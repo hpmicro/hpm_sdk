@@ -1,0 +1,3 @@
+dependency:
+  - sdcard
+  - lcd

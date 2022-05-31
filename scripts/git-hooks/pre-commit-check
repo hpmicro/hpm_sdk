@@ -1,0 +1,10 @@
+#!bin/sh
+# Copyright 2021 hpmicro
+# SPDX-License-Identifier: BSD-3-Clause
+
+if [ "$HPM_SDK_BASE" == "" ] || [ ! -e "$HPM_SDK_BASE" ]; then
+    echo HPM_SDK_BASE is not correctly set
+    exit 1
+fi
+
+git diff --cached -- . ':!middleware/FreeRTOS/**' ':!doc' ':!*/*.html' ':!*/hpm_*_regs.h' ':!*/hpm_soc.h' ':!*/hpm_*_iomux.h' ':!*/*.xml' | $HPM_SDK_BASE/scripts/checkpatch.pl

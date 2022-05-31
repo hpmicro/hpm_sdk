@@ -1,0 +1,7 @@
+excluded_targets:
+  - flash_xip
+  - flash_xip_release
+  - flash_uf2
+dependency:
+  - motor-control
+  - lcd

@@ -1,0 +1,42 @@
+#!/bin/sh
+# Copyright 2021 hpmicro
+# SPDX-License-Identifier: BSD-3-Clause
+
+if [ "$HPM_SDK_BASE" = "" ] || [ ! -e "$HPM_SDK_BASE" ]; then
+    echo HPM_SDK_BASE is not correctly set
+    exit 1
+fi
+
+remote="$1"
+url="$2"
+
+z40=0000000000000000000000000000000000000000
+
+while read local_ref local_sha remote_ref remote_sha
+do
+    if [ "$local_sha" = $z40 ]
+    then
+        # Handle delete
+        :
+    else
+        if [ "$remote_sha" = $z40 ]
+        then
+            # New branch, examine all commits
+            commits=$(git rev-list --reverse $local_sha --not --remotes=origin)
+        else
+            # Update to existing branch, examine new commits
+            commits=$(git rev-list --reverse "$remote_sha..$local_sha")
+        fi
+
+        for commit in $commits
+        do
+            # Check for WIP commit
+            git format-patch --stdout "$commit" -1 -- . ':!middleware/FreeRTOS/**' ':!doc' ':!*/*.html' ':!*/hpm_*_regs.h' ':!*/hpm_soc.h' ':!*/hpm_*_iomux.h' ':!*/*.xml' | $HPM_SDK_BASE/scripts/checkpatch.pl
+            if [ $? != 0 ]; then
+                exit 1
+            fi
+        done
+    fi
+done
+
+exit 0

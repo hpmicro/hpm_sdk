@@ -1,0 +1,41 @@
+# Copyright 2021 hpmicro
+# SPDX-License-Identifier: BSD-3-Clause
+
+sdk_inc(.)
+sdk_inc(include)
+sdk_inc(include/lwip/apps)
+
+sdk_src(core/altcp.c)
+sdk_src(core/altcp_alloc.c)
+sdk_src(core/altcp_tcp.c)
+sdk_src(core/def.c)
+sdk_src(core/dns.c)
+sdk_src(core/inet_chksum.c)
+sdk_src(core/init.c)
+sdk_src(core/ip.c)
+sdk_src(core/mem.c)
+sdk_src(core/memp.c)
+sdk_src(core/netif.c)
+sdk_src(core/pbuf.c)
+sdk_src(core/raw.c)
+sdk_src(core/stats.c)
+sdk_src(core/sys.c)
+sdk_src(core/tcp.c)
+sdk_src(core/tcp_in.c)
+sdk_src(core/tcp_out.c)
+sdk_src(core/timeouts.c)
+sdk_src(core/udp.c)
+
+sdk_src(core/ipv4/autoip.c)
+sdk_src(core/ipv4/dhcp.c)
+sdk_src(core/ipv4/etharp.c)
+sdk_src(core/ipv4/icmp.c)
+sdk_src(core/ipv4/igmp.c)
+sdk_src(core/ipv4/ip4.c)
+sdk_src(core/ipv4/ip4_addr.c)
+sdk_src(core/ipv4/ip4_frag.c)
+
+sdk_src(netif/ethernet.c)
+
+sdk_src_ifdef(CONFIG_LWIP_HTTPSRV apps/http/httpd.c)
+sdk_src_ifdef(CONFIG_LWIP_HTTPSRV apps/http/fs.c)

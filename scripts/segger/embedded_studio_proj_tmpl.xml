@@ -1,0 +1,99 @@
+<!DOCTYPE CrossStudio_Project_File>
+<solution Name="{{ target["name"] }}" target="20" version="2">
+  <project Name="{{ target["name"] }}">
+    <configuration
+      Name="Common"
+      LIBRARY_IO_TYPE="STD"
+      arm_linker_heap_size="{{ target["heap_size"]}}"
+      arm_linker_stack_size="{{ target["stack_size"]}}"
+      arm_rtl_variant="SEGGER"
+      build_generic_options_file_name=""
+      c_user_include_directories="{% for inc in target["includes"] %}{{ inc }};{% endfor %}"
+      link_linker_script_file="{{ target["linker"]}}"
+      linker_output_format="hex"
+      macros="HPM_SDK_BASE={{ target["sdk_base"] }}"
+      project_directory=""
+      project_type="Executable"
+      linker_printf_fp_enabled="Float"
+      linker_printf_width_precision_supported="Yes"
+      {% if target["openocd"] -%}
+      debug_target_connection="GDB Server"
+      gdb_server_type="Custom"
+      gdb_server_reset_command="{{ target["gdb_server_reset_command"] }}"
+      gdb_server_autostart_server="{{ target["auto_start_gdb_server"] }}"
+      gdb_server_port="{{ target["gdb_server_port"] }}"
+      gdb_server_command_line="{{ target["openocd"] }} -f $(HPM_SDK_BASE)/boards/openocd/probes/{{ target["debug_probe"] }}.cfg {% if target["openocd_soc"]|length %} -f $(HPM_SDK_BASE)/boards/openocd/soc/{{ target["openocd_soc"]}}.cfg {% endif %} -f $(HPM_SDK_BASE)/boards/openocd/boards/{{ target["board"] }}.cfg"
+      {%- endif %}
+      target_device_name="{{ target["target_device_name"] }}"
+      linker_output_format="bin"
+      post_build_command="{{ target["post_build_command"] }}"
+      heap_size="{{ target["heap_size"] }}"
+      stack_size="{{ target["stack_size"] }}"
+      build_object_file_name="$(IntDir)/$(RelInputDir)/$(InputName)$(OBJ)"
+      RISCV_TOOLCHAIN_VARIANT="{{ target["toolchain_variant"] }}"
+      {% if target["compiler_abi"] -%}
+      rv_abi="{{ target["compiler_abi"] }}"
+      {%- endif %}
+      {% if target["compiler_arch"] -%}
+      rv_architecture="{{ target["compiler_arch"] }}"
+      {%- endif %}
+      {% if target["toolchain_variant"] == "Andes" -%}
+      arm_linker_variant="GNU"
+      build_generic_options_file_name="$(StudioDir)/targets/Andes_build_options.xml"
+      c_additional_options="{{ target["cflags"] }}"
+      link_use_linker_script_file="Yes"
+      rv_arch_ext="xv5"
+      rv_debug_extensions="Andes"
+      rv_toolchain_prefix="andes-"
+      {% if target["enable_nds_dsp"] -%}
+      rv32andes_compiler_ext_dsp="Yes"
+      {%- endif %}
+      {% else %}
+      rv_arch_ext=""
+      rv_debug_extensions="None"
+      rv_toolchain_prefix=""
+      arm_linker_variant="SEGGER"
+      {%- endif %}
+      {% if target["segger_level_o3"] -%}
+      gcc_optimization_level="Level 3 for more speed"
+      {%- endif %}
+      {% if target["cplusplus"] -%}
+      gcc_cplusplus_language_standard="c++11"
+      libcxx="Yes"
+      {%- endif %}
+      {% if target["ses_link_input"] -%}
+      linker_additional_files="{{ target["ses_link_input"] }}"
+      {%- endif %}
+      />
+    {% for group in target["groups"] %}<folder Name="{{ group.name }}">{% for file in group.files %}
+    <file file_name="{{ file.path }}"/>{% endfor %}</folder>{% endfor %}
+    <configuration
+      Name="Debug"
+      debug_cpu_registers_file="{{ target["cpu_register_definition"] }}"
+      debug_register_definition_file="{{ target["register_definition"] }}"
+      gdb_server_allow_memory_access_during_execution="Yes"
+      gdb_server_ignore_checksum_errors="No"
+      gdb_server_register_access="General and Individual"
+      />
+    <configuration
+      Name="Release"
+      debug_cpu_registers_file="{{ target["cpu_register_definition"] }}"
+      debug_register_definition_file="{{ target["register_definition"] }}"
+      />
+  </project>
+  <configuration
+    Name="Debug"
+    c_preprocessor_definitions="DEBUG"
+    gcc_debugging_level="Level 3"
+    gcc_optimization_level="None" />
+  <configuration
+    Name="Release"
+    c_preprocessor_definitions="NDEBUG"
+    gcc_debugging_level="None"
+    gcc_omit_frame_pointer="Yes"
+    gcc_optimization_level="Level 1" />
+  <configuration Name="Common"
+      c_preprocessor_definitions="{% for define in target["defines"] %}{{ define }};{% endfor %}"
+      gdb_server_write_timeout="300"
+      link_symbol_definitions="{% for symbol in target["link_symbols"] %}{{ symbol }};{% endfor %}" />
+</solution>

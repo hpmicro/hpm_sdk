@@ -1,0 +1,13 @@
+excluded_targets:
+  - flash_xip               # exclude the flash_xip target for core0
+  - flash_xip_release       # exclude the flash_xip_release target for core0
+  - flash_sdram_xip         # exclude the flash_sdram_xip target for core0
+  - flash_sdram_xip_release # exclude the flash_sdram_xip_release target for core0
+  - flash_uf2
+debug:
+    ses:
+      auto_start_gdb_server: false
+      gdb_server_port: 3334
+      gdb_server_reset_command: "halt"
+dependency:
+  - multicore

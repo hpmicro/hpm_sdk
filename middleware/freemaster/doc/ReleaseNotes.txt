@@ -1,0 +1,173 @@
+NXP FreeMASTER Serial Communication (SCI) Driver
+================================================================================
+
+FreeMASTER is a PC-based application serving as a real-time monitor, visualization 
+tool, and a graphical control panel of embedded applications based on NXP 
+microcontroller and microprocessor units. The FreeMASTER Serial Communication 
+Driver implements the serial interface between the target application and the host PC. 
+The serial interface covers the UART/SCI and CAN communication for all supported devices, 
+the EOnCE/JTAG communication for 56F8xxx family of hybrid microcontrollers and the 
+USB interface for some platforms.
+
+This driver was tested on all supported platforms in the CodeWarrior Integrated
+Development Environment and in other relevant IDEs. Please see the test and example 
+applications in the "example" directory. Also read "readme_xxx.txt" in "src_platform" 
+directories for more information about platform-specific implementation details.
+
+This Communication Driver is documented in the User Manual located in the "doc\UserGuide" folder.
+
+CHANGELOG
+=========
+
+Version 2.0 (August 31th 2016)
+----------------------------------
+- Added new SCI driver and example applications for Automotive MCU portfolio supporting the 
+  SCI/UART, CAN, Non-intrusive BDM and Packet Driven BDM communications.
+  The FreeMASTER SCI Driver now supports following Automotive Microcontrollers:
+    - MPC56xx family of 32-bit MCUs built on Power Architecture Technology = MPC567xF, MPC560xB/C,
+      MPC560xP, MPC560xE, MPC564xA, MPC567xK, MPC560xS, MPC567xR, MPC563xM and MPC564xL platform.
+    - MPC57xx family of 32-bit MCUs built on Power Architecture Technology = MPC574xP, MPC577xK,
+      MPC577xC, MPC574xR, MPC577xM, MPC574xC and MPC574xG platform.
+    - Kinetis EA series of 32-bit ARM Cortex-M MCUs = KEAxx platform.
+    - S32 Microcontrollers series of 32-bit ARM Cortex-M MCUs = S32Kxx platform.
+- User Guide was updated and also new NXP template was applied.
+- New NXP license text provided, effectively no change in license conditions and in terms of use.
+- Folders structure at the installation destination was rearranged for better ease of use.
+- Simple example script applications demonstrates how to initialize and use ActiveX object 
+  functions in the Microsoft Excel and Mathworks Matlab environments were created and stored in
+  the "examples\ActiveX_examples" folder.
+- Corrected macro function "FMSTR_CLRBIT8" for Kinetis platforms.
+- Application Notes AN4752, AN4771 and AN4860 were added as an supporting documents into the "doc\ApplicationNotes" folder.
+- One common PC host example application "demo.pmp", applicable for all supported platforms, 
+  was created and stored in the "examples\PC_host_demo" folder.
+- The default install location was changed to "c:\NXP\".
+
+Version 1.9 (Mar 31th 2015)
+----------------------------------
+- Support for TSA Active Content. The TSA tables can now contain references to memory-mapped files,
+  directories and hyperlinks. The files can be retrieved in FreeMASTER PC Host tool with a special 
+  "fmstr:" protocol URL directly within the HTML-encoded pages. This enables the whole project file 
+  with GUI, graphics and scripts to be embedded in MCU flash and retrieved automatically by PC Host 
+  tool. This feature requires FreeMASTER version 2.0 or higher.
+- Support for dynamic TSA entries for variables to be registered in TSA tables during runtime. Use 
+  with FMSTR_USE_TSA_DYNAMIC driver option enabled.
+- Support for general Q(m,n) or UQ(m,n) fractional format in TSA variable description. Support for
+  pointer types added. Fixed TSA support for struct types which are not aliased with a typedef.   
+- New "pipes" feature introduced. This feature enables a loss-less communication over multiple data
+  streams between target and Host PC. Suitable for console-like control or custom data streaming. 
+  This feature requires FreeMASTER version 2.0 or higher.
+- New USB-CDC driver from Kinetis SDK supported by default. Older USB stack is still maintained 
+  for backward compatibility (use with the FMSTR_USB_LEGACY_STACK option). 
+- LIN Transport Layer enabled and tested with S12Z device. Requires FreeMASTER-over-LIN 
+  communication plug-in. 
+- Transmission debugging option supported for Serial and CAN communication. When FMSTR_DEBUG_TX 
+  option is enabled, the target MCU transmits test frames continuously until the first valid
+  command frame is received. This simplifies troubleshooting of communication problems.
+- This version is also released as version 1.8.2 within ProcessorExpert component in CodeWarrior 10.6.4    
+
+Version 1.8.1  (Jun 28th 2014)
+----------------------------------
+- Added support for dynamically assigned SCI or CAN base address - for cases where
+  compile-time optimization can not be used or is not convenient to use.
+- This version of the driver is suitable to be integrated with NXP Kinetis SDK
+  version 1.0.
+- New license text provided, effectively no change in license conditions and
+  in terms of use.
+
+Version 1.8.0  (Mar 31th 2014)
+----------------------------------
+- Added support for LPUART module of the new Kinetis K22F and KV31 families
+- Application example project extended to support CodeWarrior/GCC compiler.
+- Fixed wrong calculation of communication buffer. This issue could make 
+  Recorder or Scope initialization to fail in some scenarios.
+- Initial support for Kinetis Design Studio IDE. TWR-K60 project avaliable 
+  for KDS, tested with KDS version 0.2. 
+- Known issue: USB CDC support not functional when using GCC compiler 
+  (the issue affects both KDS and CodeWarrior projects; USB temporarily removed
+  from KDS and CodeWarrior-GCC projects).  
+
+Version 1.7.0  (Dec 15th 2013)
+----------------------------------
+- Added support of S12Z core and S12Z CodeWarrior compiler.
+- The direct-USB communication upgraded to NXP USB Medical stack V4.0.3.
+- Added example application for TWR-K60N512 board for Keil uVision tool.
+- Added example application for TWR-56F8200 board for CodeWarrior 10.4.
+- Enabled compatibility with C++ applications.
+- Added support of the new FlexCAN module for 56F8400 family of Digital Signal Controllers.
+- Added option to enable ISR-communication handler callback.
+- Updated MQX example application. New version is based on the MQX 4.1.0 release. 
+
+Version 1.6.0  (Jul 31th 2012)
+----------------------------------
+- Added support of S12Z core and Cosmic compiler version 4.1.3.
+
+Version 1.5.0  (Aug 15th 2011)
+----------------------------------
+- Added FreeMASTER Packet-Driven BDM driver. This driver supports communication 
+  with the FreeMASTER tool and Packet-Driven BDM Plug-in. This support enables
+  all FreeMASTER features to run over the BDM interface (FreeMASTER Recorder, 
+  Application Commands, Target-side Addressing, Masked (bit-wise) write access 
+  and other protocol features). The Packet Driven BDM Plug-in was released with 
+  FreeMASTER tool V1.3.14.
+- Added FMSTR_DISABLE configuration option to disable all FreeMASTER features.
+  This may be useful to turn off the FreeMASTER support while leaving the source
+  files in the project.
+- The direct-USB communication upgraded to NXP USB Medical stack V3.1.
+- Internal header files reorganized, New file freemaster_defcfg.h is included
+  in freemaster.h and set up all non defined configuration macros to dafault value.
+- Added example application for Kwikstik board
+- Fixed FlexCAN issue on MPC55xx, MPC56xx and Kxx platforms. FlexCAN module 
+  could lose message on receives.
+
+Version 1.4.0  (May 30th 2011)
+----------------------------------
+- Added FreeMASTER over USB CDC class. Use Medical USB stack 3.0 or above.
+  USB CDC interface was added in EVB51JM128, M52259EVB and TWR-K60N512 example 
+  application. Use with FreeMASTER tool 1.3.13 for better performance.
+- New example application for DEMOJM board MC9S08JM60 processor based 
+  on Code Warrior 6.3 and Code Warrior 10.1, where is USB CDC class included. 
+
+Version 1.3.0  (Apr 15th 2011)
+----------------------------------
+- Implement floating point support in recorder triggering. 
+  Use with FreeMASTER version 1.3.12 or above.
+- Added support for Kxx Kinetis ARM Cortex-M4 devices.
+- New example application for TWR-K60N512 board based on Code Warrior 10.1 and 
+  IAR Embedded Workbench for ARM. 
+- Added support for MQX - Real Time Operating System.
+- Added standard MQX IO communication interface.
+- HCS08, MCF51xx, MCF52xx example application was regenerated in Code Warrior 10.1
+
+Version 1.2.0  (Apr 1st 2010)
+----------------------------------
+- Added MSCAN/FLEXCAN communication interface. Use with FreeMASTER version 1.3.10.
+- FreeMASTER Lite configuration options are available to reduce code and RAM size.
+- Fixed bug in Recorder initialization function (flag initialization).
+- Added support for MPC56xx devices.
+- Example application added for MPC5604B, MPC5604P and MPC5633M devices.
+- New MPC5553EVB example application added based on CodeWarior stationery.
+- Added example application for M52259EVB board.
+- Added two examples for MC56F8006DEMO board based on CodeWarior stationery 
+  and Processor Expert stationery.
+- Added example application for 9S08DZ60 and MCF51JM128 devices.
+- Support for DSC processors of MC56F8xx family was removed.
+- Support for PowerPC processors of MPC5xx family was removed.
+- QSUpdater tool was removed.
+
+Version 1.1.0 Beta (Oct 22nd 2007)
+----------------------------------
+- Added support for Flexis devices HCS08QE128 and ColdFire MCF51QE128.
+- Example application added for GreenHills MULTI compiler (MPC5554). 
+- Fixed interrupt-driven JTAG communication on 56F800E platforms (see FMSTR_Poll).
+- Added support for a very fast recorder routine on 56F800E. This feature is not
+  yet documented in Beta version of this software.   
+
+Version 1.0.0 (Mar 7th 2006)
+----------------------------------
+This is the first official release of the driver code. This unified driver replaces
+the older "PC Master" software driver versions for HC08, HC12, 56F8xx, 56F8xxx,
+PowerPC and ColdFire. 
+
+--------------------------------------------------------------------------------
+Copyright 2004-2016, NXP Semiconductors N.V.
+ALL RIGHTS RESERVED, www.nxp.com

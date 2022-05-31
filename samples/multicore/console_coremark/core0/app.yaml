@@ -1,0 +1,10 @@
+linked_project:
+  project_name: multicore/console_coremark/core1
+  build_type: sec_core_img
+
+debug:
+    ses:
+      auto_start_gdb_server: true
+      gdb_server_port: 3333
+dependency:
+  - multicore

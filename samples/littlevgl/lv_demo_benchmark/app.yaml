@@ -1,0 +1,7 @@
+excluded_targets:
+  - flash_uf2
+  - flash_xip
+  - flash_xip_release
+dependency:
+  - lcd
+  - cam

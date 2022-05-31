@@ -1,0 +1,49 @@
+# Copyright 2021 hpmicro
+# SPDX-License-Identifier: BSD-3-Clause
+
+board:
+    name: hpm6750evkmini
+    soc: HPM6750
+    openocd-soc: hpm6750-dual-core
+    openocd-probe: ft2232
+    on-board-ram:
+      type: sdram
+      size: 16M
+      width: 16bit
+    on-board-flash:
+      type: qspi-nor-flash
+      size: 8M
+    feature:
+      - adc
+      - sdcard
+      - usb-otg
+      - dao
+      - pdm
+      - vad
+      - cam
+      - lcd
+      - enet
+      - spi
+      - uart
+      - can
+      - i2c
+      - pwm
+      - pwm-rgb-led
+      - pwm-beep
+      - gpio
+      - gpio-led
+      - gpio-key
+      - wifi-rt007-spi
+      - tflm
+      - multicore
+      - drv_pllctl
+      - drv_sysctl
+      - dual-i2c
+      - sdxc
+      - i2s
+      - uart_dma_rx_idle
+      - ptp
+      - gpiom
+      - adc12
+      - adc16
+      - cdc_dual_ports

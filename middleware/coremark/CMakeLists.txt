@@ -1,0 +1,9 @@
+# Copyright 2021 hpmicro
+# SPDX-License-Identifier: BSD-3-Clause
+
+sdk_inc(./)
+sdk_src(core_list_join.c)
+sdk_src(core_matrix.c)
+sdk_src(core_state.c)
+sdk_src(core_util.c)
+sdk_src(core_main.c)

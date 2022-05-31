@@ -1,0 +1,118 @@
+# Synchronous timer
+## Overview
+***
+**synt** The synchronous timer drive example project shows that the counting information of the synchronous timer can be obtained in real time by setting the synchronous timer module.
+- In the example code, the synchronization timer is initialized, the device counts the overload value, the count value in the synchronization timer is read in a cycle, and the number of cycles is set to 100
+
+## Board Setting
+***
+- No special settings
+
+## Running the example
+***
+When the project runs correctly, the serial port terminal will output the following information (the count value printed each time will be different):
+```
+> synt example
+> [0]: 0x3b4db
+> [1]: 0x12a703
+> [2]: 0x21dcca
+> [3]: 0x3112b9
+> [4]: 0x4048b7
+> [5]: 0x4f7e9f
+> [6]: 0x5eb498
+> [7]: 0x6dea33
+> [8]: 0x7d201c
+> [9]: 0x3cd76
+> [10]: 0x12bf0c
+> [11]: 0x22390e
+> [12]: 0x31b2fc
+> [13]: 0x412ce8
+> [14]: 0x50a6eb
+> [15]: 0x6020c5
+> [16]: 0x6f9a8c
+> [17]: 0x7f1477
+> [18]: 0x605ed
+> [19]: 0x153bb8
+> [20]: 0x24b5a2
+> [21]: 0x342fd5
+> [22]: 0x43a9e5
+> [23]: 0x5323d4
+> [24]: 0x629dc0
+> [25]: 0x7217d6
+> [26]: 0x8191c0
+> [27]: 0x88322
+> [28]: 0x17b939
+> [29]: 0x273348
+> [30]: 0x36ad1e
+> [31]: 0x4626fa
+> [32]: 0x55a108
+> [33]: 0x651ada
+> [34]: 0x7494b4
+> [35]: 0x840e89
+> [36]: 0xb0000
+> [37]: 0x1a3591
+> [38]: 0x29afa2
+> [39]: 0x392989
+> [40]: 0x48a38c
+> [41]: 0x581d76
+> [42]: 0x679748
+> [43]: 0x77110d
+> [44]: 0x868af4
+> [45]: 0xd7c48
+> [46]: 0x1cb215
+> [47]: 0x2c2bf2
+> [48]: 0x3ba5ec
+> [49]: 0x4b1fef
+> [50]: 0x5a99fd
+> [51]: 0x6a13d0
+> [52]: 0x798da9
+> [53]: 0x7f30
+> [54]: 0xf7105
+> [55]: 0x1ea6d1
+> [56]: 0x2e20bf
+> [57]: 0x3d9aa7
+> [58]: 0x4d14a9
+> [59]: 0x5c8eb8
+> [60]: 0x6c08a0
+> [61]: 0x7b828c
+> [62]: 0x273fe
+> [63]: 0x11a9e2
+> [64]: 0x2123cc
+> [65]: 0x309df0
+> [66]: 0x4017c8
+> [67]: 0x4f91ca
+> [68]: 0x5f0bd8
+> [69]: 0x6e8598
+> [70]: 0x7dff84
+> [71]: 0x4f0e4
+> [72]: 0x1426b4
+> [73]: 0x23a0c6
+> [74]: 0x331a7a
+> [75]: 0x429464
+> [76]: 0x520e67
+> [77]: 0x618875
+> [78]: 0x710260
+> [79]: 0x807c25
+> [80]: 0x76d94
+> [81]: 0x16a377
+> [82]: 0x261d60
+> [83]: 0x359701
+> [84]: 0x4510eb
+> [85]: 0x548ad8
+> [86]: 0x6404e5
+> [87]: 0x737ef1
+> [88]: 0x82f8de
+> [89]: 0x9ea88
+> [90]: 0x192058
+> [91]: 0x289a69
+> [92]: 0x381469
+> [93]: 0x478e53
+> [94]: 0x570856
+> [95]: 0x668240
+> [96]: 0x75fc4b
+> [97]: 0x857649
+> [98]: 0xc67ce
+> [99]: 0x1b9db1
+```
+
+

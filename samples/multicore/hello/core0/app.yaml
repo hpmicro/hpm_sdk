@@ -1,0 +1,12 @@
+dependency:
+  - pwm-rgb-led
+  - multicore
+
+linked_project:
+  project_name: multicore/hello/core1
+  build_type: sec_core_img
+
+debug:
+    ses:
+      auto_start_gdb_server: true
+      gdb_server_port: 3333
