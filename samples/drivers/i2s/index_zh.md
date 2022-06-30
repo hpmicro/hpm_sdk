@@ -1,4 +1,4 @@
-# 电机控制
+# I2S例程
 
 ```{eval-rst}
 .. toctree::

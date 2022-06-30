@@ -15559,6 +15559,19 @@
       <BitField name="R_EDGE_PH_CODE" start="8" size="8"/>
       <BitField name="CENTER_PH_CODE" start="0" size="8"/>
     </Register>
+    <Register name="MISC_CTRL0" start="+0x3000" size="0x4">
+      <BitField name="IRQ_EN" start="30" size="2"/>
+      <BitField name="CARDCLK_INV_EN" start="28" size="1"/>
+      <BitField name="PAD_CLK_SEL_B" start="17" size="1"/>
+      <BitField name="CARDCLK_EN_SW" start="12" size="1"/>
+      <BitField name="FREQ_SEL_SW_EN" start="11" size="1"/>
+      <BitField name="TMCLK_EN" start="10" size="1"/>
+      <BitField name="FREQ_SEL_SW" start="0" size="10"/>
+    </Register>
+    <Register name="MISC_CTRL1" start="+0x3004" size="0x4">
+      <BitField name="CARD_ACTIVE" start="31" size="1"/>
+      <BitField name="CARD_ACTIVE_PERIOD_SEL" start="28" size="2"/>
+    </Register>
   </RegisterGroup>
   <RegisterGroup start="0xf3020000" name="I2C0">
     <Register name="CFG" start="+0x10" size="0x4">

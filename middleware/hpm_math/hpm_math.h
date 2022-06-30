@@ -90,7 +90,7 @@ static inline float32_t hpm_dsp_max_val_f32(const float32_t *src, uint32_t size)
 static inline q15_t hpm_dsp_max_q15(const q15_t *src, uint32_t size, uint32_t *index)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_max_q15(src, size, index);
+    return riscv_dsp_max_q15(src, size, index);
 #endif
 }
 
@@ -104,7 +104,7 @@ static inline q15_t hpm_dsp_max_q15(const q15_t *src, uint32_t size, uint32_t *i
 static inline q31_t hpm_dsp_max_q31(const q31_t *src, uint32_t size, uint32_t *index)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_max_q31(src, size, index);
+    return riscv_dsp_max_q31(src, size, index);
 #endif
 }
 
@@ -118,7 +118,7 @@ static inline q31_t hpm_dsp_max_q31(const q31_t *src, uint32_t size, uint32_t *i
 static inline q7_t hpm_dsp_max_q7(const q7_t *src, uint32_t size, uint32_t *index)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_max_q7(src, size, index);
+    return riscv_dsp_max_q7(src, size, index);
 #endif
 }
 
@@ -132,7 +132,7 @@ static inline q7_t hpm_dsp_max_q7(const q7_t *src, uint32_t size, uint32_t *inde
 static inline uint8_t hpm_dsp_max_u8(const uint8_t *src, uint32_t size, uint32_t *index)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_max_u8(src, size, index);
+    return riscv_dsp_max_u8(src, size, index);
 #endif
 }
 
@@ -161,7 +161,7 @@ static inline float32_t hpm_dsp_min_f32(const float32_t *src, uint32_t size, uin
 static inline q15_t hpm_dsp_min_q15(const q15_t *src, uint32_t size, uint32_t *index)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_min_q15(src, size, index);
+    return riscv_dsp_min_q15(src, size, index);
 #endif
 }
 
@@ -175,7 +175,7 @@ static inline q15_t hpm_dsp_min_q15(const q15_t *src, uint32_t size, uint32_t *i
 static inline q31_t hpm_dsp_min_q31(const q31_t *src, uint32_t size, uint32_t *index)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_min_q31(src, size, index);
+    return riscv_dsp_min_q31(src, size, index);
 #endif
 }
 
@@ -189,7 +189,7 @@ static inline q31_t hpm_dsp_min_q31(const q31_t *src, uint32_t size, uint32_t *i
 static inline q7_t hpm_dsp_min_q7(const q7_t *src, uint32_t size, uint32_t *index)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_min_q7(src, size, index);
+    return riscv_dsp_min_q7(src, size, index);
 #endif
 }
 
@@ -203,7 +203,7 @@ static inline q7_t hpm_dsp_min_q7(const q7_t *src, uint32_t size, uint32_t *inde
 static inline uint8_t hpm_dsp_min_u8(const uint8_t *src, uint32_t size, uint32_t *index)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_min_u8(src, size, index);
+    return riscv_dsp_min_u8(src, size, index);
 #endif
 }
 
@@ -217,7 +217,7 @@ static inline uint8_t hpm_dsp_min_u8(const uint8_t *src, uint32_t size, uint32_t
 static inline float32_t hpm_dsp_mean_f32(const float32_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_mean_f32(src, size);
+    return riscv_dsp_mean_f32(src, size);
 #endif
 }
 
@@ -235,7 +235,7 @@ static inline float32_t hpm_dsp_mean_f32(const float32_t *src, uint32_t size)
 static inline q15_t hpm_dsp_mean_q15(const q15_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_mean_q15(src, size);
+    return riscv_dsp_mean_q15(src, size);
 #endif
 }
 
@@ -253,7 +253,7 @@ static inline q15_t hpm_dsp_mean_q15(const q15_t *src, uint32_t size)
 static inline q31_t hpm_dsp_mean_q31(const q31_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_mean_q31(src, size);
+    return riscv_dsp_mean_q31(src, size);
 #endif
 }
 
@@ -271,7 +271,7 @@ static inline q31_t hpm_dsp_mean_q31(const q31_t *src, uint32_t size)
 static inline q7_t hpm_dsp_mean_q7(const q7_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_mean_q7(src, size);
+    return riscv_dsp_mean_q7(src, size);
 #endif
 }
 
@@ -287,7 +287,7 @@ static inline q7_t hpm_dsp_mean_q7(const q7_t *src, uint32_t size)
 static inline uint8_t hpm_dsp_mean_u8(const uint8_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_mean_u8(src, size);
+    return riscv_dsp_mean_u8(src, size);
 #endif
 }
 
@@ -301,7 +301,7 @@ static inline uint8_t hpm_dsp_mean_u8(const uint8_t *src, uint32_t size)
 static inline float32_t hpm_dsp_pwr_f32(const float32_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_pwr_f32(src, size);
+    return riscv_dsp_pwr_f32(src, size);
 #endif
 }
 
@@ -320,7 +320,7 @@ static inline float32_t hpm_dsp_pwr_f32(const float32_t *src, uint32_t size)
 static inline q63_t hpm_dsp_pwr_q15(const q15_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_pwr_q15(src, size);
+    return riscv_dsp_pwr_q15(src, size);
 #endif
 }
 
@@ -340,7 +340,7 @@ static inline q63_t hpm_dsp_pwr_q15(const q15_t *src, uint32_t size)
 static inline q63_t hpm_dsp_pwr_q31(const q31_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_pwr_q31(src, size);
+    return riscv_dsp_pwr_q31(src, size);
 #endif
 }
 
@@ -359,7 +359,7 @@ static inline q63_t hpm_dsp_pwr_q31(const q31_t *src, uint32_t size)
 static inline q31_t hpm_dsp_pwr_q7(const q7_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_pwr_q7(src, size);
+    return riscv_dsp_pwr_q7(src, size);
 #endif
 }
 
@@ -373,7 +373,7 @@ static inline q31_t hpm_dsp_pwr_q7(const q7_t *src, uint32_t size)
 static inline float32_t hpm_dsp_rms_f32(const float32_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_rms_f32(src, size);
+    return riscv_dsp_rms_f32(src, size);
 #endif
 }
 
@@ -393,7 +393,7 @@ static inline float32_t hpm_dsp_rms_f32(const float32_t *src, uint32_t size)
 static inline q15_t hpm_dsp_rms_q15(const q15_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_rms_q15(src, size);
+    return riscv_dsp_rms_q15(src, size);
 #endif
 }
 
@@ -413,7 +413,7 @@ static inline q15_t hpm_dsp_rms_q15(const q15_t *src, uint32_t size)
 static inline q31_t hpm_dsp_rms_q31(const q31_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_rms_q31(src, size);
+    return riscv_dsp_rms_q31(src, size);
 #endif
 }
 
@@ -427,7 +427,7 @@ static inline q31_t hpm_dsp_rms_q31(const q31_t *src, uint32_t size)
 static inline float32_t hpm_dsp_std_f32(const float32_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_std_f32(src, size);
+    return riscv_dsp_std_f32(src, size);
 #endif
 }
 
@@ -447,7 +447,7 @@ static inline float32_t hpm_dsp_std_f32(const float32_t *src, uint32_t size)
 static inline q15_t hpm_dsp_std_q15(const q15_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_std_q15(src, size);
+    return riscv_dsp_std_q15(src, size);
 #endif
 }
 
@@ -467,7 +467,7 @@ static inline q15_t hpm_dsp_std_q15(const q15_t *src, uint32_t size)
 static inline q31_t hpm_dsp_std_q31(const q31_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_std_q31(src, size);
+    return riscv_dsp_std_q31(src, size);
 #endif
 }
 
@@ -486,7 +486,7 @@ static inline q31_t hpm_dsp_std_q31(const q31_t *src, uint32_t size)
 static inline q15_t hpm_dsp_std_u8(const uint8_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_std_u8(src, size);
+    return riscv_dsp_std_u8(src, size);
 #endif
 }
 
@@ -500,7 +500,7 @@ static inline q15_t hpm_dsp_std_u8(const uint8_t *src, uint32_t size)
 static inline float32_t hpm_dsp_var_f32(const float32_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_var_f32(src, size);
+    return riscv_dsp_var_f32(src, size);
 #endif
 }
 
@@ -520,7 +520,7 @@ static inline float32_t hpm_dsp_var_f32(const float32_t *src, uint32_t size)
 static inline q31_t hpm_dsp_var_q15(const q15_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_var_q15(src, size);
+    return riscv_dsp_var_q15(src, size);
 #endif
 }
 
@@ -540,7 +540,7 @@ static inline q31_t hpm_dsp_var_q15(const q15_t *src, uint32_t size)
 static inline q63_t hpm_dsp_var_q31(const q31_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_var_q31(src, size);
+    return riscv_dsp_var_q31(src, size);
 #endif
 }
 
@@ -555,7 +555,7 @@ static inline q63_t hpm_dsp_var_q31(const q31_t *src, uint32_t size)
 static inline float32_t hpm_dsp_entropy_f32(const float32_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_entropy_f32(src, size);
+    return riscv_dsp_entropy_f32(src, size);
 #endif
 }
 
@@ -574,7 +574,7 @@ static inline float32_t hpm_dsp_entropy_f32(const float32_t *src, uint32_t size)
 static inline float32_t hpm_dsp_relative_entropy_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_relative_entropy_f32(src1, src2, size);
+    return riscv_dsp_relative_entropy_f32(src1, src2, size);
 #endif
 }
 
@@ -588,7 +588,7 @@ static inline float32_t hpm_dsp_relative_entropy_f32(const float32_t *src1, cons
 static inline float32_t hpm_dsp_lse_f32(const float32_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_lse_f32(src, size);
+    return riscv_dsp_lse_f32(src, size);
 #endif
 }
 
@@ -604,7 +604,7 @@ static inline float32_t hpm_dsp_lse_f32(const float32_t *src, uint32_t size)
 static inline float32_t hpm_dsp_lse_dprod_f32(const float32_t *src1, const float32_t *src2, uint32_t size, float32_t *buffer)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_lse_dprod_f32(src1, src2, size, buffer);
+    return riscv_dsp_lse_dprod_f32(src1, src2, size, buffer);
 #endif
 }
 
@@ -620,7 +620,7 @@ static inline float32_t hpm_dsp_lse_dprod_f32(const float32_t *src1, const float
 static inline uint32_t hpm_dsp_gaussian_naive_bayes_est_f32(const riscv_dsp_gaussian_naivebayes_f32_t *instance, const float32_t * src, float32_t *buf)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_gaussian_naive_bayes_est_f32(instance, src, buf);
+    return riscv_dsp_gaussian_naive_bayes_est_f32(instance, src, buf);
 #endif
 }
 
@@ -646,7 +646,7 @@ static inline uint32_t hpm_dsp_gaussian_naive_bayes_est_f32(const riscv_dsp_gaus
 static inline void hpm_dsp_abs_f32(float32_t *src, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_abs_f32(src, dst, size);
+    riscv_dsp_abs_f32(src, dst, size);
 #endif
 }
 
@@ -663,7 +663,7 @@ static inline void hpm_dsp_abs_f32(float32_t *src, float32_t *dst, uint32_t size
 static inline void hpm_dsp_abs_q31(q31_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_abs_q31(src, dst, size);
+    riscv_dsp_abs_q31(src, dst, size);
 #endif
 }
 
@@ -680,7 +680,7 @@ static inline void hpm_dsp_abs_q31(q31_t *src, q31_t *dst, uint32_t size)
 static inline void hpm_dsp_abs_q15(q15_t *src, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_abs_q15(src, dst, size);
+    riscv_dsp_abs_q15(src, dst, size);
 #endif
 }
 
@@ -697,7 +697,7 @@ static inline void hpm_dsp_abs_q15(q15_t *src, q15_t *dst, uint32_t size)
 static inline void hpm_dsp_abs_q7(q7_t *src, q7_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_abs_q7(src, dst, size);
+    riscv_dsp_abs_q7(src, dst, size);
 #endif
 }
 
@@ -713,7 +713,7 @@ static inline void hpm_dsp_abs_q7(q7_t *src, q7_t *dst, uint32_t size)
 static inline void hpm_dsp_add_f32(float32_t *src1, float32_t *src2, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_add_f32(src1, src2, dst, size);
+    riscv_dsp_add_f32(src1, src2, dst, size);
 #endif
 }
 
@@ -730,7 +730,7 @@ static inline void hpm_dsp_add_f32(float32_t *src1, float32_t *src2, float32_t *
 static inline void hpm_dsp_add_q31(q31_t *src1, q31_t *src2, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_add_q31(src1, src2, dst, size);
+    riscv_dsp_add_q31(src1, src2, dst, size);
 #endif
 }
 
@@ -747,7 +747,7 @@ static inline void hpm_dsp_add_q31(q31_t *src1, q31_t *src2, q31_t *dst, uint32_
 static inline void hpm_dsp_add_q15(q15_t *src1, q15_t *src2, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_add_q15(src1, src2, dst, size);
+    riscv_dsp_add_q15(src1, src2, dst, size);
 #endif
 }
 
@@ -764,7 +764,7 @@ static inline void hpm_dsp_add_q15(q15_t *src1, q15_t *src2, q15_t *dst, uint32_
 static inline void hpm_dsp_add_q7(q7_t *src1, q7_t *src2, q7_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_add_q7(src1, src2, dst, size);
+    riscv_dsp_add_q7(src1, src2, dst, size);
 #endif
 }
 
@@ -781,7 +781,7 @@ static inline void hpm_dsp_add_q7(q7_t *src1, q7_t *src2, q7_t *dst, uint32_t si
 static inline void hpm_dsp_add_u8_u16(uint8_t *src1, uint8_t *src2, uint16_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_add_u8_u16(src1, src2, dst, size);
+    riscv_dsp_add_u8_u16(src1, src2, dst, size);
 #endif
 }
 
@@ -797,7 +797,7 @@ static inline void hpm_dsp_add_u8_u16(uint8_t *src1, uint8_t *src2, uint16_t *ds
 static inline void hpm_dsp_sub_f32(float32_t *src1, float32_t *src2, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_sub_f32(src1, src2, dst, size);
+    riscv_dsp_sub_f32(src1, src2, dst, size);
 #endif
 }
 
@@ -814,7 +814,7 @@ static inline void hpm_dsp_sub_f32(float32_t *src1, float32_t *src2, float32_t *
 static inline void hpm_dsp_sub_q31(q31_t *src1, q31_t *src2, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_sub_q31(src1, src2, dst, size);
+    riscv_dsp_sub_q31(src1, src2, dst, size);
 #endif
 }
 
@@ -831,7 +831,7 @@ static inline void hpm_dsp_sub_q31(q31_t *src1, q31_t *src2, q31_t *dst, uint32_
 static inline void hpm_dsp_sub_q15(q15_t *src1, q15_t *src2, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_sub_q15(src1, src2, dst, size);
+    riscv_dsp_sub_q15(src1, src2, dst, size);
 #endif
 }
 
@@ -848,7 +848,7 @@ static inline void hpm_dsp_sub_q15(q15_t *src1, q15_t *src2, q15_t *dst, uint32_
 static inline void hpm_dsp_sub_q7(q7_t *src1, q7_t *src2, q7_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_sub_q7(src1, src2, dst, size);
+    riscv_dsp_sub_q7(src1, src2, dst, size);
 #endif
 }
 
@@ -865,7 +865,7 @@ static inline void hpm_dsp_sub_q7(q7_t *src1, q7_t *src2, q7_t *dst, uint32_t si
 static inline void hpm_dsp_sub_u8_q7(uint8_t *src1, uint8_t *src2, q7_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_sub_u8_q7(src1, src2, dst, size);
+    riscv_dsp_sub_u8_q7(src1, src2, dst, size);
 #endif
 }
 
@@ -881,7 +881,7 @@ static inline void hpm_dsp_sub_u8_q7(uint8_t *src1, uint8_t *src2, q7_t *dst, ui
 static inline void hpm_dsp_mul_f32(float32_t *src1, float32_t *src2, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mul_f32(src1, src2, dst, size);
+    riscv_dsp_mul_f32(src1, src2, dst, size);
 #endif
 }
 
@@ -898,7 +898,7 @@ static inline void hpm_dsp_mul_f32(float32_t *src1, float32_t *src2, float32_t *
 static inline void hpm_dsp_mul_q31(q31_t *src1, q31_t *src2, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mul_q31(src1, src2, dst, size);
+    riscv_dsp_mul_q31(src1, src2, dst, size);
 #endif
 }
 
@@ -915,7 +915,7 @@ static inline void hpm_dsp_mul_q31(q31_t *src1, q31_t *src2, q31_t *dst, uint32_
 static inline void hpm_dsp_mul_q15(q15_t *src1, q15_t *src2, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mul_q15(src1, src2, dst, size);
+    riscv_dsp_mul_q15(src1, src2, dst, size);
 #endif
 }
 
@@ -932,7 +932,7 @@ static inline void hpm_dsp_mul_q15(q15_t *src1, q15_t *src2, q15_t *dst, uint32_
 static inline void hpm_dsp_mul_q7(q7_t *src1, q7_t *src2, q7_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mul_q7(src1, src2, dst, size);
+    riscv_dsp_mul_q7(src1, src2, dst, size);
 #endif
 }
 
@@ -949,7 +949,7 @@ static inline void hpm_dsp_mul_q7(q7_t *src1, q7_t *src2, q7_t *dst, uint32_t si
 static inline void hpm_dsp_mul_u8_u16(uint8_t *src1, uint8_t *src2, uint16_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mul_u8_u16(src1, src2, dst, size);
+    riscv_dsp_mul_u8_u16(src1, src2, dst, size);
 #endif
 }
 
@@ -965,7 +965,7 @@ static inline void hpm_dsp_mul_u8_u16(uint8_t *src1, uint8_t *src2, uint16_t *ds
 static inline void hpm_dsp_div_f32(float32_t *src1, float32_t *src2, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_div_f32(src1, src2, dst, size);
+    riscv_dsp_div_f32(src1, src2, dst, size);
 #endif
 }
 
@@ -978,7 +978,7 @@ static inline void hpm_dsp_div_f32(float32_t *src1, float32_t *src2, float32_t *
 static inline q31_t hpm_dsp_div_q31(q31_t src1, q31_t src2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_div_q31(src1, src2);
+    return riscv_dsp_div_q31(src1, src2);
 #endif
 }
 
@@ -991,7 +991,7 @@ static inline q31_t hpm_dsp_div_q31(q31_t src1, q31_t src2)
 static inline q31_t hpm_dsp_div_s64_u32(q63_t src1, uint32_t src2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_div_s64_u32(src1, src2);
+    return riscv_dsp_div_s64_u32(src1, src2);
 #endif
 }
 
@@ -1004,7 +1004,7 @@ static inline q31_t hpm_dsp_div_s64_u32(q63_t src1, uint32_t src2)
 static inline q31_t hpm_dsp_div_u64_u32(uint64_t src1, uint32_t src2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_div_u64_u32(src1, src2);
+    return riscv_dsp_div_u64_u32(src1, src2);
 #endif
 }
 
@@ -1019,7 +1019,7 @@ static inline q31_t hpm_dsp_div_u64_u32(uint64_t src1, uint32_t src2)
 static inline void hpm_dsp_neg_f32(float32_t *src, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_neg_f32(src, dst, size);
+    riscv_dsp_neg_f32(src, dst, size);
 #endif
 }
 
@@ -1036,7 +1036,7 @@ static inline void hpm_dsp_neg_f32(float32_t *src, float32_t *dst, uint32_t size
 static inline void hpm_dsp_neg_q31(q31_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_neg_q31(src, dst, size);
+    riscv_dsp_neg_q31(src, dst, size);
 #endif
 }
 
@@ -1053,7 +1053,7 @@ static inline void hpm_dsp_neg_q31(q31_t *src, q31_t *dst, uint32_t size)
 static inline void hpm_dsp_neg_q15(q15_t *src, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_neg_q15(src, dst, size);
+    riscv_dsp_neg_q15(src, dst, size);
 #endif
 }
 
@@ -1070,7 +1070,7 @@ static inline void hpm_dsp_neg_q15(q15_t *src, q15_t *dst, uint32_t size)
 static inline void hpm_dsp_neg_q7(q7_t *src, q7_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_neg_q7(src, dst, size);
+    riscv_dsp_neg_q7(src, dst, size);
 #endif
 }
 
@@ -1085,7 +1085,7 @@ static inline void hpm_dsp_neg_q7(q7_t *src, q7_t *dst, uint32_t size)
 static inline float32_t hpm_dsp_dprod_f32(float32_t *src1, float32_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_dprod_f32(src1, src2, size);
+    return riscv_dsp_dprod_f32(src1, src2, size);
 #endif
 }
 
@@ -1104,7 +1104,7 @@ static inline float32_t hpm_dsp_dprod_f32(float32_t *src1, float32_t *src2, uint
 static inline q63_t hpm_dsp_dprod_q31(q31_t *src1, q31_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_dprod_q31(src1, src2, size);
+    return riscv_dsp_dprod_q31(src1, src2, size);
 #endif
 }
 
@@ -1121,7 +1121,7 @@ static inline q63_t hpm_dsp_dprod_q31(q31_t *src1, q31_t *src2, uint32_t size)
 static inline q63_t hpm_dsp_dprod_q15(q15_t *src1, q15_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_dprod_q15(src1, src2, size);
+    return riscv_dsp_dprod_q15(src1, src2, size);
 #endif
 }
 
@@ -1139,7 +1139,7 @@ static inline q63_t hpm_dsp_dprod_q15(q15_t *src1, q15_t *src2, uint32_t size)
 static inline q31_t hpm_dsp_dprod_u8xq15(uint8_t *src1, q15_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_dprod_u8xq15(src1, src2, size);
+    return riscv_dsp_dprod_u8xq15(src1, src2, size);
 #endif
 }
 
@@ -1157,7 +1157,7 @@ static inline q31_t hpm_dsp_dprod_u8xq15(uint8_t *src1, q15_t *src2, uint32_t si
 static inline q31_t hpm_dsp_dprod_q7(q7_t *src1, q7_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_dprod_q7(src1, src2, size);
+    return riscv_dsp_dprod_q7(src1, src2, size);
 #endif
 }
 
@@ -1174,7 +1174,7 @@ static inline q31_t hpm_dsp_dprod_q7(q7_t *src1, q7_t *src2, uint32_t size)
 static inline q31_t hpm_dsp_dprod_q7xq15(q7_t *src1, q15_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_dprod_q7xq15(src1, src2, size);
+    return riscv_dsp_dprod_q7xq15(src1, src2, size);
 #endif
 }
 
@@ -1191,7 +1191,7 @@ static inline q31_t hpm_dsp_dprod_q7xq15(q7_t *src1, q15_t *src2, uint32_t size)
 static inline uint32_t hpm_dsp_dprod_u8(uint8_t *src1, uint8_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_dprod_u8(src1, src2, size);
+    return riscv_dsp_dprod_u8(src1, src2, size);
 #endif
 }
 
@@ -1207,7 +1207,7 @@ static inline uint32_t hpm_dsp_dprod_u8(uint8_t *src1, uint8_t *src2, uint32_t s
 static inline void hpm_dsp_offset_f32(float32_t *src, float32_t offset, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_offset_f32(src, offset, dst, size);
+    riscv_dsp_offset_f32(src, offset, dst, size);
 #endif
 }
 
@@ -1224,7 +1224,7 @@ static inline void hpm_dsp_offset_f32(float32_t *src, float32_t offset, float32_
 static inline void hpm_dsp_offset_q31(q31_t *src, q31_t offset, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_offset_q31(src, offset, dst, size);
+    riscv_dsp_offset_q31(src, offset, dst, size);
 #endif
 }
 
@@ -1241,7 +1241,7 @@ static inline void hpm_dsp_offset_q31(q31_t *src, q31_t offset, q31_t *dst, uint
 static inline void hpm_dsp_offset_q15(q15_t *src, q15_t offset, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_offset_q15(src, offset, dst, size);
+    riscv_dsp_offset_q15(src, offset, dst, size);
 #endif
 }
 
@@ -1258,7 +1258,7 @@ static inline void hpm_dsp_offset_q15(q15_t *src, q15_t offset, q15_t *dst, uint
 static inline void hpm_dsp_offset_q7(q7_t *src, q7_t offset, q7_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_offset_q7(src, offset, dst, size);
+    riscv_dsp_offset_q7(src, offset, dst, size);
 #endif
 }
 
@@ -1275,7 +1275,7 @@ static inline void hpm_dsp_offset_q7(q7_t *src, q7_t offset, q7_t *dst, uint32_t
 static inline void hpm_dsp_offset_u8(uint8_t *src, q7_t offset, uint8_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_offset_u8(src, offset, dst, size);
+    riscv_dsp_offset_u8(src, offset, dst, size);
 #endif
 }
 
@@ -1291,7 +1291,7 @@ static inline void hpm_dsp_offset_u8(uint8_t *src, q7_t offset, uint8_t *dst, ui
 static inline void hpm_dsp_scale_f32(float32_t *src, float32_t scale, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_scale_f32(src, scale, dst, size);
+    riscv_dsp_scale_f32(src, scale, dst, size);
 #endif
 }
 
@@ -1311,7 +1311,7 @@ static inline void hpm_dsp_scale_f32(float32_t *src, float32_t scale, float32_t 
 static inline void hpm_dsp_scale_q31(q31_t *src, q31_t scalefract, int8_t shift, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_scale_q31(src, scalefract, shift, dst, size);
+    riscv_dsp_scale_q31(src, scalefract, shift, dst, size);
 #endif
 }
 
@@ -1331,7 +1331,7 @@ static inline void hpm_dsp_scale_q31(q31_t *src, q31_t scalefract, int8_t shift,
 static inline void hpm_dsp_scale_q15(q15_t *src, q15_t scalefract, int8_t shift, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_scale_q15(src, scalefract, shift, dst, size);
+    riscv_dsp_scale_q15(src, scalefract, shift, dst, size);
 #endif
 }
 
@@ -1351,7 +1351,7 @@ static inline void hpm_dsp_scale_q15(q15_t *src, q15_t scalefract, int8_t shift,
 static inline void hpm_dsp_scale_q7(q7_t *src, q7_t scalefract, int8_t shift, q7_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_scale_q7(src, scalefract, shift, dst, size);
+    riscv_dsp_scale_q7(src, scalefract, shift, dst, size);
 #endif
 }
 
@@ -1370,7 +1370,7 @@ static inline void hpm_dsp_scale_q7(q7_t *src, q7_t scalefract, int8_t shift, q7
 static inline void hpm_dsp_scale_u8(uint8_t *src, q7_t scalefract, int8_t shift, uint8_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_scale_u8(src, scalefract, shift, dst, size);
+    riscv_dsp_scale_u8(src, scalefract, shift, dst, size);
 #endif
 }
 
@@ -1389,7 +1389,7 @@ static inline void hpm_dsp_scale_u8(uint8_t *src, q7_t scalefract, int8_t shift,
 static inline void hpm_dsp_shift_q15(q15_t *src, int8_t shift, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_shift_q15(src, shift, dst, size);
+    riscv_dsp_shift_q15(src, shift, dst, size);
 #endif
 }
 
@@ -1407,7 +1407,7 @@ static inline void hpm_dsp_shift_q15(q15_t *src, int8_t shift, q15_t *dst, uint3
 static inline void hpm_dsp_shift_q31(q31_t *src, int8_t shift, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_shift_q31(src, shift, dst, size);
+    riscv_dsp_shift_q31(src, shift, dst, size);
 #endif
 }
 
@@ -1425,7 +1425,7 @@ static inline void hpm_dsp_shift_q31(q31_t *src, int8_t shift, q31_t *dst, uint3
 static inline void hpm_dsp_shift_q7(q7_t *src, int8_t shift, q7_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_shift_q7(src, shift, dst, size);
+    riscv_dsp_shift_q7(src, shift, dst, size);
 #endif
 }
 
@@ -1443,7 +1443,7 @@ static inline void hpm_dsp_shift_q7(q7_t *src, int8_t shift, q7_t *dst, uint32_t
 static inline void hpm_dsp_shift_u8(uint8_t *src, int8_t shift, uint8_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_shift_u8(src, shift, dst, size);
+    riscv_dsp_shift_u8(src, shift, dst, size);
 #endif
 }
 #endif
@@ -1472,7 +1472,7 @@ static inline void hpm_dsp_shift_u8(uint8_t *src, int8_t shift, uint8_t *dst, ui
 static inline void hpm_dsp_cconj_f32(const float32_t *src, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cconj_f32(src, dst, size);
+    riscv_dsp_cconj_f32(src, dst, size);
 #endif
 }
 
@@ -1489,7 +1489,7 @@ static inline void hpm_dsp_cconj_f32(const float32_t *src, float32_t *dst, uint3
 static inline void hpm_dsp_cconj_q15(const q15_t *src, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cconj_q15(src, dst, size);
+    riscv_dsp_cconj_q15(src, dst, size);
 #endif
 }
 
@@ -1506,7 +1506,7 @@ static inline void hpm_dsp_cconj_q15(const q15_t *src, q15_t *dst, uint32_t size
 static inline void hpm_dsp_cconj_q31(const q31_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cconj_q31(src, dst, size);
+    riscv_dsp_cconj_q31(src, dst, size);
 #endif
 }
 
@@ -1522,7 +1522,7 @@ static inline void hpm_dsp_cconj_q31(const q31_t *src, q31_t *dst, uint32_t size
 static inline void hpm_dsp_cdprod_f32(const float32_t *src1, const float32_t *src2, uint32_t size, float32_t *dst)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cdprod_f32(src1, src2, size, dst);
+    riscv_dsp_cdprod_f32(src1, src2, size, dst);
 #endif
 }
 
@@ -1538,7 +1538,7 @@ static inline void hpm_dsp_cdprod_f32(const float32_t *src1, const float32_t *sr
 static inline void hpm_dsp_cdprod_typ2_f32(const float32_t *src1, const float32_t *src2, uint32_t size, float32_t *rout, float32_t *iout)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cdprod_typ2_f32(src1, src2, size, rout, iout);
+    riscv_dsp_cdprod_typ2_f32(src1, src2, size, rout, iout);
 #endif
 }
 
@@ -1556,7 +1556,7 @@ static inline void hpm_dsp_cdprod_typ2_f32(const float32_t *src1, const float32_
 static inline void hpm_dsp_cdprod_q15(const q15_t *src1, const q15_t *src2, uint32_t size, q15_t *dst)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cdprod_q15(src1, src2, size, dst);
+    riscv_dsp_cdprod_q15(src1, src2, size, dst);
 #endif
 }
 
@@ -1575,7 +1575,7 @@ static inline void hpm_dsp_cdprod_q15(const q15_t *src1, const q15_t *src2, uint
 static inline void hpm_dsp_cdprod_typ2_q15(const q15_t *src1, const q15_t *src2, uint32_t size, q31_t *rout, q31_t *iout)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cdprod_typ2_q15(src1, src2, size, rout, iout);
+    riscv_dsp_cdprod_typ2_q15(src1, src2, size, rout, iout);
 #endif
 }
 
@@ -1593,7 +1593,7 @@ static inline void hpm_dsp_cdprod_typ2_q15(const q15_t *src1, const q15_t *src2,
 static inline void hpm_dsp_cdprod_q31(const q31_t *src1, const q31_t *src2, uint32_t size, q31_t *dst)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cdprod_q31(src1, src2, size, dst);
+    riscv_dsp_cdprod_q31(src1, src2, size, dst);
 #endif
 }
 
@@ -1613,7 +1613,7 @@ static inline void hpm_dsp_cdprod_q31(const q31_t *src1, const q31_t *src2, uint
 static inline void hpm_dsp_cdprod_typ2_q31(const q31_t *src1, const q31_t *src2, uint32_t size, q63_t *rout, q63_t *iout)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cdprod_typ2_q31(src1, src2, size, rout, iout);
+    riscv_dsp_cdprod_typ2_q31(src1, src2, size, rout, iout);
 #endif
 }
 
@@ -1628,7 +1628,7 @@ static inline void hpm_dsp_cdprod_typ2_q31(const q31_t *src1, const q31_t *src2,
 static inline void hpm_dsp_cmag_f32(const float32_t *src, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cmag_f32(src, dst, size);
+    riscv_dsp_cmag_f32(src, dst, size);
 #endif
 }
 
@@ -1645,7 +1645,7 @@ static inline void hpm_dsp_cmag_f32(const float32_t *src, float32_t *dst, uint32
 static inline void hpm_dsp_cmag_q15(const q15_t *src, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cmag_q15(src, dst, size);
+    riscv_dsp_cmag_q15(src, dst, size);
 #endif
 }
 
@@ -1662,7 +1662,7 @@ static inline void hpm_dsp_cmag_q15(const q15_t *src, q15_t *dst, uint32_t size)
 static inline void hpm_dsp_cmag_q31(const q31_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cmag_q31(src, dst, size);
+    riscv_dsp_cmag_q31(src, dst, size);
 #endif
 }
 
@@ -1678,7 +1678,7 @@ static inline void hpm_dsp_cmag_q31(const q31_t *src, q31_t *dst, uint32_t size)
 static inline void hpm_dsp_cmag_sqr_f32(const float32_t *src, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cmag_sqr_f32(src, dst, size);
+    riscv_dsp_cmag_sqr_f32(src, dst, size);
 #endif
 }
 
@@ -1695,7 +1695,7 @@ static inline void hpm_dsp_cmag_sqr_f32(const float32_t *src, float32_t *dst, ui
 static inline void hpm_dsp_cmag_sqr_q15(const q15_t *src, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cmag_sqr_q15(src, dst, size);
+    riscv_dsp_cmag_sqr_q15(src, dst, size);
 #endif
 }
 
@@ -1712,7 +1712,7 @@ static inline void hpm_dsp_cmag_sqr_q15(const q15_t *src, q15_t *dst, uint32_t s
 static inline void hpm_dsp_cmag_sqr_q31(const q31_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cmag_sqr_q31(src, dst, size);
+    riscv_dsp_cmag_sqr_q31(src, dst, size);
 #endif
 }
 
@@ -1728,7 +1728,7 @@ static inline void hpm_dsp_cmag_sqr_q31(const q31_t *src, q31_t *dst, uint32_t s
 static inline void hpm_dsp_cmul_f32(const float32_t *src1, const float32_t *src2, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cmul_f32(src1, src2, dst, size);
+    riscv_dsp_cmul_f32(src1, src2, dst, size);
 #endif
 }
 
@@ -1746,7 +1746,7 @@ static inline void hpm_dsp_cmul_f32(const float32_t *src1, const float32_t *src2
 static inline void hpm_dsp_cmul_q15(const q15_t *src1, const q15_t *src2, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cmul_q15(src1, src2, dst, size);
+    riscv_dsp_cmul_q15(src1, src2, dst, size);
 #endif
 }
 
@@ -1764,7 +1764,7 @@ static inline void hpm_dsp_cmul_q15(const q15_t *src1, const q15_t *src2, q15_t 
 static inline void hpm_dsp_cmul_q31(const q31_t *src1, const q31_t *src2, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cmul_q31(src1, src2, dst, size);
+    riscv_dsp_cmul_q31(src1, src2, dst, size);
 #endif
 }
 
@@ -1780,7 +1780,7 @@ static inline void hpm_dsp_cmul_q31(const q31_t *src1, const q31_t *src2, q31_t 
 static inline void hpm_dsp_cmul_real_f32(const float32_t *src, const float32_t *real, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cmul_real_f32(src, real, dst, size);
+    riscv_dsp_cmul_real_f32(src, real, dst, size);
 #endif
 }
 
@@ -1797,7 +1797,7 @@ static inline void hpm_dsp_cmul_real_f32(const float32_t *src, const float32_t *
 static inline void hpm_dsp_cmul_real_q15(const q15_t *src, const q15_t *real, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cmul_real_q15(src, real, dst, size);
+    riscv_dsp_cmul_real_q15(src, real, dst, size);
 #endif
 }
 
@@ -1814,7 +1814,7 @@ static inline void hpm_dsp_cmul_real_q15(const q15_t *src, const q15_t *real, q1
 static inline void hpm_dsp_cmul_real_q31(const q31_t *src, const q31_t *real, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cmul_real_q31(src, real, dst, size);
+    riscv_dsp_cmul_real_q31(src, real, dst, size);
 #endif
 }
 #endif
@@ -1841,7 +1841,7 @@ static inline void hpm_dsp_cmul_real_q31(const q31_t *src, const q31_t *real, q3
 static inline void hpm_dsp_clarke_f32(float32_t a, float32_t b, float32_t *alpha, float32_t *beta)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_clarke_f32(a, b, alpha, beta);
+    riscv_dsp_clarke_f32(a, b, alpha, beta);
 #endif
 }
 /**
@@ -1858,7 +1858,7 @@ static inline void hpm_dsp_clarke_f32(float32_t a, float32_t b, float32_t *alpha
 static inline void hpm_dsp_clarke_q31(q31_t a, q31_t b, q31_t *alpha, q31_t *beta)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_clarke_q31(a, b, alpha, beta);
+    riscv_dsp_clarke_q31(a, b, alpha, beta);
 #endif
 }
 
@@ -1874,7 +1874,7 @@ static inline void hpm_dsp_clarke_q31(q31_t a, q31_t b, q31_t *alpha, q31_t *bet
 static inline void hpm_dsp_inv_clarke_f32(float32_t alpha, float32_t beta, float32_t *a, float32_t *b)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_inv_clarke_f32(alpha, beta, a, b);
+    riscv_dsp_inv_clarke_f32(alpha, beta, a, b);
 #endif
 }
 /**
@@ -1891,7 +1891,7 @@ static inline void hpm_dsp_inv_clarke_f32(float32_t alpha, float32_t beta, float
 static inline void hpm_dsp_inv_clarke_q31(q31_t alpha, q31_t beta, q31_t *a, q31_t *b)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_inv_clarke_q31(alpha, beta, a, b);
+    riscv_dsp_inv_clarke_q31(alpha, beta, a, b);
 #endif
 }
 
@@ -1909,7 +1909,7 @@ static inline void hpm_dsp_inv_clarke_q31(q31_t alpha, q31_t beta, q31_t *a, q31
 static inline void hpm_dsp_park_f32(float32_t alpha, float32_t beta, float32_t *a, float32_t *b, float32_t sin, float32_t cos)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_park_f32(alpha, beta, a, b, sin, cos);
+    riscv_dsp_park_f32(alpha, beta, a, b, sin, cos);
 #endif
 }
 
@@ -1929,7 +1929,7 @@ static inline void hpm_dsp_park_f32(float32_t alpha, float32_t beta, float32_t *
 static inline void hpm_dsp_park_q31(q31_t alpha, q31_t beta, q31_t *a, q31_t *b, q31_t sin, q31_t cos)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_park_q31(alpha, beta, a, b, sin, cos);
+    riscv_dsp_park_q31(alpha, beta, a, b, sin, cos);
 #endif
 }
 
@@ -1947,7 +1947,7 @@ static inline void hpm_dsp_park_q31(q31_t alpha, q31_t beta, q31_t *a, q31_t *b,
 static inline void hpm_dsp_inv_park_f32(float32_t a, float32_t b, float32_t *alpha, float32_t *beta, float32_t sin, float32_t cos)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_inv_park_f32(a, b, alpha, beta, sin, cos);
+    riscv_dsp_inv_park_f32(a, b, alpha, beta, sin, cos);
 #endif
 }
 /**
@@ -1966,7 +1966,7 @@ static inline void hpm_dsp_inv_park_f32(float32_t a, float32_t b, float32_t *alp
 static inline void hpm_dsp_inv_park_q31(q31_t a, q31_t b, q31_t *alpha, q31_t *beta, q31_t sin, q31_t cos)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_inv_park_q31(a, b, alpha, beta, sin, cos);
+    riscv_dsp_inv_park_q31(a, b, alpha, beta, sin, cos);
 #endif
 }
 /**
@@ -1979,7 +1979,7 @@ static inline void hpm_dsp_inv_park_q31(q31_t a, q31_t b, q31_t *alpha, q31_t *b
 static inline float32_t hpm_dsp_pid_f32(riscv_dsp_pid_f32_t *instance, float32_t src)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_pid_f32(instance, src);
+    return riscv_dsp_pid_f32(instance, src);
 #endif
 }
 /**
@@ -1998,7 +1998,7 @@ static inline float32_t hpm_dsp_pid_f32(riscv_dsp_pid_f32_t *instance, float32_t
 static inline void hpm_dsp_init_pid_f32(riscv_dsp_pid_f32_t *instance, int32_t set)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_init_pid_f32(instance, set);
+    riscv_dsp_init_pid_f32(instance, set);
 #endif
 }
 
@@ -2012,7 +2012,7 @@ static inline void hpm_dsp_init_pid_f32(riscv_dsp_pid_f32_t *instance, int32_t s
 static inline q31_t hpm_dsp_pid_q31(riscv_dsp_pid_q31_t *instance, q31_t src)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_pid_q31(instance, src);
+    return riscv_dsp_pid_q31(instance, src);
 #endif
 }
 
@@ -2032,14 +2032,14 @@ static inline q31_t hpm_dsp_pid_q31(riscv_dsp_pid_q31_t *instance, q31_t src)
 static inline void hpm_dsp_init_pid_q31(riscv_dsp_pid_q31_t *instance, int32_t set)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_init_pid_q31(instance, set);
+    riscv_dsp_init_pid_q31(instance, set);
 #endif
 }
 
 static inline q15_t hpm_dsp_pid_q15(riscv_dsp_pid_q15_t *instance, q15_t src)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_pid_q15(instance, src);
+    return riscv_dsp_pid_q15(instance, src);
 #endif
 }
 /**
@@ -2058,7 +2058,7 @@ static inline q15_t hpm_dsp_pid_q15(riscv_dsp_pid_q15_t *instance, q15_t src)
 static inline void hpm_dsp_init_pid_q15(riscv_dsp_pid_q15_t *instance, int32_t set)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_init_pid_q15(instance, set);
+    riscv_dsp_init_pid_q15(instance, set);
 #endif
 }
 #endif
@@ -2084,7 +2084,7 @@ static inline void hpm_dsp_init_pid_q15(riscv_dsp_pid_q15_t *instance, int32_t s
 static inline float32_t hpm_dsp_dist_bray_curtis_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_dist_bray_curtis_f32(src1, src2, size);
+    return riscv_dsp_dist_bray_curtis_f32(src1, src2, size);
 #endif
 }
 
@@ -2098,7 +2098,7 @@ static inline float32_t hpm_dsp_dist_bray_curtis_f32(const float32_t *src1, cons
 static inline float32_t hpm_dsp_dist_canberra_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_dist_canberra_f32(src1, src2, size);
+    return riscv_dsp_dist_canberra_f32(src1, src2, size);
 #endif
 }
 
@@ -2112,7 +2112,7 @@ static inline float32_t hpm_dsp_dist_canberra_f32(const float32_t *src1, const f
 static inline float32_t hpm_dsp_dist_chebyshev_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_dist_chebyshev_f32(src1, src2, size);
+    return riscv_dsp_dist_chebyshev_f32(src1, src2, size);
 #endif
 }
 
@@ -2126,7 +2126,7 @@ static inline float32_t hpm_dsp_dist_chebyshev_f32(const float32_t *src1, const 
 static inline float32_t hpm_dsp_dist_city_block_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_dist_city_block_f32(src1, src2, size);
+    return riscv_dsp_dist_city_block_f32(src1, src2, size);
 #endif
 }
 
@@ -2140,7 +2140,7 @@ static inline float32_t hpm_dsp_dist_city_block_f32(const float32_t *src1, const
 static inline float32_t hpm_dsp_dist_corr_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_dist_corr_f32(src1, src2, size);
+    return riscv_dsp_dist_corr_f32(src1, src2, size);
 #endif
 }
 
@@ -2154,7 +2154,7 @@ static inline float32_t hpm_dsp_dist_corr_f32(const float32_t *src1, const float
 static inline float32_t hpm_dsp_dist_cos_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_dist_cos_f32(src1, src2, size);
+    return riscv_dsp_dist_cos_f32(src1, src2, size);
 #endif
 }
 
@@ -2168,7 +2168,7 @@ static inline float32_t hpm_dsp_dist_cos_f32(const float32_t *src1, const float3
 static inline float32_t hpm_dsp_dist_euclidean_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_dist_euclidean_f32(src1, src2, size);
+    return riscv_dsp_dist_euclidean_f32(src1, src2, size);
 #endif
 }
 
@@ -2182,7 +2182,7 @@ static inline float32_t hpm_dsp_dist_euclidean_f32(const float32_t *src1, const 
 static inline float32_t hpm_dsp_dist_jensen_shannon_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_dist_jensen_shannon_f32(src1, src2, size);
+    return riscv_dsp_dist_jensen_shannon_f32(src1, src2, size);
 #endif
 }
 
@@ -2197,7 +2197,7 @@ static inline float32_t hpm_dsp_dist_jensen_shannon_f32(const float32_t *src1, c
 static inline float32_t hpm_dsp_dist_minkowski_f32(const float32_t *src1, const float32_t *src2, int32_t order, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_dist_minkowski_f32(src1, src2, order, size);
+    return riscv_dsp_dist_minkowski_f32(src1, src2, order, size);
 #endif
 }
 
@@ -2211,7 +2211,7 @@ static inline float32_t hpm_dsp_dist_minkowski_f32(const float32_t *src1, const 
 static inline float32_t hpm_dsp_bdist_dice_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_bdist_dice_u32_f32(src1, src2, numofbool);
+    return riscv_dsp_bdist_dice_u32_f32(src1, src2, numofbool);
 #endif
 }
 
@@ -2225,7 +2225,7 @@ static inline float32_t hpm_dsp_bdist_dice_u32_f32(const uint32_t *src1, const u
 static inline float32_t hpm_dsp_bdist_hamming_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_bdist_hamming_u32_f32(src1, src2, numofbool);
+    return riscv_dsp_bdist_hamming_u32_f32(src1, src2, numofbool);
 #endif
 }
 
@@ -2239,7 +2239,7 @@ static inline float32_t hpm_dsp_bdist_hamming_u32_f32(const uint32_t *src1, cons
 static inline float32_t hpm_dsp_bdist_jaccard_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_bdist_jaccard_u32_f32(src1, src2, numofbool);
+    return riscv_dsp_bdist_jaccard_u32_f32(src1, src2, numofbool);
 #endif
 }
 
@@ -2253,7 +2253,7 @@ static inline float32_t hpm_dsp_bdist_jaccard_u32_f32(const uint32_t *src1, cons
 static inline float32_t hpm_dsp_bdist_kulsinski_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_bdist_kulsinski_u32_f32(src1, src2, numofbool);
+    return riscv_dsp_bdist_kulsinski_u32_f32(src1, src2, numofbool);
 #endif
 }
 
@@ -2267,7 +2267,7 @@ static inline float32_t hpm_dsp_bdist_kulsinski_u32_f32(const uint32_t *src1, co
 static inline float32_t hpm_dsp_bdist_sokal_michener_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_bdist_sokal_michener_u32_f32(src1, src2, numofbool);
+    return riscv_dsp_bdist_sokal_michener_u32_f32(src1, src2, numofbool);
 #endif
 }
 
@@ -2281,7 +2281,7 @@ static inline float32_t hpm_dsp_bdist_sokal_michener_u32_f32(const uint32_t *src
 static inline float32_t hpm_dsp_bdist_sokal_sneath_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_bdist_sokal_sneath_u32_f32(src1, src2, numofbool);
+    return riscv_dsp_bdist_sokal_sneath_u32_f32(src1, src2, numofbool);
 #endif
 }
 
@@ -2295,7 +2295,7 @@ static inline float32_t hpm_dsp_bdist_sokal_sneath_u32_f32(const uint32_t *src1,
 static inline float32_t hpm_dsp_bdist_rogers_tanimoto_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_bdist_rogers_tanimoto_u32_f32(src1, src2, numofbool);
+    return riscv_dsp_bdist_rogers_tanimoto_u32_f32(src1, src2, numofbool);
 #endif
 }
 
@@ -2309,7 +2309,7 @@ static inline float32_t hpm_dsp_bdist_rogers_tanimoto_u32_f32(const uint32_t *sr
 static inline float32_t hpm_dsp_bdist_yule_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_bdist_yule_u32_f32(src1, src2, numofbool);
+    return riscv_dsp_bdist_yule_u32_f32(src1, src2, numofbool);
 #endif
 }
 
@@ -2323,7 +2323,7 @@ static inline float32_t hpm_dsp_bdist_yule_u32_f32(const uint32_t *src1, const u
 static inline float32_t hpm_dsp_bdist_russell_rao_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_bdist_russell_rao_u32_f32(src1, src2, numofbool);
+    return riscv_dsp_bdist_russell_rao_u32_f32(src1, src2, numofbool);
 #endif
 }
 #endif
@@ -2348,7 +2348,7 @@ static inline float32_t hpm_dsp_bdist_russell_rao_u32_f32(const uint32_t *src1, 
 static inline void hpm_dsp_fir_f32(const riscv_dsp_fir_f32_t *instance, float32_t *src, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_fir_f32(instance, src, dst, size);
+    riscv_dsp_fir_f32(instance, src, dst, size);
 #endif
 }
 
@@ -2370,7 +2370,7 @@ static inline void hpm_dsp_fir_f32(const riscv_dsp_fir_f32_t *instance, float32_
 static inline void hpm_dsp_fir_q31(const riscv_dsp_fir_q31_t *instance, q31_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_fir_q31(instance, src, dst, size);
+    riscv_dsp_fir_q31(instance, src, dst, size);
 #endif
 }
 
@@ -2392,7 +2392,7 @@ static inline void hpm_dsp_fir_q31(const riscv_dsp_fir_q31_t *instance, q31_t *s
 static inline void hpm_dsp_fir_fast_q31(const riscv_dsp_fir_q31_t *instance, q31_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_fir_fast_q31(instance, src, dst, size);
+    riscv_dsp_fir_fast_q31(instance, src, dst, size);
 #endif
 }
 /**
@@ -2413,7 +2413,7 @@ static inline void hpm_dsp_fir_fast_q31(const riscv_dsp_fir_q31_t *instance, q31
 static inline void hpm_dsp_fir_q15(const riscv_dsp_fir_q15_t *instance, q15_t *src, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_fir_q15(instance, src, dst, size);
+    riscv_dsp_fir_q15(instance, src, dst, size);
 #endif
 }
 
@@ -2433,7 +2433,7 @@ static inline void hpm_dsp_fir_q15(const riscv_dsp_fir_q15_t *instance, q15_t *s
 static inline void hpm_dsp_fir_fast_q15(const riscv_dsp_fir_q15_t *instance, q15_t *src, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_fir_fast_q15(instance, src, dst, size);
+    riscv_dsp_fir_fast_q15(instance, src, dst, size);
 #endif
 }
 /**
@@ -2453,7 +2453,7 @@ static inline void hpm_dsp_fir_fast_q15(const riscv_dsp_fir_q15_t *instance, q15
 static inline void hpm_dsp_fir_q7(const riscv_dsp_fir_q7_t *instance, q7_t *src, q7_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_fir_q7(instance, src, dst, size);
+    riscv_dsp_fir_q7(instance, src, dst, size);
 #endif
 }
 
@@ -2469,7 +2469,7 @@ static inline void hpm_dsp_fir_q7(const riscv_dsp_fir_q7_t *instance, q7_t *src,
 static inline void hpm_dsp_lfir_f32(const riscv_dsp_lfir_f32_t *instance, float32_t *src, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_lfir_f32(instance, src, dst, size);
+    riscv_dsp_lfir_f32(instance, src, dst, size);
 #endif
 }
 
@@ -2485,7 +2485,7 @@ static inline void hpm_dsp_lfir_f32(const riscv_dsp_lfir_f32_t *instance, float3
 static inline void hpm_dsp_lfir_q15(const riscv_dsp_lfir_q15_t *instance, q15_t *src, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_lfir_q15(instance, src, dst, size);
+    riscv_dsp_lfir_q15(instance, src, dst, size);
 #endif
 }
 
@@ -2505,79 +2505,79 @@ static inline void hpm_dsp_lfir_q15(const riscv_dsp_lfir_q15_t *instance, q15_t 
 static inline void hpm_dsp_lfir_q31(const riscv_dsp_lfir_q31_t *instance, q31_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_lfir_q31(instance, src, dst, size);
+    riscv_dsp_lfir_q31(instance, src, dst, size);
 #endif
 }
 static inline void hpm_dsp_dcmfir_f32(const riscv_dsp_dcmfir_f32_t *instance, float32_t *src, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_dcmfir_f32(instance, src, dst, size);
+    riscv_dsp_dcmfir_f32(instance, src, dst, size);
 #endif
 }
 static inline void hpm_dsp_dcmfir_q15(const riscv_dsp_dcmfir_q15_t *instance, q15_t *src, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_dcmfir_q15(instance, src, dst, size);
+    riscv_dsp_dcmfir_q15(instance, src, dst, size);
 #endif
 }
 static inline void hpm_dsp_dcmfir_q31(const riscv_dsp_dcmfir_q31_t *instance, q31_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_dcmfir_q31(instance, src, dst, size);
+    riscv_dsp_dcmfir_q31(instance, src, dst, size);
 #endif
 }
 static inline void hpm_dsp_dcmfir_fast_q31(const riscv_dsp_dcmfir_q31_t *instance, q31_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_dcmfir_fast_q31(instance, src, dst, size);
+    riscv_dsp_dcmfir_fast_q31(instance, src, dst, size);
 #endif
 }
 static inline void hpm_dsp_dcmfir_fast_q15(const riscv_dsp_dcmfir_q15_t *instance, q15_t *src,  q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_dcmfir_fast_q15(instance, src, dst, size);
+    riscv_dsp_dcmfir_fast_q15(instance, src, dst, size);
 #endif
 }
 static inline void hpm_dsp_upsplfir_f32(const riscv_dsp_upsplfir_f32_t *instance, float32_t *src, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_upsplfir_f32(instance, src, dst, size);
+    riscv_dsp_upsplfir_f32(instance, src, dst, size);
 #endif
 }
 static inline void hpm_dsp_upsplfir_q15(const riscv_dsp_upsplfir_q15_t *instance, q15_t *src, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_upsplfir_q15(instance, src, dst, size);
+    riscv_dsp_upsplfir_q15(instance, src, dst, size);
 #endif
 }
 static inline void hpm_dsp_upsplfir_q31(const riscv_dsp_upsplfir_q31_t *instance, q31_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_upsplfir_q31(instance, src, dst, size);
+    riscv_dsp_upsplfir_q31(instance, src, dst, size);
 #endif
 }
 static inline void hpm_dsp_spafir_f32(riscv_dsp_spafir_f32_t *instance, float32_t *src, float32_t *dst, float32_t *buf, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_spafir_f32(instance, src, dst, buf, size);
+    riscv_dsp_spafir_f32(instance, src, dst, buf, size);
 #endif
 }
 static inline void hpm_dsp_spafir_q15(riscv_dsp_spafir_q15_t *instance, q15_t *src, q15_t *dst, q15_t *buf1, q31_t *buf2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_spafir_q15(instance, src, dst, buf1, buf2, size);
+    riscv_dsp_spafir_q15(instance, src, dst, buf1, buf2, size);
 #endif
 }
 static inline void hpm_dsp_spafir_q31(riscv_dsp_spafir_q31_t *instance, q31_t *src, q31_t *dst, q31_t *buf, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_spafir_q31(instance, src, dst, buf, size);
+    riscv_dsp_spafir_q31(instance, src, dst, buf, size);
 #endif
 }
 static inline void hpm_dsp_spafir_q7(riscv_dsp_spafir_q7_t *instance, q7_t *src, q7_t *dst, q7_t *buf1, q31_t *buf2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_spafir_q7(instance, src, dst, buf1, buf2, size);
+    riscv_dsp_spafir_q7(instance, src, dst, buf1, buf2, size);
 #endif
 }
 
@@ -2599,7 +2599,7 @@ static inline void hpm_dsp_spafir_q7(riscv_dsp_spafir_q7_t *instance, q7_t *src,
 static inline void hpm_dsp_lms_f32(const riscv_dsp_lms_f32_t *instance, float32_t *src, float32_t *ref, float32_t *dst, float32_t *err, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_lms_f32(instance, src, ref, dst, err, size);
+    riscv_dsp_lms_f32(instance, src, ref, dst, err, size);
 #endif
 }
 
@@ -2623,7 +2623,7 @@ static inline void hpm_dsp_lms_f32(const riscv_dsp_lms_f32_t *instance, float32_
 static inline void hpm_dsp_lms_q31(const riscv_dsp_lms_q31_t *instance, q31_t *src, q31_t *ref, q31_t *dst, q31_t *err, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_lms_q31(instance, src, ref, dst, err, size);
+    riscv_dsp_lms_q31(instance, src, ref, dst, err, size);
 #endif
 }
 
@@ -2647,7 +2647,7 @@ static inline void hpm_dsp_lms_q31(const riscv_dsp_lms_q31_t *instance, q31_t *s
 static inline void hpm_dsp_lms_q15(const riscv_dsp_lms_q15_t *instance, q15_t *src, q15_t *ref, q15_t *dst, q15_t *err, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_lms_q15(instance, src, ref, dst, err, size);
+    riscv_dsp_lms_q15(instance, src, ref, dst, err, size);
 #endif
 }
 
@@ -2658,7 +2658,7 @@ static inline void hpm_dsp_lms_q15(const riscv_dsp_lms_q15_t *instance, q15_t *s
 static inline void hpm_dsp_nlms_f32(riscv_dsp_nlms_f32_t *instance, float32_t *src, float32_t *ref, float32_t *dst, float32_t *err, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_nlms_f32(instance, src, ref, dst, err, size);
+    riscv_dsp_nlms_f32(instance, src, ref, dst, err, size);
 #endif
 }
 
@@ -2670,7 +2670,7 @@ static inline void hpm_dsp_nlms_f32(riscv_dsp_nlms_f32_t *instance, float32_t *s
 static inline void hpm_dsp_nlms_q31(riscv_dsp_nlms_q31_t *instance, q31_t *src, q31_t *ref, q31_t *dst, q31_t *err, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_nlms_q31(instance, src, ref, dst, err, size);
+    riscv_dsp_nlms_q31(instance, src, ref, dst, err, size);
 #endif
 }
 
@@ -2678,7 +2678,7 @@ static inline void hpm_dsp_nlms_q31(riscv_dsp_nlms_q31_t *instance, q31_t *src, 
 static inline void hpm_dsp_nlms_q15(riscv_dsp_nlms_q15_t *instance, q15_t *src, q15_t *ref, q15_t *dst, q15_t *err, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_nlms_q15(instance, src, ref, dst, err, size);
+    riscv_dsp_nlms_q15(instance, src, ref, dst, err, size);
 #endif
 }
 
@@ -2697,7 +2697,7 @@ static inline void hpm_dsp_nlms_q15(riscv_dsp_nlms_q15_t *instance, q15_t *src, 
 static inline void hpm_dsp_conv_f32(float32_t *src1, uint32_t len1, float32_t *src2, uint32_t len2, float32_t *dst)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_conv_f32(src1, len1, src2, len2, dst);
+    riscv_dsp_conv_f32(src1, len1, src2, len2, dst);
 #endif
 }
 
@@ -2720,7 +2720,7 @@ static inline void hpm_dsp_conv_f32(float32_t *src1, uint32_t len1, float32_t *s
 static inline void hpm_dsp_conv_q15(q15_t *src1, uint32_t len1, q15_t *src2, uint32_t len2, q15_t *dst)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_conv_q15(src1, len1, src2, len2, dst);
+    riscv_dsp_conv_q15(src1, len1, src2, len2, dst);
 #endif
 }
 
@@ -2745,7 +2745,7 @@ static inline void hpm_dsp_conv_q15(q15_t *src1, uint32_t len1, q15_t *src2, uin
 static inline void hpm_dsp_conv_q31(q31_t *src1, uint32_t len1, q31_t *src2, uint32_t len2, q31_t *dst)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_conv_q31(src1, len1, src2, len2, dst);
+    riscv_dsp_conv_q31(src1, len1, src2, len2, dst);
 #endif
 }
 
@@ -2768,7 +2768,7 @@ static inline void hpm_dsp_conv_q31(q31_t *src1, uint32_t len1, q31_t *src2, uin
 static inline void hpm_dsp_conv_q7(q7_t *src1, uint32_t len1, q7_t *src2, uint32_t len2, q7_t *dst)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_conv_q7(src1, len1, src2, len2, dst);
+    riscv_dsp_conv_q7(src1, len1, src2, len2, dst);
 #endif
 }
 
@@ -2789,7 +2789,7 @@ static inline void hpm_dsp_conv_q7(q7_t *src1, uint32_t len1, q7_t *src2, uint32
 static inline int32_t hpm_dsp_conv_partial_f32(float32_t *src1, uint32_t len1, float32_t *src2, uint32_t len2, float32_t *dst, uint32_t startindex, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_conv_partial_f32(src1, len1, src2, len2, dst, startindex, size);
+    return riscv_dsp_conv_partial_f32(src1, len1, src2, len2, dst, startindex, size);
 #endif
 }
 
@@ -2810,7 +2810,7 @@ static inline int32_t hpm_dsp_conv_partial_f32(float32_t *src1, uint32_t len1, f
 static inline int32_t hpm_dsp_conv_partial_q15(q15_t *src1, uint32_t len1, q15_t *src2, uint32_t len2, q15_t *dst, uint32_t startindex, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_conv_partial_q15(src1, len1, src2, len2, dst, startindex, size);
+    return riscv_dsp_conv_partial_q15(src1, len1, src2, len2, dst, startindex, size);
 #endif
 }
 
@@ -2831,7 +2831,7 @@ static inline int32_t hpm_dsp_conv_partial_q15(q15_t *src1, uint32_t len1, q15_t
 static inline int32_t hpm_dsp_conv_partial_q31(q31_t *src1, uint32_t len1, q31_t *src2, uint32_t len2, q31_t *dst, uint32_t startindex, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_conv_partial_q31(src1, len1, src2, len2, dst, startindex, size);
+    return riscv_dsp_conv_partial_q31(src1, len1, src2, len2, dst, startindex, size);
 #endif
 }
 
@@ -2852,7 +2852,7 @@ static inline int32_t hpm_dsp_conv_partial_q31(q31_t *src1, uint32_t len1, q31_t
 static inline int32_t hpm_dsp_conv_partial_q7(q7_t *src1, uint32_t len1, q7_t *src2, uint32_t len2, q7_t *dst, uint32_t startindex, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_conv_partial_q7(src1, len1, src2, len2, dst, startindex, size);
+    return riscv_dsp_conv_partial_q7(src1, len1, src2, len2, dst, startindex, size);
 #endif
 }
 
@@ -2871,7 +2871,7 @@ static inline int32_t hpm_dsp_conv_partial_q7(q7_t *src1, uint32_t len1, q7_t *s
 static inline void hpm_dsp_corr_f32(float32_t *src1, uint32_t len1, float32_t *src2, uint32_t len2, float32_t *dst)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_corr_f32(src1, len1, src2, len2, dst);
+    riscv_dsp_corr_f32(src1, len1, src2, len2, dst);
 #endif
 }
 
@@ -2894,7 +2894,7 @@ static inline void hpm_dsp_corr_f32(float32_t *src1, uint32_t len1, float32_t *s
 static inline void hpm_dsp_corr_q15(q15_t *src1, uint32_t len1, q15_t *src2, uint32_t len2, q15_t *dst)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_corr_q15(src1, len1, src2, len2, dst);
+    riscv_dsp_corr_q15(src1, len1, src2, len2, dst);
 #endif
 }
 
@@ -2921,7 +2921,7 @@ static inline void hpm_dsp_corr_q15(q15_t *src1, uint32_t len1, q15_t *src2, uin
 static inline void hpm_dsp_corr_q31(q31_t *src1, uint32_t len1, q31_t *src2, uint32_t len2, q31_t *dst)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_corr_q31(src1, len1, src2, len2, dst);
+    riscv_dsp_corr_q31(src1, len1, src2, len2, dst);
 #endif
 }
 
@@ -2944,80 +2944,80 @@ static inline void hpm_dsp_corr_q31(q31_t *src1, uint32_t len1, q31_t *src2, uin
 static inline void hpm_dsp_corr_q7(q7_t *src1, uint32_t len1, q7_t *src2, uint32_t len2, q7_t *dst)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_corr_q7(src1, len1, src2, len2, dst);
+    riscv_dsp_corr_q7(src1, len1, src2, len2, dst);
 #endif
 }
 static inline void hpm_dsp_bq_df1_f32(const riscv_dsp_bq_df1_f32_t *instance, float32_t *src, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_bq_df1_f32(instance, src, dst, size);
+    riscv_dsp_bq_df1_f32(instance, src, dst, size);
 #endif
 }
 static inline void hpm_dsp_bq_df1_q15(const riscv_dsp_bq_df1_q15_t *instance, q15_t *src, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_bq_df1_q15(instance, src, dst, size);
+    riscv_dsp_bq_df1_q15(instance, src, dst, size);
 #endif
 }
 static inline void hpm_dsp_bq_df1_fast_q15(const riscv_dsp_bq_df1_q15_t *instance, q15_t *src, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_bq_df1_fast_q15(instance, src, dst, size);
+    riscv_dsp_bq_df1_fast_q15(instance, src, dst, size);
 #endif
 }
 static inline void hpm_dsp_bq_df1_q31(const riscv_dsp_bq_df1_q31_t *instance, q31_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_bq_df1_q31(instance, src, dst, size);
+    riscv_dsp_bq_df1_q31(instance, src, dst, size);
 #endif
 }
 static inline void hpm_dsp_bq_df1_fast_q31(const riscv_dsp_bq_df1_q31_t *instance, q31_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_bq_df1_fast_q31(instance, src, dst, size);
+    riscv_dsp_bq_df1_fast_q31(instance, src, dst, size);
 #endif
 }
 static inline void hpm_dsp_bq_df1_32x64_q31(const riscv_dsp_bq_df1_32x64_q31_t *instance, q31_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_bq_df1_32x64_q31(instance, src, dst, size);
+    riscv_dsp_bq_df1_32x64_q31(instance, src, dst, size);
 #endif
 }
 static inline void hpm_dsp_bq_df2T_f32(const riscv_dsp_bq_df2T_f32_t *instance, float32_t *src, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_bq_df2T_f32(instance, src, dst, size);
+    riscv_dsp_bq_df2T_f32(instance, src, dst, size);
 #endif
 }
 static inline void hpm_dsp_bq_df2T_f64(const riscv_dsp_bq_df2T_f64_t *instance, float64_t *src, float64_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_bq_df2T_f64(instance, src, dst, size);
+    riscv_dsp_bq_df2T_f64(instance, src, dst, size);
 #endif
 }
 static inline void hpm_dsp_bq_stereo_df2T_f32(const riscv_dsp_bq_stereo_df2T_f32_t *instance, float32_t *src, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_bq_stereo_df2T_f32(instance, src, dst, size);
+    riscv_dsp_bq_stereo_df2T_f32(instance, src, dst, size);
 #endif
 }
 
 static inline void hpm_dsp_liir_f32(const riscv_dsp_liir_f32_t *instance, float32_t *src, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_liir_f32(instance, src, dst, size);
+    riscv_dsp_liir_f32(instance, src, dst, size);
 #endif
 }
 static inline void hpm_dsp_liir_q31(const riscv_dsp_liir_q31_t *instance, q31_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_liir_q31(instance, src, dst, size);
+    riscv_dsp_liir_q31(instance, src, dst, size);
 #endif
 }
 static inline void hpm_dsp_liir_fast_q31(const riscv_dsp_liir_q31_t *instance, q31_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_liir_fast_q31(instance, src, dst, size);
+    riscv_dsp_liir_fast_q31(instance, src, dst, size);
 #endif
 }
 static inline void hpm_dsp_liir_q15(const riscv_dsp_liir_q15_t *instance, q15_t *src, q15_t *dst, uint32_t size)
@@ -3029,7 +3029,7 @@ static inline void hpm_dsp_liir_q15(const riscv_dsp_liir_q15_t *instance, q15_t 
 static inline void hpm_dsp_liir_fast_q15(const riscv_dsp_liir_q15_t *instance, q15_t *src, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_liir_fast_q15(instance, src, dst, size);
+    riscv_dsp_liir_fast_q15(instance, src, dst, size);
 #endif
 }
 #endif
@@ -3074,7 +3074,7 @@ static inline void hpm_dsp_liir_fast_q15(const riscv_dsp_liir_q15_t *instance, q
 static inline void hpm_dsp_mat_add_f32(const float32_t *src1, const float32_t *src2, float32_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mat_add_f32(src1, src2, dst, row, col);
+    riscv_dsp_mat_add_f32(src1, src2, dst, row, col);
 #endif
 }
 
@@ -3092,7 +3092,7 @@ static inline void hpm_dsp_mat_add_f32(const float32_t *src1, const float32_t *s
 static inline void hpm_dsp_mat_add_q15(const q15_t *src1, const q15_t *src2, q15_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mat_add_q15(src1, src2, dst, row, col);
+    riscv_dsp_mat_add_q15(src1, src2, dst, row, col);
 #endif
 }
 
@@ -3110,7 +3110,7 @@ static inline void hpm_dsp_mat_add_q15(const q15_t *src1, const q15_t *src2, q15
 static inline void hpm_dsp_mat_add_q31(const q31_t *src1, const q31_t *src2, q31_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mat_add_q31(src1, src2, dst, row, col);
+    riscv_dsp_mat_add_q31(src1, src2, dst, row, col);
 #endif
 }
 
@@ -3126,13 +3126,13 @@ static inline void hpm_dsp_mat_add_q31(const q31_t *src1, const q31_t *src2, q31
 static inline int32_t hpm_dsp_mat_inv_f32(float32_t *src, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_mat_inv_f32(src, dst, size);
+    return riscv_dsp_mat_inv_f32(src, dst, size);
 #endif
 }
 static inline int32_t hpm_dsp_mat_inv_f64(float64_t *src, float64_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_mat_inv_f64(src, dst, size);
+    return riscv_dsp_mat_inv_f64(src, dst, size);
 #endif
 }
 
@@ -3150,14 +3150,14 @@ static inline int32_t hpm_dsp_mat_inv_f64(float64_t *src, float64_t *dst, uint32
 static inline void hpm_dsp_mat_mul_f32(const float32_t *src1, const float32_t *src2, float32_t *dst, uint32_t row, uint32_t col, uint32_t col2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mat_mul_f32(src1, src2, dst, row, col, col2);
+    riscv_dsp_mat_mul_f32(src1, src2, dst, row, col, col2);
 #endif
 }
 
 static inline void hpm_dsp_mat_mul_f64(const float64_t *src1, const float64_t *src2, float64_t *dst, uint32_t row, uint32_t col, uint32_t col2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mat_mul_f64(src1, src2, dst, row, col, col2);
+    riscv_dsp_mat_mul_f64(src1, src2, dst, row, col, col2);
 #endif
 }
 
@@ -3174,7 +3174,7 @@ static inline void hpm_dsp_mat_mul_f64(const float64_t *src1, const float64_t *s
 static inline void hpm_dsp_cmat_mul_f32(const float32_t *src1, const float32_t *src2, float32_t *dst, uint32_t row, uint32_t col, uint32_t col2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cmat_mul_f32(src1, src2, dst, row, col, col2);
+    riscv_dsp_cmat_mul_f32(src1, src2, dst, row, col, col2);
 #endif
 }
 
@@ -3198,13 +3198,13 @@ static inline void hpm_dsp_cmat_mul_f32(const float32_t *src1, const float32_t *
 static inline void hpm_dsp_mat_mul_q15(const q15_t *src1, const q15_t *src2, q15_t *dst, uint32_t row, uint32_t col, uint32_t col2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mat_mul_q15(src1, src2, dst, row, col, col2);
+    riscv_dsp_mat_mul_q15(src1, src2, dst, row, col, col2);
 #endif
 }
 static inline void hpm_dsp_mat_mul_fast_q15(const q15_t *src1, const q15_t *src2, q15_t *dst, uint32_t row, uint32_t col, uint32_t col2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mat_mul_fast_q15(src1, src2, dst, row, col, col2);
+    riscv_dsp_mat_mul_fast_q15(src1, src2, dst, row, col, col2);
 #endif
 }
 
@@ -3228,7 +3228,7 @@ static inline void hpm_dsp_mat_mul_fast_q15(const q15_t *src1, const q15_t *src2
 static inline void hpm_dsp_cmat_mul_q15(const q15_t *src1, const q15_t *src2, q15_t *dst, uint32_t row, uint32_t col, uint32_t col2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cmat_mul_q15(src1, src2, dst, row, col, col2);
+    riscv_dsp_cmat_mul_q15(src1, src2, dst, row, col, col2);
 #endif
 }
 
@@ -3252,13 +3252,13 @@ static inline void hpm_dsp_cmat_mul_q15(const q15_t *src1, const q15_t *src2, q1
 static inline void hpm_dsp_mat_mul_q31(const q31_t *src1, const q31_t *src2, q31_t *dst, uint32_t row, uint32_t col, uint32_t col2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mat_mul_q31(src1, src2, dst, row, col, col2);
+    riscv_dsp_mat_mul_q31(src1, src2, dst, row, col, col2);
 #endif
 }
 static inline void hpm_dsp_mat_mul_fast_q31(const q31_t *src1, const q31_t *src2, q31_t *dst, uint32_t row, uint32_t col, uint32_t col2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mat_mul_fast_q31(src1, src2, dst, row, col, col2);
+    riscv_dsp_mat_mul_fast_q31(src1, src2, dst, row, col, col2);
 #endif
 }
 /**
@@ -3276,7 +3276,7 @@ static inline void hpm_dsp_mat_mul_fast_q31(const q31_t *src1, const q31_t *src2
 static inline void hpm_dsp_mat_oprod_q31(const q31_t * src1, const q31_t * src2, q31_t * dst, uint32_t size1, uint32_t size2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mat_oprod_q31(src1, src2, dst, size1, size2);
+    riscv_dsp_mat_oprod_q31(src1, src2, dst, size1, size2);
 #endif
 }
 
@@ -3300,7 +3300,7 @@ static inline void hpm_dsp_mat_oprod_q31(const q31_t * src1, const q31_t * src2,
 static inline void hpm_dsp_cmat_mul_q31(const q31_t *src1, const q31_t *src2, q31_t *dst, uint32_t row, uint32_t col, uint32_t col2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cmat_mul_q31(src1, src2, dst, row, col, col2);
+    riscv_dsp_cmat_mul_q31(src1, src2, dst, row, col, col2);
 #endif
 }
 
@@ -3324,7 +3324,7 @@ static inline void hpm_dsp_cmat_mul_q31(const q31_t *src1, const q31_t *src2, q3
 static inline void hpm_dsp_mat_mul_q7(const q7_t *src1, const q7_t *src2, q7_t *dst, uint32_t row, uint32_t col, uint32_t col2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mat_mul_q7(src1, src2, dst, row, col, col2);
+    riscv_dsp_mat_mul_q7(src1, src2, dst, row, col, col2);
 #endif
 }
 
@@ -3347,7 +3347,7 @@ static inline void hpm_dsp_mat_mul_q7(const q7_t *src1, const q7_t *src2, q7_t *
 static inline void hpm_dsp_mat_mul_vxm_q7(const q7_t * src1, const q7_t * src2, q7_t * dst, uint32_t col, uint32_t col2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mat_mul_vxm_q7(src1, src2, dst, col, col2);
+    riscv_dsp_mat_mul_vxm_q7(src1, src2, dst, col, col2);
 #endif
 }
 
@@ -3357,7 +3357,7 @@ static inline void hpm_dsp_mat_mul_vxm_q7(const q7_t * src1, const q7_t * src2, 
 static inline int32_t hpm_dsp_mat_pwr2_cache_f64(const float64_t *src, float64_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_mat_pwr2_cache_f64(src, dst, size);
+    return riscv_dsp_mat_pwr2_cache_f64(src, dst, size);
 #endif
 }
 
@@ -3374,7 +3374,7 @@ static inline int32_t hpm_dsp_mat_pwr2_cache_f64(const float64_t *src, float64_t
 static inline void hpm_dsp_mat_scale_f32(const float32_t *src, float32_t scale, float32_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mat_scale_f32(src, scale, dst, row, col);
+    riscv_dsp_mat_scale_f32(src, scale, dst, row, col);
 #endif
 }
 
@@ -3396,7 +3396,7 @@ static inline void hpm_dsp_mat_scale_f32(const float32_t *src, float32_t scale, 
 static inline void hpm_dsp_mat_scale_q15(const q15_t *src, q15_t scale_fract, int32_t shift, q15_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mat_scale_q15(src, scale_fract, shift, dst, row, col);
+    riscv_dsp_mat_scale_q15(src, scale_fract, shift, dst, row, col);
 #endif
 }
 
@@ -3418,7 +3418,7 @@ static inline void hpm_dsp_mat_scale_q15(const q15_t *src, q15_t scale_fract, in
 static inline void hpm_dsp_mat_scale_q31(const q31_t *src, q31_t scale_fract, int32_t shift, q31_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mat_scale_q31(src, scale_fract, shift, dst, row, col);
+    riscv_dsp_mat_scale_q31(src, scale_fract, shift, dst, row, col);
 #endif
 }
 
@@ -3435,7 +3435,7 @@ static inline void hpm_dsp_mat_scale_q31(const q31_t *src, q31_t scale_fract, in
 static inline void hpm_dsp_mat_sub_f32(const float32_t *src1, const float32_t *src2, float32_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mat_sub_f32(src1, src2, dst, row, col);
+    riscv_dsp_mat_sub_f32(src1, src2, dst, row, col);
 #endif
 }
 
@@ -3453,7 +3453,7 @@ static inline void hpm_dsp_mat_sub_f32(const float32_t *src1, const float32_t *s
 static inline void hpm_dsp_mat_sub_q15(const q15_t *src1, const q15_t *src2, q15_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mat_sub_q15(src1, src2, dst, row, col);
+    riscv_dsp_mat_sub_q15(src1, src2, dst, row, col);
 #endif
 }
 
@@ -3471,7 +3471,7 @@ static inline void hpm_dsp_mat_sub_q15(const q15_t *src1, const q15_t *src2, q15
 static inline void hpm_dsp_mat_sub_q31(const q31_t *src1, const q31_t *src2, q31_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mat_sub_q31(src1, src2, dst, row, col);
+    riscv_dsp_mat_sub_q31(src1, src2, dst, row, col);
 #endif
 }
 
@@ -3487,7 +3487,7 @@ static inline void hpm_dsp_mat_sub_q31(const q31_t *src1, const q31_t *src2, q31
 static inline void hpm_dsp_mat_trans_f32(const float32_t *src, float32_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mat_trans_f32(src, dst, row, col);
+    riscv_dsp_mat_trans_f32(src, dst, row, col);
 #endif
 }
 
@@ -3502,7 +3502,7 @@ static inline void hpm_dsp_mat_trans_f32(const float32_t *src, float32_t *dst, u
 static inline void hpm_dsp_mat_trans_q15(const q15_t *src, q15_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mat_trans_q15(src, dst, row, col);
+    riscv_dsp_mat_trans_q15(src, dst, row, col);
 #endif
 }
 
@@ -3517,7 +3517,7 @@ static inline void hpm_dsp_mat_trans_q15(const q15_t *src, q15_t *dst, uint32_t 
 static inline void hpm_dsp_mat_trans_q31(const q31_t *src, q31_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mat_trans_q31(src, dst, row, col);
+    riscv_dsp_mat_trans_q31(src, dst, row, col);
 #endif
 }
 
@@ -3532,7 +3532,7 @@ static inline void hpm_dsp_mat_trans_q31(const q31_t *src, q31_t *dst, uint32_t 
 static inline void hpm_dsp_mat_trans_u8(const uint8_t *src, uint8_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_mat_trans_u8(src, dst, row, col);
+    riscv_dsp_mat_trans_u8(src, dst, row, col);
 #endif
 }
 
@@ -3558,7 +3558,7 @@ static inline void hpm_dsp_mat_trans_u8(const uint8_t *src, uint8_t *dst, uint32
 static inline void hpm_dsp_svm_linear_est_f32(const riscv_dsp_svm_linear_f32_t *instance, const float32_t *src, int32_t *result)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_svm_linear_est_f32(instance, src, result);
+    riscv_dsp_svm_linear_est_f32(instance, src, result);
 #endif
 }
 
@@ -3573,7 +3573,7 @@ static inline void hpm_dsp_svm_linear_est_f32(const riscv_dsp_svm_linear_f32_t *
 static inline void hpm_dsp_svm_sigmoid_est_f32(const riscv_dsp_svm_sigmoid_f32_t *instance, const float32_t *src, int32_t *result)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_svm_sigmoid_est_f32(instance, src, result);
+    riscv_dsp_svm_sigmoid_est_f32(instance, src, result);
 #endif
 }
 
@@ -3588,7 +3588,7 @@ static inline void hpm_dsp_svm_sigmoid_est_f32(const riscv_dsp_svm_sigmoid_f32_t
 static inline void hpm_dsp_svm_rbf_est_f32(const riscv_dsp_svm_rbf_f32_t *instance, const float32_t *src, int32_t *result)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_svm_rbf_est_f32(instance, src, result);
+    riscv_dsp_svm_rbf_est_f32(instance, src, result);
 #endif
 }
 
@@ -3603,7 +3603,7 @@ static inline void hpm_dsp_svm_rbf_est_f32(const riscv_dsp_svm_rbf_f32_t *instan
 static inline void hpm_dsp_svm_poly_est_f32(const riscv_dsp_svm_poly_f32_t *instance, const float32_t *src, int32_t *result)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_svm_poly_est_f32(instance, src, result);
+    riscv_dsp_svm_poly_est_f32(instance, src, result);
 #endif
 }
 
@@ -3623,13 +3623,13 @@ static inline void hpm_dsp_svm_poly_est_f32(const riscv_dsp_svm_poly_f32_t *inst
 static inline int32_t hpm_dsp_cfft_rd2_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_cfft_rd2_f32(src, m);
+    return riscv_dsp_cfft_rd2_f32(src, m);
 #endif
 }
 static inline int32_t hpm_dsp_cifft_rd2_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_cifft_rd2_f32(src, m);
+    return riscv_dsp_cifft_rd2_f32(src, m);
 #endif
 }
 
@@ -3637,13 +3637,13 @@ static inline int32_t hpm_dsp_cifft_rd2_f32(float32_t *src, uint32_t m)
 static inline int32_t hpm_dsp_cfft_rd2_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_cfft_rd2_q15(src, m);
+    return riscv_dsp_cfft_rd2_q15(src, m);
 #endif
 }
 static inline int32_t hpm_dsp_cifft_rd2_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_cifft_rd2_q15(src, m);
+    return riscv_dsp_cifft_rd2_q15(src, m);
 #endif
 }
 
@@ -3651,13 +3651,13 @@ static inline int32_t hpm_dsp_cifft_rd2_q15(q15_t *src, uint32_t m)
 static inline int32_t hpm_dsp_cfft_rd2_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_cfft_rd2_q31(src, m);
+    return riscv_dsp_cfft_rd2_q31(src, m);
 #endif
 }
 static inline int32_t hpm_dsp_cifft_rd2_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_cifft_rd2_q31(src, m);
+    return riscv_dsp_cifft_rd2_q31(src, m);
 #endif
 }
 
@@ -3666,13 +3666,13 @@ static inline int32_t hpm_dsp_cifft_rd2_q31(q31_t *src, uint32_t m)
 static inline int32_t hpm_dsp_cfft_rd4_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_cfft_rd4_f32(src, m);
+    return riscv_dsp_cfft_rd4_f32(src, m);
 #endif
 }
 static inline int32_t hpm_dsp_cifft_rd4_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_cifft_rd4_f32(src, m);
+    return riscv_dsp_cifft_rd4_f32(src, m);
 #endif
 }
 
@@ -3680,13 +3680,13 @@ static inline int32_t hpm_dsp_cifft_rd4_f32(float32_t *src, uint32_t m)
 static inline int32_t hpm_dsp_cfft_rd4_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_cfft_rd4_q15(src, m);
+    return riscv_dsp_cfft_rd4_q15(src, m);
 #endif
 }
 static inline int32_t hpm_dsp_cifft_rd4_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_cifft_rd4_q15(src, m);
+    return riscv_dsp_cifft_rd4_q15(src, m);
 #endif
 }
 
@@ -3694,13 +3694,13 @@ static inline int32_t hpm_dsp_cifft_rd4_q15(q15_t *src, uint32_t m)
 static inline int32_t hpm_dsp_cfft_rd4_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_cfft_rd4_q31(src, m);
+    return riscv_dsp_cfft_rd4_q31(src, m);
 #endif
 }
 static inline int32_t hpm_dsp_cifft_rd4_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_cifft_rd4_q31(src, m);
+    return riscv_dsp_cifft_rd4_q31(src, m);
 #endif
 }
 
@@ -3709,13 +3709,13 @@ static inline int32_t hpm_dsp_cifft_rd4_q31(q31_t *src, uint32_t m)
 static inline void hpm_dsp_cfft_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cfft_f32(src, m);
+    riscv_dsp_cfft_f32(src, m);
 #endif
 }
 static inline void hpm_dsp_cifft_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cifft_f32(src, m);
+    riscv_dsp_cifft_f32(src, m);
 #endif
 }
 
@@ -3723,13 +3723,13 @@ static inline void hpm_dsp_cifft_f32(float32_t *src, uint32_t m)
 static inline void hpm_dsp_cfft_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cfft_q15(src, m);
+    riscv_dsp_cfft_q15(src, m);
 #endif
 }
 static inline void hpm_dsp_cifft_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cifft_q15(src, m);
+    riscv_dsp_cifft_q15(src, m);
 #endif
 }
 
@@ -3737,13 +3737,13 @@ static inline void hpm_dsp_cifft_q15(q15_t *src, uint32_t m)
 static inline void hpm_dsp_cfft_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cfft_q31(src, m);
+    riscv_dsp_cfft_q31(src, m);
 #endif
 }
 static inline void hpm_dsp_cifft_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_cifft_q31(src, m);
+    riscv_dsp_cifft_q31(src, m);
 #endif
 }
 
@@ -3752,13 +3752,13 @@ static inline void hpm_dsp_cifft_q31(q31_t *src, uint32_t m)
 static inline int32_t hpm_dsp_rfft_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_rfft_f32(src, m);
+    return riscv_dsp_rfft_f32(src, m);
 #endif
 }
 static inline int32_t hpm_dsp_rifft_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_rifft_f32(src, m);
+    return riscv_dsp_rifft_f32(src, m);
 #endif
 }
 
@@ -3766,13 +3766,13 @@ static inline int32_t hpm_dsp_rifft_f32(float32_t *src, uint32_t m)
 static inline int32_t hpm_dsp_rfft_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_rfft_q15(src, m);
+    return riscv_dsp_rfft_q15(src, m);
 #endif
 }
 static inline int32_t hpm_dsp_rifft_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_rifft_q15(src, m);
+    return riscv_dsp_rifft_q15(src, m);
 #endif
 }
 
@@ -3780,13 +3780,13 @@ static inline int32_t hpm_dsp_rifft_q15(q15_t *src, uint32_t m)
 static inline int32_t hpm_dsp_rfft_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_rfft_q31(src, m);
+    return riscv_dsp_rfft_q31(src, m);
 #endif
 }
 static inline int32_t hpm_dsp_rifft_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_rifft_q31(src, m);
+    return riscv_dsp_rifft_q31(src, m);
 #endif
 }
 
@@ -3795,13 +3795,13 @@ static inline int32_t hpm_dsp_rifft_q31(q31_t *src, uint32_t m)
 static inline void hpm_dsp_dct_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_dct_f32(src, m);
+    riscv_dsp_dct_f32(src, m);
 #endif
 }
 static inline void hpm_dsp_idct_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_idct_f32(src, m);
+    riscv_dsp_idct_f32(src, m);
 #endif
 }
 
@@ -3809,13 +3809,13 @@ static inline void hpm_dsp_idct_f32(float32_t *src, uint32_t m)
 static inline void hpm_dsp_dct_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_dct_q15(src, m);
+    riscv_dsp_dct_q15(src, m);
 #endif
 }
 static inline void hpm_dsp_idct_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_idct_q15(src, m);
+    riscv_dsp_idct_q15(src, m);
 #endif
 }
 
@@ -3823,13 +3823,13 @@ static inline void hpm_dsp_idct_q15(q15_t *src, uint32_t m)
 static inline void hpm_dsp_dct_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_dct_q31(src, m);
+    riscv_dsp_dct_q31(src, m);
 #endif
 }
 static inline void hpm_dsp_idct_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_idct_q31(src, m);
+    riscv_dsp_idct_q31(src, m);
 #endif
 }
 
@@ -3838,13 +3838,13 @@ static inline void hpm_dsp_idct_q31(q31_t *src, uint32_t m)
 static inline void hpm_dsp_dct4_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_dct4_f32(src, m);
+    riscv_dsp_dct4_f32(src, m);
 #endif
 }
 static inline void hpm_dsp_idct4_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_idct4_f32(src, m);
+    riscv_dsp_idct4_f32(src, m);
 #endif
 }
 
@@ -3852,13 +3852,13 @@ static inline void hpm_dsp_idct4_f32(float32_t *src, uint32_t m)
 static inline void hpm_dsp_dct4_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_dct4_q15(src, m);
+    riscv_dsp_dct4_q15(src, m);
 #endif
 }
 static inline void hpm_dsp_idct4_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_idct4_q15(src, m);
+    riscv_dsp_idct4_q15(src, m);
 #endif
 }
 
@@ -3866,21 +3866,22 @@ static inline void hpm_dsp_idct4_q15(q15_t *src, uint32_t m)
 static inline void hpm_dsp_dct4_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_dct4_q31(src, m);
+    riscv_dsp_dct4_q31(src, m);
 #endif
 }
 static inline void hpm_dsp_idct4_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_idct4_q31(src, m);
+    riscv_dsp_idct4_q31(src, m);
 #endif
 }
 
 #endif
 
-#if CONFIG_HAS_FFA
+#ifdef CONFIG_HAS_HPMSDK_FFA
 #include "hpm_ffa_drv.h"
 #include "hpm_soc.h"
+#include "hpm_l1c_drv.h"
 /**
  * @brief fft calculation using ffa hardware acceleration unit, q15 format
  *
@@ -3891,14 +3892,24 @@ static inline void hpm_dsp_idct4_q31(q31_t *src, uint32_t m)
  */
 static inline void hpm_ffa_cfft_q15(q15_t *src, uint32_t m)
 {
-	fft_xfer_t xfer = { 0 };
-	xfer.num_points = 1 << m;
-	xfer.src = src;
-	xfer.dst = src;
-	xfer.is_ifft = false;
-	xfer.src_data_type = FFA_DATA_TYPE_COMPLEX_Q15;
-	xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q15;
-	ffa_calculate_fft_blocking(HPM_FFA, &xfer);
+    fft_xfer_t xfer = { 0 };
+    xfer.num_points = 1 << m;
+    xfer.src = src;
+    xfer.dst = src;
+    xfer.is_ifft = false;
+    xfer.src_data_type = FFA_DATA_TYPE_COMPLEX_Q15;
+    xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q15;
+    if (l1c_dc_is_enabled()) {
+        l1c_dc_flush(HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src),
+            2 * (HPM_L1C_CACHELINE_ALIGN_UP((xfer.num_points * sizeof(q15_t) + xfer.src)) -
+            HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src)));
+    }
+    ffa_calculate_fft_blocking(HPM_FFA, &xfer);
+    if (l1c_dc_is_enabled()) {
+        l1c_dc_invalidate(HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src),
+            2 * (HPM_L1C_CACHELINE_ALIGN_UP((xfer.num_points * sizeof(q15_t) + xfer.src)) -
+            HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src)));
+    }
 }
 /**
  * @brief fft calculation using ffa hardware acceleration unit, q31 format
@@ -3910,14 +3921,24 @@ static inline void hpm_ffa_cfft_q15(q15_t *src, uint32_t m)
  */
 static inline void hpm_ffa_cfft_q31(q31_t *src, uint32_t m)
 {
-	fft_xfer_t xfer = { 0 };
-	xfer.num_points = 1 << m;
-	xfer.src = src;
-	xfer.dst = src;
-	xfer.is_ifft = false;
-	xfer.src_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
-	xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
-	ffa_calculate_fft_blocking(HPM_FFA, &xfer);
+    fft_xfer_t xfer = { 0 };
+    xfer.num_points = 1 << m;
+    xfer.src = src;
+    xfer.dst = src;
+    xfer.is_ifft = false;
+    xfer.src_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
+    xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
+    if (l1c_dc_is_enabled()) {
+        l1c_dc_flush(HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src),
+            2 * (HPM_L1C_CACHELINE_ALIGN_UP((xfer.num_points * sizeof(q31_t) + xfer.src)) -
+            HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src)));
+    }
+    ffa_calculate_fft_blocking(HPM_FFA, &xfer);
+    if (l1c_dc_is_enabled()) {
+        l1c_dc_invalidate(HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src),
+            2 * (HPM_L1C_CACHELINE_ALIGN_UP((xfer.num_points * sizeof(q31_t) + xfer.src)) -
+            HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src)));
+    }
 }
 /**
  * @brief ifft calculation using ffa hardware acceleration unit, q15 format
@@ -3929,14 +3950,24 @@ static inline void hpm_ffa_cfft_q31(q31_t *src, uint32_t m)
  */
 static inline void hpm_ffa_cifft_q15(q15_t *src, uint32_t m)
 {
-	fft_xfer_t xfer = { 0 };
-	xfer.num_points = 1 << m;
-	xfer.src = src;
-	xfer.dst = src;
-	xfer.is_ifft = true;
-	xfer.src_data_type = FFA_DATA_TYPE_COMPLEX_Q15;
-	xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q15;
-	ffa_calculate_fft_blocking(HPM_FFA, &xfer);
+    fft_xfer_t xfer = { 0 };
+    xfer.num_points = 1 << m;
+    xfer.src = src;
+    xfer.dst = src;
+    xfer.is_ifft = true;
+    xfer.src_data_type = FFA_DATA_TYPE_COMPLEX_Q15;
+    xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q15;
+    if (l1c_dc_is_enabled()) {
+        l1c_dc_flush(HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src),
+            2 * (HPM_L1C_CACHELINE_ALIGN_UP((xfer.num_points * sizeof(q15_t) + xfer.src)) -
+            HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src)));
+    }
+    ffa_calculate_fft_blocking(HPM_FFA, &xfer);
+    if (l1c_dc_is_enabled()) {
+        l1c_dc_invalidate(HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src),
+            2 * (HPM_L1C_CACHELINE_ALIGN_UP((xfer.num_points * sizeof(q15_t) + xfer.src)) -
+            HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src)));
+    }
 }
 
 /**
@@ -3949,14 +3980,24 @@ static inline void hpm_ffa_cifft_q15(q15_t *src, uint32_t m)
  */
 static inline void hpm_ffa_cifft_q31(q31_t *src, uint32_t m)
 {
-	fft_xfer_t xfer = { 0 };
-	xfer.num_points = 1 << m;
-	xfer.src = src;
-	xfer.dst = src;
-	xfer.is_ifft = true;
-	xfer.src_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
-	xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
-	ffa_calculate_fft_blocking(HPM_FFA, &xfer);
+    fft_xfer_t xfer = { 0 };
+    xfer.num_points = 1 << m;
+    xfer.src = src;
+    xfer.dst = src;
+    xfer.is_ifft = true;
+    xfer.src_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
+    xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
+    if (l1c_dc_is_enabled()) {
+        l1c_dc_flush(HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src),
+            2 * (HPM_L1C_CACHELINE_ALIGN_UP((xfer.num_points * sizeof(q31_t) + xfer.src)) -
+            HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src)));
+    }
+    ffa_calculate_fft_blocking(HPM_FFA, &xfer);
+    if (l1c_dc_is_enabled()) {
+        l1c_dc_invalidate(HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src),
+            2 * (HPM_L1C_CACHELINE_ALIGN_UP((xfer.num_points * sizeof(q31_t) + xfer.src)) -
+            HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src)));
+    }
 }
 
 
@@ -3991,38 +4032,38 @@ void hpm_software_cfft_float(float *src, uint32_t m);
 static inline float32_t hpm_dsp_cos_f32(float32_t src)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_cos_f32(src);
+    return riscv_dsp_cos_f32(src);
 #endif
 }
 static inline q31_t hpm_dsp_cos_q31(q31_t src)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_cos_q31(src);
+    return riscv_dsp_cos_q31(src);
 #endif
 }
 static inline q15_t hpm_dsp_cos_q15(q15_t src)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_cos_q15(src);
+    return riscv_dsp_cos_q15(src);
 #endif
 }
 
 static inline float32_t hpm_dsp_sin_f32(float32_t src)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_sin_f32(src);
+    return riscv_dsp_sin_f32(src);
 #endif
 }
 static inline q31_t hpm_dsp_sin_q31(q31_t src)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_sin_q31(src);
+    return riscv_dsp_sin_q31(src);
 #endif
 }
 static inline q15_t hpm_dsp_sin_q15(q15_t src)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_sin_q15(src);
+    return riscv_dsp_sin_q15(src);
 #endif
 }
 
@@ -4030,37 +4071,37 @@ static inline q15_t hpm_dsp_sin_q15(q15_t src)
 static inline float32_t hpm_dsp_atan_f32(float32_t src)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_atan_f32(src);
+    return riscv_dsp_atan_f32(src);
 #endif
 }
 static inline q31_t hpm_dsp_atan_q31(q31_t src)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_atan_q31(src);
+    return riscv_dsp_atan_q31(src);
 #endif
 }
 static inline q15_t hpm_dsp_atan_q15(q15_t src)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_atan_q15(src);
+    return riscv_dsp_atan_q15(src);
 #endif
 }
 static inline float32_t hpm_dsp_atan2_f32(float32_t srcy, float32_t src2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_atan2_f32(srcy, src2);
+    return riscv_dsp_atan2_f32(srcy, src2);
 #endif
 }
 static inline q15_t hpm_dsp_atan2_q15(q15_t srcy, q15_t src2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_atan2_q15(srcy, src2);
+    return riscv_dsp_atan2_q15(srcy, src2);
 #endif
 }
 static inline q31_t hpm_dsp_atan2_q31(q31_t srcy, q31_t src2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_atan2_q31(srcy, src2);
+    return riscv_dsp_atan2_q31(srcy, src2);
 #endif
 }
 
@@ -4073,7 +4114,7 @@ static inline q31_t hpm_dsp_atan2_q31(q31_t srcy, q31_t src2)
 static inline float32_t hpm_dsp_sqrt_f32(float32_t src)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_sqrt_f32(src);
+    return riscv_dsp_sqrt_f32(src);
 #endif
 }
 
@@ -4085,7 +4126,7 @@ static inline float32_t hpm_dsp_sqrt_f32(float32_t src)
 static inline q31_t hpm_dsp_sqrt_q31(q31_t src)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_sqrt_q31(src);
+    return riscv_dsp_sqrt_q31(src);
 #endif
 }
 
@@ -4097,7 +4138,7 @@ static inline q31_t hpm_dsp_sqrt_q31(q31_t src)
 static inline q15_t hpm_dsp_sqrt_q15(q15_t src)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_sqrt_q15(src);
+    return riscv_dsp_sqrt_q15(src);
 #endif
 }
 
@@ -4112,7 +4153,7 @@ static inline q15_t hpm_dsp_sqrt_q15(q15_t src)
 static inline void hpm_dsp_convert_f32_q15(float32_t *src, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_convert_f32_q15(src, dst, size);
+    riscv_dsp_convert_f32_q15(src, dst, size);
 #endif
 }
 
@@ -4126,7 +4167,7 @@ static inline void hpm_dsp_convert_f32_q15(float32_t *src, q15_t *dst, uint32_t 
 static inline void hpm_dsp_convert_f32_q31(float32_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_convert_f32_q31(src, dst, size);
+    riscv_dsp_convert_f32_q31(src, dst, size);
 #endif
 }
 
@@ -4140,7 +4181,7 @@ static inline void hpm_dsp_convert_f32_q31(float32_t *src, q31_t *dst, uint32_t 
 static inline void hpm_dsp_convert_f32_q7(float32_t *src, q7_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_convert_f32_q7(src, dst, size);
+    riscv_dsp_convert_f32_q7(src, dst, size);
 #endif
 }
 
@@ -4154,7 +4195,7 @@ static inline void hpm_dsp_convert_f32_q7(float32_t *src, q7_t *dst, uint32_t si
 static inline void hpm_dsp_convert_q15_f32(q15_t *src, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_convert_q15_f32(src, dst, size);
+    riscv_dsp_convert_q15_f32(src, dst, size);
 #endif
 }
 
@@ -4168,7 +4209,7 @@ static inline void hpm_dsp_convert_q15_f32(q15_t *src, float32_t *dst, uint32_t 
 static inline void hpm_dsp_convert_q15_q31(q15_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_convert_q15_q31(src, dst, size);
+    riscv_dsp_convert_q15_q31(src, dst, size);
 #endif
 }
 
@@ -4182,7 +4223,7 @@ static inline void hpm_dsp_convert_q15_q31(q15_t *src, q31_t *dst, uint32_t size
 static inline void hpm_dsp_convert_q15_q7(q15_t *src, q7_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_convert_q15_q7(src, dst, size);
+    riscv_dsp_convert_q15_q7(src, dst, size);
 #endif
 }
 
@@ -4196,7 +4237,7 @@ static inline void hpm_dsp_convert_q15_q7(q15_t *src, q7_t *dst, uint32_t size)
 static inline void hpm_dsp_convert_q31_f32(q31_t *src, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_convert_q31_f32(src, dst, size);
+    riscv_dsp_convert_q31_f32(src, dst, size);
 #endif
 }
 
@@ -4210,7 +4251,7 @@ static inline void hpm_dsp_convert_q31_f32(q31_t *src, float32_t *dst, uint32_t 
 static inline void hpm_dsp_convert_q31_q15(q31_t *src, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_convert_q31_q15(src, dst, size);
+    riscv_dsp_convert_q31_q15(src, dst, size);
 #endif
 }
 
@@ -4224,7 +4265,7 @@ static inline void hpm_dsp_convert_q31_q15(q31_t *src, q15_t *dst, uint32_t size
 static inline void hpm_dsp_convert_q31_q7(q31_t *src, q7_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_convert_q31_q7(src, dst, size);
+    riscv_dsp_convert_q31_q7(src, dst, size);
 #endif
 }
 
@@ -4238,7 +4279,7 @@ static inline void hpm_dsp_convert_q31_q7(q31_t *src, q7_t *dst, uint32_t size)
 static inline void hpm_dsp_convert_q7_f32(q7_t *src, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_convert_q7_f32(src, dst, size);
+    riscv_dsp_convert_q7_f32(src, dst, size);
 #endif
 }
 
@@ -4252,7 +4293,7 @@ static inline void hpm_dsp_convert_q7_f32(q7_t *src, float32_t *dst, uint32_t si
 static inline void hpm_dsp_convert_q7_q15(q7_t *src, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_convert_q7_q15(src, dst, size);
+    riscv_dsp_convert_q7_q15(src, dst, size);
 #endif
 }
 
@@ -4266,7 +4307,7 @@ static inline void hpm_dsp_convert_q7_q15(q7_t *src, q15_t *dst, uint32_t size)
 static inline void hpm_dsp_convert_q7_q31(q7_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_convert_q7_q31(src, dst, size);
+    riscv_dsp_convert_q7_q31(src, dst, size);
 #endif
 }
 
@@ -4281,7 +4322,7 @@ static inline void hpm_dsp_convert_q7_q31(q7_t *src, q31_t *dst, uint32_t size)
 static inline void hpm_dsp_dup_f32(float32_t *src, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_dup_f32(src, dst, size);
+    riscv_dsp_dup_f32(src, dst, size);
 #endif
 }
 
@@ -4295,7 +4336,7 @@ static inline void hpm_dsp_dup_f32(float32_t *src, float32_t *dst, uint32_t size
 static inline void hpm_dsp_dup_q15(q15_t *src, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_dup_q15(src, dst, size);
+    riscv_dsp_dup_q15(src, dst, size);
 #endif
 }
 
@@ -4309,7 +4350,7 @@ static inline void hpm_dsp_dup_q15(q15_t *src, q15_t *dst, uint32_t size)
 static inline void hpm_dsp_dup_q31(q31_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_dup_q31(src, dst, size);
+    riscv_dsp_dup_q31(src, dst, size);
 #endif
 }
 
@@ -4323,7 +4364,7 @@ static inline void hpm_dsp_dup_q31(q31_t *src, q31_t *dst, uint32_t size)
 static inline void hpm_dsp_dup_q7(q7_t *src, q7_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_dup_q7(src, dst, size);
+    riscv_dsp_dup_q7(src, dst, size);
 #endif
 }
 
@@ -4338,7 +4379,7 @@ static inline void hpm_dsp_dup_q7(q7_t *src, q7_t *dst, uint32_t size)
 static inline void hpm_dsp_set_f32(float32_t val, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_set_f32(val, dst, size);
+    riscv_dsp_set_f32(val, dst, size);
 #endif
 }
 
@@ -4352,7 +4393,7 @@ static inline void hpm_dsp_set_f32(float32_t val, float32_t *dst, uint32_t size)
 static inline void hpm_dsp_set_q15(q15_t val, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_set_q15(val, dst, size);
+    riscv_dsp_set_q15(val, dst, size);
 #endif
 }
 
@@ -4366,7 +4407,7 @@ static inline void hpm_dsp_set_q15(q15_t val, q15_t *dst, uint32_t size)
 static inline void hpm_dsp_set_q31(q31_t val, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_set_q31(val, dst, size);
+    riscv_dsp_set_q31(val, dst, size);
 #endif
 }
 
@@ -4380,7 +4421,7 @@ static inline void hpm_dsp_set_q31(q31_t val, q31_t *dst, uint32_t size)
 static inline void hpm_dsp_set_q7(q7_t val, q7_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_set_q7(val, dst, size);
+    riscv_dsp_set_q7(val, dst, size);
 #endif
 }
 
@@ -4395,7 +4436,7 @@ static inline void hpm_dsp_set_q7(q7_t val, q7_t *dst, uint32_t size)
 static inline float32_t hpm_dsp_weighted_sum_f32(const float32_t *src, const float32_t *weight, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	return riscv_dsp_weighted_sum_f32(src, weight, size);
+    return riscv_dsp_weighted_sum_f32(src, weight, size);
 #endif
 }
 
@@ -4412,7 +4453,7 @@ static inline float32_t hpm_dsp_weighted_sum_f32(const float32_t *src, const flo
 static inline void hpm_dsp_barycenter_f32(const float32_t *src, const float32_t *weights, float32_t *out, uint32_t numofvec, uint32_t dimofvec)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-	riscv_dsp_barycenter_f32(src, weights, out, numofvec, dimofvec);
+    riscv_dsp_barycenter_f32(src, weights, out, numofvec, dimofvec);
 #endif
 }
 

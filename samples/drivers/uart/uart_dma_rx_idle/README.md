@@ -1,7 +1,7 @@
-# UART receive indefinite data
+# UART_DMA receive variable length data
 ## Overview
 ***
-In this example project, UART receives indefinite data via DMA(data size less than defined BUFFER_SIZE in program).
+In this example project, UART receives variable length data via DMA(data size less than defined BUFFER_SIZE in program).
 
 ## Port Settings
 ***

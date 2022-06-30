@@ -21,7 +21,7 @@ hpm_stat_t pwm_load_cmp_shadow_on_match(PWM_Type *pwm_x,
     return status_success;
 }
 
-void pwm_get_count(PWM_Type *pwm_x, uint32_t *buf, pwm_counter_type_t counter, uint8_t start_index, uint8_t num)
+void pwm_get_captured_count(PWM_Type *pwm_x, uint32_t *buf, pwm_counter_type_t counter, uint8_t start_index, uint8_t num)
 {
     uint32_t i;
     if (counter == pwm_counter_type_capture_falling_edge) {

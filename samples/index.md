@@ -11,7 +11,6 @@
    touch_panel/README
    rtos/index
    drivers/index
-   freemaster/README
    motor_ctrl/index
    jpeg/index
    tinycrypt/index
@@ -24,5 +23,5 @@
    rgb_led/README
    hpm_math/index
    lwip/index
-
+   memstress/index
 :::

@@ -21,7 +21,7 @@ it will generate update.uf2, the UF2 container, from the application image hello
 0x0A4D5048: HPMicro UF2 family ID which should be supported by uf2conv.py
 
 ### Enter bootloader mode
-Hold UF2 boot button while presing reset button
+Hold TinyUF2 button (please check [Button](lab_board_resource) section of sepcific board) while presing reset button
 
 ## Board Setting
 

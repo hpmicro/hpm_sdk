@@ -195,15 +195,12 @@ hpm_stat_t sysctl_set_adc_i2s_clock_mux(SYSCTL_Type *ptr, clock_node_t node, clo
     }
 
     switch (node) {
-    case clock_node_adc3:
     case clock_node_adc2:
     case clock_node_adc1:
     case clock_node_adc0:
         index = node - clock_node_adc0;
         ptr->ADCCLK[index] = (ptr->ADCCLK[index] & ~SYSCTL_ADCCLK_MUX_MASK) | SYSCTL_ADCCLK_MUX_SET(source);
         break;
-    case clock_node_i2s3:
-    case clock_node_i2s2:
     case clock_node_i2s1:
     case clock_node_i2s0:
         index = node - clock_node_i2s0;

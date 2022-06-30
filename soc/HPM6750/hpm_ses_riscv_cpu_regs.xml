@@ -746,6 +746,12 @@
     <Register name="PMAADDR_PMAADDR15" start="0x1bdf" size="0x4">
       <BitField name="PMAADDR_31_2" start="2" size="30"/>
     </Register>
+    <Register name="CYCLE" start="0x1c00" size="0x4">
+      <BitField name="CYCLE" start="0" size="32"/>
+    </Register>
+    <Register name="CYCLEH" start="0x1c80" size="0x4">
+      <BitField name="CYCLEH" start="0" size="32"/>
+    </Register>
     <Register name="MVENDORID" start="0x1f11" size="0x4">
       <BitField name="MVENDORID" start="0" size="32"/>
     </Register>

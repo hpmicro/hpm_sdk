@@ -60,7 +60,8 @@ place in AXI_SRAM with minimum size order   { block tdata_load,                 
                                               readonly,                                             // Catch-all for readonly data (e.g. .rodata, .srodata)
                                               readexec                                              // Catch-all for (readonly) executable code (e.g. .text)
                                             };
-place in SDRAM                              { block framebuffer };
+
+
 
 //
 // The GNU compiler creates these exception-related sections as writeable.
@@ -71,10 +72,12 @@ define access readonly { section .gcc_except_table, section .gcc_except_table.* 
 define access readonly { section .eh_frame, section .eh_frame.* };
 define access readonly { section .sdata.DW.* };
 
-place in SDRAM with auto order              { section .fast, section .fast.*,                       // "ramfunc" section
+place in SDRAM with auto order              {
+                                              section .fast, section .fast.*,                       // "ramfunc" section
                                               block tls,                                            // Thread-local-storage block
                                               readwrite,                                            // Catch-all for initialized/uninitialized data sections (e.g. .data, .noinit)
-                                              zeroinit                                              // Catch-all for zero-initialized data sections (e.g. .bss)
+                                              zeroinit,                                              // Catch-all for zero-initialized data sections (e.g. .bss)
+                                              block framebuffer,
                                             };
 place in NONCACHEABLE_RAM                   { section .noncacheable, section .noncacheable.init, section .noncacheable.bss };                                 // Noncacheable block
 place in AXI_SRAM                           { block heap };                                         // Heap reserved block

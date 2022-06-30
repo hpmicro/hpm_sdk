@@ -13,7 +13,7 @@
 void pdma_set_block_size(PDMA_Type *ptr, pdma_blocksize_t size)
 {
     ptr->CTRL = (ptr->CTRL & ~PDMA_CTRL_BS16_MASK)
-        | (size == pdma_blocksize_16x16) ? PDMA_CTRL_BS16_MASK : 0;
+        | ((size == pdma_blocksize_16x16) ? PDMA_CTRL_BS16_MASK : 0);
 }
 
 void pdma_enable_plane(PDMA_Type *ptr, pdma_plane_t enable_plane, bool enable)
@@ -210,8 +210,8 @@ void pdma_get_default_output_config(PDMA_Type *ptr, pdma_output_config_t *config
 
 void pdma_stop(PDMA_Type *ptr)
 {
-    pdma_software_reset(ptr);
     ptr->CTRL &= ~PDMA_CTRL_PDMA_EN_MASK;
+    pdma_software_reset(ptr);
     ptr->STAT = 0x21F;
 }
 

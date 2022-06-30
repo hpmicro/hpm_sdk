@@ -235,21 +235,7 @@ void board_init_lcd(void)
 
 void board_delay_ms(uint32_t ms)
 {
-    uint32_t gptmr_freq;
-    gptmr_channel_config_t config;
-    gptmr_channel_get_default_config(BOARD_DELAY_TIMER, &config);
-
-    clock_add_to_group(BOARD_DELAY_TIMER_CLK_NAME, 0);
-    gptmr_freq = clock_get_frequency(BOARD_DELAY_TIMER_CLK_NAME);
-
-    config.reload = gptmr_freq / 1000 * ms;
-    gptmr_channel_config(BOARD_DELAY_TIMER, BOARD_DELAY_TIMER_CH, &config, false);
-    gptmr_start_counter(BOARD_DELAY_TIMER, BOARD_DELAY_TIMER_CH);
-    while (!gptmr_check_status(BOARD_DELAY_TIMER, GPTMR_CH_RLD_STAT_MASK(BOARD_DELAY_TIMER_CH))) {
-        __asm("nop");
-    }
-    gptmr_stop_counter(BOARD_DELAY_TIMER, BOARD_DELAY_TIMER_CH);
-    gptmr_clear_status(BOARD_DELAY_TIMER, GPTMR_CH_RLD_STAT_MASK(BOARD_DELAY_TIMER_CH));
+    clock_cpu_delay_ms(ms);
 }
 
 void board_timer_isr(void)
@@ -583,6 +569,8 @@ void board_init_clock(void)
     clock_set_source_divider(clock_cpu1, clk_src_pll0_clk0, 1);
     /* Connect Group1 to CPU1 */
     clock_connect_group_to_cpu(1, 1);
+
+    clock_update_core_clock();
 }
 
 uint32_t board_init_cam_clock(CAM_Type *ptr)

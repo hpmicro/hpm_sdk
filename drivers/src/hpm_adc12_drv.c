@@ -89,6 +89,14 @@ hpm_stat_t adc12_init(ADC12_Type *ptr, adc12_config_t *config)
 {
     uint32_t adc_clk_div;
 
+    /**
+     * disable adc
+     * When the adc is processing data, it will generate an error to initialize the adc again,
+     * so you need to shut down the adc before initializing it.
+     */
+
+    ptr->ANA_CTRL0 &= ~(ADC12_ANA_CTRL0_ENADC_MASK);
+
     /* Check the resolution */
     if (config->res > adc12_res_12_bits) {
         return status_invalid_argument;

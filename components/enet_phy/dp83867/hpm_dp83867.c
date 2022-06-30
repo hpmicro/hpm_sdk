@@ -9,7 +9,7 @@
  * Includes
  *---------------------------------------------------------------------*/
 #include "hpm_enet_drv.h"
-#include "hpm_DP83867_REGs.h"
+#include "hpm_dp83867_regs.h"
 #include "hpm_dp83867.h"
 #include "board.h"
 
@@ -105,12 +105,13 @@ bool dp83867_basic_mode_init(ENET_Type *ptr, dp83867_config_t *config)
         para |= DP83867_BMCR_SPEED0_SET(config->speed) | DP83867_BMCR_SPEED1_SET(config->speed >> 1);
     }
 
-    dp83867_id_check(ptr);
-
     /* check the id of dp83867 */
     if (dp83867_id_check(ptr) == false) {
-        dp83867_enable_rmii_inf(ptr);
         return false;
+    }
+
+    while (dp83867_get_phy_link_status(ptr) == 0) {
+
     }
 
     return true;

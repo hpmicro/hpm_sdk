@@ -36,15 +36,17 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 |OFF, ON| Serial boot |
 |ON, OFF| ISP |
 
+(lab_hpm6750_evkmini_board)=
 ## Button
+(lab_hpm6750_evkmini_board_buttons)=
 | Name | FUNCTIONS |
+|----------|------------|
 |PBUTN (S2) | Power Button, TinyUF2 Boot Button, GPIO Button |
 |WBUTN (S3) | WAKE UP Button |
 |RESET (S4) | Reset Button |
 
 ## Pin Description
 
-(lab_hpm6750_evkmini_board)=
 
 - SPI Pin
 
@@ -61,3 +63,24 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 | ---- | -------- |
 | I2C0.SCL    | P1[13] |
 | I2C0.SDA    | P1[15] |
+
+- UART for core1 debug console：
+
+| Function | Position |
+| ---- | -------- |
+| UART13.TXD    | P1[8] |
+| UART13.RXD    | P1[10] |
+
+- ACMP Pin
+
+| Function | Position |
+| ---- | -------- |
+| CMP.INN6    | P2[11] |
+| CMP.COMP_1  | P1[7] |
+
+- GPTMR Pin
+
+| Function | Position |
+| ---- | -------- |
+| GPTMR2.CAPT_2  | P2[15] |
+| GPTMR2.COMP_2  | P2[19] |

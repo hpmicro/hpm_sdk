@@ -90,7 +90,7 @@ static void cdc_task(void)
     {
       if ( tud_cdc_n_available(itf) )
       {
-        uint8_t buf[64];
+        uint8_t buf[512];
 
         uint32_t count = tud_cdc_n_read(itf, buf, sizeof(buf));
 

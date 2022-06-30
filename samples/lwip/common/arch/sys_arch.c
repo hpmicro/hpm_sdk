@@ -46,7 +46,7 @@
 #endif
 
 int errno;
-
+#if !NO_SYS
 /** Set this to 1 if you want the stack size passed to sys_thread_new() to be
  * interpreted as number of stack words (FreeRTOS-like).
  * Default is that they are interpreted as byte count (lwIP-like).
@@ -136,7 +136,8 @@ sys_now(void)
 u32_t
 sys_now(void)
 {
-  return 1;// xTaskGetTickCount() * portTICK_PERIOD_MS;
+  uint32_t lwip_get_tick(void);
+  return lwip_get_tick();
 }
 #endif
 
@@ -620,3 +621,23 @@ sys_check_core_locking(void)
 }
 
 #endif /* LWIP_FREERTOS_CHECK_CORE_LOCKING*/
+
+#else
+static uint32_t lwip_tick = 0;
+
+void lwip_timer_callback(void)
+{
+    lwip_tick++;
+}
+
+uint32_t lwip_get_tick(void)
+{
+    return lwip_tick;
+}
+
+u32_t sys_now(void)
+{
+    return (u32_t)lwip_tick;
+}
+
+#endif

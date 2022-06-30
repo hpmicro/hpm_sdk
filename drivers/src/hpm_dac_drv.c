@@ -110,7 +110,7 @@ hpm_stat_t dac_set_step_config(DAC_Type *ptr, uint8_t step_cfg_idx, dac_step_con
 
 hpm_stat_t dac_set_buffer_config(DAC_Type *ptr, dac_buffer_config_t *config)
 {
-    if (config->buf0.len == 0 || config->buf0.len > DAC_SOC_MAX_BUFF_COUNT || config->buf1.len > DAC_SOC_MAX_BUFF_COUNT) {
+    if (config->buf0.len == 0) {
         return status_invalid_argument;
     }
 

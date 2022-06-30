@@ -7,7 +7,7 @@
 #ifndef HPM_ENET_SOC_DRV_H
 #define HPM_ENET_SOC_DRV_H
 
-#include "hpm_enet_regs.h"
+#include "hpm_soc.h"
 
 #if defined __cplusplus
 extern "C" {

@@ -1,10 +1,11 @@
+# MBX
 ## Overview
 ***
 This example demonstrate how MBX works. Core 0 will send message to core 1 which will echo back what's been received.
 
 ## Board Setting
 ***
-Nothing speicial.
+debug console for core1 can be found in [Pin Description](lab_board_resource) for specific board
 
 ## Running the Example
 ***

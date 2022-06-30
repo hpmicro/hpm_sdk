@@ -8,28 +8,55 @@
 #include "hpm_common.h"
 #include "hpm_spi_drv.h"
 
+#ifndef HPM_SPI_DRV_DEFAULT_RETRY_COUNT
+/* the waiting time of timeout status is related to retry count and CPU frequency */
+#define HPM_SPI_DRV_DEFAULT_RETRY_COUNT (5000U)
+#endif
+
 typedef enum {
     spi_data_length_8_bits = 7,
     spi_data_length_16_bits = 15,
     spi_data_length_31_bits = 30
 } spi_data_length_in_bits_t;
 
-static void spi_wait_for_idle_status(SPI_Type *ptr)
+static hpm_stat_t spi_wait_for_idle_status(SPI_Type *ptr)
 {
     uint32_t status;
+    uint32_t retry = 0;
 
     do {
         status = ptr->STATUS;
+        if (retry > HPM_SPI_DRV_DEFAULT_RETRY_COUNT) {
+            break;
+        }
+        retry++;
     } while(status & SPI_STATUS_SPIACTIVE_MASK);
+
+    if (retry > HPM_SPI_DRV_DEFAULT_RETRY_COUNT) {
+        return status_timeout;
+    }
+
+    return status_success;
 }
 
-static void spi_wait_for_busy_status(SPI_Type *ptr)
+static hpm_stat_t spi_wait_for_busy_status(SPI_Type *ptr)
 {
     uint32_t status;
+    uint32_t retry = 0;
 
     do {
         status = ptr->STATUS;
+        if (retry > HPM_SPI_DRV_DEFAULT_RETRY_COUNT) {
+            break;
+        }
+        retry++;
     } while(!(status & SPI_STATUS_SPIACTIVE_MASK));
+
+    if (retry > HPM_SPI_DRV_DEFAULT_RETRY_COUNT) {
+        return status_timeout;
+    }
+
+    return status_success;
 }
 
 static hpm_stat_t spi_write_command(SPI_Type *ptr, spi_mode_selection_t mode, spi_control_config_t *config, uint8_t *cmd)
@@ -74,6 +101,7 @@ static hpm_stat_t spi_write_data(SPI_Type *ptr, uint8_t datalen, uint8_t *buff, 
 {
     uint32_t status;
     uint32_t transferred = 0;
+    uint32_t retry = 0;
 
     /* check parameter validity */
     if (buff == NULL || size == 0) {
@@ -104,7 +132,18 @@ static hpm_stat_t spi_write_data(SPI_Type *ptr, uint8_t datalen, uint8_t *buff, 
             }
             /* transfer count increment */
             transferred++;
+            retry = 0;
+        } else {
+            if (retry > HPM_SPI_DRV_DEFAULT_RETRY_COUNT) {
+                break;
+            }
+            retry++;
         }
+    }
+
+    if (retry > HPM_SPI_DRV_DEFAULT_RETRY_COUNT) {
+        /* dummy state may triggers timeout if dummy count, retry count, spi rate and cpu frequency are inappropriate */
+        return status_timeout;
     }
 
     return status_success;
@@ -114,6 +153,7 @@ static hpm_stat_t spi_read_data(SPI_Type *ptr, uint8_t datalen, uint8_t *buff, u
 {
     uint32_t status;
     uint32_t transferred = 0;
+    uint32_t retry = 0;
 
     /* check parameter validity */
     if (buff == NULL || size == 0) {
@@ -144,7 +184,18 @@ static hpm_stat_t spi_read_data(SPI_Type *ptr, uint8_t datalen, uint8_t *buff, u
             }
             /* transfer count increment */
             transferred++;
+            retry = 0;
+        } else {
+            if (retry > HPM_SPI_DRV_DEFAULT_RETRY_COUNT) {
+                break;
+            }
+            retry++;
         }
+    }
+
+    if (retry > HPM_SPI_DRV_DEFAULT_RETRY_COUNT) {
+        /* dummy state may triggers timeout if dummy count, retry count, spi rate and cpu frequency are inappropriate */
+        return status_timeout;
     }
 
     return status_success;
@@ -155,6 +206,7 @@ static hpm_stat_t spi_write_read_data(SPI_Type *ptr, uint8_t datalen, uint8_t *w
     uint32_t status;
     uint32_t wtransferred = 0;
     uint32_t rtransferred = 0;
+    uint32_t retry = 0;
 
     /* check parameter validity */
     if (wbuff == NULL || wsize == 0 || rbuff == NULL || rsize == 0) {
@@ -186,6 +238,12 @@ static hpm_stat_t spi_write_read_data(SPI_Type *ptr, uint8_t datalen, uint8_t *w
                 }
                 /* transfer count increment */
                 wtransferred++;
+                retry = 0;
+            } else {
+                if (retry > HPM_SPI_DRV_DEFAULT_RETRY_COUNT) {
+                    break;
+                }
+                retry++;
             }
         }
 
@@ -211,8 +269,19 @@ static hpm_stat_t spi_write_read_data(SPI_Type *ptr, uint8_t datalen, uint8_t *w
                 }
                 /* transfer count increment */
                 rtransferred++;
+                retry = 0;
+            } else {
+                if (retry > HPM_SPI_DRV_DEFAULT_RETRY_COUNT) {
+                    break;
+                }
+                retry++;
             }
         }
+    }
+
+    if (retry > HPM_SPI_DRV_DEFAULT_RETRY_COUNT) {
+        /* dummy state may triggers timeout if dummy count, retry count, spi rate and cpu frequency are inappropriate */
+        return status_timeout;
     }
 
     return status_success;
@@ -220,14 +289,15 @@ static hpm_stat_t spi_write_read_data(SPI_Type *ptr, uint8_t datalen, uint8_t *w
 
 static hpm_stat_t spi_no_data(SPI_Type *ptr, spi_mode_selection_t mode, spi_control_config_t *config)
 {
+    hpm_stat_t stat;
     if (mode == spi_master_mode) {
         if (config->master_config.cmd_enable == false && config->master_config.addr_enable == false) {
             return status_invalid_argument;
         }
     }
     else {
-        spi_wait_for_busy_status(ptr);
-        spi_wait_for_idle_status(ptr);
+        HPM_CHECK_RET(spi_wait_for_busy_status(ptr));
+        HPM_CHECK_RET(spi_wait_for_idle_status(ptr));
     }
 
     return status_success;
@@ -392,7 +462,11 @@ hpm_stat_t spi_transfer(SPI_Type *ptr,
         spi_read_command(ptr, mode, cmd);
     }
 
-    spi_wait_for_idle_status(ptr);
+    if (stat != status_success) {
+        return stat;
+    }
+
+    stat = spi_wait_for_idle_status(ptr);
 
     return stat;
 }

@@ -3,7 +3,6 @@
 
 **bldc_foc**工程展示了直流无刷电机的有感转速控制、位置控制，
 以及无感转速控制。
-- 通过**freemaster**进行转速控制，模式切换，位置控制
 - 电机控制算法为**FOC**
 - 无感控制算法为**SMO**
 
@@ -13,10 +12,12 @@
 
 - 板子设置参考开发板文档[ PWM_PIN ](lab_board_motor_ctrl_pin)相关内容
 
-- 点击查看[DRV-LV50A-MP1907电机驱动板](lab_drv_lv50a_mp1907)章节并进行配置
+- 支持[HPM6750EVKMINI-TO_MOTOR电机扩展板](lab_board_hpm6750evkmini-to-motor-220530RevA)的开发板参考相关章节进行配置，支持列表如下：
+  - hpm6750evkmini
 
-- 设置**freemaster**请参考[freemaster 配置](lab_samples_freemaster_configure)章节
-	- **freemaster**工程文件地址`./bldc_foc_segger.pmpx`
+- 支持[DRV-LV50A-MP1907电机驱动板](lab_drv_lv50a_mp1907)的开发板参考相关章节进行配置，支持列表如下:
+  - hpm6750evk
+  - hpm6360evk
 
 - 完成上述过程后，给驱动板上电观察电流无异常后，给核心板上电，再次确认电流无异常后，就可以烧录程序，观察运行现象。
 
@@ -36,36 +37,62 @@
 ### 有感
 
 当工程正确运行后，电机以20r/s的速度运行。
-点击**freemaster**的GO图标，启动freemaster即可配置如下数据：
+通过串口控制台可配置如下参数：
 
-`fre_setspeed` float类型， 输入范围+40~-40，单位r/s
+`speed` float类型， 输入范围+40~-40，单位r/s
 
-`fre_setpos` int类型，范围不限，单位(-4000,+4000)对应(-360,+360)度
+`pos` int类型，范围不限，单位(-4000,+4000)对应(-360,+360)度
 
-`fre_user_mode` bool类型， 1- 速度模式   0-位置模式
+`mode` bool类型， 1- 速度模式   0-位置模式
 
 - 速度模式：
 
-	可以在规定的速度范围内输入速度参数，并通过**freemaster**观察速度变化
+	可以在规定的速度范围内配置速度
 
 - 位置模式：
 
 	可以设置电机轴的位置，此时电机轴会锁定在指定的位置
 
-也可以查看如下参数：
 
-	`fre_dispspeed` float类型，单位r/s
 
 ### 无感
 
 当工程正确运行后，电机以20r/s的速度运行。
-点击**freemaster**的GO图标，启动freemaster即可配置如下数据：
+通过串口控制台可配置如下数据：
 
-`fre_setspeed` float类型， 输入范围+40~+5，-5~-40单位r/s
+`speed` float类型， 输入范围+40~+5，-5~-40单位r/s
 
-也可以查看如下参数：
+串口输出如下：
 
-`fre_dispspeed` float类型，单位r/s
+```
+Mode selection:
+1. Location mode.
+2. Speed mode.
+Enter mode code:
+
+Location mode, motor run, The location is: 0.
+Input Location:
+ 10000
+
+Location mode, motor run, The location is: 10000.
+Input Location:
+
+```
+
+```
+Mode selection:
+0. Location mode.
+1. Speed mode.
+Enter mode code:
+1
+Speed mode, motor run, speed is: 20.000000.
+Input speed:
+10.5
+
+Speed mode, motor run, speed is: 10.500000.
+Input speed:
+
+```
 
 ```{warning}
 
@@ -73,7 +100,6 @@
 
 - 电机运行时，请时刻注意电流大小，如果发生异常，请随时准备切断电源。
 
-- 如果需要功能更多的可配置项，请使用我们提供的**gnu-gcc**工具链，并通过**freemaster**
-载入地址`./bldc_foc.pmpx`的文件
+- 输入速度和位置的数值时，需要输入换行符作为输入结束标志
 
 ```

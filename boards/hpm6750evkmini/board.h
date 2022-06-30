@@ -59,8 +59,8 @@
 #define BOARD_CONSOLE_BASE HPM_UART0
 #define BOARD_CONSOLE_CLK_NAME clock_uart0
 #else
-#define BOARD_CONSOLE_BASE HPM_UART6
-#define BOARD_CONSOLE_CLK_NAME clock_uart6
+#define BOARD_CONSOLE_BASE HPM_UART13
+#define BOARD_CONSOLE_CLK_NAME clock_uart13
 #endif
 #endif
 #define BOARD_CONSOLE_BAUDRATE (115200UL)
@@ -311,6 +311,82 @@
 #define BOARD_BEEP_PWM HPM_PWM3
 #define BOARD_BEEP_PWM_OUT 4
 #define BOARD_BEEP_PWM_CLOCK_NAME clock_mot3
+
+/*BLDC pwm*/
+
+/*PWM define*/
+#define BOARD_BLDCPWM                     HPM_PWM1
+#define BOARD_BLDC_UH_PWM_OUTPIN         (2U)
+#define BOARD_BLDC_UL_PWM_OUTPIN         (3U)
+#define BOARD_BLDC_VH_PWM_OUTPIN         (4U)
+#define BOARD_BLDC_VL_PWM_OUTPIN         (5U)
+#define BOARD_BLDC_WH_PWM_OUTPIN         (6U)
+#define BOARD_BLDC_WL_PWM_OUTPIN         (7U)
+#define BOARD_BLDCPWM_TRGM                HPM_TRGM1
+#define BOARD_BLDCAPP_PWM_IRQ             IRQn_PWM1
+#define BOARD_BLDCPWM_CMP_INDEX_0         (0U)
+#define BOARD_BLDCPWM_CMP_INDEX_1         (1U)
+#define BOARD_BLDCPWM_CMP_INDEX_2         (2U)
+#define BOARD_BLDCPWM_CMP_INDEX_3         (3U)
+#define BOARD_BLDCPWM_CMP_INDEX_4         (4U)
+#define BOARD_BLDCPWM_CMP_INDEX_5         (5U)
+
+/*HALL define*/
+
+#define BOARD_BLDC_HALL_BASE                 HPM_HALL2
+#define BOARD_BLDC_HALL_TRGM                 HPM_TRGM2
+#define BOARD_BLDC_HALL_IRQ                  IRQn_HALL2
+#define BOARD_BLDC_HALL_TRGM_HALL_U_SRC      HPM_TRGM2_INPUT_SRC_TRGM2_P9
+#define BOARD_BLDC_HALL_TRGM_HALL_V_SRC      HPM_TRGM2_INPUT_SRC_TRGM2_P10
+#define BOARD_BLDC_HALL_TRGM_HALL_W_SRC      HPM_TRGM2_INPUT_SRC_TRGM2_P11
+#define BOARD_BLDC_HALL_MOTOR_PHASE_COUNT_PER_REV        (1000U)
+
+
+
+/*QEI*/
+
+#define BOARD_BLDC_QEI_BASE              HPM_QEI2
+#define BOARD_BLDC_QEI_IRQ               IRQn_QEI2
+#define BOARD_BLDC_QEI_TRGM              HPM_TRGM2
+#define BOARD_BLDC_QEI_TRGM_QEI_A_SRC    HPM_TRGM2_INPUT_SRC_TRGM2_P6
+#define BOARD_BLDC_QEI_TRGM_QEI_B_SRC    HPM_TRGM2_INPUT_SRC_TRGM2_P7
+#define BOARD_BLDC_QEI_MOTOR_PHASE_COUNT_PER_REV     (16U)
+#define BOARD_BLDC_QEI_CLOCK_SOURCE      clock_mot2
+#define BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV       (4000U)
+
+/*Timer define*/
+
+#define BOARD_TMR_1MS                       HPM_GPTMR2
+#define BOARD_TMR_1MS_CH                        0
+#define BOARD_TMR_1MS_CMP                       0
+#define BOARD_TMR_1MS_IRQ                       IRQn_GPTMR2
+#define BOARD_TMR_1MS_RELOAD                    (100000U)
+
+#define BOARD_BLDC_TMR_1MS                       BOARD_TMR_1MS
+#define BOARD_BLDC_TMR_CH                        BOARD_TMR_1MS_CH
+#define BOARD_BLDC_TMR_CMP                       BOARD_TMR_1MS_CMP
+#define BOARD_BLDC_TMR_IRQ                       BOARD_TMR_1MS_IRQ
+#define BOARD_BLDC_TMR_RELOAD                    BOARD_TMR_1MS_RELOAD
+
+/*adc*/
+#define BOARD_BLDC_ADC_MODULE                  ADCX_MODULE_ADC12
+#define BOARD_BLDC_ADC_U_BASE                  HPM_ADC0
+#define BOARD_BLDC_ADC_V_BASE                  HPM_ADC1
+#define BOARD_BLDC_ADC_W_BASE                  HPM_ADC2
+#define BOARD_BLDC_ADC_TRIG_FLAG               adc12_event_trig_complete
+
+#define BOARD_BLDC_ADC_CH_U                    (1U)
+#define BOARD_BLDC_ADC_CH_V                    (2U)
+#define BOARD_BLDC_ADC_CH_W                    (3U)
+#define BOARD_BLDC_ADC_IRQn                    IRQn_ADC0
+#define BOARD_BLDC_ADC_SEQ_DMA_SIZE_IN_4BYTES  (40U)
+#define BOARD_BLDC_ADC_TRG                    ADC12_CONFIG_TRG1A
+#define BOARD_BLDC_ADC_PREEMPT_TRIG_LEN        (1U)
+#define BOARD_BLDC_PWM_TRIG_CMP_INDEX          (8U)
+#define BOARD_BLDC_TRIGMUX_IN_NUM              HPM_TRGM1_INPUT_SRC_PWM1_CH8REF
+#define BOARD_BLDC_TRG_NUM                     TRGM_TRGOCFG_ADCX_PTRGI0A
+#define BOARD_BLDC_ADC_IRQn                    IRQn_ADC0
+
 
 #define BOARD_CPU_FREQ (816000000UL)
 

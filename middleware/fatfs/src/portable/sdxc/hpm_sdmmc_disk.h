@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 - 2022 hpmicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -14,6 +14,8 @@
 
 extern sd_card_t g_sd;
 
+
+#define MAX_ALIGNED_BUF_SIZE (16384U)
 
 #ifdef __cplusplus
 extern "C" {

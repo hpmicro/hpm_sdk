@@ -89,7 +89,7 @@ uint8_t desc_fs_configuration[] =
     TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP, 100),
 
     /* Interface number, string index, protocol, report descriptor len, EP In & Out address, size & polling interval */
-    TUD_HID_INOUT_DESCRIPTOR(ITF_NUM_HID, 0, HID_PROTOCOL_NONE, sizeof(desc_hid_report), CFG_TUD_EPNUM_HID, 0x80 | CFG_TUD_EPNUM_HID, 64, 1)
+    TUD_HID_INOUT_DESCRIPTOR(ITF_NUM_HID, 0, HID_ITF_PROTOCOL_NONE, sizeof(desc_hid_report), CFG_TUD_EPNUM_HID, 0x80 | CFG_TUD_EPNUM_HID, 64, 1)
 };
 
 #if TUD_OPT_HIGH_SPEED
@@ -99,7 +99,7 @@ uint8_t desc_hs_configuration[] =
     TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP, 100),
 
     /* Interface number, string index, protocol, report descriptor len, EP In & Out address, size & polling interval */
-    TUD_HID_INOUT_DESCRIPTOR(ITF_NUM_HID, 0, HID_PROTOCOL_NONE, sizeof(desc_hid_report), CFG_TUD_EPNUM_HID, 0x80 | CFG_TUD_EPNUM_HID, 1024, 4)
+    TUD_HID_INOUT_DESCRIPTOR(ITF_NUM_HID, 0, HID_ITF_PROTOCOL_NONE, sizeof(desc_hid_report), CFG_TUD_EPNUM_HID, 0x80 | CFG_TUD_EPNUM_HID, 1024, 4)
 };
 #endif
 

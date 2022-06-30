@@ -11,7 +11,6 @@
    touch_panel/README_zh
    rtos/index_zh
    drivers/index_zh
-   freemaster/README_zh
    motor_ctrl/index_zh
    jpeg/index_zh
    tinycrypt/index_zh
@@ -24,5 +23,6 @@
    rgb_led/README_zh
    hpm_math/index_zh
    lwip/index_zh
+   memstress/index_zh
 
 :::

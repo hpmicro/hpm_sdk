@@ -75,14 +75,14 @@
 #if CFG_TUSB_DEBUG
   #include <stdio.h>
   #define _MESS_ERR(_err)   tu_printf("%s %d: failed, error = %s\r\n", __func__, __LINE__, tusb_strerr[_err])
-  #define _MESS_FAILED()    tu_printf("%s %d: assert failed\r\n", __func__, __LINE__)
+  #define _MESS_FAILED()    tu_printf("%s %d: ASSERT FAILED\r\n", __func__, __LINE__)
 #else
   #define _MESS_ERR(_err) do {} while (0)
   #define _MESS_FAILED() do {} while (0)
 #endif
 
-// Halt CPU (breakpoint) when hitting error, only apply for Cortex M3, M4, M7
-#if defined(__ARM_ARCH_7M__) || defined (__ARM_ARCH_7EM__)
+// Halt CPU (breakpoint) when hitting error, only apply for Cortex M3, M4, M7, M33
+#if defined(__ARM_ARCH_7M__) || defined (__ARM_ARCH_7EM__) || defined(__ARM_ARCH_8M_MAIN__)
   #define TU_BREAKPOINT() do                                                                                \
   {                                                                                                         \
     volatile uint32_t* ARM_CM_DHCSR =  ((volatile uint32_t*) 0xE000EDF0UL); /* Cortex M CoreDebug->DHCSR */ \
@@ -91,6 +91,7 @@
 
 #elif defined(__riscv)
   #define TU_BREAKPOINT() do { __asm("ebreak\n"); } while(0)
+
 #else
   #define TU_BREAKPOINT() do {} while (0)
 #endif
@@ -100,7 +101,6 @@
  *------------------------------------------------------------------*/
 
 // Helper to implement optional parameter for TU_VERIFY Macro family
-
 #define GET_1ST_ARG(arg1, ...)                    arg1
 #define GET_2ND_ARG(arg1, arg2, ...)              arg2
 #define GET_3RD_ARG(arg1, arg2, arg3, ...)        arg3

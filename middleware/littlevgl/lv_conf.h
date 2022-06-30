@@ -131,8 +131,8 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 /*Use NXP's VG-Lite GPU iMX RTxxx platforms*/
 #define LV_USE_GPU_NXP_VG_LITE   0
 
-/*1: Use PDMA for CPU off-load on HPM6000 platforms */
-#define LV_USE_GPU_HPM_PDMA     0
+/*1: Use PDMA for CPU off-load on HPM6700 platforms */
+#define LV_USE_GPU_HPM_PDMA     1
 /*-------------
  * Logging
  *-----------*/

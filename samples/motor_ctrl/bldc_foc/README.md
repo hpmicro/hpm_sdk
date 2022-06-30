@@ -3,7 +3,6 @@
 ## Overview
 
 The **bldc_foc** project contains the speed control, position control, and sensorless speed control of DC brushless motors.
-- **freemaster** for speed control, mode switching, position control
 - Use the **FOC** control algorithm
 - Sensorless control algorithm for **SMO**
 
@@ -13,10 +12,11 @@ The **bldc_foc** project contains the speed control, position control, and senso
 
 - Board settings refer to the development board documentation [ PWM_PIN ](lab_board_motor_ctrl_pin) related content
 
-- Click [DRV-LV50A-MP1907 Motor Driver Board](lab_drv_lv50a_mp1907) section and configure
-
-- **freemaster** settings refer to [freemaster configuration](lab_samples_freemaster_configure) section
-  - **freemaster** project file address `./bldc_foc_segger.pmpx`
+- Click [HPM6750EVKMINI-TO-MOTOR Extension Board ](lab_board_hpm6750evkmini-to-motor-220530RevA) section and configure, list of supported development boards:
+  - hpm6750evkmini
+- Click [DRV-LV50A-MP1907 Motor Driver Board ](lab_drv_lv50a_mp1907) section and configure, list of supported development boards:
+  - hpm6750evk
+  - hpm6360evk
 
 ## Code Options
 
@@ -34,37 +34,60 @@ This code does not support any compilation optimization, please turn off compila
 ### With sensor
 
 The motor runs at a speed of 20r/s.
-The following data can be configured by clicking on the GO icon of **freemaster**：
+The following data can be configured by serial console ：
 
-`fre_setspeed` float, range +40~-40, unit r/s
+`speed` float, range +40~-40, unit r/s
 
-`fre_setpos` int, (-4000, +4000) corresponds to (-360, +360) degrees
+`pos` int, (-4000, +4000) corresponds to (-360, +360) degrees
 
-`fre_user_mode` bool, 1- Speed mode 0- Position mode
-
-Check the following parameters
-
-`fre_dispspeed` float, unit r/s
+`mode` bool, 1- Speed mode 0- Position mode
 
 - Speed mode
 
-	Enter the correct speed parameters and then observe the speed change with **freemaster**.
+	Enter the correct speed parameters with serial console.
 
 - Position mode
 
 	Set the position of the motor's shaft, then the motor's shaft will be locked at the specified position
 
-
 ### Sensorless
 
 The motor runs at a speed of 20r/s.
-The following data can be configured by clicking on the GO icon of **freemaster**：
+The following data can be configured by serial console ：
 
-`fre_setspeed` float, range (-40, -5) and (5, +40), unit r/s
+`speed` float, range (-40, -5) and (5, +40), unit r/s
 
-Check the following parameters
+The serial console message is as follows:
 
-`fre_dispspeed` float, unit r/s
+```
+Mode selection:
+1. Location mode.
+2. Speed mode.
+Enter mode code:
+
+Location mode, motor run, The location is: 0.
+Input Location:
+ 10000
+
+Location mode, motor run, The location is: 10000.
+Input Location:
+
+```
+
+```
+Mode selection:
+0. Location mode.
+1. Speed mode.
+Enter mode code:
+1
+Speed mode, motor run, speed is: 20.000000.
+Input speed:
+10.5
+
+Speed mode, motor run, speed is: 10.500000.
+Input speed:
+
+```
 
 ```{warning}
 
@@ -72,6 +95,6 @@ Check the following parameters
 
 - Pay attention to the current size, when abnormalities occur, please cut off the power at any time
 
-- Use the **gnu-gcc** toolchain and load the `. /bldc_foc_segger.pmpx` file for more features
+- When entering values for speed and position, a line break is required as an end-of-entry flag
 
 ```

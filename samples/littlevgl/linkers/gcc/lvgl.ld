@@ -16,8 +16,8 @@ MEMORY
     CORE0_LM_SLV (wx) : ORIGIN = 0x1000000, LENGTH = 512K
     /* It's alias address of core1 ILM+DLM, but accessing via system bus */
     CORE1_LM_SLV (wx) : ORIGIN = 0x1180000, LENGTH = 512K
-    SDRAM (wx) : ORIGIN = 0x40000000, LENGTH = 24M
-    SDRAM_NONCACHEABLE (wx) : ORIGIN = 0x41800000, LENGTH = 8M
+    SDRAM (wx) : ORIGIN = 0x40800000, LENGTH = (_extram_size - 8M)
+    SDRAM_NONCACHEABLE (wx) : ORIGIN = 0x40000000, LENGTH = 8M
     AXI_SRAM (wx) : ORIGIN = 0x1080000, LENGTH = 1536K
 }
 

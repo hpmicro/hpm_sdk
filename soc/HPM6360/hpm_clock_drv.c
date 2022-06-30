@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 - 2022 hpmicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,9 +9,12 @@
 #include "hpm_soc.h"
 #include "hpm_common.h"
 #include "hpm_pllctlv2_drv.h"
+#include "hpm_csr_regs.h"
+#include "riscv/riscv_core.h"
 /***********************************************************************************************************************
  * Definitions
  **********************************************************************************************************************/
+#define FREQ_1MHz (1000000UL)
 
 /* Clock preset values */
 #define FREQ_PRESET1_OSC0_CLK0 (24000000UL)
@@ -89,6 +92,8 @@ static const clock_node_t s_i2s_clk_mux_node[] = {
 };
 
 static WDG_Type *const s_wdgs[] = { HPM_WDG0, HPM_WDG1};
+
+uint32_t hpm_core_clock;
 
 
 /***********************************************************************************************************************
@@ -196,10 +201,12 @@ static uint32_t get_frequency_for_i2s_or_adc(uint32_t clk_src_type, uint32_t ins
     if (clk_src_type == CLK_SRC_GROUP_ADC) {
         uint32_t adc_index = instance;
         if (adc_index < ADC_INSTANCE_NUM) {
+            is_mux_valid = true;
             uint32_t mux_in_reg = SYSCTL_ADCCLK_MUX_GET(HPM_SYSCTL->ADCCLK[adc_index]);
-            if (mux_in_reg < ARRAY_SIZE(s_adc_clk_mux_node)) {
-                node = s_adc_clk_mux_node[mux_in_reg];
-                is_mux_valid = true;
+            if (mux_in_reg == 1) {
+                node = s_adc_clk_mux_node[1];
+            } else {
+                node = s_adc_clk_mux_node[0] + adc_index;
             }
         }
     } else {
@@ -222,17 +229,15 @@ static uint32_t get_frequency_for_i2s_or_adc(uint32_t clk_src_type, uint32_t ins
 static uint32_t get_frequency_for_dac(uint32_t instance)
 {
     uint32_t clk_freq = 0UL;
-    bool is_mux_valid = false;
     clock_node_t node = clock_node_end;
     if (instance < DAC_INSTANCE_NUM) {
         uint32_t mux_in_reg = SYSCTL_DACCLK_MUX_GET(HPM_SYSCTL->DACCLK[instance]);
-        if (mux_in_reg < ARRAY_SIZE(s_dac_clk_mux_node)) {
-            node = s_dac_clk_mux_node[mux_in_reg];
-            is_mux_valid = true;
+        if (mux_in_reg == 1) {
+            node = s_dac_clk_mux_node[1];
+        } else {
+            node = s_dac_clk_mux_node[0] + instance;
         }
-    }
 
-    if (is_mux_valid) {
         if (node == clock_node_ahb) {
             clk_freq = get_frequency_for_ahb();
         } else {
@@ -343,7 +348,7 @@ hpm_stat_t clock_set_adc_source(clock_name_t clock_name, clk_src_t src)
         return status_clk_invalid;
     }
 
-    if ((src <= clk_adc_src_ahb0) || (src >= clk_adc_src_ana2)) {
+    if ((src != clk_adc_src_ahb) && (src != clk_adc_src_ana)) {
         return status_clk_src_invalid;
     }
 
@@ -363,7 +368,7 @@ hpm_stat_t clock_set_dac_source(clock_name_t clock_name, clk_src_t src)
         return status_clk_invalid;
     }
 
-    if ((src < clk_dac_src_ana3) || (src > clk_dac_src_ahb0)) {
+    if ((src != clk_dac_src_ana) || (src != clk_dac_src_ahb)) {
         return status_clk_src_invalid;
     }
 
@@ -383,7 +388,7 @@ hpm_stat_t clock_set_i2s_source(clock_name_t clock_name, clk_src_t src)
         return status_clk_invalid;
     }
 
-    if ((src <= clk_i2s_src_ahb0) || (src >= clk_i2s_src_aud2)) {
+    if ((src != clk_i2s_src_aud0) || (src != clk_i2s_src_aud1)) {
         return status_clk_src_invalid;
     }
 
@@ -404,7 +409,8 @@ hpm_stat_t clock_set_source_divider(clock_name_t clock_name, clk_src_t src, uint
         if ((div < 1U) || (div > 256U)) {
             status = status_clk_div_invalid;
         } else {
-            sysctl_config_clock(HPM_SYSCTL, (clock_node_t) node_or_instance, src, div);
+            clock_source_t source = GET_CLOCK_SOURCE_FROM_CLK_SRC(src);
+            sysctl_config_clock(HPM_SYSCTL, (clock_node_t) node_or_instance, source, div);
         }
         break;
     case CLK_SRC_GROUP_ADC:
@@ -514,4 +520,41 @@ void clock_disconnect_group_from_cpu(uint32_t group, uint32_t cpu)
     if (cpu < 2U) {
         HPM_SYSCTL->AFFILIATE[cpu].CLEAR = (1UL << group);
     }
+}
+
+
+static uint64_t get_core_mcycle(void)
+{
+    uint64_t result;
+    uint32_t resultl_first = read_csr(CSR_CYCLE);
+    uint32_t resulth = read_csr(CSR_CYCLEH);
+    uint32_t resultl_second = read_csr(CSR_CYCLE);
+    if (resultl_first < resultl_second) {
+        result = ((uint64_t)resulth << 32) | resultl_first; /* if MCYCLE didn't roll over, return the value directly */
+    } else {
+        resulth = read_csr(CSR_MCYCLEH);
+        result = ((uint64_t)resulth << 32) | resultl_second; /* if MCYCLE rolled over, need to get the MCYCLEH again */
+    }
+    return result;
+ }
+
+void clock_cpu_delay_us(uint32_t us)
+{
+    uint32_t ticks_per_us = (hpm_core_clock + FREQ_1MHz - 1U) / FREQ_1MHz;
+    uint64_t expected_ticks = get_core_mcycle() + ticks_per_us * us;
+    while (get_core_mcycle() < expected_ticks) {
+    }
+}
+
+void clock_cpu_delay_ms(uint32_t ms)
+{
+    uint32_t ticks_per_us = (hpm_core_clock + FREQ_1MHz - 1U) / FREQ_1MHz;
+    uint64_t expected_ticks = get_core_mcycle() + (uint64_t)ticks_per_us * 1000UL * ms;
+    while (get_core_mcycle() < expected_ticks) {
+    }
+}
+
+void clock_update_core_clock(void)
+{
+    hpm_core_clock = clock_get_frequency(clock_cpu0);
 }

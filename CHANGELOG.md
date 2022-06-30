@@ -1,5 +1,51 @@
 # Change Log
 
+## [0.12.0] - 2022-06-30:
+
+Tested with SES 6.32
+
+Main changes since 0.11.0
+
+### Changed:
+  - boards: hpm6360evk has been renamed to hpm6300evk
+  - boards: Use CSR_CYCLE in the clock_delay function
+  - soc: hpm_soc.h: include hpm_common.h
+  - driver: rename hpm_pmu_drv.c to hpm_pcfg_drv.h
+  - driver: spi: change to non-blocking interfaces
+  - driver: dma: update driver to adapt to different DMA instance constraints
+  - components: enet_phy: update dp83867 driver
+  - components: enet_phy: remove rtl8211 driver
+  - cmake: enable nano newlib by default
+  - cmake: move distclean to the beginning
+  - middleware: littlevgl enable PDMA by default
+  - middleware: tinyusb: upgrade to 0.13.0
+  - samples: tinyusb: device: cdc_msc: adjust buffer size
+  - samples: drivers: plic: use gpio toggle count as nested irq
+
+### Fixed:
+  - drivers: pwm: fix function name inconsistency bug
+  - drivers: enet: remove "board.h" in enet driver
+  - drivers: clock: Fix bugs in hpm6360 clock driver
+  - drivers: clock: returns wrong adc/dac clock in HPM6360
+  - drivers: dram: failed to configure 8bit mode.
+  - freertos: fix issue about running on core1
+  - boards: hpm6300evk pmp_entry set initial value
+  - middleware: littlevgl: fix pdma cache op issue
+  - middleware: littlevgl: fix doxygen markdown for pdma driver
+  - middleware: lvgl: ses: update ram linker.
+  - middleware: hpm_math: fix ffa cache size error
+  - samples: audio_codec: remove the wrong dependency
+  - samples: FATFS demo cannot support write/read if FATFS passes unaligned buffer address
+
+### Added:
+  - samples: add memstress and flash stress
+  - drivers: clock: add implement common delay function based on mcycle and mcycleh register
+  - boards: add hpm6300evk support
+  - boards: hpm6750evkmini: motor control support
+  - soc: add svd files
+  - middleware: lwip: iperf: enable iperf and add udp function
+  - samples: lwip: add lwip_iperf
+
 ## [0.11.0] - 2022-05-31:
 Main changes since 0.10.0-hpm6360-er
 

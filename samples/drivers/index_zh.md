@@ -37,5 +37,6 @@
    dram/README_zh
    ptpc/README_zh
    mbx/README_zh
+   l1c/README_zh
 
 :::

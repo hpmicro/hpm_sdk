@@ -193,9 +193,6 @@
 #define BOARD_APP_SPI_TX_DMA HPM_DMA_SRC_SPI2_TX
 #define BOARD_APP_SPI_TX_DMAMUX_CH DMAMUX_MUXCFG_HDMA_MUX1
 
-/* mtimer section */
-#define BOARD_MCHTMR_FREQ_IN_HZ (1000000UL)
-
 /* Flash section */
 #define BOARD_APP_XPI_NOR_XPI_BASE            (HPM_XPI0)
 #define BOARD_APP_XPI_NOR_CFG_OPT_HDR         (0xfcf90001U)
@@ -223,8 +220,8 @@
 #define BOARD_ENET_RGMII_RST_GPIO_INDEX GPIO_DO_GPIOF
 #define BOARD_ENET_RGMII_RST_GPIO_PIN   (0U)
 #define BOARD_ENET_RGMII                HPM_ENET0
-#define BOARD_ENET_RGMII_TX_DLY         (0U)
-#define BOARD_ENET_RGMII_RX_DLY         (21U)
+#define BOARD_ENET_RGMII_TX_DLY         (22U)
+#define BOARD_ENET_RGMII_RX_DLY         (19U)
 
 #define BOARD_ENET_RGMII_PTP_CLOCK      (clock_ptp0)
 
@@ -353,7 +350,6 @@
 #define BOARD_BLDC_TMR_CMP                       BOARD_TMR_1MS_CMP
 #define BOARD_BLDC_TMR_IRQ                       BOARD_TMR_1MS_IRQ
 #define BOARD_BLDC_TMR_RELOAD                    BOARD_TMR_1MS_RELOAD
-#define BOARD_BLDC_ADC_TRG                       ADC12_CONFIG_TRG2A
 
 /*adc*/
 #define BOARD_BLDC_ADC_MODULE                  ADCX_MODULE_ADC12

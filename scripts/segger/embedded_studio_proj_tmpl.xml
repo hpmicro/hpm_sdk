@@ -60,6 +60,9 @@
       {% if target["cplusplus"] -%}
       gcc_cplusplus_language_standard="c++11"
       libcxx="Yes"
+      {%- if target["enable_cpp_exceptions"] -%}
+      cpp_enable_exceptions="Yes"
+      {%- endif %}
       {%- endif %}
       {% if target["ses_link_input"] -%}
       linker_additional_files="{{ target["ses_link_input"] }}"

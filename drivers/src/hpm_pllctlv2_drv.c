@@ -56,8 +56,6 @@ void pllctlv2_set_postdiv(PLLCTLV2_Type *ptr, uint8_t pll, uint8_t div_index, ui
         ptr->PLL[pll].DIV[div_index] =
             (ptr->PLL[pll].DIV[div_index] & PLLCTLV2_DIV_DIV_MASK) | PLLCTLV2_DIV_DIV_SET(div_value) |
                 PLLCTLV2_DIV_ENABLE_MASK;
-        while (!IS_HPM_BITMASK_SET(ptr->PLL[pll].DIV[div_index], PLLCTLV2_DIV_RESPONSE_MASK)) {
-        }
     }
 }
 

@@ -1,4 +1,4 @@
-# Motor Control
+# I2S example
 
 ```{eval-rst}
 .. toctree::

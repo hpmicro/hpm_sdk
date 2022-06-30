@@ -33,11 +33,18 @@
 #define PREEMPTIVE_MODE "Non-Preemptive"
 #endif
 
+#define MAX_TOGGLE_IN_NESTED_IRQ 5
+
 void test_plicsw_interrupt(void);
+static volatile uint32_t toggled;
 
 void isr_gpio(void)
 {
-    printf("gpio interrupt start\n");
+    if (toggled < MAX_TOGGLE_IN_NESTED_IRQ) {
+        printf("gpio interrupt occurred in nested irq context\n");
+    }
+    printf("gpio interrupt start, toggled %d times\n", toggled + 1);
+    toggled++;
     gpio_clear_pin_interrupt_flag(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN);
 #ifdef BOARD_LED_GPIO_CTRL
     gpio_toggle_pin(BOARD_LED_GPIO_CTRL, BOARD_LED_GPIO_INDEX, BOARD_LED_GPIO_PIN);
@@ -73,9 +80,12 @@ void test_gpio_input_interrupt(void)
 void isr_ptpc(void)
 {
     printf("ptpc interrupt start\n");
-    board_delay_ms(50000); /* could press button here */
+    printf("+ now next %d gpio interrupts will occur in nested irq context\n", MAX_TOGGLE_IN_NESTED_IRQ);
+    while (toggled < MAX_TOGGLE_IN_NESTED_IRQ) {
+    }
     ptpc_clear_irq_status(HPM_PTPC, PTPC_EVENT_COMPARE0_MASK);
     printf("ptpc interrupt end\n");
+    printf("- now the following gpio interrupts will occur normal irq context\n");
 }
 #ifdef TEST_S_MODE
 SDK_DECLARE_EXT_ISR_S(IRQn_PTPC, isr_ptpc)
@@ -107,11 +117,6 @@ void test_interrupt_nesting(void)
 #else
     intc_m_enable_irq_with_priority(IRQn_PTPC, 2);
 #endif
-}
-
-void delay_ms(uint32_t ms)
-{
-    board_delay_ms(ms);
 }
 
 #ifdef TEST_S_MODE

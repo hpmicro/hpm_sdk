@@ -281,12 +281,10 @@ typedef enum {
     clock_node_adc0 = clock_node_adc_i2s_start,
     clock_node_adc1,
     clock_node_adc2,
-    clock_node_adc3,
 
     clock_node_i2s0,
     clock_node_i2s1,
-    clock_node_i2s2,
-    clock_node_i2s3,
+
     clock_node_end,
 
     clock_node_core_start = 0xfc,
@@ -314,13 +312,10 @@ typedef enum {
  * @brief ADC/I2S clock sources
  */
 typedef enum {
-    clock_source_adc_i2s_ahb_clk = 0,
-    clock_source_adc_ana0_clk = 1,
-    clock_source_i2s_aud0_clk = 1,
-    clock_source_adc_ana1_clk = 2,
-    clock_source_i2s_aud1_clk = 2,
-    clock_source_adc_ana2_clk = 3,
-    clock_source_i2s_aud2_clk = 3,
+    clock_source_adc_ana_clk = 0,
+    clock_source_adc_ahb_clk = 1,
+    clock_source_i2s_aud0_clk = 0,
+    clock_source_i2s_aud1_clk = 1,
     clock_source_adc_i2s_clk_end,
 } clock_source_adc_i2s_t;
 

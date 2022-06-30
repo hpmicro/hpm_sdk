@@ -115,7 +115,6 @@ int main(void)
     uint32_t addr = 0;
     uint8_t wbuff[10] = {0xb0, 0xb1, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6, 0xb7, 0xb8, 0xb9};
     uint8_t rbuff[10] = {0};
-    uint32_t framecnt = 0;
     spi_format_config_t format_config = {0};
     spi_control_config_t control_config = {0};
     hpm_stat_t stat;
@@ -146,26 +145,24 @@ int main(void)
     control_config.common_config.dummy_cnt = spi_dummy_count_1;
     spi_transfer_mode_print(&control_config);
 
-    while(1) {
-        printf("------------------------Frame %d------------------------\n", ++framecnt);
-        printf("SPI-Slave transfer waits.\n");
+    printf("SPI-Slave transfer waits.\n");
+
+    do {
         stat = spi_transfer(BOARD_APP_SPI_BASE,
-                            &control_config,
-                            &cmd, &addr,
-                            (uint8_t *)wbuff, ARRAY_SIZE(wbuff), (uint8_t *)rbuff, ARRAY_SIZE(rbuff));
+                        &control_config,
+                        &cmd, &addr,
+                        (uint8_t *)wbuff, ARRAY_SIZE(wbuff), (uint8_t *)rbuff, ARRAY_SIZE(rbuff));
+    } while (stat == status_timeout);
 
-        if (stat == status_success) {
-            spi_slave_frame_dump(BOARD_APP_SPI_DATA_LEN_IN_BITS,
-                                 &control_config,
-                                 &cmd,
-                                 (uint8_t *)wbuff, ARRAY_SIZE(wbuff), (uint8_t *)rbuff, ARRAY_SIZE(rbuff));
+    if (stat == status_success) {
+        spi_slave_frame_dump(BOARD_APP_SPI_DATA_LEN_IN_BITS,
+                                &control_config,
+                                &cmd,
+                                (uint8_t *)wbuff, ARRAY_SIZE(wbuff), (uint8_t *)rbuff, ARRAY_SIZE(rbuff));
 
-            printf("SPI-Slave transfer ends.\n");
-        }
-        else {
-            printf("SPI-Slave transfer error[%d]!\n", stat);
-            break;
-        }
+        printf("SPI-Slave transfer ends.\n");
+    } else {
+        printf("SPI-Slave transfer error[%d]!\n", stat);
     }
 
     while (1) {

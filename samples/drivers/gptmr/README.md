@@ -5,6 +5,7 @@ The GPTMR example shows compare and capture function.
 
 ## Board Setting
 
+Please refer to [Pin Description](lab_board_resource) for specific board.
 Connect external PWM signal to GPTMR capture pin, connect GPTMR compare output pin to oscilloscope.
 
 

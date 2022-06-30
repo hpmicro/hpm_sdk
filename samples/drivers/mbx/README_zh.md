@@ -1,10 +1,11 @@
+# MBX
 ## 概述
 ***
 该示例程序演示了MBX如何工作。Core 0会发送信息给Core 1，Core 1收到之后并将之返回。
 
 ## Board Setting
 ***
-使用USB转串口模块，连接评估板上Core 1调试串口终端
+使用USB转串口模块，连接评估板上Core 1调试串口终端(请确认具体开发板 {ref}`引脚描述 <lab_board_resource>` 部分描述)
 
 ## Running the Example
 ***

@@ -20,8 +20,10 @@
  * See http://www.freertos.org/a00110.html.
  */
 
-#define configMTIME_BASE_ADDRESS                (0xE6000000UL)
-#define configMTIMECMP_BASE_ADDRESS             (0xE6000008UL)
+#include "board.h"
+
+#define configMTIME_BASE_ADDRESS                (HPM_MCHTMR_BASE)
+#define configMTIMECMP_BASE_ADDRESS             (HPM_MCHTMR_BASE + 8UL)
 
 #define configUSE_PREEMPTION                    1
 #define configCPU_CLOCK_HZ                      ((uint32_t) 24000000)

@@ -139,6 +139,8 @@
 #define IRQn_DEBUG_0       126                 /* DEBUG[0] IRQ */
 #define IRQn_DEBUG_1       127                 /* DEBUG[1] IRQ */
 
+#include "hpm_common.h"
+
 #include "hpm_gpio_regs.h"
 /* Address of GPIO instances */
 /* FGPIO base address */

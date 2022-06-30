@@ -53,6 +53,13 @@ include(${HPM_SDK_BASE}/cmake/python.cmake)
 include(${HPM_SDK_BASE}/cmake/ccache.cmake)
 include(${HPM_SDK_BASE}/cmake/ide/segger.cmake)
 
+# distclean target
+add_custom_target(
+    distclean
+    COMMAND ${CMAKE_COMMAND} -DBIN_DIR=${APP_BIN_DIR}
+    -DSRC_DIR=${APP_SRC_DIR} -P ${HPM_SDK_BASE}/cmake/cleanup.cmake
+)
+
 if(APP_YAML_PATH)
     check_board_capability(${BOARD} "${APP_YAML_PATH}/app.yaml" result)
     if(${result} STREQUAL "1")
@@ -107,9 +114,3 @@ if(${APP_SRC_DIR} STREQUAL ${APP_BIN_DIR})
     please specify a build directory, e.g. cmake -Bbuild -H.")
 endif()
 
-# distclean target
-add_custom_target(
-    distclean
-    COMMAND ${CMAKE_COMMAND} -DBIN_DIR=${APP_BIN_DIR}
-    -DSRC_DIR=${APP_SRC_DIR} -P ${HPM_SDK_BASE}/cmake/cleanup.cmake
-    )

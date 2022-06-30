@@ -9,9 +9,12 @@
 #include "hpm_clock_drv.h"
 #include "hpm_sysctl_drv.h"
 #include "hpm_pllctl_drv.h"
+#include "hpm_csr_regs.h"
+#include "riscv/riscv_core.h"
 /***********************************************************************************************************************
  * Definitions
  **********************************************************************************************************************/
+#define FREQ_1MHz (1000000UL)
 
 /* Clock preset values */
 #define FREQ_PRESET1_OSC0_CLK0 (24000000UL)
@@ -61,6 +64,8 @@ static uint32_t get_frequency_for_wdg(uint32_t instance);
  */
 static void switch_ip_clock(clock_name_t clock_name, bool on);
 
+static uint64_t get_core_mcycle(void);
+
 /***********************************************************************************************************************
  * Variables
  **********************************************************************************************************************/
@@ -79,6 +84,7 @@ static const clock_node_t s_i2s_clk_mux_node[] = {
 
 static WDG_Type *const s_wdgs[] = { HPM_WDG0, HPM_WDG1, HPM_WDG2, HPM_WDG3 };
 
+uint32_t hpm_core_clock;
 
 /***********************************************************************************************************************
  * Codes
@@ -359,7 +365,8 @@ hpm_stat_t clock_set_source_divider(clock_name_t clock_name, clk_src_t src, uint
         if ((div < 1U) || (div > 256U)) {
             status = status_clk_div_invalid;
         } else {
-            sysctl_config_clock(HPM_SYSCTL, (clock_node_t) node_or_instance, src, div);
+            clock_source_t clk_src = GET_CLOCK_SOURCE_FROM_CLK_SRC(src);
+            sysctl_config_clock(HPM_SYSCTL, (clock_node_t) node_or_instance, clk_src, div);
         }
         break;
     case CLK_SRC_GROUP_ADC:
@@ -463,4 +470,43 @@ void clock_disconnect_group_from_cpu(uint32_t group, uint32_t cpu)
     if (cpu < 2U) {
         HPM_SYSCTL->AFFILIATE[cpu].CLEAR = (1UL << group);
     }
+}
+
+
+static uint64_t get_core_mcycle(void)
+{
+    uint64_t result;
+    uint32_t resultl_first = read_csr(CSR_CYCLE);
+    uint32_t resulth = read_csr(CSR_CYCLEH);
+    uint32_t resultl_second = read_csr(CSR_CYCLE);
+    if (resultl_first < resultl_second) {
+        result = ((uint64_t)resulth << 32) | resultl_first; /* if MCYCLE didn't roll over, return the value directly */
+    } else {
+        resulth = read_csr(CSR_CYCLEH);
+        result = ((uint64_t)resulth << 32) | resultl_second; /* if MCYCLE rolled over, need to get the MCYCLEH again */
+    }
+    return result;
+ }
+
+void clock_cpu_delay_us(uint32_t us)
+{
+    uint32_t ticks_per_us = (hpm_core_clock + FREQ_1MHz - 1U) / FREQ_1MHz;
+    uint64_t expected_ticks = get_core_mcycle() + ticks_per_us * us;
+    while (get_core_mcycle() < expected_ticks) {
+    }
+}
+
+void clock_cpu_delay_ms(uint32_t ms)
+{
+    uint32_t ticks_per_us = (hpm_core_clock + FREQ_1MHz - 1U) / FREQ_1MHz;
+    uint64_t expected_ticks = get_core_mcycle() + (uint64_t)ticks_per_us * 1000UL * ms;
+    while (get_core_mcycle() < expected_ticks) {
+    }
+}
+
+void clock_update_core_clock(void)
+{
+    uint32_t hart_id = read_csr(CSR_MHARTID);
+    clock_name_t cpu_clk_name = (hart_id == 1U) ? clock_cpu1 : clock_cpu0;
+    hpm_core_clock = clock_get_frequency(cpu_clk_name);
 }

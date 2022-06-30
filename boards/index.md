@@ -9,23 +9,23 @@ This chapter describes the board-related configuration
 
    hpm6750evk/README
    hpm6750evkmini/README
+   hpm6300evk/README
    ../doc/boards/README
 
 :::
 
 **Board level vocabulary cross-reference table**
 
-:::{tab} hpm6750evk
-Click [here](lab_hpm6750_evk_board) to view the hpm6750evk development board
+(lab_board_resource)=
+
+:::{tab} HPM6750EVK
+Click [here](lab_hpm6750_evk_board) to view the HPM6750EVK development board
 :::
-:::{tab} hpm6750evkmini
-Click [here](lab_hpm6750_evkmini_board) to view the hpm6750evkmini development board
+:::{tab} HPM6750EVKMINI
+Click [here](lab_hpm6750_evkmini_board) to view the HPM6750EVKMINI development board
 :::
-:::{tab} hpm6750-validation
--
-:::
-:::{tab} hpm6360evk
-Click [here](lab_hpm6360_evk_board) to view the hpm6360evk development board
+:::{tab} HPM6300EVK
+Click [here](lab_hpm6300_evk_board) to view the HPM6300EVK development board
 :::
 
 (lab_board_lcd_pin)=
@@ -37,3 +37,5 @@ Click [here](lab_hpm6360_evk_board) to view the hpm6360evk development board
 (lab_board_drv_pwm_pin)=
 (lab_board_motor_ctrl_pin)=
 (lab_board_overiew)=
+(lab_board_app_acmp_pin)=
+(lab_board_app_gptmr_pin)=

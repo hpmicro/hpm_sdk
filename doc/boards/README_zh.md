@@ -25,6 +25,15 @@
 
 		![image-1](../images/boards/extension/drv_lv50a_mp1907__oee.jpg "image-1")
 
+## **HPM6750EVKMINI-TO-Motor**电机扩展板
+
+(lab_board_hpm6750evkmini-to-motor-220530RevA)=
+
+  - 需要配合[DRV-LV50A-MP1907电机驱动板](lab_drv_lv50a_mp1907)使用
+  - j2和j3插件相连
+  - **HPM6750EVKMINI-TO-Motor**电机扩展板、**HPM6750EVKMINI**核心板和**DRV-LV50A-MP1907**电机驱动板连接如下图所示：
+
+ ![image-2](../images/boards/extension/hpm6750evkmini_to_motor_220530RevA.jpg "image-2")
 ## **LCD-800480W070TC** 显示屏
 
   (lab_lcd_800480w070tc)=

@@ -55,6 +55,9 @@ enum {
 #define MAKE_CLK_SRC(src_grp, index) (((uint8_t)(src_grp) << 4) | (index))
 #define GET_CLK_SRC_GROUP(src) (((uint8_t)(src) >> 4) & 0x0FU)
 #define GET_CLK_SRC_INDEX(src) ((uint8_t)(src)&0x0FU)
+
+#define GET_CLOCK_SOURCE_FROM_CLK_SRC(clk_src) (clock_source_t)((uint32_t)(clk_src) & 0xFU)
+
 /**
  * @brief Clock source definitions
  */
@@ -320,6 +323,31 @@ extern "C"
      * @param[in] cpu CPU index, valid value is 0/1
      */
     void clock_disconnect_group_from_cpu(uint32_t group, uint32_t cpu);
+
+
+    /**
+     * @brief Delay specified microseconds
+     *
+     * @param [in] us expected delay interval in microseconds
+     */
+    void clock_cpu_delay_us(uint32_t us);
+
+    /**
+     * @brief Delay specified milliseconds
+     *
+     * @param [in] ms expected delay interval in milliseconds
+     */
+    void clock_cpu_delay_ms(uint32_t ms);
+
+    /**
+     * @brief Update the Core clock frequency
+     */
+    void clock_update_core_clock(void);
+
+    /**
+     * @brief HPM Core clock variable
+     */
+    extern uint32_t hpm_core_clock;
 
 #ifdef __cplusplus
 }

@@ -109,23 +109,12 @@ void spi_master_frame_dump(uint32_t datalen,
     }
 }
 
-void spi_master_waits(void)
-{
-    uint8_t i;
-
-    for (i = 0; i < 5; i++)
-    {
-        printf("SPI-Master waits.\n");
-    }
-}
-
 int main(void)
 {
     uint8_t cmd = 0x1a;
     uint32_t addr = 0x10;
     uint8_t wbuff[10] = {0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9};
     uint8_t rbuff[10] = {0};
-    uint32_t framecnt = 0;
     spi_timing_config_t timing_config = {0};
     spi_format_config_t format_config = {0};
     spi_control_config_t control_config = {0};
@@ -169,32 +158,25 @@ int main(void)
     control_config.common_config.dummy_cnt = spi_dummy_count_1;
     spi_transfer_mode_print(&control_config);
 
-    while(framecnt < 3) {
-        printf("------------------------Frame %d------------------------\n", ++framecnt);
-    	printf("SPI-Master transfer starts.\n");
-        stat = spi_transfer(BOARD_APP_SPI_BASE,
-                    &control_config,
-                    &cmd, &addr,
-                    (uint8_t *)wbuff, ARRAY_SIZE(wbuff), (uint8_t *)rbuff, ARRAY_SIZE(rbuff));
 
-        if (stat == status_success) {
-            spi_master_frame_dump(BOARD_APP_SPI_DATA_LEN_IN_BITS,
-                                  &control_config,
-                                  &cmd, &addr,
-                                  (uint8_t *)wbuff, ARRAY_SIZE(wbuff),(uint8_t *)rbuff, ARRAY_SIZE(rbuff));
+    printf("SPI-Master transfer starts.\n");
+    stat = spi_transfer(BOARD_APP_SPI_BASE,
+                &control_config,
+                &cmd, &addr,
+                (uint8_t *)wbuff, ARRAY_SIZE(wbuff), (uint8_t *)rbuff, ARRAY_SIZE(rbuff));
 
-            printf("SPI-Master transfer ends.\n");
-        }
-        else {
-            printf("SPI-Master transfer error[%d]!\n", stat);
-            break;
-        }
+    if (stat == status_success) {
+        spi_master_frame_dump(BOARD_APP_SPI_DATA_LEN_IN_BITS,
+                                &control_config,
+                                &cmd, &addr,
+                                (uint8_t *)wbuff, ARRAY_SIZE(wbuff), (uint8_t *)rbuff, ARRAY_SIZE(rbuff));
 
-        spi_master_waits();
+        printf("SPI-Master transfer ends.\n");
+    } else {
+        printf("SPI-Master transfer error[%d]!\n", stat);
     }
 
     while(1) {
-
     }
 
     return 0;

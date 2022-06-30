@@ -11,9 +11,12 @@
 - 本例程电机使用的是雷赛智能的 **BLM57050-1000** 无刷电机，电机具体参数请参考雷赛智能官网。
 - 连接显示屏到相应接口，显示屏型号[LCD-800480W070TC](lab_lcd_800480w070tc)
 - 板子设置参考开发板文档[ PWM_PIN ](lab_board_motor_ctrl_pin)相关内容
-- 点击查看{ref}`DRV-LV50A-MP1907电机驱动板<lab_drv_lv50a_mp1907>`章节并进行配置
-- 设置**freemaster**请参考[freemaster 配置](lab_samples_freemaster_configure)章节
-	- **freemaster**工程文件地址`./bldc_foc_segger.pmpx`
+- 支持[HPM6750EVKMINI-TO_MOTOR电机扩展板](lab_board_hpm6750evkmini-to-motor-220530RevA)的开发板参考相关章节进行配置，支持列表如下：
+  - hpm6750evkmini
+
+- 支持[DRV-LV50A-MP1907电机驱动板](lab_drv_lv50a_mp1907)的开发板参考相关章节进行配置，支持列表如下:
+  - hpm6750evk
+  - hpm6360evk
 
 - 完成上述过程后，给驱动板上电观察电流无异常后，给核心板上电，再次确认电流无异常后，就可以烧录程序，观察运行现象。
 

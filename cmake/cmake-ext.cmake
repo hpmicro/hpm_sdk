@@ -325,7 +325,9 @@ function(import_soc_modules soc_module_list)
     endif()
 
     set("${MODULE_NAME}" "${CONFIG_VALUE}" PARENT_SCOPE)
-    sdk_compile_definitions("-D${MODULE_NAME}=${CONFIG_VALUE}")
+    if(("${CONFIG_VALUE}" STREQUAL "y") OR ("${CONFIG_VALUE}" STREQUAL "Y") OR ("${CONFIG_VALUE}" STREQUAL "1"))
+        sdk_compile_definitions("-D${MODULE_NAME}=${CONFIG_VALUE}")
+    endif()
   endforeach()
 endfunction()
 

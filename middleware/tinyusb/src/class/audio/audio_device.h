@@ -28,10 +28,6 @@
 #ifndef _TUSB_AUDIO_DEVICE_H_
 #define _TUSB_AUDIO_DEVICE_H_
 
-#include "assert.h"
-#include "common/tusb_common.h"
-#include "device/usbd.h"
-
 #include "audio.h"
 
 //--------------------------------------------------------------------+
@@ -188,6 +184,11 @@
 // Enable/disable feedback EP (required for asynchronous RX applications)
 #ifndef CFG_TUD_AUDIO_ENABLE_FEEDBACK_EP
 #define CFG_TUD_AUDIO_ENABLE_FEEDBACK_EP                    0                             // Feedback - 0 or 1
+#endif
+
+// Enable/disable conversion from 16.16 to 10.14 format on full-speed devices. See tud_audio_n_fb_set().
+#ifndef CFG_TUD_AUDIO_ENABLE_FEEDBACK_FORMAT_CORRECTION
+#define CFG_TUD_AUDIO_ENABLE_FEEDBACK_FORMAT_CORRECTION     0                             // 0 or 1
 #endif
 
 // Audio interrupt control EP size - disabled if 0
@@ -364,23 +365,27 @@ bool     tud_audio_n_mounted    (uint8_t func_id);
 uint16_t tud_audio_n_available                    (uint8_t func_id);
 uint16_t tud_audio_n_read                         (uint8_t func_id, void* buffer, uint16_t bufsize);
 bool     tud_audio_n_clear_ep_out_ff              (uint8_t func_id);                          // Delete all content in the EP OUT FIFO
+tu_fifo_t*   tud_audio_n_get_ep_out_ff            (uint8_t func_id);
 #endif
 
 #if CFG_TUD_AUDIO_ENABLE_EP_OUT && CFG_TUD_AUDIO_ENABLE_DECODING
 bool     tud_audio_n_clear_rx_support_ff          (uint8_t func_id, uint8_t ff_idx);       // Delete all content in the support RX FIFOs
 uint16_t tud_audio_n_available_support_ff         (uint8_t func_id, uint8_t ff_idx);
 uint16_t tud_audio_n_read_support_ff              (uint8_t func_id, uint8_t ff_idx, void* buffer, uint16_t bufsize);
+tu_fifo_t* tud_audio_n_get_rx_support_ff          (uint8_t func_id, uint8_t ff_idx);
 #endif
 
 #if CFG_TUD_AUDIO_ENABLE_EP_IN && !CFG_TUD_AUDIO_ENABLE_ENCODING
 uint16_t tud_audio_n_write                        (uint8_t func_id, const void * data, uint16_t len);
 bool     tud_audio_n_clear_ep_in_ff               (uint8_t func_id);                          // Delete all content in the EP IN FIFO
+tu_fifo_t*   tud_audio_n_get_ep_in_ff             (uint8_t func_id);
 #endif
 
 #if CFG_TUD_AUDIO_ENABLE_EP_IN && CFG_TUD_AUDIO_ENABLE_ENCODING
 uint16_t tud_audio_n_flush_tx_support_ff          (uint8_t func_id);      // Force all content in the support TX FIFOs to be written into EP SW FIFO
 bool     tud_audio_n_clear_tx_support_ff          (uint8_t func_id, uint8_t ff_idx);
 uint16_t tud_audio_n_write_support_ff             (uint8_t func_id, uint8_t ff_idx, const void * data, uint16_t len);
+tu_fifo_t* tud_audio_n_get_tx_support_ff          (uint8_t func_id, uint8_t ff_idx);
 #endif
 
 #if CFG_TUD_AUDIO_INT_CTR_EPSIZE_IN
@@ -399,12 +404,14 @@ static inline bool         tud_audio_mounted                (void);
 static inline uint16_t     tud_audio_available              (void);
 static inline bool         tud_audio_clear_ep_out_ff        (void);                       // Delete all content in the EP OUT FIFO
 static inline uint16_t     tud_audio_read                   (void* buffer, uint16_t bufsize);
+static inline tu_fifo_t*   tud_audio_get_ep_out_ff          (void);
 #endif
 
 #if CFG_TUD_AUDIO_ENABLE_EP_OUT && CFG_TUD_AUDIO_ENABLE_DECODING
 static inline bool     tud_audio_clear_rx_support_ff        (uint8_t ff_idx);
 static inline uint16_t tud_audio_available_support_ff       (uint8_t ff_idx);
 static inline uint16_t tud_audio_read_support_ff            (uint8_t ff_idx, void* buffer, uint16_t bufsize);
+static inline tu_fifo_t* tud_audio_get_rx_support_ff        (uint8_t ff_idx);
 #endif
 
 // TX API
@@ -412,12 +419,14 @@ static inline uint16_t tud_audio_read_support_ff            (uint8_t ff_idx, voi
 #if CFG_TUD_AUDIO_ENABLE_EP_IN && !CFG_TUD_AUDIO_ENABLE_ENCODING
 static inline uint16_t tud_audio_write                      (const void * data, uint16_t len);
 static inline bool 	   tud_audio_clear_ep_in_ff             (void);
+static inline tu_fifo_t* tud_audio_get_ep_in_ff             (void);
 #endif
 
 #if CFG_TUD_AUDIO_ENABLE_EP_IN && CFG_TUD_AUDIO_ENABLE_ENCODING
 static inline uint16_t tud_audio_flush_tx_support_ff        (void);
 static inline uint16_t tud_audio_clear_tx_support_ff        (uint8_t ff_idx);
 static inline uint16_t tud_audio_write_support_ff           (uint8_t ff_idx, const void * data, uint16_t len);
+static inline tu_fifo_t* tud_audio_get_tx_support_ff        (uint8_t ff_idx);
 #endif
 
 // INT CTR API
@@ -450,10 +459,15 @@ TU_ATTR_WEAK bool tud_audio_rx_done_post_read_cb(uint8_t rhport, uint16_t n_byte
 
 #if CFG_TUD_AUDIO_ENABLE_EP_OUT && CFG_TUD_AUDIO_ENABLE_FEEDBACK_EP
 TU_ATTR_WEAK bool tud_audio_fb_done_cb(uint8_t rhport);
-// User code should call this function with feedback value in 16.16 format for FS and HS.
-// Value will be corrected for FS to 10.14 format automatically.
-// (see Universal Serial Bus Specification Revision 2.0 5.12.4.2).
-// Feedback value will be sent at FB endpoint interval till it's changed.
+
+// This function is used to provide data rate feedback from an asynchronous sink. Feedback value will be sent at FB endpoint interval till it's changed.
+//
+// The feedback format is specified to be 16.16 for HS and 10.14 for FS devices (see Universal Serial Bus Specification Revision 2.0 5.12.4.2). By default,
+// the choice of format is left to the caller and feedback argument is sent as-is. If CFG_TUD_AUDIO_ENABLE_FEEDBACK_FORMAT_CORRECTION is set, then tinyusb
+// expects 16.16 format and handles the conversion to 10.14 on FS.
+//
+// Note that due to a bug in its USB Audio 2.0 driver, Windows currently requires 16.16 format for _all_ USB 2.0 devices. On Linux and macOS it seems the 
+// driver can work with either format. So a good compromise is to keep format correction disabled and stick to 16.16 format.
 bool tud_audio_n_fb_set(uint8_t func_id, uint32_t feedback);
 static inline bool tud_audio_fb_set(uint32_t feedback);
 #endif
@@ -514,6 +528,11 @@ static inline bool tud_audio_clear_ep_out_ff(void)
   return tud_audio_n_clear_ep_out_ff(0);
 }
 
+static inline tu_fifo_t* tud_audio_get_ep_out_ff(void)
+{
+  return tud_audio_n_get_ep_out_ff(0);
+}
+
 #endif
 
 #if CFG_TUD_AUDIO_ENABLE_EP_OUT && CFG_TUD_AUDIO_ENABLE_DECODING
@@ -533,6 +552,11 @@ static inline uint16_t tud_audio_read_support_ff(uint8_t ff_idx, void* buffer, u
   return tud_audio_n_read_support_ff(0, ff_idx, buffer, bufsize);
 }
 
+static inline tu_fifo_t* tud_audio_get_rx_support_ff(uint8_t ff_idx)
+{
+  return tud_audio_n_get_rx_support_ff(0, ff_idx);
+}
+
 #endif
 
 // TX API
@@ -547,6 +571,11 @@ static inline uint16_t tud_audio_write(const void * data, uint16_t len)
 static inline bool tud_audio_clear_ep_in_ff(void)
 {
   return tud_audio_n_clear_ep_in_ff(0);
+}
+
+static inline tu_fifo_t* tud_audio_get_ep_in_ff(void)
+{
+  return tud_audio_n_get_ep_in_ff(0);
 }
 
 #endif
@@ -566,6 +595,11 @@ static inline uint16_t tud_audio_clear_tx_support_ff(uint8_t ff_idx)
 static inline uint16_t tud_audio_write_support_ff(uint8_t ff_idx, const void * data, uint16_t len)
 {
   return tud_audio_n_write_support_ff(0, ff_idx, data, len);
+}
+
+static inline tu_fifo_t* tud_audio_get_tx_support_ff(uint8_t ff_idx)
+{
+  return tud_audio_n_get_tx_support_ff(0, ff_idx);
 }
 
 #endif

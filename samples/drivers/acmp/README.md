@@ -6,6 +6,7 @@ In this example, ACMP's MIN signal connets analog input pin, PIN signal connects
 
 ## Board Setting
 
+Please refer to [Pin Description](lab_board_resource) for specific board
 1. Connect analog input signal to ACMP MIN pin
 2. Connect ACMP output pin to oscilloscope or multimeter
 

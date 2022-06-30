@@ -64,18 +64,14 @@ typedef enum _clock_sources {
     clk_src_pll2_clk1 = MAKE_CLK_SRC(CLK_SRC_GROUP_COMMON, 7),
     clk_src_osc32k = MAKE_CLK_SRC(CLK_SRC_GROUP_COMMON, 8),
 
-    clk_adc_src_ahb0 = MAKE_CLK_SRC(CLK_SRC_GROUP_ADC, 0),
-    clk_adc_src_ana0 = MAKE_CLK_SRC(CLK_SRC_GROUP_ADC, 1),
-    clk_adc_src_ana1 = MAKE_CLK_SRC(CLK_SRC_GROUP_ADC, 2),
-    clk_adc_src_ana2 = MAKE_CLK_SRC(CLK_SRC_GROUP_ADC, 3),
+    clk_adc_src_ana = MAKE_CLK_SRC(CLK_SRC_GROUP_ADC, 0),
+    clk_adc_src_ahb = MAKE_CLK_SRC(CLK_SRC_GROUP_ADC, 1),
 
-    clk_dac_src_ana3 = MAKE_CLK_SRC(CLK_SRC_GROUP_DAC, 0),
-    clk_dac_src_ahb0 = MAKE_CLK_SRC(CLK_SRC_GROUP_DAC, 1),
+    clk_dac_src_ana = MAKE_CLK_SRC(CLK_SRC_GROUP_DAC, 0),
+    clk_dac_src_ahb = MAKE_CLK_SRC(CLK_SRC_GROUP_DAC, 1),
 
-    clk_i2s_src_ahb0 = MAKE_CLK_SRC(CLK_SRC_GROUP_I2S, 0),
-    clk_i2s_src_aud0 = MAKE_CLK_SRC(CLK_SRC_GROUP_I2S, 1),
-    clk_i2s_src_aud1 = MAKE_CLK_SRC(CLK_SRC_GROUP_I2S, 2),
-    clk_i2s_src_aud2 = MAKE_CLK_SRC(CLK_SRC_GROUP_I2S, 3),
+    clk_i2s_src_aud0 = MAKE_CLK_SRC(CLK_SRC_GROUP_I2S, 0),
+    clk_i2s_src_aud1 = MAKE_CLK_SRC(CLK_SRC_GROUP_I2S, 1),
 
     clk_wdg_src_ahb0 = MAKE_CLK_SRC(CLK_SRC_GROUP_WDG, 0),
     clk_wdg_src_osc32k = MAKE_CLK_SRC(CLK_SRC_GROUP_WDG, 1),
@@ -87,6 +83,8 @@ typedef enum _clock_sources {
 #define RESOURCE_INVALID (0xFFFFU)
 #define RESOURCE_SHARED_PTPC (0xFFFEU)
 #define RESOURCE_SHARED_CPU0 (0xFFFDU)
+
+#define GET_CLOCK_SOURCE_FROM_CLK_SRC(clk_src) (clock_source_t)((uint32_t)(clk_src) & 0xFU)
 
 /* Clock NAME related Macros */
 #define MAKE_CLOCK_NAME(resource, src_type, node) (((uint32_t)(resource) << 16) | ((uint32_t)(src_type) << 8) | ((uint32_t)node))
@@ -310,6 +308,30 @@ void clock_connect_group_to_cpu(uint32_t group, uint32_t cpu);
  * @param[in] cpu CPU index, valid value is 0/1
  */
 void clock_disconnect_group_from_cpu(uint32_t group, uint32_t cpu);
+
+/**
+ * @brief Delay specified microseconds
+ *
+ * @param [in] us expected delay interval in microseconds
+ */
+void clock_cpu_delay_us(uint32_t us);
+
+/**
+ * @brief Delay specified milliseconds
+ *
+ * @param [in] ms expected delay interval in milliseconds
+ */
+void clock_cpu_delay_ms(uint32_t ms);
+
+/**
+ * @brief Update the Core clock frequency
+ */
+void clock_update_core_clock(void);
+
+/**
+ * @brief HPM Core clock variable
+ */
+extern uint32_t hpm_core_clock;
 
 #ifdef __cplusplus
 }

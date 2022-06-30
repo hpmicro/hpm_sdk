@@ -5,6 +5,7 @@ GPTMR示例工程演示了GPTMR输出比较、输入捕获、PWM测量和生成P
 
 ## 硬件设置
 
+请参考具体开发板{ref}`引脚描述 <lab_board_resource>`部分的描述。
 连接外部PWM至GPTMR输入捕获引脚，连接GPTMR比较输出引脚至示波器。
 
 ## 运行现象

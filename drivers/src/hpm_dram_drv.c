@@ -241,6 +241,7 @@ hpm_stat_t dram_config_sdram(DRAM_Type *ptr, uint32_t clk_in_hz, dram_sdram_conf
     ptr->SDRCTRL0 = DRAM_SDRCTRL0_PORTSZ_SET(config->port_size)
                   | DRAM_SDRCTRL0_BURSTLEN_SET(burst_len)
                   | DRAM_SDRCTRL0_COL_SET(config->col_addr_bits)
+                  | DRAM_SDRCTRL0_COL8_SET(config->col_addr_bits == DRAM_SDRAM_COLUMN_ADDR_8_BITS)
                   | DRAM_SDRCTRL0_CAS_SET(config->cas_latency)
                   | DRAM_SDRCTRL0_BANK2_SET(config->bank_num);
 

@@ -6,6 +6,7 @@
  */
 #include "board.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include "math.h"
 #include "hpm_debug_console.h"
 #include "hpm_sysctl_drv.h"
@@ -16,7 +17,6 @@
 #include "hpm_adc12_drv.h"
 
 #include "hpm_clock_drv.h"
-#include "freemaster.h"
 #include "hpm_uart_drv.h"
 
 #include "hpm_bldc_define.h"
@@ -432,30 +432,6 @@ void init_trigger_mux(TRGM_Type * ptr)
     trgm_output_config(ptr, BOARD_BLDC_TRG_NUM, &trgm_output_cfg);
 }
 
-static void init_freemaster_uart(void)
-{
-    hpm_stat_t stat;
-    uart_config_t config = {0};
-
-    clock_set_source_divider(BOARD_FREEMASTER_UART_CLK_NAME, clk_src_osc24m, 1U);
-    board_init_uart(BOARD_FREEMASTER_UART_BASE);
-    uart_default_config(BOARD_FREEMASTER_UART_BASE, &config);
-    config.fifo_enable = true;
-    config.src_freq_in_hz = clock_get_frequency(BOARD_FREEMASTER_UART_CLK_NAME);
-    stat = uart_init(BOARD_FREEMASTER_UART_BASE, &config);
-    if (stat != status_success) {
-        /* uart failed to be initialized */
-        printf("failed to initialize uart\n");
-        while(1);
-    }
-
-#if FMSTR_SHORT_INTR || FMSTR_LONG_INTR
-    /* Enable UART interrupts. */
-    uart_enable_irq(BOARD_FREEMASTER_UART_BASE, uart_intr_rx_data_avail_or_timeout, true);
-    intc_m_enable_irq_with_priority(BOARD_FREEMASTER_UART_IRQ, 1);
-#endif
-
-}
 void isr_adc(void)
 {
     uint32_t status;
@@ -683,11 +659,10 @@ void lv_set_adval_middle(void)
 }
 int main(void)
 {
-    unsigned short nAppCmdCode;
+    char input_data[100], input_end;
+    uint8_t i;
     board_init();
     init_adc_bldc_pins();
-    init_freemaster_uart();
-    FMSTR_Init();
     init_pwm_pins(MOTOR0_BLDCPWM);
     qei_init();
     bldc_init_par();
@@ -703,24 +678,79 @@ int main(void)
 #endif
     intc_m_enable_irq_with_priority(BOARD_BLDC_ADC_IRQn, 1);
     hpm_adc_enable_interrupts(&hpm_adc_u, BOARD_BLDC_ADC_TRIG_FLAG);
-    while(1)
-    {
-        nAppCmdCode = FMSTR_GetAppCmd();
-        if (nAppCmdCode != FMSTR_APPCMDRESULT_NOCMD){
-            switch(nAppCmdCode){
-                case 1:
+#if !MOTOR0_SMC_EN
+    while (1) {
+        printf("Mode selection:\r\n");
+        printf("0. Location mode.\r\n");
+        printf("1. Speed mode.\r\n");
+        printf("Enter mode code:\r\n");
+        char option = getchar();
+        if (option == '0') {
+            fre_user_mode = 0;
+            break;
+        } else if (option == '1') {
+            fre_user_mode = 1;
+            break;
+        }
+    }
+#endif
+    if (fre_user_mode == 1) {
+        printf("\r\nSpeed mode, motor run, speed is: %f.\r\nInput speed:\r\n", fre_setspeed);
+        while (1) {
+            memset(input_data, 0, sizeof(input_data));
+            input_end = 1;
+            i = 0;
+            while (input_end) {
+                char option = getchar();
 
-                    FMSTR_AppCmdAck(1);
-
-                break;
-                case 2: FMSTR_AppCmdAck(0xcd); break;
-                default: FMSTR_AppCmdAck(0); break;
+                switch (option) {
+                case '\n':
+                case '\r':
+                    input_end = 0;
+                    break;
+                default:
+                    input_data[i++] = option;
+                    break;
+                }
+                if (i >= sizeof(input_data)) {
+                    i = 0;
+                    printf("Input Err. Please try again.\r\n");
+                    break;
+                }
+            }
+            if (i != 0) {
+                fre_setspeed = atof(input_data);
+                printf("\r\nSpeed mode, motor run, speed is: %f.\r\nInput speed:\r\n", fre_setspeed);
             }
         }
+    } else if (fre_user_mode == 0) {
+        printf("\r\nLocation mode, motor run, The location is: %d.\r\nInput Location:\r\n ", fre_set_pos);
+        while (1) {
+            memset(input_data, 0, sizeof(input_data));
+            input_end = 1;
+            i = 0;
+            while (input_end) {
+                char option = getchar();
 
-        FMSTR_Recorder();
-        FMSTR_Poll();
-
+                switch (option) {
+                case '\n':
+                case '\r':
+                    input_end = 0;
+                    break;
+                default:
+                    input_data[i++] = option;
+                    break;
+                }
+                if (i >= sizeof(input_data)) {
+                    printf("Input Err. Please try again.\r\n");
+                    i = 0;
+                    break;
+                }
+            }
+            if (i != 0) {
+                fre_set_pos = atoi(input_data);
+                printf("\r\nLocation mode, motor run, The location is: %d.\r\nInput Location:\r\n", fre_set_pos);
+            }
+        }
     }
-
 }

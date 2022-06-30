@@ -92,13 +92,9 @@ static void bus_reset(uint8_t rhport)
 }
 
 /* Initialize controller to device mode */
-bool dcd_init(uint8_t rhport)
+void dcd_init(uint8_t rhport)
 {
     uint32_t int_mask;
-
-    if (rhport > USB_SOC_MAX_COUNT) {
-        return false;
-    }
 
     usb_device_handle[rhport].regs     = _dcd_controller[rhport].regs;
     usb_device_handle[rhport].dcd_data =  &_dcd_data;
@@ -110,7 +106,9 @@ bool dcd_init(uint8_t rhport)
     #endif /* USB_DEVICE_CONFIG_LOW_POWER_MODE */
                     );
 
-    return usb_device_init(&usb_device_handle[rhport], int_mask);
+    usb_device_init(&usb_device_handle[rhport], int_mask);
+
+    return;
 }
 
 /* De-initialize controller */
@@ -165,7 +163,7 @@ bool dcd_edpt_open(uint8_t rhport, tusb_desc_endpoint_t const * p_endpoint_desc)
 
     ep_cfg.xfer            = p_endpoint_desc->bmAttributes.xfer;
     ep_cfg.ep_addr         = p_endpoint_desc->bEndpointAddress;
-    ep_cfg.max_packet_size = p_endpoint_desc->wMaxPacketSize.size;
+    ep_cfg.max_packet_size = p_endpoint_desc->wMaxPacketSize;
 
     return usb_device_edpt_open(&usb_device_handle[rhport], &ep_cfg);
 }

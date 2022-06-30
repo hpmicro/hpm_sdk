@@ -26,6 +26,11 @@ void enable_plic_feature(void)
 
 __attribute__((weak)) void system_init(void)
 {
+#ifndef CONFIG_NOT_ENALBE_ACCESS_TO_CYCLE_CSR
+    uint32_t mcounteren = read_csr(CSR_MCOUNTEREN);
+    write_csr(CSR_MCOUNTEREN, mcounteren | 1); /* Enable MCYCLE */
+#endif
+
 #ifdef USE_S_MODE_IRQ
     disable_global_irq(CSR_MSTATUS_MIE_MASK | CSR_MSTATUS_SIE_MASK);
 #else
@@ -41,7 +46,7 @@ __attribute__((weak)) void system_init(void)
     enable_irq_from_intc();
 
 #ifdef USE_S_MODE_IRQ
-    delegate_irq(CSR_MIDELEG_SEI_MASK | CSR_MIDELEG_SSI_MASK | CSR_MIDELEG_STI_MASK);   
+    delegate_irq(CSR_MIDELEG_SEI_MASK | CSR_MIDELEG_SSI_MASK | CSR_MIDELEG_STI_MASK);
     enable_s_irq_from_intc();
     enable_global_irq(CSR_MSTATUS_MIE_MASK | CSR_MSTATUS_SIE_MASK);
 #else

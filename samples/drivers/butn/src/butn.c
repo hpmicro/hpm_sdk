@@ -25,7 +25,10 @@ int main(void)
     printf("Please press PBUTN 16s to enter power down mode, then press PBUTN or WBUTN 0.5s to wake up from power down mode.\n");
     while(1)
     {
-        u = console_receive_byte();
+        u = getchar();
+        if (u == '\r') {
+            u = '\n';
+        }
         printf("%c", u);
     }
     return 0;

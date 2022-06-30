@@ -41,7 +41,6 @@
 #include "board.h"
 #include "common/tusb_common.h"
 #include "hpm_usb_host.h"
-#include "host/usbh_hcd.h"
 #include "host/hcd.h"
 #include "ff.h"
 #include "hpm_interrupt.h"
@@ -66,6 +65,7 @@ typedef enum {
                                        hcd_int_mask_async_advance | hcd_int_mask_sof |
                                        hcd_int_mask_async | hcd_int_mask_periodic
 } usb_interrupt_mask_t;
+
 typedef struct
 {
     USB_Type *regs;            /* register base */
@@ -125,9 +125,9 @@ bool hcd_int_status(void)
     return hcd_int_sta;
 }
 
-uint32_t hcd_uframe_number(uint8_t rhport)
+uint32_t hcd_frame_number(uint8_t rhport)
 {
-    return usb_host_uframe_number(&usb_host_handle);
+    return (usb_host_uframe_number(&usb_host_handle) >> 3);
 }
 
 void hcd_port_reset(uint8_t hostid)
@@ -162,9 +162,12 @@ bool hcd_setup_send(uint8_t rhport, uint8_t dev_addr, uint8_t const setup_packet
 
 bool hcd_edpt_open(uint8_t rhport, uint8_t dev_addr, tusb_desc_endpoint_t const * ep_desc)
 {
-    usb_host_handle.ep_speed = _usbh_devices[dev_addr].speed;
-    usb_host_handle.hub_addr = _usbh_devices[dev_addr].hub_addr;
-    usb_host_handle.hub_port = _usbh_devices[dev_addr].hub_port;
+    hcd_devtree_info_t devtree_info;
+    hcd_devtree_get_info(dev_addr, &devtree_info);
+
+    usb_host_handle.ep_speed = devtree_info.speed;
+    usb_host_handle.hub_addr = devtree_info.hub_addr;
+    usb_host_handle.hub_port = devtree_info.hub_port;
 
     return usb_host_edpt_open(&usb_host_handle, dev_addr, (usb_desc_endpoint_t const *)ep_desc);
 }

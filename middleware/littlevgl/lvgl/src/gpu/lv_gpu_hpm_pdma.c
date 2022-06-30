@@ -90,7 +90,7 @@ static void _lv_gpu_hpm_pdma_blit(lv_color_t *dst, lv_coord_t dst_width,
     pdma_get_default_config(LV_GPU_HPM_PDMA_ID, &config, format);
     pdma_get_default_plane_config(LV_GPU_HPM_PDMA_ID, &plane_src, format);
     pdma_get_default_plane_config(LV_GPU_HPM_PDMA_ID, &plane_dst, format);
-    pdma_get_default_yuv2rgb_coef_config(ptr, &yuv2rgb_coef, format);
+    pdma_get_default_yuv2rgb_coef_config(LV_GPU_HPM_PDMA_ID, &yuv2rgb_coef, format);
     pdma_get_default_output_config(LV_GPU_HPM_PDMA_ID, &output, format);
 
     config.enable_plane = pdma_plane_both;
@@ -153,15 +153,6 @@ static void _lv_gpu_hpm_pdma_blit(lv_color_t *dst, lv_coord_t dst_width,
     }
 }
 
-
-/**
- * Fill an area in the buffer with a color
- * @param dst a buffer which should be filled
- * @param dst_width width of the buffer in pixels
- * @param color fill color
- * @param width width to fill in pixels
- * @param height height to fill in pixels
- */
 void lv_gpu_hpm_pdma_fill(lv_color_t *dst, lv_coord_t dst_width,
         lv_color_t color, lv_coord_t width, lv_coord_t height, lv_opa_t opa)
 {
@@ -180,7 +171,10 @@ void lv_gpu_hpm_pdma_fill(lv_color_t *dst, lv_coord_t dst_width,
             lv_color_to32(color), opa, format, true, &status);
 
     if (l1c_dc_is_enabled()) {
-        l1c_dc_invalidate((uint32_t)dst, dst_width * height * display_get_pixel_size_in_byte(format));
+        uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t)dst);
+        uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP((uint32_t)dst + dst_width * height * display_get_pixel_size_in_byte(format));
+        uint32_t aligned_size = aligned_end - aligned_start;
+        l1c_dc_invalidate((uint32_t)aligned_start, aligned_size);
     }
     if (stat != status_success) {
         /* avoid status be optimized */
@@ -188,21 +182,6 @@ void lv_gpu_hpm_pdma_fill(lv_color_t *dst, lv_coord_t dst_width,
     }
 }
 
-/**
- * @brief BLock Image Transfer with recolor - copy rectangular image from src buffer to dst buffer with effects.
- *
- * Image is copied directly, with optional opacity configured by \p opa and recolor
- *
- * @param[in/out] dst destination buffer
- * @param[in] dst_width width (stride) of destination buffer in pixels
- * @param[in] src source buffer
- * @param[in] src_with width (stride) of source buffer in pixels
- * @param[in] width width of area to be copied from src to dest
- * @param[in] height height of area to be copied from src to dest
- * @param[in] opa opacity of the result
- * @param[in] rc recolor
- * @param[in] rc_opa opacity of the recolor
- */
 static void _lv_gpu_hpm_pdma_blit_recolor(lv_color_t *dst, lv_coord_t dst_width,
                           const lv_color_t * src, lv_coord_t src_width,
                           lv_coord_t width, lv_coord_t height, lv_opa_t opa,
@@ -237,7 +216,7 @@ static void _lv_gpu_hpm_pdma_blit_recolor(lv_color_t *dst, lv_coord_t dst_width,
         pdma_get_default_config(LV_GPU_HPM_PDMA_ID, &config, format);
         pdma_get_default_plane_config(LV_GPU_HPM_PDMA_ID, &plane_src, format);
         pdma_get_default_plane_config(LV_GPU_HPM_PDMA_ID, &plane_dst, format);
-        pdma_get_default_yuv2rgb_coef_config(ptr, &yuv2rgb_coef, format);
+        pdma_get_default_yuv2rgb_coef_config(LV_GPU_HPM_PDMA_ID, &yuv2rgb_coef, format);
         pdma_get_default_output_config(LV_GPU_HPM_PDMA_ID, &output, format);
 
         config.enable_plane = pdma_plane_both;
@@ -290,7 +269,10 @@ static void _lv_gpu_hpm_pdma_blit_recolor(lv_color_t *dst, lv_coord_t dst_width,
         } while((stat != status_pdma_done) && (stat != status_pdma_error));
         pdma_stop(LV_GPU_HPM_PDMA_ID);
         if (l1c_dc_is_enabled()) {
-            l1c_dc_invalidate((uint32_t)dst, width * height * display_get_pixel_size_in_byte(format));
+            uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t)dst);
+            uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP((uint32_t)dst + dst_width * height * display_get_pixel_size_in_byte(format));
+            uint32_t aligned_size = aligned_end - aligned_start;
+            l1c_dc_invalidate(aligned_start, aligned_size);
         }
     } else {
         lv_color_t * tmpBuf  = (lv_color_t *) lv_mem_buf_get(width * height * sizeof(lv_color_t));
@@ -302,17 +284,6 @@ static void _lv_gpu_hpm_pdma_blit_recolor(lv_color_t *dst, lv_coord_t dst_width,
     }
 }
 
-/**
- * Blend a map (e.g. ARGB image or RGB image with opacity) to a buffer
- * @param buf a buffer where `map` should be copied
- * @param buf_w width of the buffer in pixels
- * @param map an "image" to copy
- * @param opa opacity of `map`
- * @param map_w width of the map in pixels
- * @param copy_w width of the area to copy in pixels (<= buf_w)
- * @param copy_h height of the area to copy in pixels
- * @note `map_w - fill_w` is offset to the next line after copy
- */
 void lv_gpu_hpm_pdma_blit(lv_color_t *dst, lv_coord_t dst_width,
                           const lv_color_t * src, lv_coord_t src_width,
                           lv_coord_t width, lv_coord_t height, lv_opa_t opa)

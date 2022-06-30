@@ -25,6 +25,11 @@ if(RV_ARCH)
     sdk_compile_options("-march=${RV_ARCH}")
     sdk_ld_options("-march=${RV_ARCH}")
 endif()
+if(NOT HPM_SDK_NO_NANO_SPECS)
+    sdk_ld_options("--specs=nano.specs")
+    sdk_ld_options("-u _printf_float")
+    sdk_ld_options("-u _scanf_float")
+endif()
 
 endif()
 

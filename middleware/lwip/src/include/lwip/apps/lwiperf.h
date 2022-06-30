@@ -45,6 +45,7 @@ extern "C" {
 #endif
 
 #define LWIPERF_TCP_PORT_DEFAULT  5001
+#define LWIPERF_UDP_PORT_DEFAULT  5001
 
 /** lwIPerf test results */
 enum lwiperf_report_type
@@ -60,7 +61,19 @@ enum lwiperf_report_type
   /** Transmit error lead to test abort */
   LWIPERF_TCP_ABORTED_LOCAL_TXERROR,
   /** Remote side aborted the test */
-  LWIPERF_TCP_ABORTED_REMOTE
+  LWIPERF_TCP_ABORTED_REMOTE,
+  /** The server side test is done */
+  LWIPERF_UDP_DONE_SERVER,
+  /** The client side test is done */
+  LWIPERF_UDP_DONE_CLIENT,
+  /** Local error lead to test abort */
+  LWIPERF_UDP_ABORTED_LOCAL,
+  /** Data check error lead to test abort */
+  LWIPERF_UDP_ABORTED_LOCAL_DATAERROR,
+  /** Transmit error lead to test abort */
+  LWIPERF_UDP_ABORTED_LOCAL_TXERROR,
+  /** Remote side aborted the test */
+  LWIPERF_UDP_ABORTED_REMOTE
 };
 
 /** Control */
@@ -90,6 +103,14 @@ void* lwiperf_start_tcp_client(const ip_addr_t* remote_addr, u16_t remote_port,
 void* lwiperf_start_tcp_client_default(const ip_addr_t* remote_addr,
                                lwiperf_report_fn report_fn, void* report_arg);
 
+void* lwiperf_start_udp_server(const ip_addr_t *local_addr, u16_t local_port,
+                         lwiperf_report_fn report_fn, void *report_arg);
+void *lwiperf_start_udp_client(const ip_addr_t *local_addr, u16_t local_port,
+                         const ip_addr_t *remote_addr, u16_t remote_port,
+                         enum lwiperf_client_type type, int amount, s32_t rate, u8_t tos,
+                         lwiperf_report_fn report_fn, void *report_arg);
+
+void lwiperf_poll_udp_client(void);
 void  lwiperf_abort(void* lwiperf_session);
 
 

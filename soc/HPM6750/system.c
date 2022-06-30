@@ -31,6 +31,11 @@ __attribute__((weak)) void system_init(void)
     enable_plic_feature();
     enable_irq_from_intc();
     enable_global_irq(CSR_MSTATUS_MIE_MASK);
+
+#ifndef CONFIG_NOT_ENALBE_ACCESS_TO_CYCLE_CSR
+    uint32_t mcounteren = read_csr(CSR_MCOUNTEREN);
+    write_csr(CSR_MCOUNTEREN, mcounteren | 1); /* Enable MCYCLE */
+#endif
 #ifndef CONFIG_NOT_ENABLE_ICACHE
     l1c_ic_enable();
 #endif

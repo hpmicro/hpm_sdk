@@ -134,6 +134,11 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
       bytes_left_to_copy = q->len;
       payload_offset = 0;
 
+
+      if (dma_tx_desc->tdes0_bm.own != 0) {
+          	return ERR_BUF;
+        }
+
       /* Check if the length of data to copy is bigger than Tx buffer size*/
       while ((bytes_left_to_copy + buffer_offset) > ENET_TX_BUFF_SIZE) {
         /* Copy data to Tx buffer*/
@@ -157,11 +162,8 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
         buffer_offset = 0;
       }
 
-      /* Copy the remaining bytes */
-      memcpy((uint8_t *)((uint8_t *)buffer + buffer_offset),
-	           (uint8_t *)((uint8_t *)q->payload + payload_offset),
-			       bytes_left_to_copy);
-
+      /* pass payload to buffer */
+      desc.tx_desc_list_cur->tdes2_bm.buffer1 = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)q->payload);
       buffer_offset = buffer_offset + bytes_left_to_copy;
       frame_length = frame_length + bytes_left_to_copy;
     }
@@ -227,8 +229,8 @@ static struct pbuf *low_level_input(struct netif *netif)
         buffer_offset = 0;
       }
 
-      /* Copy remaining data in pbuf */
-      memcpy((uint8_t *)((uint8_t *)q->payload + payload_offset), (uint8_t *)((uint8_t *)buffer + buffer_offset), bytes_left_to_copy);
+      /* pass the buffer to pbuf */
+      q->payload = (void *)buffer;
       buffer_offset = buffer_offset + bytes_left_to_copy;
     }
   } else {

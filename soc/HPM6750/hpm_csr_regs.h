@@ -114,6 +114,8 @@
 #define CSR_PMAADDR13 (0xBDD)
 #define CSR_PMAADDR14 (0xBDE)
 #define CSR_PMAADDR15 (0xBDF)
+#define CSR_CYCLE (0xC00)
+#define CSR_CYCLEH (0xC80)
 #define CSR_MVENDORID (0xF11)
 #define CSR_MARCHID (0xF12)
 #define CSR_MIMPID (0xF13)
@@ -410,7 +412,7 @@
 #define CSR_SSTATUS_XS_GET(x) (((uint32_t)(x) & CSR_SSTATUS_XS_MASK) >> CSR_SSTATUS_XS_SHIFT)
 
 /*
- * FS (WLRL)
+ * FS (RW)
  *
  * FS holds the status of the architectural states of the floating-point unit, including the fcsr CSR and f0 – f31 floating-point data registers. The value of this field is zero and read-only if the processor does not have FPU.
  * This field is primarily managed by software. The processor hardware assists the state managements in two regards:
@@ -1032,7 +1034,7 @@
 #define CSR_MSTATUS_XS_GET(x) (((uint32_t)(x) & CSR_MSTATUS_XS_MASK) >> CSR_MSTATUS_XS_SHIFT)
 
 /*
- * FS (WLRL)
+ * FS (RW)
  *
  * FS holds the status of the architectural states of the floating-point unit, including the fcsr CSR and f0 – f31 floating-point data registers. The value of this field is zero and read-only if the processor does not have FPU. This field is primarily managed by software. The processor hardware assists the state
  * managements in two regards:
@@ -1049,7 +1051,7 @@
 #define CSR_MSTATUS_FS_GET(x) (((uint32_t)(x) & CSR_MSTATUS_FS_MASK) >> CSR_MSTATUS_FS_SHIFT)
 
 /*
- * MPP (WARL)
+ * MPP (RW)
  *
  * MPP holds the privilege mode prior to a trap. Encoding for privilege mode is described in Table5. When U-mode is not available, this field is hardwired to 3.
  */
@@ -2665,7 +2667,7 @@
 #define CSR_MCONTROL_EXECUTE_GET(x) (((uint32_t)(x) & CSR_MCONTROL_EXECUTE_MASK) >> CSR_MCONTROL_EXECUTE_SHIFT)
 
 /*
- * STORE (RW*)
+ * STORE (RW)
  *
  * Setting this field to enable this trigger to compare virtual address of a store.
  */
@@ -2675,7 +2677,7 @@
 #define CSR_MCONTROL_STORE_GET(x) (((uint32_t)(x) & CSR_MCONTROL_STORE_MASK) >> CSR_MCONTROL_STORE_SHIFT)
 
 /*
- * LOAD (RW*)
+ * LOAD (RW)
  *
  * Setting this field to enable this trigger to compare virtual address of a load.
  */
@@ -3685,6 +3687,28 @@
 #define CSR_PMAADDR15_PMAADDR_31_2_SHIFT (2U)
 #define CSR_PMAADDR15_PMAADDR_31_2_SET(x) (((uint32_t)(x) << CSR_PMAADDR15_PMAADDR_31_2_SHIFT) & CSR_PMAADDR15_PMAADDR_31_2_MASK)
 #define CSR_PMAADDR15_PMAADDR_31_2_GET(x) (((uint32_t)(x) & CSR_PMAADDR15_PMAADDR_31_2_MASK) >> CSR_PMAADDR15_PMAADDR_31_2_SHIFT)
+
+/* Bitfield definition for register: CYCLE */
+/*
+ * CYCLE (RW)
+ *
+ * Cycle Counter
+ */
+#define CSR_CYCLE_CYCLE_MASK (0xFFFFFFFFUL)
+#define CSR_CYCLE_CYCLE_SHIFT (0U)
+#define CSR_CYCLE_CYCLE_SET(x) (((uint32_t)(x) << CSR_CYCLE_CYCLE_SHIFT) & CSR_CYCLE_CYCLE_MASK)
+#define CSR_CYCLE_CYCLE_GET(x) (((uint32_t)(x) & CSR_CYCLE_CYCLE_MASK) >> CSR_CYCLE_CYCLE_SHIFT)
+
+/* Bitfield definition for register: CYCLEH */
+/*
+ * CYCLEH (RW)
+ *
+ * Cycle Counter Higher 32-bit
+ */
+#define CSR_CYCLEH_CYCLEH_MASK (0xFFFFFFFFUL)
+#define CSR_CYCLEH_CYCLEH_SHIFT (0U)
+#define CSR_CYCLEH_CYCLEH_SET(x) (((uint32_t)(x) << CSR_CYCLEH_CYCLEH_SHIFT) & CSR_CYCLEH_CYCLEH_MASK)
+#define CSR_CYCLEH_CYCLEH_GET(x) (((uint32_t)(x) & CSR_CYCLEH_CYCLEH_MASK) >> CSR_CYCLEH_CYCLEH_SHIFT)
 
 /* Bitfield definition for register: MVENDORID */
 /*

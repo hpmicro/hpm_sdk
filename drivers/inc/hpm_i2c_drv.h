@@ -261,6 +261,21 @@ static inline void i2c_enable_irq(I2C_Type *ptr, uint32_t mask)
 }
 
 /**
+ * @brief enable 10 bit address mode
+ *
+ * @details enable 10 bit address mode, if not, address is 7 bit mode
+ *
+ * @param [in] ptr I2C base address
+ * @param [in] enable
+ *  @arg true: enable 10 bit address mode
+ *  @arg false: enable 7 bit address mode
+ */
+static inline void i2c_enable_10bit_address_mode(I2C_Type *ptr, bool enable)
+{
+    ptr->SETUP |= I2C_SETUP_ADDRESSING_SET(enable);
+}
+
+/**
  * @brief I2C master initialization
  *
  * @details Initialized I2C controller working at master mode

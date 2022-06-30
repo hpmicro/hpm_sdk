@@ -179,9 +179,9 @@ void test_unchained_transfer(uint32_t src, uint32_t dst, bool verbose)
     intc_m_enable_irq_with_priority(TEST_DMA_IRQ, 1);
 #endif
 
-    for (int32_t i = DMA_NUM_TRANSFER_PER_BURST_1024T; i >= 0; i--) {
+    for (int32_t i = DMA_SOC_TRANSFER_PER_BURST_MAX(TEST_DMA_CONTROLLER); i >= 0; i--) {
         reset_transfer_status();
-        burst_len_in_byte = (1 << i) * (1 << DMA_SOC_TRANSFER_WIDTH_MAX);
+        burst_len_in_byte = (1 << i) * (1 << DMA_SOC_TRANSFER_WIDTH_MAX(TEST_DMA_CONTROLLER));
         src += burst_len_in_byte;
         prepare_test_data((uint8_t *)src, SIZE_PER_TEST);
 

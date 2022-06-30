@@ -15,7 +15,6 @@
 #include "hpm_gptmr_drv.h"
 
 #include "hpm_clock_drv.h"
-#include "freemaster.h"
 #include "hpm_uart_drv.h"
 
 #include "hpm_bldc_define.h"
@@ -392,53 +391,22 @@ static void timer_init(void)
 
 }
 
-static void init_freemaster_uart(void)
-{
-    hpm_stat_t stat;
-    uart_config_t config = {0};
-
-    clock_set_source_divider(BOARD_FREEMASTER_UART_CLK_NAME, clk_src_osc24m, 1U);
-    board_init_uart(BOARD_FREEMASTER_UART_BASE);
-    uart_default_config(BOARD_FREEMASTER_UART_BASE, &config);
-    config.fifo_enable = true;
-    config.src_freq_in_hz = clock_get_frequency(BOARD_FREEMASTER_UART_CLK_NAME);
-
-    stat = uart_init(BOARD_FREEMASTER_UART_BASE, &config);
-    if (stat != status_success) {
-        /* uart failed to be initialized */
-        printf("failed to initialize uart\n");
-        while(1);
-    }
-
-#if FMSTR_SHORT_INTR || FMSTR_LONG_INTR
-    /* Enable UART interrupts. */
-    uart_enable_irq(BOARD_FREEMASTER_UART_BASE, uart_intr_rx_data_avail_or_timeout, true);
-    intc_m_enable_irq_with_priority(BOARD_FREEMASTER_UART_IRQ, 1);
-#endif
-
-}
-
 int main(void)
 {
+    char input_data[100], input_end;
+    uint8_t i;
     int32_t block_pwm_out = 0;
     uint8_t motor_step;  
     uint8_t hal_stat;
     uint8_t u, v, w;
-    unsigned short nAppCmdCode;
+
     board_init();
-
-    init_freemaster_uart();
-    FMSTR_Init();
-
-
     init_pwm_pins(MOTOR0_BLDCPWM);
     hall_init();
     qei_init();
     printf("motor test example\n");
-
     pwm_init();
     timer_init();
-
     block_pwm_out = 0;
     pwm_update_raw_cmp_central_aligned(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_INDEX_0, BOARD_BLDCPWM_CMP_INDEX_1,
                  (PWM_RELOAD - block_pwm_out)<<1, (PWM_RELOAD + block_pwm_out)<<1);
@@ -453,24 +421,34 @@ int main(void)
 
     bldc_block_ctrl(BLDC_MOTOR0_INDEX,motor_dir,motor_step);
 
-    while(1)
-    {
-        nAppCmdCode = FMSTR_GetAppCmd();
+    printf("\r\nSpeed mode, motor run, speed is: %f.\r\nInput speed:\r\n", fre_setspeed);
+    while (1) {
+        memset(input_data, 0, sizeof(input_data));
+        input_end = 1;
+        i = 0;
+        while (input_end) {
+            char option = getchar();
 
-        if (nAppCmdCode != FMSTR_APPCMDRESULT_NOCMD){
-            switch(nAppCmdCode){
-                case 1:  FMSTR_AppCmdAck(1); break;
-                case 2: FMSTR_AppCmdAck(0xcd); break;
-                default: FMSTR_AppCmdAck(0); break;
+            switch (option) {
+            case '\n':
+            case '\r':
+                input_end = 0;
+                break;
+            default:
+                input_data[i++] = option;
+                break;
+            }
+            if (i >= sizeof(input_data)) {
+                i = 0;
+                printf("Input Err. Please try again.\r\n");
+                break;
             }
         }
-        FMSTR_Recorder();
-        FMSTR_Poll();
-        
+        if (i != 0) {
+            fre_setspeed = atof(input_data);
+            printf("\r\nSpeed mode, motor run, speed is: %f.\r\nInput speed:\r\n", fre_setspeed);
+        }
     }
-    disable_all_pwm_output();    
-    printf("test done\n");
-    while(1);
     return 0;
 }
 

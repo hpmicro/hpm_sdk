@@ -77,12 +77,6 @@
 #define CFG_TUD_MIDI              0
 #define CFG_TUD_VENDOR            0
 
-/*------------- Transfer Type -------------*/
-/* 0: bulk xfer */
-/* 1: interrupt xfer */
-#ifndef CFG_TUD_XFER_TYPE
-    #define CFG_TUD_XFER_TYPE         1
-#endif
 /*------------- Report ID -------------*/
 #define REPORT_ID_COUNT           2   /* This value must not be larger than 2 in this demo. */
 
@@ -100,13 +94,8 @@
 #endif
 
 /* HID buffer size Should be sufficient to hold ID (if any) + Data */
-#if CFG_TUD_XFER_TYPE
-  #define CFG_TUD_HID_EP_BUFSIZE_HS   1024
-  #define CFG_TUD_HID_EP_BUFSIZE_FS   64
-#else
-  #define CFG_TUD_HID_EP_BUFSIZE_HS   512
-  #define CFG_TUD_HID_EP_BUFSIZE_FS   64
-#endif
+#define CFG_TUD_HID_EP_BUFSIZE_HS   1024
+#define CFG_TUD_HID_EP_BUFSIZE_FS   64
 
 #define CFG_TUD_HID_EP_INTERVAL_HS  4 /* 2^(4-1) * 125us = 1ms */
 #define CFG_TUD_HID_EP_INTERVAL_FS  1 /* 1ms */
