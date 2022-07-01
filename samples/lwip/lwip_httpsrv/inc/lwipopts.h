@@ -14,6 +14,7 @@
 #define LWIP_RAW                1
 #define LWIP_IPV4               1
 #define LWIP_TIMERS             0
+#define LWIP_NETIF_TX_SINGLE_PBUF 1
 /**
  * NO_SYS==1: Provides VERY minimal functionality. Otherwise,
  * use lwIP facilities.
@@ -124,7 +125,7 @@ Some MCUs allow computing and verifying the IP, UDP, TCP and ICMP checksums by h
  - To use this feature let the following define uncommented.
  - To disable it and process by CPU comment the  the checksum.
 */
-
+#define CHECKSUM_BY_HARDWARE 1
 #ifdef CHECKSUM_BY_HARDWARE
   /* CHECKSUM_GEN_IP==0: Generate checksums by hardware for outgoing IP packets.*/
   #define CHECKSUM_GEN_IP                 0

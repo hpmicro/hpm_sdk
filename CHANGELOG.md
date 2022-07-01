@@ -1,5 +1,12 @@
 # Change Log
 
+## [0.12.1] - 2022-07-01:
+
+Main changes since 0.12.0
+
+### Fixed:
+  - update lwipopt.h for updated enet driver
+
 ## [0.12.0] - 2022-06-30:
 
 Tested with SES 6.32
