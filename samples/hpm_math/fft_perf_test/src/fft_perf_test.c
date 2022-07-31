@@ -12,6 +12,7 @@
 #include <math.h>
 #include "hpm_math.h"
 #include "hpm_ffa_drv.h"
+#include "hpm_l1c_drv.h"
 
 typedef float FFT_BUF_TYPE;
 #define FFT_PRECISION (0.001)
@@ -209,9 +210,19 @@ int main(void)
         point = 1 << j;
         shift = j;
         init_fft_inputbuf(&fft_buf[0], point);
+        if (l1c_dc_is_enabled()) {
+            l1c_dc_flush(HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) &ffa_buf[0]),
+                2 * (HPM_L1C_CACHELINE_ALIGN_UP((point * sizeof(q31_t) + &ffa_buf[0])) -
+                HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) &ffa_buf[0])));
+        }
         clear_cycle();
         hpm_ffa_cfft_q31(&ffa_buf[0], shift);
         run_times = read_cycles();
+        if (l1c_dc_is_enabled()) {
+            l1c_dc_invalidate(HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) &ffa_buf[0]),
+                2 * (HPM_L1C_CACHELINE_ALIGN_UP((point * sizeof(q31_t) + &ffa_buf[0])) -
+                HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) &ffa_buf[0])));
+        }
         printf("dsp ffa fft q31 Total samples: %d.\r\n", point);
         printf("total times:%d tick.\r\n", run_times);
         hpm_dsp_convert_q31_f32(ffa_buf, fft_buf, point * 2);
@@ -220,9 +231,19 @@ int main(void)
         }
         fft_printf(&fft_buf[0], &fft_mag_output[0], point);
 
+        if (l1c_dc_is_enabled()) {
+            l1c_dc_flush(HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) &ffa_buf[0]),
+                2 * (HPM_L1C_CACHELINE_ALIGN_UP((point * sizeof(q31_t) + &ffa_buf[0])) -
+                HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) &ffa_buf[0])));
+        }
         clear_cycle();
         hpm_ffa_cifft_q31(ffa_buf, shift);
         run_times = read_cycles();
+        if (l1c_dc_is_enabled()) {
+            l1c_dc_invalidate(HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) &ffa_buf[0]),
+                2 * (HPM_L1C_CACHELINE_ALIGN_UP((point * sizeof(q31_t) + &ffa_buf[0])) -
+                HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) &ffa_buf[0])));
+        }
         hpm_dsp_convert_q31_f32(ffa_buf, fft_buf, point * 2);
         for (uint32_t i = 0; i < 2 * point; i++) {
             fft_buf[i] = fft_buf[i] * point * point;

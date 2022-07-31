@@ -18,7 +18,7 @@ define region CORE0_LM_SLV   = [from 0x1000000 size 512K];
 define region CORE1_LM_SLV   = [from 0x1180000 size 512K];
 define region SDRAM  = [from 0x40000000 size extram_size - 8M];
 define region SDRAM_NONCACHABLE  = [from 0x40000000 + extram_size - 8M size 8M];
-define region AXI_SRAM  = [from 0x1080000 size 768K];
+define region AXI_SRAM  = [from 0x1080000 size 1536k];
 define region NONCACHEABLE_RAM = [from 0x01140000 size 256K];
 
 /* Symbol */

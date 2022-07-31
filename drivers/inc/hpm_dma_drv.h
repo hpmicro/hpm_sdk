@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 - 2022 hpmicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -226,16 +226,16 @@ static inline bool dma_has_linked_pointer_configured(DMA_Type *ptr, uint32_t ch_
  * @param[in] ptr DMA base address
  * @param[in] ch_index Target channel index to be checked
  *
- * @return status_dma_transfer_done if transfer is finished without error
- * @return status_dma_transfer_error if any error occurred during transferring
- * @return status_dma_transfer_abort if transfer is aborted
- * @return status_dma_transfer_ongoing if transfer is still ongoing
+ * @retval 1 if transfer is still ongoing
+ * @retval 2 if any error occurred during transferring
+ * @retval 4 if transfer is aborted
+ * @retval 8 if transfer is finished without error
  */
-static inline hpm_stat_t dma_check_transfer_status(DMA_Type *ptr, uint8_t ch_index)
+static inline uint32_t dma_check_transfer_status(DMA_Type *ptr, uint8_t ch_index)
 {
     volatile uint32_t tmp = ptr->INTSTATUS;
     volatile uint32_t tmp_channel;
-    hpm_stat_t dma_status;
+    uint32_t dma_status;
 
     dma_status = 0;
     tmp_channel = tmp & (1 << (DMA_STATUS_TC_SHIFT + ch_index));
@@ -260,6 +260,43 @@ static inline hpm_stat_t dma_check_transfer_status(DMA_Type *ptr, uint8_t ch_ind
 }
 
 /**
+ * @brief Enable DMA Channel interrupt
+ *
+ * @param [in] ptr DMA base address
+ * @param [in] ch_index Target channel index
+ * @param [in] interrupt_mask Interrupt mask
+ */
+static inline void dma_enable_channel_interrupt(DMA_Type *ptr, uint8_t ch_index, int32_t interrupt_mask)
+{
+    ptr->CHCTRL[ch_index].CTRL &= ~(interrupt_mask & (DMA_INTERRUPT_MASK_ERROR | DMA_INTERRUPT_MASK_ABORT | DMA_INTERRUPT_MASK_TERMINAL_COUNT));
+}
+
+/**
+ * @brief Disable DMA Channel interrupt
+ *
+ * @param [in] ptr DMA base address
+ * @param [in] ch_index Target channel index
+ * @param [in] interrupt_mask Interrupt mask
+ */
+static inline void dma_disable_channel_interrupt(DMA_Type *ptr, uint8_t ch_index, int32_t interrupt_mask)
+{
+    ptr->CHCTRL[ch_index].CTRL |= (interrupt_mask & (DMA_INTERRUPT_MASK_ERROR | DMA_INTERRUPT_MASK_ABORT | DMA_INTERRUPT_MASK_TERMINAL_COUNT));
+}
+
+
+/**
+ * @brief Check Channel interrupt master
+ *
+ * @param[in] ptr DMA base address
+ * @param[in] ch_index Target channel index to be checked
+ * @return uint32_t Interrupt mask
+ */
+static inline uint32_t dma_check_channel_interrupt_mask(DMA_Type *ptr, uint8_t ch_index)
+{
+    return ptr->CHCTRL[ch_index].CTRL & (DMA_INTERRUPT_MASK_ERROR | DMA_INTERRUPT_MASK_ABORT | DMA_INTERRUPT_MASK_TERMINAL_COUNT);
+}
+
+/**
  * @brief   Get clear IRQ status
  *
  * @param[in] ptr DMA base address
@@ -267,7 +304,7 @@ static inline hpm_stat_t dma_check_transfer_status(DMA_Type *ptr, uint8_t ch_ind
  */
 static inline void dma_clear_irq_status(DMA_Type *ptr, uint32_t mask)
 {
-    ptr->INTSTATUS |= mask;
+    ptr->INTSTATUS = mask; /* Write-1-Clear */
 }
 
 /**

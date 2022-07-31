@@ -8,11 +8,6 @@
 #include "hpm_adc12_drv.h"
 #include "hpm_soc_feature.h"
 
-#define ADC12_IS_CHANNEL_INVALID(PTR, CH) ((CH > ADC12_SOC_MAX_CH_NUM && CH != ADC12_SOC_TEMP_CH_NUM) || \
-                                           ((uint32_t)PTR == ADC12_SOC_INVALID_TEMP_BASE && CH == ADC12_SOC_TEMP_CH_NUM))
-#define ADC12_IS_TRIG_CH_INVLAID(CH) (CH > ADC12_SOC_MAX_TRIG_CH_NUM)
-#define ADC12_IS_TRIG_LEN_INVLAID(TRIG_LEN) (TRIG_LEN > ADC_SOC_MAX_TRIG_CH_LEN)
-
 void adc12_get_default_config(adc12_config_t *config)
 {
     config->res                = adc12_res_12_bits;
@@ -38,7 +33,7 @@ static hpm_stat_t adc12_do_calibration(ADC12_Type *ptr, adc12_sample_signal_t di
     uint8_t cal_out;
     uint32_t loop_cnt = ADC12_SOC_CALIBRATION_WAITING_LOOP_CNT;
 
-    if (diff_sel > adc12_sample_signal_differential) {
+    if (ADC12_IS_SIGNAL_TYPE_INVALID(diff_sel)) {
         return status_invalid_argument;
     }
 
@@ -184,13 +179,18 @@ hpm_stat_t adc12_init_channel(ADC12_Type *ptr, adc12_channel_config_t *config)
     return status_success;
 }
 
-void adc12_init_seq_dma(ADC12_Type *ptr, adc12_dma_config_t *dma_config)
+hpm_stat_t adc12_init_seq_dma(ADC12_Type *ptr, adc12_dma_config_t *dma_config)
 {
+    /* Check the DMA buffer length  */
+    if (ADC12_IS_SEQ_DMA_BUFF_LEN_INVLAID(dma_config->buff_len_in_4bytes)) {
+        return status_invalid_argument;
+    }
+
     /* Reset ADC DMA  */
     ptr->SEQ_DMA_CFG |= ADC12_SEQ_DMA_CFG_DMA_RST_MASK;
 
     /* Reset memory to clear all of cycle bits */
-    memset(dma_config->start_addr, 0x00, dma_config->size_in_4bytes * sizeof(uint32_t));
+    memset(dma_config->start_addr, 0x00, dma_config->buff_len_in_4bytes * sizeof(uint32_t));
 
     /* De-reset ADC DMA */
     ptr->SEQ_DMA_CFG &= ~ADC12_SEQ_DMA_CFG_DMA_RST_MASK;
@@ -200,7 +200,7 @@ void adc12_init_seq_dma(ADC12_Type *ptr, adc12_dma_config_t *dma_config)
 
     /* Set ADC DMA memory dword length */
     ptr->SEQ_DMA_CFG = (ptr->SEQ_DMA_CFG & ~ADC12_SEQ_DMA_CFG_BUF_LEN_MASK)
-                     | ADC12_SEQ_DMA_CFG_BUF_LEN_SET(dma_config->size_in_4bytes);
+                     | ADC12_SEQ_DMA_CFG_BUF_LEN_SET(dma_config->buff_len_in_4bytes - 1);
 
     /* Set stop_en and stop_pos */
     if (dma_config->stop_en) {
@@ -208,12 +208,12 @@ void adc12_init_seq_dma(ADC12_Type *ptr, adc12_dma_config_t *dma_config)
                          | ADC12_SEQ_DMA_CFG_STOP_EN_MASK
                          | ADC12_SEQ_DMA_CFG_STOP_POS_SET(dma_config->stop_pos);
     }
+
+    return status_success;
 }
 
 hpm_stat_t adc12_set_prd_config(ADC12_Type *ptr, adc12_prd_config_t *config)
 {
-    uint32_t prd_reload_value;
-
     /* Check the specified channel number */
     if (ADC12_IS_CHANNEL_INVALID(ptr, config->ch)) {
         return status_invalid_argument;
@@ -224,18 +224,14 @@ hpm_stat_t adc12_set_prd_config(ADC12_Type *ptr, adc12_prd_config_t *config)
         return status_invalid_argument;
     }
 
-    /* Periodic prescale */
+    /* Set periodic prescale */
     ptr->PRD_CFG[config->ch].PRD_CFG = (ptr->PRD_CFG[config->ch].PRD_CFG & ~ADC12_PRD_CFG_PRD_CFG_PRESCALE_MASK)
                                      | ADC12_PRD_CFG_PRD_CFG_PRESCALE_SET(config->prescale);
 
-    /* Calculate period count frequency (unit in Hz) */
-    prd_reload_value = config->period_in_ms;
 
-    /* Check the validity for period count value */
-    if (prd_reload_value) {
-        ptr->PRD_CFG[config->ch].PRD_CFG = (ptr->PRD_CFG[config->ch].PRD_CFG & ~ADC12_PRD_CFG_PRD_CFG_PRD_MASK)
-                                         | ADC12_PRD_CFG_PRD_CFG_PRD_SET(prd_reload_value);
-    }
+    /* Set period count */
+    ptr->PRD_CFG[config->ch].PRD_CFG = (ptr->PRD_CFG[config->ch].PRD_CFG & ~ADC12_PRD_CFG_PRD_CFG_PRD_MASK)
+                                         | ADC12_PRD_CFG_PRD_CFG_PRD_SET(config->period_count);
 
     return status_success;
 }
@@ -245,10 +241,11 @@ void adc12_trigger_seq_by_sw(ADC12_Type *ptr)
     ptr->SEQ_CFG0 |= ADC12_SEQ_CFG0_SW_TRIG_MASK;
 }
 
+/* Note: the sequence length can not be larger or equal than 2 in HPM6750EVK Revision A0 */
 hpm_stat_t adc12_set_seq_config(ADC12_Type *ptr, adc12_seq_config_t *config)
 {
     /* Check sequence length */
-    if (config->seq_len > ADC_SOC_MAX_SEQ_LEN) {
+    if (ADC12_IS_SEQ_LEN_INVLAID(config->seq_len)) {
         return status_invalid_argument;
     }
 

@@ -24,5 +24,6 @@
    hpm_math/index_zh
    lwip/index_zh
    memstress/index_zh
+   dma_manager/README_zh
 
 :::

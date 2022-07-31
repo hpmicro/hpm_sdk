@@ -12,6 +12,7 @@
 #include "hpm_lcdc_drv.h"
 #include "hpm_l1c_drv.h"
 #include "hpm_sysctl_drv.h"
+#include "file_op.h"
 /*--------------------------------------------------------------------*
  * Macro Definitions
  *---------------------------------------------------------------------
@@ -31,13 +32,10 @@
 /*LCD Definitions*/
 #ifndef LCD
 #define LCD BOARD_LCD_BASE
-#define LCD_IRQ BOARD_LCD_IRQ
 #endif
 
 /*Pixel format of LCD display*/
 #define PIXEL_FORMAT display_pixel_format_rgb565
-/*rgb565 data buff length*/
-#define RGBBUFFLEN 200000
 /*---------------------------------------------------------------------*
  * Define variables
  *---------------------------------------------------------------------
@@ -47,13 +45,11 @@ ATTR_PLACE_AT_WITH_ALIGNMENT(".framebuffer", HPM_L1C_CACHELINE_SIZE) uint8_t rgb
 
 /*JPG file data buff*/
 uint8_t filebuff[FILEBUFFLEN];
-/*JPG data buff size*/
-int32_t jpg_size;
 /*---------------------------------------------------------------------*
  * Display picture data on LCD
  *---------------------------------------------------------------------
  */
-void lcdc_display_picture(int32_t rgb_width, int32_t rgb_heihgt)
+void lcdc_display_picture(uint8_t *rgbbuff, int32_t rgb_width, int32_t rgb_heihgt)
 {
     uint8_t layer_index = 0;
     lcdc_config_t config = {0};
@@ -72,7 +68,7 @@ void lcdc_display_picture(int32_t rgb_width, int32_t rgb_heihgt)
     layer.pixel_format = PIXEL_FORMAT;
     layer.width = rgb_width;
     layer.height = rgb_heihgt;
-    layer.buffer = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)rgb565buff);
+    layer.buffer = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)rgbbuff);
     layer.alphablend.src_alpha = 0xFF;/* src */
     layer.alphablend.dst_alpha = 0xFF;/* dst */
     layer.alphablend.src_alpha_op = display_alpha_op_invalid;
@@ -92,43 +88,71 @@ void lcdc_display_picture(int32_t rgb_width, int32_t rgb_heihgt)
 }
 
 /*---------------------------------------------------------------------*
+ * Storage device initialization
+ *---------------------------------------------------------------------
+ */
+void store_device_init(void)
+{
+#if defined SD_FATFS_MODE
+    /*Read picture data by SD card*/
+    printf("Read picture data by SD card\n");
+    sdfatfs_task();
+#elif defined TINYUSB_HOST_MODE
+    /*Reading picture data in tinyusb mode*/
+    printf("Read picture data by usb-mode\n");
+    tinyusb_task();
+#endif
+}
+
+/*---------------------------------------------------------------------*
  * MAIN.C
  *---------------------------------------------------------------------
  */
 int main(void)
 {
-    int32_t rgbwidth, rgbheight, rgbsize;
+    /*Width and height of RGB data*/
+    int32_t rgbwidth, rgbheight;
+    /*Get the number of files*/
+    int32_t filenum;
+    /*JPG data buff size*/
+    int32_t jpg_size;
+    /*Get file list name*/
+    file_name_list_t filelist = {0};
+    /*Function return status*/
+    uint8_t status;
 
     /*System initialization*/
     board_init();
-
-    do {
-#if defined SD_FATFS_MODE
-        /*Read picture data by SD card*/
-        printf("Read picture data by SD card\n");
-        sdfatfs_task();
-#elif defined TINYUSB_HOST_MODE
-        /*Reading picture data in tinyusb mode*/
-        printf("Read picture data by usb-mode\n");
-        tinyusb_task();
-#endif
-    } while (!jpg_size);
-
-#if defined JPEG_TURBO_MODE
-    /*Libjpeg-turbo conversion to convert JPG data into rgb565 data*/
-    jpeg_convert_data(jpg_size, &rgbsize, &rgbwidth, &rgbheight);
-    printf("Libjpeg-turbo decode completed\n");
-#elif defined JPEG_HARDWARE_MODE
-    /*jpeg-hardware conversion to convert JPG data into rgb565 data*/
-    jpeg_convert_hw(jpg_size, &rgbwidth, &rgbheight);
-    printf("jpeg-hardware decode completed\n");
-#endif
-
     /*LCD initialization*/
     board_init_lcd();
-    /*Display picture data on LCD*/
-    lcdc_display_picture(rgbwidth, rgbheight);
+    /*Storage device initialization*/
+    store_device_init();
 
-    while (1) {
-    };
+    /*Get a list of specific file types under the specified directory*/
+    status = file_scan("/", ".jpg", &filelist);
+    if (!status) {
+        printf("Failed to scan files\n");
+    } else {
+        /*Get JPG files circularly and convert them into RGB data*/
+        for (filenum = 0; filenum < filelist.fillnum; filenum++) {
+            /*Get a JPG file data*/
+            status = file_get(filenum, &filelist, filebuff, &jpg_size);
+            if (!status) {
+                printf("file %s is too big, Please store pictures smaller than %d byte.\n", filelist.filename[filenum], FILEBUFFLEN);
+                break;
+            }    
+#if defined JPEG_TURBO_MODE
+            /*Libjpeg-turbo conversion to convert JPG data into rgb565 data*/
+            jpeg_convert_data(filebuff, jpg_size, &rgbwidth, &rgbheight, rgb565buff);
+            printf("Libjpeg-turbo decode completed\n");
+#elif defined JPEG_HARDWARE_MODE
+            /*jpeg-hardware conversion to convert JPG data into rgb565 data*/
+            jpeg_convert_hw(filebuff, jpg_size, &rgbwidth, &rgbheight, rgb565buff);
+            printf("jpeg-hardware decode completed\n");
+#endif
+            /*Display picture data on LCD*/
+            lcdc_display_picture(rgb565buff, rgbwidth, rgbheight);
+            board_delay_ms(2000);
+        }
+    }
 }

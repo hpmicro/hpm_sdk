@@ -14,7 +14,7 @@ sdk_compile_definitions(-DUSB_HOST_MCU_CORE=HPM_CORE0)
 sdk_compile_definitions(-DUSB_FATFS_ENABLE)
 #sdk_compile_options("-Os")
 
-project(usb_host_example)
+project(usb_host_msc_udisk_example)
 sdk_inc(inc)
 sdk_app_src(src/main.c)
 sdk_app_src(src/msc_app.c)

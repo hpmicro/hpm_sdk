@@ -40,6 +40,8 @@
 int32_t bldc_foc_get_pos(void);
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t adc_buff[3][BOARD_BLDC_ADC_SEQ_DMA_SIZE_IN_4BYTES];
 
+void motor0_current_loop(void);
+
 uint8_t smc_start_flag = 0; /*滑模启动标志*/
 int32_t qei_clock_hz = 0;
 /*
@@ -86,12 +88,14 @@ typedef struct motor0_par{
 #endif
     BLDC_CONTRL_PID_PARA        speedloop_para;
     BLDC_CONTRL_PID_PARA        position_para;
+    void (*adc_trig_event_callback)(void);
 }MOTOR0_PARA;
 MOTOR0_PARA motor0 = {  BLDC_CONTROL_FOC_PARA_DEFAULTS,
 #if MOTOR0_SMC_EN
                         BLDC_CONTROL_SMC_PARA_DEFAULTS,
 #endif
-                        BLDC_CONTRL_PID_PARA_DEFAULTS, BLDC_CONTRL_PID_PARA_DEFAULTS
+                        BLDC_CONTRL_PID_PARA_DEFAULTS, BLDC_CONTRL_PID_PARA_DEFAULTS,
+                        NULL
                     };
 
 /*初始化foc变量*/
@@ -129,7 +133,6 @@ void bldc_init_par(void)
     par->pwmpar.pwmout.func_set_pwm = bldc_foc_pwmset;
     par->pwmpar.pwmout.I_pwm_reload = PWM_RELOAD;
     par->pwmpar.pwmout.I_motor_id = BLDC_MOTOR0_INDEX;
-    par->pwmpar.pwmout.I_sync_id = BLDC_MOTOR0_PWM_T;
 
     par->samplCurpar.func_sampl = bldc_foc_current_cal;
     par->func_dqsvpwm =  bldc_foc_ctrl_dq_to_pwm;
@@ -144,6 +147,8 @@ void bldc_init_par(void)
     motor0.position_para.I_kp       = HPM_MOTOR_MATH_FL_MDF(0.0095);
     motor0.position_para.I_ki       = 0;
     motor0.position_para.I_max      = HPM_MOTOR_MATH_FL_MDF(25);
+
+    motor0.adc_trig_event_callback = &motor0_current_loop;
 #if MOTOR0_SMC_EN
     /*使能滑模*/
     motor0.speedloop_para.I_kp = HPM_MOTOR_MATH_FL_MDF(2);
@@ -206,7 +211,7 @@ void disable_all_pwm_output(void)
 void pwm_init(void)
 {
     uint8_t cmp_index = BOARD_BLDCPWM_CMP_INDEX_0;
-    pwm_cmp_config_t cmp_config[3] = {0};
+    pwm_cmp_config_t cmp_config[4] = {0};
     pwm_pair_config_t pwm_pair_config = {0};
     pwm_output_channel_t pwm_output_ch_cfg;
 
@@ -222,18 +227,20 @@ void pwm_init(void)
      */
     cmp_config[0].mode = pwm_cmp_mode_output_compare;
     cmp_config[0].cmp = PWM_RELOAD + 1;
-    cmp_config[0].update_trigger = pwm_shadow_register_update_on_shlk;
+    cmp_config[0].update_trigger = pwm_shadow_register_update_on_hw_event;
 
     cmp_config[1].mode = pwm_cmp_mode_output_compare;
     cmp_config[1].cmp = PWM_RELOAD + 1;
-    cmp_config[1].update_trigger = pwm_shadow_register_update_on_shlk;
+    cmp_config[1].update_trigger = pwm_shadow_register_update_on_hw_event;
 
     cmp_config[2].enable_ex_cmp  = false;
     cmp_config[2].mode           = pwm_cmp_mode_output_compare;
     cmp_config[2].cmp = 5;
     cmp_config[2].update_trigger = pwm_shadow_register_update_on_shlk;
-    pwm_config_cmp(MOTOR0_BLDCPWM, BOARD_BLDC_PWM_TRIG_CMP_INDEX, &cmp_config[2]);
-    pwm_shadow_register_lock(MOTOR0_BLDCPWM);
+
+    cmp_config[3].mode = pwm_cmp_mode_output_compare;
+    cmp_config[3].cmp = PWM_RELOAD;
+    cmp_config[3].update_trigger = pwm_shadow_register_update_on_modify;
 
     pwm_get_default_pwm_pair_config(MOTOR0_BLDCPWM, &pwm_pair_config);
     pwm_pair_config.pwm[0].enable_output = true;
@@ -265,6 +272,11 @@ void pwm_init(void)
         printf("failed to setup waveform\n");
         while(1);
     }
+    pwm_load_cmp_shadow_on_capture(MOTOR0_BLDCPWM, 20, 0);
+    pwm_config_cmp(MOTOR0_BLDCPWM, 20, &cmp_config[3]);
+
+    pwm_config_cmp(MOTOR0_BLDCPWM, BOARD_BLDC_PWM_TRIG_CMP_INDEX, &cmp_config[2]);
+
     pwm_start_counter(MOTOR0_BLDCPWM);
     pwm_issue_shadow_register_lock_event(MOTOR0_BLDCPWM);
 }
@@ -432,33 +444,38 @@ void init_trigger_mux(TRGM_Type * ptr)
     trgm_output_config(ptr, BOARD_BLDC_TRG_NUM, &trgm_output_cfg);
 }
 
-void isr_adc(void)
+void motor0_current_loop(void)
 {
-    uint32_t status;
     uint32_t  pos;
     float user_give_angle = 0;
     float fre_get_angle = 0.0;
+    pos = qei_get_current_count(BOARD_BLDC_QEI_BASE, qei_counter_type_phase)&0x1fffff;
+    pos = ((pos) % 2000)*18;
+    fre_get_angle = pos;
+    fre_get_angle = 360- (fre_get_angle /100);
+
+    if(smc_start_flag == 1){
+        user_give_angle = fre_set_angle;
+    }
+    else{
+        user_give_angle = fre_get_angle;
+        fre_set_angle = fre_get_angle;
+    }
+    motor0.foc_para.samplCurpar.adc_u = ((adc_buff[0][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
+    motor0.foc_para.samplCurpar.adc_v = ((adc_buff[1][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
+    motor0.foc_para.samplCurpar.adc_w = ((adc_buff[2][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
+    motor0.foc_para.electric_angle = HPM_MOTOR_MATH_FL_MDF(user_give_angle);
+    motor0.foc_para.func_dqsvpwm(&motor0.foc_para);
+}
+
+void isr_adc(void)
+{
+    uint32_t status;
     status = hpm_adc_get_status_flags(&hpm_adc_u);
 
     if ((status & BOARD_BLDC_ADC_TRIG_FLAG) != 0) {
         hpm_adc_clear_status_flags(&hpm_adc_u, BOARD_BLDC_ADC_TRIG_FLAG);
-        pos = qei_get_current_count(BOARD_BLDC_QEI_BASE, qei_counter_type_phase)&0x1fffff;
-        pos = ((pos) % 2000)*18;
-        fre_get_angle = pos;
-        fre_get_angle = 360- (fre_get_angle /100);
-
-        if(smc_start_flag == 1){
-            user_give_angle = fre_set_angle;
-        }
-        else{
-            user_give_angle = fre_get_angle;
-            fre_set_angle = fre_get_angle;
-        }
-        motor0.foc_para.samplCurpar.adc_u = ((adc_buff[0][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
-        motor0.foc_para.samplCurpar.adc_v = ((adc_buff[1][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
-        motor0.foc_para.samplCurpar.adc_w = ((adc_buff[2][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
-        motor0.foc_para.electric_angle = HPM_MOTOR_MATH_FL_MDF(user_give_angle);
-        motor0.foc_para.func_dqsvpwm(&motor0.foc_para);
+        motor0.adc_trig_event_callback();
     }
 }
 SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_ADC_IRQn, isr_adc)
@@ -587,6 +604,16 @@ void adc_init(void)
     hpm_adc_init_pmt_dma(&hpm_adc_v, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[1]));
     hpm_adc_init_pmt_dma(&hpm_adc_w, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[2]));
 }
+void motor0_angle_align_loop(void)
+{
+    motor0.foc_para.samplCurpar.adc_u = ((adc_buff[0][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
+    motor0.foc_para.samplCurpar.adc_v = ((adc_buff[1][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
+    motor0.foc_para.samplCurpar.adc_w = ((adc_buff[2][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
+    motor0.foc_para.electric_angle = HPM_MOTOR_MATH_FL_MDF(0);
+    motor0.foc_para.CurrentDPiPar.target = HPM_MOTOR_MATH_FL_MDF(100);
+    motor0.foc_para.CurrentQPiPar.target = HPM_MOTOR_MATH_FL_MDF(0);
+    motor0.foc_para.func_dqsvpwm(&motor0.foc_para);
+}
 /*
 * 转子角度对中，将编码器的中点值和实际物理角度的中点值对齐,默认当前的中点值为0角度所在的区域
 *               该函数应当在已经可以输出pwm后调用，即电机可以根据给定角度输出力矩
@@ -594,16 +621,10 @@ void adc_init(void)
 void bldc_foc_angle_align(void)
 {
     uint16_t run_times = 0;
+    motor0.adc_trig_event_callback = &motor0_angle_align_loop;
     do{
         if(timer_flag == 1){/*1ms 定时*/
             timer_flag = 0;
-            motor0.foc_para.samplCurpar.adc_u = ((adc_buff[0][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
-            motor0.foc_para.samplCurpar.adc_v = ((adc_buff[1][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
-            motor0.foc_para.samplCurpar.adc_w = ((adc_buff[2][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
-            motor0.foc_para.electric_angle = HPM_MOTOR_MATH_FL_MDF(0);
-            motor0.foc_para.CurrentDPiPar.target = HPM_MOTOR_MATH_FL_MDF(80);
-            motor0.foc_para.CurrentQPiPar.target = HPM_MOTOR_MATH_FL_MDF(0);
-            motor0.foc_para.func_dqsvpwm(&motor0.foc_para);
             run_times++;
             if(run_times >= BLDC_ANGLE_SET_TIME_MS){/*运行时间*/
                 /*获取转子角度信息，标记为0 点*/
@@ -640,8 +661,12 @@ void lv_set_adval_middle(void)
     uint32_t adc_v_sum = 0;
     uint32_t adc_w_sum = 0;
     uint8_t times = 0;
+    motor0.foc_para.pwmpar.pwmout.pwm_u = PWM_RELOAD >> 1;
+    motor0.foc_para.pwmpar.pwmout.pwm_v = PWM_RELOAD >> 1;
+    motor0.foc_para.pwmpar.pwmout.pwm_w = PWM_RELOAD >> 1;
+    motor0.foc_para.pwmpar.pwmout.func_set_pwm(&motor0.foc_para.pwmpar.pwmout);
     do{
-        if(timer_flag == 1){/*1ms 定时*/
+        if(timer_flag == 1){/*1ms*/
 
             adc_u_sum += ((adc_buff[0][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
             adc_v_sum += ((adc_buff[1][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
@@ -670,14 +695,15 @@ int main(void)
     pwm_init();
     timer_init();
     lv_set_adval_middle();
-
+    intc_m_enable_irq_with_priority(BOARD_BLDC_ADC_IRQn, 1);
+    hpm_adc_enable_interrupts(&hpm_adc_u, BOARD_BLDC_ADC_TRIG_FLAG);
 #if !MOTOR0_SMC_EN
     /*角度对中*/
     bldc_foc_angle_align();
     /*开始转*/
 #endif
-    intc_m_enable_irq_with_priority(BOARD_BLDC_ADC_IRQn, 1);
-    hpm_adc_enable_interrupts(&hpm_adc_u, BOARD_BLDC_ADC_TRIG_FLAG);
+    motor0.adc_trig_event_callback = &motor0_current_loop;
+
 #if !MOTOR0_SMC_EN
     while (1) {
         printf("Mode selection:\r\n");

@@ -110,6 +110,12 @@ int __SEGGER_RTL_X_file_unget(__SEGGER_RTL_FILE *stream, int c)
     }
     return c;
 }
+
+int  __SEGGER_RTL_X_file_flush(__SEGGER_RTL_FILE *__stream)
+{
+    return 1;
+}
+
 #endif
 
 int _write(int file, char *data, int size)

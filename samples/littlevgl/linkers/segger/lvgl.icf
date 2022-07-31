@@ -77,6 +77,8 @@ place in SDRAM with auto order              {
                                               block tls,                                            // Thread-local-storage block
                                               readwrite,                                            // Catch-all for initialized/uninitialized data sections (e.g. .data, .noinit)
                                               zeroinit,                                              // Catch-all for zero-initialized data sections (e.g. .bss)
+                                            };
+place in SDRAM                              {
                                               block framebuffer,
                                             };
 place in NONCACHEABLE_RAM                   { section .noncacheable, section .noncacheable.init, section .noncacheable.bss };                                 // Noncacheable block

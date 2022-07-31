@@ -37,7 +37,7 @@ void test_gpio_toggle_output(GPIO_Type *ptr)
 void gpiom_configure_pin_control_setting(gpiom_gpio_t gpio_module)
 {
     printf("using gpiom configures pin control module\n");
-    gpiom_set_pin_controler(BOARD_APP_GPIOM_BASE, BOARD_LED_GPIO_INDEX, BOARD_LED_GPIO_PIN, gpio_module);
+    gpiom_set_pin_controller(BOARD_APP_GPIOM_BASE, BOARD_LED_GPIO_INDEX, BOARD_LED_GPIO_PIN, gpio_module);
     gpiom_enable_pin_visibility(BOARD_APP_GPIOM_BASE, BOARD_LED_GPIO_INDEX, BOARD_LED_GPIO_PIN, gpio_module);
     gpiom_lock_pin(BOARD_APP_GPIOM_BASE, BOARD_LED_GPIO_INDEX, BOARD_LED_GPIO_PIN);
 }

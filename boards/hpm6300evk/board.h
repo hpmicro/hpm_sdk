@@ -149,6 +149,9 @@
 #define BOARD_APP_SPI_RX_DMAMUX_CH DMAMUX_MUXCFG_HDMA_MUX0
 #define BOARD_APP_SPI_TX_DMA HPM_DMA_SRC_SPI3_TX
 #define BOARD_APP_SPI_TX_DMAMUX_CH DMAMUX_MUXCFG_HDMA_MUX1
+#define BOARD_SPI_CS_GPIO_CTRL           HPM_GPIO0
+#define BOARD_SPI_CS_PIN                 IOC_PAD_PC18
+#define BOARD_SPI_CS_ACTIVE_LEVEL        (0U)
 
 /* Flash section */
 #define BOARD_APP_XPI_NOR_XPI_BASE            (HPM_XPI0)
@@ -160,6 +163,8 @@
 #define BOARD_APP_I2S_BASE HPM_I2S0
 #define BOARD_APP_I2S_DATA_LINE      (2U)
 #define BOARD_APP_I2S_CLK_NAME clock_i2s0
+#define BOARD_APP_AUDIO_CLK_SRC clock_source_pll2_clk0
+#define BOARD_APP_AUDIO_CLK_SRC_NAME clk_pll2clk0
 
 /* enet section */
 #define BOARD_ENET_RMII                 HPM_ENET0
@@ -174,11 +179,7 @@
 #define BOARD_APP_ADC16_NAME "ADC0"
 #define BOARD_APP_ADC16_BASE HPM_ADC0
 #define BOARD_APP_ADC16_IRQn IRQn_ADC0
-#define BOARD_APP_ADC16_CH                       (13U)
-#define BOARD_APP_ADC_SEQ_DMA_SIZE_IN_4BYTES     (1024U)
-#define BOARD_APP_ADC_PMT_DMA_SIZE_IN_4BYTES     (192U)
-#define BOARD_APP_ADC_PREEMPT_TRIG_LEN           (1U)
-#define BOARD_APP_ADC_SINGLE_CONV_CNT            (6)
+#define BOARD_APP_ADC16_CH_1                     (13U)
 #define BOARD_APP_ADC_TRIG_PWMT0                 HPM_PWM0
 #define BOARD_APP_ADC_TRIG_PWMT1                 HPM_PWM1
 #define BOARD_APP_ADC_TRIG_TRGM0                 HPM_TRGM0
@@ -207,10 +208,15 @@
 #define BOARD_CALLBACK_TIMER_CLK_NAME (clock_gptmr3)
 
 /* SDXC section */
-#define BOARD_APP_SDCARD_SDXC_BASE            (HPM_SDXC0)
-#define BOARD_APP_SDCARD_CDN_GPIO_CTRL        (HPM_GPIO0)
-#define BOARD_APP_SDCARD_CDN_GPIO_PIN         (15UL)
-#define BOARD_APP_SDCARD_SUPPORT_1V8          (0)
+#define BOARD_APP_SDCARD_SDXC_BASE                  (HPM_SDXC0)
+#define BOARD_APP_SDCARD_SUPPORT_1V8                (0)
+#define BOARD_APP_SDCARD_SUPPORT_CARD_DETECTION     (1)
+#define BOARD_APP_SDCARD_CARD_DETECTION_USING_GPIO  (0)
+#if BOARD_APP_SDCARD_CARD_DETECTION_USING_GPIO
+#define BOARD_APP_SDCARD_CARD_DETECTION_GPIO        NULL
+#define BOARD_APP_SDCARD_CARD_DETECTION_GPIO_INDEX  0
+#define BOARD_APP_SDCARD_CARD_DETECTION_PIN_INDEX   0
+#endif
 
 /* USB section */
 #define BOARD_USB0_ID_PORT       (HPM_GPIO0)
@@ -327,6 +333,8 @@ uint32_t board_init_dram_clock(void);
 void board_init_sdram_pins(void);
 void board_init_gpio_pins(void);
 void board_init_spi_pins(SPI_Type *ptr);
+void board_init_spi_pins_with_gpio_as_cs(SPI_Type *ptr);
+void board_write_spi_cs(uint32_t pin, uint8_t state);
 void board_init_led_pins(void);
 
 void board_led_write(uint8_t state);

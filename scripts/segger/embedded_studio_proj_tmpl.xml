@@ -29,7 +29,6 @@
       post_build_command="{{ target["post_build_command"] }}"
       heap_size="{{ target["heap_size"] }}"
       stack_size="{{ target["stack_size"] }}"
-      build_object_file_name="$(IntDir)/$(RelInputDir)/$(InputName)$(OBJ)"
       RISCV_TOOLCHAIN_VARIANT="{{ target["toolchain_variant"] }}"
       {% if target["compiler_abi"] -%}
       rv_abi="{{ target["compiler_abi"] }}"
@@ -68,8 +67,15 @@
       linker_additional_files="{{ target["ses_link_input"] }}"
       {%- endif %}
       />
-    {% for group in target["groups"] %}<folder Name="{{ group.name }}">{% for file in group.files %}
-    <file file_name="{{ file.path }}"/>{% endfor %}</folder>{% endfor %}
+    {%- for group in target["groups"] %}
+    <folder Name="{{ group.name }}">
+      {%- for file in group.files %}
+      <file file_name="{{ file.path }}">
+        <configuration Name="Common" build_object_file_name="{{ file.obj_path }}$(OBJ)" />
+      </file>
+      {%- endfor %}
+    </folder>
+    {%- endfor %}
     <configuration
       Name="Debug"
       debug_cpu_registers_file="{{ target["cpu_register_definition"] }}"

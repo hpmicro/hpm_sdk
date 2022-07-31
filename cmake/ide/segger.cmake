@@ -434,7 +434,7 @@ function (generate_ses_project)
     endif()
 
     execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} ${HPM_SDK_BASE}/scripts/segger/embedded_studio_proj_gen.py "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}.json" "${CMAKE_CURRENT_BINARY_DIR}/segger_embedded_studio"
+        COMMAND ${PYTHON_EXECUTABLE} ${HPM_SDK_BASE}/scripts/segger/embedded_studio_proj_gen.py "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}.json" "${CMAKE_CURRENT_BINARY_DIR}/segger_embedded_studio" "${CMAKE_CURRENT_SOURCE_DIR}"
         WORKING_DIRECTORY  ${HPM_SDK_BASE}/scripts/segger
         )
 endfunction ()

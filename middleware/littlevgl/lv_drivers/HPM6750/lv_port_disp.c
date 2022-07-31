@@ -18,35 +18,45 @@
  * resource definition
  */
 
+#ifndef RUNNING_CORE_INDEX
 #define RUNNING_CORE_INDEX HPM_CORE0
+#endif
 
 #define LCD_CONTROLLER BOARD_LCD_BASE
 #define LCD_LAYER_INDEX (0)
 #define LCD_LAYER_DONE_MASK (LCD_LAYER_INDEX + 1)
 #define LCD_IRQ_NUM  BOARD_LCD_IRQ
 
+#ifndef HPM_LCD_IRQ_PRIORITY
+#define HPM_LCD_IRQ_PRIORITY  1
+#endif
+
 #define LV_LCD_WIDTH BOARD_LCD_WIDTH
 #define LV_LCD_HEIGHT BOARD_LCD_HEIGHT
 
-static volatile bool vsync = false;
+static volatile bool back_buffer_filled;
 static void init_lcd(void);
 static void flush_display(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p);
 static lcdc_layer_config_t layer;
 static lv_disp_drv_t g_disp_drv;
-static lv_color_t __attribute__((section (".framebuffer"))) framebuffer0[LV_LCD_WIDTH * LV_LCD_HEIGHT] __attribute__ ((aligned(4)));
-static lv_color_t __attribute__((section (".framebuffer"))) framebuffer1[LV_LCD_WIDTH * LV_LCD_HEIGHT] __attribute__ ((aligned(4)));
+static lv_color_t __attribute__((section(".framebuffer"), aligned(HPM_L1C_CACHELINE_SIZE))) framebuffer[2][LV_LCD_WIDTH * LV_LCD_HEIGHT];
+static volatile lv_color_t *back_buffer;
+static volatile lv_color_t *front_buffer;
 static uint32_t ms_per_frame = 0;
 
 void isr_lcd(void)
 {
     volatile uint32_t s = lcdc_get_dma_status(LCD_CONTROLLER);
+    volatile lv_color_t *tmp;
     lcdc_clear_dma_status(LCD_CONTROLLER, s);
-    if (s & (LCD_LAYER_DONE_MASK << LCDC_DMA_ST_DMA0_DONE_SHIFT)) {
-        if (lcdc_layer_control_shadow_loaded(LCD_CONTROLLER, 0)) {
-            vsync = true;
-        }
+    if ((back_buffer_filled) && (s & (LCD_LAYER_DONE_MASK << LCDC_DMA_ST_DMA0_DONE_SHIFT))) {
+        tmp = front_buffer;
+        front_buffer = back_buffer;
+        back_buffer = tmp;
+        lcdc_layer_set_next_buffer(LCD_CONTROLLER, LCD_LAYER_INDEX, (uint32_t)front_buffer);
+        lv_disp_flush_ready(&g_disp_drv);
+        back_buffer_filled = false;
     }
-
 }
 SDK_DECLARE_EXT_ISR_M(LCD_IRQ_NUM, isr_lcd)
 
@@ -64,7 +74,7 @@ void lv_port_disp_init(void)
     init_lcd();
 
     static lv_disp_draw_buf_t draw_buf_dsc;
-    lv_disp_draw_buf_init(&draw_buf_dsc, framebuffer0, framebuffer1, LV_LCD_WIDTH * LV_LCD_HEIGHT);   /*Initialize the display buffer*/
+    lv_disp_draw_buf_init(&draw_buf_dsc, framebuffer[0], framebuffer[1], LV_LCD_WIDTH * LV_LCD_HEIGHT);   /*Initialize the display buffer*/
 
     /*-----------------------------------
      * Register the display in LVGL
@@ -88,14 +98,10 @@ void lv_port_disp_init(void)
 
     /*Finally register the driver*/
     lv_disp_drv_register(&g_disp_drv);
-}
 
-static void disp_wait(void)
-{
-    vsync = false;
-    while(!vsync) {
-        __asm("nop");
-    }
+    front_buffer = framebuffer[0];
+    back_buffer = framebuffer[0];
+    back_buffer_filled = false;
 }
 
 /* Initialize your display and the required peripherals. */
@@ -119,37 +125,44 @@ static void init_lcd(void)
     lcdc_init(LCD_CONTROLLER, &config);
     lcdc_get_default_layer_config(LCD_CONTROLLER, &layer, pixel_format, LCD_LAYER_INDEX);
 
-    memset(framebuffer0, 0, sizeof(framebuffer0));
-    memset(framebuffer1, 0, sizeof(framebuffer1));
+    memset(framebuffer, 0, sizeof(framebuffer));
 
     layer.position_x = 0;
     layer.position_y = 0;
     layer.width = config.resolution_x;
     layer.height = config.resolution_y;
-    layer.buffer = (uint32_t) core_local_mem_to_sys_address(RUNNING_CORE_INDEX, (uint32_t) framebuffer0);
+    layer.buffer = (uint32_t) core_local_mem_to_sys_address(RUNNING_CORE_INDEX, (uint32_t) framebuffer[0]);
     layer.background.u = 0;
 
     if (status_success != lcdc_config_layer(LCD_CONTROLLER, LCD_LAYER_INDEX, &layer, true)) {
         printf("failed to configure layer\n");
-        while(1);
+        while (1) {
+        }
     }
-
 
     lcdc_turn_on_display(LCD_CONTROLLER);
     lcdc_enable_interrupt(LCD_CONTROLLER, LCD_LAYER_DONE_MASK << 16);
-    intc_m_enable_irq_with_priority(LCD_IRQ_NUM, 1);
+    intc_m_enable_irq_with_priority(LCD_IRQ_NUM, HPM_LCD_IRQ_PRIORITY);
+}
+
+static bool is_back_buffer(lv_color_t *color_p)
+{
+    return (color_p == back_buffer);
 }
 
 static void flush_display(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p)
 {
-    uint32_t buffer = core_local_mem_to_sys_address(RUNNING_CORE_INDEX, (uint32_t) color_p);
+    if (back_buffer_filled || ((front_buffer != back_buffer) && !is_back_buffer(color_p))) {
+        /* it should not go here */
+        while (1) {
+        }
+    }
+    back_buffer = (lv_color_t *)core_local_mem_to_sys_address(RUNNING_CORE_INDEX, (uint32_t) color_p);
     if (l1c_dc_is_enabled()) {
-        uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t)buffer);
-        uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP((uint32_t)buffer + LV_LCD_HEIGHT * LV_LCD_WIDTH * LV_COLOR_DEPTH / 8);
+        uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t)back_buffer);
+        uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP((uint32_t)back_buffer + LV_LCD_HEIGHT * LV_LCD_WIDTH * LV_COLOR_DEPTH / 8);
         uint32_t aligned_size = aligned_end - aligned_start;
         l1c_dc_writeback(aligned_start, aligned_size);
     }
-    lcdc_layer_set_next_buffer(LCD_CONTROLLER, LCD_LAYER_INDEX, buffer);
-    disp_wait();
-    lv_disp_flush_ready(disp_drv);
+    back_buffer_filled = true;
 }

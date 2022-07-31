@@ -20,7 +20,6 @@
 #define CODEC_I2S_DATA_LINE  BOARD_APP_I2S_DATA_LINE
 
 #define CODEC_I2C_ADDRESS    SGTL5000_I2C_ADDR
-#define CODEC_I2S_MCLK_HZ    24576000UL
 #define CODEC_SAMPLE_RATE_HZ 48000U
 #define CODEC_BIT_WIDTH      32U
 
@@ -28,7 +27,7 @@ sgtl_config_t sgtl5000_config = {
     .route = sgtl_route_playback_record,  /*!< Audio data route.*/
     .bus = sgtl_bus_left_justified,       /*!< Audio transfer protocol */
     .master = false,                      /*!< Master or slave. True means master, false means slave. */
-    .format = {.mclk_hz = CODEC_I2S_MCLK_HZ,
+    .format = {.mclk_hz = 0,
                .sample_rate = CODEC_SAMPLE_RATE_HZ,
                .bit_width = CODEC_BIT_WIDTH,
                .sclk_edge = sgtl_sclk_valid_edge_rising}, /*!< audio format */
@@ -68,6 +67,7 @@ void test_interrupt(void)
 {
     i2s_config_t i2s_config;
     i2s_transfer_config_t transfer;
+    uint32_t i2s_mclk_hz;
 
     /* Config I2S interface to CODEC */ 
     i2s_get_default_config(CODEC_I2S, &i2s_config);
@@ -78,12 +78,14 @@ void test_interrupt(void)
     transfer.data_line = I2S_DATA_LINE_2;
     transfer.sample_rate = CODEC_SAMPLE_RATE_HZ;
     transfer.master_mode = true;
-    if (status_success != i2s_config_transfer(CODEC_I2S, CODEC_I2S_MCLK_HZ, &transfer)) {
+    i2s_mclk_hz = clock_get_frequency(CODEC_I2S_CLK_NAME);
+    if (status_success != i2s_config_transfer(CODEC_I2S, i2s_mclk_hz, &transfer)) {
         printf("I2S config failed for CODEC\n");
         while(1);
     }
 
     sgtl5000_config.route = sgtl_route_playback;
+    sgtl5000_config.format.mclk_hz = i2s_mclk_hz;
     sgtl_init(&sgtl5000_context, &sgtl5000_config);
 
     printf("Test Codec playback\n");

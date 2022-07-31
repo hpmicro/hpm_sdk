@@ -6,37 +6,44 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include "board.h"
+
 #include "hpm_clock_drv.h"
-#include "hpm_i2s_drv.h"
-#include "hpm_sgtl5000.h"
-#include "ff.h"
+#include "hpm_l1c_drv.h"
 #include "hpm_dma_drv.h"
 #include "hpm_dmamux_drv.h"
-#include <string.h>
+#include "hpm_i2s_drv.h"
 #include "hpm_wav_codec.h"
-#include "hpm_l1c_drv.h"
+#include "ff.h"
 #include "diskio.h"
 
+#if !defined(USING_CODEC_SGTL5000) && !defined(USING_DAO)
+#define USING_DAO 1
+#endif
+
+#if USING_CODEC_SGTL5000
+#include "hpm_sgtl5000.h"
+#elif USING_DAO
+#include "hpm_dao_drv.h"
+#endif
+
+#if USING_CODEC_SGTL5000
 #define CODEC_I2C            BOARD_APP_I2C_BASE
-#define CODEC_I2S            BOARD_APP_I2S_BASE
-#define CODEC_I2S_CLK_NAME   BOARD_APP_I2S_CLK_NAME
-#define CODEC_I2S_DATA_LINE  BOARD_APP_I2S_DATA_LINE
-
 #define CODEC_I2C_ADDRESS    SGTL5000_I2C_ADDR
-#define CODEC_I2S_MCLK_HZ    24576000UL
-#define CODEC_SAMPLE_RATE_HZ 48000U
-#define CODEC_BIT_WIDTH      32U
 
-#define CODEC_BUFF_SIZE      20480
+#define TARGET_I2S            BOARD_APP_I2S_BASE
+#define TARGET_I2S_CLK_NAME   BOARD_APP_I2S_CLK_NAME
+#define TARGET_I2S_DATA_LINE  BOARD_APP_I2S_DATA_LINE
+#define TARGET_I2S_TX_DMAMUX_SRC HPM_DMA_SRC_I2S0_TX
 
 sgtl_config_t sgtl5000_config = {
     .route = sgtl_route_playback_record,  /*!< Audio data route.*/
     .bus = sgtl_bus_left_justified,       /*!< Audio transfer protocol */
     .master = false,                      /*!< Master or slave. True means master, false means slave. */
-    .format = {.mclk_hz = CODEC_I2S_MCLK_HZ,
-               .sample_rate = CODEC_SAMPLE_RATE_HZ,
-               .bit_width = CODEC_BIT_WIDTH,
+    .format = {.mclk_hz = 0,
+               .sample_rate = 0,
+               .bit_width = 32,
                .sclk_edge = sgtl_sclk_valid_edge_rising}, /*!< audio format */
 };
 
@@ -45,21 +52,37 @@ sgtl_context_t sgtl5000_context = {
     .slave_address = CODEC_I2C_ADDRESS, /* I2C address */
 };
 
+#elif USING_DAO
+#define TARGET_I2S            DAO_I2S
+#define TARGET_I2S_CLK_NAME   clock_dao
+#define TARGET_I2S_DATA_LINE  0
+#define TARGET_I2S_TX_DMAMUX_SRC HPM_DMA_SRC_I2S1_TX
+#else
+#error define USING_CODEC or USING_DAO
+#endif
+
+#define CODEC_BUFF_SIZE      20480
+
+#define FIL_SEARCH_NUM      10
+#define FIL_SEARCH_LENGTH   128
+
 volatile bool dma_transfer_done = false;
 volatile bool dma_transfer_error = false;
 
 FIL wav_file;
 hpm_wav_ctrl wav_ctrl;
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(32) uint8_t i2s_buff1[CODEC_BUFF_SIZE];
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(32) uint8_t i2s_buff2[CODEC_BUFF_SIZE];
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(32) uint8_t i2s_buff3[CODEC_BUFF_SIZE];
+uint32_t i2s_mclk_hz;
+ATTR_ALIGN(4) uint8_t wav_header_buff[512];
+uint8_t search_file_buff[FIL_SEARCH_NUM][FIL_SEARCH_LENGTH];
+ATTR_ALIGN(32) uint8_t i2s_buff1[CODEC_BUFF_SIZE];
+ATTR_ALIGN(32) uint8_t i2s_buff2[CODEC_BUFF_SIZE];
 
 hpm_stat_t hpm_audiocodec_search_file(char * file_name, HPM_AUDIOCODEC_FILE * fil)
 {
     FRESULT rsl = f_open(&wav_file, file_name, FA_READ);
     if(rsl == FR_OK) {
         *fil = (uint32_t) &wav_file;
-        return status_audio_codec_true;
+        return status_success;
     } else {
         return status_audio_codec_none_file;
     }
@@ -69,9 +92,9 @@ hpm_stat_t hpm_audiocodec_read_file(HPM_AUDIOCODEC_FILE fil, uint32_t num_bytes,
 {
     FRESULT rsl = f_read((FIL *)fil, data, num_bytes, (UINT*)br);
     if(rsl == FR_OK) {
-        return status_audio_codec_true;
+        return status_success;
     } else {
-        return status_audio_codec_false;
+        return status_fail;
     }
 }
 
@@ -79,9 +102,9 @@ hpm_stat_t hpm_audiocodec_write_file(HPM_AUDIOCODEC_FILE fil, uint32_t num_bytes
 {
     FRESULT rsl = f_write((FIL *)fil, data, num_bytes, (UINT*)br);
     if(rsl == FR_OK) {
-        return status_audio_codec_true;
+        return status_success;
     } else {
-        return status_audio_codec_false;
+        return status_fail;
     }
 }
 
@@ -89,10 +112,35 @@ hpm_stat_t hpm_audiocodec_close_file(HPM_AUDIOCODEC_FILE fil)
 {
     FRESULT rsl = f_close((FIL *)fil);
     if(rsl == FR_OK) {
-        return status_audio_codec_true;
+        return status_success;
     } else {
-        return status_audio_codec_false;
+        return status_fail;
     }
+}
+
+hpm_stat_t get_audio_clock_div(uint16_t *div1, uint32_t sample_rate, uint8_t audio_depth, uint8_t channel_num)
+{
+    uint32_t bclk_freq_in_hz;
+    uint32_t audio_freq_in_hz;
+    uint32_t prop;
+    uint16_t i, j, m;
+    int8_t error_buf[6] = {1, -2, 3, -4, 5, -6};
+    bclk_freq_in_hz = sample_rate * ((audio_depth << 3) + 16) * channel_num;
+    audio_freq_in_hz = clock_get_frequency(BOARD_APP_AUDIO_CLK_SRC_NAME);
+    m = 0;
+    do {
+        prop = audio_freq_in_hz / bclk_freq_in_hz;
+        for (i = 20; i <= 256; i--) {
+            for (j = 512; j >= 10; j--) {
+                if ((i * j) == prop) {
+                    *div1 = i;
+                    return status_success;
+                }
+            }
+        }
+        prop += error_buf[m++];
+    } while (m < 6);
+    return status_fail;
 }
 
 void isr_dma(void)
@@ -107,7 +155,7 @@ void isr_dma(void)
 SDK_DECLARE_EXT_ISR_M(BOARD_APP_HDMA_IRQ, isr_dma)
 
 uint32_t * strdata = 0;
-void i2s_dma_cfg(void)
+void i2s_dma_cfg(uint32_t size)
 {
     dma_channel_config_t ch_config = {0};
 
@@ -115,12 +163,12 @@ void i2s_dma_cfg(void)
 
     dma_default_channel_config(BOARD_APP_HDMA, &ch_config);
     ch_config.src_addr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)strdata);
-    ch_config.dst_addr = (uint32_t)&CODEC_I2S->TXD[CODEC_I2S_DATA_LINE];
+    ch_config.dst_addr = (uint32_t)&TARGET_I2S->TXD[TARGET_I2S_DATA_LINE];
     ch_config.src_width = DMA_TRANSFER_WIDTH_WORD;
     ch_config.dst_width = DMA_TRANSFER_WIDTH_WORD;
     ch_config.src_addr_ctrl = DMA_ADDRESS_CONTROL_INCREMENT;
     ch_config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
-    ch_config.size_in_byte = CODEC_BUFF_SIZE;
+    ch_config.size_in_byte = size;
     ch_config.dst_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
     ch_config.src_burst_size = 0;
 
@@ -128,80 +176,160 @@ void i2s_dma_cfg(void)
         printf(" dma setup channel failed\n");
         return;
     }
-    dmamux_config(BOARD_APP_DMAMUX, 2, HPM_DMA_SRC_I2S0_TX, 1);
+    dmamux_config(BOARD_APP_DMAMUX, 2, TARGET_I2S_TX_DMAMUX_SRC, 1);
 }
 
-void test_sgtl5000_playback_record(void)
+#if USING_CODEC_SGTL5000
+void test_sgtl5000_playback(uint32_t sample_rate, uint8_t audio_depth, uint8_t channel_num)
 {
     i2s_config_t i2s_config;
     i2s_transfer_config_t transfer;
+    uint16_t div1;
+    hpm_stat_t rsl;
 
-    /* Config I2S interface to CODEC */ 
-    i2s_get_default_config(CODEC_I2S, &i2s_config);
+    /* Config I2S interface to CODEC */
+    i2s_get_default_config(TARGET_I2S, &i2s_config);
     i2s_config.enable_mclk_out = true;
-    i2s_init(CODEC_I2S, &i2s_config);
+    i2s_init(TARGET_I2S, &i2s_config);
 
     i2s_get_default_transfer_config(&transfer);
     transfer.data_line = I2S_DATA_LINE_2;
-    transfer.sample_rate = CODEC_SAMPLE_RATE_HZ;
+    transfer.sample_rate = sample_rate;
     transfer.master_mode = true;
+    transfer.audio_depth = I2S_AUDIO_DEPTH_32_BITS;
+
+    rsl = get_audio_clock_div(&div1, transfer.sample_rate, transfer.audio_depth, channel_num);
+    if (rsl == status_fail) {
+        printf("Clock selection error.\r\n");
+        while (1) {
+            ;
+        }
+    }
+    sysctl_config_clock(HPM_SYSCTL, clock_node_aud0, BOARD_APP_AUDIO_CLK_SRC, div1);
+    i2s_mclk_hz = clock_get_frequency(BOARD_APP_I2S_CLK_NAME);
+
     /* configure I2S RX and TX */
-    if (status_success != i2s_config_transfer(CODEC_I2S, CODEC_I2S_MCLK_HZ, &transfer))
-    {
+    if (status_success != i2s_config_transfer(TARGET_I2S, i2s_mclk_hz, &transfer)) {
         printf("I2S config failed for CODEC\n");
         while(1);
     }
-    i2s_enable_tx_dma_request(CODEC_I2S);
+    i2s_enable_tx_dma_request(TARGET_I2S);
 
     sgtl5000_config.route = sgtl_route_playback;
+    sgtl5000_config.format.sample_rate = sample_rate;
+    sgtl5000_config.format.bit_width = audio_depth;
+    sgtl5000_config.format.mclk_hz = i2s_mclk_hz;
     sgtl_init(&sgtl5000_context, &sgtl5000_config);
 
-    printf("Test WAV decode\n");
 }
+#elif USING_DAO
+void test_dao_playback(uint32_t sample_rate, uint8_t audio_depth, uint8_t channel_num)
+{
+    i2s_config_t i2s_config;
+    i2s_transfer_config_t transfer;
+    dao_config_t dao_config;
+    uint16_t div1;
+    hpm_stat_t rsl;
+
+    i2s_get_default_config(TARGET_I2S, &i2s_config);
+    i2s_init(TARGET_I2S, &i2s_config);
+
+    /*
+     * config transfer for DAO
+     */
+    i2s_get_default_transfer_config_for_dao(&transfer);
+    transfer.sample_rate = sample_rate;
+
+    rsl = get_audio_clock_div(&div1, transfer.sample_rate, audio_depth, channel_num);
+    if (rsl == status_fail) {
+        printf("Clock selection error.\r\n");
+        while (1) {
+            ;
+        }
+    }
+    sysctl_config_clock(HPM_SYSCTL, clock_node_aud0, BOARD_APP_AUDIO_CLK_SRC, div1);
+    i2s_mclk_hz = clock_get_frequency(BOARD_APP_I2S_CLK_NAME);
+
+    if (status_success != i2s_config_tx(TARGET_I2S, i2s_mclk_hz, &transfer)) {
+        printf("I2S config failed for DAO\n");
+        while (1) {
+        }
+    }
+
+    dao_get_default_config(HPM_DAO, &dao_config);
+    dao_config.enable_mono_output = true;
+    dao_init(HPM_DAO, &dao_config);
+
+    dao_start(HPM_DAO);
+}
+#endif
 
 hpm_stat_t hpm_playbackwav(char* fname)
 {
-	hpm_stat_t res;  
-	uint32_t fillnum; 
+	hpm_stat_t res;
+	uint32_t fillnum;
 	FIL file;
     wav_ctrl.func.close_file = hpm_audiocodec_close_file;
 	wav_ctrl.func.read_file = hpm_audiocodec_read_file;
 	wav_ctrl.func.search_file = hpm_audiocodec_search_file;
 	wav_ctrl.func.write_file = hpm_audiocodec_write_file;
 
-    res = hpm_wav_decode_init(fname, &wav_ctrl);
-    if(res == status_audio_codec_true) {
+    res = hpm_wav_decode_init(fname, &wav_ctrl, &wav_header_buff);
+    if (res == status_success) {
         printf("music playing time:%d seconds ...\r\n", wav_ctrl.sec_total);
         f_lseek(&file, wav_ctrl.data_pos);
-        fillnum = hpm_wav_decode(&wav_ctrl, i2s_buff1, i2s_buff3, 512);
+#if USING_CODEC_SGTL5000
+        test_sgtl5000_playback(wav_ctrl.wav_head.fmt_chunk.samplerate, wav_ctrl.wav_head.fmt_chunk.bitspersample, 2);
+#elif USING_DAO
+        test_dao_playback(wav_ctrl.wav_head.fmt_chunk.samplerate, I2S_AUDIO_DEPTH_32_BITS, 2);
+#endif
         dma_transfer_done = true;
-        while (1) {			
-            fillnum = hpm_wav_decode(&wav_ctrl, i2s_buff1, i2s_buff3, CODEC_BUFF_SIZE);
+        while (1) {
+            fillnum = hpm_wav_decode(&wav_ctrl, i2s_buff1, CODEC_BUFF_SIZE);
+            if (l1c_dc_is_enabled()) {
+                l1c_dc_flush(HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) i2s_buff1),
+                    HPM_L1C_CACHELINE_ALIGN_UP((CODEC_BUFF_SIZE + i2s_buff1)) -
+                    HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) i2s_buff1));
+            }
             while(dma_transfer_done == false);
             strdata = (uint32_t *)&i2s_buff1[0];
             dma_transfer_done = false;
-            l1c_dc_writeback_all();
-            i2s_dma_cfg();
-            i2s_enable_tx_dma_request(CODEC_I2S);
-
-            fillnum = hpm_wav_decode(&wav_ctrl, i2s_buff2, i2s_buff3, CODEC_BUFF_SIZE);
-            while(dma_transfer_done == false);
-            strdata = (uint32_t *)&i2s_buff2[0];
-            dma_transfer_done = false;
-            l1c_dc_writeback_all();
-            i2s_dma_cfg();
-            i2s_enable_tx_dma_request(CODEC_I2S);
+            i2s_dma_cfg(fillnum);
+            i2s_enable_tx_dma_request(TARGET_I2S);
             if (fillnum < CODEC_BUFF_SIZE) {
+                while (dma_transfer_done == false) {
+                    ;
+                }
                 printf("music end.\r\n");
                 return status_audio_codec_end;
             }
-        } 
+
+            fillnum = hpm_wav_decode(&wav_ctrl, i2s_buff2, CODEC_BUFF_SIZE);
+            if (l1c_dc_is_enabled()) {
+                l1c_dc_flush(HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) i2s_buff2),
+                    HPM_L1C_CACHELINE_ALIGN_UP((CODEC_BUFF_SIZE + i2s_buff2)) -
+                    HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) i2s_buff2));
+            }
+            while(dma_transfer_done == false);
+            strdata = (uint32_t *)&i2s_buff2[0];
+            dma_transfer_done = false;
+            i2s_dma_cfg(fillnum);
+            i2s_enable_tx_dma_request(TARGET_I2S);
+            if (fillnum < CODEC_BUFF_SIZE) {
+                while (dma_transfer_done == false) {
+                    ;
+                }
+                printf("music end.\r\n");
+                return status_audio_codec_end;
+            }
+        }
     } else {
         printf("music file error.\r\n");
-        res = status_audio_codec_false;
+        res = status_fail;
     }
 	return res;
 }
+
 const char *show_error_string(FRESULT fresult)
 {
     const char *result_str;
@@ -289,39 +417,93 @@ static FRESULT sd_mount_fs(void)
     return fresult;
 }
 
-int main(void)
+FRESULT sd_choose_music(char *search_path, char *target_filetype, char *filename)
 {
-    uint8_t input_end;
-    char file_name[256];
-    uint8_t i = 0;
-    board_init();
+    DIR dir;
+    FILINFO fil;
+    FRESULT rsl;
+    char *ret;
+    uint16_t m;
+
+    rsl = f_opendir(&dir, search_path);
+    if (rsl != FR_OK) {
+        return rsl;
+    }
+    do {
+        printf("\r\n\r\n***********Music List**********\r\n");
+        m = 0;
+        do {
+            rsl = f_readdir(&dir, &fil);
+            if ((rsl != FR_OK) || (fil.fname[0] == 0)) {
+                break;
+            }
+            if (fil.fattrib == AM_DIR) {
+                continue;
+            }
+            ret = strstr(fil.fname, target_filetype);
+            if (ret == NULL) {
+                continue;
+            } else {
+                strncpy((char *)search_file_buff[m], fil.fname, FIL_SEARCH_LENGTH);
+                printf("%d: %s\r\n\r\n", m, search_file_buff[m]);
+                m++;
+            }
+            if (m >= FIL_SEARCH_NUM) {
+                break;
+            }
+        } while (1);
+        rsl = FR_NO_FILE;
+        printf("\r\n**Any non-numeric key to change pages**\r\n");
+        if (m != 0) {
+            printf("\r\nEnter Music Number:\r\n");
+        }
+        char option = getchar();
+        printf("%c\r\n\r\n", option);
+        if (('0' <= option) && (option <= '9')) {
+            strncpy(filename, (char *)search_file_buff[option - '0'], FIL_SEARCH_LENGTH);
+            rsl = FR_OK;
+            break;
+        }
+    } while (m >= FIL_SEARCH_NUM);
+    return rsl;
+}
+
+#if USING_CODEC_SGTL5000
+void init_codec(void)
+{
     board_init_i2c(CODEC_I2C);
 
-    init_i2s_pins(CODEC_I2S);
-    board_init_i2s_clock(CODEC_I2S);
+    init_i2s_pins(TARGET_I2S);
+    /* board_init_i2s_clock(TARGET_I2S); */
+}
+#endif
+
+#ifdef USING_DAO
+void init_dao(void)
+{
+
+    /* board_init_dao_clock(); */
+    init_dao_pins();
+}
+#endif
+
+int main(void)
+{
+    char file_name[256];
+    FRESULT rsl;
+
+    board_init();
+#if USING_CODEC_SGTL5000
+    init_codec();
+#elif USING_DAO
+    init_dao();
+#endif
 
     printf("audio codec example\n");
     sd_mount_fs();
-    test_sgtl5000_playback_record();
     while(1) {
-        printf("Please input wav name:\r\n");
-        memset(file_name, 0, sizeof(file_name));
-        input_end = 1;
-        i = 0;
-        while (input_end) {
-            char option = getchar();
-
-            switch (option) {
-            case '\n':
-            case '\r':
-                input_end = 0;
-                break;
-            default:
-                file_name[i++] = option;
-                break;
-            }
-        }
-        if (i != 0) {
+        rsl = sd_choose_music((char *)&driver_num_buf, ".wav", file_name);
+        if (rsl == FR_OK) {
             printf("wav_name:%s.\r\n",file_name);
             hpm_playbackwav(file_name);
         }

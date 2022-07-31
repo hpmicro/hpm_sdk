@@ -23,7 +23,7 @@
   - J8 of the HPM6750EVK is connected to J12 of the DRV-LV50A-MP1907。**Be careful to check the silkscreen, do not insert the reverse**
   - The figure below shows the overall effect, with red boxes marking the locations of the devices that may need to be operated：
 
-  ![image-1](../images/boards/extension/drv_lv50a_mp1907__oee.jpg "image-1")
+  ![image-1](../images/boards/extension/drv_lv50a_mp1907__oee.png "image-1")
 
 ## **HPM6750EVKMINI-TO-Motor** Motor Expansion Board
 
@@ -33,7 +33,7 @@
   - Connected with j2 and j3 plug-ins
   - The **HPM6750EVKMINI-TO-Motor** motor expansion board, **HPM6750EVKMINI** board and **DRV-LV50A-MP1907** motor driver board are connected as follows:
 
- ![image-2](../images/boards/extension/hpm6750evkmini_to_motor_220530RevA.jpg "image-2")
+ ![image-2](../images/boards/extension/hpm6750evkmini_to_motor_220530RevA.png "image-2")
 
 ## **LCD-800480W070TC** Display
 

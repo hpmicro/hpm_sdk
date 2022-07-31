@@ -181,7 +181,7 @@ typedef union _can_tx_buf {
     struct {
         struct {
             uint32_t id: 29;                       /**< CAN ID */
-            uint32_t : 1;
+            uint32_t : 2;
             uint32_t transmit_timestamp_enable: 1;  /**< Timestamp enable flag */
         };
         struct {

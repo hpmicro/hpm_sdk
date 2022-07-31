@@ -82,7 +82,7 @@ SDK_DECLARE_EXT_ISR_M(GREEN_PWM_IRQ, pwm_isr)
 SDK_DECLARE_EXT_ISR_M(BLUE_PWM_IRQ, pwm_isr)
 #endif
 
-void config_pwm(PWM_Type *ptr, uint8_t pin, uint8_t cmp_index, uint32_t reload, bool cmp_initial_zero, uint8_t hw_event_cmp)
+void config_pwm(PWM_Type * ptr, uint8_t pin, uint8_t cmp_index, uint32_t reload, bool cmp_initial_zero, uint8_t hw_event_cmp, bool off_level_high)
 {
     pwm_cmp_config_t cmp_config = {0};
     pwm_config_t pwm_config = {0};
@@ -93,7 +93,7 @@ void config_pwm(PWM_Type *ptr, uint8_t pin, uint8_t cmp_index, uint32_t reload, 
 
     pwm_config.enable_output = false;
     pwm_config.dead_zone_in_half_cycle = 0;
-    pwm_config.invert_output = false;
+    pwm_config.invert_output = !(cmp_initial_zero && off_level_high);
 
     /*
      * reload and start counter
@@ -231,7 +231,7 @@ int main(void){
 
     for (uint8_t i = 0; i < ARRAY_SIZE(leds); i++) {
         leds[i].step = leds[i].reload / PWM_DUTY_STEP_COUNT;
-        config_pwm(leds[i].pwm, leds[i].pwm_ch, leds[i].pwm_cmp, leds[i].reload, leds[i].pwm_cmp_initial_zero, hw_event_cmp);
+        config_pwm(leds[i].pwm, leds[i].pwm_ch, leds[i].pwm_cmp, leds[i].reload, leds[i].pwm_cmp_initial_zero, hw_event_cmp, BOARD_LED_OFF_LEVEL);
         pwm_start_counter(leds[i].pwm);
         intc_m_enable_irq_with_priority(leds[i].pwm_irq, 1);
     }

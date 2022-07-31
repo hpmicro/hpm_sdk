@@ -42,7 +42,7 @@ DSTATUS disk_status(
 
 #if USB_FATFS_ENABLE
     case DEV_USB :
-        stat = USB_disk_status(pdrv);
+        stat = usb_disk_status(pdrv);
         break;
 #endif
 
@@ -75,7 +75,7 @@ void disk_deinitialize(
 
 #if USB_FATFS_ENABLE
     case DEV_USB:
-        USB_disk_deinitialize();
+        usb_disk_deinitialize();
         break;
 #endif
 
@@ -104,7 +104,7 @@ DSTATUS disk_initialize(
 
 #if USB_FATFS_ENABLE
     case DEV_USB :
-        stat = USB_disk_initialize(pdrv);
+        stat = usb_disk_initialize(pdrv);
         break;
 #endif
 
@@ -141,7 +141,7 @@ DRESULT disk_read(
 
 #if USB_FATFS_ENABLE
     case DEV_USB :
-        res = USB_disk_read(pdrv, buff, sector, count);
+        res = usb_disk_read(pdrv, buff, sector, count);
         break;
 #endif
 
@@ -182,7 +182,7 @@ DRESULT disk_write(
 
 #if USB_FATFS_ENABLE
     case DEV_USB :
-        res = USB_disk_write(pdrv, buff, sector, count);
+        res = usb_disk_write(pdrv, buff, sector, count);
         break;
 #endif
 
@@ -221,7 +221,7 @@ DRESULT disk_ioctl(
 
 #if USB_FATFS_ENABLE
     case DEV_USB :
-        res = USB_disk_ioctl(pdrv, cmd ,buff);
+        res = usb_disk_ioctl(pdrv, cmd ,buff);
         break;
 #endif
 

@@ -31,8 +31,6 @@ extern "C" {
 #define BLDC_MOTOR2_INDEX                (3)
 #define BLDC_MOTOR3_INDEX                (4)
 
-#define BLDC_MOTOR0_PWM_T                (20)
-
 /*pwm 通道定义  foc算法中 它对应 pwm_u 、pwm_v 、pwm_w*/
 #define BLDC_PWM_U          0
 #define BLDC_PWM_V          1

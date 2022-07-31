@@ -52,11 +52,4 @@ void bldc_foc_pwmset(BLDC_CONTROL_PWMOUT_PARA *par)
   default:
     break;
   }
-  switch (par->I_sync_id){
-    case BLDC_MOTOR0_PWM_T:
-      pwm_issue_shadow_register_lock_event(MOTOR0_BLDCPWM);
-    break;
-    default:
-    break;
-  }
 }

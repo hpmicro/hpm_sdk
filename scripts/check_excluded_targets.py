@@ -11,7 +11,7 @@ def get_excluded_targets(input_yml):
     with open(input_yml, "r") as stream:
         try:
             info = yaml.safe_load(stream)
-            if EXCLUDED_TARGETS in info.keys():
+            if not info is None and EXCLUDED_TARGETS in info.keys():
                 for t in info[EXCLUDED_TARGETS]:
                     excluded.append(t.strip().lower())
         except yaml.YAMLError as e:

@@ -1,4 +1,4 @@
-/* 
+/*
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 Ha Thach (tinyusb.org)
@@ -62,7 +62,7 @@ typedef struct
   hidh_interface_t instances[CFG_TUH_HID];
 } hidh_device_t;
 
-static hidh_device_t _hidh_dev[CFG_TUH_DEVICE_MAX];
+static CFG_TUSB_MEM_SECTION hidh_device_t _hidh_dev[CFG_TUH_DEVICE_MAX];
 
 //------------- Internal prototypes -------------//
 

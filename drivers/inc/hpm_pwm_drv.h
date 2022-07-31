@@ -366,13 +366,13 @@ static inline void pwm_set_force_cmd_shadow_register_hwevent(PWM_Type *pwm_x,
  */
 
 /**
- * @brief config shadow register control register
+ * @brief set shadow register control register
  *
  * @param[in] pwm_x PWM base address, HPM_PWMx(x=0..n)
  * @param[in] trigger  select when the counter related shadow registers @ref pwm_shadow_register_update_trigger_t
  * @param[in] target_cmp_index  select one of the comparators as hardware event (0..(PWM_SOC_CMP_MAX_COUNT-1))
  */
-static inline void pwm_config_load_counter_shadow_register_trigger(PWM_Type *pwm_x,
+static inline void pwm_set_load_counter_shadow_register_trigger(PWM_Type *pwm_x,
                                 pwm_shadow_register_update_trigger_t trigger,
                                 uint8_t target_cmp_index)
 {

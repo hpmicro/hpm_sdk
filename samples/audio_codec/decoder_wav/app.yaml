@@ -1,2 +1,2 @@
 dependency:
-  - audio-codec
+  - audio-codec || dao

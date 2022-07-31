@@ -240,6 +240,9 @@ MARK_FUNC __SEGGER_init_done
     /* Initial machine trap-vector Base */
     la t0, HANDLER_TRAP
     csrw mtvec, t0
+
+    /* Disable vectored external PLIC interrupt */
+    csrci CSR_MMISC_CTL, 2
 #endif
 
 MARK_FUNC start

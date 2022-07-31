@@ -58076,7 +58076,7 @@ KEY register to increment to the next higher word in the key</description>
           <description>Cipher Initializtion Vector 0</description>
           <addressOffset>0x18</addressOffset>
           <size>32</size>
-          <resetValue>0x3200000000</resetValue>
+          <resetValue>0x00000000</resetValue>
           <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>
@@ -58093,7 +58093,7 @@ KEY register to increment to the next higher word in the key</description>
           <description>Cipher Initializtion Vector 1</description>
           <addressOffset>0x1c</addressOffset>
           <size>32</size>
-          <resetValue>0x3200000000</resetValue>
+          <resetValue>0x00000000</resetValue>
           <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>
@@ -58110,7 +58110,7 @@ KEY register to increment to the next higher word in the key</description>
           <description>Cipher Initializtion Vector 2</description>
           <addressOffset>0x20</addressOffset>
           <size>32</size>
-          <resetValue>0x3200000000</resetValue>
+          <resetValue>0x00000000</resetValue>
           <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>
@@ -58127,7 +58127,7 @@ KEY register to increment to the next higher word in the key</description>
           <description>Cipher Initializtion Vector 3</description>
           <addressOffset>0x24</addressOffset>
           <size>32</size>
-          <resetValue>0x3200000000</resetValue>
+          <resetValue>0x00000000</resetValue>
           <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>

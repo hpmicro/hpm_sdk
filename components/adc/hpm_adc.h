@@ -245,7 +245,7 @@ static inline hpm_stat_t hpm_adc_channel_init(adc_channel_config_t *config)
 #endif
     } else if (config->module == adc_module_adc16) {
 #ifdef CONFIG_HAS_HPMSDK_ADC16
-        return adc16_channel_init(config->adc_base.adc16, &config->config.adc16_ch);
+        return adc16_init_channel(config->adc_base.adc16, &config->config.adc16_ch);
 #else
         return status_invalid_argument;
 #endif

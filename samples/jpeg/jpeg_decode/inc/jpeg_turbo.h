@@ -11,6 +11,6 @@
  * Define function
  *---------------------------------------------------------------------
  */
-void jpeg_convert_data(int32_t fileLen, int32_t *size, int32_t *width, int32_t *height);
+void jpeg_convert_data(uint8_t *filebuffs, int32_t fileLen, int32_t *width, int32_t *height, uint8_t *rgb565buff);
 
 #endif  /* JPEG_TURBO_H */

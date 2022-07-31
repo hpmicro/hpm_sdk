@@ -3881,7 +3881,10 @@ static inline void hpm_dsp_idct4_q31(q31_t *src, uint32_t m)
 #ifdef CONFIG_HAS_HPMSDK_FFA
 #include "hpm_ffa_drv.h"
 #include "hpm_soc.h"
-#include "hpm_l1c_drv.h"
+/**
+ * @brief The ffa module requires the user to pay attention to cache operations
+ *
+ */
 /**
  * @brief fft calculation using ffa hardware acceleration unit, q15 format
  *
@@ -3899,17 +3902,7 @@ static inline void hpm_ffa_cfft_q15(q15_t *src, uint32_t m)
     xfer.is_ifft = false;
     xfer.src_data_type = FFA_DATA_TYPE_COMPLEX_Q15;
     xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q15;
-    if (l1c_dc_is_enabled()) {
-        l1c_dc_flush(HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src),
-            2 * (HPM_L1C_CACHELINE_ALIGN_UP((xfer.num_points * sizeof(q15_t) + xfer.src)) -
-            HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src)));
-    }
     ffa_calculate_fft_blocking(HPM_FFA, &xfer);
-    if (l1c_dc_is_enabled()) {
-        l1c_dc_invalidate(HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src),
-            2 * (HPM_L1C_CACHELINE_ALIGN_UP((xfer.num_points * sizeof(q15_t) + xfer.src)) -
-            HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src)));
-    }
 }
 /**
  * @brief fft calculation using ffa hardware acceleration unit, q31 format
@@ -3928,17 +3921,7 @@ static inline void hpm_ffa_cfft_q31(q31_t *src, uint32_t m)
     xfer.is_ifft = false;
     xfer.src_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
     xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
-    if (l1c_dc_is_enabled()) {
-        l1c_dc_flush(HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src),
-            2 * (HPM_L1C_CACHELINE_ALIGN_UP((xfer.num_points * sizeof(q31_t) + xfer.src)) -
-            HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src)));
-    }
     ffa_calculate_fft_blocking(HPM_FFA, &xfer);
-    if (l1c_dc_is_enabled()) {
-        l1c_dc_invalidate(HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src),
-            2 * (HPM_L1C_CACHELINE_ALIGN_UP((xfer.num_points * sizeof(q31_t) + xfer.src)) -
-            HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src)));
-    }
 }
 /**
  * @brief ifft calculation using ffa hardware acceleration unit, q15 format
@@ -3957,17 +3940,7 @@ static inline void hpm_ffa_cifft_q15(q15_t *src, uint32_t m)
     xfer.is_ifft = true;
     xfer.src_data_type = FFA_DATA_TYPE_COMPLEX_Q15;
     xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q15;
-    if (l1c_dc_is_enabled()) {
-        l1c_dc_flush(HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src),
-            2 * (HPM_L1C_CACHELINE_ALIGN_UP((xfer.num_points * sizeof(q15_t) + xfer.src)) -
-            HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src)));
-    }
     ffa_calculate_fft_blocking(HPM_FFA, &xfer);
-    if (l1c_dc_is_enabled()) {
-        l1c_dc_invalidate(HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src),
-            2 * (HPM_L1C_CACHELINE_ALIGN_UP((xfer.num_points * sizeof(q15_t) + xfer.src)) -
-            HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src)));
-    }
 }
 
 /**
@@ -3987,17 +3960,7 @@ static inline void hpm_ffa_cifft_q31(q31_t *src, uint32_t m)
     xfer.is_ifft = true;
     xfer.src_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
     xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
-    if (l1c_dc_is_enabled()) {
-        l1c_dc_flush(HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src),
-            2 * (HPM_L1C_CACHELINE_ALIGN_UP((xfer.num_points * sizeof(q31_t) + xfer.src)) -
-            HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src)));
-    }
     ffa_calculate_fft_blocking(HPM_FFA, &xfer);
-    if (l1c_dc_is_enabled()) {
-        l1c_dc_invalidate(HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src),
-            2 * (HPM_L1C_CACHELINE_ALIGN_UP((xfer.num_points * sizeof(q31_t) + xfer.src)) -
-            HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) xfer.src)));
-    }
 }
 
 

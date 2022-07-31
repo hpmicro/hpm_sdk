@@ -17,6 +17,7 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(audio_codec)
 
 sdk_compile_definitions(-DSD_FATFS_ENABLE=1)
+sdk_compile_definitions(-DFF_CODE_PAGE=437)
 
 sdk_app_src(src/audio_codec.c)
 generate_ses_project()

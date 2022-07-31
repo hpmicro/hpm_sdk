@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 - 2022 hpmicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -24,7 +24,8 @@ enum {
     sd_cmd_switch = 6,
     sd_cmd_send_if_cond = 8,
     sd_cmd_send_csd = 9,
-
+    sd_voltage_switch = 11,
+    sd_cmd_send_tuning_block = 19,
     sd_cmd_erase_start = 32,
     sd_cmd_erase_end = 33,
 

@@ -13,6 +13,11 @@ set(CONFIG_SDFATFS_MODE 1)
 set(CONFIG_JPEG_TURBO_MODE 1)
 #set(CONFIG_JPEG_HARDWARE_MODE 1)
 
+#Under the premise of hardware decoding, Table used for quantization decode:
+#Only one of them can be selected to be defined(1->CONFIG_EXTRACT_FILE_TABLE:Get from file;2->CONFIG_DEFAULT_TABLE:default)
+set(CONFIG_HARDWARE_EXTRACT_TABLE 1)
+#set(CONFIG_HARDWARE_DEFAULT_TABLE 1)
+
 if(DEFINED CONFIG_SDFATFS_MODE)
 set(CONFIG_SDMMC 1)
 endif()
@@ -56,6 +61,14 @@ if(DEFINED CONFIG_JPEG_HARDWARE_MODE)
 sdk_compile_definitions(JPEG_HARDWARE_MODE)
 endif()
 
+if(DEFINED CONFIG_HARDWARE_EXTRACT_TABLE)
+sdk_compile_definitions(HARDWARE_EXTRACT_TABLE)
+endif()
+
+if(DEFINED CONFIG_HARDWARE_DEFAULT_TABLE)
+sdk_compile_definitions(HARDWARE_DEFAULT_TABLE)
+endif()
+
 sdk_compile_options(-Os)
 
 sdk_inc(../common/inc)
@@ -75,6 +88,10 @@ endif()
 
 if(DEFINED CONFIG_JPEG_HARDWARE_MODE)
 sdk_app_src(src/jpeg_hw.c)
+endif()
+
+if(DEFINED CONFIG_HARDWARE_DEFAULT_TABLE)
+sdk_app_src(src/qdtable.cdat)
 endif()
 
 sdk_app_src(src/djpeg.c)

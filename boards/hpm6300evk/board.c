@@ -117,13 +117,13 @@ void board_print_clock_freq(void)
     printf("==============================\n");
     printf(" %s clock summary\n", BOARD_NAME);
     printf("==============================\n");
-    printf("cpu0:\t\t %dHz\n", clock_get_frequency(clock_cpu0));
-    printf("axi:\t\t %dHz\n", clock_get_frequency(clock_axi));
-    printf("ahb:\t\t %dHz\n", clock_get_frequency(clock_ahb));
-    printf("mchtmr0:\t %dHz\n", clock_get_frequency(clock_mchtmr0));
-    printf("xpi0:\t\t %dHz\n", clock_get_frequency(clock_xpi0));
-    printf("xpi1:\t\t %dHz\n", clock_get_frequency(clock_xpi1));
-    printf("dram:\t\t %dHz\n", clock_get_frequency(clock_dram));
+    printf("cpu0:\t\t %luHz\n", clock_get_frequency(clock_cpu0));
+    printf("axi:\t\t %luHz\n", clock_get_frequency(clock_axi));
+    printf("ahb:\t\t %luHz\n", clock_get_frequency(clock_ahb));
+    printf("mchtmr0:\t %luHz\n", clock_get_frequency(clock_mchtmr0));
+    printf("xpi0:\t\t %luHz\n", clock_get_frequency(clock_xpi0));
+    printf("xpi1:\t\t %luHz\n", clock_get_frequency(clock_xpi1));
+    printf("dram:\t\t %luHz\n", clock_get_frequency(clock_dram));
     printf("==============================\n");
 }
 
@@ -255,6 +255,18 @@ void board_init_gpio_pins(void)
 void board_init_spi_pins(SPI_Type *ptr)
 {
     init_spi_pins(ptr);
+}
+
+void board_init_spi_pins_with_gpio_as_cs(SPI_Type *ptr)
+{
+    init_spi_pins_with_gpio_as_cs(ptr);
+    gpio_set_pin_output_with_initial(BOARD_SPI_CS_GPIO_CTRL, GPIO_GET_PORT_INDEX(BOARD_SPI_CS_PIN),
+                                    GPIO_GET_PIN_INDEX(BOARD_SPI_CS_PIN), !BOARD_SPI_CS_ACTIVE_LEVEL);
+}
+
+void board_write_spi_cs(uint32_t pin, uint8_t state)
+{
+    gpio_write_pin(BOARD_SPI_CS_GPIO_CTRL, GPIO_GET_PORT_INDEX(pin), GPIO_GET_PIN_INDEX(pin), state);
 }
 
 void board_init_led_pins(void)

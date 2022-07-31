@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 - 2022 hpmicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -192,6 +192,9 @@
 #define BOARD_APP_SPI_RX_DMAMUX_CH DMAMUX_MUXCFG_HDMA_MUX0
 #define BOARD_APP_SPI_TX_DMA HPM_DMA_SRC_SPI2_TX
 #define BOARD_APP_SPI_TX_DMAMUX_CH DMAMUX_MUXCFG_HDMA_MUX1
+#define BOARD_SPI_CS_GPIO_CTRL           HPM_GPIO0
+#define BOARD_SPI_CS_PIN                 IOC_PAD_PE31
+#define BOARD_SPI_CS_ACTIVE_LEVEL        (0U)
 
 /* Flash section */
 #define BOARD_APP_XPI_NOR_XPI_BASE            (HPM_XPI0)
@@ -214,6 +217,8 @@
 #define BOARD_APP_I2S_BASE HPM_I2S0
 #define BOARD_APP_I2S_DATA_LINE      (2U)
 #define BOARD_APP_I2S_CLK_NAME clock_i2s0
+#define BOARD_APP_AUDIO_CLK_SRC clock_source_pll3_clk0
+#define BOARD_APP_AUDIO_CLK_SRC_NAME clk_pll3clk0
 
 /* enet section */
 #define BOARD_ENET_RGMII_RST_GPIO       HPM_GPIO0
@@ -238,17 +243,16 @@
 #define BOARD_APP_ADC12_NAME "ADC0"
 #define BOARD_APP_ADC12_BASE HPM_ADC0
 #define BOARD_APP_ADC12_IRQn IRQn_ADC0
-#define BOARD_APP_ADC12_CH                       (11U)
+#define BOARD_APP_ADC12_CH_1                  (11U)
+#define BOARD_APP_ADC12_CH_2                  (10U)
+#define BOARD_APP_ADC12_CH_3                  (7U)
 
 #define BOARD_APP_ADC16_NAME "ADC3"
 #define BOARD_APP_ADC16_BASE HPM_ADC3
 #define BOARD_APP_ADC16_IRQn IRQn_ADC3
-#define BOARD_APP_ADC16_CH                       (2U)
+#define BOARD_APP_ADC16_CH_1                  (2U)
 
-#define BOARD_APP_ADC_SEQ_DMA_SIZE_IN_4BYTES     (1024U)
-#define BOARD_APP_ADC_PMT_DMA_SIZE_IN_4BYTES     (192U)
-#define BOARD_APP_ADC_PREEMPT_TRIG_LEN           (1U)
-#define BOARD_APP_ADC_SINGLE_CONV_CNT            (6)
+
 #define BOARD_APP_ADC_TRIG_PWMT0                 HPM_PWM0
 #define BOARD_APP_ADC_TRIG_PWMT1                 HPM_PWM1
 #define BOARD_APP_ADC_TRIG_TRGM0                 HPM_TRGM0
@@ -273,10 +277,16 @@
 #define BOARD_CALLBACK_TIMER_CLK_NAME (clock_gptmr7)
 
 /* SDXC section */
-#define BOARD_APP_SDCARD_SDXC_BASE            (HPM_SDXC1)
-#define BOARD_APP_SDCARD_CDN_GPIO_CTRL        (HPM_GPIO0)
-#define BOARD_APP_SDCARD_CDN_GPIO_PIN         (15UL)
-#define BOARD_APP_SDCARD_SUPPORT_1V8          (0)
+#define BOARD_APP_SDCARD_SDXC_BASE                  (HPM_SDXC1)
+#define BOARD_APP_SDCARD_SUPPORT_1V8                (0)
+#define BOARD_APP_SDCARD_SUPPORT_CARD_DETECTION     (1)
+#define BOARD_APP_SDCARD_CARD_DETECTION_USING_GPIO  (1)
+#if BOARD_APP_SDCARD_CARD_DETECTION_USING_GPIO
+#define BOARD_APP_SDCARD_CARD_DETECTION_GPIO        HPM_GPIO0
+#define BOARD_APP_SDCARD_CARD_DETECTION_GPIO_INDEX  GPIO_DI_GPIOD
+#define BOARD_APP_SDCARD_CARD_DETECTION_PIN_INDEX   15
+#endif
+
 
 /* USB section */
 #define BOARD_USB0_ID_PORT       (HPM_GPIO0)
@@ -434,6 +444,8 @@ uint32_t board_init_dram_clock(void);
 void board_init_sdram_pins(void);
 void board_init_gpio_pins(void);
 void board_init_spi_pins(SPI_Type *ptr);
+void board_init_spi_pins_with_gpio_as_cs(SPI_Type *ptr);
+void board_write_spi_cs(uint32_t pin, uint8_t state);
 void board_init_led_pins(void);
 
 /* cap touch */
@@ -484,7 +496,7 @@ void board_usb_vbus_ctrl(uint8_t usb_index, uint8_t level);
 
 hpm_stat_t board_init_enet_pins(ENET_Type *ptr);
 hpm_stat_t board_init_enet_rmii_reference_clock(ENET_Type *ptr, bool internal);
-
+hpm_stat_t board_init_enet_rgmii_clock_delay(ENET_Type *ptr);
 hpm_stat_t board_init_enet_ptp_clock(ENET_Type *ptr);
 
 /*
@@ -505,7 +517,6 @@ void board_disable_output_rgb_led(uint8_t color);
  * Keep mchtmr clock on low power mode
  */
 void board_ungate_mchtmr_at_lp_mode(void);
-
 
 #if defined(__cplusplus)
 }

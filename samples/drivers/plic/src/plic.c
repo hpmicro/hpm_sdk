@@ -81,6 +81,7 @@ void isr_ptpc(void)
 {
     printf("ptpc interrupt start\n");
     printf("+ now next %d gpio interrupts will occur in nested irq context\n", MAX_TOGGLE_IN_NESTED_IRQ);
+    toggled = 0;
     while (toggled < MAX_TOGGLE_IN_NESTED_IRQ) {
     }
     ptpc_clear_irq_status(HPM_PTPC, PTPC_EVENT_COMPARE0_MASK);

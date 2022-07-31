@@ -5,6 +5,6 @@
    :maxdepth: 3
 
    jpeg_decode/README
-   libjpeg_turbo_encode/README
+   jpeg_encode/README
 
 ```

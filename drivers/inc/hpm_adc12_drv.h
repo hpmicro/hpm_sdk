@@ -19,10 +19,33 @@
  * @{
  */
 
+/** @brief Define ADC12 validity check for the signal type */
+#define ADC12_IS_SIGNAL_TYPE_INVALID(TYPE)  (TYPE > (uint32_t)adc12_sample_signal_count)
+
+/** @brief Define ADC12 validity check for the channel number */
+#define ADC12_IS_CHANNEL_INVALID(PTR, CH) ((CH > ADC12_SOC_MAX_CH_NUM && CH != ADC12_SOC_TEMP_CH_NUM) || \
+                                           ((uint32_t)PTR == ADC12_SOC_INVALID_TEMP_BASE && CH == ADC12_SOC_TEMP_CH_NUM))
+
+/** @brief Define ADC12 validity check for the trigger number */
+#define ADC12_IS_TRIG_CH_INVLAID(CH) (CH > ADC12_SOC_MAX_TRIG_CH_NUM)
+
+/** @brief Define ADC12 validity check for the trigger length */
+#define ADC12_IS_TRIG_LEN_INVLAID(TRIG_LEN) (TRIG_LEN > ADC_SOC_MAX_TRIG_CH_LEN)
+
+/** @brief Define ADC12 validity check for the sequence length */
+#define ADC12_IS_SEQ_LEN_INVLAID(LEN)  ((LEN == 0) || (LEN > ADC_SOC_SEQ_MAX_LEN))
+
+/** @brief Define ADC12 validity check for the DMA buffer length in the sequence mode */
+#define ADC12_IS_SEQ_DMA_BUFF_LEN_INVLAID(LEN)  ((LEN == 0) || (LEN > ADC_SOC_SEQ_MAX_DMA_BUFF_LEN_IN_4BYTES))
+
+/** @brief Define ADC12 validity check for the DMA buffer length in the preemption mode */
+#define ADC12_IS_PMT_DMA_BUFF_LEN_INVLAID(LEN)  ((LEN == 0) || (LEN > ADC_SOC_PMT_MAX_DMA_BUFF_LEN_IN_4BYTES))
+
 /** @brief Define ADC12 sample signal types. */
 typedef enum {
     adc12_sample_signal_single_ended = 0,
-    adc12_sample_signal_differential
+    adc12_sample_signal_differential = 1,
+    adc12_sample_signal_count = 2
 } adc12_sample_signal_t;
 
 /** @brief Define ADC12 resolutions. */
@@ -97,7 +120,7 @@ typedef struct {
 /** @brief ADC12 DMA configuration struct. */
 typedef struct {
     uint32_t *start_addr;
-    uint32_t size_in_4bytes;
+    uint32_t buff_len_in_4bytes;
     uint32_t stop_pos;
     bool stop_en;
 } adc12_dma_config_t;
@@ -130,7 +153,7 @@ typedef struct {
     uint32_t clk_src_freq_in_hz;
     uint8_t ch;
     uint8_t prescale;
-    uint8_t period_in_ms;
+    uint8_t period_count;
 } adc12_prd_config_t;
 
 /** @brief ADC12 queue configuration struct for the sequence mode. */
@@ -141,7 +164,7 @@ typedef struct {
 
 /** @brief ADC12 configuration struct for the sequence mode. */
 typedef struct {
-    adc12_seq_queue_config_t queue[ADC_SOC_MAX_SEQ_LEN];
+    adc12_seq_queue_config_t queue[ADC_SOC_SEQ_MAX_LEN];
     bool restart_en;
     bool cont_en;
     bool sw_trig_en;
@@ -269,8 +292,11 @@ static inline void adc12_init_pmt_dma(ADC12_Type *ptr, uint32_t addr)
  *
  * @param[in] ptr An ADC12 peripheral base address.
  * @param[in] config A pointer to configuration struct of @ref adc12_dma_config_t.
+ * @return An implementation result of DMA initializing for the sequence mode
+ * @retval status_success Get the result of an ADC12 conversion in oneshot mode successfully. Please refert to @ref hpm_stat_t.
+ * @retval status_invalid_argument Get the result of an ADC12 conversion in oneshot mode unsuccessfully due to passing invalid arguments. Please refert to @ref hpm_stat_t.
  */
-void adc12_init_seq_dma(ADC12_Type *ptr, adc12_dma_config_t *config);
+hpm_stat_t adc12_init_seq_dma(ADC12_Type *ptr, adc12_dma_config_t *config);
 
 /** @} */
 

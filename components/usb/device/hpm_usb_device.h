@@ -77,9 +77,8 @@ typedef struct {
 } dcd_qhd_t;
 
 typedef struct {
-    /* Must be at 2K alignment */
-    dcd_qhd_t qhd[USB_SOS_DCD_MAX_QHD_COUNT] __attribute__ ((aligned(USB_SOC_DCD_QHD_ALIGNMENT)));
-    dcd_qtd_t qtd[USB_SOC_DCD_MAX_QTD_COUNT] __attribute__ ((aligned(USB_SOC_DCD_QTD_ALIGNMENT)));
+    dcd_qhd_t qhd[USB_SOS_DCD_MAX_QHD_COUNT];
+    dcd_qtd_t qtd[USB_SOC_DCD_MAX_QTD_COUNT];
 } dcd_data_t;
 
 typedef struct {

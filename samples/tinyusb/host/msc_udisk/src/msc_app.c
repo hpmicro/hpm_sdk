@@ -55,7 +55,7 @@ bool file_system_mount(uint8_t dev_addr)
     disk_initialize(phy_disk);
 
     if (disk_is_ready(phy_disk)) {
-        sprintf(logic_drv_num, "%d", phy_disk);
+        sprintf(logic_drv_num, "%d:", phy_disk);
 
         if (f_mount(&fatfs[phy_disk], _T(logic_drv_num), 0) != FR_OK)
         {

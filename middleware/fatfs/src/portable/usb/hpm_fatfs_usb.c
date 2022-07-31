@@ -9,7 +9,7 @@
 
 static DSTATUS usb_disk_stat[CFG_TUSB_HOST_DEVICE_MAX];
 
-static bool USB_disk_wait_for_complete(uint8_t usb_addr)
+static bool usb_disk_wait_for_complete(uint8_t usb_addr)
 {
     #if CFG_TUSB_OS != OPT_OS_NONE
     int32_t retry_cnt = 200;
@@ -29,7 +29,7 @@ static bool USB_disk_wait_for_complete(uint8_t usb_addr)
     return retry_cnt > 0 ? true : false;
 }
 
-DSTATUS USB_disk_status(BYTE pdrv)
+DSTATUS usb_disk_status(BYTE pdrv)
 {
     uint8_t usb_addr = pdrv + 1;
 
@@ -45,13 +45,13 @@ DSTATUS USB_disk_status(BYTE pdrv)
     return usb_disk_stat[pdrv];
 }
 
-void USB_disk_deinitialize(void)
+void usb_disk_deinitialize(void)
 {
     /* set the default status as STA_NOINIT */
     memset(usb_disk_stat, STA_NOINIT, sizeof(DSTATUS));
 }
 
-DSTATUS USB_disk_initialize(BYTE pdrv)
+DSTATUS usb_disk_initialize(BYTE pdrv)
 {
     uint8_t usb_addr = pdrv + 1;
 
@@ -67,7 +67,7 @@ DSTATUS USB_disk_initialize(BYTE pdrv)
     return usb_disk_stat[pdrv];
 }
 
-DRESULT USB_disk_read(BYTE pdrv, BYTE*buff, DWORD sector, BYTE count)
+DRESULT usb_disk_read(BYTE pdrv, BYTE*buff, DWORD sector, BYTE count)
 {
     uint8_t usb_addr = pdrv + 1;
     bool result;
@@ -75,13 +75,13 @@ DRESULT USB_disk_read(BYTE pdrv, BYTE*buff, DWORD sector, BYTE count)
     result = tuh_msc_read10(usb_addr, LUN_USB, buff, sector, count, NULL);
 
     if (result) {
-        result =  USB_disk_wait_for_complete(usb_addr);
+        result =  usb_disk_wait_for_complete(usb_addr);
     }
 
     return result ? RES_OK : RES_ERROR;
 }
 
-DRESULT USB_disk_write(BYTE pdrv, const BYTE* buff, DWORD sector, BYTE count)
+DRESULT usb_disk_write(BYTE pdrv, const BYTE* buff, DWORD sector, BYTE count)
 {
     uint8_t usb_addr = pdrv + 1;
     bool result;
@@ -89,13 +89,13 @@ DRESULT USB_disk_write(BYTE pdrv, const BYTE* buff, DWORD sector, BYTE count)
     result = tuh_msc_write10(usb_addr, LUN_USB, buff, sector, count, NULL);
 
     if (result) {
-        result = USB_disk_wait_for_complete(usb_addr);
+        result = usb_disk_wait_for_complete(usb_addr);
     }
 
     return result ? RES_OK : RES_ERROR;
 }
 
-DRESULT USB_disk_ioctl(BYTE pdrv, BYTE cmd, void* buff)
+DRESULT usb_disk_ioctl(BYTE pdrv, BYTE cmd, void* buff)
 {
     if (cmd != CTRL_SYNC) {
         return RES_ERROR;

@@ -13,11 +13,11 @@ DEBUG_INFO_SES_GDB_SERVER_RST_CMD="gdb_server_reset_command"
 def get_ses_info(input_yml, info_type = "auto_start_gdb_server"):
     gdb_auto_start = "Yes"
     gdb_server_port = 3333
-    gdb_server_reset_command = "reset_halt"
+    gdb_server_reset_command = "reset halt"
     with open(input_yml, "r") as stream:
         try:
             info = yaml.safe_load(stream)
-            if DEBUG_INFO in info.keys() and DEBUG_INFO_SES in info[DEBUG_INFO].keys():
+            if not info is None and DEBUG_INFO in info.keys() and DEBUG_INFO_SES in info[DEBUG_INFO].keys():
                 if DEBUG_INFO_SES_AUTO_START_GDB_SERVER in info[DEBUG_INFO][DEBUG_INFO_SES].keys():
                     r = info[DEBUG_INFO][DEBUG_INFO_SES][DEBUG_INFO_SES_AUTO_START_GDB_SERVER]
                     if not r:

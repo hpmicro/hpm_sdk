@@ -14,12 +14,11 @@
  * 
  */
 enum hpm_audio_codec_status {
-    status_audio_codec_false = MAKE_STATUS(status_group_audio_codec, 0),
-    status_audio_codec_true = MAKE_STATUS(status_group_audio_codec, 1),
     status_audio_codec_format_err = MAKE_STATUS(status_group_audio_codec, 2),
     status_audio_codec_non_standard = MAKE_STATUS(status_group_audio_codec, 3),
     status_audio_codec_none_file = MAKE_STATUS(status_group_audio_codec, 4),
-    status_audio_codec_end = MAKE_STATUS(status_group_audio_codec, 5),
+    status_audio_codec_none_dir = MAKE_STATUS(status_group_audio_codec, 5),
+    status_audio_codec_end = MAKE_STATUS(status_group_audio_codec, 6),
 };
 
 typedef uint32_t HPM_AUDIOCODEC_FILE;

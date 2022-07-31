@@ -7,22 +7,6 @@
 #include "hpm_sdxc_drv.h"
 
 
-#define SDXC_STS_CMD_ERR (SDXC_INT_STAT_CMD_TOUT_ERR_MASK | SDXC_INT_STAT_CMD_CRC_ERR_MASK |\
-            SDXC_INT_STAT_CMD_END_BIT_ERR_MASK | SDXC_INT_STAT_CMD_IDX_ERR_MASK | SDXC_INT_STAT_AUTO_CMD_ERR_MASK)
-#define SDXC_STS_DATA_ERR (SDXC_INT_STAT_DATA_TOUT_ERR_MASK| SDXC_INT_STAT_DATA_CRC_ERR_MASK | \
-            SDXC_INT_STAT_DATA_END_BIT_ERR_MASK)
-#define SDXC_STS_ERROR (SDXC_INT_STAT_ERR_INTERRUPT_MASK | SDXC_STS_CMD_ERR | SDXC_STS_DATA_ERR)
-#define SDXC_STS_CMD_FLAGS (SDXC_STS_CMD_ERR | SDXC_INT_STAT_CMD_COMPLETE_MASK)
-
-#define SDXC_STS_ALL_FLAGS (SDXC_INT_STAT_ERR_INTERRUPT_MASK | SDXC_INT_STAT_CQE_EVENT_MASK | \
-            SDXC_INT_STAT_FX_EVENT_MASK | SDXC_INT_STAT_RE_TUNE_EVENT_MASK | SDXC_INT_STAT_CARD_INTERRUPT_MASK | \
-            SDXC_INT_STAT_CARD_REMOVAL_MASK | SDXC_INT_STAT_CARD_INSERTION_MASK | SDXC_INT_STAT_BUF_RD_READY_MASK | \
-            SDXC_INT_STAT_BUF_WR_READY_MASK | SDXC_INT_STAT_DMA_INTERRUPT_MASK | SDXC_INT_STAT_BGAP_EVENT_MASK | \
-            SDXC_INT_STAT_XFER_COMPLETE_MASK | SDXC_INT_STAT_CMD_COMPLETE_MASK | SDXC_INT_STAT_BOOT_ACK_ERR_MASK |  \
-            SDXC_INT_STAT_RESP_ERR_MASK | SDXC_INT_STAT_TUNING_ERR_MASK | SDXC_INT_STAT_ADMA_ERR_MASK |   \
-            SDXC_INT_STAT_AUTO_CMD_ERR_MASK | SDXC_INT_STAT_CUR_LMT_ERR_MASK | SDXC_INT_STAT_DATA_END_BIT_ERR_MASK |\
-            SDXC_INT_STAT_DATA_CRC_ERR_MASK | SDXC_INT_STAT_DATA_TOUT_ERR_MASK | SDXC_INT_STAT_CMD_IDX_ERR_MASK |\
-            SDXC_INT_STAT_CMD_END_BIT_ERR_MASK | SDXC_INT_STAT_CMD_CRC_ERR_MASK | SDXC_INT_STAT_CMD_TOUT_ERR_MASK)
 
 
 #define SDXC_DMA_MAX_XFER_LEN_26BIT ((1UL << 26) - 4U)
@@ -45,8 +29,6 @@ static const uint32_t s_sdxc_boot_dummy = 0;
 
 static hpm_stat_t sdxc_set_transfer_config(SDXC_Type *base, uint32_t xfer_flags,
                                            uint32_t block_size, uint32_t block_cnt, uint32_t *new_flags);
-
-static hpm_stat_t sdxc_receive_cmd_response(SDXC_Type *base, sdxc_command_t *cmd);
 
 static uint32_t sdxc_read_data_port(SDXC_Type *base, sdxc_data_t *data, uint32_t transferred_words);
 
@@ -115,7 +97,7 @@ static hpm_stat_t sdxc_set_transfer_config(SDXC_Type *base, uint32_t xfer_flags,
 }
 
 
-static hpm_stat_t sdxc_receive_cmd_response(SDXC_Type *base, sdxc_command_t *cmd)
+hpm_stat_t sdxc_receive_cmd_response(SDXC_Type *base, sdxc_command_t *cmd)
 {
     hpm_stat_t status = status_success;
 
@@ -310,7 +292,7 @@ hpm_stat_t sdxc_send_command(SDXC_Type *base, sdxc_command_t *cmd)
     uint32_t cmd_xfer = base->CMD_XFER;
     uint32_t flags = cmd->cmd_flags;
 
-    uint32_t wait_cnt = 0xFFFFFFUL;
+    int32_t wait_cnt = 1000000L;
 
     while (!sdxc_is_bus_idle(base) && (wait_cnt > 0U)) {
         wait_cnt--;
@@ -339,8 +321,20 @@ hpm_stat_t sdxc_send_command(SDXC_Type *base, sdxc_command_t *cmd)
             flags |= SDXC_CMD_XFER_RESP_INT_DISABLE_MASK;
         }
     }
-    if (cmd->cmd_type == sdxc_cmd_type_abort_cmd) {
+
+    switch(cmd->cmd_type) {
+    case sdxc_cmd_type_abort_cmd:
         flags |= SDXC_CMD_TYPE_ABORT;
+        break;
+    case sdxc_cmd_type_suspend_cmd:
+        flags |= SDXC_CMD_TYPE_SUSPEND;
+        break;
+    case sdxc_cmd_tye_resume_cmd:
+        flags |= SDXC_CMD_TYPE_RESUME;
+        break;
+    default:
+        flags |= SDXC_CMD_TYPE_NORMAL;
+        break;
     }
 
     cmd_xfer &= ~(SDXC_CMD_XFER_CMD_INDEX_MASK | SDXC_CMD_XFER_CMD_TYPE_MASK | SDXC_CMD_XFER_CMD_CRC_CHK_ENABLE_MASK
@@ -354,12 +348,8 @@ hpm_stat_t sdxc_send_command(SDXC_Type *base, sdxc_command_t *cmd)
             | SDXC_CMD_XFER_CMD_IDX_CHK_ENABLE_MASK | SDXC_CMD_XFER_RESP_TYPE_SELECT_MASK |
             SDXC_CMD_XFER_DATA_PRESENT_SEL_MASK | SDXC_CMD_XFER_DMA_ENABLE_MASK |
             SDXC_CMD_XFER_DATA_XFER_DIR_MASK | SDXC_CMD_XFER_AUTO_CMD_ENABLE_MASK |
-            SDXC_CMD_XFER_MULTI_BLK_SEL_MASK | SDXC_CMD_XFER_RESP_TYPE_MASK |
+            SDXC_CMD_XFER_MULTI_BLK_SEL_MASK | SDXC_CMD_XFER_BLOCK_COUNT_ENABLE_MASK | SDXC_CMD_XFER_RESP_TYPE_MASK |
             SDXC_CMD_XFER_RESP_ERR_CHK_ENABLE_MASK)));
-
-    if (SDXC_PROT_CTRL_DMA_SEL_GET(base->PROT_CTRL) >= (uint32_t) sdxc_dmasel_adma2) {
-        cmd_xfer &= ~SDXC_CMD_XFER_BLOCK_COUNT_ENABLE_MASK;
-    }
 
     base->CMD_ARG = cmd->cmd_argument;
     base->CMD_XFER = cmd_xfer;
@@ -367,6 +357,63 @@ hpm_stat_t sdxc_send_command(SDXC_Type *base, sdxc_command_t *cmd)
     return status_success;
 }
 
+
+hpm_stat_t sdxc_parse_interrupt_status(SDXC_Type *base)
+{
+    uint32_t interrupt_status = sdxc_get_interrupt_status(base);
+    hpm_stat_t status = status_success;
+    if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_STS_ERROR)) {
+        if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_CMD_TOUT_ERR_MASK)) {
+            status = status_sdxc_cmd_timeout_error;
+        } else if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_CMD_CRC_ERR_MASK)) {
+            status = status_sdxc_cmd_crc_error;
+        } else if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_CMD_END_BIT_ERR_MASK)) {
+            status = status_sdxc_cmd_end_bit_error;
+        } else if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_CMD_IDX_ERR_MASK)) {
+            status = status_sdxc_cmd_index_error;
+        } else if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_DATA_TOUT_ERR_MASK)) {
+            status = status_sdxc_data_timeout_error;
+        } else if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_DATA_CRC_ERR_MASK)) {
+            status = status_sdxc_data_crc_error;
+        } else if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_DATA_END_BIT_ERR_MASK)) {
+            status = status_sdxc_data_end_bit_error;
+        } else if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_AUTO_CMD_ERR_MASK)) {
+            uint32_t auto_cmd_err_mask = base->AC_HOST_CTRL & 0xFFFFUL;
+            if (IS_HPM_BITMASK_SET(auto_cmd_err_mask, SDXC_AC_HOST_CTRL_AUTO_CMD12_NOT_EXEC_MASK)) {
+                status = status_sdxc_autocmd_cmd12_not_exec;
+            } else if (IS_HPM_BITMASK_SET(auto_cmd_err_mask, SDXC_AC_HOST_CTRL_AUTO_CMD_TOUT_ERR_MASK)) {
+                status = status_sdxc_autocmd_cmd_timeout_error;
+            } else if (IS_HPM_BITMASK_SET(auto_cmd_err_mask, SDXC_AC_HOST_CTRL_AUTO_CMD_CRC_ERR_MASK)) {
+                status = status_sdxc_autocmd_cmd_crc_error;
+            } else if (IS_HPM_BITMASK_SET(auto_cmd_err_mask, SDXC_AC_HOST_CTRL_AUTO_CMD_IDX_ERR_MASK)) {
+                status = status_sdxc_autocmd_cmd_index_error;
+            } else if (IS_HPM_BITMASK_SET(auto_cmd_err_mask, SDXC_AC_HOST_CTRL_AUTO_CMD_EBIT_ERR_MASK)) {
+                status = status_sdxc_autocmd_end_bit_error;
+            } else if (IS_HPM_BITMASK_SET(auto_cmd_err_mask, SDXC_AC_HOST_CTRL_AUTO_CMD_RESP_ERR_MASK)) {
+                status = status_sdxc_autocmd_cmd_response_error;
+            } else if (IS_HPM_BITMASK_SET(auto_cmd_err_mask, SDXC_AC_HOST_CTRL_CMD_NOT_ISSUED_AUTO_CMD12_MASK)) {
+                status = status_sdxc_autocmd_cmd_not_issued_auto_cmd12;
+            } else {
+                status = status_sdxc_auto_cmd_error;
+            }
+        } else if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_ADMA_ERR_MASK)) {
+            status = status_sdxc_adma_error;
+        } else if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_TUNING_ERR_MASK)) {
+            status = status_sdxc_tuning_error;
+        } else if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_RESP_ERR_MASK)) {
+            status = status_sdxc_response_error;
+        } else if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_BOOT_ACK_ERR_MASK)) {
+            status = status_sdxc_boot_ack_error;
+        } else if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_CARD_REMOVAL_MASK))  {
+            status = status_sdxc_card_removed;
+        } else {
+            status = status_sdxc_error;
+        }
+    } else {
+        status = status_success;
+    }
+    return status;
+}
 
 hpm_stat_t sdxc_wait_cmd_done(SDXC_Type *base, sdxc_command_t *cmd, bool polling_cmd_done)
 {
@@ -376,74 +423,9 @@ hpm_stat_t sdxc_wait_cmd_done(SDXC_Type *base, sdxc_command_t *cmd, bool polling
     if (polling_cmd_done) {
         while (!IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_CMD_COMPLETE_MASK)) {
             interrupt_status = sdxc_get_interrupt_status(base);
-            if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_STS_ERROR)) {
-                if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_CMD_TOUT_ERR_MASK)) {
-                    status = status_sdxc_cmd_timeout_error;
-                }
-                else if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_CMD_CRC_ERR_MASK)) {
-                    status = status_sdxc_cmd_crc_error;
-                }
-                else if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_CMD_END_BIT_ERR_MASK)) {
-                    status = status_sdxc_cmd_end_bit_error;
-                }
-                else if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_CMD_IDX_ERR_MASK)) {
-                    status = status_sdxc_cmd_index_error;
-                }
-                else if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_DATA_TOUT_ERR_MASK)) {
-                    status = status_sdxc_data_timeout_error;
-                }
-                else if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_DATA_CRC_ERR_MASK)) {
-                    status = status_sdxc_data_crc_error;
-                }
-                else if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_DATA_END_BIT_ERR_MASK)) {
-                    status = status_sdxc_data_end_bit_error;
-                }
-                else if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_AUTO_CMD_ERR_MASK)) {
-                    uint32_t auto_cmd_err_mask = base->AC_HOST_CTRL & 0xFFFFUL;
-                    if (IS_HPM_BITMASK_SET(auto_cmd_err_mask, SDXC_AC_HOST_CTRL_AUTO_CMD12_NOT_EXEC_MASK)) {
-                        status = status_sdxc_autocmd_cmd12_not_exec;
-                    }
-                    else if (IS_HPM_BITMASK_SET(auto_cmd_err_mask, SDXC_AC_HOST_CTRL_AUTO_CMD_TOUT_ERR_MASK)) {
-                        status = status_sdxc_autocmd_cmd_timeout_error;
-                    }
-                    else if (IS_HPM_BITMASK_SET(auto_cmd_err_mask, SDXC_AC_HOST_CTRL_AUTO_CMD_CRC_ERR_MASK)) {
-                        status = status_sdxc_autocmd_cmd_crc_error;
-                    }
-                    else if (IS_HPM_BITMASK_SET(auto_cmd_err_mask, SDXC_AC_HOST_CTRL_AUTO_CMD_IDX_ERR_MASK)) {
-                        status = status_sdxc_autocmd_cmd_index_error;
-                    }
-                    else if (IS_HPM_BITMASK_SET(auto_cmd_err_mask, SDXC_AC_HOST_CTRL_AUTO_CMD_EBIT_ERR_MASK)) {
-                        status = status_sdxc_autocmd_end_bit_error;
-                    }
-                    else if (IS_HPM_BITMASK_SET(auto_cmd_err_mask, SDXC_AC_HOST_CTRL_AUTO_CMD_RESP_ERR_MASK)) {
-                        status = status_sdxc_autocmd_cmd_response_error;
-                    }
-                    else if (IS_HPM_BITMASK_SET(auto_cmd_err_mask, SDXC_AC_HOST_CTRL_CMD_NOT_ISSUED_AUTO_CMD12_MASK)) {
-                        status = status_sdxc_autocmd_cmd_not_issued_auto_cmd12;
-                    }
-                    else {
-                        status = status_sdxc_auto_cmd_error;
-                    }
-                }
-                else if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_ADMA_ERR_MASK)) {
-                    status = status_sdxc_adma_error;
-                }
-                else if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_TUNING_ERR_MASK)) {
-                    status = status_sdxc_tuning_error;
-                }
-                else if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_RESP_ERR_MASK)) {
-                    status = status_sdxc_response_error;
-                }
-                else if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_BOOT_ACK_ERR_MASK)) {
-                    status = status_sdxc_boot_ack_error;
-                }
-                else {
-                    status = status_sdxc_error;
-                }
-                break;
-            }
+            status = sdxc_parse_interrupt_status(base);
+            HPM_BREAK_IF(status != status_success);
         }
-
         sdxc_clear_interrupt_status(base, SDXC_INT_STAT_CMD_COMPLETE_MASK);
 
         if (status == status_success) {
@@ -467,9 +449,9 @@ static hpm_stat_t sdxc_transfer_data_blocking(SDXC_Type *base, sdxc_data_t *data
             interrupt_status = sdxc_get_interrupt_status(base);
             if (IS_HPM_BITMASK_SET(interrupt_status, SDXC_INT_STAT_DMA_INTERRUPT_MASK)) {
                 sdxc_clear_interrupt_status(base, SDXC_INT_STAT_DMA_INTERRUPT_MASK);
-            }
-            if (SDXC_PROT_CTRL_DMA_SEL_GET(base->PROT_CTRL) == (uint32_t) sdxc_dmasel_sdma) {
-                base->ADMA_SYS_ADDR += data->block_size;
+                if (SDXC_PROT_CTRL_DMA_SEL_GET(base->PROT_CTRL) == (uint32_t) sdxc_dmasel_sdma) {
+                    base->ADMA_SYS_ADDR += data->block_size;
+                }
             }
         }
 
@@ -513,9 +495,11 @@ void sdxc_init(SDXC_Type *base, const sdxc_config_t *config)
 
     uint32_t prot_ctrl = base->PROT_CTRL;
 
-    prot_ctrl &= ~SDXC_PROT_CTRL_DMA_SEL_MASK;
+    prot_ctrl &= ~(SDXC_PROT_CTRL_DMA_SEL_MASK | SDXC_PROT_CTRL_SD_BUS_VOL_VDD1_MASK);
 
-    base->SYS_CTRL = (base->SYS_CTRL & ~SDXC_SYS_CTRL_TOUT_CNT_MASK) | SDXC_SYS_CTRL_TOUT_CNT_SET(config->data_timeout);
+    prot_ctrl |= (1UL << 8);
+
+    sdxc_set_data_timeout(base, config->data_timeout, NULL);
 
     base->PROT_CTRL = prot_ctrl;
 
@@ -535,7 +519,37 @@ void sdxc_init(SDXC_Type *base, const sdxc_config_t *config)
     base->INT_SIGNAL_EN = 0UL;
     base->INT_STAT = SDXC_STS_ALL_FLAGS;
 
-    base->AC_HOST_CTRL |= SDXC_AC_HOST_CTRL_HOST_VER4_ENABLE_MASK;
+    /* Set Host to version 4, enable 26-bit ADMA2 length mode */
+    base->AC_HOST_CTRL &= ~(SDXC_AC_HOST_CTRL_UHS_MODE_SEL_MASK | SDXC_AC_HOST_CTRL_SAMPLE_CLK_SEL_MASK);
+    base->AC_HOST_CTRL |= SDXC_AC_HOST_CTRL_HOST_VER4_ENABLE_MASK | SDXC_AC_HOST_CTRL_ADMA2_LEN_MODE_MASK;
+}
+
+void sdxc_set_data_timeout(SDXC_Type *base, uint32_t timeout_in_ms, uint32_t *actual_timeout_ms)
+{
+    static uint32_t pre_calc_timeout_list[15] = {
+        8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384,
+        32768,65536, 131072
+    };
+
+    uint32_t field_value = 0;
+    for(uint32_t i = 0; i < ARRAY_SIZE(pre_calc_timeout_list); i++) {
+        if (timeout_in_ms < pre_calc_timeout_list[i]) {
+            field_value = i;
+            break;
+        }
+    }
+    uint32_t max_index = ARRAY_SIZE(pre_calc_timeout_list) - 1U;
+    if (timeout_in_ms > pre_calc_timeout_list[max_index]) {
+        field_value = max_index;
+    }
+
+    sdxc_enable_interrupt_status(base, SDXC_INT_STAT_EN_DATA_TOUT_ERR_STAT_EN_MASK, false);
+    base->SYS_CTRL = (base->SYS_CTRL & ~SDXC_SYS_CTRL_TOUT_CNT_MASK) | SDXC_SYS_CTRL_TOUT_CNT_SET(field_value);
+    sdxc_enable_interrupt_status(base, SDXC_INT_STAT_EN_DATA_TOUT_ERR_STAT_EN_MASK, true);
+
+    if (actual_timeout_ms != NULL) {
+        *actual_timeout_ms = pre_calc_timeout_list[field_value];
+    }
 }
 
 void sdxc_set_mmc_boot_config(SDXC_Type *base, const sdxc_boot_config_t *config)
@@ -617,8 +631,8 @@ hpm_stat_t sdxc_set_adma2_desc(uint32_t *adma_tbl, uint32_t adma_table_words, co
         /* Ensure that the data_bytes is 4-byte aligned. */
         data_bytes += (data_bytes % sizeof(uint32_t));
 
-        min_entries = data_bytes / SDXC_DMA_MAX_XFER_LEN_16BIT;
-        if (data_bytes % SDXC_DMA_MAX_XFER_LEN_16BIT != 0U) {
+        min_entries = data_bytes / SDXC_DMA_MAX_XFER_LEN_26BIT;
+        if (data_bytes % SDXC_DMA_MAX_XFER_LEN_26BIT != 0U) {
             min_entries += 1U;
         }
 
@@ -644,8 +658,8 @@ hpm_stat_t sdxc_set_adma2_desc(uint32_t *adma_tbl, uint32_t adma_table_words, co
         uint32_t dma_buf_len = 0U;
         const uint32_t *data = data_buf;
         for (i = start_idx; i < (min_entries + start_idx); i++) {
-            if (data_bytes > SDXC_DMA_MAX_XFER_LEN_16BIT) {
-                dma_buf_len = SDXC_DMA_MAX_XFER_LEN_16BIT;
+            if (data_bytes > SDXC_DMA_MAX_XFER_LEN_26BIT) {
+                dma_buf_len = SDXC_DMA_MAX_XFER_LEN_26BIT;
             } else {
                 dma_buf_len = (data_bytes == 0U) ? sizeof(uint32_t) : data_bytes;
             }
@@ -653,7 +667,8 @@ hpm_stat_t sdxc_set_adma2_desc(uint32_t *adma_tbl, uint32_t adma_table_words, co
             /* Format each adma2 descriptor entry */
             adma2_desc[i].addr = (data_bytes == 0U) ? &s_sdxc_boot_dummy : data;
             adma2_desc[i].len_attr = 0U;
-            adma2_desc[i].len_lower = dma_buf_len;
+            adma2_desc[i].len_lower = dma_buf_len & 0xFFFFU;
+            adma2_desc[i].len_upper = dma_buf_len >> 16;
             adma2_desc[i].len_attr |= SDXC_ADMA2_DESC_VALID_FLAG;
             if (data_bytes != 0U) {
                 adma2_desc[i].act = SDXC_ADMA2_DESC_TYPE_TRANS;
@@ -788,6 +803,21 @@ void sdxc_set_data_bus_width(SDXC_Type *base, sdxc_bus_width_t width)
     sdxc_enable_sd_clock(base, true);
 }
 
+uint32_t sdxc_get_data_bus_width(SDXC_Type *base)
+{
+    uint32_t bus_width;
+    uint32_t bus_width_mask = base->PROT_CTRL & (SDXC_PROT_CTRL_EXT_DAT_XFER_MASK | SDXC_PROT_CTRL_DAT_XFER_WIDTH_MASK);
+
+    if (IS_HPM_BITMASK_SET(bus_width_mask, SDXC_PROT_CTRL_EXT_DAT_XFER_MASK)) {
+        bus_width = 8;
+    } else if (IS_HPM_BITMASK_SET(bus_width_mask, SDXC_PROT_CTRL_DAT_XFER_WIDTH_MASK)) {
+        bus_width = 4;
+    } else {
+        bus_width = 1;
+    }
+    return bus_width;
+}
+
 void sdxc_set_speed_mode(SDXC_Type *base, sdxc_speed_mode_t mode)
 {
     uint32_t mode_u32 = (uint32_t) mode;
@@ -801,12 +831,11 @@ void sdxc_set_speed_mode(SDXC_Type *base, sdxc_speed_mode_t mode)
     }
 }
 
-hpm_stat_t sdxc_transfer_blocking(SDXC_Type *base, sdxc_adma_config_t *dma_config, sdxc_xfer_t *xfer)
+hpm_stat_t sdxc_transfer_nonblocking(SDXC_Type *base, sdxc_adma_config_t *dma_config, sdxc_xfer_t *xfer)
 {
     hpm_stat_t status = status_invalid_argument;
     sdxc_command_t *cmd = xfer->command;
     sdxc_data_t *data = xfer->data;
-    bool enable_dma = true;
     bool enable_tuning = ((data == NULL)) ? false : (data->data_type == (uint8_t) sdxc_xfer_data_tuning);
     uint32_t xfer_flags = (uint32_t) sdxc_cmd_only;
 
@@ -853,6 +882,19 @@ hpm_stat_t sdxc_transfer_blocking(SDXC_Type *base, sdxc_adma_config_t *dma_confi
 
         cmd->cmd_flags |= new_xfer_flags;
         status = sdxc_send_command(base, cmd);
+    } while (false);
+
+    return status;
+}
+
+hpm_stat_t sdxc_transfer_blocking(SDXC_Type *base, sdxc_adma_config_t *dma_config, sdxc_xfer_t *xfer)
+{
+    hpm_stat_t status = status_invalid_argument;
+    sdxc_command_t *cmd = xfer->command;
+    sdxc_data_t *data = xfer->data;
+    bool enable_dma = true;
+    do {
+        status = sdxc_transfer_nonblocking(base, dma_config, xfer);
         HPM_BREAK_IF(status != status_success);
 
         bool polling_cmd_done = (data == NULL) || (data->data_type == sdxc_xfer_data_normal);
@@ -861,7 +903,6 @@ hpm_stat_t sdxc_transfer_blocking(SDXC_Type *base, sdxc_adma_config_t *dma_confi
             status = status_sdxc_send_cmd_failed;
             break;
         }
-
         if (data != NULL) {
             status = sdxc_transfer_data_blocking(base, data, enable_dma);
         }
@@ -873,21 +914,23 @@ hpm_stat_t sdxc_transfer_blocking(SDXC_Type *base, sdxc_adma_config_t *dma_confi
 hpm_stat_t sdxc_error_recovery(SDXC_Type *base)
 {
     hpm_stat_t status = status_success;
+    /* D8, D3-D0 of ERROR_INT_STAT */
     uint32_t cmdline_err_mask =
         SDXC_INT_STAT_AUTO_CMD_ERR_MASK | SDXC_INT_STAT_CMD_TOUT_ERR_MASK | SDXC_INT_STAT_CMD_CRC_ERR_MASK |
-            SDXC_INT_STAT_CMD_END_BIT_ERR_MASK;
+            SDXC_INT_STAT_CMD_END_BIT_ERR_MASK | SDXC_INT_STAT_CMD_IDX_ERR_MASK;
+
     if ((base->INT_STAT & cmdline_err_mask) != 0U) {
         status = status_sdxc_send_cmd_failed;
         /* Only Auto Command error */
         if ((base->INT_STAT & cmdline_err_mask) == SDXC_INT_STAT_AUTO_CMD_ERR_MASK) {
-
+            /* Will reset command line  */
         } else {
             if (((base->CMD_XFER & SDXC_CMD_XFER_RESP_INT_DISABLE_MASK) != 0U) ||
                 ((base->AC_HOST_CTRL & SDXC_AC_HOST_CTRL_EXEC_TUNING_MASK))) {
-
+                /* Will reset command line */
             } else {
                 /* Wait until command completes */
-                uint32_t timeout = 0xFFFFFFFUL;
+                uint32_t timeout = 1000000UL;
                 while (!IS_HPM_BITMASK_SET(base->CMD_XFER, SDXC_INT_STAT_CMD_COMPLETE_MASK)) {
                     --timeout;
                     if (timeout < 1U) {
@@ -901,6 +944,7 @@ hpm_stat_t sdxc_error_recovery(SDXC_Type *base)
         sdxc_reset(base, sdxc_reset_cmd_line, 0xFFFFFFU);
     }
 
+    /* Check D9, D6-D4 in ERR_INT_STAT */
     uint32_t dataline_err_mask =
         SDXC_INT_STAT_ADMA_ERR_MASK | SDXC_INT_STAT_DATA_TOUT_ERR_MASK | SDXC_INT_STAT_DATA_CRC_ERR_MASK |
             SDXC_INT_STAT_DATA_END_BIT_ERR_MASK;
@@ -910,6 +954,13 @@ hpm_stat_t sdxc_error_recovery(SDXC_Type *base)
         sdxc_reset(base, sdxc_reset_data_line, 0xFFFFFFU);
     }
     sdxc_clear_interrupt_status(base, ~0UL);
+
+    if (IS_HPM_BITMASK_SET(base->PSTATE, SDXC_PSTATE_CMD_INHIBIT_MASK)) {
+        sdxc_reset(base, sdxc_reset_cmd_line, 10000U);
+    }
+    if (IS_HPM_BITMASK_SET(base->PSTATE, SDXC_PSTATE_DAT_INHIBIT_MASK)) {
+        sdxc_reset(base, sdxc_reset_data_line, 10000U);
+    }
 
     return status;
 }
@@ -930,7 +981,6 @@ hpm_stat_t sdxc_perform_tuning_flow_sequence(SDXC_Type *base, uint8_t tuning_cmd
     /* Turn off Sampling clock */
     sdxc_enable_sd_clock(base, false);
     sdxc_execute_tuning(base);
-
     uint32_t block_size = SDXC_PROT_CTRL_EXT_DAT_XFER_GET(base->PROT_CTRL) ? 128U : 64U;
     sdxc_command_t cmd;
     (void) memset(&cmd, 0, sizeof(cmd));
@@ -938,18 +988,17 @@ hpm_stat_t sdxc_perform_tuning_flow_sequence(SDXC_Type *base, uint8_t tuning_cmd
     cmd.cmd_argument = 0;
     cmd.cmd_flags = SDXC_CMD_XFER_DATA_PRESENT_SEL_MASK | SDXC_CMD_XFER_DATA_XFER_DIR_MASK;
     cmd.resp_type = sdxc_dev_resp_r1;
-    base->BLK_ATTR = block_size;
-    base->SDMASA = 0;
     sdxc_enable_sd_clock(base, true);
-
     do {
+        base->BLK_ATTR = block_size;
+        base->SDMASA = 1;
         sdxc_send_command(base, &cmd);
         while (!IS_HPM_BITMASK_SET(base->INT_STAT, SDXC_INT_STAT_BUF_RD_READY_MASK)) {}
         sdxc_clear_interrupt_status(base, SDXC_INT_STAT_BUF_RD_READY_MASK);
-
     } while (IS_HPM_BITMASK_SET(base->AC_HOST_CTRL, SDXC_AC_HOST_CTRL_EXEC_TUNING_MASK));
 
     if (!IS_HPM_BITMASK_SET(base->AC_HOST_CTRL, SDXC_AC_HOST_CTRL_SAMPLE_CLK_SEL_MASK)) {
+        sdxc_tuning_error_recovery(base);
         status = status_sdxc_tuning_failed;
     }
 
@@ -1042,10 +1091,7 @@ hpm_stat_t sdxc_perform_software_tuning(SDXC_Type *base, uint8_t tuning_cmd)
 
 hpm_stat_t sdxc_perform_auto_tuning(SDXC_Type *base, uint8_t tuning_cmd)
 {
-    sdxc_enable_sd_clock(base, false);
     sdxc_enable_auto_tuning(base, true);
-    sdxc_enable_sd_clock(base, true);
 
     return sdxc_perform_tuning_flow_sequence(base, tuning_cmd);
-
 }

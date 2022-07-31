@@ -2,9 +2,10 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
-
+set(HPM_SDK_NO_NANO_SPECS 1)
 set(CONFIG_LWIP 1)
 #set(CONFIG_ENET_PHY_DP83867 1)
+#set(CONFIG_ENET_PHY_RTL8211 1)
 set(CONFIG_ENET_PHY_DP83848 1)
 #set(CONFIG_ENET_PHY_RTL8201 1)
 
@@ -12,6 +13,12 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 if(${CONFIG_ENET_PHY_DP83867})
     sdk_compile_definitions(-DRGMII=1)
+    sdk_compile_definitions(-D__USE_DP83867=1)
+endif()
+
+if(${CONFIG_ENET_PHY_RTL8211})
+    sdk_compile_definitions(-DRGMII=1)
+    sdk_compile_definitions(-D__USE_RTL8211=1)
 endif()
 
 if(${CONFIG_ENET_PHY_DP83848})

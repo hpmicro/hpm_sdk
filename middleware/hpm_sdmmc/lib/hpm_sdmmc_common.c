@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 - 2022 hpmicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -126,6 +126,19 @@ hpm_stat_t sdmmc_set_block_size(sdmmc_host_t *host, uint32_t block_size)
 
         status = sdmmchost_send_command(host, host_cmd);
 
+    } while (false);
+
+    return status;
+}
+
+hpm_stat_t sdmmc_enable_auto_tuning(sdmmc_host_t *host)
+{
+    hpm_stat_t status = status_invalid_argument;
+
+    do {
+        HPM_BREAK_IF((host == NULL) || (host->host_param.base == NULL));
+        sdxc_enable_auto_tuning(host->host_param.base, true);
+        status = status_success;
     } while (false);
 
     return status;

@@ -28,31 +28,19 @@ from collections import namedtuple
 from shutil import copyfile
 
 PROJECT_TEMPLATE = "embedded_studio_proj_tmpl.xml"
-File = namedtuple("File", ["path"])
+File = namedtuple("File", ["path", "obj_path"])
 Group = namedtuple("Group", ["name", "files", "match_string"])
 
 GROUP_TEMPLATES = [
-    Group(name="app", files=[], match_string="/samples/"),
-    Group(name="drivers", files=[], match_string="/drivers/"),
-    Group(name="components", files=[], match_string="/components/"),
-    Group(name="boards", files=[], match_string="/boards/"),
-    Group(name="utils", files=[], match_string="/utils/"),
-    Group(name="startup", files=[], match_string="/startup/"),
+    Group(name="drivers", files=[], match_string='\$\(HPM_SDK_BASE\)\/drivers'),
+    Group(name="components", files=[], match_string="\$\(HPM_SDK_BASE\)\/components/"),
+    Group(name="boards", files=[], match_string="\$\(HPM_SDK_BASE\)\/boards/"),
+    Group(name="utils", files=[], match_string="\$\(HPM_SDK_BASE\)\/utils/"),
+    Group(name="startup", files=[], match_string="\$\(HPM_SDK_BASE\)\/startup/"),
     Group(name="linker", files=[], match_string=".icf"),
-    Group(name="toolchains", files=[], match_string="/toolchains/"),
-    Group(name="soc", files=[], match_string="/soc/"), # icf files are located in soc, so make sure soc group will be created after linker
-    Group(name="middleware", files=[], match_string="/middleware/")]
-
-def unix_relative_path_get(path1, path2):
-    rel_path = None
-    # relpath only works with directory names
-    if os.path.exists(path1) and os.path.exists(path2):
-        try:
-            rel_path = os.path.join(os.path.relpath(os.path.dirname(path1), path2), os.path.basename(path1))
-        except ValueError:
-            return path1.replace("\\", "/")
-        return rel_path.replace("\\", "/")
-    return rel_path
+    Group(name="toolchains", files=[], match_string="\$\(HPM_SDK_BASE\)\/toolchains/"),
+    Group(name="soc", files=[], match_string="\$\(HPM_SDK_BASE\)\/soc/"), # icf files are located in soc, so make sure soc group will be created after linker
+    Group(name="middleware", files=[], match_string="\$\(HPM_SDK_BASE\)\/middleware/")]
 
 def load_config(input_file):
     with open(input_file, "r") as f:
@@ -71,8 +59,27 @@ def file_to_be_excluded(f):
             return True
     return False
 
-def create_file_groups(files, out_dir):
-    other = Group(name="Other", files=[], match_string=None)
+def get_relpath(f, sdk_base):
+    s = os.path.relpath(os.path.realpath(f), os.path.realpath(sdk_base))
+    return re.sub(r'\\', '/', s)
+
+def get_sdk_fullpath(f, sdk_base):
+    return re.sub(r'^', '$(HPM_SDK_BASE)/', get_relpath(f, sdk_base))
+
+def add_sdk_file_to_group(group, f, sdk_base):
+    s = re.sub(r'^', '$(IntDir)/', get_relpath(f, sdk_base))
+    group.files.append(File(get_sdk_fullpath(f, sdk_base), s))
+
+
+def add_app_file_to_group(group, f, base_path):
+    # if app source file is not located under project dir, there'll be couple of
+    # leading '../'. the object file can use the name without these leading '../'
+    s = re.sub(r'^(../)+', '', get_relpath(f, base_path))
+    s = re.sub(r'^', r'$(IntDir)/app/', s)
+    group.files.append(File(f, s))
+
+def create_file_groups(files, sdk_base, project_dir):
+    app = Group(name="app", files=[], match_string=None)
     groups = GROUP_TEMPLATES[:]
     for f in files:
         found_group = False
@@ -83,16 +90,16 @@ def create_file_groups(files, out_dir):
             continue
 
         for g in groups:
-            if g.match_string in f:
-                f = unix_relative_path_get(f, out_dir)
-                g.files.append(File(f))
+            new_path = get_sdk_fullpath(f, sdk_base)
+            m = re.search(g.match_string, new_path)
+            if not m is None:
+                add_sdk_file_to_group(g, f, sdk_base)
                 found_group = True
                 break
         if not found_group:
-            f = unix_relative_path_get(f, out_dir)
-            other.files.append(File(f))
+            add_app_file_to_group(app, f, project_dir)
 
-    groups.append(other)
+    groups.append(app)
     # Remove empty groups
     for g in groups[:]:
         if len(g.files) == 0:
@@ -100,37 +107,40 @@ def create_file_groups(files, out_dir):
 
     return groups
 
-def get_includes(config, out_dir):
+def get_include_path(config, sdk_base):
     l = ["$(StudioDir)/include"]
     for i in config["target"]["includes"].split(","):
         i = i.strip()
         if "gnu" in i or len(i) == 0:
             continue
-        l.append(unix_relative_path_get(i, out_dir))
+        file_sdk_path = get_sdk_fullpath(i, sdk_base)
+        l.append(file_sdk_path)
     return l
 
-def get_defines(config):
+def get_definitions(definitions):
     l = []
-    for i in config["target"]["defines"].split(","):
+    for i in definitions.split(","):
         l.append(re.sub("\"", "&quot;", i))
     return l
 
-def get_link_symbols(config):
+def get_link_symbols(symbols):
     l = []
-    for i in config["target"]["link_symbols"].split(","):
+    for i in symbols.split(","):
         l.append(re.sub("\"", "&quot;", i))
     return l
 
-def generate_ses_project(config, out_dir="."):
+def generate_ses_project(config, out_dir=".", project_dir = None):
     files = config["target"]["sources"].split(",")
-    config["target"]["includes"] = get_includes(config, out_dir)
-    config["target"]["defines"] = get_defines(config)
-    config["target"]["groups"] = create_file_groups(files, out_dir)
-    config["target"]["link_symbols"] = get_link_symbols(config)
-    config["target"]["linker"] = unix_relative_path_get(config["target"]["linker"], out_dir)
-    config["target"]["register_definition"] = unix_relative_path_get(config["target"]["register_definition"], out_dir)
-    config["target"]["cpu_register_definition"] = unix_relative_path_get(config["target"]["cpu_register_definition"], out_dir)
-    config["target"]["ses_link_input"] = unix_relative_path_get(config["target"]["ses_link_input"], out_dir)
+    sdk_base = config["target"]["sdk_base"]
+    config["target"]["includes"] = get_include_path(config, sdk_base)
+    config["target"]["defines"] = get_definitions(config["target"]["defines"])
+    config["target"]["groups"] = create_file_groups(files, sdk_base, project_dir)
+    config["target"]["link_symbols"] = get_link_symbols(config["target"]["link_symbols"])
+    config["target"]["linker"] = get_sdk_fullpath(config["target"]["linker"], sdk_base)
+    config["target"]["register_definition"] = get_sdk_fullpath(config["target"]["register_definition"], sdk_base)
+    config["target"]["cpu_register_definition"] = get_sdk_fullpath(config["target"]["cpu_register_definition"], sdk_base)
+    if config["target"]["ses_link_input"].strip():
+        config["target"]["ses_link_input"] = get_sdk_fullpath(config["target"]["ses_link_input"], sdk_base)
     s = ""
 
     with open(PROJECT_TEMPLATE, "r") as f:
@@ -153,11 +163,12 @@ def generate_ses_session(out_dir):
 def main():
     input_file = sys.argv[1]
     out_dir = sys.argv[2]
+    project_dir = sys.argv[3]
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
     config = load_config(input_file)
-    ses_project = generate_ses_project(config, out_dir)
+    ses_project = generate_ses_project(config, out_dir, project_dir)
 
     out_dir += "/"
     output_filename = out_dir + config["target"]["name"].replace(".", "_")

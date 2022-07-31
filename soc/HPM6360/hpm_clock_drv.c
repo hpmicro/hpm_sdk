@@ -214,7 +214,7 @@ static uint32_t get_frequency_for_i2s_or_adc(uint32_t clk_src_type, uint32_t ins
         if (i2s_index < I2S_INSTANCE_NUM) {
             uint32_t mux_in_reg = SYSCTL_I2SCLK_MUX_GET(HPM_SYSCTL->I2SCLK[i2s_index]);
             if (mux_in_reg < ARRAY_SIZE(s_i2s_clk_mux_node)) {
-                node = s_adc_clk_mux_node[mux_in_reg];
+                node = s_i2s_clk_mux_node[mux_in_reg];
                 is_mux_valid = true;
             }
         }

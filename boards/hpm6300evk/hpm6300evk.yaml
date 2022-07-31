@@ -4,6 +4,7 @@
 board:
     name: hpm6300evk
     soc: HPM6360
+    device: HPM6360xPAx
     openocd-soc: hpm6360
     openocd-probe: ft2232
     on-board-ram:

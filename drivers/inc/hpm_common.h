@@ -114,6 +114,7 @@ enum
     status_group_middleware_start = 500,
     status_group_sdmmc = status_group_middleware_start,
     status_group_audio_codec,
+    status_group_dma_manager,
 };
 
 /* @brief Common status code definitions */

@@ -1,7 +1,7 @@
 # JPEG_DECODE decode
 ## Overview
 ***
-**libjpeg_turbo_decode** decoding example project shows to convert JPG picture data into RGB data.
+**libjpeg_turbo_decode** decoding example project shows to convert JPG picture data(Default scan storage device root directory) into RGB data.
 - JPEG images stored in **USB** or **SD card** are converted into
 rgb565 data through **software libjpeg_turbo library** or **hardware JPEG module**, the decoded data is displayed on **the LCD screen**.
 

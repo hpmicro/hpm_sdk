@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 - 2022 hpmicro
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
@@ -115,22 +115,22 @@ void board_print_clock_freq(void)
     printf("==============================\n");
     printf(" %s clock summary\n", BOARD_NAME);
     printf("==============================\n");
-    printf("cpu0:\t\t %dHz\n", clock_get_frequency(clock_cpu0));
-    printf("cpu1:\t\t %dHz\n", clock_get_frequency(clock_cpu1));
-    printf("axi0:\t\t %dHz\n", clock_get_frequency(clock_axi0));
-    printf("axi1:\t\t %dHz\n", clock_get_frequency(clock_axi1));
-    printf("axi2:\t\t %dHz\n", clock_get_frequency(clock_axi2));
-    printf("ahb:\t\t %dHz\n", clock_get_frequency(clock_ahb));
-    printf("mchtmr0:\t %dHz\n", clock_get_frequency(clock_mchtmr0));
-    printf("mchtmr1:\t %dHz\n", clock_get_frequency(clock_mchtmr1));
-    printf("xpi0:\t\t %dHz\n", clock_get_frequency(clock_xpi0));
-    printf("xpi1:\t\t %dHz\n", clock_get_frequency(clock_xpi1));
-    printf("dram:\t\t %dHz\n", clock_get_frequency(clock_dram));
-    printf("display:\t %dHz\n", clock_get_frequency(clock_display));
-    printf("cam0:\t\t %dHz\n", clock_get_frequency(clock_camera0));
-    printf("cam1:\t\t %dHz\n", clock_get_frequency(clock_camera1));
-    printf("jpeg:\t\t %dHz\n", clock_get_frequency(clock_jpeg));
-    printf("pdma:\t\t %dHz\n", clock_get_frequency(clock_pdma));
+    printf("cpu0:\t\t %luHz\n", clock_get_frequency(clock_cpu0));
+    printf("cpu1:\t\t %luHz\n", clock_get_frequency(clock_cpu1));
+    printf("axi0:\t\t %luHz\n", clock_get_frequency(clock_axi0));
+    printf("axi1:\t\t %luHz\n", clock_get_frequency(clock_axi1));
+    printf("axi2:\t\t %luHz\n", clock_get_frequency(clock_axi2));
+    printf("ahb:\t\t %luHz\n", clock_get_frequency(clock_ahb));
+    printf("mchtmr0:\t %luHz\n", clock_get_frequency(clock_mchtmr0));
+    printf("mchtmr1:\t %luHz\n", clock_get_frequency(clock_mchtmr1));
+    printf("xpi0:\t\t %luHz\n", clock_get_frequency(clock_xpi0));
+    printf("xpi1:\t\t %luHz\n", clock_get_frequency(clock_xpi1));
+    printf("dram:\t\t %luHz\n", clock_get_frequency(clock_dram));
+    printf("display:\t %luHz\n", clock_get_frequency(clock_display));
+    printf("cam0:\t\t %luHz\n", clock_get_frequency(clock_camera0));
+    printf("cam1:\t\t %luHz\n", clock_get_frequency(clock_camera1));
+    printf("jpeg:\t\t %luHz\n", clock_get_frequency(clock_jpeg));
+    printf("pdma:\t\t %luHz\n", clock_get_frequency(clock_pdma));
     printf("==============================\n");
 }
 
@@ -333,7 +333,7 @@ void board_init_i2c(I2C_Type *ptr)
     freq = clock_get_frequency(BOARD_CAP_I2C_CLK_NAME);
     stat = i2c_init_master(BOARD_CAP_I2C_BASE, freq, &config);
     if (stat != status_success) {
-        printf("failed to initialize i2c 0x%x\n", (uint32_t)BOARD_CAP_I2C_BASE);
+        printf("failed to initialize i2c 0x%lx\n", (uint32_t)BOARD_CAP_I2C_BASE);
         while (1) {}
     }
 }
@@ -399,6 +399,18 @@ void board_init_gpio_pins(void)
 void board_init_spi_pins(SPI_Type *ptr)
 {
     init_spi_pins(ptr);
+}
+
+void board_init_spi_pins_with_gpio_as_cs(SPI_Type *ptr)
+{
+    init_spi_pins_with_gpio_as_cs(ptr);
+    gpio_set_pin_output_with_initial(BOARD_SPI_CS_GPIO_CTRL, GPIO_GET_PORT_INDEX(BOARD_SPI_CS_PIN),
+                                    GPIO_GET_PIN_INDEX(BOARD_SPI_CS_PIN), !BOARD_SPI_CS_ACTIVE_LEVEL);
+}
+
+void board_write_spi_cs(uint32_t pin, uint8_t state)
+{
+    gpio_write_pin(BOARD_SPI_CS_GPIO_CTRL, GPIO_GET_PORT_INDEX(pin), GPIO_GET_PIN_INDEX(pin), state);
 }
 
 void board_init_led_pins(void)
@@ -829,7 +841,7 @@ uint32_t board_sd_configure_clock(SDXC_Type *ptr, uint32_t freq)
 
 void board_sd_switch_pins_to_1v8(SDXC_Type *ptr)
 {
-    sdxc_switch_to_1v8_signal(ptr, true);
+    sdxc_select_voltage(ptr, sdxc_bus_voltage_sd_1v8);
     init_sdxc_pins(ptr, true);
 }
 

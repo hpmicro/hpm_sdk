@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
+import re
 import sys
 import yaml
 import subprocess
@@ -14,36 +15,34 @@ APP_LINKED_PROJECT="linked_project"
 APP_LINKED_PROJECT_NAME="project_name"
 APP_LINKED_PROJECT_BUILD_TYPE="build_type"
 
-def get_app_dep(app_yml):
+def parse_app_yml(app_yml):
+    app_info = None
+    with open(app_yml, "r") as stream:
+        try:
+            app_info = yaml.safe_load(stream)
+        except yaml.YAMLError as e:
+            pass
+    stream.close()
+    return app_info
+
+def get_app_dep(app_info):
     ip_list = ""
     app_dep = None
-    with open(app_yml, "r") as stream:
-        try:
-            app_info = yaml.safe_load(stream)
-            if APP_DEPENDENCY in app_info.keys():
-                app_dep = app_info[APP_DEPENDENCY]
-        except yaml.YAMLError as e:
-            pass
-    stream.close()
+    if not app_info is None and APP_DEPENDENCY in app_info.keys():
+        app_dep = app_info[APP_DEPENDENCY]
     return app_dep
 
-def get_linked_project(app_yml):
+def get_linked_project(app_info):
     linked_proj_info = None
-    with open(app_yml, "r") as stream:
-        try:
-            app_info = yaml.safe_load(stream)
-            if APP_LINKED_PROJECT in app_info.keys():
-                linked_proj_info = app_info[APP_LINKED_PROJECT]
-        except yaml.YAMLError as e:
-            pass
-    stream.close()
+    if not app_info is None and APP_LINKED_PROJECT in app_info.keys():
+        linked_proj_info = app_info[APP_LINKED_PROJECT]
     return linked_proj_info
 
 
-def build_linked_project(app_yml,board_name):
+def build_linked_project(app_info,board_name):
     project_name=""
     build_type=""
-    linked_proj_info = get_linked_project(app_yml)
+    linked_proj_info = get_linked_project(app_info)
     if (linked_proj_info == None):
         return 0
     else:
@@ -69,15 +68,34 @@ def build_linked_project(app_yml,board_name):
 if __name__ == "__main__":
     board_cap = get_board_info.get_info(sys.argv[1], get_board_info.BOARD_INFO_FEATURE_KEY)
     board_name = get_board_info.get_info(sys.argv[1], get_board_info.BOARD_INFO_NAME_KEY)
-    retval = build_linked_project(sys.argv[2], board_name)
+    app_yml = sys.argv[2]
+
+    if not os.path.exists(app_yml) or board_cap is None:
+        sys.exit(0)
+
+    app_info = parse_app_yml(app_yml)
+
+    retval = build_linked_project(app_info, board_name)
     if (retval != 0):
         sys.exit(retval)
-    if not os.path.exists(sys.argv[2]) or board_cap is None:
-        sys.exit(0)
-    app_dep = get_app_dep(sys.argv[2])
+
+    app_dep = get_app_dep(app_info)
     if app_dep is None:
         sys.exit(0)
+
     for d in app_dep:
-        if not d in board_cap.split(get_board_info.BOARD_FEATURE_DELIM):
-            sys.exit(1)
+        # process OR logic
+        m = re.match(r'||', d)
+        if not m is None:
+            or_list = d.split('||')
+            found = False
+            for d in or_list:
+                if d.strip() in board_cap.split(get_board_info.BOARD_FEATURE_DELIM):
+                    found = True
+                    break
+            if not found:
+                sys.exit(1)
+        else:
+            if not d in board_cap.split(get_board_info.BOARD_FEATURE_DELIM):
+                sys.exit(1)
     sys.exit(0)

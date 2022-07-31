@@ -99,7 +99,6 @@ DSTATUS sd_disk_read(BYTE pdrv, BYTE *buff, LBA_t sector, UINT count)
         }
     } else {
       if (sd_read_blocks(&g_sd, (uint8_t *) buff, sector, count) != status_success) {
-          while(1);
           return RES_ERROR;
       }
     }

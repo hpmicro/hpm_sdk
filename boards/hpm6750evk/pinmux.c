@@ -207,6 +207,16 @@ void init_spi_pins(SPI_Type *ptr)
     }
 }
 
+void init_spi_pins_with_gpio_as_cs(SPI_Type *ptr)
+{
+    if (ptr == HPM_SPI2) {
+        HPM_IOC->PAD[IOC_PAD_PE31].FUNC_CTL = IOC_PE31_FUNC_CTL_GPIO_E_31;
+        HPM_IOC->PAD[IOC_PAD_PE30].FUNC_CTL = IOC_PE30_FUNC_CTL_SPI2_MOSI;
+        HPM_IOC->PAD[IOC_PAD_PE28].FUNC_CTL = IOC_PE28_FUNC_CTL_SPI2_MISO;
+        HPM_IOC->PAD[IOC_PAD_PE27].FUNC_CTL = IOC_PE27_FUNC_CTL_SPI2_SCLK | IOC_PAD_FUNC_CTL_LOOP_BACK_SET(1);
+    }
+}
+
 void init_pins(void)
 {
     init_uart_pins(BOARD_CONSOLE_BASE);
@@ -449,7 +459,7 @@ void init_sdxc_pins(SDXC_Type * ptr, bool use_1v8)
         /* CDN */
         HPM_IOC->PAD[IOC_PAD_PD15].FUNC_CTL = IOC_PD15_FUNC_CTL_GPIO_D_15;
         HPM_IOC->PAD[IOC_PAD_PD15].PAD_CTL = pad_ctl;
-        HPM_GPIO0->OE[GPIO_OE_GPIOD].CLEAR = 1UL << BOARD_APP_SDCARD_CDN_GPIO_PIN;
+        HPM_GPIO0->OE[GPIO_OE_GPIOD].CLEAR = 1UL << BOARD_APP_SDCARD_CARD_DETECTION_PIN_INDEX;
 
     }
 }

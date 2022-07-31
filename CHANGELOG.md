@@ -1,5 +1,60 @@
 # Change Log
 
+## [0.13.0] - 2022-07-31:
+
+Main changes since 0.12.1
+
+### Changed:
+  - drivers: adc: fix sequence and preemption mode
+  - drivers: usb: automatically change transceiver type in host mode
+  - drivers: pwm: modify the interface for setting the pwm shadow register trigger function
+  - drivers: sdxc: driver improvement
+  - samples: jpeg demo update
+  - samples: motor_ctrl: Optimize motor control performance
+  - samples: motor_ctrl: Modify the pwm update method to be hardware triggered
+  - samples: audio_codec: wav: Modify the interface
+  - samples: audio_codec: add dao support
+  - samples: tinyusb: update all USB project names
+  - samples: adc: place DMA buffer in noncacheable
+  - components: usb: update two struct definitions for the hcd_data_t and the dcd_data_t
+  - middleware: littlevgl: update double buffer refresh approach.
+  - middleware: fatfs: enable exfat format
+  - middleware: fatfs: change 'USB' to lowercase
+  - middleware: hpm_math: remove cache operations from the ffa interface
+  - scripts: ses: update file path using $(HPM_SDK_BASE)
+
+### Fixed:
+  - drivers: gpiom: fix spelling errors in API names
+  - drivers: enet: fix ptp time offset update
+  - drivers: cam: fix store mode configuration
+  - drivers: can: Fix the issue can timestamp cannot be enabled
+  - drivers: gpio: incorrect return type gpio_get_port_interrupt_flags.
+  - middleware: audio_codec: decoder_wav: fix wav codec problem
+  - middleware: tinyusb: fix the alignment of _hcd_data
+  - soc: driver: clock: i2s get clock error
+  - soc: hpm_misc.h: fix incorrect system address mapping.
+  - soc: SVD files: fix SDP peripheral reset value problem
+  - soc: disable vector mode explicitly.
+  - boards: correct device name in ses project
+  - board: correct the printf format for frequency and register base
+  - python: fix ses project generation on windows
+  - samples: adc: fix not working in sequence mode and preemption mode
+  - ses: set obj path for common configuration.
+  - cmake: ses: put app source into separate category in ses.
+
+### Added:
+  - components: enet_phy: add rtl8211 driver
+  - components: hpm_spi: add initial SPI component
+  - components: add DMA Manager
+  - drivers: cam: add new API
+  - drivers: uart: add uart_set_baudrate API
+  - drivers: spi: update dma transfer API
+  - samples: tinyusb: host: add a hid demo
+  - samples: drivers: spi: add master_trans_large_amount_of_data example
+  - samples: decoder_wav: Add support for different bit rates and bits
+  - samples: drivers: audio: automatic acquisition of i2s clock frequency
+  - middleware: tinyusb: update portable file for USB host
+
 ## [0.12.1] - 2022-07-01:
 
 Main changes since 0.12.0

@@ -11,14 +11,7 @@
 #include "board.h"
 #include "jpeglib.h"
 #include "jpeg_turbo.h"
-/*---------------------------------------------------------------------*
- * Define variables
- *---------------------------------------------------------------------
- */
-/*JPG file data buff*/
-extern uint8_t filebuff[];
-/*rgb565 data buff*/
-extern uint8_t rgb565buff[];
+#include "file_op.h"
 /*---------------------------------------------------------------------*
  * libjpeg-turbo  -Convert JPG data to bgr888 data
  *---------------------------------------------------------------------
@@ -27,6 +20,7 @@ void jpeg_jpgmem_to_bgr888(const uint8_t *src, int32_t srcLen, uint8_t **_dst, i
 {
     struct jpeg_decompress_struct cinfo;
     struct jpeg_error_mgr jerr;
+    uint64_t image_size;
 
     /* Initialize the JPEG decompression object with default error handling. */
     cinfo.err = jpeg_std_error(&jerr);
@@ -36,6 +30,28 @@ void jpeg_jpgmem_to_bgr888(const uint8_t *src, int32_t srcLen, uint8_t **_dst, i
     jpeg_mem_src(&cinfo, src, srcLen);
     /* Read file header, set default decompression parameters */
     jpeg_read_header(&cinfo, TRUE);
+
+    /*Image conversion compression*/
+    image_size = cinfo.image_width*cinfo.image_height*2;
+    /*No compression*/
+    if (image_size < RGBBUFFLEN) {
+        cinfo.scale_num = 1;
+        cinfo.scale_denom = 1;
+    }
+    /*Compression ratio: 1:2*/
+    else if (image_size < (RGBBUFFLEN * 4)) {
+        cinfo.scale_num = 1;
+        cinfo.scale_denom = 2;
+    }
+    /*Compression ratio: 1:4*/
+    else if (image_size < (RGBBUFFLEN * 16)) {
+        cinfo.scale_num = 1;
+        cinfo.scale_denom = 4;
+    }
+    else {
+        printf("Pixels too large, Pictures can support 1024*768 at most\n");
+        return;
+    }
 
     /* Start decompressor */
     printf("start decoding\n");
@@ -49,7 +65,7 @@ void jpeg_jpgmem_to_bgr888(const uint8_t *src, int32_t srcLen, uint8_t **_dst, i
     /* Process data */
     JSAMPROW row_pointer[1];
     while (cinfo.output_scanline < cinfo.output_height) {
-        row_pointer[0] = &dst[cinfo.output_scanline * cinfo.image_width * cinfo.num_components];
+        row_pointer[0] = &dst[cinfo.output_scanline * cinfo.output_width * cinfo.num_components];
         jpeg_read_scanlines(&cinfo, row_pointer, 1);
     }
     /* Finish decompression*/
@@ -102,17 +118,18 @@ void jpeg_bgr888_to_rgb565(uint8_t *bgr, int32_t *bsize, int32_t bit)
  * Libjpeg conversion to convert JPG data into rgb565 data
  *---------------------------------------------------------------------
  */
-void jpeg_convert_data(int32_t fileLen, int32_t *size, int32_t *width, int32_t *height)
+void jpeg_convert_data(uint8_t *filebuffs, int32_t fileLen, int32_t *width, int32_t *height, uint8_t *rgbbuff)
 {
     int32_t component;
     uint8_t *djpegbuff = NULL;
+    int32_t size;
 
     /* jpeg  -Convert JPG data to bgr888 data */
-    jpeg_jpgmem_to_bgr888(filebuff, fileLen, &djpegbuff, size, width, height, &component);
+    jpeg_jpgmem_to_bgr888(filebuffs, fileLen, &djpegbuff, &size, width, height, &component);
     /*bgr888 data conversion to rgb565*/
-    jpeg_bgr888_to_rgb565(djpegbuff, size, 24);
+    jpeg_bgr888_to_rgb565(djpegbuff, &size, 24);
     /*Store data to buff*/
-    memcpy(rgb565buff, &djpegbuff[0], *size);
+    memcpy(rgbbuff, &djpegbuff[0], size);
     /*Free memory*/
     free(djpegbuff);
     /*Complete JPG decoding*/

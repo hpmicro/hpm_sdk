@@ -54,6 +54,7 @@ void jpeg_reset(JPEG_Type *ptr)
 
 void jpeg_init(JPEG_Type *ptr)
 {
+    jpeg_clear_cfg(ptr);
     jpeg_reset(ptr);
 }
 

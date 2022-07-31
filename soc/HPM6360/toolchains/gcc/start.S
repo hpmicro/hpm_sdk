@@ -78,6 +78,9 @@ _start:
     la t0, HANDLER_S_TRAP
     csrw stvec, t0
 #endif
+
+    /* Disable vectored external PLIC interrupt */
+    csrci CSR_MMISC_CTL, 2
 #endif
 
     /* System reset handler */

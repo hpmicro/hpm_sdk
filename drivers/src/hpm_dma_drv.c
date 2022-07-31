@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 - 2022 hpmicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -35,7 +35,7 @@ hpm_stat_t dma_setup_channel(DMA_Type *ptr, uint32_t ch_num, dma_channel_config_
     ptr->CHCTRL[ch_num].LLPOINTERH = DMA_CHCTRL_LLPOINTERH_LLPOINTERH_SET(ch->linked_ptr_high);
 #endif
 
-    ptr->INTSTATUS = 0xFFFFFFFFUL;
+    ptr->INTSTATUS = (DMA_INTSTATUS_TC_SET(1) | DMA_INTSTATUS_ABORT_SET(1) | DMA_INTSTATUS_ERROR_SET(1)) << ch_num;
     tmp = DMA_CHCTRL_CTRL_SRCBUSINFIDX_SET(0)
         | DMA_CHCTRL_CTRL_DSTBUSINFIDX_SET(0)
         | DMA_CHCTRL_CTRL_PRIORITY_SET(ch->priority)
@@ -128,7 +128,7 @@ hpm_stat_t dma_start_memcpy(DMA_Type *ptr, uint8_t ch_num,
     config.src_addr = src;
     config.dst_addr = dst;
     config.size_in_byte = size;
-    
+
     config.src_burst_size = burst_size;
     stat = dma_setup_channel(ptr, ch_num, &config);
     if (stat != status_success) {

@@ -499,7 +499,7 @@ void enet_update_ptp_timeoffset(ENET_Type *ptr, enet_ptp_time_t *timeoffset)
 {
     /* write the offset (positive or negative ) in the timestamp update high and low registers */
     ptr->SYST_SEC_UPD = ENET_SYST_SEC_UPD_TSS_SET(timeoffset->sec);
-    ptr->SYST_NSEC_UPD = ENET_SYST_NSEC_UPD_ADDSUB_SET(timeoffset->sign) | ENET_SYST_NSEC_UPD_TSSS_SET(timeoffset->nsec / ptr->SUB_SEC_INCR);
+    ptr->SYST_NSEC_UPD = ENET_SYST_NSEC_UPD_ADDSUB_SET(timeoffset->sign) | ENET_SYST_NSEC_UPD_TSSS_SET(timeoffset->nsec);
 
     /* update the timestamp */
     ptr->TS_CTRL |= ENET_TS_CTRL_TSUPDT_MASK;

@@ -82,7 +82,7 @@ hpm_stat_t cam_init(CAM_Type *ptr, cam_config_t *config)
         | CAM_CR1_RESTART_BUSPTR_MASK
         | CAM_CR1_COLOR_EXT_SET(config->color_ext)
         | CAM_CR1_PACK_DIR_SET(config->data_pack_msb)
-        | CAM_CR1_STORAGE_MODE_SET(config->data_store_mode)
+        | config->data_store_mode
         | config->color_format
         | config->sensor_bitwidth;
 

@@ -161,6 +161,28 @@ hpm_stat_t uart_init(UART_Type *ptr, uart_config_t *config)
     return status_success;
 }
 
+hpm_stat_t uart_set_baudrate(UART_Type *ptr, uint32_t baudrate, uint32_t src_clock_hz)
+{
+    uint8_t osc;
+    uint16_t div;
+
+    /* Set DLAB to 1 */
+    ptr->LCR |= UART_LCR_DLAB_MASK;
+
+    if (!uart_calculate_baudrate(src_clock_hz, baudrate, &div, &osc)) {
+        return status_uart_no_suitable_baudrate_parameter_found;
+    }
+
+    ptr->OSCR = (ptr->OSCR & ~UART_OSCR_OSC_MASK) | UART_OSCR_OSC_SET(osc);
+    ptr->DLL = UART_DLL_DLL_SET(div >> 0);
+    ptr->DLM = UART_DLM_DLM_SET(div >> 8);
+
+    /* DLAB bit needs to be cleared once baudrate is configured */
+    ptr->LCR &= ~UART_LCR_DLAB_MASK;
+
+    return status_success;
+}
+
 hpm_stat_t uart_send_byte(UART_Type *ptr, uint8_t c)
 {
     uint32_t retry = 0;

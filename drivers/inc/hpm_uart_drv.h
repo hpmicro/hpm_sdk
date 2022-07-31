@@ -406,6 +406,21 @@ hpm_stat_t uart_receive_data(UART_Type *ptr, uint8_t *buf, uint32_t size_in_byte
  */
 hpm_stat_t uart_send_data(UART_Type *ptr, uint8_t *buf, uint32_t size_in_byte);
 
+
+/**
+ * @brief Sets UART baudrate.
+ *
+ * This function configures the UART module baud rate. This function is used to update
+ * the UART module baud rate after the UART module is initialized by the uart_init.
+ *
+ * @param ptr UART base address
+ * @param baudrate UART baudrate to be set
+ * @param src_clock_hz UART clock source frequency in Hz.
+ * @retval status_uart_no_suitable_baudrate_parameter_found Baudrate is not supported in the current clock source
+ * @retval status_success Set baudrate succeeded.
+ */
+hpm_stat_t uart_set_baudrate(UART_Type *ptr, uint32_t baudrate, uint32_t src_clock_hz);
+
 #ifdef __cplusplus
 }
 #endif

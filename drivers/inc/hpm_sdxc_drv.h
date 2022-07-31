@@ -31,6 +31,25 @@
 #define SDXC_CMD_RESP_TYPE_RESP_LEN_48B (3U)    /**< Response Length 48; Check busy after response */
 
 
+#define SDXC_STS_CMD_ERR (SDXC_INT_STAT_CMD_TOUT_ERR_MASK | SDXC_INT_STAT_CMD_CRC_ERR_MASK |\
+            SDXC_INT_STAT_CMD_END_BIT_ERR_MASK | SDXC_INT_STAT_CMD_IDX_ERR_MASK | SDXC_INT_STAT_AUTO_CMD_ERR_MASK)
+#define SDXC_STS_DATA_ERR (SDXC_INT_STAT_DATA_TOUT_ERR_MASK| SDXC_INT_STAT_DATA_CRC_ERR_MASK | \
+            SDXC_INT_STAT_DATA_END_BIT_ERR_MASK)
+#define SDXC_STS_CARD_ERR (SDXC_INT_STAT_CARD_REMOVAL_MASK)
+#define SDXC_STS_ERROR (SDXC_INT_STAT_ERR_INTERRUPT_MASK | SDXC_STS_CMD_ERR | SDXC_STS_DATA_ERR | SDXC_STS_CARD_ERR)
+#define SDXC_STS_CMD_FLAGS (SDXC_STS_CMD_ERR | SDXC_INT_STAT_CMD_COMPLETE_MASK)
+
+#define SDXC_STS_ALL_FLAGS (SDXC_INT_STAT_ERR_INTERRUPT_MASK | SDXC_INT_STAT_CQE_EVENT_MASK | \
+            SDXC_INT_STAT_FX_EVENT_MASK | SDXC_INT_STAT_RE_TUNE_EVENT_MASK | SDXC_INT_STAT_CARD_INTERRUPT_MASK | \
+            SDXC_INT_STAT_CARD_REMOVAL_MASK | SDXC_INT_STAT_CARD_INSERTION_MASK | SDXC_INT_STAT_BUF_RD_READY_MASK | \
+            SDXC_INT_STAT_BUF_WR_READY_MASK | SDXC_INT_STAT_DMA_INTERRUPT_MASK | SDXC_INT_STAT_BGAP_EVENT_MASK | \
+            SDXC_INT_STAT_XFER_COMPLETE_MASK | SDXC_INT_STAT_CMD_COMPLETE_MASK | SDXC_INT_STAT_BOOT_ACK_ERR_MASK |  \
+            SDXC_INT_STAT_RESP_ERR_MASK | SDXC_INT_STAT_TUNING_ERR_MASK | SDXC_INT_STAT_ADMA_ERR_MASK |   \
+            SDXC_INT_STAT_AUTO_CMD_ERR_MASK | SDXC_INT_STAT_CUR_LMT_ERR_MASK | SDXC_INT_STAT_DATA_END_BIT_ERR_MASK |\
+            SDXC_INT_STAT_DATA_CRC_ERR_MASK | SDXC_INT_STAT_DATA_TOUT_ERR_MASK | SDXC_INT_STAT_CMD_IDX_ERR_MASK |\
+            SDXC_INT_STAT_CMD_END_BIT_ERR_MASK | SDXC_INT_STAT_CMD_CRC_ERR_MASK | SDXC_INT_STAT_CMD_TOUT_ERR_MASK)
+
+
 /**
  * @brief Software reset flag definitions
  */
@@ -44,13 +63,10 @@ typedef enum _sdxc_software_reset {
  * @brief SDXC Bus voltage options
  */
 typedef enum _sdxc_bus_voltage_option {
-    sdxc_bus_voltage_sd_1v8 = 0x05U,
-    sdxc_bus_voltage_sd_3v0 = 0x06U,
-    sdxc_bus_voltage_sd_3v3 = 0x07U,
-
-    sdxc_bus_voltage_emmc_1v2 = 0x05U,
-    sdxc_bus_voltage_emmc_1v8 = 0x06U,
-    sdxc_bus_voltage_emmc_3v3 = 0x07U,
+    sdxc_bus_voltage_sd_1v8 = 0x01U,
+    sdxc_bus_voltage_sd_3v3 = 0x00U,
+    sdxc_bus_voltage_emmc_1v8 = 0x01U,
+    sdxc_bus_voltage_emmc_3v3 = 0x00U,
 } sdxc_bus_voltage_option_t;
 
 /**
@@ -138,8 +154,8 @@ typedef enum _sdxc_command_type {
  */
 #define SDXC_CMD_TYPE_NORMAL (0UL << SDXC_CMD_XFER_CMD_TYPE_SHIFT)
 #define SDXC_CMD_TYPE_SUSPEND (1UL << SDXC_CMD_XFER_CMD_TYPE_SHIFT)
-#define SDXC_CMD_TYPE_RESUME (1UL << SDXC_CMD_XFER_CMD_TYPE_SHIFT)
-#define SDXC_CMD_TYPE_ABORT (1UL << SDXC_CMD_XFER_CMD_TYPE_SHIFT)
+#define SDXC_CMD_TYPE_RESUME (2UL << SDXC_CMD_XFER_CMD_TYPE_SHIFT)
+#define SDXC_CMD_TYPE_ABORT (3UL << SDXC_CMD_XFER_CMD_TYPE_SHIFT)
 
 /**
  * @brief SDXC boot mode types
@@ -215,6 +231,9 @@ enum {
     status_sdxc_transfer_data_failed = MAKE_STATUS(status_group_sdxc, 27),              /**< SDXC transfer data failed */
     status_sdxc_dma_addr_unaligned = MAKE_STATUS(status_group_sdxc, 28),                /**< SDXC DMA address unaligned */
     status_sdxc_tuning_failed = MAKE_STATUS(status_group_sdxc, 29),                     /**< SDXC tuning failed */
+    status_sdxc_card_removed = MAKE_STATUS(status_group_sdxc, 30),                      /**< SDXC Card removed */
+    status_sdxc_non_recoverable_error = MAKE_STATUS(status_group_sdxc, 30),             /**< SDXC non-recoverable error */
+    status_sdxc_recoverable_error = MAKE_STATUS(status_group_sdxc, 31),                 /**< SDXC recoverable error */
 };
 
 /**
@@ -316,6 +335,7 @@ typedef struct _sdxc_command {
     uint32_t resp_error_flags;              /**< Command response error flags */
     uint32_t response[4];                   /**< Response buffer */
     uint32_t auto_cmd_resp;                 /**< Auto command response */
+    uint32_t cmd_timeout_ms;                /**< Command Timeout in ms, 0 - means use default short timeout */
 } sdxc_command_t;
 
 /**
@@ -377,7 +397,7 @@ enum {
  * @brief SDXC configuration
  */
 typedef struct _sdxc_config {
-    uint32_t data_timeout;
+    uint32_t data_timeout; /**< Data timeout in milliseconds */
 } sdxc_config_t;
 
 /**
@@ -395,7 +415,7 @@ typedef struct _sdxc_adma2_descriptor {
         };
         uint32_t len_attr;
     };
-    const uint32_t *addr;              /**< Data Addess */
+    const uint32_t *addr;              /**< Data Address */
 } sdxc_adma2_descriptor_t;
 
 #define SDXC_ADMA2_DESC_VALID_FLAG (1UL << 0)
@@ -664,7 +684,7 @@ static inline void sdxc_enable_host_version4(SDXC_Type *base, bool enable)
  */
 static inline void sdxc_execute_tuning(SDXC_Type *base)
 {
-    base->AC_HOST_CTRL |= SDXC_AC_HOST_CTRL_EXEC_TUNING_MASK;
+    base->AC_HOST_CTRL |= SDXC_AC_HOST_CTRL_EXEC_TUNING_MASK | SDXC_AC_HOST_CTRL_SAMPLE_CLK_SEL_MASK;
 }
 
 /**
@@ -858,6 +878,21 @@ void sdxc_set_mmc_boot_config(SDXC_Type *base, const sdxc_boot_config_t *config)
 hpm_stat_t sdxc_send_command(SDXC_Type *base, sdxc_command_t *cmd);
 
 /**
+ * @brief Receive command response
+ * @param [in] base SDXC base address
+ * @param [in/out] cmd Command
+ * @return status_success if no error happened
+ */
+hpm_stat_t sdxc_receive_cmd_response(SDXC_Type *base, sdxc_command_t *cmd);
+
+/**
+ * @brief Parse the SDXC interrupt status to HPM encoded status
+ * @param [in] base SDXC base status
+ * @return status_success if no error happened
+ */
+hpm_stat_t sdxc_parse_interrupt_status(SDXC_Type *base);
+
+/**
  * @brief Wait until SDXC command completes
  * @param [in] base SDXC base address
  * @param [in] cmd Command
@@ -917,6 +952,14 @@ hpm_stat_t sdxc_set_dma_config(SDXC_Type *base, sdxc_adma_config_t *dma_cfg, con
 void sdxc_init(SDXC_Type *base, const sdxc_config_t *config);
 
 /**
+ * @brief Set the Data Timeout Counter value for an SD/eMMC device
+ * @param [in] base SDXC base address
+ * @param [in] timeout_in_ms Required timeout value in milliseconds, maximum value is 131,072ms
+ * @param [out] actual_timeout_us Actual timeout in milliseconds, reported by this API
+ */
+void sdxc_set_data_timeout(SDXC_Type *base, uint32_t timeout_in_ms, uint32_t *actual_timeout_ms);
+
+/**
  * @brief Set SDXC speed mode
  * @param [in] base SDXC base address
  * @param [in] mode SDXC speed mode option
@@ -927,9 +970,16 @@ void sdxc_set_speed_mode(SDXC_Type *base, sdxc_speed_mode_t mode);
 /**
  * @brief Set SDXC Data bus width
  * @param [in] base SDXC base address
- * @param [in] width SDXXC bus width option
+ * @param [in] width SDXC bus width option
  */
 void sdxc_set_data_bus_width(SDXC_Type *base, sdxc_bus_width_t width);
+
+/**
+ * @brief Get SDXC Data bus width
+ * @param [in] base SDXC base address
+ * @return Actual bus width, valid value: 1 / 4 / 8
+ */
+uint32_t sdxc_get_data_bus_width(SDXC_Type *base);
 
 /**
  * @brief Set SDXC IO voltage
@@ -963,6 +1013,15 @@ void sdxc_enable_wakeup_event(SDXC_Type *base, sdxc_wakeup_event_t evt, bool ena
  * @retval SDXC transfer status
  */
 hpm_stat_t sdxc_transfer_blocking(SDXC_Type *base, sdxc_adma_config_t *dma_config, sdxc_xfer_t *xfer);
+
+/**
+ * @brief Start SDXC transfer in nonblocking way
+ * @param [in] base SDXC base address
+ * @param [in] dma_config SDXC DMA configuration
+ * @param [in] xfer SDXC transfer context
+ * @retval SDXC transfer status
+ */
+hpm_stat_t sdxc_transfer_nonblocking(SDXC_Type *base, sdxc_adma_config_t *dma_config, sdxc_xfer_t *xfer);
 
 /**
  * @brief SDXC Error recovery

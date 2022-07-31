@@ -10,7 +10,7 @@ set(CONFIG_USB_DEVICE 1)
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
-project(usb_cdc_dual_ports_example)
+project(usb_device_cdc_dual_ports_example)
 
 sdk_compile_definitions(-DCFG_TUSB_MCU=OPT_MCU_HPM)
 sdk_compile_definitions(-DUSB_HOST_MCU_CORE=HPM_CORE0)

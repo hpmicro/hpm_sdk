@@ -10,7 +10,6 @@
  *---------------------------------------------------------------------*/
 #include "board.h"
 #include "hpm_enet_drv.h"
-#include "hpm_enet_soc_drv.h"
 #include "hpm_mchtmr_drv.h"
 #include "hpm_gpio_drv.h"
 #include "hpm_clock_drv.h"
@@ -23,9 +22,14 @@
 #include "lwip/apps/lwiperf.h"
 #include "lwip/timeouts.h"
 
-#if RGMII
-    #include "hpm_dp83867.h"
-    #include "hpm_dp83867_regs.h"
+#if RGMII == 1
+    #if defined __USE_DP83867
+        #include "hpm_dp83867.h"
+        #include "hpm_dp83867_regs.h"
+    #elif defined __USE_RTL8211
+        #include "hpm_rtl8211.h"
+        #include "hpm_rtl8211_regs.h"
+    #endif
 #else
     #if defined __USE_DP83864
         #include "hpm_dp83848.h"
@@ -66,7 +70,6 @@ __RW uint8_t tx_buff[ENET_TX_BUFF_COUNT][ENET_TX_BUFF_SIZE]; /* Ethernet Transmi
 
 enet_desc_t desc;
 
-
 /*---------------------------------------------------------------------*
  * Initialization
  *---------------------------------------------------------------------*/
@@ -75,7 +78,11 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     uint32_t intr = 0;
     enet_mac_config_t enet_config;
     #if RGMII == 1
+        #if __USE_DP83867
         dp83867_config_t phy_config;
+        #else
+        rtl8211_config_t phy_config;
+        #endif
     #else
         #if __USE_DP83864
         dp83848_config_t phy_config;
@@ -104,38 +111,22 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     /* Set mac0 address */
     enet_config.mac_addr_high[0] = MAC_ADDR5 << 8 | MAC_ADDR4;
     enet_config.mac_addr_low[0]  = MAC_ADDR3 << 24 | MAC_ADDR2 << 16 | MAC_ADDR1 << 8 | MAC_ADDR0;
-#if 0
-    enet_config.mac_addr_high[1] = ENET_MAC_ADDR_HIGH_AE_MASK | MAC_ADDR5 << 8 | MAC_ADDR4;
-    enet_config.mac_addr_low[1] = MAC_ADDR3 << 24 | MAC_ADDR2 << 16 | MAC_ADDR1 << 8 | MAC_ADDR0;
-
-    enet_config.mac_addr_high[2] = ENET_MAC_ADDR_HIGH_AE_MASK | 0xff << 8 | 0xff;
-    enet_config.mac_addr_low[2] = 0xff << 24 | 0xff << 16 | 0xff << 8 | 0xff;
-
-    enet_config.valid_max_count  = 3;
-#else
-    enet_config.valid_max_count = 1;
-#endif
-    /* Set RGMII or RMII clock */
-    #if RGMII
-        enet_rgmii_enable_clock(ptr);
-    #else
-        board_init_enet_rmii_reference_clock(ptr, BOARD_ENET_RMII_INT_REF_CLK);
-        enet_rmii_enable_clock(ptr, BOARD_ENET_RMII_INT_REF_CLK);
-    #endif
-
-    /* Set RGMII clock delay */
-    #if RGMII
-        enet_rgmii_set_clock_delay(ptr, BOARD_ENET_RGMII_TX_DLY, BOARD_ENET_RGMII_RX_DLY);
-    #endif
+    enet_config.valid_max_count  = 1;
 
     /* Initialize enet controller */
     enet_controller_init(ptr, ENET_INF_TYPE, &desc, &enet_config, intr);
 
     /* Initialize phy */
-    #if RGMII
+    #if RGMII == 1
+        #if __USE_DP83867
         dp83867_reset(ptr);
         dp83867_basic_mode_default_config(ptr, &phy_config);
         if (dp83867_basic_mode_init(ptr, &phy_config) == true) {
+        #else
+        rtl8211_reset(ptr);
+        rtl8211_basic_mode_default_config(ptr, &phy_config);
+        if (rtl8211_basic_mode_init(ptr, &phy_config) == true) {
+        #endif
     #else
         #if __USE_DP83864
         dp83848_reset(ptr);
@@ -267,6 +258,16 @@ int main(void)
 
     /* Initialize GPIOs */
     board_init_enet_pins(ENET);
+
+    /* Set RMII reference clock */
+    #if RGMII ==  0
+    board_init_enet_rmii_reference_clock(ENET, BOARD_ENET_RMII_INT_REF_CLK);
+    #endif
+
+    /* Set RGMII clock delay */
+    #if RGMII == 1
+    board_init_enet_rgmii_clock_delay(ENET);
+    #endif
 
     printf("This is an ethernet demo: Iperf\n");
     printf("LwIP Version: %s\n", LWIP_VERSION_STRING);

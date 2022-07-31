@@ -58,6 +58,22 @@ typedef enum {
     usb_ctrl_mode_host   = 3
 } usb_controller_mode_t;
 
+/**
+ * @brief USB line state
+ */
+typedef enum {
+    usb_line_state0 = 0,
+    usb_line_state1 = 1,
+    usb_line_state2 = 2
+} usb_line_state_t;
+
+/**
+ * @brief USB transceiver
+ */
+typedef enum {
+    usb_tran_parallel = 0,
+    usb_tran_serial = 1
+} usb_transceiver_t;
 /*---------------------------------------------------------------------*
  * Structure Declarations
  *---------------------------------------------------------------------*/

@@ -73,6 +73,10 @@ static void usb_phy_deinit(USB_Type *ptr)
     ptr->PHY_CTRL1 &= ~USB_PHY_CTRL1_UTMI_OTG_SUSPENDM_MASK;       /* clear otg_suspendm */
 }
 
+static uint8_t usb_phy_get_line_state(USB_Type *ptr)
+{
+    return USB_PHY_STATUS_LINE_STATE_GET(ptr->PHY_STATUS);
+}
 /*---------------------------------------------------------------------*
  * Driver API
  *---------------------------------------------------------------------*/
@@ -295,7 +299,7 @@ bool usb_hcd_init(USB_Type *ptr, uint32_t int_mask, uint16_t framelist_size)
 
     /* USB CMD Register */
     ptr->USBCMD =  USB_USBCMD_RS_MASK
-                |  USB_USBCMD_ASE_MASK /*| USB_USBCMD_PSE_MASK */
+                |  USB_USBCMD_ASE_MASK | USB_USBCMD_PSE_MASK
                 |  USB_USBCMD_FS_2_SET(framelist_size_bf >> 2)
                 |  USB_USBCMD_FS_1_SET(framelist_size_bf);
 
@@ -307,6 +311,12 @@ bool usb_hcd_init(USB_Type *ptr, uint32_t int_mask, uint16_t framelist_size)
 
 void usb_hcd_port_reset(USB_Type *ptr)
 {
+    if (usb_phy_get_line_state(ptr) == usb_line_state2) {
+        ptr->PORTSC1 |= USB_PORTSC1_STS_MASK;
+    } else {
+        ptr->PORTSC1 &= ~USB_PORTSC1_STS_MASK;
+    }
+
     ptr->PORTSC1 &= ~USB_PORTSC1_PE_MASK;
     ptr->PORTSC1 |=  USB_PORTSC1_PR_MASK;
 

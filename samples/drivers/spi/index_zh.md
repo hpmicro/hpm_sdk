@@ -8,5 +8,6 @@
    polling/slave/README_zh
    dma/master/README_zh
    dma/slave/README_zh
+   master_trans_large_amount_of_data/README_zh
 
 :::

@@ -153,7 +153,7 @@ typedef struct
     volatile hcd_qtd_t qtd_overlay;
 
     /*--------------------------------------------------------------------
-     * Due to the fact QHD is 64 bytes aligned but occupies only 48 bytes
+     * Due to the fact QHD is 32 bytes aligned but occupies only 48 bytes
      * thus there are 16 bytes padding free that we can make use of.
      *--------------------------------------------------------------------*/
     uint8_t used;
@@ -179,12 +179,12 @@ typedef struct
 
     /* Note control qhd of dev0 is used as head of async list */
     struct {
-        hcd_qhd_t qhd __attribute__ ((aligned(USB_SOC_HCD_QHD_ALIGNMENT)));
-        hcd_qtd_t qtd __attribute__ ((aligned(USB_SOC_HCD_QTD_ALIGNMENT)));
+        hcd_qhd_t qhd;
+        hcd_qtd_t qtd;
     } control[USB_HCD_MAX_CONNECTED_DEVICES + 1];
 
-    hcd_qhd_t qhd_pool[USB_SOC_HCD_MAX_ENDPOINT_COUNT]      __attribute__ ((aligned(USB_SOC_HCD_QHD_ALIGNMENT)));
-    hcd_qtd_t qtd_pool[USB_SOC_HCD_MAX_XFER_ENDPOINT_COUNT] __attribute__ ((aligned(USB_SOC_HCD_QTD_ALIGNMENT)));
+    hcd_qhd_t qhd_pool[USB_SOC_HCD_MAX_ENDPOINT_COUNT];
+    hcd_qtd_t qtd_pool[USB_SOC_HCD_MAX_XFER_ENDPOINT_COUNT];
 
     uint32_t uframe_number;
 } hcd_data_t;

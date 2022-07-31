@@ -32,13 +32,15 @@
  * Define function
  *---------------------------------------------------------------------
  */
-void jpeg_convert_hw(int32_t fileLen, int32_t *width, int32_t *height);
+void jpeg_convert_hw(uint8_t *filebuffs, int32_t fileLen, int32_t *width, int32_t *height, uint8_t *rgbbuff);
 
 /*---------------------------------------------------------------------*
  * Define variables
  *---------------------------------------------------------------------
  */
 typedef struct jpeg_huffman_table {
+    /*JPG file data esc-data lenth*/
+    uint16_t  in_ecs_length;
     /*huffmin data buff*/
     uint32_t huffmin[HUFFMINLEN];
     /*huffbase data buff*/

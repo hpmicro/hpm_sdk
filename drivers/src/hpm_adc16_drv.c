@@ -8,10 +8,6 @@
 #include "hpm_adc16_drv.h"
 #include "hpm_soc_feature.h"
 
-#define ADC16_IS_CHANNEL_INVALID(CH) (CH > ADC16_SOC_MAX_CH_NUM && CH != ADC16_SOC_TEMP_CH_NUM)
-#define ADC16_IS_TRIG_CH_INVLAID(CH) (CH > ADC16_SOC_MAX_TRIG_CH_NUM)
-#define ADC16_IS_TRIG_LEN_INVLAID(TRIG_LEN) (TRIG_LEN > ADC_SOC_MAX_TRIG_CH_LEN)
-
 void adc16_get_default_config(adc16_config_t *config)
 {
     config->conv_mode          = adc16_conv_mode_oneshot;
@@ -173,7 +169,7 @@ hpm_stat_t adc16_init(ADC16_Type *ptr, adc16_config_t *config)
     return status_success;
 }
 
-hpm_stat_t adc16_channel_init(ADC16_Type *ptr, adc16_channel_config_t *config)
+hpm_stat_t adc16_init_channel(ADC16_Type *ptr, adc16_channel_config_t *config)
 {
     /* Check the specified channel number */
     if (ADC16_IS_CHANNEL_INVALID(config->ch)) {
@@ -198,7 +194,7 @@ void adc16_init_seq_dma(ADC16_Type *ptr, adc16_dma_config_t *dma_config)
     ptr->SEQ_DMA_CFG |= ADC16_SEQ_DMA_CFG_DMA_RST_MASK;
 
     /* Reset memory to clear all of cycle bits */
-    memset(dma_config->start_addr, 0x00, dma_config->size_in_4bytes * sizeof(uint32_t));
+    memset(dma_config->start_addr, 0x00, dma_config->buff_len_in_4bytes * sizeof(uint32_t));
 
     /* De-reset ADC DMA */
     ptr->SEQ_DMA_CFG &= ~ADC16_SEQ_DMA_CFG_DMA_RST_MASK;
@@ -208,7 +204,7 @@ void adc16_init_seq_dma(ADC16_Type *ptr, adc16_dma_config_t *dma_config)
 
     /* Set ADC DMA memory dword length */
     ptr->SEQ_DMA_CFG = (ptr->SEQ_DMA_CFG & ~ADC16_SEQ_DMA_CFG_BUF_LEN_MASK)
-                     | ADC16_SEQ_DMA_CFG_BUF_LEN_SET(dma_config->size_in_4bytes);
+                     | ADC16_SEQ_DMA_CFG_BUF_LEN_SET(dma_config->buff_len_in_4bytes);
 
     /* Set stop_en and stop_pos */
     if (dma_config->stop_en) {
@@ -220,8 +216,7 @@ void adc16_init_seq_dma(ADC16_Type *ptr, adc16_dma_config_t *dma_config)
 
 hpm_stat_t adc16_set_prd_config(ADC16_Type *ptr, adc16_prd_config_t *config)
 {
-    uint32_t prd_freq, prd_reload_value;
-
+    /* Check the specified channel number */
     if (ADC16_IS_CHANNEL_INVALID(config->ch)) {
         return status_invalid_argument;
     }
@@ -234,15 +229,10 @@ hpm_stat_t adc16_set_prd_config(ADC16_Type *ptr, adc16_prd_config_t *config)
     ptr->PRD_CFG[config->ch].PRD_CFG = (ptr->PRD_CFG[config->ch].PRD_CFG & ~ADC16_PRD_CFG_PRD_CFG_PRESCALE_MASK)
                                      | ADC16_PRD_CFG_PRD_CFG_PRESCALE_SET(config->prescale);
 
-    /* Calculate period count frequency (unit in Hz) */
-    prd_freq = config->clk_src_freq_in_hz / (config->prescale + 1);
-    prd_reload_value = config->period_in_ms / 1000 * prd_freq;
 
-    /* check the validity for period count value */
-    if (prd_reload_value) {
+    /* Set period count */
         ptr->PRD_CFG[config->ch].PRD_CFG = (ptr->PRD_CFG[config->ch].PRD_CFG & ~ADC16_PRD_CFG_PRD_CFG_PRD_MASK)
-                                         | ADC16_PRD_CFG_PRD_CFG_PRD_SET(prd_reload_value);
-    }
+                                         | ADC16_PRD_CFG_PRD_CFG_PRD_SET(config->period_count);
 
     return status_success;
 }
@@ -252,9 +242,10 @@ void adc16_trigger_seq_by_sw(ADC16_Type *ptr)
     ptr->SEQ_CFG0 |= ADC16_SEQ_CFG0_SW_TRIG_MASK;
 }
 
+/* Note: the sequence length can not be larger or equal than 2 in HPM6750EVK Revision A0 */
 hpm_stat_t adc16_set_seq_config(ADC16_Type *ptr, adc16_seq_config_t *config)
 {
-    if (config->seq_len > ADC_SOC_MAX_SEQ_LEN) {
+    if (config->seq_len > ADC_SOC_SEQ_MAX_LEN) {
         return status_invalid_argument;
     }
 
@@ -265,8 +256,8 @@ hpm_stat_t adc16_set_seq_config(ADC16_Type *ptr, adc16_seq_config_t *config)
                   | ADC16_SEQ_CFG0_HW_TRIG_EN_SET(config->hw_trig_en);
 
     /* Set sequence queue */
-    for (int i = 0; i < config->seq_len; i++)
-    {
+    for (int i = 0; i < config->seq_len; i++) {
+        /* Check the specified channel number */
         if (ADC16_IS_CHANNEL_INVALID(config->queue[i].ch)) {
             return status_invalid_argument;
         }

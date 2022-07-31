@@ -68,6 +68,7 @@ typedef struct
     uint32_t sec_total;     /** song total seconds */
     uint32_t sec_cur;       /** song current seconds */
     uint32_t data_pos;     /**  data position */
+    uint32_t remaining_data;    /**  The amount of data remaining, according to which the music has been played */
     hpm_audiocodec_callback func; /** callback function */
 }hpm_wav_ctrl;
 
@@ -76,18 +77,19 @@ typedef struct
  *
  * @param[in] fname file path and name string
  * @param[inout] wav_ctrl @ref hpm_wav_ctrl
+ * @param[in] pbuf buffer, minimum 512 bytes
+ *
  * @return @ref hpm_stat_t
  */
-hpm_stat_t hpm_wav_decode_init(char *fname, hpm_wav_ctrl *wav_ctrl);
+hpm_stat_t hpm_wav_decode_init(char *fname, hpm_wav_ctrl *wav_ctrl, uint8_t (*pbuf)[512]);
 
 /**
  * @brief hpm wav file decode
  *
  * @param[in] wav_ctrl @ref hpm_wav_ctrl
  * @param[out] buf output data
- * @param[in] buf_transit buf == buf_transit
  * @param size buf size
  * @return uint32_t data size
  */
-uint32_t hpm_wav_decode(hpm_wav_ctrl *wav_ctrl, uint8_t *buf, uint8_t * buf_transit, uint32_t size);
+uint32_t hpm_wav_decode(hpm_wav_ctrl *wav_ctrl, uint8_t *buf, uint32_t size);
 #endif

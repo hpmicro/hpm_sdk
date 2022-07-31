@@ -24,4 +24,5 @@
    hpm_math/index
    lwip/index
    memstress/index
+   dma_manager/README
 :::

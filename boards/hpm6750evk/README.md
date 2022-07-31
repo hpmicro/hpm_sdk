@@ -64,7 +64,7 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 
 - PWM Pin:
 
-  ![image-1](../../doc/images/boards/hpm6750evk/hpm6750evk_pwm_output_pin.jpg "image-1")
+  ![image-1](../../doc/images/boards/hpm6750evk/hpm6750evk_pwm_output_pin.png "image-1")
 
 - SPI Pin：
 
@@ -83,6 +83,7 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 | I2C0.SDA    | J20[4] |
 
 - UART for core1 debug console
+
 | Function | Position |
 | ---- | -------- |
 | UART13.TXD    | J20[5] |

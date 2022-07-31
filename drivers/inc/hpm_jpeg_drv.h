@@ -97,6 +97,16 @@ extern "C" {
 #endif
 
 /**
+ * @brief clear jpeg cfg Register
+ *
+ * @param [in] ptr JPEG base address, HPM_JPEG
+ */
+static inline void jpeg_clear_cfg(JPEG_Type *ptr)
+{
+    ptr->CFG = 0;
+}
+
+/**
  * @brief jpeg function disable
  *
  * @param [in] ptr JPEG base address, HPM_JPEG

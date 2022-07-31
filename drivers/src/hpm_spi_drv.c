@@ -19,7 +19,7 @@ typedef enum {
     spi_data_length_31_bits = 30
 } spi_data_length_in_bits_t;
 
-static hpm_stat_t spi_wait_for_idle_status(SPI_Type *ptr)
+hpm_stat_t spi_wait_for_idle_status(SPI_Type *ptr)
 {
     uint32_t status;
     uint32_t retry = 0;
@@ -39,7 +39,7 @@ static hpm_stat_t spi_wait_for_idle_status(SPI_Type *ptr)
     return status_success;
 }
 
-static hpm_stat_t spi_wait_for_busy_status(SPI_Type *ptr)
+hpm_stat_t spi_wait_for_busy_status(SPI_Type *ptr)
 {
     uint32_t status;
     uint32_t retry = 0;
@@ -478,6 +478,11 @@ hpm_stat_t spi_setup_dma_transfer(SPI_Type *ptr,
 {
     hpm_stat_t stat = status_fail;
     uint8_t mode;
+
+    stat = spi_wait_for_idle_status(ptr);
+    if (stat != status_success) {
+        return stat;
+    }
 
     ptr->TRANSCTRL = SPI_TRANSCTRL_SLVDATAONLY_SET(config->slave_config.slave_data_only) |
                      SPI_TRANSCTRL_CMDEN_SET(config->master_config.cmd_enable) |

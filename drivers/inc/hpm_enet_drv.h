@@ -14,6 +14,7 @@
 #include "hpm_common.h"
 #include "hpm_enet_regs.h"
 #include "hpm_soc_feature.h"
+#include "hpm_enet_soc_drv.h"
 
 /**
  * @brief Enet driver APIs

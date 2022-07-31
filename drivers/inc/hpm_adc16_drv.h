@@ -19,6 +19,24 @@
  * @{
  */
 
+/** @brief Define ADC16 validity check for the channel number */
+#define ADC16_IS_CHANNEL_INVALID(CH) (CH > ADC16_SOC_MAX_CH_NUM && CH != ADC16_SOC_TEMP_CH_NUM)
+
+/** @brief Define ADC16 validity check for the trigger number */
+#define ADC16_IS_TRIG_CH_INVLAID(CH) (CH > ADC16_SOC_MAX_TRIG_CH_NUM)
+
+/** @brief Define ADC16 validity check for the trigger length */
+#define ADC16_IS_TRIG_LEN_INVLAID(TRIG_LEN) (TRIG_LEN > ADC_SOC_MAX_TRIG_CH_LEN)
+
+/** @brief Define ADC16 validity check for the sequence length */
+#define ADC16_IS_SEQ_LEN_INVLAID(LEN)  ((LEN == 0) || (LEN > ADC_SOC_SEQ_MAX_LEN))
+
+/** @brief Define ADC16 validity check for the DMA buffer length in the sequence mode */
+#define ADC16_IS_SEQ_DMA_BUFF_LEN_INVLAID(LEN)  ((LEN == 0) || (LEN > ADC_SOC_SEQ_MAX_DMA_BUFF_LEN_IN_4BYTES))
+
+/** @brief Define ADC16 validity check for the DMA buffer length in the preemption mode */
+#define ADC16_IS_PMT_DMA_BUFF_LEN_INVLAID(LEN)  ((LEN == 0) || (LEN > ADC_SOC_PMT_MAX_DMA_BUFF_LEN_IN_4BYTES))
+
 /** @brief Define ADC16 conversion modes. */
 typedef enum {
     adc16_conv_mode_oneshot = 0,
@@ -83,7 +101,7 @@ typedef struct {
 /** @brief ADC16 DMA configuration struct. */
 typedef struct {
     uint32_t *start_addr;
-    uint32_t size_in_4bytes;
+    uint32_t buff_len_in_4bytes;
     uint32_t stop_pos;
     bool stop_en;
 } adc16_dma_config_t;
@@ -114,7 +132,7 @@ typedef struct {
     uint32_t clk_src_freq_in_hz;
     uint8_t ch;
     uint8_t prescale;
-    uint8_t period_in_ms;
+    uint8_t period_count;
 } adc16_prd_config_t;
 
 /** @brief ADC16 queue configuration struct for the sequence mode. */
@@ -125,7 +143,7 @@ typedef struct {
 
 /** @brief ADC16 configuration struct for the sequence mode. */
 typedef struct {
-    adc16_seq_queue_config_t queue[ADC_SOC_MAX_SEQ_LEN];
+    adc16_seq_queue_config_t queue[ADC_SOC_SEQ_MAX_LEN];
     bool restart_en;
     bool cont_en;
     bool sw_trig_en;
@@ -184,7 +202,7 @@ hpm_stat_t adc16_init(ADC16_Type *ptr, adc16_config_t *config);
  * @retval status_success Initialize an ADC16 channel successfully. Please refert to @ref hpm_stat_t.
  * @retval status_invalid_argument Initialize an ADC16 channel unsuccessfully due to passing one or more invalid arguments. Please refert to @ref hpm_stat_t.
  */
-hpm_stat_t adc16_channel_init(ADC16_Type *ptr, adc16_channel_config_t *config);
+hpm_stat_t adc16_init_channel(ADC16_Type *ptr, adc16_channel_config_t *config);
 
 /**
  * @brief Configure the the period mode for an ADC16 instance.

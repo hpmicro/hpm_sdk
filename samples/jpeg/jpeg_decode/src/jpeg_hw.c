@@ -10,23 +10,22 @@
  */
 #include "board.h"
 #include "hpm_jpeg_drv.h"
-#include "qlook.h"
 #include "jpeg_hw.h"
 /*---------------------------------------------------------------------*
- * Define variables
+ * Define constant
  *---------------------------------------------------------------------
  */
-/*JPG file data esc-data length*/
-uint16_t in_ecs_length;
-/*jpg file data buff*/
-extern uint8_t filebuff[];
-/*rgb565 data buff*/
-extern uint8_t rgb565buff[];
+#if defined HARDWARE_DEFAULT_TABLE   
+    /*Default quantization decode table*/
+    const uint16_t qdtable[256]={
+    #include "qdtable.cdat"
+};
+#endif
 /*---------------------------------------------------------------------*
  * extract tables from a JPEG image
  *---------------------------------------------------------------------
  */
-void jpeg_extract_table(int32_t fileLen, jpeg_huffman_table_t *huffmantable, int32_t *width, int32_t *height)
+void jpeg_extract_table(uint8_t *filebuffdata, int32_t fileLen, jpeg_huffman_table_t *huffmantable, int32_t *width, int32_t *height)
 {
     uint8_t filebyte;
     uint32_t i, j, n, v, rst, nm, code, hid, z;
@@ -67,12 +66,12 @@ void jpeg_extract_table(int32_t fileLen, jpeg_huffman_table_t *huffmantable, int
 
     /* scanning and extract tables from jpeg-data*/
     while (fileLen - fp) {
-        if (filebuff[fp++] != 0xff) {
+        if (filebuffdata[fp++] != 0xff) {
             continue;
         }
 
         while
-        ((filebyte = filebuff[fp++]) == 0xff);
+        ((filebyte = filebuffdata[fp++]) == 0xff);
         if (filebyte == 0) {
             continue;
         }
@@ -81,11 +80,11 @@ marker:
         /*Baseline (0, 0)*/
         case 0xc0:
             fp += 3;
-            i = filebuff[fp++];
-            *height = (i << 8) | filebuff[fp++];
-            i = filebuff[fp++];
-            *width = (i << 8) | filebuff[fp++];
-            n = filebuff[fp++];
+            i = filebuffdata[fp++];
+            *height = (i << 8) | filebuffdata[fp++];
+            i = filebuffdata[fp++];
+            *width = (i << 8) | filebuffdata[fp++];
+            n = filebuffdata[fp++];
             fp += 3 * n;
             /*printf("SOF");*/
             break;
@@ -114,7 +113,7 @@ marker:
         /*Differential Lossless, Arithmetic*/
         case 0xcf:
             fp += 7;
-            n = filebuff[fp++];
+            n = filebuffdata[fp++];
             fp += 3 * n;
             /*printf("SOF");*/
             break;
@@ -122,14 +121,14 @@ marker:
         case 0xc4:
             /*printf("DHT");*/
             /* Lh : HT length (16b)*/
-            v = filebuff[fp++];
-            n = (v << 8) | filebuff[fp++];
+            v = filebuffdata[fp++];
+            n = (v << 8) | filebuffdata[fp++];
             /*printf("Lh %d\n", n);*/
             /* Reduce marker segment byte count */
             n -= 2;
             while (n) {
                 /* Get the type of table */
-                v = filebuff[fp++]; /* Tc & Th*/
+                v = filebuffdata[fp++]; /* Tc & Th*/
                 n--;
                 /*printf("Tc %d\n", v >> 4);*/
                 /*printf("Th %d\n", v & 15);*/
@@ -180,7 +179,7 @@ marker:
                  *allowed by spec. BITS
                  */
                 for (i = 0; i < 16; i++) {
-                    l[i] = filebuff[fp++];
+                    l[i] = filebuffdata[fp++];
                 }
                 /* Reduce marker segment byte count */
                 n -= 16;
@@ -194,7 +193,7 @@ marker:
                          *of length i.  HUFFVAL
                          */
                         for (j = 0; j < l[i]; j++, bbase++) {
-                            v = filebuff[fp++];
+                            v = filebuffdata[fp++];
                             /* Reduce marker segment byte count */
                             n--;
                             if (dc) {
@@ -249,19 +248,19 @@ marker:
         /*EOI*/
         case 0xd9:
             /*printf("EOI\n");*/
-            huffmantable->in_ecs[in_ecs_length++] = 0xff;
-            huffmantable->in_ecs[in_ecs_length++] = 0xd9;
+            huffmantable->in_ecs[(huffmantable->in_ecs_length)++] = 0xff;
+            huffmantable->in_ecs[(huffmantable->in_ecs_length)++] = 0xd9;
             break;
         /*data scan*/
         case 0xda:
             /*Start of Scan*/
             /*printf("SOS\n");*/
-            tmp[0] = filebuff[fp++];
-            tmp[1] = filebuff[fp++];
+            tmp[0] = filebuffdata[fp++];
+            tmp[1] = filebuffdata[fp++];
             /*Ls (scan header length)*/
             nTemp = (tmp[0] << 8) | (tmp[1]);
             /*Ns (# of image components)*/
-            n = filebuff[fp++];
+            n = filebuffdata[fp++];
             /*printf("Ls = %d, Ns = %02x\n", nTemp, n);*/
 
             for (i = 0; i < n; i++) {
@@ -271,26 +270,26 @@ marker:
             /*ss se Ah&Al*/
             fp += 3;
             for (;;) {
-                filebyte = filebuff[fp++];
+                filebyte = filebuffdata[fp++];
                 if (filebyte == 0xff) {
-                    filebyte = filebuff[fp++];
+                    filebyte = filebuffdata[fp++];
                     if ((filebyte != 0x00) && ((filebyte & 0xf8) != 0xd0)) {
                         goto marker;
                     } else {
-                        huffmantable->in_ecs[in_ecs_length++] = 0xff;
+                        huffmantable->in_ecs[(huffmantable->in_ecs_length)++] = 0xff;
                     }
                 }
-                huffmantable->in_ecs[in_ecs_length++] = filebyte;
+                huffmantable->in_ecs[(huffmantable->in_ecs_length)++] = filebyte;
             }
             break;
         case 0xdb:
             /*Quantization Table  */
             /*printf("DQT\n");*/
             /*Lq : QT Length (16b)*/
-            v = filebuff[fp++];
-            v = (v << 8) | filebuff[fp++];
+            v = filebuffdata[fp++];
+            v = (v << 8) | filebuffdata[fp++];
             /*printf("Lq %d\n", v);*/
-            v = filebuff[fp++];
+            v = filebuffdata[fp++];
             /* Pq : QT element precision (4b)
              *- specifies the precision of the Qk values.
              *  0 indicates 8-bits Qk values.
@@ -308,7 +307,7 @@ marker:
                  *k is the index in the zigzag ordering of the DCT coeff
                  *JPC only do 8-bit Qk! (ie, Pq shall be 0)
                  */
-                qt[n][i] = filebuff[fp++];
+                qt[n][i] = filebuffdata[fp++];
             }
             break;
         case 0xdd:
@@ -317,14 +316,14 @@ marker:
             /* Lr : restart interval segment length (16b)
              *- specifies the length of the paramenters in the DRI segment
              */
-            v = filebuff[fp++];
-            v = (v << 8) | filebuff[fp++];
+            v = filebuffdata[fp++];
+            v = (v << 8) | filebuffdata[fp++];
             /*printf("Lr %d\n", v);*/
             /* Ri : restart interval (16b)
              *- specifies the number of MCU in the restart interval.
              */
-            v = filebuff[fp++];
-            v = (v << 8) | filebuff[fp++];
+            v = filebuffdata[fp++];
+            v = (v << 8) | filebuffdata[fp++];
             /*printf("Ri %d\n", v);*/
             break;
         /* All these markers are ignored */
@@ -359,15 +358,15 @@ marker:
         case 0xfc:
         case 0xfd:
         case 0xfe:
-            v = filebuff[fp++];
-            v = (v << 8) | filebuff[fp++];
+            v = filebuffdata[fp++];
+            v = (v << 8) | filebuffdata[fp++];
             v -= 2;
             for (i = 0; i < v; i++) {
                 fp++;
             }
             break;
         default:
-            /*printf("Unknown marker %x !\n", filebuff);*/
+            /*printf("Unknown marker %x !\n", filebuffdata);*/
             break;
         }
     }
@@ -456,7 +455,11 @@ void fill_jpeg_decode_table(jpeg_huffman_table_t *huffmantable)
 {
     jpeg_enable(TEST_JPEG);
     /*Fill Decoder Q. values*/
+#if defined HARDWARE_EXTRACT_TABLE    
     jpeg_fill_table(TEST_JPEG, jpeg_table_qmem, (uint8_t *)(huffmantable->qdtable), QDTABLELEN);
+#elif defined HARDWARE_DEFAULT_TABLE
+    jpeg_fill_table(TEST_JPEG, jpeg_table_qmem, (uint8_t *)qdtable, ARRAY_SIZE(qdtable));
+#endif    
     jpeg_disable(TEST_JPEG);
 }
 
@@ -475,7 +478,6 @@ bool wait_jpeg_finish(void)
             jpeg_clear_status(TEST_JPEG, JPEG_EVENT_ERROR);
             return false;
         }
-        board_delay_ms(100);
     } while (1);
 }
 
@@ -483,12 +485,11 @@ bool wait_jpeg_finish(void)
  * JPEG decoding
  *---------------------------------------------------------------------
  */
-void decode_jpeg(jpeg_huffman_table_t *huffmantable, int32_t *width, int32_t *height)
+void decode_jpeg(jpeg_huffman_table_t *huffmantable, int32_t *width, int32_t *height, uint8_t *rgbbuffdata)
 {
     jpeg_job_config_t config = {0};
 
     /*JPEG default parameter table settings*/
-    TEST_JPEG->CFG = 0;
     jpeg_init(TEST_JPEG);
     fill_jpeg_decode_table(huffmantable);
 
@@ -502,11 +503,11 @@ void decode_jpeg(jpeg_huffman_table_t *huffmantable, int32_t *width, int32_t *he
     config.width_in_pixel = *width;
     config.height_in_pixel = *height;
     config.in_buffer = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)(huffmantable->in_ecs));
-    config.out_buffer = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)rgb565buff);
+    config.out_buffer = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)rgbbuffdata);
 
     /* Start decompressor */
     printf("start decoding\n");
-    if (status_success != jpeg_start_decode(TEST_JPEG, &config, in_ecs_length)) {
+    if (status_success != jpeg_start_decode(TEST_JPEG, &config, huffmantable->in_ecs_length)) {
         printf("failed to decode\n");
         while (1) {
         };
@@ -521,14 +522,14 @@ void decode_jpeg(jpeg_huffman_table_t *huffmantable, int32_t *width, int32_t *he
  * jpeg-hardware conversion to convert JPG data into rgb565 data
  *---------------------------------------------------------------------
  */
-void jpeg_convert_hw(int32_t fileLen, int32_t *width, int32_t *height)
+void jpeg_convert_hw(uint8_t *filebuffs, int32_t fileLen, int32_t *width, int32_t *height, uint8_t *rgbbuff)
 {
     jpeg_huffman_table_t huffmantable;
 
     /*extract tables from a JPEG image*/
-    jpeg_extract_table(fileLen, &huffmantable, width, height);
+    jpeg_extract_table(filebuffs, fileLen, &huffmantable, width, height);
     /*Initialize JPEG module*/
     init_jpeg(&huffmantable);
     /*jpeg conversion to convert JPG data into rgb565 data*/
-    decode_jpeg(&huffmantable, width, height);
+    decode_jpeg(&huffmantable, width, height , rgbbuff);
 }

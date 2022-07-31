@@ -64,6 +64,7 @@
 #define DMA_SOC_TRANSFER_PER_BURST_MAX(x) (((x) == HPM_XDMA) ? DMA_NUM_TRANSFER_PER_BURST_1024T : DMA_NUM_TRANSFER_PER_BURST_128T)
 #define DMA_SOC_BUS_NUM (1U)
 #define DMA_SOC_CHANNEL_NUM (8U)
+#define DMA_SOC_MAX_COUNT (2U)
 
 /*
  * PDMA Section
@@ -112,11 +113,14 @@
 /*
 * ADC Section
 */
-#define ADC_SOC_MAX_SEQ_LEN                        (16U)
+#define ADC_SOC_SEQ_MAX_LEN                        (16U)
 #define ADC_SOC_MAX_TRIG_CH_LEN                    (4U)
 #define ADC_SOC_DMA_ADDR_ALIGNMENT                 (4U)
 #define ADC_SOC_CONFIG_INTEN_CHAN_BIT_SIZE         (8U)
 #define ADC_SOC_PREEMPT_ENABLE_CTRL_SUPPORT        (1U)
+#define ADC_SOC_SEQ_MAX_DMA_BUFF_LEN_IN_4BYTES     (1024U)
+#define ADC_SOC_PMT_MAX_DMA_BUFF_LEN_IN_4BYTES     (48U)
+
 #define ADC16_SOC_PARAMS_LEN                       (34U)
 #define ADC16_SOC_MAX_CH_NUM                       (15U)
 #define ADC16_SOC_TEMP_CH_NUM                      (16U)
@@ -164,8 +168,18 @@
 #define SDXC_SOC_HAS_MISC_CTRL1 (1)
 
 /*
- * CAN Section
+ * UART Section
  */
 #define UART_SOC_FIFO_SIZE       (16U)
+
+/*
+ * SPI Section
+ */
+#define SPI_SOC_TRANSFER_COUNT_MAX  (512U)
+
+/*
+ * SDXC Section
+ */
+#define SDXC_SOC_MAX_COUNT      (1)
 
 #endif /* HPM_SOC_FEATURE_H */

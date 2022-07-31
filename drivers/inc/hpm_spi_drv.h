@@ -297,6 +297,22 @@ hpm_stat_t spi_setup_dma_transfer(SPI_Type *ptr,
                         uint32_t wsize, uint32_t rsize);
 
 /**
+ * @brief spi wait for idle status
+ *
+ * @param [in] ptr SPI base address
+ * @retval hpm_stat_t status_success if spi in idle status
+ */
+hpm_stat_t spi_wait_for_idle_status(SPI_Type *ptr);
+
+/**
+ * @brief spi wait for busy status
+ *
+ * @param [in] ptr SPI base address
+ * @retval hpm_stat_t status_success if spi in busy status
+ */
+hpm_stat_t spi_wait_for_busy_status(SPI_Type *ptr);
+
+/**
  * @}
  */
 

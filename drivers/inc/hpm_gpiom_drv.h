@@ -30,7 +30,7 @@ extern "C" {
 #endif
 
 /**
- * @brief Get pin's controler
+ * @brief Get pin's controller
  *
  * @param ptr GPIOM base address
  * @param gpio_index gpio port index
@@ -38,7 +38,7 @@ extern "C" {
  * 
  * @retval pin control module
  */
-static inline gpiom_gpio_t gpiom_get_pin_controler(GPIOM_Type *ptr,
+static inline gpiom_gpio_t gpiom_get_pin_controller(GPIOM_Type *ptr,
                                                       uint8_t gpio_index,
                                                       uint8_t pin_index)
 {
@@ -47,14 +47,14 @@ static inline gpiom_gpio_t gpiom_get_pin_controler(GPIOM_Type *ptr,
 }
 
 /**
- * @brief set pin's controler
+ * @brief set pin's controller
  *
  * @param ptr GPIOM base address
  * @param gpio_index gpio port index
  * @param pin_index pin index
  * @param gpio gpio module index
  */
-static inline void gpiom_set_pin_controler(GPIOM_Type *ptr,
+static inline void gpiom_set_pin_controller(GPIOM_Type *ptr,
                               uint8_t gpio_index,
                               uint8_t pin_index,
                               gpiom_gpio_t gpio)
@@ -65,15 +65,15 @@ static inline void gpiom_set_pin_controler(GPIOM_Type *ptr,
 }
 
 /**
- * @brief Check if pin is visibility for specificed module
+ * @brief Check if pin is visibility for specified module
  *
  * @param ptr GPIOM base address
  * @param gpio_index gpio port index
  * @param pin_index pin index
  * @param gpio gpio module index
  * 
- * @retval true if pin is visible by specificed module
- * @retval false if pin is not visible by specificed module
+ * @retval true if pin is visible by specified module
+ * @retval false if pin is not visible by specified module
  */
 static inline bool gpiom_check_pin_visibility(GPIOM_Type *ptr,
                               uint8_t gpio_index,
@@ -85,7 +85,7 @@ static inline bool gpiom_check_pin_visibility(GPIOM_Type *ptr,
 }
 
 /**
- * @brief enable pin visibility for specificed module
+ * @brief enable pin visibility for specified module
  *
  * @param ptr GPIOM base address
  * @param gpio_index gpio port index
@@ -102,7 +102,7 @@ static inline void gpiom_enable_pin_visibility(GPIOM_Type *ptr,
 }
 
 /**
- * @brief disable pin visibility for specificed module
+ * @brief disable pin visibility for specified module
  *
  * @param ptr GPIOM base address
  * @param gpio_index gpio port index

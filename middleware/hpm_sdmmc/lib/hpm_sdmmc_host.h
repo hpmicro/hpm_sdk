@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 - 2022 hpmicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -10,12 +10,36 @@
 
 #include "hpm_common.h"
 #include "hpm_sdxc_drv.h"
+#include "hpm_gpio_drv.h"
 
 typedef enum  {
     sdmmc_bus_width_1bit,
     sdmmc_bus_width_4bit,
     sdmmc_bus_width_8bit,
 } sdmmc_buswidth_t;
+
+typedef enum {
+    sdmmc_host_card_detection_none = 0,
+    sdmmc_host_card_detection_via_gpio = 1,
+    sdmmc_host_card_detection_via_sdxc = 2,
+}sdmmc_card_detection_mode_t;
+
+typedef enum {
+    sdmmc_sd_speed_normal = 0,
+    sdmmc_sd_speed_high = 1,
+    sdmmc_sd_speed_sdr12 = sdmmc_sd_speed_normal,
+    sdmmc_sd_speed_sdr25 = sdmmc_sd_speed_high,
+    sdmmc_sd_speed_sdr50 = 2,
+    sdmmc_sd_speed_sdr104 = 3,
+    sdmmc_sd_speed_ddr50 = 4,
+
+    sdmmc_emmc_speed_legacy = 0,
+    sdmmc_emmc_speed_high_speed_sdr = 1,
+    sdmmc_emmc_speed_hs200 = 3,
+    sdmmc_emmc_high_speed_ddr = 4,
+    sdmmc_emmc_speed_hs400 = 7,
+}sdmmc_speed_mode_t;
+
 
 typedef sdxc_xfer_t sdmmchost_xfer_t;
 typedef sdxc_command_t sdmmchost_cmd_t;
@@ -29,21 +53,45 @@ typedef void (*sdmmchost_switch_1v8_io_func_t)(SDMMCHOST_Type *base);
 typedef bool (*sdmmchost_card_detect_func_t)(SDMMCHOST_Type *base);
 
 
-
 typedef struct {
-    SDXC_Type *base;
-    sdmmchost_capabilities_t capabilities;
-    sdmmchost_xfer_t xfer;
-    sdmmchost_cmd_t cmd;
-    sdmmchost_data_t data;
-    sdmmc_adma2_desc_t adma2_desc;
-    uint32_t buffer[128];
+    uint8_t hart_id;
+    uint8_t instance_num;
+    bool support_1v8;
+    bool use_polling_mode;
+    SDMMCHOST_Type *base;
+    uint32_t host_clk_freq;
     sdmmchost_clock_init_func_t clock_init_func;
     sdmmchost_io_init_func_t io_init_func;
     sdmmchost_switch_1v8_io_func_t switch_to_1v8;
     sdmmchost_card_detect_func_t card_detect;
     void (*delay_ms)(uint32_t ms);
-    bool support_1v8;
+    /* Card detection related fields */
+    sdmmc_card_detection_mode_t card_detection_mode;
+    uint8_t card_detection_gpio_index;
+    uint8_t card_detection_pin_index;
+    GPIO_Type *card_detection_gpio;
+    int32_t card_detection_irq_index;
+}sdmmc_host_param_t;
+
+
+typedef struct {
+    sdmmc_host_param_t host_param;
+
+    /* Host Transfer Fields */
+    sdmmchost_xfer_t xfer;
+    sdmmchost_cmd_t cmd;
+    sdmmchost_data_t data;
+    sdmmc_adma2_desc_t adma2_desc;
+    uint32_t buffer[128];
+
+    /* Host run-time fields */
+    bool card_inserted;
+    bool card_init_done;
+    bool cmd_done_or_error;
+    bool transfer_complete_or_error;
+    uint32_t int_stat;
+    uint32_t auto_cmd_stat;
+    uint32_t adma_error_stat;
 }sdmmc_host_t;
 
 
@@ -55,6 +103,13 @@ typedef struct {
     sdmmchost_card_detect_func_t card_detect;
     void (*delay_ms)(uint32_t ms);
     bool support_1v8;
+    bool use_polling_mode;
+    sdmmc_card_detection_mode_t card_detection_mode;
+    uint8_t card_detection_gpio_index;
+    uint8_t card_detection_pin_index;
+    uint8_t hart_id;
+    int16_t card_detection_irq_index;
+    GPIO_Type *card_detection_gpio;
 }sdmmchost_config_t;
 
 
@@ -79,6 +134,13 @@ hpm_stat_t sdmmchost_transfer(sdmmc_host_t *host, sdmmchost_xfer_t *content);
 bool sdmmchost_is_card_detected(sdmmc_host_t *host);
 
 hpm_stat_t sdmmchost_switch_to_1v8(sdmmc_host_t *host);
+
+hpm_stat_t sdmmchost_set_speed_mode(sdmmc_host_t *host, sdmmc_speed_mode_t speed_mode);
+
+hpm_stat_t sdmmchost_error_recovery(sdmmc_host_t *host, sdmmchost_cmd_t *abort_cmd);
+
+hpm_stat_t sdmmchost_setup_card_detection(sdmmc_host_t *host);
+hpm_stat_t  sdmmchost_handle_card_detection(sdmmc_host_t *host);
 
 
 

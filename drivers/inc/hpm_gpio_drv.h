@@ -10,6 +10,13 @@
 
 #include "hpm_common.h"
 #include "hpm_gpio_regs.h"
+
+#ifndef PORT_PIN_COUNT
+#define PORT_PIN_COUNT (32U)
+#endif
+#define GPIO_GET_PORT_INDEX(x) (x / PORT_PIN_COUNT)
+#define GPIO_GET_PIN_INDEX(x)  (x % PORT_PIN_COUNT)
+
 /**
  *
  * @brief GPIO driver APIs
@@ -286,7 +293,7 @@ static inline void gpio_disable_port_output_with_mask(GPIO_Type *ptr, uint32_t p
  *
  * @return Current interrupt flags on specific port
  */
-static inline bool gpio_get_port_interrupt_flags(GPIO_Type *ptr, uint32_t port)
+static inline uint32_t gpio_get_port_interrupt_flags(GPIO_Type *ptr, uint32_t port)
 {
     return ptr->IF[port].VALUE;
 }

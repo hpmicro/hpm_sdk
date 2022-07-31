@@ -16,6 +16,7 @@ void init_i2c_pins(I2C_Type *ptr);
 void init_sdram_pins(void);
 void init_gpio_pins(void);
 void init_spi_pins(SPI_Type *ptr);
+void init_spi_pins_with_gpio_as_cs(SPI_Type *ptr);
 void init_pins(void);
 void init_gptmr_pins(GPTMR_Type *ptr);
 void init_hall_trgm_pins(void);
