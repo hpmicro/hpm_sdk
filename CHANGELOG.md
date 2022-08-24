@@ -1,5 +1,26 @@
 # Change Log
 
+## [0.13.1] - 2022-08-23:
+
+Main changes since 0.13.0
+
+### Changed:
+  - Driver:I2S: update i2s drivers
+  - middleware: lwip: optimize variable_name definition
+  - samples: lwip: lwip_iperf: update readme files
+  - samples: lwip: common: arch: add LWIP_MEM_SECTION declartion
+
+### Fixed:
+  - samples: multicore: BOOT_HEADER was missing in multicore core0 example
+  - samples: jpeg: Fix encoding and decoding problem
+  - samples: audio codec: wav decoder: fix 32bit wave file playback
+  - I2S_DMA: fix wav channel not align problem
+  - i2s_interrupt: fix I2S FIFO overflow
+  - fix lack of interrupt claim for swi
+  - driver: watchdog: overflow
+  - Fix critical section logic issue in dma manager
+  - Fix the core1 application debugging issue
+
 ## [0.13.0] - 2022-07-31:
 
 Main changes since 0.12.1

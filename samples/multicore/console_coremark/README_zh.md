@@ -13,16 +13,9 @@ BOOT_PIN 必须拨到 0-OFF, 1-OFF
 
 本示例中：__core0__ 示例在FLASH中原地执行， __core1__ 工程在ILM里执行。
 
-用户必须先生成 __core0__ 工程，然后生成和编译 __core1__工程
+用户必须先生成 __core0__ 工程，作为关联工程， __core1__ 工程会被自动生成。
 
 用户必须在生成和编译完core1工程后再编译 __core0__ 工程
-
-### 生成core1工程
-__CMAKE_BUILD_TYPE__ 必须是下列选项中的一种：
-- *"sec_core_img"*
-- *"sec_core_img_release"*
-
-若通过SDK env 包来生成工程，需要用 *"-t sec_core_img"*
 
 ### 生成core0工程
 __CMAKE_BUILD_TYPE__ 必须是下列选项中的一种：

@@ -237,6 +237,7 @@ hpm_stat_t jpeg_start_decode(JPEG_Type *ptr,
     ptr->INDMABASE = JPEG_INDMABASE_ADDR_SET(config->in_buffer);
     /* TODO: check if it has to use the compressed length */
     ptr->INDMA_CTRL0 = JPEG_INDMA_CTRL0_TTLEN_SET(length);
+    ptr->INDMA_CTRL1 = JPEG_INDMA_CTRL1_ROWLEN_SET(length >> 16);
     ptr->INXT_CMD = JPEG_INXT_CMD_ADDR_SET(0x14) | JPEG_INXT_CMD_OP_VALID_MASK;
 
     /* output DMA setting */

@@ -16,16 +16,9 @@
 
 本示例中：core0示例在FLASH中原地执行， core1工程在ILM里执行。
 
-用户必须先生成和编译__Core1__工程
+用户必须先生成 __Core0__ 工程，作为关联工程，__Core1__ 工程会被自动生成
 
-用户必须在生成和编译完core1工程后再生成和编译__Core0__工程
-
-### 生成core1工程
-__CMAKE_BUILD_TYPE__ 必须是下列选项中的一种：
-- *"sec_core_img"*
-- *"sec_core_img_release"*
-
-若通过SDK env 包来生成工程，需要用 *"-t sec_core_img"*
+用户必须在编译完 __Core1__ 工程后再编译 __Core0__ 工程
 
 ### 生成core0工程
 __CMAKE_BUILD_TYPE__ 必须是下列选项中的一种：

@@ -14,6 +14,11 @@
 - 文件[CMakeLists.txt](./CmakeLists.txt)中配置``set(CONFIG_SDFATFS_MODE 1)``，则默认将JPG图片存储在**SD卡**内；配置
 ``set(CONFIG_TINYUSBHOST_MODE 1)``，则默认将JPG图片存储在**USB**内
 
+## 存储图片大小
+***
+- 本例程中存储的图片格式为JPG，分辨率大小为800*480
+- 如果支持更高分辨率的编码，可采用支持高分辨率的摄像头作为RGB数据源，通过编码功能存储JPG文件
+
 ## 运行现象
 ***
 - SD卡方式：

@@ -32,25 +32,20 @@ void jpeg_jpgmem_to_bgr888(const uint8_t *src, int32_t srcLen, uint8_t **_dst, i
     jpeg_read_header(&cinfo, TRUE);
 
     /*Image conversion compression*/
-    image_size = cinfo.image_width*cinfo.image_height*2;
-    /*No compression*/
-    if (image_size < RGBBUFFLEN) {
-        cinfo.scale_num = 1;
-        cinfo.scale_denom = 1;
-    }
-    /*Compression ratio: 1:2*/
-    else if (image_size < (RGBBUFFLEN * 4)) {
-        cinfo.scale_num = 1;
-        cinfo.scale_denom = 2;
-    }
-    /*Compression ratio: 1:4*/
-    else if (image_size < (RGBBUFFLEN * 16)) {
-        cinfo.scale_num = 1;
-        cinfo.scale_denom = 4;
-    }
-    else {
+    image_size = cinfo.image_width*cinfo.image_height;
+    if (image_size > 1024*768) {
         printf("Pixels too large, Pictures can support 1024*768 at most\n");
         return;
+    }
+    if (image_size > 480*320) {
+        cinfo.scale_num = 1;
+        cinfo.scale_denom = 4;
+    } else if (image_size > 240*160) {
+        cinfo.scale_num = 1;
+        cinfo.scale_denom = 2;
+    } else {
+        cinfo.scale_num = 1;
+        cinfo.scale_denom = 1;
     }
 
     /* Start decompressor */

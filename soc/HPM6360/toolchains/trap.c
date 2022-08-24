@@ -228,6 +228,7 @@ void irq_handler_s_trap(void)
 
     else if ((scause & CSR_SCAUSE_INTERRUPT_MASK) && ((scause & CSR_SCAUSE_EXCEPTION_CODE_MASK) == IRQ_S_SOFT)) {
         /* Machine SWI interrupt */
+        intc_m_claim_swi();
         swi_s_isr();
         intc_s_complete_swi();
     } else if (!(scause & CSR_SCAUSE_INTERRUPT_MASK) && ((scause & CSR_SCAUSE_EXCEPTION_CODE_MASK) == MCAUSE_ECALL_FROM_SUPERVISOR_MODE)) {

@@ -96,8 +96,15 @@ hpm_stat_t i2s_config_tx(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_config
 {
     uint32_t bclk_freq_in_hz;
     uint32_t bclk_div;
+    if (I2S_AUDIO_DEPTH_IS_NOT_VALID(config->audio_depth)
+            || !config->sample_rate
+            || !config->channel_num_per_frame
+            || (config->channel_num_per_frame > I2S_SOC_MAX_CHANNEL_NUM)
+            || !(config->channel_slot_mask & ((1U << config->channel_num_per_frame) - 1U))) {
+        return status_invalid_argument;
+    }
 
-    bclk_freq_in_hz = config->sample_rate * ((config->audio_depth << 3) + 16) * config->channel_num_per_frame;
+    bclk_freq_in_hz = config->sample_rate * ((config->channel_length << 4) + 16) * config->channel_num_per_frame;
     bclk_div = mclk_in_hz / bclk_freq_in_hz;
     if ((bclk_div > (I2S_CFGR_BCLK_DIV_MASK >> I2S_CFGR_BCLK_DIV_SHIFT))) {
         return status_invalid_argument;
@@ -125,11 +132,12 @@ hpm_stat_t i2s_config_rx(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_config
     if (I2S_AUDIO_DEPTH_IS_NOT_VALID(config->audio_depth)
             || !config->sample_rate
             || !config->channel_num_per_frame
-            || (config->channel_num_per_frame > I2S_SOC_MAX_CHANNEL_NUM)) {
+            || (config->channel_num_per_frame > I2S_SOC_MAX_CHANNEL_NUM)
+            || !(config->channel_slot_mask & ((1U << config->channel_num_per_frame) - 1U))) {
         return status_invalid_argument;
     }
 
-    bclk_freq_in_hz = config->sample_rate * ((config->audio_depth << 3) + 16) * config->channel_num_per_frame;
+    bclk_freq_in_hz = config->sample_rate * ((config->channel_length << 4) + 16) * config->channel_num_per_frame;
     bclk_div = mclk_in_hz / bclk_freq_in_hz;
     if (!bclk_div || (bclk_div > (I2S_CFGR_BCLK_DIV_MASK >> I2S_CFGR_BCLK_DIV_SHIFT))) {
         return status_invalid_argument;
@@ -157,11 +165,12 @@ hpm_stat_t i2s_config_transfer(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_
     if (I2S_AUDIO_DEPTH_IS_NOT_VALID(config->audio_depth)
             || !config->sample_rate
             || !config->channel_num_per_frame
-            || (config->channel_num_per_frame > I2S_SOC_MAX_CHANNEL_NUM)) {
+            || (config->channel_num_per_frame > I2S_SOC_MAX_CHANNEL_NUM)
+            || !(config->channel_slot_mask & ((1U << config->channel_num_per_frame) - 1U))) {
         return status_invalid_argument;
     }
 
-    bclk_freq_in_hz = config->sample_rate * ((config->audio_depth << 3) + 16) * config->channel_num_per_frame;
+    bclk_freq_in_hz = config->sample_rate * ((config->channel_length << 4) + 16) * config->channel_num_per_frame;
     bclk_div = mclk_in_hz / bclk_freq_in_hz;
     if (!bclk_div || (bclk_div > (I2S_CFGR_BCLK_DIV_MASK >> I2S_CFGR_BCLK_DIV_SHIFT))) {
         return status_invalid_argument;

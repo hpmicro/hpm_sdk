@@ -162,5 +162,14 @@
  * SDXC Section
  */
 #define SDXC_SOC_MAX_COUNT      (2)
+/*
+ * JPEG Section
+ */
+/*jpg file sampling factor*/
+#define JPEG_SOC_SAMPLING_FORMAT_420               (0x2211U)
+#define JPEG_SOC_SAMPLING_FORMAT_422H              (0x2111U)
+#define JPEG_SOC_SAMPLING_FORMAT_422V              (0x1211U)
+#define JPEG_SOC_SAMPLING_FORMAT_444               (0x1111U)
+#define JPEG_SOC_SAMPLING_FORMAT_400               (0x2200U)
 
 #endif /* HPM_SOC_FEATURE_H */

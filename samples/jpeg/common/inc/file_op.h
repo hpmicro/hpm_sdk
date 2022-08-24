@@ -12,11 +12,19 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#if BOARD_SDRAM_SIZE >= (32*SIZE_1MB)
 /*JPG data buff length*/
-#define FILEBUFFLEN 27000
-
+#define FILEBUFFLEN 10485760
 /*rgb565 data buff length*/
-#define RGBBUFFLEN 200000
+#define RGBBUFFLEN 16777216
+#else
+/*JPG data buff length*/
+#define FILEBUFFLEN 4194304
+/*rgb565 data buff length*/
+#define RGBBUFFLEN 7340032
+#endif
+
+
 
 #define FILENAMENUM 10
 #define FILENAMELENGTH 255

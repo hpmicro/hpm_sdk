@@ -25,11 +25,13 @@
     #include "msc_app.h"
 #endif
 
+/*Stored JPG data buff length*/
+#define FILELENGTH 102400
 /*rgb565 data buff length*/
-#define RGBBUFFLEN 100000
+#define RGBBUFFLENGTH 1253376
 /*Get camera resolution*/
-#define IMAGE_WIDTH      227
-#define IMAGE_HEIGHT     149
+#define IMAGE_WIDTH      800
+#define IMAGE_HEIGHT     480
 #define IMAGE_COMPONENT  3
 
 /*jpeg related*/
@@ -53,13 +55,16 @@
 /*JPG file data size*/
 int32_t jpg_size = 0;
 /*JPG file data buff*/
-uint8_t filebuff[FILEBUFFLEN];
+uint8_t filebuff[FILELENGTH];
 
 /*rgb565 data buff*/
-__attribute__((section(".framebuffer"))) uint8_t rgb565buff[RGBBUFFLEN] = {0};
+__attribute__((section(".framebuffer"))) uint8_t rgb565buff[RGBBUFFLENGTH] = {0};
 
 /*JPG file data header length*/
 #define JPGHEADERLEN 623
+
+/*rgb888 data buff*/
+uint8_t convertbuff[RGBBUFFLENGTH] = {0};
 
 /*---------------------------------------------------------------------*
  *JPG file data header data
@@ -172,7 +177,7 @@ void init_cam(uint8_t *rgbbuff)
     cam_config.height = IMAGE_HEIGHT;
     cam_config.hsync_active_low = true;
     cam_config.buffer1 = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)rgbbuff);
-    cam_config.color_format = PIXEL_FORMAT;
+    cam_config.color_format = CAM_COLOR_FORMAT_RGB565;
     cam_init(TEST_CAM, &cam_config);
 }
 
@@ -274,15 +279,13 @@ void jpeg_bgr888_to_jpgmem(uint8_t *src, int32_t width, int32_t height, int32_t 
  */
 void jpeg_convert_data(uint8_t *rgbbuff, int32_t datawidth, int32_t dataheight, int32_t *datasize, uint8_t *filesbuff)
 {
-    uint8_t convertbuff[RGBBUFFLEN *2] = {0};
-
     /*Convert rgb565 data to rgb888 data*/
     jpeg_rgb565_to_rgb888(rgbbuff, datawidth, dataheight, convertbuff, datasize);
     printf("jpeg_rgb565_to_rgb888 --> datasize= %d   \n",*datasize);
     /*Convert rgb888 data to bgr888 data*/
     jpeg_rgb888_to_bgr888(convertbuff, datasize, 24);
     printf("jpeg_rgb888_to_bgr888 --> datasize= %d   \n",*datasize);
-    uint8_t *jpgbuff = (uint8_t *)malloc(FILEBUFFLEN);
+    uint8_t *jpgbuff = (uint8_t *)malloc(FILELENGTH);
     /*Convert bgr888 data to jpg data*/
     jpeg_bgr888_to_jpgmem(convertbuff, datawidth, dataheight, IMAGE_COMPONENT, &jpgbuff, datasize);
     printf("jpeg_bgr888_to_jpgmem --> datasize= %d   \n",*datasize);

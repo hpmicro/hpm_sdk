@@ -92,7 +92,6 @@ ATTR_ALWAYS_INLINE static inline void disable_mchtmr_irq(void)
  */
 ATTR_ALWAYS_INLINE static inline void intc_m_init_swi(void)
 {
-    __plic_set_irq_priority(HPM_PLICSW_BASE, PLICSWI, 1);
     __plic_enable_irq(HPM_PLICSW_BASE, HPM_PLIC_TARGET_M_MODE, PLICSWI);
 }
 
@@ -126,6 +125,15 @@ ATTR_ALWAYS_INLINE static inline void intc_m_trigger_swi(void)
     __plic_set_irq_pending(HPM_PLICSW_BASE, PLICSWI);
 }
 
+
+/**
+ * @brief Claim software interrupt
+ *
+ */
+ATTR_ALWAYS_INLINE static inline void intc_m_claim_swi(void)
+{
+    __plic_claim_irq(HPM_PLICSW_BASE, 0);
+}
 
 /**
  * @brief   Complete software interrupt

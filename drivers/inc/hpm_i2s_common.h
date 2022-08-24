@@ -31,6 +31,15 @@
 #define I2S_CHANNEL_LENGTH_32_BITS (1U)
 
 /**
+ * @brief I2S stereo/mono channel
+ */
+enum {
+    i2s_mono_left  = 0,
+    i2s_mono_right = 1,
+    i2s_stereo     = 2,
+};
+
+/**
  * @}
  */
 

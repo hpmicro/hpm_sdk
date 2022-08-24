@@ -140,7 +140,6 @@ void isr_plicsw(void)
 {
     printf("plicsw start\n");
     printf("plicsw end\n");
-    intc_m_disable_swi();
 }
 SDK_DECLARE_SWI_ISR(isr_plicsw)
 

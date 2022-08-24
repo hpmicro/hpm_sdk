@@ -20,14 +20,14 @@
  */
 
 /**
- * @brief I2C IRQ mask
+ * @brief I2S IRQ mask
  */
 #define I2S_IRQ_TX_FIFO_EMPTY I2S_CTRL_TXDNIE_MASK
 #define I2S_IRQ_RX_FIFO_DATA_AVAILABLE I2S_CTRL_RXDAIE_MASK
 #define I2S_IRQ_ERROR I2S_CTRL_ERRIE_MASK
 
 /**
- * @brief I2C data line
+ * @brief I2S data line
  */
 #define I2S_DATA_LINE_0 (0U)
 #define I2S_DATA_LINE_1 (1U)
@@ -35,8 +35,11 @@
 #define I2S_DATA_LINE_3 (3U)
 #define I2S_DATA_LINE_MAX I2S_DATA_LINE_3
 
+/* i2s channel slot mask */
+#define I2S_CHANNEL_SLOT_MASK(x) ((1U << (x)) & I2S_RXDSLOT_EN_MASK)
+
 /**
- * @brief I2C config
+ * @brief I2S config
  */
 typedef struct i2s_config {
     bool invert_mclk_out;
@@ -54,7 +57,7 @@ typedef struct i2s_config {
 } i2s_config_t;
 
 /**
- * @brief I2C transfer config
+ * @brief I2S transfer config
  */
 typedef struct i2x_transfer_config {
     uint32_t sample_rate;

@@ -665,16 +665,16 @@ static void pdma_calculate_scale(uint32_t t, uint32_t target_t,
 {
     uint32_t tmp;
     tmp = ((t << PDMA_SCALE_FRAC_BITS) / target_t) >> PDMA_SCALE_FRAC_BITS;
-    if (tmp > 16) {
+    if (tmp >= 16) {
         *dec = pdma_decimation_by_8;
         *scale = 2;
         return;
     }
-    if (tmp > 8) {
+    if (tmp >= 8) {
         *dec = pdma_decimation_by_8;
-    } else if (tmp > 4) {
+    } else if (tmp >= 4) {
         *dec = pdma_decimation_by_4;
-    } else if (tmp > 2) {
+    } else if (tmp >= 2) {
         *dec = pdma_decimation_by_2;
     } else {
         *dec = pdma_decimation_by_1;

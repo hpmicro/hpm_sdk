@@ -109,6 +109,7 @@ void test_i2s_dma(void)
     i2s_get_default_transfer_config(&transfer);
     transfer.data_line = I2S_DATA_LINE_2;
     transfer.sample_rate = CODEC_SAMPLE_RATE_HZ;
+    transfer.channel_slot_mask = I2S_CHANNEL_SLOT_MASK(0); /* mono left */
     transfer.master_mode = true;
     i2s_mclk_hz = clock_get_frequency(CODEC_I2S_CLK_NAME);
     if (status_success != i2s_config_transfer(CODEC_I2S, i2s_mclk_hz, &transfer)) {

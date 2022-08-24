@@ -11,6 +11,8 @@
 #include "board.h"
 #include "hpm_jpeg_drv.h"
 #include "jpeg_hw.h"
+#include "file_op.h"
+#include "hpm_soc_feature.h"
 /*---------------------------------------------------------------------*
  * Define constant
  *---------------------------------------------------------------------
@@ -21,6 +23,8 @@
     #include "qdtable.cdat"
 };
 #endif
+
+jpeg_huffman_table_t huffmantable;
 /*---------------------------------------------------------------------*
  * extract tables from a JPEG image
  *---------------------------------------------------------------------
@@ -33,7 +37,7 @@ void jpeg_extract_table(uint8_t *filebuffdata, int32_t fileLen, jpeg_huffman_tab
     uint32_t l[16];
     uint8_t tmp[4];
     uint32_t nTemp;
-    uint16_t fp = 0;
+    uint32_t fp = 0;
 
     /*BASE mem (base.dat) - 9 bits array*/
     uint32_t hea[64] = {0};
@@ -44,6 +48,7 @@ void jpeg_extract_table(uint8_t *filebuffdata, int32_t fileLen, jpeg_huffman_tab
     /*QT (qdtable.dat)*/
     uint32_t qt[4][64];
 
+    huffmantable->in_ecs_length = 0;
     /* Initialize HuffEnc with default values */
     for (i = 0; i < 384; i++) {
         huffmantable->huffenc[i] = 0xfff;
@@ -85,7 +90,47 @@ marker:
             i = filebuffdata[fp++];
             *width = (i << 8) | filebuffdata[fp++];
             n = filebuffdata[fp++];
-            fp += 3 * n;
+            fp++;
+            i = filebuffdata[fp++];
+            fp++;
+            fp++;
+            /*Sampling factor*/
+            nTemp = ((i << 8) | filebuffdata[fp++]) & 0x0000ffff;
+            if (nTemp == JPEG_SOC_SAMPLING_FORMAT_420) {
+                huffmantable->sampling_format = JPEG_SUPPORTED_FORMAT_420;
+                i = (*width) % 16;
+                if (i) {
+                    *width += (16 - i);
+                }
+                j = (*height) % 16;
+                if (j) {
+                    *height += (16 - j);
+                }
+            } else if (nTemp == JPEG_SOC_SAMPLING_FORMAT_422H) {
+                huffmantable->sampling_format = JPEG_SUPPORTED_FORMAT_422H;
+            } else if (nTemp == JPEG_SOC_SAMPLING_FORMAT_422V) {
+                huffmantable->sampling_format = JPEG_SUPPORTED_FORMAT_422V;
+            } else if (nTemp == JPEG_SOC_SAMPLING_FORMAT_444) {
+                huffmantable->sampling_format = JPEG_SUPPORTED_FORMAT_444;
+                i = (*width) % 8;
+                if (i) {
+                    *width += (8 - i);
+                }
+                j = (*height) % 8;
+                if (j) {
+                    *height += (8 - j);
+                }
+            } else if (nTemp == JPEG_SOC_SAMPLING_FORMAT_400) {
+                huffmantable->sampling_format = JPEG_SUPPORTED_FORMAT_400;
+            } else {
+                printf("The sampling factors supported by the file are:\n");
+                printf("hy:y component horizontal sampling factor;\n");
+                printf("vy:y component vertical sampling factor;\n");
+                printf("hc:c component horizontal sampling factor;\n");
+                printf("vc:c component vertical sampling factor\n");
+                printf("hy=2, vy=2, hc=1, vc=1;\n hy=2, vy=1, hc=1, vc=1;\n hy=1, vy=2, hc=1, vc=1;\n hy=1, vy=1, hc=1, vc=1;\n hy=2, vy=2, hc=0, vc=0;\n");
+            }
+            fp += 4;
             /*printf("SOF");*/
             break;
         /*Ext. Sequential, Huffman (0, 0)*/
@@ -248,8 +293,8 @@ marker:
         /*EOI*/
         case 0xd9:
             /*printf("EOI\n");*/
-            huffmantable->in_ecs[(huffmantable->in_ecs_length)++] = 0xff;
-            huffmantable->in_ecs[(huffmantable->in_ecs_length)++] = 0xd9;
+            filebuffdata[(huffmantable->in_ecs_length)++] = 0xff;
+            filebuffdata[(huffmantable->in_ecs_length)++] = 0xd9;
             break;
         /*data scan*/
         case 0xda:
@@ -276,10 +321,10 @@ marker:
                     if ((filebyte != 0x00) && ((filebyte & 0xf8) != 0xd0)) {
                         goto marker;
                     } else {
-                        huffmantable->in_ecs[(huffmantable->in_ecs_length)++] = 0xff;
+                        filebuffdata[(huffmantable->in_ecs_length)++] = 0xff;
                     }
                 }
-                huffmantable->in_ecs[(huffmantable->in_ecs_length)++] = filebyte;
+                filebuffdata[(huffmantable->in_ecs_length)++] = filebyte;
             }
             break;
         case 0xdb:
@@ -485,7 +530,7 @@ bool wait_jpeg_finish(void)
  * JPEG decoding
  *---------------------------------------------------------------------
  */
-void decode_jpeg(jpeg_huffman_table_t *huffmantable, int32_t *width, int32_t *height, uint8_t *rgbbuffdata)
+uint8_t decode_jpeg(uint8_t *filebuffdata, jpeg_huffman_table_t *huffmantable, int32_t *width, int32_t *height, uint8_t *rgbbuffdata)
 {
     jpeg_job_config_t config = {0};
 
@@ -494,15 +539,15 @@ void decode_jpeg(jpeg_huffman_table_t *huffmantable, int32_t *width, int32_t *he
     fill_jpeg_decode_table(huffmantable);
 
     /*jpeg parameter configuration*/
-    config.jpeg_format = JPEG_SUPPORTED_FORMAT_420;
+    config.jpeg_format = huffmantable->sampling_format;
     config.in_pixel_format = JPEG_PIXEL_FORMAT_YUV422H1P;
     config.out_pixel_format = JPEG_PIXEL_FORMAT_RGB565;
-    config.byte_order = JPEG_BYTE_ORDER_2301;
+    config.byte_order = JPEG_BYTE_ORDER_0123;
     config.enable_csc = true;
     config.enable_ycbcr = true;
     config.width_in_pixel = *width;
     config.height_in_pixel = *height;
-    config.in_buffer = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)(huffmantable->in_ecs));
+    config.in_buffer = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)(filebuffdata));
     config.out_buffer = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)rgbbuffdata);
 
     /* Start decompressor */
@@ -514,22 +559,30 @@ void decode_jpeg(jpeg_huffman_table_t *huffmantable, int32_t *width, int32_t *he
     }
     if (wait_jpeg_finish()) {
         printf("decoding done\n");
+        return true;
     } else {
         printf("decoding failed\n");
+        return false;
     }
 }
 /*---------------------------------------------------------------------*
  * jpeg-hardware conversion to convert JPG data into rgb565 data
  *---------------------------------------------------------------------
  */
-void jpeg_convert_hw(uint8_t *filebuffs, int32_t fileLen, int32_t *width, int32_t *height, uint8_t *rgbbuff)
+uint8_t jpeg_convert_hw(uint8_t *filebuffs, int32_t fileLen, int32_t *width, int32_t *height, uint8_t *rgbbuff)
 {
-    jpeg_huffman_table_t huffmantable;
-
     /*extract tables from a JPEG image*/
     jpeg_extract_table(filebuffs, fileLen, &huffmantable, width, height);
+    if (((*width) * (*height)) * 2 > (RGBBUFFLEN)) {
+        printf("file is too big, Please store pictures with smaller resolution than width*height = %d.\n", RGBBUFFLEN/2);
+        return false;
+    }
     /*Initialize JPEG module*/
     init_jpeg(&huffmantable);
+    __asm volatile("fence.i");
     /*jpeg conversion to convert JPG data into rgb565 data*/
-    decode_jpeg(&huffmantable, width, height , rgbbuff);
+    if (!decode_jpeg(filebuffs, &huffmantable, width, height, rgbbuff)) {
+        return false;
+    }
+    return true;
 }

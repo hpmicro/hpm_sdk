@@ -17,6 +17,26 @@
 - 文件[CMakeLists.txt](./CmakeLists.txt)中配置``set(CONFIG_JPEG_TURBO_MODE 1)``，则默认解码方式为通过**软件libjpeg_turbo库**完成数据解码；配置
 ``set(CONFIG_JPEG_HARDWARE_MODE 1)``，则默认解码方式为通过**硬件jpeg模块**完成数据解码
 
+## 支持的图片格式
+***
+- 支持标准的JPEG图片：
+  JPEG图片格式组成部分：SOI（文件头）+APP0（图像识别信息）+ DQT（定义量化表）+ SOF0（图像基本信息）+ DHT（定义Huffman表） + DRI（定义重新开始间隔）+ SOS（扫描行开始）+ EOI（文件尾），其中SOI是由两个16进制字节FFD8组成。
+- JPEG图片支持的采样因子为：YUV420、YUV422H、YUV422V、YUV444、YUV400，如一张800*400 YUV420格式的JPG图片，通过图虫EXIF查看器[图虫EXIF查看器官网](https://exif.tuchong.com//)可获取：
+    FileType	        JPEG
+    FileTypeExtension	jpg
+    MIMEType	        image/jpeg
+    ImageWidth	        800
+    ImageHeight	        480
+    EncodingProcess	    Baseline DCT, Huffman coding
+    BitsPerSample	    8
+    ColorComponents	    3
+    YCbCrSubSampling  **YCbCr4:2:0 (2 2)**
+
+##本例程支持的图片大小及分辨率
+***
+- JPG图片不大于10M(hpm6750evk开发板)/4M(hpm6750evkmini开发板)
+- JPG图片分辨率(宽*高)不大于8M(hpm6750evk开发板)/3.5M(hpm6750evkmini开发板)
+
 ## 运行现象
 ***
 - SD卡方式(存储示例图片example.jpg) & 软件libjpeg_turbo解码方式：

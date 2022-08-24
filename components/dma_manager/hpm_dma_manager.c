@@ -111,9 +111,7 @@ static uint32_t dma_manager_enter_critical(void)
 
 static void dma_manager_exit_critical(uint32_t level)
 {
-    if ((level & CSR_MSTATUS_MIE_MASK) == 0) {
-        enable_global_irq(CSR_MSTATUS_MIE_MASK);
-    }
+    write_csr(CSR_MSTATUS, level);
 }
 
 /* See hpm_dma_manager.h for more details */

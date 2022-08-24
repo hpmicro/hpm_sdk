@@ -66,8 +66,8 @@ uint32_t hpm_wav_decode(hpm_wav_ctrl *wav_ctrl, uint8_t *buf, uint32_t size)
     pbuf = (uint32_t *)buf;
     if (wav_ctrl->wav_head.fmt_chunk.bitspersample == 32) {
         if (wav_ctrl->wav_head.fmt_chunk.channels == 2) {
-            word_size = size;
-            readlen = word_size;
+            word_size = size >> 2;
+            readlen = word_size << 2;
             if (wav_ctrl->remaining_data >= readlen) {
                 wav_ctrl->remaining_data -= readlen;
             } else {
@@ -80,9 +80,10 @@ uint32_t hpm_wav_decode(hpm_wav_ctrl *wav_ctrl, uint8_t *buf, uint32_t size)
                 pbuf[n++] = (*(uint32_t *)&p8[0]);
                 p8 += 4;
             }
+            buf_len = read;
         } else if (wav_ctrl->wav_head.fmt_chunk.channels == 1) {
-            word_size = size;
-            readlen = word_size >> 1;
+            word_size = size >> 2;
+            readlen = word_size << 1;
             if (wav_ctrl->remaining_data >= readlen) {
                 wav_ctrl->remaining_data -= readlen;
             } else {

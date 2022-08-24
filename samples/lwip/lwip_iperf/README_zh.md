@@ -21,7 +21,6 @@
 ## 运行示例
 
 * 编译下载程序
-
 * 串口终端显示如下信息：
 
   ```
@@ -34,14 +33,13 @@
   Static IP: 192.168.11.201
   NETMASK  : 255.255.255.0
   Gateway  : 192.168.11.1
-  
+
   1: TCP Server Mode
   2: TCP Client Mode
   3: UDP Server Mode
   4: UDP Client Mode
   Please enter the test mode code:
   ```
-  
 * 选择测试模式并运行iperf
 
   - TCP服务端模式
@@ -55,19 +53,16 @@
       4: UDP Client Mode
       Please enter the test mode code:
       ```
-
     - 在串口终端输入测试模式的代号
 
       ```
       Please enter the test mode code: 1
       ```
-
     - 在命令行中运行iperf
 
       ```
       iperf -c 192.168.11.201 -i 1
       ```
-
     - 观察结果
 
       ```
@@ -89,9 +84,6 @@
       [304]  9.0-10.0 sec  11.3 MBytes  94.4 Mbits/sec
       [304]  0.0-10.0 sec   113 MBytes  94.4 Mbits/sec
       ```
-
-  
-
   - TCP客户端模式
 
     - 按开发板RESETN键，并等待提示
@@ -103,19 +95,16 @@
       4: UDP Client Mode
       Please enter the test mode code:
       ```
-
     - 在命令行中运行iperf
 
       ```
-      iperf -s -i 1		
+      iperf -s -i 1
       ```
-
     - 在串口终端输入测试模式的代号
 
       ```
       Please enter the test mode code: 2
       ```
-
     - 观察结果
 
       ```
@@ -137,9 +126,6 @@
       [364]  9.0-10.0 sec  11.2 MBytes  94.2 Mbits/sec
       [364]  0.0-10.0 sec   112 MBytes  93.6 Mbits/sec
       ```
-
-      
-
   - UDP服务端模式
 
     - 按开发板RESETN键，并等待提示
@@ -149,21 +135,18 @@
       2: TCP Client Mode
       3: UDP Server Mode
       4: UDP Client Mode
-      Please enter the test mode code: 
+      Please enter the test mode code:
       ```
-
     - 在串口终端输入测试模式的代号
 
       ```
       Please enter the test mode code: 3
       ```
-
     - 在命令行中运行iperf
 
       ```
       iperf -u -c 192.168.11.201 -i 1 -b 100M
       ```
-
     - 观察结果
 
       ```
@@ -189,9 +172,6 @@
       [304]  0.0-10.0 sec   113 MBytes  94.5 Mbits/sec  0.002 ms    0/80328 (0%)
       [304] Sent 80328 datagrams
       ```
-
-  
-
   - UDP客户端模式
 
     - 按开发板RESETN键，并等待提示
@@ -203,19 +183,16 @@
       4: UDP Client Mode
       Please enter the test mode code:
       ```
-
     - 在命令行中运行iperf
 
       ```
-      iperf -u -s -i 1 -b 100M
+      iperf -u -s -i 1
       ```
-
     - 在串口终端输入测试模式的代号
 
       ```
       Please enter the test mode code: 4
       ```
-
     - 观察结果
 
       ```
@@ -247,7 +224,3 @@
       [  3]  0.0-10.0 sec   112 MBytes  94.1 Mbits/sec   0.234 ms  135/79952 (0.17%)
       [  3] 0.00-9.97 sec  59861 datagrams received out-of-order
       ```
-
-  
-
-  

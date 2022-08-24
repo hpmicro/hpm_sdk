@@ -10,8 +10,8 @@ set(CONFIG_SDFATFS_MODE 1)
 
 #Decoding mode:
 #Only one of them can be selected to be defined(1->CONFIG_JPEG_TURBO_MODE:libjpeg_turbo;2->CONFIG_JPEG_HARDWARE_MODE:Hardware JPEG)
-set(CONFIG_JPEG_TURBO_MODE 1)
-#set(CONFIG_JPEG_HARDWARE_MODE 1)
+#set(CONFIG_JPEG_TURBO_MODE 1)
+set(CONFIG_JPEG_HARDWARE_MODE 1)
 
 #Under the premise of hardware decoding, Table used for quantization decode:
 #Only one of them can be selected to be defined(1->CONFIG_EXTRACT_FILE_TABLE:Get from file;2->CONFIG_DEFAULT_TABLE:default)
@@ -40,6 +40,7 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(libjpeg_djpeg_example)
 
 sdk_compile_definitions(DECOMPRESS_MODE)
+sdk_compile_definitions(INIT_EXT_RAM_FOR_DATA=1)
 
 if(DEFINED CONFIG_SDFATFS_MODE)
 sdk_compile_definitions(-DSD_FATFS_ENABLE=1)

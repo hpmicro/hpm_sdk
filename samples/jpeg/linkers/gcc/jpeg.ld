@@ -16,8 +16,8 @@ MEMORY
     CORE0_LM_SLV (wx) : ORIGIN = 0x1000000, LENGTH = 512K
     /* It's alias address of core1 ILM+DLM, but accessing via system bus */
     CORE1_LM_SLV (wx) : ORIGIN = 0x1180000, LENGTH = 512K
-    SDRAM (wx) : ORIGIN = 0x40000000, LENGTH = 24M
-    SDRAM_NONCACHEABLE (wx) : ORIGIN = 0x41800000, LENGTH = 8M
+    SDRAM (wx) : ORIGIN = 0x40000000, LENGTH = 64M
+    SDRAM_NONCACHEABLE (wx) : ORIGIN = 0x44000000, LENGTH = 8M
     AXI_SRAM (wx) : ORIGIN = 0x1080000, LENGTH = 1536k
     AXI_SRAM_NONCACHEABLE (wx) : ORIGIN = 0x01140000, LENGTH = 256K
 }
@@ -140,7 +140,7 @@ SECTIONS
         . = ALIGN(8);
         _end = .;
         __bss_end__ = .;
-    } > DLM
+    } > SDRAM
 
     .noncacheable : AT(etext + __data_end__ - __data_start__ + __ramfunc_end__ - __ramfunc_start__){
         . = ALIGN(8);
@@ -158,7 +158,7 @@ SECTIONS
         . = ALIGN(8);
         KEEP(*(.framebuffer))
         . = ALIGN(8);
-    } > AXI_SRAM
+    } > SDRAM
 
     .heap : {
         . = ALIGN(8);

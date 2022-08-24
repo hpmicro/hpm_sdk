@@ -1,4 +1,4 @@
-# TCP/UDP Throughput Test 
+# TCP/UDP Throughput Test
 
 ## Overview
 
@@ -23,7 +23,6 @@ This  example shows TCP/UDP throughput performance test through iperf (https://i
 ## Run Example
 
 - Compiling and Downloading
-
 - Running log is shown in the serial terminal as follows:
 
   ```
@@ -36,14 +35,13 @@ This  example shows TCP/UDP throughput performance test through iperf (https://i
   Static IP: 192.168.11.201
   NETMASK  : 255.255.255.0
   Gateway  : 192.168.11.1
-  
+
   1: TCP Server Mode
   2: TCP Client Mode
   3: UDP Server Mode
   4: UDP Client Mode
   Please enter the test mode code:
   ```
-  
 - Select a test mode and Run iperf
 
   - TCP Server mode
@@ -57,19 +55,16 @@ This  example shows TCP/UDP throughput performance test through iperf (https://i
       4: UDP Client Mode
       Please enter the test mode code:
       ```
-
-    - Enter a test mode code in the serial terminal 
-
-      ```
-      Please enter the test mode code: 1 
-      ```
-
-    -   Run iperf  in command line 
+    - Enter a test mode code in the serial terminal
 
       ```
-      iperf -c 192.168.11.201 -i 1
+      Please enter the test mode code: 1
       ```
+    - Run iperf  in command line
 
+    ```
+    iperf -c 192.168.11.201 -i 1
+    ```
     - Watch the result
 
       ```
@@ -91,9 +86,6 @@ This  example shows TCP/UDP throughput performance test through iperf (https://i
       [304]  9.0-10.0 sec  11.3 MBytes  94.4 Mbits/sec
       [304]  0.0-10.0 sec   113 MBytes  94.4 Mbits/sec
       ```
-
-  
-
   - TCP Client mode
 
     - Press "RESETN" key on the development board, and wait for the hints
@@ -105,19 +97,16 @@ This  example shows TCP/UDP throughput performance test through iperf (https://i
       4: UDP Client Mode
       Please enter the test mode code:
       ```
-
-    - Run iperf  in command line 
+    - Run iperf  in command line
 
       ```
-      iperf -s -i 1	
+      iperf -s -i 1
       ```
-
-    - Enter a test mode code in the serial terminal 
+    - Enter a test mode code in the serial terminal
 
       ```
       Please enter the test mode code: 2
       ```
-
     - Watch the result
 
       ```
@@ -139,9 +128,6 @@ This  example shows TCP/UDP throughput performance test through iperf (https://i
       [364]  9.0-10.0 sec  11.2 MBytes  94.2 Mbits/sec
       [364]  0.0-10.0 sec   112 MBytes  93.6 Mbits/sec
       ```
-
-      
-
   - UDP Server mode
 
     - Press "RESETN" key on the development board, and wait for the hints
@@ -153,19 +139,16 @@ This  example shows TCP/UDP throughput performance test through iperf (https://i
       4: UDP Client Mode
       Please enter the test mode code:
       ```
-
     - Enter a test mode code in the serial terminal
 
       ```
       Please enter the test mode code: 3
       ```
-
     - Run iperf  in command line
 
       ```
       iperf -u -c 192.168.11.201 -i 1 -b 100M
       ```
-
     - Watch test result
 
       ```
@@ -191,9 +174,6 @@ This  example shows TCP/UDP throughput performance test through iperf (https://i
       [304]  0.0-10.0 sec   113 MBytes  94.5 Mbits/sec  0.002 ms    0/80328 (0%)
       [304] Sent 80328 datagrams
       ```
-
-    
-
   - UDP Client mode
 
     - Press "RESETN" key on the development board, and wait for the hints
@@ -205,19 +185,16 @@ This  example shows TCP/UDP throughput performance test through iperf (https://i
       4: UDP Client Mode
       Please enter the test mode code:
       ```
-
-    - Run iperf  in command line 
+    - Run iperf  in command line
 
       ```
-      iperf -u -s -i 1 -b 100M
+      iperf -u -s -i 1
       ```
-
     - Enter a test mode code in the serial terminal
 
       ```
       Please enter the test mode code: 4
       ```
-
     - Watch test result
 
       ```
@@ -249,5 +226,3 @@ This  example shows TCP/UDP throughput performance test through iperf (https://i
       [  3]  0.0-10.0 sec   112 MBytes  94.1 Mbits/sec   0.234 ms  135/79952 (0.17%)
       [  3] 0.00-9.97 sec  59861 datagrams received out-of-order
       ```
-
-      

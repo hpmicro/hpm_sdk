@@ -141,6 +141,7 @@ void irq_handler_trap(void)
 
     else if ((mcause & CSR_MCAUSE_INTERRUPT_MASK) && ((mcause & CSR_MCAUSE_EXCEPTION_CODE_MASK) == IRQ_M_SOFT)) {
         /* Machine SWI interrupt */
+        intc_m_claim_swi();
         swi_isr();
         intc_m_complete_swi();
     } else if (!(mcause & CSR_MCAUSE_INTERRUPT_MASK) && ((mcause & CSR_MCAUSE_EXCEPTION_CODE_MASK) == MCAUSE_ECALL_FROM_MACHINE_MODE)) {

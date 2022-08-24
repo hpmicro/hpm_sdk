@@ -13,7 +13,7 @@ set(CONFIG_JPEG_TURBO_MODE 1)
 #set(CONFIG_JPEG_HARDWARE_MODE 1)
 
 if(NOT DEFINED CONFIG_CAMERA)
-set(CONFIG_CAMERA "ov7725")
+set(CONFIG_CAMERA "ov5640")
 endif()
 set(CONFIG_HPM_CAMERA 1)
 
@@ -39,6 +39,7 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(libjpeg_cjpeg_example)
 
 sdk_compile_definitions(COMPRESS_MODE)
+sdk_compile_definitions(INIT_EXT_RAM_FOR_DATA=1)
 
 if(DEFINED CONFIG_SDFATFS_MODE)
 sdk_compile_definitions(-DSD_FATFS_ENABLE=1)

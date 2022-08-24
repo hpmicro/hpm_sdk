@@ -74,6 +74,8 @@
 
 #endif
 
-#define LWIP_PLATFORM_ASSERT(x) do {printf(x);}while(0)
+#define LWIP_PLATFORM_ASSERT(x) printf(x)
+
+#define LWIP_MEM_SECTION __attribute__ ((section(".noncacheable")))
 
 #endif /* __CC_H__ */

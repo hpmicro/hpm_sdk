@@ -17,16 +17,9 @@ In this project:
 
 In this project, the core0 application runs in FLASH while the core1 application runs in its own ILM
 
-__Core1__ project must be generated and built first
+__Core0__ project must be generated first, as a linked project, __Core1__ project will be generated automatically
 
-__Core0__ project must be generated after the core1 project has been built successfully.
-
-### Generate core1 project
-__CMAKE_BUILD_TYPE__ must be one of the following options:
-- *"sec_core_img"*
-- *"sec_core_img_release"*
-
-The *"-t sec_core_img"* should be used when generating the project in the SDK env package
+__Core0__ project must be built after the __Core1__ project has been built successfully.
 
 ### Generate core0 project
 __CMAKE_BUILD_TYPE__ must be one of the following options:

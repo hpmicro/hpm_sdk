@@ -13,6 +13,7 @@
 #include "hpm_l1c_drv.h"
 #include "hpm_sysctl_drv.h"
 #include "file_op.h"
+#include "hpm_pdma_drv.h"
 /*--------------------------------------------------------------------*
  * Macro Definitions
  *---------------------------------------------------------------------
@@ -36,15 +37,35 @@
 
 /*Pixel format of LCD display*/
 #define PIXEL_FORMAT display_pixel_format_rgb565
+/*PDMA Definitions*/
+#define PDMA BOARD_PDMA_BASE
+
 /*---------------------------------------------------------------------*
  * Define variables
  *---------------------------------------------------------------------
  */
 /*rgb565 data buff*/
-ATTR_PLACE_AT_WITH_ALIGNMENT(".framebuffer", HPM_L1C_CACHELINE_SIZE) uint8_t rgb565buff[RGBBUFFLEN] = {0};
-
+ATTR_PLACE_AT_WITH_ALIGNMENT(".framebuffer", HPM_L1C_CACHELINE_SIZE) uint8_t rgb565buff[RGBBUFFLEN];
 /*JPG file data buff*/
-uint8_t filebuff[FILEBUFFLEN];
+ATTR_PLACE_AT_WITH_ALIGNMENT(".framebuffer", HPM_L1C_CACHELINE_SIZE) uint8_t filebuff[FILEBUFFLEN];
+/*---------------------------------------------------------------------*
+ * Scale RGB dat
+ *---------------------------------------------------------------------
+ */
+void scale(uint8_t *dst, uint32_t dst_width, uint8_t *src, uint32_t src_width, uint32_t x, uint32_t y, uint32_t width, uint32_t height, uint32_t target_width, uint32_t target_height, uint32_t alpha)
+{
+    uint32_t status;
+
+    pdma_scale(PDMA,
+    (uint32_t)core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)dst),
+    dst_width,
+    (uint32_t)core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)src),
+    src_width,
+    x, y, width, height,
+    target_width, target_height,
+    alpha, PIXEL_FORMAT, true, &status);
+}
+
 /*---------------------------------------------------------------------*
  * Display picture data on LCD
  *---------------------------------------------------------------------
@@ -60,6 +81,7 @@ void lcdc_display_picture(uint8_t *rgbbuff, int32_t rgb_width, int32_t rgb_heihg
     config.resolution_x = BOARD_LCD_WIDTH;
     config.resolution_y = BOARD_LCD_HEIGHT;
     lcdc_init(LCD, &config);
+
     lcdc_get_default_layer_config(LCD, &layer, PIXEL_FORMAT, layer_index);
 
     /*LCD layer parameter configuration*/
@@ -105,6 +127,54 @@ void store_device_init(void)
 }
 
 /*---------------------------------------------------------------------*
+ * Extract cache data
+ *---------------------------------------------------------------------
+ */
+void blit(uint8_t *dst, uint32_t dst_width,
+        uint8_t *src, uint32_t src_width,
+        uint32_t x, uint32_t y,
+        uint32_t width, uint32_t height, uint32_t alpha)
+{
+    uint32_t status;
+
+    pdma_blit(PDMA,
+            (uint32_t)core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)dst),
+            dst_width,
+            (uint32_t)core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)src),
+            src_width,
+            x, y, width, height, alpha, PIXEL_FORMAT, true, &status);
+}
+
+/*---------------------------------------------------------------------*
+ * Zoom display picture scale
+ *---------------------------------------------------------------------
+ */
+void display_scale_picture(uint8_t *rgbbuff, int32_t *rgb_width, int32_t *rgb_heihgt, uint8_t *rgbbuff_scale, int32_t *rgb_width_scale, int32_t *rgb_heihgt_scale)
+{
+    int32_t size;
+#if defined JPEG_HARDWARE_MODE
+    if ((*rgb_width) > BOARD_LCD_WIDTH) {
+        scale(rgbbuff, *rgb_width, rgbbuff, *rgb_width, 0, 0, *rgb_width, *rgb_heihgt, BOARD_LCD_WIDTH, BOARD_LCD_HEIGHT, 0xff);
+        *rgb_width_scale = BOARD_LCD_WIDTH;
+        *rgb_heihgt_scale = BOARD_LCD_HEIGHT;
+        blit(rgbbuff_scale, BOARD_LCD_WIDTH, rgbbuff, *rgb_width, 0, 0, BOARD_LCD_WIDTH, BOARD_LCD_HEIGHT, 0xFF);
+    } else {
+        size = (*rgb_width) * (*rgb_heihgt) * 2;
+        memcpy(rgbbuff_scale, rgbbuff, size);
+        *rgb_width_scale = *rgb_width;
+        *rgb_heihgt_scale = *rgb_heihgt;
+    }
+#elif defined JPEG_TURBO_MODE
+        size = (*rgb_width) * (*rgb_heihgt) * 2;
+        memcpy(rgbbuff_scale, rgbbuff, size);
+        *rgb_width_scale = *rgb_width;
+        *rgb_heihgt_scale = *rgb_heihgt;
+#endif
+
+
+}
+
+/*---------------------------------------------------------------------*
  * MAIN.C
  *---------------------------------------------------------------------
  */
@@ -112,6 +182,8 @@ int main(void)
 {
     /*Width and height of RGB data*/
     int32_t rgbwidth, rgbheight;
+    /*Width and height of display*/
+    int32_t rgbwidth_dsp, rgbheight_dsp;
     /*Get the number of files*/
     int32_t filenum;
     /*JPG data buff size*/
@@ -123,6 +195,8 @@ int main(void)
 
     /*System initialization*/
     board_init();
+
+    l1c_dc_disable();
     /*LCD initialization*/
     board_init_lcd();
     /*Storage device initialization*/
@@ -135,23 +209,34 @@ int main(void)
     } else {
         /*Get JPG files circularly and convert them into RGB data*/
         for (filenum = 0; filenum < filelist.fillnum; filenum++) {
+            lcdc_turn_off_display(LCD);
             /*Get a JPG file data*/
             status = file_get(filenum, &filelist, filebuff, &jpg_size);
             if (!status) {
                 printf("file %s is too big, Please store pictures smaller than %d byte.\n", filelist.filename[filenum], FILEBUFFLEN);
                 break;
             }    
+            if (l1c_dc_is_enabled()) {
+                /* cache writeback for file buff */
+                l1c_dc_writeback((uint32_t)filebuff, FILEBUFFLEN);
+            }
 #if defined JPEG_TURBO_MODE
             /*Libjpeg-turbo conversion to convert JPG data into rgb565 data*/
             jpeg_convert_data(filebuff, jpg_size, &rgbwidth, &rgbheight, rgb565buff);
             printf("Libjpeg-turbo decode completed\n");
 #elif defined JPEG_HARDWARE_MODE
             /*jpeg-hardware conversion to convert JPG data into rgb565 data*/
-            jpeg_convert_hw(filebuff, jpg_size, &rgbwidth, &rgbheight, rgb565buff);
+            status = jpeg_convert_hw(filebuff, jpg_size, &rgbwidth, &rgbheight, rgb565buff);
+            if (!status) {
+                printf("jpeg-hardware decode failed\n");
+                break;
+            }
             printf("jpeg-hardware decode completed\n");
 #endif
+            /*Zoom display picture scale*/
+            display_scale_picture(rgb565buff, &rgbwidth, &rgbheight, filebuff, &rgbwidth_dsp, &rgbheight_dsp);
             /*Display picture data on LCD*/
-            lcdc_display_picture(rgb565buff, rgbwidth, rgbheight);
+            lcdc_display_picture(filebuff, rgbwidth_dsp, rgbheight_dsp);
             board_delay_ms(2000);
         }
     }

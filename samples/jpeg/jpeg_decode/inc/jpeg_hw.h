@@ -26,13 +26,11 @@
 #define QDTABLELEN 256
 /*huffenc data buff length*/
 #define HUFFENCLEN 384
-/*Input file esc-data length*/
-#define INECSLEN 10000
 /*---------------------------------------------------------------------*
  * Define function
  *---------------------------------------------------------------------
  */
-void jpeg_convert_hw(uint8_t *filebuffs, int32_t fileLen, int32_t *width, int32_t *height, uint8_t *rgbbuff);
+uint8_t jpeg_convert_hw(uint8_t *filebuffs, int32_t fileLen, int32_t *width, int32_t *height, uint8_t *rgbbuff);
 
 /*---------------------------------------------------------------------*
  * Define variables
@@ -40,7 +38,7 @@ void jpeg_convert_hw(uint8_t *filebuffs, int32_t fileLen, int32_t *width, int32_
  */
 typedef struct jpeg_huffman_table {
     /*JPG file data esc-data lenth*/
-    uint16_t  in_ecs_length;
+    uint32_t  in_ecs_length;
     /*huffmin data buff*/
     uint32_t huffmin[HUFFMINLEN];
     /*huffbase data buff*/
@@ -51,8 +49,8 @@ typedef struct jpeg_huffman_table {
     uint16_t qdtable[QDTABLELEN];
     /*huffenc data buff*/
     uint16_t huffenc[HUFFENCLEN];
-    /*JPG file data esc-data buff*/
-    uint8_t in_ecs[INECSLEN];
+    /*JPG file sampling*/
+    uint8_t sampling_format;
 } jpeg_huffman_table_t;
 
 #endif  /* JPEG_HW_H */

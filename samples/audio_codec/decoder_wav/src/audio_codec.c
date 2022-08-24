@@ -74,8 +74,8 @@ hpm_wav_ctrl wav_ctrl;
 uint32_t i2s_mclk_hz;
 ATTR_ALIGN(4) uint8_t wav_header_buff[512];
 uint8_t search_file_buff[FIL_SEARCH_NUM][FIL_SEARCH_LENGTH];
-ATTR_ALIGN(32) uint8_t i2s_buff1[CODEC_BUFF_SIZE];
-ATTR_ALIGN(32) uint8_t i2s_buff2[CODEC_BUFF_SIZE];
+ATTR_ALIGN(HPM_L1C_CACHELINE_SIZE) uint8_t i2s_buff1[CODEC_BUFF_SIZE];
+ATTR_ALIGN(HPM_L1C_CACHELINE_SIZE) uint8_t i2s_buff2[CODEC_BUFF_SIZE];
 
 hpm_stat_t hpm_audiocodec_search_file(char * file_name, HPM_AUDIOCODEC_FILE * fil)
 {
@@ -130,8 +130,8 @@ hpm_stat_t get_audio_clock_div(uint16_t *div1, uint32_t sample_rate, uint8_t aud
     m = 0;
     do {
         prop = audio_freq_in_hz / bclk_freq_in_hz;
-        for (i = 20; i <= 256; i--) {
-            for (j = 512; j >= 10; j--) {
+        for (i = 5; i <= (SYSCTL_CLOCK_DIV_MASK >> SYSCTL_CLOCK_DIV_SHIFT); i++) {
+            for (j = (I2S_CFGR_BCLK_DIV_MASK >> I2S_CFGR_BCLK_DIV_SHIFT); j >= 5; j--) {
                 if ((i * j) == prop) {
                     *div1 = i;
                     return status_success;

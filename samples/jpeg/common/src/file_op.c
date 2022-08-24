@@ -13,14 +13,13 @@
 #include "string.h"
 #include "stdio.h"
 #include "file_op.h"
+#include "board.h"
 /*---------------------------------------------------------------------*
  * Define variables
  *---------------------------------------------------------------------
  */
 FIL s_file;
 
-#define true	1
-#define false	0
 /*---------------------------------------------------------------------*
  * scan files in the specified directory of storage device
  *---------------------------------------------------------------------
@@ -105,13 +104,18 @@ uint8_t file_get(int32_t filenums, file_name_list_t *jpgfiles, uint8_t *filesbuf
         return false;
     }
     /* Open file */
-    f_open(&s_file, jpgfiles->filename[filenums], FA_OPEN_ALWAYS | FA_READ);
-    printf("Open file successfully, status=%d\n", fresult);
-    /* read the specified file from Storage device */
-    f_read(&s_file, filesbuff, FILEBUFFLEN, &cnt);
-    f_close(&s_file);
-    *jpgsize = cnt;
-    return true;
+    fresult = f_open(&s_file, jpgfiles->filename[filenums], FA_OPEN_ALWAYS | FA_READ);
+    if (fresult == FR_OK) {
+        printf("Open file successfully, status=%d\n", fresult);
+        /* read the specified file from Storage device */
+        f_read(&s_file, filesbuff, FILEBUFFLEN, &cnt);
+        f_close(&s_file);
+        *jpgsize = cnt;
+        return true;
+    } else {
+        printf("fail to Open file , status=%d\n", fresult);
+        return false;
+    }
 }
 
 /*---------------------------------------------------------------------*
@@ -122,14 +126,20 @@ uint8_t file_store(uint8_t *filebuffs, int32_t *jpgsize, char *storefilename)
 {
     char filename[255];
     UINT cnt = 0;
+    FRESULT fresult;
 
     strcpy(filename, storefilename);
     /* Open file */
-    if (f_open(&s_file, filename, FA_WRITE | FA_OPEN_ALWAYS) == FR_OK) {
+    fresult = f_open(&s_file, filename, FA_WRITE | FA_OPEN_ALWAYS);
+    if (fresult == FR_OK) {
         printf("The %s is open.\n", filename);
         /* Write the specified file via Storage device */
         f_write(&s_file, (uint8_t *)(filebuffs), *jpgsize, &cnt);
         f_close(&s_file);
         *jpgsize = 0;
+        return true;
+    } else {
+        printf("fail to Open file , status=%d\n", fresult);
+        return false;
     }
 }

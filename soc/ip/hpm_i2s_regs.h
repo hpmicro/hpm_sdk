@@ -168,7 +168,7 @@ typedef struct {
 
 /* Bitfield definition for register: RFIFO_FILLINGS */
 /*
- * RX3 (ROI)
+ * RX3 (RO)
  *
  * RX3 fifo fillings
  */
@@ -177,7 +177,7 @@ typedef struct {
 #define I2S_RFIFO_FILLINGS_RX3_GET(x) (((uint32_t)(x) & I2S_RFIFO_FILLINGS_RX3_MASK) >> I2S_RFIFO_FILLINGS_RX3_SHIFT)
 
 /*
- * RX2 (ROI)
+ * RX2 (RO)
  *
  * RX2 fifo fillings
  */
@@ -186,7 +186,7 @@ typedef struct {
 #define I2S_RFIFO_FILLINGS_RX2_GET(x) (((uint32_t)(x) & I2S_RFIFO_FILLINGS_RX2_MASK) >> I2S_RFIFO_FILLINGS_RX2_SHIFT)
 
 /*
- * RX1 (ROI)
+ * RX1 (RO)
  *
  * RX1 fifo fillings
  */
@@ -195,7 +195,7 @@ typedef struct {
 #define I2S_RFIFO_FILLINGS_RX1_GET(x) (((uint32_t)(x) & I2S_RFIFO_FILLINGS_RX1_MASK) >> I2S_RFIFO_FILLINGS_RX1_SHIFT)
 
 /*
- * RX0 (ROI)
+ * RX0 (RO)
  *
  * RX0 fifo fillings
  */
@@ -205,7 +205,7 @@ typedef struct {
 
 /* Bitfield definition for register: TFIFO_FILLINGS */
 /*
- * TX3 (ROI)
+ * TX3 (RO)
  *
  * TX3 fifo fillings
  */
@@ -214,7 +214,7 @@ typedef struct {
 #define I2S_TFIFO_FILLINGS_TX3_GET(x) (((uint32_t)(x) & I2S_TFIFO_FILLINGS_TX3_MASK) >> I2S_TFIFO_FILLINGS_TX3_SHIFT)
 
 /*
- * TX2 (ROI)
+ * TX2 (RO)
  *
  * TX2 fifo fillings
  */
@@ -223,7 +223,7 @@ typedef struct {
 #define I2S_TFIFO_FILLINGS_TX2_GET(x) (((uint32_t)(x) & I2S_TFIFO_FILLINGS_TX2_MASK) >> I2S_TFIFO_FILLINGS_TX2_SHIFT)
 
 /*
- * TX1 (ROI)
+ * TX1 (RO)
  *
  * TX1 fifo fillings
  */
@@ -232,7 +232,7 @@ typedef struct {
 #define I2S_TFIFO_FILLINGS_TX1_GET(x) (((uint32_t)(x) & I2S_TFIFO_FILLINGS_TX1_MASK) >> I2S_TFIFO_FILLINGS_TX1_SHIFT)
 
 /*
- * TX0 (ROI)
+ * TX0 (RO)
  *
  * TX0 fifo fillings
  */
@@ -283,7 +283,7 @@ typedef struct {
 #define I2S_STA_RX_OV_GET(x) (((uint32_t)(x) & I2S_STA_RX_OV_MASK) >> I2S_STA_RX_OV_SHIFT)
 
 /*
- * TX_DN (ROI)
+ * TX_DN (RO)
  *
  * Asserted when tx fifo data are needed.
  */
@@ -292,7 +292,7 @@ typedef struct {
 #define I2S_STA_TX_DN_GET(x) (((uint32_t)(x) & I2S_STA_TX_DN_MASK) >> I2S_STA_TX_DN_SHIFT)
 
 /*
- * RX_DA (ROI)
+ * RX_DA (RO)
  *
  * Asserted when rx fifo data are available.
  */
@@ -302,7 +302,7 @@ typedef struct {
 
 /* Bitfield definition for register array: RXD */
 /*
- * D (ROI)
+ * D (RO)
  *
  */
 #define I2S_RXD_D_MASK (0xFFFFFFFFUL)
@@ -545,7 +545,7 @@ typedef struct {
  * EN (RW)
  *
  */
-#define I2S_RXDSLOT_EN_MASK (0xFFFFFFFFUL)
+#define I2S_RXDSLOT_EN_MASK (0xFFFFU)
 #define I2S_RXDSLOT_EN_SHIFT (0U)
 #define I2S_RXDSLOT_EN_SET(x) (((uint32_t)(x) << I2S_RXDSLOT_EN_SHIFT) & I2S_RXDSLOT_EN_MASK)
 #define I2S_RXDSLOT_EN_GET(x) (((uint32_t)(x) & I2S_RXDSLOT_EN_MASK) >> I2S_RXDSLOT_EN_SHIFT)
@@ -555,7 +555,7 @@ typedef struct {
  * EN (RW)
  *
  */
-#define I2S_TXDSLOT_EN_MASK (0xFFFFFFFFUL)
+#define I2S_TXDSLOT_EN_MASK (0xFFFFU)
 #define I2S_TXDSLOT_EN_SHIFT (0U)
 #define I2S_TXDSLOT_EN_SET(x) (((uint32_t)(x) << I2S_TXDSLOT_EN_SHIFT) & I2S_TXDSLOT_EN_MASK)
 #define I2S_TXDSLOT_EN_GET(x) (((uint32_t)(x) & I2S_TXDSLOT_EN_MASK) >> I2S_TXDSLOT_EN_SHIFT)

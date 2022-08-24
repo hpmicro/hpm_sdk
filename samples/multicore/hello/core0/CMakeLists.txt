@@ -4,6 +4,8 @@
 cmake_minimum_required(VERSION 3.13)
 
 set(CUSTOM_LINKER_FILE $ENV{HPM_SDK_BASE}/samples/multicore/hello/linker/gcc/core0.ld)
+set(CMAKE_BUILD_TYPE debug)
+set(INCLUDE_BOOTHEADER 1)
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 

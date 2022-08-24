@@ -13,6 +13,11 @@
 ***
 - File [cmakelists.txt](./CmakeLists.txt). If ``set (config_sdfatfs_mode 1)`` is configured, Jpg pictures are stored in **SD card** by default; to configure ``set (config_tinyusbhost_mode 1)``, Jpg pictures are stored in **USB** by default
 
+## Store picture size
+***
+- The image format stored in this routine is JPG, and the resolution size is 800*480
+- If higher resolution encoding is supported, a camera that supports high resolution can be used as the RGB data source to store JPG files through the encoding function
+
 ## Running the example
 ***
 - SD card mode:
