@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -41,7 +41,7 @@ hpm_stat_t ft5406_get_sys_info(ft5406_context_t *context, ft5406_sys_info_t *inf
 
 hpm_stat_t ft5406_read_data(ft5406_context_t *context, uint8_t addr, uint8_t *buf, uint32_t size)
 {
-    return i2c_master_address_read(context->ptr, FT5406_I2C_ADDR, &addr, 1, buf, size); 
+    return i2c_master_address_read(context->ptr, FT5406_I2C_ADDR, &addr, 1, buf, size);
 }
 
 hpm_stat_t ft5406_read_touch_data(ft5406_context_t *context, ft5406_touch_data_t *touch_data)

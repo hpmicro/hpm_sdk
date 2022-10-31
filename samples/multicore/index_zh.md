@@ -6,5 +6,7 @@
 
    hello/README_zh
    lvgl_coremark/README_zh
+   console_coremark/README_zh
+   erpc/README_zh
 
 :::

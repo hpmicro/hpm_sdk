@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2022 hpmicro
+ * Copyright (c) 2021-2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -103,7 +103,7 @@ typedef enum _can_mode {
     can_mode_loopback_internal,   /**< Internal loopback mode */
     can_mode_loopback_external,   /**< External loopback mode */
     can_mode_listen_only,         /**< CAN listen mode */
-} can_mode_t;
+} can_node_mode_t;
 
 /**
  * @brief CAN bit timing options
@@ -239,7 +239,7 @@ typedef struct {
         };
     };
 
-    can_mode_t mode;                            /**< CAN work mode */
+    can_node_mode_t mode;                            /**< CAN work mode */
     bool use_lowlevel_timing_setting;           /**< Use low-level timing setting */
     bool enable_canfd;                          /**< Enable CAN FD */
     bool enable_self_ack;                       /**< CAN self-ack flag */
@@ -289,7 +289,7 @@ static inline void can_reset(CAN_Type *base, bool enable)
  *  @arg can_mode_loopback_external external loopback mode
  *  @arg can_mode_listen_only CAN listen-only mode
  */
-static inline void can_set_mode(CAN_Type *base, can_mode_t mode)
+static inline void can_set_node_mode(CAN_Type *base, can_node_mode_t mode)
 {
     uint32_t cfg_stat = base->CMD_STA_CMD_CTRL & ~(CAN_CMD_STA_CMD_CTRL_LBME_MASK | CAN_CMD_STA_CMD_CTRL_LBMI_MASK | CAN_CMD_STA_CMD_CTRL_LOM_MASK);
     if (mode == can_mode_loopback_internal) {

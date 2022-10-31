@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,7 +9,7 @@
 #define LV_APP_CONF_H
 
 #undef LV_MEM_SIZE
-#define LV_MEM_SIZE    (1024U * 1024U)          /*[bytes]*/
+#define LV_MEM_SIZE    (512U * 1024U)          /*[bytes]*/
 
 #endif
 

@@ -134,7 +134,7 @@ bool _lv_area_intersect(lv_area_t * res_p, const lv_area_t * a1_p, const lv_area
     res_p->x2 = LV_MIN(a1_p->x2, a2_p->x2);
     res_p->y2 = LV_MIN(a1_p->y2, a2_p->y2);
 
-    /*If x1 or y1 greater then x2 or y2 then the areas union is empty*/
+    /*If x1 or y1 greater than x2 or y2 then the areas union is empty*/
     bool union_ok = true;
     if((res_p->x1 > res_p->x2) || (res_p->y1 > res_p->y2)) {
         union_ok = false;
@@ -142,6 +142,7 @@ bool _lv_area_intersect(lv_area_t * res_p, const lv_area_t * a1_p, const lv_area
 
     return union_ok;
 }
+
 /**
  * Join two areas into a third which involves the other two
  * @param res_p pointer to an area, the result will be stored here
@@ -281,6 +282,49 @@ bool _lv_area_is_in(const lv_area_t * ain_p, const lv_area_t * aholder_p, lv_coo
 }
 
 /**
+ * Check if an area is fully out of an other
+ * @param aout_p pointer to an area which could be in 'aholder_p'
+ * @param aholder_p pointer to an area which could involve 'ain_p'
+ * @param radius radius of `aholder_p` (e.g. for rounded rectangle)
+ * @return true: `aout_p` is fully outside `aholder_p`
+ */
+bool _lv_area_is_out(const lv_area_t * aout_p, const lv_area_t * aholder_p, lv_coord_t radius)
+{
+    if(aout_p->x2 < aholder_p->x1 || aout_p->y2 < aholder_p->y1 || aout_p->x1 > aholder_p->x2 ||
+       aout_p->y1 > aholder_p->y2) {
+        return true;
+    }
+
+    if(radius == 0) return false;
+
+    /*Check if the corner points are outside the radius or not*/
+    lv_point_t p;
+
+    p.x = aout_p->x1;
+    p.y = aout_p->y1;
+    if(_lv_area_is_point_on(aholder_p, &p, radius)) return false;
+
+    p.x = aout_p->x2;
+    p.y = aout_p->y1;
+    if(_lv_area_is_point_on(aholder_p, &p, radius)) return false;
+
+    p.x = aout_p->x1;
+    p.y = aout_p->y2;
+    if(_lv_area_is_point_on(aholder_p, &p, radius)) return false;
+
+    p.x = aout_p->x2;
+    p.y = aout_p->y2;
+    if(_lv_area_is_point_on(aholder_p, &p, radius)) return false;
+
+    return true;
+}
+
+bool _lv_area_is_equal(const lv_area_t * a, const lv_area_t * b)
+{
+    return a->x1 == b->x1 && a->x2 == b->x2 && a->y1 == b->y1 && a->y2 == b->y2;
+}
+
+/**
  * Align an area to an other
  * @param base an are where the other will be aligned
  * @param to_align the area to align
@@ -411,6 +455,59 @@ void lv_area_align(const lv_area_t * base, lv_area_t * to_align, lv_align_t alig
     to_align->x2 = to_align->x1 + w - 1;
     to_align->y2 = to_align->y1 + h - 1;
 }
+
+#define _LV_TRANSFORM_TRIGO_SHIFT 10
+void lv_point_transform(lv_point_t * p, int32_t angle, int32_t zoom, const lv_point_t * pivot)
+{
+    if(angle == 0 && zoom == 256) {
+        return;
+    }
+
+    p->x -= pivot->x;
+    p->y -= pivot->y;
+
+    if(angle == 0) {
+        p->x = (((int32_t)(p->x) * zoom) >> 8) + pivot->x;
+        p->y = (((int32_t)(p->y) * zoom) >> 8) + pivot->y;
+        return;
+    }
+
+    static int32_t angle_prev = INT32_MIN;
+    static int32_t sinma;
+    static int32_t cosma;
+    if(angle_prev != angle) {
+        int32_t angle_limited = angle;
+        if(angle_limited > 3600) angle_limited -= 3600;
+        if(angle_limited < 0) angle_limited += 3600;
+
+        int32_t angle_low = angle_limited / 10;
+        int32_t angle_high = angle_low + 1;
+        int32_t angle_rem = angle_limited  - (angle_low * 10);
+
+        int32_t s1 = lv_trigo_sin(angle_low);
+        int32_t s2 = lv_trigo_sin(angle_high);
+
+        int32_t c1 = lv_trigo_sin(angle_low + 90);
+        int32_t c2 = lv_trigo_sin(angle_high + 90);
+
+        sinma = (s1 * (10 - angle_rem) + s2 * angle_rem) / 10;
+        cosma = (c1 * (10 - angle_rem) + c2 * angle_rem) / 10;
+        sinma = sinma >> (LV_TRIGO_SHIFT - _LV_TRANSFORM_TRIGO_SHIFT);
+        cosma = cosma >> (LV_TRIGO_SHIFT - _LV_TRANSFORM_TRIGO_SHIFT);
+        angle_prev = angle;
+    }
+    int32_t x = p->x;
+    int32_t y = p->y;
+    if(zoom == 256) {
+        p->x = ((cosma * x - sinma * y) >> _LV_TRANSFORM_TRIGO_SHIFT) + pivot->x;
+        p->y = ((sinma * x + cosma * y) >> _LV_TRANSFORM_TRIGO_SHIFT) + pivot->y;
+    }
+    else {
+        p->x = (((cosma * x - sinma * y) * zoom) >> (_LV_TRANSFORM_TRIGO_SHIFT + 8)) + pivot->x;
+        p->y = (((sinma * x + cosma * y) * zoom) >> (_LV_TRANSFORM_TRIGO_SHIFT + 8)) + pivot->y;
+    }
+}
+
 
 /**********************
  *   STATIC FUNCTIONS

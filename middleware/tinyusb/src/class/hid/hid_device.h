@@ -376,7 +376,6 @@ static inline bool  tud_hid_gamepad_report(uint8_t report_id, int8_t x, int8_t y
     HID_USAGE        ( 0x01                       ),\
     HID_COLLECTION   ( HID_COLLECTION_APPLICATION ),\
       GET_1ST_2ND_ARGS(__VA_ARGS__), \
-      __VA_ARGS__ \
       /* Input */ \
       HID_USAGE       ( 0x02                                   ),\
       HID_LOGICAL_MIN ( 0x00                                   ),\
@@ -414,7 +413,7 @@ static inline bool  tud_hid_gamepad_report(uint8_t report_id, int8_t x, int8_t y
       HID_REPORT_SIZE ( 8                                       ),\
       HID_REPORT_COUNT_N( report_size, 2                       ),\
       HID_OUTPUT      ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE  ),\
-    HID_COLLECTION_END 
+    HID_COLLECTION_END
 #endif
 //--------------------------------------------------------------------+
 // Internal Class Driver API

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 hpmicro
+ * Copyright (c) 2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -37,6 +37,7 @@ sgtl_context_t sgtl5000_context = {
     .ptr = CODEC_I2C,
     .slave_address = CODEC_I2C_ADDRESS, /* I2C address */
 };
+uint32_t * data_tx;
 uint32_t t_count = 0;
 uint32_t sin_1khz_48khz[] = {
   0x00000000, 0x0D5DAA00, 0x1A80C900, 0x272FD100, 0x33333300, 0x3E565100, 0x48686100, 0x513D4800,
@@ -52,12 +53,11 @@ void isr_i2s(void)
     s = CODEC_I2S->STA;
     CODEC_I2S->STA = s;
     if ((s & I2S_CTRL_TX_EN_SET(4))) {
-        i2s_send_data(CODEC_I2S, CODEC_I2S_DATA_LINE, &sin_1khz_48khz[t_count], 1);
-        i2s_send_data(CODEC_I2S, CODEC_I2S_DATA_LINE, &sin_1khz_48khz[t_count], 1);
+        i2s_send_data(CODEC_I2S, CODEC_I2S_DATA_LINE, sin_1khz_48khz[t_count]);
+        i2s_send_data(CODEC_I2S, CODEC_I2S_DATA_LINE, sin_1khz_48khz[t_count]);
         t_count++;
         t_count = t_count % ARRAY_SIZE(sin_1khz_48khz);
     }
-   
 }
 SDK_DECLARE_EXT_ISR_M(IRQn_I2S0, isr_i2s)
 

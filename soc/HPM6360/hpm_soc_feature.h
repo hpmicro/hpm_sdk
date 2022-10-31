@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -14,6 +14,7 @@
  * I2C Section
  */
 #define I2C_SOC_FIFO_SIZE (4U)
+#define I2C_SOC_TRANSFER_COUNT_MAX (256U)
 
 /*
  * PMIC Section
@@ -65,6 +66,7 @@
 #define DMA_SOC_BUS_NUM (1U)
 #define DMA_SOC_CHANNEL_NUM (8U)
 #define DMA_SOC_MAX_COUNT (2U)
+#define DMA_SOC_CHN_TO_DMAMUX_CHN(x, n) (((x) == HPM_XDMA) ? (DMAMUX_MUXCFG_XDMA_MUX0 + n) : (DMAMUX_MUXCFG_HDMA_MUX0 + n))
 
 /*
  * PDMA Section
@@ -96,8 +98,6 @@
 #define USB_SOC_HCD_QTD_BUFFER_COUNT               (5U)
 #define USB_SOC_HCD_QTD_ALIGNMENT                  (32U)
 #define USB_SOC_HCD_QHD_ALIGNMENT                  (32U)
-#define USB_SOC_HCD_MAX_ENDPOINT_COUNT             (8U)
-#define USB_SOC_HCD_MAX_XFER_ENDPOINT_COUNT        (USB_SOC_HCD_MAX_ENDPOINT_COUNT * 2U)
 #define USB_SOC_HCD_FRAMELIST_MAX_ELEMENTS         (1024U)
 #define USB_SOC_HCD_DATA_RAM_ADDRESS_ALIGNMENT     (4096U)
 
@@ -176,10 +176,17 @@
  * SPI Section
  */
 #define SPI_SOC_TRANSFER_COUNT_MAX  (512U)
+#define SPI_SOC_FIFO_DEPTH          (4U)
 
 /*
  * SDXC Section
  */
 #define SDXC_SOC_MAX_COUNT      (1)
+
+/*
+ * ROM API section
+ */
+#define ROMAPI_HAS_SW_SM3 (1)
+#define ROMAPI_HAS_SW_SM4 (1)
 
 #endif /* HPM_SOC_FEATURE_H */

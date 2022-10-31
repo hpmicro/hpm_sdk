@@ -25,9 +25,7 @@ __Core0__ project must be generated first, as a linked project, __Core1__ projec
 __Core0__ project must be built after the __Core1__  project has been built successfully.
 
 ### Generate Core0 project
-__CMAKE_BUILD_TYPE__ must be one of the following options:
-- *"debug"*
-- *"release"*
+__CMAKE_BUILD_TYPE__ forced to be *"debug"*, and users don't need to care.
 
 
 ## Debugging the example

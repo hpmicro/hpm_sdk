@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2022 hpmicro
+ * Copyright (c) 2021-2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -19,9 +19,9 @@ static sd_card_t g_sd;
  *
  ************************************************************************************/
 #ifdef INIT_EXT_RAM_FOR_DATA
-#define MAX_BUF_SIZE_DEFAULT (1024*1024U)
+#define MAX_BUF_SIZE_DEFAULT (512U * 1024U)
 #else
-#define MAX_BUF_SIZE_DEFAULT (64*1024U)
+#define MAX_BUF_SIZE_DEFAULT (64U * 1024U)
 #endif
 
 ATTR_PLACE_AT_NONCACHEABLE uint32_t s_write_buf[MAX_BUF_SIZE_DEFAULT / sizeof(uint32_t)];

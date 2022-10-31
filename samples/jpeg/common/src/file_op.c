@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,137 +9,33 @@
  * Includes
  *---------------------------------------------------------------------
  */
+#include <stdio.h>
 #include "ff.h"
-#include "string.h"
-#include "stdio.h"
 #include "file_op.h"
-#include "board.h"
+#include "hpm_common.h"
 /*---------------------------------------------------------------------*
  * Define variables
  *---------------------------------------------------------------------
  */
-FIL s_file;
-
-/*---------------------------------------------------------------------*
- * scan files in the specified directory of storage device
- *---------------------------------------------------------------------
- */
-uint8_t file_scan(char *path, char *filetype, file_name_list_t *jpgfile)
-{
-    /*Number of scanned files*/
-    int8_t nums = 0;
-    /*Get file name length*/
-    int8_t filenamelen = 0;
-    DIR DirInfo;
-    FILINFO fileinfo;
-    FRESULT filefresult;
-    int8_t nin, fin, njn;
-
-    /*File type character length*/
-    fin = strlen(filetype);
-    /*Open the file under the specified path*/
-    filefresult = f_opendir(&DirInfo, (const TCHAR*)path);
-    if (filefresult == FR_OK) {
-        printf("\nDirecotry Path: %s\r\n",path);
-        while (f_readdir(&DirInfo, &fileinfo) == FR_OK) {
-            /* If a file name is null, it means that the read operation is complete. */
-            if (!fileinfo.fname[0]) {
-                break;
-            }
-            if ((fileinfo.fattrib & AM_HID) == 0 && \
-                (fileinfo.fattrib & AM_SYS) == 0)
-            {
-                if ((fileinfo.fattrib & AM_DIR) == AM_DIR) {
-                    printf("Folder Name: %s\r\n", fileinfo.fname);
-                } else {
-                    printf("File   Name: %s\r\n", fileinfo.fname);
-                    /* Get file name length. */
-                    filenamelen = strlen(fileinfo.fname);
-                    /* Judge the length of file name. */
-                    if (filenamelen > fin) { 
-                        /*Judge whether the file type is correct*/
-                        for (nin = 0; nin < fin; nin++) {
-                            njn = fin - nin;
-                            if (fileinfo.fname[filenamelen - njn] != filetype[nin]) {
-                                break;
-                            }
-                        }
-                        /*Correct file type*/
-                        if (nin == fin) {
-                            if (nums < FILENAMENUM) {
-                                /* Get one of the picture name*/
-                                strcpy(jpgfile->filename[nums], fileinfo.fname);
-                                jpgfile->filesize[nums] = fileinfo.fsize;
-                                nums++;
-                            } else {
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    } else {
-        printf("Can't open the directory: %s\n", path);
-        return false;
-    }
-    f_closedir(&DirInfo);
-
-    /*Get total number of picture files*/
-    jpgfile->fillnum = nums;
-
-    return true;
-}
-
-/*---------------------------------------------------------------------*
- * Get a file data from the file list
- *---------------------------------------------------------------------
- */
-uint8_t file_get(int32_t filenums, file_name_list_t *jpgfiles, uint8_t *filesbuff, int32_t *jpgsize)
-{
-    UINT cnt = 0;
-    FRESULT fresult;
-
-    if (jpgfiles->filesize[filenums] > FILEBUFFLEN) {
-        return false;
-    }
-    /* Open file */
-    fresult = f_open(&s_file, jpgfiles->filename[filenums], FA_OPEN_ALWAYS | FA_READ);
-    if (fresult == FR_OK) {
-        printf("Open file successfully, status=%d\n", fresult);
-        /* read the specified file from Storage device */
-        f_read(&s_file, filesbuff, FILEBUFFLEN, &cnt);
-        f_close(&s_file);
-        *jpgsize = cnt;
-        return true;
-    } else {
-        printf("fail to Open file , status=%d\n", fresult);
-        return false;
-    }
-}
+static ATTR_PLACE_AT_NONCACHEABLE_BSS FIL s_file;
 
 /*---------------------------------------------------------------------*
  * File data store a file type
  *---------------------------------------------------------------------
  */
-uint8_t file_store(uint8_t *filebuffs, int32_t *jpgsize, char *storefilename)
+bool file_store(uint8_t *fname, uint8_t *buf, uint32_t size)
 {
-    char filename[255];
     UINT cnt = 0;
-    FRESULT fresult;
+    FRESULT stat;
 
-    strcpy(filename, storefilename);
-    /* Open file */
-    fresult = f_open(&s_file, filename, FA_WRITE | FA_OPEN_ALWAYS);
-    if (fresult == FR_OK) {
-        printf("The %s is open.\n", filename);
-        /* Write the specified file via Storage device */
-        f_write(&s_file, (uint8_t *)(filebuffs), *jpgsize, &cnt);
+    stat = f_open(&s_file, (const TCHAR *) fname, FA_WRITE | FA_OPEN_ALWAYS);
+    if (stat == FR_OK) {
+        f_write(&s_file, buf, size, &cnt);
         f_close(&s_file);
-        *jpgsize = 0;
+        printf("%s is opened, %d bytes.\n", fname, cnt);
         return true;
     } else {
-        printf("fail to Open file , status=%d\n", fresult);
+        printf("fail to open file %s, status = %d\n", fname, stat);
         return false;
     }
 }

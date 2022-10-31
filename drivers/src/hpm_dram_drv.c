@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -26,7 +26,7 @@ static void dram_config_delay_cell(DRAM_Type *ptr, uint32_t delay_cell_value)
 }
 
 static hpm_stat_t dram_ip_cmd_done(DRAM_Type *ptr)
-{ 
+{
     uint32_t intr_status = 0;
     uint32_t retry = 0;
     do {
@@ -71,7 +71,7 @@ uint32_t dram_issue_ip_cmd(DRAM_Type *ptr, uint32_t base_address, dram_cmd_t *cm
     if (dram_ip_cmd_done(ptr) < 0) {
         return status_dram_cmd_err;
     }
-    
+
     if (read_data) {
         cmd->data = ptr->IPRX;
     }
@@ -188,21 +188,21 @@ static uint8_t dram_convert_burst_len(uint8_t burst_len_in_byte)
     }
 
     switch (burst_len_in_byte) {
-        case 1:
-        case 2:
-        case 4:
-            return burst_len_in_byte >> 1;
-        case 8:
-            return (burst_len_in_byte - 1) >> 1;
-        default:
-            return DRAM_SDRAM_MAX_BURST_LENGTH_IN_BYTE + 1;
+    case 1:
+    case 2:
+    case 4:
+        return burst_len_in_byte >> 1;
+    case 8:
+        return (burst_len_in_byte - 1) >> 1;
+    default:
+        return DRAM_SDRAM_MAX_BURST_LENGTH_IN_BYTE + 1;
     }
 }
 
 static uint32_t ns2cycle(uint32_t freq_in_hz, uint32_t ns)
 {
     uint32_t ns_per_cycle;
-    ns_per_cycle = 1000000000 / freq_in_hz ;
+    ns_per_cycle = 1000000000 / freq_in_hz;
     if (ns < ns_per_cycle) {
         return 1;
     }
@@ -246,13 +246,13 @@ hpm_stat_t dram_config_sdram(DRAM_Type *ptr, uint32_t clk_in_hz, dram_sdram_conf
                   | DRAM_SDRCTRL0_BANK2_SET(config->bank_num);
 
     ptr->SDRCTRL1 = DRAM_SDRCTRL1_PRE2ACT_SET(ns2cycle(clk_in_hz, config->precharge_to_act_in_ns))
-                  | DRAM_SDRCTRL1_ACT2RW_SET(ns2cycle(clk_in_hz, config->act_to_rw_in_ns)) 
-                  | DRAM_SDRCTRL1_RFRC_SET(ns2cycle(clk_in_hz, config->refresh_recover_in_ns)) 
-                  | DRAM_SDRCTRL1_WRC_SET(ns2cycle(clk_in_hz, config->write_recover_in_ns)) 
-                  | DRAM_SDRCTRL1_CKEOFF_SET(ns2cycle(clk_in_hz, config->cke_off_in_ns)) 
+                  | DRAM_SDRCTRL1_ACT2RW_SET(ns2cycle(clk_in_hz, config->act_to_rw_in_ns))
+                  | DRAM_SDRCTRL1_RFRC_SET(ns2cycle(clk_in_hz, config->refresh_recover_in_ns))
+                  | DRAM_SDRCTRL1_WRC_SET(ns2cycle(clk_in_hz, config->write_recover_in_ns))
+                  | DRAM_SDRCTRL1_CKEOFF_SET(ns2cycle(clk_in_hz, config->cke_off_in_ns))
                   | DRAM_SDRCTRL1_ACT2PRE_SET(ns2cycle(clk_in_hz, config->act_to_precharge_in_ns));
 
-    ptr->SDRCTRL2 = DRAM_SDRCTRL2_SRRC_SET(ns2cycle(clk_in_hz, config->self_refresh_recover_in_ns)) 
+    ptr->SDRCTRL2 = DRAM_SDRCTRL2_SRRC_SET(ns2cycle(clk_in_hz, config->self_refresh_recover_in_ns))
                   | DRAM_SDRCTRL2_REF2REF_SET(ns2cycle(clk_in_hz, config->refresh_to_refresh_in_ns))
                   | DRAM_SDRCTRL2_ACT2ACT_SET(ns2cycle(clk_in_hz, config->act_to_act_in_ns))
                   | DRAM_SDRCTRL2_ITO_SET(ns2cycle(clk_in_hz, config->idle_timeout_in_ns));
@@ -260,9 +260,9 @@ hpm_stat_t dram_config_sdram(DRAM_Type *ptr, uint32_t clk_in_hz, dram_sdram_conf
     ptr->SDRCTRL3 = DRAM_SDRCTRL3_PRESCALE_SET(prescaler)
                   | DRAM_SDRCTRL3_RT_SET(refresh_cycle)
                   | DRAM_SDRCTRL3_UT_SET(refresh_cycle)
-                  | DRAM_SDRCTRL3_REBL_SET(config->auto_refresh_count_in_one_burst - 1); 
+                  | DRAM_SDRCTRL3_REBL_SET(config->auto_refresh_count_in_one_burst - 1);
     /*
-     * 
+     *
      * DATSZ[2:0]: Data size in byte
      *     0b - 4
      *     1b - 1
@@ -291,7 +291,7 @@ hpm_stat_t dram_config_sdram(DRAM_Type *ptr, uint32_t clk_in_hz, dram_sdram_conf
     }
 
     /*
-     * 
+     *
      * DATSZ[2:0]: Data size in byte
      *     0b - 4
      *     1b - 1

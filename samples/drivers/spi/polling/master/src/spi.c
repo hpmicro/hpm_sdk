@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -8,6 +8,7 @@
 #include "board.h"
 #include "hpm_debug_console.h"
 #include "hpm_spi_drv.h"
+#include "hpm_clock_drv.h"
 
 typedef enum {
     spi_op_write = 0,
@@ -128,7 +129,7 @@ int main(void)
 
     /* set SPI sclk frequency for master */
     spi_master_get_default_timing_config(&timing_config);
-    timing_config.master_config.clk_src_freq_in_hz = BOARD_APP_SPI_CLK_SRC_FREQ;
+    timing_config.master_config.clk_src_freq_in_hz = clock_get_frequency(BOARD_APP_SPI_CLK_NAME);;
     timing_config.master_config.sclk_freq_in_hz = BOARD_APP_SPI_SCLK_FREQ;
     spi_master_timing_init(BOARD_APP_SPI_BASE, &timing_config);
     printf("SPI-Master transfer timing is configured.\n");

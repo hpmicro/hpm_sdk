@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -116,8 +116,8 @@ void test_vad_to_dao(void)
                     data = *(vad_in + i);
                     data <<= VOLUME_SCALE_SHIFT;
                     for (j = 0; j < DAO_SOC_VAD_SAMPLE_RATE_RATIO; j++) {
-                        i2s_send_data(DAO_I2S, 0, &data, 1); /* Left channel */
-                        i2s_send_data(DAO_I2S, 0, &data, 1); /* Right channel */
+                        i2s_send_data(DAO_I2S, 0, data); /* Left channel */
+                        i2s_send_data(DAO_I2S, 0, data); /* Right channel */
                     }
                     i += 1;
                 }

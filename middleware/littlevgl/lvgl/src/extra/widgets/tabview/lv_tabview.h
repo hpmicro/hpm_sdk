@@ -25,14 +25,13 @@ extern "C" {
  *      TYPEDEFS
  **********************/
 
-typedef struct
-{
+typedef struct {
     lv_obj_t obj;
     char ** map;
     uint16_t tab_cnt;
     uint16_t tab_cur;
     lv_dir_t tab_pos;
-}lv_tabview_t;
+} lv_tabview_t;
 
 extern const lv_obj_class_t lv_tabview_class;
 
@@ -42,6 +41,8 @@ extern const lv_obj_class_t lv_tabview_class;
 lv_obj_t * lv_tabview_create(lv_obj_t * parent, lv_dir_t tab_pos, lv_coord_t tab_size);
 
 lv_obj_t * lv_tabview_add_tab(lv_obj_t * tv, const char * name);
+
+void lv_tabview_rename_tab(lv_obj_t * obj, uint32_t tab_id, const char * new_name);
 
 lv_obj_t * lv_tabview_get_content(lv_obj_t * tv);
 

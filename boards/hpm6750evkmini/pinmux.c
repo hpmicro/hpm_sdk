@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2022 hpmicro
+ * Copyright (c) 2021-2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -104,7 +104,8 @@ void init_i2c_pins_as_gpio(I2C_Type *ptr)
         HPM_IOC->PAD[IOC_PAD_PB11].FUNC_CTL = IOC_PB11_FUNC_CTL_GPIO_B_11;
         HPM_IOC->PAD[IOC_PAD_PB10].FUNC_CTL = IOC_PB10_FUNC_CTL_GPIO_B_10;
     } else {
-        while(1);
+        while (1) {
+        }
     }
 }
 
@@ -125,7 +126,8 @@ void init_i2c_pins(I2C_Type *ptr)
         HPM_IOC->PAD[IOC_PAD_PB14].PAD_CTL = IOC_PAD_PAD_CTL_OD_MASK;
         HPM_IOC->PAD[IOC_PAD_PB13].PAD_CTL = IOC_PAD_PAD_CTL_OD_MASK;
     } else {
-        while(1);
+        while (1) {
+        }
     }
 }
 
@@ -177,10 +179,6 @@ void init_sdram_pins(void)
 void init_gpio_pins(void)
 {
     uint32_t pad_ctl = IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(1);
-
-    /* Green LED*/
-    HPM_IOC->PAD[IOC_PAD_PB18].FUNC_CTL = IOC_PB18_FUNC_CTL_GPIO_B_18;
-    HPM_IOC->PAD[IOC_PAD_PB18].PAD_CTL = pad_ctl;
 
 #ifdef USING_GPIO0_FOR_GPIOZ
     HPM_IOC->PAD[IOC_PAD_PZ02].FUNC_CTL = IOC_PZ02_FUNC_CTL_GPIO_Z_02;

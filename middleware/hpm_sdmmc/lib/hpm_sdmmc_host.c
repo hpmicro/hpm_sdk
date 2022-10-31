@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2022 hpmicro
+ * Copyright (c) 2021-2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -171,13 +171,13 @@ hpm_stat_t sdmmchost_send_command(sdmmc_host_t *host, sdmmchost_cmd_t *cmd)
             has_done_or_error = true;
         }
 
-    }while((!has_done_or_error) && (delay_cnt > 0));
+    } while ((!has_done_or_error) && (delay_cnt > 0));
 
     if ((delay_cnt <= 0) && (!has_done_or_error)) {
         status = status_timeout;
         return status;
     }
-    if ((status != status_success)) {
+    if (status != status_success) {
         return status;
     }
     status = sdxc_receive_cmd_response(host->host_param.base, &host->cmd);
@@ -198,7 +198,7 @@ hpm_stat_t sdmmchost_send_command(sdmmc_host_t *host, sdmmchost_cmd_t *cmd)
             if (status != status_success) {
                 has_done_or_error = true;
             }
-        }while((!has_done_or_error) && (delay_cnt > 0));
+        } while ((!has_done_or_error) && (delay_cnt > 0));
 
         if ((delay_cnt <= 0) && (!has_done_or_error)) {
             status = status_timeout;
@@ -258,7 +258,7 @@ hpm_stat_t sdmmchost_transfer(sdmmc_host_t *host, sdmmchost_xfer_t *content)
         if (status != status_success) {
             has_done_or_error = true;
         }
-    }while((!has_done_or_error) && (delay_cnt > 0));
+    } while ((!has_done_or_error) && (delay_cnt > 0));
 
     if ((delay_cnt <= 0) && (!has_done_or_error)) {
         status = status_timeout;
@@ -286,7 +286,7 @@ hpm_stat_t sdmmchost_transfer(sdmmc_host_t *host, sdmmchost_xfer_t *content)
             if (status != status_success) {
                 has_done_or_error = true;
             }
-        } while((delay_cnt > 0) && (!has_done_or_error));
+        } while ((delay_cnt > 0) && (!has_done_or_error));
 
         if (delay_cnt <= 0) {
             status = status_sdxc_data_timeout_error;

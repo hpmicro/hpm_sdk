@@ -1,25 +1,85 @@
 # Change Log
 
-## [0.13.1] - 2022-08-23:
+## [0.14.0] - 2022-10-31:
 
 Main changes since 0.13.0
 
+Tested Segger Embedded Studio Version: 6.34a
+
 ### Changed:
-  - Driver:I2S: update i2s drivers
-  - middleware: lwip: optimize variable_name definition
-  - samples: lwip: lwip_iperf: update readme files
-  - samples: lwip: common: arch: add LWIP_MEM_SECTION declartion
+  - drivers: inc: update adc driver
+  - drivers: gptmr: update reload value
+  - components: enet_phy: optimize APIs
+  - components: enet_phy: dp83867: rename functions
+  - components: conditionally add debug_console
+  - middleware: add cherryusb (0.6.0)
+  - middleware: littlevgl: update to v8.3.1
+  - middleware: fatfs: file name encoding in utf-8
+  - middleware: freertos: support nested irq handling
+  - middleware: hpm_mcl: Optimized motor control foc speed
+  - samples: drivers: dma src move to dma_general_transfer folder
+  - samples: lwip: update all static addresses and all gateway addresses
+  - samples: lwip: lwip_iperf: optimize the interactive log
+  - samples: tinyusb: device: hid_generic_inout: optimize the python script
+  - openocd: HPM6750A1 silicon in hpm6750-dual-core.cfg
+  - header file: update the enet/conctl register files
+  - header file: Update TRGMUX0 pin input source definition
+  - header file: update the ADC12 header files
+  - scripts: ses: organize file in ses according to real path.
+  - cmake: split gcc and ses source
+  - board: bump HPM6750 DCDC voltage to 1200mv
 
 ### Fixed:
+  - drivers: pdma: fix scale api issue
+  - drivers: i2c: update DATACNT processing
+  - drivers: i2s: fix i2s interrupt workaround in i2s_init
+  - drivers: pwm: fix pwm capture function error
+  - drivers: pwm: fix pwm capture configuration error
+  - drivers: clock: fix error in clock_set_xxx_source
+  - drivers: wdg: timeout calculation error
+  - drivers: trgm_drv: bugfix: include error
+  - drivers: romapi: call fencei after flash erase/write operation
+  - drivers: watchdog: overflow
+  - drivers: usb: host controller initialization issue
+  - drivers: i2s: i2s_enable() issue fix
+  - middleware: tinyusb: src: class: fix the HID report desc macro
+  - samples: drivers: adc: optimize all ADC demos
+  - samples: drivers: adc: fix all channel initializations  without a default value
+  - samples: motor_ctrl: hardware trigger api usage error
+  - samples: audio_codec: update clock process for 44100 sample rate
+  - samples: lcdc: boundary pixel is incorrenct
   - samples: multicore: BOOT_HEADER was missing in multicore core0 example
-  - samples: jpeg: Fix encoding and decoding problem
-  - samples: audio codec: wav decoder: fix 32bit wave file playback
-  - I2S_DMA: fix wav channel not align problem
-  - i2s_interrupt: fix I2S FIFO overflow
-  - fix lack of interrupt claim for swi
-  - driver: watchdog: overflow
-  - Fix critical section logic issue in dma manager
-  - Fix the core1 application debugging issue
+  - samples: drivers: i2s: correct audio data if depth < 32bit.
+  - samples: hpm_math: fft_perf_test: Fix error printing information
+  - samples: fix pdm2dao noise problem
+  - samples: lwip: fix the enet throughput degradation
+  - soc: correct address overlapping SES XIP linker file
+  - soc: correct the interrupt context switch issue
+  - soc: fix Lack of interrupt claim for swi
+  - boards: fix some rmii reference clock APIs
+
+### Added:
+  - boards: add hpm6750evk2 support
+  - soc: add initfini.c
+  - drivers: lcdc: add y8 support
+  - drivers: spi: update data_length processing
+  - drivers: spi:  add api to enable/disable spi dma request
+  - drivers: pmp: Add pmp_config_entry API
+  - components: add ipc_event_mgr
+  - component: spi: add cache maintain
+  - middleware: add erpc
+  - samples: lwip: support self-adaptive port speed and duplex mode
+  - samples: jpeg: support grayscale
+  - samples: drivers: spi: use api to get data length
+  - samples: drivers: spi:  add interrupt b2b sample
+  - samples: drivers: mbx: add singlecore samples
+  - samples: drivers: add dma circle transfer
+  - samples: drivers: pwm: add pwm capture demo
+  - samples: provide OTP API demo
+  - samples: add cherryusb hid/msc/cdc samples
+  - samples: add Guomi API example
+  - samples: add erpc sample
+  - samples: add segger_rtt
 
 ## [0.13.0] - 2022-07-31:
 

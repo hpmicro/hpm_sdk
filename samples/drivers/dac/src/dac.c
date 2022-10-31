@@ -1,14 +1,13 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
 
+#include <math.h>
 #include "board.h"
 #include "hpm_dac_drv.h"
-#include <math.h>
-#include "hpm_gpio_drv.h"
 
 #define DAC_STEP_CFG_IDX DAC_STEP_CFG_STEP0
 
@@ -81,6 +80,7 @@ static void set_step_mode_config(void)
     dac_step_config_t config0;
 
     printf("Set DAC to output data in step mode\n");
+    printf("DAC is outputting a saw tooth waveform in step mode\n");
 
     /* saw tooth waveform */
     config0.up_down = dac_step_up;
@@ -98,6 +98,7 @@ static void set_buffer_mode_config(void)
     dac_buffer_config_t buffer_config;
 
     printf("Set DAC to output data in buffer mode\n");
+    printf("DAC is outputting a sine waveform in buffer mode\n");
 
     buffer_config.buf_data_mode = dac_data_stru_1_point;
     buffer_config.burst = dac_burst_single;
@@ -135,7 +136,6 @@ static void step_mode_handler(void)
     if (step_running_flag == 0) {
         step_running_flag = 1;
         dac_set_step_sw_trigger(BOARD_DAC_BASE, DAC_STEP_CFG_IDX);
-        printf("DAC is outputting a saw tooth waveform in step mode\n");
     }
 }
 
@@ -148,7 +148,25 @@ static void buffer_mode_handler(void)
 
     if (buf1_cmpt_flag == 1) {
         buf1_cmpt_flag = 0;
-        printf("DAC is outputting a sine waveform in buffer mode\n");
+    }
+}
+
+static uint8_t get_dac_mode(void)
+{
+    uint8_t ch;
+
+    while (1) {
+        printf("1. Direct mode\n");
+        printf("2. Step   mode\n");
+        printf("3. Buffer mode\n");
+        printf("Please enter the DAC mode code: ");
+        printf("%c\n", ch = getchar());
+        ch -= '0' + 1;
+        if (ch > dac_mode_buffer) {
+            printf("Output mode is not supported!\n");
+        } else {
+            return ch;
+        }
     }
 }
 
@@ -159,14 +177,17 @@ int main(void)
     /* Initialize Bsp */
     board_init();
 
+    /* Set a log title */
+    printf("This is a DAC demo:\n");
+
     /* Initialize a DAC clock */
     board_init_dac_clock(BOARD_DAC_BASE, false);
 
     /* Initialize a DAC pin */
     board_init_dac_pins(BOARD_DAC_BASE);
 
-    /* TODO: Get the output mode from a console */
-    output_mode = dac_mode_direct;
+    /* Get the output mode from a console */
+    output_mode = get_dac_mode();
 
     /* Initialize a DAC peripheral with a common config */
     init_common_config(output_mode);
@@ -194,9 +215,6 @@ int main(void)
     default:
         break;
     }
-
-    /* Set a log title */
-    printf("This is a DAC demo:\n");
 
     /* Main loop */
     while (1) {

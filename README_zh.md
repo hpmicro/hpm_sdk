@@ -1,16 +1,32 @@
 # HPM SDK 概述
 HPM SDK项目是基于HPMicro 公司的MCU编写的软件开发包，支持多种MCU。基于BSD许可证，包含了底层驱动，中间件和RTOS，例如littlevgl/ lwIP/ TinyUSB/ FreeRTOS等，支持大量评估板。
 
-# HPM SDK使用说明
+## HPM SDK directory
 
-## 依赖软件最低版本要求
+| 目录名称 | 描述 |
+|--------|--------|
+| <HPM_SDK_BASE>/arch | cpu架构相关文件 |
+| <HPM_SDK_BASE>/boards | 板级文件 |
+| <HPM_SDK_BASE>/cmake | cmake扩展 |
+| <HPM_SDK_BASE>/components | 软件组件 |
+| <HPM_SDK_BASE>/doc | 文档 |
+| <HPM_SDK_BASE>/drivers | 底层驱动文件|
+| <HPM_SDK_BASE>/middleware | 中间件 |
+| <HPM_SDK_BASE>/samples | 驱动、中间件以及软件组件示例代码 |
+| <HPM_SDK_BASE>/scripts | 辅助脚本 |
+| <HPM_SDK_BASE>/soc | SoC相关文件 |
+| <HPM_SDK_BASE>/utils | 辅助文件 |
+
+## HPM SDK使用说明
+
+### 依赖软件最低版本要求
 
 | 软件名称 | 版本号 |
 |--- | --- |
 | CMake | 3.13 |
 | Python | 3.8 |
 
-## 安装依赖
+### 安装依赖
 
 - Ubuntu:
   - 安装工具:
@@ -255,4 +271,7 @@ HPM SDK项目是基于HPMicro 公司的MCU编写的软件开发包，支持多�
 
   注意：openocd可执行文件应该可以通过当前终端的PATH环境变量中可以找到, 否则无法在工程文件中生成相应的调试配置，需要之后在Segger Embedded Studio中手工配置。
 
-# 社区支持
+## 社区支持
+- github page: https://hpmicro.github.io
+- github: https://github.com/hpmicro/hpm_sdk
+- gitee: https://gitee.com/hpmicro/hpm_sdk

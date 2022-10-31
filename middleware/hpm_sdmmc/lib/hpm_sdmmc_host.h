@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2022 hpmicro
+ * Copyright (c) 2021-2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -22,7 +22,7 @@ typedef enum {
     sdmmc_host_card_detection_none = 0,
     sdmmc_host_card_detection_via_gpio = 1,
     sdmmc_host_card_detection_via_sdxc = 2,
-}sdmmc_card_detection_mode_t;
+} sdmmc_card_detection_mode_t;
 
 typedef enum {
     sdmmc_sd_speed_normal = 0,
@@ -38,7 +38,7 @@ typedef enum {
     sdmmc_emmc_speed_hs200 = 3,
     sdmmc_emmc_high_speed_ddr = 4,
     sdmmc_emmc_speed_hs400 = 7,
-}sdmmc_speed_mode_t;
+} sdmmc_speed_mode_t;
 
 
 typedef sdxc_xfer_t sdmmchost_xfer_t;
@@ -71,7 +71,7 @@ typedef struct {
     uint8_t card_detection_pin_index;
     GPIO_Type *card_detection_gpio;
     int32_t card_detection_irq_index;
-}sdmmc_host_param_t;
+} sdmmc_host_param_t;
 
 
 typedef struct {
@@ -92,7 +92,7 @@ typedef struct {
     uint32_t int_stat;
     uint32_t auto_cmd_stat;
     uint32_t adma_error_stat;
-}sdmmc_host_t;
+} sdmmc_host_t;
 
 
 typedef struct {
@@ -110,7 +110,7 @@ typedef struct {
     uint8_t hart_id;
     int16_t card_detection_irq_index;
     GPIO_Type *card_detection_gpio;
-}sdmmchost_config_t;
+} sdmmchost_config_t;
 
 
 sdmmc_host_t *sdmmchost_get_host(void);

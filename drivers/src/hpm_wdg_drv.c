@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2022 hpmicro
+ * Copyright (c) 2021-2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -10,6 +10,7 @@
 #define TICKS_1M (1024UL * TICKS_1K)
 #define TICKS_1G (1024UL * TICKS_1M)
 #define ONE_SECOND_TICKS_IN_NS (1000UL * 1000UL * 1000UL)
+#define DIFF_MAX (64U)
 
 typedef struct {
     uint32_t top;
@@ -44,12 +45,11 @@ static const interrupt_interval_map_t k_interrupt_interval_map[interrupt_interva
             { 16UL * TICKS_1K,  interrupt_interval_clock_period_multi_16k },
             { 32UL * TICKS_1K,  interrupt_interval_clock_period_multi_32k },
             { 128UL * TICKS_1K, interrupt_interval_clock_period_multi_128k },
-            { 512UL * TICKS_1K, interrupt_interval_clock_period_multi_512k },
+            { 256UL * TICKS_1K, interrupt_interval_clock_period_multi_256k },
             { 2UL * TICKS_1M,   interrupt_interval_clock_period_multi_2m },
-            { 4UL * TICKS_1M,   interrupt_interval_clock_period_multi_4m },
             { 8UL * TICKS_1M,   interrupt_interval_clock_period_multi_8m },
-            { 32UL * TICKS_1M,  interrupt_interval_clock_period_multi_32m },
-            { 128UL * TICKS_1M, interrupt_interval_clock_period_multi_128m },
+            { 32UL * TICKS_1M,   interrupt_interval_clock_period_multi_32m },
+            { 128UL * TICKS_1M,  interrupt_interval_clock_period_multi_128m },
             { 512UL * TICKS_1M, interrupt_interval_clock_period_multi_512m },
             { 2UL * TICKS_1G,   interrupt_interval_clock_period_multi_2g },
             { 0xFFFFFFFFUL,     interrupt_interval_out_of_range }
@@ -127,7 +127,7 @@ interrupt_interval_t wdg_convert_interrupt_interval_from_us(const uint32_t src_f
     uint32_t interrupt_interval_ticks = ((uint64_t) interval_us * 1000UL) / src_clk_one_tick_in_ns;
 
     for (uint32_t i = 0; i < ARRAY_SIZE(k_interrupt_interval_map); i++) {
-        if (interrupt_interval_ticks <= k_interrupt_interval_map[i].top) {
+        if (abs(interrupt_interval_ticks - k_interrupt_interval_map[i].top) <= DIFF_MAX) {
             interrupt_interval = k_interrupt_interval_map[i].interval;
             break;
         }

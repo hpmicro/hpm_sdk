@@ -1,85 +1,94 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021-2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
 
-/*---------------------------------------------------------------------*
- * Includes
- *---------------------------------------------------------------------
- */
 #include "board.h"
 #include "hpm_cam_drv.h"
 #include "hpm_camera.h"
-#include "jpeglib.h"
-#include "file_op.h"
 #include "hpm_jpeg_drv.h"
-/*---------------------------------------------------------------------*
- * Macro Definitions
- *---------------------------------------------------------------------
- */
-#if defined  SD_FATFS_MODE
-    #include "sd_fatfs.h"
-#elif defined TINYUSB_HOST_MODE
-    #include "msc_app.h"
+#include "hpm_lcdc_drv.h"
+#include "hpm_gpio_drv.h"
+#include "hpm_l1c_drv.h"
+#include "file_op.h"
+
+#ifndef JPEG_HW_MODE
+#define JPEG_HW_MODE 1
 #endif
 
-/*Stored JPG data buff length*/
-#define FILELENGTH 102400
-/*rgb565 data buff length*/
-#define RGBBUFFLENGTH 1253376
-/*Get camera resolution*/
-#define IMAGE_WIDTH      800
-#define IMAGE_HEIGHT     480
-#define IMAGE_COMPONENT  3
+#if !JPEG_HW_MODE
+#include "jpeglib.h"
+#define JPEG_SW_LIBJPEG_TURBO 1
+#endif
 
-/*jpeg related*/
+#ifdef JPEG_USE_SDCARD
+#include "sd_fatfs.h"
+#elif defined JPEG_USE_UDISK
+#include "msc_app.h"
+#endif
+
+#ifndef JPEG_USE_GRAYSCALE
+#define JPEG_USE_GRAYSCALE 0
+#endif
+
+/* image resolution */
+#define IMAGE_WIDTH      640
+#define IMAGE_HEIGHT     480
+
+/* jpeg related */
 #ifndef TEST_JPEG
 #define TEST_JPEG HPM_JPEG
 #endif
 
-/*cam related*/
-#define CAM_I2C BOARD_CAM_I2C_BASE
-#define CAMERA_INTERFACE camera_interface_dvp
-#define PIXEL_FORMAT display_pixel_format_rgb565
 #ifndef TEST_CAM
 #define TEST_CAM HPM_CAM0
 #endif
-/*libjpeg related*/
+
+/* cam related */
+#define CAM_I2C BOARD_CAM_I2C_BASE
+#define CAMERA_INTERFACE camera_interface_dvp
+
+#define LCD BOARD_LCD_BASE
+#define LCD_WIDTH BOARD_LCD_WIDTH
+#define LCD_HEIGHT BOARD_LCD_HEIGHT
+#define LCD_LAYER_INDEX 0
+#define LCD_LAYER_DONE_MASK (LCD_LAYER_INDEX + 1)
+
 #define UPALIGN4(n) (((n) + 3) & ~3)
-/*---------------------------------------------------------------------*
- * Define variables
- *---------------------------------------------------------------------
- */
-/*JPG file data size*/
-int32_t jpg_size = 0;
-/*JPG file data buff*/
-uint8_t filebuff[FILELENGTH];
 
-/*rgb565 data buff*/
-__attribute__((section(".framebuffer"))) uint8_t rgb565buff[RGBBUFFLENGTH] = {0};
+#define FILE_NAME_MAX 256
+#define JPEG_COMP_QUAL 80
 
-/*JPG file data header length*/
-#define JPGHEADERLEN 623
+#define CAM_BUF_LEN (IMAGE_HEIGHT * IMAGE_WIDTH * 3)
 
-/*rgb888 data buff*/
-uint8_t convertbuff[RGBBUFFLENGTH] = {0};
+/* Supported RGB565 and Y8 (grayscale) */
+#if JPEG_USE_GRAYSCALE
+#define PIXEL_FORMAT display_pixel_format_y8
+#else
+#define PIXEL_FORMAT display_pixel_format_rgb565
+#endif
 
-/*---------------------------------------------------------------------*
- *JPG file data header data
- *the data is extracted from the reference_jpeg_from_design.jpg, it is provided by design as reference
- *---------------------------------------------------------------------*
-*/
-const uint8_t in_ecs[] = {
-#include "jpg_header.cdat"
+ATTR_PLACE_AT_NONCACHEABLE uint8_t file_buffer[CAM_BUF_LEN];
+ATTR_PLACE_AT_NONCACHEABLE uint8_t decoding_buffer[CAM_BUF_LEN];
+ATTR_PLACE_AT(".framebuffer") uint8_t buffers[2][CAM_BUF_LEN];
+ATTR_PLACE_AT(".framebuffer") uint8_t csc_buffer[CAM_BUF_LEN];
+
+static volatile bool vsync = false;
+#if JPEG_HW_MODE
+static uint8_t jpeg_header[] = {
+#if JPEG_USE_GRAYSCALE
+#include "jpg_header_grayscale.cdat"
+#else
+#include "jpg_header_rgb.cdat"
+#endif
 };
+#endif
 
-/*---------------------------------------------------------------------*
- *JPG file huffmin table
- *the data is extracted from the reference_jpeg_from_design.jpg, it is provided by design as reference
- *---------------------------------------------------------------------*
-*/
+/*
+ * huffmin table
+ */
 const uint32_t huffmin[16]={
     0xf0e0c082,
     0xf6f6f6f4,
@@ -101,47 +110,44 @@ const uint32_t huffmin[16]={
     0xbbdf7efe,
     0x00000001
 };
-/*---------------------------------------------------------------------*
- *JPG file huffbase table
- *the data is extracted from the reference_jpeg_from_design.jpg, it is provided by design as reference
- *---------------------------------------------------------------------*
-*/
-const uint16_t huffbase[64]={
+
+/*
+ * huffbase table
+ */
+const uint16_t huffbase[64] = {
 #include "base.cdat"
 };
-/*---------------------------------------------------------------------*
- *JPG file huffsymb table
- *the data is extracted from the reference_jpeg_from_design.jpg, it is provided by design as reference
- *---------------------------------------------------------------------*
-*/
-const uint8_t huffsymb[336]={
+
+/*
+ * huffsymb table
+ */
+const uint8_t huffsymb[336] = {
 #include "symb.cdat"
 };
-/*---------------------------------------------------------------------*
- *JPG file huffenc table
- *the data is extracted from the reference_jpeg_from_design.jpg, it is provided by design as reference
- *---------------------------------------------------------------------*
-*/
-const uint16_t huffenc[384]={
+
+/*
+ * huffenc table
+ */
+const uint16_t huffenc[384] = {
 #include "htable.cdat"
 };
-/*---------------------------------------------------------------------*
- *JPG file qetable table
- *the data is extracted from the reference_jpeg_from_design.jpg, it is provided by design as reference
- *---------------------------------------------------------------------*
-*/
-const uint16_t qetable[256]={
+
+const uint16_t qetable[256] = {
 #include "qetable.cdat"
 };
 
-/*---------------------------------------------------------------------*
- * Camera device parameter initialization
- *---------------------------------------------------------------------
+const uint16_t qdtable[256] = {
+#include "qdtable.cdat"
+};
+
+/*
+ * sensor configuration
+ *
  */
 void init_camera_device(void)
 {
-    camera_context_t camera_context = {NULL, NULL, NULL, NULL};
-    camera_config_t camera_config;
+    camera_context_t camera_context = {0};
+    camera_config_t camera_config = {0};
 
     camera_context.ptr = CAM_I2C;
     camera_context.delay_ms = board_delay_ms;
@@ -154,8 +160,8 @@ void init_camera_device(void)
 
     camera_config.width = IMAGE_WIDTH;
     camera_config.height = IMAGE_HEIGHT;
-    camera_config.pixel_format = PIXEL_FORMAT;
     camera_config.interface = CAMERA_INTERFACE;
+    camera_config.pixel_format = PIXEL_FORMAT;
 
     if (status_success != camera_device_init(&camera_context, &camera_config)) {
         printf("failed to init camera device\n");
@@ -164,152 +170,211 @@ void init_camera_device(void)
     }
 }
 
-/*---------------------------------------------------------------------*
- * Camera output data parameter initialization
- *---------------------------------------------------------------------
+/*
+ *  configure CAM
  */
-void init_cam(uint8_t *rgbbuff)
+void init_cam(uint8_t *buffer)
 {
     cam_config_t cam_config;
 
-    cam_get_default_config(TEST_CAM, &cam_config ,PIXEL_FORMAT);
+    cam_get_default_config(TEST_CAM, &cam_config, PIXEL_FORMAT);
+
     cam_config.width = IMAGE_WIDTH;
     cam_config.height = IMAGE_HEIGHT;
     cam_config.hsync_active_low = true;
-    cam_config.buffer1 = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)rgbbuff);
-    cam_config.color_format = CAM_COLOR_FORMAT_RGB565;
+    cam_config.buffer1 = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)buffer);
+
+    if (PIXEL_FORMAT == display_pixel_format_rgb565) {
+        cam_config.color_format = CAM_COLOR_FORMAT_RGB565;
+    } else if (PIXEL_FORMAT == display_pixel_format_y8) {
+        cam_config.color_format = CAM_COLOR_FORMAT_YCBCR422;
+        cam_config.data_store_mode = CAM_DATA_STORE_MODE_Y_ONLY;
+    }
     cam_init(TEST_CAM, &cam_config);
 }
 
-/*---------------------------------------------------------------------*
- * -Convert rgb565 data to rgb888 data
- *---------------------------------------------------------------------
+#if !JPEG_HW_MODE
+/*
+ * convert rgb565 to rgb888 data
+ *
  */
-void jpeg_rgb565_to_rgb888(uint8_t *psrc, int32_t width, int32_t height, uint8_t *pdst, int32_t *bsize)
+void jpeg_rgb565_to_rgb888(uint8_t *psrc, uint32_t width, uint32_t height, uint8_t *pdst)
 {
-    int32_t srclinesize = UPALIGN4(width * 2);
-    int32_t dstlinesize = UPALIGN4(width * 3);
+    uint32_t srclinesize = UPALIGN4(width * 2);
+    uint32_t dstlinesize = UPALIGN4(width * 3);
 
     uint8_t *psrcline;
     const uint16_t *psrcdot;
     uint8_t *pdstline;
     uint8_t *pdstdot;
-    int32_t i =0;
-    int32_t j =0;
 
     psrcline = psrc;
     pdstline = pdst;
-    for (i = 0; i < height; i++) {
+    for (uint32_t i = 0; i < height; i++) {
         psrcdot = (const uint16_t *)psrcline;
         pdstdot = pdstline;
-        for (j = 0; j < width; j++) {
-            /*RGB16 bit data is combined into 24 bit data*/
-            *pdstdot++ = (uint8_t)(((*psrcdot) >> 0) << 3);
-            *pdstdot++ = (uint8_t)(((*psrcdot) >> 5) << 2);
-            *pdstdot++ = (uint8_t)(((*psrcdot) >> 11) << 3);
+        for (uint32_t j = 0; j < width; j++) {
+            *(pdstdot) = (uint8_t)(((*psrcdot & 0x1F) >> 0) << 3);
+            *(pdstdot + 1) = (uint8_t)(((*psrcdot & 0x7E0) >> 5) << 2);
+            *(pdstdot + 2) = (uint8_t)(((*psrcdot & 0xF800) >> 11) << 3);
             psrcdot++;
+            pdstdot += 3;
         }
         psrcline += srclinesize;
         pdstline += dstlinesize;
     }
-    *bsize = i * j * 3;
 }
 
-/*---------------------------------------------------------------------*
- * Convert rgb888 data to bgr888 data
- *---------------------------------------------------------------------
- */
-void jpeg_rgb888_to_bgr888(uint8_t *bgr, int32_t *bsize, int32_t bit)
+void jpeg_rgb888_to_rgb565(uint8_t *psrc, uint32_t width, uint32_t height, uint8_t *pdst)
 {
-    int32_t i = 0;
-    int32_t fsize = (*bsize);
+    uint32_t srclinesize = UPALIGN4(width * 3);
+    uint32_t dstlinesize = UPALIGN4(width * 2);
 
-    /*Blue data bytes and red data bytes are exchanged*/
-    for (i = 0; i < fsize; i += bit / 8) {
-        uint8_t b = bgr[i];
-        bgr[i] = bgr[i + 2];
-        bgr[i + 2] = b;
+    uint8_t *psrcline;
+    uint8_t *psrcdot;
+    uint8_t *pdstline;
+    uint16_t *pdstdot;
+
+    psrcline = psrc;
+    pdstline = pdst;
+    for (uint32_t i = 0; i < height; i++) {
+        psrcdot = psrcline;
+        pdstdot = (uint16_t *)pdstline;
+        for (uint32_t j = 0; j < width; j++) {
+            *(pdstdot) = ((uint16_t)(*(psrcdot) & 0xF8) >> 3)         /* Blue */
+                  | (((uint16_t)(*(psrcdot + 1) & 0xFC) >> 2) << 5)   /* Green */
+                  | (((uint16_t)(*(psrcdot + 2) & 0xF8) >> 3) << 11); /* Red */
+            psrcdot += 3;
+            pdstdot++;
+        }
+        psrcline += srclinesize;
+        pdstline += dstlinesize;
     }
 }
 
-/*---------------------------------------------------------------------*
- *libjpeg-turbo   Convert bgr888 data to jpg data
- *---------------------------------------------------------------------
- */
-void jpeg_bgr888_to_jpgmem(uint8_t *src, int32_t width, int32_t height, int32_t depth, uint8_t **dst, int32_t *dstLen)
+uint32_t libjpeg_compress_image(uint8_t *src, uint32_t width, uint32_t height, uint8_t format, uint8_t *dst, uint32_t buffer_size)
 {
-    unsigned long act_len = 0;
+    uint32_t act_len = 0;
+    uint32_t row_stride;
+    uint32_t components;
+    uint8_t *tmp = 0;
+    J_COLOR_SPACE color_space;
 
-    struct jpeg_compress_struct jcs;
-    struct jpeg_error_mgr jem;
+    struct jpeg_compress_struct jcs = {0};
+    struct jpeg_error_mgr jem = {0};
+    JSAMPROW row_pointer;
 
-    /* Initialize the JPEG compression object with default error handling. */
+    /* color space coversion */
+    if (format == display_pixel_format_rgb565) {
+        tmp = csc_buffer;
+        jpeg_rgb565_to_rgb888(src, width, height, tmp);
+        color_space = JCS_RGB;
+        components = 3;
+    } else if (format == display_pixel_format_y8) {
+        tmp = src;
+        color_space = JCS_GRAYSCALE;
+        components = 1;
+    } else {
+        printf("Unsupported color space\n");
+        while (1) {
+        }
+    }
+
+    act_len = buffer_size;
+    /* initialize the JPEG compression object with default error handling. */
     jcs.err = jpeg_std_error(&jem);
     jpeg_create_compress(&jcs);
 
-    /* Specify data source for compression */
-    jpeg_mem_dest(&jcs, dst, &act_len);
+    jpeg_mem_dest(&jcs, &dst, (unsigned long int *)&act_len);
 
     /* set default compression parameters */
     jcs.image_width = width;
     jcs.image_height = height;
-    jcs.input_components = depth;
-    jcs.in_color_space = JCS_RGB;
+    jcs.input_components = components;
+    jcs.in_color_space = color_space;
     jpeg_set_defaults(&jcs);
-    jpeg_set_quality(&jcs, 80, true);
+    jpeg_set_quality(&jcs, JPEG_COMP_QUAL, true);
 
-    /* Start compressor */
-    jpeg_start_compress(&jcs, TRUE);
-    JSAMPROW row_pointer[1];
-    int32_t row_stride = jcs.image_width * jcs.num_components;
+    jpeg_start_compress(&jcs, true);
+    row_stride = jcs.image_width * jcs.num_components;
     while (jcs.next_scanline < jcs.image_height) {
-        row_pointer[0] = &src[jcs.next_scanline * row_stride];
-        jpeg_write_scanlines(&jcs, row_pointer, 1);
+        row_pointer = &tmp[jcs.next_scanline * row_stride];
+        jpeg_write_scanlines(&jcs, &row_pointer, 1);
     }
 
-    /* Finish compression*/
     jpeg_finish_compress(&jcs);
     jpeg_destroy_compress(&jcs);
-    *dstLen = act_len;
+    return act_len;
 }
 
-/*---------------------------------------------------------------------*
- *Libjpeg conversion to convert rgb565 data into JPG data
- *---------------------------------------------------------------------
- */
-void jpeg_convert_data(uint8_t *rgbbuff, int32_t datawidth, int32_t dataheight, int32_t *datasize, uint8_t *filesbuff)
+void jpeg_sw_decode(const uint8_t *src_buf, uint32_t width, uint32_t height, uint32_t jpg_size, uint8_t *buffer)
 {
-    /*Convert rgb565 data to rgb888 data*/
-    jpeg_rgb565_to_rgb888(rgbbuff, datawidth, dataheight, convertbuff, datasize);
-    printf("jpeg_rgb565_to_rgb888 --> datasize= %d   \n",*datasize);
-    /*Convert rgb888 data to bgr888 data*/
-    jpeg_rgb888_to_bgr888(convertbuff, datasize, 24);
-    printf("jpeg_rgb888_to_bgr888 --> datasize= %d   \n",*datasize);
-    uint8_t *jpgbuff = (uint8_t *)malloc(FILELENGTH);
-    /*Convert bgr888 data to jpg data*/
-    jpeg_bgr888_to_jpgmem(convertbuff, datawidth, dataheight, IMAGE_COMPONENT, &jpgbuff, datasize);
-    printf("jpeg_bgr888_to_jpgmem --> datasize= %d   \n",*datasize);
-    /*Store data to buff*/
-    memcpy(filesbuff, &jpgbuff[0], (*datasize));
-    /*Free memory*/
-    free(jpgbuff);
+    struct jpeg_decompress_struct cinfo;
+    struct jpeg_error_mgr jerr;
+    JSAMPROW row_pointer;
+
+    /* Initialize the JPEG decompression object with default error handling. */
+    cinfo.err = jpeg_std_error(&jerr);
+    jpeg_create_decompress(&cinfo);
+
+    /* Specify data source for decompression */
+    jpeg_mem_src(&cinfo, src_buf, jpg_size);
+    /* Read file header, set default decompression parameters */
+    jpeg_read_header(&cinfo, TRUE);
+
+    cinfo.scale_num = 1;
+    cinfo.scale_denom = 1;
+
+    /* Start decompressor */
+    jpeg_start_decompress(&cinfo);
+
+    /* Process data */
+    while (cinfo.output_scanline < cinfo.output_height) {
+#if JPEG_USE_GRAYSCALE
+        row_pointer = &buffer[cinfo.output_scanline * cinfo.output_width * cinfo.num_components];
+#else
+        row_pointer = &csc_buffer[cinfo.output_scanline * cinfo.output_width * cinfo.num_components];
+#endif
+        jpeg_read_scanlines(&cinfo, &row_pointer, 1);
+    }
+    /* Finish decompression*/
+    jpeg_finish_decompress(&cinfo);
+    jpeg_destroy_decompress(&cinfo);
+
+#if !JPEG_USE_GRAYSCALE
+    jpeg_rgb888_to_rgb565(csc_buffer, width, height, buffer);
+#endif
 }
 
-/*---------------------------------------------------------------------*
- *jpeg hardware file encode table
- *---------------------------------------------------------------------
- */
-void fill_jpeg_encode_table(void)
+uint32_t jpeg_sw_encode(uint8_t *src, uint32_t width, uint32_t height, uint8_t format, uint8_t *file_buf, uint32_t buffer_size)
 {
+#ifdef JPEG_SW_LIBJPEG_TURBO
+    return libjpeg_compress_image(src, width, height, format, file_buf, buffer_size);
+#endif
+    /* unsupported SW mode */
+    return 0;
+}
+#else
+
+/*
+ * JPEG configuration
+ */
+void reset_jpeg(bool encoding)
+{
+    jpeg_init(TEST_JPEG);
     jpeg_enable(TEST_JPEG);
-    jpeg_fill_table(TEST_JPEG, jpeg_table_qmem, (uint8_t *)qetable, ARRAY_SIZE(qetable));
+    jpeg_fill_table(TEST_JPEG, jpeg_table_huffmin, (uint8_t *)huffmin, ARRAY_SIZE(huffmin));
+    jpeg_fill_table(TEST_JPEG, jpeg_table_huffbase, (uint8_t *)huffbase, ARRAY_SIZE(huffbase));
+    jpeg_fill_table(TEST_JPEG, jpeg_table_huffsymb, (uint8_t *)huffsymb, ARRAY_SIZE(huffsymb));
+    jpeg_fill_table(TEST_JPEG, jpeg_table_huffenc, (uint8_t *)huffenc, ARRAY_SIZE(huffenc));
+    if (encoding) {
+        jpeg_fill_table(TEST_JPEG, jpeg_table_qmem, (uint8_t *)qetable, ARRAY_SIZE(qetable));
+    } else {
+        jpeg_fill_table(TEST_JPEG, jpeg_table_qmem, (uint8_t *)qdtable, ARRAY_SIZE(qdtable));
+    }
     jpeg_disable(TEST_JPEG);
 }
 
-/*---------------------------------------------------------------------*
- *jpeg hardware wait finish
- *---------------------------------------------------------------------
- */
 bool wait_jpeg_finish(void)
 {
     do {
@@ -321,142 +386,292 @@ bool wait_jpeg_finish(void)
             jpeg_clear_status(TEST_JPEG, JPEG_EVENT_ERROR);
             return false;
         }
-    } while(1);
+    } while (1);
 }
 
-/*---------------------------------------------------------------------*
- *jpeg hardware convert
- *---------------------------------------------------------------------
- */
-void jpeg_encode(uint8_t *rgbbuff, int32_t width, int32_t height, int32_t *dasize, uint8_t *filesbuff)
+void jpeg_hw_decode(uint8_t *src_buf, uint32_t width, uint32_t height, uint32_t jpg_size, uint8_t format, uint8_t *buffer)
 {
-
     jpeg_job_config_t config = {0};
+    reset_jpeg(false);
 
-    /*JPEG default parameter table settings*/
-    jpeg_init(TEST_JPEG);
-    fill_jpeg_encode_table();
+    if (format == display_pixel_format_y8) {
+        config.jpeg_format = JPEG_SUPPORTED_FORMAT_400;
+        config.in_pixel_format = jpeg_pixel_format_y8;
+        config.out_pixel_format = jpeg_pixel_format_y8;
+        config.enable_ycbcr = false;
+    } else if (format == display_pixel_format_rgb565) {
+        config.jpeg_format = JPEG_SUPPORTED_FORMAT_420;
+        config.in_pixel_format = jpeg_pixel_format_yuv422h1p;
+        config.out_pixel_format = jpeg_pixel_format_rgb565;
+        config.enable_ycbcr = true;
+        config.out_byte_order = JPEG_BYTE_ORDER_2301;
+    } else {
+        printf("unsupported pixel format 0x%x\n", format);
+        while (1) {
+        }
+    }
 
-    /*jpeg encode parameter configuration*/
-    config.jpeg_format = JPEG_SUPPORTED_FORMAT_420;
-    config.in_pixel_format = JPEG_PIXEL_FORMAT_RGB565;
-    config.out_pixel_format = JPEG_PIXEL_FORMAT_YUV422H1P;
-    config.byte_order = JPEG_BYTE_ORDER_3210;
-    config.enable_csc = true;
-    config.enable_ycbcr = true;
     config.width_in_pixel = width;
     config.height_in_pixel = height;
-    config.in_buffer = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)rgbbuff);
-    config.out_buffer = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)(filesbuff + JPGHEADERLEN));
+    config.in_buffer = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t) src_buf);
+    config.out_buffer = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t) buffer);
 
-    /* Start compressor */
+    if (status_success != jpeg_start_decode(TEST_JPEG, &config, jpg_size)) {
+        printf("failed to decode\n");
+        while (1) {
+        }
+    }
+
+    if (!wait_jpeg_finish()) {
+        printf("decoding failed\n");
+    }
+}
+
+uint32_t jpeg_hw_encode(uint8_t *src_buf, uint32_t width, uint32_t height, uint8_t format, uint8_t *buffer)
+{
+    uint32_t jpg_size;
+    jpeg_job_config_t config = {0};
+
+    reset_jpeg(true);
+
+    /* jpeg encode parameter configuration */
+    if (format == display_pixel_format_y8) {
+        config.jpeg_format = JPEG_SUPPORTED_FORMAT_400;
+        config.in_pixel_format = jpeg_pixel_format_y8;
+        config.out_pixel_format = jpeg_pixel_format_y8;
+        config.enable_ycbcr = false;
+    } else if (format == display_pixel_format_rgb565) {
+        config.jpeg_format = JPEG_SUPPORTED_FORMAT_420;
+        config.in_pixel_format = jpeg_pixel_format_rgb565;
+        config.out_pixel_format = jpeg_pixel_format_yuv422h1p;
+        config.enable_ycbcr = true;
+    } else {
+        printf("unsupported pixel format 0x%x\n", format);
+        while (1) {
+        }
+    }
+    config.width_in_pixel = width;
+    config.height_in_pixel = height;
+    config.in_buffer = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t) src_buf);
+    config.out_buffer = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t) buffer);
+
     if (status_success != jpeg_start_encode(TEST_JPEG, &config)) {
         printf("failed to endcode\n");
-        while (1) {
-        };
+        return 0;
     }
     if (!wait_jpeg_finish()) {
         printf("encoding failed\n");
-        while (1) {
-        };
+        return 0;
     }
-    *dasize = jpeg_get_encoded_length(TEST_JPEG);
-    printf("complete encoding length %d bytes\n", *dasize);
+    jpg_size = jpeg_get_encoded_length(TEST_JPEG);
+    printf("complete encoding length %d bytes\n", jpg_size);
+
+    return jpg_size;
 }
 
-/*---------------------------------------------------------------------*
- *Hardware-jpeg-init
- *---------------------------------------------------------------------
- */
-void init_jpeg(void)
+void jpeg_header_update_resolution(uint8_t *header, uint32_t header_size, uint32_t width, uint32_t height)
 {
-    jpeg_enable(TEST_JPEG);
-    jpeg_fill_table(TEST_JPEG, jpeg_table_huffmin, (uint8_t *)huffmin, ARRAY_SIZE(huffmin));
-    jpeg_fill_table(TEST_JPEG, jpeg_table_huffbase, (uint8_t *)huffbase, ARRAY_SIZE(huffbase));
-    jpeg_fill_table(TEST_JPEG, jpeg_table_huffsymb, (uint8_t *)huffsymb, ARRAY_SIZE(huffsymb));
-    jpeg_fill_table(TEST_JPEG, jpeg_table_huffenc, (uint8_t *)huffenc, ARRAY_SIZE(huffenc));
-    jpeg_disable(TEST_JPEG);
+    for (uint32_t i = 0; i < header_size; i++) {
+        /* find SOF0 */
+        if ((header[i] == 0xFF) && (header[i+1] == 0xC0)) {
+            /* frame resolution offset 5 bytes after SOF0 signature */
+            header[i+5] = height >> 8;
+            header[i+6] = height & 0xFF;
+            header[i+7] = width >> 8;
+            header[i+8] = width & 0xFF;
+            break;
+        }
+    }
 }
 
-/*---------------------------------------------------------------------*
- *jpeg file build
- *---------------------------------------------------------------------
- */
-void jpeg_build_file(int32_t *dbsize, uint8_t *filesbuff)
+void jpeg_add_header(uint8_t *file_buf, uint32_t width, uint32_t height)
 {
-    memcpy(filesbuff, &in_ecs[0], JPGHEADERLEN);
-    *dbsize = *dbsize + JPGHEADERLEN;
+    jpeg_header_update_resolution(jpeg_header, sizeof(jpeg_header), width, height);
+    memcpy(file_buf, &jpeg_header[0], sizeof(jpeg_header));
 }
+#endif
 
-/*---------------------------------------------------------------------*
- *Hardware-jpeg   Hardware to convert rgb565 data into JPG data
- *---------------------------------------------------------------------
+/*
+ * GPIO button setup
  */
-void jpeg_convert_hw(uint8_t *rgbbuff, int32_t datawidth, int32_t dataheight, int32_t *datasize, uint8_t *filesbuff)
+static volatile bool pressed;
+void isr_gpio(void)
 {
-    init_jpeg();
-    /*jpeg hardware convert*/
-    jpeg_encode(rgbbuff, datawidth, dataheight, datasize, filesbuff);
-    /*jpeg file build*/
-    jpeg_build_file(datasize, filesbuff);
+    gpio_clear_pin_interrupt_flag(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX,
+                        BOARD_APP_GPIO_PIN);
+    if (!pressed) {
+        pressed = true;
+    }
 }
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_GPIO_IRQ, isr_gpio)
 
-/*---------------------------------------------------------------------*
- * Storage device initialization
- *---------------------------------------------------------------------
- */
-void store_device_init(void)
+void init_gpio_button(void)
 {
-#if defined SD_FATFS_MODE
-    /*storage picture data by SD card*/
-    printf("storage picture data by SD card\n");        
-    sdfatfs_task();
-#elif defined TINYUSB_HOST_MODE
-    /*storage picture data by tinyusb mode*/
-    printf("storage picture data by tinyusb mode\n");
-    tinyusb_task();
-#endif  
+    gpio_interrupt_trigger_t trigger;
+    gpio_set_pin_input(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX,
+                           BOARD_APP_GPIO_PIN);
+
+    trigger = gpio_interrupt_trigger_edge_falling;
+
+    gpio_config_pin_interrupt(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX,
+                           BOARD_APP_GPIO_PIN, trigger);
+    gpio_enable_pin_interrupt(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX,
+                           BOARD_APP_GPIO_PIN);
 }
 
-/*---------------------------------------------------------------------*
- * Main
- *---------------------------------------------------------------------
+
+uint32_t jpeg_encode(uint8_t *src_buf, uint32_t width, uint32_t height, uint8_t *file_buf, uint32_t buffer_size)
+{
+    uint32_t size = 0;
+#if !JPEG_HW_MODE
+    size = jpeg_sw_encode(src_buf, width, height, PIXEL_FORMAT, file_buf, buffer_size);
+    jpeg_sw_decode(file_buf, width, height, size, decoding_buffer);
+#else
+    size = jpeg_hw_encode(src_buf, width, height, PIXEL_FORMAT, file_buf + sizeof(jpeg_header));
+    jpeg_add_header(file_buf, width, height);
+    jpeg_hw_decode(file_buf + sizeof(jpeg_header), width, height, size, PIXEL_FORMAT, decoding_buffer);
+    size += sizeof(jpeg_header);
+#endif
+    return size;
+}
+
+/*
+ * LCD configuration
  */
+void isr_lcd_d0(void)
+{
+    volatile uint32_t s = lcdc_get_dma_status(LCD);
+    lcdc_clear_dma_status(LCD, s);
+    if ((s & (LCD_LAYER_DONE_MASK << LCDC_DMA_ST_DMA0_DONE_SHIFT))) {
+        vsync = true;
+    }
+}
+SDK_DECLARE_EXT_ISR_M(BOARD_LCD_IRQ, isr_lcd_d0)
+
+void init_lcd(uint32_t buffer)
+{
+    lcdc_config_t config = {0};
+    lcdc_layer_config_t layer = {0};
+
+    lcdc_get_default_config(LCD, &config);
+
+    config.resolution_x = LCD_WIDTH;
+    config.resolution_y = LCD_HEIGHT;
+
+    config.vsync.back_porch_pulse = 23;
+    config.vsync.front_porch_pulse = 10;
+    config.vsync.pulse_width = 3;
+    config.hsync.back_porch_pulse = 46;
+    config.hsync.front_porch_pulse = 50;
+    config.hsync.pulse_width = 10;
+
+    lcdc_init(LCD, &config);
+
+    lcdc_get_default_layer_config(LCD, &layer, PIXEL_FORMAT, LCD_LAYER_INDEX);
+
+    layer.position_x = (LCD_WIDTH - IMAGE_WIDTH) / 2;
+    layer.position_y = (LCD_HEIGHT - IMAGE_HEIGHT) / 2;
+    layer.width = IMAGE_WIDTH;
+    layer.height = IMAGE_HEIGHT;
+
+    layer.buffer = core_local_mem_to_sys_address(HPM_CORE0, buffer);
+    layer.alphablend.src_alpha = 0xFF; /* src */
+    layer.alphablend.dst_alpha = 0xF0; /* dst */
+    layer.alphablend.src_alpha_op = display_alpha_op_override;
+    layer.alphablend.dst_alpha_op = display_alpha_op_override;
+    layer.background.u = 0xFFFF0000;
+    layer.alphablend.mode = display_alphablend_mode_src_over;
+
+    if (status_success != lcdc_config_layer(LCD, LCD_LAYER_INDEX, &layer, true)) {
+        printf("failed to configure layer\n");
+        while (1) {
+        }
+    }
+
+    lcdc_enable_interrupt(LCD, LCD_LAYER_DONE_MASK << 16);
+    intc_m_enable_irq_with_priority(BOARD_LCD_IRQ, 1);
+    lcdc_turn_on_display(LCD);
+}
+
+static void wait_for_button_press(void)
+{
+    intc_m_enable_irq(BOARD_APP_GPIO_IRQ);
+    while (!pressed) {
+    }
+    intc_m_disable_irq(BOARD_APP_GPIO_IRQ);
+    pressed = false;
+}
+
+static void update_lcd_buffer(uint32_t buffer)
+{
+    while (!vsync) {
+    }
+    lcdc_layer_set_next_buffer(LCD, LCD_LAYER_INDEX, buffer);
+    vsync = false;
+}
+
 int main(void)
 {
-    /* System initialization */
-    board_init();
+    uint32_t i = 0, jpg_size;
+    uint8_t *tmp;
+    uint8_t fname[FILE_NAME_MAX];
 
-    /*Camera module initialization*/
+    uint8_t *front_buffer, *back_buffer;
+    front_buffer = buffers[0];
+    back_buffer = buffers[1];
+
+    board_init();
+    board_init_gpio_pins();
+    init_gpio_button();
+
     board_init_cam_clock(TEST_CAM);
     board_init_i2c(CAM_I2C);
     board_init_cam_pins();
 
-    /*Storage device initialization*/
-    store_device_init();
-
-    /*Camera parameter initialization*/
     init_camera_device();
-    init_cam(rgb565buff); 
-    /*Camera module enable*/
+    init_cam(front_buffer);
     cam_start(TEST_CAM);
-    board_delay_ms(2000);
+    board_delay_ms(100);
 
-#if defined JPEG_TURBO_MODE
-    /*Libjpeg conversion to convert rgb565 data into JPG data*/
-    jpeg_convert_data(rgb565buff, IMAGE_WIDTH, IMAGE_HEIGHT, &jpg_size, filebuff);
-    printf("jpeg_convert_data --> jpg_size= %d   \n",jpg_size);
-#elif defined JPEG_HARDWARE_MODE
-    /*Hardware to convert rgb565 data into JPG data*/
-    jpeg_convert_hw(rgb565buff, IMAGE_WIDTH, IMAGE_HEIGHT, &jpg_size, filebuff);
-    printf("jpeg_convert_hw --> jpg_size= %d   \n",jpg_size);
-#endif
+    board_init_lcd();
+    init_lcd((uint32_t)front_buffer);
+    init_disk();
 
-    /* Store camera pictures */
-    file_store(filebuff, &jpg_size, "Camera.jpg");
-
-    printf("Libjpeg-turbo encode completed\n");
+    printf("JPEG %s mode\n", JPEG_HW_MODE ? "hardware" : "software");
     while (1) {
+        wait_for_button_press();
+        printf("preview is captured\n");
+        cam_stop(TEST_CAM);
+        tmp = front_buffer;
+        front_buffer = back_buffer;
+        back_buffer = tmp;
+        cam_update_buffer(TEST_CAM, (uint32_t)front_buffer);
+
+        /* start sensor preview */
+        cam_start(TEST_CAM);
+        update_lcd_buffer((uint32_t)front_buffer);
+
+        /* encoding captured image */
+        jpg_size = jpeg_encode(back_buffer, IMAGE_WIDTH, IMAGE_HEIGHT, file_buffer, sizeof(file_buffer));
+
+        /* display decoded image */
+        cam_stop(TEST_CAM);
+        update_lcd_buffer((uint32_t)decoding_buffer);
+
+
+        snprintf((char *)fname, sizeof(fname), "cam_%s_encode_%02d.jpg", JPEG_HW_MODE ? "hw" : "sw", i);
+        if (check_disk() && file_store(fname, file_buffer, jpg_size)) {
+            printf("captured image encoded to %s\n", fname);
+            i++;
+        } else {
+            check_disk();
+        }
+
+        wait_for_button_press();
+        printf("preview is resumed\n");
+        /* resume sensor preview */
+        cam_start(TEST_CAM);
+        update_lcd_buffer((uint32_t)front_buffer);
     };
     return 0;
 }

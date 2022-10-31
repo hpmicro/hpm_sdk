@@ -1,4 +1,4 @@
-# Copyright 2022 hpmicro
+# Copyright (c) 2022 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 board:
@@ -39,3 +39,4 @@ board:
       - ptp
       - uart_dma_rx_idle
       - sdxc
+      - drv_pllctlv2

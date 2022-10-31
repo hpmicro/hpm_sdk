@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -218,7 +218,7 @@ void pdma_config_output(PDMA_Type *ptr, pdma_output_config_t *config);
  *
  * Note: The plane_src and plane_dst share one YUV2RGB_COEF, so not support convert one plane YUV422 format
  * and another plane YCbCr422 format at same time
- * 
+ *
  * @param [in] ptr PDMA base address
  * @param [in] plane_src_config Pointer to plane_src configuration structure
  * @param [in] plane_dst_config Pointer to plan_dst configuration structure

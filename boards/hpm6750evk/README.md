@@ -36,9 +36,9 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 
 ## DIP Switch S1
 
-- Bit 1 and 2 controls boot mode
+- Bit 2 and 3 controls boot mode
 
-| bit[2:1] | Description                  |
+| bit[2:3] | Description                  |
 | -------- | ---------------------------- |
 | OFF, OFF | Boot from Quad SPI NOR flash |
 | OFF, ON  | Serial boot                  |
@@ -46,7 +46,7 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 
 - Change the position of bit 3 to select between PWM and 1000Mbit ethernet
 
-| Bit3 | Description    |
+| Bit1 | Description    |
 | ---- | -------------- |
 | OFF  | 1000Mbits ENET |
 | ON   | PWM            |
@@ -58,7 +58,7 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 | ---- | -------- |
 |PBUTN (S2) | Power Button, TinyUF2 Boot Button, GPIO Button |
 |WBUTN (S3) | WAKE UP Button |
-|RESET (S4) | Reset Button |
+|RESETN (S4) | Reset Button |
 
 ## Pin Description
 
@@ -70,10 +70,10 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 
 | Function | Position |
 | ---- | -------- |
-| SPI2.CSN    | J20[6] |
-| SPI2.SCLK   | J20[7] |
-| SPI2.MISO   | J20[8] |
-| SPI2.MOSI   | J20[9] |
+| SPI2.CSN    | J20[7] |
+| SPI2.SCLK   | J20[8] |
+| SPI2.MISO   | J20[9] |
+| SPI2.MOSI   | J20[10] |
 
 - I2C Pin：
 
@@ -98,7 +98,22 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 
 - GPTMR Pin
 
-| Function | Function |
+| Function | Position |
 | ---- | -------- |
 | GPTMR4.CAPT_1  | J12[6] |
 | GPTMR3.COMP_1  | J12[7] |
+
+- ADC12 Pin
+
+| Function        | Position |
+| --------------- | -------- |
+| ADC0/1/2.VINP11 | J12[6]   |
+| ADC0/1/2.VINP10 | J12[7]   |
+| ADC0/1/2.VINP7  | J12[8]   |
+
+- ADC16 Pin
+
+| Function  | Position |
+| :-------- | -------- |
+| ADC3.INA2 | J12[5]   |
+

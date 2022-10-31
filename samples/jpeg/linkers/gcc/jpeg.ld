@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -14,10 +14,8 @@ MEMORY
     DLM (w) : ORIGIN = 0x80000, LENGTH = 256K
     /* It's alias address of core0 ILM+DLM, but accessing via system bus */
     CORE0_LM_SLV (wx) : ORIGIN = 0x1000000, LENGTH = 512K
-    /* It's alias address of core1 ILM+DLM, but accessing via system bus */
-    CORE1_LM_SLV (wx) : ORIGIN = 0x1180000, LENGTH = 512K
-    SDRAM (wx) : ORIGIN = 0x40000000, LENGTH = 64M
-    SDRAM_NONCACHEABLE (wx) : ORIGIN = 0x44000000, LENGTH = 8M
+    SDRAM (wx) : ORIGIN = 0x40000000, LENGTH = (_extram_size - 8M)
+    SDRAM_NONCACHEABLE (wx) : ORIGIN = 0x40000000 + (_extram_size - 4M), LENGTH = 4M
     AXI_SRAM (wx) : ORIGIN = 0x1080000, LENGTH = 1536k
     AXI_SRAM_NONCACHEABLE (wx) : ORIGIN = 0x01140000, LENGTH = 256K
 }
@@ -60,10 +58,6 @@ SECTIONS
         KEEP (*(.init))
         KEEP (*(.fini))
         . = ALIGN(8);
-
-        *(.fast)
-        __ramfunc_start__ = .;
-        __ramfunc_end__ = .;
 
         PROVIDE (__etext = .);
         PROVIDE (_etext = .);
@@ -121,9 +115,16 @@ SECTIONS
         __data_end__ = .;
         PROVIDE (__edata = .);
         PROVIDE (_edata = .);
-        PROVIDE (_edata = .);
         PROVIDE (edata = .);
-    } > AXI_SRAM 
+    } > AXI_SRAM
+
+    .fast : AT(etext + __data_end__ - __data_start__) {
+        . = ALIGN(8);
+        PROVIDE(__ramfunc_start__ = .);
+        *(.fast)
+        . = ALIGN(8);
+        PROVIDE(__ramfunc_end__ = .);
+    } > AXI_SRAM
 
     .bss : {
         . = ALIGN(8);
@@ -152,7 +153,7 @@ SECTIONS
         KEEP(*(.noncacheable.bss))
         __noncacheable_bss_end__ = .;
         . = ALIGN(8);
-    } > AXI_SRAM_NONCACHEABLE 
+    } > SDRAM_NONCACHEABLE
 
     .framebuffer (NOLOAD) : {
         . = ALIGN(8);
@@ -166,7 +167,7 @@ SECTIONS
         . += HEAP_SIZE;
         __heap_end__ = .;
 
-    } > AXI_SRAM
+    } > SDRAM
 
     .stack : {
         . = ALIGN(8);
@@ -176,6 +177,6 @@ SECTIONS
         PROVIDE (_stack_safe = .);
     } > AXI_SRAM
 
-    __noncacheable_start__ = ORIGIN(AXI_SRAM_NONCACHEABLE);
-    __noncacheable_end__ = ORIGIN(AXI_SRAM_NONCACHEABLE) + LENGTH(AXI_SRAM_NONCACHEABLE);
+    __noncacheable_start__ = ORIGIN(SDRAM_NONCACHEABLE);
+    __noncacheable_end__ = ORIGIN(SDRAM_NONCACHEABLE) + LENGTH(SDRAM_NONCACHEABLE);
 }

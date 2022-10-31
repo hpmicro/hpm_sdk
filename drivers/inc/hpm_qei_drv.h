@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -272,8 +272,7 @@ static inline bool qei_get_bit_status(QEI_Type *qei_x, uint32_t mask)
 {
     if ((qei_x->SR & mask) == mask) {
         return true;
-    }
-    else{
+    } else {
         return false;
     }
 }

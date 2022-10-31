@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 hpmicro
+ * Copyright (c) 2022 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -31,7 +31,10 @@ define block tdata_load                     { copy of block tdata };
 define block heap  with size = __HEAPSIZE__,  alignment = 8, /* fill =0x00, */ readwrite access { };
 define block stack with size = __STACKSIZE__, alignment = 8, /* fill =0xCD, */ readwrite access { };
 define block framebuffer { section .framebuffer };
+define block cherryusb_usbh_class_info { section .usbh_class_info };
 
+define exported symbol __usbh_class_info_start__ = start of block cherryusb_usbh_class_info;
+define exported symbol __usbh_class_info_end__ = end of block cherryusb_usbh_class_info + 1;
 
 do not initialize                           { section .noncacheable };
 do not initialize                           { section .non_init, section .non_init.*, section .*.non_init, section .*.non_init.* };
@@ -66,6 +69,7 @@ define access readonly { section .eh_frame, section .eh_frame.* };
 define access readonly { section .sdata.DW.* };
 
 /* Explicit placement in AXI_SRAM */
+place in AXI_SRAM                               { block cherryusb_usbh_class_info };
 place in AXI_SRAM                               { block framebuffer };
 
 place in RAM with auto order                { section .fast, section .fast.*,                       // "ramfunc" section
@@ -76,3 +80,5 @@ place in RAM with auto order                { section .fast, section .fast.*,   
 place in NONCACHEABLE_RAM                   { section .noncacheable, section .noncacheable.init, section .noncacheable.bss };
 place in RAM                                { block heap };                                         // Heap reserved block
 place at end of RAM                         { block stack, block safe_stack };                                        // Stack reserved block at the end
+
+keep { section .usbh_class_info};

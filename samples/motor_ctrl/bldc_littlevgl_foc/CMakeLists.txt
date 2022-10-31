@@ -1,4 +1,4 @@
-# Copyright 2021 hpmicro
+# Copyright (c) 2021 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 cmake_minimum_required(VERSION 3.13)
 
@@ -13,7 +13,7 @@ set(CONFIG_LV_INDEV 1)
 set(CONFIG_HPM_ADC 1)
 # set(HPM_MATH_SES_LIB "libdspf")
 
-set(CUSTOM_LINKER_FILE $ENV{HPM_SDK_BASE}/samples/littlevgl/linkers/gcc/lvgl.ld)
+set(CUSTOM_GCC_LINKER_FILE $ENV{HPM_SDK_BASE}/samples/littlevgl/linkers/gcc/lvgl.ld)
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -11,7 +11,7 @@
 #define SYSCTL_RESOURCE_GROUP0 0
 #define SYSCTL_RESOURCE_GROUP1 1
 
-#define SYSCTL_CPU_RELEASE_KEY(cpu) (0xC0BEF1A9UL | ((cpu & 1) << 24 ))
+#define SYSCTL_CPU_RELEASE_KEY(cpu) (0xC0BEF1A9UL | ((cpu & 1) << 24))
 
 static inline bool sysctl_valid_cpu_index(uint8_t cpu)
 {
@@ -30,7 +30,7 @@ hpm_stat_t sysctl_get_cpu_gpr(SYSCTL_Type *ptr, uint8_t cpu,
         return status_invalid_argument;
     }
     for (i = 0; i < size; i++) {
-        *(data + i) = ptr->CPU[cpu].GPR[i] ;
+        *(data + i) = ptr->CPU[cpu].GPR[i];
     }
     return status_success;
 }
@@ -277,7 +277,7 @@ hpm_stat_t sysctl_set_adc_i2s_clock_mux(SYSCTL_Type *ptr,
         return status_invalid_argument;
     }
 
-    switch(node) {
+    switch (node) {
         case clock_node_adc3:
         case clock_node_adc2:
         case clock_node_adc1:
@@ -311,7 +311,8 @@ hpm_stat_t sysctl_update_divider(SYSCTL_Type *ptr, clock_node_t node_index, uint
     }
 
     ptr->CLOCK[node] = (ptr->CLOCK[node] & ~(SYSCTL_CLOCK_DIV_MASK)) | SYSCTL_CLOCK_DIV_SET(divide_by - 1);
-    while(sysctl_clock_target_is_busy(ptr, node));
+    while (sysctl_clock_target_is_busy(ptr, node)) {
+    }
     return status_success;
 }
 
@@ -330,6 +331,7 @@ hpm_stat_t sysctl_config_clock(SYSCTL_Type *ptr, clock_node_t node_index,
     ptr->CLOCK[node] = (ptr->CLOCK[node] &
             ~(SYSCTL_CLOCK_MUX_MASK | SYSCTL_CLOCK_DIV_MASK))
             | (SYSCTL_CLOCK_MUX_SET(source) | SYSCTL_CLOCK_DIV_SET(divide_by - 1));
-    while(sysctl_clock_target_is_busy(ptr, node));
+    while (sysctl_clock_target_is_busy(ptr, node)) {
+    }
     return status_success;
 }

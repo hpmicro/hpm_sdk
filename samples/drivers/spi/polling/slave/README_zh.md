@@ -10,8 +10,9 @@ spi_polling_slave示例工程展示了SPI作为slave进行板与板之间通信�
 
 
 ## 运行现象
+- 先运行slave，再运行master
 
-当工程正确运行后，串口终端会输出如下信息：
+- 当工程正确运行后，串口终端会输出如下信息：
 ```
 SPI-Slave Polling Transfer Example
 SPI-Slave transfer format is configured.

@@ -35,7 +35,13 @@ typedef enum {
     LV_SCR_LOAD_ANIM_MOVE_RIGHT,
     LV_SCR_LOAD_ANIM_MOVE_TOP,
     LV_SCR_LOAD_ANIM_MOVE_BOTTOM,
-    LV_SCR_LOAD_ANIM_FADE_ON,
+    LV_SCR_LOAD_ANIM_FADE_IN,
+    LV_SCR_LOAD_ANIM_FADE_ON = LV_SCR_LOAD_ANIM_FADE_IN, /*For backward compatibility*/
+    LV_SCR_LOAD_ANIM_FADE_OUT,
+    LV_SCR_LOAD_ANIM_OUT_LEFT,
+    LV_SCR_LOAD_ANIM_OUT_RIGHT,
+    LV_SCR_LOAD_ANIM_OUT_TOP,
+    LV_SCR_LOAD_ANIM_OUT_BOTTOM,
 } lv_scr_load_anim_t;
 
 /**********************
@@ -67,22 +73,21 @@ void lv_disp_load_scr(lv_obj_t * scr);
 /**
  * Return with the top layer. (Same on every screen and it is above the normal screen layer)
  * @param disp pointer to display which top layer should be get. (NULL to use the default screen)
- * @return pointer to the top layer object  (transparent screen sized lv_obj)
+ * @return pointer to the top layer object (transparent screen sized lv_obj)
  */
 lv_obj_t * lv_disp_get_layer_top(lv_disp_t * disp);
 
 /**
  * Return with the sys. layer. (Same on every screen and it is above the normal screen and the top
  * layer)
- * @param disp pointer to display which sys. layer  should be get. (NULL to use the default screen)
- * @return pointer to the sys layer object  (transparent screen sized lv_obj)
+ * @param disp pointer to display which sys. layer should be retrieved. (NULL to use the default screen)
+ * @return pointer to the sys layer object (transparent screen sized lv_obj)
  */
 lv_obj_t * lv_disp_get_layer_sys(lv_disp_t * disp);
 
 /**
- * Get the theme of a display
+ * Set the theme of a display
  * @param disp pointer to a display
- * @return the display's theme (can be NULL)
  */
 void lv_disp_set_theme(lv_disp_t * disp, lv_theme_t * th);
 
@@ -108,7 +113,7 @@ void lv_disp_set_bg_color(lv_disp_t * disp, lv_color_t color);
 void lv_disp_set_bg_image(lv_disp_t * disp, const void  * img_src);
 
 /**
- * Opacity of the background
+ * Set opacity of the background
  * @param disp pointer to a display
  * @param opa opacity (0..255)
  */
@@ -117,7 +122,7 @@ void lv_disp_set_bg_opa(lv_disp_t * disp, lv_opa_t opa);
 /**
  * Switch screen with animation
  * @param scr pointer to the new screen to load
- * @param anim_type type of the animation from `lv_scr_load_anim_t`. E.g.  `LV_SCR_LOAD_ANIM_MOVE_LEFT`
+ * @param anim_type type of the animation from `lv_scr_load_anim_t`, e.g. `LV_SCR_LOAD_ANIM_MOVE_LEFT`
  * @param time time of the animation
  * @param delay delay before the transition
  * @param auto_del true: automatically delete the old screen
@@ -126,22 +131,36 @@ void lv_scr_load_anim(lv_obj_t * scr, lv_scr_load_anim_t anim_type, uint32_t tim
 
 /**
  * Get elapsed time since last user activity on a display (e.g. click)
- * @param disp pointer to an display (NULL to get the overall smallest inactivity)
+ * @param disp pointer to a display (NULL to get the overall smallest inactivity)
  * @return elapsed ticks (milliseconds) since the last activity
  */
 uint32_t lv_disp_get_inactive_time(const lv_disp_t * disp);
 
 /**
  * Manually trigger an activity on a display
- * @param disp pointer to an display (NULL to use the default display)
+ * @param disp pointer to a display (NULL to use the default display)
  */
 void lv_disp_trig_activity(lv_disp_t * disp);
 
 /**
  * Clean any CPU cache that is related to the display.
- * @param disp pointer to an display (NULL to use the default display)
+ * @param disp pointer to a display (NULL to use the default display)
  */
 void lv_disp_clean_dcache(lv_disp_t * disp);
+
+/**
+ * Temporarily enable and disable the invalidation of the display.
+ * @param disp pointer to a display (NULL to use the default display)
+ * @param en true: enable invalidation; false: invalidation
+ */
+void lv_disp_enable_invalidation(lv_disp_t * disp, bool en);
+
+/**
+ * Get display invalidation is enabled.
+ * @param disp pointer to a display (NULL to use the default display)
+ * @return return true if invalidation is enabled
+ */
+bool lv_disp_is_invalidation_enabled(lv_disp_t * disp);
 
 /**
  * Get a pointer to the screen refresher timer to
@@ -229,7 +248,7 @@ static inline lv_coord_t lv_dpx(lv_coord_t n)
  * considering the DPI of the given display.
  * It ensures that e.g. `lv_dpx(100)` will have the same physical size regardless to the
  * DPI of the display.
- * @param obj   an display whose dpi should be considered
+ * @param obj   a display whose dpi should be considered
  * @param n     the number of pixels to scale
  * @return      `n x current_dpi/160`
  */

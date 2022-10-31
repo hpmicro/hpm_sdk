@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -20,7 +20,7 @@
 #undef GT911_I2C_ADDR
 
 /* enable auto probe */
-#ifndef GT911_NO_AUTO_PROBE 
+#ifndef GT911_NO_AUTO_PROBE
 #define GT911_NO_AUTO_PROBE 0
 #endif
 

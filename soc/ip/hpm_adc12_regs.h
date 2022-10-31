@@ -167,8 +167,8 @@ typedef struct {
  * If wait_dis bit is set, SW will get the latest conversion result(not current one) with valid bit is 0, SW need polling valid bit till it's set to get current result
  * If wait_dis bit is 0, SW can get the current conversion result with holding the bus, valid bit is always set at this mode. this is not recommended if channel sample time is too long
  */
-#define ADC12_BUS_RESULT_CHAN_RESULT_MASK (0xFFFFU)
-#define ADC12_BUS_RESULT_CHAN_RESULT_SHIFT (0U)
+#define ADC12_BUS_RESULT_CHAN_RESULT_MASK (0xFFF0U)
+#define ADC12_BUS_RESULT_CHAN_RESULT_SHIFT (4U)
 #define ADC12_BUS_RESULT_CHAN_RESULT_GET(x) (((uint32_t)(x) & ADC12_BUS_RESULT_CHAN_RESULT_MASK) >> ADC12_BUS_RESULT_CHAN_RESULT_SHIFT)
 
 /* Bitfield definition for register: BUF_CFG0 */
@@ -390,8 +390,8 @@ typedef struct {
  * adc convert result, update after each valid conversion.
  * it may be updated period according to config, also may be updated due to other queue convert the same channel
  */
-#define ADC12_PRD_CFG_PRD_RESULT_CHAN_RESULT_MASK (0xFFFFU)
-#define ADC12_PRD_CFG_PRD_RESULT_CHAN_RESULT_SHIFT (0U)
+#define ADC12_PRD_CFG_PRD_RESULT_CHAN_RESULT_MASK (0xFFF0U)
+#define ADC12_PRD_CFG_PRD_RESULT_CHAN_RESULT_SHIFT (4U)
 #define ADC12_PRD_CFG_PRD_RESULT_CHAN_RESULT_GET(x) (((uint32_t)(x) & ADC12_PRD_CFG_PRD_RESULT_CHAN_RESULT_MASK) >> ADC12_PRD_CFG_PRD_RESULT_CHAN_RESULT_SHIFT)
 
 /* Bitfield definition for register array: SAMPLE_CFG */

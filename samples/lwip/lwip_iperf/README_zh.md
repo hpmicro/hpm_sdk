@@ -51,7 +51,7 @@
       2: TCP Client Mode
       3: UDP Server Mode
       4: UDP Client Mode
-      Please enter the test mode code:
+      Please enter one of modes above (e.g. 1 or 2 ...):
       ```
     - 在串口终端输入测试模式的代号
 

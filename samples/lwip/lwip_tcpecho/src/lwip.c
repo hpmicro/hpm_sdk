@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 hpmicro
+ * Copyright (c) 2021-2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -8,17 +8,11 @@
 /*---------------------------------------------------------------------*
  * Includes
  *---------------------------------------------------------------------*/
-#include "board.h"
-#include "hpm_enet_drv.h"
-#include "hpm_mchtmr_drv.h"
-#include "hpm_gpio_drv.h"
-#include "hpm_clock_drv.h"
+#include "common.h"
 #include "netconf.h"
-#include "lwip/init.h"
-#include "lwip/timeouts.h"
-#include "netif/etharp.h"
-#include "ethernetif.h"
+#include "sys_arch.h"
 #include "lwip.h"
+#include "lwip/init.h"
 #include "tcp_echo.h"
 
 #if RGMII == 1
@@ -30,7 +24,7 @@
         #include "hpm_rtl8211_regs.h"
     #endif
 #else
-    #if defined __USE_DP83864
+    #if defined __USE_DP83848
         #include "hpm_dp83848.h"
         #include "hpm_dp83848_regs.h"
     #elif defined  __USE_RTL8201
@@ -69,7 +63,7 @@ hpm_stat_t enet_init(ENET_Type *ptr)
         rtl8211_config_t phy_config;
         #endif
     #else
-        #if __USE_DP83864
+        #if __USE_DP83848
         dp83848_config_t phy_config;
         #else
         rtl8201_config_t phy_config;
@@ -98,6 +92,10 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     enet_config.mac_addr_low[0]  = MAC_ADDR3 << 24 | MAC_ADDR2 << 16 | MAC_ADDR1 << 8 | MAC_ADDR0;
     enet_config.valid_max_count  = 1;
 
+    /* Set DMA PBL */
+    enet_config.dma_pbl = board_enet_get_dma_pbl(ENET);
+
+
     /* Initialize enet controller */
     enet_controller_init(ptr, ENET_INF_TYPE, &desc, &enet_config, intr);
 
@@ -105,6 +103,9 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     #if RGMII == 1
         #if __USE_DP83867
         dp83867_reset(ptr);
+        #ifdef __DISABLE_AUTO_NEGO
+        dp83867_set_mdi_crossover_mode(ENET, enet_phy_mdi_crossover_manual_mdix);
+        #endif
         dp83867_basic_mode_default_config(ptr, &phy_config);
         if (dp83867_basic_mode_init(ptr, &phy_config) == true) {
         #else
@@ -113,7 +114,7 @@ hpm_stat_t enet_init(ENET_Type *ptr)
         if (rtl8211_basic_mode_init(ptr, &phy_config) == true) {
         #endif
     #else
-        #if __USE_DP83864
+        #if __USE_DP83848
         dp83848_reset(ptr);
         dp83848_basic_mode_default_config(ptr, &phy_config);
         if (dp83848_basic_mode_init(ptr, &phy_config) == true) {
@@ -142,8 +143,11 @@ int main(void)
     /* Initialize GPIOs */
     board_init_enet_pins(ENET);
 
+    /* Reset an enet PHY */
+    board_reset_enet_phy(ENET);
+
     /* Set RMII reference clock */
-    #if RGMII ==  0
+    #if RGMII == 0
     board_init_enet_rmii_reference_clock(ENET, BOARD_ENET_RMII_INT_REF_CLK);
     #endif
 
@@ -152,10 +156,11 @@ int main(void)
     board_init_enet_rgmii_clock_delay(ENET);
     #endif
 
+    /* Start a board timer */
+    board_timer_create(LWIP_APP_TIMER_INTERVAL, sys_timer_callback);
+
     printf("This is an ethernet demo: TCP Echo\n");
     printf("LwIP Version: %s\n", LWIP_VERSION_STRING);
-    printf("Local IP: %d.%d.%d.%d\n", IP_ADDR0, IP_ADDR1, IP_ADDR2, IP_ADDR3);
-    printf("Speed Rate:%s\n", RGMII == 1 ? "1000Mbps" : "100Mbps");
 
     #if RGMII == 0
     printf("Reference Clock: %s\n", BOARD_ENET_RMII_INT_REF_CLK ? "Internal Clock" : "External Clock");
@@ -168,11 +173,14 @@ int main(void)
         netif_config();
         user_notification(&gnetif);
 
+        /* Start services */
+        enet_services(&gnetif);
+
         /* Initialize TCP echo */
         tcp_echo_init();
 
         while (1) {
-            ethernetif_input(&gnetif);
+            enet_common_handler(&gnetif);
         }
     } else {
         printf("Enet initialization fails !!!\n");

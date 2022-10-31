@@ -23,17 +23,18 @@ extern "C" {
 /**********************
  *      TYPEDEFS
  **********************/
+extern const lv_obj_class_t lv_calendar_header_arrow_class;
 
 /**********************
  * GLOBAL PROTOTYPES
  **********************/
 
 /**
- * Create a calendar objects
- * @param par pointer to an object, it will be the parent of the new calendar
- * @return pointer to the created calendar
+ * Create a calendar header with drop-drowns to select the year and month
+ * @param parent    pointer to a calendar object.
+ * @return          the created header
  */
-lv_obj_t * lv_calendar_header_arrow_create(lv_obj_t * parent, lv_obj_t * calendar, lv_coord_t btn_size);
+lv_obj_t * lv_calendar_header_arrow_create(lv_obj_t * parent);
 
 /**********************
  *      MACROS
@@ -45,4 +46,4 @@ lv_obj_t * lv_calendar_header_arrow_create(lv_obj_t * parent, lv_obj_t * calenda
 } /*extern "C"*/
 #endif
 
-#endif /*LV_CALENDAR_H*/
+#endif /*LV_CALENDAR_HEADER_ARROW_H*/

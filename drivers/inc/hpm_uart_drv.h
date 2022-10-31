@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -11,7 +11,7 @@
 #include "hpm_uart_regs.h"
 
 /**
- * 
+ *
  * @brief UART driver APIs
  * @defgroup uart_interface UART driver APIs
  * @ingroup io_interfaces
@@ -109,7 +109,7 @@ typedef enum uart_stat {
 } uart_stat_t;
 
 /**
- * @brief UART modem config 
+ * @brief UART modem config
  */
 typedef struct uart_modem_config {
     bool auto_flow_ctrl_en;     /**< Auto flow control enable flag */
@@ -121,7 +121,6 @@ typedef struct uart_modem_config {
  * @brief UART config
  */
 typedef struct hpm_uart_config {
- 
     uint32_t src_freq_in_hz;            /**< Source clock frequency in Hz */
     uint32_t baudrate;                  /**< Baudrate */
     uint8_t num_of_stop_bits;           /**< Number of stop bits */

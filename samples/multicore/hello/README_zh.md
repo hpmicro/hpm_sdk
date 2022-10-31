@@ -21,10 +21,7 @@
 用户必须在编译完core1工程后再编译__Core0__工程
 
 ### 生成core0工程
-__CMAKE_BUILD_TYPE__ 必须是 下列选项中的一种:
-- *"debug"*
-- *"release"*
-
+__CMAKE_BUILD_TYPE__ 强制为 *"debug"*，用户无需关心。
 
 
 ## 调试示例

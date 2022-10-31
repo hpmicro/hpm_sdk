@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -43,6 +43,27 @@ uint8_t trig_channel[] = {BOARD_APP_ADC16_CH_1};
 __IO uint8_t seq_full_complete_flag;
 __IO uint8_t trig_complete_flag;
 
+static uint8_t get_adc_conv_mode(void)
+{
+    uint8_t ch;
+
+    while (1) {
+        printf("1. Oneshot    mode\n");
+        printf("2. Period     mode\n");
+        printf("3. Sequence   mode\n");
+        printf("4. Preemption mode\n");
+
+        printf("Please enter one of ADC conversion modes above (e.g. 1 or 2 ...): ");
+        printf("%c\n", ch = getchar());
+        ch -= '0' + 1;
+        if (ch > adc16_conv_mode_preemption) {
+            printf("The ADC mode is not supported!\n");
+        } else {
+            return ch;
+        }
+    }
+}
+
 void isr_adc16(void)
 {
     uint32_t status;
@@ -50,7 +71,7 @@ void isr_adc16(void)
     status = adc16_get_status_flags(BOARD_APP_ADC16_BASE);
 
     if (ADC16_INT_STS_SEQ_CMPT_GET(status)) {
-        /* Clear seq_dmaabt status */
+        /* Clear seq_complete status */
         adc16_clear_status_flags(BOARD_APP_ADC16_BASE, adc16_event_seq_full_complete);
         /* Set flag to read memory data */
         seq_full_complete_flag = 1;
@@ -76,13 +97,11 @@ hpm_stat_t process_seq_data(uint32_t *buff, int32_t start_pos, uint32_t len)
     printf("Sequence Mode - %s - ", BOARD_APP_ADC16_NAME);
 
     for (int i = start_pos; i < start_pos + len; i++) {
-        printf("Sequence Number:%d ", dma_data[i].seq_num);
+        printf("Sequence Number:%02d ", dma_data[i].seq_num);
         printf("Cycle Bit: %02d ",   dma_data[i].cycle_bit);
         printf("ADC Channel: %02d ",  dma_data[i].adc_ch);
-        printf("Result: 0x%02x\n",      dma_data[i].result);
+        printf("Result: 0x%04x\n", dma_data[i].result);
     }
-
-    printf("\n");
 
     return status_success;
 }
@@ -98,14 +117,17 @@ hpm_stat_t process_pmt_data(uint32_t *buff, int32_t start_pos, uint32_t len)
     printf("Preemption Mode - %s - ", BOARD_APP_ADC16_NAME);
 
     for (int i = start_pos; i < start_pos + len; i++) {
-        printf("Cycle Bit: %d ", dma_data[i].cycle_bit);
-        printf("ADC Channel: %d ", dma_data[i].adc_ch);
-        printf("Trig Index:%d ", dma_data[i].trig_index);
-        printf("Trig Channel:%d ", dma_data[i].trig_ch);
-        printf("Result: 0x%02x\n", dma_data[i].result);
+        printf("Cycle Bit: %02d ", dma_data[i].cycle_bit);
+        if (dma_data[i].cycle_bit) {
+            printf("ADC Channel: %02d ", dma_data[i].adc_ch);
+            printf("Trig Index: %02d ", dma_data[i].trig_index);
+            printf("Trig Channel: %02d ", dma_data[i].trig_ch);
+            printf("Result: 0x%04x\n", dma_data[i].result);
+            dma_data[i].cycle_bit = 0;
+        } else {
+            printf("invalid data\n");
+        }
     }
-
-    printf("\n");
 
     return status_success;
 }
@@ -168,6 +190,7 @@ void init_trigger_cfg(ADC16_Type *ptr, uint8_t trig_ch, bool inten)
     pmt_cfg.inten[pmt_cfg.trig_len - 1] = inten;
 
     adc16_set_pmt_config(ptr, &pmt_cfg);
+    adc16_set_pmt_queue_enable(ptr, trig_ch, true);
 }
 
 void init_common_config(adc16_conversion_mode_t conv_mode)
@@ -195,6 +218,9 @@ void init_oneshot_config(void)
 {
     adc16_channel_config_t ch_cfg;
 
+    /* get a default channel config */
+    adc16_get_channel_default_config(&ch_cfg);
+
     /* initialize an ADC channel */
     ch_cfg.ch           = BOARD_APP_ADC16_CH_1;
     ch_cfg.sample_cycle = 20;
@@ -207,13 +233,16 @@ void oneshot_handler(void)
     uint16_t result;
 
     adc16_get_oneshot_result(BOARD_APP_ADC16_BASE, BOARD_APP_ADC16_CH_1, &result);
-    printf("Oneshot Mode - %s [channel %d] - Result: 0x%08x\n\n", BOARD_APP_ADC16_NAME, BOARD_APP_ADC16_CH_1, result);
+    printf("Oneshot Mode - %s [channel %d] - Result: 0x%04x\n", BOARD_APP_ADC16_NAME, BOARD_APP_ADC16_CH_1, result);
 }
 
 void init_period_config(void)
 {
     adc16_channel_config_t ch_cfg;
     adc16_prd_config_t prd_cfg;
+
+    /* get a default channel config */
+    adc16_get_channel_default_config(&ch_cfg);
 
     /* initialize an ADC channel */
     ch_cfg.ch           = BOARD_APP_ADC16_CH_1;
@@ -233,7 +262,7 @@ void period_handler(void)
     uint16_t result;
 
     adc16_get_prd_result(BOARD_APP_ADC16_BASE, BOARD_APP_ADC16_CH_1, &result);
-    printf("Period Mode - %s [channel %d] - Result: 0x%08x\n\n", BOARD_APP_ADC16_NAME, BOARD_APP_ADC16_CH_1, result);
+    printf("Period Mode - %s [channel %d] - Result: 0x%04x\n", BOARD_APP_ADC16_NAME, BOARD_APP_ADC16_CH_1, result);
 }
 
 void init_sequence_config(void)
@@ -241,6 +270,9 @@ void init_sequence_config(void)
     adc16_seq_config_t seq_cfg;
     adc16_dma_config_t dma_cfg;
     adc16_channel_config_t ch_cfg;
+
+    /* get a default channel config */
+    adc16_get_channel_default_config(&ch_cfg);
 
     /* initialize an ADC channel */
     ch_cfg.sample_cycle = 20;
@@ -299,6 +331,9 @@ void init_preemption_config(void)
 {
     adc16_channel_config_t ch_cfg;
 
+    /* get a default channel config */
+    adc16_get_channel_default_config(&ch_cfg);
+
     /* initialize an ADC channel */
     ch_cfg.sample_cycle = 20;
 
@@ -319,7 +354,7 @@ void init_preemption_config(void)
     /* Set DMA start address for preemption mode */
     adc16_init_pmt_dma(BOARD_APP_ADC16_BASE, core_local_mem_to_sys_address(BOARD_APP_CORE, (uint32_t)pmt_buff));
 
-    /* Enable sequence complete interrupt */
+    /* Enable trigger complete interrupt */
     adc16_enable_interrupts(BOARD_APP_ADC16_BASE, adc16_event_trig_complete);
 }
 
@@ -349,13 +384,13 @@ int main(void)
     /* ADC clock initialization */
     board_init_adc16_clock(BOARD_APP_ADC16_BASE);
 
-    /* TODO: Get sample mode from console */
-    conv_mode = adc16_conv_mode_oneshot;
+    printf("This is an ADC16 demo:\n");
+
+    /* Get a conversion mode from a console window */
+    conv_mode = get_adc_conv_mode();
 
     /* ADC16 common initialization */
     init_common_config(conv_mode);
-
-    printf("This is an ADC16 demo:\n");
 
     /* ADC16 read patter and DMA initialization */
     switch (conv_mode) {
@@ -381,6 +416,8 @@ int main(void)
 
     /* Main loop */
     while (1) {
+        board_delay_ms(1000);
+
         if (conv_mode == adc16_conv_mode_oneshot) {
             oneshot_handler();
         } else if (conv_mode == adc16_conv_mode_period) {
@@ -392,6 +429,5 @@ int main(void)
         } else {
             printf("Conversion mode is not supported!\n");
         }
-        board_delay_ms(1000);
     }
 }

@@ -1,4 +1,4 @@
-# Copyright 2021-2022 hpmicro
+# Copyright (c) 2021-2022 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -25,7 +25,7 @@ endif()
 
 if(${CONFIG_ENET_PHY_DP83848})
     sdk_compile_definitions(-DRGMII=0)
-    sdk_compile_definitions(-D__USE_DP83864=1)
+    sdk_compile_definitions(-D__USE_DP83848=1)
 endif()
 
 if(${CONFIG_ENET_PHY_RTL8201})
@@ -36,10 +36,13 @@ project(lwip_httpsrv_example)
 
 sdk_inc(../common)
 sdk_inc(../common/arch)
+sdk_inc(../common/feature)
 sdk_inc(inc)
 sdk_inc(inc/eth)
 
+sdk_app_src(../common/arch/sys_arch.c)
 sdk_app_src(../common/arch/ethernetif.c)
+sdk_app_src(../common/feature/common.c)
 sdk_app_src(src/eth/netconf.c)
 sdk_app_src(src/lwip.c)
 generate_ses_project()

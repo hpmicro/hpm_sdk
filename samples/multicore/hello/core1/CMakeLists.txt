@@ -1,11 +1,11 @@
-# Copyright 2022 hpmicro
+# Copyright (c) 2022 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
 
-set(CUSTOM_LINKER_FILE $ENV{HPM_SDK_BASE}/samples/multicore/hello/linker/gcc/core1.ld)
+set(CUSTOM_GCC_LINKER_FILE ${CMAKE_CURRENT_SOURCE_DIR}/../linker/gcc/core1.ld)
 
-set(SEC_CORE_IMG_C_ARRAY_OUTPUT $ENV{HPM_SDK_BASE}/samples/multicore/hello/core0/src/sec_core_img.c)
+set(SEC_CORE_IMG_C_ARRAY_OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/../core0/src/sec_core_img.c)
 
 if(NOT ${CMAKE_BUILD_TYPE} STREQUAL "")
     string(TOLOWER ${CMAKE_BUILD_TYPE} build_type)

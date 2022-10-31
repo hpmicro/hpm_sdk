@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 hpmicro
+ * Copyright (c) 2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -44,7 +44,7 @@ hpm_stat_t i2c_tx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, I2C_Type *i2c_p
     config.src_fixed = false;
     config.size_in_byte = size;
 
-    return dma_setup_handshake(dma_ptr, &config);
+    return dma_setup_handshake(dma_ptr, &config, true);
 }
 
 hpm_stat_t i2c_rx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, I2C_Type *i2c_ptr, uint32_t dst, uint32_t size)
@@ -57,7 +57,7 @@ hpm_stat_t i2c_rx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, I2C_Type *i2c_p
     config.src_fixed = true;
     config.size_in_byte = size;
 
-    return dma_setup_handshake(dma_ptr, &config);
+    return dma_setup_handshake(dma_ptr, &config, true);
 }
 
 static void i2c_handle_dma_transfer_complete(I2C_Type *ptr)

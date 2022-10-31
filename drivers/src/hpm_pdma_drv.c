@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -20,18 +20,18 @@ void pdma_enable_plane(PDMA_Type *ptr, pdma_plane_t enable_plane, bool enable)
 {
     uint32_t mask;
     switch (enable_plane) {
-        case pdma_plane_both:
-            mask = (PDMA_CTRL_P0_EN_MASK | PDMA_CTRL_P1_EN_MASK);
-            break;
-        case pdma_plane_src:
-            mask = PDMA_CTRL_P0_EN_MASK;
-            break;
-        case pdma_plane_dst:
-            mask = PDMA_CTRL_P1_EN_MASK;
-            break;
-        default:
-            mask = 0;
-            break;
+    case pdma_plane_both:
+        mask = (PDMA_CTRL_P0_EN_MASK | PDMA_CTRL_P1_EN_MASK);
+        break;
+    case pdma_plane_src:
+        mask = PDMA_CTRL_P0_EN_MASK;
+        break;
+    case pdma_plane_dst:
+        mask = PDMA_CTRL_P1_EN_MASK;
+        break;
+    default:
+        mask = 0;
+        break;
     }
     if (!mask) {
         return;
@@ -47,7 +47,7 @@ void pdma_enable_irq(PDMA_Type *ptr, uint32_t mask, bool enable)
 {
     mask &= PDMA_CTRL_AXIERR_IRQ_EN_MASK | PDMA_CTRL_PDMA_DONE_IRQ_EN_MASK;
     if (enable) {
-        ptr->CTRL |= mask | PDMA_CTRL_IRQ_EN_MASK; 
+        ptr->CTRL |= mask | PDMA_CTRL_IRQ_EN_MASK;
     } else {
         ptr->CTRL &= ~mask;
     }
@@ -88,19 +88,19 @@ void pdma_get_default_plane_config(PDMA_Type *ptr, pdma_plane_config_t *config, 
     config->height = 0;
     config->pitch = 0;
 
-    switch(pixel_format) {
-        case display_pixel_format_yuv422:
-            config->ycbcr_mode = false;
-            config->bypass_colorspace_conversion = false;
-            break;
-        case display_pixel_format_ycbcr422:
-            config->ycbcr_mode = true;
-            config->bypass_colorspace_conversion = false;
-            break;
-        default:
-            config->ycbcr_mode = false;
-            config->bypass_colorspace_conversion = true;
-            break;
+    switch (pixel_format) {
+    case display_pixel_format_yuv422:
+        config->ycbcr_mode = false;
+        config->bypass_colorspace_conversion = false;
+        break;
+    case display_pixel_format_ycbcr422:
+        config->ycbcr_mode = true;
+        config->bypass_colorspace_conversion = false;
+        break;
+    default:
+        config->ycbcr_mode = false;
+        config->bypass_colorspace_conversion = true;
+        break;
     }
 }
 
@@ -108,34 +108,34 @@ void pdma_get_default_yuv2rgb_coef_config(PDMA_Type *ptr, display_yuv2rgb_coef_t
 {
     /* Two plane share one YUV2RGB_COEF, not support one plane format is yuv422 and another is ycbcr422 */
 
-    switch(source_format) {
-        case display_pixel_format_yuv422:
-            yuv2rgb_coef->c0 = 0x100;
-            yuv2rgb_coef->uv_offset = 0;
-            yuv2rgb_coef->y_offset = 0;
-            yuv2rgb_coef->c1 = 0x123;
-            yuv2rgb_coef->c2 = 0x76B;
-            yuv2rgb_coef->c3 = 0x79C;
-            yuv2rgb_coef->c4 = 0x208;
-            break;
-        case display_pixel_format_ycbcr422:
-            yuv2rgb_coef->c0 = 0x12A;
-            yuv2rgb_coef->uv_offset = 0x180;
-            yuv2rgb_coef->y_offset = 0x1F0;
-            yuv2rgb_coef->c1 = 0x198;
-            yuv2rgb_coef->c2 = 0x730;
-            yuv2rgb_coef->c3 = 0x79C;
-            yuv2rgb_coef->c4 = 0x204;
-            break;
-        default:
-            yuv2rgb_coef->c0 = 0;
-            yuv2rgb_coef->uv_offset = 0;
-            yuv2rgb_coef->y_offset = 0;
-            yuv2rgb_coef->c1 = 0;
-            yuv2rgb_coef->c2 = 0;
-            yuv2rgb_coef->c3 = 0;
-            yuv2rgb_coef->c4 = 0;
-            break;
+    switch (source_format) {
+    case display_pixel_format_yuv422:
+        yuv2rgb_coef->c0 = 0x100;
+        yuv2rgb_coef->uv_offset = 0;
+        yuv2rgb_coef->y_offset = 0;
+        yuv2rgb_coef->c1 = 0x123;
+        yuv2rgb_coef->c2 = 0x76B;
+        yuv2rgb_coef->c3 = 0x79C;
+        yuv2rgb_coef->c4 = 0x208;
+        break;
+    case display_pixel_format_ycbcr422:
+        yuv2rgb_coef->c0 = 0x12A;
+        yuv2rgb_coef->uv_offset = 0x180;
+        yuv2rgb_coef->y_offset = 0x1F0;
+        yuv2rgb_coef->c1 = 0x198;
+        yuv2rgb_coef->c2 = 0x730;
+        yuv2rgb_coef->c3 = 0x79C;
+        yuv2rgb_coef->c4 = 0x204;
+        break;
+    default:
+        yuv2rgb_coef->c0 = 0;
+        yuv2rgb_coef->uv_offset = 0;
+        yuv2rgb_coef->y_offset = 0;
+        yuv2rgb_coef->c1 = 0;
+        yuv2rgb_coef->c2 = 0;
+        yuv2rgb_coef->c3 = 0;
+        yuv2rgb_coef->c4 = 0;
+        break;
     }
 }
 
@@ -159,52 +159,52 @@ void pdma_get_default_output_config(PDMA_Type *ptr, pdma_output_config_t *config
     config->height = 0;
     config->pitch = 0;
 
-    switch(pixel_format) {
-        case display_pixel_format_yuv422:
-            config->rgb2yuv_config.enable = true;
-            config->rgb2yuv_config.ycbcr_mode = false;
-            config->rgb2yuv_config.c0 = 0x4D;
-            config->rgb2yuv_config.uv_offset = 0;
-            config->rgb2yuv_config.y_offset = 0;
-            config->rgb2yuv_config.c1 = 0x96;
-            config->rgb2yuv_config.c2 = 0x1D;
-            config->rgb2yuv_config.c3 = 0x7DA;
-            config->rgb2yuv_config.c4 = 0x7B6;
-            config->rgb2yuv_config.c5 = 0x70;
-            config->rgb2yuv_config.c6 = 0x9D;
-            config->rgb2yuv_config.c7 = 0x77C;
-            config->rgb2yuv_config.c8 = 0x7E6;
-            break;
-        case display_pixel_format_ycbcr422:
-            config->rgb2yuv_config.enable = true;
-            config->rgb2yuv_config.ycbcr_mode = true;
-            config->rgb2yuv_config.c0 = 0x42;
-            config->rgb2yuv_config.uv_offset = 0x80;
-            config->rgb2yuv_config.y_offset = 0x10;
-            config->rgb2yuv_config.c1 = 0x81;
-            config->rgb2yuv_config.c2 = 0x19;
-            config->rgb2yuv_config.c3 = 0x7DA;
-            config->rgb2yuv_config.c4 = 0x7B5;
-            config->rgb2yuv_config.c5 = 0x70;
-            config->rgb2yuv_config.c6 = 0x70;
-            config->rgb2yuv_config.c7 = 0x7A2;
-            config->rgb2yuv_config.c8 = 0x7EE;
-            break;
-        default:
-            config->rgb2yuv_config.enable = false;
-            config->rgb2yuv_config.ycbcr_mode = false;
-            config->rgb2yuv_config.c0 = 0;
-            config->rgb2yuv_config.uv_offset = 0;
-            config->rgb2yuv_config.y_offset = 0;
-            config->rgb2yuv_config.c1 = 0;
-            config->rgb2yuv_config.c2 = 0;
-            config->rgb2yuv_config.c3 = 0;
-            config->rgb2yuv_config.c4 = 0;
-            config->rgb2yuv_config.c5 = 0;
-            config->rgb2yuv_config.c6 = 0;
-            config->rgb2yuv_config.c7 = 0;
-            config->rgb2yuv_config.c8 = 0;
-            break;
+    switch (pixel_format) {
+    case display_pixel_format_yuv422:
+        config->rgb2yuv_config.enable = true;
+        config->rgb2yuv_config.ycbcr_mode = false;
+        config->rgb2yuv_config.c0 = 0x4D;
+        config->rgb2yuv_config.uv_offset = 0;
+        config->rgb2yuv_config.y_offset = 0;
+        config->rgb2yuv_config.c1 = 0x96;
+        config->rgb2yuv_config.c2 = 0x1D;
+        config->rgb2yuv_config.c3 = 0x7DA;
+        config->rgb2yuv_config.c4 = 0x7B6;
+        config->rgb2yuv_config.c5 = 0x70;
+        config->rgb2yuv_config.c6 = 0x9D;
+        config->rgb2yuv_config.c7 = 0x77C;
+        config->rgb2yuv_config.c8 = 0x7E6;
+        break;
+    case display_pixel_format_ycbcr422:
+        config->rgb2yuv_config.enable = true;
+        config->rgb2yuv_config.ycbcr_mode = true;
+        config->rgb2yuv_config.c0 = 0x42;
+        config->rgb2yuv_config.uv_offset = 0x80;
+        config->rgb2yuv_config.y_offset = 0x10;
+        config->rgb2yuv_config.c1 = 0x81;
+        config->rgb2yuv_config.c2 = 0x19;
+        config->rgb2yuv_config.c3 = 0x7DA;
+        config->rgb2yuv_config.c4 = 0x7B5;
+        config->rgb2yuv_config.c5 = 0x70;
+        config->rgb2yuv_config.c6 = 0x70;
+        config->rgb2yuv_config.c7 = 0x7A2;
+        config->rgb2yuv_config.c8 = 0x7EE;
+        break;
+    default:
+        config->rgb2yuv_config.enable = false;
+        config->rgb2yuv_config.ycbcr_mode = false;
+        config->rgb2yuv_config.c0 = 0;
+        config->rgb2yuv_config.uv_offset = 0;
+        config->rgb2yuv_config.y_offset = 0;
+        config->rgb2yuv_config.c1 = 0;
+        config->rgb2yuv_config.c2 = 0;
+        config->rgb2yuv_config.c3 = 0;
+        config->rgb2yuv_config.c4 = 0;
+        config->rgb2yuv_config.c5 = 0;
+        config->rgb2yuv_config.c6 = 0;
+        config->rgb2yuv_config.c7 = 0;
+        config->rgb2yuv_config.c8 = 0;
+        break;
     }
 }
 
@@ -220,22 +220,22 @@ void pdma_init(PDMA_Type *ptr, pdma_config_t *config)
     uint32_t mask;
     pdma_stop(ptr);
     switch (config->enable_plane) {
-        case pdma_plane_both:
-            mask = (PDMA_CTRL_P0_EN_MASK | PDMA_CTRL_P1_EN_MASK);
-            break;
-        case pdma_plane_dst:
-            mask = PDMA_CTRL_P1_EN_MASK;
-            break;
-        case pdma_plane_src:
-            mask = PDMA_CTRL_P0_EN_MASK;
-            break;
-        default:
-            mask = 0;
-            break;
+    case pdma_plane_both:
+        mask = (PDMA_CTRL_P0_EN_MASK | PDMA_CTRL_P1_EN_MASK);
+        break;
+    case pdma_plane_dst:
+        mask = PDMA_CTRL_P1_EN_MASK;
+        break;
+    case pdma_plane_src:
+        mask = PDMA_CTRL_P0_EN_MASK;
+        break;
+    default:
+        mask = 0;
+        break;
     }
 
     if (config->block_size == pdma_blocksize_16x16) {
-        mask |= PDMA_CTRL_BS16_MASK; 
+        mask |= PDMA_CTRL_BS16_MASK;
     }
 
     ptr->CTRL = PDMA_CTRL_PACK_DIR_SET(config->byteorder) | mask;
@@ -244,16 +244,16 @@ void pdma_init(PDMA_Type *ptr, pdma_config_t *config)
 static uint32_t pdma_pixel_format(display_pixel_format_t display_format)
 {
     switch (display_format) {
-        case display_pixel_format_rgb565:
-            return 0xE; 
-        case display_pixel_format_argb8888:
-            return 0; 
-        case display_pixel_format_yuv422:
-            return 0x13; 
-        case display_pixel_format_ycbcr422:
-            return 0x13; 
-        default:
-            return 0;
+    case display_pixel_format_rgb565:
+        return 0xE;
+    case display_pixel_format_argb8888:
+        return 0;
+    case display_pixel_format_yuv422:
+        return 0x13;
+    case display_pixel_format_ycbcr422:
+        return 0x13;
+    default:
+        return 0;
     }
 }
 
@@ -303,7 +303,7 @@ void pdma_config_planes(PDMA_Type *ptr, void *plane_src_config, void *plane_dst_
             | PDMA_PS_CTRL_YCBCR_MODE_SET(plane_src->ycbcr_mode)
             | PDMA_PS_CTRL_BYPASS_SET(plane_src->bypass_colorspace_conversion)
             | ((plane_src->flip << PDMA_PS_CTRL_HFLIP_SHIFT)
-                    & (PDMA_PS_CTRL_VFLIP_MASK| PDMA_PS_CTRL_HFLIP_MASK))
+                    & (PDMA_PS_CTRL_VFLIP_MASK | PDMA_PS_CTRL_HFLIP_MASK))
             | PDMA_PS_CTRL_ROTATE_SET(plane_src->rotate)
             | PDMA_PS_CTRL_DECY_SET(plane_src->y_dec)
             | PDMA_PS_CTRL_DECX_SET(plane_src->x_dec)
@@ -335,7 +335,7 @@ void pdma_config_planes(PDMA_Type *ptr, void *plane_src_config, void *plane_dst_
             | PDMA_PS_CTRL_YCBCR_MODE_SET(plane_dst->ycbcr_mode)
             | PDMA_PS_CTRL_BYPASS_SET(plane_dst->bypass_colorspace_conversion)
             | ((plane_dst->flip << PDMA_PS_CTRL_HFLIP_SHIFT)
-                    & (PDMA_PS_CTRL_VFLIP_MASK| PDMA_PS_CTRL_HFLIP_MASK))
+                    & (PDMA_PS_CTRL_VFLIP_MASK | PDMA_PS_CTRL_HFLIP_MASK))
             | PDMA_PS_CTRL_ROTATE_SET(plane_dst->rotate)
             | PDMA_PS_CTRL_DECY_SET(plane_dst->y_dec)
             | PDMA_PS_CTRL_DECX_SET(plane_dst->x_dec)
@@ -343,7 +343,7 @@ void pdma_config_planes(PDMA_Type *ptr, void *plane_src_config, void *plane_dst_
             | PDMA_PS_CTRL_FORMAT_SET(format);
     }
 
-    if(yuv2rgb != NULL) {
+    if (yuv2rgb != NULL) {
         ptr->YUV2RGB_COEF0 = PDMA_YUV2RGB_COEF0_C0_SET(yuv2rgb->c0)
             | PDMA_YUV2RGB_COEF0_UV_OFFSET_SET(yuv2rgb->uv_offset)
             | PDMA_YUV2RGB_COEF0_Y_OFFSET_SET(yuv2rgb->y_offset);
@@ -440,9 +440,9 @@ hpm_stat_t pdma_fill_color(PDMA_Type *ptr, uint32_t dst, uint32_t dst_width,
     display_yuv2rgb_coef_t yuv2rgb_coef;
     pdma_output_config_t output;
 
-    if (((display_pixel_format_is_yuv_format(format)) && (width & 2)) 
+    if (((display_pixel_format_is_yuv_format(format)) && (width & 2))
         || !(width > 8 || height > 8)) {
-            return status_invalid_argument;
+        return status_invalid_argument;
     }
 
     pdma_get_default_config(ptr, &config, format);
@@ -450,7 +450,7 @@ hpm_stat_t pdma_fill_color(PDMA_Type *ptr, uint32_t dst, uint32_t dst_width,
     pdma_get_default_plane_config(ptr, &plane_dst, format);
     pdma_get_default_yuv2rgb_coef_config(ptr, &yuv2rgb_coef, format);
     pdma_get_default_output_config(ptr, &output, format);
-    
+
     config.enable_plane = pdma_plane_both;
     if (width <= 16) {
         config.block_size = pdma_blocksize_8x8;
@@ -488,7 +488,7 @@ hpm_stat_t pdma_fill_color(PDMA_Type *ptr, uint32_t dst, uint32_t dst_width,
         hpm_stat_t stat;
         do {
             stat = pdma_check_status(ptr, status);
-        } while((stat != status_pdma_done) && (stat != status_pdma_error));
+        } while ((stat != status_pdma_done) && (stat != status_pdma_error));
         pdma_stop(ptr);
         return stat;
     }
@@ -510,7 +510,7 @@ hpm_stat_t pdma_flip_rotate(PDMA_Type *ptr, uint32_t dst, uint32_t dst_width,
 
     if ((width + x > dst_width)
         /* YUV422 requires width to be 2-byte aligned */
-        || ((display_pixel_format_is_yuv_format(format)) && (width & 2)) 
+        || ((display_pixel_format_is_yuv_format(format)) && (width & 2))
         || !(width > 8 || height > 8)) {
         return status_invalid_argument;
     }
@@ -573,7 +573,7 @@ hpm_stat_t pdma_flip_rotate(PDMA_Type *ptr, uint32_t dst, uint32_t dst_width,
         hpm_stat_t stat;
         do {
             stat = pdma_check_status(ptr, status);
-        } while((stat != status_pdma_done) && (stat != status_pdma_error));
+        } while ((stat != status_pdma_done) && (stat != status_pdma_error));
         pdma_stop(ptr);
         return stat;
     }
@@ -596,7 +596,7 @@ hpm_stat_t pdma_blit(PDMA_Type *ptr,
 
     if ((width + x > dst_width)
         /* YUV422 requires width to be 2-byte aligned */
-        || ((display_pixel_format_is_yuv_format(format)) && (width & 2)) 
+        || ((display_pixel_format_is_yuv_format(format)) && (width & 2))
         || !(width > 8 || height > 8)) {
         return status_invalid_argument;
     }
@@ -606,7 +606,7 @@ hpm_stat_t pdma_blit(PDMA_Type *ptr,
     pdma_get_default_plane_config(ptr, &plane_dst, format);
     pdma_get_default_yuv2rgb_coef_config(ptr, &yuv2rgb_coef, format);
     pdma_get_default_output_config(ptr, &output, format);
-    
+
     config.enable_plane = pdma_plane_both;
     if (width <= 16) {
         config.block_size = pdma_blocksize_8x8;
@@ -653,7 +653,7 @@ hpm_stat_t pdma_blit(PDMA_Type *ptr,
         hpm_stat_t stat;
         do {
             stat = pdma_check_status(ptr, status);
-        } while((stat != status_pdma_done) && (stat != status_pdma_error));
+        } while ((stat != status_pdma_done) && (stat != status_pdma_error));
         pdma_stop(ptr);
         return stat;
     }
@@ -702,9 +702,9 @@ hpm_stat_t pdma_scale(PDMA_Type *ptr,
     display_yuv2rgb_coef_t yuv2rgb_coef;
     pdma_output_config_t output;
 
-    if ((width + x > dst_width)
+    if ((target_width + x > dst_width)
         /* YUV422 requires width to be 2-byte aligned */
-        || ((display_pixel_format_is_yuv_format(format)) && (width & 2)) 
+        || ((display_pixel_format_is_yuv_format(format)) && (width & 2))
         || !(width > 8 || height > 8)) {
         return status_invalid_argument;
     }
@@ -714,7 +714,7 @@ hpm_stat_t pdma_scale(PDMA_Type *ptr,
     pdma_get_default_plane_config(ptr, &plane_dst, format);
     pdma_get_default_yuv2rgb_coef_config(ptr, &yuv2rgb_coef, format);
     pdma_get_default_output_config(ptr, &output, format);
-    
+
     config.enable_plane = pdma_plane_both;
     if (width <= 16) {
         config.block_size = pdma_blocksize_8x8;
@@ -730,10 +730,10 @@ hpm_stat_t pdma_scale(PDMA_Type *ptr,
 
     pdma_calculate_scale(width, target_width, &dec, &scale);
     plane_src.x_scale = scale;
-    plane_src.x_dec = dec,
+    plane_src.x_dec = dec;
     pdma_calculate_scale(height, target_height, &dec, &scale);
     plane_src.y_scale = scale;
-    plane_src.y_dec = dec,
+    plane_src.y_dec = dec;
     plane_src.background = 0x00FFFFFF;
 
     plane_dst.buffer = dst + (y * dst_width + x) * display_get_pixel_size_in_byte(format);
@@ -768,7 +768,7 @@ hpm_stat_t pdma_scale(PDMA_Type *ptr,
         hpm_stat_t stat;
         do {
             stat = pdma_check_status(ptr, status);
-        } while((stat != status_pdma_done) && (stat != status_pdma_error));
+        } while ((stat != status_pdma_done) && (stat != status_pdma_error));
         pdma_stop(ptr);
         return stat;
     }

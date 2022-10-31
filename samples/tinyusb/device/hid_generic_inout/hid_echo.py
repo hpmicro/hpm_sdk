@@ -1,15 +1,27 @@
-# Copyright 2021 hpmicro
+# Copyright (c) 2021 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 import pywinusb.hid as hid
 import os
 import time
 import sys
+import operator
 
 # VID and PID customization changes here...
 
 VID = 0xcafe
 PID = 0x4004
+
+# Send buffer
+buffer = [0xff]*1024
+
+# Const
+TIMEOUT = -1
+PASS    =  0
+FAIL    =  1
+
+# Result
+result = TIMEOUT
 
 def search_dev():
     filter = hid.HidDeviceFilter(vendor_id = VID, product_id = PID)
@@ -21,11 +33,14 @@ def recv_data(data):
     for i in range(0, len(data)):
         print("0x{0:02x}" .format(data[i]), end=" ")
     print("\n")
+
+    global result
+    result = (PASS if (operator.eq(data[1:-1], buffer[1:-1]) == True) else FAIL)
+
     return None
 
 def send_data(report):
     print("<=================== USB HID Write ========================>")
-    buffer = [0xff]*1024
     buffer[0] = report[0].report_id
     print("0x{0:02x}" .format(buffer[0]), end=" ")
 
@@ -45,3 +60,9 @@ if __name__ == '__main__':
     send_data(device.find_output_reports())
     time.sleep(1)
 
+    if result == PASS:
+        print("USB hid echo passed!")
+    elif result == FAIL:
+        print("USB HID echo failed!")
+    else:
+        print("USB HID echo timed out!")

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
@@ -13,10 +13,19 @@
 #include "hpm_dma_drv.h"
 
 #include "lv_port_disp.h"
+#include "hpm_dma_drv.h"
 
 /*
  * resource definition
  */
+
+#ifndef LVGL_COPY_FB_DATA_USE_MEMCPY
+
+#ifndef LVGL_USE_DMA
+#define LVGL_USE_DMA
+#endif
+
+#endif
 
 #ifndef RUNNING_CORE_INDEX
 #define RUNNING_CORE_INDEX HPM_CORE0
@@ -24,42 +33,75 @@
 
 #define LCD_CONTROLLER BOARD_LCD_BASE
 #define LCD_LAYER_INDEX (0)
-#define LCD_LAYER_DONE_MASK (LCD_LAYER_INDEX + 1)
-#define LCD_IRQ_NUM  BOARD_LCD_IRQ
-
-#ifndef HPM_LCD_IRQ_PRIORITY
-#define HPM_LCD_IRQ_PRIORITY  1
-#endif
 
 #define LV_LCD_WIDTH BOARD_LCD_WIDTH
 #define LV_LCD_HEIGHT BOARD_LCD_HEIGHT
 
-static volatile bool back_buffer_filled;
 static void init_lcd(void);
 static void flush_display(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p);
 static lcdc_layer_config_t layer;
 static lv_disp_drv_t g_disp_drv;
-static lv_color_t __attribute__((section(".framebuffer"), aligned(HPM_L1C_CACHELINE_SIZE))) framebuffer[2][LV_LCD_WIDTH * LV_LCD_HEIGHT];
-static volatile lv_color_t *back_buffer;
-static volatile lv_color_t *front_buffer;
+static lv_color_t __attribute__((section(".framebuffer"), aligned(HPM_L1C_CACHELINE_SIZE))) framebuffer[3][LV_LCD_WIDTH * LV_LCD_HEIGHT];
 static uint32_t ms_per_frame = 0;
 
-void isr_lcd(void)
+#define LV_LCDC_TRANS_BUFFER_ADDR        ((void *)(&framebuffer[2]))
+/* DMA defines */
+#ifdef LVGL_USE_DMA
+
+#ifdef BOARD_APP_XDMA
+
+/* XDMA */
+#define LV_DMA_CONTROLLER BOARD_APP_XDMA
+#define LV_DMA_BURST_SIZE    (1024)
+#ifndef LV_DMA_IRQ
+#define LV_DMA_IRQ BOARD_APP_XDMA_IRQ
+#endif
+
+#elif defined BOARD_APP_HDMA
+
+/* HDMA */
+#define LV_DMA_CONTROLLER BOARD_APP_HDMA
+#define LV_DMA_BURST_SIZE    (512)
+#ifndef LV_DMA_IRQ
+#define LV_DMA_IRQ BOARD_APP_HDMA_IRQ
+#endif
+
+#else
+
+#error "Both BOARD_APP_XDMA and BOARD_APP_HDMA not found. Define LVGL_COPY_FB_DATA_USE_MEMCPY to run without using DMA."
+
+#endif
+
+#ifndef LV_DMA_CHANNEL
+#define LV_DMA_CHANNEL (0U)
+#endif
+
+#if LV_DMA_BURST_SIZE > (8 * SIZE_1KB)
+#error LV_DMA_BURST_SIZE cannot > 8KB!!
+#endif
+
+void isr_lv_dma(void)
 {
-    volatile uint32_t s = lcdc_get_dma_status(LCD_CONTROLLER);
-    volatile lv_color_t *tmp;
-    lcdc_clear_dma_status(LCD_CONTROLLER, s);
-    if ((back_buffer_filled) && (s & (LCD_LAYER_DONE_MASK << LCDC_DMA_ST_DMA0_DONE_SHIFT))) {
-        tmp = front_buffer;
-        front_buffer = back_buffer;
-        back_buffer = tmp;
-        lcdc_layer_set_next_buffer(LCD_CONTROLLER, LCD_LAYER_INDEX, (uint32_t)front_buffer);
-        lv_disp_flush_ready(&g_disp_drv);
-        back_buffer_filled = false;
+    volatile uint32_t stat = dma_get_irq_status(LV_DMA_CONTROLLER);
+    dma_clear_irq_status(LV_DMA_CONTROLLER, stat);
+    lv_disp_flush_ready(&g_disp_drv);
+}
+
+SDK_DECLARE_EXT_ISR_M(LV_DMA_IRQ, isr_lv_dma)
+
+void lv_start_transfer_data_to_buffer(void* src, uint32_t len)
+{
+    volatile hpm_stat_t stat;
+    stat = dma_start_memcpy(LV_DMA_CONTROLLER, LV_DMA_CHANNEL,
+                (uint32_t)core_local_mem_to_sys_address(RUNNING_CORE_INDEX, (uint32_t)LV_LCDC_TRANS_BUFFER_ADDR),
+                (uint32_t)core_local_mem_to_sys_address(RUNNING_CORE_INDEX, (uint32_t)src),
+                len, LV_DMA_BURST_SIZE);
+    if (stat != status_success) {
+        printf("failed to start dma transfer\n");
     }
 }
-SDK_DECLARE_EXT_ISR_M(LCD_IRQ_NUM, isr_lcd)
 
+#endif
 
 __attribute__((weak)) void hpm_lv_monitor(lv_disp_drv_t * disp_drv, uint32_t time, uint32_t px)
 {
@@ -72,7 +114,9 @@ void lv_port_disp_init(void)
      * Initialize your display
      * -----------------------*/
     init_lcd();
-
+#ifdef LVGL_USE_DMA
+    intc_m_enable_irq_with_priority(LV_DMA_IRQ, 1);
+#endif
     static lv_disp_draw_buf_t draw_buf_dsc;
     lv_disp_draw_buf_init(&draw_buf_dsc, framebuffer[0], framebuffer[1], LV_LCD_WIDTH * LV_LCD_HEIGHT);   /*Initialize the display buffer*/
 
@@ -98,10 +142,6 @@ void lv_port_disp_init(void)
 
     /*Finally register the driver*/
     lv_disp_drv_register(&g_disp_drv);
-
-    front_buffer = framebuffer[0];
-    back_buffer = framebuffer[0];
-    back_buffer_filled = false;
 }
 
 /* Initialize your display and the required peripherals. */
@@ -113,6 +153,13 @@ static void init_lcd(void)
 
     config.resolution_x = LV_LCD_WIDTH;
     config.resolution_y = LV_LCD_HEIGHT;
+
+    config.vsync.back_porch_pulse = 23;
+    config.vsync.front_porch_pulse = 10;
+    config.vsync.pulse_width = 3;
+    config.hsync.back_porch_pulse = 46;
+    config.hsync.front_porch_pulse = 50;
+    config.hsync.pulse_width = 10;
 
 #if LV_COLOR_DEPTH == 32
     pixel_format = display_pixel_format_argb8888;
@@ -131,38 +178,51 @@ static void init_lcd(void)
     layer.position_y = 0;
     layer.width = config.resolution_x;
     layer.height = config.resolution_y;
-    layer.buffer = (uint32_t) core_local_mem_to_sys_address(RUNNING_CORE_INDEX, (uint32_t) framebuffer[0]);
+    layer.buffer = (uint32_t) core_local_mem_to_sys_address(RUNNING_CORE_INDEX, (uint32_t) LV_LCDC_TRANS_BUFFER_ADDR);
     layer.background.u = 0;
 
     if (status_success != lcdc_config_layer(LCD_CONTROLLER, LCD_LAYER_INDEX, &layer, true)) {
-        printf("failed to configure layer\n");
         while (1) {
         }
     }
 
     lcdc_turn_on_display(LCD_CONTROLLER);
-    lcdc_enable_interrupt(LCD_CONTROLLER, LCD_LAYER_DONE_MASK << 16);
-    intc_m_enable_irq_with_priority(LCD_IRQ_NUM, HPM_LCD_IRQ_PRIORITY);
-}
+#ifdef LVGL_USE_DMA
+    printf("lvgl using DMA transfer method.\r\n");
+#else
+    printf("lvgl using memcpy instead of DMA transfer method!!\r\n");
 
-static bool is_back_buffer(lv_color_t *color_p)
-{
-    return (color_p == back_buffer);
+#endif
 }
 
 static void flush_display(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p)
 {
-    if (back_buffer_filled || ((front_buffer != back_buffer) && !is_back_buffer(color_p))) {
-        /* it should not go here */
-        while (1) {
-        }
-    }
-    back_buffer = (lv_color_t *)core_local_mem_to_sys_address(RUNNING_CORE_INDEX, (uint32_t) color_p);
+    lv_color_t* cur_buffer = (lv_color_t *)core_local_mem_to_sys_address(RUNNING_CORE_INDEX, (uint32_t) color_p);
+
     if (l1c_dc_is_enabled()) {
-        uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t)back_buffer);
-        uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP((uint32_t)back_buffer + LV_LCD_HEIGHT * LV_LCD_WIDTH * LV_COLOR_DEPTH / 8);
+        uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t)cur_buffer);
+        uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP((uint32_t)cur_buffer + LV_LCD_HEIGHT * LV_LCD_WIDTH * LV_COLOR_DEPTH / 8);
         uint32_t aligned_size = aligned_end - aligned_start;
+        disable_global_irq(CSR_MSTATUS_MIE_MASK);
         l1c_dc_writeback(aligned_start, aligned_size);
+        enable_global_irq(CSR_MSTATUS_MIE_MASK);
     }
-    back_buffer_filled = true;
+
+#ifdef LVGL_USE_DMA
+    lv_start_transfer_data_to_buffer((void *)cur_buffer, sizeof(lv_color_t) * LV_LCD_WIDTH * LV_LCD_HEIGHT);
+#else
+    memcpy(LV_LCDC_TRANS_BUFFER_ADDR, (void *)cur_buffer, sizeof(lv_color_t) * LV_LCD_WIDTH * LV_LCD_HEIGHT);
+
+    if (l1c_dc_is_enabled()) {
+        lv_color_t* buf = (lv_color_t *)core_local_mem_to_sys_address(RUNNING_CORE_INDEX, (uint32_t) LV_LCDC_TRANS_BUFFER_ADDR);
+        uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t)buf);
+        uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP((uint32_t)buf + LV_LCD_HEIGHT * LV_LCD_WIDTH * LV_COLOR_DEPTH / 8);
+        uint32_t aligned_size = aligned_end - aligned_start;
+        disable_global_irq(CSR_MSTATUS_MIE_MASK);
+        l1c_dc_writeback(aligned_start, aligned_size);
+        enable_global_irq(CSR_MSTATUS_MIE_MASK);
+    }
+    lv_disp_flush_ready(&g_disp_drv);
+#endif
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -38,9 +38,9 @@
 #endif
 
 int32_t bldc_foc_get_pos(void);
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t adc_buff[3][BOARD_BLDC_ADC_SEQ_DMA_SIZE_IN_4BYTES];
+volatile ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t adc_buff[3][BOARD_BLDC_ADC_SEQ_DMA_SIZE_IN_4BYTES];
 
-void motor0_current_loop(void);
+void motor0_highspeed_loop(void);
 
 uint8_t smc_start_flag = 0; /*滑模启动标志*/
 int32_t qei_clock_hz = 0;
@@ -50,7 +50,7 @@ int32_t qei_clock_hz = 0;
 float fre_setspeed = MOTOR0_SPD;
 float fre_dispspeed = 0.0; /**< disp speed to freemaster */
 /*1ms 时间参考*/
-uint8_t timer_flag = 0;
+volatile uint8_t timer_flag = 0;
 int16_t fre_set_angle = 0;
 
 int32_t fre_set_pos = 0;
@@ -148,7 +148,7 @@ void bldc_init_par(void)
     motor0.position_para.I_ki       = 0;
     motor0.position_para.I_max      = HPM_MOTOR_MATH_FL_MDF(25);
 
-    motor0.adc_trig_event_callback = &motor0_current_loop;
+    motor0.adc_trig_event_callback = &motor0_highspeed_loop;
 #if MOTOR0_SMC_EN
     /*使能滑模*/
     motor0.speedloop_para.I_kp = HPM_MOTOR_MATH_FL_MDF(2);
@@ -272,8 +272,7 @@ void pwm_init(void)
         printf("failed to setup waveform\n");
         while(1);
     }
-    pwm_load_cmp_shadow_on_capture(MOTOR0_BLDCPWM, 20, 0);
-    pwm_config_cmp(MOTOR0_BLDCPWM, 20, &cmp_config[3]);
+    pwm_load_cmp_shadow_on_match(MOTOR0_BLDCPWM, 20,  &cmp_config[3]);
 
     pwm_config_cmp(MOTOR0_BLDCPWM, BOARD_BLDC_PWM_TRIG_CMP_INDEX, &cmp_config[2]);
 
@@ -443,8 +442,17 @@ void init_trigger_mux(TRGM_Type * ptr)
     trgm_output_cfg.input  = BOARD_BLDC_TRIGMUX_IN_NUM;
     trgm_output_config(ptr, BOARD_BLDC_TRG_NUM, &trgm_output_cfg);
 }
+void motor0_current_loop(float angle)
+{
+    motor0.foc_para.samplCurpar.adc_u = ((adc_buff[0][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4);
+    motor0.foc_para.samplCurpar.adc_v = ((adc_buff[1][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4);
+    motor0.foc_para.samplCurpar.adc_w = ((adc_buff[2][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4);
+    motor0.foc_para.electric_angle = HPM_MOTOR_MATH_FL_MDF(angle);
+    motor0.foc_para.func_dqsvpwm(&motor0.foc_para);
+    motor0.foc_para.pwmpar.pwmout.func_set_pwm(&motor0.foc_para.pwmpar.pwmout);
 
-void motor0_current_loop(void)
+}
+void motor0_highspeed_loop(void)
 {
     uint32_t  pos;
     float user_give_angle = 0;
@@ -461,11 +469,9 @@ void motor0_current_loop(void)
         user_give_angle = fre_get_angle;
         fre_set_angle = fre_get_angle;
     }
-    motor0.foc_para.samplCurpar.adc_u = ((adc_buff[0][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
-    motor0.foc_para.samplCurpar.adc_v = ((adc_buff[1][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
-    motor0.foc_para.samplCurpar.adc_w = ((adc_buff[2][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
-    motor0.foc_para.electric_angle = HPM_MOTOR_MATH_FL_MDF(user_give_angle);
-    motor0.foc_para.func_dqsvpwm(&motor0.foc_para);
+    motor0_current_loop(user_give_angle);
+    motor0.foc_para.SpeedCalPar.speedtheta = motor0.foc_para.electric_angle;
+    motor0.foc_para.SpeedCalPar.func_getspd(&motor0.foc_para.SpeedCalPar);
 }
 
 void isr_adc(void)
@@ -613,6 +619,7 @@ void motor0_angle_align_loop(void)
     motor0.foc_para.CurrentDPiPar.target = HPM_MOTOR_MATH_FL_MDF(100);
     motor0.foc_para.CurrentQPiPar.target = HPM_MOTOR_MATH_FL_MDF(0);
     motor0.foc_para.func_dqsvpwm(&motor0.foc_para);
+    motor0.foc_para.pwmpar.pwmout.func_set_pwm(&motor0.foc_para.pwmpar.pwmout);
 }
 /*
 * 转子角度对中，将编码器的中点值和实际物理角度的中点值对齐,默认当前的中点值为0角度所在的区域
@@ -702,7 +709,7 @@ int main(void)
     bldc_foc_angle_align();
     /*开始转*/
 #endif
-    motor0.adc_trig_event_callback = &motor0_current_loop;
+    motor0.adc_trig_event_callback = &motor0_highspeed_loop;
 
 #if !MOTOR0_SMC_EN
     while (1) {

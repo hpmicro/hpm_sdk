@@ -13,10 +13,13 @@ extern "C" {
 /*********************
  *      INCLUDES
  *********************/
+#include "../lv_demos.h"
 
 /*********************
  *      DEFINES
  *********************/
+
+#define LV_DEMO_STRESS_TIME_STEP    50
 
 /**********************
  *      TYPEDEFS

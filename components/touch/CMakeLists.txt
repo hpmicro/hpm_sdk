@@ -1,4 +1,4 @@
-# Copyright 2021 hpmicro
+# Copyright (c) 2021 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 string(TOUPPER ${CONFIG_TOUCH} CONFIG_TOUCH_UPPER)

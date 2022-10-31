@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -8,6 +8,7 @@
 #define LWIP_H
 
 /* Includes ------------------------------------------------------------------*/
+#include "board.h"
 #include "hpm_enet_drv.h"
 
 /* Exported Macros------------------------------------------------------------*/

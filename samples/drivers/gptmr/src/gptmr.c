@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -104,6 +104,8 @@ static void test_generate_pwm_waveform_edge_aligned(void)
     uint32_t duty_step, duty, cmp;
     uint32_t reload = 0x10000;
     bool increase_duty_cycle;
+
+    printf("test generate waveform edge aligned pwm\n");
 
     gptmr_channel_config_t config;
     gptmr_channel_get_default_config(GPTMR_PWM, &config);

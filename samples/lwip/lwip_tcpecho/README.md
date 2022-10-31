@@ -44,8 +44,8 @@ This  example shows TCP echo communication.
 
   - Enter and send any characters in the edit window
 
-    ![](image/README/17570924116107101.png)
+    ![](../../../doc/images/samples/lwip_tcpecho_1.png)
 
   - Watch the characters echoed from MCU
 
-    ![](image/README/182410098510799.png)
+    ![](../../../doc/images/samples/lwip_tcpecho_2.png)

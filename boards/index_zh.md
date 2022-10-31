@@ -6,6 +6,7 @@
    :numbered:
 
    hpm6750evk/README_zh
+   hpm6750evk2/README_zh
    hpm6750evkmini/README_zh
    hpm6300evk/README_zh
    ../doc/boards/README_zh
@@ -16,6 +17,9 @@
 
 :::{tab} HPM6750EVK
 点击{ref}`此处 <lab_hpm6750_evk_board>`查看HPM6750EVK开发板
+:::
+:::{tab} HPM6750EVK2
+点击{ref}`此处 <lab_hpm6750_evk2_board>`查看HPM6750EVK2开发板
 :::
 :::{tab} HPM6750EVKMINI
 点击{ref}`此处 <lab_hpm6750_evkmini_board>`查看HPM6750EVKMINI开发板

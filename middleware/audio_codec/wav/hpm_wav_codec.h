@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 hpmicro
+ * Copyright (c) 2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -7,14 +7,13 @@
 
 #ifndef HPM_WAV_DECODER_H
 #define HPM_WAV_DECODER_H
- 
-#include "hpm_audio_codec.h" 
+
+#include "hpm_audio_codec.h"
 /**
  * @brief riff header
- * 
+ *
  */
-typedef struct
-{
+typedef struct {
     uint32_t groupid;               /** fix "RIFF" */
     uint32_t size ;                 /** file size sub 8 */
     uint32_t riff_type;             /** fix "WAVE" */
@@ -22,55 +21,51 @@ typedef struct
 
 /**
  * @brief fmt header
- * 
+ *
  */
-typedef struct
-{
+typedef struct {
     uint32_t id;            /** fix "fmt" */
     uint32_t size ;         /** sizeof(wav_formatchunk) - id - size */
     uint16_t audioformat;   /** 0X01:PCM ;0X11:IMA ADPCM */
     uint16_t channels;   /** channels num 1 or 2 */
     uint32_t samplerate;    /**  sample rate */
-    uint32_t byterate;      /** byterate=samplerate*channels*bitspersample/8 */ 
+    uint32_t byterate;      /** byterate=samplerate*channels*bitspersample/8 */
     uint16_t blockalign;    /** bitspersample*channels/8 */
     uint16_t bitspersample; /** 8 16 24 32*/
 } wav_formatchunk;
 
 /**
  * @brief data header
- * 
+ *
  */
-typedef struct
-{
+typedef struct {
     uint32_t id;            /** fix "data" */
-    uint32_t size;          /** data size */     
+    uint32_t size;          /** data size */
 } wav_data;
 
 /**
  * @brief wav head describe
- * 
+ *
  */
-typedef struct
-{ 
+typedef struct {
     wav_riff riff_chunk;  /** riff chunk */
     wav_formatchunk fmt_chunk;    /** fmt chunk */
-    wav_data data_chunk;  /** data chunk */      
-} hpm_wav_head; 
+    wav_data data_chunk;  /** data chunk */
+} hpm_wav_head;
 
 /**
  * @brief wav control
- * 
+ *
  */
-typedef struct
-{ 
-    char * file_name;
+typedef struct {
+    char *file_name;
     hpm_wav_head wav_head;
     uint32_t sec_total;     /** song total seconds */
     uint32_t sec_cur;       /** song current seconds */
     uint32_t data_pos;     /**  data position */
     uint32_t remaining_data;    /**  The amount of data remaining, according to which the music has been played */
     hpm_audiocodec_callback func; /** callback function */
-}hpm_wav_ctrl;
+} hpm_wav_ctrl;
 
 /**
  * @brief Init wav decode function

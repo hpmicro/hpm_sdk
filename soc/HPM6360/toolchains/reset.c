@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 hpmicro
+ * Copyright (c) 2022 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -9,15 +9,9 @@
 #include "hpm_l1c_drv.h"
 #include "hpm_interrupt.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 extern void system_init(void);
-extern void __libc_init_array(void);
-extern void __libc_fini_array(void);
-#ifdef __cplusplus
-}
-#endif
+
 
 __attribute__((weak)) void _clean_up(void)
 {
@@ -93,21 +87,9 @@ __attribute__((weak)) void reset_handler(void)
 {
     l1c_dc_disable();
     l1c_dc_invalidate_all();
-#if !defined(__SEGGER_RTL_VERSION) || defined(__GNU_LINKER)
-    /*
-     * Initialize LMA/VMA sections.
-     * Relocation for any sections that need to be copied from LMA to VMA.
-     */
-    c_startup();
-#endif
 
     /* Call platform specific hardware initialization */
     system_init();
-
-#ifdef __cplusplus
-    /* Do global constructors */
-    __libc_init_array();
-#endif
 
     /* Entry function */
     main();
@@ -123,7 +105,7 @@ void __cxa_atexit(void (*arg1)(void *), void *arg2, void *arg3)
 }
 
 #ifndef __SEGGER_RTL_VERSION
-void*   __dso_handle = (void *) &__dso_handle;
+void *__dso_handle = (void *) &__dso_handle;
 #endif
 
 __attribute__((weak)) void _init(void)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021-2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -40,6 +40,15 @@ _start:
     la t0, _stack
     mv sp, t0
 
+    /*
+     * Initialize LMA/VMA sections.
+     * Relocation for any sections that need to be copied from LMA to VMA.
+     */
+    call c_startup
+
+    /* Do global constructors */
+    call __libc_init_array
+
 #ifndef NO_CLEANUP_AT_START
     /* clean up */
     call _clean_up
@@ -57,6 +66,9 @@ _start:
 #else
     #define HANDLER_TRAP freertos_risc_v_trap_handler
     #define HANDLER_S_TRAP freertos_risc_v_trap_handler
+
+    /* Use mscratch to store isr level */
+    csrw mscratch, 0
 #endif
 
 #ifndef USE_NONVECTOR_MODE

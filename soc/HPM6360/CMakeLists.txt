@@ -1,10 +1,11 @@
-# Copyright 2021 hpmicro
+# Copyright (c) 2021-2022 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 sdk_inc(toolchains)
 
 if(NOT DEFINED USE_CUSTOM_STARTUP)
-sdk_src(toolchains/gcc/start.S)
+    sdk_gcc_src(toolchains/gcc/start.S)
+    sdk_ses_src(toolchains/segger/startup.s)
 endif()
 
 sdk_src(
@@ -12,6 +13,8 @@ sdk_src(
     toolchains/trap.c
     system.c
 )
+
+sdk_gcc_src(toolchains/gcc/initfini.c)
 
 # soc drivers
 sdk_src (

@@ -1,9 +1,9 @@
-# Copyright 2021 hpmicro
+# Copyright (c) 2021 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
 
-set(CUSTOM_LINKER_FILE $ENV{HPM_SDK_BASE}/samples/multicore/lvgl_coremark/linker/gcc/core0.ld)
+set(CUSTOM_GCC_LINKER_FILE ${CMAKE_CURRENT_SOURCE_DIR}/../linker/gcc/core0.ld)
 
 set(CONFIG_LVGL 1)
 if(NOT DEFINED CONFIG_TOUCH)
@@ -25,7 +25,7 @@ sdk_compile_definitions(-DCONFIG_LV_HAS_EXTRA_CONFIG="lv_app_conf.h")
 sdk_compile_definitions(-DCONFIG_LV_GPU_HPM_SOC_INCLUDE="hpm_soc.h")
 sdk_compile_definitions("-DFLASH_XIP=1")
 sdk_compile_definitions("-DINIT_EXT_RAM_FOR_DATA=1")
-
+sdk_compile_definitions("-DLV_USE_DEMO_WIDGETS=1")
 if(DEFINED SEC_CORE_IMG_START)
     sdk_compile_definitions(-DSEC_CORE_IMG_START=${SEC_CORE_IMG_START})
 else()

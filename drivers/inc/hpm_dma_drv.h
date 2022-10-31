@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2022 hpmicro
+ * Copyright (c) 2021-2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -183,6 +183,73 @@ static inline void dma_disable_channel(DMA_Type *ptr, uint32_t ch_index)
 }
 
 /**
+ * @brief   Check whether DMA channel is transferring
+ *
+ * @param[in] ptr DMA base address
+ * @param[in] ch_index Index of the channel
+ *
+ * @return   true if DMA channel is transferring
+ *
+ */
+static inline bool dma_channel_is_transferring(DMA_Type *ptr, uint32_t ch_index)
+{
+    return (ptr->CHCTRL[ch_index].CTRL & DMA_CHCTRL_CTRL_ENABLE_MASK) ? true : false;
+}
+
+/**
+ * @brief   Get DMA channel residue transfer size
+ *
+ * @param[in] ptr DMA base address
+ * @param[in] ch_index Index of the channel
+ *
+ * @return residue transfer size
+ *
+ */
+static inline uint32_t dma_get_residue_transfer_size(DMA_Type *ptr, uint32_t ch_index)
+{
+    return ptr->CHCTRL[ch_index].TRANSIZE;
+}
+
+/**
+ * @brief   Set DMA channel transfer size
+ *
+ * @param[in] ptr DMA base address
+ * @param[in] ch_index Index of the channel
+ * @param[in] size transfer size of the channel
+ *
+ */
+static inline void dma_set_transfer_size(DMA_Type *ptr, uint32_t ch_index, uint32_t size)
+{
+    ptr->CHCTRL[ch_index].TRANSIZE = size;
+}
+
+/**
+ * @brief   Set DMA channel source address
+ *
+ * @param[in] ptr DMA base address
+ * @param[in] ch_index Index of the channel
+ * @param[in] addr source address
+ *
+ */
+static inline void dma_set_source_address(DMA_Type *ptr, uint32_t ch_index, uint32_t addr)
+{
+    ptr->CHCTRL[ch_index].SRCADDR = addr;
+}
+
+/**
+ * @brief   Set DMA channel destination address
+ *
+ * @param[in] ptr DMA base address
+ * @param[in] ch_index Index of the channel
+ * @param[in] addr destination address
+ *
+ */
+static inline void dma_set_destination_address(DMA_Type *ptr, uint32_t ch_index, uint32_t addr)
+{
+    ptr->CHCTRL[ch_index].DSTADDR = addr;
+}
+
+/**
  * @brief   Abort channel transfer with mask
  *
  * @param[in] ptr DMA base address
@@ -260,6 +327,18 @@ static inline uint32_t dma_check_transfer_status(DMA_Type *ptr, uint8_t ch_index
 }
 
 /**
+ * @brief   Clear transfer status
+ *
+ * @param[in] ptr DMA base address
+ * @param[in] ch_index Target channel index
+ *
+ */
+static inline void dma_clear_transfer_status(DMA_Type *ptr, uint8_t ch_index)
+{
+    ptr->INTSTATUS &= ~((1 << (DMA_STATUS_TC_SHIFT + ch_index)) | (1 << (DMA_STATUS_ERROR_SHIFT + ch_index)) | (1 << (DMA_STATUS_ABORT_SHIFT + ch_index)));
+}
+
+/**
  * @brief Enable DMA Channel interrupt
  *
  * @param [in] ptr DMA base address
@@ -331,11 +410,12 @@ void dma_default_channel_config(DMA_Type *ptr, dma_channel_config_t *ch);
  * @param[in] ptr DMA base address
  * @param[in] ch_index Target channel index to be configured
  * @param[in] ch Channel config
+ * @param[in] start_transfer Set true to start transfer
  *
  * @return  status_success if everything is okay
  */
 hpm_stat_t dma_setup_channel(DMA_Type *ptr, uint32_t ch_index,
-                            dma_channel_config_t *ch);
+                            dma_channel_config_t *ch, bool start_transfer);
 /**
  * @brief   Start DMA copy
  *
@@ -358,10 +438,11 @@ hpm_stat_t dma_start_memcpy(DMA_Type *ptr, uint8_t ch_index,
  *
  * @param[in] ptr DMA base address
  * @param[in] pconfig dma handshake config pointer
+ * @param[in] start_transfer Set true to start transfer
  *
- * @return status_success if everthing is okay
+ * @return status_success if everything is okay
  */
-hpm_stat_t dma_setup_handshake(DMA_Type *ptr,  dma_handshake_config_t *pconfig);
+hpm_stat_t dma_setup_handshake(DMA_Type *ptr,  dma_handshake_config_t *pconfig, bool start_transfer);
 
 #ifdef __cplusplus
 }

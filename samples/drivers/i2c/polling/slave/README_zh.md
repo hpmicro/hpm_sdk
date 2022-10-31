@@ -9,7 +9,9 @@ i2c_polling_slave示例工程展示了I2C在slave模式使用polling方式接收
 
 ## 运行现象
 
-当工程正确运行后，串口终端会输出如下信息：
+- 先运行slave，再运行master
+
+- 当工程正确运行后，串口终端会输出如下信息：
 ```
 I2C polling slave example, I2C will sent back the received data
 The received data are:

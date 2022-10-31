@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -13,8 +13,8 @@ define symbol flash_size = 16M;
 #endif
 
 /* Regions */
-define region NOR_CFG_OPTION = [ from 0x80000400 size 0x1000 ];
-define region BOOT_HEADER = [ from 0x80001000 size 0x3000 ];
+define region NOR_CFG_OPTION = [ from 0x80000400 size 0xc00 ];
+define region BOOT_HEADER = [ from 0x80001000 size 0x2000 ];
 define region XPI0 = [from 0x80003000 size flash_size - 0x3000 ];   /* XPI0 */
 define region ILM_SLV   = [from 0x1000000 size 256k];        /* ILM_SLV */
 define region DLM   = [from 0x80000 size 256k];    /* DLM */

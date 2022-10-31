@@ -13,7 +13,7 @@
 #define ARP_QUEUEING            0
 #define LWIP_RAW                1
 #define LWIP_IPV4               1
-#define LWIP_TIMERS             0
+#define LWIP_TIMERS             1
 #define LWIP_NETIF_TX_SINGLE_PBUF 1
 /**
  * NO_SYS==1: Provides VERY minimal functionality. Otherwise,

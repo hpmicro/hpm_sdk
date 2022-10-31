@@ -6,12 +6,13 @@ In this example, one spi instance as master and another spi instance on other bo
 
 ## Board Setting
 
-Connect [SPI Pins](lab_board_app_spi_pin) of the two boards
+Connect [SPI Pins](lab_board_app_spi_pin) of the two boards.
 
 
 ## Running the example
+- Run slave first, and then run master.
 
-When the example runs successfully, the log would be seen on the terminal like:
+- When the example runs successfully, the log would be seen on the terminal like:
 ```
 SPI Master DMA Transfer Example
 The sent data are:

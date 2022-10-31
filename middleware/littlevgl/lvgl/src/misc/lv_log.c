@@ -72,9 +72,6 @@ void _lv_log_add(lv_log_level_t level, const char * file, int line, const char *
     if(level >= LV_LOG_LEVEL) {
         va_list args;
         va_start(args, format);
-        char msg[256];
-        lv_vsnprintf(msg, sizeof(msg), format, args);
-        va_end(args);
 
         /*Use only the file name not the path*/
         size_t p;
@@ -85,22 +82,59 @@ void _lv_log_add(lv_log_level_t level, const char * file, int line, const char *
             }
         }
 
-        char buf[512];
         uint32_t t = lv_tick_get();
         static const char * lvl_prefix[] = {"Trace", "Info", "Warn", "Error", "User"};
-        lv_snprintf(buf, sizeof(buf), "[%s]\t(%d.%03d, +%d)\t %s: %s \t(in %s line #%d)\n", lvl_prefix[level], t / 1000, t % 1000, t - last_log_time, func, msg, &file[p], line);
+
+#if LV_LOG_PRINTF
+        printf("[%s]\t(%" LV_PRId32 ".%03" LV_PRId32 ", +%" LV_PRId32 ")\t %s: ",
+               lvl_prefix[level], t / 1000, t % 1000, t - last_log_time, func);
+        vprintf(format, args);
+        printf(" \t(in %s line #%d)\n", &file[p], line);
+#else
+        if(custom_print_cb) {
+            char buf[512];
+#if LV_SPRINTF_CUSTOM
+            char msg[256];
+            lv_vsnprintf(msg, sizeof(msg), format, args);
+            lv_snprintf(buf, sizeof(buf), "[%s]\t(%" LV_PRId32 ".%03" LV_PRId32 ", +%" LV_PRId32 ")\t %s: %s \t(in %s line #%d)\n",
+                        lvl_prefix[level], t / 1000, t % 1000, t - last_log_time, func, msg, &file[p], line);
+#else
+            lv_vaformat_t vaf = {format, &args};
+            lv_snprintf(buf, sizeof(buf), "[%s]\t(%" LV_PRId32 ".%03" LV_PRId32 ", +%" LV_PRId32 ")\t %s: %pV \t(in %s line #%d)\n",
+                        lvl_prefix[level], t / 1000, t % 1000, t - last_log_time, func, (void *)&vaf, &file[p], line);
+#endif
+            custom_print_cb(buf);
+        }
+#endif
+
         last_log_time = t;
-        lv_log(buf);
+        va_end(args);
     }
 }
 
-void lv_log(const char * buf)
+void lv_log(const char * format, ...)
 {
-#if LV_LOG_PRINTF
-    printf("%s", buf);
-#endif
-    if(custom_print_cb) custom_print_cb(buf);
+    if(LV_LOG_LEVEL >= LV_LOG_LEVEL_NONE) return; /* disable log */
 
+    va_list args;
+    va_start(args, format);
+
+#if LV_LOG_PRINTF
+    vprintf(format, args);
+#else
+    if(custom_print_cb) {
+        char buf[512];
+#if LV_SPRINTF_CUSTOM
+        lv_vsnprintf(buf, sizeof(buf), format, args);
+#else
+        lv_vaformat_t vaf = {format, &args};
+        lv_snprintf(buf, sizeof(buf), "%pV", (void *)&vaf);
+#endif
+        custom_print_cb(buf);
+    }
+#endif
+
+    va_end(args);
 }
 
 /**********************

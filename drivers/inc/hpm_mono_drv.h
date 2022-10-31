@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -12,7 +12,7 @@
 #include "hpm_mono_regs.h"
 
 /**
- * 
+ *
  * @brief MONO driver APIs
  * @defgroup mono_interface MONO driver APIs
  * @ingroup io_interfaces

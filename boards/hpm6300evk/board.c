@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 hpmicro
+ * Copyright (c) 2022 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
@@ -10,7 +10,6 @@
 #include "hpm_lcdc_drv.h"
 #include "hpm_i2c_drv.h"
 #include "hpm_gpio_drv.h"
-#include "hpm_debug_console.h"
 #include "hpm_dram_drv.h"
 #include "pinmux.h"
 #include "hpm_pmp_drv.h"
@@ -21,7 +20,12 @@
 #include "hpm_pwm_drv.h"
 #include "hpm_trgm_drv.h"
 #include "hpm_pllctlv2_drv.h"
+#include "hpm_enet_drv.h"
 #include "hpm_pcfg_drv.h"
+
+#if !defined(CONFIG_NDEBUG_CONSOLE) || !CONFIG_NDEBUG_CONSOLE
+#include "hpm_debug_console.h"
+#endif
 
 static board_timer_cb timer_cb;
 
@@ -88,6 +92,7 @@ ATTR_PLACE_AT(".uf2_signature") const uint32_t uf2_signature = BOARD_UF2_SIGNATU
 
 void board_init_console(void)
 {
+#if !defined(CONFIG_NDEBUG_CONSOLE) || !CONFIG_NDEBUG_CONSOLE
 #if console_type_uart == BOARD_CONSOLE_TYPE
     console_config_t cfg;
 
@@ -109,6 +114,7 @@ void board_init_console(void)
 #else
     while (1) {
     }
+#endif
 #endif
 }
 
@@ -345,6 +351,8 @@ void board_init_clock(void)
         /* Select clock setting preset1 */
         sysctl_clock_set_preset(HPM_SYSCTL, 2);
     }
+
+
     /* Add most Clocks to group 0 */
     clock_add_to_group(clock_cpu0, 0);
     clock_add_to_group(clock_ahbp, 0);
@@ -410,10 +418,22 @@ void board_init_clock(void)
 
     /* Connect Group0 to CPU0 */
     clock_connect_group_to_cpu(0, 0);
-    /* Configure CPU0 to 480MHz */
+    /*
+     * Configure CPU0 to 480MHz
+     *
+     *  NOTE: The PLL2 is disabled by default, and it will be enabled automatically if
+     *        it is required by any nodes.
+     *  Here the PLl2 clock is enabled after switching CPU clock source to it
+     */
     clock_set_source_divider(clock_cpu0, clk_src_pll1_clk0, 1);
+    /* Configure PLL1_CLK0 Post Divider to 1.2 */
+    pllctlv2_set_postdiv(HPM_PLLCTLV2, 1, 0, 1);
+    /* Configure PLL1 clock frequencey to 576MHz, the PLL1_CLK0 frequency  =- 576MHz / 1.2 = 480MHz */
+    pllctlv2_init_pll_with_freq(HPM_PLLCTLV2, 1, 576000000);
 
     clock_update_core_clock();
+
+    clock_set_source_divider(clock_aud1, clk_src_pll2_clk0, 46); /* config clock_aud1 for 44100*n sample rate */
 }
 
 uint32_t board_init_adc12_clock(ADC16_Type *ptr)
@@ -456,6 +476,11 @@ uint32_t board_init_pdm_clock(void)
     return clock_get_frequency(clock_pdm);
 }
 
+hpm_stat_t board_set_audio_pll_clock(uint32_t freq)
+{
+    return pllctlv2_init_pll_with_freq(HPM_PLLCTLV2, 2, freq);    /* pll2clk */
+}
+
 uint32_t board_init_i2s_clock(I2S_Type *ptr)
 {
     return 0;
@@ -472,7 +497,7 @@ uint32_t board_init_dac_clock(DAC_Type *ptr, bool clk_src_ahb)
 
     if (ptr == HPM_DAC) {
         if (clk_src_ahb == true) {
-            /* Configure the DAC clock to 133MHz */
+            /* Configure the DAC clock to 160MHz */
             clock_set_dac_source(clock_dac0, clk_dac_src_ahb);
         } else {
             /* Configure the DAC clock to 166MHz */
@@ -643,6 +668,9 @@ hpm_stat_t board_init_enet_rmii_reference_clock(ENET_Type *ptr, bool internal)
     } else {
         return status_invalid_argument;
     }
+
+    enet_rmii_enable_clock(ptr, internal);
+
     return status_success;
 }
 
@@ -655,6 +683,11 @@ hpm_stat_t board_init_enet_pins(ENET_Type *ptr)
 {
     init_enet_pins(ptr);
 
+    return status_success;
+}
+
+hpm_stat_t board_reset_enet_phy(ENET_Type *ptr)
+{
     return status_success;
 }
 
@@ -679,4 +712,9 @@ uint32_t board_init_uart_clock(UART_Type *ptr)
         /* Not supported */
     }
     return freq;
+}
+
+uint8_t board_enet_get_dma_pbl(ENET_Type *ptr)
+{
+    return enet_pbl_16;
 }

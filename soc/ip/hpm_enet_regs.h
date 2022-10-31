@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 hpmicro
+ * Copyright (c) 2021-2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -232,8 +232,8 @@ errors */
     __R  uint8_t  RESERVED10[372];             /* 0x58C - 0x6FF: Reserved */
     __RW uint32_t TS_CTRL;                     /* 0x700: Timestamp Control Register */
     __RW uint32_t SUB_SEC_INCR;                /* 0x704: Sub-Second Increment Register */
-    __RW uint32_t SYST_SEC;                    /* 0x708: System Time - Seconds Register */
-    __RW uint32_t SYST_NSEC;                   /* 0x70C: System Time - Nanoseconds Register */
+    __R  uint32_t SYST_SEC;                    /* 0x708: System Time - Seconds Register */
+    __R  uint32_t SYST_NSEC;                   /* 0x70C: System Time - Nanoseconds Register */
     __RW uint32_t SYST_SEC_UPD;                /* 0x710: System Time - Seconds Update Register */
     __RW uint32_t SYST_NSEC_UPD;               /* 0x714: System Time - Nanoseconds Update Register */
     __RW uint32_t TS_ADDEND;                   /* 0x718: Timestamp Addend Register */
@@ -242,8 +242,8 @@ errors */
     __RW uint32_t SYSTM_H_SEC;                 /* 0x724: System Time - Higher Word Seconds Register */
     __R  uint32_t TS_STATUS;                   /* 0x728: Timestamp Status Register */
     __RW uint32_t PPS_CTRL;                    /* 0x72C: PPS Control Register */
-    __RW uint32_t AUX_TS_NSEC;                 /* 0x730: Auxiliary Timestamp - Nanoseconds Register */
-    __RW uint32_t AUX_TS_SEC;                  /* 0x734: Auxiliary Timestamp - Seconds Register */
+    __R  uint32_t AUX_TS_NSEC;                 /* 0x730: Auxiliary Timestamp - Nanoseconds Register */
+    __R  uint32_t AUX_TS_SEC;                  /* 0x734: Auxiliary Timestamp - Seconds Register */
     __R  uint8_t  RESERVED11[40];              /* 0x738 - 0x75F: Reserved */
     __RW uint32_t PPS0_INTERVAL;               /* 0x760: PPS0 Interval Register */
     __RW uint32_t PPS0_WIDTH;                  /* 0x764: PPS0 Width Register */
@@ -1552,14 +1552,13 @@ errors */
 
 /* Bitfield definition for register: MAC_ADDR_0_HIGH */
 /*
- * AE (RW)
+ * AE (RO)
  *
  * Address Enable
  *  This bit is always set to 1.
  */
 #define ENET_MAC_ADDR_0_HIGH_AE_MASK (0x80000000UL)
 #define ENET_MAC_ADDR_0_HIGH_AE_SHIFT (31U)
-#define ENET_MAC_ADDR_0_HIGH_AE_SET(x) (((uint32_t)(x) << ENET_MAC_ADDR_0_HIGH_AE_SHIFT) & ENET_MAC_ADDR_0_HIGH_AE_MASK)
 #define ENET_MAC_ADDR_0_HIGH_AE_GET(x) (((uint32_t)(x) & ENET_MAC_ADDR_0_HIGH_AE_MASK) >> ENET_MAC_ADDR_0_HIGH_AE_SHIFT)
 
 /*
@@ -5011,26 +5010,24 @@ errors */
 
 /* Bitfield definition for register: SYST_SEC */
 /*
- * TSS (RW)
+ * TSS (RO)
  *
  * Timestamp Second
  *  The value in this field indicates the current value in seconds of the System Time maintained by the MAC.
  */
 #define ENET_SYST_SEC_TSS_MASK (0xFFFFFFFFUL)
 #define ENET_SYST_SEC_TSS_SHIFT (0U)
-#define ENET_SYST_SEC_TSS_SET(x) (((uint32_t)(x) << ENET_SYST_SEC_TSS_SHIFT) & ENET_SYST_SEC_TSS_MASK)
 #define ENET_SYST_SEC_TSS_GET(x) (((uint32_t)(x) & ENET_SYST_SEC_TSS_MASK) >> ENET_SYST_SEC_TSS_SHIFT)
 
 /* Bitfield definition for register: SYST_NSEC */
 /*
- * TSSS (RW)
+ * TSSS (RO)
  *
  * Timestamp Sub Seconds
  *  The value in this field has the sub second representation of time, with an accuracy of 0.46 ns. When Bit 9 (TSCTRLSSR) is set in Register 448 (Timestamp Control Register), each bit represents 1 ns and the maximum value is 0x3B9A_C9FF, after which it rolls-over to zero.
  */
 #define ENET_SYST_NSEC_TSSS_MASK (0x7FFFFFFFUL)
 #define ENET_SYST_NSEC_TSSS_SHIFT (0U)
-#define ENET_SYST_NSEC_TSSS_SET(x) (((uint32_t)(x) << ENET_SYST_NSEC_TSSS_SHIFT) & ENET_SYST_NSEC_TSSS_MASK)
 #define ENET_SYST_NSEC_TSSS_GET(x) (((uint32_t)(x) & ENET_SYST_NSEC_TSSS_MASK) >> ENET_SYST_NSEC_TSSS_SHIFT)
 
 /* Bitfield definition for register: SYST_SEC_UPD */
@@ -5353,24 +5350,22 @@ errors */
 
 /* Bitfield definition for register: AUX_TS_NSEC */
 /*
- * AUXTSLO (RW)
+ * AUXTSLO (RO)
  *
  * Contains the lower 31 bits (nano-seconds field) of the auxiliary timestamp.
  */
 #define ENET_AUX_TS_NSEC_AUXTSLO_MASK (0x7FFFFFFFUL)
 #define ENET_AUX_TS_NSEC_AUXTSLO_SHIFT (0U)
-#define ENET_AUX_TS_NSEC_AUXTSLO_SET(x) (((uint32_t)(x) << ENET_AUX_TS_NSEC_AUXTSLO_SHIFT) & ENET_AUX_TS_NSEC_AUXTSLO_MASK)
 #define ENET_AUX_TS_NSEC_AUXTSLO_GET(x) (((uint32_t)(x) & ENET_AUX_TS_NSEC_AUXTSLO_MASK) >> ENET_AUX_TS_NSEC_AUXTSLO_SHIFT)
 
 /* Bitfield definition for register: AUX_TS_SEC */
 /*
- * AUXTSHI (RW)
+ * AUXTSHI (RO)
  *
  * Contains the lower 32 bits of the Seconds field of the auxiliary timestamp.
  */
 #define ENET_AUX_TS_SEC_AUXTSHI_MASK (0xFFFFFFFFUL)
 #define ENET_AUX_TS_SEC_AUXTSHI_SHIFT (0U)
-#define ENET_AUX_TS_SEC_AUXTSHI_SET(x) (((uint32_t)(x) << ENET_AUX_TS_SEC_AUXTSHI_SHIFT) & ENET_AUX_TS_SEC_AUXTSHI_MASK)
 #define ENET_AUX_TS_SEC_AUXTSHI_GET(x) (((uint32_t)(x) & ENET_AUX_TS_SEC_AUXTSHI_MASK) >> ENET_AUX_TS_SEC_AUXTSHI_SHIFT)
 
 /* Bitfield definition for register: PPS0_INTERVAL */
@@ -6931,13 +6926,13 @@ errors */
 
 /* Bitfield definition for register: CTRL2 */
 /*
- * ENET0_IRQ_EN (RW)
+ * ENET0_LPI_INTR_EN (RW)
  *
  */
-#define ENET_CTRL2_ENET0_IRQ_EN_MASK (0xF8000000UL)
-#define ENET_CTRL2_ENET0_IRQ_EN_SHIFT (27U)
-#define ENET_CTRL2_ENET0_IRQ_EN_SET(x) (((uint32_t)(x) << ENET_CTRL2_ENET0_IRQ_EN_SHIFT) & ENET_CTRL2_ENET0_IRQ_EN_MASK)
-#define ENET_CTRL2_ENET0_IRQ_EN_GET(x) (((uint32_t)(x) & ENET_CTRL2_ENET0_IRQ_EN_MASK) >> ENET_CTRL2_ENET0_IRQ_EN_SHIFT)
+#define ENET_CTRL2_ENET0_LPI_INTR_EN_MASK (0x20000000UL)
+#define ENET_CTRL2_ENET0_LPI_INTR_EN_SHIFT (29U)
+#define ENET_CTRL2_ENET0_LPI_INTR_EN_SET(x) (((uint32_t)(x) << ENET_CTRL2_ENET0_LPI_INTR_EN_SHIFT) & ENET_CTRL2_ENET0_LPI_INTR_EN_MASK)
+#define ENET_CTRL2_ENET0_LPI_INTR_EN_GET(x) (((uint32_t)(x) & ENET_CTRL2_ENET0_LPI_INTR_EN_MASK) >> ENET_CTRL2_ENET0_LPI_INTR_EN_SHIFT)
 
 /*
  * ENET0_REFCLK_OE (RW)

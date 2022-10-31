@@ -1,19 +1,21 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
 
-/*---------------------------------------------------------------------*
+/*---------------------------------------------------------------------
  * Includes
- *---------------------------------------------------------------------*/
+ *---------------------------------------------------------------------
+ */
 #include "hpm_enet_drv.h"
 #include "hpm_enet_soc_drv.h"
 
-/*---------------------------------------------------------------------*
+/*---------------------------------------------------------------------
  * Internal API
- *---------------------------------------------------------------------*/
+ *---------------------------------------------------------------------
+ */
 static void enet_mode_init(ENET_Type *ptr, uint32_t intr)
 {
     /* receive and transmit store and forward */
@@ -30,19 +32,21 @@ static void enet_mode_init(ENET_Type *ptr, uint32_t intr)
 
     ptr->DMA_INTR_EN |= intr;
 
-    while (ENET_DMA_BUS_STATUS_AXIRDSTS_GET(ptr->DMA_BUS_STATUS) || ENET_DMA_BUS_STATUS_AXWHSTS_GET(ptr->DMA_BUS_STATUS)) {}
+    while (ENET_DMA_BUS_STATUS_AXIRDSTS_GET(ptr->DMA_BUS_STATUS) || ENET_DMA_BUS_STATUS_AXWHSTS_GET(ptr->DMA_BUS_STATUS)) {
+    }
 
     /* start the receive and transmit dma */
     ptr->DMA_OP_MODE |= ENET_DMA_OP_MODE_ST_MASK | ENET_DMA_OP_MODE_SR_MASK;
 }
 
-static int enet_dma_init(ENET_Type *ptr, enet_desc_t *desc, uint32_t intr)
+static int enet_dma_init(ENET_Type *ptr, enet_desc_t *desc, uint32_t intr, uint8_t pbl)
 {
     /* generate software reset */
     ptr->DMA_BUS_MODE |= ENET_DMA_BUS_MODE_SWR_MASK;
 
     /* wait for the completion of reset process */
-    while (ENET_DMA_BUS_MODE_SWR_GET(ptr->DMA_BUS_MODE)) {}
+    while (ENET_DMA_BUS_MODE_SWR_GET(ptr->DMA_BUS_MODE)) {
+    }
 
     /* initialize bus mode register */
     ptr->DMA_BUS_MODE |= ENET_DMA_BUS_MODE_AAL_MASK;
@@ -53,7 +57,8 @@ static int enet_dma_init(ENET_Type *ptr, enet_desc_t *desc, uint32_t intr)
     ptr->DMA_BUS_MODE |= ENET_DMA_BUS_MODE_PBLX8_MASK;
 
     /* set programmable burst length */
-    ptr->DMA_BUS_MODE |= ENET_DMA_BUS_MODE_PBL_SET(enet_pbl_32);
+    ptr->DMA_BUS_MODE &= ~ENET_DMA_BUS_MODE_PBL_SHIFT;
+    ptr->DMA_BUS_MODE |= ENET_DMA_BUS_MODE_PBL_SET(pbl);
 
     /* disable separate pbl */
     ptr->DMA_BUS_MODE &= ~ENET_DMA_BUS_MODE_USP_MASK;
@@ -68,8 +73,7 @@ static int enet_dma_init(ENET_Type *ptr, enet_desc_t *desc, uint32_t intr)
     /* set the maximum enabled burst length */
     if (ENET_DMA_BUS_MODE_FB_GET(ptr->DMA_BUS_MODE) == 0) {
         ptr->DMA_AXI_MODE |= ENET_DMA_AXI_MODE_BLEN4_MASK | ENET_DMA_AXI_MODE_BLEN8_MASK | ENET_DMA_AXI_MODE_BLEN16_MASK;
-    }
-    else {
+    } else {
         /* TODO: set BLENX_MASK */
     }
 
@@ -132,9 +136,10 @@ static int enet_mac_init(ENET_Type *ptr, enet_mac_config_t *config, enet_inf_typ
     return true;
 }
 
-/*---------------------------------------------------------------------*
+/*---------------------------------------------------------------------
  * Driver API
- *---------------------------------------------------------------------*/
+ *---------------------------------------------------------------------
+ */
 void enet_dma_flush(ENET_Type *ptr)
 {
     /* flush DMA transmit FIFO */
@@ -154,10 +159,11 @@ void enet_write_phy(ENET_Type *ptr, uint32_t phy_addr, uint32_t addr, uint32_t d
                    | ENET_GMII_ADDR_GR_SET(addr)
                    | ENET_GMII_ADDR_CR_SET(enet_csr_150m_to_250m_mdc_csr_div_102)
                    | ENET_GMII_ADDR_GW_SET(enet_phy_op_write)
-                   | ENET_GMII_ADDR_GB_SET(enet_phy_busy);
+                   | ENET_GMII_ADDR_GB_SET(enet_gmii_busy);
 
     /* wait until the write operation is completed */
-    while (ENET_GMII_ADDR_GB_GET(ptr->GMII_ADDR)) {}
+    while (ENET_GMII_ADDR_GB_GET(ptr->GMII_ADDR)) {
+    }
 }
 
 uint16_t enet_read_phy(ENET_Type *ptr, uint32_t phy_addr, uint32_t addr)
@@ -167,13 +173,27 @@ uint16_t enet_read_phy(ENET_Type *ptr, uint32_t phy_addr, uint32_t addr)
                    | ENET_GMII_ADDR_GR_SET(addr)
                    | ENET_GMII_ADDR_CR_SET(enet_csr_150m_to_250m_mdc_csr_div_102)
                    | ENET_GMII_ADDR_GW_SET(enet_phy_op_read)
-                   | ENET_GMII_ADDR_GB_SET(enet_phy_busy);
+                   | ENET_GMII_ADDR_GB_SET(enet_gmii_busy);
 
     /* wait until the write operation is completed */
-    while (ENET_GMII_ADDR_GB_GET(ptr->GMII_ADDR)) {}
+    while (ENET_GMII_ADDR_GB_GET(ptr->GMII_ADDR)) {
+    }
 
     /* read and return data */
     return (uint16_t)ENET_GMII_DATA_GD_GET(ptr->GMII_DATA);
+}
+
+
+void enet_set_line_speed(ENET_Type *ptr, enet_line_speed_t speed)
+{
+    ptr->MACCFG &= ~(ENET_MACCFG_PS_MASK | ENET_MACCFG_FES_MASK);
+    ptr->MACCFG |= speed << ENET_MACCFG_FES_SHIFT;
+}
+
+void enet_set_duplex_mode(ENET_Type *ptr, enet_duplex_mode_t mode)
+{
+    ptr->MACCFG &= ~ENET_MACCFG_DM_MASK;
+    ptr->MACCFG |= ENET_MACCFG_DM_SET(mode);
 }
 
 int enet_controller_init(ENET_Type *ptr, enet_inf_type_t inf_type, enet_desc_t *desc, enet_mac_config_t *config, uint32_t intr)
@@ -182,7 +202,7 @@ int enet_controller_init(ENET_Type *ptr, enet_inf_type_t inf_type, enet_desc_t *
     enet_intf_selection(ptr, inf_type);
 
     /* initialize DMA */
-    enet_dma_init(ptr, desc, intr);
+    enet_dma_init(ptr, desc, intr, config->dma_pbl);
 
     /* Initialize MAC */
     enet_mac_init(ptr, config, inf_type);
@@ -190,9 +210,10 @@ int enet_controller_init(ENET_Type *ptr, enet_inf_type_t inf_type, enet_desc_t *
     return true;
 }
 
-/******************************************************************************/
-/*                           DMA API                                          */
-/******************************************************************************/
+/*****************************************************************************
+ *                           DMA API
+ *****************************************************************************
+ */
 uint32_t enet_check_received_frame(enet_rx_desc_t **parent_rx_desc_list_cur, enet_rx_frame_info_t *rx_frame_info)
 {
     enet_rx_desc_t *rx_desc_list_cur = *parent_rx_desc_list_cur;
@@ -512,18 +533,13 @@ void enet_update_ptp_timeoffset(ENET_Type *ptr, enet_ptp_time_t *timeoffset)
 
 void enet_adjust_ptp_time_freq(ENET_Type *ptr, int32_t adj)
 {
-    ptr->TS_ADDEND = (uint32_t)((int64_t)adj * ENET_ADJ_FREQ_BASE_ADDEND / (ENET_ONE_SEC_IN_NANOSEC - adj) + ENET_ADJ_FREQ_BASE_ADDEND);;
+    ptr->TS_ADDEND = (uint32_t)((int64_t)adj * ENET_ADJ_FREQ_BASE_ADDEND / (ENET_ONE_SEC_IN_NANOSEC - adj) + ENET_ADJ_FREQ_BASE_ADDEND);
 
     ptr->TS_CTRL |= ENET_TS_CTRL_TSADDREG_MASK;
 
     while (ENET_TS_CTRL_TSADDREG_GET(ptr->TS_CTRL)) {
 
     }
-}
-
-void enet_eanble_timestamp(ENET_Type *ptr)
-{
-    ptr->TS_CTRL |= ENET_TS_CTRL_TSENA_MASK;
 }
 
 void enet_set_ptp_version(ENET_Type *ptr, enet_ptp_version_t ptp_ver)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -43,7 +43,7 @@
  * - CFG_TUSB_MEM_ALIGN   : __attribute__ ((aligned(4)))
  */
 #ifndef CFG_TUSB_MEM_SECTION
-	#define CFG_TUSB_MEM_SECTION
+	#define CFG_TUSB_MEM_SECTION		__attribute__ ((section(".noncacheable")))
 #endif
 
 #ifndef CFG_TUSB_MEM_ALIGN

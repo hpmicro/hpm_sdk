@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -112,9 +112,13 @@ static void event_handler_redraw_keyboard(lv_event_t * e)
 /*速度位置切换按钮回调*/
 static void event_handler_switch_speed_pos(lv_event_t * e)
 {
-    uint32_t *val = lv_event_get_param(e);
-    fre_user_mode = *val;
-    fre_setspeed = 0;
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t *obj = lv_event_get_target(e);
+    LV_UNUSED(obj);
+    if (code == LV_EVENT_VALUE_CHANGED) {
+        fre_user_mode = lv_obj_has_state(obj, LV_STATE_CHECKED) ? 1 : 0;
+        fre_setspeed = 0;
+    }
 }
 
 void lv_ex_motor_speed(void)

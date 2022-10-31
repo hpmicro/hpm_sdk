@@ -9,7 +9,9 @@ connect [I2C Pins](lab_board_app_i2c_pin) on the two boards。
 
 ## Running the example
 
-When the example runs successfully, the log would be seen on the terminal like:
+- Run slave first, and then run master.
+
+- When the example runs successfully, the log would be seen on the terminal like:
 ```
 I2C DMA master example
 The sent data are:

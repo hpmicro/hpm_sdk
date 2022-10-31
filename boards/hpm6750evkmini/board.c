@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2022 hpmicro
+ * Copyright (c) 2021-2022 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
@@ -10,7 +10,6 @@
 #include "hpm_lcdc_drv.h"
 #include "hpm_i2c_drv.h"
 #include "hpm_gpio_drv.h"
-#include "hpm_debug_console.h"
 #include "hpm_dram_drv.h"
 #include "pinmux.h"
 #include "hpm_pmp_drv.h"
@@ -21,6 +20,12 @@
 #include "hpm_sdxc_soc_drv.h"
 #include "hpm_pllctl_drv.h"
 #include "hpm_pwm_drv.h"
+#include "hpm_pcfg_drv.h"
+#include "hpm_enet_drv.h"
+
+#if !defined(CONFIG_NDEBUG_CONSOLE) || !CONFIG_NDEBUG_CONSOLE
+#include "hpm_debug_console.h"
+#endif
 
 static board_timer_cb timer_cb;
 
@@ -87,6 +92,7 @@ ATTR_PLACE_AT(".uf2_signature") const uint32_t uf2_signature = BOARD_UF2_SIGNATU
 
 void board_init_console(void)
 {
+#if !defined(CONFIG_NDEBUG_CONSOLE) || !CONFIG_NDEBUG_CONSOLE
 #if BOARD_CONSOLE_TYPE == console_type_uart
     console_config_t cfg;
 
@@ -106,7 +112,9 @@ void board_init_console(void)
         }
     }
 #else
-    while(1);
+    while (1) {
+    }
+#endif
 #endif
 }
 
@@ -141,7 +149,7 @@ void board_init_uart(UART_Type *ptr)
 
 void board_init_ahb(void)
 {
-    clock_set_source_divider(clock_ahb,clk_src_pll1_clk1,2);/*200m hz*/
+    clock_set_source_divider(clock_ahb, clk_src_pll1_clk1, 2); /*200m hz*/
 }
 
 void board_print_banner(void)
@@ -289,7 +297,8 @@ void board_i2c_bus_clear(I2C_Type *ptr)
         gpio_set_pin_input(BOARD_LED_GPIO_CTRL, BOARD_CAP_I2C_CLK_GPIO_INDEX, BOARD_CAP_I2C_CLK_GPIO_PIN);
         if (!gpio_read_pin(BOARD_LED_GPIO_CTRL, BOARD_CAP_I2C_CLK_GPIO_INDEX, BOARD_CAP_I2C_CLK_GPIO_PIN)) {
             printf("CLK is low, please power cycle the board\n");
-            while (1) {}
+            while (1) {
+            }
         }
         if (!gpio_read_pin(BOARD_LED_GPIO_CTRL, BOARD_CAP_I2C_SDA_GPIO_INDEX, BOARD_CAP_I2C_SDA_GPIO_PIN)) {
             printf("SDA is low, try to issue I2C bus clear\n");
@@ -333,8 +342,9 @@ void board_init_i2c(I2C_Type *ptr)
     freq = clock_get_frequency(BOARD_CAP_I2C_CLK_NAME);
     stat = i2c_init_master(BOARD_CAP_I2C_BASE, freq, &config);
     if (stat != status_success) {
-        printf("failed to initialize i2c 0x%lx\n", (uint32_t)BOARD_CAP_I2C_BASE);
-        while (1) {}
+        printf("failed to initialize i2c 0x%lx\n", (uint32_t) BOARD_CAP_I2C_BASE);
+        while (1) {
+        }
     }
 }
 
@@ -424,11 +434,10 @@ void board_init_led_pins(void)
 void board_led_toggle(void)
 {
     static uint8_t i;
-    if(BOARD_LED_PULL_STATUS){
+    if (BOARD_LED_PULL_STATUS) {
         /* hpm6750 Mini Rev A led configure*/
         gpio_write_port(BOARD_G_GPIO_CTRL, BOARD_G_GPIO_INDEX, (7 & ~(1 << i)) << BOARD_G_GPIO_PIN);
-    }
-    else{
+    } else {
         /* hpm6750 Mini Rev B led configure*/
         gpio_write_port(BOARD_G_GPIO_CTRL, BOARD_G_GPIO_INDEX, ((1 << i)) << BOARD_G_GPIO_PIN);
     }
@@ -588,9 +597,13 @@ void board_init_clock(void)
     /* Connect Group0 to CPU0 */
     clock_connect_group_to_cpu(0, 0);
 
+    /* Bump up DCDC voltage to 1200mv */
+    pcfg_dcdc_set_voltage(HPM_PCFG, 1200);
+
     if (status_success != pllctl_init_int_pll_with_freq(HPM_PLLCTL, 0, BOARD_CPU_FREQ)) {
         printf("Failed to set pll0_clk0 to %ldHz\n", BOARD_CPU_FREQ);
-        while(1);
+        while (1) {
+        }
     }
 
     clock_set_source_divider(clock_cpu0, clk_src_pll0_clk0, 1);
@@ -599,6 +612,8 @@ void board_init_clock(void)
     clock_connect_group_to_cpu(1, 1);
 
     clock_update_core_clock();
+
+    clock_set_source_divider(clock_aud1, clk_src_pll3_clk0, 54); /* config clock_aud1 for 44100*n sample rate */
 }
 
 uint32_t board_init_cam_clock(CAM_Type *ptr)
@@ -676,6 +691,11 @@ uint32_t board_init_pdm_clock(void)
     sysctl_set_adc_i2s_clock_mux(HPM_SYSCTL, clock_node_i2s0, clock_source_i2s_aud0_clk);
 
     return clock_get_frequency(clock_pdm);
+}
+
+hpm_stat_t board_set_audio_pll_clock(uint32_t freq)
+{
+    return pllctl_init_frac_pll_with_freq(HPM_PLLCTL, 3, freq);    /* pll3clk */
 }
 
 uint32_t board_init_i2s_clock(I2S_Type *ptr)
@@ -926,6 +946,9 @@ hpm_stat_t board_init_enet_rmii_reference_clock(ENET_Type *ptr, bool internal)
     } else {
         return status_invalid_argument;
     }
+
+    enet_rmii_enable_clock(ptr, internal);
+
     return status_success;
 }
 
@@ -945,6 +968,17 @@ hpm_stat_t board_init_enet_pins(ENET_Type *ptr)
 
     if (ptr == HPM_ENET1) {
         gpio_set_pin_output_with_initial(BOARD_ENET_RMII_RST_GPIO, BOARD_ENET_RMII_RST_GPIO_INDEX, BOARD_ENET_RMII_RST_GPIO_PIN, 0);
+    } else {
+        return status_invalid_argument;
+    }
+
+    return status_success;
+}
+
+hpm_stat_t board_reset_enet_phy(ENET_Type *ptr)
+{
+    if (ptr == HPM_ENET1) {
+        gpio_write_pin(BOARD_ENET_RMII_RST_GPIO, BOARD_ENET_RMII_RST_GPIO_INDEX, BOARD_ENET_RMII_RST_GPIO_PIN, 0);
         board_delay_ms(1);
         gpio_write_pin(BOARD_ENET_RMII_RST_GPIO, BOARD_ENET_RMII_RST_GPIO_INDEX, BOARD_ENET_RMII_RST_GPIO_PIN, 1);
     } else {
@@ -952,4 +986,9 @@ hpm_stat_t board_init_enet_pins(ENET_Type *ptr)
     }
 
     return status_success;
+}
+
+uint8_t board_enet_get_dma_pbl(ENET_Type *ptr)
+{
+    return enet_pbl_32;
 }

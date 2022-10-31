@@ -23,7 +23,7 @@
 		- 核心板的J8和电机驱动板的J12相连。**注意对照丝印，不要插反**
 		- 下图是连接完成后的整体效果图，红色方框标出了可能需要操作的器件的位置：
 
-		![image-1](../images/boards/extension/drv_lv50a_mp1907__oee.jpg "image-1")
+		![image-1](../images/boards/extension/drv_lv50a_mp1907__oee.png "image-1")
 
 ## **HPM6750EVKMINI-TO-Motor**电机扩展板
 
@@ -33,7 +33,7 @@
   - j2和j3插件相连
   - **HPM6750EVKMINI-TO-Motor**电机扩展板、**HPM6750EVKMINI**核心板和**DRV-LV50A-MP1907**电机驱动板连接如下图所示：
 
- ![image-2](../images/boards/extension/hpm6750evkmini_to_motor_220530RevA.jpg "image-2")
+ ![image-2](../images/boards/extension/hpm6750evkmini_to_motor_220530RevA.png "image-2")
 ## **LCD-800480W070TC** 显示屏
 
   (lab_lcd_800480w070tc)=

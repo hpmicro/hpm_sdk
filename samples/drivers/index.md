@@ -5,11 +5,12 @@
     :maxdepth: 3
 
     hall/README
-    pwm/README
+    pwm/index
     qei/README
     jpeg/README
     mchtmr/README
     pllctl/README
+    pllctlv2/README
     synt/README
     sysctl/README
     uart/uart_irq/README
@@ -33,8 +34,12 @@
     wdg/README
     spi/index
     i2c/index
-    dma/README
+    dma/dma_general_transfer/README
+    dma/dma_uart_rx_circle_transfer/README
     dram/README
     ptpc/README
-    mbx/README
+    mbx/index
     l1c/README
+    tsns/README
+    pmp/README
+    dac/README

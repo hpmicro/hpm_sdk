@@ -1,5 +1,8 @@
-# Copyright 2021 hpmicro
+# Copyright 2021-2022 hpmicro
 # SPDX-License-Identifier: BSD-3-Clause
+
+
+cmake_policy(SET CMP0079 NEW)
 
 function(sdk_src)
     foreach(file ${ARGN})
@@ -359,28 +362,48 @@ function(sdk_raise_fatal_error_if_valid_at_least_one)
     message(FATAL_ERROR "ERROR: at least one of ${ARGN} needs to set")
 endfunction()
 
-add_library(hpm_sdk_nds_lib_itf INTERFACE)
-
+# NDSGCC sections
 function(sdk_nds_compile_options)
     foreach(opt ${ARGN})
-        target_compile_options(hpm_sdk_nds_lib_itf INTERFACE ${opt})
+        target_compile_options(${HPM_SDK_NDSGCC_LIB_ITF} INTERFACE ${opt})
     endforeach()
 endfunction()
 
 function(sdk_nds_compile_definitions)
     foreach(def ${ARGN})
-        target_compile_definitions(hpm_sdk_nds_lib_itf INTERFACE ${def})
+        target_compile_definitions(${HPM_SDK_NDSGCC_LIB_ITF} INTERFACE ${def})
     endforeach()
 endfunction()
 
 function(sdk_nds_link_libraries)
     foreach(lib ${ARGN})
-        target_link_libraries(hpm_sdk_nds_lib_itf INTERFACE ${lib})
+        target_link_libraries(${HPM_SDK_NDSGCC_LIB_ITF} INTERFACE ${lib})
     endforeach()
 endfunction()
 
 function(sdk_nds_ld_options)
     foreach(opt ${ARGN})
-        target_link_libraries(hpm_sdk_nds_lib_itf INTERFACE ${opt})
+        target_link_libraries(${HPM_SDK_NDSGCC_LIB_ITF} INTERFACE ${opt})
     endforeach()
 endfunction()
+
+function(add_subdirectory_ifndef feature dir)
+    if(NOT DEFINED ${feature} OR "${${feature}}" EQUAL "0")
+        add_subdirectory(${dir})
+    endif()
+endfunction()
+
+function(sdk_gcc_src)
+    foreach(file ${ARGN})
+        if(IS_DIRECTORY ${file})
+            message(FATAL_ERROR "directory ${file} can't be added to sdk_lib_src")
+        endif()
+        if(IS_ABSOLUTE ${file})
+            set(path ${file})
+        else()
+            set(path ${CMAKE_CURRENT_SOURCE_DIR}/${file})
+        endif()
+        target_sources(${HPM_SDK_GCC_LIB} PUBLIC ${path})
+    endforeach()
+endfunction()
+

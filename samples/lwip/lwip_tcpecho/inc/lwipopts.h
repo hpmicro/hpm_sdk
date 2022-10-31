@@ -13,7 +13,7 @@
 #define ARP_QUEUEING            0
 #define LWIP_RAW                1
 #define LWIP_IPV4               1
-#define LWIP_TIMERS             0
+#define LWIP_TIMERS             1
 #define LWIP_NETIF_TX_SINGLE_PBUF 1
 /**
  * NO_SYS==1: Provides VERY minimal functionality. Otherwise,
@@ -97,7 +97,6 @@ a lot of data that needs to be copied, this should be set high. */
    interfaces. DHCP is not implemented in lwIP 0.5.1, however, so
    turning this on does currently not work. */
 #define LWIP_DHCP               0
-
 
 /* ---------- UDP options ---------- */
 #define LWIP_UDP                1

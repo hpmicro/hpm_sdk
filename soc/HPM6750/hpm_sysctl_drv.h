@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -562,7 +562,8 @@ static inline bool sysctl_monitor_result_is_valid(SYSCTL_Type *ptr, uint8_t moni
 static inline uint32_t sysctl_monitor_get_current_result(SYSCTL_Type *ptr,
                                                          uint8_t monitor_index)
 {
-    while(!sysctl_monitor_result_is_valid(ptr, monitor_index));
+    while (!sysctl_monitor_result_is_valid(ptr, monitor_index)) {
+    }
     return ptr->MONITOR[monitor_index].CURRENT;
 }
 

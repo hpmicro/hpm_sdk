@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -8,9 +8,10 @@
 #ifndef HPM_ENET_DRV_H
 #define HPM_ENET_DRV_H
 
-/*---------------------------------------------------------------------*
+/*---------------------------------------------------------------------
  * Includes
- *---------------------------------------------------------------------*/
+ *---------------------------------------------------------------------
+ */
 #include "hpm_common.h"
 #include "hpm_enet_regs.h"
 #include "hpm_soc_feature.h"
@@ -23,9 +24,10 @@
  * @{
  */
 
-/*---------------------------------------------------------------------*
+/*---------------------------------------------------------------------
  *  Macro Constant Declarations
- *---------------------------------------------------------------------*/
+ *---------------------------------------------------------------------
+ */
 #define ENET_HEADER               (14U)    /**< 6-byte Dest addr, 6-byte Src addr, 2-byte type */
 #define ENET_EXTRA                (2U)     /**< Extra bytes in some cases */
 #define ENET_VLAN_TAG             (4U)     /**< optional 802.1q VLAN Tag */
@@ -40,9 +42,10 @@
 
 #define ENET_ADJ_FREQ_BASE_ADDEND (0x7fffffffUL)  /**< PTP base adjustment addend */
 #define ENET_ONE_SEC_IN_NANOSEC   (1000000000UL)  /**< one second in nanoseconds */
-/*---------------------------------------------------------------------*
+/*---------------------------------------------------------------------
  *  Typedef Enum Declarations
- *---------------------------------------------------------------------*/
+ *---------------------------------------------------------------------
+ */
 /** @brief Programmable burst length selections */
 typedef enum {
     enet_pbl_1  = 1,
@@ -70,9 +73,9 @@ typedef enum {
 
 /** @brief PHY status */
 typedef enum {
-    enet_phy_idle = 0,
-    enet_phy_busy
-} enet_phy_status_t;
+    enet_gmii_idle = 0,
+    enet_gmii_busy
+} enet_gmii_status_t;
 
 /** @brief CSR clock range and MDC clock selections */
 /** @note The suggested range of CSR clock is approximately
@@ -104,6 +107,19 @@ typedef enum {
     enet_inf_rmii = 4,
     enet_inf_rgmii = 1
 } enet_inf_type_t;
+
+/** @brief enet line speed */
+typedef enum {
+    enet_line_speed_1000mbps  = 0,
+    enet_line_speed_10mbps    = 2,
+    enet_line_speed_100mbps   = 3
+} enet_line_speed_t;
+
+/** @brief enet duplex mode */
+typedef enum {
+    enet_half_duplex = 0,
+    enet_full_duplex
+} enet_duplex_mode_t;
 
 /** @brief enet timestamp update methods */
 typedef enum {
@@ -141,9 +157,10 @@ typedef enum {
     enet_ptp_count_res_low        /* ptp su-second count resolution at 1 ns */
 } enet_ptp_count_res_t;
 
-/*---------------------------------------------------------------------*
+/*---------------------------------------------------------------------
  *  Typedef Struct Declarations
- *---------------------------------------------------------------------*/
+ *---------------------------------------------------------------------
+ */
 /** @brief enet buffer config struct */
 typedef struct {
     uint32_t buffer;
@@ -157,6 +174,7 @@ typedef struct {
     uint32_t mac_addr_high[ENET_SOC_ADDR_MAX_COUNT];
     uint32_t mac_addr_low[ENET_SOC_ADDR_MAX_COUNT];
     uint8_t  valid_max_count;
+    uint8_t  dma_pbl;
 } enet_mac_config_t;
 
 /** @brief transmission descriptor struct */
@@ -240,8 +258,7 @@ typedef struct {
 
 
 /** @brief reception descriptor struct */
-typedef struct
-{
+typedef struct {
     union {
         uint32_t rdes0;
 
@@ -328,7 +345,7 @@ typedef struct
 
     struct {
         uint32_t rtsl;  /**< Receive Frame Timestamp Low */
-    }rdes6_bm;
+    } rdes6_bm;
 
     struct {
         uint32_t rtsh;  /**< Receive Frame Timestamp High */
@@ -385,9 +402,10 @@ typedef struct {
 #if defined __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-/*---------------------------------------------------------------------*
+/*---------------------------------------------------------------------
  * Exported Functions
- *---------------------------------------------------------------------*/
+ *---------------------------------------------------------------------
+ */
 /**
  * @brief Initialize controller
  *
@@ -400,12 +418,28 @@ extern "C" {
 int enet_controller_init(ENET_Type *ptr, enet_inf_type_t inf_type, enet_desc_t *desc, enet_mac_config_t *config, uint32_t intr);
 
 /**
+ * @brief Set port line speed
+ *
+ * @param[in] ptr An Ethernet peripheral base address
+ * @param[in] line_speed An enum variable of @ref enet_line_speed_t
+ */
+void enet_set_line_speed(ENET_Type *ptr, enet_line_speed_t speed);
+
+/**
+ * @brief Set duplex mode
+ *
+ * @param[in] ptr An Ethernet peripheral base address
+ * @param[in] mode An enum variable of @ref enet_duplex_mode_t
+ */
+void enet_set_duplex_mode(ENET_Type *ptr, enet_duplex_mode_t mode);
+
+/**
  * @brief Read phy
  *
  * @param[in] ptr An Ethernet peripheral base address
  * @param[in] phy_addr the specified address of phy
  * @param[in] addr the specified address of register
- * @retval A value corresponding to the specifeid register address
+ * @retval A value corresponding to the specified register address
  */
 uint16_t enet_read_phy(ENET_Type *ptr, uint32_t phy_addr, uint32_t addr);
 
@@ -422,7 +456,7 @@ void enet_write_phy(ENET_Type *ptr, uint32_t phy_addr, uint32_t addr, uint32_t d
 /**
  * @brief Check if there is a received frame
  *
- * @param[out] parent_rx_desc_list_cur a parrent pointer to the current reception descritpion list
+ * @param[out] parent_rx_desc_list_cur a parent pointer to the current reception description list
  * @param[in] rx_frame_info A pointer to the information of the reception frames
  * @retval A result of reception frame.
  *         1 means that a reception of frame is successful.
@@ -433,7 +467,7 @@ uint32_t enet_check_received_frame(enet_rx_desc_t **parent_rx_desc_list_cur, ene
 /**
  * @brief get a received frame
  *
- * @param[out] parent_rx_desc_list_cur A parrent pointer to the current reception descritpion list
+ * @param[out] parent_rx_desc_list_cur A parent pointer to the current reception description list
  * @param[in] rx_frame_info A pointer to the information of the reception frames
  * @retval A struct of the current reception frame
  */
@@ -442,7 +476,7 @@ enet_frame_t enet_get_received_frame(enet_rx_desc_t **parent_rx_desc_list_cur, e
 /**
  * @brief get a received frame from interrupt
  *
- * @param[out] parent_rx_desc_list_cur the parrent pointer to the current reception descritpion list
+ * @param[out] parent_rx_desc_list_cur the parent pointer to the current reception description list
  * @param[in] rx_frame_info A pointer to the information of the reception frames
  * @param[in] rx_desc_count A total count of the reception descriptors
  * @retval A struct of the current reception frame
@@ -458,7 +492,7 @@ enet_frame_t enet_get_received_frame_interrupt(enet_rx_desc_t **parent_rx_desc_l
  * @param[in] tx_buff_size the size of the transmission buffer
  * @retval a result of the transmission preparation.
  *         1 means that the preparation is successful.
- *         0 means that the prepartion is unsuccessful.
+ *         0 means that the preparation is unsuccessful.
  */
 uint32_t enet_prepare_transmission_descriptors(ENET_Type *ptr, enet_tx_desc_t **parent_tx_desc_list_cur, uint16_t frame_length, uint16_t tx_buff_size);
 

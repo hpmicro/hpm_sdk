@@ -1,9 +1,9 @@
 /*
-* Copyright (c) 2021 hpmicro
-*
-* SPDX-License-Identifier: BSD-3-Clause
-*
-*/
+ * Copyright (c) 2021-2022 HPMicro
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ */
 
 #ifndef HPM_ROMAPI_H
 #define HPM_ROMAPI_H
@@ -60,6 +60,19 @@ typedef union {
 #define API_BOOT_PERIPH_AUTO (0U)                       /**< Boot peripheral: Auto detected */
 #define API_BOOT_PERIPH_UART (1U)                       /**< Boot peripheral: UART */
 #define API_BOOT_PERIPH_USBHID (2U)                     /**< Boot Peripheral: USB-HID */
+
+typedef struct {
+    uint32_t _internal[138];
+} sm3_context_t;
+
+
+#define SM4_ENCRYPT     1
+#define SM4_DECRYPT     0
+
+typedef struct {
+    uint32_t mode;
+    uint32_t _internal[116];
+} sm4_context_t;
 
 /**
  * @brief OTP driver interface
@@ -228,6 +241,43 @@ typedef struct {
     hpm_stat_t (*hash_finish)(sdp_hash_ctx_t *hash_ctx, uint8_t *digest);
 } sdp_driver_interface_t;
 
+typedef struct {
+    /**< SM3 API version*/
+    uint32_t version;
+    /**< SM3 API itnerface: HASH Initialization */
+    hpm_stat_t (*init)(sm3_context_t *ctx);
+    /**< SM3 API interface: HASH update */
+    hpm_stat_t (*update)(sm3_context_t *ctx, const void *input, uint32_t len);
+    /**< SM3 API interface: HASH finish */
+    hpm_stat_t (*finalize)(sm3_context_t *ctx, uint8_t output[32]);
+} sm3_api_interface_t;
+
+typedef struct {
+    /**< SM4 API interface: Version */
+    uint32_t version;
+    /**< SM4 API interface: Set encryption key */
+    void (*setkey_enc)(sm4_context_t *ctx, const uint8_t key[16]);
+    /**< SM4 API interface: Set decryption key */
+    void (*setkey_dec)(sm4_context_t *ctx, const uint8_t key[16]);
+    /**< SM4 API interface: SM4 ECB operation */
+    hpm_stat_t (*crypt_ecb)(sm4_context_t *ctx, uint32_t mode, uint32_t length, const uint8_t *input, uint8_t *output);
+    /**< SM4 API interface: SM4 CBC operation */
+    hpm_stat_t (*crypt_cbc)(sm4_context_t *ctx, uint32_t mode, uint32_t length, const uint8_t iv[16],
+                            const uint8_t *input, uint8_t *output);
+    /**< SM4 API interface: SM4 CTR operation */
+    hpm_stat_t (*crypt_ctr)(sm4_context_t *ctx, uint8_t *nonce_counter, const uint8_t *input,
+                            uint8_t *output, uint32_t length);
+    /**< SM4 API interface: SM4 CCB encryption */
+    hpm_stat_t (*ccm_gen_enc)(sm4_context_t *ctx, uint32_t input_len, const uint8_t *iv,
+                              uint32_t iv_len, const uint8_t *aad, uint32_t aad_len, const uint8_t *input,
+                              uint8_t *output, uint8_t *tag, uint32_t tag_len);
+    /**< SM4 API interface: SM4 CCM Decryption and verifying */
+    hpm_stat_t (*ccm_dec_verify)(sm4_context_t *ctx, uint32_t input_len, const uint8_t *iv,
+                                 uint32_t iv_len, const uint8_t *aad, uint32_t aad_len, const uint8_t *input,
+                                 uint8_t *output, const uint8_t *tag, uint32_t tag_len);
+} sm4_api_interface_t;
+
+
 /**
  * @brief Bootloader API table
  */
@@ -248,10 +298,13 @@ typedef struct {
     const xpi_ram_driver_interface_t *xpi_ram_driver_if;
     /**< Bootloader API table: sdp driver interface address */
     const sdp_driver_interface_t *sdp_driver_if;
+    const uint32_t reserved0;
+    const sm3_api_interface_t *sm3_api_if;  /* SM3 driver interface address */
+    const sm4_api_interface_t *sm4_api_if;  /* SM4 driver itnerface address */
 } bootloader_api_table_t;
 
 /**< Bootloader API table Root */
-#define ROM_API_TABLE_ROOT ((const bootloader_api_table_t*)0x2001FF00U)
+#define ROM_API_TABLE_ROOT ((const bootloader_api_table_t *)0x2001FF00U)
 
 
 #ifdef __cplusplus
@@ -320,7 +373,9 @@ static inline hpm_stat_t rom_xpi_nor_init(XPI_Type *base, xpi_nor_config_t *nor_
 static inline hpm_stat_t rom_xpi_nor_erase(XPI_Type *base, xpi_xfer_channel_t channel, const xpi_nor_config_t *nor_config,
                                            uint32_t start, uint32_t length)
 {
-    return ROM_API_TABLE_ROOT->xpi_nor_driver_if->erase(base, channel, nor_config, start, length);
+    hpm_stat_t status = ROM_API_TABLE_ROOT->xpi_nor_driver_if->erase(base, channel, nor_config, start, length);
+    fencei();
+    return status;
 }
 
 /**
@@ -335,7 +390,9 @@ static inline hpm_stat_t rom_xpi_nor_erase_sector(XPI_Type *base, xpi_xfer_chann
                                                   const xpi_nor_config_t *nor_config,
                                                   uint32_t start)
 {
-    return ROM_API_TABLE_ROOT->xpi_nor_driver_if->erase_sector(base, channel, nor_config, start);
+    hpm_stat_t status = ROM_API_TABLE_ROOT->xpi_nor_driver_if->erase_sector(base, channel, nor_config, start);
+    fencei();
+    return status;
 }
 
 /**
@@ -365,7 +422,9 @@ static inline hpm_stat_t rom_xpi_nor_erase_block(XPI_Type *base, xpi_xfer_channe
                                                  const xpi_nor_config_t *nor_config,
                                                  uint32_t start)
 {
-    return ROM_API_TABLE_ROOT->xpi_nor_driver_if->erase_block(base, channel, nor_config, start);
+    hpm_stat_t status = ROM_API_TABLE_ROOT->xpi_nor_driver_if->erase_block(base, channel, nor_config, start);
+    fencei();
+    return status;
 }
 
 /**
@@ -407,7 +466,9 @@ static inline hpm_stat_t rom_xpi_nor_erase_chip(XPI_Type *base, xpi_xfer_channel
 static inline hpm_stat_t rom_xpi_nor_erase_chip_nonblocking(XPI_Type *base, xpi_xfer_channel_t channel,
                                                             const xpi_nor_config_t *nor_config)
 {
-    return ROM_API_TABLE_ROOT->xpi_nor_driver_if->erase_chip_nonblocking(base, channel, nor_config);
+    hpm_stat_t status = ROM_API_TABLE_ROOT->xpi_nor_driver_if->erase_chip_nonblocking(base, channel, nor_config);
+    fencei();
+    return status;
 }
 
 
@@ -424,7 +485,9 @@ static inline hpm_stat_t rom_xpi_nor_erase_chip_nonblocking(XPI_Type *base, xpi_
 static inline hpm_stat_t rom_xpi_nor_program(XPI_Type *base, xpi_xfer_channel_t channel, const xpi_nor_config_t *nor_config,
                                              const uint32_t *src, uint32_t dst_addr, uint32_t length)
 {
-    return ROM_API_TABLE_ROOT->xpi_nor_driver_if->program(base, channel, nor_config, src, dst_addr, length);
+    hpm_stat_t status = ROM_API_TABLE_ROOT->xpi_nor_driver_if->program(base, channel, nor_config, src, dst_addr, length);
+    fencei();
+    return status;
 }
 
 /**
@@ -486,6 +549,23 @@ static inline hpm_stat_t rom_xpi_nor_get_property(XPI_Type *base, xpi_nor_config
                                                   uint32_t *value)
 {
     return ROM_API_TABLE_ROOT->xpi_nor_driver_if->get_property(base, nor_cfg, property_id, value);
+}
+
+/**
+ * @brief Return the status register value on XPI NOR FLASH
+ *
+ * @param [in] base XPI base address
+ * @param [in] channel XPI transfer channel
+ * @param [in] nor_config XPI NOR configuration
+ * @param [in] addr FLASH address offset
+ * @param [out] out_status FLASH status register value
+ * @return API execution status
+ */
+static inline hpm_stat_t rom_xpi_nor_get_status(XPI_Type *base, xpi_xfer_channel_t channel,
+                                                const xpi_nor_config_t *nor_config, uint32_t addr,
+                                                    uint16_t *out_status)
+{
+    return ROM_API_TABLE_ROOT->xpi_nor_driver_if->get_status(base, channel, nor_config, addr, out_status);
 }
 
 
@@ -647,6 +727,111 @@ static inline hpm_stat_t rom_sdp_memset(sdp_dma_ctx_t *dma_ctx, void *dst, uint8
 {
     return ROM_API_TABLE_ROOT->sdp_driver_if->memset(dma_ctx, dst, pattern, length);
 }
+
+
+/***********************************************************************************************************************
+ *
+ *
+ *      SM3 Driver Wrapper
+ *
+ *
+ **********************************************************************************************************************/
+
+/**
+ * @brief SM4 initialization
+ *
+ * @param [in] ctx SM3 context
+ * @return API execution status
+ */
+static inline hpm_stat_t rom_sm3_init(sm3_context_t *ctx)
+{
+    return ROM_API_TABLE_ROOT->sm3_api_if->init(ctx);
+}
+
+/**
+ * @brief SM3 update operation
+ *
+ * @param [in,out] ctx SM3 context
+ * @param [in] input Data for SM3 calculation
+ * @param [in] len length of the data for SM3 calculation
+ * @return API execution status
+ */
+static inline hpm_stat_t rom_sm3_update(sm3_context_t *ctx, const void *input, uint32_t len)
+{
+    return ROM_API_TABLE_ROOT->sm3_api_if->update(ctx, input, len);
+}
+
+/**
+ * @brief SM3 finalize
+ *        Return the computing SM3 digest
+ *
+ * @param [in] ctx SM3 context
+ * @param [out] output SM3 digest calculated by the above API
+ * @return API execution status
+ */
+static inline hpm_stat_t rom_sm3_finalize(sm3_context_t *ctx, uint8_t output[32])
+{
+    return ROM_API_TABLE_ROOT->sm3_api_if->finalize(ctx, output);
+}
+
+/***********************************************************************************************************************
+ *
+ *
+ *      SM4 Driver Wrapper
+ *
+ *
+ **********************************************************************************************************************/
+/**
+ * @brief Set SM4 encryption key
+ *
+ * @param [in] ctx SM4 context
+ * @param [in] key SM4 encryption key
+ */
+static inline void rom_sm4_setkey_enc(sm4_context_t *ctx, const uint8_t key[16])
+{
+    ROM_API_TABLE_ROOT->sm4_api_if->setkey_enc(ctx, key);
+}
+
+/**
+ * @brief Set SM4 decryption key
+ *
+ * @param [in] ctx SM4 context
+ * @param [in] key SM4 decryption key
+ */
+static inline void rom_sm4_setkey_dec(sm4_context_t *ctx, const uint8_t key[16])
+{
+    ROM_API_TABLE_ROOT->sm4_api_if->setkey_dec(ctx, key);
+}
+
+/**
+ * @brief SM4 ECB crypto operation(Encrypt or Decrypt)
+ * @param [in] ctx SM4 context
+ * @param [in] mode SM4 operation: 1 - ENCRYPT, 0 - DECRYPT
+ * @param [in] length Data length for SM4 encryption/decryption
+ * @param [in] input Input data
+ * @param [out] output Output data
+ * @return API execution status
+ */
+static inline hpm_stat_t rom_sm4_crypt_ecb(sm4_context_t *ctx, uint32_t mode, uint32_t length, const uint8_t *input, uint8_t *output)
+{
+    return ROM_API_TABLE_ROOT->sm4_api_if->crypt_ecb(ctx, mode, length, input, output);
+}
+
+/**
+ * @brief SM4 CBC crypto operation(Encrypt or Decrypt)
+ * @param [in] ctx SM4 context
+ * @param [in] mode SM4 operation: 1 - ENCRYPT, 0 - DECRYPT
+ * @param [in] length Data length for SM4 encryption/decryption
+ * @param [in] input Input data
+ * @param [out] output Output data
+ * @return API execution status
+ */
+static inline hpm_stat_t rom_sm4_crypt_cbc(sm4_context_t *ctx, uint32_t mode, uint32_t length, const uint8_t iv[16], const uint8_t *input, uint8_t *output)
+{
+    return ROM_API_TABLE_ROOT->sm4_api_if->crypt_cbc(ctx, mode, length, iv, input, output);
+}
+
+
 
 #ifdef __cplusplus
 }

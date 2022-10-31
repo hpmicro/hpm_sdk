@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -11,7 +11,7 @@
 #define SYSCTL_RESOURCE_GROUP0 0
 #define SYSCTL_RESOURCE_GROUP1 1
 
-#define SYSCTL_CPU_RELEASE_KEY(cpu) (0xC0BEF1A9UL | ((cpu & 1) << 24 ))
+#define SYSCTL_CPU_RELEASE_KEY(cpu) (0xC0BEF1A9UL | ((cpu & 1) << 24))
 
 static inline bool sysctl_valid_cpu_index(uint8_t cpu)
 {

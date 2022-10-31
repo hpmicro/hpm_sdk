@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -25,11 +25,11 @@ void pwm_get_captured_count(PWM_Type *pwm_x, uint32_t *buf, pwm_counter_type_t c
 {
     uint32_t i;
     if (counter == pwm_counter_type_capture_falling_edge) {
-        for (i = start_index; i < num; i++) {
+        for (i = start_index; i < start_index + num; i++) {
             *buf = pwm_x->CAPNEG[i];
         }
     } else {
-        for (i = start_index; i < num; i++) {
+        for (i = start_index; i < start_index + num; i++) {
             *buf = pwm_x->CAPPOS[i];
         }
     }

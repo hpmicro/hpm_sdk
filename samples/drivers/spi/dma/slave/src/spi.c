@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -86,7 +86,7 @@ hpm_stat_t spi_tx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_p
     config.src_fixed = false;
     config.size_in_byte = size;
 
-    return dma_setup_handshake(dma_ptr, &config);
+    return dma_setup_handshake(dma_ptr, &config, true);
 }
 
 hpm_stat_t spi_rx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_ptr, uint32_t dst, uint32_t size)
@@ -99,7 +99,7 @@ hpm_stat_t spi_rx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_p
     config.src_fixed = true;
     config.size_in_byte = size;
 
-    return dma_setup_handshake(dma_ptr, &config);
+    return dma_setup_handshake(dma_ptr, &config, true);
 }
 
 int main(void)

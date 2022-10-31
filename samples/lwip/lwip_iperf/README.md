@@ -25,7 +25,6 @@ This  example shows TCP/UDP throughput performance test through iperf (https://i
 - Compiling and Downloading
 - Running log is shown in the serial terminal as follows:
 
-  ```
   This is an ethernet demo: Iperf
   LwIP Version: 2.1.2
   Local IP: 192.168.11.201
@@ -41,7 +40,6 @@ This  example shows TCP/UDP throughput performance test through iperf (https://i
   3: UDP Server Mode
   4: UDP Client Mode
   Please enter the test mode code:
-  ```
 - Select a test mode and Run iperf
 
   - TCP Server mode
@@ -53,7 +51,7 @@ This  example shows TCP/UDP throughput performance test through iperf (https://i
       2: TCP Client Mode
       3: UDP Server Mode
       4: UDP Client Mode
-      Please enter the test mode code:
+      Please enter one of modes above (e.g. 1 or 2 ...):
       ```
     - Enter a test mode code in the serial terminal
 

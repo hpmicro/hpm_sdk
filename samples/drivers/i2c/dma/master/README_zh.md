@@ -9,7 +9,9 @@ i2c_dma_master示例工程展示了I2C在master模式使用dma方式接收和发
 
 ## 运行现象
 
-当工程正确运行后，串口终端会输出如下信息：
+- 先运行slave，再运行master
+
+- 当工程正确运行后，串口终端会输出如下信息：
 ```
 I2C DMA master example
 The sent data are:

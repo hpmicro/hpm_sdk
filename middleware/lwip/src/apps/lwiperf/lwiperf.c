@@ -59,8 +59,6 @@
 #include "lwip/mld6.h"
 #include <string.h>
 
-extern u32_t sys_now(void);
-
 /* Currently, only TCP is implemented */
 #if LWIP_TCP && LWIP_CALLBACK_API
 

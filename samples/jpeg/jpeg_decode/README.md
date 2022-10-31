@@ -1,19 +1,18 @@
-# JPEG_DECODE decode
+# JPEG decode
 ## Overview
 ***
-**libjpeg_turbo_decode** decoding example project shows to convert JPG picture data(Default scan storage device root directory) into RGB data.
-- JPEG images stored in **USB** or **SD card** are converted into
-rgb565 data through **software libjpeg_turbo library** or **hardware JPEG module**, the decoded data is displayed on **the LCD screen**.
+JPEG decoding example project demonstrates how to decode a JPG file using either JPEG module or software jpeg library
 
 ## Board Setting
 ***
-- Connect the **USB disk** to the development board ``usb0``, or insert the **SD memory card** into the development board ``SD card``, and store JPG pictures in the storage medium. The example pictures can be used under the JPEG path : **example.jpg**
-- Connect **LCD screen** to development board ``lcd1``
+- Connect the **USB disk** to the development board ``usb0``, or insert the **SD memory card** into the development board ``SD card``
+- Connect **LCD screen** to development board
 
-## Engineering configuration
+## Configuration
 ***
-- File [cmakelists.txt](./CmakeLists.txt). If ``set (config_sdfatfs_mode 1)`` is configured, JPG pictures are read from the **SD card** by default; to configure ``Set (config_tinyusbhost_mode 1)``, JPG pictures are read from **USB** by default
-- - File [cmakelists.txt](./CmakeLists.txt). If ``set (CONFIG_JPEG_TURBO_MODE 1)`` is configured, the decoding method is through **software libjpeg_turbo library** complete data decoding by default; to configure ``Set (CONFIG_JPEG_HARDWARE_MODE 1)``, the decoding method is through **hardware JPEG module** complete data decoding  by default
+- File [CMakelists.txt](./CMakeLists.txt).
+  - ``set (JPEG_USE_SDCARD 1)`` to read jpeg file (.jpg) from SD card or ``set (JPEG_USE_UDISK 1)`` to read jpeg file (.jpg) from u-disk. These options are exclusive.
+  - ``set (JPEG_HW_MODE 1)`` to decode jpeg file with JPEG module; ``set (JPEG_HW_MODE 0)`` to decode with software library
 
 ## Supported picture formats
 ***
@@ -32,36 +31,14 @@ rgb565 data through **software libjpeg_turbo library** or **hardware JPEG module
 
 ## Image size and resolution supported by this routine
 ***
-- JPG image is no more than 10M(hpm6750evk development board) / 4M(hpm6750evkmini development board)
-- JPG image resolution (width * height) is not greater than 8M (hpm6750evk development board) / 3.5M (hpm6750evkmini development board)
+- jpeg file size is expected to be less than 500KB, image resolution is expected to be less than 1024 * 768, defined in common/inc/file_op.h
 
 ## Running the example
 ***
-- SD card mode (Store sample pictures : example.jpg) & software libjpeg_turbo library decoding mode:
-When the project runs correctly, the LCD screen correctly displays the picture information in the storage device, and the serial port terminal will output the following information:
-```
-> Read picture data by SD card
-> Libjpeg-turbo decode completed
-```
-
-- USB mode (Store sample pictures : example.jpg) & software libjpeg_turbo library decoding mode:
-When the project runs correctly, the LCD screen correctly displays the picture information in the storage device, and the serial port terminal will output the following information:
-```
-> Read picture data by usb-mode
-> Libjpeg-turbo decode completed
-```
-
-- SD card mode (Store sample pictures : example.jpg) & hardware JPEG module decoding mode:
-When the project runs correctly, the LCD screen correctly displays the picture information in the storage device, and the serial port terminal will output the following information:
-```
-> Read picture data by SD card
-> jpeg-hardware decode completed
-```
-
-- USB mode (Store sample pictures : example.jpg) & hardware JPEG module decoding mode:
-When the project runs correctly, the LCD screen correctly displays the picture information in the storage device, and the serial port terminal will output the following information:
-```
-> Read picture data by usb-mode
-> jpeg-hardware decode completed
-```
+- Configure storage in CMakeLists.txt
+- Put jpeg files (with .jpg) into target storage
+- Connect LCD pannel and storage to board
+- Power on the board
+- Download built elf into development board and run the demo
+- If everything goes well, jpeg files stored in the target storage will be show on LCD pannel one by one.
 

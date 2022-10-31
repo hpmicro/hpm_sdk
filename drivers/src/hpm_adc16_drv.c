@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -72,7 +72,7 @@ static hpm_stat_t adc16_do_calibration(ADC16_Type *ptr)
     ptr->CONV_CFG1 = (ptr->CONV_CFG1 & ~ADC16_CONV_CFG1_CLOCK_DIVIDER_MASK)
                    | ADC16_CONV_CFG1_CLOCK_DIVIDER_SET(clk_div_temp);
 
-    for(j = 0; j < 4; j++) {
+    for (j = 0; j < 4; j++) {
         /* Set startcal */
         ptr->ANA_CTRL0 |= ADC16_ANA_CTRL0_STARTCAL_MASK;
 
@@ -80,7 +80,8 @@ static hpm_stat_t adc16_do_calibration(ADC16_Type *ptr)
         ptr->ANA_CTRL0 &= ~ADC16_ANA_CTRL0_STARTCAL_MASK;
 
         /* Polling calibration status */
-        while (ADC16_ANA_STATUS_CALON_GET(ptr->ANA_STATUS)) {}
+        while (ADC16_ANA_STATUS_CALON_GET(ptr->ANA_STATUS)) {
+        }
 
         /* Read parameters */
         for (i = 0; i < ADC16_SOC_PARAMS_LEN; i++) {
@@ -188,8 +189,13 @@ hpm_stat_t adc16_init_channel(ADC16_Type *ptr, adc16_channel_config_t *config)
     return status_success;
 }
 
-void adc16_init_seq_dma(ADC16_Type *ptr, adc16_dma_config_t *dma_config)
+hpm_stat_t adc16_init_seq_dma(ADC16_Type *ptr, adc16_dma_config_t *dma_config)
 {
+     /* Check the DMA buffer length  */
+    if (ADC16_IS_SEQ_DMA_BUFF_LEN_INVLAID(dma_config->buff_len_in_4bytes)) {
+        return status_invalid_argument;
+    }
+
     /* Reset ADC DMA  */
     ptr->SEQ_DMA_CFG |= ADC16_SEQ_DMA_CFG_DMA_RST_MASK;
 
@@ -204,7 +210,7 @@ void adc16_init_seq_dma(ADC16_Type *ptr, adc16_dma_config_t *dma_config)
 
     /* Set ADC DMA memory dword length */
     ptr->SEQ_DMA_CFG = (ptr->SEQ_DMA_CFG & ~ADC16_SEQ_DMA_CFG_BUF_LEN_MASK)
-                     | ADC16_SEQ_DMA_CFG_BUF_LEN_SET(dma_config->buff_len_in_4bytes);
+                     | ADC16_SEQ_DMA_CFG_BUF_LEN_SET(dma_config->buff_len_in_4bytes - 1);
 
     /* Set stop_en and stop_pos */
     if (dma_config->stop_en) {
@@ -212,6 +218,8 @@ void adc16_init_seq_dma(ADC16_Type *ptr, adc16_dma_config_t *dma_config)
                          | ADC16_SEQ_DMA_CFG_STOP_EN_MASK
                          | ADC16_SEQ_DMA_CFG_STOP_POS_SET(dma_config->stop_pos);
     }
+
+    return status_success;
 }
 
 hpm_stat_t adc16_set_prd_config(ADC16_Type *ptr, adc16_prd_config_t *config)

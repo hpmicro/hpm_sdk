@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -12,6 +12,53 @@
 #if defined __cplusplus
 extern "C" {
 #endif
+
+static inline hpm_stat_t enet_intf_selection(ENET_Type *ptr, uint8_t inf_type)
+{
+    hpm_stat_t stat = status_success;
+
+    if (ptr == HPM_ENET0) {
+        HPM_CONCTL->CTRL2 &= ~CONCTL_CTRL2_ENET0_PHY_INTF_SEL_MASK;
+        HPM_CONCTL->CTRL2 |= CONCTL_CTRL2_ENET0_PHY_INTF_SEL_SET(inf_type);
+    } else if (ptr == HPM_ENET1) {
+        HPM_CONCTL->CTRL3 &= ~CONCTL_CTRL3_ENET1_PHY_INTF_SEL_MASK;
+        HPM_CONCTL->CTRL3 |= CONCTL_CTRL3_ENET1_PHY_INTF_SEL_SET(inf_type);
+    } else {
+        return status_invalid_argument;
+    }
+
+    return stat;
+}
+
+static inline hpm_stat_t enet_enable_lpi_interrupt(ENET_Type *ptr)
+{
+    hpm_stat_t stat = status_success;
+
+    if (ptr == HPM_ENET0) {
+        HPM_CONCTL->CTRL2 |= CONCTL_CTRL2_ENET0_LPI_INTR_EN_MASK;
+    } else if (ptr == HPM_ENET1) {
+        HPM_CONCTL->CTRL3 |= CONCTL_CTRL3_ENET1_LPI_INTR_EN_MASK;
+    } else {
+        return status_invalid_argument;
+    }
+
+    return stat;
+}
+
+static inline hpm_stat_t enet_disable_lpi_interrupt(ENET_Type *ptr)
+{
+    hpm_stat_t stat = status_success;
+
+    if (ptr == HPM_ENET0) {
+        HPM_CONCTL->CTRL2 &= ~CONCTL_CTRL2_ENET0_LPI_INTR_EN_MASK;
+    } else if (ptr == HPM_ENET1) {
+        HPM_CONCTL->CTRL3 &= ~CONCTL_CTRL3_ENET1_LPI_INTR_EN_MASK;
+    } else {
+        return status_invalid_argument;
+    }
+
+    return stat;
+}
 
 static inline hpm_stat_t enet_rgmii_set_clock_delay(ENET_Type *ptr, uint8_t tx_delay, uint8_t rx_delay)
 {
@@ -75,22 +122,6 @@ static inline hpm_stat_t enet_rgmii_enable_clock(ENET_Type *ptr)
     return stat;
 }
 
-static inline hpm_stat_t enet_intf_selection(ENET_Type *ptr, uint8_t inf_type)
-{
-    hpm_stat_t stat = status_success;
-
-    if (ptr == HPM_ENET0) {
-        HPM_CONCTL->CTRL2 &= ~CONCTL_CTRL2_ENET0_PHY_INTF_SEL_MASK;
-        HPM_CONCTL->CTRL2 |= CONCTL_CTRL2_ENET0_PHY_INTF_SEL_SET(inf_type);
-    } else if (ptr == HPM_ENET1) {
-        HPM_CONCTL->CTRL3 &= ~CONCTL_CTRL3_ENET1_PHY_INTF_SEL_MASK;
-        HPM_CONCTL->CTRL3 |= CONCTL_CTRL3_ENET1_PHY_INTF_SEL_SET(inf_type);
-    } else {
-        return status_invalid_argument;
-    }
-
-    return stat;
-}
 #if defined __cplusplus
 } /* __cplusplus */
 #endif

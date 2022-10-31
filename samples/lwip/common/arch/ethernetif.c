@@ -56,6 +56,7 @@
 #include "board.h"
 #include "netconf.h"
 #include <string.h>
+#include "lwip/netif.h"
 
 /* Define those to better describe your network interface. */
 #define IFNAME0 'e'
@@ -72,10 +73,10 @@ static struct netif *s_pxNetIf;
 */
 static void low_level_init(struct netif *netif)
 {
-  /* set netif MAC hardware address length */
+  /* Set netif MAC hardware address length */
   netif->hwaddr_len = ETHARP_HWADDR_LEN;
 
-  /* set netif MAC hardware address */
+  /* Set netif MAC hardware address */
   netif->hwaddr[0] =  MAC_ADDR0;
   netif->hwaddr[1] =  MAC_ADDR1;
   netif->hwaddr[2] =  MAC_ADDR2;
@@ -83,10 +84,10 @@ static void low_level_init(struct netif *netif)
   netif->hwaddr[4] =  MAC_ADDR4;
   netif->hwaddr[5] =  MAC_ADDR5;
 
-  /* set netif maximum transfer unit */
+  /* Set netif maximum transfer unit */
   netif->mtu = 1500;
 
-  /* need to judge from phy status */
+  /* Set the default link status */
   netif->flags |= NETIF_FLAG_LINK_UP;
 
   /* Accept broadcast address and ARP traffic */

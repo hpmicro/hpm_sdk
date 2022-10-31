@@ -84,3 +84,18 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 | ---- | -------- |
 | GPTMR2.CAPT_2  | P2[15] |
 | GPTMR2.COMP_2  | P2[19] |
+
+- ADC12 Pin
+
+| Function        | Position |
+| --------------- | -------- |
+| ADC0/1/2.VINP7  | P2[11]   |
+| ADC0/1/2.VINP8  | P2[13]   |
+| ADC0/1/2.VINP9  | P2[15]   |
+| ADC0/1/2.VINP10 | P2[16]   |
+
+- ADC16 Pin
+
+| Function  | Position |
+| --------- | -------- |
+| ADC3.INA2 | P1[16]   |

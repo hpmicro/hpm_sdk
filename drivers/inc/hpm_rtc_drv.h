@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -87,8 +87,7 @@ static inline void rtc_enable_alarm_interrupt(RTC_Type *base, uint32_t index, bo
 
     if (enable) {
         base->ALARM_EN |= mask;
-    }
-    else {
+    } else {
         base->ALARM_EN &= ~mask;
     }
 }
@@ -134,4 +133,4 @@ static inline bool rtc_is_alarm_flag_asserted(RTC_Type *base, uint32_t index)
  *
  */
 
-#endif // HPM_RTC_DRV_H
+#endif /* HPM_RTC_DRV_H */

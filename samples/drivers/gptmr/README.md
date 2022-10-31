@@ -1,7 +1,7 @@
 # GPTMR
 ## Overview
 
-The GPTMR example shows compare and capture function.
+The GPTMR example shows comparison, capture, PWM measurement and PWM generation functions.
 
 ## Board Setting
 
@@ -11,11 +11,12 @@ Connect external PWM signal to GPTMR capture pin, connect GPTMR compare output p
 
 ## Running the example
 
-Running the example, the PWM signal with changing duty cycle can be seen through the oscilloscope. The following message is displayed in the terminal:
+Running the example, the example will execute comparison, capture, PWM measurement and PWM generation functions test, The following message is displayed in the terminal and the PWM signal with changing duty cycle can be seen through the oscilloscope:
 ```
 > timer testing
 > time is up: 0x1059
 > captured rising edge: 0x36f3f
 > measured period: 0x10001
 > measured duty cycle: 0x8000
+> test generate waveform edge aligned pwm
 ```

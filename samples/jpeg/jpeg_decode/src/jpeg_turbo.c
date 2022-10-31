@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 hpmicro
+ * Copyright (c) 2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -12,120 +12,71 @@
 #include "jpeglib.h"
 #include "jpeg_turbo.h"
 #include "file_op.h"
-/*---------------------------------------------------------------------*
- * libjpeg-turbo  -Convert JPG data to bgr888 data
- *---------------------------------------------------------------------
- */
-void jpeg_jpgmem_to_bgr888(const uint8_t *src, int32_t srcLen, uint8_t **_dst, int32_t *dstLen, int32_t *width, int32_t *height, int32_t *depth)
+
+void jpeg_convert_to_rgb565(uint8_t *in, uint32_t len, uint16_t *out)
 {
-    struct jpeg_decompress_struct cinfo;
-    struct jpeg_error_mgr jerr;
-    uint64_t image_size;
-
-    /* Initialize the JPEG decompression object with default error handling. */
-    cinfo.err = jpeg_std_error(&jerr);
-    jpeg_create_decompress(&cinfo);
-
-    /* Specify data source for decompression */
-    jpeg_mem_src(&cinfo, src, srcLen);
-    /* Read file header, set default decompression parameters */
-    jpeg_read_header(&cinfo, TRUE);
-
-    /*Image conversion compression*/
-    image_size = cinfo.image_width*cinfo.image_height;
-    if (image_size > 1024*768) {
-        printf("Pixels too large, Pictures can support 1024*768 at most\n");
-        return;
+    for (uint32_t i = 0, j = 0; i < len; i += 3, j++) {
+        out[j] = (((uint16_t)(in[i + 2] >> 3) << 11) & 0xF800) /* R */
+              | (((uint16_t)(in[i + 1] >> 2) << 5) & 0x07E0)  /* G */
+              | (uint16_t)((in[i] >> 3) & 0x1F); /* B */
     }
-    if (image_size > 480*320) {
-        cinfo.scale_num = 1;
-        cinfo.scale_denom = 4;
-    } else if (image_size > 240*160) {
-        cinfo.scale_num = 1;
-        cinfo.scale_denom = 2;
-    } else {
-        cinfo.scale_num = 1;
-        cinfo.scale_denom = 1;
-    }
-
-    /* Start decompressor */
-    printf("start decoding\n");
-    jpeg_start_decompress(&cinfo);
-    (*width) = cinfo.output_width;
-    (*height) = cinfo.output_height;
-    (*depth) = cinfo.num_components;
-    (*dstLen) = (*width) * (*height) * (*depth);
-    uint8_t *dst = (uint8_t *)malloc(*dstLen);
-
-    /* Process data */
-    JSAMPROW row_pointer[1];
-    while (cinfo.output_scanline < cinfo.output_height) {
-        row_pointer[0] = &dst[cinfo.output_scanline * cinfo.output_width * cinfo.num_components];
-        jpeg_read_scanlines(&cinfo, row_pointer, 1);
-    }
-    /* Finish decompression*/
-    jpeg_finish_decompress(&cinfo);
-    jpeg_destroy_decompress(&cinfo);
-    printf("decoding done\n");
-    *_dst = dst;
-}
-
-/*---------------------------------------------------------------------*
- * Convert rgb888 data to rgb565 data
- *---------------------------------------------------------------------
- */
-uint16_t jpeg_rgb888_to_rgb565(uint8_t red, uint8_t green, uint8_t blue)
-{
-    /*RGB24 bit data is combined into 16 bit data*/
-    uint16_t B = (blue >> 3) & 0x001F;
-    uint16_t G = ((green >> 2) << 5) & 0x07E0;
-    uint16_t R = ((red >> 3) << 11) & 0xF800;
-
-    return (uint16_t)(R | G | B);
-}
-
-/*---------------------------------------------------------------------*
- * Convert bgr888 data to rgb565 data
- *---------------------------------------------------------------------
- */
-void jpeg_bgr888_to_rgb565(uint8_t *bgr, int32_t *bsize, int32_t bit)
-{
-    int32_t fsize = (*bsize);
-    int32_t fnsi = 0;
-
-    /*Blue data bytes and red data bytes are exchanged*/
-    for (int32_t i = 0; i < fsize; i += bit / 8) {
-        uint8_t b = bgr[i];
-        bgr[i] = bgr[i + 2];
-        bgr[i + 2] = b;
-    }
-
-    /*Convert rgb888 data to rgb565 data */
-    for (uint64_t iz = 0, j = 0; iz < fsize; iz += 3, j += 2) {
-        uint16_t color565 = jpeg_rgb888_to_rgb565(bgr[iz], bgr[iz + 1], bgr[iz + 2]);
-        memcpy(bgr + j, &color565, 2);
-        fnsi += 2;
-    }
-    (*bsize) = fnsi;
 }
 
 /*---------------------------------------------------------------------*
  * Libjpeg conversion to convert JPG data into rgb565 data
  *---------------------------------------------------------------------
  */
-void jpeg_convert_data(uint8_t *filebuffs, int32_t fileLen, int32_t *width, int32_t *height, uint8_t *rgbbuff)
+bool jpeg_sw_decode(uint8_t *file_buf, uint32_t file_len, uint32_t *width, uint32_t *height, uint8_t *components, uint16_t *out_buf)
 {
-    int32_t component;
-    uint8_t *djpegbuff = NULL;
-    int32_t size;
+    uint8_t *tmp_buf;
+    uint32_t size;
+    struct jpeg_decompress_struct cinfo;
+    struct jpeg_error_mgr jerr;
 
-    /* jpeg  -Convert JPG data to bgr888 data */
-    jpeg_jpgmem_to_bgr888(filebuffs, fileLen, &djpegbuff, &size, width, height, &component);
-    /*bgr888 data conversion to rgb565*/
-    jpeg_bgr888_to_rgb565(djpegbuff, &size, 24);
-    /*Store data to buff*/
-    memcpy(rgbbuff, &djpegbuff[0], size);
-    /*Free memory*/
-    free(djpegbuff);
-    /*Complete JPG decoding*/
+    /* Initialize the JPEG decompression object with default error handling. */
+    cinfo.err = jpeg_std_error(&jerr);
+    jpeg_create_decompress(&cinfo);
+
+    /* Specify data source for decompression */
+    jpeg_mem_src(&cinfo, file_buf, file_len);
+    /* Read file header, set default decompression parameters */
+    jpeg_read_header(&cinfo, true);
+
+    if ((cinfo.image_width <= BOARD_LCD_WIDTH) && (cinfo.image_height <= BOARD_LCD_HEIGHT)) {
+        cinfo.scale_num = 1;
+        cinfo.scale_denom = 1;
+    } else {
+        cinfo.scale_num = 0;
+        cinfo.scale_denom = 2;
+    }
+
+    jpeg_start_decompress(&cinfo);
+    (*width) = cinfo.output_width;
+    (*height) = cinfo.output_height;
+    (*components) = cinfo.num_components;
+    size = cinfo.output_width * cinfo.output_height * cinfo.num_components;
+    if (cinfo.num_components == 1) {
+        tmp_buf = (uint8_t *)out_buf;
+    } else {
+        tmp_buf = (uint8_t *)malloc(size);
+        if (!tmp_buf) {
+            printf("out of memory\n");
+            return false;
+        }
+    }
+    /* Process data */
+    JSAMPROW row_pointer[1];
+    while (cinfo.output_scanline < cinfo.output_height) {
+        row_pointer[0] = &tmp_buf[cinfo.output_scanline * cinfo.output_width * cinfo.num_components];
+        jpeg_read_scanlines(&cinfo, row_pointer, 1);
+    }
+    /* Finish decompression*/
+    jpeg_finish_decompress(&cinfo);
+    jpeg_destroy_decompress(&cinfo);
+
+    if (*components == 3) {
+        jpeg_convert_to_rgb565(tmp_buf, size, out_buf);
+        free(tmp_buf);
+    }
+    return true;
 }

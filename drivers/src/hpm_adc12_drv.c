@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -153,7 +153,8 @@ hpm_stat_t adc12_init(ADC12_Type *ptr, adc12_config_t *config)
 
     /*-------------------------------------------------------------------------------
      *                                 End of calibration
-     *------------------------------------------------------------------------------*/
+     *------------------------------------------------------------------------------
+     */
 
     return status_success;
 }

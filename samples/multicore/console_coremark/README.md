@@ -24,9 +24,7 @@ __core0__ project must be built after the __core1__ project has been built succe
 
 
 ### Generate core0 project
-__CMAKE_BUILD_TYPE__ must be one of the following options:
-- *"debug"
-- *"release"
+__CMAKE_BUILD_TYPE__ forced to be *"debug"*, and users don't need to care.
 
 ## Running the example
 

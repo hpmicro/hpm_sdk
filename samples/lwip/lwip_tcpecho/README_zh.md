@@ -43,10 +43,9 @@
 
   - 在数据发送窗口编辑发送字符
 
-    ![](image/README_zh/17570924116107101.png)
+    ![](../../../doc/images/samples/lwip_tcpecho_1.png)
 
   - 观察回送数据
 
-  ​        ![](image/README_zh/182410098510799.png) 
-
-  
+    ![](../../../doc/images/samples/lwip_tcpecho_2.png)
+  ​

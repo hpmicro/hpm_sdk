@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -80,7 +80,7 @@ static inline uint32_t ppor_reset_get_status(PPOR_Type *ptr)
 }
 
 /*
- * get reset flags 
+ * get reset flags
  */
 static inline uint32_t ppor_reset_get_flags(PPOR_Type *ptr)
 {
@@ -88,7 +88,7 @@ static inline uint32_t ppor_reset_get_flags(PPOR_Type *ptr)
 }
 
 /*
- * clear reset flags 
+ * clear reset flags
  */
 static inline void ppor_reset_clear_flags(PPOR_Type *ptr, uint32_t mask)
 {

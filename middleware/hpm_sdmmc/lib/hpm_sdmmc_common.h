@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2022 hpmicro
+ * Copyright (c) 2021-2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -73,8 +73,7 @@ enum {
     sdmmc_state_disconnect = 8
 };
 
-enum
-{
+enum {
     sdmmc_cmd_go_idle_state = 0,
     sdmmc_cmd_all_send_cid = 2,
     sdmmc_cmd_set_dsr = 4,
@@ -105,7 +104,7 @@ typedef enum {
     sdmmc_operation_voltage_1v8 = 5,
     sdmmc_operation_voltage_3v0 = 6,
     sdmmc_operation_voltage_3v3 = 7,
-}sdmmc_operation_voltage_t;
+} sdmmc_operation_voltage_t;
 
 
 typedef enum {

@@ -1,11 +1,15 @@
 /*
- * Copyright (c) 2022 hpmicro
+ * Copyright (c) 2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
 
 #include "hpm_pllctlv2_drv.h"
+
+
+#define PLLCTLV2_PLL_MFN_FACTOR (10U)                       /*!< PLLCTLV2 PLL MFN Factor */
+#define PLLCTLV2_PLL_MFD_DEFAULT (240UL * 1000000UL)        /*!< PLLCTLV2 PLL Default MFD value */
 
 #define PLLCTLV2_PLL_MFI_MIN (16U)
 #define PLLCTLV2_PLL_MFI_MAX (42U)
@@ -24,8 +28,15 @@ hpm_stat_t pllctlv2_init_pll_with_freq(PLLCTLV2_Type *ptr, uint8_t pll, uint32_t
     uint32_t mfn = freq_in_hz % PLLCTLV2_PLL_XTAL_FREQ;
     uint32_t mfi = freq_in_hz / PLLCTLV2_PLL_XTAL_FREQ;
 
+    if (PLLCTLV2_PLL_MFI_MFI_GET(ptr->PLL[pll].MFI) == mfi) {
+        ptr->PLL[pll].MFI = mfi - 1;
+    }
+
     ptr->PLL[pll].MFI = mfi;
-    ptr->PLL[pll].MFN = mfn * 10UL;
+    /*
+     * NOTE: Default MFD value is 240M
+     */
+    ptr->PLL[pll].MFN = mfn * PLLCTLV2_PLL_MFN_FACTOR;
 
     while (!pllctlv2_pll_is_stable(ptr, pll)) {
     }
@@ -54,7 +65,7 @@ void pllctlv2_set_postdiv(PLLCTLV2_Type *ptr, uint8_t pll, uint8_t div_index, ui
 {
     if ((ptr != NULL) && (pll < PLLCTL_SOC_PLL_MAX_COUNT)) {
         ptr->PLL[pll].DIV[div_index] =
-            (ptr->PLL[pll].DIV[div_index] & PLLCTLV2_DIV_DIV_MASK) | PLLCTLV2_DIV_DIV_SET(div_value) |
+            (ptr->PLL[pll].DIV[div_index] & ~PLLCTLV2_DIV_DIV_MASK) | PLLCTLV2_DIV_DIV_SET(div_value) |
                 PLLCTLV2_DIV_ENABLE_MASK;
     }
 }

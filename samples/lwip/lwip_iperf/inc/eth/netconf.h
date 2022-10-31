@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -25,7 +25,7 @@
 /* Static IP ADDRESS */
 #define IP_ADDR0    192
 #define IP_ADDR1    168
-#define IP_ADDR2    11
+#define IP_ADDR2    10
 #define IP_ADDR3    201
 
 /* NETMASK */
@@ -34,16 +34,16 @@
 #define NETMASK_ADDR2   255
 #define NETMASK_ADDR3   0
 
-/* Gateway Address*/
+/* Gateway Address */
 #define GW_ADDR0   192
 #define GW_ADDR1   168
-#define GW_ADDR2   11
+#define GW_ADDR2   10
 #define GW_ADDR3   1
 
 /* Remote IP Address */
 #define REMOTE_IP_ADDR0 192
 #define REMOTE_IP_ADDR1 168
-#define REMOTE_IP_ADDR2 11
+#define REMOTE_IP_ADDR2 10
 #define REMOTE_IP_ADDR3 5
 
 #ifdef __cplusplus

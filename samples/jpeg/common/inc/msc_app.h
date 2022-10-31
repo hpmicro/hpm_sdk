@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -8,6 +8,7 @@
 #ifndef MSC_APP_H
 #define MSC_APP_H
 
-void tinyusb_task(void);
+void init_disk(void);
+bool check_disk(void);
 
 #endif  /* MSC_APP_H */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -12,7 +12,7 @@ void gptmr_channel_get_default_config(GPTMR_Type *ptr, gptmr_channel_config_t *c
     config->mode = gptmr_work_mode_no_capture;
     config->dma_request_event = gptmr_dma_request_disabled;
     config->synci_edge = gptmr_synci_edge_none;
-    for(uint8_t i = 0; i < GPTMR_CH_CMP_COUNT; i++) {
+    for (uint8_t i = 0; i < GPTMR_CH_CMP_COUNT; i++) {
         config->cmp[i] = 0;
     }
     config->reload = 0xFFFFFFFFUL;
@@ -29,7 +29,7 @@ hpm_stat_t gptmr_channel_config(GPTMR_Type *ptr,
                          bool enable)
 {
     uint32_t v = 0;
-    if (config->enable_sync_follow_previous_channel && !ch_index) {
+    if ((config->enable_sync_follow_previous_channel && !ch_index) || (config->reload == 0)) {
         return status_invalid_argument;
     }
 
@@ -49,7 +49,7 @@ hpm_stat_t gptmr_channel_config(GPTMR_Type *ptr,
     for (uint8_t i = 0; i < GPTMR_CH_CMP_COUNT; i++) {
         ptr->CHANNEL[ch_index].CMP[i] = GPTMR_CMP_CMP_SET(config->cmp[i]);
     }
-    ptr->CHANNEL[ch_index].RLD = GPTMR_CHANNEL_RLD_RLD_SET(config->reload);
+    ptr->CHANNEL[ch_index].RLD = GPTMR_CHANNEL_RLD_RLD_SET(config->reload - 1);
     ptr->CHANNEL[ch_index].CR = v;
     return status_success;
 }

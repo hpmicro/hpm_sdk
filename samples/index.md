@@ -25,4 +25,7 @@
    lwip/index
    memstress/index
    dma_manager/README
+   segger_rtt/README
+   cherryusb/index
+   dhrystone/README
 :::

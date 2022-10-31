@@ -35,6 +35,8 @@
 #include "lwip/opt.h"
 #include "lwip/arch.h"
 
+
+#if !NO_SYS
 /** This is returned by _fromisr() sys functions to tell the outermost function
  * that a higher priority task was woken and the scheduler needs to be invoked.
  */
@@ -51,6 +53,7 @@ void sys_arch_msleep(u32_t delay_ms);
 #if SYS_LIGHTWEIGHT_PROT
 typedef u32_t sys_prot_t;
 #endif /* SYS_LIGHTWEIGHT_PROT */
+
 
 #if !LWIP_COMPAT_MUTEX
 struct _sys_mut {
@@ -84,12 +87,14 @@ struct _sys_thread {
 typedef struct _sys_thread sys_thread_t;
 
 #if LWIP_NETCONN_SEM_PER_THREAD
-sys_sem_t* sys_arch_netconn_sem_get(void);
+sys_sem_t *sys_arch_netconn_sem_get(void);
 void sys_arch_netconn_sem_alloc(void);
 void sys_arch_netconn_sem_free(void);
 #define LWIP_NETCONN_THREAD_SEM_GET()   sys_arch_netconn_sem_get()
 #define LWIP_NETCONN_THREAD_SEM_ALLOC() sys_arch_netconn_sem_alloc()
 #define LWIP_NETCONN_THREAD_SEM_FREE()  sys_arch_netconn_sem_free()
 #endif /* LWIP_NETCONN_SEM_PER_THREAD */
-
+#else
+void sys_timer_callback(void);
+#endif
 #endif /* LWIP_ARCH_SYS_ARCH_H */

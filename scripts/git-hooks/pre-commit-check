@@ -7,4 +7,4 @@ if [ "$HPM_SDK_BASE" == "" ] || [ ! -e "$HPM_SDK_BASE" ]; then
     exit 1
 fi
 
-git diff --cached -- . ':!middleware/FreeRTOS/**' ':!doc' ':!*/*.html' ':!*/hpm_*_regs.h' ':!*/hpm_soc.h' ':!*/hpm_*_iomux.h' ':!*/*.xml' | $HPM_SDK_BASE/scripts/checkpatch.pl
+git diff --cached -- .  ':!*/assets/**' ':!*/generated/**' ':!middleware/erpc/**' ':!middleware/cherryusb/**' ':!middleware/tinyusb/**' ':!middleware/tinycrypt/**' ':!middleware/tflm/**' ':!middleware/lwip/**' ':!middleware/littlevgl/**' ':!middleware/libjpeg-turbo/**' ':!middleware/fatfs/**' ':!middleware/coremark/**' ':!middleware/segger_rtt/**' ':!middleware/FreeRTOS/**' ':!doc' ':!*/*.html' ':!*/hpm_*_regs.h' ':!*/hpm_soc.h' ':!*/hpm_*_iomux.h' ':!*/*.xml' | $HPM_SDK_BASE/scripts/checkpatch.pl

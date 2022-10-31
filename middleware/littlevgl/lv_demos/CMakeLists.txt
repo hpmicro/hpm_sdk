@@ -1,4 +1,4 @@
-# Copyright 2021 hpmicro
+# Copyright (c) 2021 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 if(DEFINED CONFIG_LV_DEMO)

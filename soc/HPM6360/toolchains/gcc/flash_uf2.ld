@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 hpmicro
+ * Copyright (c) 2022 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -49,6 +49,15 @@ SECTIONS
 
     .rel : {
         KEEP(*(.rel*))
+    } > XPI0
+
+    /* section information for usbh class */
+    .usbh_class_info : {
+        . = ALIGN(4);
+        __usbh_class_info_start__ = .;
+        KEEP(*(.usbh_class_info))
+        __usbh_class_info_end__ = .;
+        . = ALIGN(8);
     } > XPI0
 
     PROVIDE (__etext = .);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -23,7 +23,8 @@ static inline void sdxc_wait_card_active(SDXC_Type *base)
 {
     base->SYS_CTRL |= SDXC_SYS_CTRL_SD_CLK_EN_MASK;
 
-    while (!IS_HPM_BITMASK_SET(base->SYS_CTRL, SDXC_SYS_CTRL_SD_CLK_EN_MASK)) {}
+    while (!IS_HPM_BITMASK_SET(base->SYS_CTRL, SDXC_SYS_CTRL_SD_CLK_EN_MASK)) {
+    }
     /*
      * Assume that the BUS clock is 200MHz, while in the identification state, the SD clock is 400KHz.
      *  - Reading the register costs about 5ns in best case, hence the loop should be (74 / 400KHz) * 1000000000 / 5

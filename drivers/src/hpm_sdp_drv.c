@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -105,23 +105,17 @@ hpm_stat_t sdp_wait_done(SDP_Type *base)
         sdp_sta = base->STA;
         if (IS_HPM_BITMASK_SET(sdp_sta, SDP_STA_ERRSET_MASK)) {
             status = status_sdp_error_setup;
-        }
-        else if (IS_HPM_BITMASK_SET(sdp_sta, SDP_STA_ERRPKT_MASK)) {
+        } else if (IS_HPM_BITMASK_SET(sdp_sta, SDP_STA_ERRPKT_MASK)) {
             status = status_sdp_error_packet;
-        }
-        else if (IS_HPM_BITMASK_SET(sdp_sta, SDP_STA_ERRSRC_MASK)) {
+        } else if (IS_HPM_BITMASK_SET(sdp_sta, SDP_STA_ERRSRC_MASK)) {
             status = status_sdp_error_src;
-        }
-        else if (IS_HPM_BITMASK_SET(sdp_sta, SDP_STA_ERRDST_MASK)) {
+        } else if (IS_HPM_BITMASK_SET(sdp_sta, SDP_STA_ERRDST_MASK)) {
             status = status_sdp_error_dst;
-        }
-        else if (IS_HPM_BITMASK_SET(sdp_sta, SDP_STA_ERRHAS_MASK)) {
+        } else if (IS_HPM_BITMASK_SET(sdp_sta, SDP_STA_ERRHAS_MASK)) {
             status = status_sdp_error_hash;
-        }
-        else if (IS_HPM_BITMASK_SET(sdp_sta, SDP_STA_ERRCHAIN_MASK)) {
+        } else if (IS_HPM_BITMASK_SET(sdp_sta, SDP_STA_ERRCHAIN_MASK)) {
             status = status_sdp_error_chain;
-        }
-        else {
+        } else {
             status = status_success;
         }
     } while (IS_HPM_BITMASK_CLR(sdp_sta, SDP_STA_PKTCNT0_MASK));
@@ -164,7 +158,7 @@ hpm_stat_t sdp_aes_set_key(SDP_Type *base, sdp_aes_ctx_t *aes_ctx, const uint8_t
 
     hpm_stat_t status = status_invalid_argument;
     do {
-        //TODO: AES_KEY index validity check
+        /* TODO: AES_KEY index validity check */
 
         if (IS_HPM_BITMASK_SET(base->SDPCR, SDP_SDPCR_CIPDIS_MASK)) {
             status = status_sdp_no_crypto_support;
@@ -187,12 +181,10 @@ hpm_stat_t sdp_aes_set_key(SDP_Type *base, sdp_aes_ctx_t *aes_ctx, const uint8_t
                         base->KEYDAT = aes_key.words[idx++];
                     }
                 }
-            }
-            else if ((key_idx >= AES_KEY_SRC_KEYMAN_START_IDX) && (key_idx <= AES256_KEY_SRC_KEYMAN_END_IDX)) {
+            } else if ((key_idx >= AES_KEY_SRC_KEYMAN_START_IDX) && (key_idx <= AES256_KEY_SRC_KEYMAN_END_IDX)) {
                 key128_idx = (key_idx - AES_KEY_SRC_KEYMAN_START_IDX) * 2U + AES_KEY_SRC_KEYMAN_START_IDX;
             }
-        }
-        else {
+        } else {
             if (key_idx <= AES128_KEY_SRC_SDP_END_IDX) {
                 (void) memcpy(aes_key.bytes, key, 16);
                 base->KEYADDR = SDP_KEYADDR_INDEX_SET(key_idx);
@@ -239,8 +231,7 @@ hpm_stat_t sdp_aes_crypt_ecb(SDP_Type *base, sdp_aes_ctx_t *aes_ctx, sdp_aes_op_
     if (aes_ctx->key_bits == sdp_aes_keybits_128) {
         base->MODCTRL = SDP_MODCTRL_AESKS_SET(aes_ctx->key_idx)
             | SDP_MODCTRL_AESDIR_SET(op);
-    }
-    else {
+    } else {
         base->MODCTRL = SDP_MODCTRL_AESALG_SET(1)
             | SDP_MODCTRL_AESKS_SET(aes_ctx->key_idx)
             | SDP_MODCTRL_AESDIR_SET(op);
@@ -295,7 +286,7 @@ hpm_stat_t sdp_aes_crypt_cbc(SDP_Type *base, sdp_aes_ctx_t *aes_ctx, sdp_aes_op_
             | SDP_MODCTRL_AESMOD_SET(1);
     }
 
-    // Set IV, copy the IV to the context first in case the IV address is not 32-bit aligned
+    /* Set IV, copy the IV to the context first in case the IV address is not 32-bit aligned */
     uint32_t iv_32[4];
     (void) memcpy(iv_32, iv, 16);
     for (uint32_t i = 0; i < 4; i++) {
@@ -337,7 +328,7 @@ hpm_stat_t sdp_aes_crypt_ctr(SDP_Type *base, sdp_aes_ctx_t *aes_ctx, uint8_t *no
                 (base == NULL) || (aes_ctx == NULL) || (nonce_counter == NULL) || (input == NULL) || (output == NULL));
 
         uint32_t calc_len;
-        uint8_t *cipher_nonce = (uint8_t*)&aes_ctx->buf3;
+        uint8_t *cipher_nonce = (uint8_t *)&aes_ctx->buf3;
         while (length > 0) {
             calc_len = (length < 16U) ? length : 16U;
             status = sdp_aes_crypt_ecb(base, aes_ctx, sdp_aes_op_encrypt, 16, nonce_counter, cipher_nonce);
@@ -460,7 +451,8 @@ static hpm_stat_t aes_ccm_auth_crypt(SDP_Type *base, sdp_aes_ctx_t *aes_ctx,
 
 
         /*
-         * Follow A2.2.2 in NIST Special Publication 800-38C, only supports up to 2^32 bytes*/
+         * Follow A2.2.2 in NIST Special Publication 800-38C, only supports up to 2^32 bytes
+         */
         if (aad_len > 0U) {
             uint32_t calc_len = 0U;
             const uint8_t *aad_src = aad;
@@ -473,8 +465,7 @@ static hpm_stat_t aes_ccm_auth_crypt(SDP_Type *base, sdp_aes_ctx_t *aes_ctx,
                 uint32_to_be(b, 2, aad_len);
                 calc_len = MIN(remaining_len, 14U);
                 (void) memcpy(&b[2], aad_src, calc_len);
-            }
-            else {
+            } else {
                 b[0] = 0xFFU;
                 b[1] = 0xFEU;
                 uint32_to_be(&b[6], 4, calc_len);
@@ -593,8 +584,7 @@ hpm_stat_t sdp_aes_ccm_decrypt_verify(SDP_Type *base, sdp_aes_ctx_t *aes_ctx, ui
         HPM_BREAK_IF(status != status_success);
         if (sdp_constant_time_cmp(calc_mac, tag, tag_len) != 0U) {
             status = status_sdp_error_invalid_mac;
-        }
-        else {
+        } else {
             status = status_success;
         }
 
@@ -612,7 +602,7 @@ hpm_stat_t sdp_hash_init(SDP_Type *base, sdp_hash_ctx_t *hash_ctx, sdp_hash_alg_
             break;
         }
 
-        // Initialize the SDP HASH context
+        /* Initialize the SDP HASH context */
         sdp_hash_internal_ctx_t *ctx_internal = (sdp_hash_internal_ctx_t *) &hash_ctx->internal;
         (void) memset(ctx_internal, 0, sizeof(*ctx_internal));
         ctx_internal->alg = alg;
@@ -689,7 +679,7 @@ static hpm_stat_t sdp_hash_process_message(SDP_Type *base, sdp_hash_ctx_t *ctx, 
     hpm_stat_t status = status_invalid_argument;
 
     sdp_hash_internal_ctx_t *ctx_internal = (sdp_hash_internal_ctx_t *) &ctx->internal;
-    // If there is partially filled internal buffer, fill it to full block
+    /* If there is partially filled internal buffer, fill it to full block */
     if (ctx_internal->blk_size > 0U) {
         uint32_t size_to_copy = HASH_BLOCK_SIZE - ctx_internal->blk_size;
         (void) memcpy(&ctx_internal->block.bytes[ctx_internal->blk_size], msg, size_to_copy);
@@ -703,7 +693,7 @@ static hpm_stat_t sdp_hash_process_message(SDP_Type *base, sdp_hash_ctx_t *ctx, 
         }
     }
 
-    // Process all full blocks in message
+    /* Process all full blocks in message */
     uint32_t full_blk_size = (msg_size >> 6) << 6;
     if (full_blk_size > 0U) {
         status = sdp_hash_internal_update(base, ctx, msg, full_blk_size);
@@ -739,8 +729,7 @@ hpm_stat_t sdp_hash_update(SDP_Type *base, sdp_hash_ctx_t *hash_ctx, const uint8
             ctx_internal->blk_size += length;
             status = status_success;
             break;
-        }
-        else {
+        } else {
             if (ctx_internal->state != sdp_state_hash_update) {
                 sdp_hash_internal_engine_init(base, hash_ctx);
                 ctx_internal->state = sdp_state_hash_update;
@@ -800,7 +789,7 @@ hpm_stat_t sdp_hash_finish(SDP_Type *base, sdp_hash_ctx_t *hash_ctx, uint8_t *di
             }
             break;
         default:
-            // Never reach here
+            /* Never reach here */
             break;
         }
         (void) memcpy(digest, ctx_internal->running_hash, copy_bytes);

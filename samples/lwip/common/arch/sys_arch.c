@@ -31,15 +31,13 @@
  */
 
 /* lwIP includes. */
+#include "common.h"
 #include "lwip/debug.h"
 #include "lwip/def.h"
 #include "lwip/sys.h"
 #include "lwip/mem.h"
 #include "lwip/stats.h"
 #include "lwip/tcpip.h"
-//#include "FreeRTOS.h"
-//#include "semphr.h"
-//#include "task.h"
 
 #if !NO_SYS
 #include "sys_arch.h"
@@ -136,8 +134,7 @@ sys_now(void)
 u32_t
 sys_now(void)
 {
-  uint32_t lwip_get_tick(void);
-  return lwip_get_tick();
+  return 0;
 }
 #endif
 
@@ -215,7 +212,7 @@ sys_mutex_new(sys_mutex_t *mutex)
   LWIP_ASSERT("mutex != NULL", mutex != NULL);
 
   mutex->mut = xSemaphoreCreateRecursiveMutex();
-  if(mutex->mut == NULL) {
+  if (mutex->mut == NULL) {
     SYS_STATS_INC(mutex.err);
     return ERR_MEM;
   }
@@ -266,13 +263,13 @@ sys_sem_new(sys_sem_t *sem, u8_t initial_count)
     (initial_count == 0) || (initial_count == 1));
 
   sem->sem = xSemaphoreCreateBinary();
-  if(sem->sem == NULL) {
+  if (sem->sem == NULL) {
     SYS_STATS_INC(sem.err);
     return ERR_MEM;
   }
   SYS_STATS_INC_USED(sem);
 
-  if(initial_count == 1) {
+  if (initial_count == 1) {
     BaseType_t ret = xSemaphoreGive(sem->sem);
     LWIP_ASSERT("sys_sem_new: initial give failed", ret == pdTRUE);
   }
@@ -299,7 +296,7 @@ sys_arch_sem_wait(sys_sem_t *sem, u32_t timeout_ms)
   LWIP_ASSERT("sem != NULL", sem != NULL);
   LWIP_ASSERT("sem->sem != NULL", sem->sem != NULL);
 
-  if(!timeout_ms) {
+  if (!timeout_ms) {
     /* wait infinite */
     ret = xSemaphoreTake(sem->sem, portMAX_DELAY);
     LWIP_ASSERT("taking semaphore failed", ret == pdTRUE);
@@ -337,7 +334,7 @@ sys_mbox_new(sys_mbox_t *mbox, int size)
   LWIP_ASSERT("size > 0", size > 0);
 
   mbox->mbx = xQueueCreate((UBaseType_t)size, sizeof(void *));
-  if(mbox->mbx == NULL) {
+  if (mbox->mbx == NULL) {
     SYS_STATS_INC(mbox.err);
     return ERR_MEM;
   }
@@ -504,7 +501,7 @@ sys_thread_new(const char *name, lwip_thread_fn thread, void *arg, int stacksize
 sys_sem_t *
 sys_arch_netconn_sem_get(void)
 {
-  void* ret;
+  void *ret;
   TaskHandle_t task = xTaskGetCurrentTaskHandle();
   LWIP_ASSERT("task != NULL", task != NULL);
 
@@ -520,7 +517,7 @@ sys_arch_netconn_sem_alloc(void)
   LWIP_ASSERT("task != NULL", task != NULL);
 
   ret = pvTaskGetThreadLocalStoragePointer(task, 0);
-  if(ret == NULL) {
+  if (ret == NULL) {
     sys_sem_t *sem;
     err_t err;
     /* need to allocate the memory for this semaphore */
@@ -535,12 +532,12 @@ sys_arch_netconn_sem_alloc(void)
 
 void sys_arch_netconn_sem_free(void)
 {
-  void* ret;
+  void *ret;
   TaskHandle_t task = xTaskGetCurrentTaskHandle();
   LWIP_ASSERT("task != NULL", task != NULL);
 
   ret = pvTaskGetThreadLocalStoragePointer(task, 0);
-  if(ret != NULL) {
+  if (ret != NULL) {
     sys_sem_t *sem = ret;
     sys_sem_free(sem);
     mem_free(sem);
@@ -623,21 +620,20 @@ sys_check_core_locking(void)
 #endif /* LWIP_FREERTOS_CHECK_CORE_LOCKING*/
 
 #else
-static uint32_t lwip_tick = 0;
+static uint32_t sys_tick = 0;
 
-void lwip_timer_callback(void)
+void sys_timer_callback(void)
 {
-    lwip_tick++;
-}
+    sys_tick++;
 
-uint32_t lwip_get_tick(void)
-{
-    return lwip_tick;
+    if (sys_tick % (2000 * LWIP_APP_TIMER_INTERVAL) == 0) {
+        enet_self_adaptive_port_speed();
+    }
 }
 
 u32_t sys_now(void)
 {
-    return (u32_t)lwip_tick;
+    return (u32_t)sys_tick;
 }
 
 #endif

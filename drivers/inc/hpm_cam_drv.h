@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -85,7 +85,7 @@ typedef struct {
     bool color_ext;
     bool data_pack_msb;
     bool enable_buffer2;
-    uint8_t data_store_mode;
+    uint16_t data_store_mode;
     uint8_t color_format;
     uint8_t sensor_bitwidth;
     uint32_t buffer1;
@@ -166,6 +166,8 @@ void cam_start(CAM_Type *ptr);
  * @param [in] ptr CAM base address
  */
 void cam_stop(CAM_Type *ptr);
+
+void cam_update_buffer(CAM_Type *ptr, uint32_t buffer);
 
 /**
  * @brief CAM enable binary output

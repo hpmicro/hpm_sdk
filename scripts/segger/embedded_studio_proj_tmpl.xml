@@ -3,7 +3,7 @@
   <project Name="{{ target["name"] }}">
     <configuration
       Name="Common"
-      LIBRARY_IO_TYPE="STD"
+      LIBRARY_IO_TYPE="{{ target["library_io_type"] }}"
       arm_linker_heap_size="{{ target["heap_size"]}}"
       arm_linker_stack_size="{{ target["stack_size"]}}"
       arm_rtl_variant="SEGGER"
@@ -23,6 +23,13 @@
       gdb_server_autostart_server="{{ target["auto_start_gdb_server"] }}"
       gdb_server_port="{{ target["gdb_server_port"] }}"
       gdb_server_command_line="{{ target["openocd"] }} -f $(HPM_SDK_BASE)/boards/openocd/probes/{{ target["debug_probe"] }}.cfg {% if target["openocd_soc"]|length %} -f $(HPM_SDK_BASE)/boards/openocd/soc/{{ target["openocd_soc"]}}.cfg {% endif %} -f $(HPM_SDK_BASE)/boards/openocd/boards/{{ target["board"] }}.cfg"
+      {%- else %}
+      {%- if target["debug_target_connection"] -%}
+      debug_target_connection="{{ target["debug_target_connection"]}}"
+      {%- endif %}
+      {%- if target["jlink_speed"] -%}
+      speed="{{ target["jlink_speed"]}}"
+      {%- endif %}
       {%- endif %}
       target_device_name="{{ target["target_device_name"] }}"
       linker_output_format="bin"
@@ -67,15 +74,8 @@
       linker_additional_files="{{ target["ses_link_input"] }}"
       {%- endif %}
       />
-    {%- for group in target["groups"] %}
-    <folder Name="{{ group.name }}">
-      {%- for file in group.files %}
-      <file file_name="{{ file.path }}">
-        <configuration Name="Common" build_object_file_name="{{ file.obj_path }}$(OBJ)" />
-      </file>
-      {%- endfor %}
-    </folder>
-    {%- endfor %}
+
+{{ target["file_structure"] }}
     <configuration
       Name="Debug"
       debug_cpu_registers_file="{{ target["cpu_register_definition"] }}"

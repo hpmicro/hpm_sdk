@@ -10,8 +10,9 @@ spi_dma_master示例工程展示了SPI作为master使用dma方法进行板与板
 
 
 ## 运行现象
+- 先运行slave，再运行master
 
-当工程正确运行后，串口终端会输出如下信息：
+- 当工程正确运行后，串口终端会输出如下信息：
 ```
 SPI Master DMA Transfer Example
 The sent data are:

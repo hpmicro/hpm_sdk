@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 hpmicro
+ * Copyright (c) 2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -26,8 +26,7 @@
  * @brief An ADC peripheral base address.
  *
  */
-typedef union
-{
+typedef union {
 #ifdef CONFIG_HAS_HPMSDK_ADC12
     ADC12_Type *adc12;
 #endif
@@ -85,7 +84,7 @@ typedef struct {
 /**
  * @brief ADC DMA configuration struct.
  *
- * */
+ */
 typedef struct {
     adc_module module;
     adc_base adc_base;
@@ -102,7 +101,7 @@ typedef struct {
 /**
  * @brief ADC configuration struct for period mode.
  *
- * */
+ */
 typedef struct {
     adc_module module;
     adc_base adc_base;
@@ -119,7 +118,7 @@ typedef struct {
 /**
  * @brief ADC configuration struct for sequence mode.
  *
- * */
+ */
 typedef struct {
     adc_module module;
     adc_base adc_base;
@@ -136,9 +135,8 @@ typedef struct {
 /**
  * @brief ADC trigger configuration struct for preempt mode.
  *
- * */
-typedef struct
-{
+ */
+typedef struct {
     adc_module module;
     adc_base adc_base;
     struct {
@@ -152,8 +150,7 @@ typedef struct
 } adc_pmt_config_t;
 
 
-typedef struct
-{
+typedef struct {
     adc_module module;
     adc_base adc_base;
 } adc_type;

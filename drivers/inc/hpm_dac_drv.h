@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -33,8 +33,7 @@ typedef enum {
 typedef struct {
     bool sync_mode;
     uint8_t dac_mode;
-    uint8_t clk_dac_div;
-    uint16_t div_cfg;
+    uint8_t ana_div;
 } dac_config_t;
 
 typedef enum {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 hpmicro
+ * Copyright (c) 2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -141,7 +141,8 @@
 
 /* spi section */
 #define BOARD_APP_SPI_BASE HPM_SPI3
-#define BOARD_APP_SPI_CLK_SRC_FREQ      (24000000UL)
+#define BOARD_APP_SPI_CLK_NAME          clock_spi3
+#define BOARD_APP_SPI_IRQ               IRQn_SPI3
 #define BOARD_APP_SPI_SCLK_FREQ         (1562500UL)
 #define BOARD_APP_SPI_ADDR_LEN_IN_BYTES (1U)
 #define BOARD_APP_SPI_DATA_LEN_IN_BITS  (8U)
@@ -247,9 +248,9 @@
 #define BOARD_BLDC_HALL_BASE                 HPM_HALL0
 #define BOARD_BLDC_HALL_TRGM                 HPM_TRGM0
 #define BOARD_BLDC_HALL_IRQ                  IRQn_HALL0
-#define BOARD_BLDC_HALL_TRGM_HALL_U_SRC      HPM_TRGM0_INPUT_SRC_TRGM0_IN8
-#define BOARD_BLDC_HALL_TRGM_HALL_V_SRC      HPM_TRGM0_INPUT_SRC_TRGM0_IN7
-#define BOARD_BLDC_HALL_TRGM_HALL_W_SRC      HPM_TRGM0_INPUT_SRC_TRGM0_IN6
+#define BOARD_BLDC_HALL_TRGM_HALL_U_SRC      HPM_TRGM0_INPUT_SRC_TRGM0_P8
+#define BOARD_BLDC_HALL_TRGM_HALL_V_SRC      HPM_TRGM0_INPUT_SRC_TRGM0_P7
+#define BOARD_BLDC_HALL_TRGM_HALL_W_SRC      HPM_TRGM0_INPUT_SRC_TRGM0_P6
 #define BOARD_BLDC_HALL_MOTOR_PHASE_COUNT_PER_REV        (1000U)
 
 
@@ -259,8 +260,8 @@
 #define BOARD_BLDC_QEI_BASE              HPM_QEI0
 #define BOARD_BLDC_QEI_IRQ               IRQn_QEI0
 #define BOARD_BLDC_QEI_TRGM              HPM_TRGM0
-#define BOARD_BLDC_QEI_TRGM_QEI_A_SRC    HPM_TRGM0_INPUT_SRC_TRGM0_IN9
-#define BOARD_BLDC_QEI_TRGM_QEI_B_SRC    HPM_TRGM0_INPUT_SRC_TRGM0_IN10
+#define BOARD_BLDC_QEI_TRGM_QEI_A_SRC    HPM_TRGM0_INPUT_SRC_TRGM0_P9
+#define BOARD_BLDC_QEI_TRGM_QEI_B_SRC    HPM_TRGM0_INPUT_SRC_TRGM0_P10
 #define BOARD_BLDC_QEI_MOTOR_PHASE_COUNT_PER_REV     (16U)
 #define BOARD_BLDC_QEI_CLOCK_SOURCE      clock_mot0
 #define BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV       (4000U)
@@ -297,6 +298,7 @@
 #define BOARD_APP_PWM_OUT1 0
 #define BOARD_APP_PWM_OUT2 1
 #define BOARD_APP_TRGM HPM_TRGM0
+#define BOARD_APP_PWM_IRQ IRQn_PWM0
 
 #define BOARD_CPU_FREQ (480000000UL)
 
@@ -355,6 +357,7 @@ void board_init_dac_pins(DAC_Type *ptr);
 
 uint32_t board_init_can_clock(CAN_Type *ptr);
 
+hpm_stat_t board_set_audio_pll_clock(uint32_t freq);
 uint32_t board_init_i2s_clock(I2S_Type *ptr);
 uint32_t board_init_pdm_clock(void);
 uint32_t board_init_dao_clock(void);
@@ -368,10 +371,11 @@ void board_init_usb_pins(void);
 void board_usb_vbus_ctrl(uint8_t usb_index, uint8_t level);
 uint8_t board_get_usb_id_status(void);
 
+hpm_stat_t board_reset_enet_phy(ENET_Type *ptr);
 hpm_stat_t board_init_enet_pins(ENET_Type *ptr);
 hpm_stat_t board_init_enet_rmii_reference_clock(ENET_Type *ptr, bool internal);
 hpm_stat_t board_init_enet_ptp_clock(ENET_Type *ptr);
-
+uint8_t board_enet_get_dma_pbl(ENET_Type *ptr);
 /*
  * @brief Initialize PMP and PMA for but not limited to the following purposes:
  *      -- non-cacheable memory initialization

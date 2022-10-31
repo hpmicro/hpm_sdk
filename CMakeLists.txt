@@ -1,24 +1,14 @@
-# Copyright 2021 hpmicro
+# Copyright 2021-2022 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 cmake_minimum_required(VERSION 3.13)
 
 if(${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.20)
     cmake_policy(SET CMP0116 OLD)
 endif()
+cmake_policy(SET CMP0079 NEW)
 
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
-
-# to store all options
-add_library(${HPM_SDK_LIB_ITF} INTERFACE)
-
-add_library(${HPM_SDK_LIB} STATIC "")
-target_link_libraries(${HPM_SDK_LIB} PUBLIC ${HPM_SDK_LIB_ITF})
-
-include(cmake/extra_flags.cmake)
-
-include(${HPM_SDK_BASE}/cmake/toolchain.cmake)
-enable_language(C CXX ASM)
 
 sdk_linker_global_symbols("_flash_size=${flash_size}")
 sdk_linker_global_symbols("_extram_size=${extram_size}")
@@ -96,9 +86,9 @@ else()
 endif()
 
 if(NOT DEFINED USE_PRESET_FLASH_LINKER OR "${USE_PRESET_FLASH_LINKER}" EQUAL "0")
-    if(DEFINED CUSTOM_LINKER_FILE)
+    if(DEFINED CUSTOM_GCC_LINKER_FILE)
         set(USE_CUSTOM_LINKER 1)
-        set(LINKER_SCRIPT ${CUSTOM_LINKER_FILE})
+        set(LINKER_SCRIPT ${CUSTOM_GCC_LINKER_FILE})
     else()
         if(DEFINED USE_LINKER_TEMPLATE)
             set(USE_CUSTOM_LINKER 1)
@@ -111,9 +101,14 @@ if(${EXCLUDE_SDK_STARTUP})
     set(USE_CUSTOM_STARTUP 1)
 endif()
 
-if(DEFINED CUSTOM_STARTUP_FILE)
+if(DEFINED CUSTOM_GCC_STARTUP_FILE)
     set(USE_CUSTOM_STARTUP 1)
-    sdk_src(${CUSTOM_STARTUP_FILE})
+    sdk_gcc_src(${CUSTOM_GCC_STARTUP_FILE})
+endif()
+
+if(DEFINED CUSTOM_SES_STARTUP_FILE)
+    set(USE_CUSTOM_STARTUP 1)
+    sdk_gcc_src(${CUSTOM_SES_STARTUP_FILE})
 endif()
 
 sdk_sys_inc(${SYSROOT_DIR}/include)
@@ -156,18 +151,24 @@ endif()
 
 sdk_ld_options("-T ${LINKER_SCRIPT}")
 
-file(WRITE ${PROJECT_BINARY_DIR}/misc/empty.c "")
-add_executable(${APP_ELF_NAME} ${PROJECT_BINARY_DIR}/misc/empty.c)
+# prepare dummy file
+set(EMPTY_FILE ${PROJECT_BINARY_DIR}/misc/empty.c)
+file(WRITE ${EMPTY_FILE} "")
+
+add_executable(${APP_ELF_NAME} ${EMPTY_FILE})
 
 set_target_properties(${APP_ELF_NAME} PROPERTIES LINK_DEPENDS ${LINKER_SCRIPT})
 
 if("${TOOLCHAIN_VARIANT}" STREQUAL "nds-gcc")
     target_link_libraries(${APP_ELF_NAME}
         "-Wl,-Map=${PROJECT_BINARY_DIR}/${APP_MAP_NAME}"
-        ${HPM_SDK_LIB} ${HPM_SDK_LIB_ITF} hpm_sdk_nds_lib_itf app)
+        ${HPM_SDK_NDSGCC_LIB_ITF}
+        ${HPM_SDK_GCC_LIB} ${HPM_SDK_GCC_LIB_ITF}
+        ${HPM_SDK_LIB} ${HPM_SDK_LIB_ITF} app)
 else()
     target_link_libraries(${APP_ELF_NAME}
     "-Wl,-Map=${PROJECT_BINARY_DIR}/${APP_MAP_NAME}"
+    ${HPM_SDK_GCC_LIB} ${HPM_SDK_GCC_LIB_ITF}
     ${HPM_SDK_LIB} ${HPM_SDK_LIB_ITF} app)
 endif()
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -37,16 +37,22 @@ void bldc_pwm_disable(uint8_t motor_index,uint8_t pin_name)
 
 void bldc_foc_pwmset(BLDC_CONTROL_PWMOUT_PARA *par)
 {
-  uint32_t pwm_reload ;
-  pwm_reload = par->I_pwm_reload;
+  uint32_t pwm_reload;
+  uint32_t pwm_u_half, pwm_v_half, pwm_w_half;
+
+  pwm_reload = par->I_pwm_reload >> 1;
   switch (par->I_motor_id){
     case BLDC_MOTOR0_INDEX:
-      pwm_update_raw_cmp_central_aligned(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_INDEX_0, BOARD_BLDCPWM_CMP_INDEX_1,
-            (pwm_reload + par->pwm_u) >> 1, (pwm_reload - par->pwm_u) >> 1);
-      pwm_update_raw_cmp_central_aligned(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_INDEX_2, BOARD_BLDCPWM_CMP_INDEX_3,
-            (pwm_reload + par->pwm_v) >> 1, (pwm_reload - par->pwm_v) >> 1);
-      pwm_update_raw_cmp_central_aligned(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_INDEX_4, BOARD_BLDCPWM_CMP_INDEX_5, 
-            (pwm_reload + par->pwm_w) >> 1, (pwm_reload - par->pwm_w) >> 1);
+        pwm_u_half =  par->pwm_u >> 1;
+        pwm_v_half =  par->pwm_v >> 1;
+        pwm_w_half =  par->pwm_w >> 1;
+        pwm_cmp_force_value(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_INDEX_0, PWM_CMP_CMP_SET((pwm_reload + pwm_u_half)));
+        pwm_cmp_force_value(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_INDEX_1, PWM_CMP_CMP_SET((pwm_reload - pwm_u_half)));
+        pwm_cmp_force_value(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_INDEX_2, PWM_CMP_CMP_SET((pwm_reload + pwm_v_half)));
+        pwm_cmp_force_value(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_INDEX_3, PWM_CMP_CMP_SET((pwm_reload - pwm_v_half)));
+        pwm_cmp_force_value(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_INDEX_4, PWM_CMP_CMP_SET((pwm_reload + pwm_w_half)));
+        pwm_cmp_force_value(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_INDEX_5, PWM_CMP_CMP_SET((pwm_reload - pwm_w_half)));
+
     break;
   
   default:

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -35,7 +35,7 @@ int main(void)
     init_acmp_pins();
 
     acmp_channel_get_default_config(TEST_ACMP, &acmp_channel_configure);
-    
+
     acmp_channel_configure.plus_input = TEST_ACMP_PLUS_INPUT;
     acmp_channel_configure.minus_input = TEST_ACMP_MINUS_INPUT;
     acmp_channel_configure.enable_dac = true;
@@ -51,7 +51,7 @@ int main(void)
     for(dac_value = 0; dac_value < 0xff; dac_value++)
     {
         acmp_channel_config_dac(TEST_ACMP, TEST_ACMP_CHANNEL, dac_value);
-        board_delay_ms(1);
+        board_delay_ms(15);
         if(acmp_output_toogle)
         {
             printf("acmp out toggled, the dac set value is 0x%x\n", dac_value);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -140,6 +140,7 @@ void isr_plicsw(void)
 {
     printf("plicsw start\n");
     printf("plicsw end\n");
+    intc_m_disable_swi();
 }
 SDK_DECLARE_SWI_ISR(isr_plicsw)
 

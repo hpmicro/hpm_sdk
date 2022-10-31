@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -7,12 +7,29 @@
 
 #ifndef HPM_ENET_PHY_COMMON_H
 #define HPM_ENET_PHY_COMMON_H
+#include <stdint.h>
 
 typedef enum {
-    enet_port_speed_10mbps = 0,
-    enet_port_speed_100msbs,
-    enet_port_speed_1000mbps
-} enet_port_speed_t;
+    enet_phy_port_speed_10mbps = 0,
+    enet_phy_port_speed_100mbps,
+    enet_phy_port_speed_1000mbps
+} enet_phy_port_speed_t;
 
+typedef enum {
+    enet_phy_duplex_half = 0,
+    enet_phy_duplex_full
+} enet_phy_duplex_mode_t;
+
+typedef enum {
+    enet_phy_mdi_crossover_manual_mdi = 0,
+    enet_phy_mdi_crossover_manual_mdix,
+    enet_phy_mdi_crossover_automatic
+} enet_phy_crossover_mode_t;
+
+typedef struct {
+    uint8_t enet_phy_link;
+    uint8_t enet_phy_speed;
+    uint8_t enet_phy_duplex;
+} enet_phy_status_t;
 
 #endif

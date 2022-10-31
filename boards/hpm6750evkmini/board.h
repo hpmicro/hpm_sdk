@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2022 hpmicro
+ * Copyright (c) 2021-2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -180,7 +180,8 @@
 
 /* spi section */
 #define BOARD_APP_SPI_BASE HPM_SPI2
-#define BOARD_APP_SPI_CLK_SRC_FREQ      (24000000UL)
+#define BOARD_APP_SPI_CLK_NAME          clock_spi2
+#define BOARD_APP_SPI_IRQ               IRQn_SPI2
 #define BOARD_APP_SPI_SCLK_FREQ         (1562500UL)
 #define BOARD_APP_SPI_ADDR_LEN_IN_BYTES (1U)
 #define BOARD_APP_SPI_DATA_LEN_IN_BITS  (8U)
@@ -292,6 +293,7 @@
 #define BOARD_APP_PWM_OUT1 4
 #define BOARD_APP_PWM_OUT2 5
 #define BOARD_APP_TRGM HPM_TRGM0
+#define BOARD_APP_PWM_IRQ IRQn_PWM0
 
 /* RGB LED Section */
 #define BOARD_RED_PWM_IRQ IRQn_PWM1
@@ -469,6 +471,7 @@ uint32_t board_init_adc16_clock(ADC16_Type *ptr);
 
 uint32_t board_init_can_clock(CAN_Type *ptr);
 
+hpm_stat_t board_set_audio_pll_clock(uint32_t freq);
 uint32_t board_init_i2s_clock(I2S_Type *ptr);
 uint32_t board_init_pdm_clock(void);
 uint32_t board_init_dao_clock(void);
@@ -484,9 +487,11 @@ void board_init_adc16_pins(void);
 void board_init_usb_pins(void);
 void board_usb_vbus_ctrl(uint8_t usb_index, uint8_t level);
 
+hpm_stat_t board_reset_enet_phy(ENET_Type *ptr);
 hpm_stat_t board_init_enet_pins(ENET_Type *ptr);
 hpm_stat_t board_init_enet_rmii_reference_clock(ENET_Type *ptr, bool internal);
 hpm_stat_t board_init_enet_ptp_clock(ENET_Type *ptr);
+uint8_t board_enet_get_dma_pbl(ENET_Type *ptr);
 
 /*
  * @brief Initialize PMP and PMA for but not limited to the following purposes:

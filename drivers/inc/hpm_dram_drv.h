@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -111,7 +111,7 @@ typedef struct {
 } dram_sdram_config_t;
 
 /**
- * @brief Structure for specifying the configuration of DRAM 
+ * @brief Structure for specifying the configuration of DRAM
  */
 typedef struct {
     uint8_t dqs;                        /**< DQS setting */
@@ -160,7 +160,8 @@ static inline void dram_enable(DRAM_Type *ptr)
  */
 static inline void dram_disable(DRAM_Type *ptr)
 {
-    while((ptr->STAT0 & (uint32_t) DRAM_STAT0_IDLE_MASK) == 0) {}
+    while ((ptr->STAT0 & (uint32_t) DRAM_STAT0_IDLE_MASK) == 0) {
+    }
     ptr->CTRL |= DRAM_CTRL_DIS_MASK;
 }
 
@@ -174,7 +175,8 @@ static inline void dram_disable(DRAM_Type *ptr)
 static inline void dram_sw_reset(DRAM_Type *ptr)
 {
     ptr->CTRL = DRAM_CTRL_RST_MASK;
-    while((ptr->CTRL & (uint32_t) DRAM_CTRL_RST_MASK) != 0) {}
+    while ((ptr->CTRL & (uint32_t) DRAM_CTRL_RST_MASK) != 0) {
+    }
 }
 
 /**
@@ -210,7 +212,7 @@ void dram_get_typical_sdram_config(DRAM_Type *ptr, dram_sdram_config_t *config);
 
 /**
  * @brief dram config sdram
- * 
+ *
  * Configure DRAM controlling external SDRAM using parameters specified in dram_sdram_config
  *
  * @param[in] ptr DRAM base address

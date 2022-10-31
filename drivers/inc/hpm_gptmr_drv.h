@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -188,21 +188,21 @@ static inline uint32_t gptmr_channel_get_counter(GPTMR_Type *ptr,
 {
     uint32_t value;
     switch (capture) {
-        case gptmr_counter_type_rising_edge:
-            value = (ptr->CHANNEL[ch_index].CAPPOS & GPTMR_CHANNEL_CAPPOS_CAPPOS_MASK) >> GPTMR_CHANNEL_CAPPOS_CAPPOS_SHIFT;
-            break;
-        case gptmr_counter_type_falling_edge:
-            value = (ptr->CHANNEL[ch_index].CAPNEG & GPTMR_CHANNEL_CAPNEG_CAPNEG_MASK) >> GPTMR_CHANNEL_CAPNEG_CAPNEG_SHIFT;
-            break;
-        case gptmr_counter_type_measured_period:
-            value = (ptr->CHANNEL[ch_index].CAPPRD & GPTMR_CHANNEL_CAPPRD_CAPPRD_MASK) >> GPTMR_CHANNEL_CAPPRD_CAPPRD_SHIFT;
-            break;
-        case gptmr_counter_type_measured_duty_cycle:
-            value = (ptr->CHANNEL[ch_index].CAPDTY & GPTMR_CHANNEL_CAPDTY_MEAS_HIGH_MASK) >> GPTMR_CHANNEL_CAPDTY_MEAS_HIGH_SHIFT;
-            break;
-        default:
-            value = (ptr->CHANNEL[ch_index].CNT & GPTMR_CHANNEL_CNT_COUNTER_MASK) >> GPTMR_CHANNEL_CNT_COUNTER_SHIFT;
-            break;
+    case gptmr_counter_type_rising_edge:
+        value = (ptr->CHANNEL[ch_index].CAPPOS & GPTMR_CHANNEL_CAPPOS_CAPPOS_MASK) >> GPTMR_CHANNEL_CAPPOS_CAPPOS_SHIFT;
+        break;
+    case gptmr_counter_type_falling_edge:
+        value = (ptr->CHANNEL[ch_index].CAPNEG & GPTMR_CHANNEL_CAPNEG_CAPNEG_MASK) >> GPTMR_CHANNEL_CAPNEG_CAPNEG_SHIFT;
+        break;
+    case gptmr_counter_type_measured_period:
+        value = (ptr->CHANNEL[ch_index].CAPPRD & GPTMR_CHANNEL_CAPPRD_CAPPRD_MASK) >> GPTMR_CHANNEL_CAPPRD_CAPPRD_SHIFT;
+        break;
+    case gptmr_counter_type_measured_duty_cycle:
+        value = (ptr->CHANNEL[ch_index].CAPDTY & GPTMR_CHANNEL_CAPDTY_MEAS_HIGH_MASK) >> GPTMR_CHANNEL_CAPDTY_MEAS_HIGH_SHIFT;
+        break;
+    default:
+        value = (ptr->CHANNEL[ch_index].CNT & GPTMR_CHANNEL_CNT_COUNTER_MASK) >> GPTMR_CHANNEL_CNT_COUNTER_SHIFT;
+        break;
     }
     return value;
 }
@@ -317,7 +317,7 @@ static inline void gptmr_update_cmp(GPTMR_Type *ptr, uint8_t ch_index, uint8_t c
  */
 static inline void gptmr_channel_config_update_reload(GPTMR_Type *ptr, uint8_t ch_index, uint32_t reload)
 {
-    ptr->CHANNEL[ch_index].RLD = GPTMR_CHANNEL_RLD_RLD_SET(reload);
+    ptr->CHANNEL[ch_index].RLD = GPTMR_CHANNEL_RLD_RLD_SET(reload - 1);
 }
 
 /**

@@ -1,12 +1,17 @@
-# Copyright 2021 hpmicro
+# Copyright (c) 2021 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
+
+if("${CMAKE_BUILD_TYPE}" STREQUAL "")
+    SET(CMAKE_BUILD_TYPE flash_xip)
+endif()
 
 set(CONFIG_TINYUSB 1)
 set(CONFIG_USB_HOST 1)
 set(CONFIG_FATFS 1)
 set(CONFIG_USB_FATFS 1)
+set(CONFIG_USB_FATFS_TINYUSB 1)
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 sdk_compile_definitions(-DCFG_TUSB_MCU=OPT_MCU_HPM)

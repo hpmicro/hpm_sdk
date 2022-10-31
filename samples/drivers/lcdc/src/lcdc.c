@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -204,6 +204,12 @@ void run_layer_change(void)
 
     config.resolution_x = BOARD_LCD_WIDTH;
     config.resolution_y = BOARD_LCD_HEIGHT;
+    config.vsync.back_porch_pulse = 23;
+    config.vsync.front_porch_pulse = 10;
+    config.vsync.pulse_width = 3;
+    config.hsync.back_porch_pulse = 46;
+    config.hsync.front_porch_pulse = 50;
+    config.hsync.pulse_width = 10;
 
     lcdc_init(LCD, &config);
     lcdc_enable_interrupt(LCD, LCDC_INT_EN_DMA_DONE_SET(TEST_LAYER_DONE_MASK));

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -45,11 +45,12 @@ const uint32_t sin_1khz_48khz[] = {
 void test_dao(const uint8_t *audio,
               uint32_t length,
               struct audio_info *info,
-              uint8_t volume_shift,
+              float volume_scale,
               uint32_t loop_count)
 {
-    uint32_t i, j, oversample, data;
+    uint32_t i, j, oversample;
     uint32_t *ptr;
+    int32_t data;
 
     if (info->sample_rate < DAO_SOC_SAMPLE_RATE_IN_HZ) {
         oversample = DAO_SOC_SAMPLE_RATE_IN_HZ / info->sample_rate;
@@ -89,24 +90,26 @@ void test_dao(const uint8_t *audio,
         i = 0;
         while(i < length) {
             ptr = (uint32_t *)&audio[i];
-            data = *(ptr) & (((uint64_t)1 << info->audio_depth) - 1);
-            data <<= volume_shift; /* Volume up */
+            data = *(ptr) << (32 - info->audio_depth);
+            data *= volume_scale; /* volume adjust */
             if (i2s_get_tx_line_fifo_level(DAO_I2S, 0) <= 2){
                 for (j = 0; j < oversample; j++) {
                     while(i2s_get_tx_line_fifo_level(DAO_I2S, 0) >= 1)  {}
-                    i2s_send_data(DAO_I2S, 0, &data, 1);
-                    i2s_send_data(DAO_I2S, 0, &data, 1);
+                    i2s_send_data(DAO_I2S, 0, data);
+                    if (info->channel_num == 1) {
+                        i2s_send_data(DAO_I2S, 0, data);
+                    }
                 }
                 i += info->audio_depth / 8;
             }
         }
     }
-
 }
 
-void test_pdm_to_dao(uint8_t volume_shift)
+void test_pdm_to_dao(float volume_scale)
 {
-    uint32_t i, j, data;
+    uint32_t i, j;
+    int32_t data;
     bool recording;
 
     i2s_config_t i2s_config;
@@ -159,7 +162,7 @@ void test_pdm_to_dao(uint8_t volume_shift)
             printf("Recording...\nPlease make some sound to mic0\n");
             while(i < ARRAY_SIZE(pdm_in)) {
                 if (i2s_get_rx_line_fifo_level(PDM_I2S, 0)){
-                    i2s_receive_data(PDM_I2S, 0, &pdm_in[i], 1);
+                    i2s_receive_data(PDM_I2S, 0, &pdm_in[i]);
                     i++;
                 }
             }
@@ -169,10 +172,10 @@ void test_pdm_to_dao(uint8_t volume_shift)
             while(i < (ARRAY_SIZE(pdm_in))) {
                 if (i2s_get_tx_line_fifo_level(DAO_I2S, 0) <= 2){
                     data = *(pdm_in + i);
-                    data <<= volume_shift;
+                    data *= volume_scale;
                     for (j = 0; j < DAO_SOC_PDM_SAMPLE_RATE_RATIO; j++) {
-                        i2s_send_data(DAO_I2S, 0, &data, 1); /* Left channel */
-                        i2s_send_data(DAO_I2S, 0, &data, 1); /* Right channel */
+                        i2s_send_data(DAO_I2S, 0, data); /* Left channel */
+                        i2s_send_data(DAO_I2S, 0, data); /* Right channel */
                     }
                     i += 1;
                 }
@@ -197,19 +200,19 @@ int main(void)
     printf("i2s example\n");
 
     printf("testing pdm to dao\n");
-    test_pdm_to_dao(2);
+    test_pdm_to_dao(0.6);
 
     printf("testing wav playback\n");
     wav_info.sample_rate = 8000;
     wav_info.channel_num = 1;
     wav_info.audio_depth = 16;
-    test_dao(wav, sizeof(wav), &wav_info, 17, 1);
+    test_dao(wav, sizeof(wav), &wav_info, 0.6, 1);
 
     printf("testing sine wave playback\n");
     wav_info.sample_rate = 48000;
     wav_info.channel_num = 1;
     wav_info.audio_depth = 32;
-    test_dao((uint8_t *)sin_1khz_48khz, sizeof(sin_1khz_48khz), &wav_info, 0, 200);
+    test_dao((uint8_t *)sin_1khz_48khz, sizeof(sin_1khz_48khz), &wav_info, 0.6, 200);
 
     while(1);
     return 0;

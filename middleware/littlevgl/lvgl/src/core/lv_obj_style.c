@@ -33,7 +33,7 @@ typedef enum {
     CACHE_UNSET = 2,
     CACHE_255 = 3,
     CACHE_NEED_CHECK = 4,
-}cache_t;
+} cache_t;
 
 /**********************
  *  GLOBAL PROTOTYPES
@@ -44,14 +44,14 @@ typedef enum {
  **********************/
 static lv_style_t * get_local_style(lv_obj_t * obj, lv_style_selector_t selector);
 static _lv_obj_style_t * get_trans_style(lv_obj_t * obj, uint32_t part);
-static bool get_prop_core(const lv_obj_t * obj, lv_part_t part, lv_style_prop_t prop, lv_style_value_t * v);
-static lv_style_value_t apply_color_filter(const lv_obj_t * obj, uint32_t part, lv_style_value_t v);
+static lv_style_res_t get_prop_core(const lv_obj_t * obj, lv_part_t part, lv_style_prop_t prop, lv_style_value_t * v);
 static void report_style_change_core(void * style, lv_obj_t * obj);
 static void refresh_children_style(lv_obj_t * obj);
 static bool trans_del(lv_obj_t * obj, lv_part_t part, lv_style_prop_t prop, trans_t * tr_limit);
 static void trans_anim_cb(void * _tr, int32_t v);
 static void trans_anim_start_cb(lv_anim_t * a);
 static void trans_anim_ready_cb(lv_anim_t * a);
+static lv_layer_type_t calculate_layer_type(lv_obj_t * obj);
 static void fade_anim_cb(void * obj, int32_t v);
 static void fade_in_anim_ready(lv_anim_t * a);
 
@@ -117,8 +117,7 @@ void lv_obj_remove_style(lv_obj_t * obj, lv_style_t * style, lv_style_selector_t
         lv_part_t part_act = lv_obj_style_get_selector_part(obj->styles[i].selector);
         if((state != LV_STATE_ANY && state_act != state) ||
            (part != LV_PART_ANY && part_act != part) ||
-           (style != NULL && style != obj->styles[i].style))
-        {
+           (style != NULL && style != obj->styles[i].style)) {
             i++;
             continue;
         }
@@ -175,23 +174,41 @@ void lv_obj_refresh_style(lv_obj_t * obj, lv_style_selector_t selector, lv_style
 
     lv_part_t part = lv_obj_style_get_selector_part(selector);
 
-    if((part == LV_PART_ANY || part == LV_PART_MAIN) && (prop == LV_STYLE_PROP_ANY || (prop & LV_STYLE_PROP_LAYOUT_REFR))) {
-        lv_event_send(obj, LV_EVENT_STYLE_CHANGED, NULL);
-        lv_obj_mark_layout_as_dirty(obj);
+    bool is_layout_refr = lv_style_prop_has_flag(prop, LV_STYLE_PROP_LAYOUT_REFR);
+    bool is_ext_draw = lv_style_prop_has_flag(prop, LV_STYLE_PROP_EXT_DRAW);
+    bool is_inheritable = lv_style_prop_has_flag(prop, LV_STYLE_PROP_INHERIT);
+    bool is_layer_refr = lv_style_prop_has_flag(prop, LV_STYLE_PROP_LAYER_REFR);
+
+    if(is_layout_refr) {
+        if(part == LV_PART_ANY ||
+           part == LV_PART_MAIN ||
+           lv_obj_get_style_height(obj, 0) == LV_SIZE_CONTENT ||
+           lv_obj_get_style_width(obj, 0) == LV_SIZE_CONTENT) {
+            lv_event_send(obj, LV_EVENT_STYLE_CHANGED, NULL);
+            lv_obj_mark_layout_as_dirty(obj);
+        }
     }
-    if((part == LV_PART_ANY || part == LV_PART_MAIN) && (prop == LV_STYLE_PROP_ANY || (prop & LV_STYLE_PROP_PARENT_LAYOUT_REFR))) {
+    if((part == LV_PART_ANY || part == LV_PART_MAIN) && (prop == LV_STYLE_PROP_ANY || is_layout_refr)) {
         lv_obj_t * parent = lv_obj_get_parent(obj);
         if(parent) lv_obj_mark_layout_as_dirty(parent);
     }
 
-    if(prop == LV_STYLE_PROP_ANY || (prop & LV_STYLE_PROP_EXT_DRAW)) {
+    /*Cache the layer type*/
+    if((part == LV_PART_ANY || part == LV_PART_MAIN) && is_layer_refr) {
+        lv_layer_type_t layer_type = calculate_layer_type(obj);
+        if(obj->spec_attr) obj->spec_attr->layer_type = layer_type;
+        else if(layer_type != LV_LAYER_TYPE_NONE) {
+            lv_obj_allocate_spec_attr(obj);
+            obj->spec_attr->layer_type = layer_type;
+        }
+    }
+
+    if(prop == LV_STYLE_PROP_ANY || is_ext_draw) {
         lv_obj_refresh_ext_draw_size(obj);
     }
     lv_obj_invalidate(obj);
 
-    if(prop == LV_STYLE_PROP_ANY ||
-      ((prop & LV_STYLE_PROP_INHERIT) && ((prop & LV_STYLE_PROP_EXT_DRAW) || (prop & LV_STYLE_PROP_LAYOUT_REFR))))
-    {
+    if(prop == LV_STYLE_PROP_ANY || (is_inheritable && (is_ext_draw || is_layout_refr))) {
         if(part != LV_PART_SCROLLBAR) {
             refresh_children_style(obj);
         }
@@ -206,19 +223,15 @@ void lv_obj_enable_style_refresh(bool en)
 lv_style_value_t lv_obj_get_style_prop(const lv_obj_t * obj, lv_part_t part, lv_style_prop_t prop)
 {
     lv_style_value_t value_act;
-    bool inherit = prop & LV_STYLE_PROP_INHERIT ? true : false;
-    bool filter = prop & LV_STYLE_PROP_FILTER ? true : false;
-    if(filter) {
-        prop &= ~LV_STYLE_PROP_FILTER;
-    }
-    bool found = false;
+    bool inheritable = lv_style_prop_has_flag(prop, LV_STYLE_PROP_INHERIT);
+    lv_style_res_t found = LV_STYLE_RES_NOT_FOUND;
     while(obj) {
         found = get_prop_core(obj, part, prop, &value_act);
-        if(found) break;
-        if(!inherit) break;
+        if(found == LV_STYLE_RES_FOUND) break;
+        if(!inheritable) break;
 
         /*If not found, check the `MAIN` style first*/
-        if(part != LV_PART_MAIN) {
+        if(found != LV_STYLE_RES_INHERIT && part != LV_PART_MAIN) {
             part = LV_PART_MAIN;
             continue;
         }
@@ -227,47 +240,62 @@ lv_style_value_t lv_obj_get_style_prop(const lv_obj_t * obj, lv_part_t part, lv_
         obj = lv_obj_get_parent(obj);
     }
 
-    if(!found) {
+    if(found != LV_STYLE_RES_FOUND) {
         if(part == LV_PART_MAIN && (prop == LV_STYLE_WIDTH || prop == LV_STYLE_HEIGHT)) {
             const lv_obj_class_t * cls = obj->class_p;
             while(cls) {
                 if(prop == LV_STYLE_WIDTH) {
                     if(cls->width_def != 0) break;
-                } else {
+                }
+                else {
                     if(cls->height_def != 0) break;
                 }
                 cls = cls->base_class;
             }
 
-            value_act.num = prop == LV_STYLE_WIDTH ? cls->width_def : cls->height_def;
-        } else {
+            if(cls) {
+                value_act.num = prop == LV_STYLE_WIDTH ? cls->width_def : cls->height_def;
+            }
+            else {
+                value_act.num = 0;
+            }
+        }
+        else {
             value_act = lv_style_prop_get_default(prop);
         }
     }
-    if(filter) value_act = apply_color_filter(obj, part, value_act);
     return value_act;
 }
 
-void lv_obj_set_local_style_prop(lv_obj_t * obj, lv_style_prop_t prop, lv_style_value_t value, lv_style_selector_t selector)
+void lv_obj_set_local_style_prop(lv_obj_t * obj, lv_style_prop_t prop, lv_style_value_t value,
+                                 lv_style_selector_t selector)
 {
     lv_style_t * style = get_local_style(obj, selector);
     lv_style_set_prop(style, prop, value);
     lv_obj_refresh_style(obj, selector, prop);
 }
 
+void lv_obj_set_local_style_prop_meta(lv_obj_t * obj, lv_style_prop_t prop, uint16_t meta,
+                                      lv_style_selector_t selector)
+{
+    lv_style_t * style = get_local_style(obj, selector);
+    lv_style_set_prop_meta(style, prop, meta);
+    lv_obj_refresh_style(obj, selector, prop);
+}
 
-lv_res_t lv_obj_get_local_style_prop(lv_obj_t * obj, lv_style_prop_t prop, lv_style_value_t * value, lv_style_selector_t selector)
+
+lv_style_res_t lv_obj_get_local_style_prop(lv_obj_t * obj, lv_style_prop_t prop, lv_style_value_t * value,
+                                           lv_style_selector_t selector)
 {
     uint32_t i;
     for(i = 0; i < obj->style_cnt; i++) {
         if(obj->styles[i].is_local &&
-           obj->styles[i].selector ==  selector)
-        {
+           obj->styles[i].selector == selector) {
             return lv_style_get_prop(obj->styles[i].style, prop, value);
         }
     }
 
-    return LV_RES_INV;
+    return LV_STYLE_RES_NOT_FOUND;
 }
 
 bool lv_obj_remove_local_style_prop(lv_obj_t * obj, lv_style_prop_t prop, lv_style_selector_t selector)
@@ -289,7 +317,8 @@ bool lv_obj_remove_local_style_prop(lv_obj_t * obj, lv_style_prop_t prop, lv_sty
     return lv_style_remove_prop(obj->styles[i].style, prop);
 }
 
-void _lv_obj_style_create_transition(lv_obj_t * obj, lv_part_t part, lv_state_t prev_state, lv_state_t new_state, const _lv_obj_style_transition_dsc_t * tr_dsc)
+void _lv_obj_style_create_transition(lv_obj_t * obj, lv_part_t part, lv_state_t prev_state, lv_state_t new_state,
+                                     const _lv_obj_style_transition_dsc_t * tr_dsc)
 {
     trans_t * tr;
 
@@ -312,7 +341,7 @@ void _lv_obj_style_create_transition(lv_obj_t * obj, lv_part_t part, lv_state_t 
     if(tr_dsc->prop == LV_STYLE_RADIUS) {
         if(v1.num == LV_RADIUS_CIRCLE || v2.num == LV_RADIUS_CIRCLE) {
             lv_coord_t whalf = lv_obj_get_width(obj) / 2;
-            lv_coord_t hhalf = lv_obj_get_width(obj) / 2;
+            lv_coord_t hhalf = lv_obj_get_height(obj) / 2;
             if(v1.num == LV_RADIUS_CIRCLE) v1.num = LV_MIN(whalf + 1, hhalf + 1);
             if(v2.num == LV_RADIUS_CIRCLE) v2.num = LV_MIN(whalf + 1, hhalf + 1);
         }
@@ -323,28 +352,37 @@ void _lv_obj_style_create_transition(lv_obj_t * obj, lv_part_t part, lv_state_t 
     if(tr == NULL) return;
     tr->start_value = v1;
     tr->end_value = v2;
+    tr->obj = obj;
+    tr->prop = tr_dsc->prop;
+    tr->selector = part;
 
-    if(tr) {
-        tr->obj = obj;
-        tr->prop = tr_dsc->prop;
-        tr->selector = part;
-
-        lv_anim_t a;
-        lv_anim_init(&a);
-        lv_anim_set_var(&a, tr);
-        lv_anim_set_exec_cb(&a, trans_anim_cb);
-        lv_anim_set_start_cb(&a, trans_anim_start_cb);
-        lv_anim_set_ready_cb(&a, trans_anim_ready_cb);
-        lv_anim_set_values(&a, 0x00, 0xFF);
-        lv_anim_set_time(&a, tr_dsc->time);
-        lv_anim_set_delay(&a, tr_dsc->delay);
-        lv_anim_set_path_cb(&a, tr_dsc->path_cb);
-        lv_anim_set_early_apply(&a, false);
+    lv_anim_t a;
+    lv_anim_init(&a);
+    lv_anim_set_var(&a, tr);
+    lv_anim_set_exec_cb(&a, trans_anim_cb);
+    lv_anim_set_start_cb(&a, trans_anim_start_cb);
+    lv_anim_set_ready_cb(&a, trans_anim_ready_cb);
+    lv_anim_set_values(&a, 0x00, 0xFF);
+    lv_anim_set_time(&a, tr_dsc->time);
+    lv_anim_set_delay(&a, tr_dsc->delay);
+    lv_anim_set_path_cb(&a, tr_dsc->path_cb);
+    lv_anim_set_early_apply(&a, false);
 #if LV_USE_USER_DATA
-        a.user_data = tr_dsc->user_data;
+    a.user_data = tr_dsc->user_data;
 #endif
-        lv_anim_start(&a);
+    lv_anim_start(&a);
+}
+
+
+lv_style_value_t _lv_obj_style_apply_color_filter(const lv_obj_t * obj, uint32_t part, lv_style_value_t v)
+{
+    if(obj == NULL) return v;
+    const lv_color_filter_dsc_t * f = lv_obj_get_style_color_filter_dsc(obj, part);
+    if(f && f->filter_cb) {
+        lv_opa_t f_opa = lv_obj_get_style_color_filter_opa(obj, part);
+        if(f_opa != 0) v.color = f->filter_cb(f, v.color, f_opa);
     }
+    return v;
 }
 
 _lv_style_state_cmp_t _lv_obj_style_state_compare(lv_obj_t * obj, lv_state_t state1, lv_state_t state2)
@@ -357,8 +395,7 @@ _lv_style_state_cmp_t _lv_obj_style_state_compare(lv_obj_t * obj, lv_state_t sta
         if(obj->styles[i].is_trans) continue;
 
         lv_state_t state_act = lv_obj_style_get_selector_state(obj->styles[i].selector);
-        lv_part_t part_act = lv_obj_style_get_selector_part(obj->styles[i].selector);
-        /*The style is valid for a stat but not the other*/
+        /*The style is valid for a state but not the other*/
         bool valid1 = state_act & (~state1) ? false : true;
         bool valid2 = state_act & (~state2) ? false : true;
         if(valid1 != valid2) {
@@ -382,15 +419,11 @@ _lv_style_state_cmp_t _lv_obj_style_state_compare(lv_obj_t * obj, lv_state_t sta
             else if(lv_style_get_prop(style, LV_STYLE_MIN_HEIGHT, &v)) layout_diff = true;
             else if(lv_style_get_prop(style, LV_STYLE_MAX_HEIGHT, &v)) layout_diff = true;
             else if(lv_style_get_prop(style, LV_STYLE_BORDER_WIDTH, &v)) layout_diff = true;
+            else if(lv_style_get_prop(style, LV_STYLE_TRANSFORM_ANGLE, &v)) layout_diff = true;
+            else if(lv_style_get_prop(style, LV_STYLE_TRANSFORM_ZOOM, &v)) layout_diff = true;
 
             if(layout_diff) {
-                if(part_act == LV_PART_MAIN) {
-                    return _LV_STYLE_STATE_CMP_DIFF_LAYOUT;
-                }
-                else {
-                    res = _LV_STYLE_STATE_CMP_DIFF_DRAW_PAD;
-                    continue;
-                }
+                return _LV_STYLE_STATE_CMP_DIFF_LAYOUT;
             }
 
             /*Check for draw pad changes*/
@@ -419,7 +452,7 @@ void lv_obj_fade_in(lv_obj_t * obj, uint32_t time, uint32_t delay)
     lv_anim_t a;
     lv_anim_init(&a);
     lv_anim_set_var(&a, obj);
-    lv_anim_set_values(&a, LV_OPA_TRANSP, LV_OPA_COVER);
+    lv_anim_set_values(&a, 0, LV_OPA_COVER);
     lv_anim_set_exec_cb(&a, fade_anim_cb);
     lv_anim_set_ready_cb(&a, fade_in_anim_ready);
     lv_anim_set_time(&a, time);
@@ -432,7 +465,7 @@ void lv_obj_fade_out(lv_obj_t * obj, uint32_t time, uint32_t delay)
     lv_anim_t a;
     lv_anim_init(&a);
     lv_anim_set_var(&a, obj);
-    lv_anim_set_values(&a, LV_OPA_COVER, LV_OPA_TRANSP);
+    lv_anim_set_values(&a, lv_obj_get_style_opa(obj, 0), LV_OPA_TRANSP);
     lv_anim_set_exec_cb(&a, fade_anim_cb);
     lv_anim_set_time(&a, time);
     lv_anim_set_delay(&a, delay);
@@ -449,6 +482,15 @@ lv_part_t lv_obj_style_get_selector_part(lv_style_selector_t selector)
     return selector & 0xFF0000;
 }
 
+
+lv_text_align_t lv_obj_calculate_style_text_align(const struct _lv_obj_t * obj, lv_part_t part, const char * txt)
+{
+    lv_text_align_t align = lv_obj_get_style_text_align(obj, part);
+    lv_base_dir_t base_dir = lv_obj_get_style_base_dir(obj, part);
+    lv_bidi_calculate_align(&align, &base_dir, txt);
+    return align;
+}
+
 /**********************
  *   STATIC FUNCTIONS
  **********************/
@@ -456,18 +498,16 @@ lv_part_t lv_obj_style_get_selector_part(lv_style_selector_t selector)
 /**
  * Get the local style of an object for a given part and for a given state.
  * If the local style for the part-state pair doesn't exist allocate and return it.
- * @param obj   pointer to an object
- * @param part  the part in whose local style to get
- * @param state the state in whose local style to get
+ * @param obj pointer to an object
+ * @param selector OR-ed value of parts and state for which the style should be get
  * @return pointer to the local style
  */
-static lv_style_t * get_local_style(lv_obj_t * obj,  lv_style_selector_t selector)
+static lv_style_t * get_local_style(lv_obj_t * obj, lv_style_selector_t selector)
 {
     uint32_t i;
     for(i = 0; i < obj->style_cnt; i++) {
         if(obj->styles[i].is_local &&
-           obj->styles[i].selector == selector)
-        {
+           obj->styles[i].selector == selector) {
             return obj->styles[i].style;
         }
     }
@@ -495,8 +535,7 @@ static lv_style_t * get_local_style(lv_obj_t * obj,  lv_style_selector_t selecto
  * Get the transition style of an object for a given part and for a given state.
  * If the transition style for the part-state pair doesn't exist allocate and return it.
  * @param obj   pointer to an object
- * @param part  the part in whose local style to get
- * @param state the state in whose local style to get
+ * @param selector OR-ed value of parts and state for which the style should be get
  * @return pointer to the transition style
  */
 static _lv_obj_style_t * get_trans_style(lv_obj_t * obj,  lv_style_selector_t selector)
@@ -525,7 +564,7 @@ static _lv_obj_style_t * get_trans_style(lv_obj_t * obj,  lv_style_selector_t se
 }
 
 
-static bool get_prop_core(const lv_obj_t * obj, lv_part_t part, lv_style_prop_t prop, lv_style_value_t * v)
+static lv_style_res_t get_prop_core(const lv_obj_t * obj, lv_part_t part, lv_style_prop_t prop, lv_style_value_t * v)
 {
     uint8_t group = 1 << _lv_style_get_prop_group(prop);
     int32_t weight = -1;
@@ -534,7 +573,7 @@ static bool get_prop_core(const lv_obj_t * obj, lv_part_t part, lv_style_prop_t 
     lv_style_value_t value_tmp;
     bool skip_trans = obj->skip_trans;
     uint32_t i;
-    bool found;
+    lv_style_res_t found;
     for(i = 0; i < obj->style_cnt; i++) {
         _lv_obj_style_t * obj_style = &obj->styles[i];
         if(obj_style->is_trans == false) break;
@@ -545,19 +584,21 @@ static bool get_prop_core(const lv_obj_t * obj, lv_part_t part, lv_style_prop_t 
         if(part_act != part) continue;
         if((obj_style->style->has_group & group) == 0) continue;
         found = lv_style_get_prop(obj_style->style, prop, &value_tmp);
-        if(found) {
+        if(found == LV_STYLE_RES_FOUND) {
             *v = value_tmp;
-            return true;
+            return LV_STYLE_RES_FOUND;
+        }
+        else if(found == LV_STYLE_RES_INHERIT) {
+            return LV_STYLE_RES_INHERIT;
         }
     }
 
     for(; i < obj->style_cnt; i++) {
+        if((obj->styles[i].style->has_group & group) == 0) continue;
         _lv_obj_style_t * obj_style = &obj->styles[i];
         lv_part_t part_act = lv_obj_style_get_selector_part(obj->styles[i].selector);
         lv_state_t state_act = lv_obj_style_get_selector_state(obj->styles[i].selector);
         if(part_act != part) continue;
-
-        if((obj_style->style->has_group & group) == 0) continue;
 
         /*Be sure the style not specifies other state than the requested.
          *E.g. For HOVER+PRESS object state, HOVER style only is OK, but HOVER+FOCUS style is not*/
@@ -568,34 +609,26 @@ static bool get_prop_core(const lv_obj_t * obj, lv_part_t part, lv_style_prop_t 
 
         found = lv_style_get_prop(obj_style->style, prop, &value_tmp);
 
-        if(found) {
+        if(found == LV_STYLE_RES_FOUND) {
             if(state_act == state) {
                 *v = value_tmp;
-                return true;
+                return LV_STYLE_RES_FOUND;
             }
             if(weight < state_act) {
                 weight = state_act;
                 *v = value_tmp;
             }
         }
+        else if(found == LV_STYLE_RES_INHERIT) {
+            return LV_STYLE_RES_INHERIT;
+        }
     }
 
     if(weight >= 0) {
         *v = value_tmp;
-        return true;
+        return LV_STYLE_RES_FOUND;
     }
-    else return false;
-}
-
-static lv_style_value_t apply_color_filter(const lv_obj_t * obj, uint32_t part, lv_style_value_t v)
-{
-    if(obj == NULL) return v;
-    const lv_color_filter_dsc_t * f = lv_obj_get_style_color_filter_dsc(obj, part);
-    if(f && f->filter_cb) {
-        lv_opa_t f_opa = lv_obj_get_style_color_filter_opa(obj, part);
-        if(f_opa != 0) v.color = f->filter_cb(f, v.color, f_opa);
-    }
-    return v;
+    else return LV_STYLE_RES_NOT_FOUND;
 }
 
 /**
@@ -613,8 +646,9 @@ static void report_style_change_core(void * style, lv_obj_t * obj)
         }
     }
 
-    for(i = 0; i < lv_obj_get_child_cnt(obj); i++) {
-        report_style_change_core(style, lv_obj_get_child(obj, i));
+    uint32_t child_cnt = lv_obj_get_child_cnt(obj);
+    for(i = 0; i < child_cnt; i++) {
+        report_style_change_core(style, obj->spec_attr->children[i]);
     }
 }
 
@@ -626,8 +660,9 @@ static void report_style_change_core(void * style, lv_obj_t * obj)
 static void refresh_children_style(lv_obj_t * obj)
 {
     uint32_t i;
-    for(i = 0; i < lv_obj_get_child_cnt(obj); i++) {
-        lv_obj_t * child = lv_obj_get_child(obj, i);
+    uint32_t child_cnt = lv_obj_get_child_cnt(obj);
+    for(i = 0; i < child_cnt; i++) {
+        lv_obj_t * child = obj->spec_attr->children[i];
         lv_obj_invalidate(child);
         lv_event_send(child, LV_EVENT_STYLE_CHANGED, NULL);
         lv_obj_invalidate(child);
@@ -658,18 +693,20 @@ static bool trans_del(lv_obj_t * obj, lv_part_t part, lv_style_prop_t prop, tran
         tr_prev = _lv_ll_get_prev(&LV_GC_ROOT(_lv_obj_style_trans_ll), tr);
 
         if(tr->obj == obj && (part == tr->selector || part == LV_PART_ANY) && (prop == tr->prop || prop == LV_STYLE_PROP_ANY)) {
-            /*Remove the transitioned property from trans. style
+            /*Remove any transitioned properties from the trans. style
              *to allow changing it by normal styles*/
             uint32_t i;
             for(i = 0; i < obj->style_cnt; i++) {
                 if(obj->styles[i].is_trans && (part == LV_PART_ANY || obj->styles[i].selector == part)) {
                     lv_style_remove_prop(obj->styles[i].style, tr->prop);
-                    lv_anim_del(tr, NULL);
-                    _lv_ll_remove(&LV_GC_ROOT(_lv_obj_style_trans_ll), tr);
-                    lv_mem_free(tr);
-                    removed = true;
                 }
             }
+
+            /*Free the transition descriptor too*/
+            lv_anim_del(tr, NULL);
+            _lv_ll_remove(&LV_GC_ROOT(_lv_obj_style_trans_ll), tr);
+            lv_mem_free(tr);
+            removed = true;
 
         }
         tr = tr_prev;
@@ -687,7 +724,7 @@ static void trans_anim_cb(void * _tr, int32_t v)
         if(obj->styles[i].is_trans == 0 || obj->styles[i].selector != tr->selector) continue;
 
         lv_style_value_t value_final;
-        switch (tr->prop) {
+        switch(tr->prop) {
 
             case LV_STYLE_BORDER_SIDE:
             case LV_STYLE_BORDER_POST:
@@ -727,12 +764,13 @@ static void trans_anim_cb(void * _tr, int32_t v)
         lv_style_value_t old_value;
         bool refr = true;
         if(lv_style_get_prop(obj->styles[i].style, tr->prop, &old_value)) {
-            if(value_final.ptr == old_value.ptr && value_final.color.full == old_value.color.full && value_final.num == old_value.num) {
+            if(value_final.ptr == old_value.ptr && value_final.color.full == old_value.color.full &&
+               value_final.num == old_value.num) {
                 refr = false;
             }
         }
         lv_style_set_prop(obj->styles[i].style, tr->prop, value_final);
-        if (refr) lv_obj_refresh_style(tr->obj, tr->selector, tr->prop);
+        if(refr) lv_obj_refresh_style(tr->obj, tr->selector, tr->prop);
         break;
 
     }
@@ -796,6 +834,18 @@ static void trans_anim_ready_cb(lv_anim_t * a)
             }
         }
     }
+}
+
+static lv_layer_type_t calculate_layer_type(lv_obj_t * obj)
+{
+    if(lv_obj_get_style_transform_angle(obj, 0) != 0) return LV_LAYER_TYPE_TRANSFORM;
+    if(lv_obj_get_style_transform_zoom(obj, 0) != 256) return LV_LAYER_TYPE_TRANSFORM;
+    if(lv_obj_get_style_opa(obj, 0) != LV_OPA_COVER) return LV_LAYER_TYPE_SIMPLE;
+
+#if LV_DRAW_COMPLEX
+    if(lv_obj_get_style_blend_mode(obj, 0) != LV_BLEND_MODE_NORMAL) return LV_LAYER_TYPE_SIMPLE;
+#endif
+    return LV_LAYER_TYPE_NONE;
 }
 
 static void fade_anim_cb(void * obj, int32_t v)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 hpmicro
+ * Copyright (c) 2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -74,12 +74,12 @@ void data_conversion_test(FFT_BUF_TYPE *buf, uint16_t pt)
     clear_cycle();
     hpm_dsp_convert_f32_q31(fft_buf_conversion, ffa_buf, 2 * pt);
     run_times = read_cycles();
-    printf("total times:%d tick.\r\n", pt, run_times);
+    printf("total times:%d tick.\r\n", run_times);
     printf("convert data from q31 to float, nums:%d.\r\n", 2 * pt);
     clear_cycle();
     hpm_dsp_convert_q31_f32(ffa_buf, fft_buf_conversion, 2 * pt);
     run_times = read_cycles();
-    printf("total times:%d tick.\r\n", pt, run_times);
+    printf("total times:%d tick.\r\n", run_times);
     printf("------------------------------------\r\n");
 }
 

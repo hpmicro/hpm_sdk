@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -69,9 +69,9 @@ hpm_stat_t gt911_init(gt911_context_t *context, uint16_t width, uint16_t height)
     g_i2c_addr = GT911_I2C_ADDR0;
     stat = gt911_read_data(context, GT911_CONFIG, config, sizeof(config));
     if (stat != status_success) {
-        printf("0x%x failed to init GT911", g_i2c_addr); 
+        printf("0x%x failed to init GT911", g_i2c_addr);
         g_i2c_addr = GT911_I2C_ADDR1;
-        printf(", try 0x%x\n", g_i2c_addr); 
+        printf(", try 0x%x\n", g_i2c_addr);
         stat = gt911_read_data(context, GT911_CONFIG, config, sizeof(config));
     }
     if (stat != status_success) {
@@ -93,7 +93,7 @@ hpm_stat_t gt911_init(gt911_context_t *context, uint16_t width, uint16_t height)
     /* if (stat != status_success) { */
         /* return stat; */
     /* } */
-    
+
     /* if (val != GT911_PRODUCT_ID) { */
         /* return status_fail; */
     /* } */
@@ -120,7 +120,7 @@ hpm_stat_t gt911_read_touch_data(gt911_context_t *context,
                                   gt911_touch_data_t *touch_data)
 {
     hpm_stat_t stat = status_success;
- 
+
     stat = gt911_read_data(context, GT911_STATUS,
             (uint8_t *)touch_data, sizeof(gt911_touch_data_t));
     if (stat != status_success) {

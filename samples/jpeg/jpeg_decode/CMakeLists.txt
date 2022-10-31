@@ -1,101 +1,69 @@
-# Copyright 2022 hpmicro
+# Copyright (c) 2022 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
 
-#Read file mode:
-#Only one of them can be selected to be defined(1->CONFIG_SDFATFS_MODE:sd card;2->CONFIG_TINYUSBHOST_MODE:tinyusb)
-set(CONFIG_SDFATFS_MODE 1)
-#set(CONFIG_TINYUSBHOST_MODE 1)
+# target storage
+set(JPEG_USE_SDCARD 1)
+#set(JPEG_USE_UDISK 1)
 
-#Decoding mode:
-#Only one of them can be selected to be defined(1->CONFIG_JPEG_TURBO_MODE:libjpeg_turbo;2->CONFIG_JPEG_HARDWARE_MODE:Hardware JPEG)
-#set(CONFIG_JPEG_TURBO_MODE 1)
-set(CONFIG_JPEG_HARDWARE_MODE 1)
+# set JPEG_HW_MODE to 0 to use software library
+set(JPEG_HW_MODE 1)
 
-#Under the premise of hardware decoding, Table used for quantization decode:
-#Only one of them can be selected to be defined(1->CONFIG_EXTRACT_FILE_TABLE:Get from file;2->CONFIG_DEFAULT_TABLE:default)
-set(CONFIG_HARDWARE_EXTRACT_TABLE 1)
-#set(CONFIG_HARDWARE_DEFAULT_TABLE 1)
-
-if(DEFINED CONFIG_SDFATFS_MODE)
-set(CONFIG_SDMMC 1)
-endif()
-
-if(DEFINED CONFIG_TINYUSBHOST_MODE)
-set(CONFIG_TINYUSB 1)
-set(CONFIG_USB_HOST 1)
-set(CONFIG_USB_FATFS 1)
-endif()
-
+# target storage
 set(CONFIG_FATFS 1)
-set(CONFIG_LIBJPEG 1)
-set(CUSTOM_LINKER_FILE $ENV{HPM_SDK_BASE}/samples/jpeg/linkers/gcc/jpeg.ld)
+if(DEFINED JPEG_USE_SDCARD)
+  set(CONFIG_SDMMC 1)
+elseif(DEFINED JPEG_USE_UDISK)
+  set(CONFIG_TINYUSB 1)
+  set(CONFIG_USB_HOST 1)
+  set(CONFIG_USB_FATFS 1)
+  set(CONFIG_USB_FATFS_TINYUSB 1)
+else()
+  message(FATAL_ERROR "Please select target storaget, set JPEG_USE_SDCARD or JPEG_USE_UDISK in CMakeLists.txt")
+endif()
 
-set(HEAP_SIZE 0x40000)
+set(CUSTOM_GCC_LINKER_FILE $ENV{HPM_SDK_BASE}/samples/jpeg/linkers/gcc/jpeg.ld)
+
+if(${JPEG_HW_MODE})
+  set(HEAP_SIZE 0x40000)
+else()
+  set(CONFIG_LIBJPEG 1)
+  set(HEAP_SIZE 0x100000)
+endif()
 set(STACK_SIZE 0x40000)
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
-project(libjpeg_djpeg_example)
+project(jpeg_dec_example)
 
-sdk_compile_definitions(DECOMPRESS_MODE)
 sdk_compile_definitions(INIT_EXT_RAM_FOR_DATA=1)
 
-if(DEFINED CONFIG_SDFATFS_MODE)
-sdk_compile_definitions(-DSD_FATFS_ENABLE=1)
-sdk_compile_definitions(SD_FATFS_MODE)
+if(DEFINED JPEG_USE_SDCARD)
+  sdk_compile_definitions(-DJPEG_USE_SDCARD=1)
+  sdk_compile_definitions(-DSD_FATFS_ENABLE=1)
+  sdk_app_src(../common/src/sd_fatfs.c)
+elseif(DEFINED JPEG_USE_UDISK)
+  sdk_compile_definitions(-DJPEG_USE_UDISK=1)
+  sdk_compile_definitions(-DCFG_TUSB_MCU=OPT_MCU_HPM)
+  sdk_compile_definitions(-DUSB_HOST_MCU_CORE=BOARD_RUNNING_CORE)
+  sdk_compile_definitions(-DUSB_FATFS_ENABLE=1)
+  sdk_app_src(../common/src/msc_app.c)
 endif()
 
-if(DEFINED CONFIG_TINYUSBHOST_MODE)
-sdk_compile_definitions(-DCFG_TUSB_MCU=OPT_MCU_HPM)
-sdk_compile_definitions(-DUSB_HOST_MCU_CORE=BOARD_RUNNING_CORE)
-sdk_compile_definitions(-DUSB_FATFS_ENABLE)
-sdk_compile_definitions(TINYUSB_HOST_MODE)
-endif()
-
-if(DEFINED CONFIG_JPEG_TURBO_MODE)
-sdk_compile_definitions(JPEG_TURBO_MODE)
-endif()
-
-if(DEFINED CONFIG_JPEG_HARDWARE_MODE)
-sdk_compile_definitions(JPEG_HARDWARE_MODE)
-endif()
-
-if(DEFINED CONFIG_HARDWARE_EXTRACT_TABLE)
-sdk_compile_definitions(HARDWARE_EXTRACT_TABLE)
-endif()
-
-if(DEFINED CONFIG_HARDWARE_DEFAULT_TABLE)
-sdk_compile_definitions(HARDWARE_DEFAULT_TABLE)
+if(${JPEG_HW_MODE})
+  sdk_compile_definitions(-DJPEG_HW_MODE=1)
+  sdk_app_src(src/jpeg_hw.c)
+else()
+  sdk_compile_definitions(DECOMPRESS_MODE)
+  sdk_compile_definitions(-DJPEG_HW_MODE=0)
+  sdk_app_src(src/jpeg_turbo.c)
 endif()
 
 sdk_compile_options(-Os)
 
 sdk_inc(../common/inc)
 sdk_inc(inc)
-
-if(DEFINED CONFIG_SDFATFS_MODE)
-sdk_app_src(../common/src/sd_fatfs.c)
-endif()
-
-if(DEFINED CONFIG_TINYUSBHOST_MODE)
-sdk_app_src(../common/src/msc_app.c)
-endif()
-
-if(DEFINED CONFIG_JPEG_TURBO_MODE)
-sdk_app_src(src/jpeg_turbo.c)
-endif()
-
-if(DEFINED CONFIG_JPEG_HARDWARE_MODE)
-sdk_app_src(src/jpeg_hw.c)
-endif()
-
-if(DEFINED CONFIG_HARDWARE_DEFAULT_TABLE)
-sdk_app_src(src/qdtable.cdat)
-endif()
-
 sdk_app_src(src/djpeg.c)
-sdk_app_src(../common/src/file_op.c)
 
 generate_ses_project()

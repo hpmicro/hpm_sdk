@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -112,29 +112,22 @@ void init_lcd(void)
     }
 }
 
-void init_jpeg(void)
+void reset_jpeg(bool encoding)
 {
+    jpeg_init(TEST_JPEG);
     jpeg_enable(TEST_JPEG);
     jpeg_fill_table(TEST_JPEG, jpeg_table_huffmin, (uint8_t *)huffmin, ARRAY_SIZE(huffmin));
     jpeg_fill_table(TEST_JPEG, jpeg_table_huffbase, (uint8_t *)huffbase, ARRAY_SIZE(huffbase));
     jpeg_fill_table(TEST_JPEG, jpeg_table_huffsymb, (uint8_t *)huffsymb, ARRAY_SIZE(huffsymb));
     jpeg_fill_table(TEST_JPEG, jpeg_table_huffenc, (uint8_t *)huffenc, ARRAY_SIZE(huffenc));
+    if (encoding) {
+        jpeg_fill_table(TEST_JPEG, jpeg_table_qmem, (uint8_t *)qetable, ARRAY_SIZE(qetable));
+    } else {
+        jpeg_fill_table(TEST_JPEG, jpeg_table_qmem, (uint8_t *)qdtable, ARRAY_SIZE(qdtable));
+    }
     jpeg_disable(TEST_JPEG);
 }
 
-void fill_jpeg_encode_table(void)
-{
-    jpeg_enable(TEST_JPEG);
-    jpeg_fill_table(TEST_JPEG, jpeg_table_qmem, (uint8_t *)qetable, ARRAY_SIZE(qetable));
-    jpeg_disable(TEST_JPEG);
-}
-
-void fill_jpeg_decode_table(void)
-{
-    jpeg_enable(TEST_JPEG);
-    jpeg_fill_table(TEST_JPEG, jpeg_table_qmem, (uint8_t *)qdtable, ARRAY_SIZE(qdtable));
-    jpeg_disable(TEST_JPEG);
-}
 
 bool wait_jpeg_finish(void)
 {
@@ -158,18 +151,15 @@ void encode_decode_jpeg(void)
     jpeg_job_config_t config = {0};
     printf("start encoding and decoding\n");
 
-    TEST_JPEG->CFG=0;
-    jpeg_init(TEST_JPEG);
-    fill_jpeg_encode_table();
+    reset_jpeg(true);
     
     config.jpeg_format = JPEG_SUPPORTED_FORMAT_422H;
-    config.in_pixel_format = JPEG_PIXEL_FORMAT_RGB565;
-    config.out_pixel_format = JPEG_PIXEL_FORMAT_YUV422H1P;
-    config.byte_order = JPEG_BYTE_ORDER_2301;
-    config.enable_csc = true;
+    config.in_pixel_format = jpeg_pixel_format_rgb565;
+    config.out_pixel_format = jpeg_pixel_format_yuv422h1p;
     config.enable_ycbcr = true;
     config.width_in_pixel = LAYER_WIDTH;
     config.height_in_pixel = LAYER_HEIGHT;
+    config.in_byte_order = JPEG_BYTE_ORDER_2301;
     config.in_buffer = core_local_mem_to_sys_address(RUNNING_CORE, (uint32_t)in_img);
     config.out_buffer = core_local_mem_to_sys_address(RUNNING_CORE, (uint32_t)out_ecs);
 
@@ -184,18 +174,15 @@ void encode_decode_jpeg(void)
     encoded_length = jpeg_get_encoded_length(TEST_JPEG);
     printf("encoded %d\n", encoded_length);
 
-    TEST_JPEG->CFG=0;
-    jpeg_init(TEST_JPEG);
-    fill_jpeg_decode_table();
-    
+    reset_jpeg(false);
+
     config.jpeg_format = JPEG_SUPPORTED_FORMAT_422H;
-    config.in_pixel_format = JPEG_PIXEL_FORMAT_YUV422H1P;
-    config.out_pixel_format = JPEG_PIXEL_FORMAT_RGB565;
-    config.byte_order = JPEG_BYTE_ORDER_2301;
-    config.enable_csc = true;
-    config.enable_ycbcr = false;
+    config.in_pixel_format = jpeg_pixel_format_yuv422h1p;
+    config.out_pixel_format = jpeg_pixel_format_rgb565;
+    config.enable_ycbcr = true;
     config.width_in_pixel = LAYER_WIDTH;
     config.height_in_pixel = LAYER_HEIGHT;
+    config.out_byte_order = JPEG_BYTE_ORDER_2301;
     config.in_buffer = core_local_mem_to_sys_address(RUNNING_CORE, (uint32_t)out_ecs);
     config.out_buffer = core_local_mem_to_sys_address(RUNNING_CORE, (uint32_t)out_img);
 
@@ -214,18 +201,15 @@ void decode_jpeg(void)
 {
     jpeg_job_config_t config = {0};
 
-    TEST_JPEG->CFG=0;
-    jpeg_init(TEST_JPEG);
-    fill_jpeg_decode_table();
-    
+    reset_jpeg(false);
+
     config.jpeg_format = JPEG_SUPPORTED_FORMAT_422H;
-    config.in_pixel_format = JPEG_PIXEL_FORMAT_YUV422H1P;
-    config.out_pixel_format = JPEG_PIXEL_FORMAT_RGB565;
-    config.byte_order = JPEG_BYTE_ORDER_2301;
-    config.enable_csc = true;
+    config.in_pixel_format = jpeg_pixel_format_yuv422h1p;
+    config.out_pixel_format = jpeg_pixel_format_rgb565;
     config.enable_ycbcr = true;
     config.width_in_pixel = LAYER_WIDTH;
     config.height_in_pixel = LAYER_HEIGHT;
+    config.out_byte_order = JPEG_BYTE_ORDER_2301;
     config.in_buffer = core_local_mem_to_sys_address(RUNNING_CORE, (uint32_t)in_ecs);
     config.out_buffer = core_local_mem_to_sys_address(RUNNING_CORE, (uint32_t)out_img);
 
@@ -248,7 +232,6 @@ int main(void)
 
     printf("jpeg example\r\n");
 
-    init_jpeg();
     init_lcd();
     lcdc_turn_on_display(LCD);
 

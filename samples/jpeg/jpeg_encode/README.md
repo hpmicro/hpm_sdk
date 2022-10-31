@@ -1,37 +1,29 @@
 # JPEG encode
 ## Overview
 ***
-**jpeg_encode** example project shows how to pass the rgb565 data collected by the camera through libjpeg_turbo library Or hardware JPEG module is converted into JPG data and saved in the storage medium.
-- the rgb565 data is obtained through **the camera**, the rgb565 data is converted into JPEG data through the code base, and the JPG pictures are stored in **USB** or **SD card**
+JPEG decoding example project demonstrates how to encode an image capture from camera sensor to a JPG file using either JPEG module or software jpeg library
 
 ## Board Setting
 ***
 - Connect the **USB disk** to the development board ``usb0``, or insert the **SD memory card** into the development board ``SD card``
-- **Cam camera** connected to development board ``cam``
+- Connect **LCD screen** and **Cam camera** to development board
 
 ## Engineering configuration
 ***
-- File [cmakelists.txt](./CmakeLists.txt). If ``set (config_sdfatfs_mode 1)`` is configured, Jpg pictures are stored in **SD card** by default; to configure ``set (config_tinyusbhost_mode 1)``, Jpg pictures are stored in **USB** by default
+- File [CMakeLists.txt](./CMakeLists.txt). If ``set (JPEG_USE_SDCARD 1)`` is configured, jpeg files are stored in SD card or ``set (JPEG_USE_UDISK 1)``, they will be saved to udisk.
 
 ## Store picture size
 ***
-- The image format stored in this routine is JPG, and the resolution size is 800*480
-- If higher resolution encoding is supported, a camera that supports high resolution can be used as the RGB data source to store JPG files through the encoding function
+- The image format stored in this routine is JPG, and the resolution size is 640*480
 
 ## Running the example
 ***
-- SD card mode:
-When the project runs correctly, the pictures captured by the camera are stored in the SD card and named camera Jpg, and the serial terminal will output the following information:
-```
-> storage picture data by SD card
-> File Name: Camera.jpg
-> Libjpeg-turbo encode completed
-```
+- Configure storage in CMakeLists.txt
+- Connect camera senor, LCD pannel and storage to board
+- Power on the board
+- Download built elf into development board and run the demo
+- If everything goes well:
+  - camera sensor preview will be shown on LCD panel
+  - press GPIO button (please check [Button](lab_board_resource) section of specific board) will save current frame and encode to jpeg file and save to target storage
+  - encoded image will be decoded and shown on LCD pannel until GPIO button is pressed again. Once it's been pressed, preview will be resumed.
 
-- USB mode:
-When the project runs correctly, the pictures captured by the camera are stored in USB and named camera Jpg, and the serial terminal will output the following information:
-```
-> storage picture data by tinyusb mode
-> File Name: Camera.jpg
-> Libjpeg-turbo encode completed
-```

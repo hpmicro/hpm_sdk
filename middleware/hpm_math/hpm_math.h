@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 hpmicro
+ * Copyright (c) 2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -8,6 +8,10 @@
 #ifndef __HPM_MATH_H__
 #define __HPM_MATH_H__
 
+/**
+ * @defgroup hpmmath HPMicro Math Functions
+ * @ingroup middleware_interfaces
+ */
 
 #define HPM_DSP_HW_NDS32 nds32_dsp_core//andes hardware dsp
 
@@ -55,6 +59,8 @@ extern "C"
 
 /**
  * @defgroup statistics Statistics Functions
+ * @ingroup hpmmath
+ * @{
  */
 
 #ifdef HPM_EN_MATH_DSP_LIB
@@ -627,10 +633,17 @@ static inline uint32_t hpm_dsp_gaussian_naive_bayes_est_f32(const riscv_dsp_gaus
 #endif
 #endif
 
+/**
+ * @}
+ *
+ */
+
 #ifdef HPM_MATH_BASIC
 
 /**
  * @defgroup basic Basic Functions
+ * @ingroup hpmmath
+ * @{
  */
 #ifdef HPM_EN_MATH_DSP_LIB
 #include "riscv_dsp_basic_math.h"
@@ -641,7 +654,6 @@ static inline uint32_t hpm_dsp_gaussian_naive_bayes_est_f32(const riscv_dsp_gaus
  * @param[in]       *src points to the input vector.
  * @param[out]      *dst points to the output vector.
  * @param[in]       size size of the vectors.
- * @return none.
  */
 static inline void hpm_dsp_abs_f32(float32_t *src, float32_t *dst, uint32_t size)
 {
@@ -655,7 +667,6 @@ static inline void hpm_dsp_abs_f32(float32_t *src, float32_t *dst, uint32_t size
  * @param[in]       *src points to the input vector.
  * @param[out]      *dst points to the output vector.
  * @param[in]       size size of the vectors.
- * @return none.
  *
  * The Q31 value INT32_MIN (0x80000000) will be saturated to the maximum
  * allowable positive value INT32_MAX.
@@ -672,7 +683,6 @@ static inline void hpm_dsp_abs_q31(q31_t *src, q31_t *dst, uint32_t size)
  * @param[in]       *src points to the input vector.
  * @param[out]      *dst points to the output vector.
  * @param[in]       size size of the vectors.
- * @return none.
  *
  * The Q15 value INT16_MIN (0x8000) will be saturated to the maximum
  * allowable positive value INT16_MAX.
@@ -689,7 +699,6 @@ static inline void hpm_dsp_abs_q15(q15_t *src, q15_t *dst, uint32_t size)
  * @param[in]       *src points to the input vector.
  * @param[out]      *dst points to the output vector.
  * @param[in]       size size of the vectors.
- * @return none.
  *
  * The Q7 value INT8_MIN (0x8000) will be saturated to the maximum
  * allowable positive value INT8_MAX.
@@ -708,7 +717,6 @@ static inline void hpm_dsp_abs_q7(q7_t *src, q7_t *dst, uint32_t size)
  * @param[in]       *src2 points to the second input vector.
  * @param[out]      *dst  points to the output vector.
  * @param[in]       size  size of the vectors.
- * @return none.
  */
 static inline void hpm_dsp_add_f32(float32_t *src1, float32_t *src2, float32_t *dst, uint32_t size)
 {
@@ -723,7 +731,6 @@ static inline void hpm_dsp_add_f32(float32_t *src1, float32_t *src2, float32_t *
  * @param[in]       *src2 points to the second input vector.
  * @param[out]      *dst  points to the output vector.
  * @param[in]       size  size of the vectors.
- * @return none.
  *
  * Ouput results will be saturated in Q31 range [0x80000000 0x7FFFFFFF].
  */
@@ -740,7 +747,6 @@ static inline void hpm_dsp_add_q31(q31_t *src1, q31_t *src2, q31_t *dst, uint32_
  * @param[in]       *src2 points to the second input vector.
  * @param[out]      *dst  points to the output vector.
  * @param[in]       size  size of the vectors.
- * @return none.
  *
  * The output results will be saturated in Q15 range [0x8000 0x7FFF].
  */
@@ -757,7 +763,6 @@ static inline void hpm_dsp_add_q15(q15_t *src1, q15_t *src2, q15_t *dst, uint32_
  * @param[in]       *src2 points to the second input vector.
  * @param[out]      *dst  points to the output vector.
  * @param[in]       size  size of the vectors.
- * @return none.
  *
  * Ouput results will be saturated in Q7 range [0x80 0x7F].
  */
@@ -774,7 +779,6 @@ static inline void hpm_dsp_add_q7(q7_t *src1, q7_t *src2, q7_t *dst, uint32_t si
  * @param[in]       *src2 points to the second input vector.
  * @param[out]      *dst  points to the output vector.
  * @param[in]       size  size of the vectors.
- * @return none.
  *
  * Ouput results will be saturated in U16 range [0x0000 0xFFFF].
  */
@@ -792,7 +796,6 @@ static inline void hpm_dsp_add_u8_u16(uint8_t *src1, uint8_t *src2, uint16_t *ds
  * @param[in]       *src2 points to the second input vector.
  * @param[out]      *dst  points to the output vector.
  * @param[in]       size  size of the vectors.
- * @return none.
  */
 static inline void hpm_dsp_sub_f32(float32_t *src1, float32_t *src2, float32_t *dst, uint32_t size)
 {
@@ -807,7 +810,6 @@ static inline void hpm_dsp_sub_f32(float32_t *src1, float32_t *src2, float32_t *
  * @param[in]       *src2 points to the second input vector.
  * @param[out]      *dst  points to the output vector.
  * @param[in]       size  size of the vectors.
- * @return none.
  *
  * Ouput results will be saturated in Q31 range [0x80000000 0x7FFFFFFF].
  */
@@ -824,7 +826,6 @@ static inline void hpm_dsp_sub_q31(q31_t *src1, q31_t *src2, q31_t *dst, uint32_
  * @param[in]       *src2 points to the second input vector.
  * @param[out]      *dst  points to the output vector.
  * @param[in]       size  size of the vectors.
- * @return none.
  *
  * The output results will be saturated in Q15 range [0x8000 0x7FFF].
  */
@@ -841,7 +842,6 @@ static inline void hpm_dsp_sub_q15(q15_t *src1, q15_t *src2, q15_t *dst, uint32_
  * @param[in]       *src2 points to the second input vector.
  * @param[out]      *dst  points to the output vector.
  * @param[in]       size  size of the vectors.
- * @return none.
  *
  * Ouput results will be saturated in Q7 range [0x80 0x7F].
  */
@@ -858,7 +858,6 @@ static inline void hpm_dsp_sub_q7(q7_t *src1, q7_t *src2, q7_t *dst, uint32_t si
  * @param[in]       *src2 points to the second input vector.
  * @param[out]      *dst  points to the output vector.
  * @param[in]       size  size of the vectors.
- * @return none.
  *
  * Ouput results will be saturated in Q7 range [0x80 0x7F].
  */
@@ -876,7 +875,6 @@ static inline void hpm_dsp_sub_u8_q7(uint8_t *src1, uint8_t *src2, q7_t *dst, ui
  * @param[in]       *src2 points to the second input vector.
  * @param[out]      *dst  points to the output vector.
  * @param[in]       size  size of the vectors.
- * @return none.
  */
 static inline void hpm_dsp_mul_f32(float32_t *src1, float32_t *src2, float32_t *dst, uint32_t size)
 {
@@ -891,7 +889,6 @@ static inline void hpm_dsp_mul_f32(float32_t *src1, float32_t *src2, float32_t *
  * @param[in]       *src2 points to the second input vector.
  * @param[out]      *dst  points to the output vector.
  * @param[in]       size  size of the vectors.
- * @return none.
  *
  * Ouput results will be saturated in Q31 range [0x80000000 0x7FFFFFFF].
  */
@@ -908,7 +905,6 @@ static inline void hpm_dsp_mul_q31(q31_t *src1, q31_t *src2, q31_t *dst, uint32_
  * @param[in]       *src2 points to the second input vector.
  * @param[out]      *dst  points to the output vector.
  * @param[in]       size  size of the vectors.
- * @return none.
  *
  * Output results will be saturated in Q15 range [0x8000 0x7FFF].
  */
@@ -925,7 +921,6 @@ static inline void hpm_dsp_mul_q15(q15_t *src1, q15_t *src2, q15_t *dst, uint32_
  * @param[in]       *src2 points to the second input vector.
  * @param[out]      *dst  points to the output vector.
  * @param[in]       size  size of the vectors.
- * @return none.
  *
  * Ouput results will be saturated in Q7 range [0x80 0x7F].
  */
@@ -942,7 +937,6 @@ static inline void hpm_dsp_mul_q7(q7_t *src1, q7_t *src2, q7_t *dst, uint32_t si
  * @param[in]       *src2 points to the second input vector.
  * @param[out]      *dst  points to the output vector.
  * @param[in]       size  size of the vectors.
- * @return none.
  *
  * Ouput results will be in U16 range [0x00 0xFFFF].
  */
@@ -960,7 +954,6 @@ static inline void hpm_dsp_mul_u8_u16(uint8_t *src1, uint8_t *src2, uint16_t *ds
  * @param[in]       *src2 points to the second input vector.
  * @param[out]      *dst  points to the output vector.
  * @param[in]       size  size of the vectors.
- * @return none.
  */
 static inline void hpm_dsp_div_f32(float32_t *src1, float32_t *src2, float32_t *dst, uint32_t size)
 {
@@ -1014,7 +1007,6 @@ static inline q31_t hpm_dsp_div_u64_u32(uint64_t src1, uint32_t src2)
  * @param[in]       *src points to the input vector.
  * @param[out]      *dst points to the output vector.
  * @param[in]       size size of the vectors.
- * @return none.
  */
 static inline void hpm_dsp_neg_f32(float32_t *src, float32_t *dst, uint32_t size)
 {
@@ -1028,7 +1020,6 @@ static inline void hpm_dsp_neg_f32(float32_t *src, float32_t *dst, uint32_t size
  * @param[in]       *src points to the input vector.
  * @param[out]      *dst points to the output vector.
  * @param[in]       size size of the vectors.
- * @return none.
  *
  * The Q31 value INT32_MIN (0x80000000) will be saturated to the maximum
  * allowable positive value INT32_MAX.
@@ -1045,7 +1036,6 @@ static inline void hpm_dsp_neg_q31(q31_t *src, q31_t *dst, uint32_t size)
  * @param[in]       *src points to the input vector.
  * @param[out]      *dst points to the output vector.
  * @param[in]       size size of the vectors.
- * @return none.
  *
  * The Q15 value INT16_MIN (0x8000) will be saturated to the maximum
  * allowable positive value INT16_MAX.
@@ -1062,7 +1052,6 @@ static inline void hpm_dsp_neg_q15(q15_t *src, q15_t *dst, uint32_t size)
  * @param[in]       *src points to the input vector.
  * @param[out]      *dst points to the output vector.
  * @param[in]       size size of the vectors.
- * @return none.
  *
  * The Q7 value INT8_MIN (0x80) will be saturated to the maximum allowable
  * positive value INT8_MAX.
@@ -1202,7 +1191,6 @@ static inline uint32_t hpm_dsp_dprod_u8(uint8_t *src1, uint8_t *src2, uint32_t s
  * @param[in]       offset is the value to be added.
  * @param[out]      *dst points to the output vector.
  * @param[in]       size size of the vectors.
- * @return none.
  */
 static inline void hpm_dsp_offset_f32(float32_t *src, float32_t offset, float32_t *dst, uint32_t size)
 {
@@ -1217,7 +1205,6 @@ static inline void hpm_dsp_offset_f32(float32_t *src, float32_t offset, float32_
  * @param[in]       offset is the value to be added.
  * @param[out]      *dst points to the output vector.
  * @param[in]       size size of the vectors.
- * @return none.
  *
  * Output results are saturated in Q31 range [0x80000000 0x7FFFFFFF].
  */
@@ -1234,7 +1221,6 @@ static inline void hpm_dsp_offset_q31(q31_t *src, q31_t offset, q31_t *dst, uint
  * @param[in]       offset is the value to be added.
  * @param[out]      *dst points to the output vector.
  * @param[in]       size size of the vectors.
- * @return none.
  *
  * Output results are saturated in Q15 range [0x8000 0x7FFF].
  */
@@ -1251,7 +1237,6 @@ static inline void hpm_dsp_offset_q15(q15_t *src, q15_t offset, q15_t *dst, uint
  * @param[in]       offset is the value to be added.
  * @param[out]      *dst points to the output vector.
  * @param[in]       size size of the vectors.
- * @return none.
  *
  * Output results are saturated in Q7 range [0x80 0x7F].
  */
@@ -1268,7 +1253,6 @@ static inline void hpm_dsp_offset_q7(q7_t *src, q7_t offset, q7_t *dst, uint32_t
  * @param[in]       offset is the value to be added.
  * @param[out]      *dst points to the output vector.
  * @param[in]       size size of the vectors.
- * @return none.
  *
  * Output results are saturated in U8 range [0x00 0xFF].
  */
@@ -1286,7 +1270,6 @@ static inline void hpm_dsp_offset_u8(uint8_t *src, q7_t offset, uint8_t *dst, ui
  * @param[in]       scale is the value to be multiplied.
  * @param[out]      *dst points to the output vector.
  * @param[in]       size size of the vectors.
- * @return none.
  */
 static inline void hpm_dsp_scale_f32(float32_t *src, float32_t scale, float32_t *dst, uint32_t size)
 {
@@ -1303,7 +1286,6 @@ static inline void hpm_dsp_scale_f32(float32_t *src, float32_t scale, float32_t 
  * @param[in]       shift      number of bits to shift.
  * @param[out]      *dst points to the output vector.
  * @param[in]       size size of the vectors.
- * @return none.
  *
  * These are multiplied to yield a 2.62 output and then is shift with
  * saturation to 1.31 format.
@@ -1323,7 +1305,6 @@ static inline void hpm_dsp_scale_q31(q31_t *src, q31_t scalefract, int8_t shift,
  * @param[in]       shift      number of bits to shift.
  * @param[out]      *dst points to the output vector.
  * @param[in]       size size of the vectors.
- * @return none.
  *
  * These are multiplied to yield a 2.30 output and then is shifted with
  * saturation to 1.15 format.
@@ -1343,7 +1324,6 @@ static inline void hpm_dsp_scale_q15(q15_t *src, q15_t scalefract, int8_t shift,
  * @param[in]       shift      number of bits to shift.
  * @param[out]      *dst points to the output vector.
  * @param[in]       size size of the vectors.
- * @return none.
  *
  * These are multiplied to yield a 2.14 output and then is shifted with
  * saturation to 1.7 format.
@@ -1362,7 +1342,6 @@ static inline void hpm_dsp_scale_q7(q7_t *src, q7_t scalefract, int8_t shift, q7
  * @param[in]  shift: number of bits to shift.
  * @param[out] *dst points to the output vector.
  * @param[in]  size size of the vectors.
- * @return none.
  *
  * The inputs are multiplied to yield a 1.15 output and then are shift with
  * saturation to 8-bit formats.
@@ -1382,7 +1361,6 @@ static inline void hpm_dsp_scale_u8(uint8_t *src, q7_t scalefract, int8_t shift,
  *                       left; (shift < 0) means shifts right.
  * @param[out]      *dst the output vector.
  * @param[in]       size size of the vectors.
- * @return none.
  *
  * The input and output are all saturated to q15 range [0x8000 0x7FFF].
  */
@@ -1400,7 +1378,6 @@ static inline void hpm_dsp_shift_q15(q15_t *src, int8_t shift, q15_t *dst, uint3
  *                       left; (shift < 0) means shifts right.
  * @param[out]      *dst the output vector.
  * @param[in]       size size of the vectors.
- * @return none.
  *
  * The input and output are all saturated to q31 range [0x80000000 0x7FFFFFFF].
  */
@@ -1418,7 +1395,6 @@ static inline void hpm_dsp_shift_q31(q31_t *src, int8_t shift, q31_t *dst, uint3
  *                       left; (shift < 0) means shifts right.
  * @param[out]      *dst the output vector.
  * @param[in]       size size of the vectors.
- * @return none.
  *
  * The input and output are all saturated to q7 range [0x80 0x7F].
  */
@@ -1436,7 +1412,6 @@ static inline void hpm_dsp_shift_q7(q7_t *src, int8_t shift, q7_t *dst, uint32_t
  *                       left; (shift < 0) means shifts right.
  * @param[out]      *dst the output vector.
  * @param[in]       size size of the vectors.
- * @return none.
  *
  * The input and output are all saturated to u8 range [0x00 0xFF].
  */
@@ -1449,6 +1424,11 @@ static inline void hpm_dsp_shift_u8(uint8_t *src, int8_t shift, uint8_t *dst, ui
 #endif
 #endif
 
+/**
+ * @}
+ *
+ */
+
 #ifdef HPM_MATH_COMPLEX
 
 /**
@@ -1456,6 +1436,8 @@ static inline void hpm_dsp_shift_u8(uint8_t *src, int8_t shift, uint8_t *dst, ui
  * This set of functions operates on complex data vectors.
  * The data in the input <code>src</code> vector and output <code>dst</code>
  * are arranged in the array as: [real, imag, real, imag, real, imag, ...).
+ * @ingroup hpmmath
+ * @{
  */
 
 #ifdef HPM_EN_MATH_DSP_LIB
@@ -1467,7 +1449,6 @@ static inline void hpm_dsp_shift_u8(uint8_t *src, int8_t shift, uint8_t *dst, ui
  * @param[in]		*src the input complex vector.
  * @param[out]		*dst the output complex vector.
  * @param[in]		size size of the vectors.
- * @return none.
  */
 static inline void hpm_dsp_cconj_f32(const float32_t *src, float32_t *dst, uint32_t size)
 {
@@ -1481,7 +1462,6 @@ static inline void hpm_dsp_cconj_f32(const float32_t *src, float32_t *dst, uint3
  * @param[in]		*src the input complex vector.
  * @param[out]		*dst the output complex vector.
  * @param[in]		size size of the vectors.
- * @return none.
  *
  * The Q15 value INT16_MIN (0x8000) will be saturated to the maximum
  * allowable positive value INT16_MAX.
@@ -1498,7 +1478,6 @@ static inline void hpm_dsp_cconj_q15(const q15_t *src, q15_t *dst, uint32_t size
  * @param[in]		*src the input complex vector.
  * @param[out]		*dst the output complex vector.
  * @param[in]		size size of the vectors.
- * @return none.
  *
  * The Q31 value INT32_MIN (0x80000000) will be saturated to the maximum
  * allowable positive value INT32_MAX.
@@ -1517,7 +1496,6 @@ static inline void hpm_dsp_cconj_q31(const q31_t *src, q31_t *dst, uint32_t size
  * @param[in]		*src2 the second input complex vector.
  * @param[in]		size  size of the vectors.
  * @param[out]		*dst  the output vector.
- * @return none.
  */
 static inline void hpm_dsp_cdprod_f32(const float32_t *src1, const float32_t *src2, uint32_t size, float32_t *dst)
 {
@@ -1533,7 +1511,6 @@ static inline void hpm_dsp_cdprod_f32(const float32_t *src1, const float32_t *sr
  * @param[in]		size  size of the vectors.
  * @param[out]		*rout the real sum of the output.
  * @param[out]		*iout the imag sum of the output.
- * @return none.
  */
 static inline void hpm_dsp_cdprod_typ2_f32(const float32_t *src1, const float32_t *src2, uint32_t size, float32_t *rout, float32_t *iout)
 {
@@ -1548,7 +1525,6 @@ static inline void hpm_dsp_cdprod_typ2_f32(const float32_t *src1, const float32_
  * @param[in]		*src2 the second input complex vector.
  * @param[in]		size  size of the vectors.
  * @param[out]		*dst  the output vector.
- * @return none.
  *
  * The multiplication outputs are in 1.15 x 1.15 = 2.30 format and
  * finally output is shift into 3.13 format.
@@ -1567,7 +1543,6 @@ static inline void hpm_dsp_cdprod_q15(const q15_t *src1, const q15_t *src2, uint
  * @param[in]		size  size of the vectors.
  * @param[out]		*rout the real sum of the output.
  * @param[out]		*iout the imag sum of the output.
- * @return none.
  *
  * The multiplication outputs are in 1.15 x 1.15 = 2.30 format and
  * finally output is shift into q24 format.
@@ -1585,7 +1560,6 @@ static inline void hpm_dsp_cdprod_typ2_q15(const q15_t *src1, const q15_t *src2,
  * @param[in]		*src2 the second input complex vector.
  * @param[in]		size  size of the vectors.
  * @param[out]		*dst  the output vector.
- * @return none.
  *
  * The multiplication outputs are in 1.31 x 1.31 = 2.62 format and
  * finally output is shift into 3.29 format.
@@ -1605,7 +1579,6 @@ static inline void hpm_dsp_cdprod_q31(const q31_t *src1, const q31_t *src2, uint
  * @param[in]		size  size of the vectors.
  * @param[out]		*rout the real sum of the output.
  * @param[out]		*iout the imag sum of the output.
- * @return none.
  *
  * The multiplication outputs are in 1.31 x 1.31 = 2.62 format and
  * finally output is shift into q48 format.
@@ -1623,7 +1596,6 @@ static inline void hpm_dsp_cdprod_typ2_q31(const q31_t *src1, const q31_t *src2,
  * @param[in]		*src points to the input complex vector.
  * @param[out]		*dst points to the output complex vector.
  * @param[in]		size size of the vectors.
- * @return none.
  */
 static inline void hpm_dsp_cmag_f32(const float32_t *src, float32_t *dst, uint32_t size)
 {
@@ -1637,7 +1609,6 @@ static inline void hpm_dsp_cmag_f32(const float32_t *src, float32_t *dst, uint32
  * @param[in]		*src points to the input complex vector.
  * @param[out]		*dst points to the output complex vector.
  * @param[in]		size size of the vectors.
- * @return none.
  *
  * The multiplication outputs are in 1.15 x 1.15 = 2.30 format and
  * finally output is shift into 2.14 format.
@@ -1654,7 +1625,6 @@ static inline void hpm_dsp_cmag_q15(const q15_t *src, q15_t *dst, uint32_t size)
  * @param[in]		*src points to the input complex vector.
  * @param[out]		*dst points to the output complex vector.
  * @param[in]		size size of the vectors.
- * @return none.
  *
  * The multiplication outputs are in 1.31 x 1.31 = 2.62 format and
  * finally output is shift into 2.30 format.
@@ -1673,7 +1643,6 @@ static inline void hpm_dsp_cmag_q31(const q31_t *src, q31_t *dst, uint32_t size)
  * @param[in]		*src points to the input complex vector.
  * @param[out]		*dst points to the output complex vector.
  * @param[in]		size size of the vectors.
- * @return none.
  */
 static inline void hpm_dsp_cmag_sqr_f32(const float32_t *src, float32_t *dst, uint32_t size)
 {
@@ -1687,7 +1656,6 @@ static inline void hpm_dsp_cmag_sqr_f32(const float32_t *src, float32_t *dst, ui
  * @param[in]		*src points to the input complex vector.
  * @param[out]		*dst points to the output complex vector.
  * @param[in]		size size of the vectors.
- * @return none.
  *
  * The multiplication outputs are in 1.15 x 1.15 = 2.30 format and
  * finally output is shift into 3.13 format.
@@ -1704,7 +1672,6 @@ static inline void hpm_dsp_cmag_sqr_q15(const q15_t *src, q15_t *dst, uint32_t s
  * @param[in]		*src points to the input complex vector.
  * @param[out]		*dst points to the output complex vector.
  * @param[in]		size size of the vectors.
- * @return none.
  *
  * The multiplication outputs are in 1.31 x 1.31 = 2.62 format and
  * finally output is shift into 3.29 format.
@@ -1723,7 +1690,6 @@ static inline void hpm_dsp_cmag_sqr_q31(const q31_t *src, q31_t *dst, uint32_t s
  * @param[in]		*src2 the second input complex vector.
  * @param[out]		*dst  output complex vector.
  * @param[in]		size size of the vectors.
- * @return none.
  */
 static inline void hpm_dsp_cmul_f32(const float32_t *src1, const float32_t *src2, float32_t *dst, uint32_t size)
 {
@@ -1738,7 +1704,6 @@ static inline void hpm_dsp_cmul_f32(const float32_t *src1, const float32_t *src2
  * @param[in]		*src2 the second input complex vector.
  * @param[out]		*dst  output complex vector.
  * @param[in]		size size of the vectors.
- * @return none.
  *
  * The multiplication outputs are in 1.15 x 1.15 = 2.30 format and
  * finally output is shift into 3.13 format.
@@ -1756,7 +1721,6 @@ static inline void hpm_dsp_cmul_q15(const q15_t *src1, const q15_t *src2, q15_t 
  * @param[in]		*src2 the second input complex vector.
  * @param[out]		*dst  output complex vector.
  * @param[in]		size size of the vectors.
- * @return none.
  *
  * The multiplication outputs are in 1.31 x 1.31 = 2.62 format and
  * finally output is shift into 3.29 format.
@@ -1775,7 +1739,6 @@ static inline void hpm_dsp_cmul_q31(const q31_t *src1, const q31_t *src2, q31_t 
  * @param[in]		*real the input real vector.
  * @param[out]		*dst  output complex vector.
  * @param[in]		size size of the vectors.
- * @return none.
  */
 static inline void hpm_dsp_cmul_real_f32(const float32_t *src, const float32_t *real, float32_t *dst, uint32_t size)
 {
@@ -1790,7 +1753,6 @@ static inline void hpm_dsp_cmul_real_f32(const float32_t *src, const float32_t *
  * @param[in]		*real the input real vector.
  * @param[out]		*dst  output complex vector.
  * @param[in]		size size of the vectors.
- * @return none.
  *
  * Output results will be saturated in Q15 range [0x8000 0x7FFF].
  */
@@ -1807,7 +1769,6 @@ static inline void hpm_dsp_cmul_real_q15(const q15_t *src, const q15_t *real, q1
  * @param[in]		*real the input real vector.
  * @param[out]		*dst  output complex vector.
  * @param[in]		size size of the vectors.
- * @return none.
  *
  * Output results will be saturated in Q31 range[0x80000000 0x7FFFFFFF].
  */
@@ -1820,10 +1781,17 @@ static inline void hpm_dsp_cmul_real_q31(const q31_t *src, const q31_t *real, q3
 #endif
 #endif
 
+/**
+ * @}
+ *
+ */
+
 #ifdef HPM_MATH_CONTROLLER
 
 /**
  * @defgroup controller Controller Functions
+ * @ingroup hpmmath
+ * @{
  */
 #ifdef HPM_EN_MATH_DSP_LIB
 
@@ -1836,7 +1804,6 @@ static inline void hpm_dsp_cmul_real_q31(const q31_t *src, const q31_t *real, q3
  * @param[in]       b       input three-phase coordinate b.
  * @param[out]      *alpha  output two-phase orthogonal vector axis alpha.
  * @param[out]      *beta   output two-phase orthogonal vector axis beta.
- * @return none.
  */
 static inline void hpm_dsp_clarke_f32(float32_t a, float32_t b, float32_t *alpha, float32_t *beta)
 {
@@ -1850,7 +1817,6 @@ static inline void hpm_dsp_clarke_f32(float32_t a, float32_t b, float32_t *alpha
  * @param[in]       b       input three-phase coordinate b.
  * @param[out]      *alpha  output two-phase orthogonal vector axis alpha.
  * @param[out]      *beta   output two-phase orthogonal vector axis beta.
- * @return none.
  *
  * The internal 32-bit accumulator maintains 1.31 format by truncating lower
  * 31 bits of the intermediate multiplication in 2.62 format.
@@ -1869,7 +1835,6 @@ static inline void hpm_dsp_clarke_q31(q31_t a, q31_t b, q31_t *alpha, q31_t *bet
  * @param[in]       beta    input two-phase orthogonal vector axis beta.
  * @param[out]      *a      output three-phase coordinate a.
  * @param[in]       *b      output three-phase coordinate b.
- * @return none.
  */
 static inline void hpm_dsp_inv_clarke_f32(float32_t alpha, float32_t beta, float32_t *a, float32_t *b)
 {
@@ -1883,7 +1848,6 @@ static inline void hpm_dsp_inv_clarke_f32(float32_t alpha, float32_t beta, float
  * @param[in]       beta    input two-phase orthogonal vector axis beta.
  * @param[out]      *a      output three-phase coordinate a.
  * @param[in]       *b      output three-phase coordinate b.
- * @return none.
  *
  * The internal 32-bit accumulator maintains 1.31 format by truncating lower
  * 31 bits of the intermediate multiplication in 2.62 format.
@@ -1904,7 +1868,6 @@ static inline void hpm_dsp_inv_clarke_q31(q31_t alpha, q31_t beta, q31_t *a, q31
  * @param[out]      *b    output rotor frame b.
  * @param[in]       sin   sine value of rotation angle θ.
  * @param[in]       cos   cosine value of rotation angle θ.
- * @return none.
  */
 static inline void hpm_dsp_park_f32(float32_t alpha, float32_t beta, float32_t *a, float32_t *b, float32_t sin, float32_t cos)
 {
@@ -1921,7 +1884,6 @@ static inline void hpm_dsp_park_f32(float32_t alpha, float32_t beta, float32_t *
  * @param[out]      *b    output rotor frame b.
  * @param[in]       sin   sine value of rotation angle θ.
  * @param[in]       cos   cosine value of rotation angle θ.
- * @return none.
  *
  * The internal 32-bit accumulator maintains 1.31 format by truncating lower
  * 31 bits of the intermediate multiplication in 2.62 format.
@@ -1942,7 +1904,6 @@ static inline void hpm_dsp_park_q31(q31_t alpha, q31_t beta, q31_t *a, q31_t *b,
  * @param[out]      *beta   output two-phase orthogonal vec axis beta.
  * @param[in]       sin     sine value of rotation angle θ.
  * @param[in]       cos     cosine value of rotation angle θ.
- * @return none.
  */
 static inline void hpm_dsp_inv_park_f32(float32_t a, float32_t b, float32_t *alpha, float32_t *beta, float32_t sin, float32_t cos)
 {
@@ -1958,7 +1919,6 @@ static inline void hpm_dsp_inv_park_f32(float32_t a, float32_t b, float32_t *alp
  * @param[out]      *beta   output two-phase orthogonal vec axis beta.
  * @param[in]       sin     sine value of rotation angle θ.
  * @param[in]       cos     cosine value of rotation angle θ.
- * @return none.
  *
  * The internal 32-bit accumulator maintains 1.31 format by truncating lower
  * 31 bits of the intermediate multiplication in 2.62 format.
@@ -1988,7 +1948,6 @@ static inline float32_t hpm_dsp_pid_f32(riscv_dsp_pid_f32_t *instance, float32_t
  *                                 controliler.
  * @param[in]               set    for 1 will clear the state to all zeros
  *                                     0 will not.
- * @return none.
  *
  * This function will calculate the PID control structure gain
  * <code>gain1</code>, <code>gain2</code> and <code>gain3</code> by seting
@@ -2022,7 +1981,6 @@ static inline q31_t hpm_dsp_pid_q31(riscv_dsp_pid_q31_t *instance, q31_t src)
  *                                 controliler.
  * @param[in]               set    for 1 will clear the state to all zeros
  *                                     0 will not.
- * @return none.
  *
  * This function will calculate the PID control structure gain
  * <code>gain1</code>, <code>gain2</code> and <code>gain3</code> by seting
@@ -2048,7 +2006,6 @@ static inline q15_t hpm_dsp_pid_q15(riscv_dsp_pid_q15_t *instance, q15_t src)
  *                                 controliler.
  * @param[in]               set    for 1 will clear the state to all zeros
  *                                     0 will not.
- * @return none.
  *
  * This function will calculate the PID control structure gain
  * <code>gain1</code>, <code>gain2</code> and <code>gain3</code> by seting
@@ -2064,10 +2021,17 @@ static inline void hpm_dsp_init_pid_q15(riscv_dsp_pid_q15_t *instance, int32_t s
 #endif
 #endif
 
+/**
+ * @}
+ *
+ */
+
 #ifdef HPM_MATH_DISTANCE
 
 /**
  * @defgroup dist Distance Functions
+ * @ingroup hpmmath
+ * @{
  */
 #ifdef HPM_EN_MATH_DSP_LIB
 
@@ -2329,10 +2293,17 @@ static inline float32_t hpm_dsp_bdist_russell_rao_u32_f32(const uint32_t *src1, 
 #endif
 #endif
 
+/**
+ * @}
+ *
+ */
+
 #ifdef HPM_MATH_FILTERING
 
 /**
  * @defgroup filtering Filtering Functions
+ * @ingroup hpmmath
+ * @{
  */
 #ifdef HPM_EN_MATH_DSP_LIB
 #include "riscv_dsp_filtering_math.h"
@@ -2343,7 +2314,6 @@ static inline float32_t hpm_dsp_bdist_russell_rao_u32_f32(const uint32_t *src1, 
  * @param[in]       *src      points to the input block data.
  * @param[out]      *dst      points to the output block data.
  * @param[in]       size      number of the blocksize.
- * @return none.
  */
 static inline void hpm_dsp_fir_f32(const riscv_dsp_fir_f32_t *instance, float32_t *src, float32_t *dst, uint32_t size)
 {
@@ -2358,7 +2328,6 @@ static inline void hpm_dsp_fir_f32(const riscv_dsp_fir_f32_t *instance, float32_
  * @param[in]       *src      points to the input block data.
  * @param[out]      *dst      points to the output block data.
  * @param[in]       size      number of the blocksize.
- * @return none.
  *
  * Function notes:
  * Both coefficients and state variables are represented in 1.31 format
@@ -2380,7 +2349,6 @@ static inline void hpm_dsp_fir_q31(const riscv_dsp_fir_q31_t *instance, q31_t *s
  * @param[in]       *src      points to the input block data.
  * @param[out]      *dst      points to the output block data.
  * @param[in]       size      number of the blocksize.
- * @return none.
  *
  * Function notes:
  * Both coefficients and state variables are represented in 1.31 format.
@@ -2401,7 +2369,6 @@ static inline void hpm_dsp_fir_fast_q31(const riscv_dsp_fir_q31_t *instance, q31
  * @param[in]       *src      points to the input block data.
  * @param[out]      *dst      points to the output block data.
  * @param[in]       size      number of the blocksize.
- * @return none.
  *
  * Function notes:
  * Both coefficients and state variables are represented in 1.15 format
@@ -2423,7 +2390,6 @@ static inline void hpm_dsp_fir_q15(const riscv_dsp_fir_q15_t *instance, q15_t *s
  * @param[in]       *src      points to the input block data.
  * @param[out]      *dst      points to the output block data.
  * @param[in]       size      number of the blocksize.
- * @return none.
  *
  * Function notes:
  * Both coefficients and state variables are represented in Q15 format and multiplications yield
@@ -2442,7 +2408,6 @@ static inline void hpm_dsp_fir_fast_q15(const riscv_dsp_fir_q15_t *instance, q15
  * @param[in]       *src      points to the input block data.
  * @param[out]      *dst      points to the output block data.
  * @param[in]       size      number of the blocksize.
- * @return none.
  *
  * Function notes:
  * Both inputs are in 1.7 format and multiplications yield a 2.14 result.
@@ -2464,7 +2429,6 @@ static inline void hpm_dsp_fir_q7(const riscv_dsp_fir_q7_t *instance, q7_t *src,
  * @param[in]       *src      points to the input block data.
  * @param[out]      *dst      points to the output block data.
  * @param[in]       size      number of the blocksize.
- * @return none.
  */
 static inline void hpm_dsp_lfir_f32(const riscv_dsp_lfir_f32_t *instance, float32_t *src, float32_t *dst, uint32_t size)
 {
@@ -2480,7 +2444,6 @@ static inline void hpm_dsp_lfir_f32(const riscv_dsp_lfir_f32_t *instance, float3
  * @param[in]       *src      points to the input block data.
  * @param[out]      *dst      points to the output block data.
  * @param[in]       size      number of the blocksize.
- * @return none.
  */
 static inline void hpm_dsp_lfir_q15(const riscv_dsp_lfir_q15_t *instance, q15_t *src, q15_t *dst, uint32_t size)
 {
@@ -2496,7 +2459,6 @@ static inline void hpm_dsp_lfir_q15(const riscv_dsp_lfir_q15_t *instance, q15_t 
  * @param[in]       *src      points to the input block data.
  * @param[out]      *dst      points to the output block data.
  * @param[in]       size      number of the blocksize.
- * @return none.
  *
  * Function notes:
  * In order to avoid overflows the input signal must be scaled down by
@@ -2594,7 +2556,6 @@ static inline void hpm_dsp_spafir_q7(riscv_dsp_spafir_q7_t *instance, q7_t *src,
  * @param[out]      *dst      points to the output data.
  * @param[out]      *err      points to the error data.
  * @param[in]       size      number of the blocksize.
- * @return none.
  */
 static inline void hpm_dsp_lms_f32(const riscv_dsp_lms_f32_t *instance, float32_t *src, float32_t *ref, float32_t *dst, float32_t *err, uint32_t size)
 {
@@ -2611,7 +2572,6 @@ static inline void hpm_dsp_lms_f32(const riscv_dsp_lms_f32_t *instance, float32_
  * @param[out]      *dst      points to the output data.
  * @param[out]      *err      points to the error data.
  * @param[in]       size      number of the blocksize.
- * @return none.
  *
  * Function notes:
  * Both coefficients and state variables are represented in 1.31 format
@@ -2635,7 +2595,6 @@ static inline void hpm_dsp_lms_q31(const riscv_dsp_lms_q31_t *instance, q31_t *s
  * @param[out]      *dst      points to the output data.
  * @param[out]      *err      points to the error data.
  * @param[in]       size      number of the blocksize.
- * @return none.
  *
  * Function notes:
  * Both coefficients and state variables are represented in 1.15 format
@@ -2692,7 +2651,6 @@ static inline void hpm_dsp_nlms_q15(riscv_dsp_nlms_q15_t *instance, q15_t *src, 
  * @param[in]       len2  length of the second input vector.
  * @param[out]      *dst  points to the output vector where the length is
  *                        len1 + len2 - 1.
- * @return none.
  */
 static inline void hpm_dsp_conv_f32(float32_t *src1, uint32_t len1, float32_t *src2, uint32_t len2, float32_t *dst)
 {
@@ -2709,7 +2667,6 @@ static inline void hpm_dsp_conv_f32(float32_t *src1, uint32_t len1, float32_t *s
  * @param[in]       len2  length of the second input vector.
  * @param[out]      *dst  points to the output vector where the length is
  *                        len1 + len2 - 1.
- * @return none.
  *
  * Function notes:
  * Both inputs are in 1.15 format and multiplications yield a 2.30 result.
@@ -2732,7 +2689,6 @@ static inline void hpm_dsp_conv_q15(q15_t *src1, uint32_t len1, q15_t *src2, uin
  * @param[in]       len2  length of the second input vector.
  * @param[out]      *dst  points to the output vector where the length is
  *                        len1 + len2 - 1.
- * @return none.
  *
  * Function notes:
  * Both inputs are in 1.31 format and the 64-bit accumulator has a 2.62
@@ -2757,7 +2713,6 @@ static inline void hpm_dsp_conv_q31(q31_t *src1, uint32_t len1, q31_t *src2, uin
  * @param[in]       len2  length of the second input vector.
  * @param[out]      *dst  points to the output vector where the length is
  *                        len1 + len2 - 1.
- * @return none.
  *
  * Function notes:
  * Both inputs are in 1.7 format and multiplications yield a 2.14 result.
@@ -2866,7 +2821,6 @@ static inline int32_t hpm_dsp_conv_partial_q7(q7_t *src1, uint32_t len1, q7_t *s
  * @param[in]       len2  length of the second input vector.
  * @param[out]      *dst  points to the output vector where the length is
  *                        2 * max(len1, len2) - 1.
- * @return none.
  */
 static inline void hpm_dsp_corr_f32(float32_t *src1, uint32_t len1, float32_t *src2, uint32_t len2, float32_t *dst)
 {
@@ -2883,7 +2837,6 @@ static inline void hpm_dsp_corr_f32(float32_t *src1, uint32_t len1, float32_t *s
  * @param[in]       len2  length of the second input vector.
  * @param[out]      *dst  points to the output vector where the length is
  *                        2 * max(len1, len2) - 1.
- * @return none.
  *
  * Function notes:
  * Both inputs are in 1.15 format and multiplications yield a 2.30 result.
@@ -2906,7 +2859,6 @@ static inline void hpm_dsp_corr_q15(q15_t *src1, uint32_t len1, q15_t *src2, uin
  * @param[in]       len2  length of the second input vector.
  * @param[out]      *dst  points to the output vector where the length is
  *                        len1 + len2 - 1.
- * @return none.
  *
  * Function notes:
  * Both inputs are in 1.31 format and the 64-bit accumulator has a 2.62
@@ -2933,7 +2885,6 @@ static inline void hpm_dsp_corr_q31(q31_t *src1, uint32_t len1, q31_t *src2, uin
  * @param[in]       len2  length of the second input vector.
  * @param[out]      *dst  points to the output vector where the length is
  *                        2 * max(len1, len2) - 1.
- * @return none.
  *
  * Function notes:
  * Both inputs are in 1.7 format and multiplications yield a 2.14 result.
@@ -3035,6 +2986,11 @@ static inline void hpm_dsp_liir_fast_q15(const riscv_dsp_liir_q15_t *instance, q
 #endif
 #endif
 
+/**
+ * @}
+ *
+ */
+
 #ifdef HPM_MATH_MATRIX
 
 /**
@@ -3057,6 +3013,8 @@ static inline void hpm_dsp_liir_fast_q15(const riscv_dsp_liir_q15_t *instance, q
  * <code>row * col</code> matrix and the matrix 2 is a
  * <code>rol2 * col2</code> and the output matrix woild be different since
  * the math operation. There are similar definitions for Q15 and Q31 data types.
+ * @ingroup hpmmath
+ * @{
  */
 #ifdef HPM_EN_MATH_DSP_LIB
 #include "riscv_dsp_matrix_math.h"
@@ -3069,7 +3027,6 @@ static inline void hpm_dsp_liir_fast_q15(const riscv_dsp_liir_q15_t *instance, q
  * @param[out]      *dst  points to the output matrix.
  * @param[in]       row   number of the matrix rows.
  * @param[in]       col   number of the matrix columns.
- * @return none.
  */
 static inline void hpm_dsp_mat_add_f32(const float32_t *src1, const float32_t *src2, float32_t *dst, uint32_t row, uint32_t col)
 {
@@ -3085,7 +3042,6 @@ static inline void hpm_dsp_mat_add_f32(const float32_t *src1, const float32_t *s
  * @param[out]      *dst  points to the output matrix.
  * @param[in]       row   number of the matrix rows.
  * @param[in]       col   number of the matrix columns.
- * @return none.
  *
  * The output results will be saturated in Q15 range [0x8000 0x7FFF].
  */
@@ -3103,7 +3059,6 @@ static inline void hpm_dsp_mat_add_q15(const q15_t *src1, const q15_t *src2, q15
  * @param[out]      *dst  points to the output matrix.
  * @param[in]       row   number of the matrix rows.
  * @param[in]       col   number of the matrix columns.
- * @return none.
  *
  * Ouput results will be saturated in Q31 range [0x80000000 0x7FFFFFFF].
  */
@@ -3117,8 +3072,7 @@ static inline void hpm_dsp_mat_add_q31(const q31_t *src1, const q31_t *src2, q31
 // Matrix Inverse
 /**
  * @brief Compute the inverse matrix of the floating-potint matrix.
- * @param[in]       *src1 points to the first input matrix.
- * @param[in]       *src2 points to the second input matrix.
+ * @param[in]       *src points to the input matrix.
  * @param[out]      *dst  points to the output matrix.
  * @param[in]       size  number of the matrix row or column.
  * @return the inverse process success or not.
@@ -3145,7 +3099,6 @@ static inline int32_t hpm_dsp_mat_inv_f64(float64_t *src, float64_t *dst, uint32
  * @param[in]       row   number of the first input matrix rows.
  * @param[in]       col   number of the first input matrix columns.
  * @param[in]       col2  number of the second input matrix columns.
- * @return none.
  */
 static inline void hpm_dsp_mat_mul_f32(const float32_t *src1, const float32_t *src2, float32_t *dst, uint32_t row, uint32_t col, uint32_t col2)
 {
@@ -3169,7 +3122,6 @@ static inline void hpm_dsp_mat_mul_f64(const float64_t *src1, const float64_t *s
  * @param[in]       row   number of the first input matrix rows.
  * @param[in]       col   number of the first input matrix columns.
  * @param[in]       col2  number of the second input matrix columns.
- * @return none.
  */
 static inline void hpm_dsp_cmat_mul_f32(const float32_t *src1, const float32_t *src2, float32_t *dst, uint32_t row, uint32_t col, uint32_t col2)
 {
@@ -3186,7 +3138,6 @@ static inline void hpm_dsp_cmat_mul_f32(const float32_t *src1, const float32_t *
  * @param[in]       row   number of the first input matrix rows.
  * @param[in]       col   number of the first input matrix columns.
  * @param[in]       col2  number of the second input matrix columns.
- * @return none.
  *
  * <b>Function notes:</b>
  *
@@ -3216,7 +3167,6 @@ static inline void hpm_dsp_mat_mul_fast_q15(const q15_t *src1, const q15_t *src2
  * @param[in]       row   number of the first input matrix rows.
  * @param[in]       col   number of the first input matrix columns.
  * @param[in]       col2  number of the second input matrix columns.
- * @return none.
  *
  * <b>Function notes:</b>
  *
@@ -3240,7 +3190,6 @@ static inline void hpm_dsp_cmat_mul_q15(const q15_t *src1, const q15_t *src2, q1
  * @param[in]       row   number of the first input matrix rows.
  * @param[in]       col   number of the first input matrix columns.
  * @param[in]       col2  number of the second input matrix columns.
- * @return none.
  *
  * <b>Function notes:</b>
  *
@@ -3268,7 +3217,6 @@ static inline void hpm_dsp_mat_mul_fast_q31(const q31_t *src1, const q31_t *src2
  * @param[out]      *dst  pointer of the output matrix with a size of size1 * size2.
  * @param[in]       size1 number of rows in the first input matrix.
  * @param[in]       size2 number of columns in the second input matrix.
- * @return none.
  *
  * <b>Function notes:</b>
  *
@@ -3288,7 +3236,6 @@ static inline void hpm_dsp_mat_oprod_q31(const q31_t * src1, const q31_t * src2,
  * @param[in]       row   number of the first input matrix rows.
  * @param[in]       col   number of the first input matrix columns.
  * @param[in]       col2  number of the second input matrix columns.
- * @return none.
  *
  * <b>Function notes:</b>
  *
@@ -3312,7 +3259,6 @@ static inline void hpm_dsp_cmat_mul_q31(const q31_t *src1, const q31_t *src2, q3
  * @param[in]       row   number of the first input matrix rows.
  * @param[in]       col   number of the first input matrix columns.
  * @param[in]       col2  number of the second input matrix columns.
- * @return none.
  *
  * <b>Function notes:</b>
  *
@@ -3335,7 +3281,6 @@ static inline void hpm_dsp_mat_mul_q7(const q7_t *src1, const q7_t *src2, q7_t *
  * @param[out]      *dst  points to the output vector.
  * @param[in]       col   number of the first input vector columns.
  * @param[in]       col2  number of the second input matrix columns.
- * @return none.
  *
  * <b>Function notes:</b>
  *
@@ -3369,7 +3314,6 @@ static inline int32_t hpm_dsp_mat_pwr2_cache_f64(const float64_t *src, float64_t
  * @param[out]      *dst  points to the output matrix.
  * @param[in]       row   number of the matrix rows.
  * @param[in]       col   number of the matrix columns.
- * @return none.
  */
 static inline void hpm_dsp_mat_scale_f32(const float32_t *src, float32_t scale, float32_t *dst, uint32_t row, uint32_t col)
 {
@@ -3381,12 +3325,11 @@ static inline void hpm_dsp_mat_scale_f32(const float32_t *src, float32_t scale, 
 /**
  * @brief Multiplt a scale value of q15 matrix.
  * @param[in]       *src      points to the input matrix.
- * @param[in]       scalefract fractional multiplication.
+ * @param[in]       scale_fract fractional multiplication.
  * @param[in]       shift      arithmetic shift.
  * @param[out]      *dst       points to the output matrix.
  * @param[in]       row        number of the matrix rows.
  * @param[in]       col        number of the matrix columns.
- * @return none.
  *
  * <b>Function notes:</b>
  *
@@ -3403,12 +3346,11 @@ static inline void hpm_dsp_mat_scale_q15(const q15_t *src, q15_t scale_fract, in
 /**
  * @brief Multiplt a scale value of q31 matrix.
  * @param[in]       *src      points to the input matrix.
- * @param[in]       scalefract fractional multiplication.
+ * @param[in]       scale_fract fractional multiplication.
  * @param[in]       shift      arithmetic shift.
  * @param[out]      *dst       points to the output matrix.
  * @param[in]       row        number of the matrix rows.
  * @param[in]       col        number of the matrix columns.
- * @return none.
  *
  * <b>Function notes:</b>
  *
@@ -3430,7 +3372,6 @@ static inline void hpm_dsp_mat_scale_q31(const q31_t *src, q31_t scale_fract, in
  * @param[out]      *dst  points to the output matrix.
  * @param[in]       row   number of the matrix rows.
  * @param[in]       col   number of the matrix columns.
- * @return none.
  */
 static inline void hpm_dsp_mat_sub_f32(const float32_t *src1, const float32_t *src2, float32_t *dst, uint32_t row, uint32_t col)
 {
@@ -3446,7 +3387,6 @@ static inline void hpm_dsp_mat_sub_f32(const float32_t *src1, const float32_t *s
  * @param[out]      *dst  points to the output matrix.
  * @param[in]       row   number of the matrix rows.
  * @param[in]       col   number of the matrix columns.
- * @return none.
  *
  * The output results will be saturated in Q15 range [0x8000 0x7FFF].
  */
@@ -3464,7 +3404,6 @@ static inline void hpm_dsp_mat_sub_q15(const q15_t *src1, const q15_t *src2, q15
  * @param[out]      *dst  points to the output matrix.
  * @param[in]       row   number of the matrix rows.
  * @param[in]       col   number of the matrix columns.
- * @return none.
  *
  * Ouput results will be saturated in Q31 range [0x80000000 0x7FFFFFFF].
  */
@@ -3482,7 +3421,6 @@ static inline void hpm_dsp_mat_sub_q31(const q31_t *src1, const q31_t *src2, q31
  * @param[out]      *dst  points to the output matrix.
  * @param[in]       row   number of the matrix rows.
  * @param[in]       col   number of the matrix columns.
- * @return none.
  */
 static inline void hpm_dsp_mat_trans_f32(const float32_t *src, float32_t *dst, uint32_t row, uint32_t col)
 {
@@ -3497,7 +3435,6 @@ static inline void hpm_dsp_mat_trans_f32(const float32_t *src, float32_t *dst, u
  * @param[out]      *dst  points to the output matrix.
  * @param[in]       row   number of the matrix rows.
  * @param[in]       col   number of the matrix columns.
- * @return none.
  */
 static inline void hpm_dsp_mat_trans_q15(const q15_t *src, q15_t *dst, uint32_t row, uint32_t col)
 {
@@ -3512,7 +3449,6 @@ static inline void hpm_dsp_mat_trans_q15(const q15_t *src, q15_t *dst, uint32_t 
  * @param[out]      *dst  points to the output matrix.
  * @param[in]       row   number of the matrix rows.
  * @param[in]       col   number of the matrix columns.
- * @return none.
  */
 static inline void hpm_dsp_mat_trans_q31(const q31_t *src, q31_t *dst, uint32_t row, uint32_t col)
 {
@@ -3527,7 +3463,6 @@ static inline void hpm_dsp_mat_trans_q31(const q31_t *src, q31_t *dst, uint32_t 
  * @param[out]      *dst  points to the output matrix.
  * @param[in]       row   number of the matrix rows.
  * @param[in]       col   number of the matrix columns.
- * @return none.
  */
 static inline void hpm_dsp_mat_trans_u8(const uint8_t *src, uint8_t *dst, uint32_t row, uint32_t col)
 {
@@ -3539,20 +3474,26 @@ static inline void hpm_dsp_mat_trans_u8(const uint8_t *src, uint8_t *dst, uint32
 #endif
 #endif
 
+/**
+ * @}
+ *
+ */
+
 #ifdef HPM_MATH_SVM
 
 /**
  * @defgroup svm SVM Functions
+ * @ingroup hpmmath
+ * @{
  */
 
 #ifdef HPM_EN_MATH_DSP_LIB
 #include "riscv_dsp_svm_math.h"
 /**
  * @brief SVM linear prediction
- * @param[in]    S          Pointer to an instance of the linear SVM structure.
+ * @param[in]    instance          Pointer to an instance of the linear SVM structure.
  * @param[in]    src         Pointer to input vector
  * @param[out]   result    Decision value
- * @return none.
  */
 
 static inline void hpm_dsp_svm_linear_est_f32(const riscv_dsp_svm_linear_f32_t *instance, const float32_t *src, int32_t *result)
@@ -3564,10 +3505,9 @@ static inline void hpm_dsp_svm_linear_est_f32(const riscv_dsp_svm_linear_f32_t *
 
 /**
  * @brief SVM Sigmoid prediction
- * @param[in]    S          Pointer to an instance of the linear SVM structure.
+ * @param[in]    instance          Pointer to an instance of the linear SVM structure.
  * @param[in]    src         Pointer to input vector
  * @param[out]   result    Decision value
- * @return none.
  */
 
 static inline void hpm_dsp_svm_sigmoid_est_f32(const riscv_dsp_svm_sigmoid_f32_t *instance, const float32_t *src, int32_t *result)
@@ -3579,10 +3519,9 @@ static inline void hpm_dsp_svm_sigmoid_est_f32(const riscv_dsp_svm_sigmoid_f32_t
 
 /**
  * @brief SVM rbf prediction
- * @param[in]    S          Pointer to an instance of the linear SVM structure.
+ * @param[in]    instance          Pointer to an instance of the linear SVM structure.
  * @param[in]    src         Pointer to input vector
  * @param[out]   result    Decision value
- * @return none.
  */
 
 static inline void hpm_dsp_svm_rbf_est_f32(const riscv_dsp_svm_rbf_f32_t *instance, const float32_t *src, int32_t *result)
@@ -3594,10 +3533,9 @@ static inline void hpm_dsp_svm_rbf_est_f32(const riscv_dsp_svm_rbf_f32_t *instan
 
 /**
  * @brief SVM polynomial prediction
- * @param[in]    S          Pointer to an instance of the linear SVM structure.
+ * @param[in]    instance          Pointer to an instance of the linear SVM structure.
  * @param[in]    src         Pointer to input vector
  * @param[out]   result    Decision value
- * @return none.
  */
 
 static inline void hpm_dsp_svm_poly_est_f32(const riscv_dsp_svm_poly_f32_t *instance, const float32_t *src, int32_t *result)
@@ -3610,10 +3548,17 @@ static inline void hpm_dsp_svm_poly_est_f32(const riscv_dsp_svm_poly_f32_t *inst
 #endif
 #endif
 
+/**
+ * @}
+ *
+ */
+
 #ifdef HPM_MATH_TRANSFORM
 
 /**
  * @defgroup transform Transform Functions
+ * @ingroup hpmmath
+ * @{
  */
 #ifdef HPM_EN_MATH_DSP_LIB
 
@@ -3981,12 +3926,19 @@ void hpm_software_cfft_float(float *src, uint32_t m);
 
 #endif
 
+/**
+ * @}
+ *
+ */
+
 #ifdef HPM_MATH_UTILS
 
 /**
  * @defgroup utils Utils Functions
  * This set of functions implements sine, cosine, arctanm, and square root.
  * There are separate functions for Q15, Q31, and floating-point data.
+ * @ingroup hpmmath
+ * @{
  */
 
 #ifdef HPM_EN_MATH_DSP_LIB
@@ -4111,7 +4063,6 @@ static inline q15_t hpm_dsp_sqrt_q15(q15_t src)
  * @param[in]       *src the input vector point.
  * @param[out]      *dst yhe output vector point.
  * @param[in]       size size of vector.
- * @return none.
  */
 static inline void hpm_dsp_convert_f32_q15(float32_t *src, q15_t *dst, uint32_t size)
 {
@@ -4125,7 +4076,6 @@ static inline void hpm_dsp_convert_f32_q15(float32_t *src, q15_t *dst, uint32_t 
  * @param[in]       *src the input vector point.
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vectors.
- * @return none.
  */
 static inline void hpm_dsp_convert_f32_q31(float32_t *src, q31_t *dst, uint32_t size)
 {
@@ -4139,7 +4089,6 @@ static inline void hpm_dsp_convert_f32_q31(float32_t *src, q31_t *dst, uint32_t 
  * @param[in]       *src the input vector point.
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vectors.
- * @return none.
  */
 static inline void hpm_dsp_convert_f32_q7(float32_t *src, q7_t *dst, uint32_t size)
 {
@@ -4153,7 +4102,6 @@ static inline void hpm_dsp_convert_f32_q7(float32_t *src, q7_t *dst, uint32_t si
  * @param[in]       *src the input vector point.
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vector.
- * @return none.
  */
 static inline void hpm_dsp_convert_q15_f32(q15_t *src, float32_t *dst, uint32_t size)
 {
@@ -4167,7 +4115,6 @@ static inline void hpm_dsp_convert_q15_f32(q15_t *src, float32_t *dst, uint32_t 
  * @param[in]       *src the input vector point.
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vector.
- * @return none.
  */
 static inline void hpm_dsp_convert_q15_q31(q15_t *src, q31_t *dst, uint32_t size)
 {
@@ -4181,7 +4128,6 @@ static inline void hpm_dsp_convert_q15_q31(q15_t *src, q31_t *dst, uint32_t size
  * @param[in]       *src the input vector point.
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vector.
- * @return none.
  */
 static inline void hpm_dsp_convert_q15_q7(q15_t *src, q7_t *dst, uint32_t size)
 {
@@ -4195,7 +4141,6 @@ static inline void hpm_dsp_convert_q15_q7(q15_t *src, q7_t *dst, uint32_t size)
  * @param[in]       *src the input vector point.
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vector.
- * @return none.
  */
 static inline void hpm_dsp_convert_q31_f32(q31_t *src, float32_t *dst, uint32_t size)
 {
@@ -4209,7 +4154,6 @@ static inline void hpm_dsp_convert_q31_f32(q31_t *src, float32_t *dst, uint32_t 
  * @param[in]       *src the input vector point.
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vector.
- * @return none.
  */
 static inline void hpm_dsp_convert_q31_q15(q31_t *src, q15_t *dst, uint32_t size)
 {
@@ -4223,7 +4167,6 @@ static inline void hpm_dsp_convert_q31_q15(q31_t *src, q15_t *dst, uint32_t size
  * @param[in]       *src the input vector point.
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vector.
- * @return none.
  */
 static inline void hpm_dsp_convert_q31_q7(q31_t *src, q7_t *dst, uint32_t size)
 {
@@ -4237,7 +4180,6 @@ static inline void hpm_dsp_convert_q31_q7(q31_t *src, q7_t *dst, uint32_t size)
  * @param[in]       *src the input vector point.
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vector.
- * @return none.
  */
 static inline void hpm_dsp_convert_q7_f32(q7_t *src, float32_t *dst, uint32_t size)
 {
@@ -4251,7 +4193,6 @@ static inline void hpm_dsp_convert_q7_f32(q7_t *src, float32_t *dst, uint32_t si
  * @param[in]       *src the input vector point.
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vector.
- * @return none.
  */
 static inline void hpm_dsp_convert_q7_q15(q7_t *src, q15_t *dst, uint32_t size)
 {
@@ -4265,7 +4206,6 @@ static inline void hpm_dsp_convert_q7_q15(q7_t *src, q15_t *dst, uint32_t size)
  * @param[in]       *src the input vector point.
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vector.
- * @return none.
  */
 static inline void hpm_dsp_convert_q7_q31(q7_t *src, q31_t *dst, uint32_t size)
 {
@@ -4280,7 +4220,6 @@ static inline void hpm_dsp_convert_q7_q31(q7_t *src, q31_t *dst, uint32_t size)
  * @param[in]       *src the input vector point.
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vectors.
- * @return none.
  */
 static inline void hpm_dsp_dup_f32(float32_t *src, float32_t *dst, uint32_t size)
 {
@@ -4294,7 +4233,6 @@ static inline void hpm_dsp_dup_f32(float32_t *src, float32_t *dst, uint32_t size
  * @param[in]       *src the input vector point.
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vectors.
- * @return none.
  */
 static inline void hpm_dsp_dup_q15(q15_t *src, q15_t *dst, uint32_t size)
 {
@@ -4308,7 +4246,6 @@ static inline void hpm_dsp_dup_q15(q15_t *src, q15_t *dst, uint32_t size)
  * @param[in]       *src the input vector point.
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vectors.
- * @return none.
  */
 static inline void hpm_dsp_dup_q31(q31_t *src, q31_t *dst, uint32_t size)
 {
@@ -4322,7 +4259,6 @@ static inline void hpm_dsp_dup_q31(q31_t *src, q31_t *dst, uint32_t size)
  * @param[in]       *src the input vector point.
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vectors.
- * @return none.
  */
 static inline void hpm_dsp_dup_q7(q7_t *src, q7_t *dst, uint32_t size)
 {
@@ -4337,7 +4273,6 @@ static inline void hpm_dsp_dup_q7(q7_t *src, q7_t *dst, uint32_t size)
  * @param[in]       val specify floating-point value.
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of the vector.
- * @return none.
  */
 static inline void hpm_dsp_set_f32(float32_t val, float32_t *dst, uint32_t size)
 {
@@ -4351,7 +4286,6 @@ static inline void hpm_dsp_set_f32(float32_t val, float32_t *dst, uint32_t size)
  * @param[in]       val specify Q15 value.
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of the vector.
- * @return none.
  */
 static inline void hpm_dsp_set_q15(q15_t val, q15_t *dst, uint32_t size)
 {
@@ -4365,7 +4299,6 @@ static inline void hpm_dsp_set_q15(q15_t val, q15_t *dst, uint32_t size)
  * @param[in]       val specify Q31 value.
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of the vector.
- * @return none.
  */
 static inline void hpm_dsp_set_q31(q31_t val, q31_t *dst, uint32_t size)
 {
@@ -4379,7 +4312,6 @@ static inline void hpm_dsp_set_q31(q31_t val, q31_t *dst, uint32_t size)
  * @param[in]       val specify Q7 value.
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of the vector.
- * @return none.
  */
 static inline void hpm_dsp_set_q7(q7_t val, q7_t *dst, uint32_t size)
 {
@@ -4406,11 +4338,10 @@ static inline float32_t hpm_dsp_weighted_sum_f32(const float32_t *src, const flo
 /**
  * @brief Barycenter of the floating-potint type.
  * @param[in]       *src    points to the input vector.
- * @param[in]       *weight points to the weighted vector.
+ * @param[in]       *weights points to the weighted vector.
  * @param[out]      *out    points to the out vector.
  * @param[in]       numofvec    size of the vectors.
  * @param[in]       dimofvec    size of the vectors.
- * @return  None
  *
  */
 static inline void hpm_dsp_barycenter_f32(const float32_t *src, const float32_t *weights, float32_t *out, uint32_t numofvec, uint32_t dimofvec)
@@ -4422,6 +4353,11 @@ static inline void hpm_dsp_barycenter_f32(const float32_t *src, const float32_t 
 
 #endif
 #endif
+
+/**
+ * @}
+ *
+ */
 
 #ifdef  __cplusplus
 }

@@ -1,4 +1,4 @@
-# Copyright 2022 hpmicro
+# Copyright (c) 2022 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -8,7 +8,7 @@ set(CONFIG_CAMERA "ov5640")
 endif()
 set(CONFIG_HPM_CAMERA 1)
 set(CONFIG_TFLM 1)
-set(CUSTOM_LINKER_FILE $ENV{HPM_SDK_BASE}/samples/littlevgl/linkers/gcc/lvgl.ld)
+set(CUSTOM_GCC_LINKER_FILE $ENV{HPM_SDK_BASE}/samples/littlevgl/linkers/gcc/lvgl.ld)
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(tensorflow_litemicro_example)

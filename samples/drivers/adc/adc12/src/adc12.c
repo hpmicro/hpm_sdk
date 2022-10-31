@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -42,6 +42,27 @@ uint8_t trig_channel[] = {BOARD_APP_ADC12_CH_1};
 __IO uint8_t seq_full_complete_flag;
 __IO uint8_t trig_complete_flag;
 
+static uint8_t get_adc_conv_mode(void)
+{
+    uint8_t ch;
+
+    while (1) {
+        printf("1. Oneshot    mode\n");
+        printf("2. Period     mode\n");
+        printf("3. Sequence   mode\n");
+        printf("4. Preemption mode\n");
+
+        printf("Please enter one of ADC conversion modes above (e.g. 1 or 2 ...): ");
+        printf("%c\n", ch = getchar());
+        ch -= '0' + 1;
+        if (ch > adc12_conv_mode_preemption) {
+            printf("The ADC mode is not supported!\n");
+        } else {
+            return ch;
+        }
+    }
+}
+
 void isr_adc12(void)
 {
     uint32_t status;
@@ -75,13 +96,11 @@ hpm_stat_t process_seq_data(uint32_t *buff, uint32_t start_pos, uint32_t len)
     printf("Sequence Mode - %s - ", BOARD_APP_ADC12_NAME);
 
     for (int i = start_pos; i < start_pos + len; i++) {
-        printf("Sequence Number:%d ", dma_data[i].seq_num);
+        printf("Sequence Number:%02d ", dma_data[i].seq_num);
         printf("Cycle Bit: %02d ",   dma_data[i].cycle_bit);
         printf("ADC Channel: %02d ",  dma_data[i].adc_ch);
-        printf("Result: 0x%02x\n",      dma_data[i].result);
+        printf("Result: 0x%04x\n", dma_data[i].result);
     }
-
-    printf("\n");
 
     return status_success;
 }
@@ -97,14 +116,17 @@ hpm_stat_t process_pmt_data(uint32_t *buff, int32_t start_pos, uint32_t len)
     printf("Preemption Mode - %s - ", BOARD_APP_ADC12_NAME);
 
     for (int i = start_pos; i < start_pos + len; i++) {
-        printf("Cycle Bit: %d ", dma_data[i].cycle_bit);
-        printf("ADC Channel: %d ", dma_data[i].adc_ch);
-        printf("Trig Index:%d ", dma_data[i].trig_index);
-        printf("Trig Channel:%d ", dma_data[i].trig_ch);
-        printf("Result: 0x%02x\n", dma_data[i].result);
+        printf("Cycle Bit: %02d ", dma_data[i].cycle_bit);
+        if (dma_data[i].cycle_bit) {
+            printf("ADC Channel: %02d ", dma_data[i].adc_ch);
+            printf("Trig Index: %02d ", dma_data[i].trig_index);
+            printf("Trig Channel: %02d ", dma_data[i].trig_ch);
+            printf("Result: 0x%04x\n", dma_data[i].result);
+            dma_data[i].cycle_bit = 0;
+        } else {
+            printf("invalid data\n");
+        }
     }
-
-    printf("\n");
 
     return status_success;
 }
@@ -192,7 +214,11 @@ void init_common_config(adc12_conversion_mode_t conv_mode)
 }
 
 void init_oneshot_config(void)
-{    adc12_channel_config_t ch_cfg;
+{
+    adc12_channel_config_t ch_cfg;
+
+    /* get a default channel config */
+    adc12_get_channel_default_config(&ch_cfg);
 
     /* initialize an ADC channel */
     ch_cfg.ch           = BOARD_APP_ADC12_CH_1;
@@ -207,13 +233,16 @@ void oneshot_handler(void)
     uint16_t result;
 
     adc12_get_oneshot_result(BOARD_APP_ADC12_BASE, BOARD_APP_ADC12_CH_1, &result);
-    printf("Oneshot Mode - %s [channel %d] - Result: 0x%08x\n\n", BOARD_APP_ADC12_NAME, BOARD_APP_ADC12_CH_1, result);
+    printf("Oneshot Mode - %s [channel %d] - Result: 0x%04x\n", BOARD_APP_ADC12_NAME, BOARD_APP_ADC12_CH_1, result);
 }
 
 void init_period_config(void)
 {
     adc12_channel_config_t ch_cfg;
     adc12_prd_config_t prd_cfg;
+
+    /* get a default channel config */
+    adc12_get_channel_default_config(&ch_cfg);
 
     /* initialize an ADC channel */
     ch_cfg.ch           = BOARD_APP_ADC12_CH_1;
@@ -234,7 +263,7 @@ void period_handler(void)
     uint16_t result;
 
     adc12_get_prd_result(BOARD_APP_ADC12_BASE, BOARD_APP_ADC12_CH_1, &result);
-    printf("Period Mode - %s [channel %d] - Result: 0x%08x\n\n", BOARD_APP_ADC12_NAME, BOARD_APP_ADC12_CH_1, result);
+    printf("Period Mode - %s [channel %d] - Result: 0x%04x\n", BOARD_APP_ADC12_NAME, BOARD_APP_ADC12_CH_1, result);
 }
 
 void init_sequence_config(void)
@@ -242,6 +271,9 @@ void init_sequence_config(void)
     adc12_seq_config_t seq_cfg;
     adc12_dma_config_t dma_cfg;
     adc12_channel_config_t ch_cfg;
+
+    /* get a default channel config */
+    adc12_get_channel_default_config(&ch_cfg);
 
     /* initialize an ADC channel */
     ch_cfg.diff_sel     = adc12_sample_signal_single_ended;
@@ -302,6 +334,9 @@ void init_preemption_config(void)
 {
     adc12_channel_config_t ch_cfg;
 
+    /* get a default channel config */
+    adc12_get_channel_default_config(&ch_cfg);
+
     /* initialize an ADC channel */
     ch_cfg.diff_sel     = adc12_sample_signal_single_ended;
     ch_cfg.sample_cycle = 20;
@@ -323,7 +358,7 @@ void init_preemption_config(void)
     /* Set DMA start address for preemption mode */
     adc12_init_pmt_dma(BOARD_APP_ADC12_BASE, core_local_mem_to_sys_address(BOARD_APP_CORE, (uint32_t)pmt_buff));
 
-    /* Enable sequence complete interrupt */
+    /* Enable trigger complete interrupt */
     adc12_enable_interrupts(BOARD_APP_ADC12_BASE, adc12_event_trig_complete);
 }
 
@@ -339,7 +374,6 @@ void preemption_handler(void)
     trig_complete_flag = 0;
 }
 
-
 int main(void)
 {
     uint8_t conv_mode;
@@ -353,13 +387,13 @@ int main(void)
     /* ADC clock initialization */
     board_init_adc12_clock(BOARD_APP_ADC12_BASE);
 
-    /* TODO: Get sample mode from console */
-    conv_mode = adc12_conv_mode_oneshot;
+    printf("This is an ADC12 demo:\n");
+
+    /* Get a conversion mode from a console window */
+    conv_mode = get_adc_conv_mode();
 
     /* ADC12 common initialization */
     init_common_config(conv_mode);
-
-    printf("This is an ADC12 demo:\n");
 
     /* ADC12 read patter and DMA initialization */
     switch (conv_mode) {
@@ -385,6 +419,8 @@ int main(void)
 
     /* Main loop */
     while (1) {
+        board_delay_ms(1000);
+
         if (conv_mode == adc12_conv_mode_oneshot) {
             oneshot_handler();
         } else if (conv_mode == adc12_conv_mode_period) {
@@ -396,7 +432,5 @@ int main(void)
         } else {
             printf("Conversion mode is not supported!\n");
         }
-
-        board_delay_ms(1000);
     }
 }

@@ -1,19 +1,20 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
 
-/*---------------------------------------------------------------------*
+/*---------------------------------------------------------------------
  * Include
- *---------------------------------------------------------------------*/
+ *---------------------------------------------------------------------
+ */
 #include "hpm_usb_device.h"
 #include "hpm_misc.h"
 #include "hpm_common.h"
 
 /* Initialize qtd */
-static void usb_qtd_init(dcd_qtd_t* p_qtd, void *data_ptr, uint16_t total_bytes)
+static void usb_qtd_init(dcd_qtd_t *p_qtd, void *data_ptr, uint16_t total_bytes)
 {
     memset(p_qtd, 0, sizeof(dcd_qtd_t));
 
@@ -21,25 +22,24 @@ static void usb_qtd_init(dcd_qtd_t* p_qtd, void *data_ptr, uint16_t total_bytes)
     p_qtd->active      = 1;
     p_qtd->total_bytes = p_qtd->expected_bytes = total_bytes;
 
-    if (data_ptr != NULL)
-    {
+    if (data_ptr != NULL) {
         p_qtd->buffer[0]   = (uint32_t)data_ptr;
-        for(uint8_t i = 1; i < USB_SOC_DCD_QHD_BUFFER_COUNT; i++)
-        {
+        for (uint8_t i = 1; i < USB_SOC_DCD_QHD_BUFFER_COUNT; i++) {
             p_qtd->buffer[i] |= ((p_qtd->buffer[i-1]) & 0xFFFFF000UL) + 4096U;
         }
     }
 }
 
-/*---------------------------------------------------------------------*
+/*---------------------------------------------------------------------
  * Device API
- *---------------------------------------------------------------------*/
-dcd_qhd_t* usb_device_qhd_get(usb_device_handle_t *handle, uint8_t ep_idx)
+ *---------------------------------------------------------------------
+ */
+dcd_qhd_t *usb_device_qhd_get(usb_device_handle_t *handle, uint8_t ep_idx)
 {
     return &handle->dcd_data->qhd[ep_idx];
 }
 
-dcd_qtd_t* usb_device_qtd_get(usb_device_handle_t *handle, uint8_t ep_idx)
+dcd_qtd_t *usb_device_qtd_get(usb_device_handle_t *handle, uint8_t ep_idx)
 {
     return &handle->dcd_data->qtd[ep_idx];
 }
@@ -185,9 +185,10 @@ void usb_device_clear_setup_status(usb_device_handle_t *handle, uint32_t mask)
     usb_dcd_clear_edpt_setup_status(handle->regs, mask);
 }
 
-/*---------------------------------------------------------------------*
+/*---------------------------------------------------------------------
  * Endpoint API
- *---------------------------------------------------------------------*/
+ *---------------------------------------------------------------------
+ */
 bool usb_device_edpt_open(usb_device_handle_t *handle, usb_endpoint_config_t *config)
 {
     uint8_t const epnum  = config->ep_addr & 0x0f;
@@ -223,15 +224,15 @@ bool usb_device_edpt_xfer(usb_device_handle_t *handle, uint8_t ep_addr, uint8_t 
     uint8_t const epnum = ep_addr & 0x0f;
     uint8_t const dir   = (ep_addr & 0x80) >> 7;
     uint8_t const ep_idx = 2 * epnum + dir;
-    dcd_qhd_t * p_qhd;
-    dcd_qtd_t * p_qtd;
+    dcd_qhd_t *p_qhd;
+    dcd_qtd_t *p_qtd;
 
-    if (epnum == 0)
-    {
+    if (epnum == 0) {
         /* follows UM Setup packet handling using setup lockout mechanism
          * wait until ENDPTSETUPSTAT before priming data/status in response TODO add time out
          */
-        while(usb_dcd_get_edpt_setup_status(handle->regs) & HPM_BITSMASK(1, 0)) {}
+        while (usb_dcd_get_edpt_setup_status(handle->regs) & HPM_BITSMASK(1, 0)) {
+        }
     }
 
     p_qhd = &handle->dcd_data->qhd[ep_idx];

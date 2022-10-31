@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 hpmicro
+ * Copyright (c) 2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -84,7 +84,7 @@ hpm_stat_t uart_rx_trigger_dma(DMA_Type *dma_ptr,
     config.src_fixed = true;
     config.size_in_byte = size;
 
-    return dma_setup_handshake(dma_ptr, &config);
+    return dma_setup_handshake(dma_ptr, &config, true);
 }
 
 void config_uart(uart_info_t *uart_info)

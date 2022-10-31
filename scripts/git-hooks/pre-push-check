@@ -31,7 +31,7 @@ do
         for commit in $commits
         do
             # Check for WIP commit
-            git format-patch --stdout "$commit" -1 -- . ':!middleware/FreeRTOS/**' ':!doc' ':!*/*.html' ':!*/hpm_*_regs.h' ':!*/hpm_soc.h' ':!*/hpm_*_iomux.h' ':!*/*.xml' | $HPM_SDK_BASE/scripts/checkpatch.pl
+            git format-patch --stdout "$commit" -1 -- .  ':!*/assets/**' ':!*/generated/**' ':!middleware/erpc/**' ':!middleware/cherryusb/**' ':!middleware/tinyusb/**' ':!middleware/tinycrypt/**' ':!middleware/tflm/**' ':!middleware/lwip/**' ':!middleware/littlevgl/**' ':!middleware/libjpeg-turbo/**' ':!middleware/fatfs/**' ':!middleware/coremark/**' ':!middleware/segger_rtt/**' ':!middleware/FreeRTOS/**' ':!doc' ':!*/*.html' ':!*/hpm_*_regs.h' ':!*/hpm_soc.h' ':!*/hpm_*_iomux.h' ':!*/*.xml' | $HPM_SDK_BASE/scripts/checkpatch.pl
             if [ $? != 0 ]; then
                 exit 1
             fi

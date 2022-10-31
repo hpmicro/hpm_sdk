@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -20,43 +20,43 @@ void cam_get_default_config(CAM_Type *ptr, cam_config_t *config, display_pixel_f
     config->data_pack_msb = false;
     config->enable_buffer2 = false;
     config->data_store_mode = CAM_DATA_STORE_MODE_NORMAL;
-    config->color_format = CAM_COLOR_FORMAT_RGB565;
+    config->color_format = pixel_format;
     config->sensor_bitwidth = CAM_SENSOR_BITWIDTH_10BITS;
 
-    switch(pixel_format) {
-        case display_pixel_format_yuv422:
-            config->csc_config.enable = true;
-            config->csc_config.ycbcr_mode = false;
-            config->csc_config.yuv2rgb_coef.c0 = 0x100;
-            config->csc_config.yuv2rgb_coef.uv_offset = 0;
-            config->csc_config.yuv2rgb_coef.y_offset = 0;
-            config->csc_config.yuv2rgb_coef.c1 = 0x123;
-            config->csc_config.yuv2rgb_coef.c2 = 0x76B;
-            config->csc_config.yuv2rgb_coef.c3 = 0x79C;
-            config->csc_config.yuv2rgb_coef.c4 = 0x208;
-            break;
-        case display_pixel_format_ycbcr422:
-            config->csc_config.enable = true;
-            config->csc_config.ycbcr_mode = true;
-            config->csc_config.yuv2rgb_coef.c0 = 0x12A;
-            config->csc_config.yuv2rgb_coef.uv_offset = 0x180;
-            config->csc_config.yuv2rgb_coef.y_offset = 0x1F0;
-            config->csc_config.yuv2rgb_coef.c1 = 0x198;
-            config->csc_config.yuv2rgb_coef.c2 = 0x730;
-            config->csc_config.yuv2rgb_coef.c3 = 0x79C;
-            config->csc_config.yuv2rgb_coef.c4 = 0x204;
-            break;
-        default:
-            config->csc_config.enable = false;
-            config->csc_config.ycbcr_mode = false;
-            config->csc_config.yuv2rgb_coef.c0 = 0;
-            config->csc_config.yuv2rgb_coef.uv_offset = 0;
-            config->csc_config.yuv2rgb_coef.y_offset = 0;
-            config->csc_config.yuv2rgb_coef.c1 = 0;
-            config->csc_config.yuv2rgb_coef.c2 = 0;
-            config->csc_config.yuv2rgb_coef.c3 = 0;
-            config->csc_config.yuv2rgb_coef.c4 = 0;
-            break;
+    switch (pixel_format) {
+    case display_pixel_format_yuv422:
+        config->csc_config.enable = true;
+        config->csc_config.ycbcr_mode = false;
+        config->csc_config.yuv2rgb_coef.c0 = 0x100;
+        config->csc_config.yuv2rgb_coef.uv_offset = 0;
+        config->csc_config.yuv2rgb_coef.y_offset = 0;
+        config->csc_config.yuv2rgb_coef.c1 = 0x123;
+        config->csc_config.yuv2rgb_coef.c2 = 0x76B;
+        config->csc_config.yuv2rgb_coef.c3 = 0x79C;
+        config->csc_config.yuv2rgb_coef.c4 = 0x208;
+        break;
+    case display_pixel_format_ycbcr422:
+        config->csc_config.enable = true;
+        config->csc_config.ycbcr_mode = true;
+        config->csc_config.yuv2rgb_coef.c0 = 0x12A;
+        config->csc_config.yuv2rgb_coef.uv_offset = 0x180;
+        config->csc_config.yuv2rgb_coef.y_offset = 0x1F0;
+        config->csc_config.yuv2rgb_coef.c1 = 0x198;
+        config->csc_config.yuv2rgb_coef.c2 = 0x730;
+        config->csc_config.yuv2rgb_coef.c3 = 0x79C;
+        config->csc_config.yuv2rgb_coef.c4 = 0x204;
+        break;
+    default:
+        config->csc_config.enable = false;
+        config->csc_config.ycbcr_mode = false;
+        config->csc_config.yuv2rgb_coef.c0 = 0;
+        config->csc_config.yuv2rgb_coef.uv_offset = 0;
+        config->csc_config.yuv2rgb_coef.y_offset = 0;
+        config->csc_config.yuv2rgb_coef.c1 = 0;
+        config->csc_config.yuv2rgb_coef.c2 = 0;
+        config->csc_config.yuv2rgb_coef.c3 = 0;
+        config->csc_config.yuv2rgb_coef.c4 = 0;
+        break;
     }
 }
 
@@ -110,6 +110,11 @@ hpm_stat_t cam_init(CAM_Type *ptr, cam_config_t *config)
                     | CAM_CSC_COEF2_C3_SET(config->csc_config.yuv2rgb_coef.c3);
 
     return stat;
+}
+
+void cam_update_buffer(CAM_Type *ptr, uint32_t buffer)
+{
+    ptr->DMASA_FB1 = buffer;
 }
 
 void cam_stop(CAM_Type *ptr)

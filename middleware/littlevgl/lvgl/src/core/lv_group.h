@@ -50,16 +50,21 @@ struct _lv_obj_t;
 struct _lv_group_t;
 
 typedef void (*lv_group_focus_cb_t)(struct _lv_group_t *);
+typedef void (*lv_group_edge_cb_t)(struct _lv_group_t *, bool);
 
 /**
  * Groups can be used to logically hold objects so that they can be individually focused.
- * They are NOT for laying out objects on a screen (try `lv_cont` for that).
+ * They are NOT for laying out objects on a screen (try layouts for that).
  */
 typedef struct _lv_group_t {
     lv_ll_t obj_ll;        /**< Linked list to store the objects in the group*/
     struct _lv_obj_t ** obj_focus; /**< The object in focus*/
 
     lv_group_focus_cb_t focus_cb;              /**< A function to call when a new object is focused (optional)*/
+    lv_group_edge_cb_t  edge_cb;               /**< A function to call when an edge is reached, no more focus
+                                                    targets are available in this direction (to allow edge feedback
+                                                    like a sound or a scroll bounce) */
+
 #if LV_USE_USER_DATA
     void * user_data;
 #endif
@@ -76,7 +81,7 @@ typedef struct _lv_group_t {
 typedef enum {
     LV_GROUP_REFOCUS_POLICY_NEXT = 0,
     LV_GROUP_REFOCUS_POLICY_PREV = 1
-}lv_group_refocus_policy_t;
+} lv_group_refocus_policy_t;
 
 /**********************
  * GLOBAL PROTOTYPES
@@ -118,6 +123,13 @@ lv_group_t * lv_group_get_default(void);
  * @param obj       pointer to an object to add
  */
 void lv_group_add_obj(lv_group_t * group, struct _lv_obj_t * obj);
+
+/**
+ * Swap 2 object in a group. The object must be in the same group
+ * @param obj1  pointer to an object
+ * @param obj2  pointer to an other object
+ */
+void lv_group_swap_obj(struct _lv_obj_t * obj1, struct _lv_obj_t * obj2);
 
 /**
  * Remove an object from its group
@@ -172,6 +184,14 @@ lv_res_t lv_group_send_data(lv_group_t * group, uint32_t c);
 void lv_group_set_focus_cb(lv_group_t * group, lv_group_focus_cb_t focus_cb);
 
 /**
+ * Set a function for a group which will be called when a focus edge is reached
+ * @param group         pointer to a group
+ * @param edge_cb      the call back function or NULL if unused
+ */
+void lv_group_set_edge_cb(lv_group_t * group, lv_group_edge_cb_t edge_cb);
+
+
+/**
  * Set whether the next or previous item in a group is focused if the currently focused obj is
  * deleted.
  * @param group         pointer to a group
@@ -206,6 +226,13 @@ struct _lv_obj_t * lv_group_get_focused(const lv_group_t * group);
  * @return the call back function or NULL if not set
  */
 lv_group_focus_cb_t lv_group_get_focus_cb(const lv_group_t * group);
+
+/**
+ * Get the edge callback function of a group
+ * @param group pointer to a group
+ * @return the call back function or NULL if not set
+ */
+lv_group_edge_cb_t lv_group_get_edge_cb(const lv_group_t * group);
 
 /**
  * Get the current mode (edit or navigate).

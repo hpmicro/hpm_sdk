@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 hpmicro
+ * Copyright (c) 2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -36,12 +36,12 @@ hpm_stat_t hpm_wav_decode_init(char *fname, hpm_wav_ctrl *wav_ctrl, uint8_t (*pb
             break;
             }
         }
-        if (wav_ctrl->wav_head.riff_chunk.riff_type==0X45564157) { /** wav */
-            if(wav_ctrl->wav_head.data_chunk.id == 0X61746164) { /** data */
+        if (wav_ctrl->wav_head.riff_chunk.riff_type == 0X45564157) { /** wav */
+            if (wav_ctrl->wav_head.data_chunk.id == 0X61746164) { /** data */
                 wav_ctrl->data_pos = 28 + wav_ctrl->wav_head.fmt_chunk.size;
                 wav_ctrl->remaining_data = wav_ctrl->wav_head.data_chunk.size;
                 wav_ctrl->sec_total = wav_ctrl->wav_head.data_chunk.size / wav_ctrl->wav_head.fmt_chunk.byterate;
-            }else {
+            } else {
                 res = status_audio_codec_non_standard;
             }
         } else {
@@ -55,7 +55,7 @@ hpm_stat_t hpm_wav_decode_init(char *fname, hpm_wav_ctrl *wav_ctrl, uint8_t (*pb
 
 uint32_t hpm_wav_decode(hpm_wav_ctrl *wav_ctrl, uint8_t *buf, uint32_t size)
 {
-    uint16_t readlen=0;
+    uint16_t readlen = 0;
     uint32_t read;
     uint32_t n;
     uint32_t *pbuf;

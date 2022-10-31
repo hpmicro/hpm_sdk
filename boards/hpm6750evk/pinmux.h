@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -16,7 +16,7 @@ void init_lcd_pins(LCDC_Type *ptr);
 void init_i2c_pins(I2C_Type *ptr);
 void init_cap_pins(void);
 void init_sdram_pins(void);
-void init_gpio_pins(void);
+void init_gpio_pins(uint8_t pin_stat);
 void init_spi_pins(SPI_Type *ptr);
 void init_spi_pins_with_gpio_as_cs(SPI_Type *ptr);
 void init_pins(void);
@@ -36,7 +36,7 @@ void init_adc12_pins(void);
 void init_adc16_pins(void);
 void init_usb_pins(void);
 void init_can_pins(CAN_Type *ptr);
-void init_sdxc_pins(SDXC_Type * ptr, bool use_1v8);
+void init_sdxc_pins(SDXC_Type *ptr, bool use_1v8);
 void init_adc_bldc_pins(void);
 void init_rgb_pwm_pins(void);
 void init_i2c_pins_as_gpio(I2C_Type *ptr);

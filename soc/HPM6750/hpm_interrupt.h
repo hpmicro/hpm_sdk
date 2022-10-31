@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021-2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -23,6 +23,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* Machine mode API: these APIs are supposed to be called at machine mode */
 
 /**
  * @brief   Enable global IRQ with mask
@@ -125,7 +127,6 @@ ATTR_ALWAYS_INLINE static inline void intc_m_trigger_swi(void)
     __plic_set_irq_pending(HPM_PLICSW_BASE, PLICSWI);
 }
 
-
 /**
  * @brief Claim software interrupt
  *
@@ -187,7 +188,7 @@ ATTR_ALWAYS_INLINE static inline void intc_m_complete_swi(void)
     do { \
         intc_set_irq_priority(irq, priority); \
         intc_m_enable_irq(irq); \
-    } while(0);
+    } while (0)
 
 /*
  * @brief Enable specific interrupt
@@ -259,6 +260,7 @@ ATTR_ALWAYS_INLINE static inline void intc_complete_irq(uint32_t target, uint32_
 /*
  * Vectored based irq install and uninstall
  */
+/* Machine mode */
 extern int __vector_table[];
 extern void default_irq_entry(void);
 
@@ -326,8 +328,14 @@ ATTR_ALWAYS_INLINE static inline void uninstall_isr(uint32_t irq)
 #endif
 
 #ifdef __riscv_flen
-/* RV32I caller registers + MCAUSE + MEPC + MSTATUS +MXSTATUS + UCODE (DSP) + 21 FPU caller registers */
-#define CONTEXT_REG_NUM (4*(16 + 4 + 1 + 21))
+#if __riscv_flen == 32
+/* RV32I caller registers + MCAUSE + MEPC + MSTATUS +MXSTATUS + 20 FPU caller registers +FCSR + UCODE (DSP)  */
+#define CONTEXT_REG_NUM (4*(16 + 4 + 20 + 1 + 1))
+#else   /* __riscv_flen = 64 */
+/* RV32I caller registers + MCAUSE + MEPC + MSTATUS +MXSTATUS + 20 DFPU caller + FCSR registers + UCODE (DSP)  */
+#define CONTEXT_REG_NUM (4*(16 + 4 + 20*2 + 1 + 1))
+#endif
+
 #else
 /* RV32I caller registers + MCAUSE + MEPC + MSTATUS +MXSTATUS + UCODE (DSP)*/
 #define CONTEXT_REG_NUM (4*(16 + 4 + 1))
@@ -336,61 +344,117 @@ ATTR_ALWAYS_INLINE static inline void uninstall_isr(uint32_t irq)
 #ifdef __riscv_flen
 /*
  * Save FPU caller registers:
- * NOTE: To simplify the logic, the FPU caller registers are always stored at word offset 21 in the stack
+ * NOTE: To simplify the logic, the FPU caller registers are always stored at word offset 20 in the stack
  */
+#if __riscv_flen == 32
 #define SAVE_FPU_CONTEXT()  { \
-    __asm volatile("fsw ft0, 21*4(sp) \n\
-             fsw ft1, 22*4(sp) \n\
-             fsw ft2, 23*4(sp) \n\
-             fsw ft3, 24*4(sp) \n\
-             fsw ft4, 25*4(sp) \n\
-             fsw ft5, 26*4(sp) \n\
-             fsw ft6, 27*4(sp) \n\
-             fsw ft7, 28*4(sp) \n\
-             fsw fa0, 29*4(sp) \n\
-             fsw fa1, 30*4(sp) \n\
-             fsw fa2, 31*4(sp) \n\
-             fsw fa3, 32*4(sp) \n\
-             fsw fa4, 33*4(sp) \n\
-             fsw fa5, 34*4(sp) \n\
-             fsw fa6, 35*4(sp) \n\
-             fsw fa7, 36*4(sp) \n\
-             fsw ft8, 37*4(sp) \n\
-             fsw ft9, 38*4(sp) \n\
-             fsw ft10, 39*4(sp) \n\
-             fsw ft11, 40*4(sp) \n\
+    __asm volatile("fsw ft0, 20*4(sp)\n\
+             fsw ft1,  21*4(sp) \n\
+             fsw ft2,  22*4(sp) \n\
+             fsw ft3,  23*4(sp) \n\
+             fsw ft4,  24*4(sp) \n\
+             fsw ft5,  25*4(sp) \n\
+             fsw ft6,  26*4(sp) \n\
+             fsw ft7,  27*4(sp) \n\
+             fsw fa0,  28*4(sp) \n\
+             fsw fa1,  29*4(sp) \n\
+             fsw fa2,  30*4(sp) \n\
+             fsw fa3,  31*4(sp) \n\
+             fsw fa4,  32*4(sp) \n\
+             fsw fa5,  33*4(sp) \n\
+             fsw fa6,  34*4(sp) \n\
+             fsw fa7,  35*4(sp) \n\
+             fsw ft8,  36*4(sp) \n\
+             fsw ft9,  37*4(sp) \n\
+             fsw ft10, 38*4(sp) \n\
+             fsw ft11, 39*4(sp) \n\
              frsr t6 \n\
-             sw t6, 41*4(sp) \n");\
+             sw t6,    40*4(sp) \n");\
 }
 
 /*
  * Restore FPU caller registers:
- * NOTE: To simplify the logic, the FPU caller registers are always stored at word offset 21 in the stack
+ * NOTE: To simplify the logic, the FPU caller registers are always stored at word offset 20 in the stack
  */
 #define RESTORE_FPU_CONTEXT() { \
-    __asm volatile("flw ft0, 21*4(sp) \n\
-             flw ft1, 22*4(sp) \n\
-             flw ft2, 23*4(sp) \n\
-             flw ft3, 24*4(sp) \n\
-             flw ft4, 25*4(sp) \n\
-             flw ft5, 26*4(sp) \n\
-             flw ft6, 27*4(sp) \n\
-             flw ft7, 28*4(sp) \n\
-             flw fa0, 29*4(sp) \n\
-             flw fa1, 30*4(sp) \n\
-             flw fa2, 31*4(sp) \n\
-             flw fa3, 32*4(sp) \n\
-             flw fa4, 33*4(sp) \n\
-             flw fa5, 34*4(sp) \n\
-             flw fa6, 35*4(sp) \n\
-             flw fa7, 36*4(sp) \n\
-             flw ft8, 37*4(sp) \n\
-             flw ft9, 38*4(sp) \n\
-             flw ft10, 39*4(sp) \n\
-             flw ft11, 40*4(sp) \n\
-             lw t6, 41*4(sp) \n\
+    __asm volatile("flw ft0, 20*4(sp)\n\
+             flw ft1,  21*4(sp) \n\
+             flw ft2,  22*4(sp) \n\
+             flw ft3,  23*4(sp) \n\
+             flw ft4,  24*4(sp) \n\
+             flw ft5,  25*4(sp) \n\
+             flw ft6,  26*4(sp) \n\
+             flw ft7,  27*4(sp) \n\
+             flw fa0,  28*4(sp) \n\
+             flw fa1,  29*4(sp) \n\
+             flw fa2,  30*4(sp) \n\
+             flw fa3,  31*4(sp) \n\
+             flw fa4,  32*4(sp) \n\
+             flw fa5,  33*4(sp) \n\
+             flw fa6,  34*4(sp) \n\
+             flw fa7,  35*4(sp) \n\
+             flw ft8,  36*4(sp) \n\
+             flw ft9,  37*4(sp) \n\
+             flw ft10, 38*4(sp) \n\
+             flw ft11, 39*4(sp) \n\
+             lw t6,    40*4(sp) \n\
              fssr t6, t6 \n");\
 }
+#else /*__riscv_flen == 64*/
+#define SAVE_FPU_CONTEXT()  { \
+    __asm volatile("fsd ft0, 20*4(sp)\n\
+             fsd ft1,  22*4(sp) \n\
+             fsd ft2,  24*4(sp) \n\
+             fsd ft3,  26*4(sp) \n\
+             fsd ft4,  28*4(sp) \n\
+             fsd ft5,  30*4(sp) \n\
+             fsd ft6,  32*4(sp) \n\
+             fsd ft7,  34*4(sp) \n\
+             fsd fa0,  36*4(sp) \n\
+             fsd fa1,  38*4(sp) \n\
+             fsd fa2,  40*4(sp) \n\
+             fsd fa3,  42*4(sp) \n\
+             fsd fa4,  44*4(sp) \n\
+             fsd fa5,  46*4(sp) \n\
+             fsd fa6,  48*4(sp) \n\
+             fsd fa7,  50*4(sp) \n\
+             fsd ft8,  52*4(sp) \n\
+             fsd ft9,  54*4(sp) \n\
+             fsd ft10, 56*4(sp) \n\
+             fsd ft11, 58*4(sp) \n\
+             frsr t6 \n\
+             sw t6,    60*4(sp) \n");\
+}
+
+/*
+ * Restore FPU caller registers:
+ * NOTE: To simplify the logic, the FPU caller registers are always stored at word offset 20 in the stack
+ */
+#define RESTORE_FPU_CONTEXT() { \
+    __asm volatile("fld ft0, 20*4(sp)\n\
+             fld ft1,  22*4(sp) \n\
+             fld ft2,  24*4(sp) \n\
+             fld ft3,  26*4(sp) \n\
+             fld ft4,  28*4(sp) \n\
+             fld ft5,  30*4(sp) \n\
+             fld ft6,  32*4(sp) \n\
+             fld ft7,  34*4(sp) \n\
+             fld fa0,  36*4(sp) \n\
+             fld fa1,  38*4(sp) \n\
+             fld fa2,  40*4(sp) \n\
+             fld fa3,  42*4(sp) \n\
+             fld fa4,  44*4(sp) \n\
+             fld fa5,  46*4(sp) \n\
+             fld fa6,  48*4(sp) \n\
+             fld fa7,  50*4(sp) \n\
+             fld ft8,  52*4(sp) \n\
+             fld ft9,  54*4(sp) \n\
+             fld ft10, 56*4(sp) \n\
+             fld ft11, 58*4(sp) \n\
+             lw t6,    60*4(sp) \n\
+             fssr t6, t6 \n");\
+}
+#endif
 #else
 #define SAVE_FPU_CONTEXT()
 #define RESTORE_FPU_CONTEXT()
@@ -401,7 +465,7 @@ ATTR_ALWAYS_INLINE static inline void uninstall_isr(uint32_t irq)
  */
 #define SAVE_CALLER_CONTEXT()   { \
     __asm volatile("addi sp, sp, %0" : : "i"(-CONTEXT_REG_NUM) :);\
-    __asm volatile("sw ra,  0*4(sp) \n\
+    __asm volatile("sw ra,  0*4(sp)\n\
             sw t0,  1*4(sp) \n\
             sw t1,  2*4(sp) \n\
             sw t2,  3*4(sp) \n\
@@ -424,7 +488,7 @@ ATTR_ALWAYS_INLINE static inline void uninstall_isr(uint32_t irq)
  * @brief Restore the caller registers based on the RISC-V ABI specification
  */
 #define RESTORE_CALLER_CONTEXT() { \
-        __asm volatile("lw ra,  0*4(sp) \n\
+        __asm volatile("lw ra,  0*4(sp)\n\
             lw t0,  1*4(sp) \n\
             lw t1,  2*4(sp) \n\
             lw t2,  3*4(sp) \n\
@@ -445,9 +509,47 @@ ATTR_ALWAYS_INLINE static inline void uninstall_isr(uint32_t irq)
 }
 
 #ifdef __riscv_dsp
+
+#if defined(__riscv_flen)
+#if __riscv_flen == 32
 /*
  * Save DSP context
- * NOTE: To simplify the logic, DSP context registers are always stored at word offset 20 in the stack
+ * NOTE: DSP context registers are stored at word offset 41 in the stack
+ */
+#define SAVE_DSP_CONTEXT() { \
+    __asm volatile("csrr t6, ucode\n\
+            sw t6, 41*4(sp)\n");  \
+}
+/*
+ * @brief Restore DSP context
+ * @note DSP context registers are stored at word offset 41 in the stack
+ */
+#define RESTORE_DSP_CONTEXT() {\
+    __asm volatile("lw t6, 41*4(sp)\n\
+            csrw ucode, t6 \n"); \
+}
+#else
+/*
+ * Save DSP context
+ * NOTE: DSP context registers are stored at word offset 61 in the stack
+ */
+#define SAVE_DSP_CONTEXT() { \
+    __asm volatile("csrr t6, ucode\n\
+            sw t6, 61*4(sp)\n");  \
+}
+/*
+ * @brief Restore DSP context
+ * @note  DSP context registers are  stored at word offset 61 in the stack
+ */
+#define RESTORE_DSP_CONTEXT() {\
+    __asm volatile("lw t6, 61*4(sp)\n\
+            csrw ucode, t6 \n"); \
+}
+#endif
+#else /* FPU is not enabled */
+/*
+ * Save DSP context
+ * NOTE:  DSP context registers are stored at word offset 20 in the stack
  */
 #define SAVE_DSP_CONTEXT() { \
     __asm volatile("csrr t6, ucode\n\
@@ -455,12 +557,13 @@ ATTR_ALWAYS_INLINE static inline void uninstall_isr(uint32_t irq)
 }
 /*
  * @brief Restore DSP context
- * @note To simplify the logic, DSP context registers are always stored at word offset 20 in the stack
+ * @note DSP context registers are stored at word offset 20 in the stack
  */
 #define RESTORE_DSP_CONTEXT() {\
     __asm volatile("lw t6, 20*4(sp)\n\
             csrw ucode, t6 \n"); \
 }
+#endif
 #else
 #define SAVE_DSP_CONTEXT()
 #define RESTORE_DSP_CONTEXT()
@@ -475,30 +578,27 @@ ATTR_ALWAYS_INLINE static inline void uninstall_isr(uint32_t irq)
  *       MXSTATUS = word offset 19
  */
 #define ENTER_NESTED_IRQ_HANDLING_M() {\
-    __asm volatile("csrr t6, mepc \n\
+    __asm volatile("csrr t6, mepc\n\
             sw t6, 17*4(sp) \n\
             csrr t6, mstatus \n\
             sw t6, 18*4(sp) \n\
             csrr t6, %0\n\
             sw t6, 19*4(sp) \n\
-    " : : "i" CSR_MSTATUS);\
+    " : : "i" CSR_MXSTATUS);\
     SAVE_DSP_CONTEXT(); \
-    __asm volatile("li t6, %0\n" : : "i" (CSR_MSTATUS_MIE_MASK)); \
-    __asm volatile("csrrs t6, mstatus, t6\n"); \
+    __asm volatile("csrrsi t6, mstatus, 8\n"); \
 }
+
+/*
+ * @brief Complete IRQ Handling
+ */
 #define COMPLETE_IRQ_HANDLING_M(irq_num) {\
-    __asm volatile("li t0, 0xe4000000 \n\
-            li t1, 0x200004 \n\
-            add t0, t0, t1 \n\
-            lui t1, 0 \n\
-            slli t2, t1, 0xc \n\
-            add t0, t0, t2 \n");\
+    clear_csr(CSR_MSTATUS, CSR_MSTATUS_MIE_MASK);\
+    __asm volatile("lui t0, 0xe4200\n\
+            addi t0, t0, 0x4 \n");\
     __asm volatile("li t1, %0" : : "i" (irq_num) :); \
-    __asm volatile("sw t1, 0(t0) \n\
-            fence io, io \n\
-            li t6, 1\n\
-            addi t6, t6, -0x800\n\
-            csrrs t6, mie, t6 \n"); \
+    __asm volatile("sw t1, 0(t0)\n\
+            fence io, io\n"); \
 }
 
 /*
@@ -510,13 +610,12 @@ ATTR_ALWAYS_INLINE static inline void uninstall_isr(uint32_t irq)
  *       MXSTATUS = word offset 19
  */
 #define EXIT_NESTED_IRQ_HANDLING_M() { \
-    __asm volatile("csrrci t6, mstatus, 8 \n\
-            lw t6, 18*4(sp) \n\
+    __asm volatile("lw t6, 18*4(sp) \n\
             csrw mstatus, t6 \n\
             lw t6, 17*4(sp) \n\
             csrw mepc, t6 \n\
             lw t6, 19*4(sp) \n\
-            csrw %0, t6 \n" : : "i" CSR_MSTATUS);\
+            csrw %0, t6 \n" : : "i" CSR_MXSTATUS);\
             RESTORE_DSP_CONTEXT(); \
 }
 
@@ -532,7 +631,6 @@ ATTR_ALWAYS_INLINE static inline void uninstall_isr(uint32_t irq)
 
 /* @brief Nested IRQ exit macro : Restore CSRs */
 #define NESTED_IRQ_EXIT()                               \
-        clear_csr(CSR_MSTATUS, CSR_MSTATUS_MIE_MASK);            \
         RESTORE_CSR(CSR_MSTATUS)                        \
         RESTORE_CSR(CSR_MEPC)                           \
         RESTORE_MXSTATUS()                              \
@@ -549,7 +647,7 @@ do {                                                    \
     __plic_complete_irq(HPM_PLIC_BASE, HPM_PLIC_TARGET_M_MODE, irq);  \
     __asm volatile("fence io, io");                     \
     set_csr(CSR_MIE, CSR_MIP_MEIP_MASK);                         \
-} while(0)
+} while (0)
 
 #ifdef __cplusplus
 #define HPM_EXTERN_C extern "C"
@@ -568,13 +666,14 @@ do {                                                    \
 #define SDK_DECLARE_EXT_ISR_M(irq_num, isr) \
 void isr(void) __attribute__((section(".isr_vector")));\
 HPM_EXTERN_C void ISR_NAME_M(irq_num)(void) __attribute__((section(".isr_vector")));\
-void ISR_NAME_M(irq_num)(void) {\
+void ISR_NAME_M(irq_num)(void) \
+{ \
     SAVE_CALLER_CONTEXT(); \
     ENTER_NESTED_IRQ_HANDLING_M();\
     __asm volatile("la t1, %0\n\t" : : "i" (isr) : );\
     __asm volatile("jalr t1\n");\
-    EXIT_NESTED_IRQ_HANDLING_M();\
     COMPLETE_IRQ_HANDLING_M(irq_num);\
+    EXIT_NESTED_IRQ_HANDLING_M();\
     RESTORE_CALLER_CONTEXT();\
     __asm volatile("mret\n");\
 }
@@ -582,8 +681,9 @@ void ISR_NAME_M(irq_num)(void) {\
 #define SDK_DECLARE_EXT_ISR_M(irq_num, isr) \
 void isr(void) __attribute__((section(".isr_vector")));\
 HPM_EXTERN_C void ISR_NAME_M(irq_num)(void) __attribute__((section(".isr_vector")));\
-void ISR_NAME_M(irq_num)(void) {           \
-    isr();                                            \
+void ISR_NAME_M(irq_num)(void) \
+{ \
+    isr(); \
 }
 #endif
 
@@ -596,7 +696,8 @@ void ISR_NAME_M(irq_num)(void) {           \
 #define SDK_DECLARE_MCHTMR_ISR(isr) \
 void isr(void) __attribute__((section(".isr_vector")));\
 HPM_EXTERN_C void mchtmr_isr(void) __attribute__((section(".isr_vector"))); \
-void mchtmr_isr(void) {\
+void mchtmr_isr(void) \
+{ \
     isr();\
 }
 
@@ -608,7 +709,8 @@ void mchtmr_isr(void) {\
 #define SDK_DECLARE_SWI_ISR(isr)\
 void isr(void) __attribute__((section(".isr_vector")));\
 HPM_EXTERN_C void swi_isr(void) __attribute__((section(".isr_vector"))); \
-void swi_isr(void) {\
+void swi_isr(void)  \
+{ \
     isr();\
 }
 

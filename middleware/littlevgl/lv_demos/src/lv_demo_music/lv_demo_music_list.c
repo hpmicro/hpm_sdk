@@ -29,8 +29,8 @@ static void btn_click_event_cb(lv_event_t * e);
  *  STATIC VARIABLES
  **********************/
 static lv_obj_t * list;
-static lv_font_t * font_small;
-static lv_font_t * font_medium;
+static const lv_font_t * font_small;
+static const lv_font_t * font_medium;
 static lv_style_t style_scrollbar;
 static lv_style_t style_btn;
 static lv_style_t style_btn_pr;
@@ -102,7 +102,7 @@ lv_obj_t * _lv_demo_music_list_create(lv_obj_t * parent)
 
     lv_style_init(&style_artist);
     lv_style_set_text_font(&style_artist, font_small);
-    lv_style_set_text_color(&style_artist,lv_color_hex(0xb1b0be));
+    lv_style_set_text_color(&style_artist, lv_color_hex(0xb1b0be));
 
     lv_style_init(&style_time);
     lv_style_set_text_font(&style_time, font_medium);
@@ -154,7 +154,7 @@ static lv_obj_t * add_list_btn(lv_obj_t * parent, uint32_t track_id)
 {
     uint32_t t = _lv_demo_music_get_track_length(track_id);
     char time[32];
-    lv_snprintf(time, sizeof(time), "%d:%02d", t / 60, t % 60);
+    lv_snprintf(time, sizeof(time), "%"LV_PRIu32":%02"LV_PRIu32, t / 60, t % 60);
     const char * title = _lv_demo_music_get_title(track_id);
     const char * artist = _lv_demo_music_get_artist(track_id);
 

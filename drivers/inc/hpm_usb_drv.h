@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -7,9 +7,10 @@
 
 #ifndef HPM_USB_DRV_H
 #define HPM_USB_DRV_H
-/*---------------------------------------------------------------------*
+/*---------------------------------------------------------------------
  * Includes
- *---------------------------------------------------------------------*/
+ *---------------------------------------------------------------------
+ */
 #include "hpm_common.h"
 #include "hpm_usb_regs.h"
 #include "hpm_soc_feature.h"
@@ -21,15 +22,17 @@
  * @{
  */
 
-/*---------------------------------------------------------------------*
+/*---------------------------------------------------------------------
  *  Macro Constant Declarations
- *---------------------------------------------------------------------*/
+ *---------------------------------------------------------------------
+ */
 #define USB_PHY_INIT_DELAY_COUNT  (16U) /**< a delay count for USB phy initialization */
 #define USB_HOST_FRAMELIST_SIZE   (8U)  /**< a frame list size in USB host mode */
 
-/*---------------------------------------------------------------------*
+/*---------------------------------------------------------------------
  *  Macro Enum Declarations
- *---------------------------------------------------------------------*/
+ *---------------------------------------------------------------------
+ */
 /**
  * @brief USB transfer direction types
  */
@@ -74,13 +77,14 @@ typedef enum {
     usb_tran_parallel = 0,
     usb_tran_serial = 1
 } usb_transceiver_t;
-/*---------------------------------------------------------------------*
+/*---------------------------------------------------------------------
  * Structure Declarations
- *---------------------------------------------------------------------*/
+ *---------------------------------------------------------------------
+ */
 /**
  * @brief Control request structure
  */
-typedef struct  __attribute__ ((packed)){
+typedef struct  __attribute__ ((packed)) {
     union {
         struct  __attribute__ ((packed)) {
             uint8_t recipient :  5;
@@ -110,9 +114,10 @@ typedef struct {
 extern "C" {
 #endif /* __cplusplus */
 
-/*---------------------------------------------------------------------*
+/*---------------------------------------------------------------------
  * Common API
- *---------------------------------------------------------------------*/
+ *---------------------------------------------------------------------
+ */
 
 /**
  * @brief Get the mask of all enabled interrupts
@@ -205,9 +210,10 @@ static inline uint8_t usb_get_port_speed(USB_Type *ptr)
     return USB_PORTSC1_PSPD_GET(ptr->PORTSC1);
 }
 
-/*---------------------------------------------------------------------*
+/*---------------------------------------------------------------------
  * Device API
- *---------------------------------------------------------------------*/
+ *---------------------------------------------------------------------
+ */
 
 /**
  * @brief USB device bus reset
@@ -245,6 +251,15 @@ void usb_dcd_remote_wakeup(USB_Type *ptr);
  * @param[in] config A pointer to the specified endpoint config struct
  */
 void usb_dcd_edpt_open(USB_Type *ptr, usb_endpoint_config_t *config);
+
+/**
+ * @brief get a specified endpoint type
+ *
+ * @param[in] ptr A USB peripheral base address
+ * @param[in] ep_addr Endpoint address
+ */
+uint8_t usb_dcd_edpt_get_type(USB_Type *ptr, uint8_t ep_addr);
+
 /**
  * @brief Submit a transfer
  *
@@ -368,9 +383,10 @@ static inline void usb_dcd_clear_edpt_complete_status(USB_Type *ptr, uint32_t ma
     ptr->ENDPTCOMPLETE |= mask;
 }
 
-/*---------------------------------------------------------------------*
+/*---------------------------------------------------------------------
  * Host API
- *---------------------------------------------------------------------*/
+ *---------------------------------------------------------------------
+ */
 /**
  * @brief Initialize controller to host mode
  *
@@ -393,7 +409,7 @@ void usb_hcd_port_reset(USB_Type *ptr);
  * @param[in] ptr A USB peripheral base address
  * @param[in] mask A mask of all required commands
  */
-static inline void usb_hcd_set_command(USB_Type *ptr ,uint32_t mask)
+static inline void usb_hcd_set_command(USB_Type *ptr, uint32_t mask)
 {
     ptr->USBCMD |= mask;
 }
@@ -421,6 +437,16 @@ static inline bool usb_hcd_get_port_csc(USB_Type *ptr)
 }
 
 /**
+ * @brief Enable port power
+ *
+ * @param[in] ptr A USB peripheral base address
+ */
+static inline void usb_hcd_enable_port_power(USB_Type *ptr)
+{
+    ptr->PORTSC1 |= USB_PORTSC1_PP_MASK;
+}
+
+/**
  * @brief Get port connect status changeSet async list address
  *
  * @param[in] ptr A USB peripheral base address
@@ -440,6 +466,26 @@ static inline void usb_hcd_set_async_list_addr(USB_Type *ptr, uint32_t addr)
 static inline void usb_hcd_set_periodic_list_addr(USB_Type *ptr, uint32_t addr)
 {
     ptr->PERIODICLISTBASE = addr & USB_PERIODICLISTBASE_BASEADR_MASK;
+}
+
+/**
+ * @brief Start hcd controller
+ *
+ * @param[in] ptr A USB peripheral base address
+ */
+static inline void usb_hcd_run(USB_Type *ptr)
+{
+    ptr->USBCMD |= USB_USBCMD_RS_MASK;
+}
+
+/**
+ * @brief Stop hcd controller
+ *
+ * @param[in] ptr A USB peripheral base address
+ */
+static inline void usb_hcd_stop(USB_Type *ptr)
+{
+    ptr->USBCMD &= ~USB_USBCMD_RS_MASK;
 }
 
 #if defined __cplusplus

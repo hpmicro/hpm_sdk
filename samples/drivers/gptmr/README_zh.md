@@ -10,11 +10,12 @@ GPTMR示例工程演示了GPTMR输出比较、输入捕获、PWM测量和生成P
 
 ## 运行现象
 
-运行工程，可在示波器观察到占空比不断变化的PWM信号，串口终端会输出如下信息：
+运行工程，示例依次执行GPTMR的输出比较， 输入捕获， PWM测量和生成PWM的功能，串口终端输出如下信息，使用示波器观测输出的占空比不断变化的PWM：
 ```
 > timer testing
 > time is up: 0x1059
 > captured rising edge: 0x36f3f
 > measured period: 0x10001
 > measured duty cycle: 0x8000
+> test generate waveform edge aligned pwm
 ```

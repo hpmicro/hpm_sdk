@@ -1,11 +1,11 @@
-# Copyright 2021 hpmicro
+# Copyright (c) 2021 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
 
 set(SES_TOOLCHAIN_VARIANT "Andes")
 
-set(CUSTOM_LINKER_FILE $ENV{HPM_SDK_BASE}/samples/multicore/console_coremark/linker/gcc/core0.ld)
+set(CUSTOM_GCC_LINKER_FILE ${CMAKE_CURRENT_SOURCE_DIR}/../linker/gcc/core0.ld)
 
 set(CONFIG_COREMARK 1)
 set(CMAKE_BUILD_TYPE debug)

@@ -1,13 +1,10 @@
 # HPM6300EVK开发板
 
-
-::::{important}
-:::{note}
-添加内容
-:::
-::::
-
 ## 概述
+
+
+
+![](../../doc/images/boards/hpm6300evk/hpm6300evk.png)
 
 
 - 控制台串口参数：
@@ -35,9 +32,9 @@
 (lab_hpm6300_evk_board_buttons)=
 | 名称 | 功能 |
 | ---- | -------- |
-|PBUTN (sw3) | 电源按键, TinyUF2 Boot按键, GPIO 按键|
-|WBUTN (sw1) | WAKE UP 按键|
-|RESET (sw2) | Reset 按键|
+|PBUTN (SW1) | 电源按键, TinyUF2 Boot按键, GPIO 按键|
+|WBUTN (SW2) | WAKE UP 按键|
+|RESETN (SW3) | Reset 按键|
 
 
 ## 引脚描述
@@ -71,3 +68,16 @@
 | ---- | -------- |
 | GPTMR2.CAPT_2  | J28[40] |
 | GPTMR2.COMP_2  | J28[35] |
+
+- ADC16引脚
+
+| 功能                           | 位置   |
+| ------------------------------ | ------ |
+| ADC0.INA13/ADC1.INA9/ADC2.INA5 | J26[6] |
+
+- DAC引脚
+
+| 功能     | 位置    |
+| -------- | ------- |
+| DCA0.OUT | J26[11] |
+

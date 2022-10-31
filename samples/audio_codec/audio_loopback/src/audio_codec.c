@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -67,13 +67,13 @@ void test_sgtl5000_playback_record(void)
     while(1) {
         /* record from codec and play by codec */
         while(i2s_get_rx_line_fifo_level(CODEC_I2S, CODEC_I2S_DATA_LINE) <= 1);
-        i2s_receive_data(CODEC_I2S, CODEC_I2S_DATA_LINE, &data_rx, 1);
+        i2s_receive_data(CODEC_I2S, CODEC_I2S_DATA_LINE, &data_rx);
 
         data_tx = data_rx;
         while(i2s_get_tx_line_fifo_level(CODEC_I2S, CODEC_I2S_DATA_LINE) >= 1);
         if (i2s_get_tx_line_fifo_level(CODEC_I2S, CODEC_I2S_DATA_LINE) <= 2){
-            i2s_send_data(CODEC_I2S, CODEC_I2S_DATA_LINE, &data_tx, 1); /* Left channel */
-            i2s_send_data(CODEC_I2S, CODEC_I2S_DATA_LINE, &data_tx, 1); /* Right channel */
+            i2s_send_data(CODEC_I2S, CODEC_I2S_DATA_LINE, data_tx); /* Left channel */
+            i2s_send_data(CODEC_I2S, CODEC_I2S_DATA_LINE, data_tx); /* Right channel */
         }
     }
 }

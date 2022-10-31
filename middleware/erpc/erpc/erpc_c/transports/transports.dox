@@ -1,0 +1,99 @@
+/*!
+@defgroup transports Transport Layers
+@brief Transport layer classes.
+*/
+
+/*!
+@defgroup dspi_master_transport DSPI Master
+@ingroup transports
+@brief MCUXpressoSDK DSPI master driver transport.
+*/
+
+/*!
+@defgroup dspi_slave_transport DSPI Slave
+@ingroup transports
+@brief MCUXpressoSDK DSPI slave driver transport.
+*/
+
+/*!
+@defgroup spi_master_transport SPI Master
+@ingroup transports
+@brief MCUXpressoSDK SPI master driver transport.
+*/
+
+/*!
+@defgroup spi_slave_transport SPI Slave
+@ingroup transports
+@brief MCUXpressoSDK SPI slave driver transport.
+*/
+
+/*!
+@defgroup spidev_master_transport SPIdev Linux Master
+@ingroup transports
+@brief SPIdev Linux transport.
+*/
+
+/*!
+@defgroup itbp_transport Inter-thread
+@ingroup transports
+@brief Simple inter-thread communications transport.
+*/
+
+/*!
+@defgroup uart_transport CMSIS UART
+@ingroup transports
+@brief CMSIS UART driver transport.
+*/
+/*!
+@defgroup serial_transport Serial port
+@ingroup transports
+@brief POSIX and Win32 serial port transport.
+*/
+
+/*!
+@defgroup rpmsg_lite_rtos_transport RPMsg-Lite RTOS
+@ingroup transports
+@brief RPMsg-Lite zero copy transport using RTOS API.
+*/
+
+/*!
+@defgroup rpmsg_lite_transport RPMsg-Lite
+@ingroup transports
+@brief RPMsg-Lite zero copy transport.
+*/
+
+/*!
+@defgroup rpmsg_tty_rtos_transport RPMsg TTY RTOS
+@ingroup transports
+@brief RPMsg TTY RTOS transport.
+*/
+
+/*!
+@defgroup tcp_transport TCP/IP
+@ingroup transports
+@brief Simple TCP/IP transport.
+*/
+
+/*!
+@defgroup mu_transport Messaging Unit
+@ingroup transports
+@brief Messaging Unit transport.
+*/
+
+/*!
+@defgroup rpmsg_linux_transport RPMsg Endpoints
+@ingroup transports
+@brief RPMsg endpoints linux transport.
+*/
+
+/*!
+@defgroup USB_CDC_transport USB CDC
+@ingroup transports
+@brief USB CDC transport.
+*/
+
+/*!
+@defgroup i2c_slave_transport I2C Slave
+@ingroup transports
+@brief MCUXpressoSDK I2C slave driver transport.
+*/

@@ -7,6 +7,7 @@
  *      INCLUDES
  *********************/
 #include "lv_tileview.h"
+#include "../../../core/lv_indev.h"
 #if LV_USE_TILEVIEW
 
 /*********************
@@ -29,12 +30,14 @@ static void tileview_event_cb(lv_event_t * e);
  **********************/
 
 const lv_obj_class_t lv_tileview_class = {.constructor_cb = lv_tileview_constructor,
-                                    .base_class = &lv_obj_class,
-                                    .instance_size = sizeof(lv_tileview_t)};
+                                          .base_class = &lv_obj_class,
+                                          .instance_size = sizeof(lv_tileview_t)
+                                         };
 
 const lv_obj_class_t lv_tileview_tile_class = {.constructor_cb = lv_tileview_tile_constructor,
-                                         .base_class = &lv_obj_class,
-                                         .instance_size = sizeof(lv_tileview_tile_t)};
+                                               .base_class = &lv_obj_class,
+                                               .instance_size = sizeof(lv_tileview_tile_t)
+                                              };
 
 static lv_dir_t create_dir;
 static uint32_t create_col_id;
@@ -50,7 +53,7 @@ static uint32_t create_row_id;
 
 lv_obj_t * lv_tileview_create(lv_obj_t * parent)
 {
-    LV_LOG_INFO("begin")
+    LV_LOG_INFO("begin");
     lv_obj_t * obj = lv_obj_class_create_obj(&lv_tileview_class, parent);
     lv_obj_class_init_obj(obj);
     return obj;
@@ -62,7 +65,7 @@ lv_obj_t * lv_tileview_create(lv_obj_t * parent)
 
 lv_obj_t * lv_tileview_add_tile(lv_obj_t * tv, uint8_t col_id, uint8_t row_id, lv_dir_t dir)
 {
-    LV_LOG_INFO("begin")
+    LV_LOG_INFO("begin");
     create_dir = dir;
     create_col_id = col_id;
     create_row_id = row_id;
@@ -87,6 +90,8 @@ void lv_obj_set_tile(lv_obj_t * obj, lv_obj_t * tile_obj, lv_anim_enable_t anim_
 
 void lv_obj_set_tile_id(lv_obj_t * tv, uint32_t col_id, uint32_t row_id, lv_anim_enable_t anim_en)
 {
+    lv_obj_update_layout(tv);
+
     lv_coord_t w = lv_obj_get_content_width(tv);
     lv_coord_t h = lv_obj_get_content_height(tv);
 
@@ -104,7 +109,7 @@ void lv_obj_set_tile_id(lv_obj_t * tv, uint32_t col_id, uint32_t row_id, lv_anim
         }
     }
 
-    LV_LOG_WARN("No tile found with at (%d,%d) index", col_id, row_id);
+    LV_LOG_WARN("No tile found with at (%d,%d) index", (int)col_id, (int)row_id);
 }
 
 lv_obj_t * lv_tileview_get_tile_act(lv_obj_t * obj)
@@ -135,7 +140,8 @@ static void lv_tileview_tile_constructor(const lv_obj_class_t * class_p, lv_obj_
     lv_obj_t * parent = lv_obj_get_parent(obj);
     lv_obj_set_size(obj, LV_PCT(100), LV_PCT(100));
     lv_obj_update_layout(obj);  /*Be sure the size is correct*/
-    lv_obj_set_pos(obj, create_col_id * lv_obj_get_content_width(parent),  create_row_id * lv_obj_get_content_height(parent));
+    lv_obj_set_pos(obj, create_col_id * lv_obj_get_content_width(parent),
+                   create_row_id * lv_obj_get_content_height(parent));
 
     lv_tileview_tile_t * tile = (lv_tileview_tile_t *)obj;
     tile->dir = create_dir;
@@ -152,6 +158,11 @@ static void tileview_event_cb(lv_event_t * e)
     lv_tileview_t * tv = (lv_tileview_t *) obj;
 
     if(code == LV_EVENT_SCROLL_END) {
+        lv_indev_t * indev = lv_indev_get_act();
+        if(indev && indev->proc.state == LV_INDEV_STATE_PRESSED) {
+            return;
+        }
+
         lv_coord_t w = lv_obj_get_content_width(obj);
         lv_coord_t h = lv_obj_get_content_height(obj);
 

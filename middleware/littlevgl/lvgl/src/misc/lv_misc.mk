@@ -1,4 +1,5 @@
 CSRCS += lv_anim.c
+CSRCS += lv_anim_timeline.c
 CSRCS += lv_area.c
 CSRCS += lv_async.c
 CSRCS += lv_bidi.c
@@ -7,6 +8,7 @@ CSRCS += lv_fs.c
 CSRCS += lv_gc.c
 CSRCS += lv_ll.c
 CSRCS += lv_log.c
+CSRCS += lv_lru.c
 CSRCS += lv_math.c
 CSRCS += lv_mem.c
 CSRCS += lv_printf.c

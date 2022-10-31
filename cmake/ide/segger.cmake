@@ -1,39 +1,82 @@
-# Copyright 2021 hpmicro
+# Copyright 2021-2022 hpmicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 # add ses library interface to store ses specific configurations
-add_library(hpm_sdk_ses_lib_itf INTERFACE)
+set(HPM_SDK_SES_LIB_ITF hpm_sdk_ses_lib_itf)
+add_library(${HPM_SDK_SES_LIB_ITF} INTERFACE)
+
+set(HPM_SDK_SES_LIB hpm_sdk_ses_lib)
+define_property(GLOBAL PROPERTY ${HPM_SDK_SES_LIB} BRIEF_DOCS "ses library" FULL_DOCS "ses library")
+
+set(SES_OPT_LIB_IO_TYPE LIBRARY_IO_TYPE)
+set(SES_OPT_DBG_TGT_CONN debug_target_connection)
+set(SES_OPT_DBG_JLINK_SPEED speed)
+set(SES_DBG_CONN_GDB_SRV "GDB Server")
+
+set(HPM_SDK_SES_OPTS hpm_sdk_ses_opts)
+define_property(GLOBAL PROPERTY ${HPM_SDK_SES_OPTS} BRIEF_DOCS "ses options" FULL_DOCS "ses options")
 
 function(sdk_ses_compile_options)
     foreach(opt ${ARGN})
-        target_compile_options(hpm_sdk_ses_lib_itf INTERFACE ${opt})
+        target_compile_options(${HPM_SDK_SES_LIB_ITF} INTERFACE ${opt})
     endforeach()
 endfunction()
 
 function(sdk_ses_compile_definitions)
     foreach(def ${ARGN})
-        target_compile_definitions(hpm_sdk_ses_lib_itf INTERFACE ${def})
+        target_compile_definitions(${HPM_SDK_SES_LIB_ITF} INTERFACE ${def})
     endforeach()
 endfunction()
 
 function(sdk_ses_link_libraries)
     foreach(lib ${ARGN})
-        target_link_libraries(hpm_sdk_ses_lib_itf INTERFACE ${lib})
+        target_link_libraries(${HPM_SDK_SES_LIB_ITF} INTERFACE ${lib})
     endforeach()
 endfunction()
 
 function(sdk_ses_ld_options)
     foreach(opt ${ARGN})
-        target_link_libraries(hpm_sdk_ses_lib_itf INTERFACE ${opt})
+        target_link_libraries(${HPM_SDK_SES_LIB_ITF} INTERFACE ${opt})
     endforeach()
 endfunction()
 
 function(sdk_ses_ld_lib)
     foreach(opt ${ARGN})
-        set_property(TARGET hpm_sdk_ses_lib_itf APPEND PROPERTY INTERFACE_SES_LD_INPUTS ${opt})
+        set_property(TARGET ${HPM_SDK_SES_LIB_ITF} APPEND PROPERTY INTERFACE_SES_LD_INPUTS ${opt})
     endforeach()
 endfunction()
 
+function(sdk_ses_src)
+    foreach(file ${ARGN})
+        if(IS_DIRECTORY ${file})
+            message(FATAL_ERROR "directory ${file} can't be added to sdk_lib_src")
+        endif()
+        if(IS_ABSOLUTE ${file})
+            set(path ${file})
+        else()
+            set(path ${CMAKE_CURRENT_SOURCE_DIR}/${file})
+        endif()
+        set_property(GLOBAL APPEND PROPERTY ${HPM_SDK_SES_LIB} ${path})
+    endforeach()
+endfunction()
+
+function(sdk_ses_options)
+    foreach(opt ${ARGN})
+        set_property(GLOBAL APPEND PROPERTY ${HPM_SDK_SES_OPTS} ${opt})
+    endforeach()
+endfunction()
+
+function(sdk_ses_opt_lib_io_type type)
+    sdk_ses_options("${SES_OPT_LIB_IO_TYPE}=${type}")
+endfunction()
+
+function(sdk_ses_opt_debug_connection conn)
+    sdk_ses_options("${SES_OPT_DBG_TGT_CONN}=${conn}")
+endfunction()
+
+function(sdk_ses_opt_debug_jlink_speed speed)
+    sdk_ses_options("${SES_OPT_DBG_JLINK_SPEED}=${speed}")
+endfunction()
 
 function (generate_ses_project)
     get_property(target_source_files TARGET app PROPERTY SOURCES)
@@ -43,9 +86,11 @@ function (generate_ses_project)
     get_property(target_defines TARGET ${HPM_SDK_LIB_ITF} PROPERTY INTERFACE_COMPILE_DEFINITIONS)
     get_property(target_link_sym TARGET ${HPM_SDK_LIB_ITF} PROPERTY INTERFACE_LINK_SYMBOLS)
     get_property(target_gcc_cflags TARGET ${HPM_SDK_LIB_ITF} PROPERTY INTERFACE_COMPILE_OPTIONS)
-    get_property(target_ses_cflags TARGET hpm_sdk_ses_lib_itf PROPERTY INTERFACE_COMPILE_OPTIONS)
-    get_property(target_ses_ld_lib TARGET hpm_sdk_ses_lib_itf PROPERTY INTERFACE_SES_LD_INPUTS)
-
+    get_property(target_ses_cflags TARGET ${HPM_SDK_SES_LIB_ITF} PROPERTY INTERFACE_COMPILE_OPTIONS)
+    get_property(target_ses_ld_lib TARGET ${HPM_SDK_SES_LIB_ITF} PROPERTY INTERFACE_SES_LD_INPUTS)
+    get_property(target_ses_source_files GLOBAL PROPERTY ${HPM_SDK_SES_LIB})
+    get_property(target_ses_options GLOBAL PROPERTY ${HPM_SDK_SES_OPTS})
+    get_property(target_gcc_source_files TARGET ${HPM_SDK_GCC_LIB} PROPERTY SOURCES)
 
     if(NOT SES_TOOLCHAIN_VARIANT)
         set(SES_TOOLCHAIN_VARIANT "Standard")
@@ -54,7 +99,7 @@ function (generate_ses_project)
     string(FIND ${SES_TOOLCHAIN_VARIANT} "Andes" exist)
     if (NOT ${exist} EQUAL -1)
         set(SES_USE_TOOLCHAIN_ANDES 1)
-        get_property(target_nds_cflags TARGET hpm_sdk_nds_lib_itf PROPERTY INTERFACE_COMPILE_OPTIONS)
+        get_property(target_nds_cflags TARGET ${HPM_SDK_NDSGCC_LIB_ITF} PROPERTY INTERFACE_COMPILE_OPTIONS)
     endif()
 
     if(target_ses_ld_lib)
@@ -98,6 +143,9 @@ function (generate_ses_project)
                 endif()
             endforeach()
         endif()
+        set(target_source_files "${target_source_files};${target_gcc_source_files}")
+    else()
+        set(target_source_files "${target_source_files};${target_ses_source_files}")
     endif()
 
     foreach(f IN ITEMS ${target_ses_cflags})
@@ -203,46 +251,75 @@ function (generate_ses_project)
         endif()
     endif()
 
-    set(OPENOCD_READY 1)
-    set(BOARD_YAML "${HPM_SDK_BASE}/boards/${BOARD}/${BOARD}.yaml")
-    # get specified openocd config file for probe
-    get_openocd_probe_name_of_board(${BOARD} OPENOCD_PROBE)
-    if(NOT OPENOCD_PROBE)
-        message(STATUS " Segger: openocd-probe was not correctly configured in ${BOARD_YAML}")
-        set(OPENOCD_READY 0)
-    endif()
-    # get specified openocd config file for soc
-    get_openocd_soc_name_of_board(${BOARD} OPENOCD_SOC)
-    if(NOT OPENOCD_SOC)
-        message(STATUS " Segger: openocd-soc was not correctly configured in ${BOARD_YAML}")
-        set(OPENOCD_READY 0)
-    endif()
-    find_program(OPENOCD openocd)
-    if(NOT EXISTS ${OPENOCD})
-        message(STATUS " Segger: openocd can not be located")
-        set(OPENOCD_READY 0)
+    foreach(opt IN ITEMS ${target_ses_options})
+        string(REGEX MATCH "${SES_OPT_DBG_TGT_CONN}=" out ${opt})
+        if(out)
+            string(REGEX REPLACE "${SES_OPT_DBG_TGT_CONN}=(.*)" "\\1" debug_target_conn ${opt})
+            continue()
+        endif()
+        string(REGEX MATCH "${SES_OPT_LIB_IO_TYPE}=" out ${opt})
+        if(out)
+            string(REGEX REPLACE "${SES_OPT_LIB_IO_TYPE}=(.*)" "\\1" lib_io_type ${opt})
+            continue()
+        endif()
+        string(REGEX MATCH "${SES_OPT_DBG_JLINK_SPEED}=" out ${opt})
+        if(out)
+            string(REGEX REPLACE "${SES_OPT_DBG_JLINK_SPEED}=(.*)" "\\1" jlink_speed ${opt})
+            continue()
+        endif()
+    endforeach()
+
+    if(NOT lib_io_type)
+        set(lib_io_type STD)
     endif()
 
-    if (APP_YAML_PATH)
-        set(APP_YAML "${APP_YAML_PATH}/app.yaml")
-        get_ses_debug_auto_start_gdb_server(${APP_YAML} AUTO_START_GDB_SRV)
-        if(NOT DEFINED AUTO_START_GDB_SRV)
-            message(STATUS " Segger: openocd auto start gdb server was not correctly configured in ${APP_YAML}")
+    if(NOT debug_target_conn)
+        set(debug_target_conn ${SES_DBG_CONN_GDB_SRV})
+    endif()
+
+    string(REGEX MATCH "GDB Server" is_gdb ${debug_target_conn})
+    if(is_gdb)
+        set(OPENOCD_READY 1)
+        set(BOARD_YAML "${HPM_SDK_BASE}/boards/${BOARD}/${BOARD}.yaml")
+        # get specified openocd config file for probe
+        get_openocd_probe_name_of_board(${BOARD} OPENOCD_PROBE)
+        if(NOT OPENOCD_PROBE)
+            message(STATUS " Segger: openocd-probe was not correctly configured in ${BOARD_YAML}")
+            set(OPENOCD_READY 0)
+        endif()
+        # get specified openocd config file for soc
+        get_openocd_soc_name_of_board(${BOARD} OPENOCD_SOC)
+        if(NOT OPENOCD_SOC)
+            message(STATUS " Segger: openocd-soc was not correctly configured in ${BOARD_YAML}")
+            set(OPENOCD_READY 0)
+        endif()
+        find_program(OPENOCD openocd)
+        if(NOT EXISTS ${OPENOCD})
+            message(STATUS " Segger: openocd can not be located")
+            set(OPENOCD_READY 0)
         endif()
 
-        get_ses_debug_gdb_server_port(${APP_YAML} GDB_SERVER_PORT)
-        if(NOT DEFINED GDB_SERVER_PORT)
-            message(STATUS " Segger: openocd gdb server port was not correctly configured in ${APP_YAML}")
-        endif()
+        if (APP_YAML_PATH)
+            set(APP_YAML "${APP_YAML_PATH}/app.yaml")
+            get_ses_debug_auto_start_gdb_server(${APP_YAML} AUTO_START_GDB_SRV)
+            if(NOT DEFINED AUTO_START_GDB_SRV)
+                message(STATUS " Segger: openocd auto start gdb server was not correctly configured in ${APP_YAML}")
+            endif()
 
-        get_ses_debug_gdb_server_reset_command(${APP_YAML} GDB_SERVER_RST_CMD)
-        if(NOT DEFINED GDB_SERVER_RST_CMD)
-            message(STATUS " Segger: openocd gdb server reset command was not correctly configured in ${APP_YAML}")
+            get_ses_debug_gdb_server_port(${APP_YAML} GDB_SERVER_PORT)
+            if(NOT DEFINED GDB_SERVER_PORT)
+                message(STATUS " Segger: openocd gdb server port was not correctly configured in ${APP_YAML}")
+            endif()
+
+            get_ses_debug_gdb_server_reset_command(${APP_YAML} GDB_SERVER_RST_CMD)
+            if(NOT DEFINED GDB_SERVER_RST_CMD)
+                message(STATUS " Segger: openocd gdb server reset command was not correctly configured in ${APP_YAML}")
+            endif()
+        else()
+            set(AUTO_START_GDB_SRV "Yes")
+            set(GDB_SERVER_RST_CMD "reset halt")
+            set(GDB_SERVER_PORT 3333)
         endif()
-    else()
-        set(AUTO_START_GDB_SRV "Yes")
-        set(GDB_SERVER_RST_CMD "reset halt")
-        set(GDB_SERVER_PORT 3333)
     endif()
 
     foreach (lib_src IN ITEMS ${target_lib_sources})
@@ -255,11 +332,6 @@ function (generate_ses_project)
         endif()
         set(target_sources "${target_sources},${lib_src}")
     endforeach ()
-
-    if(NOT SES_USE_TOOLCHAIN_ANDES)
-        # if Andes toolchain has not been specified, it needs to use SES specific startup file
-        set(target_sources "${target_sources},${HPM_SDK_BASE}/soc/${HPM_SOC}/toolchains/segger/startup.s")
-    endif()
 
     if (NOT IS_ABSOLUTE ${target_linker})
         set(target_linker ${CMAKE_CURRENT_SOURCE_DIR}/${target_linker})
@@ -363,75 +435,62 @@ function (generate_ses_project)
         set(SES_DEVICE_NAME ${HPM_DEVICE_NAME})
     endif()
 
-    message(STATUS "Segger device name: ${SES_DEVICE_NAME}")
-    if(${OPENOCD_READY})
-        file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}.json
-            "{
-                \"target\": {
-                \"name\": \"${CMAKE_PROJECT_NAME}\",
-                \"sources\": \"${target_sources_with_macro}\",
-                \"includes\": \"${target_include_dirs_with_macro}\",
-                \"defines\":\"${target_defines_escaped}\",
-                \"linker\":\"${target_linker}\",
-                \"link_symbols\":\"${target_link_symbols}\",
-                \"sdk_base\":\"${hpm_sdk_base_path}\",
-                \"board\":\"${BOARD}\",
-                \"soc\":\"${HPM_SOC}\",
+    set(target_data "
+        \"name\": \"${CMAKE_PROJECT_NAME}\",
+        \"sources\": \"${target_sources_with_macro}\",
+        \"includes\": \"${target_include_dirs_with_macro}\",
+        \"defines\":\"${target_defines_escaped}\",
+        \"linker\":\"${target_linker}\",
+        \"link_symbols\":\"${target_link_symbols}\",
+        \"sdk_base\":\"${hpm_sdk_base_path}\",
+        \"board\":\"${BOARD}\",
+        \"soc\":\"${HPM_SOC}\",
+        \"register_definition\":\"${target_register_definition}\",
+        \"cpu_register_definition\":\"${target_cpu_register_definition}\",
+        \"post_build_command\":\"${post_build_command}\",
+        \"heap_size\":\"${HEAP_SIZE}\",
+        \"stack_size\":\"${STACK_SIZE}\",
+        \"cplusplus\":\"${CMAKE_CXX_STANDARD}\",
+        \"segger_level_o3\":\"${SEGGER_LEVEL_O3}\",
+        \"target_device_name\":\"${SES_DEVICE_NAME}\",
+        \"toolchain_variant\":\"${SES_TOOLCHAIN_VARIANT}\",
+        \"cflags\":\"${target_cflags}\",
+        \"compiler_abi\":\"${target_compiler_abi}\",
+        \"compiler_arch\":\"${target_compiler_arch}\",
+        \"ses_link_input\":\"${target_ses_ld_input}\",
+        \"enable_nds_dsp\":\"${enable_nds_dsp}\",
+        \"enable_cpp_exceptions\":\"${enable_cpp_exceptions}\",
+        \"library_io_type\":\"${lib_io_type}\"")
+
+    string(REGEX MATCH "GDB Server" is_gdb ${debug_target_conn})
+    if(is_gdb)
+        if(${OPENOCD_READY})
+            set(target_data "${target_data},
                 \"openocd\":\"${OPENOCD}\",
                 \"openocd_soc\":\"${OPENOCD_SOC}\",
                 \"debug_probe\":\"${OPENOCD_PROBE}\",
                 \"auto_start_gdb_server\":\"${AUTO_START_GDB_SRV}\",
                 \"gdb_server_port\":\"${GDB_SERVER_PORT}\",
-                \"gdb_server_reset_command\":\"${GDB_SERVER_RST_CMD}\",
-                \"register_definition\":\"${target_register_definition}\",
-                \"cpu_register_definition\":\"${target_cpu_register_definition}\",
-                \"post_build_command\":\"${post_build_command}\",
-                \"heap_size\":\"${HEAP_SIZE}\",
-                \"stack_size\":\"${STACK_SIZE}\",
-                \"cplusplus\":\"${CMAKE_CXX_STANDARD}\",
-                \"segger_level_o3\":\"${SEGGER_LEVEL_O3}\",
-                \"target_device_name\":\"${SES_DEVICE_NAME}\",
-                \"toolchain_variant\":\"${SES_TOOLCHAIN_VARIANT}\",
-                \"cflags\":\"${target_cflags}\",
-                \"compiler_abi\":\"${target_compiler_abi}\",
-                \"compiler_arch\":\"${target_compiler_arch}\",
-                \"ses_link_input\":\"${target_ses_ld_input}\",
-                \"enable_nds_dsp\":\"${enable_nds_dsp}\",
-                \"enable_cpp_exceptions\":\"${enable_cpp_exceptions}\"
-                }
-            }")
+                \"gdb_server_reset_command\":\"${GDB_SERVER_RST_CMD}\"")
+        else()
+            message(STATUS " Segger: no debugger configuration is generated, due to missing openocd information. Please configure manually in Segger Embedded Studio")
+        endif()
     else()
-        message(STATUS " Segger: no debugger configuration is generated, due to missing openocd information. Please configure manually in Segger Embedded Studio")
-        file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}.json
-            "{
-                \"target\": {
-                \"name\": \"${CMAKE_PROJECT_NAME}\",
-                \"sources\": \"${target_sources_with_macro}\",
-                \"includes\": \"${target_include_dirs_with_macro}\",
-                \"defines\":\"${target_defines_escaped}\",
-                \"linker\":\"${target_linker}\",
-                \"link_symbols\":\"${target_link_symbols}\",
-                \"sdk_base\":\"${hpm_sdk_base_path}\",
-                \"board\":\"${BOARD}\",
-                \"soc\":\"${HPM_SOC}\",
-                \"register_definition\":\"${target_register_definition}\",
-                \"cpu_register_definition\":\"${target_cpu_register_definition}\",
-                \"post_build_command\":\"${post_build_command}\",
-                \"heap_size\":\"${HEAP_SIZE}\",
-                \"stack_size\":\"${STACK_SIZE}\",
-                \"cplusplus\":\"${CMAKE_CXX_STANDARD}\",
-                \"segger_level_o3\":\"${SEGGER_LEVEL_O3}\",
-                \"target_device_name\":\"${SES_DEVICE_NAME}\",
-                \"toolchain_variant\":\"${SES_TOOLCHAIN_VARIANT}\",
-                \"cflags\":\"${target_cflags}\",
-                \"compiler_abi\":\"${target_compiler_abi}\",
-                \"compiler_arch\":\"${target_compiler_arch}\",
-                \"ses_link_input\":\"${target_ses_ld_input}\",
-                \"enable_nds_dsp\":\"${enable_nds_dsp}\",
-                \"enable_cpp_exceptions\":\"${enable_cpp_exceptions}\"
-                }
-            }")
+        set(target_data "${target_data},
+            \"debug_target_connection\":\"${debug_target_conn}\"")
+
+        if(jlink_speed)
+            set(target_data "${target_data}, \"jlink_speed\":\"${jlink_speed}\"")
+        endif()
     endif()
+
+    message(STATUS "Segger device name: ${SES_DEVICE_NAME}")
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}.json
+        "{
+            \"target\": {
+                ${target_data}
+            }
+        }")
 
     execute_process(
         COMMAND ${PYTHON_EXECUTABLE} ${HPM_SDK_BASE}/scripts/segger/embedded_studio_proj_gen.py "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}.json" "${CMAKE_CURRENT_BINARY_DIR}/segger_embedded_studio" "${CMAKE_CURRENT_SOURCE_DIR}"

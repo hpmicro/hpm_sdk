@@ -25,5 +25,7 @@
    lwip/index_zh
    memstress/index_zh
    dma_manager/README_zh
-
+   segger_rtt/README_zh
+   cherryusb/index_zh
+   dhrystone/README_zh
 :::

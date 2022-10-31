@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -11,45 +11,45 @@
 #include "hpm_bldc_foc_func.h"
 #include "hpm_smc.h"
 
-/*函数函数指针没有初始化的情况下报错*/
-void bldc_nullcallback_func(void){
-    while(1){
+void bldc_nullcallback_func(void)
+{
+    while (1) {
         ;
     }
 }
 /*
-使用任意c编译器运行如下代码 可以生成 bldc_foc_sintable[]数组
-#include <stdio.h>
-#include <math.h>
-#define NUM 501
-#define PRECISION 0.18
-#define PI 3.14159265
-int main()
-{
-	short i;
-	printf("staitc const float bldc_foc_sintable[%d] =\r",NUM);
-	printf("{\r");
-	for(i=0;i<NUM;i++)
-	{
-   		printf(" %f",sin(i*PRECISION*PI/180));
-   		if(i != NUM-1)
-   		{
-   		   printf(",");
-   		}
-   	
-   		if((i%10) == 0)
-   		{
-   		    printf("\r");
-   		}
-	}
-	printf("};\r");
-   
-   return 0;
-}
-*/
+ *
+ *
+ * #include <stdio.h>
+ * #include <math.h>
+ * #define NUM 501
+ * #define PRECISION 0.18
+ * #define PI 3.14159265
+ * int main()
+ * {
+ *     short i;
+ *     printf("staitc const float bldc_foc_sintable[%d] =\r",NUM);
+ *     printf("{\r");
+ *     for(i=0;i<NUM;i++) {
+ *         printf(" %f",sin(i*PRECISION*PI/180));
+ *         if(i != NUM-1) {
+ *            printf(",");
+ *         }
+ *
+ *         if((i%10) == 0) {
+ *             printf("\r");
+ *         }
+ *     }
+ *     printf("};\r");
+ *
+ *    return 0;
+ * }
+ *
+ */
 #define PRECISION       (0.18)
-const float bldc_foc_sintable[501] =
-{
+#define SIN_TABLE_INDEX_MAX   (500)
+const float bldc_foc_sintable[SIN_TABLE_INDEX_MAX + 1] = {
+
  0.000000,
  0.003142, 0.006283, 0.009425, 0.012566, 0.015707, 0.018848, 0.021989, 0.025130, 0.028271, 0.031411,
  0.034551, 0.037690, 0.040829, 0.043968, 0.047106, 0.050244, 0.053382, 0.056519, 0.059655, 0.062791,
@@ -102,146 +102,79 @@ const float bldc_foc_sintable[501] =
  0.998219, 0.998402, 0.998574, 0.998737, 0.998890, 0.999033, 0.999166, 0.999289, 0.999403, 0.999507,
  0.999600, 0.999684, 0.999758, 0.999822, 0.999877, 0.999921, 0.999956, 0.999980, 0.999995, 1.000000
 };
-/*
-*  
-* 描述：速度计算器，通过角度差值计算速度
-* 返回值：速度
-*/
+
 void bldc_foc_al_speed(BLDC_CONTRL_SPD_PARA  *par)
 {
     HPM_MOTOR_MATH_TYPE deta;
     deta = par->speedtheta - par->speedlasttheta;
-    if(deta > HPM_MOTOR_MATH_FL_MDF(180)){/*-speed*/
+    if (deta > HPM_MOTOR_MATH_FL_MDF(180)) {/*-speed*/
         deta = -par->speedlasttheta - (HPM_MOTOR_MATH_FL_MDF(360) - par->speedtheta);
-    }
-    else if(deta < HPM_MOTOR_MATH_FL_MDF(-180)){/*+speed*/
+    } else if (deta < HPM_MOTOR_MATH_FL_MDF(-180)) {/*+speed*/
         deta = HPM_MOTOR_MATH_FL_MDF(360) + par->speedtheta - par->speedlasttheta;
     }
     par->speedthetaLastN += deta;
     par->speedlasttheta = par->speedtheta;
     par->num++;
-    if(par->I_speedacq == par->num){
+    if (par->I_speedacq == par->num) {
         par->num = 0;
         par->O_speedout = HPM_MOTOR_MATH_DIV(par->speedthetaLastN,
-            HPM_MOTOR_MATH_MUL(HPM_MOTOR_MATH_MUL( par->I_speedLooptime_s,HPM_MOTOR_MATH_FL_MDF(par->I_motorpar->I_Poles_n)),HPM_MOTOR_MATH_FL_MDF(360)));
+            HPM_MOTOR_MATH_MUL(HPM_MOTOR_MATH_MUL(par->I_speedLooptime_s, HPM_MOTOR_MATH_FL_MDF(par->I_motorpar->I_Poles_n)), HPM_MOTOR_MATH_FL_MDF(360)));
         par->O_speedout_filter = par->O_speedout_filter + HPM_MOTOR_MATH_MUL(par->I_speedfilter,
             (par->O_speedout - par->O_speedout_filter));
         par->speedthetaLastN = 0;
     }
 }
 
-/*
-** ===================================================================
-**  bldc_foc_sin(float angle , float angle_precision)
-**  功能描述：计算电机角度的正弦值
-**  输入参数：angle 电机转子角度值
-**           angle_precision 角度精度 输入角度是每0.18度进行跳变
-**  返回值：角度的正弦值
-** ===================================================================
-*/
-static HPM_MOTOR_MATH_TYPE bldc_foc_sin(HPM_MOTOR_MATH_TYPE angle , HPM_MOTOR_MATH_TYPE angle_precision)
+static void bldc_foc_sin_cos(HPM_MOTOR_MATH_TYPE angle, HPM_MOTOR_MATH_TYPE angle_precision,
+                            HPM_MOTOR_MATH_TYPE *sin_angle, HPM_MOTOR_MATH_TYPE *cos_angle)
 {
-     HPM_MOTOR_MATH_TYPE result=0;
-     int16_t  transfer=0;
-     if((angle >= 0) && (angle <= HPM_MOTOR_MATH_FL_MDF(90)))
-     {
-        transfer = HPM_MOTOR_MATH_MDF_FL(HPM_MOTOR_MATH_DIV(angle , angle_precision));
-        result = HPM_MOTOR_MATH_FL_MDF(bldc_foc_sintable[transfer]);
-     }
-     else if((angle > HPM_MOTOR_MATH_FL_MDF(90)) && (angle <= HPM_MOTOR_MATH_FL_MDF(180)))
-     {
-        transfer = HPM_MOTOR_MATH_MDF_FL(HPM_MOTOR_MATH_DIV((HPM_MOTOR_MATH_FL_MDF(180) - angle),angle_precision));
-        result = HPM_MOTOR_MATH_FL_MDF(bldc_foc_sintable[transfer]);
-     }
-     else if((angle > HPM_MOTOR_MATH_FL_MDF(180)) && (angle <= HPM_MOTOR_MATH_FL_MDF(270)))
-     {
-        transfer = HPM_MOTOR_MATH_MDF_FL(HPM_MOTOR_MATH_DIV((angle - HPM_MOTOR_MATH_FL_MDF(180)),angle_precision));
-        result = HPM_MOTOR_MATH_FL_MDF(-bldc_foc_sintable[transfer]);
-     }
-     else if((angle > HPM_MOTOR_MATH_FL_MDF(270)) && (angle <= HPM_MOTOR_MATH_FL_MDF(360)))
-     {
-        transfer = HPM_MOTOR_MATH_MDF_FL(HPM_MOTOR_MATH_DIV((HPM_MOTOR_MATH_FL_MDF(360)-angle),angle_precision));
-        result = HPM_MOTOR_MATH_FL_MDF(-bldc_foc_sintable[transfer]);
-     }
-     return(result);
+    int16_t  transfer = 0;
+    uint16_t angle_int = HPM_MOTOR_MATH_MDF_FL(angle);
+
+    if (angle_int < HPM_MOTOR_MATH_FL_MDF(90)) {
+        transfer = HPM_MOTOR_MATH_MDF_FL(HPM_MOTOR_MATH_DIV(angle, angle_precision));
+        *sin_angle = HPM_MOTOR_MATH_FL_MDF(bldc_foc_sintable[transfer]);
+        *cos_angle = HPM_MOTOR_MATH_FL_MDF(bldc_foc_sintable[SIN_TABLE_INDEX_MAX - transfer]);
+    } else if (angle_int < HPM_MOTOR_MATH_FL_MDF(180)) {
+        transfer = HPM_MOTOR_MATH_MDF_FL(HPM_MOTOR_MATH_DIV((HPM_MOTOR_MATH_FL_MDF(180) - angle), angle_precision));
+        *sin_angle = HPM_MOTOR_MATH_FL_MDF(bldc_foc_sintable[transfer]);
+        *cos_angle = HPM_MOTOR_MATH_FL_MDF(-bldc_foc_sintable[SIN_TABLE_INDEX_MAX - transfer]);
+    } else if (angle_int < HPM_MOTOR_MATH_FL_MDF(270)) {
+        transfer = HPM_MOTOR_MATH_MDF_FL(HPM_MOTOR_MATH_DIV((angle - HPM_MOTOR_MATH_FL_MDF(180)), angle_precision));
+        *sin_angle = HPM_MOTOR_MATH_FL_MDF(-bldc_foc_sintable[transfer]);
+        *cos_angle = HPM_MOTOR_MATH_FL_MDF(-bldc_foc_sintable[SIN_TABLE_INDEX_MAX - transfer]);
+    } else if (angle_int <= HPM_MOTOR_MATH_FL_MDF(360)) {
+        transfer = HPM_MOTOR_MATH_MDF_FL(HPM_MOTOR_MATH_DIV((HPM_MOTOR_MATH_FL_MDF(360)-angle), angle_precision));
+        *sin_angle = HPM_MOTOR_MATH_FL_MDF(-bldc_foc_sintable[transfer]);
+        *cos_angle = HPM_MOTOR_MATH_FL_MDF(bldc_foc_sintable[SIN_TABLE_INDEX_MAX - transfer]);
+    }
 }
 
-/*
-** ===================================================================
-**  函数名称：bldc_foc_cos(float angle , float angle_precision)
-**  功能描述：计算电机角度的余弦值
-**  输入参数：angle 电机转子角度值
-**           angle_precision 角度精度 输入角度是每0.18度进行跳变
-**  返回值：角度的余弦值
-** ===================================================================
-*/
-static HPM_MOTOR_MATH_TYPE bldc_foc_cos(HPM_MOTOR_MATH_TYPE angle , HPM_MOTOR_MATH_TYPE angle_precision)
+void bldc_foc_inv_park(HPM_MOTOR_MATH_TYPE ud, HPM_MOTOR_MATH_TYPE uq,
+                    HPM_MOTOR_MATH_TYPE *ualpha, HPM_MOTOR_MATH_TYPE *ubeta,
+                    HPM_MOTOR_MATH_TYPE sin_angle, HPM_MOTOR_MATH_TYPE cos_angle)
 {
-     HPM_MOTOR_MATH_TYPE result=0;
-     int16_t  transfer=0;
-     if((angle >= 0) && (angle <= HPM_MOTOR_MATH_FL_MDF(90)))
-     {
-        transfer = HPM_MOTOR_MATH_MDF_FL(HPM_MOTOR_MATH_DIV((HPM_MOTOR_MATH_FL_MDF(90) - angle),angle_precision));
-        result = HPM_MOTOR_MATH_FL_MDF(bldc_foc_sintable[transfer]);
-     }
-     else if((angle > HPM_MOTOR_MATH_FL_MDF(90)) && (angle <= HPM_MOTOR_MATH_FL_MDF(180)))
-     {
-        transfer = HPM_MOTOR_MATH_MDF_FL(HPM_MOTOR_MATH_DIV((angle - HPM_MOTOR_MATH_FL_MDF(90)),angle_precision));
-        result = HPM_MOTOR_MATH_FL_MDF(-bldc_foc_sintable[transfer]);
-     }
-     else if((angle > HPM_MOTOR_MATH_FL_MDF(180)) && (angle <= HPM_MOTOR_MATH_FL_MDF(270)))
-     {
-        transfer = HPM_MOTOR_MATH_MDF_FL(HPM_MOTOR_MATH_DIV((HPM_MOTOR_MATH_FL_MDF(270) - angle),angle_precision));
-        result = HPM_MOTOR_MATH_FL_MDF(-bldc_foc_sintable[transfer]);
-     }
-     else if((angle > HPM_MOTOR_MATH_FL_MDF(270)) && (angle <= HPM_MOTOR_MATH_FL_MDF(360)))
-     {
-        transfer =HPM_MOTOR_MATH_MDF_FL(HPM_MOTOR_MATH_DIV((angle - HPM_MOTOR_MATH_FL_MDF(270)),angle_precision));
-        result = HPM_MOTOR_MATH_FL_MDF(bldc_foc_sintable[transfer]);
-     }
-
-     return(result);
+    *ualpha = HPM_MOTOR_MATH_MUL(cos_angle, ud) + HPM_MOTOR_MATH_MUL(-sin_angle, uq);
+    *ubeta = HPM_MOTOR_MATH_MUL(sin_angle, ud) + HPM_MOTOR_MATH_MUL(cos_angle, uq);
 }
-/** ===================================================================
-**  函数名称：bldc_foc_inv_park
-**  功能描述：反park变换
-**  输入参数：
-**  返回值：
-** ===================================================================*/
-void bldc_foc_inv_park(HPM_MOTOR_MATH_TYPE ud,HPM_MOTOR_MATH_TYPE uq,HPM_MOTOR_MATH_TYPE *ualpha, HPM_MOTOR_MATH_TYPE *ubeta, HPM_MOTOR_MATH_TYPE angle)
-{
-    HPM_MOTOR_MATH_TYPE sin_angle,cos_angle;
-    sin_angle = bldc_foc_sin(angle,HPM_MOTOR_MATH_FL_MDF(PRECISION));
-    cos_angle = bldc_foc_cos(angle,HPM_MOTOR_MATH_FL_MDF(PRECISION));
-    *ualpha = HPM_MOTOR_MATH_MUL(cos_angle , ud) + HPM_MOTOR_MATH_MUL(-sin_angle , uq); // PARK逆变换
-    *ubeta = HPM_MOTOR_MATH_MUL(sin_angle , ud) + HPM_MOTOR_MATH_MUL(cos_angle , uq);
-}
-
-
-/** ===================================================================
-**  函数名称：bldc_foc_svpwm
-**  功能描述：脉宽调制函数
-**  输入参数：
-**  返回值：
-** ===================================================================*/
 
 void bldc_foc_svpwm(BLDC_CONTROL_PWM_PARA *par)
 {
-    HPM_MOTOR_MATH_TYPE ualpha_60, ubeta_30;
+    int32_t ualpha_60, ubeta_30;
     uint32_t pwm_reload;
     int32_t uref1, uref2, uref3;
-    int32_t tx, ty, t0;  
+    int32_t tx, ty, t0;
     int32_t tuon, tvon, twon = 0;
     int8_t sector = 0;
 
-    /*求出参考电压*/
     uref1 = HPM_MOTOR_MATH_MDF_FL(par->target_beta);
-    ualpha_60 = HPM_MOTOR_MATH_MUL(HPM_MOTOR_MATH_FL_MDF(0.866025 ) , par->target_alpha);
-    ubeta_30 = HPM_MOTOR_MATH_MUL(par->target_beta , HPM_MOTOR_MATH_FL_MDF(0.5));
-    uref2 = HPM_MOTOR_MATH_MDF_FL(ualpha_60 - ubeta_30);   
+    ualpha_60 = HPM_MOTOR_MATH_MDF_FL(par->target_alpha);
+    ubeta_30 = HPM_MOTOR_MATH_MDF_FL(par->target_beta);
+    ualpha_60 = (ualpha_60 * 14189) >> 14;
+    ubeta_30 = ubeta_30 >> 1;
+    uref2 = HPM_MOTOR_MATH_MDF_FL(ualpha_60 - ubeta_30);
     uref3 = HPM_MOTOR_MATH_MDF_FL(-ualpha_60 - ubeta_30);
     pwm_reload = par->pwmout.I_pwm_reload;
-
 
     if (uref1 >= 0)
         sector = 1;
@@ -250,91 +183,85 @@ void bldc_foc_svpwm(BLDC_CONTROL_PWM_PARA *par)
     if (uref3 >= 0)
         sector = sector + 4;
 
-    switch (sector)
-    {
-    case 1: // 第二扇区  000 010 110 111 110 010 000
-        tx = -uref2;   
+    switch (sector) {
+    case 1: /* sector2  000 010 110 111 110 010 000 */
+        tx = -uref2;
         ty = -uref3;
         t0 = pwm_reload - tx - ty;
-        if (t0 < 0)  // tx + ty > T
-        {
+        /* tx + ty > T */
+        if (t0 < 0) {
             tx = ((float)tx / (tx + ty)) * pwm_reload;
             ty = pwm_reload - tx;
             t0 = 0;
         }
-        twon = ((int) (t0)) >> 1;
-        tuon = (int) (ty + twon);
-        tvon = (int) (tx + tuon);
+        twon = t0 >> 1;
+        tuon = ty + twon;
+        tvon = tx + tuon;
         break;
-    case 2: // 第六扇区  000   100 101 111 101 100 000
+    case 2: /* sector6  000   100 101 111 101 100 000 */
         tx = -uref3;
         ty = -uref1;
         t0 = pwm_reload - tx - ty;
-        if (t0 < 0)
-        {
+        if (t0 < 0) {
             tx = ((float)tx / (tx + ty)) * pwm_reload;
             ty = pwm_reload - tx;
             t0 = 0;
         }
-        tvon = ((int) (t0)) >> 1;
-        twon = (int) (ty + tvon);
-        tuon = (int) (tx + twon);
+        tvon = t0 >> 1;
+        twon = ty + tvon;
+        tuon = tx + twon;
         break;
-    case 3: // 第一扇区  000 100 110 111 110 100 000
+    case 3: /* sector1  000 100 110 111 110 100 000 */
         tx = uref2;
         ty = uref1;
         t0 = pwm_reload - tx - ty;
-        if (t0 < 0)
-        {
+        if (t0 < 0) {
             tx = ((float)tx / (tx + ty)) * pwm_reload;
             ty = pwm_reload - tx;
             t0 = 0;
         }
-        twon = ((int) (t0)) >> 1;
-        tvon = (int) (ty + twon);
-        tuon = (int) (tx + tvon);
+        twon = t0 >> 1;
+        tvon = ty + twon;
+        tuon = tx + tvon;
         break;
-    case 4: // 第四扇区  000 001 011 111 011 001 000
+    case 4: /* sector4  000 001 011 111 011 001 000 */
         tx = -uref1;
         ty = -uref2;
         t0 = pwm_reload - tx - ty;
-        if (t0 < 0)
-        {
+        if (t0 < 0) {
             tx = ((float)tx / (tx + ty)) * pwm_reload;
             ty = pwm_reload - tx;
             t0 = 0;
         }
-        tuon = ((int) (t0)) >> 1;
-        tvon = (int) (ty + tuon);
-        twon = (int) (tx + tvon);
+        tuon = t0 >> 1;
+        tvon = ty + tuon;
+        twon = tx + tvon;
         break;
-    case 5: // 第三扇区 000 010 011 111 011 010 000
+    case 5: /* sector5 000 010 011 111 011 010 000 */
         tx = uref1;
         ty = uref3;
         t0 = pwm_reload - tx - ty;
-        if (t0 < 0)
-        {
+        if (t0 < 0) {
             tx = ((float)tx / (tx + ty)) * pwm_reload;
             ty = pwm_reload - tx;
             t0 = 0;
         }
-        tuon = ((int) (t0)) >> 1;
-        twon = (int) (ty + tuon);
-        tvon = (int) (tx + twon);
+        tuon = t0 >> 1;
+        twon = ty + tuon;
+        tvon = tx + twon;
         break;
-    case 6: // 第五扇区 000 001 101 111 101 001 000
+    case 6: /* sector6 000 001 101 111 101 001 000 */
         tx = uref3;
         ty = uref2;
         t0 = pwm_reload - tx - ty;
-        if (t0 < 0)
-        {
+        if (t0 < 0) {
             tx = ((float)tx / (tx + ty)) * pwm_reload;
             ty = pwm_reload - tx;
             t0 = 0;
         }
-        tvon = ((int) (t0)) >> 1;
-        tuon = (int) (ty + tvon);
-        twon = (int) (tx + tuon);
+        tvon = t0 >> 1;
+        tuon = ty + tvon;
+        twon = tx + tuon;
         break;
 
     default:
@@ -343,14 +270,6 @@ void bldc_foc_svpwm(BLDC_CONTROL_PWM_PARA *par)
         twon = (int)(pwm_reload/2);
     }
     par->sector = sector;
-
-
-    if (tuon > par->I_pwm_reload_max)
-        tuon = par->I_pwm_reload_max;
-    if (tvon > par->I_pwm_reload_max)
-        tvon = par->I_pwm_reload_max;
-    if (twon > par->I_pwm_reload_max)
-        twon = par->I_pwm_reload_max;
 
     if (tuon < 0)
         tuon = 0;
@@ -364,127 +283,80 @@ void bldc_foc_svpwm(BLDC_CONTROL_PWM_PARA *par)
     par->pwmout.pwm_w = twon;
 }
 
-/*
-** ===================================================================
-**  函数名称：bldc_foc_clarke
-**  功能描述：Clark 坐标变换
-**  输入参数：
-**         
-**  返回值：无
-** ===================================================================
-*/
-void bldc_foc_clarke(HPM_MOTOR_MATH_TYPE currentU,HPM_MOTOR_MATH_TYPE currentV,HPM_MOTOR_MATH_TYPE currentW,
-             HPM_MOTOR_MATH_TYPE * currentAlpha, HPM_MOTOR_MATH_TYPE * currentBeta)
+void bldc_foc_clarke(HPM_MOTOR_MATH_TYPE currentu, HPM_MOTOR_MATH_TYPE currentv, HPM_MOTOR_MATH_TYPE currentw,
+             HPM_MOTOR_MATH_TYPE *currentalpha, HPM_MOTOR_MATH_TYPE *currentbeta)
 {
-    HPM_MOTOR_MATH_TYPE curbeta;
-    *currentAlpha = currentU;
-    curbeta = HPM_MOTOR_MATH_MUL(HPM_MOTOR_MATH_FL_MDF(0.5773502) , currentU)  + HPM_MOTOR_MATH_MUL(HPM_MOTOR_MATH_FL_MDF(1.1547004), currentV);
-    *currentBeta = curbeta;
-   
+    int32_t curbeta;
+    *currentalpha = currentu;
+    curbeta = (((int)(9370 * HPM_MOTOR_MATH_MDF_FL(currentu))) + ((int)(18918 * HPM_MOTOR_MATH_MDF_FL(currentv))))>>14;
+    *currentbeta = HPM_MOTOR_MATH_FL_MDF(curbeta);
 }
-/*
-** ===================================================================
-**  函数名称：bldc_foc_park
-**  功能描述：Clark 坐标变换
-**  输入参数：
-**  返回值：无
-** ===================================================================
-*/
-void bldc_foc_park( HPM_MOTOR_MATH_TYPE currentAlpha, HPM_MOTOR_MATH_TYPE currentBeta, HPM_MOTOR_MATH_TYPE angle ,
-                   HPM_MOTOR_MATH_TYPE * currentd, HPM_MOTOR_MATH_TYPE * currentq)
+
+void bldc_foc_park(HPM_MOTOR_MATH_TYPE currentalpha, HPM_MOTOR_MATH_TYPE currentbeta,
+                   HPM_MOTOR_MATH_TYPE *currentd, HPM_MOTOR_MATH_TYPE *currentq,
+                   HPM_MOTOR_MATH_TYPE sin_angle, HPM_MOTOR_MATH_TYPE cos_angle)
 {
-    HPM_MOTOR_MATH_TYPE sin_angle,cos_angle;
-					
-	sin_angle = bldc_foc_sin(angle, PRECISION);
-	cos_angle = bldc_foc_cos(angle, PRECISION);
-    *currentd = HPM_MOTOR_MATH_MUL(cos_angle , currentAlpha) + HPM_MOTOR_MATH_MUL(sin_angle , currentBeta);
-    *currentq = HPM_MOTOR_MATH_MUL(-sin_angle , currentAlpha) + HPM_MOTOR_MATH_MUL(cos_angle , currentBeta);
+    *currentd = HPM_MOTOR_MATH_MUL(cos_angle, currentalpha) + HPM_MOTOR_MATH_MUL(sin_angle, currentbeta);
+    *currentq = HPM_MOTOR_MATH_MUL(-sin_angle, currentalpha) + HPM_MOTOR_MATH_MUL(cos_angle, currentbeta);
 }
-/*
-** ===================================================================
-**  函数名称：bldc_foc_current_cal
-**  功能描述：重构三相电流值
-**  输入参数：
-**          adc_u\adc_v\adc_w  采集到的三相电流ad值
-**          mid_u\mid_v\mid_w  采集到的三相电流ad中点值
-**          
-**  返回值：current_u\current_v\current_w带方向的三相电流   流出是-   流入是+
-** ===================================================================
-*/
+
 void bldc_foc_current_cal(BLDC_CONTROL_CURRENT_PARA *par)
 {
     par->cal_u = HPM_MOTOR_MATH_FL_MDF(par->adc_u_middle - par->adc_u);
     par->cal_v = HPM_MOTOR_MATH_FL_MDF(par->adc_v_middle - par->adc_v);
-    par->cal_w=  HPM_MOTOR_MATH_FL_MDF(-(par->cal_u + par->cal_v));
+    par->cal_w = HPM_MOTOR_MATH_FL_MDF(-(par->cal_u + par->cal_v));
 
 }
-/*
-** ===================================================================
-**  函数名称：bldc_foc_curpi_contrl
-**  功能描述：d轴电流pi调节
-**  输入参数：
-**          
-**          
-**  返回值：output 
-** ===================================================================
-*/
+
 void bldc_foc_pi_contrl(BLDC_CONTRL_PID_PARA *par)
 {
-   HPM_MOTOR_MATH_TYPE result = 0;//PI运算结果
+    HPM_MOTOR_MATH_TYPE result = 0;
 
-   /*目标电流和采样电流进行PI调节，计算给定电压*/
-   HPM_MOTOR_MATH_TYPE curerr = 0;       
-   HPM_MOTOR_MATH_TYPE portion_asp = 0;  
-   HPM_MOTOR_MATH_TYPE portion_asi = 0;  
+    HPM_MOTOR_MATH_TYPE curerr = 0;
+    HPM_MOTOR_MATH_TYPE portion_asp = 0;
+    HPM_MOTOR_MATH_TYPE portion_asi = 0;
 
-   curerr = par->target - par->cur;
-   portion_asp = HPM_MOTOR_MATH_MUL(curerr , (par->I_kp));
-   portion_asi = HPM_MOTOR_MATH_MUL(curerr , (par->I_ki))+ par->mem;
-   result = portion_asi + portion_asp;
+    curerr = par->target - par->cur;
+    portion_asp = HPM_MOTOR_MATH_MUL(curerr, (par->I_kp));
+    portion_asi = HPM_MOTOR_MATH_MUL(curerr, (par->I_ki)) + par->mem;
+    result = portion_asi + portion_asp;
 
-   if(result < (-par->I_max)){
-       result = -par->I_max;
-   }
-   else if(result > par->I_max){
-       result = par->I_max;
-   }
-   else{
-       par->mem = portion_asi;
-   }
-   //目标电流和采样电流进行PI调节，计算给定电压
-   par->outval = result;
+    if (result < (-par->I_max)) {
+        result = -par->I_max;
+    } else if (result > par->I_max) {
+        result = par->I_max;
+    } else {
+        par->mem = portion_asi;
+    }
+
+    par->outval = result;
 }
-/*
-** ===================================================================
-**  函数名称：ldc_foc_ctrl_dq_to_pwm
-**  功能描述：输入dq轴电流、转子角度、和采样电流，输出pwm
-**  输入参数：
-**          
-**          
-**  返回值： 
-** ===================================================================
-*/
+
 void bldc_foc_ctrl_dq_to_pwm(BLDC_CONTROL_FOC_PARA *par)
 {
-    par->pwmpar.pwmout.func_set_pwm(&par->pwmpar.pwmout);//750
+
+    HPM_MOTOR_MATH_TYPE sin_angle = 0;
+    HPM_MOTOR_MATH_TYPE cos_angle = 0;
+
     par->samplCurpar.func_sampl(&par->samplCurpar);
-    bldc_foc_clarke(par->samplCurpar.cal_u,par->samplCurpar.cal_v,par->samplCurpar.cal_w,
-                    &par->i_alpha,&par->i_beta);
-    
-    if(par->pos_estimator_par.func != NULL){
+    bldc_foc_clarke(par->samplCurpar.cal_u, par->samplCurpar.cal_v, par->samplCurpar.cal_w,
+                    &par->i_alpha, &par->i_beta);
+    if (par->pos_estimator_par.func != NULL) {
         par->pos_estimator_par.func(par->pos_estimator_par.par);
     }
-    bldc_foc_park(par->i_alpha,par->i_beta,par->electric_angle,
-                &par->CurrentDPiPar.cur,&par->CurrentQPiPar.cur);
-    par->SpeedCalPar.speedtheta = par->electric_angle;
-    par->SpeedCalPar.func_getspd(&par->SpeedCalPar);
+
+    bldc_foc_sin_cos(par->electric_angle, PRECISION, &sin_angle, &cos_angle);
+    bldc_foc_park(par->i_alpha, par->i_beta,
+                &par->CurrentDPiPar.cur, &par->CurrentQPiPar.cur,
+                sin_angle, cos_angle);
 
     par->CurrentDPiPar.func_pid(&par->CurrentDPiPar);
     par->CurrentQPiPar.func_pid(&par->CurrentQPiPar);
 
-    bldc_foc_inv_park(par->CurrentDPiPar.outval,par->CurrentQPiPar.outval,
-        &par->u_alpha,&par->u_beta,par->electric_angle);
+    bldc_foc_inv_park(par->CurrentDPiPar.outval, par->CurrentQPiPar.outval,
+        &par->u_alpha, &par->u_beta, sin_angle, cos_angle);
     par->pwmpar.target_alpha = par->u_alpha;
     par->pwmpar.target_beta = par->u_beta;
     par->pwmpar.func_spwm(&par->pwmpar);
+
 }

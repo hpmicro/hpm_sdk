@@ -8,6 +8,7 @@ This chapter describes the board-related configuration
    :numbered:
 
    hpm6750evk/README
+   hpm6750evk2/README
    hpm6750evkmini/README
    hpm6300evk/README
    ../doc/boards/README
@@ -20,6 +21,9 @@ This chapter describes the board-related configuration
 
 :::{tab} HPM6750EVK
 Click [here](lab_hpm6750_evk_board) to view the HPM6750EVK development board
+:::
+:::{tab} HPM6750EVK2
+Click [here](lab_hpm6750_evk2_board) to view the HPM6750EVK2 development board
 :::
 :::{tab} HPM6750EVKMINI
 Click [here](lab_hpm6750_evkmini_board) to view the HPM6750EVKMINI development board

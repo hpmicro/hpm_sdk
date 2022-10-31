@@ -1,4 +1,4 @@
-# Copyright 2021 hpmicro
+# Copyright 2021-2022 hpmicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 if(NOT DEFINED ENV{GNURISCV_TOOLCHAIN_PATH})
@@ -17,6 +17,11 @@ set(APP_ASM_NAME ${APP_NAME}.asm)
 
 set(HPM_SDK_LIB hpm_sdk_lib)
 set(HPM_SDK_LIB_ITF hpm_sdk_lib_itf)
+
+# store all options
+add_library(${HPM_SDK_LIB} STATIC "")
+target_link_libraries(${HPM_SDK_LIB} PUBLIC ${HPM_SDK_LIB_ITF})
+add_library(${HPM_SDK_LIB_ITF} INTERFACE)
 
 add_library(app STATIC "")
 
@@ -48,10 +53,12 @@ if(NOT RV_ARCH)
 endif()
 
 # add extention
-include(${HPM_SDK_BASE}/cmake/cmake-ext.cmake)
 include(${HPM_SDK_BASE}/cmake/python.cmake)
-include(${HPM_SDK_BASE}/cmake/ccache.cmake)
+include(${HPM_SDK_BASE}/cmake/cmake-ext.cmake)
+include(${HPM_SDK_BASE}/cmake/toolchain.cmake)
 include(${HPM_SDK_BASE}/cmake/ide/segger.cmake)
+include(${HPM_SDK_BASE}/cmake/extra_flags.cmake)
+include(${HPM_SDK_BASE}/cmake/ccache.cmake)
 
 # distclean target
 add_custom_target(
@@ -102,6 +109,8 @@ endif()
 # skip compiler check
 set(CMAKE_C_COMPILER_FORCED 1)
 set(CMAKE_CXX_COMPILER_FORCED 1)
+
+enable_language(C CXX ASM)
 
 add_subdirectory(${HPM_SDK_BASE} ${__build_dir})
 

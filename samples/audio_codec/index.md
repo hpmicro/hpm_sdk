@@ -6,5 +6,6 @@
 
    decoder_wav/README
    audio_loopback/README
+   lvgl_audio_player/README
 
 ```

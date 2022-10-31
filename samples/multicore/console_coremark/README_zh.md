@@ -18,9 +18,7 @@ BOOT_PIN 必须拨到 0-OFF, 1-OFF
 用户必须在生成和编译完core1工程后再编译 __core0__ 工程
 
 ### 生成core0工程
-__CMAKE_BUILD_TYPE__ 必须是下列选项中的一种：
-- *"debug"*
-- *"release"
+__CMAKE_BUILD_TYPE__ 强制为 *"debug"*，用户无需关心。
 
 
 

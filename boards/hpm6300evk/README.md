@@ -13,6 +13,8 @@ version
 Board overall
 Board overall hpm6300evk
 
+![](../../doc/images/boards/hpm6300evk/hpm6300evk.png)
+
 - Console serial port parameters:
 
   - Baud rate: 115200
@@ -38,9 +40,9 @@ Board overall hpm6300evk
 (lab_hpm6300_evk_board_buttons)=
 | Function | Position |
 | ---- | -------- |
-|PBUTN (sw3) |Power Button, TinyUF2 Boot Button, GPIO Button |
-|WBUTN (sw1) | WAKE UP Button |
-|RESET (sw2) | Reset Button |
+|PBUTN (SW1) |Power Button, TinyUF2 Boot Button, GPIO Button |
+|WBUTN (SW2) | WAKE UP Button |
+|RESETN (SW3) | Reset Button |
 
 ## Pin Description
 
@@ -73,3 +75,15 @@ Board overall hpm6300evk
 | ---- | -------- |
 | GPTMR2.CAPT_2  | J28[40] |
 | GPTMR2.COMP_2  | J28[35] |
+
+- ADC16 Pin
+
+| Function                       | Position |
+| ------------------------------ | -------- |
+| ADC0.INA13/ADC1.INA9/ADC2.INA5 | J26[6]   |
+
+- DAC Pin
+
+| Function | Position |
+| -------- | -------- |
+| DCA0.OUT | J26[11]  |

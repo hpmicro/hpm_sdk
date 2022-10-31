@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -388,7 +388,7 @@ static inline void pwm_set_load_counter_shadow_register_trigger(PWM_Type *pwm_x,
 }
 
 /**
- * @brief configure the hardware to trigger the shadow register to update the CMP
+ * @brief configure the cmp shadow on capture mode
  *
  * @param[in] pwm_x PWM base address, HPM_PWMx(x=0..n)
  * @param[in] index cmp index (0..(PWM_SOC_CMP_MAX_COUNT-1))
@@ -401,8 +401,7 @@ static inline void pwm_load_cmp_shadow_on_capture(PWM_Type *pwm_x,
                                                    bool edge)
 {
     pwm_x->CMPCFG[index] |= PWM_CMPCFG_CMPMODE_MASK;
-    pwm_x->GCR = ((pwm_x->GCR & ~(PWM_GCR_CMPSHDWSEL_MASK | PWM_GCR_HWSHDWEDG_MASK))
-            | PWM_GCR_CMPSHDWSEL_SET(index)
+    pwm_x->GCR = ((pwm_x->GCR & ~(PWM_GCR_HWSHDWEDG_MASK))
             | PWM_GCR_HWSHDWEDG_SET(edge));
 }
 
@@ -453,6 +452,18 @@ static inline void pwm_cmp_update_cmp_value(PWM_Type *pwm_x, uint8_t index,
 {
     pwm_x->CMP[index] = (pwm_x->CMP[index] & ~(PWM_CMP_CMP_MASK | PWM_CMP_XCMP_MASK))
         | PWM_CMP_CMP_SET(cmp) | PWM_CMP_XCMP_SET(ex_cmp);
+}
+
+/**
+ * @brief Forced update of pwm cmp register value, cmp content guaranteed accurate by user
+ *
+ * @param[in] pwm_x PWM base address, HPM_PWMx(x=0..n)
+ * @param[in] index cmp index (0..(PWM_SOC_CMP_MAX_COUNT-1))
+ * @param[in] cmp cmp register data
+ */
+static inline void pwm_cmp_force_value(PWM_Type *pwm_x, uint8_t index, uint32_t cmp)
+{
+    pwm_x->CMP[index] = cmp;
 }
 
 /**

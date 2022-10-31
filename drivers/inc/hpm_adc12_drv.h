@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 hpmicro
+ * Copyright (c) 2021 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -150,7 +150,6 @@ typedef struct {
 
 /** @brief ADC12 configuration struct for the period mode. */
 typedef struct {
-    uint32_t clk_src_freq_in_hz;
     uint8_t ch;
     uint8_t prescale;
     uint8_t period_count;
@@ -293,8 +292,8 @@ static inline void adc12_init_pmt_dma(ADC12_Type *ptr, uint32_t addr)
  * @param[in] ptr An ADC12 peripheral base address.
  * @param[in] config A pointer to configuration struct of @ref adc12_dma_config_t.
  * @return An implementation result of DMA initializing for the sequence mode
- * @retval status_success Get the result of an ADC12 conversion in oneshot mode successfully. Please refert to @ref hpm_stat_t.
- * @retval status_invalid_argument Get the result of an ADC12 conversion in oneshot mode unsuccessfully due to passing invalid arguments. Please refert to @ref hpm_stat_t.
+ * @retval status_success ADC12 initialize in sequence mode successfully. Please refert to @ref hpm_stat_t.
+ * @retval status_invalid_argument ADC12 initialize in sequence mode unsuccessfully due to passing invalid arguments. Please refert to @ref hpm_stat_t.
  */
 hpm_stat_t adc12_init_seq_dma(ADC12_Type *ptr, adc12_dma_config_t *config);
 
