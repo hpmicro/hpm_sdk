@@ -17,12 +17,13 @@ import re
 from tkinter.tix import Tree
 #sys.path.insert(0, os.path.abspath('../../'))
 HPM_SDK_BASE = os.path.abspath('../../../')
+
 if tags.has("en"):
     HPM_SDK_LANGUAGE = "en"
 elif tags.has("zh"):
     HPM_SDK_LANGUAGE = "zh"
 else:
-    error("Py:LANGUAGE err.")
+    HPM_SDK_LANGUAGE = "en"
 
 HPM_DOC_OUTPUT_BASE = f"{HPM_SDK_BASE}/doc/output"
 HPM_DOC_OUTPUT_SDK_BASE = f"{HPM_DOC_OUTPUT_BASE}/sdk_doc/{HPM_SDK_LANGUAGE}"
@@ -84,12 +85,12 @@ templates_path = ['_templates'
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['middleware']
                     
-if tags.has("en"):
+if HPM_SDK_LANGUAGE == "en":
     master_doc = 'index'
     html_index = 'index.html'
     exclude_patterns.append("**README_zh*")
     exclude_patterns.append("**index_zh*")
-elif tags.has("zh"):
+elif HPM_SDK_LANGUAGE == "zh":
     master_doc = 'index_zh'
     html_index = 'index_zh.html'
     exclude_patterns.append("**README.md")
