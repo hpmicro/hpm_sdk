@@ -102,69 +102,69 @@ MOTOR0_PARA motor0 = {  BLDC_CONTROL_FOC_PARA_DEFAULTS,
 void bldc_init_par(void)
 {
     BLDC_CONTROL_FOC_PARA *par = &motor0.foc_para;
-    par->motorpar.func_smc_const = &bldc_smc_const_cal;
-    par->motorpar.I_Lstator_h = 2.63;
-    par->motorpar.I_MaxSpeed_rs = 35;
-    par->motorpar.I_PhaseCur_a = 0.125;
-    par->motorpar.I_PhaseVol_v = 24;
-    par->motorpar.I_Poles_n = 2;
-    par->motorpar.I_Rstator_ohm = 1.1;
-    par->motorpar.I_SamplingPer_s = 0.00005;
+    par->motorpar.func_smc_const = &hpm_mcl_bldc_smc_const_cal;
+    par->motorpar.i_lstator_h = 2.63;
+    par->motorpar.i_maxspeed_rs = 35;
+    par->motorpar.i_phasecur_a = 0.125;
+    par->motorpar.i_phasevol_v = 24;
+    par->motorpar.i_poles_n = 2;
+    par->motorpar.i_rstator_ohm = 1.1;
+    par->motorpar.i_samplingper_s = 0.00005;
     par->motorpar.func_smc_const(&par->motorpar);
 
-    par->SpeedCalPar.I_speedacq = 20;
-    par->SpeedCalPar.I_speedfilter = HPM_MOTOR_MATH_FL_MDF(0.02);
-    par->SpeedCalPar.I_speedLooptime_s = HPM_MOTOR_MATH_FL_MDF(0.00005*20);
-    par->SpeedCalPar.I_motorpar = &par->motorpar;
-    par->SpeedCalPar.func_getspd = bldc_foc_al_speed;
+    par->speedcalpar.i_speedacq = 20;
+    par->speedcalpar.i_speedfilter = HPM_MOTOR_MATH_FL_MDF(0.02);
+    par->speedcalpar.i_speedlooptime_s = HPM_MOTOR_MATH_FL_MDF(0.00005*20);
+    par->speedcalpar.i_motorpar = &par->motorpar;
+    par->speedcalpar.func_getspd = hpm_mcl_bldc_foc_al_speed;
 
-    par->CurrentDPiPar.I_kp = HPM_MOTOR_MATH_FL_MDF(10);
-    par->CurrentDPiPar.I_ki = HPM_MOTOR_MATH_FL_MDF(0.01);
-    par->CurrentDPiPar.I_max = HPM_MOTOR_MATH_FL_MDF(4000);
-    par->CurrentDPiPar.func_pid = bldc_foc_pi_contrl;
+    par->currentdpipar.i_kp = HPM_MOTOR_MATH_FL_MDF(10);
+    par->currentdpipar.i_ki = HPM_MOTOR_MATH_FL_MDF(0.01);
+    par->currentdpipar.i_max = HPM_MOTOR_MATH_FL_MDF(4000);
+    par->currentdpipar.func_pid = hpm_mcl_bldc_foc_pi_contrl;
 
-    par->CurrentQPiPar.I_kp = HPM_MOTOR_MATH_FL_MDF(10);
-    par->CurrentQPiPar.I_ki = HPM_MOTOR_MATH_FL_MDF(0.01);
-    par->CurrentQPiPar.I_max = HPM_MOTOR_MATH_FL_MDF(4000);
-    par->CurrentQPiPar.func_pid = bldc_foc_pi_contrl;
+    par->currentqpipar.i_kp = HPM_MOTOR_MATH_FL_MDF(10);
+    par->currentqpipar.i_ki = HPM_MOTOR_MATH_FL_MDF(0.01);
+    par->currentqpipar.i_max = HPM_MOTOR_MATH_FL_MDF(4000);
+    par->currentqpipar.func_pid = hpm_mcl_bldc_foc_pi_contrl;
 
-    par->pwmpar.func_spwm = bldc_foc_svpwm;
-    par->pwmpar.I_pwm_reload_max = PWM_RELOAD*0.95;
-    par->pwmpar.pwmout.func_set_pwm = bldc_foc_pwmset;
-    par->pwmpar.pwmout.I_pwm_reload = PWM_RELOAD;
-    par->pwmpar.pwmout.I_motor_id = BLDC_MOTOR0_INDEX;
+    par->pwmpar.func_spwm = hpm_mcl_bldc_foc_svpwm;
+    par->pwmpar.i_pwm_reload_max = PWM_RELOAD*0.95;
+    par->pwmpar.pwmout.func_set_pwm = hpm_mcl_bldc_foc_pwmset;
+    par->pwmpar.pwmout.i_pwm_reload = PWM_RELOAD;
+    par->pwmpar.pwmout.i_motor_id = BLDC_MOTOR0_INDEX;
 
-    par->samplCurpar.func_sampl = bldc_foc_current_cal;
-    par->func_dqsvpwm =  bldc_foc_ctrl_dq_to_pwm;
+    par->samplcurpar.func_sampl = hpm_mcl_bldc_foc_current_cal;
+    par->func_dqsvpwm =  hpm_mcl_bldc_foc_ctrl_dq_to_pwm;
 
     /*速度环参数*/
-    motor0.speedloop_para.func_pid  = bldc_foc_pi_contrl;
-    motor0.speedloop_para.I_kp      = HPM_MOTOR_MATH_FL_MDF(60);
-    motor0.speedloop_para.I_ki      = HPM_MOTOR_MATH_FL_MDF(0.01);
-    motor0.speedloop_para.I_max     = HPM_MOTOR_MATH_FL_MDF(300);
+    motor0.speedloop_para.func_pid  = hpm_mcl_bldc_foc_pi_contrl;
+    motor0.speedloop_para.i_kp      = HPM_MOTOR_MATH_FL_MDF(60);
+    motor0.speedloop_para.i_ki      = HPM_MOTOR_MATH_FL_MDF(0.01);
+    motor0.speedloop_para.i_max     = HPM_MOTOR_MATH_FL_MDF(300);
     /*位置环参数*/
-    motor0.position_para.func_pid   = bldc_foc_pi_contrl;
-    motor0.position_para.I_kp       = HPM_MOTOR_MATH_FL_MDF(0.0095);
-    motor0.position_para.I_ki       = 0;
-    motor0.position_para.I_max      = HPM_MOTOR_MATH_FL_MDF(25);
+    motor0.position_para.func_pid   = hpm_mcl_bldc_foc_pi_contrl;
+    motor0.position_para.i_kp       = HPM_MOTOR_MATH_FL_MDF(0.0095);
+    motor0.position_para.i_ki       = 0;
+    motor0.position_para.i_max      = HPM_MOTOR_MATH_FL_MDF(25);
 
     motor0.adc_trig_event_callback = &motor0_highspeed_loop;
 #if MOTOR0_SMC_EN
     /*使能滑模*/
-    motor0.speedloop_para.I_kp = HPM_MOTOR_MATH_FL_MDF(2);
-    motor0.speedloop_para.I_ki = HPM_MOTOR_MATH_FL_MDF(0.001);
-    par->SpeedCalPar.I_speedfilter = HPM_MOTOR_MATH_FL_MDF(0.01);
+    motor0.speedloop_para.i_kp = HPM_MOTOR_MATH_FL_MDF(2);
+    motor0.speedloop_para.i_ki = HPM_MOTOR_MATH_FL_MDF(0.001);
+    par->speedcalpar.i_speedfilter = HPM_MOTOR_MATH_FL_MDF(0.01);
 
-    motor0.smc_para.I_Ezero = HPM_MOTOR_MATH_FL_MDF(0.5);
-    motor0.smc_para.I_ksmc = HPM_MOTOR_MATH_FL_MDF(60);
-    motor0.smc_para.I_kfil  = HPM_MOTOR_MATH_FL_MDF(0.025);
-    motor0.smc_para.I_motorpar = &par->motorpar;
-    motor0.smc_para.ualpha = &par->u_alpha;
-    motor0.smc_para.ubeta = &par->u_beta;
-    motor0.smc_para.ialpha = &par->i_alpha;
-    motor0.smc_para.ibeta = &par->i_beta;
+    motor0.smc_para.i_ezero = HPM_MOTOR_MATH_FL_MDF(0.5);
+    motor0.smc_para.i_ksmc = HPM_MOTOR_MATH_FL_MDF(60);
+    motor0.smc_para.i_kfil  = HPM_MOTOR_MATH_FL_MDF(0.025);
+    motor0.smc_para.i_motorpar = &par->motorpar;
+    motor0.smc_para.ualpha = &par->ualpha;
+    motor0.smc_para.ubeta = &par->ubeta;
+    motor0.smc_para.ialpha = &par->ialpha;
+    motor0.smc_para.ibeta = &par->ibeta;
     motor0.smc_para.theta = &par->electric_angle;
-    motor0.smc_para.func_smc = bldc_smc_pos_cal;
+    motor0.smc_para.func_smc = hpm_mcl_bldc_smc_pos_cal;
     par->pos_estimator_par.func = motor0.smc_para.func_smc;
     par->pos_estimator_par.par = &motor0.smc_para;
 #else
@@ -332,10 +332,10 @@ void isr_gptmr(void)
 
         /*速度控制*/
         motor0.speedloop_para.target = HPM_MOTOR_MATH_FL_MDF(fre_setspeed);
-        motor0.speedloop_para.cur = motor0.foc_para.SpeedCalPar.O_speedout;
+        motor0.speedloop_para.cur = motor0.foc_para.speedcalpar.o_speedout;
         motor0.speedloop_para.func_pid(&motor0.speedloop_para); /*速度控制函数*/
-        motor0.foc_para.CurrentQPiPar.target =  motor0.speedloop_para.outval;
-        motor0.foc_para.CurrentDPiPar.target =  0;
+        motor0.foc_para.currentqpipar.target =  motor0.speedloop_para.outval;
+        motor0.foc_para.currentdpipar.target =  0;
         fre_dispspeed = motor0.speedloop_para.cur;
         if(fre_user_mode == 0){/*pos*/
 #if !MOTOR0_SMC_EN
@@ -382,7 +382,7 @@ void isr_gptmr(void)
                 if(start_times < 1000){
                     smc_start_flag = 1;
                     motor0.foc_para.pos_estimator_par.func = NULL;
-                    motor0.foc_para.CurrentDPiPar.target = 300;
+                    motor0.foc_para.currentdpipar.target = 300;
                     if(fre_setspeed > 0){
                         motor0.speedloop_para.mem = 70;
                         fre_set_angle = (fre_set_angle+10)%360;
@@ -396,9 +396,9 @@ void isr_gptmr(void)
                             fre_set_angle += 350;
                         }
                     }
-                    motor0.foc_para.CurrentQPiPar.target = 0;
-                    motor0.foc_para.CurrentDPiPar.mem = 0;
-                    motor0.foc_para.CurrentQPiPar.mem = 0;
+                    motor0.foc_para.currentqpipar.target = 0;
+                    motor0.foc_para.currentdpipar.mem = 0;
+                    motor0.foc_para.currentqpipar.mem = 0;
 
                 }
                 else{
@@ -444,9 +444,9 @@ void init_trigger_mux(TRGM_Type * ptr)
 }
 void motor0_current_loop(float angle)
 {
-    motor0.foc_para.samplCurpar.adc_u = ((adc_buff[0][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4);
-    motor0.foc_para.samplCurpar.adc_v = ((adc_buff[1][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4);
-    motor0.foc_para.samplCurpar.adc_w = ((adc_buff[2][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4);
+    motor0.foc_para.samplcurpar.adc_u = ((adc_buff[0][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4);
+    motor0.foc_para.samplcurpar.adc_v = ((adc_buff[1][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4);
+    motor0.foc_para.samplcurpar.adc_w = ((adc_buff[2][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4);
     motor0.foc_para.electric_angle = HPM_MOTOR_MATH_FL_MDF(angle);
     motor0.foc_para.func_dqsvpwm(&motor0.foc_para);
     motor0.foc_para.pwmpar.pwmout.func_set_pwm(&motor0.foc_para.pwmpar.pwmout);
@@ -470,8 +470,8 @@ void motor0_highspeed_loop(void)
         fre_set_angle = fre_get_angle;
     }
     motor0_current_loop(user_give_angle);
-    motor0.foc_para.SpeedCalPar.speedtheta = motor0.foc_para.electric_angle;
-    motor0.foc_para.SpeedCalPar.func_getspd(&motor0.foc_para.SpeedCalPar);
+    motor0.foc_para.speedcalpar.speedtheta = motor0.foc_para.electric_angle;
+    motor0.foc_para.speedcalpar.func_getspd(&motor0.foc_para.speedcalpar);
 }
 
 void isr_adc(void)
@@ -612,12 +612,12 @@ void adc_init(void)
 }
 void motor0_angle_align_loop(void)
 {
-    motor0.foc_para.samplCurpar.adc_u = ((adc_buff[0][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
-    motor0.foc_para.samplCurpar.adc_v = ((adc_buff[1][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
-    motor0.foc_para.samplCurpar.adc_w = ((adc_buff[2][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
+    motor0.foc_para.samplcurpar.adc_u = ((adc_buff[0][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
+    motor0.foc_para.samplcurpar.adc_v = ((adc_buff[1][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
+    motor0.foc_para.samplcurpar.adc_w = ((adc_buff[2][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
     motor0.foc_para.electric_angle = HPM_MOTOR_MATH_FL_MDF(0);
-    motor0.foc_para.CurrentDPiPar.target = HPM_MOTOR_MATH_FL_MDF(100);
-    motor0.foc_para.CurrentQPiPar.target = HPM_MOTOR_MATH_FL_MDF(0);
+    motor0.foc_para.currentdpipar.target = HPM_MOTOR_MATH_FL_MDF(100);
+    motor0.foc_para.currentqpipar.target = HPM_MOTOR_MATH_FL_MDF(0);
     motor0.foc_para.func_dqsvpwm(&motor0.foc_para);
     motor0.foc_para.pwmpar.pwmout.func_set_pwm(&motor0.foc_para.pwmpar.pwmout);
 }
@@ -646,7 +646,7 @@ void bldc_foc_angle_align(void)
 */
 int32_t bldc_foc_get_pos(void)
 {
-    int32_t ph,z;
+    int32_t ph, z;
     ph = qei_get_current_count(BOARD_BLDC_QEI_BASE, qei_counter_type_phase)&0x1fffff;
     z = qei_get_current_count(BOARD_BLDC_QEI_BASE, qei_counter_type_z)&0x1fffff;
     /*将数据以0为中点  正负排列*/
@@ -685,9 +685,9 @@ void lv_set_adval_middle(void)
             timer_flag = 0;
         }
     }while(1);
-    motor0.foc_para.samplCurpar.adc_u_middle = adc_u_sum/ BLDC_CURRENT_SET_TIME_MS;
-    motor0.foc_para.samplCurpar.adc_v_middle = adc_v_sum/ BLDC_CURRENT_SET_TIME_MS;
-    motor0.foc_para.samplCurpar.adc_w_middle = adc_w_sum/ BLDC_CURRENT_SET_TIME_MS;
+    motor0.foc_para.samplcurpar.adc_u_middle = adc_u_sum / BLDC_CURRENT_SET_TIME_MS;
+    motor0.foc_para.samplcurpar.adc_v_middle = adc_v_sum / BLDC_CURRENT_SET_TIME_MS;
+    motor0.foc_para.samplcurpar.adc_w_middle = adc_w_sum / BLDC_CURRENT_SET_TIME_MS;
 }
 int main(void)
 {

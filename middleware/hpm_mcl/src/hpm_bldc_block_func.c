@@ -8,57 +8,57 @@
 #include "hpm_bldc_define.h"
 #include "hpm_bldc_block_func.h"
 /*HALL func begin*/
-void bldc_block_ctrl(uint8_t motorindex, uint8_t dir, uint8_t step)
+void hpm_mcl_bldc_block_ctrl(uint8_t motorindex, uint8_t dir, uint8_t step)
 {
     if (dir == BLDC_MOTOR_DIR_FORWARD) {
         switch (step) {
         case 2:
-            bldc_pwm_enable(motorindex, BLDC_PWM_PIN_UH);/*uh*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UL);/*ul*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VH);/*vh*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VL);/*vl*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WH);/*wh*/
-            bldc_pwm_enable(motorindex, BLDC_PWM_PIN_WL);/*wl*/
+            hpm_mcl_bldc_pwm_enable(motorindex, BLDC_PWM_PIN_UH);/*uh*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UL);/*ul*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VH);/*vh*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VL);/*vl*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WH);/*wh*/
+            hpm_mcl_bldc_pwm_enable(motorindex, BLDC_PWM_PIN_WL);/*wl*/
             break;
         case 3:
-            bldc_pwm_enable(motorindex, BLDC_PWM_PIN_UH);/*uh*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UL);/*ul*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VH);/*vh*/
-            bldc_pwm_enable(motorindex, BLDC_PWM_PIN_VL);/*vl*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WH);/*wh*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WL);/*wl*/
+            hpm_mcl_bldc_pwm_enable(motorindex, BLDC_PWM_PIN_UH);/*uh*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UL);/*ul*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VH);/*vh*/
+            hpm_mcl_bldc_pwm_enable(motorindex, BLDC_PWM_PIN_VL);/*vl*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WH);/*wh*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WL);/*wl*/
             break;
         case 4:
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UH);/*uh*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UL);/*ul*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VH);/*vh*/
-            bldc_pwm_enable(motorindex, BLDC_PWM_PIN_VL);/*vl*/
-            bldc_pwm_enable(motorindex, BLDC_PWM_PIN_WH);/*wh*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WL);/*wl*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UH);/*uh*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UL);/*ul*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VH);/*vh*/
+            hpm_mcl_bldc_pwm_enable(motorindex, BLDC_PWM_PIN_VL);/*vl*/
+            hpm_mcl_bldc_pwm_enable(motorindex, BLDC_PWM_PIN_WH);/*wh*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WL);/*wl*/
             break;
         case 5:
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UH);/*uh*/
-            bldc_pwm_enable(motorindex, BLDC_PWM_PIN_UL);/*ul*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VH);/*vh*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VL);/*vl*/
-            bldc_pwm_enable(motorindex, BLDC_PWM_PIN_WH);/*wh*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WL);/*wl*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UH);/*uh*/
+            hpm_mcl_bldc_pwm_enable(motorindex, BLDC_PWM_PIN_UL);/*ul*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VH);/*vh*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VL);/*vl*/
+            hpm_mcl_bldc_pwm_enable(motorindex, BLDC_PWM_PIN_WH);/*wh*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WL);/*wl*/
             break;
         case 6:
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UH);/*uh*/
-            bldc_pwm_enable(motorindex, BLDC_PWM_PIN_UL);/*ul*/
-            bldc_pwm_enable(motorindex, BLDC_PWM_PIN_VH);/*vh*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VL);/*vl*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WH);/*wh*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WL);/*wl*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UH);/*uh*/
+            hpm_mcl_bldc_pwm_enable(motorindex, BLDC_PWM_PIN_UL);/*ul*/
+            hpm_mcl_bldc_pwm_enable(motorindex, BLDC_PWM_PIN_VH);/*vh*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VL);/*vl*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WH);/*wh*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WL);/*wl*/
             break;
         case 1:
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UH);/*uh*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UL);/*ul*/
-            bldc_pwm_enable(motorindex, BLDC_PWM_PIN_VH);/*vh*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VL);/*vl*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WH);/*wh*/
-            bldc_pwm_enable(motorindex, BLDC_PWM_PIN_WL);/*wl*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UH);/*uh*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UL);/*ul*/
+            hpm_mcl_bldc_pwm_enable(motorindex, BLDC_PWM_PIN_VH);/*vh*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VL);/*vl*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WH);/*wh*/
+            hpm_mcl_bldc_pwm_enable(motorindex, BLDC_PWM_PIN_WL);/*wl*/
             break;
 
         default:
@@ -67,52 +67,52 @@ void bldc_block_ctrl(uint8_t motorindex, uint8_t dir, uint8_t step)
     } else {
         switch (step) {
         case 2:
-            bldc_pwm_enable(motorindex, BLDC_PWM_PIN_UL);/*uh*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UH);/*ul*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VH);/*vh*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VL);/*vl*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WL);/*wh*/
-            bldc_pwm_enable(motorindex, BLDC_PWM_PIN_WH);/*wl*/
+            hpm_mcl_bldc_pwm_enable(motorindex, BLDC_PWM_PIN_UL);/*uh*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UH);/*ul*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VH);/*vh*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VL);/*vl*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WL);/*wh*/
+            hpm_mcl_bldc_pwm_enable(motorindex, BLDC_PWM_PIN_WH);/*wl*/
             break;
         case 3:
-            bldc_pwm_enable(motorindex, BLDC_PWM_PIN_UL);/*uh*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UH);/*ul*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VL);/*vh*/
-            bldc_pwm_enable(motorindex, BLDC_PWM_PIN_VH);/*vl*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WH);/*wh*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WL);/*wl*/
+            hpm_mcl_bldc_pwm_enable(motorindex, BLDC_PWM_PIN_UL);/*uh*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UH);/*ul*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VL);/*vh*/
+            hpm_mcl_bldc_pwm_enable(motorindex, BLDC_PWM_PIN_VH);/*vl*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WH);/*wh*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WL);/*wl*/
             break;
         case 4:
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UH);/*uh*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UL);/*ul*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VL);/*vh*/
-            bldc_pwm_enable(motorindex, BLDC_PWM_PIN_VH);/*vl*/
-            bldc_pwm_enable(motorindex, BLDC_PWM_PIN_WL);/*wh*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WH);/*wl*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UH);/*uh*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UL);/*ul*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VL);/*vh*/
+            hpm_mcl_bldc_pwm_enable(motorindex, BLDC_PWM_PIN_VH);/*vl*/
+            hpm_mcl_bldc_pwm_enable(motorindex, BLDC_PWM_PIN_WL);/*wh*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WH);/*wl*/
             break;
         case 5:
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UL);/*uh*/
-            bldc_pwm_enable(motorindex, BLDC_PWM_PIN_UH);/*ul*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VH);/*vh*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VL);/*vl*/
-            bldc_pwm_enable(motorindex, BLDC_PWM_PIN_WL);/*wh*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WH);/*wl*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UL);/*uh*/
+            hpm_mcl_bldc_pwm_enable(motorindex, BLDC_PWM_PIN_UH);/*ul*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VH);/*vh*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VL);/*vl*/
+            hpm_mcl_bldc_pwm_enable(motorindex, BLDC_PWM_PIN_WL);/*wh*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WH);/*wl*/
             break;
         case 6:
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UL);/*uh*/
-            bldc_pwm_enable(motorindex, BLDC_PWM_PIN_UH);/*ul*/
-            bldc_pwm_enable(motorindex, BLDC_PWM_PIN_VL);/*vh*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VH);/*vl*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WH);/*wh*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WL);/*wl*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UL);/*uh*/
+            hpm_mcl_bldc_pwm_enable(motorindex, BLDC_PWM_PIN_UH);/*ul*/
+            hpm_mcl_bldc_pwm_enable(motorindex, BLDC_PWM_PIN_VL);/*vh*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VH);/*vl*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WH);/*wh*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WL);/*wl*/
             break;
         case 1:
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UH);/*uh*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UL);/*ul*/
-            bldc_pwm_enable(motorindex, BLDC_PWM_PIN_VL);/*vh*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VH);/*vl*/
-            bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WL);/*wh*/
-            bldc_pwm_enable(motorindex, BLDC_PWM_PIN_WH);/*wl*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UH);/*uh*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_UL);/*ul*/
+            hpm_mcl_bldc_pwm_enable(motorindex, BLDC_PWM_PIN_VL);/*vh*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_VH);/*vl*/
+            hpm_mcl_bldc_pwm_disable(motorindex, BLDC_PWM_PIN_WL);/*wh*/
+            hpm_mcl_bldc_pwm_enable(motorindex, BLDC_PWM_PIN_WH);/*wl*/
             break;
 
         default:
@@ -121,7 +121,7 @@ void bldc_block_ctrl(uint8_t motorindex, uint8_t dir, uint8_t step)
     }
 }
 /*BLDC Block HALL position*/
-uint8_t bldc_block_step_get(bldc_hall_phase_t phase, uint8_t hall_u, uint8_t hall_v, uint8_t hall_w)
+uint8_t hpm_mcl_bldc_block_step_get(bldc_hall_phase_t phase, uint8_t hall_u, uint8_t hall_v, uint8_t hall_w)
 {
     /*
      *tbl_para = (u<<2)|(v<<1)|(w);
@@ -138,7 +138,7 @@ uint8_t bldc_block_step_get(bldc_hall_phase_t phase, uint8_t hall_u, uint8_t hal
 }
 
 /*pi_ctrl*/
-float al_pi_ctrl_func(float *memory, float targetSpeed, float speed, float kp, float ki, float max)
+float hpm_mcl_al_pi_ctrl_func(float *memory, float targetspeed, float speed, float kp, float ki, float max)
 {
 	float result = 0;
 	float spderr = 0;
@@ -146,7 +146,7 @@ float al_pi_ctrl_func(float *memory, float targetSpeed, float speed, float kp, f
 	float portion_asi = 0;
     float *portion_asi_last_speed;
 
-	spderr = targetSpeed - speed;
+	spderr = targetspeed - speed;
     portion_asi_last_speed = memory;
 
 	portion_asp = spderr * kp;

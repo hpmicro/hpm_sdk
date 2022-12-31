@@ -11,7 +11,7 @@ HEAP_SIZE = DEFINED(_heap_size) ? _heap_size : 0x4000;
 MEMORY
 {
     ILM (wx) : ORIGIN = 0, LENGTH = 256K
-    DLM (w) : ORIGIN = 0x80000, LENGTH = 256K
+    DLM (w) : ORIGIN = 0x80000, LENGTH = 252K
     AXI_SRAM (wx) : ORIGIN = 0x1100000, LENGTH = 384K
     AXI_SRAM_NONCACHEABLE (wx) : ORIGIN = 0x01160000, LENGTH = 128K
 }
@@ -174,6 +174,9 @@ SECTIONS
 
     __noncacheable_start__ = ORIGIN(AXI_SRAM_NONCACHEABLE);
     __noncacheable_end__ = ORIGIN(AXI_SRAM_NONCACHEABLE) + LENGTH(AXI_SRAM_NONCACHEABLE);
+    /* define symbols for building, length is 0 */
+    __share_mem_start__ = __noncacheable_end__;
+    __share_mem_end__ = __share_mem_start__;
 
     ASSERT(__stack_base__ >= __heap_end__, "stack overlapped with heap")
 }

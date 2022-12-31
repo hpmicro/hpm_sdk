@@ -8,7 +8,7 @@ void displayStats(const PtpClock *ptpClock)
 
 void getTime(TimeInternal *time)
 {
-    enet_ptp_time_t timestamp;
+    enet_ptp_ts_system_t timestamp;
 
     enet_get_ptp_timestamp(ENET, &timestamp);
     time->seconds = timestamp.sec;
@@ -17,7 +17,7 @@ void getTime(TimeInternal *time)
 
 void setTime(const TimeInternal *time)
 {
-    enet_ptp_time_t timestamp;
+    enet_ptp_ts_update_t timestamp;
 
     timestamp.sec = time->seconds;
     timestamp.nsec = time->nanoseconds;
@@ -28,7 +28,7 @@ void setTime(const TimeInternal *time)
 
 void updateTime(const TimeInternal *time)
 {
-    enet_ptp_time_t timeoffset;
+    enet_ptp_ts_update_t timeoffset;
 
     DBGV("updateTime: %ds %dns\n", time->seconds, time->nanoseconds);
 

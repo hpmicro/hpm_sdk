@@ -288,7 +288,7 @@ void spi_format_init(SPI_Type *ptr, spi_format_config_t *config);
  *
  * @param [in] ptr SPI base address
  * @param [in] config spi_control_config_t
- * @param [in/out] cmd spi transfer command address
+ * @param [in,out] cmd spi transfer command address
  * @param [in] addr spi transfer target address
  * @param [in] wbuff spi sent data buff address
  * @param [in] wcount spi sent data count, not greater than SPI_SOC_TRANSFER_COUNT_MAX
@@ -338,7 +338,7 @@ hpm_stat_t spi_wait_for_busy_status(SPI_Type *ptr);
  *
  * This function configures SPI TX FIFO threshold.
  *
- * @param base SPI base address.
+ * @param ptr SPI base address.
  * @param threshold The FIFO threshold value, the value should not greater than FIFO size.
  */
 static inline void spi_set_tx_fifo_threshold(SPI_Type *ptr, uint32_t threshold)
@@ -351,7 +351,7 @@ static inline void spi_set_tx_fifo_threshold(SPI_Type *ptr, uint32_t threshold)
  *
  * This function configures SPI RX FIFO threshold.
  *
- * @param base SPI base address.
+ * @param ptr SPI base address.
  * @param threshold The FIFO threshold value, the value should not greater than FIFO size.
  */
 static inline void spi_set_rx_fifo_threshold(SPI_Type *ptr, uint32_t threshold)
@@ -515,7 +515,7 @@ hpm_stat_t spi_read_command(SPI_Type *ptr, spi_mode_selection_t mode, spi_contro
  * @param [in] ptr SPI base address
  * @param [in] mode spi mode, use the spi_mode_selection_t
  * @param [in] config point to spi_control_config_t
- * @param [in] cmd command data address
+ * @param [in] addr point to address
  * @retval hpm_stat_t status_success if spi transfer without any error
  */
 hpm_stat_t spi_write_address(SPI_Type *ptr, spi_mode_selection_t mode, spi_control_config_t *config, uint32_t *addr);

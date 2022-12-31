@@ -7,6 +7,7 @@
       arm_linker_heap_size="{{ target["heap_size"]}}"
       arm_linker_stack_size="{{ target["stack_size"]}}"
       arm_rtl_variant="SEGGER"
+      arm_linker_no_warn_on_mismatch="Yes"
       build_generic_options_file_name=""
       c_user_include_directories="{% for inc in target["includes"] %}{{ inc }};{% endfor %}"
       link_linker_script_file="{{ target["linker"]}}"
@@ -49,20 +50,22 @@
       c_additional_options="{{ target["cflags"] }}"
       link_use_linker_script_file="Yes"
       rv_arch_ext="xv5"
+      rv_arch_zicsr="No"
+      rv_arch_zifencei="No"
       rv_debug_extensions="Andes"
       rv_toolchain_prefix="andes-"
       {% if target["enable_nds_dsp"] -%}
       rv32andes_compiler_ext_dsp="Yes"
+      {%- endif %}
+      {% if target["cplusplus"] -%}
+      gcc_cplusplus_language_standard="c++11"
+      libcxx="Yes (No Exceptions)"
       {%- endif %}
       {% else %}
       rv_arch_ext=""
       rv_debug_extensions="None"
       rv_toolchain_prefix=""
       arm_linker_variant="SEGGER"
-      {%- endif %}
-      {% if target["segger_level_o3"] -%}
-      gcc_optimization_level="Level 3 for more speed"
-      {%- endif %}
       {% if target["cplusplus"] -%}
       gcc_cplusplus_language_standard="c++11"
       libcxx="Yes"
@@ -70,9 +73,14 @@
       cpp_enable_exceptions="Yes"
       {%- endif %}
       {%- endif %}
+      {%- endif %}
+      {% if target["segger_level_o3"] -%}
+      gcc_optimization_level="Level 3 for more speed"
+      {%- endif %}
       {% if target["ses_link_input"] -%}
       linker_additional_files="{{ target["ses_link_input"] }}"
       {%- endif %}
+      build_output_file_name="$(OutDir)/demo$(EXE)"
       />
 
 {{ target["file_structure"] }}

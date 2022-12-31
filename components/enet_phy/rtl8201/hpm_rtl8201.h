@@ -12,8 +12,9 @@
  * Includes
  *---------------------------------------------------------------------
  */
-#include "stdint.h"
-#include "hpm_enet_phy_common.h"
+#include "hpm_enet_phy.h"
+#include "hpm_common.h"
+#include "hpm_enet_regs.h"
 /*---------------------------------------------------------------------
  *  Macro Const Definitions
  *---------------------------------------------------------------------

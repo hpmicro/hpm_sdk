@@ -1,33 +1,32 @@
+/*
+ * Copyright (c) 2022 HPMicro
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ */
+
 #include "common.h"
-#include "hpm_enet_phy_common.h"
+#include "hpm_common.h"
+#include "hpm_otp_drv.h"
 #include "ethernetif.h"
+#include "netconf.h"
 #include "lwip.h"
 #include "lwip/timeouts.h"
 #include "lwip/dhcp.h"
 #include "lwip/prot/dhcp.h"
 
-#if RGMII == 1
-    #if defined __USE_DP83867
-        #include "hpm_dp83867.h"
-        #include "hpm_dp83867_regs.h"
-    #elif defined __USE_RTL8211
-        #include "hpm_rtl8211.h"
-        #include "hpm_rtl8211_regs.h"
-    #endif
-#else
-    #if defined __USE_DP83848
-        #include "hpm_dp83848.h"
-        #include "hpm_dp83848_regs.h"
-    #elif defined  __USE_RTL8201
-        #include "hpm_rtl8201.h"
-        #include "hpm_rtl8201_regs.h"
-    #else
-        #error no specified Ethernet PHY !!!
-    #endif
+#if !NO_SYS
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "queue.h"
 #endif
 
 static enet_phy_status_t last_status;
 
+#if !NO_SYS
+extern xSemaphoreHandle s_xSemaphore;
+#endif
 
 #if LWIP_DHCP
 static void dhcp_state(struct netif *netif)
@@ -95,6 +94,31 @@ static void dhcp_state(struct netif *netif)
 }
 #endif
 
+ATTR_WEAK void enet_get_mac_address(uint8_t *mac)
+{
+    bool invalid = true;
+
+    uint32_t uuid[(ENET_MAC + (ENET_MAC - 1)) / sizeof(uint32_t)];
+
+    for (int i = 0; i < ARRAY_SIZE(uuid); i++) {
+        uuid[i] = otp_read_from_shadow(OTP_SOC_UUID_IDX + i);
+        if (uuid[i] != 0xFFFFFFFFUL && uuid[i] != 0) {
+            invalid = false;
+        }
+    }
+
+    if (invalid == false) {
+        memcpy(mac, &uuid, ENET_MAC);
+    } else {
+        mac[0] = MAC_ADDR0;
+        mac[1] = MAC_ADDR1;
+        mac[2] = MAC_ADDR2;
+        mac[3] = MAC_ADDR3;
+        mac[4] = MAC_ADDR4;
+        mac[5] = MAC_ADDR5;
+    }
+}
+
 bool enet_get_link_status(void)
 {
     return last_status.enet_phy_link;
@@ -157,3 +181,65 @@ void enet_common_handler(struct netif *netif)
     dhcp_state(netif);
     #endif
 }
+
+#if __USE_ENET_RECEIVE_INTERRUPT || !NO_SYS
+void isr_enet(ENET_Type *ptr)
+{
+#if !NO_SYS
+    portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+#endif
+
+    uint32_t status;
+    uint32_t rxgbfrmis;
+    uint32_t intr_status;
+
+    status = ptr->DMA_STATUS;
+    rxgbfrmis = ptr->MMC_INTR_RX;
+    intr_status = ptr->INTR_STATUS;
+
+    if (ENET_DMA_STATUS_GLPII_GET(status)) {
+        /* read LPI_CSR to clear interrupt status */
+        ptr->LPI_CSR;
+    }
+
+    if (ENET_INTR_STATUS_RGSMIIIS_GET(intr_status)) {
+        /* read XMII_CSR to clear interrupt status */
+        ptr->XMII_CSR;
+    }
+
+    if (ENET_DMA_STATUS_RI_GET(status)) {
+    #if !NO_SYS
+        /* Give the semaphore to wakeup LwIP task */
+        xSemaphoreGiveFromISR(s_xSemaphore, &xHigherPriorityTaskWoken);
+        /* Switch tasks if necessary. */
+        if (xHigherPriorityTaskWoken != pdFALSE) {
+            portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
+        }
+    #else
+        rx_flag = true;
+    #endif
+        ptr->DMA_STATUS |= ENET_DMA_STATUS_RI_SET(ENET_DMA_STATUS_RI_GET(status));
+    }
+
+    if (ENET_MMC_INTR_RX_RXCTRLFIS_GET(rxgbfrmis)) {
+        ptr->RXFRAMECOUNT_GB;
+    }
+}
+
+#ifdef HPM_ENET0_BASE
+void isr_enet0(void)
+{
+    isr_enet(ENET);
+}
+SDK_DECLARE_EXT_ISR_M(IRQn_ENET0, isr_enet0)
+#endif
+
+#ifdef HPM_ENET1_BASE
+void isr_enet1(void)
+{
+    isr_enet(ENET);
+}
+SDK_DECLARE_EXT_ISR_M(IRQn_ENET1, isr_enet1)
+#endif
+
+#endif

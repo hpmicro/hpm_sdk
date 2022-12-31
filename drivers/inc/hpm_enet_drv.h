@@ -36,9 +36,9 @@
 #define ENET_MAX_PAYLOAD          (1500U)  /**< Maximum Ethernet payload size */
 #define ENET_MAX_FRAME_SIZE       (1524U)  /**< ENET_HEADER + ENET_EXTRA + VLAN_TAG + MAX_ENET_PAYLOAD + ENET_CRC */
 #define ENET_JUMBO_FRAME_PAYLOAD  (9000U)  /**< Jumbo frame payload size */
-
-#define ENET_ERROR                (0)   /**< ENET error */
-#define ENET_SUCCESS              (1)   /**< ENET success */
+#define ENET_MAC                  (6)      /**< Ethernet MAC size */
+#define ENET_ERROR                (0)      /**< ENET error */
+#define ENET_SUCCESS              (1)      /**< ENET success */
 
 #define ENET_ADJ_FREQ_BASE_ADDEND (0x7fffffffUL)  /**< PTP base adjustment addend */
 #define ENET_ONE_SEC_IN_NANOSEC   (1000000000UL)  /**< one second in nanoseconds */
@@ -46,6 +46,20 @@
  *  Typedef Enum Declarations
  *---------------------------------------------------------------------
  */
+
+/** @brief Programmable burst length selections */
+typedef enum {
+    enet_normal_int_sum_en   = ENET_DMA_INTR_EN_NIE_MASK,
+    enet_aboarmal_int_sum_en = ENET_DMA_INTR_EN_AIE_MASK,
+    enet_receive_int_en      = ENET_DMA_INTR_EN_RIE_MASK
+} enet_interrupt_enable_t;
+
+/** @brief Programmable burst length selections */
+typedef enum {
+    enet_lpi_int_mask    = ENET_INTR_MASK_LPIIM_MASK,
+    enet_rgsmii_int_mask = ENET_INTR_MASK_RGSMIIIM_MASK
+} enet_interrupt_mask_t;
+
 /** @brief Programmable burst length selections */
 typedef enum {
     enet_pbl_1  = 1,
@@ -153,10 +167,40 @@ typedef enum {
 } enet_ts_ss_ptp_msg_t;
 
 typedef enum {
-    enet_ptp_count_res_high = 0,  /* ptp sub-second count resolution at 0.465 ns */
-    enet_ptp_count_res_low        /* ptp su-second count resolution at 1 ns */
-} enet_ptp_count_res_t;
+    enet_ts_bin_rollover_control = 0,  /* timestamp rolls over after 0x7fffffff */
+    enet_ts_dig_rollover_control       /* timestamp rolls over after 0x3b9ac9ff */
+} enet_ts_rollover_control_t;
 
+/** @brief PPS0 control for output frequency selections */
+typedef enum {
+    enet_pps_ctrl_pps = 0,
+    enet_pps_ctrl_bin_2hz_digital_1hz,
+    enet_pps_ctrl_bin_4hz_digital_2hz,
+    enet_pps_ctrl_bin_8hz_digital_4hz,
+    enet_pps_ctrl_bin_16hz_digital_8hz,
+    enet_pps_ctrl_bin_32hz_digital_16hz,
+    enet_pps_ctrl_bin_64hz_digital_32hz,
+    enet_pps_ctrl_bin_128hz_digital_64hz,
+    enet_pps_ctrl_bin_256hz_digital_128hz,
+    enet_pps_ctrl_bin_512hz_digital_256hz,
+    enet_pps_ctrl_bin_1024hz_digital_512hz,
+    enet_pps_ctrl_bin_2048hz_digital_1024hz,
+    enet_pps_ctrl_bin_4096hz_digital_2048hz,
+    enet_pps_ctrl_bin_8192hz_digital_4096hz,
+    enet_pps_ctrl_bin_16384hz_digital_8192hz,
+    enet_pps_ctrl_bin_32867hz_digital_16384hz
+} enet_pps_ctrl_t;
+
+/** @brief PPS0 commands */
+typedef enum {
+    enet_pps_cmd_no_command = 0,
+    enet_pps_cmd_start_single_pulse,
+    enet_pps_cmd_start_pulse_train,
+    enet_pps_cmd_cancel_start,
+    enet_pps_cmd_stop_pulse_train_at_time,
+    enet_pps_cmd_stop_pulse_train_immediately,
+    enet_pps_cmd_cancel_stop_pulse_train
+} enet_pps_cmd_t;
 /*---------------------------------------------------------------------
  *  Typedef Struct Declarations
  *---------------------------------------------------------------------
@@ -167,7 +211,6 @@ typedef struct {
     uint32_t count;
     uint16_t size;
 } enet_buff_config_t;
-
 
 /** @brief enet mac config struct */
 typedef struct {
@@ -255,7 +298,6 @@ typedef struct {
     } tdes7_bm;
 #endif
 } enet_tx_desc_t;
-
 
 /** @brief reception descriptor struct */
 typedef struct {
@@ -378,20 +420,46 @@ typedef struct {
     enet_rx_frame_info_t rx_frame_info;
 } enet_desc_t;
 
-/** @brief PTP timestamp struct */
+/** @brief PTP system timestamp struct */
+typedef struct {
+    uint32_t sec;
+    uint32_t nsec;
+} enet_ptp_ts_system_t;
+
+/** @brief PTP update timestamp struct */
 typedef struct {
     uint32_t sec;
     uint32_t nsec;
     uint8_t sign;
-} enet_ptp_time_t;
+} enet_ptp_ts_update_t;
 
-/* PTP config strcut */
+/** @brief PTP target timestamp struct */
+typedef struct {
+    uint32_t sec;
+    uint32_t nsec;
+} enet_ptp_ts_target_t;
+
+/** @brief PTP config strcut */
 typedef struct {
     uint8_t ssinc;
-    uint8_t sub_sec_count_res;
+    uint8_t timestamp_rollover_mode;
     uint8_t update_method;
     uint32_t addend;
 } enet_ptp_config_t;
+
+/** @brief PTP PPS command output config strcut */
+typedef struct {
+    uint32_t pps_interval;
+    uint32_t pps_width;
+    uint32_t target_sec;
+    uint32_t target_nsec;
+} enet_pps_cmd_config_t;
+
+/** @brief Enet interrupt config struct */
+typedef struct {
+    uint32_t int_enable;  /* DMA_INTR_EN */
+    uint32_t int_mask;    /* INTR MASK */
+} enet_int_config_t;
 
 /*
  *  @brief Bit definition of TDES1
@@ -412,10 +480,10 @@ extern "C" {
  * @param[in] ptr An Ethernet peripheral base address
  * @param[in] inf_type the specified interface
  * @param[in] desc A pointer to descriptor config
- * @param[in] config A pointer to mac config
- * @param[in] intr A mask of all required interrupts
+ * @param[in] cfg A pointer to mac config
+ * @param[in] int_cfg A pointer to the masks of the specified enabled interrupts and the specified masked interrupts
  */
-int enet_controller_init(ENET_Type *ptr, enet_inf_type_t inf_type, enet_desc_t *desc, enet_mac_config_t *config, uint32_t intr);
+int enet_controller_init(ENET_Type *ptr, enet_inf_type_t inf_type, enet_desc_t *desc, enet_mac_config_t *cfg, enet_int_config_t *int_config);
 
 /**
  * @brief Set port line speed
@@ -531,25 +599,25 @@ void enet_init_ptp(ENET_Type *ptr, enet_ptp_config_t *config);
  * @brief Set a timestamp to the PTP timer
  *
  * @param[in] ptr An Ethernet peripheral base address
- * @param[in] timestamp A pointer to a timestamp structure instance
+ * @param[in] timestamp A pointer to a update timestamp structure instance
  */
-void enet_set_ptp_timestamp(ENET_Type *ptr, enet_ptp_time_t *timestamp);
+void enet_set_ptp_timestamp(ENET_Type *ptr, enet_ptp_ts_update_t *timestamp);
 
 /**
  * @brief Get a timestamp from the PTP timer
  *
  * @param[in] ptr An Ethernet peripheral base address
- * @param[out] timestamp A pointer to a timestamp structure instance
+ * @param[out] timestamp A pointer to a system timestamp structure instance
  */
-void enet_get_ptp_timestamp(ENET_Type *ptr, enet_ptp_time_t *timestamp);
+void enet_get_ptp_timestamp(ENET_Type *ptr, enet_ptp_ts_system_t *timestamp);
 
 /**
  * @brief Update a timestamp to the PTP timer
  *
  * @param[in] ptr An Ethernet peripheral base address
- * @param[in] timeoffset A pointer to a timestamp structure instance
+ * @param[in] timeoffset A pointer to a update timestamp structure instance
  */
-void enet_update_ptp_timeoffset(ENET_Type *ptr, enet_ptp_time_t *timeoffset);
+void enet_update_ptp_timeoffset(ENET_Type *ptr, enet_ptp_ts_update_t *timeoffset);
 
 /**
  * @brief Adjust the count frequency of the PTP timer
@@ -584,6 +652,30 @@ hpm_stat_t enet_enable_ptp_frame_type(ENET_Type *ptr, enet_ptp_frame_type_t ptp_
  * @param[in] ts_ss_ptp_msg An enum value indicating the specified ptp message type for snapshots
  */
 void enet_set_snapshot_ptp_message_type(ENET_Type *ptr, enet_ts_ss_ptp_msg_t ts_ss_ptp_msg);
+
+/**
+ * @brief Set the pps0 control output
+ *
+ * @param[in] ptr An Ethernet peripheral base address
+ * @param[in] enet_pps_ctrl_t An enum value indicating the specified pps frequency
+ */
+void enet_set_pps0_control_output(ENET_Type *ptr, enet_pps_ctrl_t freq);
+
+/**
+ * @brief Set the pps0 control config
+ *
+ * @param[in] ptr An Ethernet peripheral base address
+ * @param[in] enet_pps_ctrl_t A struct pointer indicating the specified pps command configuration
+ */
+void enet_set_pps0_command_config(ENET_Type *ptr, enet_pps_cmd_config_t *cmd_cfg);
+
+/**
+ * @brief Set the pps0 control config
+ *
+ * @param[in] ptr An Ethernet peripheral base address
+ * @param[in] enet_pps_ctrl_t An enum value indicating the specified pps command
+ */
+void enet_set_pps0_cmd(ENET_Type *ptr, enet_pps_cmd_t cmd);
 
 #if defined __cplusplus
 }

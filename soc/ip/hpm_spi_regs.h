@@ -847,12 +847,13 @@ typedef struct {
 
 /* Bitfield definition for register: SLVST */
 /*
- * UNDERRUN (R1C)
+ * UNDERRUN (W1C)
  *
  * Data underrun occurs in the last transaction
  */
 #define SPI_SLVST_UNDERRUN_MASK (0x40000UL)
 #define SPI_SLVST_UNDERRUN_SHIFT (18U)
+#define SPI_SLVST_UNDERRUN_SET(x) (((uint32_t)(x) << SPI_SLVST_UNDERRUN_SHIFT) & SPI_SLVST_UNDERRUN_MASK)
 #define SPI_SLVST_UNDERRUN_GET(x) (((uint32_t)(x) & SPI_SLVST_UNDERRUN_MASK) >> SPI_SLVST_UNDERRUN_SHIFT)
 
 /*

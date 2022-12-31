@@ -9,6 +9,10 @@
 
 将LCD屏连接到评估板
 
+## 编译类型
+- flash_sdram_xip
+- flash_sdram_xip_release
+
 ## 运行
 
 littglevgl widgets将会显示在LCD屏上

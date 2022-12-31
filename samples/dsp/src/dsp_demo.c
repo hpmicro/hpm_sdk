@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2012-2019 Andes Technology Corporation
- * All rights reserved.
+ * Copyright (c) 2022 HPMicro
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *
  */
 #include <stdio.h>

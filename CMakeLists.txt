@@ -157,6 +157,15 @@ file(WRITE ${EMPTY_FILE} "")
 
 add_executable(${APP_ELF_NAME} ${EMPTY_FILE})
 
+# generate SDK version file
+execute_process(
+  COMMAND ${CMAKE_COMMAND} -DHPM_SDK_BASE=${HPM_SDK_BASE}
+    -DOUT_FILE=${PROJECT_BINARY_DIR}/include/generated/hpm_sdk_version.h
+    -P ${HPM_SDK_BASE}/cmake/gen_version_h.cmake
+  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+)
+sdk_inc(${PROJECT_BINARY_DIR}/include/generated/)
+
 set_target_properties(${APP_ELF_NAME} PROPERTIES LINK_DEPENDS ${LINKER_SCRIPT})
 
 if("${TOOLCHAIN_VARIANT}" STREQUAL "nds-gcc")

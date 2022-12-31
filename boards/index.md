@@ -43,3 +43,6 @@ Click [here](lab_hpm6300_evk_board) to view the HPM6300EVK development board
 (lab_board_overiew)=
 (lab_board_app_acmp_pin)=
 (lab_board_app_gptmr_pin)=
+(lab_board_app_audio_input)=
+(lab_board_app_headphone)=
+(lab_board_app_dao)=

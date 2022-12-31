@@ -1,0 +1,3 @@
+dependency:
+  - usb-otg
+  - audio-codec || dao

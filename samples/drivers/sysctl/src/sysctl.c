@@ -35,7 +35,7 @@ const node_info_t node_name[] = {
     {"axi1", clock_node_axi1, monitor_target_clk_top_axi1},
     {"axi2", clock_node_axi2, monitor_target_clk_top_axi2},
     {"ahb0", clock_node_ahb0, monitor_target_clk_top_ahb0},
-    {"dram", clock_node_dram, monitor_target_clk_top_dram},
+    {"femc", clock_node_femc, monitor_target_clk_top_femc},
     {"xpi0", clock_node_xpi0, monitor_target_clk_top_xpi0},
     {"xpi1", clock_node_xpi1, monitor_target_clk_top_xpi1},
     {"gptmr0", clock_node_gptmr0, monitor_target_clk_top_gptmr0},
@@ -130,7 +130,7 @@ const source_info_t adc_clock_source_name[] = {
 };
 
 const char *linkable_resource_name[] = {
-    "ahbp", "axis", "axic", "axiv", "dramc", "rom0", "lm0", "lm1", "mchtmr0",
+    "ahbp", "axis", "axic", "axiv", "femc", "rom0", "lm0", "lm1", "mchtmr0",
     "mchtmr1", "ram0", "ram1", "xpi0", "xpi1", "sdp0", "rng0", "keym", "dma0",
     "dma1", "gpio", "mbx0", "mbx1", "wdog0", "wdog1", "wdog2", "wdog3",
     "gptmr0", "gptmr1", "gptmr2", "gptmr3", "gptmr4", "gptmr5", "gptmr6", "gptmr7",

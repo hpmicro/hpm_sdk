@@ -6,13 +6,17 @@
 
 更多详细信息请参考 [官方 lv_demos github](https://github.com/lvgl/lv_demos)
 
+## 工程配置
+
+- 在文件[CMakeLists.txt](./CmakeLists.txt)中, 根据需求设置音频播放器件的类型，默认使用DAO播放。如存在板载音频编解码芯片， 可以设置匹配的音频编解码芯片类型， 例如："set(CONFIG_CODEC "sgtl5000")"。
+
 ## 硬件连接
 
 将LCD屏连接到评估板；
 
 将存储wav格式歌曲的MicroSD卡插入到卡槽中；
 
-将喇叭接在DAO输出端口上。
+根据工程配置， 使用DAO播放时将喇叭接到[DAO](lab_board_app_dao)接口， 使用音频编解码芯片播放时将耳机接到音频编解码芯片的[耳机](lab_board_app_headphone)接口。
 
 ## 运行
 

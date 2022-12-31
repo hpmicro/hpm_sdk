@@ -9,10 +9,6 @@
 #include "hpm_gpio_drv.h"
 #include "hpm_gpiom_drv.h"
 
-#ifndef BOARD_LED_OFF_LEVEL 
-#define BOARD_LED_OFF_LEVEL 0
-#endif
-
 #define GPIO_TOGGLE_COUNT 5
 
 void test_gpio_toggle_output(GPIO_Type *ptr)
@@ -21,7 +17,7 @@ void test_gpio_toggle_output(GPIO_Type *ptr)
     gpio_set_pin_output(ptr, BOARD_LED_GPIO_INDEX,
                            BOARD_LED_GPIO_PIN);
     gpio_write_pin(ptr, BOARD_LED_GPIO_INDEX,
-                        BOARD_LED_GPIO_PIN, BOARD_LED_OFF_LEVEL);
+                        BOARD_LED_GPIO_PIN, board_get_led_gpio_off_level());
 
     for (uint32_t i = 0; i < GPIO_TOGGLE_COUNT; i++) {
         gpio_toggle_pin(ptr, BOARD_LED_GPIO_INDEX,

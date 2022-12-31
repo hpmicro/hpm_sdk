@@ -11,7 +11,7 @@
 #include "hpm_bldc_foc_func.h"
 #include "hpm_smc.h"
 
-void bldc_nullcallback_func(void)
+void hpm_mcl_nullcallback_func(void)
 {
     while (1) {
         ;
@@ -103,7 +103,7 @@ const float bldc_foc_sintable[SIN_TABLE_INDEX_MAX + 1] = {
  0.999600, 0.999684, 0.999758, 0.999822, 0.999877, 0.999921, 0.999956, 0.999980, 0.999995, 1.000000
 };
 
-void bldc_foc_al_speed(BLDC_CONTRL_SPD_PARA  *par)
+void hpm_mcl_bldc_foc_al_speed(BLDC_CONTRL_SPD_PARA  *par)
 {
     HPM_MOTOR_MATH_TYPE deta;
     deta = par->speedtheta - par->speedlasttheta;
@@ -112,16 +112,16 @@ void bldc_foc_al_speed(BLDC_CONTRL_SPD_PARA  *par)
     } else if (deta < HPM_MOTOR_MATH_FL_MDF(-180)) {/*+speed*/
         deta = HPM_MOTOR_MATH_FL_MDF(360) + par->speedtheta - par->speedlasttheta;
     }
-    par->speedthetaLastN += deta;
+    par->speedthetalastn += deta;
     par->speedlasttheta = par->speedtheta;
     par->num++;
-    if (par->I_speedacq == par->num) {
+    if (par->i_speedacq == par->num) {
         par->num = 0;
-        par->O_speedout = HPM_MOTOR_MATH_DIV(par->speedthetaLastN,
-            HPM_MOTOR_MATH_MUL(HPM_MOTOR_MATH_MUL(par->I_speedLooptime_s, HPM_MOTOR_MATH_FL_MDF(par->I_motorpar->I_Poles_n)), HPM_MOTOR_MATH_FL_MDF(360)));
-        par->O_speedout_filter = par->O_speedout_filter + HPM_MOTOR_MATH_MUL(par->I_speedfilter,
-            (par->O_speedout - par->O_speedout_filter));
-        par->speedthetaLastN = 0;
+        par->o_speedout = HPM_MOTOR_MATH_DIV(par->speedthetalastn,
+            HPM_MOTOR_MATH_MUL(HPM_MOTOR_MATH_MUL(par->i_speedlooptime_s, HPM_MOTOR_MATH_FL_MDF(par->i_motorpar->i_poles_n)), HPM_MOTOR_MATH_FL_MDF(360)));
+        par->o_speedout_filter = par->o_speedout_filter + HPM_MOTOR_MATH_MUL(par->i_speedfilter,
+            (par->o_speedout - par->o_speedout_filter));
+        par->speedthetalastn = 0;
     }
 }
 
@@ -150,7 +150,7 @@ static void bldc_foc_sin_cos(HPM_MOTOR_MATH_TYPE angle, HPM_MOTOR_MATH_TYPE angl
     }
 }
 
-void bldc_foc_inv_park(HPM_MOTOR_MATH_TYPE ud, HPM_MOTOR_MATH_TYPE uq,
+void hpm_mcl_bldc_foc_inv_park(HPM_MOTOR_MATH_TYPE ud, HPM_MOTOR_MATH_TYPE uq,
                     HPM_MOTOR_MATH_TYPE *ualpha, HPM_MOTOR_MATH_TYPE *ubeta,
                     HPM_MOTOR_MATH_TYPE sin_angle, HPM_MOTOR_MATH_TYPE cos_angle)
 {
@@ -158,7 +158,7 @@ void bldc_foc_inv_park(HPM_MOTOR_MATH_TYPE ud, HPM_MOTOR_MATH_TYPE uq,
     *ubeta = HPM_MOTOR_MATH_MUL(sin_angle, ud) + HPM_MOTOR_MATH_MUL(cos_angle, uq);
 }
 
-void bldc_foc_svpwm(BLDC_CONTROL_PWM_PARA *par)
+void hpm_mcl_bldc_foc_svpwm(BLDC_CONTROL_PWM_PARA *par)
 {
     int32_t ualpha_60, ubeta_30;
     uint32_t pwm_reload;
@@ -174,7 +174,7 @@ void bldc_foc_svpwm(BLDC_CONTROL_PWM_PARA *par)
     ubeta_30 = ubeta_30 >> 1;
     uref2 = HPM_MOTOR_MATH_MDF_FL(ualpha_60 - ubeta_30);
     uref3 = HPM_MOTOR_MATH_MDF_FL(-ualpha_60 - ubeta_30);
-    pwm_reload = par->pwmout.I_pwm_reload;
+    pwm_reload = par->pwmout.i_pwm_reload;
 
     if (uref1 >= 0)
         sector = 1;
@@ -283,7 +283,7 @@ void bldc_foc_svpwm(BLDC_CONTROL_PWM_PARA *par)
     par->pwmout.pwm_w = twon;
 }
 
-void bldc_foc_clarke(HPM_MOTOR_MATH_TYPE currentu, HPM_MOTOR_MATH_TYPE currentv, HPM_MOTOR_MATH_TYPE currentw,
+void hpm_mcl_bldc_foc_clarke(HPM_MOTOR_MATH_TYPE currentu, HPM_MOTOR_MATH_TYPE currentv, HPM_MOTOR_MATH_TYPE currentw,
              HPM_MOTOR_MATH_TYPE *currentalpha, HPM_MOTOR_MATH_TYPE *currentbeta)
 {
     int32_t curbeta;
@@ -292,7 +292,7 @@ void bldc_foc_clarke(HPM_MOTOR_MATH_TYPE currentu, HPM_MOTOR_MATH_TYPE currentv,
     *currentbeta = HPM_MOTOR_MATH_FL_MDF(curbeta);
 }
 
-void bldc_foc_park(HPM_MOTOR_MATH_TYPE currentalpha, HPM_MOTOR_MATH_TYPE currentbeta,
+void hpm_mcl_bldc_foc_park(HPM_MOTOR_MATH_TYPE currentalpha, HPM_MOTOR_MATH_TYPE currentbeta,
                    HPM_MOTOR_MATH_TYPE *currentd, HPM_MOTOR_MATH_TYPE *currentq,
                    HPM_MOTOR_MATH_TYPE sin_angle, HPM_MOTOR_MATH_TYPE cos_angle)
 {
@@ -300,7 +300,7 @@ void bldc_foc_park(HPM_MOTOR_MATH_TYPE currentalpha, HPM_MOTOR_MATH_TYPE current
     *currentq = HPM_MOTOR_MATH_MUL(-sin_angle, currentalpha) + HPM_MOTOR_MATH_MUL(cos_angle, currentbeta);
 }
 
-void bldc_foc_current_cal(BLDC_CONTROL_CURRENT_PARA *par)
+void hpm_mcl_bldc_foc_current_cal(BLDC_CONTROL_CURRENT_PARA *par)
 {
     par->cal_u = HPM_MOTOR_MATH_FL_MDF(par->adc_u_middle - par->adc_u);
     par->cal_v = HPM_MOTOR_MATH_FL_MDF(par->adc_v_middle - par->adc_v);
@@ -308,7 +308,7 @@ void bldc_foc_current_cal(BLDC_CONTROL_CURRENT_PARA *par)
 
 }
 
-void bldc_foc_pi_contrl(BLDC_CONTRL_PID_PARA *par)
+void hpm_mcl_bldc_foc_pi_contrl(BLDC_CONTRL_PID_PARA *par)
 {
     HPM_MOTOR_MATH_TYPE result = 0;
 
@@ -317,14 +317,14 @@ void bldc_foc_pi_contrl(BLDC_CONTRL_PID_PARA *par)
     HPM_MOTOR_MATH_TYPE portion_asi = 0;
 
     curerr = par->target - par->cur;
-    portion_asp = HPM_MOTOR_MATH_MUL(curerr, (par->I_kp));
-    portion_asi = HPM_MOTOR_MATH_MUL(curerr, (par->I_ki)) + par->mem;
+    portion_asp = HPM_MOTOR_MATH_MUL(curerr, (par->i_kp));
+    portion_asi = HPM_MOTOR_MATH_MUL(curerr, (par->i_ki)) + par->mem;
     result = portion_asi + portion_asp;
 
-    if (result < (-par->I_max)) {
-        result = -par->I_max;
-    } else if (result > par->I_max) {
-        result = par->I_max;
+    if (result < (-par->i_max)) {
+        result = -par->i_max;
+    } else if (result > par->i_max) {
+        result = par->i_max;
     } else {
         par->mem = portion_asi;
     }
@@ -332,31 +332,31 @@ void bldc_foc_pi_contrl(BLDC_CONTRL_PID_PARA *par)
     par->outval = result;
 }
 
-void bldc_foc_ctrl_dq_to_pwm(BLDC_CONTROL_FOC_PARA *par)
+void hpm_mcl_bldc_foc_ctrl_dq_to_pwm(BLDC_CONTROL_FOC_PARA *par)
 {
 
     HPM_MOTOR_MATH_TYPE sin_angle = 0;
     HPM_MOTOR_MATH_TYPE cos_angle = 0;
 
-    par->samplCurpar.func_sampl(&par->samplCurpar);
-    bldc_foc_clarke(par->samplCurpar.cal_u, par->samplCurpar.cal_v, par->samplCurpar.cal_w,
-                    &par->i_alpha, &par->i_beta);
+    par->samplcurpar.func_sampl(&par->samplcurpar);
+    hpm_mcl_bldc_foc_clarke(par->samplcurpar.cal_u, par->samplcurpar.cal_v, par->samplcurpar.cal_w,
+                    &par->ialpha, &par->ibeta);
     if (par->pos_estimator_par.func != NULL) {
         par->pos_estimator_par.func(par->pos_estimator_par.par);
     }
 
     bldc_foc_sin_cos(par->electric_angle, PRECISION, &sin_angle, &cos_angle);
-    bldc_foc_park(par->i_alpha, par->i_beta,
-                &par->CurrentDPiPar.cur, &par->CurrentQPiPar.cur,
+    hpm_mcl_bldc_foc_park(par->ialpha, par->ibeta,
+                &par->currentdpipar.cur, &par->currentqpipar.cur,
                 sin_angle, cos_angle);
 
-    par->CurrentDPiPar.func_pid(&par->CurrentDPiPar);
-    par->CurrentQPiPar.func_pid(&par->CurrentQPiPar);
+    par->currentdpipar.func_pid(&par->currentdpipar);
+    par->currentqpipar.func_pid(&par->currentqpipar);
 
-    bldc_foc_inv_park(par->CurrentDPiPar.outval, par->CurrentQPiPar.outval,
-        &par->u_alpha, &par->u_beta, sin_angle, cos_angle);
-    par->pwmpar.target_alpha = par->u_alpha;
-    par->pwmpar.target_beta = par->u_beta;
+    hpm_mcl_bldc_foc_inv_park(par->currentdpipar.outval, par->currentqpipar.outval,
+        &par->ualpha, &par->ubeta, sin_angle, cos_angle);
+    par->pwmpar.target_alpha = par->ualpha;
+    par->pwmpar.target_beta = par->ubeta;
     par->pwmpar.func_spwm(&par->pwmpar);
 
 }

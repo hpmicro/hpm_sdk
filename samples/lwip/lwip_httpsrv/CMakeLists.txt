@@ -12,28 +12,9 @@ set(CONFIG_ENET_PHY_DP83848 1)
 set(CONFIG_LWIP_HTTPSRV 1)
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
+#sdk_compile_definitions(-D__USE_ENET_RECEIVE_INTERRUPT=1)
 
-if(${CONFIG_ENET_PHY_DP83867})
-    sdk_compile_definitions(-DRGMII=1)
-    sdk_compile_definitions(-D__USE_DP83867=1)
-endif()
-
-if(${CONFIG_ENET_PHY_RTL8211})
-    sdk_compile_definitions(-DRGMII=1)
-    sdk_compile_definitions(-D__USE_RTL8211=1)
-endif()
-
-if(${CONFIG_ENET_PHY_DP83848})
-    sdk_compile_definitions(-DRGMII=0)
-    sdk_compile_definitions(-D__USE_DP83848=1)
-endif()
-
-if(${CONFIG_ENET_PHY_RTL8201})
-    sdk_compile_definitions(-DRGMII=0)
-    sdk_compile_definitions(-D__USE_RTL8201=1)
-endif()
 project(lwip_httpsrv_example)
-
 sdk_inc(../common)
 sdk_inc(../common/arch)
 sdk_inc(../common/feature)

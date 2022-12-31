@@ -16,10 +16,8 @@ spi_polling_slave示例工程展示了SPI作为slave进行板与板之间通信�
 ```
 SPI-Slave Polling Transfer Example
 SPI-Slave transfer format is configured.
-SPI-Slave transfer mode:read-dummy-write
+SPI-Slave transfer mode:write-read-together
 SPI-Slave transfer waits.
-SPI-Slave read command:0x1a
-SPI-Slave read address:dummy
 SPI-Slave read  data: 0xa0 0xa1 0xa2 0xa3 0xa4 0xa5 0xa6 0xa7 0xa8 0xa9
 SPI-Slave write data: 0xb0 0xb1 0xb2 0xb3 0xb4 0xb5 0xb6 0xb7 0xb8 0xb9
 SPI-Slave transfer ends.

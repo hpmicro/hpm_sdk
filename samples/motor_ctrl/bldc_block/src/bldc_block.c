@@ -76,14 +76,14 @@ void isr_hall(void)
     
     hall_clear_status(BOARD_BLDC_HALL_BASE, hall_get_status(BOARD_BLDC_HALL_BASE));
 
-    /* the following u,v,w count value read out on read event at u singal toggle */
+    /* the following u, v, w count value read out on read event at u signal toggle */
     hall_stat = hall_get_current_uvw_stat(BOARD_BLDC_HALL_BASE);
     w = ((hall_stat >> 0)& 0x01);
     v = ((hall_stat >> 1)& 0x01);
     u = ((hall_stat >> 2)& 0x01);
-    motor_step = bldc_block_step_get(MOTOR0_HALL_ANGLE,u,v,w);
+    motor_step = hpm_mcl_bldc_block_step_get(MOTOR0_HALL_ANGLE, u, v, w);
 
-    bldc_block_ctrl(BLDC_MOTOR0_INDEX,motor_dir,motor_step);
+    hpm_mcl_bldc_block_ctrl(BLDC_MOTOR0_INDEX, motor_dir, motor_step);
 }
 
 SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_HALL_IRQ, isr_hall)
@@ -126,13 +126,13 @@ float qei_get_speed(bool zero)
         spd =0;
     }
     else{
-        spd = qei_get_speed_history(BOARD_BLDC_QEI_BASE,0)+\
-            qei_get_speed_history(BOARD_BLDC_QEI_BASE,1)+\
-            qei_get_speed_history(BOARD_BLDC_QEI_BASE,2)+\
-            qei_get_speed_history(BOARD_BLDC_QEI_BASE,3);
+        spd = qei_get_speed_history(BOARD_BLDC_QEI_BASE, 0)+\
+            qei_get_speed_history(BOARD_BLDC_QEI_BASE, 1)+\
+            qei_get_speed_history(BOARD_BLDC_QEI_BASE, 2)+\
+            qei_get_speed_history(BOARD_BLDC_QEI_BASE, 3);
     }
     /*get dir*/
-    dir = qei_get_count_on_read_event(BOARD_BLDC_QEI_BASE,qei_counter_type_speed) >> QEI_COUNT_SPD_DIR_SHIFT;
+    dir = qei_get_count_on_read_event(BOARD_BLDC_QEI_BASE, qei_counter_type_speed) >> QEI_COUNT_SPD_DIR_SHIFT;
     if(dir == 0){
         spd = -spd;
     }
@@ -288,10 +288,10 @@ void disable_all_pwm_output(void)
 /*qei*/
 void isr_qei(void)
 {
-    if(qei_get_bit_status(BOARD_BLDC_QEI_BASE,QEI_EVENT_WDOG_FLAG_MASK)){
+    if (qei_get_bit_status(BOARD_BLDC_QEI_BASE, QEI_EVENT_WDOG_FLAG_MASK)) {
         current_speed_global = qei_get_speed(0);            
     }
-    if(qei_get_bit_status(BOARD_BLDC_QEI_BASE,QEI_EVENT_POSITIVE_COMPARE_FLAG_MASK)){
+    if (qei_get_bit_status(BOARD_BLDC_QEI_BASE, QEI_EVENT_POSITIVE_COMPARE_FLAG_MASK)) {
         current_speed_global = qei_get_speed(1);
     }
     qei_clear_status(BOARD_BLDC_QEI_BASE, qei_get_status(BOARD_BLDC_QEI_BASE));
@@ -313,7 +313,7 @@ int qei_init(void)
 
     intc_m_enable_irq_with_priority(BOARD_BLDC_QEI_IRQ, 1);
 
-    qei_wdog_config(BOARD_BLDC_QEI_BASE,QEI_WDOG_TIMEOUT,1);
+    qei_wdog_config(BOARD_BLDC_QEI_BASE, QEI_WDOG_TIMEOUT, 1);
     qei_wdog_enable(BOARD_BLDC_QEI_BASE);
 
     qei_counter_reset_assert(BOARD_BLDC_QEI_BASE);
@@ -364,7 +364,7 @@ void isr_gptmr(void)
                 }
             }
             
-            pi = al_pi_ctrl_func(&motor_pi_ctrl_mem,setspeed,current_speed_global,fre_pid_p,fre_pid_i,PI_PWM_RANGE);
+            pi = hpm_mcl_al_pi_ctrl_func(&motor_pi_ctrl_mem, setspeed, current_speed_global, fre_pid_p, fre_pid_i, PI_PWM_RANGE);
             fre_curspeed = current_speed_global;
             block_pwm_out = pival_to_pwmoutput(pi);
             pwm_update_raw_cmp_central_aligned(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_INDEX_0, BOARD_BLDCPWM_CMP_INDEX_1,
@@ -412,14 +412,14 @@ int main(void)
                  (PWM_RELOAD - block_pwm_out)<<1, (PWM_RELOAD + block_pwm_out)<<1);
     pwm_issue_shadow_register_lock_event(MOTOR0_BLDCPWM);
 
-    /*start motor By Hall position ,Get motor step*/
+    /*start motor By Hall position , Get motor step*/
     hal_stat = hall_get_current_uvw_stat(BOARD_BLDC_HALL_BASE);
     w = ((hal_stat >> 0)& 0x01);
     v = ((hal_stat >> 1)& 0x01);
     u = ((hal_stat >> 2)& 0x01);
-    motor_step = bldc_block_step_get(MOTOR0_HALL_ANGLE,u,v,w);
+    motor_step = hpm_mcl_bldc_block_step_get(MOTOR0_HALL_ANGLE, u, v, w);
 
-    bldc_block_ctrl(BLDC_MOTOR0_INDEX,motor_dir,motor_step);
+    hpm_mcl_bldc_block_ctrl(BLDC_MOTOR0_INDEX, motor_dir, motor_step);
 
     printf("\r\nSpeed mode, motor run, speed is: %f.\r\nInput speed:\r\n", fre_setspeed);
     while (1) {

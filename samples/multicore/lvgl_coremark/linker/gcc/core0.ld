@@ -195,8 +195,11 @@ SECTIONS
         . = ALIGN(8);
         PROVIDE (_stack = .);
         PROVIDE (_stack_safe = .);
-    } > SDRAM
+    } > AXI_SRAM
 
     __noncacheable_start__ = ORIGIN(SDRAM_NONCACHABLE);
     __noncacheable_end__ = ORIGIN(SDRAM_NONCACHABLE) + LENGTH(SDRAM_NONCACHABLE);
+    /* define symbols for building, length is 0 */
+    __share_mem_start__ = __noncacheable_end__;
+    __share_mem_end__ = __share_mem_start__;
 }

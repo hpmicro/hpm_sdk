@@ -152,9 +152,8 @@ hpm_stat_t dma_setup_handshake(DMA_Type *ptr,  dma_handshake_config_t *pconfig, 
         return status_invalid_argument;
     }
 
-    /*  In DMA handshake case, source width and destination width must be BYTE. */
-    config.src_width = DMA_TRANSFER_WIDTH_BYTE;
-    config.dst_width = DMA_TRANSFER_WIDTH_BYTE;
+    config.src_width = pconfig->data_width;
+    config.dst_width = pconfig->data_width;
     config.src_addr = pconfig->src;
     config.dst_addr = pconfig->dst;
     config.size_in_byte = pconfig->size_in_byte;

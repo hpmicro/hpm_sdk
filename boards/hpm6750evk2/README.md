@@ -1,4 +1,4 @@
-# HPM6750E2VK
+# HPM6750EVK2
 
 ## Overview
 
@@ -8,7 +8,7 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 
 ## Hardware
 
-- HPM6750IVM MCU (816Mhz, 2MB OCRAM)
+- HPM6750IVM MCU (816MHz, 2MB OCRAM)
 - Onboard Memory
   - 256Mb SDRAM
   - 128Mb Quad SPI NOR Flash
@@ -26,7 +26,6 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
   - DAO
 - Others
   - TF Slot
-  - FT2232
   - RGB LED
   - CAN
 - Expansion port
@@ -75,56 +74,88 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 
 ## Pin Description
 
-- PWM Pin:
+- UART0 Pin:
 
-  ![image-1](../../doc/images/boards/hpm6750evk/hpm6750evk_pwm_output_pin.png "image-1")
+The UART0 pin leads to three positions:
+| Function  | Pin  | Position1 | Position2  | Position3  |
+| --------- | ---- | -------- | ----------- | ---------- |
+| UART0.TX  | PY06 | J109[1]  | JTAG P4[7]  | USB2UART0  |
+| UART0.RX  | PY07 | J109[3]  | JTAG P4[9]  | USB2UART0  |
+
+Note: To avoid abnormal functions caused by multiple connections, please ensure that there is only one connection. For example, if the JTAG interface is connected to UART0, USB2UART0 interface send data to UART0 will be abnormal.
+
 - SPI Pin：
 
-| Function  | Position |
-| --------- | -------- |
-| SPI2.CSN  | J20[7]   |
-| SPI2.SCLK | J20[8]   |
-| SPI2.MISO | J20[9]   |
-| SPI2.MOSI | J20[10]  |
+| Function  | Pin  | Position|
+| --------- | ---- | ------- |
+| SPI2.CSN  | PE31 | J11[7]  |
+| SPI2.SCLK | PE27 | J11[8]  |
+| SPI2.MISO | PE28 | J11[9]  |
+| SPI2.MOSI | PE30 | J11[10] |
 
-- I2C Pin：
+- I2C Pin：：
 
-| Function | Position |
-| -------- | -------- |
-| I2C0.SCL | J20[3]   |
-| I2C0.SDA | J20[4]   |
+| Function | Pin  | Position|
+| -------- | ---- | ------ |
+| I2C0.SCL | PZ11 | J11[3] |
+| I2C0.SDA | PZ10 | J11[4] |
 
-- UART for core1 debug console
+- UART for core1 debug console：
 
-| Function   | Position |
-| ---------- | -------- |
-| UART13.TXD | J20[5]   |
-| UART13.RXD | J20[6]   |
+| Function   | Pin  | Position|
+| ---------- | ---- | ------ |
+| UART13.TXD | PZ09 | J11[5] |
+| UART13.RXD | PZ08 | J11[6] |
+
+- PWM Pin:
+
+| Function  | Pin  | Position|
+| --------- | ---- | ------- |
+| PWM2.P[0] | PD31 | J10[14]  |
+| PWM2.P[1] | PD30 | J10[13]  |
 
 - ACMP Pin
 
-| Function   | Position |
-| ---------- | -------- |
-| CMP.INN6   | J10[8]   |
-| CMP.COMP_1 | J10[6]   |
+| Function   | Pin  | Position|
+| ---------- | ---- | ------ |
+| CMP.INN6   | PE21 | J10[8] |
+| CMP.COMP_1 | PE25 | J10[6] |
 
 - GPTMR Pin
 
-| Function      | Position |
-| ------------- | -------- |
-| GPTMR4.CAPT_1 | J10[6]   |
-| GPTMR3.COMP_1 | J10[7]   |
+| Function      | Pin  | Position|
+| ------------- | ---- | ------ |
+| GPTMR4.CAPT_1 | PE25 | J10[6] |
+| GPTMR3.COMP_1 | PE24 | J10[7] |
 
 - ADC12 Pin
 
-| Function        | Position |
-| --------------- | -------- |
-| ADC0/1/2.VINP11 | J10[6]   |
-| ADC0/1/2.VINP10 | J10[7]   |
-| ADC0/1/2.VINP7  | J10[8]   |
+| Function        | Pin  | Position|
+| --------------- | ---- | ------ |
+| ADC0/1/2.VINP11 | PE25 | J10[6] |
+| ADC0/1/2.VINP10 | PE24 | J10[7] |
+| ADC0/1/2.VINP7  | PE21 | J10[8] |
 
 - ADC16 Pin
 
-| Function  | Position |
-| :-------- | -------- |
-| ADC3.INA2 | J10[5]   |
+| Function  | Pin  | Position|
+| --------- | ---- | ------ |
+| ADC3.INA2 | PE29 | J10[5] |
+
+- headphone interface
+
+| Function        | Position |
+| --------        | ------ |
+| 3.5mm headphone | J13    |
+
+- audio input interface
+
+| Function    | Position |
+| --------    | ------ |
+| microphone  | P3     |
+
+- DAO interface
+
+| Function    | Position |
+| --------    | ------   |
+| DAO-SPK     | J12      |

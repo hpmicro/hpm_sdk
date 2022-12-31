@@ -235,12 +235,7 @@ static volatile uint8_t hid_state = HID_STATE_IDLE;
 /* function ------------------------------------------------------------------*/
 static void usbd_hid_int_callback(uint8_t ep, uint32_t nbytes)
 {
-    /*!< endpoint call back */
-    /*!< transfer successfully */
-    if (hid_state == HID_STATE_BUSY) {
-        /*!< update the state  */
-        hid_state = HID_STATE_IDLE;
-    }
+    hid_state = HID_STATE_IDLE;
 }
 
 /*!< endpoint call back */
@@ -296,25 +291,23 @@ struct usbd_endpoint cdc_in_ep = {
     .ep_cb = usbd_cdc_acm_bulk_in
 };
 
-/* function ------------------------------------------------------------------*/
-/**
-  * @brief            msc ram init
-  * @pre              none
-  * @param[in]        none
-  * @retval           none
-  */
+struct usbd_interface intf0;
+struct usbd_interface intf1;
+struct usbd_interface intf2;
+struct usbd_interface intf3;
+
 void cdc_acm_hid_msc_descriptor_init(void)
 {
     usbd_desc_register(cdc_acm_hid_msc_descriptor);
 
-    usbd_add_interface(usbd_cdc_acm_alloc_intf());
-    usbd_add_interface(usbd_cdc_acm_alloc_intf());
+    usbd_add_interface(usbd_cdc_acm_init_intf(&intf0));
+    usbd_add_interface(usbd_cdc_acm_init_intf(&intf1));
     usbd_add_endpoint(&cdc_out_ep);
     usbd_add_endpoint(&cdc_in_ep);
 
-    usbd_add_interface(usbd_msc_alloc_intf(MSC_OUT_EP, MSC_IN_EP));
+    usbd_add_interface(usbd_msc_init_intf(&intf2, MSC_OUT_EP, MSC_IN_EP));
 
-    usbd_add_interface(usbd_hid_alloc_intf(hid_mouse_report_desc, HID_MOUSE_REPORT_DESC_SIZE));
+    usbd_add_interface(usbd_hid_init_intf(&intf3, hid_mouse_report_desc, HID_MOUSE_REPORT_DESC_SIZE));
     usbd_add_endpoint(&hid_in_ep);
 
     /*!< init mouse report data */
@@ -341,6 +334,7 @@ void hid_mouse_test(void)
     if (ret < 0) {
         return;
     }
+    hid_state = HID_STATE_BUSY;
     while (hid_state == HID_STATE_BUSY) {
     }
 }

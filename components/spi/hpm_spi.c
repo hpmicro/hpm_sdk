@@ -7,7 +7,7 @@
 
 #include "hpm_spi.h"
 
-static hpm_stat_t hpm_spi_tx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_ptr, uint32_t src, uint32_t size)
+static hpm_stat_t hpm_spi_tx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_ptr, uint32_t src, uint8_t data_width, uint32_t size)
 {
     dma_handshake_config_t config;
     config.ch_index = ch_num;
@@ -15,12 +15,13 @@ static hpm_stat_t hpm_spi_tx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_
     config.dst_fixed = true;
     config.src = src;
     config.src_fixed = false;
+    config.data_width = data_width;
     config.size_in_byte = size;
 
     return dma_setup_handshake(dma_ptr, &config, true);
 }
 
-static hpm_stat_t hpm_spi_rx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_ptr, uint32_t dst, uint32_t size)
+static hpm_stat_t hpm_spi_rx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_ptr, uint32_t dst, uint8_t data_width, uint32_t size)
 {
     dma_handshake_config_t config;
     config.ch_index = ch_num;
@@ -28,6 +29,7 @@ static hpm_stat_t hpm_spi_rx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_
     config.dst_fixed = false;
     config.src = (uint32_t)&spi_ptr->DATA;
     config.src_fixed = true;
+    config.data_width = data_width;
     config.size_in_byte = size;
 
     return dma_setup_handshake(dma_ptr, &config, true);
@@ -39,9 +41,9 @@ void hpm_spi_prepare_dma_tx_descriptors(spi_context_t *context, spi_control_conf
 {
     SPI_Type *ptr = context->ptr;
     uint32_t dma_transfer_size[trans_count];
-    uint32_t tx_size = context->tx_size;
+    uint32_t tx_count = context->tx_count;
     uint32_t per_trans_size = context->per_trans_max;
-    uint32_t dmamux_ch = context->dma_context.tx_dmamux_ch;
+    uint32_t dma_ch = context->dma_context.tx_dma_ch;
     uint8_t *tx_buff = context->tx_buff;
 
     static uint8_t dummy_cmd = 0xff;
@@ -49,11 +51,11 @@ void hpm_spi_prepare_dma_tx_descriptors(spi_context_t *context, spi_control_conf
     uint32_t temp32;
     uint32_t tx_buff_index = 0;
     for (uint32_t i = 0; i < trans_count; i++) {
-        if (tx_size > per_trans_size) {
+        if (tx_count > per_trans_size) {
             temp32 = per_trans_size;
-            tx_size -= per_trans_size;
+            tx_count -= per_trans_size;
         } else {
-            temp32 = tx_size;
+            temp32 = tx_count;
         }
 
         *(spi_transctrl + i) = SPI_TRANSCTRL_TRANSMODE_SET(config->common_config.trans_mode == spi_trans_write_read_together ?
@@ -77,8 +79,8 @@ void hpm_spi_prepare_dma_tx_descriptors(spi_context_t *context, spi_control_conf
         (tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS)->ctrl = DMA_CHCTRL_CTRL_SRCWIDTH_SET(DMA_TRANSFER_WIDTH_WORD)
                                                                         | DMA_CHCTRL_CTRL_DSTWIDTH_SET(DMA_TRANSFER_WIDTH_WORD)
                                                                         | DMA_CHCTRL_CTRL_SRCBURSTSIZE_SET(DMA_NUM_TRANSFER_PER_BURST_1T)
-                                                                        | DMA_CHCTRL_CTRL_SRCREQSEL_SET(dmamux_ch)
-                                                                        | DMA_CHCTRL_CTRL_DSTREQSEL_SET(dmamux_ch);
+                                                                        | DMA_CHCTRL_CTRL_SRCREQSEL_SET(dma_ch)
+                                                                        | DMA_CHCTRL_CTRL_DSTREQSEL_SET(dma_ch);
         (tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS)->linked_ptr =
                                     core_local_mem_to_sys_address(context->running_core, (uint32_t)(tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 1));
 
@@ -89,8 +91,8 @@ void hpm_spi_prepare_dma_tx_descriptors(spi_context_t *context, spi_control_conf
         (tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 1)->ctrl = DMA_CHCTRL_CTRL_SRCWIDTH_SET(DMA_TRANSFER_WIDTH_BYTE)
                                                                         | DMA_CHCTRL_CTRL_DSTWIDTH_SET(DMA_TRANSFER_WIDTH_BYTE)
                                                                         | DMA_CHCTRL_CTRL_SRCBURSTSIZE_SET(DMA_NUM_TRANSFER_PER_BURST_1T)
-                                                                        | DMA_CHCTRL_CTRL_SRCREQSEL_SET(dmamux_ch)
-                                                                        | DMA_CHCTRL_CTRL_DSTREQSEL_SET(dmamux_ch);
+                                                                        | DMA_CHCTRL_CTRL_SRCREQSEL_SET(dma_ch)
+                                                                        | DMA_CHCTRL_CTRL_DSTREQSEL_SET(dma_ch);
         (tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 1)->linked_ptr =
                                 core_local_mem_to_sys_address(context->running_core, (uint32_t)(tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2));
 
@@ -99,13 +101,13 @@ void hpm_spi_prepare_dma_tx_descriptors(spi_context_t *context, spi_control_conf
         (tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2)->src_addr =
                                                                     core_local_mem_to_sys_address(context->running_core, (uint32_t)(tx_buff + tx_buff_index));
         (tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2)->dst_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)&ptr->DATA);
-        (tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2)->ctrl = DMA_CHCTRL_CTRL_SRCWIDTH_SET(DMA_TRANSFER_WIDTH_BYTE)
-                                                                        | DMA_CHCTRL_CTRL_DSTWIDTH_SET(DMA_TRANSFER_WIDTH_BYTE)
+        (tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2)->ctrl = DMA_CHCTRL_CTRL_SRCWIDTH_SET(context->dma_context.data_width)
+                                                                        | DMA_CHCTRL_CTRL_DSTWIDTH_SET(context->dma_context.data_width)
                                                                         | DMA_CHCTRL_CTRL_SRCBURSTSIZE_SET(DMA_NUM_TRANSFER_PER_BURST_1T)
                                                                         | DMA_CHCTRL_CTRL_DSTMODE_SET(DMA_HANDSHAKE_MODE_HANDSHAKE)
                                                                         | DMA_CHCTRL_CTRL_DSTADDRCTRL_SET(DMA_ADDRESS_CONTROL_FIXED)
-                                                                        | DMA_CHCTRL_CTRL_SRCREQSEL_SET(dmamux_ch)
-                                                                        | DMA_CHCTRL_CTRL_DSTREQSEL_SET(dmamux_ch);
+                                                                        | DMA_CHCTRL_CTRL_SRCREQSEL_SET(dma_ch)
+                                                                        | DMA_CHCTRL_CTRL_DSTREQSEL_SET(dma_ch);
         if (i == trans_count - 1) {
             (tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2)->linked_ptr = 0;
         } else {
@@ -113,7 +115,7 @@ void hpm_spi_prepare_dma_tx_descriptors(spi_context_t *context, spi_control_conf
                                 core_local_mem_to_sys_address(context->running_core, (uint32_t)(tx_dma_descriptors + (i + 1) * SPI_DMA_DESC_COUNT_PER_TRANS));
         }
 
-        tx_buff_index += temp32;
+        tx_buff_index += temp32 * context->data_len_in_byte;
     }
 }
 
@@ -122,9 +124,9 @@ void hpm_prepare_dma_rx_descriptors(spi_context_t *context, spi_control_config_t
 {
     SPI_Type *ptr = context->ptr;
     uint32_t dma_transfer_size[trans_count];
-    uint32_t rx_size = context->rx_size;
+    uint32_t rx_count = context->rx_count;
     uint32_t per_trans_size = context->per_trans_max;
-    uint32_t dmamux_ch = context->dma_context.rx_dmamux_ch;
+    uint32_t dma_ch = context->dma_context.rx_dma_ch;
     uint8_t *rx_buff = context->rx_buff;
 
     static uint8_t dummy_cmd = 0xff;
@@ -132,11 +134,11 @@ void hpm_prepare_dma_rx_descriptors(spi_context_t *context, spi_control_config_t
     uint32_t temp32;
     uint32_t rx_buff_index = 0;
     for (uint32_t i = 0; i < trans_count; i++) {
-        if (rx_size > per_trans_size) {
+        if (rx_count > per_trans_size) {
             temp32 = per_trans_size;
-            rx_size -= per_trans_size;
+            rx_count -= per_trans_size;
         } else {
-            temp32 = rx_size;
+            temp32 = rx_count;
         }
 
         *(spi_transctrl + i) = SPI_TRANSCTRL_TRANSMODE_SET(spi_trans_read_only) |
@@ -152,8 +154,8 @@ void hpm_prepare_dma_rx_descriptors(spi_context_t *context, spi_control_config_t
         (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS)->ctrl = DMA_CHCTRL_CTRL_SRCWIDTH_SET(DMA_TRANSFER_WIDTH_WORD)
                                                                     | DMA_CHCTRL_CTRL_DSTWIDTH_SET(DMA_TRANSFER_WIDTH_WORD)
                                                                     | DMA_CHCTRL_CTRL_SRCBURSTSIZE_SET(DMA_NUM_TRANSFER_PER_BURST_1T)
-                                                                    | DMA_CHCTRL_CTRL_SRCREQSEL_SET(dmamux_ch)
-                                                                    | DMA_CHCTRL_CTRL_DSTREQSEL_SET(dmamux_ch);
+                                                                    | DMA_CHCTRL_CTRL_SRCREQSEL_SET(dma_ch)
+                                                                    | DMA_CHCTRL_CTRL_DSTREQSEL_SET(dma_ch);
         (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS)->linked_ptr =
                                     core_local_mem_to_sys_address(context->running_core, (uint32_t)(rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 1));
 
@@ -164,8 +166,8 @@ void hpm_prepare_dma_rx_descriptors(spi_context_t *context, spi_control_config_t
         (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 1)->ctrl = DMA_CHCTRL_CTRL_SRCWIDTH_SET(DMA_TRANSFER_WIDTH_BYTE)
                                                                         | DMA_CHCTRL_CTRL_DSTWIDTH_SET(DMA_TRANSFER_WIDTH_BYTE)
                                                                         | DMA_CHCTRL_CTRL_SRCBURSTSIZE_SET(DMA_NUM_TRANSFER_PER_BURST_1T)
-                                                                        | DMA_CHCTRL_CTRL_SRCREQSEL_SET(dmamux_ch)
-                                                                        | DMA_CHCTRL_CTRL_DSTREQSEL_SET(dmamux_ch);
+                                                                        | DMA_CHCTRL_CTRL_SRCREQSEL_SET(dma_ch)
+                                                                        | DMA_CHCTRL_CTRL_DSTREQSEL_SET(dma_ch);
         (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 1)->linked_ptr =
                                     core_local_mem_to_sys_address(context->running_core, (uint32_t)(rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2));
 
@@ -174,38 +176,38 @@ void hpm_prepare_dma_rx_descriptors(spi_context_t *context, spi_control_config_t
         (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2)->src_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)&ptr->DATA);
         (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2)->dst_addr =
                                                                     core_local_mem_to_sys_address(context->running_core, (uint32_t)(rx_buff + rx_buff_index));
-        (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2)->ctrl = DMA_CHCTRL_CTRL_SRCWIDTH_SET(DMA_TRANSFER_WIDTH_BYTE)
-                                                                        | DMA_CHCTRL_CTRL_DSTWIDTH_SET(DMA_TRANSFER_WIDTH_BYTE)
+        (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2)->ctrl = DMA_CHCTRL_CTRL_SRCWIDTH_SET(context->dma_context.data_width)
+                                                                        | DMA_CHCTRL_CTRL_DSTWIDTH_SET(context->dma_context.data_width)
                                                                         | DMA_CHCTRL_CTRL_SRCBURSTSIZE_SET(DMA_NUM_TRANSFER_PER_BURST_1T)
                                                                         | DMA_CHCTRL_CTRL_SRCMODE_SET(DMA_HANDSHAKE_MODE_HANDSHAKE)
                                                                         | DMA_CHCTRL_CTRL_SRCADDRCTRL_SET(DMA_ADDRESS_CONTROL_FIXED)
-                                                                        | DMA_CHCTRL_CTRL_SRCREQSEL_SET(dmamux_ch)
-                                                                        | DMA_CHCTRL_CTRL_DSTREQSEL_SET(dmamux_ch);
+                                                                        | DMA_CHCTRL_CTRL_SRCREQSEL_SET(dma_ch)
+                                                                        | DMA_CHCTRL_CTRL_DSTREQSEL_SET(dma_ch);
         if (i == trans_count - 1) {
             (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2)->linked_ptr = 0;
         } else {
             (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2)->linked_ptr =
                                 core_local_mem_to_sys_address(context->running_core, (uint32_t)(rx_dma_descriptors + (i + 1) * SPI_DMA_DESC_COUNT_PER_TRANS));
         }
-        rx_buff_index += temp32;
+        rx_buff_index += temp32 * context->data_len_in_byte;
     }
 }
 
 static uint32_t hpm_spi_get_trans_count(spi_context_t *context, spi_control_config_t *config)
 {
-    uint32_t total_trans_size, per_trans_size, trans_count;
+    uint32_t total_trans_count, per_trans_count, trans_count;
 
-    per_trans_size = context->per_trans_max;
+    per_trans_count = context->per_trans_max;
     if (config->common_config.trans_mode == spi_trans_write_only || config->common_config.trans_mode == spi_trans_dummy_write) {
-        total_trans_size = context->tx_size;
+        total_trans_count = context->tx_count;
     } else if (config->common_config.trans_mode == spi_trans_read_only || config->common_config.trans_mode == spi_trans_dummy_read) {
-        total_trans_size = context->rx_size;
+        total_trans_count = context->rx_count;
     } else {
         /* write read together */
-        assert(context->tx_size == context->rx_size);
-        total_trans_size = context->tx_size;
+        assert(context->tx_count == context->rx_count);
+        total_trans_count = context->tx_count;
     }
-    trans_count = (total_trans_size + per_trans_size - 1) / per_trans_size;
+    trans_count = (total_trans_count + per_trans_count - 1) / per_trans_count;
 
     return trans_count;
 }
@@ -227,29 +229,12 @@ static hpm_stat_t spi_setup_trans_with_dma_chain(spi_context_t *context, spi_con
     /* active spi cs pin */
     context->write_cs(context->cs_pin, SPI_CS_ACTIVE);
 
-    if (l1c_dc_is_enabled()) {
-        /* cache writeback for tx buff */
-        if (context->tx_buff != NULL && context->tx_size != 0) {
-            uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t)context->tx_buff);
-            uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP((uint32_t)context->tx_buff + context->tx_size);
-            uint32_t aligned_size = aligned_end - aligned_start;
-            l1c_dc_writeback(aligned_start, aligned_size);
-        }
-        /* cache invalidate for receive buff */
-        if (context->rx_buff != NULL && context->rx_size != 0) {
-            uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t)context->rx_buff);
-            uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP((uint32_t)context->rx_buff + context->rx_size);
-            uint32_t aligned_size = aligned_end - aligned_start;
-            l1c_dc_invalidate(aligned_start, aligned_size);
-        }
-    }
-
     stat = spi_setup_dma_transfer(spi_ptr,
                                 config,
                                 &context->cmd,
                                 &context->addr,
-                                MIN(context->tx_size, context->per_trans_max),
-                                MIN(context->rx_size, context->per_trans_max));
+                                MIN(context->tx_count, context->per_trans_max),
+                                MIN(context->rx_count, context->per_trans_max));
     if (stat != status_success) {
         return stat;
     }
@@ -272,9 +257,10 @@ static hpm_stat_t spi_setup_trans_with_dma_chain(spi_context_t *context, spi_con
         dmamux_config(dmamux_ptr, context->dma_context.rx_dmamux_ch, context->dma_context.rx_req, true);
         /* spi tx use chained dma descriptor, spi rx use unchained dma */
         stat = hpm_spi_rx_trigger_dma(dma_ptr,
-                            context->dma_context.rx_dmamux_ch,
+                            context->dma_context.rx_dma_ch,
                             spi_ptr,
                             core_local_mem_to_sys_address(context->running_core, (uint32_t)context->rx_buff),
+                            context->dma_context.data_width,
                             context->rx_size);
         if (stat != status_success) {
             return stat;
@@ -312,7 +298,7 @@ static hpm_stat_t spi_setup_trans_with_dma(spi_context_t *context, spi_control_c
     }
     stat = spi_setup_dma_transfer(spi_ptr, config,
                                 &context->cmd, &context->addr,
-                                context->tx_size, context->rx_size);
+                                context->tx_count, context->rx_count);
     if (stat != status_success) {
         return stat;
     }
@@ -320,29 +306,22 @@ static hpm_stat_t spi_setup_trans_with_dma(spi_context_t *context, spi_control_c
     if (trans_mode != spi_trans_write_only && trans_mode != spi_trans_dummy_write && trans_mode != spi_trans_no_data) {
         dmamux_config(dmamux_ptr, context->dma_context.rx_dmamux_ch, context->dma_context.rx_req, true);
         stat = hpm_spi_rx_trigger_dma(dma_ptr,
-                                context->dma_context.rx_dmamux_ch,
+                                context->dma_context.rx_dma_ch,
                                 spi_ptr,
                                 core_local_mem_to_sys_address(context->running_core, (uint32_t)context->rx_buff),
+                                context->dma_context.data_width,
                                 context->rx_size);
         if (stat != status_success) {
             return stat;
         }
-        /* cache invalidate for receive buff */
-        if (l1c_dc_is_enabled()) {
-            l1c_dc_invalidate((uint32_t)context->rx_buff, context->rx_size);
-        }
     }
     if (trans_mode != spi_trans_read_only && trans_mode != spi_trans_dummy_read && trans_mode != spi_trans_no_data) {
         dmamux_config(dmamux_ptr, context->dma_context.tx_dmamux_ch, context->dma_context.tx_req, true);
-        /* cache writeback for tx buff */
-        if (l1c_dc_is_enabled()) {
-            l1c_dc_writeback((uint32_t)context->tx_buff, context->tx_size);
-        }
-
         stat = hpm_spi_tx_trigger_dma(dma_ptr,
-                                context->dma_context.tx_dmamux_ch,
+                                context->dma_context.tx_dma_ch,
                                 spi_ptr,
                                 core_local_mem_to_sys_address(context->running_core, (uint32_t)context->tx_buff),
+                                context->dma_context.data_width,
                                 context->tx_size);
         if (stat != status_success) {
             return stat;
@@ -363,7 +342,24 @@ hpm_stat_t hpm_spi_setup_dma_transfer(spi_context_t *context, spi_control_config
     hpm_stat_t stat = status_success;
     uint32_t trans_mode = config->common_config.trans_mode;
 
-    if ((context->rx_size > context->per_trans_max) || (context->tx_size > context->per_trans_max)) {
+    if (l1c_dc_is_enabled()) {
+        /* cache writeback for tx buff */
+        if (context->tx_buff != NULL && context->tx_size != 0) {
+            uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t)context->tx_buff);
+            uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP((uint32_t)context->tx_buff + context->tx_size);
+            uint32_t aligned_size = aligned_end - aligned_start;
+            l1c_dc_writeback(aligned_start, aligned_size);
+        }
+        /* cache invalidate for receive buff */
+        if (context->rx_buff != NULL && context->rx_size != 0) {
+            uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t)context->rx_buff);
+            uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP((uint32_t)context->rx_buff + context->rx_size);
+            uint32_t aligned_size = aligned_end - aligned_start;
+            l1c_dc_invalidate(aligned_start, aligned_size);
+        }
+    }
+
+    if ((context->rx_count > context->per_trans_max) || (context->tx_count > context->per_trans_max)) {
         /* multiple SPI transmissions with chained DMA */
         assert(trans_mode == spi_trans_read_only || trans_mode == spi_trans_dummy_read
                 || trans_mode == spi_trans_write_only || trans_mode == spi_trans_dummy_write

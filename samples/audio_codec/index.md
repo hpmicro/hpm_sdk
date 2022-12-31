@@ -4,8 +4,7 @@
 .. toctree::
    :maxdepth: 3
 
-   decoder_wav/README
    audio_loopback/README
+   decoder_wav/README
    lvgl_audio_player/README
-
 ```

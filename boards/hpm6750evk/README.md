@@ -44,64 +44,71 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 | OFF, ON  | Serial boot                  |
 | ON, OFF  | ISP                          |
 
-- Change the position of bit 3 to select between PWM and 1000Mbit ethernet
+- Change the position of bit 1 to select between PWM and Gigabit Ethernet
 
-| Bit1 | Description    |
-| ---- | -------------- |
-| OFF  | 1000Mbits ENET |
-| ON   | PWM            |
+| Bit1 | Description       |
+| ---- | ----------------- |
+| OFF  | Gigabit Ethernet |
+| ON   | PWM               |
 
 (lab_hpm6750_evk_board)=
+
 ## Button
+
 (lab_hpm6750_evk_board_buttons)=
-| Name | FUNCTIONS |
-| ---- | -------- |
-|PBUTN (S2) | Power Button, TinyUF2 Boot Button, GPIO Button |
-|WBUTN (S3) | WAKE UP Button |
-|RESETN (S4) | Reset Button |
+
+| Name        | FUNCTIONS                                      |
+| ----------- | ---------------------------------------------- |
+| PBUTN (S2)  | Power Button, TinyUF2 Boot Button, GPIO Button |
+| WBUTN (S3)  | WAKE UP Button                                 |
+| RESETN (S4) | Reset Button                                   |
 
 ## Pin Description
 
 - PWM Pin:
 
+| Function | Position |
+| -------- | -------- |
+| PWM2.P0 | J12[14]  |
+| PWM2.P1 | J12[13]  |
   ![image-1](../../doc/images/boards/hpm6750evk/hpm6750evk_pwm_output_pin.png "image-1")
 
 - SPI Pin：
 
-| Function | Position |
-| ---- | -------- |
-| SPI2.CSN    | J20[7] |
-| SPI2.SCLK   | J20[8] |
-| SPI2.MISO   | J20[9] |
-| SPI2.MOSI   | J20[10] |
+| Function  | Position |
+| --------- | -------- |
+| SPI2.CSN  | J20[7]   |
+| SPI2.SCLK | J20[8]   |
+| SPI2.MISO | J20[9]   |
+| SPI2.MOSI | J20[10]  |
 
 - I2C Pin：
 
 | Function | Position |
-| ---- | -------- |
-| I2C0.SCL    | J20[3] |
-| I2C0.SDA    | J20[4] |
+| -------- | -------- |
+| I2C0.SCL | J20[3]   |
+| I2C0.SDA | J20[4]   |
 
 - UART for core1 debug console
 
-| Function | Position |
-| ---- | -------- |
-| UART13.TXD    | J20[5] |
-| UART13.RXD    | J20[6] |
+| Function   | Position |
+| ---------- | -------- |
+| UART13.TXD | J20[5]   |
+| UART13.RXD | J20[6]   |
 
 - ACMP Pin
 
-| Function | Position |
-| ---- | -------- |
-| CMP.INN6    | J12[8] |
-| CMP.COMP_1  | J12[6] |
+| Function   | Position |
+| ---------- | -------- |
+| CMP.INN6   | J12[8]   |
+| CMP.COMP_1 | J12[6]   |
 
 - GPTMR Pin
 
-| Function | Position |
-| ---- | -------- |
-| GPTMR4.CAPT_1  | J12[6] |
-| GPTMR3.COMP_1  | J12[7] |
+| Function      | Position |
+| ------------- | -------- |
+| GPTMR4.CAPT_1 | J12[6]   |
+| GPTMR3.COMP_1 | J12[7]   |
 
 - ADC12 Pin
 
@@ -117,3 +124,20 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 | :-------- | -------- |
 | ADC3.INA2 | J12[5]   |
 
+- headphone interface
+
+| Function        | Position |
+| --------        | ------   |
+| 3.5mm headphone | J14      |
+
+- audio input interface
+
+| Function     | Position |
+| --------     | ------ |
+| 3.5mm LIN_IN | J17      |
+
+- DAO interface
+
+| Function    | Position |
+| --------    | ------   |
+| Speaker     | J18      |

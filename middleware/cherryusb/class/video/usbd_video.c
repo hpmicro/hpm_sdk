@@ -24,8 +24,6 @@ struct usbd_video_cfg_priv {
     .info[2] = { .bDescriptorSubtype = VIDEO_VC_PROCESSING_UNIT_DESCRIPTOR_SUBTYPE, .bEntityId = 0x02, .wTerminalType = 0x00 },
 };
 
-static bool head_toggle = false;
-
 static int usbd_video_control_request_handler(struct usb_setup_packet *setup, uint8_t **data, uint32_t *len)
 {
     uint8_t control_selector = (uint8_t)(setup->wValue >> 8);
@@ -696,7 +694,6 @@ static void video_notify_handler(uint8_t event, void *arg)
                 usbd_video_open(intf->bInterfaceNumber);
             } else {
                 usbd_video_close(intf->bInterfaceNumber);
-                head_toggle = false;
             }
         }
 
@@ -745,14 +742,11 @@ void usbd_video_probe_and_commit_controls_init(uint32_t dwFrameInterval, uint32_
     usbd_video_cfg.commit.bMaxVersion = 0;
 }
 
-struct usbd_interface *usbd_video_alloc_intf(uint32_t dwFrameInterval, uint32_t dwMaxVideoFrameSize, uint32_t dwMaxPayloadTransferSize)
+struct usbd_interface *usbd_video_init_intf(struct usbd_interface *intf,
+                                            uint32_t dwFrameInterval,
+                                            uint32_t dwMaxVideoFrameSize,
+                                            uint32_t dwMaxPayloadTransferSize)
 {
-    struct usbd_interface *intf = usb_malloc(sizeof(struct usbd_interface));
-    if (intf == NULL) {
-        USB_LOG_ERR("no mem to alloc intf\r\n");
-        return NULL;
-    }
-
     intf->class_interface_handler = video_class_interface_request_handler;
     intf->class_endpoint_handler = NULL;
     intf->vendor_handler = NULL;
@@ -767,28 +761,23 @@ uint32_t usbd_video_mjpeg_payload_fill(uint8_t *input, uint32_t input_len, uint8
     uint32_t packets;
     uint32_t last_packet_size;
     uint32_t picture_pos = 0;
+    static uint8_t uvc_header[2] = { 0x02, 0x80 };
 
     packets = input_len / usbd_video_cfg.probe.dwMaxPayloadTransferSize + 1;
     last_packet_size = input_len - ((packets - 1) * (usbd_video_cfg.probe.dwMaxPayloadTransferSize - 2)) + 2;
 
     for (size_t i = 0; i < packets; i++) {
-        output[usbd_video_cfg.probe.dwMaxPayloadTransferSize * i] = 0x02;
-        output[usbd_video_cfg.probe.dwMaxPayloadTransferSize * i + 1] = head_toggle;
+        output[usbd_video_cfg.probe.dwMaxPayloadTransferSize * i] = uvc_header[0];
+        output[usbd_video_cfg.probe.dwMaxPayloadTransferSize * i + 1] = uvc_header[1];
         if (i == (packets - 1)) {
             memcpy(&output[2 + usbd_video_cfg.probe.dwMaxPayloadTransferSize * i], &input[picture_pos], last_packet_size - 2);
+            output[usbd_video_cfg.probe.dwMaxPayloadTransferSize * i + 1] |= (1 << 1);
         } else {
             memcpy(&output[2 + usbd_video_cfg.probe.dwMaxPayloadTransferSize * i], &input[picture_pos], usbd_video_cfg.probe.dwMaxPayloadTransferSize - 2);
             picture_pos += usbd_video_cfg.probe.dwMaxPayloadTransferSize - 2;
         }
     }
-    head_toggle ^= 1;
+    uvc_header[1] ^= 1;
     *out_len = (input_len + 2 * packets);
     return packets;
-}
-
-void usbd_video_mjpeg_payload_header_toggle(uint8_t *output, uint32_t packets)
-{
-    for (size_t i = 0; i < packets; i++) {
-        output[usbd_video_cfg.probe.dwMaxPayloadTransferSize * i + 1] ^= 0x01;
-    }
 }

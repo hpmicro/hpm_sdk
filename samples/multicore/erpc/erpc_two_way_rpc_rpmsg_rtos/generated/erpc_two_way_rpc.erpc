@@ -1,0 +1,45 @@
+//Copyright below will be added into all generated files.
+/*!
+ * Copyright 2018 NXP
+ * Copyright (c) 2022 HPMicro
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+// set output name
+@include("erpc_two_way_rpc_Core0Interface.h")
+@include("erpc_two_way_rpc_Core1Interface.h")
+program erpc_two_way_rpc
+
+/*! callback type */
+getNumberCallback_t(out uint32 param1)-> void
+
+/*! Core0 interface */
+@group("Core0Interface")
+interface Core0Interface {
+    /*! Sets callback function. To the other side. Implementation on Core1  */
+    oneway setGetNumberFunction(getNumberCallback_t getNumberCallbackParam);
+
+    /*! Gets callback function. Implementation on Core1  */
+    getGetNumberFunction(out getNumberCallback_t getNumberCallbackParam) -> void;
+
+    /*! Sets callback function. To the other side. Implementation on Core1  */
+    nestedCallGetNumber(getNumberCallback_t getNumberCallbackParam) -> void;
+
+    /*! Callback function. Implementation on Core1 */
+    getNumberCallback_t getNumberFromCore1(number);
+}
+
+/*! Core1 interface */
+@group("Core1Interface")
+interface Core1Interface {
+    /*! Function for increasing given number by 1. Implementation on Core0 */
+    increaseNumber(inout uint32 number) -> void
+
+    /*! Gets callback function. Implementation on Core0  */
+    getGetCallbackFunction(out getNumberCallback_t getNumberCallbackParam) -> void;
+
+    /*! Callback function. Implementation on Core0 */
+    getNumberCallback_t getNumberFromCore0(number);
+}

@@ -4,6 +4,7 @@
 cmake_minimum_required(VERSION 3.13)
 
 set(CONFIG_COREMARK 1)
+set(CMAKE_BUILD_TYPE sec_core_img)
 
 set(CUSTOM_GCC_LINKER_FILE ${CMAKE_CURRENT_SOURCE_DIR}/../linker/gcc/core1.ld)
 

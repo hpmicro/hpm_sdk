@@ -37,6 +37,8 @@ sdk_src(core/ipv4/ip4_frag.c)
 
 sdk_src(netif/ethernet.c)
 
+sdk_src(api/tcpip.c)
+
 sdk_src_ifdef(CONFIG_LWIP_HTTPSRV apps/http/httpd.c)
 sdk_src_ifdef(CONFIG_LWIP_HTTPSRV apps/http/fs.c)
 sdk_src_ifdef(CONFIG_LWIP_IPERF apps/lwiperf/lwiperf.c)

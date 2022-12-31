@@ -7,5 +7,4 @@
    bldc_block/README
    bldc_foc/README
    bldc_littlevgl_foc/README
-
 ```

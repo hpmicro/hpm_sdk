@@ -17,6 +17,7 @@ void init_lcd_pins(LCDC_Type *ptr);
 void init_i2c_pins(I2C_Type *ptr);
 void init_cap_pins(void);
 void init_sdram_pins(void);
+void init_sram_pins(void);
 void init_gpio_pins(void);
 void init_spi_pins(SPI_Type *ptr);
 void init_spi_pins_with_gpio_as_cs(SPI_Type *ptr);

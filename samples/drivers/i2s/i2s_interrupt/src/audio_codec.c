@@ -9,7 +9,6 @@
 #include "board.h"
 #include "hpm_clock_drv.h"
 #include "hpm_i2s_drv.h"
-#include "hpm_sgtl5000.h"
 #include "hpm_dma_drv.h"
 #include "hpm_dmamux_drv.h"
 #include "hpm_l1c_drv.h"
@@ -23,20 +22,41 @@
 #define CODEC_SAMPLE_RATE_HZ 48000U
 #define CODEC_BIT_WIDTH      32U
 
-sgtl_config_t sgtl5000_config = {
-    .route = sgtl_route_playback_record,  /*!< Audio data route.*/
-    .bus = sgtl_bus_left_justified,       /*!< Audio transfer protocol */
-    .master = false,                      /*!< Master or slave. True means master, false means slave. */
-    .format = {.mclk_hz = 0,
-               .sample_rate = CODEC_SAMPLE_RATE_HZ,
-               .bit_width = CODEC_BIT_WIDTH,
-               .sclk_edge = sgtl_sclk_valid_edge_rising}, /*!< audio format */
-};
+#if CONFIG_CODEC_WM8960
+    #include "hpm_wm8960.h"
+    wm8960_config_t wm8960_config = {
+        .route       = wm8960_route_playback,
+        .left_input  = wm8960_input_closed,
+        .right_input = wm8960_input_closed,
+        .play_source = wm8960_play_source_dac,
+        .bus         = wm8960_bus_i2s,
+        .format = {.mclk_hz = 0U, .sample_rate = CODEC_SAMPLE_RATE_HZ, .bit_width = 32},
+    };
 
-sgtl_context_t sgtl5000_context = {
-    .ptr = CODEC_I2C,
-    .slave_address = CODEC_I2C_ADDRESS, /* I2C address */
-};
+    wm8960_control_t wm8960_control = {
+        .ptr = CODEC_I2C,
+        .slave_address = WM8960_I2C_ADDR, /* I2C address */
+    };
+#elif CONFIG_CODEC_SGTL5000
+    #include "hpm_sgtl5000.h"
+    sgtl_config_t sgtl5000_config = {
+        .route = sgtl_route_playback,  /*!< Audio data route.*/
+        .bus = sgtl_bus_left_justified,       /*!< Audio transfer protocol */
+        .master = false,                      /*!< Master or slave. True means master, false means slave. */
+        .format = {.mclk_hz = 0,
+                .sample_rate = CODEC_SAMPLE_RATE_HZ,
+                .bit_width = CODEC_BIT_WIDTH,
+                .sclk_edge = sgtl_sclk_valid_edge_rising}, /*!< audio format */
+    };
+
+    sgtl_context_t sgtl5000_context = {
+        .ptr = CODEC_I2C,
+        .slave_address = SGTL5000_I2C_ADDR, /* I2C address */
+    };
+#else
+    #error no specified Audio Codec!!!
+#endif
+
 uint32_t * data_tx;
 uint32_t t_count = 0;
 uint32_t sin_1khz_48khz[] = {
@@ -78,15 +98,26 @@ void test_interrupt(void)
     transfer.data_line = I2S_DATA_LINE_2;
     transfer.sample_rate = CODEC_SAMPLE_RATE_HZ;
     transfer.master_mode = true;
+#if CONFIG_CODEC_WM8960
+    transfer.protocol = I2S_PROTOCOL_I2S_PHILIPS;
+#endif
     i2s_mclk_hz = clock_get_frequency(CODEC_I2S_CLK_NAME);
     if (status_success != i2s_config_transfer(CODEC_I2S, i2s_mclk_hz, &transfer)) {
         printf("I2S config failed for CODEC\n");
         while(1);
     }
 
-    sgtl5000_config.route = sgtl_route_playback;
+#if CONFIG_CODEC_WM8960
+    wm8960_config.format.mclk_hz = i2s_mclk_hz;
+    if (wm8960_init(&wm8960_control, &wm8960_config) != status_success) {
+        printf("Init Audio Codec failed\n");
+    }
+#elif CONFIG_CODEC_SGTL5000
     sgtl5000_config.format.mclk_hz = i2s_mclk_hz;
-    sgtl_init(&sgtl5000_context, &sgtl5000_config);
+    if (sgtl_init(&sgtl5000_context, &sgtl5000_config) != status_success) {
+        printf("Init Audio Codec failed\n");
+    }
+#endif
 
     printf("Test Codec playback\n");
     i2s_enable_irq(CODEC_I2S, I2S_IRQ_TX_FIFO_EMPTY);

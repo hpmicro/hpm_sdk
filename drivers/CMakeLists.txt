@@ -4,7 +4,7 @@
 sdk_inc(inc)
 
 sdk_src_ifdef(CONFIG_HAS_HPMSDK_UART src/hpm_uart_drv.c)
-sdk_src_ifdef(CONFIG_HAS_HPMSDK_DRAM src/hpm_dram_drv.c)
+sdk_src_ifdef(CONFIG_HAS_HPMSDK_FEMC src/hpm_femc_drv.c)
 sdk_src_ifdef(CONFIG_HAS_HPMSDK_SDP src/hpm_sdp_drv.c)
 sdk_src_ifdef(CONFIG_HAS_HPMSDK_LCDC src/hpm_lcdc_drv.c)
 sdk_src_ifdef(CONFIG_HAS_HPMSDK_I2C src/hpm_i2c_drv.c)

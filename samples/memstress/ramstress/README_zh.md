@@ -2,7 +2,7 @@
 
 ## 概述
 
-RAMSTERSS 示例工程对外部的SDRAM进行压力测试. 主要包含如下测试内容:
+RAMSTERSS 示例工程对外部的存储器进行压力测试. 主要包含如下测试内容:
 
 - algo_fill_selfaddress
 - algo_random

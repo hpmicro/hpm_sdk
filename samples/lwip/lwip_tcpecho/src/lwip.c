@@ -15,26 +15,6 @@
 #include "lwip/init.h"
 #include "tcp_echo.h"
 
-#if RGMII == 1
-    #if defined __USE_DP83867
-        #include "hpm_dp83867.h"
-        #include "hpm_dp83867_regs.h"
-    #elif defined __USE_RTL8211
-        #include "hpm_rtl8211.h"
-        #include "hpm_rtl8211_regs.h"
-    #endif
-#else
-    #if defined __USE_DP83848
-        #include "hpm_dp83848.h"
-        #include "hpm_dp83848_regs.h"
-    #elif defined  __USE_RTL8201
-        #include "hpm_rtl8201.h"
-        #include "hpm_rtl8201_regs.h"
-    #else
-        #error no specified Ethernet PHY !!!
-    #endif
-#endif
-
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ENET_SOC_DESC_ADDR_ALIGNMENT)
 __RW enet_rx_desc_t dma_rx_desc_tab[ENET_RX_BUFF_COUNT] ; /* Ethernet Rx DMA Descriptor */
 
@@ -48,15 +28,21 @@ ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ENET_SOC_BUFF_ADDR_ALIGNMENT)
 __RW uint8_t tx_buff[ENET_TX_BUFF_COUNT][ENET_TX_BUFF_SIZE]; /* Ethernet Transmit Buffer */
 
 enet_desc_t desc;
+uint8_t mac[ENET_MAC];
+
+#if __USE_ENET_RECEIVE_INTERRUPT
+volatile bool rx_flag;
+#endif
 
 /*---------------------------------------------------------------------*
  * Initialization
  *---------------------------------------------------------------------*/
 hpm_stat_t enet_init(ENET_Type *ptr)
 {
-    uint32_t intr = 0;
+    enet_int_config_t int_config = {.int_enable = 0, .int_mask = 0};
     enet_mac_config_t enet_config;
-    #if RGMII == 1
+
+    #if RGMII
         #if __USE_DP83867
         dp83867_config_t phy_config;
         #else
@@ -87,20 +73,38 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     desc.rx_buff_cfg.count = ENET_RX_BUFF_COUNT;
     desc.rx_buff_cfg.size = ENET_RX_BUFF_SIZE;
 
+    /* Get MAC address */
+    enet_get_mac_address(mac);
+
     /* Set mac0 address */
-    enet_config.mac_addr_high[0] = MAC_ADDR5 << 8 | MAC_ADDR4;
-    enet_config.mac_addr_low[0]  = MAC_ADDR3 << 24 | MAC_ADDR2 << 16 | MAC_ADDR1 << 8 | MAC_ADDR0;
+    enet_config.mac_addr_high[0] = mac[5] << 8 | mac[4];
+    enet_config.mac_addr_low[0]  = mac[3] << 24 | mac[2] << 16 | mac[1] << 8 | mac[0];
     enet_config.valid_max_count  = 1;
 
     /* Set DMA PBL */
     enet_config.dma_pbl = board_enet_get_dma_pbl(ENET);
 
+    #if __USE_ENET_RECEIVE_INTERRUPT
+    /* Enable Enet IRQ */
+    board_enet_enable_irq(ENET);
+
+    /* Set the interrupt enable mask */
+    int_config.int_enable = enet_normal_int_sum_en    /* Enable normal interrupt summary */
+                          | enet_receive_int_en;      /* Enable receive interrupt */
+
+    int_config.int_mask = enet_rgsmii_int_mask; /* Disable RGSMII interrupt */
+    #endif
 
     /* Initialize enet controller */
-    enet_controller_init(ptr, ENET_INF_TYPE, &desc, &enet_config, intr);
+    enet_controller_init(ptr, ENET_INF_TYPE, &desc, &enet_config, &int_config);
+
+    #if __USE_ENET_RECEIVE_INTERRUPT
+    /* Disable LPI interrupt */
+    enet_disable_lpi_interrupt(ENET);
+    #endif
 
     /* Initialize phy */
-    #if RGMII == 1
+    #if RGMII
         #if __USE_DP83867
         dp83867_reset(ptr);
         #ifdef __DISABLE_AUTO_NEGO
@@ -146,25 +150,24 @@ int main(void)
     /* Reset an enet PHY */
     board_reset_enet_phy(ENET);
 
-    /* Set RMII reference clock */
-    #if RGMII == 0
-    board_init_enet_rmii_reference_clock(ENET, BOARD_ENET_RMII_INT_REF_CLK);
+    #if __USE_ENET_RECEIVE_INTERRUPT
+    printf("This is an ethernet demo: TCP Echo (Interrupt Usage)\n");
+    #else
+    printf("This is an ethernet demo: TCP Echo (Polling Usage)\n");
     #endif
 
-    /* Set RGMII clock delay */
-    #if RGMII == 1
-    board_init_enet_rgmii_clock_delay(ENET);
-    #endif
-
-    /* Start a board timer */
-    board_timer_create(LWIP_APP_TIMER_INTERVAL, sys_timer_callback);
-
-    printf("This is an ethernet demo: TCP Echo\n");
     printf("LwIP Version: %s\n", LWIP_VERSION_STRING);
 
-    #if RGMII == 0
+    /* Set RGMII clock delay */
+    #if RGMII
+    board_init_enet_rgmii_clock_delay(ENET);
+    #else
+    /* Set RMII reference clock */
+    board_init_enet_rmii_reference_clock(ENET, BOARD_ENET_RMII_INT_REF_CLK);
     printf("Reference Clock: %s\n", BOARD_ENET_RMII_INT_REF_CLK ? "Internal Clock" : "External Clock");
     #endif
+    /* Start a board timer */
+    board_timer_create(LWIP_APP_TIMER_INTERVAL, sys_timer_callback);
 
     /* Initialize MAC and DMA */
     if (enet_init(ENET) == 0) {

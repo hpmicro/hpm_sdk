@@ -17,7 +17,8 @@
 #define TEST_I2C_DMA           BOARD_APP_I2C_DMA
 #define TEST_I2C_DMAMUX        BOARD_APP_I2C_DMAMUX
 #define TEST_I2C_DMAMUX_SRC    BOARD_APP_I2C_DMA_SRC
-#define TEST_I2C_DMAMUX_CH     BOARD_APP_I2C_DMAMUX_CH
+#define TEST_I2C_DMA_CH        0
+#define TEST_I2C_DMAMUX_CH     DMA_SOC_CHN_TO_DMAMUX_CHN(TEST_I2C_DMA, TEST_I2C_DMA_CH)
 
 #define TEST_I2C_SLAVE_ADDRESS (0x16U)
 
@@ -42,6 +43,7 @@ hpm_stat_t i2c_tx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, I2C_Type *i2c_p
     config.dst_fixed = true;
     config.src = src;
     config.src_fixed = false;
+    config.data_width = DMA_TRANSFER_WIDTH_BYTE;
     config.size_in_byte = size;
 
     return dma_setup_handshake(dma_ptr, &config, true);
@@ -55,6 +57,7 @@ hpm_stat_t i2c_rx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, I2C_Type *i2c_p
     config.dst_fixed = false;
     config.src = (uint32_t)&i2c_ptr->DATA;
     config.src_fixed = true;
+    config.data_width = DMA_TRANSFER_WIDTH_BYTE;
     config.size_in_byte = size;
 
     return dma_setup_handshake(dma_ptr, &config, true);
@@ -141,7 +144,7 @@ int main(void)
     }
 #endif
     stat = i2c_tx_trigger_dma(TEST_I2C_DMA,
-                            TEST_I2C_DMAMUX_CH,
+                            TEST_I2C_DMA_CH,
                             TEST_I2C,
                             core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)tx_buff),
                             TEST_TRANSFER_DATA_IN_BYTE);
@@ -155,7 +158,7 @@ int main(void)
 
     /* setup i2c dma rx */
     stat = i2c_rx_trigger_dma(TEST_I2C_DMA,
-                            TEST_I2C_DMAMUX_CH,
+                            TEST_I2C_DMA_CH,
                             TEST_I2C,
                             core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)rx_buff),
                             TEST_TRANSFER_DATA_IN_BYTE);

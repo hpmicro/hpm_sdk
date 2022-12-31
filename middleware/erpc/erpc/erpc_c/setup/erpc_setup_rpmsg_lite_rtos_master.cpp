@@ -27,7 +27,7 @@ char rpmsg_lite_base[SH_MEM_TOTAL_SIZE];
 #elif defined(__CC_ARM) || defined(__ARMCC_VERSION) /* Keil MDK */
 char rpmsg_lite_base[SH_MEM_TOTAL_SIZE] __attribute__((section("rpmsg_sh_mem_section")));
 #elif defined(__GNUC__)
-char rpmsg_lite_base[SH_MEM_TOTAL_SIZE] __attribute__((section(".noinit.$rpmsg_sh_mem")));
+static ATTR_SHARE_MEM char rpmsg_lite_base[SH_MEM_TOTAL_SIZE];
 #else
 #error "RPMsg: Please provide your definition of rpmsg_lite_base[]!"
 #endif

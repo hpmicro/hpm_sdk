@@ -245,9 +245,14 @@ hpm_stat_t adc16_set_prd_config(ADC16_Type *ptr, adc16_prd_config_t *config)
     return status_success;
 }
 
-void adc16_trigger_seq_by_sw(ADC16_Type *ptr)
+hpm_stat_t adc16_trigger_seq_by_sw(ADC16_Type *ptr)
 {
+    if (ADC16_INT_STS_SEQ_SW_CFLCT_GET(ptr->INT_STS)) {
+        return status_fail;
+    }
     ptr->SEQ_CFG0 |= ADC16_SEQ_CFG0_SW_TRIG_MASK;
+
+    return status_success;
 }
 
 /* Note: the sequence length can not be larger or equal than 2 in HPM6750EVK Revision A0 */
@@ -337,7 +342,56 @@ hpm_stat_t adc16_get_prd_result(ADC16_Type *ptr, uint8_t ch, uint16_t *result)
         return status_invalid_argument;
     }
 
-    *result = ptr->PRD_CFG[ch].PRD_RESULT;
+    *result = ADC16_PRD_CFG_PRD_RESULT_CHAN_RESULT_GET(ptr->PRD_CFG[ch].PRD_RESULT);
 
     return status_success;
+}
+
+void adc16_enable_temp_sensor(ADC16_Type *ptr)
+{
+    uint32_t clk_div_temp;
+
+    /* Get input clock divider */
+    clk_div_temp = ADC16_CONV_CFG1_CLOCK_DIVIDER_GET(ptr->CONV_CFG1);
+
+    /* Set input clock divider temporarily */
+    ptr->CONV_CFG1 = (ptr->CONV_CFG1 & ~ADC16_CONV_CFG1_CLOCK_DIVIDER_MASK) | ADC16_CONV_CFG1_CLOCK_DIVIDER_SET(1);
+
+    /* Enable ADC config clock */
+    ptr->ANA_CTRL0 |= ADC16_ANA_CTRL0_ADC_CLK_ON_MASK;
+
+    /* Enable the temperature sensor */
+    ptr->ADC16_CONFIG0 |= ADC16_ADC16_CONFIG0_TEMPSNS_EN_MASK | ADC16_ADC16_CONFIG0_REG_EN_MASK
+                        | ADC16_ADC16_CONFIG0_BANDGAP_EN_MASK | ADC16_ADC16_CONFIG0_CAL_AVG_CFG_SET(5);
+
+    /* Disable ADC config clock */
+    ptr->ANA_CTRL0 &= ~ADC16_ANA_CTRL0_ADC_CLK_ON_MASK;
+
+    /* Recover input clock divider */
+    ptr->CONV_CFG1 = (ptr->CONV_CFG1 & ~ADC16_CONV_CFG1_CLOCK_DIVIDER_MASK) | ADC16_CONV_CFG1_CLOCK_DIVIDER_SET(clk_div_temp);
+}
+
+void adc16_disable_temp_sensor(ADC16_Type *ptr)
+{
+    uint32_t clk_div_temp;
+
+    /* Get input clock divider */
+    clk_div_temp = ADC16_CONV_CFG1_CLOCK_DIVIDER_GET(ptr->CONV_CFG1);
+
+    /* Set input clock divider temporarily */
+    ptr->CONV_CFG1 = (ptr->CONV_CFG1 & ~ADC16_CONV_CFG1_CLOCK_DIVIDER_MASK)
+                   | ADC16_CONV_CFG1_CLOCK_DIVIDER_SET(1);
+
+    /* Enable ADC clock */
+    ptr->ANA_CTRL0 |= ADC16_ANA_CTRL0_ADC_CLK_ON_MASK;
+
+    /* Disable the temp sensor */
+    ptr->ADC16_CONFIG0 &= ~ADC16_ADC16_CONFIG0_TEMPSNS_EN_MASK;
+
+    /* Disable ADC clock */
+    ptr->ANA_CTRL0 &= ~ADC16_ANA_CTRL0_ADC_CLK_ON_MASK;
+
+    /* Recover input clock divider */
+    ptr->CONV_CFG1 = (ptr->CONV_CFG1 & ~ADC16_CONV_CFG1_CLOCK_DIVIDER_MASK)
+                   | ADC16_CONV_CFG1_CLOCK_DIVIDER_SET(clk_div_temp);
 }

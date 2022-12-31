@@ -5,9 +5,13 @@ The audio codec sample project shows how to play WAV format audio.
 In this project, the wav format file from the SD card is read and then played,
 MCU send back the received data to codec component, then codec component decodes and plays the audio data.
 
+## Project Configuration
+
+- In the file [cmakelists.txt](./CmakeLists.txt), set a matched audio codec type according to the development board schematic，e.g. "set(CONFIG_CODEC "sgtl5000")"
+
 ## Board Setting
 
-1. Connect headphone to the HP_MIC interface on the board
+- According to project configuration, connect speaker to [DAO](lab_board_app_dao) interface if using DAO as player, connect headphone to [headphone](lab_board_app_headphone) interface if using audio codec as player.
 
 ## Running the example
 

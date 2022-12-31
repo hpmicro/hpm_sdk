@@ -6,13 +6,17 @@ The music player demo shows what kind of modern, smartphone-like user interfaces
 
 Please refer to [official lv_demos github](https://github.com/lvgl/lv_demos)
 
+## Project Configuration
+
+- In the file [cmakelists.txt](./CmakeLists.txt), set a matched audio codec type according to the development board schematic，e.g. "set(CONFIG_CODEC "sgtl5000")"
+
 ## Board Settings
 
 Attach LCD panel to the board LCD interface.
 
 Attach MicroSD card that stores songs in WAV format into the card slot;
 
-Attach Trumpet to the board DAO interface.
+According to project configuration, connect speaker to [DAO](lab_board_app_dao) interface if using DAO as player, connect headphone to [headphone](lab_board_app_headphone) interface if using audio codec as player.
 
 ## Running the Demo
 

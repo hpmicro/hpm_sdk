@@ -11,14 +11,13 @@
 #include "hpm_clock_drv.h"
 #include "hpm_mchtmr_drv.h"
 #include "hpm_dma_drv.h"
-#include "hpm_dram_drv.h"
+#include "hpm_femc_drv.h"
 #include "hpm_sysctl_drv.h"
 #include "hpm_l1c_drv.h"
 
 #define SIZE_PER_TEST   (0x00020000UL)
 #define DST_ADDRESS     BOARD_SDRAM_ADDRESS + (BOARD_SDRAM_SIZE / 16)
 #define SRC_ADDRESS     (0x010c0000UL)
-#define TEST_DATA_LENGTH_IN_BYTE (0x2000000UL)
 
 #ifndef TEST_DMA_CONTROLLER
 #define TEST_DMA_CONTROLLER HPM_XDMA
@@ -36,8 +35,8 @@
 #define USE_IRQ (1)
 #endif
 
-#ifndef DRAM_CLOCK_NAME
-#define DRAM_CLOCK_NAME clock_dram
+#ifndef FEMC_CLOCK_NAME
+#define FEMC_CLOCK_NAME clock_femc
 #endif
 
 #ifndef TIMER_CLOCK_NAME

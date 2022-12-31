@@ -197,10 +197,6 @@ bool usb_device_edpt_open(usb_device_handle_t *handle, usb_endpoint_config_t *co
 
     dcd_qhd_t *p_qhd;
 
-    if (config->xfer == usb_xfer_isochronous) {
-        return false;
-    }
-
     /* Must not exceed max endpoint number */
     if (epnum >= USB_SOC_DCD_MAX_ENDPOINT_COUNT) {
         return false;
@@ -247,6 +243,9 @@ bool usb_device_edpt_xfer(usb_device_handle_t *handle, uint8_t ep_addr, uint8_t 
     p_qtd->int_on_complete = true;
     p_qhd->qtd_overlay.next = core_local_mem_to_sys_address(0, (uint32_t) p_qtd); /* link qtd to qhd */
 
+    if (usb_dcd_edpt_get_type(handle->regs, ep_addr) == usb_xfer_isochronous) {
+        p_qhd->iso_mult = 1;
+    }
     usb_dcd_edpt_xfer(handle->regs, ep_idx);
 
     return true;

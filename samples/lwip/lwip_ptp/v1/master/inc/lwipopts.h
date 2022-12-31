@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021-2022 HPMicro
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ */
 #ifndef LWIPOPTS_H
 #define LWIPOPTS_H
 

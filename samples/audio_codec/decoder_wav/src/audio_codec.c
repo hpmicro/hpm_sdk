@@ -17,7 +17,7 @@ int main(void)
     FRESULT rsl;
 
     board_init();
-#if USING_CODEC_SGTL5000
+#if USING_CODEC
     init_codec();
 #elif USING_DAO
     init_dao();

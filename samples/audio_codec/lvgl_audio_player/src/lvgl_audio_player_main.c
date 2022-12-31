@@ -83,7 +83,7 @@ int main(void)
     board_init_cap_touch();
     board_init_lcd();
 
-#if USING_CODEC_SGTL5000
+#if USING_CODEC
     init_codec();
 #elif USING_DAO
     init_dao();

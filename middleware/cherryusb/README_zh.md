@@ -59,21 +59,20 @@ CherryUSB Device 协议栈当前实现以下功能：
 - 支持 USB AUDIO CLASS (UAC1.0、UAC2.0)
 - 支持 Device Firmware Upgrade CLASS (DFU)
 - 支持 USB MIDI CLASS (MIDI)
-- 支持 Test and Measurement CLASS (TMC)
 - 支持 Remote NDIS (RNDIS)
 - 支持 WINUSB1.0、WINUSB2.0(带 BOS )
 - 支持 Vendor 类 class
 
 CherryUSB Device 协议栈资源占用说明（GCC 10.2 with -O2）：
 
-|   file        |  FLASH (Byte)  |  No Cache RAM (Byte)      |  RAM (Byte)   |  Heap (Byte)                      |
-|:-------------:|:--------------:|:-------------------------:|:-------------:|:---------------------------------:|
-|usbd_core.c    |  3263          | 384                       | 17            | 0                                 |
-|usbd_cdc.c     |  490           | 0                         | 0             | sizeof(struct usbd_interface) * x |
-|usbd_msc.c     |  2772          | 128 + 512(default)        | 16            | sizeof(struct usbd_interface) * x |
-|usbd_hid.c     |  501           | 0                         | 0             | sizeof(struct usbd_interface) * x |
-|usbd_audio.c   |  1208          | 0                         | 4             | sizeof(struct usbd_interface) * x |
-|usbd_video.c   |  2272          | 0                         | 82            | sizeof(struct usbd_interface) * x |
+|   file        |  FLASH (Byte)  |  No Cache RAM (Byte)      |  RAM (Byte)   |  Heap (Byte)     |
+|:-------------:|:--------------:|:-------------------------:|:-------------:|:----------------:|
+|usbd_core.c    |  3263          | 384                       | 17            | 0                |
+|usbd_cdc.c     |  490           | 0                         | 0             | 0                |
+|usbd_msc.c     |  2772          | 128 + 512(default)        | 16            | 0                |
+|usbd_hid.c     |  501           | 0                         | 0             | 0                |
+|usbd_audio.c   |  1208          | 0                         | 4             | 0                |
+|usbd_video.c   |  2272          | 0                         | 82            | 0                |
 
 ## Host 协议栈简介
 
@@ -88,7 +87,7 @@ CherryUSB Host 协议栈当前实现以下功能：
 - 支持 Communication Device Class (CDC)
 - 支持 Human Interface Device (HID)
 - 支持 Mass Storage Class (MSC)
-- 支持 USB VIDEO CLASS (UVC1.0, only supports ehci)
+- 支持 USB VIDEO CLASS
 - 支持 Remote NDIS (RNDIS)
 - 支持 Vendor 类 class
 
@@ -103,6 +102,7 @@ CherryUSB Host 协议栈资源占用说明（GCC 10.2 with -O2）：
 |usbh_cdc_acm.c |  1004          | 7                               | 4                           | sizeof(struct usbh_cdc_acm) * x |
 |usbh_msc.c     |  1776          | 32                              | 4                           | sizeof(struct usbh_msc) * x     |
 |usbh_hid.c     |  822           | 128                             | 4                           | sizeof(struct usbh_hid) * x     |
+|usbh_video.c   |  3587          | 128                             | 4100(yuv2rgb)               | sizeof(struct usbh_video) * x   |
 
 其中，`sizeof(struct usbh_hub)` 和 `sizeof(struct usbh_hubport)` 受以下宏影响：
 
@@ -144,7 +144,7 @@ USB 基本知识点与 CherryUSB Device 协议栈是如何编写的，参考 [Ch
 |WCH    |  CH57x | ch58x |[ch57x_repo](https://github.com/CherryUSB/cherryusb_ch57x)|v0.4.1 |
 |Nuvoton    |  Nuc442 | nuvoton |[nuc442_repo](https://github.com/CherryUSB/cherryusb_nuc442)|v0.4.1 |
 |Geehy    |  APM32E10x APM32F0xx| fsdev |[apm32_repo](https://github.com/CherryUSB/cherryusb_apm32)|v0.4.1 |
-|Nordicsemi |  Nrf52840 | nrf5x |[nrf5x_repo](https://github.com/CherryUSB/cherryusb_nrf5x)|v0.4.1 |
+|Nordicsemi |  Nrf52840 | nrf5x |[nrf5x_repo](https://github.com/CherryUSB/cherryusb_nrf5x)|latest |
 |Espressif    |  esp32 | dwc2 |[esp32_repo](https://github.com/CherryUSB/cherryusb_esp32)|v0.4.1 |
 |Mindmotion    |  MM32L3xx | mm32 |[mm32_repo](https://github.com/CherryUSB/cherryusb_mm32)|v0.4.1 |
 

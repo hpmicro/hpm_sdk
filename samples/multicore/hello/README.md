@@ -13,19 +13,15 @@ In this project:
   BOOT_PIN should be configured to 0-OFF, 1-OFF
 
 
+## Generate core1 project
+__CMAKE_BUILD_TYPE__ must be *"sec_core_img"*
 
+## Generate core0 project
+__CMAKE_BUILD_TYPE__ user can specify *"debug"* or *"flash_xip"*, etc.
 
-## Generate and Build Multi-core projects
-
-
-In this project, the core0 application runs in FLASH while the core1 application runs in its own ILM
-
-__Core0__ project must be generated first, as a linked project, __Core1__ project will be generated automatically
-
-__Core0__ project must be built after the __Core1__  project has been built successfully.
-
-### Generate Core0 project
-__CMAKE_BUILD_TYPE__ forced to be *"debug"*, and users don't need to care.
+## Build project
+__Core1__ project must be generated and built first
+__Core0__ project must be generated after the core1 project has been built successfully.
 
 
 ## Debugging the example
@@ -36,24 +32,19 @@ __CMAKE_BUILD_TYPE__ forced to be *"debug"*, and users don't need to care.
 *NOTE*
 - If users expects to debug the core0 and core1 example step by step, users must ensure the *board_init()* function is executed before debugging the core1 example as some hardware resoruces needs to be initialized by *board_init()* in core0 example.
 
-When the project runs successfully,
-- The serial port terminal will output the following information:
+- When debug core0 and the project runs successfully, The serial port terminal will output the following information:
     ```shell
-        Copying secondary core image to destination memory...
-        Starting secondary core...
-        Secondary core started, RGB leds are blinking...
-
-        hello world
+        hello world from primary core
     ```
-- The RGB leds are switching among RED, GREEN, BLUE respectively.
+- When debug core1 and the project runs successfully, The RGB leds are switching among RED, GREEN, BLUE respectively.
 
 ## Running the example
-- Download the core0 example to the target, stop debugging and reset the board. When the project runs successfully, the serial port terminal will output the following information:
+- When __CMAKE_BUILD_TYPE__ is *"flash_xip"* , download the core0 example to the target, stop debugging and reset the board. When the project runs successfully, the serial port terminal will output the following information:
     ```shell
         Copying secondary core image to destination memory...
         Starting secondary core...
         Secondary core started, RGB leds are blinking...
 
-        hello world
+        hello world from primary core
     ```
 - The RGB leds are switching among RED, GREEN, BLUE respectively.

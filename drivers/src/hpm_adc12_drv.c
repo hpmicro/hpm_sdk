@@ -237,9 +237,14 @@ hpm_stat_t adc12_set_prd_config(ADC12_Type *ptr, adc12_prd_config_t *config)
     return status_success;
 }
 
-void adc12_trigger_seq_by_sw(ADC12_Type *ptr)
+hpm_stat_t adc12_trigger_seq_by_sw(ADC12_Type *ptr)
 {
+    if (ADC12_INT_STS_SEQ_SW_CFLCT_GET(ptr->INT_STS)) {
+        return status_fail;
+    }
     ptr->SEQ_CFG0 |= ADC12_SEQ_CFG0_SW_TRIG_MASK;
+
+    return status_success;
 }
 
 /* Note: the sequence length can not be larger or equal than 2 in HPM6750EVK Revision A0 */
@@ -314,7 +319,7 @@ hpm_stat_t adc12_get_prd_result(ADC12_Type *ptr, uint8_t ch, uint16_t *result)
         return status_invalid_argument;
     }
 
-    *result = ptr->PRD_CFG[ch].PRD_RESULT;
+    *result = ADC12_PRD_CFG_PRD_RESULT_CHAN_RESULT_GET(ptr->PRD_CFG[ch].PRD_RESULT);
 
     return status_success;
 }

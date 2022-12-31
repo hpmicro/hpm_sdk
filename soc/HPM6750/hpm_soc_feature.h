@@ -121,17 +121,23 @@
 #define ADC_SOC_PREEMPT_ENABLE_CTRL_SUPPORT        (0U)
 #define ADC_SOC_SEQ_MAX_DMA_BUFF_LEN_IN_4BYTES     (1024U)
 #define ADC_SOC_PMT_MAX_DMA_BUFF_LEN_IN_4BYTES     (48U)
+#define ADC_SOC_OTP_TSNS_REF25_MASK                (0xffffUL)
+#define ADC_SOC_OTP_TSNS_REF25_SHIFT               (21U)
+#define ADC_SOC_REF_TEMP                           (25U)
+#define ADC_SOC_REF_SLOPE                          (1.0f/6)
+#define ADC_SOC_TEMPSENS_REF25_VOL                 (3300U)
+#define ADC_SOC_VOUT25C_MAX_SAMPLE_VALUE           (65535U)
+
 
 #define ADC12_SOC_CLOCK_CLK_DIV                    (2U)
 #define ADC12_SOC_CALIBRATION_WAITING_LOOP_CNT     (10)
 #define ADC12_SOC_MAX_CH_NUM                       (17U)
-#define ADC12_SOC_TEMP_CH_NUM                      (18U)
-#define ADC12_SOC_INVALID_TEMP_BASE                (0xF0010000UL)
+#define ADC12_SOC_MAX_SAMPLE_VALUE                 (4095U)
 
 #define ADC16_SOC_PARAMS_LEN                       (34U)
 #define ADC16_SOC_MAX_CH_NUM                       (7U)
 #define ADC16_SOC_TEMP_CH_NUM                      (14U)
-
+#define ADC16_SOC_MAX_SAMPLE_VALUE                 (65535U)
 /*
  * SYSCTL Section
  */
@@ -170,5 +176,10 @@
  */
 #define ROMAPI_HAS_SW_SM3 (1)
 #define ROMAPI_HAS_SW_SM4 (1)
+
+/*
+ * OTP Section
+ */
+#define OTP_SOC_UUID_IDX   (88U)
 
 #endif /* HPM_SOC_FEATURE_H */

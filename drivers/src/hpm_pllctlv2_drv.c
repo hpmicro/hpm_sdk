@@ -65,8 +65,8 @@ void pllctlv2_set_postdiv(PLLCTLV2_Type *ptr, uint8_t pll, uint8_t div_index, ui
 {
     if ((ptr != NULL) && (pll < PLLCTL_SOC_PLL_MAX_COUNT)) {
         ptr->PLL[pll].DIV[div_index] =
-            (ptr->PLL[pll].DIV[div_index] & ~PLLCTLV2_DIV_DIV_MASK) | PLLCTLV2_DIV_DIV_SET(div_value) |
-                PLLCTLV2_DIV_ENABLE_MASK;
+            (ptr->PLL[pll].DIV[div_index] & ~PLLCTLV2_PLL_DIV_DIV_MASK) | PLLCTLV2_PLL_DIV_DIV_SET(div_value) |
+                PLLCTLV2_PLL_DIV_ENABLE_MASK;
     }
 }
 
@@ -86,7 +86,7 @@ uint32_t pllctlv2_get_pll_postdiv_freq_in_hz(PLLCTLV2_Type *ptr, uint8_t pll, ui
 {
     uint32_t postdiv_freq = 0;
     if ((ptr != NULL) && (pll < PLLCTL_SOC_PLL_MAX_COUNT)) {
-        uint32_t postdiv = PLLCTLV2_DIV_DIV_GET(ptr->PLL[pll].DIV[div_index]);
+        uint32_t postdiv = PLLCTLV2_PLL_DIV_DIV_GET(ptr->PLL[pll].DIV[div_index]);
         uint32_t pll_freq = pllctlv2_get_pll_freq_in_hz(ptr, pll);
         postdiv_freq = (uint32_t) (pll_freq / (1 + postdiv * 1.0 / 5));
     }

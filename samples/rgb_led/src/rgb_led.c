@@ -231,7 +231,7 @@ int main(void){
 
     for (uint8_t i = 0; i < ARRAY_SIZE(leds); i++) {
         leds[i].step = leds[i].reload / PWM_DUTY_STEP_COUNT;
-        config_pwm(leds[i].pwm, leds[i].pwm_ch, leds[i].pwm_cmp, leds[i].reload, leds[i].pwm_cmp_initial_zero, hw_event_cmp, BOARD_LED_OFF_LEVEL);
+        config_pwm(leds[i].pwm, leds[i].pwm_ch, leds[i].pwm_cmp, leds[i].reload, leds[i].pwm_cmp_initial_zero, hw_event_cmp, board_get_led_pwm_off_level());
         pwm_start_counter(leds[i].pwm);
         intc_m_enable_irq_with_priority(leds[i].pwm_irq, 1);
     }

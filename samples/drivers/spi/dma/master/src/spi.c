@@ -16,10 +16,17 @@
 #define TEST_SPI_SCLK_FREQ     BOARD_APP_SPI_SCLK_FREQ
 #define TEST_SPI_DMA           BOARD_APP_HDMA
 #define TEST_SPI_DMAMUX        BOARD_APP_DMAMUX
-#define TEST_SPI_RX_DMA        BOARD_APP_SPI_RX_DMA
-#define TEST_SPI_RX_DMAMUX_CH  BOARD_APP_SPI_RX_DMAMUX_CH
-#define TEST_SPI_TX_DMA        BOARD_APP_SPI_TX_DMA
-#define TEST_SPI_TX_DMAMUX_CH  BOARD_APP_SPI_TX_DMAMUX_CH
+#define TEST_SPI_RX_DMA_REQ    BOARD_APP_SPI_RX_DMA
+#define TEST_SPI_TX_DMA_REQ    BOARD_APP_SPI_TX_DMA
+#define TEST_SPI_RX_DMA_CH     0
+#define TEST_SPI_TX_DMA_CH     1
+#define TEST_SPI_RX_DMAMUX_CH  DMA_SOC_CHN_TO_DMAMUX_CHN(TEST_SPI_DMA, TEST_SPI_RX_DMA_CH)
+#define TEST_SPI_TX_DMAMUX_CH  DMA_SOC_CHN_TO_DMAMUX_CHN(TEST_SPI_DMA, TEST_SPI_TX_DMA_CH)
+
+/* data width definition */
+#define TEST_SPI_DATA_LEN_IN_BIT          (8U)
+#define TEST_SPI_DATA_LEN_IN_BYTE         (1U)
+#define TEST_SPI_DMA_TRANS_DATA_WIDTH     DMA_TRANSFER_WIDTH_BYTE
 
 #ifndef PLACE_BUFF_AT_CACHEABLE
 #define PLACE_BUFF_AT_CACHEABLE 1
@@ -76,7 +83,7 @@ void spi_master_check_transfer_data(SPI_Type *ptr)
     }
 }
 
-hpm_stat_t spi_tx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_ptr, uint32_t src, uint32_t size)
+hpm_stat_t spi_tx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_ptr, uint32_t src, uint8_t data_width, uint32_t size)
 {
     dma_handshake_config_t config;
     config.ch_index = ch_num;
@@ -84,12 +91,13 @@ hpm_stat_t spi_tx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_p
     config.dst_fixed = true;
     config.src = src;
     config.src_fixed = false;
+    config.data_width = data_width;
     config.size_in_byte = size;
 
     return dma_setup_handshake(dma_ptr, &config, true);
 }
 
-hpm_stat_t spi_rx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_ptr, uint32_t dst, uint32_t size)
+hpm_stat_t spi_rx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_ptr, uint32_t dst, uint8_t data_width, uint32_t size)
 {
     dma_handshake_config_t config;
     config.ch_index = ch_num;
@@ -97,6 +105,7 @@ hpm_stat_t spi_rx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_p
     config.dst_fixed = false;
     config.src = (uint32_t)&spi_ptr->DATA;
     config.src_fixed = true;
+    config.data_width = data_width;
     config.size_in_byte = size;
 
     return dma_setup_handshake(dma_ptr, &config, true);
@@ -110,6 +119,7 @@ int main(void)
     hpm_stat_t stat;
     uint8_t cmd = 0x1a;
     uint32_t addr = 0x10;
+    uint32_t spi_tx_trans_count, spi_rx_trans_count;
 
     board_init();
     board_init_spi_clock(TEST_SPI);
@@ -121,13 +131,13 @@ int main(void)
     timing_config.master_config.clk_src_freq_in_hz = board_init_spi_clock(TEST_SPI);
     timing_config.master_config.sclk_freq_in_hz = TEST_SPI_SCLK_FREQ;
     if (status_success != spi_master_timing_init(TEST_SPI, &timing_config)) {
-        printf("SPI master timming init failed\n");
+        printf("SPI master timing init failed\n");
     }
 
     /* set SPI format config for master */
     spi_master_get_default_format_config(&format_config);
     format_config.master_config.addr_len_in_bytes = 1U;
-    format_config.common_config.data_len_in_bits = 8U;
+    format_config.common_config.data_len_in_bits = TEST_SPI_DATA_LEN_IN_BIT;
     format_config.common_config.data_merge = false;
     format_config.common_config.mosi_bidir = false;
     format_config.common_config.lsb = false;
@@ -147,10 +157,12 @@ int main(void)
     control_config.common_config.data_phase_fmt = spi_single_io_mode;
     control_config.common_config.dummy_cnt = spi_dummy_count_1;
 
+    spi_tx_trans_count = sizeof(sent_buff) / TEST_SPI_DATA_LEN_IN_BYTE;
+    spi_rx_trans_count = sizeof(receive_buff) / TEST_SPI_DATA_LEN_IN_BYTE;
     stat = spi_setup_dma_transfer(TEST_SPI,
                         &control_config,
                         &cmd, &addr,
-                        TEST_TRANSFER_DATA_IN_BYTE, TEST_TRANSFER_DATA_IN_BYTE);
+                        spi_tx_trans_count, spi_rx_trans_count);
     if (stat != status_success) {
         printf("spi setup dma transfer failed\n");
         while (1) {
@@ -163,15 +175,19 @@ int main(void)
 #if PLACE_BUFF_AT_CACHEABLE
     if (l1c_dc_is_enabled()) {
         /* cache writeback for sent buff */
-        l1c_dc_writeback((uint32_t)sent_buff, TEST_TRANSFER_DATA_IN_BYTE);
+        uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t)sent_buff);
+        uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP((uint32_t)sent_buff + sizeof(sent_buff));
+        uint32_t aligned_size = aligned_end - aligned_start;
+        l1c_dc_writeback(aligned_start, aligned_size);
     }
 #endif
-    dmamux_config(TEST_SPI_DMAMUX, TEST_SPI_TX_DMAMUX_CH, TEST_SPI_TX_DMA, true);
+    dmamux_config(TEST_SPI_DMAMUX, TEST_SPI_TX_DMAMUX_CH, TEST_SPI_TX_DMA_REQ, true);
     stat = spi_tx_trigger_dma(TEST_SPI_DMA,
-                            TEST_SPI_TX_DMAMUX_CH,
+                            TEST_SPI_TX_DMA_CH,
                             TEST_SPI,
                             core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)sent_buff),
-                            TEST_TRANSFER_DATA_IN_BYTE);
+                            TEST_SPI_DMA_TRANS_DATA_WIDTH,
+                            sizeof(sent_buff));
     if (stat != status_success) {
         printf("spi tx trigger dma failed\n");
         while (1) {
@@ -179,12 +195,13 @@ int main(void)
     }
 
     /* setup spi rx trigger dma transfer*/
-    dmamux_config(TEST_SPI_DMAMUX, TEST_SPI_RX_DMAMUX_CH, TEST_SPI_RX_DMA, true);
+    dmamux_config(TEST_SPI_DMAMUX, TEST_SPI_RX_DMAMUX_CH, TEST_SPI_RX_DMA_REQ, true);
     stat = spi_rx_trigger_dma(TEST_SPI_DMA,
-                            TEST_SPI_RX_DMAMUX_CH,
+                            TEST_SPI_RX_DMA_CH,
                             TEST_SPI,
                             core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)receive_buff),
-                            TEST_TRANSFER_DATA_IN_BYTE);
+                            TEST_SPI_DMA_TRANS_DATA_WIDTH,
+                            sizeof(receive_buff));
     if (stat != status_success) {
         printf("spi rx trigger dma failed\n");
         while (1) {
@@ -193,7 +210,10 @@ int main(void)
 #if PLACE_BUFF_AT_CACHEABLE
     if (l1c_dc_is_enabled()) {
         /* cache invalidate for receive buff */
-        l1c_dc_invalidate((uint32_t)receive_buff, TEST_TRANSFER_DATA_IN_BYTE);
+        uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t)receive_buff);
+        uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP((uint32_t)receive_buff + sizeof(receive_buff));
+        uint32_t aligned_size = aligned_end - aligned_start;
+        l1c_dc_invalidate(aligned_start, aligned_size);
     }
 #endif
 

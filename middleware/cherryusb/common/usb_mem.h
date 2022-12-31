@@ -6,32 +6,6 @@
 #ifndef USB_MEM_H
 #define USB_MEM_H
 
-#include "usb_config.h"
-
-#ifdef CONFIG_USBHOST_XHCI
-
-void *usb_hc_malloc(size_t size);
-void usb_hc_free();
-void *usb_hc_malloc_align(size_t align, size_t size);
-
-#define usb_malloc(size)                    usb_hc_malloc(size)
-#define usb_free(ptr)                       usb_hc_free(ptr)
-#define usb_align(align, size)              usb_hc_malloc_align(align, size)  
-
-#else
-
-#define usb_malloc(size) malloc(size)
-#define usb_free(ptr)    free(ptr)
-
-#endif
-
-#ifndef CONFIG_USB_ALIGN_SIZE
-#define CONFIG_USB_ALIGN_SIZE 4
-#endif
-
-#ifndef USB_NOCACHE_RAM_SECTION
-#define USB_NOCACHE_RAM_SECTION
-#endif
 #define USB_MEM_ALIGNX __attribute__((aligned(CONFIG_USB_ALIGN_SIZE)))
 
 #if (CONFIG_USB_ALIGN_SIZE > 4)

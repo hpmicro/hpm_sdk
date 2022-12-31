@@ -13,6 +13,7 @@
 #include "hpm_soc_feature.h"
 #include "hpm_clock_drv.h"
 #include "pinmux.h"
+#include "hpm_lcdc_drv.h"
 
 #define BOARD_NAME "hpm6750evkmini"
 #define BOARD_UF2_SIGNATURE (0x0A4D5048UL)
@@ -48,6 +49,8 @@
 
 #define BOARD_APP_UART_BAUDRATE (115200UL)
 #define BOARD_APP_UART_CLK_NAME clock_uart0
+#define BOARD_APP_UART_RX_DMA_REQ HPM_DMA_SRC_UART0_RX
+#define BOARD_APP_UART_TX_DMA_REQ HPM_DMA_SRC_UART0_TX
 
 #ifndef BOARD_CONSOLE_TYPE
 #define BOARD_CONSOLE_TYPE console_type_uart
@@ -73,8 +76,8 @@
 /* sdram section */
 #define BOARD_SDRAM_ADDRESS  (0x40000000UL)
 #define BOARD_SDRAM_SIZE     (16*SIZE_1MB)
-#define BOARD_SDRAM_CS       DRAM_SDRAM_CS0
-#define BOARD_SDRAM_PORT_SIZE DRAM_SDRAM_PORT_SIZE_16_BITS
+#define BOARD_SDRAM_CS       FEMC_SDRAM_CS0
+#define BOARD_SDRAM_PORT_SIZE FEMC_SDRAM_PORT_SIZE_16_BITS
 #define BOARD_SDRAM_REFRESH_COUNT (4096UL)
 #define BOARD_SDRAM_REFRESH_IN_MS (64UL)
 #define BOARD_SDRAM_DATA_WIDTH_IN_BYTE (2UL)
@@ -96,7 +99,6 @@
 #define BOARD_APP_I2C_DMA HPM_HDMA
 #define BOARD_APP_I2C_DMAMUX HPM_DMAMUX
 #define BOARD_APP_I2C_DMA_SRC HPM_DMA_SRC_I2C0
-#define BOARD_APP_I2C_DMAMUX_CH DMAMUX_MUXCFG_HDMA_MUX0
 
 #define BOARD_CAM_I2C_BASE HPM_I2C0
 #define BOARD_CAM_I2C_CLK_NAME clock_i2c0
@@ -182,13 +184,11 @@
 #define BOARD_APP_SPI_BASE HPM_SPI2
 #define BOARD_APP_SPI_CLK_NAME          clock_spi2
 #define BOARD_APP_SPI_IRQ               IRQn_SPI2
-#define BOARD_APP_SPI_SCLK_FREQ         (1562500UL)
+#define BOARD_APP_SPI_SCLK_FREQ         (20000000UL)
 #define BOARD_APP_SPI_ADDR_LEN_IN_BYTES (1U)
 #define BOARD_APP_SPI_DATA_LEN_IN_BITS  (8U)
 #define BOARD_APP_SPI_RX_DMA HPM_DMA_SRC_SPI2_RX
-#define BOARD_APP_SPI_RX_DMAMUX_CH DMAMUX_MUXCFG_HDMA_MUX0
 #define BOARD_APP_SPI_TX_DMA HPM_DMA_SRC_SPI2_TX
-#define BOARD_APP_SPI_TX_DMAMUX_CH DMAMUX_MUXCFG_HDMA_MUX1
 #define BOARD_SPI_CS_GPIO_CTRL           HPM_GPIO0
 #define BOARD_SPI_CS_PIN                 IOC_PAD_PB24
 #define BOARD_SPI_CS_ACTIVE_LEVEL        (0U)
@@ -203,11 +203,58 @@
 #define BOARD_FLASH_SIZE (8 << 20)
 
 /* lcd section */
+
+/*
+ * BOARD_PANEL_TIMING_PARA {HSPW, HBP, HFP, VSPW, VBP, VFP, HSSP, VSSP, DESP, PDSP, PCSP}
+ *
+ * HSPW: Horizontal Synchronization Pulse width
+ * HBP: Horizontal Back Porch
+ * HFP: Horizontal Front Porch
+ * VSPW: Vertical Synchronization Pulse width
+ * VBP: Vertical Back Porch
+ * VFP: Vertical Front Porch
+ * HSSP: Horizontal Synchronization Signal Polarity, 0: High Active, 1: Low Active
+ * VSSP: Vertical Synchronization Signal Polarity, 0: High Active, 1: Low Active
+ * DESP: Data Enable Signal Polarity, 0: High Active, 1: Low Active
+ * PDSP: Pixel Data Signal Polarity, 0: High Active, 1: Low Active
+ * PCSP: Pixel Clock Signal Polarity, 0: High Active, 1: Low Active
+ */
+#define BOARD_PANEL_TIMEING_PARA_HSPW_INDEX 0
+#define BOARD_PANEL_TIMEING_PARA_HBP_INDEX 1
+#define BOARD_PANEL_TIMEING_PARA_HFP_INDEX 2
+#define BOARD_PANEL_TIMEING_PARA_VSPW_INDEX 3
+#define BOARD_PANEL_TIMEING_PARA_VBP_INDEX 4
+#define BOARD_PANEL_TIMEING_PARA_VFP_INDEX 5
+#define BOARD_PANEL_TIMEING_PARA_HSSP_INDEX 6
+#define BOARD_PANEL_TIMEING_PARA_VSSP_INDEX 7
+#define BOARD_PANEL_TIMEING_PARA_DESP_INDEX 8
+#define BOARD_PANEL_TIMEING_PARA_PDSP_INDEX 9
+#define BOARD_PANEL_TIMEING_PARA_PCSP_INDEX 10
+
+#if defined(PANEL_TM070RDH13)
+
 #ifndef BOARD_LCD_WIDTH
-#define BOARD_LCD_WIDTH (800)
+#define BOARD_LCD_WIDTH 800
 #endif
 #ifndef BOARD_LCD_HEIGHT
-#define BOARD_LCD_HEIGHT (480)
+#define BOARD_LCD_HEIGHT 480
+#endif
+#ifndef BOARD_PANEL_TIMING_PARA
+#define BOARD_PANEL_TIMING_PARA {10, 46, 50, 3, 23, 10, 0, 0, 0, 0, 0}
+#endif
+
+#else
+
+#ifndef BOARD_LCD_WIDTH
+#define BOARD_LCD_WIDTH 800
+#endif
+#ifndef BOARD_LCD_HEIGHT
+#define BOARD_LCD_HEIGHT 480
+#endif
+#ifndef BOARD_PANEL_TIMING_PARA
+#define BOARD_PANEL_TIMING_PARA {10, 46, 50, 3, 23, 10, 0, 0, 0, 0, 0}
+#endif
+
 #endif
 
 /* pdma section */
@@ -429,10 +476,10 @@ void board_init_console(void);
 void board_init_uart(UART_Type *ptr);
 void board_init_i2c(I2C_Type *ptr);
 void board_init_lcd(void);
-
+void board_panel_para_to_lcdc(lcdc_config_t *config);
 void board_init_can(CAN_Type *ptr);
 
-uint32_t board_init_dram_clock(void);
+uint32_t board_init_femc_clock(void);
 
 void board_init_sdram_pins(void);
 void board_init_gpio_pins(void);
@@ -487,11 +534,13 @@ void board_init_adc16_pins(void);
 void board_init_usb_pins(void);
 void board_usb_vbus_ctrl(uint8_t usb_index, uint8_t level);
 
+uint8_t board_enet_get_dma_pbl(ENET_Type *ptr);
 hpm_stat_t board_reset_enet_phy(ENET_Type *ptr);
 hpm_stat_t board_init_enet_pins(ENET_Type *ptr);
 hpm_stat_t board_init_enet_rmii_reference_clock(ENET_Type *ptr, bool internal);
 hpm_stat_t board_init_enet_ptp_clock(ENET_Type *ptr);
-uint8_t board_enet_get_dma_pbl(ENET_Type *ptr);
+hpm_stat_t board_enet_enable_irq(ENET_Type *ptr);
+hpm_stat_t board_enet_disable_irq(ENET_Type *ptr);
 
 /*
  * @brief Initialize PMP and PMA for but not limited to the following purposes:
@@ -513,6 +562,15 @@ void board_disable_output_rgb_led(uint8_t color);
  */
 void board_ungate_mchtmr_at_lp_mode(void);
 
+/*
+ * Get PWM output level of onboard LED
+ */
+uint8_t board_get_led_pwm_off_level(void);
+
+/*
+ * Get GPIO pin level of onboard LED
+ */
+uint8_t board_get_led_gpio_off_level(void);
 #if defined(__cplusplus)
 }
 #endif /* __cplusplus */

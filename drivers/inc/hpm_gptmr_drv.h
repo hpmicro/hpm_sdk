@@ -305,7 +305,7 @@ static inline void gptmr_stop_counter(GPTMR_Type *ptr, uint8_t ch_index)
  */
 static inline void gptmr_update_cmp(GPTMR_Type *ptr, uint8_t ch_index, uint8_t cmp_index, uint32_t cmp)
 {
-    ptr->CHANNEL[ch_index].CMP[cmp_index] = GPTMR_CMP_CMP_SET(cmp);
+    ptr->CHANNEL[ch_index].CMP[cmp_index] = GPTMR_CHANNEL_CMP_CMP_SET(cmp);
 }
 
 /**

@@ -108,7 +108,7 @@ typedef enum _clock_name {
     clock_axi1 = MAKE_CLOCK_NAME(sysctl_resource_axic, CLK_SRC_GROUP_COMMON, clock_node_axi1),
     clock_axi2 = MAKE_CLOCK_NAME(sysctl_resource_axiv, CLK_SRC_GROUP_COMMON, clock_node_axi2),
     clock_ahb = MAKE_CLOCK_NAME(sysctl_resource_ahbp, CLK_SRC_GROUP_COMMON, clock_node_ahb0),
-    clock_dram = MAKE_CLOCK_NAME(sysctl_resource_dram, CLK_SRC_GROUP_COMMON, clock_node_dram),
+    clock_femc = MAKE_CLOCK_NAME(sysctl_resource_femc, CLK_SRC_GROUP_COMMON, clock_node_femc),
     clock_xpi0 = MAKE_CLOCK_NAME(sysctl_resource_xpi0, CLK_SRC_GROUP_COMMON, clock_node_xpi0),
     clock_xpi1 = MAKE_CLOCK_NAME(sysctl_resource_xpi1, CLK_SRC_GROUP_COMMON, clock_node_xpi1),
     clock_gptmr0 = MAKE_CLOCK_NAME(sysctl_resource_gptmr0, CLK_SRC_GROUP_COMMON, clock_node_gptmr0),

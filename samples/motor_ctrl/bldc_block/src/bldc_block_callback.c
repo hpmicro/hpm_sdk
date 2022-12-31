@@ -25,14 +25,14 @@ const uint8_t pwm_uvw_conversion_tbl[4][6] ={
 PWM_Type* motor_pwm_tbl[4] ={
   MOTOR0_BLDCPWM
 };
-void bldc_pwm_enable(uint8_t motor_index,uint8_t pin_name)
+void hpm_mcl_bldc_pwm_enable(uint8_t motor_index, uint8_t pin_name)
 {
   motor_index -= 1;
-  pwm_disable_pwm_sw_force_output(motor_pwm_tbl[motor_index],pwm_uvw_conversion_tbl[motor_index][pin_name]);
+  pwm_disable_pwm_sw_force_output(motor_pwm_tbl[motor_index], pwm_uvw_conversion_tbl[motor_index][pin_name]);
 }
 
-void bldc_pwm_disable(uint8_t motor_index,uint8_t pin_name)
+void hpm_mcl_bldc_pwm_disable(uint8_t motor_index, uint8_t pin_name)
 {
   motor_index -= 1;
-  pwm_enable_pwm_sw_force_output(motor_pwm_tbl[motor_index],pwm_uvw_conversion_tbl[motor_index][pin_name]);
+  pwm_enable_pwm_sw_force_output(motor_pwm_tbl[motor_index], pwm_uvw_conversion_tbl[motor_index][pin_name]);
 }

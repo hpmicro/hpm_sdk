@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -13,6 +13,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include "hpm_sdk_version.h"
 
 /**
  *
@@ -90,7 +91,7 @@ enum {
     status_group_xpi = 6,
     status_group_l1c,
     status_group_dma,
-    status_group_dram,
+    status_group_femc,
     status_group_sdp,
     status_group_xpi_nor,
     status_group_otp,
@@ -156,7 +157,10 @@ ATTR_PLACE_AT(section_name) ATTR_ALIGN(alignment)
 #define ATTR_RAMFUNC_WITH_ALIGNMENT(alignment) \
     ATTR_RAMFUNC ATTR_ALIGN(alignment)
 
-#define ATTR_RPMSG ATTR_PLACE_AT(".noinit.rpmsg_sh_mem")
+#define ATTR_SHARE_MEM ATTR_PLACE_AT(".sh_mem")
+
+#define NOP() __asm volatile("nop")
+#define WFI() __asm volatile("wfi")
 
 #else
 #error Unknown toolchain

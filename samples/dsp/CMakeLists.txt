@@ -5,7 +5,8 @@ cmake_minimum_required(VERSION 3.13)
 set(SES_TOOLCHAIN_VARIANT "Andes")
 
 set(CONFIG_HPM_MATH 1)
-set(HPM_MATH_SES_LIB "libdspf")
+set(CONFIG_HPM_MATH_DSP 1)
+set(HPM_MATH_DSP_SES_LIB "libdspf")
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(dsp_demo)

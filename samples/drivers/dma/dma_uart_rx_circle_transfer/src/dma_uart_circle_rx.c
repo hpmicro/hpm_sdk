@@ -97,6 +97,7 @@ void init_board_app_dma(void)
     ch1_config.dst_fixed = true;
     ch1_config.src = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)uart_tx_buf);
     ch1_config.src_fixed = false;
+    ch1_config.data_width = DMA_TRANSFER_WIDTH_BYTE;
     ch1_config.size_in_byte = TEST_BUFFER_SIZE;
     dma_setup_handshake(TEST_UART_DMA_CONTROLLER, &ch1_config, false);
 }

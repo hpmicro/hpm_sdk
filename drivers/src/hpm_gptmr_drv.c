@@ -47,7 +47,7 @@ hpm_stat_t gptmr_channel_config(GPTMR_Type *ptr,
         | config->synci_edge;
 
     for (uint8_t i = 0; i < GPTMR_CH_CMP_COUNT; i++) {
-        ptr->CHANNEL[ch_index].CMP[i] = GPTMR_CMP_CMP_SET(config->cmp[i]);
+        ptr->CHANNEL[ch_index].CMP[i] = GPTMR_CHANNEL_CMP_CMP_SET(config->cmp[i]);
     }
     ptr->CHANNEL[ch_index].RLD = GPTMR_CHANNEL_RLD_RLD_SET(config->reload - 1);
     ptr->CHANNEL[ch_index].CR = v;

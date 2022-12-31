@@ -154,7 +154,7 @@ int usbd_ep_start_write(const uint8_t ep, const uint8_t *data, uint32_t data_len
     g_hpm_udc.in_ep[ep_idx].xfer_len = data_len;
     g_hpm_udc.in_ep[ep_idx].actual_xfer_len = 0;
 
-    usb_device_edpt_xfer(handle, ep, data, data_len);
+    usb_device_edpt_xfer(handle, ep, (uint8_t *)data, data_len);
 
     return 0;
 }
@@ -183,7 +183,6 @@ int usbd_ep_start_read(const uint8_t ep, uint8_t *data, uint32_t data_len)
 void USBD_IRQHandler(void)
 {
     uint32_t int_status;
-    uint32_t speed;
     usb_device_handle_t *handle = g_hpm_udc.handle;
     uint32_t transfer_len;
 
@@ -198,7 +197,6 @@ void USBD_IRQHandler(void)
     }
 
     if (int_status & intr_reset) {
-        speed = usb_device_get_port_speed(handle);
         memset(g_hpm_udc.in_ep, 0, sizeof(struct hpm_ep_state) * USB_NUM_BIDIR_ENDPOINTS);
         memset(g_hpm_udc.out_ep, 0, sizeof(struct hpm_ep_state) * USB_NUM_BIDIR_ENDPOINTS);
         usbd_event_reset_handler();
@@ -218,7 +216,6 @@ void USBD_IRQHandler(void)
         if (!usb_device_get_port_ccs(handle)) {
         } else {
             if (usb_device_get_port_reset_status(handle) == 0) {
-                uint32_t speed = usb_device_get_port_speed(handle);
             }
         }
     }

@@ -25,45 +25,57 @@
  *  Definitions
  *
  *****************************************************************************************************************/
-#if USING_CODEC_SGTL5000
-#include "hpm_sgtl5000.h"
+#if USING_CODEC
+    #define CODEC_I2C BOARD_APP_I2C_BASE
+    #define TARGET_I2S BOARD_APP_I2S_BASE
+    #define TARGET_I2S_CLK_NAME BOARD_APP_I2S_CLK_NAME
+    #define TARGET_I2S_DATA_LINE BOARD_APP_I2S_DATA_LINE
+    #define TARGET_I2S_TX_DMAMUX_SRC HPM_DMA_SRC_I2S0_TX
+
+    #if CONFIG_CODEC_WM8960
+        #include "hpm_wm8960.h"
+        wm8960_config_t wm8960_config = {
+            .route       = wm8960_route_playback,
+            .left_input  = wm8960_input_closed,
+            .right_input = wm8960_input_closed,
+            .play_source = wm8960_play_source_dac,
+            .bus         = wm8960_bus_i2s,
+            .format = {.mclk_hz = 0U, .sample_rate = 0U, .bit_width = 32U},
+        };
+
+        wm8960_control_t wm8960_control = {
+            .ptr = CODEC_I2C,
+            .slave_address = WM8960_I2C_ADDR, /* I2C address */
+        };
+    #elif CONFIG_CODEC_SGTL5000
+        #include "hpm_sgtl5000.h"
+        sgtl_config_t sgtl5000_config = {
+            .route = sgtl_route_playback_record, /*!< Audio data route.*/
+            .bus = sgtl_bus_left_justified, /*!< Audio transfer protocol */
+            .master = false, /*!< Master or slave. True means master, false means slave. */
+            .format = { .mclk_hz = 0,
+                .sample_rate = 0,
+                .bit_width = 32,
+                .sclk_edge = sgtl_sclk_valid_edge_rising }, /*!< audio format */
+        };
+
+        sgtl_context_t sgtl5000_context = {
+            .ptr = CODEC_I2C,
+            .slave_address = SGTL5000_I2C_ADDR, /* I2C address */
+        };
+    #else
+        #error no specified Audio Codec!!!
+    #endif
 #elif USING_DAO
-#include "hpm_dao_drv.h"
-#endif
+    #define TARGET_I2S DAO_I2S
+    #define TARGET_I2S_CLK_NAME clock_i2s1
+    #define TARGET_I2S_DATA_LINE 0
+    #define TARGET_I2S_TX_DMAMUX_SRC HPM_DMA_SRC_I2S1_TX
 
-#if USING_CODEC_SGTL5000
-#define CODEC_I2C BOARD_APP_I2C_BASE
-#define CODEC_I2C_ADDRESS SGTL5000_I2C_ADDR
-
-#define TARGET_I2S BOARD_APP_I2S_BASE
-#define TARGET_I2S_CLK_NAME BOARD_APP_I2S_CLK_NAME
-#define TARGET_I2S_DATA_LINE BOARD_APP_I2S_DATA_LINE
-#define TARGET_I2S_TX_DMAMUX_SRC HPM_DMA_SRC_I2S0_TX
-
-sgtl_config_t sgtl5000_config = {
-    .route = sgtl_route_playback_record, /*!< Audio data route.*/
-    .bus = sgtl_bus_left_justified, /*!< Audio transfer protocol */
-    .master = false, /*!< Master or slave. True means master, false means slave. */
-    .format = { .mclk_hz = 0,
-        .sample_rate = 0,
-        .bit_width = 32,
-        .sclk_edge = sgtl_sclk_valid_edge_rising }, /*!< audio format */
-};
-
-sgtl_context_t sgtl5000_context = {
-    .ptr = CODEC_I2C,
-    .slave_address = CODEC_I2C_ADDRESS, /* I2C address */
-};
-
-#elif USING_DAO
-#define TARGET_I2S DAO_I2S
-#define TARGET_I2S_CLK_NAME clock_i2s1
-#define TARGET_I2S_DATA_LINE 0
-#define TARGET_I2S_TX_DMAMUX_SRC HPM_DMA_SRC_I2S1_TX
-
-dao_config_t dao_config;
+    #include "hpm_dao_drv.h"
+    dao_config_t dao_config;
 #else
-#error define USING_CODEC or USING_DAO
+    #error define USING_CODEC or USING_DAO
 #endif
 
 #define CODEC_BUFF_CNT 3
@@ -98,9 +110,9 @@ static hpm_wav_ctrl wav_ctrl;
 static uint32_t i2s_mclk_hz;
 ATTR_ALIGN(4) static uint8_t wav_header_buff[512];
 ATTR_ALIGN(HPM_L1C_CACHELINE_SIZE) static uint8_t i2s_buff[CODEC_BUFF_CNT][CODEC_BUFF_SIZE];
-static uint32_t i2s_buff_fill_size[CODEC_BUFF_CNT];
-static uint8_t s_i2s_buff_front;
-static uint8_t s_i2s_buff_rear;
+static volatile uint32_t i2s_buff_fill_size[CODEC_BUFF_CNT];
+static volatile uint8_t s_i2s_buff_front;
+static volatile uint8_t s_i2s_buff_rear;
 static bool s_i2s_buff_first_tranferred;
 static bool s_playing_finished;
 static bool s_switch_songs_req;
@@ -171,7 +183,7 @@ void isr_dma(void)
 }
 SDK_DECLARE_EXT_ISR_M(BOARD_APP_HDMA_IRQ, isr_dma)
 
-#ifdef USING_CODEC_SGTL5000
+#ifdef USING_CODEC
 void init_codec(void)
 {
     board_init_i2c(CODEC_I2C);
@@ -387,7 +399,7 @@ static hpm_stat_t init_i2s_playback(uint32_t sample_rate, uint8_t audio_depth, u
     }
 
     i2s_get_default_config(TARGET_I2S, &i2s_config);
-#ifdef USING_CODEC_SGTL5000
+#ifdef USING_CODEC
     i2s_config.enable_mclk_out = true;
 #endif
     i2s_init(TARGET_I2S, &i2s_config);
@@ -402,6 +414,9 @@ static hpm_stat_t init_i2s_playback(uint32_t sample_rate, uint8_t audio_depth, u
     transfer.audio_depth = audio_depth;
     transfer.channel_num_per_frame = 2; /* non TDM mode, channel num fix to 2. */
     transfer.channel_slot_mask = 0x3; /* data from hpm_wav_decode API is 2 channels */
+#if CONFIG_CODEC_WM8960
+    transfer.protocol = I2S_PROTOCOL_I2S_PHILIPS;
+#endif
 
     if ((sample_rate % 44100) == 0) {
         /* clock_aud1 has been configured for 44100*n sample rate*/
@@ -416,12 +431,24 @@ static hpm_stat_t init_i2s_playback(uint32_t sample_rate, uint8_t audio_depth, u
         return status_fail;
     }
 
-#ifdef USING_CODEC_SGTL5000
-    sgtl5000_config.route = sgtl_route_playback;
-    sgtl5000_config.format.sample_rate = sample_rate;
-    sgtl5000_config.format.bit_width = audio_depth;
-    sgtl5000_config.format.mclk_hz = i2s_mclk_hz;
-    sgtl_init(&sgtl5000_context, &sgtl5000_config);
+#ifdef USING_CODEC
+    #if CONFIG_CODEC_WM8960
+        wm8960_config.route = wm8960_route_playback;
+        wm8960_config.format.sample_rate = sample_rate;
+        wm8960_config.format.bit_width = audio_depth;
+        wm8960_config.format.mclk_hz = i2s_mclk_hz;
+        if (wm8960_init(&wm8960_control, &wm8960_config) != status_success) {
+            printf("Init Audio Codec failed\n");
+        }
+    #elif CONFIG_CODEC_SGTL5000
+        sgtl5000_config.route = sgtl_route_playback;
+        sgtl5000_config.format.sample_rate = sample_rate;
+        sgtl5000_config.format.bit_width = audio_depth;
+        sgtl5000_config.format.mclk_hz = i2s_mclk_hz;
+        if (sgtl_init(&sgtl5000_context, &sgtl5000_config) != status_success) {
+            printf("Init Audio Codec failed\n");
+        }
+    #endif
 #elif USING_DAO
     dao_get_default_config(HPM_DAO, &dao_config);
     dao_config.enable_mono_output = true;

@@ -5333,7 +5333,7 @@ errors */
 #define ENET_PPS_CTRL_PPSEN0_GET(x) (((uint32_t)(x) & ENET_PPS_CTRL_PPSEN0_MASK) >> ENET_PPS_CTRL_PPSEN0_SHIFT)
 
 /*
- * PPSCTRL0 (RW)
+ * PPSCTRLCMD0 (RW)
  *
  * PPSCTRL0: PPS0 Output Frequency Control
  * This field controls the frequency of the PPS0 output (ptp_pps_o[0]) signal. The default value of PPSCTRL is 0000, and the PPS output is 1 pulse (of width clk_ptp_i) every second. For other values of PPSCTRL, the PPS output becomes a generated clock of following frequencies:
@@ -5342,11 +5342,41 @@ errors */
  * - 0011: The binary rollover is 8 Hz, and the digital rollover is 4 Hz.
  * - 0100: The binary rollover is 16 Hz, and the digital rollover is 8 Hz. - ...
  * - 1111: The binary rollover is 32.768 KHz, and the digital rollover is 16.384 KHz. Note: In the binary rollover mode, the PPS output (ptp_pps_o) has a duty cycle of 50 percent with these frequencies. In the digital rollover mode, the PPS output frequency is an average number. The actual clock is of different frequency that gets synchronized every second. For example: - When PPSCTRL = 0001, the PPS (1 Hz) has a low period of 537 ms and a high period of 463 ms - When PPSCTRL = 0010, the PPS (2 Hz) is a sequence of: - One clock of 50 percent duty cycle and 537 ms period - Second clock of 463 ms period (268 ms low and 195 ms high) - When PPSCTRL = 0011, the PPS (4 Hz) is a sequence of: - Three clocks of 50 percent duty cycle and 268 ms period - Fourth clock of 195 ms period (134 ms low and 61 ms high)
+ * PPSCMD0: Flexible PPS0 Output Control
+ * 0000: No Command
+ * 0001: START Single Pulse
+ * This command generates single pulse rising at the start point defined in
+ * Target Time Registers and of a duration defined
+ * in the PPS0 Width Register.
+ * 0010: START Pulse Train
+ * This command generates the train of pulses rising at the start point
+ * defined in the Target Time Registers and of a duration defined in the
+ * PPS0 Width Register and repeated at interval defined in the PPS
+ * Interval Register. By default, the PPS pulse train is free-running unless
+ * stopped by ‘STOP Pulse train at time’ or ‘STOP Pulse Train
+ * immediately’ commands.
+ * 0011: Cancel START
+ * This command cancels the START Single Pulse and START Pulse Train
+ * commands if the system time has not crossed the programmed start
+ * time.
+ * 0100: STOP Pulse train at time
+ * This command stops the train of pulses initiated by the START Pulse
+ * Train command (PPSCMD = 0010) after the time programmed in the
+ * Target Time registers elapses.
+ * 0101: STOP Pulse Train immediately
+ * This command immediately stops the train of pulses initiated by the
+ * START Pulse Train command (PPSCMD = 0010).
+ * 0110: Cancel STOP Pulse train
+ * This command cancels the STOP pulse train at time command if the
+ * programmed stop time has not elapsed. The PPS pulse train becomes
+ * free-running on the successful execution of this command.
+ * 0111-1111: Reserved
+ * Note: These bits get cleared automatically
  */
-#define ENET_PPS_CTRL_PPSCTRL0_MASK (0xFU)
-#define ENET_PPS_CTRL_PPSCTRL0_SHIFT (0U)
-#define ENET_PPS_CTRL_PPSCTRL0_SET(x) (((uint32_t)(x) << ENET_PPS_CTRL_PPSCTRL0_SHIFT) & ENET_PPS_CTRL_PPSCTRL0_MASK)
-#define ENET_PPS_CTRL_PPSCTRL0_GET(x) (((uint32_t)(x) & ENET_PPS_CTRL_PPSCTRL0_MASK) >> ENET_PPS_CTRL_PPSCTRL0_SHIFT)
+#define ENET_PPS_CTRL_PPSCTRLCMD0_MASK (0xFU)
+#define ENET_PPS_CTRL_PPSCTRLCMD0_SHIFT (0U)
+#define ENET_PPS_CTRL_PPSCTRLCMD0_SET(x) (((uint32_t)(x) << ENET_PPS_CTRL_PPSCTRLCMD0_SHIFT) & ENET_PPS_CTRL_PPSCTRLCMD0_MASK)
+#define ENET_PPS_CTRL_PPSCTRLCMD0_GET(x) (((uint32_t)(x) & ENET_PPS_CTRL_PPSCTRLCMD0_MASK) >> ENET_PPS_CTRL_PPSCTRLCMD0_SHIFT)
 
 /* Bitfield definition for register: AUX_TS_NSEC */
 /*
@@ -6926,13 +6956,13 @@ errors */
 
 /* Bitfield definition for register: CTRL2 */
 /*
- * ENET0_LPI_INTR_EN (RW)
+ * ENET0_LPI_IRQ_EN (RW)
  *
  */
-#define ENET_CTRL2_ENET0_LPI_INTR_EN_MASK (0x20000000UL)
-#define ENET_CTRL2_ENET0_LPI_INTR_EN_SHIFT (29U)
-#define ENET_CTRL2_ENET0_LPI_INTR_EN_SET(x) (((uint32_t)(x) << ENET_CTRL2_ENET0_LPI_INTR_EN_SHIFT) & ENET_CTRL2_ENET0_LPI_INTR_EN_MASK)
-#define ENET_CTRL2_ENET0_LPI_INTR_EN_GET(x) (((uint32_t)(x) & ENET_CTRL2_ENET0_LPI_INTR_EN_MASK) >> ENET_CTRL2_ENET0_LPI_INTR_EN_SHIFT)
+#define ENET_CTRL2_ENET0_LPI_IRQ_EN_MASK (0x20000000UL)
+#define ENET_CTRL2_ENET0_LPI_IRQ_EN_SHIFT (29U)
+#define ENET_CTRL2_ENET0_LPI_IRQ_EN_SET(x) (((uint32_t)(x) << ENET_CTRL2_ENET0_LPI_IRQ_EN_SHIFT) & ENET_CTRL2_ENET0_LPI_IRQ_EN_MASK)
+#define ENET_CTRL2_ENET0_LPI_IRQ_EN_GET(x) (((uint32_t)(x) & ENET_CTRL2_ENET0_LPI_IRQ_EN_MASK) >> ENET_CTRL2_ENET0_LPI_IRQ_EN_SHIFT)
 
 /*
  * ENET0_REFCLK_OE (RW)

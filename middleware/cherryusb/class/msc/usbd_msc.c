@@ -10,10 +10,6 @@
 #include "usb_osal.h"
 #endif
 
-#ifndef CONFIG_USBDEV_MSC_BLOCK_SIZE
-#define CONFIG_USBDEV_MSC_BLOCK_SIZE 512
-#endif
-
 #define MSC_THREAD_OP_READ_MEM   1
 #define MSC_THREAD_OP_WRITE_MEM  2
 #define MSC_THREAD_OP_WRITE_DONE 3
@@ -916,14 +912,8 @@ static void usbd_msc_thread(void *argument)
 }
 #endif
 
-struct usbd_interface *usbd_msc_alloc_intf(const uint8_t out_ep, const uint8_t in_ep)
+struct usbd_interface *usbd_msc_init_intf(struct usbd_interface *intf, const uint8_t out_ep, const uint8_t in_ep)
 {
-    struct usbd_interface *intf = usb_malloc(sizeof(struct usbd_interface));
-    if (intf == NULL) {
-        USB_LOG_ERR("no mem to alloc intf\r\n");
-        return NULL;
-    }
-
     intf->class_interface_handler = msc_storage_class_interface_request_handler;
     intf->class_endpoint_handler = NULL;
     intf->vendor_handler = NULL;

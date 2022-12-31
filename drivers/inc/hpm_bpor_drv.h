@@ -22,11 +22,11 @@
 
 /** @brief Define BPOR power on cause */
 typedef enum {
-    bpor_power_on_cause_wbutn = 0,
-    bpor_power_on_cause_safety_violation = 1,
-    bpor_power_on_cause_rtc_0 = 2,
-    bpor_power_on_cause_rtc_1 = 3,
-    bpor_power_on_cause_gpio = 4
+    bpor_power_on_cause_wbutn = 1 << 0,
+    bpor_power_on_cause_safety_violation = 1 << 1,
+    bpor_power_on_cause_rtc_0 = 1 << 2,
+    bpor_power_on_cause_rtc_1 = 1 << 3,
+    bpor_power_on_cause_gpio = 1 << 4
 } bpor_power_on_cause_t;
 
 
@@ -46,14 +46,47 @@ static inline uint32_t bpor_get_power_on_cause(BPOR_Type *ptr)
 }
 
 /**
- * @brief Select power on cause
+ * @brief Clear power on cause
  *
  * @param[in] ptr BPOR base address
- * @param[in] cause bpor_power_on_cause_t
+ * @param[in] mask cause status to be cleared
  */
-static inline void bpor_select_power_on_cause(BPOR_Type *ptr, bpor_power_on_cause_t cause)
+static inline void bpor_clear_power_on_cause(BPOR_Type *ptr, uint8_t mask)
 {
-    ptr->POR_SELECT |= 1 << cause;
+    ptr->POR_CAUSE |= mask;
+}
+
+/**
+ * @brief enable power on cause
+ *
+ * @param[in] ptr BPOR base address
+ * @param[in] cause wake up cause to be enabled
+ */
+static inline void bpor_enable_power_on_cause(BPOR_Type *ptr, bpor_power_on_cause_t cause)
+{
+    ptr->POR_SELECT |= cause;
+}
+
+/**
+ * @brief disable power on cause
+ *
+ * @param[in] ptr BPOR base address
+ * @param[in] cause wake up cause to be disabled
+ */
+static inline void bpor_disable_power_on_cause(BPOR_Type *ptr, bpor_power_on_cause_t cause)
+{
+    ptr->POR_SELECT &= ~cause;
+}
+
+/**
+ * @brief Set power on cause
+ *
+ * @param[in] ptr BPOR base address
+ * @param[in] cause wake up cause to be used
+ */
+static inline void bpor_set_power_on_cause(BPOR_Type *ptr, uint8_t cause)
+{
+    ptr->POR_SELECT = (ptr->POR_SELECT & ~BPOR_POR_SELECT_SELECT_MASK) | cause;
 }
 
 /**

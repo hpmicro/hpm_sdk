@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.13)
 # set(CONFIG_HPM_MATH 1)
 set(CONFIG_MOTORCTRL 1)
 set(CONFIG_HPM_ADC 1)
-# set(HPM_MATH_SES_LIB "libdspf")
+# set(HPM_MATH_DSP_SES_LIB "libdspf")
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 # sdk_compile_options("-Os")

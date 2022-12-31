@@ -150,16 +150,7 @@ static void init_lcd(void)
     display_pixel_format_t pixel_format;
     lcdc_config_t config = {0};
     lcdc_get_default_config(LCD_CONTROLLER, &config);
-
-    config.resolution_x = LV_LCD_WIDTH;
-    config.resolution_y = LV_LCD_HEIGHT;
-
-    config.vsync.back_porch_pulse = 23;
-    config.vsync.front_porch_pulse = 10;
-    config.vsync.pulse_width = 3;
-    config.hsync.back_porch_pulse = 46;
-    config.hsync.front_porch_pulse = 50;
-    config.hsync.pulse_width = 10;
+    board_panel_para_to_lcdc(&config);
 
 #if LV_COLOR_DEPTH == 32
     pixel_format = display_pixel_format_argb8888;
@@ -203,9 +194,7 @@ static void flush_display(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_c
         uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t)cur_buffer);
         uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP((uint32_t)cur_buffer + LV_LCD_HEIGHT * LV_LCD_WIDTH * LV_COLOR_DEPTH / 8);
         uint32_t aligned_size = aligned_end - aligned_start;
-        disable_global_irq(CSR_MSTATUS_MIE_MASK);
         l1c_dc_writeback(aligned_start, aligned_size);
-        enable_global_irq(CSR_MSTATUS_MIE_MASK);
     }
 
 #ifdef LVGL_USE_DMA
@@ -218,9 +207,7 @@ static void flush_display(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_c
         uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t)buf);
         uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP((uint32_t)buf + LV_LCD_HEIGHT * LV_LCD_WIDTH * LV_COLOR_DEPTH / 8);
         uint32_t aligned_size = aligned_end - aligned_start;
-        disable_global_irq(CSR_MSTATUS_MIE_MASK);
         l1c_dc_writeback(aligned_start, aligned_size);
-        enable_global_irq(CSR_MSTATUS_MIE_MASK);
     }
     lv_disp_flush_ready(&g_disp_drv);
 #endif

@@ -136,6 +136,11 @@ static int enet_mac_init(ENET_Type *ptr, enet_mac_config_t *config, enet_inf_typ
     return true;
 }
 
+static void enet_mask_interrupt_event(ENET_Type *ptr, uint32_t mask)
+{
+    /* mask the specified interrupts */
+    ptr->INTR_MASK |= mask;
+}
 /*---------------------------------------------------------------------
  * Driver API
  *---------------------------------------------------------------------
@@ -196,16 +201,19 @@ void enet_set_duplex_mode(ENET_Type *ptr, enet_duplex_mode_t mode)
     ptr->MACCFG |= ENET_MACCFG_DM_SET(mode);
 }
 
-int enet_controller_init(ENET_Type *ptr, enet_inf_type_t inf_type, enet_desc_t *desc, enet_mac_config_t *config, uint32_t intr)
+int enet_controller_init(ENET_Type *ptr, enet_inf_type_t inf_type, enet_desc_t *desc, enet_mac_config_t *config, enet_int_config_t *int_config)
 {
     /* select an interface */
     enet_intf_selection(ptr, inf_type);
 
     /* initialize DMA */
-    enet_dma_init(ptr, desc, intr, config->dma_pbl);
+    enet_dma_init(ptr, desc, int_config->int_enable, config->dma_pbl);
 
     /* Initialize MAC */
     enet_mac_init(ptr, config, inf_type);
+
+    /* Mask the specified interrupts */
+    enet_mask_interrupt_event(ptr, int_config->int_mask);
 
     return true;
 }
@@ -480,12 +488,6 @@ void enet_dma_rx_desc_chain_init(ENET_Type *ptr,  enet_desc_t *desc)
     ptr->DMA_RX_DESC_LIST_ADDR = (uint32_t)desc->rx_desc_list_head;
 }
 
-void enet_mask_interrupt_event(ENET_Type *ptr, uint32_t mask)
-{
-    /* mask the specified interrupts */
-    ptr->INTR_MASK |= mask;
-}
-
 void enet_timestamp_enable(ENET_Type *ptr, bool enable)
 {
     /* enable the timestamp */
@@ -499,7 +501,7 @@ void enet_set_subsecond_increment(ENET_Type *ptr, uint8_t ssinc)
     ptr->SUB_SEC_INCR |= ENET_SUB_SEC_INCR_SSINC_SET(ssinc);
 }
 
-void enet_set_ptp_timestamp(ENET_Type *ptr, enet_ptp_time_t *timestamp)
+void enet_set_ptp_timestamp(ENET_Type *ptr, enet_ptp_ts_update_t *timestamp)
 {
     ptr->SYST_SEC_UPD = timestamp->sec;
     ptr->SYST_NSEC_UPD = timestamp->nsec;
@@ -510,13 +512,13 @@ void enet_set_ptp_timestamp(ENET_Type *ptr, enet_ptp_time_t *timestamp)
     }
 }
 
-void enet_get_ptp_timestamp(ENET_Type *ptr, enet_ptp_time_t *timestamp)
+void enet_get_ptp_timestamp(ENET_Type *ptr, enet_ptp_ts_system_t *timestamp)
 {
     timestamp->sec = ptr->SYST_SEC;
     timestamp->nsec = ptr->SYST_NSEC;
 }
 
-void enet_update_ptp_timeoffset(ENET_Type *ptr, enet_ptp_time_t *timeoffset)
+void enet_update_ptp_timeoffset(ENET_Type *ptr, enet_ptp_ts_update_t *timeoffset)
 {
     /* write the offset (positive or negative ) in the timestamp update high and low registers */
     ptr->SYST_SEC_UPD = ENET_SYST_SEC_UPD_TSS_SET(timeoffset->sec);
@@ -583,7 +585,7 @@ void enet_init_ptp(ENET_Type *ptr, enet_ptp_config_t *config)
 
     /* select the resolution of nanosecond */
     ptr->TS_CTRL &= ~ENET_TS_CTRL_TSCTRLSSR_MASK;
-    ptr->TS_CTRL |= ENET_TS_CTRL_TSCTRLSSR_SET(config->sub_sec_count_res);
+    ptr->TS_CTRL |= ENET_TS_CTRL_TSCTRLSSR_SET(config->timestamp_rollover_mode);
 
     /* enable timestamping */
     ptr->TS_CTRL |= ENET_TS_CTRL_TSENALL_MASK | ENET_TS_CTRL_TSENA_MASK;
@@ -610,4 +612,42 @@ void enet_init_ptp(ENET_Type *ptr, enet_ptp_config_t *config)
         /* coarse update */
         ptr->TS_CTRL &= ~ENET_TS_CTRL_TSCFUPDT_MASK;
     }
+}
+
+void enet_set_pps0_control_output(ENET_Type *ptr, enet_pps_ctrl_t freq)
+{
+    ptr->PPS_CTRL &= ~ENET_PPS_CTRL_PPSEN0_MASK;
+    ptr->PPS_CTRL |= ENET_PPS_CTRL_PPSCTRLCMD0_SET(freq);
+}
+
+void enet_set_pps0_cmd(ENET_Type *ptr, enet_pps_cmd_t cmd)
+{
+    /* Wait the last command to complete */
+    while (ENET_PPS_CTRL_PPSCTRLCMD0_GET(ptr->PPS_CTRL)) {
+
+    }
+
+    ptr->PPS_CTRL |= ENET_PPS_CTRL_PPSCTRLCMD0_SET(cmd);
+}
+
+void enet_set_pps0_command_config(ENET_Type *ptr, enet_pps_cmd_config_t *cmd_cfg)
+{
+    /* Set PPS0 interval and width */
+    ptr->PPS0_INTERVAL = cmd_cfg->pps_interval - 1;
+    ptr->PPS0_WIDTH    = cmd_cfg->pps_width - 1;
+
+    /* Set the target timestamp */
+    ptr->TGTTM_SEC     = cmd_cfg->target_sec;
+    ptr->TGTTM_NSEC    = cmd_cfg->target_nsec;
+
+    /* Set PPS0 as the command function */
+    ptr->PPS_CTRL     |= ENET_PPS_CTRL_PPSEN0_MASK;
+
+    /* Wait the last command to complete */
+    while (ENET_PPS_CTRL_PPSCTRLCMD0_GET(ptr->PPS_CTRL)) {
+
+    }
+
+    /* Initialize with the No Command */
+    ptr->PPS_CTRL &= ~ENET_PPS_CTRL_PPSCTRLCMD0_MASK;
 }

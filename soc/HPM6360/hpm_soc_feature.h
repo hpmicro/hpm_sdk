@@ -189,4 +189,9 @@
 #define ROMAPI_HAS_SW_SM3 (1)
 #define ROMAPI_HAS_SW_SM4 (1)
 
+/*
+ * OTP Section
+ */
+#define OTP_SOC_UUID_IDX   (88U)
+
 #endif /* HPM_SOC_FEATURE_H */

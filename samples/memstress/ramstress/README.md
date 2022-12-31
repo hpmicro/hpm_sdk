@@ -2,7 +2,7 @@
 
 ## Overview
 
-RAMSTERSS example project stress test for external DRAM memory. It's contain the follow:
+RAMSTERSS example project stress test for external memory. It's contain the follow:
 
 - algo_fill_selfaddress
 - algo_random

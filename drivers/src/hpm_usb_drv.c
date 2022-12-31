@@ -21,7 +21,7 @@
 /* ENDPTCTRL */
 enum {
     ENDPTCTRL_STALL          = HPM_BITSMASK(1, 0),
-    ENDPTCTRL_TYPE           = HPM_BITSMASK(1, 2),
+    ENDPTCTRL_TYPE           = HPM_BITSMASK(3, 2),
     ENDPTCTRL_TOGGLE_INHIBIT = HPM_BITSMASK(1, 5),
     ENDPTCTRL_TOGGLE_RESET   = HPM_BITSMASK(1, 6),
     ENDPTCTRL_ENABLE         = HPM_BITSMASK(1, 7),
@@ -252,7 +252,7 @@ void usb_dcd_edpt_close(USB_Type *ptr, uint8_t ep_addr)
     uint8_t const epnum = ep_addr & 0x0f;
     uint8_t const dir   = (ep_addr & 0x80) >> 7;
 
-    uint32_t primebit = HPM_BITSMASK(1, epnum) + (dir ? 16 : 0);
+    uint32_t primebit = HPM_BITSMASK(1, epnum) << (dir ? 16 : 0);
 
     /* Flush the endpoint to stop a transfer. */
     do {
@@ -271,6 +271,7 @@ void usb_dcd_edpt_close(USB_Type *ptr, uint8_t ep_addr)
 
     /* Disable the endpoint */
     ptr->ENDPTCTRL[epnum] &= ~((ENDPTCTRL_TYPE | ENDPTCTRL_ENABLE | ENDPTCTRL_STALL) << (dir ? 16 : 0));
+    ptr->ENDPTCTRL[epnum] |= (usb_xfer_bulk << 2) << (dir ? 16 : 0);
 }
 
 void usb_dcd_remote_wakeup(USB_Type *ptr)

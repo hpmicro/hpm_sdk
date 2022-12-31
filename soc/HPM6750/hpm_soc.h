@@ -99,7 +99,7 @@
 #define IRQn_XPI1          86                  /* XPI1 IRQ */
 #define IRQn_XDMA          87                  /* XDMA IRQ */
 #define IRQn_HDMA          88                  /* HDMA IRQ */
-#define IRQn_DRAM          89                  /* DRAM IRQ */
+#define IRQn_FEMC          89                  /* FEMC IRQ */
 #define IRQn_RNG           90                  /* RNG IRQ */
 #define IRQn_I2S0          91                  /* I2S0 IRQ */
 #define IRQn_I2S1          92                  /* I2S1 IRQ */
@@ -676,12 +676,12 @@
 /* SDP base pointer */
 #define HPM_SDP ((SDP_Type *) HPM_SDP_BASE)
 
-#include "hpm_dram_regs.h"
-/* Address of DRAM instances */
-/* DRAM base address */
-#define HPM_DRAM_BASE (0xF3050000UL)
-/* DRAM base pointer */
-#define HPM_DRAM ((DRAM_Type *) HPM_DRAM_BASE)
+#include "hpm_femc_regs.h"
+/* Address of FEMC instances */
+/* FEMC base address */
+#define HPM_FEMC_BASE (0xF3050000UL)
+/* FEMC base pointer */
+#define HPM_FEMC ((FEMC_Type *) HPM_FEMC_BASE)
 
 #include "hpm_sysctl_regs.h"
 /* Address of SYSCTL instances */

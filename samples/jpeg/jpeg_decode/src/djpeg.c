@@ -102,17 +102,7 @@ void init_lcd(void)
     lcdc_config_t config = {0};
 
     lcdc_get_default_config(LCD, &config);
-
-    config.resolution_x = BOARD_LCD_WIDTH;
-    config.resolution_y = BOARD_LCD_HEIGHT;
-
-    config.vsync.back_porch_pulse = 23;
-    config.vsync.front_porch_pulse = 10;
-    config.vsync.pulse_width = 3;
-    config.hsync.back_porch_pulse = 46;
-    config.hsync.front_porch_pulse = 50;
-    config.hsync.pulse_width = 10;
-
+    board_panel_para_to_lcdc(&config);
     lcdc_init(LCD, &config);
 
     lcd_is_on = false;

@@ -263,10 +263,7 @@ bool initialize_lcd(void)
     lcdc_config_t config = {0};
     lcdc_layer_config_t *layer;
     lcdc_get_default_config(LCD, &config);
-
-    config.resolution_x = LCD_WIDTH;
-    config.resolution_y = LCD_HEIGHT;
-
+    board_panel_para_to_lcdc(&config);
     lcdc_init(LCD, &config);
     lcdc_enable_interrupt(LCD, LCDC_INT_EN_VSYNC_MASK);
 

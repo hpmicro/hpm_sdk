@@ -49,4 +49,4 @@ board:
       - gpiom
       - adc12
       - adc16
-      - cdc_dual_ports
+      - adc_tempsns

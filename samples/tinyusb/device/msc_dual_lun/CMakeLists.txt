@@ -16,6 +16,4 @@ sdk_app_src(src/main.c)
 sdk_app_src(src/usb_descriptors.c)
 sdk_app_src(src/msc_disk_dual.c)
 
-sdk_ses_compile_options(-mabi=ilp32)
-sdk_ses_compile_options(-march=rv32ima)
 generate_ses_project()

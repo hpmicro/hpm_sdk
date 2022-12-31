@@ -10,13 +10,11 @@ HEAP_SIZE = DEFINED(_heap_size) ? _heap_size : 0x4000;
 
 MEMORY
 {
-    ILM (wx) : ORIGIN = 0, LENGTH = 128K
-    DLM (w) : ORIGIN = 0x80000, LENGTH = 128K
-    /* It's alias address of core0 ILM+DLM, but accessing via system bus */
-    CORE0_LM_SLV (wx) : ORIGIN = 0x1040000, LENGTH = 256K
-    
-    AXI_SRAM (wx) : ORIGIN = 0x1080000, LENGTH = 256K
+    ILM (wx) : ORIGIN = 0x00000000, LENGTH = 128K
+    DLM (w) : ORIGIN = 0x00080000, LENGTH = 128K
+    AXI_SRAM (wx) : ORIGIN = 0x01080000, LENGTH = 256K
     AXI_SRAM_NONCACHEABLE (wx) : ORIGIN = 0x010C0000, LENGTH = 256K
+    AHB_SRAM (w) : ORIGIN = 0xF0300000, LENGTH = 32k
 }
 
 SECTIONS
@@ -124,7 +122,7 @@ SECTIONS
         PROVIDE (__edata = .);
         PROVIDE (_edata = .);
         PROVIDE (edata = .);
-    } > DLM
+    } > AXI_SRAM
 
     .fast : AT(etext + __data_end__ - __data_start__) {
         . = ALIGN(8);
@@ -132,9 +130,9 @@ SECTIONS
         *(.fast)
         . = ALIGN(8);
         PROVIDE(__ramfunc_end__ = .);
-    } > AXI_SRAM
+    } > ILM
 
-    .bss : {
+    .bss (NOLOAD) : {
         . = ALIGN(8);
         __bss_start__ = .;
         *(.bss)
@@ -149,23 +147,13 @@ SECTIONS
         . = ALIGN(8);
         _end = .;
         __bss_end__ = .;
-    } > DLM
+    } > AXI_SRAM
 
     .framebuffer (NOLOAD) : {
-        KEEP(*(.framebuffer))
-    } > AXI_SRAM
-
-    .dual_core_share (NOLOAD) : {
-        KEEP(*(.dual_core_share))
-    } > AXI_SRAM
-
-    .heap : {
         . = ALIGN(8);
-        __heap_start__ = .;
-        . += HEAP_SIZE;
-        __heap_end__ = .;
-
-    } > DLM
+        KEEP(*(.framebuffer))
+        . = ALIGN(8);
+    } > AXI_SRAM
 
     .noncacheable : AT(etext + __data_end__ - __data_start__ + __ramfunc_end__ - __ramfunc_start__) {
         . = ALIGN(8);
@@ -179,7 +167,22 @@ SECTIONS
         . = ALIGN(8);
     } > AXI_SRAM_NONCACHEABLE
 
-    .stack : {
+    .ahb_sram (NOLOAD) : {
+        KEEP(*(.ahb_sram))
+    } > AHB_SRAM
+
+    .fast_ram (NOLOAD) : {
+        KEEP(*(.fast_ram))
+    } > DLM
+
+    .heap (NOLOAD) : {
+        . = ALIGN(8);
+        __heap_start__ = .;
+        . += HEAP_SIZE;
+        __heap_end__ = .;
+    } > DLM
+
+    .stack (NOLOAD) : {
         . = ALIGN(8);
         __stack_base__ = .;
         . += STACK_SIZE;
@@ -190,5 +193,5 @@ SECTIONS
     __noncacheable_start__ = ORIGIN(AXI_SRAM_NONCACHEABLE);
     __noncacheable_end__ = ORIGIN(AXI_SRAM_NONCACHEABLE) + LENGTH(AXI_SRAM_NONCACHEABLE);
 
-    ASSERT(__stack_base__ >= __heap_end__, "stack overlapped with heap")
+    ASSERT((STACK_SIZE + HEAP_SIZE) <= 128K, "stack and heap total size larger than 128k")
 }

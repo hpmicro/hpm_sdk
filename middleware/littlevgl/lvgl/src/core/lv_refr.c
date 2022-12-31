@@ -289,7 +289,6 @@ void _lv_disp_refr_timer(lv_timer_t * tmr)
 
     uint32_t start = lv_tick_get();
     volatile uint32_t elaps = 0;
-
     if(tmr) {
         disp_refr = tmr->user_data;
 #if LV_USE_PERF_MONITOR == 0 && LV_USE_MEM_MONITOR == 0
@@ -304,6 +303,8 @@ void _lv_disp_refr_timer(lv_timer_t * tmr)
         disp_refr = lv_disp_get_default();
     }
 
+    elaps = lv_tick_elaps(disp_refr->last_render_start_time);
+    disp_refr->last_render_start_time = start;
     /*Refresh the screen's layout if required*/
     lv_obj_update_layout(disp_refr->act_scr);
     if(disp_refr->prev_scr) lv_obj_update_layout(disp_refr->prev_scr);
@@ -337,8 +338,6 @@ void _lv_disp_refr_timer(lv_timer_t * tmr)
         lv_memset_00(disp_refr->inv_areas, sizeof(disp_refr->inv_areas));
         lv_memset_00(disp_refr->inv_area_joined, sizeof(disp_refr->inv_area_joined));
         disp_refr->inv_p = 0;
-
-        elaps = lv_tick_elaps(start);
 
         /*Call monitor cb if present*/
         if(disp_refr->driver->monitor_cb) {

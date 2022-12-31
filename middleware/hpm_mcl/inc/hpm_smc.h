@@ -23,14 +23,14 @@ extern "C" {
  *
  * @param par @ref BLDC_CONTROL_SMC_PARA
  */
-void bldc_smc_pos_cal(BLDC_CONTROL_SMC_PARA *par);
+void hpm_mcl_bldc_smc_pos_cal(BLDC_CONTROL_SMC_PARA *par);
 
 /**
  * @brief Calculation of sliding mode control static parameters
  *
  * @param par @ref BLDC_MOTOR_PARA
  */
-void bldc_smc_const_cal(BLDC_MOTOR_PARA *par);
+void hpm_mcl_bldc_smc_const_cal(BLDC_MOTOR_PARA *par);
 
 #if defined(__cplusplus)
 }

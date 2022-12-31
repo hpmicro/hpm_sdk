@@ -7,6 +7,10 @@
 
 将LCD屏连接到评估板
 
+## 编译类型
+- flash_sdram_xip
+- flash_sdram_xip_release
+
 ## 运行
 
 一旦此程序正确运行，在LCD屏上将显示7个彩色矩形以及HPM logo

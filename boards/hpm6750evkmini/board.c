@@ -10,7 +10,7 @@
 #include "hpm_lcdc_drv.h"
 #include "hpm_i2c_drv.h"
 #include "hpm_gpio_drv.h"
-#include "hpm_dram_drv.h"
+#include "hpm_femc_drv.h"
 #include "pinmux.h"
 #include "hpm_pmp_drv.h"
 #include "assert.h"
@@ -28,6 +28,7 @@
 #endif
 
 static board_timer_cb timer_cb;
+static bool invert_led_level;
 
 /**
  * @brief FLASH configuration option definitions:
@@ -133,7 +134,7 @@ void board_print_clock_freq(void)
     printf("mchtmr1:\t %luHz\n", clock_get_frequency(clock_mchtmr1));
     printf("xpi0:\t\t %luHz\n", clock_get_frequency(clock_xpi0));
     printf("xpi1:\t\t %luHz\n", clock_get_frequency(clock_xpi1));
-    printf("dram:\t\t %luHz\n", clock_get_frequency(clock_dram));
+    printf("femc:\t\t %luHz\n", clock_get_frequency(clock_femc));
     printf("display:\t %luHz\n", clock_get_frequency(clock_display));
     printf("cam0:\t\t %luHz\n", clock_get_frequency(clock_camera0));
     printf("cam1:\t\t %luHz\n", clock_get_frequency(clock_camera1));
@@ -165,6 +166,9 @@ $$ |  $$ |$$ |      $$ |\\$  /$$ |$$ |$$ |      $$ |      $$ |  $$ |\n\
 $$ |  $$ |$$ |      $$ | \\_/ $$ |$$ |\\$$$$$$$\\ $$ |      \\$$$$$$  |\n\
 \\__|  \\__|\\__|      \\__|     \\__|\\__| \\_______|\\__|       \\______/\n\
 ----------------------------------------------------------------------\n"};
+#ifdef SDK_VERSION_STRING
+    printf("hpm_sdk: %s\n", SDK_VERSION_STRING);
+#endif
     printf("%s", banner);
 }
 
@@ -185,16 +189,32 @@ static void board_turnoff_rgb_led(void)
     port_pin18_status = gpio_read_pin(BOARD_G_GPIO_CTRL, GPIO_DI_GPIOB, 18);
     port_pin19_status = gpio_read_pin(BOARD_G_GPIO_CTRL, GPIO_DI_GPIOB, 19);
     port_pin20_status = gpio_read_pin(BOARD_G_GPIO_CTRL, GPIO_DI_GPIOB, 20);
+    invert_led_level = false;
 /**
  * hpm board evkmini Rev. B led light modification, resulting in two versions of rgb led processing different
  *
  */
     if ((port_pin18_status & port_pin19_status & port_pin20_status) == 0) {
-        /*Mini Rev B*/
+        /* Mini Rev B */
+        invert_led_level = true;
         pad_ctl = IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(0);
         HPM_IOC->PAD[IOC_PAD_PB18].PAD_CTL = pad_ctl;
         HPM_IOC->PAD[IOC_PAD_PB19].PAD_CTL = pad_ctl;
         HPM_IOC->PAD[IOC_PAD_PB20].PAD_CTL = pad_ctl;
+    }
+}
+
+uint8_t board_get_led_pwm_off_level(void)
+{
+    return BOARD_LED_OFF_LEVEL;
+}
+
+uint8_t board_get_led_gpio_off_level(void)
+{
+    if (invert_led_level) {
+        return BOARD_LED_ON_LEVEL;
+    } else {
+        return BOARD_LED_OFF_LEVEL;
     }
 }
 
@@ -224,10 +244,10 @@ void board_init_sdram_pins(void)
     init_sdram_pins();
 }
 
-uint32_t board_init_dram_clock(void)
+uint32_t board_init_femc_clock(void)
 {
-    clock_set_source_divider(clock_dram, clk_src_pll2_clk0, 2U); /* 166Mhz */
-    return clock_get_frequency(clock_dram);
+    clock_set_source_divider(clock_femc, clk_src_pll2_clk0, 2U); /* 166Mhz */
+    return clock_get_frequency(clock_femc);
 }
 
 void board_power_cycle_lcd(void)
@@ -254,6 +274,28 @@ void board_init_lcd(void)
     board_init_lcd_clock();
     init_lcd_pins(BOARD_LCD_BASE);
     board_power_cycle_lcd();
+}
+
+void board_panel_para_to_lcdc(lcdc_config_t *config)
+{
+    const uint16_t panel_timing_para[] = BOARD_PANEL_TIMING_PARA;
+
+    config->resolution_x = BOARD_LCD_WIDTH;
+    config->resolution_y = BOARD_LCD_HEIGHT;
+
+    config->hsync.pulse_width = panel_timing_para[BOARD_PANEL_TIMEING_PARA_HSPW_INDEX];
+    config->hsync.back_porch_pulse = panel_timing_para[BOARD_PANEL_TIMEING_PARA_HBP_INDEX];
+    config->hsync.front_porch_pulse = panel_timing_para[BOARD_PANEL_TIMEING_PARA_HFP_INDEX];
+
+    config->vsync.pulse_width = panel_timing_para[BOARD_PANEL_TIMEING_PARA_VSPW_INDEX];
+    config->vsync.back_porch_pulse = panel_timing_para[BOARD_PANEL_TIMEING_PARA_VBP_INDEX];
+    config->vsync.front_porch_pulse = panel_timing_para[BOARD_PANEL_TIMEING_PARA_VFP_INDEX];
+
+    config->control.invert_hsync = panel_timing_para[BOARD_PANEL_TIMEING_PARA_HSSP_INDEX];
+    config->control.invert_vsync = panel_timing_para[BOARD_PANEL_TIMEING_PARA_VSSP_INDEX];
+    config->control.invert_href = panel_timing_para[BOARD_PANEL_TIMEING_PARA_DESP_INDEX];
+    config->control.invert_pixel_data = panel_timing_para[BOARD_PANEL_TIMEING_PARA_PDSP_INDEX];
+    config->control.invert_pixel_clock = panel_timing_para[BOARD_PANEL_TIMEING_PARA_PCSP_INDEX];
 }
 
 void board_delay_ms(uint32_t ms)
@@ -377,7 +419,7 @@ uint32_t board_init_spi_clock(SPI_Type *ptr)
     if (ptr == HPM_SPI2) {
         /* SPI2 clock configure */
         clock_add_to_group(clock_spi2, 0);
-        clock_set_source_divider(clock_spi2, clk_src_osc24m, 1U);
+        clock_set_source_divider(clock_spi2, clk_src_pll1_clk1, 5U); /* 80MHz */
 
         return clock_get_frequency(clock_spi2);
     } else {
@@ -426,9 +468,9 @@ void board_write_spi_cs(uint32_t pin, uint8_t state)
 void board_init_led_pins(void)
 {
     init_led_pins_as_gpio();
-    gpio_set_pin_output_with_initial(BOARD_R_GPIO_CTRL, BOARD_R_GPIO_INDEX, BOARD_R_GPIO_PIN, BOARD_LED_OFF_LEVEL);
-    gpio_set_pin_output_with_initial(BOARD_G_GPIO_CTRL, BOARD_G_GPIO_INDEX, BOARD_G_GPIO_PIN, BOARD_LED_OFF_LEVEL);
-    gpio_set_pin_output_with_initial(BOARD_B_GPIO_CTRL, BOARD_B_GPIO_INDEX, BOARD_B_GPIO_PIN, BOARD_LED_OFF_LEVEL);
+    gpio_set_pin_output_with_initial(BOARD_R_GPIO_CTRL, BOARD_R_GPIO_INDEX, BOARD_R_GPIO_PIN, board_get_led_gpio_off_level());
+    gpio_set_pin_output_with_initial(BOARD_G_GPIO_CTRL, BOARD_G_GPIO_INDEX, BOARD_G_GPIO_PIN, board_get_led_gpio_off_level());
+    gpio_set_pin_output_with_initial(BOARD_B_GPIO_CTRL, BOARD_B_GPIO_INDEX, BOARD_B_GPIO_PIN, board_get_led_gpio_off_level());
 }
 
 void board_led_toggle(void)
@@ -473,28 +515,47 @@ void board_usb_vbus_ctrl(uint8_t usb_index, uint8_t level)
 
 void board_init_pmp(void)
 {
+    uint32_t start_addr;
+    uint32_t end_addr;
+    uint32_t length;
+    pmp_entry_t pmp_entry[16];
+    uint8_t index = 0;
+
+    /* Init noncachable memory */
     extern uint32_t __noncacheable_start__[];
     extern uint32_t __noncacheable_end__[];
-
-    uint32_t start_addr = (uint32_t) __noncacheable_start__;
-    uint32_t end_addr = (uint32_t) __noncacheable_end__;
-    uint32_t length = end_addr - start_addr;
-
-    if (length == 0) {
-        return;
+    start_addr = (uint32_t) __noncacheable_start__;
+    end_addr = (uint32_t) __noncacheable_end__;
+    length = end_addr - start_addr;
+    if (length > 0) {
+        /* Ensure the address and the length are power of 2 aligned */
+        assert((length & (length - 1U)) == 0U);
+        assert((start_addr & (length - 1U)) == 0U);
+        pmp_entry[index].pmp_addr = PMP_NAPOT_ADDR(start_addr, length);
+        pmp_entry[index].pmp_cfg.val = PMP_CFG(READ_EN, WRITE_EN, EXECUTE_EN, ADDR_MATCH_NAPOT, REG_UNLOCK);
+        pmp_entry[index].pma_addr = PMA_NAPOT_ADDR(start_addr, length);
+        pmp_entry[index].pma_cfg.val = PMA_CFG(ADDR_MATCH_NAPOT, MEM_TYPE_MEM_NON_CACHE_BUF, AMO_EN);
+        index++;
     }
 
-    /* Ensure the address and the length are power of 2 aligned */
-    assert((length & (length - 1U)) == 0U);
-    assert((start_addr & (length - 1U)) == 0U);
+    /* Init share memory */
+    extern uint32_t __share_mem_start__[];
+    extern uint32_t __share_mem_end__[];
+    start_addr = (uint32_t)__share_mem_start__;
+    end_addr = (uint32_t)__share_mem_end__;
+    length = end_addr - start_addr;
+    if (length > 0) {
+        /* Ensure the address and the length are power of 2 aligned */
+        assert((length & (length - 1U)) == 0U);
+        assert((start_addr & (length - 1U)) == 0U);
+        pmp_entry[index].pmp_addr = PMP_NAPOT_ADDR(start_addr, length);
+        pmp_entry[index].pmp_cfg.val = PMP_CFG(READ_EN, WRITE_EN, EXECUTE_EN, ADDR_MATCH_NAPOT, REG_UNLOCK);
+        pmp_entry[index].pma_addr = PMA_NAPOT_ADDR(start_addr, length);
+        pmp_entry[index].pma_cfg.val = PMA_CFG(ADDR_MATCH_NAPOT, MEM_TYPE_MEM_NON_CACHE_BUF, AMO_EN);
+        index++;
+    }
 
-    pmp_entry_t pmp_entry[1];
-    pmp_entry[0].pmp_addr = PMP_NAPOT_ADDR(start_addr, length);
-    pmp_entry[0].pmp_cfg.val = PMP_CFG(READ_EN, WRITE_EN, EXECUTE_EN, ADDR_MATCH_NAPOT, REG_UNLOCK);
-    pmp_entry[0].pma_addr = PMA_NAPOT_ADDR(start_addr, length);
-    pmp_entry[0].pma_cfg.val = PMA_CFG(ADDR_MATCH_NAPOT, MEM_TYPE_MEM_NON_CACHE_BUF, AMO_EN);
-
-    pmp_config(&pmp_entry[0], ARRAY_SIZE(pmp_entry));
+    pmp_config(&pmp_entry[0], index);
 }
 
 void board_init_clock(void)
@@ -515,7 +576,7 @@ void board_init_clock(void)
     clock_add_to_group(clock_axi1, 0);
     clock_add_to_group(clock_axi2, 0);
     clock_add_to_group(clock_ahb, 0);
-    clock_add_to_group(clock_dram, 0);
+    clock_add_to_group(clock_femc, 0);
     clock_add_to_group(clock_xpi0, 0);
     clock_add_to_group(clock_xpi1, 0);
     clock_add_to_group(clock_gptmr0, 0);
@@ -579,6 +640,7 @@ void board_init_clock(void)
     clock_add_to_group(clock_msyn, 0);
     clock_add_to_group(clock_lmm0, 0);
     clock_add_to_group(clock_lmm1, 0);
+    clock_add_to_group(clock_pdm, 0);
 
     clock_add_to_group(clock_adc0, 0);
     clock_add_to_group(clock_adc1, 0);
@@ -589,13 +651,14 @@ void board_init_clock(void)
     clock_add_to_group(clock_i2s1, 0);
     clock_add_to_group(clock_i2s2, 0);
     clock_add_to_group(clock_i2s3, 0);
+    /* Connect Group0 to CPU0 */
+    clock_connect_group_to_cpu(0, 0);
 
     /* Add the CPU1 clock to Group1 */
     clock_add_to_group(clock_mchtmr1, 1);
     clock_add_to_group(clock_mbx1, 1);
-
-    /* Connect Group0 to CPU0 */
-    clock_connect_group_to_cpu(0, 0);
+    /* Connect Group1 to CPU1 */
+    clock_connect_group_to_cpu(1, 1);
 
     /* Bump up DCDC voltage to 1200mv */
     pcfg_dcdc_set_voltage(HPM_PCFG, 1200);
@@ -608,12 +671,11 @@ void board_init_clock(void)
 
     clock_set_source_divider(clock_cpu0, clk_src_pll0_clk0, 1);
     clock_set_source_divider(clock_cpu1, clk_src_pll0_clk0, 1);
-    /* Connect Group1 to CPU1 */
-    clock_connect_group_to_cpu(1, 1);
-
     clock_update_core_clock();
 
     clock_set_source_divider(clock_aud1, clk_src_pll3_clk0, 54); /* config clock_aud1 for 44100*n sample rate */
+    clock_set_source_divider(clock_mchtmr0, clk_src_osc24m, 1);
+    clock_set_source_divider(clock_mchtmr1, clk_src_osc24m, 1);
 }
 
 uint32_t board_init_cam_clock(CAM_Type *ptr)
@@ -761,23 +823,24 @@ uint32_t board_init_can_clock(CAN_Type *ptr)
  */
 void _init_ext_ram(void)
 {
-    uint32_t dram_clk_in_hz;
+    uint32_t femc_clk_in_hz;
+    clock_add_to_group(clock_femc, 0);
     board_init_sdram_pins();
-    dram_clk_in_hz = board_init_dram_clock();
+    femc_clk_in_hz = board_init_femc_clock();
 
-    dram_config_t config = {0};
-    dram_sdram_config_t sdram_config = {0};
+    femc_config_t config = {0};
+    femc_sdram_config_t sdram_config = {0};
 
-    dram_default_config(HPM_DRAM, &config);
-    config.dqs = DRAM_DQS_INTERNAL;
-    dram_init(HPM_DRAM, &config);
+    femc_default_config(HPM_FEMC, &config);
+    config.dqs = FEMC_DQS_INTERNAL;
+    femc_init(HPM_FEMC, &config);
 
-    sdram_config.bank_num = DRAM_SDRAM_BANK_NUM_4;
+    sdram_config.bank_num = FEMC_SDRAM_BANK_NUM_4;
     sdram_config.prescaler = 0x3;
     sdram_config.burst_len_in_byte = 8;
     sdram_config.auto_refresh_count_in_one_burst = 1;
-    sdram_config.col_addr_bits = DRAM_SDRAM_COLUMN_ADDR_9_BITS;
-    sdram_config.cas_latency = DRAM_SDRAM_CAS_LATENCY_3;
+    sdram_config.col_addr_bits = FEMC_SDRAM_COLUMN_ADDR_9_BITS;
+    sdram_config.cas_latency = FEMC_SDRAM_CAS_LATENCY_3;
 
     sdram_config.precharge_to_act_in_ns = 18;   /* Trp */
     sdram_config.act_to_rw_in_ns = 18;          /* Trcd */
@@ -790,7 +853,7 @@ void _init_ext_ram(void)
     sdram_config.refresh_to_refresh_in_ns = 66;     /* Trfc/Trc */
     sdram_config.act_to_act_in_ns = 12;             /* Trrd */
     sdram_config.idle_timeout_in_ns = 6;
-    sdram_config.cs_mux_pin = DRAM_IO_MUX_NOT_USED;
+    sdram_config.cs_mux_pin = FEMC_IO_MUX_NOT_USED;
 
     sdram_config.cs = BOARD_SDRAM_CS;
     sdram_config.base_address = BOARD_SDRAM_ADDRESS;
@@ -801,7 +864,7 @@ void _init_ext_ram(void)
     sdram_config.data_width_in_byte = BOARD_SDRAM_DATA_WIDTH_IN_BYTE;
     sdram_config.delay_cell_value = 29;
 
-    dram_config_sdram(HPM_DRAM, dram_clk_in_hz, &sdram_config);
+    femc_config_sdram(HPM_FEMC, femc_clk_in_hz, &sdram_config);
 }
 #endif
 
@@ -991,4 +1054,14 @@ hpm_stat_t board_reset_enet_phy(ENET_Type *ptr)
 uint8_t board_enet_get_dma_pbl(ENET_Type *ptr)
 {
     return enet_pbl_32;
+}
+
+hpm_stat_t board_enet_enable_irq(ENET_Type *ptr)
+{
+    return status_success;
+}
+
+hpm_stat_t board_enet_disable_irq(ENET_Type *ptr)
+{
+    return status_success;
 }

@@ -11,10 +11,11 @@ HEAP_SIZE = DEFINED(_heap_size) ? _heap_size : 0x4000;
 MEMORY
 {
     XPI0 (rx) : ORIGIN = 0x80003000, LENGTH = _flash_size - 0x3000
-    ILM (wx) : ORIGIN = 0, LENGTH = 128K
-    DLM (wx) : ORIGIN = 0x80000, LENGTH = 128K
-    AXI_SRAM (wx) : ORIGIN = 0x1080000, LENGTH = 256K
+    ILM (wx) : ORIGIN = 0x00000000, LENGTH = 128K
+    DLM (w) : ORIGIN = 0x00080000, LENGTH = 128K
+    AXI_SRAM (wx) : ORIGIN = 0x01080000, LENGTH = 256K
     AXI_SRAM_NONCACHEABLE (wx) : ORIGIN = 0x010C0000, LENGTH = 256K
+    AHB_SRAM (w) : ORIGIN = 0xF0300000, LENGTH = 32k
 }
 
 SECTIONS
@@ -131,9 +132,9 @@ SECTIONS
         *(.fast)
         . = ALIGN(8);
         __ramfunc_end__ = .;
-    } > AXI_SRAM
+    } > ILM
 
-    .bss : {
+    .bss (NOLOAD) : {
         . = ALIGN(8);
         __bss_start__ = .;
         *(.bss)
@@ -148,13 +149,6 @@ SECTIONS
         . = ALIGN(8);
         _end = .;
         __bss_end__ = .;
-    } > DLM
-
-    .heap : {
-        . = ALIGN(8);
-        __heap_start__ = .;
-        . += HEAP_SIZE;
-        __heap_end__ = .;
     } > AXI_SRAM
 
     .framebuffer (NOLOAD) : {
@@ -175,7 +169,22 @@ SECTIONS
         . = ALIGN(8);
     } > AXI_SRAM_NONCACHEABLE
 
-    .stack : {
+    .ahb_sram (NOLOAD) : {
+        KEEP(*(.ahb_sram))
+    } > AHB_SRAM
+
+    .fast_ram (NOLOAD) : {
+        KEEP(*(.fast_ram))
+    } > DLM
+
+    .heap (NOLOAD) : {
+        . = ALIGN(8);
+        __heap_start__ = .;
+        . += HEAP_SIZE;
+        __heap_end__ = .;
+    } > DLM
+
+    .stack (NOLOAD) : {
         . = ALIGN(8);
         __stack_base__ = .;
         . += STACK_SIZE;
@@ -186,4 +195,6 @@ SECTIONS
 
     __noncacheable_start__ = ORIGIN(AXI_SRAM_NONCACHEABLE);
     __noncacheable_end__ = ORIGIN(AXI_SRAM_NONCACHEABLE) + LENGTH(AXI_SRAM_NONCACHEABLE);
+
+    ASSERT((STACK_SIZE + HEAP_SIZE) <= 128K, "stack and heap total size larger than 128k")
 }

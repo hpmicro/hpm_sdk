@@ -268,7 +268,7 @@ typedef int ssize_t;
  * \#define LWIP_DECLARE_MEMORY_ALIGNED(variable_name, size) u32_t variable_name[(size + sizeof(u32_t) - 1) / sizeof(u32_t)]
  */
 #ifndef LWIP_DECLARE_MEMORY_ALIGNED
-#define LWIP_DECLARE_MEMORY_ALIGNED(variable_name, size) LWIP_MEM_SECTION u8_t variable_name[LWIP_MEM_ALIGN_BUFFER(size)]
+#define LWIP_DECLARE_MEMORY_ALIGNED(variable_name, size) __attribute__ ((section(LWIP_MEM_SECTION))) u8_t variable_name[LWIP_MEM_ALIGN_BUFFER(size)]
 #endif
 
 /** Calculate memory size for an aligned buffer - returns the next highest

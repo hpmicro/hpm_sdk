@@ -311,7 +311,7 @@ hpm_stat_t i2c_init_master(I2C_Type *ptr,
 hpm_stat_t i2c_master_address_write(I2C_Type *ptr,
                             const uint16_t device_address,
                             uint8_t *addr,
-                            uint8_t addr_size_in_byte,
+                            uint32_t addr_size_in_byte,
                             uint8_t *buf,
                             const uint32_t size_in_byte);
 
@@ -332,7 +332,7 @@ hpm_stat_t i2c_master_address_write(I2C_Type *ptr,
 hpm_stat_t i2c_master_address_read(I2C_Type *ptr,
                            const uint16_t device_address,
                            uint8_t *addr,
-                           uint8_t addr_size_in_byte,
+                           uint32_t addr_size_in_byte,
                            uint8_t *buf,
                            const uint32_t size_in_byte);
 

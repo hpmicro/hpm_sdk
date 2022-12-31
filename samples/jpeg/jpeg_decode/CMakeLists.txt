@@ -23,7 +23,9 @@ else()
   message(FATAL_ERROR "Please select target storaget, set JPEG_USE_SDCARD or JPEG_USE_UDISK in CMakeLists.txt")
 endif()
 
-set(CUSTOM_GCC_LINKER_FILE $ENV{HPM_SDK_BASE}/samples/jpeg/linkers/gcc/jpeg.ld)
+if("${CMAKE_BUILD_TYPE}" STREQUAL "")
+    SET(CMAKE_BUILD_TYPE flash_sdram_xip)
+endif()
 
 if(${JPEG_HW_MODE})
   set(HEAP_SIZE 0x40000)

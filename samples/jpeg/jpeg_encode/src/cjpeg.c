@@ -554,17 +554,7 @@ void init_lcd(uint32_t buffer)
     lcdc_layer_config_t layer = {0};
 
     lcdc_get_default_config(LCD, &config);
-
-    config.resolution_x = LCD_WIDTH;
-    config.resolution_y = LCD_HEIGHT;
-
-    config.vsync.back_porch_pulse = 23;
-    config.vsync.front_porch_pulse = 10;
-    config.vsync.pulse_width = 3;
-    config.hsync.back_porch_pulse = 46;
-    config.hsync.front_porch_pulse = 50;
-    config.hsync.pulse_width = 10;
-
+    board_panel_para_to_lcdc(&config);
     lcdc_init(LCD, &config);
 
     lcdc_get_default_layer_config(LCD, &layer, PIXEL_FORMAT, LCD_LAYER_INDEX);

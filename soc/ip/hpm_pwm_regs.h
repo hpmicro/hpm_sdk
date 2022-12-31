@@ -43,7 +43,8 @@ typedef struct {
 /*
  * SHUNLK (RW)
  *
- * write 0xB0382607 to unlock the shadow registers of register offset from 0x04 to 0x78, otherwise the shadow registers can not be written.
+ * write 0xB0382607 to unlock the shadow registers of register offset from 0x04 to 0x78,
+ * otherwise the shadow registers can not be written.
  */
 #define PWM_UNLK_SHUNLK_MASK (0xFFFFFFFFUL)
 #define PWM_UNLK_SHUNLK_SHIFT (0U)
@@ -107,7 +108,8 @@ typedef struct {
 /*
  * CMP (RW)
  *
- * clock counter compare value, the compare output is 0 at default, set to 1 when compare value meet, and clr to 0 when timer reload. Software can invert the output by setting chan_cfg.out_polarity.
+ * clock counter compare value, the compare output is 0 at default, set to 1 when compare value meet,
+ * and clr to 0 when timer reload. Software can invert the output by setting chan_cfg.out_polarity.
  */
 #define PWM_CMP_CMP_MASK (0xFFFFFF0UL)
 #define PWM_CMP_CMP_SHIFT (4U)
@@ -138,7 +140,7 @@ typedef struct {
 /*
  * FRCMD (RW)
  *
- * 2bit for each PWM output channel (0~7);
+ * 2bit for each PWM output channel (0-7);
  * 00:  force output 0
  * 01:  force output 1
  * 10:  output highz
@@ -257,7 +259,8 @@ typedef struct {
 /*
  * HWSHDWEDG (RW)
  *
- * When hardware event is selected as shawdow register effective time and the select comparator is configured as input capture mode. This bit assign its which edge is used as shadow register hardware load event.
+ * When hardware event is selected as shawdow register effective time and the select comparator is configured as input capture mode.
+ * This bit assign its which edge is used as shadow register hardware load event.
  * 1- Falling edge
  * 0- Rising edge
  */
@@ -279,7 +282,8 @@ typedef struct {
 /*
  * FAULTRECEDG (RW)
  *
- * When hardware load is selected as output fault recover trigger and the selected channel is capture mode. This bit assign its effective edge of fault recover trigger.
+ * When hardware load is selected as output fault recover trigger and the selected channel is capture mode.
+ * This bit assign its effective edge of fault recover trigger.
  * 1- Falling edge
  * 0- Rising edge
  */
@@ -354,7 +358,8 @@ typedef struct {
 /*
  * FAULTCLR (RW)
  *
- * 1- Write 1 to clear the fault condition. The output will recover if FAULTRECTIME is set to 2b'11. User should write 1 to this bit after the active FAULT signal de-assert and before it re-assert again.
+ * 1- Write 1 to clear the fault condition. The output will recover if FAULTRECTIME is set to 2b'11.
+ * User should write 1 to this bit after the active FAULT signal de-assert and before it re-assert again.
  */
 #define PWM_GCR_FAULTCLR_MASK (0x40U)
 #define PWM_GCR_FAULTCLR_SHIFT (6U)
@@ -422,7 +427,8 @@ typedef struct {
  * This bitfield select when the counter related shadow registers (STA and RLD) will be loaded to its work register
  * 00:  after software set shlk bit of shlk register
  * 01:  immediately after the register being modified
- * 10:  after hardware event assert, user can select one of the comparators to generate this hardware event. The comparator can be either output compare mode or input capture mode.
+ * 10:  after hardware event assert, user can select one of the comparators to generate this hardware event.
+ *        The comparator can be either output compare mode or input capture mode.
  * 11:  after SHSYNCI assert
  */
 #define PWM_SHCR_CNTSHDWUPT_MASK (0x6U)
@@ -518,7 +524,8 @@ typedef struct {
  * This bitfield select when the FRCMD shadow register will be loaded to its work register
  * 00:  after software set shlk bit of shlk register
  * 01:  immediately after the register being modified
- * 10:  after hardware event assert, user can select one of the comparators to generate this hardware event. The comparator can be either output compare mode or input capture mode.
+ * 10:  after hardware event assert, user can select one of the comparators to generate this hardware event.
+ *        The comparator can be either output compare mode or input capture mode.
  * 11:  after SHSYNCI assert
  */
 #define PWM_PWMCFG_FRCSHDWUPT_MASK (0xC000000UL)
@@ -545,7 +552,8 @@ typedef struct {
  * This bitfield select when to recover PWM output after fault condition removed.
  * 00:  immediately
  * 01:  after pwm timer counter reload time
- * 10:  after hardware event assert, user can select one of the comparators to generate this hardware event. The comparator can be either output compare mode or input capture mode.
+ * 10:  after hardware event assert, user can select one of the comparators to generate this hardware event.
+ *        The comparator can be either output compare mode or input capture mode.
  * 11:  after software write faultclr bit in GCR register
  */
 #define PWM_PWMCFG_FAULTRECTIME_MASK (0xC00000UL)
@@ -757,7 +765,8 @@ typedef struct {
  * This bitfield select when the comparator shadow register will be loaded to its work register
  * 00:  after software set shlk bit of shlk register
  * 01:  immediately after the register being modified
- * 10:  after hardware event assert, user can select one of the comparators to generate this hardware event. The comparator can be either output compare mode or input capture mode.
+ * 10:  after hardware event assert, user can select one of the comparators to generate this hardware event.
+ *        The comparator can be either output compare mode or input capture mode.
  * 11:  after SHSYNCI assert
  */
 #define PWM_CMPCFG_CMPSHDWUPT_MASK (0xCU)

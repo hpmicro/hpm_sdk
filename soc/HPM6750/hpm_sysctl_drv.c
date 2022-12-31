@@ -200,25 +200,6 @@ hpm_stat_t sysctl_set_cpu0_wakeup_entry(SYSCTL_Type *ptr, uint32_t entry)
     return _sysctl_set_cpu_entry(ptr, 0, entry);
 }
 
-void sysctl_release_cpu1(SYSCTL_Type *ptr)
-{
-    ptr->CPU[1].LP &= ~SYSCTL_CPU_LP_HALT_MASK;
-}
-
-bool sysctl_is_cpu1_released(SYSCTL_Type *ptr)
-{
-    return ((ptr->CPU[1].LP & SYSCTL_CPU_LP_HALT_MASK) == 0U);
-}
-
-hpm_stat_t sysctl_set_cpu_lp_mode(SYSCTL_Type *ptr, uint8_t cpu, cpu_lp_mode_t mode)
-{
-    if (!sysctl_valid_cpu_index(cpu)) {
-        return status_invalid_argument;
-    }
-    ptr->CPU[cpu].LP = (ptr->CPU[cpu].LP & ~(SYSCTL_CPU_LP_MODE_MASK)) | (mode);
-    return status_success;
-}
-
 hpm_stat_t sysctl_enable_group_resource(SYSCTL_Type *ptr,
                                         uint8_t group,
                                         sysctl_resource_t linkable_resource,

@@ -176,7 +176,7 @@ typedef struct {
 
 /* Bitfield definition for register: STAT */
 /*
- * BLOCKY (ROI)
+ * BLOCKY (RO)
  *
  * Y block that is processing
  */
@@ -185,7 +185,7 @@ typedef struct {
 #define PDMA_STAT_BLOCKY_GET(x) (((uint32_t)(x) & PDMA_STAT_BLOCKY_MASK) >> PDMA_STAT_BLOCKY_SHIFT)
 
 /*
- * BLOCKX (ROI)
+ * BLOCKX (RO)
  *
  * X block that is processing
  */
@@ -194,7 +194,7 @@ typedef struct {
 #define PDMA_STAT_BLOCKX_GET(x) (((uint32_t)(x) & PDMA_STAT_BLOCKX_MASK) >> PDMA_STAT_BLOCKX_SHIFT)
 
 /*
- * PDMA_DONE (ROI)
+ * PDMA_DONE (RO)
  *
  * PDMA one image done
  */
@@ -203,7 +203,7 @@ typedef struct {
 #define PDMA_STAT_PDMA_DONE_GET(x) (((uint32_t)(x) & PDMA_STAT_PDMA_DONE_MASK) >> PDMA_STAT_PDMA_DONE_SHIFT)
 
 /*
- * AXI_ERR_ID (ROI)
+ * AXI_ERR_ID (RO)
  *
  * AXI error ID
  */

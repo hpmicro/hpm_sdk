@@ -5,6 +5,7 @@ cmake_minimum_required(VERSION 3.13)
 
 set(CUSTOM_GCC_LINKER_FILE ${CMAKE_CURRENT_SOURCE_DIR}/../linker/gcc/core0.ld)
 
+set(CMAKE_BUILD_TYPE "")
 set(CONFIG_LVGL 1)
 if(NOT DEFINED CONFIG_TOUCH)
 set(CONFIG_TOUCH "gt911")
@@ -13,7 +14,6 @@ set(CONFIG_HPM_TOUCH 1)
 set(CONFIG_LV_INDEV 1)
 set(CONFIG_LV_DEMO lv_demo_widgets)
 set(CONFIG_COREMARK 1)
-set(CMAKE_BUILD_TYPE flash_sdram_xip_release)
 set(INCLUDE_BOOTHEADER 1)
 
 

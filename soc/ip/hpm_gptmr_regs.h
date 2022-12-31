@@ -120,10 +120,10 @@ typedef struct {
  * DMASEL (RW)
  *
  * select one of DMA request:
- * 00- RLD flag, counter reload;
- * 01- Input signal toggle captured
- * 10- CMP0 flag
- * 11- CMP1 flag
+ * 00- CMP0 flag
+ * 01- CMP1 flag
+ * 10- Input signal toggle captured
+ * 11- RLD flag, counter reload;
  */
 #define GPTMR_CHANNEL_CR_DMASEL_MASK (0xC0U)
 #define GPTMR_CHANNEL_CR_DMASEL_SHIFT (6U)
@@ -181,10 +181,10 @@ typedef struct {
  *
  * compare value 0
  */
-#define GPTMR_CMP_CMP_MASK (0xFFFFFFFFUL)
-#define GPTMR_CMP_CMP_SHIFT (0U)
-#define GPTMR_CMP_CMP_SET(x) (((uint32_t)(x) << GPTMR_CMP_CMP_SHIFT) & GPTMR_CMP_CMP_MASK)
-#define GPTMR_CMP_CMP_GET(x) (((uint32_t)(x) & GPTMR_CMP_CMP_MASK) >> GPTMR_CMP_CMP_SHIFT)
+#define GPTMR_CHANNEL_CMP_CMP_MASK (0xFFFFFFFFUL)
+#define GPTMR_CHANNEL_CMP_CMP_SHIFT (0U)
+#define GPTMR_CHANNEL_CMP_CMP_SET(x) (((uint32_t)(x) << GPTMR_CHANNEL_CMP_CMP_SHIFT) & GPTMR_CHANNEL_CMP_CMP_MASK)
+#define GPTMR_CHANNEL_CMP_CMP_GET(x) (((uint32_t)(x) & GPTMR_CHANNEL_CMP_CMP_MASK) >> GPTMR_CHANNEL_CMP_CMP_SHIFT)
 
 /* Bitfield definition for register of struct array CHANNEL: RLD */
 /*

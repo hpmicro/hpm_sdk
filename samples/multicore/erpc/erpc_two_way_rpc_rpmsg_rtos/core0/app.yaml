@@ -1,0 +1,15 @@
+excluded_targets:
+  - debug
+  - release
+
+linked_project:
+  project_name: multicore/erpc/erpc_two_way_rpc_rpmsg_rtos/core1
+  build_type: sec_core_img
+
+debug:
+    ses:
+      auto_start_gdb_server: true
+      gdb_server_port: 3333
+
+dependency:
+  - multicore

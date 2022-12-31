@@ -12,10 +12,10 @@
 #define TEST_UART                     BOARD_UART_IDLE
 
 #define TEST_DMA                      BOARD_APP_HDMA
-#define TEST_DMA_CHANNEL              (0U) /* Corresponding to DMAMUX CHANNEL*/
+#define TEST_DMA_CHANNEL              (0U)
 
 #define TEST_DMAMUX                   BOARD_APP_DMAMUX
-#define TEST_DMAMUX_CHANNEL           (0U)
+#define TEST_DMAMUX_CHANNEL           DMA_SOC_CHN_TO_DMAMUX_CHN(TEST_DMA, TEST_DMA_CHANNEL)
 #define TEST_DMAMUX_SRC               BOARD_UART_IDLE_DMA_SRC
 
 #define TEST_TRGM                     BOARD_UART_IDLE_TRGM
@@ -32,8 +32,8 @@
 
 #define BUFF_SIZE                     (1024U)
 #define UART_DMA_ADDR_ALIGNMENT       (8U)
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(UART_DMA_ADDR_ALIGNMENT) uint8_t uart_rx_buff[BUFF_SIZE];
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(UART_DMA_ADDR_ALIGNMENT) uint8_t dma_buf[BUFF_SIZE];
+ATTR_PLACE_AT_NONCACHEABLE uint8_t uart_rx_buff[BUFF_SIZE];
+ATTR_PLACE_AT_NONCACHEABLE uint8_t dma_buf[BUFF_SIZE];
 
 uart_rx_flexiable_data_context_t demo_config = {
     .uart_rx_idle = false,
@@ -82,6 +82,7 @@ hpm_stat_t uart_rx_trigger_dma(DMA_Type *dma_ptr,
     config.dst_fixed = false;
     config.src = (uint32_t)&uart_ptr->RBR;
     config.src_fixed = true;
+    config.data_width = DMA_TRANSFER_WIDTH_BYTE;
     config.size_in_byte = size;
 
     return dma_setup_handshake(dma_ptr, &config, true);

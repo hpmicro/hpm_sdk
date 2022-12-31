@@ -4748,28 +4748,28 @@
       <BitField name="MAX_PRIORITY" start="16" size="16"/>
       <BitField name="VERSION" start="0" size="16"/>
     </Register>
-    <Register name="TARGETINT_TARGET0_INTEN0" start="+0x2000" size="0x4">
+    <Register name="TARGETINT_TARGET0_INTEN_INTEN0" start="+0x2000" size="0x4">
       <BitField name="INTERRUPT" start="0" size="32"/>
     </Register>
-    <Register name="TARGETINT_TARGET0_INTEN1" start="+0x2004" size="0x4">
+    <Register name="TARGETINT_TARGET0_INTEN_INTEN1" start="+0x2004" size="0x4">
       <BitField name="INTERRUPT" start="0" size="32"/>
     </Register>
-    <Register name="TARGETINT_TARGET0_INTEN2" start="+0x2008" size="0x4">
+    <Register name="TARGETINT_TARGET0_INTEN_INTEN2" start="+0x2008" size="0x4">
       <BitField name="INTERRUPT" start="0" size="32"/>
     </Register>
-    <Register name="TARGETINT_TARGET0_INTEN3" start="+0x200c" size="0x4">
+    <Register name="TARGETINT_TARGET0_INTEN_INTEN3" start="+0x200c" size="0x4">
       <BitField name="INTERRUPT" start="0" size="32"/>
     </Register>
-    <Register name="TARGETINT_TARGET1_INTEN0" start="+0x2080" size="0x4">
+    <Register name="TARGETINT_TARGET1_INTEN_INTEN0" start="+0x2080" size="0x4">
       <BitField name="INTERRUPT" start="0" size="32"/>
     </Register>
-    <Register name="TARGETINT_TARGET1_INTEN1" start="+0x2084" size="0x4">
+    <Register name="TARGETINT_TARGET1_INTEN_INTEN1" start="+0x2084" size="0x4">
       <BitField name="INTERRUPT" start="0" size="32"/>
     </Register>
-    <Register name="TARGETINT_TARGET1_INTEN2" start="+0x2088" size="0x4">
+    <Register name="TARGETINT_TARGET1_INTEN_INTEN2" start="+0x2088" size="0x4">
       <BitField name="INTERRUPT" start="0" size="32"/>
     </Register>
-    <Register name="TARGETINT_TARGET1_INTEN3" start="+0x208c" size="0x4">
+    <Register name="TARGETINT_TARGET1_INTEN_INTEN3" start="+0x208c" size="0x4">
       <BitField name="INTERRUPT" start="0" size="32"/>
     </Register>
     <Register name="TARGETCONFIG_TARGET0_THRESHOLD" start="+0x200000" size="0x4">
@@ -4811,1442 +4811,1037 @@
     </Register>
   </RegisterGroup>
   <RegisterGroup start="0xf0008000" name="GPIOM">
-    <Register name="ASSIGN_GPIOA_PIN00" start="+0x0" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN00" start="+0x0" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN01" start="+0x4" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN01" start="+0x4" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN02" start="+0x8" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN02" start="+0x8" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN03" start="+0xc" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN03" start="+0xc" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN04" start="+0x10" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN04" start="+0x10" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN05" start="+0x14" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN05" start="+0x14" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN06" start="+0x18" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN06" start="+0x18" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN07" start="+0x1c" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN07" start="+0x1c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN08" start="+0x20" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN08" start="+0x20" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN09" start="+0x24" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN09" start="+0x24" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN10" start="+0x28" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN10" start="+0x28" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN11" start="+0x2c" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN11" start="+0x2c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN12" start="+0x30" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN12" start="+0x30" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN13" start="+0x34" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN13" start="+0x34" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN14" start="+0x38" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN14" start="+0x38" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN15" start="+0x3c" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN15" start="+0x3c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN16" start="+0x40" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN16" start="+0x40" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN17" start="+0x44" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN17" start="+0x44" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN18" start="+0x48" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN18" start="+0x48" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN19" start="+0x4c" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN19" start="+0x4c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN20" start="+0x50" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN20" start="+0x50" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN21" start="+0x54" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN21" start="+0x54" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN22" start="+0x58" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN22" start="+0x58" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN23" start="+0x5c" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN23" start="+0x5c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN24" start="+0x60" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN24" start="+0x60" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN25" start="+0x64" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN25" start="+0x64" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN26" start="+0x68" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN26" start="+0x68" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN27" start="+0x6c" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN27" start="+0x6c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN28" start="+0x70" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN28" start="+0x70" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN29" start="+0x74" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN29" start="+0x74" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN30" start="+0x78" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN30" start="+0x78" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOA_PIN31" start="+0x7c" size="0x4">
+    <Register name="ASSIGN_GPIOA_PIN_PIN31" start="+0x7c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN00" start="+0x80" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN00" start="+0x80" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN01" start="+0x84" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN01" start="+0x84" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN02" start="+0x88" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN02" start="+0x88" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN03" start="+0x8c" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN03" start="+0x8c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN04" start="+0x90" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN04" start="+0x90" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN05" start="+0x94" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN05" start="+0x94" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN06" start="+0x98" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN06" start="+0x98" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN07" start="+0x9c" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN07" start="+0x9c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN08" start="+0xa0" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN08" start="+0xa0" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN09" start="+0xa4" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN09" start="+0xa4" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN10" start="+0xa8" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN10" start="+0xa8" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN11" start="+0xac" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN11" start="+0xac" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN12" start="+0xb0" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN12" start="+0xb0" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN13" start="+0xb4" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN13" start="+0xb4" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN14" start="+0xb8" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN14" start="+0xb8" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN15" start="+0xbc" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN15" start="+0xbc" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN16" start="+0xc0" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN16" start="+0xc0" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN17" start="+0xc4" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN17" start="+0xc4" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN18" start="+0xc8" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN18" start="+0xc8" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN19" start="+0xcc" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN19" start="+0xcc" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN20" start="+0xd0" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN20" start="+0xd0" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN21" start="+0xd4" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN21" start="+0xd4" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN22" start="+0xd8" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN22" start="+0xd8" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN23" start="+0xdc" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN23" start="+0xdc" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN24" start="+0xe0" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN24" start="+0xe0" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN25" start="+0xe4" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN25" start="+0xe4" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN26" start="+0xe8" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN26" start="+0xe8" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN27" start="+0xec" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN27" start="+0xec" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN28" start="+0xf0" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN28" start="+0xf0" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN29" start="+0xf4" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN29" start="+0xf4" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN30" start="+0xf8" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN30" start="+0xf8" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOB_PIN31" start="+0xfc" size="0x4">
+    <Register name="ASSIGN_GPIOB_PIN_PIN31" start="+0xfc" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN00" start="+0x100" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN00" start="+0x100" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN01" start="+0x104" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN01" start="+0x104" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN02" start="+0x108" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN02" start="+0x108" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN03" start="+0x10c" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN03" start="+0x10c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN04" start="+0x110" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN04" start="+0x110" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN05" start="+0x114" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN05" start="+0x114" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN06" start="+0x118" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN06" start="+0x118" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN07" start="+0x11c" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN07" start="+0x11c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN08" start="+0x120" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN08" start="+0x120" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN09" start="+0x124" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN09" start="+0x124" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN10" start="+0x128" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN10" start="+0x128" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN11" start="+0x12c" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN11" start="+0x12c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN12" start="+0x130" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN12" start="+0x130" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN13" start="+0x134" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN13" start="+0x134" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN14" start="+0x138" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN14" start="+0x138" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN15" start="+0x13c" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN15" start="+0x13c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN16" start="+0x140" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN16" start="+0x140" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN17" start="+0x144" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN17" start="+0x144" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN18" start="+0x148" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN18" start="+0x148" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN19" start="+0x14c" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN19" start="+0x14c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN20" start="+0x150" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN20" start="+0x150" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN21" start="+0x154" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN21" start="+0x154" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN22" start="+0x158" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN22" start="+0x158" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN23" start="+0x15c" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN23" start="+0x15c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN24" start="+0x160" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN24" start="+0x160" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN25" start="+0x164" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN25" start="+0x164" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN26" start="+0x168" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN26" start="+0x168" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN27" start="+0x16c" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN27" start="+0x16c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN28" start="+0x170" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN28" start="+0x170" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN29" start="+0x174" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN29" start="+0x174" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN30" start="+0x178" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN30" start="+0x178" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOC_PIN31" start="+0x17c" size="0x4">
+    <Register name="ASSIGN_GPIOC_PIN_PIN31" start="+0x17c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN00" start="+0x180" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN00" start="+0x180" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN01" start="+0x184" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN01" start="+0x184" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN02" start="+0x188" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN02" start="+0x188" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN03" start="+0x18c" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN03" start="+0x18c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN04" start="+0x190" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN04" start="+0x190" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN05" start="+0x194" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN05" start="+0x194" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN06" start="+0x198" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN06" start="+0x198" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN07" start="+0x19c" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN07" start="+0x19c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN08" start="+0x1a0" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN08" start="+0x1a0" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN09" start="+0x1a4" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN09" start="+0x1a4" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN10" start="+0x1a8" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN10" start="+0x1a8" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN11" start="+0x1ac" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN11" start="+0x1ac" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN12" start="+0x1b0" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN12" start="+0x1b0" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN13" start="+0x1b4" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN13" start="+0x1b4" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN14" start="+0x1b8" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN14" start="+0x1b8" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN15" start="+0x1bc" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN15" start="+0x1bc" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN16" start="+0x1c0" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN16" start="+0x1c0" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN17" start="+0x1c4" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN17" start="+0x1c4" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN18" start="+0x1c8" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN18" start="+0x1c8" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN19" start="+0x1cc" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN19" start="+0x1cc" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN20" start="+0x1d0" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN20" start="+0x1d0" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN21" start="+0x1d4" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN21" start="+0x1d4" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN22" start="+0x1d8" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN22" start="+0x1d8" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN23" start="+0x1dc" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN23" start="+0x1dc" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN24" start="+0x1e0" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN24" start="+0x1e0" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN25" start="+0x1e4" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN25" start="+0x1e4" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN26" start="+0x1e8" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN26" start="+0x1e8" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN27" start="+0x1ec" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN27" start="+0x1ec" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN28" start="+0x1f0" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN28" start="+0x1f0" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN29" start="+0x1f4" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN29" start="+0x1f4" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN30" start="+0x1f8" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN30" start="+0x1f8" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOD_PIN31" start="+0x1fc" size="0x4">
+    <Register name="ASSIGN_GPIOD_PIN_PIN31" start="+0x1fc" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN00" start="+0x200" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN00" start="+0x200" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN01" start="+0x204" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN01" start="+0x204" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN02" start="+0x208" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN02" start="+0x208" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN03" start="+0x20c" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN03" start="+0x20c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN04" start="+0x210" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN04" start="+0x210" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN05" start="+0x214" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN05" start="+0x214" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN06" start="+0x218" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN06" start="+0x218" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN07" start="+0x21c" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN07" start="+0x21c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN08" start="+0x220" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN08" start="+0x220" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN09" start="+0x224" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN09" start="+0x224" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN10" start="+0x228" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN10" start="+0x228" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN11" start="+0x22c" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN11" start="+0x22c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN12" start="+0x230" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN12" start="+0x230" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN13" start="+0x234" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN13" start="+0x234" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN14" start="+0x238" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN14" start="+0x238" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN15" start="+0x23c" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN15" start="+0x23c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN16" start="+0x240" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN16" start="+0x240" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN17" start="+0x244" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN17" start="+0x244" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN18" start="+0x248" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN18" start="+0x248" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN19" start="+0x24c" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN19" start="+0x24c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN20" start="+0x250" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN20" start="+0x250" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN21" start="+0x254" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN21" start="+0x254" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN22" start="+0x258" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN22" start="+0x258" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN23" start="+0x25c" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN23" start="+0x25c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN24" start="+0x260" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN24" start="+0x260" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN25" start="+0x264" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN25" start="+0x264" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN26" start="+0x268" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN26" start="+0x268" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN27" start="+0x26c" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN27" start="+0x26c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN28" start="+0x270" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN28" start="+0x270" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN29" start="+0x274" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN29" start="+0x274" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN30" start="+0x278" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN30" start="+0x278" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOE_PIN31" start="+0x27c" size="0x4">
+    <Register name="ASSIGN_GPIOE_PIN_PIN31" start="+0x27c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN00" start="+0x280" size="0x4">
+    <Register name="ASSIGN_GPIOF_PIN_PIN00" start="+0x280" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN01" start="+0x284" size="0x4">
+    <Register name="ASSIGN_GPIOF_PIN_PIN01" start="+0x284" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN02" start="+0x288" size="0x4">
+    <Register name="ASSIGN_GPIOF_PIN_PIN02" start="+0x288" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN03" start="+0x28c" size="0x4">
+    <Register name="ASSIGN_GPIOF_PIN_PIN03" start="+0x28c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN04" start="+0x290" size="0x4">
+    <Register name="ASSIGN_GPIOF_PIN_PIN04" start="+0x290" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN05" start="+0x294" size="0x4">
+    <Register name="ASSIGN_GPIOF_PIN_PIN05" start="+0x294" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN06" start="+0x298" size="0x4">
+    <Register name="ASSIGN_GPIOF_PIN_PIN06" start="+0x298" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN07" start="+0x29c" size="0x4">
+    <Register name="ASSIGN_GPIOF_PIN_PIN07" start="+0x29c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN08" start="+0x2a0" size="0x4">
+    <Register name="ASSIGN_GPIOF_PIN_PIN08" start="+0x2a0" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN09" start="+0x2a4" size="0x4">
+    <Register name="ASSIGN_GPIOF_PIN_PIN09" start="+0x2a4" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN10" start="+0x2a8" size="0x4">
+    <Register name="ASSIGN_GPIOF_PIN_PIN10" start="+0x2a8" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN11" start="+0x2ac" size="0x4">
+    <Register name="ASSIGN_GPIOX_PIN_PIN00" start="+0x680" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN12" start="+0x2b0" size="0x4">
+    <Register name="ASSIGN_GPIOX_PIN_PIN01" start="+0x684" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN13" start="+0x2b4" size="0x4">
+    <Register name="ASSIGN_GPIOX_PIN_PIN02" start="+0x688" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN14" start="+0x2b8" size="0x4">
+    <Register name="ASSIGN_GPIOX_PIN_PIN03" start="+0x68c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN15" start="+0x2bc" size="0x4">
+    <Register name="ASSIGN_GPIOX_PIN_PIN04" start="+0x690" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN16" start="+0x2c0" size="0x4">
+    <Register name="ASSIGN_GPIOX_PIN_PIN05" start="+0x694" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN17" start="+0x2c4" size="0x4">
+    <Register name="ASSIGN_GPIOX_PIN_PIN06" start="+0x698" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN18" start="+0x2c8" size="0x4">
+    <Register name="ASSIGN_GPIOX_PIN_PIN07" start="+0x69c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN19" start="+0x2cc" size="0x4">
+    <Register name="ASSIGN_GPIOX_PIN_PIN08" start="+0x6a0" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN20" start="+0x2d0" size="0x4">
+    <Register name="ASSIGN_GPIOX_PIN_PIN09" start="+0x6a4" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN21" start="+0x2d4" size="0x4">
+    <Register name="ASSIGN_GPIOX_PIN_PIN10" start="+0x6a8" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN22" start="+0x2d8" size="0x4">
+    <Register name="ASSIGN_GPIOX_PIN_PIN11" start="+0x6ac" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN23" start="+0x2dc" size="0x4">
+    <Register name="ASSIGN_GPIOY_PIN_PIN00" start="+0x700" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN24" start="+0x2e0" size="0x4">
+    <Register name="ASSIGN_GPIOY_PIN_PIN01" start="+0x704" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN25" start="+0x2e4" size="0x4">
+    <Register name="ASSIGN_GPIOY_PIN_PIN02" start="+0x708" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN26" start="+0x2e8" size="0x4">
+    <Register name="ASSIGN_GPIOY_PIN_PIN03" start="+0x70c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN27" start="+0x2ec" size="0x4">
+    <Register name="ASSIGN_GPIOY_PIN_PIN04" start="+0x710" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN28" start="+0x2f0" size="0x4">
+    <Register name="ASSIGN_GPIOY_PIN_PIN05" start="+0x714" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN29" start="+0x2f4" size="0x4">
+    <Register name="ASSIGN_GPIOY_PIN_PIN06" start="+0x718" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN30" start="+0x2f8" size="0x4">
+    <Register name="ASSIGN_GPIOY_PIN_PIN07" start="+0x71c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOF_PIN31" start="+0x2fc" size="0x4">
+    <Register name="ASSIGN_GPIOY_PIN_PIN08" start="+0x720" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOX_PIN00" start="+0x680" size="0x4">
+    <Register name="ASSIGN_GPIOY_PIN_PIN09" start="+0x724" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOX_PIN01" start="+0x684" size="0x4">
+    <Register name="ASSIGN_GPIOY_PIN_PIN10" start="+0x728" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOX_PIN02" start="+0x688" size="0x4">
+    <Register name="ASSIGN_GPIOY_PIN_PIN11" start="+0x72c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOX_PIN03" start="+0x68c" size="0x4">
+    <Register name="ASSIGN_GPIOZ_PIN_PIN00" start="+0x780" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOX_PIN04" start="+0x690" size="0x4">
+    <Register name="ASSIGN_GPIOZ_PIN_PIN01" start="+0x784" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOX_PIN05" start="+0x694" size="0x4">
+    <Register name="ASSIGN_GPIOZ_PIN_PIN02" start="+0x788" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOX_PIN06" start="+0x698" size="0x4">
+    <Register name="ASSIGN_GPIOZ_PIN_PIN03" start="+0x78c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOX_PIN07" start="+0x69c" size="0x4">
+    <Register name="ASSIGN_GPIOZ_PIN_PIN04" start="+0x790" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOX_PIN08" start="+0x6a0" size="0x4">
+    <Register name="ASSIGN_GPIOZ_PIN_PIN05" start="+0x794" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOX_PIN09" start="+0x6a4" size="0x4">
+    <Register name="ASSIGN_GPIOZ_PIN_PIN06" start="+0x798" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOX_PIN10" start="+0x6a8" size="0x4">
+    <Register name="ASSIGN_GPIOZ_PIN_PIN07" start="+0x79c" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOX_PIN11" start="+0x6ac" size="0x4">
+    <Register name="ASSIGN_GPIOZ_PIN_PIN08" start="+0x7a0" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOX_PIN12" start="+0x6b0" size="0x4">
+    <Register name="ASSIGN_GPIOZ_PIN_PIN09" start="+0x7a4" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOX_PIN13" start="+0x6b4" size="0x4">
+    <Register name="ASSIGN_GPIOZ_PIN_PIN10" start="+0x7a8" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
-    <Register name="ASSIGN_GPIOX_PIN14" start="+0x6b8" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOX_PIN15" start="+0x6bc" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOX_PIN16" start="+0x6c0" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOX_PIN17" start="+0x6c4" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOX_PIN18" start="+0x6c8" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOX_PIN19" start="+0x6cc" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOX_PIN20" start="+0x6d0" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOX_PIN21" start="+0x6d4" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOX_PIN22" start="+0x6d8" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOX_PIN23" start="+0x6dc" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOX_PIN24" start="+0x6e0" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOX_PIN25" start="+0x6e4" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOX_PIN26" start="+0x6e8" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOX_PIN27" start="+0x6ec" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOX_PIN28" start="+0x6f0" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOX_PIN29" start="+0x6f4" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOX_PIN30" start="+0x6f8" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOX_PIN31" start="+0x6fc" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN00" start="+0x700" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN01" start="+0x704" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN02" start="+0x708" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN03" start="+0x70c" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN04" start="+0x710" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN05" start="+0x714" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN06" start="+0x718" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN07" start="+0x71c" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN08" start="+0x720" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN09" start="+0x724" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN10" start="+0x728" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN11" start="+0x72c" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN12" start="+0x730" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN13" start="+0x734" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN14" start="+0x738" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN15" start="+0x73c" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN16" start="+0x740" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN17" start="+0x744" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN18" start="+0x748" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN19" start="+0x74c" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN20" start="+0x750" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN21" start="+0x754" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN22" start="+0x758" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN23" start="+0x75c" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN24" start="+0x760" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN25" start="+0x764" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN26" start="+0x768" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN27" start="+0x76c" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN28" start="+0x770" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN29" start="+0x774" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN30" start="+0x778" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOY_PIN31" start="+0x77c" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN00" start="+0x780" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN01" start="+0x784" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN02" start="+0x788" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN03" start="+0x78c" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN04" start="+0x790" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN05" start="+0x794" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN06" start="+0x798" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN07" start="+0x79c" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN08" start="+0x7a0" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN09" start="+0x7a4" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN10" start="+0x7a8" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN11" start="+0x7ac" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN12" start="+0x7b0" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN13" start="+0x7b4" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN14" start="+0x7b8" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN15" start="+0x7bc" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN16" start="+0x7c0" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN17" start="+0x7c4" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN18" start="+0x7c8" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN19" start="+0x7cc" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN20" start="+0x7d0" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN21" start="+0x7d4" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN22" start="+0x7d8" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN23" start="+0x7dc" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN24" start="+0x7e0" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN25" start="+0x7e4" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN26" start="+0x7e8" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN27" start="+0x7ec" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN28" start="+0x7f0" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN29" start="+0x7f4" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN30" start="+0x7f8" size="0x4">
-      <BitField name="LOCK" start="31" size="1"/>
-      <BitField name="HIDE" start="8" size="4"/>
-      <BitField name="SELECT" start="0" size="2"/>
-    </Register>
-    <Register name="ASSIGN_GPIOZ_PIN31" start="+0x7fc" size="0x4">
+    <Register name="ASSIGN_GPIOZ_PIN_PIN11" start="+0x7ac" size="0x4">
       <BitField name="LOCK" start="31" size="1"/>
       <BitField name="HIDE" start="8" size="4"/>
       <BitField name="SELECT" start="0" size="2"/>
@@ -6390,79 +5985,79 @@
     </Register>
     <Register name="BUS_RESULT_CHN0" start="+0x400" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN1" start="+0x404" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN2" start="+0x408" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN3" start="+0x40c" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN4" start="+0x410" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN5" start="+0x414" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN6" start="+0x418" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN7" start="+0x41c" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN8" start="+0x420" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN9" start="+0x424" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN10" start="+0x428" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN11" start="+0x42c" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN12" start="+0x430" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN13" start="+0x434" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN14" start="+0x438" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN15" start="+0x43c" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN16" start="+0x440" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN17" start="+0x444" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN18" start="+0x448" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUF_CFG0" start="+0x500" size="0x4">
       <BitField name="WAIT_DIS" start="0" size="1"/>
@@ -6561,7 +6156,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN0_PRD_RESULT" start="+0xc08" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN1_PRD_CFG" start="+0xc10" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -6572,7 +6167,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN1_PRD_RESULT" start="+0xc18" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN2_PRD_CFG" start="+0xc20" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -6583,7 +6178,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN2_PRD_RESULT" start="+0xc28" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN3_PRD_CFG" start="+0xc30" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -6594,7 +6189,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN3_PRD_RESULT" start="+0xc38" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN4_PRD_CFG" start="+0xc40" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -6605,7 +6200,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN4_PRD_RESULT" start="+0xc48" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN5_PRD_CFG" start="+0xc50" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -6616,7 +6211,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN5_PRD_RESULT" start="+0xc58" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN6_PRD_CFG" start="+0xc60" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -6627,7 +6222,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN6_PRD_RESULT" start="+0xc68" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN7_PRD_CFG" start="+0xc70" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -6638,7 +6233,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN7_PRD_RESULT" start="+0xc78" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN8_PRD_CFG" start="+0xc80" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -6649,7 +6244,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN8_PRD_RESULT" start="+0xc88" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN9_PRD_CFG" start="+0xc90" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -6660,7 +6255,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN9_PRD_RESULT" start="+0xc98" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN10_PRD_CFG" start="+0xca0" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -6671,7 +6266,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN10_PRD_RESULT" start="+0xca8" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN11_PRD_CFG" start="+0xcb0" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -6682,7 +6277,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN11_PRD_RESULT" start="+0xcb8" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN12_PRD_CFG" start="+0xcc0" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -6693,7 +6288,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN12_PRD_RESULT" start="+0xcc8" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN13_PRD_CFG" start="+0xcd0" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -6704,7 +6299,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN13_PRD_RESULT" start="+0xcd8" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN14_PRD_CFG" start="+0xce0" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -6715,7 +6310,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN14_PRD_RESULT" start="+0xce8" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN15_PRD_CFG" start="+0xcf0" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -6726,7 +6321,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN15_PRD_RESULT" start="+0xcf8" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN16_PRD_CFG" start="+0xd00" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -6737,7 +6332,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN16_PRD_RESULT" start="+0xd08" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN17_PRD_CFG" start="+0xd10" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -6748,7 +6343,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN17_PRD_RESULT" start="+0xd18" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN18_PRD_CFG" start="+0xd20" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -6759,7 +6354,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN18_PRD_RESULT" start="+0xd28" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="SAMPLE_CFG_CHN0" start="+0x1000" size="0x4">
       <BitField name="DIFF_SEL" start="12" size="1"/>
@@ -7050,79 +6645,79 @@
     </Register>
     <Register name="BUS_RESULT_CHN0" start="+0x400" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN1" start="+0x404" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN2" start="+0x408" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN3" start="+0x40c" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN4" start="+0x410" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN5" start="+0x414" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN6" start="+0x418" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN7" start="+0x41c" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN8" start="+0x420" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN9" start="+0x424" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN10" start="+0x428" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN11" start="+0x42c" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN12" start="+0x430" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN13" start="+0x434" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN14" start="+0x438" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN15" start="+0x43c" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN16" start="+0x440" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN17" start="+0x444" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN18" start="+0x448" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUF_CFG0" start="+0x500" size="0x4">
       <BitField name="WAIT_DIS" start="0" size="1"/>
@@ -7221,7 +6816,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN0_PRD_RESULT" start="+0xc08" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN1_PRD_CFG" start="+0xc10" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7232,7 +6827,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN1_PRD_RESULT" start="+0xc18" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN2_PRD_CFG" start="+0xc20" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7243,7 +6838,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN2_PRD_RESULT" start="+0xc28" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN3_PRD_CFG" start="+0xc30" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7254,7 +6849,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN3_PRD_RESULT" start="+0xc38" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN4_PRD_CFG" start="+0xc40" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7265,7 +6860,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN4_PRD_RESULT" start="+0xc48" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN5_PRD_CFG" start="+0xc50" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7276,7 +6871,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN5_PRD_RESULT" start="+0xc58" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN6_PRD_CFG" start="+0xc60" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7287,7 +6882,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN6_PRD_RESULT" start="+0xc68" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN7_PRD_CFG" start="+0xc70" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7298,7 +6893,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN7_PRD_RESULT" start="+0xc78" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN8_PRD_CFG" start="+0xc80" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7309,7 +6904,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN8_PRD_RESULT" start="+0xc88" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN9_PRD_CFG" start="+0xc90" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7320,7 +6915,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN9_PRD_RESULT" start="+0xc98" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN10_PRD_CFG" start="+0xca0" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7331,7 +6926,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN10_PRD_RESULT" start="+0xca8" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN11_PRD_CFG" start="+0xcb0" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7342,7 +6937,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN11_PRD_RESULT" start="+0xcb8" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN12_PRD_CFG" start="+0xcc0" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7353,7 +6948,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN12_PRD_RESULT" start="+0xcc8" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN13_PRD_CFG" start="+0xcd0" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7364,7 +6959,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN13_PRD_RESULT" start="+0xcd8" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN14_PRD_CFG" start="+0xce0" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7375,7 +6970,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN14_PRD_RESULT" start="+0xce8" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN15_PRD_CFG" start="+0xcf0" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7386,7 +6981,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN15_PRD_RESULT" start="+0xcf8" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN16_PRD_CFG" start="+0xd00" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7397,7 +6992,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN16_PRD_RESULT" start="+0xd08" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN17_PRD_CFG" start="+0xd10" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7408,7 +7003,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN17_PRD_RESULT" start="+0xd18" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN18_PRD_CFG" start="+0xd20" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7419,7 +7014,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN18_PRD_RESULT" start="+0xd28" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="SAMPLE_CFG_CHN0" start="+0x1000" size="0x4">
       <BitField name="DIFF_SEL" start="12" size="1"/>
@@ -7710,79 +7305,79 @@
     </Register>
     <Register name="BUS_RESULT_CHN0" start="+0x400" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN1" start="+0x404" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN2" start="+0x408" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN3" start="+0x40c" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN4" start="+0x410" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN5" start="+0x414" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN6" start="+0x418" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN7" start="+0x41c" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN8" start="+0x420" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN9" start="+0x424" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN10" start="+0x428" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN11" start="+0x42c" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN12" start="+0x430" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN13" start="+0x434" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN14" start="+0x438" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN15" start="+0x43c" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN16" start="+0x440" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN17" start="+0x444" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUS_RESULT_CHN18" start="+0x448" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="BUF_CFG0" start="+0x500" size="0x4">
       <BitField name="WAIT_DIS" start="0" size="1"/>
@@ -7881,7 +7476,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN0_PRD_RESULT" start="+0xc08" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN1_PRD_CFG" start="+0xc10" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7892,7 +7487,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN1_PRD_RESULT" start="+0xc18" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN2_PRD_CFG" start="+0xc20" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7903,7 +7498,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN2_PRD_RESULT" start="+0xc28" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN3_PRD_CFG" start="+0xc30" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7914,7 +7509,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN3_PRD_RESULT" start="+0xc38" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN4_PRD_CFG" start="+0xc40" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7925,7 +7520,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN4_PRD_RESULT" start="+0xc48" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN5_PRD_CFG" start="+0xc50" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7936,7 +7531,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN5_PRD_RESULT" start="+0xc58" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN6_PRD_CFG" start="+0xc60" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7947,7 +7542,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN6_PRD_RESULT" start="+0xc68" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN7_PRD_CFG" start="+0xc70" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7958,7 +7553,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN7_PRD_RESULT" start="+0xc78" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN8_PRD_CFG" start="+0xc80" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7969,7 +7564,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN8_PRD_RESULT" start="+0xc88" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN9_PRD_CFG" start="+0xc90" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7980,7 +7575,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN9_PRD_RESULT" start="+0xc98" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN10_PRD_CFG" start="+0xca0" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -7991,7 +7586,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN10_PRD_RESULT" start="+0xca8" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN11_PRD_CFG" start="+0xcb0" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -8002,7 +7597,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN11_PRD_RESULT" start="+0xcb8" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN12_PRD_CFG" start="+0xcc0" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -8013,7 +7608,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN12_PRD_RESULT" start="+0xcc8" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN13_PRD_CFG" start="+0xcd0" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -8024,7 +7619,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN13_PRD_RESULT" start="+0xcd8" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN14_PRD_CFG" start="+0xce0" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -8035,7 +7630,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN14_PRD_RESULT" start="+0xce8" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN15_PRD_CFG" start="+0xcf0" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -8046,7 +7641,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN15_PRD_RESULT" start="+0xcf8" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN16_PRD_CFG" start="+0xd00" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -8057,7 +7652,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN16_PRD_RESULT" start="+0xd08" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN17_PRD_CFG" start="+0xd10" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -8068,7 +7663,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN17_PRD_RESULT" start="+0xd18" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="PRD_CFG_CHN18_PRD_CFG" start="+0xd20" size="0x4">
       <BitField name="PRESCALE" start="8" size="5"/>
@@ -8079,7 +7674,7 @@
       <BitField name="THSHDL" start="0" size="16"/>
     </Register>
     <Register name="PRD_CFG_CHN18_PRD_RESULT" start="+0xd28" size="0x4">
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
+      <BitField name="CHAN_RESULT" start="4" size="12"/>
     </Register>
     <Register name="SAMPLE_CFG_CHN0" start="+0x1000" size="0x4">
       <BitField name="DIFF_SEL" start="12" size="1"/>
@@ -12920,28 +12515,28 @@
       <BitField name="MCLKOE" start="0" size="1"/>
     </Register>
     <Register name="RXDSLOT_DATA0" start="+0x60" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="RXDSLOT_DATA1" start="+0x64" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="RXDSLOT_DATA2" start="+0x68" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="RXDSLOT_DATA3" start="+0x6c" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="TXDSLOT_DATA0" start="+0x70" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="TXDSLOT_DATA1" start="+0x74" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="TXDSLOT_DATA2" start="+0x78" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="TXDSLOT_DATA3" start="+0x7c" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
   </RegisterGroup>
   <RegisterGroup start="0xf0104000" name="I2S1">
@@ -13038,28 +12633,28 @@
       <BitField name="MCLKOE" start="0" size="1"/>
     </Register>
     <Register name="RXDSLOT_DATA0" start="+0x60" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="RXDSLOT_DATA1" start="+0x64" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="RXDSLOT_DATA2" start="+0x68" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="RXDSLOT_DATA3" start="+0x6c" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="TXDSLOT_DATA0" start="+0x70" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="TXDSLOT_DATA1" start="+0x74" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="TXDSLOT_DATA2" start="+0x78" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="TXDSLOT_DATA3" start="+0x7c" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
   </RegisterGroup>
   <RegisterGroup start="0xf0108000" name="I2S2">
@@ -13156,28 +12751,28 @@
       <BitField name="MCLKOE" start="0" size="1"/>
     </Register>
     <Register name="RXDSLOT_DATA0" start="+0x60" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="RXDSLOT_DATA1" start="+0x64" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="RXDSLOT_DATA2" start="+0x68" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="RXDSLOT_DATA3" start="+0x6c" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="TXDSLOT_DATA0" start="+0x70" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="TXDSLOT_DATA1" start="+0x74" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="TXDSLOT_DATA2" start="+0x78" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="TXDSLOT_DATA3" start="+0x7c" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
   </RegisterGroup>
   <RegisterGroup start="0xf010c000" name="I2S3">
@@ -13274,28 +12869,28 @@
       <BitField name="MCLKOE" start="0" size="1"/>
     </Register>
     <Register name="RXDSLOT_DATA0" start="+0x60" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="RXDSLOT_DATA1" start="+0x64" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="RXDSLOT_DATA2" start="+0x68" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="RXDSLOT_DATA3" start="+0x6c" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="TXDSLOT_DATA0" start="+0x70" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="TXDSLOT_DATA1" start="+0x74" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="TXDSLOT_DATA2" start="+0x78" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
     <Register name="TXDSLOT_DATA3" start="+0x7c" size="0x4">
-      <BitField name="EN" start="0" size="32"/>
+      <BitField name="EN" start="0" size="16"/>
     </Register>
   </RegisterGroup>
   <RegisterGroup start="0xf0110000" name="DAO">
@@ -17291,7 +16886,6 @@
       <BitField name="ZCNT" start="0" size="32"/>
     </Register>
     <Register name="COUNT_CURRENT_PH" start="+0x34" size="0x4">
-      <BitField name="RESERVE" start="31" size="1"/>
       <BitField name="DIR" start="30" size="1"/>
       <BitField name="ASTAT" start="26" size="1"/>
       <BitField name="BSTAT" start="25" size="1"/>
@@ -17310,7 +16904,6 @@
       <BitField name="ZCNT" start="0" size="32"/>
     </Register>
     <Register name="COUNT_READ_PH" start="+0x44" size="0x4">
-      <BitField name="RESERVE" start="31" size="1"/>
       <BitField name="DIR" start="30" size="1"/>
       <BitField name="ASTAT" start="26" size="1"/>
       <BitField name="BSTAT" start="25" size="1"/>
@@ -17329,7 +16922,6 @@
       <BitField name="ZCNT" start="0" size="32"/>
     </Register>
     <Register name="COUNT_SNAP0_PH" start="+0x54" size="0x4">
-      <BitField name="RESERVE" start="31" size="1"/>
       <BitField name="DIR" start="30" size="1"/>
       <BitField name="ASTAT" start="26" size="1"/>
       <BitField name="BSTAT" start="25" size="1"/>
@@ -17348,7 +16940,6 @@
       <BitField name="ZCNT" start="0" size="32"/>
     </Register>
     <Register name="COUNT_SNAP1_PH" start="+0x64" size="0x4">
-      <BitField name="RESERVE" start="31" size="1"/>
       <BitField name="DIR" start="30" size="1"/>
       <BitField name="ASTAT" start="26" size="1"/>
       <BitField name="BSTAT" start="25" size="1"/>
@@ -17452,7 +17043,6 @@
       <BitField name="ZCNT" start="0" size="32"/>
     </Register>
     <Register name="COUNT_CURRENT_PH" start="+0x34" size="0x4">
-      <BitField name="RESERVE" start="31" size="1"/>
       <BitField name="DIR" start="30" size="1"/>
       <BitField name="ASTAT" start="26" size="1"/>
       <BitField name="BSTAT" start="25" size="1"/>
@@ -17471,7 +17061,6 @@
       <BitField name="ZCNT" start="0" size="32"/>
     </Register>
     <Register name="COUNT_READ_PH" start="+0x44" size="0x4">
-      <BitField name="RESERVE" start="31" size="1"/>
       <BitField name="DIR" start="30" size="1"/>
       <BitField name="ASTAT" start="26" size="1"/>
       <BitField name="BSTAT" start="25" size="1"/>
@@ -17490,7 +17079,6 @@
       <BitField name="ZCNT" start="0" size="32"/>
     </Register>
     <Register name="COUNT_SNAP0_PH" start="+0x54" size="0x4">
-      <BitField name="RESERVE" start="31" size="1"/>
       <BitField name="DIR" start="30" size="1"/>
       <BitField name="ASTAT" start="26" size="1"/>
       <BitField name="BSTAT" start="25" size="1"/>
@@ -17509,7 +17097,6 @@
       <BitField name="ZCNT" start="0" size="32"/>
     </Register>
     <Register name="COUNT_SNAP1_PH" start="+0x64" size="0x4">
-      <BitField name="RESERVE" start="31" size="1"/>
       <BitField name="DIR" start="30" size="1"/>
       <BitField name="ASTAT" start="26" size="1"/>
       <BitField name="BSTAT" start="25" size="1"/>
@@ -17613,7 +17200,6 @@
       <BitField name="ZCNT" start="0" size="32"/>
     </Register>
     <Register name="COUNT_CURRENT_PH" start="+0x34" size="0x4">
-      <BitField name="RESERVE" start="31" size="1"/>
       <BitField name="DIR" start="30" size="1"/>
       <BitField name="ASTAT" start="26" size="1"/>
       <BitField name="BSTAT" start="25" size="1"/>
@@ -17632,7 +17218,6 @@
       <BitField name="ZCNT" start="0" size="32"/>
     </Register>
     <Register name="COUNT_READ_PH" start="+0x44" size="0x4">
-      <BitField name="RESERVE" start="31" size="1"/>
       <BitField name="DIR" start="30" size="1"/>
       <BitField name="ASTAT" start="26" size="1"/>
       <BitField name="BSTAT" start="25" size="1"/>
@@ -17651,7 +17236,6 @@
       <BitField name="ZCNT" start="0" size="32"/>
     </Register>
     <Register name="COUNT_SNAP0_PH" start="+0x54" size="0x4">
-      <BitField name="RESERVE" start="31" size="1"/>
       <BitField name="DIR" start="30" size="1"/>
       <BitField name="ASTAT" start="26" size="1"/>
       <BitField name="BSTAT" start="25" size="1"/>
@@ -17670,7 +17254,6 @@
       <BitField name="ZCNT" start="0" size="32"/>
     </Register>
     <Register name="COUNT_SNAP1_PH" start="+0x64" size="0x4">
-      <BitField name="RESERVE" start="31" size="1"/>
       <BitField name="DIR" start="30" size="1"/>
       <BitField name="ASTAT" start="26" size="1"/>
       <BitField name="BSTAT" start="25" size="1"/>
@@ -17774,7 +17357,6 @@
       <BitField name="ZCNT" start="0" size="32"/>
     </Register>
     <Register name="COUNT_CURRENT_PH" start="+0x34" size="0x4">
-      <BitField name="RESERVE" start="31" size="1"/>
       <BitField name="DIR" start="30" size="1"/>
       <BitField name="ASTAT" start="26" size="1"/>
       <BitField name="BSTAT" start="25" size="1"/>
@@ -17793,7 +17375,6 @@
       <BitField name="ZCNT" start="0" size="32"/>
     </Register>
     <Register name="COUNT_READ_PH" start="+0x44" size="0x4">
-      <BitField name="RESERVE" start="31" size="1"/>
       <BitField name="DIR" start="30" size="1"/>
       <BitField name="ASTAT" start="26" size="1"/>
       <BitField name="BSTAT" start="25" size="1"/>
@@ -17812,7 +17393,6 @@
       <BitField name="ZCNT" start="0" size="32"/>
     </Register>
     <Register name="COUNT_SNAP0_PH" start="+0x54" size="0x4">
-      <BitField name="RESERVE" start="31" size="1"/>
       <BitField name="DIR" start="30" size="1"/>
       <BitField name="ASTAT" start="26" size="1"/>
       <BitField name="BSTAT" start="25" size="1"/>
@@ -17831,7 +17411,6 @@
       <BitField name="ZCNT" start="0" size="32"/>
     </Register>
     <Register name="COUNT_SNAP1_PH" start="+0x64" size="0x4">
-      <BitField name="RESERVE" start="31" size="1"/>
       <BitField name="DIR" start="30" size="1"/>
       <BitField name="ASTAT" start="26" size="1"/>
       <BitField name="BSTAT" start="25" size="1"/>
@@ -23775,8 +23354,6 @@
     <Register name="RXICMP_GD_OCTETS" start="+0x280" size="0x4">
       <BitField name="BYTECNT" start="0" size="32"/>
     </Register>
-    <Register name="RXICMP_ERR_OCTETS" start="+0x284" size="0x4">
-    </Register>
     <Register name="L3_L4_CFG_0_L3_L4_CTRL" start="+0x400" size="0x4">
       <BitField name="L4DPIM0" start="21" size="1"/>
       <BitField name="L4DPM0" start="20" size="1"/>
@@ -24006,7 +23583,7 @@
       <BitField name="PPSCMD1" start="8" size="3"/>
       <BitField name="TRGTMODSEL0" start="5" size="2"/>
       <BitField name="PPSEN0" start="4" size="1"/>
-      <BitField name="PPSCTRL0" start="0" size="4"/>
+      <BitField name="PPSCTRLCMD0" start="0" size="4"/>
     </Register>
     <Register name="AUX_TS_NSEC" start="+0x730" size="0x4">
       <BitField name="AUXTSLO" start="0" size="31"/>
@@ -24225,15 +23802,11 @@
       <BitField name="ENET0_TXCLK_DLY_SEL" start="0" size="5"/>
     </Register>
     <Register name="CTRL2" start="+0x3008" size="0x4">
-      <BitField name="ENET0_IRQ_EN" start="27" size="5"/>
+      <BitField name="ENET0_LPI_IRQ_EN" start="29" size="1"/>
       <BitField name="ENET0_REFCLK_OE" start="19" size="1"/>
       <BitField name="ENET0_PHY_INF_SEL" start="13" size="3"/>
       <BitField name="ENET0_FLOWCTRL" start="12" size="1"/>
       <BitField name="ENET0_RMII_TXCLK_SEL" start="10" size="1"/>
-    </Register>
-    <Register name="TSL" start="+0x3020" size="0x4">
-    </Register>
-    <Register name="TSH" start="+0x3024" size="0x4">
     </Register>
   </RegisterGroup>
   <RegisterGroup start="0xf2004000" name="ENET1">
@@ -24858,8 +24431,6 @@
     <Register name="RXICMP_GD_OCTETS" start="+0x280" size="0x4">
       <BitField name="BYTECNT" start="0" size="32"/>
     </Register>
-    <Register name="RXICMP_ERR_OCTETS" start="+0x284" size="0x4">
-    </Register>
     <Register name="L3_L4_CFG_0_L3_L4_CTRL" start="+0x400" size="0x4">
       <BitField name="L4DPIM0" start="21" size="1"/>
       <BitField name="L4DPM0" start="20" size="1"/>
@@ -25089,7 +24660,7 @@
       <BitField name="PPSCMD1" start="8" size="3"/>
       <BitField name="TRGTMODSEL0" start="5" size="2"/>
       <BitField name="PPSEN0" start="4" size="1"/>
-      <BitField name="PPSCTRL0" start="0" size="4"/>
+      <BitField name="PPSCTRLCMD0" start="0" size="4"/>
     </Register>
     <Register name="AUX_TS_NSEC" start="+0x730" size="0x4">
       <BitField name="AUXTSLO" start="0" size="31"/>
@@ -25308,15 +24879,11 @@
       <BitField name="ENET0_TXCLK_DLY_SEL" start="0" size="5"/>
     </Register>
     <Register name="CTRL2" start="+0x3008" size="0x4">
-      <BitField name="ENET0_IRQ_EN" start="27" size="5"/>
+      <BitField name="ENET0_LPI_IRQ_EN" start="29" size="1"/>
       <BitField name="ENET0_REFCLK_OE" start="19" size="1"/>
       <BitField name="ENET0_PHY_INF_SEL" start="13" size="3"/>
       <BitField name="ENET0_FLOWCTRL" start="12" size="1"/>
       <BitField name="ENET0_RMII_TXCLK_SEL" start="10" size="1"/>
-    </Register>
-    <Register name="TSL" start="+0x3020" size="0x4">
-    </Register>
-    <Register name="TSH" start="+0x3024" size="0x4">
     </Register>
   </RegisterGroup>
   <RegisterGroup start="0xf2010000" name="NTMR0">
@@ -25336,10 +24903,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH0_CMP0" start="+0x4" size="0x4">
+    <Register name="CHANNEL_CH0_CMP_CMP0" start="+0x4" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH0_CMP1" start="+0x8" size="0x4">
+    <Register name="CHANNEL_CH0_CMP_CMP1" start="+0x8" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH0_RLD" start="+0xc" size="0x4">
@@ -25379,10 +24946,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH1_CMP0" start="+0x44" size="0x4">
+    <Register name="CHANNEL_CH1_CMP_CMP0" start="+0x44" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH1_CMP1" start="+0x48" size="0x4">
+    <Register name="CHANNEL_CH1_CMP_CMP1" start="+0x48" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH1_RLD" start="+0x4c" size="0x4">
@@ -25422,10 +24989,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH2_CMP0" start="+0x84" size="0x4">
+    <Register name="CHANNEL_CH2_CMP_CMP0" start="+0x84" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH2_CMP1" start="+0x88" size="0x4">
+    <Register name="CHANNEL_CH2_CMP_CMP1" start="+0x88" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH2_RLD" start="+0x8c" size="0x4">
@@ -25465,10 +25032,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH3_CMP0" start="+0xc4" size="0x4">
+    <Register name="CHANNEL_CH3_CMP_CMP0" start="+0xc4" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH3_CMP1" start="+0xc8" size="0x4">
+    <Register name="CHANNEL_CH3_CMP_CMP1" start="+0xc8" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH3_RLD" start="+0xcc" size="0x4">
@@ -25551,10 +25118,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH0_CMP0" start="+0x4" size="0x4">
+    <Register name="CHANNEL_CH0_CMP_CMP0" start="+0x4" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH0_CMP1" start="+0x8" size="0x4">
+    <Register name="CHANNEL_CH0_CMP_CMP1" start="+0x8" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH0_RLD" start="+0xc" size="0x4">
@@ -25594,10 +25161,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH1_CMP0" start="+0x44" size="0x4">
+    <Register name="CHANNEL_CH1_CMP_CMP0" start="+0x44" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH1_CMP1" start="+0x48" size="0x4">
+    <Register name="CHANNEL_CH1_CMP_CMP1" start="+0x48" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH1_RLD" start="+0x4c" size="0x4">
@@ -25637,10 +25204,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH2_CMP0" start="+0x84" size="0x4">
+    <Register name="CHANNEL_CH2_CMP_CMP0" start="+0x84" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH2_CMP1" start="+0x88" size="0x4">
+    <Register name="CHANNEL_CH2_CMP_CMP1" start="+0x88" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH2_RLD" start="+0x8c" size="0x4">
@@ -25680,10 +25247,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH3_CMP0" start="+0xc4" size="0x4">
+    <Register name="CHANNEL_CH3_CMP_CMP0" start="+0xc4" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH3_CMP1" start="+0xc8" size="0x4">
+    <Register name="CHANNEL_CH3_CMP_CMP1" start="+0xc8" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH3_RLD" start="+0xcc" size="0x4">
@@ -25766,10 +25333,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH0_CMP0" start="+0x4" size="0x4">
+    <Register name="CHANNEL_CH0_CMP_CMP0" start="+0x4" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH0_CMP1" start="+0x8" size="0x4">
+    <Register name="CHANNEL_CH0_CMP_CMP1" start="+0x8" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH0_RLD" start="+0xc" size="0x4">
@@ -25809,10 +25376,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH1_CMP0" start="+0x44" size="0x4">
+    <Register name="CHANNEL_CH1_CMP_CMP0" start="+0x44" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH1_CMP1" start="+0x48" size="0x4">
+    <Register name="CHANNEL_CH1_CMP_CMP1" start="+0x48" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH1_RLD" start="+0x4c" size="0x4">
@@ -25852,10 +25419,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH2_CMP0" start="+0x84" size="0x4">
+    <Register name="CHANNEL_CH2_CMP_CMP0" start="+0x84" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH2_CMP1" start="+0x88" size="0x4">
+    <Register name="CHANNEL_CH2_CMP_CMP1" start="+0x88" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH2_RLD" start="+0x8c" size="0x4">
@@ -25895,10 +25462,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH3_CMP0" start="+0xc4" size="0x4">
+    <Register name="CHANNEL_CH3_CMP_CMP0" start="+0xc4" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH3_CMP1" start="+0xc8" size="0x4">
+    <Register name="CHANNEL_CH3_CMP_CMP1" start="+0xc8" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH3_RLD" start="+0xcc" size="0x4">
@@ -25981,10 +25548,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH0_CMP0" start="+0x4" size="0x4">
+    <Register name="CHANNEL_CH0_CMP_CMP0" start="+0x4" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH0_CMP1" start="+0x8" size="0x4">
+    <Register name="CHANNEL_CH0_CMP_CMP1" start="+0x8" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH0_RLD" start="+0xc" size="0x4">
@@ -26024,10 +25591,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH1_CMP0" start="+0x44" size="0x4">
+    <Register name="CHANNEL_CH1_CMP_CMP0" start="+0x44" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH1_CMP1" start="+0x48" size="0x4">
+    <Register name="CHANNEL_CH1_CMP_CMP1" start="+0x48" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH1_RLD" start="+0x4c" size="0x4">
@@ -26067,10 +25634,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH2_CMP0" start="+0x84" size="0x4">
+    <Register name="CHANNEL_CH2_CMP_CMP0" start="+0x84" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH2_CMP1" start="+0x88" size="0x4">
+    <Register name="CHANNEL_CH2_CMP_CMP1" start="+0x88" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH2_RLD" start="+0x8c" size="0x4">
@@ -26110,10 +25677,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH3_CMP0" start="+0xc4" size="0x4">
+    <Register name="CHANNEL_CH3_CMP_CMP0" start="+0xc4" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH3_CMP1" start="+0xc8" size="0x4">
+    <Register name="CHANNEL_CH3_CMP_CMP1" start="+0xc8" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH3_RLD" start="+0xcc" size="0x4">
@@ -26196,10 +25763,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH0_CMP0" start="+0x4" size="0x4">
+    <Register name="CHANNEL_CH0_CMP_CMP0" start="+0x4" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH0_CMP1" start="+0x8" size="0x4">
+    <Register name="CHANNEL_CH0_CMP_CMP1" start="+0x8" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH0_RLD" start="+0xc" size="0x4">
@@ -26239,10 +25806,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH1_CMP0" start="+0x44" size="0x4">
+    <Register name="CHANNEL_CH1_CMP_CMP0" start="+0x44" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH1_CMP1" start="+0x48" size="0x4">
+    <Register name="CHANNEL_CH1_CMP_CMP1" start="+0x48" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH1_RLD" start="+0x4c" size="0x4">
@@ -26282,10 +25849,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH2_CMP0" start="+0x84" size="0x4">
+    <Register name="CHANNEL_CH2_CMP_CMP0" start="+0x84" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH2_CMP1" start="+0x88" size="0x4">
+    <Register name="CHANNEL_CH2_CMP_CMP1" start="+0x88" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH2_RLD" start="+0x8c" size="0x4">
@@ -26325,10 +25892,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH3_CMP0" start="+0xc4" size="0x4">
+    <Register name="CHANNEL_CH3_CMP_CMP0" start="+0xc4" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH3_CMP1" start="+0xc8" size="0x4">
+    <Register name="CHANNEL_CH3_CMP_CMP1" start="+0xc8" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH3_RLD" start="+0xcc" size="0x4">
@@ -26411,10 +25978,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH0_CMP0" start="+0x4" size="0x4">
+    <Register name="CHANNEL_CH0_CMP_CMP0" start="+0x4" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH0_CMP1" start="+0x8" size="0x4">
+    <Register name="CHANNEL_CH0_CMP_CMP1" start="+0x8" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH0_RLD" start="+0xc" size="0x4">
@@ -26454,10 +26021,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH1_CMP0" start="+0x44" size="0x4">
+    <Register name="CHANNEL_CH1_CMP_CMP0" start="+0x44" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH1_CMP1" start="+0x48" size="0x4">
+    <Register name="CHANNEL_CH1_CMP_CMP1" start="+0x48" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH1_RLD" start="+0x4c" size="0x4">
@@ -26497,10 +26064,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH2_CMP0" start="+0x84" size="0x4">
+    <Register name="CHANNEL_CH2_CMP_CMP0" start="+0x84" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH2_CMP1" start="+0x88" size="0x4">
+    <Register name="CHANNEL_CH2_CMP_CMP1" start="+0x88" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH2_RLD" start="+0x8c" size="0x4">
@@ -26540,10 +26107,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH3_CMP0" start="+0xc4" size="0x4">
+    <Register name="CHANNEL_CH3_CMP_CMP0" start="+0xc4" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH3_CMP1" start="+0xc8" size="0x4">
+    <Register name="CHANNEL_CH3_CMP_CMP1" start="+0xc8" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH3_RLD" start="+0xcc" size="0x4">
@@ -26626,10 +26193,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH0_CMP0" start="+0x4" size="0x4">
+    <Register name="CHANNEL_CH0_CMP_CMP0" start="+0x4" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH0_CMP1" start="+0x8" size="0x4">
+    <Register name="CHANNEL_CH0_CMP_CMP1" start="+0x8" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH0_RLD" start="+0xc" size="0x4">
@@ -26669,10 +26236,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH1_CMP0" start="+0x44" size="0x4">
+    <Register name="CHANNEL_CH1_CMP_CMP0" start="+0x44" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH1_CMP1" start="+0x48" size="0x4">
+    <Register name="CHANNEL_CH1_CMP_CMP1" start="+0x48" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH1_RLD" start="+0x4c" size="0x4">
@@ -26712,10 +26279,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH2_CMP0" start="+0x84" size="0x4">
+    <Register name="CHANNEL_CH2_CMP_CMP0" start="+0x84" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH2_CMP1" start="+0x88" size="0x4">
+    <Register name="CHANNEL_CH2_CMP_CMP1" start="+0x88" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH2_RLD" start="+0x8c" size="0x4">
@@ -26755,10 +26322,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH3_CMP0" start="+0xc4" size="0x4">
+    <Register name="CHANNEL_CH3_CMP_CMP0" start="+0xc4" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH3_CMP1" start="+0xc8" size="0x4">
+    <Register name="CHANNEL_CH3_CMP_CMP1" start="+0xc8" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH3_RLD" start="+0xcc" size="0x4">
@@ -26841,10 +26408,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH0_CMP0" start="+0x4" size="0x4">
+    <Register name="CHANNEL_CH0_CMP_CMP0" start="+0x4" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH0_CMP1" start="+0x8" size="0x4">
+    <Register name="CHANNEL_CH0_CMP_CMP1" start="+0x8" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH0_RLD" start="+0xc" size="0x4">
@@ -26884,10 +26451,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH1_CMP0" start="+0x44" size="0x4">
+    <Register name="CHANNEL_CH1_CMP_CMP0" start="+0x44" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH1_CMP1" start="+0x48" size="0x4">
+    <Register name="CHANNEL_CH1_CMP_CMP1" start="+0x48" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH1_RLD" start="+0x4c" size="0x4">
@@ -26927,10 +26494,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH2_CMP0" start="+0x84" size="0x4">
+    <Register name="CHANNEL_CH2_CMP_CMP0" start="+0x84" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH2_CMP1" start="+0x88" size="0x4">
+    <Register name="CHANNEL_CH2_CMP_CMP1" start="+0x88" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH2_RLD" start="+0x8c" size="0x4">
@@ -26970,10 +26537,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH3_CMP0" start="+0xc4" size="0x4">
+    <Register name="CHANNEL_CH3_CMP_CMP0" start="+0xc4" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH3_CMP1" start="+0xc8" size="0x4">
+    <Register name="CHANNEL_CH3_CMP_CMP1" start="+0xc8" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH3_RLD" start="+0xcc" size="0x4">
@@ -27056,10 +26623,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH0_CMP0" start="+0x4" size="0x4">
+    <Register name="CHANNEL_CH0_CMP_CMP0" start="+0x4" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH0_CMP1" start="+0x8" size="0x4">
+    <Register name="CHANNEL_CH0_CMP_CMP1" start="+0x8" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH0_RLD" start="+0xc" size="0x4">
@@ -27099,10 +26666,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH1_CMP0" start="+0x44" size="0x4">
+    <Register name="CHANNEL_CH1_CMP_CMP0" start="+0x44" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH1_CMP1" start="+0x48" size="0x4">
+    <Register name="CHANNEL_CH1_CMP_CMP1" start="+0x48" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH1_RLD" start="+0x4c" size="0x4">
@@ -27142,10 +26709,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH2_CMP0" start="+0x84" size="0x4">
+    <Register name="CHANNEL_CH2_CMP_CMP0" start="+0x84" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH2_CMP1" start="+0x88" size="0x4">
+    <Register name="CHANNEL_CH2_CMP_CMP1" start="+0x88" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH2_RLD" start="+0x8c" size="0x4">
@@ -27185,10 +26752,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH3_CMP0" start="+0xc4" size="0x4">
+    <Register name="CHANNEL_CH3_CMP_CMP0" start="+0xc4" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH3_CMP1" start="+0xc8" size="0x4">
+    <Register name="CHANNEL_CH3_CMP_CMP1" start="+0xc8" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH3_RLD" start="+0xcc" size="0x4">
@@ -27271,10 +26838,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH0_CMP0" start="+0x4" size="0x4">
+    <Register name="CHANNEL_CH0_CMP_CMP0" start="+0x4" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH0_CMP1" start="+0x8" size="0x4">
+    <Register name="CHANNEL_CH0_CMP_CMP1" start="+0x8" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH0_RLD" start="+0xc" size="0x4">
@@ -27314,10 +26881,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH1_CMP0" start="+0x44" size="0x4">
+    <Register name="CHANNEL_CH1_CMP_CMP0" start="+0x44" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH1_CMP1" start="+0x48" size="0x4">
+    <Register name="CHANNEL_CH1_CMP_CMP1" start="+0x48" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH1_RLD" start="+0x4c" size="0x4">
@@ -27357,10 +26924,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH2_CMP0" start="+0x84" size="0x4">
+    <Register name="CHANNEL_CH2_CMP_CMP0" start="+0x84" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH2_CMP1" start="+0x88" size="0x4">
+    <Register name="CHANNEL_CH2_CMP_CMP1" start="+0x88" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH2_RLD" start="+0x8c" size="0x4">
@@ -27400,10 +26967,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH3_CMP0" start="+0xc4" size="0x4">
+    <Register name="CHANNEL_CH3_CMP_CMP0" start="+0xc4" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH3_CMP1" start="+0xc8" size="0x4">
+    <Register name="CHANNEL_CH3_CMP_CMP1" start="+0xc8" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH3_RLD" start="+0xcc" size="0x4">
@@ -27486,10 +27053,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH0_CMP0" start="+0x4" size="0x4">
+    <Register name="CHANNEL_CH0_CMP_CMP0" start="+0x4" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH0_CMP1" start="+0x8" size="0x4">
+    <Register name="CHANNEL_CH0_CMP_CMP1" start="+0x8" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH0_RLD" start="+0xc" size="0x4">
@@ -27529,10 +27096,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH1_CMP0" start="+0x44" size="0x4">
+    <Register name="CHANNEL_CH1_CMP_CMP0" start="+0x44" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH1_CMP1" start="+0x48" size="0x4">
+    <Register name="CHANNEL_CH1_CMP_CMP1" start="+0x48" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH1_RLD" start="+0x4c" size="0x4">
@@ -27572,10 +27139,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH2_CMP0" start="+0x84" size="0x4">
+    <Register name="CHANNEL_CH2_CMP_CMP0" start="+0x84" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH2_CMP1" start="+0x88" size="0x4">
+    <Register name="CHANNEL_CH2_CMP_CMP1" start="+0x88" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH2_RLD" start="+0x8c" size="0x4">
@@ -27615,10 +27182,10 @@
       <BitField name="DBGPAUSE" start="3" size="1"/>
       <BitField name="CAPMODE" start="0" size="3"/>
     </Register>
-    <Register name="CHANNEL_CH3_CMP0" start="+0xc4" size="0x4">
+    <Register name="CHANNEL_CH3_CMP_CMP0" start="+0xc4" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
-    <Register name="CHANNEL_CH3_CMP1" start="+0xc8" size="0x4">
+    <Register name="CHANNEL_CH3_CMP_CMP1" start="+0xc8" size="0x4">
       <BitField name="CMP" start="0" size="32"/>
     </Register>
     <Register name="CHANNEL_CH3_RLD" start="+0xcc" size="0x4">
@@ -27789,8 +27356,6 @@
       <BitField name="EPTNE" start="16" size="8"/>
       <BitField name="EPRNE" start="0" size="8"/>
     </Register>
-    <Register name="CONFIGFLAG" start="+0x180" size="0x4">
-    </Register>
     <Register name="PORTSC1" start="+0x184" size="0x4">
       <BitField name="STS" start="29" size="1"/>
       <BitField name="PTW" start="28" size="1"/>
@@ -27946,8 +27511,6 @@
       <BitField name="OTG_OVER_CUR_POL" start="8" size="1"/>
       <BitField name="OTG_OVER_CUR_DIS" start="7" size="1"/>
       <BitField name="SER_MODE_SUSPEND_EN" start="4" size="1"/>
-    </Register>
-    <Register name="OTG_CTRL1" start="+0x204" size="0x4">
     </Register>
     <Register name="PHY_CTRL0" start="+0x210" size="0x4">
       <BitField name="GPIO_ID_SEL_N" start="25" size="1"/>
@@ -28079,8 +27642,6 @@
       <BitField name="EPTNE" start="16" size="8"/>
       <BitField name="EPRNE" start="0" size="8"/>
     </Register>
-    <Register name="CONFIGFLAG" start="+0x180" size="0x4">
-    </Register>
     <Register name="PORTSC1" start="+0x184" size="0x4">
       <BitField name="STS" start="29" size="1"/>
       <BitField name="PTW" start="28" size="1"/>
@@ -28237,8 +27798,6 @@
       <BitField name="OTG_OVER_CUR_DIS" start="7" size="1"/>
       <BitField name="SER_MODE_SUSPEND_EN" start="4" size="1"/>
     </Register>
-    <Register name="OTG_CTRL1" start="+0x204" size="0x4">
-    </Register>
     <Register name="PHY_CTRL0" start="+0x210" size="0x4">
       <BitField name="GPIO_ID_SEL_N" start="25" size="1"/>
       <BitField name="ID_DIG_OVERRIDE" start="14" size="1"/>
@@ -28336,6 +27895,7 @@
       <BitField name="CONTINUE_REQ" start="17" size="1"/>
       <BitField name="STOP_BG_REQ" start="16" size="1"/>
       <BitField name="SD_BUS_VOL_VDD1" start="9" size="3"/>
+      <BitField name="SD_BUS_PWR_VDD1" start="8" size="1"/>
       <BitField name="EXT_DAT_XFER" start="5" size="1"/>
       <BitField name="DMA_SEL" start="3" size="2"/>
       <BitField name="HIGH_SPEED_EN" start="2" size="1"/>
@@ -28573,8 +28133,6 @@
     <Register name="SLOT_INTR_STATUS" start="+0xfc" size="0x2">
       <BitField name="INTR_SLOT" start="0" size="8"/>
     </Register>
-    <Register name="HOST_CTRL_VERS" start="+0xfe" size="0x2">
-    </Register>
     <Register name="CQVER" start="+0x180" size="0x4">
       <BitField name="EMMC_VER_MAHOR" start="8" size="4"/>
       <BitField name="EMMC_VER_MINOR" start="4" size="4"/>
@@ -28670,6 +28228,9 @@
     </Register>
     <Register name="MSHC_VER_TYPE" start="+0x504" size="0x4">
       <BitField name="VER_TYPE" start="0" size="32"/>
+    </Register>
+    <Register name="MSHC_CTRL" start="+0x508" size="0x4">
+      <BitField name="CMD_CONFLICT_CHECK" start="0" size="1"/>
     </Register>
     <Register name="MBIU_CTRL" start="+0x510" size="0x4">
       <BitField name="BURST_INCR16_EN" start="3" size="1"/>
@@ -28780,6 +28341,7 @@
       <BitField name="CONTINUE_REQ" start="17" size="1"/>
       <BitField name="STOP_BG_REQ" start="16" size="1"/>
       <BitField name="SD_BUS_VOL_VDD1" start="9" size="3"/>
+      <BitField name="SD_BUS_PWR_VDD1" start="8" size="1"/>
       <BitField name="EXT_DAT_XFER" start="5" size="1"/>
       <BitField name="DMA_SEL" start="3" size="2"/>
       <BitField name="HIGH_SPEED_EN" start="2" size="1"/>
@@ -29017,8 +28579,6 @@
     <Register name="SLOT_INTR_STATUS" start="+0xfc" size="0x2">
       <BitField name="INTR_SLOT" start="0" size="8"/>
     </Register>
-    <Register name="HOST_CTRL_VERS" start="+0xfe" size="0x2">
-    </Register>
     <Register name="CQVER" start="+0x180" size="0x4">
       <BitField name="EMMC_VER_MAHOR" start="8" size="4"/>
       <BitField name="EMMC_VER_MINOR" start="4" size="4"/>
@@ -29115,6 +28675,9 @@
     <Register name="MSHC_VER_TYPE" start="+0x504" size="0x4">
       <BitField name="VER_TYPE" start="0" size="32"/>
     </Register>
+    <Register name="MSHC_CTRL" start="+0x508" size="0x4">
+      <BitField name="CMD_CONFLICT_CHECK" start="0" size="1"/>
+    </Register>
     <Register name="MBIU_CTRL" start="+0x510" size="0x4">
       <BitField name="BURST_INCR16_EN" start="3" size="1"/>
       <BitField name="BURST_INCR8_EN" start="2" size="1"/>
@@ -29161,12 +28724,14 @@
       <BitField name="ENET0_TXCLK_DLY_SEL" start="0" size="5"/>
     </Register>
     <Register name="CTRL2" start="+0x8" size="0x4">
+      <BitField name="ENET0_LPI_IRQ_EN" start="29" size="1"/>
       <BitField name="ENET0_REFCLK_OE" start="19" size="1"/>
       <BitField name="ENET0_PHY_INTF_SEL" start="13" size="3"/>
       <BitField name="ENET0_FLOWCTRL" start="12" size="1"/>
       <BitField name="ENET0_RMII_TXCLK_SEL" start="10" size="1"/>
     </Register>
     <Register name="CTRL3" start="+0xc" size="0x4">
+      <BitField name="ENET1_LPI_IRQ_EN" start="29" size="1"/>
       <BitField name="ENET1_REFCLK_OE" start="19" size="1"/>
       <BitField name="ENET1_PHY_INTF_SEL" start="13" size="3"/>
       <BitField name="ENET1_FLOWCTRL" start="12" size="1"/>
@@ -29179,6 +28744,8 @@
       <BitField name="SDXC0_GPR_TUNING_CARD_CLK_SEL" start="23" size="5"/>
       <BitField name="SDXC0_GPR_TUNING_STROBE_SEL" start="18" size="5"/>
       <BitField name="SDXC0_GPR_STROBE_IN_ENABLE" start="17" size="1"/>
+      <BitField name="SDXC0_GPR_CCLK_RX_DLY_SW_SEL" start="12" size="5"/>
+      <BitField name="SDXC0_GPR_CCLK_RX_DLY_SW_FORCE" start="11" size="1"/>
     </Register>
     <Register name="CTRL5" start="+0x14" size="0x4">
       <BitField name="SDXC1_SYS_IRQ_EN" start="31" size="1"/>
@@ -29187,6 +28754,8 @@
       <BitField name="SDXC1_GPR_TUNING_CARD_CLK_SEL" start="23" size="5"/>
       <BitField name="SDXC1_GPR_TUNING_STROBE_SEL" start="18" size="5"/>
       <BitField name="SDXC1_GPR_STROBE_IN_ENABLE" start="17" size="1"/>
+      <BitField name="SDXC1_GPR_CCLK_RX_DLY_SW_SEL" start="12" size="5"/>
+      <BitField name="SDXC1_GPR_CCLK_RX_DLY_SW_FORCE" start="11" size="1"/>
     </Register>
   </RegisterGroup>
   <RegisterGroup start="0xf3020000" name="I2C0">
@@ -29619,13 +29188,16 @@
       <BitField name="PKTBUF" start="0" size="32"/>
     </Register>
   </RegisterGroup>
-  <RegisterGroup start="0xf3050000" name="DRAM">
+  <RegisterGroup start="0xf3050000" name="FEMC">
     <Register name="CTRL" start="+0x0" size="0x4">
       <BitField name="BTO" start="24" size="5"/>
       <BitField name="CTO" start="16" size="8"/>
       <BitField name="DQS" start="2" size="1"/>
       <BitField name="DIS" start="1" size="1"/>
       <BitField name="RST" start="0" size="1"/>
+    </Register>
+    <Register name="IOCTRL" start="+0x4" size="0x4">
+      <BitField name="IO_CSX" start="4" size="4"/>
     </Register>
     <Register name="BMW0" start="+0x8" size="0x4">
       <BitField name="RWS" start="16" size="8"/>
@@ -29646,6 +29218,11 @@
       <BitField name="VLD" start="0" size="1"/>
     </Register>
     <Register name="BR_BASE1" start="+0x14" size="0x4">
+      <BitField name="BASE" start="12" size="20"/>
+      <BitField name="SIZE" start="1" size="5"/>
+      <BitField name="VLD" start="0" size="1"/>
+    </Register>
+    <Register name="BR_BASE6" start="+0x28" size="0x4">
       <BitField name="BASE" start="12" size="20"/>
       <BitField name="SIZE" start="1" size="5"/>
       <BitField name="VLD" start="0" size="1"/>
@@ -29691,6 +29268,22 @@
       <BitField name="PRESCALE" start="8" size="8"/>
       <BitField name="REBL" start="1" size="3"/>
       <BitField name="REN" start="0" size="1"/>
+    </Register>
+    <Register name="SRCTRL0" start="+0x70" size="0x4">
+      <BitField name="ADVH" start="11" size="1"/>
+      <BitField name="ADVP" start="10" size="1"/>
+      <BitField name="ADM" start="8" size="2"/>
+      <BitField name="PORTSZ" start="0" size="1"/>
+    </Register>
+    <Register name="SRCTRL1" start="+0x74" size="0x4">
+      <BitField name="OEH" start="28" size="4"/>
+      <BitField name="OEL" start="24" size="4"/>
+      <BitField name="WEH" start="20" size="4"/>
+      <BitField name="WEL" start="16" size="4"/>
+      <BitField name="AH" start="12" size="4"/>
+      <BitField name="AS" start="8" size="4"/>
+      <BitField name="CEH" start="4" size="4"/>
+      <BitField name="CES" start="0" size="4"/>
     </Register>
     <Register name="SADDR" start="+0x90" size="0x4">
       <BitField name="SA" start="0" size="32"/>
@@ -29894,7 +29487,7 @@
       <BitField name="LOC_BUSY" start="30" size="1"/>
       <BitField name="MODE" start="0" size="2"/>
     </Register>
-    <Register name="RESOURCE_CLK_TOP_DRAM" start="+0x120" size="0x4">
+    <Register name="RESOURCE_CLK_TOP_FEMC" start="+0x120" size="0x4">
       <BitField name="GLB_BUSY" start="31" size="1"/>
       <BitField name="LOC_BUSY" start="30" size="1"/>
       <BitField name="MODE" start="0" size="2"/>
@@ -30249,7 +29842,7 @@
       <BitField name="LOC_BUSY" start="30" size="1"/>
       <BitField name="MODE" start="0" size="2"/>
     </Register>
-    <Register name="RESOURCE_DRAM" start="+0x410" size="0x4">
+    <Register name="RESOURCE_FEMC" start="+0x410" size="0x4">
       <BitField name="GLB_BUSY" start="31" size="1"/>
       <BitField name="LOC_BUSY" start="30" size="1"/>
       <BitField name="MODE" start="0" size="2"/>
@@ -30985,7 +30578,7 @@
       <BitField name="MUX" start="8" size="4"/>
       <BitField name="DIV" start="0" size="8"/>
     </Register>
-    <Register name="CLOCK_CLK_TOP_DRAM" start="+0x1820" size="0x4">
+    <Register name="CLOCK_CLK_TOP_FEMC" start="+0x1820" size="0x4">
       <BitField name="GLB_BUSY" start="31" size="1"/>
       <BitField name="LOC_BUSY" start="30" size="1"/>
       <BitField name="MUX" start="8" size="4"/>
@@ -31382,12 +30975,6 @@
     <Register name="GLOBAL00" start="+0x2000" size="0x4">
       <BitField name="PRESET" start="0" size="4"/>
     </Register>
-    <Register name="GLOBAL01" start="+0x2004" size="0x4">
-    </Register>
-    <Register name="GLOBAL02" start="+0x2008" size="0x4">
-    </Register>
-    <Register name="GLOBAL03" start="+0x200c" size="0x4">
-    </Register>
     <Register name="MONITOR_SLICE0_CONTROL" start="+0x2400" size="0x4">
       <BitField name="VALID" start="31" size="1"/>
       <BitField name="DIV_BUSY" start="27" size="1"/>
@@ -31490,94 +31077,94 @@
       <BitField name="GPR" start="2" size="14"/>
       <BitField name="LOCK" start="1" size="1"/>
     </Register>
-    <Register name="CPU_CPU0_GPR0" start="+0x2808" size="0x4">
+    <Register name="CPU_CPU0_GPR_GPR0" start="+0x2808" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_GPR1" start="+0x280c" size="0x4">
+    <Register name="CPU_CPU0_GPR_GPR1" start="+0x280c" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_GPR2" start="+0x2810" size="0x4">
+    <Register name="CPU_CPU0_GPR_GPR2" start="+0x2810" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_GPR3" start="+0x2814" size="0x4">
+    <Register name="CPU_CPU0_GPR_GPR3" start="+0x2814" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_GPR4" start="+0x2818" size="0x4">
+    <Register name="CPU_CPU0_GPR_GPR4" start="+0x2818" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_GPR5" start="+0x281c" size="0x4">
+    <Register name="CPU_CPU0_GPR_GPR5" start="+0x281c" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_GPR6" start="+0x2820" size="0x4">
+    <Register name="CPU_CPU0_GPR_GPR6" start="+0x2820" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_GPR7" start="+0x2824" size="0x4">
+    <Register name="CPU_CPU0_GPR_GPR7" start="+0x2824" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_GPR8" start="+0x2828" size="0x4">
+    <Register name="CPU_CPU0_GPR_GPR8" start="+0x2828" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_GPR9" start="+0x282c" size="0x4">
+    <Register name="CPU_CPU0_GPR_GPR9" start="+0x282c" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_GPR10" start="+0x2830" size="0x4">
+    <Register name="CPU_CPU0_GPR_GPR10" start="+0x2830" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_GPR11" start="+0x2834" size="0x4">
+    <Register name="CPU_CPU0_GPR_GPR11" start="+0x2834" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_GPR12" start="+0x2838" size="0x4">
+    <Register name="CPU_CPU0_GPR_GPR12" start="+0x2838" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_GPR13" start="+0x283c" size="0x4">
+    <Register name="CPU_CPU0_GPR_GPR13" start="+0x283c" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_STATUS0" start="+0x2840" size="0x4">
+    <Register name="CPU_CPU0_WAKEUP_STATUS_STATUS0" start="+0x2840" size="0x4">
       <BitField name="STATUS" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_STATUS1" start="+0x2844" size="0x4">
+    <Register name="CPU_CPU0_WAKEUP_STATUS_STATUS1" start="+0x2844" size="0x4">
       <BitField name="STATUS" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_STATUS2" start="+0x2848" size="0x4">
+    <Register name="CPU_CPU0_WAKEUP_STATUS_STATUS2" start="+0x2848" size="0x4">
       <BitField name="STATUS" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_STATUS3" start="+0x284c" size="0x4">
+    <Register name="CPU_CPU0_WAKEUP_STATUS_STATUS3" start="+0x284c" size="0x4">
       <BitField name="STATUS" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_STATUS4" start="+0x2850" size="0x4">
+    <Register name="CPU_CPU0_WAKEUP_STATUS_STATUS4" start="+0x2850" size="0x4">
       <BitField name="STATUS" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_STATUS5" start="+0x2854" size="0x4">
+    <Register name="CPU_CPU0_WAKEUP_STATUS_STATUS5" start="+0x2854" size="0x4">
       <BitField name="STATUS" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_STATUS6" start="+0x2858" size="0x4">
+    <Register name="CPU_CPU0_WAKEUP_STATUS_STATUS6" start="+0x2858" size="0x4">
       <BitField name="STATUS" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_STATUS7" start="+0x285c" size="0x4">
+    <Register name="CPU_CPU0_WAKEUP_STATUS_STATUS7" start="+0x285c" size="0x4">
       <BitField name="STATUS" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_ENABLE0" start="+0x2880" size="0x4">
+    <Register name="CPU_CPU0_WAKEUP_ENABLE_ENABLE0" start="+0x2880" size="0x4">
       <BitField name="ENABLE" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_ENABLE1" start="+0x2884" size="0x4">
+    <Register name="CPU_CPU0_WAKEUP_ENABLE_ENABLE1" start="+0x2884" size="0x4">
       <BitField name="ENABLE" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_ENABLE2" start="+0x2888" size="0x4">
+    <Register name="CPU_CPU0_WAKEUP_ENABLE_ENABLE2" start="+0x2888" size="0x4">
       <BitField name="ENABLE" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_ENABLE3" start="+0x288c" size="0x4">
+    <Register name="CPU_CPU0_WAKEUP_ENABLE_ENABLE3" start="+0x288c" size="0x4">
       <BitField name="ENABLE" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_ENABLE4" start="+0x2890" size="0x4">
+    <Register name="CPU_CPU0_WAKEUP_ENABLE_ENABLE4" start="+0x2890" size="0x4">
       <BitField name="ENABLE" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_ENABLE5" start="+0x2894" size="0x4">
+    <Register name="CPU_CPU0_WAKEUP_ENABLE_ENABLE5" start="+0x2894" size="0x4">
       <BitField name="ENABLE" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_ENABLE6" start="+0x2898" size="0x4">
+    <Register name="CPU_CPU0_WAKEUP_ENABLE_ENABLE6" start="+0x2898" size="0x4">
       <BitField name="ENABLE" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU0_ENABLE7" start="+0x289c" size="0x4">
+    <Register name="CPU_CPU0_WAKEUP_ENABLE_ENABLE7" start="+0x289c" size="0x4">
       <BitField name="ENABLE" start="0" size="32"/>
     </Register>
     <Register name="CPU_CPU1_LP" start="+0x2c00" size="0x4">
@@ -31594,94 +31181,94 @@
       <BitField name="GPR" start="2" size="14"/>
       <BitField name="LOCK" start="1" size="1"/>
     </Register>
-    <Register name="CPU_CPU1_GPR0" start="+0x2c08" size="0x4">
+    <Register name="CPU_CPU1_GPR_GPR0" start="+0x2c08" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_GPR1" start="+0x2c0c" size="0x4">
+    <Register name="CPU_CPU1_GPR_GPR1" start="+0x2c0c" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_GPR2" start="+0x2c10" size="0x4">
+    <Register name="CPU_CPU1_GPR_GPR2" start="+0x2c10" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_GPR3" start="+0x2c14" size="0x4">
+    <Register name="CPU_CPU1_GPR_GPR3" start="+0x2c14" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_GPR4" start="+0x2c18" size="0x4">
+    <Register name="CPU_CPU1_GPR_GPR4" start="+0x2c18" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_GPR5" start="+0x2c1c" size="0x4">
+    <Register name="CPU_CPU1_GPR_GPR5" start="+0x2c1c" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_GPR6" start="+0x2c20" size="0x4">
+    <Register name="CPU_CPU1_GPR_GPR6" start="+0x2c20" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_GPR7" start="+0x2c24" size="0x4">
+    <Register name="CPU_CPU1_GPR_GPR7" start="+0x2c24" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_GPR8" start="+0x2c28" size="0x4">
+    <Register name="CPU_CPU1_GPR_GPR8" start="+0x2c28" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_GPR9" start="+0x2c2c" size="0x4">
+    <Register name="CPU_CPU1_GPR_GPR9" start="+0x2c2c" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_GPR10" start="+0x2c30" size="0x4">
+    <Register name="CPU_CPU1_GPR_GPR10" start="+0x2c30" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_GPR11" start="+0x2c34" size="0x4">
+    <Register name="CPU_CPU1_GPR_GPR11" start="+0x2c34" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_GPR12" start="+0x2c38" size="0x4">
+    <Register name="CPU_CPU1_GPR_GPR12" start="+0x2c38" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_GPR13" start="+0x2c3c" size="0x4">
+    <Register name="CPU_CPU1_GPR_GPR13" start="+0x2c3c" size="0x4">
       <BitField name="GPR" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_STATUS0" start="+0x2c40" size="0x4">
+    <Register name="CPU_CPU1_WAKEUP_STATUS_STATUS0" start="+0x2c40" size="0x4">
       <BitField name="STATUS" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_STATUS1" start="+0x2c44" size="0x4">
+    <Register name="CPU_CPU1_WAKEUP_STATUS_STATUS1" start="+0x2c44" size="0x4">
       <BitField name="STATUS" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_STATUS2" start="+0x2c48" size="0x4">
+    <Register name="CPU_CPU1_WAKEUP_STATUS_STATUS2" start="+0x2c48" size="0x4">
       <BitField name="STATUS" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_STATUS3" start="+0x2c4c" size="0x4">
+    <Register name="CPU_CPU1_WAKEUP_STATUS_STATUS3" start="+0x2c4c" size="0x4">
       <BitField name="STATUS" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_STATUS4" start="+0x2c50" size="0x4">
+    <Register name="CPU_CPU1_WAKEUP_STATUS_STATUS4" start="+0x2c50" size="0x4">
       <BitField name="STATUS" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_STATUS5" start="+0x2c54" size="0x4">
+    <Register name="CPU_CPU1_WAKEUP_STATUS_STATUS5" start="+0x2c54" size="0x4">
       <BitField name="STATUS" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_STATUS6" start="+0x2c58" size="0x4">
+    <Register name="CPU_CPU1_WAKEUP_STATUS_STATUS6" start="+0x2c58" size="0x4">
       <BitField name="STATUS" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_STATUS7" start="+0x2c5c" size="0x4">
+    <Register name="CPU_CPU1_WAKEUP_STATUS_STATUS7" start="+0x2c5c" size="0x4">
       <BitField name="STATUS" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_ENABLE0" start="+0x2c80" size="0x4">
+    <Register name="CPU_CPU1_WAKEUP_ENABLE_ENABLE0" start="+0x2c80" size="0x4">
       <BitField name="ENABLE" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_ENABLE1" start="+0x2c84" size="0x4">
+    <Register name="CPU_CPU1_WAKEUP_ENABLE_ENABLE1" start="+0x2c84" size="0x4">
       <BitField name="ENABLE" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_ENABLE2" start="+0x2c88" size="0x4">
+    <Register name="CPU_CPU1_WAKEUP_ENABLE_ENABLE2" start="+0x2c88" size="0x4">
       <BitField name="ENABLE" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_ENABLE3" start="+0x2c8c" size="0x4">
+    <Register name="CPU_CPU1_WAKEUP_ENABLE_ENABLE3" start="+0x2c8c" size="0x4">
       <BitField name="ENABLE" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_ENABLE4" start="+0x2c90" size="0x4">
+    <Register name="CPU_CPU1_WAKEUP_ENABLE_ENABLE4" start="+0x2c90" size="0x4">
       <BitField name="ENABLE" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_ENABLE5" start="+0x2c94" size="0x4">
+    <Register name="CPU_CPU1_WAKEUP_ENABLE_ENABLE5" start="+0x2c94" size="0x4">
       <BitField name="ENABLE" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_ENABLE6" start="+0x2c98" size="0x4">
+    <Register name="CPU_CPU1_WAKEUP_ENABLE_ENABLE6" start="+0x2c98" size="0x4">
       <BitField name="ENABLE" start="0" size="32"/>
     </Register>
-    <Register name="CPU_CPU1_ENABLE7" start="+0x2c9c" size="0x4">
+    <Register name="CPU_CPU1_WAKEUP_ENABLE_ENABLE7" start="+0x2c9c" size="0x4">
       <BitField name="ENABLE" start="0" size="32"/>
     </Register>
   </RegisterGroup>
@@ -42264,52 +41851,52 @@
     </Register>
   </RegisterGroup>
   <RegisterGroup start="0xf5048000" name="BKEY">
-    <Register name="KEY_0_0" start="+0x0" size="0x4">
+    <Register name="KEY_0_DATA_0" start="+0x0" size="0x4">
       <BitField name="DATA" start="0" size="32"/>
     </Register>
-    <Register name="KEY_0_1" start="+0x4" size="0x4">
+    <Register name="KEY_0_DATA_1" start="+0x4" size="0x4">
       <BitField name="DATA" start="0" size="32"/>
     </Register>
-    <Register name="KEY_0_2" start="+0x8" size="0x4">
+    <Register name="KEY_0_DATA_2" start="+0x8" size="0x4">
       <BitField name="DATA" start="0" size="32"/>
     </Register>
-    <Register name="KEY_0_3" start="+0xc" size="0x4">
+    <Register name="KEY_0_DATA_3" start="+0xc" size="0x4">
       <BitField name="DATA" start="0" size="32"/>
     </Register>
-    <Register name="KEY_0_4" start="+0x10" size="0x4">
+    <Register name="KEY_0_DATA_4" start="+0x10" size="0x4">
       <BitField name="DATA" start="0" size="32"/>
     </Register>
-    <Register name="KEY_0_5" start="+0x14" size="0x4">
+    <Register name="KEY_0_DATA_5" start="+0x14" size="0x4">
       <BitField name="DATA" start="0" size="32"/>
     </Register>
-    <Register name="KEY_0_6" start="+0x18" size="0x4">
+    <Register name="KEY_0_DATA_6" start="+0x18" size="0x4">
       <BitField name="DATA" start="0" size="32"/>
     </Register>
-    <Register name="KEY_0_7" start="+0x1c" size="0x4">
+    <Register name="KEY_0_DATA_7" start="+0x1c" size="0x4">
       <BitField name="DATA" start="0" size="32"/>
     </Register>
-    <Register name="KEY_1_0" start="+0x20" size="0x4">
+    <Register name="KEY_1_DATA_0" start="+0x20" size="0x4">
       <BitField name="DATA" start="0" size="32"/>
     </Register>
-    <Register name="KEY_1_1" start="+0x24" size="0x4">
+    <Register name="KEY_1_DATA_1" start="+0x24" size="0x4">
       <BitField name="DATA" start="0" size="32"/>
     </Register>
-    <Register name="KEY_1_2" start="+0x28" size="0x4">
+    <Register name="KEY_1_DATA_2" start="+0x28" size="0x4">
       <BitField name="DATA" start="0" size="32"/>
     </Register>
-    <Register name="KEY_1_3" start="+0x2c" size="0x4">
+    <Register name="KEY_1_DATA_3" start="+0x2c" size="0x4">
       <BitField name="DATA" start="0" size="32"/>
     </Register>
-    <Register name="KEY_1_4" start="+0x30" size="0x4">
+    <Register name="KEY_1_DATA_4" start="+0x30" size="0x4">
       <BitField name="DATA" start="0" size="32"/>
     </Register>
-    <Register name="KEY_1_5" start="+0x34" size="0x4">
+    <Register name="KEY_1_DATA_5" start="+0x34" size="0x4">
       <BitField name="DATA" start="0" size="32"/>
     </Register>
-    <Register name="KEY_1_6" start="+0x38" size="0x4">
+    <Register name="KEY_1_DATA_6" start="+0x38" size="0x4">
       <BitField name="DATA" start="0" size="32"/>
     </Register>
-    <Register name="KEY_1_7" start="+0x3c" size="0x4">
+    <Register name="KEY_1_DATA_7" start="+0x3c" size="0x4">
       <BitField name="DATA" start="0" size="32"/>
     </Register>
     <Register name="ECC_KEY0" start="+0x40" size="0x4">

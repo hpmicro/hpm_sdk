@@ -782,8 +782,8 @@ hpm_stat_t pwm_update_raw_cmp_edge_aligned(PWM_Type *pwm_x, uint8_t cmp_index,
  * @brief update raw compare value for central aligned waveform
  *
  * @param[in] pwm_x PWM base address, HPM_PWMx(x=0..n)
- * @param[in] cmp1_index index of cmp1 to be adjusted (cmp1_index must even number)
- * @param[in] cmp2_index index of cmp2 to be adjusted (cmp2_index must odd number)
+ * @param[in] cmp1_index index of cmp1 to be adjusted (cmp1_index must be even number)
+ * @param[in] cmp2_index index of cmp2 to be adjusted (cmp2_index must be odd number)
  * @param[in] target_cmp1 target compare value for cmp1
  * @param[in] target_cmp2 target compare value for cmp2
  * @retval hpm_stat_t @ref status_invalid_argument or @ref status_success cmp1_index

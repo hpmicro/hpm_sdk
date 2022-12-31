@@ -5,9 +5,8 @@ cmake_minimum_required(VERSION 3.13)
 
 if(NOT DEFINED CONFIG_CODEC)
 set(CONFIG_CODEC "sgtl5000")
+# set(CONFIG_CODEC "wm8960")
 endif()
-set(CONFIG_HPM_CODEC 1)
-# set(CONFIG_NOT_ENABLE_DCACHE 1)
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 

@@ -497,7 +497,7 @@ void sdxc_init(SDXC_Type *base, const sdxc_config_t *config)
 
     prot_ctrl &= ~(SDXC_PROT_CTRL_DMA_SEL_MASK | SDXC_PROT_CTRL_SD_BUS_VOL_VDD1_MASK);
 
-    prot_ctrl |= (1UL << 8);
+    prot_ctrl |= SDXC_PROT_CTRL_SD_BUS_PWR_VDD1_MASK;
 
     sdxc_set_data_timeout(base, config->data_timeout, NULL);
 

@@ -1,5 +1,59 @@
 # Change Log
 
+## [1.00.0] - 2022-12-31:
+
+Main changes since 0.14.0
+
+Tested Segger Embedded Studio Version: 7.10
+
+### Changed:
+  - boards: add version info in banner.
+  - board: lcdc: move panel para to board
+  - components: spi component to support to transfer different width of data in dma handshake mode
+  - drivers: rename dram to femc
+  - middleware: cherryusb update to v0.7.0
+  - middleware: erpc: update for support rtos
+  - middleware: hpm_mcl: update api naming
+  - samples: erpc: rename erpc_matrix_multiply_rpmsg to erpc_matrix_multiply_rpmsg_bm
+  - samples: erpc: reorganize erpc_matrix_multiply_rpmsg samples
+  - samples: erpc: move samples folder to erpc_matrix_multiply_rpmsg
+  - samples: update i2c/spi dma channel and dmamux channel definition
+  - ses: project template: use demo.* as output file naming.
+  - soc: HPM6750: toolchains: update linker files
+  - soc: HPM6360: toolchains: update linker files
+
+### Added:
+  - arch: riscv: add read_clear_csr() API
+  - component: add wm8960 support
+  - component: add usb device iso transfer support
+  - drivers: hpm_common: include hpm_sdk_version.h.
+  - drivers: common: add NOP and WFI.
+  - drivers: uart: add api to recv/send byte directly.
+  - soc: HPM6750 linker files: rename rpmsg_sh_mem to sh_mem
+  - cmake: add sdk version header file generation.
+  - middleware: tinyusb: add audio class
+  - middleware: hpm_math: add NN library
+  - samples: erpc: add erpc_two_way_rpc_rpmsg_rtos sample
+  - samples: erpc: add erpc_matrix_multiply_rpmsg_rtos sample
+  - samples: add power mode switch demo. #282
+  - samples: drivers: adc: add a temperature measurement demo
+  - samples: drviers: femc: add sram sample
+  - samples: lwip demo for FreeRTOS
+  - samples: lwip demo of interrupt usage
+  - samples: tinyusb: add uac2 demo
+  - samples: tflm: add face detection demo
+  - samples: tflm: add MLPerf Tiny benchmark demo
+  - samples: lwip: common: feature: add a LPI interrupt process
+
+### Fixed:
+  - drivers:interrupt: Fix FPU context crashing in nested irq case
+  - drivers: src: adc: fix adc result in period mode
+  - segger: update app directory structure in SES.
+  - soc: disable irq during cache maintenance
+  - middleware: lvgl: fps calculation to No.
+  - samples: get off level based on board api.
+  - samples: multicore: hello: core1 rgb led does not change correctly.
+
 ## [0.14.0] - 2022-10-31:
 
 Main changes since 0.13.0

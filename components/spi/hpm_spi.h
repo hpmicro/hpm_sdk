@@ -31,6 +31,7 @@ typedef struct {
     uint8_t tx_dmamux_ch;
     uint8_t rx_req;
     uint8_t tx_req;
+    uint8_t data_width;
 } spi_dma_context_t;
 
 typedef struct {
@@ -42,7 +43,10 @@ typedef struct {
     uint8_t running_core;
     uint32_t addr;
     uint32_t rx_size;
+    uint32_t rx_count;
     uint32_t tx_size;
+    uint32_t tx_count;
+    uint32_t data_len_in_byte;
     uint32_t per_trans_max;
     uint32_t *spi_transctrl;
     void (*write_cs)(uint32_t cs_pin, uint8_t state);

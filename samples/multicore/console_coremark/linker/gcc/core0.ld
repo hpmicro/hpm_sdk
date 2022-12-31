@@ -202,4 +202,7 @@ SECTIONS
 
     __noncacheable_start__ = ORIGIN(AXI_SRAM_NONCACHEABLE);
     __noncacheable_end__ = ORIGIN(AXI_SRAM_NONCACHEABLE) + LENGTH(AXI_SRAM_NONCACHEABLE);
+    /* define symbols for building, length is 0 */
+    __share_mem_start__ = __noncacheable_end__;
+    __share_mem_end__ = __share_mem_start__;
 }

@@ -1,35 +1,20 @@
-/*
- * Copyright (c) 2021 HPMicro
- *
- * SPDX-License-Identifier: BSD-3-Clause
- *
- */
-
 #ifndef HPM_ENET_PHY_COMMON_H
 #define HPM_ENET_PHY_COMMON_H
-#include <stdint.h>
 
-typedef enum {
-    enet_phy_port_speed_10mbps = 0,
-    enet_phy_port_speed_100mbps,
-    enet_phy_port_speed_1000mbps
-} enet_phy_port_speed_t;
-
-typedef enum {
-    enet_phy_duplex_half = 0,
-    enet_phy_duplex_full
-} enet_phy_duplex_mode_t;
-
-typedef enum {
-    enet_phy_mdi_crossover_manual_mdi = 0,
-    enet_phy_mdi_crossover_manual_mdix,
-    enet_phy_mdi_crossover_automatic
-} enet_phy_crossover_mode_t;
-
-typedef struct {
-    uint8_t enet_phy_link;
-    uint8_t enet_phy_speed;
-    uint8_t enet_phy_duplex;
-} enet_phy_status_t;
-
+#if __USE_DP83867
+    #include "hpm_dp83867.h"
+    #include "hpm_dp83867_regs.h"
+#elif __USE_RTL8211
+    #include "hpm_rtl8211.h"
+    #include "hpm_rtl8211_regs.h"
+#elif __USE_DP83848
+    #include "hpm_dp83848.h"
+    #include "hpm_dp83848_regs.h"
+#elif defined  __USE_RTL8201
+    #include "hpm_rtl8201.h"
+    #include "hpm_rtl8201_regs.h"
+#else
+    #error no specified Ethernet PHY !!!
 #endif
+
+#endif /* HPM_ENET_PHY_H */

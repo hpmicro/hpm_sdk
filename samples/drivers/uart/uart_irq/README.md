@@ -8,6 +8,10 @@
 ***
 - Serial port baud rate is set to ``115200bps``, with ``one stop bit`` and ``no parity bit``
 
+## Note
+***
+- The input string length should not exceed UART_SOC_FIFO_SIZE defined in the program every time
+
 ## Running the example
 ***
 When the project runs correctly, the serial port terminal will output the following information:

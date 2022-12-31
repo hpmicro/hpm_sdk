@@ -112,8 +112,6 @@ void spi_master_frame_dump(uint32_t datalen,
 
 int main(void)
 {
-    uint8_t cmd = 0x1a;
-    uint32_t addr = 0x10;
     uint8_t wbuff[10] = {0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9};
     uint8_t rbuff[10] = {0};
     spi_timing_config_t timing_config = {0};
@@ -134,15 +132,11 @@ int main(void)
     spi_master_timing_init(BOARD_APP_SPI_BASE, &timing_config);
     printf("SPI-Master transfer timing is configured.\n");
     printf("SPI-Master transfer source clock frequency: %dHz\n", timing_config.master_config.clk_src_freq_in_hz);
-    printf("SPI-Master tannsfer sclk frequecny: %dHz\n", timing_config.master_config.sclk_freq_in_hz);
+    printf("SPI-Master transfer sclk frequency: %dHz\n", timing_config.master_config.sclk_freq_in_hz);
 
     /* set SPI format config for master */
     spi_master_get_default_format_config(&format_config);
-    format_config.master_config.addr_len_in_bytes = BOARD_APP_SPI_ADDR_LEN_IN_BYTES;
     format_config.common_config.data_len_in_bits = BOARD_APP_SPI_DATA_LEN_IN_BITS;
-    format_config.common_config.data_merge = false;
-    format_config.common_config.mosi_bidir = false;
-    format_config.common_config.lsb = false;
     format_config.common_config.mode = spi_master_mode;
     format_config.common_config.cpol = spi_sclk_high_idle;
     format_config.common_config.cpha = spi_sclk_sampling_even_clk_edges;
@@ -151,25 +145,21 @@ int main(void)
 
     /* set SPI control config for master */
     spi_master_get_default_control_config(&control_config);
-    control_config.master_config.cmd_enable = true;
-    control_config.master_config.addr_enable = true;
-    control_config.master_config.addr_phase_fmt = spi_address_phase_format_single_io_mode;
-    control_config.common_config.trans_mode = spi_trans_write_dummy_read;
-    control_config.common_config.data_phase_fmt = spi_single_io_mode;
-    control_config.common_config.dummy_cnt = spi_dummy_count_1;
+    control_config.master_config.cmd_enable = false;  /* cmd phase control for master */
+    control_config.master_config.addr_enable = false; /* address phase control for master */
+    control_config.common_config.trans_mode = spi_trans_write_read_together;
     spi_transfer_mode_print(&control_config);
-
 
     printf("SPI-Master transfer starts.\n");
     stat = spi_transfer(BOARD_APP_SPI_BASE,
                 &control_config,
-                &cmd, &addr,
+                NULL, NULL,
                 (uint8_t *)wbuff, ARRAY_SIZE(wbuff), (uint8_t *)rbuff, ARRAY_SIZE(rbuff));
 
     if (stat == status_success) {
         spi_master_frame_dump(BOARD_APP_SPI_DATA_LEN_IN_BITS,
                                 &control_config,
-                                &cmd, &addr,
+                                NULL, NULL,
                                 (uint8_t *)wbuff, ARRAY_SIZE(wbuff), (uint8_t *)rbuff, ARRAY_SIZE(rbuff));
 
         printf("SPI-Master transfer ends.\n");

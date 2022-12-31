@@ -7,6 +7,10 @@
 
 连接LCD到板上LCD接口。
 
+## 编译类型
+- flash_sdram_xip
+- flash_sdram_xip_release
+
 ## 运行现象
 
 当工程正确运行后，可以在LCD上看到图像变化。串口终端会输出如下信息：

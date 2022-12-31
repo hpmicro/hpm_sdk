@@ -9,6 +9,7 @@
 #define _HPM_L1_CACHE_H
 #include "riscv/riscv_core.h"
 #include "hpm_common.h"
+#include "hpm_soc.h"
 
 /**
  *

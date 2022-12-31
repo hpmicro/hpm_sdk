@@ -6,14 +6,17 @@
 #ifndef CHERRYUSB_CONFIG_H
 #define CHERRYUSB_CONFIG_H
 
+#define CHERRYUSB_VERSION 0x000700
+
 /* ================ USB common Configuration ================ */
+
+#define CONFIG_USB_PRINTF(...) printf(__VA_ARGS__)
+
+#define usb_malloc(size) malloc(size)
+#define usb_free(ptr)    free(ptr)
 
 #ifndef CONFIG_USB_DBG_LEVEL
 #define CONFIG_USB_DBG_LEVEL USB_DBG_INFO
-#endif
-
-#ifndef CONFIG_USB_PRINTF
-#define CONFIG_USB_PRINTF printf
 #endif
 
 /* Enable print with color */
@@ -77,6 +80,24 @@
 #define CONFIG_USBDEV_AUDIO_MAX_CHANNEL 8
 #endif
 
+#ifndef CONFIG_USBDEV_RNDIS_RESP_BUFFER_SIZE
+#define CONFIG_USBDEV_RNDIS_RESP_BUFFER_SIZE 128
+#endif
+
+#ifndef CONFIG_USBDEV_RNDIS_ETH_MAX_FRAME_SIZE
+#define CONFIG_USBDEV_RNDIS_ETH_MAX_FRAME_SIZE 1536
+#endif
+
+#ifndef CONFIG_USBDEV_RNDIS_VENDOR_ID
+#define CONFIG_USBDEV_RNDIS_VENDOR_ID 0x0000ffff
+#endif
+
+#ifndef CONFIG_USBDEV_RNDIS_VENDOR_DESC
+#define CONFIG_USBDEV_RNDIS_VENDOR_DESC "CherryUSB"
+#endif
+
+#define CONFIG_USBDEV_RNDIS_USING_LWIP
+
 /* ================ USB HOST Stack Configuration ================== */
 
 #define CONFIG_USBHOST_MAX_RHPORTS          1
@@ -120,9 +141,9 @@
 
 /* ================ EHCI Configuration ================ */
 
-#define CONFIG_USB_EHCI_HCCR_BASE   (0x20072000)
-#define CONFIG_USB_EHCI_HCOR_BASE   (0x20072000 + 0x10)
-#define CONFIG_EHCI_FRAME_LIST_SIZE 1024
+#define CONFIG_USB_EHCI_HCCR_BASE       (0x20072000)
+#define CONFIG_USB_EHCI_HCOR_BASE       (0x20072000 + 0x10)
+#define CONFIG_USB_EHCI_FRAME_LIST_SIZE 1024
 // #define CONFIG_USB_EHCI_INFO_ENABLE
 // #define CONFIG_USB_ECHI_HCOR_RESERVED_DISABLE
 // #define CONFIG_USB_EHCI_CONFIGFLAG

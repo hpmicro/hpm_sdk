@@ -67,6 +67,7 @@ int main(void)
     buff_index = 0;
 
     board_init();
+    board_init_uart(TEST_UART);
 
     uart_config_t config = {0};
     uart_default_config(TEST_UART, &config);
@@ -93,7 +94,6 @@ int main(void)
         printf("uart will send back received characters, echo every %d bytes\n", data_count);
     }
 
-    board_init_uart(TEST_UART);
     stat = uart_init(TEST_UART, &config);
     if (stat != status_success) {
         /* uart failed to be initialized */

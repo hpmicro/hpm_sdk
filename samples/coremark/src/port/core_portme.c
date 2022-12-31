@@ -24,7 +24,7 @@ Original Author: Shay Gal-on
 #if USE_SNPRINTF
 #include <stdio.h>
 #include <stdarg.h>
-char g_buff[4096] __attribute__((section (".dual_core_share")));
+char g_buff[4096];
 char g_temp[1024];
 char* g_buff_current;
 void ee_printf(char *format, ...)

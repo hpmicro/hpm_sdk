@@ -11,7 +11,11 @@ endif()
 set(CONFIG_HPM_TOUCH 1)
 set(CONFIG_LV_INDEV 1)
 set(CONFIG_LV_DEMO lv_demo_benchmark)
-set(CUSTOM_GCC_LINKER_FILE $ENV{HPM_SDK_BASE}/samples/littlevgl/linkers/gcc/lvgl.ld)
+set(STACK_SIZE 0x10000)
+
+if("${CMAKE_BUILD_TYPE}" STREQUAL "")
+    SET(CMAKE_BUILD_TYPE flash_sdram_xip)
+endif()
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 

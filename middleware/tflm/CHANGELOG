@@ -5,5 +5,4 @@
  
  - Change :
     - ADD __HPMICRO__ to middleware
-
-
+    - Optimize running speed with nn library

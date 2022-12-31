@@ -14,26 +14,6 @@
 #include "lwip/init.h"
 #include "ptpd.h"
 
-#if RGMII == 1
-    #if defined __USE_DP83867
-        #include "hpm_dp83867.h"
-        #include "hpm_dp83867_regs.h"
-    #elif defined __USE_RTL8211
-        #include "hpm_rtl8211.h"
-        #include "hpm_rtl8211_regs.h"
-    #endif
-#else
-    #if defined __USE_DP83848
-        #include "hpm_dp83848.h"
-        #include "hpm_dp83848_regs.h"
-    #elif defined  __USE_RTL8201
-        #include "hpm_rtl8201.h"
-        #include "hpm_rtl8201_regs.h"
-    #else
-        #error no specified Ethernet PHY !!!
-    #endif
-#endif
-
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ENET_SOC_DESC_ADDR_ALIGNMENT)
 __RW enet_rx_desc_t dma_rx_desc_tab[ENET_RX_BUFF_COUNT] ; /* Ethernet Rx DMA Descriptor */
 
@@ -48,17 +28,18 @@ __RW uint8_t tx_buff[ENET_TX_BUFF_COUNT][ENET_TX_BUFF_SIZE]; /* Ethernet Transmi
 
 enet_desc_t desc;
 uint32_t localtime;
+uint8_t mac[ENET_MAC];
 /*---------------------------------------------------------------------*
  * Initialization
  *---------------------------------------------------------------------*/
 static void enet_ptp_init(void)
 {
     enet_ptp_config_t config;
-    enet_ptp_time_t timestamp;
+    enet_ptp_ts_update_t timestamp;
 
     /* initial the ptp function */
     config.ssinc = ENET_ONE_SEC_IN_NANOSEC / clock_get_frequency(ENET_PTP_CLK);
-    config.sub_sec_count_res = enet_ptp_count_res_low;
+    config.timestamp_rollover_mode = enet_ts_dig_rollover_control;
     config.update_method = enet_ptp_time_fine_update;
     config.addend = 0xffffffff;
 
@@ -72,9 +53,10 @@ static void enet_ptp_init(void)
 
 static hpm_stat_t enet_init(ENET_Type *ptr)
 {
-    uint32_t intr = 0;
+    enet_int_config_t int_config = {.int_enable = 0, .int_mask = 0};
     enet_mac_config_t enet_config;
-    #if RGMII == 1
+
+    #if RGMII
         #if __USE_DP83867
         dp83867_config_t phy_config;
         #else
@@ -105,19 +87,22 @@ static hpm_stat_t enet_init(ENET_Type *ptr)
     desc.rx_buff_cfg.count = ENET_RX_BUFF_COUNT;
     desc.rx_buff_cfg.size = ENET_RX_BUFF_SIZE;
 
+    /* Get MAC address */
+    enet_get_mac_address(mac);
+
     /* Set mac0 address */
-    enet_config.mac_addr_high[0] = MAC_ADDR5 << 8 | MAC_ADDR4;
-    enet_config.mac_addr_low[0]  = MAC_ADDR3 << 24 | MAC_ADDR2 << 16 | MAC_ADDR1 << 8 | MAC_ADDR0;
+    enet_config.mac_addr_high[0] = mac[5] << 8 | mac[4];
+    enet_config.mac_addr_low[0]  = mac[3] << 24 | mac[2] << 16 | mac[1] << 8 | mac[0];
     enet_config.valid_max_count  = 1;
 
     /* Set DMA PBL */
     enet_config.dma_pbl = board_enet_get_dma_pbl(ENET);
 
     /* Initialize enet controller */
-    enet_controller_init(ptr, ENET_INF_TYPE, &desc, &enet_config, intr);
+    enet_controller_init(ptr, ENET_INF_TYPE, &desc, &enet_config, &int_config);
 
     /* Initialize phy */
-    #if RGMII == 1
+    #if RGMII
         #if __USE_DP83867
         dp83867_reset(ptr);
         dp83867_basic_mode_default_config(ptr, &phy_config);
@@ -172,25 +157,20 @@ int main(void)
     /* Reset an enet PHY */
     board_reset_enet_phy(ENET);
 
-    /* Set RMII reference clock */
-    #if RGMII == 0
-    board_init_enet_rmii_reference_clock(ENET, BOARD_ENET_RMII_INT_REF_CLK);
-    #endif
+    printf("This is an ethernet demo: PTP Master\n");
+    printf("LwIP Version: %s\n", LWIP_VERSION_STRING);
 
+    #if RGMII
     /* Set RGMII clock delay */
-    #if RGMII == 1
     board_init_enet_rgmii_clock_delay(ENET);
+    #else
+    /* Set RMII reference clock */
+    board_init_enet_rmii_reference_clock(ENET, BOARD_ENET_RMII_INT_REF_CLK);
+    printf("Reference Clock: %s\n", BOARD_ENET_RMII_INT_REF_CLK ? "Internal Clock" : "External Clock");
     #endif
 
     /* Initialize a board timer */
     board_timer_create(LWIP_APP_TIMER_INTERVAL, time_update);
-
-    printf("This is an ethernet demo: PTP Master\n");
-    printf("LwIP Version: %s\n", LWIP_VERSION_STRING);
-
-    #if RGMII == 0
-    printf("Reference Clock: %s\n", BOARD_ENET_RMII_INT_REF_CLK ? "Internal Clock" : "External Clock");
-    #endif
 
     /* Initialize MAC and DMA */
     if (enet_init(ENET) == 0) {

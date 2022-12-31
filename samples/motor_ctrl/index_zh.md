@@ -7,5 +7,4 @@
    bldc_block/README_zh
    bldc_foc/README_zh
    bldc_littlevgl_foc/README_zh
-
 ```

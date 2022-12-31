@@ -5,8 +5,6 @@
  *
  */
 
-#include "hpm_common.h"
-#include "hpm_soc.h"
 #include "hpm_l1c_drv.h"
 #include <assert.h>
 
@@ -21,6 +19,9 @@ static void l1c_op(uint8_t opcode, uint32_t address, uint32_t size)
     register uint32_t i;
     register uint32_t next_address;
     register uint32_t tmp;
+    register uint32_t csr;
+
+    csr = read_clear_csr(CSR_MSTATUS, CSR_MSTATUS_MIE_MASK);
 
 #define CCTL_VERSION (3U << 18)
 
@@ -37,6 +38,8 @@ static void l1c_op(uint8_t opcode, uint32_t address, uint32_t size)
             tmp += HPM_L1C_CACHELINE_SIZE;
         }
     }
+
+    write_csr(CSR_MSTATUS, csr);
 }
 
 void l1c_dc_enable(void)

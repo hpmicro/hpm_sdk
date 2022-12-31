@@ -89,8 +89,8 @@ extern "C" {
 #endif /* __cplusplus */
 
 /*call back func*/
-void bldc_pwm_enable(uint8_t motor_index,uint8_t pin_name);
-void bldc_pwm_disable(uint8_t motor_index,uint8_t pin_name);
+void hpm_mcl_bldc_pwm_enable(uint8_t motor_index, uint8_t pin_name);
+void hpm_mcl_bldc_pwm_disable(uint8_t motor_index, uint8_t pin_name);
 
 #if defined(__cplusplus)
 }

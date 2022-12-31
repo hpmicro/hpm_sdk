@@ -4,7 +4,8 @@
 cmake_minimum_required(VERSION 3.13)
 
 if(NOT DEFINED CONFIG_CODEC)
-set(CONFIG_CODEC "sgtl5000")
+# set(CONFIG_CODEC "sgtl5000")
+# set(CONFIG_CODEC "wm8960")
 endif()
 set(CONFIG_SDMMC 1)
 set(CONFIG_FATFS 1)
@@ -16,7 +17,11 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(decoder_wav)
 
+if(DEFINED CONFIG_CODEC)
+sdk_compile_definitions(-DUSING_CODEC=1)
+else()
 sdk_compile_definitions(-DUSING_DAO=1)
+endif()
 sdk_compile_definitions(-DSD_FATFS_ENABLE=1)
 sdk_compile_definitions(-DFF_CODE_PAGE=437)
 

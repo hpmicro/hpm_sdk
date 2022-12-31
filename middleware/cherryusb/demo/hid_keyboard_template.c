@@ -193,10 +193,12 @@ static struct usbd_endpoint hid_in_ep = {
     .ep_addr = HID_INT_EP
 };
 
+struct usbd_interface intf0;
+
 void hid_keyboard_init(void)
 {
     usbd_desc_register(hid_descriptor);
-    usbd_add_interface(usbd_hid_alloc_intf(hid_keyboard_report_desc, HID_KEYBOARD_REPORT_DESC_SIZE));
+    usbd_add_interface(usbd_hid_init_intf(&intf0, hid_keyboard_report_desc, HID_KEYBOARD_REPORT_DESC_SIZE));
     usbd_add_endpoint(&hid_in_ep);
 
     usbd_initialize();
@@ -205,11 +207,12 @@ void hid_keyboard_init(void)
 void hid_keyboard_test(void)
 {
     uint8_t sendbuffer[8] = { 0x00, 0x00, HID_KBD_USAGE_A, 0x00, 0x00, 0x00, 0x00, 0x00 }; //A
-    hid_state = HID_STATE_BUSY;
+
     int ret = usbd_ep_start_write(HID_INT_EP, sendbuffer, 8);
     if (ret < 0) {
         return;
     }
+    hid_state = HID_STATE_BUSY;
     while (hid_state == HID_STATE_BUSY) {
     }
 }

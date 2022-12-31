@@ -86,4 +86,11 @@ Board overall hpm6300evk
 
 | Function | Position |
 | -------- | -------- |
-| DCA0.OUT | J26[11]  |
+| DAC0.OUT | J26[11]  |
+
+- PWM Pin
+
+| Function | Position |
+| -------- | -------- |
+| PWM2.P0 | J26[14]  |
+| PWM2.P1 | J26[13]  |

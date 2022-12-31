@@ -123,6 +123,7 @@ typedef struct dma_handshake_config {
     uint32_t dst;
     uint32_t src;
     uint32_t size_in_byte;
+    uint8_t data_width;            /* data width, value defined by DMA_TRANSFER_WIDTH_xxx */
     uint8_t ch_index;
     bool dst_fixed;
     bool src_fixed;

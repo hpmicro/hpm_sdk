@@ -50,8 +50,14 @@ def file_to_be_excluded(f):
             return True
     return False
 
+def fix_path(p):
+    return re.sub(r'\\', r'/', os.path.realpath(os.path.expanduser(p)))
+
 def get_relpath(f, base):
-    return re.sub(r'\\', r'/', os.path.relpath(f, base))
+    try:
+        return os.path.relpath(f, base)
+    except ValueError:
+        return f
 
 def get_sdk_fullpath(f, sdk_base):
     # replace real path with sdk base variable to be defined in SES
@@ -63,15 +69,16 @@ def is_sdk_file(f, sdk_base):
 
 def get_include_path(config, sdk_base, out_dir):
     l = ["$(StudioDir)/include"]
-    for i in config["target"]["includes"].split(","):
-        i = i.strip()
-        if "gnu" in i or len(i) == 0:
+    for d in config["target"]["includes"].split(","):
+        d = d.strip()
+        if len(d) == 0:
             continue
-        i = os.path.realpath(i)
-        if is_sdk_file(i, sdk_base):
-            inc_path = get_sdk_fullpath(i, sdk_base)
+        d = fix_path(d)
+        if is_sdk_file(d, sdk_base):
+            inc_path = get_sdk_fullpath(d, sdk_base)
         else:
-            inc_path = get_relpath(i, out_dir)
+            inc_path = get_relpath(d, out_dir)
+        inc_path = re.sub(r'\\', '/', inc_path)
         l.append(inc_path)
     return l
 
@@ -115,10 +122,13 @@ def populate_file_nodes(root, sdk_base, project_dir, out_dir, level = 1):
             for f in root[n]:
                 if is_sdk_file(f, sdk_base):
                     node += "%s<file file_name=\"%s\">\n" % (" " * (level * 2), get_sdk_fullpath(f, sdk_base))
-                    obj = re.sub(re.escape(sdk_base + os.sep), r'', f)
+                    obj = re.sub(re.escape(sdk_base + '/'), r'', f)
                 else:
                     node += "%s<file file_name=\"%s\">\n" % (" " * (level * 2), get_relpath(f, out_dir))
                     obj = re.sub(re.escape(project_dir), r'app', f)
+                    if obj == f:
+                        # deal with drive letter of Windows path
+                        obj = re.sub(r'^\w:', '', f)
                 obj = re.sub(r'\\', r'/', obj)
                 node += "%s<configuration Name=\"Common\" build_object_file_name=\"%s$(OBJ)\"/>\n" % (" " * ((level + 1) * 2), "/".join(["$(IntDir)", obj]))
                 node += "%s</file>\n" % (" " * (level * 2))
@@ -128,35 +138,50 @@ def populate_file_nodes(root, sdk_base, project_dir, out_dir, level = 1):
             node += "%s</folder>\n" % (" " * (level * 2))
     return node
 
+def get_app_common_path(file_full_path, project_dir):
+    app_common_path = os.path.commonprefix([project_dir, file_full_path])
+    if len(app_common_path) == 0:
+        app_common_path = project_dir
+    # remove tailing "/"
+    return re.sub(r'/$', '', app_common_path)
+
 def generate_file_structure(files, sdk_base, out_dir, project_dir):
     f_tree = {}
+    app_common_dir = None
     # process all files
     for f in files:
         f = f.strip()
-        if file_to_be_excluded(f):
-            continue
         if len(f) == 0:
             continue
-        f = os.path.realpath(f)
-        m = re.sub(re.escape(project_dir), '', f)
-        if m == f:
+        if file_to_be_excluded(f):
+            continue
+        f = fix_path(f)
+        if is_sdk_file(f, sdk_base):
             # sdk source
             ses_file = re.sub(r'\\', r'/', get_sdk_fullpath(f, sdk_base))
         else:
             # app source
-            m = re.sub(r'\\', r'/', m)
+            if app_common_dir is None:
+                d = get_app_common_path(f, project_dir)
+                if d != project_dir:
+                    app_common_dir = d
+                else:
+                    app_common_dir = project_dir
+            m = re.sub(re.escape(app_common_dir), '', f)
+            # deal with drive letter of Windows path
+            m = re.sub(r'^\w:', '', m)
             ses_file = re.sub(r'^', r'application', m)
         update_file_tree(ses_file, f, f_tree)
 
     # generate ses project xml content
-    nodes = populate_file_nodes(f_tree, sdk_base, project_dir, out_dir, level = 1)
+    nodes = populate_file_nodes(f_tree, sdk_base, app_common_dir, out_dir, level = 1)
     return nodes
 
 def generate_ses_project(config, out_dir=".", project_dir = None):
     files = config["target"]["sources"].split(",")
-    sdk_base = os.path.realpath(config["target"]["sdk_base"])
-    out_dir = os.path.realpath(out_dir)
-    project_dir = os.path.realpath(project_dir)
+    sdk_base = fix_path(config["target"]["sdk_base"])
+    out_dir = fix_path(out_dir)
+    project_dir = fix_path(project_dir)
 
     config["target"]["includes"] = get_include_path(config, sdk_base, out_dir)
     config["target"]["defines"] = get_definitions(config["target"]["defines"])

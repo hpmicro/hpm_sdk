@@ -33,7 +33,7 @@ typedef struct
     float32_t       intercept;    // Intercept
     const float32_t *dualcoe;     // Dual coefficients
     const float32_t *vec;         // Support vectors
-    const int32_t   *class;       // The two SVM classes
+    const int32_t   *classes;       // The two SVM classes
 } riscv_dsp_svm_linear_f32_t;
 
 /**
@@ -53,7 +53,7 @@ typedef struct
     float32_t       intercept;    // Intercept
     const float32_t *dualcoe;     // Dual coefficients
     const float32_t *vec;         // Support vectors
-    const int32_t   *class;       // The two SVM classes
+    const int32_t   *classes;       // The two SVM classes
     float32_t       coef0;        // Independant constant
     float32_t       gamma;        //  Gamma factor */
 } riscv_dsp_svm_sigmoid_f32_t;
@@ -74,7 +74,7 @@ typedef struct
     float32_t       intercept;    // Intercept
     const float32_t *dualcoe;     // Dual coefficients
     const float32_t *vec;         // Support vectors
-    const int32_t   *class;       // The two SVM classes
+    const int32_t   *classes;       // The two SVM classes
     float32_t       gamma;        //  Gamma factor */
 } riscv_dsp_svm_rbf_f32_t;
 /**
@@ -95,7 +95,7 @@ typedef struct
     float32_t       intercept;    // Intercept
     const float32_t *dualcoe;     // Dual coefficients
     const float32_t *vec;         // Support vectors
-    const int32_t   *class;       // The two SVM classes
+    const int32_t   *classes;       // The two SVM classes
     int32_t         exponent;     // Polynomial exponent
     float32_t       coef0;        // Independant constant
     float32_t       gamma;        //  Gamma factor */

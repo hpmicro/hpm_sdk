@@ -97,7 +97,7 @@
 /* GNUC */
 #elif defined(__GNUC__)
 
-#define MEM_BARRIER() __asm("fence.i");
+#define MEM_BARRIER() __asm("fence rw, rw");
 
 #ifndef RL_PACKED_BEGIN
 #define RL_PACKED_BEGIN

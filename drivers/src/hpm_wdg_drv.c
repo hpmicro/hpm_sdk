@@ -124,10 +124,10 @@ interrupt_interval_t wdg_convert_interrupt_interval_from_us(const uint32_t src_f
         src_clk_one_tick_in_ns = 1U;
     }
 
-    uint32_t interrupt_interval_ticks = ((uint64_t) interval_us * 1000UL) / src_clk_one_tick_in_ns;
+    int32_t interrupt_interval_ticks = ((int64_t) interval_us * 1000L) / src_clk_one_tick_in_ns;
 
     for (uint32_t i = 0; i < ARRAY_SIZE(k_interrupt_interval_map); i++) {
-        if (abs(interrupt_interval_ticks - k_interrupt_interval_map[i].top) <= DIFF_MAX) {
+        if (abs(interrupt_interval_ticks - (int32_t) k_interrupt_interval_map[i].top) <= DIFF_MAX) {
             interrupt_interval = k_interrupt_interval_map[i].interval;
             break;
         }

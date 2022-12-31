@@ -5,27 +5,29 @@
    :maxdepth: 3
    :numbered:
 
-   hello_world/README
    audio_codec/index
+   cherryusb/index
    coremark/README
-   touch_panel/README
-   rtos/index
+   dhrystone/README
+   dma_manager/README
    drivers/index
-   motor_ctrl/index
-   jpeg/index
-   tinycrypt/index
-   multicore/index
-   rom_api/index
-   tflm/README
-   tinyusb/index
-   littlevgl/index
-   tinyuf2/README
-   rgb_led/README
+   dsp/README
+   hello_world/README
    hpm_math/index
+   jpeg/index
+   littlevgl/index
    lwip/index
    memstress/index
-   dma_manager/README
+   motor_ctrl/index
+   multicore/index
+   power_mode_switch/README
+   rgb_led/README
+   rom_api/index
+   rtos/index
    segger_rtt/README
-   cherryusb/index
-   dhrystone/README
+   tflm/index
+   tinycrypt/index
+   tinyuf2/README
+   tinyusb/index
+   touch_panel/README
 :::

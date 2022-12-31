@@ -117,9 +117,7 @@ void run_test_mode()
      * lcdc needs to be initialized with one layer at least for test mode
      */
     lcdc_get_default_config(LCD, &config);
-    config.resolution_x = BOARD_LCD_WIDTH;
-    config.resolution_y = BOARD_LCD_HEIGHT;
-
+    board_panel_para_to_lcdc(&config);
     lcdc_init(LCD, &config);
 
     lcdc_get_default_layer_config(LCD, &dummy_layer, PIXEL_FORMAT, layer_index);
@@ -201,16 +199,7 @@ void run_layer_change(void)
     generate_color_table();
     lcdc_layer_config_t *layer;
     lcdc_get_default_config(LCD, &config);
-
-    config.resolution_x = BOARD_LCD_WIDTH;
-    config.resolution_y = BOARD_LCD_HEIGHT;
-    config.vsync.back_porch_pulse = 23;
-    config.vsync.front_porch_pulse = 10;
-    config.vsync.pulse_width = 3;
-    config.hsync.back_porch_pulse = 46;
-    config.hsync.front_porch_pulse = 50;
-    config.hsync.pulse_width = 10;
-
+    board_panel_para_to_lcdc(&config);
     lcdc_init(LCD, &config);
     lcdc_enable_interrupt(LCD, LCDC_INT_EN_DMA_DONE_SET(TEST_LAYER_DONE_MASK));
 

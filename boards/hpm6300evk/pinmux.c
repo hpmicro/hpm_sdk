@@ -28,6 +28,9 @@ void init_uart_pins(UART_Type *ptr)
     } else if (ptr == HPM_UART2) {
         HPM_IOC->PAD[IOC_PAD_PC26].FUNC_CTL = IOC_PC26_FUNC_CTL_UART2_TXD;
         HPM_IOC->PAD[IOC_PAD_PC27].FUNC_CTL = IOC_PC27_FUNC_CTL_UART2_RXD;
+    } else if (ptr == HPM_PUART) {
+        HPM_PIOC->PAD[IOC_PAD_PY07].FUNC_CTL = IOC_PY07_FUNC_CTL_PUART_RXD;
+        HPM_PIOC->PAD[IOC_PAD_PY06].FUNC_CTL = IOC_PY06_FUNC_CTL_PUART_TXD;
     }
 }
 
@@ -108,6 +111,43 @@ void init_sdram_pins(void)
     HPM_IOC->PAD[IOC_PAD_PB29].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);
     HPM_IOC->PAD[IOC_PAD_PB30].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);
     HPM_IOC->PAD[IOC_PAD_PB31].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);
+}
+
+void init_sram_pins(void)
+{
+                                                                                /* Non-MUX */         /* MUX */
+    HPM_IOC->PAD[IOC_PAD_PB18].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* A0 */            /* A16 */
+    HPM_IOC->PAD[IOC_PAD_PB19].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* A1 */            /* A17 */
+    HPM_IOC->PAD[IOC_PAD_PB20].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* A2 */            /* A18 */
+    HPM_IOC->PAD[IOC_PAD_PB21].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* A3 */            /* A19 */
+    HPM_IOC->PAD[IOC_PAD_PB31].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* A4 */            /* A20 */
+    HPM_IOC->PAD[IOC_PAD_PB30].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* A5 */            /* A21 */
+    HPM_IOC->PAD[IOC_PAD_PB29].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* A6 */            /* A22 */
+    HPM_IOC->PAD[IOC_PAD_PB28].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* A7 */            /* A23 */
+
+    HPM_IOC->PAD[IOC_PAD_PB00].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* D0 */            /* AD0 */
+    HPM_IOC->PAD[IOC_PAD_PA31].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* D1 */            /* AD1 */
+    HPM_IOC->PAD[IOC_PAD_PA30].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* D2 */            /* AD2 */
+    HPM_IOC->PAD[IOC_PAD_PA29].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* D3 */            /* AD3 */
+    HPM_IOC->PAD[IOC_PAD_PA28].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* D4 */            /* AD4 */
+    HPM_IOC->PAD[IOC_PAD_PA27].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* D5 */            /* AD5 */
+    HPM_IOC->PAD[IOC_PAD_PA26].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* D6 */            /* AD6 */
+    HPM_IOC->PAD[IOC_PAD_PA25].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* D7 */            /* AD7 */
+    HPM_IOC->PAD[IOC_PAD_PB02].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* D8 */            /* AD8 */
+    HPM_IOC->PAD[IOC_PAD_PB03].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* D9 */            /* AD9 */
+    HPM_IOC->PAD[IOC_PAD_PB04].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* D10 */           /* AD10 */
+    HPM_IOC->PAD[IOC_PAD_PB05].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* D11 */           /* AD11 */
+    HPM_IOC->PAD[IOC_PAD_PB06].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* D12 */           /* AD12 */
+    HPM_IOC->PAD[IOC_PAD_PB07].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* D13 */           /* AD13 */
+    HPM_IOC->PAD[IOC_PAD_PB08].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* D14 */           /* AD14 */
+    HPM_IOC->PAD[IOC_PAD_PB09].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* D15 */           /* AD15 */
+
+    HPM_IOC->PAD[IOC_PAD_PA23].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* #CE */
+    HPM_IOC->PAD[IOC_PAD_PB24].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* #OE */
+    HPM_IOC->PAD[IOC_PAD_PB25].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* #WE */
+    HPM_IOC->PAD[IOC_PAD_PB01].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* #UB */
+    HPM_IOC->PAD[IOC_PAD_PB10].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* #LB */
+    HPM_IOC->PAD[IOC_PAD_PB16].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);    /* #ADV */
 }
 
 void init_gpio_pins(void)
@@ -287,11 +327,7 @@ void init_clk_obs_pins(void)
 
 void init_led_pins(void)
 {
-    /* Pull up */
-    uint32_t pad_ctl = IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(0);
-
     HPM_IOC->PAD[IOC_PAD_PA07].FUNC_CTL = IOC_PA07_FUNC_CTL_GPIO_A_07;
-    HPM_IOC->PAD[IOC_PAD_PA07].PAD_CTL = pad_ctl;
 }
 
 void init_dac_pins(DAC_Type *ptr)

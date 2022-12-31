@@ -70,50 +70,28 @@ static void yuyv2rgb565(void *input, void *output, uint32_t len)
     }
 }
 
-/****************************************************************************
- * Name: usbh_video_devno_alloc
- *
- * Description:
- *   Allocate a unique /dev/video[n] minor number in the range 0-31.
- *
- ****************************************************************************/
-
 static int usbh_video_devno_alloc(struct usbh_video *video_class)
 {
-    size_t flags;
     int devno;
 
-    flags = usb_osal_enter_critical_section();
     for (devno = 0; devno < 32; devno++) {
         uint32_t bitno = 1 << devno;
         if ((g_devinuse & bitno) == 0) {
             g_devinuse |= bitno;
             video_class->minor = devno;
-            usb_osal_leave_critical_section(flags);
             return 0;
         }
     }
 
-    usb_osal_leave_critical_section(flags);
     return -EMFILE;
 }
-
-/****************************************************************************
- * Name: usbh_video_devno_free
- *
- * Description:
- *   Free a /dev/video[n] minor number so that it can be used.
- *
- ****************************************************************************/
 
 static void usbh_video_devno_free(struct usbh_video *video_class)
 {
     int devno = video_class->minor;
 
     if (devno >= 0 && devno < 32) {
-        size_t flags = usb_osal_enter_critical_section();
         g_devinuse &= ~(1 << devno);
-        usb_osal_leave_critical_section(flags);
     }
 }
 
@@ -248,9 +226,32 @@ int usbh_video_close(struct usbh_video *video_class)
 
 void usbh_video_list_info(struct usbh_video *video_class)
 {
+    struct usbh_hubport *hport;
+    struct usb_endpoint_descriptor *ep_desc;
+    uint8_t mult;
+    uint16_t mps;
+
     USB_LOG_INFO("============= Video device information ===================\r\n");
     USB_LOG_INFO("bcdVDC:%04x\r\n", video_class->bcdVDC);
     USB_LOG_INFO("Num of altsettings:%02x\r\n", video_class->num_of_intf_altsettings);
+
+    hport = video_class->hport;
+
+    for (uint8_t i = 1; i < video_class->num_of_intf_altsettings; i++) {
+        ep_desc = &video_class->hport->config.intf[video_class->data_intf].altsetting[i].ep[0].ep_desc;
+
+        mult = (ep_desc->wMaxPacketSize & USB_MAXPACKETSIZE_ADDITIONAL_TRANSCATION_MASK) >> USB_MAXPACKETSIZE_ADDITIONAL_TRANSCATION_SHIFT;
+        mps = ep_desc->wMaxPacketSize & USB_MAXPACKETSIZE_MASK;
+
+        USB_LOG_INFO("Altsetting:%u, Ep=%02x Attr=%02u Mps=%d Interval=%02u Mult=%02u\r\n",
+                     i,
+                     ep_desc->bEndpointAddress,
+                     ep_desc->bmAttributes,
+                     mps,
+                     ep_desc->bInterval,
+                     mult);
+    }
+
     USB_LOG_INFO("bNumFormats:%u\r\n", video_class->num_of_formats);
     for (uint8_t i = 0; i < video_class->num_of_formats; i++) {
         USB_LOG_INFO("  FormatIndex:%u\r\n", i + 1);
@@ -444,23 +445,18 @@ void usbh_videostreaming_parse_mjpeg(struct usbh_urb *urb, struct usbh_videostre
             uint8_t errorBit             : 1U;
             uint8_t endOfHeader          : 1U;
         */
-        if (iso_packet[i].actual_length == 0) { /* skip */
-            stream->bufoffset = 0;
+        if (iso_packet[i].actual_length == 0) { /* skip no data */
             continue;
         }
-        if (iso_packet[i].actual_length < iso_packet[i].transfer_buffer[0]) {
-            stream->bufoffset = 0;
-            continue;
+        if (iso_packet[i].actual_length < iso_packet[i].transfer_buffer[0]) { /* do not be illegal */
+            while (1) {
+            }
         }
-        if ((iso_packet[i].transfer_buffer[0] > 12) || (iso_packet[i].transfer_buffer[0] == 0)) {
-            stream->bufoffset = 0;
-            continue;
+        if ((iso_packet[i].transfer_buffer[0] > 12) || (iso_packet[i].transfer_buffer[0] == 0)) { /* do not be illegal */
+            while (1) {
+            }
         }
-        if (iso_packet[i].transfer_buffer[1] & (1 << 6)) {
-            stream->bufoffset = 0;
-            continue;
-        }
-        if (iso_packet[i].actual_length == iso_packet[i].transfer_buffer[0]) { /* skip frame header */
+        if (iso_packet[i].transfer_buffer[1] & (1 << 6)) { /* error bit, re-receive */
             stream->bufoffset = 0;
             continue;
         }
@@ -513,23 +509,18 @@ void usbh_videostreaming_parse_yuyv2rgb565(struct usbh_urb *urb, struct usbh_vid
             uint8_t endOfHeader          : 1U;
         */
 
-        if (iso_packet[i].actual_length == 0) { /* skip */
-            stream->bufoffset = 0;
+        if (iso_packet[i].actual_length == 0) { /* skip no data */
             continue;
         }
-        if (iso_packet[i].actual_length < iso_packet[i].transfer_buffer[0]) {
-            stream->bufoffset = 0;
-            continue;
+        if (iso_packet[i].actual_length < iso_packet[i].transfer_buffer[0]) { /* do not be illegal */
+            while (1) {
+            }
         }
-        if ((iso_packet[i].transfer_buffer[0] > 12) || (iso_packet[i].transfer_buffer[0] == 0)) {
-            stream->bufoffset = 0;
-            continue;
+        if ((iso_packet[i].transfer_buffer[0] > 12) || (iso_packet[i].transfer_buffer[0] == 0)) { /* do not be illegal */
+            while (1) {
+            }
         }
-        if (iso_packet[i].transfer_buffer[1] & (1 << 6)) {
-            stream->bufoffset = 0;
-            continue;
-        }
-        if (iso_packet[i].actual_length == iso_packet[i].transfer_buffer[0]) { /* skip frame header */
+        if (iso_packet[i].transfer_buffer[1] & (1 << 6)) { /* error bit, re-receive */
             stream->bufoffset = 0;
             continue;
         }

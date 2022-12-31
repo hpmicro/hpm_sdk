@@ -11,7 +11,8 @@ set(CONFIG_HPM_TOUCH 1)
 set(CONFIG_LV_INDEV 1)
 
 if(NOT DEFINED CONFIG_CODEC)
-set(CONFIG_CODEC "sgtl5000")
+# set(CONFIG_CODEC "sgtl5000")
+# set(CONFIG_CODEC "wm8960")
 endif()
 set(CONFIG_SDMMC 1)
 set(CONFIG_FATFS 1)
@@ -27,12 +28,17 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(lvgl_audio_player)
 
+if(DEFINED CONFIG_CODEC)
+sdk_compile_definitions(-DUSING_CODEC=1)
+else()
+sdk_compile_definitions(-DUSING_DAO=1)
+endif()
 sdk_compile_definitions(-DLV_USE_DEMO_MUSIC=1)
 sdk_compile_definitions(-DINIT_EXT_RAM_FOR_DATA=1)
 sdk_compile_definitions(-DCONFIG_LV_HAS_EXTRA_CONFIG="lv_app_conf.h")
 sdk_compile_definitions(-DSD_FATFS_ENABLE=1)
 sdk_compile_definitions(-DFF_CODE_PAGE=936)
-sdk_compile_definitions(-DUSING_DAO=1)
+
 
 sdk_inc(../common/inc)
 sdk_app_src(../common/src/audio_codec_common.c)

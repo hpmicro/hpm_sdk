@@ -13,7 +13,12 @@
 #define TEST_SPI           BOARD_APP_SPI_BASE
 #define TEST_SPI_IRQ       BOARD_APP_SPI_IRQ
 #define TEST_SPI_CLK_NAME  BOARD_APP_SPI_CLK_NAME
+/* The frequency of SCLK should adapt to SPI interrupt response time, otherwise it may cause overrun or underrun */
+#ifndef EXAMPLE_SPI_SCLK_FREQ
 #define TEST_SPI_SCLK_FREQ BOARD_APP_SPI_SCLK_FREQ
+#else
+#define TEST_SPI_SCLK_FREQ EXAMPLE_SPI_SCLK_FREQ
+#endif
 
 volatile bool spi_transfer_done;
 

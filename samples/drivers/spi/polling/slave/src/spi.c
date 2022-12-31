@@ -111,8 +111,6 @@ void spi_slave_frame_dump(uint32_t datalen,
 
 int main(void)
 {
-    uint8_t cmd = 0;
-    uint32_t addr = 0;
     uint8_t wbuff[10] = {0xb0, 0xb1, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6, 0xb7, 0xb8, 0xb9};
     uint8_t rbuff[10] = {0};
     spi_format_config_t format_config = {0};
@@ -128,9 +126,6 @@ int main(void)
     /* set SPI format config for master */
     spi_slave_get_default_format_config(&format_config);
     format_config.common_config.data_len_in_bits = BOARD_APP_SPI_DATA_LEN_IN_BITS;
-    format_config.common_config.data_merge = false;
-    format_config.common_config.mosi_bidir = false;
-    format_config.common_config.lsb = false;
     format_config.common_config.mode = spi_slave_mode;
     format_config.common_config.cpol = spi_sclk_high_idle;
     format_config.common_config.cpha = spi_sclk_sampling_even_clk_edges;
@@ -139,10 +134,9 @@ int main(void)
 
     /* set SPI control config for master */
     spi_slave_get_default_control_config(&control_config);
-    control_config.slave_config.slave_data_only = false;
-    control_config.common_config.trans_mode = spi_trans_read_dummy_write;
-    control_config.common_config.data_phase_fmt = spi_single_io_mode;
-    control_config.common_config.dummy_cnt = spi_dummy_count_1;
+    control_config.slave_config.slave_data_only = true; /* raw data mode for slave */
+    /* data only mode, trans_mode have to be spi_trans_write_read_together */
+    control_config.common_config.trans_mode = spi_trans_write_read_together;
     spi_transfer_mode_print(&control_config);
 
     printf("SPI-Slave transfer waits.\n");
@@ -150,14 +144,14 @@ int main(void)
     do {
         stat = spi_transfer(BOARD_APP_SPI_BASE,
                         &control_config,
-                        &cmd, &addr,
+                        NULL, NULL,
                         (uint8_t *)wbuff, ARRAY_SIZE(wbuff), (uint8_t *)rbuff, ARRAY_SIZE(rbuff));
     } while (stat == status_timeout);
 
     if (stat == status_success) {
         spi_slave_frame_dump(BOARD_APP_SPI_DATA_LEN_IN_BITS,
                                 &control_config,
-                                &cmd,
+                                NULL,
                                 (uint8_t *)wbuff, ARRAY_SIZE(wbuff), (uint8_t *)rbuff, ARRAY_SIZE(rbuff));
 
         printf("SPI-Slave transfer ends.\n");

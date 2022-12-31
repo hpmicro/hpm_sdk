@@ -11,13 +11,16 @@
 
 #include "lwip/err.h"
 #include "lwip/netif.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 /* Exported functions---------------------------------------------------------*/
 err_t ethernetif_init(struct netif *netif);
+#if !NO_SYS
+void ethernetif_input(void *pvParameters);
+#else
 err_t ethernetif_input(struct netif *netif);
+#endif
 void User_notification(struct netif *netif);
 #ifdef __cplusplus /* __cplusplus */
 }

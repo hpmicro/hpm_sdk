@@ -12,17 +12,18 @@ No special settings are required
 
 ## Running the example
 
-When the example runs successfully, the board shows the following menu:
+When the example runs successfully, the board shows the following menu, please input 1, 2, 3 or 4 for testing.
 
 ```shell
+
 -----------------------------------------------------------------------------------
 *                                                                                 *
 *                   SD Card Low-level test demo                                   *
 *                                                                                 *
 *        1. Write & Read the last block                                           *
 *        2. Write & Read the last 1024 blocks                                     *
+*        3. Hot plug test                                                         *
+*        4. SD Stress test (Write / Read 200MBytes)                               *
 *                                                                                 *
 *---------------------------------------------------------------------------------*
-
-
 ```

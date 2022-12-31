@@ -71,7 +71,7 @@ typedef struct {
 
 /* Bitfield definition for register: STATUS */
 /*
- * FIR_OV (ROI)
+ * FIR_OV (RO)
  *
  * FIR Overflow err
  */
@@ -80,7 +80,7 @@ typedef struct {
 #define FFA_STATUS_FIR_OV_GET(x) (((uint32_t)(x) & FFA_STATUS_FIR_OV_MASK) >> FFA_STATUS_FIR_OV_SHIFT)
 
 /*
- * FFT_OV (ROI)
+ * FFT_OV (RO)
  *
  * FFT Overflow Err
  */
@@ -89,7 +89,7 @@ typedef struct {
 #define FFA_STATUS_FFT_OV_GET(x) (((uint32_t)(x) & FFA_STATUS_FFT_OV_MASK) >> FFA_STATUS_FFT_OV_SHIFT)
 
 /*
- * WR_ERR (ROI)
+ * WR_ERR (RO)
  *
  * AXI Data Write Error
  */
@@ -98,7 +98,7 @@ typedef struct {
 #define FFA_STATUS_WR_ERR_GET(x) (((uint32_t)(x) & FFA_STATUS_WR_ERR_MASK) >> FFA_STATUS_WR_ERR_SHIFT)
 
 /*
- * RD_NXT_ERR (ROI)
+ * RD_NXT_ERR (RO)
  *
  * AXI Read Bus Error for NXT DATA
  */
@@ -107,7 +107,7 @@ typedef struct {
 #define FFA_STATUS_RD_NXT_ERR_GET(x) (((uint32_t)(x) & FFA_STATUS_RD_NXT_ERR_MASK) >> FFA_STATUS_RD_NXT_ERR_SHIFT)
 
 /*
- * RD_ERR (ROI)
+ * RD_ERR (RO)
  *
  * AXI Data Read Error
  */
@@ -116,7 +116,7 @@ typedef struct {
 #define FFA_STATUS_RD_ERR_GET(x) (((uint32_t)(x) & FFA_STATUS_RD_ERR_MASK) >> FFA_STATUS_RD_ERR_SHIFT)
 
 /*
- * NXT_CMD_RD_DONE (ROI)
+ * NXT_CMD_RD_DONE (RO)
  *
  * Indicate that next command sequence is already read into the module.
  */
@@ -125,7 +125,7 @@ typedef struct {
 #define FFA_STATUS_NXT_CMD_RD_DONE_GET(x) (((uint32_t)(x) & FFA_STATUS_NXT_CMD_RD_DONE_MASK) >> FFA_STATUS_NXT_CMD_RD_DONE_SHIFT)
 
 /*
- * OP_CMD_DONE (ROI)
+ * OP_CMD_DONE (RO)
  *
  * Indicate that operation cmd is done, and data are available in system memory.
  */

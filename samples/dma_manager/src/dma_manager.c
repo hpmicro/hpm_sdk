@@ -35,7 +35,6 @@ void dma_manager_test_teardown(void);
 
 int main(void)
 {
-    int u;
     board_init();
     board_init_led_pins();
 
@@ -99,7 +98,7 @@ void dma_manager_test_setup(void)
         hpm_dma_resource_t *resource = &dma_resource_pools[i];
         test_ctx = &s_dma_test_ctx[i];
         if (dma_manager_request_resource(resource) == status_success) {
-            dma_manager_install_interrupt_callback(resource, test_ctx->callback, &test_ctx->has_done);
+            dma_manager_install_interrupt_callback(resource, test_ctx->callback, (void *)&test_ctx->has_done);
             dma_manager_enable_dma_interrupt(resource, 1);
         }
     }
@@ -115,8 +114,8 @@ bool dma_manager_test_execute(void)
 
         uint32_t burst_len = 1UL << DMA_SOC_TRANSFER_WIDTH_MAX(resource->base);
         dma_start_memcpy(resource->base, resource->channel,
-                (uint32_t)core_local_mem_to_sys_address(BOARD_RUNNING_CORE, test_ctx->dst),
-                (uint32_t)core_local_mem_to_sys_address(BOARD_RUNNING_CORE, test_ctx->src),
+                (uint32_t)core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)test_ctx->dst),
+                (uint32_t)core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)test_ctx->src),
                 sizeof(test_ctx->src), burst_len);
 
     }

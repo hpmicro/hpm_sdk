@@ -9,6 +9,8 @@
 #include "hpm_pdma_drv.h"
 
 #define PDMA_SCALE_FRAC_BITS 12
+/* x_offset might need to be adjusted when scaling YUV format */
+#define PDMA_YUV_SCALE_DEFAULT_X_OFFSET (0x800)
 
 void pdma_set_block_size(PDMA_Type *ptr, pdma_blocksize_t size)
 {
@@ -59,7 +61,11 @@ void pdma_get_default_config(PDMA_Type *ptr, pdma_config_t *config, display_pixe
     config->enable_plane = pdma_plane_src;
 
     if (display_pixel_format_is_yuv_format(pixel_format)) {
-        config->byteorder = display_byteorder_a0a1a2a3; /* change yuv fromat output byte order to YUYV format */
+        if (pixel_format == display_pixel_format_ycbcr422) {
+            config->byteorder = display_byteorder_a2a3a0a1;
+        } else {
+            config->byteorder = display_byteorder_a0a1a2a3;
+        }
     } else {
         config->byteorder = display_byteorder_a3a2a1a0;
     }
@@ -241,7 +247,7 @@ void pdma_init(PDMA_Type *ptr, pdma_config_t *config)
     ptr->CTRL = PDMA_CTRL_PACK_DIR_SET(config->byteorder) | mask;
 }
 
-static uint32_t pdma_pixel_format(display_pixel_format_t display_format)
+static uint32_t pdma_pixel_format(display_pixel_format_t display_format, bool is_out_plane)
 {
     switch (display_format) {
     case display_pixel_format_rgb565:
@@ -251,7 +257,7 @@ static uint32_t pdma_pixel_format(display_pixel_format_t display_format)
     case display_pixel_format_yuv422:
         return 0x13;
     case display_pixel_format_ycbcr422:
-        return 0x13;
+        return is_out_plane ? 0x12 : 0x13;
     default:
         return 0;
     }
@@ -274,7 +280,7 @@ void pdma_config_planes(PDMA_Type *ptr, void *plane_src_config, void *plane_dst_
     if (plane_dst != NULL) {
         assert((plane_dst->bypass_colorspace_conversion) || (yuv2rgb != NULL));
     }
-    if ((plane_src != NULL) || (plane_dst != NULL)) {
+    if ((plane_src != NULL) && (plane_dst != NULL)) {
         assert(!(display_pixel_format_is_yuv_format(plane_src->pixel_format) && display_pixel_format_is_yuv_format(plane_dst->pixel_format))
                 || (plane_src->pixel_format == plane_dst->pixel_format));
     }
@@ -285,7 +291,7 @@ void pdma_config_planes(PDMA_Type *ptr, void *plane_src_config, void *plane_dst_
         } else {
             pitch = plane_src->pitch;
         }
-        format = pdma_pixel_format(plane_src->pixel_format);
+        format = pdma_pixel_format(plane_src->pixel_format, false);
         ptr->PS[pdma_plane_src].BUF = PDMA_PS_BUF_ADDR_SET((uint32_t) plane_src->buffer);
         ptr->PS[pdma_plane_src].PITCH = PDMA_PS_PITCH_BYTELEN_SET(pitch);
         ptr->PS[pdma_plane_src].BKGD = PDMA_PS_BKGD_COLOR_SET(plane_src->background);
@@ -317,7 +323,7 @@ void pdma_config_planes(PDMA_Type *ptr, void *plane_src_config, void *plane_dst_
         } else {
             pitch = plane_dst->pitch;
         }
-        format = pdma_pixel_format(plane_dst->pixel_format);
+        format = pdma_pixel_format(plane_dst->pixel_format, false);
         ptr->PS[pdma_plane_dst].BUF = PDMA_PS_BUF_ADDR_SET((uint32_t) plane_dst->buffer);
         ptr->PS[pdma_plane_dst].PITCH = PDMA_PS_PITCH_BYTELEN_SET(pitch);
         ptr->PS[pdma_plane_dst].BKGD = PDMA_PS_BKGD_COLOR_SET(plane_dst->background);
@@ -365,7 +371,7 @@ void pdma_config_output(PDMA_Type *ptr, pdma_output_config_t *config)
     } else {
         pitch = config->pitch;
     }
-    format = pdma_pixel_format(config->pixel_format);
+    format = pdma_pixel_format(config->pixel_format, true);
     ptr->OUT_BUF = PDMA_OUT_BUF_ADDR_SET((uint32_t) config->buffer);
     ptr->OUT_PITCH = PDMA_OUT_PITCH_BYTELEN_SET(pitch);
     ptr->OUT_LRC = PDMA_OUT_LRC_X_SET(config->width)
@@ -440,7 +446,7 @@ hpm_stat_t pdma_fill_color(PDMA_Type *ptr, uint32_t dst, uint32_t dst_width,
     display_yuv2rgb_coef_t yuv2rgb_coef;
     pdma_output_config_t output;
 
-    if (((display_pixel_format_is_yuv_format(format)) && (width & 2))
+    if (((display_pixel_format_is_yuv_format(format)) && (width & 1))
         || !(width > 8 || height > 8)) {
         return status_invalid_argument;
     }
@@ -509,8 +515,8 @@ hpm_stat_t pdma_flip_rotate(PDMA_Type *ptr, uint32_t dst, uint32_t dst_width,
     pdma_output_config_t output;
 
     if ((width + x > dst_width)
-        /* YUV422 requires width to be 2-byte aligned */
-        || ((display_pixel_format_is_yuv_format(format)) && (width & 2))
+        /* YUV422 requires width to be 2-pixel aligned */
+        || ((display_pixel_format_is_yuv_format(format)) && (width & 1))
         || !(width > 8 || height > 8)) {
         return status_invalid_argument;
     }
@@ -595,8 +601,8 @@ hpm_stat_t pdma_blit(PDMA_Type *ptr,
     pdma_output_config_t output;
 
     if ((width + x > dst_width)
-        /* YUV422 requires width to be 2-byte aligned */
-        || ((display_pixel_format_is_yuv_format(format)) && (width & 2))
+        /* YUV422 requires width to be 2-pixel aligned */
+        || ((display_pixel_format_is_yuv_format(format)) && (width & 1))
         || !(width > 8 || height > 8)) {
         return status_invalid_argument;
     }
@@ -667,7 +673,7 @@ static void pdma_calculate_scale(uint32_t t, uint32_t target_t,
     tmp = ((t << PDMA_SCALE_FRAC_BITS) / target_t) >> PDMA_SCALE_FRAC_BITS;
     if (tmp >= 16) {
         *dec = pdma_decimation_by_8;
-        *scale = 2;
+        *scale = 2U << PDMA_SCALE_FRAC_BITS;
         return;
     }
     if (tmp >= 8) {
@@ -703,8 +709,8 @@ hpm_stat_t pdma_scale(PDMA_Type *ptr,
     pdma_output_config_t output;
 
     if ((target_width + x > dst_width)
-        /* YUV422 requires width to be 2-byte aligned */
-        || ((display_pixel_format_is_yuv_format(format)) && (width & 2))
+        /* YUV422 requires width to be 2-pixel aligned */
+        || ((display_pixel_format_is_yuv_format(format)) && (width & 1))
         || !(width > 8 || height > 8)) {
         return status_invalid_argument;
     }
@@ -735,6 +741,10 @@ hpm_stat_t pdma_scale(PDMA_Type *ptr,
     plane_src.y_scale = scale;
     plane_src.y_dec = dec;
     plane_src.background = 0x00FFFFFF;
+
+    if (display_pixel_format_is_yuv_format(format)) {
+        plane_src.x_offset = PDMA_YUV_SCALE_DEFAULT_X_OFFSET;
+    }
 
     plane_dst.buffer = dst + (y * dst_width + x) * display_get_pixel_size_in_byte(format);
     plane_dst.width = width;

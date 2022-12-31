@@ -43,6 +43,13 @@
 * something that better describes your network interface.
 */
 
+/*
+ * Copyright (c) 2021-2022 HPMicro
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ */
+
 #include "lwip/opt.h"
 #include "lwip/def.h"
 #include "lwip/mem.h"
@@ -58,11 +65,27 @@
 #include <string.h>
 #include "lwip/netif.h"
 
+#if !NO_SYS
+#include "FreeRTOS.h"
+#include "semphr.h"
+#endif
+
+#define netifMTU                           (1500)
+#define netifINTERFACE_TASK_STACK_SIZE     (350)
+#define netifINTERFACE_TASK_PRIORITY       (configMAX_PRIORITIES - 1)
+#define netifGUARD_BLOCK_TIME              (250)
+
+/* The time to block waiting for input. */
+#define emacBLOCK_TIME_WAITING_FOR_INPUT   ((portTickType)100)
+
 /* Define those to better describe your network interface. */
 #define IFNAME0 'e'
 #define IFNAME1 'n'
 
-static struct netif *s_pxNetIf;
+static struct netif *s_pxNetIf = NULL;
+#if !NO_SYS
+xSemaphoreHandle s_xSemaphore = NULL;
+#endif
 
 /**
 * In this function, the hardware should be initialized.
@@ -73,27 +96,33 @@ static struct netif *s_pxNetIf;
 */
 static void low_level_init(struct netif *netif)
 {
-  /* Set netif MAC hardware address length */
-  netif->hwaddr_len = ETHARP_HWADDR_LEN;
+    /* Set netif MAC hardware address length */
+    netif->hwaddr_len = ETHARP_HWADDR_LEN;
 
-  /* Set netif MAC hardware address */
-  netif->hwaddr[0] =  MAC_ADDR0;
-  netif->hwaddr[1] =  MAC_ADDR1;
-  netif->hwaddr[2] =  MAC_ADDR2;
-  netif->hwaddr[3] =  MAC_ADDR3;
-  netif->hwaddr[4] =  MAC_ADDR4;
-  netif->hwaddr[5] =  MAC_ADDR5;
+    /* Set netif MAC hardware address */
+    memcpy(netif->hwaddr, mac, ETH_HWADDR_LEN);
 
-  /* Set netif maximum transfer unit */
-  netif->mtu = 1500;
+    /* Set netif maximum transfer unit */
+    netif->mtu = 1500;
 
-  /* Set the default link status */
-  netif->flags |= NETIF_FLAG_LINK_UP;
+    /* Set the default link status */
+    netif->flags |= NETIF_FLAG_LINK_UP;
 
-  /* Accept broadcast address and ARP traffic */
-  netif->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_IGMP;
+    /* Accept broadcast address and ARP traffic */
+    netif->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_IGMP;
 
-  s_pxNetIf = netif;
+    s_pxNetIf = netif;
+
+#if !NO_SYS
+    /* create binary semaphore used for informing ethernetif of frame reception */
+    if (s_xSemaphore == NULL) {
+        vSemaphoreCreateBinary(s_xSemaphore);
+        xSemaphoreTake(s_xSemaphore, 0);
+    }
+    /* create the task that handles the ETH_MAC */
+    xTaskCreate(ethernetif_input, "Eth_if", netifINTERFACE_TASK_STACK_SIZE, NULL,
+                netifINTERFACE_TASK_PRIORITY, NULL);
+#endif
 }
 
 
@@ -115,62 +144,77 @@ static void low_level_init(struct netif *netif)
 
 static err_t low_level_output(struct netif *netif, struct pbuf *p)
 {
-  struct pbuf *q;
-  uint8_t *buffer;
+#if !NO_SYS
+    static xSemaphoreHandle xTxSemaphore = NULL;
+#endif
+    struct pbuf *q;
+    uint8_t *buffer;
 
-  __IO enet_tx_desc_t *dma_tx_desc;
-  uint16_t frame_length = 0;
-  uint32_t buffer_offset = 0;
-  uint32_t bytes_left_to_copy = 0;
-  uint32_t payload_offset = 0;
-  enet_tx_desc_t  *tx_desc_list_cur = desc.tx_desc_list_cur;
+    __IO enet_tx_desc_t *dma_tx_desc;
+    uint16_t frame_length = 0;
+    uint32_t buffer_offset = 0;
+    uint32_t bytes_left_to_copy = 0;
+    uint32_t payload_offset = 0;
+    enet_tx_desc_t  *tx_desc_list_cur = desc.tx_desc_list_cur;
 
-
-    dma_tx_desc = tx_desc_list_cur;
-    buffer = (uint8_t *)(dma_tx_desc->tdes2_bm.buffer1);
-    buffer_offset = 0;
-
-    for (q = p; q != NULL; q = q->next) {
-      /* Get bytes in current lwIP buffer  */
-      bytes_left_to_copy = q->len;
-      payload_offset = 0;
-
-
-      if (dma_tx_desc->tdes0_bm.own != 0) {
-          	return ERR_BUF;
-        }
-
-      /* Check if the length of data to copy is bigger than Tx buffer size*/
-      while ((bytes_left_to_copy + buffer_offset) > ENET_TX_BUFF_SIZE) {
-        /* Copy data to Tx buffer*/
-        memcpy((uint8_t *)((uint8_t *)buffer + buffer_offset),
-               (uint8_t *)((uint8_t *)q->payload + payload_offset),
-			          ENET_TX_BUFF_SIZE - buffer_offset);
-
-        /* Point to next descriptor */
-        dma_tx_desc = (enet_tx_desc_t *)(dma_tx_desc->tdes3_bm.next_desc);
-
-        /* Check if the buffer is available */
-		    if (dma_tx_desc->tdes0_bm.own != 0) {
-          	return ERR_BUF;
-        }
-
-        buffer = (uint8_t *)(dma_tx_desc->tdes2_bm.buffer1);
-
-        bytes_left_to_copy = bytes_left_to_copy - (ENET_TX_BUFF_SIZE - buffer_offset);
-        payload_offset = payload_offset + (ENET_TX_BUFF_SIZE - buffer_offset);
-        frame_length = frame_length + (ENET_TX_BUFF_SIZE - buffer_offset);
-        buffer_offset = 0;
-      }
-
-      /* pass payload to buffer */
-      desc.tx_desc_list_cur->tdes2_bm.buffer1 = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)q->payload);
-      buffer_offset = buffer_offset + bytes_left_to_copy;
-      frame_length = frame_length + bytes_left_to_copy;
+#if !NO_SYS
+    if (xTxSemaphore == NULL) {
+        vSemaphoreCreateBinary(xTxSemaphore);
     }
-    /* Prepare transmit descriptors to give to DMA*/
-     frame_length += 4;
-     enet_prepare_transmission_descriptors(ENET, &desc.tx_desc_list_cur, frame_length, desc.tx_buff_cfg.size);
+
+    if (xSemaphoreTake(xTxSemaphore, netifGUARD_BLOCK_TIME)) {
+#endif
+        dma_tx_desc = tx_desc_list_cur;
+        buffer = (uint8_t *)(dma_tx_desc->tdes2_bm.buffer1);
+        buffer_offset = 0;
+
+        for (q = p; q != NULL; q = q->next) {
+            /* Get bytes in current lwIP buffer  */
+            bytes_left_to_copy = q->len;
+            payload_offset = 0;
+
+
+            if (dma_tx_desc->tdes0_bm.own != 0) {
+                return ERR_BUF;
+            }
+
+            /* Check if the length of data to copy is bigger than Tx buffer size*/
+            while ((bytes_left_to_copy + buffer_offset) > ENET_TX_BUFF_SIZE) {
+                /* Copy data to Tx buffer*/
+                memcpy((uint8_t *)((uint8_t *)buffer + buffer_offset),
+                    (uint8_t *)((uint8_t *)q->payload + payload_offset),
+                            ENET_TX_BUFF_SIZE - buffer_offset);
+
+                /* Point to next descriptor */
+                dma_tx_desc = (enet_tx_desc_t *)(dma_tx_desc->tdes3_bm.next_desc);
+
+                /* Check if the buffer is available */
+                if (dma_tx_desc->tdes0_bm.own != 0) {
+                    return ERR_BUF;
+                }
+
+                buffer = (uint8_t *)(dma_tx_desc->tdes2_bm.buffer1);
+
+                bytes_left_to_copy = bytes_left_to_copy - (ENET_TX_BUFF_SIZE - buffer_offset);
+                payload_offset = payload_offset + (ENET_TX_BUFF_SIZE - buffer_offset);
+                frame_length = frame_length + (ENET_TX_BUFF_SIZE - buffer_offset);
+                buffer_offset = 0;
+            }
+
+            /* pass payload to buffer */
+            desc.tx_desc_list_cur->tdes2_bm.buffer1 = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)q->payload);
+            buffer_offset = buffer_offset + bytes_left_to_copy;
+            frame_length = frame_length + bytes_left_to_copy;
+        }
+        /* Prepare transmit descriptors to give to DMA*/
+        frame_length += 4;
+        enet_prepare_transmission_descriptors(ENET, &desc.tx_desc_list_cur, frame_length, desc.tx_buff_cfg.size);
+
+#if !NO_SYS
+    /* Give semaphore and exit */
+    xSemaphoreGive(xTxSemaphore);
+    }
+#endif
 
     return ERR_OK;
 }
@@ -189,68 +233,72 @@ static struct pbuf *low_level_input(struct netif *netif)
     u32_t len;
     uint8_t *buffer;
     enet_frame_t frame = {0, 0, 0};
-    enet_rx_desc_t*dma_rx_desc;
+    enet_rx_desc_t *dma_rx_desc;
     uint32_t buffer_offset = 0;
     uint32_t payload_offset = 0;
     uint32_t bytes_left_to_copy = 0;
     uint32_t i = 0;
 
     /* Check and get a received frame */
-    if (enet_check_received_frame(&desc.rx_desc_list_cur, &desc.rx_frame_info) == 1) {
-        frame = enet_get_received_frame(&desc.rx_desc_list_cur, &desc.rx_frame_info);
-    }
+    #if __USE_ENET_RECEIVE_INTERRUPT || !NO_SYS
+        frame = enet_get_received_frame_interrupt(&desc.rx_desc_list_cur, &desc.rx_frame_info, ENET_RX_BUFF_COUNT);
+    #else
+        if (enet_check_received_frame(&desc.rx_desc_list_cur, &desc.rx_frame_info) == 1) {
+            frame = enet_get_received_frame(&desc.rx_desc_list_cur, &desc.rx_frame_info);
+        }
+    #endif
 
-  /* Obtain the size of the packet and put it into the "len" variable. */
-  len = frame.length;
-  buffer = (uint8_t *)frame.buffer;
+    /* Obtain the size of the packet and put it into the "len" variable. */
+    len = frame.length;
+    buffer = (uint8_t *)frame.buffer;
 
-  if (len > 0) {
+    if (len > 0) {
     /* We allocate a pbuf chain of pbufs from the Lwip buffer pool */
-    p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
-  }
-
-  if (p != NULL) {
-    dma_rx_desc = frame.rx_desc;
-    buffer_offset = 0;
-    for (q = p; q != NULL; q = q->next) {
-      bytes_left_to_copy = q->len;
-      payload_offset = 0;
-
-      /* Check if the length of bytes to copy in current pbuf is bigger than Rx buffer size*/
-      while ((bytes_left_to_copy + buffer_offset) > ENET_RX_BUFF_SIZE) {
-        /* Copy data to pbuf*/
-        memcpy((uint8_t *)((uint8_t *)q->payload + payload_offset), (uint8_t *)((uint8_t *)buffer + buffer_offset), (ENET_RX_BUFF_SIZE - buffer_offset));
-
-        /* Point to next descriptor */
-        dma_rx_desc = (enet_rx_desc_t*)(dma_rx_desc->rdes3_bm.next_desc);
-        buffer = (uint8_t *)(dma_rx_desc->rdes2_bm.buffer1);
-
-        bytes_left_to_copy = bytes_left_to_copy - (ENET_RX_BUFF_SIZE - buffer_offset);
-        payload_offset = payload_offset + (ENET_RX_BUFF_SIZE - buffer_offset);
-        buffer_offset = 0;
-      }
-
-      /* pass the buffer to pbuf */
-      q->payload = (void *)buffer;
-      buffer_offset = buffer_offset + bytes_left_to_copy;
+        p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
     }
-  } else {
-    return NULL;
-  }
 
-  /* Release descriptors to DMA */
-  dma_rx_desc = frame.rx_desc;
+    if (p != NULL) {
+        dma_rx_desc = frame.rx_desc;
+        buffer_offset = 0;
+        for (q = p; q != NULL; q = q->next) {
+            bytes_left_to_copy = q->len;
+            payload_offset = 0;
 
-  /* Set Own bit in Rx descriptors: gives the buffers back to DMA */
-  for (i = 0; i < desc.rx_frame_info.seg_count; i++) {
-    dma_rx_desc->rdes0_bm.own = 1;
-    dma_rx_desc = (enet_rx_desc_t*)(dma_rx_desc->rdes3_bm.next_desc);
-  }
+            /* Check if the length of bytes to copy in current pbuf is bigger than Rx buffer size*/
+            while ((bytes_left_to_copy + buffer_offset) > ENET_RX_BUFF_SIZE) {
+                /* Copy data to pbuf*/
+                memcpy((uint8_t *)((uint8_t *)q->payload + payload_offset), (uint8_t *)((uint8_t *)buffer + buffer_offset), (ENET_RX_BUFF_SIZE - buffer_offset));
 
-  /* Clear Segment_Count */
-  desc.rx_frame_info.seg_count = 0;
+                /* Point to next descriptor */
+                dma_rx_desc = (enet_rx_desc_t *)(dma_rx_desc->rdes3_bm.next_desc);
+                buffer = (uint8_t *)(dma_rx_desc->rdes2_bm.buffer1);
 
-return p;
+                bytes_left_to_copy = bytes_left_to_copy - (ENET_RX_BUFF_SIZE - buffer_offset);
+                payload_offset = payload_offset + (ENET_RX_BUFF_SIZE - buffer_offset);
+                buffer_offset = 0;
+            }
+
+            /* pass the buffer to pbuf */
+            q->payload = (void *)buffer;
+            buffer_offset = buffer_offset + bytes_left_to_copy;
+        }
+    } else {
+        return NULL;
+    }
+
+    /* Release descriptors to DMA */
+    dma_rx_desc = frame.rx_desc;
+
+    /* Set Own bit in Rx descriptors: gives the buffers back to DMA */
+    for (i = 0; i < desc.rx_frame_info.seg_count; i++) {
+        dma_rx_desc->rdes0_bm.own = 1;
+        dma_rx_desc = (enet_rx_desc_t *)(dma_rx_desc->rdes3_bm.next_desc);
+    }
+
+    /* Clear Segment_Count */
+    desc.rx_frame_info.seg_count = 0;
+
+    return p;
 }
 
 
@@ -267,27 +315,58 @@ return p;
  /*
   invoked after receiving data packet
  */
-  err_t ethernetif_input(struct netif *netif)
+#if !NO_SYS
+void ethernetif_input(void *pvParameters)
 {
-    err_t err;
-    struct pbuf *p = NULL;
-    /* move received packet into a new pbuf */
-    p = low_level_input(netif);
+    struct pbuf *p;
 
-    /* no packet could be read, silently ignore this */
-    if (p == NULL) {
-		  return ERR_MEM;
-	  }
-
-  /* entry point to the LwIP stack */
-  err = netif->input(p, netif);
-
-  if (err != ERR_OK) {
-    LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\n"));
-    pbuf_free(p);
-  }
-  return err;
+    for ( ;; ) {
+        if (xSemaphoreTake(s_xSemaphore, emacBLOCK_TIME_WAITING_FOR_INPUT) == pdTRUE) {
+GET_NEXT_FRAME:
+            p = low_level_input(s_pxNetIf);
+            if (p != NULL) {
+                if (ERR_OK != s_pxNetIf->input(p, s_pxNetIf)) {
+                    pbuf_free(p);
+                } else {
+                    goto GET_NEXT_FRAME;
+                }
+            }
+        }
+    }
 }
+#else
+err_t ethernetif_input(struct netif *netif)
+{
+    err_t err = ERR_OK;
+    struct pbuf *p = NULL;
+#if __USE_ENET_RECEIVE_INTERRUPT
+    if (rx_flag) {
+#endif
+        GET_NEXT_FRAME:
+        /* move received packet into a new pbuf */
+        p = low_level_input(netif);
+
+        /* no packet could be read, silently ignore this */
+        if (p == NULL) {
+            err = ERR_MEM;
+        } else {
+             /* entry point to the LwIP stack */
+            err = netif->input(p, netif);
+
+            if (err != ERR_OK) {
+                LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\n"));
+                pbuf_free(p);
+            } else {
+                goto GET_NEXT_FRAME;
+            }
+        }
+#if __USE_ENET_RECEIVE_INTERRUPT
+        rx_flag = false;
+    }
+#endif
+    return err;
+}
+#endif
 
 /**
 * Should be called at the beginning of the program to set up the
@@ -306,20 +385,20 @@ err_t ethernetif_init(struct netif *netif)
   LWIP_ASSERT("netif != NULL", (netif != NULL));
 
 #if LWIP_NETIF_HOSTNAME
-  /* Initialize interface hostname */
-  netif->hostname = "lwip";
+    /* Initialize interface hostname */
+    netif->hostname = "lwip";
 #endif /* LWIP_NETIF_HOSTNAME */
 
-  netif->name[0] = IFNAME0;
-  netif->name[1] = IFNAME1;
+    netif->name[0] = IFNAME0;
+    netif->name[1] = IFNAME1;
 
-  netif->output = etharp_output;
-  netif->linkoutput = low_level_output;
+    netif->output = etharp_output;
+    netif->linkoutput = low_level_output;
 
-  /* initialize the hardware */
-  low_level_init(netif);
+    /* initialize the hardware */
+    low_level_init(netif);
 
-  etharp_init();
+    etharp_init();
 
-  return ERR_OK;
+    return ERR_OK;
 }

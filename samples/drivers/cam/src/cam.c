@@ -51,10 +51,7 @@ void init_lcd(void)
     lcdc_layer_config_t layer = {0};
 
     lcdc_get_default_config(LCD, &config);
-
-    config.resolution_x = LCD_WIDTH;
-    config.resolution_y = LCD_HEIGHT;
-
+    board_panel_para_to_lcdc(&config);
     lcdc_init(LCD, &config);
 
     lcdc_get_default_layer_config(LCD, &layer, PIXEL_FORMAT, layer_index);

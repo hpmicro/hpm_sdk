@@ -307,7 +307,7 @@ typedef struct {
 
 /* Bitfield definition for register: CR2 */
 /*
- * FRMCNT_15_0 (ROI)
+ * FRMCNT_15_0 (RO)
  *
  * Frame Counter. This is a 16-bit Frame Counter
  * (Wraps around automatically after reaching the maximum)
@@ -750,7 +750,7 @@ typedef struct {
 
 /* Bitfield definition for register array: HISTOGRAM_FIFO */
 /*
- * HIST_Y (ROI)
+ * HIST_Y (RO)
  *
  * the appearance of bin x (x=(address-DATA0)/4)
  */

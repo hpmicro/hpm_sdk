@@ -27,5 +27,5 @@
 
 /* Exported Variables ------------------------------------------------------*/
 extern enet_desc_t desc;
-
+extern uint8_t mac[];
 #endif /* LWIP_H */
