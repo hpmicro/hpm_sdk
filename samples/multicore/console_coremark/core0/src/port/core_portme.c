@@ -28,7 +28,8 @@
 #include "hpm_uart_drv.h"
 #include "hpm_clock_drv.h"
 
-ATTR_PLACE_AT(".coremark_ctx") coremark_context_t g_coremark_ctx;
+ATTR_SHARE_MEM coremark_context_t g_coremark_ctx[2];
+static coremark_context_t *ctx = &g_coremark_ctx[0];
 
 #if USE_SNPRINTF
 #include <stdio.h>
@@ -36,20 +37,19 @@ ATTR_PLACE_AT(".coremark_ctx") coremark_context_t g_coremark_ctx;
 void ee_printf(char *format, ...)
 {
     char g_temp[1024];
-    coremark_context_t *ctx = &g_coremark_ctx;
 
     uint32_t len;
     va_list args;
     va_start(args, format);
     len = vsnprintf(g_temp, sizeof(g_temp), format, args);
     va_end(args);
-    memcpy((void *) &ctx->s_buffer[ctx->current_idx], g_temp, len);
+    memcpy((void *)&ctx->s_buffer[ctx->current_idx], g_temp, len);
     //printf("%s", g_temp);
     ctx->current_idx += len;
 }
 #endif
 
-#define ITERATIONS (0)
+#define ITERATIONS     (0)
 #define CLOCKS_PER_SEC (clock_get_frequency(clock_mchtmr0))
 
 #if VALIDATION_RUN
@@ -83,7 +83,7 @@ volatile ee_s32 seed5_volatile = 0;
  */
 CORETIMETYPE barebones_clock(void)
 {
-    return (CORETIMETYPE) HPM_MCHTMR->MTIME;
+    return (CORETIMETYPE)HPM_MCHTMR->MTIME;
 }
 /* Define : TIMER_RES_DIVIDER
  *       Divider to trade off timer resolution and total time that can be
@@ -93,7 +93,7 @@ CORETIMETYPE barebones_clock(void)
  *  does not occur. If there are issues with the return value overflowing,
  *  increase this value.
  */
-#define GETMYTIME(_t) (*_t = barebones_clock())
+#define GETMYTIME(_t)        (*_t = barebones_clock())
 #define MYTIMEDIFF(fin, ini) ((fin) - (ini))
 /* #define TIMER_RES_DIVIDER          1 */
 /* #define SAMPLE_TIME_IMPLEMENTATION 1 */
@@ -114,7 +114,6 @@ CORETIMETYPE barebones_clock(void)
  */
 void start_time(void)
 {
-    coremark_context_t *ctx = &g_coremark_ctx;
     GETMYTIME(&ctx->start_time_val);
 }
 /* Function : stop_time
@@ -127,7 +126,6 @@ void start_time(void)
  */
 void stop_time(void)
 {
-    coremark_context_t *ctx = &g_coremark_ctx;
     GETMYTIME(&ctx->stop_time_val);
 }
 /* Function : get_time
@@ -141,8 +139,7 @@ void stop_time(void)
  */
 CORE_TICKS get_time(void)
 {
-    coremark_context_t *ctx = &g_coremark_ctx;
-    CORE_TICKS elapsed = (CORE_TICKS) (MYTIMEDIFF(ctx->stop_time_val, ctx->start_time_val));
+    CORE_TICKS elapsed = (CORE_TICKS)(MYTIMEDIFF(ctx->stop_time_val, ctx->start_time_val));
     return elapsed;
 }
 /* Function : time_in_secs
@@ -154,8 +151,7 @@ CORE_TICKS get_time(void)
  */
 secs_ret time_in_secs(CORE_TICKS ticks)
 {
-    coremark_context_t *ctx = &g_coremark_ctx;
-    secs_ret retval = ((secs_ret) ticks) / (secs_ret) ctx->tmr_freq;
+    secs_ret retval = ((secs_ret)ticks) / (secs_ret)ctx->tmr_freq;
     return retval;
 }
 
@@ -167,7 +163,6 @@ const ee_u32 default_num_contexts = 1;
  */
 void portable_init(core_portable *p, int *argc, char *argv[])
 {
-    coremark_context_t *ctx = &g_coremark_ctx;
     ctx->current_idx = 0;
     ctx->s_buffer[0] = '\0';
     ctx->printf_callback = NULL;
@@ -193,11 +188,10 @@ void portable_init(core_portable *p, int *argc, char *argv[])
  */
 void portable_fini(core_portable *p)
 {
-    coremark_context_t *ctx = &g_coremark_ctx;
     ctx->has_done = true;
     ctx->printf_callback = NULL;
     if (ctx->print_out && ctx->printf_callback) {
-        ctx->printf_callback("%s\n", (const char *) ctx->s_buffer);
+        ctx->printf_callback("%s\n", (const char *)ctx->s_buffer);
     }
     memset(&ctx->s_buffer[ctx->current_idx], 0, sizeof(ctx->s_buffer) - ctx->current_idx);
 }

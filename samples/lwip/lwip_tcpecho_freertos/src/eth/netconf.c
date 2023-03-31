@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -32,7 +32,7 @@ uint32_t TCPTimer;
 uint32_t ARPTimer;
 uint32_t IPaddress;
 
-#ifdef USE_DHCP
+#if __ENABLE_DHCP
 uint32_t DHCPfineTimer;
 uint32_t DHCPcoarseTimer;
 __IO uint8_t DHCP_state = DHCP_START;
@@ -54,7 +54,7 @@ void LwIP_Init(void)
     /* Create tcp_ip stack thread */
     tcpip_init(NULL, NULL);
 
-#ifdef USE_DHCP
+#if __ENABLE_DHCP
     ip4_addr_set_zero(&gw);
     ip4_addr_set_zero(&ipaddr);
     ip4_addr_set_zero(&netmask);
@@ -76,7 +76,7 @@ void LwIP_Init(void)
 
     The init function pointer must point to a initialization function for
     your ethernet netif interface. The following code illustrates it's use.*/
-    netif_add(&gnetif, &ipaddr, &netmask, &gw, NULL, &ethernetif_init, &ethernet_input);
+    netif_add(&gnetif, &ipaddr, &netmask, &gw, NULL, &ethernetif_init, &tcpip_input);
 
     /*  Registers the default network interface.*/
     netif_set_default(&gnetif);
@@ -86,17 +86,17 @@ void LwIP_Init(void)
 
     /* When the netif is fully configured this function must be called.*/
     netif_set_up(&gnetif);
-#ifdef USE_DHCP
+#if __ENABLE_DHCP
     DHCP_state = DHCP_START;
 #else
 	printf("\r\n	Static IP address	\r\n");
 	printf("IP: %d.%d.%d.%d\r\n", IP_ADDR0, IP_ADDR1, IP_ADDR2, IP_ADDR3);
 	printf("NETMASK: %d.%d.%d.%d\r\n", NETMASK_ADDR0, NETMASK_ADDR1, NETMASK_ADDR2, NETMASK_ADDR3);
 	printf("Gateway: %d.%d.%d.%d\r\n", GW_ADDR0, GW_ADDR1, GW_ADDR2, GW_ADDR3);
-#endif /* USE_DHCP */
+#endif /* __ENABLE_DHCP */
 }
 
-#ifdef USE_DHCP
+#if __ENABLE_DHCP
 /**
 * @brief  LwIP_DHCP_Process_Handle
 * @param  None
@@ -117,19 +117,18 @@ void LwIP_DHCP_task(void *pvParameters)
             DHCP_state = DHCP_WAIT_ADDRESS;
             dhcp_start(&gnetif);
             gnetif.ip_addr.addr = 0;
-            /* IP address should be set to 0
-                every time we want to assign a new DHCP address */
+            /* IP address should be set to 0, and every time we want to assign a new DHCP address */
             IPaddress = 0;
 
             printf("    Looking for    \r\n");
             printf("    DHCP server    \r\n");
             printf("    Please wait... \r\n");
-            }
-            break;
+        }
+        break;
 
         case DHCP_WAIT_ADDRESS: {
-        /* Read the new IP address */
-        IPaddress = gnetif.ip_addr.addr;
+            /* Read the new IP address */
+            IPaddress = gnetif.ip_addr.addr;
 
             if (IPaddress != 0) {
                 DHCP_state = DHCP_ADDRESS_ASSIGNED;
@@ -143,44 +142,43 @@ void LwIP_DHCP_task(void *pvParameters)
 
                 /* Display the IP address */
                 printf("IP address assigned by a DHCP server:\r\n");
-                        sprintf((char *)iptxt, " %d.%d.%d.%d", (uint8_t)(gnetif.ip_addr.addr), (uint8_t)(gnetif.ip_addr.addr>>8), (uint8_t)(gnetif.ip_addr.addr>>16), (uint8_t)(gnetif.ip_addr.addr>>24));
-                        printf("IP addr: %s\r\n", iptxt);
+                sprintf((char *)iptxt, " %d.%d.%d.%d", (uint8_t)(gnetif.ip_addr.addr), (uint8_t)(gnetif.ip_addr.addr>>8), (uint8_t)(gnetif.ip_addr.addr>>16), (uint8_t)(gnetif.ip_addr.addr>>24));
+                printf("IP addr: %s\r\n", iptxt);
 
-                        sprintf((char *)iptxt, " %d.%d.%d.%d", (uint8_t)(gnetif.netmask.addr), (uint8_t)(gnetif.netmask.addr>>8), (uint8_t)(gnetif.netmask.addr>>16), (uint8_t)(gnetif.netmask.addr>>24));
-                        printf("Netmask addr: %s\r\n", iptxt);
+                sprintf((char *)iptxt, " %d.%d.%d.%d", (uint8_t)(gnetif.netmask.addr), (uint8_t)(gnetif.netmask.addr>>8), (uint8_t)(gnetif.netmask.addr>>16), (uint8_t)(gnetif.netmask.addr>>24));
+                printf("Netmask addr: %s\r\n", iptxt);
 
-                        sprintf((char *)iptxt, " %d.%d.%d.%d", (uint8_t)(gnetif.gw.addr), (uint8_t)(gnetif.gw.addr>>8), (uint8_t)(gnetif.gw.addr>>16), (uint8_t)(gnetif.gw.addr>>24));
-                        printf("GW addr: %s\r\n", iptxt);
+                sprintf((char *)iptxt, " %d.%d.%d.%d", (uint8_t)(gnetif.gw.addr), (uint8_t)(gnetif.gw.addr>>8), (uint8_t)(gnetif.gw.addr>>16), (uint8_t)(gnetif.gw.addr>>24));
+                printf("GW addr: %s\r\n", iptxt);
 
-                        sprintf((char *)mactxt, " %02x-%02x-%02x-%02x-%02x-%02x", gnetif.hwaddr[0], gnetif.hwaddr[1], gnetif.hwaddr[2], gnetif.hwaddr[3], gnetif.hwaddr[4], gnetif.hwaddr[5]);
-                        printf("MAC addr: %s\r\n", mactxt);
+                sprintf((char *)mactxt, " %02x-%02x-%02x-%02x-%02x-%02x", gnetif.hwaddr[0], gnetif.hwaddr[1], gnetif.hwaddr[2], gnetif.hwaddr[3], gnetif.hwaddr[4], gnetif.hwaddr[5]);
+                printf("MAC addr: %s\r\n", mactxt);
+            } else {
+                struct dhcp *dhcp = netif_dhcp_data(&gnetif);
+                /* DHCP timeout */
+                if (dhcp->tries > MAX_DHCP_TRIES) {
+                    DHCP_state = DHCP_TIMEOUT;
 
-                } else {
-                    struct dhcp *dhcp = netif_dhcp_data(&gnetif);
-                    /* DHCP timeout */
-                    if (dhcp->tries > MAX_DHCP_TRIES) {
-                        DHCP_state = DHCP_TIMEOUT;
+                    /* Stop DHCP */
+                    dhcp_stop(&gnetif);
 
-                        /* Stop DHCP */
-                        dhcp_stop(&gnetif);
+                    /* Static address used */
+                    IP4_ADDR(&ipaddr, IP_ADDR0, IP_ADDR1, IP_ADDR2, IP_ADDR3);
+                    IP4_ADDR(&netmask, NETMASK_ADDR0, NETMASK_ADDR1, NETMASK_ADDR2, NETMASK_ADDR3);
+                    IP4_ADDR(&gw, GW_ADDR0, GW_ADDR1, GW_ADDR2, GW_ADDR3);
+                    netif_set_addr(&gnetif, &ipaddr, &netmask, &gw);
 
-                        /* Static address used */
-                        IP4_ADDR(&ipaddr, IP_ADDR0, IP_ADDR1, IP_ADDR2, IP_ADDR3);
-                        IP4_ADDR(&netmask, NETMASK_ADDR0, NETMASK_ADDR1, NETMASK_ADDR2, NETMASK_ADDR3);
-                        IP4_ADDR(&gw, GW_ADDR0, GW_ADDR1, GW_ADDR2, GW_ADDR3);
-                        netif_set_addr(&gnetif, &ipaddr, &netmask, &gw);
+                    printf("    DHCP timeout    \r\n");
 
-                        printf("    DHCP timeout    \r\n");
+                    iptab[0] = IP_ADDR3;
+                    iptab[1] = IP_ADDR2;
+                    iptab[2] = IP_ADDR1;
+                    iptab[3] = IP_ADDR0;
 
-                        iptab[0] = IP_ADDR3;
-                        iptab[1] = IP_ADDR2;
-                        iptab[2] = IP_ADDR1;
-                        iptab[3] = IP_ADDR0;
+                    sprintf((char *)iptxt, "  %d.%d.%d.%d", iptab[3], iptab[2], iptab[1], iptab[0]);
 
-                        sprintf((char *)iptxt, "  %d.%d.%d.%d", iptab[3], iptab[2], iptab[1], iptab[0]);
-
-                        printf("    Static IP address   \r\n");
-                        printf("%s\r\n", iptxt);
+                    printf("  Static IP address   \r\n");
+                    printf("%s\r\n", iptxt);
                 }
             }
         }

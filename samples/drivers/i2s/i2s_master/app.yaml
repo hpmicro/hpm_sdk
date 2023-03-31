@@ -1,0 +1,3 @@
+dependency:
+  - i2s_pinout
+  - dao

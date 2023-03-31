@@ -43,11 +43,11 @@ in th_results is copied from the original in EEMBC.
 extern "C" {
 #include "board.h"
 }
-static uint64_t get_core_mcycle(void);
+
 volatile unsigned char gstr[0x100] __attribute__((aligned(4))) = {0};
 volatile unsigned char gstr1[0x100] __attribute__((aligned(4))) = {0};
 
-#define timestamp_in_usec ((unsigned long)(((unsigned long long )get_core_mcycle() * (unsigned long long) 1000000) / (unsigned long long) BOARD_CPU_FREQ))
+#define timestamp_in_usec ((unsigned long)(((unsigned long long )hpm_csr_get_core_cycle() * (unsigned long long) 1000000) / (unsigned long long) BOARD_CPU_FREQ))
 
 
 tflite::MicroModelRunner<int8_t, int8_t, 7> *runner;
@@ -55,20 +55,6 @@ tflite::MicroModelRunner<int8_t, int8_t, 7> *runner;
 constexpr int kTensorArenaSize = 100 * 1024;
 uint8_t tensor_arena_local[kTensorArenaSize];
 
-static uint64_t get_core_mcycle(void)
-{
-    uint64_t result;
-    uint32_t resultl_first = read_csr(CSR_CYCLE);
-    uint32_t resulth = read_csr(CSR_CYCLEH);
-    uint32_t resultl_second = read_csr(CSR_CYCLE);
-    if (resultl_first < resultl_second) {
-        result = ((uint64_t)resulth << 32) | resultl_first; /* if MCYCLE didn't roll over, return the value directly */
-    } else {
-        resulth = read_csr(CSR_CYCLEH);
-        result = ((uint64_t)resulth << 32) | resultl_second; /* if MCYCLE rolled over, need to get the MCYCLEH again */
-    }
-    return result;
- }
 
 void th_load_tensor() {
   uint8_t input_quantized[kIcInputSize];

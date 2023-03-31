@@ -29,7 +29,7 @@
 
 #define MOTOR0_SMC_EN               (0) /*使能滑模控制*/
 /*motor_speed set*/
-#define MOTOR0_SPD                  (20.0)  /*r/s   deta:0.1r/s    1-40r/s */
+#define MOTOR0_SPD                  (20.0)  /*r/s   delta:0.1r/s    1-40r/s */
 #define BLDC_ANGLE_SET_TIME_MS      (2000) /*角度对中时间  单位ms*/
 #define BLDC_CURRENT_SET_TIME_MS    (200) /*电流对中时间  单位ms，禁止大于250*/
 
@@ -272,7 +272,7 @@ void pwm_init(void)
         printf("failed to setup waveform\n");
         while(1);
     }
-    pwm_load_cmp_shadow_on_match(MOTOR0_BLDCPWM, 20,  &cmp_config[3]);
+    pwm_load_cmp_shadow_on_match(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_TRIG_CMP,  &cmp_config[3]);
 
     pwm_config_cmp(MOTOR0_BLDCPWM, BOARD_BLDC_PWM_TRIG_CMP_INDEX, &cmp_config[2]);
 
@@ -549,6 +549,7 @@ void adc_init(void)
     cfg.adc_base.adc12 = BOARD_BLDC_ADC_W_BASE;
     hpm_adc_init(&cfg);
 #else
+    cfg.config.adc16.res            = adc16_res_16_bits;
     cfg.config.adc16.conv_mode      = adc16_conv_mode_preemption;
     cfg.config.adc16.adc_clk_div    = 3;
     cfg.config.adc16.sel_sync_ahb   = true;

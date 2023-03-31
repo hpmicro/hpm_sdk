@@ -15,7 +15,7 @@ hpm_stat_t console_init(console_config_t *cfg)
 {
     hpm_stat_t stat = status_fail;
 
-    if (cfg->type == console_type_uart) {
+    if (cfg->type == CONSOLE_TYPE_UART) {
         uart_config_t config = {0};
         uart_default_config((UART_Type *)cfg->base, &config);
         config.src_freq_in_hz = cfg->src_freq_in_hz;

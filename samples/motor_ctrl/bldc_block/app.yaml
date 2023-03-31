@@ -1,2 +1,7 @@
 dependency:
   - motor-control
+  - hall-qei
+
+excluded_targets:
+  - flash_sdram_xip_release
+  - flash_sdram_xip

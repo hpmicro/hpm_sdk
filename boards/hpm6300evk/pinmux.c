@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -341,4 +341,10 @@ void init_trgmux_pins(uint32_t pin)
 {
     /* all trgmux pin ALT_SELECT fixed to 16*/
     HPM_IOC->PAD[pin].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(16);
+}
+
+void init_enet_pps_pins(void)
+{
+    HPM_IOC->PAD[IOC_PAD_PC21].FUNC_CTL = IOC_PC21_FUNC_CTL_ETH0_EVTO_0;
+    HPM_IOC->PAD[IOC_PAD_PC20].FUNC_CTL = IOC_PC20_FUNC_CTL_ETH0_EVTO_1;
 }

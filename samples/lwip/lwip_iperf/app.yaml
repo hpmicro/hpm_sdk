@@ -5,3 +5,6 @@ excluded_targets:
   - flash_sdram_xip_release
   - sec_core_img
   - sec_core_img_release
+dependency:
+  - enet
+  - enet_phy_on_board

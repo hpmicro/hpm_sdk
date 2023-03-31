@@ -13,7 +13,7 @@ void adc12_get_default_config(adc12_config_t *config)
     config->res                = adc12_res_12_bits;
     config->conv_mode          = adc12_conv_mode_oneshot;
     config->adc_clk_div        = 1;
-    config->wait_dis           = 0;
+    config->wait_dis           = 1;
     config->sel_sync_ahb       = true;
     config->adc_ahb_en         = false;
 }
@@ -162,7 +162,7 @@ hpm_stat_t adc12_init(ADC12_Type *ptr, adc12_config_t *config)
 hpm_stat_t adc12_init_channel(ADC12_Type *ptr, adc12_channel_config_t *config)
 {
     /* Check the specified channel number */
-    if (ADC12_IS_CHANNEL_INVALID(ptr, config->ch)) {
+    if (ADC12_IS_CHANNEL_INVALID(config->ch)) {
         return status_invalid_argument;
     }
 
@@ -216,7 +216,7 @@ hpm_stat_t adc12_init_seq_dma(ADC12_Type *ptr, adc12_dma_config_t *dma_config)
 hpm_stat_t adc12_set_prd_config(ADC12_Type *ptr, adc12_prd_config_t *config)
 {
     /* Check the specified channel number */
-    if (ADC12_IS_CHANNEL_INVALID(ptr, config->ch)) {
+    if (ADC12_IS_CHANNEL_INVALID(config->ch)) {
         return status_invalid_argument;
     }
 
@@ -264,7 +264,7 @@ hpm_stat_t adc12_set_seq_config(ADC12_Type *ptr, adc12_seq_config_t *config)
     /* Set sequence queue */
     for (int i = 0; i < config->seq_len; i++) {
         /* Check the specified channel number */
-        if (ADC12_IS_CHANNEL_INVALID(ptr, config->queue[i].ch)) {
+        if (ADC12_IS_CHANNEL_INVALID(config->queue[i].ch)) {
             return status_invalid_argument;
         }
 
@@ -287,7 +287,7 @@ hpm_stat_t adc12_set_pmt_config(ADC12_Type *ptr, adc12_pmt_config_t *config)
     temp |= ADC12_CONFIG_TRIG_LEN_SET(config->trig_len - 1);
 
     for (int i = 0; i < config->trig_len; i++) {
-        if (ADC12_IS_CHANNEL_INVALID(ptr, config->trig_ch)) {
+        if (ADC12_IS_CHANNEL_INVALID(config->trig_ch)) {
             return status_invalid_argument;
         }
 
@@ -302,12 +302,21 @@ hpm_stat_t adc12_set_pmt_config(ADC12_Type *ptr, adc12_pmt_config_t *config)
 
 hpm_stat_t adc12_get_oneshot_result(ADC12_Type *ptr, uint8_t ch, uint16_t *result)
 {
+    uint32_t bus_res;
+
     /* Check the specified channel number */
-    if (ADC12_IS_CHANNEL_INVALID(ptr, ch)) {
+    if (ADC12_IS_CHANNEL_INVALID(ch)) {
         return status_invalid_argument;
     }
 
-    *result = ADC12_BUS_RESULT_CHAN_RESULT_GET(ptr->BUS_RESULT[ch]);
+    bus_res = ptr->BUS_RESULT[ch];
+    *result = ADC12_BUS_RESULT_CHAN_RESULT_GET(bus_res);
+
+    if (ADC12_BUF_CFG0_WAIT_DIS_GET(ptr->BUF_CFG0)) {
+        if (!ADC12_BUS_RESULT_VALID_GET(bus_res)) {
+            return status_fail;
+        }
+    }
 
     return status_success;
 }
@@ -315,7 +324,7 @@ hpm_stat_t adc12_get_oneshot_result(ADC12_Type *ptr, uint8_t ch, uint16_t *resul
 hpm_stat_t adc12_get_prd_result(ADC12_Type *ptr, uint8_t ch, uint16_t *result)
 {
     /* Check the specified channel number */
-    if (ADC12_IS_CHANNEL_INVALID(ptr, ch)) {
+    if (ADC12_IS_CHANNEL_INVALID(ch)) {
         return status_invalid_argument;
     }
 

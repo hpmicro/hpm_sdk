@@ -29,7 +29,9 @@ hpm_stat_t gptmr_channel_config(GPTMR_Type *ptr,
                          bool enable)
 {
     uint32_t v = 0;
-    if ((config->enable_sync_follow_previous_channel && !ch_index) || (config->reload == 0)) {
+    uint32_t tmp_value;
+
+    if (config->enable_sync_follow_previous_channel && !ch_index) {
         return status_invalid_argument;
     }
 
@@ -47,9 +49,17 @@ hpm_stat_t gptmr_channel_config(GPTMR_Type *ptr,
         | config->synci_edge;
 
     for (uint8_t i = 0; i < GPTMR_CH_CMP_COUNT; i++) {
-        ptr->CHANNEL[ch_index].CMP[i] = GPTMR_CHANNEL_CMP_CMP_SET(config->cmp[i]);
+        tmp_value = config->cmp[i];
+        if (tmp_value > 0) {
+            tmp_value--;
+        }
+        ptr->CHANNEL[ch_index].CMP[i] = GPTMR_CHANNEL_CMP_CMP_SET(tmp_value);
     }
-    ptr->CHANNEL[ch_index].RLD = GPTMR_CHANNEL_RLD_RLD_SET(config->reload - 1);
+    tmp_value = config->reload;
+    if (tmp_value > 0) {
+        tmp_value--;
+    }
+    ptr->CHANNEL[ch_index].RLD = GPTMR_CHANNEL_RLD_RLD_SET(tmp_value);
     ptr->CHANNEL[ch_index].CR = v;
     return status_success;
 }

@@ -13,7 +13,6 @@ project(fft_perf_test)
 sdk_ses_compile_options(-mabi=ilp32f)
 sdk_ses_compile_options(-march=rv32imafc)
 
-sdk_compile_definitions(-DBOARD_SHOW_CLOCK=0)
 sdk_app_src(src/fft_perf_test.c)
 sdk_compile_options("-O3")
 set(SEGGER_LEVEL_O3 1)

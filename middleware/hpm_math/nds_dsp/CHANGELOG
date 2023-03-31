@@ -1,0 +1,15 @@
+# Change Log
+
+## Version
+   TOOLCHAIN version: 2023-01-06_nds32le-elf-newlib-v5x-62c1f3633
+ - Change :
+    base 2 logarithm value of the sample number and it can be set to 13
+    function list:
+      void riscv_dsp_cfft_f32 (float32_t *src, uint32_t m)
+      void riscv_dsp_cifft_f32 (float32_t *src, uint32_t m)
+      void riscv_dsp_cfft_q31 (q31_t *src, uint32_t m)
+      void riscv_dsp_cifft_q31 (q31_t *src, uint32_t m)
+      int32_t riscv_dsp_rfft_f32(float32_t *src, uint32_t m)
+      int32_t riscv_dsp_rifft_f32(float32_t *src, uint32_t m)
+      int32_t riscv_dsp_rfft_q31(q31_t *src, uint32_t m)
+      int32_t riscv_dsp_rifft_q31(q31_t *src, uint32_t m)

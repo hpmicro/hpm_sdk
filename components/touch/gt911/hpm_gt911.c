@@ -10,10 +10,15 @@ static uint8_t g_i2c_addr;
 
 hpm_stat_t gt911_read_data(gt911_context_t *context, uint16_t addr, uint8_t *buf, uint32_t size)
 {
+    hpm_stat_t stat;
     uint8_t r[2];
     r[0] = addr >> 8;
     r[1] = addr & 0xFF;
-    return i2c_master_address_read(context->ptr, g_i2c_addr, r, sizeof(r), buf, size);
+    stat = i2c_master_write(context->ptr, g_i2c_addr, r, sizeof(r));
+    if (stat != status_success) {
+        return stat;
+    }
+    return i2c_master_read(context->ptr, g_i2c_addr, buf, size);
 }
 
 hpm_stat_t gt911_write_data(gt911_context_t *context, uint16_t addr, uint8_t *buf, uint32_t size)

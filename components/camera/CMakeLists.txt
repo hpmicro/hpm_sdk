@@ -3,8 +3,8 @@
 
 string(TOUPPER ${CONFIG_CAMERA} CONFIG_CAMERA_UPPER)
 string(TOLOWER ${CONFIG_CAMERA} CONFIG_CAMERA_LOWER)
-if((NOT ${CONFIG_CAMERA_LOWER} STREQUAL "ov7725") AND (NOT ${CONFIG_CAMERA_LOWER} STREQUAL "ov5640"))
-message(FATAL_ERROR "${CONFIG_CAMERA} is not supported, only \"ov7725\" or \"ov5640\" is supported")
+if((NOT ${CONFIG_CAMERA_LOWER} STREQUAL "ov7725") AND (NOT ${CONFIG_CAMERA_LOWER} STREQUAL "ov5640") AND (NOT ${CONFIG_CAMERA_LOWER} STREQUAL "mt9m114"))
+message(FATAL_ERROR "${CONFIG_CAMERA} is not supported, only \"ov7725\", \"ov5640\", \"mt9m114\" is supported")
 else()
 sdk_compile_definitions(-DCONFIG_CAMERA_${CONFIG_CAMERA_UPPER}=1)
 sdk_inc(.)

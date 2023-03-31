@@ -15,9 +15,16 @@
 #include "hpm_sysctl_drv.h"
 #include "hpm_l1c_drv.h"
 
-#define SIZE_PER_TEST   (0x00020000UL)
-#define DST_ADDRESS     BOARD_SDRAM_ADDRESS + (BOARD_SDRAM_SIZE / 16)
-#define SRC_ADDRESS     (0x010c0000UL)
+#define SIZE_PER_TEST   (0x00008000UL)
+#define LINKED_DESCRIPTOR_NUM 3
+
+ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(4) uint8_t s_dst_buffer[LINKED_DESCRIPTOR_NUM][SIZE_PER_TEST];
+ATTR_PLACE_AT_WITH_ALIGNMENT(".fast_ram", 4) uint8_t s_src_buffer[SIZE_PER_TEST];
+/* descriptor should be 8-byte aligned */
+ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(8) dma_linked_descriptor_t descriptors[LINKED_DESCRIPTOR_NUM];
+
+#define DST_ADDRESS     ((uint32_t)(&s_dst_buffer[0][0]))
+#define SRC_ADDRESS     ((uint32_t)(&s_src_buffer[0]))
 
 #ifndef TEST_DMA_CONTROLLER
 #define TEST_DMA_CONTROLLER HPM_XDMA
@@ -45,8 +52,8 @@
 
 uint32_t timer_freq_in_hz;
 
-volatile bool dma_transfer_done = false;
-volatile bool dma_transfer_error = false;
+volatile bool dma_transfer_done;
+volatile bool dma_transfer_error;
 
 static void reset_transfer_status(void)
 {
@@ -54,11 +61,11 @@ static void reset_transfer_status(void)
     dma_transfer_error = false;
 }
 
-static void prepare_test_data(uint8_t *buffer, uint32_t size_in_byte)
+static void prepare_test_data(uint8_t *buffer, uint32_t size_in_byte, uint32_t magic_data)
 {
-    uint32_t i = 0;
+    uint32_t i;
     for (i = 0; i < size_in_byte; i++) {
-        buffer[i] = i;
+        buffer[i] = i + magic_data;
     }
     if (l1c_dc_is_enabled()) {
         uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t)buffer);
@@ -99,9 +106,6 @@ static uint32_t compare_buffers(uint8_t *expected, uint8_t *actual, uint32_t siz
     return errors;
 }
 
-/* descriptor should be 8-byte aligned */
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(8) dma_linked_descriptor_t descriptors[4];
-
 void isr_dma(void)
 {
     volatile hpm_stat_t stat;
@@ -122,7 +126,7 @@ void test_chained_transfer(bool verbose)
 
     intc_m_enable_irq_with_priority(TEST_DMA_IRQ, 1);
 
-    prepare_test_data((uint8_t *)SRC_ADDRESS, SIZE_PER_TEST);
+    prepare_test_data((uint8_t *)SRC_ADDRESS, SIZE_PER_TEST, 0x5AA5);
     for (i = 0; i < ARRAY_SIZE(descriptors); i++) {
         descriptors[i].trans_size = (SIZE_PER_TEST / ARRAY_SIZE(descriptors)) >> DMA_TRANSFER_WIDTH_BYTE;
         descriptors[i].src_addr = core_local_mem_to_sys_address(HPM_CORE0, SRC_ADDRESS + i * OFFSET_PER_DESCRIPTOR);
@@ -142,7 +146,7 @@ void test_chained_transfer(bool verbose)
     ch_config.src_width = DMA_TRANSFER_WIDTH_BYTE;
     ch_config.dst_width = DMA_TRANSFER_WIDTH_BYTE;
     ch_config.size_in_byte = SIZE_PER_TEST / ARRAY_SIZE(descriptors);
-    ch_config.linked_ptr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)&descriptors[0]);
+    ch_config.linked_ptr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)&descriptors[1]);
 
     reset_transfer_status();
     if (status_success != dma_setup_channel(TEST_DMA_CONTROLLER, TEST_DMA_CHANNEL, &ch_config, true)) {
@@ -181,8 +185,7 @@ void test_unchained_transfer(uint32_t src, uint32_t dst, bool verbose)
     for (int32_t i = DMA_SOC_TRANSFER_PER_BURST_MAX(TEST_DMA_CONTROLLER); i >= 0; i--) {
         reset_transfer_status();
         burst_len_in_byte = (1 << i) * (1 << DMA_SOC_TRANSFER_WIDTH_MAX(TEST_DMA_CONTROLLER));
-        src += burst_len_in_byte;
-        prepare_test_data((uint8_t *)src, SIZE_PER_TEST);
+        prepare_test_data((uint8_t *)src, SIZE_PER_TEST, burst_len_in_byte);
 
         printf("dma transferring data from 0x%x to 0x%x, burst size: %d bytes\n",
                 src, dst, burst_len_in_byte);

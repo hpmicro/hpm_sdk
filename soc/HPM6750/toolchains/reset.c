@@ -100,7 +100,7 @@ __attribute__((weak)) void reset_handler(void)
  * a call to __cxa_atexit() with __dso_handle as one of the arguments.
  * The dummy versions of these symbols should be provided.
  */
-void __cxa_atexit(void (*arg1)(void *), void *arg2, void *arg3)
+__attribute__((weak)) void __cxa_atexit(void (*arg1)(void *), void *arg2, void *arg3)
 {
 }
 

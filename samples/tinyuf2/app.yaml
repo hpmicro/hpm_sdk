@@ -2,3 +2,4 @@ excluded_targets:
   - debug
   - release
   - flash_uf2
+  - flash_sdram_uf2

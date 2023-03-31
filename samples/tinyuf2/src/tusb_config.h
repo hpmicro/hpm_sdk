@@ -85,6 +85,11 @@ extern "C" {
 #ifndef CFG_TUSB_MEM_ALIGN
 #define CFG_TUSB_MEM_ALIGN        __attribute__ ((aligned(4)))
 #endif
+
+#ifndef CFG_TUSB_REPORT_ID_COUNT
+#define CFG_TUSB_REPORT_ID_COUNT 0
+#endif
+
     /*-------------------------------------------------------------------- */
     /* DEVICE CONFIGURATION */
     /*-------------------------------------------------------------------- */

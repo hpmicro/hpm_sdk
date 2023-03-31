@@ -20,7 +20,13 @@ typedef struct {
     void (*delay_ms)(uint32_t ms);
     void (*write_rst)(uint8_t state);
     void (*write_pwdn)(uint8_t state);
+    uint16_t i2c_device_addr;
 } camera_context_t;
+
+typedef struct {
+    bool hsync_active_low;
+    bool vsync_active_low;
+} camera_param_dvp_t;
 
 typedef enum {
     camera_interface_dvp,
@@ -32,6 +38,7 @@ typedef struct {
     uint32_t height;
     display_pixel_format_t pixel_format;
     camera_interface_t interface;
+    void *interface_param;
 } camera_config_t;
 
 /* Video Resolution definition. */
@@ -77,7 +84,7 @@ extern "C" {
  * camera device initialization
  */
 hpm_stat_t camera_device_init(camera_context_t *camera_context, camera_config_t *camera_config);
-
+hpm_stat_t camera_device_get_dvp_param(camera_context_t *camera_context, camera_config_t *camera_config);
 #ifdef __cplusplus
 }
 #endif

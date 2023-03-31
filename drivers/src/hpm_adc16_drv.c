@@ -12,7 +12,7 @@ void adc16_get_default_config(adc16_config_t *config)
 {
     config->conv_mode          = adc16_conv_mode_oneshot;
     config->adc_clk_div        = 1;
-    config->wait_dis           = 0;
+    config->wait_dis           = 1;
     config->conv_duration      = 0;
     config->sel_sync_ahb       = true;
     config->port3_rela_time    = false;
@@ -46,7 +46,7 @@ static hpm_stat_t adc16_do_calibration(ADC16_Type *ptr)
     ptr->CONV_CFG1 = (ptr->CONV_CFG1 & ~ADC16_CONV_CFG1_CLOCK_DIVIDER_MASK)
                    | ADC16_CONV_CFG1_CLOCK_DIVIDER_SET(1);
 
-    /* Enable ADC clock */
+    /* Enable ADC config clock */
     ptr->ANA_CTRL0 |= ADC16_ANA_CTRL0_ADC_CLK_ON_MASK;
 
     for (i = 0; i < ADC16_SOC_PARAMS_LEN; i++) {
@@ -65,7 +65,7 @@ static hpm_stat_t adc16_do_calibration(ADC16_Type *ptr)
     /* Enable ahb_en */
     ptr->ADC_CFG0 |= ADC16_ADC_CFG0_ADC_AHB_EN_MASK;
 
-    /* Disable ADC clock */
+    /* Disable ADC config clock */
     ptr->ANA_CTRL0 &= ~ADC16_ANA_CTRL0_ADC_CLK_ON_MASK;
 
     /* Recover input clock divider */
@@ -109,7 +109,7 @@ static hpm_stat_t adc16_do_calibration(ADC16_Type *ptr)
         adc16_params[i] >>= 6;
     }
 
-    /* Enable ADC clock */
+    /* Enable ADC config clock */
     ptr->ANA_CTRL0 |= ADC16_ANA_CTRL0_ADC_CLK_ON_MASK;
 
     ptr->CONV_CFG1 = (ptr->CONV_CFG1 & ~ADC16_CONV_CFG1_CLOCK_DIVIDER_MASK)
@@ -136,7 +136,7 @@ static hpm_stat_t adc16_do_calibration(ADC16_Type *ptr)
     ptr->CONV_CFG1 = (ptr->CONV_CFG1 & ~ADC16_CONV_CFG1_CLOCK_DIVIDER_MASK)
                    | ADC16_CONV_CFG1_CLOCK_DIVIDER_SET(clk_div_temp);
 
-    /* Disable ADC clock */
+    /* Disable ADC config clock */
     ptr->ANA_CTRL0 &= ~ADC16_ANA_CTRL0_ADC_CLK_ON_MASK;
 
     return status_success;
@@ -144,17 +144,19 @@ static hpm_stat_t adc16_do_calibration(ADC16_Type *ptr)
 
 hpm_stat_t adc16_init(ADC16_Type *ptr, adc16_config_t *config)
 {
+    uint32_t clk_div_temp;
+
     /* Set convert clock number and clock period */
     if (config->adc_clk_div > ADC16_CONV_CFG1_CLOCK_DIVIDER_MASK)  {
         return status_invalid_argument;
     }
 
     /* Set ADC minimum conversion cycle and ADC clock divider */
-    ptr->CONV_CFG1 = ADC16_CONV_CFG1_CONVERT_CLOCK_NUMBER_SET(21)
+    ptr->CONV_CFG1 = ADC16_CONV_CFG1_CONVERT_CLOCK_NUMBER_SET(config->res)
                    | ADC16_CONV_CFG1_CLOCK_DIVIDER_SET(config->adc_clk_div);
 
     /* Set ahb_en */
-    /* Set convert duration */
+    /* Set the duration of the conversion */
     ptr->ADC_CFG0 = ADC16_ADC_CFG0_ADC_AHB_EN_SET(config->sel_sync_ahb)
                   | ADC16_ADC_CFG0_CONVERT_DURATION_SET(config->conv_duration);
 
@@ -163,6 +165,27 @@ hpm_stat_t adc16_init(ADC16_Type *ptr, adc16_config_t *config)
         /* Set wait_dis */
         ptr->BUF_CFG0 = ADC16_BUF_CFG0_WAIT_DIS_SET(config->wait_dis);
     }
+
+    /* Get input clock divider */
+    clk_div_temp = ADC16_CONV_CFG1_CLOCK_DIVIDER_GET(ptr->CONV_CFG1);
+
+    /* Set input clock divider temporarily */
+    ptr->CONV_CFG1 = (ptr->CONV_CFG1 & ~ADC16_CONV_CFG1_CLOCK_DIVIDER_MASK)
+                   | ADC16_CONV_CFG1_CLOCK_DIVIDER_SET(1);
+
+    /* Enable ADC config clock */
+    ptr->ANA_CTRL0 |= ADC16_ANA_CTRL0_ADC_CLK_ON_MASK;
+
+    /* Set end count */
+    ptr->ADC16_CONFIG1 &= ~ADC16_ADC16_CONFIG1_COV_END_CNT_MASK;
+    ptr->ADC16_CONFIG1 |= ADC16_ADC16_CONFIG1_COV_END_CNT_SET(ADC16_SOC_MAX_CONV_CLK_NUM - config->res + 1);
+
+    /* Disable ADC config clock */
+    ptr->ANA_CTRL0 &= ~ADC16_ANA_CTRL0_ADC_CLK_ON_MASK;
+
+    /* Recover input clock divider */
+    ptr->CONV_CFG1 = (ptr->CONV_CFG1 & ~ADC16_CONV_CFG1_CLOCK_DIVIDER_MASK)
+                   | ADC16_CONV_CFG1_CLOCK_DIVIDER_SET(clk_div_temp);
 
     /* Do a calibration */
     adc16_do_calibration(ptr);
@@ -309,12 +332,12 @@ hpm_stat_t adc16_set_pmt_config(ADC16_Type *ptr, adc16_pmt_config_t *config)
 
 hpm_stat_t adc16_set_pmt_queue_enable(ADC16_Type *ptr, uint8_t trig_ch, bool enable)
 {
-#if ADC_SOC_PREEMPT_ENABLE_CTRL_SUPPORT == 1
     /* Check the specified trigger channel */
     if (ADC16_IS_TRIG_CH_INVLAID(trig_ch)) {
         return status_invalid_argument;
     }
 
+#if ADC_SOC_PREEMPT_ENABLE_CTRL_SUPPORT == 1
     /* Set queue enable control */
     ptr->CONFIG[trig_ch] |= ADC16_CONFIG_QUEUE_EN_SET(enable);
     return status_success;
@@ -326,11 +349,21 @@ hpm_stat_t adc16_set_pmt_queue_enable(ADC16_Type *ptr, uint8_t trig_ch, bool ena
 /* one shot mode */
 hpm_stat_t adc16_get_oneshot_result(ADC16_Type *ptr, uint8_t ch, uint16_t *result)
 {
+    uint32_t bus_res;
+
+    /* Check the specified channel number */
     if (ADC16_IS_CHANNEL_INVALID(ch)) {
         return status_invalid_argument;
     }
 
-    *result = ADC16_BUS_RESULT_CHAN_RESULT_GET(ptr->BUS_RESULT[ch]);
+    bus_res = ptr->BUS_RESULT[ch];
+    *result = ADC16_BUS_RESULT_CHAN_RESULT_GET(bus_res);
+
+    if (ADC16_BUF_CFG0_WAIT_DIS_GET(ptr->BUF_CFG0)) {
+        if (!ADC16_BUS_RESULT_VALID_GET(bus_res)) {
+            return status_fail;
+        }
+    }
 
     return status_success;
 }
@@ -382,13 +415,13 @@ void adc16_disable_temp_sensor(ADC16_Type *ptr)
     ptr->CONV_CFG1 = (ptr->CONV_CFG1 & ~ADC16_CONV_CFG1_CLOCK_DIVIDER_MASK)
                    | ADC16_CONV_CFG1_CLOCK_DIVIDER_SET(1);
 
-    /* Enable ADC clock */
+    /* Enable ADC config clock */
     ptr->ANA_CTRL0 |= ADC16_ANA_CTRL0_ADC_CLK_ON_MASK;
 
     /* Disable the temp sensor */
     ptr->ADC16_CONFIG0 &= ~ADC16_ADC16_CONFIG0_TEMPSNS_EN_MASK;
 
-    /* Disable ADC clock */
+    /* Disable ADC config clock */
     ptr->ANA_CTRL0 &= ~ADC16_ANA_CTRL0_ADC_CLK_ON_MASK;
 
     /* Recover input clock divider */

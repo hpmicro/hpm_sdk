@@ -18,7 +18,7 @@ BOARD_FEATURE_DELIM=":"
 def get_info(board_yml, info_type = "soc"):
     is_error = False
     ip_list = ""
-    result = None
+    result = "not found"
     with open(board_yml, "r") as stream:
         try:
             board_info = yaml.safe_load(stream)
@@ -46,18 +46,10 @@ def get_info(board_yml, info_type = "soc"):
             elif(info_type == "device"):
                 if BOARD_INFO_DEVICE_NAME_KEY in board_info["board"].keys():
                     result = ("%s" % board_info["board"][BOARD_INFO_DEVICE_NAME_KEY])
-                else:
-                    result = ""
-            else:
-                is_error = True
         except yaml.YAMLError as e:
-            is_error = True
+            pass
     stream.close()
     return result
 
 if __name__ == "__main__":
-    info = get_info(sys.argv[1], sys.argv[2].lower())
-    if not info is None:
-        sys.stdout.write("%s" % info)
-    else:
-        sys.stdout.write("error occured")
+    sys.stdout.write(get_info(sys.argv[1], sys.argv[2].lower()))

@@ -94,22 +94,24 @@ static int enet_mac_init(ENET_Type *ptr, enet_mac_config_t *config, enet_inf_typ
 {
     for (int i = 0; i < config->valid_max_count; i++) {
         if (i == 0) {
-            ptr->MAC_ADDR_0_HIGH = ENET_MAC_ADDR_0_HIGH_AE_MASK;
+            ptr->MAC_ADDR_0_HIGH &= ~ENET_MAC_ADDR_0_HIGH_ADDRHI_MASK;
+            ptr->MAC_ADDR_0_LOW  &= ~ENET_MAC_ADDR_0_LOW_ADDRLO_MASK;
             ptr->MAC_ADDR_0_HIGH |= ENET_MAC_ADDR_0_HIGH_ADDRHI_SET(config->mac_addr_high[i]);
-            ptr->MAC_ADDR_0_LOW  = ENET_MAC_ADDR_0_LOW_ADDRLO_SET(config->mac_addr_low[i]);
+            ptr->MAC_ADDR_0_LOW  |= ENET_MAC_ADDR_0_LOW_ADDRLO_SET(config->mac_addr_low[i]);
         } else {
-            ptr->MAC_ADDR[i].HIGH |= ENET_MAC_ADDR_HIGH_ADDRHI_SET(config->mac_addr_high[i]);
-            ptr->MAC_ADDR[i].LOW  |= ENET_MAC_ADDR_LOW_ADDRLO_SET(config->mac_addr_low[i]);
+            ptr->MAC_ADDR[i-1].HIGH &= ~ENET_MAC_ADDR_HIGH_ADDRHI_MASK;
+            ptr->MAC_ADDR[i-1].LOW  &= ~ENET_MAC_ADDR_LOW_ADDRLO_MASK;
+            ptr->MAC_ADDR[i-1].HIGH |= ENET_MAC_ADDR_HIGH_AE_MASK | ENET_MAC_ADDR_HIGH_ADDRHI_SET(config->mac_addr_high[i]);
+            ptr->MAC_ADDR[i-1].LOW  |= ENET_MAC_ADDR_LOW_ADDRLO_SET(config->mac_addr_low[i]);
         }
     }
-
 
     /* set the appropriate filters for the incoming frames */
     ptr->MACFF |= ENET_MACFF_RA_SET(1);      /* receive all */
 
     /* replace the content of the mac address 0 in the sa field of all transmitted frames */
-    ptr->MACCFG &= ENET_MACCFG_SARC_MASK;
-    ptr->MACCFG |= ENET_MACCFG_SARC_SET(0x3);
+    ptr->MACCFG &= ~ENET_MACCFG_SARC_MASK;
+    ptr->MACCFG |= ENET_MACCFG_SARC_SET(config->sarc);
 
     ptr->MACCFG |= ENET_MACCFG_PS_MASK | ENET_MACCFG_FES_MASK;
 
@@ -344,6 +346,99 @@ enet_frame_t enet_get_received_frame_interrupt(enet_rx_desc_t **parent_rx_desc_l
     }
 
     return frame;
+}
+
+void enet_get_default_tx_control_config(ENET_Type *ptr, enet_tx_control_config_t *config)
+{
+    config->enable_ioc  = false;
+    config->disable_crc = true;
+    config->disable_pad = false;
+    config->enable_tts  = false;
+    config->enable_crcr = true;
+    config->cic         = enet_cic_ip_pseudoheader;
+    config->vlic        = enet_vlic_disable;
+    config->saic        = enet_saic_disable;
+}
+
+uint32_t enet_prepare_tx_desc(ENET_Type *ptr, enet_tx_desc_t **parent_tx_desc_list_cur, enet_tx_control_config_t *config, uint16_t frame_length, uint16_t tx_buff_size)
+{
+    uint32_t buf_count = 0, size = 0, i = 0;
+    enet_tx_desc_t *dma_tx_desc;
+    enet_tx_desc_t  *tx_desc_list_cur = *parent_tx_desc_list_cur;
+
+    if (tx_buff_size == 0) {
+        return ENET_ERROR;
+    }
+    /* check if the descriptor is owned by the Ethernet DMA (when set) or CPU (when reset) */
+    dma_tx_desc = tx_desc_list_cur;
+    if (frame_length > tx_buff_size) {
+        buf_count = frame_length / tx_buff_size;
+        if (frame_length % tx_buff_size) {
+            buf_count++;
+        }
+    } else {
+        buf_count = 1;
+    }
+
+    if (buf_count == 1) {
+        /*set the last and the first segment */
+        dma_tx_desc->tdes0_bm.own  = 0;
+        dma_tx_desc->tdes0_bm.fs   = 1;
+        dma_tx_desc->tdes0_bm.ls   = 1;
+        dma_tx_desc->tdes0_bm.ic   = config->enable_ioc;
+        dma_tx_desc->tdes0_bm.dc   = config->disable_crc;
+        dma_tx_desc->tdes0_bm.dp   = config->disable_pad;
+        dma_tx_desc->tdes0_bm.crcr = config->enable_crcr;
+        dma_tx_desc->tdes0_bm.cic  = config->cic;
+        dma_tx_desc->tdes0_bm.vlic = config->vlic;
+        dma_tx_desc->tdes1_bm.saic = config->saic;
+        /* set the frame size */
+        dma_tx_desc->tdes1_bm.tbs1 = (frame_length & ENET_DMATxDesc_TBS1);
+        /* set own bit of the Tx descriptor status: gives the buffer back to Ethernet DMA */
+        dma_tx_desc->tdes0_bm.own = 1;
+        ptr->DMA_TX_POLL_DEMAND = 1;
+
+        dma_tx_desc = (enet_tx_desc_t *)(dma_tx_desc->tdes3_bm.next_desc);
+    } else {
+        for (i = 0; i < buf_count; i++) {
+            /* clear first and last segment bits */
+            dma_tx_desc->tdes0_bm.fs = 0;
+            dma_tx_desc->tdes0_bm.ls = 0;
+
+            if (i == 0) {
+                /* setting the first segment bit */
+                dma_tx_desc->tdes0_bm.fs = 1;
+                dma_tx_desc->tdes0_bm.dc   = config->disable_crc;
+                dma_tx_desc->tdes0_bm.dp   = config->disable_pad;
+                dma_tx_desc->tdes0_bm.crcr = config->enable_crcr;
+                dma_tx_desc->tdes0_bm.cic  = config->cic;
+                dma_tx_desc->tdes0_bm.vlic = config->vlic;
+                dma_tx_desc->tdes1_bm.saic = config->saic;
+            }
+
+            /* set the buffer 1 size */
+            dma_tx_desc->tdes1_bm.tbs1 = (tx_buff_size & ENET_DMATxDesc_TBS1);
+
+            if (i == (buf_count - 1)) {
+                /* set the last segment bit */
+                dma_tx_desc->tdes0_bm.ls = 1;
+                dma_tx_desc->tdes0_bm.ic   = config->enable_ioc;
+                size = frame_length - (buf_count - 1) * tx_buff_size;
+                dma_tx_desc->tdes1_bm.tbs1 = (size & ENET_DMATxDesc_TBS1);
+
+                /* set own bit of the Tx descriptor status: gives the buffer back to Ethernet DMA */
+                dma_tx_desc->tdes0_bm.own = 1;
+                ptr->DMA_TX_POLL_DEMAND = 1;
+            }
+
+            dma_tx_desc = (enet_tx_desc_t *)(dma_tx_desc->tdes3_bm.next_desc);
+        }
+    }
+
+    tx_desc_list_cur = dma_tx_desc;
+    *parent_tx_desc_list_cur = tx_desc_list_cur;
+
+    return ENET_SUCCESS;
 }
 
 uint32_t enet_prepare_transmission_descriptors(ENET_Type *ptr, enet_tx_desc_t **parent_tx_desc_list_cur, uint16_t frame_length, uint16_t tx_buff_size)
@@ -620,34 +715,65 @@ void enet_set_pps0_control_output(ENET_Type *ptr, enet_pps_ctrl_t freq)
     ptr->PPS_CTRL |= ENET_PPS_CTRL_PPSCTRLCMD0_SET(freq);
 }
 
-void enet_set_pps0_cmd(ENET_Type *ptr, enet_pps_cmd_t cmd)
+hpm_stat_t enet_set_ppsx_command(ENET_Type *ptr, enet_pps_cmd_t cmd, enet_pps_idx_t idx)
 {
+    if (idx >= ENET_SOC_PPS_MAX_COUNT) {
+        return status_invalid_argument;
+    }
+
     /* Wait the last command to complete */
-    while (ENET_PPS_CTRL_PPSCTRLCMD0_GET(ptr->PPS_CTRL)) {
+    while (ptr->PPS_CTRL & (ENET_PPS_CMD_MASK << ((idx + 1) << ENET_PPS_CMD_OFS_FAC))) {
 
     }
 
-    ptr->PPS_CTRL |= ENET_PPS_CTRL_PPSCTRLCMD0_SET(cmd);
+    /* Set the specified pps output with a specified command */
+    ptr->PPS_CTRL |= cmd << ((idx + 1) << ENET_PPS_CMD_OFS_FAC);
+
+    return status_success;
 }
 
-void enet_set_pps0_command_config(ENET_Type *ptr, enet_pps_cmd_config_t *cmd_cfg)
+hpm_stat_t enet_set_ppsx_config(ENET_Type *ptr, enet_pps_cmd_config_t *cmd_cfg, enet_pps_idx_t idx)
 {
-    /* Set PPS0 interval and width */
-    ptr->PPS0_INTERVAL = cmd_cfg->pps_interval - 1;
-    ptr->PPS0_WIDTH    = cmd_cfg->pps_width - 1;
+    if (idx >= ENET_SOC_PPS_MAX_COUNT) {
+        return status_invalid_argument;
+    }
+
+    /* Set the interval and width for PPSx */
+    if (idx == enet_pps_0) {
+        ptr->PPS0_INTERVAL = cmd_cfg->pps_interval - 1;
+        ptr->PPS0_WIDTH    = cmd_cfg->pps_width - 1;
+    } else {
+        ptr->PPS[idx].INTERVAL = cmd_cfg->pps_interval - 1;
+        ptr->PPS[idx].WIDTH    = cmd_cfg->pps_width - 1;
+    }
 
     /* Set the target timestamp */
-    ptr->TGTTM_SEC     = cmd_cfg->target_sec;
-    ptr->TGTTM_NSEC    = cmd_cfg->target_nsec;
+    if (idx == enet_pps_0) {
+        ptr->TGTTM_SEC  = cmd_cfg->target_sec;
+        ptr->TGTTM_NSEC = cmd_cfg->target_nsec;
+    } else {
+        ptr->PPS[idx].TGTTM_SEC  = cmd_cfg->target_sec;
+        ptr->PPS[idx].TGTTM_NSEC = cmd_cfg->target_nsec;
+    }
 
     /* Set PPS0 as the command function */
-    ptr->PPS_CTRL     |= ENET_PPS_CTRL_PPSEN0_MASK;
+    if (idx == enet_pps_0) {
+        ptr->PPS_CTRL |= ENET_PPS_CTRL_PPSEN0_MASK;
+    }
+
+#if ENET_SOC_PPS1_EN
+    if (idx == enet_pps_1) {
+        ptr->PPS_CTRL |= ENET_PPS_CTRL_PPSEN1_MASK;
+    }
+#endif
 
     /* Wait the last command to complete */
-    while (ENET_PPS_CTRL_PPSCTRLCMD0_GET(ptr->PPS_CTRL)) {
+    while (ptr->PPS_CTRL & (ENET_PPS_CMD_MASK << ((idx + 1) << ENET_PPS_CMD_OFS_FAC))) {
 
     }
 
     /* Initialize with the No Command */
-    ptr->PPS_CTRL &= ~ENET_PPS_CTRL_PPSCTRLCMD0_MASK;
+    ptr->PPS_CTRL &= ~(ENET_PPS_CMD_MASK << ((idx + 1) << ENET_PPS_CMD_OFS_FAC));
+
+    return status_success;
 }

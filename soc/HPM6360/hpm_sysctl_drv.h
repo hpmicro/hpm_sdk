@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -25,15 +25,11 @@
 typedef enum {
     sysctl_retention_domain_sys = 0,
     sysctl_retention_domain_cpu0 = 2,
-    sysctl_retention_domain_cpu1 = 4,
-    sysctl_retention_domain_conn = 6,
-    sysctl_retention_domain_vis = 8,
-    sysctl_retention_domain_xtal24m = 10,
-    sysctl_retention_domain_pll0 = 11,
-    sysctl_retention_domain_pll1 = 12,
-    sysctl_retention_domain_pll2 = 13,
-    sysctl_retention_domain_pll3 = 14,
-    sysctl_retention_domain_pll4 = 15,
+
+    sysctl_retention_domain_xtal24m = 4,
+    sysctl_retention_domain_pll0 = 5,
+    sysctl_retention_domain_pll1 = 6,
+    sysctl_retention_domain_pll2 = 7,
 } sysctl_retention_domain_t;
 
 /**
@@ -51,10 +47,7 @@ typedef enum {
  */
 typedef enum {
     sysctl_reset_domain_soc = 0,
-    sysctl_reset_domain_con,
-    sysctl_reset_domain_vis,
     sysctl_reset_domain_cpu0,
-    sysctl_reset_domain_cpu1,
 } sysctl_reset_domain_t;
 
 /**
@@ -339,23 +332,19 @@ typedef enum {
     monitor_target_clk_irc24m = 1,
     monitor_target_clk_xtal_24m = 2,
     monitor_target_clk_usb0_phy = 3,
-    monitor_target_clk_usb1_phy = 4,
+
     monitor_target_clk0_osc0 = 8,
     monitor_target_clk0_pll0 = 9,
-    monitor_target_clk0_pll1 = 10,
-    monitor_target_clk1_pll1 = 11,
-    monitor_target_clk0_pll2 = 12,
-    monitor_target_clk1_pll2 = 13,
-    monitor_target_clk0_pll3 = 14,
-    monitor_target_clk0_pll4 = 15,
+    monitor_target_clk1_pll0 = 10,
+    monitor_target_clk2_pll0 = 11,
+    monitor_target_clk0_pll1 = 12,
+    monitor_target_clk1_pll1 = 13,
+    monitor_target_clk0_pll2 = 14,
+    monitor_target_clk1_pll2 = 15,
+
     monitor_target_clk_top_cpu0 = 128,
     monitor_target_clk_top_mchtmr0 = 129,
-    monitor_target_clk_top_cpu1 = 130,
-    monitor_target_clk_top_mchtmr1 = 131,
-    monitor_target_clk_top_axi0 = 132,
-    monitor_target_clk_top_axi1 = 133,
-    monitor_target_clk_top_axi2 = 134,
-    monitor_target_clk_top_ahb0 = 135,
+
     monitor_target_clk_top_femc = 136,
     monitor_target_clk_top_xpi0 = 137,
     monitor_target_clk_top_xpi1 = 138,
@@ -363,10 +352,7 @@ typedef enum {
     monitor_target_clk_top_gptmr1 = 140,
     monitor_target_clk_top_gptmr2 = 141,
     monitor_target_clk_top_gptmr3 = 142,
-    monitor_target_clk_top_gptmr4 = 143,
-    monitor_target_clk_top_gptmr5 = 144,
-    monitor_target_clk_top_gptmr6 = 145,
-    monitor_target_clk_top_gptmr7 = 146,
+
     monitor_target_clk_top_uart0 = 147,
     monitor_target_clk_top_uart1 = 148,
     monitor_target_clk_top_uart2 = 149,
@@ -375,14 +361,7 @@ typedef enum {
     monitor_target_clk_top_uart5 = 152,
     monitor_target_clk_top_uart6 = 153,
     monitor_target_clk_top_uart7 = 154,
-    monitor_target_clk_top_uart8 = 155,
-    monitor_target_clk_top_uart9 = 156,
-    monitor_target_clk_top_uarta = 157,
-    monitor_target_clk_top_uartb = 158,
-    monitor_target_clk_top_uartc = 159,
-    monitor_target_clk_top_uartd = 160,
-    monitor_target_clk_top_uarte = 161,
-    monitor_target_clk_top_uartf = 162,
+
     monitor_target_clk_top_i2c0 = 163,
     monitor_target_clk_top_i2c1 = 164,
     monitor_target_clk_top_i2c2 = 165,
@@ -393,28 +372,25 @@ typedef enum {
     monitor_target_clk_top_spi3 = 170,
     monitor_target_clk_top_can0 = 171,
     monitor_target_clk_top_can1 = 172,
-    monitor_target_clk_top_can2 = 173,
-    monitor_target_clk_top_can3 = 174,
+
     monitor_target_clk_top_ptpc = 175,
     monitor_target_clk_top_ana0 = 176,
     monitor_target_clk_top_ana1 = 177,
     monitor_target_clk_top_ana2 = 178,
-    monitor_target_clk_top_aud0 = 179,
-    monitor_target_clk_top_aud1 = 180,
-    monitor_target_clk_top_aud2 = 181,
-    monitor_target_clk_top_dis0 = 182,
-    monitor_target_clk_top_cam0 = 183,
-    monitor_target_clk_top_cam1 = 184,
+    monitor_target_clk_top_ana3 = 179,
+    monitor_target_clk_top_aud0 = 180,
+    monitor_target_clk_top_aud1 = 181,
+
     monitor_target_clk_top_eth0 = 185,
-    monitor_target_clk_top_eth1 = 186,
+
     monitor_target_clk_top_ptp0 = 187,
-    monitor_target_clk_top_ptp1 = 188,
+
     monitor_target_clk_top_ref0 = 189,
     monitor_target_clk_top_ref1 = 190,
     monitor_target_clk_top_ntmr0 = 191,
-    monitor_target_clk_top_ntmr1 = 192,
+
     monitor_target_clk_top_sdxc0 = 193,
-    monitor_target_clk_top_sdxc1 = 194,
+
 } monitor_target_t;
 
 /**

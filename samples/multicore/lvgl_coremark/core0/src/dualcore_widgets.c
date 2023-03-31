@@ -6,17 +6,18 @@
 /*********************
  *      INCLUDES
  *********************/
-#include "lv_demo_widgets.h"
-#include "dualcore_widgets.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "hpm_common.h"
 #include "hpm_soc.h"
+#include "board.h"
 #include "hpm_l1c_drv.h"
 #include "hpm_pllctl_drv.h"
 #include "hpm_clock_drv.h"
 #include "core_portme.h"
+#include "lv_demo_widgets.h"
+#include "dualcore_widgets.h"
 
 coremark_context_t *g_cm_ctx[2] = { (coremark_context_t *) 0xBF000, (coremark_context_t *) 0x011FF000, };
 

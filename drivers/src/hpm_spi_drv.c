@@ -255,16 +255,11 @@ hpm_stat_t spi_write_read_data(SPI_Type *ptr, uint8_t data_len_in_bytes, uint8_t
 
 static hpm_stat_t spi_no_data(SPI_Type *ptr, spi_mode_selection_t mode, spi_control_config_t *config)
 {
-    hpm_stat_t stat;
     if (mode == spi_master_mode) {
         if (config->master_config.cmd_enable == false && config->master_config.addr_enable == false) {
             return status_invalid_argument;
         }
-    } else {
-        HPM_CHECK_RET(spi_wait_for_busy_status(ptr));
-        HPM_CHECK_RET(spi_wait_for_idle_status(ptr));
     }
-
     return status_success;
 }
 
@@ -441,11 +436,6 @@ hpm_stat_t spi_transfer(SPI_Type *ptr,
 
     /* read command on slave mode */
     stat = spi_read_command(ptr, mode, config, cmd);
-    if (stat != status_success) {
-        return stat;
-    }
-
-    stat = spi_wait_for_idle_status(ptr);
 
     return stat;
 }
@@ -457,11 +447,6 @@ hpm_stat_t spi_setup_dma_transfer(SPI_Type *ptr,
 {
     hpm_stat_t stat = status_fail;
     uint8_t mode;
-
-    stat = spi_wait_for_idle_status(ptr);
-    if (stat != status_success) {
-        return stat;
-    }
 
     stat = spi_control_init(ptr, config, wcount, rcount);
     if (stat != status_success) {

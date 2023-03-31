@@ -310,10 +310,11 @@ int main(void)
     printf("sysctl example\n");
 
     /*Enable software reset*/
-    ppor_reset_set_source_enable(ppor_ptr, ppor_reset_software);
+    ppor_reset_mask_set_source_enable(ppor_ptr, ppor_reset_software);
     /*If a software reset occurs, clear the reset flag and print the message*/
     if (ppor_reset_get_flags(ppor_ptr) & ppor_reset_software) {
         ppor_reset_clear_flags(ppor_ptr, ppor_reset_software);
+        ppor_reset_mask_clear_source_enable(ppor_ptr, ppor_reset_software);
         printf("Software reset has occurred\n");
         while (1) {
         };

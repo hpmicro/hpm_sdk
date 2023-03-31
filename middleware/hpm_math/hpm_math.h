@@ -13,16 +13,16 @@
  * @ingroup middleware_interfaces
  */
 
-#define HPM_DSP_HW_NDS32 nds32_dsp_core//andes hardware dsp
+#define HPM_DSP_HW_NDS32 1 /* andes hardware dsp */
 
 #ifdef CONFIG_HPM_MATH_HAS_EXTRA_CONFIG
 #include CONFIG_HPM_MATH_HAS_EXTRA_CONFIG
 #else
 
-/*Enable Compute Cell Library*/
-// #define HPM_EN_MATH_FFA_LIB
-// #define HPM_EN_MATH_DSP_LIB
-// #define HPM_EN_MATH_NN_LIB
+/* Enable Compute Cell Library*/
+/* #define HPM_EN_MATH_FFA_LIB */
+/* #define HPM_EN_MATH_DSP_LIB */
+/* #define HPM_EN_MATH_NN_LIB */
 
 #define HPM_MATH_DSP_STATISTICS 1
 #define HPM_MATH_DSP_BASIC 1
@@ -34,6 +34,7 @@
 #define HPM_MATH_DSP_SVM 1
 #define HPM_MATH_DSP_TRANSFORM 1
 #define HPM_MATH_DSP_UTILS 1
+#define HPM_MATH_DSP_SORT 1
 
 #define HPM_MATH_NN_ACTIVATION 1
 #define HPM_MATH_NN_BASIC  1
@@ -44,7 +45,7 @@
 #define HPM_MATH_NN_SOFTMAX 1
 #define HPM_MATH_NN_UTIL 1
 
-#define HPM_DSP_CORE HPM_DSP_HW_NDS32 //DSP core selection
+#define HPM_DSP_CORE HPM_DSP_HW_NDS32 /* DSP core selection */
 
 #define HPM_MATH_PI (3.1415926535898)
 
@@ -637,6 +638,118 @@ static inline uint32_t hpm_dsp_gaussian_naive_bayes_est_f32(const riscv_dsp_gaus
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
     return riscv_dsp_gaussian_naive_bayes_est_f32(instance, src, buf);
+#endif
+}
+
+/**
+ * @brief Maximum absolute value of the floating-potint vector.
+ * @param[in]       src     pointer of the input vector
+ * @param[in]       size    number of elements in a vector
+ * @param[out]      index   index of the maximum value
+ * @return Maximum value
+ */
+static inline float32_t hpm_dsp_absmax_f32(const float32_t* src, uint32_t size, uint32_t* index)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    return riscv_dsp_absmax_f32(src, size, index);
+#endif
+}
+
+/**
+ * @brief Maximum absolute value of the q15 vector.
+ * @param[in]       src     pointer of the input vector
+ * @param[in]       size    number of elements in a vector
+ * @param[out]      index   index of the maximum value
+ * @return Maximum value
+ */
+static inline q15_t hpm_dsp_absmax_q15(const q15_t* src, uint32_t size, uint32_t* index)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    return riscv_dsp_absmax_q15(src, size, index);
+#endif
+}
+
+/**
+ * @brief Maximum absolute value of the q31 vector.
+ * @param[in]       src     pointer of the input vector
+ * @param[in]       size    number of elements in a vector
+ * @param[out]      index   index of the maximum value
+ * @return Maximum value
+ */
+static inline q31_t hpm_dsp_absmax_q31(const q31_t* src, uint32_t size, uint32_t* index)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    return riscv_dsp_absmax_q31(src, size, index);
+#endif
+}
+
+/**
+ * @brief Maximum absolute value of the q7 vector.
+ * @param[in]       src     pointer of the input vector
+ * @param[in]       size    number of elements in a vector
+ * @param[out]      index   index of the maximum value
+ * @return Maximum value
+ */
+static inline q7_t hpm_dsp_absmax_q7(const q7_t* src, uint32_t size, uint32_t* index)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    return riscv_dsp_absmax_q7(src, size, index);
+#endif
+}
+
+/**
+ * @brief Minimum absolute value of the floating-potint vector.
+ * @param[in]       src     pointer of the input vector
+ * @param[in]       size    number of elements in a vector
+ * @param[out]      index   index of the maximum value
+ * @return Minimum value
+ */
+static inline float32_t hpm_dsp_absmin_f32(const float32_t* src, uint32_t size, uint32_t* index)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    return riscv_dsp_absmin_f32(src, size, index);
+#endif
+}
+
+/**
+ * @brief Minimum absolute value of the q31 vector.
+ * @param[in]       src     pointer of the input vector
+ * @param[in]       size    number of elements in a vector
+ * @param[out]      index   index of the maximum value
+ * @return Minimum value
+ */
+static inline q31_t hpm_dsp_absmin_q31(const q31_t* src, uint32_t size, uint32_t* index)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    return riscv_dsp_absmin_q31(src, size, index);
+#endif
+}
+
+/**
+ * @brief Minimum absolute value of the q15 vector.
+ * @param[in]       src     pointer of the input vector
+ * @param[in]       size    number of elements in a vector
+ * @param[out]      index   index of the maximum value
+ * @return Minimum value
+ */
+static inline q15_t hpm_dsp_absmin_q15(const q15_t* src, uint32_t size, uint32_t* index)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    return riscv_dsp_absmin_q15(src, size, index);
+#endif
+}
+
+/**
+ * @brief Minimum absolute value of the q7 vector.
+ * @param[in]       src     pointer of the input vector
+ * @param[in]       size    number of elements in a vector
+ * @param[out]      index   index of the maximum value
+ * @return Minimum value
+ */
+static inline q7_t hpm_dsp_absmin_q7(const q7_t* src, uint32_t size, uint32_t* index)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    return riscv_dsp_absmin_q7(src, size, index);
 #endif
 }
 
@@ -1431,6 +1544,286 @@ static inline void hpm_dsp_shift_u8(uint8_t *src, int8_t shift, uint8_t *dst, ui
     riscv_dsp_shift_u8(src, shift, dst, size);
 #endif
 }
+
+/**
+ * @addtogroup basic_clip
+ * @{
+ */
+/**
+ * @brief Elementwise clipping of f32 function.
+ * @param[in]       *src pointer of the input vector
+ * @param[out]      *dst pointer of the output vector
+ * @param[in]       low  lower bound.
+ * @param[in]       high higher bound.
+ * @param[in]       size number of elements in a vector
+ * @return none.
+ */
+static inline void hpm_dsp_clip_f32(float32_t *src, float32_t *dst, float32_t low, float32_t high, uint32_t size)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_clip_f32(src, dst, low, high, size);
+#endif
+}
+/**
+ * @brief Elementwise clipping of q31 function.
+ * @param[in]       *src pointer of the input vector
+ * @param[out]      *dst pointer of the output vector
+ * @param[in]       low  lower bound.
+ * @param[in]       high higher bound.
+ * @param[in]       size number of elements in a vector
+ * @return none.
+ */
+static inline void hpm_dsp_clip_q31(q31_t *src, q31_t *dst, q31_t low, q31_t high, uint32_t size)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_clip_q31(src, dst, low, high, size);
+#endif
+}
+/**
+ * @brief Elementwise clipping of q15 function.
+ * @param[in]       *src pointer of the input vector
+ * @param[out]      *dst pointer of the output vector
+ * @param[in]       low  lower bound.
+ * @param[in]       high higher bound.
+ * @param[in]       size number of elements in a vector
+ * @return none.
+ */
+static inline void hpm_dsp_clip_q15(q15_t *src, q15_t *dst, q15_t low, q15_t high, uint32_t size)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_clip_q15(src, dst, low, high, size);
+#endif
+}
+/**
+ * @brief Elementwise clipping of q7 function.
+ * @param[in]       *src pointer of the input vector
+ * @param[out]      *dst pointer of the output vector
+ * @param[in]       low  lower bound.
+ * @param[in]       high higher bound.
+ * @param[in]       size number of elements in a vector
+ * @return none.
+ */
+static inline void hpm_dsp_clip_q7(q7_t *src, q7_t *dst, q7_t low, q7_t high, uint32_t size)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_clip_q7(src, dst, low, high, size);
+#endif
+}
+/** @} basic_clip */
+
+// AND
+/**
+ * @defgroup basic_and Bitwise AND Functions
+ * @brief  Bitwise AND Functions
+ *
+ * Bitwise AND functions calculate logical bitwise AND value from separate source vectors and write the results one-by-one into a destination vector.
+ *
+ * Andes DSP library supports distinct bitwise AND functions for U32, U15 and U8 data types. These functions are introduced in the subsections below.
+ */
+/**
+ * @addtogroup basic_and
+ * @{
+ */
+/**
+ * @brief Compute the logical bitwise AND of two u32 vectors.
+ * @param[in]       *src1 pointer of the first input vector
+ * @param[in]       *src2 pointer of the second input vector
+ * @param[out]      *dst pointer of the output vector
+ * @param[in]       size number of elements in a vector
+ * @return none.
+ */
+static inline void hpm_dsp_and_u32(u32_t *src1, u32_t *src2, u32_t *dst, uint32_t size)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_and_u32(src1, src2, dst, size);
+#endif
+}
+/**
+ * @brief Compute the logical bitwise AND of two u8 vectors.
+ * @param[in]       *src1 pointer of the first input vector
+ * @param[in]       *src2 pointer of the second input vector
+ * @param[out]      *dst pointer of the output vector
+ * @param[in]       size number of elements in a vector
+ * @return none.
+ */
+static inline void hpm_dsp_and_u8(u8_t *src1, u8_t *src2, u8_t *dst, uint32_t size)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_and_u8(src1, src2, dst, size);
+#endif
+}
+/** @} basic_and */
+
+// OR
+/**
+ * @defgroup basic_or Bitwise Inclusive OR Functions
+ * @brief  Bitwise Inclusive OR Functions
+ *
+ * Bitwise inclusive OR functions calculate logical bitwise OR value from separate source vectors and write the results one-by-one into a destination vector.
+ *
+ * Andes DSP library supports distinct bitwise inclusive OR functions for U32, U15 and U8 data types. These functions are introduced in the subsections below.
+ */
+/**
+ * @addtogroup basic_or
+ * @{
+ */
+/**
+ * @brief Compute the logical bitwise OR of two u32 vectors.
+ * @param[in]       *src1 pointer of the first input vector
+ * @param[in]       *src2 pointer of the second input vector
+ * @param[out]      *dst pointer of the output vector
+ * @param[in]       size number of elements in a vector
+ * @return none.
+ */
+static inline void hpm_dsp_or_u32(u32_t *src1, u32_t *src2, u32_t *dst, uint32_t size)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_or_u32(src1, src2, dst, size);
+#endif
+}
+/**
+ * @brief Compute the logical bitwise OR of two u16 vectors.
+ * @param[in]       *src1 pointer of the first input vector
+ * @param[in]       *src2 pointer of the second input vector
+ * @param[out]      *dst pointer of the output vector
+ * @param[in]       size number of elements in a vector
+ * @return none.
+ */
+static inline void hpm_dsp_or_u16(u16_t *src1, u16_t *src2, u16_t *dst, uint32_t size)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_or_u16(src1, src2, dst, size);
+#endif
+}
+/**
+ * @brief Compute the logical bitwise OR of two u8 vectors.
+ * @param[in]       *src1 pointer of the first input vector
+ * @param[in]       *src2 pointer of the second input vector
+ * @param[out]      *dst pointer of the output vector
+ * @param[in]       size number of elements in a vector
+ * @return none.
+ */
+static inline void hpm_dsp_or_u8(u8_t *src1, u8_t *src2, u8_t *dst, uint32_t size)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_or_u8(src1, src2, dst, size);
+#endif
+}
+/** @} basic_or */
+
+// XOR
+/**
+ * @defgroup basic_xor Bitwise exclusive OR Functions
+ * @brief  Bitwise exclusive OR Functions
+ *
+ * Bitwise exclusive OR (XOR) functions calculate logical bitwise XOR value from separate source vectors and write the results one-by-one into a destination vector.
+ *
+ * Andes DSP library supports distinct bitwise XOR functions for U32, U15 and U8 data types. These functions are introduced in the subsections below.
+ */
+/**
+ * @addtogroup basic_xor
+ * @{
+ */
+/**
+ * @brief Compute the logical bitwise XOR of two u32 vectors.
+ * @param[in]       *src1 pointer of the first input vector
+ * @param[in]       *src2 pointer of the second input vector
+ * @param[out]      *dst pointer of the output vector
+ * @param[in]       size number of elements in a vector
+ * @return none.
+ */
+static inline void hpm_dsp_xor_u32(u32_t *src1, u32_t *src2, u32_t *dst, uint32_t size)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_xor_u32(src1, src2, dst, size);
+#endif
+}
+/**
+ * @brief Compute the logical bitwise XOR of two u16 vectors.
+ * @param[in]       *src1 pointer of the first input vector
+ * @param[in]       *src2 pointer of the second input vector
+ * @param[out]      *dst pointer of the output vector
+ * @param[in]       size number of elements in a vector
+ * @return none.
+ */
+static inline void hpm_dsp_xor_u16(u16_t *src1, u16_t *src2, u16_t *dst, uint32_t size)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_xor_u16(src1, src2, dst, size);
+#endif
+}
+/**
+ * @brief Compute the logical bitwise XOR of two u8 vectors.
+ * @param[in]       *src1 pointer of the first input vector
+ * @param[in]       *src2 pointer of the second input vector
+ * @param[out]      *dst pointer of the output vector
+ * @param[in]       size number of elements in a vector
+ * @return none.
+ */
+static inline void hpm_dsp_xor_u8(u8_t *src1, u8_t *src2, u8_t *dst, uint32_t size)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_xor_u8(src1, src2, dst, size);
+#endif
+}
+/** @} basic_xor */
+
+// Not
+/**
+ * @defgroup basic_not Bitwise NOT Functions
+ * @brief  Bitwise NOT Functions
+ *
+ * Bitwise NOT functions calculate logical bitwise NOT value from elements of a source vector and write them one-by-one into a destination vector.
+ *
+ * Andes DSP library supports distinct bitwise NOT functions for U32, U15 and U8 data types. These functions are introduced in the subsections below.
+ */
+/**
+ * @addtogroup basic_not
+ * @{
+ */
+/**
+ * @brief Compute the logical bitwise NOT of u32 vector.
+ * @param[in]       *src pointer of the input vector
+ * @param[out]      *dst pointer of the output vector
+ * @param[in]       size number of elements in a vector
+ * @return none.
+ */
+static inline void hpm_dsp_not_u32(u32_t *src, u32_t *dst, uint32_t size)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_not_u32(src, dst, size);
+#endif
+}
+/**
+ * @brief Compute the logical bitwise NOT of u16 vector.
+ * @param[in]       *src pointer of the input vector
+ * @param[out]      *dst pointer of the output vector
+ * @param[in]       size number of elements in a vector
+ * @return none.
+ */
+static inline void hpm_dsp_not_u16(u16_t *src, u16_t *dst, uint32_t size)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_not_u16(src, dst, size);
+#endif
+}
+/**
+ * @brief Compute the logical bitwise NOT of u8 vector.
+ * @param[in]       *src pointer of the input vector
+ * @param[out]      *dst pointer of the output vector
+ * @param[in]       size number of elements in a vector
+ * @return none.
+ */
+static inline void hpm_dsp_not_u8(u8_t *src, u8_t *dst, uint32_t size)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_not_u8(src, dst, size);
+#endif
+}
+/** @} basic_not */
+
+/** @} basic */
+
 #endif
 #endif
 
@@ -3220,23 +3613,6 @@ static inline void hpm_dsp_mat_mul_fast_q31(const q31_t *src1, const q31_t *src2
     riscv_dsp_mat_mul_fast_q31(src1, src2, dst, row, col, col2);
 #endif
 }
-/**
- * @brief Outer production of two q31 matrices.
- * @param[in]       *src1 pointer of the first input matrix with a size of size1*1.
- * @param[in]       *src2 pointer of the second input matrix with a size of 1*size2.
- * @param[out]      *dst  pointer of the output matrix with a size of size1 * size2.
- * @param[in]       size1 number of rows in the first input matrix.
- * @param[in]       size2 number of columns in the second input matrix.
- *
- * <b>Function notes:</b>
- *
- */
-static inline void hpm_dsp_mat_oprod_q31(const q31_t * src1, const q31_t * src2, q31_t * dst, uint32_t size1, uint32_t size2)
-{
-#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_oprod_q31(src1, src2, dst, size1, size2);
-#endif
-}
 
 /**
  * @brief Multiplication of two q31 complex matrices.
@@ -3375,6 +3751,24 @@ static inline void hpm_dsp_mat_scale_q31(const q31_t *src, q31_t scale_fract, in
 }
 
 // Matrix Subtraction
+
+/**
+ * @brief Substraction of two double-precision floating-potint matrices.
+ * @param[in] src1 pointer of the first input matrix
+ * @param[in] src2 pointer of the second input matrix
+ * @param[out] dst pointer of the output matrix
+ * @param[in] row number of rows in a matrix
+ * @param[in] col number of columns in a matrix
+ * @return none.
+ */
+static inline void hpm_dsp_mat_sub_f64(const float64_t *src1, const float64_t *src2,
+                       float64_t *dst, uint32_t row, uint32_t col)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_mat_sub_f64(src1, src2, dst, row, col);
+#endif
+}
+
 /**
  * @brief Substraction of two floating-potint matrices.
  * @param[in]       *src1 points to the first input matrix.
@@ -3425,6 +3819,22 @@ static inline void hpm_dsp_mat_sub_q31(const q31_t *src1, const q31_t *src2, q31
 }
 
 // Matrix Transpose
+
+/**
+ * @brief Transpose the double-precision floating-potint matrices.
+ * @param[in]       src  pointer of the input matrix
+ * @param[out]      dst  pointer of the output matrix
+ * @param[in]       row   number of rows in a matrix
+ * @param[in]       col   number of columns in a matrix
+ * @return none.
+ */
+static inline void hpm_dsp_mat_trans_f64(const float64_t *src, float64_t *dst, uint32_t row, uint32_t col)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_mat_trans_f64(src, dst, row, col);
+#endif
+}
+
 /**
  * @brief Transpose the floating-potint matricex.
  * @param[in]       *src  points to the input matrix.
@@ -3478,6 +3888,138 @@ static inline void hpm_dsp_mat_trans_u8(const uint8_t *src, uint8_t *dst, uint32
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
     riscv_dsp_mat_trans_u8(src, dst, row, col);
+#endif
+}
+
+/**
+ * @brief Transpose the q7 matrices.
+ * @param[in]       src  pointer of the input matrix
+ * @param[out]      dst  pointer of the output matrix
+ * @param[in]       row   number of rows in a matrix
+ * @param[in]       col   number of columns in a matrix
+ * @return none.
+ */
+static inline void hpm_dsp_mat_trans_q7(const q7_t *src, q7_t *dst, uint32_t row, uint32_t col)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_mat_trans_q7(src, dst, row, col);
+#endif
+}
+
+/**
+ * @brief Outer production of two q31 matrices.
+ * @param[in]       src1 pointer of the first input matrix with a size of size1*1
+ * @param[in]       src2 pointer of the second input matrix with a size of 1*size2
+ * @param[out]      dst  pointer of the output matrix with a size of size1 * size2
+ * @param[in]       size1 number of rows in the first input matrix.
+ * @param[in]       size2 number of columns in the second input matrix.
+ * @return none.
+ *
+ * @b Note:
+ *
+ * This function multiplies a one-column matrix with size1 rows, src1[size1, 1], with a
+ * one-row matrix with size2 columns, src2[1, size2], and stores the result into a matrix
+ * with size1 rows and size2 columns, dst[size1, size2]. It achieves better efficiency for
+ * vector-wise matrix multiplication than for regular matrix multiplication.
+ *
+ * @b Example
+ *     <pre>
+ * The following equation shows the outer product of two matrices and its result.
+ *
+ *
+ * Its code example is as follows:
+ *
+ *      \#define Arow 3
+ *      \#define Bcol 2
+ *      q31_t src1[Arow] = {0x200000, 0x100000, 0x50000};
+ *      q31_t src2[Bcol] = {0x10000, 0x30000};
+ *      q31_t dst[Arow * Bcol];
+ *      hpm_dsp_mat_oprod_q31 (src1, src2, dst, Arow, Bcol);
+ *     </pre>
+ */
+static inline void hpm_dsp_mat_oprod_q31(const q31_t * src1, const q31_t * src2,
+                       q31_t * dst, uint32_t size1, uint32_t size2)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_mat_oprod_q31(src1, src2, dst, size1, size2);
+#endif
+}
+
+/**
+ * @brief Matrix multiply vector for f32 formats
+ * @param[in]   src1 pointer of the input matrix
+ * @param[in]   src2 pointer of the input vector
+ * @param[out]  dst  pointer of the output vector
+ * @param[in]   row  number of rows in the matrix
+ * @param[in]   col  number of columns in the matrix and the elements size of vector
+ * @return none.
+ *
+ * @b Example
+ *  <pre>
+ *
+ *     \#define Arow		2
+ *     \#define Acol		3
+ *     float32_t src1[Arow * Acol] = {0.1, -0.1, 0.1, 0.2, -0.2, 0.3};
+ *     float32_t src2[Acol] = {0.2, -0.1, -0.7};
+ *     float32_t dst[Arow];
+ *     hpm_dsp_mat_mul_mxv_f32 (src1, src2, dst, Arow, Acol);
+ *
+ * This example also serves as a reference for examples of Q31, Q15 or Q7 functions.
+ *  </pre>
+ */
+static inline void hpm_dsp_mat_mul_mxv_f32(const float32_t *src1, const float32_t *src2,
+                       float32_t *dst, uint32_t row, uint32_t col)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_mat_mul_mxv_f32(src1, src2, dst, row, col);
+#endif
+}
+/**
+ * @brief Matrix multiply vector for q15 formats
+ * @param[in]   src1 pointer of the input matrix
+ * @param[in]   src2 pointer of the input vector
+ * @param[out]  dst  pointer of the output vector
+ * @param[in]   row  number of rows in the matrix
+ * @param[in]   col  number of columns in the matrix and the elements size of vector
+ * @return none.
+ */
+static inline void hpm_dsp_mat_mul_mxv_q15(const q15_t *src1, const q15_t *src2,
+                       q15_t *dst, uint32_t row, uint32_t col)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_mat_mul_mxv_q15(src1, src2, dst, row, col);
+#endif
+}
+/**
+ * @brief Matrix multiply vector for q31 formats
+ * @param[in]   src1 pointer of the input matrix
+ * @param[in]   src2 pointer of the input vector
+ * @param[out]  dst  pointer of the output vector
+ * @param[in]   row  number of rows in the matrix
+ * @param[in]   col  number of columns in the matrix and the elements size of vector
+ * @return none.
+ */
+static inline void hpm_dsp_mat_mul_mxv_q31(const q31_t *src1, const q31_t *src2,
+                       q31_t *dst, uint32_t row, uint32_t col)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_mat_mul_mxv_q31(src1, src2, dst, row, col);
+#endif
+}
+/**
+ * @brief Matrix multiply vector for q7 formats
+ * @param[in]   src1 pointer of the input matrix
+ * @param[in]   src2 pointer of the input vector
+ * @param[out]  dst  pointer of the output vector
+ * @param[in]   row  number of rows in the matrix
+ * @param[in]   col  number of columns in the matrix and the elements size of vector
+ * @return none.
+ */
+static inline void hpm_dsp_mat_mul_mxv_q7(const q7_t *src1, const q7_t *src2,
+                       q7_t *dst, uint32_t row, uint32_t col)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_mat_mul_mxv_q7(src1, src2, dst, row, col);
 #endif
 }
 
@@ -3573,14 +4115,49 @@ static inline void hpm_dsp_svm_poly_est_f32(const riscv_dsp_svm_poly_f32_t *inst
 #ifdef HPM_EN_MATH_DSP_LIB
 
 #include "riscv_dsp_transform_math.h"
-// CFFT/CIFFT-Radix2
-/// Floating-point Radix-2 Complex FFT/IFFT Function
+/**
+ * @brief cfft_rd2 of f32 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ * @return 0 success; -1 failure
+ *
+ * @b Example
+ *     <pre>
+ * Given 128 samples (that is, FFT_LOGN = 7), the example of floating-point Radix-2 CFFT and
+ * CIFFT is as follows:
+ *      \#define FFT_LOGN 7
+ *      float32_t src[2* (1 << FFT_LOGN)] = {…};
+ *      int32_t ret;
+ *      ret = hpm_dsp_cfft_rd2_f32(src, FFT_LOGN);
+ *      if (ret == 0)
+ *          Success
+ *      Else
+ *          Fail
+ *      ret = hpm_dsp_cifft_rd2_f32(src, FFT_LOGN);
+ *      if (ret == 0)
+ *           Success
+ *      Else
+ *           Fail
+ *
+ * This example also serves as a reference for examples of Q31 and Q15 Radix-2 CFFT and
+ * CIFFT functions.
+ *     </pre>
+ */
 static inline int32_t hpm_dsp_cfft_rd2_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
     return riscv_dsp_cfft_rd2_f32(src, m);
 #endif
 }
+
+/**
+ * @brief cifft_rd2 of f32 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ * @return 0 success; -1 failure
+ */
 static inline int32_t hpm_dsp_cifft_rd2_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
@@ -3588,13 +4165,39 @@ static inline int32_t hpm_dsp_cifft_rd2_f32(float32_t *src, uint32_t m)
 #endif
 }
 
-/// Q15 Radix-2 Complex FFT/IFFT Function
+/**
+ * @brief cfft_rd2 of q15 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ * @return 0 success; -1 failure
+ *
+ * @b Note:
+ *
+ * The input and output formats are listed below. To satisfy the input format corresponding to
+ * your input size, you may need to perform an arithmetic shift operation before calling this
+ * function.
+ */
 static inline int32_t hpm_dsp_cfft_rd2_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
     return riscv_dsp_cfft_rd2_q15(src, m);
 #endif
 }
+
+/**
+ * @brief cifft_rd2 of q15 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ * @return 0 success; -1 failure
+ *
+ * @b Note:
+ *
+ * The input and output formats are listed below. To satisfy the input format corresponding to
+ * your input size, you may need to perform an arithmetic shift operation before calling this
+ * function.
+ */
 static inline int32_t hpm_dsp_cifft_rd2_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
@@ -3602,13 +4205,39 @@ static inline int32_t hpm_dsp_cifft_rd2_q15(q15_t *src, uint32_t m)
 #endif
 }
 
-/// Q31 Radix-2 Complex FFT/IFFT Function
+/**
+ * @brief cfft_rd2 of q31 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ * @return 0 success; -1 failure
+ *
+ * @b Note:
+ *
+ * The input and output formats are listed below. To satisfy the input format corresponding to
+ * your input size, you may need to perform an arithmetic shift operation before calling this
+ * function.
+ */
 static inline int32_t hpm_dsp_cfft_rd2_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
     return riscv_dsp_cfft_rd2_q31(src, m);
 #endif
 }
+
+/**
+ * @brief cfft_rd2 of q31 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ * @return 0 success; -1 failure
+ *
+ * @b Note:
+ *
+ * The input and output formats are listed below. To satisfy the input format corresponding to
+ * your input size, you may need to perform an arithmetic shift operation before calling this
+ * function.
+ */
 static inline int32_t hpm_dsp_cifft_rd2_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
@@ -3616,14 +4245,49 @@ static inline int32_t hpm_dsp_cifft_rd2_q31(q31_t *src, uint32_t m)
 #endif
 }
 
-// CFFT/IFFT-Radix4
-/// Floating-point Radix-4 Complex FFT/IFFT Function
+/**
+ * @brief cfft_rd4 of f32 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set as 4, 6, 8 or 10
+ * @return 0 success; -1 failure
+ *
+ * @b Example
+ *     <pre>
+ * Given 256 samples (that is, FFT_LOGN = 8), the example of floating-point Radix-4 CFFT and
+ * CIFFT is as follows:
+ *      \#define FFT_LOGN 8
+ *      float32_t src[2* (1 << FFT_LOGN)] = {…};
+ *      int32_t ret;
+ *      ret = hpm_dsp_cfft_rd4_f32(src, FFT_LOGN);
+ *      if (ret == 0)
+ *          Success
+ *      Else
+ *          Fail
+ *      ret = riscv_dsp_cifft_rd4_f32(src, FFT_LOGN);
+ *      if (ret == 0)
+ *          Success
+ *      Else
+ *          Fail
+ *
+ * This example also serves as a reference for examples of Q31 or Q15 Radix-4 CFFT and
+ * CIFFT functions.
+ *     </pre>
+ */
 static inline int32_t hpm_dsp_cfft_rd4_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
     return riscv_dsp_cfft_rd4_f32(src, m);
 #endif
 }
+
+/**
+ * @brief cifft_rd4 of f32 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set as 4, 6, 8 or 10
+ * @return 0 success; -1 failure
+ */
 static inline int32_t hpm_dsp_cifft_rd4_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
@@ -3631,13 +4295,39 @@ static inline int32_t hpm_dsp_cifft_rd4_f32(float32_t *src, uint32_t m)
 #endif
 }
 
-/// Q15 Radix-4 Complex FFT/IFFT Function
+/**
+ * @brief cfft_rd4 of q15 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set as 4, 6, 8 or 10
+ * @return 0 success; -1 failure
+ *
+ * @b Note:
+ *
+ * The input and output formats are listed below. To satisfy the input format corresponding to
+ * your input size, you may need to perform an arithmetic shift operation before calling this
+ * function.
+ */
 static inline int32_t hpm_dsp_cfft_rd4_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
     return riscv_dsp_cfft_rd4_q15(src, m);
 #endif
 }
+
+/**
+ * @brief cifft_rd4 of q15 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set as 4, 6, 8 or 10
+ * @return 0 success; -1 failure
+ *
+ * @b Note:
+ *
+ * The input and output formats are listed below. To satisfy the input format corresponding to
+ * your input size, you may need to perform an arithmetic shift operation before calling this
+ * function.
+ */
 static inline int32_t hpm_dsp_cifft_rd4_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
@@ -3645,13 +4335,39 @@ static inline int32_t hpm_dsp_cifft_rd4_q15(q15_t *src, uint32_t m)
 #endif
 }
 
-/// Q31 Radix-4 Complex FFT/IFFT Function
+/**
+ * @brief cfft_rd4 of q31 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set as 4, 6, 8 or 10
+ * @return 0 success; -1 failure
+ *
+ * @b Note:
+ *
+ * The input and output formats are listed below. To satisfy the input format corresponding to
+ * your input size, you may need to perform an arithmetic shift operation before calling this
+ * function.
+ */
 static inline int32_t hpm_dsp_cfft_rd4_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
     return riscv_dsp_cfft_rd4_q31(src, m);
 #endif
 }
+
+/**
+ * @brief cifft_rd4 of q31 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set as 4, 6, 8 or 10
+ * @return 0 success; -1 failure
+ *
+ * @b Note:
+ *
+ * The input and output formats are listed below. To satisfy the input format corresponding to
+ * your input size, you may need to perform an arithmetic shift operation before calling this
+ * function.
+ */
 static inline int32_t hpm_dsp_cifft_rd4_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
@@ -3659,14 +4375,52 @@ static inline int32_t hpm_dsp_cifft_rd4_q31(q31_t *src, uint32_t m)
 #endif
 }
 
-// CFFT/CIFFT
-/// Floating-point Complex FFT/IFFT Function
+/**
+ * @brief cfft of f32 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ *
+ * @b Example
+ *     <pre>
+ * Given 128 samples (that is, FFT_LOGN = 7), the example of floating-point CFFT and
+ * CIFFT is as follows:
+ *      \#define FFT_LOGN 7
+ *      float32_t src[2* (1 << FFT_LOGN)] = {…};
+ *      int32_t ret;
+ *      hpm_dsp_cfft_f32(src, FFT_LOGN);
+ *      hpm_dsp_cifft_f32(src, FFT_LOGN);
+ *
+ * This example also serves as a reference for examples of F16, F64, Q31 and Q15 CFFT and
+ * CIFFT functions.
+ *     </pre>
+ */
 static inline void hpm_dsp_cfft_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
     riscv_dsp_cfft_f32(src, m);
 #endif
 }
+
+/**
+ * @brief cfft of f64 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ */
+static inline void hpm_dsp_cfft_f64(float64_t *src, uint32_t m)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_cfft_f64(src, m);
+#endif
+}
+
+/**
+ * @brief cifft of f32 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ */
 static inline void hpm_dsp_cifft_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
@@ -3674,13 +4428,51 @@ static inline void hpm_dsp_cifft_f32(float32_t *src, uint32_t m)
 #endif
 }
 
-/// Q15 Complex FFT/IFFT Function
+/**
+ * @brief cifft of f64 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ */
+static inline void hpm_dsp_cifft_f64(float64_t *src, uint32_t m)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_cifft_f64(src, m);
+#endif
+}
+
+
+/**
+ * @brief cfft of q15 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ *
+ * @b Note:
+ *
+ * The input and output formats are listed below. To satisfy the input format corresponding to
+ * your input size, you may need to perform an arithmetic shift operation before calling this
+ * function.
+ */
 static inline void hpm_dsp_cfft_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
     riscv_dsp_cfft_q15(src, m);
 #endif
 }
+
+/**
+ * @brief cifft of q15 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ *
+ * @b Note:
+ *
+ * The input and output formats are listed below. To satisfy the input format corresponding to
+ * your input size, you may need to perform an arithmetic shift operation before calling this
+ * function.
+ */
 static inline void hpm_dsp_cifft_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
@@ -3688,13 +4480,37 @@ static inline void hpm_dsp_cifft_q15(q15_t *src, uint32_t m)
 #endif
 }
 
-/// Q31 Complex FFT/IFFT Function
+/**
+ * @brief cfft of q31 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ *
+ * @b Note:
+ *
+ * The input and output formats are listed below. To satisfy the input format corresponding to
+ * your input size, you may need to perform an arithmetic shift operation before calling this
+ * function.
+ */
 static inline void hpm_dsp_cfft_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
     riscv_dsp_cfft_q31(src, m);
 #endif
 }
+
+/**
+ * @brief cifft of q31 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ *
+ * @b Note:
+ *
+ * The input and output formats are listed below. To satisfy the input format corresponding to
+ * your input size, you may need to perform an arithmetic shift operation before calling this
+ * function.
+ */
 static inline void hpm_dsp_cifft_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
@@ -3702,14 +4518,63 @@ static inline void hpm_dsp_cifft_q31(q31_t *src, uint32_t m)
 #endif
 }
 
-// Real-FFT
-/// Floating-point Real FFT/IFFT Function
+/**
+ * @brief rfft of f32 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 4 to 14
+ * @return 0 success; -1 failure
+ *
+ * @b Example
+ *     <pre>
+ * Given 128 samples (that is, FFT_LOGN = 7), the example of floating-point RFFT and RIFFT
+ * is as follows:
+ *      \#define FFT_LOGN 7
+ *      float32_t src[(1 << FFT_LOGN)] = {…};
+ *      int32_t ret;
+ *      ret = hpm_dsp_rfft_f32(src, FFT_LOGN);
+ *      if (ret == 0)
+ *          Success
+ *      else
+ *          Fail
+ *      ret = riscv_dsp_rifft_f32(src, FFT_LOGN);
+ *      if (ret == 0)
+ *          Success
+ *      else
+ *          Fail
+ *
+ * This example also serves as a reference for examples of Q31 or Q15 RFFT and RIFFT
+ * functions.
+ *     </pre>
+ */
 static inline int32_t hpm_dsp_rfft_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
     return riscv_dsp_rfft_f32(src, m);
 #endif
 }
+
+/**
+ * @brief rfft of f64 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 4 to 14
+ * @return 0 success; -1 failure
+ */
+static inline int32_t hpm_dsp_rfft_f64(float64_t *src, uint32_t m)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    return riscv_dsp_rfft_f64(src, m);
+#endif
+}
+
+/**
+ * @brief rifft of f32 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 4 to 14
+ * @return 0 success; -1 failure
+ */
 static inline int32_t hpm_dsp_rifft_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
@@ -3717,13 +4582,53 @@ static inline int32_t hpm_dsp_rifft_f32(float32_t *src, uint32_t m)
 #endif
 }
 
-/// Q15 Real FFT/IFFT Function
+/**
+ * @brief rifft of f64 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 4 to 14
+ * @return 0 success; -1 failure
+ */
+static inline int32_t hpm_dsp_rifft_f64(float64_t *src, uint32_t m)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    return riscv_dsp_rifft_f64(src, m);
+#endif
+}
+
+/**
+ * @brief rfft of q15 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 4 to 14
+ * @return 0 success; -1 failure
+ *
+ * @b Note:
+ *
+ * The input and output formats are listed below. To satisfy the input format corresponding to
+ * your input size, you may need to perform an arithmetic shift operation before calling this
+ * function.
+ */
 static inline int32_t hpm_dsp_rfft_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
     return riscv_dsp_rfft_q15(src, m);
 #endif
 }
+
+/**
+ * @brief rifft of q15 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 4 to 14
+ * @return 0 success; -1 failure
+ *
+ * @b Note:
+ *
+ * The input and output formats are listed below. To satisfy the input format corresponding to
+ * your input size, you may need to perform an arithmetic shift operation before calling this
+ * function.
+ */
 static inline int32_t hpm_dsp_rifft_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
@@ -3731,13 +4636,39 @@ static inline int32_t hpm_dsp_rifft_q15(q15_t *src, uint32_t m)
 #endif
 }
 
-/// Q31 Real FFT/IFFT Function
+/**
+ * @brief rfft of q31 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 4 to 14
+ * @return 0 success; -1 failure
+ *
+ * @b Note:
+ *
+ * The input and output formats are listed below. To satisfy the input format corresponding to
+ * your input size, you may need to perform an arithmetic shift operation before calling this
+ * function.
+ */
 static inline int32_t hpm_dsp_rfft_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
     return riscv_dsp_rfft_q31(src, m);
 #endif
 }
+
+/**
+ * @brief rifft of q31 vectors.
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 4 to 14
+ * @return 0 success; -1 failure
+ *
+ * @b Note:
+ *
+ * The input and output formats are listed below. To satisfy the input format corresponding to
+ * your input size, you may need to perform an arithmetic shift operation before calling this
+ * function.
+ */
 static inline int32_t hpm_dsp_rifft_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
@@ -3745,14 +4676,37 @@ static inline int32_t hpm_dsp_rifft_q31(q31_t *src, uint32_t m)
 #endif
 }
 
-// DCT/IDCT Type II
-/// Floating-point DCT/IDCT Type II Function
+/**
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 8
+ * @return none
+ *
+ * @b Example
+ *  <pre>
+ * Given 256 samples (that is, FFT_LOGN = 8), the example of floating-point (DCT) type II and
+ * IDCT is as follows:
+ *      \#define FFT_LOGN 8
+ *      float32_t src[(1 << FFT_LOGN)] = {…};
+ *      riscv_dsp_dct_f32(src, FFT_LOGN);
+ *      riscv_dsp_idct_f32(src, FFT_LOGN);
+ * This example also serves as a reference for examples of Q31 or Q15 DCT type II and IDCT
+ * functions.
+ *  </pre>
+ */
 static inline void hpm_dsp_dct_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
     riscv_dsp_dct_f32(src, m);
 #endif
 }
+
+/**
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 8
+ * @return none
+ */
 static inline void hpm_dsp_idct_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
@@ -3760,13 +4714,37 @@ static inline void hpm_dsp_idct_f32(float32_t *src, uint32_t m)
 #endif
 }
 
-/// Q15 DCT/IDCT Type II Function
+/**
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 8
+ * @return none
+ *
+ * @b Note:
+ *
+ * The input and output formats are listed below. To satisfy the input format corresponding to
+ * your input size, you may need to perform an arithmetic shift operation before calling this
+ * function.
+ */
 static inline void hpm_dsp_dct_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
     riscv_dsp_dct_q15(src, m);
 #endif
 }
+
+/**
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 8
+ * @return none
+ *
+ * @b Note:
+ *
+ * The input and output formats are listed below. To satisfy the input format corresponding to
+ * your input size, you may need to perform an arithmetic shift operation before calling this
+ * function.
+ */
 static inline void hpm_dsp_idct_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
@@ -3774,13 +4752,37 @@ static inline void hpm_dsp_idct_q15(q15_t *src, uint32_t m)
 #endif
 }
 
-/// Q31 DCT/IDCT Type II Function
+/**
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 8
+ * @return none
+ *
+ * @b Note:
+ *
+ * The input and output formats are listed below. To satisfy the input format corresponding to
+ * your input size, you may need to perform an arithmetic shift operation before calling this
+ * function.
+ */
 static inline void hpm_dsp_dct_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
     riscv_dsp_dct_q31(src, m);
 #endif
 }
+
+/**
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 8
+ * @return none
+ *
+ * @b Note:
+ *
+ * The input and output formats are listed below. To satisfy the input format corresponding to
+ * your input size, you may need to perform an arithmetic shift operation before calling this
+ * function.
+ */
 static inline void hpm_dsp_idct_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
@@ -3788,14 +4790,37 @@ static inline void hpm_dsp_idct_q31(q31_t *src, uint32_t m)
 #endif
 }
 
-// DCT Type IV
-/// Floating-point DCT/IDCT Type IV Function
+/**
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 7
+ * @return none
+ *
+ * @b Example
+ *  <pre>
+ * Given 128 samples (that is, FFT_LOGN = 7), the example of floating-point DCT or IDCT type
+ * IV transform is as follows:
+ *      \#define FFT_LOGN 7
+ *      float32_t src[(1 << FFT_LOGN)] = {…};
+ *      riscv_dsp_dct4_f32(src, FFT_LOGN);
+ *      riscv_dsp_idct4_f32(src, FFT_LOGN);
+ * This example also serves as a reference for examples of Q31 or Q15 DCT type IV and IDCT
+ * functions.
+ *  </pre>
+ */
 static inline void hpm_dsp_dct4_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
     riscv_dsp_dct4_f32(src, m);
 #endif
 }
+
+/**
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 7
+ * @return none
+ */
 static inline void hpm_dsp_idct4_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
@@ -3803,13 +4828,37 @@ static inline void hpm_dsp_idct4_f32(float32_t *src, uint32_t m)
 #endif
 }
 
-/// Q15 DCT/IDCT Type IV Function
+/**
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 7
+ * @return none
+ *
+ * @b Note:
+ *
+ * The input and output formats are listed below. To satisfy the input format corresponding to
+ * your input size, you may need to perform an arithmetic shift operation before calling this
+ * function.
+ */
 static inline void hpm_dsp_dct4_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
     riscv_dsp_dct4_q15(src, m);
 #endif
 }
+
+/**
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 7
+ * @return none
+ *
+ * @b Note:
+ *
+ * The input and output formats are listed below. To satisfy the input format corresponding to
+ * your input size, you may need to perform an arithmetic shift operation before calling this
+ * function.
+ */
 static inline void hpm_dsp_idct4_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
@@ -3817,13 +4866,37 @@ static inline void hpm_dsp_idct4_q15(q15_t *src, uint32_t m)
 #endif
 }
 
-/// Q31 DCT/IDCT Type IV Function
+/**
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 7
+ * @return none
+ *
+ * @b Note:
+ *
+ * The input and output formats are listed below. To satisfy the input format corresponding to
+ * your input size, you may need to perform an arithmetic shift operation before calling this
+ * function.
+ */
 static inline void hpm_dsp_dct4_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
     riscv_dsp_dct4_q31(src, m);
 #endif
 }
+
+/**
+ * @param[in, out] src   pointer of the input vector. After the function is executed, the
+ *                       output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 7
+ * @return none
+ *
+ * @b Note:
+ *
+ * The input and output formats are listed below. To satisfy the input format corresponding to
+ * your input size, you may need to perform an arithmetic shift operation before calling this
+ * function.
+ */
 static inline void hpm_dsp_idct4_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
@@ -3979,6 +5052,20 @@ static inline float32_t hpm_dsp_sin_f32(float32_t src)
     return riscv_dsp_sin_f32(src);
 #endif
 }
+
+#if defined (__riscv_zfh)
+/**
+ * @param[in] src input value (radian)
+ * @return Sine value of the input
+ */
+static inline float16_t hpm_dsp_sin_f16(float16_t src)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    return riscv_dsp_sin_f16(src);
+#endif
+}
+#endif
+
 static inline q31_t hpm_dsp_sin_q31(q31_t src)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
@@ -4362,10 +5449,243 @@ static inline void hpm_dsp_barycenter_f32(const float32_t *src, const float32_t 
 }
 
 /**
+ * @brief Calculate exponential value of f32 vector.
+ * @param[in] src input value
+ * @return exponential value of the input
+ */
+static inline float32_t hpm_dsp_exp_f32(float32_t src)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    return riscv_dsp_exp_f32(src);
+#endif
+}
+
+#if defined (__riscv_zfh)
+/**
+ * @brief Calculate exponential value of f16 vector.
+ * @param[in] src input value
+ * @return exponential value of the input
+ */
+static inline float16_t hpm_dsp_exp_f16(float16_t src)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    return riscv_dsp_exp_f16(src);
+#endif
+}
+#endif
+
+/**
+ * @brief Calculate sigmoid value of f32 vector.
+ * @param[in] src input value
+ * @return sigmoid value of the input
+ */
+static inline float32_t hpm_dsp_sigmoid_f32(float32_t src)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    return riscv_dsp_sigmoid_f32(src);
+#endif
+}
+
+#if defined (__riscv_zfh)
+/**
+ * @brief Calculate sigmoid value of f16 vector.
+ * @param[in] src input value
+ * @return sigmoid value of the input
+ */
+static inline float16_t hpm_dsp_sigmoid_f16(float16_t src)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    return riscv_dsp_sigmoid_f16(src);
+#endif
+}
+#endif
+
+/**
+ * @brief Calculate the natural logarithm value of f32 vector.
+ * @param[in] src input value
+ * @return natural logarithm value of the input
+ */
+static inline float32_t hpm_dsp_log_f32(float32_t src)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    return riscv_dsp_log_f32(src);
+#endif
+}
+
+#if defined (__riscv_zfh)
+/**
+ * @brief Calculate the natural logarithm value of f16 vector.
+ * @param[in] src input value
+ * @return natural logarithm value of the input
+ */
+static inline float16_t hpm_dsp_log_f16(float16_t src)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    return riscv_dsp_log_f16(src);
+#endif
+}
+#endif
+
+/**
  * @}
  *
  */
 
+
+#endif
+#endif
+
+#ifdef HPM_MATH_DSP_SORT
+
+/**
+ * @defgroup sort DSP Sort Functions
+ * The generic sort function sorts elements of a vector by the algorithm and sorting order specified
+ * in its instance structure. The algorithms to be chosen from to perform the generic sorting
+ * include bitonic sort, bubble sort, heap sort, insertion sort, quick sort and selection sort.
+ * Andes DSP library only supports the generic sort function for floating-point data.
+ * @ingroup hpmmath
+ * @{
+ */
+
+#ifdef HPM_EN_MATH_DSP_LIB
+#include "riscv_dsp_sort_math.h"
+/**
+ * @param[in,out]  instance     pointer of the instance structure
+ * @param[in]      alg          desired sorting algorithm
+ * @param[in]      order        desired sorting order
+ *
+ * @b Note:
+ *
+ * 1. This function has to be called to initialize the instance structure before the function
+ *    riscv_dsp_sort_f32 is executed. Please refer to code examples.
+ *
+ * 2. The possible sorting algorithms for the generic sorting (i.e., options for alg) include
+ *    - RISCV_DSP_SORT_BITONIC      bitonic sort
+ *    - RISCV_DSP_SORT_BUBBLE       bubble sort
+ *    - RISCV_DSP_SORT_HEAP         heap sort
+ *    - RISCV_DSP_SORT_INSERTION    insertion sort
+ *    - RISCV_DSP_SORT_QUICK        quick sort
+ *    - RISCV_DSP_SORT_SELECTION    selection sort
+ *
+ * 3. The possible sorting orders for the generic sorting (i.e., options for order) include
+ *    - RISCV_DSP_SORT_DESCENDING   descending order
+ *    - RISCV_DSP_SORT_ASCENDING    ascending order
+ */
+static inline void hpm_dsp_sort_init_f32(riscv_dsp_sort_f32_t * instance, riscv_dsp_sort_alg alg, riscv_dsp_sort_order order)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_sort_init_f32(instance, alg, order);
+#endif
+}
+
+/**
+ * @brief Generic sorting function
+ *
+ * @param[in]  instance  pointer of the instance structure
+ * @param[in]  src       pointer of the input vector
+ * @param[out] dst       pointer of the output vector
+ * @param[in]  size      number of elements in a vector
+ *
+ * @b Note:
+ *
+ * 1. The possible sorting algorithms for the generic sorting (i.e., options for alg) include
+ *    - RISCV_DSP_SORT_BITONIC      bitonic sort
+ *    - RISCV_DSP_SORT_BUBBLE       bubble sort
+ *    - RISCV_DSP_SORT_HEAP         heap sort
+ *    - RISCV_DSP_SORT_INSERTION    insertion sort
+ *    - RISCV_DSP_SORT_QUICK        quick sort
+ *    - RISCV_DSP_SORT_SELECTION    selection sort
+ *
+ * 2. The possible sorting orders for the generic sorting (i.e., options for order) include
+ *    - RISCV_DSP_SORT_DESCENDING   descending order
+ *    - RISCV_DSP_SORT_ASCENDING    ascending order
+ *
+ * 3. To ensure correct results, you must initialize the instance structure with the function
+ *    riscv_dsp_sort_init_f32 before using this function riscv_dsp_sort_f32. For
+ *    how to use the two functions, please refer to the code examples below.
+ *
+ * @b Example
+ *     <pre>
+ *       With the input size as 100, sorting order as ascending and sorting algorithm as quick
+ *       sort, the code example of generic sorting is as follows:
+ *
+ *          \#define size 100
+ *          riscv_dsp_sort_f32_t *instance;
+ *          float32_t src[size] = {…};
+ *          float32_t dst[size];
+ *          riscv_dsp_sort_init_f32(instance, RISCV_DSP_SORT_QUICK,
+ *          RISCV_DSP_SORT_ASCENDING);
+ *          riscv_dsp_sort_f32(instance, src, dst, size);
+ *     </pre>
+ */
+static inline void hpm_dsp_sort_f32(const riscv_dsp_sort_f32_t * instance,float32_t * src, float32_t * dst, uint32_t size)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_sort_f32(instance, src, dst, size);
+#endif
+}
+
+/**
+ * @param[in, out]  instance  pointer of the instance structure.
+ * @param[in]       order     desired sorting order
+ * @param[in]       buf       pointer of the working buffer
+ *
+ * @b Note:
+ *
+ * 1. This function has to be called to initialize the instance structure before the function
+ *    riscv_dsp_sort_merge_f32 is executed. Please refer to Section 2.11.2.2 for a code
+ *    example.
+ *
+ * 2. The possible sorting orders for the merge sorting (i.e., options for order) include
+ *    - RISCV_DSP_SORT_DESCENDING   descending order
+ *    - RISCV_DSP_SORT_ASCENDING    ascending order
+ */
+static inline void hpm_dsp_sort_merge_init_f32(riscv_dsp_sort_merge_f32_t * instance, riscv_dsp_sort_order order, float32_t * buf)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_sort_merge_init_f32(instance, order, buf);
+#endif
+}
+
+/**
+ * @brief Merge sort
+ *
+ * @param[in]  instance  pointer of the instance structure.
+ * @param[in]  src       pointer of the input vector
+ * @param[out] dst       pointer of the output vector
+ * @param[in]  size      number of elements in a vector
+ *
+ * @b Note:
+ *
+ * 1. The possible sorting orders for the merge sorting (i.e., options for order) include
+ *    - RISCV_DSP_SORT_DESCENDING   descending order
+ *    - RISCV_DSP_SORT_ASCENDING    ascending order
+ *
+ * 2. To ensure correct results, you must initialize the instance structure with the function
+ *    riscv_dsp_sort_merge_init_f32 before using this function
+ *    riscv_dsp_sort_merge_f32. For how to use the two functions, please refer to the
+ *    code example below.
+ *
+ * @b Example
+ *     <pre>
+ *     With the input size as 100 and sorting order as descending, the code example of merge
+ *     sorting is as follows:
+ *
+ *     \#define size 100
+ *     riscv_dsp_sort_merge_f32_t *instance;
+ *     float32_t src[size] = {…};
+ *     float32_t buf[size];
+ *     float32_t dst[size];
+ *     riscv_dsp_sort_merge_init_f32(instance, RISCV_DSP_SORT_DESCENDING, buf);
+ *     riscv_dsp_sort_merge_f32(instance, src, dst, size);
+ *     </pre>
+ */
+static inline void hpm_dsp_sort_merge_f32(const riscv_dsp_sort_merge_f32_t * instance, float32_t * src, float32_t * dst, uint32_t size)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+    riscv_dsp_sort_merge_f32(instance, src, dst, size);
+#endif
+}
 
 #endif
 #endif
@@ -5041,7 +6361,7 @@ static inline void hpm_nn_concate_s8_z(const int8_t *in_tensor,
  * @b Example:
  * @code
  *  //Convolve a 160x120x20 input tensor with a 1x1 kernel and generate a
- *  //160x120x8 output tensor. Let both dimensions�? padding be 0 and their
+ *  //160x120x8 output tensor. Let both dimensions padding be 0 and their
  *  //stride be 1.
  *
  *  #define IN_X 160
@@ -5124,7 +6444,7 @@ static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_sft_bias_fast_any(const q7_t 
  * @b Example:
  * @code
  *  //Convolve a 28x28x3 input tensor with a 5x5 kernel and generate a 24x24x20
- *  //output tensor. Let both dimensions�? padding be 0 and their stride be 1.
+ *  //output tensor. Let both dimensions padding be 0 and their stride be 1.
  *
  *  #define IN_DIM 28
  *  #define KER_DIM 5
@@ -5193,7 +6513,7 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_RGB_sft_bias(const q7_t *in_tenso
  * @b Example:
  * @code
  *  //Convolve a 28x28x3 input tensor with a 5x5 kernel and generate a 24x24x20
- *  //output tensor. Let both dimensions�? padding be 0 and their stride be 1.
+ *  //output tensor. Let both dimensions padding be 0 and their stride be 1.
  *
  *  #define IN_DIM 28
  *  #define KER_DIM 5
@@ -5261,7 +6581,7 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_RGB_sft_bias_fast(const q7_t *in_
  * @b Example:
  * @code
  *  //Convolve a 28x28x1 input tensor with a 5x5 kernel and generate a 24x24x20
- *  //output tensor. Let both dimensions�? padding be 0 and their stride be 1.
+ *  //output tensor. Let both dimensions padding be 0 and their stride be 1.
  *
  *  #define IN_DIM 28
  *  #define IN_CH 1
@@ -5336,7 +6656,7 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sft_bias(const q7_t *in_tensor,
  * @b Example:
  * @code
  *  //Convolve a 160x120x3 input tensor with a 3x5 kernel and generate a 80x59x5
- *  //output tensor. Let both dimensions�? padding be 1 and their stride be 2.
+ *  //output tensor. Let both dimensions padding be 1 and their stride be 2.
  *
  *  #define IN_X 160
  *  #define IN_Y 120
@@ -5417,7 +6737,7 @@ static inline void hpm_nn_conv_HWC_s8_s8_s8_sft_bias_any(const q7_t *in_tensor,
  * @b Example:
  * @code
  *  //Convolve a 12x12x20 input tensor with a 5x5 kernel and generate a 8x8x50
- *  //output tensor. Let both dimensions�? padding be 0 and their stride be 1.
+ *  //output tensor. Let both dimensions锟�? padding be 0 and their stride be 1.
  *
  *  #define IN_DIM 12
  *  #define IN_CH 20
@@ -5495,7 +6815,7 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sft_bias_fast(const q7_t *in_tens
  * @b Example:
  * @code
  *  //Convolve a 160x120x20 input tensor with a 3x5 kernel and generate a
- *  //80x59x8 output tensor. Let both dimensions�? padding be 1 and their stride
+ *  //80x59x8 output tensor. Let both dimensions padding be 1 and their stride
  *  //be 2.
  *
  *  #define IN_X 160
@@ -5577,7 +6897,7 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sft_bias_fast_any(const q7_t *in_
  * @b Example:
  * @code
  *  //Convolve a 28x28x1 input tensor with a 5x5 kernel and generate a 24x24x20
- *  //output tensor. Let both dimensions�? padding be 0 and their stride be 1.
+ *  //output tensor. Let both dimensions padding be 0 and their stride be 1.
  *
  *  #define IN_DIM 28
  *  #define IN_CH 1
@@ -5648,7 +6968,7 @@ static inline int32_t hpm_nn_conv_HWC_s16_s16_s16_sft_bias(const q15_t *in_tenso
  * @b Example:
  * @code
  *  //Convolve a 28x28x4 input tensor with a 5x5 kernel and generate a 24x24x8
- *  //output tensor. Let both dimensions�? padding be 0 and their stride be 1.
+ *  //output tensor. Let both dimensions padding be 0 and their stride be 1.
  *
  *  #define IN_DIM 28
  *  #define IN_CH 4
@@ -5726,7 +7046,7 @@ static inline int32_t hpm_nn_conv_HWC_s16_s16_s16_sft_bias_fast(const q15_t *in_
  * @b Example:
  * @code
  *  //Convolve a 160x120x20 input tensor with a 3x5 kernel and generate a
- *  //80x59x8 output tensor. Let both dimensions�? padding be 1 and their stride
+ *  //80x59x8 output tensor. Let both dimensions padding be 1 and their stride
  *  //be 2.
  *
  *  #define IN_X 160
@@ -5809,7 +7129,7 @@ static inline int32_t hpm_nn_conv_HWC_s16_s16_s16_sft_bias_fast_any(const q15_t 
  * @b Example:
  * @code
  *  //Convolve a 11x11x28 input tensor with a 3x3 kernel and generate a 9x9x48
- *  //output tensor. Let both dimensions�? padding be 0 and their stride be 1.
+ *  //output tensor. Let both dimensions padding be 0 and their stride be 1.
  *
  *  #define IN_DIM 11
  *  #define IN_CH 28
@@ -5886,7 +7206,7 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sft_bias(const q7_t *in_tensor
  * @b Example:
  * @code
  *  //Perform a depth-wise convolution for a 79x59x12 input tensor with a 3x3
- *  //kernel and generate a 77x57x12 output tensor. Let both dimensions�? padding
+ *  //kernel and generate a 77x57x12 output tensor. Let both dimensions padding
  *  //be 0 and their stride be 1.
  *
  *  #define IN_DIM_X 79

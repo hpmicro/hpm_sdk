@@ -386,6 +386,44 @@ static inline void hpm_adc_init_seq_dma(adc_dma_config_t *config)
     }
 }
 
+/**
+ * @brief Reset value of the WAIT_DIS bit. ADC blocks access to the associated peripheral bus
+ * until the ADC completes the conversion.
+ *
+ * @param[in] config A pointer to configuration struct of "adc_dma_config_t".
+ */
+static inline void hpm_adc_disable_busywait(adc_dma_config_t *config)
+{
+    if (config->module == adc_module_adc12) {
+#ifdef CONFIG_HAS_HPMSDK_ADC12
+        adc12_disable_busywait(config->adc_base.adc12);
+#endif
+    } else if (config->module == adc_module_adc16) {
+#ifdef CONFIG_HAS_HPMSDK_ADC16
+        adc16_disable_busywait(config->adc_base.adc16);
+#endif
+    }
+}
+
+/**
+ * @brief Set value of the WAIT_DIS bit. The ADC does not block access to the associated peripheral bus
+ * until the ADC has completed its conversion.
+ *
+ * @param[in] config A pointer to configuration struct of "adc_dma_config_t".
+ */
+static inline void hpm_adc_enable_busywait(adc_dma_config_t *config)
+{
+    if (config->module == adc_module_adc12) {
+#ifdef CONFIG_HAS_HPMSDK_ADC12
+        adc12_enable_busywait(config->adc_base.adc12);
+#endif
+    } else if (config->module == adc_module_adc16) {
+#ifdef CONFIG_HAS_HPMSDK_ADC16
+        adc16_enable_busywait(config->adc_base.adc16);
+#endif
+    }
+}
+
 
 /**
  * @brief Get ADC status flags.
@@ -405,33 +443,6 @@ static inline uint32_t hpm_adc_get_status_flags(adc_type *ptr)
     } else if (ptr->module == adc_module_adc16) {
 #ifdef CONFIG_HAS_HPMSDK_ADC16
         return adc16_get_status_flags(ptr->adc_base.adc16);
-#else
-        return status_invalid_argument;
-#endif
-    } else {
-        return status_invalid_argument;
-    }
-}
-
-/**
- * @brief Get the setting value of wait disable.
- *
- * This status flag is only used when wait_dis is set to disable.
- *
- * @param[in] ptr An ADC peripheral base address.
- * @retval Status It means whether the current setting of wait disable is disable.
- */
-static inline bool hpm_adc_get_wait_dis_status(adc_type *ptr)
-{
-    if (ptr->module == adc_module_adc12) {
-#ifdef CONFIG_HAS_HPMSDK_ADC12
-        return adc12_get_wait_dis_status(ptr->adc_base.adc12);
-#else
-        return status_invalid_argument;
-#endif
-    } else if (ptr->module == adc_module_adc16) {
-#ifdef CONFIG_HAS_HPMSDK_ADC16
-        return adc16_get_wait_dis_status(ptr->adc_base.adc16);
 #else
         return status_invalid_argument;
 #endif

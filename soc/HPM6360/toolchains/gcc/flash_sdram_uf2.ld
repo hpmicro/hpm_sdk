@@ -16,7 +16,7 @@ MEMORY
     DLM (w) : ORIGIN = 0x00080000, LENGTH = 128K
     AXI_SRAM (wx) : ORIGIN = 0x1080000, LENGTH = 512K
     SDRAM (wx) : ORIGIN = 0x40000000, LENGTH = (_extram_size - 4M)
-    SDRAM_NONCACHABLE (wx) : ORIGIN = 0x40000000 + (_extram_size - 4M), LENGTH = 4M
+    SDRAM_NONCACHEABLE (wx) : ORIGIN = 0x40000000 + (_extram_size - 4M), LENGTH = 4M
     AHB_SRAM (w) : ORIGIN = 0xF0300000, LENGTH = 32k
 }
 
@@ -162,11 +162,16 @@ SECTIONS
         . = ALIGN(8);
     } > SDRAM
 
-    .noncacheable : AT(etext + __data_end__ - __data_start__ + __ramfunc_end__ - __ramfunc_start__){
+    .noncacheable.init : AT(etext + __data_end__ - __data_start__ + __ramfunc_end__ - __ramfunc_start__){
         . = ALIGN(8);
         __noncacheable_init_start__ = .;
         KEEP(*(.noncacheable.init))
         __noncacheable_init_end__ = .;
+        . = ALIGN(8);
+    } > SDRAM_NONCACHEABLE
+
+    .noncacheable.bss (NOLOAD) : {
+        . = ALIGN(8);
         KEEP(*(.noncacheable))
         __noncacheable_bss_start__ = .;
         KEEP(*(.noncacheable.bss))

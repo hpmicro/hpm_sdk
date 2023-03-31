@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -13,6 +13,9 @@
 #include "hpm_soc.h"
 #include "hpm_soc_feature.h"
 #include "pinmux.h"
+#if !defined(CONFIG_NDEBUG_CONSOLE) || !CONFIG_NDEBUG_CONSOLE
+#include "hpm_debug_console.h"
+#endif
 
 #define BOARD_NAME "hpm6300evk"
 #define BOARD_UF2_SIGNATURE (0x0A4D5048UL)
@@ -43,10 +46,10 @@
 #define BOARD_APP_UART_TX_DMA_REQ HPM_DMA_SRC_UART0_TX
 
 #ifndef BOARD_CONSOLE_TYPE
-#define BOARD_CONSOLE_TYPE console_type_uart
+#define BOARD_CONSOLE_TYPE CONSOLE_TYPE_UART
 #endif
 
-#if console_type_uart == BOARD_CONSOLE_TYPE
+#if CONSOLE_TYPE_UART == BOARD_CONSOLE_TYPE
 #ifndef BOARD_CONSOLE_BASE
 #if BOARD_RUNNING_CORE == HPM_CORE0
 #define BOARD_CONSOLE_BASE HPM_UART0
@@ -95,6 +98,7 @@
 
 /* i2c section */
 #define BOARD_APP_I2C_BASE HPM_I2C0
+#define BOARD_APP_I2C_IRQ IRQn_I2C0
 #define BOARD_APP_I2C_CLK_NAME clock_i2c0
 #define BOARD_APP_I2C_DMA HPM_HDMA
 #define BOARD_APP_I2C_DMAMUX HPM_DMAMUX
@@ -120,6 +124,7 @@
 #define BOARD_GPTMR_CHANNEL 0
 #define BOARD_GPTMR_PWM HPM_GPTMR2
 #define BOARD_GPTMR_PWM_CHANNEL 0
+#define BOARD_GPTMR_CLK_NAME clock_gptmr2
 
 /* gpio section */
 #define BOARD_APP_GPIO_INDEX GPIO_DI_GPIOZ
@@ -167,6 +172,10 @@
 #define BOARD_APP_AUDIO_CLK_SRC_NAME clk_pll2clk0
 
 /* enet section */
+#define BOARD_ENET_PPS                  HPM_ENET0
+#define BOARD_ENET_PPS_IDX              enet_pps_0
+#define BOARD_ENET_PPS_PTP_CLOCK        clock_ptp0
+
 #define BOARD_ENET_RMII                 HPM_ENET0
 #define BOARD_ENET_RMII_RST_GPIO
 #define BOARD_ENET_RMII_RST_GPIO_INDEX
@@ -241,6 +250,7 @@
 #define BOARD_BLDCPWM_CMP_INDEX_3         (3U)
 #define BOARD_BLDCPWM_CMP_INDEX_4         (4U)
 #define BOARD_BLDCPWM_CMP_INDEX_5         (5U)
+#define BOARD_BLDCPWM_CMP_TRIG_CMP        (20U)
 
 /*HALL define*/
 
@@ -370,13 +380,14 @@ void board_init_usb_pins(void);
 void board_usb_vbus_ctrl(uint8_t usb_index, uint8_t level);
 uint8_t board_get_usb_id_status(void);
 
-uint8_t    board_enet_get_dma_pbl(ENET_Type *ptr);
+void       board_init_enet_pps_pins(ENET_Type *ptr);
+uint8_t    board_get_enet_dma_pbl(ENET_Type *ptr);
 hpm_stat_t board_reset_enet_phy(ENET_Type *ptr);
 hpm_stat_t board_init_enet_pins(ENET_Type *ptr);
 hpm_stat_t board_init_enet_rmii_reference_clock(ENET_Type *ptr, bool internal);
 hpm_stat_t board_init_enet_ptp_clock(ENET_Type *ptr);
-hpm_stat_t board_enet_enable_irq(ENET_Type *ptr);
-hpm_stat_t board_enet_disable_irq(ENET_Type *ptr);
+hpm_stat_t board_enable_enet_irq(ENET_Type *ptr);
+hpm_stat_t board_disable_enet_irq(ENET_Type *ptr);
 /*
  * @brief Initialize PMP and PMA for but not limited to the following purposes:
  *      -- non-cacheable memory initialization

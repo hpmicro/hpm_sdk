@@ -10,12 +10,10 @@
 #include <stdio.h>
 #include "hpm_common.h"
 
-typedef enum console_type {
-    console_type_uart = 0,
-} console_type_t;
+#define CONSOLE_TYPE_UART 0
 
 typedef struct {
-    console_type_t type;
+    uint32_t type;
     uint32_t base;
     uint32_t src_freq_in_hz;
     uint32_t baudrate;

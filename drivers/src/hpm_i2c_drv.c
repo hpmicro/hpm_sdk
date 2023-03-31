@@ -27,8 +27,7 @@ typedef struct {
     uint16_t t_sp;
     uint16_t t_sudat;
     uint16_t t_hddat;
-    uint16_t t_sclhi_min1;
-    uint16_t t_sclhi_min2;
+    uint16_t t_sclhi;
     uint16_t t_sclratio;
 } i2c_timing_t;
 
@@ -36,6 +35,10 @@ static hpm_stat_t i2c_configure_timing(uint32_t src_clk_in_hz,
                                        i2c_mode_t i2c_mode,
                                        i2c_timing_t *timing)
 {
+    uint32_t setup_time, hold_time, period;
+    uint32_t temp1, temp2, temp3;
+    uint32_t tpclk = period_in_ns(src_clk_in_hz);
+
     switch (i2c_mode) {
     /*
      *          |Standard mode | Fast mode | Fast mode plus | Uint
@@ -47,14 +50,23 @@ static hpm_stat_t i2c_configure_timing(uint32_t src_clk_in_hz,
     case i2c_mode_fast:
         timing->t_high = 600;
         timing->t_low = 1300;
+        setup_time = 100;
+        hold_time = 300;
+        period = period_in_ns(400000); /**< 400KHz, period = 2500ns */
         break;
     case i2c_mode_fast_plus:
         timing->t_high = 260;
         timing->t_low = 500;
+        setup_time = 50;
+        hold_time = 0;
+        period = period_in_ns(1000000); /**< 1MHz, period = 1000ns */
         break;
     case i2c_mode_normal:
         timing->t_high = 4000;
         timing->t_low = 4700;
+        setup_time = 250;
+        hold_time = 300;
+        period = period_in_ns(100000); /**< 100KHz, period = 10000ns */
         break;
     default:
         return status_i2c_not_supported;
@@ -66,7 +78,7 @@ static hpm_stat_t i2c_configure_timing(uint32_t src_clk_in_hz,
      * ------------------+----------+-----------+----------------+-------
      *    t_sp (min)     |    -     |  0 - 50   |    0 - 50      |   ns
      *
-     * T_SP = 50ns / (25ns * (TPM + 1))
+     * T_SP = 50ns / (tpclk * (TPM + 1))
      */
     timing->t_sp = 50 / period_in_ns(src_clk_in_hz) / (HPM_I2C_DRV_DEFAULT_TPM + 1);
 
@@ -77,8 +89,7 @@ static hpm_stat_t i2c_configure_timing(uint32_t src_clk_in_hz,
      *
      * Setup time = (2 * tpclk) + (2 + T_SP + T_SUDAT) * tpclk * (TPM + 1)
      */
-    timing->t_sudat = (250 - 2 * period_in_ns(src_clk_in_hz)) / period_in_ns(src_clk_in_hz) - 2 - timing->t_sp;
-
+    timing->t_sudat = (setup_time - 2 * tpclk) / tpclk / (HPM_I2C_DRV_DEFAULT_TPM + 1) - 2 - timing->t_sp;
     /*
      * Hold time       |Standard mode | Fast mode | Fast mode plus | Uint
      * ----------------+--------------+-----------+----------------+-------
@@ -86,20 +97,28 @@ static hpm_stat_t i2c_configure_timing(uint32_t src_clk_in_hz,
      *
      * Hold time = (2 * tpclk) + (2 + T_SP + T_HDDAT) * tpclk * (TPM + 1)
      */
-    timing->t_hddat = (300 - 2 * period_in_ns(src_clk_in_hz)) / period_in_ns(src_clk_in_hz) - 2 - timing->t_sp;
+    timing->t_hddat = (hold_time - 2 * tpclk) / tpclk / (HPM_I2C_DRV_DEFAULT_TPM + 1) - 2 - timing->t_sp;
 
     /*
      * SCLK High period = (2 * tpclk) + (2 + T_SP + T_SCLHi) * tpclk * (TPM + 1) > t_high;
      */
-    timing->t_sclhi_min1 = (timing->t_high - 2 * period_in_ns(src_clk_in_hz))
-        / (HPM_I2C_DRV_DEFAULT_TPM + 1) / period_in_ns(src_clk_in_hz) - 2 - timing->t_sp;
+    temp1 = (timing->t_high - 2 * tpclk) / tpclk / (HPM_I2C_DRV_DEFAULT_TPM + 1) - 2 - timing->t_sp;
+
+    /*
+     * SCLK High period = (2 * tpclk) + (2 + T_SP + T_SCLHi) * tpclk * (TPM + 1) > period / (1 + ratio);
+     */
+    temp2 = (period / (1 + timing->t_sclratio) - 2 * tpclk) / tpclk / (HPM_I2C_DRV_DEFAULT_TPM + 1) - 2 - timing->t_sp;
 
     /*
      * SCLK Low period = (2 * tpclk) + (2 + T_SP + T_SCLHi * ratio) * tpclk * (TPM + 1) > t_low;
      */
-    timing->t_sclhi_min2 = ((timing->t_low - 2 * period_in_ns(src_clk_in_hz))
-        / (HPM_I2C_DRV_DEFAULT_TPM + 1) / period_in_ns(src_clk_in_hz) - 2 - timing->t_sp)
-        / (timing->t_sclratio);
+    temp3 = ((timing->t_low - 2 * tpclk) / tpclk / (HPM_I2C_DRV_DEFAULT_TPM + 1) - 2 - timing->t_sp) / (timing->t_sclratio);
+
+    timing->t_sclhi = MAX(MAX(temp1, temp2), temp3);
+
+    /* update high_period and low_period to calculated value */
+    timing->t_high = 2 * tpclk + (2 + timing->t_sp + timing->t_sclhi) * tpclk;
+    timing->t_low = timing->t_high * timing->t_sclratio;
 
     return status_success;
 }
@@ -130,7 +149,7 @@ hpm_stat_t i2c_init_master(I2C_Type *ptr, uint32_t src_clk_in_hz, i2c_config_t *
         | I2C_SETUP_T_SUDAT_SET(timing.t_sudat)
         | I2C_SETUP_T_HDDAT_SET(timing.t_hddat)
         | I2C_SETUP_T_SCLRADIO_SET(timing.t_sclratio - 1)
-        | I2C_SETUP_T_SCLHI_SET(MAX(timing.t_sclhi_min1, timing.t_sclhi_min2))
+        | I2C_SETUP_T_SCLHI_SET(timing.t_sclhi)
         | I2C_SETUP_ADDRESSING_SET(config->is_10bit_addressing)
         | I2C_SETUP_IICEN_MASK
         | I2C_SETUP_MASTER_MASK;
@@ -153,7 +172,6 @@ hpm_stat_t i2c_master_address_read(I2C_Type *ptr, const uint16_t device_address,
 
     ptr->CMD = I2C_CMD_CLEAR_FIFO;
     ptr->CTRL = I2C_CTRL_PHASE_START_MASK
-        | I2C_CTRL_PHASE_STOP_MASK
         | I2C_CTRL_PHASE_ADDR_MASK
         | I2C_CTRL_PHASE_DATA_MASK
         | I2C_CTRL_DIR_SET(I2C_DIR_MASTER_WRITE)
@@ -178,6 +196,7 @@ hpm_stat_t i2c_master_address_read(I2C_Type *ptr, const uint16_t device_address,
     if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
         return status_timeout;
     }
+    ptr->STATUS |= I2C_STATUS_CMPL_MASK;
 
     ptr->CMD = I2C_CMD_CLEAR_FIFO;
     ptr->CTRL = I2C_CTRL_PHASE_START_MASK
@@ -434,7 +453,7 @@ hpm_stat_t i2c_init_slave(I2C_Type *ptr, uint32_t src_clk_in_hz,
         | I2C_SETUP_T_SUDAT_SET(timing.t_sudat)
         | I2C_SETUP_T_HDDAT_SET(timing.t_hddat)
         | I2C_SETUP_T_SCLRADIO_SET(timing.t_sclratio - 1)
-        | I2C_SETUP_T_SCLHI_SET(MAX(timing.t_sclhi_min1, timing.t_sclhi_min2))
+        | I2C_SETUP_T_SCLHI_SET(timing.t_sclhi)
         | I2C_SETUP_ADDRESSING_SET(config->is_10bit_addressing)
         | I2C_SETUP_IICEN_MASK;
 
@@ -576,4 +595,18 @@ void i2c_slave_dma_transfer(I2C_Type *i2c_ptr, uint32_t size)
     i2c_ptr->CTRL |= I2C_CTRL_DATACNT_SET(I2C_DATACNT_MAP(size));
 
     i2c_ptr->SETUP |= I2C_SETUP_DMAEN_MASK;
+}
+
+void i2c_master_configure_transfer(I2C_Type *i2c_ptr, const uint16_t device_address, uint32_t size, bool read)
+{
+    i2c_ptr->CMD = I2C_CMD_CLEAR_FIFO;
+    i2c_ptr->ADDR = I2C_ADDR_ADDR_SET(device_address);
+    i2c_ptr->CTRL = I2C_CTRL_PHASE_START_MASK
+                | I2C_CTRL_PHASE_STOP_MASK
+                | I2C_CTRL_PHASE_ADDR_MASK
+                | I2C_CTRL_PHASE_DATA_MASK
+                | I2C_CTRL_DIR_SET(read)
+                | I2C_CTRL_DATACNT_SET(I2C_DATACNT_MAP(size));
+
+    i2c_ptr->CMD = I2C_CMD_ISSUE_DATA_TRANSMISSION;
 }

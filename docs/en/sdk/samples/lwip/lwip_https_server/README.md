@@ -1,0 +1,44 @@
+# Https Server Test
+
+## Overview
+
+This example shows how to use lwip and bedtls to setup a https server.
+
+## Board Setting
+
+- Connect a USB port on PC to the PWR DEBUG port on the development board with a USB Type-C cable
+- Connect an Ethernet port on PC to a RGMII port or a RMII port on the development board with an Ethernet cable
+
+## Project Configuration
+
+- In the file `CMAkelists.txt` ,  set a matched Ethernet PHY type according to the development board schematic，
+
+  e.g. "set(COFNIG_ENET_PHY_DP83848 1)"
+
+## Run Example
+
+- Compiling and Downloading
+- Running log is shown in the serial terminal as follows:
+
+```console
+This is an ethernet demo: https server (Polling Usage)
+LwIP Version: 2.1.2
+Reference Clock: Internal Clock
+Enet phy init passes !
+Static IP: 10.10.10.10
+NETMASK  : 255.255.255.0
+Gateway  : 10.10.10.1
+
+************************************************
+ mbedTLS HTTPS Server example
+************************************************
+Link Status: Down
+Link Status: Down
+Link Status: Up
+Link Speed:  100Mbps
+Link Duplex: Full duplex
+```
+
+Open browser on pc, type https://10.10.10.10 and press enter, the web page will appear：
+
+ ![https_server](../../../../../assets/sdk/samples/lwip_mbedtls_https_server.png "https_server")

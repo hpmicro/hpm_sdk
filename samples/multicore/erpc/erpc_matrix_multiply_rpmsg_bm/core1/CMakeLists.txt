@@ -18,7 +18,7 @@ project(erpc_rpmsg_bm_core1)
 set(CMAKE_CXX_STANDARD 11)
 
 sdk_compile_definitions(-DHPM_FEATURE_MBX_SIDE_B)
-sdk_compile_definitions(-DBOARD_RUNNING_CORE=1)
+sdk_compile_options(-O1)
 
 sdk_inc(src)
 sdk_app_src(src/main_core1.c)

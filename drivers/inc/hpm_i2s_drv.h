@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -429,6 +429,14 @@ static inline void i2s_stop_transfer(I2S_Type *ptr)
 hpm_stat_t i2s_config_tx(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_config_t *config);
 
 /**
+ * @brief I2S config tx for slave
+ *
+ * @param [in] ptr I2S base address
+ * @param [in] config i2s_transfer_config_t
+ */
+hpm_stat_t i2s_config_tx_slave(I2S_Type *ptr, i2s_transfer_config_t *config);
+
+/**
  * @brief I2S config rx
  *
  * @param [in] ptr I2S base address
@@ -439,6 +447,15 @@ hpm_stat_t i2s_config_tx(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_config
 hpm_stat_t i2s_config_rx(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_config_t *config);
 
 /**
+ * @brief I2S config rx for slave
+ *
+ * @param [in] ptr I2S base address
+ * @param [in] config i2s_transfer_config_t
+ * @retval hpm_stat_t status_invalid_argument or status_success
+ */
+hpm_stat_t i2s_config_rx_slave(I2S_Type *ptr, i2s_transfer_config_t *config);
+
+/**
  * @brief I2S config transfer
  *
  * @param [in] ptr I2S base address
@@ -447,6 +464,15 @@ hpm_stat_t i2s_config_rx(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_config
  * @retval hpm_stat_t status_invalid_argument or status_success
  */
 hpm_stat_t i2s_config_transfer(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_config_t *config);
+
+/**
+ * @brief I2S config transfer for slave
+ *
+ * @param [in] ptr I2S base address
+ * @param [in] config i2s_transfer_config_t
+ * @retval hpm_stat_t status_invalid_argument or status_success
+ */
+hpm_stat_t i2s_config_transfer_slave(I2S_Type *ptr, i2s_transfer_config_t *config);
 
 /**
  * @brief I2S send data

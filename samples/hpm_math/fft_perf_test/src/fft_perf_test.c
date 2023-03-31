@@ -14,28 +14,30 @@
 #include "hpm_ffa_drv.h"
 #include "hpm_l1c_drv.h"
 
-typedef float FFT_BUF_TYPE;
+typedef float fft_type_t;
 #define FFT_PRECISION (0.001)
 #define FFT_COMPLEX_MAX (2*1024)
 #define FFT_COMPLEX_MAGNITUDE (FFT_COMPLEX_MAX/2)
 
-FFT_BUF_TYPE fft_buf[FFT_COMPLEX_MAX * 2];
-FFT_BUF_TYPE fft_buf_copy[FFT_COMPLEX_MAX];
-FFT_BUF_TYPE fft_mag_output[FFT_COMPLEX_MAGNITUDE];
+fft_type_t fft_buf[FFT_COMPLEX_MAX * 2];
+fft_type_t fft_buf_copy[FFT_COMPLEX_MAX];
+fft_type_t fft_mag_output[FFT_COMPLEX_MAGNITUDE];
 
-FFT_BUF_TYPE fft_buf_conversion[FFT_COMPLEX_MAX];
+fft_type_t fft_buf_conversion[FFT_COMPLEX_MAX];
 ffa_q31_t ffa_buf[FFT_COMPLEX_MAX];
 
 uint32_t run_times;
-void clear_cycle(void)
+uint64_t delta_time;
+
+void start_time(void)
 {
-    write_csr(CSR_MCYCLE, 0);
+    delta_time = hpm_csr_get_core_mcycle();
 }
-uint32_t read_cycles(void)
+
+uint32_t get_end_time(void)
 {
-    uint32_t cycles;
-    cycles = read_csr(CSR_MCYCLE);
-    return cycles;
+    delta_time = hpm_csr_get_core_mcycle() - delta_time;
+    return delta_time;
 }
 
 /**
@@ -47,7 +49,7 @@ uint32_t read_cycles(void)
  * @param[out] buf
  * @param[in] pt samples point
  */
-void init_fft_inputbuf(FFT_BUF_TYPE *buf, uint16_t pt)
+void init_fft_inputbuf(fft_type_t *buf, uint16_t pt)
 {
     uint16_t i;
     float flx;
@@ -66,28 +68,27 @@ void init_fft_inputbuf(FFT_BUF_TYPE *buf, uint16_t pt)
     hpm_dsp_convert_f32_q31(fft_buf_conversion, ffa_buf, 2 * pt);
 }
 
-void data_conversion_test(FFT_BUF_TYPE *buf, uint16_t pt)
+void data_conversion_test(fft_type_t *buf, uint16_t pt)
 {
     init_fft_inputbuf(buf, pt);
     printf("------------------------------------\r\n");
     printf("convert data from float to q31, nums:%d.\r\n", 2 * pt);
-    clear_cycle();
+    start_time();
     hpm_dsp_convert_f32_q31(fft_buf_conversion, ffa_buf, 2 * pt);
-    run_times = read_cycles();
+    run_times = get_end_time();
     printf("total times:%d tick.\r\n", run_times);
     printf("convert data from q31 to float, nums:%d.\r\n", 2 * pt);
-    clear_cycle();
+    start_time();
     hpm_dsp_convert_q31_f32(ffa_buf, fft_buf_conversion, 2 * pt);
-    run_times = read_cycles();
+    run_times = get_end_time();
     printf("total times:%d tick.\r\n", run_times);
     printf("------------------------------------\r\n");
 }
 
-void fft_printf(FFT_BUF_TYPE *buf, FFT_BUF_TYPE *output, uint16_t num)
+void fft_printf(fft_type_t *buf, fft_type_t *output, uint16_t num)
 {
     unsigned int i;
     hpm_dsp_cmag_f32(buf, output, num);
-    riscv_dsp_cmag_f32(buf, output, num);
     printf("------------------------------------\r\n");
     printf("DC component amplitude:%f.\r\n", output[0]/num);
     for (i = 1; i <  num/2; i++) {
@@ -114,16 +115,16 @@ int main(void)
         point = 1 << i;
         shift = i;
         init_fft_inputbuf(&fft_buf[0], point);
-        clear_cycle();
+        start_time();
         hpm_dsp_cfft_rd4_f32(&fft_buf[0], shift);
-        run_times = read_cycles();
+        run_times = get_end_time();
         printf("dsp fft radix-4 Total samples: %d.\r\n", point);
         printf("total times:%d tick.\r\n", run_times);
         fft_printf(&fft_buf[0], &fft_mag_output[0], point);
 
-        clear_cycle();
+        start_time();
         hpm_dsp_cifft_rd4_f32(&fft_buf[0], shift);
-        run_times = read_cycles();
+        run_times = get_end_time();
         printf("dsp ifft radix-4 Total samples: %d.\r\n", point);
         printf("total times:%d tick.\r\n", run_times);
         for (uint32_t m = 0; m < 2 * point; m++) {
@@ -143,16 +144,16 @@ int main(void)
         point = 1 << i;
         shift = i;
         init_fft_inputbuf(&fft_buf[0], point);
-        clear_cycle();
+        start_time();
         hpm_dsp_cfft_rd2_f32(&fft_buf[0], shift);
-        run_times = read_cycles();
+        run_times = get_end_time();
         printf("dsp fft radix-2 Total samples: %d.\r\n", point);
         printf("total times:%d tick.\r\n", run_times);
         fft_printf(&fft_buf[0], &fft_mag_output[0], point);
 
-        clear_cycle();
+        start_time();
         hpm_dsp_cifft_rd2_f32(&fft_buf[0], shift);
-        run_times = read_cycles();
+        run_times = get_end_time();
         printf("dsp ifft radix-2 Total samples: %d.\r\n", point);
         printf("total times:%d tick.\r\n", run_times);
         for (uint32_t m = 0; m < 2 * point; m++) {
@@ -172,9 +173,9 @@ int main(void)
         point = 1 << j;
         shift = j;
         init_fft_inputbuf(&fft_buf[0], point);
-        clear_cycle();
+        start_time();
         hpm_dsp_cfft_rd2_q31(&ffa_buf[0], shift);
-        run_times = read_cycles();
+        run_times = get_end_time();
         printf("dsp fft q31 radix-2 Total samples: %d.\r\n", point);
         printf("total times:%d tick.\r\n", run_times);
         hpm_dsp_convert_q31_f32(ffa_buf, fft_buf, point * 2);
@@ -183,9 +184,9 @@ int main(void)
         }
         fft_printf(&fft_buf[0], &fft_mag_output[0], point);
 
-        clear_cycle();
+        start_time();
         hpm_dsp_cifft_rd2_q31(ffa_buf, shift);
-        run_times = read_cycles();
+        run_times = get_end_time();
         hpm_dsp_convert_q31_f32(ffa_buf, fft_buf, point * 2);
         for (uint32_t i = 0; i < 2 * point; i++) {
             fft_buf[i] = fft_buf[i] * point;
@@ -215,9 +216,9 @@ int main(void)
                 2 * (HPM_L1C_CACHELINE_ALIGN_UP((point * sizeof(q31_t) + &ffa_buf[0])) -
                 HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) &ffa_buf[0])));
         }
-        clear_cycle();
+        start_time();
         hpm_ffa_cfft_q31(&ffa_buf[0], shift);
-        run_times = read_cycles();
+        run_times = get_end_time();
         if (l1c_dc_is_enabled()) {
             l1c_dc_invalidate(HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) &ffa_buf[0]),
                 2 * (HPM_L1C_CACHELINE_ALIGN_UP((point * sizeof(q31_t) + &ffa_buf[0])) -
@@ -236,9 +237,9 @@ int main(void)
                 2 * (HPM_L1C_CACHELINE_ALIGN_UP((point * sizeof(q31_t) + &ffa_buf[0])) -
                 HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) &ffa_buf[0])));
         }
-        clear_cycle();
+        start_time();
         hpm_ffa_cifft_q31(ffa_buf, shift);
-        run_times = read_cycles();
+        run_times = get_end_time();
         if (l1c_dc_is_enabled()) {
             l1c_dc_invalidate(HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) &ffa_buf[0]),
                 2 * (HPM_L1C_CACHELINE_ALIGN_UP((point * sizeof(q31_t) + &ffa_buf[0])) -
@@ -268,9 +269,9 @@ int main(void)
         point = 1 << i;
         shift = i;
         init_fft_inputbuf(&fft_buf[0], point);
-        clear_cycle();
+        start_time();
         hpm_software_cfft_float(&fft_buf[0], shift);
-        run_times = read_cycles();
+        run_times = get_end_time();
         printf("Software fft  cooley tukey Total samples: %d.\r\n", point);
         printf("total times:%d tick.\r\n", run_times);
         fft_printf(&fft_buf[0], &fft_mag_output[0], point);

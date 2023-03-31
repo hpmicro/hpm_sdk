@@ -77,6 +77,9 @@ void getNumberFromCore1(uint32_t *number)
 
 static void client_task(void *param)
 {
+    /* ERPC client initialization */
+    erpc_client_t erpc_client;
+
     /* RPMsg-Lite transport layer initialization */
     erpc_transport_t transport;
 
@@ -90,14 +93,14 @@ static void client_task(void *param)
     message_buffer_factory = erpc_mbf_rpmsg_init(transport);
 
     /* eRPC client side initialization */
-    s_transportArbitrator = erpc_arbitrated_client_init(transport, message_buffer_factory);
+    erpc_client = erpc_arbitrated_client_init(transport, message_buffer_factory, &s_transportArbitrator);
 
     /* Add server to client is necessary when do nesting RPC call. */
     while (s_server == NULL) {
         vTaskDelay(100);
     }
-    erpc_arbitrated_client_set_server(s_server);
-    erpc_arbitrated_client_set_server_thread_id((void *)s_server_task_handle);
+    erpc_arbitrated_client_set_server(erpc_client, s_server);
+    erpc_arbitrated_client_set_server_thread_id(erpc_client, (void *)s_server_task_handle);
 
     s_getNumberCallbackPtr = &getNumberFromCore1;
 
@@ -127,17 +130,17 @@ static void server_task(void *param)
     /* eRPC server initialization */
     s_server               = erpc_server_init(s_transportArbitrator, message_buffer_factory);
     erpc_service_t service = create_Core0Interface_service();
-    erpc_add_service_to_server(service);
+    erpc_add_service_to_server(s_server, service);
 
     /* process message */
-    erpc_status_t status = erpc_server_run();
+    erpc_status_t status = erpc_server_run(s_server);
 
     /* handle error status */
     if (status != (erpc_status_t)kErpcStatus_Success) {
         /* eRPC server de-initialization */
-        erpc_remove_service_from_server(service);
+        erpc_remove_service_from_server(s_server, service);
         destroy_Core0Interface_service(service);
-        erpc_server_deinit();
+        erpc_server_deinit(s_server);
     }
 
     vTaskDelete(s_server_task_handle);
@@ -153,6 +156,8 @@ int main(void)
     board_init_pmp();
     ipc_init();
     ipc_enable_event_interrupt(2u);
+
+    printf("Secondary core started...\r\n");
 
     if (xTaskCreate(client_task, "APP_TASK", configMINIMAL_STACK_SIZE + 256U, NULL, tskIDLE_PRIORITY + 1U, &s_client_task_handle) != pdPASS) {
         /* Failed to create application task */

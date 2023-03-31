@@ -30,8 +30,15 @@
  *
  */
 
+/*
+ * Copyright (c) 2021-2022 HPMicro
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ */
+
 /* lwIP includes. */
-#include "common.h"
+#include "common_lwip.h"
 #include "lwip/debug.h"
 #include "lwip/def.h"
 #include "lwip/sys.h"

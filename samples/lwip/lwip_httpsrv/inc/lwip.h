@@ -29,7 +29,7 @@
 extern enet_desc_t desc;
 extern uint8_t mac[];
 
-#if __USE_ENET_RECEIVE_INTERRUPT
+#if __ENABLE_ENET_RECEIVE_INTERRUPT
 extern volatile bool rx_flag;
 #endif
 

@@ -58,16 +58,19 @@ color_t buffer[IMAGE_WIDTH*(IMAGE_HEIGHT+IMAGE_HIGH_OFFSET)] __attribute__((sect
 uint32_t tf_run_inference;
 
 uint32_t run_times;
-void clear_cycle(void)
+uint64_t delta_time;
+
+void start_time(void)
 {
-    write_csr(CSR_MCYCLE, 0);
+    delta_time = hpm_csr_get_core_mcycle();
 }
-uint32_t read_cycles(void)
+
+uint32_t get_end_time(void)
 {
-    uint32_t cycles;
-    cycles = read_csr(CSR_MCYCLE);
-    return cycles;
+    delta_time = hpm_csr_get_core_mcycle() - delta_time;
+    return delta_time;
 }
+
 void init_lcd(void)
 {
     lcdc_config_t config = {0};
@@ -104,6 +107,7 @@ void init_camera_device(void)
     camera_context_t camera_context = {NULL, NULL, NULL, NULL};
     camera_config_t camera_config;
 
+    camera_context.i2c_device_addr = CAMERA_DEVICE_ADDR;
     camera_context.ptr = CAM_I2C;
     camera_context.delay_ms = board_delay_ms;
 #ifdef BOARD_SUPPORT_CAM_RESET
@@ -245,7 +249,7 @@ int main(void)
         }
         tf_run_inference = 0;
         loop();
-        run_times = read_cycles();
+        run_times = get_end_time();
         tf_run_inference = 816000000 / run_times;
     }
 }

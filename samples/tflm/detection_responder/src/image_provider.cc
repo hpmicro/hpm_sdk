@@ -21,7 +21,7 @@ limitations under the License.
 extern uint16_t buffer[];
 extern uint32_t tf_run_inference;
 extern"C"{
-void clear_cycle(void);
+void start_time(void);
 }
 TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
                       int image_height, int channels, int8_t* image_data) {
@@ -37,6 +37,6 @@ TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
           i++;
       }
   }
-  clear_cycle();
+  start_time();
   return kTfLiteOk;
 }

@@ -10,10 +10,6 @@
 #define SEC_CORE_IMG_H
 #include <stdint.h>
 
-
-#define SEC_CORE_IMG_START 0
-
-
 extern const uint32_t sec_core_img_size;
 extern const uint8_t sec_core_img[];
 

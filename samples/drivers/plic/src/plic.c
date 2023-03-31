@@ -27,7 +27,7 @@
 #define VECTOR_MODE "Non-Vector"
 #endif
 
-#ifndef DISABLE_IRQ_PREEMPTIVE
+#if !defined(DISABLE_IRQ_PREEMPTIVE) || (DISABLE_IRQ_PREEMPTIVE == 0)
 #define PREEMPTIVE_MODE "Preemptive"
 #else
 #define PREEMPTIVE_MODE "Non-Preemptive"

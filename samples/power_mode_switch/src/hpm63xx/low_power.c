@@ -24,7 +24,6 @@
 void prepare_soc_low_power(void)
 {
     bcfg_vbg_enable_lp_mode(HPM_BCFG);
-    bcfg_ldo_set_voltage(HPM_BCFG, 800);
     pcfg_dcdc_set_lp_current_limit(HPM_PCFG, pcfg_dcdc_lp_current_limit_250ma, false);
     pcfg_dcdc_set_current_hys_range(HPM_PCFG, pcfg_dcdc_current_hys_25mv);
 
@@ -111,7 +110,6 @@ void enter_shutdown_mode(void)
     printf("Long press PBUTN or WBUTN to wake up from the shutdown mode\n");
     printf("\nEntering shutdown mode with voltage:%dmV\n", 800);
 
-    bcfg_ldo_set_voltage(HPM_BCFG, 800);
     bpor_set_power_on_cause(HPM_BPOR, bpor_power_on_cause_wbutn);
     sysctl_set_cpu0_lp_retention(HPM_SYSCTL, retention);
     pcfg_set_periph_clock_mode(HPM_PCFG, 0);

@@ -13,7 +13,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
-#include "hpm_sdk_version.h"
 
 /**
  *
@@ -108,6 +107,7 @@ enum {
     status_group_pllctl,
     status_group_pllctlv2,
     status_group_ffa,
+    status_group_mcan,
 
     status_group_middleware_start = 500,
     status_group_sdmmc = status_group_middleware_start,

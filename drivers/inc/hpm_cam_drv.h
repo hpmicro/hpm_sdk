@@ -65,6 +65,8 @@
 #define CAM_COLOR_FORMAT_RGB555 (CAM_CR1_COLOR_FORMATS_SET(6))
 #define CAM_COLOR_FORMAT_YCBCR422 (CAM_CR1_COLOR_FORMATS_SET(7))
 #define CAM_COLOR_FORMAT_YUV444 (CAM_CR1_COLOR_FORMATS_SET(8))
+#define CAM_COLOR_FORMAT_RAW8 (CAM_CR1_COLOR_FORMATS_SET(0xf))
+#define CAM_COLOR_FORMAT_UNSUPPORTED (1)
 
 /**
  * @brief CAM config
@@ -113,6 +115,26 @@ typedef enum {
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief cam get pixel format value
+ *
+ * @param format display_pixel_format_t
+ * @return uint32_t cam color format, like CAM_COLOR_FORMAT_RGB565
+ */
+static inline uint32_t cam_get_pixel_format(display_pixel_format_t format)
+{
+    switch (format) {
+    case display_pixel_format_rgb565:
+        return CAM_COLOR_FORMAT_RGB565;
+    case display_pixel_format_ycbcr422:
+        return CAM_COLOR_FORMAT_YCBCR422;
+    case display_pixel_format_raw8:
+        return CAM_COLOR_FORMAT_RAW8;
+    default:
+        return CAM_COLOR_FORMAT_UNSUPPORTED;
+    }
+}
 
 /**
  * @brief CAM set high and low limits of color key

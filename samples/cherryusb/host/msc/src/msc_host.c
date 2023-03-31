@@ -16,6 +16,7 @@ USB_NOCACHE_RAM_SECTION FATFS fs;
 USB_NOCACHE_RAM_SECTION FIL fnew;
 UINT fnum;
 FRESULT res_sd;
+static volatile bool mounted_flag;
 
 int usb_msc_fatfs_write_read_test(void)
 {
@@ -98,6 +99,16 @@ void usb_msc_fatfs_scan_file_test(char *path)
 
 void usbh_device_mount_done_callback(struct usbh_hubport *hport)
 {
+    mounted_flag = true;
+}
+
+void usbh_device_unmount_done_callback(struct usbh_hubport *hport)
+{
+    mounted_flag = false;
+}
+
+static void msc_test(void)
+{
     struct usbh_msc *msc_class;
 
     msc_class = (struct usbh_msc *)usbh_find_class_instance("/dev/sda");
@@ -111,16 +122,25 @@ void usbh_device_mount_done_callback(struct usbh_hubport *hport)
             if (usb_msc_fatfs_write_read_test() == 0) {
                 usb_msc_fatfs_scan_file_test("/");
                 f_unmount("0:");
+                mounted_flag = false;
             }
         }
     }
 }
 
-void usbh_device_unmount_done_callback(struct usbh_hubport *hport)
+static void usbh_class_test_thread(void *argument)
 {
+    while (1) {
+        usb_osal_msleep(1000);
+        if (mounted_flag) {
+            usb_osal_msleep(1000);
+            msc_test();
+        }
+    }
 }
 
 void usbh_class_test(void)
 {
     printf("cherryusb msc host test\r\n");
+    usb_osal_thread_create("usbh_test", 4096, CONFIG_USBHOST_PSC_PRIO + 1, usbh_class_test_thread, NULL);
 }

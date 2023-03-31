@@ -7,11 +7,14 @@ if(${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.20)
 endif()
 cmake_policy(SET CMP0079 NEW)
 
-set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
+if(flash_size)
+    sdk_linker_global_symbols("_flash_size=${flash_size}")
+endif()
 
-sdk_linker_global_symbols("_flash_size=${flash_size}")
-sdk_linker_global_symbols("_extram_size=${extram_size}")
+if(extram_size)
+    sdk_linker_global_symbols("_extram_size=${extram_size}")
+endif()
+
 sdk_linker_global_symbols("_heap_size=${HEAP_SIZE}")
 sdk_linker_global_symbols("_stack_size=${STACK_SIZE}")
 
@@ -108,7 +111,7 @@ endif()
 
 if(DEFINED CUSTOM_SES_STARTUP_FILE)
     set(USE_CUSTOM_STARTUP 1)
-    sdk_gcc_src(${CUSTOM_SES_STARTUP_FILE})
+    sdk_ses_src(${CUSTOM_SES_STARTUP_FILE})
 endif()
 
 sdk_sys_inc(${SYSROOT_DIR}/include)
@@ -151,8 +154,9 @@ endif()
 
 sdk_ld_options("-T ${LINKER_SCRIPT}")
 
+set(generated_file_path "${PROJECT_BINARY_DIR}/generated")
 # prepare dummy file
-set(EMPTY_FILE ${PROJECT_BINARY_DIR}/misc/empty.c)
+set(EMPTY_FILE ${generated_file_path}/misc/empty.c)
 file(WRITE ${EMPTY_FILE} "")
 
 add_executable(${APP_ELF_NAME} ${EMPTY_FILE})
@@ -160,35 +164,39 @@ add_executable(${APP_ELF_NAME} ${EMPTY_FILE})
 # generate SDK version file
 execute_process(
   COMMAND ${CMAKE_COMMAND} -DHPM_SDK_BASE=${HPM_SDK_BASE}
-    -DOUT_FILE=${PROJECT_BINARY_DIR}/include/generated/hpm_sdk_version.h
+    -DOUT_FILE=${generated_file_path}/include/hpm_sdk_version.h
     -P ${HPM_SDK_BASE}/cmake/gen_version_h.cmake
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
 )
-sdk_inc(${PROJECT_BINARY_DIR}/include/generated/)
+sdk_inc(${generated_file_path}/include)
 
 set_target_properties(${APP_ELF_NAME} PROPERTIES LINK_DEPENDS ${LINKER_SCRIPT})
 
 if("${TOOLCHAIN_VARIANT}" STREQUAL "nds-gcc")
     target_link_libraries(${APP_ELF_NAME}
-        "-Wl,-Map=${PROJECT_BINARY_DIR}/${APP_MAP_NAME}"
+        "-Wl,-Map=${EXECUTABLE_OUTPUT_PATH}/${APP_MAP_NAME}"
+        "-Wl,--whole-archive"
         ${HPM_SDK_NDSGCC_LIB_ITF}
         ${HPM_SDK_GCC_LIB} ${HPM_SDK_GCC_LIB_ITF}
-        ${HPM_SDK_LIB} ${HPM_SDK_LIB_ITF} app)
+        ${HPM_SDK_LIB} ${HPM_SDK_LIB_ITF} app
+        "-Wl,--no-whole-archive")
 else()
     target_link_libraries(${APP_ELF_NAME}
-    "-Wl,-Map=${PROJECT_BINARY_DIR}/${APP_MAP_NAME}"
-    ${HPM_SDK_GCC_LIB} ${HPM_SDK_GCC_LIB_ITF}
-    ${HPM_SDK_LIB} ${HPM_SDK_LIB_ITF} app)
+        "-Wl,-Map=${EXECUTABLE_OUTPUT_PATH}/${APP_MAP_NAME}"
+        "-Wl,--whole-archive"
+        ${HPM_SDK_GCC_LIB} ${HPM_SDK_GCC_LIB_ITF}
+        ${HPM_SDK_LIB} ${HPM_SDK_LIB_ITF} app
+        "-Wl,--no-whole-archive")
 endif()
 
 add_custom_command(
     TARGET ${APP_ELF_NAME}
-    COMMAND "${CROSS_COMPILE}objcopy" -O binary -S ${PROJECT_BINARY_DIR}/${APP_ELF_NAME} ${PROJECT_BINARY_DIR}/${APP_BIN_NAME}
+    COMMAND "${CROSS_COMPILE}objcopy" -O binary -S ${EXECUTABLE_OUTPUT_PATH}/${APP_ELF_NAME} ${EXECUTABLE_OUTPUT_PATH}/${APP_BIN_NAME}
 )
 
 add_custom_command(
     TARGET ${APP_ELF_NAME}
-    COMMAND "${CROSS_COMPILE}objdump" -S -d ${PROJECT_BINARY_DIR}/${APP_ELF_NAME} > ${PROJECT_BINARY_DIR}/${APP_ASM_NAME}
+    COMMAND "${CROSS_COMPILE}objdump" -S -d ${EXECUTABLE_OUTPUT_PATH}/${APP_ELF_NAME} > ${EXECUTABLE_OUTPUT_PATH}/${APP_ASM_NAME}
 )
 
 

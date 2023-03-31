@@ -48,7 +48,7 @@ extern struct netif gnetif;
 /* Exported functions ------------------------------------------------------- */
 void LwIP_Init(void);
 void netif_config(void);
-#ifdef USE_DHCP
+#if __ENABLE_DHCP
 void LwIP_DHCP_task(void *pvParameters);
 #endif
 void user_notification(struct netif *netif);

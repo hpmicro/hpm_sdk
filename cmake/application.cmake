@@ -7,8 +7,8 @@ endif()
 
 set(APP_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE PATH "application source directory")
 set(APP_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR} CACHE PATH "application binary directory")
+set(__build_dir ${APP_BIN_DIR}/build_tmp)
 
-set(__build_dir ${CMAKE_CURRENT_BINARY_DIR}/output)
 set(APP_NAME demo)
 set(APP_ELF_NAME ${APP_NAME}.elf)
 set(APP_BIN_NAME ${APP_NAME}.bin)
@@ -29,16 +29,19 @@ message(STATUS "Application: ${APP_SRC_DIR}")
 
 file(TO_CMAKE_PATH "${HPM_SDK_BASE}" PROJECT_SOURCE_DIR)
 
-set(PROJECT_BINARY_DIR ${__build_dir})
 set(PROJECT_SOURCE_DIR ${HPM_SDK_BASE})
+set(PROJECT_BINARY_DIR ${__build_dir})
+
+set(LIBRARY_OUTPUT_PATH ${APP_BIN_DIR}/lib)
+set(EXECUTABLE_OUTPUT_PATH ${APP_BIN_DIR}/output)
+
 
 set(BOARD_MESSAGE "Board: ${BOARD}")
 find_path(HPM_BOARD_DIR NAMES ${BOARD}.yaml PATHS ${HPM_SDK_BASE}/boards/* NO_DEFAULT_PATH)
 
 message(STATUS "${BOARD_MESSAGE}")
 if(NOT HPM_BOARD_DIR)
-    message("No board named '${BOARD}' found")
-    message(FATAL_ERROR "Invalid usage")
+    message(FATAL_ERROR "No board named '${BOARD}' found")
 endif()
 set(HPM_BOARD_DIR ${HPM_SDK_BASE}/boards/${BOARD})
 
@@ -98,6 +101,16 @@ set(HPM_DEVICE_NAME ${device_name})
 
 get_flash_size_of_board(${BOARD} flash_size)
 get_extram_size_of_board(${BOARD} extram_size)
+
+string(TOLOWER ${CMAKE_BUILD_TYPE} build_type)
+if(NOT extram_size)
+    string(FIND ${build_type} "sdram" found)
+    if(${found} GREATER_EQUAL 0)
+        message(FATAL_ERROR "\n!!! target ${build_type} is not supported for ${BOARD}\n")
+    endif()
+endif()
+
+
 if(NOT HEAP_SIZE)
     SET(HEAP_SIZE 0x4000)
 endif()
@@ -116,7 +129,6 @@ add_subdirectory(${HPM_SDK_BASE} ${__build_dir})
 
 # link final executable
 target_link_libraries(app PUBLIC ${HPM_SDK_LIB_ITF})
-set_property(TARGET app PROPERTY ARCHIVE_OUTPUT_DIRECTORY app)
 
 if(${APP_SRC_DIR} STREQUAL ${APP_BIN_DIR})
     message(FATAL_ERROR "source directory is the same with binary directory.\

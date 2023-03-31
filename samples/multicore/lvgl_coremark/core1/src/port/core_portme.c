@@ -176,7 +176,7 @@ void portable_init(core_portable *p, int *argc, char *argv[])
     board_init_uart(HPM_UART6);
     clock_add_to_group(clock_uart6, 1);
     console_config_t config;
-    config.type = console_type_uart;
+    config.type = CONSOLE_TYPE_UART;
     config.base = HPM_UART6_BASE;
     config.src_freq_in_hz = board_init_uart_clock(HPM_UART6);
     config.baudrate = 115200;

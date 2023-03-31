@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -32,13 +32,16 @@
 #define AES_CTR_BLOCK_UNIT (16U)
 
 typedef enum {
-    sdp_state_hash_init,
-    sdp_state_hash_update,
+    sdp_state_hash_init, sdp_state_hash_update,
 } sdp_hash_alg_state_t;
 
 #define AES_BLOCK_SIZE (16U)
 #define HASH_BLOCK_SIZE (64U)
 #define HASH_DIGEST_SIZE_MAX (32)
+
+#define SDP_CRYPTO_ALG_IDX_AES128 (0U)
+#define SDP_CRYPTO_ALG_IDX_AES256 (1U)
+#define SDP_CRYPTO_ALG_IDX_SM4 (8U)
 
 typedef struct {
     union {
@@ -74,7 +77,8 @@ static void sdp_increment_bn(uint8_t *big_num, uint32_t bytes);
 
 static void uint32_to_be(uint8_t *dst, uint32_t len, uint32_t num);
 
-static hpm_stat_t aes_ccm_auth_crypt(SDP_Type *base, sdp_aes_ctx_t *aes_ctx,
+static hpm_stat_t aes_ccm_auth_crypt(SDP_Type *base,
+                                     sdp_aes_ctx_t *aes_ctx,
                                      sdp_aes_op_t op,
                                      uint32_t input_len,
                                      const uint8_t *iv,
@@ -86,13 +90,16 @@ static hpm_stat_t aes_ccm_auth_crypt(SDP_Type *base, sdp_aes_ctx_t *aes_ctx,
                                      uint8_t *mac,
                                      uint32_t mac_len);
 
-static void aes_ccm_format_b0(uint8_t *block, const uint8_t *iv, uint32_t iv_len, uint32_t mac_len, uint32_t aad_len,
+static void aes_ccm_format_b0(uint8_t *block,
+                              const uint8_t *iv,
+                              uint32_t iv_len,
+                              uint32_t mac_len,
+                              uint32_t aad_len,
                               uint32_t input_len);
 
 static void aes_ccm_format_ctr0(uint8_t *ctr, const uint8_t *iv, uint8_t iv_len);
 
 static uint8_t sdp_constant_time_cmp(const void *dst, const void *src, uint32_t len);
-
 
 /***********************************************************************************************************************
  * Codes
@@ -135,7 +142,6 @@ hpm_stat_t sdp_init(SDP_Type *base)
     return status;
 }
 
-
 hpm_stat_t sdp_deinit(SDP_Type *base)
 {
     hpm_stat_t status = status_invalid_argument;
@@ -146,7 +152,10 @@ hpm_stat_t sdp_deinit(SDP_Type *base)
     return status;
 }
 
-hpm_stat_t sdp_aes_set_key(SDP_Type *base, sdp_aes_ctx_t *aes_ctx, const uint8_t *key, sdp_aes_key_bits_t key_bits,
+hpm_stat_t sdp_aes_set_key(SDP_Type *base,
+                           sdp_aes_ctx_t *aes_ctx,
+                           const uint8_t *key,
+                           sdp_aes_key_bits_t key_bits,
                            uint32_t key_idx)
 {
     union {
@@ -158,7 +167,7 @@ hpm_stat_t sdp_aes_set_key(SDP_Type *base, sdp_aes_ctx_t *aes_ctx, const uint8_t
 
     hpm_stat_t status = status_invalid_argument;
     do {
-        /* TODO: AES_KEY index validity check */
+        aes_ctx->crypto_algo = sdp_crypto_alg_aes;
 
         if (IS_HPM_BITMASK_SET(base->SDPCR, SDP_SDPCR_CIPDIS_MASK)) {
             status = status_sdp_no_crypto_support;
@@ -203,7 +212,32 @@ hpm_stat_t sdp_aes_set_key(SDP_Type *base, sdp_aes_ctx_t *aes_ctx, const uint8_t
     return status;
 }
 
-hpm_stat_t sdp_aes_crypt_ecb(SDP_Type *base, sdp_aes_ctx_t *aes_ctx, sdp_aes_op_t op, uint32_t len, const uint8_t *in,
+#if defined(SDP_HAS_SM4_SUPPORT) && (SDP_HAS_SM4_SUPPORT == 1)
+hpm_stat_t sdp_sm4_set_key(SDP_Type *base,
+                           sdp_sm4_ctx_t *sm4_ctx,
+                           const uint8_t *key,
+                           sdp_sm4_key_bits_t key_bits,
+                           uint32_t key_idx)
+{
+    hpm_stat_t status = status_invalid_argument;
+    if (key_bits != sdp_sm4_keybits_128) {
+        return status;
+    }
+    status = sdp_aes_set_key(base, sm4_ctx, key, (sdp_aes_key_bits_t) key_bits, key_idx);
+    if (status != status_success) {
+        return status;
+    }
+    sm4_ctx->crypto_algo = sdp_crypto_alg_sm4;
+
+    return status;
+}
+#endif
+
+hpm_stat_t sdp_aes_crypt_ecb(SDP_Type *base,
+                             sdp_aes_ctx_t *aes_ctx,
+                             sdp_aes_op_t op,
+                             uint32_t len,
+                             const uint8_t *in,
                              uint8_t *out)
 {
     assert((base != NULL) && (aes_ctx != NULL));
@@ -211,7 +245,7 @@ hpm_stat_t sdp_aes_crypt_ecb(SDP_Type *base, sdp_aes_ctx_t *aes_ctx, sdp_aes_op_
     hpm_stat_t status;
 
     base->SDPCR = SDP_SDPCR_CIPHEN_MASK;
-#if SDP_REGISTER_DESCRIPTOR_COUNT
+#if defined(SDP_REGISTER_DESCRIPTOR_COUNT) && SDP_REGISTER_DESCRIPTOR_COUNT
     base->SDPCR |= HPM_BITSMASK(1, 8);
     base->PKTCTL = SDP_PKT_CTRL_DERSEMA_MASK;
     base->PKTSRC = (uint32_t) in;
@@ -228,16 +262,28 @@ hpm_stat_t sdp_aes_crypt_ecb(SDP_Type *base, sdp_aes_ctx_t *aes_ctx, sdp_aes_op_
 #endif
     sdp_clear_error_status(base);
 
-    if (aes_ctx->key_bits == sdp_aes_keybits_128) {
-        base->MODCTRL = SDP_MODCTRL_AESKS_SET(aes_ctx->key_idx)
-            | SDP_MODCTRL_AESDIR_SET(op);
-    } else {
-        base->MODCTRL = SDP_MODCTRL_AESALG_SET(1)
-            | SDP_MODCTRL_AESKS_SET(aes_ctx->key_idx)
-            | SDP_MODCTRL_AESDIR_SET(op);
+    if (aes_ctx->crypto_algo == sdp_crypto_alg_aes) {
+        if (aes_ctx->key_bits == sdp_aes_keybits_128) {
+            base->MODCTRL =
+                SDP_MODCTRL_AESALG_SET(SDP_CRYPTO_ALG_IDX_AES128) | SDP_MODCTRL_AESKS_SET(aes_ctx->key_idx) |
+                    SDP_MODCTRL_AESDIR_SET(op);
+        } else {
+            base->MODCTRL =
+                SDP_MODCTRL_AESALG_SET(SDP_CRYPTO_ALG_IDX_AES256) | SDP_MODCTRL_AESKS_SET(aes_ctx->key_idx) |
+                    SDP_MODCTRL_AESDIR_SET(op);
+        }
+    }
+#if defined(SDP_HAS_SM4_SUPPORT) && (SDP_HAS_SM4_SUPPORT == 1)
+    else if (aes_ctx->crypto_algo == sdp_crypto_alg_sm4) {
+        base->MODCTRL = SDP_MODCTRL_AESALG_SET(SDP_CRYPTO_ALG_IDX_SM4) | SDP_MODCTRL_AESKS_SET(aes_ctx->key_idx) |
+            SDP_MODCTRL_AESDIR_SET(op);
+    }
+#endif
+    else {
+        return status_sdp_invalid_alg;
     }
 
-#if SDP_REGISTER_DESCRIPTOR_COUNT
+#if defined(SDP_REGISTER_DESCRIPTOR_COUNT) && SDP_REGISTER_DESCRIPTOR_COUNT
     base->CMDPTR = 0;
 #else
     base->CMDPTR = (uint32_t) pkt_desc;
@@ -249,8 +295,13 @@ hpm_stat_t sdp_aes_crypt_ecb(SDP_Type *base, sdp_aes_ctx_t *aes_ctx, sdp_aes_op_
     return status;
 }
 
-hpm_stat_t sdp_aes_crypt_cbc(SDP_Type *base, sdp_aes_ctx_t *aes_ctx, sdp_aes_op_t op, uint32_t length,
-                             const uint8_t iv[16], const uint8_t *input, uint8_t *output)
+hpm_stat_t sdp_aes_crypt_cbc(SDP_Type *base,
+                             sdp_aes_ctx_t *aes_ctx,
+                             sdp_aes_op_t op,
+                             uint32_t length,
+                             const uint8_t iv[16],
+                             const uint8_t *input,
+                             uint8_t *output)
 {
     assert((base != NULL) && (aes_ctx != NULL));
     assert((op <= sdp_aes_op_decrypt) && (input != NULL) && (output != NULL));
@@ -258,7 +309,7 @@ hpm_stat_t sdp_aes_crypt_cbc(SDP_Type *base, sdp_aes_ctx_t *aes_ctx, sdp_aes_op_
     hpm_stat_t status;
 
     base->SDPCR = SDP_SDPCR_CIPHEN_MASK;
-#if SDP_REGISTER_DESCRIPTOR_COUNT
+#if defined(SDP_REGISTER_DESCRIPTOR_COUNT) && SDP_REGISTER_DESCRIPTOR_COUNT
     base->SDPCR |= HPM_BITSMASK(1, 8);
     base->PKTCTL = SDP_PKT_CTRL_DERSEMA_MASK | SDP_PKT_CTRL_CIPHIV_MASK;
     base->PKTSRC = (uint32_t) input;
@@ -275,15 +326,25 @@ hpm_stat_t sdp_aes_crypt_cbc(SDP_Type *base, sdp_aes_ctx_t *aes_ctx, sdp_aes_op_
 
     sdp_clear_error_status(base);
 
-    if (aes_ctx->key_bits == sdp_aes_keybits_128) {
-        base->MODCTRL = SDP_MODCTRL_AESKS_SET(aes_ctx->key_idx)
-                | SDP_MODCTRL_AESDIR_SET(op)
-                | SDP_MODCTRL_AESMOD_SET(1);
-    } else {
-        base->MODCTRL = SDP_MODCTRL_AESALG_SET(1)
-            | SDP_MODCTRL_AESKS_SET(aes_ctx->key_idx)
-            | SDP_MODCTRL_AESDIR_SET(op)
-            | SDP_MODCTRL_AESMOD_SET(1);
+    if (aes_ctx->crypto_algo == sdp_crypto_alg_aes) {
+        if (aes_ctx->key_bits == sdp_aes_keybits_128) {
+            base->MODCTRL =
+                SDP_MODCTRL_AESALG_SET(SDP_CRYPTO_ALG_IDX_AES128) | SDP_MODCTRL_AESKS_SET(aes_ctx->key_idx) |
+                    SDP_MODCTRL_AESDIR_SET(op) | SDP_MODCTRL_AESMOD_SET(1);
+        } else {
+            base->MODCTRL =
+                SDP_MODCTRL_AESALG_SET(SDP_CRYPTO_ALG_IDX_AES256) | SDP_MODCTRL_AESKS_SET(aes_ctx->key_idx) |
+                    SDP_MODCTRL_AESDIR_SET(op) | SDP_MODCTRL_AESMOD_SET(1);
+        }
+    }
+#if defined(SDP_HAS_SM4_SUPPORT) && (SDP_HAS_SM4_SUPPORT == 1)
+    else if (aes_ctx->crypto_algo == sdp_crypto_alg_sm4) {
+        base->MODCTRL = SDP_MODCTRL_AESALG_SET(SDP_CRYPTO_ALG_IDX_SM4) | SDP_MODCTRL_AESKS_SET(aes_ctx->key_idx) |
+            SDP_MODCTRL_AESDIR_SET(op) | SDP_MODCTRL_AESMOD_SET(1);
+    }
+#endif
+    else {
+        return status_sdp_invalid_alg;
     }
 
     /* Set IV, copy the IV to the context first in case the IV address is not 32-bit aligned */
@@ -293,7 +354,7 @@ hpm_stat_t sdp_aes_crypt_cbc(SDP_Type *base, sdp_aes_ctx_t *aes_ctx, sdp_aes_op_
         base->CIPHIV[i] = iv_32[i];
     }
     (void) memset(iv_32, 0, sizeof(iv_32));
-#if SDP_REGISTER_DESCRIPTOR_COUNT
+#if defined(SDP_REGISTER_DESCRIPTOR_COUNT) && SDP_REGISTER_DESCRIPTOR_COUNT
     base->CMDPTR = 0;
 #else
     base->CMDPTR = (uint32_t) pkt_desc;
@@ -318,17 +379,21 @@ static void sdp_increment_bn(uint8_t *big_num, uint32_t bytes)
     }
 }
 
-hpm_stat_t sdp_aes_crypt_ctr(SDP_Type *base, sdp_aes_ctx_t *aes_ctx, uint8_t *nonce_counter, uint8_t *input,
-                             uint8_t *output, uint32_t length)
+hpm_stat_t sdp_aes_crypt_ctr(SDP_Type *base,
+                             sdp_aes_ctx_t *aes_ctx,
+                             uint8_t *nonce_counter,
+                             uint8_t *input,
+                             uint8_t *output,
+                             uint32_t length)
 {
     hpm_stat_t status = status_invalid_argument;
 
     do {
         HPM_BREAK_IF(
-                (base == NULL) || (aes_ctx == NULL) || (nonce_counter == NULL) || (input == NULL) || (output == NULL));
+            (base == NULL) || (aes_ctx == NULL) || (nonce_counter == NULL) || (input == NULL) || (output == NULL));
 
         uint32_t calc_len;
-        uint8_t *cipher_nonce = (uint8_t *)&aes_ctx->buf3;
+        uint8_t *cipher_nonce = (uint8_t *) &aes_ctx->buf3;
         while (length > 0) {
             calc_len = (length < 16U) ? length : 16U;
             status = sdp_aes_crypt_ecb(base, aes_ctx, sdp_aes_op_encrypt, 16, nonce_counter, cipher_nonce);
@@ -376,7 +441,11 @@ static void uint32_to_be(uint8_t *dst, uint32_t len, uint32_t num)
  * byte (16-q...15) input length
  *
  */
-static void aes_ccm_format_b0(uint8_t *block, const uint8_t *iv, uint32_t iv_len, uint32_t mac_len, uint32_t aad_len,
+static void aes_ccm_format_b0(uint8_t *block,
+                              const uint8_t *iv,
+                              uint32_t iv_len,
+                              uint32_t mac_len,
+                              uint32_t aad_len,
                               uint32_t input_len)
 {
     uint8_t q = 15U - iv_len;
@@ -411,8 +480,8 @@ static void aes_ccm_format_ctr0(uint8_t *ctr, const uint8_t *iv, uint8_t iv_len)
     (void) memcpy(ctr + 1U, iv, iv_len);
 }
 
-
-static hpm_stat_t aes_ccm_auth_crypt(SDP_Type *base, sdp_aes_ctx_t *aes_ctx,
+static hpm_stat_t aes_ccm_auth_crypt(SDP_Type *base,
+                                     sdp_aes_ctx_t *aes_ctx,
                                      sdp_aes_op_t op,
                                      uint32_t input_len,
                                      const uint8_t *iv,
@@ -544,14 +613,31 @@ static hpm_stat_t aes_ccm_auth_crypt(SDP_Type *base, sdp_aes_ctx_t *aes_ctx,
     return status;
 }
 
-hpm_stat_t sdp_aes_ccm_generate_encrypt(SDP_Type *base, sdp_aes_ctx_t *aes_ctx, uint32_t input_len, const uint8_t *iv,
-                                        uint32_t iv_len, const uint8_t *aad, uint32_t aad_len, const uint8_t *input,
-                                        uint8_t *output, uint8_t *tag, uint32_t tag_len)
+hpm_stat_t sdp_aes_ccm_generate_encrypt(SDP_Type *base,
+                                        sdp_aes_ctx_t *aes_ctx,
+                                        uint32_t input_len,
+                                        const uint8_t *iv,
+                                        uint32_t iv_len,
+                                        const uint8_t *aad,
+                                        uint32_t aad_len,
+                                        const uint8_t *input,
+                                        uint8_t *output,
+                                        uint8_t *tag,
+                                        uint32_t tag_len)
 {
-    return aes_ccm_auth_crypt(base, aes_ctx, sdp_aes_op_encrypt, input_len, iv, iv_len, aad, aad_len, input, output,
-                              tag, tag_len);
+    return aes_ccm_auth_crypt(base,
+                              aes_ctx,
+                              sdp_aes_op_encrypt,
+                              input_len,
+                              iv,
+                              iv_len,
+                              aad,
+                              aad_len,
+                              input,
+                              output,
+                              tag,
+                              tag_len);
 }
-
 
 static uint8_t sdp_constant_time_cmp(const void *dst, const void *src, uint32_t len)
 {
@@ -569,9 +655,17 @@ static uint8_t sdp_constant_time_cmp(const void *dst, const void *src, uint32_t 
     return result;
 }
 
-hpm_stat_t sdp_aes_ccm_decrypt_verify(SDP_Type *base, sdp_aes_ctx_t *aes_ctx, uint32_t input_len, const uint8_t *iv,
-                                      uint32_t iv_len, const uint8_t *aad, uint32_t aad_len, const uint8_t *input,
-                                      uint8_t *output, const uint8_t *tag, uint32_t tag_len)
+hpm_stat_t sdp_aes_ccm_decrypt_verify(SDP_Type *base,
+                                      sdp_aes_ctx_t *aes_ctx,
+                                      uint32_t input_len,
+                                      const uint8_t *iv,
+                                      uint32_t iv_len,
+                                      const uint8_t *aad,
+                                      uint32_t aad_len,
+                                      const uint8_t *input,
+                                      uint8_t *output,
+                                      const uint8_t *tag,
+                                      uint32_t tag_len)
 {
     hpm_stat_t status;
 
@@ -579,8 +673,18 @@ hpm_stat_t sdp_aes_ccm_decrypt_verify(SDP_Type *base, sdp_aes_ctx_t *aes_ctx, ui
 
         uint32_t calc_mac[4];
 
-        status = aes_ccm_auth_crypt(base, aes_ctx, sdp_aes_op_decrypt, input_len, iv, iv_len, aad, aad_len, input,
-                                    output, (uint8_t *) &calc_mac, tag_len);
+        status = aes_ccm_auth_crypt(base,
+                                    aes_ctx,
+                                    sdp_aes_op_decrypt,
+                                    input_len,
+                                    iv,
+                                    iv_len,
+                                    aad,
+                                    aad_len,
+                                    input,
+                                    output,
+                                    (uint8_t *) &calc_mac,
+                                    tag_len);
         HPM_BREAK_IF(status != status_success);
         if (sdp_constant_time_cmp(calc_mac, tag, tag_len) != 0U) {
             status = status_sdp_error_invalid_mac;
@@ -625,7 +729,6 @@ static void sdp_hash_internal_engine_init(SDP_Type *base, sdp_hash_ctx_t *hash_c
     ctx_internal->hash_finish = false;
 }
 
-
 static hpm_stat_t sdp_hash_internal_update(SDP_Type *base, sdp_hash_ctx_t *ctx, const uint8_t *msg, uint32_t msg_size)
 {
     sdp_hash_internal_ctx_t *ctx_internal = (sdp_hash_internal_ctx_t *) &ctx->internal;
@@ -643,7 +746,7 @@ static hpm_stat_t sdp_hash_internal_update(SDP_Type *base, sdp_hash_ctx_t *ctx, 
     }
 
     base->SDPCR = SDP_SDPCR_HASHEN_MASK;
-#if SDP_REGISTER_DESCRIPTOR_COUNT
+#if defined(SDP_REGISTER_DESCRIPTOR_COUNT) && SDP_REGISTER_DESCRIPTOR_COUNT
     base->SDPCR |= HPM_BITSMASK(1, 8);
     base->NPKTPTR = 0UL;
     base->PKTCTL = pkt_ctrl;
@@ -662,7 +765,7 @@ static hpm_stat_t sdp_hash_internal_update(SDP_Type *base, sdp_hash_ctx_t *ctx, 
 
     sdp_clear_error_status(base);
     base->MODCTRL = SDP_MODCTRL_HASALG_SET(ctx_internal->alg);
-#if SDP_REGISTER_DESCRIPTOR_COUNT
+#if defined(SDP_REGISTER_DESCRIPTOR_COUNT) && SDP_REGISTER_DESCRIPTOR_COUNT
     base->CMDPTR = 0;
 #else
     base->CMDPTR = (uint32_t) pkt_desc;
@@ -782,6 +885,9 @@ hpm_stat_t sdp_hash_finish(SDP_Type *base, sdp_hash_ctx_t *hash_ctx, uint8_t *di
             }
             break;
         case sdp_hash_alg_sha256:
+#if defined(SDP_HAS_SM3_SUPPORT) && (SDP_HAS_SM3_SUPPORT == 1)
+        case sdp_hash_alg_sm3:
+#endif
             copy_bytes = SHA256_DIGEST_SIZE_IN_BYTES;
             digest_words = copy_bytes / sizeof(uint32_t);
             for (uint32_t i = 0; i < digest_words; i++) {
@@ -808,7 +914,7 @@ hpm_stat_t sdp_memcpy(SDP_Type *base, sdp_dma_ctx_t *dma_ctx, void *dst, const v
     }
 
     base->SDPCR = SDP_SDPCR_MCPEN_MASK;
-#if SDP_REGISTER_DESCRIPTOR_COUNT
+#if defined(SDP_REGISTER_DESCRIPTOR_COUNT) && SDP_REGISTER_DESCRIPTOR_COUNT
     base->SDPCR |= HPM_BITSMASK(1, 8);
     base->NPKTPTR = 0;
     base->PKTCTL = SDP_PKT_CTRL_DERSEMA_MASK | SDP_PKTCTL_PKTTAG_SET(1);
@@ -827,7 +933,7 @@ hpm_stat_t sdp_memcpy(SDP_Type *base, sdp_dma_ctx_t *dma_ctx, void *dst, const v
     sdp_clear_error_status(base);
 
     base->MODCTRL = 0;
-#if SDP_REGISTER_DESCRIPTOR_COUNT
+#if defined(SDP_REGISTER_DESCRIPTOR_COUNT) && SDP_REGISTER_DESCRIPTOR_COUNT
     base->CMDPTR = 0;
 #else
     base->CMDPTR = (uint32_t) pkt_desc;
@@ -843,11 +949,11 @@ hpm_stat_t sdp_memset(SDP_Type *base, sdp_dma_ctx_t *sdp_ctx, void *dst, uint8_t
 {
     hpm_stat_t status;
 
-    uint32_t pattern_32 =
-            (pattern) | ((uint32_t) pattern << 8) | ((uint32_t) pattern << 16) | ((uint32_t) pattern << 24);
+    uint32_t
+        pattern_32 = (pattern) | ((uint32_t) pattern << 8) | ((uint32_t) pattern << 16) | ((uint32_t) pattern << 24);
 
     base->SDPCR = SDP_SDPCR_CONFEN_MASK;
-  #if SDP_REGISTER_DESCRIPTOR_COUNT
+#if defined(SDP_REGISTER_DESCRIPTOR_COUNT) && SDP_REGISTER_DESCRIPTOR_COUNT
     base->SDPCR |= HPM_BITSMASK(1, 8);
     base->PKTCTL = SDP_PKT_CTRL_DERSEMA_MASK;
     base->PKTSRC = (uint32_t) pattern_32;
@@ -864,7 +970,7 @@ hpm_stat_t sdp_memset(SDP_Type *base, sdp_dma_ctx_t *sdp_ctx, void *dst, uint8_t
 
     sdp_clear_error_status(base);
     base->MODCTRL = 0;
-#if SDP_REGISTER_DESCRIPTOR_COUNT
+#if defined(SDP_REGISTER_DESCRIPTOR_COUNT) && SDP_REGISTER_DESCRIPTOR_COUNT
     base->CMDPTR = 0;
 #else
     base->CMDPTR = (uint32_t) pkt_desc;

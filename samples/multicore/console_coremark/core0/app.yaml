@@ -1,3 +1,7 @@
+excluded_targets:
+  - debug
+  - release
+
 linked_project:
   project_name: multicore/console_coremark/core1
   build_type: sec_core_img

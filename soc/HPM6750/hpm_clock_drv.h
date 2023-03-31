@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,6 +9,7 @@
 
 #include "hpm_common.h"
 #include "hpm_sysctl_drv.h"
+#include "hpm_csr_drv.h"
 
 /**
  * @brief CLOCK driver APIs

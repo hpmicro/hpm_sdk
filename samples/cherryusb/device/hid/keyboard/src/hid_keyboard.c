@@ -132,20 +132,6 @@ static const uint8_t hid_descriptor[] = {
     0x00
 };
 
-/* USB HID device Configuration Descriptor */
-static uint8_t hid_desc[9] __ALIGN_END = {
-    /* 18 */
-    0x09,                    /* bLength: HID Descriptor size */
-    HID_DESCRIPTOR_TYPE_HID, /* bDescriptorType: HID */
-    0x11,                    /* bcdHID: HID Class Spec release number */
-    0x01,
-    0x00,                          /* bCountryCode: Hardware target country */
-    0x01,                          /* bNumDescriptors: Number of HID class descriptors to follow */
-    0x22,                          /* bDescriptorType */
-    HID_KEYBOARD_REPORT_DESC_SIZE, /* wItemLength: Total length of Report descriptor */
-    0x00,
-};
-
 static const uint8_t hid_keyboard_report_desc[HID_KEYBOARD_REPORT_DESC_SIZE] = {
     0x05, 0x01, /* USAGE_PAGE (Generic Desktop) */
     0x09, 0x06, /* USAGE (Keyboard) */

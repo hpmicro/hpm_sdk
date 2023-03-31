@@ -199,9 +199,10 @@ void init_common_config(adc16_conversion_mode_t conv_mode)
 
     /* initialize an ADC instance */
     adc16_get_default_config(&cfg);
+    cfg.res            = adc16_res_16_bits;
     cfg.conv_mode      = conv_mode;
     cfg.adc_clk_div    = 3;
-    cfg.sel_sync_ahb   = true;
+    cfg.sel_sync_ahb   = false;
 
     if (cfg.conv_mode == adc16_conv_mode_sequence ||
         cfg.conv_mode == adc16_conv_mode_preemption) {
@@ -232,8 +233,9 @@ void oneshot_handler(void)
 {
     uint16_t result;
 
-    adc16_get_oneshot_result(BOARD_APP_ADC16_BASE, BOARD_APP_ADC16_CH_1, &result);
-    printf("Oneshot Mode - %s [channel %d] - Result: 0x%04x\n", BOARD_APP_ADC16_NAME, BOARD_APP_ADC16_CH_1, result);
+    if (adc16_get_oneshot_result(BOARD_APP_ADC16_BASE, BOARD_APP_ADC16_CH_1, &result) == status_success) {
+        printf("Oneshot Mode - %s [channel %d] - Result: 0x%04x\n", BOARD_APP_ADC16_NAME, BOARD_APP_ADC16_CH_1, result);
+    }
 }
 
 void init_period_config(void)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -442,8 +442,12 @@ typedef struct {
  * CLOCK_DIVIDER (RW)
  *
  * clock_period, N half clock cycle per half adc cycle
- * 0 for same adc_clk and bus_clk, 1 for 1:2, 2 for 1:3.
- * set to 2 can genenerate 66.7MHz adc_clk at 200MHz bus_clk
+ * 0 for same adc_clk and bus_clk,
+ * 1 for 1:2,
+ * 2 for 1:3,
+ * ...
+ * 15 for 1:16
+ * Note: set to 2 can genenerate 66.7MHz adc_clk at 200MHz bus_clk
  */
 #define ADC12_CONV_CFG1_CLOCK_DIVIDER_MASK (0xFU)
 #define ADC12_CONV_CFG1_CLOCK_DIVIDER_SHIFT (0U)

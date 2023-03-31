@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021 - 2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,6 +9,7 @@
 #define HPM_UART_DRV_H
 #include "hpm_common.h"
 #include "hpm_uart_regs.h"
+#include "hpm_soc_feature.h"
 
 /**
  *
@@ -85,6 +86,9 @@ typedef enum uart_intr_enable {
     uart_intr_tx_slot_avail = UART_IER_ETHEI_MASK,
     uart_intr_rx_line_stat = UART_IER_ELSI_MASK,
     uart_intr_modem_stat = UART_IER_EMSI_MASK,
+#if defined(UART_SOC_HAS_RXLINE_IDLE_DETECTION) && (UART_SOC_HAS_RXLINE_IDLE_DETECTION == 1)
+    uart_intr_rx_line_idle = UART_IER_ERXIDLE_MASK,
+#endif
 } uart_intr_enable_t;
 
 /* @brief UART interrupt IDs */
@@ -117,20 +121,40 @@ typedef struct uart_modem_config {
     bool set_rts_high;          /**< Set signal RTS level high flag */
 } uart_modem_config_t;
 
+#if defined(UART_SOC_HAS_RXLINE_IDLE_DETECTION) && (UART_SOC_HAS_RXLINE_IDLE_DETECTION == 1)
+/**
+ * @brief UART RX Line Idle detection conditions
+ */
+typedef enum hpm_uart_rxline_idle_cond {
+    uart_rxline_idle_cond_rxline_logic_one = 0,         /**< Treat as idle if the RX Line high duration exceeds threshold */
+    uart_rxline_idle_cond_state_machine_idle = 1        /**< Treat as idle if the RX state machine idle state duration exceeds threshold */
+} uart_rxline_idle_cond_t;
+
+typedef struct hpm_uart_rxline_idle_detect_config {
+    bool detect_enable;                 /**< RX Line Idle detection flag */
+    bool detect_irq_enable;             /**< Enable RX Line Idle detection interrupt */
+    uart_rxline_idle_cond_t idle_cond;  /**< RX Line Idle detection condition */
+    uint8_t threshold;                  /**< UART RX Line Idle detection threshold, in terms of bits */
+} uart_rxline_idle_config_t;
+#endif
+
 /**
  * @brief UART config
  */
 typedef struct hpm_uart_config {
-    uint32_t src_freq_in_hz;            /**< Source clock frequency in Hz */
-    uint32_t baudrate;                  /**< Baudrate */
-    uint8_t num_of_stop_bits;           /**< Number of stop bits */
-    uint8_t word_length;                /**< Word length */
-    uint8_t parity;                     /**< Parity */
-    uint8_t tx_fifo_level;              /**< TX Fifo level */
-    uint8_t rx_fifo_level;              /**< RX Fifo level */
-    bool dma_enable;                    /**< DMA Enable flag */
-    bool fifo_enable;                   /**< Fifo Enable flag */
-    uart_modem_config_t modem_config;   /**< Modem config */
+    uint32_t src_freq_in_hz;                    /**< Source clock frequency in Hz */
+    uint32_t baudrate;                          /**< Baudrate */
+    uint8_t num_of_stop_bits;                   /**< Number of stop bits */
+    uint8_t word_length;                        /**< Word length */
+    uint8_t parity;                             /**< Parity */
+    uint8_t tx_fifo_level;                      /**< TX Fifo level */
+    uint8_t rx_fifo_level;                      /**< RX Fifo level */
+    bool dma_enable;                            /**< DMA Enable flag */
+    bool fifo_enable;                           /**< Fifo Enable flag */
+    uart_modem_config_t modem_config;           /**< Modem config */
+#if defined(UART_SOC_HAS_RXLINE_IDLE_DETECTION) && (UART_SOC_HAS_RXLINE_IDLE_DETECTION == 1)
+    uart_rxline_idle_config_t  rxidle_config;   /**< RX Idle configuration */
+#endif
 } uart_config_t;
 
 #ifdef __cplusplus
@@ -140,7 +164,7 @@ extern "C" {
 /**
  * @brief Get fifo size
  *
- * @param ptr UART base address
+ * @param [in] ptr UART base address
  * @retval size of Fifo
  */
 static inline uint8_t uart_get_fifo_size(UART_Type *ptr)
@@ -153,7 +177,7 @@ static inline uint8_t uart_get_fifo_size(UART_Type *ptr)
  *
  * @note this API may modify other bit fields in FIFO control register
  *
- * @param ptr UART base address
+ * @param [in] ptr UART base address
  */
 static inline void uart_reset_tx_fifo(UART_Type *ptr)
 {
@@ -165,7 +189,7 @@ static inline void uart_reset_tx_fifo(UART_Type *ptr)
  *
  * @note this API may modify other bit fields in FIFO control register
  *
- * @param ptr UART base address
+ * @param [in] ptr UART base address
  */
 static inline void uart_reset_rx_fifo(UART_Type *ptr)
 {
@@ -173,11 +197,11 @@ static inline void uart_reset_rx_fifo(UART_Type *ptr)
 }
 
 /**
- * @brief Reset both TX and RX Fifo
+ * @brief [in] Reset both TX and RX Fifo
  *
  * @note this API may modify other bit fields in FIFO control register
  *
- * @param ptr UART base address
+ * @param [in] ptr UART base address
  */
 static inline void uart_reset_all_fifo(UART_Type *ptr)
 {
@@ -187,7 +211,7 @@ static inline void uart_reset_all_fifo(UART_Type *ptr)
 /**
  * @brief Enable modem loopback
  *
- * @param ptr UART base address
+ * @param [in] ptr UART base address
  */
 static inline void uart_modem_enable_loopback(UART_Type *ptr)
 {
@@ -197,7 +221,7 @@ static inline void uart_modem_enable_loopback(UART_Type *ptr)
 /**
  * @brief Disable modem loopback
  *
- * @param ptr UART base address
+ * @param [in] ptr UART base address
  */
 static inline void uart_modem_disable_loopback(UART_Type *ptr)
 {
@@ -207,7 +231,7 @@ static inline void uart_modem_disable_loopback(UART_Type *ptr)
 /**
  * @brief Disable modem auto flow control
  *
- * @param ptr UART base address
+ * @param [in] ptr UART base address
  */
 
 static inline void uart_modem_disable_auto_flow_control(UART_Type *ptr)
@@ -218,7 +242,7 @@ static inline void uart_modem_disable_auto_flow_control(UART_Type *ptr)
 /**
  * @brief Enable modem auto flow control
  *
- * @param ptr UART base address
+ * @param [in] ptr UART base address
  */
 static inline void uart_modem_enable_auto_flow_control(UART_Type *ptr)
 {
@@ -228,7 +252,7 @@ static inline void uart_modem_enable_auto_flow_control(UART_Type *ptr)
 /**
  * @brief Configure modem
  *
- * @param ptr UART base address
+ * @param [in] ptr UART base address
  * @param config Pointer to modem config struct
  */
 static inline void uart_modem_config(UART_Type *ptr, uart_modem_config_t *config)
@@ -241,7 +265,7 @@ static inline void uart_modem_config(UART_Type *ptr, uart_modem_config_t *config
 /**
  * @brief Get modem status
  *
- * @param ptr UART base address
+ * @param [in] ptr UART base address
  * @retval Current modem status
  */
 static inline uint8_t uart_get_modem_status(UART_Type *ptr)
@@ -275,20 +299,20 @@ static inline uint8_t uart_read_byte(UART_Type *ptr)
 /**
  * @brief Check modem status with given mask
  *
- * @param ptr UART base address
+ * @param [in] ptr UART base address
  * @param mask Status mask value to be checked against
  * @retval true if any bit in given mask is set
  * @retval false if none of any bit in given mask is set
  */
 static inline bool uart_check_modem_status(UART_Type *ptr, uart_modem_stat_t mask)
 {
-    return (ptr->MSR & mask);
+    return ((ptr->MSR & mask) != 0U) ? true : false;
 }
 
 /**
  * @brief Disable IRQ with mask
  *
- * @param ptr UART base address
+ * @param [in] ptr UART base address
  * @param irq_mask IRQ mask value to be disabled
  */
 static inline void uart_disable_irq(UART_Type *ptr, uart_intr_enable_t irq_mask)
@@ -299,7 +323,7 @@ static inline void uart_disable_irq(UART_Type *ptr, uart_intr_enable_t irq_mask)
 /**
  * @brief Enable IRQ with mask
  *
- * @param ptr UART base address
+ * @param [in] ptr UART base address
  * @param irq_mask IRQ mask value to be enabled
  */
 static inline void uart_enable_irq(UART_Type *ptr, uart_intr_enable_t irq_mask)
@@ -310,7 +334,7 @@ static inline void uart_enable_irq(UART_Type *ptr, uart_intr_enable_t irq_mask)
 /**
  * @brief Get Enabled IRQ
  *
- * @param ptr UART base address
+ * @param [in] ptr UART base address
  * @return enabled irq
  */
 static inline uint32_t uart_get_enabled_irq(UART_Type *ptr)
@@ -321,7 +345,7 @@ static inline uint32_t uart_get_enabled_irq(UART_Type *ptr)
 /**
  * @brief Get interrupt identification
  *
- * @param ptr UART base address
+ * @param [in] ptr UART base address
  * @retval interrupt id
  */
 static inline uint8_t uart_get_irq_id(UART_Type *ptr)
@@ -329,10 +353,58 @@ static inline uint8_t uart_get_irq_id(UART_Type *ptr)
     return (ptr->IIR & UART_IIR_INTRID_MASK);
 }
 
+#if defined(UART_SOC_HAS_RXLINE_IDLE_DETECTION) && (UART_SOC_HAS_RXLINE_IDLE_DETECTION == 1)
+/**
+ * @brief Determine whether UART RX Line is idle
+ * @param [in] ptr UART base address
+ */
+static inline bool uart_is_rxline_idle(UART_Type *ptr)
+{
+    return ((ptr->IIR & UART_IIR_RXIDLE_FLAG_MASK) != 0U) ? true : false;
+}
+
+/**
+ * @brief Clear UART RX Line Idle Flag
+ * @param [in] ptr UART base address
+ */
+static inline void uart_clear_rxline_idle_flag(UART_Type *ptr)
+{
+    ptr->IIR = UART_IIR_RXIDLE_FLAG_MASK; /* Write-1-Clear Logic */
+}
+
+/**
+ * @brief Enable UART RX Idle Line detection logic
+ * @param [in] ptr UART base address
+ */
+static inline void uart_enable_rxline_idle_detection(UART_Type *ptr)
+{
+    ptr->RXIDLE_CFG |= UART_RXIDLE_CFG_DETECT_EN_MASK;
+}
+
+/**
+ * @brief Disable UART RX Idle Line detection logic
+ *
+ * @param [in] ptr UART base address
+ */
+static inline void uart_disable_rxline_idle_detection(UART_Type *ptr)
+{
+    ptr->RXIDLE_CFG &= ~UART_RXIDLE_CFG_DETECT_EN_MASK;
+}
+
+/**
+ * @brief Configure UART RX Line detection
+ * @param [in] ptr UART base address
+ * @param [in] rxidle_config RXLine IDLE detection configuration
+ * @retval status_success if no error occurs
+ */
+hpm_stat_t uart_init_rxline_idle_detection(UART_Type *ptr, uart_rxline_idle_config_t rxidle_config);
+
+#endif
+
 /**
  * @brief Get status
  *
- * @param ptr UART base address
+ * @param [in] ptr UART base address
  * @retval current status
  */
 static inline uint8_t uart_get_status(UART_Type *ptr)
@@ -343,20 +415,20 @@ static inline uint8_t uart_get_status(UART_Type *ptr)
 /**
  * @brief Check uart status according to the given status mask
  *
- * @param ptr UART base address
+ * @param [in] ptr UART base address
  * @param mask Status mask value to be checked against
  * @retval true if any bit in given mask is set
  * @retval false if none of any bit in given mask is set
  */
 static inline bool uart_check_status(UART_Type *ptr, uart_stat_t mask)
 {
-    return (ptr->LSR & mask);
+    return ((ptr->LSR & mask) != 0U) ? true : false;
 }
 
 /**
  * @brief Get default config
  *
- * @param ptr UART base address
+ * @param [in] ptr UART base address
  * @param config Pointer to the buffer to save default values
  */
 void uart_default_config(UART_Type *ptr, uart_config_t *config);
@@ -364,7 +436,7 @@ void uart_default_config(UART_Type *ptr, uart_config_t *config);
 /**
  * @brief Initialization
  *
- * @param ptr UART base address
+ * @param [in] ptr UART base address
  * @param config Pointer to config struct
  * @retval status_success only if it succeeds
  */
@@ -373,7 +445,7 @@ hpm_stat_t uart_init(UART_Type *ptr, uart_config_t *config);
 /**
  * @brief Send one byte after checking thresh hold status
  *
- * @param ptr UART base address
+ * @param [in] ptr UART base address
  * @param c Byte to be sent
  * @retval status_success only if it succeeds
  */
@@ -382,7 +454,7 @@ hpm_stat_t uart_send_byte(UART_Type *ptr, uint8_t c);
 /**
  * @brief Receive one byte after checking data ready status
  *
- * @param ptr UART base address
+ * @param [in] ptr UART base address
  * @param c Pointer to buffer to save the byte received on UART
  * @retval status_success only if it succeeds
  */
@@ -391,7 +463,7 @@ hpm_stat_t uart_receive_byte(UART_Type *ptr, uint8_t *c);
 /**
  * @brief Set uart signal output level
  *
- * @param ptr UART base address
+ * @param [in] ptr UART base address
  * @param signal Target signal
  * @param level Target signal level
  */
@@ -402,7 +474,7 @@ void uart_set_signal_level(UART_Type *ptr,
 /**
  * @brief Flush sending buffer/fifo
  *
- * @param ptr UART base address
+ * @param [in] ptr UART base address
  * @retval status_success only if it succeeds
  */
 hpm_stat_t uart_flush(UART_Type *ptr);
@@ -410,7 +482,7 @@ hpm_stat_t uart_flush(UART_Type *ptr);
 /**
  * @brief Receive bytes blocking
  *
- * @param ptr UART base address
+ * @param [in] ptr UART base address
  * @param buf Pointer to the buffer to save received data
  * @param size_in_byte Size in byte to be sent
  * @retval status_success only if it succeeds
@@ -420,7 +492,7 @@ hpm_stat_t uart_receive_data(UART_Type *ptr, uint8_t *buf, uint32_t size_in_byte
 /**
  * @brief Send bytes blocking
  *
- * @param ptr UART base address
+ * @param [in] ptr UART base address
  * @param buf Pointer to the buffer to be sent
  * @param size_in_byte Size in byte to be sent
  * @retval status_success only if it succeeds

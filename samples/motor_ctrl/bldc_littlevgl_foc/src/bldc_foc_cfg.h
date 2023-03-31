@@ -38,6 +38,7 @@ extern  int32_t qei_clock_hz;
 #define BOARD_BLDCPWM_CMP_INDEX_3         (3U)
 #define BOARD_BLDCPWM_CMP_INDEX_4         (4U)
 #define BOARD_BLDCPWM_CMP_INDEX_5         (5U)
+#define BOARD_BLDCPWM_CMP_TRIG_CMP        (20U)
 
 #endif
 

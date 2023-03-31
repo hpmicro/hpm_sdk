@@ -20,7 +20,11 @@
  */
 
 /** @brief Define ADC16 validity check for the channel number */
+#if ADC16_SOC_TEMP_CH_EN
 #define ADC16_IS_CHANNEL_INVALID(CH) (CH > ADC16_SOC_MAX_CH_NUM && CH != ADC16_SOC_TEMP_CH_NUM)
+#else
+#define ADC16_IS_CHANNEL_INVALID(CH) (CH > ADC16_SOC_MAX_CH_NUM)
+#endif
 
 /** @brief Define ADC16 validity check for the trigger number */
 #define ADC16_IS_TRIG_CH_INVLAID(CH) (CH > ADC16_SOC_MAX_TRIG_CH_NUM)
@@ -36,6 +40,14 @@
 
 /** @brief Define ADC16 validity check for the DMA buffer length in the preemption mode */
 #define ADC16_IS_PMT_DMA_BUFF_LEN_INVLAID(LEN)  ((LEN == 0) || (LEN > ADC_SOC_PMT_MAX_DMA_BUFF_LEN_IN_4BYTES))
+
+/** @brief Define ADC16 resolutions. */
+typedef enum {
+    adc16_res_8_bits = 9,
+    adc16_res_10_bits = 11,
+    adc16_res_12_bits = 14,
+    adc16_res_16_bits = 21
+} adc16_resolution_t;
 
 /** @brief Define ADC16 conversion modes. */
 typedef enum {
@@ -80,6 +92,7 @@ typedef enum {
 
 /** @brief ADC16 common configuration struct. */
 typedef struct {
+    uint8_t res;
     uint8_t conv_mode;
     uint8_t wait_dis;
     uint32_t adc_clk_div;
@@ -308,16 +321,25 @@ static inline uint32_t adc16_get_status_flags(ADC16_Type *ptr)
 }
 
 /**
- * @brief Get the setting value of the WAIT_DIS bit.
+ * @brief Set value of the WAIT_DIS bit. The ADC does not block access to the associated peripheral bus
+ * until the ADC has completed its conversion.
  *
  * @param[in] ptr An ADC16 peripheral base address.
- * @return Status that indicats whether the current setting of the WAIT_DIS bit in the BUF_RESULT register is disabled.
- * @retval true  It means that the WAIT_DIS bit is 1.
- * @retval false It means that the WAIT_DIS bit is 0.
  */
-static inline bool adc16_get_wait_dis_status(ADC16_Type *ptr)
+static inline void adc16_disable_busywait(ADC16_Type *ptr)
 {
-    return ADC16_BUF_CFG0_WAIT_DIS_GET(ptr->BUF_CFG0);
+    ptr->BUF_CFG0 |= ADC16_BUF_CFG0_WAIT_DIS_SET(1);
+}
+
+/**
+ * @brief Set value of the WAIT_DIS bit. ADC blocks access to the associated peripheral bus
+ * until the ADC completes the conversion.
+ *
+ * @param[in] ptr An ADC16 peripheral base address.
+ */
+static inline void adc16_enable_busywait(ADC16_Type *ptr)
+{
+    ptr->BUF_CFG0 &= ~ADC16_BUF_CFG0_WAIT_DIS_MASK;
 }
 
 /**

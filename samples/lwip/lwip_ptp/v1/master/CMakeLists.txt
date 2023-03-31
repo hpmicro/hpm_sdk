@@ -16,6 +16,9 @@ set(CONFIG_ENET_PHY_DP83848 1)
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
+sdk_compile_definitions(-D__DISABLE_AUTO_NEGO=0)
+sdk_compile_definitions(-D__ENABLE_ENET_RECEIVE_INTERRUPT=0)
+
 project(lwip_ptp_master_example)
 sdk_inc(../../../common)
 sdk_inc(../../../common/arch)
@@ -28,7 +31,7 @@ sdk_inc(src/ptpd/src/ptp)
 sdk_inc(src/ptpd/src/ptp/dep)
 
 sdk_app_src(../../../common/arch/ethernetif.c)
-sdk_app_src(../../../common/feature/common.c)
+sdk_app_src(../../../common/feature/common_lwip.c)
 sdk_app_src(src/eth/netconf.c)
 sdk_app_src(src/lwip.c)
 

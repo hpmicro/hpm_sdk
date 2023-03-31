@@ -32,7 +32,7 @@ volatile uint8_t data_buff[UART_SOC_FIFO_SIZE];
 void uart_isr(void)
 {
     uint8_t c;
-    if (uart_get_irq_id(TEST_UART) & uart_intr_id_rx_data_avail) {
+    if (uart_get_irq_id(TEST_UART) == uart_intr_id_rx_data_avail) {
         if (status_success != uart_receive_byte(TEST_UART, &c)) {
             while (1) {
             }
@@ -44,7 +44,7 @@ void uart_isr(void)
             uart_enable_irq(TEST_UART, uart_intr_tx_slot_avail);
         }
     }
-    if (uart_get_irq_id(TEST_UART) & uart_intr_id_tx_slot_avail) {
+    if (uart_get_irq_id(TEST_UART) == uart_intr_id_tx_slot_avail) {
         for (uint8_t i = 0; i < data_count; i++) {
             if (status_success != uart_send_byte(TEST_UART, data_buff[i])) {
                 while (1) {
@@ -67,6 +67,7 @@ int main(void)
     buff_index = 0;
 
     board_init();
+    /* if TEST_UART is same as BOARD_CONSOLE_BASE, it has been initialized in board_init(); */
     board_init_uart(TEST_UART);
 
     uart_config_t config = {0};

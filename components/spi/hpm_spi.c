@@ -65,7 +65,9 @@ void hpm_spi_prepare_dma_tx_descriptors(spi_context_t *context, spi_control_conf
                                 | SPI_TRANSCTRL_RDTRANCNT_SET(temp32 - 1);
 
         if (i == 0) {
-            temp32 = temp32 + 1; /* DMA transmits one byte more than SPI at the first transmission */
+            /* Set the count of data transferred by dma to be one more than that of spi */
+            /* when dma transfer finished, there are data in SPI fifo, dma should not execute the dma descriptor which changes SPI CTRL register */
+            temp32 = temp32 + 1;
         }
         if (i == trans_count - 1) {
             temp32 = temp32 - 1;
@@ -212,6 +214,15 @@ static uint32_t hpm_spi_get_trans_count(spi_context_t *context, spi_control_conf
     return trans_count;
 }
 
+/**
+ * spi with dma chain workflow
+ *
+ * 1. call spi_setup_dma_transfer to config SPI for first transmission
+ * 2. execute data transmission phase in dma chain descriptor
+ * 3. execute setting SPI CTRL register phase in dma chain descriptor
+ * 4. execute writing SPI CMD register phase in dma chain descriptor
+ * 5. Repeat steps 2-4 until finish the transmission
+ */
 static hpm_stat_t spi_setup_trans_with_dma_chain(spi_context_t *context, spi_control_config_t *config)
 {
     hpm_stat_t stat = status_success;
@@ -229,6 +240,7 @@ static hpm_stat_t spi_setup_trans_with_dma_chain(spi_context_t *context, spi_con
     /* active spi cs pin */
     context->write_cs(context->cs_pin, SPI_CS_ACTIVE);
 
+    /* config SPI for first dma transmission */
     stat = spi_setup_dma_transfer(spi_ptr,
                                 config,
                                 &context->cmd,
@@ -275,6 +287,7 @@ static hpm_stat_t spi_setup_trans_with_dma_chain(spi_context_t *context, spi_con
     dma_ch_config.src_width = DMA_TRANSFER_WIDTH_WORD;
     dma_ch_config.dst_width = DMA_TRANSFER_WIDTH_WORD;
     dma_ch_config.size_in_byte = 4;
+    /* start data transmission phase in dma chain */
     dma_ch_config.linked_ptr = core_local_mem_to_sys_address(context->running_core, (uint32_t)(dma_linked_descriptor + SPI_DMA_DESC_COUNT_PER_TRANS - 1));
 
     stat = dma_setup_channel(dma_ptr, dma_channel, &dma_ch_config, true);

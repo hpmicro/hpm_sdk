@@ -10,6 +10,10 @@
 #include "hpm_soc.h"
 #include "hpm_l1c_drv.h"
 
+#ifndef CONFIG_DISABLE_GLOBAL_IRQ_ON_STARTUP
+#define CONFIG_DISABLE_GLOBAL_IRQ_ON_STARTUP 0
+#endif
+
 void enable_plic_feature(void)
 {
     uint32_t plic_feature = 0;
@@ -17,7 +21,7 @@ void enable_plic_feature(void)
     /* enabled vector mode and preemptive priority interrupt */
     plic_feature |= HPM_PLIC_FEATURE_VECTORED_MODE;
 #endif
-#ifndef DISABLE_IRQ_PREEMPTIVE
+#if !defined(DISABLE_IRQ_PREEMPTIVE) || (DISABLE_IRQ_PREEMPTIVE == 0)
     /* enabled preemptive priority interrupt */
     plic_feature |= HPM_PLIC_FEATURE_PREEMPTIVE_PRIORITY_IRQ;
 #endif
@@ -48,9 +52,13 @@ __attribute__((weak)) void system_init(void)
 #ifdef USE_S_MODE_IRQ
     delegate_irq(CSR_MIDELEG_SEI_MASK | CSR_MIDELEG_SSI_MASK | CSR_MIDELEG_STI_MASK);
     enable_s_irq_from_intc();
+#if !CONFIG_DISABLE_GLOBAL_IRQ_ON_STARTUP
     enable_global_irq(CSR_MSTATUS_MIE_MASK | CSR_MSTATUS_SIE_MASK);
+#endif
 #else
+#if !CONFIG_DISABLE_GLOBAL_IRQ_ON_STARTUP
     enable_global_irq(CSR_MSTATUS_MIE_MASK);
+#endif
 #endif
 
 #ifndef CONFIG_NOT_ENABLE_ICACHE

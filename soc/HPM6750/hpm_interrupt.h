@@ -304,7 +304,7 @@ ATTR_ALWAYS_INLINE static inline void uninstall_isr(uint32_t irq)
  */
 #define RESTORE_CSR(r)                                  write_csr(r, __##r);
 
-#if SUPPORT_PFT_ARCH
+#if defined(SUPPORT_PFT_ARCH) && SUPPORT_PFT_ARCH
 #define SAVE_MXSTATUS()                                 SAVE_CSR(CSR_MXSTATUS)
 #define RESTORE_MXSTATUS()                              RESTORE_CSR(CSR_MXSTATUS)
 #else

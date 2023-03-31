@@ -208,11 +208,11 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
         }
         /* Prepare transmit descriptors to give to DMA*/
         frame_length += 4;
-        enet_prepare_transmission_descriptors(ENET, &desc.tx_desc_list_cur, frame_length, desc.tx_buff_cfg.size);
+        enet_prepare_tx_desc(ENET, &desc.tx_desc_list_cur, &desc.tx_control_config, frame_length, desc.tx_buff_cfg.size);
 
 #if !NO_SYS
-    /* Give semaphore and exit */
-    xSemaphoreGive(xTxSemaphore);
+        /* Give semaphore and exit */
+        xSemaphoreGive(xTxSemaphore);
     }
 #endif
 
@@ -240,7 +240,7 @@ static struct pbuf *low_level_input(struct netif *netif)
     uint32_t i = 0;
 
     /* Check and get a received frame */
-    #if __USE_ENET_RECEIVE_INTERRUPT || !NO_SYS
+    #if (defined(__ENABLE_ENET_RECEIVE_INTERRUPT) && __ENABLE_ENET_RECEIVE_INTERRUPT) || !NO_SYS
         frame = enet_get_received_frame_interrupt(&desc.rx_desc_list_cur, &desc.rx_frame_info, ENET_RX_BUFF_COUNT);
     #else
         if (enet_check_received_frame(&desc.rx_desc_list_cur, &desc.rx_frame_info) == 1) {
@@ -339,7 +339,7 @@ err_t ethernetif_input(struct netif *netif)
 {
     err_t err = ERR_OK;
     struct pbuf *p = NULL;
-#if __USE_ENET_RECEIVE_INTERRUPT
+#if (defined(__ENABLE_ENET_RECEIVE_INTERRUPT) && __ENABLE_ENET_RECEIVE_INTERRUPT)
     if (rx_flag) {
 #endif
         GET_NEXT_FRAME:
@@ -360,7 +360,7 @@ err_t ethernetif_input(struct netif *netif)
                 goto GET_NEXT_FRAME;
             }
         }
-#if __USE_ENET_RECEIVE_INTERRUPT
+#if (defined(__ENABLE_ENET_RECEIVE_INTERRUPT) && __ENABLE_ENET_RECEIVE_INTERRUPT)
         rx_flag = false;
     }
 #endif

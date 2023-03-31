@@ -38,14 +38,6 @@ uint32_t cap_buf_falling;
 uint32_t cap_buf_rising;
 bool cap_true;
 
-void config_hw_event(uint8_t cmp_index, uint32_t cmp)
-{
-    pwm_cmp_config_t cmp_config = {0};
-    cmp_config.mode = pwm_cmp_mode_output_compare;
-    cmp_config.cmp = cmp;
-    cmp_config.update_trigger = pwm_shadow_register_update_on_modify;
-    pwm_config_cmp(PWM, cmp_index, &cmp_config);
-}
 
 void reset_pwm_counter(void)
 {
@@ -79,7 +71,9 @@ SDK_DECLARE_EXT_ISR_M(BOARD_APP_PWM_IRQ, isr_pwm_cap)
 
 void config_pwm_input_capture(void)
 {
-    pwm_load_cmp_shadow_on_capture(PWM, PWM_INPUT_CAP_PIN, PWM_CAP_TRIG_TYPE);
+    pwm_cmp_config_t cmp_config;
+    cmp_config.mode = pwm_cmp_mode_input_capture;
+    pwm_config_cmp(PWM, PWM_INPUT_CAP_PIN, &cmp_config);
     intc_m_enable_irq_with_priority(BOARD_APP_PWM_IRQ, 1);
     pwm_enable_irq(PWM, PWM_IRQ_CMP(PWM_INPUT_CAP_PIN));
 }

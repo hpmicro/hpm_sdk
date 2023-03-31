@@ -59,9 +59,13 @@ __attribute__ ((section(".flash_algo.text"))) uint32_t flash_init(uint32_t flash
 
     if (flash_base == XPI0_MEM_START) {
         xpi_base = HPM_XPI0;
-    } else if (flash_base == XPI1_MEM_START) {
+    }
+#ifdef HPM_XPI1
+    else if (flash_base == XPI1_MEM_START) {
         xpi_base = HPM_XPI1;
-    } else {
+    }
+#endif
+    else {
         return status_invalid_argument;
     }
 
@@ -107,9 +111,13 @@ __attribute__ ((section(".flash_algo.text"))) uint32_t flash_erase(uint32_t flas
     uint32_t left, start, block_size, align;
     if (flash_base == XPI0_MEM_START) {
         xpi_base = HPM_XPI0;
-    } else if (flash_base == XPI1_MEM_START) {
+    }
+#ifdef HPM_XPI1
+    else if (flash_base == XPI1_MEM_START) {
         xpi_base = HPM_XPI1;
-    } else {
+    }
+#endif
+    else {
         return status_invalid_argument;
     }
 
@@ -148,9 +156,13 @@ __attribute__ ((section(".flash_algo.text"))) uint32_t flash_program(uint32_t fl
 
     if (flash_base == XPI0_MEM_START) {
         xpi_base = HPM_XPI0;
-    } else if (flash_base == XPI1_MEM_START) {
+    }
+#ifdef HPM_XPI1
+    else if (flash_base == XPI1_MEM_START) {
         xpi_base = HPM_XPI1;
-    } else {
+    }
+#endif
+    else {
         return status_invalid_argument;
     }
 
@@ -164,9 +176,13 @@ __attribute__ ((section(".flash_algo.text"))) uint32_t flash_read(uint32_t flash
     hpm_stat_t stat;
     if (flash_base == XPI0_MEM_START) {
         xpi_base = HPM_XPI0;
-    } else if (flash_base == XPI1_MEM_START) {
+    }
+#ifdef HPM_XPI1
+    else if (flash_base == XPI1_MEM_START) {
         xpi_base = HPM_XPI1;
-    } else {
+    }
+#endif
+    else {
         return status_invalid_argument;
     }
 
@@ -190,9 +206,13 @@ __attribute__ ((section(".flash_algo.text"))) uint32_t flash_erase_chip(uint32_t
     XPI_Type *xpi_base;
     if (flash_base == XPI0_MEM_START) {
         xpi_base = HPM_XPI0;
-    } else if (flash_base == XPI1_MEM_START) {
+    }
+#ifdef HPM_XPI1
+    else if (flash_base == XPI1_MEM_START) {
         xpi_base = HPM_XPI1;
-    } else {
+    }
+#endif
+    else {
         return status_invalid_argument;
     }
 

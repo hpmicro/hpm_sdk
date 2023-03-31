@@ -8,7 +8,7 @@
 /*-----------------------------------------------------------------------*/
 
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -16,11 +16,11 @@
 
 #include "diskio.h"          /* Declarations of disk functions */
 
-#ifdef USB_FATFS_ENABLE
+#if defined(USB_FATFS_ENABLE) && USB_FATFS_ENABLE
 #include "./usb/hpm_fatfs_usb.h"
 #endif
 
-#ifdef SD_FATFS_ENABLE
+#if defined(SD_FATFS_ENABLE) && SD_FATFS_ENABLE
 #include "./sdxc/hpm_sdmmc_disk.h"
 #endif
 
@@ -40,13 +40,13 @@ DSTATUS disk_status(
     case DEV_MMC :
         break;
 
-#if USB_FATFS_ENABLE
+#if defined(USB_FATFS_ENABLE) && USB_FATFS_ENABLE
     case DEV_USB :
         stat = usb_disk_status(pdrv);
         break;
 #endif
 
-#ifdef SD_FATFS_ENABLE
+#if defined(SD_FATFS_ENABLE) && SD_FATFS_ENABLE
     case DEV_SD:
         stat = sd_disk_status(pdrv);
         break;
@@ -73,13 +73,13 @@ void disk_deinitialize(
     case DEV_MMC :
         break;
 
-#if USB_FATFS_ENABLE
+#if defined(USB_FATFS_ENABLE) && USB_FATFS_ENABLE
     case DEV_USB:
         usb_disk_deinitialize();
         break;
 #endif
 
-#ifdef SD_FATFS_ENABLE
+#if defined(SD_FATFS_ENABLE) && SD_FATFS_ENABLE
     case DEV_SD:
         sd_disk_deinitialize(pdrv);
         break;
@@ -102,13 +102,13 @@ DSTATUS disk_initialize(
     case DEV_MMC :
         break;
 
-#if USB_FATFS_ENABLE
+#if defined(USB_FATFS_ENABLE) && USB_FATFS_ENABLE
     case DEV_USB :
         stat = usb_disk_initialize(pdrv);
         break;
 #endif
 
-#ifdef SD_FATFS_ENABLE
+#if defined(SD_FATFS_ENABLE) && SD_FATFS_ENABLE
     case DEV_SD:
         stat = sd_disk_initialize(pdrv);
         break;
@@ -139,13 +139,13 @@ DRESULT disk_read(
     case DEV_MMC :
         break;
 
-#if USB_FATFS_ENABLE
+#if defined(USB_FATFS_ENABLE) && USB_FATFS_ENABLE
     case DEV_USB :
         res = usb_disk_read(pdrv, buff, sector, count);
         break;
 #endif
 
-#ifdef SD_FATFS_ENABLE
+#if defined(SD_FATFS_ENABLE) && SD_FATFS_ENABLE
     case DEV_SD:
         res = sd_disk_read(pdrv, buff, sector, count);
         break;
@@ -180,13 +180,13 @@ DRESULT disk_write(
     case DEV_MMC :
         break;
 
-#if USB_FATFS_ENABLE
+#if defined(USB_FATFS_ENABLE) && USB_FATFS_ENABLE
     case DEV_USB :
         res = usb_disk_write(pdrv, buff, sector, count);
         break;
 #endif
 
-#ifdef SD_FATFS_ENABLE
+#if defined(SD_FATFS_ENABLE) && SD_FATFS_ENABLE
     case DEV_SD:
         res = sd_disk_write(pdrv, buff, sector, count);
         break;
@@ -219,13 +219,13 @@ DRESULT disk_ioctl(
     case DEV_MMC :
         break;
 
-#if USB_FATFS_ENABLE
+#if defined(USB_FATFS_ENABLE) && USB_FATFS_ENABLE
     case DEV_USB :
         res = usb_disk_ioctl(pdrv, cmd ,buff);
         break;
 #endif
 
-#ifdef SD_FATFS_ENABLE
+#if defined(SD_FATFS_ENABLE) && SD_FATFS_ENABLE
     case DEV_SD:
         res = sd_disk_ioctl(pdrv, cmd, buff);
         break;

@@ -23,6 +23,8 @@ static uint32_t lcdc_pixel_format(display_pixel_format_t format)
         return 7;
     case display_pixel_format_y8:
         return 0xb;
+    case display_pixel_format_raw8:
+        return 0xb;
     default:
         return 9;
     }

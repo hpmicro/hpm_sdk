@@ -8,7 +8,7 @@
 /*---------------------------------------------------------------------*
  * Includes
  *---------------------------------------------------------------------*/
-#include "common.h"
+#include "common_lwip.h"
 #include "netconf.h"
 #include "lwip.h"
 #include "lwip/init.h"
@@ -55,15 +55,16 @@ static hpm_stat_t enet_init(ENET_Type *ptr)
 {
     enet_int_config_t int_config = {.int_enable = 0, .int_mask = 0};
     enet_mac_config_t enet_config;
+    enet_tx_control_config_t enet_tx_control_config;
 
     #if RGMII
-        #if __USE_DP83867
+        #if defined(__USE_DP83867) && __USE_DP83867
         dp83867_config_t phy_config;
         #else
         rtl8211_config_t phy_config;
         #endif
     #else
-        #if __USE_DP83848
+        #if defined(__USE_DP83848) && __USE_DP83848
         dp83848_config_t phy_config;
         #else
         rtl8201_config_t phy_config;
@@ -87,23 +88,32 @@ static hpm_stat_t enet_init(ENET_Type *ptr)
     desc.rx_buff_cfg.count = ENET_RX_BUFF_COUNT;
     desc.rx_buff_cfg.size = ENET_RX_BUFF_SIZE;
 
+    /*Get a default control config for tx descriptor */
+    enet_get_default_tx_control_config(ENET, &enet_tx_control_config);
+
+    /* Set the control config for tx descriptor */
+    memcpy(&desc.tx_control_config, &enet_tx_control_config, sizeof(enet_tx_control_config_t));
+
     /* Get MAC address */
     enet_get_mac_address(mac);
 
-    /* Set mac0 address */
+    /* Set MAC0 address */
     enet_config.mac_addr_high[0] = mac[5] << 8 | mac[4];
     enet_config.mac_addr_low[0]  = mac[3] << 24 | mac[2] << 16 | mac[1] << 8 | mac[0];
     enet_config.valid_max_count  = 1;
 
     /* Set DMA PBL */
-    enet_config.dma_pbl = board_enet_get_dma_pbl(ENET);
+    enet_config.dma_pbl = board_get_enet_dma_pbl(ENET);
+
+    /* Set SARC */
+    enet_config.sarc = enet_sarc_replace_mac0;
 
     /* Initialize enet controller */
     enet_controller_init(ptr, ENET_INF_TYPE, &desc, &enet_config, &int_config);
 
     /* Initialize phy */
     #if RGMII
-        #if __USE_DP83867
+        #if defined(__USE_DP83867) && __USE_DP83867
         dp83867_reset(ptr);
         dp83867_basic_mode_default_config(ptr, &phy_config);
         if (dp83867_basic_mode_init(ptr, &phy_config) == true) {
@@ -113,7 +123,7 @@ static hpm_stat_t enet_init(ENET_Type *ptr)
         if (rtl8211_basic_mode_init(ptr, &phy_config) == true) {
         #endif
     #else
-        #if __USE_DP83848
+        #if defined(__USE_DP83848) && __USE_DP83848
         dp83848_reset(ptr);
         dp83848_basic_mode_default_config(ptr, &phy_config);
         if (dp83848_basic_mode_init(ptr, &phy_config) == true) {

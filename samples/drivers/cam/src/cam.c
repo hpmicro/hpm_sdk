@@ -39,10 +39,12 @@
 #define PIXEL_FORMAT display_pixel_format_rgb565
 #define CAMERA_INTERFACE camera_interface_dvp
 
-#define COLOR_SIZE 16 
+#define COLOR_SIZE 16
 typedef CONCAT3(uint, COLOR_SIZE, _t) color_t;
 
 color_t buffer[IMAGE_WIDTH * IMAGE_HEIGHT] __attribute__((section (".framebuffer")));
+camera_context_t camera_context = {NULL, NULL, NULL, NULL};
+camera_config_t camera_config;
 
 void init_lcd(void)
 {
@@ -77,9 +79,7 @@ void init_lcd(void)
 
 void init_camera_device(void)
 {
-    camera_context_t camera_context = {NULL, NULL, NULL, NULL};
-    camera_config_t camera_config;
-
+    camera_context.i2c_device_addr = CAMERA_DEVICE_ADDR;
     camera_context.ptr = CAM_I2C;
     camera_context.delay_ms = board_delay_ms;
 #ifdef BOARD_SUPPORT_CAM_RESET
@@ -94,6 +94,11 @@ void init_camera_device(void)
     camera_config.pixel_format = PIXEL_FORMAT;
     camera_config.interface = CAMERA_INTERFACE;
 
+    /* get dvp interface parameters */
+    if (CAMERA_INTERFACE == camera_interface_dvp) {
+        camera_device_get_dvp_param(&camera_context, &camera_config);
+    }
+
     if (status_success != camera_device_init(&camera_context, &camera_config)) {
         printf("failed to init camera device\n");
         while(1);
@@ -103,16 +108,23 @@ void init_camera_device(void)
 void init_cam(void)
 {
     cam_config_t cam_config;
+    camera_param_dvp_t *dvp;
+    assert((camera_config.interface == camera_interface_dvp) && (camera_config.interface_param != NULL));
+    dvp = (camera_param_dvp_t *)camera_config.interface_param;
 
     cam_get_default_config(TEST_CAM, &cam_config, PIXEL_FORMAT);
 
     cam_config.width = IMAGE_WIDTH;
     cam_config.height = IMAGE_HEIGHT;
-    cam_config.hsync_active_low = true;
+    cam_config.hsync_active_low  = dvp->hsync_active_low;
+    cam_config.vsync_active_low  = dvp->vsync_active_low;
     cam_config.buffer1 = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)buffer);
-    if (PIXEL_FORMAT == display_pixel_format_rgb565) {
-        cam_config.color_format = CAM_COLOR_FORMAT_RGB565;
+    cam_config.color_format = cam_get_pixel_format(PIXEL_FORMAT);
+    if (CAM_COLOR_FORMAT_UNSUPPORTED == cam_config.color_format) {
+        printf("cam does not support this pixel format\n");
+        return;
     }
+
     cam_init(TEST_CAM, &cam_config);
 }
 

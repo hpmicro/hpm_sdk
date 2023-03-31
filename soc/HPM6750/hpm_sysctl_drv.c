@@ -180,7 +180,7 @@ uint32_t sysctl_monitor_measure_frequency(SYSCTL_Type *ptr,
     return frequency;
 }
 
-static hpm_stat_t _sysctl_set_cpu_entry(SYSCTL_Type *ptr, uint8_t cpu, uint32_t entry)
+hpm_stat_t sysctl_set_cpu_entry(SYSCTL_Type *ptr, uint8_t cpu, uint32_t entry)
 {
     if (!sysctl_valid_cpu_index(cpu)) {
         return status_invalid_argument;
@@ -192,12 +192,12 @@ static hpm_stat_t _sysctl_set_cpu_entry(SYSCTL_Type *ptr, uint8_t cpu, uint32_t 
 
 hpm_stat_t sysctl_set_cpu1_entry(SYSCTL_Type *ptr, uint32_t entry)
 {
-    return _sysctl_set_cpu_entry(ptr, 1, entry);
+    return sysctl_set_cpu_entry(ptr, 1, entry);
 }
 
 hpm_stat_t sysctl_set_cpu0_wakeup_entry(SYSCTL_Type *ptr, uint32_t entry)
 {
-    return _sysctl_set_cpu_entry(ptr, 0, entry);
+    return sysctl_set_cpu_entry(ptr, 0, entry);
 }
 
 hpm_stat_t sysctl_enable_group_resource(SYSCTL_Type *ptr,

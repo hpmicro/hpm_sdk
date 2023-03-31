@@ -16,7 +16,7 @@ extern uint16_t buffer[2][800*480];
 extern uint16_t dispbuffer[];
 extern uint32_t tf_run_inference;
 extern"C"{
-void clear_cycle(void);
+void start_time(void);
 }
 
 extern uint16_t px[], py[];

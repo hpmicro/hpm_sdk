@@ -61,7 +61,10 @@ int main(void)
 
         z = qei_get_count_on_read_event(BOARD_APP_QEI_BASE, qei_counter_type_z);
         ph = qei_get_count_on_read_event(BOARD_APP_QEI_BASE, qei_counter_type_phase);
-        spd = qei_get_count_on_read_event(BOARD_APP_QEI_BASE, qei_counter_type_speed);
+        spd = qei_get_speed_history(BOARD_APP_QEI_BASE, qei_speed_his0) +
+            qei_get_speed_history(BOARD_APP_QEI_BASE, qei_speed_his1) +
+            qei_get_speed_history(BOARD_APP_QEI_BASE, qei_speed_his2) +
+            qei_get_speed_history(BOARD_APP_QEI_BASE, qei_speed_his3);
         tmr = qei_get_count_on_read_event(BOARD_APP_QEI_BASE, qei_counter_type_timer);
 
         printf("z: 0x%x\n", z);

@@ -43,6 +43,7 @@ void init_rgb_pwm_pins(void);
 void init_i2c_pins_as_gpio(I2C_Type *ptr);
 void init_led_pins_as_gpio(void);
 void init_trgmux_pins(uint32_t pin);
+void init_enet_pps_pins(void);
 
 #ifdef __cplusplus
 }

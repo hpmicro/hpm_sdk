@@ -1439,13 +1439,37 @@ static inline uint32_t sysctl_get_cpu1_flags(SYSCTL_Type *ptr)
 }
 
 /**
+ * @brief Release cpu
+ *
+ * @param[in] ptr SYSCTL_Type base address
+ * @param[in] cpu_index CPU index
+ */
+static inline void sysctl_release_cpu(SYSCTL_Type *ptr, uint8_t cpu_index)
+{
+    ptr->CPU[cpu_index].LP &= ~SYSCTL_CPU_LP_HALT_MASK;
+}
+
+/**
  * @brief Release cpu1
  *
  * @param[in] ptr SYSCTL_Type base address
  */
 static inline void sysctl_release_cpu1(SYSCTL_Type *ptr)
 {
-    ptr->CPU[1].LP &= ~SYSCTL_CPU_LP_HALT_MASK;
+    sysctl_release_cpu(ptr, 1);
+}
+
+/**
+ * @brief Check whether CPU is released or not
+ *
+ * @param [in] ptr SYSCTL_Type base address
+ * @param[in] cpu_index CPU index
+ * @retval true CPU is released
+ * @retval false CPU is on-hold
+ */
+static inline bool sysctl_is_cpu_released(SYSCTL_Type *ptr, uint8_t cpu_index)
+{
+    return ((ptr->CPU[cpu_index].LP & SYSCTL_CPU_LP_HALT_MASK) == 0U);
 }
 
 /**
@@ -1457,7 +1481,7 @@ static inline void sysctl_release_cpu1(SYSCTL_Type *ptr)
  */
 static inline bool sysctl_is_cpu1_released(SYSCTL_Type *ptr)
 {
-    return ((ptr->CPU[1].LP & SYSCTL_CPU_LP_HALT_MASK) == 0U);
+    return sysctl_is_cpu_released(ptr, 1);
 }
 
 /**
@@ -1613,6 +1637,17 @@ hpm_stat_t sysctl_get_cpu1_gpr(SYSCTL_Type *ptr,
                                uint8_t start,
                                uint8_t count,
                                uint32_t *data);
+
+/**
+ * @brief Set entry point on CPU boot or wakeup
+ *
+ * @param[in] ptr SYSCTL_Type base address
+ * @param[in] cpu CPU index
+ * @param[in] entry Entry address for CPU
+ * @return status_success if everything is okay
+ */
+hpm_stat_t sysctl_set_cpu_entry(SYSCTL_Type *ptr, uint8_t cpu, uint32_t entry);
+
 /**
  * @brief Set entry point on CPU0 wakeup
  *

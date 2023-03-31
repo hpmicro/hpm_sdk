@@ -49,6 +49,8 @@ void init_beep_pwm_pins(void);
 void init_led_pins_as_pwm(void);
 void init_led_pins_as_gpio(void);
 void init_trgmux_pins(uint32_t pin);
+void init_enet_pps_pins(void);
+
 #ifdef __cplusplus
 }
 #endif

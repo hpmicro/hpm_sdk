@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 sdk_compile_options("-Wall")
+sdk_compile_options("-Wundef")
 sdk_compile_options("-Wno-format")
 sdk_compile_options("-fomit-frame-pointer")
 sdk_compile_options("-fno-builtin")

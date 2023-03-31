@@ -23,11 +23,11 @@ board:
       - vad
       - cam
       - lcd
-      - enet
       - spi
       - uart
       - can
       - i2c
+      - femc
       - gpio
       - gpio-led
       - gpio-key
@@ -45,9 +45,14 @@ board:
       - drv_sysctl
       - sdxc
       - i2s
-      - uart_dma_rx_idle
+      - uart_software_rx_idle
       - ptp
       - gpiom
       - adc12
       - adc16
       - adc_tempsns
+      - enet
+      - enet_pps_pinout
+      - enet_phy_on_board
+      - sw_gm_api
+      - hall-qei

@@ -18,6 +18,7 @@
 #define GPTMR_PWM BOARD_GPTMR_PWM
 #define GPTMR_PWM_CH BOARD_GPTMR_PWM_CHANNEL
 #define GPTMR_CMP  0
+#define GPTMR_CLK_NAME BOARD_GPTMR_CLK_NAME
 
 #define GPTMR_PWM_DUTY_CYCLE_FP_MAX ((1U << 24) - 1)
 
@@ -84,7 +85,10 @@ static void test_capture(void)
 
 static void test_measure(void)
 {
+    uint32_t period, duty;
     gptmr_channel_config_t config;
+
+    uint32_t gptmr_freq = clock_get_frequency(BOARD_GPTMR_CLK_NAME);
     gptmr_channel_get_default_config(GPTMR, &config);
     config.mode = gptmr_work_mode_measure_width;
     gptmr_channel_config(GPTMR, GPTMR_CH, &config, false);
@@ -93,9 +97,10 @@ static void test_measure(void)
 
     /* please make sure deplay time is more than one pwm cycle */
     board_delay_ms(100);
-
-    printf("measured period: 0x%x\n", gptmr_channel_get_counter(GPTMR, GPTMR_CH, gptmr_counter_type_measured_period));
-    printf("measured duty cycle: 0x%x\n", gptmr_channel_get_counter(GPTMR, GPTMR_CH, gptmr_counter_type_measured_duty_cycle));
+    period = gptmr_channel_get_counter(GPTMR, GPTMR_CH, gptmr_counter_type_measured_period);
+    duty = gptmr_channel_get_counter(GPTMR, GPTMR_CH, gptmr_counter_type_measured_duty_cycle);
+    printf("measured frequency: %f\n", (float) gptmr_freq / period);
+    printf("measured duty cycle: %.2f%%\n", ((float) duty / period) * 100);
 
 }
 

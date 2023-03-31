@@ -20,6 +20,5 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(multcore_core1)
 
-sdk_compile_definitions(-DBOARD_SHOW_CLOCK=0)
 sdk_app_src(src/demo.c)
 generate_ses_project()

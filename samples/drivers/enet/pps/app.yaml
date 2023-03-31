@@ -1,0 +1,4 @@
+dependency:
+  - enet
+  - ptp
+  - enet_pps_pinout

@@ -29,6 +29,14 @@
  * Author: Simon Goldschmdit <goldsimon@gmx.de>
  *
  */
+
+/*
+ * Copyright (c) 2021-2022 HPMicro
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ */
+
 #ifndef LWIP_ARCH_SYS_ARCH_H
 #define LWIP_ARCH_SYS_ARCH_H
 

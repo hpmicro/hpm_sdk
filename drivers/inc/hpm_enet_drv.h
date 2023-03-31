@@ -42,6 +42,9 @@
 
 #define ENET_ADJ_FREQ_BASE_ADDEND (0x7fffffffUL)  /**< PTP base adjustment addend */
 #define ENET_ONE_SEC_IN_NANOSEC   (1000000000UL)  /**< one second in nanoseconds */
+
+#define ENET_PPS_CMD_MASK         (0x07UL) /**< Enet PPS CMD Mask */
+#define ENET_PPS_CMD_OFS_FAC      (3U)     /**< Enet PPS CMD OFS Factor */
 /*---------------------------------------------------------------------
  *  Typedef Enum Declarations
  *---------------------------------------------------------------------
@@ -72,13 +75,39 @@ typedef enum {
 
 /** @brief Checksum insertion control selections */
 typedef enum {
-    enet_cic_bypass = 0,
-    enet_cic_insert_ipv4_header,
-    enet_cic_insert_tcp_udp_icmp,
-    enet_cic_insert_tcp_upd_icmp,
-} enet_insert_t;
+    enet_cic_disable            = 0,
+    enet_cic_ip                 = 1,
+    enet_cic_ip_no_pseudoheader = 2,
+    enet_cic_ip_pseudoheader    = 3
+} enet_cic_insertion_control_t;
 
-/** @brief PHY opeartion selections */
+/** @brief VLAN insertion control selections */
+typedef enum {
+    enet_vlic_disable          = 0,
+    enet_vlic_remove_vlan_tag  = 1,
+    enet_vlic_insert_vlan_tag  = 2,
+    enet_vlic_replace_vlan_tag = 3
+} enet_vlan_insertion_control_t;
+
+/** @brief SA insertion or replacement control selections for any selective frames */
+typedef enum {
+    enet_saic_disable      = 0,
+    enet_saic_insert_mac0  = 1,
+    enet_saic_replace_mac0 = 2,
+    enet_saic_insert_mac1  = 5,
+    enet_saic_replace_mac1 = 6
+} enet_saic_insertion_replacement_control_t;
+
+/** @brief SA insertion or replacement control selections for all transmit frames */
+typedef enum {
+    enet_sarc_disable      = 0,
+    enet_sarc_insert_mac0  = 2,
+    enet_sarc_replace_mac0 = 3,
+    enet_sarc_insert_mac1  = 6,
+    enet_sarc_replace_mac1 = 7
+} enet_sarc_insertion_replacement_control_t;
+
+/** @brief PHY operation selections */
 typedef enum {
     enet_phy_op_read = 0,
     enet_phy_op_write
@@ -166,10 +195,19 @@ typedef enum {
     enet_ts_ss_ptp_msg_7 = 12 /* Pdelay_Req, Pdelay_Resp */
 } enet_ts_ss_ptp_msg_t;
 
+/** @brief PTP timer rollover modes */
 typedef enum {
     enet_ts_bin_rollover_control = 0,  /* timestamp rolls over after 0x7fffffff */
     enet_ts_dig_rollover_control       /* timestamp rolls over after 0x3b9ac9ff */
 } enet_ts_rollover_control_t;
+
+/** @brief PPS indexes */
+typedef enum {
+    enet_pps_0 = -1,
+    enet_pps_1 = 0,
+    enet_pps_2 = 1,
+    enet_pps_3 = 2
+} enet_pps_idx_t;
 
 /** @brief PPS0 control for output frequency selections */
 typedef enum {
@@ -201,6 +239,7 @@ typedef enum {
     enet_pps_cmd_stop_pulse_train_immediately,
     enet_pps_cmd_cancel_stop_pulse_train
 } enet_pps_cmd_t;
+
 /*---------------------------------------------------------------------
  *  Typedef Struct Declarations
  *---------------------------------------------------------------------
@@ -218,6 +257,7 @@ typedef struct {
     uint32_t mac_addr_low[ENET_SOC_ADDR_MAX_COUNT];
     uint8_t  valid_max_count;
     uint8_t  dma_pbl;
+    uint8_t  sarc;
 } enet_mac_config_t;
 
 /** @brief transmission descriptor struct */
@@ -261,7 +301,7 @@ typedef struct {
             uint32_t tbs1    : 13; /**< Transmit Buffer 1 Size */
             uint32_t reserved:  3; /**< Reserved */
             uint32_t tbs2    : 13; /**< Transmit Buffer 2 Size */
-            uint32_t saic    :  3; /**< SA Inertion Control */
+            uint32_t saic    :  3; /**< SA Insertion Control */
         } tdes1_bm;
     };
 
@@ -343,7 +383,7 @@ typedef struct {
     union {
         uint32_t rdes2;
         struct {
-        uint32_t buffer1;       /**< Buffer 1 Address */
+            uint32_t buffer1;       /**< Buffer 1 Address */
         } rdes2_bm;
     };
 
@@ -359,26 +399,26 @@ typedef struct {
     union {
         uint32_t rdes4;
         struct {
-                uint32_t ip_payload_type     : 3; /**< IP Payload Type */
-                uint32_t ip_header_err       : 1; /**< IP Header Error */
-                uint32_t ip_payload_err      : 1; /**< IP Payload Error */
-                uint32_t ip_chksum_bypassed  : 1; /**< IP Checksum Bypassed */
-                uint32_t ipv4_pkt_received   : 1; /**< IPv4 Packet Received */
-                uint32_t ipv6_pkt_received   : 1; /**< IPv6 Packet Received */
-                uint32_t msg_type            : 4; /**< Message Type */
-                uint32_t ptp_frame_type      : 1; /**< PTP Frame Type */
-                uint32_t ptp_version         : 1; /**< PTP Version */
-                uint32_t ts_dp               : 1; /**< Timestamp Dropped */
-                uint32_t reserved0           : 1; /**< Reserved */
-                uint32_t av_pkt_recv         : 1; /**< AV Packet Received */
-                uint32_t av_tagged_pkt_recv  : 1; /**< AV Tagged Packet Received */
-                uint32_t vlan_tag_pri_value  : 3; /**< VLAN Tag Priority Value */
-                uint32_t reserved1           : 3; /**< Reserved */
-                uint32_t l3_fm               : 1; /**< Layer 3 Filter Matched */
-                uint32_t l4_fm               : 1; /**< Layer 4 Filter Matched */
-                uint32_t l3_l4_fnl           : 2; /**< Layer 3 and Layer 4 Filter Number Matched */
-                uint32_t reserved2           : 4; /**< Reserved */
-            } rdes4_bm;
+            uint32_t ip_payload_type     : 3; /**< IP Payload Type */
+            uint32_t ip_header_err       : 1; /**< IP Header Error */
+            uint32_t ip_payload_err      : 1; /**< IP Payload Error */
+            uint32_t ip_chksum_bypassed  : 1; /**< IP Checksum Bypassed */
+            uint32_t ipv4_pkt_received   : 1; /**< IPv4 Packet Received */
+            uint32_t ipv6_pkt_received   : 1; /**< IPv6 Packet Received */
+            uint32_t msg_type            : 4; /**< Message Type */
+            uint32_t ptp_frame_type      : 1; /**< PTP Frame Type */
+            uint32_t ptp_version         : 1; /**< PTP Version */
+            uint32_t ts_dp               : 1; /**< Timestamp Dropped */
+            uint32_t reserved0           : 1; /**< Reserved */
+            uint32_t av_pkt_recv         : 1; /**< AV Packet Received */
+            uint32_t av_tagged_pkt_recv  : 1; /**< AV Tagged Packet Received */
+            uint32_t vlan_tag_pri_value  : 3; /**< VLAN Tag Priority Value */
+            uint32_t reserved1           : 3; /**< Reserved */
+            uint32_t l3_fm               : 1; /**< Layer 3 Filter Matched */
+            uint32_t l4_fm               : 1; /**< Layer 4 Filter Matched */
+            uint32_t l3_l4_fnl           : 2; /**< Layer 3 and Layer 4 Filter Number Matched */
+            uint32_t reserved2           : 4; /**< Reserved */
+        } rdes4_bm;
     };
 
     struct {
@@ -409,6 +449,18 @@ typedef struct  {
     uint32_t  seg_count;
 } enet_rx_frame_info_t;
 
+/** @brief enet control config struct for transmission */
+typedef struct {
+    bool enable_ioc;        /* interrupt on completion */
+    bool disable_crc;       /* disable CRC */
+    bool disable_pad;       /* disable Pad */
+    bool enable_tts;        /* enable transmit timestamp */
+    bool enable_crcr;       /* CRC replacement control */
+    uint8_t cic;            /* checksum insertion control */
+    uint8_t vlic;           /* VLAN insertion control */
+    uint8_t saic;           /* SA insertion control */
+} enet_tx_control_config_t;
+
 /** @brief enet description struct */
 typedef struct {
     enet_tx_desc_t *tx_desc_list_head;
@@ -418,6 +470,7 @@ typedef struct {
     enet_buff_config_t tx_buff_cfg;
     enet_buff_config_t rx_buff_cfg;
     enet_rx_frame_info_t rx_frame_info;
+    enet_tx_control_config_t tx_control_config;
 } enet_desc_t;
 
 /** @brief PTP system timestamp struct */
@@ -474,6 +527,14 @@ extern "C" {
  * Exported Functions
  *---------------------------------------------------------------------
  */
+/**
+ * @brief Get a default control config for tranmission
+ *
+ * @param[in] ptr An Ethernet peripheral base address
+ * @param[in] config A pointer to a control config structure for tranmission
+ */
+void enet_get_default_tx_control_config(ENET_Type *ptr, enet_tx_control_config_t *config);
+
 /**
  * @brief Initialize controller
  *
@@ -552,7 +613,7 @@ enet_frame_t enet_get_received_frame(enet_rx_desc_t **parent_rx_desc_list_cur, e
 enet_frame_t enet_get_received_frame_interrupt(enet_rx_desc_t **parent_rx_desc_list_cur, enet_rx_frame_info_t *rx_frame_info, uint32_t rx_desc_count);
 
 /**
- * @brief prepare for the transmission descriptors
+ * @brief prepare for the transmission descriptors (It will be deprecated.)
  *
  * @param[in] ptr An Ethernet peripheral base address
  * @param[out] parent_tx_desc_list_cur a pointer to the information of the reception frames
@@ -564,6 +625,19 @@ enet_frame_t enet_get_received_frame_interrupt(enet_rx_desc_t **parent_rx_desc_l
  */
 uint32_t enet_prepare_transmission_descriptors(ENET_Type *ptr, enet_tx_desc_t **parent_tx_desc_list_cur, uint16_t frame_length, uint16_t tx_buff_size);
 
+/**
+ * @brief prepare for the transmission descriptors
+ *
+ * @param[in] ptr An Ethernet peripheral base address
+ * @param[out] parent_tx_desc_list_cur a pointer to the information of the reception frames
+ * @param[in] config a pointer to the control configuration for the transmission frames
+ * @param[in] frame_length the length of the transmission
+ * @param[in] tx_buff_size the size of the transmission buffer
+ * @retval a result of the transmission preparation.
+ *         1 means that the preparation is successful.
+ *         0 means that the preparation is unsuccessful.
+ */
+uint32_t enet_prepare_tx_desc(ENET_Type *ptr, enet_tx_desc_t **parent_tx_desc_list_cur, enet_tx_control_config_t *config, uint16_t frame_length, uint16_t tx_buff_size);
 /**
  * @brief Initialize DMA transmission descriptors in chain mode
  *
@@ -662,20 +736,24 @@ void enet_set_snapshot_ptp_message_type(ENET_Type *ptr, enet_ts_ss_ptp_msg_t ts_
 void enet_set_pps0_control_output(ENET_Type *ptr, enet_pps_ctrl_t freq);
 
 /**
- * @brief Set the pps0 control config
+ * @brief Set a pps command for ppsx
  *
  * @param[in] ptr An Ethernet peripheral base address
- * @param[in] enet_pps_ctrl_t A struct pointer indicating the specified pps command configuration
+ * @param[in] cmd An enum value indicating the specified pps command
+ * @param[in] idx An enum value indicating the index of pps instance
+ * @retval hpm_stat_t @ref status_invalid_argument or @ref status_success
  */
-void enet_set_pps0_command_config(ENET_Type *ptr, enet_pps_cmd_config_t *cmd_cfg);
+hpm_stat_t enet_set_ppsx_command(ENET_Type *ptr, enet_pps_cmd_t cmd, enet_pps_idx_t idx);
 
 /**
- * @brief Set the pps0 control config
+ * @brief Set a pps config for ppsx
  *
  * @param[in] ptr An Ethernet peripheral base address
- * @param[in] enet_pps_ctrl_t An enum value indicating the specified pps command
+ * @param[in] cmd An enum value indicating the specified pps config
+ * @param[in] idx An enum value indicating the index of pps instance
+ * @retval hpm_stat_t @ref status_invalid_argument or @ref status_success
  */
-void enet_set_pps0_cmd(ENET_Type *ptr, enet_pps_cmd_t cmd);
+hpm_stat_t enet_set_ppsx_config(ENET_Type *ptr, enet_pps_cmd_config_t *cmd_cfg, enet_pps_idx_t idx);
 
 #if defined __cplusplus
 }

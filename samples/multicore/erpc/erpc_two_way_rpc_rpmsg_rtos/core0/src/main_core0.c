@@ -19,7 +19,7 @@
 #include "erpc_two_way_rpc_Core0Interface.h"
 #include "erpc_two_way_rpc_Core1Interface_server.h"
 #include "rpmsg_lite.h"
-#include "sec_core_img.h"
+#include "multicore_common.h"
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -86,19 +86,7 @@ static void client_task(void *param)
     (void)ipc_register_event(ipc_remote_start_event, eRPCReadyEventHandler, NULL);
 
     printf("\r\nPrimary core started\r\n");
-    if (!sysctl_is_cpu1_released(HPM_SYSCTL)) {
-        printf("\n\n");
-        printf("Copying secondary core image to destination memory...\n");
-        uint32_t sec_core_img_sys_addr = core_local_mem_to_sys_address(HPM_CORE1, (uint32_t)SEC_CORE_IMG_START);
-        memcpy((void *)sec_core_img_sys_addr, sec_core_img, sec_core_img_size);
-        uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN(sec_core_img_sys_addr);
-        uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP(sec_core_img_sys_addr + sec_core_img_size);
-        uint32_t aligned_size = aligned_end - aligned_start;
-        l1c_dc_flush(aligned_start, aligned_size);
-        sysctl_set_cpu1_entry(HPM_SYSCTL, (uint32_t)SEC_CORE_IMG_START);
-        sysctl_release_cpu1(HPM_SYSCTL);
-    }
-
+    multicore_release_cpu(HPM_CORE1, SEC_CORE_IMG_START);
     printf("Starting secondary core...\r\n");
 
     /*
@@ -109,6 +97,9 @@ static void client_task(void *param)
     };
 
     printf("\r\nSecondary core started...\r\n");
+
+    /* ERPC client initialization */
+    erpc_client_t erpc_client;
 
     /* RPMsg-Lite transport layer initialization */
     erpc_transport_t transport;
@@ -122,14 +113,14 @@ static void client_task(void *param)
     message_buffer_factory = erpc_mbf_rpmsg_init(transport);
 
     /* eRPC client side initialization */
-    s_transportArbitrator = erpc_arbitrated_client_init(transport, message_buffer_factory);
+    erpc_client = erpc_arbitrated_client_init(transport, message_buffer_factory, &s_transportArbitrator);
 
     /* Add server to client is necessary when do nesting RPC call. */
     while (s_server == NULL) {
         vTaskDelay(100);
     }
-    erpc_arbitrated_client_set_server(s_server);
-    erpc_arbitrated_client_set_server_thread_id((void *)s_server_task_handle);
+    erpc_arbitrated_client_set_server(erpc_client, s_server);
+    erpc_arbitrated_client_set_server_thread_id(erpc_client, (void *)s_server_task_handle);
 
     s_getNumberCallbackPtr = &getNumberFromCore1;
 
@@ -194,9 +185,9 @@ static void server_task(void *param)
     /* eRPC server initialization */
     s_server               = erpc_server_init(s_transportArbitrator, message_buffer_factory);
     erpc_service_t service = create_Core1Interface_service();
-    erpc_add_service_to_server(service);
+    erpc_add_service_to_server(s_server, service);
 
-    erpc_status_t status = erpc_server_run();
+    erpc_status_t status = erpc_server_run(s_server);
 
     /* handle error status */
     if (status != (erpc_status_t)kErpcStatus_Success) {
@@ -204,9 +195,9 @@ static void server_task(void *param)
         printf("Error occurred in server task. Task end with %d\r\n", status);
 
         /* eRPC server de-initialization */
-        erpc_remove_service_from_server(service);
+        erpc_remove_service_from_server(s_server, service);
         destroy_Core1Interface_service(service);
-        erpc_server_deinit();
+        erpc_server_deinit(s_server);
     }
 
     vTaskDelete(s_server_task_handle);

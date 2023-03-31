@@ -149,6 +149,7 @@ void init_camera_device(void)
     camera_context_t camera_context = {0};
     camera_config_t camera_config = {0};
 
+    camera_context.i2c_device_addr = CAMERA_DEVICE_ADDR;
     camera_context.ptr = CAM_I2C;
     camera_context.delay_ms = board_delay_ms;
 #ifdef BOARD_SUPPORT_CAM_RESET

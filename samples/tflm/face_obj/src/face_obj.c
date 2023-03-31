@@ -62,16 +62,19 @@ color_t buffer[2][IMAGE_WIDTH*IMAGE_HEIGHT] __attribute__((section(".framebuffer
 uint32_t tf_run_inference;
 
 uint32_t run_times;
-void clear_cycle(void)
+uint64_t delta_time;
+
+void start_time(void)
 {
-    write_csr(CSR_MCYCLE, 0);
+    delta_time = hpm_csr_get_core_mcycle();
 }
-uint32_t read_cycles(void)
+
+uint32_t get_end_time(void)
 {
-    uint32_t cycles;
-    cycles = read_csr(CSR_MCYCLE);
-    return cycles;
+    delta_time = hpm_csr_get_core_mcycle() - delta_time;
+    return delta_time;
 }
+
 void init_lcd(void)
 {
     lcdc_config_t config = {0};
@@ -111,6 +114,7 @@ void init_camera_device(void)
     camera_context_t camera_context = {NULL, NULL, NULL, NULL};
     camera_config_t camera_config;
 
+    camera_context.i2c_device_addr = CAMERA_DEVICE_ADDR;
     camera_context.ptr = CAM_I2C;
     camera_context.delay_ms = board_delay_ms;
 #ifdef BOARD_SUPPORT_CAM_RESET
@@ -275,9 +279,9 @@ int main(void)
         string2fount(1, 1, (uint8_t *)fount_display_buf, sizeof(fount_display_buf), 0xff00, (uint8_t *)nAsciiDot24x48, screen_addr, 24, 48);
         sprintf(fount_display_buf, "    facenum:%03d    ", abs(face_num));
         string2fount(0, 1, (uint8_t *)fount_display_buf, sizeof(fount_display_buf), 0x1f, (uint8_t *)nAsciiDot24x48, screen_addr, 24, 48);
-        clear_cycle();
+        start_time();
         loop();
-        run_times = read_cycles();
+        run_times = get_end_time();
         tf_run_inference = clock_get_frequency(clock_cpu0) / run_times;
     }
 }

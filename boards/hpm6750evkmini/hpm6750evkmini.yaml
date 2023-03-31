@@ -1,4 +1,4 @@
-# Copyright (c) 2021 HPMicro
+# Copyright (c) 2021-2023 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 board:
@@ -23,11 +23,11 @@ board:
       - vad
       - cam
       - lcd
-      - enet
       - spi
       - uart
       - can
       - i2c
+      - femc
       - pwm
       - pwm-rgb-led
       - pwm-beep
@@ -42,10 +42,15 @@ board:
       - dual-i2c
       - sdxc
       - i2s
-      - uart_dma_rx_idle
+      - uart_software_rx_idle
       - ptp
       - gpiom
       - adc12
       - adc16
       - adc_tempsns
       - motor-control
+      - enet
+      - enet_pps_pinout
+      - sw_gm_api
+      - i2s_pinout
+      - hall-qei

@@ -184,12 +184,17 @@ static const uint8_t ov7725_default_yuv_regs[][2] = {
 
 hpm_stat_t ov7725_read_register(camera_context_t *context, uint8_t reg, uint8_t *buf)
 {
-    return i2c_master_address_read(context->ptr, OV7725_I2C_ADDR, &reg, 1, buf, 1);
+    hpm_stat_t stat = i2c_master_write(context->ptr, context->i2c_device_addr, &reg, 1);
+    if (stat != status_success) {
+        return stat;
+    }
+    return i2c_master_read(context->ptr, context->i2c_device_addr, buf, 1);
+
 }
 
 hpm_stat_t ov7725_write_register(camera_context_t *context, uint8_t reg, uint8_t val)
 {
-    return i2c_master_address_write(context->ptr, OV7725_I2C_ADDR, &reg, 1, &val, 1);
+    return i2c_master_address_write(context->ptr, context->i2c_device_addr, &reg, 1, &val, 1);
 }
 
 hpm_stat_t ov7725_load_settings(camera_context_t *context, uint8_t *reg_values, uint32_t count)
@@ -278,6 +283,10 @@ hpm_stat_t ov7725_set_pixel_format(camera_context_t *context, display_pixel_form
     case display_pixel_format_yuv422:
     case display_pixel_format_y8:
         val |= COM7_FMT_YUV;
+        break;
+    case display_pixel_format_raw8:
+        stat |= ov7725_write_register(context, DSP_CTRL4, DSP_CTRL4_RAW8);
+        val |= COM7_FMT_R_BAYER;
         break;
     default:
         stat = status_invalid_argument;

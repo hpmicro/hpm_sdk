@@ -31,6 +31,7 @@ void init_common_config(adc16_conversion_mode_t conv_mode)
 
     /* initialize an ADC instance */
     adc16_get_default_config(&cfg);
+    cfg.res            = adc16_res_16_bits;
     cfg.conv_mode      = conv_mode;
     cfg.adc_clk_div    = 3;
     cfg.sel_sync_ahb   = true;
@@ -66,18 +67,18 @@ void oneshot_handler(void)
     uint16_t result;
     uint16_t vout, vout25c;
 
-    adc16_get_oneshot_result(APP_ADC_TEMP_ADC16_BASE, ADC16_SOC_TEMP_CH_NUM, &result);
+    if (adc16_get_oneshot_result(BOARD_APP_ADC16_BASE, ADC16_SOC_TEMP_CH_NUM, &result) == status_success) {
+        /* Calculate vout */
+        vout = result * ADC_SCALING / ADC_MAX_SAMPLE_VALUE * ADC_VREFH_VOL / ADC_SCALING;
 
-    /* Calculate vout */
-    vout = result * ADC_SCALING / ADC_MAX_SAMPLE_VALUE * ADC_VREFH_VOL / ADC_SCALING;
+        /* Calculate vout25c */
+        vout25c = (uint16_t)(ADC_GET_REF25_VAL() * ADC_SCALING / ADC_SOC_VOUT25C_MAX_SAMPLE_VALUE * ADC_SOC_TEMPSENS_REF25_VOL / ADC_SCALING);
 
-    /* Calculate vout25c */
-    vout25c = (uint16_t)(ADC_GET_REF25_VAL() * ADC_SCALING / ADC_SOC_VOUT25C_MAX_SAMPLE_VALUE * ADC_SOC_TEMPSENS_REF25_VOL / ADC_SCALING);
+        /* Calculate temperature */
+        temp = (int16_t)((vout - vout25c) * ADC_SOC_REF_SLOPE + ADC_SOC_REF_TEMP);
 
-    /* Calculate temperature */
-    temp = (int16_t)((vout - vout25c) * ADC_SOC_REF_SLOPE + ADC_SOC_REF_TEMP);
-
-    printf("Current Soc Temp: %d℃\n", temp);
+        printf("Current Soc Temp: %d℃\n", temp);
+    }
 }
 
 int main(void)

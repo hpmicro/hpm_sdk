@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -24,7 +24,6 @@
 #define WDG_INTERRUPT_INTERVAL_US (1000UL * 1000UL) /* WDG interrupt interval: 1s  */
 #define WDG_RESET_INTERVAL_US (1000UL) /* WDOG reset interval:1ms */
 
-
 /***********************************************************************************
  *
  *  Prototypes
@@ -35,7 +34,11 @@ void wdg_isr(void);
 void wdg_interrupt_test(void);
 void wdg_reset_test(void);
 
-SDK_DECLARE_EXT_ISR_M(IRQn_WDG0, wdg_isr);
+void show_valid_interrupt_intervals(void);
+void show_valid_reset_intervals(void);
+
+SDK_DECLARE_EXT_ISR_M(IRQn_WDG0, wdg_isr
+);
 
 /***********************************************************************************
  *
@@ -71,6 +74,12 @@ int main(void)
         case '2':
             wdg_reset_test();
             break;
+        case '3':
+            show_valid_interrupt_intervals();
+            break;
+        case '4':
+            show_valid_reset_intervals();
+            break;
         default:
             show_menu();
             break;
@@ -88,10 +97,45 @@ void show_menu(void)
                                     "*  WDG Example Menu                                            *\n"
                                     "*  1. Test WDG interrupt                                       *\n"
                                     "*  2. Test WDG reset                                           *\n"
+                                    "*  3. Show valid Interrupt values                              *\n"
+                                    "*  4. Show valid Reset values                                  *\n"
                                     "*                                                              *\n"
+                                    "*  NOTE:                                                       *\n"
+                                    "*    WDG total reset inverval =                                *\n"
+                                    "*    interrupt interval + reset interval                       *\n"
                                     "****************************************************************\n";
 
     printf("%s", menu_info);
+}
+
+void show_valid_interrupt_intervals(void)
+{
+    printf("Valid WDOG interrupt interval list:\n------------------------\n");
+    for (interrupt_interval_t i = 0; i < interrupt_interval_out_of_range; i++) {
+        uint64_t timeout_us = wdg_convert_interrupt_interval_to_us(WDG_EXT_CLK_FREQ, i);
+        if (timeout_us < 1000UL) {
+            printf("%.2fus\n", (float) timeout_us);
+        } else if (timeout_us < 1000000UL) {
+            printf("%.2fms\n", (float) (1.0 * timeout_us / 1000));
+        } else {
+            printf("%.2fs\n", (float) (1.0 * timeout_us / 1000000));
+        }
+    }
+}
+
+void show_valid_reset_intervals(void)
+{
+    printf("Valid WDOG reset interval list:\n------------------------\n");
+    for (reset_interval_t i = 0; i < reset_interval_out_of_range; i++) {
+        uint64_t timeout_us = wdg_convert_reset_interval_to_us(WDG_EXT_CLK_FREQ, i);
+        if (timeout_us < 1000UL) {
+            printf("%.2fus\n", (float) timeout_us);
+        } else if (timeout_us < 1000000UL) {
+            printf("%.2fms\n", (float) (1.0 * timeout_us / 1000));
+        } else {
+            printf("%.2fs\n", (float) (1.0 * timeout_us / 1000000));
+        }
+    }
 }
 
 void wdg_isr(void)
@@ -125,6 +169,7 @@ void wdg_interrupt_test(void)
     printf("Waiting for WDG interrupt...\n");
     while (!has_interrupt) {
     }
+
     has_interrupt = false;
     printf("WDG0 interrupt happened!\n");
     /* Service WDG */

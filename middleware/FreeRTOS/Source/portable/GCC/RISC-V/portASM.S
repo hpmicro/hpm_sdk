@@ -121,7 +121,11 @@ at the top of this file. */
     #define FREGBYTES           8
 #endif
 
-#define portFPU_CONTEXT_WORDS   32
+/* offset 0 * FREGBYTES - mepc
+ * offset 1 * FREGBYTES - mstatus
+ * offset (2 - 32) * FREGBYTES - float registers
+ */
+#define portFPU_CONTEXT_WORDS   34
 #define portFPU_CONTEXT_SIZE (portFPU_CONTEXT_WORDS * FREGBYTES)
 
 .macro portasmSAVE_FPU_REGISTERS
@@ -129,43 +133,44 @@ at the top of this file. */
     /* get FS field from mstatus */
     li t0, MSTATUS_FS
     csrr    t1, mstatus
+    store_x t1, 33 * FREGBYTES(sp)
     and t0, t1, t0
     li t2, MSTATUS_FS_DIRTY
     bne t2, t0, 1f
     /* FS == dirty */
     /* Make room for the additional FPU registers. */
-    store_fpu  f0, 0 * FREGBYTES(sp)
-    store_fpu  f1, 1 * FREGBYTES(sp)
-    store_fpu  f2, 2 * FREGBYTES(sp)
-    store_fpu  f3, 3 * FREGBYTES(sp)
-    store_fpu  f4, 4 * FREGBYTES(sp)
-    store_fpu  f5, 5 * FREGBYTES(sp)
-    store_fpu  f6, 6 * FREGBYTES(sp)
-    store_fpu  f7, 7 * FREGBYTES(sp)
-    store_fpu  f8, 8 * FREGBYTES(sp)
-    store_fpu  f9, 9 * FREGBYTES(sp)
-    store_fpu  f10, 10 * FREGBYTES(sp)
-    store_fpu  f11, 11 * FREGBYTES(sp)
-    store_fpu  f12, 12 * FREGBYTES(sp)
-    store_fpu  f13, 13 * FREGBYTES(sp)
-    store_fpu  f14, 14 * FREGBYTES(sp)
-    store_fpu  f15, 15 * FREGBYTES(sp)
-    store_fpu  f16, 16 * FREGBYTES(sp)
-    store_fpu  f17, 17 * FREGBYTES(sp)
-    store_fpu  f18, 18 * FREGBYTES(sp)
-    store_fpu  f19, 19 * FREGBYTES(sp)
-    store_fpu  f20, 20 * FREGBYTES(sp)
-    store_fpu  f21, 21 * FREGBYTES(sp)
-    store_fpu  f22, 22 * FREGBYTES(sp)
-    store_fpu  f23, 23 * FREGBYTES(sp)
-    store_fpu  f24, 24 * FREGBYTES(sp)
-    store_fpu  f25, 25 * FREGBYTES(sp)
-    store_fpu  f26, 26 * FREGBYTES(sp)
-    store_fpu  f27, 27 * FREGBYTES(sp)
-    store_fpu  f28, 28 * FREGBYTES(sp)
-    store_fpu  f29, 29 * FREGBYTES(sp)
-    store_fpu  f30, 30 * FREGBYTES(sp)
-    store_fpu  f31, 31 * FREGBYTES(sp)
+    store_fpu  f0, 1 * FREGBYTES(sp)
+    store_fpu  f1, 2 * FREGBYTES(sp)
+    store_fpu  f2, 3 * FREGBYTES(sp)
+    store_fpu  f3, 4 * FREGBYTES(sp)
+    store_fpu  f4, 5 * FREGBYTES(sp)
+    store_fpu  f5, 6 * FREGBYTES(sp)
+    store_fpu  f6, 7 * FREGBYTES(sp)
+    store_fpu  f7, 8 * FREGBYTES(sp)
+    store_fpu  f8, 9 * FREGBYTES(sp)
+    store_fpu  f9, 10 * FREGBYTES(sp)
+    store_fpu  f10, 11 * FREGBYTES(sp)
+    store_fpu  f11, 12 * FREGBYTES(sp)
+    store_fpu  f12, 13 * FREGBYTES(sp)
+    store_fpu  f13, 14 * FREGBYTES(sp)
+    store_fpu  f14, 15 * FREGBYTES(sp)
+    store_fpu  f15, 16 * FREGBYTES(sp)
+    store_fpu  f16, 17 * FREGBYTES(sp)
+    store_fpu  f17, 18 * FREGBYTES(sp)
+    store_fpu  f18, 19 * FREGBYTES(sp)
+    store_fpu  f19, 20 * FREGBYTES(sp)
+    store_fpu  f20, 21 * FREGBYTES(sp)
+    store_fpu  f21, 22 * FREGBYTES(sp)
+    store_fpu  f22, 23 * FREGBYTES(sp)
+    store_fpu  f23, 24 * FREGBYTES(sp)
+    store_fpu  f24, 25 * FREGBYTES(sp)
+    store_fpu  f25, 26 * FREGBYTES(sp)
+    store_fpu  f26, 27 * FREGBYTES(sp)
+    store_fpu  f27, 28 * FREGBYTES(sp)
+    store_fpu  f28, 29 * FREGBYTES(sp)
+    store_fpu  f29, 30 * FREGBYTES(sp)
+    store_fpu  f30, 31 * FREGBYTES(sp)
+    store_fpu  f31, 32 * FREGBYTES(sp)
 
     /* must set FS to clean */
     csrc    mstatus, t0
@@ -175,8 +180,7 @@ at the top of this file. */
     .endm
 
 .macro portasmRESTORE_FPU_REGISTERS
-    /* Assume that a0 contain the @ of saved core register */
-    load_x  t1, 0(a0)
+    load_x  t1, 33 * FREGBYTES(sp)
     /* get FS field from mstatus */
     li t0, MSTATUS_FS
     and t0, t1, t0
@@ -184,38 +188,38 @@ at the top of this file. */
     bne t2, t0, 1f
      /* FS == dirty */
     csrs    mstatus, t0
-    load_fpu   f0, 0 * FREGBYTES(sp)
-    load_fpu   f1, 1 * FREGBYTES(sp)
-    load_fpu   f2, 2 * FREGBYTES(sp)
-    load_fpu   f3, 3 * FREGBYTES(sp)
-    load_fpu   f4, 4 * FREGBYTES(sp)
-    load_fpu   f5, 5 * FREGBYTES(sp)
-    load_fpu   f6, 6 * FREGBYTES(sp)
-    load_fpu   f7, 7 * FREGBYTES(sp)
-    load_fpu   f8, 8 * FREGBYTES(sp)
-    load_fpu   f9, 9 * FREGBYTES(sp)
-    load_fpu   f10, 10 * FREGBYTES(sp)
-    load_fpu   f11, 11 * FREGBYTES(sp)
-    load_fpu   f12, 12 * FREGBYTES(sp)
-    load_fpu   f13, 13 * FREGBYTES(sp)
-    load_fpu   f14, 14 * FREGBYTES(sp)
-    load_fpu   f15, 15 * FREGBYTES(sp)
-    load_fpu   f16, 16 * FREGBYTES(sp)
-    load_fpu   f17, 17 * FREGBYTES(sp)
-    load_fpu   f18, 18 * FREGBYTES(sp)
-    load_fpu   f19, 19 * FREGBYTES(sp)
-    load_fpu   f20, 20 * FREGBYTES(sp)
-    load_fpu   f21, 21 * FREGBYTES(sp)
-    load_fpu   f22, 22 * FREGBYTES(sp)
-    load_fpu   f23, 23 * FREGBYTES(sp)
-    load_fpu   f24, 24 * FREGBYTES(sp)
-    load_fpu   f25, 25 * FREGBYTES(sp)
-    load_fpu   f26, 26 * FREGBYTES(sp)
-    load_fpu   f27, 27 * FREGBYTES(sp)
-    load_fpu   f28, 28 * FREGBYTES(sp)
-    load_fpu   f29, 29 * FREGBYTES(sp)
-    load_fpu   f30, 30 * FREGBYTES(sp)
-    load_fpu   f31, 31 * FREGBYTES(sp)
+    load_fpu   f0, 1 * FREGBYTES(sp)
+    load_fpu   f1, 2 * FREGBYTES(sp)
+    load_fpu   f2, 3 * FREGBYTES(sp)
+    load_fpu   f3, 4 * FREGBYTES(sp)
+    load_fpu   f4, 5 * FREGBYTES(sp)
+    load_fpu   f5, 6 * FREGBYTES(sp)
+    load_fpu   f6, 7 * FREGBYTES(sp)
+    load_fpu   f7, 8 * FREGBYTES(sp)
+    load_fpu   f8, 9 * FREGBYTES(sp)
+    load_fpu   f9, 10 * FREGBYTES(sp)
+    load_fpu   f10, 11 * FREGBYTES(sp)
+    load_fpu   f11, 12 * FREGBYTES(sp)
+    load_fpu   f12, 13 * FREGBYTES(sp)
+    load_fpu   f13, 14 * FREGBYTES(sp)
+    load_fpu   f14, 15 * FREGBYTES(sp)
+    load_fpu   f15, 16 * FREGBYTES(sp)
+    load_fpu   f16, 17 * FREGBYTES(sp)
+    load_fpu   f17, 18 * FREGBYTES(sp)
+    load_fpu   f18, 19 * FREGBYTES(sp)
+    load_fpu   f19, 20 * FREGBYTES(sp)
+    load_fpu   f20, 21 * FREGBYTES(sp)
+    load_fpu   f21, 22 * FREGBYTES(sp)
+    load_fpu   f22, 23 * FREGBYTES(sp)
+    load_fpu   f23, 24 * FREGBYTES(sp)
+    load_fpu   f24, 25 * FREGBYTES(sp)
+    load_fpu   f25, 26 * FREGBYTES(sp)
+    load_fpu   f26, 27 * FREGBYTES(sp)
+    load_fpu   f27, 28 * FREGBYTES(sp)
+    load_fpu   f28, 29 * FREGBYTES(sp)
+    load_fpu   f29, 30 * FREGBYTES(sp)
+    load_fpu   f30, 31 * FREGBYTES(sp)
+    load_fpu   f31, 32 * FREGBYTES(sp)
 
     /* must set FS to clean */
     csrc    mstatus, t0
@@ -251,6 +255,7 @@ at the top of this file. */
 /*-----------------------------------------------------------*/
 .section .isr_vector
 .align 8
+.type freertos_risc_v_trap_handler, function
 .func
 freertos_risc_v_trap_handler:
     addi sp, sp, -portCONTEXT_SIZE
@@ -356,9 +361,6 @@ handle_asynchronous:
 skip1:
         addi t0, t0, 1
         csrw mscratch, t0
-        /* Disable task scheduler, if it's already in ISR */
-        addi t1, t0, -1
-        bgtz t1, processed_source
 
         call xTaskIncrementTick
         beqz a0, processed_source        /* Don't switch context if incrementing tick didn't unblock a task. */
@@ -467,6 +469,7 @@ skip5:
 /*-----------------------------------------------------------*/
 .section .isr_vector
 .align 8
+.type xPortStartFirstTask, function
 .func
 xPortStartFirstTask:
 
@@ -482,6 +485,8 @@ xPortStartFirstTask:
     load_x  sp, 0( sp )                     /* Read sp from first TCB member. */
 
     load_x  x1, 0( sp ) /* Note for starting the scheduler the exception return address is used as the function return address. */
+
+    portasmRESTORE_FPU_REGISTERS
 
     portasmRESTORE_ADDITIONAL_REGISTERS      /* Defined in freertos_risc_v_chip_specific_extensions.h to restore any registers unique to the RISC-V implementation. */
 
@@ -586,12 +591,17 @@ xPortStartFirstTask:
  */
 .section .isr_vector
 .align 8
+.type pxPortInitialiseStack, function
 .func
 pxPortInitialiseStack:
 
     csrr t0, mstatus                     /* Obtain current mstatus value. */
     andi t0, t0, ~0x8                    /* Ensure interrupts are disabled when the stack is restored within an ISR.  Required when a task is created after the schedulre has been started, otherwise interrupts would be disabled anyway. */
+#ifdef __riscv_flen
+    addi t1, x0, 0x388                   /* Generate the value 0x3880, which are the MPIE and MPP bits to set and FS bits to 1 in mstatus. */
+#else
     addi t1, x0, 0x188                   /* Generate the value 0x1880, which are the MPIE and MPP bits to set in mstatus. */
+#endif
     slli t1, t1, 4
     or t0, t0, t1                        /* Set MPIE and MPP bits in mstatus value. */
 

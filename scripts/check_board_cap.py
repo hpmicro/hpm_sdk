@@ -58,8 +58,8 @@ def build_linked_project(app_info,board_name):
                 pass
             else:
                os.mkdir(linked_proj_build_dir)
-            build_linked_proj_cmd = "cd " + linked_proj_build_dir
-            build_linked_proj_cmd += " && " + "cmake -GNinja -DBOARD=" + board_name + " -DCMAKE_BUILD_TYPE="+build_type + " .."
+            os.chdir(linked_proj_build_dir)
+            build_linked_proj_cmd = "cmake -GNinja -DBOARD=" + board_name + " -DCMAKE_BUILD_TYPE="+build_type + " " + linked_proj_root_dir
             build_linked_proj_cmd += " && ninja"
             p = subprocess.Popen(build_linked_proj_cmd, shell=True,  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             retval = p.wait()

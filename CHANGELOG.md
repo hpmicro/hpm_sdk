@@ -1,5 +1,88 @@
 # Change Log
 
+## [1.1.0] - 2023-03-31:
+
+Main changes since 1.0.0
+
+Tested Segger Embedded Studio Version: 7.10
+
+### Changed:
+  - docs: add new docs for rtd project.
+  - soc: ip: enet: update the enet register file
+  - soc: ip: adc16: update the adc16 header file
+  - soc: hpm_romapi - Add APIs for configuring remapping, exip regions
+  - drivers: enet: improve APIs related to PPS
+  - drivers: adc: change adc bus blocking interface
+  - drivers: adc: optimize getting oneshot result
+  - drivers: src: update the default config for ADC12&ADC16
+  - boards: rename board-level APIs related to enet
+  - components: enet_phy: rtl8201: update the register file
+  - middleware: hpm_math: update dsp version
+  - middleware: erpc: update to v1.10.0
+  - samples: uart: rename uart_dma_rx_idle to uart_software_rx_idle
+  - samples: uart: add hardware rx idle detection sample
+  - samples: multicore: erpc: core1 add sdk_compile_options(-O1)
+  - samples: drivers: gptmr: update sample output.
+  - samples: lwip: common: arch: ethernetif: update a calling function name
+  - samples:drivers: adc: optimize oneshot handler
+
+### Added:
+  - arch: add FPU related APIs
+  - soc/board: add HPM6280 support
+  - soc: HPM6750: acmp: add ACMP section
+  - components: add mt9m114 support
+  - drivers: add raw8 pixel format support
+  - drivers: csr - Implement CSR driver
+  - drivers: adc: adc16: support resolution setting
+  - drivers/samples: add SDM/PLA/CRC/MCAN
+  - drivers: I2C: add new API
+  - drivers: adc: adc16: support resolution setting
+  - drivers: enet: add enet control config for transmission
+  - middleware: cherryusb: audio: update class driver and demo template
+  - middleware: add mbedtls lib files with SDP acceleration
+  - freeRTOS: add support for static allocation
+  - samples: drivers: enet: add a pps demo
+  - samples: cherryusb: add audio samples
+  - samples: add the resolution parameter in all demos with ADC16
+  - samples: add rfft demo
+  - sampels: i2c: add interrupt b2b samples
+  - samples: drivers: i2s: add an i2s_master demo
+  - samples: drivers: i2s: add an i2s_slave demo
+  - samples : rom_api : add sw_gm_api filter
+  - samples: add the resolution parameter in all demos with ADC16
+
+### Fixed:
+  - openocd: hpm6300evk: update sdram initialization.
+  - drivers: trgmux: trigmux edge filter setting error
+  - drivers: enet: fix register access error
+  - drivers: adc16: fix the config error of ADC16_CONFIG1
+  - drivers: i2c: fix i2c timing configuration
+  - drivers: SPI: fix SPI status API
+  - drivers: fix gptmr cmp value don't minus one
+  - drivers: mcan: correct the mcan ext_id filter issue
+  - drivers: I2C: fix issue in i2c_master_address_read API
+  - drivers: Self_ACK cannot be set in CAN driver
+  - drivers: rtc rtc_config_alarm always return error code
+  - cmake: correct source code compilation
+  - soc: toolchain: gcc: initialize heap for SES
+  - soc: gcc linker files: add NOLOAD keyword to noncacheable.bss section
+  - soc: HPM6360: gcc: ld: correct noncacheable region name.
+  - drivers: qei: Fix speed display always zero
+  - middleware: freertos: disable global irq before vTaskStartScheduler
+  - freeRTOS: fix trap when enable float feature
+  - freeRTOS: fix tick lost
+  - freeRTOS: fix segger project build warning
+  - samples: drivers: i2s: fix CFGR config
+  - samples: drivers: fix acmp toggle error
+  - samples: lwip: fix the DHCP issue
+  - samples: uart: fix irq_id judgment
+  - samples: fix the order of uart pin configuration and clock configuration
+  - samples: update spi dma sample
+  - samples: drivers: sysctl: correct reset enable approach.
+  - samples: fix dma_general_transfer sample memory out of bounds
+  - samples: drivers: wdog: Fix logic issue on finding the nearest interrupt interval
+  - sample: audio_codec: decoder_wav: add '\0' to fatfs path
+
 ## [1.00.0] - 2022-12-31:
 
 Main changes since 0.14.0

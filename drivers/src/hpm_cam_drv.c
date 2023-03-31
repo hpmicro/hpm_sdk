@@ -73,6 +73,19 @@ void cam_reset(CAM_Type *ptr)
 hpm_stat_t cam_init(CAM_Type *ptr, cam_config_t *config)
 {
     hpm_stat_t stat = status_success;
+    uint32_t pixel_format, width;
+
+    pixel_format = config->color_format;
+    width = config->width;
+
+    if (pixel_format == CAM_COLOR_FORMAT_RAW8) {
+        if ((width % 2) != 0) {
+            return status_invalid_argument;
+        }
+        /* use rgb565 format to receive raw8 data and adjust the width to half */
+        pixel_format = CAM_COLOR_FORMAT_RGB565;
+        width /= 2;
+    }
 
     cam_reset(ptr);
 
@@ -83,11 +96,11 @@ hpm_stat_t cam_init(CAM_Type *ptr, cam_config_t *config)
         | CAM_CR1_COLOR_EXT_SET(config->color_ext)
         | CAM_CR1_PACK_DIR_SET(config->data_pack_msb)
         | config->data_store_mode
-        | config->color_format
+        | pixel_format
         | config->sensor_bitwidth;
 
     ptr->IDEAL_WN_SIZE = CAM_IDEAL_WN_SIZE_HEIGHT_SET(config->height)
-        | CAM_IDEAL_WN_SIZE_WIDTH_SET(config->width);
+        | CAM_IDEAL_WN_SIZE_WIDTH_SET(width);
 
     ptr->MAX_WN_CYCLE = CAM_MAX_WN_CYCLE_ROW_SET(1200)
         | CAM_MAX_WN_CYCLE_COL_SET(2090);

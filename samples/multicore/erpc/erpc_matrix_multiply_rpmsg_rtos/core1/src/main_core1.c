@@ -81,6 +81,9 @@ static void SignalReady(void)
 
 static void server_task(void *param)
 {
+    /* ERPC server initialization */
+    erpc_server_t erpc_server;
+
     /* RPMsg-Lite transport layer initialization */
     erpc_transport_t transport;
 
@@ -92,26 +95,26 @@ static void server_task(void *param)
     message_buffer_factory = erpc_mbf_rpmsg_init(transport);
 
     /* eRPC server side initialization */
-    (void)erpc_server_init(transport, message_buffer_factory);
+    erpc_server = erpc_server_init(transport, message_buffer_factory);
 
     /* adding the service to the server */
     erpc_service_t service = create_MatrixMultiplyService_service();
-    erpc_add_service_to_server(service);
+    erpc_add_service_to_server(erpc_server, service);
 
     /* process message */
-    erpc_status_t status = erpc_server_run();
+    erpc_status_t status = erpc_server_run(erpc_server);
 
     /* handle error status */
     if (status != (erpc_status_t)kErpcStatus_Success) {
         /* removing the service from the server */
-        erpc_remove_service_from_server(service);
+        erpc_remove_service_from_server(erpc_server, service);
         destroy_MatrixMultiplyService_service(service);
 
         /* stop erpc server */
-        erpc_server_stop();
+        erpc_server_stop(erpc_server);
 
         /* print error description */
-        erpc_server_deinit();
+        erpc_server_deinit(erpc_server);
     }
 
     for (;;) {
@@ -130,6 +133,7 @@ int main(void)
     ipc_init();
     ipc_enable_event_interrupt(2u);
 
+    printf("Secondary core started...\r\n");
 
     if (xTaskCreate(server_task, "APP_TASK", configMINIMAL_STACK_SIZE + 256U, NULL, tskIDLE_PRIORITY + 1U, NULL) != pdPASS) {
         /* Failed to create application task */

@@ -38,36 +38,20 @@ in th_results is copied from the original in EEMBC.
 #include "./ad/micro_inputs.h"
 #include "./ad/model.h"
 
-
 #include <stdio.h>
 extern "C" {
 #include "board.h"
 }
-static uint64_t get_core_mcycle(void);
 volatile unsigned char gstr[0x100] __attribute__((aligned(4))) = {0};
 volatile unsigned char gstr1[0x100] __attribute__((aligned(4))) = {0};
 
-#define timestamp_in_usec ((unsigned long)(((unsigned long long )get_core_mcycle() * (unsigned long long) 1000000) / (unsigned long long) BOARD_CPU_FREQ))
+#define timestamp_in_usec ((unsigned long)(((unsigned long long )hpm_csr_get_core_cycle() * (unsigned long long) 1000000) / (unsigned long long) BOARD_CPU_FREQ))
 
 tflite::MicroModelRunner<int8_t, int8_t, 3> *runner;
 
 constexpr int kTensorArenaSize = 10 * 1024;
 uint8_t tensor_arena_local[kTensorArenaSize];
 
-static uint64_t get_core_mcycle(void)
-{
-    uint64_t result;
-    uint32_t resultl_first = read_csr(CSR_CYCLE);
-    uint32_t resulth = read_csr(CSR_CYCLEH);
-    uint32_t resultl_second = read_csr(CSR_CYCLE);
-    if (resultl_first < resultl_second) {
-        result = ((uint64_t)resulth << 32) | resultl_first; /* if MCYCLE didn't roll over, return the value directly */
-    } else {
-        resulth = read_csr(CSR_CYCLEH);
-        result = ((uint64_t)resulth << 32) | resultl_second; /* if MCYCLE rolled over, need to get the MCYCLEH again */
-    }
-    return result;
- }
 typedef int8_t model_input_t;
 typedef int8_t model_output_t;
 
@@ -81,10 +65,10 @@ float input_float[kInputSize];
 void th_load_tensor() {
   int8_t input_quantized[kInputSize];
   size_t bytes;
-  
+
   bytes = ee_get_buffer(reinterpret_cast<uint8_t *>(input_float),
                          kInputSize * sizeof(float));
-  
+
   if (bytes / sizeof(float) != kInputSize) {
     th_printf("Input db has %d elemented, expected %d\n", bytes / sizeof(float),
               kInputSize);
@@ -99,7 +83,7 @@ void th_load_tensor() {
   }
 
   runner->SetInput(input_quantized);
- 
+
 }
 
 
@@ -132,7 +116,7 @@ void th_infer() { runner->Invoke(); }
 
 /// \brief optional API.
 void th_final_initialize(void) {
-  
+
   static tflite::MicroMutableOpResolver<3> resolver;
 
   resolver.AddFullyConnected();
@@ -142,7 +126,7 @@ void th_final_initialize(void) {
   static tflite::MicroModelRunner<int8_t, int8_t, 3> model_runner(
          g_model, resolver, tensor_arena_local, kTensorArenaSize);
   runner = &model_runner;
-  
+
   th_printf("Initialized\r\n");
 }
 
@@ -183,7 +167,7 @@ void *th_memcpy(void *dst, const void *src, size_t n) {
 int th_vprintf(const char *format, va_list ap) {
 	vsprintf((char *)gstr1, format, ap);
 	printf((char *)gstr1);
-	return 0; 
+	return 0;
 }
 
 void th_printf(const char *p_fmt, ...) {
@@ -212,7 +196,7 @@ void th_timestamp(void) {
   /* USER CODE 2 END */
   /* This message must NOT be changed. */
   th_printf(EE_MSG_TIMESTAMP, microSeconds);
-# endif  
+# endif
 }
 
 void th_timestamp_initialize(void) {

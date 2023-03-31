@@ -8,7 +8,7 @@
 /*---------------------------------------------------------------------*
  * Includes
  *---------------------------------------------------------------------*/
-#include "common.h"
+#include "common_lwip.h"
 #include "netconf.h"
 #include "sys_arch.h"
 #include "lwip.h"
@@ -30,7 +30,7 @@ __RW uint8_t tx_buff[ENET_TX_BUFF_COUNT][ENET_TX_BUFF_SIZE]; /* Ethernet Transmi
 enet_desc_t desc;
 uint8_t mac[ENET_MAC];
 
-#if __USE_ENET_RECEIVE_INTERRUPT
+#if __ENABLE_ENET_RECEIVE_INTERRUPT
 volatile bool rx_flag;
 #endif
 
@@ -41,15 +41,16 @@ hpm_stat_t enet_init(ENET_Type *ptr)
 {
     enet_int_config_t int_config = {.int_enable = 0, .int_mask = 0};
     enet_mac_config_t enet_config;
+    enet_tx_control_config_t enet_tx_control_config;
 
     #if RGMII
-        #if __USE_DP83867
+        #if defined(__USE_DP83867) && __USE_DP83867
         dp83867_config_t phy_config;
         #else
         rtl8211_config_t phy_config;
         #endif
     #else
-        #if __USE_DP83848
+        #if defined(__USE_DP83848) && __USE_DP83848
         dp83848_config_t phy_config;
         #else
         rtl8201_config_t phy_config;
@@ -73,20 +74,29 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     desc.rx_buff_cfg.count = ENET_RX_BUFF_COUNT;
     desc.rx_buff_cfg.size = ENET_RX_BUFF_SIZE;
 
+    /*Get a default control config for tx descriptor */
+    enet_get_default_tx_control_config(ENET, &enet_tx_control_config);
+
+    /* Set the control config for tx descriptor */
+    memcpy(&desc.tx_control_config, &enet_tx_control_config, sizeof(enet_tx_control_config_t));
+
     /* Get MAC address */
     enet_get_mac_address(mac);
 
-    /* Set mac0 address */
+    /* Set MAC0 address */
     enet_config.mac_addr_high[0] = mac[5] << 8 | mac[4];
     enet_config.mac_addr_low[0]  = mac[3] << 24 | mac[2] << 16 | mac[1] << 8 | mac[0];
     enet_config.valid_max_count  = 1;
 
     /* Set DMA PBL */
-    enet_config.dma_pbl = board_enet_get_dma_pbl(ENET);
+    enet_config.dma_pbl = board_get_enet_dma_pbl(ENET);
 
-    #if __USE_ENET_RECEIVE_INTERRUPT
+    /* Set SARC */
+    enet_config.sarc = enet_sarc_replace_mac0;
+
+    #if __ENABLE_ENET_RECEIVE_INTERRUPT
     /* Enable Enet IRQ */
-    board_enet_enable_irq(ENET);
+    board_enable_enet_irq(ENET);
 
     /* Set the interrupt enable mask */
     int_config.int_enable = enet_normal_int_sum_en    /* Enable normal interrupt summary */
@@ -95,19 +105,19 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     int_config.int_mask = enet_rgsmii_int_mask; /* Disable RGSMII interrupt */
     #endif
 
-    /* Initialize enet controlle */
+    /* Initialize enet controller */
     enet_controller_init(ptr, ENET_INF_TYPE, &desc, &enet_config, &int_config);
 
-    #if __USE_ENET_RECEIVE_INTERRUPT
+    #if __ENABLE_ENET_RECEIVE_INTERRUPT
     /* Disable LPI interrupt */
     enet_disable_lpi_interrupt(ENET);
     #endif
 
     /* Initialize phy */
     #if RGMII
-        #if __USE_DP83867
+        #if defined(__USE_DP83867) && __USE_DP83867
         dp83867_reset(ptr);
-        #ifdef __DISABLE_AUTO_NEGO
+        #if __DISABLE_AUTO_NEGO
         dp83867_set_mdi_crossover_mode(ENET, enet_phy_mdi_crossover_manual_mdix);
         #endif
         dp83867_basic_mode_default_config(ptr, &phy_config);
@@ -118,7 +128,7 @@ hpm_stat_t enet_init(ENET_Type *ptr)
         if (rtl8211_basic_mode_init(ptr, &phy_config) == true) {
         #endif
     #else
-        #if __USE_DP83848
+        #if defined(__USE_DP83848) && __USE_DP83848
         dp83848_reset(ptr);
         dp83848_basic_mode_default_config(ptr, &phy_config);
         if (dp83848_basic_mode_init(ptr, &phy_config) == true) {
@@ -150,15 +160,16 @@ int main(void)
     /* Reset an enet PHY */
     board_reset_enet_phy(ENET);
 
-    #if __USE_ENET_RECEIVE_INTERRUPT
+    #if __ENABLE_ENET_RECEIVE_INTERRUPT
     printf("This is an ethernet demo: HTTP Server (Interrupt Usage)\n");
     #else
     printf("This is an ethernet demo: HTTP Server (Polling Usage)\n");
     #endif
+
     printf("LwIP Version: %s\n", LWIP_VERSION_STRING);
 
-    #if RGMII
     /* Set RGMII clock delay */
+    #if RGMII
     board_init_enet_rgmii_clock_delay(ENET);
     #else
     /* Set RMII reference clock */
@@ -171,7 +182,7 @@ int main(void)
 
     /* Initialize MAC and DMA */
     if (enet_init(ENET) == 0) {
-         /* Initialize the Lwip stack */
+        /* Initialize the Lwip stack */
         lwip_init();
         netif_config();
         user_notification(&gnetif);

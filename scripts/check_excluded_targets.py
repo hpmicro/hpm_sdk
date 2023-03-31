@@ -1,4 +1,4 @@
-# Copyright 2022 hpmicro
+# Copyright 2023 hpmicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 import sys

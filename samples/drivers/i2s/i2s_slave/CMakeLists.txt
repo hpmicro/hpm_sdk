@@ -1,0 +1,15 @@
+# Copyright 2023 hpmicro
+# SPDX-License-Identifier: BSD-3-Clause
+
+cmake_minimum_required(VERSION 3.13)
+
+if("${CMAKE_BUILD_TYPE}" STREQUAL "")
+    SET(CMAKE_BUILD_TYPE flash_xip)
+endif()
+
+find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
+
+project(i2s_slave_example)
+sdk_inc(inc)
+sdk_app_src(src/i2s_slave.c)
+generate_ses_project()

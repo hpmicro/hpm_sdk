@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -31,6 +31,7 @@
  */
 #define I2S_SOC_MAX_CHANNEL_NUM (16U)
 #define I2S_SOC_MAX_TX_CHANNEL_NUM (8U)
+#define I2S_SOC_MAX_TX_FIFO_DEPTH (8U)
 #define PDM_I2S HPM_I2S0
 #define DAO_I2S HPM_I2S1
 #define PDM_SOC_SAMPLE_RATE_IN_HZ (16000U)
@@ -104,12 +105,16 @@
 /*
 * ENET Section
 */
+#define ENET_SOC_RGMII_EN                          (0U)
 #define ENET_SOC_DESC_ADDR_ALIGNMENT               (32U)
 #define ENET_SOC_BUFF_ADDR_ALIGNMENT               (4U)
 #define ENET_SOC_ADDR_MAX_COUNT                    (5U)
-#define ENET_SOC_ADVANCED_TIMESTAMP_EN             (1U)
-#define ENET_SOC_IPC_FULL_CHKSUM_OFFLOAD_ENGINE    (0U)
-#define ENET_SOC_ALT_EHD_DES_LEN                   (ENET_SOC_ADVANCED_TIMESTAMP_EN || ENET_SOC_IPC_FULL_CHKSUM_OFFLOAD_ENGINE) ? (8U) : (4U)
+#define ENET_SOC_ALT_EHD_DES_MIN_LEN               (4U)
+#define ENET_SOC_ALT_EHD_DES_MAX_LEN               (8U)
+#define ENET_SOC_ALT_EHD_DES_LEN                   (8U)
+#define ENET_SOC_PPS_MAX_COUNT                     (2L)
+#define ENET_SOC_PPS1_EN                           (1U)
+
 /*
 * ADC Section
 */
@@ -123,8 +128,10 @@
 
 #define ADC16_SOC_PARAMS_LEN                       (34U)
 #define ADC16_SOC_MAX_CH_NUM                       (15U)
-#define ADC16_SOC_TEMP_CH_NUM                      (16U)
+#define ADC16_SOC_TEMP_CH_EN                       (0U)
+#define ADC16_SOC_MAX_SAMPLE_VALUE                 (65535U)
 #define ADC16_SOC_MAX_TRIG_CH_NUM                  (11U)
+#define ADC16_SOC_MAX_CONV_CLK_NUM                 (21U)
 
 /*
  * SYSCTL Section
@@ -193,5 +200,14 @@
  * OTP Section
  */
 #define OTP_SOC_UUID_IDX   (88U)
+#define OTP_SOC_UUID_LEN   (16U) /* in bytes */
+
+/**
+ * PWM Section
+ *
+ */
+#define PWM_SOC_HRPWM_SUPPORT  (0U)
+#define PWM_SOC_SHADOW_TRIG_SUPPORT (0U)
+#define PWM_SOC_TIMER_RESET_SUPPORT (1U)
 
 #endif /* HPM_SOC_FEATURE_H */

@@ -91,6 +91,7 @@ int main(void)
     printf("UART DMA example\n");
     printf("UART will send back received characters, echo every %d bytes\n", TEST_BUFFER_SIZE);
 
+    /* if TEST_UART is same as BOARD_CONSOLE_BASE, it has been initialized in board_init(); */
     board_init_uart(TEST_UART);
     uart_default_config(TEST_UART, &config);
     config.fifo_enable = true;

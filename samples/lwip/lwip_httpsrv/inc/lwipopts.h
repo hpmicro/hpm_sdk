@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -19,7 +19,7 @@
 #define ARP_QUEUEING            0
 #define LWIP_RAW                1
 #define LWIP_IPV4               1
-#define LWIP_TIMERS             0
+#define LWIP_TIMERS             1
 #define LWIP_NETIF_TX_SINGLE_PBUF 1
 /**
  * NO_SYS==1: Provides VERY minimal functionality. Otherwise,
@@ -36,11 +36,6 @@
 /* MEM_SIZE: the size of the heap memory. If the application will send
 a lot of data that needs to be copied, this should be set high. */
 #define MEM_SIZE                (5*1024)
-
-/**
- * MEMP_MEM_MALLOC==1: Use mem_malloc/mem_free instead of the lwip pool allocator.
- */
-#define MEMP_MEM_MALLOC         1
 
 /* MEMP_NUM_PBUF: the number of memp struct pbufs. If the application
    sends a lot of data out of ROM (or other static memory), this

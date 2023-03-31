@@ -1,2 +1,2 @@
-sdk_inc(${HPM_SOC})
-sdk_src(${HPM_SOC}/ecc_platform_specific.c)
+sdk_inc(src)
+sdk_src(src/ecc_platform_specific.c)

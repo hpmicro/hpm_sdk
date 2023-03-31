@@ -19,7 +19,8 @@
 #include "erpc_client_setup.h"
 #include "erpc_matrix_multiply.h"
 #include "rpmsg_lite.h"
-#include "sec_core_img.h"
+#include "multicore_common.h"
+
 
 /*******************************************************************************
  * Definitions
@@ -27,6 +28,7 @@
 #define ERPC_TRANSPORT_RPMSG_LITE_LINK_ID (RL_PLATFORM_HPM6XXX_DUAL_CORE_LINK_ID)
 #define MATRIX_ITEM_MAX_VALUE (50)
 #define APP_ERPC_READY_EVENT_DATA (1U)
+
 
 /*******************************************************************************
  * Variables
@@ -100,20 +102,8 @@ int main(void)
     /* Register the application event before starting the secondary core */
     (void)ipc_register_event(ipc_remote_start_event, eRPCReadyEventHandler, NULL);
 
-    (void)printf("\r\nPrimary core started\r\n");
-    if (!sysctl_is_cpu1_released(HPM_SYSCTL)) {
-        printf("\n\n");
-        printf("Copying secondary core image to destination memory...\n");
-        uint32_t sec_core_img_sys_addr = core_local_mem_to_sys_address(HPM_CORE1, (uint32_t)SEC_CORE_IMG_START);
-        memcpy((void *)sec_core_img_sys_addr, sec_core_img, sec_core_img_size);
-        uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN(sec_core_img_sys_addr);
-        uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP(sec_core_img_sys_addr + sec_core_img_size);
-        uint32_t aligned_size = aligned_end - aligned_start;
-        l1c_dc_flush(aligned_start, aligned_size);
-        sysctl_set_cpu1_entry(HPM_SYSCTL, (uint32_t)SEC_CORE_IMG_START);
-        sysctl_release_cpu1(HPM_SYSCTL);
-    }
-
+    printf("\r\nPrimary core started\r\n");
+    multicore_release_cpu(HPM_CORE1, SEC_CORE_IMG_START);
     printf("Starting secondary core...\r\n");
 
     /*

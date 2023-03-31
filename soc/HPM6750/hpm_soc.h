@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -853,4 +853,10 @@
 #include "hpm_gpiom_regs.h"
 #include "hpm_sysctl_regs.h"
 #include "hpm_trgm_regs.h"
+#include "hpm_pcfg_regs.h"
+#include "hpm_pgpr_regs.h"
+#include "hpm_ppor_regs.h"
+#include "hpm_bcfg_regs.h"
+#include "hpm_bgpr_regs.h"
+#include "hpm_bpor_regs.h"
 #endif /* HPM_SOC_H */

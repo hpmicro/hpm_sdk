@@ -184,15 +184,15 @@ static inline void dma_disable_channel(DMA_Type *ptr, uint32_t ch_index)
 }
 
 /**
- * @brief   Check whether DMA channel is transferring
+ * @brief   Check whether DMA channel is enable
  *
  * @param[in] ptr DMA base address
  * @param[in] ch_index Index of the channel
  *
- * @return   true if DMA channel is transferring
+ * @return   true if DMA channel is enable
  *
  */
-static inline bool dma_channel_is_transferring(DMA_Type *ptr, uint32_t ch_index)
+static inline bool dma_channel_is_enable(DMA_Type *ptr, uint32_t ch_index)
 {
     return (ptr->CHCTRL[ch_index].CTRL & DMA_CHCTRL_CTRL_ENABLE_MASK) ? true : false;
 }
@@ -444,6 +444,21 @@ hpm_stat_t dma_start_memcpy(DMA_Type *ptr, uint8_t ch_index,
  * @return status_success if everything is okay
  */
 hpm_stat_t dma_setup_handshake(DMA_Type *ptr,  dma_handshake_config_t *pconfig, bool start_transfer);
+
+
+#if defined(DMA_SOC_HAS_IDLE_FLAG) && (DMA_SOC_HAS_IDLE_FLAG == 1)
+/**
+ * @brief Check whether DMA is idle
+ * @param [in] ptr DMA base address
+ * @return true DMA is idle
+ * @return false DMA is busy
+ */
+static inline bool dma_is_idle(DMA_Type *ptr)
+{
+    return ((ptr->IDMISC & DMA_IDMISC_IDLE_FLAG_MASK) != 0U);
+}
+#endif
+
 
 #ifdef __cplusplus
 }

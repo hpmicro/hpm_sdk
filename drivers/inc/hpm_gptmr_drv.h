@@ -138,6 +138,9 @@ static inline void gptmr_channel_update_count(GPTMR_Type *ptr,
                                              uint8_t ch_index,
                                              uint32_t value)
 {
+    if (value > 0) {
+        value--;
+    }
     ptr->CHANNEL[ch_index].CNTUPTVAL = GPTMR_CHANNEL_CNTUPTVAL_CNTUPTVAL_SET(value);
     ptr->CHANNEL[ch_index].CR |= GPTMR_CHANNEL_CR_CNTUPT_MASK;
 }
@@ -305,6 +308,9 @@ static inline void gptmr_stop_counter(GPTMR_Type *ptr, uint8_t ch_index)
  */
 static inline void gptmr_update_cmp(GPTMR_Type *ptr, uint8_t ch_index, uint8_t cmp_index, uint32_t cmp)
 {
+    if (cmp > 0) {
+        cmp--;
+    }
     ptr->CHANNEL[ch_index].CMP[cmp_index] = GPTMR_CHANNEL_CMP_CMP_SET(cmp);
 }
 
@@ -317,7 +323,10 @@ static inline void gptmr_update_cmp(GPTMR_Type *ptr, uint8_t ch_index, uint8_t c
  */
 static inline void gptmr_channel_config_update_reload(GPTMR_Type *ptr, uint8_t ch_index, uint32_t reload)
 {
-    ptr->CHANNEL[ch_index].RLD = GPTMR_CHANNEL_RLD_RLD_SET(reload - 1);
+    if (reload > 0) {
+        reload--;
+    }
+    ptr->CHANNEL[ch_index].RLD = GPTMR_CHANNEL_RLD_RLD_SET(reload);
 }
 
 /**

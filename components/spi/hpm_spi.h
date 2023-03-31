@@ -61,6 +61,9 @@ extern "C" {
 /**
  * @brief hpm_spi setup dma transfer
  *
+ * @note if the transferred data count more than SPI_SOC_TRANSFER_COUNT_MAX, this API will using
+ * DMA chain descriptors to link SPI transmission.
+ *
  * @param[in] spi_context A pointer to the struct of "spi_context_t"
  * @param[in] spi_config A pointer to the struct of "spi_control_config_t"
  * @retval status_success if SPI transfers data successfully.

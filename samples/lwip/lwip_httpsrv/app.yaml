@@ -1,0 +1,6 @@
+excluded_targets:
+  - debug
+  - release
+dependency:
+  - enet
+  - enet_phy_on_board

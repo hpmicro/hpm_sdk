@@ -159,11 +159,16 @@ SECTIONS
         . = ALIGN(8);
     } > AXI_SRAM
 
-    .noncacheable : AT(etext + __vector_ram_end__ - __vector_ram_start__ + __data_end__ - __data_start__ + __ramfunc_end__ - __ramfunc_start__) {
+    .noncacheable.init : AT(etext + __vector_ram_end__ - __vector_ram_start__ + __data_end__ - __data_start__ + __ramfunc_end__ - __ramfunc_start__) {
         . = ALIGN(8);
         __noncacheable_init_start__ = .;
         KEEP(*(.noncacheable.init))
         __noncacheable_init_end__ = .;
+        . = ALIGN(8);
+    } > NONCACHEABLE_RAM
+
+    .noncacheable.bss (NOLOAD) : {
+        . = ALIGN(8);
         KEEP(*(.noncacheable))
         __noncacheable_bss_start__ = .;
         KEEP(*(.noncacheable.bss))

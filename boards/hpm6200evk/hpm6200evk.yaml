@@ -1,0 +1,39 @@
+# Copyright 2022 hpmicro
+# SPDX-License-Identifier: BSD-3-Clause
+
+board:
+    name: hpm6200evk
+    soc: HPM6280
+    device: HPM6280xPAx
+    openocd-soc: hpm6280-dual-core
+    openocd-probe: ft2232
+    on-board-flash:
+      type: qspi-nor-flash
+      size: 16M
+    feature:
+      - lin
+      - sdm
+      - adc16
+      - usb-otg
+      - spi
+      - uart
+      - mcan
+      - i2c
+      - dual-i2c
+      - gpio
+      - gpio-led
+      - gpio-key
+      - gpiom
+      - pwm
+      - hall
+      - qei
+      - motor-control
+      - multicore
+      - tsns
+      - dac
+      - ptp
+      - uart_hardware_rx_idle
+      - hrpwm
+      - pla
+      - pwm-rgb-led
+      - crc

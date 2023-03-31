@@ -329,13 +329,6 @@ function (generate_ses_project)
     endif()
 
     foreach (lib_src IN ITEMS ${target_lib_sources})
-        if(NOT SES_USE_TOOLCHAIN_ANDES)
-            # if Andes toolchain has not been specified, files for gcc should be skipped
-            string(FIND ${lib_src} "gcc" exist)
-            if(NOT ${exist} EQUAL -1)
-                continue()
-            endif()
-        endif()
         set(target_sources "${target_sources},${lib_src}")
     endforeach ()
 

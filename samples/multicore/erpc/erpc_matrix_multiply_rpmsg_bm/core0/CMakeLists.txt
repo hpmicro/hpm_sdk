@@ -8,7 +8,7 @@ set(CONFIG_IPC_EVENT_MGR 1)
 set(CONFIG_IPC_EVENT_MGR_MBX 1)
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
-    SET(CMAKE_BUILD_TYPE flash_sdram_xip)
+    SET(CMAKE_BUILD_TYPE flash_xip)
 endif()
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
@@ -20,7 +20,9 @@ set(CMAKE_CXX_STANDARD 11)
 sdk_compile_definitions(-DHPM_FEATURE_MBX_SIDE_A)
 
 sdk_inc(src)
+sdk_inc(../../../common)
 
+sdk_app_src(../../../common/multicore_common.c)
 sdk_app_src(src/main_core0.c)
 sdk_app_src(src/sec_core_img.c)
 

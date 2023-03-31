@@ -220,11 +220,25 @@ void ee_printf(char *format, ...);
     && !defined(VALIDATION_RUN)
 #if (TOTAL_DATA_SIZE == 1200)
 #define PROFILE_RUN 1
+#define PERFORMANCE_RUN 0
+#define VALIDATION_RUN 0
 #elif (TOTAL_DATA_SIZE == 2000)
 #define PERFORMANCE_RUN 1
+#define VALIDATION_RUN 0
+#define PROFILE_RUN 0
 #else
 #define VALIDATION_RUN 1
+#define PERFORMANCE_RUN 0
+#define PROFILE_RUN 0
 #endif
+#endif
+
+#ifndef CORE_DEBUG
+#define CORE_DEBUG 0
+#endif
+
+#ifndef COMPILER_REQUIRES_SORT_RETURN
+#define COMPILER_REQUIRES_SORT_RETURN 0
 #endif
 
 #endif /* CORE_PORTME_H */

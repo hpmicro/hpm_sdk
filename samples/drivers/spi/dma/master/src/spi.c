@@ -50,12 +50,14 @@ void prepare_transfer_data(void)
 
 void spi_master_check_transfer_data(SPI_Type *ptr)
 {
-    uint32_t i = 0U, error_count = 0U, status;
+    uint32_t i = 0U, error_count = 0U;
 
     /* Wait for the spi master transfer to complete */
-    do {
-        status = ptr->STATUS;
-    } while (status & SPI_STATUS_SPIACTIVE_MASK);
+    while (spi_is_active(ptr)) {
+    }
+    /* disable spi dma before starting next dma transaction */
+    spi_disable_tx_dma(ptr);
+    spi_disable_rx_dma(ptr);
 
     printf("The sent data are:");
     for (i = 0; i < TEST_TRANSFER_DATA_IN_BYTE; i++) {

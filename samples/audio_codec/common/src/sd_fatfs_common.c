@@ -26,7 +26,7 @@
  *---------------------------------------------------------------------
  */
 static FATFS s_sd_disk;
-static const TCHAR c_driver_num_buf[3] = { DEV_SD + '0', ':', '/' };
+static const TCHAR c_driver_num_buf[4] = { DEV_SD + '0', ':', '/', '\0'};
 static uint8_t s_search_file_cnt;
 static char s_search_file_buff[FIL_SEARCH_NUM][FIL_SEARCH_LENGTH];
 

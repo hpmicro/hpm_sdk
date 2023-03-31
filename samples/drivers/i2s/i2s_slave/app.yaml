@@ -1,0 +1,6 @@
+excluded_targets:
+  - debug
+  - release
+
+dependency:
+  - i2s_pinout

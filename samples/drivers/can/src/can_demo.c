@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -44,6 +44,15 @@ static uint8_t can_get_data_bytes_from_dlc(uint32_t dlc);
 bool can_loopback_test(CAN_Type *base);
 
 /**
+ * @brief CANFD loopback test
+ *
+ * @param [in] base CAN base address
+ * @return true Test passed
+ * @return false Test failed
+ */
+bool canfd_loopback_test(CAN_Type *base);
+
+/**
  * @brief Run loopback test for all SoC supported CANs
  */
 void can_loopback_test_for_all_cans(void);
@@ -63,9 +72,14 @@ void board_can_echo_test_initiator(void);
 void board_can_echo_test_responder(void);
 
 /**
- * @brief CAN multiple message transmission test
+ * @brief CAN multiple CAN message transmission test
  */
-void board_can_send_multiple_messages(void);
+void board_can_send_multiple_can_messages(void);
+
+/**
+ * @brief CAN multiple CANFD message transmission test
+ */
+void board_can_send_multiple_canfd_messages(void);
 
 /**
  * @brief CAN error interrupt test
@@ -258,8 +272,8 @@ bool can_loopback_test(CAN_Type *base)
         tx_buf.data[i] = (uint8_t) i | (i << 4);
     }
 
-    can_send_high_priority_message_blocking(HPM_CAN0, &tx_buf);
-    can_receive_message_blocking(HPM_CAN0, &rx_buf);
+    can_send_high_priority_message_blocking(base, &tx_buf);
+    can_receive_message_blocking(base, &rx_buf);
     result = can_buf_compare(&tx_buf, &rx_buf);
     if (!result) {
         error_cnt++;
@@ -269,8 +283,8 @@ bool can_loopback_test(CAN_Type *base)
     tx_buf.extend_id = 1U;
     tx_buf.id = 0x12345678U;
 
-    can_send_high_priority_message_blocking(HPM_CAN0, &tx_buf);
-    can_receive_message_blocking(HPM_CAN0, &rx_buf);
+    can_send_high_priority_message_blocking(base, &tx_buf);
+    can_receive_message_blocking(base, &rx_buf);
 
     result = can_buf_compare(&tx_buf, &rx_buf);
     if (!result) {
@@ -281,32 +295,82 @@ bool can_loopback_test(CAN_Type *base)
     return (error_cnt < 1);
 }
 
+bool canfd_loopback_test(CAN_Type *base)
+{
+    uint32_t error_cnt = 0;
+    bool result = false;
+    can_transmit_buf_t tx_buf;
+    can_receive_buf_t rx_buf;
+    memset(&tx_buf, 0, sizeof(tx_buf));
+    memset(&rx_buf, 0, sizeof(rx_buf));
+
+    tx_buf.id = 0x7f;
+    tx_buf.dlc = 15;
+    tx_buf.bitrate_switch = 1;
+    tx_buf.canfd_frame = 1;
+
+    uint32_t msg_bytes = can_get_data_bytes_from_dlc(tx_buf.id);
+    for (uint32_t i = 0; i < msg_bytes; i++) {
+        tx_buf.data[i] = i;
+    }
+
+    can_send_high_priority_message_blocking(base, &tx_buf);
+    can_receive_message_blocking(base, &rx_buf);
+    result = can_buf_compare(&tx_buf, &rx_buf);
+    if (!result) {
+        error_cnt++;
+    }
+    printf("    CANFD loopback test for standard frame %s\n", result ? "passed" : "failed");
+
+    tx_buf.extend_id = 1U;
+    tx_buf.id = 0x12345678U;
+
+    can_send_high_priority_message_blocking(base, &tx_buf);
+    can_receive_message_blocking(base, &rx_buf);
+
+    result = can_buf_compare(&tx_buf, &rx_buf);
+    if (!result) {
+        error_cnt++;
+    }
+    printf("    CANFD loopback test for extend frame %s\n", result ? "passed" : "failed");
+
+    return (error_cnt < 1);
+}
+
 void can_loopback_test_for_all_cans(void)
 {
     can_config_t can_config;
-    can_get_default_config(&can_config);
-    can_config.baudrate = 1000000; /* 1Mbps */
-    can_config.mode = can_mode_loopback_internal;
     hpm_stat_t status;
     for (uint32_t i = 0; i < ARRAY_SIZE(s_can_info); i++) {
+        can_get_default_config(&can_config);
+        can_config.baudrate = 1000000; /* 1Mbps */
+        can_config.mode = can_mode_loopback_internal;
         status = can_init(s_can_info[i].can_base, &can_config, s_can_info[i].clock_freq);
         assert(status == status_success);
         (void)status; /* Suppress compiling warning in release build */
-        bool result = can_loopback_test(s_can_info[i].can_base);
-        printf("    CAN%d loopback test %s\n", i, result ? "PASSED" : "FAILED");
+        bool can_result = can_loopback_test(s_can_info[i].can_base);
+
+        can_config.baudrate_fd = 2000000;
+        can_config.enable_canfd = true;
+        status = can_init(s_can_info[i].can_base, &can_config, s_can_info[i].clock_freq);
+        assert(status == status_success);
+        bool canfd_result = canfd_loopback_test(s_can_info[i].can_base);
+        printf("    CAN%d loopback test %s\n", i, (can_result && canfd_result) ? "PASSED" : "FAILED");
+
     }
 }
 
 void board_can_loopback_test_in_interrupt_mode(void)
 {
+    CAN_Type *ptr = BOARD_APP_CAN_BASE;
     can_config_t can_config;
     can_get_default_config(&can_config);
     can_config.baudrate = 1000000; /* 1Mbps */
     can_config.mode = can_mode_loopback_internal;
-    board_init_can(BOARD_APP_CAN_BASE);
-    uint32_t can_src_clk_freq = board_init_can_clock(BOARD_APP_CAN_BASE);
+    board_init_can(ptr);
+    uint32_t can_src_clk_freq = board_init_can_clock(ptr);
     can_config.irq_txrx_enable_mask = CAN_EVENT_RECEIVE | CAN_EVENT_TX_PRIMARY_BUF | CAN_EVENT_TX_SECONDARY_BUF;
-    hpm_stat_t status = can_init(BOARD_APP_CAN_BASE, &can_config, can_src_clk_freq);
+    hpm_stat_t status = can_init(ptr, &can_config, can_src_clk_freq);
     if (status != status_success) {
         printf("CAN initialization failed, error code: %d\n", status);
         return;
@@ -338,19 +402,20 @@ void board_can_loopback_test_in_interrupt_mode(void)
 
 void board_can_echo_test_initiator(void)
 {
+    CAN_Type *ptr = BOARD_APP_CAN_BASE;
     can_config_t can_config;
     can_get_default_config(&can_config);
     can_config.baudrate = 500000; /* 500kbps */
     can_config.mode = can_mode_normal;
-    board_init_can(BOARD_APP_CAN_BASE);
-    uint32_t can_src_clk_freq = board_init_can_clock(BOARD_APP_CAN_BASE);
-    hpm_stat_t status = can_init(BOARD_APP_CAN_BASE, &can_config, can_src_clk_freq);
+    board_init_can(ptr);
+    uint32_t can_src_clk_freq = board_init_can_clock(ptr);
+    hpm_stat_t status = can_init(ptr, &can_config, can_src_clk_freq);
     if (status != status_success) {
         printf("CAN initialization failed, error code: %d\n", status);
         return;
     }
 
-    can_enable_tx_rx_irq(BOARD_APP_CAN_BASE, CAN_EVENT_RECEIVE);
+    can_enable_tx_rx_irq(ptr, CAN_EVENT_RECEIVE);
     intc_m_enable_irq_with_priority(BOARD_APP_CAN_IRQn, 1);
 
     can_transmit_buf_t tx_buf;
@@ -362,7 +427,7 @@ void board_can_echo_test_initiator(void)
     }
 
     printf("Can Echo test: Initiator is sending message out...\n");
-    status = can_send_message_blocking(BOARD_APP_CAN_BASE, &tx_buf);
+    status = can_send_message_blocking(ptr, &tx_buf);
     if (status != status_success) {
         printf("CAN sent message failed, error_code:%d\n", status);
         return;
@@ -376,19 +441,20 @@ void board_can_echo_test_initiator(void)
 
 void board_can_echo_test_responder(void)
 {
+    CAN_Type *ptr = BOARD_APP_CAN_BASE;
     can_config_t can_config;
     can_get_default_config(&can_config);
     can_config.baudrate = 500000; /* 500kbps */
     can_config.mode = can_mode_normal;
-    board_init_can(BOARD_APP_CAN_BASE);
-    uint32_t can_src_clk_freq = board_init_can_clock(BOARD_APP_CAN_BASE);
-    hpm_stat_t status = can_init(BOARD_APP_CAN_BASE, &can_config, can_src_clk_freq);
+    board_init_can(ptr);
+    uint32_t can_src_clk_freq = board_init_can_clock(ptr);
+    hpm_stat_t status = can_init(ptr, &can_config, can_src_clk_freq);
     if (status != status_success) {
         printf("CAN initialization failed, error code: %d\n", status);
         return;
     }
 
-    can_enable_tx_rx_irq(BOARD_APP_CAN_BASE, CAN_EVENT_RECEIVE);
+    can_enable_tx_rx_irq(ptr, CAN_EVENT_RECEIVE);
     intc_m_enable_irq_with_priority(BOARD_APP_CAN_IRQn, 1);
     printf("CAN echo test: Responder is waiting for echo message...\n");
     while (!has_new_rcv_msg) {
@@ -402,7 +468,7 @@ void board_can_echo_test_responder(void)
     tx_buf.id = 0x321;
     uint32_t msg_len = can_get_data_bytes_from_dlc(s_can_rx_buf.dlc);
     memcpy(&tx_buf.data, (uint8_t *)&s_can_rx_buf.data, msg_len);
-    status = can_send_message_blocking(BOARD_APP_CAN_BASE, &tx_buf);
+    status = can_send_message_blocking(ptr, &tx_buf);
     if (status != status_success) {
         printf("CAN sent message failed, error_code:%d\n", status);
         return;
@@ -411,15 +477,16 @@ void board_can_echo_test_responder(void)
 }
 
 
-void board_can_send_multiple_messages(void)
+void board_can_send_multiple_can_messages(void)
 {
+    CAN_Type *ptr = BOARD_APP_CAN_BASE;
     can_config_t can_config;
     can_get_default_config(&can_config);
     can_config.baudrate = 500000; /* 500kbps */
     can_config.mode = can_mode_normal;
-    board_init_can(BOARD_APP_CAN_BASE);
-    uint32_t can_src_clk_freq = board_init_can_clock(BOARD_APP_CAN_BASE);
-    hpm_stat_t status = can_init(BOARD_APP_CAN_BASE, &can_config, can_src_clk_freq);
+    board_init_can(ptr);
+    uint32_t can_src_clk_freq = board_init_can_clock(ptr);
+    hpm_stat_t status = can_init(ptr, &can_config, can_src_clk_freq);
     if (status != status_success) {
         printf("CAN initialization failed, error code: %d\n", status);
         return;
@@ -434,26 +501,81 @@ void board_can_send_multiple_messages(void)
     }
     for (uint32_t i = 0; i < 2048; i++) {
         tx_buf.id = i;
-        status = can_send_message_blocking(BOARD_APP_CAN_BASE, &tx_buf);
+        status = can_send_message_blocking(ptr, &tx_buf);
         if (status != status_success) {
             printf("CAN sent message failed, error_code:%d\n", status);
             return;
         }
     }
-    printf("Sent messages with ID from 0 to 2047 out\n");
+    printf("Sent CAN messages with ID from 0 to 2047 out\n");
+}
+
+void board_can_send_multiple_canfd_messages(void)
+{
+    CAN_Type *ptr = BOARD_APP_CAN_BASE;
+    can_config_t can_config;
+    can_get_default_config(&can_config);
+    /* Use baudrate setting directly, may not work on CAN-FD if some nodes selects different sampling points */
+#if defined(USE_BAUDRATE_FOR_CANFD) && (USE_USE_BAUDRATE_FOR_CANFD == 1)
+    can_config.baudrate = 500000; /* 500kbps */
+    can_config.baudrate_fd = 5000000; /* 5Mbps */
+#else
+    /* Assume the CAN clock is 80MHz, configure the nominal baudrate to 500kbit/s, configure the canfd baudrate to 5Mbit/s */
+    can_config.use_lowlevel_timing_setting = true;
+    /* bitrate = can_freq / prescale / (seq1 + seg2) */
+    can_config.can_timing.num_seg1 = 60;
+    can_config.can_timing.num_seg2 = 20;
+    can_config.can_timing.num_sjw = 16;
+    can_config.can_timing.prescaler = 2;
+    can_config.canfd_timing.num_seg1 = 12;
+    can_config.canfd_timing.num_seg2  = 4;
+    can_config.canfd_timing.num_sjw = 4;
+    can_config.canfd_timing.prescaler = 1;
+#endif
+    can_config.mode = can_mode_normal;
+    can_config.enable_canfd = true;
+    can_config.enable_tdc = true;
+
+    board_init_can(ptr);
+    uint32_t can_src_clk_freq = board_init_can_clock(ptr);
+    hpm_stat_t status = can_init(ptr, &can_config, can_src_clk_freq);
+    if (status != status_success) {
+        printf("CAN initialization failed, error code: %d\n", status);
+        return;
+    }
+
+    can_transmit_buf_t tx_buf;
+    memset(&tx_buf, 0, sizeof(tx_buf));
+    tx_buf.dlc = can_payload_size_64;
+    tx_buf.bitrate_switch = 1;
+    tx_buf.canfd_frame = 1;
+    uint32_t msg_len = can_get_data_bytes_from_dlc(tx_buf.dlc);
+    for (uint32_t i = 0; i < msg_len; i++) {
+        tx_buf.data[i] = i;
+    }
+    for (uint32_t i = 0; i < 2048; i++) {
+        tx_buf.id = i;
+        status = can_send_message_blocking(ptr, &tx_buf);
+        if (status != status_success) {
+            printf("CAN sent message failed, error_code:%d\n", status);
+            return;
+        }
+    }
+    printf("Sent CANFD messages with ID from 0 to 2047 out\n");
 }
 
 void board_can_error_test(void)
 {
+    CAN_Type *ptr = BOARD_APP_CAN_BASE;
     can_config_t can_config;
     can_get_default_config(&can_config);
     can_config.baudrate = 500000; /* 500kbps */
     can_config.mode = can_mode_normal;
     can_config.irq_txrx_enable_mask = CAN_EVENT_RECEIVE | CAN_EVENT_TX_PRIMARY_BUF | CAN_EVENT_TX_SECONDARY_BUF | CAN_EVENT_ERROR;
     can_config.irq_error_enable_mask = CAN_ERROR_ARBITRAITION_LOST_INT_ENABLE | CAN_ERROR_PASSIVE_INT_ENABLE | CAN_ERROR_BUS_ERROR_INT_ENABLE;
-    board_init_can(BOARD_APP_CAN_BASE);
-    uint32_t can_src_clk_freq = board_init_can_clock(BOARD_APP_CAN_BASE);
-    hpm_stat_t status = can_init(BOARD_APP_CAN_BASE, &can_config, can_src_clk_freq);
+    board_init_can(ptr);
+    uint32_t can_src_clk_freq = board_init_can_clock(ptr);
+    hpm_stat_t status = can_init(ptr, &can_config, can_src_clk_freq);
     if (status != status_success) {
         printf("CAN initialization failed, error code: %d\n", status);
         return;
@@ -468,11 +590,11 @@ void board_can_error_test(void)
         tx_buf.data[i] = i | (i << 4);
     }
     tx_buf.id = 0x123;
-    can_send_message_nonblocking(BOARD_APP_CAN_BASE, &tx_buf);
+    can_send_message_nonblocking(ptr, &tx_buf);
     while ((!has_sent_out) && (!has_error)) {
     }
     if (has_error) {
-        uint8_t error_kind = can_get_last_error_kind(BOARD_APP_CAN_BASE);
+        uint8_t error_kind = can_get_last_error_kind(ptr);
 
         printf("can error happened: error kind: %s\n", get_can_error_kind_str(error_kind));
     }
@@ -527,6 +649,7 @@ void board_can_filter_test(void)
      ***********************************************************************************************************/
     can_filter_config_t can_filters[16];
     can_config_t can_config;
+    CAN_Type *ptr = BOARD_APP_CAN_BASE;
 
     printf("CAN Filter test case 0: only check bit0 of CAN ID\n");
     can_filters[0].enable = true;
@@ -541,9 +664,9 @@ void board_can_filter_test(void)
     can_config.filter_list_num = 1;
     can_config.filter_list = &can_filters[0];
     can_config.irq_txrx_enable_mask = CAN_EVENT_RECEIVE | CAN_EVENT_TX_PRIMARY_BUF | CAN_EVENT_TX_SECONDARY_BUF;
-    board_init_can(BOARD_APP_CAN_BASE);
-    uint32_t can_src_clk_freq = board_init_can_clock(BOARD_APP_CAN_BASE);
-    hpm_stat_t status = can_init(BOARD_APP_CAN_BASE, &can_config, can_src_clk_freq);
+    board_init_can(ptr);
+    uint32_t can_src_clk_freq = board_init_can_clock(ptr);
+    hpm_stat_t status = can_init(ptr, &can_config, can_src_clk_freq);
     if (status != status_success) {
         printf("CAN initialization failed, error code: %d\n", status);
         return;
@@ -563,7 +686,7 @@ void board_can_filter_test(void)
     uint32_t rcv_msg_cnt = 0;
     for (uint32_t i = 0; i < 2048; i++) {
         tx_buf.id = i;
-        can_send_message_nonblocking(BOARD_APP_CAN_BASE, &tx_buf);
+        can_send_message_nonblocking(ptr, &tx_buf);
         while (!has_sent_out) {
         }
         has_sent_out = false;
@@ -573,12 +696,8 @@ void board_can_filter_test(void)
             has_new_rcv_msg = false;
             printf("New message received, ID=%08x\n", s_can_rx_buf.id);
         }
-
     }
     printf("Recevied message count: %d, %s\n", rcv_msg_cnt, (rcv_msg_cnt == 1024) ? "PASSED" : "Failed");
-
-
-
     printf("CAN Filter test case 1: only accept message with specified CAN ID\n");
     for (uint32_t i = 0; i < ARRAY_SIZE(can_filters); i++) {
         can_filters[i].enable = true;
@@ -588,7 +707,7 @@ void board_can_filter_test(void)
         can_filters[i].mask = 0;
     }
     can_config.filter_list_num = ARRAY_SIZE(can_filters);
-    status = can_init(BOARD_APP_CAN_BASE, &can_config, can_src_clk_freq);
+    status = can_init(ptr, &can_config, can_src_clk_freq);
     if (status != status_success) {
         printf("CAN initialization failed, error code: %d\n", status);
         return;
@@ -599,7 +718,7 @@ void board_can_filter_test(void)
     for (uint32_t i = 0; i < 2048; i++) {
         tx_buf.id = i;
         has_sent_out = false;
-        can_send_message_nonblocking(BOARD_APP_CAN_BASE, &tx_buf);
+        can_send_message_nonblocking(ptr, &tx_buf);
         while (!has_sent_out) {
         }
         board_delay_ms(1);
@@ -639,7 +758,7 @@ void handle_can_test(void)
             board_can_echo_test_responder();
             break;
         case '4':
-            board_can_send_multiple_messages();
+            board_can_send_multiple_can_messages();
             break;
         case '5':
             board_can_error_test();
@@ -647,6 +766,8 @@ void handle_can_test(void)
         case '6':
             board_can_filter_test();
             break;
+        case '7':
+            board_can_send_multiple_canfd_messages();
         }
     }
 }
@@ -660,11 +781,12 @@ void show_help(void)
                                     "*                                                                               *\n"
                                     "* 0 - Run loopback test for all supported CAN controllers (CAN and CANFD)       *\n"
                                     "* 1 - Run loopback test for board supported CAN controller (interrupt mode)     *\n"
-                                    "* 2 - Echo test between two board:initiator                                     *\n"
-                                    "* 3 - Echo test between two board:responder                                     *\n"
+                                    "* 2 - Echo test between two boards:initiator                                    *\n"
+                                    "* 3 - Echo test between two boards:responder                                    *\n"
                                     "* 4 - Send mulitple messages for transmission check                             *\n"
                                     "* 5 - CAN error test (Need to remove current node from CAN BUS for this test)   *\n"
                                     "* 6 - CAN filter test                                                           *\n"
+                                    "* 7 - Send multiple CANFD messages for transmission check                       *\n"
                                     "*                                                                               *\n"
                                     "*********************************************************************************\n";
     printf("%s\n", help_info);

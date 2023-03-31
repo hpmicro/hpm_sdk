@@ -55,7 +55,7 @@
 
 void test_codec_playback_record(void)
 {
-    uint32_t data_rx, data_tx;
+    uint32_t data;
     i2s_config_t i2s_config;
     i2s_transfer_config_t transfer;
     uint32_t i2s_mclk_hz;
@@ -95,15 +95,10 @@ void test_codec_playback_record(void)
     printf("Test Codec playback and record\n");
     while(1) {
         /* record from codec and play by codec */
-        while(i2s_get_rx_line_fifo_level(CODEC_I2S, CODEC_I2S_DATA_LINE) <= 1);
-        i2s_receive_data(CODEC_I2S, CODEC_I2S_DATA_LINE, &data_rx);
-
-        data_tx = data_rx;
-        while(i2s_get_tx_line_fifo_level(CODEC_I2S, CODEC_I2S_DATA_LINE) >= 1);
-        if (i2s_get_tx_line_fifo_level(CODEC_I2S, CODEC_I2S_DATA_LINE) <= 2){
-            i2s_send_data(CODEC_I2S, CODEC_I2S_DATA_LINE, data_tx); /* Left channel */
-            i2s_send_data(CODEC_I2S, CODEC_I2S_DATA_LINE, data_tx); /* Right channel */
+        while (i2s_get_rx_line_fifo_level(CODEC_I2S, CODEC_I2S_DATA_LINE) == 0) {
         }
+        i2s_receive_data(CODEC_I2S, CODEC_I2S_DATA_LINE, &data);
+        i2s_send_data(CODEC_I2S, CODEC_I2S_DATA_LINE, data);
     }
 }
 

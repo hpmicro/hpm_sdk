@@ -1,3 +1,0 @@
-#!/bin/sh
-
-sh $HPM_SDK_BASE/scripts/git-hooks/pre-push-check

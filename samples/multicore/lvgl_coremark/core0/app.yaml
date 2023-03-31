@@ -8,3 +8,4 @@ debug:
       gdb_server_port: 3333
 dependency:
   - multicore
+  - lcd

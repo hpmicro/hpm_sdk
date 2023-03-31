@@ -46,6 +46,15 @@ _start:
      */
     call c_startup
 
+#if defined(__SES_RISCV)
+    /* Initialize the heap */
+    la a0, __heap_start__
+    la a1, __heap_end__
+    sub a1, a1, a0
+    la t1, __SEGGER_RTL_init_heap
+    jalr t1
+#endif
+
     /* Do global constructors */
     call __libc_init_array
 

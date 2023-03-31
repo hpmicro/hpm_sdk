@@ -22,7 +22,7 @@
 #include "hpm_bldc_block_func.h"
 
 /*motor_speed set*/
-#define MOTOR0_SPD                  (20.0)  /*r/s   deta:0.1r/s    -40-40r/s */
+#define MOTOR0_SPD                  (20.0)  /*r/s   delta:0.1r/s    -40-40r/s */
 /*USER define*/
 #define MOTOR_PWM_DUTY_INIT_VAL     (10)  /*percentage such: 70 mean  700*/
 #define QEI_WDOG_TIMEOUT            (200000)      
@@ -126,10 +126,10 @@ float qei_get_speed(bool zero)
         spd =0;
     }
     else{
-        spd = qei_get_speed_history(BOARD_BLDC_QEI_BASE, 0)+\
-            qei_get_speed_history(BOARD_BLDC_QEI_BASE, 1)+\
-            qei_get_speed_history(BOARD_BLDC_QEI_BASE, 2)+\
-            qei_get_speed_history(BOARD_BLDC_QEI_BASE, 3);
+        spd = qei_get_speed_history(BOARD_BLDC_QEI_BASE, qei_speed_his0)+\
+            qei_get_speed_history(BOARD_BLDC_QEI_BASE, qei_speed_his1)+\
+            qei_get_speed_history(BOARD_BLDC_QEI_BASE, qei_speed_his2)+\
+            qei_get_speed_history(BOARD_BLDC_QEI_BASE, qei_speed_his3);
     }
     /*get dir*/
     dir = qei_get_count_on_read_event(BOARD_BLDC_QEI_BASE, qei_counter_type_speed) >> QEI_COUNT_SPD_DIR_SHIFT;

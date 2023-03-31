@@ -472,7 +472,12 @@ hpm_stat_t ov5640_read_register(camera_context_t *context, uint16_t reg, uint8_t
     uint8_t r[2];
     r[0] = reg >> 8;
     r[1] = reg & 0xFF;
-    return i2c_master_address_read(context->ptr, OV5640_I2C_ADDR, r, sizeof(r), buf, 1);
+
+    hpm_stat_t stat = i2c_master_write(context->ptr, context->i2c_device_addr, r, 2);
+    if (stat != status_success) {
+        return stat;
+    }
+    return i2c_master_read(context->ptr, context->i2c_device_addr, buf, 1);
 }
 
 hpm_stat_t ov5640_write_register(camera_context_t *context, uint16_t reg, uint8_t val)
@@ -480,7 +485,7 @@ hpm_stat_t ov5640_write_register(camera_context_t *context, uint16_t reg, uint8_
     uint8_t r[2];
     r[0] = reg >> 8;
     r[1] = reg & 0xFF;
-    return i2c_master_address_write(context->ptr, OV5640_I2C_ADDR, r, sizeof(r), &val, 1);
+    return i2c_master_address_write(context->ptr, context->i2c_device_addr, r, sizeof(r), &val, 1);
 }
 
 hpm_stat_t ov5640_write_multi_registers(camera_context_t *context, const ov5640_reg_val_t regval[], uint32_t len)

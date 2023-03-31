@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -14,9 +14,14 @@
 #include "hpm_soc_feature.h"
 #include "pinmux.h"
 #include "hpm_lcdc_drv.h"
+#if !defined(CONFIG_NDEBUG_CONSOLE) || !CONFIG_NDEBUG_CONSOLE
+#include "hpm_debug_console.h"
+#endif
 
 #define BOARD_NAME "hpm6750evk2"
 #define BOARD_UF2_SIGNATURE (0x0A4D5048UL)
+
+#define SEC_CORE_IMG_START ILM_LOCAL_BASE
 
 /* uart section */
 #ifndef BOARD_RUNNING_CORE
@@ -53,10 +58,10 @@
 #define BOARD_APP_UART_TX_DMA_REQ HPM_DMA_SRC_UART0_TX
 
 #ifndef BOARD_CONSOLE_TYPE
-#define BOARD_CONSOLE_TYPE console_type_uart
+#define BOARD_CONSOLE_TYPE CONSOLE_TYPE_UART
 #endif
 
-#if BOARD_CONSOLE_TYPE == console_type_uart
+#if BOARD_CONSOLE_TYPE == CONSOLE_TYPE_UART
 #ifndef BOARD_CONSOLE_BASE
 #if BOARD_RUNNING_CORE == HPM_CORE0
 #define BOARD_CONSOLE_BASE HPM_UART0
@@ -101,6 +106,7 @@
 
 /* i2c section */
 #define BOARD_APP_I2C_BASE HPM_I2C0
+#define BOARD_APP_I2C_IRQ IRQn_I2C0
 #define BOARD_APP_I2C_CLK_NAME clock_i2c0
 #define BOARD_APP_I2C_DMA HPM_HDMA
 #define BOARD_APP_I2C_DMAMUX HPM_DMAMUX
@@ -148,6 +154,7 @@
 #define BOARD_GPTMR_CHANNEL 1
 #define BOARD_GPTMR_PWM HPM_GPTMR3
 #define BOARD_GPTMR_PWM_CHANNEL 1
+#define BOARD_GPTMR_CLK_NAME clock_gptmr4
 
 /* gpio section */
 #define BOARD_R_GPIO_CTRL HPM_GPIO0
@@ -377,6 +384,7 @@
 #define BOARD_BLDCPWM_CMP_INDEX_3         (3U)
 #define BOARD_BLDCPWM_CMP_INDEX_4         (4U)
 #define BOARD_BLDCPWM_CMP_INDEX_5         (5U)
+#define BOARD_BLDCPWM_CMP_TRIG_CMP        (20U)
 
 /*HALL define*/
 
@@ -535,6 +543,8 @@ uint32_t board_init_adc16_clock(ADC16_Type *ptr);
 uint32_t board_init_can_clock(CAN_Type *ptr);
 
 hpm_stat_t board_set_audio_pll_clock(uint32_t freq);
+
+void board_init_i2s_pins(I2S_Type *ptr);
 uint32_t board_init_i2s_clock(I2S_Type *ptr);
 uint32_t board_init_pdm_clock(void);
 uint32_t board_init_dao_clock(void);
@@ -544,20 +554,23 @@ uint32_t board_sd_configure_clock(SDXC_Type *ptr, uint32_t freq);
 void board_sd_switch_pins_to_1v8(SDXC_Type *ptr);
 bool board_sd_detect_card(SDXC_Type *ptr);
 
+void board_init_dao_pins(void);
+
 void board_init_adc12_pins(void);
 void board_init_adc16_pins(void);
 
 void board_init_usb_pins(void);
 void board_usb_vbus_ctrl(uint8_t usb_index, uint8_t level);
 
-uint8_t    board_enet_get_dma_pbl(ENET_Type *ptr);
+void       board_init_enet_pps_pins(ENET_Type *ptr);
+uint8_t    board_get_enet_dma_pbl(ENET_Type *ptr);
 hpm_stat_t board_reset_enet_phy(ENET_Type *ptr);
 hpm_stat_t board_init_enet_pins(ENET_Type *ptr);
 hpm_stat_t board_init_enet_rmii_reference_clock(ENET_Type *ptr, bool internal);
 hpm_stat_t board_init_enet_rgmii_clock_delay(ENET_Type *ptr);
 hpm_stat_t board_init_enet_ptp_clock(ENET_Type *ptr);
-hpm_stat_t board_enet_enable_irq(ENET_Type *ptr);
-hpm_stat_t board_enet_disable_irq(ENET_Type *ptr);
+hpm_stat_t board_enable_enet_irq(ENET_Type *ptr);
+hpm_stat_t board_disable_enet_irq(ENET_Type *ptr);
 
 /*
  * @brief Initialize PMP and PMA for but not limited to the following purposes:
@@ -566,6 +579,7 @@ hpm_stat_t board_enet_disable_irq(ENET_Type *ptr);
 void board_init_pmp(void);
 
 void board_delay_ms(uint32_t ms);
+void board_delay_us(uint32_t us);
 
 void board_timer_create(uint32_t ms, board_timer_cb cb);
 

@@ -105,14 +105,14 @@ const float bldc_foc_sintable[SIN_TABLE_INDEX_MAX + 1] = {
 
 void hpm_mcl_bldc_foc_al_speed(BLDC_CONTRL_SPD_PARA  *par)
 {
-    HPM_MOTOR_MATH_TYPE deta;
-    deta = par->speedtheta - par->speedlasttheta;
-    if (deta > HPM_MOTOR_MATH_FL_MDF(180)) {/*-speed*/
-        deta = -par->speedlasttheta - (HPM_MOTOR_MATH_FL_MDF(360) - par->speedtheta);
-    } else if (deta < HPM_MOTOR_MATH_FL_MDF(-180)) {/*+speed*/
-        deta = HPM_MOTOR_MATH_FL_MDF(360) + par->speedtheta - par->speedlasttheta;
+    HPM_MOTOR_MATH_TYPE delta;
+    delta = par->speedtheta - par->speedlasttheta;
+    if (delta > HPM_MOTOR_MATH_FL_MDF(180)) {/*-speed*/
+        delta = -par->speedlasttheta - (HPM_MOTOR_MATH_FL_MDF(360) - par->speedtheta);
+    } else if (delta < HPM_MOTOR_MATH_FL_MDF(-180)) {/*+speed*/
+        delta = HPM_MOTOR_MATH_FL_MDF(360) + par->speedtheta - par->speedlasttheta;
     }
-    par->speedthetalastn += deta;
+    par->speedthetalastn += delta;
     par->speedlasttheta = par->speedtheta;
     par->num++;
     if (par->i_speedacq == par->num) {

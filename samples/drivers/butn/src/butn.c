@@ -22,7 +22,7 @@ int main(void)
 
     bpor_enable_power_on_cause(TEST_BPOR, TEST_BPOR_POWER_ON_CAUSE);
 
-    printf("Please press PBUTN 16s to enter power down mode, then press PBUTN or WBUTN 0.5s to wake up from power down mode.\n");
+    printf("Please press PBUTN 16s to enter power down mode, then press PBUTN 0.5s to wake up from power down mode.\n");
     while(1)
     {
         u = getchar();

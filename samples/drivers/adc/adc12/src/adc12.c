@@ -201,7 +201,7 @@ void init_common_config(adc12_conversion_mode_t conv_mode)
     cfg.res            = adc12_res_12_bits;
     cfg.conv_mode      = conv_mode;
     cfg.adc_clk_div    = 2;
-    cfg.sel_sync_ahb   = true;
+    cfg.sel_sync_ahb   = false;
     if (cfg.conv_mode == adc12_conv_mode_sequence ||
         cfg.conv_mode == adc12_conv_mode_preemption) {
         cfg.adc_ahb_en = true;
@@ -232,8 +232,9 @@ void oneshot_handler(void)
 {
     uint16_t result;
 
-    adc12_get_oneshot_result(BOARD_APP_ADC12_BASE, BOARD_APP_ADC12_CH_1, &result);
-    printf("Oneshot Mode - %s [channel %d] - Result: 0x%04x\n", BOARD_APP_ADC12_NAME, BOARD_APP_ADC12_CH_1, result);
+    if (adc12_get_oneshot_result(BOARD_APP_ADC12_BASE, BOARD_APP_ADC12_CH_1, &result) == status_success) {
+        printf("Oneshot Mode - %s [channel %d] - Result: 0x%04x\n", BOARD_APP_ADC12_NAME, BOARD_APP_ADC12_CH_1, result);
+    }
 }
 
 void init_period_config(void)

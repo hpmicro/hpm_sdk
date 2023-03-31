@@ -6,9 +6,9 @@ cmake_minimum_required(VERSION 3.13)
 set(SES_TOOLCHAIN_VARIANT "Andes")
 
 set(CONFIG_COREMARK 1)
-
-set(CUSTOM_GCC_LINKER_FILE ${CMAKE_CURRENT_SOURCE_DIR}/../linker/gcc/core1.ld)
-
+set(CMAKE_BUILD_TYPE sec_core_img)
+set(BUILD_FOR_SECONDARY_CORE 1)
+set(IS_SEC_CORE_IMG true)
 set(SEC_CORE_IMG_C_ARRAY_OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/../core0/src/sec_core_img.c)
 
 if(NOT ${CMAKE_BUILD_TYPE} STREQUAL "")

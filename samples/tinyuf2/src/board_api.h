@@ -59,6 +59,10 @@
 #define UF2_BOOTLOADER_PIN_GPIO_PIN BOARD_APP_GPIO_PIN
 #define UF2_BOOTLOADER_PIN_ACTIVE 1
 
+#ifndef TUF2_LOG
+#define TUF2_LOG 0
+#endif
+
 /*--------------------------------------------------------------------*/
 /* Basic API */
 /*--------------------------------------------------------------------*/

@@ -80,7 +80,7 @@ void dp83867_reset(ENET_Type *ptr)
 void dp83867_basic_mode_default_config(ENET_Type *ptr, dp83867_config_t *config)
 {
     config->loopback         = false;                        /* Disable PCS loopback mode */
-    #ifdef __DISABLE_AUTO_NEGO
+    #if __DISABLE_AUTO_NEGO
     config->auto_negotiation = false;                        /* Disable Auto-Negotiation */
     config->speed            = enet_phy_port_speed_100mbps;
     config->duplex           = enet_phy_duplex_full;

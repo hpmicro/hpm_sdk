@@ -1,4 +1,6 @@
 excluded_targets:
   - flash_sdram_xip
   - flash_sdram_xip_release
-  
+
+dependency:
+  - femc

@@ -23,7 +23,7 @@
 #define ADC12_IS_SIGNAL_TYPE_INVALID(TYPE)  (TYPE > (uint32_t)adc12_sample_signal_count)
 
 /** @brief Define ADC12 validity check for the channel number */
-#define ADC12_IS_CHANNEL_INVALID(PTR, CH) (CH > ADC12_SOC_MAX_CH_NUM)
+#define ADC12_IS_CHANNEL_INVALID(CH) (CH > ADC12_SOC_MAX_CH_NUM)
 
 /** @brief Define ADC12 validity check for the trigger number */
 #define ADC12_IS_TRIG_CH_INVLAID(CH) (CH > ADC12_SOC_MAX_TRIG_CH_NUM)
@@ -316,16 +316,25 @@ static inline uint32_t adc12_get_status_flags(ADC12_Type *ptr)
 }
 
 /**
- * @brief Get the setting value of the WAIT_DIS bit.
+ * @brief Set value of the WAIT_DIS bit. The ADC does not block access to the associated peripheral bus
+ * until the ADC has completed its conversion.
  *
  * @param[in] ptr An ADC12 peripheral base address.
- * @return Status that indicats whether the current setting of the WAIT_DIS bit in the BUF_RESULT register is disabled.
- * @retval true  It means that the WAIT_DIS bit is 1.
- * @retval false It means that the WAIT_DIS bit is 0.
  */
-static inline bool adc12_get_wait_dis_status(ADC12_Type *ptr)
+static inline void adc12_disable_busywait(ADC12_Type *ptr)
 {
-    return ADC12_BUF_CFG0_WAIT_DIS_GET(ptr->BUF_CFG0);
+    ptr->BUF_CFG0 |= ADC12_BUF_CFG0_WAIT_DIS_SET(1);
+}
+
+/**
+ * @brief Set value of the WAIT_DIS bit. ADC blocks access to the associated peripheral bus
+ * until the ADC completes the conversion.
+ *
+ * @param[in] ptr An ADC12 peripheral base address.
+ */
+static inline void adc12_enable_busywait(ADC12_Type *ptr)
+{
+    ptr->BUF_CFG0 &= ~ADC12_BUF_CFG0_WAIT_DIS_MASK;
 }
 
 /**

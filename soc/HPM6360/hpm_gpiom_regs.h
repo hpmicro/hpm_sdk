@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -93,7 +93,6 @@ typedef struct {
 #define GPIOM_ASSIGN_GPIOA (0UL)
 #define GPIOM_ASSIGN_GPIOB (1UL)
 #define GPIOM_ASSIGN_GPIOC (2UL)
-#define GPIOM_ASSIGN_GPIOD (3UL)
 #define GPIOM_ASSIGN_GPIOX (13UL)
 #define GPIOM_ASSIGN_GPIOY (14UL)
 #define GPIOM_ASSIGN_GPIOZ (15UL)

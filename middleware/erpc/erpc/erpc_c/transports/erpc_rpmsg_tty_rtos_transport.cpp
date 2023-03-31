@@ -77,6 +77,11 @@ void RPMsgTTYRTOSTransport::setCrc16(Crc16 *crcImpl)
     m_crcImpl = crcImpl;
 }
 
+Crc16 *RPMsgTTYRTOSTransport::getCrc16(void)
+{
+    return m_crcImpl;
+}
+
 erpc_status_t RPMsgTTYRTOSTransport::init(uint32_t src_addr, uint32_t dst_addr, void *base_address, uint32_t length,
                                           uint32_t rpmsg_link_id)
 {
@@ -173,7 +178,7 @@ erpc_status_t RPMsgTTYRTOSTransport::init(uint32_t src_addr, uint32_t dst_addr, 
                 ready_cb();
             }
 
-            rpmsg_lite_wait_for_link_up(s_rpmsg);
+            (void)rpmsg_lite_wait_for_link_up(s_rpmsg, RL_BLOCK);
 
 #if RL_USE_STATIC_API
             m_rpmsg_queue = rpmsg_queue_create(s_rpmsg, m_queue_stack, &m_queue_context);

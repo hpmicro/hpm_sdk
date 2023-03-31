@@ -11,7 +11,7 @@
 
 /*  HPM example includes. */
 #include <stdio.h>
-#include "common.h"
+#include "common_lwip.h"
 #include "lwip.h"
 #include "lwip/init.h"
 #include "lwip/tcpip.h"
@@ -68,15 +68,16 @@ hpm_stat_t enet_init(ENET_Type *ptr)
 {
     enet_int_config_t int_config = {.int_enable = 0, .int_mask = 0};
     enet_mac_config_t enet_config;
+    enet_tx_control_config_t enet_tx_control_config;
 
     #if RGMII
-        #if __USE_DP83867
+        #if defined(__USE_DP83867) && __USE_DP83867
         dp83867_config_t phy_config;
         #else
         rtl8211_config_t phy_config;
         #endif
     #else
-        #if __USE_DP83848
+        #if defined(__USE_DP83848) && __USE_DP83848
         dp83848_config_t phy_config;
         #else
         rtl8201_config_t phy_config;
@@ -100,19 +101,28 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     desc.rx_buff_cfg.count = ENET_RX_BUFF_COUNT;
     desc.rx_buff_cfg.size = ENET_RX_BUFF_SIZE;
 
+    /*Get a default control config for tx descriptor */
+    enet_get_default_tx_control_config(ENET, &enet_tx_control_config);
+
+    /* Set the control config for tx descriptor */
+    memcpy(&desc.tx_control_config, &enet_tx_control_config, sizeof(enet_tx_control_config_t));
+
     /* Get MAC address */
     enet_get_mac_address(mac);
 
-    /* Set mac0 address */
+    /* Set MAC0 address */
     enet_config.mac_addr_high[0] = mac[5] << 8 | mac[4];
     enet_config.mac_addr_low[0]  = mac[3] << 24 | mac[2] << 16 | mac[1] << 8 | mac[0];
     enet_config.valid_max_count  = 1;
 
     /* Set DMA PBL */
-    enet_config.dma_pbl = board_enet_get_dma_pbl(ENET);
+    enet_config.dma_pbl = board_get_enet_dma_pbl(ENET);
+
+    /* Set SARC */
+    enet_config.sarc = enet_sarc_replace_mac0;
 
     /* Enable Enet IRQ */
-    board_enet_enable_irq(ENET);
+    board_enable_enet_irq(ENET);
 
     /* Set the interrupt enable mask */
     int_config.int_enable = enet_normal_int_sum_en    /* Enable normal interrupt summary */
@@ -128,9 +138,9 @@ hpm_stat_t enet_init(ENET_Type *ptr)
 
     /* Initialize phy */
     #if RGMII
-        #if __USE_DP83867
+        #if defined(__USE_DP83867) && __USE_DP83867
         dp83867_reset(ptr);
-        #ifdef __DISABLE_AUTO_NEGO
+        #if __DISABLE_AUTO_NEGO
         dp83867_set_mdi_crossover_mode(ENET, enet_phy_mdi_crossover_manual_mdix);
         #endif
         dp83867_basic_mode_default_config(ptr, &phy_config);
@@ -141,7 +151,7 @@ hpm_stat_t enet_init(ENET_Type *ptr)
         if (rtl8211_basic_mode_init(ptr, &phy_config) == true) {
         #endif
     #else
-        #if __USE_DP83848
+        #if defined(__USE_DP83848) && __USE_DP83848
         dp83848_reset(ptr);
         dp83848_basic_mode_default_config(ptr, &phy_config);
         if (dp83848_basic_mode_init(ptr, &phy_config) == true) {
@@ -157,9 +167,6 @@ hpm_stat_t enet_init(ENET_Type *ptr)
             printf("Enet phy init fails !\n");
             return status_fail;
         }
-
-        printf("164 intr_mask: %08x\n", ptr->INTR_MASK);
-
 }
 
 int main(void)
@@ -188,7 +195,7 @@ void Main_task(void *pvParameters)
 
     tcp_echo_init();
 
-#ifdef USE_DHCP
+#if __ENABLE_DHCP
     /* Start DHCP Client */
     xTaskCreate(LwIP_DHCP_task, "DHCP", configMINIMAL_STACK_SIZE * 2, NULL, DHCP_TASK_PRIO, NULL);
 #endif

@@ -2,6 +2,7 @@
  * Copyright (c) 2014-2016, Freescale Semiconductor, Inc.
  * Copyright 2016-2020 NXP
  * Copyright 2021 ACRIOS Systems s.r.o.
+ * Copyright (c) 2022 HPMicro
  * All rights reserved.
  *
  *
@@ -10,6 +11,7 @@
 #include "erpc_manually_constructed.hpp"
 #include "erpc_rpmsg_lite_rtos_transport.hpp"
 #include "erpc_transport_setup.h"
+#include "hpm_common.h"
 
 using namespace erpc;
 

@@ -14,7 +14,7 @@ function(sdk_src)
         else()
             set(path ${CMAKE_CURRENT_SOURCE_DIR}/${file})
         endif()
-        target_sources(${HPM_SDK_LIB} PUBLIC ${path})
+        target_sources(${HPM_SDK_LIB} PRIVATE ${path})
     endforeach()
 endfunction()
 
@@ -97,60 +97,41 @@ function(sdk_ld_options_ifdef feature)
     endif()
 endfunction()
 
-function(get_openocd_probe_name_of_board board openocd-probe)
+function(get_board_info board info_type info_value)
     execute_process(
         COMMAND
         ${PYTHON_EXECUTABLE}
         ${HPM_SDK_BASE}/scripts/get_board_info.py
         ${HPM_SDK_BASE}/boards/${board}/${board}.yaml
-        openocd-probe
+        ${info_type}
         RESULT_VARIABLE result
-        OUTPUT_VARIABLE openocd_probe
+        OUTPUT_VARIABLE out
         OUTPUT_STRIP_TRAILING_WHITESPACE
         )
-    set(${openocd-probe} ${openocd_probe} PARENT_SCOPE)
+    if(${out} STREQUAL "not found")
+        set(out "0")
+    endif()
+    set(${info_value} ${out} PARENT_SCOPE)
 endfunction()
 
-function(get_openocd_soc_name_of_board board openocd-soc)
-    execute_process(
-        COMMAND
-        ${PYTHON_EXECUTABLE}
-        ${HPM_SDK_BASE}/scripts/get_board_info.py
-        ${HPM_SDK_BASE}/boards/${board}/${board}.yaml
-        openocd-soc
-        RESULT_VARIABLE result
-        OUTPUT_VARIABLE openocd_soc
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-        )
-    set(${openocd-soc} ${openocd_soc} PARENT_SCOPE)
+function(get_openocd_probe_name_of_board board out)
+    get_board_info(${board} openocd-probe r)
+    set(${out} ${r} PARENT_SCOPE)
 endfunction()
 
-function(get_soc_name_of_board board soc)
-    execute_process(
-        COMMAND
-        ${PYTHON_EXECUTABLE}
-        ${HPM_SDK_BASE}/scripts/get_board_info.py
-        ${HPM_SDK_BASE}/boards/${board}/${board}.yaml
-        soc
-        RESULT_VARIABLE result
-        OUTPUT_VARIABLE soc_name
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-        )
-    set(${soc} ${soc_name} PARENT_SCOPE)
+function(get_openocd_soc_name_of_board board out)
+    get_board_info(${board} openocd-soc r)
+    set(${out} ${r} PARENT_SCOPE)
 endfunction()
 
-function(get_device_name_of_board board device)
-    execute_process(
-        COMMAND
-        ${PYTHON_EXECUTABLE}
-        ${HPM_SDK_BASE}/scripts/get_board_info.py
-        ${HPM_SDK_BASE}/boards/${board}/${board}.yaml
-        device
-        RESULT_VARIABLE result
-        OUTPUT_VARIABLE device_name
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-        )
-    set(${device} ${device_name} PARENT_SCOPE)
+function(get_soc_name_of_board board out)
+    get_board_info(${board} soc r)
+    set(${out} ${r} PARENT_SCOPE)
+endfunction()
+
+function(get_device_name_of_board board out)
+    get_board_info(${board} device r)
+    set(${out} ${r} PARENT_SCOPE)
 endfunction()
 
 function(get_compiler_version compiler version_text compiler_version)
@@ -237,7 +218,7 @@ function(sdk_app_src)
         else()
             set(path ${CMAKE_CURRENT_SOURCE_DIR}/${file})
         endif()
-        target_sources(app PUBLIC ${path})
+        target_sources(app PRIVATE ${path})
     endforeach()
 endfunction()
 
@@ -254,32 +235,14 @@ function(check_board_capability board app_yaml result)
     set(${result} ${r} PARENT_SCOPE)
 endfunction()
 
-function(get_flash_size_of_board board size)
-    execute_process(
-        COMMAND
-        ${PYTHON_EXECUTABLE}
-        ${HPM_SDK_BASE}/scripts/get_board_info.py
-        ${HPM_SDK_BASE}/boards/${board}/${board}.yaml
-        flash_size
-        RESULT_VARIABLE result
-        OUTPUT_VARIABLE sz
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-        )
-    set(${size} ${sz} PARENT_SCOPE)
+function(get_flash_size_of_board board out)
+    get_board_info(${board} flash_size r)
+    set(${out} ${r} PARENT_SCOPE)
 endfunction()
 
-function(get_extram_size_of_board board size)
-    execute_process(
-        COMMAND
-        ${PYTHON_EXECUTABLE}
-        ${HPM_SDK_BASE}/scripts/get_board_info.py
-        ${HPM_SDK_BASE}/boards/${board}/${board}.yaml
-        extram_size
-        RESULT_VARIABLE result
-        OUTPUT_VARIABLE sz
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-        )
-    set(${size} ${sz} PARENT_SCOPE)
+function(get_extram_size_of_board board out)
+    get_board_info(${board} extram_size r)
+    set(${out} ${r} PARENT_SCOPE)
 endfunction()
 
 function(get_ses_debug_auto_start_gdb_server app_yaml start)
@@ -433,7 +396,7 @@ function(sdk_gcc_src)
         else()
             set(path ${CMAKE_CURRENT_SOURCE_DIR}/${file})
         endif()
-        target_sources(${HPM_SDK_GCC_LIB} PUBLIC ${path})
+        target_sources(${HPM_SDK_GCC_LIB} PRIVATE ${path})
     endforeach()
 endfunction()
 

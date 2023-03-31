@@ -53,9 +53,13 @@ void spi_slave_check_transfer_data(SPI_Type *ptr)
 
     /* Wait for the spi slave transfer to complete */
     do {
-        slv_wcnt = SPI_SLVDATACNT_WCNT_GET(ptr->SLVDATACNT);
-        slv_rcnt = SPI_SLVDATACNT_RCNT_GET(ptr->SLVDATACNT);
+        slv_wcnt = spi_slave_get_sent_data_count(ptr);
+        slv_rcnt = spi_slave_get_received_data_count(ptr);
     } while ((slv_wcnt < TEST_TRANSFER_DATA_IN_BYTE) || (slv_rcnt < TEST_TRANSFER_DATA_IN_BYTE));
+
+    /* disable spi dma before starting next dma transaction */
+    spi_disable_tx_dma(ptr);
+    spi_disable_rx_dma(ptr);
 
     printf("The sent data are:");
     for (i = 0; i < TEST_TRANSFER_DATA_IN_BYTE; i++) {

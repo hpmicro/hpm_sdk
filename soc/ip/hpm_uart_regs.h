@@ -10,10 +10,12 @@
 #define HPM_UART_H
 
 typedef struct {
-    __R  uint8_t  RESERVED0[16];               /* 0x0 - 0xF: Reserved */
+    __R  uint8_t  RESERVED0[4];                /* 0x0 - 0x3: Reserved */
+    __RW uint32_t RXIDLE_CFG;                  /* 0x4: Receive Idle Configuration Register */
+    __R  uint8_t  RESERVED1[8];                /* 0x8 - 0xF: Reserved */
     __RW uint32_t CFG;                         /* 0x10: Configuration Register */
     __RW uint32_t OSCR;                        /* 0x14: Over Sample Control Register */
-    __R  uint8_t  RESERVED1[8];                /* 0x18 - 0x1F: Reserved */
+    __R  uint8_t  RESERVED2[8];                /* 0x18 - 0x1F: Reserved */
     union {
         __R  uint32_t RBR;                     /* 0x20: Receiver Buffer Register (when DLAB = 0) */
         __W  uint32_t THR;                     /* 0x20: Transmitter Holding Register (when DLAB = 0) */
@@ -24,7 +26,7 @@ typedef struct {
         __RW uint32_t DLM;                     /* 0x24: Divisor Latch MSB (when DLAB = 1) */
     };
     union {
-        __R  uint32_t IIR;                     /* 0x28: Interrupt Identification Register */
+        __RW uint32_t IIR;                     /* 0x28: Interrupt Identification Register */
         __W  uint32_t FCR;                     /* 0x28: FIFO Control Register */
     };
     __RW uint32_t LCR;                         /* 0x2C: Line Control Register */
@@ -33,6 +35,41 @@ typedef struct {
     __R  uint32_t MSR;                         /* 0x38: Modem Status Register */
 } UART_Type;
 
+
+/* Bitfield definition for register: RXIDLE_CFG */
+/*
+ * DETECT_COND (RW)
+ *
+ * IDLE Detection Condition
+ * 0 - Treat as idle if RX pin is logic one
+ * 1 - Treat as idle if UART state machine state is idle
+ */
+#define UART_RXIDLE_CFG_DETECT_COND_MASK (0x200U)
+#define UART_RXIDLE_CFG_DETECT_COND_SHIFT (9U)
+#define UART_RXIDLE_CFG_DETECT_COND_SET(x) (((uint32_t)(x) << UART_RXIDLE_CFG_DETECT_COND_SHIFT) & UART_RXIDLE_CFG_DETECT_COND_MASK)
+#define UART_RXIDLE_CFG_DETECT_COND_GET(x) (((uint32_t)(x) & UART_RXIDLE_CFG_DETECT_COND_MASK) >> UART_RXIDLE_CFG_DETECT_COND_SHIFT)
+
+/*
+ * DETECT_EN (RW)
+ *
+ * UART Idle Detect Enable
+ * 0 - Disable
+ * 1 - Enable
+ */
+#define UART_RXIDLE_CFG_DETECT_EN_MASK (0x100U)
+#define UART_RXIDLE_CFG_DETECT_EN_SHIFT (8U)
+#define UART_RXIDLE_CFG_DETECT_EN_SET(x) (((uint32_t)(x) << UART_RXIDLE_CFG_DETECT_EN_SHIFT) & UART_RXIDLE_CFG_DETECT_EN_MASK)
+#define UART_RXIDLE_CFG_DETECT_EN_GET(x) (((uint32_t)(x) & UART_RXIDLE_CFG_DETECT_EN_MASK) >> UART_RXIDLE_CFG_DETECT_EN_SHIFT)
+
+/*
+ * THR (RW)
+ *
+ * Threshold for UART Receive Idle detection (in terms of bits)
+ */
+#define UART_RXIDLE_CFG_THR_MASK (0xFFU)
+#define UART_RXIDLE_CFG_THR_SHIFT (0U)
+#define UART_RXIDLE_CFG_THR_SET(x) (((uint32_t)(x) << UART_RXIDLE_CFG_THR_SHIFT) & UART_RXIDLE_CFG_THR_MASK)
+#define UART_RXIDLE_CFG_THR_GET(x) (((uint32_t)(x) & UART_RXIDLE_CFG_THR_MASK) >> UART_RXIDLE_CFG_THR_SHIFT)
 
 /* Bitfield definition for register: CFG */
 /*
@@ -98,6 +135,18 @@ typedef struct {
 
 /* Bitfield definition for register: IER */
 /*
+ * ERXIDLE (RW)
+ *
+ * Enable Receive Idle interrupt
+ * 0 - Disable Idle interrupt
+ * 1 - Enable Idle interrupt
+ */
+#define UART_IER_ERXIDLE_MASK (0x80000000UL)
+#define UART_IER_ERXIDLE_SHIFT (31U)
+#define UART_IER_ERXIDLE_SET(x) (((uint32_t)(x) << UART_IER_ERXIDLE_SHIFT) & UART_IER_ERXIDLE_MASK)
+#define UART_IER_ERXIDLE_GET(x) (((uint32_t)(x) & UART_IER_ERXIDLE_MASK) >> UART_IER_ERXIDLE_SHIFT)
+
+/*
  * EMSI (RW)
  *
  * Enable modem status interrupt
@@ -159,6 +208,18 @@ typedef struct {
 #define UART_DLM_DLM_GET(x) (((uint32_t)(x) & UART_DLM_DLM_MASK) >> UART_DLM_DLM_SHIFT)
 
 /* Bitfield definition for register: IIR */
+/*
+ * RXIDLE_FLAG (RW)
+ *
+ * UART IDLE Flag
+ * 0 - UART is busy
+ * 1 - UART is idle
+ */
+#define UART_IIR_RXIDLE_FLAG_MASK (0x80000000UL)
+#define UART_IIR_RXIDLE_FLAG_SHIFT (31U)
+#define UART_IIR_RXIDLE_FLAG_SET(x) (((uint32_t)(x) << UART_IIR_RXIDLE_FLAG_SHIFT) & UART_IIR_RXIDLE_FLAG_MASK)
+#define UART_IIR_RXIDLE_FLAG_GET(x) (((uint32_t)(x) & UART_IIR_RXIDLE_FLAG_MASK) >> UART_IIR_RXIDLE_FLAG_SHIFT)
+
 /*
  * FIFOED (RO)
  *

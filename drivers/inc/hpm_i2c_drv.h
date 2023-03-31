@@ -240,6 +240,19 @@ static inline uint32_t i2c_get_status(I2C_Type *ptr)
 }
 
 /**
+ * @brief i2c get interrupts setting
+ *
+ * @details Get interrupt setting register value
+ *
+ * @param [in] ptr I2C base address
+ * @retval [out] uint32_t interrupt setting register value
+ */
+static inline uint32_t i2c_get_irq_setting(I2C_Type *ptr)
+{
+    return ptr->INTEN;
+}
+
+/**
  * @brief disable interrupts
  *
  * @details Disable interrupts based on given mask
@@ -469,6 +482,51 @@ static inline void i2c_dma_disable(I2C_Type *ptr)
  * @param [in] size size of data in bytes
  */
 void i2c_slave_dma_transfer(I2C_Type *ptr,  const uint32_t size);
+
+/**
+ * @brief I2C write byte into FIFO
+ *
+ * @param ptr [in] ptr I2C base address
+ * @param data [in] byte to ne sent
+ */
+static inline void i2c_write_byte(I2C_Type *ptr, uint8_t data)
+{
+    ptr->DATA = I2C_DATA_DATA_SET(data);
+}
+
+/**
+ * @brief I2C read byte into FIFO
+ *
+ * @param ptr [in] ptr I2C base address
+ * @return uint8_t read byte
+ */
+static inline uint8_t i2c_read_byte(I2C_Type *ptr)
+{
+    return (uint8_t)I2C_DATA_DATA_GET(ptr->DATA);
+}
+
+/**
+ * @brief I2C get direction
+ *
+ * @note The same value has different meanings in master and slave modes
+ *
+ * @param ptr [in] ptr I2C base address
+ * @return uint8_t direction value
+ */
+static inline uint8_t i2c_get_direction(I2C_Type *ptr)
+{
+    return (uint8_t)I2C_CTRL_DIR_GET(ptr->CTRL);
+}
+
+/**
+ * @brief I2C master configure transfer setting
+ *
+ * @param i2c_ptr [in] ptr I2C base address
+ * @param device_address [in] I2C slave address
+ * @param size [in] size of data to be transferred in bytes
+ * @param read [in] true for receive, false for transmit
+ */
+void i2c_master_configure_transfer(I2C_Type *i2c_ptr, const uint16_t device_address, uint32_t size, bool read);
 
 /**
  * @}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -107,13 +107,25 @@ static void i2s_config_cfgr(I2S_Type *ptr,
                             i2s_transfer_config_t *config)
 {
     i2s_gate_bclk(ptr);
-    ptr->CFGR = I2S_CFGR_BCLK_DIV_SET(bclk_div)
-        | I2S_CFGR_TDM_EN_SET(config->enable_tdm_mode)
-        | I2S_CFGR_CH_MAX_SET(config->channel_num_per_frame)
-        | I2S_CFGR_STD_SET(config->protocol)
-        | I2S_CFGR_DATSIZ_SET(I2S_CFGR_DATASIZ(config->audio_depth))
-        | I2S_CFGR_CHSIZ_SET(I2S_CFGR_CHSIZ(config->channel_length));
+    ptr->CFGR = (ptr->CFGR & ~(I2S_CFGR_BCLK_DIV_MASK | I2S_CFGR_TDM_EN_MASK | I2S_CFGR_CH_MAX_MASK | I2S_CFGR_STD_MASK | I2S_CFGR_DATSIZ_MASK | I2S_CFGR_CHSIZ_MASK))
+                | I2S_CFGR_BCLK_DIV_SET(bclk_div)
+                | I2S_CFGR_TDM_EN_SET(config->enable_tdm_mode)
+                | I2S_CFGR_CH_MAX_SET(config->channel_num_per_frame)
+                | I2S_CFGR_STD_SET(config->protocol)
+                | I2S_CFGR_DATSIZ_SET(I2S_CFGR_DATASIZ(config->audio_depth))
+                | I2S_CFGR_CHSIZ_SET(I2S_CFGR_CHSIZ(config->channel_length));
     i2s_ungate_bclk(ptr);
+}
+
+static void i2s_config_cfgr_slave(I2S_Type *ptr,
+                            i2s_transfer_config_t *config)
+{
+    ptr->CFGR = (ptr->CFGR & ~(I2S_CFGR_TDM_EN_MASK | I2S_CFGR_CH_MAX_MASK | I2S_CFGR_STD_MASK | I2S_CFGR_DATSIZ_MASK | I2S_CFGR_CHSIZ_MASK))
+              | I2S_CFGR_TDM_EN_SET(config->enable_tdm_mode)
+              | I2S_CFGR_CH_MAX_SET(config->channel_num_per_frame)
+              | I2S_CFGR_STD_SET(config->protocol)
+              | I2S_CFGR_DATSIZ_SET(I2S_CFGR_DATASIZ(config->audio_depth))
+              | I2S_CFGR_CHSIZ_SET(I2S_CFGR_CHSIZ(config->channel_length));
 }
 
 static bool i2s_calculate_bclk_divider(uint32_t mclk_in_hz, uint32_t bclk_in_hz, uint32_t *div_out)
@@ -144,11 +156,8 @@ static bool i2s_calculate_bclk_divider(uint32_t mclk_in_hz, uint32_t bclk_in_hz,
     return true;
 }
 
-hpm_stat_t i2s_config_tx(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_config_t *config)
+static hpm_stat_t _i2s_config_tx(I2S_Type *ptr, i2s_transfer_config_t *config)
 {
-    uint32_t bclk_in_hz;
-    uint32_t bclk_div;
-
     /* channel_num_per_frame has to even. non TDM mode, it has be 2 */
     if (!i2s_audio_depth_is_valid(config->audio_depth)
         || !i2s_channel_length_is_valid(config->channel_length)
@@ -159,15 +168,6 @@ hpm_stat_t i2s_config_tx(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_config
         || ((!config->enable_tdm_mode) && (config->channel_num_per_frame > 2))) {
         return status_invalid_argument;
     }
-
-    bclk_in_hz = config->sample_rate * config->channel_length * config->channel_num_per_frame;
-
-    if (!i2s_calculate_bclk_divider(mclk_in_hz, bclk_in_hz, &bclk_div)) {
-        return status_invalid_argument;
-    }
-
-    i2s_disable(ptr);
-    i2s_config_cfgr(ptr, bclk_div, config);
 
     if (config->channel_slot_mask) {
         ptr->TXDSLOT[config->data_line] = config->channel_slot_mask;
@@ -175,14 +175,12 @@ hpm_stat_t i2s_config_tx(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_config
     ptr->CTRL = (ptr->CTRL & ~(I2S_CTRL_TX_EN_MASK))
         | I2S_CTRL_TX_EN_SET(1 << config->data_line)
         | I2S_CTRL_I2S_EN_MASK;
+
     return status_success;
 }
 
-hpm_stat_t i2s_config_rx(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_config_t *config)
+static hpm_stat_t _i2s_config_rx(I2S_Type *ptr, i2s_transfer_config_t *config)
 {
-    uint32_t bclk_in_hz;
-    uint32_t bclk_div;
-
     /* channel_num_per_frame has to even. non TDM mode, it has be 2 */
     if (!i2s_audio_depth_is_valid(config->audio_depth)
         || !i2s_channel_length_is_valid(config->channel_length)
@@ -193,14 +191,6 @@ hpm_stat_t i2s_config_rx(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_config
         || ((!config->enable_tdm_mode) && (config->channel_num_per_frame > 2))) {
         return status_invalid_argument;
     }
-
-    bclk_in_hz = config->sample_rate * config->channel_length * config->channel_num_per_frame;
-    if (!i2s_calculate_bclk_divider(mclk_in_hz, bclk_in_hz, &bclk_div)) {
-        return status_invalid_argument;
-    }
-
-    i2s_disable(ptr);
-    i2s_config_cfgr(ptr, bclk_div, config);
 
     if (config->channel_slot_mask) {
         ptr->RXDSLOT[config->data_line] = config->channel_slot_mask;
@@ -208,14 +198,12 @@ hpm_stat_t i2s_config_rx(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_config
     ptr->CTRL = (ptr->CTRL & ~(I2S_CTRL_RX_EN_MASK))
             | I2S_CTRL_RX_EN_SET(1 << config->data_line)
             | I2S_CTRL_I2S_EN_MASK;
+
     return status_success;
 }
 
-hpm_stat_t i2s_config_transfer(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_config_t *config)
+static hpm_stat_t _i2s_config_transfer(I2S_Type *ptr, i2s_transfer_config_t *config)
 {
-    uint32_t bclk_in_hz;
-    uint32_t bclk_div;
-
     /* channel_num_per_frame has to even. non TDM mode, it has be 2 */
     if (!i2s_audio_depth_is_valid(config->audio_depth)
         || !i2s_channel_length_is_valid(config->channel_length)
@@ -226,14 +214,6 @@ hpm_stat_t i2s_config_transfer(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_
         || ((!config->enable_tdm_mode) && (config->channel_num_per_frame > 2))) {
         return status_invalid_argument;
     }
-
-    bclk_in_hz = config->sample_rate * config->channel_length * config->channel_num_per_frame;
-    if (!i2s_calculate_bclk_divider(mclk_in_hz, bclk_in_hz, &bclk_div)) {
-        return status_invalid_argument;
-    }
-
-    i2s_disable(ptr);
-    i2s_config_cfgr(ptr, bclk_div, config);
 
     if (config->channel_slot_mask) {
         /* Suppose RX and TX use same channel */
@@ -250,7 +230,80 @@ hpm_stat_t i2s_config_transfer(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_
             | I2S_CTRL_RX_EN_SET(1 << config->data_line)
             | I2S_CTRL_TX_EN_SET(1 << config->data_line)
             | I2S_CTRL_I2S_EN_MASK;
+
     return status_success;
+}
+
+hpm_stat_t i2s_config_tx(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_config_t *config)
+{
+    uint32_t bclk_in_hz;
+    uint32_t bclk_div;
+
+    bclk_in_hz = config->sample_rate * config->channel_length * config->channel_num_per_frame;
+    if (!i2s_calculate_bclk_divider(mclk_in_hz, bclk_in_hz, &bclk_div)) {
+        return status_invalid_argument;
+    }
+
+    i2s_disable(ptr);
+    i2s_config_cfgr(ptr, bclk_div, config);
+
+    return _i2s_config_tx(ptr, config);
+}
+
+hpm_stat_t i2s_config_tx_slave(I2S_Type *ptr, i2s_transfer_config_t *config)
+{
+    i2s_disable(ptr);
+    i2s_config_cfgr_slave(ptr, config);
+
+    return _i2s_config_tx(ptr, config);
+}
+
+hpm_stat_t i2s_config_rx(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_config_t *config)
+{
+    uint32_t bclk_in_hz;
+    uint32_t bclk_div;
+
+    bclk_in_hz = config->sample_rate * config->channel_length * config->channel_num_per_frame;
+    if (!i2s_calculate_bclk_divider(mclk_in_hz, bclk_in_hz, &bclk_div)) {
+        return status_invalid_argument;
+    }
+
+    i2s_disable(ptr);
+    i2s_config_cfgr(ptr, bclk_div, config);
+
+    return _i2s_config_rx(ptr, config);
+}
+
+hpm_stat_t i2s_config_rx_slave(I2S_Type *ptr, i2s_transfer_config_t *config)
+{
+    i2s_disable(ptr);
+    i2s_config_cfgr_slave(ptr, config);
+
+    return _i2s_config_rx(ptr, config);
+}
+
+hpm_stat_t i2s_config_transfer(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_config_t *config)
+{
+    uint32_t bclk_in_hz;
+    uint32_t bclk_div;
+
+    bclk_in_hz = config->sample_rate * config->channel_length * config->channel_num_per_frame;
+    if (!i2s_calculate_bclk_divider(mclk_in_hz, bclk_in_hz, &bclk_div)) {
+        return status_invalid_argument;
+    }
+
+    i2s_disable(ptr);
+    i2s_config_cfgr(ptr, bclk_div, config);
+
+    return _i2s_config_transfer(ptr, config);
+}
+
+hpm_stat_t i2s_config_transfer_slave(I2S_Type *ptr, i2s_transfer_config_t *config)
+{
+    i2s_disable(ptr);
+    i2s_config_cfgr_slave(ptr, config);
+
+    return _i2s_config_transfer(ptr, config);
 }
 
 uint32_t i2s_send_buff(I2S_Type *ptr, uint8_t tx_line_index, uint8_t samplebits, uint8_t *src, uint32_t size)
@@ -297,7 +350,7 @@ uint32_t i2s_receive_buff(I2S_Type *ptr, uint8_t rx_line_index, uint8_t samplebi
     uint8_t bytes = samplebits / 8U;
 
     if (!i2s_audio_depth_is_valid(samplebits)) {
-        return status_invalid_argument;
+        return 0;
     }
 
     if ((size % bytes) != 0) {

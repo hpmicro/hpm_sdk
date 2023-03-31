@@ -19,11 +19,11 @@ project(erpc_two_way_rpc_rtos_core1)
 set(CMAKE_CXX_STANDARD 11)
 
 sdk_compile_definitions(-DHPM_FEATURE_MBX_SIDE_B)
-sdk_compile_definitions(-DBOARD_RUNNING_CORE=1)
 sdk_compile_definitions(-D__freertos_irq_stack_top=_stack)
 sdk_compile_definitions(-DCONFIG_FREERTOS=1)
 sdk_compile_definitions(-DUSE_NONVECTOR_MODE=1)
 sdk_compile_definitions(-DDISABLE_IRQ_PREEMPTIVE=1)
+sdk_compile_options(-O1)
 
 sdk_inc(src)
 sdk_app_src(src/main_core1.c)
