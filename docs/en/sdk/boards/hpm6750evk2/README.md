@@ -124,7 +124,8 @@ Note: To avoid abnormal functions caused by multiple connections, please ensure 
 | Function      | Pin  | Position |
 | ------------- | ---- | -------- |
 | GPTMR4.CAPT_1 | PE25 | J10[6]   |
-| GPTMR3.COMP_1 | PE24 | J10[7]   |
+| GPTMR5.COMP_2 | PD24 | J10[18] |
+| GPTMR5.COMP_3 | PD23 | J10[16] |
 
 - ADC12 Pin
 
@@ -160,7 +161,7 @@ Note: To avoid abnormal functions caused by multiple connections, please ensure 
 | -------- | -------- |
 | DAO-SPK  | J12      |
 
-- UART pin for uart_software_rx_idle sample
+- UART pin for uart_software_rx_idle sample or uart_rx_timeout sample
 
 | Function   | Position |
 | ---------- | -------- |
@@ -172,3 +173,9 @@ Note: To avoid abnormal functions caused by multiple connections, please ensure 
 | Function   | Position |
 | ---------- | -------- |
 | TRGM2_P9(PD19)  | J10[20]   |
+
+- Motor Pin:
+
+  Need to remove all the resistors selected by `GigEPOP` silkscreen and make sure all the resistors selected by `MOTOR POP` silkscreen are soldered, the development board list is as follows.
+
+  Refer to section [DRV-LV50A-MP1907 Motor Driver Board ](lab_drv_lv50a_mp1907) for configuration

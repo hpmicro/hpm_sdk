@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -68,8 +68,7 @@ typedef struct {
     __R  uint8_t  RESERVED8[800];              /* 0x1E0 - 0x4FF: Reserved */
     __R  uint32_t MSHC_VER_ID;                 /* 0x500:  */
     __R  uint32_t MSHC_VER_TYPE;               /* 0x504:  */
-    __RW uint32_t MSHC_CTRL;                   /* 0x508:  */
-    __R  uint8_t  RESERVED9[4];                /* 0x50C - 0x50F: Reserved */
+    __R  uint8_t  RESERVED9[8];                /* 0x508 - 0x50F: Reserved */
     __RW uint32_t MBIU_CTRL;                   /* 0x510: Y */
     __R  uint8_t  RESERVED10[24];              /* 0x514 - 0x52B: Reserved */
     __RW uint32_t EMMC_BOOT_CTRL;              /* 0x52C:  */
@@ -320,7 +319,8 @@ typedef struct {
  * RESP_ERR_CHK_ENABLE (RW)
  *
  * Response Error Check Enable
- * The Host Controller supports response check function to avoid overhead of response error check by Host driver. Response types of only R1 and R5 can be checked by the Controller. If the Host Controller checks the response error, set this bit to 1 and set Response Interrupt Disable to 1. If an error is detected, the Response Error interrupt is generated in the Error Interrupt Status register.
+ * The Host Controller supports response check function to avoid overhead of response error check by Host driver. Response types of only R1 and R5 can be checked by the Controller.
+ * If the Host Controller checks the response error, set this bit to 1 and set Response Interrupt Disable to 1. If an error is detected, the Response Error interrupt is generated in the Error Interrupt Status register.
  * Note:
  * - Response error check must not be enabled for any response type other than R1 and R5.
  * - Response check must not be enabled for the tuning command.
@@ -1141,7 +1141,8 @@ typedef struct {
  * RESP_ERR (R/W1C)
  *
  * Response Error
- * Host Controller Version 4.00 supports response error check function to avoid overhead of response error check by Host Driver during DMA execution. If Response Error Check Enable is set to 1 in the Transfer Mode register, Host Controller Checks R1 or R5 response. If an error is detected in a response, this bit is set to 1.This is applicable in SD/eMMC mode.
+ * Host Controller Version 4.00 supports response error check function to avoid overhead of response error check by Host Driver during DMA execution.
+ * If Response Error Check Enable is set to 1 in the Transfer Mode register, Host Controller Checks R1 or R5 response. If an error is detected in a response, this bit is set to 1.This is applicable in SD/eMMC mode.
  * Values:
  * 0x0 (FALSE): No error
  * 0x1 (TRUE): Error
@@ -3954,16 +3955,6 @@ typedef struct {
 #define SDXC_MSHC_VER_TYPE_VER_TYPE_SHIFT (0U)
 #define SDXC_MSHC_VER_TYPE_VER_TYPE_GET(x) (((uint32_t)(x) & SDXC_MSHC_VER_TYPE_VER_TYPE_MASK) >> SDXC_MSHC_VER_TYPE_VER_TYPE_SHIFT)
 
-/* Bitfield definition for register: MSHC_CTRL */
-/*
- * CMD_CONFLICT_CHECK (RW)
- *
- */
-#define SDXC_MSHC_CTRL_CMD_CONFLICT_CHECK_MASK (0x1U)
-#define SDXC_MSHC_CTRL_CMD_CONFLICT_CHECK_SHIFT (0U)
-#define SDXC_MSHC_CTRL_CMD_CONFLICT_CHECK_SET(x) (((uint32_t)(x) << SDXC_MSHC_CTRL_CMD_CONFLICT_CHECK_SHIFT) & SDXC_MSHC_CTRL_CMD_CONFLICT_CHECK_MASK)
-#define SDXC_MSHC_CTRL_CMD_CONFLICT_CHECK_GET(x) (((uint32_t)(x) & SDXC_MSHC_CTRL_CMD_CONFLICT_CHECK_MASK) >> SDXC_MSHC_CTRL_CMD_CONFLICT_CHECK_SHIFT)
-
 /* Bitfield definition for register: MBIU_CTRL */
 /*
  * BURST_INCR16_EN (RW)
@@ -4345,17 +4336,10 @@ typedef struct {
 
 /* Bitfield definition for register: MISC_CTRL0 */
 /*
- * IRQ_EN (RW)
- *
- */
-#define SDXC_MISC_CTRL0_IRQ_EN_MASK (0xC0000000UL)
-#define SDXC_MISC_CTRL0_IRQ_EN_SHIFT (30U)
-#define SDXC_MISC_CTRL0_IRQ_EN_SET(x) (((uint32_t)(x) << SDXC_MISC_CTRL0_IRQ_EN_SHIFT) & SDXC_MISC_CTRL0_IRQ_EN_MASK)
-#define SDXC_MISC_CTRL0_IRQ_EN_GET(x) (((uint32_t)(x) & SDXC_MISC_CTRL0_IRQ_EN_MASK) >> SDXC_MISC_CTRL0_IRQ_EN_SHIFT)
-
-/*
  * CARDCLK_INV_EN (RW)
  *
+ * set to invert card_clk, for slow speed card to meet 5ns setup timing.
+ * May cause glitch on clock, should be set before enable clk(in core cfg)
  */
 #define SDXC_MISC_CTRL0_CARDCLK_INV_EN_MASK (0x10000000UL)
 #define SDXC_MISC_CTRL0_CARDCLK_INV_EN_SHIFT (28U)
@@ -4365,6 +4349,8 @@ typedef struct {
 /*
  * PAD_CLK_SEL_B (RW)
  *
+ * set to use internal clock directly, may have timing issue;
+ * clr to use clock loopback from pad.
  */
 #define SDXC_MISC_CTRL0_PAD_CLK_SEL_B_MASK (0x20000UL)
 #define SDXC_MISC_CTRL0_PAD_CLK_SEL_B_SHIFT (17U)
@@ -4374,6 +4360,8 @@ typedef struct {
 /*
  * FREQ_SEL_SW_EN (RW)
  *
+ * set to use FREQ_SEL_SW as card clock divider;
+ * clear to use core logic as clock divider.
  */
 #define SDXC_MISC_CTRL0_FREQ_SEL_SW_EN_MASK (0x800U)
 #define SDXC_MISC_CTRL0_FREQ_SEL_SW_EN_SHIFT (11U)
@@ -4383,6 +4371,8 @@ typedef struct {
 /*
  * TMCLK_EN (RW)
  *
+ * set to force enable tmclk;
+ * clear to  use core signal intclk_en to control it
  */
 #define SDXC_MISC_CTRL0_TMCLK_EN_MASK (0x400U)
 #define SDXC_MISC_CTRL0_TMCLK_EN_SHIFT (10U)
@@ -4392,6 +4382,7 @@ typedef struct {
 /*
  * FREQ_SEL_SW (RW)
  *
+ * software card clock divider, it will be used only when FREQ_SEL_SW_EN is set
  */
 #define SDXC_MISC_CTRL0_FREQ_SEL_SW_MASK (0x3FFU)
 #define SDXC_MISC_CTRL0_FREQ_SEL_SW_SHIFT (0U)
@@ -4402,6 +4393,9 @@ typedef struct {
 /*
  * CARD_ACTIVE (RW)
  *
+ * SW write 1 to start card clock delay counter(delay time is configed by CARD_ACTIVE_PERIOD_SEL).
+ * When counter finished, this bit will be cleared by hardware.
+ * Write 1 when this bit is 1 will cause unknown result(actually no use except write at exact finish time)
  */
 #define SDXC_MISC_CTRL1_CARD_ACTIVE_MASK (0x80000000UL)
 #define SDXC_MISC_CTRL1_CARD_ACTIVE_SHIFT (31U)
@@ -4411,6 +4405,8 @@ typedef struct {
 /*
  * CARD_ACTIVE_PERIOD_SEL (RW)
  *
+ * card clock delay config.
+ * 00 for 100 cycle; 01 for 74 cycle; 10 for 128 cycle; 11 for 256 cycle
  */
 #define SDXC_MISC_CTRL1_CARD_ACTIVE_PERIOD_SEL_MASK (0x30000000UL)
 #define SDXC_MISC_CTRL1_CARD_ACTIVE_PERIOD_SEL_SHIFT (28U)
@@ -4418,58 +4414,24 @@ typedef struct {
 #define SDXC_MISC_CTRL1_CARD_ACTIVE_PERIOD_SEL_GET(x) (((uint32_t)(x) & SDXC_MISC_CTRL1_CARD_ACTIVE_PERIOD_SEL_MASK) >> SDXC_MISC_CTRL1_CARD_ACTIVE_PERIOD_SEL_SHIFT)
 
 /*
- * TUNING_CARD_CLK_SEL (RW)
+ * CARDCLK_DLYSEL (RW)
  *
+ * for card clock DLL, default 0
  */
-#define SDXC_MISC_CTRL1_TUNING_CARD_CLK_SEL_MASK (0x3F00000UL)
-#define SDXC_MISC_CTRL1_TUNING_CARD_CLK_SEL_SHIFT (20U)
-#define SDXC_MISC_CTRL1_TUNING_CARD_CLK_SEL_SET(x) (((uint32_t)(x) << SDXC_MISC_CTRL1_TUNING_CARD_CLK_SEL_SHIFT) & SDXC_MISC_CTRL1_TUNING_CARD_CLK_SEL_MASK)
-#define SDXC_MISC_CTRL1_TUNING_CARD_CLK_SEL_GET(x) (((uint32_t)(x) & SDXC_MISC_CTRL1_TUNING_CARD_CLK_SEL_MASK) >> SDXC_MISC_CTRL1_TUNING_CARD_CLK_SEL_SHIFT)
+#define SDXC_MISC_CTRL1_CARDCLK_DLYSEL_MASK (0x3F00000UL)
+#define SDXC_MISC_CTRL1_CARDCLK_DLYSEL_SHIFT (20U)
+#define SDXC_MISC_CTRL1_CARDCLK_DLYSEL_SET(x) (((uint32_t)(x) << SDXC_MISC_CTRL1_CARDCLK_DLYSEL_SHIFT) & SDXC_MISC_CTRL1_CARDCLK_DLYSEL_MASK)
+#define SDXC_MISC_CTRL1_CARDCLK_DLYSEL_GET(x) (((uint32_t)(x) & SDXC_MISC_CTRL1_CARDCLK_DLYSEL_MASK) >> SDXC_MISC_CTRL1_CARDCLK_DLYSEL_SHIFT)
 
 /*
- * TUNING_STROBE_SEL (RW)
+ * STROBE_DLYSEL (RW)
  *
+ * for strobe DLL, default 7taps(1ns)
  */
-#define SDXC_MISC_CTRL1_TUNING_STROBE_SEL_MASK (0x3F000UL)
-#define SDXC_MISC_CTRL1_TUNING_STROBE_SEL_SHIFT (12U)
-#define SDXC_MISC_CTRL1_TUNING_STROBE_SEL_SET(x) (((uint32_t)(x) << SDXC_MISC_CTRL1_TUNING_STROBE_SEL_SHIFT) & SDXC_MISC_CTRL1_TUNING_STROBE_SEL_MASK)
-#define SDXC_MISC_CTRL1_TUNING_STROBE_SEL_GET(x) (((uint32_t)(x) & SDXC_MISC_CTRL1_TUNING_STROBE_SEL_MASK) >> SDXC_MISC_CTRL1_TUNING_STROBE_SEL_SHIFT)
-
-/*
- * STROBE_IN_ENABLE (RW)
- *
- */
-#define SDXC_MISC_CTRL1_STROBE_IN_ENABLE_MASK (0x800U)
-#define SDXC_MISC_CTRL1_STROBE_IN_ENABLE_SHIFT (11U)
-#define SDXC_MISC_CTRL1_STROBE_IN_ENABLE_SET(x) (((uint32_t)(x) << SDXC_MISC_CTRL1_STROBE_IN_ENABLE_SHIFT) & SDXC_MISC_CTRL1_STROBE_IN_ENABLE_MASK)
-#define SDXC_MISC_CTRL1_STROBE_IN_ENABLE_GET(x) (((uint32_t)(x) & SDXC_MISC_CTRL1_STROBE_IN_ENABLE_MASK) >> SDXC_MISC_CTRL1_STROBE_IN_ENABLE_SHIFT)
-
-/*
- * AUTOTUNING_CCLK_SEL0 (RW)
- *
- */
-#define SDXC_MISC_CTRL1_AUTOTUNING_CCLK_SEL0_MASK (0x80U)
-#define SDXC_MISC_CTRL1_AUTOTUNING_CCLK_SEL0_SHIFT (7U)
-#define SDXC_MISC_CTRL1_AUTOTUNING_CCLK_SEL0_SET(x) (((uint32_t)(x) << SDXC_MISC_CTRL1_AUTOTUNING_CCLK_SEL0_SHIFT) & SDXC_MISC_CTRL1_AUTOTUNING_CCLK_SEL0_MASK)
-#define SDXC_MISC_CTRL1_AUTOTUNING_CCLK_SEL0_GET(x) (((uint32_t)(x) & SDXC_MISC_CTRL1_AUTOTUNING_CCLK_SEL0_MASK) >> SDXC_MISC_CTRL1_AUTOTUNING_CCLK_SEL0_SHIFT)
-
-/*
- * CCLK_RX_DLY_SW_FORCE (RW)
- *
- */
-#define SDXC_MISC_CTRL1_CCLK_RX_DLY_SW_FORCE_MASK (0x40U)
-#define SDXC_MISC_CTRL1_CCLK_RX_DLY_SW_FORCE_SHIFT (6U)
-#define SDXC_MISC_CTRL1_CCLK_RX_DLY_SW_FORCE_SET(x) (((uint32_t)(x) << SDXC_MISC_CTRL1_CCLK_RX_DLY_SW_FORCE_SHIFT) & SDXC_MISC_CTRL1_CCLK_RX_DLY_SW_FORCE_MASK)
-#define SDXC_MISC_CTRL1_CCLK_RX_DLY_SW_FORCE_GET(x) (((uint32_t)(x) & SDXC_MISC_CTRL1_CCLK_RX_DLY_SW_FORCE_MASK) >> SDXC_MISC_CTRL1_CCLK_RX_DLY_SW_FORCE_SHIFT)
-
-/*
- * CCLK_RX_DLY_SW_SEL (RW)
- *
- */
-#define SDXC_MISC_CTRL1_CCLK_RX_DLY_SW_SEL_MASK (0x3FU)
-#define SDXC_MISC_CTRL1_CCLK_RX_DLY_SW_SEL_SHIFT (0U)
-#define SDXC_MISC_CTRL1_CCLK_RX_DLY_SW_SEL_SET(x) (((uint32_t)(x) << SDXC_MISC_CTRL1_CCLK_RX_DLY_SW_SEL_SHIFT) & SDXC_MISC_CTRL1_CCLK_RX_DLY_SW_SEL_MASK)
-#define SDXC_MISC_CTRL1_CCLK_RX_DLY_SW_SEL_GET(x) (((uint32_t)(x) & SDXC_MISC_CTRL1_CCLK_RX_DLY_SW_SEL_MASK) >> SDXC_MISC_CTRL1_CCLK_RX_DLY_SW_SEL_SHIFT)
+#define SDXC_MISC_CTRL1_STROBE_DLYSEL_MASK (0x3F000UL)
+#define SDXC_MISC_CTRL1_STROBE_DLYSEL_SHIFT (12U)
+#define SDXC_MISC_CTRL1_STROBE_DLYSEL_SET(x) (((uint32_t)(x) << SDXC_MISC_CTRL1_STROBE_DLYSEL_SHIFT) & SDXC_MISC_CTRL1_STROBE_DLYSEL_MASK)
+#define SDXC_MISC_CTRL1_STROBE_DLYSEL_GET(x) (((uint32_t)(x) & SDXC_MISC_CTRL1_STROBE_DLYSEL_MASK) >> SDXC_MISC_CTRL1_STROBE_DLYSEL_SHIFT)
 
 
 

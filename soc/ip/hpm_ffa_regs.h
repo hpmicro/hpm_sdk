@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -330,7 +330,7 @@ typedef struct {
 /*
  * FIR_COEF_TAPS (RW)
  *
- * Length of FIR coefs
+ * Length of FIR coefs （max 256）
  */
 #define FFA_OP_FIR_MISC_FIR_COEF_TAPS_MASK (0x3FFFU)
 #define FFA_OP_FIR_MISC_FIR_COEF_TAPS_SHIFT (0U)

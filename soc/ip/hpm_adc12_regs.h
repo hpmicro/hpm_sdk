@@ -12,7 +12,8 @@
 typedef struct {
     __RW uint32_t CONFIG[12];                  /* 0x0 - 0x2C:  */
     __RW uint32_t TRG_DMA_ADDR;                /* 0x30:  */
-    __R  uint8_t  RESERVED0[972];              /* 0x34 - 0x3FF: Reserved */
+    __RW uint32_t TRG_SW_STA;                  /* 0x34:  */
+    __R  uint8_t  RESERVED0[968];              /* 0x38 - 0x3FF: Reserved */
     __R  uint32_t BUS_RESULT[19];              /* 0x400 - 0x448:  */
     __R  uint8_t  RESERVED1[180];              /* 0x44C - 0x4FF: Reserved */
     __RW uint32_t BUF_CFG0;                    /* 0x500:  */
@@ -146,6 +147,29 @@ typedef struct {
 #define ADC12_TRG_DMA_ADDR_TRG_DMA_ADDR_SHIFT (2U)
 #define ADC12_TRG_DMA_ADDR_TRG_DMA_ADDR_SET(x) (((uint32_t)(x) << ADC12_TRG_DMA_ADDR_TRG_DMA_ADDR_SHIFT) & ADC12_TRG_DMA_ADDR_TRG_DMA_ADDR_MASK)
 #define ADC12_TRG_DMA_ADDR_TRG_DMA_ADDR_GET(x) (((uint32_t)(x) & ADC12_TRG_DMA_ADDR_TRG_DMA_ADDR_MASK) >> ADC12_TRG_DMA_ADDR_TRG_DMA_ADDR_SHIFT)
+
+/* Bitfield definition for register: TRG_SW_STA */
+/*
+ * TRG_SW_STA (RW)
+ *
+ * SW trigger start bit, HW will clear it after all conversions(up to 4) finished. SW should make sure it's 0 before set it.
+ */
+#define ADC12_TRG_SW_STA_TRG_SW_STA_MASK (0x10U)
+#define ADC12_TRG_SW_STA_TRG_SW_STA_SHIFT (4U)
+#define ADC12_TRG_SW_STA_TRG_SW_STA_SET(x) (((uint32_t)(x) << ADC12_TRG_SW_STA_TRG_SW_STA_SHIFT) & ADC12_TRG_SW_STA_TRG_SW_STA_MASK)
+#define ADC12_TRG_SW_STA_TRG_SW_STA_GET(x) (((uint32_t)(x) & ADC12_TRG_SW_STA_TRG_SW_STA_MASK) >> ADC12_TRG_SW_STA_TRG_SW_STA_SHIFT)
+
+/*
+ * TRIG_SW_INDEX (RW)
+ *
+ * which trigger for the SW trigger
+ * 0 for trig0a, 1 for trig0b…
+ * 3 for trig1a, …11 for trig3c
+ */
+#define ADC12_TRG_SW_STA_TRIG_SW_INDEX_MASK (0xFU)
+#define ADC12_TRG_SW_STA_TRIG_SW_INDEX_SHIFT (0U)
+#define ADC12_TRG_SW_STA_TRIG_SW_INDEX_SET(x) (((uint32_t)(x) << ADC12_TRG_SW_STA_TRIG_SW_INDEX_SHIFT) & ADC12_TRG_SW_STA_TRIG_SW_INDEX_MASK)
+#define ADC12_TRG_SW_STA_TRIG_SW_INDEX_GET(x) (((uint32_t)(x) & ADC12_TRG_SW_STA_TRIG_SW_INDEX_MASK) >> ADC12_TRG_SW_STA_TRIG_SW_INDEX_SHIFT)
 
 /* Bitfield definition for register array: BUS_RESULT */
 /*

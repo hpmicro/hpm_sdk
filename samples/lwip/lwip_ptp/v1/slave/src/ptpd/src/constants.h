@@ -7,11 +7,11 @@
 #define MANUFACTURER_ID \
     "PTPd;1.0.1\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
 
-#define DEFAULT_SYNC_INTERVAL        2
+#define DEFAULT_SYNC_INTERVAL        0
 #define DEFAULT_UTC_OFFSET           0
 #define DEFAULT_CLOCK_VARIANCE       (-4000)
 #define DEFAULT_CLOCK_STRATUM        4
-#define DEFAULT_INBOUND_LATENCY      0       /* in nsec */
+#define DEFAULT_INBOUND_LATENCY      440     /* in nsec */
 #define DEFAULT_OUTBOUND_LATENCY     0       /* in nsec */
 #define DEFAULT_NO_RESET_CLOCK       FALSE
 #define DEFAULT_AP                   2       /* 10 */
@@ -20,8 +20,8 @@
 #define DEFAULT_OFFSET_S             1
 #define DEFUALT_MAX_FOREIGN_RECORDS  5
 
-#define DEFAULT_CALIBRATED_OFFSET_NS    10000 /* offset from master < 10us -> calibrated */
-#define DEFAULT_UNCALIBRATED_OFFSET_NS  10000000 /* offset from master > 100us -> uncalibrated */
+#define DEFAULT_CALIBRATED_OFFSET_NS    0 /* offset from master < 10us -> calibrated */
+#define DEFAULT_UNCALIBRATED_OFFSET_NS  0 /* offset from master > 100us -> uncalibrated */
 
 
 /* features, only change to refelect changes in implementation */

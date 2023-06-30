@@ -20,6 +20,7 @@
 #define PWM_CLOCK_NAME BOARD_APP_PWM_CLOCK_NAME
 #define PWM_OUTPUT_PIN1 BOARD_APP_PWM_OUT1
 #define TRGM BOARD_APP_TRGM
+#define TRGM_PWM_OUTPUT BOARD_APP_TRGM_PWM_OUTPUT
 #endif
 
 #define PWM_CENTER_OUTPUT_CMP0_NUM  (8U)
@@ -42,8 +43,8 @@ bool cap_true;
 void reset_pwm_counter(void)
 {
     pwm_enable_reload_at_synci(PWM);
-    trgm_output_update_source(TRGM, TRGM_TRGOCFG_PWM_SYNCI, 1);
-    trgm_output_update_source(TRGM, TRGM_TRGOCFG_PWM_SYNCI, 0);
+    trgm_output_update_source(TRGM, TRGM_PWM_OUTPUT, 1);
+    trgm_output_update_source(TRGM, TRGM_PWM_OUTPUT, 0);
 }
 
 void process_cap_data(uint32_t fall, uint32_t rising)

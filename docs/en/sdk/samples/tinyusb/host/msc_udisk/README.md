@@ -2,7 +2,7 @@
 
 ## Overview
 
-This  example project shows access to a U disk
+This example project shows access to a U disk (Filesystem format: FAT).
 
 - A usb host from MCU reads out all of folders and files in the root path of a U disk, and the test result of writing a test file will be output.
 

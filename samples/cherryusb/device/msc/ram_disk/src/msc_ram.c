@@ -11,11 +11,6 @@
 #define MSC_IN_EP  0x81
 #define MSC_OUT_EP 0x02
 
-#define USBD_VID           0xFFFF
-#define USBD_PID           0xFFFF
-#define USBD_MAX_POWER     100
-#define USBD_LANGID_STRING 1033
-
 #define USB_CONFIG_SIZE (9 + MSC_DESCRIPTOR_LEN)
 
 const uint8_t msc_ram_descriptor[] = {

@@ -3,6 +3,7 @@
 cmake_minimum_required(VERSION 3.5)
 set(CONFIG_TINYUSB 1)
 set(CONFIG_USB_HOST 1)
+set(CONFIG_TINYUSB_HOST 1)
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(usb_host_hid_mouse_keyboard_example)

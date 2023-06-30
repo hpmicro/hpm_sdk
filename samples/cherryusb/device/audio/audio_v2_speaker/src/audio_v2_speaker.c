@@ -9,7 +9,11 @@
 #include "usbd_audio.h"
 #include "board.h"
 #include "hpm_i2s_drv.h"
+#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#include "hpm_dmav2_drv.h"
+#else
 #include "hpm_dma_drv.h"
+#endif
 #include "hpm_dmamux_drv.h"
 #include "audio_v2_speaker.h"
 
@@ -55,11 +59,6 @@ dao_config_t dao_config;
 #error define USING_CODEC or USING_DAO
 #endif
 
-#define USBD_VID           0xffff
-#define USBD_PID           0xffff
-#define USBD_MAX_POWER     100
-#define USBD_LANGID_STRING 1033
-
 #ifdef CONFIG_USB_HS
 #define EP_INTERVAL 0x04
 #else
@@ -68,12 +67,13 @@ dao_config_t dao_config;
 
 #define AUDIO_OUT_EP 0x01
 
-#define SPEAKER_SAMPLE_FREQ    96000
+#define SPEAKER_MAX_SAMPLE_FREQ    96000
 #define SPEAKER_SLOT_BYTE_SIZE 4
 #define SPEAKER_AUDIO_DEPTH    24
 
-#define OUT_CHANNEL_NUM 2
+#define BMCONTROL (AUDIO_V2_FU_CONTROL_MUTE | AUDIO_V2_FU_CONTROL_VOLUME)
 
+#define OUT_CHANNEL_NUM 2
 #if OUT_CHANNEL_NUM == 1
 #define OUTPUT_CTRL DBVAL(BMCONTROL), DBVAL(BMCONTROL)
 #define OUTPUT_CH_ENABLE 0x00000000
@@ -102,9 +102,7 @@ dao_config_t dao_config;
 
 #define DMA_MUX_CHANNEL_SPEAKER 1U
 #define AUDIO_BUFFER_COUNT      32
-#define AUDIO_OUT_PACKET        ((uint32_t)((SPEAKER_SAMPLE_FREQ * SPEAKER_SLOT_BYTE_SIZE * OUT_CHANNEL_NUM) / 1000))
-
-#define BMCONTROL (AUDIO_V2_FU_CONTROL_MUTE | AUDIO_V2_FU_CONTROL_VOLUME)
+#define AUDIO_OUT_PACKET        ((uint32_t)((SPEAKER_MAX_SAMPLE_FREQ * SPEAKER_SLOT_BYTE_SIZE * OUT_CHANNEL_NUM) / 1000))
 
 #define USB_AUDIO_CONFIG_DESC_SIZ (9 +                                                     \
                                    AUDIO_V2_AC_DESCRIPTOR_INIT_LEN +                       \
@@ -128,7 +126,7 @@ const uint8_t audio_descriptor[] = {
     AUDIO_V2_AC_INPUT_TERMINAL_DESCRIPTOR_INIT(0x02, AUDIO_TERMINAL_STREAMING, 0x01, OUT_CHANNEL_NUM, OUTPUT_CH_ENABLE, 0x0000),
     AUDIO_V2_AC_FEATURE_UNIT_DESCRIPTOR_INIT(0x03, 0x02, OUTPUT_CTRL),
     AUDIO_V2_AC_OUTPUT_TERMINAL_DESCRIPTOR_INIT(0x04, AUDIO_OUTTERM_SPEAKER, 0x03, 0x01, 0x0000),
-    AUDIO_V2_AS_DESCRIPTOR_INIT(0x01, 0x02, OUT_CHANNEL_NUM, OUTPUT_CH_ENABLE, SPEAKER_SLOT_BYTE_SIZE, SPEAKER_AUDIO_DEPTH, AUDIO_OUT_EP, AUDIO_OUT_PACKET, EP_INTERVAL),
+    AUDIO_V2_AS_DESCRIPTOR_INIT(0x01, 0x02, OUT_CHANNEL_NUM, OUTPUT_CH_ENABLE, SPEAKER_SLOT_BYTE_SIZE, SPEAKER_AUDIO_DEPTH, AUDIO_OUT_EP, 0x09, AUDIO_OUT_PACKET, EP_INTERVAL),
     /*
      * string0 descriptor
      */
@@ -243,8 +241,6 @@ static volatile bool s_speaker_mute;
 static volatile bool s_set_speaker_mute_req;
 static volatile float s_speaker_volume_percent;
 static volatile bool s_set_speaker_volume_req;
-static volatile uint32_t s_speaker_sampling_freq;
-static volatile bool s_set_speaker_sampling_freq_req;
 static struct usbd_endpoint audio_out_ep = {
     .ep_cb = usbd_audio_iso_out_callback,
     .ep_addr = AUDIO_OUT_EP
@@ -266,12 +262,12 @@ void cherryusb_audio_init(void)
 
 void speaker_init_i2s_dao_codec(void)
 {
-    (void)speaker_init_i2s_playback(SPEAKER_SAMPLE_FREQ, SPEAKER_AUDIO_DEPTH, OUT_CHANNEL_NUM);
+    (void)speaker_init_i2s_playback(16000, SPEAKER_AUDIO_DEPTH, OUT_CHANNEL_NUM);
 
 #if defined(USING_CODEC) && USING_CODEC
 #if defined(CONFIG_CODEC_WM8960) && CONFIG_CODEC_WM8960
     wm8960_config.route = wm8960_route_playback;
-    wm8960_config.format.sample_rate = SPEAKER_SAMPLE_FREQ;
+    wm8960_config.format.sample_rate = 16000;
     wm8960_config.format.bit_width = SPEAKER_AUDIO_DEPTH;
     wm8960_config.format.mclk_hz = s_speaker_i2s_mclk_hz;
     if (wm8960_init(&wm8960_control, &wm8960_config) != status_success) {
@@ -279,7 +275,7 @@ void speaker_init_i2s_dao_codec(void)
     }
 #elif defined(CONFIG_CODEC_SGTL5000) && CONFIG_CODEC_SGTL5000
     sgtl5000_config.route = sgtl_route_playback;
-    sgtl5000_config.format.sample_rate = SPEAKER_SAMPLE_FREQ;
+    sgtl5000_config.format.sample_rate = 16000;
     sgtl5000_config.format.bit_width = SPEAKER_AUDIO_DEPTH;
     sgtl5000_config.format.mclk_hz = s_speaker_i2s_mclk_hz;
     if (sgtl_init(&sgtl5000_context, &sgtl5000_config) != status_success) {
@@ -314,26 +310,9 @@ SDK_DECLARE_EXT_ISR_M(BOARD_APP_HDMA_IRQ, isr_dma)
 
 void cherryusb_audio_main_task(void)
 {
-    hpm_stat_t state;
-
-    if (s_set_speaker_sampling_freq_req) {
-        state = speaker_init_i2s_playback(s_speaker_sampling_freq, SPEAKER_AUDIO_DEPTH, OUT_CHANNEL_NUM);
-        if (state == status_success) {
 #if defined(USING_CODEC) && USING_CODEC
-#if defined(CONFIG_CODEC_WM8960) && CONFIG_CODEC_WM8960
-            wm8960_set_data_format(&wm8960_control, s_speaker_i2s_mclk_hz, s_speaker_sampling_freq, SPEAKER_AUDIO_DEPTH);
-#elif defined(CONFIG_CODEC_SGTL5000) && CONFIG_CODEC_SGTL5000
-            sgtl_config_data_format(&sgtl5000_context, s_speaker_i2s_mclk_hz, s_speaker_sampling_freq, SPEAKER_AUDIO_DEPTH);
+    uint32_t volume;
 #endif
-#endif
-            USB_LOG_RAW("Init I2S Clock Ok! Sample Rate: %d, speaker_i2s_mclk_hz: %d\r\n", s_speaker_sampling_freq, s_speaker_i2s_mclk_hz);
-        } else {
-            USB_LOG_RAW("Init I2S Clock Fail!\r\n");
-        }
-        s_speaker_out_buffer_front = s_speaker_out_buffer_rear;
-        s_speaker_dma_transfer_req = true;
-        s_set_speaker_sampling_freq_req = false;
-    }
 
     if (s_set_speaker_mute_req) {
 #if defined(USING_CODEC) && USING_CODEC
@@ -449,9 +428,24 @@ void usbd_audio_set_mute(uint8_t entity_id, uint8_t ch, uint8_t enable)
 
 void usbd_audio_set_sampling_freq(uint8_t entity_id, uint8_t ep_ch, uint32_t sampling_freq)
 {
+    hpm_stat_t state;
+
     if (entity_id == 0x01) {
-        s_speaker_sampling_freq = sampling_freq;
-        s_set_speaker_sampling_freq_req = true;
+        state = speaker_init_i2s_playback(sampling_freq, SPEAKER_AUDIO_DEPTH, OUT_CHANNEL_NUM);
+        if (state == status_success) {
+#if defined(USING_CODEC) && USING_CODEC
+#if defined(CONFIG_CODEC_WM8960) && CONFIG_CODEC_WM8960
+            wm8960_set_data_format(&wm8960_control, s_speaker_i2s_mclk_hz, sampling_freq, SPEAKER_AUDIO_DEPTH);
+#elif defined(CONFIG_CODEC_SGTL5000) && CONFIG_CODEC_SGTL5000
+            sgtl_config_data_format(&sgtl5000_context, s_speaker_i2s_mclk_hz, sampling_freq, SPEAKER_AUDIO_DEPTH);
+#endif
+#endif
+            USB_LOG_RAW("Init I2S Clock Ok! Sample Rate: %d, speaker_i2s_mclk_hz: %d\r\n", sampling_freq, s_speaker_i2s_mclk_hz);
+        } else {
+            USB_LOG_RAW("Init I2S Clock Fail!\r\n");
+        }
+        s_speaker_out_buffer_front = s_speaker_out_buffer_rear;
+        s_speaker_dma_transfer_req = true;
     }
 }
 

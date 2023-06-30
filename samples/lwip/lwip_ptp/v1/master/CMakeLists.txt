@@ -7,7 +7,7 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "")
     SET(CMAKE_BUILD_TYPE flash_xip)
 endif()
 
-set(HPM_SDK_NO_NANO_SPECS 1)
+set(HPM_SDK_LD_NO_NANO_SPECS 1)
 set(CONFIG_LWIP 1)
 #set(CONFIG_ENET_PHY_DP83867 1)
 #set(CONFIG_ENET_PHY_RTL8211 1)
@@ -18,6 +18,7 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 sdk_compile_definitions(-D__DISABLE_AUTO_NEGO=0)
 sdk_compile_definitions(-D__ENABLE_ENET_RECEIVE_INTERRUPT=0)
+sdk_compile_definitions(-DLWIP_PTP=1)
 
 project(lwip_ptp_master_example)
 sdk_inc(../../../common)

@@ -12,7 +12,11 @@
 #include "hpm_trgmmux_src.h"
 #include "hpm_gptmr_drv.h"
 #include "hpm_uart_drv.h"
+#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#include "hpm_dmav2_drv.h"
+#else
 #include "hpm_dma_drv.h"
+#endif
 #include "hpm_dmamux_drv.h"
 
 typedef struct uart_info {

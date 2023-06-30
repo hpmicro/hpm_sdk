@@ -11,9 +11,9 @@
 void adc16_get_default_config(adc16_config_t *config)
 {
     config->conv_mode          = adc16_conv_mode_oneshot;
-    config->adc_clk_div        = 1;
-    config->wait_dis           = 1;
+    config->adc_clk_div        = adc16_clock_divider_1;
     config->conv_duration      = 0;
+    config->wait_dis           = true;
     config->sel_sync_ahb       = true;
     config->port3_rela_time    = false;
     config->adc_ahb_en         = false;
@@ -147,17 +147,18 @@ hpm_stat_t adc16_init(ADC16_Type *ptr, adc16_config_t *config)
     uint32_t clk_div_temp;
 
     /* Set convert clock number and clock period */
-    if (config->adc_clk_div > ADC16_CONV_CFG1_CLOCK_DIVIDER_MASK)  {
+    if (config->adc_clk_div - 1 > ADC16_CONV_CFG1_CLOCK_DIVIDER_MASK)  {
         return status_invalid_argument;
     }
 
     /* Set ADC minimum conversion cycle and ADC clock divider */
     ptr->CONV_CFG1 = ADC16_CONV_CFG1_CONVERT_CLOCK_NUMBER_SET(config->res)
-                   | ADC16_CONV_CFG1_CLOCK_DIVIDER_SET(config->adc_clk_div);
+                   | ADC16_CONV_CFG1_CLOCK_DIVIDER_SET(config->adc_clk_div - 1);
 
     /* Set ahb_en */
     /* Set the duration of the conversion */
-    ptr->ADC_CFG0 = ADC16_ADC_CFG0_ADC_AHB_EN_SET(config->sel_sync_ahb)
+    ptr->ADC_CFG0 = ADC16_ADC_CFG0_SEL_SYNC_AHB_SET(config->sel_sync_ahb)
+                  | ADC16_ADC_CFG0_ADC_AHB_EN_SET(config->adc_ahb_en)
                   | ADC16_ADC_CFG0_CONVERT_DURATION_SET(config->conv_duration);
 
     /* Set wait_dis */
@@ -252,11 +253,12 @@ hpm_stat_t adc16_set_prd_config(ADC16_Type *ptr, adc16_prd_config_t *config)
         return status_invalid_argument;
     }
 
+    /* Check the prescale */
     if (config->prescale > (ADC16_PRD_CFG_PRD_CFG_PRESCALE_MASK >> ADC16_PRD_CFG_PRD_CFG_PRESCALE_SHIFT)) {
         return status_invalid_argument;
     }
 
-    /* periodic prescale */
+    /* Set periodic prescale */
     ptr->PRD_CFG[config->ch].PRD_CFG = (ptr->PRD_CFG[config->ch].PRD_CFG & ~ADC16_PRD_CFG_PRD_CFG_PRESCALE_MASK)
                                      | ADC16_PRD_CFG_PRD_CFG_PRESCALE_SET(config->prescale);
 
@@ -281,7 +283,8 @@ hpm_stat_t adc16_trigger_seq_by_sw(ADC16_Type *ptr)
 /* Note: the sequence length can not be larger or equal than 2 in HPM6750EVK Revision A0 */
 hpm_stat_t adc16_set_seq_config(ADC16_Type *ptr, adc16_seq_config_t *config)
 {
-    if (config->seq_len > ADC_SOC_SEQ_MAX_LEN) {
+    /* Check sequence length */
+    if (ADC16_IS_SEQ_LEN_INVLAID(config->seq_len)) {
         return status_invalid_argument;
     }
 
@@ -299,8 +302,15 @@ hpm_stat_t adc16_set_seq_config(ADC16_Type *ptr, adc16_seq_config_t *config)
         }
 
         ptr->SEQ_QUE[i] = ADC16_SEQ_QUE_SEQ_INT_EN_SET(config->queue[i].seq_int_en)
-				        | ADC16_SEQ_QUE_CHAN_NUM_4_0_SET(config->queue[i].ch);
+                        | ADC16_SEQ_QUE_CHAN_NUM_4_0_SET(config->queue[i].ch);
     }
+
+    return status_success;
+}
+
+hpm_stat_t adc16_trigger_pmt_by_sw(ADC16_Type *ptr, uint8_t trig_ch)
+{
+    ptr->TRG_SW_STA = ADC16_TRG_SW_STA_TRG_SW_STA_MASK | ADC16_TRG_SW_STA_TRIG_SW_INDEX_SET(trig_ch);
 
     return status_success;
 }
@@ -314,10 +324,15 @@ hpm_stat_t adc16_set_pmt_config(ADC16_Type *ptr, adc16_pmt_config_t *config)
         return status_invalid_argument;
     }
 
+    /* Check the triggier channel */
+    if (ADC16_IS_TRIG_CH_INVLAID(config->trig_ch)) {
+        return status_invalid_argument;
+    }
+
     temp |= ADC16_CONFIG_TRIG_LEN_SET(config->trig_len - 1);
 
     for (int i = 0; i < config->trig_len; i++) {
-        if (ADC16_IS_CHANNEL_INVALID(config->trig_ch)) {
+        if (ADC16_IS_CHANNEL_INVALID(config->adc_ch[i])) {
             return status_invalid_argument;
         }
 
@@ -371,6 +386,7 @@ hpm_stat_t adc16_get_oneshot_result(ADC16_Type *ptr, uint8_t ch, uint16_t *resul
 /* period mode */
 hpm_stat_t adc16_get_prd_result(ADC16_Type *ptr, uint8_t ch, uint16_t *result)
 {
+    /* Check the specified channel number */
     if (ADC16_IS_CHANNEL_INVALID(ch)) {
         return status_invalid_argument;
     }
@@ -380,6 +396,7 @@ hpm_stat_t adc16_get_prd_result(ADC16_Type *ptr, uint8_t ch, uint16_t *result)
     return status_success;
 }
 
+#if defined(ADC16_SOC_TEMP_CH_EN) && ADC16_SOC_TEMP_CH_EN
 void adc16_enable_temp_sensor(ADC16_Type *ptr)
 {
     uint32_t clk_div_temp;
@@ -428,3 +445,4 @@ void adc16_disable_temp_sensor(ADC16_Type *ptr)
     ptr->CONV_CFG1 = (ptr->CONV_CFG1 & ~ADC16_CONV_CFG1_CLOCK_DIVIDER_MASK)
                    | ADC16_CONV_CFG1_CLOCK_DIVIDER_SET(clk_div_temp);
 }
+#endif

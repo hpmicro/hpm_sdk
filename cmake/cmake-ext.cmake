@@ -1,4 +1,4 @@
-# Copyright 2021-2022 hpmicro
+# Copyright (c) 2021-2022 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 
@@ -97,12 +97,12 @@ function(sdk_ld_options_ifdef feature)
     endif()
 endfunction()
 
-function(get_board_info board info_type info_value)
+function(get_board_info board_yaml info_type info_value)
     execute_process(
         COMMAND
         ${PYTHON_EXECUTABLE}
         ${HPM_SDK_BASE}/scripts/get_board_info.py
-        ${HPM_SDK_BASE}/boards/${board}/${board}.yaml
+        ${board_yaml}
         ${info_type}
         RESULT_VARIABLE result
         OUTPUT_VARIABLE out
@@ -114,23 +114,23 @@ function(get_board_info board info_type info_value)
     set(${info_value} ${out} PARENT_SCOPE)
 endfunction()
 
-function(get_openocd_probe_name_of_board board out)
-    get_board_info(${board} openocd-probe r)
+function(get_openocd_probe_name_of_board board_yaml out)
+    get_board_info(${board_yaml} openocd-probe r)
     set(${out} ${r} PARENT_SCOPE)
 endfunction()
 
-function(get_openocd_soc_name_of_board board out)
-    get_board_info(${board} openocd-soc r)
+function(get_openocd_soc_name_of_board board_yaml out)
+    get_board_info(${board_yaml} openocd-soc r)
     set(${out} ${r} PARENT_SCOPE)
 endfunction()
 
-function(get_soc_name_of_board board out)
-    get_board_info(${board} soc r)
+function(get_soc_name_of_board board_yaml out)
+    get_board_info(${board_yaml} soc r)
     set(${out} ${r} PARENT_SCOPE)
 endfunction()
 
-function(get_device_name_of_board board out)
-    get_board_info(${board} device r)
+function(get_device_name_of_board board_yaml out)
+    get_board_info(${board_yaml} device r)
     set(${out} ${r} PARENT_SCOPE)
 endfunction()
 
@@ -222,12 +222,12 @@ function(sdk_app_src)
     endforeach()
 endfunction()
 
-function(check_board_capability board app_yaml result)
+function(check_board_capability board_yaml app_yaml result)
     execute_process(
         COMMAND
         ${PYTHON_EXECUTABLE}
         ${HPM_SDK_BASE}/scripts/check_board_cap.py
-        ${HPM_SDK_BASE}/boards/${board}/${board}.yaml
+        ${board_yaml}
         ${app_yaml}
         RESULT_VARIABLE r
         OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -235,13 +235,13 @@ function(check_board_capability board app_yaml result)
     set(${result} ${r} PARENT_SCOPE)
 endfunction()
 
-function(get_flash_size_of_board board out)
-    get_board_info(${board} flash_size r)
+function(get_flash_size_of_board board_yaml out)
+    get_board_info(${board_yaml} flash_size r)
     set(${out} ${r} PARENT_SCOPE)
 endfunction()
 
-function(get_extram_size_of_board board out)
-    get_board_info(${board} extram_size r)
+function(get_extram_size_of_board board_yaml out)
+    get_board_info(${board_yaml} extram_size r)
     set(${out} ${r} PARENT_SCOPE)
 endfunction()
 

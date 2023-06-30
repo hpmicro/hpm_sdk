@@ -21,7 +21,13 @@
 #endif
 
 #if defined(SD_FATFS_ENABLE) && SD_FATFS_ENABLE
+
+#if defined(SD_SPI_ENABLE) && (SD_SPI_ENABLE)
+#include "./spi_sd/hpm_spi_sd_disk.h"
+#else
 #include "./sdxc/hpm_sdmmc_disk.h"
+#endif
+
 #endif
 
 /*-----------------------------------------------------------------------*/
@@ -48,7 +54,11 @@ DSTATUS disk_status(
 
 #if defined(SD_FATFS_ENABLE) && SD_FATFS_ENABLE
     case DEV_SD:
+#if defined(SD_SPI_ENABLE) && (SD_SPI_ENABLE)
+        stat = spi_sd_disk_status(pdrv);
+#else
         stat = sd_disk_status(pdrv);
+#endif
         break;
 #endif
 
@@ -81,7 +91,11 @@ void disk_deinitialize(
 
 #if defined(SD_FATFS_ENABLE) && SD_FATFS_ENABLE
     case DEV_SD:
+#if defined(SD_SPI_ENABLE) && (SD_SPI_ENABLE)
+        spi_sd_disk_deinitialize(pdrv);
+#else
         sd_disk_deinitialize(pdrv);
+#endif
         break;
 #endif
     default:
@@ -110,7 +124,11 @@ DSTATUS disk_initialize(
 
 #if defined(SD_FATFS_ENABLE) && SD_FATFS_ENABLE
     case DEV_SD:
+#if defined(SD_SPI_ENABLE) && (SD_SPI_ENABLE)
+        stat = spi_sd_disk_initialize(pdrv);
+#else
         stat = sd_disk_initialize(pdrv);
+#endif
         break;
 #endif
     default:
@@ -147,7 +165,11 @@ DRESULT disk_read(
 
 #if defined(SD_FATFS_ENABLE) && SD_FATFS_ENABLE
     case DEV_SD:
+#if defined(SD_SPI_ENABLE) && (SD_SPI_ENABLE)
+        res = spi_sd_disk_read(pdrv, buff, sector, count);
+#else
         res = sd_disk_read(pdrv, buff, sector, count);
+#endif
         break;
 #endif
     default:
@@ -188,7 +210,11 @@ DRESULT disk_write(
 
 #if defined(SD_FATFS_ENABLE) && SD_FATFS_ENABLE
     case DEV_SD:
+#if defined(SD_SPI_ENABLE) && (SD_SPI_ENABLE)
+        res = spi_sd_disk_write(pdrv, buff, sector, count);
+#else
         res = sd_disk_write(pdrv, buff, sector, count);
+#endif
         break;
 #endif
     default:
@@ -227,7 +253,11 @@ DRESULT disk_ioctl(
 
 #if defined(SD_FATFS_ENABLE) && SD_FATFS_ENABLE
     case DEV_SD:
+#if defined(SD_SPI_ENABLE) && (SD_SPI_ENABLE)
+        res = spi_sd_disk_ioctl(pdrv, cmd, buff);
+#else
         res = sd_disk_ioctl(pdrv, cmd, buff);
+#endif
         break;
 #endif
 

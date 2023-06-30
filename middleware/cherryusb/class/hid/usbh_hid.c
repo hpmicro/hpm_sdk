@@ -39,7 +39,7 @@ static void usbh_hid_devno_free(struct usbh_hid *hid_class)
 
 static int usbh_hid_get_report_descriptor(struct usbh_hid *hid_class, uint8_t *buffer)
 {
-    struct usb_setup_packet *setup = &hid_class->hport->setup;
+    struct usb_setup_packet *setup = hid_class->hport->setup;
     int ret;
 
     setup->bmRequestType = USB_REQUEST_DIR_IN | USB_REQUEST_STANDARD | USB_REQUEST_RECIPIENT_INTERFACE;
@@ -58,7 +58,7 @@ static int usbh_hid_get_report_descriptor(struct usbh_hid *hid_class, uint8_t *b
 
 int usbh_hid_set_idle(struct usbh_hid *hid_class, uint8_t report_id, uint8_t duration)
 {
-    struct usb_setup_packet *setup = &hid_class->hport->setup;
+    struct usb_setup_packet *setup = hid_class->hport->setup;
 
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_CLASS | USB_REQUEST_RECIPIENT_INTERFACE;
     setup->bRequest = HID_REQUEST_SET_IDLE;
@@ -71,7 +71,7 @@ int usbh_hid_set_idle(struct usbh_hid *hid_class, uint8_t report_id, uint8_t dur
 
 int usbh_hid_get_idle(struct usbh_hid *hid_class, uint8_t *buffer)
 {
-    struct usb_setup_packet *setup = &hid_class->hport->setup;
+    struct usb_setup_packet *setup = hid_class->hport->setup;
     int ret;
 
     setup->bmRequestType = USB_REQUEST_DIR_IN | USB_REQUEST_CLASS | USB_REQUEST_RECIPIENT_INTERFACE;
@@ -90,7 +90,7 @@ int usbh_hid_get_idle(struct usbh_hid *hid_class, uint8_t *buffer)
 
 int usbh_hid_set_protocol(struct usbh_hid *hid_class, uint8_t protocol)
 {
-    struct usb_setup_packet *setup = &hid_class->hport->setup;
+    struct usb_setup_packet *setup = hid_class->hport->setup;
 
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_CLASS | USB_REQUEST_RECIPIENT_INTERFACE;
     setup->bRequest = HID_REQUEST_SET_PROTOCOL;
@@ -148,7 +148,8 @@ int usbh_hid_connect(struct usbh_hubport *hport, uint8_t intf)
 
     USB_LOG_INFO("Register HID Class:%s\r\n", hport->config.intf[intf].devname);
 
-    return 0;
+    usbh_hid_run(hid_class);
+    return ret;
 }
 
 int usbh_hid_disconnect(struct usbh_hubport *hport, uint8_t intf)
@@ -168,6 +169,7 @@ int usbh_hid_disconnect(struct usbh_hubport *hport, uint8_t intf)
             usbh_pipe_free(hid_class->intout);
         }
 
+        usbh_hid_stop(hid_class);
         memset(hid_class, 0, sizeof(struct usbh_hid));
         usb_free(hid_class);
 
@@ -178,27 +180,27 @@ int usbh_hid_disconnect(struct usbh_hubport *hport, uint8_t intf)
     return ret;
 }
 
+__WEAK void usbh_hid_run(struct usbh_hid *hid_class)
+{
+
+}
+
+__WEAK void usbh_hid_stop(struct usbh_hid *hid_class)
+{
+
+}
+
 const struct usbh_class_driver hid_class_driver = {
     .driver_name = "hid",
     .connect = usbh_hid_connect,
     .disconnect = usbh_hid_disconnect
 };
 
-CLASS_INFO_DEFINE const struct usbh_class_info hid_keyboard_class_info = {
-    .match_flags = USB_CLASS_MATCH_INTF_CLASS | USB_CLASS_MATCH_INTF_SUBCLASS | USB_CLASS_MATCH_INTF_PROTOCOL,
+CLASS_INFO_DEFINE const struct usbh_class_info hid_custom_class_info = {
+    .match_flags = USB_CLASS_MATCH_INTF_CLASS,
     .class = USB_DEVICE_CLASS_HID,
-    .subclass = HID_SUBCLASS_BOOTIF,
-    .protocol = HID_PROTOCOL_KEYBOARD,
-    .vid = 0x00,
-    .pid = 0x00,
-    .class_driver = &hid_class_driver
-};
-
-CLASS_INFO_DEFINE const struct usbh_class_info hid_mouse_class_info = {
-    .match_flags = USB_CLASS_MATCH_INTF_CLASS | USB_CLASS_MATCH_INTF_SUBCLASS | USB_CLASS_MATCH_INTF_PROTOCOL,
-    .class = USB_DEVICE_CLASS_HID,
-    .subclass = HID_SUBCLASS_BOOTIF,
-    .protocol = HID_PROTOCOL_MOUSE,
+    .subclass = 0x00,
+    .protocol = 0x00,
     .vid = 0x00,
     .pid = 0x00,
     .class_driver = &hid_class_driver

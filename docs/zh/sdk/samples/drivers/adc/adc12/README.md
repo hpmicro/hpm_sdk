@@ -50,15 +50,15 @@ Please enter one of ADC conversion modes above (e.g. 1 or 2 ...):
 
   ```console
   Please enter one of ADC conversion modes above (e.g. 1 or 2 ...): 3
-  Sequence Mode - ADC0 - Sequence Number:00 Cycle Bit: 00 ADC Channel: 00 Result: 0x0fe0
-  Sequence Mode - ADC0 - Sequence Number:00 Cycle Bit: 01 ADC Channel: 11 Result: 0x0fe3
-  Sequence Mode - ADC0 - Sequence Number:00 Cycle Bit: 00 ADC Channel: 11 Result: 0x0fe7
+  Sequence Mode - ADC0 - Cycle Bit: 01 - Sequence Number:00 - ADC Channel: 11 - Result: 0x0fff
+  Sequence Mode - ADC0 - Cycle Bit: 00 - Sequence Number:00 - ADC Channel: 11 - Result: 0x0ffb
+  Sequence Mode - ADC0 - Cycle Bit: 01 - Sequence Number:00 - ADC Channel: 11 - Result: 0x0ff7
   ```
   - Preemption 模式
 
   ```console
   Please enter one of ADC conversion modes above (e.g. 1 or 2 ...): 4
-  Preemption Mode - ADC0 - Cycle Bit: 01 ADC Channel: 11 Trig Index: 00 Trig Channel: 00 Result: 0x0ffb
-  Preemption Mode - ADC0 - Cycle Bit: 01 ADC Channel: 11 Trig Index: 00 Trig Channel: 00 Result: 0x0ffd
-  Preemption Mode - ADC0 - Cycle Bit: 01 ADC Channel: 11 Trig Index: 00 Trig Channel: 00 Result: 0x0ffc
+  Preemption Mode - ADC0 - Trigger Channel: 11 - Cycle Bit: 01 - Sequence Number: 00 - ADC Channel: 11 - Result: 0x0ff9
+  Preemption Mode - ADC0 - Trigger Channel: 11 - Cycle Bit: 01 - Sequence Number: 00 - ADC Channel: 11 - Result: 0x0ff9
+  Preemption Mode - ADC0 - Trigger Channel: 11 - Cycle Bit: 01 - Sequence Number: 00 - ADC Channel: 11 - Result: 0x0ff9
   ```

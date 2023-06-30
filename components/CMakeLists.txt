@@ -15,5 +15,6 @@ add_subdirectory_ifdef(CONFIG_HPM_ADC adc)
 add_subdirectory_ifdef(CONFIG_HPM_SPI spi)
 add_subdirectory_ifdef(CONFIG_DMA_MANAGER dma_manager)
 add_subdirectory_ifdef(CONFIG_IPC_EVENT_MGR ipc_event_mgr)
-
-
+add_subdirectory_ifdef(CONFIG_HPM_SCCB sccb)
+add_subdirectory_ifdef(CONFIG_HPM_SMBUS smbus)
+add_subdirectory_ifdef(CONFIG_HPM_UART_LIN uart_lin)

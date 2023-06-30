@@ -18,11 +18,6 @@
 #define HIDRAW_OUT_EP_SIZE     64
 #define HIDRAW_OUT_EP_INTERVAL 10
 
-#define USBD_VID           0xcafe
-#define USBD_PID           0x4004
-#define USBD_MAX_POWER     100
-#define USBD_LANGID_STRING 1033
-
 /*!< config descriptor size */
 #define USB_HID_CONFIG_DESC_SIZ (9 + 9 + 9 + 7 + 7)
 

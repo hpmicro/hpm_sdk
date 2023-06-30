@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -19,9 +19,12 @@
  *  Macro Const Definitions
  *---------------------------------------------------------------------
  */
-#define PHY_ADDR (1U)
-#define PHY_ID1  (0x2000U)
-#define PHY_ID2  (0x17U)
+#ifndef DP83848_ADDR
+#define DP83848_ADDR (1U)
+#endif
+
+#define DP83848_ID1  (0x2000U)
+#define DP83848_ID2  (0x17U)
 
 /*---------------------------------------------------------------------
  *  Typedef Struct Declarations

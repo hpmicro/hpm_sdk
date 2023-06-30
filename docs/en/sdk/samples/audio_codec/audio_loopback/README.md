@@ -8,12 +8,14 @@ MCU send back the received data to codec component, then codec component decodes
 
 ## Project Configuration
 
-- In the file `CMakelists.txt`, set a matched audio codec type according to the development board schematic，e.g. "set(CONFIG_CODEC "sgtl5000")"
+- In the file `CMakeLists.txt`, set a matched audio codec type according to the development board schematic，e.g. "set(CONFIG_CODEC "sgtl5000")"
 
 ## Board Setting
 
-1. Connect audio player to the [audio input](lab_board_app_audio_input) interface on the audio codec chip
-2. Connect headphone to the [headphone](lab_board_app_headphone) interface on the audio codec chip
+1. Choose one of the following audio input methods based on the board schematic:
+    - Connect the music player to the LINE_IN interface of the onboard codec using a 3.5mm audio cable to record audio data.
+    - Use the onboard codec's microphone to record audio data.
+2. Connect headphone to the [headphone](lab_board_app_headphone) interface on the audio codec chip to play audio data
 
 ## Running the example
 

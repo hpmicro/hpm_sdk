@@ -60,6 +60,7 @@ bool extract_jpeg_tables(uint8_t *buf, int32_t len, jpeg_image_info_t *info)
     uint32_t l[16];
     uint32_t fp = 0;
     bool eoi_reached = false;
+    uint32_t qt_len, qt_num;
 
     /*BASE mem (base.dat) - 9 bits array*/
     uint32_t hea[64] = {0};
@@ -322,23 +323,27 @@ marker:
             /*Quantization Table  */
             /*Lq : QT Length (16b)*/
             v = buf[fp++];
-            v = (v << 8) | buf[fp++];
-            v = buf[fp++];
-            /* Pq : QT element precision (4b)
-             * - specifies the precision of the Qk values.
-             *   0 indicates 8-bits Qk values.
-             *   1 indicates 16-bits Qk values
-             * Tq : QT destination identifier (4b)
-             * - specifies one of 4 possible destnations at the decoder into
-             *  which the QT shall be installed.
-             */
-            n = v & 15;
-            for (i = 0; i < 64; i++) {
-                /* Qk: Quantization table element
-                 * k is the index in the zigzag ordering of the DCT coeff
-                 * JPC only do 8-bit Qk! (ie, Pq shall be 0)
-                 */
-                qt[n][i] = buf[fp++];
+            qt_len = (v << 8) | buf[fp++];
+            qt_len -= 2;
+            qt_num = qt_len / 65;
+            while (qt_num--) {
+                v = buf[fp++];
+                /* Pq : QT element precision (4b)
+                * - specifies the precision of the Qk values.
+                *   0 indicates 8-bits Qk values.
+                *   1 indicates 16-bits Qk values
+                * Tq : QT destination identifier (4b)
+                * - specifies one of 4 possible destnations at the decoder into
+                *  which the QT shall be installed.
+                */
+                n = v & 15;
+                for (i = 0; i < 64; i++) {
+                    /* Qk: Quantization table element
+                    * k is the index in the zigzag ordering of the DCT coeff
+                    * JPC only do 8-bit Qk! (ie, Pq shall be 0)
+                    */
+                    qt[n][i] = buf[fp++];
+                }
             }
             break;
         case 0xdd:

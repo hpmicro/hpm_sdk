@@ -97,33 +97,30 @@ void usb_msc_fatfs_scan_file_test(char *path)
     f_closedir(&DirInfo);
 }
 
-void usbh_device_mount_done_callback(struct usbh_hubport *hport)
+void usbh_msc_run(struct usbh_msc *msc_class)
 {
-    mounted_flag = true;
+    if (msc_class != NULL) {
+        usb_disk_set_active_msc_class((void *)msc_class);
+        mounted_flag = true;
+    }
 }
 
-void usbh_device_unmount_done_callback(struct usbh_hubport *hport)
+void usbh_msc_stop(struct usbh_msc *msc_class)
 {
     mounted_flag = false;
 }
 
 static void msc_test(void)
 {
-    struct usbh_msc *msc_class;
-
-    msc_class = (struct usbh_msc *)usbh_find_class_instance("/dev/sda");
-    if (msc_class != NULL) {
-        usb_disk_set_active_msc_class((void *)msc_class);
-        res_sd = f_mount(&fs, "0:", 1);
-        if (res_sd != FR_OK) {
-            USB_LOG_RAW("FATFS cherryusb mount fail,res:%d\r\n", res_sd);
-        } else {
-            USB_LOG_RAW("FATFS cherryusb mount succeeded!\r\n");
-            if (usb_msc_fatfs_write_read_test() == 0) {
-                usb_msc_fatfs_scan_file_test("/");
-                f_unmount("0:");
-                mounted_flag = false;
-            }
+    res_sd = f_mount(&fs, "0:", 1);
+    if (res_sd != FR_OK) {
+        USB_LOG_RAW("FATFS cherryusb mount fail,res:%d\r\n", res_sd);
+    } else {
+        USB_LOG_RAW("FATFS cherryusb mount succeeded!\r\n");
+        if (usb_msc_fatfs_write_read_test() == 0) {
+            usb_msc_fatfs_scan_file_test("/");
+            f_unmount("0:");
+            mounted_flag = false;
         }
     }
 }

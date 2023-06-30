@@ -16,10 +16,11 @@
 #include "hpm_pllctl_drv.h"
 #include "hpm_clock_drv.h"
 #include "core_portme.h"
-#include "lv_demo_widgets.h"
+#include "demos/lv_demos.h"
 #include "dualcore_widgets.h"
 
-coremark_context_t *g_cm_ctx[2] = { (coremark_context_t *) 0xBF000, (coremark_context_t *) 0x011FF000, };
+extern coremark_context_t g_coremark_ctx[2];
+coremark_context_t *g_cm_ctx[2] = { (coremark_context_t *)&g_coremark_ctx[0], (coremark_context_t *)&g_coremark_ctx[1] };
 
 bool start_coremark;
 
@@ -198,6 +199,9 @@ void lv_dualcore_coremark_demo(void)
 
 static void profile_create(lv_obj_t *parent, ui_component_t *ui)
 {
+    char str_buf[100];
+    uint32_t cpu_freq_in_hz;
+
     /* Top panel */
     lv_obj_t *panel1 = lv_obj_create(parent);
     lv_obj_set_height(panel1, LV_SIZE_CONTENT);
@@ -242,7 +246,10 @@ static void profile_create(lv_obj_t *parent, ui_component_t *ui)
     lv_obj_add_event_cb(ui->freqswitch_btn, freqswitch_button_click_cb, LV_EVENT_CLICKED, NULL);
 
     ui->freqswitch_btn_label = lv_label_create(ui->freqswitch_btn);
-    lv_label_set_text(ui->freqswitch_btn_label, "816MHz");
+
+    cpu_freq_in_hz = clock_get_frequency(clock_cpu0);
+    sprintf(str_buf, "%dMHz", cpu_freq_in_hz / 1000000U);
+    lv_label_set_text(ui->freqswitch_btn_label, str_buf);
     lv_label_set_recolor(ui->freqswitch_btn_label, true);
     lv_obj_center(ui->freqswitch_btn_label);
 
@@ -546,7 +553,7 @@ static void profile_create(lv_obj_t *parent, ui_component_t *ui)
 
 void update_coremark_result(lv_coremark_ctx_t *cm_ctx)
 {
-    char str_buf[1000];
+    char str_buf[100];
     for (uint32_t i = 0; i < 2; i++) {
         clock_name_t cpu_clk_name = (i == 0) ? clock_cpu0 : clock_cpu1;
         uint32_t cpu_freq_in_hz = clock_get_frequency(cpu_clk_name);
@@ -607,22 +614,25 @@ void load_coremark_bin_for_cpu(void)
 
 void refresh_coremark_info(void)
 {
+    static const char coremark_str_hdrs[] = "CoreMark 1.0 : ";
+    char *str_start;
+    uint32_t temp;
+    uint32_t cpu_freq;
     uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN(g_cm_ctx[1]);
     uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP((uint32_t) g_cm_ctx[1] + sizeof(*g_cm_ctx[1]));
     uint32_t aligned_size = aligned_end - aligned_start;
     l1c_dc_invalidate(aligned_start, aligned_size);
+
     for (uint32_t i = 0; i < 2; i++) {
         if (g_cm_ctx[i]->has_done) {
             g_lv_cm_ctx.result_ready[i] = true;
-
-            static const char coremark_str_hdrs[] = "CoreMark 1.0 : ";
-            char *str_start = strstr(g_cm_ctx[i]->s_buffer, coremark_str_hdrs);
+            str_start = strstr(g_cm_ctx[i]->s_buffer, coremark_str_hdrs);
             if (str_start != NULL) {
                 str_start += strlen(coremark_str_hdrs);
-                uint32_t temp = strtoul(str_start, NULL, 0);
-
+                /* temp = strtoul(str_start, NULL, 0); */
+                sscanf(str_start, "%d", &temp);
                 clock_name_t cpu_clk_name = (i == 0) ? clock_cpu0 : clock_cpu1;
-                uint32_t cpu_freq = clock_get_frequency(cpu_clk_name);
+                cpu_freq = clock_get_frequency(cpu_clk_name);
                 g_lv_cm_ctx.coremark[i] = temp;
                 g_lv_cm_ctx.coremarkmhz[i] = g_lv_cm_ctx.coremark[i] * 1.0 / (cpu_freq / 1000000U);
             }
@@ -678,7 +688,7 @@ void freqswitch_button_click_cb(lv_event_t *e)
     } clock_setting_t;
 
     const clock_setting_t
-        k_clock_setting_list[] = {{ 816000000UL, false }, { 700000100UL, false }, { 648000100UL, false }, };
+        k_clock_setting_list[] = {{ 648000100UL, false }, { 700000100UL, false }, { 816000000UL, false }, };
 
     static uint32_t freq_idx;
 

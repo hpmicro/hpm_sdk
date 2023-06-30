@@ -91,26 +91,6 @@ static inline void dao_disable_hpf(DAO_Type *ptr)
 }
 
 /**
- * @brief enable error irq
- *
- * @param [in] ptr DAO base address
- */
-static inline void dao_enable_error_irq(DAO_Type *ptr)
-{
-    ptr->CTRL |= DAO_CTRL_SAT_ERR_IE_MASK;
-}
-
-/**
- * @brief disable error irq
- *
- * @param [in] ptr DAO base address
- */
-static inline void dao_disable_error_irq(DAO_Type *ptr)
-{
-    ptr->CTRL &= ~DAO_CTRL_SAT_ERR_IE_MASK;
-}
-
-/**
  * @brief enable channel
  *
  * @param [in] ptr DAO base address

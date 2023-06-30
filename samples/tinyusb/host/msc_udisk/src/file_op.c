@@ -6,8 +6,8 @@
  */
 
 #include "ff.h"
-#include "string.h"
-#include "stdio.h"
+#include <string.h>
+#include <stdio.h>
 
 void f_scan(char *path)
 {

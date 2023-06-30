@@ -7,7 +7,7 @@ This example project shows USB MSC HOST
 ## Board Setting
 
 - Connect a USB port on PC to the PWR DEBUG port on the development board with a USB Type-C cable
-- Connect a USB port on the development board USB0 to a USB flash disk with a USB Type-C convert Type-A cable
+- Connect a USB port on the development board USB0 to a USB flash disk (Filesystem format: FAT) with a USB Type-C convert Type-A cable
 
 ## Running the example
 

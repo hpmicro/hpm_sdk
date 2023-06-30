@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -15,18 +15,17 @@
 #include "board.h"
 
 /*---------------------------------------------------------------------
- *
- * Interal API
+ * Internal API
  *---------------------------------------------------------------------
  */
 static bool rtl8211_check_id(ENET_Type *ptr)
 {
     uint16_t id1, id2;
 
-    id1 = enet_read_phy(ptr, PHY_ADDR, RTL8211_PHYID1);
-    id2 = enet_read_phy(ptr, PHY_ADDR, RTL8211_PHYID2);
+    id1 = enet_read_phy(ptr, RTL8211_ADDR, RTL8211_PHYID1);
+    id2 = enet_read_phy(ptr, RTL8211_ADDR, RTL8211_PHYID2);
 
-    if (RTL8211_PHYID1_OUI_MSB_GET(id1) == PHY_ID1 && RTL8211_PHYID2_OUI_LSB_GET(id2) == PHY_ID2) {
+    if (RTL8211_PHYID1_OUI_MSB_GET(id1) == RTL8211_ID1 && RTL8211_PHYID2_OUI_LSB_GET(id2) == RTL8211_ID2) {
         return true;
     } else {
         return false;
@@ -42,11 +41,11 @@ void rtl8211_reset(ENET_Type *ptr)
     uint16_t data;
 
     /* PHY reset */
-    enet_write_phy(ptr, PHY_ADDR, RTL8211_BMCR, RTL8211_BMCR_RESET_SET(1));
+    enet_write_phy(ptr, RTL8211_ADDR, RTL8211_BMCR, RTL8211_BMCR_RESET_SET(1));
 
     /* wait until the reset is completed */
     do {
-        data = enet_read_phy(ptr, PHY_ADDR, RTL8211_BMCR);
+        data = enet_read_phy(ptr, RTL8211_ADDR, RTL8211_BMCR);
     } while (RTL8211_BMCR_RESET_GET(data));
 }
 
@@ -79,7 +78,7 @@ bool rtl8211_basic_mode_init(ENET_Type *ptr, rtl8211_config_t *config)
         data |= RTL8211_BMCR_DUPLEX_SET(config->duplex);                                                /* Set duplex mode */
     }
 
-    enet_write_phy(ptr, PHY_ADDR, RTL8211_BMCR, data);
+    enet_write_phy(ptr, RTL8211_ADDR, RTL8211_BMCR, data);
 
     /* check the id of rtl8211 */
     if (rtl8211_check_id(ptr) == false) {
@@ -94,7 +93,7 @@ void rtl8211_get_phy_status(ENET_Type *ptr, enet_phy_status_t *status)
 {
     uint16_t data;
 
-    data = enet_read_phy(ptr, PHY_ADDR, RTL8211_PHYSR);
+    data = enet_read_phy(ptr, RTL8211_ADDR, RTL8211_PHYSR);
     status->enet_phy_link = RTL8211_PHYSR_LINK_REAL_TIME_GET(data);
     status->enet_phy_speed = RTL8211_PHYSR_SPEED_GET(data) == 0 ? enet_phy_port_speed_10mbps : RTL8211_PHYSR_SPEED_GET(data) == 1 ? enet_phy_port_speed_100mbps : enet_phy_port_speed_1000mbps;
     status->enet_phy_duplex = RTL8211_PHYSR_DUPLEX_GET(data);

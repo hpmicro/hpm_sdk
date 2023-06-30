@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -302,8 +302,10 @@ static hpm_stat_t sd_all_send_cid(sd_card_t *card)
     if (status != status_success) {
         return status;
     }
-    card->cid.cid_words[0] = cmd->response[0];
-    card->cid.cid_words[1] = cmd->response[1];
+
+    for (uint32_t i = 0; i < 3; i++) {
+        card->cid.cid_words[i] = cmd->response[i];
+    }
 
     return status;
 }
@@ -328,7 +330,7 @@ static hpm_stat_t sd_send_rca(sd_card_t *card)
 static hpm_stat_t sd_error_recovery(sd_card_t *card)
 {
     sdmmchost_cmd_t *cmd = &card->host->cmd;
-    cmd->cmd_index = sdmmc_cmd_top_transmission;
+    cmd->cmd_index = sdmmc_cmd_stop_transmission;
     cmd->cmd_type = sdxc_cmd_type_abort_cmd;
     cmd->resp_type = sdmmc_resp_r1b;
 
@@ -371,12 +373,12 @@ static hpm_stat_t sd_probe_bus_voltage(sd_card_t *card)
     hpm_stat_t status = status_invalid_argument;
 
     do {
-        status = sdmmc_go_idle_state(card->host);
+        status = sdmmc_go_idle_state(card->host, 0);
         HPM_BREAK_IF(status != status_success);
 
         status = sd_send_if_cond(card);
         if (status == status_sdmmc_card_not_support) {
-            status = sdmmc_go_idle_state(card->host);
+            status = sdmmc_go_idle_state(card->host, 0);
             HPM_BREAK_IF(status != status_success);
         }
         sd_ocr_t ocr = {.ocr_word = 0};
@@ -564,7 +566,7 @@ static hpm_stat_t sd_set_bus_timing(sd_card_t *card)
         break;
     }
 
-    sdmmchost_set_card_clock(card->host, clock_option);
+    sdmmchost_set_card_clock(card->host, clock_option, true);
     return status;
 }
 
@@ -714,11 +716,11 @@ hpm_stat_t sd_card_init(sd_card_t *card)
         HPM_BREAK_IF(status != status_success);
 
         sdmmchost_set_card_bus_width(card->host, sdxc_bus_width_1bit);
-        sdmmchost_set_card_clock(card->host, SDMMC_CLOCK_400KHZ);
+        sdmmchost_set_card_clock(card->host, SDMMC_CLOCK_400KHZ, true);
         status = sd_probe_bus_voltage(card);
         HPM_BREAK_IF(status != status_success);
 
-        sdmmchost_set_card_clock(card->host, SD_CLOCK_25MHZ);
+        sdmmchost_set_card_clock(card->host, SD_CLOCK_25MHZ, true);
 
         /* Send CMD2 */
         status = sd_all_send_cid(card);

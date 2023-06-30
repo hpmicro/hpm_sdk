@@ -88,7 +88,7 @@ __attribute__((weak)) long exception_handler(long cause, long epc)
     return epc;
 }
 
-#ifndef CONFIG_FREERTOS
+#if !defined(CONFIG_FREERTOS) && !defined(CONFIG_UCOS_III) && !defined(CONFIG_THREADX)
 void irq_handler_trap(void) __attribute__ ((section(".isr_vector"), interrupt("machine"), aligned(4)));
 #else
 void irq_handler_trap(void) __attribute__ ((section(".isr_vector")));

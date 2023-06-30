@@ -1,14 +1,15 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
 
 #include "hpm_sdmmc_common.h"
+#include "hpm_sdmmc_card.h"
 #include <string.h>
 
-hpm_stat_t sdmmc_go_idle_state(sdmmc_host_t *host)
+hpm_stat_t sdmmc_go_idle_state(sdmmc_host_t *host, uint32_t argument)
 {
     hpm_stat_t status = status_invalid_argument;
 
@@ -18,6 +19,7 @@ hpm_stat_t sdmmc_go_idle_state(sdmmc_host_t *host)
         (void) memset(host_cmd, 0, sizeof(sdmmchost_cmd_t));
 
         host_cmd->cmd_index = sdmmc_cmd_go_idle_state;
+        host_cmd->cmd_argument = argument;
         host_cmd->resp_type = sdxc_dev_resp_none;
 
         status = sdmmchost_send_command(host, host_cmd);
@@ -142,4 +144,30 @@ hpm_stat_t sdmmc_enable_auto_tuning(sdmmc_host_t *host)
     } while (false);
 
     return status;
+}
+
+uint32_t extract_csd_field(const uint32_t *raw_csd, uint8_t end_offset, uint8_t start_offset)
+{
+    assert((start_offset <= end_offset) && ((end_offset - start_offset) <= 31U));
+    uint32_t result = 0;
+
+    uint32_t start_word_index = start_offset / 32;
+    uint32_t end_word_index = end_offset / 32;
+    uint32_t end_offset_in_word = end_offset % 32;
+    uint32_t start_offset_in_word = start_offset % 32;
+
+    /* If all bits of the field are in the same raw_csd word */
+    if (start_word_index == end_word_index) {
+        uint32_t field_width = end_offset - start_offset + 1U;
+        uint32_t field_mask = ((1UL << field_width) - 1U) << start_offset;
+        result = (raw_csd[start_word_index] & field_mask) >> start_offset_in_word;
+    } else {
+        /* If the bits of the field crosses two raw_csd words */
+        uint32_t lsb_bits = 32U - start_offset_in_word;
+        uint32_t result_lsb = raw_csd[start_word_index] >> start_offset_in_word;
+        uint32_t result_msb = raw_csd[end_word_index] & ((1UL << end_offset_in_word) - 1U);
+        result = (result_msb << lsb_bits) | result_lsb;
+    }
+
+    return result;
 }

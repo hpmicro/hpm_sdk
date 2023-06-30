@@ -266,6 +266,7 @@ int main(void)
 
         if ((f_info.fattrib & AM_DIR) == AM_DIR) {
             printf("folder: %s\r\n", f_info.fname);
+            continue;
         } else if (!file_is_jpg((uint8_t *)f_info.fname)) {
             continue;
         }

@@ -33,7 +33,7 @@ void init_common_config(adc16_conversion_mode_t conv_mode)
     adc16_get_default_config(&cfg);
     cfg.res            = adc16_res_16_bits;
     cfg.conv_mode      = conv_mode;
-    cfg.adc_clk_div    = 3;
+    cfg.adc_clk_div    = adc16_clock_divider_4;
     cfg.sel_sync_ahb   = true;
 
     if (cfg.conv_mode == adc16_conv_mode_sequence ||

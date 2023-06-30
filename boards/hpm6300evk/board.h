@@ -68,6 +68,9 @@
 
 /* uart rx idle demo section */
 #define BOARD_UART_IDLE HPM_UART2
+#define BOARD_UART_IDLE_IRQ        IRQn_UART2
+#define BOARD_UART_IDLE_CLK_NAME   clock_uart2
+#define BOARD_UART_IDLE_TX_DMA_SRC HPM_DMA_SRC_UART2_TX
 #define BOARD_UART_IDLE_DMA_SRC HPM_DMA_SRC_UART2_RX
 
 #define BOARD_UART_IDLE_TRGM HPM_TRGM1
@@ -81,6 +84,18 @@
 #define BOARD_UART_IDLE_GPTMR_IRQ IRQn_GPTMR2
 #define BOARD_UART_IDLE_GPTMR_CMP_CH 0
 #define BOARD_UART_IDLE_GPTMR_CAP_CH 2
+
+/* uart lin sample section */
+#define BOARD_UART_LIN            HPM_UART2
+#define BOARD_UART_LIN_IRQ        IRQn_UART2
+#define BOARD_UART_LIN_CLK_NAME   clock_uart2
+#define BOARD_UART_LIN_TX_PORT    GPIO_DI_GPIOC
+#define BOARD_UART_LIN_TX_PIN     (26U)  /* PC26 should align with used pin in pinmux configuration */
+
+/* uart microros sample section */
+#define BOARD_MICROROS_UART_BASE HPM_UART2
+#define BOARD_MICROROS_UART_IRQ IRQn_UART2
+#define BOARD_MICROROS_UART_CLK_NAME clock_uart2
 
 /* sdram section */
 #define BOARD_SDRAM_ADDRESS  (0x40000000UL)
@@ -119,12 +134,19 @@
 #define BOARD_APP_DMAMUX HPM_DMAMUX
 
 /* gptmr section */
-#define BOARD_GPTMR HPM_GPTMR2
-#define BOARD_GPTMR_IRQ IRQn_GPTMR2
-#define BOARD_GPTMR_CHANNEL 0
-#define BOARD_GPTMR_PWM HPM_GPTMR2
-#define BOARD_GPTMR_PWM_CHANNEL 0
-#define BOARD_GPTMR_CLK_NAME clock_gptmr2
+#define BOARD_GPTMR                   HPM_GPTMR2
+#define BOARD_GPTMR_IRQ               IRQn_GPTMR2
+#define BOARD_GPTMR_CHANNEL           0
+#define BOARD_GPTMR_DMA_SRC           HPM_DMA_SRC_GPTMR2_0
+#define BOARD_GPTMR_CLK_NAME          clock_gptmr2
+#define BOARD_GPTMR_PWM               HPM_GPTMR2
+#define BOARD_GPTMR_PWM_DMA_SRC       HPM_DMA_SRC_GPTMR2_0
+#define BOARD_GPTMR_PWM_CHANNEL       0
+#define BOARD_GPTMR_PWM_CLK_NAME      clock_gptmr2
+#define BOARD_GPTMR_PWM_IRQ           IRQn_GPTMR2
+#define BOARD_GPTMR_PWM_SYNC          HPM_GPTMR2
+#define BOARD_GPTMR_PWM_SYNC_CHANNEL  1
+#define BOARD_GPTMR_PWM_SYNC_CLK_NAME clock_gptmr2
 
 /* gpio section */
 #define BOARD_APP_GPIO_INDEX GPIO_DI_GPIOZ
@@ -189,11 +211,6 @@
 #define BOARD_APP_ADC16_BASE HPM_ADC0
 #define BOARD_APP_ADC16_IRQn IRQn_ADC0
 #define BOARD_APP_ADC16_CH_1                     (13U)
-#define BOARD_APP_ADC_TRIG_PWMT0                 HPM_PWM0
-#define BOARD_APP_ADC_TRIG_PWMT1                 HPM_PWM1
-#define BOARD_APP_ADC_TRIG_TRGM0                 HPM_TRGM0
-#define BOARD_APP_ADC_TRIG_TRGM1                 HPM_TRGM1
-#define BOARD_APP_ADC_TRIG_PWM_SYNC              HPM_SYNT
 
 /* DAC section */
 #define BOARD_DAC_BASE       HPM_DAC
@@ -308,6 +325,7 @@
 #define BOARD_APP_PWM_OUT2 1
 #define BOARD_APP_TRGM HPM_TRGM0
 #define BOARD_APP_PWM_IRQ IRQn_PWM0
+#define BOARD_APP_TRGM_PWM_OUTPUT TRGM_TRGOCFG_PWM_SYNCI
 
 #define BOARD_CPU_FREQ (480000000UL)
 

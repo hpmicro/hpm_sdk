@@ -104,7 +104,7 @@ __attribute__((weak)) void __cxa_atexit(void (*arg1)(void *), void *arg2, void *
 {
 }
 
-#ifndef __SEGGER_RTL_VERSION
+#if !defined(__SEGGER_RTL_VERSION) || defined(__riscv_xandes)
 void *__dso_handle = (void *) &__dso_handle;
 #endif
 

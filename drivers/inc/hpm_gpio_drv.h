@@ -54,6 +54,20 @@ static inline uint8_t gpio_read_pin(GPIO_Type *ptr, uint32_t port, uint8_t pin)
 }
 
 /**
+ * @brief   Read target pin output state
+ *
+ * @param ptr GPIO base address
+ * @param port Port index
+ * @param pin Pin index
+ *
+ * @return Pin output state
+ */
+static inline uint32_t gpio_get_pin_output_status(GPIO_Type *ptr, uint32_t port, uint8_t pin)
+{
+    return (ptr->DO[port].VALUE & (1 << pin)) >> pin;
+}
+
+/**
  * @brief   Toggle pin level
  *
  * @param ptr GPIO base address

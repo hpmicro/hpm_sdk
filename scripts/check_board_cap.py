@@ -1,4 +1,4 @@
-# Copyright 2021 hpmicro
+# Copyright (c) 2021 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
@@ -38,8 +38,10 @@ def get_linked_project(app_info):
         linked_proj_info = app_info[APP_LINKED_PROJECT]
     return linked_proj_info
 
+def is_sdk_board(board_dir):
+    return board_dir.find(os.getenv('HPM_SDK_BASE')) > 0
 
-def build_linked_project(app_info,board_name):
+def build_linked_project(app_info, board_name, board_dir):
     project_name=""
     build_type=""
     linked_proj_info = get_linked_project(app_info)
@@ -59,7 +61,10 @@ def build_linked_project(app_info,board_name):
             else:
                os.mkdir(linked_proj_build_dir)
             os.chdir(linked_proj_build_dir)
-            build_linked_proj_cmd = "cmake -GNinja -DBOARD=" + board_name + " -DCMAKE_BUILD_TYPE="+build_type + " " + linked_proj_root_dir
+            extra_option = ""
+            if not is_sdk_board(board_dir):
+                extra_option = "-DEXTRA_BOARD_PATH=" + os.path.dirname(board_dir)
+            build_linked_proj_cmd = "cmake -GNinja -DBOARD=" + board_name + " -DCMAKE_BUILD_TYPE="+build_type + " " + extra_option + " " + linked_proj_root_dir
             build_linked_proj_cmd += " && ninja"
             p = subprocess.Popen(build_linked_proj_cmd, shell=True,  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             retval = p.wait()
@@ -68,6 +73,7 @@ def build_linked_project(app_info,board_name):
 if __name__ == "__main__":
     board_cap = get_board_info.get_info(sys.argv[1], get_board_info.BOARD_INFO_FEATURE_KEY)
     board_name = get_board_info.get_info(sys.argv[1], get_board_info.BOARD_INFO_NAME_KEY)
+    board_dir = sys.argv[1].split(board_name)[0]
     app_yml = sys.argv[2]
 
     if not os.path.exists(app_yml) or board_cap is None:
@@ -75,7 +81,7 @@ if __name__ == "__main__":
 
     app_info = parse_app_yml(app_yml)
 
-    retval = build_linked_project(app_info, board_name)
+    retval = build_linked_project(app_info, board_name, board_dir)
     if (retval != 0):
         sys.exit(retval)
 

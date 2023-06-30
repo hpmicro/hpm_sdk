@@ -89,7 +89,8 @@ HPM6750是一款主频达816Mhz的双核微控制器。该芯片拥有最大2M�
 | 功能          | 位置   |
 | ------------- | ------ |
 | GPTMR2.CAPT_2 | P2[15] |
-| GPTMR2.COMP_2 | P2[19] |
+| GPTMR2.COMP_0 | P2[19] |
+| GPTMR2.COMP_1 | P2[22] |
 
 - ADC12引脚
 
@@ -139,7 +140,7 @@ HPM6750是一款主频达816Mhz的双核微控制器。该芯片拥有最大2M�
 | ENET0.EVTO1 | P1[12] |
 | ENET0.EVTO2 | P1[35] |
 
-- UART引脚用于uart_software_rx_idle工程
+- UART引脚用于uart_software_rx_idle或uart_rx_timeout或uart_lin工程
 
 | 功能       | 位置   |
 | ---------- | ------ |
@@ -151,3 +152,11 @@ HPM6750是一款主频达816Mhz的双核微控制器。该芯片拥有最大2M�
 | 功能        | 位置    |
 | ---------- | -------- |
 | TRGM2_P9(PD19)  | P2[35]   |
+
+- 电机引脚
+
+  参考 [HPM6750EVKMINI-TO-MOTOR扩展板章节](lab_board_hpm6750evkmini-to-motor-220530RevA) 进行连接
+
+## 已知问题：
+- 一些例程在运行过程中有可能会进入trap handler，同时mcause为2（指令错误），这是由于ILM的缺陷导致的，详见《勘误手册E00001》。
+  - 处理办法：将链接脚本中的ILM接口地址改为ILM_SLV地址。

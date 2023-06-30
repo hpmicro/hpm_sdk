@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 hpmicro
+ * Copyright (c) 2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -37,6 +37,8 @@ void init_trgmux_pins(uint32_t pin);
 void init_pla_pins(void);
 void init_lin_pins(LIN_Type *ptr);
 void init_sdm_pins(void);
+void init_pla_tamagawa_pins(void);
+void init_motor_over_zero_sensorless_adc_pins(void);
 #ifdef __cplusplus
 }
 #endif

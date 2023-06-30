@@ -15,17 +15,16 @@
 #include "lwip/dhcp.h"
 #include "lwip/prot/dhcp.h"
 
-#if !NO_SYS
-#include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
-#include "queue.h"
-#endif
-
 static enet_phy_status_t last_status;
 
 #if !NO_SYS
 extern xSemaphoreHandle s_xSemaphore;
+
+void timer_callback(TimerHandle_t xTimer)
+{
+   enet_self_adaptive_port_speed();
+}
+
 #endif
 
 #if LWIP_DHCP
@@ -214,7 +213,7 @@ void isr_enet(ENET_Type *ptr)
     #else
         rx_flag = true;
     #endif
-        ptr->DMA_STATUS |= ENET_DMA_STATUS_RI_SET(ENET_DMA_STATUS_RI_GET(status));
+        ptr->DMA_STATUS |= ENET_DMA_STATUS_RI_MASK;
     }
 
     if (ENET_MMC_INTR_RX_RXCTRLFIS_GET(rxgbfrmis)) {

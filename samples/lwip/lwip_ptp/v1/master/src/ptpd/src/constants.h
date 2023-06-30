@@ -7,7 +7,7 @@
 #define MANUFACTURER_ID \
     "PTPd;1.0.1\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
 
-#define DEFAULT_SYNC_INTERVAL        2
+#define DEFAULT_SYNC_INTERVAL        0
 #define DEFAULT_UTC_OFFSET           0
 #define DEFAULT_CLOCK_VARIANCE       (-4000)
 #define DEFAULT_CLOCK_STRATUM        4

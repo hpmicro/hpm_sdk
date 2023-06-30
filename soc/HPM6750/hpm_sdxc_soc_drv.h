@@ -45,6 +45,22 @@ static inline void sdxc_enable_inverse_clock(SDXC_Type *base, bool enable)
     }
 }
 
+static inline bool sdxc_is_inverse_clock_enabled(SDXC_Type *base)
+{
+    volatile uint32_t *reg = (base == HPM_SDXC0) ? &HPM_CONCTL->CTRL4 : &HPM_CONCTL->CTRL5;
+    return ((*reg) & (1UL << 28)) != 0U;
+}
+
+static inline void sdxc_select_cardclk_delay_source(SDXC_Type *base, bool delay_from_pad)
+{
+
+}
+
+static inline void sdxc_set_cardclk_delay_chain(SDXC_Type *base, uint32_t delay_chain)
+{
+
+}
+
 
 #if defined(__cplusplus)
 }

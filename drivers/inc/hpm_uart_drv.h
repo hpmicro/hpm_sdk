@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2022 HPMicro
+ * Copyright (c) 2021-2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -63,6 +63,28 @@ typedef enum uart_fifo_trg_lvl {
     uart_tx_fifo_trg_lt_one_quarter = 3,
 } uart_fifo_trg_lvl_t;
 
+#if defined(UART_SOC_HAS_NEW_FIFO_THR) && (UART_SOC_HAS_NEW_FIFO_THR == 1)
+/* @brief UART new fifo trigger levels */
+typedef enum uart_new_fifo_trg_lvl {
+    uart_fifo_1_byte  = 0,
+    uart_fifo_2_bytes = 1,
+    uart_fifo_3_bytes = 2,
+    uart_fifo_4_bytes = 3,
+    uart_fifo_5_bytes = 4,
+    uart_fifo_6_bytes = 5,
+    uart_fifo_7_bytes = 6,
+    uart_fifo_8_bytes = 7,
+    uart_fifo_9_bytes = 8,
+    uart_fifo_10_bytes = 9,
+    uart_fifo_11_bytes = 10,
+    uart_fifo_12_bytes = 11,
+    uart_fifo_13_bytes = 12,
+    uart_fifo_14_bytes = 13,
+    uart_fifo_15_bytes = 14,
+    uart_fifo_16_bytes = 15,
+} uart_new_fifo_trg_lvl_t;
+#endif
+
 /* @brief UART signals */
 typedef enum uart_signal {
     uart_signal_rts = UART_MCR_RTS_MASK,
@@ -102,7 +124,7 @@ typedef enum uart_intr_id {
 
 /* @brief UART status */
 typedef enum uart_stat {
-    uart_stat_data_ready = UART_LSR_DR_MASK,
+    uart_stat_data_ready = UART_LSR_DR_MASK, /* rx data ready in fifo */
     uart_stat_overrun_error = UART_LSR_OE_MASK,
     uart_stat_parity_error = UART_LSR_PE_MASK,
     uart_stat_framing_error = UART_LSR_FE_MASK,
@@ -149,13 +171,38 @@ typedef struct hpm_uart_config {
     uint8_t parity;                             /**< Parity */
     uint8_t tx_fifo_level;                      /**< TX Fifo level */
     uint8_t rx_fifo_level;                      /**< RX Fifo level */
+#if defined(UART_SOC_HAS_NEW_FIFO_THR) && (UART_SOC_HAS_NEW_FIFO_THR == 1)
+    bool using_new_fifo_thr;
+#endif
     bool dma_enable;                            /**< DMA Enable flag */
     bool fifo_enable;                           /**< Fifo Enable flag */
     uart_modem_config_t modem_config;           /**< Modem config */
 #if defined(UART_SOC_HAS_RXLINE_IDLE_DETECTION) && (UART_SOC_HAS_RXLINE_IDLE_DETECTION == 1)
     uart_rxline_idle_config_t  rxidle_config;   /**< RX Idle configuration */
 #endif
+#if defined(UART_SOC_HAS_RXEN_CFG) && (UART_SOC_HAS_RXEN_CFG == 1)
+    bool rx_enable;                             /**< RX Enable configuration */
+#endif
 } uart_config_t;
+
+#if defined(UART_SOC_HAS_NEW_FIFO_THR) && (UART_SOC_HAS_NEW_FIFO_THR == 1)
+typedef struct {
+    uint16_t stop_bit_len;
+    bool en_stop_bit_insert;
+    bool hardware_trig;
+    bool trig_mode;
+    bool trig_clr_rxfifo;
+} uart_trig_config_t;
+#endif
+
+typedef struct {
+    uint8_t tx_fifo_level;                      /**< TX Fifo level */
+    uint8_t rx_fifo_level;                      /**< RX Fifo level */
+    bool reset_tx_fifo;                         /**< reset tx Fifo */
+    bool reset_rx_fifo;                         /**< reset rx Fifo */
+    bool dma_enable;                            /**< DMA Enable flag */
+    bool fifo_enable;                           /**< Fifo Enable flag */
+} uart_fifo_ctrl_t;
 
 #ifdef __cplusplus
 extern "C" {
@@ -170,6 +217,31 @@ extern "C" {
 static inline uint8_t uart_get_fifo_size(UART_Type *ptr)
 {
     return 16 << ((ptr->CFG & UART_CFG_FIFOSIZE_MASK) >> UART_CFG_FIFOSIZE_SHIFT);
+}
+
+/**
+ * @brief uart config fifo control
+ *
+ * @note fifo control register is WO access, prepare all bitfiled value to write
+ *
+ * @param [in] ptr UART base address
+ * @param [in] ctrl uart_fifo_ctrl_t
+ */
+void uart_config_fifo_ctrl(UART_Type *ptr, uart_fifo_ctrl_t *ctrl);
+
+/**
+ * @brief uart clear rx fifo by reading data
+ *
+ * @note read out all data in rx fifo, the uart_intr_rx_data_avail_or_timeout is cleared
+ * when RBR register is read
+ *
+ * @param [in] ptr UART base address
+ */
+static inline void uart_clear_rx_fifo(UART_Type *ptr)
+{
+    while (ptr->LSR & UART_LSR_DR_MASK) {
+        ptr->RBR;
+    }
 }
 
 /**
@@ -378,7 +450,7 @@ static inline void uart_clear_rxline_idle_flag(UART_Type *ptr)
  */
 static inline void uart_enable_rxline_idle_detection(UART_Type *ptr)
 {
-    ptr->RXIDLE_CFG |= UART_RXIDLE_CFG_DETECT_EN_MASK;
+    ptr->IDLE_CFG |= UART_IDLE_CFG_RX_IDLE_EN_MASK;
 }
 
 /**
@@ -388,7 +460,7 @@ static inline void uart_enable_rxline_idle_detection(UART_Type *ptr)
  */
 static inline void uart_disable_rxline_idle_detection(UART_Type *ptr)
 {
-    ptr->RXIDLE_CFG &= ~UART_RXIDLE_CFG_DETECT_EN_MASK;
+    ptr->IDLE_CFG &= ~UART_IDLE_CFG_RX_IDLE_EN_MASK;
 }
 
 /**
@@ -499,7 +571,6 @@ hpm_stat_t uart_receive_data(UART_Type *ptr, uint8_t *buf, uint32_t size_in_byte
  */
 hpm_stat_t uart_send_data(UART_Type *ptr, uint8_t *buf, uint32_t size_in_byte);
 
-
 /**
  * @brief Sets UART baudrate.
  *
@@ -513,6 +584,50 @@ hpm_stat_t uart_send_data(UART_Type *ptr, uint8_t *buf, uint32_t size_in_byte);
  * @retval status_success Set baudrate succeeded.
  */
 hpm_stat_t uart_set_baudrate(UART_Type *ptr, uint32_t baudrate, uint32_t src_clock_hz);
+
+
+#if defined(UART_SOC_HAS_NEW_FIFO_THR) && (UART_SOC_HAS_NEW_FIFO_THR == 1)
+/**
+ * @brief Config uart trigger mode for communication
+ *
+ * This function is used to tomagawa communication, uart sent out data in fifo then generate interrupt after
+ * received specify count of data into fifo.
+ *
+ * @param ptr UART base address
+ * @param uart_trig_config_t config
+ */
+void uart_config_trig_mode(UART_Type *ptr, uart_trig_config_t *config);
+
+/**
+ * @brief uart trigger communication
+ *
+ * This function triggers uart communication, the communication configed by uart_config_trig_mode()
+ *
+ * @param ptr UART base address
+ */
+static inline void uart_trigger_communication(UART_Type *ptr)
+{
+    ptr->MOTO_CFG &= ~UART_MOTO_CFG_HWTRG_EN_MASK;
+    ptr->MOTO_CFG |= UART_MOTO_CFG_SWTRG_MASK;
+}
+
+/**
+ * @brief uart enable hardware trigger mode
+ *
+ * This function configures uart start communication by hardware trigger from motor periphrals
+ *
+ * @param ptr UART base address
+ * @param bool enable
+ */
+static inline void uart_enable_hardware_trigger_mode(UART_Type *ptr, bool enable)
+{
+    if (enable) {
+        ptr->MOTO_CFG |= UART_MOTO_CFG_HWTRG_EN_MASK;
+    } else {
+        ptr->MOTO_CFG &= ~UART_MOTO_CFG_HWTRG_EN_MASK;
+    }
+}
+#endif
 
 #ifdef __cplusplus
 }

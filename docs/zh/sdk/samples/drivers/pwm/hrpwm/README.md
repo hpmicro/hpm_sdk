@@ -13,7 +13,7 @@
 
 - 一个双通道示波器
 - 安装串口终端，查看[板子信息](lab_board_overiew)并配置串口终端参数
-- [PWM_P0和PWM_P1引脚](lab_board_drv_pwm_pin)根据板子型号查看具体信息
+- 查看[HRPWM_P0和HRPWM_P2引脚](lab_board_drv_hrpwm_pin)根据板子型号查看具体信息
 
 
 ## 运行现象

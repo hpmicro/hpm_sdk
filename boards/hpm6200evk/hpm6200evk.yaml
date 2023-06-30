@@ -1,4 +1,4 @@
-# Copyright 2022 hpmicro
+# Copyright (c) 2022 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 board:
@@ -11,6 +11,9 @@ board:
       type: qspi-nor-flash
       size: 16M
     feature:
+      - butn
+      - rtc
+      - wdg
       - lin
       - sdm
       - adc16
@@ -37,3 +40,5 @@ board:
       - pla
       - pwm-rgb-led
       - crc
+      - motor-phase-voltage
+      - bldc_smc

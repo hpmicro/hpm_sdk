@@ -48,12 +48,12 @@ hpm_stat_t gptmr_channel_config(GPTMR_Type *ptr,
         | GPTMR_CHANNEL_CR_CEN_SET(enable)
         | config->synci_edge;
 
-    for (uint8_t i = 0; i < GPTMR_CH_CMP_COUNT; i++) {
-        tmp_value = config->cmp[i];
+    for (uint8_t i = GPTMR_CH_CMP_COUNT; i > 0; i--) {
+        tmp_value = config->cmp[i - 1];
         if (tmp_value > 0) {
             tmp_value--;
         }
-        ptr->CHANNEL[ch_index].CMP[i] = GPTMR_CHANNEL_CMP_CMP_SET(tmp_value);
+        ptr->CHANNEL[ch_index].CMP[i - 1] = GPTMR_CHANNEL_CMP_CMP_SET(tmp_value);
     }
     tmp_value = config->reload;
     if (tmp_value > 0) {

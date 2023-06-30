@@ -12,8 +12,8 @@ void adc12_get_default_config(adc12_config_t *config)
 {
     config->res                = adc12_res_12_bits;
     config->conv_mode          = adc12_conv_mode_oneshot;
-    config->adc_clk_div        = 1;
-    config->wait_dis           = 1;
+    config->adc_clk_div        = adc12_clock_divider_1;
+    config->wait_dis           = true;
     config->sel_sync_ahb       = true;
     config->adc_ahb_en         = false;
 }
@@ -102,13 +102,13 @@ hpm_stat_t adc12_init(ADC12_Type *ptr, adc12_config_t *config)
                    | ADC12_ANA_CTRL1_SELRES_SET(config->res);
 
     /* Set convert clock number and clock period */
-    if (config->adc_clk_div > ADC12_CONV_CFG1_CLOCK_DIVIDER_MASK)  {
+    if ((config->adc_clk_div - 1) > ADC12_CONV_CFG1_CLOCK_DIVIDER_MASK)  {
         return status_invalid_argument;
     }
 
     /* Set ADC minimum conversion cycle and ADC clock divider */
     ptr->CONV_CFG1 = ADC12_CONV_CFG1_CONVERT_CLOCK_NUMBER_SET(2 * config->res + 7)
-                   | ADC12_CONV_CFG1_CLOCK_DIVIDER_SET(config->adc_clk_div);
+                   | ADC12_CONV_CFG1_CLOCK_DIVIDER_SET(config->adc_clk_div - 1);
 
     /* Set ADC Config0 */
     ptr->ADC_CFG0 = ADC12_ADC_CFG0_SEL_SYNC_AHB_SET(config->sel_sync_ahb)
@@ -275,6 +275,13 @@ hpm_stat_t adc12_set_seq_config(ADC12_Type *ptr, adc12_seq_config_t *config)
     return status_success;
 }
 
+hpm_stat_t adc12_trigger_pmt_by_sw(ADC12_Type *ptr, uint8_t trig_ch)
+{
+    ptr->TRG_SW_STA = ADC12_TRG_SW_STA_TRG_SW_STA_MASK | ADC12_TRG_SW_STA_TRIG_SW_INDEX_SET(trig_ch);
+
+    return status_success;
+}
+
 hpm_stat_t adc12_set_pmt_config(ADC12_Type *ptr, adc12_pmt_config_t *config)
 {
     uint32_t temp = 0;
@@ -284,10 +291,15 @@ hpm_stat_t adc12_set_pmt_config(ADC12_Type *ptr, adc12_pmt_config_t *config)
         return status_invalid_argument;
     }
 
+	/* Check the triggier channel */
+    if (ADC12_IS_TRIG_CH_INVLAID(config->trig_ch)) {
+        return status_invalid_argument;
+    }
+
     temp |= ADC12_CONFIG_TRIG_LEN_SET(config->trig_len - 1);
 
     for (int i = 0; i < config->trig_len; i++) {
-        if (ADC12_IS_CHANNEL_INVALID(config->trig_ch)) {
+        if (ADC12_IS_CHANNEL_INVALID(config->adc_ch[i])) {
             return status_invalid_argument;
         }
 

@@ -2,12 +2,11 @@
 
 ## Overview
 
-The audio_codec example shows how to use codec component to play audio information.
-MCU send back the data to codec component, then codec component decodes and plays the audio data.
+This example shows I2S transfer audio data with Interrupt way to audio codec on board.
 
 ## Project Configuration
 
-- In the file `CMakelists.txt`, set a matched audio codec type according to the development board schematic，e.g. "set(CONFIG_CODEC "sgtl5000")"
+- In the file `CMakeLists.txt`, set a matched audio codec type according to the development board schematic，e.g. "set(CONFIG_CODEC "sgtl5000")"
 
 ## Board Setting
 
@@ -15,9 +14,10 @@ MCU send back the data to codec component, then codec component decodes and play
 
 ## Running the example
 
-When the example runs successfully, the headset will play the sound of a sine wave with a frequency of 1KHZ. The 1KHZ sine wave can be obtained by measuring the left channel or the right channel with an oscilloscope, and the following message is displayed in the terminal:
+When the example runs successfully, the headset will play the sound, and the following message is displayed in the terminal:
 ```console
 I2S Interrupt example
-Test Codec playback
+I2C bus is ready
+I2S interrupt play finished
 ```
 

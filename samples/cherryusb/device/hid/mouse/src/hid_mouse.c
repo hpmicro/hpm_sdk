@@ -15,11 +15,6 @@
 #define HID_INT_EP_SIZE     4
 #define HID_INT_EP_INTERVAL 10
 
-#define USBD_VID           0xffff
-#define USBD_PID           0xffff
-#define USBD_MAX_POWER     100
-#define USBD_LANGID_STRING 1033
-
 /*!< config descriptor size */
 #define USB_HID_CONFIG_DESC_SIZ 34
 /*!< report descriptor size */

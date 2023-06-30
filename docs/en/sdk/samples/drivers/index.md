@@ -13,11 +13,14 @@
     dac/README
     dma/dma_general_transfer/README
     dma/dma_uart_rx_circle_transfer/README
+    dma/dma_use_gptmr_event_transfer/README
+    dmav2/dmav2_uart_rx_circle_transfer/README
+    dmav2/dmav2_half_tc_irq/README
     enet/index
     femc/sdram/README
     gpio/README
     gpiom/README
-    gptmr/README
+    gptmr/index
     hall/README
     i2c/index
     i2s/index
@@ -47,6 +50,8 @@
     vad/README
     wdg/README
     mcan/README
-    pla/README
+    pla/index
     ffa/README
+    qeo/index
+    mmc/README
 :::

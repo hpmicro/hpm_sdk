@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -8,8 +8,7 @@
 #include <stdio.h>
 #include "board.h"
 #include "lvgl.h"
-#include "lv_port_disp.h"
-#include "lv_port_indev.h"
+#include "lv_adapter.h"
 #include "lv_demo_music.h"
 #include "audio_codec_common.h"
 #include "sd_fatfs_common.h"
@@ -90,10 +89,9 @@ int main(void)
 #endif
 
     lv_init();
-    lv_port_disp_init();
-    lv_port_indev_init();
+    lv_adapter_init();
 
-    printf("littlevgl music\n");
+    printf("lvgl music\n");
     printf("%d color depth @%d\n", LV_COLOR_SIZE, clock_get_frequency(clock_display));
 
     init_wav_ctrl_func();

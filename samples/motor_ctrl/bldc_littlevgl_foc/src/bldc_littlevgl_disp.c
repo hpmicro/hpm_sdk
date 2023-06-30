@@ -20,8 +20,7 @@
 #include "hpm_mchtmr_drv.h"
 
 #include "lvgl.h"
-#include "lv_port_disp.h"
-#include "lv_port_indev.h"
+#include "lv_adapter.h"
 #include <stdlib.h>
 
 static lv_obj_t *obj_btnm_keyboard;

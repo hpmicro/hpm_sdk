@@ -11,14 +11,14 @@
 
 ## Note
 
-- The input string length should not exceed UART_SOC_FIFO_SIZE defined in the program every time
+- The input string length should not exceed TEST_UART_MAX_BUFFER_SIZE defined in the program every time
 
 ## Running the example
 
-When the project runs correctly, manually input the string through the serial port, such as 1234567887654321, and the serial port terminal will receive the following information:
+When the project runs correctly, manually input the string through the serial port, such as 12345678909876543210, and the serial port terminal will receive the following information:
 ```console
 uart driver example
 fifo mode
-uart will send back received characters, echo every 16 bytes
-1234567887654321
+uart will send back received characters, echo every 20 bytes
+12345678909876543210
 ```

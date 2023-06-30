@@ -40,7 +40,7 @@
 #ifndef __CC_H__
 #define __CC_H__
 
-#include "stdio.h"
+#include <stdio.h>
 
 #define U16_F "hu"
 #define S16_F "d"

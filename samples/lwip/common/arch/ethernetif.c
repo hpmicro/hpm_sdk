@@ -157,6 +157,10 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
     uint32_t payload_offset = 0;
     enet_tx_desc_t  *tx_desc_list_cur = desc.tx_desc_list_cur;
 
+#if defined(LWIP_PTP) && LWIP_PTP
+    enet_ptp_ts_system_t timestamp;
+#endif
+
 #if !NO_SYS
     if (xTxSemaphore == NULL) {
         vSemaphoreCreateBinary(xTxSemaphore);
@@ -175,7 +179,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 
 
             if (dma_tx_desc->tdes0_bm.own != 0) {
-                return ERR_BUF;
+                return ERR_INPROGRESS;
             }
 
             /* Check if the length of data to copy is bigger than Tx buffer size*/
@@ -190,7 +194,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 
                 /* Check if the buffer is available */
                 if (dma_tx_desc->tdes0_bm.own != 0) {
-                    return ERR_BUF;
+                    return ERR_INPROGRESS;
                 }
 
                 buffer = (uint8_t *)(dma_tx_desc->tdes2_bm.buffer1);
@@ -208,7 +212,15 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
         }
         /* Prepare transmit descriptors to give to DMA*/
         frame_length += 4;
-        enet_prepare_tx_desc(ENET, &desc.tx_desc_list_cur, &desc.tx_control_config, frame_length, desc.tx_buff_cfg.size);
+
+        #if defined(LWIP_PTP) && LWIP_PTP
+            enet_prepare_tx_desc_with_ts_record(ENET, &desc.tx_desc_list_cur, &desc.tx_control_config, frame_length, desc.tx_buff_cfg.size, &timestamp);
+            /* Get the transimitted timestamp */
+            p->time_sec  = timestamp.sec;
+            p->time_nsec = timestamp.nsec;
+        #else
+            enet_prepare_tx_desc(ENET, &desc.tx_desc_list_cur, &desc.tx_control_config, frame_length, desc.tx_buff_cfg.size);
+        #endif
 
 #if !NO_SYS
         /* Give semaphore and exit */
@@ -285,6 +297,12 @@ static struct pbuf *low_level_input(struct netif *netif)
     } else {
         return NULL;
     }
+
+#if defined(LWIP_PTP) && LWIP_PTP
+    /* Get the received timestamp */
+    p->time_sec  = frame.rx_desc->rdes7_bm.rtsh;
+    p->time_nsec = frame.rx_desc->rdes6_bm.rtsl;
+#endif
 
     /* Release descriptors to DMA */
     dma_rx_desc = frame.rx_desc;

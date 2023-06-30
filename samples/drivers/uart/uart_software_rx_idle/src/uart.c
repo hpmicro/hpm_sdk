@@ -77,6 +77,8 @@ hpm_stat_t uart_rx_trigger_dma(DMA_Type *dma_ptr,
                                 uint32_t size)
 {
     dma_handshake_config_t config;
+
+    dma_default_handshake_config(dma_ptr, &config);
     config.ch_index = ch_num;
     config.dst = dst;
     config.dst_fixed = false;

@@ -90,7 +90,7 @@ typedef enum bldc_hall_phase {
  * Input (i)/output (o)_physical_volume_description_units_of_physical_volume.
  *
  */
-typedef struct bldc_motor_par {
+typedef struct hpm_motor_par {
     float  i_rstator_ohm;           /**< Stator resistance (in ohm) */
     float  i_poles_n;               /**< polar logarithm */
     float  i_maxspeed_rs;           /**< Maximum speed r/s */
@@ -101,7 +101,7 @@ typedef struct bldc_motor_par {
     HPM_MOTOR_MATH_TYPE  o_smc_f;   /**< Sliding mode control factor1 */
     HPM_MOTOR_MATH_TYPE  o_smc_g;   /**< Sliding mode control factor2 */
     void   (*func_smc_const)();     /**< Calculate the function of the sliding mode control coefficient */
-} BLDC_MOTOR_PARA;
+} hpm_motor_para_t;
 
 #define BLDC_MOTOR_PARA_DEFAULTS {0, 0, 0,\
                                         0, 0, 0,\
@@ -122,7 +122,7 @@ typedef struct  bldc_contrl_spd_par {
     HPM_MOTOR_MATH_TYPE       i_speedfilter;            /**< Low-pass filter coefficient */
     HPM_MOTOR_MATH_TYPE       o_speedout_filter;        /**< Speed after filter */
     HPM_MOTOR_MATH_TYPE       o_speedout;               /**< Speed before filter */
-    BLDC_MOTOR_PARA     *i_motorpar;                /**< Motor operating parameters */
+    hpm_motor_para_t     *i_motorpar;                /**< Motor operating parameters */
     void    (*func_getspd)();                     /**< Speed calculation function */
 } BLDC_CONTRL_SPD_PARA;
 
@@ -203,34 +203,6 @@ typedef struct bldc_control_pwm_par {
                                            BLDC_CONTROL_PWMOUT_PARA_DEFAULTS,\
                                             &hpm_mcl_nullcallback_func}
 /**
- * @brief sliding mode control(SMC)
- *
- */
-typedef struct bldc_control_smc_par {
-    HPM_MOTOR_MATH_TYPE       i_ezero;    /**< Default value 0.5, slip mode convergence */
-    HPM_MOTOR_MATH_TYPE       i_ksmc;   /**< Slide coefficient */
-    HPM_MOTOR_MATH_TYPE       i_kfil;   /**< Slide coefficient */
-    HPM_MOTOR_MATH_TYPE       *ualpha;  /**< alpha voltage */
-    HPM_MOTOR_MATH_TYPE       *ubeta;   /**< beta voltage */
-    HPM_MOTOR_MATH_TYPE       *ialpha;  /**< alpha current */
-    HPM_MOTOR_MATH_TYPE       *ibeta;   /**< beta current */
-    HPM_MOTOR_MATH_TYPE       ialpha_mem;   /**< Internal Data */
-    HPM_MOTOR_MATH_TYPE       ibeta_mem;    /**< Internal Data */
-    HPM_MOTOR_MATH_TYPE       alpha_cal;    /**< Internal Data */
-    HPM_MOTOR_MATH_TYPE       zalpha_cal;   /**< Internal Data */
-    HPM_MOTOR_MATH_TYPE       beta_cal; /**< Internal Data */
-    HPM_MOTOR_MATH_TYPE       zbeta_cal;    /**< Internal Data */
-    HPM_MOTOR_MATH_TYPE       *theta;   /**< Estimated angle value */
-    BLDC_MOTOR_PARA     *i_motorpar;    /**< Motor parameters @ref BLDC_MOTOR_PARA */
-    void (*func_smc)();                 /**< Slide-mode controller */
-} BLDC_CONTROL_SMC_PARA;
-
-#define BLDC_CONTROL_SMC_PARA_DEFAULTS {0, 0, 0, NULL, NULL,\
-                                        NULL, NULL, 0, 0, 0,\
-                                        0, 0, 0, NULL,\
-                                        NULL,\
-                                         &hpm_mcl_nullcallback_func}
-/**
  * @brief Location estimation function
  *
  */
@@ -251,7 +223,7 @@ typedef struct bldc_contrl_foc_par {
     BLDC_CONTRL_SPD_PARA        speedcalpar;               /**< Speed calculation parameters */
     HPM_MOTOR_MATH_TYPE         electric_angle;            /**< Electric angle */
     BLDC_CONTROL_CURRENT_PARA   samplcurpar;               /**< Sampling current */
-    BLDC_MOTOR_PARA             motorpar;                  /**< Motor parameters */
+    hpm_motor_para_t             motorpar;                  /**< Motor parameters */
     BLDC_CONTROL_PWM_PARA       pwmpar;                    /**< PWM parameters */
     BLDC_FUNC_CAL               pos_estimator_par;         /**< Null pointers do not run the position estimation algorithm, pointers are assigned for position estimation */
     HPM_MOTOR_MATH_TYPE               ualpha;             /**< alpha voltage */

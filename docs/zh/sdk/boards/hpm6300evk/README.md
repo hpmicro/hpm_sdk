@@ -90,8 +90,9 @@ HPM6300EVK提供了HPM6300微控制器大部分外设的接口，包括1个SD卡
 
 | 功能          | 位置    |
 | ------------- | ------- |
-| GPTMR2.CAPT_2 | J28[40] |
-| GPTMR2.COMP_2 | J28[35] |
+| GPTMR2.CAPT_0 | J28[40] |
+| GPTMR2.COMP_0 | J28[35] |
+| GPTMR2.COMP_1 | J28[12] |
 
 - ADC16引脚
 
@@ -120,7 +121,7 @@ HPM6300EVK提供了HPM6300微控制器大部分外设的接口，包括1个SD卡
 | ENET0.EVTO0 | J28[19] |
 | ENET0.EVTO1 | J28[23] |
 
-- UART引脚用于uart_software_rx_idle工程
+- UART引脚用于uart_software_rx_idle或uart_rx_timeout或uart_lin工程
 
 | 功能        | 位置    |
 | ---------- | -------- |
@@ -133,3 +134,6 @@ HPM6300EVK提供了HPM6300微控制器大部分外设的接口，包括1个SD卡
 | ---------- | -------- |
 | TRGM1_P4(PA24)  | J28[16]   |
 
+- 电机引脚
+
+  参考 [DRV-LV50A-MP1907 电机驱动板章节](lab_drv_lv50a_mp1907) 进行连接

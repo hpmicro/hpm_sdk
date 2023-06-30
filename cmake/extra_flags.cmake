@@ -1,4 +1,4 @@
-# Copyright 2021 hpmicro
+# Copyright (c) 2021 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 separate_arguments(EXTRA_C_FLAGS_LIST UNIX_COMMAND ${EXTRA_C_FLAGS})

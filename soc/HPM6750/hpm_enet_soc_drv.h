@@ -66,10 +66,10 @@ static inline hpm_stat_t enet_rgmii_set_clock_delay(ENET_Type *ptr, uint8_t tx_d
 
     if (ptr == HPM_ENET0) {
         HPM_CONCTL->CTRL0 &= ~(CONCTL_CTRL0_ENET0_TXCLK_DLY_SEL_MASK | CONCTL_CTRL0_ENET0_RXCLK_DLY_SEL_MASK);
-        HPM_CONCTL->CTRL0 |= CONCTL_CTRL0_ENET0_RXCLK_DLY_SEL_SET(tx_delay) | CONCTL_CTRL0_ENET0_RXCLK_DLY_SEL_SET(rx_delay);
+        HPM_CONCTL->CTRL0 |= CONCTL_CTRL0_ENET0_TXCLK_DLY_SEL_SET(tx_delay) | CONCTL_CTRL0_ENET0_RXCLK_DLY_SEL_SET(rx_delay);
     } else if (ptr == HPM_ENET1) {
         HPM_CONCTL->CTRL0 &= ~(CONCTL_CTRL0_ENET1_TXCLK_DLY_SEL_MASK | CONCTL_CTRL0_ENET1_RXCLK_DLY_SEL_MASK);
-        HPM_CONCTL->CTRL0 |= CONCTL_CTRL0_ENET1_RXCLK_DLY_SEL_SET(tx_delay) | CONCTL_CTRL0_ENET1_RXCLK_DLY_SEL_SET(rx_delay);
+        HPM_CONCTL->CTRL0 |= CONCTL_CTRL0_ENET1_TXCLK_DLY_SEL_SET(tx_delay) | CONCTL_CTRL0_ENET1_RXCLK_DLY_SEL_SET(rx_delay);
     } else {
         return status_invalid_argument;
     }

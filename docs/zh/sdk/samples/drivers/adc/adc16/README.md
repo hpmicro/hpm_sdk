@@ -11,7 +11,9 @@
 
 ## 硬件设置
 
-在指定的管脚输入电压 (请参考{ref}`引脚描述 <lab_board_resource>`部分)
+- 在指定的管脚输入电压 (请参考{ref}`引脚描述 <lab_board_resource>`部分)
+
+- 根据开发板设计，如有必要，请连接VREF管脚处的跳帽  (请参考{ref}`引脚描述 <lab_board_resource>`部分)
 
 注： ADC管脚的输入电压范围: 0~VREFH
 
@@ -50,15 +52,15 @@ Please enter one of ADC conversion modes above (e.g. 1 or 2 ...):
 
   ```console
   Please enter one of ADC conversion modes above (e.g. 1 or 2 ...): 3
-  Sequence Mode - ADC3 - Sequence Number:00 Cycle Bit: 01 ADC Channel: 02 Result: 0xffff
-  Sequence Mode - ADC3 - Sequence Number:00 Cycle Bit: 00 ADC Channel: 02 Result: 0xffff
-  Sequence Mode - ADC3 - Sequence Number:00 Cycle Bit: 01 ADC Channel: 02 Result: 0xfff2
+  Sequence Mode - ADC3 - Cycle Bit: 01 - Sequence Number:00 - ADC Channel: 02 - Result: 0xffff
+  Sequence Mode - ADC3 - Cycle Bit: 00 - Sequence Number:00 - ADC Channel: 02 - Result: 0xffd9
+  Sequence Mode - ADC3 - Cycle Bit: 01 - Sequence Number:00 - ADC Channel: 02 - Result: 0xffff
   ```
   - Preemption 模式
 
   ```console
   Please enter one of ADC conversion modes above (e.g. 1 or 2 ...): 4
-  Preemption Mode - ADC3 - Cycle Bit: 01 ADC Channel: 02 Trig Index: 00 Trig Channel: 00 Result: 0xffff
-  Preemption Mode - ADC3 - Cycle Bit: 01 ADC Channel: 02 Trig Index: 00 Trig Channel: 00 Result: 0xfffa
-  Preemption Mode - ADC3 - Cycle Bit: 01 ADC Channel: 02 Trig Index: 00 Trig Channel: 00 Result: 0xffff
+  Preemption Mode - ADC3 - Trigger Channel: 00 - Cycle Bit: 01 - Sequence Number: 00 - ADC Channel: 02 - Result: 0xffff
+  Preemption Mode - ADC3 - Trigger Channel: 00 - Cycle Bit: 01 - Sequence Number: 00 - ADC Channel: 02 - Result: 0xffff
+  Preemption Mode - ADC3 - Trigger Channel: 00 - Cycle Bit: 01 - Sequence Number: 00 - ADC Channel: 02 - Result: 0xffff
   ```

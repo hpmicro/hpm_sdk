@@ -39,6 +39,9 @@ void uart_default_config(UART_Type *ptr, uart_config_t *config)
     config->rxidle_config.idle_cond = uart_rxline_idle_cond_rxline_logic_one;
     config->rxidle_config.threshold = 10; /* 10-bit for typical UART configuration (8-N-1) */
 #endif
+#if defined(UART_SOC_HAS_RXEN_CFG) && (UART_SOC_HAS_RXEN_CFG == 1)
+    config->rx_enable = true;
+#endif
 }
 
 static bool uart_calculate_baudrate(uint32_t freq, uint32_t baudrate, uint16_t *div_out, uint8_t *osc_out)
@@ -153,23 +156,45 @@ hpm_stat_t uart_init(UART_Type *ptr, uart_config_t *config)
 
     ptr->LCR = tmp | UART_LCR_WLS_SET(config->word_length);
 
+#if defined(UART_SOC_HAS_NEW_FIFO_THR) && (UART_SOC_HAS_NEW_FIFO_THR == 1)
+    ptr->FCRR = UART_FCRR_TFIFORST_MASK | UART_FCRR_RFIFORST_MASK;
+    if (config->fifo_enable) {
+        /* Enable FIFO, reset TX and RX. */
+        if (config->using_new_fifo_thr) {
+            ptr->FCRR = UART_FCRR_FIFOT4EN_MASK
+            | UART_FCRR_FIFOE_MASK
+            | UART_FCRR_TFIFOT4_SET(config->tx_fifo_level)
+            | UART_FCRR_RFIFOT4_SET(config->rx_fifo_level)
+            | UART_FCRR_DMAE_SET(config->dma_enable);
+        } else {
+            ptr->FCR = UART_FCRR_FIFOE_MASK
+            | UART_FCRR_TFIFOT_SET(config->tx_fifo_level)
+            | UART_FCRR_RFIFOT_SET(config->rx_fifo_level)
+            | UART_FCRR_DMAE_SET(config->dma_enable);
+        }
+    }
+#else
     ptr->FCR = UART_FCR_TFIFORST_MASK | UART_FCR_RFIFORST_MASK;
     if (config->fifo_enable) {
         /* Enable FIFO, reset TX and RX. */
-        ptr->FCR = UART_FCR_TFIFORST_MASK
-            | UART_FCR_RFIFORST_MASK | UART_FCR_FIFOE_MASK
+        ptr->FCR = UART_FCR_FIFOE_MASK
             | UART_FCR_TFIFOT_SET(config->tx_fifo_level)
             | UART_FCR_RFIFOT_SET(config->rx_fifo_level)
             | UART_FCR_DMAE_SET(config->dma_enable);
     }
+#endif
 
     uart_modem_config(ptr, &config->modem_config);
 
 #if defined(UART_SOC_HAS_RXLINE_IDLE_DETECTION) && (UART_SOC_HAS_RXLINE_IDLE_DETECTION == 1)
-    return uart_init_rxline_idle_detection(ptr, config->rxidle_config);
-#else
-    return status_success;
+    uart_init_rxline_idle_detection(ptr, config->rxidle_config);
 #endif
+#if defined(UART_SOC_HAS_RXEN_CFG) && (UART_SOC_HAS_RXEN_CFG == 1)
+    if (config->rx_enable) {
+        ptr->IDLE_CFG |= UART_IDLE_CFG_RXEN_MASK;
+    }
+#endif
+    return status_success;
 }
 
 hpm_stat_t uart_set_baudrate(UART_Type *ptr, uint32_t baudrate, uint32_t src_clock_hz)
@@ -282,9 +307,9 @@ hpm_stat_t uart_send_data(UART_Type *ptr, uint8_t *source, uint32_t size_in_byte
 #if defined(UART_SOC_HAS_RXLINE_IDLE_DETECTION) && (UART_SOC_HAS_RXLINE_IDLE_DETECTION == 1)
 hpm_stat_t uart_init_rxline_idle_detection(UART_Type *ptr, uart_rxline_idle_config_t rxidle_config)
 {
-    ptr->RXIDLE_CFG = UART_RXIDLE_CFG_DETECT_EN_SET(rxidle_config.detect_enable)
-                      | UART_RXIDLE_CFG_THR_SET(rxidle_config.threshold)
-                      | UART_RXIDLE_CFG_DETECT_COND_SET(rxidle_config.idle_cond);
+    ptr->IDLE_CFG = UART_IDLE_CFG_RX_IDLE_EN_SET(rxidle_config.detect_enable)
+                      | UART_IDLE_CFG_RX_IDLE_THR_SET(rxidle_config.threshold)
+                      | UART_IDLE_CFG_RX_IDLE_COND_SET(rxidle_config.idle_cond);
 
     if (rxidle_config.detect_irq_enable) {
         uart_enable_irq(ptr, uart_intr_rx_line_idle);
@@ -295,3 +320,27 @@ hpm_stat_t uart_init_rxline_idle_detection(UART_Type *ptr, uart_rxline_idle_conf
     return status_success;
 }
 #endif
+
+#if defined(UART_SOC_HAS_NEW_FIFO_THR) && (UART_SOC_HAS_NEW_FIFO_THR == 1)
+void uart_config_trig_mode(UART_Type *ptr, uart_trig_config_t *config)
+{
+    ptr->MOTO_CFG &= ~UART_MOTO_CFG_TXSTP_BITS_MASK;
+
+    ptr->MOTO_CFG = UART_MOTO_CFG_TXSTP_BITS_SET(config->stop_bit_len)
+                    | UART_MOTO_CFG_HWTRG_EN_SET(config->hardware_trig)
+                    | UART_MOTO_CFG_TRG_MODE_SET(config->trig_mode)
+                    | UART_MOTO_CFG_TRG_CLR_RFIFO_SET(config->trig_clr_rxfifo)
+                    | UART_MOTO_CFG_TXSTOP_INSERT_SET(config->en_stop_bit_insert);
+}
+#endif
+
+/* FCR is WO register, preprae all bit field to write */
+void uart_config_fifo_ctrl(UART_Type *ptr, uart_fifo_ctrl_t *ctrl)
+{
+    ptr->FCR =  UART_FCR_TFIFOT_SET(ctrl->tx_fifo_level)
+                | UART_FCR_RFIFOT_SET(ctrl->rx_fifo_level)
+                | UART_FCR_TFIFORST_SET(ctrl->reset_tx_fifo)
+                | UART_FCR_RFIFORST_SET(ctrl->reset_rx_fifo)
+                | UART_FCR_DMAE_SET(ctrl->dma_enable)
+                | UART_FCR_FIFOE_SET(ctrl->fifo_enable);
+}

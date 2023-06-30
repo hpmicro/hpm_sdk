@@ -238,15 +238,15 @@ The HPM SDK Project is a software development kit based on HPMicro's MCUs, which
 
     Open zadig, click Options-> List All Devices.
 
-    ![List All Devices](doc/images/readme/zadig_list_all_devices.png)
+    ![List All Devices](docs/assets/zadig_list_all_devices.png)
 
     Select Dual RS232-HS (Interface 0).
 
-    ![Select Dual RS232-HS (Interface 0)](doc/images/readme/zadig_select_dual_rs232-hs.png)
+    ![Select Dual RS232-HS (Interface 0)](docs/assets/zadig_select_dual_rs232-hs.png)
 
     Then click Install Driver or Replace Driver.
 
-    ![Replace Driver](doc/images/readme/zadig_replace_driver.png)
+    ![Replace Driver](docs/assets/zadig_replace_driver.png)
 
     7. Go to hello_world directory
 
@@ -270,7 +270,7 @@ The HPM SDK Project is a software development kit based on HPMicro's MCUs, which
     9. connect gdb client to the gdbserver started by openocd, (by default, gdbserver port is 3333)
 
     ```GDB
-      gdb> file build/output/hello_world.elf
+      gdb> file build/output/demo.elf
       gdb> target remote localhost:3333
       gdb> load
       gdb> b main

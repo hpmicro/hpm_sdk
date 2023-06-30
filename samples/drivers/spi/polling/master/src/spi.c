@@ -68,12 +68,10 @@ void spi_master_data_dump(spi_op_t op, uint32_t datalen, uint8_t *buff,  uint32_
         if (datalen <= 8) {
             printf("0x%02x ", *(uint8_t *)buff);
              buff += 1;
-        }
-        else if (datalen <= 16) {
+        } else if (datalen <= 16) {
             printf("0x%02x ", *(uint16_t *)buff);
             buff += 2;
-        }
-        else {
+        } else {
             printf("0x%02x ", *(uint32_t *)buff);
             buff += 4;
         }
@@ -94,18 +92,14 @@ void spi_master_frame_dump(uint32_t datalen,
     if (trans_mode == spi_trans_write_read_together || trans_mode == spi_trans_write_read || trans_mode == spi_trans_write_dummy_read) {
         spi_master_data_dump(spi_op_write, datalen, wbuff, wsize);
         spi_master_data_dump(spi_op_read, datalen, rbuff, rsize);
-    }
-    else if (trans_mode == spi_trans_read_write ||  trans_mode == spi_trans_read_dummy_write) {
+    } else if (trans_mode == spi_trans_read_write ||  trans_mode == spi_trans_read_dummy_write) {
         spi_master_data_dump(spi_op_read, datalen, rbuff, rsize);
         spi_master_data_dump(spi_op_write, datalen, wbuff, wsize);
-    }
-    else if (trans_mode == spi_trans_write_only || trans_mode == spi_trans_dummy_write) {
+    } else if (trans_mode == spi_trans_write_only || trans_mode == spi_trans_dummy_write) {
         spi_master_data_dump(spi_op_write, datalen, wbuff, wsize);
-    }
-    else if (trans_mode == spi_trans_read_only || trans_mode == spi_trans_dummy_read) {
+    } else if (trans_mode == spi_trans_read_only || trans_mode == spi_trans_dummy_read) {
         spi_master_data_dump(spi_op_read, datalen, rbuff, rsize);
-    }
-    else {
+    } else {
         spi_master_data_dump(spi_op_no_data, 0, NULL, 0);
     }
 }
@@ -118,16 +112,17 @@ int main(void)
     spi_format_config_t format_config = {0};
     spi_control_config_t control_config = {0};
     hpm_stat_t stat;
+    uint32_t spi_clcok;
 
     /* bsp initialization */
     board_init();
-    board_init_spi_clock(BOARD_APP_SPI_BASE);
+    spi_clcok = board_init_spi_clock(BOARD_APP_SPI_BASE);
     board_init_spi_pins(BOARD_APP_SPI_BASE);
     printf("SPI-Master Polling Transfer Example\n");
 
     /* set SPI sclk frequency for master */
     spi_master_get_default_timing_config(&timing_config);
-    timing_config.master_config.clk_src_freq_in_hz = clock_get_frequency(BOARD_APP_SPI_CLK_NAME);;
+    timing_config.master_config.clk_src_freq_in_hz = spi_clcok;
     timing_config.master_config.sclk_freq_in_hz = BOARD_APP_SPI_SCLK_FREQ;
     spi_master_timing_init(BOARD_APP_SPI_BASE, &timing_config);
     printf("SPI-Master transfer timing is configured.\n");

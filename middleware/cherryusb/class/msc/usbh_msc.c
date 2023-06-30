@@ -40,7 +40,7 @@ static void usbh_msc_devno_free(struct usbh_msc *msc_class)
 
 static int usbh_msc_get_maxlun(struct usbh_msc *msc_class, uint8_t *buffer)
 {
-    struct usb_setup_packet *setup = &msc_class->hport->setup;
+    struct usb_setup_packet *setup = msc_class->hport->setup;
 
     setup->bmRequestType = USB_REQUEST_DIR_IN | USB_REQUEST_CLASS | USB_REQUEST_RECIPIENT_INTERFACE;
     setup->bRequest = MSC_REQUEST_GET_MAX_LUN;
@@ -371,6 +371,7 @@ static int usbh_msc_connect(struct usbh_hubport *hport, uint8_t intf)
 
     USB_LOG_INFO("Register MSC Class:%s\r\n", hport->config.intf[intf].devname);
 
+    usbh_msc_run(msc_class);
     return ret;
 }
 
@@ -391,6 +392,7 @@ static int usbh_msc_disconnect(struct usbh_hubport *hport, uint8_t intf)
             usbh_pipe_free(msc_class->bulkout);
         }
 
+        usbh_msc_stop(msc_class);
         memset(msc_class, 0, sizeof(struct usbh_msc));
         usb_free(msc_class);
 
@@ -399,6 +401,16 @@ static int usbh_msc_disconnect(struct usbh_hubport *hport, uint8_t intf)
     }
 
     return ret;
+}
+
+__WEAK void usbh_msc_run(struct usbh_msc *msc_class)
+{
+
+}
+
+__WEAK void usbh_msc_stop(struct usbh_msc *msc_class)
+{
+
 }
 
 const struct usbh_class_driver msc_class_driver = {

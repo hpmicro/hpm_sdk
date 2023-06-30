@@ -320,8 +320,7 @@ hpm_stat_t spi_setup_dma_transfer(SPI_Type *ptr,
 /**
  * @brief spi wait for idle status
  *
- * @note on master mode, if software controls CS signal, this function does not really reflect the SPI state.
- * on slave mode, if CS signal is asserted, take it as busy; if SPI CS signal is de-asserted, take it as idle.
+ * @note on slave mode, if CS signal is asserted, take it as busy; if SPI CS signal is de-asserted, take it as idle.
  *
  * @param [in] ptr SPI base address
  * @retval hpm_stat_t status_success if spi in idle status
@@ -331,8 +330,7 @@ hpm_stat_t spi_wait_for_idle_status(SPI_Type *ptr);
 /**
  * @brief spi wait for busy status
  *
- * @note on master mode, if software controls CS signal, this function does not really reflect the SPI state.
- * on slave mode, if CS signal is asserted, take it as busy; if SPI CS signal is de-asserted, take it as idle.
+ * @note on slave mode, if CS signal is asserted, take it as busy; if SPI CS signal is de-asserted, take it as idle.
  *
  * @param [in] ptr SPI base address
  * @retval hpm_stat_t status_success if spi in busy status
@@ -632,6 +630,95 @@ static inline uint32_t spi_slave_get_received_data_count(SPI_Type *ptr)
     return SPI_SLVDATACNT_RCNT_GET(ptr->SLVDATACNT);
 }
 
+/**
+ * @brief set spi clock phase
+ *
+ * @param [in] ptr SPI base address
+ * @param [in] clock_phase clock phase enum
+ */
+static inline void spi_set_clock_phase(SPI_Type *ptr, spi_sclk_sampling_clk_edges_t clock_phase)
+{
+    ptr->TRANSCTRL |= SPI_TRANSFMT_CPHA_SET(clock_phase);
+}
+
+/**
+ * @brief get spi clock phase
+ *
+ * @param [in] ptr SPI base address
+ * @retval spi_sclk_sampling_clk_edges_t spi_sclk_sampling_odd_clk_edges if CPHA is 0
+ */
+static inline spi_sclk_sampling_clk_edges_t spi_get_clock_phase(SPI_Type *ptr)
+{
+    return SPI_TRANSFMT_CPHA_GET(ptr->TRANSCTRL);
+}
+
+/**
+ * @brief set spi clock polarity
+ *
+ * @param [in] ptr SPI base address
+ * @param [in] clock_polarity clock polarity enum
+ */
+static inline void spi_set_clock_polarity(SPI_Type *ptr, spi_sclk_idle_state_t clock_polarity)
+{
+    ptr->TRANSCTRL |= SPI_TRANSFMT_CPOL_SET(clock_polarity);
+}
+
+/**
+ * @brief get spi clock phase
+ *
+ * @param [in] ptr SPI base address
+ * @retval spi_sclk_idle_state_t spi_sclk_low_idle if CPOL is 0
+ */
+static inline spi_sclk_idle_state_t spi_get_clock_polarity(SPI_Type *ptr)
+{
+    return SPI_TRANSFMT_CPOL_GET(ptr->TRANSCTRL);
+}
+
+/**
+ * @brief set spi the length of each data unit in bits
+ *
+ * @param [in] nbit the actual bits number of a data
+ * @retval hpm_stat_t status_success if spi transfer without any error
+ */
+static inline hpm_stat_t spi_set_data_bits(SPI_Type *ptr, uint8_t nbits)
+{
+    if (nbits > 32) {
+        return status_invalid_argument;
+    } else {
+        ptr->TRANSFMT |= SPI_TRANSFMT_DATALEN_SET(nbits - 1);
+        return status_success;
+    }
+}
+
+/**
+ * @brief SPI transmit fifo reset
+ *
+ * @param ptr SPI base address
+ */
+static inline void spi_transmit_fifo_reset(SPI_Type *ptr)
+{
+    ptr->CTRL |= SPI_CTRL_TXFIFORST_MASK;
+}
+
+/**
+ * @brief SPI receive fifo reset
+ *
+ * @param ptr SPI base address
+ */
+static inline void spi_receive_fifo_reset(SPI_Type *ptr)
+{
+    ptr->CTRL |= SPI_CTRL_RXFIFORST_MASK;
+}
+
+/**
+ * @brief SPI reset
+ *
+ * @param ptr SPI base address
+ */
+static inline void spi_reset(SPI_Type *ptr)
+{
+    ptr->CTRL |= SPI_CTRL_SPIRST_MASK;
+}
 /**
  * @}
  */

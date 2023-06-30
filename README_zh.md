@@ -247,15 +247,15 @@ HPM SDK项目是基于HPMicro 公司的MCU编写的软件开发包，支持多�
 
     打开zadig，点击 Options->List All Devices.
 
-    ![List All Devices](doc/images/readme/zadig_list_all_devices.png)
+    ![List All Devices](docs/assets/zadig_list_all_devices.png)
 
     选择 Dual RS232-HS (Interface 0).
 
-    ![Select Dual RS232-HS (Interface 0)](doc/images/readme/zadig_select_dual_rs232-hs.png)
+    ![Select Dual RS232-HS (Interface 0)](docs/assets/zadig_select_dual_rs232-hs.png)
 
      然后点击 Install Driver 或 Replace Driver.
 
-    ![Replace Driver](doc/images/readme/zadig_replace_driver.png)
+    ![Replace Driver](docs/assets/zadig_replace_driver.png)
 
     7. 切换到hello_world目录
 
@@ -279,7 +279,7 @@ HPM SDK项目是基于HPMicro 公司的MCU编写的软件开发包，支持多�
     9. 连接GDB client到openocd GDB server (缺省状态下, openocd gdbserver 端口为 3333)
 
     ```GDB
-      gdb> file build/output/hello_world.elf
+      gdb> file build/output/demo.elf
       gdb> target remote localhost:3333
       gdb> load
       gdb> b main

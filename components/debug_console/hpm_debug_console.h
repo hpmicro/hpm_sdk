@@ -7,7 +7,6 @@
 
 #ifndef _HPM_DEBUG_CONSOLE_H
 #define _HPM_DEBUG_CONSOLE_H
-#include <stdio.h>
 #include "hpm_common.h"
 
 #define CONSOLE_TYPE_UART 0

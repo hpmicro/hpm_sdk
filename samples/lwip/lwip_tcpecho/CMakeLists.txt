@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
-set(HPM_SDK_NO_NANO_SPECS 1)
+set(HPM_SDK_LD_NO_NANO_SPECS 1)
 set(CONFIG_LWIP 1)
 #set(CONFIG_ENET_PHY_DP83867 1)
 #set(CONFIG_ENET_PHY_RTL8211 1)

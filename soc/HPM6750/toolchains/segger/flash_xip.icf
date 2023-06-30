@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -64,7 +64,7 @@ do not initialize                           { section .backup_sram};
 initialize by copy with packing=auto        { section .noncacheable.init };
 initialize by copy with packing=none        { section .data, section .data.*, section .*.data, section .*.data.* };               // Static data sections
 initialize by copy with packing=auto        { section .sdata, section .sdata.* };
-initialize by copy with packing=auto        { section .fast, section .fast.*, section .*.fast, section .*.fast.* };               // "RAM Code" sections
+initialize by copy with packing=auto        { section .fast, section .fast.*, section .*.fast, section .*.fast.*, section .text.*nx* };               // "RAM Code" sections
 
 initialize by symbol __SEGGER_init_heap     { block heap  };                                        // Init the heap if there is one
 initialize by symbol __SEGGER_init_ctors    { block ctors };                                        // Call constructors for global objects which need to be constructed before reaching main (if any). Make sure this is done after setting up heap.
@@ -95,7 +95,7 @@ define access readonly { section .eh_frame, section .eh_frame.* };
 define access readonly { section .sdata.DW.* };
 
 place in ILM                              {
-                                           section .fast, section .fast.*,                       // "ramfunc" section
+                                           section .fast, section .fast.*, section .text.*nx*,    // "ramfunc" section
                                           };
 
 place in AXI_SRAM                         { block cherryusb_usbh_class_info };

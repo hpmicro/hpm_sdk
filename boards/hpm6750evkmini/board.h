@@ -38,6 +38,9 @@
 
 /* uart rx idle demo section */
 #define BOARD_UART_IDLE HPM_UART7
+#define BOARD_UART_IDLE_IRQ        IRQn_UART7
+#define BOARD_UART_IDLE_CLK_NAME   clock_uart7
+#define BOARD_UART_IDLE_TX_DMA_SRC HPM_DMA_SRC_UART7_TX
 #define BOARD_UART_IDLE_DMA_SRC HPM_DMA_SRC_UART7_RX
 
 #define BOARD_UART_IDLE_TRGM HPM_TRGM2
@@ -51,6 +54,18 @@
 #define BOARD_UART_IDLE_GPTMR_IRQ IRQn_GPTMR4
 #define BOARD_UART_IDLE_GPTMR_CMP_CH 0
 #define BOARD_UART_IDLE_GPTMR_CAP_CH 2
+
+/* uart microros sample section */
+#define BOARD_MICROROS_UART_BASE HPM_UART7
+#define BOARD_MICROROS_UART_IRQ IRQn_UART7
+#define BOARD_MICROROS_UART_CLK_NAME clock_uart7
+
+/* uart lin sample section */
+#define BOARD_UART_LIN            HPM_UART7
+#define BOARD_UART_LIN_IRQ        IRQn_UART7
+#define BOARD_UART_LIN_CLK_NAME   clock_uart7
+#define BOARD_UART_LIN_TX_PORT    GPIO_DI_GPIOC
+#define BOARD_UART_LIN_TX_PIN     (3U)  /* PC03 should align with used pin in pinmux configuration */
 
 #define BOARD_APP_UART_BAUDRATE (115200UL)
 #define BOARD_APP_UART_CLK_NAME clock_uart0
@@ -139,12 +154,19 @@
 #define BOARD_APP_DMAMUX HPM_DMAMUX
 
 /* gptmr section */
-#define BOARD_GPTMR HPM_GPTMR2
-#define BOARD_GPTMR_IRQ IRQn_GPTMR2
-#define BOARD_GPTMR_CHANNEL 0
-#define BOARD_GPTMR_PWM HPM_GPTMR2
-#define BOARD_GPTMR_PWM_CHANNEL 0
-#define BOARD_GPTMR_CLK_NAME clock_gptmr2
+#define BOARD_GPTMR                   HPM_GPTMR2
+#define BOARD_GPTMR_IRQ               IRQn_GPTMR2
+#define BOARD_GPTMR_CHANNEL           0
+#define BOARD_GPTMR_DMA_SRC           HPM_DMA_SRC_GPTMR2_0
+#define BOARD_GPTMR_CLK_NAME          clock_gptmr2
+#define BOARD_GPTMR_PWM               HPM_GPTMR2
+#define BOARD_GPTMR_PWM_DMA_SRC       HPM_DMA_SRC_GPTMR2_0
+#define BOARD_GPTMR_PWM_CHANNEL       0
+#define BOARD_GPTMR_PWM_CLK_NAME      clock_gptmr2
+#define BOARD_GPTMR_PWM_IRQ           IRQn_GPTMR2
+#define BOARD_GPTMR_PWM_SYNC          HPM_GPTMR2
+#define BOARD_GPTMR_PWM_SYNC_CHANNEL  1
+#define BOARD_GPTMR_PWM_SYNC_CLK_NAME clock_gptmr2
 
 /* gpio section */
 #define BOARD_R_GPIO_CTRL HPM_GPIO0
@@ -165,9 +187,8 @@
  *led Internal pull-up and pull-down resistance direction
  *The configurations of Rev-A / B boards are different
  */
-#define BOARD_LED_PULL_STATUS IOC_PAD_PAD_CTL_PS_GET(HPM_IOC->PAD[IOC_PAD_PB18].PAD_CTL)
-#define BOARD_LED_OFF_LEVEL BOARD_LED_PULL_STATUS
-#define BOARD_LED_ON_LEVEL !BOARD_LED_PULL_STATUS
+#define BOARD_LED_OFF_LEVEL 1
+#define BOARD_LED_ON_LEVEL 0
 
 #define BOARD_APP_GPIO_INDEX GPIO_DI_GPIOZ
 #define BOARD_APP_GPIO_PIN 2
@@ -296,12 +317,6 @@
 #define BOARD_APP_ADC16_BASE HPM_ADC3
 #define BOARD_APP_ADC16_CH_1                     (2U)
 
-#define BOARD_APP_ADC_TRIG_PWMT0                 HPM_PWM0
-#define BOARD_APP_ADC_TRIG_PWMT1                 HPM_PWM1
-#define BOARD_APP_ADC_TRIG_TRGM0                 HPM_TRGM0
-#define BOARD_APP_ADC_TRIG_TRGM1                 HPM_TRGM1
-#define BOARD_APP_ADC_TRIG_PWM_SYNC              HPM_SYNT
-
 /* CAN section */
 #define BOARD_APP_CAN_BASE                       HPM_CAN1
 #define BOARD_APP_CAN_IRQn                       IRQn_CAN1
@@ -352,6 +367,7 @@
 #define BOARD_APP_PWM_OUT2 5
 #define BOARD_APP_TRGM HPM_TRGM0
 #define BOARD_APP_PWM_IRQ IRQn_PWM0
+#define BOARD_APP_TRGM_PWM_OUTPUT TRGM_TRGOCFG_PWM_SYNCI
 
 /* RGB LED Section */
 #define BOARD_RED_PWM_IRQ IRQn_PWM1
@@ -461,7 +477,7 @@
 #define BOARD_BLDC_ADC_IRQn                    IRQn_ADC0
 
 
-#define BOARD_CPU_FREQ (816000000UL)
+#define BOARD_CPU_FREQ (648000000UL)
 
 #define BOARD_APP_DISPLAY_CLOCK clock_display
 
@@ -534,6 +550,7 @@ hpm_stat_t board_set_audio_pll_clock(uint32_t freq);
 
 void board_init_i2s_pins(I2S_Type *ptr);
 uint32_t board_init_i2s_clock(I2S_Type *ptr);
+uint32_t board_config_i2s_clock(I2S_Type *ptr, uint32_t sample_rate);
 uint32_t board_init_pdm_clock(void);
 uint32_t board_init_dao_clock(void);
 

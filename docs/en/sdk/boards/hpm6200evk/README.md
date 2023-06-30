@@ -78,6 +78,7 @@ The HPM6200EVK provides a series of interfaces for the characteristic peripheral
 | ------------- | ------ |
 | GPTMR2.CAPT_0 | J4[15] |
 | GPTMR2.COMP_0 | J4[17] |
+| GPTMR2.COMP_1 | J4[1]  |
 
 - ADC16 Pin:
 
@@ -102,9 +103,19 @@ The HPM6200EVK provides a series of interfaces for the characteristic peripheral
 | PWM0.P0 | J4[14] |
 | PWM0.P1 | J4[13] |
 
+- HRPWM Pin:
+
+| Function     | Position  |
+| -------- | ----- |
+| HRPWM0.P0 | RF2 |
+| HRPWM0.P2 | P2[29] |
+
 - PLA Output Pin:
 
 | Function     | Position  |
 | -------- | ----- |
 | PLA.OUT | P1[26] |
 
+- Motor Pin:
+
+  Refer to section [DRV-LV50A-MP1907 Motor Driver Board ](lab_drv_lv50a_mp1907) for configuration

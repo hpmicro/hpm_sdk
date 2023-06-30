@@ -1,4 +1,4 @@
-# Copyright 2021-2022 hpmicro
+# Copyright (c) 2021-2022 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 # add ses library interface to store ses specific configurations
@@ -10,6 +10,10 @@ define_property(GLOBAL PROPERTY ${HPM_SDK_SES_LIB} BRIEF_DOCS "ses library" FULL
 
 set(SES_OPT_LIB_IO_TYPE LIBRARY_IO_TYPE)
 set(SES_OPT_DBG_TGT_CONN debug_target_connection)
+set(SES_OPT_LINKER_PRINTF_FP_ENABLED linker_printf_fp_enabled)
+set(SES_OPT_LINKER_SCANF_FP_ENABLED linker_scanf_fp_enabled)
+set(SES_OPT_LINKER_PRINTF_FMT_LEVEL linker_printf_fmt_level)
+set(SES_OPT_LINKER_SCANF_FMT_LEVEL linker_scanf_fmt_level)
 set(SES_OPT_DBG_JLINK_SPEED speed)
 set(SES_DBG_CONN_GDB_SRV "GDB Server")
 
@@ -120,6 +124,12 @@ function (generate_ses_project)
         set(target_ses_ld_input "")
     endif()
 
+    set(gcc_opt_level "")
+    STRING(REGEX REPLACE ".*(-O[0-3s]).*" "\\1" RESULT ${target_gcc_cflags})
+    if(NOT "${RESULT}" STREQUAL "${target_gcc_cflags}")
+        LIST(GET RESULT 0 gcc_opt_level)
+    endif()
+
     set(target_cflags "")
     if (SES_USE_TOOLCHAIN_ANDES)
         # if Andes toolchain has not been specified, cflags needs to be preserved
@@ -204,6 +214,20 @@ function (generate_ses_project)
         set(SES_COMPILER_ARCH ${RV_ARCH})
     endif()
 
+    STRING(FIND ${SES_COMPILER_ARCH} "_" exist)
+    if(NOT ${exist} EQUAL -1)
+        set(target_compiler_arch_exts_csr 0)
+        set(target_compiler_arch_exts_fencei 0)
+        # isa extenions will be processed according to given arch, user should be responsible for ext settings
+        STRING(REGEX REPLACE "(rv[A-Za-z0-9]+)_(zi[A-Za-z0-9_]+)" "\\1;\\2" RESULT ${SES_COMPILER_ARCH})
+        LIST(GET RESULT 0 SES_COMPILER_ARCH)
+        LIST(GET RESULT 1 SES_COMPILER_ARCH_EXTS)
+    else()
+        # zicsr and zifencei will be set if no isa extention specified
+        set(target_compiler_arch_exts_csr 1)
+        set(target_compiler_arch_exts_fencei 1)
+    endif()
+
     set(post_build_command "")
     if (DEFINED IS_SEC_CORE_IMG)
         if (IS_SEC_CORE_IMG)
@@ -257,7 +281,9 @@ function (generate_ses_project)
         endif()
     endif()
 
+    set(ses_extra_options "")
     foreach(opt IN ITEMS ${target_ses_options})
+        string(REPLACE "\"" "" opt ${opt}) # remove any quotes
         string(REGEX MATCH "${SES_OPT_DBG_TGT_CONN}=" out ${opt})
         if(out)
             string(REGEX REPLACE "${SES_OPT_DBG_TGT_CONN}=(.*)" "\\1" debug_target_conn ${opt})
@@ -273,6 +299,11 @@ function (generate_ses_project)
             string(REGEX REPLACE "${SES_OPT_DBG_JLINK_SPEED}=(.*)" "\\1" jlink_speed ${opt})
             continue()
         endif()
+        if("${ses_extra_options}" STREQUAL "")
+            set(ses_extra_options "${opt}")
+        else()
+            set(ses_extra_options "${ses_extra_options},${opt}")
+        endif()
     endforeach()
 
     if(NOT lib_io_type)
@@ -286,15 +317,14 @@ function (generate_ses_project)
     string(REGEX MATCH "GDB Server" is_gdb ${debug_target_conn})
     if(is_gdb)
         set(OPENOCD_READY 1)
-        set(BOARD_YAML "${HPM_SDK_BASE}/boards/${BOARD}/${BOARD}.yaml")
         # get specified openocd config file for probe
-        get_openocd_probe_name_of_board(${BOARD} OPENOCD_PROBE)
+        get_openocd_probe_name_of_board(${BOARD_YAML} OPENOCD_PROBE)
         if(NOT OPENOCD_PROBE)
             message(STATUS " Segger: openocd-probe was not correctly configured in ${BOARD_YAML}")
             set(OPENOCD_READY 0)
         endif()
         # get specified openocd config file for soc
-        get_openocd_soc_name_of_board(${BOARD} OPENOCD_SOC)
+        get_openocd_soc_name_of_board(${BOARD_YAML} OPENOCD_SOC)
         if(NOT OPENOCD_SOC)
             message(STATUS " Segger: openocd-soc was not correctly configured in ${BOARD_YAML}")
             set(OPENOCD_READY 0)
@@ -414,6 +444,7 @@ function (generate_ses_project)
     string(REPLACE "\\"  "/" target_register_definition ${target_register_definition})
     string(REPLACE "\\"  "/" target_cpu_register_definition ${target_cpu_register_definition})
     string(REPLACE "\\"  "/" hpm_sdk_base_path ${HPM_SDK_BASE})
+    string(REPLACE "\\"  "/" hpm_board_path ${HPM_BOARD_DIR})
 
     if(SES_COMPILER_ABI)
         set(target_compiler_abi ${SES_COMPILER_ABI})
@@ -426,6 +457,19 @@ function (generate_ses_project)
     else()
         set(target_compiler_arch "rv32ima")
     endif()
+
+    if(SES_COMPILER_ARCH_EXTS)
+        STRING(REPLACE "_" ";" RESULT ${SES_COMPILER_ARCH_EXTS})
+        FOREACH(i IN LISTS RESULT)
+            if(${i} STREQUAL "zicsr")
+                set(target_compiler_arch_exts_csr 1)
+            endif()
+            if(${i} STREQUAL "zifencei")
+                set(target_compiler_arch_exts_fencei 1)
+            endif()
+        ENDFOREACH()
+    endif()
+
 
     # Specify SES target device name to be defined in SES project file
     if (NOT HPM_DEVICE_NAME)
@@ -443,6 +487,7 @@ function (generate_ses_project)
         \"link_symbols\":\"${target_link_symbols}\",
         \"sdk_base\":\"${hpm_sdk_base_path}\",
         \"board\":\"${BOARD}\",
+        \"board_dir\":\"${hpm_board_path}\",
         \"soc\":\"${HPM_SOC}\",
         \"register_definition\":\"${target_register_definition}\",
         \"cpu_register_definition\":\"${target_cpu_register_definition}\",
@@ -450,16 +495,20 @@ function (generate_ses_project)
         \"heap_size\":\"${HEAP_SIZE}\",
         \"stack_size\":\"${STACK_SIZE}\",
         \"cplusplus\":\"${CMAKE_CXX_STANDARD}\",
-        \"segger_level_o3\":\"${SEGGER_LEVEL_O3}\",
+        \"gcc_opt_level\":\"${gcc_opt_level}\",
         \"target_device_name\":\"${SES_DEVICE_NAME}\",
         \"toolchain_variant\":\"${SES_TOOLCHAIN_VARIANT}\",
         \"cflags\":\"${target_cflags}\",
         \"compiler_abi\":\"${target_compiler_abi}\",
         \"compiler_arch\":\"${target_compiler_arch}\",
+        \"compiler_arch_exts_csr\":\"${target_compiler_arch_exts_csr}\",
+        \"compiler_arch_exts_fencei\":\"${target_compiler_arch_exts_fencei}\",
         \"ses_link_input\":\"${target_ses_ld_input}\",
         \"enable_nds_dsp\":\"${enable_nds_dsp}\",
         \"enable_cpp_exceptions\":\"${enable_cpp_exceptions}\",
-        \"library_io_type\":\"${lib_io_type}\"")
+        \"library_io_type\":\"${lib_io_type}\",
+        \"extra_ses_options\":\"${ses_extra_options}\"
+        ")
 
     string(REGEX MATCH "GDB Server" is_gdb ${debug_target_conn})
     if(is_gdb)

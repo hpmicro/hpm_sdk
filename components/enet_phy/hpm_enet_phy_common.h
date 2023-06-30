@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021-2023 HPMicro
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ */
 #ifndef HPM_ENET_PHY_COMMON_H
 #define HPM_ENET_PHY_COMMON_H
 

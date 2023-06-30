@@ -9,6 +9,8 @@ spi_dma_slave示例工程展示了SPI作为slave使用DMA进行板与板之间�
 
 将两个板子的[SPI引脚](lab_board_app_spi_pin)相连。
 
+两个板子必须相连双方GND进行共地，保证信号传输。
+
 
 ## 运行现象
 - 先运行slave，再运行master

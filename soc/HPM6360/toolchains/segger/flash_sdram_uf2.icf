@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022-2023 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -8,7 +8,7 @@ define memory with size = 4G;
 define symbol UF2_BOOTLOADER_RESERVED_LENGTH = 0x20000;
 
 /* Regions */
-define region XPI0 = [from 0x80000000 + UF2_BOOTLOADER_RESERVED_LENGTH ];
+define region XPI0 = [from 0x80000000 + UF2_BOOTLOADER_RESERVED_LENGTH size _flash_size - UF2_BOOTLOADER_RESERVED_LENGTH];
 define region ILM = [from 0x00000000 size 128k];    /* ILM */
 define region DLM = [from 0x00080000 size 128k];    /* DLM */
 define region AXI_SRAM  = [from 0x01080000 size 512k];

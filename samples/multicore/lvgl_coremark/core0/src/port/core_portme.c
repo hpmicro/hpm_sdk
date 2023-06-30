@@ -28,7 +28,8 @@
 #include "hpm_uart_drv.h"
 #include "hpm_clock_drv.h"
 
-#define COREMARK_CTX (coremark_context_t *)0xBF000
+ATTR_SHARE_MEM coremark_context_t g_coremark_ctx[2];
+#define COREMARK_CTX ((coremark_context_t *)(&g_coremark_ctx[0]))
 
 #if USE_SNPRINTF
 #include <stdio.h>

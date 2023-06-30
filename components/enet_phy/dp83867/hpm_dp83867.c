@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -21,10 +21,10 @@ bool dp83867_check_id(ENET_Type *ptr)
 {
     uint16_t id1, id2;
 
-    id1 = enet_read_phy(ptr, PHY_ADDR, DP83867_PHYIDR1);
-    id2 = enet_read_phy(ptr, PHY_ADDR, DP83867_PHYIDR2);
+    id1 = enet_read_phy(ptr, DP83867_ADDR, DP83867_PHYIDR1);
+    id2 = enet_read_phy(ptr, DP83867_ADDR, DP83867_PHYIDR2);
 
-    if (DP83867_PHYIDR1_OUI_MSB_GET(id1) == PHY_ID1 && DP83867_PHYIDR2_OUI_LSB_GET(id2) == PHY_ID2) {
+    if (DP83867_PHYIDR1_OUI_MSB_GET(id1) == DP83867_ID1 && DP83867_PHYIDR2_OUI_LSB_GET(id2) == DP83867_ID2) {
         return true;
     } else {
         return false;
@@ -69,11 +69,11 @@ void dp83867_reset(ENET_Type *ptr)
     uint16_t data;
 
     /* PHY reset */
-    enet_write_phy(ptr, PHY_ADDR, DP83867_BMCR, DP83867_BMCR_RESET_SET(1));
+    enet_write_phy(ptr, DP83867_ADDR, DP83867_BMCR, DP83867_BMCR_RESET_SET(1));
 
     /* wait until the reset is completed */
     do {
-        data = enet_read_phy(ptr, PHY_ADDR, DP83867_BMCR);
+        data = enet_read_phy(ptr, DP83867_ADDR, DP83867_BMCR);
     } while (DP83867_BMCR_RESET_GET(data));
 }
 
@@ -111,8 +111,8 @@ bool dp83867_basic_mode_init(ENET_Type *ptr, dp83867_config_t *config)
         return false;
     }
 
-    enet_write_phy(ptr, PHY_ADDR, DP83867_BMCR, data);
-    data = enet_read_phy(ptr, PHY_ADDR, DP83867_BMCR);
+    enet_write_phy(ptr, DP83867_ADDR, DP83867_BMCR, data);
+    data = enet_read_phy(ptr, DP83867_ADDR, DP83867_BMCR);
 
     return true;
 }
@@ -121,7 +121,7 @@ void dp83867_get_phy_status(ENET_Type *ptr, enet_phy_status_t *status)
 {
     uint16_t data;
 
-    data = enet_read_phy(ptr, PHY_ADDR, DP83867_PHYSTS);
+    data = enet_read_phy(ptr, DP83867_ADDR, DP83867_PHYSTS);
     status->enet_phy_link = DP83867_PHYSTS_LINK_STATUS_GET(data);
     status->enet_phy_speed = DP83867_PHYSTS_SPEED_SELECTION_GET(data) == 0 ? enet_phy_port_speed_10mbps : DP83867_PHYSTS_SPEED_SELECTION_GET(data) == 1 ? enet_phy_port_speed_100mbps : enet_phy_port_speed_1000mbps;
     status->enet_phy_duplex = DP83867_PHYSTS_DUPLEX_MODE_GET(data);
@@ -131,8 +131,8 @@ void dp83867_set_mdi_crossover_mode(ENET_Type *ptr, enet_phy_crossover_mode_t mo
 {
     uint16_t data;
 
-    data = dp83867_read_phy_ext(ptr, PHY_ADDR, DP83867_PHYCR);
+    data = dp83867_read_phy_ext(ptr, DP83867_ADDR, DP83867_PHYCR);
     data &= ~DP83867_PHYCR_MDI_CROSSOVER_MASK;
     data |= DP83867_PHYCR_MDI_CROSSOVER_SET(mode);
-    dp83867_write_phy_ext(ptr, PHY_ADDR, DP83867_PHYCR, data);
+    dp83867_write_phy_ext(ptr, DP83867_ADDR, DP83867_PHYCR, data);
 }

@@ -38,6 +38,23 @@ void init_uart_pins(UART_Type *ptr)
     }
 }
 
+void init_uart_pin_as_gpio(UART_Type *ptr)
+{
+    if (ptr == HPM_UART13) {
+        /* pull-up */
+        HPM_IOC->PAD[IOC_PAD_PZ08].PAD_CTL = IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(1);
+        HPM_IOC->PAD[IOC_PAD_PZ09].PAD_CTL = IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(1);
+
+        /* PZ port IO needs to configure BIOC as well */
+        HPM_IOC->PAD[IOC_PAD_PZ08].FUNC_CTL = IOC_PZ08_FUNC_CTL_GPIO_Z_08;
+        HPM_BIOC->PAD[IOC_PAD_PZ08].FUNC_CTL = IOC_PZ08_FUNC_CTL_SOC_PZ_08;
+
+        /* PZ port IO needs to configure BIOC as well */
+        HPM_IOC->PAD[IOC_PAD_PZ09].FUNC_CTL = IOC_PZ09_FUNC_CTL_GPIO_Z_09;
+        HPM_BIOC->PAD[IOC_PAD_PZ09].FUNC_CTL = IOC_PZ09_FUNC_CTL_SOC_PZ_09;
+    }
+}
+
 void init_lcd_pins(LCDC_Type *ptr)
 {
     HPM_IOC->PAD[IOC_PAD_PB03].FUNC_CTL = IOC_PB03_FUNC_CTL_DIS0_R_0;
@@ -293,6 +310,27 @@ void init_gptmr_pins(GPTMR_Type *ptr)
     if (ptr == HPM_GPTMR4) {
         /* TMR4 capture 1 */
         HPM_IOC->PAD[IOC_PAD_PE25].FUNC_CTL = IOC_PE25_FUNC_CTL_GPTMR4_CAPT_1;
+    }
+    if (ptr == HPM_GPTMR5) {
+        /* TMR5 compare 2 */
+        HPM_IOC->PAD[IOC_PAD_PD24].FUNC_CTL = IOC_PD24_FUNC_CTL_TRGM2_P_10;
+        trgm_enable_io_output(HPM_TRGM2, 1 << 10);
+
+        /* TMR5 compare 3 */
+        HPM_IOC->PAD[IOC_PAD_PD23].FUNC_CTL = IOC_PD23_FUNC_CTL_TRGM2_P_11;
+        trgm_enable_io_output(HPM_TRGM2, 1 << 11);
+
+        trgm_output_t trgm2IoConfig0;
+        trgm2IoConfig0.invert = 0;
+        trgm2IoConfig0.type = trgm_output_same_as_input;
+        trgm2IoConfig0.input = HPM_TRGM2_INPUT_SRC_GPTMR5_OUT2;
+        trgm_output_config(HPM_TRGM2, HPM_TRGM2_OUTPUT_SRC_TRGM2_P10, &trgm2IoConfig0);
+
+        trgm_output_t trgm2IoConfig1;
+        trgm2IoConfig1.invert = 0;
+        trgm2IoConfig1.type = trgm_output_same_as_input;
+        trgm2IoConfig1.input = HPM_TRGM2_INPUT_SRC_GPTMR5_OUT3;
+        trgm_output_config(HPM_TRGM2, HPM_TRGM2_OUTPUT_SRC_TRGM2_P11, &trgm2IoConfig1);
     }
 }
 

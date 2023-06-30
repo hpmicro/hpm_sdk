@@ -15,7 +15,7 @@
 
 ## 工程配置
 
-- 在文件 `CMakeLists.txt`中,  根据开发板原理图，设置匹配的以太网PHY类型，例如："set(COFNIG_ENET_PHY_DP83848 1)"
+- 在文件 `CMakeLists.txt`中,  根据开发板原理图，设置匹配的以太网PHY类型，例如："set(CONFIG_ENET_PHY_DP83848 1)"
 
 ## 运行示例
 

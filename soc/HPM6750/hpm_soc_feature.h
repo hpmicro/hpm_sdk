@@ -57,7 +57,6 @@
 #define PWM_SOC_PWM_MAX_COUNT (8U)
 #define PWM_SOC_CMP_MAX_COUNT (24U)
 #define PWM_SOC_OUTPUT_TO_PWM_MAX_COUNT (8U)
-#define PWM_SOC_OUTPUT_MAX_COUNT (24U)
 
 /*
  * DMA Section
@@ -125,10 +124,11 @@
  */
 #define ADC_SOC_SEQ_MAX_LEN                        (16U)
 #define ADC_SOC_MAX_TRIG_CH_LEN                    (4U)
+#define ADC_SOC_MAX_TRIG_CH_NUM                    (11U)
 #define ADC_SOC_DMA_ADDR_ALIGNMENT                 (4U)
 #define ADC_SOC_CONFIG_INTEN_CHAN_BIT_SIZE         (8U)
 #define ADC_SOC_PREEMPT_ENABLE_CTRL_SUPPORT        (0U)
-#define ADC_SOC_SEQ_MAX_DMA_BUFF_LEN_IN_4BYTES     (1024U)
+#define ADC_SOC_SEQ_MAX_DMA_BUFF_LEN_IN_4BYTES     (4096U)
 #define ADC_SOC_PMT_MAX_DMA_BUFF_LEN_IN_4BYTES     (48U)
 #define ADC_SOC_OTP_TSNS_REF25_MASK                (0xffffUL)
 #define ADC_SOC_OTP_TSNS_REF25_SHIFT               (21U)
@@ -147,7 +147,6 @@
 #define ADC16_SOC_TEMP_CH_NUM                      (14U)
 #define ADC16_SOC_TEMP_CH_EN                       (1U)
 #define ADC16_SOC_MAX_SAMPLE_VALUE                 (65535U)
-#define ADC16_SOC_MAX_TRIG_CH_NUM                  (11U)
 #define ADC16_SOC_MAX_CONV_CLK_NUM                 (21U)
 
 /*
@@ -203,6 +202,13 @@
 #define PWM_SOC_HRPWM_SUPPORT  (0U)
 #define PWM_SOC_SHADOW_TRIG_SUPPORT (0U)
 #define PWM_SOC_TIMER_RESET_SUPPORT (0U)
+
+
+/**
+ * IOC Section
+ *
+ */
+#define IOC_SOC_PAD_MAX     (491)
 
 
 #endif /* HPM_SOC_FEATURE_H */

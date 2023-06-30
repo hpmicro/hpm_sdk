@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -15,7 +15,6 @@
 #include "board.h"
 
 /*---------------------------------------------------------------------
- *
  * Internal API
  *---------------------------------------------------------------------
  */
@@ -23,10 +22,10 @@ static bool rtl8201_check_id(ENET_Type *ptr)
 {
     uint16_t id1, id2;
 
-    id1 = enet_read_phy(ptr, PHY_ADDR, RTL8201_PHYID1);
-    id2 = enet_read_phy(ptr, PHY_ADDR, RTL8201_PHYID2);
+    id1 = enet_read_phy(ptr, RTL8201_ADDR, RTL8201_PHYID1);
+    id2 = enet_read_phy(ptr, RTL8201_ADDR, RTL8201_PHYID2);
 
-    if (RTL8201_PHYID1_OUI_MSB_GET(id1) == PHY_ID1 && RTL8201_PHYID2_OUI_LSB_GET(id2) == PHY_ID2) {
+    if (RTL8201_PHYID1_OUI_MSB_GET(id1) == RTL8201_ID1 && RTL8201_PHYID2_OUI_LSB_GET(id2) == RTL8201_ID2) {
         return true;
     } else {
         return false;
@@ -42,11 +41,11 @@ void rtl8201_reset(ENET_Type *ptr)
     uint16_t data;
 
     /* PHY reset */
-    enet_write_phy(ptr, PHY_ADDR, RTL8201_BMCR, RTL8201_BMCR_RESET_SET(1));
+    enet_write_phy(ptr, RTL8201_ADDR, RTL8201_BMCR, RTL8201_BMCR_RESET_SET(1));
 
     /* wait until the reset is completed */
     do {
-        data = enet_read_phy(ptr, PHY_ADDR, RTL8201_BMCR);
+        data = enet_read_phy(ptr, RTL8201_ADDR, RTL8201_BMCR);
     } while (RTL8201_BMCR_RESET_GET(data));
 }
 
@@ -85,16 +84,16 @@ bool rtl8201_basic_mode_init(ENET_Type *ptr, rtl8201_config_t *config)
         return false;
     }
 
-    enet_write_phy(ptr, PHY_ADDR, RTL8201_BMCR, data);
+    enet_write_phy(ptr, RTL8201_ADDR, RTL8201_BMCR, data);
 
     /* select page 7 */
-    enet_write_phy(ptr, PHY_ADDR, RTL8201_PAGESEL, 7);
+    enet_write_phy(ptr, RTL8201_ADDR, RTL8201_PAGESEL, 7);
 
     /* set txc direction */
-    data = enet_read_phy(ptr, PHY_ADDR, RTL8201_RMSR_P7);
+    data = enet_read_phy(ptr, RTL8201_ADDR, RTL8201_RMSR_P7);
     data &= ~RTL8201_RMSR_P7_RG_RMII_CLKDIR_MASK;
     data |= RTL8201_RMSR_P7_RG_RMII_CLKDIR_SET(config->txc_input);
-    enet_write_phy(ptr, PHY_ADDR, RTL8201_RMSR_P7, data);
+    enet_write_phy(ptr, RTL8201_ADDR, RTL8201_RMSR_P7, data);
 
     return true;
 }
@@ -103,10 +102,10 @@ void rtl8201_get_phy_status(ENET_Type *ptr, enet_phy_status_t *status)
 {
     uint16_t data;
 
-    data = enet_read_phy(ptr, PHY_ADDR, RTL8201_BMSR);
+    data = enet_read_phy(ptr, RTL8201_ADDR, RTL8201_BMSR);
     status->enet_phy_link = RTL8201_BMSR_LINK_STATUS_GET(data);
 
-    data = enet_read_phy(ptr, PHY_ADDR, RTL8201_BMCR);
+    data = enet_read_phy(ptr, RTL8201_ADDR, RTL8201_BMCR);
     status->enet_phy_speed = RTL8201_BMCR_SPEED0_GET(data) == 0 ? enet_phy_port_speed_10mbps : enet_phy_port_speed_100mbps;
     status->enet_phy_duplex = RTL8201_BMCR_DUPLEX_GET(data);
 }

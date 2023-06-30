@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -366,9 +366,8 @@ typedef struct _sdxc_data {
  */
 enum {
     sdxc_xfer_data_normal = 0U,         /**< Transfer normal read/write data */
-    sdxc_xfer_data_tuning = 1U,         /**< Transfer Tuning data */
-    sdxc_xfer_data_boot = 2U,           /**< Transfer boot data */
-    sdxc_xfer_data_boot_continuous = 3U, /**< Transfer boot data continuously */
+    sdxc_xfer_data_boot = 1U,           /**< Transfer boot data */
+    sdxc_xfer_data_boot_continuous = 2U, /**< Transfer boot data continuously */
 };
 
 /**
@@ -746,6 +745,28 @@ static inline void sdxc_enable_internal_clock(SDXC_Type *base, bool enable)
 static inline uint32_t sdxc_get_present_status(SDXC_Type *base)
 {
     return base->PSTATE;
+}
+
+/**
+ * @brief Check whether the Data Buffer is writable or not
+ * @param [in] base SDXC base address
+ * @retval true Data buffer is writeable
+ * @retval false Data buffer write is disabled
+ */
+static inline bool sdxc_is_data_buf_writable(SDXC_Type *base)
+{
+    return ((base->PSTATE & SDXC_PSTATE_BUF_WR_ENABLE_MASK) != 0U);
+}
+
+/**
+ * @brief Check whether the data buffer is readable
+ * @param [in] base SDXC base address
+ * @retval true There are data available in data buffer
+ * @retval false there is no data available in data buffer, read is disabled
+ */
+static inline bool sdxc_is_data_buf_readable(SDXC_Type *base)
+{
+    return ((base->PSTATE & SDXC_PSTATE_BUF_RD_ENABLE_MASK) != 0U);
 }
 
 /**

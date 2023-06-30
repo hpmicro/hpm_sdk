@@ -9,6 +9,8 @@ In this example, one spi instance as master and another spi instance on other bo
 
 Connect [SPI Pins](lab_board_app_spi_pin) of the two boards.
 
+the two boards must be connected to the GND of both sides for a common ground to ensure signal transmission.
+
 
 ## Running the example
 

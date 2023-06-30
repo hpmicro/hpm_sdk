@@ -17,7 +17,7 @@ If the hardware supports receiving idle detection, uart can use uart_hardware_rx
 
 ## Running the example
 
-When the project runs correctly, the serial port terminal will output the information like:
+When the project runs correctly, send data through the UART transmitter, such as "1234567890123",  the debug serial port terminal will output the information like:
 ```
 uart software rx idle detection.
 uart receive 13 bytes, the received data are:

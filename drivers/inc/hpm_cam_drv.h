@@ -34,28 +34,32 @@
 #define CAM_SENSOR_BITWIDTH_10BITS (CAM_CR1_SENSOR_BIT_WIDTH_SET(1))
 
 /**
- * @brief CAM IRQ flag
+ * @brief CAM IRQ mask
  */
-#define CAM_IRQ_UNSUPPORTED_CONFIGURATION (CAM_INT_EN_ERR_CL_BWID_CFG_INT_EN_MASK)
-#define CAM_IRQ_HIST_CALCULATION_DONE (CAM_INT_EN_HIST_DONE_INT_EN_MASK)
-#define CAM_IRQ_HRESPONSE_ERROR (CAM_INT_EN_HRESP_ERR_EN_MASK)
-#define CAM_IRQ_END_OF_FRAME (CAM_INT_EN_EOF_INT_EN_MASK)
-#define CAM_IRQ_RX_FIFO_OVERRUN (CAM_INT_EN_RF_OR_INTEN_MASK)
-#define CAM_IRQ_FB2_DMA_TRANSFER_DONE (CAM_INT_EN_FB2_DMA_DONE_INTEN_MASK)
-#define CAM_IRQ_FB1_DMA_TRANSFER_DONE (CAM_INT_EN_FB1_DMA_DONE_INTEN_MASK)
-#define CAM_IRQ_START_OF_FRAME (CAM_INT_EN_SOF_INT_EN_MASK)
+typedef enum {
+    cam_irq_unsupported_configuration = CAM_INT_EN_ERR_CL_BWID_CFG_INT_EN_MASK,
+    cam_irq_hist_calculation_done = CAM_INT_EN_HIST_DONE_INT_EN_MASK,
+    cam_irq_hresponse_error = CAM_INT_EN_HRESP_ERR_EN_MASK,
+    cam_irq_end_of_frame = CAM_INT_EN_EOF_INT_EN_MASK,
+    cam_irq_rx_fifo_overrun = CAM_INT_EN_RF_OR_INTEN_MASK,
+    cam_irq_fb2_dma_transfer_done = CAM_INT_EN_FB2_DMA_DONE_INTEN_MASK,
+    cam_irq_fb1_dma_transfer_done = CAM_INT_EN_FB1_DMA_DONE_INTEN_MASK,
+    cam_irq_start_of_frame = CAM_INT_EN_SOF_INT_EN_MASK
+} cam_irq_mask_t;
 
 /**
- * @brief CAM status flag
+ * @brief CAM status mask
  */
-#define CAM_STATUS_UNSUPPORTED_CONFIGURATION (CAM_STA_ERR_CL_BWID_CFG_MASK)
-#define CAM_STATUS_HIST_CALCULATION_DONE (CAM_STA_HIST_DONE_MASK)
-#define CAM_STATUS_RX_FIFO_OVERRUN (CAM_STA_RF_OR_INT_MASK)
-#define CAM_STATUS_FB2_DMA_TRANSFER_DONE (CAM_STA_DMA_TSF_DONE_FB2_MASK)
-#define CAM_STATUS_FB1_DMA_TRANSFER_DONE (CAM_STA_DMA_TSF_DONE_FB1_MASK)
-#define CAM_STATUS_END_OF_FRAME (CAM_STA_EOF_INT_MASK)
-#define CAM_STATUS_START_OF_FRAME (CAM_STA_SOF_INT_MASK)
-#define CAM_STATUS_HRESPONSE_ERROR (CAM_STA_HRESP_ERR_INT_MASK)
+typedef enum {
+    cam_status_unsupported_configuration = CAM_STA_ERR_CL_BWID_CFG_MASK,
+    cam_status_hist_calculation_done = CAM_STA_HIST_DONE_MASK,
+    cam_status_rx_fifo_overrun = CAM_STA_RF_OR_INT_MASK,
+    cam_status_fb2_dma_transfer_done = CAM_STA_DMA_TSF_DONE_FB2_MASK,
+    cam_status_fb1_dma_transfer_done = CAM_STA_DMA_TSF_DONE_FB1_MASK,
+    cam_status_end_of_frame = CAM_STA_EOF_INT_MASK,
+    cam_status_start_of_frame = CAM_STA_SOF_INT_MASK,
+    cam_status_hresponse_error = CAM_STA_HRESP_ERR_INT_MASK
+} cam_status_mask_t;
 
 /**
  * @brief CAM input color format
@@ -251,6 +255,54 @@ static inline void cam_set_input_pixel_byte_order(CAM_Type *ptr, cam_input_pixel
 {
     ptr->CR2 = (ptr->CR2 & (~CAM_CR2_CLRBITFORMAT_MASK)) | CAM_CR2_CLRBITFORMAT_SET(order);
 }
+
+/**
+ * @brief CAM enable irq
+ *
+ * @param [in] ptr CAM base address
+ * @param [in] irq_mask irq mask value
+ */
+static inline void cam_enable_irq(CAM_Type *ptr, cam_irq_mask_t irq_mask)
+{
+    ptr->INT_EN |= irq_mask;
+}
+
+
+/**
+ * @brief CAM disable irq
+ *
+ * @param [in] ptr CAM base address
+ * @param [in] irq_mask irq mask value
+ */
+static inline void cam_disable_irq(CAM_Type *ptr, cam_irq_mask_t irq_mask)
+{
+    ptr->INT_EN &= ~irq_mask;
+}
+
+/**
+ * @brief Check CAM status according to the given status mask
+ *
+ * @param [in] ptr CAM base address
+ * @param sta_mask sta_mask refer to cam_status_mask_t
+ * @retval true if any bit in given mask is set
+ * @retval false if none of any bit in given mask is set
+ */
+static inline bool cam_check_status(CAM_Type *ptr, cam_status_mask_t sta_mask)
+{
+    return ((ptr->STA & sta_mask) != 0U) ? true : false;
+}
+
+/**
+ * @brief Clear CAM status according to the given status mask
+ *
+ * @param [in] ptr CAM base address
+ * @param sta_mask sta_mask refer to cam_status_mask_t
+ */
+static inline void cam_clear_status(CAM_Type *ptr, cam_status_mask_t sta_mask)
+{
+    ptr->STA |= sta_mask;
+}
+
 
 /**
  * @}

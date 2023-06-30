@@ -7,7 +7,7 @@
 
 #include "board.h"
 #include "hpm_bldc_define.h"
-#include "hpm_bldc_foc_func.h"
+#include "hpm_foc.h"
 #include "hpm_pwm_drv.h"
 #include "bldc_foc_cfg.h"
 /*输入 BLDC_PWM_PIN_UH,查找数组后输出BOARD_BLDCPWM_OUTPUT_PIN1 */

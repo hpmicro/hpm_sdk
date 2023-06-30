@@ -13,7 +13,6 @@
 #include "hpm_gpio_drv.h"
 #include "pinmux.h"
 #include "hpm_pmp_drv.h"
-#include "assert.h"
 #include "hpm_clock_drv.h"
 #include "hpm_sysctl_drv.h"
 #include "hpm_pwm_drv.h"
@@ -22,7 +21,6 @@
 #include "hpm_pcfg_drv.h"
 
 static board_timer_cb timer_cb;
-ATTR_PLACE_AT_NONCACHEABLE_BSS static bool init_delay_flag;
 
 /**
  * @brief FLASH configuration option definitions:
@@ -189,29 +187,12 @@ void board_init(void)
 
 void board_delay_us(uint32_t us)
 {
-    static uint32_t gptmr_freq;
-    gptmr_channel_config_t config;
-
-    if (init_delay_flag == false) {
-        init_delay_flag = true;
-        clock_add_to_group(BOARD_DELAY_TIMER_CLK_NAME, 0);
-        gptmr_freq = clock_get_frequency(BOARD_DELAY_TIMER_CLK_NAME);
-        gptmr_channel_get_default_config(BOARD_DELAY_TIMER, &config);
-        gptmr_channel_config(BOARD_DELAY_TIMER, BOARD_DELAY_TIMER_CH, &config, false);
-    }
-
-    gptmr_channel_config_update_reload(BOARD_DELAY_TIMER, BOARD_DELAY_TIMER_CH, gptmr_freq / 1000000 * us);
-    gptmr_start_counter(BOARD_DELAY_TIMER, BOARD_DELAY_TIMER_CH);
-    while (!gptmr_check_status(BOARD_DELAY_TIMER, GPTMR_CH_RLD_STAT_MASK(BOARD_DELAY_TIMER_CH))) {
-        __asm("nop");
-    }
-    gptmr_stop_counter(BOARD_DELAY_TIMER, BOARD_DELAY_TIMER_CH);
-    gptmr_clear_status(BOARD_DELAY_TIMER, GPTMR_CH_RLD_STAT_MASK(BOARD_DELAY_TIMER_CH));
+    clock_cpu_delay_us(us);
 }
 
 void board_delay_ms(uint32_t ms)
 {
-    board_delay_us(1000 * ms);
+    clock_cpu_delay_ms(ms);
 }
 
 void board_timer_isr(void)
@@ -259,6 +240,12 @@ uint32_t board_init_spi_clock(SPI_Type *ptr)
         clock_set_source_divider(clock_spi1, clk_src_pll0_clk0, 5U); /* 80MHz */
 
         return clock_get_frequency(clock_spi1);
+    } else if (ptr == HPM_SPI2) {
+        /* SPI2 clock configure */
+        clock_add_to_group(clock_spi2, 0);
+        clock_set_source_divider(clock_spi2, clk_src_pll0_clk0, 5U); /* 80MHz */
+
+        return clock_get_frequency(clock_spi2);
     } else if (ptr == HPM_SPI3) {
         /* SPI3 clock configure */
         clock_add_to_group(clock_spi3, 0);

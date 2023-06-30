@@ -1353,7 +1353,7 @@ uint8_t mcan_get_data_field_size(uint8_t data_field_size_option);
  * @param [out] ram_config CAN RAM Configuration
  * @param [in] enable_canfd CANFD enable flag
  */
-void mcan_get_defaul_ram_flexible_config(MCAN_Type *ptr, mcan_ram_flexible_config_t *ram_config, bool enable_canfd);
+void mcan_get_default_ram_flexible_config(MCAN_Type *ptr, mcan_ram_flexible_config_t *ram_config, bool enable_canfd);
 
 /**
  * @brief Get Default MCAN RAM configuration

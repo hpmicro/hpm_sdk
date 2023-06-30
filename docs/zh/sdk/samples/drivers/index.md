@@ -16,7 +16,7 @@
    femc/sdram/README
    gpio/README
    gpiom/README
-   gptmr/README
+   gptmr/index
    hall/README
    i2c/index
    i2s/index
@@ -39,17 +39,17 @@
    sdm/README
    sdxc/sd/README
    sdxc/sd_fatfs/README
+   sdxc/emmc/README
    spi/index
    synt/README
    sysctl/README
    tsns/README
-   uart/uart_dma/README
-   uart/uart_software_rx_idle/README
-   uart/uart_hardware_rx_idle/README
-   uart/uart_irq/README
+   uart/index
    vad/README
    wdg/README
    mcan/README
-   pla/README
+   pla/index
    ffa/README
+   qeo/index
+   mmc/README
 :::

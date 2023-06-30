@@ -2,34 +2,20 @@
 
 ## 概述
 
-**bldc_foc**工程展示了直流无刷电机的有感转速控制、位置控制，
-以及无感转速控制。
+**bldc_foc**工程展示了直流无刷电机的有感转速控制、位置控制.
 - 电机控制算法为**FOC**
-- 无感控制算法为**SMO**
 
 ## 配置
 
 - 本例程电机使用的是雷赛智能的 **BLM57050-1000** 无刷电机，电机具体参数请参考[雷赛智能官网](https://leisai.com/)。
 
-- 板子设置参考开发板文档[ PWM_PIN ](lab_board_motor_ctrl_pin)相关内容
-
-- 支持[HPM6750EVKMINI-TO_MOTOR电机扩展板](lab_board_hpm6750evkmini-to-motor-220530RevA)的开发板参考相关章节进行配置，支持列表如下：
-  - hpm6750evkmini
-
-- 支持[DRV-LV50A-MP1907电机驱动板](lab_drv_lv50a_mp1907)的开发板参考相关章节进行配置，支持列表如下:
-  - hpm6750evk
-  - hpm6300evk
-  - hpm6200evk
-
-- 需要更改选择电阻的开发板需要去除`GigEPOP`丝印框选的全部电阻，并且确保`MOTOR POP`丝印框选的电阻全部焊接，列表如下：
-  - hpm6750evk2
+- 板子设置参考开发板文档[Motor Pin](lab_board_motor_ctrl_pin)相关内容
 
 - 完成上述过程后，给驱动板上电观察电流无异常后，给核心板上电，再次确认电流无异常后，就可以烧录程序，观察运行现象。
 
 ## 代码选项
 
 - 如果需要更快的代码运行速度请在该工程的CMakeLists.txt中添加`sdk_compile_options("-mabi=ilp32f")`语句，获得较高的性能提升
-- 本代码包含无传感器的滑模控制算法，请将 bldc_foc.c 中的 `#define MOTOR0_SMC_EN               (0) /*使能滑模控制*/`置1即可。
 
 ```{note}
 
@@ -58,31 +44,6 @@
 
 	可以设置电机轴的位置，此时电机轴会锁定在指定的位置
 
-
-
-### 无感
-
-当工程正确运行后，电机以20r/s的速度运行。
-通过串口控制台可配置如下数据：
-
-`speed` float类型， 输入范围+40~+5，-5~-40单位r/s
-
-串口输出如下：
-
-```console
-Mode selection:
-1. Location mode.
-2. Speed mode.
-Enter mode code:
-
-Location mode, motor run, The location is: 0.
-Input Location:
- 10000
-
-Location mode, motor run, The location is: 10000.
-Input Location:
-
-```
 
 ```console
 Mode selection:

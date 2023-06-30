@@ -172,10 +172,19 @@ sdk_inc(${generated_file_path}/include)
 
 set_target_properties(${APP_ELF_NAME} PROPERTIES LINK_DEPENDS ${LINKER_SCRIPT})
 
+if(NOT DEFINED HPM_SDK_LD_NO_WHOLE_SDK)
+    set(HPM_SDK_LD_NO_WHOLE_SDK 0)
+endif()
+
+set(HPM_SDK_WHOLE_ARCHIVE_OPT "-Wl,--whole-archive")
+if(${HPM_SDK_LD_NO_WHOLE_SDK})
+    set(HPM_SDK_WHOLE_ARCHIVE_OPT "")
+endif()
+
 if("${TOOLCHAIN_VARIANT}" STREQUAL "nds-gcc")
     target_link_libraries(${APP_ELF_NAME}
         "-Wl,-Map=${EXECUTABLE_OUTPUT_PATH}/${APP_MAP_NAME}"
-        "-Wl,--whole-archive"
+        ${HPM_SDK_WHOLE_ARCHIVE_OPT}
         ${HPM_SDK_NDSGCC_LIB_ITF}
         ${HPM_SDK_GCC_LIB} ${HPM_SDK_GCC_LIB_ITF}
         ${HPM_SDK_LIB} ${HPM_SDK_LIB_ITF} app
@@ -183,7 +192,7 @@ if("${TOOLCHAIN_VARIANT}" STREQUAL "nds-gcc")
 else()
     target_link_libraries(${APP_ELF_NAME}
         "-Wl,-Map=${EXECUTABLE_OUTPUT_PATH}/${APP_MAP_NAME}"
-        "-Wl,--whole-archive"
+        ${HPM_SDK_WHOLE_ARCHIVE_OPT}
         ${HPM_SDK_GCC_LIB} ${HPM_SDK_GCC_LIB_ITF}
         ${HPM_SDK_LIB} ${HPM_SDK_LIB_ITF} app
         "-Wl,--no-whole-archive")

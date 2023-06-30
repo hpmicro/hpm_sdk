@@ -1,4 +1,4 @@
-# Copyright 2021 hpmicro
+# Copyright (c) 2021 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 
@@ -26,7 +26,7 @@ if(RV_ARCH)
     sdk_compile_options("-march=${RV_ARCH}")
     sdk_ld_options("-march=${RV_ARCH}")
 endif()
-if(NOT HPM_SDK_NO_NANO_SPECS)
+if(NOT HPM_SDK_LD_NO_NANO_SPECS)
     sdk_ld_options("--specs=nano.specs")
     sdk_ld_options("-u _printf_float")
     sdk_ld_options("-u _scanf_float")

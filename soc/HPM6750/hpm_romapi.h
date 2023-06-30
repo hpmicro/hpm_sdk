@@ -640,12 +640,12 @@ static inline void rom_xpi_nor_remap_disable(XPI_Type *base)
  * @retval false Remapping logic is disabled
  */
 ATTR_RAMFUNC
-static inline void rom_xpi_nor_is_remap_enabled(XPI_Type *base)
+static inline bool rom_xpi_nor_is_remap_enabled(XPI_Type *base)
 {
     static const uint8_t k_mc_xpi_remap_enabled[] = {
         0x03, 0x25, 0x05, 0x42, 0x05, 0x89, 0x82, 0x80,
     };
-    typedef void (*remap_chk_cb_t)(XPI_Type *);
+    typedef bool (*remap_chk_cb_t)(XPI_Type *);
     remap_chk_cb_t chk_cb = (remap_chk_cb_t) &k_mc_xpi_remap_enabled;
     return chk_cb(base);
 }

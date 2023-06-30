@@ -19,6 +19,7 @@
 #define PWM_OUTPUT_PIN1 BOARD_APP_PWM_OUT1
 #define PWM_OUTPUT_PIN2 BOARD_APP_PWM_OUT2
 #define TRGM BOARD_APP_TRGM
+#define TRGM_PWM_OUTPUT BOARD_APP_TRGM_PWM_OUTPUT
 #endif
 
 #ifndef TEST_LOOP
@@ -40,8 +41,8 @@ void config_hw_event(uint8_t cmp_index, uint32_t cmp)
 void reset_pwm_counter(void)
 {
     pwm_enable_reload_at_synci(PWM);
-    trgm_output_update_source(TRGM, TRGM_TRGOCFG_PWM_SYNCI, 1);
-    trgm_output_update_source(TRGM, TRGM_TRGOCFG_PWM_SYNCI, 0);
+    trgm_output_update_source(TRGM, TRGM_PWM_OUTPUT, 1);
+    trgm_output_update_source(TRGM, TRGM_PWM_OUTPUT, 0);
 }
 
 void generate_edge_aligned_waveform(void)

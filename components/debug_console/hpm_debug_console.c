@@ -44,6 +44,7 @@ void console_send_byte(uint8_t c)
 }
 
 #ifdef __SEGGER_RTL_VERSION
+#include <stdio.h>
 #include "__SEGGER_RTL_Int.h"
 static int _stdin_ungot  = EOF;
 struct __SEGGER_RTL_FILE_impl { /* NOTE: Provides implementation for FILE */

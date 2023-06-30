@@ -10,4 +10,6 @@
    dma/slave/README
    interrupt/master/README
    interrupt/slave/README
+   smbus/master/README
+   smbus/slave/README
 :::

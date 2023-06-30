@@ -6,8 +6,8 @@
  */
 
 
-#ifndef HPM_DMA_DRV_H
-#define HPM_DMA_DRV_H
+#ifndef HPM_DMAV1_DRV_H
+#define HPM_DMAV1_DRV_H
 #include "hpm_common.h"
 #include "hpm_soc_feature.h"
 #include "hpm_dma_regs.h"
@@ -36,8 +36,6 @@
 #define DMA_TRANSFER_WIDTH_HALF_WORD            (1U)
 #define DMA_TRANSFER_WIDTH_WORD                 (2U)
 #define DMA_TRANSFER_WIDTH_DOUBLE_WORD          (3U)
-#define DMA_TRANSFER_WIDTH_QUAD_WORD            (4U)
-#define DMA_TRANSFER_WIDTH_EIGHT_WORD           (5U)
 
 #define DMA_STATUS_ERROR_SHIFT                  (0U)
 #define DMA_STATUS_ABORT_SHIFT                  (8U)
@@ -216,12 +214,35 @@ static inline uint32_t dma_get_residue_transfer_size(DMA_Type *ptr, uint32_t ch_
  *
  * @param[in] ptr DMA base address
  * @param[in] ch_index Index of the channel
- * @param[in] size transfer size of the channel
+ * @param[in] size_in_width transfer size of the channel. The width is current dma channel configured source width.
+ *            Transfer total bytes are (size_in_width * source width).
  *
  */
-static inline void dma_set_transfer_size(DMA_Type *ptr, uint32_t ch_index, uint32_t size)
+static inline void dma_set_transfer_size(DMA_Type *ptr, uint32_t ch_index, uint32_t size_in_width)
 {
-    ptr->CHCTRL[ch_index].TRANSIZE = size;
+    ptr->CHCTRL[ch_index].TRANSIZE = DMA_CHCTRL_TRANSIZE_TRANSIZE_SET(size_in_width);
+}
+
+/**
+ * @brief   Set DMA channel transfer width and size in byte
+ *
+ * @param[in] ptr DMA base address
+ * @param[in] ch_index Index of the channel
+ * @param[in] src_width transfer source width of the channel
+ *  @arg @ref DMA_TRANSFER_WIDTH_BYTE
+ *  @arg @ref DMA_TRANSFER_WIDTH_HALF_WORD
+ *  @arg @ref DMA_TRANSFER_WIDTH_WORD
+ *  @arg @ref DMA_TRANSFER_WIDTH_DOUBLE_WORD
+ * @param[in] size_in_byte transfer size in byte of the channel. The dma transfer size is (size_in_byte >> src_width).
+ *
+ */
+static inline void dma_set_transfer_src_width_byte_size(DMA_Type *ptr, uint32_t ch_index, uint8_t src_width, uint32_t size_in_byte)
+{
+    assert((src_width == DMA_TRANSFER_WIDTH_BYTE) || (src_width == DMA_TRANSFER_WIDTH_HALF_WORD)
+        || (src_width == DMA_TRANSFER_WIDTH_WORD) || (src_width == DMA_TRANSFER_WIDTH_DOUBLE_WORD));
+
+    ptr->CHCTRL[ch_index].CTRL = (ptr->CHCTRL[ch_index].CTRL & ~DMA_CHCTRL_CTRL_SRCWIDTH_MASK) | DMA_CHCTRL_CTRL_SRCWIDTH_SET(src_width);
+    ptr->CHCTRL[ch_index].TRANSIZE = DMA_CHCTRL_TRANSIZE_TRANSIZE_SET(size_in_byte >> src_width);
 }
 
 /**
@@ -409,19 +430,32 @@ void dma_default_channel_config(DMA_Type *ptr, dma_channel_config_t *ch);
  * @brief   Setup DMA channel
  *
  * @param[in] ptr DMA base address
- * @param[in] ch_index Target channel index to be configured
+ * @param[in] ch_num Target channel index to be configured
  * @param[in] ch Channel config
  * @param[in] start_transfer Set true to start transfer
  *
  * @return  status_success if everything is okay
  */
-hpm_stat_t dma_setup_channel(DMA_Type *ptr, uint32_t ch_index,
+hpm_stat_t dma_setup_channel(DMA_Type *ptr, uint8_t ch_num,
                             dma_channel_config_t *ch, bool start_transfer);
+
+/**
+ * @brief   Config linked descriptor function
+ *
+ * @param[in] ptr DMA base address
+ * @param[in] descriptor Linked descriptor pointer
+ * @param[in] ch_num Target channel index to be configured
+ * @param[in] config Descriptor config pointer
+ *
+ * @return status_success if everything is okay
+ */
+hpm_stat_t dma_config_linked_descriptor(DMA_Type *ptr, dma_linked_descriptor_t *descriptor, uint8_t ch_num, dma_channel_config_t *config);
+
 /**
  * @brief   Start DMA copy
  *
  * @param[in] ptr DMA base address
- * @param[in] ch_index Target channel index
+ * @param[in] ch_num Target channel index
  * @param[in] dst Destination address
  * @param[in] src Source Address
  * @param[in] size_in_byte Size in byte
@@ -430,9 +464,17 @@ hpm_stat_t dma_setup_channel(DMA_Type *ptr, uint32_t ch_index,
  * @return status_success if everthing is okay
  * @note: dst, src, size should be aligned with burst_len_in_byte
  */
-hpm_stat_t dma_start_memcpy(DMA_Type *ptr, uint8_t ch_index,
+hpm_stat_t dma_start_memcpy(DMA_Type *ptr, uint8_t ch_num,
                                uint32_t dst, uint32_t src,
                                uint32_t size_in_byte, uint32_t burst_len_in_byte);
+
+/**
+ * @brief   Get default handshake config
+ *
+ * @param[in] ptr DMA base address
+ * @param[in] config default config
+ */
+void dma_default_handshake_config(DMA_Type *ptr, dma_handshake_config_t *config);
 
 /**
  * @brief   config dma handshake function
@@ -466,4 +508,4 @@ static inline bool dma_is_idle(DMA_Type *ptr)
 /**
  * @}
  */
-#endif /* HPM_DMA_DRV_H */
+#endif /* HPM_DMAV1_DRV_H */

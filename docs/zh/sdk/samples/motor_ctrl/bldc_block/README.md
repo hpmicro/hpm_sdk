@@ -9,17 +9,7 @@
 
 - 本例程电机使用的是雷赛智能的 **BLM57050-1000** 无刷电机，电机具体参数请参考[雷赛智能官网](https://leisai.com/)。
 
-- 板子设置参考开发板文档[ PWM_PIN ](lab_board_motor_ctrl_pin)相关内容
-
-- 支持[HPM6750EVKMINI-TO_MOTOR电机扩展板](lab_board_hpm6750evkmini-to-motor-220530RevA)的开发板参考相关章节进行配置，支持列表如下：
-  - hpm6750evkmini
-
-- 支持[DRV-LV50A-MP1907电机驱动板](lab_drv_lv50a_mp1907)的开发板参考相关章节进行配置，支持列表如下:
-  - hpm6750evk
-  - hpm6300evk
-
-- 需要更改选择电阻的开发板需要去除`GigEPOP`丝印框选的全部电阻，并且确保`MOTOR POP`丝印框选的电阻全部焊接，列表如下：
-  - hpm6750evk2
+- 板子设置参考开发板文档[Motor Pin](lab_board_motor_ctrl_pin)相关内容
 
 - 完成上述过程后，给驱动板上电观察电流无异常后，给核心板上电，再次确认电流无异常后，就可以烧录程序，观察运行现象。
 
@@ -39,11 +29,7 @@
 串口输出如下：
 
 ```console
-Mode selection:
-0. Location mode.
-1. Speed mode.
-Enter mode code:
-1
+
 Speed mode, motor run, speed is: 20.000000.
 Input speed:
 10.5

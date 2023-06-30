@@ -1,10 +1,11 @@
-# Copyright 2021-2022 hpmicro
+# Copyright (c) 2021-2022 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
 
 set(CONFIG_TINYUSB 1)
 set(CONFIG_USB_DEVICE 1)
+set(CONFIG_USB_DEVICE_AUDIO 1)
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 

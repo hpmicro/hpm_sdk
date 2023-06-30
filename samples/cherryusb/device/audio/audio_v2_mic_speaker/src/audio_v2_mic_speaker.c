@@ -9,17 +9,16 @@
 #include "usbd_audio.h"
 #include "board.h"
 #include "hpm_i2s_drv.h"
+#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#include "hpm_dmav2_drv.h"
+#else
 #include "hpm_dma_drv.h"
+#endif
 #include "hpm_dmamux_drv.h"
 #include "hpm_pdm_drv.h"
 #include "hpm_dao_drv.h"
 #include "audio_v2_mic_speaker.h"
 
-
-#define USBD_VID           0xffff
-#define USBD_PID           0xffff
-#define USBD_MAX_POWER     100
-#define USBD_LANGID_STRING 1033
 
 #ifdef CONFIG_USB_HS
 #define EP_INTERVAL 0x04
@@ -30,7 +29,7 @@
 #define AUDIO_OUT_EP 0x02
 #define AUDIO_IN_EP  0x81
 
-#define SPEAKER_SAMPLE_FREQ    96000
+#define SPEAKER_MAX_SAMPLE_FREQ    96000
 #define SPEAKER_SLOT_BYTE_SIZE 4
 #define SPEAKER_AUDIO_DEPTH    24
 
@@ -38,8 +37,9 @@
 #define MIC_SLOT_BYTE_SIZE 2
 #define MIC_AUDIO_DEPTH    16
 
-#define IN_CHANNEL_NUM 2
+#define BMCONTROL (AUDIO_V2_FU_CONTROL_MUTE | AUDIO_V2_FU_CONTROL_VOLUME)
 
+#define IN_CHANNEL_NUM 2
 #if IN_CHANNEL_NUM == 1
 #define INPUT_CTRL      DBVAL(BMCONTROL), DBVAL(BMCONTROL)
 #define INPUT_CH_ENABLE 0x00000000
@@ -66,9 +66,7 @@
 #define INPUT_CH_ENABLE 0x000000ff
 #endif
 
-
 #define OUT_CHANNEL_NUM 2
-
 #if OUT_CHANNEL_NUM == 1
 #define OUTPUT_CTRL DBVAL(BMCONTROL), DBVAL(BMCONTROL)
 #define OUTPUT_CH_ENABLE 0x00000000
@@ -97,10 +95,8 @@
 
 #define AUDIO_BUFFER_COUNT 32
 /* AudioFreq * DataSize * NumChannels */
-#define AUDIO_OUT_PACKET ((uint32_t)((SPEAKER_SAMPLE_FREQ * SPEAKER_SLOT_BYTE_SIZE * OUT_CHANNEL_NUM) / 1000))
+#define AUDIO_OUT_PACKET ((uint32_t)((SPEAKER_MAX_SAMPLE_FREQ * SPEAKER_SLOT_BYTE_SIZE * OUT_CHANNEL_NUM) / 1000))
 #define AUDIO_IN_PACKET  ((uint32_t)((MIC_SAMPLE_FREQ * MIC_SLOT_BYTE_SIZE * IN_CHANNEL_NUM) / 1000))
-
-#define BMCONTROL (AUDIO_V2_FU_CONTROL_MUTE | AUDIO_V2_FU_CONTROL_VOLUME)
 
 #define USB_AUDIO_CONFIG_DESC_SIZ (9 +                                                     \
                                    AUDIO_V2_AC_DESCRIPTOR_INIT_LEN +                       \
@@ -137,8 +133,8 @@ uint8_t audio_descriptor[] = {
     AUDIO_V2_AC_INPUT_TERMINAL_DESCRIPTOR_INIT(0x06, AUDIO_INTERM_MIC, 0x05, IN_CHANNEL_NUM, INPUT_CH_ENABLE, 0x0000),
     AUDIO_V2_AC_FEATURE_UNIT_DESCRIPTOR_INIT(0x07, 0x06, INPUT_CTRL),
     AUDIO_V2_AC_OUTPUT_TERMINAL_DESCRIPTOR_INIT(0x08, AUDIO_TERMINAL_STREAMING, 0x07, 0x05, 0x0000),
-    AUDIO_V2_AS_DESCRIPTOR_INIT(0x01, 0x02, OUT_CHANNEL_NUM, OUTPUT_CH_ENABLE, SPEAKER_SLOT_BYTE_SIZE, SPEAKER_AUDIO_DEPTH, AUDIO_OUT_EP, AUDIO_OUT_PACKET, EP_INTERVAL),
-    AUDIO_V2_AS_DESCRIPTOR_INIT(0x02, 0x08, IN_CHANNEL_NUM, INPUT_CH_ENABLE, MIC_SLOT_BYTE_SIZE, MIC_AUDIO_DEPTH, AUDIO_IN_EP, (AUDIO_IN_PACKET + 4), EP_INTERVAL),
+    AUDIO_V2_AS_DESCRIPTOR_INIT(0x01, 0x02, OUT_CHANNEL_NUM, OUTPUT_CH_ENABLE, SPEAKER_SLOT_BYTE_SIZE, SPEAKER_AUDIO_DEPTH, AUDIO_OUT_EP, 0x09, AUDIO_OUT_PACKET, EP_INTERVAL),
+    AUDIO_V2_AS_DESCRIPTOR_INIT(0x02, 0x08, IN_CHANNEL_NUM, INPUT_CH_ENABLE, MIC_SLOT_BYTE_SIZE, MIC_AUDIO_DEPTH, AUDIO_IN_EP, 0x05, (AUDIO_IN_PACKET + 4), EP_INTERVAL),
     /*
      * string0 descriptor
      */
@@ -277,8 +273,6 @@ static volatile bool s_speaker_mute;
 static volatile bool s_set_speaker_mute_req;
 static volatile float s_speaker_volume_percent;
 static volatile bool s_set_speaker_volume_req;
-static volatile uint32_t s_speaker_sampling_freq;
-static volatile bool s_set_speaker_sampling_freq_req;
 static volatile bool s_mic_tx_flag;
 static volatile bool s_mic_ep_tx_busy_flag;
 static volatile uint8_t s_mic_in_buffer_front;
@@ -320,7 +314,7 @@ void speaker_init_i2s_dao_codec(void)
 {
     dao_config_t dao_config;
 
-    (void)speaker_init_i2s_playback(SPEAKER_SAMPLE_FREQ, SPEAKER_AUDIO_DEPTH, OUT_CHANNEL_NUM);
+    (void)speaker_init_i2s_playback(16000, SPEAKER_AUDIO_DEPTH, OUT_CHANNEL_NUM);
 
     dao_get_default_config(HPM_DAO, &dao_config);
     dao_config.enable_mono_output = true;
@@ -385,20 +379,6 @@ SDK_DECLARE_EXT_ISR_M(BOARD_APP_HDMA_IRQ, isr_dma)
 
 void cherryusb_audio_v2_main_task(void)
 {
-    hpm_stat_t state;
-
-    if (s_set_speaker_sampling_freq_req) {
-        state = speaker_init_i2s_playback(s_speaker_sampling_freq, SPEAKER_AUDIO_DEPTH, OUT_CHANNEL_NUM);
-        if (state == status_success) {
-            USB_LOG_RAW("Init I2S Clock Ok! Sample Rate: %d, speaker_i2s_mclk_hz: %d\r\n", s_speaker_sampling_freq, s_speaker_i2s_mclk_hz);
-        } else {
-            USB_LOG_RAW("Init I2S Clock Fail!\r\n");
-        }
-        s_speaker_out_buffer_front = s_speaker_out_buffer_rear;
-        s_speaker_dma_transfer_req = true;
-        s_set_speaker_sampling_freq_req = false;
-    }
-
     if (s_set_speaker_mute_req) {
         if (s_speaker_mute) {
             dao_stop(HPM_DAO);
@@ -532,9 +512,17 @@ void usbd_audio_set_mute(uint8_t entity_id, uint8_t ch, uint8_t enable)
 
 void usbd_audio_set_sampling_freq(uint8_t entity_id, uint8_t ep_ch, uint32_t sampling_freq)
 {
+    hpm_stat_t state;
+
     if (entity_id == 1) {
-        s_speaker_sampling_freq = sampling_freq;
-        s_set_speaker_sampling_freq_req = true;
+        state = speaker_init_i2s_playback(sampling_freq, SPEAKER_AUDIO_DEPTH, OUT_CHANNEL_NUM);
+        if (state == status_success) {
+            USB_LOG_RAW("Init I2S Clock Ok! Sample Rate: %d, speaker_i2s_mclk_hz: %d\r\n", sampling_freq, s_speaker_i2s_mclk_hz);
+        } else {
+            USB_LOG_RAW("Init I2S Clock Fail!\r\n");
+        }
+        s_speaker_out_buffer_front = s_speaker_out_buffer_rear;
+        s_speaker_dma_transfer_req = true;
     } else if (entity_id == 5) {
     } else {
     }

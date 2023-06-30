@@ -10,6 +10,8 @@
 static hpm_stat_t hpm_spi_tx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_ptr, uint32_t src, uint8_t data_width, uint32_t size)
 {
     dma_handshake_config_t config;
+
+    dma_default_handshake_config(dma_ptr, &config);
     config.ch_index = ch_num;
     config.dst = (uint32_t)&spi_ptr->DATA;
     config.dst_fixed = true;
@@ -24,6 +26,8 @@ static hpm_stat_t hpm_spi_tx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_
 static hpm_stat_t hpm_spi_rx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_ptr, uint32_t dst, uint8_t data_width, uint32_t size)
 {
     dma_handshake_config_t config;
+
+    dma_default_handshake_config(dma_ptr, &config);
     config.ch_index = ch_num;
     config.dst = dst;
     config.dst_fixed = false;
@@ -45,11 +49,14 @@ void hpm_spi_prepare_dma_tx_descriptors(spi_context_t *context, spi_control_conf
     uint32_t per_trans_size = context->per_trans_max;
     uint32_t dma_ch = context->dma_context.tx_dma_ch;
     uint8_t *tx_buff = context->tx_buff;
+    dma_channel_config_t dma_ch_config;
 
     static uint8_t dummy_cmd = 0xff;
 
     uint32_t temp32;
     uint32_t tx_buff_index = 0;
+
+    dma_default_channel_config(context->dma_context.dma_ptr, &dma_ch_config);
     for (uint32_t i = 0; i < trans_count; i++) {
         if (tx_count > per_trans_size) {
             temp32 = per_trans_size;
@@ -75,47 +82,50 @@ void hpm_spi_prepare_dma_tx_descriptors(spi_context_t *context, spi_control_conf
         dma_transfer_size[i] = temp32;
 
         /* SPI CTRL */
-        (tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS)->trans_size = 1;
-        (tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS)->src_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)(spi_transctrl + i));
-        (tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS)->dst_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)&ptr->TRANSCTRL);
-        (tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS)->ctrl = DMA_CHCTRL_CTRL_SRCWIDTH_SET(DMA_TRANSFER_WIDTH_WORD)
-                                                                        | DMA_CHCTRL_CTRL_DSTWIDTH_SET(DMA_TRANSFER_WIDTH_WORD)
-                                                                        | DMA_CHCTRL_CTRL_SRCBURSTSIZE_SET(DMA_NUM_TRANSFER_PER_BURST_1T)
-                                                                        | DMA_CHCTRL_CTRL_SRCREQSEL_SET(dma_ch)
-                                                                        | DMA_CHCTRL_CTRL_DSTREQSEL_SET(dma_ch);
-        (tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS)->linked_ptr =
-                                    core_local_mem_to_sys_address(context->running_core, (uint32_t)(tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 1));
+        dma_ch_config.size_in_byte = 4;
+        dma_ch_config.src_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)(spi_transctrl + i));
+        dma_ch_config.dst_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)&ptr->TRANSCTRL);
+        dma_ch_config.src_width = DMA_TRANSFER_WIDTH_WORD;
+        dma_ch_config.dst_width = DMA_TRANSFER_WIDTH_WORD;
+        dma_ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
+        dma_ch_config.src_mode = DMA_HANDSHAKE_MODE_NORMAL;
+        dma_ch_config.dst_mode = DMA_HANDSHAKE_MODE_NORMAL;
+        dma_ch_config.src_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
+        dma_ch_config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
+        dma_ch_config.linked_ptr = core_local_mem_to_sys_address(context->running_core, (uint32_t)(tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 1));
+        dma_config_linked_descriptor(context->dma_context.dma_ptr, tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS, dma_ch, &dma_ch_config);
 
         /* SPI CMD */
-        (tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 1)->trans_size = 1;
-        (tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 1)->src_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)&dummy_cmd);
-        (tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 1)->dst_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)&ptr->CMD);
-        (tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 1)->ctrl = DMA_CHCTRL_CTRL_SRCWIDTH_SET(DMA_TRANSFER_WIDTH_BYTE)
-                                                                        | DMA_CHCTRL_CTRL_DSTWIDTH_SET(DMA_TRANSFER_WIDTH_BYTE)
-                                                                        | DMA_CHCTRL_CTRL_SRCBURSTSIZE_SET(DMA_NUM_TRANSFER_PER_BURST_1T)
-                                                                        | DMA_CHCTRL_CTRL_SRCREQSEL_SET(dma_ch)
-                                                                        | DMA_CHCTRL_CTRL_DSTREQSEL_SET(dma_ch);
-        (tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 1)->linked_ptr =
-                                core_local_mem_to_sys_address(context->running_core, (uint32_t)(tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2));
+        dma_ch_config.size_in_byte = 1;
+        dma_ch_config.src_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)&dummy_cmd);
+        dma_ch_config.dst_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)&ptr->CMD);
+        dma_ch_config.src_width = DMA_TRANSFER_WIDTH_BYTE;
+        dma_ch_config.dst_width = DMA_TRANSFER_WIDTH_BYTE;
+        dma_ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
+        dma_ch_config.src_mode = DMA_HANDSHAKE_MODE_NORMAL;
+        dma_ch_config.dst_mode = DMA_HANDSHAKE_MODE_NORMAL;
+        dma_ch_config.src_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
+        dma_ch_config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
+        dma_ch_config.linked_ptr = core_local_mem_to_sys_address(context->running_core, (uint32_t)(tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2));
+        dma_config_linked_descriptor(context->dma_context.dma_ptr, tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 1, dma_ch, &dma_ch_config);
 
         /* SPI DATA */
-        (tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2)->trans_size = dma_transfer_size[i];
-        (tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2)->src_addr =
-                                                                    core_local_mem_to_sys_address(context->running_core, (uint32_t)(tx_buff + tx_buff_index));
-        (tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2)->dst_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)&ptr->DATA);
-        (tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2)->ctrl = DMA_CHCTRL_CTRL_SRCWIDTH_SET(context->dma_context.data_width)
-                                                                        | DMA_CHCTRL_CTRL_DSTWIDTH_SET(context->dma_context.data_width)
-                                                                        | DMA_CHCTRL_CTRL_SRCBURSTSIZE_SET(DMA_NUM_TRANSFER_PER_BURST_1T)
-                                                                        | DMA_CHCTRL_CTRL_DSTMODE_SET(DMA_HANDSHAKE_MODE_HANDSHAKE)
-                                                                        | DMA_CHCTRL_CTRL_DSTADDRCTRL_SET(DMA_ADDRESS_CONTROL_FIXED)
-                                                                        | DMA_CHCTRL_CTRL_SRCREQSEL_SET(dma_ch)
-                                                                        | DMA_CHCTRL_CTRL_DSTREQSEL_SET(dma_ch);
+        dma_ch_config.size_in_byte = dma_transfer_size[i] << context->dma_context.data_width;
+        dma_ch_config.src_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)(tx_buff + tx_buff_index));
+        dma_ch_config.dst_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)&ptr->DATA);
+        dma_ch_config.src_width = context->dma_context.data_width;
+        dma_ch_config.dst_width = context->dma_context.data_width;
+        dma_ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
+        dma_ch_config.src_mode = DMA_HANDSHAKE_MODE_NORMAL;
+        dma_ch_config.dst_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
+        dma_ch_config.src_addr_ctrl = DMA_ADDRESS_CONTROL_INCREMENT;
+        dma_ch_config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
         if (i == trans_count - 1) {
-            (tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2)->linked_ptr = 0;
+            dma_ch_config.linked_ptr = 0;
         } else {
-            (tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2)->linked_ptr =
-                                core_local_mem_to_sys_address(context->running_core, (uint32_t)(tx_dma_descriptors + (i + 1) * SPI_DMA_DESC_COUNT_PER_TRANS));
+            dma_ch_config.linked_ptr = core_local_mem_to_sys_address(context->running_core, (uint32_t)(tx_dma_descriptors + (i + 1) * SPI_DMA_DESC_COUNT_PER_TRANS));
         }
+        dma_config_linked_descriptor(context->dma_context.dma_ptr, tx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2, dma_ch, &dma_ch_config);
 
         tx_buff_index += temp32 * context->data_len_in_byte;
     }
@@ -130,11 +140,14 @@ void hpm_prepare_dma_rx_descriptors(spi_context_t *context, spi_control_config_t
     uint32_t per_trans_size = context->per_trans_max;
     uint32_t dma_ch = context->dma_context.rx_dma_ch;
     uint8_t *rx_buff = context->rx_buff;
+    dma_channel_config_t dma_ch_config;
 
     static uint8_t dummy_cmd = 0xff;
 
     uint32_t temp32;
     uint32_t rx_buff_index = 0;
+
+    dma_default_channel_config(context->dma_context.dma_ptr, &dma_ch_config);
     for (uint32_t i = 0; i < trans_count; i++) {
         if (rx_count > per_trans_size) {
             temp32 = per_trans_size;
@@ -150,47 +163,51 @@ void hpm_prepare_dma_rx_descriptors(spi_context_t *context, spi_control_config_t
         dma_transfer_size[i] = temp32;
 
         /* SPI CTRL */
-        (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS)->trans_size = 1;
-        (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS)->src_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)(spi_transctrl + i));
-        (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS)->dst_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)&ptr->TRANSCTRL);
-        (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS)->ctrl = DMA_CHCTRL_CTRL_SRCWIDTH_SET(DMA_TRANSFER_WIDTH_WORD)
-                                                                    | DMA_CHCTRL_CTRL_DSTWIDTH_SET(DMA_TRANSFER_WIDTH_WORD)
-                                                                    | DMA_CHCTRL_CTRL_SRCBURSTSIZE_SET(DMA_NUM_TRANSFER_PER_BURST_1T)
-                                                                    | DMA_CHCTRL_CTRL_SRCREQSEL_SET(dma_ch)
-                                                                    | DMA_CHCTRL_CTRL_DSTREQSEL_SET(dma_ch);
-        (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS)->linked_ptr =
-                                    core_local_mem_to_sys_address(context->running_core, (uint32_t)(rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 1));
+        dma_ch_config.size_in_byte = 4;
+        dma_ch_config.src_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)(spi_transctrl + i));
+        dma_ch_config.dst_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)&ptr->TRANSCTRL);
+        dma_ch_config.src_width = DMA_TRANSFER_WIDTH_WORD;
+        dma_ch_config.dst_width = DMA_TRANSFER_WIDTH_WORD;
+        dma_ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
+        dma_ch_config.src_mode = DMA_HANDSHAKE_MODE_NORMAL;
+        dma_ch_config.dst_mode = DMA_HANDSHAKE_MODE_NORMAL;
+        dma_ch_config.src_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
+        dma_ch_config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
+        dma_ch_config.linked_ptr = core_local_mem_to_sys_address(context->running_core, (uint32_t)(rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 1));
+        dma_config_linked_descriptor(context->dma_context.dma_ptr, rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS, dma_ch, &dma_ch_config);
 
         /* SPI CMD */
-        (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 1)->trans_size = 1;
-        (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 1)->src_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)&dummy_cmd);
-        (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 1)->dst_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)&ptr->CMD);
-        (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 1)->ctrl = DMA_CHCTRL_CTRL_SRCWIDTH_SET(DMA_TRANSFER_WIDTH_BYTE)
-                                                                        | DMA_CHCTRL_CTRL_DSTWIDTH_SET(DMA_TRANSFER_WIDTH_BYTE)
-                                                                        | DMA_CHCTRL_CTRL_SRCBURSTSIZE_SET(DMA_NUM_TRANSFER_PER_BURST_1T)
-                                                                        | DMA_CHCTRL_CTRL_SRCREQSEL_SET(dma_ch)
-                                                                        | DMA_CHCTRL_CTRL_DSTREQSEL_SET(dma_ch);
-        (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 1)->linked_ptr =
-                                    core_local_mem_to_sys_address(context->running_core, (uint32_t)(rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2));
+        dma_ch_config.size_in_byte = 1;
+        dma_ch_config.src_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)&dummy_cmd);
+        dma_ch_config.dst_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)&ptr->CMD);
+        dma_ch_config.src_width = DMA_TRANSFER_WIDTH_BYTE;
+        dma_ch_config.dst_width = DMA_TRANSFER_WIDTH_BYTE;
+        dma_ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
+        dma_ch_config.src_mode = DMA_HANDSHAKE_MODE_NORMAL;
+        dma_ch_config.dst_mode = DMA_HANDSHAKE_MODE_NORMAL;
+        dma_ch_config.src_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
+        dma_ch_config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
+        dma_ch_config.linked_ptr = core_local_mem_to_sys_address(context->running_core, (uint32_t)(rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2));
+        dma_config_linked_descriptor(context->dma_context.dma_ptr, rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 1, dma_ch, &dma_ch_config);
 
         /* SPI DATA */
-        (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2)->trans_size = dma_transfer_size[i];
-        (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2)->src_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)&ptr->DATA);
-        (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2)->dst_addr =
-                                                                    core_local_mem_to_sys_address(context->running_core, (uint32_t)(rx_buff + rx_buff_index));
-        (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2)->ctrl = DMA_CHCTRL_CTRL_SRCWIDTH_SET(context->dma_context.data_width)
-                                                                        | DMA_CHCTRL_CTRL_DSTWIDTH_SET(context->dma_context.data_width)
-                                                                        | DMA_CHCTRL_CTRL_SRCBURSTSIZE_SET(DMA_NUM_TRANSFER_PER_BURST_1T)
-                                                                        | DMA_CHCTRL_CTRL_SRCMODE_SET(DMA_HANDSHAKE_MODE_HANDSHAKE)
-                                                                        | DMA_CHCTRL_CTRL_SRCADDRCTRL_SET(DMA_ADDRESS_CONTROL_FIXED)
-                                                                        | DMA_CHCTRL_CTRL_SRCREQSEL_SET(dma_ch)
-                                                                        | DMA_CHCTRL_CTRL_DSTREQSEL_SET(dma_ch);
+        dma_ch_config.size_in_byte = dma_transfer_size[i] << context->dma_context.data_width;
+        dma_ch_config.src_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)&ptr->DATA);
+        dma_ch_config.dst_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)(rx_buff + rx_buff_index));
+        dma_ch_config.src_width = context->dma_context.data_width;
+        dma_ch_config.dst_width = context->dma_context.data_width;
+        dma_ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
+        dma_ch_config.src_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
+        dma_ch_config.dst_mode = DMA_HANDSHAKE_MODE_NORMAL;
+        dma_ch_config.src_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
+        dma_ch_config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_INCREMENT;
         if (i == trans_count - 1) {
-            (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2)->linked_ptr = 0;
+            dma_ch_config.linked_ptr = 0;
         } else {
-            (rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2)->linked_ptr =
-                                core_local_mem_to_sys_address(context->running_core, (uint32_t)(rx_dma_descriptors + (i + 1) * SPI_DMA_DESC_COUNT_PER_TRANS));
+            dma_ch_config.linked_ptr = core_local_mem_to_sys_address(context->running_core, (uint32_t)(rx_dma_descriptors + (i + 1) * SPI_DMA_DESC_COUNT_PER_TRANS));
         }
+        dma_config_linked_descriptor(context->dma_context.dma_ptr, rx_dma_descriptors + i * SPI_DMA_DESC_COUNT_PER_TRANS + 2, dma_ch, &dma_ch_config);
+
         rx_buff_index += temp32 * context->data_len_in_byte;
     }
 }
@@ -281,6 +298,8 @@ static hpm_stat_t spi_setup_trans_with_dma_chain(spi_context_t *context, spi_con
 
     /* use a dummy dma transfer to start SPI trans dma chain */
     static uint32_t dummy_data1 = 0xff, dummy_data2 = 0xff;
+
+    dma_default_channel_config(context->dma_context.dma_ptr, &dma_ch_config);
     dma_ch_config.src_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)&dummy_data1);
     dma_ch_config.dst_addr = core_local_mem_to_sys_address(context->running_core, (uint32_t)&dummy_data2);
     dma_ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;

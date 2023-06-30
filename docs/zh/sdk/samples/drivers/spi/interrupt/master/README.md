@@ -9,6 +9,8 @@ spi_interrupt_master示例工程展示了SPI作为master使用interrupt方法进
 
 将两个板子的[SPI引脚](lab_board_app_spi_pin)相连。
 
+两个板子必须相连双方GND进行共地，保证信号传输。
+
 
 ## 运行现象
 

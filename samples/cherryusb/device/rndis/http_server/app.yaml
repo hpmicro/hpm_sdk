@@ -1,0 +1,2 @@
+excluded_targets:
+  - debug

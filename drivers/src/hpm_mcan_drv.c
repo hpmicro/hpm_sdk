@@ -9,7 +9,7 @@
 #include <assert.h>
 
 #define MCAN_CAN_BAUDRATE_DEFAULT (500UL * 1000UL)          /*!< Default CAN2.0 baudrate:500 kbps */
-#define MCAN_CANFD_BAUDRATE_DEFAULT (2UL * 1000UL * 100UL)  /*!< Default CANFD baudrate: 2 Mbps */
+#define MCAN_CANFD_BAUDRATE_DEFAULT (2UL * 1000UL * 1000UL)  /*!< Default CANFD baudrate: 2 Mbps */
 
 /***********************************************************************************************************************
  *
@@ -264,6 +264,7 @@ static hpm_stat_t mcan_set_tsu(MCAN_Type *ptr, mcan_tsu_config_t *config);
  * @retval status_invalid_arugment if any parameters are invalid
  */
 static hpm_stat_t mcan_set_internal_timestamp(MCAN_Type *ptr, mcan_internal_timestamp_config_t *config);
+
 /***********************************************************************************************************************
  *
  *  Codes
@@ -271,13 +272,14 @@ static hpm_stat_t mcan_set_internal_timestamp(MCAN_Type *ptr, mcan_internal_time
 static void mcan_set_can_nominal_bit_timing(MCAN_Type *ptr, const mcan_bit_timing_param_t *bit_timing)
 {
     ptr->NBTP = MCAN_NBTP_NBRP_SET(bit_timing->prescaler - 1U) | MCAN_NBTP_NTSEG1_SET(bit_timing->num_seg1 - 1U) |
-        MCAN_NBTP_NTSEG2_SET(bit_timing->num_seg2 - 1U) | MCAN_NBTP_NSJW_SET(bit_timing->num_sjw - 1U);
+                MCAN_NBTP_NTSEG2_SET(bit_timing->num_seg2 - 1U) | MCAN_NBTP_NSJW_SET(bit_timing->num_sjw - 1U);
 }
+
 static void mcan_set_can_data_bit_timing(MCAN_Type *ptr, const mcan_bit_timing_param_t *bit_timing)
 {
     ptr->DBTP = MCAN_DBTP_DBRP_SET(bit_timing->prescaler - 1U) | MCAN_DBTP_DTSEG1_SET(bit_timing->num_seg1 - 1U) |
-        MCAN_DBTP_DTSEG2_SET(bit_timing->num_seg2 - 1U) | MCAN_DBTP_DSJW_SET(bit_timing->num_sjw - 1U) |
-        MCAN_DBTP_TDC_SET((uint32_t) bit_timing->enable_tdc);
+                MCAN_DBTP_DTSEG2_SET(bit_timing->num_seg2 - 1U) | MCAN_DBTP_DSJW_SET(bit_timing->num_sjw - 1U) |
+                MCAN_DBTP_TDC_SET((uint32_t) bit_timing->enable_tdc);
 }
 
 static uint32_t mcan_calculate_closest_prescaler(uint32_t num_tq_mul_prescaler,
@@ -491,10 +493,10 @@ void mcan_get_default_ram_config(MCAN_Type *ptr, mcan_ram_config_t *simple_confi
 
     start_addr += MCAN_TXEVT_ELEM_SIZE * tx_fifo_elem_count;
 
-    assert(start_addr <= mcan_get_ram_size(ptr));
+    assert((start_addr - mcan_get_ram_offset(ptr)) <= mcan_get_ram_size(ptr));
 }
 
-void mcan_get_defaul_ram_flexible_config(MCAN_Type *ptr, mcan_ram_flexible_config_t *ram_config, bool enable_canfd)
+void mcan_get_default_ram_flexible_config(MCAN_Type *ptr, mcan_ram_flexible_config_t *ram_config, bool enable_canfd)
 {
     (void) memset(ram_config, 0, sizeof(mcan_ram_config_t));
     uint32_t start_addr = mcan_get_ram_offset(ptr);
@@ -823,9 +825,9 @@ hpm_stat_t mcan_config_all_filters(MCAN_Type *ptr, mcan_all_filters_config_t *co
         ptr->XIDAM = config->ext_id_mask;
 
         ptr->GFC = MCAN_GFC_RRFE_SET(config->global_filter_config.reject_remote_ext_frame) |
-            MCAN_GFC_RRFS_SET(config->global_filter_config.reject_remote_std_frame) |
-            MCAN_GFC_ANFE_SET(config->global_filter_config.accept_non_matching_ext_frame_option) |
-            MCAN_GFC_ANFS_SET(config->global_filter_config.accept_non_matching_std_frame_option);
+                   MCAN_GFC_RRFS_SET(config->global_filter_config.reject_remote_std_frame) |
+                   MCAN_GFC_ANFE_SET(config->global_filter_config.accept_non_matching_ext_frame_option) |
+                   MCAN_GFC_ANFS_SET(config->global_filter_config.accept_non_matching_std_frame_option);
 
         uint32_t elem_count = 0;
         const mcan_filter_elem_t *elem = NULL;
@@ -837,6 +839,7 @@ hpm_stat_t mcan_config_all_filters(MCAN_Type *ptr, mcan_all_filters_config_t *co
                     status = status_invalid_argument;
                     break;
                 }
+
                 status = mcan_set_filter_element(ptr, elem, i);
                 if (status != status_success) {
                     break;
@@ -1056,7 +1059,7 @@ hpm_stat_t mcan_init(MCAN_Type *ptr, mcan_config_t *config, uint32_t src_clk_fre
 
         /* Initialize CAN RAM */
         uint32_t can_ram_size = mcan_get_ram_size(ptr);
-        uint32_t *ram_base = (uint32_t *) mcan_get_ram_base(ptr);
+        uint32_t *ram_base = (uint32_t *) (mcan_get_ram_base(ptr) + mcan_get_ram_offset(ptr));
         for (uint32_t i = 0U; i < can_ram_size / sizeof(uint32_t); i++) {
             ram_base[i] = 0UL;
         }
@@ -1560,9 +1563,9 @@ hpm_stat_t mcan_set_global_filter_config(MCAN_Type *ptr, mcan_global_filter_conf
         }
 
         ptr->GFC = MCAN_GFC_ANFE_SET(filter_config->accept_non_matching_ext_frame_option) |
-            MCAN_GFC_ANFS_SET(filter_config->accept_non_matching_std_frame_option) |
-            MCAN_GFC_RRFS_SET(filter_config->reject_remote_std_frame) |
-            MCAN_GFC_RRFE_SET(filter_config->reject_remote_ext_frame);
+                   MCAN_GFC_ANFS_SET(filter_config->accept_non_matching_std_frame_option) |
+                   MCAN_GFC_RRFS_SET(filter_config->reject_remote_std_frame) |
+                   MCAN_GFC_RRFE_SET(filter_config->reject_remote_ext_frame);
 
         status = status_success;
 

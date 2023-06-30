@@ -89,7 +89,8 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 | Function      | Position |
 | ------------- | -------- |
 | GPTMR2.CAPT_2 | P2[15]   |
-| GPTMR2.COMP_2 | P2[19]   |
+| GPTMR2.COMP_0 | P2[19]   |
+| GPTMR2.COMP_1 | P2[22]   |
 
 - ADC12 Pin
 
@@ -139,7 +140,7 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 | ENET0.EVTO1 | P1[12]   |
 | ENET0.EVTO2 | P1[35]   |
 
-- UART pin for uart_software_rx_idle sample
+- UART pin for uart_software_rx_idle sample or uart_rx_timeout sample
 
 | Function   | Position |
 | ---------- | ------ |
@@ -151,3 +152,13 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 | Function   | Position |
 | ---------- | -------- |
 | TRGM2_P9(PD19)  | P2[35]   |
+
+- Motor Pin:
+
+ Refer to section [HPM6750EVKMINI-TO-MOTOR Extension Board ](lab_board_hpm6750evkmini-to-motor-220530RevA) for configuration
+
+## Known Issues
+
+- Some samples may enter the trap handler during runtime, with a MCAUSE == 2 (instruction error). This is due to a flaw in ILM, as detailed in the Errata Manual E00001.
+
+  - Solution: Change the ILM interface address in the link script to ILM_ SLV address.

@@ -395,8 +395,9 @@ static inline void rom_xpi_nor_api_setup(void)
  * @param [in] cfg_option XPI NOR configuration option
  * @return API execution status
  */
-static inline hpm_stat_t
-rom_xpi_nor_get_config(XPI_Type *base, xpi_nor_config_t *nor_cfg, xpi_nor_config_option_t *cfg_option)
+static inline hpm_stat_t rom_xpi_nor_get_config(XPI_Type *base,
+                                                xpi_nor_config_t *nor_cfg,
+                                                xpi_nor_config_option_t *cfg_option)
 {
     rom_xpi_nor_api_setup();
     return ROM_API_TABLE_ROOT->xpi_nor_driver_if->get_config(base, nor_cfg, cfg_option);
@@ -439,8 +440,10 @@ static inline hpm_stat_t rom_xpi_nor_erase(XPI_Type *base,
  * @param[in] start Sector address
  * @return API execution status
  */
-static inline hpm_stat_t
-rom_xpi_nor_erase_sector(XPI_Type *base, xpi_xfer_channel_t channel, const xpi_nor_config_t *nor_config, uint32_t start)
+static inline hpm_stat_t rom_xpi_nor_erase_sector(XPI_Type *base,
+                                                  xpi_xfer_channel_t channel,
+                                                  const xpi_nor_config_t *nor_config,
+                                                  uint32_t start)
 {
     return ROM_API_TABLE_ROOT->xpi_nor_driver_if->erase_sector(base, channel, nor_config, start);
 }
@@ -469,8 +472,10 @@ static inline hpm_stat_t rom_xpi_nor_erase_sector_nonblocking(XPI_Type *base,
  * @param[in] start Block address
  * @return API execution status
  */
-static inline hpm_stat_t
-rom_xpi_nor_erase_block(XPI_Type *base, xpi_xfer_channel_t channel, const xpi_nor_config_t *nor_config, uint32_t start)
+static inline hpm_stat_t rom_xpi_nor_erase_block(XPI_Type *base,
+                                                 xpi_xfer_channel_t channel,
+                                                 const xpi_nor_config_t *nor_config,
+                                                 uint32_t start)
 {
     return ROM_API_TABLE_ROOT->xpi_nor_driver_if->erase_block(base, channel, nor_config, start);
 }
@@ -498,8 +503,9 @@ static inline hpm_stat_t rom_xpi_nor_erase_block_nonblocking(XPI_Type *base,
  * @param[in] nor_config XPI NOR configuration
  * @return API execution status
  */
-static inline hpm_stat_t
-rom_xpi_nor_erase_chip(XPI_Type *base, xpi_xfer_channel_t channel, const xpi_nor_config_t *nor_config)
+static inline hpm_stat_t rom_xpi_nor_erase_chip(XPI_Type *base,
+                                                xpi_xfer_channel_t channel,
+                                                const xpi_nor_config_t *nor_config)
 {
     return ROM_API_TABLE_ROOT->xpi_nor_driver_if->erase_chip(base, channel, nor_config);
 }
@@ -511,8 +517,9 @@ rom_xpi_nor_erase_chip(XPI_Type *base, xpi_xfer_channel_t channel, const xpi_nor
  * @param[in] nor_config XPI NOR configuration
  * @return API execution status
  */
-static inline hpm_stat_t
-rom_xpi_nor_erase_chip_nonblocking(XPI_Type *base, xpi_xfer_channel_t channel, const xpi_nor_config_t *nor_config)
+static inline hpm_stat_t rom_xpi_nor_erase_chip_nonblocking(XPI_Type *base,
+                                                            xpi_xfer_channel_t channel,
+                                                            const xpi_nor_config_t *nor_config)
 {
     return ROM_API_TABLE_ROOT->xpi_nor_driver_if->erase_chip_nonblocking(base, channel, nor_config);
 }
@@ -585,8 +592,9 @@ static inline hpm_stat_t rom_xpi_nor_read(XPI_Type *base,
  * @param [in] cfg_option XPI NOR configuration option
  * @return API execution status
  */
-static inline hpm_stat_t
-rom_xpi_nor_auto_config(XPI_Type *base, xpi_nor_config_t *config, xpi_nor_config_option_t *cfg_option)
+static inline hpm_stat_t rom_xpi_nor_auto_config(XPI_Type *base,
+                                                 xpi_nor_config_t *config,
+                                                 xpi_nor_config_option_t *cfg_option)
 {
     rom_xpi_nor_api_setup();
     return ROM_API_TABLE_ROOT->xpi_nor_driver_if->auto_config(base, config, cfg_option);
@@ -600,8 +608,10 @@ rom_xpi_nor_auto_config(XPI_Type *base, xpi_nor_config_t *config, xpi_nor_config
  * @param [out] value property value retrieved by this API
  * @return API execution status
  */
-static inline hpm_stat_t
-rom_xpi_nor_get_property(XPI_Type *base, xpi_nor_config_t *nor_cfg, uint32_t property_id, uint32_t *value)
+static inline hpm_stat_t rom_xpi_nor_get_property(XPI_Type *base,
+                                                  xpi_nor_config_t *nor_cfg,
+                                                  uint32_t property_id,
+                                                  uint32_t *value)
 {
     return ROM_API_TABLE_ROOT->xpi_nor_driver_if->get_property(base, nor_cfg, property_id, value);
 }
@@ -677,12 +687,12 @@ static inline void rom_xpi_nor_remap_disable(XPI_Type *base)
  * @retval false Remapping logic is disabled
  */
 ATTR_RAMFUNC
-static inline void rom_xpi_nor_is_remap_enabled(XPI_Type *base)
+static inline bool rom_xpi_nor_is_remap_enabled(XPI_Type *base)
 {
     static const uint8_t k_mc_xpi_remap_enabled[] = {
         0x03, 0x25, 0x05, 0x42, 0x05, 0x89, 0x82, 0x80,
     };
-    typedef void (*remap_chk_cb_t)(XPI_Type *);
+    typedef bool (*remap_chk_cb_t)(XPI_Type *);
     remap_chk_cb_t chk_cb = (remap_chk_cb_t) &k_mc_xpi_remap_enabled;
     return chk_cb(base);
 }
@@ -790,8 +800,9 @@ static inline void rom_xpi_nor_exip_disable(XPI_Type *base)
  * @param [in] cfg_option XPI RAM configuration option
  * @return API execution status
  */
-static inline hpm_stat_t
-rom_xpi_ram_get_config(XPI_Type *base, xpi_ram_config_t *ram_cfg, xpi_ram_config_option_t *cfg_option)
+static inline hpm_stat_t rom_xpi_ram_get_config(XPI_Type *base,
+                                                xpi_ram_config_t *ram_cfg,
+                                                xpi_ram_config_option_t *cfg_option)
 {
     return ROM_API_TABLE_ROOT->xpi_ram_driver_if->get_config(base, ram_cfg, cfg_option);
 }
@@ -838,8 +849,10 @@ static inline void rom_sdp_deinit(void)
  * @param[in] key_idx AES key index
  * @return API execution status
  */
-static inline hpm_stat_t
-rom_sdp_aes_set_key(sdp_aes_ctx_t *aes_ctx, const uint8_t *key, sdp_aes_key_bits_t key_bits, uint32_t key_idx)
+static inline hpm_stat_t rom_sdp_aes_set_key(sdp_aes_ctx_t *aes_ctx,
+                                             const uint8_t *key,
+                                             sdp_aes_key_bits_t key_bits,
+                                             uint32_t key_idx)
 {
     return ROM_API_TABLE_ROOT->sdp_driver_if->aes_set_key(aes_ctx, key, key_bits, key_idx);
 }
@@ -853,8 +866,11 @@ rom_sdp_aes_set_key(sdp_aes_ctx_t *aes_ctx, const uint8_t *key, sdp_aes_key_bits
  * @param [out] out Output data
  * @return API execution status
  */
-static inline hpm_stat_t
-rom_sdp_aes_crypt_ecb(sdp_aes_ctx_t *aes_ctx, sdp_aes_op_t op, uint32_t len, const uint8_t *in, uint8_t *out)
+static inline hpm_stat_t rom_sdp_aes_crypt_ecb(sdp_aes_ctx_t *aes_ctx,
+                                               sdp_aes_op_t op,
+                                               uint32_t len,
+                                               const uint8_t *in,
+                                               uint8_t *out)
 {
     return ROM_API_TABLE_ROOT->sdp_driver_if->aes_crypt_ecb(aes_ctx, op, len, in, out);
 }
@@ -887,8 +903,10 @@ static inline hpm_stat_t rom_sdp_aes_crypt_cbc(sdp_aes_ctx_t *aes_ctx,
  * @param[in] key_idx SM4 key index
  * @return API execution status
  */
-static inline hpm_stat_t
-rom_sdp_sm4_set_key(sdp_sm4_ctx_t *sm4_ctx, const uint8_t *key, sdp_sm4_key_bits_t key_bits, uint32_t key_idx)
+static inline hpm_stat_t rom_sdp_sm4_set_key(sdp_sm4_ctx_t *sm4_ctx,
+                                             const uint8_t *key,
+                                             sdp_sm4_key_bits_t key_bits,
+                                             uint32_t key_idx)
 {
     return ROM_API_TABLE_ROOT->sdp_driver_if->sm4_set_key(sm4_ctx, key, key_bits, key_idx);
 }
@@ -902,8 +920,11 @@ rom_sdp_sm4_set_key(sdp_sm4_ctx_t *sm4_ctx, const uint8_t *key, sdp_sm4_key_bits
  * @param [out] out Output data
  * @return API execution status
  */
-static inline hpm_stat_t
-rom_sdp_sm4_crypt_ecb(sdp_sm4_ctx_t *sm4_ctx, sdp_sm4_op_t op, uint32_t len, const uint8_t *in, uint8_t *out)
+static inline hpm_stat_t rom_sdp_sm4_crypt_ecb(sdp_sm4_ctx_t *sm4_ctx,
+                                               sdp_sm4_op_t op,
+                                               uint32_t len,
+                                               const uint8_t *in,
+                                               uint8_t *out)
 {
     return ROM_API_TABLE_ROOT->sdp_driver_if->sm4_crypt_ecb(sm4_ctx, op, len, in, out);
 }

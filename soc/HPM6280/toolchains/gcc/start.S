@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -63,15 +63,27 @@ _start:
     csrw uitb, t0
 #endif
 
-#ifndef CONFIG_FREERTOS
-    #define HANDLER_TRAP irq_handler_trap
-    #define HANDLER_S_TRAP irq_handler_s_trap
-#else
+#if defined(CONFIG_FREERTOS) && CONFIG_FREERTOS
     #define HANDLER_TRAP freertos_risc_v_trap_handler
     #define HANDLER_S_TRAP freertos_risc_v_trap_handler
 
     /* Use mscratch to store isr level */
     csrw mscratch, 0
+#elif defined(CONFIG_UCOS_III) && CONFIG_UCOS_III
+    #define HANDLER_TRAP ucos_risc_v_trap_handler
+    #define HANDLER_S_TRAP ucos_risc_v_trap_handler
+
+    /* Use mscratch to store isr level */
+    csrw mscratch, 0
+#elif defined(CONFIG_THREADX) && CONFIG_THREADX
+    #define HANDLER_TRAP tx_risc_v_trap_handler
+    #define HANDLER_S_TRAP tx_risc_v_trap_handler
+
+    /* Use mscratch to store isr level */
+    csrw mscratch, 0
+#else
+    #define HANDLER_TRAP irq_handler_trap
+    #define HANDLER_S_TRAP irq_handler_s_trap
 #endif
 
 #ifndef USE_NONVECTOR_MODE

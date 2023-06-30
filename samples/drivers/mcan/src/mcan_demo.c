@@ -282,9 +282,18 @@ bool can_loopback_test(MCAN_Type *base, bool enable_canfd)
 
     /* Test Transmission and Reception of Standard Frame */
     tx_buf.std_id = 0x123;
-    tx_buf.dlc = 8;
-    for (uint32_t i = 0; i < 8; i++) {
-        tx_buf.data_8[i] = (uint8_t) i | (i << 4);
+    if (!enable_canfd) {
+        tx_buf.dlc = 8;
+        for (uint32_t i = 0; i < 8; i++) {
+            tx_buf.data_8[i] = (uint8_t) i | (i << 4);
+        }
+    } else {
+        tx_buf.dlc = MCAN_DATA_FIELD_SIZE_64BYTES;
+        tx_buf.canfd_frame = 1;
+        tx_buf.bitrate_switch = 1;
+        for (uint32_t i = 0; i < mcan_get_message_size_from_dlc(tx_buf.dlc); i++) {
+            tx_buf.data_8[i] = i;
+        }
     }
     mcan_transmit_blocking(base, &tx_buf);
     mcan_receive_from_fifo_blocking(base, 0, &rx_buf);

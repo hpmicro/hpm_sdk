@@ -31,7 +31,6 @@ typedef struct {
     bool result_ready[2];
 } lv_coremark_ctx_t;
 
-#define COREMARK_MAIN_ENTRY (SEC_CORE_IMG_START)
 #define COREMARK_BIN_ARRAY ((void *)SEC_CORE_IMG_START)
 
 extern lv_coremark_ctx_t g_lv_cm_ctx;

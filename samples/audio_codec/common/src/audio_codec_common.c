@@ -11,7 +11,11 @@
 
 #include "hpm_clock_drv.h"
 #include "hpm_l1c_drv.h"
+#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#include "hpm_dmav2_drv.h"
+#else
 #include "hpm_dma_drv.h"
+#endif
 #include "hpm_dmamux_drv.h"
 #include "hpm_i2s_drv.h"
 #include "hpm_wav_codec.h"
@@ -406,7 +410,7 @@ static hpm_stat_t init_i2s_playback(uint32_t sample_rate, uint8_t audio_depth, u
 
     i2s_enable_tx_dma_request(TARGET_I2S);
     dmamux_config(BOARD_APP_DMAMUX, 2, TARGET_I2S_TX_DMAMUX_SRC, 1);
-    intc_m_enable_irq_with_priority(BOARD_APP_HDMA_IRQ, 4);
+    intc_m_enable_irq_with_priority(BOARD_APP_HDMA_IRQ, 7);
 
     i2s_get_default_transfer_config_for_dao(&transfer);
     transfer.data_line = TARGET_I2S_DATA_LINE;
@@ -440,6 +444,7 @@ static hpm_stat_t init_i2s_playback(uint32_t sample_rate, uint8_t audio_depth, u
         if (wm8960_init(&wm8960_control, &wm8960_config) != status_success) {
             printf("Init Audio Codec failed\n");
         }
+        wm8960_set_volume(&wm8960_control, wm8960_module_dac, 255);
     #elif CONFIG_CODEC_SGTL5000
         sgtl5000_config.route = sgtl_route_playback;
         sgtl5000_config.format.sample_rate = sample_rate;
@@ -448,6 +453,7 @@ static hpm_stat_t init_i2s_playback(uint32_t sample_rate, uint8_t audio_depth, u
         if (sgtl_init(&sgtl5000_context, &sgtl5000_config) != status_success) {
             printf("Init Audio Codec failed\n");
         }
+        sgtl_set_volume(&sgtl5000_context, sgtl_module_dac, SGTL5000_DAC_MIN_VOLUME_VALUE);
     #endif
 #elif USING_DAO
     dao_get_default_config(HPM_DAO, &dao_config);

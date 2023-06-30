@@ -1,4 +1,4 @@
-# USB 通讯
+# Tinyusb 通讯
 
 ```{eval-rst}
 .. toctree::

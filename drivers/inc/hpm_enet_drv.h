@@ -40,11 +40,16 @@
 #define ENET_ERROR                (0)      /**< ENET error */
 #define ENET_SUCCESS              (1)      /**< ENET success */
 
-#define ENET_ADJ_FREQ_BASE_ADDEND (0x7fffffffUL)  /**< PTP base adjustment addend */
+#define ENET_ADJ_FREQ_BASE_ADDEND (0x80000000UL)  /**< PTP base adjustment addend */
 #define ENET_ONE_SEC_IN_NANOSEC   (1000000000UL)  /**< one second in nanoseconds */
 
 #define ENET_PPS_CMD_MASK         (0x07UL) /**< Enet PPS CMD Mask */
 #define ENET_PPS_CMD_OFS_FAC      (3U)     /**< Enet PPS CMD OFS Factor */
+
+#ifndef ENET_RETRY_CNT
+#define ENET_RETRY_CNT            (10000UL)   /**< Enet retry count for PTP */
+#endif
+
 /*---------------------------------------------------------------------
  *  Typedef Enum Declarations
  *---------------------------------------------------------------------
@@ -62,6 +67,7 @@ typedef enum {
     enet_lpi_int_mask    = ENET_INTR_MASK_LPIIM_MASK,
     enet_rgsmii_int_mask = ENET_INTR_MASK_RGSMIIIM_MASK
 } enet_interrupt_mask_t;
+
 
 /** @brief Programmable burst length selections */
 typedef enum {
@@ -454,7 +460,7 @@ typedef struct {
     bool enable_ioc;        /* interrupt on completion */
     bool disable_crc;       /* disable CRC */
     bool disable_pad;       /* disable Pad */
-    bool enable_tts;        /* enable transmit timestamp */
+    bool enable_ttse;       /* enable transmit timestamp */
     bool enable_crcr;       /* CRC replacement control */
     uint8_t cic;            /* checksum insertion control */
     uint8_t vlic;           /* VLAN insertion control */
@@ -510,8 +516,12 @@ typedef struct {
 
 /** @brief Enet interrupt config struct */
 typedef struct {
-    uint32_t int_enable;  /* DMA_INTR_EN */
-    uint32_t int_mask;    /* INTR MASK */
+    uint32_t int_enable;       /* DMA_INTR_EN */
+    uint32_t int_mask;         /* INTR MASK */
+    uint32_t mmc_intr_rx;
+    uint32_t mmc_intr_mask_rx;
+    uint32_t mmc_intr_tx;
+    uint32_t mmc_intr_mask_tx;
 } enet_int_config_t;
 
 /*
@@ -534,6 +544,45 @@ extern "C" {
  * @param[in] config A pointer to a control config structure for tranmission
  */
 void enet_get_default_tx_control_config(ENET_Type *ptr, enet_tx_control_config_t *config);
+
+/**
+ * @brief Get interrupt status
+ *
+ * @param[in] ptr An Ethernet peripheral base address
+ * @return A result of interrupt status
+ */
+uint32_t enet_get_interrupt_status(ENET_Type *ptr);
+
+/**
+ * @brief Mask the specified mmc interrupt evenets of received frames
+ *
+ * @param[in] ptr An Ethernet peripheral base address
+ * @param[in] config A mask of the specified evenets
+ */
+void enet_mask_mmc_rx_interrupt_event(ENET_Type *ptr, uint32_t mask);
+
+/**
+ * @brief Mask the specified mmc interrupt evenets of transmitted frames
+ *
+ * @param[in] ptr An Ethernet peripheral base address
+ * @param[in] config A mask of the specified evenets
+ */
+void enet_mask_mmc_tx_interrupt_event(ENET_Type *ptr, uint32_t mask);
+
+/**
+ * @brief Get a staus of mmc receive interrupt events
+ *
+ * @param[in] ptr An Ethernet peripheral base address
+ * @return A result of interrupt status
+ */
+uint32_t enet_get_mmc_rx_interrupt_status(ENET_Type *ptr);
+/**
+ * @brief et a staus of mmc transmission interrupt events
+ *
+ * @param[in] ptr An Ethernet peripheral base address
+ * @return A result of interrupt status
+ */
+uint32_t enet_get_mmc_tx_interrupt_status(ENET_Type *ptr);
 
 /**
  * @brief Initialize controller
@@ -638,6 +687,26 @@ uint32_t enet_prepare_transmission_descriptors(ENET_Type *ptr, enet_tx_desc_t **
  *         0 means that the preparation is unsuccessful.
  */
 uint32_t enet_prepare_tx_desc(ENET_Type *ptr, enet_tx_desc_t **parent_tx_desc_list_cur, enet_tx_control_config_t *config, uint16_t frame_length, uint16_t tx_buff_size);
+
+/**
+ * @brief prepare for the transmission descriptors with a timestamp record
+ *
+ * @param[in] ptr An Ethernet peripheral base address
+ * @param[out] parent_tx_desc_list_cur a pointer to the information of the reception frames
+ * @param[in] config a pointer to the control configuration for the transmission frames
+ * @param[in] frame_length the length of the transmission
+ * @param[in] tx_buff_size the size of the transmission buffer
+ * @param[out] timestamp a pointer to the timestamp record of a transmitted frame
+ * @retval a result of the transmission preparation.
+ *         1 means that the preparation is successful.
+ *         0 means that the preparation is unsuccessful.
+ */
+uint32_t enet_prepare_tx_desc_with_ts_record(ENET_Type *ptr,
+                                             enet_tx_desc_t **parent_tx_desc_list_cur,
+                                             enet_tx_control_config_t *config,
+                                             uint16_t frame_length, uint16_t tx_buff_size,
+                                             enet_ptp_ts_system_t *timestamp);
+
 /**
  * @brief Initialize DMA transmission descriptors in chain mode
  *

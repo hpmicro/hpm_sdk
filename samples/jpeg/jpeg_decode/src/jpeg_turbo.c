@@ -42,11 +42,16 @@ bool jpeg_sw_decode(uint8_t *file_buf, uint32_t file_len, uint32_t *width, uint3
     /* Read file header, set default decompression parameters */
     jpeg_read_header(&cinfo, true);
 
+    /* Scale the image by the fraction scale_num/scale_denom.  Default is
+     * 1/1, or no scaling.Currently, the only supported scaling ratios
+     * are M/8 with all M from 1 to 16, or any reduced fraction thereof (such
+     * as 1/2, 3/4, etc.)
+     */
     if ((cinfo.image_width <= BOARD_LCD_WIDTH) && (cinfo.image_height <= BOARD_LCD_HEIGHT)) {
         cinfo.scale_num = 1;
         cinfo.scale_denom = 1;
     } else {
-        cinfo.scale_num = 0;
+        cinfo.scale_num = 1;
         cinfo.scale_denom = 2;
     }
 

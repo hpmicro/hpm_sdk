@@ -47,6 +47,18 @@ void init_uart_pins(UART_Type *ptr)
     }
 }
 
+void init_uart_pin_as_gpio(UART_Type *ptr)
+{
+    if (ptr == HPM_UART7) {
+        /* pull-up */
+        HPM_IOC->PAD[IOC_PAD_PC02].PAD_CTL = IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(1);
+        HPM_IOC->PAD[IOC_PAD_PC03].PAD_CTL = IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(1);
+
+        HPM_IOC->PAD[IOC_PAD_PC02].FUNC_CTL = IOC_PC02_FUNC_CTL_GPIO_C_02;
+        HPM_IOC->PAD[IOC_PAD_PC03].FUNC_CTL = IOC_PC03_FUNC_CTL_GPIO_C_03;
+    }
+}
+
 void init_lcd_pins(LCDC_Type *ptr)
 {
     HPM_IOC->PAD[IOC_PAD_PB03].FUNC_CTL = IOC_PB03_FUNC_CTL_DIS0_R_0;
@@ -297,6 +309,8 @@ void init_gptmr_pins(GPTMR_Type *ptr)
         HPM_IOC->PAD[IOC_PAD_PE23].FUNC_CTL = IOC_PE23_FUNC_CTL_GPTMR2_CAPT_0;
         /* TMR2 compare 0 */
         HPM_IOC->PAD[IOC_PAD_PE18].FUNC_CTL = IOC_PE18_FUNC_CTL_GPTMR2_COMP_0;
+        /* TMR2 compare 1*/
+        HPM_IOC->PAD[IOC_PAD_PE16].FUNC_CTL = IOC_PE16_FUNC_CTL_GPTMR2_COMP_1;
     }
 }
 

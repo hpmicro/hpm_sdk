@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 hpmicro
+ * Copyright (c) 2022 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -68,22 +68,22 @@ typedef enum pla_channel_type {
  *
  */
 typedef enum pla_aoi_16to8_input_signal_type {
-    pla_1st_filter_out_0 = 0,
-    pla_1st_filter_out_1 = 1,
-    pla_1st_filter_out_2 = 2,
-    pla_1st_filter_out_3 = 3,
-    pla_1st_filter_out_4 = 4,
-    pla_1st_filter_out_5 = 5,
-    pla_1st_filter_out_6 = 6,
-    pla_1st_filter_out_7 = 7,
-    pla_1st_filter_out_8 = 8,
-    pla_1st_filter_out_9 = 9,
-    pla_1st_filter_out_10 = 10,
-    pla_1st_filter_out_11 = 11,
-    pla_1st_filter_out_12 = 12,
-    pla_1st_filter_out_13 = 13,
-    pla_1st_filter_out_14 = 14,
-    pla_1st_filter_out_15 = 15,
+    pla_level1_filter_out_0 = 0,
+    pla_level1_filter_out_1 = 1,
+    pla_level1_filter_out_2 = 2,
+    pla_level1_filter_out_3 = 3,
+    pla_level1_filter_out_4 = 4,
+    pla_level1_filter_out_5 = 5,
+    pla_level1_filter_out_6 = 6,
+    pla_level1_filter_out_7 = 7,
+    pla_level1_filter_out_8 = 8,
+    pla_level1_filter_out_9 = 9,
+    pla_level1_filter_out_10 = 10,
+    pla_level1_filter_out_11 = 11,
+    pla_level1_filter_out_12 = 12,
+    pla_level1_filter_out_13 = 13,
+    pla_level1_filter_out_14 = 14,
+    pla_level1_filter_out_15 = 15,
 } pla_aoi_16to8_input_signal_type_t;
 
 /**
@@ -102,7 +102,7 @@ typedef enum pla_aoi_16to8_channel_type {
 } pla_aoi_16to8_channel_type_t;
 
 /**
- * @brief
+ * @brief aoi_16to8 config unit
  *
  */
 typedef struct pla_aoi_16to8_cfg_unit {
@@ -111,7 +111,7 @@ typedef struct pla_aoi_16to8_cfg_unit {
 } pla_aoi_16to8_cfg_unit_t;
 
 /**
- * @brief
+ * @brief aoi_16to8 channel config
  *
  */
 typedef struct pla_aoi_16to8_chn_cfg {
@@ -121,22 +121,22 @@ typedef struct pla_aoi_16to8_chn_cfg {
 } pla_aoi_16to8_chn_cfg_t;
 
 /**
- * @brief
+ * @brief aoi_8_to_7 input signal
  *
  */
 typedef enum pla_aoi_8to7_input_signal_type {
-    pla_2st_filter_out_0 = 0,
-    pla_2st_filter_out_1 = 1,
-    pla_2st_filter_out_2 = 2,
-    pla_2st_filter_out_3 = 3,
-    pla_2st_filter_out_4 = 4,
-    pla_2st_filter_out_5 = 5,
-    pla_2st_filter_out_6 = 6,
-    pla_2st_filter_out_7 = 7,
+    pla_level2_filter_out_0 = 0,
+    pla_level2_filter_out_1 = 1,
+    pla_level2_filter_out_2 = 2,
+    pla_level2_filter_out_3 = 3,
+    pla_level2_filter_out_4 = 4,
+    pla_level2_filter_out_5 = 5,
+    pla_level2_filter_out_6 = 6,
+    pla_level2_filter_out_7 = 7,
 } pla_aoi_8to7_input_signal_type_t;
 
 /**
- * @brief
+ * @brief aoi_8to7 channel number
  *
  */
 typedef enum pla_aoi_8to7_channel_type {
@@ -151,7 +151,7 @@ typedef enum pla_aoi_8to7_channel_type {
 
 
 /**
- * @brief
+ * @brief aoi_8to7 config unit
  *
  */
 typedef struct pla_aoi_8to7_cfg_unit {
@@ -160,7 +160,7 @@ typedef struct pla_aoi_8to7_cfg_unit {
 } pla_aoi_8to7_cfg_unit_t;
 
 /**
- * @brief
+ * @brief aoi_8_to_7 channel config
  *
  */
 typedef struct pla_aoi_8to7_chn_cfg {
@@ -170,7 +170,7 @@ typedef struct pla_aoi_8to7_chn_cfg {
 } pla_aoi_8to7_chn_cfg_t;
 
 /**
- * @brief
+ * @brief pla filter config
  *
  */
 typedef union pla_filter_cfg {
@@ -183,28 +183,38 @@ typedef union pla_filter_cfg {
         uint32_t pose_edge_dect_en:1;
         uint32_t filter_sync_level:1;
         uint32_t filter_ext_en:1;
-        uint32_t reserved:3;
+        uint32_t reserved0:3;
         uint32_t filter_ext_type:3;
+        uint32_t reserved1:1;
         uint32_t filter_ext_counter:16;
     };
     uint32_t val;
 } pla_filter_cfg_t;
 
+/**
+ * @brief pla function selection config
+ *
+ */
 typedef union pla_ff_cfg {
     struct {
         uint32_t sel_cfg_ff_type:3;
         uint32_t sel_clk_source:1;
         uint32_t sel_adder_minus:1;
-        uint32_t reserved:11;
+        uint32_t reserved0:11;
         uint32_t dis_osc_loop_clamp:1;
         uint32_t osc_loop_clamp_value:1;
+        uint32_t reserved1:14;
     };
     uint32_t val;
 } pla_ff_cfg_t;
 
+/**
+ * @brief pla configurable functions
+ *
+ */
 typedef enum pla_ff_type {
     pla_ff_type_dff = 0,
-    pla_ff_type_3th_filter0 = 1,
+    pla_ff_type_level3_filter0 = 1,
     pla_ff_type_dual_edge_DFF = 2,
     pla_ff_type_trigger_ff = 3,
     pla_ff_type_jk_ff = 4,

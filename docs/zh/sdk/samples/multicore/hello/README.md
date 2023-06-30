@@ -32,7 +32,7 @@ __CMAKE_BUILD_TYPE__ 用户可指定为 *"debug"* 或 *"flash_xip"* 等。
 - 如果用户希望单步调试core0和core1的示例，用户需确保在core0示例中的board_init()执行完后再调试core1示例。因为core1示例使用了需要core0 board_init()函数初始化的硬件资源
 - 当调试执行core0程序时，串口终端会打印如下信息:
     ```console
-        hello world from primary core
+        Hello world for multicore! Secondary core control RGB leds blinking...
     ```
 - 当调试执行core1程序时，RGB LED会在红、绿、蓝三色中依次切换
 
@@ -40,10 +40,7 @@ __CMAKE_BUILD_TYPE__ 用户可指定为 *"debug"* 或 *"flash_xip"* 等。
 - 当使用flash_xip编译类型时，下载core0示例到设备，然后断开调试，按板子上的reset键。当双核示例正常支持的时候，会打印如下信息：
 - 串口终端会打印如下信息:
     ```console
-        Copying secondary core image to destination memory...
-        Starting secondary core...
-        Secondary core started, RGB leds are blinking...
-
-        hello world from primary core
+        Copying secondary core image to destination memory: 0x1180000
+        Hello world for multicore! Secondary core control RGB leds blinking...
     ```
 - RGB LED会在红、绿、蓝三色中依次切换

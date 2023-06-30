@@ -67,12 +67,10 @@ void spi_slave_data_dump(spi_op_t op, uint32_t datalen,  uint8_t *buff,  uint32_
         if (datalen <= 8) {
             printf("0x%02x ", *(uint8_t *)buff);
              buff += 1;
-        }
-        else if (datalen <= 16) {
+        } else if (datalen <= 16) {
             printf("0x%02x ", *(uint16_t *)buff);
             buff += 2;
-        }
-        else {
+        } else {
             printf("0x%02x ", *(uint32_t *)buff);
             buff += 4;
         }
@@ -93,18 +91,14 @@ void spi_slave_frame_dump(uint32_t datalen,
     if (trans_mode == spi_trans_write_read || trans_mode == spi_trans_write_dummy_read) {
         spi_slave_data_dump(spi_op_write, datalen, wbuff, wsize);
         spi_slave_data_dump(spi_op_read, datalen, rbuff, rsize);
-    }
-    else if (trans_mode == spi_trans_write_read_together || trans_mode == spi_trans_read_write ||  trans_mode == spi_trans_read_dummy_write) {
+    } else if (trans_mode == spi_trans_write_read_together || trans_mode == spi_trans_read_write ||  trans_mode == spi_trans_read_dummy_write) {
         spi_slave_data_dump(spi_op_read, datalen, rbuff, rsize);
         spi_slave_data_dump(spi_op_write, datalen, wbuff, wsize);
-    }
-    else if (trans_mode == spi_trans_write_only || trans_mode == spi_trans_dummy_write) {
+    } else if (trans_mode == spi_trans_write_only || trans_mode == spi_trans_dummy_write) {
         spi_slave_data_dump(spi_op_write, datalen, wbuff, wsize);
-    }
-    else if (trans_mode == spi_trans_read_only || trans_mode == spi_trans_dummy_read) {
+    } else if (trans_mode == spi_trans_read_only || trans_mode == spi_trans_dummy_read) {
          spi_slave_data_dump(spi_op_read, datalen, rbuff, rsize);
-    }
-    else {
+    } else {
         spi_slave_data_dump(spi_op_no_data, 0, NULL, 0);
     }
 }
@@ -123,7 +117,7 @@ int main(void)
     board_init_spi_pins(BOARD_APP_SPI_BASE);
     printf("SPI-Slave Polling Transfer Example\n");
 
-    /* set SPI format config for master */
+    /* set SPI format config for slave */
     spi_slave_get_default_format_config(&format_config);
     format_config.common_config.data_len_in_bits = BOARD_APP_SPI_DATA_LEN_IN_BITS;
     format_config.common_config.mode = spi_slave_mode;
@@ -132,7 +126,7 @@ int main(void)
     spi_format_init(BOARD_APP_SPI_BASE, &format_config);
     printf("SPI-Slave transfer format is configured.\n");
 
-    /* set SPI control config for master */
+    /* set SPI control config for slave */
     spi_slave_get_default_control_config(&control_config);
     control_config.slave_config.slave_data_only = true; /* raw data mode for slave */
     /* data only mode, trans_mode have to be spi_trans_write_read_together */

@@ -8,6 +8,7 @@
 #ifndef __HPM_MATH_H__
 #define __HPM_MATH_H__
 
+#include <stddef.h>
 /**
  * @defgroup hpmmath HPMicro Math Functions
  * @ingroup middleware_interfaces
@@ -584,7 +585,7 @@ static inline float32_t hpm_dsp_entropy_f32(const float32_t *src, uint32_t size)
  * @param[in]       size    size of the vectors.
  * @return Relative Entropy value.
  *
- * Relative Entropy also called Kullback–Leibler divergence:
+ * Relative Entropy also called KullbackLeibler divergence:
  * D(A || B) = A * ln(A / B);
  *
  */
@@ -1825,6 +1826,42 @@ static inline void hpm_dsp_not_u8(u8_t *src, u8_t *dst, uint32_t size)
 /** @} basic */
 
 #endif
+
+#include <stdint.h>
+
+/**
+ * @brief Reserve 8bit data lsb to msb
+ *
+ * @param[in] lsb lsb data
+ * @return uint8_t msb
+ */
+uint8_t hpm_math_sw_reverse_bit8_lsb_to_msb(uint8_t lsb);
+
+/**
+ * @brief Reserve 8bit data msb to lsb
+ *
+ * @param[in] msb msb data
+ * @return uint8_t lsb
+ */
+uint8_t hpm_math_sw_reverse_bit8_msb_to_lsb(uint8_t msb);
+
+/**
+ * @brief Reserve 32bit data lsb to msb
+ *
+ * @param[in] lsb lsb data
+ * @return uint32_t msb
+ */
+uint32_t hpm_math_sw_reverse_bit32_lsb_to_msb(uint32_t lsb);
+
+/**
+ * @brief Reserve 32bit data msb to lsb
+ *
+ * @param[in] msb msb data
+ * @return uint32_t lsb
+ */
+uint32_t hpm_math_sw_reverse_bit32_msb_to_lsb(uint32_t msb);
+
+
 #endif
 
 /**
@@ -2269,8 +2306,8 @@ static inline void hpm_dsp_inv_clarke_q31(q31_t alpha, q31_t beta, q31_t *a, q31
  * @param[in]       beta  input two-phase coordinate beta.
  * @param[out]      *a    output rotor frame a.
  * @param[out]      *b    output rotor frame b.
- * @param[in]       sin   sine value of rotation angle θ.
- * @param[in]       cos   cosine value of rotation angle θ.
+ * @param[in]       sin   sine value of rotation angle .
+ * @param[in]       cos   cosine value of rotation angle .
  */
 static inline void hpm_dsp_park_f32(float32_t alpha, float32_t beta, float32_t *a, float32_t *b, float32_t sin, float32_t cos)
 {
@@ -2285,8 +2322,8 @@ static inline void hpm_dsp_park_f32(float32_t alpha, float32_t beta, float32_t *
  * @param[in]       beta  input two-phase coordinate beta.
  * @param[out]      *a    output rotor frame a.
  * @param[out]      *b    output rotor frame b.
- * @param[in]       sin   sine value of rotation angle θ.
- * @param[in]       cos   cosine value of rotation angle θ.
+ * @param[in]       sin   sine value of rotation angle .
+ * @param[in]       cos   cosine value of rotation angle .
  *
  * The internal 32-bit accumulator maintains 1.31 format by truncating lower
  * 31 bits of the intermediate multiplication in 2.62 format.
@@ -2305,8 +2342,8 @@ static inline void hpm_dsp_park_q31(q31_t alpha, q31_t beta, q31_t *a, q31_t *b,
  * @param[in]       b       input coordinate of rotor frame b.
  * @param[out]      *alpha  output two-phase orthogonal vec axis alpha.
  * @param[out]      *beta   output two-phase orthogonal vec axis beta.
- * @param[in]       sin     sine value of rotation angle θ.
- * @param[in]       cos     cosine value of rotation angle θ.
+ * @param[in]       sin     sine value of rotation angle .
+ * @param[in]       cos     cosine value of rotation angle .
  */
 static inline void hpm_dsp_inv_park_f32(float32_t a, float32_t b, float32_t *alpha, float32_t *beta, float32_t sin, float32_t cos)
 {
@@ -2320,8 +2357,8 @@ static inline void hpm_dsp_inv_park_f32(float32_t a, float32_t b, float32_t *alp
  * @param[in]       b       input coordinate of rotor frame b.
  * @param[out]      *alpha  output two-phase orthogonal vec axis alpha.
  * @param[out]      *beta   output two-phase orthogonal vec axis beta.
- * @param[in]       sin     sine value of rotation angle θ.
- * @param[in]       cos     cosine value of rotation angle θ.
+ * @param[in]       sin     sine value of rotation angle .
+ * @param[in]       cos     cosine value of rotation angle .
  *
  * The internal 32-bit accumulator maintains 1.31 format by truncating lower
  * 31 bits of the intermediate multiplication in 2.62 format.
@@ -4127,7 +4164,7 @@ static inline void hpm_dsp_svm_poly_est_f32(const riscv_dsp_svm_poly_f32_t *inst
  * Given 128 samples (that is, FFT_LOGN = 7), the example of floating-point Radix-2 CFFT and
  * CIFFT is as follows:
  *      \#define FFT_LOGN 7
- *      float32_t src[2* (1 << FFT_LOGN)] = {…};
+ *      float32_t src[2* (1 << FFT_LOGN)] = {�?};
  *      int32_t ret;
  *      ret = hpm_dsp_cfft_rd2_f32(src, FFT_LOGN);
  *      if (ret == 0)
@@ -4257,7 +4294,7 @@ static inline int32_t hpm_dsp_cifft_rd2_q31(q31_t *src, uint32_t m)
  * Given 256 samples (that is, FFT_LOGN = 8), the example of floating-point Radix-4 CFFT and
  * CIFFT is as follows:
  *      \#define FFT_LOGN 8
- *      float32_t src[2* (1 << FFT_LOGN)] = {…};
+ *      float32_t src[2* (1 << FFT_LOGN)] = {�?};
  *      int32_t ret;
  *      ret = hpm_dsp_cfft_rd4_f32(src, FFT_LOGN);
  *      if (ret == 0)
@@ -4386,7 +4423,7 @@ static inline int32_t hpm_dsp_cifft_rd4_q31(q31_t *src, uint32_t m)
  * Given 128 samples (that is, FFT_LOGN = 7), the example of floating-point CFFT and
  * CIFFT is as follows:
  *      \#define FFT_LOGN 7
- *      float32_t src[2* (1 << FFT_LOGN)] = {…};
+ *      float32_t src[2* (1 << FFT_LOGN)] = {�?};
  *      int32_t ret;
  *      hpm_dsp_cfft_f32(src, FFT_LOGN);
  *      hpm_dsp_cifft_f32(src, FFT_LOGN);
@@ -4530,7 +4567,7 @@ static inline void hpm_dsp_cifft_q31(q31_t *src, uint32_t m)
  * Given 128 samples (that is, FFT_LOGN = 7), the example of floating-point RFFT and RIFFT
  * is as follows:
  *      \#define FFT_LOGN 7
- *      float32_t src[(1 << FFT_LOGN)] = {…};
+ *      float32_t src[(1 << FFT_LOGN)] = {�?};
  *      int32_t ret;
  *      ret = hpm_dsp_rfft_f32(src, FFT_LOGN);
  *      if (ret == 0)
@@ -4687,7 +4724,7 @@ static inline int32_t hpm_dsp_rifft_q31(q31_t *src, uint32_t m)
  * Given 256 samples (that is, FFT_LOGN = 8), the example of floating-point (DCT) type II and
  * IDCT is as follows:
  *      \#define FFT_LOGN 8
- *      float32_t src[(1 << FFT_LOGN)] = {…};
+ *      float32_t src[(1 << FFT_LOGN)] = {�?};
  *      riscv_dsp_dct_f32(src, FFT_LOGN);
  *      riscv_dsp_idct_f32(src, FFT_LOGN);
  * This example also serves as a reference for examples of Q31 or Q15 DCT type II and IDCT
@@ -4801,7 +4838,7 @@ static inline void hpm_dsp_idct_q31(q31_t *src, uint32_t m)
  * Given 128 samples (that is, FFT_LOGN = 7), the example of floating-point DCT or IDCT type
  * IV transform is as follows:
  *      \#define FFT_LOGN 7
- *      float32_t src[(1 << FFT_LOGN)] = {…};
+ *      float32_t src[(1 << FFT_LOGN)] = {�?};
  *      riscv_dsp_dct4_f32(src, FFT_LOGN);
  *      riscv_dsp_idct4_f32(src, FFT_LOGN);
  * This example also serves as a reference for examples of Q31 or Q15 DCT type IV and IDCT
@@ -4906,12 +4943,12 @@ static inline void hpm_dsp_idct4_q31(q31_t *src, uint32_t m)
 
 /**
  * @brief Software implementation does not depend on any hardware
- * 
+ *
  */
 
 /**
  * @brief Construct a new hpm software cfft float object
- * 
+ *
  * @param src requires double the space than other interfaces, 0-n for input data, n-2n for buffers, 0-n for output data
  * @param m 2^n sampling points, including real and imaginary parts
  */
@@ -5611,7 +5648,7 @@ static inline void hpm_dsp_sort_init_f32(riscv_dsp_sort_f32_t * instance, riscv_
  *
  *          \#define size 100
  *          riscv_dsp_sort_f32_t *instance;
- *          float32_t src[size] = {…};
+ *          float32_t src[size] = {�?};
  *          float32_t dst[size];
  *          riscv_dsp_sort_init_f32(instance, RISCV_DSP_SORT_QUICK,
  *          RISCV_DSP_SORT_ASCENDING);
@@ -5673,7 +5710,7 @@ static inline void hpm_dsp_sort_merge_init_f32(riscv_dsp_sort_merge_f32_t * inst
  *
  *     \#define size 100
  *     riscv_dsp_sort_merge_f32_t *instance;
- *     float32_t src[size] = {…};
+ *     float32_t src[size] = {�?};
  *     float32_t buf[size];
  *     float32_t dst[size];
  *     riscv_dsp_sort_merge_init_f32(instance, RISCV_DSP_SORT_DESCENDING, buf);
@@ -6737,7 +6774,7 @@ static inline void hpm_nn_conv_HWC_s8_s8_s8_sft_bias_any(const q7_t *in_tensor,
  * @b Example:
  * @code
  *  //Convolve a 12x12x20 input tensor with a 5x5 kernel and generate a 8x8x50
- *  //output tensor. Let both dimensions锟�? padding be 0 and their stride be 1.
+ *  //output tensor. Let both dimensions padding be 0 and their stride be 1.
  *
  *  #define IN_DIM 12
  *  #define IN_CH 20

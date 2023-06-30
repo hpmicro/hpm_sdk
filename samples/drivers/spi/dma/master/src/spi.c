@@ -8,7 +8,11 @@
 #include "board.h"
 #include "hpm_debug_console.h"
 #include "hpm_spi_drv.h"
+#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#include "hpm_dmav2_drv.h"
+#else
 #include "hpm_dma_drv.h"
+#endif
 #include "hpm_dmamux_drv.h"
 #include "hpm_l1c_drv.h"
 
@@ -88,6 +92,8 @@ void spi_master_check_transfer_data(SPI_Type *ptr)
 hpm_stat_t spi_tx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_ptr, uint32_t src, uint8_t data_width, uint32_t size)
 {
     dma_handshake_config_t config;
+
+    dma_default_handshake_config(dma_ptr, &config);
     config.ch_index = ch_num;
     config.dst = (uint32_t)&spi_ptr->DATA;
     config.dst_fixed = true;
@@ -102,6 +108,8 @@ hpm_stat_t spi_tx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_p
 hpm_stat_t spi_rx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_ptr, uint32_t dst, uint8_t data_width, uint32_t size)
 {
     dma_handshake_config_t config;
+
+    dma_default_handshake_config(dma_ptr, &config);
     config.ch_index = ch_num;
     config.dst = dst;
     config.dst_fixed = false;
@@ -119,18 +127,19 @@ int main(void)
     spi_format_config_t format_config = {0};
     spi_control_config_t control_config = {0};
     hpm_stat_t stat;
+    uint32_t spi_clcok;
     uint8_t cmd = 0x1a;
     uint32_t addr = 0x10;
     uint32_t spi_tx_trans_count, spi_rx_trans_count;
 
     board_init();
-    board_init_spi_clock(TEST_SPI);
+    spi_clcok = board_init_spi_clock(TEST_SPI);
     board_init_spi_pins(TEST_SPI);
     printf("SPI Master DMA Transfer Example\n");
 
     /* set SPI sclk frequency for master */
     spi_master_get_default_timing_config(&timing_config);
-    timing_config.master_config.clk_src_freq_in_hz = board_init_spi_clock(TEST_SPI);
+    timing_config.master_config.clk_src_freq_in_hz = spi_clcok;
     timing_config.master_config.sclk_freq_in_hz = TEST_SPI_SCLK_FREQ;
     if (status_success != spi_master_timing_init(TEST_SPI, &timing_config)) {
         printf("SPI master timing init failed\n");

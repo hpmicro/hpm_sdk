@@ -13,7 +13,6 @@
 #include "hpm_femc_drv.h"
 #include "pinmux.h"
 #include "hpm_pmp_drv.h"
-#include "assert.h"
 #include "hpm_clock_drv.h"
 #include "hpm_sysctl_drv.h"
 #include "hpm_sdxc_drv.h"
@@ -204,7 +203,11 @@ static void board_turnoff_rgb_led(void)
 
 uint8_t board_get_led_pwm_off_level(void)
 {
-    return BOARD_LED_OFF_LEVEL;
+    if (invert_led_level) {
+        return BOARD_LED_ON_LEVEL;
+    } else {
+        return BOARD_LED_OFF_LEVEL;
+    }
 }
 
 uint8_t board_get_led_gpio_off_level(void)
@@ -483,7 +486,7 @@ void board_init_led_pins(void)
 void board_led_toggle(void)
 {
     static uint8_t i;
-    if (BOARD_LED_PULL_STATUS) {
+    if (!invert_led_level) {
         /* hpm6750 Mini Rev A led configure*/
         gpio_write_port(BOARD_G_GPIO_CTRL, BOARD_G_GPIO_INDEX, (7 & ~(1 << i)) << BOARD_G_GPIO_PIN);
     } else {
@@ -781,6 +784,24 @@ uint32_t board_init_i2s_clock(I2S_Type *ptr)
     }
 }
 
+/* adjust I2S source clock base on sample rate */
+uint32_t board_config_i2s_clock(I2S_Type *ptr, uint32_t sample_rate)
+{
+    if (ptr == HPM_I2S0) {
+        if ((sample_rate % 22050) == 0) {
+            clock_add_to_group(clock_i2s0, 0);
+            clock_set_source_divider(clock_aud1, clk_src_pll3_clk0, 54); /* config clock_aud1 for 22050*n sample rate */
+            clock_set_i2s_source(clock_i2s0, clk_i2s_src_aud1);
+        } else {
+            clock_add_to_group(clock_i2s0, 0);
+            clock_set_source_divider(clock_aud0, clk_src_pll3_clk0, 25); /* config clock_aud0 for 8000*n sample rate */
+            clock_set_i2s_source(clock_i2s0, clk_i2s_src_aud0);
+        }
+        return clock_get_frequency(clock_i2s0);
+    }
+    return 0;
+}
+
 uint32_t board_init_adc16_clock(ADC16_Type *ptr)
 {
     uint32_t freq = 0;
@@ -1002,16 +1023,19 @@ hpm_stat_t board_init_enet_ptp_clock(ENET_Type *ptr)
 
 hpm_stat_t board_init_enet_rmii_reference_clock(ENET_Type *ptr, bool internal)
 {
-    if (internal == false) {
-        return status_success;
-    }
     /* Configure Enet clock to output reference clock */
-    if (ptr == HPM_ENET0) {
-        /* make sure pll2_clk1 output clock at 250MHz then set 50MHz for enet0 */
-        clock_set_source_divider(clock_eth0, clk_src_pll2_clk1, 5);
-    } else if (ptr == HPM_ENET1) {
-        /* make sure pll2_clk1 output clock at 250MHz then set 50MHz for enet1 */
-        clock_set_source_divider(clock_eth1, clk_src_pll2_clk1, 5); /* set 50MHz for enet1 */
+    if (ptr == HPM_ENET0 || ptr == HPM_ENET1) {
+        if (internal) {
+            /* set pll output frequency at 1GHz */
+            if (pllctl_init_int_pll_with_freq(HPM_PLLCTL, PLLCTL_PLL_PLL2, 1000000000UL) == status_success) {
+                /* set pll2_clk1 output frequence at 250MHz from PLL2 divided by 4 */
+                pllctl_set_div(HPM_PLLCTL, PLLCTL_PLL_PLL2, 1, 4);
+                /* set eth clock frequency at 50MHz for enet0 */
+                clock_set_source_divider(ptr == HPM_ENET0 ? clock_eth0 : clock_eth1, clk_src_pll2_clk1, 5);
+            } else {
+                return status_fail;
+            }
+        }
     } else {
         return status_invalid_argument;
     }

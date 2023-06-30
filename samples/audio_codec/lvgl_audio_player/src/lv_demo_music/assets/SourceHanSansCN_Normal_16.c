@@ -3,12 +3,8 @@
  * Bpp: 4
  * Opts: 
  ******************************************************************************/
-
-#ifdef LV_LVGL_H_INCLUDE_SIMPLE
 #include "lvgl.h"
-#else
-#include "lvgl/lvgl.h"
-#endif
+
 
 #ifndef SOURCEHANSANSCN_NORMAL_16
 #define SOURCEHANSANSCN_NORMAL_16 1

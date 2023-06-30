@@ -40,6 +40,7 @@
 (lab_board_rgb_pin)=
 (lab_board_app_spi_pin)=
 (lab_board_drv_pwm_pin)=
+(lab_board_drv_hrpwm_pin)=
 (lab_board_motor_ctrl_pin)=
 (lab_board_overiew)=
 (lab_board_app_acmp_pin)=

@@ -139,15 +139,16 @@ int main(void)
     hpm_stat_t stat;
     uint8_t cmd = 0x1a;
     uint32_t addr = 0x10;
+    uint32_t spi_clock;
 
     board_init();
-    board_init_spi_clock(TEST_SPI);
+    spi_clock = board_init_spi_clock(TEST_SPI);
     board_init_spi_pins_with_gpio_as_cs(TEST_SPI);
     printf("SPI Master DMA Transfer Example\n");
 
     /* set SPI sclk frequency for master */
     spi_master_get_default_timing_config(&timing_config);
-    timing_config.master_config.clk_src_freq_in_hz = board_init_spi_clock(TEST_SPI);
+    timing_config.master_config.clk_src_freq_in_hz = spi_clock;
     timing_config.master_config.sclk_freq_in_hz = TEST_SPI_SCLK_FREQ;
     if (status_success != spi_master_timing_init(TEST_SPI, &timing_config)) {
         printf("SPI master timming init failed\n");

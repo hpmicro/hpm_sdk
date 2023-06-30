@@ -15,6 +15,9 @@ board:
       type: qspi-nor-flash
       size: 16M
     feature:
+      - butn
+      - rtc
+      - wdg
       - adc
       - sdcard
       - usb-otg
@@ -45,6 +48,8 @@ board:
       - sdxc
       - i2s
       - uart_software_rx_idle
+      - uart_rx_timeout
+      - uart_software_lin
       - ptp
       - gpiom
       - adc12
@@ -54,3 +59,4 @@ board:
       - enet
       - enet_phy_on_board
       - hall-qei
+      - bldc_smc

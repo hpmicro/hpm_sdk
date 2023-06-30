@@ -9,7 +9,11 @@
 #define HPM_DMA_MANAGER_H
 
 #include "hpm_common.h"
+#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#include "hpm_dmav2_drv.h"
+#else
 #include "hpm_dma_drv.h"
+#endif
 #include "hpm_soc_feature.h"
 
 

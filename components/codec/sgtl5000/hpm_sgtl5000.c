@@ -7,24 +7,11 @@
  *
  */
 
-#include <stdio.h>
 #include "hpm_sgtl5000.h"
 
-/*******************************************************************************
- * Definitations
- ******************************************************************************/
-
-/*******************************************************************************
- * Prototypes
- ******************************************************************************/
-
-/*******************************************************************************
- * Variables
- ******************************************************************************/
-
-/*******************************************************************************
- * Code
- ******************************************************************************/
+#ifndef HPM_SGTL5000_MCLK_TOLERANCE
+#define HPM_SGTL5000_MCLK_TOLERANCE (4U)
+#endif
 
 hpm_stat_t sgtl_init(sgtl_context_t *context, sgtl_config_t *config)
 {
@@ -443,7 +430,7 @@ hpm_stat_t sgtl_config_data_format(sgtl_context_t *context, uint32_t mclk, uint3
 {
     uint16_t val     = 0;
     uint16_t regVal  = 0;
-    uint16_t mul_clk = 0U;
+    uint32_t mul_div = 0U;
     uint32_t sysFs   = 0U;
     hpm_stat_t stat     = status_success;
 
@@ -527,17 +514,17 @@ hpm_stat_t sgtl_config_data_format(sgtl_context_t *context, uint32_t mclk, uint3
         return status_fail;
     }
 
-    /* While as slave, Fs is input */
-    if ((regVal & SGTL5000_I2S_MS_GET_MASK) == 0U) {
-        sysFs = sample_rate;
-    }
-    mul_clk = (uint16_t)(mclk / sysFs);
-    /* Configure the mul_clk. Sgtl-5000 only support 256, 384 and 512 oversample rate */
-    if ((mul_clk / 128U - 2U) > 2U) {
-        return status_invalid_argument;
+    mul_div = mclk / sysFs;
+    if (abs(mul_div - 256) <= 256 * HPM_SGTL5000_MCLK_TOLERANCE) {
+        mul_div = 256;
+    } else if (abs(mul_div - 384) <= 384 * HPM_SGTL5000_MCLK_TOLERANCE) {
+        mul_div = 384;
+    } else if (abs(mul_div - 512) <= 512 * HPM_SGTL5000_MCLK_TOLERANCE) {
+        mul_div = 512;
     } else {
-        val |= (mul_clk / 128U - 2U);
+        return status_invalid_argument;
     }
+    val |= (mul_div / 128U - 2U);
 
     if (sgtl_write_reg(context, CHIP_CLK_CTRL, val) != status_success) {
         return status_fail;

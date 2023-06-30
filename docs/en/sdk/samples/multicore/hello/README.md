@@ -38,7 +38,7 @@ __Core0__ project must be generated after the core1 project has been built succe
 
 - When debug core0 and the project runs successfully, The serial port terminal will output the following information:
     ```console
-        hello world from primary core
+        Hello world for multicore! Secondary core control RGB leds blinking...
     ```
 - When debug core1 and the project runs successfully, The RGB leds are switching among RED, GREEN, BLUE respectively.
 
@@ -46,10 +46,7 @@ __Core0__ project must be generated after the core1 project has been built succe
 
 - When __CMAKE_BUILD_TYPE__ is *"flash_xip"* , download the core0 example to the target, stop debugging and reset the board. When the project runs successfully, the serial port terminal will output the following information:
     ```console
-        Copying secondary core image to destination memory...
-        Starting secondary core...
-        Secondary core started, RGB leds are blinking...
-
-        hello world from primary core
+        Copying secondary core image to destination memory: 0x1180000
+        Hello world for multicore! Secondary core control RGB leds blinking...
     ```
 - The RGB leds are switching among RED, GREEN, BLUE respectively.

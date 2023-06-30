@@ -10,11 +10,6 @@
 #include "board.h"
 #include "hpm_gpio_drv.h"
 
-#define USBD_VID           0xffff
-#define USBD_PID           0xffff
-#define USBD_MAX_POWER     100
-#define USBD_LANGID_STRING 1033
-
 #define HID_INT_EP          0x81
 #define HID_INT_EP_SIZE     8
 #define HID_INT_EP_INTERVAL 10

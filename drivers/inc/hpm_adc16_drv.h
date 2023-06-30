@@ -20,14 +20,14 @@
  */
 
 /** @brief Define ADC16 validity check for the channel number */
-#if ADC16_SOC_TEMP_CH_EN
+#if defined (ADC16_SOC_TEMP_CH_EN) && ADC16_SOC_TEMP_CH_EN
 #define ADC16_IS_CHANNEL_INVALID(CH) (CH > ADC16_SOC_MAX_CH_NUM && CH != ADC16_SOC_TEMP_CH_NUM)
 #else
 #define ADC16_IS_CHANNEL_INVALID(CH) (CH > ADC16_SOC_MAX_CH_NUM)
 #endif
 
 /** @brief Define ADC16 validity check for the trigger number */
-#define ADC16_IS_TRIG_CH_INVLAID(CH) (CH > ADC16_SOC_MAX_TRIG_CH_NUM)
+#define ADC16_IS_TRIG_CH_INVLAID(CH) (CH > ADC_SOC_MAX_TRIG_CH_NUM)
 
 /** @brief Define ADC16 validity check for the trigger length */
 #define ADC16_IS_TRIG_LEN_INVLAID(TRIG_LEN) (TRIG_LEN > ADC_SOC_MAX_TRIG_CH_LEN)
@@ -56,6 +56,26 @@ typedef enum {
     adc16_conv_mode_sequence,
     adc16_conv_mode_preemption
 } adc16_conversion_mode_t;
+
+/** @brief  Define adc16 Clock Divider */
+typedef enum {
+    adc16_clock_divider_1 = 1,
+    adc16_clock_divider_2,
+    adc16_clock_divider_3,
+    adc16_clock_divider_4,
+    adc16_clock_divider_5,
+    adc16_clock_divider_6,
+    adc16_clock_divider_7,
+    adc16_clock_divider_8,
+    adc16_clock_divider_9,
+    adc16_clock_divider_10,
+    adc16_clock_divider_11,
+    adc16_clock_divider_12,
+    adc16_clock_divider_13,
+    adc16_clock_divider_14,
+    adc16_clock_divider_15,
+    adc16_clock_divider_16,
+} adc16_clock_divider_t;
 
 /** @brief  Define ADC16 irq events. */
 typedef enum {
@@ -94,10 +114,10 @@ typedef enum {
 typedef struct {
     uint8_t res;
     uint8_t conv_mode;
-    uint8_t wait_dis;
     uint32_t adc_clk_div;
     uint16_t conv_duration;
     bool port3_rela_time;
+    bool wait_dis;
     bool sel_sync_ahb;
     bool adc_ahb_en;
 } adc16_config_t;
@@ -131,13 +151,13 @@ typedef struct {
 
 /** @brief ADC16 DMA configuration struct for the preemption mode. */
 typedef struct {
-    uint32_t result     :16;
-    uint32_t trig_ch    :2;
-    uint32_t            :2;
-    uint32_t trig_index :4;
-    uint32_t adc_ch     :5;
-    uint32_t            :2;
-    uint32_t cycle_bit  :1;
+    uint32_t result    :16;
+    uint32_t seq_num   :2;
+    uint32_t           :2;
+    uint32_t trig_ch   :4;
+    uint32_t adc_ch    :5;
+    uint32_t           :2;
+    uint32_t cycle_bit :1;
 } adc16_pmt_dma_data_t;
 
 /** @brief ADC16 configuration struct for the the period mode. */
@@ -407,7 +427,7 @@ static inline void adc16_disable_interrupts(ADC16_Type *ptr, uint32_t mask)
  */
 
 /**
- * @brief Trigger ADC conversions by software
+ * @brief Trigger ADC conversions by software in sequence mode
  *
  * @param[in] ptr An ADC16 peripheral base address.
  * @return An implementation result of getting an ADC16 software trigger.
@@ -415,6 +435,18 @@ static inline void adc16_disable_interrupts(ADC16_Type *ptr, uint32_t mask)
  * @retval status_fail ADC16 software triggers unsuccessfully. Please refer to @ref hpm_stat_t.
  */
 hpm_stat_t adc16_trigger_seq_by_sw(ADC16_Type *ptr);
+
+/**
+ * @brief Trigger ADC conversions by software in preemption mode
+ *
+ * @param[in] ptr An ADC16 peripheral base address.
+ * @param[in] trig_ch A trigger channel number(e.g. TRIG0A,TRIG0B,TRIG0C...).
+ * @return An implementation result of getting an ADC16 software trigger.
+ * @retval status_success ADC16 software triggers successfully. Please refer to @ref hpm_stat_t.
+ * @retval status_fail ADC16 software triggers unsuccessfully. Please refer to @ref hpm_stat_t.
+ */
+hpm_stat_t adc16_trigger_pmt_by_sw(ADC16_Type *ptr, uint8_t trig_ch);
+
 
 /**
  * @brief Get the result in oneshot mode.
@@ -440,6 +472,7 @@ hpm_stat_t adc16_get_oneshot_result(ADC16_Type *ptr, uint8_t ch, uint16_t *resul
  */
 hpm_stat_t adc16_get_prd_result(ADC16_Type *ptr, uint8_t ch, uint16_t *result);
 
+#if defined(ADC16_SOC_TEMP_CH_EN) && ADC16_SOC_TEMP_CH_EN
 /**
  * @brief Enable the temperature sensor
  *
@@ -453,6 +486,7 @@ void adc16_enable_temp_sensor(ADC16_Type *ptr);
  * @param[in] ptr An ADC16 peripheral base address.
  */
 void adc16_disable_temp_sensor(ADC16_Type *ptr);
+#endif
 
 /** @} */
 

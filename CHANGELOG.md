@@ -1,5 +1,147 @@
 # Change Log
 
+## [1.2.0] - 2023-06-30:
+
+Main changes since 1.1.0
+
+Tested Segger Embedded Studio Version: 7.22
+
+### Changed:
+  - boards: hpm6750evk*: decrease core frequency from 816MHz to 648MHz
+  - openocd: soc: hpm6280: simplify dual core release core1 approach.
+  - cmake: segger: configure optimization level according to gcc level.
+  - soc: dmamux: move it from ip to soc
+  - soc: interrupt: adjust irq api. #659
+  - soc: improve svd file
+  - soc: hpm_soc_feature.h: remove ADC16_SOC_TEMP_CH_EN for some specified Socs
+  - components: enet_phy: update the common enet phy header file
+  - components: sgtl5000 and wm8960: update clock setting
+  - drivers: uart: update uart driver
+  - drivers: pdma: improve quality of scale
+  - drivers: adc: adjust wait_dis type in adc16_config_t struct
+  - drivers: enet: update rmii reference clock setting API for ENET
+  - utils: hpm_swap: escape for andes toolchain.
+  - middleware: hpm_sdmmc: add spi sdcard
+  - middleware: motor_ctrl: change the file organization
+  - middleware: motor_ctrl: remove slide control content from foc
+  - middleware: lvgl: upgrade to v8.3.5 (with pdma)
+  - middleware: lvgl: Add direct mode
+  - middleware: cherryusb: update version to v0.8.0
+  - samples: I2S_DMA and I2S Interrupt: update sample behavior
+  - samples: cherryusb: hid host: separate mouse and keyboard urb
+  - samples: cherryusb: increase max interface and endpoint number Configuration
+  - samples: cherryusb: uac2: move setting sampling freq to isr
+  - samples: cherryusb: audio: update descriptor for identification
+  - samples: audio_codec: set codec voice to max and increase irq priority
+  - samples: multicore: lvgl_coremark: delete custom linker files and using andes toolchain
+  - samples: lvgl_audio_player: update CMakeLists.txt to using noncacheable framebuffer
+  - samples: spi: clean the redundant code
+  - samples: i2c: improve the processing of FIFO in ISR
+  - samples: drivers: uart: update uart_rx_timeout demo
+  - samples: drivers: gptmr: split sample into multiple function samples
+  - samples: drivers: adc: optimization for all macro definitions in applications
+  - samples: drivers: adc: update struct member names
+  - samples: update clock divider setting for ADC-related examples
+  - samples: cherryusb: move vid/pid etc definition to usb_config.h
+  - samples: cherryusb: device: update vid to hpmicro 0x34B7
+  - samples: cherryusb: change API update for v0.8
+  - samples: cherryusb: device: audiov1: change to full speed mode
+  - samples: tinyusb: uac2: update descriptor and sample
+  - samples: lwip: disable mmc interrupt settings
+  - samples: lwip: lwip_ptp: v1: sync precision improvement
+
+### Added:
+  - cmake: toolchains: add isa spec 20191213 support.
+  - cmake: ses: support set ses raw option in CMakeLists.txt
+  - cmake: add option to specify board search path.
+  - cmake: generate compile_commands.json file
+  - soc: hpm_soc_feature: add a common macro for ADC12 and ADC16
+  - drivers: cam: add new APIs
+  - drivers: spi: add new APIs
+  - drivers: i2c: add new APIs
+  - drivers: I2S: add i2s_check_data_line_status API
+  - drivers: dma: add dma_set_transfer_src_width_byte_size() API
+  - drivers: gptmr: add output capture APIs
+  - drivers: gptmr: add gptmr_channel_get_dma_request_event api
+  - drivers: adc: add adc16_trigger_pmt_by_sw API
+  - drivers: enet: add some APIs related to interrupt settings
+  - drivers: enet: add a new API for transmisstion
+  - drivers: usb: add macro CONFIG_USB_DEVICE_FS to set full speed mode
+  - components: uart_lin: add uart lin component
+  - components: add smbus
+  - components: add sccb
+  - middleware: lvgl: add macro HPM_LVGL_FRAMEBUFFER_NONCACHEABLE
+  - middleware: add AzureRTOS (threadx/usbx/netx/guix)
+  - middleware: hpm_mcl: sensorless over-zero
+  - middleware: add smc
+  - middleware: hpm_sdmmc Add eMMC support
+  - middleware: hpm_math: add bit conversion function
+  - middleware: add uC/OS-III
+  - middleware: cherryusb: audio: add feedback descriptor
+  - middleware: cherryusb: audio: add param to set endpoint bmAttributes
+  - middleware: microros: add microros foxy sources
+  - samples: drivers: spi: add spi_sdcard_fatfs sample
+  - samples: drivers: spi: add sd sample
+  - samples: add uart_lin
+  - samples: motor_ctrl: sensorless: over-zero demo
+  - samples: cherryusb: add rndis host dhcp samples
+  - samples: drivers: sdxc :emmc Added eMMC sample
+  - samples: drivers: adc12: update irq pattern for sequence usage
+  - samples: drivers: pla: add pla tamagawa demo
+  - samples: drivers: gptmr: add counter_sync sample
+  - samples: drivers: gptmr: add timer_basic sample
+  - samples: drivers: gptmr: add t_shape_accel_decel sample
+  - samples: drivers: dma/gptmr: add trigger dma transfer using gptmr event sample
+  - samples: drivers: uart add uart_rx_timeout sample
+  - samples: i2c: add smbus samples
+  - samples: lwip: lwip_tcpecho_freertos: add self-adaption
+  - samples: cherryusb: hid host: move usbh_submit_urb() out of condition
+  - samples: cherryusb: add composite freertos sample
+  - samples: cherryusb: add rndis freertos sample
+  - samples: cherryusb: add msc freertos sample
+  - samples: cherryusb: add audio v2 mic speaker freertos sample
+  - samples: cherryusb: add hid mouse freertos sample
+  - samples: cherryusb: add hid keyboard freertos sample
+  - samples: cherryusb: add cdc acm freertos sample
+  - samples: cherryusb: add rndis tcp server sample
+  - samples: cherryusb: add rndis device udp_echo sample
+  - samples: cherryusb: add rndis device http_server sample
+  - samples: cherryusb: device: add audio_v2_speaker_sync sample
+  - samples: add several uC/OS-III samples
+  - samples: smc: add smc demo
+  - samples: microros: add subscriber, sevice and publisher
+  - samples: uC/OS-III: mutex
+
+### Fixed:
+  - cmake: ses: fix __SEGGER_RTL_vfprintf issue with nds tool in SES 7.20.
+  - soc: hpm6280: Modify the number of PWM cmps.
+  - soc: reset.c: __dso_handle needs to be declared for nds toolchain.
+  - soc: fix max buffer length in sequence mode for ADC
+  - soc: HPM6750: enet soc drv: fix set clock delay settings
+  - soc:hpm6360:sdxc Correct clock divider settting issue
+  - drivers: pla: missing Union Field
+  - drivers: spi: fix the problem of CMD and ADDR configuration order
+  - drivers: i2c: fix clock frequency error rate problem
+  - drivers: i2c: clear CMPL bit in API to avoid blocking the trans
+  - drivers: i2c: fix i2c slave device read and write fail
+  - drivers: i2c: fix read data unexpected multi transition.
+  - drivers: i2c: fix w1c clear status error
+  - driver: usb: fix w1c clear flag error
+  - drivers: gptmr: fix dma request enum definition
+  - drivers: adc: fix logics for judging the validity of arguments
+  - component: uart_lin: fix break signal problem
+  - middleware: cherryusb: fix buffer size error
+  - middleware: lvgl: fix fbbuffer option
+  - samples: gptmr: fix pwm_measure sample compile waring
+  - samples: jpeg: fix interchange format of exif support
+  - samples: jpeg: fix jpeg decode
+  - samples: drivers: spi: fix the problem of CMD and ADDR configuration order
+  - samples: drivers: mcan: can_fd loopback test setting is incorrect
+  - samples: cherryusb: http_server_freertos: fix printf content error
+  - samples: cherryusb: audio: change endpoint attributes for support MACBOOK
+  - samples: tinyusb: msc: increase block numbers for windows format
+  - samples: lwip: lwip_httpsrv: fix reload or refresh error
+
 ## [1.1.0] - 2023-03-31:
 
 Main changes since 1.0.0

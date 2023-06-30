@@ -16,7 +16,7 @@
 
 ## 运行现象
 
-当工程正确运行后，通过串口中断输入一些数据，串口终端会以如下形式输出信息：
+当工程正确运行后，通过UART发送器终端发送数据，例如"1234567890123", 调试串口终端会以如下形式输出信息：
 ```console
 uart software rx idle detection.
 uart receive 13 bytes, the received data are:

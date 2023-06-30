@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -37,13 +37,24 @@ ATTR_ALWAYS_INLINE static inline void enable_global_irq(uint32_t mask)
 }
 
 /**
- * @brief   Disable global IRQ with mask
+ * @brief   Disable global IRQ with mask and return mstatus
  *
  * @param[in] mask interrupt mask to be disabled
+ * @retval current mstatus value before irq mask is disabled
  */
-ATTR_ALWAYS_INLINE static inline void disable_global_irq(uint32_t mask)
+ATTR_ALWAYS_INLINE static inline uint32_t disable_global_irq(uint32_t mask)
 {
-    clear_csr(CSR_MSTATUS, mask);
+    return read_clear_csr(CSR_MSTATUS, mask);
+}
+
+/**
+ * @brief   Restore global IRQ with mask
+ *
+ * @param[in] mask interrupt mask to be restored
+ */
+ATTR_ALWAYS_INLINE static inline void restore_global_irq(uint32_t mask)
+{
+    set_csr(CSR_MSTATUS, mask);
 }
 
 /**

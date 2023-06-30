@@ -1,7 +1,7 @@
-# Copyright (c) 2021-2022 HPMicro
+# Copyright (c) 2021-2023 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
-add_subdirectory_ifdef(CONFIG_LVGL littlevgl)
+add_subdirectory_ifdef(CONFIG_LVGL lvgl)
 add_subdirectory_ifdef(CONFIG_TINYUSB tinyusb)
 add_subdirectory_ifdef(CONFIG_TINYCRYPT tinycrypt)
 add_subdirectory_ifdef(CONFIG_FATFS fatfs)
@@ -18,3 +18,6 @@ add_subdirectory_ifdef(CONFIG_SEGGER_RTT segger_rtt)
 add_subdirectory_ifdef(CONFIG_ERPC erpc)
 add_subdirectory_ifdef(CONFIG_CHERRYUSB cherryusb)
 add_subdirectory_ifdef(CONFIG_MBEDTLS mbedtls)
+add_subdirectory_ifdef(CONFIG_UCOS_III ucos_iii)
+add_subdirectory(azure_rtos)
+add_subdirectory_ifdef(CONFIG_MICROROS microros)

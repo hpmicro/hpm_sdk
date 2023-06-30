@@ -7,7 +7,7 @@
 ## 硬件设置
 
 - 使用USB Type-C线缆线连接PC USB端口和PWR DEBUG端口
-- 使用USB Type-C转Type-A线缆线连接开发板USB0端口和U盘
+- 使用USB Type-C转Type-A线缆线连接开发板USB0端口和U盘（文件系统格式：FAT）
 
 ## 运行现象
 

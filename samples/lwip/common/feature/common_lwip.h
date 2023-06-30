@@ -14,6 +14,14 @@
 #include "lwip/netif.h"
 #include "hpm_enet_phy_common.h"
 
+#if !NO_SYS
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "queue.h"
+#include "timers.h"
+#endif /* !NO_SYS */
+
 /* Exported Macros------------------------------------------------------------*/
 #define IS_UUID_INVALID(UUID)  (UUID[0] == 0 && \
                                 UUID[1] == 0 && \
@@ -22,7 +30,7 @@
 
 #ifndef LWIP_APP_TIMER_INTERVAL
 #define LWIP_APP_TIMER_INTERVAL (2 * 1000U)  /* 2 * 1000 ms */
-#endif
+#endif /* LWIP_APP_TIMER_INTERVAL  */
 
 #if defined __cplusplus
 extern "C" {
@@ -34,8 +42,12 @@ void enet_self_adaptive_port_speed(void);
 void enet_services(struct netif *netif);
 void enet_common_handler(struct netif *netif);
 
+#if !NO_SYS
+void timer_callback(TimerHandle_t xTimer);
+#endif /* !NO_SYS */
+
 #if defined __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif
+#endif /* COMMON_LWIP_H */

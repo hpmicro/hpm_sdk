@@ -19,7 +19,7 @@
 
 #include "hpm_bldc_define.h"
 #include "bldc_block_cfg.h"
-#include "hpm_bldc_block_func.h"
+#include "hpm_block.h"
 
 /*motor_speed set*/
 #define MOTOR0_SPD                  (20.0)  /*r/s   delta:0.1r/s    -40-40r/s */

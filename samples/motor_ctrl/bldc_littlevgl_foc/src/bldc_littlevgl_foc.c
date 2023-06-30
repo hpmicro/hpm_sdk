@@ -6,7 +6,7 @@
  */
 #include "board.h"
 #include <stdio.h>
-#include "math.h"
+#include <math.h>
 #include "hpm_debug_console.h"
 #include "hpm_sysctl_drv.h"
 #include "hpm_pwm_drv.h"
@@ -20,18 +20,16 @@
 
 #include "hpm_bldc_define.h"
 #include "bldc_foc_cfg.h"
-#include "hpm_bldc_foc_func.h"
+#include "hpm_foc.h"
 #include "hpm_smc.h"
 
 #include "hpm_lcdc_drv.h"
 
 #include "lvgl.h"
-#include "lv_port_disp.h"
-#include "lv_port_indev.h"
+#include "lv_adapter.h"
 #include "hpm_gpio_drv.h"
 #include "hpm_adc.h"
 
-#define MOTOR0_SMC_EN               (0) /*使能滑模控制*/
 /*motor_speed set*/
 #define MOTOR0_SPD                  (0)  /*r/s   delta:0.1r/s    1-40r/s */
 /*USER define*/
@@ -92,17 +90,11 @@ adc_type hpm_adc_w = {
     .module = BOARD_BLDC_ADC_MODULE};
 typedef struct motor0_par{
     BLDC_CONTROL_FOC_PARA       foc_para;
-#if MOTOR0_SMC_EN
-    BLDC_CONTROL_SMC_PARA       smc_para;
-#endif
     BLDC_CONTRL_PID_PARA        speedloop_para;
     BLDC_CONTRL_PID_PARA        position_para;
     void (*adc_trig_event_callback)(void);
 }MOTOR0_PARA;
 MOTOR0_PARA motor0 = {  BLDC_CONTROL_FOC_PARA_DEFAULTS,
-#if MOTOR0_SMC_EN
-                        BLDC_CONTROL_SMC_PARA_DEFAULTS,
-#endif
                         BLDC_CONTRL_PID_PARA_DEFAULTS, BLDC_CONTRL_PID_PARA_DEFAULTS,
                         NULL
                     };
@@ -111,7 +103,7 @@ MOTOR0_PARA motor0 = {  BLDC_CONTROL_FOC_PARA_DEFAULTS,
 void bldc_init_par(void)
 {
     BLDC_CONTROL_FOC_PARA *par = &motor0.foc_para;
-    par->motorpar.func_smc_const = &hpm_mcl_bldc_smc_const_cal;
+
     par->motorpar.i_lstator_h = 2.63;
     par->motorpar.i_maxspeed_rs = 35;
     par->motorpar.i_phasecur_a = 0.125;
@@ -119,7 +111,6 @@ void bldc_init_par(void)
     par->motorpar.i_poles_n = 2;
     par->motorpar.i_rstator_ohm = 1.1;
     par->motorpar.i_samplingper_s = 0.00005;
-    par->motorpar.func_smc_const(&par->motorpar);
 
     par->speedcalpar.i_speedacq = 20;
     par->speedcalpar.i_speedfilter = HPM_MOTOR_MATH_FL_MDF(0.02);
@@ -158,27 +149,7 @@ void bldc_init_par(void)
     motor0.position_para.i_max      = HPM_MOTOR_MATH_FL_MDF(25);
 
     motor0.adc_trig_event_callback = &motor0_highspeed_loop;
-#if MOTOR0_SMC_EN
-    /*使能滑模*/
-    motor0.speedloop_para.i_kp = HPM_MOTOR_MATH_FL_MDF(2);
-    motor0.speedloop_para.i_ki = HPM_MOTOR_MATH_FL_MDF(0.001);
-    par->speedcalpar.i_speedfilter = HPM_MOTOR_MATH_FL_MDF(0.01);
-
-    motor0.smc_para.i_ezero = HPM_MOTOR_MATH_FL_MDF(0.5);
-    motor0.smc_para.i_ksmc = HPM_MOTOR_MATH_FL_MDF(60);
-    motor0.smc_para.i_kfil  = HPM_MOTOR_MATH_FL_MDF(0.025);
-    motor0.smc_para.i_motorpar = &par->motorpar;
-    motor0.smc_para.ualpha = &par->ualpha;
-    motor0.smc_para.ubeta = &par->ubeta;
-    motor0.smc_para.ialpha = &par->ialpha;
-    motor0.smc_para.ibeta = &par->ibeta;
-    motor0.smc_para.theta = &par->electric_angle;
-    motor0.smc_para.func_smc = hpm_mcl_bldc_smc_pos_cal;
-    par->pos_estimator_par.func = motor0.smc_para.func_smc;
-    par->pos_estimator_par.par = &motor0.smc_para;
-#else
-    par->pos_estimator_par.func = NULL;     /*如果不使用位置估算器需要清零，否则会进入死循环*/
-#endif
+    par->pos_estimator_par.func = NULL;
 }
 
 void reset_pwm_counter(void)
@@ -321,19 +292,37 @@ int qei_init(void)
 /*1ms*/
 static volatile uint32_t gui_times = 0;
 volatile uint8_t gui_begin = 0;
+volatile int32_t lvgl_fre_get_pos;
+volatile int32_t lvgl_fre_is_update;
+
+void lvgl_pos_update(void)
+{
+    if (lvgl_fre_is_update) {
+        lvgl_fre_is_update = 0;
+        int32_t fre_get_pos = lvgl_fre_get_pos;
+        if (-fre_get_pos > 0) {
+            set_value_pos(((-fre_get_pos) % BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV) * 0.09);
+        } else {
+            set_value_pos((BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV + (-(fre_get_pos % BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV))) * 0.09);
+        }
+    }
+}
+
+void lvgl_pos_set(int32_t pos)
+{
+    lvgl_fre_get_pos = pos;
+    lvgl_fre_is_update = 1;
+}
+
 void isr_gptmr(void)
 {
     volatile uint32_t s = BOARD_BLDC_TMR_1MS->SR;
-#if !MOTOR0_SMC_EN
     int32_t pos_ctrl = 0;
     int32_t pos_err = 0;
     int32_t fre_get_pos = 0 ;
-#endif
     static int16_t start_times = 0;
     static uint8_t timer_times = 0;
-#if MOTOR0_SMC_EN
-    static float last_set_speed = 0;
-#endif
+
     BOARD_BLDC_TMR_1MS->SR = s;
     if (s & GPTMR_CH_CMP_STAT_MASK(BOARD_BLDC_TMR_CH, BOARD_BLDC_TMR_CMP)) {
 
@@ -356,7 +345,7 @@ void isr_gptmr(void)
         motor0.foc_para.currentqpipar.target =  motor0.speedloop_para.outval;
         motor0.foc_para.currentdpipar.target =  0;
         if(fre_user_mode == 0){/*pos*/
-#if !MOTOR0_SMC_EN
+
             fre_get_pos = bldc_foc_get_pos()+ fre_record_now_pos;
             if(fre_set_pos != fre_last_pos){
                 pos_err =  fre_set_pos - fre_get_pos;
@@ -369,12 +358,7 @@ void isr_gptmr(void)
                 }
                     if(gui_begin == 1){
                         /*位置显示*/
-                        if(-fre_get_pos > 0){
-                            set_value_pos(((-fre_get_pos)%BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV)*0.09);
-                        }
-                        else{
-                            set_value_pos((BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV+(-(fre_get_pos%BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV)))*0.09);
-                        }
+                        lvgl_pos_set(fre_get_pos);
                     }
             }
             else{
@@ -386,12 +370,7 @@ void isr_gptmr(void)
                     pos_ctrl = fre_set_pos;
                         if(gui_begin == 1){
                             /*位置显示*/
-                            if(-fre_get_pos > 0){
-                                set_value_pos(((-fre_get_pos)%BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV)*0.09);
-                            }
-                            else{
-                                set_value_pos((BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV+(-(fre_get_pos%BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV)))*0.09);
-                            }
+                            lvgl_pos_set(fre_get_pos);
                         }
                     }
                 }
@@ -399,53 +378,8 @@ void isr_gptmr(void)
             motor0.position_para.target = HPM_MOTOR_MATH_FL_MDF(pos_ctrl);
             motor0.position_para.func_pid(&motor0.position_para);
             fre_setspeed = HPM_MOTOR_MATH_MDF_FL(motor0.position_para.outval);
-#endif
-        }
-        else if(fre_user_mode == 1){/*speed;*/
-        fre_record_now_pos = -bldc_foc_get_pos();
-#if MOTOR0_SMC_EN
-            /*滑模控制速度有特殊要求*/
-            if(fabs(fre_setspeed) < 5){
-                fre_setspeed = 0;
-                start_times = 0;
-                last_set_speed = 0;
-                disable_all_pwm_output();
-            }
-            /*开机拖动*/
-            if((last_set_speed == 0)&&(fabs(fre_setspeed) >= 5)){
-
-                enable_all_pwm_output();
-                if(start_times < 1000){
-                    smc_start_flag = 1;
-                    motor0.foc_para.pos_estimator_par.func = NULL;
-                    motor0.foc_para.currentdpipar.target = 300;
-                    if(fre_setspeed > 0){
-                        motor0.speedloop_para.mem = 70;
-                        fre_set_angle = (fre_set_angle+10)%360;
-                    }
-                    else{
-                        motor0.speedloop_para.mem = -70;
-                        if(fre_set_angle > 10){
-                            fre_set_angle -=10 ;
-                        }
-                        else{
-                            fre_set_angle += 350;
-                        }
-                    }
-                    motor0.foc_para.currentqpipar.target = 0;
-                    motor0.foc_para.currentdpipar.mem = 0;
-                    motor0.foc_para.currentqpipar.mem = 0;
-
-                }
-                else{
-                    start_times = 0;
-                    last_set_speed = fre_setspeed;
-                    smc_start_flag = 0;
-                    motor0.foc_para.pos_estimator_par.func = motor0.smc_para.func_smc;
-                }
-                start_times++;
-            }
-#endif
+        } else if (fre_user_mode == 1) {
+            fre_record_now_pos = -bldc_foc_get_pos();
         }
         timer_times = 0;
     }
@@ -574,8 +508,8 @@ void adc_init(void)
 #if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC12
     cfg.config.adc12.res            = adc12_res_12_bits;
     cfg.config.adc12.conv_mode      = adc12_conv_mode_preemption;
-    cfg.config.adc12.adc_clk_div    = 2;
-    cfg.config.adc12.sel_sync_ahb   = true;
+    cfg.config.adc12.adc_clk_div    = adc12_clock_divider_3;
+    cfg.config.adc12.sel_sync_ahb   = false;
     cfg.config.adc12.adc_ahb_en = true;
 
     cfg.adc_base.adc12 = BOARD_BLDC_ADC_U_BASE;
@@ -589,8 +523,8 @@ void adc_init(void)
 #else
     cfg.config.adc16.res            = adc16_res_16_bits;
     cfg.config.adc16.conv_mode      = adc16_conv_mode_preemption;
-    cfg.config.adc16.adc_clk_div    = 3;
-    cfg.config.adc16.sel_sync_ahb   = true;
+    cfg.config.adc16.adc_clk_div    = adc16_clock_divider_4;
+    cfg.config.adc16.sel_sync_ahb   = false;
     cfg.config.adc16.adc_ahb_en = true;
 
     cfg.adc_base.adc16 = BOARD_BLDC_ADC_U_BASE;
@@ -621,7 +555,7 @@ void adc_init(void)
     ch_cfg.config.adc12_ch.ch            = BOARD_BLDC_ADC_CH_W;
     hpm_adc_channel_init(&ch_cfg);
 #else
-    ch_cfg.config.adc16_ch.sample_cycle  = 15;
+    ch_cfg.config.adc16_ch.sample_cycle  = 20;
 
     ch_cfg.adc_base.adc16                = BOARD_BLDC_ADC_U_BASE;
     ch_cfg.config.adc16_ch.ch            = BOARD_BLDC_ADC_CH_U;
@@ -742,9 +676,8 @@ int main(void)
     board_init_cap_touch();
     board_init_lcd();
     lv_init();
-    lv_port_disp_init();
-    lv_port_indev_init();
-    printf("littlevgl example\n");
+    lv_adapter_init();
+    printf("lvgl example\n");
     lv_ex_motor_speed();
 	intc_m_enable_irq_with_priority(BOARD_BLDC_ADC_IRQn, 1);
     hpm_adc_enable_interrupts(&hpm_adc_u, BOARD_BLDC_ADC_TRIG_FLAG);
@@ -754,6 +687,7 @@ int main(void)
     motor0.adc_trig_event_callback = &motor0_highspeed_loop;
     gui_begin = 1;
     while(1){
+        lvgl_pos_update();
         lv_task_handler();
     }
 }

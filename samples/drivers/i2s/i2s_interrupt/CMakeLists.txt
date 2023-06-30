@@ -12,5 +12,6 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(i2s_interrupt)
 
-sdk_app_src(src/audio_codec.c)
+sdk_inc(src)
+sdk_app_src(src/i2s_interrupt.c)
 generate_ses_project()

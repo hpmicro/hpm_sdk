@@ -9,7 +9,6 @@ if(NOT DEFINED CONFIG_TOUCH)
 set(CONFIG_TOUCH "gt911")
 endif()
 set(CONFIG_HPM_TOUCH 1)
-set(CONFIG_LV_INDEV 1)
 set(CONFIG_HPM_ADC 1)
 # set(HPM_MATH_DSP_SES_LIB "libdspf")
 set(STACK_SIZE 0x10000)
@@ -21,10 +20,10 @@ endif()
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(bldc_littlevgl_foc)
-
+sdk_compile_definitions(-DCONFIG_LV_TOUCH=1)
 sdk_compile_definitions(-DINIT_EXT_RAM_FOR_DATA=1)
 sdk_compile_definitions(-DCONFIG_LV_HAS_EXTRA_CONFIG="lv_app_conf.h")
-
+sdk_compile_definitions(-DHPM_LVGL_FRAMEBUFFER_NONCACHEABLE)
 sdk_inc(src)
 
 sdk_app_src(src/bldc_foc_callback.c)

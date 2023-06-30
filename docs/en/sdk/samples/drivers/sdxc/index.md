@@ -6,5 +6,6 @@
 
    sd/README
    sd_fatfs/README
+   emmc/README
 
 ```

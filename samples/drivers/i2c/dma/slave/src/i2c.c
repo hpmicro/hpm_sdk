@@ -8,7 +8,11 @@
 #include "board.h"
 #include "hpm_clock_drv.h"
 #include "hpm_i2c_drv.h"
+#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#include "hpm_dmav2_drv.h"
+#else
 #include "hpm_dma_drv.h"
+#endif
 #include "hpm_dmamux_drv.h"
 #include "hpm_l1c_drv.h"
 
@@ -37,6 +41,8 @@ ATTR_PLACE_AT_NONCACHEABLE uint8_t data_buff[TEST_TRANSFER_DATA_IN_BYTE];
 hpm_stat_t i2c_tx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, I2C_Type *i2c_ptr, uint32_t src, uint32_t size)
 {
     dma_handshake_config_t config;
+
+    dma_default_handshake_config(dma_ptr, &config);
     config.ch_index = ch_num;
     config.dst = (uint32_t)&i2c_ptr->DATA;
     config.dst_fixed = true;
@@ -51,6 +57,8 @@ hpm_stat_t i2c_tx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, I2C_Type *i2c_p
 hpm_stat_t i2c_rx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, I2C_Type *i2c_ptr, uint32_t dst, uint32_t size)
 {
     dma_handshake_config_t config;
+
+    dma_default_handshake_config(dma_ptr, &config);
     config.ch_index = ch_num;
     config.dst = dst;
     config.dst_fixed = false;

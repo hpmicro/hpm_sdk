@@ -7,7 +7,7 @@
 #ifndef CHERRYUSB_CONFIG_H
 #define CHERRYUSB_CONFIG_H
 
-#define CHERRYUSB_VERSION 0x000700
+#define CHERRYUSB_VERSION 0x000800
 
 /* ================ USB common Configuration ================ */
 
@@ -20,6 +20,12 @@
 #define CONFIG_USB_DBG_LEVEL USB_DBG_INFO
 #endif
 
+#ifdef CONFIG_USB_DEVICE_FS
+#undef CONFIG_USB_HS
+#else
+#define CONFIG_USB_HS
+#endif
+
 /* Enable print with color */
 #define CONFIG_USB_PRINTF_COLOR_ENABLE
 
@@ -27,6 +33,12 @@
 #ifndef CONFIG_USB_ALIGN_SIZE
 #define CONFIG_USB_ALIGN_SIZE 4
 #endif
+
+/* descriptor common define */
+#define USBD_VID           0x34B7    /* Hpmicro vid */
+#define USBD_PID           0xFFFF
+#define USBD_MAX_POWER     200
+#define USBD_LANGID_STRING 1033
 
 /* attribute data into no cache ram */
 #define USB_NOCACHE_RAM_SECTION __attribute__((section(".noncacheable")))
@@ -45,6 +57,27 @@
 /* Enable test mode */
 /* #define CONFIG_USBDEV_TEST_MODE */
 
+/* #define CONFIG_USBDEV_TX_THREAD */
+/* #define CONFIG_USBDEV_RX_THREAD */
+
+#ifdef CONFIG_USBDEV_TX_THREAD
+#ifndef CONFIG_USBDEV_TX_PRIO
+#define CONFIG_USBDEV_TX_PRIO 4
+#endif
+#ifndef CONFIG_USBDEV_TX_STACKSIZE
+#define CONFIG_USBDEV_TX_STACKSIZE 2048
+#endif
+#endif
+
+#ifdef CONFIG_USBDEV_RX_THREAD
+#ifndef CONFIG_USBDEV_RX_PRIO
+#define CONFIG_USBDEV_RX_PRIO 4
+#endif
+#ifndef CONFIG_USBDEV_RX_STACKSIZE
+#define CONFIG_USBDEV_RX_STACKSIZE 2048
+#endif
+#endif
+
 #ifndef CONFIG_USBDEV_MSC_BLOCK_SIZE
 #define CONFIG_USBDEV_MSC_BLOCK_SIZE 512
 #endif
@@ -59,18 +92,6 @@
 
 #ifndef CONFIG_USBDEV_MSC_VERSION_STRING
 #define CONFIG_USBDEV_MSC_VERSION_STRING "0.01"
-#endif
-
-/* #define CONFIG_USBDEV_MSC_THREAD */
-
-#ifdef CONFIG_USBDEV_MSC_THREAD
-#ifndef CONFIG_USBDEV_MSC_STACKSIZE
-#define CONFIG_USBDEV_MSC_STACKSIZE 2048
-#endif
-
-#ifndef CONFIG_USBDEV_MSC_PRIO
-#define CONFIG_USBDEV_MSC_PRIO 4
-#endif
 #endif
 
 #ifndef CONFIG_USBDEV_AUDIO_VERSION
@@ -104,9 +125,9 @@
 #define CONFIG_USBHOST_MAX_RHPORTS          1
 #define CONFIG_USBHOST_MAX_EXTHUBS          1
 #define CONFIG_USBHOST_MAX_EHPORTS          4
-#define CONFIG_USBHOST_MAX_INTERFACES       6
-#define CONFIG_USBHOST_MAX_INTF_ALTSETTINGS 1
-#define CONFIG_USBHOST_MAX_ENDPOINTS        4
+#define CONFIG_USBHOST_MAX_INTERFACES       8
+#define CONFIG_USBHOST_MAX_INTF_ALTSETTINGS 2
+#define CONFIG_USBHOST_MAX_ENDPOINTS        8
 
 #define CONFIG_USBHOST_DEV_NAMELEN 16
 

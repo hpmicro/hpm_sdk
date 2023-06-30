@@ -205,7 +205,7 @@ static inline float soft_conv_q31_to_float(HPM_MOTOR_MATH_TYPE x)
 #if (HPM_QMATH_N != HPM_QMATH_MOD_Q31)
     #error "SOFT Q_MATH only support q31"
 #endif
-    #include "math.h"
+    #include <math.h>
     #define HPM_MOTOR_MATH_FL_MDF(from_f32)                   soft_conv_float_to_q31(from_f32)
     #define HPM_MOTOR_MATH_MDF_FL(from_mdf)                   soft_conv_q31_to_float(from_mdf)
     #define HPM_MOTOR_MATH_MUL(x, y)                           ((((int64_t)x)*y)>>HPM_SOFT_Q_N)
@@ -231,7 +231,7 @@ static inline float soft_conv_q31_to_float(HPM_MOTOR_MATH_TYPE x)
     #define HPM_MOTOR_MATH_ATAN(x)                            hpm_dsp_hw_atan_fp(x)
     #define HPM_MOTOR_MATH_FABS(x)                            hpm_dsp_hw_abs_fp(x)
 #elif HPM_MOTOR_MATH_MOD == HPM_MOTOR_MATH_MOD_FP
-    #include "math.h"
+    #include <math.h>
     #define HPM_MOTOR_MATH_FL_MDF(from_f32)                   (from_f32)
     #define HPM_MOTOR_MATH_MDF_FL(from_mdf)                   (from_mdf)
     #define HPM_MOTOR_MATH_MUL(x, y)                           (x*y)

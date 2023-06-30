@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -111,6 +111,11 @@ void sdmmchost_reset(sdmmc_host_t *host)
     sdxc_reset(host->host_param.base, sdxc_reset_data_line, 0xffffu);
 }
 
+void sdmmchost_enable_emmc_support(sdmmc_host_t *host, bool enable)
+{
+    sdxc_enable_mmc_boot(host->host_param.base, enable);
+}
+
 bool sdmmchost_is_card_detected(sdmmc_host_t *host)
 {
     bool result;
@@ -128,7 +133,7 @@ void sdmmchost_set_card_bus_width(sdmmc_host_t *host, sdmmc_buswidth_t bus_width
     sdxc_set_data_bus_width(host->host_param.base, bus_width);
 }
 
-uint32_t sdmmchost_set_card_clock(sdmmc_host_t *host, uint32_t freq)
+uint32_t sdmmchost_set_card_clock(sdmmc_host_t *host, uint32_t freq, bool clock_inverse)
 {
     host->host_param.host_clk_freq = host->host_param.clock_init_func(host->host_param.base, freq);
     return host->host_param.host_clk_freq;
@@ -272,7 +277,7 @@ hpm_stat_t sdmmchost_transfer(sdmmc_host_t *host, sdmmchost_xfer_t *content)
     sdxc_clear_interrupt_status(host->host_param.base, SDXC_INT_STAT_CMD_COMPLETE_MASK);
 
     if ((content->data != NULL) || (content->command->resp_type == (sdxc_dev_resp_type_t)sdmmc_resp_r1b)) {
-        delay_cnt = 100000000UL; /* Delay more than 1 seconds based on the Bus Frequency */
+        delay_cnt = 100000000UL; /* Delay more than 1 second based on the Bus Frequency */
         uint32_t xfer_done_or_error_mask = SDXC_INT_STAT_XFER_COMPLETE_MASK | SDXC_STS_ERROR;
         bool has_done_or_error = false;
         do {
@@ -380,8 +385,8 @@ hpm_stat_t  sdmmchost_handle_card_detection(sdmmc_host_t *host)
                 sdxc_enable_sd_clock(host->host_param.base, false);
                 sdmmchost_reset(host);
             }
-            /* Clear interrupt flag */
-            gpio->IF[gpio_index].SET = HPM_BITSMASK(1, pin_index);
+            /* Clear interrupt flag: W1C */
+            gpio->IF[gpio_index].VALUE = HPM_BITSMASK(1, pin_index);
             status = status_success;
         }
     } while (false);

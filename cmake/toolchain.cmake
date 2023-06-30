@@ -1,4 +1,4 @@
-# Copyright 2021-2022 hpmicro
+# Copyright (c) 2021-2022 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 function(get_compiler_version compiler version_text compiler_version)
@@ -106,7 +106,7 @@ endif()
 execute_process(
   COMMAND ${CMAKE_C_COMPILER} --version
   RESULT_VARIABLE ret
-  OUTPUT_VARIABLE version_text 
+  OUTPUT_VARIABLE version_text
   ERROR_QUIET
   )
 if(ret)
@@ -117,8 +117,38 @@ if(ret)
 endif()
 
 get_compiler_version(${COMPILER} "${version_text}" ver)
-
 set(COMPILER_VERSION ${ver})
+
+execute_process(
+  COMMAND ${CMAKE_C_COMPILER} --verbose
+  RESULT_VARIABLE ret
+  ERROR_VARIABLE verbose_text
+  )
+STRING(REGEX REPLACE ".*--with-isa-spec=([A-Za-z0-9]+).*" "\\1" RESULT ${verbose_text})
+if(NOT "${RESULT}" STREQUAL "${verbose_text}")
+    LIST(GET RESULT 0 specs)
+    if(NOT ${specs} LESS 20191213)
+        if(NOT "${RV_ARCH}" MATCHES "_")
+            set(need_csr ON)
+            set(need_fencei ON)
+            STRING(FIND ${RV_ARCH} "g" exist)
+            if("${RV_ARCH}" MATCHES "g")
+                set(need_csr OFF)
+                set(need_fencei OFF)
+            elseif("${RV_ARCH}" MATCHES "[fd]")
+                set(need_csr OFF)
+            endif()
+            # append isa ext
+            if(need_csr AND NOT HPM_SDK_GCC_ISA_SPEC_NO_CSR)
+                set(RV_ARCH "${RV_ARCH}_zicsr")
+            endif()
+
+            if(need_fencei AND NOT HPM_SDK_GCC_ISA_SPEC_NO_FENCEI)
+                set(RV_ARCH "${RV_ARCH}_zifencei")
+            endif()
+        endif()
+    endif()
+endif()
 
 set(CXX ${C++})
 find_program(CMAKE_CXX_COMPILER ${CROSS_COMPILE}${CXX}   PATHS ${TOOLCHAIN_HOME} NO_DEFAULT_PATH)

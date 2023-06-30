@@ -26,7 +26,7 @@ elseif(("${CONFIG_HPM_MATH_NN_NORMAL}") AND (NOT "${CONFIG_HPM_MATH_NN_NORMAL}" 
 endif()
 
 
-sdk_src_ifdef(CONFIG_HPM_MATH_DSP sw_dsp/hpm_math_sw.c)
+sdk_src(sw_dsp/hpm_math_sw.c)
 if((NOT "${TOOLCHAIN_VARIANT}" STREQUAL "nds-gcc") AND (NOT "${SES_TOOLCHAIN_VARIANT}" STREQUAL "Andes"))
 message(FATAL_ERROR "hpm_math middleware must use nds toolchain")
 endif()

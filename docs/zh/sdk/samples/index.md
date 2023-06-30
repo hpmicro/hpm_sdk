@@ -16,7 +16,7 @@
    hello_world/README
    hpm_math/index
    jpeg/index
-   littlevgl/index
+   lvgl/index
    lwip/index
    mbedtls/README
    memstress/index
@@ -32,4 +32,5 @@
    tinyuf2/README
    tinyusb/index
    touch_panel/README
+   microros/index
 :::

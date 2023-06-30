@@ -163,7 +163,7 @@ static inline uint32_t usb_get_status_flags(USB_Type *ptr)
 
 static inline void usb_clear_status_flags(USB_Type *ptr, uint32_t mask)
 {
-    ptr->USBSTS |= mask;
+    ptr->USBSTS = mask;
 }
 
 /**
@@ -214,6 +214,13 @@ static inline uint8_t usb_get_port_speed(USB_Type *ptr)
  * Device API
  *---------------------------------------------------------------------
  */
+
+/**
+ * @brief Initialize USB phy
+ *
+ * @param[in] ptr A USB peripheral base address
+ */
+void usb_phy_init(USB_Type *ptr);
 
 /**
  * @brief USB device bus reset
@@ -325,7 +332,7 @@ static inline uint32_t usb_dcd_get_edpt_setup_status(USB_Type *ptr)
  */
 static inline void usb_dcd_clear_edpt_setup_status(USB_Type *ptr, uint32_t mask)
 {
-    ptr->ENDPTSETUPSTAT |= mask;
+    ptr->ENDPTSETUPSTAT = mask;
 }
 
 /**
@@ -380,7 +387,7 @@ static inline uint32_t usb_dcd_get_edpt_complete_status(USB_Type *ptr)
  */
 static inline void usb_dcd_clear_edpt_complete_status(USB_Type *ptr, uint32_t mask)
 {
-    ptr->ENDPTCOMPLETE |= mask;
+    ptr->ENDPTCOMPLETE = mask;
 }
 
 /*---------------------------------------------------------------------

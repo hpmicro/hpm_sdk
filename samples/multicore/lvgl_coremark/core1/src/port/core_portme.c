@@ -24,7 +24,8 @@
 #include "hpm_debug_console.h"
 #include "board.h"
 
-#define COREMARK_CTX (coremark_context_t *)(0xBF000UL)
+ATTR_SHARE_MEM coremark_context_t g_coremark_ctx[2];
+#define COREMARK_CTX ((coremark_context_t *)(&g_coremark_ctx[1]))
 
 #if USE_SNPRINTF
 #include <stdio.h>
@@ -49,7 +50,7 @@ void ee_printf(char *format, ...)
 #endif
 
 #define ITERATIONS (0)
-#define CLOCKS_PER_SEC (clock_get_frequency(clock_mchtmr0))
+#define CLOCKS_PER_SEC (clock_get_frequency(clock_mchtmr1))
 
 #if VALIDATION_RUN
 volatile ee_s32 seed1_volatile = 0x3415;
@@ -167,6 +168,8 @@ const ee_u32 default_num_contexts = 1;
 void portable_init(core_portable *p, int *argc, char *argv[])
 {
     coremark_context_t *ctx = COREMARK_CTX;
+
+    board_init_pmp();
     memset(ctx, 0, sizeof(*ctx));
     ctx->current_idx = 0;
     ctx->s_buffer[0] = '\0';

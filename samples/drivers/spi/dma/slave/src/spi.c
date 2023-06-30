@@ -8,7 +8,11 @@
 #include "board.h"
 #include "hpm_debug_console.h"
 #include "hpm_spi_drv.h"
+#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#include "hpm_dmav2_drv.h"
+#else
 #include "hpm_dma_drv.h"
+#endif
 #include "hpm_dmamux_drv.h"
 #include "hpm_l1c_drv.h"
 
@@ -90,6 +94,8 @@ void spi_slave_check_transfer_data(SPI_Type *ptr)
 hpm_stat_t spi_tx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_ptr, uint32_t src, uint8_t data_width, uint32_t size)
 {
     dma_handshake_config_t config;
+
+    dma_default_handshake_config(dma_ptr, &config);
     config.ch_index = ch_num;
     config.dst = (uint32_t)&spi_ptr->DATA;
     config.dst_fixed = true;
@@ -104,6 +110,8 @@ hpm_stat_t spi_tx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_p
 hpm_stat_t spi_rx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_ptr, uint32_t dst, uint8_t data_width, uint32_t size)
 {
     dma_handshake_config_t config;
+
+    dma_default_handshake_config(dma_ptr, &config);
     config.ch_index = ch_num;
     config.dst = dst;
     config.dst_fixed = false;
@@ -129,7 +137,7 @@ int main(void)
     board_init_spi_pins(TEST_SPI);
     printf("SPI Slave DMA Transfer Example\n");
 
-    /* set SPI format config for master */
+    /* set SPI format config for slave */
     spi_slave_get_default_format_config(&format_config);
     format_config.common_config.data_len_in_bits = TEST_SPI_DATA_LEN_IN_BIT;
     format_config.common_config.data_merge = false;
@@ -140,7 +148,7 @@ int main(void)
     format_config.common_config.cpha = spi_sclk_sampling_even_clk_edges;
     spi_format_init(TEST_SPI, &format_config);
 
-    /* set SPI control config for master */
+    /* set SPI control config for slave */
     spi_slave_get_default_control_config(&control_config);
     control_config.slave_config.slave_data_only = false;
     control_config.common_config.tx_dma_enable = true;

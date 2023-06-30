@@ -16,14 +16,15 @@ This  example shows TCP/UDP throughput performance test through iperf (https://i
 
 ## Project Configuration
 
-- In the file `CMAkelists.txt` ,  set a matched Ethernet PHY type according to the development board schematic，
+- In the file `CMakeLists.txt` ,  set a matched Ethernet PHY type according to the development board schematic，
 
-  e.g. "set(COFNIG_ENET_PHY_DP83848 1)"
+  e.g. "set(CONFIG_ENET_PHY_DP83848 1)"
 
 ## Run Example
 
 - Compiling and Downloading
 - Running log is shown in the serial terminal as follows:
+
   ```console
   This is an ethernet demo: Iperf
   LwIP Version: 2.1.2
@@ -41,7 +42,7 @@ This  example shows TCP/UDP throughput performance test through iperf (https://i
   3: UDP Server Mode
   4: UDP Client Mode
   Please enter one of modes above (e.g. 1 or 2 ...):
-   ```
+  ```
 - Select a test mode and Run iperf
 
   - TCP Server mode

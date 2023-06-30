@@ -8,7 +8,7 @@ MCU send back the received data to codec component, then codec component decodes
 
 ## Project Configuration
 
-- In the file `CMakelists.txt`, set a matched audio codec type according to the development board schematic，e.g. "set(CONFIG_CODEC "sgtl5000")"
+- In the file `CMakeLists.txt`, set a matched audio codec type according to the development board schematic，e.g. "set(CONFIG_CODEC "sgtl5000")"
 
 ## Board Setting
 

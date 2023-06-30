@@ -4,73 +4,19 @@
     <Register name="DI_GPIOA_VALUE" start="+0x0" size="0x4">
       <BitField name="INPUT" start="0" size="32"/>
     </Register>
-    <Register name="DI_GPIOA_SET" start="+0x4" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOA_CLEAR" start="+0x8" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOA_TOGGLE" start="+0xc" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
     <Register name="DI_GPIOB_VALUE" start="+0x10" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOB_SET" start="+0x14" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOB_CLEAR" start="+0x18" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOB_TOGGLE" start="+0x1c" size="0x4">
       <BitField name="INPUT" start="0" size="32"/>
     </Register>
     <Register name="DI_GPIOC_VALUE" start="+0x20" size="0x4">
       <BitField name="INPUT" start="0" size="32"/>
     </Register>
-    <Register name="DI_GPIOC_SET" start="+0x24" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOC_CLEAR" start="+0x28" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOC_TOGGLE" start="+0x2c" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
     <Register name="DI_GPIOX_VALUE" start="+0xd0" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOX_SET" start="+0xd4" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOX_CLEAR" start="+0xd8" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOX_TOGGLE" start="+0xdc" size="0x4">
       <BitField name="INPUT" start="0" size="32"/>
     </Register>
     <Register name="DI_GPIOY_VALUE" start="+0xe0" size="0x4">
       <BitField name="INPUT" start="0" size="32"/>
     </Register>
-    <Register name="DI_GPIOY_SET" start="+0xe4" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOY_CLEAR" start="+0xe8" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOY_TOGGLE" start="+0xec" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
     <Register name="DI_GPIOZ_VALUE" start="+0xf0" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOZ_SET" start="+0xf4" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOZ_CLEAR" start="+0xf8" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOZ_TOGGLE" start="+0xfc" size="0x4">
       <BitField name="INPUT" start="0" size="32"/>
     </Register>
     <Register name="DO_GPIOA_VALUE" start="+0x100" size="0x4">
@@ -220,73 +166,19 @@
     <Register name="IF_GPIOA_VALUE" start="+0x300" size="0x4">
       <BitField name="IRQ_FLAG" start="0" size="32"/>
     </Register>
-    <Register name="IF_GPIOA_SET" start="+0x304" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOA_CLEAR" start="+0x308" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOA_TOGGLE" start="+0x30c" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
     <Register name="IF_GPIOB_VALUE" start="+0x310" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOB_SET" start="+0x314" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOB_CLEAR" start="+0x318" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOB_TOGGLE" start="+0x31c" size="0x4">
       <BitField name="IRQ_FLAG" start="0" size="32"/>
     </Register>
     <Register name="IF_GPIOC_VALUE" start="+0x320" size="0x4">
       <BitField name="IRQ_FLAG" start="0" size="32"/>
     </Register>
-    <Register name="IF_GPIOC_SET" start="+0x324" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOC_CLEAR" start="+0x328" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOC_TOGGLE" start="+0x32c" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
     <Register name="IF_GPIOX_VALUE" start="+0x3d0" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOX_SET" start="+0x3d4" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOX_CLEAR" start="+0x3d8" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOX_TOGGLE" start="+0x3dc" size="0x4">
       <BitField name="IRQ_FLAG" start="0" size="32"/>
     </Register>
     <Register name="IF_GPIOY_VALUE" start="+0x3e0" size="0x4">
       <BitField name="IRQ_FLAG" start="0" size="32"/>
     </Register>
-    <Register name="IF_GPIOY_SET" start="+0x3e4" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOY_CLEAR" start="+0x3e8" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOY_TOGGLE" start="+0x3ec" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
     <Register name="IF_GPIOZ_VALUE" start="+0x3f0" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOZ_SET" start="+0x3f4" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOZ_CLEAR" start="+0x3f8" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOZ_TOGGLE" start="+0x3fc" size="0x4">
       <BitField name="IRQ_FLAG" start="0" size="32"/>
     </Register>
     <Register name="IE_GPIOA_VALUE" start="+0x400" size="0x4">
@@ -582,73 +474,19 @@
     <Register name="DI_GPIOA_VALUE" start="+0x0" size="0x4">
       <BitField name="INPUT" start="0" size="32"/>
     </Register>
-    <Register name="DI_GPIOA_SET" start="+0x4" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOA_CLEAR" start="+0x8" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOA_TOGGLE" start="+0xc" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
     <Register name="DI_GPIOB_VALUE" start="+0x10" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOB_SET" start="+0x14" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOB_CLEAR" start="+0x18" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOB_TOGGLE" start="+0x1c" size="0x4">
       <BitField name="INPUT" start="0" size="32"/>
     </Register>
     <Register name="DI_GPIOC_VALUE" start="+0x20" size="0x4">
       <BitField name="INPUT" start="0" size="32"/>
     </Register>
-    <Register name="DI_GPIOC_SET" start="+0x24" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOC_CLEAR" start="+0x28" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOC_TOGGLE" start="+0x2c" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
     <Register name="DI_GPIOX_VALUE" start="+0xd0" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOX_SET" start="+0xd4" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOX_CLEAR" start="+0xd8" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOX_TOGGLE" start="+0xdc" size="0x4">
       <BitField name="INPUT" start="0" size="32"/>
     </Register>
     <Register name="DI_GPIOY_VALUE" start="+0xe0" size="0x4">
       <BitField name="INPUT" start="0" size="32"/>
     </Register>
-    <Register name="DI_GPIOY_SET" start="+0xe4" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOY_CLEAR" start="+0xe8" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOY_TOGGLE" start="+0xec" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
     <Register name="DI_GPIOZ_VALUE" start="+0xf0" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOZ_SET" start="+0xf4" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOZ_CLEAR" start="+0xf8" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOZ_TOGGLE" start="+0xfc" size="0x4">
       <BitField name="INPUT" start="0" size="32"/>
     </Register>
     <Register name="DO_GPIOA_VALUE" start="+0x100" size="0x4">
@@ -798,73 +636,19 @@
     <Register name="IF_GPIOA_VALUE" start="+0x300" size="0x4">
       <BitField name="IRQ_FLAG" start="0" size="32"/>
     </Register>
-    <Register name="IF_GPIOA_SET" start="+0x304" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOA_CLEAR" start="+0x308" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOA_TOGGLE" start="+0x30c" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
     <Register name="IF_GPIOB_VALUE" start="+0x310" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOB_SET" start="+0x314" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOB_CLEAR" start="+0x318" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOB_TOGGLE" start="+0x31c" size="0x4">
       <BitField name="IRQ_FLAG" start="0" size="32"/>
     </Register>
     <Register name="IF_GPIOC_VALUE" start="+0x320" size="0x4">
       <BitField name="IRQ_FLAG" start="0" size="32"/>
     </Register>
-    <Register name="IF_GPIOC_SET" start="+0x324" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOC_CLEAR" start="+0x328" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOC_TOGGLE" start="+0x32c" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
     <Register name="IF_GPIOX_VALUE" start="+0x3d0" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOX_SET" start="+0x3d4" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOX_CLEAR" start="+0x3d8" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOX_TOGGLE" start="+0x3dc" size="0x4">
       <BitField name="IRQ_FLAG" start="0" size="32"/>
     </Register>
     <Register name="IF_GPIOY_VALUE" start="+0x3e0" size="0x4">
       <BitField name="IRQ_FLAG" start="0" size="32"/>
     </Register>
-    <Register name="IF_GPIOY_SET" start="+0x3e4" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOY_CLEAR" start="+0x3e8" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOY_TOGGLE" start="+0x3ec" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
     <Register name="IF_GPIOZ_VALUE" start="+0x3f0" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOZ_SET" start="+0x3f4" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOZ_CLEAR" start="+0x3f8" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOZ_TOGGLE" start="+0x3fc" size="0x4">
       <BitField name="IRQ_FLAG" start="0" size="32"/>
     </Register>
     <Register name="IE_GPIOA_VALUE" start="+0x400" size="0x4">
@@ -1160,73 +944,19 @@
     <Register name="DI_GPIOA_VALUE" start="+0x0" size="0x4">
       <BitField name="INPUT" start="0" size="32"/>
     </Register>
-    <Register name="DI_GPIOA_SET" start="+0x4" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOA_CLEAR" start="+0x8" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOA_TOGGLE" start="+0xc" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
     <Register name="DI_GPIOB_VALUE" start="+0x10" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOB_SET" start="+0x14" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOB_CLEAR" start="+0x18" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOB_TOGGLE" start="+0x1c" size="0x4">
       <BitField name="INPUT" start="0" size="32"/>
     </Register>
     <Register name="DI_GPIOC_VALUE" start="+0x20" size="0x4">
       <BitField name="INPUT" start="0" size="32"/>
     </Register>
-    <Register name="DI_GPIOC_SET" start="+0x24" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOC_CLEAR" start="+0x28" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOC_TOGGLE" start="+0x2c" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
     <Register name="DI_GPIOX_VALUE" start="+0xd0" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOX_SET" start="+0xd4" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOX_CLEAR" start="+0xd8" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOX_TOGGLE" start="+0xdc" size="0x4">
       <BitField name="INPUT" start="0" size="32"/>
     </Register>
     <Register name="DI_GPIOY_VALUE" start="+0xe0" size="0x4">
       <BitField name="INPUT" start="0" size="32"/>
     </Register>
-    <Register name="DI_GPIOY_SET" start="+0xe4" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOY_CLEAR" start="+0xe8" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOY_TOGGLE" start="+0xec" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
     <Register name="DI_GPIOZ_VALUE" start="+0xf0" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOZ_SET" start="+0xf4" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOZ_CLEAR" start="+0xf8" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOZ_TOGGLE" start="+0xfc" size="0x4">
       <BitField name="INPUT" start="0" size="32"/>
     </Register>
     <Register name="DO_GPIOA_VALUE" start="+0x100" size="0x4">
@@ -1376,73 +1106,19 @@
     <Register name="IF_GPIOA_VALUE" start="+0x300" size="0x4">
       <BitField name="IRQ_FLAG" start="0" size="32"/>
     </Register>
-    <Register name="IF_GPIOA_SET" start="+0x304" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOA_CLEAR" start="+0x308" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOA_TOGGLE" start="+0x30c" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
     <Register name="IF_GPIOB_VALUE" start="+0x310" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOB_SET" start="+0x314" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOB_CLEAR" start="+0x318" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOB_TOGGLE" start="+0x31c" size="0x4">
       <BitField name="IRQ_FLAG" start="0" size="32"/>
     </Register>
     <Register name="IF_GPIOC_VALUE" start="+0x320" size="0x4">
       <BitField name="IRQ_FLAG" start="0" size="32"/>
     </Register>
-    <Register name="IF_GPIOC_SET" start="+0x324" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOC_CLEAR" start="+0x328" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOC_TOGGLE" start="+0x32c" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
     <Register name="IF_GPIOX_VALUE" start="+0x3d0" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOX_SET" start="+0x3d4" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOX_CLEAR" start="+0x3d8" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOX_TOGGLE" start="+0x3dc" size="0x4">
       <BitField name="IRQ_FLAG" start="0" size="32"/>
     </Register>
     <Register name="IF_GPIOY_VALUE" start="+0x3e0" size="0x4">
       <BitField name="IRQ_FLAG" start="0" size="32"/>
     </Register>
-    <Register name="IF_GPIOY_SET" start="+0x3e4" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOY_CLEAR" start="+0x3e8" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOY_TOGGLE" start="+0x3ec" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
     <Register name="IF_GPIOZ_VALUE" start="+0x3f0" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOZ_SET" start="+0x3f4" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOZ_CLEAR" start="+0x3f8" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOZ_TOGGLE" start="+0x3fc" size="0x4">
       <BitField name="IRQ_FLAG" start="0" size="32"/>
     </Register>
     <Register name="IE_GPIOA_VALUE" start="+0x400" size="0x4">
@@ -1738,73 +1414,19 @@
     <Register name="DI_GPIOA_VALUE" start="+0x0" size="0x4">
       <BitField name="INPUT" start="0" size="32"/>
     </Register>
-    <Register name="DI_GPIOA_SET" start="+0x4" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOA_CLEAR" start="+0x8" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOA_TOGGLE" start="+0xc" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
     <Register name="DI_GPIOB_VALUE" start="+0x10" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOB_SET" start="+0x14" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOB_CLEAR" start="+0x18" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOB_TOGGLE" start="+0x1c" size="0x4">
       <BitField name="INPUT" start="0" size="32"/>
     </Register>
     <Register name="DI_GPIOC_VALUE" start="+0x20" size="0x4">
       <BitField name="INPUT" start="0" size="32"/>
     </Register>
-    <Register name="DI_GPIOC_SET" start="+0x24" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOC_CLEAR" start="+0x28" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOC_TOGGLE" start="+0x2c" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
     <Register name="DI_GPIOX_VALUE" start="+0xd0" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOX_SET" start="+0xd4" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOX_CLEAR" start="+0xd8" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOX_TOGGLE" start="+0xdc" size="0x4">
       <BitField name="INPUT" start="0" size="32"/>
     </Register>
     <Register name="DI_GPIOY_VALUE" start="+0xe0" size="0x4">
       <BitField name="INPUT" start="0" size="32"/>
     </Register>
-    <Register name="DI_GPIOY_SET" start="+0xe4" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOY_CLEAR" start="+0xe8" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOY_TOGGLE" start="+0xec" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
     <Register name="DI_GPIOZ_VALUE" start="+0xf0" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOZ_SET" start="+0xf4" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOZ_CLEAR" start="+0xf8" size="0x4">
-      <BitField name="INPUT" start="0" size="32"/>
-    </Register>
-    <Register name="DI_GPIOZ_TOGGLE" start="+0xfc" size="0x4">
       <BitField name="INPUT" start="0" size="32"/>
     </Register>
     <Register name="DO_GPIOA_VALUE" start="+0x100" size="0x4">
@@ -1954,73 +1576,19 @@
     <Register name="IF_GPIOA_VALUE" start="+0x300" size="0x4">
       <BitField name="IRQ_FLAG" start="0" size="32"/>
     </Register>
-    <Register name="IF_GPIOA_SET" start="+0x304" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOA_CLEAR" start="+0x308" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOA_TOGGLE" start="+0x30c" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
     <Register name="IF_GPIOB_VALUE" start="+0x310" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOB_SET" start="+0x314" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOB_CLEAR" start="+0x318" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOB_TOGGLE" start="+0x31c" size="0x4">
       <BitField name="IRQ_FLAG" start="0" size="32"/>
     </Register>
     <Register name="IF_GPIOC_VALUE" start="+0x320" size="0x4">
       <BitField name="IRQ_FLAG" start="0" size="32"/>
     </Register>
-    <Register name="IF_GPIOC_SET" start="+0x324" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOC_CLEAR" start="+0x328" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOC_TOGGLE" start="+0x32c" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
     <Register name="IF_GPIOX_VALUE" start="+0x3d0" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOX_SET" start="+0x3d4" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOX_CLEAR" start="+0x3d8" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOX_TOGGLE" start="+0x3dc" size="0x4">
       <BitField name="IRQ_FLAG" start="0" size="32"/>
     </Register>
     <Register name="IF_GPIOY_VALUE" start="+0x3e0" size="0x4">
       <BitField name="IRQ_FLAG" start="0" size="32"/>
     </Register>
-    <Register name="IF_GPIOY_SET" start="+0x3e4" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOY_CLEAR" start="+0x3e8" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOY_TOGGLE" start="+0x3ec" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
     <Register name="IF_GPIOZ_VALUE" start="+0x3f0" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOZ_SET" start="+0x3f4" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOZ_CLEAR" start="+0x3f8" size="0x4">
-      <BitField name="IRQ_FLAG" start="0" size="32"/>
-    </Register>
-    <Register name="IF_GPIOZ_TOGGLE" start="+0x3fc" size="0x4">
       <BitField name="IRQ_FLAG" start="0" size="32"/>
     </Register>
     <Register name="IE_GPIOA_VALUE" start="+0x400" size="0x4">
@@ -3522,6 +3090,10 @@
     <Register name="TRG_DMA_ADDR" start="+0x30" size="0x4">
       <BitField name="TRG_DMA_ADDR" start="2" size="30"/>
     </Register>
+    <Register name="TRG_SW_STA" start="+0x34" size="0x4">
+      <BitField name="TRG_SW_STA" start="4" size="1"/>
+      <BitField name="TRIG_SW_INDEX" start="0" size="4"/>
+    </Register>
     <Register name="BUS_RESULT_CHN0" start="+0x400" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
       <BitField name="CHAN_RESULT" start="0" size="16"/>
@@ -4221,6 +3793,10 @@
     <Register name="TRG_DMA_ADDR" start="+0x30" size="0x4">
       <BitField name="TRG_DMA_ADDR" start="2" size="30"/>
     </Register>
+    <Register name="TRG_SW_STA" start="+0x34" size="0x4">
+      <BitField name="TRG_SW_STA" start="4" size="1"/>
+      <BitField name="TRIG_SW_INDEX" start="0" size="4"/>
+    </Register>
     <Register name="BUS_RESULT_CHN0" start="+0x400" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
       <BitField name="CHAN_RESULT" start="0" size="16"/>
@@ -4919,6 +4495,10 @@
     </Register>
     <Register name="TRG_DMA_ADDR" start="+0x30" size="0x4">
       <BitField name="TRG_DMA_ADDR" start="2" size="30"/>
+    </Register>
+    <Register name="TRG_SW_STA" start="+0x34" size="0x4">
+      <BitField name="TRG_SW_STA" start="4" size="1"/>
+      <BitField name="TRIG_SW_INDEX" start="0" size="4"/>
     </Register>
     <Register name="BUS_RESULT_CHN0" start="+0x400" size="0x4">
       <BitField name="VALID" start="16" size="1"/>
@@ -5712,27 +5292,6 @@
       <BitField name="CPOL" start="1" size="1"/>
       <BitField name="CPHA" start="0" size="1"/>
     </Register>
-    <Register name="DIRECTIO" start="+0x14" size="0x4">
-      <BitField name="DIRECTIOEN" start="24" size="1"/>
-      <BitField name="HOLD_OE" start="21" size="1"/>
-      <BitField name="WP_OE" start="20" size="1"/>
-      <BitField name="MISO_OE" start="19" size="1"/>
-      <BitField name="MOSI_OE" start="18" size="1"/>
-      <BitField name="SCLK_OE" start="17" size="1"/>
-      <BitField name="CS_OE" start="16" size="1"/>
-      <BitField name="HOLD_O" start="13" size="1"/>
-      <BitField name="WP_O" start="12" size="1"/>
-      <BitField name="MISO_O" start="11" size="1"/>
-      <BitField name="MOSI_O" start="10" size="1"/>
-      <BitField name="SCLK_O" start="9" size="1"/>
-      <BitField name="CS_O" start="8" size="1"/>
-      <BitField name="HOLD_I" start="5" size="1"/>
-      <BitField name="WP_I" start="4" size="1"/>
-      <BitField name="MISO_I" start="3" size="1"/>
-      <BitField name="MOSI_I" start="2" size="1"/>
-      <BitField name="SCLK_I" start="1" size="1"/>
-      <BitField name="CS_I" start="0" size="1"/>
-    </Register>
     <Register name="TRANSCTRL" start="+0x20" size="0x4">
       <BitField name="SLVDATAONLY" start="31" size="1"/>
       <BitField name="CMDEN" start="30" size="1"/>
@@ -5808,7 +5367,6 @@
     </Register>
     <Register name="CONFIG" start="+0x7c" size="0x4">
       <BitField name="SLAVE" start="14" size="1"/>
-      <BitField name="DIRECTIO" start="11" size="1"/>
       <BitField name="QUADSPI" start="9" size="1"/>
       <BitField name="DUALSPI" start="8" size="1"/>
       <BitField name="TXFIFOSIZE" start="4" size="4"/>
@@ -5827,27 +5385,6 @@
       <BitField name="CPOL" start="1" size="1"/>
       <BitField name="CPHA" start="0" size="1"/>
     </Register>
-    <Register name="DIRECTIO" start="+0x14" size="0x4">
-      <BitField name="DIRECTIOEN" start="24" size="1"/>
-      <BitField name="HOLD_OE" start="21" size="1"/>
-      <BitField name="WP_OE" start="20" size="1"/>
-      <BitField name="MISO_OE" start="19" size="1"/>
-      <BitField name="MOSI_OE" start="18" size="1"/>
-      <BitField name="SCLK_OE" start="17" size="1"/>
-      <BitField name="CS_OE" start="16" size="1"/>
-      <BitField name="HOLD_O" start="13" size="1"/>
-      <BitField name="WP_O" start="12" size="1"/>
-      <BitField name="MISO_O" start="11" size="1"/>
-      <BitField name="MOSI_O" start="10" size="1"/>
-      <BitField name="SCLK_O" start="9" size="1"/>
-      <BitField name="CS_O" start="8" size="1"/>
-      <BitField name="HOLD_I" start="5" size="1"/>
-      <BitField name="WP_I" start="4" size="1"/>
-      <BitField name="MISO_I" start="3" size="1"/>
-      <BitField name="MOSI_I" start="2" size="1"/>
-      <BitField name="SCLK_I" start="1" size="1"/>
-      <BitField name="CS_I" start="0" size="1"/>
-    </Register>
     <Register name="TRANSCTRL" start="+0x20" size="0x4">
       <BitField name="SLVDATAONLY" start="31" size="1"/>
       <BitField name="CMDEN" start="30" size="1"/>
@@ -5923,7 +5460,6 @@
     </Register>
     <Register name="CONFIG" start="+0x7c" size="0x4">
       <BitField name="SLAVE" start="14" size="1"/>
-      <BitField name="DIRECTIO" start="11" size="1"/>
       <BitField name="QUADSPI" start="9" size="1"/>
       <BitField name="DUALSPI" start="8" size="1"/>
       <BitField name="TXFIFOSIZE" start="4" size="4"/>
@@ -5942,27 +5478,6 @@
       <BitField name="CPOL" start="1" size="1"/>
       <BitField name="CPHA" start="0" size="1"/>
     </Register>
-    <Register name="DIRECTIO" start="+0x14" size="0x4">
-      <BitField name="DIRECTIOEN" start="24" size="1"/>
-      <BitField name="HOLD_OE" start="21" size="1"/>
-      <BitField name="WP_OE" start="20" size="1"/>
-      <BitField name="MISO_OE" start="19" size="1"/>
-      <BitField name="MOSI_OE" start="18" size="1"/>
-      <BitField name="SCLK_OE" start="17" size="1"/>
-      <BitField name="CS_OE" start="16" size="1"/>
-      <BitField name="HOLD_O" start="13" size="1"/>
-      <BitField name="WP_O" start="12" size="1"/>
-      <BitField name="MISO_O" start="11" size="1"/>
-      <BitField name="MOSI_O" start="10" size="1"/>
-      <BitField name="SCLK_O" start="9" size="1"/>
-      <BitField name="CS_O" start="8" size="1"/>
-      <BitField name="HOLD_I" start="5" size="1"/>
-      <BitField name="WP_I" start="4" size="1"/>
-      <BitField name="MISO_I" start="3" size="1"/>
-      <BitField name="MOSI_I" start="2" size="1"/>
-      <BitField name="SCLK_I" start="1" size="1"/>
-      <BitField name="CS_I" start="0" size="1"/>
-    </Register>
     <Register name="TRANSCTRL" start="+0x20" size="0x4">
       <BitField name="SLVDATAONLY" start="31" size="1"/>
       <BitField name="CMDEN" start="30" size="1"/>
@@ -6038,7 +5553,6 @@
     </Register>
     <Register name="CONFIG" start="+0x7c" size="0x4">
       <BitField name="SLAVE" start="14" size="1"/>
-      <BitField name="DIRECTIO" start="11" size="1"/>
       <BitField name="QUADSPI" start="9" size="1"/>
       <BitField name="DUALSPI" start="8" size="1"/>
       <BitField name="TXFIFOSIZE" start="4" size="4"/>
@@ -6057,27 +5571,6 @@
       <BitField name="CPOL" start="1" size="1"/>
       <BitField name="CPHA" start="0" size="1"/>
     </Register>
-    <Register name="DIRECTIO" start="+0x14" size="0x4">
-      <BitField name="DIRECTIOEN" start="24" size="1"/>
-      <BitField name="HOLD_OE" start="21" size="1"/>
-      <BitField name="WP_OE" start="20" size="1"/>
-      <BitField name="MISO_OE" start="19" size="1"/>
-      <BitField name="MOSI_OE" start="18" size="1"/>
-      <BitField name="SCLK_OE" start="17" size="1"/>
-      <BitField name="CS_OE" start="16" size="1"/>
-      <BitField name="HOLD_O" start="13" size="1"/>
-      <BitField name="WP_O" start="12" size="1"/>
-      <BitField name="MISO_O" start="11" size="1"/>
-      <BitField name="MOSI_O" start="10" size="1"/>
-      <BitField name="SCLK_O" start="9" size="1"/>
-      <BitField name="CS_O" start="8" size="1"/>
-      <BitField name="HOLD_I" start="5" size="1"/>
-      <BitField name="WP_I" start="4" size="1"/>
-      <BitField name="MISO_I" start="3" size="1"/>
-      <BitField name="MOSI_I" start="2" size="1"/>
-      <BitField name="SCLK_I" start="1" size="1"/>
-      <BitField name="CS_I" start="0" size="1"/>
-    </Register>
     <Register name="TRANSCTRL" start="+0x20" size="0x4">
       <BitField name="SLVDATAONLY" start="31" size="1"/>
       <BitField name="CMDEN" start="30" size="1"/>
@@ -6153,7 +5646,6 @@
     </Register>
     <Register name="CONFIG" start="+0x7c" size="0x4">
       <BitField name="SLAVE" start="14" size="1"/>
-      <BitField name="DIRECTIO" start="11" size="1"/>
       <BitField name="QUADSPI" start="9" size="1"/>
       <BitField name="DUALSPI" start="8" size="1"/>
       <BitField name="TXFIFOSIZE" start="4" size="4"/>
@@ -8692,7 +8184,6 @@
   <RegisterGroup start="0xf0110000" name="DAO">
     <Register name="CTRL" start="+0x0" size="0x4">
       <BitField name="HPF_EN" start="17" size="1"/>
-      <BitField name="SAT_ERR_IE" start="16" size="1"/>
       <BitField name="MONO" start="7" size="1"/>
       <BitField name="RIGHT_EN" start="6" size="1"/>
       <BitField name="LEFT_EN" start="5" size="1"/>

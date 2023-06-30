@@ -26,7 +26,7 @@
 #define ADC12_IS_CHANNEL_INVALID(CH) (CH > ADC12_SOC_MAX_CH_NUM)
 
 /** @brief Define ADC12 validity check for the trigger number */
-#define ADC12_IS_TRIG_CH_INVLAID(CH) (CH > ADC12_SOC_MAX_TRIG_CH_NUM)
+#define ADC12_IS_TRIG_CH_INVLAID(CH) (CH > ADC_SOC_MAX_TRIG_CH_NUM)
 
 /** @brief Define ADC12 validity check for the trigger length */
 #define ADC12_IS_TRIG_LEN_INVLAID(TRIG_LEN) (TRIG_LEN > ADC_SOC_MAX_TRIG_CH_LEN)
@@ -96,12 +96,32 @@ typedef enum {
     adc12_event_dma_fifo_full       = ADC12_INT_STS_DMA_FIFO_FULL_MASK
 } adc12_irq_event_t;
 
+/** @brief  Define ADC12 Clock Divider */
+typedef enum {
+    adc12_clock_divider_1 = 1,
+    adc12_clock_divider_2,
+    adc12_clock_divider_3,
+    adc12_clock_divider_4,
+    adc12_clock_divider_5,
+    adc12_clock_divider_6,
+    adc12_clock_divider_7,
+    adc12_clock_divider_8,
+    adc12_clock_divider_9,
+    adc12_clock_divider_10,
+    adc12_clock_divider_11,
+    adc12_clock_divider_12,
+    adc12_clock_divider_13,
+    adc12_clock_divider_14,
+    adc12_clock_divider_15,
+    adc12_clock_divider_16,
+} adc12_clock_divider_t;
+
 /** @brief ADC12 common configuration struct. */
 typedef struct {
     uint8_t res;
     uint8_t conv_mode;
-    uint8_t wait_dis;
     uint32_t adc_clk_div;
+    bool wait_dis;
     bool sel_sync_ahb;
     bool adc_ahb_en;
 } adc12_config_t;
@@ -137,14 +157,14 @@ typedef struct {
 
 /** @brief ADC12 DMA configuration struct for the preemption mode. */
 typedef struct {
-    uint32_t            :4;
-    uint32_t result     :12;
-    uint32_t trig_ch    :2;
-    uint32_t            :2;
-    uint32_t trig_index :4;
-    uint32_t adc_ch     :5;
-    uint32_t            :2;
-    uint32_t cycle_bit  :1;
+    uint32_t           :4;
+    uint32_t result    :12;
+    uint32_t seq_num   :2;
+    uint32_t           :2;
+    uint32_t trig_ch   :4;
+    uint32_t adc_ch    :5;
+    uint32_t           :2;
+    uint32_t cycle_bit :1;
 } adc12_pmt_dma_data_t;
 
 /** @brief ADC12 configuration struct for the period mode. */
@@ -402,7 +422,7 @@ static inline void adc12_disable_interrupts(ADC12_Type *ptr, uint32_t mask)
  */
 
 /**
- * @brief Trigger ADC conversions by software
+ * @brief Trigger ADC conversions by software in sequence mode
  *
  * @param[in] ptr An ADC12 peripheral base address.
  * @return An implementation result of getting an ADC12 software trigger.
@@ -410,6 +430,17 @@ static inline void adc12_disable_interrupts(ADC12_Type *ptr, uint32_t mask)
  * @retval status_fail ADC12 software triggers unsuccessfully. Please refer to @ref hpm_stat_t.
  */
 hpm_stat_t adc12_trigger_seq_by_sw(ADC12_Type *ptr);
+
+/**
+ * @brief Trigger ADC conversions by software in preemption mode
+ *
+ * @param[in] ptr An ADC12 peripheral base address.
+ * @param[in] trig_ch A trigger channel number(e.g. TRIG0A,TRIG0B,TRIG0C...).
+ * @return An implementation result of getting an ADC12 software trigger.
+ * @retval status_success ADC12 software triggers successfully. Please refer to @ref hpm_stat_t.
+ * @retval status_fail ADC12 software triggers unsuccessfully. Please refer to @ref hpm_stat_t.
+ */
+hpm_stat_t adc12_trigger_pmt_by_sw(ADC12_Type *ptr, uint8_t trig_ch);
 
 /**
  * @brief Get the result in oneshot mode.

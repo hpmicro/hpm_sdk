@@ -1,4 +1,4 @@
-# Copyright 2022 hpmicro
+# Copyright (c) 2022 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -40,5 +40,4 @@ sdk_ses_compile_options("-march=rv32gc")
 # sdk_compile_options("-mabi=ilp32d")
 # sdk_compile_options("-march=rv32gc")
 sdk_compile_options("-O3")
-set(SEGGER_LEVEL_O3 1)
 generate_ses_project()

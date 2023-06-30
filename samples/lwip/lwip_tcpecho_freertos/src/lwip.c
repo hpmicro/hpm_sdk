@@ -1,13 +1,9 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
-
-/* FreeRTOS kernel includes. */
-#include "FreeRTOS.h"
-#include "task.h"
 
 /*  HPM example includes. */
 #include <stdio.h>
@@ -130,6 +126,9 @@ hpm_stat_t enet_init(ENET_Type *ptr)
 
     int_config.int_mask = enet_rgsmii_int_mask | ENET_INTR_MASK_LPIIM_MASK; /* Disable RGSMII interrupt */
 
+    int_config.mmc_intr_mask_rx = 0x03ffffff;   /* Disable all mmc rx interrupt events */
+    int_config.mmc_intr_mask_tx = 0x03ffffff;   /* Disable all mmc tx interrupt events */
+
     /* Initialize enet controller */
     enet_controller_init(ptr, ENET_INF_TYPE, &desc, &enet_config, &int_config);
 
@@ -184,6 +183,8 @@ int main(void)
 
 void Main_task(void *pvParameters)
 {
+    TimerHandle_t timer_handle;
+
     /* Initialize bsp */
     bsp_init();
 
@@ -200,7 +201,15 @@ void Main_task(void *pvParameters)
     xTaskCreate(LwIP_DHCP_task, "DHCP", configMINIMAL_STACK_SIZE * 2, NULL, DHCP_TASK_PRIO, NULL);
 #endif
 
-    for ( ;; ) {
-        vTaskDelete(NULL);
+    timer_handle = xTimerCreate((const char *)NULL,
+                                (TickType_t)1000,
+                                (UBaseType_t)pdTRUE,
+                                (void * const)1,
+                                (TimerCallbackFunction_t)timer_callback);
+
+    if (NULL != timer_handle)  {
+        xTimerStart(timer_handle, 0);
     }
+
+    vTaskDelete(NULL);
 }

@@ -32,8 +32,29 @@ enum {
  *---------------------------------------------------------------------
  */
 
+/* De-initialize USB phy */
+static void usb_phy_deinit(USB_Type *ptr)
+{
+    ptr->OTG_CTRL0 |= USB_OTG_CTRL0_OTG_UTMI_SUSPENDM_SW_MASK;     /* set otg_utmi_suspend_m for naneng usbphy */
+
+    ptr->OTG_CTRL0 &= ~USB_OTG_CTRL0_OTG_UTMI_RESET_SW_MASK;       /* clear otg_utmi_reset_sw for naneng usbphy */
+
+    ptr->PHY_CTRL1 &= ~USB_PHY_CTRL1_UTMI_CFG_RST_N_MASK;          /* clear cfg_rst_n */
+
+    ptr->PHY_CTRL1 &= ~USB_PHY_CTRL1_UTMI_OTG_SUSPENDM_MASK;       /* clear otg_suspendm */
+}
+
+static uint8_t usb_phy_get_line_state(USB_Type *ptr)
+{
+    return USB_PHY_STATUS_LINE_STATE_GET(ptr->PHY_STATUS);
+}
+
+/*---------------------------------------------------------------------
+ * Driver API
+ *---------------------------------------------------------------------
+ */
 /* Initialize USB phy */
-static void usb_phy_init(USB_Type *ptr)
+void usb_phy_init(USB_Type *ptr)
 {
     uint32_t status;
 
@@ -64,26 +85,6 @@ static void usb_phy_init(USB_Type *ptr)
     ptr->PHY_CTRL1 |= USB_PHY_CTRL1_UTMI_OTG_SUSPENDM_MASK;           /* set otg_suspendm */
 }
 
-/* De-initialize USB phy */
-static void usb_phy_deinit(USB_Type *ptr)
-{
-    ptr->OTG_CTRL0 |= USB_OTG_CTRL0_OTG_UTMI_SUSPENDM_SW_MASK;     /* set otg_utmi_suspend_m for naneng usbphy */
-
-    ptr->OTG_CTRL0 &= ~USB_OTG_CTRL0_OTG_UTMI_RESET_SW_MASK;       /* clear otg_utmi_reset_sw for naneng usbphy */
-
-    ptr->PHY_CTRL1 &= ~USB_PHY_CTRL1_UTMI_CFG_RST_N_MASK;          /* clear cfg_rst_n */
-
-    ptr->PHY_CTRL1 &= ~USB_PHY_CTRL1_UTMI_OTG_SUSPENDM_MASK;       /* clear otg_suspendm */
-}
-
-static uint8_t usb_phy_get_line_state(USB_Type *ptr)
-{
-    return USB_PHY_STATUS_LINE_STATE_GET(ptr->PHY_STATUS);
-}
-/*---------------------------------------------------------------------
- * Driver API
- *---------------------------------------------------------------------
- */
 void usb_dcd_bus_reset(USB_Type *ptr, uint16_t ep0_max_packet_size)
 {
     /* The reset value for all endpoint types is the control endpoint. If one endpoint
@@ -139,6 +140,11 @@ void usb_dcd_init(USB_Type *ptr)
 
     /* Set parallel transceiver width */
     ptr->PORTSC1 &= ~USB_PORTSC1_PTW_MASK;
+
+#ifdef CONFIG_USB_DEVICE_FS
+    /* Set usb forced to full speed mode */
+    ptr->PORTSC1 |= USB_PORTSC1_PFSC_MASK;
+#endif
 
     /* Not use interrupt threshold. */
     ptr->USBCMD &= ~USB_USBCMD_ITC_MASK;

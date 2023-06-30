@@ -13,7 +13,6 @@
 #include "hpm_femc_drv.h"
 #include "pinmux.h"
 #include "hpm_pmp_drv.h"
-#include "assert.h"
 #include "hpm_clock_drv.h"
 #include "hpm_sysctl_drv.h"
 #include "hpm_sdxc_drv.h"
@@ -662,14 +661,19 @@ hpm_stat_t board_init_enet_ptp_clock(ENET_Type *ptr)
 
 hpm_stat_t board_init_enet_rmii_reference_clock(ENET_Type *ptr, bool internal)
 {
-    if (internal == false) {
-        return status_success;
-    }
-
     /* Configure Enet clock to output reference clock */
     if (ptr == HPM_ENET0) {
-        /* make sure pll0_clk2 output clock at 250MHz then set 50MHz for enet0 */
-        clock_set_source_divider(clock_eth0, clk_src_pll0_clk2, 5);
+        if (internal) {
+            /* set pll output frequency at 1GHz */
+            if (pllctlv2_init_pll_with_freq(HPM_PLLCTLV2, PLLCTLV2_PLL_PLL2, 1000000000UL) == status_success) {
+                /* set pll2_clk1 output frequence at 250MHz from PLL2 divided by 4 (1 + 15 / 5) */
+                pllctlv2_set_postdiv(HPM_PLLCTLV2, PLLCTLV2_PLL_PLL2, 1, 15);
+                /* set eth clock frequency at 50MHz for enet0 */
+                clock_set_source_divider(clock_eth0, clk_src_pll2_clk1, 5);
+            } else {
+                return status_fail;
+            }
+        }
     } else {
         return status_invalid_argument;
     }

@@ -61,13 +61,13 @@ static void set_direct_mode_config(void)
 
     /* triangle waveform */
     for (j = 0; j < 5000; j++) {
-        for (i = 0; i < DAC_SOC_MAX_DATA + 1; i += 1) {
-            dac_set_direct_config(BOARD_DAC_BASE, i);
+        for (float i = 0; i <= 10000; i += 2.5) {
+            dac_set_direct_config(BOARD_DAC_BASE, (uint16_t)DAC_OUTPUT(i));
             board_delay_us(1);
         }
 
-        for (i = DAC_SOC_MAX_DATA - 1; i > 0; i -= 1) {
-            dac_set_direct_config(BOARD_DAC_BASE, i);
+        for (float i = 10000; i >= 0; i -= 2.5) {
+            dac_set_direct_config(BOARD_DAC_BASE, (uint16_t)DAC_OUTPUT(i));
             board_delay_us(1);
         }
     }

@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
 
-#ifndef HPM_DP83867_DRV_H
-#define HPM_DP83867_DRV_H
+#ifndef HPM_DP83867_H
+#define HPM_DP83867_H
 
 /*---------------------------------------------------------------------
  * Includes
@@ -19,9 +19,12 @@
  *  Macro Const Definitions
  *---------------------------------------------------------------------
  */
-#define PHY_ADDR (0U)
-#define PHY_ID1  (0x2000U)
-#define PHY_ID2  (0x28U)
+#ifndef DP83867_ADDR
+#define DP83867_ADDR (0U)
+#endif
+
+#define DP83867_ID1  (0x2000U)
+#define DP83867_ID2  (0x28U)
 
 /*---------------------------------------------------------------------
  *  Typedef Struct Declarations

@@ -13,11 +13,6 @@
 #define CDC_OUT_EP 0x01
 #define CDC_INT_EP 0x83
 
-#define USBD_VID           0xFFFF
-#define USBD_PID           0xFFFF
-#define USBD_MAX_POWER     100
-#define USBD_LANGID_STRING 1033
-
 /*!< config descriptor size */
 #define USB_CONFIG_SIZE (9 + CDC_ACM_DESCRIPTOR_LEN)
 

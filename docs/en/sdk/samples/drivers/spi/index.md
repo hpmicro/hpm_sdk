@@ -11,4 +11,7 @@
    interrupt/master/README
    interrupt/slave/README
    master_trans_large_amount_of_data/README
+   sdcard/sd/README
+   sdcard/sd_fatfs/README
+
 :::

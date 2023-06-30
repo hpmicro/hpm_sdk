@@ -8,7 +8,11 @@
 #include "board.h"
 #include "i2s_master.h"
 #include "hpm_i2s_drv.h"
+#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#include "hpm_dmav2_drv.h"
+#else
 #include "hpm_dma_drv.h"
+#endif
 #include "hpm_dmamux_drv.h"
 #include "hpm_dao_drv.h"
 
@@ -20,10 +24,10 @@ void isr_dma(void)
 {
     uint32_t stat;
 
-    stat = dma_get_irq_status(BOARD_APP_HDMA);
-    dma_clear_irq_status(BOARD_APP_HDMA, stat);
+    stat = dma_check_transfer_status(BOARD_APP_HDMA, DMA_MUX_CHANNEL);
+    dma_clear_transfer_status(BOARD_APP_HDMA, DMA_MUX_CHANNEL);
 
-    if (stat & DMA_CHANNEL_IRQ_STATUS_TC(DMA_MUX_CHANNEL)) {
+    if (stat & DMA_CHANNEL_STATUS_TC) {
         dma_transfer_done = true;
     } else {
         dma_transfer_error = true;

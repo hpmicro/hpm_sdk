@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -17,8 +17,7 @@
 #include "dualcore_widgets.h"
 
 #include "lvgl.h"
-#include "lv_port_disp.h"
-#include "lv_port_indev.h"
+#include "lv_adapter.h"
 
 #define LV_TICK 10
 
@@ -47,13 +46,11 @@ int app_main(void)
     board_init_cap_touch();
     board_init_lcd();
 
-    mchtmr_freq_in_khz = clock_get_frequency(TIMER_CLK_NAME) / 1000;
-
     lv_init();
-    lv_port_disp_init();
-    lv_port_indev_init();
+    lv_adapter_init();
 
-    printf("littlevgl example\n");
+    mchtmr_freq_in_khz = clock_get_frequency(TIMER_CLK_NAME) / 1000;
+    printf("lvgl example\n");
     printf("%d color depth @%d\n", LV_COLOR_SIZE, clock_get_frequency(clock_display));
     init_coremark_context();
     init_coremark_result(&g_lv_cm_ctx);
@@ -82,23 +79,11 @@ void init_coremark_result(lv_coremark_ctx_t *cm_ctx)
 void reset_handler(void)
 {
     l1c_dc_disable();
-#ifndef __SEGGER_RTL_VERSION
-    /*
-     * Initialize LMA/VMA sections.
-     * Relocation for any sections that need to be copied from LMA to VMA.
-     */
-    extern void c_startup(void);
-    c_startup();
-#endif
+    l1c_dc_invalidate_all();
 
     /* Call platform specific hardware initialization */
     extern void system_init(void);
     system_init();
-
-#ifdef __cplusplus
-    /* Do global constructors */
-    __libc_init_array();
-#endif
 
     /* Entry function */
     app_main();

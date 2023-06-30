@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -48,12 +48,12 @@ SECTIONS
 
     .text (__vector_load_addr__ + __vector_ram_end__ - __vector_ram_start__) : {
         . = ALIGN(8);
-        *(.text)
-        *(.text*)
-        *(.rodata)
-        *(.rodata*)
-        *(.srodata)
-        *(.srodata*)
+        *(EXCLUDE_FILE (nx*.o*) .text)
+        *(EXCLUDE_FILE (nx*.o*) .text*)
+        *(EXCLUDE_FILE (nx*.o*) .rodata)
+        *(EXCLUDE_FILE (nx*.o*) .rodata*)
+        *(EXCLUDE_FILE (nx*.o*) .srodata)
+        *(EXCLUDE_FILE (nx*.o*) .srodata*)
 
         *(.hash)
         *(.dyn*)
@@ -152,6 +152,12 @@ SECTIONS
         . = ALIGN(8);
         PROVIDE(__ramfunc_start__ = .);
         *(.fast)
+        nx*.o*(.text)
+        nx*.o*(.text*)
+        nx*.o*(.rodata)
+        nx*.o*(.rodata*)
+        nx*.o*(.srodata)
+        nx*.o*(.srodata*)
         . = ALIGN(8);
         PROVIDE(__ramfunc_end__ = .);
     } > ILM

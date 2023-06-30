@@ -32,10 +32,12 @@ void i2c_isr(void)
 
     /* transmit */
     if ((status & I2C_EVENT_FIFO_EMPTY) && (irq & I2C_EVENT_FIFO_EMPTY)) {
-        i2c_write_byte(TEST_I2C, tx_buff[sent_data_count++]);
-        i2c_clear_status(TEST_I2C, I2C_EVENT_FIFO_EMPTY);
-        if (sent_data_count == TEST_TRANSFER_DATA_IN_BYTE) {
-            i2c_disable_irq(TEST_I2C, I2C_EVENT_FIFO_EMPTY);
+        while (!i2c_fifo_is_full(TEST_I2C)) {
+            i2c_write_byte(TEST_I2C, tx_buff[sent_data_count++]);
+            if (sent_data_count == TEST_TRANSFER_DATA_IN_BYTE) {
+                i2c_disable_irq(TEST_I2C, I2C_EVENT_FIFO_EMPTY);
+                break;
+            }
         }
     }
 
@@ -44,7 +46,6 @@ void i2c_isr(void)
         while (!i2c_fifo_is_empty(TEST_I2C)) {
             rx_buff[received_data_count++] = i2c_read_byte(TEST_I2C);
         }
-        i2c_clear_status(TEST_I2C, I2C_EVENT_FIFO_FULL);
 
         if (received_data_count == TEST_TRANSFER_DATA_IN_BYTE) {
             i2c_disable_irq(TEST_I2C, I2C_EVENT_FIFO_FULL);
@@ -54,6 +55,13 @@ void i2c_isr(void)
     /* complete */
     if (status & I2C_EVENT_TRANSACTION_COMPLETE) {
         if (I2C_DIR_MASTER_READ == i2c_get_direction(TEST_I2C)) {
+            while ((!i2c_fifo_is_empty(TEST_I2C)) && (received_data_count < TEST_TRANSFER_DATA_IN_BYTE)) {
+                rx_buff[received_data_count++] = i2c_read_byte(TEST_I2C);
+                if (received_data_count == TEST_TRANSFER_DATA_IN_BYTE) {
+                    i2c_disable_irq(TEST_I2C, I2C_EVENT_FIFO_FULL);
+                    break;
+                }
+            }
             i2c_receive_complete = true;
         } else {
             i2c_transmit_complete = true;

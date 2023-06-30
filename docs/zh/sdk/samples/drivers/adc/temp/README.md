@@ -6,7 +6,7 @@
 
 ## 硬件设置
 
-设置ADC reference voltage (请参考{ref}`引脚描述 <lab_board_resource>`部分)
+- 根据开发板设计，如有必要，请连接VREF管脚处的跳帽  (请参考{ref}`引脚描述 <lab_board_resource>`部分)
 
 ## 运行现象
 

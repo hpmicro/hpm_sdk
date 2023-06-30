@@ -80,17 +80,18 @@ int main(void)
     spi_format_config_t format_config = {0};
     spi_control_config_t control_config = {0};
     hpm_stat_t stat;
+    uint32_t spi_clcok;
 
     /* bsp initialization */
     board_init();
-    board_init_spi_clock(TEST_SPI);
+    spi_clcok = board_init_spi_clock(TEST_SPI);
     board_init_spi_pins(TEST_SPI);
     intc_m_enable_irq_with_priority(TEST_SPI_IRQ, 1);
     printf("SPI-Master Interrupt Transfer Example\n");
 
     /* set SPI sclk frequency for master */
     spi_master_get_default_timing_config(&timing_config);
-    timing_config.master_config.clk_src_freq_in_hz = clock_get_frequency(TEST_SPI_CLK_NAME);
+    timing_config.master_config.clk_src_freq_in_hz = spi_clcok;
     timing_config.master_config.sclk_freq_in_hz = TEST_SPI_SCLK_FREQ;
     spi_master_timing_init(TEST_SPI, &timing_config);
     printf("SPI-Master transfer timing is configured.\n");
@@ -123,15 +124,15 @@ int main(void)
         return -1;
     }
 
-    stat = spi_write_command(TEST_SPI, spi_master_mode, &control_config, &cmd);
-    if (stat != status_success) {
-        printf("SPI write command failed.\n");
-        return -1;
-    }
-
     stat = spi_write_address(TEST_SPI, spi_master_mode, &control_config, &addr);
     if (stat != status_success) {
         printf("SPI write address failed.\n");
+        return -1;
+    }
+
+    stat = spi_write_command(TEST_SPI, spi_master_mode, &control_config, &cmd);
+    if (stat != status_success) {
+        printf("SPI write command failed.\n");
         return -1;
     }
 

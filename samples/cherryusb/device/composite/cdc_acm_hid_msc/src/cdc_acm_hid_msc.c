@@ -25,11 +25,6 @@
 #define HID_INT_EP_SIZE     4
 #define HID_INT_EP_INTERVAL 10
 
-#define USBD_VID           0xFFFF
-#define USBD_PID           0xFFFF
-#define USBD_MAX_POWER     100
-#define USBD_LANGID_STRING 1033
-
 /*!< report descriptor size */
 #define HID_MOUSE_REPORT_DESC_SIZE 74
 

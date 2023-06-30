@@ -150,6 +150,9 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     int_config.int_mask = enet_rgsmii_int_mask; /* Disable RGSMII interrupt */
 #endif
 
+    int_config.mmc_intr_mask_rx = 0x03ffffff;   /* Disable all mmc rx interrupt events */
+    int_config.mmc_intr_mask_tx = 0x03ffffff;   /* Disable all mmc tx interrupt events */
+
     /* Initialize enet controller */
     enet_controller_init(ptr, ENET_INF_TYPE, &desc, &enet_config, &int_config);
 

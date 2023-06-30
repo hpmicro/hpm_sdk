@@ -55,7 +55,7 @@ extern "C" {
 #define LWIP_SUPPORT_CUSTOM_PBUF ((IP_FRAG && !LWIP_NETIF_TX_SINGLE_PBUF) || (LWIP_IPV6 && LWIP_IPV6_FRAG))
 #endif
 
-/** @ingroup pbuf 
+/** @ingroup pbuf
  * PBUF_NEEDS_COPY(p): return a boolean value indicating whether the given
  * pbuf needs to be copied in order to be kept around beyond the current call
  * stack without risking being corrupted. The default setting provides safety:
@@ -219,6 +219,19 @@ struct pbuf {
 
   /** For incoming packets, this contains the input netif's index */
   u8_t if_idx;
+
+#if defined(LWIP_PTP) && LWIP_PTP
+  /**
+   *  PTP Timestamp High
+   */
+  uint32_t time_sec;
+
+  /**
+   *  PTP Timestamp Low
+   */
+  uint32_t time_nsec;
+#endif
+
 };
 
 

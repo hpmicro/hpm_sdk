@@ -13,9 +13,9 @@ This  example shows TCP echo communication on FreeRTOS.
 
 ## Project Configuration
 
-- In the file `CMakelists.txt` ,  set a matched Ethernet PHY type according to the development board schematic，
+- In the file `CMakeLists.txt` ,  set a matched Ethernet PHY type according to the development board schematic，
 
-  e.g. "set(COFNIG_ENET_PHY_DP83848 1)"
+  e.g. "set(CONFIG_ENET_PHY_DP83848 1)"
 
 ## Run Example
 
@@ -27,13 +27,13 @@ This  example shows TCP echo communication on FreeRTOS.
      LwIP Version: 2.1.2
      Reference Clock: Internal Clock
      Enet phy init passes !
-     
-     	Static IP address	
+
+     	Static IP address
      IP: 10.10.10.10
      NETMASK: 255.255.255.0
      Gateway: 10.10.10.1
      ```
-     
+
 - Run an Ethernet debugging tool
 
   - create and set a TCP client:  TCP Server IP: 10.10.10.10/Port: 5001
@@ -45,7 +45,7 @@ This  example shows TCP echo communication on FreeRTOS.
   - Enter and send any characters in the edit window
 
     ![](../../../../../assets/sdk/samples/lwip_tcpecho_1.png)
-  
+
   - Watch the characters echoed from MCU
-  
+
     ![](../../../../../assets/sdk/samples/lwip_tcpecho_2.png)

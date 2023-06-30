@@ -15,9 +15,9 @@ Note:
 
 ## Project Configuration
 
-- In the file `CMAkelists.txt` ,  set a matched Ethernet PHY type according to the development board schematic，
+- In the file `CMakeLists.txt` ,  set a matched Ethernet PHY type according to the development board schematic，
 
-  e.g. "set(COFNIG_ENET_PHY_DP83848 1)"
+  e.g. "set(CONFIG_ENET_PHY_DP83848 1)"
 
 ## Run Example
 

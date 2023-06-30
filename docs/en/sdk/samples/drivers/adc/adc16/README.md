@@ -2,17 +2,17 @@
 
 ## Overview
 
-This example shows ADC16 conversions and results in four working modes.
+- This example shows ADC16 conversions and results in four working modes.
 
 Notes:
 
 * When ADC is configured to non-bus-read (oneshot) mode, it can't be accessed otherwise bus will be stuck.
 * When ADC is configured to bus-read (oneshot) mode,  CPU has to complete initialization before accessing to the ADC register list.
 
-
 ## Board Setting
 
-Input voltage at the specified pin. （Please refer to  [Pin Description](lab_board_resource)）
+- Input voltage at the specified pin. （Please refer to  [Pin Description](lab_board_resource)）
+- If necessary, connect a jumper for VREF pin according to the HW design. （Please refer to  [Pin Description](lab_board_resource)）
 
 Note:  The input voltage range at ADC input pins: 0~VREFH
 
@@ -51,15 +51,15 @@ Please enter one of ADC conversion modes above (e.g. 1 or 2 ...):
 
   ```console
   Please enter one of ADC conversion modes above (e.g. 1 or 2 ...): 3
-  Sequence Mode - ADC3 - Sequence Number:00 Cycle Bit: 01 ADC Channel: 02 Result: 0xffff
-  Sequence Mode - ADC3 - Sequence Number:00 Cycle Bit: 00 ADC Channel: 02 Result: 0xffff
-  Sequence Mode - ADC3 - Sequence Number:00 Cycle Bit: 01 ADC Channel: 02 Result: 0xfff2
+  Sequence Mode - ADC3 - Cycle Bit: 01 - Sequence Number:00 - ADC Channel: 02 - Result: 0xffff
+  Sequence Mode - ADC3 - Cycle Bit: 00 - Sequence Number:00 - ADC Channel: 02 - Result: 0xffd9
+  Sequence Mode - ADC3 - Cycle Bit: 01 - Sequence Number:00 - ADC Channel: 02 - Result: 0xffff
   ```
   - Preemption mode
 
   ```console
   Please enter one of ADC conversion modes above (e.g. 1 or 2 ...): 4
-  Preemption Mode - ADC3 - Cycle Bit: 01 ADC Channel: 02 Trig Index: 00 Trig Channel: 00 Result: 0xffff
-  Preemption Mode - ADC3 - Cycle Bit: 01 ADC Channel: 02 Trig Index: 00 Trig Channel: 00 Result: 0xfffa
-  Preemption Mode - ADC3 - Cycle Bit: 01 ADC Channel: 02 Trig Index: 00 Trig Channel: 00 Result: 0xffff
+  Preemption Mode - ADC3 - Trigger Channel: 00 - Cycle Bit: 01 - Sequence Number: 00 - ADC Channel: 02 - Result: 0xffff
+  Preemption Mode - ADC3 - Trigger Channel: 00 - Cycle Bit: 01 - Sequence Number: 00 - ADC Channel: 02 - Result: 0xffff
+  Preemption Mode - ADC3 - Trigger Channel: 00 - Cycle Bit: 01 - Sequence Number: 00 - ADC Channel: 02 - Result: 0xffff
   ```

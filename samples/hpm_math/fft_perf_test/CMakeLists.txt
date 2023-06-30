@@ -15,6 +15,5 @@ sdk_ses_compile_options(-march=rv32imafc)
 
 sdk_app_src(src/fft_perf_test.c)
 sdk_compile_options("-O3")
-set(SEGGER_LEVEL_O3 1)
 
 generate_ses_project()

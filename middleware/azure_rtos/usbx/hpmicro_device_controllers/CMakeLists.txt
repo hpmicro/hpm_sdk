@@ -1,0 +1,21 @@
+# Copyright (c) 2023 HPMicro
+# SPDX-License-Identifier: BSD-3-Clause
+
+sdk_src(hpm_usbd_ctl_callback.c)
+sdk_src(hpm_usbd_ctl_control_callback.c)
+sdk_src(hpm_usbd_ctl_endpoint_create.c)
+sdk_src(hpm_usbd_ctl_endpoint_destroy.c)
+sdk_src(hpm_usbd_ctl_endpoint_reset.c)
+sdk_src(hpm_usbd_ctl_endpoint_stall.c)
+sdk_src(hpm_usbd_ctl_endpoint_status.c)
+sdk_src(hpm_usbd_ctl_frame_number_get.c)
+sdk_src(hpm_usbd_ctl_function.c)
+sdk_src(hpm_usbd_ctl_initialize_complete.c)
+sdk_src(hpm_usbd_ctl_initialize.c)
+sdk_src(hpm_usbd_ctl_transfer_callback.c)
+sdk_src(hpm_usbd_ctl_transfer_request.c)
+sdk_src(hpm_usbd_ctl_transfer_abort.c)
+sdk_src(hpm_usbd_ctl_transfer_run.c)
+sdk_src(hpm_usbd_ctl_state_change.c)
+sdk_src(hpm_usbd_ctl_uninitialize.c)
+sdk_inc(.)

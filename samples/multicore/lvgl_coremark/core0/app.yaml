@@ -6,6 +6,15 @@ debug:
     ses:
       auto_start_gdb_server: true
       gdb_server_port: 3333
+
 dependency:
   - multicore
   - lcd
+
+excluded_targets:
+  - debug
+  - release
+  - flash_uf2
+  - flash_uf2_release
+  - flash_xip
+  - flash_xip_release

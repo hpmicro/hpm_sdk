@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
 
-#ifndef HPM_rtl8201_H
-#define HPM_rtl8201_H
+#ifndef HPM_RTL8201_H
+#define HPM_RTL8201_H
 
 /*---------------------------------------------------------------------
  * Includes
@@ -19,9 +19,12 @@
  *  Macro Const Definitions
  *---------------------------------------------------------------------
  */
-#define PHY_ADDR (2U)
-#define PHY_ID1  (0x001CU)
-#define PHY_ID2  (0x32U)
+#ifndef RTL8201_ADDR
+#define RTL8201_ADDR (2U)
+#endif
+
+#define RTL8201_ID1  (0x001CU)
+#define RTL8201_ID2  (0x32U)
 
 /*---------------------------------------------------------------------
  *  Typedef Struct Declarations
@@ -50,4 +53,4 @@ void rtl8201_get_phy_status(ENET_Type *ptr, enet_phy_status_t *status);
 #if defined(__cplusplus)
 }
 #endif /* __cplusplus */
-#endif /* HPM_rtl8201_H */
+#endif /* HPM_RTL8201_H */

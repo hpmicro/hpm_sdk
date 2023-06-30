@@ -1,4 +1,4 @@
-# Copyright 2021 hpmicro
+# Copyright (c) 2021 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 if(NOT DEFINED ENV{HPM_SDK_BASE})
@@ -6,5 +6,6 @@ if(NOT DEFINED ENV{HPM_SDK_BASE})
 endif()
 
 set(HPM_SDK_BASE $ENV{HPM_SDK_BASE})
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(${HPM_SDK_BASE}/cmake/application.cmake)

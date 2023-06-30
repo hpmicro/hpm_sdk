@@ -7,11 +7,13 @@
 
 #include "hpm_dma_drv.h"
 
-hpm_stat_t dma_setup_channel(DMA_Type *ptr, uint32_t ch_num, dma_channel_config_t *ch, bool start_transfer)
+hpm_stat_t dma_setup_channel(DMA_Type *ptr, uint8_t ch_num, dma_channel_config_t *ch, bool start_transfer)
 {
     uint32_t tmp;
+
     if ((ch->dst_width > DMA_SOC_TRANSFER_WIDTH_MAX(ptr))
-            || (ch->src_width > DMA_SOC_TRANSFER_WIDTH_MAX(ptr))) {
+            || (ch->src_width > DMA_SOC_TRANSFER_WIDTH_MAX(ptr))
+            || (ch_num >= DMA_SOC_CHANNEL_NUM)) {
         return status_invalid_argument;
     }
     if ((ch->size_in_byte & ((1 << ch->dst_width) - 1))
@@ -24,7 +26,7 @@ hpm_stat_t dma_setup_channel(DMA_Type *ptr, uint32_t ch_num, dma_channel_config_
     ptr->CHCTRL[ch_num].SRCADDR = DMA_CHCTRL_SRCADDR_SRCADDRL_SET(ch->src_addr);
     ptr->CHCTRL[ch_num].DSTADDR = DMA_CHCTRL_DSTADDR_DSTADDRL_SET(ch->dst_addr);
     ptr->CHCTRL[ch_num].TRANSIZE = DMA_CHCTRL_TRANSIZE_TRANSIZE_SET(ch->size_in_byte >> ch->src_width);
-    ptr->CHCTRL[ch_num].LLPOINTER = DMA_CHCTRL_LLPOINTER_LLPOINTERL_SET(ch->linked_ptr >> 3);
+    ptr->CHCTRL[ch_num].LLPOINTER = DMA_CHCTRL_LLPOINTER_LLPOINTERL_SET(ch->linked_ptr >> DMA_CHCTRL_LLPOINTER_LLPOINTERL_SHIFT);
 
 #if DMA_SUPPORT_64BIT_ADDR
     ptr->CHCTRL[ch_num].SRCADDRH = DMA_CHCTRL_SRCADDRH_SRCADDRH_SET(ch->src_addr_high);
@@ -69,6 +71,52 @@ void dma_default_channel_config(DMA_Type *ptr, dma_channel_config_t *ch)
 #if DMA_SUPPORT_64BIT_ADDR
     ch->linked_ptr_high = 0;
 #endif
+}
+
+hpm_stat_t dma_config_linked_descriptor(DMA_Type *ptr, dma_linked_descriptor_t *descriptor, uint8_t ch_num, dma_channel_config_t *config)
+{
+    uint32_t tmp;
+
+    if ((config->dst_width > DMA_SOC_TRANSFER_WIDTH_MAX(ptr))
+            || (config->src_width > DMA_SOC_TRANSFER_WIDTH_MAX(ptr))
+            || (ch_num >= DMA_SOC_CHANNEL_NUM)) {
+        return status_invalid_argument;
+    }
+    if ((config->size_in_byte & ((1 << config->dst_width) - 1))
+     || (config->src_addr & ((1 << config->src_width) - 1))
+     || (config->dst_addr & ((1 << config->dst_width) - 1))
+     || ((1 << config->src_width) & ((1 << config->dst_width) - 1))
+     || ((config->linked_ptr & 0x7))) {
+        return status_dma_alignment_error;
+    }
+    descriptor->src_addr = DMA_CHCTRL_SRCADDR_SRCADDRL_SET(config->src_addr);
+    descriptor->dst_addr = DMA_CHCTRL_DSTADDR_DSTADDRL_SET(config->dst_addr);
+    descriptor->trans_size = DMA_CHCTRL_TRANSIZE_TRANSIZE_SET(config->size_in_byte >> config->src_width);
+    descriptor->linked_ptr = DMA_CHCTRL_LLPOINTER_LLPOINTERL_SET(config->linked_ptr >> DMA_CHCTRL_LLPOINTER_LLPOINTERL_SHIFT);
+
+#if DMA_SUPPORT_64BIT_ADDR
+    descriptor->src_addr_high = DMA_CHCTRL_SRCADDRH_SRCADDRH_SET(config->src_addr_high);
+    descriptor->dst_addr_high = DMA_CHCTRL_DSTADDRH_DSTADDRH_SET(config->dst_addr_high);
+    descriptor->linked_ptr_high = DMA_CHCTRL_LLPOINTERH_LLPOINTERH_SET(config->linked_ptr_high);
+#endif
+
+    tmp = DMA_CHCTRL_CTRL_SRCBUSINFIDX_SET(0)
+        | DMA_CHCTRL_CTRL_DSTBUSINFIDX_SET(0)
+        | DMA_CHCTRL_CTRL_PRIORITY_SET(config->priority)
+        | DMA_CHCTRL_CTRL_SRCBURSTSIZE_SET(config->src_burst_size)
+        | DMA_CHCTRL_CTRL_SRCWIDTH_SET(config->src_width)
+        | DMA_CHCTRL_CTRL_DSTWIDTH_SET(config->dst_width)
+        | DMA_CHCTRL_CTRL_SRCMODE_SET(config->src_mode)
+        | DMA_CHCTRL_CTRL_DSTMODE_SET(config->dst_mode)
+        | DMA_CHCTRL_CTRL_SRCADDRCTRL_SET(config->src_addr_ctrl)
+        | DMA_CHCTRL_CTRL_DSTADDRCTRL_SET(config->dst_addr_ctrl)
+        | DMA_CHCTRL_CTRL_SRCREQSEL_SET(ch_num)
+        | DMA_CHCTRL_CTRL_DSTREQSEL_SET(ch_num)
+        | config->interrupt_mask
+        | DMA_CHCTRL_CTRL_ENABLE_MASK;
+    descriptor->ctrl = tmp;
+
+    return status_success;
 }
 
 hpm_stat_t dma_start_memcpy(DMA_Type *ptr, uint8_t ch_num,
@@ -133,6 +181,11 @@ hpm_stat_t dma_start_memcpy(DMA_Type *ptr, uint8_t ch_num,
     return stat;
 }
 
+void dma_default_handshake_config(DMA_Type *ptr, dma_handshake_config_t *config)
+{
+    memset(config, 0, sizeof(dma_handshake_config_t));
+}
+
 hpm_stat_t dma_setup_handshake(DMA_Type *ptr,  dma_handshake_config_t *pconfig, bool start_transfer)
 {
     hpm_stat_t stat = status_success;
@@ -148,7 +201,7 @@ hpm_stat_t dma_setup_handshake(DMA_Type *ptr,  dma_handshake_config_t *pconfig, 
         config.src_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
     }
 
-    if (pconfig->ch_index > DMA_SOC_CHANNEL_NUM) {
+    if (pconfig->ch_index >= DMA_SOC_CHANNEL_NUM) {
         return status_invalid_argument;
     }
 

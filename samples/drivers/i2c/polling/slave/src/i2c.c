@@ -52,10 +52,10 @@ int main(void)
 
     /* wait for address hit */
     do {
-        status = i2c_get_status(TEST_I2C);
-    } while (!(status & I2C_STATUS_ADDRHIT_MASK));
+        stat = i2c_slave_read(TEST_I2C, data_buff, TEST_TRANSFER_DATA_IN_BYTE);
+    } while (stat == status_fail);
 
-    if (status_success != i2c_slave_read(TEST_I2C, data_buff, TEST_TRANSFER_DATA_IN_BYTE)) {
+    if (stat != status_success) {
         printf("Slave read failed\n");
         while (1) {
         }
@@ -63,10 +63,10 @@ int main(void)
 
     /* wait for address hit */
     do {
-        status = i2c_get_status(TEST_I2C);
-    } while (!(status & I2C_STATUS_ADDRHIT_MASK));
+        stat = i2c_slave_write(TEST_I2C, data_buff, TEST_TRANSFER_DATA_IN_BYTE);
+    } while (stat == status_fail);
 
-    if (status_success != i2c_slave_write(TEST_I2C, data_buff, TEST_TRANSFER_DATA_IN_BYTE)) {
+    if (stat != status_success) {
         printf("Slave write failed");
         while (1) {
         }

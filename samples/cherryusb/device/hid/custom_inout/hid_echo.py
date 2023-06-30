@@ -9,8 +9,8 @@ import operator
 
 # VID and PID customization changes here...
 
-VID = 0xcafe
-PID = 0x4004
+VID = 0x34B7
+PID = 0xFFFF
 
 # Send buffer
 buffer = [0xff]*64

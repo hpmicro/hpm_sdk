@@ -10,15 +10,19 @@
 #include "board.h"
 #include "hpm_clock_drv.h"
 #include "hpm_mchtmr_drv.h"
+#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#include "hpm_dmav2_drv.h"
+#else
 #include "hpm_dma_drv.h"
+#endif
 #include "hpm_femc_drv.h"
 #include "hpm_sysctl_drv.h"
 #include "hpm_l1c_drv.h"
 
-#define SIZE_PER_TEST   (0x00008000UL)
-#define LINKED_DESCRIPTOR_NUM 3
+#define SIZE_PER_TEST   (0x00004000UL)
+#define LINKED_DESCRIPTOR_NUM 2
 
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(4) uint8_t s_dst_buffer[LINKED_DESCRIPTOR_NUM][SIZE_PER_TEST];
+ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(4) uint8_t s_dst_buffer[LINKED_DESCRIPTOR_NUM + 1][SIZE_PER_TEST];
 ATTR_PLACE_AT_WITH_ALIGNMENT(".fast_ram", 4) uint8_t s_src_buffer[SIZE_PER_TEST];
 /* descriptor should be 8-byte aligned */
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(8) dma_linked_descriptor_t descriptors[LINKED_DESCRIPTOR_NUM];
@@ -42,10 +46,6 @@ ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(8) dma_linked_descriptor_t descriptors
 #define USE_IRQ (1)
 #endif
 
-#ifndef FEMC_CLOCK_NAME
-#define FEMC_CLOCK_NAME clock_femc
-#endif
-
 #ifndef TIMER_CLOCK_NAME
 #define TIMER_CLOCK_NAME clock_mchtmr0
 #endif
@@ -54,6 +54,8 @@ uint32_t timer_freq_in_hz;
 
 volatile bool dma_transfer_done;
 volatile bool dma_transfer_error;
+volatile bool dma_test_chain_flag;
+volatile uint8_t dma_chain_tc_irq_cnt;
 
 static void reset_transfer_status(void)
 {
@@ -108,52 +110,74 @@ static uint32_t compare_buffers(uint8_t *expected, uint8_t *actual, uint32_t siz
 
 void isr_dma(void)
 {
-    volatile hpm_stat_t stat;
-    dma_transfer_done = true;
+    uint32_t stat;
+
     stat = dma_check_transfer_status(TEST_DMA_CONTROLLER, TEST_DMA_CHANNEL);
-    if (0 == (stat & DMA_CHANNEL_STATUS_TC)) {
+    if (0 != (stat & DMA_CHANNEL_STATUS_ERROR)) {
         dma_transfer_error = true;
     }
-}
 
+    if (0 != (stat & DMA_CHANNEL_STATUS_TC)) {
+        if (dma_test_chain_flag) {
+            dma_chain_tc_irq_cnt++;
+#ifdef CONFIG_HAS_HPMSDK_DMAV2
+            if (dma_chain_tc_irq_cnt == (LINKED_DESCRIPTOR_NUM + 1)) {
+#else
+            if (dma_chain_tc_irq_cnt == 1) {
+#endif
+                dma_transfer_done = true;
+            }
+        } else {
+            dma_transfer_done = true;
+        }
+    }
+}
 SDK_DECLARE_EXT_ISR_M(TEST_DMA_IRQ, isr_dma)
 
-#define OFFSET_PER_DESCRIPTOR 0x1000
 void test_chained_transfer(bool verbose)
 {
     uint32_t i, errors;
     dma_channel_config_t ch_config = {0};
 
+    dma_test_chain_flag = true;
+    reset_transfer_status();
+
     intc_m_enable_irq_with_priority(TEST_DMA_IRQ, 1);
 
     prepare_test_data((uint8_t *)SRC_ADDRESS, SIZE_PER_TEST, 0x5AA5);
-    for (i = 0; i < ARRAY_SIZE(descriptors); i++) {
-        descriptors[i].trans_size = (SIZE_PER_TEST / ARRAY_SIZE(descriptors)) >> DMA_TRANSFER_WIDTH_BYTE;
-        descriptors[i].src_addr = core_local_mem_to_sys_address(HPM_CORE0, SRC_ADDRESS + i * OFFSET_PER_DESCRIPTOR);
-        descriptors[i].dst_addr = core_local_mem_to_sys_address(HPM_CORE0, DST_ADDRESS + i * SIZE_PER_TEST);
-        descriptors[i].ctrl = DMA_CHCTRL_CTRL_SRCWIDTH_SET(DMA_TRANSFER_WIDTH_BYTE)
-                | DMA_CHCTRL_CTRL_DSTWIDTH_SET(DMA_TRANSFER_WIDTH_BYTE)
-                | DMA_CHCTRL_CTRL_SRCBURSTSIZE_SET(DMA_NUM_TRANSFER_PER_BURST_8T);
-        if (i == ARRAY_SIZE(descriptors) - 1) {
-            descriptors[i].linked_ptr = 0;
+
+    dma_default_channel_config(TEST_DMA_CONTROLLER, &ch_config);
+
+    for (i = 0; i < LINKED_DESCRIPTOR_NUM; i++) {
+        ch_config.src_addr = core_local_mem_to_sys_address(HPM_CORE0, SRC_ADDRESS);
+        ch_config.dst_addr = core_local_mem_to_sys_address(HPM_CORE0, DST_ADDRESS + (i + 1) * SIZE_PER_TEST);
+        ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_8T;
+        ch_config.src_width = DMA_TRANSFER_WIDTH_BYTE;
+        ch_config.dst_width = DMA_TRANSFER_WIDTH_BYTE;
+        ch_config.size_in_byte = SIZE_PER_TEST;
+        if (i == (LINKED_DESCRIPTOR_NUM - 1)) {
+            ch_config.linked_ptr = 0;
         } else {
-            descriptors[i].linked_ptr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)&descriptors[i+1]);
+            ch_config.linked_ptr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)&descriptors[i + 1]);
+        }
+        if (status_success != dma_config_linked_descriptor(TEST_DMA_CONTROLLER, &descriptors[i], TEST_DMA_CHANNEL, &ch_config)) {
+            printf("dma config linked descriptor failed\n");
+            return;
         }
     }
+
     ch_config.src_addr = core_local_mem_to_sys_address(HPM_CORE0, SRC_ADDRESS);
     ch_config.dst_addr = core_local_mem_to_sys_address(HPM_CORE0, DST_ADDRESS);
     ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_8T;
     ch_config.src_width = DMA_TRANSFER_WIDTH_BYTE;
     ch_config.dst_width = DMA_TRANSFER_WIDTH_BYTE;
-    ch_config.size_in_byte = SIZE_PER_TEST / ARRAY_SIZE(descriptors);
-    ch_config.linked_ptr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)&descriptors[1]);
-
-    reset_transfer_status();
+    ch_config.size_in_byte = SIZE_PER_TEST;
+    ch_config.linked_ptr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)&descriptors[0]);
     if (status_success != dma_setup_channel(TEST_DMA_CONTROLLER, TEST_DMA_CHANNEL, &ch_config, true)) {
-        printf(" dma setup channel failed\n");
+        printf("dma setup channel failed\n");
         return;
     }
-    printf(" dma setup channel done\n");
+    printf("dma setup channel done\n");
 
     while (!dma_transfer_done) {
         __asm("nop");
@@ -163,12 +187,20 @@ void test_chained_transfer(bool verbose)
         printf(" chained transfer failed\n");
         return;
     }
-    for (i = 0; i < ARRAY_SIZE(descriptors); i++) {
+
+    errors = compare_buffers((uint8_t *)ch_config.src_addr, (uint8_t *)ch_config.dst_addr, ch_config.size_in_byte, false);
+    if (!errors) {
+        printf(" [%d]: data match\n", 0);
+    } else {
+        printf(" [%d]: !!! data mismatch\n", 0);
+    }
+
+    for (i = 0; i < LINKED_DESCRIPTOR_NUM; i++) {
         errors = compare_buffers((uint8_t *)descriptors[i].src_addr, (uint8_t *)descriptors[i].dst_addr, descriptors[i].trans_size << DMA_TRANSFER_WIDTH_BYTE, false);
         if (!errors) {
-            printf(" [%d]: data match\n", i);
+            printf(" [%d]: data match\n", (i + 1));
         } else {
-            printf(" [%d]: !!! data mismatch\n", i);
+            printf(" [%d]: !!! data mismatch\n", (i + 1));
         }
     }
 }
@@ -178,6 +210,9 @@ void test_unchained_transfer(uint32_t src, uint32_t dst, bool verbose)
     uint64_t elapsed = 0, now;
     hpm_stat_t stat;
     uint32_t errors, burst_len_in_byte;
+
+    dma_test_chain_flag = false;
+
 #if USE_IRQ
     intc_m_enable_irq_with_priority(TEST_DMA_IRQ, 1);
 #endif
@@ -217,7 +252,7 @@ void test_unchained_transfer(uint32_t src, uint32_t dst, bool verbose)
                 (double) (SIZE_PER_TEST >> 10) * timer_freq_in_hz / elapsed);
 
         if (dma_transfer_error) {
-            printf(" dma transfer failed\n");
+            printf("dma transfer failed\n");
             continue;
         }
 
@@ -232,21 +267,20 @@ void test_unchained_transfer(uint32_t src, uint32_t dst, bool verbose)
 int main(void)
 {
     board_init();
-    board_init_console();
 
     timer_freq_in_hz = clock_get_frequency(TIMER_CLOCK_NAME);
 
-    printf("dma example start\n");
+    printf("\ndma example start\n");
 
-    printf("unchained transfer\n");
-    printf("write testing\n");
+    printf("\nunchained transfer\n");
+    printf("\nwrite testing\n");
     test_unchained_transfer(SRC_ADDRESS, DST_ADDRESS, false);
-    printf("read testing\n");
+    printf("\nread testing\n");
     test_unchained_transfer(DST_ADDRESS, SRC_ADDRESS, false);
 
-    printf("chained transfer\n");
+    printf("\nchained transfer\n");
     test_chained_transfer(false);
 
-    printf("dma example end\n");
+    printf("\ndma example end\n");
     return 0;
 }

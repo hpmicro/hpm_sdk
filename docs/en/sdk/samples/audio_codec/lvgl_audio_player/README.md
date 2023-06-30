@@ -8,7 +8,7 @@ Please refer to [official lv_demos github](https://github.com/lvgl/lv_demos)
 
 ## Project Configuration
 
-- In the file `CMakelists.txt`, set a matched audio codec type according to the development board schematic，e.g. "set(CONFIG_CODEC "sgtl5000")"
+- In the file `CMakeLists.txt`, set a matched audio codec type according to the development board schematic，e.g. "set(CONFIG_CODEC "sgtl5000")"
 
 ## Board Settings
 
@@ -20,7 +20,7 @@ According to project configuration, connect speaker to [DAO](lab_board_app_dao) 
 
 ## Running the Demo
 
-littlevgl music will be shown on the LCD panel and can operate play/pause, next, previous.
+lvgl music will be shown on the LCD panel and can operate play/pause, next, previous.
 
 ![lv_demo_music](../../../../../assets/sdk/samples/lv_demo_music.gif "lv_demo_music")
 

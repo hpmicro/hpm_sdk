@@ -7,8 +7,11 @@
  *
  */
 
-#include <stdio.h>
 #include "hpm_wm8960.h"
+
+#ifndef HPM_WM8960_MCLK_TOLERANCE
+#define HPM_WM8960_MCLK_TOLERANCE (4U)
+#endif
 
 /* wm8960 register default value */
 static const uint16_t wm8960_default_reg_val[WM8960_REG_NUM] = {
@@ -407,19 +410,35 @@ hpm_stat_t wm8960_set_data_format(wm8960_control_t *control, uint32_t sysclk, ui
     /* Compute sample rate divider and SYSCLK Pre-divider, dac and adc are the same sample rate */
     divider = sysclk / sample_rate;
 
-    if (divider >= 512) {
+    if (divider > 6 * 512 * HPM_WM8960_MCLK_TOLERANCE / 100 + 6 * 512) {
         divider = divider / 2; /* SYSCLK Pre-divider */
         val |= WM8960_CLOCK1_SYSCLKDIV_SET(2U);
     }
 
-    if (divider < 256U) {
-        return status_invalid_argument;
-    } else if (divider == 256U) {
-        HPM_CHECK_RET(wm8960_modify_reg(control, WM8960_CLOCK1, 0x1FEU, val));
+    if (abs(divider - 256) <= 256 * HPM_WM8960_MCLK_TOLERANCE) {
+        divider = 256;
+    } else if (abs(divider - 256 * 1.5) <= 256 * 1.5 * HPM_WM8960_MCLK_TOLERANCE) {
+        divider = 256 * 1.5;
+        val |= ((1 << WM8960_CLOCK1_ADCDIV_SHIFT) | (1 << WM8960_CLOCK1_DACDIV_SHIFT));
+    } else if (abs(divider - 256 * 2) <= 256 * 2 * HPM_WM8960_MCLK_TOLERANCE) {
+        divider = 256 * 2;
+        val |= ((2 << WM8960_CLOCK1_ADCDIV_SHIFT) | (2 << WM8960_CLOCK1_DACDIV_SHIFT));
+    } else if (abs(divider - 256 * 3) <= 256 * 3 * HPM_WM8960_MCLK_TOLERANCE) {
+        divider = 256 * 3;
+        val |= ((3 << WM8960_CLOCK1_ADCDIV_SHIFT) | (3 << WM8960_CLOCK1_DACDIV_SHIFT));
+    } else if (abs(divider - 256 * 4) <= 256 * 4 * HPM_WM8960_MCLK_TOLERANCE) {
+        divider = 256 * 4;
+        val |= ((4 << WM8960_CLOCK1_ADCDIV_SHIFT) | (4 << WM8960_CLOCK1_DACDIV_SHIFT));
+    } else if (abs(divider - 256 * 5.5) <= 256 * 5.5 * HPM_WM8960_MCLK_TOLERANCE) {
+        divider = 256 * 5.5;
+        val |= ((5 << WM8960_CLOCK1_ADCDIV_SHIFT) | (5 << WM8960_CLOCK1_DACDIV_SHIFT));
+    } else if (abs(divider - 256 * 6) <= 256 * 6 * HPM_WM8960_MCLK_TOLERANCE) {
+        divider = 256 * 6;
+        val |= ((6 << WM8960_CLOCK1_ADCDIV_SHIFT) | (6 << WM8960_CLOCK1_DACDIV_SHIFT));
     } else {
-        val |= (((divider / 256U) << WM8960_CLOCK1_ADCDIV_SHIFT) | ((divider / 256U) << WM8960_CLOCK1_DACDIV_SHIFT));
-        HPM_CHECK_RET(wm8960_modify_reg(control, WM8960_CLOCK1, 0x1FEU, val));
+        return status_invalid_argument;
     }
+    HPM_CHECK_RET(wm8960_modify_reg(control, WM8960_CLOCK1, 0x1FEU, val));
 
     /* set sample bit */
     switch (bits) {

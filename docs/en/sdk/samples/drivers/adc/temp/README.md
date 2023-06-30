@@ -6,7 +6,7 @@ This example shows the soc temperature measured by ADC16
 
 ## Board Setting
 
-Set ADC reference voltage. （Please refer to  [Pin Description](lab_board_resource)）
+- If necessary, connect a jumper for VREF pin according to the HW design.（Please refer to  [Pin Description](lab_board_resource)）
 
 ## Running the example
 

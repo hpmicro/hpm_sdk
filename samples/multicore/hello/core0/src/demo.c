@@ -23,7 +23,7 @@ int main(void)
 
     secondary_core_image_load_and_run();
 
-    printf("hello world from primary core\n");
+    printf("Hello world for multicore! Secondary core control RGB leds blinking...\n");
 
     while (1) {
         u = getchar();

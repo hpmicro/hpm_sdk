@@ -20,7 +20,7 @@
 
 ## 运行
 
-littglevgl music将会显示在LCD屏上，可以操作播放/暂停、下一首、上一首。
+lvgl music将会显示在LCD屏上，可以操作播放/暂停、下一首、上一首。
 
 ![lv_demo_music](../../../../../assets/sdk/samples/lv_demo_music.gif "lv_demo_music")
 

@@ -19,13 +19,6 @@
  * @{
  */
 
-/**
- * @brief I2S IRQ mask
- */
-#define I2S_IRQ_TX_FIFO_EMPTY I2S_CTRL_TXDNIE_MASK
-#define I2S_IRQ_RX_FIFO_DATA_AVAILABLE I2S_CTRL_RXDAIE_MASK
-#define I2S_IRQ_ERROR I2S_CTRL_ERRIE_MASK
-
 /* i2s channel slot mask */
 #define I2S_CHANNEL_SLOT_MASK(x) (1U << (x))
 /* convert audio depth value into CFGR[DATASIZ] value map */
@@ -74,6 +67,19 @@ typedef struct i2x_transfer_config {
     uint8_t data_line;
     uint32_t channel_slot_mask;
 } i2s_transfer_config_t;
+
+typedef enum {
+    i2s_tx_fifo_threshold_irq_mask = I2S_CTRL_TXDNIE_MASK,
+    i2s_rx_fifo_threshold_irq_mask = I2S_CTRL_RXDAIE_MASK,
+    i2s_fifo_error_irq_mask = I2S_CTRL_ERRIE_MASK, /*<! rx fifo overrun, tx fifo underrun */
+} i2s_irq_mask_t;
+
+typedef enum {
+    i2s_data_line_rx_fifo_avail = 1U, /*<! data avail */
+    i2s_data_line_tx_fifo_avail = 2U, /*<! fifo empty avail */
+    i2s_data_line_rx_fifo_overrun = 4U,
+    i2s_data_line_tx_fifo_underrun = 8U,
+} i2s_data_line_stat_t;
 
 #ifdef __cplusplus
 extern "C" {
@@ -394,6 +400,48 @@ static inline uint32_t i2s_get_rx_fifo_level(I2S_Type *ptr)
 static inline uint32_t i2s_get_rx_line_fifo_level(I2S_Type *ptr, uint8_t line)
 {
     return (i2s_get_rx_fifo_level(ptr) & (0xFF << (line << 3))) >> (line << 3);
+}
+
+/**
+ * @brief Check I2S data line status
+ *
+ * @param[in] ptr I2S base address
+ * @param[in] line I2S data line
+ *
+ * @retval i2s_data_line_rx_fifo_avail data in rx fifo >= threshold
+ * @retval i2s_data_line_tx_fifo_avail data in tx fifo <= threshold
+ * @retval i2s_data_line_rx_fifo_overrun  rx fifo overrun occured
+ * @retval i2s_data_line_tx_fifo_underrun  tx fifo underrun occured
+ */
+static inline uint32_t i2s_check_data_line_status(I2S_Type *ptr, uint8_t line)
+{
+    volatile uint32_t reg_val = ptr->STA;
+    uint32_t bit_mask;
+    uint32_t stat = 0;
+
+    bit_mask = 1 << (I2S_STA_RX_DA_SHIFT + line);
+    if ((bit_mask & reg_val) != 0) {
+        stat |= i2s_data_line_rx_fifo_avail;
+    }
+
+    bit_mask = 1 << (I2S_STA_TX_DN_SHIFT + line);
+    if ((bit_mask & reg_val) != 0) {
+        stat |= i2s_data_line_tx_fifo_avail;
+    }
+
+    bit_mask = 1 << (I2S_STA_RX_OV_SHIFT + line);
+    if ((bit_mask & reg_val) != 0) {
+        stat |= i2s_data_line_rx_fifo_overrun;
+        ptr->STA = bit_mask; /* clear flag: W1C*/
+    }
+
+    bit_mask = 1 << (I2S_STA_TX_UD_SHIFT + line);
+    if ((bit_mask & reg_val) != 0) {
+        stat |= i2s_data_line_tx_fifo_underrun;
+        ptr->STA = bit_mask; /* clear flag: W1C*/
+    }
+
+    return stat;
 }
 
 /**

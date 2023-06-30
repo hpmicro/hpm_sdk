@@ -14,7 +14,7 @@
 
 - Dual Channel Oscilloscope
 - Install the serial terminal, view [board information](lab_board_overiew), and configure the serial terminal parameters
-- [PWM_P0 and PWM_P1 pins](lab_board_drv_pwm_pin) Check the information according to the board model
+- [HRPWM_P0 and HRPWM_P2 pins](lab_board_drv_hrpwm_pin) Check the information according to the board model
 
 
 ## Running the Demo

@@ -378,7 +378,6 @@ hpm_stat_t spi_control_init(SPI_Type *ptr, spi_control_config_t *config, uint32_
     return status_success;
 }
 
-
 hpm_stat_t spi_transfer(SPI_Type *ptr,
                         spi_control_config_t *config,
                         uint8_t *cmd, uint32_t *addr,
@@ -401,14 +400,14 @@ hpm_stat_t spi_transfer(SPI_Type *ptr,
     /* read spi transfer mode */
     trans_mode = config->common_config.trans_mode;
 
-    /* write command on master mode */
-    stat = spi_write_command(ptr, mode, config, cmd);
+    /* write address on master mode */
+    stat = spi_write_address(ptr, mode, config, addr);
     if (stat != status_success) {
         return stat;
     }
 
-    /* write address on master mode */
-    stat = spi_write_address(ptr, mode, config, addr);
+    /* write command on master mode */
+    stat = spi_write_command(ptr, mode, config, cmd);
     if (stat != status_success) {
         return stat;
     }
@@ -436,7 +435,11 @@ hpm_stat_t spi_transfer(SPI_Type *ptr,
 
     /* read command on slave mode */
     stat = spi_read_command(ptr, mode, config, cmd);
-
+    if (stat != status_success) {
+        return stat;
+    }
+    /* on the slave mode, if master keeps asserting the cs signal, it's maybe timeout */
+    stat = spi_wait_for_idle_status(ptr);
     return stat;
 }
 
@@ -463,14 +466,14 @@ hpm_stat_t spi_setup_dma_transfer(SPI_Type *ptr,
     /* read spi control mode */
     mode = (ptr->TRANSFMT & SPI_TRANSFMT_SLVMODE_MASK) >> SPI_TRANSFMT_SLVMODE_SHIFT;
 
-    /* command phase */
-    stat = spi_write_command(ptr, mode, config, cmd);
+    /* address phase */
+    stat = spi_write_address(ptr, mode, config, addr);
     if (stat != status_success) {
         return stat;
     }
 
-    /* address phase */
-    stat = spi_write_address(ptr, mode, config, addr);
+    /* command phase */
+    stat = spi_write_command(ptr, mode, config, cmd);
     if (stat != status_success) {
         return stat;
     }

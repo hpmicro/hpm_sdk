@@ -3,10 +3,12 @@
 
 cmake_minimum_required(VERSION 3.13)
 
-set(CONFIG_COREMARK 1)
-set(CMAKE_BUILD_TYPE sec_core_img)
+set(SES_TOOLCHAIN_VARIANT "Andes")
 
-set(CUSTOM_GCC_LINKER_FILE ${CMAKE_CURRENT_SOURCE_DIR}/../linker/gcc/core1.ld)
+set(CONFIG_COREMARK 1)
+set(BUILD_FOR_SECONDARY_CORE 1)
+set(IS_SEC_CORE_IMG true)
+set(CMAKE_BUILD_TYPE sec_core_img)
 
 set(SEC_CORE_IMG_C_ARRAY_OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/../core0/src/sec_core_img.c)
 
@@ -34,4 +36,6 @@ sdk_compile_definitions(COMPILER_FLAGS="${all_opts}")
 sdk_inc(src/port)
 sdk_app_src(src/port/core_portme.c)
 
+sdk_ses_compile_options(-mabi=ilp32d)
+sdk_ses_compile_options(-march=rv32gc)
 generate_ses_project()

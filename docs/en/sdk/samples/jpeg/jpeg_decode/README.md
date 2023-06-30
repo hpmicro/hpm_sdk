@@ -11,7 +11,7 @@ JPEG decoding example project demonstrates how to decode a JPG file using either
 
 ## Configuration
 
-- File `CMakelists.txt`.
+- File `CMakeLists.txt`.
   - ``set (JPEG_USE_SDCARD 1)`` to read jpeg file (.jpg) from SD card or ``set (JPEG_USE_UDISK 1)`` to read jpeg file (.jpg) from u-disk. These options are exclusive.
   - ``set (JPEG_HW_MODE 1)`` to decode jpeg file with JPEG module; ``set (JPEG_HW_MODE 0)`` to decode with software library
 

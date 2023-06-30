@@ -11,14 +11,14 @@
 
 ## 注意
 
-- 通过串口单次输入的字符串长度不应该超过UART_SOC_FIFO_SIZE
+- 通过串口单次输入的字符串长度不应该超过TEST_UART_MAX_BUFFER_SIZE
 
 ## 运行现象
 
-当工程正确运行后，通过串口手动输入字符串，如：1234567887654321，则串口终端会收到如下信息：
+当工程正确运行后，通过串口手动输入字符串，如：12345678909876543210，则串口终端会收到如下信息：
 ```console
 uart driver example
 fifo mode
-uart will send back received characters, echo every 16 bytes
-1234567887654321
+uart will send back received characters, echo every 20 bytes
+12345678909876543210
 ```

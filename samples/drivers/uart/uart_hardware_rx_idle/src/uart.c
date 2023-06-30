@@ -9,7 +9,11 @@
 #include "hpm_common.h"
 #include "hpm_clock_drv.h"
 #include "hpm_uart_drv.h"
+#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#include "hpm_dmav2_drv.h"
+#else
 #include "hpm_dma_drv.h"
+#endif
 #include "hpm_dmamux_drv.h"
 
 #define TEST_UART                     BOARD_APP_UART_BASE
@@ -46,6 +50,8 @@ hpm_stat_t uart_rx_trigger_dma(DMA_Type *dma_ptr,
                                 uint32_t size)
 {
     dma_handshake_config_t config;
+
+    dma_default_handshake_config(dma_ptr, &config);
     config.ch_index = ch_num;
     config.dst = dst;
     config.dst_fixed = false;

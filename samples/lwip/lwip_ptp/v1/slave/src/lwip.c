@@ -38,10 +38,10 @@ static void enet_ptp_init(void)
     enet_ptp_ts_update_t timestamp;
 
     /* initial the ptp function */
-    config.ssinc = ENET_ONE_SEC_IN_NANOSEC / clock_get_frequency(ENET_PTP_CLK);
+    config.ssinc = 2 * ENET_ONE_SEC_IN_NANOSEC / clock_get_frequency(ENET_PTP_CLK);
     config.timestamp_rollover_mode = enet_ts_dig_rollover_control;
     config.update_method = enet_ptp_time_fine_update;
-    config.addend = 0xffffffff;
+    config.addend = 0x80000000;
 
     enet_init_ptp(ENET, &config);
 
@@ -90,6 +90,7 @@ static hpm_stat_t enet_init(ENET_Type *ptr)
 
     /*Get a default control config for tx descriptor */
     enet_get_default_tx_control_config(ENET, &enet_tx_control_config);
+    enet_tx_control_config.enable_ttse = true;
 
     /* Set the control config for tx descriptor */
     memcpy(&desc.tx_control_config, &enet_tx_control_config, sizeof(enet_tx_control_config_t));
@@ -107,6 +108,9 @@ static hpm_stat_t enet_init(ENET_Type *ptr)
 
     /* Set SARC */
     enet_config.sarc = enet_sarc_replace_mac0;
+
+    int_config.mmc_intr_mask_rx = 0x03ffffff;   /* Disable all mmc rx interrupt events */
+    int_config.mmc_intr_mask_tx = 0x03ffffff;   /* Disable all mmc tx interrupt events */
 
     /* Initialize enet controller */
     enet_controller_init(ptr, ENET_INF_TYPE, &desc, &enet_config, &int_config);
@@ -162,6 +166,7 @@ int main(void)
 
     /* Initialize GPIOs */
     board_init_enet_pins(ENET);
+    board_init_enet_pps_pins(BOARD_ENET_PPS);
 
     /* Reset an enet PHY */
     board_reset_enet_phy(ENET);
@@ -185,6 +190,7 @@ int main(void)
     if (enet_init(ENET) == 0) {
         /* Initialize PTP */
         enet_ptp_init();
+        enet_set_pps0_control_output(BOARD_ENET_PPS, enet_pps_ctrl_pps);
 
         /* Initialize the Lwip stack */
         lwip_init();

@@ -143,10 +143,36 @@ static void enet_mask_interrupt_event(ENET_Type *ptr, uint32_t mask)
     /* mask the specified interrupts */
     ptr->INTR_MASK |= mask;
 }
+
 /*---------------------------------------------------------------------
  * Driver API
  *---------------------------------------------------------------------
  */
+uint32_t enet_get_interrupt_status(ENET_Type *ptr)
+{
+    return ptr->INTR_STATUS;
+}
+
+void enet_mask_mmc_rx_interrupt_event(ENET_Type *ptr, uint32_t mask)
+{
+    ptr->MMC_INTR_MASK_RX |= mask;
+}
+
+uint32_t enet_get_mmc_rx_interrupt_status(ENET_Type *ptr)
+{
+    return ptr->MMC_INTR_RX;
+}
+
+void enet_mask_mmc_tx_interrupt_event(ENET_Type *ptr, uint32_t mask)
+{
+    ptr->MMC_INTR_MASK_TX |= mask;
+}
+
+uint32_t enet_get_mmc_tx_interrupt_status(ENET_Type *ptr)
+{
+    return ptr->MMC_INTR_TX;
+}
+
 void enet_dma_flush(ENET_Type *ptr)
 {
     /* flush DMA transmit FIFO */
@@ -190,7 +216,6 @@ uint16_t enet_read_phy(ENET_Type *ptr, uint32_t phy_addr, uint32_t addr)
     return (uint16_t)ENET_GMII_DATA_GD_GET(ptr->GMII_DATA);
 }
 
-
 void enet_set_line_speed(ENET_Type *ptr, enet_line_speed_t speed)
 {
     ptr->MACCFG &= ~(ENET_MACCFG_PS_MASK | ENET_MACCFG_FES_MASK);
@@ -211,11 +236,17 @@ int enet_controller_init(ENET_Type *ptr, enet_inf_type_t inf_type, enet_desc_t *
     /* initialize DMA */
     enet_dma_init(ptr, desc, int_config->int_enable, config->dma_pbl);
 
-    /* Initialize MAC */
+    /* initialize MAC */
     enet_mac_init(ptr, config, inf_type);
 
-    /* Mask the specified interrupts */
+    /* mask the specified interrupts */
     enet_mask_interrupt_event(ptr, int_config->int_mask);
+
+    /* mask the mmc rx interrupts */
+    enet_mask_mmc_rx_interrupt_event(ptr, int_config->mmc_intr_mask_rx);
+
+    /* mask the mmc tx interrupts */
+    enet_mask_mmc_tx_interrupt_event(ptr, int_config->mmc_intr_mask_tx);
 
     return true;
 }
@@ -353,18 +384,135 @@ void enet_get_default_tx_control_config(ENET_Type *ptr, enet_tx_control_config_t
     config->enable_ioc  = false;
     config->disable_crc = true;
     config->disable_pad = false;
-    config->enable_tts  = false;
+    config->enable_ttse = false;
     config->enable_crcr = true;
     config->cic         = enet_cic_ip_pseudoheader;
     config->vlic        = enet_vlic_disable;
     config->saic        = enet_saic_disable;
 }
 
+uint32_t enet_prepare_tx_desc_with_ts_record(ENET_Type *ptr,
+                                             enet_tx_desc_t **parent_tx_desc_list_cur,
+                                             enet_tx_control_config_t *config,
+                                             uint16_t frame_length, uint16_t tx_buff_size,
+                                             enet_ptp_ts_system_t *timestamp)
+{
+    uint32_t buf_count = 0, size = 0, i = 0;
+    uint32_t retry_cnt = ENET_RETRY_CNT;
+    enet_tx_desc_t *dma_tx_desc;
+    enet_tx_desc_t *tx_desc_list_cur = *parent_tx_desc_list_cur;
+
+    if (tx_buff_size == 0) {
+        return ENET_ERROR;
+    }
+    /* check if the descriptor is owned by the Ethernet DMA (when set) or CPU (when reset) */
+
+    dma_tx_desc = tx_desc_list_cur;
+
+    if (frame_length > tx_buff_size) {
+        buf_count = frame_length / tx_buff_size;
+        if (frame_length % tx_buff_size) {
+            buf_count++;
+        }
+    } else {
+        buf_count = 1;
+    }
+
+    if (buf_count == 1) {
+        /*set the last and the first segment */
+        dma_tx_desc->tdes0_bm.own  = 0;
+        dma_tx_desc->tdes0_bm.fs   = 1;
+        dma_tx_desc->tdes0_bm.ls   = 1;
+        dma_tx_desc->tdes0_bm.ic   = config->enable_ioc;
+        dma_tx_desc->tdes0_bm.dc   = config->disable_crc;
+        dma_tx_desc->tdes0_bm.dp   = config->disable_pad;
+        dma_tx_desc->tdes0_bm.crcr = config->enable_crcr;
+        dma_tx_desc->tdes0_bm.cic  = config->cic;
+        dma_tx_desc->tdes0_bm.vlic = config->vlic;
+        dma_tx_desc->tdes0_bm.ttse = config->enable_ttse;
+        dma_tx_desc->tdes1_bm.saic = config->saic;
+        /* set the frame size */
+        dma_tx_desc->tdes1_bm.tbs1 = (frame_length & ENET_DMATxDesc_TBS1);
+        /* set own bit of the Tx descriptor status: gives the buffer back to Ethernet DMA */
+        dma_tx_desc->tdes0_bm.own = 1;
+        ptr->DMA_TX_POLL_DEMAND = 1;
+
+        if (dma_tx_desc->tdes0_bm.ttse == true) {
+            do {
+
+            } while (dma_tx_desc->tdes0_bm.own == 1 && retry_cnt-- > 0);
+
+            if (retry_cnt == 0) {
+                return ENET_ERROR;
+            }
+
+            timestamp->sec  = dma_tx_desc->tdes7_bm.ttsh;
+            timestamp->nsec = dma_tx_desc->tdes6_bm.ttsl;
+        }
+
+        dma_tx_desc = (enet_tx_desc_t *)(dma_tx_desc->tdes3_bm.next_desc);
+    } else {
+        for (i = 0; i < buf_count; i++) {
+            /* get the next available tx descriptor */
+            dma_tx_desc = (enet_tx_desc_t *)(dma_tx_desc->tdes3_bm.next_desc);
+
+            /* clear first and last segment bits */
+            dma_tx_desc->tdes0_bm.fs = 0;
+            dma_tx_desc->tdes0_bm.ls = 0;
+
+            if (i == 0) {
+                /* setting the first segment bit */
+                dma_tx_desc->tdes0_bm.fs = 1;
+                dma_tx_desc->tdes0_bm.dc   = config->disable_crc;
+                dma_tx_desc->tdes0_bm.dp   = config->disable_pad;
+                dma_tx_desc->tdes0_bm.crcr = config->enable_crcr;
+                dma_tx_desc->tdes0_bm.cic  = config->cic;
+                dma_tx_desc->tdes0_bm.vlic = config->vlic;
+                dma_tx_desc->tdes0_bm.ttse = config->enable_ttse;
+                dma_tx_desc->tdes1_bm.saic = config->saic;
+
+                if (dma_tx_desc->tdes0_bm.ttse == true) {
+                    do {
+
+                    } while (dma_tx_desc->tdes0_bm.own == 1 && retry_cnt-- > 0);
+
+                    if (retry_cnt == 0) {
+                        return ENET_ERROR;
+                    }
+
+                    timestamp->sec  = dma_tx_desc->tdes7_bm.ttsh;
+                    timestamp->nsec = dma_tx_desc->tdes6_bm.ttsl;
+                }
+            }
+
+            /* set the buffer 1 size */
+            dma_tx_desc->tdes1_bm.tbs1 = (tx_buff_size & ENET_DMATxDesc_TBS1);
+
+            if (i == (buf_count - 1)) {
+                /* set the last segment bit */
+                dma_tx_desc->tdes0_bm.ls = 1;
+                dma_tx_desc->tdes0_bm.ic   = config->enable_ioc;
+                size = frame_length - (buf_count - 1) * tx_buff_size;
+                dma_tx_desc->tdes1_bm.tbs1 = (size & ENET_DMATxDesc_TBS1);
+
+                /* set own bit of the Tx descriptor status: gives the buffer back to Ethernet DMA */
+                dma_tx_desc->tdes0_bm.own = 1;
+                ptr->DMA_TX_POLL_DEMAND = 1;
+            }
+        }
+    }
+
+    tx_desc_list_cur = dma_tx_desc;
+    *parent_tx_desc_list_cur = tx_desc_list_cur;
+
+    return ENET_SUCCESS;
+}
+
 uint32_t enet_prepare_tx_desc(ENET_Type *ptr, enet_tx_desc_t **parent_tx_desc_list_cur, enet_tx_control_config_t *config, uint16_t frame_length, uint16_t tx_buff_size)
 {
     uint32_t buf_count = 0, size = 0, i = 0;
     enet_tx_desc_t *dma_tx_desc;
-    enet_tx_desc_t  *tx_desc_list_cur = *parent_tx_desc_list_cur;
+    enet_tx_desc_t *tx_desc_list_cur = *parent_tx_desc_list_cur;
 
     if (tx_buff_size == 0) {
         return ENET_ERROR;
