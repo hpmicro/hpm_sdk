@@ -58,8 +58,8 @@ void init_lcd(void)
 
     lcdc_get_default_layer_config(LCD, &layer, PIXEL_FORMAT, layer_index);
 
-    layer.position_x = 0;
-    layer.position_y = 0;
+    layer.position_x = (BOARD_LCD_WIDTH - IMAGE_WIDTH) / 2;
+    layer.position_y = (BOARD_LCD_HEIGHT - IMAGE_HEIGHT) / 2;
     layer.width = IMAGE_WIDTH;
     layer.height = IMAGE_HEIGHT;
 

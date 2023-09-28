@@ -7,7 +7,7 @@
 /* FreeRTOS kernel includes. */
 #include "FreeRTOS.h"
 #include "task.h"
-#include "semphr.h"
+#include "usb_osal.h"
 
 #include <stdio.h>
 #include "board.h"
@@ -82,11 +82,11 @@ uint32_t sys_now(void)
 
 static void task1(void *pvParameters)
 {
-    extern SemaphoreHandle_t sema_rndis_data;
+    extern usb_osal_sem_t sema_rndis_data;
     printf("[cherry usb rndis device with freertos sample]: task started.\n");
 
     while (1) {
-        if (xSemaphoreTake(sema_rndis_data, portMAX_DELAY) != pdTRUE) {
+        if (usb_osal_sem_take(sema_rndis_data, portMAX_DELAY) != 0) {
             continue;
         }
         lwip_service_traffic();
@@ -102,7 +102,7 @@ int main(void)
 
     /* set irq priority */
     intc_set_irq_priority(BOARD_CALLBACK_TIMER_IRQ, 2);
-    intc_set_irq_priority(IRQn_USB0, 1);
+    intc_set_irq_priority(CONFIG_HPM_USBD_IRQn, 1);
 
     printf("cherry usb rndis device sample.\n");
 
@@ -120,7 +120,7 @@ int main(void)
     }
     httpd_init();
 
-    if (xTaskCreate(task1, "task1", configMINIMAL_STACK_SIZE + 256U, NULL, task1_PRIORITY, NULL) != pdPASS) {
+    if (usb_osal_thread_create("task1", 8192U, task1_PRIORITY, task1, NULL) == NULL) {
         printf("Task1 creation failed!.\n");
         for (;;) {
             ;

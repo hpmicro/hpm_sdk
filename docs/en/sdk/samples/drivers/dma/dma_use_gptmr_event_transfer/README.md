@@ -1,4 +1,4 @@
-# DMA use gptmr event transfer example
+# DMA Use GPTMR Event Transfer
 
 ## Overview
 
@@ -10,13 +10,14 @@
 ## Board Setting
 Please refer to [Pin Description](lab_board_resource) for specific board
 - use the serial debug assistant and input the gptmr event request configure number
+- when the gptmr event triggers to request DMA transfers is input_signal_toggle event, need to connect external PWM signal to GPTMR capture pin.
 - The serial port is set to ``115200bps``, ``1 stop bit``, ``no parity bit``
 
 
 ## Running the example
 
 - use the serial debug assistant, press the enter key to print a prompt,select the corresponding event trigger according to the prompt, and the onboard LED will flash at different frequencies.
-- If you need to change the blinking frequency of the LED in 0, 1, and 3 in the demo menu, you can change the default macros APP_BOARD_RELOAD_MS and APP_BOARD_CMP_MS in the code, which are 500ms and 100ms by default. 2 LED blinking effect is determined by the input CAP pin.
+- If you need to change the blinking frequency of the LED in 0, 1, and 3 in the demo menu, you can change the default macros APP_BOARD_RELOAD_MS and APP_BOARD_CMP_MS in the code, which are 500ms and 100ms by default. 2 LED blinking effect is determined by the input PWM of the GPTMR capture pin.
 - log as follows:
 
 ```console

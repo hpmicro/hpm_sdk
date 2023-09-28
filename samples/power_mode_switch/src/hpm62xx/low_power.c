@@ -64,6 +64,7 @@ void enter_wait_mode(void)
     pcfg_disable_power_trap(HPM_PCFG);
     sysctl_set_cpu0_lp_mode(HPM_SYSCTL, cpu_lp_mode_gate_cpu_clock);
     WFI();
+    sysctl_clock_set_preset(HPM_SYSCTL, sysctl_preset_1);
 }
 
 void enter_stop_mode(void)
@@ -96,7 +97,7 @@ void enter_standby_mode(void)
      */
     pcfg_set_periph_clock_mode(HPM_PCFG, PCFG_PERIPH_KEEP_CLOCK_ON(pcfg_pmc_periph_uart));
     sysctl_set_cpu0_lp_retention(HPM_SYSCTL, retention);
-    sysctl_set_cpu0_lp_mode(HPM_SYSCTL, cpu_lp_mode_gate_cpu_clock);
+    sysctl_set_cpu0_lp_mode(HPM_SYSCTL, cpu_lp_mode_trigger_system_lp);
     WFI();
 }
 

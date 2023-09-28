@@ -1,38 +1,57 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
-#include <string.h>
+
 #include "tcp_echo.h"
-#include "lwip/tcp.h"
+#include "lwip/sys.h"
+#include "lwip/api.h"
 
-static err_t tcpecho_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
+static void tcp_echo_thread(void *arg)
 {
-    if (p != NULL) {
-        tcp_recved(tpcb, p->tot_len);
-        tcp_write(tpcb, p->payload, p->tot_len, 1);
-        memset(p->payload, 0, p->tot_len);
-        pbuf_free(p);
-    } else if (err == ERR_OK) {
-        return tcp_close(tpcb);
+    struct netconn *conn, *newconn;
+    struct netbuf *buf;
+    void *data;
+    u16_t len;
+    err_t err;
+
+    LWIP_UNUSED_ARG(arg);
+
+#if LWIP_IPV6
+    conn = netconn_new(NETCONN_TCP_IPV6);
+    netconn_bind(conn, IP6_ADDR_ANY, TCP_ECHO_PORT);
+#else /* LWIP_IPV6 */
+    conn = netconn_new(NETCONN_TCP);
+    netconn_bind(conn, IP_ADDR_ANY, TCP_ECHO_PORT);
+#endif /* LWIP_IPV6 */
+    LWIP_ASSERT("tcpecho: invalid conn", (conn != NULL));
+
+    netconn_listen(conn);
+
+    while (1) {
+        err = netconn_accept(conn, &newconn);
+
+        if (err == ERR_OK) {
+            while ((err = netconn_recv(newconn, &buf)) == ERR_OK) {
+
+                do {
+                    netbuf_data(buf, &data, &len);
+                    err = netconn_write(newconn, data, len, NETCONN_COPY);
+                    if (err != ERR_OK) {
+                        LWIP_ASSERT("tcpecho: netconn_write: error %s\n", lwip_strerr(err));
+                    }
+                } while (netbuf_next(buf) >= 0);
+                netbuf_delete(buf);
+            }
+            netconn_close(newconn);
+            netconn_delete(newconn);
+        }
     }
-    return ERR_OK;
-}
-
-static err_t tcpecho_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
-{
-    tcp_recv(newpcb, tcpecho_recv);
-    return ERR_OK;
 }
 
 void tcp_echo_init(void)
 {
-    struct tcp_pcb *pcb = NULL;
-
-    pcb = tcp_new();
-    tcp_bind(pcb, IP_ADDR_ANY, TCP_ECHO_PORT);
-    pcb = tcp_listen(pcb);
-    tcp_accept(pcb, tcpecho_accept);
+    sys_thread_new("tcp_echo_thread", tcp_echo_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
 }

@@ -1,4 +1,4 @@
-# DMA circularly receives uart data example
+# DMA Circularly Receives Uart Data
 
 ## Overview
 

@@ -171,7 +171,7 @@ void uart_dma_rx_idle_callback(uart_rx_flexiable_data_context_t *demo_config)
     dma_info_t dma_info = demo_config->dma_info;
     gptmr_info_t gptmr_info = demo_config->gptmr_info;
     demo_config->uart_rx_idle = true;
-    demo_config->uart_receive_data_size = BUFF_SIZE - dma_get_residue_transfer_size(dma_info.ptr, dma_info.ch);
+    demo_config->uart_receive_data_size = BUFF_SIZE - dma_get_remaining_transfer_size(dma_info.ptr, dma_info.ch);
     memcpy(uart_info.buff_addr, dma_info.dst_addr, demo_config->uart_receive_data_size);
 
     /* start grtmr capture for next rx reception start detection */
@@ -189,7 +189,8 @@ void gptmr_detect_uart_rx_idle_handler(uart_rx_flexiable_data_context_t *demo_co
 
     /* cmp */
     if (gptmr_check_status(gptmr_info.ptr, GPTMR_CH_CMP_STAT_MASK(gptmr_info.cmp_ch, 0))) {
-        gptmr_clear_status(gptmr_info.ptr, GPTMR_CH_CMP_STAT_MASK(gptmr_info.cmp_ch, 0)); /* clear cmp status */
+        /* clear cmp status and capture status, the rx idle set cmp status, the low level of data transmission set capture status */
+        gptmr_clear_status(gptmr_info.ptr, GPTMR_CH_CMP_STAT_MASK(gptmr_info.cmp_ch, 0) | GPTMR_CH_CAP_STAT_MASK(gptmr_info.cap_ch));
         gptmr_stop_counter(gptmr_info.ptr, gptmr_info.cmp_ch); /* stop counter */
         gptmr_channel_reset_count(gptmr_info.ptr, gptmr_info.cmp_ch); /* clear counter */
         gptmr_disable_irq(gptmr_info.ptr, GPTMR_CH_CMP_IRQ_MASK(gptmr_info.cmp_ch, 0)); /* disable cmp irq */

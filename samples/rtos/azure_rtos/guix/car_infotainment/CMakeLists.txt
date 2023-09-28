@@ -24,6 +24,7 @@ project(demo_guix_car_infotainment)
 
 sdk_compile_definitions(-D__threadx_irq_stack_top=_stack)
 sdk_compile_definitions(-DCONFIG_THREADX=1)
+sdk_compile_options("-O3")
 
 sdk_app_inc(inc)
 sdk_app_src(src/guix_demo.c)

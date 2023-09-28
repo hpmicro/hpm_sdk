@@ -1,14 +1,14 @@
-# USB RNDIS HOST - DHCP
+# CherryUSB RNDIS Host - DHCP Client
 
 ## Overview
 
-- This example project shows USB RNDIS HOST realize DHCP Client.
+- This example project shows USB RNDIS Host realize DHCP Client.
 - Using two development boards interconnect. A development board program 'samples/cheryusb/device/rndis/udp_echo' as the RNDIS device, and B development board program this example as the RNDIS host. The RNDIS host will obtain and set its own MAC address from the RNDIS device, as well as obtain its own IP address and gateway information through the dhcp protocol.
 
 ## Board Setting
 
 - A development board interconnected to B development board throught port USB0.
-- B development board(RNDIS HOST) DEBUG port or console port connect to PC.
+- B development board(RNDIS Host) DEBUG port or console port connect to PC.
 
 ## Example of output log
 
@@ -70,10 +70,5 @@ Start cherryusb rndis host task...
  IPv4 Address     : 192.168.7.2
  IPv4 Subnet mask : 255.255.255.0
  IPv4 Gateway     : 192.168.7.1
-
-rndis dev keepalive success!
-rndis dev keepalive success!
-rndis dev keepalive success!
-
 
 ```

@@ -1,0 +1,4 @@
+dependency:
+  - qeo
+  - mmc
+  - dac

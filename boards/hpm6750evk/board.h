@@ -33,7 +33,7 @@
 #define BOARD_APP_UART_IRQ  IRQn_UART0
 #else
 #ifndef BOARD_APP_UART_IRQ
-#warning no IRQ specified for applicaiton uart
+#warning no IRQ specified for application uart
 #endif
 #endif
 
@@ -301,10 +301,12 @@
 #define BOARD_APP_AUDIO_CLK_SRC_NAME clk_pll3clk0
 
 /* enet section */
+#define BOARD_ENET_COUNT                (2U)
 #define BOARD_ENET_PPS                  HPM_ENET0
 #define BOARD_ENET_PPS_IDX              enet_pps_0
 #define BOARD_ENET_PPS_PTP_CLOCK        clock_ptp0
 
+#define BOARD_ENET_RGMII_PHY_ITF        enet_inf_rgmii
 #define BOARD_ENET_RGMII_RST_GPIO       HPM_GPIO0
 #define BOARD_ENET_RGMII_RST_GPIO_INDEX GPIO_DO_GPIOF
 #define BOARD_ENET_RGMII_RST_GPIO_PIN   (0U)
@@ -312,26 +314,46 @@
 #define BOARD_ENET_RGMII_TX_DLY         (0U)
 #define BOARD_ENET_RGMII_RX_DLY         (23U)
 #define BOARD_ENET_RGMII_PTP_CLOCK      clock_ptp0
+#define BOARD_ENET_RGMII_PPS0_PINOUT    (1)
 
+#define BOARD_ENET_RMII_PHY_ITF         enet_inf_rmii
 #define BOARD_ENET_RMII_RST_GPIO        HPM_GPIO0
 #define BOARD_ENET_RMII_RST_GPIO_INDEX  GPIO_DO_GPIOE
 #define BOARD_ENET_RMII_RST_GPIO_PIN    (26U)
 #define BOARD_ENET_RMII                 HPM_ENET1
 #define BOARD_ENET_RMII_INT_REF_CLK     (1U)
 #define BOARD_ENET_RMII_PTP_CLOCK       clock_ptp1
+#define BOARD_ENET_RMII_PPS0_PINOUT     (0)
 
 /* ADC section */
-#define BOARD_APP_ADC12_NAME "ADC0"
-#define BOARD_APP_ADC12_BASE HPM_ADC0
-#define BOARD_APP_ADC12_IRQn IRQn_ADC0
-#define BOARD_APP_ADC12_CH_1                  (11U)
-#define BOARD_APP_ADC12_CH_2                  (10U)
-#define BOARD_APP_ADC12_CH_3                  (7U)
+#define BOARD_APP_ADC12_NAME            "ADC0"
+#define BOARD_APP_ADC12_BASE            HPM_ADC0
+#define BOARD_APP_ADC12_IRQn            IRQn_ADC0
+#define BOARD_APP_ADC12_CH_1            (11U)
+#define BOARD_APP_ADC12_CH_2            (10U)
+#define BOARD_APP_ADC12_CH_3            (7U)
+#define BOARD_APP_ADC12_CLK_NAME        (clock_adc0)
 
-#define BOARD_APP_ADC16_NAME "ADC3"
-#define BOARD_APP_ADC16_BASE HPM_ADC3
-#define BOARD_APP_ADC16_IRQn IRQn_ADC3
-#define BOARD_APP_ADC16_CH_1                  (2U)
+#define BOARD_APP_ADC16_NAME            "ADC3"
+#define BOARD_APP_ADC16_BASE            HPM_ADC3
+#define BOARD_APP_ADC16_IRQn            IRQn_ADC3
+#define BOARD_APP_ADC16_CH_1            (2U)
+#define BOARD_APP_ADC16_CLK_NAME        (clock_adc3)
+
+#define BOARD_APP_ADC12_HW_TRIG_SRC     HPM_PWM0
+#define BOARD_APP_ADC12_HW_TRGM         HPM_TRGM0
+#define BOARD_APP_ADC12_HW_TRGM_IN      HPM_TRGM0_INPUT_SRC_PWM0_CH8REF
+#define BOARD_APP_ADC12_HW_TRGM_OUT_SEQ TRGM_TRGOCFG_ADC0_STRGI
+#define BOARD_APP_ADC12_HW_TRGM_OUT_PMT TRGM_TRGOCFG_ADCX_PTRGI0A
+
+#define BOARD_APP_ADC16_HW_TRIG_SRC     HPM_PWM0
+#define BOARD_APP_ADC16_HW_TRGM         HPM_TRGM0
+#define BOARD_APP_ADC16_HW_TRGM_IN      HPM_TRGM0_INPUT_SRC_PWM0_CH8REF
+#define BOARD_APP_ADC16_HW_TRGM_OUT_SEQ TRGM_TRGOCFG_ADC3_STRGI
+#define BOARD_APP_ADC16_HW_TRGM_OUT_PMT TRGM_TRGOCFG_ADCX_PTRGI0A
+
+#define BOARD_APP_ADC12_PMT_TRIG_CH     ADC12_CONFIG_TRG0A
+#define BOARD_APP_ADC16_PMT_TRIG_CH     ADC16_CONFIG_TRG0A
 
 /* CAN section */
 #define BOARD_APP_CAN_BASE                       HPM_CAN0
@@ -501,6 +523,12 @@
 #define BOARD_SHOW_BANNER 1
 #endif
 
+/* FreeRTOS Definitions */
+#define BOARD_FREERTOS_TIMER                    HPM_GPTMR4
+#define BOARD_FREERTOS_TIMER_CHANNEL            1
+#define BOARD_FREERTOS_TIMER_IRQ                IRQn_GPTMR4
+#define BOARD_FREERTOS_TIMER_CLK_NAME           clock_gptmr4
+
 #if defined(__cplusplus)
 extern "C" {
 #endif /* __cplusplus */
@@ -513,6 +541,7 @@ void board_init_console(void);
 void board_init_uart(UART_Type *ptr);
 void board_init_i2c(I2C_Type *ptr);
 void board_init_lcd(void);
+void board_lcd_backlight(bool is_on);
 void board_panel_para_to_lcdc(lcdc_config_t *config);
 void board_init_can(CAN_Type *ptr);
 
@@ -550,9 +579,9 @@ uint32_t board_init_lcd_clock(void);
 
 uint32_t board_init_spi_clock(SPI_Type *ptr);
 
-uint32_t board_init_adc12_clock(ADC12_Type *ptr);
+uint32_t board_init_adc12_clock(ADC12_Type *ptr, bool clk_src_ahb);
 
-uint32_t board_init_adc16_clock(ADC16_Type *ptr);
+uint32_t board_init_adc16_clock(ADC16_Type *ptr, bool clk_src_ahb);
 
 uint32_t board_init_can_clock(CAN_Type *ptr);
 
@@ -586,6 +615,16 @@ hpm_stat_t board_init_enet_rgmii_clock_delay(ENET_Type *ptr);
 hpm_stat_t board_init_enet_ptp_clock(ENET_Type *ptr);
 hpm_stat_t board_enable_enet_irq(ENET_Type *ptr);
 hpm_stat_t board_disable_enet_irq(ENET_Type *ptr);
+
+#if defined(ENET_MULTIPLE_PORT) && ENET_MULTIPLE_PORT
+hpm_stat_t board_init_multiple_enet_pins(void);
+hpm_stat_t board_init_multiple_enet_clock(void);
+hpm_stat_t board_reset_multiple_enet_phy(void);
+hpm_stat_t board_init_enet_phy(ENET_Type *ptr);
+ENET_Type *board_get_enet_base(uint8_t idx);
+uint8_t    board_get_enet_phy_itf(uint8_t idx);
+void       board_get_enet_phy_status(uint8_t idx, void *status);
+#endif
 
 /*
  * @brief Initialize PMP and PMA for but not limited to the following purposes:

@@ -8,14 +8,14 @@ set(CONFIG_HPM_ADC 1)
 
 # set(HPM_MATH_DSP_SES_LIB "libdspf")
 
+set(RV_ABI "ilp32f")
+set(RV_ARCH "rv32imafc")
+
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(bldc_over_zero)
 
 sdk_app_inc(src)
 sdk_app_src(src/bldc_over_zero_callback.c)
 sdk_app_src(src/bldc_over_zero.c)
-
-sdk_ses_compile_options(-mabi=ilp32f)
-sdk_ses_compile_options(-march=rv32imafc)
 
 generate_ses_project()

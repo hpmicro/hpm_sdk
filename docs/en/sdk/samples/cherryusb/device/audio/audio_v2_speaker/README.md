@@ -1,10 +1,10 @@
-# USB AUDIO V2 SPEAKER
+# CherryUSB Audio V2 Speaker
 
 ## Overview
 
-This example project shows USB AUDIO V2 speaker device.
+This example project shows USB Audio V2 speaker device.
 
-- PC sees a cherry usb speaker via Device Manager
+- PC sees a CherryUSB speaker via Device Manager
 
 ## Board Setting
 

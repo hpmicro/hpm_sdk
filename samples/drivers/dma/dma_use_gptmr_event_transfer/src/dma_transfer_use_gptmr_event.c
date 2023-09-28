@@ -17,12 +17,16 @@
 
 #define APP_DMA_SRC_WIDTH            DMA_TRANSFER_WIDTH_WORD
 #define APP_DMA_DST_WIDTH            DMA_TRANSFER_WIDTH_WORD
+#define APP_GPTMR_DMA                BOARD_APP_HDMA
+#define APP_GPTMR_DMA_IRQ            BOARD_APP_HDMA_IRQ
 #define APP_BOARD_GPTMR              BOARD_GPTMR
 #define APP_BOARD_GPTMR_CLOCK        BOARD_GPTMR_CLK_NAME
 #define APP_BOARD_GPTMR_CH           BOARD_GPTMR_CHANNEL
 #define APP_BOARD_GPTMR_DMA_SRC      BOARD_GPTMR_DMA_SRC
-#define APP_BOARD_RELOAD_MS          (500)
-#define APP_BOARD_CMP_MS             (100)
+#define APP_BOARD_GPTMR_DMA_CH       (0U)
+#define APP_BOARD_GPTMR_DMAMUX_CH    DMA_SOC_CHN_TO_DMAMUX_CHN(APP_GPTMR_DMA, APP_BOARD_GPTMR_DMA_CH)
+#define APP_BOARD_RELOAD_MS          (500U)
+#define APP_BOARD_CMP_MS             (100U)
 
 typedef struct {
     uint8_t num;
@@ -47,21 +51,21 @@ void isr_dma(void)
 {
     volatile hpm_stat_t stat;
     volatile uint32_t src_addr;
-    stat = dma_check_transfer_status(BOARD_APP_HDMA, DMAMUX_MUXCFG_HDMA_MUX0);
+    stat = dma_check_transfer_status(APP_GPTMR_DMA, APP_BOARD_GPTMR_DMA_CH);
     if (stat & DMA_CHANNEL_STATUS_TC) {
 
         /* in order to show the demo need to reset count, example:in gptmr_dma_request_on_cmp0 mode,the flash time of led varies with cmp */
-        gptmr_channel_reset_count(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH);
+        gptmr_channel_reset_count(APP_BOARD_GPTMR, APP_BOARD_GPTMR_DMA_CH);
 
         src_addr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)&pins_toggle_status);
-        dma_set_source_address(BOARD_APP_HDMA, DMAMUX_MUXCFG_HDMA_MUX0, src_addr);
+        dma_set_source_address(APP_GPTMR_DMA, APP_BOARD_GPTMR_DMA_CH, src_addr);
 
-        dma_set_transfer_size(BOARD_APP_HDMA, DMAMUX_MUXCFG_HDMA_MUX0, sizeof(pins_toggle_status) >> APP_DMA_SRC_WIDTH);
+        dma_set_transfer_size(APP_GPTMR_DMA, APP_BOARD_GPTMR_DMA_CH, sizeof(pins_toggle_status) >> APP_DMA_SRC_WIDTH);
 
-        dma_enable_channel(BOARD_APP_HDMA, DMAMUX_MUXCFG_HDMA_MUX0);
+        dma_enable_channel(APP_GPTMR_DMA, APP_BOARD_GPTMR_DMA_CH);
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_HDMA_IRQ, isr_dma)
+SDK_DECLARE_EXT_ISR_M(APP_GPTMR_DMA_IRQ, isr_dma)
 
 int main(void)
 {
@@ -76,9 +80,9 @@ int main(void)
 static void dma_transfer_config(void)
 {
     dma_channel_config_t ch_config = {0};
-    dma_disable_channel(BOARD_APP_HDMA, DMAMUX_MUXCFG_HDMA_MUX0);
-    dma_reset(BOARD_APP_HDMA);
-    dma_default_channel_config(BOARD_APP_HDMA, &ch_config);
+    dma_disable_channel(APP_GPTMR_DMA, APP_BOARD_GPTMR_DMA_CH);
+    dma_reset(APP_GPTMR_DMA);
+    dma_default_channel_config(APP_GPTMR_DMA, &ch_config);
     ch_config.src_addr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)&pins_toggle_status);
     ch_config.dst_addr = (uint32_t)&BOARD_LED_GPIO_CTRL->DO[BOARD_LED_GPIO_INDEX].TOGGLE;
     ch_config.src_mode = DMA_HANDSHAKE_MODE_NORMAL;
@@ -89,7 +93,7 @@ static void dma_transfer_config(void)
     ch_config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
     ch_config.dst_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
     ch_config.size_in_byte = sizeof(pins_toggle_status);
-    if (status_success != dma_setup_channel(BOARD_APP_HDMA, DMAMUX_MUXCFG_HDMA_MUX0, &ch_config, false)) {
+    if (status_success != dma_setup_channel(APP_GPTMR_DMA, APP_BOARD_GPTMR_DMA_CH, &ch_config, false)) {
         printf(" dma setup channel failed\n");
         return;
     }
@@ -125,9 +129,9 @@ static void gptmr_config(gptmr_dma_request_event_t event)
     }
     gptmr_channel_reset_count(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH);
     gptmr_channel_config(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH, &config, false);
-    dmamux_config(BOARD_APP_DMAMUX, DMAMUX_MUXCFG_HDMA_MUX0, APP_BOARD_GPTMR_DMA_SRC, true);
+    dmamux_config(BOARD_APP_DMAMUX, APP_BOARD_GPTMR_DMAMUX_CH, APP_BOARD_GPTMR_DMA_SRC, true);
 
-    dma_enable_channel(BOARD_APP_HDMA, DMAMUX_MUXCFG_HDMA_MUX0);
+    dma_enable_channel(APP_GPTMR_DMA, APP_BOARD_GPTMR_DMA_CH);
     gptmr_start_counter(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH);
 }
 

@@ -9,6 +9,7 @@
    uart_irq/README
    uart_software_rx_idle/README
    uart_rx_timeout/README
+   uart_9bit/README
    uart_tamagawa/README
    uart_lin/master/README
    uart_lin/slave/README

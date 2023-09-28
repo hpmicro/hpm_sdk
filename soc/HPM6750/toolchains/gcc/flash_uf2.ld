@@ -28,7 +28,17 @@ SECTIONS
         KEEP(*(.start))
     } > XPI0
 
-    .text (__vector_load_addr__ + __vector_ram_end__ - __vector_ram_start__): {
+    __vector_load_addr__ = ADDR(.start) + SIZEOF(.start);
+    .vectors ORIGIN(ILM) : AT(__vector_load_addr__) {
+        . = ALIGN(8);
+        __vector_ram_start__ = .;
+        KEEP(*(.vector_table))
+        KEEP(*(.isr_vector))
+        . = ALIGN(8);
+        __vector_ram_end__ = .;
+    } > ILM
+
+    .text (__vector_load_addr__ + SIZEOF(.vectors)): {
         . = ALIGN(8);
         *(.text)
         *(.text*)
@@ -47,6 +57,12 @@ SECTIONS
 
         KEEP (*(.init))
         KEEP (*(.fini))
+
+        /* section information for usbh class */
+        . = ALIGN(8);
+        __usbh_class_info_start__ = .;
+        KEEP(*(.usbh_class_info))
+        __usbh_class_info_end__ = .;
         . = ALIGN(8);
     } > XPI0
 
@@ -54,30 +70,12 @@ SECTIONS
         KEEP(*(.rel*))
     } > XPI0
 
-    /* section information for usbh class */
-    .usbh_class_info : {
-        . = ALIGN(4);
-        __usbh_class_info_start__ = .;
-        KEEP(*(.usbh_class_info))
-        __usbh_class_info_end__ = .;
-        . = ALIGN(8);
-    } > XPI0
-
     PROVIDE (__etext = .);
     PROVIDE (_etext = .);
     PROVIDE (etext = .);
 
-    __vector_load_addr__ = ADDR(.start) + SIZEOF(.start);
-    .vectors ORIGIN(ILM) : AT(__vector_load_addr__) {
-        . = ALIGN(8);
-        __vector_ram_start__ = .;
-        KEEP(*(.vector_table))
-        KEEP(*(.isr_vector))
-        . = ALIGN(8);
-        __vector_ram_end__ = .;
-    } > ILM
-
-    .data : AT(etext) {
+    __data_load_addr__ = etext;
+    .data : AT(__data_load_addr__) {
         . = ALIGN(8);
         __data_start__ = .;
         __global_pointer$ = . + 0x800;
@@ -85,8 +83,6 @@ SECTIONS
         *(.data*)
         *(.sdata)
         *(.sdata*)
-        *(.tdata)
-        *(.tdata*)
 
         KEEP(*(.jcr))
         KEEP(*(.dynamic))
@@ -130,7 +126,8 @@ SECTIONS
         PROVIDE (edata = .);
     } > AXI_SRAM
 
-    .fast : AT(etext + __data_end__ - __data_start__) {
+    __fast_load_addr__ = etext + SIZEOF(.data);
+    .fast : AT(__fast_load_addr__) {
         . = ALIGN(8);
         PROVIDE(__ramfunc_start__ = .);
         *(.fast)
@@ -143,16 +140,37 @@ SECTIONS
         __bss_start__ = .;
         *(.bss)
         *(.bss*)
-        *(.tbss*)
         *(.sbss*)
         *(.scommon)
         *(.scommon*)
-        *(.tcommon*)
         *(.dynsbss*)
         *(COMMON)
         . = ALIGN(8);
         _end = .;
         __bss_end__ = .;
+    } > AXI_SRAM
+
+    .tbss (NOLOAD) : {
+        . = ALIGN(8);
+        PROVIDE(__tbss_start__ = .);
+        __thread_pointer$ = .;
+        *(.tbss)
+        *(.tbss.*)
+        *(.gnu.linkonce.tb.*)
+        *(.tcommon)
+        . = ALIGN(8);
+        PROVIDE(__tbss_end__ = .);
+    } > AXI_SRAM
+
+    __tdata_load_addr__ = etext + SIZEOF(.data) + SIZEOF(.fast);
+    .tdata : AT(__tdata_load_addr__) {
+        . = ALIGN(8);
+        PROVIDE(__tdata_start__ = .);
+        *(.tdata)
+        *(.tdata.*)
+        *(.gnu.linkonce.td.*)
+        . = ALIGN(8);
+        PROVIDE(__tdata_end__ = .);
     } > AXI_SRAM
 
     .framebuffer (NOLOAD) : {
@@ -161,7 +179,8 @@ SECTIONS
         . = ALIGN(8);
     } > AXI_SRAM
 
-    .noncacheable.init : AT(etext + __data_end__ - __data_start__ + __ramfunc_end__ - __ramfunc_start__) {
+    __noncacheable_init_load_addr__ = etext + SIZEOF(.data) + SIZEOF(.fast) + SIZEOF(.tdata);
+    .noncacheable.init : AT(__noncacheable_init_load_addr__) {
         . = ALIGN(8);
         __noncacheable_init_start__ = .;
         KEEP(*(.noncacheable.init))
@@ -215,5 +234,6 @@ SECTIONS
     __share_mem_start__ = ORIGIN(SHARE_RAM);
     __share_mem_end__ = ORIGIN(SHARE_RAM) + LENGTH(SHARE_RAM);
 
-    ASSERT((STACK_SIZE + HEAP_SIZE) <= 256K, "stack and heap total size larger than 256k")
+    __fw_size__ = SIZEOF(.start) + SIZEOF(.vectors) + SIZEOF(.rel) + SIZEOF(.text) + SIZEOF(.data) + SIZEOF(.fast) + SIZEOF(.tdata) + SIZEOF(.noncacheable.init);
+    ASSERT(__fw_size__ <= LENGTH(XPI0), "******  FAILED! XPI0 has not enough space!  ******")
 }

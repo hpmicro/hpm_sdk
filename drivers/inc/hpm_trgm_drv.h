@@ -24,10 +24,10 @@
  */
 typedef enum trgm_filter_mode {
     trgm_filter_mode_bypass = 0,
-    trgm_filter_mode_rapid_change = 1,
-    trgm_filter_mode_delay = 2,
-    trgm_filter_mode_stable_low = 3,
-    trgm_filter_mode_stable_high = 4,
+    trgm_filter_mode_rapid_change = 4,
+    trgm_filter_mode_delay = 5,
+    trgm_filter_mode_stable_high = 6,
+    trgm_filter_mode_stable_low = 7,
 } trgm_filter_mode_t;
 
 /**

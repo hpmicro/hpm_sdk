@@ -1,4 +1,4 @@
-# HPMICRO MICROROS
+# Microros
 
 ```{eval-rst}
 .. toctree::

@@ -57,12 +57,26 @@ extern "C" {
 #define BLDC_MOTOR3_INDEX                (4)
 
 /**
+ * @brief Serial number of the current sampling array
+ *
+ */
+#define ADCU_INDEX                 (0)
+#define ADCV_INDEX                 (1)
+#define ADCW_INDEX                 (2)
+
+/**
  * @brief PWM output channel definition, used for internal calculations
  *
  */
 #define BLDC_PWM_U          0
 #define BLDC_PWM_V          1
 #define BLDC_PWM_W          2
+
+/**
+ * @brief Get ADC data with 12bit valid bits
+ *
+ */
+#define GET_ADC_12BIT_VALID_DATA(x)             ((x & 0xffff) >> 4)
 
 /**
  * @brief All function pointers defined in the middleware point to this function,

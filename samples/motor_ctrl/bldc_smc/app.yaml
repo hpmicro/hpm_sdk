@@ -4,6 +4,7 @@ dependency:
 
 excluded_targets:
   - flash_sdram_xip_release
+  - flash_sdram_xip
   - flash_xip_release
   - release
 

@@ -54,7 +54,7 @@ int main(void)
     /* Initialize PTP */
     enet_ptp_init();
 
-#if __PPS0_CONTROL_OUTPUT_ENABLE
+#if defined(__PPS0_CONTROL_OUTPUT_ENABLE) && __PPS0_CONTROL_OUTPUT_ENABLE
     printf("Control Output Mode\n");
     enet_set_pps0_control_output(BOARD_ENET_PPS, enet_pps_ctrl_bin_2hz_digital_1hz);
 #else

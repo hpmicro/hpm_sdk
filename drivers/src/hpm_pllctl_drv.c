@@ -22,6 +22,28 @@
 #define PLLCTL_FRAC_PLL_MIN_REF (10000000U)
 #define PLLCTL_INT_PLL_MIN_REF (1000000U)
 
+
+hpm_stat_t pllctl_set_pll_work_mode(PLLCTL_Type *ptr, uint8_t pll, bool int_mode)
+{
+    if (int_mode) {
+        if (!(ptr->PLL[pll].CFG0 & PLLCTL_PLL_CFG0_DSMPD_MASK)) {
+            /* it was at frac mode, then it needs to be power down */
+            pllctl_pll_powerdown(ptr, pll);
+            ptr->PLL[pll].CFG0 |= PLLCTL_PLL_CFG0_DSMPD_MASK;
+            pllctl_pll_poweron(ptr, pll);
+        }
+    } else {
+        if (ptr->PLL[pll].CFG0 & PLLCTL_PLL_CFG0_DSMPD_MASK) {
+            /* pll has to be powered down to configure frac mode */
+            pllctl_pll_powerdown(ptr, pll);
+            ptr->PLL[pll].CFG0 &= ~PLLCTL_PLL_CFG0_DSMPD_MASK;
+            pllctl_pll_poweron(ptr, pll);
+        }
+    }
+
+    return status_success;
+}
+
 hpm_stat_t pllctl_set_refdiv(PLLCTL_Type *ptr, uint8_t pll, uint8_t div)
 {
     uint32_t min_ref;
@@ -47,6 +69,7 @@ hpm_stat_t pllctl_set_refdiv(PLLCTL_Type *ptr, uint8_t pll, uint8_t div)
         pllctl_pll_powerdown(ptr, pll);
         ptr->PLL[pll].CFG0 = (ptr->PLL[pll].CFG0 & ~PLLCTL_PLL_CFG0_REFDIV_MASK)
             | PLLCTL_PLL_CFG0_REFDIV_SET(div);
+        pllctl_pll_poweron(ptr, pll);
     }
     return status_success;
 }
@@ -204,7 +227,7 @@ uint32_t pllctl_get_pll_freq_in_hz(PLLCTL_Type *ptr, uint8_t pll)
         /* pll frac mode */
         fbdiv = PLLCTL_PLL_FREQ_FBDIV_FRAC_GET(ptr->PLL[pll].FREQ);
         frac = PLLCTL_PLL_FREQ_FRAC_GET(ptr->PLL[pll].FREQ);
-        freq = refclk * (fbdiv + ((double) frac / (1 << 24)));
+        freq = (refclk * (fbdiv + ((double) frac / (1 << 24)))) + 0.5;
     }
     return freq;
 }

@@ -24,6 +24,10 @@
 #define TEST_UART_CLK_NAME BOARD_APP_UART_CLK_NAME
 #define TEST_UART_DMA_CONTROLLER BOARD_APP_HDMA
 #define TEST_UART_DMAMUX_CONTROLLER BOARD_APP_DMAMUX
+#define TEST_UART_RX_DMA_CH 0
+#define TEST_UART_TX_DMA_CH 1
+#define TEST_UART_RX_DMAMUX_CH DMA_SOC_CHN_TO_DMAMUX_CHN(TEST_UART_DMA_CONTROLLER, TEST_UART_RX_DMA_CH)
+#define TEST_UART_TX_DMAMUX_CH DMA_SOC_CHN_TO_DMAMUX_CHN(TEST_UART_DMA_CONTROLLER, TEST_UART_TX_DMA_CH)
 
 #define TEST_BUFFER_SIZE HPM_L1C_CACHELINE_SIZE
 
@@ -58,67 +62,67 @@ void init_board_app_uart(void)
 void init_board_app_dma(void)
 {
     hpm_stat_t stat;
-    dma_channel_config_t ch0_config = { 0 };
-    dma_handshake_config_t ch1_config = { 0 };
+    dma_channel_config_t rx_ch_config = { 0 };
+    dma_handshake_config_t tx_ch_config = { 0 };
 
 /* 1. config uart circle rx dma */
-    dmamux_config(TEST_UART_DMAMUX_CONTROLLER, DMAMUX_MUXCFG_HDMA_MUX0, HPM_DMA_SRC_UART0_RX, true);
+    dmamux_config(TEST_UART_DMAMUX_CONTROLLER, TEST_UART_RX_DMAMUX_CH, HPM_DMA_SRC_UART0_RX, true);
 
     /* 1.1 config chain descriptors */
-    dma_default_channel_config(TEST_UART_DMA_CONTROLLER, &ch0_config);
-    ch0_config.src_addr = (uint32_t)&TEST_UART->RBR;
-    ch0_config.src_width = DMA_TRANSFER_WIDTH_BYTE;  /*  In DMA handshake case, source width and destination width must be BYTE. */
-    ch0_config.src_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
-    ch0_config.src_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
-    ch0_config.dst_addr = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)uart_rx_buf);
-    ch0_config.dst_width = DMA_TRANSFER_WIDTH_BYTE;  /*  In DMA handshake case, source width and destination width must be BYTE. */
-    ch0_config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_INCREMENT;
-    ch0_config.dst_mode = DMA_HANDSHAKE_MODE_NORMAL;
-    ch0_config.size_in_byte = TEST_BUFFER_SIZE;
-    ch0_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;  /*  In DMA handshake case, source burst size must be 1 transfer, that is 0. */
-    ch0_config.linked_ptr = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)&descriptors[1]);
-    stat = dma_config_linked_descriptor(TEST_UART_DMA_CONTROLLER, &descriptors[0], 0, &ch0_config);
+    dma_default_channel_config(TEST_UART_DMA_CONTROLLER, &rx_ch_config);
+    rx_ch_config.src_addr = (uint32_t)&TEST_UART->RBR;
+    rx_ch_config.src_width = DMA_TRANSFER_WIDTH_BYTE;  /*  In DMA handshake case, source width and destination width must be BYTE. */
+    rx_ch_config.src_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
+    rx_ch_config.src_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
+    rx_ch_config.dst_addr = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)uart_rx_buf);
+    rx_ch_config.dst_width = DMA_TRANSFER_WIDTH_BYTE;  /*  In DMA handshake case, source width and destination width must be BYTE. */
+    rx_ch_config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_INCREMENT;
+    rx_ch_config.dst_mode = DMA_HANDSHAKE_MODE_NORMAL;
+    rx_ch_config.size_in_byte = TEST_BUFFER_SIZE;
+    rx_ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;  /*  In DMA handshake case, source burst size must be 1 transfer, that is 0. */
+    rx_ch_config.linked_ptr = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)&descriptors[1]);
+    stat = dma_config_linked_descriptor(TEST_UART_DMA_CONTROLLER, &descriptors[0], TEST_UART_RX_DMA_CH, &rx_ch_config);
     if (stat != status_success) {
         while (1) {
         };
     }
 
-    ch0_config.linked_ptr = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)&descriptors[0]);
-    stat = dma_config_linked_descriptor(TEST_UART_DMA_CONTROLLER, &descriptors[1], 0, &ch0_config);
+    rx_ch_config.linked_ptr = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)&descriptors[0]);
+    stat = dma_config_linked_descriptor(TEST_UART_DMA_CONTROLLER, &descriptors[1], TEST_UART_RX_DMA_CH, &rx_ch_config);
     if (stat != status_success) {
         while (1) {
         };
     }
 
     /* 1.2 config rx dma */
-    ch0_config.linked_ptr = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)&descriptors[0]);
-    stat = dma_setup_channel(TEST_UART_DMA_CONTROLLER, 0, &ch0_config, true);
+    rx_ch_config.linked_ptr = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)&descriptors[0]);
+    stat = dma_setup_channel(TEST_UART_DMA_CONTROLLER, TEST_UART_RX_DMA_CH, &rx_ch_config, true);
     if (stat != status_success) {
         while (1) {
         };
     }
 
 /* 2. config uart tx dma */
-    dmamux_config(TEST_UART_DMAMUX_CONTROLLER, DMAMUX_MUXCFG_HDMA_MUX1, HPM_DMA_SRC_UART0_TX, true);
-    dma_default_handshake_config(TEST_UART_DMA_CONTROLLER, &ch1_config);
-    ch1_config.ch_index = 1;
-    ch1_config.dst = (uint32_t)&TEST_UART->THR;
-    ch1_config.dst_fixed = true;
-    ch1_config.src = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)uart_tx_buf);
-    ch1_config.src_fixed = false;
-    ch1_config.data_width = DMA_TRANSFER_WIDTH_BYTE;
-    ch1_config.size_in_byte = TEST_BUFFER_SIZE;
-    dma_setup_handshake(TEST_UART_DMA_CONTROLLER, &ch1_config, false);
+    dmamux_config(TEST_UART_DMAMUX_CONTROLLER, TEST_UART_TX_DMAMUX_CH, HPM_DMA_SRC_UART0_TX, true);
+    dma_default_handshake_config(TEST_UART_DMA_CONTROLLER, &tx_ch_config);
+    tx_ch_config.ch_index = TEST_UART_TX_DMA_CH;
+    tx_ch_config.dst = (uint32_t)&TEST_UART->THR;
+    tx_ch_config.dst_fixed = true;
+    tx_ch_config.src = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)uart_tx_buf);
+    tx_ch_config.src_fixed = false;
+    tx_ch_config.data_width = DMA_TRANSFER_WIDTH_BYTE;
+    tx_ch_config.size_in_byte = TEST_BUFFER_SIZE;
+    dma_setup_handshake(TEST_UART_DMA_CONTROLLER, &tx_ch_config, false);
 }
 
 void task_entry_5ms(void)
 {
     uint32_t rx_data_size;
-    uint32_t dma_residue_size;
+    uint32_t dma_remaining_size;
 
-    dma_residue_size = dma_get_residue_transfer_size(TEST_UART_DMA_CONTROLLER, 0);
+    dma_remaining_size = dma_get_remaining_transfer_size(TEST_UART_DMA_CONTROLLER, TEST_UART_RX_DMA_CH);
 
-    rx_rear_index = TEST_BUFFER_SIZE - dma_residue_size;
+    rx_rear_index = TEST_BUFFER_SIZE - dma_remaining_size;
     if (rx_front_index > rx_rear_index) {
         rx_data_size = TEST_BUFFER_SIZE + rx_rear_index - rx_front_index;
     } else {
@@ -135,10 +139,10 @@ void task_entry_5ms(void)
     rx_front_index = rx_rear_index;
 
     if (rx_data_size > 0) {
-        if (!dma_channel_is_enable(TEST_UART_DMA_CONTROLLER, 1)) {
-            dma_set_transfer_size(TEST_UART_DMA_CONTROLLER, 1, rx_data_size);
-            dma_set_source_address(TEST_UART_DMA_CONTROLLER, 1, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)uart_tx_buf));
-            dma_enable_channel(TEST_UART_DMA_CONTROLLER, 1);
+        if (!dma_channel_is_enable(TEST_UART_DMA_CONTROLLER, TEST_UART_TX_DMA_CH)) {
+            dma_set_transfer_size(TEST_UART_DMA_CONTROLLER, TEST_UART_TX_DMA_CH, rx_data_size);
+            dma_set_source_address(TEST_UART_DMA_CONTROLLER, TEST_UART_TX_DMA_CH, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)uart_tx_buf));
+            dma_enable_channel(TEST_UART_DMA_CONTROLLER, TEST_UART_TX_DMA_CH);
         }
     }
 }
@@ -148,6 +152,9 @@ int main(void)
     board_init();
     init_board_app_uart();
     init_board_app_dma();
+
+    printf("\nDma used link chain to implement circle transmission example");
+    printf("\nPlease input some characters, the serial port will echo. Please input characters:\n");
 
     board_timer_create(5, task_entry_5ms);
 

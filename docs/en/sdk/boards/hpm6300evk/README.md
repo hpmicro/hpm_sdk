@@ -1,6 +1,7 @@
 # HPM6300EVK
 
 ## Overview
+
 HPM6300EVK provides interfaces for most of the peripherals of the HPM6300 microcontroller, including 1 SD card slot, 1 USB Type-C interface, a 100M Ethernet port, CAN FD interface, etc., and expands NOR Flash, SDRAM and other external memories , and integrates an on-board debugger.
 
 ![hpm6300evk](../../../../assets/sdk/boards/hpm6300evk/hpm6300evk.png "hpm6300evk")
@@ -53,11 +54,11 @@ The sdram pins are multiplexed with the 15-20pin of the motor interface J26, so 
 
 Plug-in
 
-- `J108` ADC/DAC reference voltage selection
+- The ADC/DAC reference voltage is selected as follows:
+
   | Connection | Description         |
   | ---------- | ------------------- |
-  | 1, 2       | 3.3V                |
-  | 2, 3       | High precision 3.3V |
+  | J108[2, 3]       |  Reference voltage |
 
 ## Pin Description
 
@@ -82,15 +83,15 @@ Plug-in
 | Function   | Position |
 | ---------- | -------- |
 | CMP.INN5   | J26[7]   |
-| CMP.COMP_1 | J26[5]   |
+| CMP.COMP_1 | J26[8]   |
 
 - GPTMR Pin
 
 | Function      | Position |
 | ------------- | -------- |
-| GPTMR2.CAPT_0 | J28[40] |
-| GPTMR2.COMP_0 | J28[35] |
-| GPTMR2.COMP_1 | J28[12] |
+| GPTMR2.CAPT_0 | J28[40]  |
+| GPTMR2.COMP_0 | J28[35]  |
+| GPTMR2.COMP_1 | J28[12]  |
 
 - ADC16 Pin
 
@@ -122,16 +123,16 @@ Plug-in
 
 - UART pin for uart_software_rx_idle sample or uart_rx_timeout sample
 
-| Function   | Position |
-| ---------- | -------- |
-| UART2.TXD | J28[18]   |
-| UART2.RXD | J28[22]   |
+| Function  | Position |
+| --------- | -------- |
+| UART2.TXD | J28[18]  |
+| UART2.RXD | J28[22]  |
 
 - TRGMUX pin for uart_software_rx_idle sample
 
-| Function   | Position |
-| ---------- | -------- |
-| TRGM1_P4(PA24)  | J28[16]   |
+| Function       | Position |
+| -------------- | -------- |
+| TRGM1_P4(PA24) | J28[16]  |
 
 - Motor Pin:
 

@@ -218,8 +218,6 @@ void run_layer_change(void)
         lcdc_get_default_layer_config(LCD, layer, PIXEL_FORMAT, i);
         prepare_rgb_data((uint8_t *)&buffer[i], sizeof(buffer[i]), &c[i]);
 
-        layer->position_x = (rand() + LAYER_WIDTH) % config.resolution_x;
-        layer->position_y = (rand() + LAYER_HEIGHT) % config.resolution_y;
         if (i < (TEST_LAYER_COUNT - 1)) {
             layer->buffer = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)buffer[i]);
             layer->width = LAYER_WIDTH;
@@ -242,6 +240,14 @@ void run_layer_change(void)
             layer->background.u = 0;
             layer->alphablend.mode = display_alphablend_mode_src_over;
         }
+
+        /*
+         * Note:
+         * layer->position_x + layer->width <= config.resolution_x
+         * layer->position_y + layer->width <= config.resolution_y
+         */
+        layer->position_x = (rand() + layer->width) % (config.resolution_x - layer->width);
+        layer->position_y = (rand() + layer->height) % (config.resolution_y - layer->height);
 
         if (status_success != lcdc_config_layer(LCD, i, layer, true)) {
             printf("failed to configure layer %d\n", i);

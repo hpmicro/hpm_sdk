@@ -62,7 +62,9 @@ int main(void)
             if (acmp_output_toggle) {
                 printf("acmp out toggled, the dac set value is 0x%x\n", dac_value);
                 acmp_output_toggle = false;
-                break;
+                while (1) {
+
+                }
             }
         }
 

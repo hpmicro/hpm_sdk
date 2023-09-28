@@ -16,12 +16,6 @@ The **bldc_smc** project contains the sensorless speed control of DC brushless m
 
 - Add `sdk_compile_options("-mabi=ilp32f")` to the project's CMakeLists.txt to get a higher performance
 
-```{note}
-
-This code does not support any compilation optimization
-
-```
-
 ## Running the demo
 
 The motor accelerates at speeds from 15 to 40 revolutions per second when the project is running correctly, then decelerates from 40 to 15 revolutions per second and keeps cycling.

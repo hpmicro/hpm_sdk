@@ -170,8 +170,8 @@ _tx_thread_context_save:
     fsd     f29,0x168(sp)                               # Store ft9
     fsd     f30,0x170(sp)                               # Store ft10
     fsd     f31,0x178(sp)                               # Store ft11
-    lw      t0, 0x180(sp)                               # Store fcsr
-    csrw    fcsr, t0                                    # Store fcsr
+    csrr    t0, fcsr
+    sw      t0, 0x180(sp)                               # Store fcsr
 #endif
 #endif
 
@@ -262,8 +262,8 @@ _tx_thread_not_nested_save:
     fsd     f29,0x168(sp)                               # Store ft9
     fsd     f30,0x170(sp)                               # Store ft10
     fsd     f31,0x178(sp)                               # Store ft11
-    lw      t0, 0x180(sp)                               # Store fcsr
-    csrw    fcsr, t0                                    # Store fcsr
+    csrr    t0, fcsr
+    sw      t0, 0x180(sp)                               # Store fcsr
 #endif
 #endif
 

@@ -121,13 +121,13 @@ bool enet_get_link_status(void)
 
 void enet_self_adaptive_port_speed(void)
 {
-    enet_phy_status_t status;
+    enet_phy_status_t status = {0};
 
     enet_line_speed_t line_speed[] = {enet_line_speed_10mbps, enet_line_speed_100mbps, enet_line_speed_1000mbps};
     char *speed_str[] = {"10Mbps", "100Mbps", "1000Mbps"};
     char *duplex_str[] = {"Half duplex", "Full duplex"};
 
-#if RGMII
+#if defined(RGMII) && RGMII
     #if defined(__USE_DP83867) && __USE_DP83867
         dp83867_get_phy_status(ENET, &status);
     #else

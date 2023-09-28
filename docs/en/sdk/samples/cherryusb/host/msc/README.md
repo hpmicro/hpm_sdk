@@ -1,8 +1,8 @@
-# USB MSC HOST
+# CherryUSB MSC Host
 
 ## Overview
 
-This example project shows USB MSC HOST
+This example project shows USB MSC Host
 
 ## Board Setting
 

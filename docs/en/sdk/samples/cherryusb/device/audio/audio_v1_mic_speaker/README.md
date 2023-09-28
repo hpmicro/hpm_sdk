@@ -1,10 +1,10 @@
-# USB AUDIO V1 SPEAKER and MICROPHONE
+# CherryUSB Audio V1 Speaker and Microphone
 
 ## Overview
 
-This example project shows USB AUDIO V1 speaker and microphone device.
+This example project shows USB Audio V1 speaker and microphone device.
 
-- PC sees a cherry usb speaker and microphone via Device Manager
+- PC sees a CherryUSB speaker and microphone via Device Manager
 
 ## Board Setting
 

@@ -6,7 +6,7 @@
 /*  Studio User Guide, or visit our web site at azure.com/rtos                 */
 /*                                                                             */
 /*  GUIX Studio Revision 6.1.0.0                                               */
-/*  Date (dd.mm.yyyy): 25. 4.2023   Time (hh:mm): 11:12                        */
+/*  Date (dd.mm.yyyy): 15. 8.2023   Time (hh:mm): 18:57                        */
 /*******************************************************************************/
 
 
@@ -14,13 +14,14 @@
 #define _DEMO_GUIX_INDUSTRIAL_MAIN_DISPLAY_RESOURCES_H_
 
 #include "gx_api.h"
+#include "board.h"
 
 /* Display and theme definitions                                               */
 
 #define MAIN_DISPLAY 0
 #define MAIN_DISPLAY_COLOR_FORMAT GX_COLOR_FORMAT_32ARGB
-#define MAIN_DISPLAY_X_RESOLUTION 800
-#define MAIN_DISPLAY_Y_RESOLUTION 480
+#define MAIN_DISPLAY_X_RESOLUTION BOARD_LCD_WIDTH
+#define MAIN_DISPLAY_Y_RESOLUTION BOARD_LCD_HEIGHT
 #define MAIN_DISPLAY_THEME_1 0
 #define MAIN_DISPLAY_THEME_TABLE_SIZE 1
 

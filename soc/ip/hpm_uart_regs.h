@@ -35,6 +35,7 @@ typedef struct {
     __RW uint32_t MCR;                         /* 0x30: Modem Control Register ( */
     __R  uint32_t LSR;                         /* 0x34: Line Status Register */
     __R  uint32_t MSR;                         /* 0x38: Modem Status Register */
+    __RW uint32_t GPR;                         /* 0x3C: GPR Register */
 } UART_Type;
 
 
@@ -1025,6 +1026,17 @@ typedef struct {
 #define UART_MSR_DCTS_MASK (0x1U)
 #define UART_MSR_DCTS_SHIFT (0U)
 #define UART_MSR_DCTS_GET(x) (((uint32_t)(x) & UART_MSR_DCTS_MASK) >> UART_MSR_DCTS_SHIFT)
+
+/* Bitfield definition for register: GPR */
+/*
+ * DATA (RW)
+ *
+ * An one-byte storage register
+ */
+#define UART_GPR_DATA_MASK (0xFFU)
+#define UART_GPR_DATA_SHIFT (0U)
+#define UART_GPR_DATA_SET(x) (((uint32_t)(x) << UART_GPR_DATA_SHIFT) & UART_GPR_DATA_MASK)
+#define UART_GPR_DATA_GET(x) (((uint32_t)(x) & UART_GPR_DATA_MASK) >> UART_GPR_DATA_SHIFT)
 
 
 

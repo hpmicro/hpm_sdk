@@ -15,9 +15,6 @@ if(extram_size)
     sdk_linker_global_symbols("_extram_size=${extram_size}")
 endif()
 
-sdk_linker_global_symbols("_heap_size=${HEAP_SIZE}")
-sdk_linker_global_symbols("_stack_size=${STACK_SIZE}")
-
 if(NOT ${CMAKE_BUILD_TYPE} STREQUAL "")
     string(TOLOWER ${CMAKE_BUILD_TYPE} build_type)
     string(FIND ${build_type} "release" found)
@@ -81,7 +78,7 @@ if(NOT ${CMAKE_BUILD_TYPE} STREQUAL "")
 
     string(FIND ${build_type} "sec_core_img" found)
     if(${found} GREATER_EQUAL 0)
-        set(GEN_SEC_CORE_IMG_C_ARRAY true)
+        set(GEN_SEC_CORE_IMG_C_ARRAY true PARENT_SCOPE)
     endif()
 
 else()
@@ -155,16 +152,17 @@ endif()
 sdk_ld_options("-T ${LINKER_SCRIPT}")
 
 set(generated_file_path "${PROJECT_BINARY_DIR}/generated")
-# prepare dummy file
-set(EMPTY_FILE ${generated_file_path}/misc/empty.c)
-file(WRITE ${EMPTY_FILE} "")
-
-add_executable(${APP_ELF_NAME} ${EMPTY_FILE})
 
 # generate SDK version file
 execute_process(
   COMMAND ${CMAKE_COMMAND} -DHPM_SDK_BASE=${HPM_SDK_BASE}
     -DOUT_FILE=${generated_file_path}/include/hpm_sdk_version.h
+    -DSDKVERSION=${SDKVERSION}
+    -DSDK_VERSION_NUMBER=${SDK_VERSION_NUMBER}
+    -DSDK_VERSION_MAJOR=${SDK_VERSION_MAJOR}
+    -DSDK_VERSION_MINOR=${SDK_VERSION_MINOR}
+    -DSDK_PATCHLEVEL=${SDK_PATCHLEVEL}
+    -DSDK_VERSION_STRING=${SDK_VERSION_STRING}
     -P ${HPM_SDK_BASE}/cmake/gen_version_h.cmake
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
 )
@@ -196,22 +194,4 @@ else()
         ${HPM_SDK_GCC_LIB} ${HPM_SDK_GCC_LIB_ITF}
         ${HPM_SDK_LIB} ${HPM_SDK_LIB_ITF} app
         "-Wl,--no-whole-archive")
-endif()
-
-add_custom_command(
-    TARGET ${APP_ELF_NAME}
-    COMMAND "${CROSS_COMPILE}objcopy" -O binary -S ${EXECUTABLE_OUTPUT_PATH}/${APP_ELF_NAME} ${EXECUTABLE_OUTPUT_PATH}/${APP_BIN_NAME}
-)
-
-add_custom_command(
-    TARGET ${APP_ELF_NAME}
-    COMMAND "${CROSS_COMPILE}objdump" -S -d ${EXECUTABLE_OUTPUT_PATH}/${APP_ELF_NAME} > ${EXECUTABLE_OUTPUT_PATH}/${APP_ASM_NAME}
-)
-
-
-if (DEFINED GEN_SEC_CORE_IMG_C_ARRAY)
-    if(NOT DEFINED SEC_CORE_IMG_C_ARRAY_OUTPUT)
-        set(SEC_CORE_IMG_C_ARRAY_OUTPUT "sec_core_img.c")
-    endif()
-    generate_bin2c_array(${SEC_CORE_IMG_C_ARRAY_OUTPUT})
 endif()

@@ -59,4 +59,6 @@ board:
       - sw_gm_api
       - i2s_pinout
       - hall-qei
+      - qei
       - bldc_smc
+      - puart

@@ -33,25 +33,16 @@ static bool i2s_channel_length_is_valid(uint8_t bits)
 
 void i2s_reset_all(I2S_Type *ptr)
 {
+    /* disable I2S */
+    ptr->CTRL &= ~I2S_CTRL_I2S_EN_MASK;
     /* gate off bclk */
     ptr->CFGR |= I2S_CFGR_BCLK_GATEOFF_MASK;
     /* gate off mclk */
     ptr->MISC_CFGR |= I2S_MISC_CFGR_MCLK_GATEOFF_MASK;
-    /*
-     * clear fifos
-     */
-    ptr->CTRL |= I2S_CTRL_TXFIFOCLR_MASK | I2S_CTRL_RXFIFOCLR_MASK;
-    ptr->CTRL &= ~(I2S_CTRL_TXFIFOCLR_MASK | I2S_CTRL_RXFIFOCLR_MASK);
 
-    /*
-     * software reset all blocks
-     */
-    ptr->CTRL |= I2S_CTRL_SFTRST_CLKGEN_MASK | I2S_CTRL_SFTRST_TX_MASK | I2S_CTRL_SFTRST_RX_MASK;
-    ptr->CTRL &= ~(I2S_CTRL_SFTRST_CLKGEN_MASK | I2S_CTRL_SFTRST_TX_MASK | I2S_CTRL_SFTRST_RX_MASK);
-    /*
-     * disable i2s
-     */
-    ptr->CTRL &= ~I2S_CTRL_I2S_EN_MASK;
+    /* reset function block and clear fifo */
+    ptr->CTRL |= (I2S_CTRL_TXFIFOCLR_MASK | I2S_CTRL_RXFIFOCLR_MASK | I2S_CTRL_SFTRST_CLKGEN_MASK | I2S_CTRL_SFTRST_TX_MASK | I2S_CTRL_SFTRST_RX_MASK);
+    ptr->CTRL &= ~(I2S_CTRL_TXFIFOCLR_MASK | I2S_CTRL_RXFIFOCLR_MASK | I2S_CTRL_SFTRST_CLKGEN_MASK | I2S_CTRL_SFTRST_TX_MASK | I2S_CTRL_SFTRST_RX_MASK);
 }
 
 void i2s_get_default_config(I2S_Type *ptr, i2s_config_t *config)
@@ -173,8 +164,7 @@ static hpm_stat_t _i2s_config_tx(I2S_Type *ptr, i2s_transfer_config_t *config)
         ptr->TXDSLOT[config->data_line] = config->channel_slot_mask;
     }
     ptr->CTRL = (ptr->CTRL & ~(I2S_CTRL_TX_EN_MASK))
-        | I2S_CTRL_TX_EN_SET(1 << config->data_line)
-        | I2S_CTRL_I2S_EN_MASK;
+        | I2S_CTRL_TX_EN_SET(1 << config->data_line);
 
     return status_success;
 }
@@ -196,8 +186,7 @@ static hpm_stat_t _i2s_config_rx(I2S_Type *ptr, i2s_transfer_config_t *config)
         ptr->RXDSLOT[config->data_line] = config->channel_slot_mask;
     }
     ptr->CTRL = (ptr->CTRL & ~(I2S_CTRL_RX_EN_MASK))
-            | I2S_CTRL_RX_EN_SET(1 << config->data_line)
-            | I2S_CTRL_I2S_EN_MASK;
+            | I2S_CTRL_RX_EN_SET(1 << config->data_line);
 
     return status_success;
 }
@@ -228,8 +217,7 @@ static hpm_stat_t _i2s_config_transfer(I2S_Type *ptr, i2s_transfer_config_t *con
     }
     ptr->CTRL = (ptr->CTRL & ~(I2S_CTRL_RX_EN_MASK | I2S_CTRL_TX_EN_MASK))
             | I2S_CTRL_RX_EN_SET(1 << config->data_line)
-            | I2S_CTRL_TX_EN_SET(1 << config->data_line)
-            | I2S_CTRL_I2S_EN_MASK;
+            | I2S_CTRL_TX_EN_SET(1 << config->data_line);
 
     return status_success;
 }

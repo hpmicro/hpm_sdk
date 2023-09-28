@@ -16,6 +16,7 @@ _start:
     .option push
     .option norelax
     la gp, __global_pointer$
+    la tp, __thread_pointer$
     .option pop
 
     /* reset mstatus to 0*/

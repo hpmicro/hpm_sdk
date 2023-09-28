@@ -1,4 +1,4 @@
-# USB HID MOUSE
+# CherryUSB HID Mouse
 
 ## Overview
 

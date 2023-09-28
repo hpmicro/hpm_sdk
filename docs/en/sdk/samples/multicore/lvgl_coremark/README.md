@@ -13,28 +13,14 @@ In this project:
 
   BOOT_PIN should be configured to 0-OFF, 1-OFF
 
+## Generate, Build and Debug Multi-core projects
 
-## Generate and Build Multi-core projects
-
-In this project, the core0 application runs in FLASH while the core1 application runs in its own ILM
-
-__Core0__ project must be generated first, as a linked project, __Core1__ project will be generated automatically
-
-__Core0__ project must be built after the __Core1__ project has been built successfully.
-
-### Generate core0 project
-
-__CMAKE_BUILD_TYPE__ must be one of the following options:
-- *"flash_sdram_xip"
-- *"flash_sdram_xip_release"
+Please reference[Multicore General Description.md](../README.md)
 
 ## Running the example
 
-- Download the core0 example to the target, dis-connect the debugger probe and reset the board
-
-When the project runs successfully, there are two buttions:
-- "Start"
-- "Frequency Switch"
-
-Users can clock the "Start" button to start the dual-core coremark benchmarking
-User can click the Frequence Switch button to switch different frequencies
+- When the project runs successfully, there are two buttions:
+  - "Start"
+  - "Frequency Switch"
+- Users can clock the "Start" button to start the dual-core coremark benchmarking
+- User can click the Frequence Switch button to switch different frequencies

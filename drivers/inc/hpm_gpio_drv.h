@@ -10,6 +10,7 @@
 
 #include "hpm_common.h"
 #include "hpm_gpio_regs.h"
+#include "hpm_soc_feature.h"
 
 #ifndef PORT_PIN_COUNT
 #define PORT_PIN_COUNT (32U)
@@ -33,6 +34,9 @@ typedef enum gpio_interrupt_trigger {
     gpio_interrupt_trigger_level_low,
     gpio_interrupt_trigger_edge_rising,
     gpio_interrupt_trigger_edge_falling,
+#if defined(GPIO_SOC_HAS_EDGE_BOTH_INTERRUPT) && (GPIO_SOC_HAS_EDGE_BOTH_INTERRUPT == 1)
+    gpio_interrupt_trigger_edge_both,
+#endif
 } gpio_interrupt_trigger_t;
 
 #ifdef __cplusplus

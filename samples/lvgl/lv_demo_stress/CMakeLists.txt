@@ -16,7 +16,6 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(lv_demo_stress)
 sdk_compile_definitions(-DLV_USE_DEMO_STRESS=1)
-sdk_compile_definitions(-DINIT_EXT_RAM_FOR_DATA=1)
 sdk_inc(src)
 sdk_app_src(src/lvgl.c)
 

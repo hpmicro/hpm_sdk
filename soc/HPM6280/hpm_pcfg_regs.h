@@ -240,7 +240,7 @@ typedef struct {
 #define PCFG_DCDC_PROT_ILIMIT_LP_GET(x) (((uint32_t)(x) & PCFG_DCDC_PROT_ILIMIT_LP_MASK) >> PCFG_DCDC_PROT_ILIMIT_LP_SHIFT)
 
 /*
- * OVERLOAD_LP (RW)
+ * OVERLOAD_LP (RO)
  *
  * over current in low power mode
  * 0: current is below setting
@@ -248,7 +248,6 @@ typedef struct {
  */
 #define PCFG_DCDC_PROT_OVERLOAD_LP_MASK (0x1000000UL)
 #define PCFG_DCDC_PROT_OVERLOAD_LP_SHIFT (24U)
-#define PCFG_DCDC_PROT_OVERLOAD_LP_SET(x) (((uint32_t)(x) << PCFG_DCDC_PROT_OVERLOAD_LP_SHIFT) & PCFG_DCDC_PROT_OVERLOAD_LP_MASK)
 #define PCFG_DCDC_PROT_OVERLOAD_LP_GET(x) (((uint32_t)(x) & PCFG_DCDC_PROT_OVERLOAD_LP_MASK) >> PCFG_DCDC_PROT_OVERLOAD_LP_SHIFT)
 
 /*

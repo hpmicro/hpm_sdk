@@ -13,6 +13,7 @@
 #include "hpm_clock_drv.h"
 #include "hpm_l1c_drv.h"
 #include "hpm_pcfg_drv.h"
+#include "hpm_pdgo_drv.h"
 
 #define CLOCK_ON (1)
 #define CLOCK_OFF (2)
@@ -21,7 +22,7 @@
 
 void prepare_soc_low_power(void)
 {
-    pcfg_dcdc_set_lp_current_limit(HPM_PCFG, pcfg_dcdc_lp_current_limit_250ma, false);
+    pcfg_dcdc_set_lp_current_limit(HPM_PCFG, pcfg_dcdc_lp_current_limit_250ma);
     pcfg_dcdc_set_current_hys_range(HPM_PCFG, pcfg_dcdc_current_hys_25mv);
 }
 
@@ -30,11 +31,10 @@ static void show_power_status(uint32_t retention_mask)
     static const char * const domain_name[] = {
         "SOC Power & Mem", "SOC Periph & Registers",
         "CPU0 Power & Mem", "CPU0 Periph & Registers",
-        "CPU1 Power & Mem", "CPU1 Periph & Registers",
-        "XTAL", "PLL0", "PLL1", "PLL2",
+        "XTAL", "PLL0", "PLL1",
     };
     printf("---------------------------------------------\n");
-    for (uint32_t i = 0; i < 10; i++) {
+    for (uint32_t i = 0; i < 7; i++) {
         if (retention_mask & (1 << i)) {
             printf("%s: ON\n", domain_name[i]);
         } else {
@@ -47,7 +47,7 @@ static void show_power_status(uint32_t retention_mask)
 
 void enter_wait_mode(void)
 {
-    uint32_t retention = 0xFFUL;
+    uint32_t retention = 0x7FUL;
     printf("Entering wait mode\n");
     show_power_status(retention);
     printf("Send 'w' to wakeup from the wait mode\n");
@@ -61,11 +61,12 @@ void enter_wait_mode(void)
     pcfg_disable_power_trap(HPM_PCFG);
     sysctl_set_cpu0_lp_mode(HPM_SYSCTL, cpu_lp_mode_gate_cpu_clock);
     WFI();
+    sysctl_clock_set_preset(HPM_SYSCTL, sysctl_preset_1);
 }
 
 void enter_stop_mode(void)
 {
-    uint32_t retention = 0x7FUL;
+    uint32_t retention = 0x1FUL;
 
     printf("Entering stop mode\n");
     show_power_status(retention);
@@ -73,7 +74,7 @@ void enter_stop_mode(void)
     /*
      * Keep PUART clock
      */
-    pcfg_set_periph_clock_mode(HPM_PCFG, PCFG_PERIPH_KEEP_CLOCK_ON(pcfg_pmc_periph_uart) | PCFG_PERIPH_KEEP_CLOCK_ON(pcfg_pmc_periph_debug));
+    pcfg_set_periph_clock_mode(HPM_PCFG, PCFG_PERIPH_KEEP_CLOCK_ON(pcfg_pmc_periph_uart));
     sysctl_set_cpu0_lp_retention(HPM_SYSCTL, retention);
     sysctl_clear_cpu0_flags(HPM_SYSCTL, cpu_event_flag_mask_all);
     sysctl_set_cpu0_lp_mode(HPM_SYSCTL, cpu_lp_mode_trigger_system_lp);
@@ -93,11 +94,14 @@ void enter_standby_mode(void)
      */
     pcfg_set_periph_clock_mode(HPM_PCFG, PCFG_PERIPH_KEEP_CLOCK_ON(pcfg_pmc_periph_uart));
     sysctl_set_cpu0_lp_retention(HPM_SYSCTL, retention);
-    sysctl_set_cpu0_lp_mode(HPM_SYSCTL, cpu_lp_mode_gate_cpu_clock);
+    sysctl_set_cpu0_lp_mode(HPM_SYSCTL, cpu_lp_mode_trigger_system_lp);
     WFI();
 }
 
 void enter_shutdown_mode(void)
 {
-    printf("Not support this mode\n");
+    printf("Entering shutdown mode\n");
+    printf("Press WAKEUP or RESETN to wake up from the shutdown mode\n");
+
+    pdgo_set_turnoff_counter(HPM_PDGO, 0x100000);
 }

@@ -30,7 +30,6 @@
 .extern p_mchtmr_cmp_reg
 .extern p_os_next_tic
 .extern timer_increment_per_tick /* size_t type so 32-bit on 32-bit core and 64-bits on 64-bit core. */
-.extern isr_stack_top
 .extern portasmHANDLE_INTERRUPT
 
 /*-----------------------------------------------------------*/

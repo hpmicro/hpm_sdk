@@ -248,6 +248,7 @@ at the top of this file. */
 .extern Timer_IRQHandler
 .extern pullMachineTimerCompareRegister
 .extern pullNextTime
+.extern pTrapNestCounter
 .extern uxTimerIncrementsForOneTick /* size_t type so 32-bit on 32-bit core and 64-bits on 64-bit core. */
 .extern xISRStackTop
 .extern portasmHANDLE_INTERRUPT
@@ -294,6 +295,11 @@ freertos_risc_v_trap_handler:
     portasmSAVE_ADDITIONAL_REGISTERS    /* Defined in freertos_risc_v_chip_specific_extensions.h to save any registers unique to the RISC-V implementation. */
 
     portasmSAVE_FPU_REGISTERS
+
+    load_x  t0, pTrapNestCounter
+    lw   t1, 0( t0 )
+    addi   t1, t1, 1
+    store_x t1, 0( t0 )
 
     csrr t0, mscratch
     bne t0, x0, skip0
@@ -411,6 +417,11 @@ is_exception:
     j is_exception                        /* No other exceptions handled yet. */
 
 processed_source:
+    load_x  t0, pTrapNestCounter
+    lw   t1, 0 ( t0 )
+    addi   t1, t1, -1
+    store_x t1, 0( t0 )
+
     csrr t0, mscratch
     beq t0, x0, skip4
     /* in isr context, mscrach needs to be updated */

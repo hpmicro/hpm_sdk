@@ -20,8 +20,14 @@
  * See http://www.freertos.org/a00110.html.
  */
 
-#define configMTIME_BASE_ADDRESS                (0xE6000000UL)
-#define configMTIMECMP_BASE_ADDRESS             (0xE6000008UL)
+#include "board.h"
+#if (portasmHAS_MTIME == 0)
+#define configMTIME_BASE_ADDRESS                (0)
+#define configMTIMECMP_BASE_ADDRESS             (0)
+#else
+#define configMTIME_BASE_ADDRESS                (HPM_MCHTMR_BASE)
+#define configMTIMECMP_BASE_ADDRESS             (HPM_MCHTMR_BASE + 8UL)
+#endif
 
 #define configUSE_PREEMPTION                    1
 #define configCPU_CLOCK_HZ                      ((uint32_t) 24000000)
@@ -40,7 +46,9 @@
 /* Memory allocation definitions. */
 #define configSUPPORT_STATIC_ALLOCATION         0
 #define configSUPPORT_DYNAMIC_ALLOCATION        1
+#ifndef configTOTAL_HEAP_SIZE
 #define configTOTAL_HEAP_SIZE                   ((size_t) (20 * 1024))
+#endif
 
 /* Hook function definitions. */
 #define configUSE_IDLE_HOOK                     0

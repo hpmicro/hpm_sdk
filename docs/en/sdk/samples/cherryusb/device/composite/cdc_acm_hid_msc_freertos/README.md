@@ -1,4 +1,4 @@
-# USB COMPOSITE DEVICE(FreeRTOS)
+# CherryUSB Composite DEVICE(FreeRTOS)
 
 ## Overview
 

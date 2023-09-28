@@ -1,4 +1,4 @@
-# 驱动
+# Drivers
 
 :::{eval-rst}
 .. toctree::
@@ -12,7 +12,9 @@
    crc/README
    dac/README
    dma/index
+   dmav2/index
    enet/index
+   ewdg/README
    femc/sdram/README
    gpio/README
    gpiom/README
@@ -24,6 +26,7 @@
    l1c/README
    lcdc/README
    lin/index
+   linv2/index
    mbx/index
    mchtmr/README
    pdma/README
@@ -51,5 +54,11 @@
    pla/index
    ffa/README
    qeo/index
-   mmc/README
+   mmc/index
+   pdgo/README
+   plb/index
+   rdc/README
+   sei/index
+   qeiv2/index
+   opamp/README
 :::

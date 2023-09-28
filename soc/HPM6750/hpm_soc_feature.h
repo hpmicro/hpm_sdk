@@ -63,7 +63,6 @@
  */
 #define DMA_SOC_TRANSFER_WIDTH_MAX(x) (((x) == HPM_XDMA) ? DMA_TRANSFER_WIDTH_DOUBLE_WORD : DMA_TRANSFER_WIDTH_WORD)
 #define DMA_SOC_TRANSFER_PER_BURST_MAX(x) (((x) == HPM_XDMA) ? DMA_NUM_TRANSFER_PER_BURST_1024T : DMA_NUM_TRANSFER_PER_BURST_128T)
-#define DMA_SOC_BUS_NUM (1U)
 #define DMA_SOC_CHANNEL_NUM (8U)
 #define DMA_SOC_MAX_COUNT (2U)
 #define DMA_SOC_CHN_TO_DMAMUX_CHN(x, n) (((x) == HPM_XDMA) ? (DMAMUX_MUXCFG_XDMA_MUX0 + n) : (DMAMUX_MUXCFG_HDMA_MUX0 + n))
@@ -122,6 +121,7 @@
 /*
  * ADC Section
  */
+#define ADC_SOC_IP_VERSION                         (0U)
 #define ADC_SOC_SEQ_MAX_LEN                        (16U)
 #define ADC_SOC_MAX_TRIG_CH_LEN                    (4U)
 #define ADC_SOC_MAX_TRIG_CH_NUM                    (11U)

@@ -15,15 +15,7 @@ The **bldc_foc** project contains the speed control and position control of DC b
 
 - Add `sdk_compile_options("-mabi=ilp32f")` to the project's CMakeLists.txt to get a higher performance
 
-```{note}
-
-This code does not support any compilation optimization, please turn off compilation optimization
-
-```
-
-
 ## Running the demo
-### With sensor
 
 The motor runs at a speed of 20r/s.
 The following data can be configured by serial console ：

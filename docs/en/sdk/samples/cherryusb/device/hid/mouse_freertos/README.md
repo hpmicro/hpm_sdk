@@ -1,4 +1,4 @@
-# USB HID MOUSE(FreeRTOS)
+# CherryUSB HID Mouse(FreeRTOS)
 
 ## Overview
 

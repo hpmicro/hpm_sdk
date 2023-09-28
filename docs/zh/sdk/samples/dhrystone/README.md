@@ -1,4 +1,4 @@
-# dhrystone
+# Dhrystone
 
 ## 概述
 

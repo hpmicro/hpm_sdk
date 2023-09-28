@@ -46,10 +46,11 @@ static int cdc_acm_class_interface_request_handler(struct usb_setup_packet *setu
                         line_coding.bDataBits,
                         parity_name[line_coding.bParityType],
                         stop_name[line_coding.bCharFormat]);
+
             usbd_cdc_acm_set_line_coding(intf_num, &line_coding);
             break;
 
-        case CDC_REQUEST_SET_CONTROL_LINE_STATE: {
+        case CDC_REQUEST_SET_CONTROL_LINE_STATE:
             dtr = (setup->wValue & 0x0001);
             rts = (setup->wValue & 0x0002);
             USB_LOG_DBG("Set intf:%d DTR 0x%x,RTS 0x%x\r\n",
@@ -58,7 +59,7 @@ static int cdc_acm_class_interface_request_handler(struct usb_setup_packet *setu
                         rts);
             usbd_cdc_acm_set_dtr(intf_num, dtr);
             usbd_cdc_acm_set_rts(intf_num, rts);
-        } break;
+            break;
 
         case CDC_REQUEST_GET_LINE_CODING:
             usbd_cdc_acm_get_line_coding(intf_num, &line_coding);
@@ -71,7 +72,9 @@ static int cdc_acm_class_interface_request_handler(struct usb_setup_packet *setu
                         line_coding.bParityType,
                         line_coding.bDataBits);
             break;
-
+        case CDC_REQUEST_SEND_BREAK:
+            usbd_cdc_acm_send_break(intf_num);
+            break;
         default:
             USB_LOG_WRN("Unhandled CDC Class bRequest 0x%02x\r\n", setup->bRequest);
             return -1;
@@ -80,22 +83,12 @@ static int cdc_acm_class_interface_request_handler(struct usb_setup_packet *setu
     return 0;
 }
 
-static void cdc_notify_handler(uint8_t event, void *arg)
-{
-    switch (event) {
-        case USBD_EVENT_RESET:
-            break;
-        default:
-            break;
-    }
-}
-
 struct usbd_interface *usbd_cdc_acm_init_intf(struct usbd_interface *intf)
 {
     intf->class_interface_handler = cdc_acm_class_interface_request_handler;
     intf->class_endpoint_handler = NULL;
     intf->vendor_handler = NULL;
-    intf->notify_handler = cdc_notify_handler;
+    intf->notify_handler = NULL;
 
     return intf;
 }
@@ -117,5 +110,9 @@ __WEAK void usbd_cdc_acm_set_dtr(uint8_t intf, bool dtr)
 }
 
 __WEAK void usbd_cdc_acm_set_rts(uint8_t intf, bool rts)
+{
+}
+
+__WEAK void usbd_cdc_acm_send_break(uint8_t intf)
 {
 }

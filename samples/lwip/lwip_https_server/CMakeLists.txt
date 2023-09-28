@@ -28,7 +28,7 @@ sdk_compile_definitions(-DMBEDTLS_CONFIG_FILE="hpm_sdk_mbedtls_config.h")
 sdk_compile_definitions(-DCONFIG_MBEDTLS_USE_HPM_SDP=1)
 sdk_compile_definitions(-D__USE_ENET_RECEIVE_INTERRUPT=0)
 
-project(lwip_https_example)
+project(lwip_https_server_example)
 sdk_inc(../common)
 sdk_inc(../common/arch)
 sdk_inc(../common/feature)

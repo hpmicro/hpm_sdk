@@ -1,4 +1,4 @@
-# Cherryusb 通讯
+# Cherryusb
 
 ```{eval-rst}
 .. toctree::
@@ -6,6 +6,7 @@
 
    device/audio/audio_v1_mic/README
    device/audio/audio_v1_mic_speaker/README
+   device/audio/audio_v1_mic_speaker_midi/README
    device/audio/audio_v2_mic/README
    device/audio/audio_v2_mic_speaker/README
    device/audio/audio_v2_mic_speaker_freertos/README
@@ -20,6 +21,7 @@
    device/hid/keyboard_freertos/README
    device/hid/mouse/README
    device/hid/mouse_freertos/README
+   device/midi/README
    device/msc/ram_disk/README
    device/msc/ram_disk_freertos/README
    device/rndis/http_server/README
@@ -29,5 +31,7 @@
    host/hid/README
    host/msc/README
    host/rndis/dhcp/README
+   host/rndis/ping/README
+   host/rndis/iperf/README
 ```
 

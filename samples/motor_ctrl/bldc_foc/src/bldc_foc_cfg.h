@@ -7,10 +7,10 @@
 #ifndef BLDC_FOC_CFG_H
 #define BLDC_FOC_CFG_H
 
-extern  int32_t qei_clock_hz;
+extern  int32_t motor_clock_hz;
 /*PI Control define*/
 #define PWM_FREQUENCY               (20000) /*PWM 频率  单位HZ*/
-#define PWM_RELOAD                  (qei_clock_hz/PWM_FREQUENCY) /*20K hz  = 200 000 000/PWM_RELOAD */
+#define PWM_RELOAD                  (motor_clock_hz/PWM_FREQUENCY) /*20K hz  = 200 000 000/PWM_RELOAD */
 
 #ifndef BOARD_BLDC_TMR_1MS
 
@@ -39,18 +39,6 @@ extern  int32_t qei_clock_hz;
 #define BOARD_BLDCPWM_CMP_INDEX_4         (4U)
 #define BOARD_BLDCPWM_CMP_INDEX_5         (5U)
 #define BOARD_BLDCPWM_CMP_TRIG_CMP        (20U)
-
-#endif
-
-#ifndef BOARD_BLDC_QEI_BASE
-
-#define BOARD_BLDC_QEI_BASE              HPM_QEI2
-#define BOARD_BLDC_QEI_IRQ               IRQn_QEI2
-#define BOARD_BLDC_QEI_TRGM              HPM_TRGM2
-#define BOARD_BLDC_QEI_TRGM_QEI_A_SRC    HPM_TRGM2_INPUT_SRC_TRGM0_P9
-#define BOARD_BLDC_QEI_TRGM_QEI_B_SRC    HPM_TRGM2_INPUT_SRC_TRGM0_P10
-#define BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV     (4000U)
-#define BOARD_BLDC_QEI_CLOCK_SOURCE      clock_mot2
 
 #endif
 

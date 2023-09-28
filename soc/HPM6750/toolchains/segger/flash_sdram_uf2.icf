@@ -19,31 +19,28 @@ define region SDRAM  = [from 0x40000000 size _extram_size - 4M];
 define region NONCACHEABLE_RAM = [from 0x40000000 + _extram_size - 4M size 4M];
 
 /* Blocks */
-define block vectors                        { section .isr_vector, section .vector_table };
+define block vectors with fixed order       { section .isr_vector, section .vector_table };
 define block ctors                          { section .ctors,     section .ctors.*, block with         alphabetical order { init_array } };
 define block dtors                          { section .dtors,     section .dtors.*, block with reverse alphabetical order { fini_array } };
 define block eh_frame                       { section .eh_frame,  section .eh_frame.* };
 define block tbss                           { section .tbss,      section .tbss.*  };
 define block tdata                          { section .tdata,     section .tdata.* };
-define block tls                            { block tbss, block tdata };
+define block tls   with fixed order         { block tbss, block tdata };
 define block tdata_load                     { copy of block tdata };
 define block heap  with size = __HEAPSIZE__,  alignment = 8, /* fill =0x00, */ readwrite access { };
 define block stack with size = __STACKSIZE__, alignment = 8, /* fill =0xCD, */ readwrite access { };
 define block cherryusb_usbh_class_info with alignment = 8     { section .usbh_class_info };
 define block framebuffer with alignment = 8                   { section .framebuffer };
 
-
 /* Symbols */
-define exported symbol __noncacheable_start__  = start of region NONCACHEABLE_RAM;
-define exported symbol __noncacheable_end__  = end of region NONCACHEABLE_RAM + 1;
-define exported symbol __share_mem_start__  = start of region SHARE_RAM;
-define exported symbol __share_mem_end__  = end of region SHARE_RAM + 1;
-
+define exported symbol __noncacheable_start__ = start of region NONCACHEABLE_RAM;
+define exported symbol __noncacheable_end__ = end of region NONCACHEABLE_RAM + 1;
+define exported symbol __share_mem_start__ = start of region SHARE_RAM;
+define exported symbol __share_mem_end__ = end of region SHARE_RAM + 1;
 define exported symbol _stack_safe = end of block stack + 1;
 define exported symbol _stack = end of block stack + 1;
-
-define exported symbol __usbh_class_info_start__  = start of block cherryusb_usbh_class_info;
-define exported symbol __usbh_class_info_end__  = end of block cherryusb_usbh_class_info + 1;
+define exported symbol __usbh_class_info_start__ = start of block cherryusb_usbh_class_info;
+define exported symbol __usbh_class_info_end__ = end of block cherryusb_usbh_class_info + 1;
 
 /* Initialization */
 do not initialize                           { section .noncacheable };
@@ -57,8 +54,8 @@ initialize by copy with packing=none        { section .data, section .data.*, se
 initialize by copy with packing=auto        { section .sdata, section .sdata.* };
 initialize by copy with packing=auto        { section .fast, section .fast.*, section .*.fast, section .*.fast.* };               // "RAM Code" sections
 
-initialize by symbol __SEGGER_init_heap     { block heap  };                                        // Init the heap if there is one
-initialize by symbol __SEGGER_init_ctors    { block ctors };                                        // Call constructors for global objects which need to be constructed before reaching main (if any). Make sure this is done after setting up heap.
+initialize by calling __SEGGER_init_heap    { block heap  };                                        // Init the heap if there is one
+initialize by calling __SEGGER_init_ctors   { block ctors };                                        // Call constructors for global objects which need to be constructed before reaching main (if any). Make sure this is done after setting up heap.
 initialize by copy { block vectors };
 initialize by copy { block cherryusb_usbh_class_info };
 

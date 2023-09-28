@@ -18,7 +18,7 @@
 #include "lwip/apps/lwiperf.h"
 
 #ifndef IPERF_UDP_CLIENT_RATE
-#if RGMII
+#if defined(RGMII) && RGMII
     #define IPERF_UDP_CLIENT_RATE (1000 * 1024 * 1024)
 #else
     #define IPERF_UDP_CLIENT_RATE (100 * 1024 * 1024)
@@ -53,7 +53,7 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     enet_mac_config_t enet_config;
     enet_tx_control_config_t enet_tx_control_config;
 
-    #if RGMII
+    #if defined(RGMII) && RGMII
         #if defined(__USE_DP83867) && __USE_DP83867
         dp83867_config_t phy_config;
         #else
@@ -111,7 +111,7 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     enet_controller_init(ptr, ENET_INF_TYPE, &desc, &enet_config, &int_config);
 
     /* Initialize phy */
-    #if RGMII
+    #if defined(RGMII) && RGMII
         #if defined(__USE_DP83867) && __USE_DP83867
         dp83867_reset(ptr);
         dp83867_basic_mode_default_config(ptr, &phy_config);
@@ -265,7 +265,7 @@ int main(void)
     printf("This is an ethernet demo: Iperf\n");
     printf("LwIP Version: %s\n", LWIP_VERSION_STRING);
 
-    #if RGMII
+    #if defined(RGMII) && RGMII
     /* Set RGMII clock delay */
     board_init_enet_rgmii_clock_delay(ENET);
     #else

@@ -23,6 +23,7 @@ typedef struct {
     __RW uint32_t MEMDATA;                     /* 0x28: Memory Access Data */
     __RW uint32_t HPF_MA;                      /* 0x2C: HPF A Coef Register */
     __RW uint32_t HPF_B;                       /* 0x30: HPF B Coef Register */
+    __RW uint32_t ALT_IN_CTRL;                 /* 0x34: Alternative input control register */
 } PDM_Type;
 
 
@@ -485,6 +486,17 @@ typedef struct {
 #define PDM_HPF_B_COEF_SHIFT (0U)
 #define PDM_HPF_B_COEF_SET(x) (((uint32_t)(x) << PDM_HPF_B_COEF_SHIFT) & PDM_HPF_B_COEF_MASK)
 #define PDM_HPF_B_COEF_GET(x) (((uint32_t)(x) & PDM_HPF_B_COEF_MASK) >> PDM_HPF_B_COEF_SHIFT)
+
+/* Bitfield definition for register: ALT_IN_CTRL */
+/*
+ * OP (RW)
+ *
+ * Select the alternative input when asserted to be 1
+ */
+#define PDM_ALT_IN_CTRL_OP_MASK (0xFFU)
+#define PDM_ALT_IN_CTRL_OP_SHIFT (0U)
+#define PDM_ALT_IN_CTRL_OP_SET(x) (((uint32_t)(x) << PDM_ALT_IN_CTRL_OP_SHIFT) & PDM_ALT_IN_CTRL_OP_MASK)
+#define PDM_ALT_IN_CTRL_OP_GET(x) (((uint32_t)(x) & PDM_ALT_IN_CTRL_OP_MASK) >> PDM_ALT_IN_CTRL_OP_SHIFT)
 
 
 

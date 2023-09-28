@@ -154,6 +154,6 @@ void user_notification(struct netif *netif)
         printf("NETMASK  : %d.%d.%d.%d\n", NETMASK_ADDR0, NETMASK_ADDR1, NETMASK_ADDR2, NETMASK_ADDR3);
         printf("Gateway  : %d.%d.%d.%d\n", GW_ADDR0, GW_ADDR1, GW_ADDR2, GW_ADDR3);
     } else {
-        printf("The network cable is not connected!\n");
+        printf("The network interface card is not ready!\n");
     }
 }

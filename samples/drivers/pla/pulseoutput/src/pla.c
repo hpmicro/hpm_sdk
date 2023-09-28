@@ -356,7 +356,7 @@ void init_pwm(void)
      * config cmp = RELOAD + 1
      */
     cmp_config[0].mode = pwm_cmp_mode_output_compare;
-    cmp_config[0].cmp = reload >> 1;
+    cmp_config[0].cmp = reload + 1;
     cmp_config[0].update_trigger = pwm_shadow_register_update_on_modify;
 
     pwm_load_cmp_shadow_on_match(BOARD_PLA_PWM_BASE, BOARD_PLA_PWM_CMP, &cmp_config[0]);
@@ -374,9 +374,10 @@ int main(void)
     init_pla_pins();
     freq = clock_get_frequency(BOARD_PLA_PWM_CLOCK_NAME);
     reload = freq / 1000 * PWM_PERIOD_IN_MS - 1;
+    pla_7bit_counter_init();
     init_pwm_pla_trgm(BOARD_PLA_TRGM);
     init_pwm();
-    pla_7bit_counter_init();
+    pwm_cmp_update_cmp_value(BOARD_PLA_PWM_BASE, BOARD_PLA_PWM_CMP, reload >> 1, 0);
     printf("PLA DEMO.\r\n");
     while (1) {
     };

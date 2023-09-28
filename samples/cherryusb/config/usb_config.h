@@ -1,13 +1,15 @@
 /*
  * Copyright (c) 2022, sakumisu
- * Copyright (c) 2022, HPMicro
+ * Copyright (c) 2022-2023, HPMicro
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 #ifndef CHERRYUSB_CONFIG_H
 #define CHERRYUSB_CONFIG_H
 
-#define CHERRYUSB_VERSION 0x000800
+#include "hpm_soc.h"
+
+#define CHERRYUSB_VERSION 0x001001
 
 /* ================ USB common Configuration ================ */
 
@@ -46,7 +48,7 @@
 /* ================= USB Device Stack Configuration ================ */
 
 /* Ep0 max transfer buffer, specially for receiving data from ep0 out */
-#define CONFIG_USBDEV_REQUEST_BUFFER_LEN 256
+#define CONFIG_USBDEV_REQUEST_BUFFER_LEN 512
 
 /* Setup packet log for debug */
 /* #define CONFIG_USBDEV_SETUP_LOG_PRINT */
@@ -56,27 +58,6 @@
 
 /* Enable test mode */
 /* #define CONFIG_USBDEV_TEST_MODE */
-
-/* #define CONFIG_USBDEV_TX_THREAD */
-/* #define CONFIG_USBDEV_RX_THREAD */
-
-#ifdef CONFIG_USBDEV_TX_THREAD
-#ifndef CONFIG_USBDEV_TX_PRIO
-#define CONFIG_USBDEV_TX_PRIO 4
-#endif
-#ifndef CONFIG_USBDEV_TX_STACKSIZE
-#define CONFIG_USBDEV_TX_STACKSIZE 2048
-#endif
-#endif
-
-#ifdef CONFIG_USBDEV_RX_THREAD
-#ifndef CONFIG_USBDEV_RX_PRIO
-#define CONFIG_USBDEV_RX_PRIO 4
-#endif
-#ifndef CONFIG_USBDEV_RX_STACKSIZE
-#define CONFIG_USBDEV_RX_STACKSIZE 2048
-#endif
-#endif
 
 #ifndef CONFIG_USBDEV_MSC_BLOCK_SIZE
 #define CONFIG_USBDEV_MSC_BLOCK_SIZE 512
@@ -94,16 +75,18 @@
 #define CONFIG_USBDEV_MSC_VERSION_STRING "0.01"
 #endif
 
-#ifndef CONFIG_USBDEV_AUDIO_VERSION
-#define CONFIG_USBDEV_AUDIO_VERSION 0x0100
+/* #define CONFIG_USBDEV_MSC_THREAD */
+
+#ifndef CONFIG_USBDEV_MSC_PRIO
+#define CONFIG_USBDEV_MSC_PRIO 4
 #endif
 
-#ifndef CONFIG_USBDEV_AUDIO_MAX_CHANNEL
-#define CONFIG_USBDEV_AUDIO_MAX_CHANNEL 8
+#ifndef CONFIG_USBDEV_MSC_STACKSIZE
+#define CONFIG_USBDEV_MSC_STACKSIZE 2048
 #endif
 
 #ifndef CONFIG_USBDEV_RNDIS_RESP_BUFFER_SIZE
-#define CONFIG_USBDEV_RNDIS_RESP_BUFFER_SIZE 128
+#define CONFIG_USBDEV_RNDIS_RESP_BUFFER_SIZE 156
 #endif
 
 #ifndef CONFIG_USBDEV_RNDIS_ETH_MAX_FRAME_SIZE
@@ -129,6 +112,13 @@
 #define CONFIG_USBHOST_MAX_INTF_ALTSETTINGS 2
 #define CONFIG_USBHOST_MAX_ENDPOINTS        8
 
+#define CONFIG_USBHOST_MAX_CDC_ACM_CLASS 4
+#define CONFIG_USBHOST_MAX_HID_CLASS     4
+#define CONFIG_USBHOST_MAX_MSC_CLASS     2
+#define CONFIG_USBHOST_MAX_AUDIO_CLASS   1
+#define CONFIG_USBHOST_MAX_VIDEO_CLASS   1
+#define CONFIG_USBHOST_MAX_RNDIS_CLASS   1
+
 #define CONFIG_USBHOST_DEV_NAMELEN 16
 
 #ifndef CONFIG_USBHOST_PSC_PRIO
@@ -153,21 +143,31 @@
 
 /* ================ USB Device Port Configuration ================*/
 
-/* #define USBD_IRQHandler USBD_IRQHandler */
-/* #define USB_BASE (0x40080000UL) */
-/* #define USB_NUM_BIDIR_ENDPOINTS 4 */
+#ifndef CONFIG_HPM_USBD_BASE
+#define CONFIG_HPM_USBD_BASE    HPM_USB0_BASE
+#endif
+#ifndef CONFIG_HPM_USBD_IRQn
+#define CONFIG_HPM_USBD_IRQn    IRQn_USB0
+#endif
 
 /* ================ USB Host Port Configuration ==================*/
 
 #define CONFIG_USBHOST_PIPE_NUM 10
+#ifndef CONFIG_HPM_USBH_BASE
+#define CONFIG_HPM_USBH_BASE    HPM_USB0_BASE
+#endif
+#ifndef CONFIG_HPM_USBH_IRQn
+#define CONFIG_HPM_USBH_IRQn    IRQn_USB0
+#endif
 
 /* ================ EHCI Configuration ================ */
 
+#define CONFIG_USB_EHCI_HPMICRO     (1)
 #define CONFIG_USB_EHCI_HCCR_BASE   (0)
-#define CONFIG_USB_EHCI_HCOR_BASE   (0xF2020000UL + 0x140)
+#define CONFIG_USB_EHCI_HCOR_BASE   (CONFIG_HPM_USBH_BASE + 0x140)
 #define CONFIG_USB_EHCI_FRAME_LIST_SIZE 1024
 /* #define CONFIG_USB_EHCI_INFO_ENABLE */
-/* #define CONFIG_USB_ECHI_HCOR_RESERVED_DISABLE */
+/* #define CONFIG_USB_EHCI_HCOR_RESERVED_DISABLE */
 /* #define CONFIG_USB_EHCI_CONFIGFLAG */
 #define CONFIG_USB_EHCI_PORT_POWER
 

@@ -173,6 +173,8 @@ void decode_show(uint8_t *f_buf, uint32_t size)
     uint32_t image_width, image_height;
     uint8_t components;
     uint32_t display_buffer_address, display_width, display_height;
+
+    board_lcd_backlight(false);
 #if !JPEG_HW_MODE
     if (!jpeg_sw_decode(file_buffer, size, &image_width, &image_height, &components, (uint16_t *)out_buf)) {
         printf("sw decode failed\n");
@@ -228,6 +230,8 @@ void decode_show(uint8_t *f_buf, uint32_t size)
     }
 
     update_lcd_layer(display_buffer_address, display_width, display_height, components == 3 ? display_pixel_format_rgb565 : display_pixel_format_y8);
+    board_delay_ms(120);
+    board_lcd_backlight(true);
 }
 
 /*---------------------------------------------------------------------*
@@ -245,6 +249,7 @@ int main(void)
     store_device_init();
 
     board_init_lcd();
+    board_lcd_backlight(false);
     init_lcd();
 
     stat = f_opendir(&d_info, "/");

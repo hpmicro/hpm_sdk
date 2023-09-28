@@ -62,7 +62,7 @@ static void udp_recv_callback(void *arg, struct udp_pcb *pcb, struct pbuf *p,
             printf("out of PBUF_RAM\n");
             return;
         }
-        memcpy(q->payload, reply, strlen(reply));
+        memcpy(q->payload, reply, strlen(reply) + 1);
         send_err = udp_sendto(pcb, q, addr, port);
         pbuf_free(q);
     } while (send_err == ERR_BUF);

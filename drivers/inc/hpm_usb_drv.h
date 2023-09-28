@@ -210,17 +210,59 @@ static inline uint8_t usb_get_port_speed(USB_Type *ptr)
     return USB_PORTSC1_PSPD_GET(ptr->PORTSC1);
 }
 
-/*---------------------------------------------------------------------
- * Device API
- *---------------------------------------------------------------------
- */
-
 /**
  * @brief Initialize USB phy
  *
  * @param[in] ptr A USB peripheral base address
  */
 void usb_phy_init(USB_Type *ptr);
+
+/**
+ * @brief USB phy using internal vbus
+ *
+ * @param[in] ptr A USB peripheral base address
+ */
+static inline void usb_phy_using_internal_vbus(USB_Type *ptr)
+{
+    ptr->PHY_CTRL0 |= (USB_PHY_CTRL0_VBUS_VALID_OVERRIDE_MASK | USB_PHY_CTRL0_SESS_VALID_OVERRIDE_MASK)
+                    | (USB_PHY_CTRL0_VBUS_VALID_OVERRIDE_EN_MASK | USB_PHY_CTRL0_SESS_VALID_OVERRIDE_EN_MASK);
+}
+
+/**
+ * @brief USB phy using external vbus
+ *
+ * @param[in] ptr A USB peripheral base address
+ */
+static inline void usb_phy_using_external_vbus(USB_Type *ptr)
+{
+    ptr->PHY_CTRL0 &= ~((USB_PHY_CTRL0_VBUS_VALID_OVERRIDE_MASK | USB_PHY_CTRL0_SESS_VALID_OVERRIDE_MASK)
+                      | (USB_PHY_CTRL0_VBUS_VALID_OVERRIDE_EN_MASK | USB_PHY_CTRL0_SESS_VALID_OVERRIDE_EN_MASK));
+}
+
+/**
+ * @brief USB phy disconnect dp/dm pins pulldown resistance
+ *
+ * @param[in] ptr A USB peripheral base address
+ */
+static inline void usb_phy_disable_dp_dm_pulldown(USB_Type *ptr)
+{
+    ptr->PHY_CTRL0 |= 0x001000E0u;
+}
+
+/**
+ * @brief USB phy connect dp/dm pins pulldown resistance
+ *
+ * @param[in] ptr A USB peripheral base address
+ */
+static inline void usb_phy_enable_dp_dm_pulldown(USB_Type *ptr)
+{
+    ptr->PHY_CTRL0 &= ~0x001000E0u;
+}
+
+/*---------------------------------------------------------------------
+ * Device API
+ *---------------------------------------------------------------------
+ */
 
 /**
  * @brief USB device bus reset
@@ -441,6 +483,21 @@ static inline uint32_t usb_hcd_get_frame_index(USB_Type *ptr)
 static inline bool usb_hcd_get_port_csc(USB_Type *ptr)
 {
     return USB_PORTSC1_CSC_GET(ptr->PORTSC1);
+}
+
+/**
+ * @brief Set power ctrl polarity
+ *
+ * @param[in] ptr A USB peripheral base address
+ * @param[in] high true - vbus high level enable, false - vbus low level enable
+ */
+static inline void usb_hcd_set_power_ctrl_polarity(USB_Type *ptr, bool high)
+{
+    if (high) {
+        ptr->OTG_CTRL0 |= USB_OTG_CTRL0_OTG_POWER_MASK_MASK;
+    } else {
+        ptr->OTG_CTRL0 &= ~USB_OTG_CTRL0_OTG_POWER_MASK_MASK;
+    }
 }
 
 /**

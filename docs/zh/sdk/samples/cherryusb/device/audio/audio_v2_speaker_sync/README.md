@@ -1,10 +1,10 @@
-# USB AUDIO V2 SPEAKER SYNC
+# CherryUSB Audio V2 Speaker SYNC
 
 ## 概述
 
-本示例工程展示USB AUDIO V2喇叭设备，它使用反馈端点实现同步。
+本示例工程展示USB Audio V2喇叭设备，它使用反馈端点实现同步。
 
-- PC可以看到一个CHERRY USB喇叭设备。
+- PC可以看到一个CherryUSB喇叭设备。
 
 ## 硬件设置
 

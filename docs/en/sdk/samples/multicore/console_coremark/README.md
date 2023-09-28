@@ -15,28 +15,13 @@ In this project:
   BOOT_PIN should be configured to 0-OFF, 1-OFF
 
 
-## Generate and Build Multi-core projects
+## Generate, Build and Debug Multi-core projects
 
-In this project, the core0 application runs in FLASH while the core1 application runs in its own ILM
-
-__core0__ project must be generated first, as a link project, __core1__ project will be generated automatically.
-
-__core0__ project must be built after the __core1__ project has been built successfully.
-
-
-### Generate core1 project
-
-__CMAKE_BUILD_TYPE__ must be *"sec_core_img"*
-
-### Generate core0 project
-
-__CMAKE_BUILD_TYPE__ user can specify *"flash_sdram_xip"* or *"flash_xip"*.
+Please reference[Multicore General Description.md](../README.md)
 
 ## Running the example
 
-- Download the core0 example to the target, dis-connect the debugger probe and reset the board
-
-When the project runs successfully, it will print out the following result:
+- When the project runs successfully, it will print out the following result:
 ```console
 ----------------------------------------------------------------------
 $$\   $$\ $$$$$$$\  $$\      $$\ $$\
@@ -108,4 +93,4 @@ CoreMark 1.0 : 3844.126070 / GCC11.1.0 -Wall -Wno-format -fomit-frame-pointer -f
 Press any key to start a new round of coremark test
 ```
 
-Users can re-run the dual-core coremark test by press any keys
+- Users can re-run the dual-core coremark test by press any keys

@@ -240,7 +240,11 @@ UINT                            i;
 
     /* Keep interval < 1ms for micro-frame calculation.  */
     /* Make it index steps to move.  */
-    if (interval > 0)
+    if (interval >= 4)
+    {
+        interval = 3; /* Uses 3 for 1ms calculation.  */
+    }
+    else if (interval > 0)
     {
         interval --;
         interval &= 0x3;

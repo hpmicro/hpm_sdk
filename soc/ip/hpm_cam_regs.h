@@ -26,8 +26,7 @@ typedef struct {
     __RW uint32_t DMASA_UV1;                   /* 0x50: Pixel UV DMA Frame Buffer 1 Address */
     __RW uint32_t DMASA_UV2;                   /* 0x54: Pixel UV DMA Frame Buffer 2 Address */
     __RW uint32_t CR20;                        /* 0x58: Control CR20 Register */
-    __RW uint32_t MAX_WN_CYCLE;                /* 0x5C: Max Window Size Register */
-    __R  uint8_t  RESERVED4[16];               /* 0x60 - 0x6F: Reserved */
+    __R  uint8_t  RESERVED4[20];               /* 0x5C - 0x6F: Reserved */
     __RW uint32_t CSC_COEF0;                   /* 0x70: Color Space Conversion Config Register 0 */
     __RW uint32_t CSC_COEF1;                   /* 0x74: Color Space Conversion Config Register 1 */
     __RW uint32_t CSC_COEF2;                   /* 0x78: Color Space Conversion Config Register 2 */
@@ -627,27 +626,6 @@ typedef struct {
 #define CAM_CR20_THRESHOLD_SHIFT (0U)
 #define CAM_CR20_THRESHOLD_SET(x) (((uint32_t)(x) << CAM_CR20_THRESHOLD_SHIFT) & CAM_CR20_THRESHOLD_MASK)
 #define CAM_CR20_THRESHOLD_GET(x) (((uint32_t)(x) & CAM_CR20_THRESHOLD_MASK) >> CAM_CR20_THRESHOLD_SHIFT)
-
-/* Bitfield definition for register: MAX_WN_CYCLE */
-/*
- * ROW (RW)
- *
- * Max Width-1
- */
-#define CAM_MAX_WN_CYCLE_ROW_MASK (0xFFFF0000UL)
-#define CAM_MAX_WN_CYCLE_ROW_SHIFT (16U)
-#define CAM_MAX_WN_CYCLE_ROW_SET(x) (((uint32_t)(x) << CAM_MAX_WN_CYCLE_ROW_SHIFT) & CAM_MAX_WN_CYCLE_ROW_MASK)
-#define CAM_MAX_WN_CYCLE_ROW_GET(x) (((uint32_t)(x) & CAM_MAX_WN_CYCLE_ROW_MASK) >> CAM_MAX_WN_CYCLE_ROW_SHIFT)
-
-/*
- * COL (RW)
- *
- * Max Height-1
- */
-#define CAM_MAX_WN_CYCLE_COL_MASK (0xFFFFU)
-#define CAM_MAX_WN_CYCLE_COL_SHIFT (0U)
-#define CAM_MAX_WN_CYCLE_COL_SET(x) (((uint32_t)(x) << CAM_MAX_WN_CYCLE_COL_SHIFT) & CAM_MAX_WN_CYCLE_COL_MASK)
-#define CAM_MAX_WN_CYCLE_COL_GET(x) (((uint32_t)(x) & CAM_MAX_WN_CYCLE_COL_MASK) >> CAM_MAX_WN_CYCLE_COL_SHIFT)
 
 /* Bitfield definition for register: CSC_COEF0 */
 /*

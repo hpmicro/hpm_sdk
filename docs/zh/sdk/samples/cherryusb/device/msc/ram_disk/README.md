@@ -1,4 +1,4 @@
-# USB MSC RAM DISK
+# CherryUSB MSC RAM Disk
 
 ## 概述
 

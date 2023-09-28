@@ -122,8 +122,8 @@ void config_pwm(PWM_Type *ptr, uint8_t pin, uint8_t cmp_index, uint32_t reload, 
     /*
      * config hw event
      */
-    cmp_config.cmp = reload - 1;
-    cmp_config.update_trigger = pwm_shadow_register_update_on_hw_event;
+    cmp_config.cmp = reload;
+    cmp_config.update_trigger = pwm_shadow_register_update_on_modify;
     pwm_load_cmp_shadow_on_match(ptr, hw_event_cmp, &cmp_config);
 }
 
@@ -215,7 +215,7 @@ int main(void)
 
     hw_event_cmp = PWM_SOC_CMP_MAX_COUNT;
     for (uint8_t i = 0; i < PWM_SOC_CMP_MAX_COUNT; i++) {
-        if ((i != RED_PWM_CMP) && (i != GREEN_PWM_CMP) && (i != BLUE_PWM_CMP)) {
+        if ((i == RED_PWM_CMP) || (i == GREEN_PWM_CMP) || (i == BLUE_PWM_CMP)) {
             continue;
         }
         hw_event_cmp = i;

@@ -36,6 +36,7 @@ board:
       - qei
       - ffa
       - motor-control
+      - bldc_hfi
       - tsns
       - dac
       - ptp
@@ -49,3 +50,4 @@ board:
       - enet_phy_on_board
       - sw_gm_api
       - hall-qei
+      - puart

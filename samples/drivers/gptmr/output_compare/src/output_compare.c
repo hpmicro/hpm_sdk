@@ -56,7 +56,6 @@ static void output_compare_config(void)
 {
     gptmr_channel_config_t config;
     uint32_t gptmr_freq;
-    uint8_t cmp_num;
     gptmr_channel_get_default_config(APP_BOARD_GPTMR, &config);
     gptmr_freq = clock_get_frequency(APP_BOARD_GPTMR_CLOCK);
     config.reload = gptmr_freq / 1000 * APP_BOARD_RELOAD_MS;

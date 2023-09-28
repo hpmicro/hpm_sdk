@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -101,9 +101,6 @@ hpm_stat_t cam_init(CAM_Type *ptr, cam_config_t *config)
 
     ptr->IDEAL_WN_SIZE = CAM_IDEAL_WN_SIZE_HEIGHT_SET(config->height)
         | CAM_IDEAL_WN_SIZE_WIDTH_SET(width);
-
-    ptr->MAX_WN_CYCLE = CAM_MAX_WN_CYCLE_ROW_SET(1200)
-        | CAM_MAX_WN_CYCLE_COL_SET(2090);
 
     ptr->CR2 = CAM_CR2_DMA_REQ_EN_RFF_MASK
         | CAM_CR2_RXFF_LEVEL_SET(CAM_RX_FIFO_THRESHOLD);

@@ -60,22 +60,12 @@ interface MatrixMultiplyService // cover functions for same topic
 
 `Server project` 需要导入 __erpc_matrix_multiply.h__, __erpc_matrix_multiply_server.h__ 和 __erpc_matrix_multiply_server.cpp__ 文件。 eRPC函数在 __erpc_matrix_multiply_server.cpp__ 文件中实现。
 
-## 生成core1工程
-__CMAKE_BUILD_TYPE__ 为 *"sec_core_img"*
+## 生成、编译和调试多核工程
 
-## 生成core0工程
-__CMAKE_BUILD_TYPE__ 用户可指定为 *"flash_sdram_xip"* 或 *"flash_xip"* 等。
-
-## 编译工程
-用户必须在编译完 __core1__ 工程后，再编译 __core0__ 工程。
-
-## 下载调试
-- 下载core0示例到设备并运行
-- 下载core1示例到设备并运行
-- 如果用户希望单步调试core0和core1的示例，用户需确保在core0示例中的board_init()执行完后再调试core1示例。因为core1示例使用了需要core0 board_init()函数初始化的硬件资源
+请参见[Multicore通用说明.md](../../README.md)
 
 ## 执行结果
-- 当core示例正常运行的时候，串口终端会打印如下信息:
+- 当示例正常运行的时候，串口终端会打印如下信息:
     ```console
         Primary core started
         Starting secondary core...

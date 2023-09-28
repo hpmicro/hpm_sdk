@@ -23,7 +23,8 @@
 typedef enum {
     dac_mode_direct = 0,
     dac_mode_step,
-    dac_mode_buffer
+    dac_mode_buffer,
+    dac_mode_trig
 } dac_mode_t;
 
 typedef enum {

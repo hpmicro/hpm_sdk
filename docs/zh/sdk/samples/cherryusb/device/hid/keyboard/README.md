@@ -1,4 +1,4 @@
-# USB HID 键盘
+# CherryUSB HID 键盘
 
 ## 概述
 

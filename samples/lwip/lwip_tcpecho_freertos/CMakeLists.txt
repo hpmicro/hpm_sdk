@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2022 HPMicro
+# Copyright (c) 2021-2023 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -10,6 +10,8 @@ endif()
 set(CONFIG_FREERTOS 1)
 set(HPM_SDK_LD_NO_NANO_SPECS 1)
 set(CONFIG_LWIP 1)
+set(CONFIG_LWIP_STRERR 1)
+
 #set(CONFIG_ENET_PHY_DP83867 1)
 #set(CONFIG_ENET_PHY_RTL8211 1)
 set(CONFIG_ENET_PHY_DP83848 1)

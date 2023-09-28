@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -12,28 +12,37 @@
 #include "hpm_trgm_drv.h"
 #include "hpm_trgmmux_src.h"
 
-#define APP_ADC12_CORE HPM_CORE0
+#ifndef APP_ADC12_CORE
+#define APP_ADC12_CORE BOARD_RUNNING_CORE
+#endif
+
+#define APP_ADC12_CH_SAMPLE_CYCLE            (20U)
+#define APP_ADC12_CH_WDOG_EVENT              (1 << BOARD_APP_ADC12_CH_1)
 
 #define APP_ADC12_SEQ_START_POS              (0U)
-#define APP_ADC12_SEQ_IRQ_EVENT              adc12_event_seq_single_complete
 #define APP_ADC12_SEQ_DMA_BUFF_LEN_IN_4BYTES (1024U)
+#define APP_ADC12_SEQ_IRQ_EVENT              adc12_event_seq_single_complete
 
-#define APP_ADC12_PMT_PWM_REFCH_A            (8U)
-#define APP_ADC12_PMT_PWM                    HPM_PWM0
-#define APP_ADC12_PMT_TRGM                   HPM_TRGM0
-#define APP_ADC12_PMT_TRGM_IN                HPM_TRGM0_INPUT_SRC_PWM0_CH8REF
-#define APP_ADC12_PMT_TRGM_OUT               TRGM_TRGOCFG_ADCX_PTRGI0A
-#define APP_ADC12_PMT_TRIG_CH                ADC12_CONFIG_TRG0A
-#define APP_ADC12_PMT_IRQ_EVENT              adc12_event_trig_complete
+#define APP_ADC12_HW_TRIGSRC_PWM_REFCH_A     (8U)
+#define APP_ADC12_HW_TRIGSRC_PWM             BOARD_APP_ADC12_HW_TRIG_SRC
+#define APP_ADC12_HW_TRGM                    BOARD_APP_ADC12_HW_TRGM
+#define APP_ADC12_HW_TRGM_IN                 BOARD_APP_ADC12_HW_TRGM_IN
+#define APP_ADC12_HW_TRGM_OUT_SEQ            BOARD_APP_ADC12_HW_TRGM_OUT_SEQ
+#define APP_ADC12_HW_TRGM_OUT_PMT            BOARD_APP_ADC12_HW_TRGM_OUT_PMT
+
+#define APP_ADC12_PMT_TRIG_CH                BOARD_APP_ADC12_PMT_TRIG_CH
 #define APP_ADC12_PMT_DMA_BUFF_LEN_IN_4BYTES ADC_SOC_PMT_MAX_DMA_BUFF_LEN_IN_4BYTES
+#define APP_ADC12_PMT_IRQ_EVENT              adc12_event_trig_complete
 
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t seq_buff[APP_ADC12_SEQ_DMA_BUFF_LEN_IN_4BYTES];
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t pmt_buff[APP_ADC12_PMT_DMA_BUFF_LEN_IN_4BYTES];
 
 uint8_t seq_adc_channel[] = {BOARD_APP_ADC12_CH_1};
 uint8_t trig_adc_channel[] = {BOARD_APP_ADC12_CH_1};
-__IO uint8_t seq_full_complete_flag;
+
+__IO uint8_t seq_complete_flag;
 __IO uint8_t trig_complete_flag;
+__IO uint32_t res_out_of_thr_flag;
 
 static uint8_t get_adc_conv_mode(void)
 {
@@ -62,18 +71,22 @@ void isr_adc12(void)
 
     status = adc12_get_status_flags(BOARD_APP_ADC12_BASE);
 
-    if (ADC12_INT_STS_SEQ_CMPT_GET(status)) {
-        /* Clear seq_complete status */
-        adc12_clear_status_flags(BOARD_APP_ADC12_BASE, adc12_event_seq_full_complete);
+    /* Clear status */
+    adc12_clear_status_flags(BOARD_APP_ADC12_BASE, status);
+
+    if (ADC12_INT_STS_SEQ_CVC_GET(status)) {
         /* Set flag to read memory data */
-        seq_full_complete_flag = 1;
+        seq_complete_flag = 1;
     }
 
     if (ADC12_INT_STS_TRIG_CMPT_GET(status)) {
-        /* Clear trig_cmpt status */
-        adc12_clear_status_flags(BOARD_APP_ADC12_BASE, adc12_event_trig_complete);
         /* Set flag to read memory data */
         trig_complete_flag = 1;
+    }
+
+    if (ADC12_INT_STS_WDOG_GET(status) & APP_ADC12_CH_WDOG_EVENT) {
+        adc12_disable_interrupts(BOARD_APP_ADC12_BASE, APP_ADC12_CH_WDOG_EVENT);
+        res_out_of_thr_flag = ADC12_INT_STS_WDOG_GET(status) & APP_ADC12_CH_WDOG_EVENT;
     }
 }
 SDK_DECLARE_EXT_ISR_M(BOARD_APP_ADC12_IRQn, isr_adc12)
@@ -140,33 +153,33 @@ void init_trigger_source(PWM_Type *ptr)
 
     /* Select comp8 and trigger at the middle of a pwm cycle */
     pwm_cmp_cfg.cmp = 2999;
-    pwm_config_cmp(ptr, APP_ADC12_PMT_PWM_REFCH_A, &pwm_cmp_cfg);
+    pwm_config_cmp(ptr, APP_ADC12_HW_TRIGSRC_PWM_REFCH_A, &pwm_cmp_cfg);
 
     /* Issue a shadow lock */
-    pwm_issue_shadow_register_lock_event(APP_ADC12_PMT_PWM);
+    pwm_issue_shadow_register_lock_event(APP_ADC12_HW_TRIGSRC_PWM);
 
     /* Set comparator channel to generate a trigger signal */
-    pwm_output_ch_cfg.cmp_start_index = APP_ADC12_PMT_PWM_REFCH_A;   /* start channel */
-    pwm_output_ch_cfg.cmp_end_index   = APP_ADC12_PMT_PWM_REFCH_A;   /* end channel */
+    pwm_output_ch_cfg.cmp_start_index = APP_ADC12_HW_TRIGSRC_PWM_REFCH_A;   /* start channel */
+    pwm_output_ch_cfg.cmp_end_index   = APP_ADC12_HW_TRIGSRC_PWM_REFCH_A;   /* end channel */
     pwm_output_ch_cfg.invert_output   = false;
-    pwm_config_output_channel(ptr, APP_ADC12_PMT_PWM_REFCH_A, &pwm_output_ch_cfg);
+    pwm_config_output_channel(ptr, APP_ADC12_HW_TRIGSRC_PWM_REFCH_A, &pwm_output_ch_cfg);
 
 	/* Start the comparator counter */
     pwm_start_counter(ptr);
 }
 
-void init_trigger_mux(TRGM_Type * ptr)
+void init_trigger_mux(TRGM_Type * ptr, uint8_t output)
 {
     trgm_output_t trgm_output_cfg;
 
     trgm_output_cfg.invert = false;
     trgm_output_cfg.type = trgm_output_same_as_input;
 
-    trgm_output_cfg.input  = APP_ADC12_PMT_TRGM_IN;
-    trgm_output_config(ptr, APP_ADC12_PMT_TRGM_OUT, &trgm_output_cfg);
+    trgm_output_cfg.input  = APP_ADC12_HW_TRGM_IN;
+    trgm_output_config(ptr, output, &trgm_output_cfg);
 }
 
-void init_trigger_cfg(ADC12_Type *ptr, uint8_t trig_ch, bool inten)
+void init_trigger_target(ADC12_Type *ptr, uint8_t trig_ch)
 {
     adc12_pmt_config_t pmt_cfg;
 
@@ -178,12 +191,12 @@ void init_trigger_cfg(ADC12_Type *ptr, uint8_t trig_ch, bool inten)
         pmt_cfg.inten[i] = false;
     }
 
-    pmt_cfg.inten[pmt_cfg.trig_len - 1] = inten;
+    pmt_cfg.inten[pmt_cfg.trig_len - 1] = true;
 
     adc12_set_pmt_config(ptr, &pmt_cfg);
 }
 
-void init_common_config(adc12_conversion_mode_t conv_mode)
+hpm_stat_t init_common_config(adc12_conversion_mode_t conv_mode)
 {
     adc12_config_t cfg;
 
@@ -193,16 +206,40 @@ void init_common_config(adc12_conversion_mode_t conv_mode)
     cfg.res            = adc12_res_12_bits;
     cfg.conv_mode      = conv_mode;
     cfg.adc_clk_div    = adc12_clock_divider_3;
-    cfg.sel_sync_ahb   = false;
+    cfg.sel_sync_ahb   = (clk_adc_src_ahb0 == clock_get_source(BOARD_APP_ADC12_CLK_NAME)) ? true : false;
+
     if (cfg.conv_mode == adc12_conv_mode_sequence ||
         cfg.conv_mode == adc12_conv_mode_preemption) {
         cfg.adc_ahb_en = true;
     }
 
-    adc12_init(BOARD_APP_ADC12_BASE, &cfg);
+    /* adc12 initialization */
+    if (adc12_init(BOARD_APP_ADC12_BASE, &cfg) == status_success) {
+        /* enable irq */
+        intc_m_enable_irq_with_priority(BOARD_APP_ADC12_IRQn, 1);
+        return status_success;
+    } else {
+        printf("%s initialization failed!\n", BOARD_APP_ADC12_NAME);
+        return status_fail;
+    }
+}
 
-    /* enable irq */
-    intc_m_enable_irq_with_priority(BOARD_APP_ADC12_IRQn, 1);
+void channel_result_out_of_threshold_handler(void)
+{
+    adc12_channel_threshold_t threshold;
+    uint32_t i = 31;
+
+    if (res_out_of_thr_flag) {
+        while (i--) {
+            if ((res_out_of_thr_flag >> i) & 0x01) {
+                adc12_get_channel_threshold(BOARD_APP_ADC12_BASE, i, &threshold);
+                printf("Warning - %s [channel %02d] - Sample voltage is out of the thresholds between 0x%04x and 0x%04x !\n", BOARD_APP_ADC12_NAME, i, threshold.thshdl, threshold.thshdh);
+            }
+        }
+
+        res_out_of_thr_flag = 0;
+        adc12_enable_interrupts(BOARD_APP_ADC12_BASE, APP_ADC12_CH_WDOG_EVENT);
+    }
 }
 
 void init_oneshot_config(void)
@@ -218,6 +255,8 @@ void init_oneshot_config(void)
     ch_cfg.sample_cycle = 20;
 
     adc12_init_channel(BOARD_APP_ADC12_BASE, &ch_cfg);
+
+    adc12_set_nonblocking_read(BOARD_APP_ADC12_BASE);
 }
 
 void oneshot_handler(void)
@@ -225,7 +264,10 @@ void oneshot_handler(void)
     uint16_t result;
 
     if (adc12_get_oneshot_result(BOARD_APP_ADC12_BASE, BOARD_APP_ADC12_CH_1, &result) == status_success) {
-        printf("Oneshot Mode - %s [channel %d] - Result: 0x%04x\n", BOARD_APP_ADC12_NAME, BOARD_APP_ADC12_CH_1, result);
+        if (adc12_is_nonblocking_mode(BOARD_APP_ADC12_BASE)) {
+            adc12_get_oneshot_result(BOARD_APP_ADC12_BASE, BOARD_APP_ADC12_CH_1, &result);
+        }
+        printf("Oneshot Mode - %s [channel %02d] - Result: 0x%04x\n", BOARD_APP_ADC12_NAME, BOARD_APP_ADC12_CH_1, result);
     }
 }
 
@@ -256,7 +298,7 @@ void period_handler(void)
     uint16_t result;
 
     adc12_get_prd_result(BOARD_APP_ADC12_BASE, BOARD_APP_ADC12_CH_1, &result);
-    printf("Period Mode - %s [channel %d] - Result: 0x%04x\n", BOARD_APP_ADC12_NAME, BOARD_APP_ADC12_CH_1, result);
+    printf("Period Mode - %s [channel %02d] - Result: 0x%04x\n", BOARD_APP_ADC12_NAME, BOARD_APP_ADC12_CH_1, result);
 }
 
 void init_sequence_config(void)
@@ -281,8 +323,13 @@ void init_sequence_config(void)
     seq_cfg.seq_len    = sizeof(seq_adc_channel);
     seq_cfg.restart_en = false;
     seq_cfg.cont_en    = true;
-    seq_cfg.sw_trig_en = true;
+#ifndef __ADC12_USE_SW_TRIG
     seq_cfg.hw_trig_en = true;
+    seq_cfg.sw_trig_en = false;
+#else
+    seq_cfg.hw_trig_en = false;
+    seq_cfg.sw_trig_en = true;
+#endif
 
     for (int i = APP_ADC12_SEQ_START_POS; i < seq_cfg.seq_len; i++) {
         seq_cfg.queue[i].seq_int_en = false;
@@ -301,6 +348,14 @@ void init_sequence_config(void)
     dma_cfg.stop_en            = false;
     dma_cfg.stop_pos           = 0;
 
+#ifndef __ADC12_USE_SW_TRIG
+    /* Trigger source initialization */
+    init_trigger_source(APP_ADC12_HW_TRIGSRC_PWM);
+
+    /* Trigger mux initialization */
+    init_trigger_mux(APP_ADC12_HW_TRGM, APP_ADC12_HW_TRGM_OUT_SEQ);
+#endif
+
     /* Initialize DMA for the sequence mode */
     adc12_init_seq_dma(BOARD_APP_ADC12_BASE, &dma_cfg);
 
@@ -310,10 +365,12 @@ void init_sequence_config(void)
 
 void sequence_handler(void)
 {
+#ifdef __ADC12_USE_SW_TRIG
     /* SW trigger */
     adc12_trigger_seq_by_sw(BOARD_APP_ADC12_BASE);
+#endif
 
-    while (seq_full_complete_flag == 0) {
+    while (seq_complete_flag == 0) {
 
     }
 
@@ -321,7 +378,7 @@ void sequence_handler(void)
     process_seq_data(seq_buff, APP_ADC12_SEQ_START_POS, sizeof(seq_adc_channel));
 
     /* Clear the flag */
-    seq_full_complete_flag = 0;
+    seq_complete_flag = 0;
 }
 
 void init_preemption_config(void)
@@ -340,14 +397,16 @@ void init_preemption_config(void)
         adc12_init_channel(BOARD_APP_ADC12_BASE, &ch_cfg);
     }
 
+#ifndef __ADC12_USE_SW_TRIG
     /* Trigger source initialization */
-    init_trigger_source(APP_ADC12_PMT_PWM);
+    init_trigger_source(APP_ADC12_HW_TRIGSRC_PWM);
 
     /* Trigger mux initialization */
-    init_trigger_mux(APP_ADC12_PMT_TRGM);
+    init_trigger_mux(APP_ADC12_HW_TRGM, APP_ADC12_HW_TRGM_OUT_PMT);
+#endif
 
-    /* Trigger config initialization */
-    init_trigger_cfg(BOARD_APP_ADC12_BASE, APP_ADC12_PMT_TRIG_CH, true);
+    /* Trigger target initialization */
+    init_trigger_target(BOARD_APP_ADC12_BASE, APP_ADC12_PMT_TRIG_CH);
 
     /* Set DMA start address for preemption mode */
     adc12_init_pmt_dma(BOARD_APP_ADC12_BASE, core_local_mem_to_sys_address(APP_ADC12_CORE, (uint32_t)pmt_buff));
@@ -358,6 +417,11 @@ void init_preemption_config(void)
 
 void preemption_handler(void)
 {
+#ifdef __ADC12_USE_SW_TRIG
+    /* SW trigger */
+    adc12_trigger_pmt_by_sw(BOARD_APP_ADC12_BASE, APP_ADC12_PMT_TRIG_CH);
+#endif
+
     /* Wait for a complete of conversion */
     while (trig_complete_flag == 0) {
 
@@ -381,7 +445,7 @@ int main(void)
     board_init_adc12_pins();
 
     /* ADC clock initialization */
-    board_init_adc12_clock(BOARD_APP_ADC12_BASE);
+    board_init_adc12_clock(BOARD_APP_ADC12_BASE, true);
 
     printf("This is an ADC12 demo:\n");
 
@@ -416,6 +480,8 @@ int main(void)
     /* Main loop */
     while (1) {
         board_delay_ms(1000);
+
+        channel_result_out_of_threshold_handler();
 
         if (conv_mode == adc12_conv_mode_oneshot) {
             oneshot_handler();

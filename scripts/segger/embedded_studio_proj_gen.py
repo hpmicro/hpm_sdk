@@ -134,7 +134,7 @@ def populate_file_nodes(root, sdk_base, project_dir, custom_board_dir, out_dir, 
                 elif custom_board_dir is not None and is_custom_board_file(f, custom_board_dir):
                     node += "%s<file file_name=\"%s\">\n" % (" " * (level * 2), get_relpath(f, out_dir))
                     f = re.sub(r'^\w:', '', f) # remove windows drive letter
-                    t = f.split(custom_board_dir)[1] # get any characters after custom board name
+                    t = f.split(custom_board_dir)[-1] # get any characters after custom board name
                     t = re.sub(r'^\W', '', t) # remove leading path separator
                     obj = os.path.join(custom_board_dir, t)
                 else:
@@ -349,6 +349,23 @@ def process_extra_options(config):
     config["target"]["extra_ses_options"] = opts
     config["target"]["segger_rtl_linker_symbols"] = get_segger_rtl_linker_symbols(printf, scanf)
 
+def get_openocd_board_cfg(config, sdk_base):
+    openocd_board_cfg = ""
+    if "board_dir" in config["target"].keys():
+        openocd_board_cfg = os.path.join(config["target"]["board_dir"], "%s.cfg" % config["target"]["board"])
+        if not os.path.exists(openocd_board_cfg):
+            openocd_board_cfg = ""
+    if not len(openocd_board_cfg) and not os.path.exists(openocd_board_cfg):
+        openocd_board_cfg = "%s/boards/openocd/boards/%s.cfg" % (sdk_base, config["target"]["board"])
+
+    if len(openocd_board_cfg) and os.path.exists(openocd_board_cfg):
+        openocd_board_cfg = fix_path(openocd_board_cfg)
+        print("-- Segger openocd board config: %s" % openocd_board_cfg)
+        return openocd_board_cfg
+    else:
+        print("-- Segger openocd board config is not found")
+        return ""
+
 def generate_ses_project(config, out_dir=".", project_dir = None):
     files = config["target"]["sources"].split(",")
     sdk_base = fix_path(config["target"]["sdk_base"])
@@ -367,9 +384,11 @@ def generate_ses_project(config, out_dir=".", project_dir = None):
     config["target"]["gcc_opt_level"] = get_gcc_opt_level(config["target"]["gcc_opt_level"].strip())
     if config["target"]["ses_link_input"].strip():
         config["target"]["ses_link_input"] = get_sdk_fullpath(config["target"]["ses_link_input"], sdk_base)
-    s = ""
-    process_extra_options(config)
 
+    config["target"]["openocd_board_cfg"] = get_openocd_board_cfg(config, sdk_base)
+
+    process_extra_options(config)
+    s = ""
     with open(os.path.join(sdk_base, "scripts", "segger", PROJECT_TEMPLATE), "r") as f:
         s = f.read()
 

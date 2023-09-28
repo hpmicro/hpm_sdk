@@ -1,4 +1,4 @@
-# USB HID HOST
+# CherryUSB HID Host
 
 ## 概述
 

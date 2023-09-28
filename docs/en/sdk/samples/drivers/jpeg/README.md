@@ -18,7 +18,7 @@ When the project runs correctly, the LCD screen will display the picture informa
 > start decoding
 > decoding done
 > start encoding and decoding
-> encoded 937
+> encoded 833
 > encoding and decoding done
 ```
 

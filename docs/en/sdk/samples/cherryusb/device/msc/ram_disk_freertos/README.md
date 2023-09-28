@@ -1,4 +1,4 @@
-# USB MSC RAM DISK(FreeRTOS)
+# CherryUSB MSC RAM Disk(FreeRTOS)
 
 ## Overview
 

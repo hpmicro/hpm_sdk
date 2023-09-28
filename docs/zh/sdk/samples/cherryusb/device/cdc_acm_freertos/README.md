@@ -1,4 +1,4 @@
-# USB CDC 串口(FreeRTOS)
+# CherryUSB CDC 串口(FreeRTOS)
 
 ## 概述
 

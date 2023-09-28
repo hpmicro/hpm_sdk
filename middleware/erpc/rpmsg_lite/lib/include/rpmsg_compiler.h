@@ -2,7 +2,7 @@
  * Copyright (c) 2014, Mentor Graphics Corporation
  * Copyright (c) 2016 Freescale Semiconductor, Inc.
  * Copyright 2016 NXP
- * Copyright 2022 hpmirco
+ * Copyright (c) 2023 HPMicro
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

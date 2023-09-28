@@ -15,6 +15,9 @@
 #include "hpm_clock_drv.h"
 #include "hpm_l1c_drv.h"
 #include "hpm_ipc_event_mgr.h"
+#if defined(CONFIG_FREERTOS) && CONFIG_FREERTOS
+#include "portmacro.h"
+#endif
 
 
 #if defined(RL_USE_ENVIRONMENT_CONTEXT) && (RL_USE_ENVIRONMENT_CONTEXT == 1)
@@ -81,7 +84,11 @@ void platform_time_delay(uint32_t num_msec)
  */
 int32_t platform_in_isr(void)
 {
-    return ((read_csr(CSR_MIP) & CSR_MIP_MEIP_MASK) != 0u) ? 1u : 0u;
+#if defined(CONFIG_FREERTOS) && CONFIG_FREERTOS
+    return xPortIsInsideInterrupt();
+#else
+    return 0u;
+#endif
 }
 
 /**

@@ -22,7 +22,7 @@ static void timer_config(void);
 
 void tick_ms_isr(void)
 {
-    if (gptmr_check_status(APP_BOARD_GPTMR, GPTMR_CH_RLD_STAT_MASK(BOARD_GPTMR_CHANNEL))) {
+    if (gptmr_check_status(APP_BOARD_GPTMR, GPTMR_CH_RLD_STAT_MASK(APP_BOARD_GPTMR_CH))) {
         gptmr_clear_status(APP_BOARD_GPTMR, GPTMR_CH_RLD_STAT_MASK(APP_BOARD_GPTMR_CH));
         board_led_toggle();
     }

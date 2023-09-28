@@ -12,14 +12,16 @@
 #include "hpm_enet_drv.h"
 
 /* Exported Macros------------------------------------------------------------*/
-#if RGMII
+#if defined(RGMII) && RGMII
 #define ENET_INF_TYPE       enet_inf_rgmii
 #define ENET                BOARD_ENET_RGMII
 #define ENET_PTP_CLK        BOARD_ENET_RGMII_PTP_CLOCK
+#define ENET_PPS_PINOUT     BOARD_ENET_RGMII_PPS0_PINOUT
 #else
 #define ENET_INF_TYPE       enet_inf_rmii
 #define ENET                BOARD_ENET_RMII
 #define ENET_PTP_CLK        BOARD_ENET_RMII_PTP_CLOCK
+#define ENET_PPS_PINOUT     BOARD_ENET_RMII_PPS0_PINOUT
 #endif
 
 #define ENET_TX_BUFF_COUNT  (10U)

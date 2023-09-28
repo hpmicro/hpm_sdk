@@ -1,0 +1,182 @@
+/*
+ * Copyright (c) 2021 HPMicro
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ */
+
+#include "board.h"
+#include "hpm_debug_console.h"
+#include "hpm_clock_drv.h"
+#include "hpm_synt_drv.h"
+#include "hpm_sei_drv.h"
+
+static uint16_t mock_pos = 0x5A5;
+static uint16_t mock_rev = 0xA5A;
+static uint32_t sample_latch_tm1;
+static uint32_t sample_latch_tm2;
+
+
+int main(void)
+{
+    sei_tranceiver_config_t tranceiver_config = {0};
+    sei_data_format_config_t data_format_config = {0};
+    sei_engine_config_t engine_config = {0};
+    sei_state_transition_config_t state_transition_config = {0};
+    sei_state_transition_latch_config_t state_transition_latch_config = {0};
+    sei_sample_config_t sample_config = {0};
+    uint8_t instr_idx;
+
+    board_init();
+    board_init_sei_pins(BOARD_SEI, BOARD_SEI_CTRL);
+
+    printf("SEI slave SSI sample\n");
+
+    sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, false);
+
+    /* [1] tranceiver config */
+    tranceiver_config.mode = sei_synchronous_slave_mode;
+    tranceiver_config.tri_sample = false;
+    tranceiver_config.src_clk_freq = clock_get_frequency(BOARD_MOTOR_CLK_NAME);
+    tranceiver_config.synchronous_slave_config.data_idle_high_z = false;
+    tranceiver_config.synchronous_slave_config.data_idle_state = sei_idle_high_state;
+    tranceiver_config.synchronous_slave_config.clock_idle_high_z = false;
+    tranceiver_config.synchronous_slave_config.clock_idle_state = sei_idle_high_state;
+    tranceiver_config.synchronous_slave_config.max_baudrate = 10000000;    /* 10 MHz */
+    tranceiver_config.synchronous_slave_config.ck0_timeout_us = 20;
+    tranceiver_config.synchronous_slave_config.ck1_timeout_us = 20;        /* min_baudrate: 50kHz */
+    sei_tranceiver_config_init(BOARD_SEI, BOARD_SEI_CTRL, &tranceiver_config);
+    sei_set_xcvr_rx_point(BOARD_SEI, BOARD_SEI_CTRL, 2);
+    sei_set_xcvr_tx_point(BOARD_SEI, BOARD_SEI_CTRL, 3 + 0x8000);
+
+    /* [2] data register config */
+    /* data register 2: Multi Turn Value */
+    data_format_config.mode = sei_data_mode;
+    data_format_config.signed_flag = false;
+    data_format_config.bit_order = sei_bit_msb_first;
+    data_format_config.word_order = sei_word_nonreverse;
+    data_format_config.word_len = 12;
+    data_format_config.last_bit = 0;
+    data_format_config.first_bit = 11;
+    data_format_config.max_bit = 11;
+    data_format_config.min_bit = 0;
+    sei_cmd_data_format_config_init(BOARD_SEI, SEI_SELECT_DATA, SEI_DAT_2, &data_format_config);
+    /* data register 3: Single Turn Value */
+    data_format_config.mode = sei_data_mode;
+    data_format_config.signed_flag = false;
+    data_format_config.bit_order = sei_bit_msb_first;
+    data_format_config.word_order = sei_word_nonreverse;
+    data_format_config.word_len = 12;
+    data_format_config.last_bit = 0;
+    data_format_config.first_bit = 11;
+    data_format_config.max_bit = 11;
+    data_format_config.min_bit = 0;
+    sei_cmd_data_format_config_init(BOARD_SEI, SEI_SELECT_DATA, SEI_DAT_3, &data_format_config);
+
+    /* [3] sei instructions */
+    instr_idx = 0;
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, SEI_INSTR_S_CK_TIMEOUT_EN, SEI_DAT_0, SEI_DAT_31, 1);  /* 1 */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, SEI_INSTR_S_CK_TIMEOUT_EN, SEI_DAT_0, SEI_DAT_2, 12);  /* MT */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, SEI_INSTR_S_CK_TIMEOUT_EN, SEI_DAT_0, SEI_DAT_3, 12);  /* ST */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, SEI_INSTR_S_CK_TIMEOUT_EN, SEI_DAT_0, SEI_DAT_30, 10); /* timeout */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_JUMP, SEI_INSTR_S_CK_DEFAULT, SEI_DAT_0, SEI_DAT_0, SEI_JUMP_INIT_INSTR_IDX);
+
+    /* [4] state transition config */
+    /* latch0 */
+    state_transition_config.disable_clk_check = true;
+    state_transition_config.disable_txd_check = true;
+    state_transition_config.disable_rxd_check = true;
+    state_transition_config.disable_timeout_check = true;
+    state_transition_config.disable_instr_ptr_check = false;
+    state_transition_config.instr_ptr_cfg = sei_state_tran_condition_fall_leave;
+    state_transition_config.instr_ptr_value = 0;
+    sei_state_transition_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0, SEI_CTRL_LATCH_TRAN_0_1, &state_transition_config);
+    state_transition_config.disable_clk_check = true;
+    state_transition_config.disable_txd_check = true;
+    state_transition_config.disable_rxd_check = true;
+    state_transition_config.disable_timeout_check = true;
+    state_transition_config.disable_instr_ptr_check = true;
+    sei_state_transition_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0, SEI_CTRL_LATCH_TRAN_1_2, &state_transition_config);
+    state_transition_config.disable_clk_check = true;
+    state_transition_config.disable_txd_check = true;
+    state_transition_config.disable_rxd_check = true;
+    state_transition_config.disable_timeout_check = true;
+    state_transition_config.disable_instr_ptr_check = true;
+    sei_state_transition_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0, SEI_CTRL_LATCH_TRAN_2_3, &state_transition_config);
+    state_transition_config.disable_clk_check = true;
+    state_transition_config.disable_txd_check = true;
+    state_transition_config.disable_rxd_check = true;
+    state_transition_config.disable_timeout_check = false;
+    state_transition_config.timeout_cfg = sei_state_tran_condition_rise_entry;
+    state_transition_config.disable_instr_ptr_check = true;
+    sei_state_transition_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0, SEI_CTRL_LATCH_TRAN_3_0, &state_transition_config);
+
+    state_transition_latch_config.enable = true;
+    state_transition_latch_config.output_select = SEI_CTRL_LATCH_TRAN_0_1;
+    state_transition_latch_config.delay = 0;
+    sei_state_transition_latch_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0, &state_transition_latch_config);
+
+    /* [5] sample config*/
+    sample_config.pos_data_idx = SEI_DAT_3;
+    sample_config.rev_data_idx = SEI_DAT_2;
+    sample_config.pos_data_use_rx = false;
+    sample_config.rev_data_use_rx = false;
+    sample_config.sample_window = 0x2;
+    sample_config.sample_once = true;
+    sample_config.latch_select = SEI_LATCH_0;
+    sample_config.data_register_select = BIT2_MASK | BIT3_MASK;    /* SEI_DAT_2, SEI_DAT_3 */
+    sei_sample_config_init(BOARD_SEI, BOARD_SEI_CTRL, &sample_config);
+    sei_set_sample_pos_override_value(BOARD_SEI, BOARD_SEI_CTRL, mock_pos);
+    sei_set_sample_rev_override_value(BOARD_SEI, BOARD_SEI_CTRL, mock_rev);
+
+    /* [6] interrupt config */
+    intc_m_enable_irq_with_priority(BOARD_SEI_IRQn, 1);
+    sei_set_irq_enable(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event | sei_irq_trx_err_event, true);
+
+    /* [7] enbale sync timer timestamp */
+    synt_enable_timestamp(HPM_SYNT, true);
+
+    /* [8] engine config */
+    printf("Started sei engine!\n");
+    engine_config.arming_mode = sei_arming_direct_exec;
+    engine_config.data_cdm_idx = SEI_DAT_0;
+    engine_config.data_base_idx = SEI_DAT_0;
+    engine_config.init_instr_idx = 0;
+    engine_config.wdg_enable = false;
+    sei_engine_config_init(BOARD_SEI, BOARD_SEI_CTRL, &engine_config);
+    sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, true);
+
+    while (1) {
+        ;
+    }
+}
+
+void isr_sei(void)
+{
+    uint32_t delta;
+
+    if (sei_get_irq_status(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event)) {
+        sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event);
+        sample_latch_tm1 = sei_get_latch_time(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0);
+        delta = (sample_latch_tm1 > sample_latch_tm2) ? (sample_latch_tm1 - sample_latch_tm2) : (sample_latch_tm1 - sample_latch_tm2 + 0xFFFFFFFFu);
+        mock_pos++;
+        if (mock_pos > 0xFFF) {
+            mock_pos = 0;
+            mock_rev++;
+        }
+        sei_set_sample_pos_override_value(BOARD_SEI, BOARD_SEI_CTRL, mock_pos);
+        sei_set_sample_rev_override_value(BOARD_SEI, BOARD_SEI_CTRL, mock_rev);
+        printf("MT:%#x, ST:%#x, sample_tm1:%u, sample_tm2:%u, sample_interval:%d us\n",
+                sei_get_data_value(BOARD_SEI, SEI_DAT_2),
+                sei_get_data_value(BOARD_SEI, SEI_DAT_3),
+                sample_latch_tm1, sample_latch_tm2, delta / (clock_get_frequency(BOARD_MOTOR_CLK_NAME) / 1000000));
+        sample_latch_tm2 = sample_latch_tm1;
+    }
+
+    if (sei_get_irq_status(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_trx_err_event)) {
+        sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_trx_err_event);
+        printf("TRX Error!\n");
+    }
+}
+SDK_DECLARE_EXT_ISR_M(BOARD_SEI_IRQn, isr_sei)
+

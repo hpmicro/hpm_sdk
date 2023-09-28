@@ -1,4 +1,4 @@
-# MEMSTRESS
+# Memory Stress
 
 ```{eval-rst}
 .. toctree::

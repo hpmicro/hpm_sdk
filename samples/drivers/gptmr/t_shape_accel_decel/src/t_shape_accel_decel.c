@@ -20,9 +20,13 @@
 #define APP_BOARD_GPTMR               BOARD_GPTMR_PWM
 #define APP_BOARD_GPTMR_CH            BOARD_GPTMR_PWM_CHANNEL
 #define APP_BOARD_GPTMR_IRQ           BOARD_GPTMR_PWM_IRQ
+#define APP_GPTMR_DMA                 BOARD_APP_HDMA
+#define APP_GPTMR_DMA_IRQ             BOARD_APP_HDMA_IRQ
 #define APP_BOARD_GPTMR_CLOCK         BOARD_GPTMR_PWM_CLK_NAME
 #define APP_DMA_SRC_WIDTH             DMA_TRANSFER_WIDTH_WORD
 #define APP_DMA_DST_WIDTH             DMA_TRANSFER_WIDTH_WORD
+#define APP_BOARD_GPTMR_DMA_CH        (0U)
+#define APP_BOARD_GPTMR_DMAMUX_CH     DMA_SOC_CHN_TO_DMAMUX_CHN(APP_GPTMR_DMA, APP_BOARD_GPTMR_DMA_CH)
 
 #define APP_FIXED_PULSE_WIDTH_US      (5U)
 #define APP_MAX_CYCLE_US              (100U)
@@ -41,15 +45,14 @@ volatile bool     dma_is_done;
 void isr_dma(void)
 {
     volatile hpm_stat_t stat;
-    volatile uint32_t src_addr;
-    stat = dma_check_transfer_status(BOARD_APP_HDMA, DMAMUX_MUXCFG_HDMA_MUX0);
+    stat = dma_check_transfer_status(APP_GPTMR_DMA, APP_BOARD_GPTMR_DMA_CH);
     if (stat & DMA_CHANNEL_STATUS_TC) {
-        dma_disable_channel(BOARD_APP_HDMA, DMAMUX_MUXCFG_HDMA_MUX0);
+        dma_disable_channel(APP_GPTMR_DMA, APP_BOARD_GPTMR_DMA_CH);
         gptmr_clear_status(APP_BOARD_GPTMR, GPTMR_CH_RLD_STAT_MASK(APP_BOARD_GPTMR_CH));
         dma_is_done = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_HDMA_IRQ, isr_dma)
+SDK_DECLARE_EXT_ISR_M(APP_GPTMR_DMA_IRQ, isr_dma)
 
 void timer_isr(void)
 {
@@ -92,9 +95,9 @@ int main(void)
 static void dma_transfer_config(void)
 {
     dma_channel_config_t ch_config = {0};
-    dma_disable_channel(BOARD_APP_HDMA, DMAMUX_MUXCFG_HDMA_MUX0);
-    dma_reset(BOARD_APP_HDMA);
-    dma_default_channel_config(BOARD_APP_HDMA, &ch_config);
+    dma_disable_channel(APP_GPTMR_DMA, APP_BOARD_GPTMR_DMA_CH);
+    dma_reset(APP_GPTMR_DMA);
+    dma_default_channel_config(APP_GPTMR_DMA, &ch_config);
     ch_config.src_addr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)&shape_table[0]);
     ch_config.dst_addr = (uint32_t)&APP_BOARD_GPTMR->CHANNEL[APP_BOARD_GPTMR_CH].RLD;
     ch_config.src_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
@@ -105,7 +108,7 @@ static void dma_transfer_config(void)
     ch_config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
     ch_config.dst_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
     ch_config.size_in_byte = sizeof(shape_table);
-    if (status_success != dma_setup_channel(BOARD_APP_HDMA, DMAMUX_MUXCFG_HDMA_MUX0, &ch_config, false)) {
+    if (status_success != dma_setup_channel(APP_GPTMR_DMA, APP_BOARD_GPTMR_DMA_CH, &ch_config, false)) {
         printf(" dma setup channel failed\n");
         return;
     }
@@ -114,7 +117,6 @@ static void dma_transfer_config(void)
 static void gptmr_config(void)
 {
     gptmr_channel_config_t config;
-    uint32_t cmp;
     gptmr_channel_get_default_config(APP_BOARD_GPTMR, &config);
     gptmr_stop_counter(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH);
     config.cmp_initial_polarity_high = false;
@@ -128,9 +130,9 @@ static void gptmr_config(void)
     gptmr_enable_irq(APP_BOARD_GPTMR, GPTMR_CH_RLD_IRQ_MASK(APP_BOARD_GPTMR_CH));
     intc_m_enable_irq_with_priority(APP_BOARD_GPTMR_IRQ, 4);
     gptmr_start_counter(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH);
-    dmamux_config(BOARD_APP_DMAMUX, DMAMUX_MUXCFG_HDMA_MUX0, BOARD_GPTMR_PWM_DMA_SRC, true);
-    dma_enable_channel(BOARD_APP_HDMA, DMAMUX_MUXCFG_HDMA_MUX0);
-    intc_m_enable_irq_with_priority(BOARD_APP_HDMA_IRQ, 4);
+    dmamux_config(BOARD_APP_DMAMUX, APP_BOARD_GPTMR_DMAMUX_CH, BOARD_GPTMR_PWM_DMA_SRC, true);
+    dma_enable_channel(APP_GPTMR_DMA, APP_BOARD_GPTMR_DMA_CH);
+    intc_m_enable_irq_with_priority(APP_GPTMR_DMA_IRQ, 4);
 }
 
 static void generate_T_shape_data(void)

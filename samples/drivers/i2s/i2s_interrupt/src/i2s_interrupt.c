@@ -101,7 +101,6 @@ hpm_stat_t board_i2s_init(audio_data_t *audio_data, uint32_t mclk_freq)
     if (stat != status_success) {
         return status_fail;
     }
-    i2s_disable(CODEC_I2S); /* Close I2S first and wait for the codec init to complete */
 
     i2s_enable_irq(CODEC_I2S, i2s_tx_fifo_threshold_irq_mask);
     intc_m_enable_irq_with_priority(CODEC_I2S_IRQ, 1);

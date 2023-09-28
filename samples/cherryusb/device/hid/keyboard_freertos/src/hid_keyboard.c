@@ -7,8 +7,7 @@
 
 /* FreeRTOS kernel includes. */
 #include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
+#include "usb_osal.h"
 #include "usbd_core.h"
 #include "usbd_hid.h"
 #include "board.h"
@@ -167,11 +166,31 @@ static const uint8_t hid_keyboard_report_desc[HID_KEYBOARD_REPORT_DESC_SIZE] = {
 };
 
 static USB_NOCACHE_RAM_SECTION uint8_t s_sendbuffer[8];
-SemaphoreHandle_t semaphore_tx_done;
+usb_osal_sem_t semaphore_tx_done;
 
-void usbd_configure_done_callback(void)
+void usbd_event_handler(uint8_t event)
 {
-    /* no out ep, do nothing */
+    switch (event) {
+    case USBD_EVENT_RESET:
+        break;
+    case USBD_EVENT_CONNECTED:
+        break;
+    case USBD_EVENT_DISCONNECTED:
+        break;
+    case USBD_EVENT_RESUME:
+        break;
+    case USBD_EVENT_SUSPEND:
+        break;
+    case USBD_EVENT_CONFIGURED:
+        break;
+    case USBD_EVENT_SET_REMOTE_WAKEUP:
+        break;
+    case USBD_EVENT_CLR_REMOTE_WAKEUP:
+        break;
+
+    default:
+        break;
+    }
 }
 
 #define HID_STATE_IDLE 0
@@ -180,8 +199,8 @@ void usbd_configure_done_callback(void)
 void usbd_hid_int_callback(uint8_t ep, uint32_t nbytes)
 {
     if (semaphore_tx_done != NULL) {
-        if (xSemaphoreGive(semaphore_tx_done) != pdPASS) {
-            USB_LOG_ERR("xSemaphoreGive error\r\n");
+        if (usb_osal_sem_give(semaphore_tx_done) != 0) {
+            USB_LOG_ERR("usb_osal_sem_give error\r\n");
         }
     }
 }
@@ -195,11 +214,11 @@ struct usbd_interface intf0;
 
 void hid_keyboard_init(void)
 {
-    semaphore_tx_done = xSemaphoreCreateBinary();
+    semaphore_tx_done = usb_osal_sem_create(0);
     if (semaphore_tx_done == NULL) {
-        USB_LOG_ERR("xSemaphoreCreateBinary creation failed!.\r\n");
+        USB_LOG_ERR("usb_osal_sem_create creation failed!.\r\n");
         for (;;) {
-            vTaskDelay(100);
+            usb_osal_msleep(10);
         }
     }
     usbd_desc_register(hid_descriptor);
@@ -222,8 +241,8 @@ void hid_keyboard_test(void)
             return;
         }
 
-        if (xSemaphoreTake(semaphore_tx_done, portMAX_DELAY) != pdPASS) {
-            USB_LOG_ERR("xSemaphoreTake error %d\r\n", __LINE__);
+        if (usb_osal_sem_take(semaphore_tx_done, portMAX_DELAY) != 0) {
+            USB_LOG_ERR("usb_osal_sem_take error %d\r\n", __LINE__);
         }
     }
 
@@ -236,8 +255,8 @@ void hid_keyboard_test(void)
         if (ret < 0) {
             return;
         }
-        if (xSemaphoreTake(semaphore_tx_done, portMAX_DELAY) != pdPASS) {
-            USB_LOG_ERR("xSemaphoreTake error %d\r\n", __LINE__);
+        if (usb_osal_sem_take(semaphore_tx_done, portMAX_DELAY) != 0) {
+            USB_LOG_ERR("usb_osal_sem_take error %d\r\n", __LINE__);
         }
     }
 }

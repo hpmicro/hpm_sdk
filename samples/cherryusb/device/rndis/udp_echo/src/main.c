@@ -83,7 +83,7 @@ int main(void)
 
     /* set irq priority */
     intc_set_irq_priority(BOARD_CALLBACK_TIMER_IRQ, 2);
-    intc_set_irq_priority(IRQn_USB0, 1);
+    intc_set_irq_priority(CONFIG_HPM_USBD_IRQn, 1);
 
     printf("cherry usb rndis device sample.\n");
 

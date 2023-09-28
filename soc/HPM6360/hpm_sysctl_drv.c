@@ -9,7 +9,6 @@
 #include "hpm_soc_feature.h"
 
 #define SYSCTL_RESOURCE_GROUP0 0
-#define SYSCTL_RESOURCE_GROUP1 1
 
 #define SYSCTL_CPU_RELEASE_KEY(cpu) (0xC0BEF1A9UL | ((cpu & 1) << 24))
 
@@ -166,6 +165,41 @@ sysctl_enable_group_resource(SYSCTL_Type *ptr, uint8_t group, sysctl_resource_t 
     }
 
     return status_success;
+}
+
+bool sysctl_check_group_resource_enable(SYSCTL_Type *ptr,
+                                        uint8_t group,
+                                        sysctl_resource_t linkable_resource)
+{
+    uint32_t index, offset;
+    bool enable;
+
+    index = (linkable_resource - sysctl_resource_linkable_start) / 32;
+    offset = (linkable_resource - sysctl_resource_linkable_start) % 32;
+    switch (group) {
+    case SYSCTL_RESOURCE_GROUP0:
+        enable = ((ptr->GROUP0[index].VALUE & (1UL << offset)) != 0) ? true : false;
+        break;
+    default:
+        enable =  false;
+        break;
+    }
+
+    return enable;
+}
+
+uint32_t sysctl_get_group_resource_value(SYSCTL_Type *ptr, uint8_t group, uint8_t index)
+{
+    uint32_t value;
+    switch (group) {
+    case SYSCTL_RESOURCE_GROUP0:
+        value = ptr->GROUP0[index].VALUE;
+        break;
+    default:
+        value = 0;
+        break;
+    }
+    return value;
 }
 
 hpm_stat_t sysctl_add_resource_to_cpu0(SYSCTL_Type *ptr, sysctl_resource_t resource)

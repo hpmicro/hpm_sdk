@@ -1,10 +1,10 @@
-# USB AUDIO V1 MICROPHONE
+# CherryUSB Audio V1 Microphone
 
 ## Overview
 
-This example project shows USB AUDIO V1 microphone device.
+This example project shows USB Audio V1 microphone device.
 
-- PC sees a cherry usb microphone via Device Manager
+- PC sees a CherryUSB microphone via Device Manager
 
 ## Board Setting
 

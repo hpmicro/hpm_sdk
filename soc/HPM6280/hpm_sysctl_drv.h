@@ -614,6 +614,19 @@ static inline void sysctl_resource_target_set_mode(SYSCTL_Type *ptr,
 }
 
 /**
+ * @brief Get target mode
+ *
+ * @param[in] ptr SYSCTL_Type base address
+ * @param[in] resource target resource index
+ * @return target resource mode
+ */
+static inline uint8_t sysctl_resource_target_get_mode(SYSCTL_Type *ptr,
+                                                   sysctl_resource_t resource)
+{
+    return SYSCTL_RESOURCE_MODE_GET(ptr->RESOURCE[resource]);
+}
+
+/**
  * @brief Disable resource retention when specific CPU enters stop mode
  *
  * @param[in] ptr SYSCTL_Type base address
@@ -1385,6 +1398,27 @@ hpm_stat_t sysctl_enable_group_resource(SYSCTL_Type *ptr,
                                         uint8_t group,
                                         sysctl_resource_t resource,
                                         bool enable);
+
+/**
+ * @brief Check group resource enable status
+ *
+ * @param[in] ptr SYSCTL_Type base address
+ * @param[in] group target group to be checked
+ * @param[in] resource target resource to be checked from group
+ * @return enable true if resource enable, false if resource disable
+ */
+bool sysctl_check_group_resource_enable(SYSCTL_Type *ptr, uint8_t group, sysctl_resource_t linkable_resource);
+
+/**
+ * @brief Get group resource value
+ *
+ * @param[in] ptr SYSCTL_Type base address
+ * @param[in] group target group to be getted
+ * @param[in] index target group index
+ * @return group index value
+ */
+uint32_t sysctl_get_group_resource_value(SYSCTL_Type *ptr, uint8_t group, uint8_t index);
+
 /**
  * @brief Add resource to CPU0
  *
@@ -1439,7 +1473,7 @@ void sysctl_monitor_get_default_config(SYSCTL_Type *ptr, monitor_config_t *confi
 void sysctl_monitor_init(SYSCTL_Type *ptr, uint8_t monitor_index, monitor_config_t *config);
 
 /**
- * @brief Save data to GPU0 GPR starting from given index
+ * @brief Save data to CPU0 GPR starting from given index
  *
  * @param[in] ptr SYSCTL_Type base address
  * @param[in] start Starting GPR index
@@ -1451,7 +1485,7 @@ void sysctl_monitor_init(SYSCTL_Type *ptr, uint8_t monitor_index, monitor_config
 hpm_stat_t sysctl_cpu0_set_gpr(SYSCTL_Type *ptr, uint8_t start, uint8_t count, uint32_t *data, bool lock);
 
 /**
- * @brief Get data saved from GPU0 GPR starting from given index
+ * @brief Get data saved from CPU0 GPR starting from given index
  *
  * @param[in] ptr SYSCTL_Type base address
  * @param[in] start Starting GPR index

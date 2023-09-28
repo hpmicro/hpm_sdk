@@ -267,7 +267,7 @@ static inline bool gptmr_check_status(GPTMR_Type *ptr, uint32_t mask)
  */
 static inline void gptmr_clear_status(GPTMR_Type *ptr, uint32_t mask)
 {
-    ptr->SR |= mask;
+    ptr->SR = mask;
 }
 
 /**

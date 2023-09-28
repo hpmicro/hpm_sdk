@@ -21,7 +21,7 @@
       gdb_server_reset_command="{{ target["gdb_server_reset_command"] }}"
       gdb_server_autostart_server="{{ target["auto_start_gdb_server"] }}"
       gdb_server_port="{{ target["gdb_server_port"] }}"
-      gdb_server_command_line="{{ target["openocd"] }} -f $(HPM_SDK_BASE)/boards/openocd/probes/{{ target["debug_probe"] }}.cfg {% if target["openocd_soc"]|length %} -f $(HPM_SDK_BASE)/boards/openocd/soc/{{ target["openocd_soc"]}}.cfg {% endif %} -f $(HPM_SDK_BASE)/boards/openocd/boards/{{ target["board"] }}.cfg"
+      gdb_server_command_line="{{ target["openocd"] }} -f $(HPM_SDK_BASE)/boards/openocd/probes/{{ target["debug_probe"] }}.cfg {% if target["openocd_soc"]|length %} -f $(HPM_SDK_BASE)/boards/openocd/soc/{{ target["openocd_soc"]}}.cfg {% endif %} {%if target["openocd_board_cfg"]|length %} -f {{target["openocd_board_cfg"]}} {% endif %}"
       {%- else %}
       {%- if target["debug_target_connection"] %}
       debug_target_connection="{{ target["debug_target_connection"]}}"

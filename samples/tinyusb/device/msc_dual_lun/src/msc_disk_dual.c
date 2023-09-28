@@ -36,7 +36,7 @@
 
 enum
 {
-  DISK_BLOCK_NUM  = 64, /* 8KB is the smallest size that windows allow to mount, set to 32KB */
+  DISK_BLOCK_NUM  = 32, /* 8KB is the smallest size that windows allow to mount, set to 16KB */
   DISK_BLOCK_SIZE = 512
 };
 

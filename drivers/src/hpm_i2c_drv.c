@@ -165,9 +165,10 @@ hpm_stat_t i2c_master_address_read(I2C_Type *ptr, const uint16_t device_address,
     hpm_stat_t stat = status_success;
     uint32_t left;
     uint32_t retry;
-
-    assert(addr_size_in_byte > 0 && addr_size_in_byte <= I2C_SOC_TRANSFER_COUNT_MAX);
-    assert(size_in_byte > 0 && size_in_byte <= I2C_SOC_TRANSFER_COUNT_MAX);
+    if (((addr_size_in_byte == 0) || (addr_size_in_byte > I2C_SOC_TRANSFER_COUNT_MAX)) ||
+        ((size_in_byte == 0) || (size_in_byte > I2C_SOC_TRANSFER_COUNT_MAX))) {
+        return status_invalid_argument;
+    }
 
     retry = 0;
     while (ptr->STATUS & I2C_STATUS_BUSBUSY_MASK) {
@@ -188,6 +189,7 @@ hpm_stat_t i2c_master_address_read(I2C_Type *ptr, const uint16_t device_address,
         | I2C_CTRL_PHASE_ADDR_MASK
         | I2C_CTRL_PHASE_DATA_MASK
         | I2C_CTRL_DIR_SET(I2C_DIR_MASTER_WRITE)
+        | I2C_CTRL_DATACNT_HIGH_SET(I2C_DATACNT_MAP(addr_size_in_byte) >> 8U)
         | I2C_CTRL_DATACNT_SET(I2C_DATACNT_MAP(addr_size_in_byte));
 
     ptr->ADDR = I2C_ADDR_ADDR_SET(device_address);
@@ -218,6 +220,7 @@ hpm_stat_t i2c_master_address_read(I2C_Type *ptr, const uint16_t device_address,
         | I2C_CTRL_PHASE_ADDR_MASK
         | I2C_CTRL_PHASE_DATA_MASK
         | I2C_CTRL_DIR_SET(I2C_DIR_MASTER_READ)
+        | I2C_CTRL_DATACNT_HIGH_SET(I2C_DATACNT_MAP(addr_size_in_byte) >> 8U)
         | I2C_CTRL_DATACNT_SET(I2C_DATACNT_MAP(size_in_byte));
     ptr->CMD = I2C_CMD_ISSUE_DATA_TRANSMISSION;
 
@@ -261,9 +264,11 @@ hpm_stat_t i2c_master_address_write(I2C_Type *ptr, const uint16_t device_address
     uint32_t left;
     uint32_t retry;
 
-    assert(addr_size_in_byte > 0 && addr_size_in_byte <= I2C_SOC_TRANSFER_COUNT_MAX);
-    assert(size_in_byte > 0 && size_in_byte <= I2C_SOC_TRANSFER_COUNT_MAX);
-    assert(addr_size_in_byte + size_in_byte <= I2C_SOC_TRANSFER_COUNT_MAX);
+    if (((addr_size_in_byte == 0) || (addr_size_in_byte > I2C_SOC_TRANSFER_COUNT_MAX)) ||
+        ((size_in_byte == 0) || (size_in_byte > I2C_SOC_TRANSFER_COUNT_MAX)) ||
+        ((addr_size_in_byte + size_in_byte) > I2C_SOC_TRANSFER_COUNT_MAX)) {
+        return status_invalid_argument;
+    }
 
     retry = 0;
     while (ptr->STATUS & I2C_STATUS_BUSBUSY_MASK) {
@@ -286,6 +291,7 @@ hpm_stat_t i2c_master_address_write(I2C_Type *ptr, const uint16_t device_address
         | I2C_CTRL_PHASE_ADDR_MASK
         | I2C_CTRL_PHASE_DATA_MASK
         | I2C_CTRL_DIR_SET(I2C_DIR_MASTER_WRITE)
+        | I2C_CTRL_DATACNT_HIGH_SET(I2C_DATACNT_MAP(size_in_byte + addr_size_in_byte) >> 8U)
         | I2C_CTRL_DATACNT_SET(I2C_DATACNT_MAP(size_in_byte + addr_size_in_byte));
 
     left = addr_size_in_byte;
@@ -335,8 +341,9 @@ hpm_stat_t i2c_master_read(I2C_Type *ptr, const uint16_t device_address,
     hpm_stat_t stat = status_success;
     uint32_t left;
     uint32_t retry;
-
-    assert(size > 0 && size <= I2C_SOC_TRANSFER_COUNT_MAX);
+    if (size > I2C_SOC_TRANSFER_COUNT_MAX) {
+        return status_invalid_argument;
+    }
 
     retry = 0;
     while (ptr->STATUS & I2C_STATUS_BUSBUSY_MASK) {
@@ -359,6 +366,7 @@ hpm_stat_t i2c_master_read(I2C_Type *ptr, const uint16_t device_address,
         | I2C_CTRL_PHASE_ADDR_MASK
         | I2C_CTRL_PHASE_DATA_MASK
         | I2C_CTRL_DIR_SET(I2C_DIR_MASTER_READ)
+        | I2C_CTRL_DATACNT_HIGH_SET(I2C_DATACNT_MAP(size) >> 8U)
         | I2C_CTRL_DATACNT_SET(I2C_DATACNT_MAP(size));
     ptr->CMD = I2C_CMD_ISSUE_DATA_TRANSMISSION;
 
@@ -410,7 +418,9 @@ hpm_stat_t i2c_master_write(I2C_Type *ptr, const uint16_t device_address,
     uint32_t retry;
     uint32_t left;
 
-    assert(size > 0 && size <= I2C_SOC_TRANSFER_COUNT_MAX);
+    if (size > I2C_SOC_TRANSFER_COUNT_MAX) {
+        return status_invalid_argument;
+    }
 
     retry = 0;
     while (ptr->STATUS & I2C_STATUS_BUSBUSY_MASK) {
@@ -433,15 +443,15 @@ hpm_stat_t i2c_master_write(I2C_Type *ptr, const uint16_t device_address,
         | I2C_CTRL_PHASE_ADDR_MASK
         | I2C_CTRL_PHASE_DATA_MASK
         | I2C_CTRL_DIR_SET(I2C_DIR_MASTER_WRITE)
+        | I2C_CTRL_DATACNT_HIGH_SET(I2C_DATACNT_MAP(size) >> 8U)
         | I2C_CTRL_DATACNT_SET(I2C_DATACNT_MAP(size));
-
+    ptr->CMD = I2C_CMD_ISSUE_DATA_TRANSMISSION;
     retry = 0;
     left = size;
     while (left) {
         if (!(ptr->STATUS & I2C_STATUS_FIFOFULL_MASK)) {
             ptr->DATA = *(buf++);
             left--;
-            ptr->CMD = I2C_CMD_ISSUE_DATA_TRANSMISSION;
             retry = 0;
         } else {
             if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
@@ -506,7 +516,9 @@ hpm_stat_t i2c_slave_write(I2C_Type *ptr, uint8_t *buf, const uint32_t size)
     uint32_t retry;
     uint32_t left;
 
-    assert(size > 0 && size <= I2C_SOC_TRANSFER_COUNT_MAX);
+    if (((size == 0) || (size > I2C_SOC_TRANSFER_COUNT_MAX))) {
+        return status_invalid_argument;
+    }
 
     /* wait for address hit */
     retry = 0;
@@ -571,7 +583,9 @@ hpm_stat_t i2c_slave_read(I2C_Type *ptr,
     uint32_t retry;
     uint32_t left;
 
-    assert(size > 0 && size <= I2C_SOC_TRANSFER_COUNT_MAX);
+    if (((size == 0) || (size > I2C_SOC_TRANSFER_COUNT_MAX))) {
+        return status_invalid_argument;
+    }
 
     /* wait for address hit */
     retry = 0;
@@ -631,7 +645,9 @@ hpm_stat_t i2c_slave_read(I2C_Type *ptr,
 hpm_stat_t i2c_master_start_dma_write(I2C_Type *i2c_ptr, const uint16_t device_address, uint32_t size)
 {
     uint32_t retry = 0;
-    assert(size > 0 && size <= I2C_SOC_TRANSFER_COUNT_MAX);
+    if (((size == 0) || (size > I2C_SOC_TRANSFER_COUNT_MAX))) {
+        return status_invalid_argument;
+    }
 
     while (i2c_ptr->STATUS & I2C_STATUS_BUSBUSY_MASK) {
         if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
@@ -652,6 +668,7 @@ hpm_stat_t i2c_master_start_dma_write(I2C_Type *i2c_ptr, const uint16_t device_a
         | I2C_CTRL_PHASE_ADDR_MASK
         | I2C_CTRL_PHASE_DATA_MASK
         | I2C_CTRL_DIR_SET(I2C_DIR_MASTER_WRITE)
+        | I2C_CTRL_DATACNT_HIGH_SET(I2C_DATACNT_MAP(size) >> 8U)
         | I2C_CTRL_DATACNT_SET(I2C_DATACNT_MAP(size));
 
     i2c_ptr->SETUP |= I2C_SETUP_DMAEN_MASK;
@@ -664,7 +681,9 @@ hpm_stat_t i2c_master_start_dma_write(I2C_Type *i2c_ptr, const uint16_t device_a
 hpm_stat_t i2c_master_start_dma_read(I2C_Type *i2c_ptr, const uint16_t device_address, uint32_t size)
 {
     uint32_t retry = 0;
-    assert(size > 0 && size <= I2C_SOC_TRANSFER_COUNT_MAX);
+    if (((size == 0) || (size > I2C_SOC_TRANSFER_COUNT_MAX))) {
+        return status_invalid_argument;
+    }
 
     while (i2c_ptr->STATUS & I2C_STATUS_BUSBUSY_MASK) {
         if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
@@ -684,6 +703,7 @@ hpm_stat_t i2c_master_start_dma_read(I2C_Type *i2c_ptr, const uint16_t device_ad
         | I2C_CTRL_PHASE_ADDR_MASK
         | I2C_CTRL_PHASE_DATA_MASK
         | I2C_CTRL_DIR_SET(I2C_DIR_MASTER_READ)
+        | I2C_CTRL_DATACNT_HIGH_SET(I2C_DATACNT_MAP(size) >> 8U)
         | I2C_CTRL_DATACNT_SET(I2C_DATACNT_MAP(size));
 
     i2c_ptr->SETUP |= I2C_SETUP_DMAEN_MASK;
@@ -695,12 +715,15 @@ hpm_stat_t i2c_master_start_dma_read(I2C_Type *i2c_ptr, const uint16_t device_ad
 
 hpm_stat_t i2c_slave_dma_transfer(I2C_Type *i2c_ptr, uint32_t size)
 {
-    assert(size > 0 && size <= I2C_SOC_TRANSFER_COUNT_MAX);
+    if (((size == 0) || (size > I2C_SOC_TRANSFER_COUNT_MAX))) {
+        return status_invalid_argument;
+    }
 
     /* W1C, clear CMPL bit to avoid blocking the transmission */
     i2c_ptr->STATUS = I2C_STATUS_CMPL_MASK;
 
-    i2c_ptr->CTRL |= I2C_CTRL_DATACNT_SET(I2C_DATACNT_MAP(size));
+    i2c_ptr->CTRL &= ~(I2C_CTRL_DATACNT_HIGH_MASK | I2C_CTRL_DATACNT_MASK);
+    i2c_ptr->CTRL |= I2C_CTRL_DATACNT_HIGH_SET(I2C_DATACNT_MAP(size) >> 8U) | I2C_CTRL_DATACNT_SET(I2C_DATACNT_MAP(size));
 
     i2c_ptr->SETUP |= I2C_SETUP_DMAEN_MASK;
 
@@ -710,7 +733,9 @@ hpm_stat_t i2c_slave_dma_transfer(I2C_Type *i2c_ptr, uint32_t size)
 hpm_stat_t i2c_master_configure_transfer(I2C_Type *i2c_ptr, const uint16_t device_address, uint32_t size, bool read)
 {
     uint32_t retry = 0;
-    assert(size > 0 && size <= I2C_SOC_TRANSFER_COUNT_MAX);
+    if (((size == 0) || (size > I2C_SOC_TRANSFER_COUNT_MAX))) {
+        return status_invalid_argument;
+    }
 
     while (i2c_ptr->STATUS & I2C_STATUS_BUSBUSY_MASK) {
         if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
@@ -730,6 +755,7 @@ hpm_stat_t i2c_master_configure_transfer(I2C_Type *i2c_ptr, const uint16_t devic
                 | I2C_CTRL_PHASE_ADDR_MASK
                 | I2C_CTRL_PHASE_DATA_MASK
                 | I2C_CTRL_DIR_SET(read)
+                | I2C_CTRL_DATACNT_HIGH_SET(I2C_DATACNT_MAP(size) >> 8U)
                 | I2C_CTRL_DATACNT_SET(I2C_DATACNT_MAP(size));
 
     i2c_ptr->CMD = I2C_CMD_ISSUE_DATA_TRANSMISSION;
@@ -744,7 +770,9 @@ hpm_stat_t i2c_master_seq_transmit(I2C_Type *ptr, const uint16_t device_address,
     uint32_t retry = 0;
     uint32_t left = 0;
 
-    assert(size > 0 && size <= I2C_SOC_TRANSFER_COUNT_MAX);
+    if (((size == 0) || (size > I2C_SOC_TRANSFER_COUNT_MAX))) {
+        return status_invalid_argument;
+    }
 
     /* W1C, clear CMPL bit to avoid blocking the transmission */
     ptr->STATUS = I2C_STATUS_CMPL_MASK;
@@ -770,9 +798,11 @@ hpm_stat_t i2c_master_seq_transmit(I2C_Type *ptr, const uint16_t device_address,
 
     ptr->CTRL = ctrl | I2C_CTRL_PHASE_DATA_SET(true) \
                 | I2C_CTRL_DIR_SET(I2C_DIR_MASTER_WRITE) \
+                | I2C_CTRL_DATACNT_HIGH_SET(I2C_DATACNT_MAP(size) >> 8U) \
                 | I2C_CTRL_DATACNT_SET(I2C_DATACNT_MAP(size));
     /* enable auto ack */
     ptr->INTEN &= ~I2C_EVENT_BYTE_RECEIVED;
+    ptr->CMD = I2C_CMD_ISSUE_DATA_TRANSMISSION;
 
     retry = 0;
     left = size;
@@ -780,7 +810,6 @@ hpm_stat_t i2c_master_seq_transmit(I2C_Type *ptr, const uint16_t device_address,
         if (!(ptr->STATUS & I2C_STATUS_FIFOFULL_MASK)) {
             ptr->DATA = *(buf++);
             left--;
-            ptr->CMD = I2C_CMD_ISSUE_DATA_TRANSMISSION;
             retry = 0;
         } else {
             if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
@@ -818,7 +847,9 @@ hpm_stat_t i2c_master_seq_receive(I2C_Type *ptr, const uint16_t device_address,
     uint32_t retry = 0;
     uint32_t left = 0;
 
-    assert(size > 0 && size <= I2C_SOC_TRANSFER_COUNT_MAX);
+    if (((size == 0) || (size > I2C_SOC_TRANSFER_COUNT_MAX))) {
+        return status_invalid_argument;
+    }
 
     /* W1C, clear CMPL bit to avoid blocking the transmission */
     ptr->STATUS = I2C_STATUS_CMPL_MASK;
@@ -844,6 +875,7 @@ hpm_stat_t i2c_master_seq_receive(I2C_Type *ptr, const uint16_t device_address,
 
     ptr->CTRL = ctrl | I2C_CTRL_PHASE_DATA_SET(true) \
                 | I2C_CTRL_DIR_SET(I2C_DIR_MASTER_READ) \
+                | I2C_CTRL_DATACNT_HIGH_SET(I2C_DATACNT_MAP(size) >> 8U) \
                 | I2C_CTRL_DATACNT_SET(I2C_DATACNT_MAP(size));
 
     /* disable auto ack */

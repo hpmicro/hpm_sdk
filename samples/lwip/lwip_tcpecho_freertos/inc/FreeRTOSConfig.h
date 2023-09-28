@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -22,8 +22,13 @@
 
 #include "board.h"
 
+#if (portasmHAS_MTIME == 0)
+#define configMTIME_BASE_ADDRESS                (0)
+#define configMTIMECMP_BASE_ADDRESS             (0)
+#else
 #define configMTIME_BASE_ADDRESS                (HPM_MCHTMR_BASE)
 #define configMTIMECMP_BASE_ADDRESS             (HPM_MCHTMR_BASE + 8UL)
+#endif
 
 #define configUSE_PREEMPTION                    1
 #define configCPU_CLOCK_HZ                      ((uint32_t) 24000000)
@@ -35,17 +40,18 @@
 #define configIDLE_SHOULD_YIELD                 0
 #define configUSE_APPLICATION_TASK_TAG          0
 #define configGENERATE_RUN_TIME_STATS           0
-#define configUSE_MUTEXES						1
+#define configUSE_MUTEXES                       1
+
 /* Memory allocation definitions. */
 #define configSUPPORT_STATIC_ALLOCATION         0
 #define configSUPPORT_DYNAMIC_ALLOCATION        1
-#define configTOTAL_HEAP_SIZE                   ((size_t) (8 * 1024))
+#define configTOTAL_HEAP_SIZE                   ((size_t) (32 * 1024))
 
 /* Hook function definitions. */
 #define configUSE_IDLE_HOOK                     0
 #define configUSE_TICK_HOOK                     0
 #define configCHECK_FOR_STACK_OVERFLOW          0
-#define configUSE_RECURSIVE_MUTEXES			    1
+#define configUSE_RECURSIVE_MUTEXES             1
 #define configUSE_MALLOC_FAILED_HOOK            0
 #define configUSE_DAEMON_TASK_STARTUP_HOOK      0
 
@@ -77,7 +83,7 @@
 #define configUSE_TIMERS                        1
 #define configTIMER_TASK_PRIORITY               (configMAX_PRIORITIES - 1)
 #define configTIMER_QUEUE_LENGTH                4
-#define configTIMER_TASK_STACK_DEPTH            (configMINIMAL_STACK_SIZE)
+#define configTIMER_TASK_STACK_DEPTH            (2 * configMINIMAL_STACK_SIZE)
 
 /* Task priorities.*/
 #ifndef uartPRIMARY_PRIORITY

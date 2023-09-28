@@ -6,6 +6,7 @@ This project demonstrates the functionality of UART simulation LIN salve.
 ## Note
 - The interval between data frames should be greater than or equal to the transmission time of 4 UART bytes.
 - The baudrate adaptation function is not supported, need to configured UART baudrate to the desired value.
+- The slave automatic sleep function is not supported, the master no need to wake up slave.
 
 ## Board Setting
 
@@ -18,7 +19,7 @@ connect LIN transceiver mcu signal to UART's TX and RX on board, connect LIN tra
 configure usb_lin debugger:
 - configure com and baudrate, then click `Set to Debugger` option
   ![lin_debugger_configuration](../../../../../../../assets/sdk/samples/lin_debugger_configuration.png)
-- Configure sent data, including master sent, master receive and sync break, the sync break could wake up slave from sleep mode：
+- Configure sent data, including master sent, master receive：
   ![lin_debugger_master_sent](../../../../../../../assets/sdk/samples/lin_debugger_master_sent_config.png)
 - Running the example, check the result in debugger window
   ![lin_debugger_master_result](../../../../../../../assets/sdk/samples/lin_debugger_master_result.png)

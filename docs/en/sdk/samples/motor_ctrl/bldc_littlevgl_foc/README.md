@@ -18,12 +18,6 @@
 
 - Add `sdk_compile_options("-mabi=ilp32f")` to the project's CMakeLists.txt to get a higher performance
 
-```{note}
-
-This code does not support any compilation optimization, please turn off compilation optimization
-
-```
-
 ## Running the demo
 
 After the initialization operation, the screen will display the interface, click on the screen for speed and position control, and the screen will show the speed and position information.

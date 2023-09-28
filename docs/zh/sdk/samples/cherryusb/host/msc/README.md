@@ -1,4 +1,4 @@
-# USB MSC HOST
+# CherryUSB MSC Host
 
 ## 概述
 

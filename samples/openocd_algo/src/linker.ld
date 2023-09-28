@@ -32,5 +32,13 @@ SECTIONS
         __noncacheable_bss_end__ = .;
         __noncacheable_init_start__ = .;
         __noncacheable_init_end__ = .;
+        __tdata_start__ = .;
+        __tdata_end__ = .;
+        __tbss_start__ = .;
+        __tbss_end__ = .;
+        __data_load_addr__ = .;
+        __fast_load_addr__ = .;
+        __tdata_load_addr__ = .;
+        __noncacheable_init_load_addr__ = .;
     }
 }

@@ -1,4 +1,4 @@
-# HPMICRO MATH
+# HPMicro Math
 
 ```{eval-rst}
 .. toctree::

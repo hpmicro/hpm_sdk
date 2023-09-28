@@ -10,6 +10,7 @@
 
 #include "hpm_common.h"
 #include "hpm_pwm_regs.h"
+#include "hpm_soc_feature.h"
 /**
  * @brief PWM driver APIs
  * @defgroup pwm_interface PWM driver APIs
@@ -159,10 +160,11 @@ typedef struct pwm_output_channel {
  *
  */
 typedef struct pwm_fault_source_config {
-    uint32_t source_mask;               /**< fault source mask*/
-    bool fault_recover_at_rising_edge;  /**< recover fault at rising edge */
-    bool external_fault_active_low;     /**< active external fault by low */
-    uint8_t fault_output_recovery_trigger; /**< fault output recoverty trigger */
+    uint32_t source_mask;                   /**< fault source mask*/
+    bool fault_recover_at_rising_edge;      /**< recover fault at rising edge */
+    bool fault_external_0_active_low;       /**< active external fault0 by low */
+    bool fault_external_1_active_low;       /**< active external fault1 by low */
+    uint8_t fault_output_recovery_trigger;  /**< fault output recoverty trigger */
 } pwm_fault_source_config_t;
 
 /**
@@ -170,6 +172,9 @@ typedef struct pwm_fault_source_config {
  *
  */
 typedef struct pwm_config {
+#if PWM_SOC_HRPWM_SUPPORT
+    bool hrpwm_update_mode;             /**< mode one or zero, HR CMP update timing */
+#endif
     bool enable_output;                 /**< enable pwm output */
     bool invert_output;                 /**< invert pwm output level */
     uint8_t update_trigger;             /**< pwm config update trigger */
@@ -190,6 +195,33 @@ typedef struct pwm_pair_config {
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief pwm deinitialize function
+ *
+ * @param[in] pwm_x PWM base address, HPM_PWMx(x=0..n)
+ *
+ */
+static inline void pwm_deinit(PWM_Type *pwm_x)
+{
+    pwm_x->IRQEN = 0;
+    pwm_x->DMAEN = 0;
+    pwm_x->SR |= pwm_x->SR;
+    pwm_x->STA = 0;
+    pwm_x->RLD = PWM_RLD_RLD_MASK;
+    for (uint8_t i = 0; i < PWM_SOC_CMP_MAX_COUNT; i++) {
+        pwm_x->CMP[i] = PWM_CMP_CMP_MASK;
+        pwm_x->CMPCFG[i] = 0;
+        pwm_x->CHCFG[i] = PWM_CHCFG_CMPSELEND_SET(PWM_SOC_CMP_MAX_COUNT - 1) | PWM_CHCFG_CMPSELBEG_SET(PWM_SOC_CMP_MAX_COUNT - 1);
+    }
+    pwm_x->FRCMD = 0;
+    pwm_x->GCR = 0;
+    pwm_x->SHCR = 0;
+    pwm_x->HRPWM_CFG = 0;
+    for (uint8_t i = 0; i < PWM_SOC_OUTPUT_TO_PWM_MAX_COUNT; i++) {
+        pwm_x->PWMCFG[i] = 0;
+    }
+}
 
 /**
  * @brief issue all shawdow register
@@ -463,6 +495,19 @@ static inline void pwm_load_cmp_shadow_on_capture(PWM_Type *pwm_x,
 }
 
 #if PWM_SOC_SHADOW_TRIG_SUPPORT
+
+/**
+ * @brief RLD, STA shadow registers take effect at the reload point
+ *
+ * @param pwm_x pwm_x PWM base address, HPM_PWMx(x=0..n)
+ * @param is_enable true or false
+ */
+static inline void pwm_set_cnt_shadow_trig_reload(PWM_Type *pwm_x, bool is_enable)
+{
+	pwm_x->SHCR = ((pwm_x->SHCR & ~PWM_SHCR_CNT_UPDATE_RELOAD_MASK)
+            | PWM_SHCR_CNT_UPDATE_RELOAD_SET(is_enable));
+}
+
 /**
  * @brief Set the timer shadow register to update the trigger edge
  *
@@ -590,7 +635,7 @@ static inline void pwm_config_cmp(PWM_Type *pwm_x, uint8_t index, pwm_cmp_config
                         | PWM_CMP_HRPWM_CMP_HR_SET(config->hrcmp);
         } else {
 #endif
-            pwm_x->CMPCFG[index] = PWM_CMPCFG_XCNTCMPEN_SET(config->enable_ex_cmp)
+            pwm_x->CMPCFG[index] = (config->enable_ex_cmp ? PWM_CMPCFG_XCNTCMPEN_MASK : 0)
                         | PWM_CMPCFG_CMPSHDWUPT_SET(config->update_trigger);
             pwm_x->CMP[index] = PWM_CMP_CMP_SET(config->cmp)
                         | PWM_CMP_XCMP_SET(config->ex_cmp)
@@ -632,7 +677,7 @@ static inline void pwm_config_fault_source(PWM_Type *pwm_x, pwm_fault_source_con
                 | PWM_GCR_FAULTRECEDG_MASK | PWM_GCR_FAULTEXPOL_MASK
                 | PWM_GCR_FAULTRECHWSEL_MASK))
         | config->source_mask
-        | PWM_GCR_FAULTEXPOL_SET(config->external_fault_active_low)
+        | PWM_GCR_FAULTEXPOL_SET((config->fault_external_0_active_low ? 0x1 : 0) | (config->fault_external_1_active_low ? 0x2 : 0))
         | PWM_GCR_FAULTRECEDG_SET(config->fault_recover_at_rising_edge)
         | PWM_GCR_FAULTRECHWSEL_SET(config->fault_output_recovery_trigger);
 }
@@ -796,6 +841,9 @@ static inline void pwm_config_pwm(PWM_Type *pwm_x, uint8_t index,
         | PWM_PWMCFG_FAULTRECTIME_SET(config->fault_recovery_trigger)
         | PWM_PWMCFG_FRCSRCSEL_SET(config->force_source)
         | PWM_PWMCFG_PAIR_SET(enable_pair_mode)
+#if PWM_SOC_HRPWM_SUPPORT
+        | PWM_PWMCFG_HR_UPDATE_MODE_SET(config->hrpwm_update_mode)
+#endif
         | PWM_PWMCFG_DEADAREA_SET(config->dead_zone_in_half_cycle);
 }
 

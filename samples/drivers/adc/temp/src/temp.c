@@ -87,7 +87,7 @@ int main(void)
     board_init();
 
     /* ADC clock initialization */
-    board_init_adc16_clock(APP_ADC_TEMP_ADC16_BASE);
+    board_init_adc16_clock(APP_ADC_TEMP_ADC16_BASE, true);
 
 
     /* ADC common initialization */

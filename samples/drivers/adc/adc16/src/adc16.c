@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,31 +9,45 @@
 #include "hpm_debug_console.h"
 #include "hpm_adc16_drv.h"
 #include "hpm_pwm_drv.h"
+
+#ifndef ADC_SOC_NO_HW_TRIG_SRC
 #include "hpm_trgm_drv.h"
 #include "hpm_trgmmux_src.h"
+#endif
 
-#define APP_ADC16_CORE HPM_CORE0
+#ifndef APP_ADC16_CORE
+#define APP_ADC16_CORE BOARD_RUNNING_CORE
+#endif
+
+#define APP_ADC16_CH_SAMPLE_CYCLE            (20U)
+#define APP_ADC16_CH_WDOG_EVENT              (1 << BOARD_APP_ADC16_CH_1)
 
 #define APP_ADC16_SEQ_START_POS              (0U)
-#define APP_ADC16_SEQ_IRQ_EVENT              adc16_event_seq_single_complete
 #define APP_ADC16_SEQ_DMA_BUFF_LEN_IN_4BYTES (1024U)
+#define APP_ADC16_SEQ_IRQ_EVENT              adc16_event_seq_single_complete
 
-#define APP_ADC16_PMT_PWM_REFCH_A            (8U)
-#define APP_ADC16_PMT_PWM                    HPM_PWM0
-#define APP_ADC16_PMT_TRGM                   HPM_TRGM0
-#define APP_ADC16_PMT_TRGM_IN                HPM_TRGM0_INPUT_SRC_PWM0_CH8REF
-#define APP_ADC16_PMT_TRGM_OUT               TRGM_TRGOCFG_ADCX_PTRGI0A
-#define APP_ADC16_PMT_TRIG_CH                ADC16_CONFIG_TRG0A
-#define APP_ADC16_PMT_IRQ_EVENT              adc16_event_trig_complete
+#ifndef ADC_SOC_NO_HW_TRIG_SRC
+#define APP_ADC16_HW_TRIG_SRC_PWM_REFCH_A    (8U)
+#define APP_ADC16_HW_TRIG_SRC                BOARD_APP_ADC16_HW_TRIG_SRC
+#define APP_ADC16_HW_TRGM                    BOARD_APP_ADC16_HW_TRGM
+#define APP_ADC16_HW_TRGM_IN                 BOARD_APP_ADC16_HW_TRGM_IN
+#define APP_ADC16_HW_TRGM_OUT_SEQ            BOARD_APP_ADC16_HW_TRGM_OUT_SEQ
+#define APP_ADC16_HW_TRGM_OUT_PMT            BOARD_APP_ADC16_HW_TRGM_OUT_PMT
+#endif
+
+#define APP_ADC16_PMT_TRIG_CH                BOARD_APP_ADC16_PMT_TRIG_CH
 #define APP_ADC16_PMT_DMA_BUFF_LEN_IN_4BYTES ADC_SOC_PMT_MAX_DMA_BUFF_LEN_IN_4BYTES
+#define APP_ADC16_PMT_IRQ_EVENT              adc16_event_trig_complete
 
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t seq_buff[APP_ADC16_SEQ_DMA_BUFF_LEN_IN_4BYTES];
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t pmt_buff[APP_ADC16_PMT_DMA_BUFF_LEN_IN_4BYTES];
 
 uint8_t seq_adc_channel[] = {BOARD_APP_ADC16_CH_1};
 uint8_t trig_adc_channel[] = {BOARD_APP_ADC16_CH_1};
-__IO uint8_t seq_full_complete_flag;
+
+__IO uint8_t seq_complete_flag;
 __IO uint8_t trig_complete_flag;
+__IO uint32_t res_out_of_thr_flag;
 
 static uint8_t get_adc_conv_mode(void)
 {
@@ -62,18 +76,22 @@ void isr_adc16(void)
 
     status = adc16_get_status_flags(BOARD_APP_ADC16_BASE);
 
-    if (ADC16_INT_STS_SEQ_CMPT_GET(status)) {
-        /* Clear seq_complete status */
-        adc16_clear_status_flags(BOARD_APP_ADC16_BASE, adc16_event_seq_full_complete);
+    /* Clear status */
+    adc16_clear_status_flags(BOARD_APP_ADC16_BASE, status);
+
+    if (ADC16_INT_STS_SEQ_CVC_GET(status)) {
         /* Set flag to read memory data */
-        seq_full_complete_flag = 1;
+        seq_complete_flag = 1;
     }
 
     if (ADC16_INT_STS_TRIG_CMPT_GET(status)) {
-        /* Clear trig_cmpt status */
-        adc16_clear_status_flags(BOARD_APP_ADC16_BASE, adc16_event_trig_complete);
         /* Set flag to read memory data */
         trig_complete_flag = 1;
+    }
+
+    if (ADC16_INT_STS_WDOG_GET(status) & APP_ADC16_CH_WDOG_EVENT) {
+        adc16_disable_interrupts(BOARD_APP_ADC16_BASE, APP_ADC16_CH_WDOG_EVENT);
+        res_out_of_thr_flag = ADC16_INT_STS_WDOG_GET(status) & APP_ADC16_CH_WDOG_EVENT;
     }
 }
 SDK_DECLARE_EXT_ISR_M(BOARD_APP_ADC16_IRQn, isr_adc16)
@@ -122,6 +140,7 @@ hpm_stat_t process_pmt_data(uint32_t *buff, int32_t start_pos, uint32_t len)
     return status_success;
 }
 
+#ifndef ADC_SOC_NO_HW_TRIG_SRC
 void init_trigger_source(PWM_Type *ptr)
 {
     pwm_cmp_config_t pwm_cmp_cfg;
@@ -140,33 +159,34 @@ void init_trigger_source(PWM_Type *ptr)
 
     /* Select comp8 and trigger at the middle of a pwm cycle */
     pwm_cmp_cfg.cmp = 2999;
-    pwm_config_cmp(ptr, APP_ADC16_PMT_PWM_REFCH_A, &pwm_cmp_cfg);
+    pwm_config_cmp(ptr, APP_ADC16_HW_TRIG_SRC_PWM_REFCH_A, &pwm_cmp_cfg);
 
     /* Issue a shadow lock */
-    pwm_issue_shadow_register_lock_event(APP_ADC16_PMT_PWM);
+    pwm_issue_shadow_register_lock_event(APP_ADC16_HW_TRIG_SRC);
 
     /* Set comparator channel to generate a trigger signal */
-    pwm_output_ch_cfg.cmp_start_index = APP_ADC16_PMT_PWM_REFCH_A;   /* start channel */
-    pwm_output_ch_cfg.cmp_end_index   = APP_ADC16_PMT_PWM_REFCH_A;   /* end channel */
+    pwm_output_ch_cfg.cmp_start_index = APP_ADC16_HW_TRIG_SRC_PWM_REFCH_A;   /* start channel */
+    pwm_output_ch_cfg.cmp_end_index   = APP_ADC16_HW_TRIG_SRC_PWM_REFCH_A;   /* end channel */
     pwm_output_ch_cfg.invert_output   = false;
-    pwm_config_output_channel(ptr, APP_ADC16_PMT_PWM_REFCH_A, &pwm_output_ch_cfg);
+    pwm_config_output_channel(ptr, APP_ADC16_HW_TRIG_SRC_PWM_REFCH_A, &pwm_output_ch_cfg);
 
-	/* Start the comparator counter */
+    /* Start the comparator counter */
     pwm_start_counter(ptr);
 }
 
-void init_trigger_mux(TRGM_Type * ptr)
+void init_trigger_mux(TRGM_Type *ptr, uint8_t output)
 {
     trgm_output_t trgm_output_cfg;
 
     trgm_output_cfg.invert = false;
     trgm_output_cfg.type = trgm_output_same_as_input;
 
-    trgm_output_cfg.input  = APP_ADC16_PMT_TRGM_IN;
-    trgm_output_config(ptr, APP_ADC16_PMT_TRGM_OUT, &trgm_output_cfg);
+    trgm_output_cfg.input  = APP_ADC16_HW_TRGM_IN;
+    trgm_output_config(ptr, output, &trgm_output_cfg);
 }
+#endif
 
-void init_trigger_cfg(ADC16_Type *ptr, uint8_t trig_ch, bool inten)
+void init_trigger_target(ADC16_Type *ptr, uint8_t trig_ch)
 {
     adc16_pmt_config_t pmt_cfg;
 
@@ -178,32 +198,56 @@ void init_trigger_cfg(ADC16_Type *ptr, uint8_t trig_ch, bool inten)
         pmt_cfg.inten[i] = false;
     }
 
-    pmt_cfg.inten[pmt_cfg.trig_len - 1] = inten;
+    pmt_cfg.inten[pmt_cfg.trig_len - 1] = true;
 
     adc16_set_pmt_config(ptr, &pmt_cfg);
     adc16_set_pmt_queue_enable(ptr, trig_ch, true);
 }
 
-void init_common_config(adc16_conversion_mode_t conv_mode)
+hpm_stat_t init_common_config(adc16_conversion_mode_t conv_mode)
 {
     adc16_config_t cfg;
 
     /* initialize an ADC instance */
     adc16_get_default_config(&cfg);
+
     cfg.res            = adc16_res_16_bits;
     cfg.conv_mode      = conv_mode;
     cfg.adc_clk_div    = adc16_clock_divider_4;
-    cfg.sel_sync_ahb   = false;
+    cfg.sel_sync_ahb   = (clk_adc_src_ahb0 == clock_get_source(BOARD_APP_ADC16_CLK_NAME)) ? true : false;
 
     if (cfg.conv_mode == adc16_conv_mode_sequence ||
         cfg.conv_mode == adc16_conv_mode_preemption) {
         cfg.adc_ahb_en = true;
     }
 
-    adc16_init(BOARD_APP_ADC16_BASE, &cfg);
+    /* adc16 initialization */
+    if (adc16_init(BOARD_APP_ADC16_BASE, &cfg) == status_success) {
+        /* enable irq */
+        intc_m_enable_irq_with_priority(BOARD_APP_ADC16_IRQn, 1);
+        return status_success;
+    } else {
+        printf("%s initialization failed!\n", BOARD_APP_ADC16_NAME);
+        return status_fail;
+    }
+}
 
-    /* enable irq */
-    intc_m_enable_irq_with_priority(BOARD_APP_ADC16_IRQn, 1);
+void channel_result_out_of_threshold_handler(void)
+{
+    adc16_channel_threshold_t threshold;
+    uint32_t i = 31;
+
+    if (res_out_of_thr_flag) {
+        while (i--) {
+            if ((res_out_of_thr_flag >> i) & 0x01) {
+                adc16_get_channel_threshold(BOARD_APP_ADC16_BASE, i, &threshold);
+                printf("Warning - %s [channel %02d] - Sample voltage is out of the thresholds between 0x%04x and 0x%04x !\n", BOARD_APP_ADC16_NAME, i, threshold.thshdl, threshold.thshdh);
+            }
+        }
+
+        res_out_of_thr_flag = 0;
+        adc16_enable_interrupts(BOARD_APP_ADC16_BASE, APP_ADC16_CH_WDOG_EVENT);
+    }
 }
 
 void init_oneshot_config(void)
@@ -218,6 +262,13 @@ void init_oneshot_config(void)
     ch_cfg.sample_cycle = 20;
 
     adc16_init_channel(BOARD_APP_ADC16_BASE, &ch_cfg);
+
+    adc16_set_nonblocking_read(BOARD_APP_ADC16_BASE);
+
+#if defined(ADC_SOC_BUSMODE_ENABLE_CTRL_SUPPORT) && ADC_SOC_BUSMODE_ENABLE_CTRL_SUPPORT
+    /* enable oneshot mode */
+    adc16_enable_oneshot_mode(BOARD_APP_ADC16_BASE);
+#endif
 }
 
 void oneshot_handler(void)
@@ -225,7 +276,10 @@ void oneshot_handler(void)
     uint16_t result;
 
     if (adc16_get_oneshot_result(BOARD_APP_ADC16_BASE, BOARD_APP_ADC16_CH_1, &result) == status_success) {
-        printf("Oneshot Mode - %s [channel %d] - Result: 0x%04x\n", BOARD_APP_ADC16_NAME, BOARD_APP_ADC16_CH_1, result);
+        if (adc16_is_nonblocking_mode(BOARD_APP_ADC16_BASE)) {
+            adc16_get_oneshot_result(BOARD_APP_ADC16_BASE, BOARD_APP_ADC16_CH_1, &result);
+        }
+        printf("Oneshot Mode - %s [channel %02d] - Result: 0x%04x\n", BOARD_APP_ADC16_NAME, BOARD_APP_ADC16_CH_1, result);
     }
 }
 
@@ -255,7 +309,7 @@ void period_handler(void)
     uint16_t result;
 
     adc16_get_prd_result(BOARD_APP_ADC16_BASE, BOARD_APP_ADC16_CH_1, &result);
-    printf("Period Mode - %s [channel %d] - Result: 0x%04x\n", BOARD_APP_ADC16_NAME, BOARD_APP_ADC16_CH_1, result);
+    printf("Period Mode - %s [channel %02d] - Result: 0x%04x\n", BOARD_APP_ADC16_NAME, BOARD_APP_ADC16_CH_1, result);
 }
 
 void init_sequence_config(void)
@@ -279,8 +333,18 @@ void init_sequence_config(void)
     seq_cfg.seq_len    = sizeof(seq_adc_channel);
     seq_cfg.restart_en = false;
     seq_cfg.cont_en    = true;
-    seq_cfg.sw_trig_en = true;
+#ifndef ADC_SOC_NO_HW_TRIG_SRC
+    #ifndef __ADC16_USE_SW_TRIG
     seq_cfg.hw_trig_en = true;
+    seq_cfg.sw_trig_en = false;
+    #else
+    seq_cfg.hw_trig_en = false;
+    seq_cfg.sw_trig_en = true;
+    #endif
+#else
+    seq_cfg.hw_trig_en = false;
+    seq_cfg.sw_trig_en = true;
+#endif
 
     for (int i = APP_ADC16_SEQ_START_POS; i < seq_cfg.seq_len; i++) {
         seq_cfg.queue[i].seq_int_en = false;
@@ -299,6 +363,14 @@ void init_sequence_config(void)
     dma_cfg.stop_en            = false;
     dma_cfg.stop_pos           = 0;
 
+#if !defined(ADC_SOC_NO_HW_TRIG_SRC) && !defined(__ADC16_USE_SW_TRIG)
+    /* Trigger source initialization */
+    init_trigger_source(APP_ADC16_HW_TRIG_SRC);
+
+    /* Trigger mux initialization */
+    init_trigger_mux(APP_ADC16_HW_TRGM, APP_ADC16_HW_TRGM_OUT_SEQ);
+#endif
+
     /* Initialize DMA for the sequence mode */
     adc16_init_seq_dma(BOARD_APP_ADC16_BASE, &dma_cfg);
 
@@ -308,10 +380,12 @@ void init_sequence_config(void)
 
 void sequence_handler(void)
 {
+#if defined(ADC_SOC_NO_HW_TRIG_SRC) || defined(__ADC16_USE_SW_TRIG)
     /* SW trigger */
     adc16_trigger_seq_by_sw(BOARD_APP_ADC16_BASE);
+#endif
 
-    while (seq_full_complete_flag == 0) {
+    while (seq_complete_flag == 0) {
 
     }
 
@@ -319,7 +393,7 @@ void sequence_handler(void)
     process_seq_data(seq_buff, APP_ADC16_SEQ_START_POS, sizeof(seq_adc_channel));
 
     /* Clear the flag */
-    seq_full_complete_flag = 0;
+    seq_complete_flag = 0;
 }
 
 void init_preemption_config(void)
@@ -337,14 +411,16 @@ void init_preemption_config(void)
         adc16_init_channel(BOARD_APP_ADC16_BASE, &ch_cfg);
     }
 
+#if !defined(ADC_SOC_NO_HW_TRIG_SRC) && !defined(__ADC16_USE_SW_TRIG)
     /* Trigger source initialization */
-    init_trigger_source(APP_ADC16_PMT_PWM);
+    init_trigger_source(APP_ADC16_HW_TRIG_SRC);
 
     /* Trigger mux initialization */
-    init_trigger_mux(APP_ADC16_PMT_TRGM);
+    init_trigger_mux(APP_ADC16_HW_TRGM, APP_ADC16_HW_TRGM_OUT_PMT);
+#endif
 
-    /* Trigger config initialization */
-    init_trigger_cfg(BOARD_APP_ADC16_BASE, APP_ADC16_PMT_TRIG_CH, true);
+    /* Trigger target initialization */
+    init_trigger_target(BOARD_APP_ADC16_BASE, APP_ADC16_PMT_TRIG_CH);
 
     /* Set DMA start address for preemption mode */
     adc16_init_pmt_dma(BOARD_APP_ADC16_BASE, core_local_mem_to_sys_address(APP_ADC16_CORE, (uint32_t)pmt_buff));
@@ -355,6 +431,11 @@ void init_preemption_config(void)
 
 void preemption_handler(void)
 {
+#if defined(ADC_SOC_NO_HW_TRIG_SRC) || defined(__ADC16_USE_SW_TRIG)
+    /* SW trigger */
+    adc16_trigger_pmt_by_sw(BOARD_APP_ADC16_BASE, APP_ADC16_PMT_TRIG_CH);
+#endif
+
     /* Wait for a complete of conversion */
     while (trig_complete_flag == 0) {
 
@@ -378,7 +459,7 @@ int main(void)
     board_init_adc16_pins();
 
     /* ADC clock initialization */
-    board_init_adc16_clock(BOARD_APP_ADC16_BASE);
+    board_init_adc16_clock(BOARD_APP_ADC16_BASE, true);
 
     printf("This is an ADC16 demo:\n");
 
@@ -413,6 +494,8 @@ int main(void)
     /* Main loop */
     while (1) {
         board_delay_ms(1000);
+
+        channel_result_out_of_threshold_handler();
 
         if (conv_mode == adc16_conv_mode_oneshot) {
             oneshot_handler();

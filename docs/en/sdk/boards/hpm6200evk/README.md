@@ -119,3 +119,14 @@ The HPM6200EVK provides a series of interfaces for the characteristic peripheral
 - Motor Pin:
 
   Refer to section [DRV-LV50A-MP1907 Motor Driver Board ](lab_drv_lv50a_mp1907) for configuration
+
+  The HALL pin of the hpm6200evk needs to be connected.
+
+  - HALL Pin：
+
+  | Function      | evk Position    | Motor Position |
+  | --------- | ------      | ------      |
+  | HALL.U    | J4[20]      | J12[3]      |
+  | HALL.V    | J4[18]      | J12[4]      |
+  | HALL.W    | J4[16]      | J12[5]      |
+  | GND       | J4[4]       | J12[1]      |

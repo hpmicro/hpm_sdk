@@ -8,14 +8,19 @@ In this example, ACMP's MIN signal connets analog input pin, PIN signal connects
 ## Board Setting
 
 Please refer to [Pin Description](lab_board_resource) for specific board
+
 1. Connect analog input signal to ACMP MIN pin
 2. Connect ACMP output pin to oscilloscope or multimeter
 
-Note: The input voltage range at ACMP input pins: 0~VCC
+Note:
+
+1. The input voltage range at ACMP input pins: 0~VCC
+2. Please make sure that no any extension board without power supply connects to the development board
 
 ## Running the example
 
 When the example runs successfully, the ACMP will perform voltage comparison per second，the output pin level reversal can be observed through the oscilloscope or multimeter, and the following message is displayed in the terminal(dac set value varies with the input analog signal level):
+
 ```console
 > acmp example
 > acmp out toggled, the dac set value is 0x8e

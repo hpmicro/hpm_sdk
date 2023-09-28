@@ -82,6 +82,15 @@
     #error define USING_CODEC or USING_DAO
 #endif
 
+#ifndef TARGET_I2S_TX_DMA_CH
+#define TARGET_I2S_TX_DMA_CH 2
+#endif
+#define TARGET_I2S_TX_DMAMUX_CH DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_HDMA, TARGET_I2S_TX_DMA_CH)
+
+#ifndef TARGET_I2S_TX_DMA_IRQ_PRIORITY
+#define TARGET_I2S_TX_DMA_IRQ_PRIORITY 7
+#endif
+
 #define CODEC_BUFF_CNT 3
 #define CODEC_BUFF_SIZE 20480
 
@@ -173,7 +182,7 @@ void isr_dma(void)
 {
     volatile hpm_stat_t stat;
 
-    stat = dma_check_transfer_status(BOARD_APP_HDMA, 2);
+    stat = dma_check_transfer_status(BOARD_APP_HDMA, TARGET_I2S_TX_DMA_CH);
 
     if (0 != (stat & DMA_CHANNEL_STATUS_TC)) {
         if (!is_i2s_buff_empty()) {
@@ -193,15 +202,15 @@ void init_codec(void)
     board_init_i2c(CODEC_I2C);
 
     init_i2s_pins(TARGET_I2S);
-    /* board_init_i2s_clock(TARGET_I2S); */
+    board_init_i2s_clock(TARGET_I2S);
 }
 #endif
 
 #ifdef USING_DAO
 void init_dao(void)
 {
-    /* board_init_dao_clock(); */
     init_dao_pins();
+    board_init_dao_clock();
 }
 #endif
 
@@ -229,7 +238,7 @@ void lv_audio_codec_task(void)
     switch (s_ctrl_state) {
     case 1:
         if (!is_music_playing()) {
-            dma_disable_channel(BOARD_APP_HDMA, 2);
+            dma_disable_channel(BOARD_APP_HDMA, TARGET_I2S_TX_DMA_CH);
             if ((I2S_STA_TX_DN_GET(i2s_get_irq_status(TARGET_I2S)) & (0x01 << TARGET_I2S_DATA_LINE)) != 0u) {
 #ifdef USING_DAO
                 dao_stop(HPM_DAO);
@@ -245,7 +254,7 @@ void lv_audio_codec_task(void)
 #ifdef USING_DAO
             dao_start(HPM_DAO);
 #endif
-            dma_enable_channel(BOARD_APP_HDMA, 2);
+            dma_enable_channel(BOARD_APP_HDMA, TARGET_I2S_TX_DMA_CH);
             s_ctrl_state = 1;
         }
         break;
@@ -260,7 +269,7 @@ void init_audio_player(char *fname)
 {
     hpm_stat_t res;
 
-    dma_abort_channel(BOARD_APP_HDMA, 2);
+    dma_abort_channel(BOARD_APP_HDMA, TARGET_I2S_TX_DMA_CH);
     if (wav_ctrl.func.file != 0) {
         wav_ctrl.func.close_file(wav_ctrl.func.file);
     }
@@ -369,7 +378,7 @@ static void init_audio_player_no_printf(char *fname)
 {
     hpm_stat_t res;
 
-    dma_abort_channel(BOARD_APP_HDMA, 2);
+    dma_abort_channel(BOARD_APP_HDMA, TARGET_I2S_TX_DMA_CH);
     if (wav_ctrl.func.file != 0) {
         wav_ctrl.func.close_file(wav_ctrl.func.file);
     }
@@ -409,8 +418,8 @@ static hpm_stat_t init_i2s_playback(uint32_t sample_rate, uint8_t audio_depth, u
     i2s_init(TARGET_I2S, &i2s_config);
 
     i2s_enable_tx_dma_request(TARGET_I2S);
-    dmamux_config(BOARD_APP_DMAMUX, 2, TARGET_I2S_TX_DMAMUX_SRC, 1);
-    intc_m_enable_irq_with_priority(BOARD_APP_HDMA_IRQ, 7);
+    dmamux_config(BOARD_APP_DMAMUX, TARGET_I2S_TX_DMAMUX_CH, TARGET_I2S_TX_DMAMUX_SRC, 1);
+    intc_m_enable_irq_with_priority(BOARD_APP_HDMA_IRQ, TARGET_I2S_TX_DMA_IRQ_PRIORITY);
 
     i2s_get_default_transfer_config_for_dao(&transfer);
     transfer.data_line = TARGET_I2S_DATA_LINE;
@@ -422,18 +431,12 @@ static hpm_stat_t init_i2s_playback(uint32_t sample_rate, uint8_t audio_depth, u
     transfer.protocol = I2S_PROTOCOL_I2S_PHILIPS;
 #endif
 
-    if ((sample_rate % 44100) == 0) {
-        /* clock_aud1 has been configured for 44100*n sample rate*/
-        clock_set_i2s_source(TARGET_I2S_CLK_NAME, clk_i2s_src_aud1);
-    } else {
-        clock_set_i2s_source(TARGET_I2S_CLK_NAME, clk_i2s_src_aud0);
-    }
-
-    i2s_mclk_hz = clock_get_frequency(TARGET_I2S_CLK_NAME);
+    i2s_mclk_hz = board_config_i2s_clock(TARGET_I2S, sample_rate);
 
     if (status_success != i2s_config_tx(TARGET_I2S, i2s_mclk_hz, &transfer)) {
         return status_fail;
     }
+    i2s_start(TARGET_I2S);
 
 #ifdef USING_CODEC
     #if CONFIG_CODEC_WM8960
@@ -444,7 +447,7 @@ static hpm_stat_t init_i2s_playback(uint32_t sample_rate, uint8_t audio_depth, u
         if (wm8960_init(&wm8960_control, &wm8960_config) != status_success) {
             printf("Init Audio Codec failed\n");
         }
-        wm8960_set_volume(&wm8960_control, wm8960_module_dac, 255);
+        wm8960_set_volume(&wm8960_control, wm8960_module_dac, 200);
     #elif CONFIG_CODEC_SGTL5000
         sgtl5000_config.route = sgtl_route_playback;
         sgtl5000_config.format.sample_rate = sample_rate;
@@ -479,7 +482,7 @@ static void i2s_dma_start_transfer(uint32_t addr, uint32_t size)
     ch_config.dst_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
     ch_config.src_burst_size = 0;
 
-    if (status_success != dma_setup_channel(BOARD_APP_HDMA, 2, &ch_config, true)) {
+    if (status_success != dma_setup_channel(BOARD_APP_HDMA, TARGET_I2S_TX_DMA_CH, &ch_config, true)) {
         printf(" dma setup channel failed\n");
         return;
     }

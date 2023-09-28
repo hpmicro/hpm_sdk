@@ -120,11 +120,11 @@ typedef long                        SLONG;
 #endif
 
 #ifndef UX_MAX_CLASS_DRIVER
-#define UX_MAX_CLASS_DRIVER                                 2
+#define UX_MAX_CLASS_DRIVER                                 4
 #endif
 
 #ifndef UX_MAX_SLAVE_CLASS_DRIVER
-#define UX_MAX_SLAVE_CLASS_DRIVER                           2
+#define UX_MAX_SLAVE_CLASS_DRIVER                           4
 #endif
 
 #ifndef UX_MAX_HCD
@@ -132,7 +132,7 @@ typedef long                        SLONG;
 #endif
 
 #ifndef UX_MAX_DEVICES
-#define UX_MAX_DEVICES                                      2
+#define UX_MAX_DEVICES                                      4
 #endif
 
 #ifndef UX_MAX_ED
@@ -152,7 +152,11 @@ typedef long                        SLONG;
 #endif
 
 #ifndef UX_THREAD_STACK_SIZE
+#ifdef __riscv_flen
+#define UX_THREAD_STACK_SIZE                                (2*1024)
+#else
 #define UX_THREAD_STACK_SIZE                                (1*1024)
+#endif /*end ifdef __riscv_flen*/
 #endif
 
 #ifndef UX_THREAD_PRIORITY_ENUM

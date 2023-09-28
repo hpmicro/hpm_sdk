@@ -15,7 +15,7 @@
 #include "hpm_qei_drv.h"
 #include "hpm_gptmr_drv.h"
 #include "hpm_adc12_drv.h"
-
+#include "hpm_qeiv2_drv.h"
 #include "hpm_clock_drv.h"
 #include "hpm_uart_drv.h"
 
@@ -30,6 +30,7 @@
 #define MOTOR0_SPD                  (20.0)  /*r/s   delta:0.1r/s    1-40r/s */
 #define BLDC_ANGLE_SET_TIME_MS      (2000) /*角度对中时间  单位ms*/
 #define BLDC_CURRENT_SET_TIME_MS    (200) /*电流对中时间  单位ms，禁止大于250*/
+#define BLDC_SPEED_MAX              (40)
 
 #if (BLDC_CURRENT_SET_TIME_MS > 250)
 #error "BLDC_CURRENT_SET_TIME_MS must samller than 250"
@@ -41,7 +42,7 @@ volatile ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) u
 void motor0_highspeed_loop(void);
 
 uint8_t smc_start_flag = 0; /*滑模启动标志*/
-int32_t qei_clock_hz = 0;
+int32_t motor_clock_hz;
 /*
 *freemaster use global
 */
@@ -110,12 +111,12 @@ void bldc_init_par(void)
 
     par->currentdpipar.i_kp = HPM_MOTOR_MATH_FL_MDF(10);
     par->currentdpipar.i_ki = HPM_MOTOR_MATH_FL_MDF(0.01);
-    par->currentdpipar.i_max = HPM_MOTOR_MATH_FL_MDF(4000);
+    par->currentdpipar.i_max = HPM_MOTOR_MATH_FL_MDF(PWM_RELOAD * 0.4);
     par->currentdpipar.func_pid = hpm_mcl_bldc_foc_pi_contrl;
 
     par->currentqpipar.i_kp = HPM_MOTOR_MATH_FL_MDF(10);
     par->currentqpipar.i_ki = HPM_MOTOR_MATH_FL_MDF(0.01);
-    par->currentqpipar.i_max = HPM_MOTOR_MATH_FL_MDF(4000);
+    par->currentqpipar.i_max = HPM_MOTOR_MATH_FL_MDF(PWM_RELOAD * 0.4);
     par->currentqpipar.func_pid = hpm_mcl_bldc_foc_pi_contrl;
 
     par->pwmpar.func_spwm = hpm_mcl_bldc_foc_svpwm;
@@ -131,7 +132,7 @@ void bldc_init_par(void)
     motor0.speedloop_para.func_pid  = hpm_mcl_bldc_foc_pi_contrl;
     motor0.speedloop_para.i_kp      = HPM_MOTOR_MATH_FL_MDF(60);
     motor0.speedloop_para.i_ki      = HPM_MOTOR_MATH_FL_MDF(0.01);
-    motor0.speedloop_para.i_max     = HPM_MOTOR_MATH_FL_MDF(300);
+    motor0.speedloop_para.i_max     = HPM_MOTOR_MATH_FL_MDF(PWM_RELOAD * 0.03);
     /*位置环参数*/
     motor0.position_para.func_pid   = hpm_mcl_bldc_foc_pi_contrl;
     motor0.position_para.i_kp       = HPM_MOTOR_MATH_FL_MDF(0.0095);
@@ -145,8 +146,6 @@ void bldc_init_par(void)
 void reset_pwm_counter(void)
 {
     pwm_enable_reload_at_synci(MOTOR0_BLDCPWM);
-    trgm_output_update_source(BOARD_BLDCPWM_TRGM, TRGM_TRGOCFG_PWM_SYNCI, 1);
-    trgm_output_update_source(BOARD_BLDCPWM_TRGM, TRGM_TRGOCFG_PWM_SYNCI, 0);
 }
 
 void enable_all_pwm_output(void)
@@ -185,6 +184,7 @@ void pwm_init(void)
     pwm_pair_config_t pwm_pair_config = {0};
     pwm_output_channel_t pwm_output_ch_cfg;
 
+    pwm_deinit(MOTOR0_BLDCPWM);
     pwm_stop_counter(MOTOR0_BLDCPWM);
     reset_pwm_counter();
     /*
@@ -254,17 +254,19 @@ void pwm_init(void)
  */
 int qei_init(void)
 {
-    init_qei_trgm_pins();
-
+#ifdef CONFIG_HAS_HPMSDK_QEI
     trgm_output_t config = {0};
+#endif
+#ifdef CONFIG_HAS_HPMSDK_QEIV2
+    qeiv2_phcnt_cmp_match_config_t phcnt_cmp_config = {0};
+#endif
+    init_qei_trgm_pins();
+#ifdef CONFIG_HAS_HPMSDK_QEI
     config.invert = false;
     config.input = BOARD_BLDC_QEI_TRGM_QEI_A_SRC;
-
     trgm_output_config(BOARD_BLDC_QEI_TRGM, TRGM_TRGOCFG_QEI_A, &config);
     config.input = BOARD_BLDC_QEI_TRGM_QEI_B_SRC;
     trgm_output_config(BOARD_BLDC_QEI_TRGM, TRGM_TRGOCFG_QEI_B, &config);
-
-    intc_m_enable_irq_with_priority(BOARD_BLDC_QEI_IRQ, 1);
 
     qei_counter_reset_assert(BOARD_BLDC_QEI_BASE);
     qei_phase_config(BOARD_BLDC_QEI_BASE, BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV,
@@ -274,8 +276,26 @@ int qei_init(void)
     qei_load_read_trigger_event_enable(BOARD_BLDC_QEI_BASE,
             QEI_EVENT_POSITIVE_COMPARE_FLAG_MASK);
     qei_counter_reset_release(BOARD_BLDC_QEI_BASE);
-    qei_clock_hz = clock_get_frequency(BOARD_BLDC_QEI_CLOCK_SOURCE);
-
+    intc_m_enable_irq_with_priority(BOARD_BLDC_QEI_IRQ, 1);
+#endif
+#ifdef CONFIG_HAS_HPMSDK_QEIV2
+    qeiv2_reset_counter(BOARD_BLDC_QEIV2_BASE);
+    qeiv2_set_work_mode(BOARD_BLDC_QEIV2_BASE, qeiv2_work_mode_abz);
+    qeiv2_select_spd_tmr_register_content(BOARD_BLDC_QEIV2_BASE, qeiv2_spd_tmr_as_spd_tm);
+    qeiv2_config_z_phase_counter_mode(BOARD_BLDC_QEIV2_BASE, qeiv2_z_count_inc_on_phase_count_max);
+    qeiv2_config_phmax_phparam(BOARD_BLDC_QEIV2_BASE, BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV);
+    qeiv2_pause_pos_counter_on_fault(BOARD_BLDC_QEIV2_BASE, true);
+    qeiv2_config_abz_uvw_signal_edge(BOARD_BLDC_QEIV2_BASE, true, true, false, true, true);
+    phcnt_cmp_config.phcnt_cmp_value = 4;
+    phcnt_cmp_config.ignore_rotate_dir = true;
+    phcnt_cmp_config.ignore_zcmp = true;
+    qeiv2_config_phcnt_cmp_match_condition(BOARD_BLDC_QEIV2_BASE, &phcnt_cmp_config);
+    qeiv2_enable_load_read_trigger_event(BOARD_BLDC_QEIV2_BASE, QEIV2_EVENT_POSITION_COMPARE_FLAG_MASK);
+    qeiv2_release_counter(BOARD_BLDC_QEIV2_BASE);
+    qeiv2_set_z_phase(BOARD_BLDC_QEIV2_BASE, 0);
+    qeiv2_set_phase_cnt(BOARD_BLDC_QEIV2_BASE, 0);
+    intc_m_enable_irq_with_priority(BOARD_BLDC_QEIV2_IRQ, 1);
+#endif
     return 0;
 }
 
@@ -358,15 +378,15 @@ void init_trigger_mux(TRGM_Type * ptr)
     trgm_output_t trgm_output_cfg;
 
     trgm_output_cfg.invert = false;
-    trgm_output_cfg.type   = trgm_output_pulse_at_input_rising_edge;
+    trgm_output_cfg.type   = trgm_output_same_as_input;
     trgm_output_cfg.input  = BOARD_BLDC_TRIGMUX_IN_NUM;
     trgm_output_config(ptr, BOARD_BLDC_TRG_NUM, &trgm_output_cfg);
 }
 void motor0_current_loop(float angle)
 {
-    motor0.foc_para.samplcurpar.adc_u = ((adc_buff[0][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4);
-    motor0.foc_para.samplcurpar.adc_v = ((adc_buff[1][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4);
-    motor0.foc_para.samplcurpar.adc_w = ((adc_buff[2][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4);
+    motor0.foc_para.samplcurpar.adc_u = GET_ADC_12BIT_VALID_DATA(adc_buff[ADCU_INDEX][BOARD_BLDC_ADC_TRG*4]);
+    motor0.foc_para.samplcurpar.adc_v = GET_ADC_12BIT_VALID_DATA(adc_buff[ADCV_INDEX][BOARD_BLDC_ADC_TRG*4]);
+    motor0.foc_para.samplcurpar.adc_w = GET_ADC_12BIT_VALID_DATA(adc_buff[ADCW_INDEX][BOARD_BLDC_ADC_TRG*4]);
     motor0.foc_para.electric_angle = HPM_MOTOR_MATH_FL_MDF(angle);
     motor0.foc_para.func_dqsvpwm(&motor0.foc_para);
     motor0.foc_para.pwmpar.pwmout.func_set_pwm(&motor0.foc_para.pwmpar.pwmout);
@@ -377,7 +397,12 @@ void motor0_highspeed_loop(void)
     uint32_t  pos;
     float user_give_angle = 0;
     float fre_get_angle = 0.0;
-    pos = qei_get_current_count(BOARD_BLDC_QEI_BASE, qei_counter_type_phase)&0x1fffff;
+#ifdef CONFIG_HAS_HPMSDK_QEI
+    pos = qei_get_current_phase_phcnt(BOARD_BLDC_QEI_BASE);
+#endif
+#ifdef CONFIG_HAS_HPMSDK_QEIV2
+    pos = qeiv2_get_current_phase_phcnt(BOARD_BLDC_QEIV2_BASE);
+#endif
     pos = ((pos) % 2000)*18;
     fre_get_angle = pos;
     fre_get_angle = 360- (fre_get_angle /100);
@@ -527,17 +552,23 @@ void adc_init(void)
 #endif
 
      /* Set DMA start address for preemption mode */
-    hpm_adc_init_pmt_dma(&hpm_adc_u, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[0]));
-    hpm_adc_init_pmt_dma(&hpm_adc_v, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[1]));
-    hpm_adc_init_pmt_dma(&hpm_adc_w, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[2]));
+     /**
+      * @brief When the adc peripheral is two. No w-phase current is used,
+      * the w-phase configuration is the same as the v-phase configuration,
+      * and the v-phase can override the w-phase configuration information.
+      * 
+      */
+    hpm_adc_init_pmt_dma(&hpm_adc_w, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[ADCW_INDEX]));
+    hpm_adc_init_pmt_dma(&hpm_adc_u, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[ADCU_INDEX]));
+    hpm_adc_init_pmt_dma(&hpm_adc_v, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[ADCV_INDEX]));
 }
 void motor0_angle_align_loop(void)
 {
-    motor0.foc_para.samplcurpar.adc_u = ((adc_buff[0][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
-    motor0.foc_para.samplcurpar.adc_v = ((adc_buff[1][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
-    motor0.foc_para.samplcurpar.adc_w = ((adc_buff[2][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
+    motor0.foc_para.samplcurpar.adc_u = GET_ADC_12BIT_VALID_DATA(adc_buff[ADCU_INDEX][BOARD_BLDC_ADC_TRG*4]);
+    motor0.foc_para.samplcurpar.adc_v = GET_ADC_12BIT_VALID_DATA(adc_buff[ADCV_INDEX][BOARD_BLDC_ADC_TRG*4]);
+    motor0.foc_para.samplcurpar.adc_w = GET_ADC_12BIT_VALID_DATA(adc_buff[ADCW_INDEX][BOARD_BLDC_ADC_TRG*4]);
     motor0.foc_para.electric_angle = HPM_MOTOR_MATH_FL_MDF(0);
-    motor0.foc_para.currentdpipar.target = HPM_MOTOR_MATH_FL_MDF(100);
+    motor0.foc_para.currentdpipar.target = 100;
     motor0.foc_para.currentqpipar.target = HPM_MOTOR_MATH_FL_MDF(0);
     motor0.foc_para.func_dqsvpwm(&motor0.foc_para);
     motor0.foc_para.pwmpar.pwmout.func_set_pwm(&motor0.foc_para.pwmpar.pwmout);
@@ -568,14 +599,19 @@ void bldc_foc_angle_align(void)
 int32_t bldc_foc_get_pos(void)
 {
     int32_t ph, z;
-    ph = qei_get_current_count(BOARD_BLDC_QEI_BASE, qei_counter_type_phase)&0x1fffff;
-    z = qei_get_current_count(BOARD_BLDC_QEI_BASE, qei_counter_type_z)&0x1fffff;
+#ifdef CONFIG_HAS_HPMSDK_QEI
+    ph = qei_get_current_phase_phcnt(BOARD_BLDC_QEI_BASE);
+    z = qei_get_current_count(BOARD_BLDC_QEI_BASE, qei_counter_type_z);
+ #endif
+#ifdef CONFIG_HAS_HPMSDK_QEIV2
+    ph = qeiv2_get_current_phase_phcnt(BOARD_BLDC_QEIV2_BASE);
+    z = qeiv2_get_current_count(BOARD_BLDC_QEIV2_BASE, qeiv2_counter_type_z);
+#endif
     /*将数据以0为中点  正负排列*/
-    if(z >= (0x200000 >> 1)){
-        return -(((z - 0x200000)*BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV)+ph);
-    }
-    else{
-        return -((z*BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV)+ph);
+    if (z >= (QEI_COUNT_Z_ZCNT_MASK >> 1)) {
+        return -(((z - QEI_COUNT_Z_ZCNT_MASK) * BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV) + ph);
+    } else {
+        return -((z * BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV) + ph);
     }
 
 }
@@ -596,9 +632,9 @@ void lv_set_adval_middle(void)
     do{
         if(timer_flag == 1){/*1ms*/
 
-            adc_u_sum += ((adc_buff[0][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
-            adc_v_sum += ((adc_buff[1][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
-            adc_w_sum += ((adc_buff[2][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
+            adc_u_sum += GET_ADC_12BIT_VALID_DATA(adc_buff[ADCU_INDEX][BOARD_BLDC_ADC_TRG*4]);
+            adc_v_sum += GET_ADC_12BIT_VALID_DATA(adc_buff[ADCV_INDEX][BOARD_BLDC_ADC_TRG*4]);
+            adc_w_sum += GET_ADC_12BIT_VALID_DATA(adc_buff[ADCW_INDEX][BOARD_BLDC_ADC_TRG*4]);
             times++;
             if(times >= BLDC_CURRENT_SET_TIME_MS){
                 break;
@@ -617,7 +653,7 @@ int main(void)
     board_init();
     init_adc_bldc_pins();
     init_pwm_pins(MOTOR0_BLDCPWM);
-    qei_init();
+    motor_clock_hz = clock_get_frequency(BOARD_BLDC_QEI_CLOCK_SOURCE);
     bldc_init_par();
     adc_init();
     pwm_init();
@@ -667,6 +703,11 @@ int main(void)
             }
             if (i != 0) {
                 fre_setspeed = atof(input_data);
+                if (fre_setspeed > BLDC_SPEED_MAX) {
+                    fre_setspeed = BLDC_SPEED_MAX;
+                } else if (fre_setspeed < -BLDC_SPEED_MAX) {
+                    fre_setspeed = -BLDC_SPEED_MAX;
+                }
                 printf("\r\nSpeed mode, motor run, speed is: %f.\r\nInput speed:\r\n", fre_setspeed);
             }
         }

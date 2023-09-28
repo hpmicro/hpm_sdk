@@ -26,6 +26,7 @@ ATTR_PLACE_AT_NONCACHEABLE_BSS static char r;
 int main(void)
 {
     board_init_pmp();
+    board_init_clock();
     board_init_led_pins();
     board_timer_create(LED_FLASH_PERIOD_IN_MS, board_led_toggle);
     SEGGER_RTT_WriteString(0, "SEGGER Real-Time-Terminal Sample\r\n");

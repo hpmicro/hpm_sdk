@@ -1,8 +1,8 @@
-# USB RNDIS DEVICE - TCP SERVER
+# CherryUSB RNDIS Device - TCP Server
 
 ## Overview
 
-This example project shows USB RNDIS device implement TCP SERVER
+This example project shows USB RNDIS device implement TCP Server
 
 - PC sees a network interface via Device Manager, the MAC address is 20:89:84:6A:96:AA.
 - Application program using lwip stack create a virtual network interface, the MAC address is 20:89:84:6A:96:00. DHCP, DNS and TCP servers are implemented. The PC enumerated network interface can communicate with virtual network interface through TCP protocol.

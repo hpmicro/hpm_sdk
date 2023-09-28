@@ -55,16 +55,15 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 
 ## Plug-in
 
-- `J108` ADC/DAC reference voltage selection
+- The ADC/DAC reference voltage is selected as follows:
+
   | Connection | Description         |
   | ---------- | ------------------- |
-  | 1, 2       | 3.3V                |
-  | 2, 3       | High precision 3.3V |
+  | J108[2, 3]       |  Reference voltage |
 
 ## Resistor Switch
 
-- GigE POP `R177-R182`
-  | Status     | Description |
+- GigE POP `R177-R182`| Status     | Description |
   | ---------- | ----------- |
   | Welding    | Network     |
   | Disconnect | Motor       |
@@ -124,8 +123,8 @@ Note: To avoid abnormal functions caused by multiple connections, please ensure 
 | Function      | Pin  | Position |
 | ------------- | ---- | -------- |
 | GPTMR4.CAPT_1 | PE25 | J10[6]   |
-| GPTMR5.COMP_2 | PD24 | J10[18] |
-| GPTMR5.COMP_3 | PD23 | J10[16] |
+| GPTMR5.COMP_2 | PD24 | J10[18]  |
+| GPTMR5.COMP_3 | PD23 | J10[16]  |
 
 - ADC12 Pin
 
@@ -145,9 +144,9 @@ Note: To avoid abnormal functions caused by multiple connections, please ensure 
 
 - headphone interface
 
-| Function        | Position |
-| --------------- | -------- |
-| 3.5mm headphone | J13      |
+| Function        | Position | Standard |
+| --------------- | -------- | -------- |
+| 3.5mm headphone | J13      | OMTP |
 
 - audio input interface
 
@@ -161,6 +160,12 @@ Note: To avoid abnormal functions caused by multiple connections, please ensure 
 | -------- | -------- |
 | DAO-SPK  | J12      |
 
+- Ethernet PPS Pin
+
+| Function    | Position |
+| ----------- | -------- |
+| ENET0.EVTO0 | U11[3]   |
+
 - UART pin for uart_software_rx_idle sample or uart_rx_timeout sample
 
 | Function   | Position |
@@ -170,9 +175,9 @@ Note: To avoid abnormal functions caused by multiple connections, please ensure 
 
 - TRGMUX pin for uart_software_rx_idle sample
 
-| Function   | Position |
-| ---------- | -------- |
-| TRGM2_P9(PD19)  | J10[20]   |
+| Function       | Position |
+| -------------- | -------- |
+| TRGM2_P9(PD19) | J10[20]  |
 
 - Motor Pin:
 

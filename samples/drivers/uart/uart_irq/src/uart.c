@@ -69,7 +69,6 @@ SDK_DECLARE_EXT_ISR_M(TEST_UART_IRQ, uart_isr)
 int main(void)
 {
     hpm_stat_t stat;
-    uint8_t fifo_size;
     buff_index = 0;
 
     board_init();

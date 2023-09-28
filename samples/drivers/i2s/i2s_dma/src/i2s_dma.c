@@ -176,7 +176,6 @@ hpm_stat_t board_i2s_init(audio_data_t *audio_data, uint32_t mclk_freq)
     if (stat != status_success) {
         return status_fail;
     }
-    i2s_disable(CODEC_I2S); /* Close I2S first and wait for the codec init to complete */
     i2s_enable_tx_dma_request(CODEC_I2S); /* enable I2S TX DMA transfer */
 
     return status_success;
@@ -193,6 +192,8 @@ hpm_stat_t test_i2s_dma_play(audio_data_t *audio_data, uint32_t mclk_freq)
         dma_transfer_done = false;
         dma_transfer_error = false;
         stat = config_dma_transfer_i2s_data(audio_data);
+        i2s_reset_tx(CODEC_I2S);
+        i2s_enable(CODEC_I2S);
         if (stat != status_success) {
             printf("DMA transfer config failed\n");
             return status_fail;
@@ -201,6 +202,8 @@ hpm_stat_t test_i2s_dma_play(audio_data_t *audio_data, uint32_t mclk_freq)
         while ((!dma_transfer_error) && (!dma_transfer_done)) {
             __asm("nop");
         }
+
+        i2s_disable(CODEC_I2S);
 
         if (dma_transfer_error) {
             printf("dma transfer i2s data failed\n");
@@ -243,12 +246,10 @@ int main(void)
     }
 
     /* Test I2S DMA play */
-    i2s_enable(CODEC_I2S); /* start */
     test_i2s_dma_play(&wave_data, i2s_mclk_freq);
     if (stat == status_success) {
         printf("i2s dma play finished\n");
     }
-    i2s_disable(CODEC_I2S); /* stop */
 
     return 0;
 }

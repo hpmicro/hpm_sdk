@@ -1,10 +1,10 @@
-# USB AUDIO V2 SPEAKER SYNC
+# CherryUSB Audio V2 Speaker SYNC
 
 ## Overview
 
-This example project shows USB AUDIO V2 speaker device, that uses feedback endpoints for synchronization.
+This example project shows USB Audio V2 speaker device, that uses feedback endpoints for synchronization.
 
-- PC sees a cherry usb speaker via Device Manager
+- PC sees a CherryUSB speaker via Device Manager
 
 ## Board Setting
 

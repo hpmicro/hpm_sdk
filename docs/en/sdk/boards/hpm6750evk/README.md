@@ -129,9 +129,9 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 
 - headphone interface
 
-| Function        | Position |
-| --------------- | -------- |
-| 3.5mm headphone | J14      |
+| Function        | Position | Standard |
+| --------------- | -------- | -------- |
+| 3.5mm headphone | J14      | CTIA |
 
 - audio input interface
 

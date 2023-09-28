@@ -51,6 +51,7 @@ enum {
 #define CLK_SRC_GROUP_CPU0 (9U)
 #define CLK_SRC_GROUP_CPU1 (10U)
 #define CLK_SRC_GROUP_SRC (11U)
+#define CLK_SRC_GROUP_PWDG    (12U)
 #define CLK_SRC_GROUP_INVALID (15U)
 
 #define MAKE_CLK_SRC(src_grp, index) (((uint8_t)(src_grp) << 4) | (index))
@@ -85,6 +86,9 @@ typedef enum _clock_sources {
 
     clk_wdg_src_ahb0 = MAKE_CLK_SRC(CLK_SRC_GROUP_WDG, 0),
     clk_wdg_src_osc32k = MAKE_CLK_SRC(CLK_SRC_GROUP_WDG, 1),
+
+    clk_pwdg_src_osc24m = MAKE_CLK_SRC(CLK_SRC_GROUP_PWDG, 0),
+    clk_pwdg_src_osc32k = MAKE_CLK_SRC(CLK_SRC_GROUP_PWDG, 1),
 
     clk_src_invalid = MAKE_CLK_SRC(CLK_SRC_GROUP_INVALID, 15),
 } clk_src_t;
@@ -164,7 +168,7 @@ typedef enum _clock_name {
     clock_watchdog2 = MAKE_CLOCK_NAME(sysctl_resource_wdg2, CLK_SRC_GROUP_WDG, 2),
     clock_watchdog3 = MAKE_CLOCK_NAME(sysctl_resource_wdg3, CLK_SRC_GROUP_WDG, 3),
     clock_puart = MAKE_CLOCK_NAME(RESOURCE_INVALID, CLK_SRC_GROUP_PMIC, 0),
-    clock_pwdg = MAKE_CLOCK_NAME(RESOURCE_INVALID, CLK_SRC_GROUP_PMIC, 1),
+    clock_pwdg = MAKE_CLOCK_NAME(RESOURCE_INVALID, CLK_SRC_GROUP_PWDG, 0),
     clock_eth0 = MAKE_CLOCK_NAME(sysctl_resource_eth0, CLK_SRC_GROUP_COMMON, clock_node_eth0),
     clock_eth1 = MAKE_CLOCK_NAME(sysctl_resource_eth1, CLK_SRC_GROUP_COMMON, clock_node_eth1),
     clock_ptp0 = MAKE_CLOCK_NAME(RESOURCE_INVALID, CLK_SRC_GROUP_COMMON, clock_node_ptp0),
@@ -310,6 +314,13 @@ extern "C"
      * @param[in] group resource group index, valid value: 0/1/2/3
      */
     void clock_remove_from_group(clock_name_t clock_name, uint32_t group);
+
+    /**
+     * @brief Check IP in specified group
+     * @param[in] clock_name IP clock name
+     * @return true if in group, false if not in group
+     */
+    bool clock_check_in_group(clock_name_t clock_name, uint32_t group);
 
     /**
      * @brief Disconnect the clock group from specified CPU

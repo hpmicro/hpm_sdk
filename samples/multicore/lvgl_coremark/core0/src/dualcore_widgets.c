@@ -180,7 +180,7 @@ void lv_dualcore_coremark_demo(void)
 
         lv_obj_t *label = lv_label_create(tab_btns);
         lv_obj_add_style(label, &style_title, 0);
-        lv_label_set_text(label, "HPM6750");
+        lv_label_set_text(label, "HPMicro");
         lv_obj_align_to(label, logo, LV_ALIGN_OUT_RIGHT_TOP, 10, 0);
 
         label = lv_label_create(tab_btns);

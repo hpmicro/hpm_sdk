@@ -9,6 +9,7 @@
 #include "board.h"
 #include "pinmux.h"
 #include "audio_v1_mic_speaker.h"
+#include "usb_config.h"
 
 
 int main(void)
@@ -22,7 +23,7 @@ int main(void)
     board_init_dao_clock();
     init_dao_pins();
 
-    intc_set_irq_priority(IRQn_USB0, 2);
+    intc_set_irq_priority(CONFIG_HPM_USBD_IRQn, 2);
     i2s_enable_dma_irq_with_priority(1);
 
     printf("cherry usb audio v1 mic speaker sample.\n");

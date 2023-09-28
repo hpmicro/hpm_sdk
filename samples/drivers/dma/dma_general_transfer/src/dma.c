@@ -242,10 +242,7 @@ void test_unchained_transfer(uint32_t src, uint32_t dst, bool verbose)
         hpm_stat_t stat;
         do {
             stat = dma_check_transfer_status(TEST_DMA_CONTROLLER, TEST_DMA_CHANNEL);
-        } while ((stat & DMA_CHANNEL_STATUS_ONGOING));
-        if (0 == (stat & DMA_CHANNEL_STATUS_TC)) {
-            dma_transfer_error = true;
-        }
+        } while ((stat & DMA_CHANNEL_STATUS_TC) == 0);
 #endif
         elapsed = (mchtmr_get_count(HPM_MCHTMR) - now);
         printf("rw throughput: %.2f KB/s\n",

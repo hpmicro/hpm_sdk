@@ -6,7 +6,7 @@
 /*  Studio User Guide, or visit our web site at azure.com/rtos                 */
 /*                                                                             */
 /*  GUIX Studio Revision 6.1.0.0                                               */
-/*  Date (dd.mm.yyyy): 12. 4.2023   Time (hh:mm): 14:26                        */
+/*  Date (dd.mm.yyyy): 21. 8.2023   Time (hh:mm): 16:16                        */
 /*******************************************************************************/
 
 
@@ -14,13 +14,14 @@
 #define _GUIX_SHAPES_DISPLAY_1_RESOURCES_H_
 
 #include "gx_api.h"
+#include "board.h"
 
 /* Display and theme definitions                                               */
 
 #define DISPLAY_1 0
 #define DISPLAY_1_COLOR_FORMAT GX_COLOR_FORMAT_565RGB
-#define DISPLAY_1_X_RESOLUTION 800
-#define DISPLAY_1_Y_RESOLUTION 480
+#define DISPLAY_1_X_RESOLUTION BOARD_LCD_WIDTH
+#define DISPLAY_1_Y_RESOLUTION BOARD_LCD_HEIGHT
 #define DISPLAY_1_DEFAULT_THEME 0
 #define DISPLAY_1_THEME_TABLE_SIZE 1
 

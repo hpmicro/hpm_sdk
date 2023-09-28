@@ -23,7 +23,6 @@ project(lv_demo_benchmark)
 
 sdk_compile_definitions(-DCONFIG_LV_TOUCH=1)
 sdk_compile_definitions(-DLV_USE_DEMO_BENCHMARK=1)
-sdk_compile_definitions(-DINIT_EXT_RAM_FOR_DATA=1)
 sdk_compile_definitions(-DCONFIG_LV_HAS_EXTRA_CONFIG="lv_app_conf.h")
 sdk_inc(src)
 sdk_app_src(src/lvgl.c)

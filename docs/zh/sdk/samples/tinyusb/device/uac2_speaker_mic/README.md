@@ -14,7 +14,7 @@
 
 ## 工程配置
 
-- 文件 `CMakeLists.txt`中设置DBOARD_DEVICE_RHPORT_NUM为0或1，0表示USB0, 1表示USB1
+- 文件 `CMakeLists.txt`中设置BOARD_DEVICE_RHPORT_NUM为0或1，0表示USB0, 1表示USB1
 - USB device 属性可通过tusb_config.h或CMakeListx.txt配置
 
 ## 运行现象

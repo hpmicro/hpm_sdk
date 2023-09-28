@@ -4,14 +4,17 @@ sdk_inc(osal)
 sdk_inc(core)
 sdk_inc(class/cdc)
 sdk_inc(class/hid)
+sdk_inc(class/midi)
 sdk_inc(class/msc)
 sdk_inc(class/audio)
 sdk_inc(class/video)
 sdk_inc(class/hub)
 sdk_inc(class/wireless)
+sdk_inc(port/ehci)
 
 if(CONFIG_USB_DEVICE_CDC OR CONFIG_USB_DEVICE_HID OR CONFIG_USB_DEVICE_MSC
-  OR CONFIG_USB_DEVICE_AUDIO OR CONFIG_USB_DEVICE_VIDEO OR CONFIG_USB_DEVICE_RNDIS)
+  OR CONFIG_USB_DEVICE_AUDIO OR CONFIG_USB_DEVICE_VIDEO OR CONFIG_USB_DEVICE_RNDIS
+  OR CONFIG_USB_DEVICE_MIDI)
 set(CONFIG_CHERRYUSB_DEVICE 1)
 endif()
 

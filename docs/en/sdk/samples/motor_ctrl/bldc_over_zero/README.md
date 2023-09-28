@@ -15,13 +15,6 @@ This project shows a sensorless control method for brushless motors
 
 - Requires board to support phase current acquisition
 
-```{note}
-
-This code does not support any compilation optimization
-
-```
-
-
 ## Running the demo
 
 The motor accelerates at speeds from 5 to 40 revolutions per second when the project is running correctly, then decelerates from 40 to 5 revolutions per second and keeps cycling.

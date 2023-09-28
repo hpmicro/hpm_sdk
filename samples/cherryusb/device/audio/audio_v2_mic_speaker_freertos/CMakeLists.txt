@@ -22,7 +22,6 @@ sdk_compile_definitions(-D__freertos_irq_stack_top=_stack)
 sdk_compile_definitions(-DCONFIG_FREERTOS=1)
 sdk_compile_definitions(-DUSE_NONVECTOR_MODE=1)
 sdk_compile_definitions(-DDISABLE_IRQ_PREEMPTIVE=1)
-sdk_compile_definitions(-DCONFIG_USBDEV_TX_THREAD=1)
-sdk_compile_definitions(-DCONFIG_USBDEV_RX_THREAD=1)
+sdk_compile_definitions(-DCONFIG_USB_DBG_LEVEL=USB_DBG_WARNING)
 
 generate_ses_project()

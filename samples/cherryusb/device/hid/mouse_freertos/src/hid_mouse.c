@@ -6,9 +6,7 @@
  */
 /* FreeRTOS kernel includes. */
 #include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
-
+#include "usb_osal.h"
 #include "usbd_core.h"
 #include "usbd_hid.h"
 #include "board.h"
@@ -194,23 +192,43 @@ struct hid_mouse {
 };
 
 /*!< mouse report */
-static USB_NOCACHE_RAM_SECTION struct hid_mouse mouse_cfg;
-SemaphoreHandle_t semaphore_tx_done;
+static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX struct hid_mouse mouse_cfg;
+usb_osal_sem_t semaphore_tx_done;
 
 #define HID_STATE_IDLE 0
 #define HID_STATE_BUSY 1
 
-void usbd_configure_done_callback(void)
+void usbd_event_handler(uint8_t event)
 {
-    /* no out ep, do nothing */
+    switch (event) {
+    case USBD_EVENT_RESET:
+        break;
+    case USBD_EVENT_CONNECTED:
+        break;
+    case USBD_EVENT_DISCONNECTED:
+        break;
+    case USBD_EVENT_RESUME:
+        break;
+    case USBD_EVENT_SUSPEND:
+        break;
+    case USBD_EVENT_CONFIGURED:
+        break;
+    case USBD_EVENT_SET_REMOTE_WAKEUP:
+        break;
+    case USBD_EVENT_CLR_REMOTE_WAKEUP:
+        break;
+
+    default:
+        break;
+    }
 }
 
 /* function ------------------------------------------------------------------*/
 static void usbd_hid_int_callback(uint8_t ep, uint32_t nbytes)
 {
     if (semaphore_tx_done != NULL) {
-        if (xSemaphoreGive(semaphore_tx_done) != pdPASS) {
-            USB_LOG_ERR("%s xSemaphoreGive error\n", __func__);
+        if (usb_osal_sem_give(semaphore_tx_done) != 0) {
+            USB_LOG_ERR("%s usb_osal_sem_give error\n", __func__);
         }
     }
 }
@@ -232,11 +250,11 @@ struct usbd_interface intf0;
 
 void hid_mouse_init(void)
 {
-    semaphore_tx_done = xSemaphoreCreateBinary();
+    semaphore_tx_done = usb_osal_sem_create(0);
     if (semaphore_tx_done == NULL) {
-        USB_LOG_ERR("xSemaphoreCreateBinary creation failed!.\n");
+        USB_LOG_ERR("usb_osal_sem_create creation failed!.\n");
         for (;;) {
-            vTaskDelay(100);
+            usb_osal_msleep(10);
         }
     }
     usbd_desc_register(hid_descriptor);
@@ -267,8 +285,8 @@ void hid_mouse_test(void)
         if (ret < 0) {
             return;
         }
-        if (xSemaphoreTake(semaphore_tx_done, portMAX_DELAY) != pdPASS) {
-            USB_LOG_ERR("%s xSemaphoreTake error\n", __func__);
+        if (usb_osal_sem_take(semaphore_tx_done, portMAX_DELAY) != 0) {
+            USB_LOG_ERR("%s usb_osal_sem_take error\n", __func__);
         }
     }
     vTaskDelay(10);

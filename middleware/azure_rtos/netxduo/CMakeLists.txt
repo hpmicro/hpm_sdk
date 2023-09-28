@@ -1,6 +1,9 @@
 # Copyright (c) 2023 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
+if(NOT DEFINED NX_INCLUDE_USER_DEFINE_FILE)
+    sdk_compile_definitions(-DNX_INCLUDE_USER_DEFINE_FILE=1)
+endif()
 cmake_minimum_required(VERSION 3.0.0 FATAL_ERROR)
 
 if(NOT DEFINED THREADX_ARCH)

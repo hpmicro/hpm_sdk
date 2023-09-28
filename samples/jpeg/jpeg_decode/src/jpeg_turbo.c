@@ -66,6 +66,8 @@ bool jpeg_sw_decode(uint8_t *file_buf, uint32_t file_len, uint32_t *width, uint3
         tmp_buf = (uint8_t *)malloc(size);
         if (!tmp_buf) {
             printf("out of memory\n");
+            jpeg_abort_decompress(&cinfo);
+            jpeg_destroy_decompress(&cinfo);
             return false;
         }
     }

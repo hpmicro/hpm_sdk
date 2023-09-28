@@ -43,7 +43,7 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     enet_mac_config_t enet_config;
     enet_tx_control_config_t enet_tx_control_config;
 
-    #if RGMII
+    #if defined(RGMII) && RGMII
         #if defined(__USE_DP83867) && __USE_DP83867
         dp83867_config_t phy_config;
         #else
@@ -117,7 +117,7 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     #endif
 
     /* Initialize phy */
-    #if RGMII
+    #if defined(RGMII) && RGMII
         #if defined(__USE_DP83867) && __USE_DP83867
         dp83867_reset(ptr);
         #if __DISABLE_AUTO_NEGO
@@ -172,7 +172,7 @@ int main(void)
     printf("LwIP Version: %s\n", LWIP_VERSION_STRING);
 
     /* Set RGMII clock delay */
-    #if RGMII
+    #if defined(RGMII) && RGMII
     board_init_enet_rgmii_clock_delay(ENET);
     #else
     /* Set RMII reference clock */

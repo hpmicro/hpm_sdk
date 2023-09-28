@@ -42,8 +42,8 @@
                               4. For applications, because of the receiving pool is shared by the driver and the protocol
                                  stack, the driver will alloc for a packet after receiving the data and give the ownership
                                  to the hardware. Therefore, in the worst cases, if the applications or netx stack hold all
-                                 the packets in the pool, the driver will fail to alloc a new packet, causing configuration 
-                                 of the rx descriptor failure. Of course, this situation is so worst and can be solved by 
+                                 the packets in the pool, the driver will fail to alloc a new packet, causing configuration
+                                 of the rx descriptor failure. Of course, this situation is so worst and can be solved by
                                  preparing pools where only hardware has ownership. However, this processing makes the driver
                                  layer more complex.
 
@@ -142,7 +142,7 @@ VOID enet_self_adaptive_port_speed(VOID)
     CHAR *speed_str[] = {"10Mbps", "100Mbps", "1000Mbps"};
     CHAR *duplex_str[] = {"Half duplex", "Full duplex"};
 
-#if RGMII
+#if defined(RGMII) && RGMII
 #if defined(__USE_DP83867) && __USE_DP83867
     dp83867_get_phy_status(ENET, &status);
 #else
@@ -331,7 +331,7 @@ NX_PACKET *_nx_driver_hardware_get_frame(enet_rx_desc_t **parent_rx_desc_list_cu
                     memcpy(packet_ptr->nx_packet_data_start, (VOID *)frame.buffer, frame.length);
                     hpm_packets[index] = packet_ptr;
                 }
-                
+
             }
 
             if (hpm_packets[index] != (NX_PACKET *)(-1)) {
@@ -406,7 +406,7 @@ NX_PACKET *_nx_driver_hardware_get_frame(enet_rx_desc_t **parent_rx_desc_list_cu
 static UINT _nx_driver_hardware_initialize(NX_IP_DRIVER *driver_req_ptr)
 {
     enet_tx_control_config_t enet_tx_control_config;
-#if RGMII
+#if defined(RGMII) && RGMII
 #if defined(__USE_DP83867) && __USE_DP83867
     dp83867_config_t phy_config;
 #else
@@ -449,8 +449,8 @@ static UINT _nx_driver_hardware_initialize(NX_IP_DRIVER *driver_req_ptr)
     nx_driver_information.desc.tx_desc_list_head = (enet_tx_desc_t *)core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (UINT)dma_tx_desc_tab);
     nx_driver_information.desc.rx_desc_list_head = (enet_rx_desc_t *)core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (UINT)dma_rx_desc_tab);
 
-#if (NETX_RX_DATA_COPY_ALGORITHM == NETX_DATA_DIRECT)  
-    NX_PACKET *packet_ptr;  
+#if (NETX_RX_DATA_COPY_ALGORITHM == NETX_DATA_DIRECT)
+    NX_PACKET *packet_ptr;
     for (UINT i = 0; i < ENET_RX_BUFF_COUNT; i++) {
         /* Allocate a packet for the receive buffers.  */
         if (nx_packet_allocate(&pool_receive, &packet_ptr,
@@ -486,7 +486,7 @@ static UINT _nx_driver_hardware_initialize(NX_IP_DRIVER *driver_req_ptr)
     _hardware_get_mac_address(mac);
 
 /* Initialize phy */
-#if RGMII
+#if defined(RGMII) && RGMII
 #if defined(__USE_DP83867) && __USE_DP83867
     dp83867_reset(ENET);
 #if __DISABLE_AUTO_NEGO
@@ -669,7 +669,7 @@ static UINT _nx_driver_hardware_enable(NX_IP_DRIVER *driver_req_ptr)
     enet_disable_lpi_interrupt(ENET);
 
     while (1) {
-#if RGMII
+#if defined(RGMII) && RGMII
 #if defined(__USE_DP83867) && __USE_DP83867
         dp83867_get_phy_status(ENET, &status);
 #else
@@ -692,7 +692,7 @@ static UINT _nx_driver_hardware_enable(NX_IP_DRIVER *driver_req_ptr)
 
 static UINT _nx_driver_hardware_disable(NX_IP_DRIVER *driver_req_ptr)
 {
-    NX_PARAMETER_NOT_USED(driver_req_ptr); 
+    NX_PARAMETER_NOT_USED(driver_req_ptr);
     /* Disable Enet IRQ */
     board_disable_enet_irq(ENET);
 
@@ -765,7 +765,7 @@ UINT _nx_driver_initialize(NX_IP_DRIVER *driver_req_ptr)
     NX_INTERFACE *interface_ptr;
     UINT status;
 
-#if (NETX_RX_DATA_COPY_ALGORITHM == NETX_DATA_DIRECT)  
+#if (NETX_RX_DATA_COPY_ALGORITHM == NETX_DATA_DIRECT)
     /* Create a packet pool.  */
     status = nx_packet_pool_create(&pool_receive, "NetX Rx Packet Pool", (1536 + sizeof(NX_PACKET)), (VOID *)pool_receive_data, sizeof(pool_receive_data));
 #endif
@@ -780,7 +780,7 @@ UINT _nx_driver_initialize(NX_IP_DRIVER *driver_req_ptr)
     nx_driver_information.nx_driver_information_state = NX_DRIVER_STATE_NOT_INITIALIZED;
 
     /* Setup the default packet pool for the driver's received packets.  */
-#if (NETX_RX_DATA_COPY_ALGORITHM == NETX_DATA_DIRECT)  
+#if (NETX_RX_DATA_COPY_ALGORITHM == NETX_DATA_DIRECT)
     nx_driver_information.nx_driver_information_packet_pool_ptr = &pool_receive;
 #else
     nx_driver_information.nx_driver_information_packet_pool_ptr = driver_req_ptr->nx_ip_driver_ptr->nx_ip_default_packet_pool;
@@ -862,7 +862,7 @@ static VOID _nx_driver_packet_send(NX_IP_DRIVER *driver_req_ptr)
     *(ethernet_frame_ptr + 1) = driver_req_ptr->nx_ip_driver_physical_address_lsw;
 
     *(ethernet_frame_ptr + 2) = (driver_req_ptr->nx_ip_driver_interface->nx_interface_physical_address_msw << 16) | (driver_req_ptr->nx_ip_driver_interface->nx_interface_physical_address_lsw >> 16);
-    
+
     *(ethernet_frame_ptr + 3) = (driver_req_ptr->nx_ip_driver_interface->nx_interface_physical_address_lsw << 16);
 
     /* Set up the frame type field in the Ethernet harder. */

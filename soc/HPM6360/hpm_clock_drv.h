@@ -45,6 +45,7 @@ enum {
 #define CLK_SRC_GROUP_DAC   (7U)
 #define CLK_SRC_GROUP_CPU0   (9U)
 #define CLK_SRC_GROUP_SRC    (10U)
+#define CLK_SRC_GROUP_PWDG    (11U)
 #define CLK_SRC_GROUP_INVALID (15U)
 
 #define MAKE_CLK_SRC(src_grp, index) (((uint8_t)(src_grp)<<4) | (index))
@@ -65,17 +66,22 @@ typedef enum _clock_sources {
     clk_src_pll2_clk1 = MAKE_CLK_SRC(CLK_SRC_GROUP_COMMON, 7),
     clk_src_osc32k = MAKE_CLK_SRC(CLK_SRC_GROUP_COMMON, 8),
 
-    clk_adc_src_ana = MAKE_CLK_SRC(CLK_SRC_GROUP_ADC, 0),
-    clk_adc_src_ahb = MAKE_CLK_SRC(CLK_SRC_GROUP_ADC, 1),
+    clk_adc_src_ana0 = MAKE_CLK_SRC(CLK_SRC_GROUP_ADC, 0),
+    clk_adc_src_ana1 = MAKE_CLK_SRC(CLK_SRC_GROUP_ADC, 0),
+    clk_adc_src_ana2 = MAKE_CLK_SRC(CLK_SRC_GROUP_ADC, 0),
+    clk_adc_src_ahb0 = MAKE_CLK_SRC(CLK_SRC_GROUP_ADC, 1),
 
-    clk_dac_src_ana = MAKE_CLK_SRC(CLK_SRC_GROUP_DAC, 0),
-    clk_dac_src_ahb = MAKE_CLK_SRC(CLK_SRC_GROUP_DAC, 1),
+    clk_dac_src_ana3 = MAKE_CLK_SRC(CLK_SRC_GROUP_DAC, 0),
+    clk_dac_src_ahb0 = MAKE_CLK_SRC(CLK_SRC_GROUP_DAC, 1),
 
     clk_i2s_src_aud0 = MAKE_CLK_SRC(CLK_SRC_GROUP_I2S, 0),
     clk_i2s_src_aud1 = MAKE_CLK_SRC(CLK_SRC_GROUP_I2S, 1),
 
     clk_wdg_src_ahb0 = MAKE_CLK_SRC(CLK_SRC_GROUP_WDG, 0),
     clk_wdg_src_osc32k = MAKE_CLK_SRC(CLK_SRC_GROUP_WDG, 1),
+
+    clk_pwdg_src_osc24m = MAKE_CLK_SRC(CLK_SRC_GROUP_PWDG, 0),
+    clk_pwdg_src_osc32k = MAKE_CLK_SRC(CLK_SRC_GROUP_PWDG, 1),
 
     clk_src_invalid = MAKE_CLK_SRC(CLK_SRC_GROUP_INVALID, 15),
 } clk_src_t;
@@ -139,7 +145,7 @@ typedef enum _clock_name {
     clock_watchdog0 = MAKE_CLOCK_NAME(sysctl_resource_wdg0, CLK_SRC_GROUP_WDG, 0),
     clock_watchdog1 = MAKE_CLOCK_NAME(sysctl_resource_wdg1, CLK_SRC_GROUP_WDG, 1),
     clock_puart = MAKE_CLOCK_NAME(RESOURCE_INVALID, CLK_SRC_GROUP_PMIC, 0),
-    clock_pwdg = MAKE_CLOCK_NAME(RESOURCE_INVALID, CLK_SRC_GROUP_PMIC, 1),
+    clock_pwdg = MAKE_CLOCK_NAME(RESOURCE_INVALID, CLK_SRC_GROUP_PWDG, 0),
     clock_eth0 = MAKE_CLOCK_NAME(sysctl_resource_eth0, CLK_SRC_GROUP_COMMON, clock_node_eth0),
     clock_sdp = MAKE_CLOCK_NAME(sysctl_resource_sdp0, CLK_SRC_GROUP_AXI, 0),
     clock_xdma = MAKE_CLOCK_NAME(sysctl_resource_dma1, CLK_SRC_GROUP_AXI, 1),
@@ -295,6 +301,13 @@ void clock_add_to_group(clock_name_t clock_name, uint32_t group);
  * @param[in] group resource group index, valid value: 0/1/2/3
  */
 void clock_remove_from_group(clock_name_t clock_name, uint32_t group);
+
+/**
+ * @brief Check IP in specified group
+ * @param[in] clock_name IP clock name
+ * @return true if in group, false if not in group
+ */
+bool clock_check_in_group(clock_name_t clock_name, uint32_t group);
 
 /**
  * @brief Disconnect the clock group from specified CPU

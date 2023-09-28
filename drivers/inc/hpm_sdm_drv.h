@@ -39,8 +39,8 @@ typedef enum {
 } sdm_filter_type_t;
 
 typedef struct {
-    bool clk_signal_sync;
-    bool data_signal_sync;
+    uint8_t clk_signal_sync; /* clk sync for channel */
+    uint8_t data_signal_sync; /* data sync for channel */
     bool interrupt_en;
 } sdm_control_t;
 

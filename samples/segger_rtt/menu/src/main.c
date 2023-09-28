@@ -29,6 +29,7 @@ int main(void)
     int r;
     int CancelOp;
     board_init_pmp();
+    board_init_clock();
     board_init_led_pins();
     board_timer_create(LED_FLASH_PERIOD_IN_MS, board_led_toggle);
 

@@ -1,4 +1,4 @@
-# USB HID Custom Inout
+# CherryUSB HID Custom Inout
 
 ## Overview
 

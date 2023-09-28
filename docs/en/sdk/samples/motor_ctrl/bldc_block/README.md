@@ -11,12 +11,6 @@
 
 - Board settings refer to the development board documentation [Motor Pin](lab_board_motor_ctrl_pin) related content
 
-```{note}
-
-This code does not support any compilation optimization, please turn off compilation optimization
-
-```
-
 ## Running the Demo
 
 The motor runs at a speed of 20r/s.

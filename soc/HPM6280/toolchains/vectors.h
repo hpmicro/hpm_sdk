@@ -232,3 +232,4 @@ __vector_s_table:
     IRQ_S_HANDLER 91 /* LIN1 IRQ handler */
     IRQ_S_HANDLER 92 /* LIN2 IRQ handler */
     IRQ_S_HANDLER 93 /* LIN3 IRQ handler */
+

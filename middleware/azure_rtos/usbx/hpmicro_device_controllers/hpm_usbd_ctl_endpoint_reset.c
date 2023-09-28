@@ -62,16 +62,11 @@
 UINT _hpm_usbd_endpoint_reset(HPM_USBD_CONTROLLER *hpm_usbd, UX_SLAVE_ENDPOINT *endpoint)
 {
     HPM_ENDPT_T *hpm_endpt;
-#if !defined(UX_DEVICE_STANDALONE)
-    UX_SLAVE_TRANSFER *transfer;
-#endif
 
     UX_PARAMETER_NOT_USED(hpm_usbd);
 
     /* Get the physical endpoint address in the endpoint container.  */
     hpm_endpt = (HPM_ENDPT_T *)endpoint->ux_slave_endpoint_ed;
-    
-
 
     /* Clear pending transfer and stall status.  */
     hpm_endpt->endpt_status &= ~(ULONG)(HPM_DCI_ED_STATUS_STALLED);

@@ -6,7 +6,7 @@
 /*  GUIX Studio User Guide, or visit our web site at azure.com/rtos            */
 /*                                                                             */
 /*  GUIX Studio Revision 6.1.0.0                                               */
-/*  Date (dd.mm.yyyy): 12. 4.2023   Time (hh:mm): 14:26                        */
+/*  Date (dd.mm.yyyy): 21. 8.2023   Time (hh:mm): 16:16                        */
 /*******************************************************************************/
 
 
@@ -14,6 +14,16 @@
 #include <stddef.h>
 #include "guix_shapes_resources.h"
 #include "guix_shapes_specifications.h"
+
+#if (DISPLAY_1_COLOR_FORMAT == GX_COLOR_FORMAT_565RGB)
+#   define MAIN_DISPLAY_PIXEL_SIZE  2
+#elif (DISPLAY_1_COLOR_FORMAT == GX_COLOR_FORMAT_32ARGB)
+#   define MAIN_DISPLAY_PIXEL_SIZE  4
+#else
+#   error "Not supported color format"
+#endif
+
+#define MAIN_DISPLAY_MEMORY_SIZE (DISPLAY_1_X_RESOLUTION * DISPLAY_1_Y_RESOLUTION * MAIN_DISPLAY_PIXEL_SIZE)
 
 static GX_WIDGET *gx_studio_nested_widget_create(GX_BYTE *control, GX_CONST GX_STUDIO_WIDGET *definition, GX_WIDGET *parent);
 TEXT_ROTAION_WINDOW_CONTROL_BLOCK Text_Rotaion_Window;
@@ -35,13 +45,13 @@ GX_STUDIO_DISPLAY_INFO guix_shapes_display_table[1] =
     DISPLAY_1_THEME_TABLE_SIZE,
     DISPLAY_1_LANGUAGE_TABLE_SIZE,
     DISPLAY_1_STRING_TABLE_SIZE,
-    800,                                     /* x resolution                   */
-    480,                                     /* y resolution                   */
+    DISPLAY_1_X_RESOLUTION,                             /* x resolution                   */
+    DISPLAY_1_Y_RESOLUTION,                             /* y resolution                   */
     &display_1_control_block,
     &display_1_canvas_control_block,
     &display_1_root_window,
-    GX_NULL,                                 /* canvas memory area             */
-    768000                                   /* canvas memory size in bytes    */
+    GX_NULL,                                            /* canvas memory area             */
+    MAIN_DISPLAY_MEMORY_SIZE                            /* canvas memory size in bytes    */
     }
 };
 
@@ -463,7 +473,7 @@ GX_CONST GX_STUDIO_WIDGET Text_Rotaion_Window_radio_button_greeb_define =
     gx_studio_radio_button_create,           /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {466, 363, 576, 387},                    /* widget size                    */
+    {604, 363, 714, 387},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(TEXT_ROTAION_WINDOW_CONTROL_BLOCK, Text_Rotaion_Window_radio_button_greeb), /* control block */
@@ -487,7 +497,7 @@ GX_CONST GX_STUDIO_WIDGET Text_Rotaion_Window_radio_button_blue_define =
     gx_studio_radio_button_create,           /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {466, 329, 576, 353},                    /* widget size                    */
+    {604, 329, 714, 353},                    /* widget size                    */
     &Text_Rotaion_Window_radio_button_greeb_define, /* next widget definition  */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(TEXT_ROTAION_WINDOW_CONTROL_BLOCK, Text_Rotaion_Window_radio_button_blue), /* control block */
@@ -511,7 +521,7 @@ GX_CONST GX_STUDIO_WIDGET Text_Rotaion_Window_radio_button_red_define =
     gx_studio_radio_button_create,           /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {466, 295, 576, 319},                    /* widget size                    */
+    {604, 295, 714, 319},                    /* widget size                    */
     &Text_Rotaion_Window_radio_button_blue_define, /* next widget definition   */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(TEXT_ROTAION_WINDOW_CONTROL_BLOCK, Text_Rotaion_Window_radio_button_red), /* control block */
@@ -535,7 +545,7 @@ GX_CONST GX_STUDIO_WIDGET Text_Rotaion_Window_prompt_text_color_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {463, 267, 563, 290},                    /* widget size                    */
+    {601, 267, 701, 290},                    /* widget size                    */
     &Text_Rotaion_Window_radio_button_red_define, /* next widget definition    */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(TEXT_ROTAION_WINDOW_CONTROL_BLOCK, Text_Rotaion_Window_prompt_text_color), /* control block */
@@ -559,7 +569,7 @@ GX_CONST GX_STUDIO_WIDGET Text_Rotaion_Window_color_group_window_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {462, 254, 613, 421},                    /* widget size                    */
+    {600, 254, 751, 421},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     &Text_Rotaion_Window_prompt_text_color_define, /* child widget definition  */
     offsetof(TEXT_ROTAION_WINDOW_CONTROL_BLOCK, Text_Rotaion_Window_color_group_window), /* control block */
@@ -583,7 +593,7 @@ GX_CONST GX_STUDIO_WIDGET Text_Rotaion_Window_checkbox_auto_shift_define =
     gx_studio_checkbox_create,               /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {463, 202, 588, 225},                    /* widget size                    */
+    {600, 202, 725, 225},                    /* widget size                    */
     &Text_Rotaion_Window_color_group_window_define, /* next widget definition  */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(TEXT_ROTAION_WINDOW_CONTROL_BLOCK, Text_Rotaion_Window_checkbox_auto_shift), /* control block */
@@ -607,7 +617,7 @@ GX_CONST GX_STUDIO_WIDGET Text_Rotaion_Window_checkbox_auto_rotate_define =
     gx_studio_checkbox_create,               /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {463, 162, 588, 185},                    /* widget size                    */
+    {600, 162, 725, 185},                    /* widget size                    */
     &Text_Rotaion_Window_checkbox_auto_shift_define, /* next widget definition */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(TEXT_ROTAION_WINDOW_CONTROL_BLOCK, Text_Rotaion_Window_checkbox_auto_rotate), /* control block */
@@ -631,7 +641,7 @@ GX_CONST GX_STUDIO_WIDGET Text_Rotaion_Window_Rotation_Angle_slider_define =
     gx_studio_pixelmap_slider_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {463, 100, 618, 126},                    /* widget size                    */
+    {600, 100, 755, 126},                    /* widget size                    */
     &Text_Rotaion_Window_checkbox_auto_rotate_define, /* next widget definition */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(TEXT_ROTAION_WINDOW_CONTROL_BLOCK, Text_Rotaion_Window_Rotation_Angle_slider), /* control block */
@@ -655,7 +665,7 @@ GX_CONST GX_STUDIO_WIDGET Text_Rotaion_Window_rotation_angle_value_define =
     gx_studio_pixelmap_prompt_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {573, 65, 622, 93},                      /* widget size                    */
+    {710, 65, 759, 93},                      /* widget size                    */
     &Text_Rotaion_Window_Rotation_Angle_slider_define, /* next widget definition */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(TEXT_ROTAION_WINDOW_CONTROL_BLOCK, Text_Rotaion_Window_rotation_angle_value), /* control block */
@@ -679,7 +689,7 @@ GX_CONST GX_STUDIO_WIDGET Text_Rotaion_Window_prompt_rotate_angle_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {463, 68, 563, 91},                      /* widget size                    */
+    {600, 68, 700, 91},                      /* widget size                    */
     &Text_Rotaion_Window_rotation_angle_value_define, /* next widget definition */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(TEXT_ROTAION_WINDOW_CONTROL_BLOCK, Text_Rotaion_Window_prompt_rotate_angle), /* control block */
@@ -703,7 +713,7 @@ GX_CONST GX_STUDIO_WIDGET Text_Rotaion_Window_Text_Window_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {62, 62, 454, 426},                      /* widget size                    */
+    {62, 62, 564, 426},                      /* widget size                    */
     &Text_Rotaion_Window_prompt_rotate_angle_define, /* next widget definition */
     &Text_Rotaion_Window_text_window_8bpp_define, /* child widget definition   */
     offsetof(TEXT_ROTAION_WINDOW_CONTROL_BLOCK, Text_Rotaion_Window_Text_Window), /* control block */
@@ -727,7 +737,7 @@ GX_CONST GX_STUDIO_WIDGET Text_Rotaion_Window_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     (UINT (*)(GX_WIDGET *, GX_EVENT *)) Text_Rotation_Window_event_handler, /* event function override */
-    {2, 51, 641, 426},                       /* widget size                    */
+    {2, 51, 801, 426},                       /* widget size                    */
     GX_NULL,                                 /* next widget                    */
     &Text_Rotaion_Window_Text_Window_define, /* child widget                   */
     0,                                       /* control block                  */
@@ -988,7 +998,7 @@ GX_CONST GX_STUDIO_WIDGET Shapes_Screen_radio_button_text_define =
     gx_studio_radio_button_create,           /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {559, 429, 627, 453},                    /* widget size                    */
+    {700, 429, 768, 453},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SHAPES_SCREEN_CONTROL_BLOCK, Shapes_Screen_radio_button_text), /* control block */
@@ -1012,7 +1022,7 @@ GX_CONST GX_STUDIO_WIDGET Shapes_Screen_radio_button_rectangle_define =
     gx_studio_radio_button_create,           /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {333, 429, 438, 453},                    /* widget size                    */
+    {419, 429, 524, 453},                    /* widget size                    */
     &Shapes_Screen_radio_button_text_define, /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SHAPES_SCREEN_CONTROL_BLOCK, Shapes_Screen_radio_button_rectangle), /* control block */
@@ -1036,7 +1046,7 @@ GX_CONST GX_STUDIO_WIDGET Shapes_Screen_radio_button_ellipse_define =
     gx_studio_radio_button_create,           /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {98, 429, 183, 453},                     /* widget size                    */
+    {117, 429, 202, 453},                    /* widget size                    */
     &Shapes_Screen_radio_button_rectangle_define, /* next widget definition    */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SHAPES_SCREEN_CONTROL_BLOCK, Shapes_Screen_radio_button_ellipse), /* control block */
@@ -1060,7 +1070,7 @@ GX_CONST GX_STUDIO_WIDGET Shapes_Screen_radio_button_polygon_define =
     gx_studio_radio_button_create,           /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {450, 429, 547, 453},                    /* widget size                    */
+    {564, 429, 661, 453},                    /* widget size                    */
     &Shapes_Screen_radio_button_ellipse_define, /* next widget definition      */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SHAPES_SCREEN_CONTROL_BLOCK, Shapes_Screen_radio_button_polygon), /* control block */
@@ -1084,7 +1094,7 @@ GX_CONST GX_STUDIO_WIDGET Shapes_Screen_radio_button_pie_define =
     gx_studio_radio_button_create,           /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {264, 429, 321, 453},                    /* widget size                    */
+    {319, 429, 376, 453},                    /* widget size                    */
     &Shapes_Screen_radio_button_polygon_define, /* next widget definition      */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SHAPES_SCREEN_CONTROL_BLOCK, Shapes_Screen_radio_button_pie), /* control block */
@@ -1108,7 +1118,7 @@ GX_CONST GX_STUDIO_WIDGET Shapes_Screen_radio_button_arc_define =
     gx_studio_radio_button_create,           /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {195, 429, 252, 453},                    /* widget size                    */
+    {225, 429, 282, 453},                    /* widget size                    */
     &Shapes_Screen_radio_button_pie_define,  /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SHAPES_SCREEN_CONTROL_BLOCK, Shapes_Screen_radio_button_arc), /* control block */
@@ -1156,7 +1166,7 @@ GX_CONST GX_STUDIO_WIDGET Shapes_Screen_checkbox_pixelmap_fill_define =
     gx_studio_checkbox_create,               /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {466, 369, 596, 392},                    /* widget size                    */
+    {600, 369, 730, 392},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SHAPES_SCREEN_CONTROL_BLOCK, Shapes_Screen_checkbox_pixelmap_fill), /* control block */
@@ -1180,7 +1190,7 @@ GX_CONST GX_STUDIO_WIDGET Shapes_Screen_checkbox_fill_define =
     gx_studio_checkbox_create,               /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {466, 333, 591, 356},                    /* widget size                    */
+    {600, 333, 725, 356},                    /* widget size                    */
     &Shapes_Screen_checkbox_pixelmap_fill_define, /* next widget definition    */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SHAPES_SCREEN_CONTROL_BLOCK, Shapes_Screen_checkbox_fill), /* control block */
@@ -1204,7 +1214,7 @@ GX_CONST GX_STUDIO_WIDGET Shapes_Screen_checkbox_round_end_define =
     gx_studio_checkbox_create,               /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {466, 297, 591, 320},                    /* widget size                    */
+    {600, 297, 725, 320},                    /* widget size                    */
     &Shapes_Screen_checkbox_fill_define,     /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SHAPES_SCREEN_CONTROL_BLOCK, Shapes_Screen_checkbox_round_end), /* control block */
@@ -1228,7 +1238,7 @@ GX_CONST GX_STUDIO_WIDGET Shapes_Screen_checkbox_anti_alised_define =
     gx_studio_checkbox_create,               /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {466, 261, 591, 284},                    /* widget size                    */
+    {600, 261, 725, 284},                    /* widget size                    */
     &Shapes_Screen_checkbox_round_end_define, /* next widget definition        */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SHAPES_SCREEN_CONTROL_BLOCK, Shapes_Screen_checkbox_anti_alised), /* control block */
@@ -1252,7 +1262,7 @@ GX_CONST GX_STUDIO_WIDGET Shapes_Screen_prompt_brush_style_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {466, 225, 557, 248},                    /* widget size                    */
+    {600, 225, 691, 248},                    /* widget size                    */
     &Shapes_Screen_checkbox_anti_alised_define, /* next widget definition      */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SHAPES_SCREEN_CONTROL_BLOCK, Shapes_Screen_prompt_brush_style), /* control block */
@@ -1276,7 +1286,7 @@ GX_CONST GX_STUDIO_WIDGET Shapes_Screen_brush_width_slider_define =
     gx_studio_pixelmap_slider_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {463, 170, 619, 196},                    /* widget size                    */
+    {600, 170, 756, 196},                    /* widget size                    */
     &Shapes_Screen_prompt_brush_style_define, /* next widget definition        */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SHAPES_SCREEN_CONTROL_BLOCK, Shapes_Screen_brush_width_slider), /* control block */
@@ -1300,7 +1310,7 @@ GX_CONST GX_STUDIO_WIDGET Shapes_Screen_brush_width_val_define =
     gx_studio_pixelmap_prompt_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {572, 139, 621, 167},                    /* widget size                    */
+    {708, 139, 757, 167},                    /* widget size                    */
     &Shapes_Screen_brush_width_slider_define, /* next widget definition        */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SHAPES_SCREEN_CONTROL_BLOCK, Shapes_Screen_brush_width_val), /* control block */
@@ -1324,7 +1334,7 @@ GX_CONST GX_STUDIO_WIDGET Shapes_Screen_prompt_brush_width_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {463, 139, 559, 162},                    /* widget size                    */
+    {600, 139, 696, 162},                    /* widget size                    */
     &Shapes_Screen_brush_width_val_define,   /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SHAPES_SCREEN_CONTROL_BLOCK, Shapes_Screen_prompt_brush_width), /* control block */
@@ -1348,7 +1358,7 @@ GX_CONST GX_STUDIO_WIDGET Shapes_Screen_radius_slider_define =
     gx_studio_pixelmap_slider_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {462, 76, 617, 102},                     /* widget size                    */
+    {600, 76, 755, 102},                     /* widget size                    */
     &Shapes_Screen_prompt_brush_width_define, /* next widget definition        */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SHAPES_SCREEN_CONTROL_BLOCK, Shapes_Screen_radius_slider), /* control block */
@@ -1372,7 +1382,7 @@ GX_CONST GX_STUDIO_WIDGET Shapes_Screen_radius_val_define =
     gx_studio_pixelmap_prompt_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {572, 46, 621, 74},                      /* widget size                    */
+    {708, 46, 757, 74},                      /* widget size                    */
     &Shapes_Screen_radius_slider_define,     /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SHAPES_SCREEN_CONTROL_BLOCK, Shapes_Screen_radius_val), /* control block */
@@ -1396,7 +1406,7 @@ GX_CONST GX_STUDIO_WIDGET Shapes_Screen_prompt_radius_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {463, 46, 518, 69},                      /* widget size                    */
+    {600, 46, 655, 69},                      /* widget size                    */
     &Shapes_Screen_radius_val_define,        /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SHAPES_SCREEN_CONTROL_BLOCK, Shapes_Screen_prompt_radius), /* control block */
@@ -1420,7 +1430,7 @@ GX_CONST GX_STUDIO_WIDGET Shapes_Screen_graphics_window_define =
     gx_studio_window_create,                 /* create function                */
     (VOID (*)(GX_WIDGET *)) graphics_draw,   /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {60, 46, 452, 410},                      /* widget size                    */
+    {60, 46, 559, 410},                      /* widget size                    */
     &Shapes_Screen_prompt_radius_define,     /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SHAPES_SCREEN_CONTROL_BLOCK, Shapes_Screen_graphics_window), /* control block */
@@ -1468,7 +1478,7 @@ GX_CONST GX_STUDIO_WIDGET Shapes_Screen_Shapes_Window_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {0, 35, 639, 410},                       /* widget size                    */
+    {0, 35, 798, 410},                       /* widget size                    */
     &Shapes_Screen_express_icon_define,      /* next widget definition         */
     &Shapes_Screen_graphics_window_define,   /* child widget definition        */
     offsetof(SHAPES_SCREEN_CONTROL_BLOCK, Shapes_Screen_Shapes_Window), /* control block */
@@ -1492,7 +1502,7 @@ GX_CONST GX_STUDIO_WIDGET Shapes_Screen_shape_type_container_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {7, 419, 635, 462},                      /* widget size                    */
+    {7, 419, 805, 462},                      /* widget size                    */
     &Shapes_Screen_Shapes_Window_define,     /* next widget definition         */
     &Shapes_Screen_radio_button_circle_define, /* child widget definition      */
     offsetof(SHAPES_SCREEN_CONTROL_BLOCK, Shapes_Screen_shape_type_container), /* control block */
@@ -1516,7 +1526,7 @@ GX_CONST GX_STUDIO_WIDGET Shapes_Screen_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     (UINT (*)(GX_WIDGET *, GX_EVENT *)) ShapesScreen_event_handler, /* event function override */
-    {1, 0, 639, 478},                        /* widget size                    */
+    {1, 0, 799, 478},                        /* widget size                    */
     GX_NULL,                                 /* next widget                    */
     &Shapes_Screen_shape_type_container_define, /* child widget                */
     0,                                       /* control block                  */

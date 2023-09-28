@@ -107,13 +107,13 @@ static Boolean lookupSubdomainAddress(Octet *subdomainName, Octet *subdomainAddr
     /* set multicast group address based on subdomainName */
 
     if (!memcmp(subdomainName, DEFAULT_PTP_DOMAIN_NAME, PTP_SUBDOMAIN_NAME_LENGTH))
-        memcpy(subdomainAddress, DEFAULT_PTP_DOMAIN_ADDRESS, NET_ADDRESS_LENGTH);
+        memcpy(subdomainAddress, DEFAULT_PTP_DOMAIN_ADDRESS, min(sizeof(DEFAULT_PTP_DOMAIN_ADDRESS), NET_ADDRESS_LENGTH));
     else if (!memcmp(subdomainName, ALTERNATE_PTP_DOMAIN1_NAME, PTP_SUBDOMAIN_NAME_LENGTH))
-        memcpy(subdomainAddress, ALTERNATE_PTP_DOMAIN1_ADDRESS, NET_ADDRESS_LENGTH);
+        memcpy(subdomainAddress, ALTERNATE_PTP_DOMAIN1_ADDRESS, min(sizeof(ALTERNATE_PTP_DOMAIN1_ADDRESS), NET_ADDRESS_LENGTH));
     else if (!memcmp(subdomainName, ALTERNATE_PTP_DOMAIN2_NAME, PTP_SUBDOMAIN_NAME_LENGTH))
-        memcpy(subdomainAddress, ALTERNATE_PTP_DOMAIN2_ADDRESS, NET_ADDRESS_LENGTH);
+        memcpy(subdomainAddress, ALTERNATE_PTP_DOMAIN2_ADDRESS, min(sizeof(ALTERNATE_PTP_DOMAIN2_ADDRESS), NET_ADDRESS_LENGTH));
     else if (!memcmp(subdomainName, ALTERNATE_PTP_DOMAIN3_NAME, PTP_SUBDOMAIN_NAME_LENGTH))
-        memcpy(subdomainAddress, ALTERNATE_PTP_DOMAIN3_ADDRESS, NET_ADDRESS_LENGTH);
+        memcpy(subdomainAddress, ALTERNATE_PTP_DOMAIN3_ADDRESS, min(sizeof(ALTERNATE_PTP_DOMAIN3_ADDRESS), NET_ADDRESS_LENGTH));
     else
     {
         h = crc_algorithm(subdomainName, PTP_SUBDOMAIN_NAME_LENGTH) % 3;
@@ -121,13 +121,13 @@ static Boolean lookupSubdomainAddress(Octet *subdomainName, Octet *subdomainAddr
         switch (h)
         {
         case 0:
-            memcpy(subdomainAddress, ALTERNATE_PTP_DOMAIN1_ADDRESS, NET_ADDRESS_LENGTH);
+            memcpy(subdomainAddress, ALTERNATE_PTP_DOMAIN1_ADDRESS, min(sizeof(ALTERNATE_PTP_DOMAIN1_ADDRESS), NET_ADDRESS_LENGTH));
             break;
         case 1:
-            memcpy(subdomainAddress, ALTERNATE_PTP_DOMAIN2_ADDRESS, NET_ADDRESS_LENGTH);
+            memcpy(subdomainAddress, ALTERNATE_PTP_DOMAIN2_ADDRESS, min(sizeof(ALTERNATE_PTP_DOMAIN2_ADDRESS), NET_ADDRESS_LENGTH));
             break;
         case 2:
-            memcpy(subdomainAddress, ALTERNATE_PTP_DOMAIN3_ADDRESS, NET_ADDRESS_LENGTH);
+            memcpy(subdomainAddress, ALTERNATE_PTP_DOMAIN3_ADDRESS, min(sizeof(ALTERNATE_PTP_DOMAIN3_ADDRESS), NET_ADDRESS_LENGTH));
             break;
         default:
             ERROR("lookupSubdomainAddress: handle out of range for '%s'!\n", subdomainName);

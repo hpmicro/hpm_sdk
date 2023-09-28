@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -10,12 +10,13 @@
 
 void adc16_get_default_config(adc16_config_t *config)
 {
+    config->res                = adc16_res_16_bits;
     config->conv_mode          = adc16_conv_mode_oneshot;
     config->adc_clk_div        = adc16_clock_divider_1;
     config->conv_duration      = 0;
     config->wait_dis           = true;
     config->sel_sync_ahb       = true;
-    config->port3_rela_time    = false;
+    config->port3_realtime     = false;
     config->adc_ahb_en         = false;
 }
 
@@ -24,8 +25,9 @@ void adc16_get_channel_default_config(adc16_channel_config_t *config)
     config->ch                 = 0;
     config->sample_cycle       = 10;
     config->sample_cycle_shift = 0;
-    config->thshdh             = 0;
-    config->thshdl             = 0;
+    config->thshdh             = 0xffff;
+    config->thshdl             = 0x0000;
+    config->wdog_int_en        = false;
 }
 
 static hpm_stat_t adc16_do_calibration(ADC16_Type *ptr)
@@ -142,6 +144,14 @@ static hpm_stat_t adc16_do_calibration(ADC16_Type *ptr)
     return status_success;
 }
 
+hpm_stat_t adc16_deinit(ADC16_Type *ptr)
+{
+    /* disable all interrupts */
+    ptr->INT_EN = 0;
+
+    return status_success;
+}
+
 hpm_stat_t adc16_init(ADC16_Type *ptr, adc16_config_t *config)
 {
     uint32_t clk_div_temp;
@@ -159,13 +169,11 @@ hpm_stat_t adc16_init(ADC16_Type *ptr, adc16_config_t *config)
     /* Set the duration of the conversion */
     ptr->ADC_CFG0 = ADC16_ADC_CFG0_SEL_SYNC_AHB_SET(config->sel_sync_ahb)
                   | ADC16_ADC_CFG0_ADC_AHB_EN_SET(config->adc_ahb_en)
-                  | ADC16_ADC_CFG0_CONVERT_DURATION_SET(config->conv_duration);
+                  | ADC16_ADC_CFG0_CONVERT_DURATION_SET(config->conv_duration)
+                  | ADC16_ADC_CFG0_PORT3_REALTIME_SET(config->port3_realtime);
 
     /* Set wait_dis */
-    if (config->conv_mode == adc16_conv_mode_oneshot) {
-        /* Set wait_dis */
-        ptr->BUF_CFG0 = ADC16_BUF_CFG0_WAIT_DIS_SET(config->wait_dis);
-    }
+    ptr->BUF_CFG0 = ADC16_BUF_CFG0_WAIT_DIS_SET(config->wait_dis);
 
     /* Get input clock divider */
     clk_div_temp = ADC16_CONV_CFG1_CLOCK_DIVIDER_GET(ptr->CONV_CFG1);
@@ -210,8 +218,40 @@ hpm_stat_t adc16_init_channel(ADC16_Type *ptr, adc16_channel_config_t *config)
     ptr->SAMPLE_CFG[config->ch] = ADC16_SAMPLE_CFG_SAMPLE_CLOCK_NUMBER_SHIFT_SET(config->sample_cycle_shift)
                                 | ADC16_SAMPLE_CFG_SAMPLE_CLOCK_NUMBER_SET(config->sample_cycle);
 
+    /* Enable watchdog interrupt */
+    if (config->wdog_int_en) {
+        ptr->INT_EN |= 1 << config->ch;
+    }
+
+
     return status_success;
 }
+
+hpm_stat_t adc16_get_channel_threshold(ADC16_Type *ptr, uint8_t ch, adc16_channel_threshold_t *config)
+{
+    /* Check the specified channel number */
+    if (ADC16_IS_CHANNEL_INVALID(ch)) {
+        return status_invalid_argument;
+    }
+
+    config->ch     = ch;
+    config->thshdh = ADC16_PRD_CFG_PRD_THSHD_CFG_THSHDH_GET(ptr->PRD_CFG[ch].PRD_THSHD_CFG);
+    config->thshdl = ADC16_PRD_CFG_PRD_THSHD_CFG_THSHDL_GET(ptr->PRD_CFG[ch].PRD_THSHD_CFG);
+
+    return status_success;
+}
+
+#if defined(ADC_SOC_BUSMODE_ENABLE_CTRL_SUPPORT) && ADC_SOC_BUSMODE_ENABLE_CTRL_SUPPORT
+void adc16_enable_oneshot_mode(ADC16_Type *ptr)
+{
+    ptr->BUF_CFG0 |= ADC16_BUF_CFG0_BUS_MODE_EN_MASK;
+}
+
+void adc16_disable_oneshot_mode(ADC16_Type *ptr)
+{
+    ptr->BUF_CFG0 &= ~ADC16_BUF_CFG0_BUS_MODE_EN_MASK;
+}
+#endif
 
 hpm_stat_t adc16_init_seq_dma(ADC16_Type *ptr, adc16_dma_config_t *dma_config)
 {
@@ -236,11 +276,22 @@ hpm_stat_t adc16_init_seq_dma(ADC16_Type *ptr, adc16_dma_config_t *dma_config)
     ptr->SEQ_DMA_CFG = (ptr->SEQ_DMA_CFG & ~ADC16_SEQ_DMA_CFG_BUF_LEN_MASK)
                      | ADC16_SEQ_DMA_CFG_BUF_LEN_SET(dma_config->buff_len_in_4bytes - 1);
 
+    #if defined(ADC_SOC_SEQ_HCFG_EN) && ADC_SOC_SEQ_HCFG_EN
+    /* Set high-half buffer length */
+    ptr->SEQ_HIGH_CFG = (ptr->SEQ_HIGH_CFG & ~ADC16_SEQ_HIGH_CFG_BUF_LEN_HIGH_MASK)
+                      | ADC16_SEQ_HIGH_CFG_BUF_LEN_HIGH_SET(((dma_config->buff_len_in_4bytes - 1) >> 12));
+    #endif
+
     /* Set stop_en and stop_pos */
     if (dma_config->stop_en) {
         ptr->SEQ_DMA_CFG = (ptr->SEQ_DMA_CFG & ~ADC16_SEQ_DMA_CFG_STOP_POS_MASK)
                          | ADC16_SEQ_DMA_CFG_STOP_EN_MASK
                          | ADC16_SEQ_DMA_CFG_STOP_POS_SET(dma_config->stop_pos);
+
+        #if defined(ADC_SOC_SEQ_HCFG_EN) && ADC_SOC_SEQ_HCFG_EN
+        ptr->SEQ_HIGH_CFG = (ptr->SEQ_HIGH_CFG & ~ADC16_SEQ_HIGH_CFG_STOP_POS_HIGH_MASK)
+                          | ADC16_SEQ_HIGH_CFG_STOP_POS_HIGH_SET(((dma_config->stop_pos) >> 12));
+        #endif
     }
 
     return status_success;

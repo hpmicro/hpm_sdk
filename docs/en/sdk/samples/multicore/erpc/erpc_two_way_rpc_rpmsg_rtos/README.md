@@ -38,24 +38,9 @@ This action creates eight files in current folder:
 
 `Core1 project` needs to import  __erpc_two_way_rpc_Core1Interface_client.cpp__ and __erpc_two_way_rpc_Core0Interface_server.cpp__ files. The __erpc_two_way_rpc_Core1Interface.h__ and __erpc_two_way_rpc_Core0Interface_server.h__ header file needs to be included.
 
-## Generate core1 project
+## Generate, Build and Debug Multi-core projects
 
-__CMAKE_BUILD_TYPE__ must be *"sec_core_img"*
-
-## Generate core0 project
-
-__CMAKE_BUILD_TYPE__ user can specify *"flash_sdram_xip"* or *"flash_xip"*, etc.
-
-## Build project
-
-__Core1__ project must be generated and built first
-__Core0__ project must be generated after the core1 project has been built successfully.
-
-## Debugging
-
-- Download the core0 example to the target and run core0 example first
-- Download the core1 example to the target and run the core1 example
-- If users expects to debug the core0 and core1 example step by step, users must ensure the *board_init()* function is executed before debugging the core1 example as some hardware resoruces needs to be initialized by *board_init()* in core0 example.
+Please reference[Multicore General Description.md](../../README.md)
 
 ## Running Results
 

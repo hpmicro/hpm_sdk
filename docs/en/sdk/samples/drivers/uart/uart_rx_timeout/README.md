@@ -23,25 +23,25 @@ When the sample is running correctly, input some data through the serial port, a
 
 ```console
 UART RX FIFO timeout example
-uart rx data size:10 interupt count is :1
-uart rx data size:20 interupt count is :2
-uart rx data size:30 interupt count is :3
-uart rx data size:40 interupt count is :4
-uart rx data size:50 interupt count is :4
-uart rx data size:60 interupt count is :5
-uart rx data size:70 interupt count is :6
-uart rx data size:80 interupt count is :7
-uart rx data size:90 interupt count is :7
-uart rx data size:100 interupt count is :8
-uart rx data size:200 interupt count is :16
-uart rx data size:300 interupt count is :24
-uart rx data size:400 interupt count is :31
-uart rx data size:500 interupt count is :39
-uart rx data size:600 interupt count is :47
-uart rx data size:700 interupt count is :54
-uart rx data size:800 interupt count is :62
-uart rx data size:900 interupt count is :70
-uart rx data size:1000 interupt count is :77
+uart rx data size:10 interrupt count is :1
+uart rx data size:20 interrupt count is :2
+uart rx data size:30 interrupt count is :3
+uart rx data size:40 interrupt count is :4
+uart rx data size:50 interrupt count is :4
+uart rx data size:60 interrupt count is :5
+uart rx data size:70 interrupt count is :6
+uart rx data size:80 interrupt count is :7
+uart rx data size:90 interrupt count is :7
+uart rx data size:100 interrupt count is :8
+uart rx data size:200 interrupt count is :16
+uart rx data size:300 interrupt count is :24
+uart rx data size:400 interrupt count is :31
+uart rx data size:500 interrupt count is :39
+uart rx data size:600 interrupt count is :47
+uart rx data size:700 interrupt count is :54
+uart rx data size:800 interrupt count is :62
+uart rx data size:900 interrupt count is :70
+uart rx data size:1000 interrupt count is :77
 
 ```
 -  Phenomenon of serial tools

@@ -32,6 +32,7 @@
  */
 #define CAM_SENSOR_BITWIDTH_8BITS (CAM_CR1_SENSOR_BIT_WIDTH_SET(0))
 #define CAM_SENSOR_BITWIDTH_10BITS (CAM_CR1_SENSOR_BIT_WIDTH_SET(1))
+#define CAM_SENSOR_BITWIDTH_24BITS (CAM_CR1_SENSOR_BIT_WIDTH_SET(2))
 
 /**
  * @brief CAM IRQ mask
@@ -79,6 +80,7 @@ typedef struct {
     uint32_t width;
     uint32_t height;
     bool pixclk_sampling_falling;
+    bool de_active_low; /* de_active_low must is same with hsync_active_low when dvp be used */
     bool hsync_active_low;
     bool vsync_active_low;
     bool color_ext;
@@ -300,7 +302,7 @@ static inline bool cam_check_status(CAM_Type *ptr, cam_status_mask_t sta_mask)
  */
 static inline void cam_clear_status(CAM_Type *ptr, cam_status_mask_t sta_mask)
 {
-    ptr->STA |= sta_mask;
+    ptr->STA = sta_mask;
 }
 
 

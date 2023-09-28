@@ -9,5 +9,6 @@
    usbx/index
    netxduo/index
    guix/index
+   tracex/README
 
 :::

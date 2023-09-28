@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.0.0 FATAL_ERROR)
 
+if(NOT DEFINED GX_INCLUDE_USER_DEFINE_FILE)
+    sdk_compile_definitions(-DGX_INCLUDE_USER_DEFINE_FILE=1)
+endif()
 if(NOT DEFINED THREADX_ARCH)
     message(FATAL_ERROR "Error: THREADX_ARCH not defined")
 endif()

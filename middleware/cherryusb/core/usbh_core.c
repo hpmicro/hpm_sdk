@@ -412,15 +412,13 @@ int usbh_enumerate(struct usbh_hubport *hport)
 {
     struct usb_interface_descriptor *intf_desc;
     struct usb_setup_packet *setup;
+    struct usb_device_descriptor *dev_desc;
     int dev_addr;
     uint16_t ep_mps;
     int ret;
 
     hport->setup = &g_setup[hport->parent->index - 1][hport->port - 1];
     setup = hport->setup;
-
-    /* Configure EP0 with the default maximum packet size */
-    usbh_hport_activate_ep0(hport);
 
     /* Read the first 8 bytes of the device descriptor */
     setup->bmRequestType = USB_REQUEST_DIR_IN | USB_REQUEST_STANDARD | USB_REQUEST_RECIPIENT_DEVICE;
@@ -438,10 +436,19 @@ int usbh_enumerate(struct usbh_hubport *hport)
     parse_device_descriptor(hport, (struct usb_device_descriptor *)ep0_request_buffer, 8);
 
     /* Extract the correct max packetsize from the device descriptor */
-    ep_mps = ((struct usb_device_descriptor *)ep0_request_buffer)->bMaxPacketSize0;
+    dev_desc = (struct usb_device_descriptor *)ep0_request_buffer;
+    if (dev_desc->bcdUSB >= USB_3_0) {
+        ep_mps = 1 << dev_desc->bMaxPacketSize0;
+    } else {
+        ep_mps = dev_desc->bMaxPacketSize0;
+    }
+
+    USB_LOG_DBG("Device rev=%04x cls=%02x sub=%02x proto=%02x size=%d\r\n",
+                dev_desc->bcdUSB, dev_desc->bDeviceClass, dev_desc->bDeviceSubClass,
+                dev_desc->bDeviceProtocol, ep_mps);
 
     /* Reconfigure EP0 with the correct maximum packet size */
-    usbh_ep0_pipe_reconfigure(hport->ep0, 0, ep_mps, hport->speed);
+    usbh_ep_pipe_reconfigure(hport->ep0, 0, ep_mps, 0);
 
 #ifdef CONFIG_USBHOST_XHCI
     extern int usbh_get_xhci_devaddr(usbh_pipe_t * pipe);
@@ -481,7 +488,7 @@ int usbh_enumerate(struct usbh_hubport *hport)
     hport->dev_addr = dev_addr;
 
     /* And reconfigure EP0 with the correct address */
-    usbh_ep0_pipe_reconfigure(hport->ep0, dev_addr, ep_mps, hport->speed);
+    usbh_ep_pipe_reconfigure(hport->ep0, dev_addr, ep_mps, 0);
 
     /* Read the full device descriptor */
     setup->bmRequestType = USB_REQUEST_DIR_IN | USB_REQUEST_STANDARD | USB_REQUEST_RECIPIENT_DEVICE;
@@ -622,17 +629,9 @@ int usbh_enumerate(struct usbh_hubport *hport)
         hport->config.intf[i].class_driver = class_driver;
         USB_LOG_INFO("Loading %s class driver\r\n", class_driver->driver_name);
         ret = CLASS_CONNECT(hport, i);
-        if (ret < 0) {
-            CLASS_DISCONNECT(hport, i);
-            goto errout;
-        }
     }
 
 errout:
-    if (ret < 0) {
-        hport->config.config_desc.bNumInterfaces = 0;
-        usbh_hport_deactivate_ep0(hport);
-    }
     if (hport->raw_config_desc) {
         usb_free(hport->raw_config_desc);
         hport->raw_config_desc = NULL;

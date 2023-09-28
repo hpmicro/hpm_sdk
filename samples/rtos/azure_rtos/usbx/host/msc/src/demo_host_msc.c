@@ -31,7 +31,7 @@
 /* Define global variables. */
 TX_THREAD tx_demo_thread;
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(64) static ULONG usb_memory[USBX_MEMORY_SIZE / sizeof(ULONG)];
-ATTR_PLACE_AT_NONCACHEABLE_INIT_WITH_ALIGNMENT(64) static char usb_memory_cachesafe[USBX_MEMORY_CACHESAFE_SIZE];
+ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(64) static char usb_memory_cachesafe[USBX_MEMORY_CACHESAFE_SIZE];
 ULONG demo_stack[DEMO_STACK_SIZE / sizeof(ULONG)];
 
 ULONG local_buffer[DEMO_BUFFER_SIZE / sizeof(ULONG)];

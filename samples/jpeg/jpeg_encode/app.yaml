@@ -8,3 +8,4 @@ excluded_targets:
 dependency:
   - cam
   - lcd
+  - sdcard

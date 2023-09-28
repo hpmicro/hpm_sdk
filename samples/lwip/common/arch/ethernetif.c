@@ -265,56 +265,57 @@ static struct pbuf *low_level_input(struct netif *netif)
     buffer = (uint8_t *)frame.buffer;
 
     if (len > 0) {
-    /* We allocate a pbuf chain of pbufs from the Lwip buffer pool */
+    /* Allocate a pbuf chain of pbufs from the Lwip buffer pool */
         p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
-    }
 
-    if (p != NULL) {
-        dma_rx_desc = frame.rx_desc;
-        buffer_offset = 0;
-        for (q = p; q != NULL; q = q->next) {
-            bytes_left_to_copy = q->len;
-            payload_offset = 0;
+        if (p != NULL) {
+            dma_rx_desc = frame.rx_desc;
+            buffer_offset = 0;
+            for (q = p; q != NULL; q = q->next) {
+                bytes_left_to_copy = q->len;
+                payload_offset = 0;
 
-            /* Check if the length of bytes to copy in current pbuf is bigger than Rx buffer size*/
-            while ((bytes_left_to_copy + buffer_offset) > ENET_RX_BUFF_SIZE) {
-                /* Copy data to pbuf*/
-                memcpy((uint8_t *)((uint8_t *)q->payload + payload_offset), (uint8_t *)((uint8_t *)buffer + buffer_offset), (ENET_RX_BUFF_SIZE - buffer_offset));
+                /* Check if the length of bytes to copy in current pbuf is bigger than Rx buffer size*/
+                while ((bytes_left_to_copy + buffer_offset) > ENET_RX_BUFF_SIZE) {
+                    /* Copy data to pbuf*/
+                    memcpy((uint8_t *)((uint8_t *)q->payload + payload_offset), (uint8_t *)((uint8_t *)buffer + buffer_offset), (ENET_RX_BUFF_SIZE - buffer_offset));
 
-                /* Point to next descriptor */
-                dma_rx_desc = (enet_rx_desc_t *)(dma_rx_desc->rdes3_bm.next_desc);
-                buffer = (uint8_t *)(dma_rx_desc->rdes2_bm.buffer1);
+                    /* Point to next descriptor */
+                    dma_rx_desc = (enet_rx_desc_t *)(dma_rx_desc->rdes3_bm.next_desc);
+                    buffer = (uint8_t *)(dma_rx_desc->rdes2_bm.buffer1);
 
-                bytes_left_to_copy = bytes_left_to_copy - (ENET_RX_BUFF_SIZE - buffer_offset);
-                payload_offset = payload_offset + (ENET_RX_BUFF_SIZE - buffer_offset);
-                buffer_offset = 0;
-            }
+                    bytes_left_to_copy = bytes_left_to_copy - (ENET_RX_BUFF_SIZE - buffer_offset);
+                    payload_offset = payload_offset + (ENET_RX_BUFF_SIZE - buffer_offset);
+                    buffer_offset = 0;
+                }
 
             /* pass the buffer to pbuf */
             q->payload = (void *)buffer;
             buffer_offset = buffer_offset + bytes_left_to_copy;
+
+            #if defined(LWIP_PTP) && LWIP_PTP
+            /* Get the received timestamp */
+            p->time_sec  = frame.rx_desc->rdes7_bm.rtsh;
+            p->time_nsec = frame.rx_desc->rdes6_bm.rtsl;
+            #endif
+            }
         }
-    } else {
-        return NULL;
+
+        /* Release descriptors to DMA */
+        dma_rx_desc = frame.rx_desc;
+
+        /* Set Own bit in Rx descriptors: gives the buffers back to DMA */
+        for (i = 0; i < desc.rx_frame_info.seg_count; i++) {
+            dma_rx_desc->rdes0_bm.own = 1;
+            dma_rx_desc = (enet_rx_desc_t *)(dma_rx_desc->rdes3_bm.next_desc);
+        }
+
+        /* Clear Segment_Count */
+        desc.rx_frame_info.seg_count = 0;
     }
 
-#if defined(LWIP_PTP) && LWIP_PTP
-    /* Get the received timestamp */
-    p->time_sec  = frame.rx_desc->rdes7_bm.rtsh;
-    p->time_nsec = frame.rx_desc->rdes6_bm.rtsl;
-#endif
-
-    /* Release descriptors to DMA */
-    dma_rx_desc = frame.rx_desc;
-
-    /* Set Own bit in Rx descriptors: gives the buffers back to DMA */
-    for (i = 0; i < desc.rx_frame_info.seg_count; i++) {
-        dma_rx_desc->rdes0_bm.own = 1;
-        dma_rx_desc = (enet_rx_desc_t *)(dma_rx_desc->rdes3_bm.next_desc);
-    }
-
-    /* Clear Segment_Count */
-    desc.rx_frame_info.seg_count = 0;
+    /* Resume Rx Process */
+    enet_rx_resume(ENET);
 
     return p;
 }

@@ -60,7 +60,7 @@ hpm_stat_t dma_setup_channel(DMA_Type *ptr, uint8_t ch_num, dma_channel_config_t
 
 void dma_default_channel_config(DMA_Type *ptr, dma_channel_config_t *ch)
 {
-    ch->priority = 0;
+    ch->priority = DMA_CHANNEL_PRIORITY_LOW;
     ch->src_mode = DMA_HANDSHAKE_MODE_NORMAL;
     ch->dst_mode = DMA_HANDSHAKE_MODE_NORMAL;
     ch->src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;

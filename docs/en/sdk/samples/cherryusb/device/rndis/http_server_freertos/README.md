@@ -1,4 +1,4 @@
-# USB RNDIS DEVICE - Http server(FreeRTOS)
+# CherryUSB RNDIS Device - Http Server(FreeRTOS)
 
 ## Overview
 

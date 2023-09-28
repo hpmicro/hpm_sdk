@@ -14,6 +14,7 @@
 typedef struct {
     CAN_Type *can_base;
     uint32_t clock_freq;
+    int32_t irq_index;
 } can_info_t;
 
 /**
@@ -119,13 +120,13 @@ void handle_can_test(void);
 void show_help(void);
 
 static can_info_t s_can_info[] = {
-        { .can_base = HPM_CAN0 },
-        { .can_base = HPM_CAN1 },
+        { .can_base = HPM_CAN0, .irq_index = IRQn_CAN0 },
+        { .can_base = HPM_CAN1, .irq_index = IRQn_CAN1 },
 #if defined(HPM_CAN2)
-        { .can_base = HPM_CAN2 },
+        { .can_base = HPM_CAN2, .irq_index = IRQn_CAN2 },
 #endif
 #if defined (HPM_CAN3)
-        { .can_base = HPM_CAN3 },
+        { .can_base = HPM_CAN3, .irq_index = IRQn_CAN3 },
 #endif
 };
 
@@ -153,6 +154,9 @@ void board_can_isr(void)
     can_clear_tx_rx_flags(BOARD_APP_CAN_BASE, flags);
 
     error_flags = can_get_error_interrupt_flags(BOARD_APP_CAN_BASE);
+    if (error_flags != 0) {
+        has_error = true;
+    }
     can_clear_error_interrupt_flags(BOARD_APP_CAN_BASE, error_flags);
 }
 
@@ -248,7 +252,7 @@ static uint8_t can_get_data_bytes_from_dlc(uint32_t dlc)
             data_bytes = 64U;
             break;
         default:
-            // Code should never touch here
+            /* Code should never touch here */
             break;
         }
     }
@@ -347,6 +351,7 @@ void can_loopback_test_for_all_cans(void)
         can_config.mode = can_mode_loopback_internal;
         status = can_init(s_can_info[i].can_base, &can_config, s_can_info[i].clock_freq);
         assert(status == status_success);
+        intc_m_disable_irq(s_can_info[i].irq_index);
         (void)status; /* Suppress compiling warning in release build */
         bool can_result = can_loopback_test(s_can_info[i].can_base);
 
@@ -590,13 +595,21 @@ void board_can_error_test(void)
         tx_buf.data[i] = i | (i << 4);
     }
     tx_buf.id = 0x123;
+
+    has_error = false;
+    has_sent_out = false;
     can_send_message_nonblocking(ptr, &tx_buf);
     while ((!has_sent_out) && (!has_error)) {
     }
     if (has_error) {
         uint8_t error_kind = can_get_last_error_kind(ptr);
-
-        printf("can error happened: error kind: %s\n", get_can_error_kind_str(error_kind));
+        uint8_t tcnt = can_get_transmit_error_count(ptr);
+        uint8_t rcnt = can_get_receive_error_count(ptr);
+        printf("can error exists: last error kind: %s\n", get_can_error_kind_str(error_kind));
+        printf("Transmission Error Count: %d\n", tcnt);
+        printf("Receiving Error Count: %d\n", rcnt);
+    } else {
+        printf("Current hardware setup cannot trigger CAN error\n");
     }
 }
 

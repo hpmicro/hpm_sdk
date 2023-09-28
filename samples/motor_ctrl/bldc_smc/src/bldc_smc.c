@@ -369,16 +369,16 @@ void init_trigger_mux(TRGM_Type *ptr)
     trgm_output_t trgm_output_cfg;
 
     trgm_output_cfg.invert = false;
-    trgm_output_cfg.type   = trgm_output_pulse_at_input_rising_edge;
+    trgm_output_cfg.type   = trgm_output_same_as_input;
     trgm_output_cfg.input  = BOARD_BLDC_TRIGMUX_IN_NUM;
     trgm_output_config(ptr, BOARD_BLDC_TRG_NUM, &trgm_output_cfg);
 }
 
 void motor0_current_loop(float angle)
 {
-    motor0.foc_para.samplcurpar.adc_u = ((adc_buff[0][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4);
-    motor0.foc_para.samplcurpar.adc_v = ((adc_buff[1][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4);
-    motor0.foc_para.samplcurpar.adc_w = ((adc_buff[2][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4);
+    motor0.foc_para.samplcurpar.adc_u = GET_ADC_12BIT_VALID_DATA(adc_buff[ADCU_INDEX][BOARD_BLDC_ADC_TRG*4]);
+    motor0.foc_para.samplcurpar.adc_v = GET_ADC_12BIT_VALID_DATA(adc_buff[ADCV_INDEX][BOARD_BLDC_ADC_TRG*4]);
+    motor0.foc_para.samplcurpar.adc_w = GET_ADC_12BIT_VALID_DATA(adc_buff[ADCW_INDEX][BOARD_BLDC_ADC_TRG*4]);
     motor0.foc_para.electric_angle = angle;
     motor0.foc_para.func_dqsvpwm(&motor0.foc_para, &motor0.smc_para, &motor0.smc_pll, !is_being_started);
     motor0.foc_para.pwmpar.pwmout.func_set_pwm(&motor0.foc_para.pwmpar.pwmout);
@@ -523,9 +523,9 @@ void adc_init(void)
 #endif
 
     /* Set DMA start address for preemption mode */
-    hpm_adc_init_pmt_dma(&hpm_adc_u, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[0]));
-    hpm_adc_init_pmt_dma(&hpm_adc_v, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[1]));
-    hpm_adc_init_pmt_dma(&hpm_adc_w, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[2]));
+    hpm_adc_init_pmt_dma(&hpm_adc_w, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[ADCW_INDEX]));
+    hpm_adc_init_pmt_dma(&hpm_adc_u, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[ADCU_INDEX]));
+    hpm_adc_init_pmt_dma(&hpm_adc_v, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[ADCV_INDEX]));
 }
 
 void set_adval_middle(void)
@@ -541,9 +541,9 @@ void set_adval_middle(void)
     motor0.foc_para.pwmpar.pwmout.func_set_pwm(&motor0.foc_para.pwmpar.pwmout);
     do {
         if (timer_flag == 1) {
-            adc_u_sum += ((adc_buff[0][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
-            adc_v_sum += ((adc_buff[1][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
-            adc_w_sum += ((adc_buff[2][BOARD_BLDC_ADC_TRG*4]&0xffff)>>4)&0xfff;
+            adc_u_sum += GET_ADC_12BIT_VALID_DATA(adc_buff[ADCU_INDEX][BOARD_BLDC_ADC_TRG*4]);
+            adc_v_sum += GET_ADC_12BIT_VALID_DATA(adc_buff[ADCV_INDEX][BOARD_BLDC_ADC_TRG*4]);
+            adc_w_sum += GET_ADC_12BIT_VALID_DATA(adc_buff[ADCW_INDEX][BOARD_BLDC_ADC_TRG*4]);
             times++;
             if (times >= BLDC_CURRENT_SET_TIME_MS) {
                 break;

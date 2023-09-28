@@ -1,4 +1,4 @@
-# ROMAPI 例程
+# ROM API
 
 :::{eval-rst}
 .. toctree::

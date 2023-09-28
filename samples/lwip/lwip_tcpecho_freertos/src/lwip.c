@@ -50,7 +50,7 @@ void bsp_init(void)
     printf("This is an ethernet demo: TCP Echo on FreeRTOS\n");
     printf("LwIP Version: %s\n", LWIP_VERSION_STRING);
 
-    #if RGMII
+    #if defined(RGMII) && RGMII
     /* Set RGMII clock delay */
     board_init_enet_rgmii_clock_delay(ENET);
     #else
@@ -66,7 +66,7 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     enet_mac_config_t enet_config;
     enet_tx_control_config_t enet_tx_control_config;
 
-    #if RGMII
+    #if defined(RGMII) && RGMII
         #if defined(__USE_DP83867) && __USE_DP83867
         dp83867_config_t phy_config;
         #else
@@ -136,7 +136,7 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     enet_disable_lpi_interrupt(ENET);
 
     /* Initialize phy */
-    #if RGMII
+    #if defined(RGMII) && RGMII
         #if defined(__USE_DP83867) && __USE_DP83867
         dp83867_reset(ptr);
         #if __DISABLE_AUTO_NEGO
@@ -170,6 +170,9 @@ hpm_stat_t enet_init(ENET_Type *ptr)
 
 int main(void)
 {
+    /* Initialize bsp */
+    bsp_init();
+
     xTaskCreate(Main_task, "Main", configMINIMAL_STACK_SIZE * 2, NULL, MAIN_TASK_PRIO, NULL);
 
     /* Start scheduler */
@@ -184,9 +187,6 @@ int main(void)
 void Main_task(void *pvParameters)
 {
     TimerHandle_t timer_handle;
-
-    /* Initialize bsp */
-    bsp_init();
 
     /* Initialize MAC and DMA */
     enet_init(ENET);

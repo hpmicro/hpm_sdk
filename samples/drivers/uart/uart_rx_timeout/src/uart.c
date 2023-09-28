@@ -58,7 +58,6 @@ hpm_stat_t uart_tx_trigger_dma(DMA_Type *dma_ptr,
 
 void uart_isr(void)
 {
-    uint8_t c;
     uint8_t count = 0;
     uint8_t irq_id = uart_get_irq_id(TEST_UART);
     if (irq_id == uart_intr_id_rx_data_avail) {

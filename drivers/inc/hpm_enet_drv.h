@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -55,14 +55,14 @@
  *---------------------------------------------------------------------
  */
 
-/** @brief Programmable burst length selections */
+/** @brief interrupt enable type */
 typedef enum {
     enet_normal_int_sum_en   = ENET_DMA_INTR_EN_NIE_MASK,
     enet_aboarmal_int_sum_en = ENET_DMA_INTR_EN_AIE_MASK,
     enet_receive_int_en      = ENET_DMA_INTR_EN_RIE_MASK
 } enet_interrupt_enable_t;
 
-/** @brief Programmable burst length selections */
+/** @brief interrupt mask type */
 typedef enum {
     enet_lpi_int_mask    = ENET_INTR_MASK_LPIIM_MASK,
     enet_rgsmii_int_mask = ENET_INTR_MASK_RGSMIIIM_MASK
@@ -592,8 +592,9 @@ uint32_t enet_get_mmc_tx_interrupt_status(ENET_Type *ptr);
  * @param[in] desc A pointer to descriptor config
  * @param[in] cfg A pointer to mac config
  * @param[in] int_cfg A pointer to the masks of the specified enabled interrupts and the specified masked interrupts
+ * @return A result of the specified controller initialization
  */
-int enet_controller_init(ENET_Type *ptr, enet_inf_type_t inf_type, enet_desc_t *desc, enet_mac_config_t *cfg, enet_int_config_t *int_config);
+hpm_stat_t enet_controller_init(ENET_Type *ptr, enet_inf_type_t inf_type, enet_desc_t *desc, enet_mac_config_t *cfg, enet_int_config_t *int_config);
 
 /**
  * @brief Set port line speed
@@ -630,6 +631,14 @@ uint16_t enet_read_phy(ENET_Type *ptr, uint32_t phy_addr, uint32_t addr);
  * @param[in] data a specified data to be written
  */
 void enet_write_phy(ENET_Type *ptr, uint32_t phy_addr, uint32_t addr, uint32_t data);
+
+/**
+ * @brief Resume reception process
+ *
+ * @param[in] ptr An Ethernet peripheral base address
+ *
+ */
+void enet_rx_resume(ENET_Type *ptr);
 
 /**
  * @brief Check if there is a received frame

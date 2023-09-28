@@ -48,19 +48,18 @@ static void init_common_config(dac_mode_t mode)
 
     dac_get_default_config(&config);
     config.dac_mode = mode;
+    config.sync_mode = (clk_dac_src_ahb0 == clock_get_source(BOARD_APP_DAC_CLOCK_NAME)) ? true : false;
 
     dac_init(BOARD_DAC_BASE, &config);
 }
 
 static void set_direct_mode_config(void)
 {
-    int32_t i, j;
-
     printf("Set DAC to output data in direct mode\n");
     printf("DAC is outputting a triangle waveform in direct mode\n");
 
     /* triangle waveform */
-    for (j = 0; j < 5000; j++) {
+    for (int32_t j = 0; j < 5000; j++) {
         for (float i = 0; i <= 10000; i += 2.5) {
             dac_set_direct_config(BOARD_DAC_BASE, (uint16_t)DAC_OUTPUT(i));
             board_delay_us(1);
@@ -90,7 +89,7 @@ static void set_step_mode_config(void)
     config0.round_mode = dac_round_mode_loop;
 
     dac_set_step_config(BOARD_DAC_BASE, DAC_STEP_CFG_IDX, &config0);
-    dac_set_output_frequency(BOARD_DAC_BASE, clock_get_frequency(BOARD_DAC_CLOCK_NAME), DAC_SOC_MAX_OUTPUT_FREQ);
+    dac_set_output_frequency(BOARD_DAC_BASE, clock_get_frequency(BOARD_APP_DAC_CLOCK_NAME), DAC_SOC_MAX_OUTPUT_FREQ);
 }
 
 static void set_buffer_mode_config(void)
@@ -118,7 +117,7 @@ static void set_buffer_mode_config(void)
     }
 
     dac_set_buffer_config(BOARD_DAC_BASE, &buffer_config);
-    dac_set_output_frequency(BOARD_DAC_BASE, clock_get_frequency(BOARD_DAC_CLOCK_NAME), DAC_SOC_MAX_OUTPUT_FREQ);
+    dac_set_output_frequency(BOARD_DAC_BASE, clock_get_frequency(BOARD_APP_DAC_CLOCK_NAME), DAC_SOC_MAX_OUTPUT_FREQ);
 
     dac_enable_interrupts(BOARD_DAC_BASE, DAC_BUF1_COMPLETE_EVENT);
 }

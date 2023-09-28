@@ -23,7 +23,9 @@ add_library(${HPM_SDK_LIB} STATIC "")
 target_link_libraries(${HPM_SDK_LIB} PUBLIC ${HPM_SDK_LIB_ITF})
 add_library(${HPM_SDK_LIB_ITF} INTERFACE)
 
-add_library(app STATIC "")
+add_library(app OBJECT "")
+
+add_executable(${APP_ELF_NAME} $<TARGET_OBJECTS:app>)
 
 message(STATUS "Application: ${APP_SRC_DIR}")
 
@@ -45,19 +47,19 @@ if(BOARD_SEARCH_PATH AND EXISTS ${BOARD_SEARCH_PATH})
 endif()
 
 # search board in sdk
-if(NOT BOARD_SEARCH_DIR)
+if(NOT HPM_BOARD_DIR OR NOT EXISTS ${HPM_BOARD_DIR})
     find_path(SDK_BOARD_DIR NAMES ${BOARD}.yaml PATHS ${HPM_SDK_BASE}/boards/* NO_DEFAULT_PATH)
     if(SDK_BOARD_DIR)
-        set(BOARD_MESSAGE "Board: ${BOARD}")
+        set(BOARD_MESSAGE "Board: ${BOARD} from ${HPM_SDK_BASE}/boards")
         set(HPM_BOARD_DIR ${HPM_SDK_BASE}/boards/${BOARD})
     endif()
 endif()
 
-if(NOT HPM_BOARD_DIR)
+set(BOARD_YAML ${HPM_BOARD_DIR}/${BOARD}.yaml)
+if(NOT HPM_BOARD_DIR OR NOT EXISTS ${BOARD_YAML})
     message(FATAL_ERROR "No board named '${BOARD}' found")
 endif()
 message(STATUS "${BOARD_MESSAGE}")
-set(BOARD_YAML ${HPM_BOARD_DIR}/${BOARD}.yaml)
 
 find_path(APP_YAML_PATH NAMES app.yaml PATHS ${APP_SRC_DIR} NO_DEFAULT_PATH)
 
@@ -76,6 +78,7 @@ include(${HPM_SDK_BASE}/cmake/toolchain.cmake)
 include(${HPM_SDK_BASE}/cmake/ide/segger.cmake)
 include(${HPM_SDK_BASE}/cmake/extra_flags.cmake)
 include(${HPM_SDK_BASE}/cmake/ccache.cmake)
+include(${HPM_SDK_BASE}/cmake/version.cmake)
 
 # distclean target
 add_custom_target(
@@ -84,12 +87,38 @@ add_custom_target(
     -DSRC_DIR=${APP_SRC_DIR} -P ${HPM_SDK_BASE}/cmake/cleanup.cmake
 )
 
+add_custom_command(
+    TARGET ${APP_ELF_NAME}
+    COMMAND "${CROSS_COMPILE}objcopy" -O binary -S ${EXECUTABLE_OUTPUT_PATH}/${APP_ELF_NAME} ${EXECUTABLE_OUTPUT_PATH}/${APP_BIN_NAME}
+)
+
+add_custom_command(
+    TARGET ${APP_ELF_NAME}
+    COMMAND "${CROSS_COMPILE}objdump" -S -d ${EXECUTABLE_OUTPUT_PATH}/${APP_ELF_NAME} > ${EXECUTABLE_OUTPUT_PATH}/${APP_ASM_NAME}
+)
+
 if(APP_YAML_PATH)
     check_board_capability(${BOARD_YAML} "${APP_YAML_PATH}/app.yaml" result)
     if(${result} STREQUAL "1")
         message(FATAL_ERROR "${BOARD} can not support this sample")
     endif()
     check_excluded_targets("${APP_YAML_PATH}/app.yaml" excluded_targets)
+    # check if specific minimum SDK version is needed
+    get_app_min_sdk_version("${APP_YAML_PATH}/app.yaml" app_min_sdk_version)
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} -DREQUIRED_MINIMUM_SDK_VERSION=${app_min_sdk_version}
+        -DHPM_SDK_BASE=${HPM_SDK_BASE}
+        -DSDK_VERSION_MAJOR=${SDK_VERSION_MAJOR}
+        -DSDK_VERSION_MINOR=${SDK_VERSION_MINOR}
+        -DSDK_PATCHLEVEL=${SDK_PATCHLEVEL}
+        -P ${HPM_SDK_BASE}/cmake/compare_target_sdk_version.cmake
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+        RESULT_VARIABLE result
+        ERROR_VARIABLE error_output
+    )
+    if(${result})
+        message(FATAL_ERROR ${error_output})
+    endif()
 endif()
 
 # default build type is set to debug
@@ -124,13 +153,16 @@ if(NOT extram_size)
     endif()
 endif()
 
-
-if(NOT HEAP_SIZE)
-    SET(HEAP_SIZE 0x4000)
+if(HEAP_SIZE)
+    sdk_linker_global_symbols("_heap_size=${HEAP_SIZE}")
+else()
+    SET(HEAP_SIZE 0x4000)    #segger default heap size
 endif()
 
-if(NOT STACK_SIZE)
-    SET(STACK_SIZE 0x4000)
+if(STACK_SIZE)
+    sdk_linker_global_symbols("_stack_size=${STACK_SIZE}")
+else()
+    SET(STACK_SIZE 0x4000)    #segger default stack size
 endif()
 
 # skip compiler check
@@ -140,6 +172,13 @@ set(CMAKE_CXX_COMPILER_FORCED 1)
 enable_language(C CXX ASM)
 
 add_subdirectory(${HPM_SDK_BASE} ${__build_dir})
+
+if (DEFINED GEN_SEC_CORE_IMG_C_ARRAY)
+    if(NOT DEFINED SEC_CORE_IMG_C_ARRAY_OUTPUT)
+        set(SEC_CORE_IMG_C_ARRAY_OUTPUT "sec_core_img.c")
+    endif()
+    generate_bin2c_array(${SEC_CORE_IMG_C_ARRAY_OUTPUT})
+endif()
 
 # link final executable
 target_link_libraries(app PUBLIC ${HPM_SDK_LIB_ITF})

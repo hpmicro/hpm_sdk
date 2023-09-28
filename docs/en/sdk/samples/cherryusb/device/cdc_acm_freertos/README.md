@@ -1,4 +1,4 @@
-# USB CDC Serial(FreeRTOS)
+# CherryUSB CDC Serial(FreeRTOS)
 
 ## Overview
 

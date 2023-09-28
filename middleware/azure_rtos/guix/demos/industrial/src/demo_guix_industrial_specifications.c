@@ -6,7 +6,7 @@
 /*  GUIX Studio User Guide, or visit our web site at azure.com/rtos            */
 /*                                                                             */
 /*  GUIX Studio Revision 6.1.0.0                                               */
-/*  Date (dd.mm.yyyy): 25. 4.2023   Time (hh:mm): 11:12                        */
+/*  Date (dd.mm.yyyy): 15. 8.2023   Time (hh:mm): 18:57                        */
 /*******************************************************************************/
 
 
@@ -14,6 +14,16 @@
 #include <stddef.h>
 #include "demo_guix_industrial_resources.h"
 #include "demo_guix_industrial_specifications.h"
+
+#if (MAIN_DISPLAY_COLOR_FORMAT == GX_COLOR_FORMAT_565RGB)
+#   define MAIN_DISPLAY_PIXEL_SIZE  2
+#elif (MAIN_DISPLAY_COLOR_FORMAT == GX_COLOR_FORMAT_32ARGB)
+#   define MAIN_DISPLAY_PIXEL_SIZE  4
+#else
+#   error "Not supported color format"
+#endif
+
+#define MAIN_DISPLAY_MEMORY_SIZE (MAIN_DISPLAY_X_RESOLUTION * MAIN_DISPLAY_Y_RESOLUTION * MAIN_DISPLAY_PIXEL_SIZE)
 
 static GX_WIDGET *gx_studio_nested_widget_create(GX_BYTE *control, GX_CONST GX_STUDIO_WIDGET *definition, GX_WIDGET *parent);
 SEQUENCE_NUMBER_CONTROL_BLOCK sequence_number;
@@ -37,13 +47,13 @@ GX_STUDIO_DISPLAY_INFO demo_guix_industrial_display_table[1] =
     MAIN_DISPLAY_THEME_TABLE_SIZE,
     MAIN_DISPLAY_LANGUAGE_TABLE_SIZE,
     MAIN_DISPLAY_STRING_TABLE_SIZE,
-    800,                                     /* x resolution                   */
-    480,                                     /* y resolution                   */
+    MAIN_DISPLAY_X_RESOLUTION,               /* x resolution                   */
+    MAIN_DISPLAY_Y_RESOLUTION,               /* y resolution                   */
     &main_display_control_block,
     &main_display_canvas_control_block,
     &main_display_root_window,
-    GX_NULL,              /* canvas memory area             */
-    1536000                                  /* canvas memory size in bytes    */
+    GX_NULL,                                 /* canvas memory area             */
+    MAIN_DISPLAY_MEMORY_SIZE                 /* canvas memory size in bytes    */
     }
 };
 
@@ -502,7 +512,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_number_prompt_18_3_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {320, 37, 352, 54},                      /* widget size                    */
+    {400, 37, 432, 54},                      /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_NUMBER_CONTROL_BLOCK, sequence_number_prompt_18_3), /* control block */
@@ -526,7 +536,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_number_prompt_18_2_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {264, 37, 313, 54},                      /* widget size                    */
+    {344, 37, 393, 54},                      /* widget size                    */
     &sequence_number_prompt_18_3_define,     /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_NUMBER_CONTROL_BLOCK, sequence_number_prompt_18_2), /* control block */
@@ -560,7 +570,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_number_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     (UINT (*)(GX_WIDGET *, GX_EVENT *)) gx_studio_sequence_number_event_process, /* event function override */
-    {259, 37, 358, 65},                      /* widget size                    */
+    {339, 37, 438, 65},                      /* widget size                    */
     GX_NULL,                                 /* next widget                    */
     &sequence_number_prompt_18_2_define,     /* child widget                   */
     0,                                       /* control block                  */
@@ -648,7 +658,7 @@ GX_CONST GX_STUDIO_WIDGET complete_window_countdown_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {380, 340, 398, 370},                    /* widget size                    */
+    {470, 338, 488, 368},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(COMPLETE_WINDOW_CONTROL_BLOCK, complete_window_countdown), /* control block */
@@ -672,7 +682,7 @@ GX_CONST GX_STUDIO_WIDGET complete_window_icon_13_2_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {309, 123, 310, 195},                    /* widget size                    */
+    {399, 121, 400, 193},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(COMPLETE_WINDOW_CONTROL_BLOCK, complete_window_icon_13_2), /* control block */
@@ -696,7 +706,7 @@ GX_CONST GX_STUDIO_WIDGET complete_window_prompt_17_4_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {188, 341, 462, 365},                    /* widget size                    */
+    {278, 339, 552, 363},                    /* widget size                    */
     &complete_window_icon_13_2_define,       /* next widget definition         */
     &complete_window_countdown_define,       /* child widget definition        */
     offsetof(COMPLETE_WINDOW_CONTROL_BLOCK, complete_window_prompt_17_4), /* control block */
@@ -720,7 +730,7 @@ GX_CONST GX_STUDIO_WIDGET complete_window_prompt_17_3_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {182, 311, 474, 335},                    /* widget size                    */
+    {272, 309, 564, 333},                    /* widget size                    */
     &complete_window_prompt_17_4_define,     /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(COMPLETE_WINDOW_CONTROL_BLOCK, complete_window_prompt_17_3), /* control block */
@@ -744,7 +754,7 @@ GX_CONST GX_STUDIO_WIDGET complete_window_prompt_17_2_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {346, 153, 432, 199},                    /* widget size                    */
+    {436, 151, 522, 197},                    /* widget size                    */
     &complete_window_prompt_17_3_define,     /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(COMPLETE_WINDOW_CONTROL_BLOCK, complete_window_prompt_17_2), /* control block */
@@ -768,7 +778,7 @@ GX_CONST GX_STUDIO_WIDGET complete_window_prompt_17_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {351, 119, 434, 149},                    /* widget size                    */
+    {441, 117, 524, 147},                    /* widget size                    */
     &complete_window_prompt_17_2_define,     /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(COMPLETE_WINDOW_CONTROL_BLOCK, complete_window_prompt_17), /* control block */
@@ -792,7 +802,7 @@ GX_CONST GX_STUDIO_WIDGET complete_window_prompt_17_7_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {85, 233, 571, 279},                     /* widget size                    */
+    {175, 231, 661, 277},                    /* widget size                    */
     &complete_window_prompt_17_define,       /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(COMPLETE_WINDOW_CONTROL_BLOCK, complete_window_prompt_17_7), /* control block */
@@ -816,7 +826,7 @@ GX_CONST GX_STUDIO_WIDGET complete_window_icon_12_2_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {190, 110, 267, 194},                    /* widget size                    */
+    {280, 108, 357, 192},                    /* widget size                    */
     &complete_window_prompt_17_7_define,     /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(COMPLETE_WINDOW_CONTROL_BLOCK, complete_window_icon_12_2), /* control block */
@@ -828,7 +838,7 @@ GX_ANIMATION_INFO complete_window_animation_1 = {
     (GX_WIDGET *) &main_screen,
     GX_NULL,
     GX_ANIMATION_TRANSLATE, ANI_ID_COMPLETE_WIN_FADE_IN, 0, 1,
-    {74, 104}, {74, 104}, 0, 255, 20
+    {164, 104}, {164, 104}, 0, 255, 20
 };
 
 
@@ -837,7 +847,7 @@ GX_ANIMATION_INFO complete_window_animation_2 = {
     (GX_WIDGET *) &main_screen,
     GX_NULL,
     GX_ANIMATION_TRANSLATE|GX_ANIMATION_DETACH, ANI_ID_COMPLETE_WIN_FADE_OUT, 0, 1,
-    {74, 104}, {74, 104}, 255, 0, 20
+    {164, 104}, {164, 104}, 255, 0, 20
 };
 
 
@@ -882,7 +892,7 @@ GX_CONST GX_STUDIO_WIDGET complete_window_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     (UINT (*)(GX_WIDGET *, GX_EVENT *)) gx_studio_complete_window_event_process, /* event function override */
-    {74, 104, 580, 400},                     /* widget size                    */
+    {164, 102, 670, 398},                    /* widget size                    */
     GX_NULL,                                 /* next widget                    */
     &complete_window_icon_12_2_define,       /* child widget                   */
     0,                                       /* control block                  */
@@ -1065,8 +1075,8 @@ GX_PROMPT_PROPERTIES sequence_window_prompt_15_11_5_properties =
 };
 GX_RADIAL_PROGRESS_BAR_INFO sequence_window_radial_progress_speed_properties =
 {
-    591,                                     /* xcenter                        */
-    146,                                     /* ycenter                        */
+    672,                                     /* xcenter                        */
+    150,                                     /* ycenter                        */
     22,                                      /* radius                         */
     -220,                                    /* current val                    */
     90,                                      /* anchor val                     */
@@ -1129,8 +1139,8 @@ GX_PROMPT_PROPERTIES sequence_window_prompt_15_15_2_properties =
 };
 GX_RADIAL_PROGRESS_BAR_INFO sequence_window_radial_progress_rotation_properties =
 {
-    592,                                     /* xcenter                        */
-    217,                                     /* ycenter                        */
+    671,                                     /* xcenter                        */
+    220,                                     /* ycenter                        */
     22,                                      /* radius                         */
     -250,                                    /* current val                    */
     90,                                      /* anchor val                     */
@@ -1245,8 +1255,8 @@ GX_PROMPT_PROPERTIES sequence_window_prompt_15_11_3_properties =
 };
 GX_RADIAL_PROGRESS_BAR_INFO sequence_window_radial_progress_force_properties =
 {
-    592,                                     /* xcenter                        */
-    286,                                     /* ycenter                        */
+    671,                                     /* xcenter                        */
+    285,                                     /* ycenter                        */
     22,                                      /* radius                         */
     -250,                                    /* current val                    */
     90,                                      /* anchor val                     */
@@ -1714,7 +1724,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_7_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {577, 357, 595, 377},                    /* widget size                    */
+    {657, 357, 675, 377},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_7), /* control block */
@@ -1738,7 +1748,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_bottom_progress_define =
     gx_studio_progress_bar_create,           /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {20, 351, 600, 381},                     /* widget size                    */
+    {100, 351, 680, 381},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     &sequence_window_prompt_7_define,        /* child widget definition        */
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_bottom_progress), /* control block */
@@ -1762,7 +1772,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_SY_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {504, 155, 534, 172},                    /* widget size                    */
+    {584, 155, 614, 172},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_SY), /* control block */
@@ -1786,7 +1796,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_SX_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {504, 139, 534, 156},                    /* widget size                    */
+    {584, 139, 614, 156},                    /* widget size                    */
     &sequence_window_prompt_SY_define,       /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_SX), /* control block */
@@ -1810,7 +1820,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_radial_progress_speed_define =
     gx_studio_radial_progress_bar_create,     /* create function               */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {567, 122, 615, 170},                    /* widget size                    */
+    {648, 126, 696, 174},                    /* widget size                    */
     &sequence_window_prompt_SX_define,       /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_radial_progress_speed), /* control block */
@@ -1834,7 +1844,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_15_11_5_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {506, 123, 529, 135},                    /* widget size                    */
+    {586, 123, 609, 135},                    /* widget size                    */
     &sequence_window_radial_progress_speed_define, /* next widget definition   */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_15_11_5), /* control block */
@@ -1858,7 +1868,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_15_10_1_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {535, 158, 556, 170},                    /* widget size                    */
+    {615, 158, 636, 170},                    /* widget size                    */
     &sequence_window_prompt_15_11_5_define,  /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_15_10_1), /* control block */
@@ -1882,7 +1892,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_15_8_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {535, 142, 556, 154},                    /* widget size                    */
+    {615, 142, 636, 154},                    /* widget size                    */
     &sequence_window_prompt_15_10_1_define,  /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_15_8), /* control block */
@@ -1906,7 +1916,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_15_7_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {466, 156, 484, 173},                    /* widget size                    */
+    {546, 156, 564, 173},                    /* widget size                    */
     &sequence_window_prompt_15_8_define,     /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_15_7), /* control block */
@@ -1930,7 +1940,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_15_6_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {466, 140, 484, 157},                    /* widget size                    */
+    {546, 140, 564, 157},                    /* widget size                    */
     &sequence_window_prompt_15_7_define,     /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_15_6), /* control block */
@@ -1954,7 +1964,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_15_5_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {467, 123, 502, 135},                    /* widget size                    */
+    {547, 123, 582, 135},                    /* widget size                    */
     &sequence_window_prompt_15_6_define,     /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_15_5), /* control block */
@@ -1978,7 +1988,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_15_11_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {551, 226, 557, 238},                    /* widget size                    */
+    {631, 226, 637, 238},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_15_11), /* control block */
@@ -2002,7 +2012,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_15_11_2_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {551, 209, 557, 221},                    /* widget size                    */
+    {631, 209, 637, 221},                    /* widget size                    */
     &sequence_window_prompt_15_11_define,    /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_15_11_2), /* control block */
@@ -2026,7 +2036,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_RX_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {501, 211, 550, 228},                    /* widget size                    */
+    {581, 211, 630, 228},                    /* widget size                    */
     &sequence_window_prompt_15_11_2_define,  /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_RX), /* control block */
@@ -2050,7 +2060,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_RY_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {501, 228, 550, 245},                    /* widget size                    */
+    {581, 228, 630, 245},                    /* widget size                    */
     &sequence_window_prompt_RX_define,       /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_RY), /* control block */
@@ -2074,7 +2084,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_radial_progress_rotation_define =
     gx_studio_radial_progress_bar_create,     /* create function               */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {568, 193, 616, 241},                    /* widget size                    */
+    {647, 196, 695, 244},                    /* widget size                    */
     &sequence_window_prompt_RY_define,       /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_radial_progress_rotation), /* control block */
@@ -2098,7 +2108,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_15_15_2_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {466, 227, 484, 244},                    /* widget size                    */
+    {546, 227, 564, 244},                    /* widget size                    */
     &sequence_window_radial_progress_rotation_define, /* next widget definition */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_15_15_2), /* control block */
@@ -2122,7 +2132,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_15_14_2_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {466, 211, 484, 228},                    /* widget size                    */
+    {546, 211, 564, 228},                    /* widget size                    */
     &sequence_window_prompt_15_15_2_define,  /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_15_14_2), /* control block */
@@ -2146,7 +2156,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_15_13_2_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {467, 194, 554, 206},                    /* widget size                    */
+    {547, 194, 634, 206},                    /* widget size                    */
     &sequence_window_prompt_15_14_2_define,  /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_15_13_2), /* control block */
@@ -2170,7 +2180,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_radial_progress_force_define =
     gx_studio_radial_progress_bar_create,     /* create function               */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {568, 262, 616, 310},                    /* widget size                    */
+    {647, 261, 695, 309},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_radial_progress_force), /* control block */
@@ -2194,7 +2204,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_15_11_3_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {533, 298, 558, 310},                    /* widget size                    */
+    {613, 298, 638, 310},                    /* widget size                    */
     &sequence_window_radial_progress_force_define, /* next widget definition   */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_15_11_3), /* control block */
@@ -2218,7 +2228,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_15_11_1_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {533, 282, 558, 294},                    /* widget size                    */
+    {613, 282, 638, 294},                    /* widget size                    */
     &sequence_window_prompt_15_11_3_define,  /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_15_11_1), /* control block */
@@ -2242,7 +2252,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_UP_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {492, 280, 531, 297},                    /* widget size                    */
+    {572, 280, 611, 297},                    /* widget size                    */
     &sequence_window_prompt_15_11_1_define,  /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_UP), /* control block */
@@ -2266,7 +2276,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_DN_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {489, 296, 531, 313},                    /* widget size                    */
+    {569, 296, 611, 313},                    /* widget size                    */
     &sequence_window_prompt_UP_define,       /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_DN), /* control block */
@@ -2290,7 +2300,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_15_15_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {466, 297, 488, 314},                    /* widget size                    */
+    {546, 297, 568, 314},                    /* widget size                    */
     &sequence_window_prompt_DN_define,       /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_15_15), /* control block */
@@ -2314,7 +2324,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_15_14_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {466, 280, 487, 297},                    /* widget size                    */
+    {546, 280, 567, 297},                    /* widget size                    */
     &sequence_window_prompt_15_15_define,    /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_15_14), /* control block */
@@ -2338,7 +2348,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_15_13_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {467, 263, 544, 275},                    /* widget size                    */
+    {547, 263, 624, 275},                    /* widget size                    */
     &sequence_window_prompt_15_14_define,    /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_15_13), /* control block */
@@ -2362,7 +2372,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_sprite_define =
     gx_studio_sprite_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {207, 100, 446, 339},                    /* widget size                    */
+    {287, 100, 526, 339},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_sprite), /* control block */
@@ -2386,7 +2396,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_15_16_14_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {416, 112, 426, 124},                    /* widget size                    */
+    {496, 112, 506, 124},                    /* widget size                    */
     &sequence_window_sprite_define,          /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_15_16_14), /* control block */
@@ -2410,7 +2420,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_Z_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {384, 109, 414, 126},                    /* widget size                    */
+    {464, 109, 494, 126},                    /* widget size                    */
     &sequence_window_prompt_15_16_14_define, /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_Z), /* control block */
@@ -2434,7 +2444,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_Z_label_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {371, 109, 380, 126},                    /* widget size                    */
+    {451, 109, 460, 126},                    /* widget size                    */
     &sequence_window_prompt_Z_define,        /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_Z_label), /* control block */
@@ -2458,7 +2468,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_15_16_10_1_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {347, 112, 357, 124},                    /* widget size                    */
+    {427, 112, 437, 124},                    /* widget size                    */
     &sequence_window_prompt_Z_label_define,  /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_15_16_10_1), /* control block */
@@ -2482,7 +2492,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_Y_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {315, 109, 345, 126},                    /* widget size                    */
+    {395, 109, 425, 126},                    /* widget size                    */
     &sequence_window_prompt_15_16_10_1_define, /* next widget definition       */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_Y), /* control block */
@@ -2506,7 +2516,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_Y_label_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {302, 109, 310, 126},                    /* widget size                    */
+    {382, 109, 390, 126},                    /* widget size                    */
     &sequence_window_prompt_Y_define,        /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_Y_label), /* control block */
@@ -2530,7 +2540,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_15_16_11_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {271, 112, 281, 124},                    /* widget size                    */
+    {351, 112, 361, 124},                    /* widget size                    */
     &sequence_window_prompt_Y_label_define,  /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_15_16_11), /* control block */
@@ -2554,7 +2564,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_X_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {239, 109, 269, 126},                    /* widget size                    */
+    {319, 109, 349, 126},                    /* widget size                    */
     &sequence_window_prompt_15_16_11_define, /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_X), /* control block */
@@ -2578,7 +2588,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_prompt_X_label_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {225, 109, 233, 126},                    /* widget size                    */
+    {305, 109, 313, 126},                    /* widget size                    */
     &sequence_window_prompt_X_define,        /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_prompt_X_label), /* control block */
@@ -2602,7 +2612,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_progress_4_percent_flag_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {159, 293, 173, 310},                    /* widget size                    */
+    {239, 293, 253, 310},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_progress_4_percent_flag), /* control block */
@@ -2626,7 +2636,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_progress_3_percent_flag_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {159, 253, 173, 270},                    /* widget size                    */
+    {239, 253, 253, 270},                    /* widget size                    */
     &sequence_window_progress_4_percent_flag_define, /* next widget definition */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_progress_3_percent_flag), /* control block */
@@ -2650,7 +2660,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_progress_2_percent_flag_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {159, 207, 173, 224},                    /* widget size                    */
+    {239, 207, 253, 224},                    /* widget size                    */
     &sequence_window_progress_3_percent_flag_define, /* next widget definition */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_progress_2_percent_flag), /* control block */
@@ -2674,7 +2684,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_progress_1_percent_flag_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {159, 167, 173, 184},                    /* widget size                    */
+    {239, 167, 253, 184},                    /* widget size                    */
     &sequence_window_progress_2_percent_flag_define, /* next widget definition */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_progress_1_percent_flag), /* control block */
@@ -2698,7 +2708,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_sprite_window_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {206, 100, 446, 340},                    /* widget size                    */
+    {286, 100, 526, 340},                    /* widget size                    */
     &sequence_window_progress_1_percent_flag_define, /* next widget definition */
     &sequence_window_prompt_X_label_define,  /* child widget definition        */
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_sprite_window), /* control block */
@@ -2722,7 +2732,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_bottom_progress_value_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {536, 358, 574, 378},                    /* widget size                    */
+    {616, 358, 654, 378},                    /* widget size                    */
     &sequence_window_sprite_window_define,   /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_bottom_progress_value), /* control block */
@@ -2746,7 +2756,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_task_title_define =
     gx_studio_prompt_create,                 /* create function                */
     (VOID (*)(GX_WIDGET *)) task_title_draw, /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {19, 111, 143, 135},                     /* widget size                    */
+    {99, 111, 223, 135},                     /* widget size                    */
     &sequence_window_bottom_progress_value_define, /* next widget definition   */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_task_title), /* control block */
@@ -2770,7 +2780,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_task_icon_define =
     gx_studio_icon_create,                   /* create function                */
     (VOID (*)(GX_WIDGET *)) task_icon_draw,  /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {148, 108, 177, 137},                    /* widget size                    */
+    {228, 108, 257, 137},                    /* widget size                    */
     &sequence_window_task_title_define,      /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_task_icon), /* control block */
@@ -2794,7 +2804,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_timer_dot_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {596, 81, 601, 98},                      /* widget size                    */
+    {676, 81, 681, 98},                      /* widget size                    */
     &sequence_window_task_icon_define,       /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_timer_dot), /* control block */
@@ -2818,7 +2828,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_timer_colon_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {570, 81, 575, 98},                      /* widget size                    */
+    {650, 81, 655, 98},                      /* widget size                    */
     &sequence_window_timer_dot_define,       /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_timer_colon), /* control block */
@@ -2842,7 +2852,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_timer_second_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {576, 82, 597, 99},                      /* widget size                    */
+    {656, 82, 677, 99},                      /* widget size                    */
     &sequence_window_timer_colon_define,     /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_timer_second), /* control block */
@@ -2866,7 +2876,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_timer_minute_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {550, 82, 571, 99},                      /* widget size                    */
+    {630, 82, 651, 99},                      /* widget size                    */
     &sequence_window_timer_second_define,    /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_timer_minute), /* control block */
@@ -2890,7 +2900,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_timer_tick_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {602, 82, 619, 99},                      /* widget size                    */
+    {682, 82, 699, 99},                      /* widget size                    */
     &sequence_window_timer_minute_define,    /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_timer_tick), /* control block */
@@ -2914,7 +2924,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_overall_label_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {481, 84, 521, 96},                      /* widget size                    */
+    {561, 84, 601, 96},                      /* widget size                    */
     &sequence_window_timer_tick_define,      /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_overall_label), /* control block */
@@ -2938,7 +2948,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_timer_icon_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {461, 80, 476, 97},                      /* widget size                    */
+    {541, 80, 556, 97},                      /* widget size                    */
     &sequence_window_overall_label_define,   /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_timer_icon), /* control block */
@@ -2962,7 +2972,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_progress_4_value_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {131, 292, 157, 309},                    /* widget size                    */
+    {211, 292, 237, 309},                    /* widget size                    */
     &sequence_window_timer_icon_define,      /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_progress_4_value), /* control block */
@@ -2986,7 +2996,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_progress_3_value_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {131, 252, 157, 269},                    /* widget size                    */
+    {211, 252, 237, 269},                    /* widget size                    */
     &sequence_window_progress_4_value_define, /* next widget definition        */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_progress_3_value), /* control block */
@@ -3010,7 +3020,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_progress_2_value_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {131, 205, 157, 222},                    /* widget size                    */
+    {211, 205, 237, 222},                    /* widget size                    */
     &sequence_window_progress_3_value_define, /* next widget definition        */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_progress_2_value), /* control block */
@@ -3034,7 +3044,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_progress_1_value_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {131, 166, 157, 183},                    /* widget size                    */
+    {211, 166, 237, 183},                    /* widget size                    */
     &sequence_window_progress_2_value_define, /* next widget definition        */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_progress_1_value), /* control block */
@@ -3058,7 +3068,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_window_force_sensor_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {460, 257, 620, 316},                    /* widget size                    */
+    {540, 257, 700, 316},                    /* widget size                    */
     &sequence_window_progress_1_value_define, /* next widget definition        */
     &sequence_window_prompt_15_13_define,    /* child widget definition        */
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_window_force_sensor), /* control block */
@@ -3082,7 +3092,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_window_rotation_angle_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {460, 188, 620, 247},                    /* widget size                    */
+    {540, 188, 700, 247},                    /* widget size                    */
     &sequence_window_window_force_sensor_define, /* next widget definition     */
     &sequence_window_prompt_15_13_2_define,  /* child widget definition        */
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_window_rotation_angle), /* control block */
@@ -3106,7 +3116,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_window_mode_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {460, 117, 620, 176},                    /* widget size                    */
+    {540, 117, 700, 176},                    /* widget size                    */
     &sequence_window_window_rotation_angle_define, /* next widget definition   */
     &sequence_window_prompt_15_5_define,     /* child widget definition        */
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_window_mode), /* control block */
@@ -3130,7 +3140,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_complete_icon_4_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {155, 294, 171, 306},                    /* widget size                    */
+    {235, 294, 251, 306},                    /* widget size                    */
     &sequence_window_window_mode_define,     /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_complete_icon_4), /* control block */
@@ -3154,7 +3164,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_complete_icon_3_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {155, 251, 171, 263},                    /* widget size                    */
+    {235, 251, 251, 263},                    /* widget size                    */
     &sequence_window_complete_icon_4_define, /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_complete_icon_3), /* control block */
@@ -3178,7 +3188,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_complete_icon_2_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {155, 210, 171, 222},                    /* widget size                    */
+    {235, 210, 251, 222},                    /* widget size                    */
     &sequence_window_complete_icon_3_define, /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_complete_icon_2), /* control block */
@@ -3202,7 +3212,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_complete_icon_1_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {155, 167, 171, 179},                    /* widget size                    */
+    {235, 167, 251, 179},                    /* widget size                    */
     &sequence_window_complete_icon_2_define, /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_complete_icon_1), /* control block */
@@ -3226,7 +3236,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_progress_4_define =
     gx_studio_progress_bar_create,           /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {20, 313, 169, 315},                     /* widget size                    */
+    {100, 313, 249, 315},                    /* widget size                    */
     &sequence_window_complete_icon_1_define, /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_progress_4), /* control block */
@@ -3250,7 +3260,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_progress_3_define =
     gx_studio_progress_bar_create,           /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {20, 271, 169, 273},                     /* widget size                    */
+    {100, 271, 249, 273},                    /* widget size                    */
     &sequence_window_progress_4_define,      /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_progress_3), /* control block */
@@ -3274,7 +3284,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_progress_2_define =
     gx_studio_progress_bar_create,           /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {21, 229, 170, 231},                     /* widget size                    */
+    {101, 229, 250, 231},                    /* widget size                    */
     &sequence_window_progress_3_define,      /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_progress_2), /* control block */
@@ -3298,7 +3308,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_progress_1_define =
     gx_studio_progress_bar_create,           /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {20, 187, 169, 189},                     /* widget size                    */
+    {100, 187, 249, 189},                    /* widget size                    */
     &sequence_window_progress_2_define,      /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_progress_1), /* control block */
@@ -3322,7 +3332,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_progress_4_title_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {19, 293, 132, 310},                     /* widget size                    */
+    {99, 293, 212, 310},                     /* widget size                    */
     &sequence_window_progress_1_define,      /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_progress_4_title), /* control block */
@@ -3346,7 +3356,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_progress_3_title_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {20, 251, 133, 268},                     /* widget size                    */
+    {100, 251, 213, 268},                    /* widget size                    */
     &sequence_window_progress_4_title_define, /* next widget definition        */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_progress_3_title), /* control block */
@@ -3370,7 +3380,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_progress_2_title_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {19, 210, 132, 227},                     /* widget size                    */
+    {99, 210, 212, 227},                     /* widget size                    */
     &sequence_window_progress_3_title_define, /* next widget definition        */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_progress_2_title), /* control block */
@@ -3394,7 +3404,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_progress_1_title_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {19, 167, 132, 184},                     /* widget size                    */
+    {99, 167, 212, 184},                     /* widget size                    */
     &sequence_window_progress_2_title_define, /* next widget definition        */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_progress_1_title), /* control block */
@@ -3418,7 +3428,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_window_progress_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {20, 351, 600, 381},                     /* widget size                    */
+    {100, 351, 680, 381},                    /* widget size                    */
     &sequence_window_progress_1_title_define, /* next widget definition        */
     &sequence_window_bottom_progress_define, /* child widget definition        */
     offsetof(SEQUENCE_WINDOW_CONTROL_BLOCK, sequence_window_window_progress), /* control block */
@@ -3430,7 +3440,7 @@ GX_ANIMATION_INFO sequence_window_animation_1 = {
     (GX_WIDGET *) &main_screen,
     GX_NULL,
     GX_ANIMATION_TRANSLATE, ANI_ID_SEQ_WIN_FADE_IN, 0, 1,
-    {0, 70}, {0, 70}, 0, 255, 20
+    {80, 70}, {80, 70}, 0, 255, 20
 };
 
 
@@ -3439,7 +3449,7 @@ GX_ANIMATION_INFO sequence_window_animation_2 = {
     (GX_WIDGET *) &main_screen,
     GX_NULL,
     GX_ANIMATION_TRANSLATE|GX_ANIMATION_DETACH, ANI_ID_SEQ_WIN_FADE_OUT, 0, 1,
-    {0, 70}, {0, 70}, 255, 0, 20
+    {80, 70}, {80, 70}, 255, 0, 20
 };
 
 
@@ -3484,7 +3494,7 @@ GX_CONST GX_STUDIO_WIDGET sequence_window_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     (UINT (*)(GX_WIDGET *, GX_EVENT *)) gx_studio_sequence_window_event_process, /* event function override */
-    {0, 70, 639, 396},                       /* widget size                    */
+    {80, 70, 719, 396},                      /* widget size                    */
     GX_NULL,                                 /* next widget                    */
     &sequence_window_window_progress_define, /* child widget                   */
     0,                                       /* control block                  */
@@ -3814,7 +3824,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_icon_9_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {533, 405, 547, 421},                    /* widget size                    */
+    {694, 405, 708, 421},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_icon_9), /* control block  */
@@ -3838,7 +3848,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_on_off_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {515, 426, 563, 438},                    /* widget size                    */
+    {676, 426, 724, 438},                    /* widget size                    */
     &main_screen_icon_9_define,              /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_on_off), /* control block */
@@ -3862,7 +3872,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_icon_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {75, 406, 89, 422},                      /* widget size                    */
+    {161, 406, 175, 422},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_icon), /* control block    */
@@ -3886,7 +3896,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_14_4_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {51, 426, 114, 438},                     /* widget size                    */
+    {137, 426, 200, 438},                    /* widget size                    */
     &main_screen_icon_define,                /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_14_4), /* control block */
@@ -3910,7 +3920,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_button_indicator_dot_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {450, 401, 454, 406},                    /* widget size                    */
+    {536, 401, 540, 406},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_button_indicator_dot), /* control block */
@@ -3934,7 +3944,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_icon_1_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {403, 406, 419, 422},                    /* widget size                    */
+    {489, 406, 505, 422},                    /* widget size                    */
     &main_screen_button_indicator_dot_define, /* next widget definition        */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_icon_1), /* control block  */
@@ -3958,7 +3968,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_14_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {382, 426, 441, 438},                    /* widget size                    */
+    {468, 426, 527, 438},                    /* widget size                    */
     &main_screen_icon_1_define,              /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_14), /* control block */
@@ -3982,7 +3992,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_icon_2_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {297, 406, 305, 422},                    /* widget size                    */
+    {383, 406, 391, 422},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_icon_2), /* control block  */
@@ -4006,7 +4016,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_14_3_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {277, 426, 325, 438},                    /* widget size                    */
+    {363, 426, 411, 438},                    /* widget size                    */
     &main_screen_icon_2_define,              /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_14_3), /* control block */
@@ -4030,7 +4040,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_icon_3_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {185, 406, 200, 422},                    /* widget size                    */
+    {271, 406, 286, 422},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_icon_3), /* control block  */
@@ -4054,7 +4064,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_14_2_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {159, 426, 227, 438},                    /* widget size                    */
+    {245, 426, 313, 438},                    /* widget size                    */
     &main_screen_icon_3_define,              /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_14_2), /* control block */
@@ -4078,7 +4088,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_button_assembling_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {129, 385, 253, 462},                    /* widget size                    */
+    {215, 385, 339, 462},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     &main_screen_prompt_14_2_define,         /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_button_assembling), /* control block */
@@ -4102,7 +4112,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_button_welding_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {238, 385, 362, 462},                    /* widget size                    */
+    {324, 385, 448, 462},                    /* widget size                    */
     &main_screen_button_assembling_define,   /* next widget definition         */
     &main_screen_prompt_14_3_define,         /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_button_welding), /* control block */
@@ -4126,7 +4136,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_button_palletizing_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {348, 385, 472, 462},                    /* widget size                    */
+    {434, 385, 558, 462},                    /* widget size                    */
     &main_screen_button_welding_define,      /* next widget definition         */
     &main_screen_prompt_14_define,           /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_button_palletizing), /* control block */
@@ -4150,7 +4160,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_button_inspecting_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {20, 385, 144, 462},                     /* widget size                    */
+    {106, 385, 230, 462},                    /* widget size                    */
     &main_screen_button_palletizing_define,  /* next widget definition         */
     &main_screen_prompt_14_4_define,         /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_button_inspecting), /* control block */
@@ -4174,7 +4184,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_Start_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {260, 152, 454, 234},                    /* widget size                    */
+    {340, 152, 534, 234},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_Start), /* control block */
@@ -4198,7 +4208,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_initiate_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {268, 233, 455, 250},                    /* widget size                    */
+    {348, 233, 535, 250},                    /* widget size                    */
     &main_screen_prompt_Start_define,        /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_initiate), /* control block */
@@ -4222,7 +4232,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_icon_robot_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {159, 151, 245, 250},                    /* widget size                    */
+    {239, 151, 325, 250},                    /* widget size                    */
     &main_screen_prompt_initiate_define,     /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_icon_robot), /* control block */
@@ -4246,7 +4256,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_4_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {86, 351, 109, 363},                     /* widget size                    */
+    {166, 351, 189, 363},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_4), /* control block */
@@ -4270,7 +4280,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_5_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {138, 351, 161, 363},                    /* widget size                    */
+    {218, 351, 241, 363},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_5), /* control block */
@@ -4294,7 +4304,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_6_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {192, 351, 215, 363},                    /* widget size                    */
+    {272, 351, 295, 363},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_6), /* control block */
@@ -4318,7 +4328,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_pixelmap_button_4_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     (VOID (*)(GX_WIDGET *)) mode_button_draw, /* drawing function override     */
     GX_NULL,                                 /* event function override        */
-    {178, 333, 227, 382},                    /* widget size                    */
+    {258, 333, 307, 382},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     &main_screen_prompt_6_define,            /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_pixelmap_button_4), /* control block */
@@ -4342,7 +4352,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_pixelmap_button_3_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     (VOID (*)(GX_WIDGET *)) mode_button_draw, /* drawing function override     */
     GX_NULL,                                 /* event function override        */
-    {125, 333, 174, 382},                    /* widget size                    */
+    {205, 333, 254, 382},                    /* widget size                    */
     &main_screen_pixelmap_button_4_define,   /* next widget definition         */
     &main_screen_prompt_5_define,            /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_pixelmap_button_3), /* control block */
@@ -4366,7 +4376,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_pixelmap_button_2_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     (VOID (*)(GX_WIDGET *)) mode_button_draw, /* drawing function override     */
     GX_NULL,                                 /* event function override        */
-    {72, 333, 121, 382},                     /* widget size                    */
+    {152, 333, 201, 382},                    /* widget size                    */
     &main_screen_pixelmap_button_3_define,   /* next widget definition         */
     &main_screen_prompt_4_define,            /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_pixelmap_button_2), /* control block */
@@ -4390,7 +4400,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_3_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {28, 336, 59, 348},                      /* widget size                    */
+    {108, 336, 139, 348},                    /* widget size                    */
     &main_screen_pixelmap_button_2_define,   /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_3), /* control block */
@@ -4414,7 +4424,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_1_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {300, 350, 327, 362},                    /* widget size                    */
+    {380, 350, 407, 362},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_1), /* control block */
@@ -4438,7 +4448,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_2_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {351, 350, 383, 362},                    /* widget size                    */
+    {431, 350, 463, 362},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_2), /* control block */
@@ -4462,7 +4472,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_10_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {409, 350, 433, 362},                    /* widget size                    */
+    {489, 350, 513, 362},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_10), /* control block */
@@ -4486,7 +4496,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_pixelmap_button_10_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     (VOID (*)(GX_WIDGET *)) mode_button_draw, /* drawing function override     */
     GX_NULL,                                 /* event function override        */
-    {397, 332, 446, 381},                    /* widget size                    */
+    {477, 332, 526, 381},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     &main_screen_prompt_10_define,           /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_pixelmap_button_10), /* control block */
@@ -4510,7 +4520,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_pixelmap_button_1_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     (VOID (*)(GX_WIDGET *)) mode_button_draw, /* drawing function override     */
     GX_NULL,                                 /* event function override        */
-    {343, 332, 392, 381},                    /* widget size                    */
+    {423, 332, 472, 381},                    /* widget size                    */
     &main_screen_pixelmap_button_10_define,  /* next widget definition         */
     &main_screen_prompt_2_define,            /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_pixelmap_button_1), /* control block */
@@ -4534,7 +4544,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_pixelmap_button_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     (VOID (*)(GX_WIDGET *)) mode_button_draw, /* drawing function override     */
     GX_NULL,                                 /* event function override        */
-    {290, 332, 339, 381},                    /* widget size                    */
+    {370, 332, 419, 381},                    /* widget size                    */
     &main_screen_pixelmap_button_1_define,   /* next widget definition         */
     &main_screen_prompt_1_define,            /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_pixelmap_button), /* control block */
@@ -4558,7 +4568,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {243, 335, 280, 347},                    /* widget size                    */
+    {323, 335, 360, 347},                    /* widget size                    */
     &main_screen_pixelmap_button_define,     /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt), /* control block  */
@@ -4582,7 +4592,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_12_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {518, 350, 545, 362},                    /* widget size                    */
+    {598, 350, 625, 362},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_12), /* control block */
@@ -4606,7 +4616,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_13_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {568, 350, 600, 362},                    /* widget size                    */
+    {648, 350, 680, 362},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_13), /* control block */
@@ -4630,7 +4640,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_pixelmap_button_12_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     (VOID (*)(GX_WIDGET *)) mode_button_draw, /* drawing function override     */
     GX_NULL,                                 /* event function override        */
-    {560, 332, 609, 381},                    /* widget size                    */
+    {640, 332, 689, 381},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     &main_screen_prompt_13_define,           /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_pixelmap_button_12), /* control block */
@@ -4654,7 +4664,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_pixelmap_button_11_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     (VOID (*)(GX_WIDGET *)) mode_button_draw, /* drawing function override     */
     GX_NULL,                                 /* event function override        */
-    {507, 332, 556, 381},                    /* widget size                    */
+    {587, 332, 636, 381},                    /* widget size                    */
     &main_screen_pixelmap_button_12_define,  /* next widget definition         */
     &main_screen_prompt_12_define,           /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_pixelmap_button_11), /* control block */
@@ -4678,7 +4688,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_11_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {461, 335, 498, 347},                    /* widget size                    */
+    {541, 335, 578, 347},                    /* widget size                    */
     &main_screen_pixelmap_button_11_define,  /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_11), /* control block */
@@ -4702,7 +4712,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_window_timer_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {454, 326, 614, 382},                    /* widget size                    */
+    {534, 326, 694, 382},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     &main_screen_prompt_11_define,           /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_window_timer), /* control block */
@@ -4726,7 +4736,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_window_speed_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {237, 327, 449, 383},                    /* widget size                    */
+    {317, 327, 529, 383},                    /* widget size                    */
     &main_screen_window_timer_define,        /* next widget definition         */
     &main_screen_prompt_define,              /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_window_speed), /* control block */
@@ -4750,7 +4760,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_window_mode_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {19, 327, 231, 383},                     /* widget size                    */
+    {99, 327, 311, 383},                     /* widget size                    */
     &main_screen_window_speed_define,        /* next widget definition         */
     &main_screen_prompt_3_define,            /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_window_mode), /* control block */
@@ -4774,7 +4784,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_button_start_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {93, 83, 545, 318},                      /* widget size                    */
+    {173, 83, 625, 318},                     /* widget size                    */
     &main_screen_window_mode_define,         /* next widget definition         */
     &main_screen_icon_robot_define,          /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_button_start), /* control block */
@@ -4798,7 +4808,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_initiate_1_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {405, 37, 565, 54},                      /* widget size                    */
+    {580, 31, 740, 48},                      /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_initiate_1), /* control block */
@@ -4822,7 +4832,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_start_window_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {0, 82, 639, 384},                       /* widget size                    */
+    {80, 82, 719, 384},                      /* widget size                    */
     &main_screen_prompt_initiate_1_define,   /* next widget definition         */
     &main_screen_button_start_define,        /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_start_window), /* control block */
@@ -4846,7 +4856,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_button_window_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {14, 384, 477, 470},                     /* widget size                    */
+    {100, 384, 563, 470},                    /* widget size                    */
     &main_screen_start_window_define,        /* next widget definition         */
     &main_screen_button_inspecting_define,   /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_button_window), /* control block */
@@ -4870,7 +4880,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_button_on_off_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {459, 392, 619, 454},                    /* widget size                    */
+    {620, 392, 780, 454},                    /* widget size                    */
     &main_screen_button_window_define,       /* next widget definition         */
     &main_screen_prompt_on_off_define,       /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_button_on_off), /* control block */
@@ -4918,7 +4928,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_button_home_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {570, 24, 607, 60},                      /* widget size                    */
+    {745, 18, 782, 54},                      /* widget size                    */
     &main_screen_expresslogic_label_define,  /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_button_home), /* control block */
@@ -4930,7 +4940,7 @@ GX_ANIMATION_INFO main_screen_animation_1 = {
     (GX_WIDGET *) &main_screen.main_screen_start_window,
     GX_NULL,
     GX_ANIMATION_TRANSLATE, 0, 0, 1,
-    {22, 327}, {-213, 327}, 255, 0, 20
+    {99, 327}, {-213, 327}, 255, 0, 20
 };
 
 
@@ -4939,7 +4949,7 @@ GX_ANIMATION_INFO main_screen_animation_2 = {
     (GX_WIDGET *) &main_screen.main_screen_start_window,
     GX_NULL,
     GX_ANIMATION_TRANSLATE, ANI_ID_START_BTN_SLIDE_OUT, 0, 1,
-    {93, 83}, {-453, 83}, 255, 0, 20
+    {173, 83}, {-453, 83}, 255, 0, 20
 };
 
 
@@ -4948,7 +4958,7 @@ GX_ANIMATION_INFO main_screen_animation_3 = {
     (GX_WIDGET *) &main_screen.main_screen_start_window,
     GX_NULL,
     GX_ANIMATION_TRANSLATE, 0, 0, 1,
-    {458, 327}, {640, 327}, 255, 0, 20
+    {534, 327}, {800, 327}, 255, 0, 20
 };
 
 
@@ -4957,7 +4967,7 @@ GX_ANIMATION_INFO main_screen_animation_4 = {
     (GX_WIDGET *) &main_screen.main_screen_start_window,
     GX_NULL,
     GX_ANIMATION_TRANSLATE|GX_ANIMATION_DETACH, 0, 0, 1,
-    {240, 327}, {240, 327}, 255, 0, 20
+    {317, 327}, {317, 327}, 255, 0, 20
 };
 
 
@@ -4966,7 +4976,7 @@ GX_ANIMATION_INFO main_screen_animation_5 = {
     (GX_WIDGET *) &main_screen.main_screen_start_window,
     GX_NULL,
     GX_ANIMATION_TRANSLATE, ANI_ID_MODE_WIN_SLIDE_IN, 0, 1,
-    {-213, 327}, {22, 327}, 0, 255, 20
+    {-213, 327}, {99, 327}, 0, 255, 20
 };
 
 
@@ -4975,7 +4985,7 @@ GX_ANIMATION_INFO main_screen_animation_6 = {
     (GX_WIDGET *) &main_screen.main_screen_start_window,
     GX_NULL,
     GX_ANIMATION_TRANSLATE, ANI_ID_SPEED_WIN_FADE_IN, 0, 1,
-    {240, 327}, {240, 327}, 0, 255, 20
+    {317, 327}, {317, 327}, 0, 255, 20
 };
 
 
@@ -4984,7 +4994,7 @@ GX_ANIMATION_INFO main_screen_animation_7 = {
     (GX_WIDGET *) &main_screen.main_screen_start_window,
     GX_NULL,
     GX_ANIMATION_TRANSLATE, ANI_ID_START_BTN_SLIDE_IN, 0, 1,
-    {-453, 83}, {93, 83}, 0, 255, 20
+    {-453, 83}, {173, 83}, 0, 255, 20
 };
 
 
@@ -4993,7 +5003,7 @@ GX_ANIMATION_INFO main_screen_animation_8 = {
     (GX_WIDGET *) &main_screen.main_screen_start_window,
     GX_NULL,
     GX_ANIMATION_TRANSLATE, ANI_ID_TIMER_WIN_SLIDE_IN, 0, 1,
-    {640, 327}, {458, 327}, 0, 255, 20
+    {800, 327}, {534, 327}, 0, 255, 20
 };
 
 
@@ -5051,7 +5061,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_define =
     gx_studio_window_create,                 /* create function                */
     (VOID (*)(GX_WIDGET *)) main_screen_draw, /* drawing function override     */
     (UINT (*)(GX_WIDGET *, GX_EVENT *)) gx_studio_main_screen_event_process, /* event function override */
-    {0, 0, 639, 479},                        /* widget size                    */
+    {0, 0, 799, 479},                        /* widget size                    */
     GX_NULL,                                 /* next widget                    */
     &main_screen_button_home_define,         /* child widget                   */
     0,                                       /* control block                  */

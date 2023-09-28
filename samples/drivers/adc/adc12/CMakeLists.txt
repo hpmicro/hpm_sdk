@@ -7,5 +7,6 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(adc12_example)
 
+#sdk_compile_definitions(-D__ADC12_USE_SW_TRIG)
 sdk_app_src(src/adc12.c)
 generate_ses_project()

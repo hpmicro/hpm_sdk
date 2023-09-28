@@ -1,4 +1,4 @@
-# Tinyusb Communication
+# Tinyusb
 
 ```{eval-rst}
 .. toctree::

@@ -556,9 +556,12 @@
 /* TSNS base pointer */
 #define HPM_TSNS ((TSNS_Type *) HPM_TSNS_BASE)
 
+#include "hpm_bacc_regs.h"
 /* Address of BACC instances */
 /* BACC base address */
 #define HPM_BACC_BASE (0xF5000000UL)
+/* BACC base pointer */
+#define HPM_BACC ((BACC_Type *) HPM_BACC_BASE)
 
 #include "hpm_bpor_regs.h"
 /* Address of BPOR instances */

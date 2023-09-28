@@ -1,10 +1,10 @@
-# USB AUDIO V2 MICROPHONE
+# CherryUSB Audio V2 Microphone
 
 ## 概述
 
-本示例工程展示USB AUDIO V2麦克风设备。
+本示例工程展示USB Audio V2麦克风设备。
 
-- PC可以看到一个CHERRY USB麦克风设备。
+- PC可以看到一个CherryUSB麦克风设备。
 
 ## 硬件设置
 

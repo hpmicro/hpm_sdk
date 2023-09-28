@@ -6,17 +6,19 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
+#include <stdio.h>
+#include "netconf.h"
+#include "hpm_common.h"
+
 #include "lwip/mem.h"
 #include "lwip/memp.h"
 #include "lwip/tcp.h"
 #include "lwip/tcpip.h"
 #include "lwip/udp.h"
-#include "netif/etharp.h"
 #include "lwip/dhcp.h"
+#include "lwip/netifapi.h"
+#include "netif/etharp.h"
 #include "ethernetif.h"
-#include "netconf.h"
-#include <stdio.h>
-#include "hpm_common.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -64,35 +66,17 @@ void LwIP_Init(void)
     IP4_ADDR(&gw, GW_ADDR0, GW_ADDR1, GW_ADDR2, GW_ADDR3);
 #endif
 
-    /* - netif_add(struct netif *netif, struct ip_addr *ipaddr,
-    struct ip_addr *netmask, struct ip_addr *gw,
-    void *state, err_t (* init)(struct netif *netif),
-    err_t (* input)(struct pbuf *p, struct netif *netif))
+    netifapi_netif_add(&gnetif, &ipaddr, &netmask, &gw, NULL, &ethernetif_init, &tcpip_input);
+    netifapi_netif_set_default(&gnetif);
+    netifapi_netif_set_up(&gnetif);
 
-    Adds your network interface to the netif_list. Allocate a struct
-    netif and pass a pointer to this structure as the first argument.
-    Give pointers to cleared ip_addr structures when using DHCP,
-    or fill them with sane numbers otherwise. The state pointer may be NULL.
-
-    The init function pointer must point to a initialization function for
-    your ethernet netif interface. The following code illustrates it's use.*/
-    netif_add(&gnetif, &ipaddr, &netmask, &gw, NULL, &ethernetif_init, &tcpip_input);
-
-    /*  Registers the default network interface.*/
-    netif_set_default(&gnetif);
-
-    /* Set Ethernet link flag */
-    gnetif.flags |= NETIF_FLAG_LINK_UP;
-
-    /* When the netif is fully configured this function must be called.*/
-    netif_set_up(&gnetif);
 #if __ENABLE_DHCP
     DHCP_state = DHCP_START;
 #else
-	printf("\r\n	Static IP address	\r\n");
-	printf("IP: %d.%d.%d.%d\r\n", IP_ADDR0, IP_ADDR1, IP_ADDR2, IP_ADDR3);
-	printf("NETMASK: %d.%d.%d.%d\r\n", NETMASK_ADDR0, NETMASK_ADDR1, NETMASK_ADDR2, NETMASK_ADDR3);
-	printf("Gateway: %d.%d.%d.%d\r\n", GW_ADDR0, GW_ADDR1, GW_ADDR2, GW_ADDR3);
+    printf("\r\n	Static IP address	\r\n");
+    printf("IP: %d.%d.%d.%d\r\n", IP_ADDR0, IP_ADDR1, IP_ADDR2, IP_ADDR3);
+    printf("NETMASK: %d.%d.%d.%d\r\n", NETMASK_ADDR0, NETMASK_ADDR1, NETMASK_ADDR2, NETMASK_ADDR3);
+    printf("Gateway: %d.%d.%d.%d\r\n", GW_ADDR0, GW_ADDR1, GW_ADDR2, GW_ADDR3);
 #endif /* __ENABLE_DHCP */
 }
 
@@ -220,6 +204,6 @@ void user_notification(struct netif *netif)
         printf("NETMASK  : %d.%d.%d.%d\n", NETMASK_ADDR0, NETMASK_ADDR1, NETMASK_ADDR2, NETMASK_ADDR3);
         printf("Gateway  : %d.%d.%d.%d\n", GW_ADDR0, GW_ADDR1, GW_ADDR2, GW_ADDR3);
     } else {
-        printf("The network cable is not connected!\n");
+        printf("The network interface card is not ready!\n");
     }
 }

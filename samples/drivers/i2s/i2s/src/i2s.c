@@ -84,6 +84,7 @@ void test_dao(const uint8_t *audio,
     }
     dao_init(HPM_DAO, &dao_config);
 
+    i2s_start(DAO_I2S);
     dao_start(HPM_DAO);
 
     for (uint8_t k = 0; k < loop_count; k++) {
@@ -152,6 +153,8 @@ void test_pdm_to_dao(float volume_scale)
     dao_get_default_config(HPM_DAO, &dao_config);
     dao_init(HPM_DAO, &dao_config);
 
+    i2s_start(PDM_I2S);
+    i2s_start(DAO_I2S);
     pdm_start(HPM_PDM);
     dao_start(HPM_DAO);
 

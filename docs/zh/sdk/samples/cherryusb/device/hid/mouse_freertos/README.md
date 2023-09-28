@@ -1,4 +1,4 @@
-# USB HID 鼠标(FreeRTOS)
+# CherryUSB HID 鼠标(FreeRTOS)
 
 ## 概述
 

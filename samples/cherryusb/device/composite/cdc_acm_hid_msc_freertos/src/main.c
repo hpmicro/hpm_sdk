@@ -7,10 +7,12 @@
 /* FreeRTOS kernel includes. */
 #include "FreeRTOS.h"
 #include "task.h"
+#include "usb_osal.h"
 
 #include <stdio.h>
 #include "board.h"
 #include "hpm_gpio_drv.h"
+#include "usb_config.h"
 
 #define LED_FLASH_PERIOD_IN_MS 300
 
@@ -37,7 +39,7 @@ static void task2(void *pvParameters)
 
     cdc_acm_data_send_with_dtr_test();
 
-    vTaskDelete(NULL);
+    usb_osal_thread_delete(NULL);
 }
 
 int main(void)
@@ -48,19 +50,19 @@ int main(void)
     board_init_gpio_pins();
     gpio_set_pin_input(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN);
 
+    intc_set_irq_priority(CONFIG_HPM_USBD_IRQn, 2);
     board_timer_create(LED_FLASH_PERIOD_IN_MS, board_led_toggle);
 
     printf("cherry usb composite cdc_acm_hid_msc freertos sample.\n");
 
     cdc_acm_hid_msc_descriptor_init();
-
-    if (xTaskCreate(task1, "task1", configMINIMAL_STACK_SIZE + 256U, NULL, task1_PRIORITY, NULL) != pdPASS) {
+    if (usb_osal_thread_create("task1", 8192U, task1_PRIORITY, task1, NULL) == NULL) {
         printf("Task1 creation failed!.\n");
         for (;;) {
             ;
         }
     }
-    if (xTaskCreate(task2, "task2", configMINIMAL_STACK_SIZE + 256U, NULL, task2_PRIORITY, NULL) != pdPASS) {
+    if (usb_osal_thread_create("task2", 8192U, task2_PRIORITY, task2, NULL) == NULL) {
         printf("Task2 creation failed!.\n");
         for (;;) {
             ;

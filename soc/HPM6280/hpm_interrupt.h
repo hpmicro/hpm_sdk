@@ -7,8 +7,8 @@
 
 #ifndef HPM_INTERRUPT_H
 #define HPM_INTERRUPT_H
-#include "riscv/riscv_core.h"
 #include "hpm_common.h"
+#include "hpm_csr_drv.h"
 #include "hpm_plic_drv.h"
 
 /**
@@ -40,7 +40,7 @@ ATTR_ALWAYS_INLINE static inline void enable_global_irq(uint32_t mask)
  * @brief   Disable global IRQ with mask and return mstatus
  *
  * @param[in] mask interrupt mask to be disabled
- * @retval current mstatus value before irq disabled
+ * @retval current mstatus value before irq mask is disabled
  */
 ATTR_ALWAYS_INLINE static inline uint32_t disable_global_irq(uint32_t mask)
 {
@@ -137,7 +137,7 @@ ATTR_ALWAYS_INLINE static inline uint32_t disable_s_global_irq(uint32_t mask)
 }
 
 /**
- * @brief   Restore global IRQ with mask
+ * @brief   Restore global IRQ with mask for supervisor mode
  *
  * @param[in] mask interrupt mask to be restored
  */
@@ -779,25 +779,17 @@ ATTR_ALWAYS_INLINE static inline void uninstall_s_isr(uint32_t irq)
             csrr s3, mstatus \n");\
     SAVE_FPU_STATE(); \
     SAVE_DSP_CONTEXT(); \
-    __asm volatile ("\n\
-            c.li a5, 8\n\
-            csrs mstatus, a5\n"); \
+    __asm volatile("csrsi mstatus, 8"); \
 }
 
 /*
  * @brief Complete IRQ Handling
  */
 #define COMPLETE_IRQ_HANDLING_M(irq_num) { \
-    __asm volatile("\n\
-            lui a5, 0x1\n\
-            addi a5, a5, -2048\n\
-            csrc mie, a5\n");  \
-    __asm volatile("\n\
-            lui a4, 0xe4200\n");\
+    __asm volatile("csrci mstatus, 8"); \
+    __asm volatile("lui a4, 0xe4200"); \
     __asm volatile("li a3, %0" : : "i" (irq_num) :); \
-    __asm volatile("sw a3, 4(a4)\n\
-            fence io, io\n"); \
-    __asm volatile("csrs mie, a5"); \
+    __asm volatile("sw a3, 4(a4)"); \
 }
 
 /*
@@ -823,23 +815,14 @@ ATTR_ALWAYS_INLINE static inline void uninstall_s_isr(uint32_t irq)
             csrr s3, sstatus \n");\
     SAVE_FPU_STATE(); \
     SAVE_DSP_CONTEXT(); \
-    __asm volatile ("\n\
-            c.li a5, 8\n\
-            csrs sstatus, a5\n"); \
+    __asm volatile("csrsi sstatus, 2"); \
 }
 #define COMPLETE_IRQ_HANDLING_S(irq_num) {\
-    __asm volatile("\n\
-            lui a5, 0x1\n\
-            addi a5, a5, -2048\n\
-            csrc sie, a5\n");  \
-    __asm volatile("\n\
-            lui a4, 0xe4201\n");\
+    __asm volatile("csrci sstatus, 2"); \
+    __asm volatile("lui a4, 0xe4201"); \
     __asm volatile("li a3, %0" : : "i" (irq_num) :); \
-    __asm volatile("sw a3, 4(a4)\n\
-            fence io, io\n"); \
-    __asm volatile("csrs sie, a5"); \
+    __asm volatile("sw a3, 4(a4)"); \
 }
-
 
 /*
  * @brief Exit Nested IRQ Handling at supervisor mode
@@ -873,18 +856,6 @@ ATTR_ALWAYS_INLINE static inline void uninstall_s_isr(uint32_t irq)
         RESTORE_FCSR()                                  \
         RESTORE_UCODE()
 
-/*
- * @brief Nested IRQ exit macro : Restore CSRs
- * @param[in] irq Target interrupt number
- */
-#define NESTED_VPLIC_COMPLETE_INTERRUPT(irq)            \
-do {                                                    \
-    clear_csr(CSR_MIE, CSR_MIP_MEIP_MASK);                       \
-    __plic_complete_irq(HPM_PLIC_BASE, HPM_PLIC_TARGET_M_MODE, irq);  \
-    __asm volatile("fence io, io");                     \
-    set_csr(CSR_MIE, CSR_MIP_MEIP_MASK);                         \
-} while (0)
-
 #ifdef __cplusplus
 #define EXTERN_C extern "C"
 #else
@@ -913,6 +884,7 @@ void ISR_NAME_M(irq_num)(void) \
     COMPLETE_IRQ_HANDLING_M(irq_num);\
     EXIT_NESTED_IRQ_HANDLING_M();\
     RESTORE_CALLER_CONTEXT();\
+    __asm volatile("fence io, io");\
     __asm volatile("mret\n");\
 }
 
@@ -933,6 +905,7 @@ void ISR_NAME_S(irq_num)(void) {\
     COMPLETE_IRQ_HANDLING_S(irq_num);\
     EXIT_NESTED_IRQ_HANDLING_S();\
     RESTORE_CALLER_CONTEXT();\
+    __asm volatile("fence io, io");\
     __asm volatile("sret\n");\
 }
 

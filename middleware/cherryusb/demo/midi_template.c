@@ -1,6 +1,22 @@
 #include "usbd_core.h"
 #include "usb_midi.h"
 
+#define MIDI_OUT_EP 0x02
+#define MIDI_IN_EP  0x81
+
+#define USBD_VID           0x0d28
+#define USBD_PID           0x0404
+#define USBD_MAX_POWER     100
+#define USBD_LANGID_STRING 1033
+
+#define USB_CONFIG_SIZE (9 + 9 + 9 + 9 + 7 + MIDI_SIZEOF_JACK_DESC + 9 + 5 + 9 + 5)
+
+#ifdef CONFIG_USB_HS
+#define MIDI_EP_MPS 512
+#else
+#define MIDI_EP_MPS 64
+#endif
+
 const uint8_t midi_descriptor[] = {
     USB_DEVICE_DESCRIPTOR_INIT(USB_2_0, 0x00, 0x00, 0x00, USBD_VID, USBD_PID, 0x0100, 0x01),
     USB_CONFIG_DESCRIPTOR_INIT(USB_CONFIG_SIZE, 0x02, 0x01, USB_CONFIG_BUS_POWERED, USBD_MAX_POWER),
@@ -48,11 +64,11 @@ const uint8_t midi_descriptor[] = {
     // MIDI_OUT_JACK_DESCRIPTOR_INIT(MIDI_JACK_TYPE_EXTERNAL, 0x04, 0x01),
     MIDI_JACK_DESCRIPTOR_INIT(0x01),
     // OUT endpoint descriptor
-    0x09, 0x05, 0x02, 0x02, WBVAL(64), 0x00, 0x00, 0x00,
+    0x09, 0x05, MIDI_OUT_EP, 0x02, WBVAL(MIDI_EP_MPS), 0x00, 0x00, 0x00,
     0x05, 0x25, 0x01, 0x01, 0x01,
 
     // IN endpoint descriptor
-    0x09, 0x05, 0x81, 0x02, WBVAL(64), 0x00, 0x00, 0x00,
+    0x09, 0x05, MIDI_IN_EP, 0x02, WBVAL(MIDI_EP_MPS), 0x00, 0x00, 0x00,
     0x05, 0x25, 0x01, 0x01, 0x03,
 
     ///////////////////////////////////////
@@ -129,6 +145,31 @@ const uint8_t midi_descriptor[] = {
 #endif
     0x00
 };
+
+void usbd_event_handler(uint8_t event)
+{
+    switch (event) {
+        case USBD_EVENT_RESET:
+            break;
+        case USBD_EVENT_CONNECTED:
+            break;
+        case USBD_EVENT_DISCONNECTED:
+            break;
+        case USBD_EVENT_RESUME:
+            break;
+        case USBD_EVENT_SUSPEND:
+            break;
+        case USBD_EVENT_CONFIGURED:
+            break;
+        case USBD_EVENT_SET_REMOTE_WAKEUP:
+            break;
+        case USBD_EVENT_CLR_REMOTE_WAKEUP:
+            break;
+
+        default:
+            break;
+    }
+}
 
 void usbd_midi_bulk_out(uint8_t ep, uint32_t nbytes)
 {

@@ -63,8 +63,10 @@ enum {
 /* Macro Const Declaration */
 #define I2S_MCLK_FREQ_IN_HZ (24576000UL)
 
-#define DMA_MUX_CHANNEL_MIC     1U
-#define DMA_MUX_CHANNEL_SPEAKER 2U
+#define SPEAKER_DMA_CHANNEL 1U
+#define MIC_DMA_CHANNEL     2U
+#define SPEAKER_DMAMUX_CHANNEL    DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_HDMA, SPEAKER_DMA_CHANNEL)
+#define MIC_DMAMUX_CHANNEL        DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_HDMA, MIC_DMA_CHANNEL)
 
 #define PDM_I2S_CLK_NAME      clock_i2s0
 #define PDM_I2S_DATA_LINE     I2S_DATA_LINE_0
@@ -136,6 +138,7 @@ void pdm_config(void)
             ;
         }
     }
+    i2s_start(PDM_I2S);
 
     pdm_get_default_config(HPM_PDM, &pdm_config);
     pdm_init(HPM_PDM, &pdm_config);
@@ -164,6 +167,7 @@ void dao_config(void)
             ;
         }
     }
+    i2s_start(DAO_I2S);
 
     dao_get_default_config(HPM_DAO, &dao_config);
     dao_config.enable_mono_output = true;
@@ -538,8 +542,8 @@ void isr_dma(void)
     volatile uint32_t speaker_status;
     volatile uint32_t mic_status;
 
-    speaker_status = dma_check_transfer_status(BOARD_APP_HDMA, DMA_MUX_CHANNEL_SPEAKER);
-    mic_status = dma_check_transfer_status(BOARD_APP_HDMA, DMA_MUX_CHANNEL_MIC);
+    speaker_status = dma_check_transfer_status(BOARD_APP_HDMA, SPEAKER_DMA_CHANNEL);
+    mic_status = dma_check_transfer_status(BOARD_APP_HDMA, MIC_DMA_CHANNEL);
 
     if (0 != (speaker_status & DMA_CHANNEL_STATUS_TC)) {
         s_spk_dma_transfer_done = true;
@@ -566,11 +570,11 @@ void i2s_speaker_dma_cfg(uint32_t size, volatile uint32_t *ptr)
     ch_config.dst_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
     ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
 
-    if (status_success != dma_setup_channel(BOARD_APP_HDMA, DMA_MUX_CHANNEL_SPEAKER, &ch_config, true)) {
+    if (status_success != dma_setup_channel(BOARD_APP_HDMA, SPEAKER_DMA_CHANNEL, &ch_config, true)) {
         printf(" dma setup channel failed\n");
         return;
     }
-    dmamux_config(BOARD_APP_DMAMUX, DMA_MUX_CHANNEL_SPEAKER, DAO_I2S_TX_DMAMUX_SRC, true);
+    dmamux_config(BOARD_APP_DMAMUX, SPEAKER_DMAMUX_CHANNEL, DAO_I2S_TX_DMAMUX_SRC, true);
 }
 
 void i2s_pdm_dma_cfg(uint32_t size, uint32_t *ptr)
@@ -589,11 +593,11 @@ void i2s_pdm_dma_cfg(uint32_t size, uint32_t *ptr)
     ch_config.src_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
     ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
 
-    if (status_success != dma_setup_channel(BOARD_APP_HDMA, DMA_MUX_CHANNEL_MIC, &ch_config, true)) {
+    if (status_success != dma_setup_channel(BOARD_APP_HDMA, MIC_DMA_CHANNEL, &ch_config, true)) {
         printf(" dma setup channel failed\n");
         return;
     }
-    dmamux_config(BOARD_APP_DMAMUX, DMA_MUX_CHANNEL_MIC, PDM_I2S_RX_DMAMUX_SRC, true);
+    dmamux_config(BOARD_APP_DMAMUX, MIC_DMAMUX_CHANNEL, PDM_I2S_RX_DMAMUX_SRC, true);
 }
 
 void reinit_dao_i2s_cfg(uint32_t sample_rate, uint8_t audio_depth, uint8_t channel_num)
@@ -617,6 +621,7 @@ void reinit_dao_i2s_cfg(uint32_t sample_rate, uint8_t audio_depth, uint8_t chann
             ;
         }
     }
+    i2s_start(DAO_I2S);
 }
 
 /*---------------------------------------------------------------------*/

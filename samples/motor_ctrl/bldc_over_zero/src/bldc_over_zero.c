@@ -254,13 +254,13 @@ void init_trigger_mux(TRGM_Type *ptr)
     trgm_output_t trgm_output_cfg;
 
     trgm_output_cfg.invert = false;
-    trgm_output_cfg.type   = trgm_output_pulse_at_input_rising_edge;
+    trgm_output_cfg.type   = trgm_output_same_as_input;
     trgm_output_cfg.input  = BOARD_BLDC_TRIGMUX_IN_NUM;
     trgm_output_config(ptr, BOARD_BLDC_TRG_NUM, &trgm_output_cfg);
 
     /* trig0 p5 */
     trgm_output_cfg.invert = false;
-    trgm_output_cfg.type   = trgm_output_pulse_at_input_rising_edge;
+    trgm_output_cfg.type   = trgm_output_same_as_input;
     trgm_output_cfg.input  = BOARD_BLDC_TRIGMUX_IN_NUM;
     trgm_output_config(ptr, TRGM_TRGOCFG_TRGM_OUT5, &trgm_output_cfg);
     trgm_enable_io_output(ptr, 1 << TRGM_TRGOCFG_TRGM_OUT5);

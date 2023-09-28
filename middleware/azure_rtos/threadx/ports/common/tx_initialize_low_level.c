@@ -27,7 +27,6 @@ extern void __disable_interrupt(void);
 #define OS_MTIMECMP_BASE_ADDRESS (HPM_MCHTMR_BASE + 8UL)
 #define OS_CPU_CLOCK_HZ ((uint32_t)24000000)
 #define OS_TICK_RATE_HZ 100U
-const uint32_t isr_stack_top = (uint32_t)__threadx_irq_stack_top;
 uint64_t os_next_tic = 0ULL;
 const uint64_t *p_os_next_tic = &os_next_tic;
 volatile uint64_t *p_mchtmr_cmp_reg = NULL;

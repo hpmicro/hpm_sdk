@@ -1,4 +1,4 @@
-# USB HID 自定义传输
+# CherryUSB HID 自定义传输
 
 ## 概述
 

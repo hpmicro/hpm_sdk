@@ -10,7 +10,7 @@
 
 /*!< hidraw in endpoint */
 #define HIDRAW_IN_EP       0x81
-#define HIDRAW_IN_SIZE     64
+#define HIDRAW_IN_EP_SIZE  64
 #define HIDRAW_IN_INTERVAL 10
 
 /*!< hidraw out endpoint */
@@ -53,7 +53,7 @@ static const uint8_t hid_descriptor[] = {
     USB_DESCRIPTOR_TYPE_ENDPOINT, /* bDescriptorType: */
     HIDRAW_IN_EP,                 /* bEndpointAddress: Endpoint Address (IN) */
     0x03,                         /* bmAttributes: Interrupt endpoint */
-    WBVAL(HIDRAW_IN_SIZE),        /* wMaxPacketSize: 4 Byte max */
+    WBVAL(HIDRAW_IN_EP_SIZE),     /* wMaxPacketSize: 4 Byte max */
     HIDRAW_IN_INTERVAL,           /* bInterval: Polling Interval */
     /******************** Descriptor of Custom out endpoint ********************/
     0x07,                         /* bLength: Endpoint Descriptor size */
@@ -162,8 +162,8 @@ static const uint8_t hid_custom_report_desc[HID_CUSTOM_REPORT_DESC_SIZE] = {
     0xC0 /*     END_COLLECTION	             */
 };
 
-USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t read_buffer[64];
-USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t send_buffer[64];
+USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t read_buffer[HIDRAW_OUT_EP_SIZE];
+USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t send_buffer[HIDRAW_IN_EP_SIZE];
 
 #define HID_STATE_IDLE 0
 #define HID_STATE_BUSY 1
@@ -171,10 +171,31 @@ USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t send_buffer[64];
 /*!< hid state ! Data can be sent only when state is idle  */
 static volatile uint8_t custom_state;
 
-void usbd_configure_done_callback(void)
+void usbd_event_handler(uint8_t event)
 {
-    /* setup first out ep read transfer */
-    usbd_ep_start_read(HIDRAW_OUT_EP, read_buffer, 64);
+    switch (event) {
+    case USBD_EVENT_RESET:
+        break;
+    case USBD_EVENT_CONNECTED:
+        break;
+    case USBD_EVENT_DISCONNECTED:
+        break;
+    case USBD_EVENT_RESUME:
+        break;
+    case USBD_EVENT_SUSPEND:
+        break;
+    case USBD_EVENT_CONFIGURED:
+        /* setup first out ep read transfer */
+        usbd_ep_start_read(HIDRAW_OUT_EP, read_buffer, HIDRAW_OUT_EP_SIZE);
+        break;
+    case USBD_EVENT_SET_REMOTE_WAKEUP:
+        break;
+    case USBD_EVENT_CLR_REMOTE_WAKEUP:
+        break;
+
+    default:
+        break;
+    }
 }
 
 static void usbd_hid_custom_in_callback(uint8_t ep, uint32_t nbytes)
@@ -187,7 +208,7 @@ static void usbd_hid_custom_out_callback(uint8_t ep, uint32_t nbytes)
 {
     USB_LOG_RAW("actual out len:%d\r\n", nbytes);
     usbd_ep_start_read(HIDRAW_OUT_EP, read_buffer, 64);
-    read_buffer[0] = 0x02;    /* IN: report id */
+    read_buffer[0] = 0x02; /* IN: report id */
     usbd_ep_start_write(HIDRAW_IN_EP, read_buffer, nbytes);
 }
 
@@ -209,6 +230,7 @@ static struct usbd_endpoint custom_out_ep = {
  * @retval           none
  */
 struct usbd_interface intf0;
+
 void hid_custom_init(void)
 {
     usbd_desc_register(hid_descriptor);

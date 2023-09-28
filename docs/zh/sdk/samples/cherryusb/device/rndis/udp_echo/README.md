@@ -1,8 +1,8 @@
-# USB RNDIS DEVICE - UDP ECHO
+# CherryUSB RNDIS Device - UDP Echo
 
 ## 概述
 
-本示例工程展示USB RNDIS设备实现UDP ECHO
+本示例工程展示USB RNDIS设备实现UDP Echo。
 
 - PC 通过设备管理器查看得到一个枚举的网口，MAC地址为20:89:84:6A:96:AA。
 - 应用程序使用LWIP协议栈虚拟出了一个网口，MAC地址为20:89:84:6A:96:00，IP地址为192.168.7.1。实现了DHCP、DNS和UDP服务器，PC枚举出来的网口可通过UDP协议与虚拟出来的网口进行通讯。

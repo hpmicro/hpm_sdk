@@ -7,8 +7,7 @@
 
 /* FreeRTOS kernel includes. */
 #include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
+#include "usb_osal.h"
 #include "assert.h"
 
 #include "usbd_core.h"
@@ -22,11 +21,16 @@
 /*!< config descriptor size */
 #define USB_CONFIG_SIZE (9 + CDC_RNDIS_DESCRIPTOR_LEN)
 
+#ifdef CONFIG_USB_HS
+#define CDC_MAX_MPS 512
+#else
+#define CDC_MAX_MPS 64
+#endif
 /*!< global descriptor */
 static const uint8_t cdc_descriptor[] = {
     USB_DEVICE_DESCRIPTOR_INIT(USB_2_0, 0xEF, 0x02, 0x01, USBD_VID, USBD_PID, 0x0100, 0x01),
     USB_CONFIG_DESCRIPTOR_INIT(USB_CONFIG_SIZE, 0x02, 0x01, USB_CONFIG_BUS_POWERED, USBD_MAX_POWER),
-    CDC_RNDIS_DESCRIPTOR_INIT(0x00, CDC_INT_EP, CDC_OUT_EP, CDC_IN_EP, 0x02),
+    CDC_RNDIS_DESCRIPTOR_INIT(0x00, CDC_INT_EP, CDC_OUT_EP, CDC_IN_EP, CDC_MAX_MPS, 0x02),
     /*
      * string0 descriptor
      */
@@ -105,16 +109,35 @@ static const uint8_t cdc_descriptor[] = {
 
 static uint8_t rndis_mac[6] = { 0x20, 0x89, 0x84, 0x6A, 0x96, 0xAA };
 
-SemaphoreHandle_t sema_rndis_data;
-void usbd_rndis_data_recv(uint8_t *data, uint32_t len)
+usb_osal_sem_t sema_rndis_data;
+void usbd_rndis_data_recv_done(void)
 {
-    if (xSemaphoreGive(sema_rndis_data) != pdPASS) {
-        USB_LOG_ERR("error while %s\n", __func__);
-    }
+    usb_osal_sem_give(sema_rndis_data);
 }
 
-void usbd_configure_done_callback(void)
+void usbd_event_handler(uint8_t event)
 {
+    switch (event) {
+    case USBD_EVENT_RESET:
+        break;
+    case USBD_EVENT_CONNECTED:
+        break;
+    case USBD_EVENT_DISCONNECTED:
+        break;
+    case USBD_EVENT_RESUME:
+        break;
+    case USBD_EVENT_SUSPEND:
+        break;
+    case USBD_EVENT_CONFIGURED:
+        break;
+    case USBD_EVENT_SET_REMOTE_WAKEUP:
+        break;
+    case USBD_EVENT_CLR_REMOTE_WAKEUP:
+        break;
+
+    default:
+        break;
+    }
 }
 
 struct usbd_interface intf0;
@@ -122,7 +145,7 @@ struct usbd_interface intf1;
 
 void cdc_rndis_init(void)
 {
-    sema_rndis_data = xSemaphoreCreateCounting(100, 0);
+    sema_rndis_data = usb_osal_sem_create(0);
     assert(sema_rndis_data != NULL);
     usbd_desc_register(cdc_descriptor);
     usbd_add_interface(usbd_rndis_init_intf(&intf0, CDC_OUT_EP, CDC_IN_EP, CDC_INT_EP, rndis_mac));

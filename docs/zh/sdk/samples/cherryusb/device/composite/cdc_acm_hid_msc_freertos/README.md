@@ -1,4 +1,4 @@
-# USB组合类设备(FreeRTOS)
+# CherryUSB 组合类设备(FreeRTOS)
 
 ## 概述
 

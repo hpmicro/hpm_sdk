@@ -233,6 +233,8 @@ set(USBX_CORE_UTILITY
 	${CMAKE_CURRENT_LIST_DIR}/src/ux_utility_virtual_address.c
 )
 
+sdk_compile_definitions_ifdef(CONFIG_AZURE_RTOS_USBX_TRACE "-DTX_ENABLE_EVENT_TRACE=1")
+
 sdk_inc(inc)
 
 sdk_src(${USBX_CORE_SYSTEM_FILES})

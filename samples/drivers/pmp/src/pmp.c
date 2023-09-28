@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -21,16 +21,20 @@ const pmp_entry_t pmp_example_cfg_list[] = {
         /* Address range: 0-0x1FFF_FFFF */
         .pmp_cfg = { .val = PMP_CFG(READ_EN, WRITE_EN, EXECUTE_EN, ADDR_MATCH_NAPOT, REG_UNLOCK) },
         .pmp_addr = PMP_NAPOT_ADDR(0, SIZE_1MB * 512U),
+#if (!defined(PMP_SUPPORT_PMA)) || (defined(PMP_SUPPORT_PMA) && (PMP_SUPPORT_PMA == 1))
         .pma_cfg = { .val = PMA_CFG(ADDR_MATCH_NAPOT, MEM_TYPE_MEM_NON_CACHE_NON_BUF, AMO_EN) }, /* Non-Cacheable */
         .pma_addr = PMA_NAPOT_ADDR(0, SIZE_1MB * 512U),
+#endif
     },
 
     {
         /* Address range: 0x2000_0000 - 0x20001_FFFF */
         .pmp_cfg = { .val = PMP_CFG(READ_EN, WRITE_DIS, EXECUTE_EN, ADDR_MATCH_NAPOT, REG_UNLOCK) },
         .pmp_addr = PMP_NAPOT_ADDR(0x20000000UL, SIZE_1KB * 128U),
+#if (!defined(PMP_SUPPORT_PMA)) || (defined(PMP_SUPPORT_PMA) && (PMP_SUPPORT_PMA == 1))
         .pma_cfg = { .val = PMA_CFG(ADDR_MATCH_NAPOT, MEM_TYPE_MEM_WT_READ_ALLOC, AMO_EN) },/* Cacheable */
         .pma_addr = PMA_NAPOT_ADDR(0x20000000UL, SIZE_1KB * 128U),
+#endif
     },
     {
         /* Address range: 0x20002_0000 - 0x2FFF_FFFF */
@@ -41,15 +45,19 @@ const pmp_entry_t pmp_example_cfg_list[] = {
         /* Address range: 0x3000_0000 - 0x3FFF_FFFF */
         .pmp_cfg = { .val = PMP_CFG(READ_EN, WRITE_EN, EXECUTE_DIS, ADDR_MATCH_NAPOT, REG_UNLOCK) },
         .pmp_addr = PMP_NAPOT_ADDR(0x30000000UL, SIZE_1MB * 256U),
+#if (!defined(PMP_SUPPORT_PMA)) || (defined(PMP_SUPPORT_PMA) && (PMP_SUPPORT_PMA == 1))
         .pma_cfg = { .val = PMA_CFG(ADDR_MATCH_NAPOT, MEM_TYPE_DEV_NON_BUF, AMO_EN) }, /* Device memory */
         .pma_addr = PMA_NAPOT_ADDR(0x30000000UL, SIZE_1MB * 256U),
+#endif
     },
     {
         /* Address range: 0x4000_0000 - 0x4FFF_FFFF */
         .pmp_cfg = { .val = PMP_CFG(READ_EN, WRITE_EN, EXECUTE_EN, ADDR_MATCH_NAPOT, REG_UNLOCK) },
         .pmp_addr = PMP_NAPOT_ADDR(0x40000000UL, SIZE_1MB * 256U),
+#if (!defined(PMP_SUPPORT_PMA)) || (defined(PMP_SUPPORT_PMA) && (PMP_SUPPORT_PMA == 1))
         .pma_cfg = { .val = PMA_CFG(ADDR_MATCH_NAPOT, MEM_TYPE_MEM_WT_READ_ALLOC, AMO_EN) }, /* Write-through */
         .pma_addr = PMA_NAPOT_ADDR(0x40000000UL, SIZE_1MB * 256U),
+#endif
     },
     {
         /* Disable access from 0x5000_0000 - 0x7FFF_FFFF */
@@ -60,8 +68,10 @@ const pmp_entry_t pmp_example_cfg_list[] = {
         /* Address range: 0x8000_0000 - 0x9FFF_FFFF */
         .pmp_cfg = { .val = PMP_CFG(READ_EN, WRITE_EN, EXECUTE_EN, ADDR_MATCH_NAPOT, REG_UNLOCK) },
         .pmp_addr = PMP_NAPOT_ADDR(0x80000000UL, SIZE_1MB * 512U),
+#if (!defined(PMP_SUPPORT_PMA)) || (defined(PMP_SUPPORT_PMA) && (PMP_SUPPORT_PMA == 1))
         .pma_cfg = { .val = PMA_CFG(ADDR_MATCH_NAPOT, MEM_TYPE_MEM_WB_READ_WRITE_ALLOC, AMO_EN) }, /* Write-back */
         .pma_addr = PMA_NAPOT_ADDR(0x80000000UL, SIZE_1MB * 512U),
+#endif
     },
     /* Disable access from 0xA000_0000 - 0xDFFF_FFFF */
     {
@@ -72,8 +82,10 @@ const pmp_entry_t pmp_example_cfg_list[] = {
         /* Address range: 0xE000_0000 - 0xFFFF_FFFF */
         .pmp_cfg = { .val = PMP_CFG(READ_EN, WRITE_EN, EXECUTE_DIS, ADDR_MATCH_NAPOT, REG_UNLOCK) },
         .pmp_addr = PMP_NAPOT_ADDR(0xE0000000UL, SIZE_1MB * 512),
+#if (!defined(PMP_SUPPORT_PMA)) || (defined(PMP_SUPPORT_PMA) && (PMP_SUPPORT_PMA == 1))
         .pma_cfg = { .val = PMA_CFG(ADDR_MATCH_NAPOT, MEM_TYPE_DEV_NON_BUF, AMO_EN) }, /* Device memory */
         .pma_addr = PMA_NAPOT_ADDR(0xE0000000UL, SIZE_1MB * 512),
+#endif
     }};
 
 int main(void)

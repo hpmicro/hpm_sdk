@@ -6,7 +6,7 @@
 /*  GUIX Studio User Guide, or visit our web site at azure.com/rtos            */
 /*                                                                             */
 /*  GUIX Studio Revision 6.1.0.0                                               */
-/*  Date (dd.mm.yyyy): 13. 4.2023   Time (hh:mm): 10:18                        */
+/*  Date (dd.mm.yyyy): 15. 8.2023   Time (hh:mm): 16:26                        */
 /*******************************************************************************/
 
 
@@ -14,6 +14,17 @@
 #include <stddef.h>
 #include "demo_guix_car_infotainment_resources.h"
 #include "demo_guix_car_infotainment_specifications.h"
+
+#if (MAIN_DISPLAY_COLOR_FORMAT == GX_COLOR_FORMAT_565RGB)
+#   define MAIN_DISPLAY_PIXEL_SIZE  2
+#elif (MAIN_DISPLAY_COLOR_FORMAT == GX_COLOR_FORMAT_32ARGB)
+#   define MAIN_DISPLAY_PIXEL_SIZE  4
+#else
+#   error "Not supported color format"
+#endif
+
+
+#define MAIN_DISPLAY_MEMORY_SIZE (MAIN_DISPLAY_X_RESOLUTION * MAIN_DISPLAY_Y_RESOLUTION * MAIN_DISPLAY_PIXEL_SIZE)
 
 static GX_WIDGET *gx_studio_nested_widget_create(GX_BYTE *control, GX_CONST GX_STUDIO_WIDGET *definition, GX_WIDGET *parent);
 VIDEO_SCREEN_CONTROL_BLOCK video_screen;
@@ -39,13 +50,13 @@ GX_STUDIO_DISPLAY_INFO demo_guix_car_infotainment_display_table[1] =
     MAIN_DISPLAY_THEME_TABLE_SIZE,
     MAIN_DISPLAY_LANGUAGE_TABLE_SIZE,
     MAIN_DISPLAY_STRING_TABLE_SIZE,
-    800,                                     /* x resolution                   */
-    480,                                     /* y resolution                   */
+    MAIN_DISPLAY_X_RESOLUTION,               /* x resolution                   */
+    MAIN_DISPLAY_Y_RESOLUTION,               /* y resolution                   */
     &main_display_control_block,
     &main_display_canvas_control_block,
     &main_display_root_window,
-    GX_NULL,              /* canvas memory area             */
-    768000                                   /* canvas memory size in bytes    */
+    GX_NULL,                                 /* canvas memory area             */
+    MAIN_DISPLAY_MEMORY_SIZE                 /* canvas memory size in bytes    */
     }
 };
 
@@ -558,7 +569,7 @@ UINT gx_studio_template_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *contr
 }
 GX_WINDOW_PROPERTIES base_properties =
 {
-    GX_PIXELMAP_ID_BG_IMAGE                  /* wallpaper pixelmap id          */
+    GX_PIXELMAP_ID_BG_IMAGEX                 /* wallpaper pixelmap id          */
 };
 GX_ICON_PROPERTIES base_logo_properties =
 {
@@ -607,7 +618,7 @@ GX_CONST GX_STUDIO_WIDGET base_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     (UINT (*)(GX_WIDGET *, GX_EVENT *)) base_event_process, /* event function override */
-    {0, 0, 639, 479},                        /* widget size                    */
+    {0, 0, 799, 479},                        /* widget size                    */
     GX_NULL,                                 /* next widget                    */
     &base_logo_define,                       /* child widget                   */
     0,                                       /* control block                  */
@@ -956,7 +967,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_11_7_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {339, 284, 360, 312},                    /* widget size                    */
+    {399, 284, 420, 312},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_11_7), /* control block */
@@ -980,7 +991,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_11_6_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {318, 284, 338, 312},                    /* widget size                    */
+    {378, 284, 398, 312},                    /* widget size                    */
     &main_screen_prompt_11_7_define,         /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_11_6), /* control block */
@@ -1004,7 +1015,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_11_5_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {299, 284, 317, 312},                    /* widget size                    */
+    {359, 284, 377, 312},                    /* widget size                    */
     &main_screen_prompt_11_6_define,         /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_11_5), /* control block */
@@ -1028,7 +1039,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_11_4_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {282, 284, 298, 312},                    /* widget size                    */
+    {342, 284, 358, 312},                    /* widget size                    */
     &main_screen_prompt_11_5_define,         /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_11_4), /* control block */
@@ -1052,7 +1063,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_gear_position_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {270, 278, 369, 312},                    /* widget size                    */
+    {330, 278, 429, 312},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     &main_screen_prompt_11_4_define,         /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_gear_position), /* control block */
@@ -1076,7 +1087,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_MPH_label_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {302, 250, 336, 267},                    /* widget size                    */
+    {362, 250, 396, 267},                    /* widget size                    */
     &main_screen_gear_position_define,       /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_MPH_label), /* control block */
@@ -1100,7 +1111,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_MPH_val_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {282, 185, 357, 230},                    /* widget size                    */
+    {342, 185, 417, 230},                    /* widget size                    */
     &main_screen_MPH_label_define,           /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_MPH_val), /* control block */
@@ -1124,7 +1135,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_second_dot_down_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {474, 73, 478, 77},                      /* widget size                    */
+    {604, 71, 608, 75},                      /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_second_dot_down), /* control block */
@@ -1148,7 +1159,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_second_dot_up_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {474, 44, 478, 48},                      /* widget size                    */
+    {604, 42, 608, 46},                      /* widget size                    */
     &main_screen_second_dot_down_define,     /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_second_dot_up), /* control block */
@@ -1172,7 +1183,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_temperature_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {565, 63, 600, 91},                      /* widget size                    */
+    {695, 61, 730, 89},                      /* widget size                    */
     &main_screen_second_dot_up_define,       /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_temperature), /* control block */
@@ -1196,7 +1207,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_weather_icon_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {562, 27, 602, 55},                      /* widget size                    */
+    {692, 25, 732, 53},                      /* widget size                    */
     &main_screen_temperature_define,         /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_weather_icon), /* control block */
@@ -1220,7 +1231,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_time_minute_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {482, 36, 557, 81},                      /* widget size                    */
+    {612, 34, 687, 79},                      /* widget size                    */
     &main_screen_weather_icon_define,        /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_time_minute), /* control block */
@@ -1244,7 +1255,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_time_hour_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {396, 36, 471, 81},                      /* widget size                    */
+    {526, 34, 601, 79},                      /* widget size                    */
     &main_screen_time_minute_define,         /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_time_hour), /* control block */
@@ -1268,7 +1279,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {51, 416, 104, 433},                     /* widget size                    */
+    {101, 416, 154, 433},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt), /* control block  */
@@ -1292,7 +1303,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_icon_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {61, 390, 91, 408},                      /* widget size                    */
+    {111, 390, 141, 408},                    /* widget size                    */
     &main_screen_prompt_define,              /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_icon), /* control block    */
@@ -1316,7 +1327,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_1_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {146, 416, 203, 433},                    /* widget size                    */
+    {196, 416, 253, 433},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_1), /* control block */
@@ -1340,7 +1351,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_icon_1_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {158, 390, 193, 407},                    /* widget size                    */
+    {208, 390, 243, 407},                    /* widget size                    */
     &main_screen_prompt_1_define,            /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_icon_1), /* control block  */
@@ -1364,7 +1375,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_2_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {247, 416, 295, 433},                    /* widget size                    */
+    {297, 416, 345, 433},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_2), /* control block */
@@ -1388,7 +1399,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_icon_2_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {261, 390, 281, 410},                    /* widget size                    */
+    {311, 390, 331, 410},                    /* widget size                    */
     &main_screen_prompt_2_define,            /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_icon_2), /* control block  */
@@ -1412,7 +1423,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_3_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {347, 416, 390, 433},                    /* widget size                    */
+    {397, 416, 440, 433},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_3), /* control block */
@@ -1436,7 +1447,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_icon_3_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {359, 390, 377, 407},                    /* widget size                    */
+    {409, 390, 427, 407},                    /* widget size                    */
     &main_screen_prompt_3_define,            /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_icon_3), /* control block  */
@@ -1460,7 +1471,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_prompt_4_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {445, 416, 486, 433},                    /* widget size                    */
+    {495, 416, 536, 433},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_prompt_4), /* control block */
@@ -1484,7 +1495,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_icon_4_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {455, 391, 476, 409},                    /* widget size                    */
+    {505, 391, 526, 409},                    /* widget size                    */
     &main_screen_prompt_4_define,            /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_icon_4), /* control block  */
@@ -1508,7 +1519,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_video_btn_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     (VOID (*)(GX_WIDGET *)) custom_pixelmap_button_draw, /* drawing function override */
     GX_NULL,                                 /* event function override        */
-    {418, 376, 512, 465},                    /* widget size                    */
+    {468, 376, 562, 465},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     &main_screen_icon_4_define,              /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_video_btn), /* control block */
@@ -1532,7 +1543,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_audio_btn_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     (VOID (*)(GX_WIDGET *)) custom_pixelmap_button_draw, /* drawing function override */
     GX_NULL,                                 /* event function override        */
-    {321, 376, 415, 465},                    /* widget size                    */
+    {371, 376, 465, 465},                    /* widget size                    */
     &main_screen_video_btn_define,           /* next widget definition         */
     &main_screen_icon_3_define,              /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_audio_btn), /* control block */
@@ -1556,7 +1567,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_phone_btn_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     (VOID (*)(GX_WIDGET *)) custom_pixelmap_button_draw, /* drawing function override */
     GX_NULL,                                 /* event function override        */
-    {224, 376, 318, 465},                    /* widget size                    */
+    {274, 376, 368, 465},                    /* widget size                    */
     &main_screen_audio_btn_define,           /* next widget definition         */
     &main_screen_icon_2_define,              /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_phone_btn), /* control block */
@@ -1580,7 +1591,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_climate_btn_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     (VOID (*)(GX_WIDGET *)) custom_pixelmap_button_draw, /* drawing function override */
     GX_NULL,                                 /* event function override        */
-    {127, 376, 221, 465},                    /* widget size                    */
+    {177, 376, 271, 465},                    /* widget size                    */
     &main_screen_phone_btn_define,           /* next widget definition         */
     &main_screen_icon_1_define,              /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_climate_btn), /* control block */
@@ -1604,7 +1615,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_vehicle_btn_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     (VOID (*)(GX_WIDGET *)) custom_pixelmap_button_draw, /* drawing function override */
     GX_NULL,                                 /* event function override        */
-    {30, 376, 124, 465},                     /* widget size                    */
+    {80, 376, 174, 465},                     /* widget size                    */
     &main_screen_climate_btn_define,         /* next widget definition         */
     &main_screen_icon_define,                /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_vehicle_btn), /* control block */
@@ -1652,7 +1663,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_vehicle_mode_icon_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {516, 288, 559, 331},                    /* widget size                    */
+    {645, 287, 688, 330},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_vehicle_mode_icon), /* control block */
@@ -1676,7 +1687,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_on_off_text_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {552, 416, 573, 433},                    /* widget size                    */
+    {706, 417, 727, 434},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_on_off_text), /* control block */
@@ -1700,7 +1711,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_icon_5_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {554, 391, 570, 409},                    /* widget size                    */
+    {708, 392, 724, 410},                    /* widget size                    */
     &main_screen_on_off_text_define,         /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_icon_5), /* control block  */
@@ -1724,7 +1735,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_on_off_btn_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     (VOID (*)(GX_WIDGET *)) custom_pixelmap_button_draw, /* drawing function override */
     GX_NULL,                                 /* event function override        */
-    {515, 376, 609, 465},                    /* widget size                    */
+    {669, 377, 763, 466},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     &main_screen_icon_5_define,              /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_on_off_btn), /* control block */
@@ -1748,7 +1759,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_radial_slider_define =
     gx_studio_radial_slider_create,          /* create function                */
     (VOID (*)(GX_WIDGET *)) radial_slider_draw, /* drawing function override   */
     GX_NULL,                                 /* event function override        */
-    {179, 99, 460, 351},                     /* widget size                    */
+    {239, 99, 520, 351},                     /* widget size                    */
     &main_screen_on_off_btn_define,          /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_radial_slider), /* control block */
@@ -1772,7 +1783,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_vehicle_mode_button_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {478, 250, 597, 369},                    /* widget size                    */
+    {607, 249, 726, 368},                    /* widget size                    */
     &main_screen_radial_slider_define,       /* next widget definition         */
     &main_screen_vehicle_mode_icon_define,   /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_vehicle_mode_button), /* control block */
@@ -1796,7 +1807,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_vehicle_mode_text_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {483, 233, 596, 261},                    /* widget size                    */
+    {612, 232, 725, 260},                    /* widget size                    */
     &main_screen_vehicle_mode_button_define, /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_vehicle_mode_text), /* control block */
@@ -1964,7 +1975,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_btn_window_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {15, 375, 514, 466},                     /* widget size                    */
+    {65, 375, 564, 466},                     /* widget size                    */
     &main_screen_remain_miles_define,        /* next widget definition         */
     &main_screen_vehicle_btn_define,         /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_btn_window), /* control block */
@@ -1988,7 +1999,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_weather_win_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {396, 22, 610, 91},                      /* widget size                    */
+    {526, 20, 740, 89},                      /* widget size                    */
     &main_screen_btn_window_define,          /* next widget definition         */
     &main_screen_time_hour_define,           /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_weather_win), /* control block */
@@ -2012,7 +2023,7 @@ GX_CONST GX_STUDIO_WIDGET main_screen_speedometer_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {197, 109, 442, 366},                    /* widget size                    */
+    {257, 109, 502, 366},                    /* widget size                    */
     &main_screen_weather_win_define,         /* next widget definition         */
     &main_screen_MPH_val_define,             /* child widget definition        */
     offsetof(MAIN_SCREEN_CONTROL_BLOCK, main_screen_speedometer), /* control block */
@@ -2275,7 +2286,7 @@ GX_CONST GX_STUDIO_WIDGET screen_base_home_btn_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {544, 23, 608, 87},                      /* widget size                    */
+    {719, 21, 783, 85},                      /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(SCREEN_BASE_CONTROL_BLOCK, screen_base_home_btn), /* control block */
@@ -2337,11 +2348,11 @@ GX_TEMPLATE_PROPERTIES video_screen_properties =
 };
 GX_WINDOW_PROPERTIES video_screen_window_1_properties =
 {
-    GX_PIXELMAP_ID_VIDEO_BG_BOTTOM           /* wallpaper pixelmap id          */
+    GX_PIXELMAP_ID_VIDEO_BG_BOTTOMY          /* wallpaper pixelmap id          */
 };
 GX_WINDOW_PROPERTIES video_screen_video_play_progress_bar_bg_properties =
 {
-    GX_PIXELMAP_ID_VIDEO_PROGRESS_BG         /* wallpaper pixelmap id          */
+    GX_PIXELMAP_ID_VIDEO_PROGRESS_BGX        /* wallpaper pixelmap id          */
 };
 GX_PROGRESS_BAR_INFO video_screen_video_play_progress_bar_properties =
 {
@@ -2352,7 +2363,7 @@ GX_PROGRESS_BAR_INFO video_screen_video_play_progress_bar_properties =
     GX_COLOR_ID_TEXT,                        /* normal text color              */
     GX_COLOR_ID_SELECTED_TEXT,               /* selected text color            */
     GX_COLOR_ID_DISABLED_TEXT,               /* disabled text color            */
-    GX_PIXELMAP_ID_VIDEO_PROGRESS_ACTIVE     /* fill pixelmap                  */
+    GX_PIXELMAP_ID_VIDEO_PROGRESS_ACTIVEX    /* fill pixelmap                  */
 };
 GX_PIXELMAP_BUTTON_PROPERTIES video_screen_play_btn_small_properties =
 {
@@ -2434,7 +2445,7 @@ GX_CONST GX_STUDIO_WIDGET video_screen_second_colon_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {549, 417, 561, 458},                    /* widget size                    */
+    {730, 421, 742, 462},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(VIDEO_SCREEN_CONTROL_BLOCK, video_screen_second_colon), /* control block */
@@ -2458,7 +2469,7 @@ GX_CONST GX_STUDIO_WIDGET video_screen_second_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {558, 420, 611, 465},                    /* widget size                    */
+    {739, 424, 792, 469},                    /* widget size                    */
     &video_screen_second_colon_define,       /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(VIDEO_SCREEN_CONTROL_BLOCK, video_screen_second), /* control block */
@@ -2482,7 +2493,7 @@ GX_CONST GX_STUDIO_WIDGET video_screen_minute_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {499, 420, 552, 465},                    /* widget size                    */
+    {680, 424, 733, 469},                    /* widget size                    */
     &video_screen_second_define,             /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(VIDEO_SCREEN_CONTROL_BLOCK, video_screen_minute), /* control block */
@@ -2578,7 +2589,7 @@ GX_CONST GX_STUDIO_WIDGET video_screen_play_btn_small_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {300, 425, 339, 464},                    /* widget size                    */
+    {370, 425, 409, 464},                    /* widget size                    */
     &video_screen_pixelmap_button_7_define,  /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(VIDEO_SCREEN_CONTROL_BLOCK, video_screen_play_btn_small), /* control block */
@@ -2602,7 +2613,7 @@ GX_CONST GX_STUDIO_WIDGET video_screen_video_play_progress_bar_define =
     gx_studio_progress_bar_create,           /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {39, 404, 602, 407},                     /* widget size                    */
+    {25, 404, 774, 407},                     /* widget size                    */
     &video_screen_play_btn_small_define,     /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(VIDEO_SCREEN_CONTROL_BLOCK, video_screen_video_play_progress_bar), /* control block */
@@ -2626,7 +2637,7 @@ GX_CONST GX_STUDIO_WIDGET video_screen_video_play_progress_bar_bg_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {39, 404, 604, 409},                     /* widget size                    */
+    {25, 404, 774, 409},                     /* widget size                    */
     &video_screen_video_play_progress_bar_define, /* next widget definition    */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(VIDEO_SCREEN_CONTROL_BLOCK, video_screen_video_play_progress_bar_bg), /* control block */
@@ -2650,7 +2661,7 @@ GX_CONST GX_STUDIO_WIDGET video_screen_play_btn_big_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {263, 155, 394, 297},                    /* widget size                    */
+    {341, 163, 472, 305},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(VIDEO_SCREEN_CONTROL_BLOCK, video_screen_play_btn_big), /* control block */
@@ -2674,7 +2685,7 @@ GX_CONST GX_STUDIO_WIDGET video_screen_play_btn_big_win_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {232, 139, 406, 313},                    /* widget size                    */
+    {310, 147, 484, 321},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     &video_screen_play_btn_big_define,       /* child widget definition        */
     offsetof(VIDEO_SCREEN_CONTROL_BLOCK, video_screen_play_btn_big_win), /* control block */
@@ -2698,7 +2709,7 @@ GX_CONST GX_STUDIO_WIDGET video_screen_window_1_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {0, 396, 639, 479},                      /* widget size                    */
+    {0, 396, 799, 479},                      /* widget size                    */
     &video_screen_play_btn_big_win_define,   /* next widget definition         */
     &video_screen_video_play_progress_bar_bg_define, /* child widget definition */
     offsetof(VIDEO_SCREEN_CONTROL_BLOCK, video_screen_window_1), /* control block */
@@ -2963,7 +2974,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_right_progress_bar_define =
     gx_studio_progress_bar_create,           /* create function                */
     GX_NULL,                                 /* drawing function override      */
     (UINT (*)(GX_WIDGET *, GX_EVENT *)) custom_progress_bar_event_process, /* event function override */
-    {557, 171, 594, 302},                    /* widget size                    */
+    {666, 179, 703, 310},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_right_progress_bar), /* control block */
@@ -2987,7 +2998,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_prompt_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {592, 131, 598, 143},                    /* widget size                    */
+    {701, 139, 707, 151},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_prompt), /* control block */
@@ -3011,7 +3022,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_right_progress_val_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {557, 137, 592, 165},                    /* widget size                    */
+    {666, 145, 701, 173},                    /* widget size                    */
     &climate_screen_prompt_define,           /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_right_progress_val), /* control block */
@@ -3035,7 +3046,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_right_progress_bar_bg_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {557, 171, 594, 302},                    /* widget size                    */
+    {666, 179, 703, 310},                    /* widget size                    */
     &climate_screen_right_progress_val_define, /* next widget definition       */
     &climate_screen_right_progress_bar_define, /* child widget definition      */
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_right_progress_bar_bg), /* control block */
@@ -3155,7 +3166,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_pixelmap_button_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {188, 130, 243, 221},                    /* widget size                    */
+    {238, 130, 293, 221},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_pixelmap_button), /* control block */
@@ -3179,7 +3190,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_pixelmap_button_3_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {188, 223, 243, 314},                    /* widget size                    */
+    {238, 223, 293, 314},                    /* widget size                    */
     &climate_screen_pixelmap_button_define,  /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_pixelmap_button_3), /* control block */
@@ -3203,7 +3214,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_pixelmap_button_2_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {393, 223, 448, 314},                    /* widget size                    */
+    {450, 223, 505, 314},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_pixelmap_button_2), /* control block */
@@ -3227,7 +3238,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_pixelmap_button_1_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {393, 130, 448, 221},                    /* widget size                    */
+    {450, 130, 505, 221},                    /* widget size                    */
     &climate_screen_pixelmap_button_2_define, /* next widget definition        */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_pixelmap_button_1), /* control block */
@@ -3251,7 +3262,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_icon_14_13_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {132, 261, 158, 313},                    /* widget size                    */
+    {151, 265, 177, 317},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_icon_14_13), /* control block */
@@ -3275,7 +3286,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_icon_14_12_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {145, 261, 171, 313},                    /* widget size                    */
+    {164, 265, 190, 317},                    /* widget size                    */
     &climate_screen_icon_14_13_define,       /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_icon_14_12), /* control block */
@@ -3299,7 +3310,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_icon_14_3_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {158, 261, 184, 313},                    /* widget size                    */
+    {177, 265, 203, 317},                    /* widget size                    */
     &climate_screen_icon_14_12_define,       /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_icon_14_3), /* control block */
@@ -3323,7 +3334,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_icon_14_15_1_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {481, 261, 507, 313},                    /* widget size                    */
+    {561, 273, 587, 325},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_icon_14_15_1), /* control block */
@@ -3347,7 +3358,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_icon_14_14_1_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {468, 261, 494, 313},                    /* widget size                    */
+    {549, 273, 575, 325},                    /* widget size                    */
     &climate_screen_icon_14_15_1_define,     /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_icon_14_14_1), /* control block */
@@ -3371,7 +3382,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_icon_14_16_1_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {455, 261, 481, 313},                    /* widget size                    */
+    {536, 273, 562, 325},                    /* widget size                    */
     &climate_screen_icon_14_14_1_define,     /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_icon_14_16_1), /* control block */
@@ -3395,7 +3406,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_right_warmer_icon_button_define =
     gx_studio_icon_button_create,            /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {459, 264, 503, 309},                    /* widget size                    */
+    {540, 276, 598, 321},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     &climate_screen_icon_14_16_1_define,     /* child widget definition        */
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_right_warmer_icon_button), /* control block */
@@ -3419,7 +3430,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_left_warmer_icon_button_define =
     gx_studio_icon_button_create,            /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {134, 265, 184, 309},                    /* widget size                    */
+    {153, 269, 206, 313},                    /* widget size                    */
     &climate_screen_right_warmer_icon_button_define, /* next widget definition */
     &climate_screen_icon_14_3_define,        /* child widget definition        */
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_left_warmer_icon_button), /* control block */
@@ -3443,7 +3454,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_left_seat_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {94, 137, 213, 298},                     /* widget size                    */
+    {106, 143, 225, 304},                    /* widget size                    */
     &climate_screen_left_warmer_icon_button_define, /* next widget definition  */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_left_seat), /* control block */
@@ -3467,7 +3478,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_right_fan_button_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {339, 166, 370, 199},                    /* widget size                    */
+    {393, 165, 424, 198},                    /* widget size                    */
     &climate_screen_left_seat_define,        /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_right_fan_button), /* control block */
@@ -3491,7 +3502,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_right_small_fan_button_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {345, 245, 364, 265},                    /* widget size                    */
+    {399, 244, 418, 264},                    /* widget size                    */
     &climate_screen_right_fan_button_define, /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_right_small_fan_button), /* control block */
@@ -3515,7 +3526,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_left_small_fan_button_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {273, 245, 292, 265},                    /* widget size                    */
+    {330, 244, 349, 264},                    /* widget size                    */
     &climate_screen_right_small_fan_button_define, /* next widget definition   */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_left_small_fan_button), /* control block */
@@ -3539,7 +3550,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_left_fan_button_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {267, 166, 298, 199},                    /* widget size                    */
+    {324, 165, 355, 198},                    /* widget size                    */
     &climate_screen_left_small_fan_button_define, /* next widget definition    */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_left_fan_button), /* control block */
@@ -3563,7 +3574,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_right_fan_mode_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {330, 212, 386, 232},                    /* widget size                    */
+    {384, 211, 440, 231},                    /* widget size                    */
     &climate_screen_left_fan_button_define,  /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_right_fan_mode), /* control block */
@@ -3587,7 +3598,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_left_fan_mode_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {254, 212, 310, 232},                    /* widget size                    */
+    {311, 211, 367, 231},                    /* widget size                    */
     &climate_screen_right_fan_mode_define,   /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_left_fan_mode), /* control block */
@@ -3611,7 +3622,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_right_seat_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {430, 137, 549, 298},                    /* widget size                    */
+    {508, 151, 627, 312},                    /* widget size                    */
     &climate_screen_left_fan_mode_define,    /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_right_seat), /* control block */
@@ -3635,7 +3646,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_center_line_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {318, 156, 319, 289},                    /* widget size                    */
+    {379, 153, 380, 286},                    /* widget size                    */
     &climate_screen_right_seat_define,       /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_center_line), /* control block */
@@ -3659,7 +3670,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_right_lines_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {393, 127, 449, 317},                    /* widget size                    */
+    {450, 127, 506, 317},                    /* widget size                    */
     &climate_screen_center_line_define,      /* next widget definition         */
     &climate_screen_pixelmap_button_1_define, /* child widget definition       */
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_right_lines), /* control block */
@@ -3683,7 +3694,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_left_lines_icon_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {188, 127, 244, 317},                    /* widget size                    */
+    {238, 127, 294, 317},                    /* widget size                    */
     &climate_screen_right_lines_define,      /* next widget definition         */
     &climate_screen_pixelmap_button_3_define, /* child widget definition       */
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_left_lines_icon), /* control block */
@@ -3731,7 +3742,7 @@ GX_CONST GX_STUDIO_WIDGET climate_screen_right_progress_bar_win_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {553, 126, 601, 309},                    /* widget size                    */
+    {662, 134, 710, 317},                    /* widget size                    */
     &climate_screen_left_progress_bar_win_define, /* next widget definition    */
     &climate_screen_right_progress_bar_bg_define, /* child widget definition   */
     offsetof(CLIMATE_SCREEN_CONTROL_BLOCK, climate_screen_right_progress_bar_win), /* control block */
@@ -3752,7 +3763,7 @@ GX_ANIMATION_INFO climate_screen_animation_2 = {
     (GX_WIDGET *) &climate_screen,
     GX_NULL,
     GX_ANIMATION_TRANSLATE, 0, 0, 1,
-    {586, 126}, {553, 126}, 255, 255, 20
+    {697, 126}, {662, 126}, 255, 255, 20
 };
 
 
@@ -3770,7 +3781,7 @@ GX_ANIMATION_INFO climate_screen_animation_4 = {
     (GX_WIDGET *) &climate_screen,
     GX_NULL,
     GX_ANIMATION_TRANSLATE, 0, 0, 1,
-    {459, 310}, {459, 264}, 255, 255, 10
+    {539, 310}, {539, 264}, 255, 255, 10
 };
 
 
@@ -5752,7 +5763,7 @@ GX_CONST GX_STUDIO_WIDGET volume_screen_base_volume_progress_bar_define =
     gx_studio_progress_bar_create,           /* create function                */
     GX_NULL,                                 /* drawing function override      */
     (UINT (*)(GX_WIDGET *, GX_EVENT *)) volume_progress_bar_event_process, /* event function override */
-    {558, 143, 595, 330},                    /* widget size                    */
+    {666, 161, 703, 348},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(VOLUME_SCREEN_BASE_CONTROL_BLOCK, volume_screen_base_volume_progress_bar), /* control block */
@@ -5776,7 +5787,7 @@ GX_CONST GX_STUDIO_WIDGET volume_screen_base_volume_label_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {554, 339, 598, 351},                    /* widget size                    */
+    {662, 354, 706, 366},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(VOLUME_SCREEN_BASE_CONTROL_BLOCK, volume_screen_base_volume_label), /* control block */
@@ -5800,7 +5811,7 @@ GX_CONST GX_STUDIO_WIDGET volume_screen_base_volume_value_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {550, 112, 603, 140},                    /* widget size                    */
+    {658, 127, 711, 155},                    /* widget size                    */
     &volume_screen_base_volume_label_define, /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(VOLUME_SCREEN_BASE_CONTROL_BLOCK, volume_screen_base_volume_value), /* control block */
@@ -5824,7 +5835,7 @@ GX_CONST GX_STUDIO_WIDGET volume_screen_base_volume_progress_bar_bg_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {558, 143, 595, 330},                    /* widget size                    */
+    {666, 158, 703, 345},                    /* widget size                    */
     &volume_screen_base_volume_value_define, /* next widget definition         */
     &volume_screen_base_volume_progress_bar_define, /* child widget definition */
     offsetof(VOLUME_SCREEN_BASE_CONTROL_BLOCK, volume_screen_base_volume_progress_bar_bg), /* control block */
@@ -5848,7 +5859,7 @@ GX_CONST GX_STUDIO_WIDGET volume_screen_base_bute_btn_icon_1_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {65, 211, 86, 232},                      /* widget size                    */
+    {68, 219, 89, 240},                      /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(VOLUME_SCREEN_BASE_CONTROL_BLOCK, volume_screen_base_bute_btn_icon_1), /* control block */
@@ -5872,7 +5883,7 @@ GX_CONST GX_STUDIO_WIDGET volume_screen_base_prompt_14_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {57, 250, 94, 267},                      /* widget size                    */
+    {60, 258, 97, 275},                      /* widget size                    */
     &volume_screen_base_bute_btn_icon_1_define, /* next widget definition      */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(VOLUME_SCREEN_BASE_CONTROL_BLOCK, volume_screen_base_prompt_14), /* control block */
@@ -5896,7 +5907,7 @@ GX_CONST GX_STUDIO_WIDGET volume_screen_base_mute_btn_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     (VOID (*)(GX_WIDGET *)) custom_pixelmap_button_draw, /* drawing function override */
     GX_NULL,                                 /* event function override        */
-    {39, 184, 112, 272},                     /* widget size                    */
+    {42, 192, 115, 280},                     /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     &volume_screen_base_prompt_14_define,    /* child widget definition        */
     offsetof(VOLUME_SCREEN_BASE_CONTROL_BLOCK, volume_screen_base_mute_btn), /* control block */
@@ -5920,7 +5931,7 @@ GX_CONST GX_STUDIO_WIDGET volume_screen_base_volume_progress_bar_win_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {550, 108, 603, 356},                    /* widget size                    */
+    {658, 123, 711, 371},                    /* widget size                    */
     &volume_screen_base_mute_btn_define,     /* next widget definition         */
     &volume_screen_base_volume_progress_bar_bg_define, /* child widget definition */
     offsetof(VOLUME_SCREEN_BASE_CONTROL_BLOCK, volume_screen_base_volume_progress_bar_win), /* control block */
@@ -5954,7 +5965,7 @@ GX_TEMPLATE_PROPERTIES audio_screen_properties =
 {
     &volume_screen_base_define,              /* base info                      */
     gx_studio_template_create,               /* base create function           */
-    {0, 0, 639, 479}                         /* widget size                    */
+    {-1, 0, 798, 479}                        /* widget size                    */
 };
 GX_WINDOW_PROPERTIES audio_screen_music_info_win_properties =
 {
@@ -6060,8 +6071,8 @@ GX_WINDOW_PROPERTIES audio_screen_window_properties =
 };
 GX_RADIAL_PROGRESS_BAR_INFO audio_screen_radial_progress_bar_properties =
 {
-    319,                                     /* xcenter                        */
-    231,                                     /* ycenter                        */
+    381,                                     /* xcenter                        */
+    253,                                     /* ycenter                        */
     55,                                      /* radius                         */
     -90,                                     /* current val                    */
     90,                                      /* anchor val                     */
@@ -6120,7 +6131,7 @@ GX_CONST GX_STUDIO_WIDGET audio_screen_minute_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {416, 167, 428, 187},                    /* widget size                    */
+    {485, 168, 497, 188},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(AUDIO_SCREEN_CONTROL_BLOCK, audio_screen_minute), /* control block */
@@ -6144,7 +6155,7 @@ GX_CONST GX_STUDIO_WIDGET audio_screen_second_colon_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {430, 165, 436, 185},                    /* widget size                    */
+    {499, 166, 505, 186},                    /* widget size                    */
     &audio_screen_minute_define,             /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(AUDIO_SCREEN_CONTROL_BLOCK, audio_screen_second_colon), /* control block */
@@ -6168,7 +6179,7 @@ GX_CONST GX_STUDIO_WIDGET audio_screen_second_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {437, 167, 462, 187},                    /* widget size                    */
+    {506, 168, 531, 188},                    /* widget size                    */
     &audio_screen_second_colon_define,       /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(AUDIO_SCREEN_CONTROL_BLOCK, audio_screen_second), /* control block */
@@ -6192,7 +6203,7 @@ GX_CONST GX_STUDIO_WIDGET audio_screen_singer_name_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {271, 98, 367, 126},                     /* widget size                    */
+    {340, 99, 436, 127},                     /* widget size                    */
     &audio_screen_second_define,             /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(AUDIO_SCREEN_CONTROL_BLOCK, audio_screen_singer_name), /* control block */
@@ -6216,7 +6227,7 @@ GX_CONST GX_STUDIO_WIDGET audio_screen_music_name_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {199, 133, 439, 153},                    /* widget size                    */
+    {268, 134, 508, 154},                    /* widget size                    */
     &audio_screen_singer_name_define,        /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(AUDIO_SCREEN_CONTROL_BLOCK, audio_screen_music_name), /* control block */
@@ -6240,7 +6251,7 @@ GX_CONST GX_STUDIO_WIDGET audio_screen_icon_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {65, 123, 87, 144},                      /* widget size                    */
+    {69, 123, 91, 144},                      /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(AUDIO_SCREEN_CONTROL_BLOCK, audio_screen_icon), /* control block  */
@@ -6264,7 +6275,7 @@ GX_CONST GX_STUDIO_WIDGET audio_screen_prompt_6_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {56, 163, 95, 180},                      /* widget size                    */
+    {60, 163, 99, 180},                      /* widget size                    */
     &audio_screen_icon_define,               /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(AUDIO_SCREEN_CONTROL_BLOCK, audio_screen_prompt_6), /* control block */
@@ -6288,7 +6299,7 @@ GX_CONST GX_STUDIO_WIDGET audio_screen_end_call_btn_icon_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {65, 298, 86, 317},                      /* widget size                    */
+    {65, 314, 86, 333},                      /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(AUDIO_SCREEN_CONTROL_BLOCK, audio_screen_end_call_btn_icon), /* control block */
@@ -6312,7 +6323,7 @@ GX_CONST GX_STUDIO_WIDGET audio_screen_prompt_1_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {54, 339, 96, 356},                      /* widget size                    */
+    {54, 355, 96, 372},                      /* widget size                    */
     &audio_screen_end_call_btn_icon_define,  /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(AUDIO_SCREEN_CONTROL_BLOCK, audio_screen_prompt_1), /* control block */
@@ -6336,7 +6347,7 @@ GX_CONST GX_STUDIO_WIDGET audio_screen_play_btn_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {285, 193, 355, 265},                    /* widget size                    */
+    {347, 215, 417, 287},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(AUDIO_SCREEN_CONTROL_BLOCK, audio_screen_play_btn), /* control block */
@@ -6360,7 +6371,7 @@ GX_CONST GX_STUDIO_WIDGET audio_screen_radial_progress_bar_define =
     gx_studio_radial_progress_bar_create,     /* create function               */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {258, 170, 380, 292},                    /* widget size                    */
+    {305, 179, 427, 301},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     &audio_screen_play_btn_define,           /* child widget definition        */
     offsetof(AUDIO_SCREEN_CONTROL_BLOCK, audio_screen_radial_progress_bar), /* control block */
@@ -6384,7 +6395,7 @@ GX_CONST GX_STUDIO_WIDGET audio_screen_pixelmap_button_5_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {223, 316, 266, 345},                    /* widget size                    */
+    {287, 328, 330, 357},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(AUDIO_SCREEN_CONTROL_BLOCK, audio_screen_pixelmap_button_5), /* control block */
@@ -6408,7 +6419,7 @@ GX_CONST GX_STUDIO_WIDGET audio_screen_pixelmap_button_2_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {371, 316, 414, 345},                    /* widget size                    */
+    {435, 328, 478, 357},                    /* widget size                    */
     &audio_screen_pixelmap_button_5_define,  /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(AUDIO_SCREEN_CONTROL_BLOCK, audio_screen_pixelmap_button_2), /* control block */
@@ -6432,7 +6443,7 @@ GX_CONST GX_STUDIO_WIDGET audio_screen_pixelmap_button_1_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {298, 316, 341, 345},                    /* widget size                    */
+    {362, 328, 405, 357},                    /* widget size                    */
     &audio_screen_pixelmap_button_2_define,  /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(AUDIO_SCREEN_CONTROL_BLOCK, audio_screen_pixelmap_button_1), /* control block */
@@ -6456,7 +6467,7 @@ GX_CONST GX_STUDIO_WIDGET audio_screen_play_mode_win_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {179, 303, 461, 360},                    /* widget size                    */
+    {243, 315, 525, 372},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     &audio_screen_pixelmap_button_1_define,  /* child widget definition        */
     offsetof(AUDIO_SCREEN_CONTROL_BLOCK, audio_screen_play_mode_win), /* control block */
@@ -6480,7 +6491,7 @@ GX_CONST GX_STUDIO_WIDGET audio_screen_window_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {256, 168, 383, 295},                    /* widget size                    */
+    {317, 189, 444, 316},                    /* widget size                    */
     &audio_screen_play_mode_win_define,      /* next widget definition         */
     &audio_screen_radial_progress_bar_define, /* child widget definition       */
     offsetof(AUDIO_SCREEN_CONTROL_BLOCK, audio_screen_window), /* control block */
@@ -6504,7 +6515,7 @@ GX_CONST GX_STUDIO_WIDGET audio_screen_pixelmap_button_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {404, 205, 461, 252},                    /* widget size                    */
+    {483, 230, 540, 277},                    /* widget size                    */
     &audio_screen_window_define,             /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(AUDIO_SCREEN_CONTROL_BLOCK, audio_screen_pixelmap_button), /* control block */
@@ -6528,7 +6539,7 @@ GX_CONST GX_STUDIO_WIDGET audio_screen_pixelmap_button_4_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {179, 205, 236, 252},                    /* widget size                    */
+    {222, 230, 279, 277},                    /* widget size                    */
     &audio_screen_pixelmap_button_define,    /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(AUDIO_SCREEN_CONTROL_BLOCK, audio_screen_pixelmap_button_4), /* control block */
@@ -6552,7 +6563,7 @@ GX_CONST GX_STUDIO_WIDGET audio_screen_end_call_btn_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     (VOID (*)(GX_WIDGET *)) custom_pixelmap_button_draw, /* drawing function override */
     GX_NULL,                                 /* event function override        */
-    {39, 268, 112, 356},                     /* widget size                    */
+    {39, 284, 112, 381},                     /* widget size                    */
     &audio_screen_pixelmap_button_4_define,  /* next widget definition         */
     &audio_screen_prompt_1_define,           /* child widget definition        */
     offsetof(AUDIO_SCREEN_CONTROL_BLOCK, audio_screen_end_call_btn), /* control block */
@@ -6576,7 +6587,7 @@ GX_CONST GX_STUDIO_WIDGET audio_screen_keypad_btn_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     (VOID (*)(GX_WIDGET *)) custom_pixelmap_button_draw, /* drawing function override */
     GX_NULL,                                 /* event function override        */
-    {39, 96, 112, 184},                      /* widget size                    */
+    {43, 96, 116, 184},                      /* widget size                    */
     &audio_screen_end_call_btn_define,       /* next widget definition         */
     &audio_screen_prompt_6_define,           /* child widget definition        */
     offsetof(AUDIO_SCREEN_CONTROL_BLOCK, audio_screen_keypad_btn), /* control block */
@@ -6600,7 +6611,7 @@ GX_CONST GX_STUDIO_WIDGET audio_screen_music_info_win_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {164, 87, 483, 194},                     /* widget size                    */
+    {233, 88, 552, 195},                     /* widget size                    */
     &audio_screen_keypad_btn_define,         /* next widget definition         */
     &audio_screen_music_name_define,         /* child widget definition        */
     offsetof(AUDIO_SCREEN_CONTROL_BLOCK, audio_screen_music_info_win), /* control block */
@@ -6612,7 +6623,7 @@ GX_ANIMATION_INFO audio_screen_animation_1 = {
     (GX_WIDGET *) &audio_screen,
     GX_NULL,
     GX_ANIMATION_TRANSLATE|GX_ANIMATION_SINE_EASE_IN, 0, 0, 1,
-    {164, 0}, {164, 87}, 255, 255, 15
+    {232, 0}, {232, 87}, 255, 255, 15
 };
 
 
@@ -6650,7 +6661,7 @@ GX_CONST GX_STUDIO_WIDGET audio_screen_define =
     gx_studio_template_create,               /* create function                */
     GX_NULL,                                 /* drawing function override      */
     (UINT (*)(GX_WIDGET *, GX_EVENT *)) gx_studio_audio_screen_event_process, /* event function override */
-    {0, 0, 639, 479},                        /* widget size                    */
+    {-1, 0, 798, 479},                       /* widget size                    */
     GX_NULL,                                 /* next widget                    */
     &audio_screen_music_info_win_define,     /* child widget                   */
     0,                                       /* control block                  */
@@ -6768,7 +6779,7 @@ GX_CONST GX_STUDIO_WIDGET phone_screen_icon_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {65, 123, 86, 144},                      /* widget size                    */
+    {71, 123, 92, 144},                      /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(PHONE_SCREEN_CONTROL_BLOCK, phone_screen_icon), /* control block  */
@@ -6792,7 +6803,7 @@ GX_CONST GX_STUDIO_WIDGET phone_screen_prompt_6_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {48, 163, 103, 180},                     /* widget size                    */
+    {54, 163, 109, 180},                     /* widget size                    */
     &phone_screen_icon_define,               /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(PHONE_SCREEN_CONTROL_BLOCK, phone_screen_prompt_6), /* control block */
@@ -6816,7 +6827,7 @@ GX_CONST GX_STUDIO_WIDGET phone_screen_end_call_btn_icon_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {65, 295, 86, 316},                      /* widget size                    */
+    {68, 305, 89, 326},                      /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(PHONE_SCREEN_CONTROL_BLOCK, phone_screen_end_call_btn_icon), /* control block */
@@ -6840,7 +6851,7 @@ GX_CONST GX_STUDIO_WIDGET phone_screen_prompt_1_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {48, 335, 103, 352},                     /* widget size                    */
+    {51, 345, 106, 362},                     /* widget size                    */
     &phone_screen_end_call_btn_icon_define,  /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(PHONE_SCREEN_CONTROL_BLOCK, phone_screen_prompt_1), /* control block */
@@ -6864,7 +6875,7 @@ GX_CONST GX_STUDIO_WIDGET phone_screen_icon_15_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {257, 103, 382, 228},                    /* widget size                    */
+    {312, 121, 437, 246},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(PHONE_SCREEN_CONTROL_BLOCK, phone_screen_icon_15), /* control block */
@@ -6888,7 +6899,7 @@ GX_CONST GX_STUDIO_WIDGET phone_screen_second_colon_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {303, 284, 315, 325},                    /* widget size                    */
+    {358, 302, 370, 343},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(PHONE_SCREEN_CONTROL_BLOCK, phone_screen_second_colon), /* control block */
@@ -6912,7 +6923,7 @@ GX_CONST GX_STUDIO_WIDGET phone_screen_second_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {315, 289, 364, 330},                    /* widget size                    */
+    {370, 307, 419, 348},                    /* widget size                    */
     &phone_screen_second_colon_define,       /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(PHONE_SCREEN_CONTROL_BLOCK, phone_screen_second), /* control block */
@@ -6936,7 +6947,7 @@ GX_CONST GX_STUDIO_WIDGET phone_screen_minute_define =
     gx_studio_numeric_prompt_create,         /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {257, 289, 306, 330},                    /* widget size                    */
+    {312, 307, 361, 348},                    /* widget size                    */
     &phone_screen_second_define,             /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(PHONE_SCREEN_CONTROL_BLOCK, phone_screen_minute), /* control block */
@@ -6960,7 +6971,7 @@ GX_CONST GX_STUDIO_WIDGET phone_screen_portait_icon_define =
     gx_studio_icon_create,                   /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {257, 103, 382, 228},                    /* widget size                    */
+    {312, 121, 437, 246},                    /* widget size                    */
     &phone_screen_minute_define,             /* next widget definition         */
     &phone_screen_icon_15_define,            /* child widget definition        */
     offsetof(PHONE_SCREEN_CONTROL_BLOCK, phone_screen_portait_icon), /* control block */
@@ -6984,7 +6995,7 @@ GX_CONST GX_STUDIO_WIDGET phone_screen_name_define =
     gx_studio_prompt_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {197, 239, 433, 267},                    /* widget size                    */
+    {252, 257, 488, 285},                    /* widget size                    */
     &phone_screen_portait_icon_define,       /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(PHONE_SCREEN_CONTROL_BLOCK, phone_screen_name), /* control block  */
@@ -7008,7 +7019,7 @@ GX_CONST GX_STUDIO_WIDGET phone_screen_phone_call_win_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {156, 96, 475, 335},                     /* widget size                    */
+    {211, 114, 530, 353},                    /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     &phone_screen_name_define,               /* child widget definition        */
     offsetof(PHONE_SCREEN_CONTROL_BLOCK, phone_screen_phone_call_win), /* control block */
@@ -7032,7 +7043,7 @@ GX_CONST GX_STUDIO_WIDGET phone_screen_end_call_btn_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     (VOID (*)(GX_WIDGET *)) custom_pixelmap_button_draw, /* drawing function override */
     GX_NULL,                                 /* event function override        */
-    {39, 268, 112, 356},                     /* widget size                    */
+    {42, 278, 115, 366},                     /* widget size                    */
     &phone_screen_phone_call_win_define,     /* next widget definition         */
     &phone_screen_prompt_1_define,           /* child widget definition        */
     offsetof(PHONE_SCREEN_CONTROL_BLOCK, phone_screen_end_call_btn), /* control block */
@@ -7056,7 +7067,7 @@ GX_CONST GX_STUDIO_WIDGET phone_screen_keypad_btn_define =
     gx_studio_pixelmap_button_create,        /* create function                */
     (VOID (*)(GX_WIDGET *)) custom_pixelmap_button_draw, /* drawing function override */
     GX_NULL,                                 /* event function override        */
-    {39, 96, 112, 184},                      /* widget size                    */
+    {45, 96, 118, 184},                      /* widget size                    */
     &phone_screen_end_call_btn_define,       /* next widget definition         */
     &phone_screen_prompt_6_define,           /* child widget definition        */
     offsetof(PHONE_SCREEN_CONTROL_BLOCK, phone_screen_keypad_btn), /* control block */

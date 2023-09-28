@@ -1,4 +1,4 @@
-# ROMAPI Samples
+# ROM API
 
 :::{eval-rst}
 .. toctree::

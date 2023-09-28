@@ -57,7 +57,7 @@ static hpm_stat_t enet_init(ENET_Type *ptr)
     enet_mac_config_t enet_config;
     enet_tx_control_config_t enet_tx_control_config;
 
-    #if RGMII
+    #if defined(RGMII) && RGMII
         #if defined(__USE_DP83867) && __USE_DP83867
         dp83867_config_t phy_config;
         #else
@@ -116,7 +116,7 @@ static hpm_stat_t enet_init(ENET_Type *ptr)
     enet_controller_init(ptr, ENET_INF_TYPE, &desc, &enet_config, &int_config);
 
     /* Initialize phy */
-    #if RGMII
+    #if defined(RGMII) && RGMII
         #if defined(__USE_DP83867) && __USE_DP83867
         dp83867_reset(ptr);
         dp83867_basic_mode_default_config(ptr, &phy_config);
@@ -167,7 +167,11 @@ int main(void)
 
     /* Initialize GPIOs */
     board_init_enet_pins(ENET);
+
+    #if defined(ENET_PPS_PINOUT) && ENET_PPS_PINOUT
+    /* Initialize PPS pins */
     board_init_enet_pps_pins(BOARD_ENET_PPS);
+    #endif
 
     /* Reset an enet PHY */
     board_reset_enet_phy(ENET);
@@ -175,7 +179,7 @@ int main(void)
     printf("This is an ethernet demo: PTP Master\n");
     printf("LwIP Version: %s\n", LWIP_VERSION_STRING);
 
-    #if RGMII
+    #if defined(RGMII) && RGMII
     /* Set RGMII clock delay */
     board_init_enet_rgmii_clock_delay(ENET);
     #else
@@ -191,7 +195,10 @@ int main(void)
     if (enet_init(ENET) == 0) {
         /* Initialize PTP */
         enet_ptp_init();
+
+        #if defined(ENET_PPS_PINOUT) && ENET_PPS_PINOUT
         enet_set_pps0_control_output(BOARD_ENET_PPS, enet_pps_ctrl_pps);
+        #endif
 
         /* Initialize the Lwip stack */
         lwip_init();

@@ -11,7 +11,7 @@
 #define TASK_ICON_ANIMATION_STEPS    8
 #define TASK_TITLE_ANIMATION_STEPS   8
 #define TASK_TITLE_ANIMATION_SHIFT   60
-#define TASK_TITLE_ANIMATION_START_X 19
+#define TASK_TITLE_ANIMATION_START_X 99
 
 /* Define task IDs.  */
 enum task_ids {
@@ -106,7 +106,7 @@ TASK_INFO task_info_list[] =
     },
     {
         TASK_ID_ASSEMBLING,
-        &main_screen.main_screen_button_inspecting,
+        &main_screen.main_screen_button_assembling,
         GX_STRING_ID_ASSEMBLING,
         GX_PIXELMAP_ID_CIRCLE_ICON_ASSEMBLING,
         GX_STRING_ID_ROTATE_AXIS,

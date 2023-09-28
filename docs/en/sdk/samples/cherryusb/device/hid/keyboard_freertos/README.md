@@ -1,4 +1,4 @@
-# USB HID KEYBOARD(FreeRTOS)
+# CherryUSB HID Keyboard(FreeRTOS)
 
 ## Overview
 

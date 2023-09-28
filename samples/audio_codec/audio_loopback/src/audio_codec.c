@@ -93,6 +93,7 @@ void test_codec_playback_record(void)
 #endif
 
     printf("Test Codec playback and record\n");
+    i2s_start(CODEC_I2S);
     while(1) {
         /* record from codec and play by codec */
         while (i2s_get_rx_line_fifo_level(CODEC_I2S, CODEC_I2S_DATA_LINE) == 0) {

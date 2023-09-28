@@ -30,6 +30,13 @@ __attribute__((weak)) void _clean_up(void)
 __attribute__((weak)) void c_startup(void)
 {
     uint32_t i, size;
+    extern uint8_t __bss_start__[], __bss_end__[];
+    extern uint8_t __data_start__[], __data_end__[];
+    extern uint8_t __ramfunc_start__[], __ramfunc_end__[];
+    extern uint8_t __noncacheable_bss_start__[], __noncacheable_bss_end__[];
+    extern uint8_t __noncacheable_init_start__[], __noncacheable_init_end__[];
+    extern uint8_t __data_load_addr__[], __fast_load_addr__[], __noncacheable_init_load_addr__[];
+
 #if defined(FLASH_XIP) || defined(FLASH_UF2)
     extern uint8_t __vector_ram_start__[], __vector_ram_end__[], __vector_load_addr__[];
     size = __vector_ram_end__ - __vector_ram_start__;
@@ -37,13 +44,6 @@ __attribute__((weak)) void c_startup(void)
         *(__vector_ram_start__ + i) = *(__vector_load_addr__ + i);
     }
 #endif
-
-    extern uint8_t __etext[];
-    extern uint8_t __bss_start__[], __bss_end__[];
-    extern uint8_t __data_start__[], __data_end__[];
-    extern uint8_t __noncacheable_bss_start__[], __noncacheable_bss_end__[];
-    extern uint8_t __ramfunc_start__[], __ramfunc_end__[];
-    extern uint8_t __noncacheable_init_start__[], __noncacheable_init_end__[];
 
     /* bss section */
     size = __bss_end__ - __bss_start__;
@@ -60,19 +60,19 @@ __attribute__((weak)) void c_startup(void)
     /* data section LMA: etext */
     size = __data_end__ - __data_start__;
     for (i = 0; i < size; i++) {
-        *(__data_start__ + i) = *(__etext + i);
+        *(__data_start__ + i) = *(__data_load_addr__ + i);
     }
 
     /* ramfunc section LMA: etext + data length */
     size = __ramfunc_end__ - __ramfunc_start__;
     for (i = 0; i < size; i++) {
-        *(__ramfunc_start__ + i) = *(__etext + (__data_end__ - __data_start__) + i);
+        *(__ramfunc_start__ + i) = *(__fast_load_addr__ + i);
     }
 
-    /* noncacheable init section LMA: etext + data length + ramfunc legnth */
+    /* noncacheable init section LMA: etext + data length + ramfunc legnth + tdata length*/
     size = __noncacheable_init_end__ - __noncacheable_init_start__;
     for (i = 0; i < size; i++) {
-        *(__noncacheable_init_start__ + i) = *(__etext + (__data_end__ - __data_start__) + (__ramfunc_end__ - __ramfunc_start__) + i);
+        *(__noncacheable_init_start__ + i) = *(__noncacheable_init_load_addr__ + i);
     }
 }
 

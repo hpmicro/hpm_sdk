@@ -185,6 +185,12 @@ START_FUNC _start
     fscsr zero
 #endif
 
+    /* Enable LMM1 clock */
+    la t0, 0xF4000800
+    lw t1, 0(t0)
+    ori t1, t1, 0x80
+    sw t1, 0(t0)
+
 #ifdef INIT_EXT_RAM_FOR_DATA
     la t0, _stack_safe
     mv sp, t0

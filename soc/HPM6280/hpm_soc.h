@@ -134,10 +134,6 @@
 /* DM base address */
 #define HPM_DM_BASE (0x30000000UL)
 
-/* Address of XBUS_SOC instances */
-/* GPV_SOC base address */
-#define HPM_GPV_SOC_BASE (0x30100000UL)
-
 #include "hpm_plic_regs.h"
 /* Address of PLIC instances */
 /* PLIC base address */
@@ -457,10 +453,6 @@
 /* SYNT base pointer */
 #define HPM_SYNT ((SYNT_Type *) HPM_SYNT_BASE)
 
-/* Address of PLA_X2 instances */
-/* PLA_X2 base address */
-#define HPM_PLA_X2_BASE (0xF024E000UL)
-
 #include "hpm_usb_regs.h"
 /* Address of USB instances */
 /* USB0 base address */
@@ -622,9 +614,12 @@
 /* TSNS base pointer */
 #define HPM_TSNS ((TSNS_Type *) HPM_TSNS_BASE)
 
+#include "hpm_bacc_regs.h"
 /* Address of BACC instances */
 /* BACC base address */
 #define HPM_BACC_BASE (0xF5000000UL)
+/* BACC base pointer */
+#define HPM_BACC ((BACC_Type *) HPM_BACC_BASE)
 
 #include "hpm_bpor_regs.h"
 /* Address of BPOR instances */

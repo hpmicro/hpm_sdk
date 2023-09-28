@@ -32,7 +32,7 @@
 #define BOARD_APP_UART_IRQ  IRQn_UART0
 #else
 #ifndef BOARD_APP_UART_IRQ
-#warning no IRQ specified for applicaiton uart
+#warning no IRQ specified for application uart
 #endif
 #endif
 
@@ -306,16 +306,33 @@
 #define BOARD_ENET_RMII_INT_REF_CLK     (0U)
 #define BOARD_ENET_RMII_PTP_CLOCK       clock_ptp1
 
-/* adc section */
-#define BOARD_APP_ADC12_NAME "ADC0"
-#define BOARD_APP_ADC12_BASE HPM_ADC0
-#define BOARD_APP_ADC12_IRQn IRQn_ADC0
-#define BOARD_APP_ADC12_CH_1                     (7U)
+/* ADC section */
+#define BOARD_APP_ADC12_NAME            "ADC0"
+#define BOARD_APP_ADC12_BASE            HPM_ADC0
+#define BOARD_APP_ADC12_IRQn            IRQn_ADC0
+#define BOARD_APP_ADC12_CH_1            (7U)
+#define BOARD_APP_ADC12_CLK_NAME        (clock_adc0)
 
-#define BOARD_APP_ADC16_NAME "ADC3"
-#define BOARD_APP_ADC16_IRQn IRQn_ADC3
-#define BOARD_APP_ADC16_BASE HPM_ADC3
-#define BOARD_APP_ADC16_CH_1                     (2U)
+#define BOARD_APP_ADC16_NAME            "ADC3"
+#define BOARD_APP_ADC16_IRQn            IRQn_ADC3
+#define BOARD_APP_ADC16_BASE            HPM_ADC3
+#define BOARD_APP_ADC16_CH_1            (2U)
+#define BOARD_APP_ADC16_CLK_NAME        (clock_adc3)
+
+#define BOARD_APP_ADC12_HW_TRIG_SRC     HPM_PWM0
+#define BOARD_APP_ADC12_HW_TRGM         HPM_TRGM0
+#define BOARD_APP_ADC12_HW_TRGM_IN      HPM_TRGM0_INPUT_SRC_PWM0_CH8REF
+#define BOARD_APP_ADC12_HW_TRGM_OUT_SEQ TRGM_TRGOCFG_ADC0_STRGI
+#define BOARD_APP_ADC12_HW_TRGM_OUT_PMT TRGM_TRGOCFG_ADCX_PTRGI0A
+
+#define BOARD_APP_ADC16_HW_TRIG_SRC     HPM_PWM0
+#define BOARD_APP_ADC16_HW_TRGM         HPM_TRGM0
+#define BOARD_APP_ADC16_HW_TRGM_IN      HPM_TRGM0_INPUT_SRC_PWM0_CH8REF
+#define BOARD_APP_ADC16_HW_TRGM_OUT_SEQ TRGM_TRGOCFG_ADC3_STRGI
+#define BOARD_APP_ADC16_HW_TRGM_OUT_PMT TRGM_TRGOCFG_ADCX_PTRGI0A
+
+#define BOARD_APP_ADC12_PMT_TRIG_CH     ADC12_CONFIG_TRG0A
+#define BOARD_APP_ADC16_PMT_TRIG_CH     ADC16_CONFIG_TRG0A
 
 /* CAN section */
 #define BOARD_APP_CAN_BASE                       HPM_CAN1
@@ -387,7 +404,7 @@
 #define BOARD_BLUE_PWM_IRQ IRQn_PWM0
 #define BOARD_BLUE_PWM HPM_PWM0
 #define BOARD_BLUE_PWM_OUT 7
-#define BOARD_BLUE_PWM_CMP 0
+#define BOARD_BLUE_PWM_CMP 7
 #define BOARD_BLUE_PWM_CMP_INITIAL_ZERO true
 #define BOARD_BLUE_PWM_CLOCK_NAME clock_mot0
 
@@ -488,6 +505,12 @@
 #define BOARD_SHOW_BANNER 1
 #endif
 
+/* FreeRTOS Definitions */
+#define BOARD_FREERTOS_TIMER                    HPM_GPTMR4
+#define BOARD_FREERTOS_TIMER_CHANNEL            1
+#define BOARD_FREERTOS_TIMER_IRQ                IRQn_GPTMR4
+#define BOARD_FREERTOS_TIMER_CLK_NAME           clock_gptmr4
+
 #ifndef BOARD_RUNNING_CORE
 #define BOARD_RUNNING_CORE 0
 #endif
@@ -504,6 +527,7 @@ void board_init_console(void);
 void board_init_uart(UART_Type *ptr);
 void board_init_i2c(I2C_Type *ptr);
 void board_init_lcd(void);
+void board_lcd_backlight(bool is_on);
 void board_panel_para_to_lcdc(lcdc_config_t *config);
 void board_init_can(CAN_Type *ptr);
 
@@ -540,9 +564,9 @@ uint32_t board_init_lcd_clock(void);
 
 uint32_t board_init_spi_clock(SPI_Type *ptr);
 
-uint32_t board_init_adc12_clock(ADC12_Type *ptr);
+uint32_t board_init_adc12_clock(ADC12_Type *ptr, bool clk_src_ahb);
 
-uint32_t board_init_adc16_clock(ADC16_Type *ptr);
+uint32_t board_init_adc16_clock(ADC16_Type *ptr, bool clk_src_ahb);
 
 uint32_t board_init_can_clock(CAN_Type *ptr);
 

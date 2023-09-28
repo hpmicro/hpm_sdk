@@ -24,51 +24,29 @@ typedef struct {
 __attribute__ ((section(".flash_algo.data"))) xpi_nor_config_t nor_config;
 __attribute__ ((section(".flash_algo.data"))) bool xpi_inited = false;
 __attribute__ ((section(".flash_algo.data"))) uint32_t channel = xpi_channel_a1;
+__attribute__ ((section(".flash_algo.data"))) XPI_Type *xpi_base;
 
-const uint8_t flash_config_dummy[256] = {
-	0x58, 0x4E, 0x4F, 0x52, 0x00, 0x00, 0x00, 0x00, 0x01, 0x05, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
-	0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	0x00, 0x01, 0x04, 0x00, 0x40, 0x00, 0x00, 0x00, 0x02, 0x00, 0x01, 0x00,
-	0x00, 0x00, 0x00, 0x00, 0x01, 0x07, 0x00, 0x00, 0x03, 0x03, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00, 0xEB, 0x04, 0x18, 0x0A, 0x00, 0x1E, 0x04, 0x32,
-	0x04, 0x26, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x04, 0x18, 0x08,
-	0x04, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	0x05, 0x04, 0x04, 0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06, 0x04, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00, 0x20, 0x04, 0x18, 0x08, 0x00, 0x00, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xD8, 0x04, 0x18, 0x08,
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	0x60, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00
-};
 
-__attribute__ ((section(".flash_algo.text"))) uint32_t flash_init(uint32_t flash_base, uint32_t header, uint32_t opt0, uint32_t opt1)
+__attribute__ ((section(".flash_algo.text"))) void refresh_device_size(XPI_Type *base, xpi_nor_config_option_t *option)
+{
+    volatile uint32_t *dev_size = (volatile uint32_t *)((uint32_t)base + 0x60);
+    bool enable_channelb = false;
+    if (option->header.words > 1) {
+        enable_channelb = option->option1.connection_sel == xpi_nor_connection_sel_chnb_cs0;
+    }
+    if (enable_channelb) {
+        dev_size[0] = 0;
+        dev_size[1] = 0;
+    }
+}
+
+__attribute__ ((section(".flash_algo.text"))) uint32_t flash_init(uint32_t flash_base, uint32_t header, uint32_t opt0, uint32_t opt1, uint32_t xpi_base_addr)
 {
     uint32_t i = 0;
-    XPI_Type *xpi_base;
     xpi_nor_config_option_t cfg_option;
     hpm_stat_t stat = status_success;
 
-    if (flash_base == XPI0_MEM_START) {
-        xpi_base = HPM_XPI0;
-    }
-#ifdef HPM_XPI1
-    else if (flash_base == XPI1_MEM_START) {
-        xpi_base = HPM_XPI1;
-    }
-#endif
-    else {
-        return status_invalid_argument;
-    }
-
+    xpi_base = (XPI_Type *)xpi_base_addr;
     if (xpi_inited) {
         return stat;
     }
@@ -79,9 +57,6 @@ __attribute__ ((section(".flash_algo.text"))) uint32_t flash_init(uint32_t flash
     for (i = 0; i < sizeof(nor_config); i++) {
         *((uint8_t *)&nor_config + i) = 0;
     }
-
-    /* dummy config needs to be done before actual configuration */
-    ROM_API_TABLE_ROOT->xpi_nor_driver_if->init(xpi_base, (xpi_nor_config_t *)flash_config_dummy);
 
     cfg_option.header.U = header;
     cfg_option.option0.U = opt0;
@@ -97,6 +72,9 @@ __attribute__ ((section(".flash_algo.text"))) uint32_t flash_init(uint32_t flash
     if (stat) {
         return stat;
     }
+
+    refresh_device_size(xpi_base, &cfg_option);
+
     nor_config.device_info.clk_freq_for_non_read_cmd = 0;
     if (!xpi_inited) {
         xpi_inited = true;
@@ -106,20 +84,8 @@ __attribute__ ((section(".flash_algo.text"))) uint32_t flash_init(uint32_t flash
 
 __attribute__ ((section(".flash_algo.text"))) uint32_t flash_erase(uint32_t flash_base, uint32_t address, uint32_t size)
 {
-    XPI_Type *xpi_base;
     hpm_stat_t stat = status_success;
     uint32_t left, start, block_size, align;
-    if (flash_base == XPI0_MEM_START) {
-        xpi_base = HPM_XPI0;
-    }
-#ifdef HPM_XPI1
-    else if (flash_base == XPI1_MEM_START) {
-        xpi_base = HPM_XPI1;
-    }
-#endif
-    else {
-        return status_invalid_argument;
-    }
 
     left = size;
     start = address;
@@ -151,20 +117,7 @@ __attribute__ ((section(".flash_algo.text"))) uint32_t flash_erase(uint32_t flas
 
 __attribute__ ((section(".flash_algo.text"))) uint32_t flash_program(uint32_t flash_base, uint32_t address, uint32_t *buf, uint32_t size)
 {
-    XPI_Type *xpi_base;
     hpm_stat_t stat;
-
-    if (flash_base == XPI0_MEM_START) {
-        xpi_base = HPM_XPI0;
-    }
-#ifdef HPM_XPI1
-    else if (flash_base == XPI1_MEM_START) {
-        xpi_base = HPM_XPI1;
-    }
-#endif
-    else {
-        return status_invalid_argument;
-    }
 
     stat = ROM_API_TABLE_ROOT->xpi_nor_driver_if->program(xpi_base, channel, &nor_config, buf, address, size);
     return stat;
@@ -172,19 +125,7 @@ __attribute__ ((section(".flash_algo.text"))) uint32_t flash_program(uint32_t fl
 
 __attribute__ ((section(".flash_algo.text"))) uint32_t flash_read(uint32_t flash_base, uint32_t *buf, uint32_t address, uint32_t size)
 {
-    XPI_Type *xpi_base;
     hpm_stat_t stat;
-    if (flash_base == XPI0_MEM_START) {
-        xpi_base = HPM_XPI0;
-    }
-#ifdef HPM_XPI1
-    else if (flash_base == XPI1_MEM_START) {
-        xpi_base = HPM_XPI1;
-    }
-#endif
-    else {
-        return status_invalid_argument;
-    }
 
     stat = rom_xpi_nor_read(xpi_base, channel, &nor_config, buf, address, size);
     return stat;
@@ -203,19 +144,6 @@ __attribute__ ((section(".flash_algo.text"))) uint32_t flash_get_info(uint32_t f
 
 __attribute__ ((section(".flash_algo.text"))) uint32_t flash_erase_chip(uint32_t flash_base)
 {
-    XPI_Type *xpi_base;
-    if (flash_base == XPI0_MEM_START) {
-        xpi_base = HPM_XPI0;
-    }
-#ifdef HPM_XPI1
-    else if (flash_base == XPI1_MEM_START) {
-        xpi_base = HPM_XPI1;
-    }
-#endif
-    else {
-        return status_invalid_argument;
-    }
-
     return rom_xpi_nor_erase_chip(xpi_base, channel, &nor_config);
 }
 

@@ -12,15 +12,18 @@ No special settings are required
 
 When the example runs successfully, the LED starts flashing and following message is displayed in the terminal:
 ```console
+task2 is running.
 Toggle the led pin level.
 LED is off.
 LED is off.
 LED is off.
 LED is off.
+task2 is running.
 Toggle the led pin level.
 LED is on.
 LED is on.
 LED is on.
+task2 is running.
 Toggle the led pin level.
 LED is off.
 LED is off.

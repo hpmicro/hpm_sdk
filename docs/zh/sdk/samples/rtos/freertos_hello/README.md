@@ -13,15 +13,18 @@
 当工程正确运行后，LED会开始闪烁，串口终端会输出如下信息：
 ```console
 Toggle the led pin level.
+task2 is running.
 LED is off.
 LED is off.
 LED is off.
 LED is off.
 Toggle the led pin level.
+task2 is running.
 LED is on.
 LED is on.
 LED is on.
 Toggle the led pin level.
+task2 is running.
 LED is off.
 LED is off.
 LED is off.

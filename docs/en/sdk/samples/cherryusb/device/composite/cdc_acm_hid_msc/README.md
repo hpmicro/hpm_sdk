@@ -1,4 +1,4 @@
-# USB COMPOSITE DEVICE
+# CherryUSB Composite DEVICE
 
 ## Overview
 

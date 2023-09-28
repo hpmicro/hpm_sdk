@@ -11,5 +11,6 @@
    pwm_measure/README
    t_shape_accel_decel/README
    timer_basic/README
+   sent_signal_decode/README
 
 ```

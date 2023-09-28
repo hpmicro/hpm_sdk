@@ -1,8 +1,8 @@
-# USB CDC Serial
+# CherryUSB CDC Serial
 
 ## Overview
 
-This  example project shows USB CDC Serial
+This example project shows USB CDC Serial
 
 - PC sees a serial port via Device Manager
 

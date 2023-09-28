@@ -41,6 +41,7 @@ typedef union {
         uint32_t support_speed_class_control_cmd: 1;
         uint32_t support_set_block_count_cmd: 1;
         uint32_t support_4bit_width: 1;
+        uint32_t is_byte_addressing_mode:1;
     };
 } sd_flags_t;
 

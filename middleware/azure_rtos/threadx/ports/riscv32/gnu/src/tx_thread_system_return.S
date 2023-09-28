@@ -95,7 +95,7 @@ _tx_thread_system_return:
 #if __riscv_flen == 32
     addi    sp, sp, -116                                # Allocate space on the stack - with floating point enabled
 #elif __riscv_flen == 64
-    addi    sp, sp, -252
+    addi    sp, sp, -168
 #endif
 #else
     addi    sp, sp, -64                                 # Allocate space on the stack - without floating point enabled
@@ -124,20 +124,20 @@ _tx_thread_system_return:
 
     /* Store floating point preserved registers.  */
 
-    fsd     f8,  0xC0(sp)                               # Store fs0
-    fsd     f9,  0xC8(sp)                               # Store fs1
-    fsd     f18, 0x110(sp)                              # Store fs2
-    fsd     f19, 0x118(sp)                              # Store fs3
-    fsd     f20, 0x120(sp)                              # Store fs4
-    fsd     f21, 0x128(sp)                              # Store fs5
-    fsd     f22, 0x130(sp)                              # Store fs6
-    fsd     f23, 0x138(sp)                              # Store fs7
-    fsd     f24, 0x140(sp)                              # Store fs8
-    fsd     f25, 0x148(sp)                              # Store fs9
-    fsd     f26, 0x150(sp)                              # Store fs10
-    fsd     f27, 0x158(sp)                              # Store fs11
+    fsd     f8,  0x40(sp)                               # Store fs0
+    fsd     f9,  0x48(sp)                               # Store fs1
+    fsd     f18, 0x50(sp)                              # Store fs2
+    fsd     f19, 0x58(sp)                              # Store fs3
+    fsd     f20, 0x60(sp)                              # Store fs4
+    fsd     f21, 0x68(sp)                              # Store fs5
+    fsd     f22, 0x70(sp)                              # Store fs6
+    fsd     f23, 0x78(sp)                              # Store fs7
+    fsd     f24, 0x80(sp)                              # Store fs8
+    fsd     f25, 0x88(sp)                              # Store fs9
+    fsd     f26, 0x90(sp)                              # Store fs10
+    fsd     f27, 0x98(sp)                              # Store fs11
     csrr    t0, fcsr
-    sw      t0, 0x6C(sp)                                # Store fcsr
+    sw      t0, 0xA0(sp)                                # Store fcsr
 #endif
 #endif
 

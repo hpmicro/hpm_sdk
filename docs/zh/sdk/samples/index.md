@@ -33,4 +33,5 @@
    tinyusb/index
    touch_panel/README
    microros/index
+   eeprom_emulation/index
 :::

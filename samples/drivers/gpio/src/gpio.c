@@ -19,7 +19,15 @@ void isr_gpio(void)
                           BOARD_LED_GPIO_PIN);
     printf("toggle led pin output\n");
 #else
+#if defined(GPIO_SOC_HAS_EDGE_BOTH_INTERRUPT) && (GPIO_SOC_HAS_EDGE_BOTH_INTERRUPT == 1)
+    if (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) == false) {
+        printf("user key pressed\n");
+    } else {
+        printf("user key released\n");
+    }
+#else
     printf("user key pressed\n");
+#endif
 #endif
 
 }
@@ -37,15 +45,17 @@ void test_gpio_input_interrupt(void)
 #endif
     gpio_set_pin_input(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX,
                            BOARD_APP_GPIO_PIN);
-
+#if defined(GPIO_SOC_HAS_EDGE_BOTH_INTERRUPT) && (GPIO_SOC_HAS_EDGE_BOTH_INTERRUPT == 1)
+    trigger = gpio_interrupt_trigger_edge_both;
+#else
     trigger = gpio_interrupt_trigger_edge_falling;
-
+#endif
     gpio_config_pin_interrupt(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX,
                            BOARD_APP_GPIO_PIN, trigger);
     gpio_enable_pin_interrupt(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX,
                            BOARD_APP_GPIO_PIN);
     intc_m_enable_irq_with_priority(BOARD_APP_GPIO_IRQ, 1);
-    while(1) {
+    while (1) {
         __asm("wfi");
     }
 }
@@ -82,6 +92,6 @@ int main(void)
 #endif
     test_gpio_input_interrupt();
 
-    while(1);
+    while (1);
     return 0;
 }

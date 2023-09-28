@@ -13,22 +13,9 @@
 #include <stdio.h>
 #include "board.h"
 #include "netif/etharp.h"
-#include "lwip/init.h"
-#include "lwip/tcp.h"
 #include "lwip/tcpip.h"
 #include "lwip/netif.h"
 #include "lwip/pbuf.h"
-#include "lwip/icmp.h"
-#include "lwip/udp.h"
-#include "lwip/opt.h"
-#include "lwip/arch.h"
-#include "lwip/api.h"
-#include "lwip/inet.h"
-#include "lwip/dhcp.h"
-#include "lwip/prot/dhcp.h"
-#include <lwip/ip.h>
-#include <lwip/netdb.h>
-#include <lwip/sockets.h>
 #include "usbh_core.h"
 #include "usbh_rndis.h"
 #include "rndis_protocol.h"
@@ -158,6 +145,7 @@ static void lwip_rx_handle(void *pdata)
     rndis_data_packet_t *pmsg;
     int pmg_offset;
     int payload_offset;
+    rndis_data_packet_t rndis_buf_tmp;
 
     struct usbh_rndis *rndis_class = (struct usbh_rndis *)pdata;
     rx_buf_ptr = rx_buffer;
@@ -172,6 +160,10 @@ static void lwip_rx_handle(void *pdata)
         }
         while (ret > 0) {
             pmsg = (rndis_data_packet_t *)(rx_buf_ptr + pmg_offset);
+            if ((pmg_offset % 4) != 0) {
+                memcpy(&rndis_buf_tmp, pmsg, sizeof(rndis_data_packet_t));
+                pmsg = &rndis_buf_tmp;
+            }
             if (pmsg->MessageType == REMOTE_NDIS_PACKET_MSG) {
                 /* allocate buffer */
                 p = pbuf_alloc(PBUF_RAW, pmsg->DataLength, PBUF_POOL);
@@ -233,7 +225,7 @@ static int usbh_rndis_eth_tx(struct pbuf *p)
     uint32_t info_len = 0;
 
     if (!s_rndis_class_ptr->link_status) {
-        printf("linkdown, drop pkg\r\n");
+        printf("linkdown....now connecting...\r\n");
         while (recount--) {
             ret = usbh_rndis_query_msg_transfer(s_rndis_class_ptr, OID_GEN_MEDIA_CONNECT_STATUS, sizeof(data), data, &info_len);
             if (ret < 0) {
@@ -241,6 +233,7 @@ static int usbh_rndis_eth_tx(struct pbuf *p)
             }
             if (NDIS_MEDIA_STATE_CONNECTED == data[0]) {
                 s_rndis_class_ptr->link_status = true;
+                printf("linkup!!!!!!\r\n");
                 break;
             } else {
                 s_rndis_class_ptr->link_status = false;

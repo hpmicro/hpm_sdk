@@ -68,7 +68,7 @@ ATTR_WEAK hpm_stat_t sdmmchost_get_board_config(sdmmchost_config_t *config)
     return status_success;
 }
 
-sdmmc_host_t *sdmmchost_get_host(void)
+ATTR_WEAK sdmmc_host_t *sdmmchost_get_host(void)
 {
     (void) memset(&s_sdmmc_host, 0, sizeof(s_sdmmc_host));
 

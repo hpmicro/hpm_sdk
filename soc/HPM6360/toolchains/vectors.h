@@ -202,3 +202,4 @@ __vector_s_table:
     IRQ_S_HANDLER 76 /* SYSCTL IRQ handler */
     IRQ_S_HANDLER 77 /* DEBUG[0] IRQ handler */
     IRQ_S_HANDLER 78 /* DEBUG[1] IRQ handler */
+

@@ -1,4 +1,4 @@
-# DMA example
+# DMA General Transfer
 
 ## Overview
 

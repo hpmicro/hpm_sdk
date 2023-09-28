@@ -30,8 +30,6 @@
 /*--------------- Tasks Priority -------------*/
 #define DHCP_TASK_PRIO            (tskIDLE_PRIORITY + 1)
 
-#define RNDIS_ETH_BUFFER_LEN (sizeof(rndis_data_packet_t) + 1514 + 42)
-
 /* Static Variable Definition*/
 TaskHandle_t print_dhcp_state_task_handle;
 
@@ -46,7 +44,7 @@ int main(void)
     board_init_usb_pins();
 
     /* set irq priority */
-    intc_set_irq_priority(IRQn_USB0, 1);
+    intc_set_irq_priority(CONFIG_HPM_USBH_IRQn, 1);
 
     printf("Start cherryusb rndis host task...\r\n");
 

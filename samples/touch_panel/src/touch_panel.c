@@ -31,9 +31,12 @@ int main(void)
 
     while(1) {
         stat = touch_get_data(points, &num_of_points);
-        if (stat != status_success) {
+        if (stat == status_fail) {
             printf("touch read data failed\n");
             while(1);
+        } else if ((stat == status_touch_buffer_no_ready) ||
+                     stat == status_touch_points_over_number) {
+            continue;
         }
         for (i = 0; i < num_of_points; i++) {
             printf("[%d]: x: %d, y: %d\n", i, points[i].x, points[i].y);

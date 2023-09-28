@@ -385,6 +385,31 @@ static inline void lcdc_set_background(LCDC_Type *ptr,
 
 /**
  *
+ * @brief enable background on alpha blender
+ *
+ * @note it not depend the background color of the layer itself. it can be used with lcdc_set_background API
+ * 
+ * @param[in] ptr LCD base address
+ */
+static inline void lcdc_enable_background_in_alpha_blender(LCDC_Type *ptr)
+{
+    ptr->CTRL |= LCDC_CTRL_BGDCL4CLR_MASK;
+}
+
+/**
+ *
+ * @brief disable background on alpha blender
+ * 
+ * @note if not use background but want depend the the background color of the layer itself, can be use the API
+ *
+ * @param[in] ptr LCD base address
+ */
+static inline void lcdc_disable_background_in_alpha_blender(LCDC_Type *ptr)
+{
+    ptr->CTRL &= ~LCDC_CTRL_BGDCL4CLR_MASK;
+}
+/**
+ *
  * @brief Get default layer configuration value
  *
  * @param[in] ptr LCD base address

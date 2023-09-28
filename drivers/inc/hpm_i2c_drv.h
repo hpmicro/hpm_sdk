@@ -29,7 +29,7 @@ enum {
     status_i2c_not_supported = MAKE_STATUS(status_group_i2c, 9),
 };
 
-/* convert data count value into CTRL[DATACNT] value map */
+/* convert data count value into register(CTRL[DATACNT] and CTRL[DATACNT_HIGH] if exist) */
 /* x range from 1 to I2C_SOC_TRANSFER_COUNT_MAX */
 /* 0 for I2C_SOC_TRANSFER_COUNT_MAX */
 #define I2C_DATACNT_MAP(x) (((x) == I2C_SOC_TRANSFER_COUNT_MAX) ? 0 : x)
@@ -158,7 +158,7 @@ static inline void i2c_clear_fifo(I2C_Type *ptr)
  */
 static inline uint8_t i2c_get_data_count(I2C_Type *ptr)
 {
-    return I2C_CTRL_DATACNT_GET(ptr->CTRL);
+    return (I2C_CTRL_DATACNT_HIGH_GET(ptr->CTRL) << 8U) + I2C_CTRL_DATACNT_GET(ptr->CTRL);
 }
 
 /**
@@ -263,7 +263,7 @@ static inline bool i2c_get_line_scl_status(I2C_Type *ptr)
  */
 static inline void i2c_clear_status(I2C_Type *ptr, uint32_t mask)
 {
-    ptr->STATUS |= (mask & I2C_EVENT_ALL_MASK);
+    ptr->STATUS = mask;
 }
 
 /**
@@ -621,6 +621,20 @@ hpm_stat_t i2c_master_seq_transmit(I2C_Type *ptr, const uint16_t device_address,
  */
 hpm_stat_t i2c_master_seq_receive(I2C_Type *ptr, const uint16_t device_address,
                                   uint8_t *buf, const uint32_t size, i2c_seq_transfer_opt_t opt);
+
+#if defined(I2C_SOC_SUPPORT_RESET) && (I2C_SOC_SUPPORT_RESET == 1)
+/**
+ * @brief generate SCL clock as reset signal
+ *
+ * @param i2c_ptr [in] ptr I2C base address
+ * @param [in] clk_len SCL clock length
+ */
+static inline void i2s_gen_reset_signal(I2C_Type *ptr, uint8_t clk_len)
+{
+    ptr->CTRL = (ptr->CTRL & ~I2C_CTRL_RESET_LEN_MASK) | I2C_CTRL_RESET_LEN_SET(clk_len) \
+                | I2C_CTRL_RESET_HOLD_SCKIN_MASK | I2C_CTRL_RESET_ON_MASK;
+}
+#endif
 
 /**
  * @}

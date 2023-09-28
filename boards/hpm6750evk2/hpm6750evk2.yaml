@@ -1,4 +1,4 @@
-# Copyright (c) 2022 HPMicro
+# Copyright (c) 2022-2023 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 board:
@@ -57,6 +57,10 @@ board:
       - adc_tempsns
       - sw_gm_api
       - enet
+      - enet_pps_pinout
       - enet_phy_on_board
+      - enet_multi_port
       - hall-qei
       - bldc_smc
+      - puart
+      - bldc_hfi

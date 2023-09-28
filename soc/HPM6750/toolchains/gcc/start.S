@@ -16,6 +16,7 @@ _start:
     .option push
     .option norelax
     la gp, __global_pointer$
+    la tp, __thread_pointer$
     .option pop
 
     /* reset mstatus to 0*/
@@ -29,6 +30,12 @@ _start:
     /* Initialize FCSR */
     fscsr zero
 #endif
+
+    /* Enable LMM1 clock */
+    la t0, 0xF4000800
+    lw t1, 0(t0)
+    ori t1, t1, 0x80
+    sw t1, 0(t0)
 
 #ifdef INIT_EXT_RAM_FOR_DATA
     la t0, _stack_safe

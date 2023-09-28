@@ -7,8 +7,8 @@
 
 #ifndef HPM_INTERRUPT_H
 #define HPM_INTERRUPT_H
-#include "riscv/riscv_core.h"
 #include "hpm_common.h"
+#include "hpm_csr_drv.h"
 #include "hpm_plic_drv.h"
 
 /**
@@ -574,25 +574,17 @@ ATTR_ALWAYS_INLINE static inline void uninstall_isr(uint32_t irq)
             csrr s3, mstatus \n");\
     SAVE_FPU_STATE(); \
     SAVE_DSP_CONTEXT(); \
-    __asm volatile ("\n\
-            c.li a5, 8\n\
-            csrs mstatus, a5\n"); \
+    __asm volatile("csrsi mstatus, 8"); \
 }
 
 /*
  * @brief Complete IRQ Handling
  */
 #define COMPLETE_IRQ_HANDLING_M(irq_num) { \
-    __asm volatile("\n\
-            lui a5, 0x1\n\
-            addi a5, a5, -2048\n\
-            csrc mie, a5\n");  \
-    __asm volatile("\n\
-            lui a4, 0xe4200\n");\
+    __asm volatile("csrci mstatus, 8"); \
+    __asm volatile("lui a4, 0xe4200"); \
     __asm volatile("li a3, %0" : : "i" (irq_num) :); \
-    __asm volatile("sw a3, 4(a4)\n\
-            fence io, io\n"); \
-    __asm volatile("csrs mie, a5"); \
+    __asm volatile("sw a3, 4(a4)"); \
 }
 
 /*
@@ -611,7 +603,6 @@ ATTR_ALWAYS_INLINE static inline void uninstall_isr(uint32_t irq)
             RESTORE_DSP_CONTEXT(); \
 }
 
-
 /* @brief Nested IRQ entry macro : Save CSRs and enable global irq. */
 #define NESTED_IRQ_ENTER()                              \
         SAVE_CSR(CSR_MEPC)                              \
@@ -628,18 +619,6 @@ ATTR_ALWAYS_INLINE static inline void uninstall_isr(uint32_t irq)
         RESTORE_MXSTATUS()                              \
         RESTORE_FCSR()                                  \
         RESTORE_UCODE()
-
-/*
- * @brief Nested IRQ exit macro : Restore CSRs
- * @param[in] irq Target interrupt number
- */
-#define NESTED_VPLIC_COMPLETE_INTERRUPT(irq)            \
-do {                                                    \
-    clear_csr(CSR_MIE, CSR_MIP_MEIP_MASK);                       \
-    __plic_complete_irq(HPM_PLIC_BASE, HPM_PLIC_TARGET_M_MODE, irq);  \
-    __asm volatile("fence io, io");                     \
-    set_csr(CSR_MIE, CSR_MIP_MEIP_MASK);                         \
-} while (0)
 
 #ifdef __cplusplus
 #define HPM_EXTERN_C extern "C"
@@ -667,6 +646,7 @@ void ISR_NAME_M(irq_num)(void) \
     COMPLETE_IRQ_HANDLING_M(irq_num);\
     EXIT_NESTED_IRQ_HANDLING_M();\
     RESTORE_CALLER_CONTEXT();\
+    __asm volatile("fence io, io");\
     __asm volatile("mret\n");\
 }
 #else

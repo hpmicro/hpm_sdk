@@ -178,88 +178,85 @@ static void sd_decode_csd(sd_card_t *card, uint32_t *raw_csd)
 {
     sd_csd_t *csd = &card->csd;
 
-    csd->csd_structure = (uint8_t) ((raw_csd[3U] & 0xC0000000U) >> 30U);
-    csd->data_read_access_time1 = (uint8_t) ((raw_csd[3U] & 0xFF0000U) >> 16U);
-    csd->data_read_access_time2 = (uint8_t) ((raw_csd[3U] & 0xFF00U) >> 8U);
-    csd->transfer_speed = (uint8_t) (raw_csd[3U] & 0xFFU);
-    csd->card_command_class = (uint16_t) ((raw_csd[2U] & 0xFFF00000U) >> 20U);
-    csd->read_block_len = (uint8_t) ((raw_csd[2U] & 0xF0000U) >> 16U);
+    csd->csd_structure = (uint8_t) extract_csd_field(raw_csd, 127, 126);
+    csd->data_read_access_time1 = (uint8_t) extract_csd_field(raw_csd, 119, 112);
+    csd->data_read_access_time2 = (uint8_t) extract_csd_field(raw_csd, 111, 104);
+    csd->transfer_speed = (uint8_t) extract_csd_field(raw_csd, 103, 96);
+    csd->card_command_class = (uint16_t) extract_csd_field(raw_csd, 95, 84);
+    csd->read_block_len = (uint8_t) extract_csd_field(raw_csd, 83, 80);
 
-    if ((raw_csd[2U] & 0x8000U) != 0U) {
+    if (extract_csd_field(raw_csd, 79, 79) != 0U) {
         csd->support_read_block_partial = true;
     }
-    if ((raw_csd[2U] & 0x4000U) != 0U) {
+    if (extract_csd_field(raw_csd, 78, 78) != 0U) {
         csd->support_write_block_misalignment = true;
     }
-    if ((raw_csd[2U] & 0x2000U) != 0U) {
+    if (extract_csd_field(raw_csd, 77, 77) != 0U) {
         csd->support_read_block_misalignment = true;
     }
-    if ((raw_csd[2U] & 0x1000U) != 0U) {
+    if (extract_csd_field(raw_csd, 76, 76) != 0U) {
         csd->is_dsr_implemented = true;
     }
     if (csd->csd_structure == 0U) {
-        csd->device_size = (uint32_t) ((raw_csd[2U] & 0x3FFU) << 2U);
-        csd->device_size |= (uint32_t) ((raw_csd[1U] & 0xC0000000U) >> 30U);
-        csd->read_current_vdd_min = (uint8_t) ((raw_csd[1U] & 0x38000000U) >> 27U);
-        csd->read_current_vdd_max = (uint8_t) ((raw_csd[1U] & 0x7000000U) >> 24U);
-        csd->write_current_vdd_min = (uint8_t) ((raw_csd[1U] & 0xE00000U) >> 20U);
-        csd->write_current_vdd_max = (uint8_t) ((raw_csd[1U] & 0x1C0000U) >> 18U);
-        csd->device_size_multiplier = (uint8_t) ((raw_csd[1U] & 0x38000U) >> 15U);
+        csd->device_size = (uint32_t) extract_csd_field(raw_csd, 73, 62);
+        csd->read_current_vdd_min = (uint8_t) extract_csd_field(raw_csd, 61, 59);
+        csd->read_current_vdd_max = (uint8_t) extract_csd_field(raw_csd, 58, 56);
+        csd->write_current_vdd_min = (uint8_t) extract_csd_field(raw_csd, 55, 53);
+        csd->write_current_vdd_max = (uint8_t) extract_csd_field(raw_csd, 52, 50);
+        csd->device_size_multiplier = (uint8_t) extract_csd_field(raw_csd, 49, 47);
 
         /* Get card total block count and block size. */
-        card->block_count = ((csd->device_size + 1U) << (csd->device_size_multiplier + 2U));
+        uint32_t c_size_mult = 1UL << (csd->device_size_multiplier + 2);
+        card->block_count = (csd->device_size + 1U) * c_size_mult;
         card->block_size = (1UL << (csd->read_block_len));
         if (card->block_size != SDMMC_BLOCK_SIZE_DEFAULT) {
             card->block_count *= card->block_size;
             card->block_size = SDMMC_BLOCK_SIZE_DEFAULT;
             card->block_count /= card->block_size;
-
-            card->card_size_in_bytes = (csd->device_size + 1U) * (1UL << (csd->device_size_multiplier + 2U));
         }
+        card->card_size_in_bytes = (uint64_t)card->block_size * card->block_count;
     } else if (csd->csd_structure == 1U) {
         card->block_size = SDMMC_BLOCK_SIZE_DEFAULT;
 
-        csd->device_size = (uint32_t) ((raw_csd[2U] & 0x3FU) << 16U);
-        csd->device_size |= (uint32_t) ((raw_csd[1U] & 0xFFFF0000U) >> 16U);
+        csd->device_size = extract_csd_field(raw_csd, 69, 48);
         if (csd->device_size >= 0xFFFFU) {
             csd->support_sdxc = true;
         }
-
         card->block_count = ((csd->device_size + 1U) * 1024U);
         card->card_size_in_bytes = (uint64_t) (csd->device_size + 1U) * 512UL * 1024UL;
     } else {
         /* Unsupported csd version */
     }
 
-    if ((uint8_t) ((raw_csd[1U] & 0x4000U) >> 14U) != 0U) {
+    if (extract_csd_field(raw_csd, 46, 46) != 0U) {
         csd->is_erase_block_enabled = true;
     }
-    csd->erase_sector_size = (1UL + ((raw_csd[1U] & 0x3F80U) >> 7U)) * card->block_size;
-    csd->write_protect_group_size = (1UL + (raw_csd[1U] & 0x7FU)) * card->block_size;
-    if ((uint8_t) (raw_csd[0U] & 0x80000000U) != 0U) {
+    csd->erase_sector_size = (1UL + extract_csd_field(raw_csd, 45, 39)) * card->block_size;
+    csd->write_protect_group_size = (1UL + extract_csd_field(raw_csd, 38, 32)) * card->block_size;
+    if (extract_csd_field(raw_csd, 31, 31) != 0U) {
         csd->is_write_protection_group_enabled = true;
     }
-    csd->write_speed_factor = (uint8_t) ((raw_csd[0U] & 0x1C000000U) >> 26U);
-    csd->max_write_block_len = 1UL << ((raw_csd[0U] & 0x3C00000U) >> 22U);
-    if ((uint8_t) ((raw_csd[0U] & 0x200000U) >> 21U) != 0U) {
+    csd->write_speed_factor = (uint8_t) extract_csd_field(raw_csd, 28, 26);
+    csd->max_write_block_len = 1UL << extract_csd_field(raw_csd, 25, 22);
+    if (extract_csd_field(raw_csd, 21, 21) != 0U) {
         csd->support_write_block_partial = true;
     }
-    if ((uint8_t) ((raw_csd[0U] & 0x8000U) >> 15U) != 0U) {
+    if (extract_csd_field(raw_csd, 15, 15) != 0U) {
         csd->support_file_format_group = true;
     }
-    if ((uint8_t) ((raw_csd[0U] & 0x4000U) >> 14U) != 0U) {
+    if (extract_csd_field(raw_csd, 14, 14) != 0U) {
         csd->support_copy = true;
     }
-    if ((uint8_t) ((raw_csd[0U] & 0x2000U) >> 13U) != 0U) {
+    if (extract_csd_field(raw_csd, 13, 13) != 0U) {
         csd->support_permanent_write_protect = true;
     }
-    if ((uint8_t) ((raw_csd[0U] & 0x1000U) >> 12U) != 0U) {
+    if (extract_csd_field(raw_csd, 12, 12) != 0U) {
         csd->support_temporary_write_protect = true;
     }
-    csd->file_format = (uint8_t) ((raw_csd[0U] & 0xC00U) >> 10U);
+    csd->file_format = (uint8_t) extract_csd_field(raw_csd, 11, 10);
 
 
-    uint32_t tran_speed = raw_csd[3] & 0xFFU;
+    uint32_t tran_speed = extract_csd_field(raw_csd, 103, 96);
     uint32_t bitrate_unit = tran_speed & 0x7U;
     uint32_t time_value = (tran_speed >> 3) & 0xFU;
     const uint32_t bitrate_unit_list[8] = {100UL * SPEED_1Kbps, SPEED_1Mbps, 10U * SPEED_1Mbps, 100U * SPEED_1Mbps,
@@ -402,6 +399,10 @@ static hpm_stat_t sd_probe_bus_voltage(sd_card_t *card)
             HPM_BREAK_IF(status != status_success);
             recv_ocr.ocr_word = cmd->response[0];
         } while (recv_ocr.card_power_up_status == 0);
+
+        if (recv_ocr.card_capacity_status == 0) {
+            card->sd_flags.is_byte_addressing_mode = 1;
+        }
 
         card->ocr.ocr_word = recv_ocr.ocr_word;
 
@@ -860,8 +861,13 @@ hpm_stat_t sd_read_blocks(sd_card_t *card, uint8_t *buffer, uint32_t start_block
             } else {
                 cmd->cmd_index = sdmmc_cmd_read_single_block;
             }
+
+            uint32_t start_addr = start_block;
+            if (card->sd_flags.is_byte_addressing_mode == 1U) {
+                start_addr *= card->block_size;
+            }
             cmd->resp_type = sdmmc_resp_r1;
-            cmd->cmd_argument = start_block;
+            cmd->cmd_argument = start_addr;
             data->block_size = SDMMC_BLOCK_SIZE_DEFAULT;
             data->block_cnt = read_block_count;
             data->rx_data = (uint32_t *) sdmmc_get_sys_addr(card->host, (uint32_t) buffer);
@@ -925,8 +931,12 @@ hpm_stat_t sd_write_blocks(sd_card_t *card, const uint8_t *buffer, uint32_t star
                 cmd->cmd_index = sdmmc_cmd_write_single_block;
                 data->enable_auto_cmd12 = false;
             }
+            uint32_t start_addr = start_block;
+            if (card->sd_flags.is_byte_addressing_mode == 1U) {
+                start_addr *= card->block_size;
+            }
             cmd->resp_type = sdmmc_resp_r1;
-            cmd->cmd_argument = start_block;
+            cmd->cmd_argument = start_addr;
             data->block_size = SDMMC_BLOCK_SIZE_DEFAULT;
             data->block_cnt = write_block_count;
             data->tx_data = (const uint32_t *) sdmmc_get_sys_addr(card->host, (uint32_t) buffer);
@@ -997,16 +1007,22 @@ hpm_stat_t sd_erase_blocks(sd_card_t *card, uint32_t start_block, uint32_t block
 
         sdmmchost_cmd_t *cmd = &card->host->cmd;
         memset(cmd, 0, sizeof(*cmd));
+        uint32_t erase_start_addr = start_block;
+        uint32_t erase_end_addr = start_block + block_count - 1U;
+        if (card->sd_flags.is_byte_addressing_mode == 1U) {
+            erase_start_addr *= card->block_size;
+            erase_end_addr *= card->block_size;
+        }
         uint32_t erase_timeout = sd_calculate_erase_timeout(card, start_block, block_count);
         /* Send erase start */
         cmd->cmd_index = sd_cmd_erase_start;
-        cmd->cmd_argument = start_block;
+        cmd->cmd_argument = erase_start_addr;
         cmd->resp_type = sdmmc_resp_r1;
         status = sd_send_cmd(card, cmd);
         HPM_BREAK_IF(status != status_success);
         /* Send Erase end */
         cmd->cmd_index = sd_cmd_erase_end;
-        cmd->cmd_argument = start_block + block_count - 1U;
+        cmd->cmd_argument = erase_end_addr;
         status = sd_send_cmd(card, cmd);
         HPM_BREAK_IF(status != status_success);
 

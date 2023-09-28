@@ -22,5 +22,4 @@ if(NOT DEFINED BUILD_VERSION)
   endif()
 endif()
 
-include(${HPM_SDK_BASE}/cmake/version.cmake)
 configure_file(${HPM_SDK_BASE}/hpm_sdk_version.h.in ${OUT_FILE})

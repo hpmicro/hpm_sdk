@@ -84,6 +84,7 @@ void test_vad_to_dao(void)
     test_vad_calibrate(&vad_config);
     printf("vad calibration done\n");
 
+    i2s_start(DAO_I2S);
     dao_start(TEST_DAO);
 
     recording = true;

@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include "board.h"
 #include "hpm_debug_console.h"
+#include "usb_config.h"
 
 #define LED_FLASH_PERIOD_IN_MS 300
 
@@ -44,13 +45,15 @@ int main(void)
     board_init_led_pins();
     board_init_usb_pins();
 
+    intc_set_irq_priority(CONFIG_HPM_USBD_IRQn, 2);
+
     board_timer_create(LED_FLASH_PERIOD_IN_MS, board_led_toggle);
 
     printf("cherry usb cdc_acm device freertos sample.\n");
 
     cdc_acm_init();
 
-    if (xTaskCreate(task1, "task1", configMINIMAL_STACK_SIZE + 256U, NULL, task1_PRIORITY, NULL) != pdPASS) {
+    if (usb_osal_thread_create("task1", 8192U, task1_PRIORITY, task1, NULL) == NULL) {
         perror("Task1 creation failed!.\n");
         for (;;) {
             ;

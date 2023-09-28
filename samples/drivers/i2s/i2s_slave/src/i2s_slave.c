@@ -27,8 +27,8 @@ void isr_dma(void)
 {
     uint32_t stat;
 
-    stat = dma_check_transfer_status(BOARD_APP_HDMA, DMA_MUX_CHANNEL);
-    dma_clear_transfer_status(BOARD_APP_HDMA, DMA_MUX_CHANNEL);
+    stat = dma_check_transfer_status(APP_DMA, DMA_CHANNEL);
+    dma_clear_transfer_status(APP_DMA, DMA_CHANNEL);
 
     if (stat & DMA_CHANNEL_STATUS_TC) {
         dma_transfer_done = true;
@@ -44,7 +44,7 @@ void dma_transfer_config(uint32_t size, uint32_t *ptr)
 
     intc_m_enable_irq_with_priority(BOARD_APP_HDMA_IRQ, ISR_PRIORITY_LEVEL);
 
-    dma_default_channel_config(BOARD_APP_HDMA, &ch_config);
+    dma_default_channel_config(APP_DMA, &ch_config);
     ch_config.src_addr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)ptr);
     ch_config.dst_addr = (uint32_t)((uint8_t *)&I2S_SLAVE->TXD[I2S_SLAVE_DATA_LINE] + sizeof(uint16_t));
     ch_config.src_width = DMA_TRANSFER_WIDTH_HALF_WORD;
@@ -55,7 +55,7 @@ void dma_transfer_config(uint32_t size, uint32_t *ptr)
     ch_config.dst_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
     ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_2T;
 
-    if (status_success != dma_setup_channel(BOARD_APP_HDMA, DMA_MUX_CHANNEL, &ch_config, true)) {
+    if (status_success != dma_setup_channel(APP_DMA, DMA_CHANNEL, &ch_config, true)) {
         printf(" dma setup channel failed\n");
         return;
     }
@@ -84,6 +84,7 @@ void i2s_slave_config(uint32_t sample_rate, uint8_t audio_depth, uint8_t channel
 
     i2s_config_tx_slave(I2S_SLAVE, &transfer);
     i2s_enable_tx_dma_request(I2S_SLAVE);
+    i2s_start(I2S_SLAVE);
 }
 
 void i2s_slave_transfer(void)

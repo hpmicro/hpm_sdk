@@ -124,7 +124,7 @@ int main(void)
 
         /* print uart received data */
         uart_rx_idle = false;
-        uart_received_data_count = BUFF_SIZE - dma_get_residue_transfer_size(TEST_DMA, TEST_DMA_CHANNEL);
+        uart_received_data_count = BUFF_SIZE - dma_get_remaining_transfer_size(TEST_DMA, TEST_DMA_CHANNEL);
         memcpy(uart_buff, dma_buff, uart_received_data_count);
         printf("uart receive %d bytes, the received data are:", uart_received_data_count);
         for (uint32_t i = 0; i < uart_received_data_count; i++) {

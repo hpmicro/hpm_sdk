@@ -8,7 +8,7 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "")
 endif()
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
-project(multcore_core0)
+project(multicore_core0)
 
 sdk_app_inc(src)
 sdk_app_inc(../../common)

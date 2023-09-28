@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include "board.h"
 #include "hpm_gpio_drv.h"
+#include "usb_config.h"
 
 #define LED_FLASH_PERIOD_IN_MS 300
 
@@ -26,6 +27,7 @@ int main(void)
     board_init_gpio_pins();
     gpio_set_pin_input(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN);
 
+    intc_set_irq_priority(CONFIG_HPM_USBD_IRQn, 2);
     board_timer_create(LED_FLASH_PERIOD_IN_MS, board_led_toggle);
 
     printf("cherry usb composite cdc_acm_hid_msc sample.\n");

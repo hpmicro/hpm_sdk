@@ -730,3 +730,11 @@ hpm_stat_t can_init(CAN_Type *base, can_config_t *config, uint32_t src_clk_freq)
 
     return status;
 }
+
+void can_deinit(CAN_Type *base)
+{
+    do {
+        HPM_BREAK_IF(base == NULL);
+        can_reset(base, true);
+    } while (false);
+}

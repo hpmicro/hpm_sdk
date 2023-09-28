@@ -11,7 +11,6 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(lcdc_example)
 
-sdk_compile_definitions(-DINIT_EXT_RAM_FOR_DATA=1)
 sdk_app_src(src/lcdc.c)
 
 generate_ses_project()

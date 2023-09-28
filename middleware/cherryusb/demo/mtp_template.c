@@ -61,10 +61,16 @@ struct usb_msosv1_descriptor msosv1_desc = {
 /*!< config descriptor size */
 #define USB_CONFIG_SIZE (9 + MTP_DESCRIPTOR_LEN)
 
+#ifdef CONFIG_USB_HS
+#define MTP_MAX_MPS 512
+#else
+#define MTP_MAX_MPS 64
+#endif
+
 const uint8_t mtp_descriptor[] = {
     USB_DEVICE_DESCRIPTOR_INIT(USB_2_1, 0x00, 0x00, 0x00, USBD_VID, USBD_PID, 0x0201, 0x01),
     USB_CONFIG_DESCRIPTOR_INIT(USB_CONFIG_SIZE, 0x01, 0x01, USB_CONFIG_BUS_POWERED, USBD_MAX_POWER),
-    MTP_DESCRIPTOR_INIT(0x00, CDC_OUT_EP, CDC_IN_EP, CDC_INT_EP, 2),
+    MTP_DESCRIPTOR_INIT(0x00, CDC_OUT_EP, CDC_IN_EP, CDC_INT_EP, MTP_MAX_MPS, 0x02),
     ///////////////////////////////////////
     /// string0 descriptor
     ///////////////////////////////////////
@@ -145,8 +151,29 @@ const uint8_t bos_descriptor[] = {
     0x0a, 0x10, 0x03, 0x00, 0x0f, 0x00, 0x01, 0x01, 0xf4, 0x01
 };
 
-void usbd_configure_done_callback(void)
+void usbd_event_handler(uint8_t event)
 {
+    switch (event) {
+        case USBD_EVENT_RESET:
+            break;
+        case USBD_EVENT_CONNECTED:
+            break;
+        case USBD_EVENT_DISCONNECTED:
+            break;
+        case USBD_EVENT_RESUME:
+            break;
+        case USBD_EVENT_SUSPEND:
+            break;
+        case USBD_EVENT_CONFIGURED:
+            break;
+        case USBD_EVENT_SET_REMOTE_WAKEUP:
+            break;
+        case USBD_EVENT_CLR_REMOTE_WAKEUP:
+            break;
+
+        default:
+            break;
+    }
 }
 
 struct usbd_interface intf0;

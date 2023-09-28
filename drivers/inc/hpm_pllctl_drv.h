@@ -390,6 +390,17 @@ static inline void pllctl_xtal_set_rampup_time(PLLCTL_Type *ptr, uint32_t cycles
 }
 
 /**
+ * @brief   Set pll work mode
+ *
+ * @param[in] ptr PLLCTL base address
+ * @param[in] pll Target PLL index
+ * @param[in] int_mode true: integer mode, false - fraction mode
+ *
+ * @return status_success if everything is okay
+ */
+hpm_stat_t pllctl_set_pll_work_mode(PLLCTL_Type *ptr, uint8_t pll, bool int_mode);
+
+/**
  * @brief   Set refdiv
  *
  * @param[in] ptr PLLCTL base address

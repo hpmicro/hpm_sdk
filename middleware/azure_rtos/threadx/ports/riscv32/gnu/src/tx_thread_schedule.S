@@ -294,19 +294,19 @@ _tx_thread_synch_return:
     lw      t0, 0x6C(sp)                                # Recover fcsr
     csrw    fcsr, t0                                    #
 #elif __riscv_flen == 64
-    fld     f8, 0xC0(sp)                                # Recover fs0
-    fld     f9, 0xC8(sp)                                # Recover fs1
-    fld     f18,0x110(sp)                               # Recover fs2
-    fld     f19,0x118(sp)                               # Recover fs3
-    fld     f20,0x120(sp)                               # Recover fs4
-    fld     f21,0x128(sp)                               # Recover fs5
-    fld     f22,0x130(sp)                               # Recover fs6
-    fld     f23,0x138(sp)                               # Recover fs7
-    fld     f24,0x140(sp)                               # Recover fs8
-    fld     f25,0x148(sp)                               # Recover fs9
-    fld     f26,0x150(sp)                               # Recover fs10
-    fld     f27,0x158(sp)                               # Recover fs11
-    lw      t0, 0x180(sp)                               # Recover fcsr
+    fld     f8, 0x40(sp)                                # Recover fs0
+    fld     f9, 0x48(sp)                                # Recover fs1
+    fld     f18,0x50(sp)                               # Recover fs2
+    fld     f19,0x58(sp)                               # Recover fs3
+    fld     f20,0x60(sp)                               # Recover fs4
+    fld     f21,0x68(sp)                               # Recover fs5
+    fld     f22,0x70(sp)                               # Recover fs6
+    fld     f23,0x78(sp)                               # Recover fs7
+    fld     f24,0x80(sp)                               # Recover fs8
+    fld     f25,0x88(sp)                               # Recover fs9
+    fld     f26,0x90(sp)                               # Recover fs10
+    fld     f27,0x98(sp)                               # Recover fs11
+    lw      t0, 0xA0(sp)                                # Recover fcsr
     csrw    fcsr, t0                                    #
 #endif
 #endif
@@ -333,7 +333,7 @@ _tx_thread_synch_return:
 #if __riscv_flen == 32
     addi    sp, sp, 116                                 # Recover stack frame
 #elif __riscv_flen == 64
-    addi    sp, sp, 252                                 # Recover stack frame
+    addi    sp, sp, 168                                 # Recover stack frame
 #endif
 #else
     addi    sp, sp, 64                                  # Recover stack frame

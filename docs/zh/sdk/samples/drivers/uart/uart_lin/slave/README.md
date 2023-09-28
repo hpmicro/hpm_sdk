@@ -6,6 +6,7 @@
 ## 注意
 - 数据帧之间的间隔应大于等于4个UART字节的传输时间。
 - 不支持波特率自适应功能，需将UART波特率配成需要的数值。
+- 不支持从机自动休眠，无需主机唤醒。
 
 ## 硬件设置
 
@@ -18,7 +19,7 @@
 运行此程序，需要配置usb_lin调试器
 - 配置usb_lin调试器，选择正确的串口和波特率， 然后点击`设置到调试器`：
   ![lin_debugger_configuration](../../../../../../../assets/sdk/samples/lin_debugger_configuration.png)
-- 配置发送窗口， 包括主机发送，主机接收和同步间隔，同步间隔可用于将从机从休眠模式唤醒：
+- 配置发送窗口， 包括主机发送，主机接收：
   ![lin_debugger_master_sent](../../../../../../../assets/sdk/samples/lin_debugger_master_sent_config.png)
 - 当程序正确运行之后， 调试器窗口可以看到结果：
   ![lin_debugger_master_result](../../../../../../../assets/sdk/samples/lin_debugger_master_result.png)

@@ -1,5 +1,182 @@
 # Change Log
 
+## [1.3.0] - 2023-09-28:
+
+Main changes since 1.2.0
+
+Tested Segger Embedded Studio Version: 7.32
+
+### Changed:
+  - boards: hpm6200evk/hpm6300evk: delete unwanted clock_ahb div set
+  - boards: hpm6750xxx: switch dcdc work mode to dcm mode
+  - docs: sdk: boards: hpm6750evk2: add pps pin information
+  - component: wm8960: support sysclk pre-divider
+  - components: serial_nor: add serial nor flash.
+  - openocd: probes: ft2232: remove trst and srst config.
+  - ip: cam：remove 0x5c MAX_WN_CYCLE register in regs.h
+  - driver: cam: remove invalid register
+  - drivers: i2s: update API
+  - drivers: adc: adc12/adc16: rename adc16_get_busywait to adc16_is_nonblocking_mode
+  - drivers: adc: adc12/adc16: update adcx_init API
+  - drivers: pllctrl: update pllctrl drivers
+  - drivers: spi : add spi enable and disable datamerge
+  - drivers: spi : add spi_set_address_len API
+  - drivers: pdgo Add missing APIs
+  - drivers: uart: update uart rx idle flag process and fifo control
+  - soc: delete_unnecessary_ppor_reset_bit_field
+  - soc: hpm_gpiom_soc_drv.h: delete gpiom_gpio_t soc name
+  - soc: delete DMA_SOC_BUS_NUM Macro
+  - soc: pcfg: update pcfg SCG_CTRL related drivers
+  - soc: hpm6750:startup Enable LMM1 clock before access to LMM1
+  - soc: gcc ld: add memory used size check
+  - middleware: cherryusb: update to v0.10.1
+  - middleware: guix: demo adapts to 800 * 480 resolution
+  - middleware: guix: improve demo display performance
+  - middleware: cherryusb: update for midi descriptor define
+  - middleware: cherryusb: update for midi
+  - samples: drivers: adc: adc12/adc16: speed optimization for oneshot reading
+  - samples: drivers: adc: adc12/adc16： update API call used for nonblocking judgement
+  - samples: drivers: adc: adc12/adc16: update API call related to blocking setting in oneshot mode
+  - samples: drivers: adc: adc12/adc16: reduce the input parameters of init_trigger_target function
+  - samples: drivers: adc: adc12/adc16: update init_oneshot_config
+  - samples: drivers: adc: adc12/adc16: optimization for clearing interrupt status
+  - samples: drivers: pwm: Add pwm clock jitter demo
+  - samples: cherryusb: hid host: separate mouse and keyboard urb
+  - samples: hrpwm: Add demo for updating hrpwm frequency
+  - samples: drivers:mcan Add CAN error handling and refined logic.
+  - samples: mbx: move dualcore mbx sample to multicore folder
+  - samples: cherryusb: update for v0.10.1
+  - samples: motor_ctrl: bldc smc: gcc toolcahin enable fpu.
+  - samples: lwip: lwip_tcpecho_freertos: optimization in a thread-safety way
+  - samples: qeo: update qeo abz frequency configuration
+  - samples: gptmr: add sent_signal sample.
+  - samples: lwip: lwip_ptp: remove the dependency on pps0 pinout
+  - samples: dma_manager: update for use dma_mgr_setup_channel()
+  - samples: drivers: gptmr: pwm_measure: support use dma
+  - samples: lwip: lwip_httpsrv/lwip_https_server: rename project names for uniform naming
+  - samples: multicore: lvgl_coremark: delete custom linker files and using andes toolchain
+  - samples: flash_algo: update device size.
+  - samples: cherryusb: host: hid: use ep_mps to fill urb
+
+### Added:
+  - cmake: ses: support specify custom openocd board cfg file.
+  - cmake: support specifying minimum sdk version in app.yaml.
+  - boards: add hpm5300evk
+  - components: eeprom_emulation: add hpm nor-flash support
+  - components: eeprom_emulation: add eeprom emulation component
+  - soc: add APIs for get or set sysctl resource status
+  - drivers: common: add HPM_ALIGN_DOWN and HPM_ALIGN_UP define
+  - drivers: adc: ad12/adc16: add adcx_set_blocking_read/adcx_set_nonblocking_read
+  - drivers: add encoder position driver
+  - drivers: lcdc: add enable/disable background in alpha blender.
+  - drivers: usb: add api to set dp/dm pin pulldown resistance
+  - drivers: spi: add spi_get_rx_fifo_valid_data_size and  spi_get_tx_fifo_valid_data_size APIs
+  - drivers: spi: add directIO function APIs
+  - drivers: enet: add rx resume API
+  - drivers: adc16: add resolution setting in adc16_get_default_config API
+  - drivers:rtc Add rtc_get_timeval API.
+  - drivers:mcan Add mcan_transmit_via_txfifo_nonblocking API.
+  - drivers: usb: add usb_hcd_set_power_ctrl_polarity() API
+  - drivers: plb: add plb drivers
+  - drivers: linv2: add linv2 driver
+  - drivers: sei: add sei driver
+  - drivers: dmav2: add dmav2 driver
+  - drivers: qeo: add qeo driver
+  - drivers: qeiv2: add qeiv2 driver
+  - drivers: mmc: add mmc driver
+  - drivers: rdc: add rdc driver
+  - drivers: add opamp driver
+  - drivers: bgpr: add related APIs for bgpr
+  - middleware: FreeRTOS: add xPortIsInsideInterrupt() API
+  - middleware: threadx: add definition automatically when enable traceX
+  - middleware: freeRTOS: add use gptmr to generate interrupt
+  - middleware: hpm_mcl: add hfi
+  - samples: drivers: adc: adc12/adc16: add wdog feature
+  - samples: add opamp demo
+  - samples: cherryusb: rndis: host: add iperf sample.
+  - samples: cherryusb: rndis: host: add ping sample.
+  - samples: drivers: adc: adc12/adc16: add hw trigger configuration in sequence mode
+  - samples: eeprom_emulation: add eeprom emulation perf test sample
+  - samples: eeprom_emulation: add base api demo
+  - samples: tracex: add demo for traceX usage
+  - samples: cherryusb: add audio_v1_mic_speaker_midi sample
+  - samples: cherryusb: add midi device sample
+  - samples: drivers: sei: add sei samples
+  - samples: drivers: plb: add plb demo
+  - samples: drivers: mmc: add mmc demo
+  - samples: drivers: qeiv2: add qeiv2 demo
+  - samples: drivers: qeo: add qeo demo
+  - samples: drivers: dmav2: add dmav2 demo
+  - samples: drivers: linv2: add linv2 demo
+  - samples: drivers: rdc: add rdc demo
+  - samples: drivers: pdgo Add PDGO samples
+  - samples: drivers: ewdg Add EWDG sample
+  - samples: lwip: add a lwip_tcpecho_multi_ports sample
+  - samples: motor_ctrl: add hfi
+
+### Fixed:
+  - cmake: fix segger default heap and stack size config
+  - cmake: fix add_subdirectory_ifdef arg processing.
+  - doc: boards: hpm6300evk: fix acmp pin info.
+  - boards: hpm6750evkmini: fix board_init_rgb_pwm_pins() problem
+  - boards: hpm6200evk: fix BOARD_G_GPIO_CTRL defined in wrong position
+  - openocd: hpm6750-dual-core: fix expression warning.
+  - component: wm8960: fix clock tolerance process
+  - soc: toolchains: segger: block tls add with fixed order
+  - soc: toolchain: gcc: fix Thread-Local Storage problem
+  - soc: segger linker files: fix heap and ctors initialize
+  - soc: fix interrupt complete operation
+  - soc: pcfg: fix DCDC_PROT[OVERLOAD_LP] bit access
+  - soc: ip: adc12: fix ADC12 threshold setting
+  - soc: HPM6750: fix clock setting and frequency obatining error
+  - soc: HPM6360: fix clock source definitions for ADC16
+  - soc: HPM6280: fix clock source definitions for ADC16
+  - soc: HPM6360: fix obtaining clock source error for DAC
+  - soc: HPM6280: fix obtaining clock source for DAC
+  - drivers: adc16: add bus mode enable control APIs
+  - drivers: adc16: fix ahb setting
+  - drivers: cam: clear the status of CAM should not affect other bits
+  - drivers: trgmux: filter function can't work.
+  - drivers: src: adc16: fix end count setting
+  - drivers: adc/dac: fix interrupt status clearing
+  - drivers: adc16: fix DMA access format
+  - drivers: sdm: fix over sample rate and signal sync problem
+  - drivers: pwm: fix pwm xcmp enable setting
+  - drivers: pwm: correct external fault polarity setting.
+  - drivers: pwm: add update hrpwm reload shadow api
+  - drivers: spi: fix  can't  set change data_bits use  spi_set_data_bits API
+  - drivers: ptpc: fix ptpc_clear_irq_status API issue.
+  - drivers: i2c: fix i2c_clear_status API issue.
+  - drivers: gptmr: fix gptmr_clear_status API issue.
+  - middleware: erpc: rpmsg_lite: fix platform_in_isr() error
+  - middleware:hpm_sdmmc Fix the issue sdsc cards are not supported.
+  - middleware: threadx: fix D extend asm code error
+  - samples: usbx: add multi devices and hot plug support
+  - samples: motor_ctrl: fix adc trig invalidate.
+  - samples: lwip: fix TCP reception error when size over 2KB
+  - samples: lwip: DHCP failure in lwip_tcpecho_freertos
+  - samples: drivers: adc: adc12: fix the status flag judgement in isr process
+  - samples: rgb_led: fix cmp shadow error
+  - samples: gptmr: pwm_generate: fix inaccurate duty in high frequency
+  - samples: lwip: low_level_input: fix the network storm issue
+  - samples: timer_basic: fix inconsistent use of defines
+  - samples: drivers: adc: adc16: fix the bit of interrupt status clearing in sequence mode
+  - samples: power_mode_switch: trigger system lowpower for standby mode
+  - samples: touch_panel: fix error data when 5 fingers touch screen at same time.
+  - samples: jpeg: jpeg_decode: fixed lcd display is tore when decoder is running
+  - samples: jpeg: jpeg_decode: malloc out of memory on gcc
+  - samples: drivers:can Fix abnormal behavior on can error sample.
+  - samples: segger_rtt: call board_init_clock.
+  - samples: drivers: acmp: fix one toggle value but multi toggle pulses
+  - samples: lwip_tcpecho_freerstos: fix code stuck with gcc toolchain
+  - samples: jpeg: fix JPEG_USE_UDISK compile error
+  - samples: bldc_foc: fix input value range.
+  - samples: cherryusb: rndis: udp_echo: fix echo extra char
+  - samples: usbx: fix global var placement
+  - samples: power_mode_switch: set to preset_1 after exiting wait mode.
+  - samples: pla: fix pla first pulse abnormal.
+  - samples: plb: fix the first pulse is abnormal.
+
 ## [1.2.0] - 2023-06-30:
 
 Main changes since 1.1.0

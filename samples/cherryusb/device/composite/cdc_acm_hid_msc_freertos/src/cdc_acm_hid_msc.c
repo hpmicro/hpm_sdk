@@ -6,10 +6,7 @@
  */
 /* FreeRTOS kernel includes. */
 #include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
-#include "assert.h"
-
+#include "usb_osal.h"
 #include "usbd_core.h"
 #include "usbd_msc.h"
 #include "usbd_cdc.h"
@@ -35,11 +32,19 @@
 
 #define USB_CONFIG_SIZE (9 + CDC_ACM_DESCRIPTOR_LEN + MSC_DESCRIPTOR_LEN + 25)
 
+#ifdef CONFIG_USB_HS
+#define CDC_MAX_MPS 512
+#define MSC_MAX_MPS 512
+#else
+#define CDC_MAX_MPS 64
+#define MSC_MAX_MPS 64
+#endif
+
 const uint8_t cdc_acm_hid_msc_descriptor[] = {
     USB_DEVICE_DESCRIPTOR_INIT(USB_2_0, 0x00, 0x00, 0x00, USBD_VID, USBD_PID, 0x0200, 0x01),
     USB_CONFIG_DESCRIPTOR_INIT(USB_CONFIG_SIZE, 0x04, 0x01, USB_CONFIG_BUS_POWERED, USBD_MAX_POWER),
-    CDC_ACM_DESCRIPTOR_INIT(0x00, CDC_INT_EP, CDC_OUT_EP, CDC_IN_EP, 0x02),
-    MSC_DESCRIPTOR_INIT(0x02, MSC_OUT_EP, MSC_IN_EP, 0x02),
+    CDC_ACM_DESCRIPTOR_INIT(0x00, CDC_INT_EP, CDC_OUT_EP, CDC_IN_EP, CDC_MAX_MPS, 0x02),
+    MSC_DESCRIPTOR_INIT(0x02, MSC_OUT_EP, MSC_IN_EP, MSC_MAX_MPS, 0x02),
     /************** Descriptor of Joystick Mouse interface ****************/
     /* 09 */
     0x09,                          /* bLength: Interface Descriptor size */
@@ -232,18 +237,18 @@ struct hid_mouse {
 };
 
 /*!< mouse report */
-static USB_NOCACHE_RAM_SECTION struct hid_mouse mouse_cfg;
+static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX struct hid_mouse mouse_cfg;
 
 #define HID_STATE_IDLE 0
 #define HID_STATE_BUSY 1
-SemaphoreHandle_t semaphore_acm_tx_done, semaphore_hid_tx_done;
+usb_osal_sem_t semaphore_acm_tx_done, semaphore_hid_tx_done;
 
 /* function ------------------------------------------------------------------*/
 static void usbd_hid_int_callback(uint8_t ep, uint32_t nbytes)
 {
     if (semaphore_hid_tx_done != NULL) {
-        if (xSemaphoreGive(semaphore_hid_tx_done) != pdPASS) {
-            printf("%s xSemaphoreGive error\n", __func__);
+        if (usb_osal_sem_give(semaphore_hid_tx_done) != 0) {
+            printf("%s usb_osal_sem_give error\n", __func__);
         }
     }
 }
@@ -257,16 +262,31 @@ static struct usbd_endpoint hid_in_ep = {
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t read_buffer[2048];
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t write_buffer[2048];
 
-#ifdef CONFIG_USB_HS
-#define CDC_MAX_MPS 512
-#else
-#define CDC_MAX_MPS 64
-#endif
-
-void usbd_configure_done_callback(void)
+void usbd_event_handler(uint8_t event)
 {
-    /* setup first out ep read transfer */
-    usbd_ep_start_read(CDC_OUT_EP, read_buffer, 2048);
+    switch (event) {
+    case USBD_EVENT_RESET:
+        break;
+    case USBD_EVENT_CONNECTED:
+        break;
+    case USBD_EVENT_DISCONNECTED:
+        break;
+    case USBD_EVENT_RESUME:
+        break;
+    case USBD_EVENT_SUSPEND:
+        break;
+    case USBD_EVENT_CONFIGURED:
+        /* setup first out ep read transfer */
+        usbd_ep_start_read(CDC_OUT_EP, read_buffer, 2048);
+        break;
+    case USBD_EVENT_SET_REMOTE_WAKEUP:
+        break;
+    case USBD_EVENT_CLR_REMOTE_WAKEUP:
+        break;
+
+    default:
+        break;
+    }
 }
 
 void usbd_cdc_acm_bulk_out(uint8_t ep, uint32_t nbytes)
@@ -286,9 +306,9 @@ void usbd_cdc_acm_bulk_in(uint8_t ep, uint32_t nbytes)
         usbd_ep_start_write(CDC_IN_EP, NULL, 0);
     } else {
         if (semaphore_acm_tx_done != NULL) {
-            int ret = xSemaphoreGive(semaphore_acm_tx_done);
-            if (ret != pdPASS) {
-                USB_LOG_ERR("xSemaphoreGive error. Have you select DTR to enable the demo to send message to host?\r\n");
+            int ret = usb_osal_sem_give(semaphore_acm_tx_done);
+            if (ret != 0) {
+                USB_LOG_ERR("usb_osal_sem_give error. Have you select DTR to enable the demo to send message to host?\r\n");
             }
         }
     }
@@ -319,9 +339,9 @@ struct usbd_interface intf3;
 
 void cdc_acm_hid_msc_descriptor_init(void)
 {
-    semaphore_acm_tx_done = xSemaphoreCreateBinary();
+    semaphore_acm_tx_done = usb_osal_sem_create(0);
     assert(semaphore_acm_tx_done != NULL);
-    semaphore_hid_tx_done = xSemaphoreCreateBinary();
+    semaphore_hid_tx_done = usb_osal_sem_create(0);
     assert(semaphore_hid_tx_done != NULL);
 
     usbd_desc_register(cdc_acm_hid_msc_descriptor);
@@ -360,8 +380,8 @@ void hid_mouse_test(void)
         if (ret < 0) {
             return;
         }
-        if (xSemaphoreTake(semaphore_hid_tx_done, portMAX_DELAY) != pdPASS) {
-            USB_LOG_ERR("%s xSemaphoreTake error\r\n", __func__);
+        if (usb_osal_sem_take(semaphore_hid_tx_done, portMAX_DELAY) != 0) {
+            USB_LOG_ERR("%s usb_osal_sem_take error\r\n", __func__);
         }
     }
     vTaskDelay(10);
@@ -396,14 +416,14 @@ void cdc_acm_data_send_with_dtr_test(void)
             write_buffer[2046] = 0x0D;
             write_buffer[2047] = 0x0A;
             usbd_ep_start_write(CDC_IN_EP, write_buffer, 2048);
-            if (xSemaphoreTake(semaphore_acm_tx_done, portMAX_DELAY) != pdPASS) {
-                USB_LOG_ERR("xSemaphoreTake error\r\n");
+            if (usb_osal_sem_take(semaphore_acm_tx_done, portMAX_DELAY) != 0) {
+                USB_LOG_ERR("usb_osal_sem_take error\r\n");
             }
             count--;
         }
         vTaskDelay(100);
     }
-    vSemaphoreDelete(semaphore_acm_tx_done);
+    usb_osal_sem_delete(semaphore_acm_tx_done);
     semaphore_acm_tx_done = NULL;
 }
 

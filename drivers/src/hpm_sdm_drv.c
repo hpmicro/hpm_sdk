@@ -14,8 +14,8 @@
 
 void sdm_get_default_module_control(SDM_Type *ptr, sdm_control_t *control)
 {
-    control->clk_signal_sync = true;
-    control->data_signal_sync = true;
+    control->clk_signal_sync = 0xf; /*!< configure clk sync for all channels */
+    control->data_signal_sync = 0xf; /*!< configure data sync for all channels */
     control->interrupt_en = false;
 }
 
@@ -102,7 +102,7 @@ void sdm_config_channel_filter(SDM_Type *ptr, uint8_t ch_index, sdm_filter_confi
     ptr->CH[ch_index].SDCTRLE = SDM_CH_SDCTRLE_SGD_ORDR_SET(filter_config->filter_type)
                                 | SDM_CH_SDCTRLE_PWMSYNC_SET(filter_config->pwm_signal_sync)
                                 | SDM_CH_SDCTRLE_CIC_SCL_SET(filter_config->output_offset)
-                                | SDM_CH_SDCTRLE_CIC_DEC_RATIO_SET(filter_config->oversampling_rate - 1)
+                                | SDM_CH_SDCTRLE_CIC_DEC_RATIO_SET(filter_config->oversampling_rate)
                                 | SDM_CH_SDCTRLE_IGN_INI_SAMPLES_SET(filter_config->ignore_invalid_samples);
 
     ptr->CH[ch_index].SDCTRLP = SDM_CH_SDCTRLP_MANCH_THR_SET(filter_config->manchester_threshold)

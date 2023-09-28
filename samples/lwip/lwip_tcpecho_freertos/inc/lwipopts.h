@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -120,6 +120,17 @@ a lot of data that needs to be copied, this should be set high. */
 #define LWIP_NETIF_LINK_CALLBACK        1
 
 /*
+   ------------------------------------------------
+   ---------- Network Interfaces options ----------
+   ------------------------------------------------
+*/
+
+/**
+ * LWIP_NETIF_API==1: Support netif api (in netifapi.c)
+ */
+#define LWIP_NETIF_API                  1
+
+/*
    --------------------------------------
    ---------- Checksum options ----------
    --------------------------------------
@@ -172,7 +183,7 @@ Some MCUs allow computing and verifying the IP, UDP, TCP and ICMP checksums by h
 /**
  * LWIP_NETCONN==1: Enable Netconn API (require to use api_lib.c)
  */
-#define LWIP_NETCONN                    0
+#define LWIP_NETCONN                    1
 
 /*
    ------------------------------------
@@ -237,7 +248,7 @@ Some MCUs allow computing and verifying the IP, UDP, TCP and ICMP checksums by h
 #define DEFAULT_UDP_RECVMBOX_SIZE       1000
 #define DEFAULT_TCP_RECVMBOX_SIZE       1000
 #define DEFAULT_ACCEPTMBOX_SIZE         1000
-#define DEFAULT_THREAD_STACKSIZE        500
+#define DEFAULT_THREAD_STACKSIZE        2048
 #define TCPIP_THREAD_PRIO               3
 #define LWIP_SINGLE_NETIF               1
 #define LWIP_COMPAT_MUTEX               0

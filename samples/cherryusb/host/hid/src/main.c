@@ -20,12 +20,10 @@ extern void usbh_class_test(void);
 int main(void)
 {
     board_init();
-    board_init_gpio_pins();
     board_init_usb_pins();
-#ifdef BOARD_LED_GPIO_CTRL
-    gpio_set_pin_output(BOARD_LED_GPIO_CTRL, BOARD_LED_GPIO_INDEX, BOARD_LED_GPIO_PIN);
-    gpio_write_pin(BOARD_LED_GPIO_CTRL, BOARD_LED_GPIO_INDEX, BOARD_LED_GPIO_PIN, BOARD_LED_ON_LEVEL);
-#endif
+
+    /* set irq priority */
+    intc_set_irq_priority(CONFIG_HPM_USBH_IRQn, 1);
 
     printf("Start usb host task...\r\n");
     usbh_initialize();

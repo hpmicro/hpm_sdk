@@ -8,6 +8,13 @@ sdk_src(
     GCC/RISC-V/portASM.S
     )
 
+# If CONFIG_FREERTOS_TIMER_RESOURCE_NOT_MTIMER is not defined, the mtimer is used to generate systic
+# Otherwise use the gptimer to generate systic
+if(NOT DEFINED CONFIG_FREERTOS_TIMER_RESOURCE_NOT_MTIMER)
+    sdk_compile_definitions("-DportasmHAS_MTIME=1")
+else()
+    sdk_compile_definitions("-DportasmHAS_MTIME=0")
+endif()
 if(DEFINED CONFIG_FREERTOS_HEAP)
     if("${CONFIG_FREERTOS_HEAP}" STREQUAL "")
         sdk_src(MemMang/heap_4.c)

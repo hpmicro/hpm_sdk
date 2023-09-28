@@ -1,4 +1,4 @@
-# USB RNDIS DEVICE - Http server
+# CherryUSB RNDIS Device - Http Server
 
 ## Overview
 

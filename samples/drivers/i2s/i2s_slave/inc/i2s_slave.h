@@ -14,9 +14,11 @@
 #define ISR_PRIORITY_LEVEL (1U)
 
 /* DMA */
-#define DMA_TRANSFER_SIZE        (96U)
-#define DMA_MUX_CHANNEL          (2U)
-#define DMA_MUX_SRC               HPM_DMA_SRC_I2S0_TX
+#define APP_DMA                BOARD_APP_HDMA
+#define DMA_TRANSFER_SIZE      (96U)
+#define DMA_CHANNEL            (2U)
+#define DMA_MUX_CHANNEL        DMA_SOC_CHN_TO_DMAMUX_CHN(APP_DMA, DMA_CHANNEL)
+#define DMA_MUX_SRC            HPM_DMA_SRC_I2S0_TX
 #define DMA_TC_MASK
 
 /* I2S Slave */

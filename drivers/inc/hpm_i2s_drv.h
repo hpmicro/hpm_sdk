@@ -234,6 +234,8 @@ static inline void i2s_disable_irq(I2S_Type *ptr, uint32_t mask)
 /**
  * @brief I2S enable
  *
+ * @note dropped API, please use i2s_start
+ *
  * @param [in] ptr I2S base address
  */
 static inline void i2s_enable(I2S_Type *ptr)
@@ -244,9 +246,31 @@ static inline void i2s_enable(I2S_Type *ptr)
 /**
  * @brief I2S disable
  *
+ * @note dropped API, please use i2s_stop
+ *
  * @param [in] ptr I2S base address
  */
 static inline void i2s_disable(I2S_Type *ptr)
+{
+    ptr->CTRL &= ~I2S_CTRL_I2S_EN_MASK;
+}
+
+/**
+ * @brief I2S start
+ *
+ * @param [in] ptr I2S base address
+ */
+static inline void i2s_start(I2S_Type *ptr)
+{
+    ptr->CTRL |= I2S_CTRL_I2S_EN_MASK;
+}
+
+/**
+ * @brief I2S stop
+ *
+ * @param [in] ptr I2S base address
+ */
+static inline void i2s_stop(I2S_Type *ptr)
 {
     ptr->CTRL &= ~I2S_CTRL_I2S_EN_MASK;
 }
@@ -296,30 +320,6 @@ static inline void i2s_disable_tx(I2S_Type *ptr, uint8_t tx_mask)
 }
 
 /**
- * @brief I2S clear tx fifo
- *
- * @param [in] ptr I2S base address
- */
-static inline void i2s_clear_tx_fifo(I2S_Type *ptr)
-{
-    ptr->CTRL |= I2S_CTRL_TXFIFOCLR_MASK;
-    while (ptr->CTRL & I2S_CTRL_TXFIFOCLR_MASK) {
-    }
-}
-
-/**
- * @brief I2S clear rx fifo
- *
- * @param [in] ptr I2S base address
- */
-static inline void i2s_clear_rx_fifo(I2S_Type *ptr)
-{
-    ptr->CTRL |= I2S_CTRL_RXFIFOCLR_MASK;
-    while (ptr->CTRL & I2S_CTRL_RXFIFOCLR_MASK) {
-    }
-}
-
-/**
  * @brief I2S reset clock generator
  *
  * @param [in] ptr I2S base address
@@ -333,23 +333,52 @@ static inline void i2s_reset_clock_gen(I2S_Type *ptr)
 /**
  * @brief I2S reset tx function
  *
+ * @note This API will disable I2S, reset tx function
+ *
  * @param [in] ptr I2S base address
  */
 static inline void i2s_reset_tx(I2S_Type *ptr)
 {
-    ptr->CTRL |= I2S_CTRL_SFTRST_TX_MASK;
-    ptr->CTRL &= ~I2S_CTRL_SFTRST_TX_MASK;
+    /* disable I2S */
+    ptr->CTRL &= ~I2S_CTRL_I2S_EN_MASK;
+
+    /* reset tx and clear fifo */
+    ptr->CTRL |= (I2S_CTRL_TXFIFOCLR_MASK | I2S_CTRL_SFTRST_TX_MASK);
+    ptr->CTRL &= ~(I2S_CTRL_TXFIFOCLR_MASK | I2S_CTRL_SFTRST_TX_MASK);
 }
 
 /**
  * @brief I2S reset rx function
  *
+ * @note This API will disable I2S, reset rx function
+ *
  * @param [in] ptr I2S base address
  */
 static inline void i2s_reset_rx(I2S_Type *ptr)
 {
-    ptr->CTRL |= I2S_CTRL_SFTRST_RX_MASK;
-    ptr->CTRL &= ~I2S_CTRL_SFTRST_RX_MASK;
+    /* disable I2S */
+    ptr->CTRL &= ~I2S_CTRL_I2S_EN_MASK;
+
+    /* reset rx and clear fifo */
+    ptr->CTRL |= (I2S_CTRL_RXFIFOCLR_MASK | I2S_CTRL_SFTRST_RX_MASK);
+    ptr->CTRL &= ~(I2S_CTRL_RXFIFOCLR_MASK | I2S_CTRL_SFTRST_RX_MASK);
+}
+
+/**
+ * @brief I2S reset tx and rx function
+ *
+ * @note This API will disable I2S, reset tx/rx function
+ *
+ * @param [in] ptr I2S base address
+ */
+static inline void i2s_reset_tx_rx(I2S_Type *ptr)
+{
+    /* disable I2S */
+    ptr->CTRL &= ~I2S_CTRL_I2S_EN_MASK;
+
+    /* reset tx/rx and clear fifo */
+    ptr->CTRL |= (I2S_CTRL_TXFIFOCLR_MASK | I2S_CTRL_RXFIFOCLR_MASK | I2S_CTRL_SFTRST_TX_MASK | I2S_CTRL_SFTRST_RX_MASK);
+    ptr->CTRL &= ~(I2S_CTRL_TXFIFOCLR_MASK | I2S_CTRL_RXFIFOCLR_MASK | I2S_CTRL_SFTRST_TX_MASK | I2S_CTRL_SFTRST_RX_MASK);
 }
 
 /**

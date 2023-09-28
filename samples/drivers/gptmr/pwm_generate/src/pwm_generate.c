@@ -65,7 +65,6 @@ static void set_pwm_waveform_edge_aligned_frequency(uint32_t freq)
     gptmr_freq = clock_get_frequency(APP_BOARD_GPTMR_CLOCK);
     current_reload = gptmr_freq / freq;
     config.reload = current_reload;
-    config.cmp[0] = current_reload - 1;
     config.cmp_initial_polarity_high = false;
     gptmr_stop_counter(APP_BOARD_PWM, APP_BOARD_PWM_CH);
     gptmr_channel_config(APP_BOARD_PWM, APP_BOARD_PWM_CH, &config, false);
@@ -79,7 +78,7 @@ static void set_pwm_waveform_edge_aligned_duty(uint8_t duty)
     if (duty > 100) {
         duty = 100;
     }
-    cmp = (current_reload * duty) / 100;
+    cmp = ((current_reload * duty) / 100) + 1;
     gptmr_update_cmp(APP_BOARD_PWM, APP_BOARD_PWM_CH, 0, cmp);
 }
 

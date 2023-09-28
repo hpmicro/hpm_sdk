@@ -1,18 +1,18 @@
-# USB RNDIS HOST - DHCP
+# CherryUSB RNDIS Host - DHCP Client
 
 ## 概述
 
-- 本示例工程展示USB RNDIS HOST实现DHCP Client。
+- 本示例工程展示USB RNDIS Host实现DHCP Client。
 - 使用两块开发板对接，A开发板烧写samples/cherryusb/device/rndis/udp_echo程序作为rndis设备，B开发板烧写本示例程序作为rndis主机。rndis主机将会从rndis设备中获取并设置自己的MAC地址，也会通过dhcp协议获取自己的ip地址及网关信息等。
 
 ## 硬件设置
 
 - 两块开发板的USB0通过USB线连接。
-- B开发板(RNDIS HOST)的DEBUG口或UART Console口接于PC。
+- B开发板(RNDIS Host)的DEBUG口或UART Console口接于PC。
 
 ## 运行现象
 
-- 将两个程序分别下载至A开发板和B开发中，并接好连线，B开发板(RNDIS HOST)串口控制台输出如下：
+- 将两个程序分别下载至A开发板和B开发板中，并接好连线，B开发板(RNDIS Host)串口控制台输出如下：
 ```console
 
 Start cherryusb rndis host task...
@@ -69,10 +69,5 @@ Start cherryusb rndis host task...
  IPv4 Address     : 192.168.7.2
  IPv4 Subnet mask : 255.255.255.0
  IPv4 Gateway     : 192.168.7.1
-
-rndis dev keepalive success!
-rndis dev keepalive success!
-rndis dev keepalive success!
-
 
 ```

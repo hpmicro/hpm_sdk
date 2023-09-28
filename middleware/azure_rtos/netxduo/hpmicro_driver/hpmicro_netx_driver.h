@@ -34,7 +34,7 @@
 #define NX_DRIVER_ERROR 90
 
 /* Exported Macros------------------------------------------------------------*/
-#if RGMII
+#if defined(RGMII) && RGMII
 #define ENET_INF_TYPE enet_inf_rgmii
 #define ENET BOARD_ENET_RGMII
 #else

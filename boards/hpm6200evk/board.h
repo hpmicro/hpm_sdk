@@ -38,7 +38,7 @@
 #define BOARD_APP_UART_IRQ  IRQn_UART0
 #else
 #ifndef BOARD_APP_UART_IRQ
-#warning no IRQ specified for applicaiton uart
+#warning no IRQ specified for application uart
 #endif
 #endif
 
@@ -101,6 +101,11 @@
 #define BOARD_APP_I2C_DMAMUX HPM_DMAMUX
 #define BOARD_APP_I2C_DMA_SRC HPM_DMA_SRC_I2C0
 #define BOARD_APP_I2C_DMAMUX_CH DMAMUX_MUXCFG_HDMA_MUX0
+#define BOARD_I2C_GPIO_CTRL           HPM_GPIO0
+#define BOARD_I2C_SCL_GPIO_INDEX      GPIO_DO_GPIOB
+#define BOARD_I2C_SCL_GPIO_PIN        22
+#define BOARD_I2C_SDA_GPIO_INDEX      GPIO_DO_GPIOB
+#define BOARD_I2C_SDA_GPIO_PIN        23
 
 /* ACMP desction */
 #define BOARD_ACMP HPM_ACMP
@@ -131,18 +136,6 @@
 #define BOARD_GPTMR_PWM_SYNC_CHANNEL  1
 #define BOARD_GPTMR_PWM_SYNC_CLK_NAME clock_gptmr2
 
-
-#define BOARD_LED_GPIO_CTRL BOARD_G_GPIO_CTRL
-#define BOARD_LED_GPIO_INDEX BOARD_G_GPIO_INDEX
-#define BOARD_LED_GPIO_PIN BOARD_G_GPIO_PIN
-
-#define BOARD_LED_OFF_LEVEL 0
-#define BOARD_LED_ON_LEVEL !BOARD_LED_OFF_LEVEL
-#define BOARD_LED_TOGGLE_RGB 1
-
-#define BOARD_APP_GPIO_INDEX GPIO_DI_GPIOZ
-#define BOARD_APP_GPIO_PIN 2
-
 /* pinmux section */
 #define USING_GPIO0_FOR_GPIOZ
 #ifndef USING_GPIO0_FOR_GPIOZ
@@ -166,9 +159,7 @@
 #define BOARD_APP_SPI_ADDR_LEN_IN_BYTES (1U)
 #define BOARD_APP_SPI_DATA_LEN_IN_BITS  (8U)
 #define BOARD_APP_SPI_RX_DMA HPM_DMA_SRC_SPI1_RX
-#define BOARD_APP_SPI_RX_DMAMUX_CH DMAMUX_MUXCFG_HDMA_MUX0
 #define BOARD_APP_SPI_TX_DMA HPM_DMA_SRC_SPI1_TX
-#define BOARD_APP_SPI_TX_DMAMUX_CH DMAMUX_MUXCFG_HDMA_MUX1
 #define BOARD_SPI_CS_GPIO_CTRL           HPM_GPIO0
 #define BOARD_SPI_CS_PIN                 IOC_PAD_PB02
 #define BOARD_SPI_CS_ACTIVE_LEVEL        (0U)
@@ -183,15 +174,24 @@
 #define BOARD_APP_XPI_NOR_CFG_OPT_OPT1        (0x00001000U)
 
 /* ADC section */
-#define BOARD_APP_ADC16_NAME "ADC0"
-#define BOARD_APP_ADC16_BASE HPM_ADC0
-#define BOARD_APP_ADC16_IRQn IRQn_ADC0
-#define BOARD_APP_ADC16_CH_1                     (1U)
+#define BOARD_APP_ADC16_NAME            "ADC0"
+#define BOARD_APP_ADC16_BASE            HPM_ADC0
+#define BOARD_APP_ADC16_IRQn            IRQn_ADC0
+#define BOARD_APP_ADC16_CH_1            (1U)
+#define BOARD_APP_ADC16_CLK_NAME        (clock_adc0)
+
+#define BOARD_APP_ADC16_HW_TRIG_SRC     HPM_PWM0
+#define BOARD_APP_ADC16_HW_TRGM         HPM_TRGM0
+#define BOARD_APP_ADC16_HW_TRGM_IN      HPM_TRGM0_INPUT_SRC_PWM0_CH8REF
+#define BOARD_APP_ADC16_HW_TRGM_OUT_SEQ TRGM_TRGOCFG_ADC0_STRGI
+#define BOARD_APP_ADC16_HW_TRGM_OUT_PMT TRGM_TRGOCFG_ADCX_PTRGI0A
+
+#define BOARD_APP_ADC16_PMT_TRIG_CH     ADC16_CONFIG_TRG0A
 
 /* DAC section */
-#define BOARD_DAC_BASE       HPM_DAC0
-#define BOARD_DAC_IRQn       IRQn_DAC0
-#define BOARD_DAC_CLOCK_NAME clock_dac0
+#define BOARD_DAC_BASE              HPM_DAC0
+#define BOARD_DAC_IRQn              IRQn_DAC0
+#define BOARD_APP_DAC_CLOCK_NAME    clock_dac0
 
 /* CAN section */
 #define BOARD_APP_CAN_BASE                       HPM_MCAN0
@@ -323,6 +323,18 @@
 #define BOARD_B_GPIO_CTRL HPM_GPIO0
 #define BOARD_B_GPIO_INDEX GPIO_DI_GPIOB
 #define BOARD_B_GPIO_PIN 19
+
+#define BOARD_LED_GPIO_CTRL BOARD_G_GPIO_CTRL
+#define BOARD_LED_GPIO_INDEX BOARD_G_GPIO_INDEX
+#define BOARD_LED_GPIO_PIN BOARD_G_GPIO_PIN
+
+#define BOARD_LED_OFF_LEVEL 0
+#define BOARD_LED_ON_LEVEL !BOARD_LED_OFF_LEVEL
+#define BOARD_LED_TOGGLE_RGB 1
+
+/* Key Section */
+#define BOARD_APP_GPIO_INDEX GPIO_DI_GPIOZ
+#define BOARD_APP_GPIO_PIN 2
 
 /* RGB LED Section */
 #define BOARD_RED_PWM_IRQ IRQn_PWM3
@@ -460,6 +472,12 @@
 #define BOARD_SHOW_BANNER 1
 #endif
 
+/* FreeRTOS Definitions */
+#define BOARD_FREERTOS_TIMER                    HPM_GPTMR1
+#define BOARD_FREERTOS_TIMER_CHANNEL            1
+#define BOARD_FREERTOS_TIMER_IRQ                IRQn_GPTMR1
+#define BOARD_FREERTOS_TIMER_CLK_NAME           clock_gptmr1
+
 #if defined(__cplusplus)
 extern "C" {
 #endif /* __cplusplus */
@@ -493,9 +511,10 @@ void board_init_clock(void);
 
 uint32_t board_init_spi_clock(SPI_Type *ptr);
 
+void board_init_lin_pins(LIN_Type *ptr);
 uint32_t board_init_lin_clock(LIN_Type *ptr);
 
-uint32_t board_init_adc16_clock(ADC16_Type *ptr);
+uint32_t board_init_adc16_clock(ADC16_Type *ptr, bool clk_src_ahb);
 
 uint32_t board_init_dac_clock(DAC_Type *ptr, bool clk_src_ahb);
 

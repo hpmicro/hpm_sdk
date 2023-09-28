@@ -1,4 +1,4 @@
-# USB CDC 串口
+# CherryUSB CDC 串口
 
 ## 概述
 

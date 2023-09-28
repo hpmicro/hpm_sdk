@@ -279,7 +279,7 @@ typedef uint32_t rndis_Type_t;
 typedef struct {
     rndis_Size_t Size;
     rndis_Type_t Type;
-    rndis_ClassInformationOffset_t ClassInformationOffset;
+    rndis_ClassInformationOffset_t ClassInformationType;
 } rndis_OOB_packet_t;
 
 #include "ndis.h"

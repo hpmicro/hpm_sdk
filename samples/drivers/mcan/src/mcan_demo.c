@@ -34,8 +34,8 @@ typedef struct {
  *
  * @param [in] tx_buf Transmission buffer
  * @param [in] rx_buf Receive buffer
- * @return true Content is identical
- * @return false Content was mismatch
+ * @retval true Content is identical
+ * @retval false Content was mismatch
  */
 static bool can_buf_compare(const mcan_tx_frame_t *tx_buf, const mcan_rx_message_t *rx_buf);
 
@@ -43,8 +43,8 @@ static bool can_buf_compare(const mcan_tx_frame_t *tx_buf, const mcan_rx_message
  * @brief CAN loopback test
  *
  * @param [in] base CAN base address
- * @return true Test passed
- * @return false Test failed
+ * @retval true Test passed
+ * @retval false Test failed
  */
 bool can_loopback_test(MCAN_Type *base, bool enable_canfd);
 
@@ -57,6 +57,7 @@ void can_loopback_test_for_all_cans(void);
  * @brief Test CAN interrupt mode in loopback mode
  */
 void board_can_loopback_test_in_interrupt_mode(void);
+
 /**
  * @brief CAN echo test, initiator
  */
@@ -121,6 +122,11 @@ void board_can_isr(void);
  */
 void handle_can_test(void);
 
+/**
+ * @brief Handle CAN errors
+ */
+void handle_can_error(MCAN_Type *ptr);
+
 void show_help(void);
 
 char *get_timestamp_hex_string(const mcan_timestamp_value_t *ts_val);
@@ -158,8 +164,6 @@ static volatile mcan_rx_message_t s_can_rx_buf;
 
 static volatile mcan_tx_event_fifo_elem_t s_can_tx_evt;
 
-static volatile uint8_t error_flags;
-
 SDK_DECLARE_EXT_ISR_M(BOARD_APP_CAN_IRQn, board_can_isr);
 
 /***********************************************************************************************************************
@@ -170,22 +174,30 @@ SDK_DECLARE_EXT_ISR_M(BOARD_APP_CAN_IRQn, board_can_isr);
 
 void board_can_isr(void)
 {
-    uint32_t flags = mcan_get_interrupt_flags(BOARD_APP_CAN_BASE);
+    MCAN_Type *base = BOARD_APP_CAN_BASE;
+    uint32_t flags = mcan_get_interrupt_flags(base);
     /* New message is available in RXFIFO0 */
     if ((flags & MCAN_INT_RXFIFI0_NEW_MSG) != 0) {
-        mcan_read_rxfifo(BOARD_APP_CAN_BASE, 0, (mcan_rx_message_t *) &s_can_rx_buf);
+        mcan_read_rxfifo(base, 0, (mcan_rx_message_t *) &s_can_rx_buf);
         has_new_rcv_msg = true;
     }
     /* New message is available in RXFIFO1 */
     if ((flags & MCAN_INT_RXFIFO1_NEW_MSG) != 0U) {
-        mcan_read_rxfifo(BOARD_APP_CAN_BASE, 0, (mcan_rx_message_t *) &s_can_rx_buf);
+        mcan_read_rxfifo(base, 1, (mcan_rx_message_t *) &s_can_rx_buf);
         has_new_rcv_msg = true;
     }
     /* New message is available in RXBUF */
     if ((flags & MCAN_INT_MSG_STORE_TO_RXBUF) != 0U) {
         has_new_rcv_msg = true;
-        mcan_read_rxbuf(BOARD_APP_CAN_BASE, 0, (mcan_rx_message_t *) &s_can_rx_buf);
-        mcan_clear_rxbuf_data_available_flag(BOARD_APP_CAN_BASE, 0);
+        /* NOTE: Below code is for demonstration purpose, the performance is not optimized
+         *       Users should optimize the performance according to real use case.
+         */
+        for (uint32_t buf_index = 0; buf_index < MCAN_RXBUF_SIZE_CAN_DEFAULT; buf_index++) {
+            if (mcan_is_rxbuf_data_available(base, buf_index)) {
+                mcan_read_rxbuf(base, buf_index, (mcan_rx_message_t *) &s_can_rx_buf);
+                mcan_clear_rxbuf_data_available_flag(base, buf_index);
+            }
+        }
     }
     /* New TX Event occurred */
     if ((flags & MCAN_INT_TX_EVT_FIFO_NEW_ENTRY) != 0) {
@@ -193,7 +205,7 @@ void board_can_isr(void)
         tx_event_occurred = true;
     }
     /* Transmit completed */
-    if ((flags & (MCAN_EVENT_TRANSMIT)) != 0U) {
+    if ((flags & MCAN_EVENT_TRANSMIT) != 0U) {
         has_sent_out = true;
     }
     /* Error happened */
@@ -333,6 +345,7 @@ void can_loopback_test_for_all_cans(void)
         assert(status == status_success);
         (void) status; /* Suppress compiling warning in release build */
         bool result = can_loopback_test(s_can_info[i].can_base, false);
+        mcan_deinit(s_can_info[i].can_base);
         printf("    CAN%d CAN2.0 loopback test %s\n", i, result ? "PASSED" : "FAILED");
 
         can_config.enable_canfd = true;
@@ -341,6 +354,7 @@ void can_loopback_test_for_all_cans(void)
         assert(status == status_success);
         (void) status; /* Suppress compiling warning in release build */
         result = can_loopback_test(s_can_info[i].can_base, false);
+        mcan_deinit(s_can_info[i].can_base);
         printf("    CAN%d CANFD loopback test %s\n", i, result ? "PASSED" : "FAILED");
     }
 }
@@ -361,7 +375,7 @@ void board_can_loopback_test_in_interrupt_mode(void)
         return;
     }
     mcan_enable_interrupts(base, interrupt_mask);
-    mcan_enable_txbuf_interrupt(base, ~0UL);
+    mcan_enable_txbuf_transmission_interrupt(base, ~0UL);
 
     intc_m_enable_irq_with_priority(BOARD_APP_CAN_IRQn, 1);
 
@@ -382,13 +396,13 @@ void board_can_loopback_test_in_interrupt_mode(void)
         }
 
         while (!has_new_rcv_msg) {
-
         }
         has_new_rcv_msg = false;
         has_sent_out = false;
         printf("New message received, ID=%08x\n", s_can_rx_buf.std_id);
         count++;
     }
+    mcan_deinit(base);
 
     printf("%s %s\n", __func__, (count == test_rounds) ? "PASSED" : "FAILED");
 }
@@ -411,11 +425,12 @@ void board_can_rxbuf_test(void)
      *  get ignored by the CAN controller according to the CAN Filter setting
      *
      */
+    uint32_t rxbuf_index = 1;
     can_filters[0].filter_type = MCAN_FILTER_TYPE_CLASSIC_FILTER;
     can_filters[0].filter_config = MCAN_FILTER_ELEM_CFG_STORE_INTO_RX_BUFFER_OR_AS_DBG_MSG;
     can_filters[0].can_id_type = MCAN_CAN_ID_TYPE_STANDARD;
     can_filters[0].match_id = 0x123;
-    can_filters[0].offset = 0;
+    can_filters[0].offset = rxbuf_index;
     can_filters[0].filter_event = 0;
     can_filters[0].store_location = 0;
 
@@ -429,13 +444,13 @@ void board_can_rxbuf_test(void)
     can_config.all_filters_config.global_filter_config.reject_remote_std_frame = true;
     can_config.all_filters_config.global_filter_config.reject_remote_ext_frame = true;
 
+    can_config.txbuf_trans_interrupt_mask = ~0UL;
+    can_config.interrupt_mask = interrupt_mask;
     hpm_stat_t status = mcan_init(base, &can_config, can_src_clk_freq);
     if (status != status_success) {
         printf("CAN initialization failed, error code: %d\n", status);
         return;
     }
-    mcan_enable_interrupts(base, interrupt_mask);
-    mcan_enable_txbuf_interrupt(base, ~0UL);
 
     intc_m_enable_irq_with_priority(BOARD_APP_CAN_IRQn, 1);
 
@@ -449,7 +464,12 @@ void board_can_rxbuf_test(void)
 
     for (uint32_t i = 0; i < 2048; i++) {
         tx_buf.std_id = i;
-        mcan_transmit_blocking(BOARD_APP_CAN_BASE, &tx_buf);
+        /* Demonstrate Transmit via TXBUF in non-blocking way here
+         */
+        uint32_t buf_index = 2;
+        mcan_transmit_via_txbuf_nonblocking(base, buf_index, &tx_buf);
+        while (!mcan_is_transmit_occurred(base, buf_index)) {
+        }
     }
 
     bool test_pass = false;
@@ -482,7 +502,7 @@ void board_can_tx_event_test(void)
         return;
     }
     mcan_enable_interrupts(base, interrupt_mask);
-    mcan_enable_txbuf_interrupt(base, ~0UL);
+    mcan_enable_txbuf_transmission_interrupt(base, ~0UL);
 
     intc_m_enable_irq_with_priority(BOARD_APP_CAN_IRQn, 1);
 
@@ -500,7 +520,8 @@ void board_can_tx_event_test(void)
         tx_buf.std_id = i;
         tx_buf.event_fifo_control = 1U; /* Store into TX Event FIFO */
         tx_buf.message_marker_l = i & 0xFF;
-        mcan_transmit_blocking(base, &tx_buf);
+        /* Demonstrate the Transmit via TXFIFO in nonblocking mode here */
+        mcan_transmit_via_txfifo_nonblocking(base, &tx_buf, NULL);
         while (!tx_event_occurred) {
         }
         printf("message with message marker:0x%02x has been sent out successfully\n", s_can_tx_evt.message_marker);
@@ -530,7 +551,7 @@ void board_can_echo_test_initiator(void)
         return;
     }
     mcan_enable_interrupts(ptr, MCAN_EVENT_RECEIVE);
-    mcan_enable_txbuf_interrupt(ptr, ~0U);
+    mcan_enable_txbuf_transmission_interrupt(ptr, ~0U);
     intc_m_enable_irq_with_priority(BOARD_APP_CAN_IRQn, 1);
 
     mcan_tx_frame_t tx_buf;
@@ -716,15 +737,20 @@ void board_can_send_multiple_canfd_messages(void)
 
 void board_can_error_test(void)
 {
+    /**
+     * Case 1: Test CAN2.0B errors
+     */
+    has_error = false;
     MCAN_Type *base = BOARD_APP_CAN_BASE;
     mcan_config_t can_config;
     mcan_get_default_config(base, &can_config);
     can_config.baudrate = 500000; /* 500kbps */
     can_config.mode = mcan_mode_normal;
     uint32_t interrupt_mask = MCAN_EVENT_RECEIVE | MCAN_EVENT_TRANSMIT | MCAN_EVENT_ERROR;
-    mcan_enable_interrupts(base, interrupt_mask);
     board_init_can(base);
     uint32_t can_src_clk_freq = board_init_can_clock(base);
+    can_config.interrupt_mask = interrupt_mask;
+    can_config.txbuf_trans_interrupt_mask = ~0UL;
     hpm_stat_t status = mcan_init(base, &can_config, can_src_clk_freq);
     if (status != status_success) {
         printf("CAN initialization failed, error code: %d\n", status);
@@ -740,12 +766,53 @@ void board_can_error_test(void)
         tx_buf.data_8[i] = i | (i << 4);
     }
     tx_buf.std_id = 0x123;
-    mcan_transmit_blocking(base, &tx_buf);
+    mcan_transmit_via_txbuf_nonblocking(base, 0, &tx_buf);
     while ((!has_sent_out) && (!has_error)) {
     }
     if (has_error) {
         printf("can error happened\n");
+    } else {
+        printf("no can error happened\n");
     }
+    has_error = false;
+    handle_can_error(base);
+
+    /**
+     * Case 2: Test CANFD errors
+     */
+    mcan_get_default_config(base, &can_config);
+    can_config.baudrate = 500000; /* 500kbps */
+    can_config.baudrate_fd = 2000000; /* 2Mbps*/
+    can_config.enable_canfd = true;
+    can_config.mode = mcan_mode_normal;
+    board_init_can(base);
+    can_config.interrupt_mask = interrupt_mask;
+    can_config.txbuf_trans_interrupt_mask = ~0UL;
+    status = mcan_init(base, &can_config, can_src_clk_freq);
+    if (status != status_success) {
+        printf("CAN initialization failed, error code: %d\n", status);
+        return;
+    }
+    intc_m_enable_irq_with_priority(BOARD_APP_CAN_IRQn, 1);
+    memset(&tx_buf, 0, sizeof(tx_buf));
+    tx_buf.dlc = 15;
+    tx_buf.canfd_frame = true;
+    tx_buf.bitrate_switch = true;
+    msg_len = mcan_get_message_size_from_dlc(tx_buf.dlc);
+    for (uint32_t i = 0; i < msg_len; i++) {
+        tx_buf.data_8[i] = i | (i << 4);
+    }
+    tx_buf.std_id = 0x123;
+    mcan_transmit_via_txbuf_nonblocking(base, 0, &tx_buf);
+    while ((!has_sent_out) && (!has_error)) {
+    }
+    if (has_error) {
+        printf("can error happened\n");
+    } else {
+        printf("no can error happened\n");
+    }
+    has_error = false;
+    handle_can_error(base);
 }
 
 void board_can_filter_test(void)
@@ -782,15 +849,15 @@ void board_can_filter_test(void)
         MCAN_ACCEPT_NON_MATCHING_FRAME_OPTION_REJECT;
     can_config.all_filters_config.global_filter_config.reject_remote_std_frame = true;
     can_config.all_filters_config.global_filter_config.reject_remote_ext_frame = true;
-
+    uint32_t int_mask = MCAN_EVENT_RECEIVE | MCAN_EVENT_TRANSMIT;
+    uint32_t txbuf_int_mask = ~0UL;
+    can_config.interrupt_mask = int_mask;
+    can_config.txbuf_trans_interrupt_mask = txbuf_int_mask;
     hpm_stat_t status = mcan_init(ptr, &can_config, can_src_clk_freq);
     if (status != status_success) {
         printf("CAN initialization failed, error code: %d\n", status);
         return;
     }
-    uint32_t int_mask = MCAN_EVENT_RECEIVE | MCAN_EVENT_TRANSMIT;
-    mcan_enable_interrupts(ptr, int_mask);
-    mcan_enable_txbuf_interrupt(ptr, ~0UL);
     intc_m_enable_irq_with_priority(BOARD_APP_CAN_IRQn, 1);
 
     mcan_tx_frame_t tx_buf;
@@ -1025,6 +1092,11 @@ void board_can_filter_test(void)
     can_config.all_filters_config.global_filter_config.reject_remote_std_frame = true;
     can_config.all_filters_config.global_filter_config.reject_remote_ext_frame = true;
 
+    int_mask = MCAN_EVENT_RECEIVE | MCAN_EVENT_TRANSMIT;
+    txbuf_int_mask = ~0UL;
+    can_config.interrupt_mask = int_mask;
+    can_config.txbuf_trans_interrupt_mask = txbuf_int_mask;
+
     status = mcan_init(ptr, &can_config, can_src_clk_freq);
     if (status != status_success) {
         printf("CAN initialization failed, error code: %d\n", status);
@@ -1104,7 +1176,7 @@ void board_can_timestamp_test(void)
     }
     uint32_t int_mask = MCAN_INT_TX_EVT_FIFO_NEW_ENTRY | MCAN_EVENT_RECEIVE;
     mcan_enable_interrupts(ptr, int_mask);
-    mcan_enable_txbuf_interrupt(ptr, ~0UL);
+    mcan_enable_txbuf_transmission_interrupt(ptr, ~0UL);
     intc_m_enable_irq_with_priority(BOARD_APP_CAN_IRQn, 1);
 
     mcan_timestamp_value_t ts_val;
@@ -1177,7 +1249,7 @@ void board_can_timestamp_test(void)
     }
     int_mask = MCAN_INT_TX_EVT_FIFO_NEW_ENTRY | MCAN_EVENT_RECEIVE;
     mcan_enable_interrupts(ptr, int_mask);
-    mcan_enable_txbuf_interrupt(ptr, ~0UL);
+    mcan_enable_txbuf_transmission_interrupt(ptr, ~0UL);
     intc_m_enable_irq_with_priority(BOARD_APP_CAN_IRQn, 1);
 
     memset(&tx_buf, 0, sizeof(tx_buf));
@@ -1248,7 +1320,7 @@ void board_can_timestamp_test(void)
     }
     int_mask = MCAN_EVENT_RECEIVE | MCAN_INT_TX_EVT_FIFO_NEW_ENTRY;
     mcan_enable_interrupts(ptr, int_mask);
-    mcan_enable_txbuf_interrupt(ptr, ~0UL);
+    mcan_enable_txbuf_transmission_interrupt(ptr, ~0UL);
     intc_m_enable_irq_with_priority(BOARD_APP_CAN_IRQn, 1);
 
     memset(&tx_buf, 0, sizeof(tx_buf));
@@ -1276,6 +1348,58 @@ void board_can_timestamp_test(void)
     mcan_get_timestamp_from_received_message(ptr, (const mcan_rx_message_t *) &s_can_rx_buf, &ts_val);
     printf("RX Timestamp for ID:0x%03x is %s\n", s_can_rx_buf.std_id, get_timestamp_hex_string(&ts_val));
 
+    mcan_deinit(ptr);
+}
+
+void handle_can_error(MCAN_Type *ptr)
+{
+    mcan_protocol_status_t protocol_status;
+    mcan_error_count_t error_count;
+    mcan_parse_protocol_status(ptr->PSR, &protocol_status);
+    mcan_get_error_counter(ptr, &error_count);
+    const char *error_msg = "Unknown Error";
+    switch (protocol_status.last_error_code) {
+    case mcan_last_error_code_no_error:
+        error_msg = "No Error";
+        break;
+    case mcan_last_error_code_stuff_error:
+        error_msg = "Stuff Error";
+        break;
+    case mcan_last_error_code_format_error:
+        error_msg = "Format Error";
+        break;
+    case mcan_last_error_code_ack_error:
+        error_msg = "Acknowledge Error";
+        break;
+    case mcan_last_error_code_bit1_error:
+        error_msg = "Bit1 Error: Sent 1 but monitored as 0";
+        break;
+    case mcan_last_error_code_bit0_error:
+        error_msg = "Bit0 Error: Sent 0 but monitored as 1";
+        break;
+    case mcan_last_error_code_crc_error:
+        error_msg = "CRC Error";
+        break;
+    case mcan_last_error_code_no_change:
+        error_msg = "Last Error was not changed";
+        break;
+    default:
+        /* Suppress compiling warning */
+        break;
+    }
+    printf("Last Error: %s\n", error_msg);
+    printf("Error Count:\n");
+    printf("Transmit Errors: %d\n", error_count.transmit_error_count);
+    printf("Receive Errors: %d\n", error_count.receive_error_count);
+    if (protocol_status.in_bus_off_state) {
+        printf("CAN is in Bus-off mode\n");
+    } else if (protocol_status.in_error_passive_state) {
+        printf("CAN is in Error Passive Mode\n");
+    } else if (protocol_status.in_warning_state) {
+        printf("CAN is in Error Warning mode\n");
+    } else {
+        /* Suppress warnings*/
+    }
 }
 
 void handle_can_test(void)

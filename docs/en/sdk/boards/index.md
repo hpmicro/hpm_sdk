@@ -12,6 +12,7 @@ This chapter describes the board-related configuration
    hpm6750evkmini/README
    hpm6300evk/README
    hpm6200evk/README
+   hpm5300evk/README
    extension/README
 
 :::
@@ -35,6 +36,9 @@ Click [here](lab_hpm6300_evk_board) to view the HPM6300EVK development board
 :::{tab} HPM6200EVK
 Click [here](lab_hpm6200_evk_board) to view the HPM6200EVK development board
 :::
+:::{tab} HPM5300EVK
+Click [here](lab_hpm5300_evk_board) to view the HPM5300EVK development board
+:::
 
 (lab_board_lcd_pin)=
 (lab_board_app_i2c_pin)=
@@ -53,3 +57,4 @@ Click [here](lab_hpm6200_evk_board) to view the HPM6200EVK development board
 (lab_board_app_dao)=
 (lab_board_app_i2s_pin)=
 (lab_board_app_pla_pin)=
+(lab_board_app_plb_pin)=

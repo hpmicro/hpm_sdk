@@ -23,11 +23,11 @@
 uint8_t sent_buff[LIN_DATA_MAX_LENGTH];
 uint8_t receive_buff[LIN_DATA_MAX_LENGTH];
 
-bool lin_complete;
-bool lin_wake_up;
-bool lin_error;
-bool lin_data_req;
-bool lin_bus_idle_timeout;
+volatile bool lin_complete;
+volatile bool lin_wake_up;
+volatile bool lin_error;
+volatile bool lin_data_req;
+volatile bool lin_bus_idle_timeout;
 
 static void printf_lin_data(uint8_t count, uint8_t *buff)
 {
@@ -100,9 +100,9 @@ int main(void)
     uint8_t data_length;
 
     board_init();
-    init_lin_pins(TEST_LIN);
+    board_init_lin_pins(TEST_LIN);
     board_init_lin_clock(TEST_LIN);  /* 20MHz */
-    intc_m_enable_irq_with_priority(TEST_LIN_IRQ, 1); /* 启用中断 */
+    intc_m_enable_irq_with_priority(TEST_LIN_IRQ, 1);
 
     printf("LIN slave example\n");
     /** prepare data to be sent */

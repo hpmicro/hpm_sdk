@@ -4,4 +4,5 @@
 sdk_src(
     hpm_smc.c
     hpm_over_zero.c
+    hpm_hfi.c
     )

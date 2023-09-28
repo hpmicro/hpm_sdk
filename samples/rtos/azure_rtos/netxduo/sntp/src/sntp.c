@@ -109,7 +109,7 @@ INT main(VOID)
     board_reset_enet_phy(ENET);
 
 /* Set RGMII clock delay */
-#if RGMII
+#if defined(RGMII) && RGMII
     board_init_enet_rgmii_clock_delay(ENET);
 #else
     /* Set RMII reference clock */

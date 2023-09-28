@@ -42,3 +42,5 @@ board:
       - crc
       - motor-phase-voltage
       - bldc_smc
+      - bldc_hfi
+      - puart
