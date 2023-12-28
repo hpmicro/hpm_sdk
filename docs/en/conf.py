@@ -21,7 +21,7 @@ DOXY_OUT = HTML_STATIC_DIR / "api_doc"
 
 sys.path.insert(0, str(HPM_SDK_BASE / "docs" / "_ext"))
 
-
+os.environ["HPM_SDK_BASE"] = str(HPM_SDK_BASE)
 project = 'HPMicro Software Development Kit'
 copyright = '2020-2023, HPMicro'
 author = 'HPMicro Software Team'

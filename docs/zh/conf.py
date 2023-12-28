@@ -21,6 +21,7 @@ DOXY_OUT = Path(__file__).resolve().parents[0] / "_static" / "api_doc"
 
 sys.path.insert(0, str(HPM_SDK_BASE / "docs" / "_ext"))
 
+os.environ["HPM_SDK_BASE"] = str(HPM_SDK_BASE)
 project = 'HPMico Software Development Kit'
 copyright = '2020-2023, HPMicro'
 author = '先楫半导体软件组'
