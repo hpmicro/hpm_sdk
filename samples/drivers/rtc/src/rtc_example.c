@@ -125,6 +125,10 @@ void rtc_set_time(void)
         /* Dec */
         month_of_year = 12;
         break;
+    default:
+        /* Supress compiling warning */
+        month_of_year = 1;
+        break;
     }
 
     /* Configure Time */

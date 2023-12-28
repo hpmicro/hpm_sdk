@@ -340,7 +340,7 @@ typedef struct {
     /**< Bootloader API table: copyright string address */
     const char *copyright;
     /**< Bootloader API table: run_bootloader API */
-    const hpm_stat_t (*run_bootloader)(void *arg);
+    hpm_stat_t (*run_bootloader)(void *arg);
     /**< Bootloader API table: otp driver interface address */
     const otp_driver_interface_t *otp_driver_if;
     /**< Bootloader API table: xpi driver interface address */
@@ -351,7 +351,7 @@ typedef struct {
     const uint32_t reserved0;
     /**< Bootloader API table: sdp driver interface address */
     const sdp_driver_interface_t *sdp_driver_if;
-    const uint32_t reserved2;
+    const uint32_t reserved1[3];
     const exip_driver_interface_t *exip_api_if;
     const uint32_t family_id;
 } bootloader_api_table_t;

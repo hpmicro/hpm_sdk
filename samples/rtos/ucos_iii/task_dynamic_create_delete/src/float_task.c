@@ -13,6 +13,7 @@ CPU_STK FLOAT_TASK_STK[FLOAT_STK_SIZE];
 void float_task(void *p_arg)
 {
     OS_ERR err;
+    (void)p_arg;
     CPU_SR_ALLOC();
     static float float_num = 0.01;
     while (1) {

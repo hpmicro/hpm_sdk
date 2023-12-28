@@ -206,7 +206,7 @@ typedef struct {
 /*
  * RXIDLE_FLAG (W1C)
  *
- * UART RX IDLE Flag, assert after rxd low and then rx idle timeout, write one clear
+ * UART RX IDLE Flag, assert after rxd high and then rx idle timeout, write one clear
  * 0 - UART RX is busy
  * 1 - UART RX is idle
  */
@@ -218,7 +218,7 @@ typedef struct {
 /*
  * TXIDLE_FLAG (W1C)
  *
- * UART TX IDLE Flag, assert after txd low and then tx idle timeout, write one clear
+ * UART TX IDLE Flag, assert after txd high and then tx idle timeout, write one clear
  * 0 - UART TX is busy
  * 1 - UART TX is idle
  */
@@ -302,7 +302,7 @@ typedef struct {
  * Over-sample control
  * The value must be an even number; any odd value
  * writes to this field will be converted to an even value.
- * OSC=0: The over-sample ratio is 32
+ * OSC=0: reserved
  * OSC<=8: The over-sample ratio is 8
  * 8 < OSC< 32: The over sample ratio is OSC
  */

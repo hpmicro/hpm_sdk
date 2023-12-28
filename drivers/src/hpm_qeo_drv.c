@@ -9,6 +9,7 @@
 
 void qeo_wave_get_default_mode_config(QEO_Type *base, qeo_wave_mode_t *config)
 {
+    (void) base;
     config->wave0.above_max_limit = qeo_wave_above_max_limit_max_val;
     config->wave0.high_area0_limit = qeo_wave_high_area_limit_max_val;
     config->wave0.high_area1_limit = qeo_wave_high_area_limit_max_val;
@@ -67,6 +68,7 @@ void qeo_wave_config_mode(QEO_Type *base, qeo_wave_mode_t *config)
 
 void qeo_abz_get_default_mode_config(QEO_Type *base, qeo_abz_mode_t *config)
 {
+    (void) base;
     config->a_inv_pol = false;
     config->b_inv_pol = false;
     config->z_inv_pol = false;
@@ -130,6 +132,7 @@ hpm_stat_t qeo_abz_set_wdog_frequency(QEO_Type *base, uint32_t src_freq, uint32_
 
 void qeo_pwm_get_default_safety_table_config(QEO_Type *base, qeo_pwm_safety_output_table_t *table)
 {
+    (void) base;
     table->pwm7_output = qeo_pwm_safety_output_highz;
     table->pwm6_output = qeo_pwm_safety_output_highz;
     table->pwm5_output = qeo_pwm_safety_output_highz;
@@ -142,6 +145,7 @@ void qeo_pwm_get_default_safety_table_config(QEO_Type *base, qeo_pwm_safety_outp
 
 void qeo_pwm_get_default_phase_table_config(QEO_Type *base, qeo_pwm_phase_output_table_t *table)
 {
+    (void) base;
     table->pwm7_output = qeo_pwm_output_force_0;
     table->pwm6_output = qeo_pwm_output_force_0;
     table->pwm5_output = qeo_pwm_output_force_0;
@@ -154,6 +158,7 @@ void qeo_pwm_get_default_phase_table_config(QEO_Type *base, qeo_pwm_phase_output
 
 void qeo_pwm_get_default_mode_config(QEO_Type *base, qeo_pwm_mode_t *config)
 {
+    (void) base;
     config->phase_num = 4;
     config->shield_hardware_trig_safety = false;
     config->revise_pairs_output = false;

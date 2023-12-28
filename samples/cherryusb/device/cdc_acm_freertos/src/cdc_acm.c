@@ -8,11 +8,13 @@
 /* FreeRTOS kernel includes. */
 #include "FreeRTOS.h"
 #include "task.h"
+#include "usb_osal.h"
 #include "semphr.h"
 #include "assert.h"
 
 #include "usbd_core.h"
 #include "usbd_cdc.h"
+#include "usb_osal.h"
 
 /*!< endpoint address */
 #define CDC_IN_EP  0x81
@@ -110,8 +112,8 @@ static const uint8_t cdc_descriptor[] = {
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t read_buffer[2048];
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t write_buffer[2048];
 
-SemaphoreHandle_t semaphore_tx_done;
-
+volatile bool dtr_enable;
+usb_osal_sem_t semaphore_tx_done;
 
 void usbd_event_handler(uint8_t event)
 {
@@ -144,7 +146,7 @@ void usbd_cdc_acm_bulk_out(uint8_t ep, uint32_t nbytes)
 {
     USB_LOG_RAW("actual out len:%d\r\n", nbytes);
 
-    usbd_ep_start_read(CDC_OUT_EP, read_buffer, 2048);
+    usbd_ep_start_read(ep, read_buffer, 2048);
     usbd_ep_start_write(CDC_IN_EP, read_buffer, nbytes);
 }
 
@@ -154,10 +156,10 @@ void usbd_cdc_acm_bulk_in(uint8_t ep, uint32_t nbytes)
 
     if ((nbytes % CDC_MAX_MPS) == 0 && nbytes) {
         /* send zlp */
-        usbd_ep_start_write(CDC_IN_EP, NULL, 0);
+        usbd_ep_start_write(ep, NULL, 0);
     } else {
-        if (semaphore_tx_done != NULL) {
-            if (xSemaphoreGive(semaphore_tx_done) != pdPASS) {
+        if ((semaphore_tx_done != NULL) && dtr_enable) {
+            if (usb_osal_sem_give(semaphore_tx_done) != 0) {
                 USB_LOG_ERR("xSemaphoreGive error\r\n");
             }
         }
@@ -181,7 +183,7 @@ struct usbd_interface intf1;
 
 void cdc_acm_init(void)
 {
-    semaphore_tx_done = xSemaphoreCreateBinary();
+    semaphore_tx_done = usb_osal_sem_create(0);
     assert(semaphore_tx_done != NULL);
     usbd_desc_register(cdc_descriptor);
     usbd_add_interface(usbd_cdc_acm_init_intf(&intf0));
@@ -191,24 +193,11 @@ void cdc_acm_init(void)
     usbd_initialize();
 }
 
-volatile uint8_t dtr_enable;
-volatile uint8_t rts_enable;
-
 void usbd_cdc_acm_set_dtr(uint8_t intf, bool dtr)
 {
+    (void)intf;
     if (dtr) {
-        dtr_enable = 1;
-    } else {
-        dtr_enable = 0;
-    }
-}
-
-void usbd_cdc_acm_set_rts(uint8_t intf, bool rts)
-{
-    if (rts) {
-        rts_enable = 1;
-    } else {
-        rts_enable = 0;
+        dtr_enable = true;
     }
 }
 
@@ -227,7 +216,7 @@ void cdc_acm_data_send_with_dtr_test(void)
     write_buffer[2046] = 0x0D;
     write_buffer[2047] = 0x0A;
     usbd_ep_start_write(CDC_IN_EP, write_buffer, 2048);
-    if (xSemaphoreTake(semaphore_tx_done, portMAX_DELAY) != pdPASS) {
+    if (usb_osal_sem_take(semaphore_tx_done, portMAX_DELAY) != 0) {
         USB_LOG_ERR("xSemaphoreTake error\r\n");
     }
 }
@@ -236,7 +225,7 @@ void destroy_demaphore_tx_done(void)
 {
     if (semaphore_tx_done != NULL) {
         vTaskEnterCritical();
-        vSemaphoreDelete(semaphore_tx_done);
+        usb_osal_sem_delete(semaphore_tx_done);
         semaphore_tx_done = NULL;
         vTaskExitCritical();
     }

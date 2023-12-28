@@ -12,10 +12,25 @@ set(CONFIG_AZURE_RTOS_NETXDUO_UTILITY_IPERF 1)
 # This should be defined to include DHCP source code
 set(CONFIG_AZURE_RTOS_NETXDUO_ADDONS_DHCP 1)
 
-#set(CONFIG_ENET_PHY_DP83867 1)
-#set(CONFIG_ENET_PHY_RTL8211 1)
-#set(CONFIG_ENET_PHY_DP83848 1)
-set(CONFIG_ENET_PHY_RTL8201 1)
+set(APP_USE_ENET_PORT_COUNT 1)
+#set(APP_USE_ENET_ITF_RGMII 1)
+#set(APP_USE_ENET_ITF_RMII 1)
+#set(APP_USE_ENET_PHY_DP83867 1)
+#set(APP_USE_ENET_PHY_RTL8211 1)
+#set(APP_USE_ENET_PHY_DP83848 1)
+#set(APP_USE_ENET_PHY_RTL8201 1)
+
+if(NOT DEFINED APP_USE_ENET_PORT_COUNT)
+    message(FATAL_ERROR "APP_USE_ENET_PORT_COUNT is undefined!")
+endif()
+
+if(NOT APP_USE_ENET_PORT_COUNT EQUAL 1)
+    message(FATAL_ERROR "This sample supports only one Ethernet port!")
+endif()
+
+if (APP_USE_ENET_ITF_RGMII AND APP_USE_ENET_ITF_RMII)
+    message(FATAL_ERROR "This sample doesn't supported more than one Ethernet phy!")
+endif()
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
     SET(CMAKE_BUILD_TYPE flash_sdram_xip)

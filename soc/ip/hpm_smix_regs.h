@@ -366,15 +366,6 @@ typedef struct {
 #define SMIX_CALSAT_ST_DST_GET(x) (((uint32_t)(x) & SMIX_CALSAT_ST_DST_MASK) >> SMIX_CALSAT_ST_DST_SHIFT)
 
 /*
- * RRSV (RO)
- *
- * Reserved
- */
-#define SMIX_CALSAT_ST_RRSV_MASK (0x3FFFC000UL)
-#define SMIX_CALSAT_ST_RRSV_SHIFT (14U)
-#define SMIX_CALSAT_ST_RRSV_GET(x) (((uint32_t)(x) & SMIX_CALSAT_ST_RRSV_MASK) >> SMIX_CALSAT_ST_RRSV_SHIFT)
-
-/*
  * SRC (W1C)
  *
  * SRC CAL_SAT_ERR. W1C
@@ -394,15 +385,6 @@ typedef struct {
 #define SMIX_FDOT_DONE_ST_DST_SHIFT (30U)
 #define SMIX_FDOT_DONE_ST_DST_SET(x) (((uint32_t)(x) << SMIX_FDOT_DONE_ST_DST_SHIFT) & SMIX_FDOT_DONE_ST_DST_MASK)
 #define SMIX_FDOT_DONE_ST_DST_GET(x) (((uint32_t)(x) & SMIX_FDOT_DONE_ST_DST_MASK) >> SMIX_FDOT_DONE_ST_DST_SHIFT)
-
-/*
- * RRSV1 (RO)
- *
- * Reserved
- */
-#define SMIX_FDOT_DONE_ST_RRSV1_MASK (0x3FFFC000UL)
-#define SMIX_FDOT_DONE_ST_RRSV1_SHIFT (14U)
-#define SMIX_FDOT_DONE_ST_RRSV1_GET(x) (((uint32_t)(x) & SMIX_FDOT_DONE_ST_RRSV1_MASK) >> SMIX_FDOT_DONE_ST_RRSV1_SHIFT)
 
 /*
  * SRC (W1C)
@@ -434,15 +416,6 @@ typedef struct {
 #define SMIX_DATA_ST_DST_UNDL_GET(x) (((uint32_t)(x) & SMIX_DATA_ST_DST_UNDL_MASK) >> SMIX_DATA_ST_DST_UNDL_SHIFT)
 
 /*
- * RRSV1 (RO)
- *
- * Reserved
- */
-#define SMIX_DATA_ST_RRSV1_MASK (0xFFFC000UL)
-#define SMIX_DATA_ST_RRSV1_SHIFT (14U)
-#define SMIX_DATA_ST_RRSV1_GET(x) (((uint32_t)(x) & SMIX_DATA_ST_RRSV1_MASK) >> SMIX_DATA_ST_RRSV1_SHIFT)
-
-/*
  * SRC_DN (RO)
  *
  * SRC data needed
@@ -452,16 +425,6 @@ typedef struct {
 #define SMIX_DATA_ST_SRC_DN_GET(x) (((uint32_t)(x) & SMIX_DATA_ST_SRC_DN_MASK) >> SMIX_DATA_ST_SRC_DN_SHIFT)
 
 /* Bitfield definition for register of struct array DST_CH: CTRL */
-/*
- * WRSV (RW)
- *
- * Reserved
- */
-#define SMIX_DST_CH_CTRL_WRSV_MASK (0xFFE00000UL)
-#define SMIX_DST_CH_CTRL_WRSV_SHIFT (21U)
-#define SMIX_DST_CH_CTRL_WRSV_SET(x) (((uint32_t)(x) << SMIX_DST_CH_CTRL_WRSV_SHIFT) & SMIX_DST_CH_CTRL_WRSV_MASK)
-#define SMIX_DST_CH_CTRL_WRSV_GET(x) (((uint32_t)(x) & SMIX_DST_CH_CTRL_WRSV_MASK) >> SMIX_DST_CH_CTRL_WRSV_SHIFT)
-
 /*
  * DATA_UNFL_IE (RW)
  *
@@ -605,16 +568,6 @@ typedef struct {
 
 /* Bitfield definition for register of struct array DST_CH: GAIN */
 /*
- * WRSV (RW)
- *
- * Reserved
- */
-#define SMIX_DST_CH_GAIN_WRSV_MASK (0xFFFF8000UL)
-#define SMIX_DST_CH_GAIN_WRSV_SHIFT (15U)
-#define SMIX_DST_CH_GAIN_WRSV_SET(x) (((uint32_t)(x) << SMIX_DST_CH_GAIN_WRSV_SHIFT) & SMIX_DST_CH_GAIN_WRSV_MASK)
-#define SMIX_DST_CH_GAIN_WRSV_GET(x) (((uint32_t)(x) & SMIX_DST_CH_GAIN_WRSV_MASK) >> SMIX_DST_CH_GAIN_WRSV_SHIFT)
-
-/*
  * VAL (RW)
  *
  * Unsigned Int, with 12 fractional bits. . The top 3 bits are for shift. Same as SHFT_CTR[2:0]
@@ -637,15 +590,6 @@ typedef struct {
 
 /* Bitfield definition for register of struct array DST_CH: FADEIN */
 /*
- * WRSV (RW)
- *
- */
-#define SMIX_DST_CH_FADEIN_WRSV_MASK (0xFFF00000UL)
-#define SMIX_DST_CH_FADEIN_WRSV_SHIFT (20U)
-#define SMIX_DST_CH_FADEIN_WRSV_SET(x) (((uint32_t)(x) << SMIX_DST_CH_FADEIN_WRSV_SHIFT) & SMIX_DST_CH_FADEIN_WRSV_MASK)
-#define SMIX_DST_CH_FADEIN_WRSV_GET(x) (((uint32_t)(x) & SMIX_DST_CH_FADEIN_WRSV_MASK) >> SMIX_DST_CH_FADEIN_WRSV_SHIFT)
-
-/*
  * DELTA (RW)
  *
  * Fade-in delta for linear fading in from 0 to 1 (about at most 20s for 48kHz sampled sound)
@@ -658,15 +602,6 @@ typedef struct {
 
 /* Bitfield definition for register of struct array DST_CH: FADEOUT */
 /*
- * WRSV (RW)
- *
- */
-#define SMIX_DST_CH_FADEOUT_WRSV_MASK (0xFFF00000UL)
-#define SMIX_DST_CH_FADEOUT_WRSV_SHIFT (20U)
-#define SMIX_DST_CH_FADEOUT_WRSV_SET(x) (((uint32_t)(x) << SMIX_DST_CH_FADEOUT_WRSV_SHIFT) & SMIX_DST_CH_FADEOUT_WRSV_MASK)
-#define SMIX_DST_CH_FADEOUT_WRSV_GET(x) (((uint32_t)(x) & SMIX_DST_CH_FADEOUT_WRSV_MASK) >> SMIX_DST_CH_FADEOUT_WRSV_SHIFT)
-
-/*
  * DELTA (RW)
  *
  * Fade out in 2^DELTA samples. Now DELTA can be at most 14。
@@ -677,14 +612,6 @@ typedef struct {
 #define SMIX_DST_CH_FADEOUT_DELTA_GET(x) (((uint32_t)(x) & SMIX_DST_CH_FADEOUT_DELTA_MASK) >> SMIX_DST_CH_FADEOUT_DELTA_SHIFT)
 
 /* Bitfield definition for register of struct array DST_CH: ST */
-/*
- * RRSV (RO)
- *
- */
-#define SMIX_DST_CH_ST_RRSV_MASK (0xFFFF8000UL)
-#define SMIX_DST_CH_ST_RRSV_SHIFT (15U)
-#define SMIX_DST_CH_ST_RRSV_GET(x) (((uint32_t)(x) & SMIX_DST_CH_ST_RRSV_MASK) >> SMIX_DST_CH_ST_RRSV_SHIFT)
-
 /*
  * FIFO_FILLINGS (RO)
  *
@@ -749,15 +676,6 @@ typedef struct {
 
 /* Bitfield definition for register of struct array DST_CH: SOURCE_EN */
 /*
- * WRSV (RW)
- *
- */
-#define SMIX_DST_CH_SOURCE_EN_WRSV_MASK (0xFFFFFF00UL)
-#define SMIX_DST_CH_SOURCE_EN_WRSV_SHIFT (8U)
-#define SMIX_DST_CH_SOURCE_EN_WRSV_SET(x) (((uint32_t)(x) << SMIX_DST_CH_SOURCE_EN_WRSV_SHIFT) & SMIX_DST_CH_SOURCE_EN_WRSV_MASK)
-#define SMIX_DST_CH_SOURCE_EN_WRSV_GET(x) (((uint32_t)(x) & SMIX_DST_CH_SOURCE_EN_WRSV_MASK) >> SMIX_DST_CH_SOURCE_EN_WRSV_SHIFT)
-
-/*
  * VAL (RW)
  *
  * After enabled, Data needed req will be asserted. DMA can feed in data. The channel will join in the sum operation of mixer operation.
@@ -768,15 +686,6 @@ typedef struct {
 #define SMIX_DST_CH_SOURCE_EN_VAL_GET(x) (((uint32_t)(x) & SMIX_DST_CH_SOURCE_EN_VAL_MASK) >> SMIX_DST_CH_SOURCE_EN_VAL_SHIFT)
 
 /* Bitfield definition for register of struct array DST_CH: SOURCE_ACT */
-/*
- * WRSV (RW)
- *
- */
-#define SMIX_DST_CH_SOURCE_ACT_WRSV_MASK (0xFFFFFF00UL)
-#define SMIX_DST_CH_SOURCE_ACT_WRSV_SHIFT (8U)
-#define SMIX_DST_CH_SOURCE_ACT_WRSV_SET(x) (((uint32_t)(x) << SMIX_DST_CH_SOURCE_ACT_WRSV_SHIFT) & SMIX_DST_CH_SOURCE_ACT_WRSV_MASK)
-#define SMIX_DST_CH_SOURCE_ACT_WRSV_GET(x) (((uint32_t)(x) & SMIX_DST_CH_SOURCE_ACT_WRSV_MASK) >> SMIX_DST_CH_SOURCE_ACT_WRSV_SHIFT)
-
 /*
  * VAL (WO)
  *
@@ -789,15 +698,6 @@ typedef struct {
 
 /* Bitfield definition for register of struct array DST_CH: SOURCE_DEACT */
 /*
- * WRSV (RW)
- *
- */
-#define SMIX_DST_CH_SOURCE_DEACT_WRSV_MASK (0xFFFFFF00UL)
-#define SMIX_DST_CH_SOURCE_DEACT_WRSV_SHIFT (8U)
-#define SMIX_DST_CH_SOURCE_DEACT_WRSV_SET(x) (((uint32_t)(x) << SMIX_DST_CH_SOURCE_DEACT_WRSV_SHIFT) & SMIX_DST_CH_SOURCE_DEACT_WRSV_MASK)
-#define SMIX_DST_CH_SOURCE_DEACT_WRSV_GET(x) (((uint32_t)(x) & SMIX_DST_CH_SOURCE_DEACT_WRSV_MASK) >> SMIX_DST_CH_SOURCE_DEACT_WRSV_SHIFT)
-
-/*
  * VAL (WO)
  *
  * Manually DeActivate the channel
@@ -808,15 +708,6 @@ typedef struct {
 #define SMIX_DST_CH_SOURCE_DEACT_VAL_GET(x) (((uint32_t)(x) & SMIX_DST_CH_SOURCE_DEACT_VAL_MASK) >> SMIX_DST_CH_SOURCE_DEACT_VAL_SHIFT)
 
 /* Bitfield definition for register of struct array DST_CH: SOURCE_FADEIN_CTRL */
-/*
- * WRSV (RW)
- *
- */
-#define SMIX_DST_CH_SOURCE_FADEIN_CTRL_WRSV_MASK (0xFFFFFF00UL)
-#define SMIX_DST_CH_SOURCE_FADEIN_CTRL_WRSV_SHIFT (8U)
-#define SMIX_DST_CH_SOURCE_FADEIN_CTRL_WRSV_SET(x) (((uint32_t)(x) << SMIX_DST_CH_SOURCE_FADEIN_CTRL_WRSV_SHIFT) & SMIX_DST_CH_SOURCE_FADEIN_CTRL_WRSV_MASK)
-#define SMIX_DST_CH_SOURCE_FADEIN_CTRL_WRSV_GET(x) (((uint32_t)(x) & SMIX_DST_CH_SOURCE_FADEIN_CTRL_WRSV_MASK) >> SMIX_DST_CH_SOURCE_FADEIN_CTRL_WRSV_SHIFT)
-
 /*
  * AOP (RW)
  *
@@ -838,14 +729,6 @@ typedef struct {
 #define SMIX_DST_CH_DEACT_ST_DST_DEACT_GET(x) (((uint32_t)(x) & SMIX_DST_CH_DEACT_ST_DST_DEACT_MASK) >> SMIX_DST_CH_DEACT_ST_DST_DEACT_SHIFT)
 
 /*
- * RRSV (RO)
- *
- */
-#define SMIX_DST_CH_DEACT_ST_RRSV_MASK (0x7FFFFF00UL)
-#define SMIX_DST_CH_DEACT_ST_RRSV_SHIFT (8U)
-#define SMIX_DST_CH_DEACT_ST_RRSV_GET(x) (((uint32_t)(x) & SMIX_DST_CH_DEACT_ST_RRSV_MASK) >> SMIX_DST_CH_DEACT_ST_RRSV_SHIFT)
-
-/*
  * SRC_DEACT_ST (RO)
  *
  * Asserted when in de-active mode
@@ -855,15 +738,6 @@ typedef struct {
 #define SMIX_DST_CH_DEACT_ST_SRC_DEACT_ST_GET(x) (((uint32_t)(x) & SMIX_DST_CH_DEACT_ST_SRC_DEACT_ST_MASK) >> SMIX_DST_CH_DEACT_ST_SRC_DEACT_ST_SHIFT)
 
 /* Bitfield definition for register of struct array DST_CH: SOURCE_MFADEOUT_CTRL */
-/*
- * WRSV (RW)
- *
- */
-#define SMIX_DST_CH_SOURCE_MFADEOUT_CTRL_WRSV_MASK (0xFFFFFF00UL)
-#define SMIX_DST_CH_SOURCE_MFADEOUT_CTRL_WRSV_SHIFT (8U)
-#define SMIX_DST_CH_SOURCE_MFADEOUT_CTRL_WRSV_SET(x) (((uint32_t)(x) << SMIX_DST_CH_SOURCE_MFADEOUT_CTRL_WRSV_SHIFT) & SMIX_DST_CH_SOURCE_MFADEOUT_CTRL_WRSV_MASK)
-#define SMIX_DST_CH_SOURCE_MFADEOUT_CTRL_WRSV_GET(x) (((uint32_t)(x) & SMIX_DST_CH_SOURCE_MFADEOUT_CTRL_WRSV_MASK) >> SMIX_DST_CH_SOURCE_MFADEOUT_CTRL_WRSV_SHIFT)
-
 /*
  * OP (RW)
  *
@@ -875,15 +749,6 @@ typedef struct {
 #define SMIX_DST_CH_SOURCE_MFADEOUT_CTRL_OP_GET(x) (((uint32_t)(x) & SMIX_DST_CH_SOURCE_MFADEOUT_CTRL_OP_MASK) >> SMIX_DST_CH_SOURCE_MFADEOUT_CTRL_OP_SHIFT)
 
 /* Bitfield definition for register of struct array SOURCE_CH: CTRL */
-/*
- * WRSV (RW)
- *
- */
-#define SMIX_SOURCE_CH_CTRL_WRSV_MASK (0xFFC00000UL)
-#define SMIX_SOURCE_CH_CTRL_WRSV_SHIFT (22U)
-#define SMIX_SOURCE_CH_CTRL_WRSV_SET(x) (((uint32_t)(x) << SMIX_SOURCE_CH_CTRL_WRSV_SHIFT) & SMIX_SOURCE_CH_CTRL_WRSV_MASK)
-#define SMIX_SOURCE_CH_CTRL_WRSV_GET(x) (((uint32_t)(x) & SMIX_SOURCE_CH_CTRL_WRSV_MASK) >> SMIX_SOURCE_CH_CTRL_WRSV_SHIFT)
-
 /*
  * FIFO_RESET (RW)
  *
@@ -978,15 +843,6 @@ typedef struct {
 
 /* Bitfield definition for register of struct array SOURCE_CH: GAIN */
 /*
- * WRSV (RW)
- *
- */
-#define SMIX_SOURCE_CH_GAIN_WRSV_MASK (0xFFFF8000UL)
-#define SMIX_SOURCE_CH_GAIN_WRSV_SHIFT (15U)
-#define SMIX_SOURCE_CH_GAIN_WRSV_SET(x) (((uint32_t)(x) << SMIX_SOURCE_CH_GAIN_WRSV_SHIFT) & SMIX_SOURCE_CH_GAIN_WRSV_MASK)
-#define SMIX_SOURCE_CH_GAIN_WRSV_GET(x) (((uint32_t)(x) & SMIX_SOURCE_CH_GAIN_WRSV_MASK) >> SMIX_SOURCE_CH_GAIN_WRSV_SHIFT)
-
-/*
  * VAL (RW)
  *
  * Unsigned Int, with 12 fractional bits. The top 3 bits are for shift. Same as SHFT_CTR[2:0].
@@ -998,15 +854,6 @@ typedef struct {
 
 /* Bitfield definition for register of struct array SOURCE_CH: FADEIN */
 /*
- * WRSV (RW)
- *
- */
-#define SMIX_SOURCE_CH_FADEIN_WRSV_MASK (0xFFF00000UL)
-#define SMIX_SOURCE_CH_FADEIN_WRSV_SHIFT (20U)
-#define SMIX_SOURCE_CH_FADEIN_WRSV_SET(x) (((uint32_t)(x) << SMIX_SOURCE_CH_FADEIN_WRSV_SHIFT) & SMIX_SOURCE_CH_FADEIN_WRSV_MASK)
-#define SMIX_SOURCE_CH_FADEIN_WRSV_GET(x) (((uint32_t)(x) & SMIX_SOURCE_CH_FADEIN_WRSV_MASK) >> SMIX_SOURCE_CH_FADEIN_WRSV_SHIFT)
-
-/*
  * DELTA (RW)
  *
  * Fade -in confg.
@@ -1017,15 +864,6 @@ typedef struct {
 #define SMIX_SOURCE_CH_FADEIN_DELTA_GET(x) (((uint32_t)(x) & SMIX_SOURCE_CH_FADEIN_DELTA_MASK) >> SMIX_SOURCE_CH_FADEIN_DELTA_SHIFT)
 
 /* Bitfield definition for register of struct array SOURCE_CH: FADEOUT */
-/*
- * WRSV (RW)
- *
- */
-#define SMIX_SOURCE_CH_FADEOUT_WRSV_MASK (0xFFF00000UL)
-#define SMIX_SOURCE_CH_FADEOUT_WRSV_SHIFT (20U)
-#define SMIX_SOURCE_CH_FADEOUT_WRSV_SET(x) (((uint32_t)(x) << SMIX_SOURCE_CH_FADEOUT_WRSV_SHIFT) & SMIX_SOURCE_CH_FADEOUT_WRSV_MASK)
-#define SMIX_SOURCE_CH_FADEOUT_WRSV_GET(x) (((uint32_t)(x) & SMIX_SOURCE_CH_FADEOUT_WRSV_MASK) >> SMIX_SOURCE_CH_FADEOUT_WRSV_SHIFT)
-
 /*
  * DELTA (RW)
  *

@@ -43,7 +43,7 @@ INT progress_val_to_seat_angle(GX_PROGRESS_BAR* bar)
 INT fan_mode_increase(int fan_mode)
 {
     fan_mode++;
-    if (fan_mode >= sizeof(fan_mode_text_id_list) / sizeof(GX_RESOURCE_ID))
+    if ((uint32_t)fan_mode >= sizeof(fan_mode_text_id_list) / sizeof(GX_RESOURCE_ID))
     {
         fan_mode = 0;
     }

@@ -12,7 +12,7 @@
 #include "hpm_debug_console.h"
 #if (defined (DMA_SOC_MAX_COUNT) && (DMA_SOC_MAX_COUNT == 2)) && (defined (CONFIG_USE_DMA) && (CONFIG_USE_DMA == 1))
 #include "hpm_dmamux_drv.h"
-#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#ifdef HPMSOC_HAS_HPMSDK_DMAV2
 #include "hpm_dmav2_drv.h"
 #else
 #include "hpm_dma_drv.h"
@@ -79,7 +79,7 @@ int main(void)
             dma_is_done = false;
             gptmr_stop_counter(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH);
             board_led_toggle();
-            for (int i = 0; i < sizeof(pwm_meas_table) / sizeof(pwm_measure_cfg_t); i++) {
+            for (uint32_t i = 0; i < sizeof(pwm_meas_table) / sizeof(pwm_measure_cfg_t); i++) {
                 printf("[table_%d]measured frequency: %f\n", i, (float) gptmr_freq / pwm_meas_table[i].priiod);
                 printf("[table_%d]measured duty cycle: %.2f%%\n", i, ((float) pwm_meas_table[i].duty / pwm_meas_table[i].priiod) * 100);
             }

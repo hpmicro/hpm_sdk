@@ -1,0 +1,30 @@
+# Copyright (c) 2023 HPMicro
+# SPDX-License-Identifier: BSD-3-Clause
+
+sdk_inc(.)
+sdk_src(hpm_panel.c)
+sdk_compile_definitions(-DCONFIG_HPM_PANEL)
+
+if(NOT $ENV{CONFIG_PANEL_RGB_TM070RDH13} EQUAL 0)
+    sdk_compile_definitions(-DCONFIG_PANEL_RGB_TM070RDH13=1)
+    sdk_compile_definitions(-DPANEL_SIZE_WIDTH=800)
+    sdk_compile_definitions(-DPANEL_SIZE_HEIGHT=480)
+    sdk_src(panels/tm070rdh13.c)
+elseif(NOT $ENV{CONFIG_PANEL_MIPI_MC10128007_31B} EQUAL 0)
+    sdk_compile_definitions(-DCONFIG_PANEL_MIPI_MC10128007_31B=1)
+    sdk_compile_definitions(-DPANEL_SIZE_WIDTH=800)
+    sdk_compile_definitions(-DPANEL_SIZE_HEIGHT=1280)
+    sdk_src(panels/mc10128007_31b.c)
+elseif(NOT $ENV{CONFIG_PANEL_LVDS_TM103XDGP01} EQUAL 0)
+    sdk_compile_definitions(-DCONFIG_PANEL_LVDS_TM103XDGP01=1)
+    sdk_compile_definitions(-DPANEL_SIZE_WIDTH=1920)
+    sdk_compile_definitions(-DPANEL_SIZE_HEIGHT=720)
+    sdk_src(panels/tm103xdgp01.c)
+elseif(NOT $ENV{CONFIG_PANEL_LVDS_CC10128007} EQUAL 0)
+    sdk_compile_definitions(-DCONFIG_PANEL_LVDS_CC10128007=1)
+    sdk_compile_definitions(-DPANEL_SIZE_WIDTH=800)
+    sdk_compile_definitions(-DPANEL_SIZE_HEIGHT=1280)
+    sdk_src(panels/cc10128007.c)
+endif()
+
+

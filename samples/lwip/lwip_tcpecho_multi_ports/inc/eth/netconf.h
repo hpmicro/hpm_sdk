@@ -54,14 +54,14 @@ typedef struct {
 #define MAC1_ADDR5   0x27
 
 /* Static IP ADDRESS */
-#define IP0_ADDR0    10
-#define IP0_ADDR1    10
-#define IP0_ADDR2    10
+#define IP0_ADDR0    192
+#define IP0_ADDR1    168
+#define IP0_ADDR2    100
 #define IP0_ADDR3    10
 
-#define IP1_ADDR0    10
-#define IP1_ADDR1    10
-#define IP1_ADDR2    20
+#define IP1_ADDR0    192
+#define IP1_ADDR1    168
+#define IP1_ADDR2    200
 #define IP1_ADDR3    10
 
 /* NETMASK */
@@ -76,14 +76,14 @@ typedef struct {
 #define NETMASK1_ADDR3   0
 
 /* Gateway Address */
-#define GW0_ADDR0   10
-#define GW0_ADDR1   10
-#define GW0_ADDR2   10
+#define GW0_ADDR0   192
+#define GW0_ADDR1   168
+#define GW0_ADDR2   100
 #define GW0_ADDR3   1
 
-#define GW1_ADDR0   10
-#define GW1_ADDR1   10
-#define GW1_ADDR2   20
+#define GW1_ADDR0   192
+#define GW1_ADDR1   168
+#define GW1_ADDR2   200
 #define GW1_ADDR3   1
 
 #ifdef __cplusplus

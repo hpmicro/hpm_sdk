@@ -139,7 +139,7 @@ VOID tx_application_define(VOID *first_unused_memory)
 {
 
     UINT status;
-
+    TX_PARAMETER_NOT_USED(first_unused_memory);
     /* Initialize NetX.  */
     nx_system_initialize();
 

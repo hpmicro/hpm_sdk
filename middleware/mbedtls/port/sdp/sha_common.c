@@ -9,7 +9,7 @@
 #include "hpm_l1c_drv.h"
 
 ATTR_PLACE_AT_NONCACHEABLE sdp_hash_ctx_t s_hash_ctx;
-volatile static bool flag_sdp_inited = false;
+static volatile bool flag_sdp_inited = false;
 
 #if defined(MBEDTLS_SHA1_ALT) || defined(MBEDTLS_SHA256_ALT)
 /* Implementation that should never be optimized out by the compiler */

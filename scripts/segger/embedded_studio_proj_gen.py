@@ -50,18 +50,24 @@ def file_to_be_excluded(f):
             return True
     return False
 
-def fix_path(p):
-    return re.sub(r'\\', r'/', os.path.realpath(os.path.expanduser(p)))
+def fix_path(p, expand_path = True):
+    if expand_path:
+        p = os.path.realpath(os.path.expanduser(p))
+    return re.sub(r'\\', r'/', p)
 
 def get_relpath(f, base):
     try:
-        return os.path.relpath(f, base)
+        return os.path.relpath(os.path.realpath(f), os.path.realpath(base))
     except ValueError:
         return f
 
 def get_sdk_fullpath(f, sdk_base):
     # replace real path with sdk base variable to be defined in SES
-    return "/".join([HPM_SDK_BASE, get_relpath(f, sdk_base)])
+    sdk_relpath = get_relpath(f, sdk_base)
+    if sdk_relpath == f:
+        return fix_path(f)
+    else:
+        return "/".join([HPM_SDK_BASE, fix_path(sdk_relpath, False)])
 
 def file_in_directory(f, directory):
     tmp_f = re.sub(r'-', r'_HpM_', f)
@@ -70,7 +76,7 @@ def file_in_directory(f, directory):
     return not (r == tmp_f)
 
 def is_sdk_file(f, sdk_base):
-    return file_in_directory(f, sdk_base)
+    return file_in_directory(os.path.realpath(f), os.path.realpath(sdk_base))
 
 def is_sdk_sample_file(f):
     return f.find("samples") > 0
@@ -123,7 +129,10 @@ def update_file_tree(ses_file, f, tree):
     ses_dir = re.sub(re.escape("%s" % HPM_SDK_BASE) + r'/', '', ses_dir)
     tree_insert_dirs(ses_dir, ses_file, f, tree)
 
-def populate_file_nodes(root, sdk_base, project_dir, custom_board_dir, out_dir, level = 1):
+def get_separate_intermediate_dir_name(name):
+    return "Output/$(Configuration)/Obj/$(ProjectName)/%s" % name
+
+def populate_file_nodes(root, sdk_base, project_dir, custom_board_dir, out_dir, level = 1, separate_intermediate_dir = True, current_folder = None):
     node = ""
     for n in root.keys():
         if n == "files":
@@ -144,11 +153,24 @@ def populate_file_nodes(root, sdk_base, project_dir, custom_board_dir, out_dir, 
                         # deal with drive letter of Windows path
                         obj = re.sub(r'^\w:', '', f)
                 obj = re.sub(r'\\', r'/', obj)
+                if separate_intermediate_dir:
+                    obj = os.path.basename(obj)
                 node += "%s<configuration Name=\"Common\" build_object_file_name=\"%s$(OBJ)\"/>\n" % (" " * ((level + 1) * 2), "/".join(["$(IntDir)", obj]))
                 node += "%s</file>\n" % (" " * (level * 2))
         else:
             node += "%s<folder Name=\"%s\">\n" % (" " * (level * 2), n)
-            node += populate_file_nodes(root[n], sdk_base, project_dir, custom_board_dir, out_dir, level + 1)
+            if separate_intermediate_dir:
+                if level == 1 and current_folder is None:
+                    tmp_dir = n
+                else:
+                    tmp_dir = "%s/%s" % (current_folder, n)
+                if "files" in root[n].keys():
+                    # as long as "files" exists in current node, this folder needs to be taken care of
+                    node += "%s<configuration Name=\"Common\" build_intermediate_directory=\"%s\"/>\n" % (" " * ((level + 1) * 2), get_separate_intermediate_dir_name(tmp_dir))
+            if separate_intermediate_dir:
+                node += populate_file_nodes(root[n], sdk_base, project_dir, custom_board_dir, out_dir, level + 1, current_folder = tmp_dir)
+            else:
+                node += populate_file_nodes(root[n], sdk_base, project_dir, custom_board_dir, out_dir, level + 1, current_folder = current_folder)
             node += "%s</folder>\n" % (" " * (level * 2))
     return node
 
@@ -361,6 +383,8 @@ def get_openocd_board_cfg(config, sdk_base):
     if len(openocd_board_cfg) and os.path.exists(openocd_board_cfg):
         openocd_board_cfg = fix_path(openocd_board_cfg)
         print("-- Segger openocd board config: %s" % openocd_board_cfg)
+        if (is_sdk_file(openocd_board_cfg, sdk_base)):
+            openocd_board_cfg = get_sdk_fullpath(openocd_board_cfg, sdk_base)
         return openocd_board_cfg
     else:
         print("-- Segger openocd board config is not found")
@@ -385,6 +409,8 @@ def generate_ses_project(config, out_dir=".", project_dir = None):
     if config["target"]["ses_link_input"].strip():
         config["target"]["ses_link_input"] = get_sdk_fullpath(config["target"]["ses_link_input"], sdk_base)
 
+    if "openocd" in config["target"].keys():
+        config["target"]["openocd"] = get_sdk_fullpath(config["target"]["openocd"], sdk_base)
     config["target"]["openocd_board_cfg"] = get_openocd_board_cfg(config, sdk_base)
 
     process_extra_options(config)

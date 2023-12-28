@@ -17,6 +17,7 @@ void usb_disk_set_active_msc_class(void *ptr)
 
 DSTATUS usb_disk_status(BYTE pdrv)
 {
+    (void)pdrv;
     if (active_msc_class == NULL) {
         return STA_NOINIT;
     }
@@ -25,6 +26,7 @@ DSTATUS usb_disk_status(BYTE pdrv)
 
 DSTATUS usb_disk_initialize(BYTE pdrv)
 {
+    (void)pdrv;
     if (active_msc_class == NULL) {
         return STA_NOINIT;
     }
@@ -33,16 +35,19 @@ DSTATUS usb_disk_initialize(BYTE pdrv)
 
 DRESULT usb_disk_read(BYTE pdrv, BYTE *buff, DWORD sector, BYTE count)
 {
+    (void)pdrv;
     return usbh_msc_scsi_read10(active_msc_class, sector, buff, count);
 }
 
 DRESULT usb_disk_write(BYTE pdrv, const BYTE *buff, DWORD sector, BYTE count)
 {
+    (void)pdrv;
     return usbh_msc_scsi_write10(active_msc_class, sector, buff, count);
 }
 
 DRESULT usb_disk_ioctl(BYTE pdrv, BYTE cmd, void *buff)
 {
+    (void)pdrv;
     int result = 0;
 
     switch (cmd) {

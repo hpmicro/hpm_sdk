@@ -67,6 +67,7 @@ void tx_application_define(void *first_unused_memory)
 {
 
     CHAR *pointer = TX_NULL;
+    (void)first_unused_memory;
 
     /* Create a byte memory pool from which to allocate the thread stacks.  */
     tx_byte_pool_create(&byte_pool_0, "byte pool 0", memory_area, DEMO_BYTE_POOL_SIZE);
@@ -173,6 +174,7 @@ void thread_0_entry(ULONG thread_input)
 {
     TX_INTERRUPT_SAVE_AREA
     UINT status;
+    (void)thread_input;
     TX_DISABLE;
     printf("%s\n", __func__);
     TX_RESTORE;
@@ -208,6 +210,7 @@ void thread_1_entry(ULONG thread_input)
 {
     TX_INTERRUPT_SAVE_AREA
     UINT status;
+    (void)thread_input;
     TX_DISABLE;
     printf("%s\n", __func__);
     TX_RESTORE;
@@ -235,6 +238,7 @@ void thread_2_entry(ULONG thread_input)
     ULONG received_message;
     TX_INTERRUPT_SAVE_AREA
     UINT status;
+    (void)thread_input;
     TX_DISABLE;
     printf("%s\n", __func__);
     TX_RESTORE;
@@ -299,6 +303,7 @@ void thread_5_entry(ULONG thread_input)
 {
     TX_INTERRUPT_SAVE_AREA
     UINT status;
+    (void)thread_input;
     TX_DISABLE;
     printf("%s\n", __func__);
     TX_RESTORE;

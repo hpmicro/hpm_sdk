@@ -133,7 +133,7 @@ typedef enum pwm_output_type {
 typedef struct pwm_cmp_config {
     uint32_t cmp;         /**< compare value */
     bool enable_ex_cmp;   /**< enable extended compare value */
-#if PWM_SOC_HRPWM_SUPPORT
+#if defined(PWM_SOC_HRPWM_SUPPORT) && PWM_SOC_HRPWM_SUPPORT
     bool enable_hrcmp;     /**< enable high precision pwm */
 #endif
     uint8_t mode;         /**< compare work mode: pwm_cmp_mode_output_compare or pwm_cmp_mode_input_capture */
@@ -141,7 +141,7 @@ typedef struct pwm_cmp_config {
     uint8_t ex_cmp;       /**< extended compare value */
     uint8_t half_clock_cmp; /**< half clock compare value*/
     uint8_t jitter_cmp;     /**< jitter compare value */
-#if PWM_SOC_HRPWM_SUPPORT
+#if defined(PWM_SOC_HRPWM_SUPPORT) && PWM_SOC_HRPWM_SUPPORT
     uint8_t hrcmp;         /**< high precision pwm */
 #endif
 } pwm_cmp_config_t;
@@ -172,7 +172,7 @@ typedef struct pwm_fault_source_config {
  *
  */
 typedef struct pwm_config {
-#if PWM_SOC_HRPWM_SUPPORT
+#if defined(PWM_SOC_HRPWM_SUPPORT) && PWM_SOC_HRPWM_SUPPORT
     bool hrpwm_update_mode;             /**< mode one or zero, HR CMP update timing */
 #endif
     bool enable_output;                 /**< enable pwm output */
@@ -276,7 +276,7 @@ static inline void pwm_set_start_count(PWM_Type *pwm_x,
         | PWM_STA_STA_SET(start);
 }
 
-#if PWM_SOC_HRPWM_SUPPORT
+#if defined(PWM_SOC_HRPWM_SUPPORT) && PWM_SOC_HRPWM_SUPPORT
 
 /**
  * @brief set hrpwm counter start value
@@ -308,7 +308,7 @@ static inline void pwm_set_reload(PWM_Type *pwm_x,
         | PWM_RLD_RLD_SET(reload);
 }
 
-#if PWM_SOC_HRPWM_SUPPORT
+#if defined(PWM_SOC_HRPWM_SUPPORT) && PWM_SOC_HRPWM_SUPPORT
 
 /**
  * @brief set the hr pwm reload value
@@ -344,7 +344,7 @@ static inline void pwm_clear_status(PWM_Type *pwm_x, uint32_t mask)
     pwm_x->SR |= mask;
 }
 
-#if PWM_SOC_TIMER_RESET_SUPPORT
+#if defined(PWM_SOC_TIMER_RESET_SUPPORT) && PWM_SOC_TIMER_RESET_SUPPORT
 
 /**
  * @brief Reset timer and extension timer
@@ -494,7 +494,7 @@ static inline void pwm_load_cmp_shadow_on_capture(PWM_Type *pwm_x,
             | PWM_GCR_HWSHDWEDG_SET(is_falling_edge));
 }
 
-#if PWM_SOC_SHADOW_TRIG_SUPPORT
+#if defined(PWM_SOC_SHADOW_TRIG_SUPPORT) && PWM_SOC_SHADOW_TRIG_SUPPORT
 
 /**
  * @brief RLD, STA shadow registers take effect at the reload point
@@ -588,7 +588,7 @@ static inline void pwm_cmp_update_cmp_value(PWM_Type *pwm_x, uint8_t index,
         | PWM_CMP_CMP_SET(cmp) | PWM_CMP_XCMP_SET(ex_cmp);
 }
 
-#if PWM_SOC_HRPWM_SUPPORT
+#if defined(PWM_SOC_HRPWM_SUPPORT) && PWM_SOC_HRPWM_SUPPORT
 /**
  * @brief update high-precision cmp value
  *
@@ -628,7 +628,7 @@ static inline void pwm_config_cmp(PWM_Type *pwm_x, uint8_t index, pwm_cmp_config
 {
     pwm_shadow_register_unlock(pwm_x);
     if (config->mode == pwm_cmp_mode_output_compare) {
-#if PWM_SOC_HRPWM_SUPPORT
+#if defined(PWM_SOC_HRPWM_SUPPORT) && PWM_SOC_HRPWM_SUPPORT
         if (config->enable_hrcmp) {
             pwm_x->CMPCFG[index] = PWM_CMPCFG_CMPSHDWUPT_SET(config->update_trigger);
             pwm_x->CMP[index] = PWM_CMP_HRPWM_CMP_SET(config->cmp)
@@ -641,7 +641,7 @@ static inline void pwm_config_cmp(PWM_Type *pwm_x, uint8_t index, pwm_cmp_config
                         | PWM_CMP_XCMP_SET(config->ex_cmp)
                         | PWM_CMP_CMPHLF_SET(config->half_clock_cmp)
                         | PWM_CMP_CMPJIT_SET(config->jitter_cmp);
-#if PWM_SOC_HRPWM_SUPPORT
+#if defined(PWM_SOC_HRPWM_SUPPORT) && PWM_SOC_HRPWM_SUPPORT
         }
 #endif
     } else {
@@ -690,6 +690,7 @@ static inline void pwm_config_fault_source(PWM_Type *pwm_x, pwm_fault_source_con
 static inline void pwm_clear_fault(PWM_Type *pwm_x)
 {
     pwm_x->GCR |= PWM_GCR_FAULTCLR_MASK;
+    pwm_x->GCR &= ~PWM_GCR_FAULTCLR_MASK;
 }
 
 /**
@@ -841,10 +842,54 @@ static inline void pwm_config_pwm(PWM_Type *pwm_x, uint8_t index,
         | PWM_PWMCFG_FAULTRECTIME_SET(config->fault_recovery_trigger)
         | PWM_PWMCFG_FRCSRCSEL_SET(config->force_source)
         | PWM_PWMCFG_PAIR_SET(enable_pair_mode)
-#if PWM_SOC_HRPWM_SUPPORT
+#if defined(PWM_SOC_HRPWM_SUPPORT) && PWM_SOC_HRPWM_SUPPORT
         | PWM_PWMCFG_HR_UPDATE_MODE_SET(config->hrpwm_update_mode)
 #endif
         | PWM_PWMCFG_DEADAREA_SET(config->dead_zone_in_half_cycle);
+}
+
+/**
+ * @brief getting the counter reload value for a pwm timer
+ *
+ * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
+ * @retval pwm reload value
+ */
+static inline uint32_t pwm_get_reload_val(PWM_Type *pwm_x)
+{
+    return PWM_RLD_RLD_GET(pwm_x->RLD);
+}
+
+/**
+ * @brief getting the extended counter reload value for a pwm timer
+ *
+ * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
+ * @retval pwm extended reload value
+ */
+static inline uint32_t pwm_get_ex_reload_val(PWM_Type *pwm_x)
+{
+    return PWM_RLD_XRLD_GET(pwm_x->RLD);
+}
+
+/**
+ * @brief getting the value of the pwm counter
+ *
+ * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
+ * @retval pwm counter value
+ */
+static inline uint32_t pwm_get_counter_val(PWM_Type *pwm_x)
+{
+    return PWM_CNT_CNT_GET(pwm_x->CNT);
+}
+
+/**
+ * @brief getting the value of the pwm extended counter
+ *
+ * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
+ * @retval pwm counter value
+ */
+static inline uint32_t pwm_get_ex_counter_val(PWM_Type *pwm_x)
+{
+    return PWM_CNT_XCNT_GET(pwm_x->CNT);
 }
 
 /**
@@ -954,7 +999,7 @@ hpm_stat_t pwm_update_raw_cmp_edge_aligned(PWM_Type *pwm_x, uint8_t cmp_index,
  */
 hpm_stat_t pwm_update_raw_cmp_central_aligned(PWM_Type *pwm_x, uint8_t cmp1_index,
                                        uint8_t cmp2_index, uint32_t target_cmp1, uint32_t target_cmp2);
-#if PWM_SOC_HRPWM_SUPPORT
+#if defined(PWM_SOC_HRPWM_SUPPORT) && PWM_SOC_HRPWM_SUPPORT
 /**
  * @brief Enable high-precision pwm
  *
@@ -1019,6 +1064,29 @@ static inline uint32_t pwm_get_cal_hrpwm_status(PWM_Type *pwm_x, uint8_t chn)
 {
     return PWM_ANASTS_CALON_GET(pwm_x->ANASTS[chn]);
 }
+
+/**
+ * @brief getting the counter reload value for hrpwm counter
+ *
+ * @param pwm_x pwm_x @ref PWM_Type PWM base address
+ * @return uint32_t hrpwm reload
+ */
+static inline uint32_t pwm_get_hrpwm_reload_val(PWM_Type *pwm_x)
+{
+    return PWM_RLD_HRPWM_RLD_GET(pwm_x->RLD_HRPWM);
+}
+
+/**
+ * @brief getting the counter reload value for hrpwm hr counter
+ *
+ * @param pwm_x pwm_x @ref PWM_Type PWM base address
+ * @return uint32_t hrpwm hr reload
+ */
+static inline uint32_t pwm_get_hrpwm_hr_reload_val(PWM_Type *pwm_x)
+{
+    return PWM_RLD_HRPWM_RLD_HR_GET(pwm_x->RLD_HRPWM);
+}
+
 
 /**
  * @brief update raw high-precision compare value for edge aligned waveform

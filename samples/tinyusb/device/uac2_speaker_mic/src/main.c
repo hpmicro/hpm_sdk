@@ -32,7 +32,7 @@
 #include "hpm_i2s_drv.h"
 #include "hpm_dao_drv.h"
 #include "hpm_clock_drv.h"
-#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#ifdef HPMSOC_HAS_HPMSDK_DMAV2
 #include "hpm_dmav2_drv.h"
 #else
 #include "hpm_dma_drv.h"
@@ -131,7 +131,7 @@ void pdm_config(void)
      * enable mic0 @ RXD0
      */
     transfer.data_line = PDM_I2S_DATA_LINE;
-    transfer.channel_slot_mask = 0x3;
+    transfer.channel_slot_mask = BOARD_PDM_DUAL_CHANNEL_MASK; /* 2 channels */
     if (status_success != i2s_config_rx(PDM_I2S, I2S_MCLK_FREQ_IN_HZ, &transfer)) {
         printf("I2S config failed for PDM\n");
         while (1) {
@@ -144,6 +144,7 @@ void pdm_config(void)
     pdm_init(HPM_PDM, &pdm_config);
 
     i2s_enable_rx_dma_request(PDM_I2S);
+    dmamux_config(BOARD_APP_DMAMUX, MIC_DMAMUX_CHANNEL, PDM_I2S_RX_DMAMUX_SRC, true);
 }
 
 void dao_config(void)
@@ -174,6 +175,7 @@ void dao_config(void)
     dao_init(HPM_DAO, &dao_config);
 
     i2s_enable_tx_dma_request(DAO_I2S);
+    dmamux_config(BOARD_APP_DMAMUX, SPEAKER_DMAMUX_CHANNEL, DAO_I2S_TX_DMAMUX_SRC, true);
 }
 
 /*------------- MAIN -------------*/
@@ -566,15 +568,13 @@ void i2s_speaker_dma_cfg(uint32_t size, volatile uint32_t *ptr)
     ch_config.dst_width = DMA_TRANSFER_WIDTH_WORD;
     ch_config.src_addr_ctrl = DMA_ADDRESS_CONTROL_INCREMENT;
     ch_config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
-    ch_config.size_in_byte = size;
+    ch_config.size_in_byte = DMA_ALIGN_WORD(size);
     ch_config.dst_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
     ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
 
     if (status_success != dma_setup_channel(BOARD_APP_HDMA, SPEAKER_DMA_CHANNEL, &ch_config, true)) {
         printf(" dma setup channel failed\n");
-        return;
     }
-    dmamux_config(BOARD_APP_DMAMUX, SPEAKER_DMAMUX_CHANNEL, DAO_I2S_TX_DMAMUX_SRC, true);
 }
 
 void i2s_pdm_dma_cfg(uint32_t size, uint32_t *ptr)
@@ -589,19 +589,18 @@ void i2s_pdm_dma_cfg(uint32_t size, uint32_t *ptr)
     ch_config.dst_width = DMA_TRANSFER_WIDTH_HALF_WORD;
     ch_config.src_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
     ch_config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_INCREMENT;
-    ch_config.size_in_byte = size;
+    ch_config.size_in_byte = DMA_ALIGN_HALF_WORD(size);
     ch_config.src_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
     ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
 
     if (status_success != dma_setup_channel(BOARD_APP_HDMA, MIC_DMA_CHANNEL, &ch_config, true)) {
         printf(" dma setup channel failed\n");
-        return;
     }
-    dmamux_config(BOARD_APP_DMAMUX, MIC_DMAMUX_CHANNEL, PDM_I2S_RX_DMAMUX_SRC, true);
 }
 
 void reinit_dao_i2s_cfg(uint32_t sample_rate, uint8_t audio_depth, uint8_t channel_num)
 {
+    (void)channel_num;
     i2s_config_t i2s_config;
     i2s_transfer_config_t transfer;
 

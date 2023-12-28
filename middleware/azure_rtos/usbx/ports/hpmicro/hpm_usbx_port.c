@@ -44,7 +44,7 @@ void usb_device_setup(void)
 
 static void USBD_IRQHandler(usb_device_handle_t *handle)
 {
-    uint32_t transfer_len;
+    uint32_t transfer_len = 0;
     uint32_t int_status;
     if (handle == NULL)
         return;
@@ -104,24 +104,31 @@ static void USBD_IRQHandler(usb_device_handle_t *handle)
                 if (edpt_complete & (1 << ep_idx2bit(ep_idx))) {
                     /* Failed QTD also get ENDPTCOMPLETE set */
                     dcd_qtd_t *p_qtd = usb_device_qtd_get(handle, ep_idx);
-
-                    if (p_qtd->halted || p_qtd->xact_err || p_qtd->buffer_err) {
-                    } else {
-                        /* only number of bytes in the IOC qtd */
-                        uint8_t const ep_addr = (ep_idx / 2) | ((ep_idx & 0x01) ? 0x80 : 0);
-
-                        transfer_len = p_qtd->expected_bytes - p_qtd->total_bytes;
-                        dcd_qhd_t *qhd0 = usb_device_qhd_get(handle, 0);
-                        if ((ep_addr & 0x0F) == 0) {
-                            msg.is_setup_packet = 0;
-                            msg.buffer = (uint8_t *)&qhd0->setup_request;
-                            msg.length = transfer_len;
-                            _hpm_usbd_ctl_control_callback(&msg, ep_addr);
+                    while (1) {
+                        if (p_qtd->halted || p_qtd->xact_err || p_qtd->buffer_err) {
+                            return;
                         } else {
-                            msg.is_setup_packet = 0;
-                            msg.length = transfer_len;
-                            _hpm_usbd_transfer_complete_callback(&msg, ep_addr);
+                            transfer_len += p_qtd->expected_bytes - p_qtd->total_bytes;
                         }
+
+                        if (p_qtd->next == USB_SOC_DCD_QTD_NEXT_INVALID) {
+                            break;
+                        } else {
+                            p_qtd = (dcd_qtd_t *)p_qtd->next;
+                        }
+                    }
+
+                    uint8_t const ep_addr = (ep_idx / 2) | ((ep_idx & 0x01) ? 0x80 : 0);
+                    dcd_qhd_t *qhd0 = usb_device_qhd_get(handle, 0);
+                    if ((ep_addr & 0x0F) == 0) {
+                        msg.is_setup_packet = 0;
+                        msg.buffer = (uint8_t *)&qhd0->setup_request;
+                        msg.length = transfer_len;
+                        _hpm_usbd_ctl_control_callback(&msg, ep_addr);
+                    } else {
+                        msg.is_setup_packet = 0;
+                        msg.length = transfer_len;
+                        _hpm_usbd_transfer_complete_callback(&msg, ep_addr);
                     }
                 }
             }

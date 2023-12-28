@@ -382,6 +382,8 @@ NX_PACKET *_nx_driver_hardware_get_frame(enet_rx_desc_t **parent_rx_desc_list_cu
 {
     enet_frame_t frame = {0, 0, 0};
     NX_PACKET *packet_ptr_rx = NULL;
+    (void)parent_rx_desc_list_cur;
+    (void)rx_desc_count;
     frame = enet_get_received_frame_interrupt(&nx_driver_information.desc.rx_desc_list_cur, &nx_driver_information.desc.rx_frame_info, ENET_RX_BUFF_COUNT);
     if (frame.length > 0) {
         if (nx_packet_allocate(nx_driver_information.nx_driver_information_packet_pool_ptr, &packet_ptr_rx,
@@ -510,10 +512,10 @@ static UINT _nx_driver_hardware_initialize(NX_IP_DRIVER *driver_req_ptr)
     if (rtl8201_basic_mode_init(ENET, &phy_config) == true) {
 #endif
 #endif
-        printf("Enet phy init passes !\n");
+        printf("Enet phy init passed !\n");
         return status_success;
     } else {
-        printf("Enet phy init fails !\n");
+        printf("Enet phy init failed !\n");
         return status_fail;
     }
     /* Return success!  */

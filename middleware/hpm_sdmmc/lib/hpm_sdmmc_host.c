@@ -10,19 +10,41 @@
 #include "board.h"
 
 
+static void sdmmchost_vsel_pin_control(sdmmc_host_t *host, hpm_sdmmc_io_volt_t io_volt);
+
+static void sdmmchost_power_control(sdmmc_host_t *host, hpm_sdmmc_power_option_t option);
+
+
+static void sdmmchost_switch_to_3v3_as_needed(sdmmc_host_t *host);
+
 static hpm_stat_t sdmmchost_check_host_availablity(sdmmc_host_t *host);
 
 static hpm_stat_t sdmmchost_check_host_availablity(sdmmc_host_t *host)
 {
-    hpm_stat_t  status = status_success;
-    if (host->host_param.card_detection_mode != sdmmc_host_card_detection_none) {
-        if (!sdmmchost_is_card_detected(host)) {
-            status = status_sdmmc_no_sd_card_inserted;
-            host->card_inserted = false;
-            host->card_init_done = false;
-        }
+    hpm_stat_t status = status_success;
+
+    if (!sdmmchost_is_card_detected(host)) {
+        status = status_sdmmc_no_sd_card_inserted;
+        host->card_inserted = false;
+        host->card_init_done = false;
     }
+
     return status;
+}
+
+void sdmmchost_delay_ms(sdmmc_host_t *host, uint32_t ms)
+{
+    if (host->host_param.delay_ms != NULL) {
+        host->host_param.delay_ms(ms);
+    }
+}
+
+
+static void sdmmchost_switch_to_3v3_as_needed(sdmmc_host_t *host)
+{
+    if (IS_HPM_BITMASK_SET(host->host_param.host_flags, HPM_SDMMC_HOST_SUPPORT_3V3)) {
+        sdmmchost_vsel_pin_control(host, hpm_sdmmc_io_voltage_3v3);
+    }
 }
 
 hpm_stat_t sdmmchost_init(sdmmc_host_t *host)
@@ -33,22 +55,53 @@ hpm_stat_t sdmmchost_init(sdmmc_host_t *host)
         HPM_BREAK_IF(host == NULL);
 
         /* Initialize clock for the identification stage */
-        host->host_param.host_clk_freq = host->host_param.clock_init_func(host->host_param.base, SDMMC_CLOCK_400KHZ);
-        host->host_param.io_init_func(host->host_param.base);
+        host->clock_freq = host->host_param.clock_init_func(host->host_param.base, SDMMC_CLOCK_400KHZ, true);
+        host->operation_mode = hpm_sdmmc_operation_mode_inactive;
+        sdmmchost_init_io(host, host->operation_mode);
+
+        sdmmchost_power_control(host, hpm_sdmmc_power_off);
+        sdmmchost_delay_ms(host, 36);
+        sdmmchost_switch_to_3v3_as_needed(host);
+        sdmmchost_delay_ms(host, 36);
+        sdmmchost_power_control(host, hpm_sdmmc_power_on);
 
         sdxc_config_t sdxc_config;
         sdxc_config.data_timeout = 1000; /* Data timeout interval, configure to 1000 milliseconds by default */
 
         sdxc_init(host->host_param.base, &sdxc_config);
 
-        sdxc_wait_card_active(host->host_param.base);
-        host->host_param.delay_ms(10);
+        sdmmchost_wait_card_active(host);
+        sdmmchost_delay_ms(host, 10);
 
         status = status_success;
 
     } while (false);
 
     return status;
+}
+
+static void sdmmchost_vsel_pin_control(sdmmc_host_t *host, hpm_sdmmc_io_volt_t io_volt)
+{
+    const hpm_sdmmc_pin_info_t *pin_info;
+    if (sdmmchost_is_voltage_switch_supported(host)) {
+        pin_info = &host->host_param.io_data.vsel_pin;
+        if (pin_info->use_gpio) {
+            bool polarity = pin_info->polarity;
+            uint32_t gpio_index = pin_info->gpio_pin / 32;
+            uint32_t pin_index = pin_info->gpio_pin % 32;
+            volatile uint32_t *gpio_on = (polarity == false) ? &HPM_GPIO0->DO[gpio_index].SET
+                                                             : &HPM_GPIO0->DO[gpio_index].CLEAR;
+            volatile uint32_t *gpio_off = (polarity == false) ? &HPM_GPIO0->DO[gpio_index].CLEAR
+                                                              : &HPM_GPIO0->DO[gpio_index].SET;
+
+            HPM_GPIO0->OE[gpio_index].SET = (1UL << pin_index);
+            if (io_volt == hpm_sdmmc_io_voltage_3v3) {
+                *gpio_off = (1UL << pin_index);
+            } else {
+                *gpio_on = (1UL << pin_index);
+            }
+        }
+    }
 }
 
 hpm_stat_t sdmmchost_switch_to_1v8(sdmmc_host_t *host)
@@ -72,11 +125,12 @@ hpm_stat_t sdmmchost_switch_to_1v8(sdmmc_host_t *host)
         return status_timeout;
     }
 
-    /* 3. Switch signaling to 1 */
-    board_sd_switch_pins_to_1v8(host->host_param.base);
+    /* 3. Switch signaling to 1.8v */
+    sdmmchost_vsel_pin_control(host, hpm_sdmmc_io_voltage_1v8);
+    sdmmchost_select_voltage(host, hpm_sdmmc_io_voltage_1v8);
 
     /* 4. delay 5ms */
-    host->host_param.delay_ms(5);
+    host->host_param.delay_ms(50);
 
     /* 5. Provide SD clock the card again */
     sdxc_enable_inverse_clock(host->host_param.base, true);
@@ -113,30 +167,39 @@ void sdmmchost_reset(sdmmc_host_t *host)
 
 void sdmmchost_enable_emmc_support(sdmmc_host_t *host, bool enable)
 {
-    sdxc_enable_mmc_boot(host->host_param.base, enable);
+    sdxc_enable_emmc_support(host->host_param.base, enable);
 }
 
 bool sdmmchost_is_card_detected(sdmmc_host_t *host)
 {
-    bool result;
-    if (host->host_param.card_detect != NULL) {
-        result = host->host_param.card_detect(host->host_param.base);
-    } else {
-        result = sdxc_is_card_inserted(host->host_param.base);
-    }
+    bool result = true;
+    if (IS_HPM_BITMASK_SET(host->host_param.host_flags, HPM_SDMMC_HOST_SUPPORT_CARD_DETECTION)) {
+        const hpm_sdmmc_pin_info_t *pin_info = &host->host_param.io_data.cd_pin;
+        if (!pin_info->use_gpio) {
+            result = sdxc_is_card_inserted(host->host_param.base);
+        } else {
+            uint32_t gpio_index = pin_info->gpio_pin / 32;
+            uint32_t pin_index = pin_info->gpio_pin % 32;
+            uint32_t pin_val = HPM_GPIO0->DI[gpio_index].VALUE & (1UL << pin_index);
 
+            result = (pin_info->polarity == 0) ? (pin_val != 0) : (pin_val == 0);
+        }
+    }
     return result;
 }
 
 void sdmmchost_set_card_bus_width(sdmmc_host_t *host, sdmmc_buswidth_t bus_width)
 {
-    sdxc_set_data_bus_width(host->host_param.base, bus_width);
+    host->bus_width = bus_width;
+    sdmmchost_init_io(host, hpm_sdmmc_operation_mode_transfer);
+    sdxc_set_data_bus_width(host->host_param.base, (sdxc_bus_width_t) bus_width);
 }
 
 uint32_t sdmmchost_set_card_clock(sdmmc_host_t *host, uint32_t freq, bool clock_inverse)
 {
-    host->host_param.host_clk_freq = host->host_param.clock_init_func(host->host_param.base, freq);
-    return host->host_param.host_clk_freq;
+    uint32_t clk_freq = host->host_param.clock_init_func(host->host_param.base, freq, clock_inverse);
+    host->clock_freq = clk_freq;
+    return clk_freq;
 }
 
 void sdmmchost_wait_card_active(sdmmc_host_t *host)
@@ -188,7 +251,7 @@ hpm_stat_t sdmmchost_send_command(sdmmc_host_t *host, sdmmchost_cmd_t *cmd)
     status = sdxc_receive_cmd_response(host->host_param.base, &host->cmd);
     sdxc_clear_interrupt_status(host->host_param.base, SDXC_INT_STAT_CMD_COMPLETE_MASK);
 
-    if (cmd->resp_type == (sdxc_dev_resp_type_t)sdmmc_resp_r1b) {
+    if (cmd->resp_type == (sdxc_dev_resp_type_t) sdmmc_resp_r1b) {
         uint32_t delay_ms = (cmd->cmd_timeout_ms == 0) ? 100 : cmd->cmd_timeout_ms;
         delay_cnt = 10 * 1000 * delay_ms;
         has_done_or_error = false;
@@ -239,13 +302,13 @@ hpm_stat_t sdmmchost_transfer(sdmmc_host_t *host, sdmmchost_xfer_t *content)
          *  Here set the margin time to 100 milliseconds
          **************************************************************************************************************/
         uint32_t bus_width = sdxc_get_data_bus_width(host->host_param.base);
-        uint32_t tx_rx_bytes_per_sec = host->host_param.host_clk_freq * bus_width / 8;
+        uint32_t tx_rx_bytes_per_sec = host->clock_freq * bus_width / 8;
         uint32_t block_cnt = content->data->block_cnt;
         uint32_t block_size = content->data->block_size;
         uint32_t read_write_size = block_cnt * block_size;
-        uint32_t timeout_ms = (uint32_t)(1.0f * read_write_size / tx_rx_bytes_per_sec) * 1000 + 100;
+        uint32_t timeout_ms = (uint32_t) (1.0f * read_write_size / tx_rx_bytes_per_sec) * 1000 + 100;
         sdxc_set_data_timeout(host->host_param.base, timeout_ms, NULL);
-     }
+    }
     status = sdxc_transfer_nonblocking(host->host_param.base, config_ptr, content);
 
     int32_t delay_cnt = 1000000U;
@@ -276,8 +339,8 @@ hpm_stat_t sdmmchost_transfer(sdmmc_host_t *host, sdmmchost_xfer_t *content)
 
     sdxc_clear_interrupt_status(host->host_param.base, SDXC_INT_STAT_CMD_COMPLETE_MASK);
 
-    if ((content->data != NULL) || (content->command->resp_type == (sdxc_dev_resp_type_t)sdmmc_resp_r1b)) {
-        delay_cnt = 100000000UL; /* Delay more than 1 second based on the Bus Frequency */
+    if ((content->data != NULL) || (content->command->resp_type == (sdxc_dev_resp_type_t) sdmmc_resp_r1b)) {
+        delay_cnt = 10000000UL; /* Delay more than 1 second based on the Bus Frequency */
         uint32_t xfer_done_or_error_mask = SDXC_INT_STAT_XFER_COMPLETE_MASK | SDXC_STS_ERROR;
         bool has_done_or_error = false;
         do {
@@ -309,87 +372,202 @@ hpm_stat_t sdmmchost_set_speed_mode(sdmmc_host_t *host, sdmmc_speed_mode_t speed
         return status_invalid_argument;
     }
 
-    sdxc_set_speed_mode(host->host_param.base, (sdxc_speed_mode_t)speed_mode);
-
+    sdxc_set_speed_mode(host->host_param.base, (sdxc_speed_mode_t) speed_mode);
     return status_success;
 }
 
 hpm_stat_t sdmmchost_error_recovery(sdmmc_host_t *host, sdmmchost_cmd_t *abort_cmd)
 {
     sdxc_error_recovery(host->host_param.base);
-
     return sdmmchost_send_command(host, abort_cmd);
 }
 
-
-hpm_stat_t sdmmchost_setup_card_detection(sdmmc_host_t *host)
+void sdmmchost_set_cardclk_delay_chain(sdmmc_host_t *host)
 {
-    hpm_stat_t status = status_invalid_argument;
-    do {
-        HPM_BREAK_IF((host == NULL) || (host->host_param.base == NULL));
-
-        if (host->host_param.card_detection_mode == sdmmc_host_card_detection_none) {
-            status = status_success;
-        } else if (host->host_param.card_detection_mode == sdmmc_host_card_detection_via_sdxc) {
-            uint32_t signal_mask = SDXC_INT_SIGNAL_EN_CARD_INSERTION_SIGNAL_EN_MASK | SDXC_INT_SIGNAL_EN_CARD_REMOVAL_SIGNAL_EN_MASK;
-            sdxc_enable_interrupt_signal(host->host_param.base, signal_mask, true);
-            intc_m_enable_irq_with_priority(host->host_param.card_detection_irq_index, 1);
-            status = status_success;
-        } else {
-            GPIO_Type *gpio = host->host_param.card_detection_gpio;
-            uint32_t gpio_index = host->host_param.card_detection_gpio_index;
-            uint32_t pin_index = host->host_param.card_detection_pin_index;
-            gpio_config_pin_interrupt(gpio, gpio_index, pin_index, gpio_interrupt_trigger_edge_falling);
-            gpio_enable_pin_interrupt(gpio, gpio_index, pin_index);
-            intc_m_enable_irq_with_priority(host->host_param.card_detection_irq_index, 1);
-            status = status_success;
-        }
-    } while (false);
-
-    return status;
+    SDXC_Type *base = host->host_param.base;
+    bool need_inverse = sdxc_is_inverse_clock_enabled(base);
+    sdxc_enable_inverse_clock(base, false);
+    sdxc_enable_sd_clock(base, false);
+    uint32_t num_delaycells = sdxc_get_default_cardclk_delay_chain(base, host->clock_freq);
+    sdxc_set_cardclk_delay_chain(host->host_param.base, num_delaycells);
+    sdxc_enable_inverse_clock(base, need_inverse);
+    sdxc_enable_sd_clock(base, true);
 }
 
-hpm_stat_t  sdmmchost_handle_card_detection(sdmmc_host_t *host)
+bool sdmmchost_is_8bit_supported(sdmmc_host_t *host)
 {
-    hpm_stat_t status = status_invalid_argument;
-    do {
-        if (host->host_param.card_detection_mode == sdmmc_host_card_detection_none) {
-            status = status_success;
-        } else if (host->host_param.card_detection_mode == sdmmc_host_card_detection_via_sdxc) {
-            uint32_t int_stat = sdxc_get_interrupt_status(host->host_param.base);
-            if ((int_stat & SDXC_INT_STAT_CARD_INSERTION_MASK) != 0) {
-                host->card_inserted = true;
-                /* Clear interrupt */
-                sdxc_clear_interrupt_status(host->host_param.base, SDXC_INT_STAT_CARD_INSERTION_MASK);
-            }
-            if ((int_stat & SDXC_INT_STAT_CARD_REMOVAL_MASK) != 0) {
-                /* Clear interrupt */
-                sdxc_clear_interrupt_status(host->host_param.base, SDXC_INT_STAT_CARD_REMOVAL_MASK);
-                host->card_inserted = false;
-                host->card_init_done = false;
-                sdxc_select_voltage(host->host_param.base, sdxc_bus_voltage_sd_3v3);
-                sdxc_enable_sd_clock(host->host_param.base, false);
-                sdmmchost_reset(host);
-            }
-            status = status_success;
-        } else {
-            GPIO_Type  *gpio = host->host_param.card_detection_gpio;
-            uint32_t gpio_index = host->host_param.card_detection_gpio_index;
-            uint32_t pin_index = host->host_param.card_detection_pin_index;
-            if (IS_HPM_BIT_SET(gpio->DI[gpio_index].VALUE, pin_index)) {
-                host->card_inserted = true;
-            } else {
-                host->card_inserted = false;
-                host->card_init_done = false;
-                sdxc_select_voltage(host->host_param.base, sdxc_bus_voltage_sd_3v3);
-                sdxc_enable_sd_clock(host->host_param.base, false);
-                sdmmchost_reset(host);
-            }
-            /* Clear interrupt flag: W1C */
-            gpio->IF[gpio_index].VALUE = HPM_BITSMASK(1, pin_index);
-            status = status_success;
-        }
-    } while (false);
+    return IS_HPM_BITMASK_SET(host->host_param.host_flags, HPM_SDMMC_HOST_SUPPORT_8BIT);
+}
 
-    return status;
+bool sdmmchost_is_voltage_switch_supported(sdmmc_host_t *host)
+{
+    return IS_HPM_BITMASK_SET(host->host_param.host_flags, HPM_SDMMC_HOST_SUPPORT_VOLTAGE_SWITCH);
+}
+
+void sdmmchost_power_control(sdmmc_host_t *host, hpm_sdmmc_power_option_t option)
+{
+    if (IS_HPM_BITMASK_SET(host->host_param.host_flags, HPM_SDMMC_HOST_SUPPORT_POWER_SWITCH)) {
+        const hpm_sdmmc_pin_info_t *pin_info = &host->host_param.io_data.pwr_pin;
+        const sdmmc_io_init_apis_t *init_apis = &host->host_param.io_init_apis;
+        bool use_gpio = pin_info->use_gpio;
+        SDMMCHOST_Type *base = host->host_param.base;
+        init_apis->pwr_io_init(base, use_gpio);
+        if (pin_info->use_gpio) {
+            uint32_t gpio_index = pin_info->gpio_pin / 32;
+            uint32_t pin_index = pin_info->gpio_pin % 32;
+            volatile uint32_t *gpio_reg_off = (pin_info->polarity == 0) ? &HPM_GPIO0->DO[gpio_index].CLEAR
+                                                                        : &HPM_GPIO0->DO[gpio_index].SET;
+            volatile uint32_t *gpio_reg_on = (pin_info->polarity == 0) ? &HPM_GPIO0->DO[gpio_index].SET
+                                                                       : &HPM_GPIO0->DO[gpio_index].CLEAR;
+            HPM_GPIO0->OE[gpio_index].SET = (1UL << pin_index);
+            if (option == hpm_sdmmc_power_off) {
+                *gpio_reg_off = (1UL << pin_index);
+            } else if (option == hpm_sdmmc_power_on) {
+                *gpio_reg_on = (1UL << pin_index);
+            } else {
+                *gpio_reg_off = (1UL << pin_index);
+                host->host_param.delay_ms(1);
+                *gpio_reg_on = (1UL << pin_index);
+            }
+        } else {
+            if (option == hpm_sdmmc_power_off) {
+                sdxc_enable_power(host->host_param.base, false);
+            } else if (option == hpm_sdmmc_power_on) {
+                sdxc_enable_power(host->host_param.base, true);
+            } else {
+                sdxc_enable_power(host->host_param.base, false);
+                host->host_param.delay_ms(1);
+                sdxc_enable_power(host->host_param.base, true);
+            }
+        }
+        host->host_param.delay_ms(1);
+    }
+}
+
+void sdmmchost_init_io(sdmmc_host_t *host, hpm_sdmmc_operation_mode_t operation_mode)
+{
+    const hpm_sdmmc_pin_info_t *pin_info;
+    bool as_gpio;
+    const sdmmc_io_init_apis_t *init_apis = &host->host_param.io_init_apis;
+    SDMMCHOST_Type *base = host->host_param.base;
+    uint32_t host_flags = host->host_param.host_flags;
+
+    if (operation_mode == hpm_sdmmc_operation_mode_inactive) {
+        uint32_t bus_width = host->bus_width;
+        bool support_3v3 = IS_HPM_BITMASK_SET(host_flags, HPM_SDMMC_HOST_SUPPORT_3V3);
+        host->io_voltage = support_3v3 ? hpm_sdmmc_io_voltage_3v3 : hpm_sdmmc_io_voltage_1v8;
+        /* Initialize IO */
+
+        bool support_pwr = IS_HPM_BITMASK_SET(host_flags, HPM_SDMMC_HOST_SUPPORT_POWER_SWITCH);
+        if (support_pwr) {
+            pin_info = &host->host_param.io_data.pwr_pin;
+            as_gpio = pin_info->use_gpio;
+            if (init_apis->pwr_io_init != NULL) {
+                init_apis->pwr_io_init(base, as_gpio);
+            }
+        }
+
+        bool is_1v8 = host->io_voltage == hpm_sdmmc_io_voltage_3v3 ? false : true;
+        init_apis->cmd_io_init(base, true, is_1v8); /* Configure CMD pin to open-drain mode */
+        init_apis->clk_data_io_init(base, bus_width, is_1v8);
+
+        bool support_cd = IS_HPM_BITMASK_SET(host_flags, HPM_SDMMC_HOST_SUPPORT_CARD_DETECTION);
+        if (support_cd) {
+            pin_info = &host->host_param.io_data.cd_pin;
+            as_gpio = pin_info->use_gpio;
+            if (init_apis->cd_io_init != NULL) {
+                init_apis->cd_io_init(base, as_gpio);
+            }
+        }
+        bool support_vsel = sdmmchost_is_voltage_switch_supported(host);
+        if (support_vsel) {
+            pin_info = &host->host_param.io_data.vsel_pin;
+            as_gpio = pin_info->use_gpio;
+            if (init_apis->vsel_io_init != NULL) {
+                init_apis->vsel_io_init(base, as_gpio);
+            }
+            /* Since eMMC device doesn't support dynamic voltage switch, so set the voltage at initialization phase */
+            if (!support_3v3) {
+                sdmmchost_vsel_pin_control(host, hpm_sdmmc_io_voltage_1v8);
+                sdmmchost_select_voltage(host, hpm_sdmmc_io_voltage_1v8);
+            }
+        }
+    } else if (operation_mode == hpm_sdmmc_operation_mode_identification) {
+        bool is_1v8 = host->io_voltage == hpm_sdmmc_io_voltage_3v3 ? false : true;
+        bool is_opendrain = true;
+        init_apis->cmd_io_init(base, is_opendrain, is_1v8);
+        uint32_t bus_width = 1;
+        switch (host->bus_width) {
+        case sdmmc_bus_width_4bit:
+            bus_width = 4;
+            break;
+        case sdmmc_bus_width_8bit:
+            bus_width = 8;
+            break;
+        default:
+            bus_width = 1;
+            break;
+        }
+        init_apis->clk_data_io_init(base, bus_width, is_1v8);
+        bool support_ds = IS_HPM_BITMASK_SET(host_flags, HPM_SDMMC_HOST_SUPPORT_HS400);
+        if (support_ds) {
+            init_apis->ds_io_init(base);
+        }
+    } else if (operation_mode == hpm_sdmmc_operation_mode_transfer) {
+        bool is_1v8 = host->io_voltage == hpm_sdmmc_io_voltage_3v3 ? false : true;
+        bool is_opendrain = false;
+        init_apis->cmd_io_init(base, is_opendrain, is_1v8);
+        uint32_t bus_width = 1;
+        switch (host->bus_width) {
+        case sdmmc_bus_width_4bit:
+            bus_width = 4;
+            break;
+        case sdmmc_bus_width_8bit:
+            bus_width = 8;
+            break;
+        default:
+            bus_width = 1;
+            break;
+        }
+        init_apis->clk_data_io_init(base, bus_width, is_1v8);
+        bool support_ds = IS_HPM_BITMASK_SET(host_flags, HPM_SDMMC_HOST_SUPPORT_HS400);
+        if (support_ds) {
+            init_apis->ds_io_init(base);
+        }
+    } else if (operation_mode == hpm_sdmmc_operation_mode_interrupt) {
+        bool is_1v8 = host->io_voltage == hpm_sdmmc_io_voltage_3v3 ? false : true;
+        bool is_opendrain = true;
+        init_apis->cmd_io_init(base, is_opendrain, is_1v8);
+    } else {
+        /* DO nothing */
+    }
+    /* Wait a while in case the IO initialization requires small delays to get effective */
+    for (volatile uint32_t delay_cnt = 100; delay_cnt > 0; delay_cnt--) {
+        NOP();
+    }
+}
+
+void sdmmchost_enable_enhanced_data_strobe(sdmmc_host_t *host, bool enable)
+{
+    sdxc_enable_enhanced_strobe(host->host_param.base, enable);
+}
+
+
+void sdmmchost_set_data_strobe_delay(sdmmc_host_t *host)
+{
+    uint32_t num_delaycells = sdxc_get_default_strobe_delay(host->host_param.base);
+    sdxc_set_data_strobe_delay(host->host_param.base, num_delaycells);
+}
+
+void sdmmchost_select_voltage(sdmmc_host_t *host, hpm_sdmmc_io_volt_t io_volt)
+{
+    sdxc_bus_voltage_option_t vsel = sdxc_bus_voltage_sd_3v3;
+    if (io_volt == hpm_sdmmc_io_voltage_1v8) {
+        vsel = sdxc_bus_voltage_sd_1v8;
+        host->io_voltage = hpm_sdmmc_io_voltage_1v8;
+    } else {
+        host->io_voltage = hpm_sdmmc_io_voltage_3v3;
+    }
+    sdxc_select_voltage(host->host_param.base, vsel);
+
 }

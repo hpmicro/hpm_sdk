@@ -103,7 +103,7 @@ static const uint8_t cdc_descriptor[] = {
 
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t read_buffer[2048];
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t write_buffer[2048];
-
+volatile bool dtr_enable;
 volatile bool ep_tx_busy_flag;
 
 
@@ -138,7 +138,7 @@ void usbd_cdc_acm_bulk_out(uint8_t ep, uint32_t nbytes)
 {
     USB_LOG_RAW("actual out len:%d\r\n", nbytes);
 
-    usbd_ep_start_read(CDC_OUT_EP, read_buffer, 2048);
+    usbd_ep_start_read(ep, read_buffer, 2048);
     usbd_ep_start_write(CDC_IN_EP, read_buffer, nbytes);
 }
 
@@ -148,7 +148,7 @@ void usbd_cdc_acm_bulk_in(uint8_t ep, uint32_t nbytes)
 
     if ((nbytes % CDC_MAX_MPS) == 0 && nbytes) {
         /* send zlp */
-        usbd_ep_start_write(CDC_IN_EP, NULL, 0);
+        usbd_ep_start_write(ep, NULL, 0);
     } else {
         ep_tx_busy_flag = false;
     }
@@ -179,24 +179,11 @@ void cdc_acm_init(void)
     usbd_initialize();
 }
 
-volatile uint8_t dtr_enable;
-volatile uint8_t rts_enable;
-
 void usbd_cdc_acm_set_dtr(uint8_t intf, bool dtr)
 {
+    (void)intf;
     if (dtr) {
         dtr_enable = 1;
-    } else {
-        dtr_enable = 0;
-    }
-}
-
-void usbd_cdc_acm_set_rts(uint8_t intf, bool rts)
-{
-    if (rts) {
-        rts_enable = 1;
-    } else {
-        rts_enable = 0;
     }
 }
 

@@ -114,13 +114,13 @@ typedef struct hpm_motor_par {
     float  i_samplingper_s;         /**< Current sampling period */
     HPM_MOTOR_MATH_TYPE  o_smc_f;   /**< Sliding mode control factor1 */
     HPM_MOTOR_MATH_TYPE  o_smc_g;   /**< Sliding mode control factor2 */
-    void   (*func_smc_const)();     /**< Calculate the function of the sliding mode control coefficient */
+    void   (*func_smc_const)(void *str);     /**< Calculate the function of the sliding mode control coefficient */
 } hpm_motor_para_t;
 
 #define BLDC_MOTOR_PARA_DEFAULTS {0, 0, 0,\
                                         0, 0, 0,\
                                         0, 0, 0,\
-                                        &hpm_mcl_nullcallback_func}
+                                        NULL}
 
 /**
  * @brief Speed calculation parameters
@@ -137,12 +137,12 @@ typedef struct  bldc_contrl_spd_par {
     HPM_MOTOR_MATH_TYPE       o_speedout_filter;        /**< Speed after filter */
     HPM_MOTOR_MATH_TYPE       o_speedout;               /**< Speed before filter */
     hpm_motor_para_t     *i_motorpar;                /**< Motor operating parameters */
-    void    (*func_getspd)();                     /**< Speed calculation function */
+    void    (*func_getspd)(void *str);                     /**< Speed calculation function */
 } BLDC_CONTRL_SPD_PARA;
 
 #define BLDC_CONTRL_SPD_PARA_DEFAULTS {0, 0, 0, 0, 0,\
                                         0, 0, 0, 0, NULL,\
-                                        &hpm_mcl_nullcallback_func}
+                                        NULL}
 
 /**
  * @brief pid control parameters
@@ -157,11 +157,11 @@ typedef struct bldc_contrl_pid_par {
     HPM_MOTOR_MATH_TYPE       mem;                    /**< Intenal Data */
     HPM_MOTOR_MATH_TYPE       cur;                    /**< Sampling data  */
     HPM_MOTOR_MATH_TYPE       outval;                 /**< Output Data */
-    void (*func_pid)();                               /**< Pid function */
+    void (*func_pid)(void *str);                               /**< Pid function */
 } BLDC_CONTRL_PID_PARA;
 #define BLDC_CONTRL_PID_PARA_DEFAULTS {0, 0, 0, 0,\
                                         0, 0, 0, 0,\
-                                       &hpm_mcl_nullcallback_func}
+                                       NULL}
 
 /**
  * @brief Current sampling parameters
@@ -178,12 +178,12 @@ typedef struct bldc_contrl_current_par {
     HPM_MOTOR_MATH_TYPE       cal_v;            /**< Calculated V-phase current */
     HPM_MOTOR_MATH_TYPE       cal_w;            /**< Calculated W-phase current */
     void *userdata;                             /**< user data */
-    void (*func_sampl)();                       /**< current samples */
+    void (*func_sampl)(void *str);                       /**< current samples */
 } BLDC_CONTROL_CURRENT_PARA;
 #define BLDC_CONTROL_CURRENT_PARA_DEFAULTS {0, 0, 0,\
                                             0, 0, 0,\
                                             0, 0, 0,\
-                                            NULL, &hpm_mcl_nullcallback_func}
+                                            NULL, NULL}
 
 /**
  * @brief PWM output parameters
@@ -196,11 +196,11 @@ typedef struct bldc_control_pwmout_par {
     uint32_t            pwm_v;                /**< v pwm duty cycle */
     uint32_t            pwm_w;                /**< w pwm duty cycle */
     uint32_t            i_pwm_reload;         /**< pwm reload value, pwm configuration related */
-    void (*func_set_pwm)();                   /**< pwm output function */
+    void (*func_set_pwm)(void *str);                   /**< pwm output function */
 } BLDC_CONTROL_PWMOUT_PARA;
 #define BLDC_CONTROL_PWMOUT_PARA_DEFAULTS {0, 0, 0,\
                                             0, 0, 0,\
-                                            &hpm_mcl_nullcallback_func}
+                                            NULL}
 /**
  * @brief svpwm parameters
  *
@@ -211,21 +211,21 @@ typedef struct bldc_control_pwm_par {
     int8_t             sector;             /**< Sector Number */
     uint32_t            i_pwm_reload_max;       /**< Maximum duty cycle the pwm module can output */
     BLDC_CONTROL_PWMOUT_PARA    pwmout; /**< @ref BLDC_CONTROL_PWMOUT_PARA */
-    void (*func_spwm)();                    /**< svpwm function */
+    void (*func_spwm)(void *str);                    /**< svpwm function */
 } BLDC_CONTROL_PWM_PARA;
 #define BLDC_CONTROL_PWM_PARA_DEFAULTS {0, 0, 0, 0,\
                                            BLDC_CONTROL_PWMOUT_PARA_DEFAULTS,\
-                                            &hpm_mcl_nullcallback_func}
+                                            NULL}
 /**
  * @brief Location estimation function
  *
  */
 typedef struct bldc_func_cal {
     void *par;
-    void (*func)();
+    void (*func)(void *str);
 } BLDC_FUNC_CAL;
 
-#define BLDC_FUNC_CAL_DEFAULTS {NULL, &hpm_mcl_nullcallback_func}
+#define BLDC_FUNC_CAL_DEFAULTS {NULL, NULL}
 
 /**
  * @brief foc control
@@ -244,14 +244,14 @@ typedef struct bldc_contrl_foc_par {
     HPM_MOTOR_MATH_TYPE               ubeta;              /**< beta voltage */
     HPM_MOTOR_MATH_TYPE               ialpha;             /**< alpha current */
     HPM_MOTOR_MATH_TYPE               ibeta;              /**< beta current */
-    void (*func_dqsvpwm)();                               /**< dq axis current to svpwm function */
+    void (*func_dqsvpwm)(void *str, void *str1, void *str2, void *data);                               /**< dq axis current to svpwm function */
 } BLDC_CONTROL_FOC_PARA;
 #define BLDC_CONTROL_FOC_PARA_DEFAULTS {BLDC_CONTRL_PID_PARA_DEFAULTS, BLDC_CONTRL_PID_PARA_DEFAULTS,\
                                         BLDC_CONTRL_SPD_PARA_DEFAULTS, 0,\
                                         BLDC_CONTROL_CURRENT_PARA_DEFAULTS, BLDC_MOTOR_PARA_DEFAULTS,\
                                         BLDC_CONTROL_PWM_PARA_DEFAULTS,\
                                         BLDC_FUNC_CAL_DEFAULTS,\
-                                        0, 0, 0, 0, &hpm_mcl_nullcallback_func}
+                                        0, 0, 0, 0, NULL}
 
 /**
  * @}

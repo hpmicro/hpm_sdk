@@ -3,6 +3,8 @@
 
 cmake_minimum_required(VERSION 3.13)
 
+set(CONFIG_HPM_PANEL 1)
+
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
     SET(CMAKE_BUILD_TYPE flash_sdram_xip)
 endif()

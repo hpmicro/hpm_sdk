@@ -10,7 +10,7 @@
 #include "board.h"
 #include "hpm_clock_drv.h"
 #include "hpm_mchtmr_drv.h"
-#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#ifdef HPMSOC_HAS_HPMSDK_DMAV2
 #include "hpm_dmav2_drv.h"
 #else
 #include "hpm_dma_drv.h"
@@ -120,7 +120,7 @@ void isr_dma(void)
     if (0 != (stat & DMA_CHANNEL_STATUS_TC)) {
         if (dma_test_chain_flag) {
             dma_chain_tc_irq_cnt++;
-#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#ifdef HPMSOC_HAS_HPMSDK_DMAV2
             if (dma_chain_tc_irq_cnt == (LINKED_DESCRIPTOR_NUM + 1)) {
 #else
             if (dma_chain_tc_irq_cnt == 1) {
@@ -188,7 +188,7 @@ void test_chained_transfer(bool verbose)
         return;
     }
 
-    errors = compare_buffers((uint8_t *)ch_config.src_addr, (uint8_t *)ch_config.dst_addr, ch_config.size_in_byte, false);
+    errors = compare_buffers((uint8_t *)ch_config.src_addr, (uint8_t *)ch_config.dst_addr, ch_config.size_in_byte, verbose);
     if (!errors) {
         printf(" [%d]: data match\n", 0);
     } else {
@@ -196,7 +196,7 @@ void test_chained_transfer(bool verbose)
     }
 
     for (i = 0; i < LINKED_DESCRIPTOR_NUM; i++) {
-        errors = compare_buffers((uint8_t *)descriptors[i].src_addr, (uint8_t *)descriptors[i].dst_addr, descriptors[i].trans_size << DMA_TRANSFER_WIDTH_BYTE, false);
+        errors = compare_buffers((uint8_t *)descriptors[i].src_addr, (uint8_t *)descriptors[i].dst_addr, descriptors[i].trans_size << DMA_TRANSFER_WIDTH_BYTE, verbose);
         if (!errors) {
             printf(" [%d]: data match\n", (i + 1));
         } else {
@@ -253,7 +253,7 @@ void test_unchained_transfer(uint32_t src, uint32_t dst, bool verbose)
             continue;
         }
 
-        errors = compare_buffers((uint8_t *)src, (uint8_t *)dst, SIZE_PER_TEST, false);
+        errors = compare_buffers((uint8_t *)src, (uint8_t *)dst, SIZE_PER_TEST, verbose);
         if (errors) {
             printf("compare failed: %d errors\n", errors);
             continue;

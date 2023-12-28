@@ -406,6 +406,8 @@ uint8_t board_get_usb_id_status(void)
 
 void board_usb_vbus_ctrl(uint8_t usb_index, uint8_t level)
 {
+    (void) usb_index;
+    (void) level;
 }
 
 void board_init_pmp(void)

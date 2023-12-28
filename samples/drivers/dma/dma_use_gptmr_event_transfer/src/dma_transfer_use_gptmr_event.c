@@ -5,7 +5,7 @@
  *
  */
 
-#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#ifdef HPMSOC_HAS_HPMSDK_DMAV2
 #include "hpm_dmav2_drv.h"
 #else
 #include "hpm_dma_drv.h"
@@ -144,7 +144,7 @@ static void handle_gptmr_event_test(void)
         gptmr_dma_request_event_t event = (option - '0');
         putchar(option);
         putchar('\n');
-        for (int i = 0; i < sizeof(test_table) / sizeof(test_number_t); i++) {
+        for (uint32_t i = 0; i < sizeof(test_table) / sizeof(test_number_t); i++) {
             if (event == test_table[i].num) {
                 gptmr_config(event);
                 continue;
@@ -165,7 +165,7 @@ static void show_help(void)
     static const char help_info_ending[] = "*---------------------------------------------------------------------------------*\n";
 
     printf("%s", help_info);
-    for (int i = 0; i < sizeof(test_table) / sizeof(test_number_t); i++) {
+    for (uint32_t i = 0; i < sizeof(test_table) / sizeof(test_number_t); i++) {
         printf("%s", test_table[i].num_str);
     }
     printf("%s", help_info_ending);

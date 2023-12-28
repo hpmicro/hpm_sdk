@@ -2,17 +2,16 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
-set(HPM_SDK_LD_NO_NANO_SPECS 1)
 set(CONFIG_LWIP 1)
 
-if(${BOARD} STREQUAL "hpm6750evk")
-set(CONFIG_ENET_PHY_DP83867 1)
-set(CONFIG_ENET_PHY_DP83848 1)
-elseif(${BOARD} STREQUAL "hpm6750evk2")
-set(CONFIG_ENET_PHY_RTL8211 1)
-set(CONFIG_ENET_PHY_RTL8201 1)
-else()
-message("This board doesn't support multiple enet ports!")
+set(APP_USE_ENET_PORT_COUNT 2)
+
+if(NOT DEFINED APP_USE_ENET_PORT_COUNT)
+    message(FATAL_ERROR "APP_USE_ENET_PORT_COUNT is undefined!")
+endif()
+
+if(NOT APP_USE_ENET_PORT_COUNT EQUAL 2)
+    message(FATAL_ERROR "This sample must use two Ethernet ports!")
 endif()
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
@@ -20,6 +19,7 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 sdk_compile_definitions(-D__DISABLE_AUTO_NEGO=0)
 sdk_compile_definitions(-D__ENABLE_ENET_RECEIVE_INTERRUPT=0)
 sdk_compile_definitions(-DENET_MULTIPLE_PORT=1)
+sdk_compile_definitions(-DLWIP_DHCP=0)
 
 project(lwip_tcpecho_multi_ports_example)
 

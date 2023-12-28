@@ -9,7 +9,7 @@
 #include "hpm_common.h"
 #include "hpm_clock_drv.h"
 #include "hpm_uart_drv.h"
-#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#ifdef HPMSOC_HAS_HPMSDK_DMAV2
 #include "hpm_dmav2_drv.h"
 #else
 #include "hpm_dma_drv.h"

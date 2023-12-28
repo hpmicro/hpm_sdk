@@ -93,7 +93,9 @@ hpm_stat_t qeiv2_config_uvw_position(QEIV2_Type *qeiv2_x, qeiv2_uvw_config_t *co
     qeiv2_set_uvw_position_opt(qeiv2_x, config->pos_opt);
     for (uint8_t i = 0; i < 6; i++) {
         if (config->pos_opt == qeiv2_uvw_pos_opt_next) {
-            if (config->u_pos_sel[i] == qeiv2_uvw_pos_sel_edge) {
+            if ((config->u_pos_sel[i] == qeiv2_uvw_pos_sel_edge)
+             || (config->v_pos_sel[i] == qeiv2_uvw_pos_sel_edge)
+             || (config->w_pos_sel[i] == qeiv2_uvw_pos_sel_edge)) {
                 return status_invalid_argument;
             }
         }

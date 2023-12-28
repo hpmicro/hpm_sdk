@@ -9,7 +9,7 @@
 #include "hpm_clock_drv.h"
 #include "hpm_uart_drv.h"
 
-#define TEST_UART_MAX_BUFFER_SIZE            (20U)
+#define TEST_UART_MAX_BUFFER_SIZE            (20)
 #ifndef TEST_UART
 #define TEST_UART BOARD_APP_UART_BASE
 #define TEST_UART_IRQ BOARD_APP_UART_IRQ
@@ -22,45 +22,27 @@
 #endif
 #endif
 
-static void send_data(uint8_t *buffer, uint8_t *remain_size, uint8_t max_len);
-
 uint8_t buff_index;
 uint8_t data_count;
 ATTR_PLACE_AT_NONCACHEABLE uint8_t data_buff[TEST_UART_MAX_BUFFER_SIZE];
 
 void uart_isr(void)
 {
-    uint8_t c;
     uint8_t irq_id = uart_get_irq_id(TEST_UART);
     if (irq_id == uart_intr_id_rx_data_avail) {
-        if (status_success != uart_receive_byte(TEST_UART, &c)) {
-            while (1) {
-            }
+        while (uart_check_status(TEST_UART, uart_stat_data_ready)) {
+            data_buff[buff_index++] = uart_read_byte(TEST_UART);
         }
-        data_buff[buff_index] = c;
-        buff_index++;
-        if (buff_index >= data_count) {
-            uart_disable_irq(TEST_UART, uart_intr_rx_data_avail_or_timeout);
-            send_data(data_buff, &buff_index, data_count);
-            if (buff_index == 0) {
-                uart_enable_irq(TEST_UART, uart_intr_rx_data_avail_or_timeout);
-            }
-        }
+        uart_disable_irq(TEST_UART, uart_intr_rx_data_avail_or_timeout);
+        uart_enable_irq(TEST_UART, uart_intr_tx_slot_avail);
     }
     if (irq_id == uart_intr_id_tx_slot_avail) {
-#if defined(CONFIG_UART_FIFO_MODE) && (CONFIG_UART_FIFO_MODE == 1)
-        send_data(data_buff, &buff_index, data_count);
-        if (buff_index == 0) {
-            uart_enable_irq(TEST_UART, uart_intr_rx_data_avail_or_timeout);
+        for (uint8_t i = 0; i < buff_index; i++) {
+            uart_write_byte(TEST_UART, data_buff[i]);
         }
-#else
-        uart_write_byte(TEST_UART, data_buff[data_count - buff_index]);
-        buff_index--;
-        if (buff_index == 0) {
-            uart_disable_irq(TEST_UART, uart_intr_tx_slot_avail);
-            uart_enable_irq(TEST_UART, uart_intr_rx_data_avail_or_timeout);
-        }
-#endif
+        buff_index = 0;
+        uart_disable_irq(TEST_UART, uart_intr_tx_slot_avail);
+        uart_enable_irq(TEST_UART, uart_intr_rx_data_avail_or_timeout);
     }
 }
 
@@ -79,7 +61,7 @@ int main(void)
     uart_default_config(TEST_UART, &config);
 
     /* The RBR and THR reg has two modes,the FIFO mode and the BUFFER mode
-    RBR/THR is a RX/TXFIFO in FIFO mode, RBR/THR is jusr a byte buffer in BUFFER mode
+    RBR/THR is a RX/TXFIFO in FIFO mode, RBR/THR is just a byte buffer in BUFFER mode
     CONFIG_UART_FIFO_MODE = 1 is means FIFO mode
     CONFIG_UART_FIFO_MODE = 0 or not define CONFIG_UART_FIFO_MODE is means BUFFER mode. */
 #if defined(CONFIG_UART_FIFO_MODE) && (CONFIG_UART_FIFO_MODE == 1)
@@ -99,9 +81,10 @@ int main(void)
         printf("non-fifo mode\n");
         printf("uart will send back received characters, echo one by one\n");
     } else {
-        data_count = TEST_UART_MAX_BUFFER_SIZE;
+        config.rx_fifo_level = uart_rx_fifo_trg_gt_half;
+        data_count = (UART_SOC_FIFO_SIZE / 2);
         printf("fifo mode\n");
-        printf("uart will send back received characters, echo every %d bytes\n", TEST_UART_MAX_BUFFER_SIZE);
+        printf("uart will send back received characters, echo every %d bytes, depends on the fifo threshold\n", data_count);
     }
 
     stat = uart_init(TEST_UART, &config);
@@ -122,17 +105,3 @@ int main(void)
     return 0;
 }
 
-static void send_data(uint8_t *buffer, uint8_t *remain_size, uint8_t max_len)
-{
-    /* in fifo mode, write data to fifo before enable tx irq best, it can maximun guaranteed fifo usage */
-    uart_disable_irq(TEST_UART, uart_intr_tx_slot_avail);
-    uint8_t fifo_size = uart_get_fifo_size(TEST_UART);
-    uint8_t tx_size = ((*remain_size) > fifo_size) ? fifo_size : (*remain_size);
-    for (uint8_t i = 0; i < tx_size; i++) {
-        uart_write_byte(TEST_UART, buffer[max_len - (*remain_size)]);
-        (*remain_size)--;
-    }
-    if ((*remain_size)) {
-        uart_enable_irq(TEST_UART, uart_intr_tx_slot_avail);
-    }
-}

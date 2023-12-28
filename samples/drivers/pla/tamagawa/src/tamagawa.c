@@ -859,7 +859,6 @@ void pla_tmgw_init(void)
 void init_pwm_pla_trgm(TRGM_Type *ptr)
 {
     trgm_output_t trgm_output_cfg;
-    trgm_input_filter_t input_filter;
 
     trgm_output_cfg.invert = false;
     trgm_output_cfg.type   = trgm_output_same_as_input;
@@ -902,11 +901,6 @@ void init_pwm_pla_trgm(TRGM_Type *ptr)
     trgm_output_cfg.type   = trgm_output_same_as_input;
     trgm_output_cfg.input = PLA_TMGW_DMA_LINK_TRGM_INPUT;
     trgm_output_config(ptr, TEST_MOTOR_PWM_CAP_REFRESH_DMA_LINK_TRGMNUM, &trgm_output_cfg);
-
-    input_filter.filter_length = 2000;
-    input_filter.invert = false;
-    input_filter.mode = trgm_filter_mode_delay;
-    trgm_input_filter_config(ptr, PLA_TMGW_DMA_LINK_TRGM_INPUT, &input_filter);
 
     /** test point */
     trgm_output_cfg.invert = false;

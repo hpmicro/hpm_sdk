@@ -388,6 +388,7 @@ enet_frame_t enet_get_received_frame_interrupt(enet_rx_desc_t **parent_rx_desc_l
 
 void enet_get_default_tx_control_config(ENET_Type *ptr, enet_tx_control_config_t *config)
 {
+    (void) ptr;
     config->enable_ioc  = false;
     config->disable_crc = true;
     config->disable_pad = false;

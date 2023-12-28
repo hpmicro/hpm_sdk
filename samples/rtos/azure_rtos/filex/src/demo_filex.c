@@ -69,7 +69,7 @@ int main(void)
 void tx_application_define(void *first_unused_memory)
 {
     CHAR *pointer = TX_NULL;
-
+    (void)first_unused_memory;
     /* Create a byte memory pool from which to allocate the thread stacks.  */
     tx_byte_pool_create(&byte_pool_0, "byte pool 0", memory_area, 9120);
 
@@ -104,6 +104,7 @@ void thread_0_entry(ULONG thread_input)
     ULONG actual;
     CHAR local_buffer[30];
     UINT check_ok_cnt = 0;
+    (void)thread_input;
     /* Format the RAM disk - the memory for the RAM disk was setup in
      * tx_application_define above.  */
 #ifdef FX_ENABLE_EXFAT

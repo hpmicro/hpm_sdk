@@ -142,7 +142,7 @@ static void test_multiword_communication(uint32_t msg_count)
     printf("core %d: multiword communication done\n", BOARD_RUNNING_CORE);
 }
 
-static void test_singleword_communication()
+static void test_singleword_communication(void)
 {
     uint32_t i = 0;
     hpm_stat_t stat;

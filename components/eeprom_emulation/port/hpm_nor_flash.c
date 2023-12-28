@@ -32,6 +32,7 @@ hpm_stat_t nor_flash_read(nor_flash_config_t *cfg, uint8_t *buf, uint32_t addr, 
     uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP(addr + size);
     uint32_t aligned_size = aligned_end - aligned_start;
 
+    (void)cfg;
     l1c_dc_invalidate(aligned_start, aligned_size);
 
     memcpy(buf, (void *)addr, size);
@@ -58,7 +59,7 @@ static hpm_stat_t nor_flash_erase_sector(nor_flash_config_t *cfg, uint32_t start
 void nor_flash_erase(nor_flash_config_t *cfg, uint32_t start_addr, uint32_t size)
 {
     uint32_t sector_size = cfg->sector_size;
-    for (int i = 0; i < size / sector_size; i++) {
+    for (uint32_t i = 0; i < size / sector_size; i++) {
         nor_flash_erase_sector(cfg, start_addr + i * sector_size);
     }
 }

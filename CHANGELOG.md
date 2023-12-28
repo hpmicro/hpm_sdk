@@ -1,5 +1,137 @@
 # Change Log
 
+## [1.4.0] - 2023-12-29:
+
+Main changes since 1.3.0
+
+Tested Segger Embedded Studio Version: 7.32
+
+### Changed:
+  - soc: hpm5301: add hpm5301
+  - soc: hpm6880: add hpm6880
+  - soc: HPM6750: pcfg: update dcdc dcm mode config
+  - soc: clock driver: update clock_set_source_divider() and clock_get_source()
+  - boards: add hpm5301evklite
+  - boards: add hpm6800evk
+  - boards: update clock_set_source_divider() to use clk_src_t type param
+  - boards: hpm6750evkmini: use the same uart port as core1 for some samples.
+  - drivers: dao: update driver support new feature on hpm6800
+  - drivers: adc16: update comment about cal_avg_cfg in calibration
+  - drivers: qeiv2: change adc trigmux name x to 0 and y to 1
+  - drivers: femc: add overflow protect to time config
+  - drivers: mcan Enlarge the range of CAN_EVENT_ERROR.
+  - components: serial_nor: add subdirectory in cmakelists
+  - middleware: cherryusb: update to v0.10.2
+  - middleware: cherryusb: rename host and device isr
+  - middleware: FreeRTOS: xPortIsInsideInterrupt() using CSR_MSCRATCH
+  - middleware:hpm_sdmmc Enhanced all speed modes support for SD and eMMC.
+  - middleware: usbx: device: support chain transfer
+  - samples: cherryusb: host: rndis: integrate dhcp thread into ping thread for host rndis ping and iperf sample
+  - samples: adc: temp: add isr for temp out of thresholds
+  - samples: drivers: acmp: optimization for comparing input voltage
+  - samples: lwip: add DHCP macro definition in CMakeLists.txt
+  - samples: lwip_ptp: enable DHCP feature in PTP samples
+  - samples: drivers: qeiv2: update API for adc-qeiv2 pin initialization
+  - samples: bldc_foc: change adc buffer size from 40 words to 48 words
+  - samples: remove explicitly c++ standard setting.
+  - samples: driver: cam: set default cmake build type
+  - samples: lwip: update to Class C static IP adress
+  - samples: tinyuf2: remove unnecessary cache ops.
+  - samples: lwip: lwip_tcpecho_freertos: optimization for API call in a thread-safe way
+  - samples: lwip: lwip_ptp: v1: slave: update static ip
+  - samples: lwip: optimize DHCP enable logic
+  - samples: lwip: opts: adjust the allocation strategy of memory pool
+  - samples: lwip: lwip_iperf: adjust MEM_SIZE for saving memory consumption
+  - samples: lwip: lwip_tcpecho_multi_ports: update the second IP with C class
+  - samples: enet: optimization for PHY selections
+  - samples: dma: update uart rx circle transfer buffer size
+  - samples: drivers: sdxc/emmc Correct doc for emmc sample.
+  - cmake: sdk_link_libraries link libraries for supported tools.
+  - cmake: add project name for hpm_sdk sub directory.
+  - cmake: decouple CMAKE_BUILD_TYPE and linker script.
+  - cmake: ses: remove -Ox from gcc option list.
+  - cmake: set default c++ standard to c++11.
+  - Update CONFIG_HAS_xxx to HPMSOC_HAS_xxx.
+  - segger: enable all warnings.
+  - segger: release: release optimization level use cmakelist config
+  - scripts: ses: set intermediate dir in project file.
+  - docs: remove quick start guide from top level readme
+  - docs: change doc structure.
+
+### Added:
+  - soc: HPM5361: add trgm filter shift length feature
+  - soc & drivers: hpm5300: add DMAMUX_SOC_WRITEONLY and TRGM_SOC_HAS_DMAMUX_EN features
+  - drivers: lcb: add lcb driver.
+  - drivers: sdxc add more APIs for timing and power control.
+  - drivers: mipi_csi: add mipi csi.
+  - drivers: cam: add cam_stop_safely API
+  - components: usb: device: add dtd chain transfer
+  - components: panel: enable panel component.
+  - components: camera: ov5640: add mipi interface.
+  - middleware: rtthread-nano: add v3.1.5
+  - middleware: rtthread-nano: add FPU support.
+  - middleware: tinyusb: device: update to support chain transfer
+  - middleware: cherryusb: device: update to support chain transfer
+  - middleware: vglite: add 4.0.49.
+  - middleware: cherryusb: add USB_OSAL_WAITING_FOREVER for sem and mq use
+  - middleware: add hpm_mcl_v2
+  - middleware: lwip: add ptpd v1 & v2
+  - middleware: cmsis_os2: add source files.
+  - samples: mcl: add step motor.
+  - samples: lwip: lwip_ptp: v2: support IEEE1588 V2
+  - samples: cherryusb: add audio_v2_mic_speaker_rtthread sample
+  - samples: cherryusb: host: add hid and msc rtthread samples
+  - samples: cherryusb: host: usbnet: add support ec20 module sample.
+  - samples: cmsis_os2: add blinky sample.
+  - samples: driver: mipi_csi: add mipi_csi.
+  - samples: mcan Support MCAN4-7 loopback testing.
+  - cmake: support custom output file name.
+
+### Fixed:
+  - soc: fix cache maintenance at startup
+  - soc: hpm53xx Correct exip API tree offset.
+  - soc: toolchain: missing .fast.* in gnu ld linker script.
+  - soc: fix tbss and tdata section not initialized.
+  - soc: sysctl: sysctl_enable_group_resource() should be check LOC_BUSY
+  - soc: hpm5300 Correct Cache size and Cacheline size.
+  - boards: hpm6750evkmini Fix the issue that eMMC is still 3.3V even 1.8V is selected.
+  - boards: hpm5301evklite correct jlink script device number.
+  - components: camera: power_up is enable by default for ov5640/ov7725.
+  - docs: samples: drivers: add numberic index.
+  - drivers/soc: fix build warning
+  - drivers: i2c: add slave device response judgment for master read/write APIs
+  - drivers: opamp: fix opamp vssa connect error.
+  - drivers: pllv2: fix pllctlv2_pll_is_stable() API
+  - drivers: qeiv2: fix invalid argument check
+  - drivers: dac: fix the upper limit value setting for DAC_OUTPUT
+  - drivers: jpeg: fix pixel format index for out buffer.
+  - drivers: uart: fix not support oversample 32 for rx idle detection on hpm5300
+  - middleware:ftafs Fix SD card init crash.
+  - middleware: mcl: fix path plan error.
+  - middleware: hpm_sdmmc Fix the issue that IO initialization work unstable on HPM6300.
+  - middleware: hpm_sdmmc Fix voltage switch setting issue for SD and eMMC.
+  - middleware: hpm_sdmmc Fix the PWR and VSEL IO initiaization issue. refs:hpm-sdk-#863
+  - samples: sei: fix nikon sample crc calc error.
+  - samples: cherryusb: msc device: add pre-format fat12 file system in u disk
+  - samples: adcx: replace const with a macro for ADC sample cycle
+  - samples: tinyusb:fix the usb host pin init.
+  - samples: motor_ctrl: bldc_littlevgl_foc: program crash.
+  - samples: qeiv2: uvw: fix uninitialized pointer usage
+  - samples: cherryusb: fix semaphore give in isr
+  - samples: drivers: Fix the issue that can error example may block.
+  - samples: uart_irq: fix unable to limit receive large than buffer size.
+  - samples: drivers:sdxc:emmc remove infinite loop for emmc initialization.
+  - samples: drivers: i2s: fix tx underflow during tx start
+  - samples: lwip: lwip_tcpecho_multiple_ports: fix no echo data when receiving large amounts of data
+  - samples: mcl: pwm duty set error.
+  - samples: cherryusb: host: usbnet: fixed when performing a stress test with a large amount of iperf data, will send fai.
+  - samples: cherryusb: audio_v2_mic_speaker_rtthread: fix mic no voice problem
+  - samples: jpeg_decode: add delay after usb pins init for waiting power stable
+  - samples: hfi: hpm6750evk2: fix the motor shake.
+  - cmake: segger: remove workstation specific path info.
+  - cmake/soc: fix heap/stack size setting for andes toolchain.
+  - cmake: ses: correct device name for core1.
+
 ## [1.3.0] - 2023-09-28:
 
 Main changes since 1.2.0

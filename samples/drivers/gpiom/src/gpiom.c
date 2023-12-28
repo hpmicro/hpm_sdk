@@ -9,6 +9,15 @@
 #include "hpm_gpio_drv.h"
 #include "hpm_gpiom_drv.h"
 
+#ifdef BOARD_LED_GPIOM_GPIO_INDEX
+#define APP_LED_GPIOM_GPIO_INDEX      BOARD_LED_GPIOM_GPIO_INDEX
+#elif defined(BOARD_LED_GPIO_INDEX)
+#define APP_LED_GPIOM_GPIO_INDEX      BOARD_LED_GPIO_INDEX
+#else
+#error Please define APP_LED_GPIO_INDEX to corresponding GPIO index
+#endif
+
+
 #define GPIO_TOGGLE_COUNT 5
 
 void test_gpio_toggle_output(GPIO_Type *ptr)
@@ -33,9 +42,9 @@ void test_gpio_toggle_output(GPIO_Type *ptr)
 void gpiom_configure_pin_control_setting(gpiom_gpio_t gpio_module)
 {
     printf("using gpiom configures pin control module\n");
-    gpiom_set_pin_controller(BOARD_APP_GPIOM_BASE, BOARD_LED_GPIO_INDEX, BOARD_LED_GPIO_PIN, gpio_module);
-    gpiom_enable_pin_visibility(BOARD_APP_GPIOM_BASE, BOARD_LED_GPIO_INDEX, BOARD_LED_GPIO_PIN, gpio_module);
-    gpiom_lock_pin(BOARD_APP_GPIOM_BASE, BOARD_LED_GPIO_INDEX, BOARD_LED_GPIO_PIN);
+    gpiom_set_pin_controller(BOARD_APP_GPIOM_BASE, APP_LED_GPIOM_GPIO_INDEX, BOARD_LED_GPIO_PIN, gpio_module);
+    gpiom_enable_pin_visibility(BOARD_APP_GPIOM_BASE, APP_LED_GPIOM_GPIO_INDEX, BOARD_LED_GPIO_PIN, gpio_module);
+    gpiom_lock_pin(BOARD_APP_GPIOM_BASE, APP_LED_GPIOM_GPIO_INDEX, BOARD_LED_GPIO_PIN);
 }
 
 int main(void)

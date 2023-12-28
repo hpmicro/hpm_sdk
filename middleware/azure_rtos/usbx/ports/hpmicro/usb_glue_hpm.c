@@ -25,13 +25,13 @@ static void usb_host_mode_init(USB_Type *ptr)
     ptr->USBCMD &= ~USB_USBCMD_ITC_MASK;
 }
 
-void usb_hc_low_level_init()
+void usb_hc_low_level_init(void)
 {
     usb_phy_init((USB_Type *)HPM_USB0_BASE);
     intc_m_enable_irq(IRQn_USB0);
 }
 
-void usb_hc_low_level2_init()
+void usb_hc_low_level2_init(void)
 {
     usb_host_mode_init((USB_Type *)HPM_USB0_BASE);
 }
@@ -39,7 +39,7 @@ void usb_hc_low_level2_init()
 uint8_t usbh_get_port_speed(const uint8_t port)
 {
     uint8_t speed;
-
+    (void)port;
     speed = usb_get_port_speed((USB_Type *)HPM_USB0_BASE);
 
     if (speed == 0x00) {

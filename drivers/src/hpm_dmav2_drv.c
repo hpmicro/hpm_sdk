@@ -54,6 +54,7 @@ hpm_stat_t dma_setup_channel(DMAV2_Type *ptr, uint8_t ch_num, dma_channel_config
 
 void dma_default_channel_config(DMAV2_Type *ptr, dma_channel_config_t *ch)
 {
+    (void) ptr;
     ch->en_infiniteloop = false;
     ch->handshake_opt = DMA_HANDSHAKE_OPT_ONE_BURST;
     ch->burst_opt = DMA_SRC_BURST_OPT_STANDAND_SIZE;
@@ -69,6 +70,7 @@ void dma_default_channel_config(DMAV2_Type *ptr, dma_channel_config_t *ch)
 
 hpm_stat_t dma_config_linked_descriptor(DMAV2_Type *ptr, dma_linked_descriptor_t *descriptor, uint8_t ch_num, dma_channel_config_t *config)
 {
+    (void) ptr;
     uint32_t tmp;
 
     if ((config->dst_width > DMA_SOC_TRANSFER_WIDTH_MAX(ptr))
@@ -114,14 +116,14 @@ hpm_stat_t dma_start_memcpy(DMAV2_Type *ptr, uint8_t ch_num,
 {
     hpm_stat_t stat = status_success;
     uint32_t width, count;
-    int32_t burst_size;
+    uint32_t burst_size;
     dma_channel_config_t config = {0};
     dma_default_channel_config(ptr, &config);
 
     /* burst size checking (1-byte burst length will cause heavy overhead */
     if (!burst_len_in_byte || burst_len_in_byte == 1 || burst_len_in_byte > size
         || burst_len_in_byte >
-            ((1 << DMA_SOC_TRANSFER_WIDTH_MAX(ptr)) << DMA_SOC_TRANSFER_PER_BURST_MAX(ptr))) {
+            (uint32_t) ((1 << DMA_SOC_TRANSFER_WIDTH_MAX(ptr)) << DMA_SOC_TRANSFER_PER_BURST_MAX(ptr))) {
         return status_invalid_argument;
     }
 
@@ -172,6 +174,7 @@ hpm_stat_t dma_start_memcpy(DMAV2_Type *ptr, uint8_t ch_num,
 
 void dma_default_handshake_config(DMAV2_Type *ptr, dma_handshake_config_t *config)
 {
+    (void) ptr;
     memset(config, 0, sizeof(dma_handshake_config_t));
     config->en_infiniteloop = false;
     config->interrupt_mask = DMA_INTERRUPT_MASK_HALF_TC;

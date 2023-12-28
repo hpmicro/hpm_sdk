@@ -28,9 +28,13 @@ TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
   uint32_t x, y;
   uint16_t i;
   uint32_t data_pos;
+  (void)error_reporter;
+  (void)image_width;
+  (void)image_height;
+  (void)channels;
   i = 0;
-  for( y = 0; y < 96; y++){
-      for( x = 0; x < 96; x++){
+  for ( y = 0; y < 96; y++) {
+      for ( x = 0; x < 96; x++) {
           data_pos = ((y) * 3 + 150) * 800 + 200 + 4 * x;
           image_data[i] = (((buffer[data_pos] & 0x7e0)>>1) + ((buffer[data_pos] & 0x1f)>>5) + ((buffer[data_pos] & 0xf800)>>3))&0xff;
           buffer[(y + 480) * 800 + x + 520] = image_data[i];

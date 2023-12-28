@@ -14,8 +14,6 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(erpc_rpmsg_bm_core1)
 
-set(CMAKE_CXX_STANDARD 11)
-
 sdk_compile_definitions(-DHPM_FEATURE_MBX_SIDE_B)
 sdk_compile_options(-O1)
 

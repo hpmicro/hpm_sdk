@@ -1,3 +1,5 @@
 excluded_targets:
   - debug
   - release
+dependency:
+  - rng

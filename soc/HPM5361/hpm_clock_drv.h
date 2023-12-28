@@ -47,6 +47,8 @@ enum {
 #define GET_CLK_SRC_GROUP(src) (((uint8_t)(src)>>4) & 0x0FU)
 #define GET_CLK_SRC_INDEX(src) ((uint8_t)(src) & 0x0FU)
 
+#define GET_CLOCK_SOURCE_FROM_CLK_SRC(clk_src) (clock_source_t)((uint32_t)(clk_src) & 0xFU)
+
 /**
  * @brief Clock source definitions
  */

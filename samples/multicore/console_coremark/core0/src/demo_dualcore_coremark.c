@@ -78,26 +78,13 @@ int app_main(void)
     return 0;
 }
 
+extern void system_init(void);
 void reset_handler(void)
 {
-    l1c_dc_disable();
-#if !defined(__SEGGER_RTL_VERSION) || defined(__GNU_LINKER)
-    /*
-     * Initialize LMA/VMA sections.
-     * Relocation for any sections that need to be copied from LMA to VMA.
-     */
-    extern void c_startup(void);
-    c_startup();
-#endif
+    fencei();
 
     /* Call platform specific hardware initialization */
-    extern void system_init(void);
     system_init();
-
-#ifdef __cplusplus
-    /* Do global constructors */
-    __libc_init_array();
-#endif
 
     /* Entry function */
     app_main();

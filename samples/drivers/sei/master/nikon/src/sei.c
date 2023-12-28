@@ -44,34 +44,30 @@ int main(void)
     sei_tranceiver_config_init(BOARD_SEI, BOARD_SEI_CTRL, &tranceiver_config);
 
     /* [2] data register config */
-    /* data register 2: send CDF0 */
+    /* data register 2: send Sink Code */
     data_format_config.mode = sei_data_mode;
     data_format_config.signed_flag = false;
     data_format_config.bit_order = sei_bit_lsb_first;
     data_format_config.word_order = sei_word_nonreverse;
-    data_format_config.word_len = 13;
-    data_format_config.last_bit = 12;
+    data_format_config.word_len = 3;
+    data_format_config.last_bit = 2;
     data_format_config.first_bit = 0;
-    data_format_config.max_bit = 12;
+    data_format_config.max_bit = 2;
     data_format_config.min_bit = 0;
     sei_cmd_data_format_config_init(BOARD_SEI, SEI_SELECT_DATA, SEI_DAT_2, &data_format_config);
-    sei_set_data_value(BOARD_SEI, SEI_DAT_2, 0x0002);    /* CDF0: EAX-0，CC-0 */
-    /* data register 3: send CRC */
-    data_format_config.mode = sei_crc_mode;
+    sei_set_data_value(BOARD_SEI, SEI_DAT_2, 0x0002);
+    /* data register 3: send CDF0 */
+    data_format_config.mode = sei_data_mode;
     data_format_config.signed_flag = false;
     data_format_config.bit_order = sei_bit_lsb_first;
     data_format_config.word_order = sei_word_nonreverse;
-    data_format_config.word_len = 3;
-    data_format_config.crc_invert = false;
-    data_format_config.crc_shift_mode = false;
-    data_format_config.crc_len = 3;
-    data_format_config.last_bit = 2;
+    data_format_config.word_len = 10;
+    data_format_config.last_bit = 9;
     data_format_config.first_bit = 0;
-    data_format_config.max_bit = 3;
+    data_format_config.max_bit = 9;
     data_format_config.min_bit = 0;
-    data_format_config.crc_init_value = 0;
-    data_format_config.crc_poly = (BIT0_MASK | BIT1_MASK);
     sei_cmd_data_format_config_init(BOARD_SEI, SEI_SELECT_DATA, SEI_DAT_3, &data_format_config);
+    sei_set_data_value(BOARD_SEI, SEI_DAT_3, 0);
     /* data register 4: recv IF.EAX */
     data_format_config.mode = sei_check_mode;
     data_format_config.signed_flag = false;
@@ -148,8 +144,9 @@ int main(void)
 
     /* [3] instructions */
     instr_idx = 0;
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, 0, SEI_DAT_3, SEI_DAT_2, 13);     /* Send CDF0 */
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, 0, SEI_DAT_0, SEI_DAT_3, 3);      /* Send CRC */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, 0, SEI_DAT_0, SEI_DAT_2, 3);     /* Send Sink Code */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, 0, SEI_DAT_9, SEI_DAT_3, 10);     /* Send CDF0 */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, 0, SEI_DAT_0, SEI_DAT_9, 3);      /* Send CRC */
 
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_9, SEI_DAT_4, 6);  /* Recv IF.EAX*/
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_9, SEI_DAT_5, 6);     /* Recv IF.CC*/

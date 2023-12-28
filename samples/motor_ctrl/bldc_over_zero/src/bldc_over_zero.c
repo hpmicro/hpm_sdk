@@ -23,7 +23,9 @@
 #include "hpm_block.h"
 #include "hpm_over_zero.h"
 
+#ifndef SEGGER_RTT_ENABLE
 #define SEGGER_RTT_ENABLE 0
+#endif
 
 #if SEGGER_RTT_ENABLE
 #include "SEGGER_RTT.h"
@@ -46,7 +48,7 @@ hpm_mcl_over_zero_cfg_t sensorless_cfg;
 #define RTT_CHANNEL         (1)
 #endif
 
-volatile ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t adc_buff[3][BOARD_BLDC_ADC_SEQ_DMA_SIZE_IN_4BYTES];
+volatile ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t adc_buff[3][BOARD_BLDC_ADC_PMT_DMA_SIZE_IN_4BYTES];
 
 uint8_t motor_dir = (MOTOR0_SPD > 0 ? hpm_motor_dir_forward : hpm_motor_dir_reverse);
 float user_setspeed = MOTOR0_SPD;

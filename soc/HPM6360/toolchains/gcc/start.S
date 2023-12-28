@@ -41,6 +41,19 @@ _start:
     la t0, _stack
     mv sp, t0
 
+#ifdef CONFIG_NOT_ENABLE_ICACHE
+    call l1c_ic_disable
+#else
+    call l1c_ic_enable
+#endif
+#ifdef CONFIG_NOT_ENABLE_DCACHE
+    call l1c_dc_invalidate_all
+    call l1c_dc_disable
+#else
+    call l1c_dc_enable
+    call l1c_dc_invalidate_all
+#endif
+
     /*
      * Initialize LMA/VMA sections.
      * Relocation for any sections that need to be copied from LMA to VMA.
@@ -88,6 +101,14 @@ _start:
 
     /* Use mscratch to store isr level */
     csrw mscratch, 0
+
+#elif defined(CONFIG_RTTHREAD) && CONFIG_RTTHREAD
+    #define HANDLER_TRAP rtt_risc_v_trap_handler
+    #define HANDLER_S_TRAP rtt_risc_v_trap_handler
+
+    /* Use mscratch to store isr level */
+    csrw mscratch, 0
+
 #else
     #define HANDLER_TRAP irq_handler_trap
     #define HANDLER_S_TRAP irq_handler_s_trap

@@ -4,9 +4,9 @@
 cmake_minimum_required(VERSION 3.13)
 set(SES_TOOLCHAIN_VARIANT "Andes")
 
+set(CONFIG_HPM_PANEL 1)
 set(CONFIG_HPM_MATH 1)
 set(CONFIG_HPM_MATH_NN_RVP32_ONLY_SES 1)
-set(CONFIG_HPM_MATH_NN_NORMAL 1)
 
 if(NOT DEFINED CONFIG_CAMERA)
 set(CONFIG_CAMERA "ov5640")
@@ -22,7 +22,6 @@ endif()
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(tflm_face_obj_example)
-set(CMAKE_CXX_STANDARD 11)
 sdk_app_src(src/face_obj.c)
 sdk_app_src(src/fount24x48.c)
 sdk_app_src(src/image_provider.cc)

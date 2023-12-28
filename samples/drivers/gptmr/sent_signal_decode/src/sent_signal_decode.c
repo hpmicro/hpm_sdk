@@ -11,7 +11,7 @@
 #include "hpm_gptmr_drv.h"
 #include "hpm_debug_console.h"
 #include "hpm_dmamux_drv.h"
-#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#ifdef HPMSOC_HAS_HPMSDK_DMAV2
 #include "hpm_dmav2_drv.h"
 #else
 #include "hpm_dma_drv.h"
@@ -115,7 +115,7 @@ ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(4) float sent_signal_table[APP_MEASURE
 volatile uint32_t count;
 volatile bool     dma_is_done;
 volatile uint32_t dma_actual_len;
-volatile static uint32_t record_dma_count = 0;
+static volatile uint32_t record_dma_count = 0;
 void isr_dma(void)
 {
     volatile hpm_stat_t stat;
@@ -173,7 +173,7 @@ int main(void)
         dma_enable_channel(APP_GPTMR_DMA, APP_DMA_CH);
         if (dma_is_done) {
             dma_is_done = false;
-             for (int i = 0; i < (APP_MEASURE_COUNT - dma_actual_len); i++) {  
+             for (uint32_t i = 0; i < (APP_MEASURE_COUNT - dma_actual_len); i++) {
                  sent_signal_table[i] = (float)(((float)1000000 / gptmr_freq) * pwm_meas_table[i].priiod);
              }
             pwm_process_sent(sent_signal_table, APP_MEASURE_COUNT - dma_actual_len, &sent_format_data);

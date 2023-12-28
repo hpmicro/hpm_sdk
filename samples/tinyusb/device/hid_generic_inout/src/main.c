@@ -45,7 +45,7 @@ enum  {
 
 static uint32_t blink_interval_ms = BLINK_NOT_MOUNTED;
 
-volatile static uint64_t millis_ticks = 0;
+static volatile uint64_t millis_ticks = 0;
 /*---------------------------------------------------------------------*
  * Board timer callback
  *---------------------------------------------------------------------*/
@@ -115,6 +115,8 @@ uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t
  */
 void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize)
 {
+    (void)itf;
+    (void)report_type;
     uint8_t echo_buf[bufsize];
 
     /* echo back anything we received from host */

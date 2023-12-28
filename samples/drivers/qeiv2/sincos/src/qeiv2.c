@@ -47,7 +47,7 @@ static void qeiv2_init(void);
 int main(void)
 {
     board_init();
-    board_init_adc16_pins();
+    board_init_adc_qeiv2_pins();
 
     pwm_init();
     trigger_mux_init();
@@ -189,8 +189,8 @@ static void qeiv2_init(void)
     qeiv2_adc_config_t adc_config;
     qeiv2_pos_cmp_match_config_t pos_cmp_config = {0};
 
-    trgm_adc_matrix_config(BOARD_BLDC_QEI_TRGM, BOARD_BLDC_QEI_ADC_MATRIX_ADCX, trgm_adc_matrix_in_from_adc0, false);
-    trgm_adc_matrix_config(BOARD_BLDC_QEI_TRGM, BOARD_BLDC_QEI_ADC_MATRIX_ADCY, trgm_adc_matrix_in_from_adc1, false);
+    trgm_adc_matrix_config(BOARD_BLDC_QEI_TRGM, BOARD_BLDC_QEI_ADC_MATRIX_ADC0, trgm_adc_matrix_in_from_adc0, false);
+    trgm_adc_matrix_config(BOARD_BLDC_QEI_TRGM, BOARD_BLDC_QEI_ADC_MATRIX_ADC1, trgm_adc_matrix_in_from_adc1, false);
 
     adc_config.adc_select  = 0;
     adc_config.adc_channel = BOARD_ADC_COS_CHN;

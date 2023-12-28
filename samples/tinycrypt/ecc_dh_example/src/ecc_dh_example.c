@@ -481,7 +481,7 @@ exitTest1:
     return result;
 }
 
-int main()
+int main(void)
 {
     unsigned int result = TC_PASS;
 

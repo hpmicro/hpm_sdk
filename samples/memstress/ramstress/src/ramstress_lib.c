@@ -42,7 +42,7 @@ int ramstress_algo_fill_selfaddress(uint32_t *buf1, uint32_t *buf2, uint32_t siz
         p1 = buf1;
         p2 = buf2;
         volatile uint32_t *error_addr = 0;
-        for (int i = 0; i < size; i++) {
+        for (uint32_t i = 0; i < size; i++) {
             if (*p1 != (((j + i) & 0x01ul) ? (uint32_t)p1 : ~((uint32_t)p1))) {
                 error_addr = p1;
                 break;
@@ -83,7 +83,7 @@ int ramstress_algo_random(uint32_t *buf1, uint32_t *buf2, uint32_t size)
     volatile uint32_t *p2 = buf2;
     uint32_t random;
 
-    for (uint32_t i = 0; i< size; i++) {
+    for (uint32_t i = 0; i < size; i++) {
         random = interface_random32();
         *p1++ = random;
         *p2++ = random;
@@ -98,7 +98,7 @@ int ramstress_algo_or(uint32_t *buf1, uint32_t *buf2, uint32_t size)
     volatile uint32_t *p2 = buf2;
     uint32_t random = interface_random32();
 
-    for (uint32_t i = 0; i< size; i++) {
+    for (uint32_t i = 0; i < size; i++) {
         *p1++ |= random;
         *p2++ |= random;
     }
@@ -112,7 +112,7 @@ int ramstress_algo_xor(uint32_t *buf1, uint32_t *buf2, uint32_t size)
     volatile uint32_t *p2 = buf2;
     uint32_t random = interface_random32();
 
-    for (uint32_t i = 0; i< size; i++) {
+    for (uint32_t i = 0; i < size; i++) {
         *p1++ ^= random;
         *p2++ ^= random;
     }
@@ -126,7 +126,7 @@ int ramstress_algo_and(uint32_t *buf1, uint32_t *buf2, uint32_t size)
     volatile uint32_t *p2 = buf2;
     uint32_t random = interface_random32();
 
-    for (uint32_t i = 0; i< size; i++) {
+    for (uint32_t i = 0; i < size; i++) {
         *p1++ &= random;
         *p2++ &= random;
     }
@@ -140,7 +140,7 @@ int ramstress_algo_sub(uint32_t *buf1, uint32_t *buf2, uint32_t size)
     volatile uint32_t *p2 = buf2;
     uint32_t random = interface_random32();
 
-    for (uint32_t i = 0; i< size; i++) {
+    for (uint32_t i = 0; i < size; i++) {
         *p1++ -= random;
         *p2++ -= random;
     }
@@ -154,7 +154,7 @@ int ramstress_algo_mul(uint32_t *buf1, uint32_t *buf2, uint32_t size)
     volatile uint32_t *p2 = buf2;
     uint32_t random = interface_random32();
 
-    for (uint32_t i = 0; i< size; i++) {
+    for (uint32_t i = 0; i < size; i++) {
         *p1++ *= random;
         *p2++ *= random;
     }
@@ -168,9 +168,9 @@ int ramstress_algo_div(uint32_t *buf1, uint32_t *buf2, uint32_t size)
     volatile uint32_t *p2 = buf2;
     uint32_t random = interface_random32();
 
-    random = (random == 0)? (random + 1) : random;
+    random = (random == 0) ? (random + 1) : random;
 
-    for (uint32_t i = 0; i< size; i++) {
+    for (uint32_t i = 0; i < size; i++) {
         *p1++ /= random;
         *p2++ /= random;
     }
@@ -184,7 +184,7 @@ int ramstress_algo_seqinc(uint32_t *buf1, uint32_t *buf2, uint32_t size)
     volatile uint32_t *p2 = buf2;
     uint32_t random = interface_random32();
 
-    for (uint32_t i = 0; i< size; i++) {
+    for (uint32_t i = 0; i < size; i++) {
         *p1++ = (i + random);
         *p2++ = (i + random);
     }
@@ -203,12 +203,12 @@ int ramstress_algo_solidbits(uint32_t *buf1, uint32_t *buf2, uint32_t size)
     for (j = 0; j < 64; j++) {
         p1 = buf1;
         p2 = buf2;
-        random = (j & 0x01) == 0? all_one_bits : 0;
+        random = (j & 0x01) == 0 ? all_one_bits : 0;
 
         RAMSTRESS_LOG("solidbits: random(%u/64) = 0x%X running...\n", j, random);
         for (i = 0; i < size; i++) {
-            *p1++ = (i & 0x01) == 0? random : ~random;
-            *p2++ = (i & 0x01) == 0? random : ~random;
+            *p1++ = (i & 0x01) == 0 ? random : ~random;
+            *p2++ = (i & 0x01) == 0 ? random : ~random;
         }
 
         if (ramstress_compare_buffer_result(buf1, buf2, size)) {
@@ -216,7 +216,7 @@ int ramstress_algo_solidbits(uint32_t *buf1, uint32_t *buf2, uint32_t size)
         }
     }
 
-    return 0; 
+    return 0;
 }
 
 int ramstress_algo_checkerboard(uint32_t *buf1, uint32_t *buf2, uint32_t size)
@@ -231,12 +231,12 @@ int ramstress_algo_checkerboard(uint32_t *buf1, uint32_t *buf2, uint32_t size)
     for (j = 0; j < 64; j++) {
         p1 = buf1;
         p2 = buf2;
-        random = (j & 0x01) == 0? checkerboard1 : checkerboard2;
+        random = (j & 0x01) == 0 ? checkerboard1 : checkerboard2;
 
         RAMSTRESS_LOG("checkerboard: random(%u/64) = 0x%X running...\n", j, random);
         for (i = 0; i < size; i++) {
-            *p1++ = (i & 0x01) == 0? random : ~random;
-            *p2++ = (i & 0x01) == 0? random : ~random;
+            *p1++ = (i & 0x01) == 0 ? random : ~random;
+            *p2++ = (i & 0x01) == 0 ? random : ~random;
         }
 
         if (ramstress_compare_buffer_result(buf1, buf2, size)) {
@@ -244,7 +244,7 @@ int ramstress_algo_checkerboard(uint32_t *buf1, uint32_t *buf2, uint32_t size)
         }
     }
 
-    return 0; 
+    return 0;
 }
 
 int ramstress_algo_blockseq(uint32_t *buf1, uint32_t *buf2, uint32_t size)
@@ -270,7 +270,7 @@ int ramstress_algo_blockseq(uint32_t *buf1, uint32_t *buf2, uint32_t size)
         }
     }
 
-    return 0; 
+    return 0;
 }
 
 int ramstress_algo_walkbits0(uint32_t *buf1, uint32_t *buf2, uint32_t size)
@@ -290,9 +290,9 @@ int ramstress_algo_walkbits0(uint32_t *buf1, uint32_t *buf2, uint32_t size)
             random = 0x01ul<<j;
         } else {
             /* DIR: down */
-            random = 0x01ul<<(bit_len - (j - bit_len) -1);
+            random = 0x01ul<<(bit_len - (j - bit_len) - 1);
         }
-        
+
         RAMSTRESS_LOG("walkbits0: random(%u/%u) = 0x%X running...\n", j, bit_len * 2, random);
         for (i = 0; i < size; i++) {
             *p1++ = random;
@@ -304,7 +304,7 @@ int ramstress_algo_walkbits0(uint32_t *buf1, uint32_t *buf2, uint32_t size)
         }
     }
 
-    return 0; 
+    return 0;
 }
 
 int ramstress_algo_walkbits1(uint32_t *buf1, uint32_t *buf2, uint32_t size)
@@ -324,9 +324,9 @@ int ramstress_algo_walkbits1(uint32_t *buf1, uint32_t *buf2, uint32_t size)
             random = 0x01ul<<j;
         } else {
             /* DIR: down */
-            random = 0x01ul<<(bit_len - (j - bit_len) -1);
+            random = 0x01ul<<(bit_len - (j - bit_len) - 1);
         }
-        
+
         random = ~random;
 
         RAMSTRESS_LOG("walkbits1: random(%u/%u) = 0x%X running...\n", j, bit_len * 2, random);
@@ -339,8 +339,8 @@ int ramstress_algo_walkbits1(uint32_t *buf1, uint32_t *buf2, uint32_t size)
             return -1;
         }
     }
-    
-    return 0; 
+
+    return 0;
 }
 
 int ramstress_algo_bitspread(uint32_t *buf1, uint32_t *buf2, uint32_t size)
@@ -363,19 +363,19 @@ int ramstress_algo_bitspread(uint32_t *buf1, uint32_t *buf2, uint32_t size)
             random = 0x01ul<<(bit_len - (j - bit_len) - 1) |
                     0x01ul<<(bit_len - (j - bit_len) + 1);
         }
-        
+
         RAMSTRESS_LOG("bitspread: random(%u/%u) = 0x%X running...\n", j, bit_len * 2, random);
         for (i = 0; i < size; i++) {
-            *p1++ = (i & 0x01) == 0? random : ~random;
-            *p2++ = (i & 0x01) == 0? random : ~random;
+            *p1++ = (i & 0x01) == 0 ? random : ~random;
+            *p2++ = (i & 0x01) == 0 ? random : ~random;
         }
 
         if (ramstress_compare_buffer_result(buf1, buf2, size)) {
             return -1;
         }
     }
-    
-    return 0; 
+
+    return 0;
 }
 
 int ramstress_algo_bitflip(uint32_t *buf1, uint32_t *buf2, uint32_t size)
@@ -394,8 +394,8 @@ int ramstress_algo_bitflip(uint32_t *buf1, uint32_t *buf2, uint32_t size)
             random = ~random;
             RAMSTRESS_LOG("bitflip: random(%u/%u) = 0x%X running...\n", (k * 8 + j), bit_len * 8, random);
             for (i = 0; i < size; i++) {
-                *p1++ = (i & 0x01) == 0? random : ~random;
-                *p2++ = (i & 0x01) == 0? random : ~random;
+                *p1++ = (i & 0x01) == 0 ? random : ~random;
+                *p2++ = (i & 0x01) == 0 ? random : ~random;
             }
 
             if (ramstress_compare_buffer_result(buf1, buf2, size)) {
@@ -403,8 +403,8 @@ int ramstress_algo_bitflip(uint32_t *buf1, uint32_t *buf2, uint32_t size)
             }
         }
     }
-    
-    return 0; 
+
+    return 0;
 }
 
 int ramstress_algo_8bits(uint32_t *buf1, uint32_t *buf2, uint32_t size)
@@ -422,7 +422,7 @@ int ramstress_algo_8bits(uint32_t *buf1, uint32_t *buf2, uint32_t size)
             p8 = (volatile uint8_t *)buf2;
             p32 = buf1;
         }
-        
+
         volatile uint8_t *t8;
         for (i = 0; i < size; i++) {
             random = interface_random32();
@@ -438,8 +438,8 @@ int ramstress_algo_8bits(uint32_t *buf1, uint32_t *buf2, uint32_t size)
             return -1;
         }
     }
-    
-    return 0; 
+
+    return 0;
 }
 
 int ramstress_algo_16bits(uint32_t *buf1, uint32_t *buf2, uint32_t size)
@@ -457,7 +457,7 @@ int ramstress_algo_16bits(uint32_t *buf1, uint32_t *buf2, uint32_t size)
             p16 = (volatile uint16_t *)buf2;
             p32 = buf1;
         }
-        
+
         volatile uint16_t *t16;
         for (i = 0; i < size; i++) {
             random = interface_random32();
@@ -473,8 +473,8 @@ int ramstress_algo_16bits(uint32_t *buf1, uint32_t *buf2, uint32_t size)
             return -1;
         }
     }
-    
-    return 0; 
+
+    return 0;
 }
 
 const struct ramfunc_list func_lists[] = {

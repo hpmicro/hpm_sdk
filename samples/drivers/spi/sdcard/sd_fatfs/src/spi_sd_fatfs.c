@@ -300,7 +300,7 @@ static void show_help(void)
     static const char help_info_ending[] = "*-------------------------------------------------------------*\n";
 
     printf("%s", help_info);
-    for (int i = 0; i < sizeof(test_table) / sizeof(test_number_t); i++) {
+    for (uint32_t i = 0; i < sizeof(test_table) / sizeof(test_number_t); i++) {
         printf("%s", test_table[i].num_str);
     }
     printf("%s", help_info_ending);

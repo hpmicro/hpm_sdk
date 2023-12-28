@@ -23,7 +23,7 @@ ATTR_WEAK VOID _hardware_get_mac_address(UCHAR *mac)
 {
     UINT uuid[OTP_SOC_UUID_LEN / sizeof(UINT)];
 
-    for (INT i = 0; i < ARRAY_SIZE(uuid); i++) {
+    for (UINT i = 0; i < ARRAY_SIZE(uuid); i++) {
         uuid[i] = otp_read_from_shadow(OTP_SOC_UUID_IDX + i);
     }
 
@@ -260,23 +260,21 @@ INT enet_controller_netx_init(ENET_Type *ptr, enet_inf_type_t inf_type, enet_des
     return true;
 }
 
-ATTR_RAMFUNC
-VOID enet_dma_rx_desc_set_ch_buffer(ENET_Type *ptr, enet_desc_t_netx *desc, UCHAR ch, VOID *buf, size_t bytes)
+ATTR_RAMFUNC VOID enet_dma_rx_desc_set_ch_buffer(ENET_Type *ptr, enet_desc_t_netx *desc, UCHAR ch, VOID *buf, size_t bytes)
 {
     enet_rx_desc_t *dma_rx_desc;
+    (void)ptr;
 
     dma_rx_desc = desc->rx_desc_list_head + ch;
-
     dma_rx_desc->rdes2_bm.buffer1 = (UINT)buf;
     dma_rx_desc->rdes1_bm.rbs1 = bytes;
 }
 
-ATTR_RAMFUNC
-VOID enet_dma_rx_desc_give_to_hardware(ENET_Type *ptr, enet_desc_t_netx *desc, UCHAR ch)
+ATTR_RAMFUNC VOID enet_dma_rx_desc_give_to_hardware(ENET_Type *ptr, enet_desc_t_netx *desc, UCHAR ch)
 {
     enet_rx_desc_t *dma_rx_desc;
+    (void)ptr;
 
     dma_rx_desc = desc->rx_desc_list_head + ch;
-
     dma_rx_desc->rdes0_bm.own = 1;
 }

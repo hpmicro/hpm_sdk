@@ -66,6 +66,11 @@
 #define DMA_SOC_HAS_IDLE_FLAG (1U)
 
 /*
+ * DMAMUX Section
+ */
+#define DMAMUX_SOC_WRITEONLY    (1U)
+
+/*
  * USB Section
  */
 #define USB_SOC_MAX_COUNT                          (1U)
@@ -75,7 +80,10 @@
 #define USB_SOC_DCD_QTD_ALIGNMENT                  (32U)
 #define USB_SOC_DCD_QHD_ALIGNMENT                  (64U)
 #define USB_SOC_DCD_MAX_ENDPOINT_COUNT             (8U)
-#define USB_SOC_DCD_MAX_QTD_COUNT                  (USB_SOC_DCD_MAX_ENDPOINT_COUNT * 2U)
+#ifndef USB_SOC_DCD_QTD_COUNT_EACH_ENDPOINT
+#define USB_SOC_DCD_QTD_COUNT_EACH_ENDPOINT        (8U)
+#endif
+#define USB_SOC_DCD_MAX_QTD_COUNT                  (USB_SOC_DCD_MAX_ENDPOINT_COUNT * 2U * USB_SOC_DCD_QTD_COUNT_EACH_ENDPOINT)
 #define USB_SOS_DCD_MAX_QHD_COUNT                  (USB_SOC_DCD_MAX_ENDPOINT_COUNT * 2U)
 #define USB_SOC_DCD_DATA_RAM_ADDRESS_ALIGNMENT     (2048U)
 
@@ -84,7 +92,6 @@
 #define USB_SOC_HCD_QHD_ALIGNMENT                  (32U)
 #define USB_SOC_HCD_FRAMELIST_MAX_ELEMENTS         (1024U)
 #define USB_SOC_HCD_DATA_RAM_ADDRESS_ALIGNMENT     (4096U)
-
 
 /*
  * ADC Section
@@ -137,7 +144,6 @@
 #define DAC_SOC_MAX_BUFF_COUNT    (65536U)
 #define DAC_SOC_MAX_OUTPUT_FREQ   (1000000UL)
 
-
 /*
  * UART Section
  */
@@ -150,6 +156,7 @@
 #define UART_SOC_HAS_ADDR_MATCH   (1U)
 #define UART_SOC_HAS_IIR2_REG     (1U) /* has IIR2 register */
 #define UART_SOC_HAS_TRIG_MODE    (1U)
+#define UART_SOC_OVERSAMPLE_MAX   (30U) /* only support 30 oversample rate for rx idle detection */
 
 /*
  * SPI Section
@@ -173,10 +180,11 @@
 #define PWM_SOC_SHADOW_TRIG_SUPPORT (0U)
 #define PWM_SOC_TIMER_RESET_SUPPORT (1U)
 
-
 /*
  * TRGM section
  */
+#define TRGM_SOC_HAS_FILTER_SHIFT   (1U)
+#define TRGM_SOC_HAS_DMAMUX_EN      (1U)
 #define TRGM_SOC_HAS_ADC_MATRIX_SEL (1U)
 #define TRGM_SOC_HAS_DAC_MATRIX_SEL (1U)
 #define TRGM_SOC_HAS_POS_MATRIX_SEL (1U)

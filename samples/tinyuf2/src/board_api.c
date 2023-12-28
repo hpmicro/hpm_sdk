@@ -19,10 +19,8 @@ void uf2_board_init(void)
 
 void uf2_board_app_jump(void)
 {
-    l1c_dc_writeback_all();
-    l1c_dc_disable();
-    l1c_ic_disable();
     fencei();
+    l1c_dc_disable();
     __asm("la a0, %0" ::"i"(BOARD_FLASH_APP_START + 4));
     __asm("jr a0");
 }

@@ -46,6 +46,11 @@ __attribute__((weak)) void swi_isr(void)
 
 __attribute__((weak)) void syscall_handler(long n, long a0, long a1, long a2, long a3)
 {
+    (void) n;
+    (void) a0;
+    (void) a1;
+    (void) a2;
+    (void) a3;
 }
 
 __attribute__((weak)) long exception_handler(long cause, long epc)
@@ -88,6 +93,7 @@ __attribute__((weak)) long exception_handler(long cause, long epc)
 
 __attribute__((weak)) long exception_s_handler(long cause, long epc)
 {
+    (void) cause;
     return epc;
 }
 
@@ -99,7 +105,7 @@ __attribute__((weak)) void mchtmr_s_isr(void)
 {
 }
 
-#if !defined(CONFIG_FREERTOS) && !defined(CONFIG_UCOS_III) && !defined(CONFIG_THREADX)
+#if !defined(CONFIG_FREERTOS) && !defined(CONFIG_UCOS_III) && !defined(CONFIG_THREADX) && !defined(CONFIG_RTTHREAD)
 void irq_handler_trap(void) __attribute__ ((section(".isr_vector"), interrupt("machine"), aligned(4)));
 #else
 void irq_handler_trap(void) __attribute__ ((section(".isr_vector")));

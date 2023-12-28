@@ -679,6 +679,8 @@ static inline uint8_t can_get_last_arbitration_lost_position(CAN_Type *base)
 static inline void can_set_transmitter_delay_compensation(CAN_Type *base, uint8_t sample_point, bool enable)
 {
 #if defined(CAN_SOC_CANFD_TDC_REQUIRE_STUFF_EXCEPTION_WORKAROUND) && (CAN_SOC_CANFD_TDC_REQUIRE_STUFF_EXCEPTION_WORKAROUND == 1)
+    (void) sample_point;
+    (void) enable;
     base->TDC = CAN_TDC_TDCEN_SET((uint8_t) enable);
 #else
     base->TDC = CAN_TDC_SSPOFF_SET(sample_point) | CAN_TDC_TDCEN_SET((uint8_t) enable);

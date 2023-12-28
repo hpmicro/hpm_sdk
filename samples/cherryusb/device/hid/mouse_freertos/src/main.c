@@ -22,6 +22,7 @@ extern void hid_mouse_test(void);
 
 static void task1(void *pvParameters)
 {
+    (void)pvParameters;
     printf("[cherryusb hid mouse with freertos sample]: task started.\n");
 
     while (1) {

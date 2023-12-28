@@ -96,6 +96,8 @@ DRESULT usb_disk_write(BYTE pdrv, const BYTE *buff, DWORD sector, BYTE count)
 
 DRESULT usb_disk_ioctl(BYTE pdrv, BYTE cmd, void *buff)
 {
+    (void)pdrv;
+    (void)buff;
     if (cmd != CTRL_SYNC) {
         return RES_ERROR;
     } else {

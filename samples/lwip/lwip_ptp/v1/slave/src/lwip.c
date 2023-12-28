@@ -137,22 +137,25 @@ static hpm_stat_t enet_init(ENET_Type *ptr)
         if (rtl8201_basic_mode_init(ptr, &phy_config) == true) {
         #endif
     #endif
-            printf("Enet phy init passes !\n");
+            printf("Enet phy init passed !\n");
             return status_success;
         } else {
-            printf("Enet phy init fails !\n");
+            printf("Enet phy init failed !\n");
             return status_fail;
         }
 }
 
-static void time_update(void)
+static void local_timer_callback(void)
 {
     localtime += LWIP_APP_TIMER_INTERVAL;
-
-    if (localtime % (2 * LWIP_APP_TIMER_INTERVAL) == 0) {
-        enet_self_adaptive_port_speed();
-    }
 }
+
+void timer_callback(void)
+{
+    local_timer_callback();
+    sys_timer_callback();
+}
+
 /*---------------------------------------------------------------------*
  * Main
  *---------------------------------------------------------------------*/
@@ -175,7 +178,7 @@ int main(void)
     /* Reset an enet PHY */
     board_reset_enet_phy(ENET);
 
-    printf("This is an ethernet demo: PTP Slave\n");
+    printf("This is an ethernet demo: PTP V1 Slave\n");
     printf("LwIP Version: %s\n", LWIP_VERSION_STRING);
 
     #if defined(RGMII) && RGMII
@@ -188,7 +191,7 @@ int main(void)
     #endif
 
     /* Initialize a board timer */
-    board_timer_create(LWIP_APP_TIMER_INTERVAL, time_update);
+    board_timer_create(LWIP_APP_TIMER_INTERVAL, timer_callback);
 
     /* Initialize MAC and DMA */
     if (enet_init(ENET) == 0) {
@@ -204,11 +207,14 @@ int main(void)
         netif_config();
         user_notification(&gnetif);
 
+        /* Start services */
+        enet_services(&gnetif);
+
         /* Initialize ptpd */
         ptpd_Init();
 
         while (1) {
-            ethernetif_input(&gnetif);
+            enet_common_handler(&gnetif);
             ptpd_periodic_handle(localtime);
         }
     } else {

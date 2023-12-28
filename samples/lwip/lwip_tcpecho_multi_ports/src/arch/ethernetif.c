@@ -220,7 +220,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 
         #if defined(LWIP_PTP) && LWIP_PTP
             enet_prepare_tx_desc_with_ts_record(base, &desc[netif->num].tx_desc_list_cur, &desc[netif->num].tx_control_config, frame_length, desc.tx_buff_cfg.size, &timestamp);
-            /* Get the transmitted timestamp */
+            /* Get the transmit timestamp */
             p->time_sec  = timestamp.sec;
             p->time_nsec = timestamp.nsec;
         #else
@@ -320,18 +320,6 @@ static struct pbuf *low_level_input(struct netif *netif)
         /* Clear Segment_Count */
         desc[netif->num].rx_frame_info.seg_count = 0;
     }
-
-    /* Release descriptors to DMA */
-    dma_rx_desc = frame.rx_desc;
-
-    /* Set Own bit in Rx descriptors: gives the buffers back to DMA */
-    for (i = 0; i < desc[netif->num].rx_frame_info.seg_count; i++) {
-        dma_rx_desc->rdes0_bm.own = 1;
-        dma_rx_desc = (enet_rx_desc_t *)(dma_rx_desc->rdes3_bm.next_desc);
-    }
-
-    /* Clear Segment_Count */
-    desc[netif->num].rx_frame_info.seg_count = 0;
 
     /* Resume Rx Process */
     enet_rx_resume(base);

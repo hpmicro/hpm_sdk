@@ -7,10 +7,12 @@ cmake_minimum_required(VERSION 3.13)
 set(CONFIG_LVGL 1)
 set(CONFIG_LV_DEMO stress)
 set(STACK_SIZE 0x10000)
+set(CONFIG_HPM_PANEL 1)
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
     SET(CMAKE_BUILD_TYPE flash_sdram_xip)
 endif()
+
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 

@@ -104,7 +104,7 @@ hpm_stat_t process_seq_data(uint32_t *buff, int32_t start_pos, uint32_t len)
         return status_invalid_argument;
     }
 
-    for (int i = start_pos; i < start_pos + len; i++) {
+    for (uint32_t i = start_pos; i < start_pos + len; i++) {
         printf("Sequence Mode - %s - ", BOARD_APP_ADC16_NAME);
         printf("Cycle Bit: %02d - ",   dma_data[i].cycle_bit);
         printf("Sequence Number:%02d - ", dma_data[i].seq_num);
@@ -123,7 +123,7 @@ hpm_stat_t process_pmt_data(uint32_t *buff, int32_t start_pos, uint32_t len)
         return status_invalid_argument;
     }
 
-    for (int i = start_pos; i < start_pos + len; i++) {
+    for (uint32_t i = start_pos; i < start_pos + len; i++) {
         if (dma_data[i].cycle_bit) {
             printf("Preemption Mode - %s - ", BOARD_APP_ADC16_NAME);
             printf("Trigger Channel: %02d - ", dma_data[i].trig_ch);
@@ -259,7 +259,7 @@ void init_oneshot_config(void)
 
     /* initialize an ADC channel */
     ch_cfg.ch           = BOARD_APP_ADC16_CH_1;
-    ch_cfg.sample_cycle = 20;
+    ch_cfg.sample_cycle = APP_ADC16_CH_SAMPLE_CYCLE;
 
     adc16_init_channel(BOARD_APP_ADC16_BASE, &ch_cfg);
 
@@ -293,7 +293,7 @@ void init_period_config(void)
 
     /* initialize an ADC channel */
     ch_cfg.ch           = BOARD_APP_ADC16_CH_1;
-    ch_cfg.sample_cycle = 20;
+    ch_cfg.sample_cycle = APP_ADC16_CH_SAMPLE_CYCLE;
 
     adc16_init_channel(BOARD_APP_ADC16_BASE, &ch_cfg);
 
@@ -322,9 +322,9 @@ void init_sequence_config(void)
     adc16_get_channel_default_config(&ch_cfg);
 
     /* initialize an ADC channel */
-    ch_cfg.sample_cycle = 20;
+    ch_cfg.sample_cycle = APP_ADC16_CH_SAMPLE_CYCLE;
 
-    for (int i = 0; i < sizeof(seq_adc_channel); i++) {
+    for (uint32_t i = 0; i < sizeof(seq_adc_channel); i++) {
         ch_cfg.ch           = seq_adc_channel[i];
         adc16_init_channel(BOARD_APP_ADC16_BASE, &ch_cfg);
     }
@@ -404,9 +404,9 @@ void init_preemption_config(void)
     adc16_get_channel_default_config(&ch_cfg);
 
     /* initialize an ADC channel */
-    ch_cfg.sample_cycle = 20;
+    ch_cfg.sample_cycle = APP_ADC16_CH_SAMPLE_CYCLE;
 
-    for (int i = 0; i < sizeof(trig_adc_channel); i++) {
+    for (uint32_t i = 0; i < sizeof(trig_adc_channel); i++) {
         ch_cfg.ch = trig_adc_channel[i];
         adc16_init_channel(BOARD_APP_ADC16_BASE, &ch_cfg);
     }

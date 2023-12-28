@@ -57,6 +57,7 @@ void pdma_enable_irq(PDMA_Type *ptr, uint32_t mask, bool enable)
 
 void pdma_get_default_config(PDMA_Type *ptr, pdma_config_t *config, display_pixel_format_t pixel_format)
 {
+    (void) ptr;
     config->block_size = pdma_blocksize_16x16;
     config->enable_plane = pdma_plane_src;
 
@@ -73,6 +74,7 @@ void pdma_get_default_config(PDMA_Type *ptr, pdma_config_t *config, display_pixe
 
 void pdma_get_default_plane_config(PDMA_Type *ptr, pdma_plane_config_t *config, display_pixel_format_t pixel_format)
 {
+    (void) ptr;
     config->swap_byte3_byte1 = false;
     config->byteorder = display_byteorder_a3a2a1a0;
     config->use_background_as_clear = true;
@@ -112,6 +114,7 @@ void pdma_get_default_plane_config(PDMA_Type *ptr, pdma_plane_config_t *config, 
 
 void pdma_get_default_yuv2rgb_coef_config(PDMA_Type *ptr, display_yuv2rgb_coef_t *yuv2rgb_coef, display_pixel_format_t source_format)
 {
+    (void) ptr;
     /* Two plane share one YUV2RGB_COEF, not support one plane format is yuv422 and another is ycbcr422 */
 
     switch (source_format) {
@@ -147,6 +150,7 @@ void pdma_get_default_yuv2rgb_coef_config(PDMA_Type *ptr, display_yuv2rgb_coef_t
 
 void pdma_get_default_output_config(PDMA_Type *ptr, pdma_output_config_t *config, display_pixel_format_t pixel_format)
 {
+    (void) ptr;
     uint8_t i;
     config->alphablend.dst_alpha = 0x0;
     config->alphablend.src_alpha = 0x0;
@@ -239,10 +243,11 @@ void pdma_init(PDMA_Type *ptr, pdma_config_t *config)
         mask = 0;
         break;
     }
-
+#if defined(PDMA_SOC_SUPPORT_BS16) && (PDMA_SOC_SUPPORT_BS16 == 1)
     if (config->block_size == pdma_blocksize_16x16) {
         mask |= PDMA_CTRL_BS16_MASK;
     }
+#endif
 
     ptr->CTRL = PDMA_CTRL_PACK_DIR_SET(config->byteorder) | mask;
 }

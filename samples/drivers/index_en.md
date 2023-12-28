@@ -1,0 +1,66 @@
+# Drivers Examples
+
+:::{eval-rst}
+.. toctree::
+    :maxdepth: 3
+    :numbered:
+
+    acmp/README_en
+    adc/index_en
+    butn/README_en
+    cam/README_en
+    can/README_en
+    crc/README_en
+    dac/README_en
+    dma/index_en
+    dmav2/index_en
+    enet/index_en
+    ewdg/README_en
+    femc/sdram/README_en
+    gpio/README_en
+    gpiom/README_en
+    gptmr/index_en
+    gwc/README_en
+    hall/README_en
+    i2c/index_en
+    i2s/index_en
+    jpeg/README_en
+    l1c/README_en
+    lcdc/README_en
+    lin/index_en
+    linv2/index_en
+    mbx/index_en
+    mchtmr/README_en
+    mipi_csi/README_en
+    pdma/README_en
+    plic/README_en
+    pllctl/README_en
+    pllctlv2/README_en
+    pmp/README_en
+    ptpc/README_en
+    pwm/index_en
+    qei/README_en
+    rng/README_en
+    rtc/README_en
+    sdm/README_en
+    sdxc/index_en
+    spi/index_en
+    synt/README_en
+    sysctl/README_en
+    tsns/README_en
+    uart/index_en
+    vad/README_en
+    wdg/README_en
+    mcan/README_en
+    pla/index_en
+    ffa/README_en
+    qeo/index_en
+    mmc/index_en
+    pdgo/README_en
+    plb/index_en
+    sei/index_en
+    qeiv2/index_en
+    rdc/README_en
+    opamp/README_en
+    smix/mixer/README_en
+:::

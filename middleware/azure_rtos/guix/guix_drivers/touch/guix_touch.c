@@ -75,6 +75,7 @@ static VOID gx_send_pen_drag_event(GX_VALUE x, GX_VALUE y)
 
 static void touch_thread_entry(ULONG thread_input)
 {
+    (void)thread_input;
     hpm_stat_t status;
     touch_point_t touch_points[HPM_TOUCH_MAX_POINTS];
     uint8_t num_of_points;

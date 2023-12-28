@@ -25,6 +25,7 @@ void mmc_track_config_pos_mode(MMC_Type *base, mmc_track_pos_mode_t *mode)
 
 void mmc_track_get_default_mode_config(MMC_Type *base, mmc_track_mode_t *config)
 {
+    (void) base;
     config->force_accel_to_zero = false;
     config->en_ms_coef = false;
     config->open_loop_mode = false;
@@ -57,6 +58,7 @@ void mmc_track_config_mode(MMC_Type *base, mmc_track_mode_t *config)
 
 void mmc_get_default_pos_or_delta_pos_para(MMC_Type *base, mmc_pos_or_delta_pos_input_t *para)
 {
+    (void) base;
     para->pos_time = 0;
     para->position = 0;
     para->revolution = 0;
@@ -164,6 +166,7 @@ void mmc_track_get_result(MMC_Type *base, mmc_pos_out_t *pos_out, mmc_coef_out_t
 
 void mmc_pred_get_default_mode_config(MMC_Type *base, mmc_pred_mode_t *config)
 {
+    (void) base;
     config->speed_trig_int = false;
     config->position_trig_int = false;
     config->delta_pos_done_trig_int = false;

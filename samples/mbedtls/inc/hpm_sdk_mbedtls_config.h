@@ -34,7 +34,7 @@
 #ifndef HPM_SDK_MBEDTLS_CONFIG_H
 #define HPM_SDK_MBEDTLS_CONFIG_H
 
-#if defined(CONFIG_HAS_HPMSDK_SDP)
+#if defined(HPMSOC_HAS_HPMSDK_SDP)
 
 /******************************************************************************/
 /*************************** AES **********************************************/

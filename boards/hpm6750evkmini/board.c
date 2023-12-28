@@ -250,57 +250,96 @@ uint32_t board_init_femc_clock(void)
     return clock_get_frequency(clock_femc);
 }
 
-void board_power_cycle_lcd(void)
+uint32_t board_lcdc_clock_init(clock_name_t clock_name, uint32_t pixel_clk_khz);
+
+#if defined(CONFIG_PANEL_RGB_TM070RDH13) && CONFIG_PANEL_RGB_TM070RDH13
+
+static void set_reset_pin_level_tm070rdh13(uint8_t level)
 {
-    /* turn off backlight */
-    gpio_set_pin_output(BOARD_LCD_BACKLIGHT_GPIO_BASE, BOARD_LCD_BACKLIGHT_GPIO_INDEX, BOARD_LCD_BACKLIGHT_GPIO_PIN);
-    gpio_write_pin(BOARD_LCD_BACKLIGHT_GPIO_BASE, BOARD_LCD_BACKLIGHT_GPIO_INDEX, BOARD_LCD_BACKLIGHT_GPIO_PIN, 0);
-
-    board_delay_ms(150);
-    /* power recycle */
-    gpio_set_pin_output(BOARD_LCD_POWER_GPIO_BASE, BOARD_LCD_POWER_GPIO_INDEX, BOARD_LCD_POWER_GPIO_PIN);
-    gpio_write_pin(BOARD_LCD_POWER_GPIO_BASE, BOARD_LCD_POWER_GPIO_INDEX, BOARD_LCD_POWER_GPIO_PIN, 0);
-    board_delay_ms(20);
-    gpio_write_pin(BOARD_LCD_POWER_GPIO_BASE, BOARD_LCD_POWER_GPIO_INDEX, BOARD_LCD_POWER_GPIO_PIN, 1);
-    board_delay_ms(150);
-
-    /* turn on backlight */
-    gpio_write_pin(BOARD_LCD_BACKLIGHT_GPIO_BASE, BOARD_LCD_BACKLIGHT_GPIO_INDEX, BOARD_LCD_BACKLIGHT_GPIO_PIN, 1);
-
+    gpio_write_pin(BOARD_LCD_POWER_GPIO_BASE, BOARD_LCD_POWER_GPIO_INDEX, BOARD_LCD_POWER_GPIO_PIN, level);
 }
+
+static void set_backlight_tm070rdh13(uint16_t percent)
+{
+    gpio_write_pin(BOARD_LCD_BACKLIGHT_GPIO_BASE, BOARD_LCD_BACKLIGHT_GPIO_INDEX, BOARD_LCD_BACKLIGHT_GPIO_PIN, percent > 0 ? 1 : 0);
+}
+
+void board_init_lcd_rgb_tm070rdh13(void)
+{
+    init_lcd_pins(BOARD_LCD_BASE);
+
+    gpio_set_pin_output(BOARD_LCD_BACKLIGHT_GPIO_BASE, BOARD_LCD_BACKLIGHT_GPIO_INDEX, BOARD_LCD_BACKLIGHT_GPIO_PIN);
+    gpio_set_pin_output(BOARD_LCD_POWER_GPIO_BASE, BOARD_LCD_POWER_GPIO_INDEX, BOARD_LCD_POWER_GPIO_PIN);
+
+    hpm_panel_hw_interface_t hw_if = {0};
+    hpm_panel_t *panel = hpm_panel_find_device_default();
+    const hpm_panel_timing_t *timing = hpm_panel_get_timing(panel);
+    uint32_t lcdc_pixel_clk_khz = board_lcdc_clock_init(clock_display, timing->pixel_clock_khz);
+    hw_if.set_reset_pin_level = set_reset_pin_level_tm070rdh13;
+    hw_if.set_backlight = set_backlight_tm070rdh13;
+    hw_if.lcdc_pixel_clk_khz = lcdc_pixel_clk_khz;
+    hpm_panel_register_interface(panel, &hw_if);
+
+    printf("name: %s, lcdc_clk: %ukhz\n",
+                        hpm_panel_get_name(panel),
+                        lcdc_pixel_clk_khz);
+
+    hpm_panel_reset(panel);
+    hpm_panel_init(panel);
+    hpm_panel_power_on(panel);
+}
+
+#endif
+
+#ifdef CONFIG_HPM_PANEL
+
+uint32_t board_lcdc_clock_init(clock_name_t clock_name, uint32_t pixel_clk_khz)
+{
+    clock_add_to_group(clock_name, 0);
+
+    uint32_t freq_khz = clock_get_frequency(clk_pll4clk0) / 1000;
+    uint32_t div = (freq_khz + pixel_clk_khz / 2) / pixel_clk_khz;
+    clock_set_source_divider(clock_name, clk_src_pll4_clk0, div);
+    return clock_get_frequency(clock_name) / 1000;
+}
+
 void board_lcd_backlight(bool is_on)
 {
-    gpio_write_pin(BOARD_LCD_BACKLIGHT_GPIO_BASE, BOARD_LCD_BACKLIGHT_GPIO_INDEX, BOARD_LCD_BACKLIGHT_GPIO_PIN, is_on);
+    hpm_panel_t *panel = hpm_panel_find_device_default();
+    hpm_panel_set_backlight(panel, is_on == true ? 100 : 0);
 }
 
 void board_init_lcd(void)
 {
-    board_init_lcd_clock();
-    init_lcd_pins(BOARD_LCD_BASE);
-    board_power_cycle_lcd();
+#ifdef CONFIG_PANEL_RGB_TM070RDH13
+    board_init_lcd_rgb_tm070rdh13();
+#endif
 }
 
 void board_panel_para_to_lcdc(lcdc_config_t *config)
 {
-    const uint16_t panel_timing_para[] = BOARD_PANEL_TIMING_PARA;
+    const hpm_panel_timing_t *timing;
+    hpm_panel_t *panel = hpm_panel_find_device_default();
 
-    config->resolution_x = BOARD_LCD_WIDTH;
-    config->resolution_y = BOARD_LCD_HEIGHT;
+    timing = hpm_panel_get_timing(panel);
+    config->resolution_x = timing->hactive;
+    config->resolution_y = timing->vactive;
 
-    config->hsync.pulse_width = panel_timing_para[BOARD_PANEL_TIMEING_PARA_HSPW_INDEX];
-    config->hsync.back_porch_pulse = panel_timing_para[BOARD_PANEL_TIMEING_PARA_HBP_INDEX];
-    config->hsync.front_porch_pulse = panel_timing_para[BOARD_PANEL_TIMEING_PARA_HFP_INDEX];
+    config->hsync.pulse_width = timing->hsync_len;
+    config->hsync.back_porch_pulse = timing->hback_porch;
+    config->hsync.front_porch_pulse = timing->hfront_porch;
 
-    config->vsync.pulse_width = panel_timing_para[BOARD_PANEL_TIMEING_PARA_VSPW_INDEX];
-    config->vsync.back_porch_pulse = panel_timing_para[BOARD_PANEL_TIMEING_PARA_VBP_INDEX];
-    config->vsync.front_porch_pulse = panel_timing_para[BOARD_PANEL_TIMEING_PARA_VFP_INDEX];
+    config->vsync.pulse_width = timing->vsync_len;
+    config->vsync.back_porch_pulse = timing->vback_porch;
+    config->vsync.front_porch_pulse = timing->vfront_porch;
 
-    config->control.invert_hsync = panel_timing_para[BOARD_PANEL_TIMEING_PARA_HSSP_INDEX];
-    config->control.invert_vsync = panel_timing_para[BOARD_PANEL_TIMEING_PARA_VSSP_INDEX];
-    config->control.invert_href = panel_timing_para[BOARD_PANEL_TIMEING_PARA_DESP_INDEX];
-    config->control.invert_pixel_data = panel_timing_para[BOARD_PANEL_TIMEING_PARA_PDSP_INDEX];
-    config->control.invert_pixel_clock = panel_timing_para[BOARD_PANEL_TIMEING_PARA_PCSP_INDEX];
+    config->control.invert_hsync = timing->hsync_pol;
+    config->control.invert_vsync = timing->vsync_pol;
+    config->control.invert_href = timing->de_pol;
+    config->control.invert_pixel_data = timing->pixel_data_pol;
+    config->control.invert_pixel_clock = timing->pixel_clk_pol;
 }
+#endif
 
 void board_delay_ms(uint32_t ms)
 {
@@ -526,6 +565,8 @@ void board_init_usb_pins(void)
 
 void board_usb_vbus_ctrl(uint8_t usb_index, uint8_t level)
 {
+    (void) usb_index;
+    (void) level;
 }
 
 void board_init_pmp(void)
@@ -709,7 +750,7 @@ uint32_t board_init_lcd_clock(void)
     uint32_t freq;
     clock_add_to_group(clock_display, 0);
     /* Configure LCDC clock to 29.7MHz */
-    clock_set_source_divider(clock_display, clock_source_pll4_clk0, 20U);
+    clock_set_source_divider(clock_display, clk_src_pll4_clk0, 20U);
     freq = clock_get_frequency(clock_display);
     return freq;
 }
@@ -939,18 +980,7 @@ void _init_ext_ram(void)
 }
 #endif
 
-void board_init_sd_pins(SDXC_Type *ptr)
-{
-    if (ptr == HPM_SDXC1) {
-        init_sdxc_pins(ptr, false);
-    } else {
-        while (1) {
-
-        }
-    }
-}
-
-uint32_t board_sd_configure_clock(SDXC_Type *ptr, uint32_t freq)
+uint32_t board_sd_configure_clock(SDXC_Type *ptr, uint32_t freq, bool need_inverse)
 {
     uint32_t actual_freq = 0;
     do {
@@ -965,11 +995,11 @@ uint32_t board_sd_configure_clock(SDXC_Type *ptr, uint32_t freq)
             clock_set_source_divider(sdxc_clk, clk_src_osc24m, 63);
         }
             /* configure the clock to 24MHz for the SDR12/Default speed */
-        else if (freq <= 25000000UL) {
+        else if (freq <= 26000000UL) {
             clock_set_source_divider(sdxc_clk, clk_src_osc24m, 1);
         }
             /* Configure the clock to 50MHz for the SDR25/High speed/50MHz DDR/50MHz SDR */
-        else if (freq <= 50000000UL) {
+        else if (freq <= 52000000UL) {
             clock_set_source_divider(sdxc_clk, clk_src_pll1_clk1, 8);
         }
             /* Configure the clock to 100MHz for the SDR50 */
@@ -984,7 +1014,9 @@ uint32_t board_sd_configure_clock(SDXC_Type *ptr, uint32_t freq)
         else {
             clock_set_source_divider(sdxc_clk, clk_src_osc24m, 1);
         }
-        sdxc_enable_inverse_clock(ptr, true);
+        if (need_inverse) {
+            sdxc_enable_inverse_clock(ptr, true);
+        }
         sdxc_enable_sd_clock(ptr, true);
         actual_freq = clock_get_frequency(sdxc_clk);
     } while (false);
@@ -992,16 +1024,6 @@ uint32_t board_sd_configure_clock(SDXC_Type *ptr, uint32_t freq)
     return actual_freq;
 }
 
-void board_sd_switch_pins_to_1v8(SDXC_Type *ptr)
-{
-    sdxc_select_voltage(ptr, sdxc_bus_voltage_sd_1v8);
-    init_sdxc_pins(ptr, true);
-}
-
-bool board_sd_detect_card(SDXC_Type *ptr)
-{
-    return sdxc_is_card_inserted(ptr);
-}
 
 static void set_rgb_output_off(PWM_Type *ptr, uint8_t pin, uint8_t cmp_index)
 {
@@ -1156,21 +1178,25 @@ hpm_stat_t board_reset_enet_phy(ENET_Type *ptr)
 
 uint8_t board_get_enet_dma_pbl(ENET_Type *ptr)
 {
+    (void) ptr;
     return enet_pbl_32;
 }
 
 hpm_stat_t board_enable_enet_irq(ENET_Type *ptr)
 {
+    (void) ptr;
     return status_success;
 }
 
 hpm_stat_t board_disable_enet_irq(ENET_Type *ptr)
 {
+    (void) ptr;
     return status_success;
 }
 
 void board_init_enet_pps_pins(ENET_Type *ptr)
 {
+    (void) ptr;
     init_enet_pps_pins();
 }
 

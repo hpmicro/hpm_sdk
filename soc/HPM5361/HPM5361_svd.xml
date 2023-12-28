@@ -1079,7 +1079,7 @@ Note: combinational interrupt is sensitive to environment noise</description>
             <addressOffset>0x0</addressOffset>
             <size>32</size>
             <resetValue>0x00000000</resetValue>
-            <resetMask>0xFFFC7FFF</resetMask>
+            <resetMask>0x80007FFF</resetMask>
             <fields>
               <field>
                 <name>CNTUPT</name>
@@ -1196,7 +1196,7 @@ User should set this bit before set CMPEN to 1.</description>
             <description>no description available</description>
             <addressOffset>0x4</addressOffset>
             <size>32</size>
-            <resetValue>0xFFFFFFFF</resetValue>
+            <resetValue>0xFFFFFFF0</resetValue>
             <resetMask>0xFFFFFFFF</resetMask>
             <fields>
               <field>
@@ -2180,7 +2180,7 @@ If want address==0 to be matched at 8bit mode, should set addr1=0x80</descriptio
           <fields>
             <field>
               <name>RXIDLE_FLAG</name>
-              <description>UART RX IDLE Flag, assert after rxd low and then rx idle timeout, write one clear
+              <description>UART RX IDLE Flag, assert after rxd high and then rx idle timeout, write one clear
 0 - UART RX is busy
 1 - UART RX is idle</description>
               <bitOffset>31</bitOffset>
@@ -2189,7 +2189,7 @@ If want address==0 to be matched at 8bit mode, should set addr1=0x80</descriptio
             </field>
             <field>
               <name>TXIDLE_FLAG</name>
-              <description>UART TX IDLE Flag, assert after txd low and then tx idle timeout, write one clear
+              <description>UART TX IDLE Flag, assert after txd high and then tx idle timeout, write one clear
 0 - UART TX is busy
 1 - UART TX is idle</description>
               <bitOffset>30</bitOffset>
@@ -2273,7 +2273,7 @@ Register (FIFOE) is set to 1.</description>
               <description>Over-sample control
 The value must be an even number; any odd value
 writes to this field will be converted to an even value.
-OSC=0: The over-sample ratio is 32
+OSC=0: reserved
 OSC&lt;=8: The over-sample ratio is 8
 8 &lt; OSC&lt; 32: The over sample ratio is OSC</description>
               <bitOffset>0</bitOffset>
@@ -5911,7 +5911,7 @@ used to disable or reconfigure a DMA channel.
 1b - DMA Mux channel is enabled</description>
               <bitOffset>31</bitOffset>
               <bitWidth>1</bitWidth>
-              <access>read-write</access>
+              <access>write-only</access>
             </field>
             <field>
               <name>SOURCE</name>
@@ -5919,7 +5919,7 @@ used to disable or reconfigure a DMA channel.
 Specifies which DMA source, if any, is routed to a particular DMA channel. See the "DMA MUX Mapping"</description>
               <bitOffset>0</bitOffset>
               <bitWidth>7</bitWidth>
-              <access>read-write</access>
+              <access>write-only</access>
             </field>
           </fields>
         </register>
@@ -5987,7 +5987,8 @@ localparam ST_END_WAIT     = 3'b111;</description>
             </field>
             <field>
               <name>REQSYNC</name>
-              <description>DMA request synchronization. The DMA request synchronization should be configured to avoid signal integrity problems when the request signal is not clocked by the system bus clock,
+              <description>DMA request synchronization.
+The DMA request synchronization should be configured to avoid signal integrity problems when the request signal is not clocked by the system bus clock,
 which the DMA control logic operates in. If the request synchronization is not configured, the request signal is sampled directly without synchronization.
 0x0: Request synchronization is not configured
 0x1: Request synchronization is configured</description>
@@ -6288,7 +6289,8 @@ The burst transfer byte number is (SrcBurstSize * SrcWidth).
               <field>
                 <name>DSTWIDTH</name>
                 <description>Destination transfer width.
-Both the total transfer byte number and the burst transfer byte number should be aligned to the destination transfer width; otherwise the error event will be triggered.
+Both the total transfer byte number and the burst transfer byte number should be aligned to the destination transfer width;
+otherwise the error event will be triggered.
 For example, destination transfer width should be set as byte transfer if total transfer byte is not aligned to half-word.
 See field SrcBurstSize above for the definition of burst transfer byte number and section 3.2.8 for the definition of the total transfer byte number.
 0x0: Byte transfer
@@ -9904,7 +9906,8 @@ clr to use ptpc0 for canx</description>
             </field>
             <field>
               <name>RD_SEL</name>
-              <description>define the width/counter value(affect width_match, width_match2, width_cur, timer_cur, width_read, timer_read, width_snap0,width_snap1, timer_snap0, timer_snap1)
+              <description>define the width/counter value(affect width_match, width_match2, width_cur, timer_cur, width_read, timer_read,
+width_snap0,width_snap1, timer_snap0, timer_snap1)
 0 : same as hpm1000/500/500s;
 1: use width for position; use timer for angle</description>
               <bitOffset>3</bitOffset>
@@ -9926,7 +9929,7 @@ clr to use ptpc0 for canx</description>
           <description>Phase configure register</description>
           <addressOffset>0x4</addressOffset>
           <size>32</size>
-          <resetValue>0x00000000</resetValue>
+          <resetValue>0xFFFFFFFF</resetValue>
           <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>
@@ -10209,7 +10212,7 @@ if 2, then phase_cnt change larger than 2 will clear wdog counter</description>
           <description>Z comparator</description>
           <addressOffset>0x18</addressOffset>
           <size>32</size>
-          <resetValue>0x00000000</resetValue>
+          <resetValue>0x80000000</resetValue>
           <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>
@@ -10226,7 +10229,7 @@ if 2, then phase_cnt change larger than 2 will clear wdog counter</description>
           <description>Phase comparator</description>
           <addressOffset>0x1c</addressOffset>
           <size>32</size>
-          <resetValue>0x00000000</resetValue>
+          <resetValue>0x80000000</resetValue>
           <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>
@@ -10243,7 +10246,7 @@ if 2, then phase_cnt change larger than 2 will clear wdog counter</description>
           <description>Speed comparator</description>
           <addressOffset>0x20</addressOffset>
           <size>32</size>
-          <resetValue>0x00000000</resetValue>
+          <resetValue>0x80000000</resetValue>
           <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>
@@ -10708,7 +10711,7 @@ if 2, then phase_cnt change larger than 2 will clear wdog counter</description>
           <description>Z comparator</description>
           <addressOffset>0x80</addressOffset>
           <size>32</size>
-          <resetValue>0x00000000</resetValue>
+          <resetValue>0x80000000</resetValue>
           <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>
@@ -10725,7 +10728,7 @@ if 2, then phase_cnt change larger than 2 will clear wdog counter</description>
           <description>Phase comparator</description>
           <addressOffset>0x84</addressOffset>
           <size>32</size>
-          <resetValue>0x00000000</resetValue>
+          <resetValue>0x80000000</resetValue>
           <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>
@@ -10742,7 +10745,7 @@ if 2, then phase_cnt change larger than 2 will clear wdog counter</description>
           <description>Speed comparator</description>
           <addressOffset>0x88</addressOffset>
           <size>32</size>
-          <resetValue>0x00000000</resetValue>
+          <resetValue>0x80000000</resetValue>
           <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>
@@ -10871,7 +10874,7 @@ if 2, then phase_cnt change larger than 2 will clear wdog counter</description>
           <description>no description available</description>
           <addressOffset>0x90</addressOffset>
           <size>32</size>
-          <resetValue>0x00000000</resetValue>
+          <resetValue>0x00001000</resetValue>
           <resetMask>0x0001FFFF</resetMask>
           <fields>
             <field>
@@ -11422,7 +11425,7 @@ such as:
           <description>adcx_cfg1</description>
           <addressOffset>0x204</addressOffset>
           <size>32</size>
-          <resetValue>0x00000000</resetValue>
+          <resetValue>0x00004000</resetValue>
           <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>
@@ -11446,7 +11449,7 @@ such as:
           <description>adcx_cfg2</description>
           <addressOffset>0x208</addressOffset>
           <size>32</size>
-          <resetValue>0x00000000</resetValue>
+          <resetValue>0x80000000</resetValue>
           <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>
@@ -11494,7 +11497,7 @@ such as:
           <description>adcy_cfg1</description>
           <addressOffset>0x214</addressOffset>
           <size>32</size>
-          <resetValue>0x00000000</resetValue>
+          <resetValue>0x40000000</resetValue>
           <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>
@@ -11518,7 +11521,7 @@ such as:
           <description>adcy_cfg2</description>
           <addressOffset>0x218</addressOffset>
           <size>32</size>
-          <resetValue>0x00000000</resetValue>
+          <resetValue>0x80000000</resetValue>
           <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>
@@ -11535,7 +11538,7 @@ such as:
           <description>cal_cfg</description>
           <addressOffset>0x220</addressOffset>
           <size>32</size>
-          <resetValue>0x00000000</resetValue>
+          <resetValue>0x00000100</resetValue>
           <resetMask>0x00FFFFFF</resetMask>
           <fields>
             <field>
@@ -11553,7 +11556,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           <description>phase_param</description>
           <addressOffset>0x230</addressOffset>
           <size>32</size>
-          <resetValue>0x00000000</resetValue>
+          <resetValue>0xFFFFFFFF</resetValue>
           <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>
@@ -11587,7 +11590,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           <description>pos_threshold</description>
           <addressOffset>0x238</addressOffset>
           <size>32</size>
-          <resetValue>0x00000000</resetValue>
+          <resetValue>0x80000000</resetValue>
           <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>
@@ -11778,7 +11781,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           <description>pos_timeout</description>
           <addressOffset>0x294</addressOffset>
           <size>32</size>
-          <resetValue>0x00000000</resetValue>
+          <resetValue>0x7FFFFFFF</resetValue>
           <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>
@@ -11817,7 +11820,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
       </addressBlock>
       <registers>
         <register>
-          <name>mode</name>
+          <name>WAVE_mode</name>
           <description>analog waves mode</description>
           <addressOffset>0x0</addressOffset>
           <size>32</size>
@@ -12042,7 +12045,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           </fields>
         </register>
         <register>
-          <name>resolution</name>
+          <name>WAVE_resolution</name>
           <description>resolution of wave0/1/2</description>
           <addressOffset>0x4</addressOffset>
           <size>32</size>
@@ -12062,7 +12065,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           <dim>3</dim>
           <dimIncrement>0x4</dimIncrement>
           <dimIndex>wave0,wave1,wave2</dimIndex>
-          <name>PHASE_SHIFT[%s]</name>
+          <name>WAVE_PHASE_SHIFT[%s]</name>
           <description>no description available</description>
           <addressOffset>0x8</addressOffset>
           <size>32</size>
@@ -12082,7 +12085,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           <dim>3</dim>
           <dimIncrement>0x4</dimIncrement>
           <dimIndex>wave0,wave1,wave2</dimIndex>
-          <name>VD_VQ_INJECT[%s]</name>
+          <name>WAVE_VD_VQ_INJECT[%s]</name>
           <description>no description available</description>
           <addressOffset>0x14</addressOffset>
           <size>32</size>
@@ -12106,7 +12109,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           </fields>
         </register>
         <register>
-          <name>vd_vq_load</name>
+          <name>WAVE_vd_vq_load</name>
           <description>load wave0/1/2 vd vq value</description>
           <addressOffset>0x20</addressOffset>
           <size>32</size>
@@ -12128,7 +12131,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           <dim>3</dim>
           <dimIncrement>0x4</dimIncrement>
           <dimIndex>wave0,wave1,wave2</dimIndex>
-          <name>AMPLITUDE[%s]</name>
+          <name>WAVE_AMPLITUDE[%s]</name>
           <description>no description available</description>
           <addressOffset>0x24</addressOffset>
           <size>32</size>
@@ -12155,7 +12158,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           <dim>3</dim>
           <dimIncrement>0x4</dimIncrement>
           <dimIndex>wave0,wave1,wave2</dimIndex>
-          <name>MID_POINT[%s]</name>
+          <name>WAVE_MID_POINT[%s]</name>
           <description>no description available</description>
           <addressOffset>0x30</addressOffset>
           <size>32</size>
@@ -12175,7 +12178,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           <dim>3</dim>
           <dimIncrement>0x8</dimIncrement>
           <dimIndex>wave0,wave1,wave2</dimIndex>
-          <name>LIMIT[%s]</name>
+          <name>WAVE_LIMIT[%s]</name>
           <description>no description available</description>
           <addressOffset>0x3c</addressOffset>
           <register>
@@ -12231,7 +12234,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           <dim>3</dim>
           <dimIncrement>0x4</dimIncrement>
           <dimIndex>wave0,wave1,wave2</dimIndex>
-          <name>DEADZONE_SHIFT[%s]</name>
+          <name>WAVE_DEADZONE_SHIFT[%s]</name>
           <description>no description available</description>
           <addressOffset>0x54</addressOffset>
           <size>32</size>
@@ -12248,7 +12251,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           </fields>
         </register>
         <register>
-          <name>mode</name>
+          <name>ABZ_mode</name>
           <description>wave_a/b/z output mode</description>
           <addressOffset>0x60</addressOffset>
           <size>32</size>
@@ -12336,7 +12339,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           </fields>
         </register>
         <register>
-          <name>resolution</name>
+          <name>ABZ_resolution</name>
           <description>resolution of wave_a/b/z</description>
           <addressOffset>0x64</addressOffset>
           <size>32</size>
@@ -12356,7 +12359,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           <dim>3</dim>
           <dimIncrement>0x4</dimIncrement>
           <dimIndex>a,b,z</dimIndex>
-          <name>PHASE_SHIFT[%s]</name>
+          <name>ABZ_PHASE_SHIFT[%s]</name>
           <description>no description available</description>
           <addressOffset>0x68</addressOffset>
           <size>32</size>
@@ -12373,7 +12376,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           </fields>
         </register>
         <register>
-          <name>line_width</name>
+          <name>ABZ_line_width</name>
           <description>Two-phase orthogonality wave 1/4 period</description>
           <addressOffset>0x74</addressOffset>
           <size>32</size>
@@ -12390,7 +12393,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           </fields>
         </register>
         <register>
-          <name>wdog_width</name>
+          <name>ABZ_wdog_width</name>
           <description>wdog width of qeo</description>
           <addressOffset>0x78</addressOffset>
           <size>32</size>
@@ -12407,7 +12410,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           </fields>
         </register>
         <register>
-          <name>postion_sync</name>
+          <name>ABZ_postion_sync</name>
           <description>sync abz owned postion</description>
           <addressOffset>0x7c</addressOffset>
           <size>32</size>
@@ -12426,7 +12429,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           </fields>
         </register>
         <register>
-          <name>mode</name>
+          <name>PWM_mode</name>
           <description>pwm mode</description>
           <addressOffset>0x80</addressOffset>
           <size>32</size>
@@ -12526,7 +12529,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           </fields>
         </register>
         <register>
-          <name>resolution</name>
+          <name>PWM_resolution</name>
           <description>resolution of pwm</description>
           <addressOffset>0x84</addressOffset>
           <size>32</size>
@@ -12546,7 +12549,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           <dim>4</dim>
           <dimIncrement>0x4</dimIncrement>
           <dimIndex>a,b,c,d</dimIndex>
-          <name>PHASE_SHIFT[%s]</name>
+          <name>PWM_PHASE_SHIFT[%s]</name>
           <description>no description available</description>
           <addressOffset>0x88</addressOffset>
           <size>32</size>
@@ -12566,7 +12569,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           <dim>24</dim>
           <dimIncrement>0x4</dimIncrement>
           <dimIndex>posedge0,posedge1,posedge2,posedge3,posedge4,posedge5,posedge6,posedge7,posedge8,posedge9,posedge10,posedge11,negedge0,negedge1,negedge2,negedge3,negedge4,negedge5,negedge6,negedge7,negedge8,negedge9,negedge10,negedge11</dimIndex>
-          <name>PHASE_TABLE[%s]</name>
+          <name>PWM_PHASE_TABLE[%s]</name>
           <description>no description available</description>
           <addressOffset>0x98</addressOffset>
           <size>32</size>
@@ -12632,7 +12635,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           </fields>
         </register>
         <register>
-          <name>postion_software</name>
+          <name>PWM_postion_software</name>
           <description>softwave inject postion</description>
           <addressOffset>0xf8</addressOffset>
           <size>32</size>
@@ -12649,7 +12652,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           </fields>
         </register>
         <register>
-          <name>postion_sel</name>
+          <name>PWM_postion_sel</name>
           <description>select softwave inject postion</description>
           <addressOffset>0xfc</addressOffset>
           <size>32</size>
@@ -12668,7 +12671,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           </fields>
         </register>
         <register>
-          <name>status</name>
+          <name>PWM_status</name>
           <description>qeo status</description>
           <addressOffset>0x100</addressOffset>
           <size>32</size>
@@ -12692,7 +12695,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           </fields>
         </register>
         <register>
-          <name>debug0</name>
+          <name>PWM_debug0</name>
           <description>qeo debug 0</description>
           <addressOffset>0x104</addressOffset>
           <size>32</size>
@@ -12716,7 +12719,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           </fields>
         </register>
         <register>
-          <name>debug1</name>
+          <name>PWM_debug1</name>
           <description>qeo debug 1</description>
           <addressOffset>0x108</addressOffset>
           <size>32</size>
@@ -12761,7 +12764,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           </fields>
         </register>
         <register>
-          <name>debug2</name>
+          <name>PWM_debug2</name>
           <description>qeo debug 2</description>
           <addressOffset>0x10c</addressOffset>
           <size>32</size>
@@ -12778,7 +12781,7 @@ Default 1.25us@200MHz;   max 80ms;</description>
           </fields>
         </register>
         <register>
-          <name>debug3</name>
+          <name>PWM_debug3</name>
           <description>qeo debug 3</description>
           <addressOffset>0x110</addressOffset>
           <size>32</size>
@@ -17140,7 +17143,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
           <description>no description available</description>
           <addressOffset>0x0</addressOffset>
           <register>
-            <name>CTRL</name>
+            <name>ENGINE_CTRL</name>
             <description>Engine control register</description>
             <addressOffset>0x0</addressOffset>
             <size>32</size>
@@ -17195,7 +17198,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>PTR_CFG</name>
+            <name>ENGINE_PTR_CFG</name>
             <description>Pointer configuration register</description>
             <addressOffset>0x4</addressOffset>
             <size>32</size>
@@ -17246,7 +17249,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>WDG_CFG</name>
+            <name>ENGINE_WDG_CFG</name>
             <description>Watch dog configuration register</description>
             <addressOffset>0x8</addressOffset>
             <size>32</size>
@@ -17263,7 +17266,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>EXE_STA</name>
+            <name>ENGINE_EXE_STA</name>
             <description>Execution status</description>
             <addressOffset>0x10</addressOffset>
             <size>32</size>
@@ -17309,7 +17312,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>EXE_PTR</name>
+            <name>ENGINE_EXE_PTR</name>
             <description>Execution pointer</description>
             <addressOffset>0x14</addressOffset>
             <size>32</size>
@@ -17340,7 +17343,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>EXE_INST</name>
+            <name>ENGINE_EXE_INST</name>
             <description>Execution instruction</description>
             <addressOffset>0x18</addressOffset>
             <size>32</size>
@@ -17357,7 +17360,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>WDG_STA</name>
+            <name>ENGINE_WDG_STA</name>
             <description>Watch dog status</description>
             <addressOffset>0x1c</addressOffset>
             <size>32</size>
@@ -17374,7 +17377,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>CTRL</name>
+            <name>XCVR_CTRL</name>
             <description>Transceiver control register</description>
             <addressOffset>0x20</addressOffset>
             <size>32</size>
@@ -17422,7 +17425,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>TYPE_CFG</name>
+            <name>XCVR_TYPE_CFG</name>
             <description>Transceiver configuration register</description>
             <addressOffset>0x24</addressOffset>
             <size>32</size>
@@ -17508,7 +17511,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>BAUD_CFG</name>
+            <name>XCVR_BAUD_CFG</name>
             <description>Transceiver baud rate register</description>
             <addressOffset>0x28</addressOffset>
             <size>32</size>
@@ -17532,7 +17535,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>DATA_CFG</name>
+            <name>XCVR_DATA_CFG</name>
             <description>Transceiver data timing configuration</description>
             <addressOffset>0x2c</addressOffset>
             <size>32</size>
@@ -17556,7 +17559,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>CLK_CFG</name>
+            <name>XCVR_CLK_CFG</name>
             <description>Transceiver clock timing configuration</description>
             <addressOffset>0x30</addressOffset>
             <size>32</size>
@@ -17580,7 +17583,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>PIN</name>
+            <name>XCVR_PIN</name>
             <description>Transceiver pin status</description>
             <addressOffset>0x38</addressOffset>
             <size>32</size>
@@ -17698,7 +17701,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>STATE</name>
+            <name>XCVR_STATE</name>
             <description>FSM of asynchronous</description>
             <addressOffset>0x3c</addressOffset>
             <size>32</size>
@@ -17722,7 +17725,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>IN_CFG</name>
+            <name>TRG_IN_CFG</name>
             <description>Trigger input configuration</description>
             <addressOffset>0x40</addressOffset>
             <size>32</size>
@@ -17792,7 +17795,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>SW</name>
+            <name>TRG_SW</name>
             <description>Software trigger</description>
             <addressOffset>0x44</addressOffset>
             <size>32</size>
@@ -17811,7 +17814,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>PRD_CFG</name>
+            <name>TRG_PRD_CFG</name>
             <description>Period trigger configuration</description>
             <addressOffset>0x48</addressOffset>
             <size>32</size>
@@ -17839,7 +17842,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>PRD</name>
+            <name>TRG_PRD</name>
             <description>Trigger period</description>
             <addressOffset>0x4c</addressOffset>
             <size>32</size>
@@ -17856,7 +17859,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>OUT_CFG</name>
+            <name>TRG_OUT_CFG</name>
             <description>Trigger output configuration</description>
             <addressOffset>0x50</addressOffset>
             <size>32</size>
@@ -17946,7 +17949,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>PRD_STS</name>
+            <name>TRG_PRD_STS</name>
             <description>Period trigger status</description>
             <addressOffset>0x60</addressOffset>
             <size>32</size>
@@ -17974,7 +17977,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>PRD_CNT</name>
+            <name>TRG_PRD_CNT</name>
             <description>Period trigger counter</description>
             <addressOffset>0x64</addressOffset>
             <size>32</size>
@@ -17994,7 +17997,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             <dim>4</dim>
             <dimIncrement>0x4</dimIncrement>
             <dimIndex>0,1,2,3</dimIndex>
-            <name>CMD[%s]</name>
+            <name>TRG_TABLE_CMD[%s]</name>
             <description>no description available</description>
             <addressOffset>0x80</addressOffset>
             <size>32</size>
@@ -18014,7 +18017,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             <dim>4</dim>
             <dimIncrement>0x4</dimIncrement>
             <dimIndex>0,1,2,3</dimIndex>
-            <name>TIME[%s]</name>
+            <name>TRG_TABLE_TIME[%s]</name>
             <description>no description available</description>
             <addressOffset>0xa0</addressOffset>
             <size>32</size>
@@ -18031,7 +18034,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>MODE</name>
+            <name>CMD_MODE</name>
             <description>command register mode</description>
             <addressOffset>0xc0</addressOffset>
             <size>32</size>
@@ -18096,7 +18099,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>IDX</name>
+            <name>CMD_IDX</name>
             <description>command register configuration</description>
             <addressOffset>0xc4</addressOffset>
             <size>32</size>
@@ -18134,7 +18137,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>GOLD</name>
+            <name>CMD_GOLD</name>
             <description>Command gold value</description>
             <addressOffset>0xc8</addressOffset>
             <size>32</size>
@@ -18151,7 +18154,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>CRCINIT</name>
+            <name>CMD_CRCINIT</name>
             <description>Command Initial value</description>
             <addressOffset>0xcc</addressOffset>
             <size>32</size>
@@ -18168,7 +18171,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>CRCPOLY</name>
+            <name>CMD_CRCPOLY</name>
             <description>Command CRC polymial</description>
             <addressOffset>0xd0</addressOffset>
             <size>32</size>
@@ -18185,7 +18188,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>CMD</name>
+            <name>CMD_CMD</name>
             <description>command</description>
             <addressOffset>0xe0</addressOffset>
             <size>32</size>
@@ -18202,7 +18205,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>SET</name>
+            <name>CMD_SET</name>
             <description>command bit set register</description>
             <addressOffset>0xe4</addressOffset>
             <size>32</size>
@@ -18219,7 +18222,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>CLR</name>
+            <name>CMD_CLR</name>
             <description>command bit clear register</description>
             <addressOffset>0xe8</addressOffset>
             <size>32</size>
@@ -18236,7 +18239,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>INV</name>
+            <name>CMD_INV</name>
             <description>command bit invert register</description>
             <addressOffset>0xec</addressOffset>
             <size>32</size>
@@ -18253,7 +18256,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>IN</name>
+            <name>CMD_IN</name>
             <description>Commad input</description>
             <addressOffset>0xf0</addressOffset>
             <size>32</size>
@@ -18270,7 +18273,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>OUT</name>
+            <name>CMD_OUT</name>
             <description>Command output</description>
             <addressOffset>0xf4</addressOffset>
             <size>32</size>
@@ -18287,7 +18290,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>STS</name>
+            <name>CMD_STS</name>
             <description>Command status</description>
             <addressOffset>0xf8</addressOffset>
             <size>32</size>
@@ -18328,7 +18331,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             <dim>8</dim>
             <dimIncrement>0x20</dimIncrement>
             <dimIndex>0,1,2,3,4,5,6,7</dimIndex>
-            <name>CMD_TABLE[%s]</name>
+            <name>CMD_CMD_TABLE[%s]</name>
             <description>no description available</description>
             <addressOffset>0x100</addressOffset>
             <register>
@@ -18463,7 +18466,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             <dim>4</dim>
             <dimIncrement>0x20</dimIncrement>
             <dimIndex>0,1,2,3</dimIndex>
-            <name>LATCH[%s]</name>
+            <name>CMD_LATCH[%s]</name>
             <description>no description available</description>
             <addressOffset>0x200</addressOffset>
             <register>
@@ -18638,7 +18641,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </register>
           </cluster>
           <register>
-            <name>SMP_EN</name>
+            <name>POS_SMP_EN</name>
             <description>Sample selection register</description>
             <addressOffset>0x280</addressOffset>
             <size>32</size>
@@ -18704,7 +18707,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>SMP_CFG</name>
+            <name>POS_SMP_CFG</name>
             <description>Sample configuration</description>
             <addressOffset>0x284</addressOffset>
             <size>32</size>
@@ -18741,7 +18744,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>SMP_DAT</name>
+            <name>POS_SMP_DAT</name>
             <description>Sample data</description>
             <addressOffset>0x288</addressOffset>
             <size>32</size>
@@ -18758,7 +18761,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>SMP_POS</name>
+            <name>POS_SMP_POS</name>
             <description>Sample override position</description>
             <addressOffset>0x290</addressOffset>
             <size>32</size>
@@ -18775,7 +18778,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>SMP_REV</name>
+            <name>POS_SMP_REV</name>
             <description>Sample override revolution</description>
             <addressOffset>0x294</addressOffset>
             <size>32</size>
@@ -18792,7 +18795,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>SMP_SPD</name>
+            <name>POS_SMP_SPD</name>
             <description>Sample override speed</description>
             <addressOffset>0x298</addressOffset>
             <size>32</size>
@@ -18809,7 +18812,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>SMP_ACC</name>
+            <name>POS_SMP_ACC</name>
             <description>Sample override accelerate</description>
             <addressOffset>0x29c</addressOffset>
             <size>32</size>
@@ -18826,7 +18829,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>UPD_EN</name>
+            <name>POS_UPD_EN</name>
             <description>Update configuration</description>
             <addressOffset>0x2a0</addressOffset>
             <size>32</size>
@@ -18892,7 +18895,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>UPD_CFG</name>
+            <name>POS_UPD_CFG</name>
             <description>Update configuration</description>
             <addressOffset>0x2a4</addressOffset>
             <size>32</size>
@@ -18931,7 +18934,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>UPD_DAT</name>
+            <name>POS_UPD_DAT</name>
             <description>Update data</description>
             <addressOffset>0x2a8</addressOffset>
             <size>32</size>
@@ -18948,7 +18951,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>UPD_TIME</name>
+            <name>POS_UPD_TIME</name>
             <description>Update overide time</description>
             <addressOffset>0x2ac</addressOffset>
             <size>32</size>
@@ -18965,7 +18968,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>UPD_POS</name>
+            <name>POS_UPD_POS</name>
             <description>Update override position</description>
             <addressOffset>0x2b0</addressOffset>
             <size>32</size>
@@ -18982,7 +18985,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>UPD_REV</name>
+            <name>POS_UPD_REV</name>
             <description>Update override revolution</description>
             <addressOffset>0x2b4</addressOffset>
             <size>32</size>
@@ -18999,7 +19002,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>UPD_SPD</name>
+            <name>POS_UPD_SPD</name>
             <description>Update override speed</description>
             <addressOffset>0x2b8</addressOffset>
             <size>32</size>
@@ -19016,7 +19019,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>UPD_ACC</name>
+            <name>POS_UPD_ACC</name>
             <description>Update override accelerate</description>
             <addressOffset>0x2bc</addressOffset>
             <size>32</size>
@@ -19033,7 +19036,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>SMP_VAL</name>
+            <name>POS_SMP_VAL</name>
             <description>Sample valid</description>
             <addressOffset>0x2c0</addressOffset>
             <size>32</size>
@@ -19071,7 +19074,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>SMP_STS</name>
+            <name>POS_SMP_STS</name>
             <description>Sample status</description>
             <addressOffset>0x2c4</addressOffset>
             <size>32</size>
@@ -19097,7 +19100,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>TIME_IN</name>
+            <name>POS_TIME_IN</name>
             <description>input time</description>
             <addressOffset>0x2cc</addressOffset>
             <size>32</size>
@@ -19114,7 +19117,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>POS_IN</name>
+            <name>POS_POS_IN</name>
             <description>Input position</description>
             <addressOffset>0x2d0</addressOffset>
             <size>32</size>
@@ -19131,7 +19134,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>REV_IN</name>
+            <name>POS_REV_IN</name>
             <description>Input revolution</description>
             <addressOffset>0x2d4</addressOffset>
             <size>32</size>
@@ -19148,7 +19151,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>SPD_IN</name>
+            <name>POS_SPD_IN</name>
             <description>Input speed</description>
             <addressOffset>0x2d8</addressOffset>
             <size>32</size>
@@ -19165,7 +19168,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>ACC_IN</name>
+            <name>POS_ACC_IN</name>
             <description>Input accelerate</description>
             <addressOffset>0x2dc</addressOffset>
             <size>32</size>
@@ -19182,7 +19185,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>UPD_STS</name>
+            <name>POS_UPD_STS</name>
             <description>Update status</description>
             <addressOffset>0x2e4</addressOffset>
             <size>32</size>
@@ -19201,7 +19204,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>INT_EN</name>
+            <name>IRQ_INT_EN</name>
             <description>Interrupt Enable</description>
             <addressOffset>0x300</addressOffset>
             <size>32</size>
@@ -19393,7 +19396,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>INT_FLAG</name>
+            <name>IRQ_INT_FLAG</name>
             <description>Interrupt flag</description>
             <addressOffset>0x304</addressOffset>
             <size>32</size>
@@ -19585,7 +19588,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>INT_STS</name>
+            <name>IRQ_INT_STS</name>
             <description>Interrupt status</description>
             <addressOffset>0x308</addressOffset>
             <size>32</size>
@@ -19777,7 +19780,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>POINTER0</name>
+            <name>IRQ_POINTER0</name>
             <description>Match pointer 0</description>
             <addressOffset>0x310</addressOffset>
             <size>32</size>
@@ -19794,7 +19797,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>POINTER1</name>
+            <name>IRQ_POINTER1</name>
             <description>Match pointer 1</description>
             <addressOffset>0x314</addressOffset>
             <size>32</size>
@@ -19811,7 +19814,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>INSTR0</name>
+            <name>IRQ_INSTR0</name>
             <description>Match instruction 0</description>
             <addressOffset>0x318</addressOffset>
             <size>32</size>
@@ -19828,7 +19831,7 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             </fields>
           </register>
           <register>
-            <name>INSTR1</name>
+            <name>IRQ_INSTR1</name>
             <description>Match instruction 1</description>
             <addressOffset>0x31c</addressOffset>
             <size>32</size>
@@ -20313,10 +20316,17 @@ OPR[4]=0, OPR[3:0]=1 is WDG_POINTER.
               <access>read-write</access>
             </field>
             <field>
-              <name>FILTLEN</name>
+              <name>FILTLEN_SHIFT</name>
+              <description>No description avaiable</description>
+              <bitOffset>9</bitOffset>
+              <bitWidth>3</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>FILTLEN_BASE</name>
               <description>This bitfields defines the filter counter length.</description>
               <bitOffset>0</bitOffset>
-              <bitWidth>12</bitWidth>
+              <bitWidth>9</bitWidth>
               <access>read-write</access>
             </field>
           </fields>
@@ -20815,7 +20825,8 @@ NOTE: This register overrides n_BURSTSIZE register when its value is not zero.
               <name>ITC</name>
               <description>ITC
 Interrupt Threshold Control -Read/Write.
-The system software uses this field to set the maximum rate at which the host/device controller will issue interrupts. ITC contains the maximum interrupt interval measured in micro-frames. Valid values are
+The system software uses this field to set the maximum rate at which the host/device controller will issue interrupts.
+ITC contains the maximum interrupt interval measured in micro-frames. Valid values are
 shown below.
 Value Maximum Interrupt Interval
 00000000 - Immediate (no threshold)
@@ -20867,7 +20878,9 @@ to a primed endpoint may go unrecognized.</description>
               <description>SUTW
 Setup TripWire - Read/Write. [device mode only]
 This bit is used as a semaphore to ensure that the setup data payload of 8 bytes is extracted from a QH by the DCD without being corrupted.
-If the setup lockout mode is off (SLOM bit in USB core register n_USBMODE, see USBMODE ) then there is a hazard when new setup data arrives while the DCD is copying the setup data payload from the QH for a previous setup packet. This bit is set and cleared by software.
+If the setup lockout mode is off (SLOM bit in USB core register n_USBMODE, see USBMODE ) then
+there is a hazard when new setup data arrives while the DCD is copying the setup data payload
+from the QH for a previous setup packet. This bit is set and cleared by software.
 This bit would also be cleared by hardware when a hazard detected.</description>
               <bitOffset>13</bitOffset>
               <bitWidth>1</bitWidth>
@@ -20877,7 +20890,9 @@ This bit would also be cleared by hardware when a hazard detected.</description>
               <name>ASPE</name>
               <description>ASPE
 Asynchronous Schedule Park Mode Enable - Read/Write.
-If the Asynchronous Park Capability bit in the HCCPARAMS register is a one, then this bit defaults to a 1h and is R/W. Otherwise the bit must be a zero and is RO. Software uses this bit to enable or disable Park mode. When this bit is one, Park mode is enabled. When this bit is a zero, Park mode is disabled.
+If the Asynchronous Park Capability bit in the HCCPARAMS register is a one, then this bit defaults to a 1h and is R/W.
+Otherwise the bit must be a zero and is RO. Software uses this bit to enable or disable Park mode.
+When this bit is one, Park mode is enabled. When this bit is a zero, Park mode is disabled.
 NOTE: ASPE bit reset value: '0b' for OTG controller .</description>
               <bitOffset>11</bitOffset>
               <bitWidth>1</bitWidth>
@@ -20888,7 +20903,8 @@ NOTE: ASPE bit reset value: '0b' for OTG controller .</description>
               <description>ASP
 Asynchronous Schedule Park Mode Count - Read/Write.
 If the Asynchronous Park Capability bit in the HCCPARAMS register is a one, then this field defaults to 3h and is R/W. Otherwise it defaults to zero and is Read-Only.
-It contains a count of the number of successive transactions the host controller is allowed to execute from a high-speed queue head on the Asynchronous schedule before continuing traversal of the Asynchronous schedule.
+It contains a count of the number of successive transactions the host controller is allowed to
+execute from a high-speed queue head on the Asynchronous schedule before continuing traversal of the Asynchronous schedule.
 Valid values are 1h to 3h. Software must not write a zero to this bit when Park Mode Enable is a one as this will result in undefined behavior.
 This field is set to 3h in all controller core.</description>
               <bitOffset>8</bitOffset>
@@ -20900,8 +20916,11 @@ This field is set to 3h in all controller core.</description>
               <description>IAA
 Interrupt on Async Advance Doorbell - Read/Write.
 This bit is used as a doorbell by software to tell the host controller to issue an interrupt the next time it advances asynchronous schedule. Software must write a 1 to this bit to ring the doorbell.
-When the host controller has evicted all appropriate cached schedule states, it sets the Interrupt on Async Advance status bit in the USBSTS register. If the Interrupt on Sync Advance Enable bit in the USBINTR register is one, then the host controller will assert an interrupt at the next interrupt threshold.
-The host controller sets this bit to zero after it has set the Interrupt on Sync Advance status bit in the USBSTS register to one. Software should not write a one to this bit when the asynchronous  schedule is inactive. Doing so will yield undefined results.
+When the host controller has evicted all appropriate cached schedule states,
+it sets the Interrupt on Async Advance status bit in the USBSTS register.
+If the Interrupt on Sync Advance Enable bit in the USBINTR register is one, then the host controller will assert an interrupt at the next interrupt threshold.
+The host controller sets this bit to zero after it has set the Interrupt on Sync Advance status bit in the USBSTS register to one.
+Software should not write a one to this bit when the asynchronous  schedule is inactive. Doing so will yield undefined results.
 This bit is only used in host mode. Writing a one to this bit when device mode is selected will have undefined results.</description>
               <bitOffset>6</bitOffset>
               <bitWidth>1</bitWidth>
@@ -20944,14 +20963,17 @@ See description at bit 15</description>
             <field>
               <name>RST</name>
               <description>RST
-Controller Reset (RESET) - Read/Write. Software uses this bit to reset the controller. This bit is set to zero by the Host/Device Controller when the reset process is complete. Software cannot terminate the reset process early by writing a zero to this register.
+Controller Reset (RESET) - Read/Write. Software uses this bit to reset the controller.
+This bit is set to zero by the Host/Device Controller when the reset process is complete. Software cannot terminate the reset process early by writing a zero to this register.
 Host operation mode:
-When software writes a one to this bit, the Controller resets its internal pipelines, timers, counters, state machines etc. to their initial value. Any transaction currently in progress on USB is immediately terminated. A USB reset is not driven on downstream ports.
+When software writes a one to this bit, the Controller resets its internal pipelines, timers, counters, state machines etc. to their initial value.
+Any transaction currently in progress on USB is immediately terminated. A USB reset is not driven on downstream ports.
 Software should not set this bit to a one when the HCHalted bit in the USBSTS register is a zero.
 Attempting to reset an actively running host controller will result in undefined behavior.
 Device operation mode:
 When software writes a one to this bit, the Controller resets its internal pipelines, timers, counters, state machines etc. to their initial value.
-Writing a one to this bit when the device is in the attached state is not recommended, because the effect on an attached host is undefined. In order to ensure that the device is not in an attached state before initiating a device controller reset, all primed endpoints should be flushed and the USBCMD Run/Stop bit should be set to 0.</description>
+Writing a one to this bit when the device is in the attached state is not recommended, because the effect on an attached host is undefined.
+In order to ensure that the device is not in an attached state before initiating a device controller reset, all primed endpoints should be flushed and the USBCMD Run/Stop bit should be set to 0.</description>
               <bitOffset>1</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -20961,11 +20983,14 @@ Writing a one to this bit when the device is in the attached state is not recomm
               <description>RS
 Run/Stop (RS) - Read/Write. Default 0b. 1=Run. 0=Stop.
 Host operation mode:
-When set to '1b', the Controller proceeds with the execution of the schedule. The Controller continues execution as long as this bit is set to a one. When this bit is set to 0, the Host Controller completes the current transaction on the USB and then halts. The HC Halted bit in the status register indicates when the Controller has finished the transaction and has entered the stopped state.
+When set to '1b', the Controller proceeds with the execution of the schedule. The Controller continues execution as long as this bit is set to a one.
+When this bit is set to 0, the Host Controller completes the current transaction on the USB and then halts.
+The HC Halted bit in the status register indicates when the Controller has finished the transaction and has entered the stopped state.
 Software should not write a one to this field unless the controller is in the Halted state (that is, HCHalted in the USBSTS register is a one).
 Device operation mode:
 Writing a one to this bit will cause the controller to enable a pull-up on D+ and initiate an attach event.
-This control bit is not directly connected to the pull-up enable, as the pull-up will become disabled upon transitioning into high-speed mode. Software should use this bit to prevent an attach event before the controller has been properly initialized. Writing a 0 to this will cause a detach event.</description>
+This control bit is not directly connected to the pull-up enable, as the pull-up will become disabled upon transitioning into high-speed mode.
+Software should use this bit to prevent an attach event before the controller has been properly initialized. Writing a 0 to this will cause a detach event.</description>
               <bitOffset>0</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -21003,8 +21028,10 @@ bit clears it.</description>
             <field>
               <name>UPI</name>
               <description>USB Host Periodic Interrupt – RWC. Default = 0b.
-This bit is set by the Host Controller when the cause of an interrupt is a completion of a USB transaction where the Transfer Descriptor (TD) has an interrupt on complete (IOC) bit set and the TD was from the periodic schedule.
-This bit is also set by the Host Controller when a short packet is detected and the packet is on the periodic schedule. A short packet is when the actual number of bytes received was less than expected.
+This bit is set by the Host Controller when the cause of an interrupt is a completion of a USB transaction
+where the Transfer Descriptor (TD) has an interrupt on complete (IOC) bit set and the TD was from the periodic schedule.
+This bit is also set by the Host Controller when a short packet is detected and the packet is on the periodic schedule.
+A short packet is when the actual number of bytes received was less than expected.
 This bit is not used by the device controller and will always be zero.</description>
               <bitOffset>19</bitOffset>
               <bitWidth>1</bitWidth>
@@ -21013,8 +21040,10 @@ This bit is not used by the device controller and will always be zero.</descript
             <field>
               <name>UAI</name>
               <description>USB Host Asynchronous Interrupt – RWC. Default = 0b.
-This bit is set by the Host Controller when the cause of an interrupt is a completion of a USB transaction where the Transfer Descriptor (TD) has an interrupt on complete (IOC) bit set AND the TD was from the asynchronous schedule.
-This bit is also set by the Host when a short packet is detected and the packet is on the asynchronous schedule. A short packet is when the actual number of bytes received was less than expected.
+This bit is set by the Host Controller when the cause of an interrupt is a completion of a USB transaction
+where the Transfer Descriptor (TD) has an interrupt on complete (IOC) bit set AND the TD was from the asynchronous schedule.
+This bit is also set by the Host when a short packet is detected and the packet is on the asynchronous schedule.
+A short packet is when the actual number of bytes received was less than expected.
 This bit is not used by the device controller and will always be zero</description>
               <bitOffset>18</bitOffset>
               <bitWidth>1</bitWidth>
@@ -21047,7 +21076,9 @@ Only used in the host operation mode.</description>
               <name>PS</name>
               <description>PS
 Periodic Schedule Status - Read Only.
-This bit reports the current real status of the Periodic Schedule. When set to zero the periodic schedule is disabled, and if set to one the status is enabled. The Host Controller is not required to immediately disable or enable the Periodic Schedule when software transitions the Periodic Schedule Enable bit in the USBCMD register. When this bit and the Periodic Schedule Enable bit are the same value, the Periodic Schedule is either enabled (1) or disabled (0).
+This bit reports the current real status of the Periodic Schedule. When set to zero the periodic schedule is disabled, and if set to one the status is enabled.
+The Host Controller is not required to immediately disable or enable the Periodic Schedule when software transitions the Periodic Schedule Enable bit in the USBCMD register.
+When this bit and the Periodic Schedule Enable bit are the same value, the Periodic Schedule is either enabled (1) or disabled (0).
 Only used in the host operation mode.</description>
               <bitOffset>14</bitOffset>
               <bitWidth>1</bitWidth>
@@ -21067,7 +21098,9 @@ Only used in the host operation mode.</description>
               <name>HCH</name>
               <description>HCH
 HCHaIted - Read Only.
-This bit is a zero whenever the Run/Stop bit is a one. The Controller sets this bit to one after it has stopped executing because of the Run/Stop bit being set to 0, either by software or by the Controller hardware (for example, an internal error).
+This bit is a zero whenever the Run/Stop bit is a one.
+ The Controller sets this bit to one after it has stopped executing because of the Run/Stop bit being set to 0,
+ either by software or by the Controller hardware (for example, an internal error).
 Only used in the host operation mode.
 Default value is '0b' for OTG core .
 This is because OTG core is not operating as host in default. Please see CM bit in USB_n_USBMODE
@@ -21091,7 +21124,8 @@ Only used in device operation mode.</description>
               <name>SRI</name>
               <description>SRI
 SOF Received - R/WC.
-When the device controller detects a Start Of (micro) Frame, this bit will be set to a one. When a SOF is extremely late, the device controller will automatically set this bit to indicate that an SOF was expected.
+When the device controller detects a Start Of (micro) Frame, this bit will be set to a one.
+When a SOF is extremely late, the device controller will automatically set this bit to indicate that an SOF was expected.
 Therefore, this bit will be set roughly every 1ms in device FS mode and every 125ms in HS mode and will be synchronized to the actual SOF that is received.
 Because the device controller is initialized to FS before connect, this bit will be set at an interval of 1ms during the prelude to connect and chirp.
 In host mode, this bit will be set every 125us and can be used by host controller driver as a time base.
@@ -21115,7 +21149,8 @@ Only used in device operation mode.</description>
               <name>AAI</name>
               <description>AAI
 Interrupt on Async Advance - R/WC.
-System software can force the host controller to issue an interrupt the next time the host controller advances the asynchronous schedule by writing a one to the Interrupt on Async Advance Doorbell bit in the n_USBCMD register. This status bit indicates the assertion of that interrupt source.
+System software can force the host controller to issue an interrupt the next time the host controller advances the asynchronous schedule
+by writing a one to the Interrupt on Async Advance Doorbell bit in the n_USBCMD register. This status bit indicates the assertion of that interrupt source.
 Only used in host operation mode.</description>
               <bitOffset>5</bitOffset>
               <bitWidth>1</bitWidth>
@@ -21124,7 +21159,8 @@ Only used in host operation mode.</description>
             <field>
               <name>SEI</name>
               <description>System Error – RWC. Default = 0b.
-In the BVCI implementation of the USBHS core, this bit is not used, and will always be cleared to '0b'. In the AMBA implementation, this bit will be set to '1b' when an Error response is seen by the master interface (HRESP[1:0]=ERROR)</description>
+In the BVCI implementation of the USBHS core, this bit is not used, and will always be cleared to '0b'.
+In the AMBA implementation, this bit will be set to '1b' when an Error response is seen by the master interface (HRESP[1:0]=ERROR)</description>
               <bitOffset>4</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -21147,8 +21183,11 @@ Only used in host operation mode.</description>
               <name>PCI</name>
               <description>PCI
 Port Change Detect - R/WC.
-The Host Controller sets this bit to a one when on any port a Connect Status occurs, a Port Enable/Disable Change occurs, or the Force Port Resume bit is set as the result of a J-K transition on the suspended port.
-The Device Controller sets this bit to a one when the port controller enters the full or high-speed operational state. When the port controller exits the full or high-speed operation states due to Reset or Suspend events, the notification mechanisms are the USB Reset Received bit and the DCSuspend bits Respectively.</description>
+The Host Controller sets this bit to a one when on any port a Connect Status occurs, a Port Enable/Disable Change occurs,
+or the Force Port Resume bit is set as the result of a J-K transition on the suspended port.
+The Device Controller sets this bit to a one when the port controller enters the full or high-speed operational state.
+When the port controller exits the full or high-speed operation states due to Reset or Suspend events,
+the notification mechanisms are the USB Reset Received bit and the DCSuspend bits Respectively.</description>
               <bitOffset>2</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -21157,7 +21196,8 @@ The Device Controller sets this bit to a one when the port controller enters the
               <name>UEI</name>
               <description>UEI
 USB Error Interrupt (USBERRINT) - R/WC.
-When completion of a USB transaction results in an error condition, this bit is set by the Host/Device Controller. This bit is set along with the USBINT bit, if the TD on which the error interrupt occurred also had its interrupt on complete (IOC) bit set.</description>
+When completion of a USB transaction results in an error condition, this bit is set by the Host/Device Controller.
+This bit is set along with the USBINT bit, if the TD on which the error interrupt occurred also had its interrupt on complete (IOC) bit set.</description>
               <bitOffset>1</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -21331,7 +21371,8 @@ When this bit is one and the UI bit in n_USBSTS register is a one the controller
               <name>FRINDEX</name>
               <description>FRINDEX
 Frame Index.
-The value, in this register, increments at the end of each time frame (micro-frame). Bits [N: 3] are used for the Frame List current index. This means that each location of the frame list is accessed 8 times (frames or micro-frames) before moving to the next index.
+The value, in this register, increments at the end of each time frame (micro-frame). Bits [N: 3] are used for the Frame List current index.
+This means that each location of the frame list is accessed 8 times (frames or micro-frames) before moving to the next index.
 The following illustrates values of N based on the value of the Frame List Size field in the USBCMD register, when used in host mode.
 USBCMD [Frame List Size] Number Elements N
 In device mode the value is the current frame number of the last frame transmitted. It is not used as an index.
@@ -21373,14 +21414,17 @@ These bits correspond to the USB device address</description>
               <name>USBADRA</name>
               <description>USBADRA
 Device Address Advance. Default=0.
-When this bit is '0', any writes to USBADR are instantaneous. When this bit is written to a '1' at the same time or before USBADR is written, the write to the USBADR field is staged and held in a hidden register.
+When this bit is '0', any writes to USBADR are instantaneous.
+ When this bit is written to a '1' at the same time or before USBADR is written, the write to the USBADR field is staged and held in a hidden register.
 After an IN occurs on endpoint 0 and is ACKed, USBADR will be loaded from the holding register.
 Hardware will automatically clear this bit on the following conditions:
 1) IN is ACKed to endpoint 0. (USBADR is updated from staging register).
 2) OUT/SETUP occur to endpoint 0. (USBADR is not updated).
 3) Device Reset occurs (USBADR is reset to 0).
-NOTE: After the status phase of the SET_ADDRESS descriptor, the DCD has 2 ms to program the USBADR field. This mechanism will ensure this specification is met when the DCD can not write of the device address within 2ms from the SET_ADDRESS status phase.
-If the DCD writes the USBADR with USBADRA=1 after the SET_ADDRESS data phase (before the prime of the status phase), the USBADR will be programmed instantly at the correct time and meet the 2ms USB requirement.</description>
+NOTE: After the status phase of the SET_ADDRESS descriptor, the DCD has 2 ms to program the USBADR field.
+This mechanism will ensure this specification is met when the DCD can not write of the device address within 2ms from the SET_ADDRESS status phase.
+If the DCD writes the USBADR with USBADRA=1 after the SET_ADDRESS data phase (before the prime of the status phase),
+the USBADR will be programmed instantly at the correct time and meet the 2ms USB requirement.</description>
               <bitOffset>24</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -21442,7 +21486,8 @@ Only used by the host controller.</description>
             <field>
               <name>EPBASE</name>
               <description>EPBASE
-Endpoint List Pointer(Low). These bits correspond to memory address signals [31:11], respectively. This field will reference a list of up to 32 Queue Head (QH) (that is, one queue head per endpoint &amp; direction).</description>
+Endpoint List Pointer(Low). These bits correspond to memory address signals [31:11], respectively.
+This field will reference a list of up to 32 Queue Head (QH) (that is, one queue head per endpoint &amp; direction).</description>
               <bitOffset>11</bitOffset>
               <bitWidth>21</bitWidth>
               <access>read-write</access>
@@ -21495,7 +21540,8 @@ USB bus to system memory.</description>
 FIFO Burst Threshold. (Read/Write)
 This register controls the number of data bursts that are posted to the TX latency FIFO in host mode before the packet begins on to the bus.
 The minimum value is 2 and this value should be a low as possible to maximize USB performance.
-A higher value can be used in systems with unpredictable latency and/or insufficient bandwidth where the FIFO may underrun because the data transferred from the latency FIFO to USB occurs before it can be replenished from system memory.
+A higher value can be used in systems with unpredictable latency and/or insufficient bandwidth
+where the FIFO may underrun because the data transferred from the latency FIFO to USB occurs before it can be replenished from system memory.
 This value is ignored if the Stream Disable bit in USB_n_USBMODE register is set.</description>
               <bitOffset>16</bitOffset>
               <bitWidth>6</bitWidth>
@@ -21506,7 +21552,10 @@ This value is ignored if the Stream Disable bit in USB_n_USBMODE register is set
               <description>TXSCHHEALTH
 Scheduler Health Counter. (Read/Write To Clear)
 Table continues on the next page
-This register increments when the host controller fails to fill the TX latency FIFO to the level programmed by TXFIFOTHRES before running out of time to send the packet before the next Start-Of-Frame. This health counter measures the number of times this occurs to provide feedback to selecting a proper TXSCHOH. Writing to this register will clear the counter and this counter will max. at 31.</description>
+This register increments when the host controller fails to fill the TX latency FIFO to the level programmed by TXFIFOTHRES
+before running out of time to send the packet before the next Start-Of-Frame.
+This health counter measures the number of times this occurs to provide feedback to selecting a proper TXSCHOH.
+Writing to this register will clear the counter and this counter will max. at 31.</description>
               <bitOffset>8</bitOffset>
               <bitWidth>5</bitWidth>
               <access>read-write</access>
@@ -21516,7 +21565,8 @@ This register increments when the host controller fails to fill the TX latency F
               <description>TXSCHOH
 Scheduler Overhead. (Read/Write) [Default = 0]
 This register adds an additional fixed offset to the schedule time estimator described above as Tff.
-As an approximation, the value chosen for this register should limit the number of back-off events captured in the TXSCHHEALTH to less than 10 per second in a highly utilized bus.
+As an approximation, the value chosen for this register should limit the number of back-off events captured
+in the TXSCHHEALTH to less than 10 per second in a highly utilized bus.
 Choosing a value that is too high for this register is not desired as it can needlessly reduce USB utilization.
 The time unit represented in this register is 1.267us when a device is connected in High-Speed Mode.
 The time unit represented in this register is 6.333us when a device is connected in Low/Full Speed Mode.
@@ -21702,7 +21752,9 @@ This field is zero if Port Power(PORTSC1) is zero or in device mode.</descriptio
               <description>PTC
 Port Test Control - Read/Write. Default = 0000b.
 Refer to Port Test Mode for the operational model for using these test modes and the USB Specification Revision 2.0, Chapter 7 for details on each test mode.
-The FORCE_ENABLE_FS and FORCE ENABLE_LS are extensions to the test mode support specified in the EHCI specification. Writing the PTC field to any of the FORCE_ENABLE_{HS/FS/LS} values will force the port into the connected and enabled state at the selected speed. Writing the PTC field back to TEST_MODE_DISABLE will allow the port state machines to progress normally from that point.
+The FORCE_ENABLE_FS and FORCE ENABLE_LS are extensions to the test mode support specified in the EHCI specification.
+Writing the PTC field to any of the FORCE_ENABLE_{HS/FS/LS} values will force the port into the connected and enabled state at the selected speed.
+Writing the PTC field back to TEST_MODE_DISABLE will allow the port state machines to progress normally from that point.
 NOTE: Low speed operations are not supported as a peripheral device.
 Any other value than zero indicates that the port is operating in test mode.
 Value Specific Test
@@ -21729,8 +21781,10 @@ PP Operation
 0
 1b Read Only - Host controller does not have port power control switches. Each port is hard-wired to power.
 1
-1b/0b - Read/Write. OTG controller requires port power control switches. This bit represents the current setting of the switch (0=off, 1=on). When power is not available on a port (that is, PP equals a 0), the port is non-functional and will not report attaches, detaches, etc.
-When an over-current condition is detected on a powered port and PPC is a one, the PP bit in each affected port may be transitional by the host controller driver from a one to a zero (removing power from the port).
+1b/0b - Read/Write. OTG controller requires port power control switches. This bit represents the current setting of the switch (0=off, 1=on).
+When power is not available on a port (that is, PP equals a 0), the port is non-functional and will not report attaches, detaches, etc.
+When an over-current condition is detected on a powered port and PPC is a one,
+the PP bit in each affected port may be transitional by the host controller driver from a one to a zero (removing power from the port).
 This feature is implemented in all controller cores (PPC = 1).</description>
               <bitOffset>12</bitOffset>
               <bitWidth>1</bitWidth>
@@ -21770,7 +21824,8 @@ NOTE: HSP is redundant with PSPD(bit 27, 26) but remained for compatibility.</de
               <description>PR
 Port Reset - Read/Write or Read Only. Default = 0b.
 In Host Mode: Read/Write. 1=Port is in Reset. 0=Port is not in Reset. Default 0.
-When software writes a one to this bit the bus-reset sequence as defined in the USB Specification Revision 2.0 is started. This bit will automatically change to zero after the reset sequence is complete.
+When software writes a one to this bit the bus-reset sequence as defined in the USB Specification Revision 2.0 is started.
+This bit will automatically change to zero after the reset sequence is complete.
 This behavior is different from EHCI where the host controller driver is required to set this bit to a zero after the reset duration is timed in the driver.
 In Device Mode: This bit is a read only status bit. Device reset from the USB bus is also indicated in the USBSTS register.</description>
               <bitOffset>8</bitOffset>
@@ -21789,7 +21844,9 @@ Bits [Port Enabled, Suspend] Port State
 10 Enable
 11 Suspend
 When in suspend state, downstream propagation of data is blocked on this port, except for port reset.
-The blocking occurs at the end of the current transaction if a transaction was in progress when this bit was written to 1. In the suspend state, the port is sensitive to resume detection. Note that the bit status does not change until the port is suspended and that there may be a delay in suspending a port if there is a transaction currently in progress on the USB.
+The blocking occurs at the end of the current transaction if a transaction was in progress when this bit was written to 1.
+In the suspend state, the port is sensitive to resume detection.
+Note that the bit status does not change until the port is suspended and that there may be a delay in suspending a port if there is a transaction currently in progress on the USB.
 The host controller will unconditionally set this bit to zero when software sets the Force Port Resume bit to zero. The host controller ignores a write of zero to this bit.
 If host software sets this bit to a one when the port is not enabled (that is, Port enabled bit is a zero) the results are undefined.
 This field is zero if Port Power(PORTSC1) is zero in host mode.
@@ -21847,7 +21904,8 @@ This bit will automatically transition from one to zero when the over current co
               <description>PEC
 Port Enable/Disable Change-R/WC. 1=Port enabled/disabled status has changed. 0=No change. Default = 0.
 In Host Mode:
-For the root hub, this bit is set to a one only when a port is disabled due to disconnect on the port or due to the appropriate conditions existing at the EOF2 point (See Chapter 11 of the USB Specification).
+For the root hub, this bit is set to a one only when a port is disabled due to disconnect on the port or
+due to the appropriate conditions existing at the EOF2 point (See Chapter 11 of the USB Specification).
 Software clears this by writing a one to it.
 This field is zero if Port Power(PORTSC1) is zero.
 In Device mode:
@@ -21877,8 +21935,10 @@ The device port is always enabled, so this bit is always '1b'.</description>
               <description>CSC
 Connect Status Change-R/WC. 1 =Change in Current Connect Status. 0=No change. Default 0.
 In Host Mode:
-Indicates a change has occurred in the port's Current Connect Status. The host/device controller sets this bit for all changes to the port device connect status, even if system software has not cleared an existing connect status change.
-For example, the insertion status changes twice before system software has cleared the changed condition, hub hardware will be 'setting' an already-set bit (that is, the bit will remain set). Software clears this bit by writing a one to it.
+Indicates a change has occurred in the port's Current Connect Status.
+The host/device controller sets this bit for all changes to the port device connect status, even if system software has not cleared an existing connect status change.
+For example, the insertion status changes twice before system software has cleared the changed condition,
+hub hardware will be 'setting' an already-set bit (that is, the bit will remain set). Software clears this bit by writing a one to it.
 This field is zero if Port Power(PORTSC1) is zero in host mode.
 In Device Mode:
 This bit is undefined in device controller mode.</description>
@@ -21891,10 +21951,14 @@ This bit is undefined in device controller mode.</description>
               <description>CCS
 Current Connect Status-Read Only.
 In Host Mode:
-1=Device is present on port. 0=No device is present. Default = 0. This value reflects the current state of the port, and may not correspond directly to the event that caused the Connect Status Change bit (Bit 1) to be set.
+1=Device is present on port. 0=No device is present. Default = 0.
+This value reflects the current state of the port, and may not correspond directly to the event that caused the Connect Status Change bit (Bit 1) to be set.
 This field is zero if Port Power(PORTSC1) is zero in host mode.
 In Device Mode:
-1=Attached. 0=Not Attached. Default=0. A one indicates that the device successfully attached and is operating in either high speed or full speed as indicated by the High Speed Port bit in this register. A zero indicates that the device did not attach successfully or was forcibly disconnected by the software writing a zero to the Run bit in the USBCMD register. It does not state the device being disconnected or Suspended.</description>
+1=Attached. 0=Not Attached. Default=0.
+A one indicates that the device successfully attached and is operating in either high speed or full speed as indicated by the High Speed Port bit in this register.
+A zero indicates that the device did not attach successfully or was forcibly disconnected by the software writing a zero to the Run bit in the USBCMD register.
+It does not state the device being disconnected or Suspended.</description>
               <bitOffset>0</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -22037,7 +22101,8 @@ Stream Disable Mode. (0 - Inactive [default]; 1 - Active)
 Device Mode: Setting to a '1' disables double priming on both RX and TX for low bandwidth systems.
 This mode ensures that when the RX and TX buffers are sufficient to contain an entire packet that the standard double buffering scheme is disabled to prevent overruns/underruns in bandwidth limited systems.
 Note: In High Speed Mode, all packets received are responded to with a NYET handshake when stream disable is active.
-Host Mode: Setting to a '1' ensures that overruns/underruns of the latency FIFO are eliminated for low bandwidth systems where the RX and TX buffers are sufficient to contain the entire packet. Enabling stream disable also has the effect of ensuring the TX latency is filled to capacity before the packet is launched onto the USB.
+Host Mode: Setting to a '1' ensures that overruns/underruns of the latency FIFO are eliminated for low bandwidth systems
+where the RX and TX buffers are sufficient to contain the entire packet. Enabling stream disable also has the effect of ensuring the TX latency is filled to capacity before the packet is launched onto the USB.
 NOTE: Time duration to pre-fill the FIFO becomes significant when stream disable is active. See TXFILLTUNING and TXTTFILLTUNING [MPH Only] to characterize the adjustments needed for
 the scheduler when using this feature.
 NOTE: The use of this feature substantially limits of the overall USB performance that can be achieved.</description>
@@ -22304,7 +22369,8 @@ TX Endpoint Type - Read/Write
 TX Endpoint Stall - Read/Write
 0 End Point OK
 1 End Point Stalled
-This bit will be cleared automatically upon receipt of a SETUP request if this Endpoint is configured as a Control Endpoint and this bit will continue to be cleared by hardware until the associated ENDPTSETUPSTAT bit is cleared.
+This bit will be cleared automatically upon receipt of a SETUP request if this Endpoint is configured
+as a Control Endpoint and this bit will continue to be cleared by hardware until the associated ENDPTSETUPSTAT bit is cleared.
 Software can write a one to this bit to force the endpoint to return a STALL handshake to the Host.
 This control will continue to STALL until this bit is either cleared by software or automatically cleared as above for control endpoints.
 NOTE: [CONTROL ENDPOINT TYPES ONLY]: there is a slight delay (50 clocks max) between the ENDPTSETUPSTAT begin cleared and hardware continuing to clear this bit.
@@ -25900,34 +25966,13 @@ others are reserved</description>
           <addressOffset>0x0</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0x07FFFFFF</resetMask>
+          <resetMask>0x0407FFFF</resetMask>
           <fields>
             <field>
               <name>EN_LV</name>
               <description>No description avaiable</description>
               <bitOffset>26</bitOffset>
               <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>OPAOUT_SEL</name>
-              <description>No description avaiable</description>
-              <bitOffset>24</bitOffset>
-              <bitWidth>2</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>VSWITCH_SEL</name>
-              <description>No description avaiable</description>
-              <bitOffset>21</bitOffset>
-              <bitWidth>3</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>ISEL</name>
-              <description>No description avaiable</description>
-              <bitOffset>19</bitOffset>
-              <bitWidth>2</bitWidth>
               <access>read-write</access>
             </field>
             <field>
@@ -25938,17 +25983,31 @@ others are reserved</description>
               <access>read-write</access>
             </field>
             <field>
-              <name>GPA_SEL</name>
+              <name>MODE</name>
               <description>No description avaiable</description>
-              <bitOffset>8</bitOffset>
-              <bitWidth>8</bitWidth>
+              <bitOffset>11</bitOffset>
+              <bitWidth>5</bitWidth>
               <access>read-write</access>
             </field>
             <field>
-              <name>CSEL</name>
+              <name>GAIN_SEL</name>
+              <description>No description avaiable</description>
+              <bitOffset>8</bitOffset>
+              <bitWidth>3</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>DISABLE_PM_CAP</name>
+              <description>No description avaiable</description>
+              <bitOffset>7</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>MILLER_SEL</name>
               <description>No description avaiable</description>
               <bitOffset>4</bitOffset>
-              <bitWidth>4</bitWidth>
+              <bitWidth>3</bitWidth>
               <access>read-write</access>
             </field>
             <field>
@@ -26038,19 +26097,19 @@ NOTE: when set, the hardware trigger will not be used</description>
             <addressOffset>0x0</addressOffset>
             <size>32</size>
             <resetValue>0x00000000</resetValue>
-            <resetMask>0x0F070707</resetMask>
+            <resetMask>0x0F000707</resetMask>
             <fields>
               <field>
-                <name>CSEL</name>
+                <name>DISABLE_PM_CAP</name>
                 <description>No description avaiable</description>
-                <bitOffset>24</bitOffset>
-                <bitWidth>4</bitWidth>
+                <bitOffset>27</bitOffset>
+                <bitWidth>1</bitWidth>
                 <access>read-write</access>
               </field>
               <field>
-                <name>VSWITCH_SEL</name>
+                <name>MILLER_SEL</name>
                 <description>No description avaiable</description>
-                <bitOffset>16</bitOffset>
+                <bitOffset>24</bitOffset>
                 <bitWidth>3</bitWidth>
                 <access>read-write</access>
               </field>
@@ -26076,7 +26135,7 @@ NOTE: when set, the hardware trigger will not be used</description>
             <addressOffset>0x4</addressOffset>
             <size>32</size>
             <resetValue>0x00000000</resetValue>
-            <resetMask>0xE30300FF</resetMask>
+            <resetMask>0xE00000FF</resetMask>
             <fields>
               <field>
                 <name>HW_TRIG_EN</name>
@@ -26101,24 +26160,17 @@ NOTE: when sw_preset is enabled, this bit will not take effert</description>
                 <access>read-write</access>
               </field>
               <field>
-                <name>OPAOUT_SEL</name>
+                <name>MODE</name>
                 <description>No description avaiable</description>
-                <bitOffset>24</bitOffset>
-                <bitWidth>2</bitWidth>
+                <bitOffset>3</bitOffset>
+                <bitWidth>5</bitWidth>
                 <access>read-write</access>
               </field>
               <field>
-                <name>ISEL</name>
-                <description>No description avaiable</description>
-                <bitOffset>16</bitOffset>
-                <bitWidth>2</bitWidth>
-                <access>read-write</access>
-              </field>
-              <field>
-                <name>PGA_SEL</name>
+                <name>GAIN_SEL</name>
                 <description>No description avaiable</description>
                 <bitOffset>0</bitOffset>
-                <bitWidth>8</bitWidth>
+                <bitWidth>3</bitWidth>
                 <access>read-write</access>
               </field>
             </fields>
@@ -26303,7 +26355,7 @@ NOTE: when sw_preset is enabled, this bit will not take effert</description>
             <fields>
               <field>
                 <name>DACCFG</name>
-                <description>8bit DAC digital value</description>
+                <description>8bit DAC digital value output to analog block</description>
                 <bitOffset>0</bitOffset>
                 <bitWidth>8</bitWidth>
                 <access>read-write</access>
@@ -28301,18 +28353,9 @@ This register should not be changed during PLL and spread spectrum enabled.  If 
           <description>1V LDO config</description>
           <addressOffset>0x4</addressOffset>
           <size>32</size>
-          <resetValue>0x0001044C</resetValue>
-          <resetMask>0x00010FFF</resetMask>
+          <resetValue>0x0000044C</resetValue>
+          <resetMask>0x00000FFF</resetMask>
           <fields>
-            <field>
-              <name>ENABLE</name>
-              <description>LDO enable
-0: turn off LDO
-1: turn on LDO</description>
-              <bitOffset>16</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
             <field>
               <name>VOLT</name>
               <description>LDO output voltage in mV,  value valid through 700-1320, , step 20mV.  Hardware select voltage no less than target if not on valid steps, with maximum 1320mV.

@@ -16,6 +16,8 @@ board:
       size: 8M
     feature:
       - butn
+      - sdp
+      - rng
       - rtc
       - wdg
       - adc
@@ -62,3 +64,7 @@ board:
       - qei
       - bldc_smc
       - puart
+      - gpt_pin
+      - sdram
+      - acmp
+      - ptpc

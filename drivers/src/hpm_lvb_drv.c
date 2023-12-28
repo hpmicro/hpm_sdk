@@ -21,20 +21,20 @@ void lvb_get_default_config(lvb_config_t *cfg)
 
 void lvb_init(LVB_Type *ptr, lvb_config_t *cfg)
 {
-    ptr->CONTROL[0] = (ptr->CONTROL[0] & ~(LVB_CONTROL_SPLIT_CH_REVERSE_MASK |
-                        LVB_CONTROL_SPLIT_CH_MODE_MASK |
-                        LVB_CONTROL_SPLIT_HSWHBP_WIDTH_MASK |
-                        LVB_CONTROL_SPLIT_MODE_EN_MASK |
-                        LVB_CONTROL_DI1_VSYNC_POLARITY_MASK |
-                        LVB_CONTROL_DI0_VSYNC_POLARITY_MASK |
-                        LVB_CONTROL_LVDS_TXCLK_SHIFT_MASK)) |
-                        LVB_CONTROL_SPLIT_CH_REVERSE_SET(cfg->split_ch_is_reverse) |
-                        LVB_CONTROL_SPLIT_CH_MODE_SET(cfg->split_ch_data_is_unaligned) |
-                        LVB_CONTROL_SPLIT_HSWHBP_WIDTH_SET(cfg->split_hswhbp_width_is_even) |
-                        LVB_CONTROL_SPLIT_MODE_EN_SET(cfg->split_mode_en) |
-                        LVB_CONTROL_DI1_VSYNC_POLARITY_SET(cfg->di1_vsync_polarity) |
-                        LVB_CONTROL_DI0_VSYNC_POLARITY_SET(cfg->di0_vsync_polarity) |
-                        LVB_CONTROL_LVDS_TXCLK_SHIFT_SET(cfg->txclk_shift);
+    ptr->CTRL = (ptr->CTRL & ~(LVB_CTRL_SPLIT_CH_REVERSE_MASK |
+                        LVB_CTRL_SPLIT_CH_MODE_MASK |
+                        LVB_CTRL_SPLIT_HSWHBP_WIDTH_MASK |
+                        LVB_CTRL_SPLIT_MODE_EN_MASK |
+                        LVB_CTRL_DI1_VSYNC_POLARITY_MASK |
+                        LVB_CTRL_DI0_VSYNC_POLARITY_MASK |
+                        LVB_CTRL_LVDS_TXCLK_SHIFT_MASK)) |
+                        LVB_CTRL_SPLIT_CH_REVERSE_SET(cfg->split_ch_is_reverse) |
+                        LVB_CTRL_SPLIT_CH_MODE_SET(cfg->split_ch_data_is_unaligned) |
+                        LVB_CTRL_SPLIT_HSWHBP_WIDTH_SET(cfg->split_hswhbp_width_is_even) |
+                        LVB_CTRL_SPLIT_MODE_EN_SET(cfg->split_mode_en) |
+                        LVB_CTRL_DI1_VSYNC_POLARITY_SET(cfg->di1_vsync_polarity) |
+                        LVB_CTRL_DI0_VSYNC_POLARITY_SET(cfg->di0_vsync_polarity) |
+                        LVB_CTRL_LVDS_TXCLK_SHIFT_SET(cfg->txclk_shift);
 }
 
 void lvb_get_ch_default_config(lvb_ch_config_t *ch_cfg)
@@ -48,37 +48,37 @@ void lvb_ch_config(LVB_Type *ptr, lvb_ch_num_t ch_num, lvb_ch_config_t *ch_cfg)
     uint32_t reg_val;
 
     if (ch_num == lvb_ch_num_0) {
-        reg_val = (ptr->CONTROL[0] & ~(LVB_CONTROL_CH0_BIT_MAPPING_MASK | LVB_CONTROL_CH0_SEL_MASK)) |
-                LVB_CONTROL_CH0_BIT_MAPPING_SET(ch_cfg->map) |
-                LVB_CONTROL_CH0_SEL_SET(ch_cfg->data_src);
+        reg_val = (ptr->CTRL & ~(LVB_CTRL_CH0_BIT_MAPPING_MASK | LVB_CTRL_CH0_SEL_MASK)) |
+                LVB_CTRL_CH0_BIT_MAPPING_SET(ch_cfg->map) |
+                LVB_CTRL_CH0_SEL_SET(ch_cfg->data_src);
     } else {
-        reg_val = (ptr->CONTROL[0] & ~(LVB_CONTROL_CH1_BIT_MAPPING_MASK | LVB_CONTROL_CH1_SEL_MASK)) |
-                LVB_CONTROL_CH1_BIT_MAPPING_SET(ch_cfg->map) |
-                LVB_CONTROL_CH1_SEL_SET(ch_cfg->data_src);
+        reg_val = (ptr->CTRL & ~(LVB_CTRL_CH1_BIT_MAPPING_MASK | LVB_CTRL_CH1_SEL_MASK)) |
+                LVB_CTRL_CH1_BIT_MAPPING_SET(ch_cfg->map) |
+                LVB_CTRL_CH1_SEL_SET(ch_cfg->data_src);
     }
 
-    ptr->CONTROL[0] = reg_val;
+    ptr->CTRL = reg_val;
 }
 
 void lvb_ch_enable(LVB_Type *ptr, lvb_ch_num_t ch_num)
 {
     if (ch_num == lvb_ch_num_0) {
-        ptr->CONTROL[0] |= LVB_CONTROL_CH0_EN_MASK;
+        ptr->CTRL |= LVB_CTRL_CH0_EN_MASK;
     } else {
-        ptr->CONTROL[0] |= LVB_CONTROL_CH1_EN_MASK;
+        ptr->CTRL |= LVB_CTRL_CH1_EN_MASK;
     }
 }
 
 void lvb_ch_disable(LVB_Type *ptr, lvb_ch_num_t ch_num)
 {
     if (ch_num == lvb_ch_num_0) {
-        ptr->CONTROL[0] &= ~LVB_CONTROL_CH0_EN_MASK;
+        ptr->CTRL &= ~LVB_CTRL_CH0_EN_MASK;
     } else {
-        ptr->CONTROL[0] &= ~LVB_CONTROL_CH1_EN_MASK;
+        ptr->CTRL &= ~LVB_CTRL_CH1_EN_MASK;
     }
 }
 
-void lvb_lvds_phy_lane_data_get_default_config(lvb_lvds_phy_lane_config_t *cfg)
+void lvb_lvds_phy_lane_get_default_config(lvb_lvds_phy_lane_config_t *cfg)
 {
     cfg->tx_idle = false;
     cfg->rterm_enable = true;

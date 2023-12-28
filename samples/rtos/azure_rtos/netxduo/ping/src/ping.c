@@ -149,7 +149,7 @@ VOID thread_0_entry(ULONG thread_input)
     UINT status;
     ULONG actual_status;
     ULONG temp;
-
+    TX_PARAMETER_NOT_USED(thread_input);
     /* Create the DHCP instance.  */
     printf("DHCP In Progress...\r\n");
 

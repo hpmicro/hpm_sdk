@@ -111,19 +111,19 @@ void uart_lin_check_head_and_respond(UART_Type *ptr, uint8_t *head_buff)
     uint8_t id = pid & 0x3f;
 
     if (0x55 != head_buff[0]) {
-        uart_disable_irq(TEST_UART, uart_intr_rx_data_avail_or_timeout); /* No longer receiving data */
+        uart_disable_irq(ptr, uart_intr_rx_data_avail_or_timeout); /* No longer receiving data */
         uart_lin_receive_head_error = true;
         return;
     }
 
     if (pid != hpm_uart_lin_calculate_protected_id(id)) {
-        uart_disable_irq(TEST_UART, uart_intr_rx_data_avail_or_timeout); /* No longer receiving data */
+        uart_disable_irq(ptr, uart_intr_rx_data_avail_or_timeout); /* No longer receiving data */
         uart_lin_receive_head_error = true;
         return;
     }
 
     /* change rx fifo trigger level, using rx time out interrupt to receive data */
-    uart_config_fifo_ctrl(TEST_UART, &fifo_ctrl_2);
+    uart_config_fifo_ctrl(ptr, &fifo_ctrl_2);
 
     switch (id) {
     case TEST_SLAVE_RECEIVE_ID:
@@ -133,7 +133,7 @@ void uart_lin_check_head_and_respond(UART_Type *ptr, uint8_t *head_buff)
         uart_lin_config.data.enhance_checksum = TEST_SLAVE_RECEIVE_ENHANCE_CHECKSUM;
         break;
     case TEST_SLAVE_SEND_ID:
-        uart_disable_irq(TEST_UART, uart_intr_rx_data_avail_or_timeout); /* No longer receiving data */
+        uart_disable_irq(ptr, uart_intr_rx_data_avail_or_timeout); /* No longer receiving data */
         uint8_t data[TEST_SLAVE_SEND_DATA_LENGTH] = {0x7, 0x6, 0x5, 0x4, 0x3, 0x2, 0x1, 0x0};
         memcpy(send_data, data, TEST_SLAVE_SEND_DATA_LENGTH);
 
@@ -142,10 +142,10 @@ void uart_lin_check_head_and_respond(UART_Type *ptr, uint8_t *head_buff)
         uart_lin_config.data.length = TEST_SLAVE_SEND_DATA_LENGTH;
         uart_lin_config.data.enhance_checksum = TEST_SLAVE_SEND_ENHANCE_CHECKSUM;
         hpm_uart_lin_slave_send_data(&uart_lin_config);
-        uart_enable_irq(TEST_UART, uart_intr_tx_slot_avail);
+        uart_enable_irq(ptr, uart_intr_tx_slot_avail);
         break;
     default:
-        uart_disable_irq(TEST_UART, uart_intr_rx_data_avail_or_timeout); /* No longer receiving data */
+        uart_disable_irq(ptr, uart_intr_rx_data_avail_or_timeout); /* No longer receiving data */
         return;
     }
 }

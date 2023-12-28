@@ -16,6 +16,8 @@ board:
       size: 16M
     feature:
       - butn
+      - sdp
+      - rng
       - rtc
       - wdg
       - adc16
@@ -51,3 +53,6 @@ board:
       - sw_gm_api
       - hall-qei
       - puart
+      - gpt_pin
+      - acmp
+      - ptpc

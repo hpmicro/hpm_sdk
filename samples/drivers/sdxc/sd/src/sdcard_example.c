@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -10,7 +10,8 @@
 #include "hpm_mchtmr_drv.h"
 #include "hpm_clock_drv.h"
 
-static sd_card_t g_sd;
+ATTR_PLACE_AT_NONCACHEABLE_BSS sdmmc_host_t g_sdmmc_host;
+static sd_card_t g_sd = {.host = &g_sdmmc_host};
 
 /***********************************************************************************
  *
@@ -28,10 +29,15 @@ ATTR_PLACE_AT_NONCACHEABLE uint32_t s_write_buf[MAX_BUF_SIZE_DEFAULT / sizeof(ui
 ATTR_PLACE_AT_NONCACHEABLE uint32_t s_read_buf[MAX_BUF_SIZE_DEFAULT / sizeof(uint32_t)];
 
 static void show_card_info(const sd_card_t *card);
+
 void show_help(void);
+
 void test_write_read_last_block(void);
+
 void test_write_read_last_1024_blocks(void);
+
 void test_hot_plug(void);
+
 void test_sd_stress_test(void);
 
 
@@ -44,10 +50,10 @@ static void show_card_info(const sd_card_t *card)
     printf("Block Size: %d Bytes\n", card->block_size);
     printf("Card class: %d\n", card->status.speed_class);
     printf("Maximum Card Supported Frequency: %uMHz\n", card->max_freq / 1000000UL);
-    printf("Current Host Clock Frequency:     %uMHz\n", card->host->host_param.host_clk_freq / 1000000UL);
+    printf("Current Host Clock Frequency:     %uMHz\n", card->host->clock_freq / 1000000UL);
 
     if (card->operation_voltage == sdmmc_operation_voltage_1v8) {
-        switch(card->status.uhs_speed_grade) {
+        switch (card->status.uhs_speed_grade) {
         case 0:
             printf("UHS Speed Grade: Less than 10MB/sec\n");
             break;
@@ -70,18 +76,23 @@ static void show_card_info(const sd_card_t *card)
 }
 
 int main(void)
-{
+ {
+    sd_card_t *card = &g_sd;
     board_init();
     hpm_stat_t status;
     do {
         printf("Please insert the SD card to SD slot...\n");
-        status = sd_init(&g_sd);
+        status = board_init_sd_host_params(&g_sdmmc_host, BOARD_APP_SDCARD_SDXC_BASE);
+        if (status != status_success) {
+            break;
+        }
+        status = sd_init(card);
         if (status != status_success) {
             board_delay_ms(1000);
         }
-    } while(status != status_success);
+    } while (status != status_success);
 
-    show_card_info(&g_sd);
+    show_card_info(card);
 
     show_help();
     while (true) {
@@ -112,32 +123,31 @@ int main(void)
 }
 
 
-
 void show_help(void)
 {
-    static const char help_info[] = "\n"
-                                    "-----------------------------------------------------------------------------------\n"
-                                    "*                                                                                 *\n"
-                                    "*                   SD Card Low-level test demo                                   *\n"
-                                    "*                                                                                 *\n"
-                                    "*        1. Write & Read the last block                                           *\n"
-                                    "*        2. Write & Read the last 1024 blocks                                     *\n"
-                                    "*        3. Hot plug test                                                         *\n"
-                                    "*        4. SD Stress test (Write / Read 200MBytes)                               *\n"
-                                    "*                                                                                 *\n"
-                                    "*---------------------------------------------------------------------------------*\n";
+    const char help_info[] = "\n"
+                             "-----------------------------------------------------------------------------------\n"
+                             "*                                                                                 *\n"
+                             "*                   SD Card Low-level test demo                                   *\n"
+                             "*                                                                                 *\n"
+                             "*        1. Write & Read the last block                                           *\n"
+                             "*        2. Write & Read the last 1024 blocks                                     *\n"
+                             "*        3. Hot plug test                                                         *\n"
+                             "*        4. SD Stress test (Write / Read 200MBytes)                               *\n"
+                             "*                                                                                 *\n"
+                             "*---------------------------------------------------------------------------------*\n";
     printf("%s", help_info);
 }
 
 void test_write_read_last_block(void)
 {
     bool result = false;
-    hpm_stat_t status = status_success;
+    hpm_stat_t status;
     uint32_t sector_addr = g_sd.block_count - 1U;
 
-    uint8_t *buf_8 = (uint8_t *)&s_write_buf;
+    uint8_t *buf_8 = (uint8_t *) &s_write_buf;
     for (uint32_t i = 0; i < g_sd.block_size; i++) {
-        buf_8[i] = (uint8_t)(i & 0xFFU);
+        buf_8[i] = (uint8_t) (i & 0xFFU);
     }
 
     do {
@@ -177,7 +187,7 @@ void test_write_read_last_1024_blocks(void)
     uint64_t write_ticks = 0;
     uint64_t read_ticks = 0;
     if (step > 1024) {
-        step  = 1024;
+        step = 1024;
     }
     for (uint32_t i = 0; i < 1024; i += step) {
         result = false;
@@ -197,9 +207,7 @@ void test_write_read_last_1024_blocks(void)
         end_ticks = mchtmr_get_count(HPM_MCHTMR);
         read_ticks += (end_ticks - start_ticks);
         result = (memcmp(s_write_buf, s_read_buf, sizeof(s_write_buf)) == 0);
-        printf("SD write-read-verify block range 0x%08x-0x%08x %s\n",
-               sector_addr + i,
-               sector_addr + i + step - 1U,
+        printf("SD write-read-verify block range 0x%08x-0x%08x %s\n", sector_addr + i, sector_addr + i + step - 1U,
                result ? "PASSED" : "FAILED");
         if (!result) {
             break;
@@ -224,11 +232,6 @@ void test_write_read_last_1024_blocks(void)
 void test_hot_plug(void)
 {
     hpm_stat_t status;
-
-    if (g_sd.host->host_param.card_detection_mode == sdmmc_host_card_detection_none) {
-        printf("Hot Plug detection is not supported");
-        return;
-    }
 
     if (sdmmchost_is_card_detected(g_sd.host)) {
         show_card_info(&g_sd);
@@ -258,7 +261,7 @@ void test_sd_stress_test(void)
     }
 
     /* Erase, Write, read 200MB */
-    uint32_t max_test_blocks = MIN(2048*200, g_sd.block_count);
+    uint32_t max_test_blocks = MIN(2048 * 200, g_sd.block_count);
 
     uint32_t sector_addr;
     uint32_t start_sector = g_sd.block_count - max_test_blocks;
@@ -267,7 +270,7 @@ void test_sd_stress_test(void)
     bool result = false;
     uint32_t step = sizeof(s_write_buf) / g_sd.block_size;
     uint32_t blocks_per_loop;
-    for (uint32_t offset = 0; offset < max_test_blocks; offset+= step) {
+    for (uint32_t offset = 0; offset < max_test_blocks; offset += step) {
         sector_addr = start_sector + offset;
         blocks_per_loop = MIN(step, (step - offset));
         result = false;
@@ -288,19 +291,12 @@ void test_sd_stress_test(void)
         read_ticks += (end_ticks - start_ticks);
         result = (memcmp(s_write_buf, s_read_buf, sizeof(s_write_buf)) == 0);
         if (!result) {
-            printf("SD write-read-verify block range 0x%08x-0x%08x %s\n",
-                   sector_addr,
-                   sector_addr + blocks_per_loop - 1U,
-                   result ? "PASSED" : "FAILED");
+            printf("SD write-read-verify block range 0x%08x-0x%08x %s\n", sector_addr,
+                   sector_addr + blocks_per_loop - 1U, result ? "PASSED" : "FAILED");
             break;
         } else {
             printf(".");
             fflush(stdout);
-        }
-
-        if (status != status_success) {
-            printf("\nError code: %d\n", status);
-            break;
         }
     }
     printf("\n");

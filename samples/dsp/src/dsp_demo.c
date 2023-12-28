@@ -120,6 +120,7 @@ static inline q15_t convert_float_to_q15(float x)
 static inline void dump_q15(const char *hdr, q15_t *buf, uint32_t size)
 {
     unsigned int i;
+    (void)hdr;
 
     LOG("%s:\n", hdr);
     for (i = 0; i < size; i++, buf++)

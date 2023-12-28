@@ -10,7 +10,11 @@
 #include "hpm_clock_drv.h"
 #include "hpm_i2s_drv.h"
 
+#ifndef BOARD_CODEC_I2C_BASE
 #define CODEC_I2C            BOARD_APP_I2C_BASE
+#else
+#define CODEC_I2C            BOARD_CODEC_I2C_BASE
+#endif
 #define CODEC_I2S            BOARD_APP_I2S_BASE
 #define CODEC_I2S_CLK_NAME   BOARD_APP_I2S_CLK_NAME
 #define CODEC_I2S_DATA_LINE  BOARD_APP_I2S_DATA_LINE
@@ -18,7 +22,7 @@
 #define CODEC_SAMPLE_RATE_HZ 48000U
 #define CODEC_BIT_WIDTH      32U
 
-#if CONFIG_CODEC_WM8960
+#if defined(CONFIG_CODEC_WM8960) && CONFIG_CODEC_WM8960
     #include "hpm_wm8960.h"
     wm8960_config_t wm8960_config = {
         .route       = wm8960_route_playback_and_record,
@@ -33,7 +37,7 @@
         .ptr = CODEC_I2C,
         .slave_address = WM8960_I2C_ADDR, /* I2C address */
     };
-#elif CONFIG_CODEC_SGTL5000
+#elif defined(CONFIG_CODEC_SGTL5000) && CONFIG_CODEC_SGTL5000
     #include "hpm_sgtl5000.h"
     sgtl_config_t sgtl5000_config = {
         .route = sgtl_route_playback_record,  /*!< Audio data route.*/
@@ -66,10 +70,10 @@ void test_codec_playback_record(void)
     i2s_init(CODEC_I2S, &i2s_config);
 
     i2s_get_default_transfer_config(&transfer);
-    transfer.data_line = I2S_DATA_LINE_2;
+    transfer.data_line = CODEC_I2S_DATA_LINE;
     transfer.sample_rate = CODEC_SAMPLE_RATE_HZ;
     transfer.master_mode = true;
-#if CONFIG_CODEC_WM8960
+#if defined(CONFIG_CODEC_WM8960) && CONFIG_CODEC_WM8960
     transfer.protocol = I2S_PROTOCOL_I2S_PHILIPS;
 #endif
     i2s_mclk_hz = clock_get_frequency(CODEC_I2S_CLK_NAME);
@@ -80,12 +84,12 @@ void test_codec_playback_record(void)
         while(1);
     }
 
-#if CONFIG_CODEC_WM8960
+#if defined(CONFIG_CODEC_WM8960) && CONFIG_CODEC_WM8960
     wm8960_config.format.mclk_hz = i2s_mclk_hz;
     if (wm8960_init(&wm8960_control, &wm8960_config) != status_success) {
         printf("Init Audio Codec failed\n");
     }
-#elif CONFIG_CODEC_SGTL5000
+#elif defined(CONFIG_CODEC_SGTL5000) && CONFIG_CODEC_SGTL5000
     sgtl5000_config.format.mclk_hz = i2s_mclk_hz;
     if (sgtl_init(&sgtl5000_context, &sgtl5000_config) != status_success) {
         printf("Init Audio Codec failed\n");

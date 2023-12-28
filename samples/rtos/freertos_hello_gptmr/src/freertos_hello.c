@@ -21,6 +21,7 @@ volatile bool led_on;
 
 static void task1(void *pvParameters)
 {
+    (void)pvParameters;
     for (;;) {
 #ifdef BOARD_LED_GPIO_CTRL
         printf("LED is %s.\n", led_on ? "on" : "off");
@@ -33,6 +34,7 @@ static void task1(void *pvParameters)
 
 static void task2(void *pvParameters)
 {
+    (void)pvParameters;
     for (;;) {
         printf("%s is running.\n", __func__);
 #ifdef BOARD_LED_GPIO_CTRL

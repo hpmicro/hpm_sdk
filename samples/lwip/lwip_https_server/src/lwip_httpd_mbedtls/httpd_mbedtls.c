@@ -420,6 +420,7 @@ static int mbedtls_net_send(void *ctx, unsigned char const *buf, size_t len)
 
 static int mbedtls_net_recv(void *ctx, unsigned char *buf, size_t len)
 {
+    (void)ctx;
     /* make sure that data is received before parsing */
     if (ssl_buf_read_pos == ssl_buf_write_pos)
         return MBEDTLS_ERR_SSL_WANT_READ;
@@ -428,7 +429,7 @@ static int mbedtls_net_recv(void *ctx, unsigned char *buf, size_t len)
         ssl_buf_read_pos, ssl_buf_write_pos, ssl_p->state);
     TRACE_DUMP((ssl_buff + ssl_buf_read_pos), len);
 
-    if (len >= (ssl_buf_write_pos - ssl_buf_read_pos))
+    if (len >= ((uint32_t)ssl_buf_write_pos - (uint32_t)ssl_buf_read_pos))
         len = ssl_buf_write_pos - ssl_buf_read_pos;
     memcpy(buf, ssl_buff + ssl_buf_read_pos, len);
 
@@ -613,6 +614,8 @@ static err_t http_write(struct tcp_pcb *pcb, const void *ptr, u16_t *length, u8_
 {
     u16_t len;
     int ret;
+    (void)apiflags;
+    (void)pcb;
     LWIP_ASSERT("length != NULL", length != NULL);
     len = *length;
     if (len == 0) {

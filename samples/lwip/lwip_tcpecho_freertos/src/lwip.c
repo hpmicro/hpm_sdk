@@ -160,10 +160,10 @@ hpm_stat_t enet_init(ENET_Type *ptr)
         if (rtl8201_basic_mode_init(ptr, &phy_config) == true) {
         #endif
     #endif
-            printf("Enet phy init passes !\n");
+            printf("Enet phy init passed !\n");
             return status_success;
         } else {
-            printf("Enet phy init fails !\n");
+            printf("Enet phy init failed !\n");
             return status_fail;
         }
 }
@@ -186,6 +186,8 @@ int main(void)
 
 void Main_task(void *pvParameters)
 {
+    (void)pvParameters;
+
     TimerHandle_t timer_handle;
 
     /* Initialize MAC and DMA */
@@ -196,7 +198,7 @@ void Main_task(void *pvParameters)
 
     tcp_echo_init();
 
-#if __ENABLE_DHCP
+#if LWIP_DHCP
     /* Start DHCP Client */
     xTaskCreate(LwIP_DHCP_task, "DHCP", configMINIMAL_STACK_SIZE * 2, NULL, DHCP_TASK_PRIO, NULL);
 #endif

@@ -11,11 +11,13 @@
 
 void cam_get_default_config(CAM_Type *ptr, cam_config_t *config, display_pixel_format_t pixel_format)
 {
+    (void) ptr;
     config->width = 320;
     config->height = 240;
     config->pixclk_sampling_falling = false;
     config->hsync_active_low = false;
     config->vsync_active_low = false;
+    config->de_active_low = false;
     config->color_ext = false;
     config->data_pack_msb = false;
     config->enable_buffer2 = false;
@@ -89,9 +91,17 @@ hpm_stat_t cam_init(CAM_Type *ptr, cam_config_t *config)
 
     cam_reset(ptr);
 
+    /*
+     * In DVP mode, de_active_low and hsync_active_low are same.
+     */
+    if (config->sensor_bitwidth != CAM_SENSOR_BITWIDTH_24BITS) {
+        config->de_active_low = config->hsync_active_low;
+    }
+
     ptr->CR1 = CAM_CR1_INV_PIXCLK_SET(config->pixclk_sampling_falling)
         | CAM_CR1_INV_HSYNC_SET(config->hsync_active_low)
         | CAM_CR1_INV_VSYNC_SET(config->vsync_active_low)
+        | CAM_CR1_INV_DEN_SET(config->de_active_low)
         | CAM_CR1_RESTART_BUSPTR_MASK
         | CAM_CR1_COLOR_EXT_SET(config->color_ext)
         | CAM_CR1_PACK_DIR_SET(config->data_pack_msb)
@@ -137,3 +147,13 @@ void cam_start(CAM_Type *ptr)
     ptr->CR18 |= CAM_CR18_CAM_ENABLE_MASK;
 }
 
+void cam_stop_safely(CAM_Type *ptr)
+{
+    /*
+    * waiting for capture frame to complete
+    */
+    cam_clear_status(ptr, cam_status_end_of_frame);
+    while (cam_check_status(ptr, cam_status_end_of_frame) == false) {
+    }
+    cam_stop(ptr);
+}

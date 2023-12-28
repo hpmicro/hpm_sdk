@@ -107,18 +107,6 @@ typedef struct {
 
 /* Bitfield definition for register: LDO1P1 */
 /*
- * ENABLE (RW)
- *
- * LDO enable
- * 0: turn off LDO
- * 1: turn on LDO
- */
-#define PCFG_LDO1P1_ENABLE_MASK (0x10000UL)
-#define PCFG_LDO1P1_ENABLE_SHIFT (16U)
-#define PCFG_LDO1P1_ENABLE_SET(x) (((uint32_t)(x) << PCFG_LDO1P1_ENABLE_SHIFT) & PCFG_LDO1P1_ENABLE_MASK)
-#define PCFG_LDO1P1_ENABLE_GET(x) (((uint32_t)(x) & PCFG_LDO1P1_ENABLE_MASK) >> PCFG_LDO1P1_ENABLE_SHIFT)
-
-/*
  * VOLT (RW)
  *
  * LDO output voltage in mV,  value valid through 700-1320, , step 20mV.  Hardware select voltage no less than target if not on valid steps, with maximum 1320mV.

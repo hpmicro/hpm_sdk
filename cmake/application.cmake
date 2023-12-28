@@ -9,7 +9,9 @@ set(APP_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE PATH "application source direc
 set(APP_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR} CACHE PATH "application binary directory")
 set(__build_dir ${APP_BIN_DIR}/build_tmp)
 
-set(APP_NAME demo)
+if(NOT APP_NAME)
+    set(APP_NAME demo)
+endif()
 set(APP_ELF_NAME ${APP_NAME}.elf)
 set(APP_BIN_NAME ${APP_NAME}.bin)
 set(APP_MAP_NAME ${APP_NAME}.map)
@@ -19,8 +21,6 @@ set(HPM_SDK_LIB hpm_sdk_lib)
 set(HPM_SDK_LIB_ITF hpm_sdk_lib_itf)
 
 # store all options
-add_library(${HPM_SDK_LIB} STATIC "")
-target_link_libraries(${HPM_SDK_LIB} PUBLIC ${HPM_SDK_LIB_ITF})
 add_library(${HPM_SDK_LIB_ITF} INTERFACE)
 
 add_library(app OBJECT "")
@@ -153,17 +153,15 @@ if(NOT extram_size)
     endif()
 endif()
 
-if(HEAP_SIZE)
-    sdk_linker_global_symbols("_heap_size=${HEAP_SIZE}")
-else()
+if(NOT HEAP_SIZE)
     SET(HEAP_SIZE 0x4000)    #segger default heap size
 endif()
+sdk_linker_global_symbols("_heap_size=${HEAP_SIZE}")
 
-if(STACK_SIZE)
-    sdk_linker_global_symbols("_stack_size=${STACK_SIZE}")
-else()
+if(NOT STACK_SIZE)
     SET(STACK_SIZE 0x4000)    #segger default stack size
 endif()
+sdk_linker_global_symbols("_stack_size=${STACK_SIZE}")
 
 # skip compiler check
 set(CMAKE_C_COMPILER_FORCED 1)

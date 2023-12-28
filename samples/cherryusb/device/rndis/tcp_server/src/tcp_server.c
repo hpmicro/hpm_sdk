@@ -36,6 +36,8 @@ void tcp_server_init(void)
 
 static err_t tcpecho_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
 {
+    (void)arg;
+    (void)err;
     tcp_recv(newpcb, tcpecho_recv);
 
     return ERR_OK;
@@ -43,6 +45,7 @@ static err_t tcpecho_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
 
 static err_t tcpecho_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
 {
+    (void)arg;
     if (p != NULL) {
         tcp_recved(tpcb, p->tot_len);
 

@@ -37,11 +37,6 @@
 
 #define MEM_SIZE                (5*1024)
 
-/**
- * MEMP_MEM_MALLOC==1: Use mem_malloc/mem_free instead of the lwip pool allocator.
- */
-#define MEMP_MEM_MALLOC         0
-
 #define MEMP_NUM_PBUF           100
 
 #define MEMP_NUM_UDP_PCB        6
@@ -103,7 +98,9 @@
  * interfaces. DHCP is not implemented in lwIP 0.5.1, however, so
  * turning this on does currently not work.
  */
+#ifndef LWIP_DHCP
 #define LWIP_DHCP               0
+#endif
 
 /* ---------- UDP options ---------- */
 #define LWIP_UDP                1

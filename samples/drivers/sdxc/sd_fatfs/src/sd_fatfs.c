@@ -10,8 +10,6 @@
 #include "ff.h"
 #include "diskio.h"
 
-extern sd_card_t g_sd;
-
 FATFS s_sd_disk;
 FIL s_file;
 DIR s_dir;
@@ -130,7 +128,7 @@ static FRESULT sd_write_file(void)
     if (fresult != FR_OK) {
         printf("Write file failed, cause: %s\n", show_error_string(fresult));
     } else {
-        printf("Write file　operation is successfully\n");
+        printf("Write file operation is successfully\n");
     }
 
     f_close(&s_file);

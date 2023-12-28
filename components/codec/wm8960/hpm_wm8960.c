@@ -403,7 +403,8 @@ hpm_stat_t wm8960_set_volume(wm8960_control_t *control, wm8960_module_t module, 
 
 static bool wm8960_check_clock_tolerance(uint32_t source, uint32_t target)
 {
-    if (abs(source - target) * 100 / target < HPM_WM8960_MCLK_TOLERANCE) {
+    uint32_t delta = (source >= target) ? (source - target) : (target - source);
+    if (delta * 100 <= HPM_WM8960_MCLK_TOLERANCE * target) {
         return true;
     }
     return false;

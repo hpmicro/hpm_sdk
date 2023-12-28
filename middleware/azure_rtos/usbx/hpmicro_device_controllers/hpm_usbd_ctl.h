@@ -36,6 +36,10 @@
         printf(fmt, ##__VA_ARGS__);                                                                                                                                                                                                                                                                                                                                    \
     } while (0)
 
+#ifndef CONFIG_USB_DBG_LEVEL
+#define CONFIG_USB_DBG_LEVEL USB_DBG_ERROR
+#endif
+
 #if (CONFIG_USB_DBG_LEVEL >= USB_DBG_LOG)
 #define USB_LOG_DBG(fmt, ...) usb_dbg_log_line('D', fmt, ##__VA_ARGS__)
 #else

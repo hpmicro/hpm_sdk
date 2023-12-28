@@ -1,0 +1,53 @@
+# Copyright (c) 2021-2023 HPMicro
+# SPDX-License-Identifier: BSD-3-Clause
+
+board:
+    name: hpm6800evk
+    soc: HPM6880
+    device: HPM6880xBDx
+    openocd-soc: hpm6880
+    openocd-probe: ft2232
+    on-board-ram:
+      type: sdram
+      size: 256M
+      width: 32bit
+    on-board-flash:
+      type: qspi-nor-flash
+      size: 16M
+    feature:
+      - lcd
+      - cam
+      - spi
+      - sdp
+      - rng
+      - uart
+      - i2c
+      - gpio
+      - sdxc
+      - dmav2
+      - ewdg
+      - mcan
+      - crc
+      - audio-codec
+      - i2s
+      - dao
+      - pdm
+      - ptp
+      - gpiom
+      - enet
+      - enet_pps_pinout
+      - enet_phy_on_board
+      - gwc
+      - adc16
+      - gpu
+      - smix
+      - rtc
+      - usb-otg
+      - gpt_pin
+      - mipi_csi
+      - mipi_dsi
+      - sdram
+      - sdcard
+      - ffa
+      - tsns
+      - ptpc

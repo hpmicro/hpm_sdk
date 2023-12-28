@@ -111,7 +111,7 @@ void init_lcd(void)
 
 void init_camera_device(void)
 {
-    camera_context_t camera_context = {NULL, NULL, NULL, NULL};
+    camera_context_t camera_context = {NULL, NULL, NULL, NULL, 0};
     camera_config_t camera_config;
 
     camera_context.i2c_device_addr = CAMERA_DEVICE_ADDR;

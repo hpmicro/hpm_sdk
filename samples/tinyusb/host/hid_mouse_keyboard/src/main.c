@@ -52,7 +52,7 @@ extern void hid_app_task(void);
 /*---------------------------------------------------------------------*
  * Variable Definitions
  *---------------------------------------------------------------------*/
-volatile static uint64_t millis_ticks = 0;
+static volatile uint64_t millis_ticks = 0;
 
 /*---------------------------------------------------------------------*
  * Board timer callback

@@ -166,7 +166,7 @@ int mbedtls_sha256_update_ret(mbedtls_sha256_context *ctx, const unsigned char *
 #endif
     }
 
-    for (int i = 0; i < ilen; i += 64)
+    for (uint32_t i = 0; i < ilen; i += 64)
     {
         size_t len = ilen - i > 64 ? 64 : ilen - i;
         if (len < 64)

@@ -291,21 +291,21 @@ void hpm_software_cfft_float(float *src, uint32_t m)
     }
 #endif
 
-    for (int i = 0; i < len; i++) {
+    for (uint32_t i = 0; i < len; i++) {
         if (i < memory[i]) {
             t = c[i];
             c[i] = c[memory[i]];
             c[memory[i]] = t;
         }
     }
-    for (int n = 1; n < len; n <<= 1) {
+    for (uint32_t n = 1; n < len; n <<= 1) {
         complex cn;
         complex wn;
         cn.real = hpm_mah_software_cosf(HPM_MATH_PI / n);
         cn.imag = -hpm_mah_software_sinf(HPM_MATH_PI / n);
-        for (int rl = n << 1, j = 0; j < len; j += rl) {
+        for (uint32_t rl = n << 1, j = 0; j < len; j += rl) {
             wn = w;
-            for (int k = 0; k < n; k++, wn = hpm_math_sw_comp_mul(wn, cn)) {
+            for (uint32_t k = 0; k < n; k++, wn = hpm_math_sw_comp_mul(wn, cn)) {
                 complex a = c[j + k], b = hpm_math_sw_comp_mul(wn, c[j + n + k]);
                 c[j + k] = hpm_math_sw_comp_add(a, b);
                 c[j + n + k] = hpm_math_sw_comp_sub(a, b);

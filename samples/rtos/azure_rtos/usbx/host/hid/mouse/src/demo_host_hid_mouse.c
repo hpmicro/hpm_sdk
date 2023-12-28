@@ -204,6 +204,7 @@ err:
 static UINT usbx_host_change_callback(ULONG event, UX_HOST_CLASS *host_class, VOID *instance)
 {
     UX_DEVICE *device;
+    (void)host_class;
     /* Check if there is a device connection event, make sure the instance is valid.  */
     if ((event == UX_DEVICE_CONNECTION) && (instance != UX_NULL)) {
         /* Get the device instance.  */

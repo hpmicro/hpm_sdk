@@ -200,6 +200,7 @@ void usbd_event_handler(uint8_t event)
 
 static void usbd_hid_custom_in_callback(uint8_t ep, uint32_t nbytes)
 {
+    (void)ep;
     USB_LOG_RAW("actual in len:%d\r\n", nbytes);
     custom_state = HID_STATE_IDLE;
 }
@@ -207,7 +208,7 @@ static void usbd_hid_custom_in_callback(uint8_t ep, uint32_t nbytes)
 static void usbd_hid_custom_out_callback(uint8_t ep, uint32_t nbytes)
 {
     USB_LOG_RAW("actual out len:%d\r\n", nbytes);
-    usbd_ep_start_read(HIDRAW_OUT_EP, read_buffer, 64);
+    usbd_ep_start_read(ep, read_buffer, 64);
     read_buffer[0] = 0x02; /* IN: report id */
     usbd_ep_start_write(HIDRAW_IN_EP, read_buffer, nbytes);
 }

@@ -20,8 +20,13 @@
 #define HPM_UART_BAUDRATE_DIV_MAX (0xFFFFU)
 #define HPM_UART_BAUDRATE_DIV_MIN (1U)
 
+#ifndef UART_SOC_OVERSAMPLE_MAX
+#define UART_SOC_OVERSAMPLE_MAX HPM_UART_OSC_MAX
+#endif
+
 void uart_default_config(UART_Type *ptr, uart_config_t *config)
 {
+    (void) ptr;
     config->baudrate = 115200;
     config->word_length = word_length_8_bits;
     config->parity = parity_none;
@@ -63,18 +68,8 @@ static bool uart_calculate_baudrate(uint32_t freq, uint32_t baudrate, uint16_t *
 
     tmp = (float) freq / baudrate;
 
-    for (uint8_t i = 0; i < HPM_UART_OSC_MAX; i += 2) {
-        /* osc range: 0 - 32, even number */
-        if (i == 0) {
-            /* osc == 0 in bitfield, oversample rate is 32 */
-            osc = HPM_UART_OSC_MAX;
-        } else if (i <= 8) {
-            /* osc <= 8 in bitfield, oversample rate is 8 */
-            osc = HPM_UART_OSC_MIN;
-        } else {
-            /* osc > 8 && osc < 32 in bitfield, oversample rate is osc */
-            osc = i;
-        }
+    for (osc = HPM_UART_OSC_MIN; osc <= UART_SOC_OVERSAMPLE_MAX; osc += 2) {
+        /* osc range: HPM_UART_OSC_MIN - UART_SOC_OVERSAMPLE_MAX, even number */
         delta = 0;
         div = (uint16_t)(tmp / osc);
         if (div < HPM_UART_BAUDRATE_DIV_MIN) {
@@ -90,7 +85,7 @@ static bool uart_calculate_baudrate(uint32_t freq, uint32_t baudrate, uint16_t *
             continue;
         } else {
             *div_out = div;
-            *osc_out = (i <= 8 && i) ? osc : i;
+            *osc_out = (osc == HPM_UART_OSC_MAX) ? 0 : osc; /* osc == 0 in bitfield, oversample rate is 32 */
             return true;
         }
     }
@@ -111,6 +106,7 @@ hpm_stat_t uart_init(UART_Type *ptr, uart_config_t *config)
     if (!uart_calculate_baudrate(config->src_freq_in_hz, config->baudrate, &div, &osc)) {
         return status_uart_no_suitable_baudrate_parameter_found;
     }
+
     ptr->OSCR = (ptr->OSCR & ~UART_OSCR_OSC_MASK)
         | UART_OSCR_OSC_SET(osc);
     ptr->DLL = UART_DLL_DLL_SET(div >> 0);

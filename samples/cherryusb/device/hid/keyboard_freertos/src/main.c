@@ -23,6 +23,7 @@ extern void hid_keyboard_test(void);
 
 static void task1(void *pvParameters)
 {
+    (void)pvParameters;
     printf("[cherryusb hid keyboard with freertos sample]: task started.\n");
 
     while (1) {

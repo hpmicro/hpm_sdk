@@ -171,7 +171,7 @@ static inline void gpio_clear_pin_interrupt_flag(GPIO_Type *ptr, uint32_t port, 
  */
 static inline bool gpio_check_pin_interrupt_enabled(GPIO_Type *ptr, uint32_t port, uint8_t pin)
 {
-    return (ptr->IE[port].VALUE & (1 << pin)) == (1 << pin);
+    return (ptr->IE[port].VALUE & (1 << pin)) == (uint32_t) (1 << pin);
 }
 
 /**

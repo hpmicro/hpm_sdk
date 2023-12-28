@@ -10,7 +10,7 @@
 #include "usb_audio.h"
 #include "hpm_i2s_drv.h"
 #include "hpm_clock_drv.h"
-#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#ifdef HPMSOC_HAS_HPMSDK_DMAV2
 #include "hpm_dmav2_drv.h"
 #else
 #include "hpm_dma_drv.h"
@@ -256,6 +256,7 @@ void usbd_event_handler(uint8_t event)
 
 void usbd_audio_set_volume(uint8_t ep, uint8_t ch, int volume)
 {
+    (void)ch;
     if (ep == AUDIO_OUT_EP) {
         s_speaker_volume_percent = volume;
         /* Do Nothing */
@@ -269,6 +270,7 @@ void usbd_audio_set_volume(uint8_t ep, uint8_t ch, int volume)
 
 int usbd_audio_get_volume(uint8_t ep, uint8_t ch)
 {
+    (void)ch;
     int volume = 0;
 
     if (ep == AUDIO_OUT_EP) {
@@ -284,6 +286,7 @@ int usbd_audio_get_volume(uint8_t ep, uint8_t ch)
 
 void usbd_audio_set_mute(uint8_t ep, uint8_t ch, bool mute)
 {
+    (void)ch;
     if (ep == AUDIO_OUT_EP) {
         s_speaker_mute = mute;
         if (s_speaker_mute) {
@@ -305,6 +308,7 @@ void usbd_audio_set_mute(uint8_t ep, uint8_t ch, bool mute)
 
 bool usbd_audio_get_mute(uint8_t ep, uint8_t ch)
 {
+    (void)ch;
     bool mute = false;
 
     if (ep == AUDIO_OUT_EP) {
@@ -464,7 +468,7 @@ void mic_init_i2s_pdm(void)
     i2s_get_default_transfer_config_for_pdm(&transfer);
     transfer.data_line = MIC_I2S_DATA_LINE;
     transfer.sample_rate = AUDIO_MIC_FREQ;
-    transfer.channel_slot_mask = 0x03; /* 2 channels */
+    transfer.channel_slot_mask = BOARD_PDM_DUAL_CHANNEL_MASK; /* 2 channels */
 
     s_mic_sample_rate = transfer.sample_rate;
 
@@ -549,6 +553,8 @@ static void usbd_audio_out_callback(uint8_t ep, uint32_t nbytes)
 
 static void usbd_audio_in_callback(uint8_t ep, uint32_t nbytes)
 {
+    (void)ep;
+    (void)nbytes;
     s_mic_ep_tx_busy_flag = false;
 }
 
@@ -563,14 +569,13 @@ static void speaker_i2s_dma_start_transfer(uint32_t addr, uint32_t size)
     ch_config.dst_width = DMA_TRANSFER_WIDTH_HALF_WORD;
     ch_config.src_addr_ctrl = DMA_ADDRESS_CONTROL_INCREMENT;
     ch_config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
-    ch_config.size_in_byte = size;
+    ch_config.size_in_byte = DMA_ALIGN_HALF_WORD(size);
     ch_config.src_mode = DMA_HANDSHAKE_MODE_NORMAL;
     ch_config.dst_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
     ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
 
     if (status_success != dma_setup_channel(BOARD_APP_HDMA, SPEAKER_DMA_CHANNEL, &ch_config, true)) {
         printf(" dma setup channel failed\n");
-        return;
     }
 }
 
@@ -585,14 +590,13 @@ static void mic_i2s_dma_start_transfer(uint32_t addr, uint32_t size)
     ch_config.dst_width = DMA_TRANSFER_WIDTH_HALF_WORD;
     ch_config.src_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
     ch_config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_INCREMENT;
-    ch_config.size_in_byte = size;
+    ch_config.size_in_byte = DMA_ALIGN_HALF_WORD(size);
     ch_config.src_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
     ch_config.dst_mode = DMA_HANDSHAKE_MODE_NORMAL;
     ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
 
     if (status_success != dma_setup_channel(BOARD_APP_HDMA, MIC_DMA_CHANNEL, &ch_config, true)) {
         printf(" pdm dma setup channel failed\n");
-        return;
     }
 }
 

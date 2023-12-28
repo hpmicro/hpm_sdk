@@ -8,7 +8,7 @@
 #include "board.h"
 #include "hpm_clock_drv.h"
 #include "hpm_i2c_drv.h"
-#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#ifdef HPMSOC_HAS_HPMSDK_DMAV2
 #include "hpm_dmav2_drv.h"
 #else
 #include "hpm_dma_drv.h"
@@ -77,12 +77,12 @@ static void i2c_handle_dma_transfer_complete(I2C_Type *ptr)
 
     /* wait for i2c transaction complete */
     do {
-        status = i2c_get_status(TEST_I2C);
+        status = i2c_get_status(ptr);
     } while (!(status & I2C_STATUS_CMPL_MASK));
     /* clear status */
-    i2c_clear_status(TEST_I2C, status);
+    i2c_clear_status(ptr, status);
     /* disable i2c dma before next dma transaction */
-    i2c_dma_disable(TEST_I2C);
+    i2c_dma_disable(ptr);
 }
 
 static void prepare_tx_data(void)

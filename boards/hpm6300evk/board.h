@@ -45,6 +45,7 @@
 #define BOARD_APP_UART_RX_DMA_REQ HPM_DMA_SRC_UART0_RX
 #define BOARD_APP_UART_TX_DMA_REQ HPM_DMA_SRC_UART0_TX
 
+#if !defined(CONFIG_NDEBUG_CONSOLE) || !CONFIG_NDEBUG_CONSOLE
 #ifndef BOARD_CONSOLE_TYPE
 #define BOARD_CONSOLE_TYPE CONSOLE_TYPE_UART
 #endif
@@ -60,6 +61,7 @@
 #endif
 #endif
 #define BOARD_CONSOLE_BAUDRATE (115200UL)
+#endif
 #endif
 
 #define BOARD_FREEMASTER_UART_BASE HPM_UART0
@@ -250,14 +252,15 @@
 
 /* SDXC section */
 #define BOARD_APP_SDCARD_SDXC_BASE                  (HPM_SDXC0)
+#define BOARD_APP_SDCARD_SUPPORT_3V3                (1)
 #define BOARD_APP_SDCARD_SUPPORT_1V8                (0)
+#define BOARD_APP_SDCARD_SUPPORT_4BIT               (1)
 #define BOARD_APP_SDCARD_SUPPORT_CARD_DETECTION     (1)
-#define BOARD_APP_SDCARD_CARD_DETECTION_USING_GPIO  (0)
-#if BOARD_APP_SDCARD_CARD_DETECTION_USING_GPIO
-#define BOARD_APP_SDCARD_CARD_DETECTION_GPIO        NULL
-#define BOARD_APP_SDCARD_CARD_DETECTION_GPIO_INDEX  0
-#define BOARD_APP_SDCARD_CARD_DETECTION_PIN_INDEX   0
-#endif
+#define BOARD_APP_EMMC_SDXC_BASE                    (HPM_SDXC0)
+#define BOARD_APP_EMMC_SUPPORT_3V3                  (1)
+#define BOARD_APP_EMMC_SUPPORT_1V8                  (0)
+#define BOARD_APP_EMMC_SUPPORT_4BIT                 (1)
+#define BOARD_APP_EMMC_HOST_USING_IRQ               (0)
 
 /* USB section */
 #define BOARD_USB0_ID_PORT       (HPM_GPIO0)
@@ -282,6 +285,8 @@
 #define BOARD_BLDCPWM_CMP_INDEX_3         (3U)
 #define BOARD_BLDCPWM_CMP_INDEX_4         (4U)
 #define BOARD_BLDCPWM_CMP_INDEX_5         (5U)
+#define BOARD_BLDCPWM_CMP_INDEX_6         (6U)
+#define BOARD_BLDCPWM_CMP_INDEX_7         (7U)
 #define BOARD_BLDCPWM_CMP_TRIG_CMP        (20U)
 
 /*HALL define*/
@@ -326,7 +331,7 @@
 #define BOARD_BLDC_ADC_CH_V                    (12U)
 #define BOARD_BLDC_ADC_CH_W                    (5U)
 #define BOARD_BLDC_ADC_IRQn                    IRQn_ADC1
-#define BOARD_BLDC_ADC_SEQ_DMA_SIZE_IN_4BYTES  (40U)
+#define BOARD_BLDC_ADC_PMT_DMA_SIZE_IN_4BYTES  (ADC_SOC_PMT_MAX_DMA_BUFF_LEN_IN_4BYTES)
 #define BOARD_BLDC_ADC_TRG                    ADC16_CONFIG_TRG0A
 #define BOARD_BLDC_ADC_PREEMPT_TRIG_LEN        (1U)
 #define BOARD_BLDC_PWM_TRIG_CMP_INDEX          (8U)
@@ -410,8 +415,7 @@ uint32_t board_init_i2s_clock(I2S_Type *ptr);
 uint32_t board_init_pdm_clock(void);
 uint32_t board_init_dao_clock(void);
 
-void board_init_sd_pins(SDXC_Type *ptr);
-uint32_t board_sd_configure_clock(SDXC_Type *ptr, uint32_t freq);
+uint32_t board_sd_configure_clock(SDXC_Type *ptr, uint32_t freq, bool need_inverse);
 void board_sd_switch_pins_to_1v8(SDXC_Type *ptr);
 bool board_sd_detect_card(SDXC_Type *ptr);
 

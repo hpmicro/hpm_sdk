@@ -172,7 +172,7 @@ UINT string_length_get(GX_CONST GX_CHAR* input_string, UINT max_string_length);
 /******************************************************************************************/
 TASK_INFO *task_info_get(INT task_id)
 {
-    if (task_id < sizeof(task_info_list) / sizeof(TASK_INFO))
+    if ((uint32_t)task_id < sizeof(task_info_list) / sizeof(TASK_INFO))
     {
         return &task_info_list[task_id];
     }
@@ -414,7 +414,7 @@ VOID task_progress_information_init()
     PROGRESS_INFO *pinfo;
     INT stage;
 
-    for (stage = 0; stage < sizeof(left_progress_info_list) / sizeof(PROGRESS_INFO); stage++)
+    for (stage = 0; (uint32_t)stage < sizeof(left_progress_info_list) / sizeof(PROGRESS_INFO); stage++)
     {
         pinfo = &left_progress_info_list[stage];
 
@@ -578,14 +578,14 @@ VOID task_properties_init()
     INT index;
     PROPERTY_INFO *pinfo;
 
-    for (index = 0; index < sizeof(property_prompt_value_list) / sizeof(PROPERTY_INFO); index++)
+    for (index = 0; (uint32_t)index < sizeof(property_prompt_value_list) / sizeof(PROPERTY_INFO); index++)
     {
         pinfo = &property_prompt_value_list[index];
 
         gx_numeric_prompt_value_set((GX_NUMERIC_PROMPT *)pinfo->widget, pinfo->values[0]);
     }
 
-    for (index = 0; index < sizeof(property_radial_progress_value_list) / sizeof(PROPERTY_INFO); index++)
+    for (index = 0; (uint32_t)index < sizeof(property_radial_progress_value_list) / sizeof(PROPERTY_INFO); index++)
     {
         pinfo = &property_radial_progress_value_list[index];
 
@@ -610,7 +610,7 @@ VOID task_properties_update()
     {
         current_task_property_animation_step++;
 
-        for (index = 0; index < sizeof(property_prompt_value_list) / sizeof(PROPERTY_INFO); index++)
+        for (index = 0; (uint32_t)index < sizeof(property_prompt_value_list) / sizeof(PROPERTY_INFO); index++)
         {
             pinfo = &property_prompt_value_list[index];
 
@@ -630,7 +630,7 @@ VOID task_properties_update()
             gx_numeric_prompt_value_set((GX_NUMERIC_PROMPT*)pinfo->widget, value);
         }
 
-        for (index = 0; index < sizeof(property_radial_progress_value_list) / sizeof(PROPERTY_INFO); index++)
+        for (index = 0; (uint32_t)index < sizeof(property_radial_progress_value_list) / sizeof(PROPERTY_INFO); index++)
         {
             pinfo = &property_radial_progress_value_list[index];
 

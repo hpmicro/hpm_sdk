@@ -62,6 +62,7 @@ volatile bool rx_flag;
 int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t *olen)
 {
     hpm_stat_t stat;
+    ((void)data);
 
     stat = rng_rand_wait(HPM_RNG, output, len);
     if (stat == status_success) {
@@ -77,6 +78,7 @@ int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t 
 
 static void my_debug(void *ctx, int level, const char *file, int line, const char *str)
 {
+    ((void)ctx);
     ((void)level);
 
     PRINTF("\r\n%s, at line %d in file %s\n", str, line, file);
@@ -186,10 +188,10 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     if (rtl8201_basic_mode_init(ptr, &phy_config) == true) {
 #endif
 #endif
-        printf("Enet phy init passes !\n");
+        printf("Enet phy init passed !\n");
         return status_success;
     } else {
-        printf("Enet phy init fails !\n");
+        printf("Enet phy init failed !\n");
         return status_fail;
     }
 }

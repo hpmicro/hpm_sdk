@@ -72,7 +72,7 @@ extern  int32_t qei_clock_hz;
 #define BOARD_BLDC_ADC_CH_V                    (10U)
 #define BOARD_BLDC_ADC_CH_W                    (11U)
 #define BOARD_BLDC_ADC_IRQn                    IRQn_ADC0
-#define BOARD_BLDC_ADC_SEQ_DMA_SIZE_IN_4BYTES  (40U)
+#define BOARD_BLDC_ADC_PMT_DMA_SIZE_IN_4BYTES  (ADC_SOC_PMT_MAX_DMA_BUFF_LEN_IN_4BYTES)
 #define BOARD_BLDC_ADC_TRG                    ADC12_CONFIG_TRG2A
 #define BOARD_BLDC_ADC_PREEMPT_TRIG_LEN        (1U)
 #define BOARD_BLDC_PWM_TRIG_CMP_INDEX          (8U)

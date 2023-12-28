@@ -63,6 +63,8 @@
 /**************************************************************************/
 UINT  _hpm_usbd_frame_number_get(HPM_USBD_CONTROLLER *hpm_usbd, ULONG *frame_number)
 {
+    (void)hpm_usbd;
+    (void)frame_number;
     /* This function never fails. */
     return UX_SUCCESS;
 }

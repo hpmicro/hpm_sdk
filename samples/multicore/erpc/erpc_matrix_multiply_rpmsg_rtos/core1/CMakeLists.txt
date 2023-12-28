@@ -15,8 +15,6 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(erpc_rpmsg_rtos_core1)
 
-set(CMAKE_CXX_STANDARD 11)
-
 sdk_compile_definitions(-DHPM_FEATURE_MBX_SIDE_B)
 sdk_compile_definitions(-D__freertos_irq_stack_top=_stack)
 sdk_compile_definitions(-DCONFIG_FREERTOS=1)

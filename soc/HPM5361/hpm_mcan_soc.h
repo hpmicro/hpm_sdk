@@ -73,6 +73,7 @@ static inline void mcan_set_tsu_ext_timebase_src(MCAN_Type *ptr, uint8_t src)
  */
 static inline void mcan_set_tsu_tbsel_option(MCAN_Type *ptr, uint8_t ext_tbsel, uint8_t tbsel_option)
 {
+    (void) ptr;
     if (ext_tbsel < HPM_MCAN_EXT_TBSEL_NUM) {
         uint32_t tbsel_shift = (ext_tbsel * HPM_MCAN_TBSEL_BITWDITH) + HPM_MCAN_TBSEL0_SHIFT;
         uint32_t tbsel_mask = HPM_MCAN_TBSEL_MASK << tbsel_shift;
@@ -105,6 +106,7 @@ static inline void mcan_disable_standby_pin(MCAN_Type *ptr)
  */
 static inline uint32_t mcan_get_ram_base(MCAN_Type *ptr)
 {
+    (void) ptr;
     return MCAN_MSG_BUF_BASE;
 }
 
@@ -127,6 +129,7 @@ static inline uint32_t mcan_get_ram_offset(MCAN_Type *ptr)
  */
 static inline uint32_t mcan_get_ram_size(MCAN_Type *ptr)
 {
+    (void) ptr;
     return (MCAN_MSG_BUF_SIZE_IN_WORDS * sizeof(uint32_t));
 }
 

@@ -64,6 +64,8 @@
 /**************************************************************************/
 UINT  _hpm_usbd_state_change(HPM_USBD_CONTROLLER *hpm_controller, ULONG state)
 {
+    (void)hpm_controller;
+    (void)state;
     return(UX_SUCCESS);         
 }
 

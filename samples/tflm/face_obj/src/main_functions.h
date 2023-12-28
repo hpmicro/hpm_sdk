@@ -23,12 +23,12 @@ extern "C" {
 
 // Initializes all data needed for the example. The name is important, and needs
 // to be setup() for Arduino compatibility.
-void setup();
+void setup(void);
 
 // Runs one iteration of data gathering and inference. This should be called
 // repeatedly from the application code. The name needs to be loop() for Arduino
 // compatibility.
-void loop();
+void loop(void);
 
 void get_face_pos(unsigned char *data, unsigned char score, unsigned short *px , unsigned short *py, unsigned char *num);
 

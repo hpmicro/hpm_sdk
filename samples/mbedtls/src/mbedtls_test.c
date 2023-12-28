@@ -47,7 +47,7 @@ static void mbedtls_hmac_demo(void)
     mbedtls_md_hmac_finish(&sha_ctx, digest);
 
     mbedtls_printf("- HMAC: ");
-    for (int i = 0; i < sizeof(digest); i++)
+    for (uint32_t i = 0; i < sizeof(digest); i++)
         mbedtls_printf("%02X", digest[i]);
     mbedtls_printf("\n");
 
@@ -97,22 +97,26 @@ static void mbedtls_aes_ecb_demo(void)
 
 static void mbedtls_aes_cbc_demo(void)
 {
-    int i = 0;
+    uint32_t i = 0;
     ATTR_PLACE_AT_NONCACHEABLE_INIT static uint8_t plaintext[16] = {
         0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96, 0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a};
     ATTR_PLACE_AT_NONCACHEABLE static uint8_t encrypt[16];
     ATTR_PLACE_AT_NONCACHEABLE static uint8_t decrypt[16];
     const uint8_t def_key128[16] = {
         0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c};
-    uint8_t iv[16] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f};
+    const uint8_t iv[16] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f};
+    uint8_t iv_input[16];
+
+    memcpy(iv_input, iv, 16);
 
     mbedtls_aes_context ctx;
 
     mbedtls_aes_setkey_enc(&ctx, def_key128, 128);
-    mbedtls_aes_crypt_cbc(&ctx, MBEDTLS_AES_ENCRYPT, sizeof(plaintext), iv, plaintext, encrypt);
+    mbedtls_aes_crypt_cbc(&ctx, MBEDTLS_AES_ENCRYPT, sizeof(plaintext), iv_input, plaintext, encrypt);
 
+    memcpy(iv_input, iv, 16);
     mbedtls_aes_setkey_dec(&ctx, def_key128, 128);
-    mbedtls_aes_crypt_cbc(&ctx, MBEDTLS_AES_DECRYPT, sizeof(plaintext), iv, encrypt, decrypt);
+    mbedtls_aes_crypt_cbc(&ctx, MBEDTLS_AES_DECRYPT, sizeof(plaintext), iv_input, encrypt, decrypt);
 
     mbedtls_aes_free(&ctx);
 

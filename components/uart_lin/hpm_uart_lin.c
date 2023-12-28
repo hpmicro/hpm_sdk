@@ -229,7 +229,7 @@ uart_lin_stat_t hpm_uart_lin_master_receive_data(uart_lin_master_config_t *confi
     UART_Type *ptr = config->ptr;
     uart_lin_data_t data = config->data;
     uint8_t pid = hpm_uart_lin_calculate_protected_id(config->id);
-    uint8_t checksum;
+    uint8_t checksum = 0;
     uint8_t index = 0;
     uint8_t *buff = data.buff;
 

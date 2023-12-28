@@ -30,6 +30,9 @@ DSTATUS spi_sd_disk_initialize(BYTE pdrv)
 
 DSTATUS spi_sd_disk_deinitialize(BYTE pdrv)
 {
+    if (pdrv != DEV_SD) {
+        return STA_NOINIT;
+    }
     /* currently there is no need to operate */
     return RES_OK;
 }

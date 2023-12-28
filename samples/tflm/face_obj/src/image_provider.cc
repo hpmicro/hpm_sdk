@@ -74,7 +74,8 @@ void draw_square(uint16_t *buf, uint16_t xm, uint16_t ym,uint16_t length,
 void face_obj_display(uint16_t *buf, int image_width, int image_height)
 {
     uint16_t face_num;
-
+    (void) image_width;
+    (void) image_height;
     for (face_num = 0; face_num < pnum; face_num ++) {
         px[face_num] = 200 + 4*px[face_num];
         py[face_num] = 3*py[face_num];
@@ -87,6 +88,8 @@ TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
     int x, y;
     uint32_t i = 0;
     uint32_t data_pos;
+    (void)error_reporter;
+    (void)channels;
 
     for (y = 0; y < 480; y++) {
     for (x = 0; x < 800; x++) {

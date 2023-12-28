@@ -180,6 +180,7 @@ static inline void qeo_wave_set_phase_shift(QEO_Type *base, uint8_t index, doubl
  */
 static inline void qeo_wave_enable_vd_vq_inject(QEO_Type *base, uint8_t index, int32_t vd_val, int32_t vq_val)
 {
+    (void) vd_val;
     assert(index < 3);
     base->WAVE.MODE |= (1U << (QEO_WAVE_MODE_EN_WAVE0_VD_VQ_INJECT_MASK + index));
     base->WAVE.VD_VQ_INJECT[index] = QEO_WAVE_VD_VQ_INJECT_VQ_VAL_SET(vq_val) | QEO_WAVE_VD_VQ_INJECT_VD_VAL_SET(vq_val);

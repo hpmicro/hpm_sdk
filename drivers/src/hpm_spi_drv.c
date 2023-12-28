@@ -255,6 +255,7 @@ hpm_stat_t spi_write_read_data(SPI_Type *ptr, uint8_t data_len_in_bytes, uint8_t
 
 static hpm_stat_t spi_no_data(SPI_Type *ptr, spi_mode_selection_t mode, spi_control_config_t *config)
 {
+    (void) ptr;
     if (mode == spi_master_mode) {
         if (config->master_config.cmd_enable == false && config->master_config.addr_enable == false) {
             return status_invalid_argument;

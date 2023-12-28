@@ -40,6 +40,10 @@
 #define DMA_TRANSFER_WIDTH_WORD                 (2U)
 #define DMA_TRANSFER_WIDTH_DOUBLE_WORD          (3U)
 
+#define DMA_ALIGN_HALF_WORD(x)                  (x & ~(1u))
+#define DMA_ALIGN_WORD(x)                       (x & ~(3u))
+#define DMA_ALIGN_DOUBLE_WORD(x)                (x & ~(7u))
+
 #define DMA_STATUS_ERROR_SHIFT                  (0U)
 #define DMA_STATUS_ABORT_SHIFT                  (8U)
 #define DMA_STATUS_TC_SHIFT                     (16U)

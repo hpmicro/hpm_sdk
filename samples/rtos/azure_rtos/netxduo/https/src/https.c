@@ -423,7 +423,7 @@ INT main(VOID)
 VOID tx_application_define(VOID *first_unused_memory)
 {
     UINT status;
-
+    TX_PARAMETER_NOT_USED(first_unused_memory);
     error_counter = 0;
 
     /* Create a helper thread for the server. */
@@ -533,7 +533,7 @@ UINT server_request_callback(NX_WEB_HTTP_SERVER *server_ptr, UINT request_type, 
     CHAR response[] = "Test response from server";
 
     NX_PARAMETER_NOT_USED(resource);
-
+    NX_PARAMETER_NOT_USED(packet_ptr);
     /* Process GET request. */
     if (request_type == NX_WEB_HTTP_SERVER_GET_REQUEST) {
 

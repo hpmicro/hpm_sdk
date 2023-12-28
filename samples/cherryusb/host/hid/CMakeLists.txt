@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.13)
 
 set(CONFIG_FREERTOS 1)
 set(CONFIG_CHERRYUSB 1)
-set(CONFIG_CHERRYUSB_HOST 1)
+set(CONFIG_USB_HOST_HID 1)
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(cherryusb_hid_host)

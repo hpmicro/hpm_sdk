@@ -118,8 +118,8 @@ void text_window_draw(GX_WINDOW *window)
 
 VOID ShiftText(GX_WINDOW *window)
 {
-INT         *xshift;
-INT         *yshift;
+INT         *xshift = &xshift_1bpp;
+INT         *yshift = &xshift_1bpp;
 GX_RECTANGLE size = Text_Rotaion_Window.Text_Rotaion_Window_Text_Window.gx_widget_size;
 
     switch (window -> gx_widget_id)

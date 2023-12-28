@@ -33,6 +33,10 @@ define block stack with size = __STACKSIZE__, alignment = 8, /* fill =0xCD, */ r
 define block boot_header with fixed order                     { section .boot_header, section .fw_info_table, section .dc_info };
 define block cherryusb_usbh_class_info with alignment = 8     { section .usbh_class_info };
 define block framebuffer with alignment = 8                   { section .framebuffer };
+define block rtthread_FSymTab                                 { section FSymTab };
+define block rtthread_VSymTab                                 { section VSymTab };
+define block rtthread_rti_fn with alphabetical order          { section .rti_fn* };
+define block rtthread_RTMSymTab                               { section RTMSymTab };
 
 /* Symbols */
 define exported symbol __nor_cfg_option_load_addr__ = start of region NOR_CFG_OPTION;
@@ -52,6 +56,18 @@ define exported symbol _stack = end of block stack + 1;
 
 define exported symbol __usbh_class_info_start__  = start of block cherryusb_usbh_class_info;
 define exported symbol __usbh_class_info_end__  = end of block cherryusb_usbh_class_info + 1;
+
+define exported symbol __fsymtab_start = start of block rtthread_FSymTab;
+define exported symbol __fsymtab_end = end of block rtthread_FSymTab + 1;
+
+define exported symbol __vsymtab_start = start of block rtthread_VSymTab;
+define exported symbol __vsymtab_end = end of block rtthread_VSymTab + 1;
+
+define exported symbol __rt_init_start = start of block rtthread_rti_fn;
+define exported symbol __rt_init_end = end of block rtthread_rti_fn + 1;
+
+define exported symbol __rtmsymtab_start = start of block rtthread_RTMSymTab;
+define exported symbol __rtmsymtab_end = end of block rtthread_RTMSymTab + 1;
 
 /* Initialization */
 do not initialize                           { section .noncacheable };
@@ -80,6 +96,10 @@ place in XPI0 with minimum size order    {
                                            block ctors,                             // Constructors block
                                            block dtors,                             // Destructors block
                                            block eh_frame,                          // Exception frames placed directly into flash overriding default placement (sections writable)
+                                           block rtthread_FSymTab,
+                                           block rtthread_VSymTab,
+                                           block rtthread_rti_fn,
+                                           block rtthread_RTMSymTab,
                                            readonly,                                // Catch-all for readonly data (e.g. .rodata, .srodata)
                                            readexec                                 // Catch-all for (readonly) executable code (e.g. .text)
                                           };
@@ -117,4 +137,4 @@ place at end of DLM                       { block stack };                      
 
 /* Keep */
 keep { section .nor_cfg_option, section .boot_header, section .fw_info_table, section .dc_info };
-keep { section .usbh_class_info};
+keep { section .usbh_class_info, section FSymTab, section VSymTab, section .rti_fn*, section RTMSymTab };

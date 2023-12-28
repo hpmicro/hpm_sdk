@@ -1,0 +1,15 @@
+# Copyright 2023 hpmicro
+# SPDX-License-Identifier: BSD-3-Clause
+
+sdk_inc(.)
+sdk_src(pinmux.c)
+sdk_src(board.c)
+
+set(ENV{CONFIG_PANEL_RGB_TM070RDH13} 1)
+set(ENV{CONFIG_PANEL_LVDS_CC10128007} 0)
+set(ENV{CONFIG_PANEL_MIPI_MC10128007_31B} 0)
+set(ENV{CONFIG_PANEL_LVDS_TM103XDGP01} 0)
+
+if(APP_USE_ENET_PORT_COUNT EQUAL 1)
+    set(ENV{CONFIG_ENET_PHY_RTL8211} 1)
+endif()

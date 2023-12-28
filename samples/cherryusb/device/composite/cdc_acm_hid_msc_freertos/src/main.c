@@ -16,7 +16,6 @@
 
 #define LED_FLASH_PERIOD_IN_MS 300
 
-extern volatile uint8_t dtr_enable;
 extern void cdc_acm_hid_msc_descriptor_init(void);
 extern void hid_mouse_test(void);
 extern void cdc_acm_data_send_with_dtr_test(void);
@@ -26,6 +25,7 @@ extern void cdc_acm_data_send_with_dtr_test(void);
 
 static void task1(void *pvParameters)
 {
+    (void)pvParameters;
     printf("[cherryusb hid mouse with freertos sample]: task started.\n");
 
     while (1) {
@@ -35,6 +35,7 @@ static void task1(void *pvParameters)
 
 static void task2(void *pvParameters)
 {
+    (void)pvParameters;
     printf("[cherryusb cdc acm with freertos sample]: task started.\n");
 
     cdc_acm_data_send_with_dtr_test();

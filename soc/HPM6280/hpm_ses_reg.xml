@@ -42824,7 +42824,6 @@
       <BitField name="VBG_P50_TRIM" start="0" size="5"/>
     </Register>
     <Register name="LDO1P1" start="+0x4" size="0x4">
-      <BitField name="ENABLE" start="16" size="1"/>
       <BitField name="VOLT" start="0" size="12"/>
     </Register>
     <Register name="LDO2P5" start="+0x8" size="0x4">

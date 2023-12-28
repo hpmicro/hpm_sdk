@@ -59,6 +59,8 @@ int main(void)
 
 void dma_channel_tc_callback(DMA_Type *ptr, uint32_t channel, void *user_data)
 {
+    (void)ptr;
+    (void)channel;
     *(volatile bool *)user_data = true;
 }
 

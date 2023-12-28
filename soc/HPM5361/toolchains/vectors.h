@@ -18,7 +18,7 @@ default_irq_handler:
 
 .section .vector_table, "a"
 .global __vector_table
-.align 9
+.align 8
 
 __vector_table:
     .weak default_isr_trap

@@ -14,6 +14,9 @@
 #include "hpm_clock_drv.h"
 #include "pinmux.h"
 #include "hpm_lcdc_drv.h"
+#ifdef CONFIG_HPM_PANEL
+#include "hpm_panel.h"
+#endif
 #if !defined(CONFIG_NDEBUG_CONSOLE) || !CONFIG_NDEBUG_CONSOLE
 #include "hpm_debug_console.h"
 #endif
@@ -37,11 +40,11 @@
 #endif
 
 /* uart rx idle demo section */
-#define BOARD_UART_IDLE HPM_UART7
-#define BOARD_UART_IDLE_IRQ        IRQn_UART7
-#define BOARD_UART_IDLE_CLK_NAME   clock_uart7
-#define BOARD_UART_IDLE_TX_DMA_SRC HPM_DMA_SRC_UART7_TX
-#define BOARD_UART_IDLE_DMA_SRC HPM_DMA_SRC_UART7_RX
+#define BOARD_UART_IDLE HPM_UART13
+#define BOARD_UART_IDLE_IRQ        IRQn_UART13
+#define BOARD_UART_IDLE_CLK_NAME   clock_uart13
+#define BOARD_UART_IDLE_TX_DMA_SRC HPM_DMA_SRC_UART13_TX
+#define BOARD_UART_IDLE_DMA_SRC HPM_DMA_SRC_UART13_RX
 
 #define BOARD_UART_IDLE_TRGM HPM_TRGM2
 #define BOARD_UART_IDLE_TRGM_PIN IOC_PAD_PD19
@@ -56,22 +59,23 @@
 #define BOARD_UART_IDLE_GPTMR_CAP_CH 2
 
 /* uart microros sample section */
-#define BOARD_MICROROS_UART_BASE HPM_UART7
-#define BOARD_MICROROS_UART_IRQ IRQn_UART7
-#define BOARD_MICROROS_UART_CLK_NAME clock_uart7
+#define BOARD_MICROROS_UART_BASE HPM_UART13
+#define BOARD_MICROROS_UART_IRQ IRQn_UART13
+#define BOARD_MICROROS_UART_CLK_NAME clock_uart13
 
 /* uart lin sample section */
-#define BOARD_UART_LIN            HPM_UART7
-#define BOARD_UART_LIN_IRQ        IRQn_UART7
-#define BOARD_UART_LIN_CLK_NAME   clock_uart7
-#define BOARD_UART_LIN_TX_PORT    GPIO_DI_GPIOC
-#define BOARD_UART_LIN_TX_PIN     (3U)  /* PC03 should align with used pin in pinmux configuration */
+#define BOARD_UART_LIN            HPM_UART13
+#define BOARD_UART_LIN_IRQ        IRQn_UART13
+#define BOARD_UART_LIN_CLK_NAME   clock_uart13
+#define BOARD_UART_LIN_TX_PORT    GPIO_DI_GPIOZ
+#define BOARD_UART_LIN_TX_PIN     (9U)  /* PC03 should align with used pin in pinmux configuration */
 
 #define BOARD_APP_UART_BAUDRATE (115200UL)
 #define BOARD_APP_UART_CLK_NAME clock_uart0
 #define BOARD_APP_UART_RX_DMA_REQ HPM_DMA_SRC_UART0_RX
 #define BOARD_APP_UART_TX_DMA_REQ HPM_DMA_SRC_UART0_TX
 
+#if !defined(CONFIG_NDEBUG_CONSOLE) || !CONFIG_NDEBUG_CONSOLE
 #ifndef BOARD_CONSOLE_TYPE
 #define BOARD_CONSOLE_TYPE CONSOLE_TYPE_UART
 #endif
@@ -87,6 +91,7 @@
 #endif
 #endif
 #define BOARD_CONSOLE_BAUDRATE (115200UL)
+#endif
 #endif
 
 #define BOARD_FREEMASTER_UART_BASE HPM_UART0
@@ -232,57 +237,11 @@
 
 /* lcd section */
 
-/*
- * BOARD_PANEL_TIMING_PARA {HSPW, HBP, HFP, VSPW, VBP, VFP, HSSP, VSSP, DESP, PDSP, PCSP}
- *
- * HSPW: Horizontal Synchronization Pulse width
- * HBP: Horizontal Back Porch
- * HFP: Horizontal Front Porch
- * VSPW: Vertical Synchronization Pulse width
- * VBP: Vertical Back Porch
- * VFP: Vertical Front Porch
- * HSSP: Horizontal Synchronization Signal Polarity, 0: High Active, 1: Low Active
- * VSSP: Vertical Synchronization Signal Polarity, 0: High Active, 1: Low Active
- * DESP: Data Enable Signal Polarity, 0: High Active, 1: Low Active
- * PDSP: Pixel Data Signal Polarity, 0: High Active, 1: Low Active
- * PCSP: Pixel Clock Signal Polarity, 0: High Active, 1: Low Active
- */
-#define BOARD_PANEL_TIMEING_PARA_HSPW_INDEX 0
-#define BOARD_PANEL_TIMEING_PARA_HBP_INDEX 1
-#define BOARD_PANEL_TIMEING_PARA_HFP_INDEX 2
-#define BOARD_PANEL_TIMEING_PARA_VSPW_INDEX 3
-#define BOARD_PANEL_TIMEING_PARA_VBP_INDEX 4
-#define BOARD_PANEL_TIMEING_PARA_VFP_INDEX 5
-#define BOARD_PANEL_TIMEING_PARA_HSSP_INDEX 6
-#define BOARD_PANEL_TIMEING_PARA_VSSP_INDEX 7
-#define BOARD_PANEL_TIMEING_PARA_DESP_INDEX 8
-#define BOARD_PANEL_TIMEING_PARA_PDSP_INDEX 9
-#define BOARD_PANEL_TIMEING_PARA_PCSP_INDEX 10
-
-#if defined(PANEL_TM070RDH13)
-
 #ifndef BOARD_LCD_WIDTH
-#define BOARD_LCD_WIDTH 800
+#define BOARD_LCD_WIDTH PANEL_SIZE_WIDTH
 #endif
 #ifndef BOARD_LCD_HEIGHT
-#define BOARD_LCD_HEIGHT 480
-#endif
-#ifndef BOARD_PANEL_TIMING_PARA
-#define BOARD_PANEL_TIMING_PARA {10, 46, 50, 3, 23, 10, 0, 0, 0, 0, 0}
-#endif
-
-#else
-
-#ifndef BOARD_LCD_WIDTH
-#define BOARD_LCD_WIDTH 800
-#endif
-#ifndef BOARD_LCD_HEIGHT
-#define BOARD_LCD_HEIGHT 480
-#endif
-#ifndef BOARD_PANEL_TIMING_PARA
-#define BOARD_PANEL_TIMING_PARA {10, 46, 50, 3, 23, 10, 0, 0, 0, 0, 0}
-#endif
-
+#define BOARD_LCD_HEIGHT PANEL_SIZE_HEIGHT
 #endif
 
 /* pdma section */
@@ -292,7 +251,8 @@
 #define BOARD_APP_I2S_CLK_NAME clock_i2s1
 #define BOARD_APP_AUDIO_CLK_SRC clock_source_pll3_clk0
 #define BOARD_APP_AUDIO_CLK_SRC_NAME clk_pll3clk0
-
+#define BOARD_PDM_SINGLE_CHANNEL_MASK (1U)
+#define BOARD_PDM_DUAL_CHANNEL_MASK   (0x11U)
 
 /* enet section */
 #define BOARD_ENET_PPS                  HPM_ENET0
@@ -359,13 +319,30 @@
 
 /* SDXC section */
 #define BOARD_APP_SDCARD_SDXC_BASE                  (HPM_SDXC1)
+#define BOARD_APP_SDCARD_SUPPORT_3V3                (1)
 #define BOARD_APP_SDCARD_SUPPORT_1V8                (1)
+#define BOARD_APP_SDCARD_SUPPORT_4BIT               (1)
+#define BOARD_APP_SDCARD_SUPPORT_CARD_DETECTION     (1)
+#define BOARD_APP_SDCARD_SUPPORT_POWER_SWITCH       (0)
+#define BOARD_APP_SDCARD_SUPPORT_VOLTAGE_SWITCH     (1)
 #define BOARD_APP_SDCARD_SUPPORT_CARD_DETECTION     (1)
 #define BOARD_APP_SDCARD_CARD_DETECTION_USING_GPIO  (0)
-#if BOARD_APP_SDCARD_CARD_DETECTION_USING_GPIO
+#if defined(BOARD_APP_SDCARD_CARD_DETECTION_USING_GPIO) && (BOARD_APP_SDCARD_CARD_DETECTION_USING_GPIO == 1)
 #define BOARD_APP_SDCARD_CARD_DETECTION_GPIO        NULL
 #define BOARD_APP_SDCARD_CARD_DETECTION_GPIO_INDEX  0
 #define BOARD_APP_SDCARD_CARD_DETECTION_PIN_INDEX   0
+#endif
+
+#define BOARD_APP_EMMC_SDXC_BASE                 (HPM_SDXC1)
+#define BOARD_APP_EMMC_SUPPORT_3V3               (1)
+#define BOARD_APP_EMMC_SUPPORT_1V8               (0)
+#define BOARD_APP_EMMC_SUPPORT_4BIT              (1)
+#define BOARD_APP_EMMC_SUPPORT_8BIT              (0)
+#define BOARD_APP_EMMC_SUPPORT_VOLTAGE_SWITCH    (0)
+/* For eMMC device, it is recommended to use GPIO to switch voltage directly */
+#define BOARD_APP_EMMC_VOLTAGE_SWITCH_USING_GPIO (1)
+#if defined(BOARD_APP_EMMC_VOLTAGE_SWITCH_USING_GPIO) && (BOARD_APP_EMMC_VOLTAGE_SWITCH_USING_GPIO == 1)
+#define BOARD_APP_EMMC_VSEL_PIN                  IOC_PAD_PD29
 #endif
 
 /* USB section */
@@ -435,6 +412,8 @@
 #define BOARD_BLDCPWM_CMP_INDEX_3         (3U)
 #define BOARD_BLDCPWM_CMP_INDEX_4         (4U)
 #define BOARD_BLDCPWM_CMP_INDEX_5         (5U)
+#define BOARD_BLDCPWM_CMP_INDEX_6         (6U)
+#define BOARD_BLDCPWM_CMP_INDEX_7         (7U)
 #define BOARD_BLDCPWM_CMP_TRIG_CMP        (20U)
 
 /*HALL define*/
@@ -485,7 +464,7 @@
 #define BOARD_BLDC_ADC_CH_V                    (2U)
 #define BOARD_BLDC_ADC_CH_W                    (3U)
 #define BOARD_BLDC_ADC_IRQn                    IRQn_ADC0
-#define BOARD_BLDC_ADC_SEQ_DMA_SIZE_IN_4BYTES  (40U)
+#define BOARD_BLDC_ADC_PMT_DMA_SIZE_IN_4BYTES  (ADC_SOC_PMT_MAX_DMA_BUFF_LEN_IN_4BYTES)
 #define BOARD_BLDC_ADC_TRG                    ADC12_CONFIG_TRG1A
 #define BOARD_BLDC_ADC_PREEMPT_TRIG_LEN        (1U)
 #define BOARD_BLDC_PWM_TRIG_CMP_INDEX          (8U)
@@ -549,7 +528,6 @@ void board_led_toggle(void);
 void board_fpga_power_enable(void);
 
 void board_init_cam_pins(void);
-
 /* Initialize SoC overall clocks */
 void board_init_clock(void);
 
@@ -579,7 +557,7 @@ uint32_t board_init_pdm_clock(void);
 uint32_t board_init_dao_clock(void);
 
 void board_init_sd_pins(SDXC_Type *ptr);
-uint32_t board_sd_configure_clock(SDXC_Type *ptr, uint32_t freq);
+uint32_t board_sd_configure_clock(SDXC_Type *ptr, uint32_t freq, bool need_inverse);
 void board_sd_switch_pins_to_1v8(SDXC_Type *ptr);
 bool board_sd_detect_card(SDXC_Type *ptr);
 

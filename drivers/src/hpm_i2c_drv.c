@@ -201,6 +201,23 @@ hpm_stat_t i2c_master_address_read(I2C_Type *ptr, const uint16_t device_address,
     }
     ptr->CMD = I2C_CMD_ISSUE_DATA_TRANSMISSION;
 
+    /* Before starting to transmit data, judge addrhit to ensure that the slave address exists on the bus. */
+    retry = 0;
+    while (!(ptr->STATUS & I2C_STATUS_ADDRHIT_MASK)) {
+        if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
+            break;
+        }
+        retry++;
+    }
+    if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
+        /* the address misses, a stop needs to be added to prevent the bus from being busy. */
+        ptr->STATUS = I2C_STATUS_CMPL_MASK;
+        ptr->CTRL = I2C_CTRL_PHASE_STOP_MASK;
+        ptr->CMD = I2C_CMD_ISSUE_DATA_TRANSMISSION;
+        return status_i2c_no_addr_hit;
+    }
+    ptr->STATUS = I2C_STATUS_ADDRHIT_MASK;
+
     retry = 0;
     while (!(ptr->STATUS & I2C_STATUS_CMPL_MASK)) {
         if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
@@ -301,6 +318,19 @@ hpm_stat_t i2c_master_address_write(I2C_Type *ptr, const uint16_t device_address
     }
     ptr->CMD = I2C_CMD_ISSUE_DATA_TRANSMISSION;
 
+    /* Before starting to transmit data, judge addrhit to ensure that the slave address exists on the bus. */
+    retry = 0;
+    while (!(ptr->STATUS & I2C_STATUS_ADDRHIT_MASK)) {
+        if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
+            break;
+        }
+        retry++;
+    }
+    if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
+        return status_i2c_no_addr_hit;
+    }
+    ptr->STATUS = I2C_STATUS_ADDRHIT_MASK;
+
     retry = 0;
     left = size_in_byte;
     while (left) {
@@ -364,11 +394,30 @@ hpm_stat_t i2c_master_read(I2C_Type *ptr, const uint16_t device_address,
     ptr->CTRL = I2C_CTRL_PHASE_START_MASK
         | I2C_CTRL_PHASE_STOP_MASK
         | I2C_CTRL_PHASE_ADDR_MASK
-        | I2C_CTRL_PHASE_DATA_MASK
-        | I2C_CTRL_DIR_SET(I2C_DIR_MASTER_READ)
-        | I2C_CTRL_DATACNT_HIGH_SET(I2C_DATACNT_MAP(size) >> 8U)
-        | I2C_CTRL_DATACNT_SET(I2C_DATACNT_MAP(size));
+        | I2C_CTRL_DIR_SET(I2C_DIR_MASTER_READ);
+    if (size > 0) {
+        ptr->CTRL |= I2C_CTRL_DATACNT_HIGH_SET(I2C_DATACNT_MAP(size) >> 8U)
+                    | I2C_CTRL_PHASE_DATA_MASK
+                    | I2C_CTRL_DATACNT_SET(I2C_DATACNT_MAP(size));
+    }
     ptr->CMD = I2C_CMD_ISSUE_DATA_TRANSMISSION;
+
+    /* Before starting to transmit data, judge addrhit to ensure that the slave address exists on the bus. */
+    retry = 0;
+    while (!(ptr->STATUS & I2C_STATUS_ADDRHIT_MASK)) {
+        if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
+            break;
+        }
+        retry++;
+    }
+    if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
+        return status_i2c_no_addr_hit;
+    }
+    ptr->STATUS = I2C_STATUS_ADDRHIT_MASK;
+    /* when size is zero, it's probe slave device, so directly return success */
+    if (size == 0) {
+        return status_success;
+    }
 
     retry = 0;
     left = size;
@@ -399,12 +448,7 @@ hpm_stat_t i2c_master_read(I2C_Type *ptr, const uint16_t device_address,
         return status_timeout;
     }
 
-    if (!(ptr->STATUS & I2C_STATUS_ADDRHIT_MASK)) {
-        /* I2C slave did not receive this transaction correctly. */
-        return status_fail;
-    }
-
-    if (i2c_get_data_count(ptr)) {
+    if (i2c_get_data_count(ptr) && (size)) {
         return status_i2c_transmit_not_completed;
     }
 
@@ -441,11 +485,31 @@ hpm_stat_t i2c_master_write(I2C_Type *ptr, const uint16_t device_address,
     ptr->CTRL = I2C_CTRL_PHASE_START_MASK
         | I2C_CTRL_PHASE_STOP_MASK
         | I2C_CTRL_PHASE_ADDR_MASK
-        | I2C_CTRL_PHASE_DATA_MASK
-        | I2C_CTRL_DIR_SET(I2C_DIR_MASTER_WRITE)
-        | I2C_CTRL_DATACNT_HIGH_SET(I2C_DATACNT_MAP(size) >> 8U)
-        | I2C_CTRL_DATACNT_SET(I2C_DATACNT_MAP(size));
+        | I2C_CTRL_DIR_SET(I2C_DIR_MASTER_WRITE);
+    if (size > 0) {
+        ptr->CTRL |= I2C_CTRL_DATACNT_HIGH_SET(I2C_DATACNT_MAP(size) >> 8U)
+                    | I2C_CTRL_PHASE_DATA_MASK
+                    | I2C_CTRL_DATACNT_SET(I2C_DATACNT_MAP(size));
+    }
     ptr->CMD = I2C_CMD_ISSUE_DATA_TRANSMISSION;
+
+    /* Before starting to transmit data, judge addrhit to ensure that the slave address exists on the bus. */
+    retry = 0;
+    while (!(ptr->STATUS & I2C_STATUS_ADDRHIT_MASK)) {
+        if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
+            break;
+        }
+        retry++;
+    }
+    if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
+        return status_i2c_no_addr_hit;
+    }
+    ptr->STATUS = I2C_STATUS_ADDRHIT_MASK;
+    /* when size is zero, it's probe slave device, so directly return success */
+    if (size == 0) {
+        return status_success;
+    }
+
     retry = 0;
     left = size;
     while (left) {
@@ -475,7 +539,7 @@ hpm_stat_t i2c_master_write(I2C_Type *ptr, const uint16_t device_address,
         return status_timeout;
     }
 
-    if (i2c_get_data_count(ptr)) {
+    if (i2c_get_data_count(ptr) && (size)) {
         return status_i2c_transmit_not_completed;
     }
 

@@ -35,7 +35,6 @@ int main(void)
     hpm_stat_t stat;
     i2c_config_t config;
     uint32_t freq;
-    volatile uint32_t status;
 
     board_init();
     init_i2c_pins(TEST_I2C);

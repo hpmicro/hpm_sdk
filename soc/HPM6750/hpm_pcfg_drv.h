@@ -154,26 +154,6 @@ static inline void pcfg_bandgap_reload_trim(PCFG_Type *ptr)
 }
 
 /**
- * @brief turn off LDO 1V
- *
- * @param[in] ptr base address
- */
-static inline void pcfg_ldo1p1_turn_off(PCFG_Type *ptr)
-{
-    ptr->LDO1P1 &= ~PCFG_LDO1P1_ENABLE_MASK;
-}
-
-/**
- * @brief turn of LDO 1V
- *
- * @param[in] ptr base address
- */
-static inline void pcfg_ldo1p1_turn_on(PCFG_Type *ptr)
-{
-    ptr->LDO1P1 |= PCFG_LDO1P1_ENABLE_MASK;
-}
-
-/**
  * @brief turn off LDO2P5
  *
  * @param[in] ptr base address
@@ -233,6 +213,7 @@ static inline void pcfg_dcdc_set_mode(PCFG_Type *ptr, uint8_t mode)
  */
 static inline void pcfg_dcdc_set_lp_current_limit(PCFG_Type *ptr, pcfg_dcdc_lp_current_limit_t limit, bool over_limit)
 {
+    (void) over_limit;
     ptr->DCDC_PROT = (ptr->DCDC_PROT & ~PCFG_DCDC_PROT_ILIMIT_LP_MASK) | PCFG_DCDC_PROT_ILIMIT_LP_SET(limit);
 }
 

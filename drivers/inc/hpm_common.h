@@ -69,6 +69,9 @@
 #define HPM_DIV_ROUND_CLOSEST(x, div) (((x) + (div) / 2) / (div))
 #define HPM_DIV_ROUND_UP(x, div) (((x) + (div) - 1) / (div))
 
+#define HPM_NUM_TO_EVEN_CEILING(x) ((x + 1) & 0xFFFFFFFEUL)
+#define HPM_NUM_TO_EVEN_FLOOR(x) ((x) & 0xFFFFFFFEUL)
+
 #define HPM_CHECK_RET(x)               \
     do {                               \
         stat = (x);                    \

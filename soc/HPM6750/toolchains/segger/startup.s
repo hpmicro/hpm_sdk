@@ -200,6 +200,19 @@ START_FUNC _start
         lui     t0,     %hi(__stack_end__)
         addi    sp, t0, %lo(__stack_end__)
 
+#ifdef CONFIG_NOT_ENABLE_ICACHE
+        call    l1c_ic_disable
+#else
+        call    l1c_ic_enable
+#endif
+#ifdef CONFIG_NOT_ENABLE_DCACHE
+        call    l1c_dc_invalidate_all
+        call    l1c_dc_disable
+#else
+        call    l1c_dc_enable
+        call    l1c_dc_invalidate_all
+#endif
+
 #ifndef __NO_SYSTEM_INIT
         //
         // Call _init
@@ -244,6 +257,12 @@ MARK_FUNC __SEGGER_init_done
 #elif defined(CONFIG_THREADX) && CONFIG_THREADX
     #define HANDLER_TRAP tx_risc_v_trap_handler
     #define HANDLER_S_TRAP tx_risc_v_trap_handler
+
+    /* Use mscratch to store isr level */
+    csrw mscratch, 0
+#elif defined(CONFIG_RTTHREAD) && CONFIG_RTTHREAD
+    #define HANDLER_TRAP rtt_risc_v_trap_handler
+    #define HANDLER_S_TRAP rtt_risc_v_trap_handler
 
     /* Use mscratch to store isr level */
     csrw mscratch, 0

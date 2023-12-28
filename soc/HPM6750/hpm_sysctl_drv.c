@@ -129,6 +129,7 @@ hpm_stat_t sysctl_cpu1_set_gpr(SYSCTL_Type *ptr,
 
 void sysctl_monitor_get_default_config(SYSCTL_Type *ptr, monitor_config_t *config)
 {
+    (void) ptr;
     config->mode = monitor_work_mode_record;
     config->accuracy = monitor_accuracy_1khz;
     config->reference = monitor_reference_24mhz;
@@ -213,16 +214,26 @@ hpm_stat_t sysctl_enable_group_resource(SYSCTL_Type *ptr,
     index = (linkable_resource - sysctl_resource_linkable_start) / 32;
     offset = (linkable_resource - sysctl_resource_linkable_start) % 32;
     switch (group) {
-        case SYSCTL_RESOURCE_GROUP0:
-            ptr->GROUP0[index].VALUE = (ptr->GROUP0[index].VALUE & ~(1UL << offset))
-                | (enable ? (1UL << offset) : 0);
-            break;
-        case SYSCTL_RESOURCE_GROUP1:
-            ptr->GROUP1[index].VALUE = (ptr->GROUP1[index].VALUE & ~(1UL << offset))
-                | (enable ? (1UL << offset) : 0);
-            break;
-        default:
-            return status_invalid_argument;
+    case SYSCTL_RESOURCE_GROUP0:
+        ptr->GROUP0[index].VALUE = (ptr->GROUP0[index].VALUE & ~(1UL << offset))
+            | (enable ? (1UL << offset) : 0);
+        if (enable) {
+            while (sysctl_resource_target_is_busy(ptr, linkable_resource)) {
+                ;
+            }
+        }
+        break;
+    case SYSCTL_RESOURCE_GROUP1:
+        ptr->GROUP1[index].VALUE = (ptr->GROUP1[index].VALUE & ~(1UL << offset))
+            | (enable ? (1UL << offset) : 0);
+        if (enable) {
+            while (sysctl_resource_target_is_busy(ptr, linkable_resource)) {
+                ;
+            }
+        }
+        break;
+    default:
+        return status_invalid_argument;
     }
 
     return status_success;

@@ -5,19 +5,16 @@
  *
  */
 
-#include <stdarg.h>
 #include <stdio.h>
 #include "board.h"
 #include "hpm_clock_drv.h"
-#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#ifdef HPMSOC_HAS_HPMSDK_DMAV2
 #include "hpm_dmav2_drv.h"
 #else
 #include "hpm_dma_drv.h"
 #endif
 #include "hpm_dmamux_drv.h"
 #include "hpm_uart_drv.h"
-#include "hpm_sysctl_drv.h"
-#include "hpm_l1c_drv.h"
 
 /* Define */
 #define TEST_UART BOARD_APP_UART_BASE
@@ -29,7 +26,7 @@
 #define TEST_UART_RX_DMAMUX_CH DMA_SOC_CHN_TO_DMAMUX_CHN(TEST_UART_DMA_CONTROLLER, TEST_UART_RX_DMA_CH)
 #define TEST_UART_TX_DMAMUX_CH DMA_SOC_CHN_TO_DMAMUX_CHN(TEST_UART_DMA_CONTROLLER, TEST_UART_TX_DMA_CH)
 
-#define TEST_BUFFER_SIZE HPM_L1C_CACHELINE_SIZE
+#define TEST_BUFFER_SIZE 64
 
 /* dma buffer should be 4-byte aligned */
 ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(4) uint8_t uart_tx_buf[TEST_BUFFER_SIZE];

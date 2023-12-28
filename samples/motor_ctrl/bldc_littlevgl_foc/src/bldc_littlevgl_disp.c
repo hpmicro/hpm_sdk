@@ -104,9 +104,9 @@ static void event_handler_keyboard(lv_event_t * e)
     
 }
 /*键盘重绘*/
-static void event_handler_redraw_keyboard(lv_event_t * e)
+static void event_handler_redraw_keyboard(lv_event_t *e)
 {
-
+  (void)e;
 }
 /*速度位置切换按钮回调*/
 static void event_handler_switch_speed_pos(lv_event_t * e)
@@ -299,14 +299,15 @@ void lv_disp_current_speed(int16_t val)
     
 }
 
-/*速度表格字体重绘*/
 static void event_handler_redraw_speed_chart(lv_event_t * e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if(code == LV_EVENT_DRAW_PART_BEGIN){
-        lv_obj_draw_part_dsc_t * dsc = lv_event_get_param(e);    
-        if(dsc->part == LV_PART_TICKS ){
-            dsc->label_dsc->color = lv_color_black();
+    if (code == LV_EVENT_DRAW_PART_BEGIN) {
+        lv_obj_draw_part_dsc_t *dsc = lv_event_get_param(e);
+        if (dsc->part == LV_PART_TICKS) {
+            if (dsc->label_dsc != NULL) {
+                dsc->label_dsc->color = lv_color_black();
+            }
         }
     }
 }

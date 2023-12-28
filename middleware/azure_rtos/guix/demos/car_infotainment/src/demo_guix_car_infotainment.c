@@ -73,6 +73,7 @@ void memory_free(VOID *mem)
 /******************************************************************************************/
 VOID tx_application_define(void *first_unused_memory)
 {
+    (void)first_unused_memory;
     /* create byte pool. */
     tx_byte_pool_create(&memory_pool, "memory pool", memory_pool_buffer, MEMORY_POOL_BUFFER_SIZE);
 
@@ -181,7 +182,7 @@ static VOID speedometer_aniomation_update()
     GX_RADIAL_SLIDER_INFO *info = &main_screen.main_screen_radial_slider.gx_radial_slider_info;
     INT angle;
 
-    if (MPH_value_index + 1 < sizeof(MPH_values) / sizeof(INT))
+    if ((uint32_t)MPH_value_index + 1 < sizeof(MPH_values) / sizeof(INT))
     {
         MPH_value_index++;
     }

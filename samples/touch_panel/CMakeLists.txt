@@ -6,6 +6,7 @@ cmake_minimum_required(VERSION 3.13)
 if(NOT DEFINED CONFIG_TOUCH)
 set(CONFIG_TOUCH "gt911")
 endif()
+set(CONFIG_HPM_PANEL 1)
 set(CONFIG_HPM_TOUCH 1)
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})

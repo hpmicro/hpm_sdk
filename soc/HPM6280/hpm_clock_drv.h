@@ -51,6 +51,8 @@ enum {
 #define GET_CLK_SRC_GROUP(src) (((uint8_t)(src)>>4) & 0x0FU)
 #define GET_CLK_SRC_INDEX(src) ((uint8_t)(src) & 0x0FU)
 
+#define GET_CLOCK_SOURCE_FROM_CLK_SRC(clk_src) (clock_source_t)((uint32_t)(clk_src) & 0xFU)
+
 /**
  * @brief Clock source definitions
  */
@@ -162,6 +164,7 @@ typedef enum _clock_name {
     clock_acmp = MAKE_CLOCK_NAME(sysctl_resource_acmp, CLK_SRC_GROUP_AHB, 10),
     clock_msyn = MAKE_CLOCK_NAME(sysctl_resource_msyn, CLK_SRC_GROUP_AHB, 11),
     clock_sdm0 = MAKE_CLOCK_NAME(sysctl_resource_sdm0, CLK_SRC_GROUP_AHB, 13),
+    clock_mbx1 = MAKE_CLOCK_NAME(sysctl_resource_mbx1, CLK_SRC_GROUP_AHB, 14),
     clock_lmm0 = MAKE_CLOCK_NAME(sysctl_resource_lmm0, CLK_SRC_GROUP_CPU0, 0),
     clock_lmm1 = MAKE_CLOCK_NAME(sysctl_resource_lmm1, CLK_SRC_GROUP_CPU0, 1),
     clock_tsns = MAKE_CLOCK_NAME(sysctl_resource_tsns, CLK_SRC_GROUP_CPU0, 2),

@@ -312,6 +312,7 @@ UCHAR hid_mouse_report[] = {
 
 static UINT demo_thread_hid_callback(UX_SLAVE_CLASS_HID *hid, UX_SLAVE_CLASS_HID_EVENT *hid_event)
 {
+    (void)hid;
     printf("demo_thread_hid_callback %x %x %x \r\n",
         hid_event->ux_device_class_hid_event_buffer[0],
         hid_event->ux_device_class_hid_event_buffer[1],
@@ -321,6 +322,7 @@ static UINT demo_thread_hid_callback(UX_SLAVE_CLASS_HID *hid, UX_SLAVE_CLASS_HID
 
 static VOID demo_hid_instance_activate(VOID *hid_instance)
 {
+    (void)hid_instance;
     printf("HID device activate\r\n");
 }
 
@@ -336,7 +338,7 @@ static void demo_thread_entry(ULONG arg)
     enum { RIGHT, DOWN, LEFT, UP };
     UCHAR dir = RIGHT;
     UINT ret;
-
+    (void)arg;
     /* Get the pointer to the device.  */
     device = &_ux_system_slave->ux_system_slave_device;
 
@@ -453,7 +455,7 @@ int main(void)
 void tx_application_define(void *first_unused_memory)
 {
     UINT status;
-
+    (void)first_unused_memory;
     /* Initialize USBX Memory */
     status = ux_system_initialize((VOID *)usb_memory, USBX_MEMORY_SIZE, UX_NULL, 0);
     if (status != UX_SUCCESS)

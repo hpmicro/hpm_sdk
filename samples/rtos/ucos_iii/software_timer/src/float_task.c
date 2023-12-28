@@ -16,6 +16,7 @@ void float_task(void *p_arg)
     OS_ERR err;
     uint32_t temp = 0;
     uint8_t i = 0;
+    (void)p_arg;
     CPU_SR_ALLOC();
     static float float_num = 0.01;
     while (1) {

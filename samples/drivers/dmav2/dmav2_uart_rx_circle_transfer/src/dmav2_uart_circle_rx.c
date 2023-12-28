@@ -5,14 +5,12 @@
  *
  */
 
-#include <stdarg.h>
 #include <stdio.h>
 #include "board.h"
 #include "hpm_clock_drv.h"
 #include "hpm_dmav2_drv.h"
 #include "hpm_dmamux_drv.h"
 #include "hpm_uart_drv.h"
-#include "hpm_sysctl_drv.h"
 #include "hpm_mchtmr_drv.h"
 #include "hpm_interrupt.h"
 

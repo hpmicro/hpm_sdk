@@ -11,14 +11,14 @@
 #include "hpm_common.h"
 #include "hpm_dmamux_drv.h"
 #include "hpm_dmamux_src.h"
-#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#ifdef HPMSOC_HAS_HPMSDK_DMAV2
 #include "hpm_dmav2_drv.h"
 #else
 #include "hpm_dma_drv.h"
 #endif
 #include "hpm_soc_feature.h"
 
-#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#ifdef HPMSOC_HAS_HPMSDK_DMAV2
 #define DMA_MGR_HAS_INFINITE_LOOP (1U)
 #define DMA_MGR_HAS_HALF_TC_INT (1U)
 #define DMA_MGR_HAS_HANDSHAKE_OPT (1U)

@@ -326,7 +326,7 @@ typedef struct {
     /**< Bootloader API table: copyright string address */
     const char *copyright;
     /**< Bootloader API table: run_bootloader API */
-    const hpm_stat_t (*run_bootloader)(void *arg);
+    hpm_stat_t (*run_bootloader)(void *arg);
     /**< Bootloader API table: otp driver interface address */
     const otp_driver_interface_t *otp_driver_if;
     /**< Bootloader API table: xpi driver interface address */
@@ -382,9 +382,13 @@ static inline void rom_xpi_nor_api_setup(void)
         0x300027f3, 0xf6b36719, 0xe68100e7, 0x90738fd9, 0x80823007,
     };
     if (ROM_API_TABLE_ROOT->version == 0x56010000UL) {
-        typedef void (*api_setup_entry_t)(void);
-        api_setup_entry_t entry = (api_setup_entry_t) &s_setup_code[0];
-        entry();
+        typedef union {
+             void (*callback)(void);
+             const uint32_t *buffer;
+        } api_setup_entry_t;
+        volatile api_setup_entry_t entry;
+        entry.buffer = &s_setup_code[0];
+        entry.callback();
     }
 }
 

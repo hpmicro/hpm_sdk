@@ -1989,7 +1989,7 @@ int mbedtls_aes_crypt_cbc(mbedtls_aes_context *ctx,
 {
     static uint8_t ATTR_PLACE_AT_NONCACHEABLE local_iv[16];
     uint8_t *local_tmp = malloc(HPM_L1C_CACHELINE_SIZE + length);
-    assert(local_tmp > 0);
+    assert((uint32_t)local_tmp > 0);
     sdp_aes_ctx_t *p_sys_sdp_ctx = (sdp_aes_ctx_t *) core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t) &s_aes_ctx);
 
     AES_VALIDATE_RET( ctx != NULL );
@@ -2058,6 +2058,7 @@ int mbedtls_aes_crypt_cbc(mbedtls_aes_context *ctx,
                 l1c_dc_invalidate((uint32_t)p_sys_local, aligned_size);
             }
             memcpy(output, p_sys_local, length);
+            memcpy(iv, local_iv, 16);
         }
     }
     else
@@ -2072,6 +2073,7 @@ int mbedtls_aes_crypt_cbc(mbedtls_aes_context *ctx,
                 l1c_dc_invalidate((uint32_t)p_sys_local, aligned_size);
             }
             memcpy(output, p_sys_local, length);
+            memcpy(iv, local_iv, 16);
         }
     }
 

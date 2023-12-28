@@ -128,7 +128,7 @@ bool hpm_mcl_hfi_pole_detect(BLDC_CONTROL_FOC_PARA *foc, hpm_hfi_para_t *inject,
             if (pole->times >= 55) {
                 hpm_mcl_hfi_sin_cos(foc->electric_angle, &sin_angle, &cos_angle);
                 hpm_mcl_bldc_foc_park(inject->alpha, inject->beta, &idh, &iqh, sin_angle, cos_angle);
-                pole->theta_zero += abs(idh);
+                pole->theta_zero += fabs(idh);
                 if (pole->times >= 60) {
                     pole->currentd_force =  0;
                     pole->times = 0;
@@ -148,7 +148,7 @@ bool hpm_mcl_hfi_pole_detect(BLDC_CONTROL_FOC_PARA *foc, hpm_hfi_para_t *inject,
         if (pole->times >= 5) {
             hpm_mcl_hfi_sin_cos(foc->electric_angle, &sin_angle, &cos_angle);
             hpm_mcl_bldc_foc_park(inject->alpha, inject->beta, &idh, &iqh, sin_angle, cos_angle);
-            pole->theta_pi += abs(idh);
+            pole->theta_pi += fabs(idh);
             if (pole->times >= 10) {
                 pole->currentd_force =  0;
                 pole->times = 0;

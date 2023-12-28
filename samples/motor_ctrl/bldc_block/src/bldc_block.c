@@ -23,6 +23,7 @@
 
 /*motor_speed set*/
 #define MOTOR0_SPD                  (20.0)  /*r/s   delta:0.1r/s    -40-40r/s */
+#define SPEED_MAX                   (40)
 /*USER define*/
 #define MOTOR_PWM_DUTY_INIT_VAL     (10)  /*percentage such: 70 mean  700*/
 #define QEI_WDOG_TIMEOUT            (200000)      
@@ -399,6 +400,7 @@ int main(void)
     uint8_t motor_step;  
     uint8_t hal_stat;
     uint8_t u, v, w;
+    float speed;
 
     board_init();
     init_pwm_pins(MOTOR0_BLDCPWM);
@@ -445,7 +447,14 @@ int main(void)
             }
         }
         if (i != 0) {
-            fre_setspeed = atof(input_data);
+            speed = atof(input_data);
+            if (speed > SPEED_MAX) {
+                fre_setspeed = SPEED_MAX;
+            } else if (speed < -SPEED_MAX) {
+                fre_setspeed = -SPEED_MAX;
+            } else {
+                fre_setspeed = speed;
+            }
             printf("\r\nSpeed mode, motor run, speed is: %f.\r\nInput speed:\r\n", fre_setspeed);
         }
     }

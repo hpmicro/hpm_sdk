@@ -11,7 +11,8 @@
 #include "hpm_clock_drv.h"
 
 #define SIZE_1GB (SIZE_1MB * SIZE_1KB)
-static emmc_card_t g_emmc;
+ATTR_PLACE_AT_NONCACHEABLE_BSS sdmmc_host_t g_sdmmc_host;
+static emmc_card_t g_emmc = {.host = &g_sdmmc_host};
 
 /***********************************************************************************
  *
@@ -39,31 +40,41 @@ void test_write_read_last_1024_blocks(void);
 
 int main(void)
 {
+    hpm_stat_t status;
+
     board_init();
-    hpm_stat_t status = emmc_init(&g_emmc);
-    if (status != status_success) {
-        printf("eMMC initialization failed, error_code=%d\n", (uint32_t) status);
-        return 0;
-    }
-    show_emmc_info(&g_emmc);
 
-    show_help();
-    while (true) {
-        char opt_char = getchar();
-        putchar(opt_char);
-        putchar('\n');
-
-        switch (opt_char) {
-        default:
-            show_help();
-            break;
-        case '1':
-            test_write_read_last_block();
-            break;
-        case '2':
-            test_write_read_last_1024_blocks();
+    do {
+        status = board_init_emmc_host_params(&g_sdmmc_host, BOARD_APP_EMMC_SDXC_BASE);
+        if (status != status_success) {
             break;
         }
+        status = emmc_init(&g_emmc);
+    } while (false);
+
+    if (status == status_success) {
+        show_emmc_info(&g_emmc);
+
+        show_help();
+        while (true) {
+            char opt_char = getchar();
+            putchar(opt_char);
+            putchar('\n');
+
+            switch (opt_char) {
+            default:
+                show_help();
+                break;
+            case '1':
+                test_write_read_last_block();
+                break;
+            case '2':
+                test_write_read_last_1024_blocks();
+                break;
+            }
+        }
+    } else {
+        printf("eMMC initialization failed, status=%d\n", status);
     }
 
     return 0;
@@ -106,7 +117,7 @@ void test_write_read_last_block(void)
             break;
         }
         result = (memcmp(s_write_buf, s_read_buf, g_emmc.device_attribute.sector_size) == 0);
-        printf("SD write-read-verify block 0x%08x %s\n", sector_addr, result ? "PASSED" : "FAILED");
+        printf("eMMC write-read-verify block 0x%08x %s\n", sector_addr, result ? "PASSED" : "FAILED");
         if (!result) {
             break;
         }
@@ -125,7 +136,7 @@ void test_write_read_last_1024_blocks(void)
 
     status = emmc_erase_blocks(&g_emmc, sector_addr, 1024, emmc_erase_option_erase);
     if (status != status_success) {
-        printf("SD Card Erase operation failed, status=%d\n", status);
+        printf("eMMC Erase operation failed, status=%d\n", status);
     }
     bool result = false;
     uint32_t step = sizeof(s_write_buf) / 512;
@@ -152,9 +163,7 @@ void test_write_read_last_1024_blocks(void)
         end_ticks = mchtmr_get_count(HPM_MCHTMR);
         read_ticks += (end_ticks - start_ticks);
         result = (memcmp(s_write_buf, s_read_buf, sizeof(s_write_buf)) == 0);
-        printf("SD write-read-verify block range 0x%08x-0x%08x %s\n",
-               sector_addr + i,
-               sector_addr + i + step - 1U,
+        printf("eMMC write-read-verify block range 0x%08x-0x%08x %s\n", sector_addr + i, sector_addr + i + step - 1U,
                result ? "PASSED" : "FAILED");
         if (!result) {
             break;
@@ -179,8 +188,8 @@ void test_write_read_last_1024_blocks(void)
 void show_emmc_info(emmc_card_t *card)
 {
     printf("eMMC Info:\n--------------------------------------------------------\n");
-    printf("CID:0x%08x 0x%08x 0x%08x 0x%08x\n", card->cid.cid_words[0],
-           card->cid.cid_words[1], card->cid.cid_words[2], card->cid.cid_words[3]);
+    printf("CID:0x%08x 0x%08x 0x%08x 0x%08x\n", card->cid.cid_words[0], card->cid.cid_words[1], card->cid.cid_words[2],
+           card->cid.cid_words[3]);
     printf("MID:0x%02x\n", card->cid.mid);
     printf("Product Name: ");
     for (int32_t i = 5; i >= 0; i--) {
@@ -189,6 +198,43 @@ void show_emmc_info(emmc_card_t *card)
             printf("\n");
         }
     }
+    const char *timing_mode_str = NULL;
+    switch (card->current_hs_timing) {
+    case emmc_timing_legacy:
+        timing_mode_str = "Legacy";
+        break;
+    case emmc_timing_high_speed:
+        timing_mode_str = "High Speed";
+        break;
+    case emmc_timing_high_speed_ddr:
+        timing_mode_str = "High Speed DDR";
+        break;
+    case emmc_timing_hs200:
+        timing_mode_str = "HS200";
+        break;
+    case emmc_timing_hs400:
+        timing_mode_str = "HS400";
+        break;
+    }
+    uint32_t bus_wdith = 1;
+    switch (card->current_bus_mode) {
+    case emmc_bus_mode_x4_sdr:
+    case emmc_bus_mode_x4_ddr:
+        bus_wdith = 4;
+        break;
+    case emmc_bus_mode_x8_sdr:
+    case emmc_bus_mode_x8_ddr:
+    case emmc_bus_mode_x8_ddr_ds:
+        bus_wdith = 8;
+        break;
+    default:
+        bus_wdith = 1;
+        break;
+    }
+
+    printf("eMMC Clock: %.1fMHz\n", card->host->clock_freq * 1.0 / 1000000);
+    printf("eMMC Speed: %s\n", timing_mode_str);
+    printf("eMMC Bus Width: %d\n", bus_wdith);
     printf("eMMC size: %ldMB\n", (uint32_t) (card->device_attribute.device_size_in_bytes / SIZE_1MB));
     printf("Boot partition size: %dKB\n", card->device_attribute.boot_partition_size / SIZE_1KB);
     printf("RPMB partition size: %dKB\n", card->device_attribute.rpmb_partition_size / SIZE_1KB);

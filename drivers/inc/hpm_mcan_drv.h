@@ -93,7 +93,8 @@ enum {
  * @brief MCAN Error Event Flags
  */
 #define MCAN_EVENT_ERROR (MCAN_INT_BUS_OFF_STATUS | MCAN_INT_WARNING_STATUS \
-                        | MCAN_INT_ERROR_PASSIVE | MCAN_INT_BIT_ERROR_UNCORRECTED)
+                        | MCAN_INT_ERROR_PASSIVE | MCAN_INT_BIT_ERROR_UNCORRECTED \
+                        | MCAN_INT_PROTOCOL_ERR_IN_DATA_PHASE | MCAN_INT_PROTOCOL_ERR_IN_ARB_PHASE)
 
 /**
  * @brief Maximum Transmission Retry Count

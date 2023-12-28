@@ -48,7 +48,7 @@ extern void hid_task(void);
 
 static uint32_t blink_interval_ms = BLINK_NOT_MOUNTED;
 
-volatile static uint64_t millis_ticks = 0;
+static volatile uint64_t millis_ticks = 0;
 
 /*---------------------------------------------------------------------*
  * Board timer callback

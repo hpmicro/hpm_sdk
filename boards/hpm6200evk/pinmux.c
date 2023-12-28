@@ -112,7 +112,9 @@ void init_spi_pins_with_gpio_as_cs(SPI_Type *ptr)
 
 void init_pins(void)
 {
+#ifdef BOARD_CONSOLE_BASE
     init_uart_pins(BOARD_CONSOLE_BASE);
+#endif
 }
 
 void init_gptmr_pins(GPTMR_Type *ptr)

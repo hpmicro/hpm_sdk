@@ -311,12 +311,12 @@ clk_src_t clock_get_source(clock_name_t clock_name)
     case CLK_SRC_GROUP_WDG:
         if (node_or_instance < WDG_INSTANCE_NUM) {
             clk_src_group = CLK_SRC_GROUP_WDG;
-            clk_src_index = (WDG_CTRL_CLKSEL_GET(s_wdgs[node_or_instance]->CTRL) == 0);
+            clk_src_index = WDG_CTRL_CLKSEL_GET(s_wdgs[node_or_instance]->CTRL);
         }
         break;
     case CLK_SRC_GROUP_PWDG:
         clk_src_group = CLK_SRC_GROUP_PWDG;
-        clk_src_index = (WDG_CTRL_CLKSEL_GET(HPM_PWDG->CTRL) == 0);
+        clk_src_index = WDG_CTRL_CLKSEL_GET(HPM_PWDG->CTRL);
         break;
     case CLK_SRC_GROUP_PMIC:
         clk_src_group = CLK_SRC_GROUP_COMMON;
@@ -396,31 +396,16 @@ hpm_stat_t clock_set_source_divider(clock_name_t clock_name, clk_src_t src, uint
         if ((div < 1U) || (div > 256U)) {
             status = status_clk_div_invalid;
         } else {
-            sysctl_config_clock(HPM_SYSCTL, (clock_node_t) node_or_instance, (clock_source_t) src, div);
+            clock_source_t clk_src = GET_CLOCK_SOURCE_FROM_CLK_SRC(src);
+            sysctl_config_clock(HPM_SYSCTL, (clock_node_t) node_or_instance, clk_src, div);
         }
         break;
     case CLK_SRC_GROUP_ADC:
-        status = status_clk_operation_unsupported;
-        break;
+    case CLK_SRC_GROUP_DAC:
     case CLK_SRC_GROUP_WDG:
-        if (node_or_instance < WDG_INSTANCE_NUM) {
-            if (src == clk_wdg_src_ahb0) {
-                s_wdgs[node_or_instance]->CTRL &= ~WDG_CTRL_CLKSEL_MASK;
-            } else if (src == clk_wdg_src_osc32k) {
-                s_wdgs[node_or_instance]->CTRL |= WDG_CTRL_CLKSEL_MASK;
-            } else {
-                status = status_clk_src_invalid;
-            }
-        }
-        break;
     case CLK_SRC_GROUP_PWDG:
-        if (src == clk_pwdg_src_osc24m) {
-            HPM_PWDG->CTRL &= ~WDG_CTRL_CLKSEL_MASK;
-        } else if (src == clk_pwdg_src_osc32k) {
-            HPM_PWDG->CTRL |= WDG_CTRL_CLKSEL_MASK;
-        } else {
-            status = status_clk_src_invalid;
-        }
+    case CLK_SRC_GROUP_SRC:
+        status = status_clk_operation_unsupported;
         break;
     case CLK_SRC_GROUP_PMIC:
         status = status_clk_fixed;
@@ -445,9 +430,6 @@ hpm_stat_t clock_set_source_divider(clock_name_t clock_name, clk_src_t src, uint
             status = status_clk_shared_cpu0;
         }
         break;
-    case CLK_SRC_GROUP_SRC:
-        status = status_clk_operation_unsupported;
-        break;
     default:
         status = status_clk_src_invalid;
         break;
@@ -456,7 +438,7 @@ hpm_stat_t clock_set_source_divider(clock_name_t clock_name, clk_src_t src, uint
     return status;
 }
 
-void switch_ip_clock(clock_name_t clock_name, bool on)
+static void switch_ip_clock(clock_name_t clock_name, bool on)
 {
     uint32_t resource = GET_CLK_RESOURCE_FROM_NAME(clock_name);
 

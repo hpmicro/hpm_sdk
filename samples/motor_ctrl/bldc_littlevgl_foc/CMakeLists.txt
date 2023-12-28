@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
 cmake_minimum_required(VERSION 3.13)
 
+set(CONFIG_HPM_PANEL 1)
+
 set(CONFIG_MOTORCTRL 1)
 # set(CONFIG_HPM_MATH 1)
 set(CONFIG_LVGL 1)

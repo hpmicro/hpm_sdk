@@ -15807,169 +15807,197 @@
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_PWM0_IN1" start="+0x4" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_PWM0_IN2" start="+0x8" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_PWM0_IN3" start="+0xc" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_PWM0_IN4" start="+0x10" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_PWM0_IN5" start="+0x14" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_PWM0_IN6" start="+0x18" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_PWM0_IN7" start="+0x1c" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_PWM1_IN0" start="+0x20" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_PWM1_IN1" start="+0x24" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_PWM1_IN2" start="+0x28" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_PWM1_IN3" start="+0x2c" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_PWM1_IN4" start="+0x30" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_PWM1_IN5" start="+0x34" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_PWM1_IN6" start="+0x38" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_PWM1_IN7" start="+0x3c" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_MOTO_GPIO_IN0" start="+0x40" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_MOTO_GPIO_IN1" start="+0x44" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_MOTO_GPIO_IN2" start="+0x48" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_MOTO_GPIO_IN3" start="+0x4c" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_MOTO_GPIO_IN4" start="+0x50" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_MOTO_GPIO_IN5" start="+0x54" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_MOTO_GPIO_IN6" start="+0x58" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_MOTO_GPIO_IN7" start="+0x5c" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_PWM0_FAULT0" start="+0x60" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_PWM0_FAULT1" start="+0x64" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_PWM1_FAULT0" start="+0x68" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="FILTCFG_PWM1_FAULT1" start="+0x6c" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FILTLEN" start="0" size="12"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
     <Register name="TRGOCFG_MOT2OPAMP0_0" start="+0x100" size="0x4">
       <BitField name="OUTINV" start="11" size="1"/>
@@ -19976,12 +20004,11 @@
   <RegisterGroup start="0xf30a0000" name="OPAMP0">
     <Register name="CTRL0" start="+0x0" size="0x4">
       <BitField name="EN_LV" start="26" size="1"/>
-      <BitField name="OPAOUT_SEL" start="24" size="2"/>
-      <BitField name="VSWITCH_SEL" start="21" size="3"/>
-      <BitField name="ISEL" start="19" size="2"/>
       <BitField name="VIM_SEL" start="16" size="3"/>
-      <BitField name="GPA_SEL" start="8" size="8"/>
-      <BitField name="CSEL" start="4" size="4"/>
+      <BitField name="MODE" start="11" size="5"/>
+      <BitField name="GAIN_SEL" start="8" size="3"/>
+      <BitField name="DISABLE_PM_CAP" start="7" size="1"/>
+      <BitField name="MILLER_SEL" start="4" size="3"/>
       <BitField name="VBYPASS" start="3" size="1"/>
       <BitField name="VIP_SEL" start="0" size="3"/>
     </Register>
@@ -19995,8 +20022,8 @@
       <BitField name="SW_SEL" start="0" size="3"/>
     </Register>
     <Register name="CFG_PRESET0_CFG0" start="+0x10" size="0x4">
-      <BitField name="CSEL" start="24" size="4"/>
-      <BitField name="VSWITCH_SEL" start="16" size="3"/>
+      <BitField name="DISABLE_PM_CAP" start="27" size="1"/>
+      <BitField name="MILLER_SEL" start="24" size="3"/>
       <BitField name="VIM_SEL" start="8" size="3"/>
       <BitField name="VIP_SEL" start="0" size="3"/>
     </Register>
@@ -20004,16 +20031,15 @@
       <BitField name="HW_TRIG_EN" start="31" size="1"/>
       <BitField name="EN_LV" start="30" size="1"/>
       <BitField name="VBYPASS_LV" start="29" size="1"/>
-      <BitField name="OPAOUT_SEL" start="24" size="2"/>
-      <BitField name="ISEL" start="16" size="2"/>
-      <BitField name="PGA_SEL" start="0" size="8"/>
+      <BitField name="MODE" start="3" size="5"/>
+      <BitField name="GAIN_SEL" start="0" size="3"/>
     </Register>
     <Register name="CFG_PRESET0_CFG2" start="+0x18" size="0x4">
       <BitField name="CHANNEL" start="24" size="3"/>
     </Register>
     <Register name="CFG_PRESET1_CFG0" start="+0x20" size="0x4">
-      <BitField name="CSEL" start="24" size="4"/>
-      <BitField name="VSWITCH_SEL" start="16" size="3"/>
+      <BitField name="DISABLE_PM_CAP" start="27" size="1"/>
+      <BitField name="MILLER_SEL" start="24" size="3"/>
       <BitField name="VIM_SEL" start="8" size="3"/>
       <BitField name="VIP_SEL" start="0" size="3"/>
     </Register>
@@ -20021,16 +20047,15 @@
       <BitField name="HW_TRIG_EN" start="31" size="1"/>
       <BitField name="EN_LV" start="30" size="1"/>
       <BitField name="VBYPASS_LV" start="29" size="1"/>
-      <BitField name="OPAOUT_SEL" start="24" size="2"/>
-      <BitField name="ISEL" start="16" size="2"/>
-      <BitField name="PGA_SEL" start="0" size="8"/>
+      <BitField name="MODE" start="3" size="5"/>
+      <BitField name="GAIN_SEL" start="0" size="3"/>
     </Register>
     <Register name="CFG_PRESET1_CFG2" start="+0x28" size="0x4">
       <BitField name="CHANNEL" start="24" size="3"/>
     </Register>
     <Register name="CFG_PRESET2_CFG0" start="+0x30" size="0x4">
-      <BitField name="CSEL" start="24" size="4"/>
-      <BitField name="VSWITCH_SEL" start="16" size="3"/>
+      <BitField name="DISABLE_PM_CAP" start="27" size="1"/>
+      <BitField name="MILLER_SEL" start="24" size="3"/>
       <BitField name="VIM_SEL" start="8" size="3"/>
       <BitField name="VIP_SEL" start="0" size="3"/>
     </Register>
@@ -20038,16 +20063,15 @@
       <BitField name="HW_TRIG_EN" start="31" size="1"/>
       <BitField name="EN_LV" start="30" size="1"/>
       <BitField name="VBYPASS_LV" start="29" size="1"/>
-      <BitField name="OPAOUT_SEL" start="24" size="2"/>
-      <BitField name="ISEL" start="16" size="2"/>
-      <BitField name="PGA_SEL" start="0" size="8"/>
+      <BitField name="MODE" start="3" size="5"/>
+      <BitField name="GAIN_SEL" start="0" size="3"/>
     </Register>
     <Register name="CFG_PRESET2_CFG2" start="+0x38" size="0x4">
       <BitField name="CHANNEL" start="24" size="3"/>
     </Register>
     <Register name="CFG_PRESET3_CFG0" start="+0x40" size="0x4">
-      <BitField name="CSEL" start="24" size="4"/>
-      <BitField name="VSWITCH_SEL" start="16" size="3"/>
+      <BitField name="DISABLE_PM_CAP" start="27" size="1"/>
+      <BitField name="MILLER_SEL" start="24" size="3"/>
       <BitField name="VIM_SEL" start="8" size="3"/>
       <BitField name="VIP_SEL" start="0" size="3"/>
     </Register>
@@ -20055,16 +20079,15 @@
       <BitField name="HW_TRIG_EN" start="31" size="1"/>
       <BitField name="EN_LV" start="30" size="1"/>
       <BitField name="VBYPASS_LV" start="29" size="1"/>
-      <BitField name="OPAOUT_SEL" start="24" size="2"/>
-      <BitField name="ISEL" start="16" size="2"/>
-      <BitField name="PGA_SEL" start="0" size="8"/>
+      <BitField name="MODE" start="3" size="5"/>
+      <BitField name="GAIN_SEL" start="0" size="3"/>
     </Register>
     <Register name="CFG_PRESET3_CFG2" start="+0x48" size="0x4">
       <BitField name="CHANNEL" start="24" size="3"/>
     </Register>
     <Register name="CFG_PRESET4_CFG0" start="+0x50" size="0x4">
-      <BitField name="CSEL" start="24" size="4"/>
-      <BitField name="VSWITCH_SEL" start="16" size="3"/>
+      <BitField name="DISABLE_PM_CAP" start="27" size="1"/>
+      <BitField name="MILLER_SEL" start="24" size="3"/>
       <BitField name="VIM_SEL" start="8" size="3"/>
       <BitField name="VIP_SEL" start="0" size="3"/>
     </Register>
@@ -20072,16 +20095,15 @@
       <BitField name="HW_TRIG_EN" start="31" size="1"/>
       <BitField name="EN_LV" start="30" size="1"/>
       <BitField name="VBYPASS_LV" start="29" size="1"/>
-      <BitField name="OPAOUT_SEL" start="24" size="2"/>
-      <BitField name="ISEL" start="16" size="2"/>
-      <BitField name="PGA_SEL" start="0" size="8"/>
+      <BitField name="MODE" start="3" size="5"/>
+      <BitField name="GAIN_SEL" start="0" size="3"/>
     </Register>
     <Register name="CFG_PRESET4_CFG2" start="+0x58" size="0x4">
       <BitField name="CHANNEL" start="24" size="3"/>
     </Register>
     <Register name="CFG_PRESET5_CFG0" start="+0x60" size="0x4">
-      <BitField name="CSEL" start="24" size="4"/>
-      <BitField name="VSWITCH_SEL" start="16" size="3"/>
+      <BitField name="DISABLE_PM_CAP" start="27" size="1"/>
+      <BitField name="MILLER_SEL" start="24" size="3"/>
       <BitField name="VIM_SEL" start="8" size="3"/>
       <BitField name="VIP_SEL" start="0" size="3"/>
     </Register>
@@ -20089,16 +20111,15 @@
       <BitField name="HW_TRIG_EN" start="31" size="1"/>
       <BitField name="EN_LV" start="30" size="1"/>
       <BitField name="VBYPASS_LV" start="29" size="1"/>
-      <BitField name="OPAOUT_SEL" start="24" size="2"/>
-      <BitField name="ISEL" start="16" size="2"/>
-      <BitField name="PGA_SEL" start="0" size="8"/>
+      <BitField name="MODE" start="3" size="5"/>
+      <BitField name="GAIN_SEL" start="0" size="3"/>
     </Register>
     <Register name="CFG_PRESET5_CFG2" start="+0x68" size="0x4">
       <BitField name="CHANNEL" start="24" size="3"/>
     </Register>
     <Register name="CFG_PRESET6_CFG0" start="+0x70" size="0x4">
-      <BitField name="CSEL" start="24" size="4"/>
-      <BitField name="VSWITCH_SEL" start="16" size="3"/>
+      <BitField name="DISABLE_PM_CAP" start="27" size="1"/>
+      <BitField name="MILLER_SEL" start="24" size="3"/>
       <BitField name="VIM_SEL" start="8" size="3"/>
       <BitField name="VIP_SEL" start="0" size="3"/>
     </Register>
@@ -20106,16 +20127,15 @@
       <BitField name="HW_TRIG_EN" start="31" size="1"/>
       <BitField name="EN_LV" start="30" size="1"/>
       <BitField name="VBYPASS_LV" start="29" size="1"/>
-      <BitField name="OPAOUT_SEL" start="24" size="2"/>
-      <BitField name="ISEL" start="16" size="2"/>
-      <BitField name="PGA_SEL" start="0" size="8"/>
+      <BitField name="MODE" start="3" size="5"/>
+      <BitField name="GAIN_SEL" start="0" size="3"/>
     </Register>
     <Register name="CFG_PRESET6_CFG2" start="+0x78" size="0x4">
       <BitField name="CHANNEL" start="24" size="3"/>
     </Register>
     <Register name="CFG_PRESET7_CFG0" start="+0x80" size="0x4">
-      <BitField name="CSEL" start="24" size="4"/>
-      <BitField name="VSWITCH_SEL" start="16" size="3"/>
+      <BitField name="DISABLE_PM_CAP" start="27" size="1"/>
+      <BitField name="MILLER_SEL" start="24" size="3"/>
       <BitField name="VIM_SEL" start="8" size="3"/>
       <BitField name="VIP_SEL" start="0" size="3"/>
     </Register>
@@ -20123,9 +20143,8 @@
       <BitField name="HW_TRIG_EN" start="31" size="1"/>
       <BitField name="EN_LV" start="30" size="1"/>
       <BitField name="VBYPASS_LV" start="29" size="1"/>
-      <BitField name="OPAOUT_SEL" start="24" size="2"/>
-      <BitField name="ISEL" start="16" size="2"/>
-      <BitField name="PGA_SEL" start="0" size="8"/>
+      <BitField name="MODE" start="3" size="5"/>
+      <BitField name="GAIN_SEL" start="0" size="3"/>
     </Register>
     <Register name="CFG_PRESET7_CFG2" start="+0x88" size="0x4">
       <BitField name="CHANNEL" start="24" size="3"/>
@@ -20134,12 +20153,11 @@
   <RegisterGroup start="0xf30a4000" name="OPAMP1">
     <Register name="CTRL0" start="+0x0" size="0x4">
       <BitField name="EN_LV" start="26" size="1"/>
-      <BitField name="OPAOUT_SEL" start="24" size="2"/>
-      <BitField name="VSWITCH_SEL" start="21" size="3"/>
-      <BitField name="ISEL" start="19" size="2"/>
       <BitField name="VIM_SEL" start="16" size="3"/>
-      <BitField name="GPA_SEL" start="8" size="8"/>
-      <BitField name="CSEL" start="4" size="4"/>
+      <BitField name="MODE" start="11" size="5"/>
+      <BitField name="GAIN_SEL" start="8" size="3"/>
+      <BitField name="DISABLE_PM_CAP" start="7" size="1"/>
+      <BitField name="MILLER_SEL" start="4" size="3"/>
       <BitField name="VBYPASS" start="3" size="1"/>
       <BitField name="VIP_SEL" start="0" size="3"/>
     </Register>
@@ -20153,8 +20171,8 @@
       <BitField name="SW_SEL" start="0" size="3"/>
     </Register>
     <Register name="CFG_PRESET0_CFG0" start="+0x10" size="0x4">
-      <BitField name="CSEL" start="24" size="4"/>
-      <BitField name="VSWITCH_SEL" start="16" size="3"/>
+      <BitField name="DISABLE_PM_CAP" start="27" size="1"/>
+      <BitField name="MILLER_SEL" start="24" size="3"/>
       <BitField name="VIM_SEL" start="8" size="3"/>
       <BitField name="VIP_SEL" start="0" size="3"/>
     </Register>
@@ -20162,16 +20180,15 @@
       <BitField name="HW_TRIG_EN" start="31" size="1"/>
       <BitField name="EN_LV" start="30" size="1"/>
       <BitField name="VBYPASS_LV" start="29" size="1"/>
-      <BitField name="OPAOUT_SEL" start="24" size="2"/>
-      <BitField name="ISEL" start="16" size="2"/>
-      <BitField name="PGA_SEL" start="0" size="8"/>
+      <BitField name="MODE" start="3" size="5"/>
+      <BitField name="GAIN_SEL" start="0" size="3"/>
     </Register>
     <Register name="CFG_PRESET0_CFG2" start="+0x18" size="0x4">
       <BitField name="CHANNEL" start="24" size="3"/>
     </Register>
     <Register name="CFG_PRESET1_CFG0" start="+0x20" size="0x4">
-      <BitField name="CSEL" start="24" size="4"/>
-      <BitField name="VSWITCH_SEL" start="16" size="3"/>
+      <BitField name="DISABLE_PM_CAP" start="27" size="1"/>
+      <BitField name="MILLER_SEL" start="24" size="3"/>
       <BitField name="VIM_SEL" start="8" size="3"/>
       <BitField name="VIP_SEL" start="0" size="3"/>
     </Register>
@@ -20179,16 +20196,15 @@
       <BitField name="HW_TRIG_EN" start="31" size="1"/>
       <BitField name="EN_LV" start="30" size="1"/>
       <BitField name="VBYPASS_LV" start="29" size="1"/>
-      <BitField name="OPAOUT_SEL" start="24" size="2"/>
-      <BitField name="ISEL" start="16" size="2"/>
-      <BitField name="PGA_SEL" start="0" size="8"/>
+      <BitField name="MODE" start="3" size="5"/>
+      <BitField name="GAIN_SEL" start="0" size="3"/>
     </Register>
     <Register name="CFG_PRESET1_CFG2" start="+0x28" size="0x4">
       <BitField name="CHANNEL" start="24" size="3"/>
     </Register>
     <Register name="CFG_PRESET2_CFG0" start="+0x30" size="0x4">
-      <BitField name="CSEL" start="24" size="4"/>
-      <BitField name="VSWITCH_SEL" start="16" size="3"/>
+      <BitField name="DISABLE_PM_CAP" start="27" size="1"/>
+      <BitField name="MILLER_SEL" start="24" size="3"/>
       <BitField name="VIM_SEL" start="8" size="3"/>
       <BitField name="VIP_SEL" start="0" size="3"/>
     </Register>
@@ -20196,16 +20212,15 @@
       <BitField name="HW_TRIG_EN" start="31" size="1"/>
       <BitField name="EN_LV" start="30" size="1"/>
       <BitField name="VBYPASS_LV" start="29" size="1"/>
-      <BitField name="OPAOUT_SEL" start="24" size="2"/>
-      <BitField name="ISEL" start="16" size="2"/>
-      <BitField name="PGA_SEL" start="0" size="8"/>
+      <BitField name="MODE" start="3" size="5"/>
+      <BitField name="GAIN_SEL" start="0" size="3"/>
     </Register>
     <Register name="CFG_PRESET2_CFG2" start="+0x38" size="0x4">
       <BitField name="CHANNEL" start="24" size="3"/>
     </Register>
     <Register name="CFG_PRESET3_CFG0" start="+0x40" size="0x4">
-      <BitField name="CSEL" start="24" size="4"/>
-      <BitField name="VSWITCH_SEL" start="16" size="3"/>
+      <BitField name="DISABLE_PM_CAP" start="27" size="1"/>
+      <BitField name="MILLER_SEL" start="24" size="3"/>
       <BitField name="VIM_SEL" start="8" size="3"/>
       <BitField name="VIP_SEL" start="0" size="3"/>
     </Register>
@@ -20213,16 +20228,15 @@
       <BitField name="HW_TRIG_EN" start="31" size="1"/>
       <BitField name="EN_LV" start="30" size="1"/>
       <BitField name="VBYPASS_LV" start="29" size="1"/>
-      <BitField name="OPAOUT_SEL" start="24" size="2"/>
-      <BitField name="ISEL" start="16" size="2"/>
-      <BitField name="PGA_SEL" start="0" size="8"/>
+      <BitField name="MODE" start="3" size="5"/>
+      <BitField name="GAIN_SEL" start="0" size="3"/>
     </Register>
     <Register name="CFG_PRESET3_CFG2" start="+0x48" size="0x4">
       <BitField name="CHANNEL" start="24" size="3"/>
     </Register>
     <Register name="CFG_PRESET4_CFG0" start="+0x50" size="0x4">
-      <BitField name="CSEL" start="24" size="4"/>
-      <BitField name="VSWITCH_SEL" start="16" size="3"/>
+      <BitField name="DISABLE_PM_CAP" start="27" size="1"/>
+      <BitField name="MILLER_SEL" start="24" size="3"/>
       <BitField name="VIM_SEL" start="8" size="3"/>
       <BitField name="VIP_SEL" start="0" size="3"/>
     </Register>
@@ -20230,16 +20244,15 @@
       <BitField name="HW_TRIG_EN" start="31" size="1"/>
       <BitField name="EN_LV" start="30" size="1"/>
       <BitField name="VBYPASS_LV" start="29" size="1"/>
-      <BitField name="OPAOUT_SEL" start="24" size="2"/>
-      <BitField name="ISEL" start="16" size="2"/>
-      <BitField name="PGA_SEL" start="0" size="8"/>
+      <BitField name="MODE" start="3" size="5"/>
+      <BitField name="GAIN_SEL" start="0" size="3"/>
     </Register>
     <Register name="CFG_PRESET4_CFG2" start="+0x58" size="0x4">
       <BitField name="CHANNEL" start="24" size="3"/>
     </Register>
     <Register name="CFG_PRESET5_CFG0" start="+0x60" size="0x4">
-      <BitField name="CSEL" start="24" size="4"/>
-      <BitField name="VSWITCH_SEL" start="16" size="3"/>
+      <BitField name="DISABLE_PM_CAP" start="27" size="1"/>
+      <BitField name="MILLER_SEL" start="24" size="3"/>
       <BitField name="VIM_SEL" start="8" size="3"/>
       <BitField name="VIP_SEL" start="0" size="3"/>
     </Register>
@@ -20247,16 +20260,15 @@
       <BitField name="HW_TRIG_EN" start="31" size="1"/>
       <BitField name="EN_LV" start="30" size="1"/>
       <BitField name="VBYPASS_LV" start="29" size="1"/>
-      <BitField name="OPAOUT_SEL" start="24" size="2"/>
-      <BitField name="ISEL" start="16" size="2"/>
-      <BitField name="PGA_SEL" start="0" size="8"/>
+      <BitField name="MODE" start="3" size="5"/>
+      <BitField name="GAIN_SEL" start="0" size="3"/>
     </Register>
     <Register name="CFG_PRESET5_CFG2" start="+0x68" size="0x4">
       <BitField name="CHANNEL" start="24" size="3"/>
     </Register>
     <Register name="CFG_PRESET6_CFG0" start="+0x70" size="0x4">
-      <BitField name="CSEL" start="24" size="4"/>
-      <BitField name="VSWITCH_SEL" start="16" size="3"/>
+      <BitField name="DISABLE_PM_CAP" start="27" size="1"/>
+      <BitField name="MILLER_SEL" start="24" size="3"/>
       <BitField name="VIM_SEL" start="8" size="3"/>
       <BitField name="VIP_SEL" start="0" size="3"/>
     </Register>
@@ -20264,16 +20276,15 @@
       <BitField name="HW_TRIG_EN" start="31" size="1"/>
       <BitField name="EN_LV" start="30" size="1"/>
       <BitField name="VBYPASS_LV" start="29" size="1"/>
-      <BitField name="OPAOUT_SEL" start="24" size="2"/>
-      <BitField name="ISEL" start="16" size="2"/>
-      <BitField name="PGA_SEL" start="0" size="8"/>
+      <BitField name="MODE" start="3" size="5"/>
+      <BitField name="GAIN_SEL" start="0" size="3"/>
     </Register>
     <Register name="CFG_PRESET6_CFG2" start="+0x78" size="0x4">
       <BitField name="CHANNEL" start="24" size="3"/>
     </Register>
     <Register name="CFG_PRESET7_CFG0" start="+0x80" size="0x4">
-      <BitField name="CSEL" start="24" size="4"/>
-      <BitField name="VSWITCH_SEL" start="16" size="3"/>
+      <BitField name="DISABLE_PM_CAP" start="27" size="1"/>
+      <BitField name="MILLER_SEL" start="24" size="3"/>
       <BitField name="VIM_SEL" start="8" size="3"/>
       <BitField name="VIP_SEL" start="0" size="3"/>
     </Register>
@@ -20281,9 +20292,8 @@
       <BitField name="HW_TRIG_EN" start="31" size="1"/>
       <BitField name="EN_LV" start="30" size="1"/>
       <BitField name="VBYPASS_LV" start="29" size="1"/>
-      <BitField name="OPAOUT_SEL" start="24" size="2"/>
-      <BitField name="ISEL" start="16" size="2"/>
-      <BitField name="PGA_SEL" start="0" size="8"/>
+      <BitField name="MODE" start="3" size="5"/>
+      <BitField name="GAIN_SEL" start="0" size="3"/>
     </Register>
     <Register name="CFG_PRESET7_CFG2" start="+0x88" size="0x4">
       <BitField name="CHANNEL" start="24" size="3"/>
@@ -23764,7 +23774,6 @@
       <BitField name="VBG_P50_TRIM" start="0" size="5"/>
     </Register>
     <Register name="LDO1P1" start="+0x4" size="0x4">
-      <BitField name="ENABLE" start="16" size="1"/>
       <BitField name="VOLT" start="0" size="12"/>
     </Register>
     <Register name="LDO2P5" start="+0x8" size="0x4">

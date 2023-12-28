@@ -199,7 +199,9 @@ void init_spi_pins_with_gpio_as_cs(SPI_Type *ptr)
 
 void init_pins(void)
 {
+#ifdef BOARD_CONSOLE_BASE
     init_uart_pins(BOARD_CONSOLE_BASE);
+#endif
     init_sdram_pins();
 }
 
@@ -301,36 +303,60 @@ void init_can_pins(CAN_Type *ptr)
     }
 }
 
-void init_sdxc_pins(SDXC_Type *ptr, bool use_1v8)
+void init_sdxc_cmd_pin(SDXC_Type *ptr, bool open_drain, bool is_1v8)
 {
-    uint32_t func_ctl = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(17) | IOC_PAD_FUNC_CTL_LOOP_BACK_SET(1);
-    uint32_t clk_pad_ctl =  IOC_PAD_PAD_CTL_DS_SET(7);
-    uint32_t pad_ctl = IOC_PAD_PAD_CTL_DS_SET(7) | IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(1);
+    (void) is_1v8;
+    if (ptr == HPM_SDXC0) {
+        uint32_t cmd_func_ctl = IOC_PA10_FUNC_CTL_SDC0_CMD | IOC_PAD_FUNC_CTL_LOOP_BACK_SET(1);
+        uint32_t cmd_pad_ctl = IOC_PAD_PAD_CTL_DS_SET(7) | IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(1);
+        if (open_drain) {
+            cmd_pad_ctl |= IOC_PAD_PAD_CTL_OD_MASK;
+        }
+        /* SDXC0.CMD */
+        HPM_IOC->PAD[IOC_PAD_PA10].FUNC_CTL = cmd_func_ctl;
+        HPM_IOC->PAD[IOC_PAD_PA10].PAD_CTL = cmd_pad_ctl;
+    }
+}
 
-    /* SDXC0.CLK */
-    HPM_IOC->PAD[IOC_PAD_PA11].FUNC_CTL = func_ctl;
-    HPM_IOC->PAD[IOC_PAD_PA11].PAD_CTL = clk_pad_ctl;
+void init_sdxc_cd_pin(SDXC_Type  *ptr, bool as_gpio)
+{
+    if (ptr == HPM_SDXC0) {
+        uint32_t cd_func_alt = as_gpio ?  IOC_PA14_FUNC_CTL_GPIO_A_14 : IOC_PA14_FUNC_CTL_SDC0_CDN;
+        uint32_t cd_pad_ctl = IOC_PAD_PAD_CTL_DS_SET(7) | IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(1);
+        /* SDXC0.CD */
+        HPM_IOC->PAD[IOC_PAD_PA14].FUNC_CTL = cd_func_alt;
+        HPM_IOC->PAD[IOC_PAD_PA14].PAD_CTL = cd_pad_ctl;
+    }
+}
 
-    /* SDXC0.CMD */
-    HPM_IOC->PAD[IOC_PAD_PA10].FUNC_CTL = func_ctl;
-    HPM_IOC->PAD[IOC_PAD_PA10].PAD_CTL = pad_ctl;
+void init_sdxc_clk_data_pins(SDXC_Type *ptr, uint32_t width, bool is_1v8)
+{
+    (void) is_1v8;
+    if (ptr == HPM_SDXC0) {
+        uint32_t func_ctl = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(17) | IOC_PAD_FUNC_CTL_LOOP_BACK_SET(1);
+        uint32_t clk_pad_ctl =  IOC_PAD_PAD_CTL_DS_SET(7);
+        uint32_t pad_ctl = IOC_PAD_PAD_CTL_DS_SET(7) | IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(1);
 
-    /* SDXC0.CD */
-    HPM_IOC->PAD[IOC_PAD_PA14].FUNC_CTL = func_ctl;
-    HPM_IOC->PAD[IOC_PAD_PA14].PAD_CTL = pad_ctl;
+        /* SDXC0.CLK */
+        HPM_IOC->PAD[IOC_PAD_PA11].FUNC_CTL = func_ctl;
+        HPM_IOC->PAD[IOC_PAD_PA11].PAD_CTL = clk_pad_ctl;
 
-    /* SDXC0.DATA0 */
-    HPM_IOC->PAD[IOC_PAD_PA12].FUNC_CTL = func_ctl;
-    HPM_IOC->PAD[IOC_PAD_PA12].PAD_CTL = pad_ctl;
-    /* SDXC0.DATA1 */
-    HPM_IOC->PAD[IOC_PAD_PA13].FUNC_CTL = func_ctl;
-    HPM_IOC->PAD[IOC_PAD_PA13].PAD_CTL = pad_ctl;
-    /* SDXC0.DATA2 */
-    HPM_IOC->PAD[IOC_PAD_PA08].FUNC_CTL = func_ctl;
-    HPM_IOC->PAD[IOC_PAD_PA08].PAD_CTL = pad_ctl;
-    /* SDXC0.DATA3 */
-    HPM_IOC->PAD[IOC_PAD_PA09].FUNC_CTL = func_ctl;
-    HPM_IOC->PAD[IOC_PAD_PA09].PAD_CTL = pad_ctl;
+        /* SDXC0.DATA0 */
+        HPM_IOC->PAD[IOC_PAD_PA12].FUNC_CTL = func_ctl;
+        HPM_IOC->PAD[IOC_PAD_PA12].PAD_CTL = pad_ctl;
+
+        if (width == 4) {
+            /* SDXC0.DATA1 */
+            HPM_IOC->PAD[IOC_PAD_PA13].FUNC_CTL = func_ctl;
+            HPM_IOC->PAD[IOC_PAD_PA13].PAD_CTL = pad_ctl;
+            /* SDXC0.DATA2 */
+            HPM_IOC->PAD[IOC_PAD_PA08].FUNC_CTL = func_ctl;
+            HPM_IOC->PAD[IOC_PAD_PA08].PAD_CTL = pad_ctl;
+            /* SDXC0.DATA3 */
+            HPM_IOC->PAD[IOC_PAD_PA09].FUNC_CTL = func_ctl;
+            HPM_IOC->PAD[IOC_PAD_PA09].PAD_CTL = pad_ctl;
+        }
+    }
 }
 
 void init_clk_obs_pins(void)

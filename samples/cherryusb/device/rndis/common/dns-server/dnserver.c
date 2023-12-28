@@ -126,6 +126,7 @@ static int parse_next_query(void *data, int size, dns_query_t *query)
 
 static void udp_recv_proc(void *arg, struct udp_pcb *upcb, struct pbuf *p, const ip_addr_t *addr, u16_t port)
 {
+    (void)arg;
     int                len;
     dns_header_t      *header;
     static dns_query_t query;

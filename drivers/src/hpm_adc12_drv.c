@@ -188,7 +188,6 @@ hpm_stat_t adc12_init_channel(ADC12_Type *ptr, adc12_channel_config_t *config)
         ptr->INT_EN |= 1 << config->ch;
     }
 
-
     return status_success;
 }
 
@@ -205,7 +204,6 @@ hpm_stat_t adc12_get_channel_threshold(ADC12_Type *ptr, uint8_t ch, adc12_channe
 
     return status_success;
 }
-
 
 hpm_stat_t adc12_init_seq_dma(ADC12_Type *ptr, adc12_dma_config_t *dma_config)
 {
@@ -256,10 +254,9 @@ hpm_stat_t adc12_set_prd_config(ADC12_Type *ptr, adc12_prd_config_t *config)
     ptr->PRD_CFG[config->ch].PRD_CFG = (ptr->PRD_CFG[config->ch].PRD_CFG & ~ADC12_PRD_CFG_PRD_CFG_PRESCALE_MASK)
                                      | ADC12_PRD_CFG_PRD_CFG_PRESCALE_SET(config->prescale);
 
-
     /* Set period count */
     ptr->PRD_CFG[config->ch].PRD_CFG = (ptr->PRD_CFG[config->ch].PRD_CFG & ~ADC12_PRD_CFG_PRD_CFG_PRD_MASK)
-                                         | ADC12_PRD_CFG_PRD_CFG_PRD_SET(config->period_count);
+                                     | ADC12_PRD_CFG_PRD_CFG_PRD_SET(config->period_count);
 
     return status_success;
 }

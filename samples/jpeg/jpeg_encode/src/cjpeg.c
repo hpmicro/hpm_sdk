@@ -184,6 +184,8 @@ void init_cam(uint8_t *buffer)
     cam_config.height = IMAGE_HEIGHT;
     cam_config.hsync_active_low = true;
     cam_config.buffer1 = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)buffer);
+    cam_config.enable_buffer2 = true;
+    cam_config.buffer2 = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)buffer);
 
     if (PIXEL_FORMAT == display_pixel_format_rgb565) {
         cam_config.color_format = CAM_COLOR_FORMAT_RGB565;
@@ -528,6 +530,7 @@ uint32_t jpeg_encode(uint8_t *src_buf, uint32_t width, uint32_t height, uint8_t 
     size = jpeg_sw_encode(src_buf, width, height, PIXEL_FORMAT, file_buf, buffer_size);
     jpeg_sw_decode(file_buf, width, height, size, decoding_buffer);
 #else
+    (void)buffer_size;
     size = jpeg_hw_encode(src_buf, width, height, PIXEL_FORMAT, file_buf + sizeof(jpeg_header));
     jpeg_add_header(file_buf, width, height);
     jpeg_hw_decode(file_buf + sizeof(jpeg_header), width, height, size, PIXEL_FORMAT, decoding_buffer);
@@ -605,6 +608,7 @@ int main(void)
 {
     uint32_t i = 0, jpg_size;
     uint8_t *tmp;
+    int retry;
     uint8_t fname[FILE_NAME_MAX];
 
     uint8_t *front_buffer, *back_buffer;
@@ -612,6 +616,8 @@ int main(void)
     back_buffer = buffers[1];
 
     board_init();
+    board_init_lcd();
+    board_lcd_backlight(false);
     board_init_gpio_pins();
     init_gpio_button();
 
@@ -623,39 +629,35 @@ int main(void)
     init_cam(front_buffer);
     cam_start(TEST_CAM);
     board_delay_ms(100);
-
-    board_init_lcd();
     init_lcd((uint32_t)front_buffer);
+    board_lcd_backlight(true);
     init_disk();
 
     printf("JPEG %s mode\n", JPEG_HW_MODE ? "hardware" : "software");
     while (1) {
         wait_for_button_press();
         printf("preview is captured\n");
-        cam_stop(TEST_CAM);
+
+        cam_stop_safely(TEST_CAM);
         tmp = front_buffer;
         front_buffer = back_buffer;
         back_buffer = tmp;
         cam_update_buffer(TEST_CAM, (uint32_t)front_buffer);
 
-        /* start sensor preview */
-        cam_start(TEST_CAM);
-        update_lcd_buffer((uint32_t)front_buffer);
-
         /* encoding captured image */
         jpg_size = jpeg_encode(back_buffer, IMAGE_WIDTH, IMAGE_HEIGHT, file_buffer, sizeof(file_buffer));
 
-        /* display decoded image */
-        cam_stop(TEST_CAM);
         update_lcd_buffer((uint32_t)decoding_buffer);
 
-
         snprintf((char *)fname, sizeof(fname), "cam_%s_encode_%02d.jpg", JPEG_HW_MODE ? "hw" : "sw", i);
-        if (check_disk() && file_store(fname, file_buffer, jpg_size)) {
-            printf("captured image encoded to %s\n", fname);
-            i++;
-        } else {
-            check_disk();
+
+        retry = 3;
+        while (retry--) {
+            if (check_disk() && file_store(fname, file_buffer, jpg_size)) {
+                printf("captured image encoded to %s\n", fname);
+                i++;
+                break;
+            }
         }
 
         wait_for_button_press();
@@ -663,6 +665,6 @@ int main(void)
         /* resume sensor preview */
         cam_start(TEST_CAM);
         update_lcd_buffer((uint32_t)front_buffer);
-    };
+    }
     return 0;
 }

@@ -286,6 +286,8 @@ void hpm_mcl_bldc_foc_clarke(HPM_MOTOR_MATH_TYPE currentu, HPM_MOTOR_MATH_TYPE c
              HPM_MOTOR_MATH_TYPE *currentalpha, HPM_MOTOR_MATH_TYPE *currentbeta)
 {
     int32_t curbeta;
+
+    (void)currentw;
     *currentalpha = currentu;
     curbeta = (((int)(9370 * HPM_MOTOR_MATH_MDF_FL(currentu))) + ((int)(18918 * HPM_MOTOR_MATH_MDF_FL(currentv))))>>14;
     *currentbeta = HPM_MOTOR_MATH_FL_MDF(curbeta);

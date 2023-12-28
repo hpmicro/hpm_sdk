@@ -78,6 +78,7 @@ void memory_free(VOID *mem)
 
 VOID tx_application_define(void *first_unused_memory)
 {
+    (void)first_unused_memory;
     /* Create the main demo thread.  */
     tx_thread_create(&demo_thread, "GUIX Demo Thread", guix_entry, 
                      0,  demo_thread_stack, sizeof(demo_thread_stack), 
@@ -87,6 +88,7 @@ VOID tx_application_define(void *first_unused_memory)
 
 VOID  guix_entry(ULONG unused)
 {
+    (void)unused;
     /* create byte pool for needle rotation to use */
     tx_byte_pool_create(&memory_pool, "scratchpad", rotation_memory,
                         ROTATION_MEMORY_SIZE);

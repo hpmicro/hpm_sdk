@@ -57,6 +57,8 @@ void init_uart_pin_as_gpio(UART_Type *ptr)
 
 void init_lcd_pins(LCDC_Type *ptr)
 {
+    (void) ptr;
+
     HPM_IOC->PAD[IOC_PAD_PB03].FUNC_CTL = IOC_PB03_FUNC_CTL_DIS0_R_0;
     HPM_IOC->PAD[IOC_PAD_PB04].FUNC_CTL = IOC_PB04_FUNC_CTL_DIS0_R_1;
     HPM_IOC->PAD[IOC_PAD_PB00].FUNC_CTL = IOC_PB00_FUNC_CTL_DIS0_R_2;
@@ -297,7 +299,9 @@ void init_spi_pins_with_gpio_as_cs(SPI_Type *ptr)
 
 void init_pins(void)
 {
+#ifdef BOARD_CONSOLE_BASE
     init_uart_pins(BOARD_CONSOLE_BASE);
+#endif
     init_sdram_pins();
 }
 
@@ -525,46 +529,73 @@ void init_can_pins(CAN_Type *ptr)
     }
 }
 
-void init_sdxc_pins(SDXC_Type *ptr, bool use_1v8)
+void init_sdxc_cmd_pin(SDXC_Type *ptr, bool open_drain, bool is_1v8)
 {
     uint32_t cmd_func_ctl = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(17) | IOC_PAD_FUNC_CTL_LOOP_BACK_SET(1);
+    uint32_t cmd_pad_ctl = IOC_PAD_PAD_CTL_MS_SET(is_1v8) | IOC_PAD_PAD_CTL_DS_SET(6) | IOC_PAD_PAD_CTL_PE_SET(1) |
+                           IOC_PAD_PAD_CTL_PS_SET(1);
+    if (open_drain) {
+        cmd_pad_ctl |= IOC_PAD_PAD_CTL_OD_MASK;
+    }
+
+    if (ptr == HPM_SDXC1) {
+        /* SDXC1.CMD */
+        HPM_IOC->PAD[IOC_PAD_PD21].FUNC_CTL = cmd_func_ctl;
+        HPM_IOC->PAD[IOC_PAD_PD21].PAD_CTL = cmd_pad_ctl;
+    }
+}
+
+void init_sdxc_cd_pin(SDXC_Type  *ptr, bool as_gpio)
+{
+    uint32_t cd_pad_ctl = IOC_PAD_PAD_CTL_DS_SET(6) | IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(1);
+    if (ptr == HPM_SDXC1) {
+        if (as_gpio) {
+            /* SDXC1.CDN */
+            uint32_t cd_func_alt = IOC_PD15_FUNC_CTL_GPIO_D_15;
+            HPM_IOC->PAD[IOC_PAD_PD15].FUNC_CTL = cd_func_alt;
+            HPM_IOC->PAD[IOC_PAD_PD15].PAD_CTL = cd_pad_ctl;
+        }
+    }
+}
+
+void init_sdxc_clk_data_pins(SDXC_Type *ptr, uint32_t width, bool is_1v8)
+{
     uint32_t func_ctl = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(17);
-    uint32_t pad_ctl = IOC_PAD_PAD_CTL_MS_SET(use_1v8) | IOC_PAD_PAD_CTL_DS_SET(7) | IOC_PAD_PAD_CTL_PE_SET(1) |
+    uint32_t pad_ctl = IOC_PAD_PAD_CTL_MS_SET(is_1v8) | IOC_PAD_PAD_CTL_DS_SET(6) | IOC_PAD_PAD_CTL_PE_SET(1) |
                        IOC_PAD_PAD_CTL_PS_SET(1);
 
-    if (ptr == HPM_SDXC0) {
-    } else if (ptr == HPM_SDXC1) {
-
-        /* Power */
-        HPM_IOC->PAD[IOC_PAD_PC20].FUNC_CTL = IOC_PC20_FUNC_CTL_GPIO_C_20;
-        HPM_IOC->PAD[IOC_PAD_PC20].PAD_CTL = IOC_PAD_PAD_CTL_DS_SET(7) | IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(1);
-
-        /* CLK */
+    if (ptr == HPM_SDXC1) {
+        /* SDXC1.CLK */
         HPM_IOC->PAD[IOC_PAD_PD22].FUNC_CTL = func_ctl;
         HPM_IOC->PAD[IOC_PAD_PD22].PAD_CTL = pad_ctl;
 
-        /* CMD */
-        HPM_IOC->PAD[IOC_PAD_PD21].FUNC_CTL = cmd_func_ctl;
-        HPM_IOC->PAD[IOC_PAD_PD21].PAD_CTL = pad_ctl;
-
-        /* DATA0 */
+        /* SDXC1.DATA0 */
         HPM_IOC->PAD[IOC_PAD_PD18].FUNC_CTL = func_ctl;
         HPM_IOC->PAD[IOC_PAD_PD18].PAD_CTL = pad_ctl;
-        /* DATA1 */
-        HPM_IOC->PAD[IOC_PAD_PD17].FUNC_CTL = func_ctl;
-        HPM_IOC->PAD[IOC_PAD_PD17].PAD_CTL = pad_ctl;
-        /* DATA2 */
-        HPM_IOC->PAD[IOC_PAD_PD27].FUNC_CTL = func_ctl;
-        HPM_IOC->PAD[IOC_PAD_PD27].PAD_CTL = pad_ctl;
-        /* DATA3 */
-        HPM_IOC->PAD[IOC_PAD_PD26].FUNC_CTL = func_ctl;
-        HPM_IOC->PAD[IOC_PAD_PD26].PAD_CTL = pad_ctl;
+        if ((width == 4)) {
+            /* SDXC1.DATA1 */
+            HPM_IOC->PAD[IOC_PAD_PD17].FUNC_CTL = func_ctl;
+            HPM_IOC->PAD[IOC_PAD_PD17].PAD_CTL = pad_ctl;
+            /* SDXC1.DATA2 */
+            HPM_IOC->PAD[IOC_PAD_PD27].FUNC_CTL = func_ctl;
+            HPM_IOC->PAD[IOC_PAD_PD27].PAD_CTL = pad_ctl;
+            /* SDXC1.DATA3 */
+            HPM_IOC->PAD[IOC_PAD_PD26].FUNC_CTL = func_ctl;
+            HPM_IOC->PAD[IOC_PAD_PD26].PAD_CTL = pad_ctl;
+        }
+    }
+}
 
-        /* CDN */
-        HPM_IOC->PAD[IOC_PAD_PD15].FUNC_CTL = IOC_PD15_FUNC_CTL_GPIO_D_15;
-        HPM_IOC->PAD[IOC_PAD_PD15].PAD_CTL = pad_ctl;
-        HPM_GPIO0->OE[GPIO_OE_GPIOD].CLEAR = 1UL << BOARD_APP_SDCARD_CARD_DETECTION_PIN_INDEX;
-
+void init_sdxc_pwr_pin(SDXC_Type *ptr, bool as_gpio)
+{
+    if (ptr == HPM_SDXC1) {
+        if (as_gpio) {
+            /* SD_PWR */
+            HPM_IOC->PAD[IOC_PAD_PC20].FUNC_CTL = IOC_PC20_FUNC_CTL_GPIO_C_20;
+            HPM_IOC->PAD[IOC_PAD_PC20].PAD_CTL =
+                    IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_DS_SET(1) | IOC_PAD_PAD_CTL_PS_SET(1);
+            HPM_GPIO0->OE[GPIO_OE_GPIOC].SET = 1UL << 20;
+        }
     }
 }
 

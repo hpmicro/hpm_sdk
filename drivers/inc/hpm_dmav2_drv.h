@@ -42,6 +42,10 @@
 #define DMA_TRANSFER_WIDTH_WORD                 (2U)
 #define DMA_TRANSFER_WIDTH_DOUBLE_WORD          (3U)
 
+#define DMA_ALIGN_HALF_WORD(x)                  (x & ~(1u))
+#define DMA_ALIGN_WORD(x)                       (x & ~(3u))
+#define DMA_ALIGN_DOUBLE_WORD(x)                (x & ~(7u))
+
 #define DMA_CHANNEL_STATUS_ONGOING              (1U)
 #define DMA_CHANNEL_STATUS_ERROR                (2U)
 #define DMA_CHANNEL_STATUS_ABORT                (4U)

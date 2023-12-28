@@ -63,7 +63,7 @@ typedef struct {
     __R  uint32_t TXEFS;                       /* 0xF4: tx event fifo status */
     __RW uint32_t TXEFA;                       /* 0xF8: tx event fifo acknowledge */
     __R  uint8_t  RESERVED7[260];              /* 0xFC - 0x1FF: Reserved */
-    __R  uint32_t TS_SEL[16];                  /* 0x200 - 0x23C: timestamp 0-15 */
+    __R  uint32_t TS_SEL[16];                  /* 0x200 - 0x23C: timestamp 0 */
     __R  uint32_t CREL;                        /* 0x240: core release register */
     __RW uint32_t TSCFG;                       /* 0x244: timestamp configuration */
     __R  uint32_t TSS1;                        /* 0x248: timestamp status1 */

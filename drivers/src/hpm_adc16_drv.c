@@ -32,7 +32,7 @@ void adc16_get_channel_default_config(adc16_channel_config_t *config)
 
 static hpm_stat_t adc16_do_calibration(ADC16_Type *ptr)
 {
-    int i, j;
+    uint32_t i, j;
     uint32_t clk_div_temp;
     uint32_t adc16_params[ADC16_SOC_PARAMS_LEN];
     int32_t  param01;
@@ -60,7 +60,7 @@ static hpm_stat_t adc16_do_calibration(ADC16_Type *ptr)
     ptr->ADC16_CONFIG0 |= ADC16_ADC16_CONFIG0_REG_EN_MASK
                        |  ADC16_ADC16_CONFIG0_BANDGAP_EN_MASK;
 
-    /* Set cal_avg_cfg for 5 loops */
+    /* Set cal_avg_cfg for 32 loops */
     ptr->ADC16_CONFIG0 = (ptr->ADC16_CONFIG0 & ~ADC16_ADC16_CONFIG0_CAL_AVG_CFG_MASK)
                        | ADC16_ADC16_CONFIG0_CAL_AVG_CFG_SET(5);
 
@@ -223,7 +223,6 @@ hpm_stat_t adc16_init_channel(ADC16_Type *ptr, adc16_channel_config_t *config)
         ptr->INT_EN |= 1 << config->ch;
     }
 
-
     return status_success;
 }
 
@@ -313,10 +312,9 @@ hpm_stat_t adc16_set_prd_config(ADC16_Type *ptr, adc16_prd_config_t *config)
     ptr->PRD_CFG[config->ch].PRD_CFG = (ptr->PRD_CFG[config->ch].PRD_CFG & ~ADC16_PRD_CFG_PRD_CFG_PRESCALE_MASK)
                                      | ADC16_PRD_CFG_PRD_CFG_PRESCALE_SET(config->prescale);
 
-
     /* Set period count */
-        ptr->PRD_CFG[config->ch].PRD_CFG = (ptr->PRD_CFG[config->ch].PRD_CFG & ~ADC16_PRD_CFG_PRD_CFG_PRD_MASK)
-                                         | ADC16_PRD_CFG_PRD_CFG_PRD_SET(config->period_count);
+    ptr->PRD_CFG[config->ch].PRD_CFG = (ptr->PRD_CFG[config->ch].PRD_CFG & ~ADC16_PRD_CFG_PRD_CFG_PRD_MASK)
+                                     | ADC16_PRD_CFG_PRD_CFG_PRD_SET(config->period_count);
 
     return status_success;
 }
@@ -398,6 +396,7 @@ hpm_stat_t adc16_set_pmt_config(ADC16_Type *ptr, adc16_pmt_config_t *config)
 
 hpm_stat_t adc16_set_pmt_queue_enable(ADC16_Type *ptr, uint8_t trig_ch, bool enable)
 {
+    (void) ptr;
     /* Check the specified trigger channel */
     if (ADC16_IS_TRIG_CH_INVLAID(trig_ch)) {
         return status_invalid_argument;
@@ -408,6 +407,7 @@ hpm_stat_t adc16_set_pmt_queue_enable(ADC16_Type *ptr, uint8_t trig_ch, bool ena
     ptr->CONFIG[trig_ch] |= ADC16_CONFIG_QUEUE_EN_SET(enable);
     return status_success;
 #else
+    (void) enable;
     return status_success;
 #endif
 }

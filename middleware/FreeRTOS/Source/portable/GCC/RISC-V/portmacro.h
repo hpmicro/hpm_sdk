@@ -30,6 +30,8 @@
 #ifndef PORTMACRO_H
 #define PORTMACRO_H
 
+#include "hpm_csr_drv.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -91,7 +93,6 @@ not need to be guarded with a critical section. */
 
 
 /* Scheduler utilities. */
-extern BaseType_t TrapNestCounter;
 extern void vTaskSwitchContext( void );
 #define portYIELD() __asm volatile( "ecall" );
 #define portEND_SWITCHING_ISR( xSwitchRequired ) do { if( xSwitchRequired ) vTaskSwitchContext(); } while( 0 )
@@ -159,7 +160,7 @@ not necessary for to use this port.  They are defined so the common demo files
 
 portFORCE_INLINE static BaseType_t xPortIsInsideInterrupt( void )
 {
-    return (TrapNestCounter > 0) ? 1 : 0;
+    return (read_csr(CSR_MSCRATCH) > 0) ? 1 : 0;
 }
 
 /* configCLINT_BASE_ADDRESS is a legacy definition that was replaced by the

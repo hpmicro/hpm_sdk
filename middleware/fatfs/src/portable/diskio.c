@@ -44,6 +44,9 @@ DSTATUS disk_status(
         break;
 
     case DEV_MMC :
+#if defined(MMC_FATFS_ENABLE) && MMC_FATFS_ENABLE
+        stat = emmc_disk_status(pdrv);
+#endif
         break;
 
 #if defined(USB_FATFS_ENABLE) && USB_FATFS_ENABLE
@@ -81,6 +84,9 @@ void disk_deinitialize(
         break;
 
     case DEV_MMC :
+#if defined(MMC_FATFS_ENABLE) && MMC_FATFS_ENABLE
+        emmc_disk_deinitialize(pdrv);
+#endif
         break;
 
 #if defined(USB_FATFS_ENABLE) && USB_FATFS_ENABLE
@@ -114,6 +120,9 @@ DSTATUS disk_initialize(
         break;
 
     case DEV_MMC :
+#if defined(MMC_FATFS_ENABLE) && MMC_FATFS_ENABLE
+        stat = emmc_disk_initialize(pdrv);
+#endif
         break;
 
 #if defined(USB_FATFS_ENABLE) && USB_FATFS_ENABLE
@@ -155,6 +164,9 @@ DRESULT disk_read(
         break;
 
     case DEV_MMC :
+#if defined(MMC_FATFS_ENABLE) && MMC_FATFS_ENABLE
+        res = emmc_disk_read(pdrv, buff, sector, count);
+#endif
         break;
 
 #if defined(USB_FATFS_ENABLE) && USB_FATFS_ENABLE
@@ -200,6 +212,9 @@ DRESULT disk_write(
         break;
 
     case DEV_MMC :
+#if defined(MMC_FATFS_ENABLE) && MMC_FATFS_ENABLE
+        res = emmc_disk_write(pdrv, buff, sector, count);
+#endif
         break;
 
 #if defined(USB_FATFS_ENABLE) && USB_FATFS_ENABLE
@@ -243,6 +258,9 @@ DRESULT disk_ioctl(
         break;
 
     case DEV_MMC :
+#if defined(MMC_FATFS_ENABLE) && MMC_FATFS_ENABLE
+        res = emmc_disk_ioctl(pdrv, cmd, buff);
+#endif
         break;
 
 #if defined(USB_FATFS_ENABLE) && USB_FATFS_ENABLE

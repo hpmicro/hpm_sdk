@@ -12,7 +12,7 @@
 
 #define LED_FLASH_PERIOD_IN_MS 300
 
-extern volatile uint8_t dtr_enable;
+extern volatile bool dtr_enable;
 extern void cdc_acm_hid_msc_descriptor_init(void);
 extern void hid_mouse_test(void);
 extern void cdc_acm_data_send_with_dtr_test(void);
@@ -38,6 +38,7 @@ int main(void)
         hid_mouse_test();
         if (dtr_enable) {
             u++;
+            board_delay_ms(50);
             cdc_acm_data_send_with_dtr_test();
         }
     }

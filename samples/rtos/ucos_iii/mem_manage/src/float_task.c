@@ -14,6 +14,7 @@ CPU_STK FLOAT_TASK_STK[FLOAT_STK_SIZE];
 void float_task(void *p_arg)
 {
     OS_ERR err;
+    (void)p_arg;
     while (1) {
         printf("mem free block %d\r\n", my_mem.NbrFree);
 

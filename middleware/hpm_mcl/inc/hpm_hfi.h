@@ -42,13 +42,13 @@ typedef struct  hpm_hfi_para {
     float       alpha;
     float       beta;
     bool       period;  /**< loop tick */
-    void    (*func)();
+    void    (*func)(void *str);
 } hpm_hfi_para_t;
 
 #define BLDC_CONTROL_INJECT_PARA_DEFAULTS {\
                                             0, 0, 0,\
                                             0, 0, 0, 0, 0, 0,\
-                                         &hpm_mcl_nullcallback_func\
+                                         NULL\
 }
 
 /**
@@ -62,7 +62,8 @@ typedef struct hpm_hfi_pole_detect_para {
     uint16_t    current_d_init_val;     /**< Voltage injected during identification */
     int32_t     theta_pi;               /**< Voltage at 180 degrees */
     int32_t     theta_zero;             /**< Voltage at 0 degrees */
-    bool    (*func)();
+    bool    (*func)(void *foc, void *inject,
+        void *pll, void *pole);
 } hpm_hfi_pole_detect_para_t;
 
 #define BLDC_CONTROL_INJECT_POLE_DETECT_PARA_DEFAULTS {\
@@ -88,13 +89,13 @@ typedef struct  hpm_hfi_pll_para {
     float       mem;
     float       loop_s;
     float       err;
-    void    (*func)();
+    void    (*func)(void *str);
 } hpm_hfi_pll_para_t;
 
 #define BLDC_CONTROL_INJECT_PLL_PARA_DEFAULTS {\
                                             0, 0, 0, 0, 0,\
                                             0, 0, 0, 0, 0, 0, 0, 0,\
-                                         &hpm_mcl_nullcallback_func\
+                                         NULL\
 }
 
 /**

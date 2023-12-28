@@ -139,8 +139,20 @@ hpm_stat_t sdmmc_enable_auto_tuning(sdmmc_host_t *host)
 
     do {
         HPM_BREAK_IF((host == NULL) || (host->host_param.base == NULL));
-        sdxc_enable_auto_tuning(host->host_param.base, true);
-        status = status_success;
+
+        SDXC_Type *base = host->host_param.base;
+
+        /* Prepare the Auto tuning environment */
+        sdxc_stop_clock_during_phase_code_change(base, true);
+        sdxc_set_post_change_delay(base, 3U);
+        sdxc_select_cardclk_delay_source(base, false);
+        sdxc_enable_power(base, true);
+
+        /* Start Auto tuning */
+        uint8_t tuning_cmd = (host->dev_type == sdmmc_dev_type_sd) ? 19U : 21U;
+        status = sdxc_perform_auto_tuning(host->host_param.base, tuning_cmd);
+        HPM_BREAK_IF(status != status_success);
+
     } while (false);
 
     return status;
@@ -148,7 +160,6 @@ hpm_stat_t sdmmc_enable_auto_tuning(sdmmc_host_t *host)
 
 uint32_t extract_csd_field(const uint32_t *raw_csd, uint8_t end_offset, uint8_t start_offset)
 {
-    assert((start_offset <= end_offset) && ((end_offset - start_offset) <= 31U));
     uint32_t result = 0;
 
     uint32_t start_word_index = start_offset / 32;

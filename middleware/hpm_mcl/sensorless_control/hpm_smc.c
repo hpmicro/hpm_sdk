@@ -99,7 +99,7 @@ float hpm_mcl_smc_pll(hpm_mcl_para_t *par, hpm_smc_pll_para_t *pll)
     return pll->theta;
 }
 
-void hpm_mcl_smc_loop(BLDC_CONTROL_FOC_PARA *par, hpm_mcl_para_t *smc, hpm_smc_pll_para_t *pll, bool is_smc_enable)
+void hpm_mcl_smc_loop(BLDC_CONTROL_FOC_PARA *par, hpm_mcl_para_t *smc, hpm_smc_pll_para_t *pll, uint8_t *is_smc_enable)
 {
 
     float sin_angle = 0;
@@ -111,7 +111,7 @@ void hpm_mcl_smc_loop(BLDC_CONTROL_FOC_PARA *par, hpm_mcl_para_t *smc, hpm_smc_p
     if (par->pos_estimator_par.func != NULL) {
         par->pos_estimator_par.func(par->pos_estimator_par.par);
         hpm_mcl_smc_pll(smc, pll);
-        if (is_smc_enable) {
+        if (*is_smc_enable) {
             par->electric_angle = pll->theta;
         }
     }

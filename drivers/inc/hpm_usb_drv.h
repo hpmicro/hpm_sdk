@@ -334,6 +334,15 @@ void usb_dcd_edpt_stall(USB_Type *ptr, uint8_t ep_addr);
 void usb_dcd_edpt_clear_stall(USB_Type *ptr, uint8_t ep_addr);
 
 /**
+ * @brief Clear stall
+ *
+ * @param[in] ptr A USB peripheral base address
+ * @param[in] ep_addr An address of the specified endpoint
+ * @retval The status of endpoint stall, true is stall, false is not stall
+ */
+bool usb_dcd_edpt_check_stall(USB_Type *ptr, uint8_t ep_addr);
+
+/**
  * @brief Close a specified endpoint
  *
  * @param[in] ptr A USB peripheral base address

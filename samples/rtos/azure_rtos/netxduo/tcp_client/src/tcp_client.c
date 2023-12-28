@@ -157,7 +157,7 @@ VOID client_thread_entry(ULONG thread_input)
     UINT status;
     NX_PACKET *packet_ptr;
     NXD_ADDRESS echo_server_address;
-
+    TX_PARAMETER_NOT_USED(thread_input);
 #if defined(CONFIG_NETX_ENABLE_DHCP) && CONFIG_NETX_ENABLE_DHCP
     ULONG actual_status;
     ULONG temp;

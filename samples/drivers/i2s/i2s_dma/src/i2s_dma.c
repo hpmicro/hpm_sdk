@@ -11,7 +11,7 @@
 #include "hpm_dmamux_drv.h"
 #include "audio_data.h"
 
-#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#ifdef HPMSOC_HAS_HPMSDK_DMAV2
 #include "hpm_dmav2_drv.h"
 #else
 #include "hpm_dma_drv.h"
@@ -25,14 +25,18 @@
     #error no specified Audio Codec!!!
 #endif
 
+#ifndef BOARD_CODEC_I2C_BASE
 #define CODEC_I2C            BOARD_APP_I2C_BASE
+#else
+#define CODEC_I2C            BOARD_CODEC_I2C_BASE
+#endif
 #define CODEC_I2S            BOARD_APP_I2S_BASE
 #define CODEC_I2S_CLK_NAME   BOARD_APP_I2S_CLK_NAME
 #define CODEC_I2S_DATA_LINE  BOARD_APP_I2S_DATA_LINE
 
 #define TEST_DMA             BOARD_APP_HDMA
 #define TEST_DMA_CHANNEL     (2U)
-#define TEST_DMA_IRQ         BOARD_APP_HDMA_IRQ
+#define TEST_I2S_DMA_IRQ     BOARD_APP_HDMA_IRQ
 #define TEST_DMA_SRC_REQ     BOARD_APP_I2S_TX_DMA_REQ
 #define TEST_DMAMUX_CH       DMA_SOC_CHN_TO_DMAMUX_CHN(TEST_DMA, TEST_DMA_CHANNEL)
 
@@ -59,7 +63,7 @@ void isr_dma(void)
         dma_transfer_done = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(TEST_DMA_IRQ, isr_dma)
+SDK_DECLARE_EXT_ISR_M(TEST_I2S_DMA_IRQ, isr_dma)
 
 hpm_stat_t config_dma_transfer_i2s_data(audio_data_t *audio_data)
 {
@@ -166,7 +170,7 @@ hpm_stat_t board_i2s_init(audio_data_t *audio_data, uint32_t mclk_freq)
     transfer.audio_depth = audio_data->audio_depth;
     /* 1 chanel - channel slot mask 0x1; 2 channel - channel solt mask 0x3 */
     transfer.channel_slot_mask = (1 << audio_data->channel_num) - 1;
-    transfer.data_line = I2S_DATA_LINE_2;
+    transfer.data_line = CODEC_I2S_DATA_LINE;
     transfer.master_mode = true;
 #ifdef CONFIG_CODEC_WM8960
     transfer.protocol = I2S_PROTOCOL_I2S_PHILIPS;
@@ -181,7 +185,7 @@ hpm_stat_t board_i2s_init(audio_data_t *audio_data, uint32_t mclk_freq)
     return status_success;
 }
 
-hpm_stat_t test_i2s_dma_play(audio_data_t *audio_data, uint32_t mclk_freq)
+hpm_stat_t test_i2s_dma_play(audio_data_t *audio_data)
 {
     hpm_stat_t stat;
 
@@ -193,6 +197,9 @@ hpm_stat_t test_i2s_dma_play(audio_data_t *audio_data, uint32_t mclk_freq)
         dma_transfer_error = false;
         stat = config_dma_transfer_i2s_data(audio_data);
         i2s_reset_tx(CODEC_I2S);
+        if (i2s_fill_tx_dummy_data(CODEC_I2S, CODEC_I2S_DATA_LINE, audio_data->channel_num) != status_success) {
+            return status_fail;
+        }
         i2s_enable(CODEC_I2S);
         if (stat != status_success) {
             printf("DMA transfer config failed\n");
@@ -246,9 +253,11 @@ int main(void)
     }
 
     /* Test I2S DMA play */
-    test_i2s_dma_play(&wave_data, i2s_mclk_freq);
+    test_i2s_dma_play(&wave_data);
     if (stat == status_success) {
         printf("i2s dma play finished\n");
+    } else {
+        printf("i2s dma play failed\n");
     }
 
     return 0;

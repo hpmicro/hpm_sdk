@@ -10,6 +10,7 @@
 
 #include "hpm_sdmmc_common.h"
 #include "hpm_sdmmc_card.h"
+#include "hpm_sdmmc_port.h"
 
 typedef enum {
     sd_timing_sdr12_default = 0,
@@ -104,7 +105,7 @@ typedef struct _sdmmc_sdcard {
     uint32_t max_freq;
     uint64_t card_size_in_bytes;
 
-    sd_timing_mode_t current_timing;
+    sdmmc_speed_mode_t current_timing;
     sd_drive_strength_t drive_strength;
     sd_max_current_t max_current;
     sdmmc_operation_voltage_t operation_voltage;

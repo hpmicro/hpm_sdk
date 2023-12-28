@@ -70,6 +70,7 @@ UINT _hpm_usbd_initialize(ULONG controller_id, usb_device_handle_t **handle)
     UX_SLAVE_DCD *dcd;
     HPM_USBD_CONTROLLER *hpm_usbd;
     HPM_ENDPT_T *ed;
+    (void)controller_id;
     /* Get the pointer to the DCD.  */
     dcd = &_ux_system_slave->ux_system_slave_dcd;
 
@@ -79,16 +80,19 @@ UINT _hpm_usbd_initialize(ULONG controller_id, usb_device_handle_t **handle)
     /* Allocate memory for this HPM_DCI DCD instance.  */
     hpm_usbd = _ux_utility_memory_allocate(UX_NO_ALIGN, UX_REGULAR_MEMORY, sizeof(HPM_USBD_CONTROLLER));
     assert(hpm_usbd != NULL);
-
     for (int i = 0; i < 8; i++) {
         ed = &hpm_usbd->hpm_endpt_out[i];
         ed->endpt_index = i;
+        ed->ux_endpt = _ux_utility_memory_allocate(UX_NO_ALIGN, UX_REGULAR_MEMORY, sizeof(struct UX_SLAVE_ENDPOINT_STRUCT));
+        assert(ed->ux_endpt != NULL);
         struct UX_SLAVE_ENDPOINT_STRUCT *ux_ed = ed->ux_endpt;
         ux_ed->ux_slave_endpoint_descriptor.bEndpointAddress = i;
     }
     for (int i = 0; i < 8; i++) {
         ed = &hpm_usbd->hpm_endpt_in[i];
         ed->endpt_index = i;
+        ed->ux_endpt = _ux_utility_memory_allocate(UX_NO_ALIGN, UX_REGULAR_MEMORY, sizeof(struct UX_SLAVE_ENDPOINT_STRUCT));
+        assert(ed->ux_endpt != NULL);
         struct UX_SLAVE_ENDPOINT_STRUCT *ux_ed = ed->ux_endpt;
         ux_ed->ux_slave_endpoint_descriptor.bEndpointAddress = i | 0x80;
     }

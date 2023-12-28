@@ -5,13 +5,15 @@ board:
     name: hpm5300evk
     soc: HPM5361
     device: HPM5361xCBx
-    openocd-soc: hpm5361
+    openocd-soc: hpm5300
     openocd-probe: ft2232
     on-board-flash:
       type: qspi-nor-flash
       size: 1M
     feature:
       - sei
+      - sdp
+      - rng
       - rdc
       - qeiv2
       - linv2
@@ -40,3 +42,6 @@ board:
       - bldc_hfi
       - bldc_smc
       - opamp
+      - gpt_pin
+      - acmp
+      - ptpc

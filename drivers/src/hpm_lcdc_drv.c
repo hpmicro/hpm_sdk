@@ -50,6 +50,7 @@ static uint8_t lcdc_byteorder(display_byteorder_t byteorder)
 
 void lcdc_get_default_layer_config(LCDC_Type *ptr, lcdc_layer_config_t *layer, display_pixel_format_t pixel_format, uint8_t layer_index)
 {
+    (void) ptr;
     layer->max_bytes = lcdc_layer_max_bytes_64;
     /* different layer has different max_ot configuration */
     if (layer_index < LCDC_SOC_MAX_CSC_LAYER_COUNT) {
@@ -110,6 +111,7 @@ void lcdc_get_default_layer_config(LCDC_Type *ptr, lcdc_layer_config_t *layer, d
 
 void lcdc_get_default_config(LCDC_Type *ptr, lcdc_config_t *config)
 {
+    (void) ptr;
     config->resolution_x = 480;
     config->resolution_y = 272;
     config->hsync.front_porch_pulse = 40;

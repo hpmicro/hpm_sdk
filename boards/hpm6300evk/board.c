@@ -363,6 +363,8 @@ uint8_t board_get_usb_id_status(void)
 
 void board_usb_vbus_ctrl(uint8_t usb_index, uint8_t level)
 {
+    (void) usb_index;
+    (void) level;
 }
 
 void board_init_pmp(void)
@@ -501,6 +503,7 @@ hpm_stat_t board_set_audio_pll_clock(uint32_t freq)
 
 uint32_t board_init_i2s_clock(I2S_Type *ptr)
 {
+    (void) ptr;
     return 0;
 }
 
@@ -638,12 +641,7 @@ void _init_ext_ram(void)
 }
 #endif
 
-void board_init_sd_pins(SDXC_Type *ptr)
-{
-    init_sdxc_pins(ptr, false);
-}
-
-uint32_t board_sd_configure_clock(SDXC_Type *ptr, uint32_t freq)
+uint32_t board_sd_configure_clock(SDXC_Type *ptr, uint32_t freq, bool need_inverse)
 {
     uint32_t actual_freq = 0;
     do {
@@ -651,6 +649,7 @@ uint32_t board_sd_configure_clock(SDXC_Type *ptr, uint32_t freq)
             break;
         }
         clock_name_t sdxc_clk = clock_sdxc0;
+        sdxc_enable_inverse_clock(ptr, false);
         sdxc_enable_sd_clock(ptr, false);
         /* Configure the SDXC Frequency to 200MHz */
         clock_set_source_divider(sdxc_clk, clk_src_pll0_clk0, 2);
@@ -661,11 +660,11 @@ uint32_t board_sd_configure_clock(SDXC_Type *ptr, uint32_t freq)
             sdxc_set_clock_divider(ptr, 600);
         }
             /* configure the clock to 24MHz for the SDR12/Default speed */
-        else if (freq <= 25000000UL) {
+        else if (freq <= 26000000UL) {
             sdxc_set_clock_divider(ptr, 8);
         }
             /* Configure the clock to 50MHz for the SDR25/High speed/50MHz DDR/50MHz SDR */
-        else if (freq <= 50000000UL) {
+        else if (freq <= 52000000UL) {
             sdxc_set_clock_divider(ptr, 4);
         }
             /* Configure the clock to 100MHz for the SDR50 */
@@ -680,6 +679,9 @@ uint32_t board_sd_configure_clock(SDXC_Type *ptr, uint32_t freq)
         else {
             sdxc_set_clock_divider(ptr, 8);
         }
+        if (need_inverse) {
+            sdxc_enable_inverse_clock(ptr, true);
+        }
         sdxc_enable_sd_clock(ptr, true);
         actual_freq = clock_get_frequency(sdxc_clk) / sdxc_get_clock_divider(ptr);
     } while (false);
@@ -689,6 +691,7 @@ uint32_t board_sd_configure_clock(SDXC_Type *ptr, uint32_t freq)
 
 void board_sd_switch_pins_to_1v8(SDXC_Type *ptr)
 {
+    (void) ptr;
     /* This feature is not supported */
 }
 
@@ -748,6 +751,7 @@ hpm_stat_t board_init_enet_pins(ENET_Type *ptr)
 
 hpm_stat_t board_reset_enet_phy(ENET_Type *ptr)
 {
+    (void) ptr;
     return status_success;
 }
 
@@ -779,6 +783,7 @@ uint32_t board_init_uart_clock(UART_Type *ptr)
 
 uint8_t board_get_enet_dma_pbl(ENET_Type *ptr)
 {
+    (void) ptr;
     return enet_pbl_16;
 }
 
@@ -806,5 +811,6 @@ hpm_stat_t board_disable_enet_irq(ENET_Type *ptr)
 
 void board_init_enet_pps_pins(ENET_Type *ptr)
 {
+    (void) ptr;
     init_enet_pps_pins();
 }

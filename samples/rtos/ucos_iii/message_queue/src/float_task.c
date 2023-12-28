@@ -16,6 +16,7 @@ void float_task(void *p_arg)
     OS_ERR err;
     OS_MSG_SIZE size;
     char *p;
+    (void)p_arg;
     while (1) {
         p = OSQPend((OS_Q *)&isr_que,
             (OS_TICK)0,

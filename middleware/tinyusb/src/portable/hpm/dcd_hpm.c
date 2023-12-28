@@ -213,6 +213,8 @@ void dcd_int_handler(uint8_t rhport)
 {
     uint32_t int_status;
     uint32_t speed;
+    uint32_t transfer_len = 0;
+    uint8_t result = XFER_RESULT_SUCCESS;
     usb_device_handle_t *handle = &usb_device_handle[rhport];
 
     /* Acknowledge handled interrupt */
@@ -271,13 +273,27 @@ void dcd_int_handler(uint8_t rhport)
                 if (tu_bit_test(edpt_complete, ep_idx2bit(ep_idx))) {
                     /* Failed QTD also get ENDPTCOMPLETE set */
                     dcd_qtd_t *p_qtd = usb_device_qtd_get(&usb_device_handle[rhport], ep_idx);
+                    while (1) {
+                        if (p_qtd->halted) {
+                            result = XFER_RESULT_STALLED;
+                            break;
+                        } else if (p_qtd->xact_err || p_qtd->buffer_err) {
+                            result = XFER_RESULT_FAILED;
+                            break;
+                        }
+                        else {
+                            transfer_len += p_qtd->expected_bytes - p_qtd->total_bytes;
+                        }
 
-                    uint8_t result = p_qtd->halted ? XFER_RESULT_STALLED :
-                    (p_qtd->xact_err ||p_qtd->buffer_err) ? XFER_RESULT_FAILED : XFER_RESULT_SUCCESS;
+                        if (p_qtd->next == USB_SOC_DCD_QTD_NEXT_INVALID){
+                            break;
+                        } else {
+                            p_qtd = (dcd_qtd_t *)p_qtd->next;
+                        }
+                    }
 
                     uint8_t const ep_addr = (ep_idx/2) | ( (ep_idx & 0x01) ? TUSB_DIR_IN_MASK : 0);
-                    /* only number of bytes in the IOC qtd */
-                    dcd_event_xfer_complete(rhport, ep_addr, p_qtd->expected_bytes - p_qtd->total_bytes, result, true);
+                    dcd_event_xfer_complete(rhport, ep_addr, transfer_len, result, true);
                 }
             }
         }

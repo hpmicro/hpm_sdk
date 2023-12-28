@@ -69,7 +69,7 @@ void usb_phy_init(USB_Type *ptr)
 
     ptr->OTG_CTRL0 |= USB_OTG_CTRL0_OTG_UTMI_SUSPENDM_SW_MASK;        /* set otg_utmi_suspend_m for naneng usbphy */
 
-    for (volatile int i = 0; i < USB_PHY_INIT_DELAY_COUNT; i++) {
+    for (volatile uint32_t i = 0; i < USB_PHY_INIT_DELAY_COUNT; i++) {
         (void)ptr->PHY_CTRL1;                                         /* used for delay */
     }
 
@@ -88,6 +88,7 @@ void usb_phy_init(USB_Type *ptr)
 
 void usb_dcd_bus_reset(USB_Type *ptr, uint16_t ep0_max_packet_size)
 {
+    (void) ep0_max_packet_size;
     /* The reset value for all endpoint types is the control endpoint. If one endpoint
      * direction is enabled and the paired endpoint of opposite direction is disabled, then the
      * endpoint type of the unused direction must be changed from the control type to any other
@@ -95,7 +96,7 @@ void usb_dcd_bus_reset(USB_Type *ptr, uint16_t ep0_max_packet_size)
      * for the data PID tracking on the active endpoint.
      */
 
-    for (int i = 1; i < USB_SOC_DCD_MAX_ENDPOINT_COUNT; i++) {
+    for (uint32_t i = 1; i < USB_SOC_DCD_MAX_ENDPOINT_COUNT; i++) {
         ptr->ENDPTCTRL[i] = USB_ENDPTCTRL_TXT_SET(usb_xfer_bulk) | USB_ENDPTCTRL_RXT_SET(usb_xfer_bulk);
     }
 
@@ -252,6 +253,14 @@ void usb_dcd_edpt_clear_stall(USB_Type *ptr, uint8_t ep_addr)
     /* data toggle also need to be reset */
     ptr->ENDPTCTRL[epnum] |= ENDPTCTRL_TOGGLE_RESET << (dir ? 16 : 0);
     ptr->ENDPTCTRL[epnum] &= ~(ENDPTCTRL_STALL << (dir  ? 16 : 0));
+}
+
+bool usb_dcd_edpt_check_stall(USB_Type *ptr, uint8_t ep_addr)
+{
+    uint8_t const epnum = ep_addr & 0x0f;
+    uint8_t const dir   = (ep_addr & 0x80) >> 7;
+
+    return (ptr->ENDPTCTRL[epnum] & (ENDPTCTRL_STALL << (dir ? 16 : 0))) ? true : false;
 }
 
 void usb_dcd_edpt_close(USB_Type *ptr, uint8_t ep_addr)

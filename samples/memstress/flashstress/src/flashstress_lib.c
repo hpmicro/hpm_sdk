@@ -77,7 +77,7 @@ static struct flashstress_context *flashstress_context_alloc(void)
 static void flashstress_context_free(struct flashstress_context *ctx)
 {
     if (!ctx) {
-        return ;
+        return;
     }
 
     ctx->is_used = 0;
@@ -98,7 +98,7 @@ struct flashstress_context *flashstress_create(struct flashstress_driver *drv, c
     if (!drv->erase_chip) {
         FLASHSTRESS_LOG("[%s]: WARNNING: <erase chip> api invalid!\n", name);
     }
-    
+
     ctx = flashstress_context_alloc();
     if (!ctx) {
         FLASHSTRESS_LOG("FLASHSTRESS: ERROR: [%s] context alloc failed!!!\n", name);
@@ -240,7 +240,7 @@ int flashstress_write_read(struct flashstress_context *ctx, uint8_t verify_data)
     float read_speed;
     float write_time_s;
     float write_speed;
-    
+
     uint32_t write_len = block_size_bytes;
 
     while (1) {
@@ -358,7 +358,7 @@ int flashstress_run(struct flashstress_context *ctx)
         goto ERROR;
     }
 
-    if (flashstress_erase_all_blocks(ctx) <0) {
+    if (flashstress_erase_all_blocks(ctx) < 0) {
         goto ERROR;
     }
 

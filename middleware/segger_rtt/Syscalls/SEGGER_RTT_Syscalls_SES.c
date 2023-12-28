@@ -238,7 +238,7 @@ int __putchar(int x, int ctx) {
 *  Function description
 *    Wait for and get a character via RTT.
 */
-int __getchar() {
+int __getchar(void) {
   return SEGGER_RTT_WaitKey();
 }
 

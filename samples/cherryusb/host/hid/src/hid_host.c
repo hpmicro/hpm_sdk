@@ -15,24 +15,26 @@ static struct usbh_urb intin_urb[2];
 
 void usbh_hid_keyboard_callback(void *arg, int nbytes)
 {
+    (void)arg;
     if (nbytes >= 0) {
         for (int i = 0; i < nbytes; i++) {
             USB_LOG_RAW("0x%02x ", hid_keyboard_buffer[i]);
         }
         USB_LOG_RAW("nbytes:%d\r\n", nbytes);
+        usbh_submit_urb(&intin_urb[0]);
     }
-    usbh_submit_urb(&intin_urb[0]);
 }
 
 void usbh_hid_mouse_callback(void *arg, int nbytes)
 {
-    if (nbytes > 0) {
+    (void)arg;
+    if (nbytes >= 0) {
         for (int i = 0; i < nbytes; i++) {
             USB_LOG_RAW("0x%02x ", hid_mouse_buffer[i]);
         }
         USB_LOG_RAW("nbytes:%d\r\n", nbytes);
+        usbh_submit_urb(&intin_urb[1]);
     }
-    usbh_submit_urb(&intin_urb[1]);
 }
 
 void usbh_hid_run(struct usbh_hid *hid_class)

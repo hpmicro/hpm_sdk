@@ -69,6 +69,7 @@
 UINT _hpm_usbd_callback(void *handle, uint32_t event, void *param)
 {
     usb_device_handle_t *phandle = (usb_device_handle_t *)handle;
+    (void)param;
     if ((uint32_t)USBD_EVENT_BUS_RESET == event) {
 
         /* If the device is attached or configured, we need to disconnect it.  */

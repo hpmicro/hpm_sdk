@@ -12,7 +12,11 @@
  * Definition
  */
 #if defined(USING_CODEC) && USING_CODEC
+    #ifndef BOARD_CODEC_I2C_BASE
     #define CODEC_I2C BOARD_APP_I2C_BASE
+    #else
+    #define CODEC_I2C BOARD_CODEC_I2C_BASE
+    #endif
     #define TARGET_I2S BOARD_APP_I2S_BASE
     #define TARGET_I2S_CLK_NAME BOARD_APP_I2S_CLK_NAME
     #define TARGET_I2S_DATA_LINE BOARD_APP_I2S_DATA_LINE

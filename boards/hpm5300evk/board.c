@@ -408,6 +408,8 @@ uint32_t board_init_lin_clock(LINV2_Type *ptr)
 
 void board_usb_vbus_ctrl(uint8_t usb_index, uint8_t level)
 {
+    (void) usb_index;
+    (void) level;
 }
 
 uint32_t board_init_adc16_clock(ADC16_Type *ptr, bool clk_src_ahb)
@@ -487,22 +489,22 @@ uint32_t board_init_can_clock(MCAN_Type *ptr)
     uint32_t freq = 0;
     if (ptr == HPM_MCAN0) {
         clock_add_to_group(clock_can0, 0);
-        clock_set_source_divider(clock_can0, clock_source_pll1_clk0, 10);
+        clock_set_source_divider(clock_can0, clk_src_pll1_clk0, 10);
         freq = clock_get_frequency(clock_can0);
     }
     if (ptr == HPM_MCAN1) {
         clock_add_to_group(clock_can1, 0);
-        clock_set_source_divider(clock_can1, clock_source_pll1_clk0, 10);
+        clock_set_source_divider(clock_can1, clk_src_pll1_clk0, 10);
         freq = clock_get_frequency(clock_can1);
     }
     if (ptr == HPM_MCAN2) {
         clock_add_to_group(clock_can2, 0);
-        clock_set_source_divider(clock_can2, clock_source_pll1_clk0, 10);
+        clock_set_source_divider(clock_can2, clk_src_pll1_clk0, 10);
         freq = clock_get_frequency(clock_can2);
     }
     if (ptr == HPM_MCAN3) {
         clock_add_to_group(clock_can3, 0);
-        clock_set_source_divider(clock_can3, clock_source_pll1_clk0, 10);
+        clock_set_source_divider(clock_can3, clk_src_pll1_clk0, 10);
         freq = clock_get_frequency(clock_can3);
     }
     return freq;
@@ -515,10 +517,12 @@ void board_init_rgb_pwm_pins(void)
 
 void board_disable_output_rgb_led(uint8_t color)
 {
+    (void) color;
 }
 
 void board_enable_output_rgb_led(uint8_t color)
 {
+    (void) color;
 }
 
 void board_init_dac_pins(DAC_Type *ptr)
@@ -613,3 +617,7 @@ void board_init_i2c(I2C_Type *ptr)
 
 }
 
+void board_init_adc_qeiv2_pins(void)
+{
+    init_adc_qeiv2_pins();
+}

@@ -127,7 +127,7 @@ INT main(VOID)
 VOID tx_application_define(VOID *first_unused_memory)
 {
     UINT status;
-
+    TX_PARAMETER_NOT_USED(first_unused_memory);
     /* Create a helper thread for the server. */
     tx_thread_create(&server_thread, "HTTP Server thread", thread_server_entry, 0, server_thread_stack, DEMO_STACK_SIZE, 4, 4, TX_NO_TIME_SLICE, TX_AUTO_START);
 

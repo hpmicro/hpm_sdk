@@ -129,7 +129,7 @@ VOID tx_application_define(VOID *first_unused_memory)
 {
 
     UINT status;
-
+    TX_PARAMETER_NOT_USED(first_unused_memory);
     /* Initialize the NetX system. */
     nx_system_initialize();
 
@@ -233,7 +233,8 @@ VOID demo_client_thread_entry(ULONG info)
     UINT server_status;
     ULONG base_seconds;
     ULONG base_fraction;
-    ULONG seconds, milliseconds, microseconds, fraction;
+    ULONG seconds, microseconds, fraction;
+    ULONG milliseconds = 0;
     UINT wait = 0;
     UINT error_counter = 0;
     ULONG events = 0;
@@ -561,7 +562,7 @@ UINT kiss_of_death_handler(NX_SNTP_CLIENT *client_ptr, UINT KOD_code)
 
 static VOID print_beijing_time(ULONG seconds_1900)
 {
-    const int days[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    const UINT days[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
     ULONG seconds_1970 = 0;
     ULONG year = 1970;
     ULONG month = 1;
@@ -571,10 +572,8 @@ static VOID print_beijing_time(ULONG seconds_1900)
     ULONG second = 0;
 
     UINT Pass4year;
-    INT hours_per_year;
-    if (seconds_1900 < 0) {
-        seconds_1900 = 0;
-    }
+    UINT hours_per_year;
+
     seconds_1970 = seconds_1900 + 8 * 60 * 60 - 2208988800;
     second = seconds_1970 % 60;
     seconds_1970 /= 60;

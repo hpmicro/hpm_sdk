@@ -700,6 +700,7 @@ hpm_stat_t dma_mgr_set_chn_infinite_loop_mode(const dma_resource_t *resource, bo
         dma_set_infinite_loop_mode(resource->base, resource->channel, infinite_loop);
         status = status_success;
 #else
+        (void)infinite_loop;
         status = status_fail;
 #endif
     }
@@ -719,6 +720,7 @@ hpm_stat_t dma_mgr_set_chn_src_busrt_option(const dma_resource_t *resource, uint
         dma_set_src_busrt_option(resource->base, resource->channel, burst_opt);
         status = status_success;
 #else
+        (void)burst_opt;
         status = status_fail;
 #endif
     }
@@ -738,6 +740,7 @@ hpm_stat_t dma_mgr_set_chn_handshake_option(const dma_resource_t *resource, uint
         dma_set_handshake_option(resource->base, resource->channel, handshake_opt);
         status = status_success;
 #else
+        (void)handshake_opt;
         status = status_fail;
 #endif
     }

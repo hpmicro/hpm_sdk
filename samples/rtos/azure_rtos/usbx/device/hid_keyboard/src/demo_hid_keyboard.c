@@ -320,6 +320,7 @@ UCHAR hid_keyboard_report[HID_KEYBOARD_REPORT_LENGTH] = {
 
 static UINT demo_thread_hid_callback(UX_SLAVE_CLASS_HID *hid, UX_SLAVE_CLASS_HID_EVENT *hid_event)
 {
+    (void)hid;
     /* There was an event.  Analyze it.  Is it NUM LOCK ? */
     if (hid_event->ux_device_class_hid_event_buffer[0] & HID_NUM_LOCK_MASK)
         /* Set the Num lock flag.  */
@@ -341,6 +342,7 @@ static UINT demo_thread_hid_callback(UX_SLAVE_CLASS_HID *hid, UX_SLAVE_CLASS_HID
 
 static VOID demo_hid_instance_activate(VOID *hid_instance)
 {
+    (void)hid_instance;
     printf("HID device activate\r\n");
 }
 
@@ -351,7 +353,7 @@ static void demo_thread_entry(ULONG arg)
     UX_SLAVE_CLASS_HID *hid;
     UX_SLAVE_CLASS_HID_EVENT hid_event;
     UCHAR key;
-
+    (void)arg;
     /* Get the pointer to the device.  */
     device = &_ux_system_slave->ux_system_slave_device;
 

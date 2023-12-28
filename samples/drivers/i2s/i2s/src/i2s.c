@@ -129,7 +129,7 @@ void test_pdm_to_dao(float volume_scale)
      * enable mic0 @ RXD0
      */
     transfer.data_line = I2S_DATA_LINE_0;
-    transfer.channel_slot_mask = 0x1;
+    transfer.channel_slot_mask = BOARD_PDM_SINGLE_CHANNEL_MASK;
     if (status_success != i2s_config_rx(PDM_I2S, I2S_MCLK_FREQ_IN_HZ, &transfer))
     {
         printf("I2S config failed for PDM\n");

@@ -15,7 +15,6 @@
 
 #define TEST_QEO BOARD_QEO
 #define QEO_TRGM_POS BOARD_QEO_TRGM_POS
-#define QEO_CLK_NAME BOARD_MOTOR_CLK_NAME
 
 #define TEST_QEO_ABZ_LINES    (1024U)
 #define TEST_QEO_ABZ_MAX_FREQ (250000U)
@@ -27,7 +26,6 @@ void qeo_gen_abz_signal_software(void)
     qeo_abz_mode_t config;
     uint32_t delay_time;
     uint32_t post_unit;
-    uint32_t freq = clock_get_frequency(QEO_CLK_NAME);
     uint32_t period_us = 1000000 / TEST_QEO_ABZ_MAX_FREQ;
 
     printf("QEO generate ABZ signal with sofeware inject postion\n");
@@ -62,7 +60,6 @@ void qeo_gen_abz_signal_software(void)
 void qeo_gen_abz_signal_hardware(void)
 {
     qeo_abz_mode_t config;
-    uint32_t freq = clock_get_frequency(QEO_CLK_NAME);
 
     printf("QEO generate ABZ signal with hardware(MMC) provide postion\n");
 

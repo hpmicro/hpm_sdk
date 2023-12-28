@@ -82,7 +82,7 @@ typedef struct  hpm_mcl_over_zero_spd_par {
     float       integral_min;   /**< integral min */
     float       output_max;     /**< output max */
     float       output_min;     /**< output min*/
-    void    (*func_getspd)();
+    void    (*func_getspd)(void *str);
 } hpm_mcl_over_zero_spd_para_t;
 
 /**
@@ -101,7 +101,7 @@ typedef struct hpm_mcl_over_zero_pi_par {
     float       mem;                    /**< integral Data */
     float       cur;                    /**< Sampling data  */
     float       outval;                 /**< Output Data */
-    void (*func_pid)();                               /**< Pid function */
+    void (*func_pid)(void *str);                               /**< Pid function */
 } hpm_mcl_over_zero_pi_para_t;
 
 /**

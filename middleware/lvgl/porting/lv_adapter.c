@@ -373,13 +373,14 @@ static void lv_disp_init(void)
 }
 
 #if defined(CONFIG_LV_TOUCH) && CONFIG_LV_TOUCH
-static void hpm_touchpad_init(void)
+static hpm_stat_t hpm_touchpad_init(void)
 {
     hpm_stat_t stat;
     stat = touch_init(BOARD_CAP_I2C_BASE);
     if (stat != status_success) {
-        while(1);
+        printf("Warning: touch init failed\n");
     }
+    return stat;
 }
 
 static void hpm_touchpad_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data)
@@ -410,11 +411,12 @@ static void hpm_touchpad_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data)
 static void lv_indev_init(void)
 {
 #if defined(CONFIG_LV_TOUCH) && CONFIG_LV_TOUCH
-    hpm_touchpad_init();
-    lv_indev_drv_init(&lv_adapter_ctx.indev_touch_drv);
-    lv_adapter_ctx.indev_touch_drv.type = LV_INDEV_TYPE_POINTER;
-    lv_adapter_ctx.indev_touch_drv.read_cb = hpm_touchpad_read;
-    lv_indev_drv_register(&lv_adapter_ctx.indev_touch_drv);
+    if (hpm_touchpad_init() == status_success) {
+        lv_indev_drv_init(&lv_adapter_ctx.indev_touch_drv);
+        lv_adapter_ctx.indev_touch_drv.type = LV_INDEV_TYPE_POINTER;
+        lv_adapter_ctx.indev_touch_drv.read_cb = hpm_touchpad_read;
+        lv_indev_drv_register(&lv_adapter_ctx.indev_touch_drv);
+    }
 #endif
 
     /* Other indev can be added */

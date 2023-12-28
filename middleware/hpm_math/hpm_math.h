@@ -4956,7 +4956,7 @@ void hpm_software_cfft_float(float *src, uint32_t m);
 
 #endif
 
-#ifdef CONFIG_HAS_HPMSDK_FFA
+#ifdef HPMSOC_HAS_HPMSDK_FFA
 #include "hpm_ffa_drv.h"
 #include "hpm_soc.h"
 /**

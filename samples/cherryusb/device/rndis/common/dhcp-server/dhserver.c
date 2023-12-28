@@ -213,11 +213,13 @@ int fill_options(void       *dest,
 
 static void udp_recv_proc(void *arg, struct udp_pcb *upcb, struct pbuf *p, const ip_addr_t *addr, u16_t port)
 {
+    (void)arg;
+    (void)addr;
     uint8_t      *ptr;
     dhcp_entry_t *entry;
     struct pbuf  *pp;
 
-    int n = p->len;
+    uint32_t n = p->len;
     if (n > sizeof(dhcp_data))
         n = sizeof(dhcp_data);
     memcpy(&dhcp_data, p->payload, n);

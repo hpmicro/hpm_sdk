@@ -43,6 +43,7 @@ static VOID demo_cdc_instance1_activate(VOID *cdc_instance)
 
 static VOID demo_cdc_instance1_deactivate(VOID *cdc_instance)
 {
+    (void)cdc_instance;
     cdc1 = UX_NULL;
     PRINTF("CDC ACM1 device deactivate\r\n");
 }
@@ -56,6 +57,7 @@ static VOID demo_cdc_instance2_activate(VOID *cdc_instance)
 
 static VOID demo_cdc_instance2_deactivate(VOID *cdc_instance)
 {
+    (void)cdc_instance;
     cdc2 = UX_NULL;
     PRINTF("CDC ACM2 device deactivate\r\n");
 }
@@ -68,7 +70,7 @@ static void demo_thread1_entry(ULONG arg)
     UCHAR buffer[256] = {
         0,
     };
-
+    (void)arg;
     while (1) {
         /* Ensure the CDC class is mounted.  */
         if (cdc1 == UX_NULL) {
@@ -146,7 +148,7 @@ static void demo_thread2_entry(ULONG arg)
     UCHAR buffer[256] = {
         0,
     };
-
+    (void)arg;
     while (1) {
         /* Ensure the CDC class is mounted.  */
         if (cdc2 == UX_NULL) {

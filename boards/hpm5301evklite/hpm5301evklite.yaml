@@ -1,0 +1,25 @@
+# Copyright (c) 2023 HPMicro
+# SPDX-License-Identifier: BSD-3-Clause
+
+board:
+    name: hpm5301evklite
+    soc: HPM5301
+    device: HPM5301xEGx
+    openocd-soc: hpm5300
+    openocd-probe: cmsis_dap
+    on-board-flash:
+      type: qspi-nor-flash
+      size: 1M
+    feature:
+      - uart_hardware_rx_idle
+      - uart
+      - adc16
+      - pdgo
+      - ewdg
+      - gpiom
+      - tsns
+      - crc
+      - spi
+      - i2c
+      - usb-otg
+      - acmp

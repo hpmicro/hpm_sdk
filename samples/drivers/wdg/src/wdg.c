@@ -45,7 +45,7 @@ SDK_DECLARE_EXT_ISR_M(IRQn_WDG0, wdg_isr
  *  Variables
  *
  **********************************************************************************/
-volatile static bool has_interrupt;
+static volatile bool has_interrupt;
 
 /***********************************************************************************
  *

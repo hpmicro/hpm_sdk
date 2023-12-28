@@ -35,8 +35,6 @@ add_library(${HPM_SDK_NDSGCC_LIB_ITF} INTERFACE)
 
 set(HPM_SDK_GCC_LIB_ITF hpm_sdk_gcc_lib_itf)
 set(HPM_SDK_GCC_LIB hpm_sdk_gcc_lib)
-add_library(${HPM_SDK_GCC_LIB} STATIC "")
-target_link_libraries(${HPM_SDK_GCC_LIB} PUBLIC ${HPM_SDK_GCC_LIB_ITF} ${HPM_SDK_LIB_ITF})
 add_library(${HPM_SDK_GCC_LIB_ITF} INTERFACE)
 
 string(REGEX REPLACE "{\"\'}" "" GNURISCV_TOOLCHAIN_PATH $ENV{GNURISCV_TOOLCHAIN_PATH})
@@ -150,6 +148,7 @@ if(NOT "${RESULT}" STREQUAL "${verbose_text}")
     endif()
 endif()
 
+set(CMAKE_CXX_STANDARD 11)
 set(CXX ${C++})
 find_program(CMAKE_CXX_COMPILER ${CROSS_COMPILE}${CXX}   PATHS ${TOOLCHAIN_HOME} NO_DEFAULT_PATH)
 # include toolchain specific settings

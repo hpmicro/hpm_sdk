@@ -14,6 +14,7 @@
 
 void sdm_get_default_module_control(SDM_Type *ptr, sdm_control_t *control)
 {
+    (void) ptr;
     control->clk_signal_sync = 0xf; /*!< configure clk sync for all channels */
     control->data_signal_sync = 0xf; /*!< configure data sync for all channels */
     control->interrupt_en = false;
@@ -32,6 +33,7 @@ void sdm_init_module(SDM_Type *ptr, sdm_control_t *control)
 
 void sdm_get_channel_common_setting(SDM_Type *ptr, sdm_channel_common_config_t *config)
 {
+    (void) ptr;
     config->sampling_mode = sdm_sampling_rising_clk_edge;
     config->enable_err_interrupt = false;
     config->enable_data_ready_interrupt = false;
@@ -53,6 +55,7 @@ void sdm_config_channel_common_setting(SDM_Type *ptr, uint8_t ch_index, sdm_chan
 
 void sdm_get_channel_default_filter_config(SDM_Type *ptr, sdm_filter_config_t *filter_config)
 {
+    (void) ptr;
     filter_config->fifo_threshold = 8;
     filter_config->en_fifo_threshold_int = true;
     filter_config->manchester_threshold = 0;
@@ -79,6 +82,7 @@ void sdm_get_channel_default_filter_config(SDM_Type *ptr, sdm_filter_config_t *f
 
 void sdm_get_channel_default_comparator_config(SDM_Type *ptr, sdm_comparator_config_t *cmp_config)
 {
+    (void) ptr;
     cmp_config->high_threshold = 0xffff;
     cmp_config->zero_cross_threshold = 0xffff;
     cmp_config->low_threshold = 0x0;

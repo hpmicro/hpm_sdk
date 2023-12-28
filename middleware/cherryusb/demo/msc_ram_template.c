@@ -137,14 +137,14 @@ void usbd_msc_get_cap(uint8_t lun, uint32_t *block_num, uint16_t *block_size)
 }
 int usbd_msc_sector_read(uint32_t sector, uint8_t *buffer, uint32_t length)
 {
-    if (sector < 10)
+    if (sector < BLOCK_COUNT)
         memcpy(buffer, mass_block[sector].BlockSpace, length);
     return 0;
 }
 
 int usbd_msc_sector_write(uint32_t sector, uint8_t *buffer, uint32_t length)
 {
-    if (sector < 10)
+    if (sector < BLOCK_COUNT)
         memcpy(mass_block[sector].BlockSpace, buffer, length);
     return 0;
 }

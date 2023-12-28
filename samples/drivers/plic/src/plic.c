@@ -9,6 +9,11 @@
 #include "hpm_clock_drv.h"
 #include "hpm_gpio_drv.h"
 #include "hpm_ptpc_drv.h"
+#if defined(HPMSOC_HAS_HPMSDK_PTPC)
+#include "hpm_ptpc_drv.h"
+#elif defined(HPMSOC_HAS_HPMSDK_GPTMR)
+#include "hpm_gptmr_drv.h"
+#endif
 
 #if defined(USE_S_MODE_IRQ) && USE_S_MODE_IRQ && (!defined(SOC_HAS_S_MODE) || !SOC_HAS_S_MODE)
 #error SOC does not support supervisor mode IRQ
@@ -31,6 +36,15 @@
 #define PREEMPTIVE_MODE "Preemptive"
 #else
 #define PREEMPTIVE_MODE "Non-Preemptive"
+#endif
+
+#if defined(HPMSOC_HAS_HPMSDK_GPTMR)
+#define APP_BOARD_GPTMR               BOARD_GPTMR
+#define APP_BOARD_GPTMR_CH            BOARD_GPTMR_CHANNEL
+#define APP_BOARD_GPTMR_IRQ           BOARD_GPTMR_IRQ
+#define APP_BOARD_GPTMR_CLOCK         BOARD_GPTMR_CLK_NAME
+
+#define APP_TICK_MS                   (2000)
 #endif
 
 #define MAX_TOGGLE_IN_NESTED_IRQ 5
@@ -77,6 +91,7 @@ void test_gpio_input_interrupt(void)
 #endif
 }
 
+#if defined(HPMSOC_HAS_HPMSDK_PTPC)
 void isr_ptpc(void)
 {
     printf("ptpc interrupt start\n");
@@ -119,6 +134,45 @@ void test_interrupt_nesting(void)
     intc_m_enable_irq_with_priority(IRQn_PTPC, 2);
 #endif
 }
+#elif defined(HPMSOC_HAS_HPMSDK_GPTMR)
+void tick_ms_isr(void)
+{
+    printf("gptmr interrupt start\n");
+    printf("+ now next %d gpio interrupts will occur in nested irq context\n", MAX_TOGGLE_IN_NESTED_IRQ);
+    toggled = 0;
+    while (toggled < MAX_TOGGLE_IN_NESTED_IRQ) {
+    }
+    gptmr_clear_status(APP_BOARD_GPTMR, GPTMR_CH_RLD_STAT_MASK(APP_BOARD_GPTMR_CH));
+    gptmr_disable_irq(APP_BOARD_GPTMR, GPTMR_CH_RLD_IRQ_MASK(APP_BOARD_GPTMR_CH));
+    printf("gptmr interrupt end\n");
+    printf("- now the following gpio interrupts will occur normal irq context\n");
+}
+SDK_DECLARE_EXT_ISR_M(APP_BOARD_GPTMR_IRQ, tick_ms_isr);
+
+void test_interrupt_nesting(void)
+{
+    uint32_t gptmr_freq;
+    gptmr_channel_config_t config;
+
+    gptmr_channel_get_default_config(APP_BOARD_GPTMR, &config);
+
+    gptmr_freq = clock_get_frequency(APP_BOARD_GPTMR_CLOCK);
+    config.reload = gptmr_freq / 1000 * APP_TICK_MS;
+    gptmr_channel_config(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH, &config, false);
+    gptmr_start_counter(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH);
+
+    gptmr_enable_irq(APP_BOARD_GPTMR, GPTMR_CH_RLD_IRQ_MASK(APP_BOARD_GPTMR_CH));
+
+    /* configure gpio interrupt */
+    test_gpio_input_interrupt();
+
+#ifdef TEST_S_MODE
+    intc_s_enable_irq_with_priority(APP_BOARD_GPTMR_IRQ, 2);
+#else
+    intc_m_enable_irq_with_priority(APP_BOARD_GPTMR_IRQ, 2);
+#endif
+}
+#endif
 
 #ifdef TEST_S_MODE
 void isr_plicsw_s(void)

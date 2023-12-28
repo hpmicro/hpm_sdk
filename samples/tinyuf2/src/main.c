@@ -55,6 +55,7 @@ static bool check_dfu_mode(void);
 int main(void)
 {
     uf2_board_init();
+    board_init_usb_pins();
     TU_LOG1("TinyUF2\r\n");
 
     /* if not DFU mode, jump to App */

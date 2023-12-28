@@ -59,7 +59,7 @@ static void eeprom_perf_write_data(void)
     uint32_t blob_data[2];
     int i = 0;
     int count_per_blob;
-    memset(blob_data, 0x00, sizeof(blob_data) / sizeof(uint32_t));
+    memset(blob_data, 0x00, sizeof(blob_data));
     
     blob_data[0] = E2P_MAGIC_ID;
     while (i < EEPROM_MAX_VAR_CNT) {

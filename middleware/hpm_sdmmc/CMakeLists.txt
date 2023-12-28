@@ -3,11 +3,12 @@
 
 sdk_inc(lib)
 
-if(NOT DEFINED CONFIG_HPM_SPI_SDCARD)
-sdk_inc(port/${HPM_SOC})
-add_subdirectory(port/${HPM_SOC})
-else()
+if(DEFINED CONFIG_HPM_SPI_SDCARD)
 sdk_compile_definitions(-DSD_SPI_ENABLE=1)
 endif()
 
 add_subdirectory(lib)
+
+if(NOT DEFINED CONFIG_HPM_SPI_SDCARD)
+add_subdirectory(port)
+endif()

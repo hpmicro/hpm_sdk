@@ -82,9 +82,9 @@ int main(void)
     board_init_cap_touch();
     board_init_lcd();
 
-#if USING_CODEC
+#if defined(USING_CODEC) && USING_CODEC
     init_codec();
-#elif USING_DAO
+#elif defined(USING_DAO) && USING_DAO
     init_dao();
 #endif
 

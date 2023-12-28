@@ -292,12 +292,19 @@ extern void usb_device_setup(void);
  ******************************************************************************/
 static UINT demo_thread_media_status(VOID *storage, ULONG lun, ULONG media_id, ULONG *media_status)
 {
+    (void)storage;
+    (void)lun;
+    (void)media_id;
+    (void)media_status;
     /* The RAM disk drive never fails. This is just for demo only !!!! */
     return UX_SUCCESS;
 }
 
 static UINT demo_thread_media_read(VOID *storage, ULONG lun, UCHAR *data_pointer, ULONG number_blocks, ULONG lba, ULONG *media_status)
 {
+    (void)storage;
+    (void)lun;
+    (void)media_status;
     ram_disk.fx_media_driver_logical_sector = lba;
     ram_disk.fx_media_driver_sectors = number_blocks;
     ram_disk.fx_media_driver_request = FX_DRIVER_READ;
@@ -309,6 +316,9 @@ static UINT demo_thread_media_read(VOID *storage, ULONG lun, UCHAR *data_pointer
 
 static UINT demo_thread_media_write(VOID *storage, ULONG lun, UCHAR *data_pointer, ULONG number_blocks, ULONG lba, ULONG *media_status)
 {
+    (void)storage;
+    (void)lun;
+    (void)media_status;
     ram_disk.fx_media_driver_logical_sector = lba;
     ram_disk.fx_media_driver_sectors = number_blocks;
     ram_disk.fx_media_driver_request = FX_DRIVER_WRITE;
@@ -329,7 +339,7 @@ static VOID thread_usb_entry(ULONG thread_input)
 {
     UX_SLAVE_CLASS_STORAGE_LUN *lun;
     ULONG status;
-
+    (void)thread_input;
     /* Format the ram drive. */
     status = fx_media_format(&ram_disk,
         _fx_ram_driver,

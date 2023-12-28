@@ -47,18 +47,30 @@ int main(void)
     sei_tranceiver_config_init(BOARD_SEI, BOARD_SEI_CTRL, &tranceiver_config);
 
     /* [2] data register config */
-    /* data register 2: Recv CDF0.EA */
+    /* data register 2: Recv Sink Code */
     data_format_config.mode = sei_check_mode;
     data_format_config.signed_flag = false;
     data_format_config.bit_order = sei_bit_lsb_first;
     data_format_config.word_order = sei_word_nonreverse;
-    data_format_config.word_len = 8;
-    data_format_config.last_bit = 7;
+    data_format_config.word_len = 3;
+    data_format_config.last_bit = 2;
     data_format_config.first_bit = 0;
-    data_format_config.max_bit = 7;
+    data_format_config.max_bit = 2;
     data_format_config.min_bit = 0;
     data_format_config.gold_value = 0x02;
     sei_cmd_data_format_config_init(BOARD_SEI, SEI_SELECT_DATA, SEI_DAT_2, &data_format_config);
+    /* data register 10: Recv CDF0.EA */
+    data_format_config.mode = sei_check_mode;
+    data_format_config.signed_flag = false;
+    data_format_config.bit_order = sei_bit_lsb_first;
+    data_format_config.word_order = sei_word_nonreverse;
+    data_format_config.word_len = 5;
+    data_format_config.last_bit = 4;
+    data_format_config.first_bit = 0;
+    data_format_config.max_bit = 4;
+    data_format_config.min_bit = 0;
+    data_format_config.gold_value = 0x00;
+    sei_cmd_data_format_config_init(BOARD_SEI, SEI_SELECT_DATA, SEI_DAT_10, &data_format_config);
     /* cmd register: Recv CDF0.CC */
     data_format_config.mode = sei_data_mode;
     data_format_config.signed_flag = false;
@@ -160,7 +172,8 @@ int main(void)
 
     /* [3] instructions */
     instr_idx = 0;
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_3, SEI_DAT_2, 8);  /* Recv CDF0.EA */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_0, SEI_DAT_2, 3);  /* Recv Sink Code */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_3, SEI_DAT_10, 5);  /* Recv CDF0.EA */
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_3, SEI_DAT_1, 5);  /* Recv CDF0.CC */
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_0, SEI_DAT_3, 3);  /* Recv CDF0.CRC */
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_HALT, 0, SEI_DAT_0, SEI_DAT_0, 7);      /* halt some bits for waiting */
@@ -179,7 +192,7 @@ int main(void)
     command_table_config.cmd_min_value = 0x00u;
     command_table_config.cmd_max_value = 0x00u;
     command_table_config.cmd_mask_value = 0xFFu;
-    command_table_config.instr_idx[0] = 5;
+    command_table_config.instr_idx[0] = 6;
     sei_cmd_table_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_CMD_TABLE_0, &command_table_config);
 
     /* [5] state transition config */
@@ -190,7 +203,7 @@ int main(void)
     state_transition_config.disable_timeout_check = true;
     state_transition_config.disable_instr_ptr_check = false;
     state_transition_config.instr_ptr_cfg = sei_state_tran_condition_fall_leave;
-    state_transition_config.instr_ptr_value = 2;
+    state_transition_config.instr_ptr_value = 3;
     sei_state_transition_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0, SEI_CTRL_LATCH_TRAN_0_1, &state_transition_config);
     state_transition_config.disable_clk_check = true;
     state_transition_config.disable_txd_check = true;

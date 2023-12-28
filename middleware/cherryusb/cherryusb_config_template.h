@@ -6,7 +6,7 @@
 #ifndef CHERRYUSB_CONFIG_H
 #define CHERRYUSB_CONFIG_H
 
-#define CHERRYUSB_VERSION 0x001001
+#define CHERRYUSB_VERSION 0x001002
 
 /* ================ USB common Configuration ================ */
 
@@ -102,7 +102,6 @@
 #define CONFIG_USBHOST_MAX_MSC_CLASS     2
 #define CONFIG_USBHOST_MAX_AUDIO_CLASS   1
 #define CONFIG_USBHOST_MAX_VIDEO_CLASS   1
-#define CONFIG_USBHOST_MAX_RNDIS_CLASS   1
 
 #define CONFIG_USBHOST_DEV_NAMELEN 16
 
@@ -114,6 +113,9 @@
 #endif
 
 //#define CONFIG_USBHOST_GET_STRING_DESC
+
+// #define CONFIG_USBHOST_MSOS_ENABLE
+#define CONFIG_USBHOST_MSOS_VENDOR_CODE 0x00
 
 /* Ep0 max transfer buffer */
 #define CONFIG_USBHOST_REQUEST_BUFFER_LEN 512

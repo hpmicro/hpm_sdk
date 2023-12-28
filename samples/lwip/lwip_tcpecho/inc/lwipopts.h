@@ -37,11 +37,6 @@
 a lot of data that needs to be copied, this should be set high. */
 #define MEM_SIZE                (5*1024)
 
-/**
- * MEMP_MEM_MALLOC==1: Use mem_malloc/mem_free instead of the lwip pool allocator.
- */
-#define MEMP_MEM_MALLOC         1
-
 /* MEMP_NUM_PBUF: the number of memp struct pbufs. If the application
    sends a lot of data out of ROM (or other static memory), this
    should be set high. */
@@ -102,7 +97,9 @@ a lot of data that needs to be copied, this should be set high. */
 /* Define LWIP_DHCP to 1 if you want DHCP configuration of
    interfaces. DHCP is not implemented in lwIP 0.5.1, however, so
    turning this on does currently not work. */
+#ifndef LWIP_DHCP
 #define LWIP_DHCP               0
+#endif
 
 /* ---------- UDP options ---------- */
 #define LWIP_UDP                1

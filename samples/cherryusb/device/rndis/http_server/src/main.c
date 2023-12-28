@@ -135,6 +135,7 @@ static err_t netif_init_cb(struct netif *netif)
 
 static err_t linkoutput_fn(struct netif *netif, struct pbuf *p)
 {
+    (void)netif;
     int ret;
 
     ret = usbd_rndis_eth_tx(p);

@@ -635,7 +635,7 @@ int montecarlo_signverify(int num_tests, bool verbose)
     return TC_PASS;
 }
 
-int main()
+int main(void)
 {
     unsigned int result = TC_PASS;
 

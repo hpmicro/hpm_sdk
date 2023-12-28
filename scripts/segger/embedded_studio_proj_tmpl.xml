@@ -86,40 +86,42 @@
       {%- if target["ses_link_input"] %}
       linker_additional_files="{{ target["ses_link_input"] }}"
       {%- endif %}
-      build_output_file_name="$(OutDir)/demo$(EXE)"
+      build_output_file_name="$(OutDir)/{{ target["app_name"] }}$(EXE)"
       {%- for opt in target["extra_ses_options"] %}
       {{ opt }}
       {%- endfor %}
+      gcc_enable_all_warnings="Yes"
+      gcc_all_warnings_command_line_options="-Wall;-Wextra;-Wno-format"
       />
 
 {{ target["file_structure"] }}
-    <configuration
-      Name="Debug"
-      debug_cpu_registers_file="{{ target["cpu_register_definition"] }}"
-      debug_register_definition_file="{{ target["register_definition"] }}"
-      gdb_server_allow_memory_access_during_execution="Yes"
-      gdb_server_ignore_checksum_errors="No"
-      gdb_server_register_access="General and Individual"
-      />
-    <configuration
-      Name="Release"
-      debug_cpu_registers_file="{{ target["cpu_register_definition"] }}"
-      debug_register_definition_file="{{ target["register_definition"] }}"
-      />
   </project>
   <configuration
     Name="Debug"
     c_preprocessor_definitions="DEBUG"
     gcc_debugging_level="Level 3"
-    gcc_optimization_level="{{ target["gcc_opt_level"] }}" />
+    gdb_server_allow_memory_access_during_execution="Yes"
+    gdb_server_ignore_checksum_errors="No"
+    gdb_server_register_access="General and Individual"
+    gcc_optimization_level="{{ target["gcc_opt_level"] }}"
+  />
   <configuration
     Name="Release"
     c_preprocessor_definitions="NDEBUG"
     gcc_debugging_level="None"
     gcc_omit_frame_pointer="Yes"
-    gcc_optimization_level="Level 1" />
+    {%- if target["gcc_opt_level"] != "None" %}
+    gcc_optimization_level="{{ target["gcc_opt_level"] }}"
+    {%- else %}
+    gcc_optimization_level="Level 1"
+    {%- endif %}
+  />
   <configuration Name="Common"
-      c_preprocessor_definitions="{% for define in target["defines"] %}{{ define }};{% endfor %}"
-      gdb_server_write_timeout="300"
-      link_symbol_definitions="{% for symbol in target["link_symbols"] %}{{ symbol }};{% endfor %}" />
+    c_preprocessor_definitions="{% for define in target["defines"] %}{{ define }};{% endfor %}"
+    gdb_server_write_timeout="300"
+    link_symbol_definitions="{% for symbol in target["link_symbols"] %}{{ symbol }};{% endfor %}"
+    debug_cpu_registers_file="{{ target["cpu_register_definition"] }}"
+    debug_register_definition_file="{{ target["register_definition"] }}"
+    debug_restrict_memory_access="No"
+  />
 </solution>

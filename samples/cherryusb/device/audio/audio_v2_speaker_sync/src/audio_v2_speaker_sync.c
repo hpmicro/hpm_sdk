@@ -9,7 +9,7 @@
 #include "usbd_audio.h"
 #include "board.h"
 #include "hpm_i2s_drv.h"
-#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#ifdef HPMSOC_HAS_HPMSDK_DMAV2
 #include "hpm_dmav2_drv.h"
 #else
 #include "hpm_dma_drv.h"
@@ -444,6 +444,7 @@ void usbd_event_handler(uint8_t event)
 
 void usbd_audio_set_volume(uint8_t ep, uint8_t ch, int volume)
 {
+    (void)ch;
     if (ep == AUDIO_OUT_EP) {
         s_speaker_volume_percent = volume;
 #if defined(USING_CODEC) && USING_CODEC
@@ -464,6 +465,7 @@ void usbd_audio_set_volume(uint8_t ep, uint8_t ch, int volume)
 
 int usbd_audio_get_volume(uint8_t ep, uint8_t ch)
 {
+    (void)ch;
     int volume = 0;
 
     if (ep == AUDIO_OUT_EP) {
@@ -475,6 +477,7 @@ int usbd_audio_get_volume(uint8_t ep, uint8_t ch)
 
 void usbd_audio_set_mute(uint8_t ep, uint8_t ch, bool mute)
 {
+    (void)ch;
 #if defined(USING_CODEC) && USING_CODEC
     uint32_t volume;
 #endif
@@ -508,6 +511,7 @@ void usbd_audio_set_mute(uint8_t ep, uint8_t ch, bool mute)
 
 bool usbd_audio_get_mute(uint8_t ep, uint8_t ch)
 {
+    (void)ch;
     bool mute = false;
 
     if (ep == AUDIO_OUT_EP) {
@@ -592,6 +596,7 @@ static void usbd_audio_iso_out_callback(uint8_t ep, uint32_t nbytes)
 
 static void usbd_audio_iso_out_feedback_callback(uint8_t ep, uint32_t nbytes)
 {
+    (void)nbytes;
     if (s_speaker_rx_flag) {
         s_speaker_feedback_cnt++;
         usbd_ep_start_write(ep, s_speaker_feedback_buffer, FEEDBACK_ENDP_PACKET_SIZE);
@@ -644,13 +649,12 @@ static void speaker_i2s_dma_start_transfer(uint32_t addr, uint32_t size)
     ch_config.dst_width = DMA_TRANSFER_WIDTH_WORD;
     ch_config.src_addr_ctrl = DMA_ADDRESS_CONTROL_INCREMENT;
     ch_config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
-    ch_config.size_in_byte = size;
+    ch_config.size_in_byte = DMA_ALIGN_WORD(size);
     ch_config.dst_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
     ch_config.src_burst_size = 0;
 
     if (status_success != dma_setup_channel(BOARD_APP_HDMA, SPEAKER_DMA_CHANNEL, &ch_config, true)) {
         printf(" dma setup channel failed\n");
-        return;
     }
 }
 

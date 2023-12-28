@@ -215,7 +215,6 @@ void set_hrpwm_frequency(float freq)
 void generate_hrpwm_frequency_variable_waveform(void)
 {
     uint8_t cmp_index = 0;
-    uint32_t duty, duty_step;
     uint32_t freq;
     pwm_cmp_config_t cmp_config[2] = {0};
     pwm_config_t pwm_config = {0};

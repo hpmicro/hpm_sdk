@@ -24,7 +24,7 @@ def get_excluded_targets(input_yml):
 
 def check_excluded_targets(input_yml, build_type):
     exc_tar = get_excluded_targets(input_yml)
-    if exc_tar is not None:
+    if len(exc_tar) != 0:
         if build_type in exc_tar:
             sys.exit(1)
         else:

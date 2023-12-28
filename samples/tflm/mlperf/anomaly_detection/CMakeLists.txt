@@ -6,7 +6,6 @@ set(SES_TOOLCHAIN_VARIANT "Andes")
 
 set(CONFIG_HPM_MATH 1)
 set(CONFIG_HPM_MATH_NN_RVP32_ONLY_SES 1)
-set(CONFIG_HPM_MATH_NN_NORMAL 1)
 
 set(CONFIG_TFLM 1)
 set(STACK_SIZE 0x10000)
@@ -18,7 +17,6 @@ endif()
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(mlperf_anomaly_detection)
-set(CMAKE_CXX_STANDARD 11)
 sdk_app_src(src/main.cc)
 sdk_app_src(src/submitter_implemented.cpp)
 sdk_app_src(src/api/internally_implemented.cpp)

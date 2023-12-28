@@ -116,17 +116,16 @@ const char *adc_node_name[] = {
 };
 
 const source_info_t i2s_clock_source_name[] = {
-    {"ahb_clk", clock_source_adc_i2s_ahb_clk, monitor_target_clk_top_ahb0},
-    {"aud0_clk", clock_source_i2s_aud0_clk, monitor_target_clk_top_aud0},
-    {"aud1_clk", clock_source_i2s_aud1_clk, monitor_target_clk_top_aud1},
-    {"aud2_clk", clock_source_i2s_aud2_clk, monitor_target_clk_top_aud2},
+    {"aud0_clk", (clock_source_t) clock_source_i2s_aud0_clk, monitor_target_clk_top_aud0},
+    {"aud1_clk", (clock_source_t) clock_source_i2s_aud1_clk, monitor_target_clk_top_aud1},
+    {"aud2_clk", (clock_source_t) clock_source_i2s_aud2_clk, monitor_target_clk_top_aud2},
 };
 
 const source_info_t adc_clock_source_name[] = {
-    {"ahb_clk", clock_source_adc_i2s_ahb_clk, monitor_target_clk_top_ahb0},
-    {"ana0_clk", clock_source_adc_ana0_clk, monitor_target_clk_top_ana0},
-    {"ana1_clk", clock_source_adc_ana1_clk, monitor_target_clk_top_ana1},
-    {"ana2_clk", clock_source_adc_ana2_clk, monitor_target_clk_top_ana2},
+    {"ahb_clk", (clock_source_t) clock_source_adc_i2s_ahb_clk, monitor_target_clk_top_ahb0},
+    {"ana0_clk", (clock_source_t) clock_source_adc_ana0_clk, monitor_target_clk_top_ana0},
+    {"ana1_clk", (clock_source_t) clock_source_adc_ana1_clk, monitor_target_clk_top_ana1},
+    {"ana2_clk", (clock_source_t) clock_source_adc_ana2_clk, monitor_target_clk_top_ana2},
 };
 
 const char *linkable_resource_name[] = {
@@ -170,7 +169,7 @@ bool test_config_adc_i2s_clock(void)
             break;
         default:
             printf("invalid clock source for adc/i2s: %d\n", source2);
-            break;
+            return false;
     }
     source = rand() % ARRAY_SIZE(clock_source_name);
     div = rand() % CLOCK_DIV_MAX + 1;

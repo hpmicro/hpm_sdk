@@ -241,12 +241,13 @@ hpm_stat_t sdcard_spi_read_multi_block(uint8_t *buffer, uint32_t start_sector, u
 
 hpm_stat_t sdcard_spi_write_multi_block(uint8_t *buffer, uint32_t sector, uint32_t num_sectors)
 {
+    hpm_stat_t sta = status_success;
     assert(g_spi_dev);
 
     if (g_card_type != card_type_sd_v2_hc) {
         sector = sector << 9;
     }
-    hpm_stat_t sta;
+
     for (uint32_t i = 0; i < num_sectors; i++) {
         sta = sdcard_spi_write_block(sector + i, &buffer[i * SPI_SD_BLOCK_SIZE]);
         if (sta != status_success) {

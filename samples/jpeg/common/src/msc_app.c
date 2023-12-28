@@ -112,8 +112,6 @@ void tuh_msc_unmount_cb(uint8_t dev_addr)
 
 void init_disk(void)
 {
-    /* tinyusb Device initialization */
-    board_init_usb_pins();
     tusb_init();
 }
 

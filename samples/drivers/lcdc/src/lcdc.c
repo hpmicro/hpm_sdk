@@ -104,7 +104,7 @@ void prepare_rgb_data(uint8_t *buf, uint32_t size, color *c)
     }
 }
 
-void run_test_mode()
+void run_test_mode(void)
 {
     uint8_t layer_index = 0;
     lcdc_layer_config_t dummy_layer = {0};

@@ -5,8 +5,8 @@
 
 ENTRY(_start)
 
-STACK_SIZE = DEFINED(_stack_size) ? _stack_size : 0x4000;
-HEAP_SIZE = DEFINED(_heap_size) ? _heap_size : 0x4000;
+STACK_SIZE = _stack_size;
+HEAP_SIZE = _heap_size;
 UF2_BOOTLOADER_RESERVED_LENGTH = DEFINED(_uf2_bl_length) ? _uf2_bl_length : 0x20000;
 
 MEMORY
@@ -63,6 +63,32 @@ SECTIONS
         __usbh_class_info_start__ = .;
         KEEP(*(.usbh_class_info))
         __usbh_class_info_end__ = .;
+
+        /* RT-Thread related sections - Start */
+        /* section information for finsh shell */
+        . = ALIGN(4);
+        __fsymtab_start = .;
+        KEEP(*(FSymTab))
+        __fsymtab_end = .;
+        . = ALIGN(4);
+        __vsymtab_start = .;
+        KEEP(*(VSymTab))
+        __vsymtab_end = .;
+        . = ALIGN(4);
+
+        . = ALIGN(4);
+        __rt_init_start = .;
+        KEEP(*(SORT(.rti_fn*)))
+        __rt_init_end = .;
+        . = ALIGN(4);
+
+        /* section information for modules */
+        . = ALIGN(4);
+        __rtmsymtab_start = .;
+        KEEP(*(RTMSymTab))
+        __rtmsymtab_end = .;
+
+        /* RT-Thread related sections - end */
         . = ALIGN(8);
     } > XPI0
 
@@ -131,6 +157,7 @@ SECTIONS
         . = ALIGN(8);
         PROVIDE(__ramfunc_start__ = .);
         *(.fast)
+        *(.fast.*)
         . = ALIGN(8);
         PROVIDE(__ramfunc_end__ = .);
     } > ILM

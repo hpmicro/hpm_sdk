@@ -36,13 +36,13 @@ typedef struct  hpm_smc_pll_para {
     float       mem;    /**< integral storage */
     float       theta0; /**< initial angle */
     float       loop_in_sec; /**< cycle time in s */
-    void    (*func_getspd)();
+    void    (*func_getspd)(void *str);
 } hpm_smc_pll_para_t;
 
 #define BLDC_CONTROL_SMC_PLL_PARA_DEFAULTS {0, 0, 0, 0,\
                                             0, 0, 0, 0,\
                                             0, 0, 0, 0, 0,\
-                                         &hpm_mcl_nullcallback_func}
+                                         NULL}
 
 /**
  * @brief sliding mode control(SMC)
@@ -63,14 +63,14 @@ typedef struct hpm_mcl_para {
     float       beta_cal; /**< Internal Data */
     float       zbeta_cal;    /**< Internal Data */
     hpm_motor_para_t     *i_motorpar;    /**< Motor parameters @ref hpm_motor_para_t */
-    void (*func_smc)();                 /**< Slide-mode controller */
+    void (*func_smc)(void *str);                 /**< Slide-mode controller */
 } hpm_mcl_para_t;
 
 #define BLDC_CONTROL_SMC_PARA_DEFAULTS {0, 0, 0, NULL, NULL,\
                                         NULL, NULL, 0, 0, 0,\
                                         0, 0, 0,\
                                         NULL,\
-                                         &hpm_mcl_nullcallback_func}
+                                         NULL}
 
 /**
  * @brief Sliding mode control function
@@ -103,7 +103,7 @@ float hpm_mcl_smc_pll(hpm_mcl_para_t *par, hpm_smc_pll_para_t *pll);
  * @param[inout] pll @ref hpm_smc_pll_para_t
  * @param[in] is_smc_enable true: smc enable, false: smc disable
  */
-void hpm_mcl_smc_loop(BLDC_CONTROL_FOC_PARA *par, hpm_mcl_para_t *smc, hpm_smc_pll_para_t *pll, bool is_smc_enable);
+void hpm_mcl_smc_loop(BLDC_CONTROL_FOC_PARA *par, hpm_mcl_para_t *smc, hpm_smc_pll_para_t *pll, uint8_t *is_smc_enable);
 
 #if defined(__cplusplus)
 }

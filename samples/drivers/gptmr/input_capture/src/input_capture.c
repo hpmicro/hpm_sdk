@@ -19,8 +19,8 @@
 static void input_capture_config(void);
 
 volatile bool capture_is_done;
-volatile uint32_t frist_rising_count;
-volatile uint32_t next_rising_count;
+volatile int frist_rising_count;
+volatile int next_rising_count;
 volatile bool frist_rised;
 volatile uint32_t gptmr_freq;
 
@@ -42,7 +42,7 @@ SDK_DECLARE_EXT_ISR_M(APP_BOARD_GPTMR_IRQ, isr_gptmr)
 
 int main(void)
 {
-    uint32_t tmp_time;
+    int tmp_time;
     capture_is_done = false;
     frist_rised = false;
     board_init();

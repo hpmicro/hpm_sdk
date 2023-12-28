@@ -141,10 +141,10 @@ hpm_stat_t enet_init(ENET_Type *ptr)
         if (rtl8201_basic_mode_init(ptr, &phy_config) == true) {
         #endif
     #endif
-            printf("Enet phy init passes !\n");
+            printf("Enet phy init passed !\n");
             return status_success;
         } else {
-            printf("Enet phy init fails !\n");
+            printf("Enet phy init failed !\n");
             return status_fail;
         }
 }

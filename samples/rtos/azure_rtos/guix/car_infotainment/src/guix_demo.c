@@ -15,6 +15,8 @@
 /******************************************************************************************/
 int main(int argc, char **argv)
 {
+    (void)argc;
+    (void)**argv;
     board_init();
     board_init_lcd();
     board_init_cap_touch();

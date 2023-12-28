@@ -24,14 +24,14 @@
 #define _CONCAT3(x, y, z) x ## y ## z
 #define CONCAT3(x, y, z) _CONCAT3(x, y, z)
 
-#if (CAMERA_MAX_IMAGE_OUTPUT_WIDTH > BOARD_LCD_WIDTH)
-#define IMAGE_WIDTH  BOARD_LCD_WIDTH
+#if (CAMERA_MAX_IMAGE_OUTPUT_WIDTH > 800)
+#define IMAGE_WIDTH  800
 #else
 #define IMAGE_WIDTH  CAMERA_MAX_IMAGE_OUTPUT_WIDTH
 #endif
 
-#if (CAMERA_MAX_IMAGE_OUTPUT_HEIGHT > BOARD_LCD_HEIGHT)
-#define IMAGE_HEIGHT BOARD_LCD_HEIGHT
+#if (CAMERA_MAX_IMAGE_OUTPUT_HEIGHT > 480)
+#define IMAGE_HEIGHT 480
 #else
 #define IMAGE_HEIGHT CAMERA_MAX_IMAGE_OUTPUT_HEIGHT
 #endif
@@ -43,7 +43,7 @@
 typedef CONCAT3(uint, COLOR_SIZE, _t) color_t;
 
 color_t buffer[IMAGE_WIDTH * IMAGE_HEIGHT] __attribute__((section (".framebuffer")));
-camera_context_t camera_context = {NULL, NULL, NULL, NULL};
+camera_context_t camera_context = {0};
 camera_config_t camera_config;
 
 void init_lcd(void)

@@ -126,41 +126,49 @@ bool hcd_int_status(void)
 
 uint32_t hcd_frame_number(uint8_t rhport)
 {
+    (void)rhport;
     return (usb_host_uframe_number(&usb_host_handle) >> 3);
 }
 
 void hcd_port_reset(uint8_t hostid)
 {
+    (void)hostid;
     usb_host_port_reset(&usb_host_handle);
 }
 
 bool hcd_port_connect_status(uint8_t hostid)
 {
+    (void)hostid;
     return usb_host_get_port_ccs(&usb_host_handle);
 }
 
 tusb_speed_t hcd_port_speed_get(uint8_t hostid)
 {
+    (void)hostid;
     return usb_host_get_port_speed(&usb_host_handle);
 }
 
 void hcd_device_close(uint8_t rhport, uint8_t dev_addr)
 {
+    (void)rhport;
     usb_host_device_close(&usb_host_handle, dev_addr);
 }
 
 bool hcd_edpt_xfer(uint8_t rhport, uint8_t dev_addr, uint8_t ep_addr, uint8_t * buffer, uint16_t buflen)
 {
+    (void)rhport;
     return usb_host_edpt_xfer(&usb_host_handle, dev_addr, ep_addr, buffer, buflen);
 }
 
 bool hcd_setup_send(uint8_t rhport, uint8_t dev_addr, uint8_t const setup_packet[8])
 {
+    (void)rhport;
     return usb_host_setup_send(&usb_host_handle, dev_addr, setup_packet);
 }
 
 bool hcd_edpt_open(uint8_t rhport, uint8_t dev_addr, tusb_desc_endpoint_t const * ep_desc)
 {
+    (void)rhport;
     hcd_devtree_info_t devtree_info;
     hcd_devtree_get_info(dev_addr, &devtree_info);
 
@@ -371,6 +379,7 @@ static void xfer_error_isr(usb_host_handle_t *handle)
 /*------------- Host Controller Driver's Interrupt Handler -------------*/
 void hcd_int_handler(uint8_t rhport)
 {
+    (void)rhport;
     uint32_t status;
     usb_host_handle_t *handle = &usb_host_handle;
 

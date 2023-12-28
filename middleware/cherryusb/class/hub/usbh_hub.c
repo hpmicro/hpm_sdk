@@ -312,7 +312,7 @@ static int usbh_hub_connect(struct usbh_hubport *hport, uint8_t intf)
 
     struct usbh_hub *hub = usbh_hub_class_alloc();
     if (hub == NULL) {
-        USB_LOG_ERR("Fail to alloc cdc_acm_class\r\n");
+        USB_LOG_ERR("Fail to alloc hub_class\r\n");
         return -ENOMEM;
     }
 
@@ -640,7 +640,7 @@ static void usbh_hub_thread(void *argument)
 
     usb_hc_init();
     while (1) {
-        ret = usb_osal_mq_recv(hub_mq, (uintptr_t *)&hub, 0xffffffff);
+        ret = usb_osal_mq_recv(hub_mq, (uintptr_t *)&hub, USB_OSAL_WAITING_FOREVER);
         if (ret < 0) {
             continue;
         }

@@ -14,6 +14,7 @@ void tmr1_callback(void *p_tmr, void *p_arg)
 {
     OS_ERR err;
     static uint8_t flag = 0;
+    (void)p_tmr;
     CPU_SR_ALLOC();
     p_arg = p_arg;
     flag++;
@@ -45,6 +46,8 @@ void tmr1_callback(void *p_tmr, void *p_arg)
 void tmr2_callback(void *p_tmr, void *p_arg)
 {
     OS_ERR err;
+    (void)p_tmr;
+    (void)p_arg;
     CPU_SR_ALLOC();
 
     CPU_CRITICAL_ENTER();

@@ -27,7 +27,9 @@
 #include "hpm_gpio_drv.h"
 #include "hpm_adc.h"
 
+#ifndef SEGGER_RTT_ENABLE
 #define SEGGER_RTT_ENABLE 0
+#endif
 
 #if SEGGER_RTT_ENABLE
 #include "SEGGER_RTT.h"
@@ -45,10 +47,10 @@ int32_t motor_clock_hz;
 #define SENSORLESS_TMR_RELOAD       (BOARD_BLDC_TMR_RELOAD / 10)
 
 #if (BLDC_CURRENT_SET_TIME_MS > 250)
-#error "BLDC_CURRENT_SET_TIME_MS must samller than 250"
+#error "BLDC_CURRENT_SET_TIME_MS must be smaller than 250"
 #endif
 
-volatile ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t adc_buff[3][BOARD_BLDC_ADC_SEQ_DMA_SIZE_IN_4BYTES];
+volatile ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t adc_buff[3][BOARD_BLDC_ADC_PMT_DMA_SIZE_IN_4BYTES];
 
 void motor0_highspeed_loop(void);
 
@@ -70,14 +72,6 @@ adc_type hpm_adc_v = {
     .adc_base.adc12 = BOARD_BLDC_ADC_V_BASE,
 #else
     .adc_base.adc16 = BOARD_BLDC_ADC_V_BASE,
-#endif
-    .module = BOARD_BLDC_ADC_MODULE
-};
-adc_type hpm_adc_w = {
-#if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC12
-    .adc_base.adc12 = BOARD_BLDC_ADC_W_BASE,
-#else
-    .adc_base.adc16 = BOARD_BLDC_ADC_W_BASE,
 #endif
     .module = BOARD_BLDC_ADC_MODULE
 };
@@ -116,7 +110,7 @@ struct {
 void bldc_init_par(void)
 {
     BLDC_CONTROL_FOC_PARA *par = &motor0.foc_para;
-    par->motorpar.func_smc_const = &hpm_mcl_smc_const_cal;
+    par->motorpar.func_smc_const = (void(*)(void *))&hpm_mcl_smc_const_cal;
     par->motorpar.i_lstator_h = 0.00263;
     par->motorpar.i_maxspeed_rs = 35;
     par->motorpar.i_phasecur_a = 0.125;
@@ -130,28 +124,28 @@ void bldc_init_par(void)
     pll_speed_control.i_speedfilter = 0.0075;
     pll_speed_control.i_speedlooptime_s = 0.00005*20;
     pll_speed_control.i_motorpar = &par->motorpar;
-    pll_speed_control.func_getspd = hpm_mcl_bldc_foc_al_speed;
+    pll_speed_control.func_getspd = (void(*)(void *))&hpm_mcl_bldc_foc_al_speed;
 
     par->currentdpipar.i_kp = 10;
     par->currentdpipar.i_ki = 0.01;
     par->currentdpipar.i_max = 6000;
-    par->currentdpipar.func_pid = hpm_mcl_bldc_foc_pi_contrl;
+    par->currentdpipar.func_pid = (void(*)(void *))&hpm_mcl_bldc_foc_pi_contrl;
 
     par->currentqpipar.i_kp = 10;
     par->currentqpipar.i_ki = 0.01;
     par->currentqpipar.i_max = 6000;
-    par->currentqpipar.func_pid = hpm_mcl_bldc_foc_pi_contrl;
+    par->currentqpipar.func_pid = (void(*)(void *))&hpm_mcl_bldc_foc_pi_contrl;
 
-    par->pwmpar.func_spwm = hpm_mcl_bldc_foc_svpwm;
+    par->pwmpar.func_spwm = (void(*)(void *))&hpm_mcl_bldc_foc_svpwm;
     par->pwmpar.i_pwm_reload_max = PWM_RELOAD*0.95;
-    par->pwmpar.pwmout.func_set_pwm = hpm_mcl_bldc_foc_pwmset;
+    par->pwmpar.pwmout.func_set_pwm = (void(*)(void *))&hpm_mcl_bldc_foc_pwmset;
     par->pwmpar.pwmout.i_pwm_reload = PWM_RELOAD;
     par->pwmpar.pwmout.i_motor_id = BLDC_MOTOR0_INDEX;
 
-    par->samplcurpar.func_sampl = hpm_mcl_bldc_foc_current_cal;
+    par->samplcurpar.func_sampl = (void(*)(void *))&hpm_mcl_bldc_foc_current_cal;
     par->func_dqsvpwm =  (void *)hpm_mcl_smc_loop;
 
-    motor0.speedloop_para.func_pid  = hpm_mcl_bldc_foc_pi_contrl;
+    motor0.speedloop_para.func_pid  = (void(*)(void *))hpm_mcl_bldc_foc_pi_contrl;
     motor0.speedloop_para.i_kp      = 46;
     motor0.speedloop_para.i_ki      = 0.095;
     motor0.speedloop_para.i_max     = 3500;
@@ -166,7 +160,7 @@ void bldc_init_par(void)
     motor0.smc_para.ubeta = &par->ubeta;
     motor0.smc_para.ialpha = &par->ialpha;
     motor0.smc_para.ibeta = &par->ibeta;
-    motor0.smc_para.func_smc = hpm_mcl_smc_pos_cal;
+    motor0.smc_para.func_smc = (void(*)(void *))hpm_mcl_smc_pos_cal;
     motor0.smc_pll.kp = 0.314;
     motor0.smc_pll.ki = 0.007;
     motor0.smc_pll.loop_in_sec = 0.00005;
@@ -376,11 +370,13 @@ void init_trigger_mux(TRGM_Type *ptr)
 
 void motor0_current_loop(float angle)
 {
+    uint8_t smc_en;
+
+    smc_en = !is_being_started;
     motor0.foc_para.samplcurpar.adc_u = GET_ADC_12BIT_VALID_DATA(adc_buff[ADCU_INDEX][BOARD_BLDC_ADC_TRG*4]);
     motor0.foc_para.samplcurpar.adc_v = GET_ADC_12BIT_VALID_DATA(adc_buff[ADCV_INDEX][BOARD_BLDC_ADC_TRG*4]);
-    motor0.foc_para.samplcurpar.adc_w = GET_ADC_12BIT_VALID_DATA(adc_buff[ADCW_INDEX][BOARD_BLDC_ADC_TRG*4]);
     motor0.foc_para.electric_angle = angle;
-    motor0.foc_para.func_dqsvpwm(&motor0.foc_para, &motor0.smc_para, &motor0.smc_pll, !is_being_started);
+    motor0.foc_para.func_dqsvpwm(&motor0.foc_para, &motor0.smc_para, &motor0.smc_pll, &smc_en);
     motor0.foc_para.pwmpar.pwmout.func_set_pwm(&motor0.foc_para.pwmpar.pwmout);
 }
 void motor0_highspeed_loop(void)
@@ -411,19 +407,14 @@ void init_trigger_cfg(uint8_t trig_ch, bool inten)
 #if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC12
     pmt_cfg.config.adc12.trig_ch   = trig_ch;
     pmt_cfg.config.adc12.trig_len  = BOARD_BLDC_ADC_PREEMPT_TRIG_LEN;
-    pmt_cfg.config.adc12.adc_ch[0] = BOARD_BLDC_ADC_CH_W;
     pmt_cfg.config.adc12.inten[0] = inten;
 
     pmt_cfg.adc_base.adc12 = BOARD_BLDC_ADC_W_BASE;
 #else
     pmt_cfg.config.adc16.trig_ch   = trig_ch;
     pmt_cfg.config.adc16.trig_len  = BOARD_BLDC_ADC_PREEMPT_TRIG_LEN;
-    pmt_cfg.config.adc16.adc_ch[0] = BOARD_BLDC_ADC_CH_W;
     pmt_cfg.config.adc16.inten[0] = inten;
-
-    pmt_cfg.adc_base.adc16 = BOARD_BLDC_ADC_W_BASE;
 #endif
-    hpm_adc_set_preempt_config(&pmt_cfg);
 #if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC12
     pmt_cfg.config.adc12.adc_ch[0] = BOARD_BLDC_ADC_CH_V;
     pmt_cfg.adc_base.adc12 = BOARD_BLDC_ADC_V_BASE;
@@ -461,9 +452,6 @@ void adc_init(void)
 
     cfg.adc_base.adc12 = BOARD_BLDC_ADC_V_BASE;
     hpm_adc_init(&cfg);
-
-    cfg.adc_base.adc12 = BOARD_BLDC_ADC_W_BASE;
-    hpm_adc_init(&cfg);
 #else
     cfg.config.adc16.res            = adc16_res_16_bits;
     cfg.config.adc16.conv_mode      = adc16_conv_mode_preemption;
@@ -475,9 +463,6 @@ void adc_init(void)
     hpm_adc_init(&cfg);
 
     cfg.adc_base.adc16 = BOARD_BLDC_ADC_V_BASE;
-    hpm_adc_init(&cfg);
-
-    cfg.adc_base.adc16 = BOARD_BLDC_ADC_W_BASE;
     hpm_adc_init(&cfg);
 #endif
     ch_cfg.module                        = BOARD_BLDC_ADC_MODULE;
@@ -494,9 +479,6 @@ void adc_init(void)
     ch_cfg.config.adc12_ch.ch            = BOARD_BLDC_ADC_CH_V;
     hpm_adc_channel_init(&ch_cfg);
 
-    ch_cfg.adc_base.adc12                = BOARD_BLDC_ADC_W_BASE;
-    ch_cfg.config.adc12_ch.ch            = BOARD_BLDC_ADC_CH_W;
-    hpm_adc_channel_init(&ch_cfg);
 #else
     ch_cfg.config.adc16_ch.sample_cycle  = 20;
 
@@ -508,9 +490,6 @@ void adc_init(void)
     ch_cfg.config.adc16_ch.ch            = BOARD_BLDC_ADC_CH_V;
     hpm_adc_channel_init(&ch_cfg);
 
-    ch_cfg.adc_base.adc16                = BOARD_BLDC_ADC_W_BASE;
-    ch_cfg.config.adc16_ch.ch            = BOARD_BLDC_ADC_CH_W;
-    hpm_adc_channel_init(&ch_cfg);
 #endif
 
     init_trigger_mux(BOARD_BLDCPWM_TRGM);
@@ -519,11 +498,9 @@ void adc_init(void)
 #if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC16
     adc16_set_pmt_queue_enable(BOARD_BLDC_ADC_U_BASE, BOARD_BLDC_ADC_TRG, true);
     adc16_set_pmt_queue_enable(BOARD_BLDC_ADC_V_BASE, BOARD_BLDC_ADC_TRG, true);
-    adc16_set_pmt_queue_enable(BOARD_BLDC_ADC_W_BASE, BOARD_BLDC_ADC_TRG, true);
 #endif
 
     /* Set DMA start address for preemption mode */
-    hpm_adc_init_pmt_dma(&hpm_adc_w, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[ADCW_INDEX]));
     hpm_adc_init_pmt_dma(&hpm_adc_u, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[ADCU_INDEX]));
     hpm_adc_init_pmt_dma(&hpm_adc_v, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[ADCV_INDEX]));
 }
@@ -532,7 +509,6 @@ void set_adval_middle(void)
 {
     uint32_t adc_u_sum = 0;
     uint32_t adc_v_sum = 0;
-    uint32_t adc_w_sum = 0;
     uint8_t times = 0;
 
     motor0.foc_para.pwmpar.pwmout.pwm_u = PWM_RELOAD >> 1;
@@ -543,7 +519,6 @@ void set_adval_middle(void)
         if (timer_flag == 1) {
             adc_u_sum += GET_ADC_12BIT_VALID_DATA(adc_buff[ADCU_INDEX][BOARD_BLDC_ADC_TRG*4]);
             adc_v_sum += GET_ADC_12BIT_VALID_DATA(adc_buff[ADCV_INDEX][BOARD_BLDC_ADC_TRG*4]);
-            adc_w_sum += GET_ADC_12BIT_VALID_DATA(adc_buff[ADCW_INDEX][BOARD_BLDC_ADC_TRG*4]);
             times++;
             if (times >= BLDC_CURRENT_SET_TIME_MS) {
                 break;
@@ -553,7 +528,6 @@ void set_adval_middle(void)
     } while (1);
     motor0.foc_para.samplcurpar.adc_u_middle = adc_u_sum / BLDC_CURRENT_SET_TIME_MS;
     motor0.foc_para.samplcurpar.adc_v_middle = adc_v_sum / BLDC_CURRENT_SET_TIME_MS;
-    motor0.foc_para.samplcurpar.adc_w_middle = adc_w_sum / BLDC_CURRENT_SET_TIME_MS;
 }
 
 int main(void)

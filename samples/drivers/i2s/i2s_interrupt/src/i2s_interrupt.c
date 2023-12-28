@@ -11,7 +11,7 @@
 #include "hpm_dmamux_drv.h"
 #include "audio_data.h"
 
-#ifdef CONFIG_HAS_HPMSDK_DMAV2
+#ifdef HPMSOC_HAS_HPMSDK_DMAV2
 #include "hpm_dmav2_drv.h"
 #else
 #include "hpm_dma_drv.h"
@@ -26,7 +26,11 @@
     #error no specified Audio Codec!!!
 #endif
 
+#ifndef BOARD_CODEC_I2C_BASE
 #define CODEC_I2C            BOARD_APP_I2C_BASE
+#else
+#define CODEC_I2C            BOARD_CODEC_I2C_BASE
+#endif
 #define CODEC_I2S            BOARD_APP_I2S_BASE
 #define CODEC_I2S_CLK_NAME   BOARD_APP_I2S_CLK_NAME
 #define CODEC_I2S_DATA_LINE  BOARD_APP_I2S_DATA_LINE
@@ -91,7 +95,7 @@ hpm_stat_t board_i2s_init(audio_data_t *audio_data, uint32_t mclk_freq)
     transfer.audio_depth = audio_data->audio_depth;
     /* 1 chanel - channel slot mask 0x1; 2 channel - channel solt mask 0x3 */
     transfer.channel_slot_mask = (1 << audio_data->channel_num) - 1;
-    transfer.data_line = I2S_DATA_LINE_2;
+    transfer.data_line = CODEC_I2S_DATA_LINE;
     transfer.master_mode = true;
 #ifdef CONFIG_CODEC_WM8960
     transfer.protocol = I2S_PROTOCOL_I2S_PHILIPS;

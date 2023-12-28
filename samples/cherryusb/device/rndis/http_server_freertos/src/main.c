@@ -83,6 +83,7 @@ uint32_t sys_now(void)
 static void task1(void *pvParameters)
 {
     extern usb_osal_sem_t sema_rndis_data;
+    (void)pvParameters;
     printf("[cherry usb rndis device with freertos sample]: task started.\n");
 
     while (1) {
@@ -160,6 +161,7 @@ static err_t netif_init_cb(struct netif *netif)
 
 static err_t linkoutput_fn(struct netif *netif, struct pbuf *p)
 {
+    (void)netif;
     int ret;
 
     ret = usbd_rndis_eth_tx(p);

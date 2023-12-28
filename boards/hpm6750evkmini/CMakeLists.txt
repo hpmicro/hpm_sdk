@@ -1,8 +1,7 @@
-# Copyright (c) 2021 HPMicro
+# Copyright (c) 2021-2023 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
-sdk_compile_definitions_ifdef(BOARD_LCD_WIDTH "-DBOARD_LCD_WIDTH=${BOARD_LCD_WIDTH}")
-sdk_compile_definitions_ifdef(BOARD_LCD_HEIGHT "-DBOARD_LCD_HEIGHT=${BOARD_LCD_HEIGHT}")
+set(ENV{CONFIG_PANEL_RGB_TM070RDH13} 1)
 sdk_compile_definitions_ifdef(BUILD_FOR_SECONDARY_CORE BOARD_RUNNING_CORE=HPM_CORE1)
 
 sdk_inc(.)

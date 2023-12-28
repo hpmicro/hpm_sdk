@@ -47,6 +47,7 @@
 #define BOARD_APP_UART_RX_DMA_REQ HPM_DMA_SRC_UART0_RX
 #define BOARD_APP_UART_TX_DMA_REQ HPM_DMA_SRC_UART0_TX
 
+#if !defined(CONFIG_NDEBUG_CONSOLE) || !CONFIG_NDEBUG_CONSOLE
 #ifndef BOARD_CONSOLE_TYPE
 #define BOARD_CONSOLE_TYPE CONSOLE_TYPE_UART
 #endif
@@ -62,6 +63,7 @@
 #endif
 #endif
 #define BOARD_CONSOLE_BAUDRATE (115200UL)
+#endif
 #endif
 
 #define BOARD_FREEMASTER_UART_BASE HPM_UART0
@@ -232,6 +234,8 @@
 #define BOARD_BLDCPWM_CMP_INDEX_3         (3U)
 #define BOARD_BLDCPWM_CMP_INDEX_4         (4U)
 #define BOARD_BLDCPWM_CMP_INDEX_5         (5U)
+#define BOARD_BLDCPWM_CMP_INDEX_6         (6U)
+#define BOARD_BLDCPWM_CMP_INDEX_7         (7U)
 #define BOARD_BLDCPWM_CMP_TRIG_CMP        (15U)
 
 /*HALL define*/
@@ -276,7 +280,7 @@
 #define BOARD_BLDC_ADC_CH_V                    (9U)
 #define BOARD_BLDC_ADC_CH_W                    (4U)
 #define BOARD_BLDC_ADC_IRQn                    IRQn_ADC0
-#define BOARD_BLDC_ADC_SEQ_DMA_SIZE_IN_4BYTES  (40U)
+#define BOARD_BLDC_ADC_PMT_DMA_SIZE_IN_4BYTES  (ADC_SOC_PMT_MAX_DMA_BUFF_LEN_IN_4BYTES)
 #define BOARD_BLDC_ADC_TRG                    ADC16_CONFIG_TRG0A
 #define BOARD_BLDC_ADC_PREEMPT_TRIG_LEN        (1U)
 #define BOARD_BLDC_PWM_TRIG_CMP_INDEX          (8U)

@@ -7,6 +7,8 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "")
     SET(CMAKE_BUILD_TYPE flash_sdram_xip)
 endif()
 
+set(CONFIG_HPM_PANEL 1)
+
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(lcdc_example)

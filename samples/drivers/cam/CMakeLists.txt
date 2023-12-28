@@ -8,21 +8,11 @@ set(CONFIG_CAMERA "ov7725")
 endif()
 set(CONFIG_HPM_CAMERA 1)
 
-if(NOT "${CONFIG_CAMERA}" STREQUAL "ov7725")
-    string(TOLOWER ${CMAKE_BUILD_TYPE} build_type)
-    string(FIND ${build_type} "release" found)
-    string(FIND ${build_type} "flash_sdram_xip" warn_message)
-
-    if (${warn_message})
-        message(WARNING "<${CONFIG_CAMERA}> need more ram on chip, so switch to <flash_sdram_xip> linker!")
-    endif()
-
-    if (${found} GREATER_EQUAL 0)
-        SET(CMAKE_BUILD_TYPE flash_sdram_xip_release)
-    else()
-        SET(CMAKE_BUILD_TYPE flash_sdram_xip)
-    endif()
+if("${CMAKE_BUILD_TYPE}" STREQUAL "")
+    SET(CMAKE_BUILD_TYPE flash_sdram_xip)
 endif()
+
+set(CONFIG_HPM_PANEL 1)
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(cam_example)

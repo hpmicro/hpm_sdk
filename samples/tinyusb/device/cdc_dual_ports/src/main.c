@@ -39,7 +39,7 @@ static void cdc_task(void);
 int main(void)
 {
   board_init();
-
+  board_init_usb_pins();
   printf("USB%d Device - CDC Dual Ports Demo\r\n", BOARD_DEVICE_RHPORT_NUM);
 
   tusb_init();

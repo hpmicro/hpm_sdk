@@ -9,15 +9,15 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+#include "usb_osal.h"
 #include <stdio.h>
 #include "board.h"
-#include "hpm_debug_console.h"
 #include "usb_config.h"
+#include "usb_osal.h"
 
 #define LED_FLASH_PERIOD_IN_MS 300
 
-extern volatile uint8_t dtr_enable;
-extern volatile uint8_t rts_enable;
+extern volatile bool dtr_enable;
 extern void cdc_acm_init(void);
 extern void cdc_acm_data_send_with_dtr_test(void);
 extern void destroy_demaphore_tx_done(void);
@@ -25,15 +25,19 @@ extern void destroy_demaphore_tx_done(void);
 
 static void task1(void *pvParameters)
 {
+    (void)pvParameters;
+
     uint32_t u = 0;
     printf("[cherryusb cdc acm with freertos sample]: task started.\n");
 
     while (u < 2) {
-        if (dtr_enable || rts_enable) {
+        if (dtr_enable) {
             u++;
+            vTaskDelay(50);
             cdc_acm_data_send_with_dtr_test();
+        } else {
+            vTaskDelay(100);
         }
-        vTaskDelay(10);
     }
     destroy_demaphore_tx_done();
     vTaskDelete(NULL);

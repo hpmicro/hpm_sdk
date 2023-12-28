@@ -10,6 +10,9 @@
 
 static err_t tcpecho_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
 {
+    (void)arg;
+    (void)err;
+
     if (p != NULL) {
         tcp_recved(tpcb, p->tot_len);
         tcp_write(tpcb, p->payload, p->tot_len, 1);
@@ -23,6 +26,9 @@ static err_t tcpecho_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t
 
 static err_t tcpecho_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
 {
+    (void)arg;
+    (void)err;
+
     tcp_recv(newpcb, tcpecho_recv);
     return ERR_OK;
 }

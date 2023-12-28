@@ -32,7 +32,7 @@ hpm_stat_t opamp_init(OPAMP_Type *opamp, opamp_cfg_t *cfg)
         if ((cfg->negative_input_pin & 0x04) != 0) {
             return status_invalid_argument;
         }
-        opamp_disconnect_vssa(opamp);
+        opamp_connect_vssa(opamp);
         opamp_phase_margin_cap_disable(opamp);
         opamp_mode_set(opamp, OPAMP_MODE_INVERT_INDEX0_KEY);
         break;
@@ -54,14 +54,14 @@ hpm_stat_t opamp_init(OPAMP_Type *opamp, opamp_cfg_t *cfg)
         if ((cfg->negative_input_pin & 0x04) != 0) {
             return status_invalid_argument;
         }
-        opamp_disconnect_vssa(opamp);
+        opamp_connect_vssa(opamp);
         opamp_mode_set(opamp, OPAMP_MODE_INVERT_INDEX0_KEY);
         break;
     case mode_non_invert_gnd_vol:
         if ((cfg->positive_input_pin & 0x04) != 0) {
             return status_invalid_argument;
         }
-        opamp_disconnect_vssa(opamp);
+        opamp_connect_vssa(opamp);
         if (!cfg->enable_extern_filter_cap) {
             if ((cfg->negative_input_pin & 0x04) == 0) {
                 return status_invalid_argument;
@@ -81,7 +81,7 @@ hpm_stat_t opamp_init(OPAMP_Type *opamp, opamp_cfg_t *cfg)
         if ((cfg->negative_input_pin & 0x04) != 0) {
             return status_invalid_argument;
         }
-        opamp_disconnect_vssa(opamp);
+        opamp_connect_vssa(opamp);
         if (!cfg->enable_extern_filter_cap) {
             opamp_mode_set(opamp, OPAMP_MODE_NON_INVERT_INDEX1_KEY);
         } else {
@@ -93,7 +93,7 @@ hpm_stat_t opamp_init(OPAMP_Type *opamp, opamp_cfg_t *cfg)
             return status_invalid_argument;
         }
         opamp_inn_pad_select(opamp, 0x02);
-        opamp_disconnect_vssa(opamp);
+        opamp_connect_vssa(opamp);
         opamp_mode_set(opamp, OPAMP_MODE_NON_INVERT_INDEX4_KEY);
         break;
     case mode_user:

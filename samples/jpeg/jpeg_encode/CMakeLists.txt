@@ -3,6 +3,8 @@
 
 cmake_minimum_required(VERSION 3.13)
 
+set(CONFIG_HPM_PANEL 1)
+
 # select target storage:
 #  - JPEG_USE_SDCARD: sdcard
 #  - JPEG_USE_UDISK: udisk

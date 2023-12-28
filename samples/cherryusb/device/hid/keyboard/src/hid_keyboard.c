@@ -10,6 +10,12 @@
 #include "board.h"
 #include "hpm_gpio_drv.h"
 
+#if defined(BOARD_BUTTON_PRESSED_VALUE)
+#define APP_BUTTON_PRESSED_VALUE BOARD_BUTTON_PRESSED_VALUE
+#else
+#define APP_BUTTON_PRESSED_VALUE 0
+#endif
+
 #define HID_INT_EP          0x81
 #define HID_INT_EP_SIZE     8
 #define HID_INT_EP_INTERVAL 10
@@ -197,6 +203,8 @@ static volatile uint8_t hid_state = HID_STATE_IDLE;
 
 void usbd_hid_int_callback(uint8_t ep, uint32_t nbytes)
 {
+    (void)ep;
+    (void)nbytes;
     hid_state = HID_STATE_IDLE;
 }
 
@@ -221,7 +229,7 @@ void hid_keyboard_test(void)
 {
     bool key_pushed = false;
 
-    if (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) == 0u) {
+    if (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) == APP_BUTTON_PRESSED_VALUE) {
         key_pushed = true;
         s_sendbuffer[2] = HID_KBD_USAGE_A;    /* a */
         int ret = usbd_ep_start_write(HID_INT_EP, s_sendbuffer, 8);
@@ -236,7 +244,7 @@ void hid_keyboard_test(void)
 
     if (key_pushed) {
         key_pushed = false;
-        while (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) == 0u) {
+        while (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) == APP_BUTTON_PRESSED_VALUE) {
         }
         s_sendbuffer[2] = 0;
         int ret = usbd_ep_start_write(HID_INT_EP, s_sendbuffer, 8);

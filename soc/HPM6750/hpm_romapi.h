@@ -304,7 +304,7 @@ typedef struct {
     /**< Bootloader API table: copyright string address */
     const char *copyright;
     /**< Bootloader API table: run_bootloader API */
-    const hpm_stat_t (*run_bootloader)(void *arg);
+    hpm_stat_t (*run_bootloader)(void *arg);
     /**< Bootloader API table: otp driver interface address */
     const otp_driver_interface_t *otp_driver_if;
     /**< Bootloader API table: xpi driver interface address */

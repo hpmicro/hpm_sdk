@@ -71,6 +71,7 @@ static inline uint32_t mcan_get_ram_base(MCAN_Type *ptr)
  */
 static inline uint32_t mcan_get_ram_offset(MCAN_Type *ptr)
 {
+    (void) ptr;
     return 0U;
 }
 

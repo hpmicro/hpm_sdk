@@ -9,6 +9,7 @@
 
 #include "hpm_sdmmc_common.h"
 #include "hpm_sdmmc_card.h"
+#include "hpm_sdmmc_port.h"
 
 typedef enum {
     emmc_switch_cmd_access_mode_command_set = 0,

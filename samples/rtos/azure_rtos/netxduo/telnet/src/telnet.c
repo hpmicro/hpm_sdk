@@ -125,7 +125,7 @@ VOID tx_application_define(VOID *first_unused_memory)
 {
 
     UINT status;
-
+    TX_PARAMETER_NOT_USED(first_unused_memory);
     /* Create the server thread.  */
     tx_thread_create(&server_thread, "server thread", thread_server_entry, 0,
         (VOID *)thread_usr_stack, sizeof(thread_usr_stack),

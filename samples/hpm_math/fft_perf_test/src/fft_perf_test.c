@@ -202,7 +202,7 @@ int main(void)
         printf("------------------------------------\r\n\r\n\r\n");
     }
     printf("**************************************\r\n\r\n\r\n\r\n");
-#ifdef CONFIG_HAS_HPMSDK_FFA
+#ifdef HPMSOC_HAS_HPMSDK_FFA
     /**
      * @brief Q31 FFA  2^j complex samples
      *

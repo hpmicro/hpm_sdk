@@ -15,6 +15,7 @@ void float_task(void *p_arg)
     OS_ERR err;
     CPU_SR_ALLOC();
     static float float_num = 0.01;
+    (void)p_arg;
     while (1) {
         float_num += 0.01f;
         CPU_CRITICAL_ENTER();

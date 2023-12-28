@@ -150,6 +150,18 @@ static can_info_t s_can_info[] = {
 #if defined (HPM_MCAN3)
     { .can_base = HPM_MCAN3, .irq_num = IRQn_CAN3 },
 #endif
+#if defined (HPM_MCAN4)
+    { .can_base = HPM_MCAN4, .irq_num = IRQn_CAN4 },
+#endif
+#if defined (HPM_MCAN5)
+    { .can_base = HPM_MCAN5, .irq_num = IRQn_CAN5 },
+#endif
+#if defined (HPM_MCAN6)
+    { .can_base = HPM_MCAN6, .irq_num = IRQn_CAN6 },
+#endif
+#if defined (HPM_MCAN7)
+    { .can_base = HPM_MCAN7, .irq_num = IRQn_CAN7 },
+#endif
 };
 
 static volatile bool has_new_rcv_msg;
@@ -740,7 +752,6 @@ void board_can_error_test(void)
     /**
      * Case 1: Test CAN2.0B errors
      */
-    has_error = false;
     MCAN_Type *base = BOARD_APP_CAN_BASE;
     mcan_config_t can_config;
     mcan_get_default_config(base, &can_config);
@@ -758,6 +769,9 @@ void board_can_error_test(void)
     }
     intc_m_enable_irq_with_priority(BOARD_APP_CAN_IRQn, 1);
 
+    has_sent_out = false;
+    has_error = false;
+
     mcan_tx_frame_t tx_buf;
     memset(&tx_buf, 0, sizeof(tx_buf));
     tx_buf.dlc = 8;
@@ -774,7 +788,6 @@ void board_can_error_test(void)
     } else {
         printf("no can error happened\n");
     }
-    has_error = false;
     handle_can_error(base);
 
     /**
@@ -794,6 +807,10 @@ void board_can_error_test(void)
         return;
     }
     intc_m_enable_irq_with_priority(BOARD_APP_CAN_IRQn, 1);
+
+    has_sent_out = false;
+    has_error = false;
+
     memset(&tx_buf, 0, sizeof(tx_buf));
     tx_buf.dlc = 15;
     tx_buf.canfd_frame = true;

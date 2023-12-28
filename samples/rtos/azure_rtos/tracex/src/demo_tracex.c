@@ -79,6 +79,7 @@ int main(void)
 void tx_application_define(void *first_unused_memory)
 {
     CHAR *pointer = TX_NULL;
+    (void)first_unused_memory;
     tx_trace_enable(&trace_buffer, trace_buffer_size, registry_entries);
 
     /* Create a byte memory pool from which to allocate the thread stacks.  */
@@ -186,6 +187,7 @@ void thread_0_entry(ULONG thread_input)
 {
     TX_INTERRUPT_SAVE_AREA
     UINT status;
+    (void)thread_input;
     TX_DISABLE;
     printf("%s\n", __func__);
     TX_RESTORE;
@@ -221,6 +223,7 @@ void thread_1_entry(ULONG thread_input)
 {
     TX_INTERRUPT_SAVE_AREA
     UINT status;
+    (void)thread_input;
     TX_DISABLE;
     printf("%s\n", __func__);
     TX_RESTORE;
@@ -244,8 +247,8 @@ void thread_1_entry(ULONG thread_input)
 
 void thread_2_entry(ULONG thread_input)
 {
-
     ULONG received_message;
+    (void)thread_input;
     TX_INTERRUPT_SAVE_AREA
     UINT status;
     TX_DISABLE;
@@ -312,6 +315,7 @@ void thread_5_entry(ULONG thread_input)
 {
     TX_INTERRUPT_SAVE_AREA
     UINT status;
+    (void)thread_input;
     TX_DISABLE;
     printf("%s\n", __func__);
     TX_RESTORE;

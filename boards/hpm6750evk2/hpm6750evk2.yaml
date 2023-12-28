@@ -16,6 +16,8 @@ board:
       size: 16M
     feature:
       - butn
+      - sdp
+      - rng
       - rtc
       - wdg
       - adc
@@ -64,3 +66,7 @@ board:
       - bldc_smc
       - puart
       - bldc_hfi
+      - gpt_pin
+      - sdram
+      - acmp
+      - ptpc

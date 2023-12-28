@@ -70,6 +70,7 @@ VOID memory_free(VOID *mem)
 /******************************************************************************************/
 VOID tx_application_define(void *first_unused_memory)
 {
+    (void)first_unused_memory;
     tx_thread_create(&demo_thread, "GUIX Demo Thread", guix_entry, 
                      0,  demo_thread_stack, sizeof(demo_thread_stack), 
                      1, 1, TX_NO_TIME_SLICE, TX_AUTO_START);
@@ -80,6 +81,7 @@ VOID tx_application_define(void *first_unused_memory)
 /******************************************************************************************/
 VOID  guix_entry(ULONG unused)
 {
+    (void)unused;
 #ifdef USE_CANVAS_FOR_ANIMATION
     GX_RECTANGLE size;
 #endif

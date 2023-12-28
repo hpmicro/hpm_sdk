@@ -53,6 +53,7 @@
 #define BOARD_APP_UART_RX_DMA_REQ HPM_DMA_SRC_UART0_RX
 #define BOARD_APP_UART_TX_DMA_REQ HPM_DMA_SRC_UART0_TX
 
+#if !defined(CONFIG_NDEBUG_CONSOLE) || !CONFIG_NDEBUG_CONSOLE
 #ifndef BOARD_CONSOLE_TYPE
 #define BOARD_CONSOLE_TYPE CONSOLE_TYPE_UART
 #endif
@@ -63,6 +64,7 @@
 #define BOARD_CONSOLE_CLK_NAME clock_uart0
 #endif
 #define BOARD_CONSOLE_BAUDRATE (115200UL)
+#endif
 #endif
 
 #define BOARD_FREEMASTER_UART_BASE HPM_UART2
@@ -199,6 +201,8 @@
 #define BOARD_BLDCPWM_CMP_INDEX_3         (3U)
 #define BOARD_BLDCPWM_CMP_INDEX_4         (4U)
 #define BOARD_BLDCPWM_CMP_INDEX_5         (5U)
+#define BOARD_BLDCPWM_CMP_INDEX_6         (6U)
+#define BOARD_BLDCPWM_CMP_INDEX_7         (7U)
 #define BOARD_BLDCPWM_CMP_TRIG_CMP        (20U)
 
 /*HALL define*/
@@ -223,8 +227,8 @@
 #define BOARD_BLDC_QEI_MOTOR_PHASE_COUNT_PER_REV     (16U)
 #define BOARD_BLDC_QEI_CLOCK_SOURCE      clock_mot0
 #define BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV       (4000U)
-#define BOARD_BLDC_QEI_ADC_MATRIX_ADCX    trgm_adc_matrix_output_to_qei1_adcx
-#define BOARD_BLDC_QEI_ADC_MATRIX_ADCY    trgm_adc_matrix_output_to_qei1_adcy
+#define BOARD_BLDC_QEI_ADC_MATRIX_ADC0    trgm_adc_matrix_output_to_qei1_adc0
+#define BOARD_BLDC_QEI_ADC_MATRIX_ADC1    trgm_adc_matrix_output_to_qei1_adc1
 
 /*Timer define*/
 #define BOARD_BLDC_TMR_1MS                       HPM_GPTMR2
@@ -242,9 +246,9 @@
 
 #define BOARD_BLDC_ADC_CH_U                    (5U)
 #define BOARD_BLDC_ADC_CH_V                    (6U)
-#define BOARD_BLDC_ADC_CH_W                    (6U)
+#define BOARD_BLDC_ADC_CH_W                    (4U)
 #define BOARD_BLDC_ADC_IRQn                    IRQn_ADC0
-#define BOARD_BLDC_ADC_SEQ_DMA_SIZE_IN_4BYTES  (40U)
+#define BOARD_BLDC_ADC_PMT_DMA_SIZE_IN_4BYTES  (ADC_SOC_PMT_MAX_DMA_BUFF_LEN_IN_4BYTES)
 #define BOARD_BLDC_ADC_TRG                    ADC16_CONFIG_TRG0A
 #define BOARD_BLDC_ADC_PREEMPT_TRIG_LEN        (1U)
 #define BOARD_BLDC_PWM_TRIG_CMP_INDEX          (8U)
@@ -348,6 +352,8 @@ uint32_t board_init_uart_clock(UART_Type *ptr);
 void board_init_sei_pins(SEI_Type *ptr, uint8_t sei_ctrl_idx);
 
 void board_init_i2c(I2C_Type *ptr);
+
+void board_init_adc_qeiv2_pins(void);
 #if defined(__cplusplus)
 }
 #endif /* __cplusplus */
