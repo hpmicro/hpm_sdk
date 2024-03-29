@@ -12,6 +12,14 @@
 #include "hpm_soc_feature.h"
 #include "hpm_bgpr_regs.h"
 
+/**
+ *
+ * @brief BGPR driver APIs
+ * @defgroup bgpr_interfaces BGPR driver APIs
+ * @ingroup io_interfaces
+ * @{
+ */
+
 #if defined(__cplusplus)
 extern "C" {
 #endif /* __cplusplus */

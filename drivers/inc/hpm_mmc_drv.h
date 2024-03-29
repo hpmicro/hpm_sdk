@@ -13,7 +13,7 @@
 /**
  * @brief MMC driver APIs
  * @defgroup mmc_interface MMC driver APIs
- * @ingroup mmc_interface
+ * @ingroup mmc_interfaces
  * @{
  */
 
@@ -360,14 +360,14 @@ void mmc_track_config_coef_para(MMC_Type *base, mmc_coef_input_t *para);
 /**
  * @brief MMC track config position trigger
  * @param [in] base MMC base address
- * @param [in] para mmc_pos_trig_t
+ * @param [in] trig mmc_pos_trig_t
  */
 void mmc_track_config_position_trig(MMC_Type *base, mmc_pos_trig_t *trig);
 
 /**
  * @brief MMC track config speed trigger
  * @param [in] base MMC base address
- * @param [in] para mmc_speed_trig_t
+ * @param [in] trig mmc_speed_trig_t
  */
 void mmc_track_config_speed_trig(MMC_Type *base, mmc_speed_trig_t *trig);
 
@@ -392,6 +392,7 @@ static inline void mmc_track_disable_speed_trig(MMC_Type *base)
 /**
  * @brief MMC track config multiple coef trigger
  * @param [in] base MMC base address
+ * @param [in] index coef trigger index(0/1/2)
  * @param [in] config mmc_coef_trig_config_t
  */
 void mmc_track_config_coef_trig(MMC_Type *base, uint8_t index, mmc_coef_trig_config_t *config);

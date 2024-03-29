@@ -10,6 +10,7 @@
 #include "hpm_mcl_cfg.h"
 #include "hpm_mcl_physical.h"
 #include "hpm_mcl_math.h"
+#include "stdio.h"
 
 typedef uint32_t hpm_mcl_stat_t;
 
@@ -46,8 +47,10 @@ enum {
  */
 void mcl_user_delay_us(uint64_t tick);
 
+#define MCL_DEBUG printf
 #define MCL_PI (3.1415926535f)
 #define MCL_2PI (2.0f * MCL_PI)
+#define MCL_PI_DIV3 (MCL_PI / 3.0f)
 
 #define MCL_DELAY_US(x) mcl_user_delay_us(x)
 #define MCL_DELAY_MS(x) MCL_DELAY_US(1000*x)
@@ -57,6 +60,7 @@ void mcl_user_delay_us(uint64_t tick);
     do {    \
         if (!b) {   \
             code_extend; \
+            MCL_DEBUG("errcode:%d, file:%s, line:%d.\r\n", errcode, __FILE__, __LINE__);  \
             return errcode;    \
         }   \
     } while (0)
@@ -132,13 +136,6 @@ void mcl_user_delay_us(uint64_t tick);
     }   \
     (val_);  \
 })
-
-/**
- * @brief Determine if a floating point number is 0
- *
- */
-#define MCL_FLOAT_IS_ZERO(val)  ((val < 0.000001) && (val > -0.000001))
-
 
 /**
  * @brief Data Range Limits

@@ -9,4 +9,4 @@ project(otp_api)
 
 sdk_app_inc(src)
 sdk_app_src(src/main.c)
-generate_ses_project()
+generate_ide_projects()

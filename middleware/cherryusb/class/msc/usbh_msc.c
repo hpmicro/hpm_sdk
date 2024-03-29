@@ -7,6 +7,10 @@
 #include "usbh_msc.h"
 #include "usb_scsi.h"
 
+#undef USB_DBG_TAG
+#define USB_DBG_TAG "usbh_msc"
+#include "usb_log.h"
+
 #define DEV_FORMAT "/dev/sd%c"
 
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_msc_buf[32];
@@ -50,7 +54,7 @@ static int usbh_msc_get_maxlun(struct usbh_msc *msc_class, uint8_t *buffer)
     setup->wIndex = msc_class->intf;
     setup->wLength = 1;
 
-    return usbh_control_transfer(msc_class->hport->ep0, setup, buffer);
+    return usbh_control_transfer(msc_class->hport, setup, buffer);
 }
 
 static void usbh_msc_cbw_dump(struct CBW *cbw)
@@ -87,9 +91,8 @@ static inline int usbh_msc_bulk_in_transfer(struct usbh_msc *msc_class, uint8_t 
 {
     int ret;
     struct usbh_urb *urb = &msc_class->bulkin_urb;
-    memset(urb, 0, sizeof(struct usbh_urb));
 
-    usbh_bulk_urb_fill(urb, msc_class->bulkin, buffer, buflen, timeout, NULL, NULL);
+    usbh_bulk_urb_fill(urb, msc_class->hport, msc_class->bulkin, buffer, buflen, timeout, NULL, NULL);
     ret = usbh_submit_urb(urb);
     if (ret == 0) {
         ret = urb->actual_length;
@@ -101,9 +104,8 @@ static inline int usbh_msc_bulk_out_transfer(struct usbh_msc *msc_class, uint8_t
 {
     int ret;
     struct usbh_urb *urb = &msc_class->bulkout_urb;
-    memset(urb, 0, sizeof(struct usbh_urb));
 
-    usbh_bulk_urb_fill(urb, msc_class->bulkout, buffer, buflen, timeout, NULL, NULL);
+    usbh_bulk_urb_fill(urb, msc_class->hport, msc_class->bulkout, buffer, buflen, timeout, NULL, NULL);
     ret = usbh_submit_urb(urb);
     if (ret == 0) {
         ret = urb->actual_length;
@@ -111,7 +113,7 @@ static inline int usbh_msc_bulk_out_transfer(struct usbh_msc *msc_class, uint8_t
     return ret;
 }
 
-int usbh_bulk_cbw_csw_xfer(struct usbh_msc *msc_class, struct CBW *cbw, struct CSW *csw, uint8_t *buffer)
+static int usbh_bulk_cbw_csw_xfer(struct usbh_msc *msc_class, struct CBW *cbw, struct CSW *csw, uint8_t *buffer)
 {
     int nbytes;
 
@@ -157,12 +159,12 @@ int usbh_bulk_cbw_csw_xfer(struct usbh_msc *msc_class, struct CBW *cbw, struct C
     /* check csw status */
     if (csw->dSignature != MSC_CSW_Signature) {
         USB_LOG_ERR("csw signature error\r\n");
-        return -EINVAL;
+        return -USB_ERR_INVAL;
     }
 
     if (csw->bStatus != 0) {
         USB_LOG_ERR("csw bStatus %d\r\n", csw->bStatus);
-        return -EINVAL;
+        return -USB_ERR_INVAL;
     }
 __err_exit:
     return nbytes < 0 ? (int)nbytes : 0;
@@ -236,6 +238,132 @@ static inline int usbh_msc_scsi_readcapacity10(struct usbh_msc *msc_class)
     return usbh_bulk_cbw_csw_xfer(msc_class, cbw, (struct CSW *)g_msc_buf, g_msc_buf);
 }
 
+static inline void usbh_msc_modeswitch(struct usbh_msc *msc_class, const uint8_t *message)
+{
+    struct CBW *cbw;
+
+    /* Construct the CBW */
+    cbw = (struct CBW *)g_msc_buf;
+
+    memcpy(g_msc_buf, message, 31);
+
+    usbh_bulk_cbw_csw_xfer(msc_class, cbw, (struct CSW *)g_msc_buf, NULL);
+}
+
+static int usbh_msc_connect(struct usbh_hubport *hport, uint8_t intf)
+{
+    struct usb_endpoint_descriptor *ep_desc;
+    int ret;
+    struct usbh_msc_modeswitch_config *config;
+
+    struct usbh_msc *msc_class = usbh_msc_class_alloc();
+    if (msc_class == NULL) {
+        USB_LOG_ERR("Fail to alloc msc_class\r\n");
+        return -USB_ERR_NOMEM;
+    }
+
+    msc_class->hport = hport;
+    msc_class->intf = intf;
+
+    hport->config.intf[intf].priv = msc_class;
+
+    ret = usbh_msc_get_maxlun(msc_class, g_msc_buf);
+    if (ret < 0) {
+        return ret;
+    }
+
+    USB_LOG_INFO("Get max LUN:%u\r\n", g_msc_buf[0] + 1);
+
+    for (uint8_t i = 0; i < hport->config.intf[intf].altsetting[0].intf_desc.bNumEndpoints; i++) {
+        ep_desc = &hport->config.intf[intf].altsetting[0].ep[i].ep_desc;
+        if (ep_desc->bEndpointAddress & 0x80) {
+            USBH_EP_INIT(msc_class->bulkin, ep_desc);
+        } else {
+            USBH_EP_INIT(msc_class->bulkout, ep_desc);
+        }
+    }
+
+    if (g_msc_modeswitch_config) {
+        uint8_t num = 0;
+        while (1) {
+            config = &g_msc_modeswitch_config[num];
+            if (config && config->name) {
+                if ((hport->device_desc.idVendor == config->vid) &&
+                    (hport->device_desc.idProduct == config->pid)) {
+                    USB_LOG_INFO("%s usb_modeswitch enable\r\n", config->name);
+                    usbh_msc_modeswitch(msc_class, config->message_content);
+                    return 0;
+                }
+                num++;
+            } else {
+                break;
+            }
+        }
+    }
+
+    ret = usbh_msc_scsi_testunitready(msc_class);
+    if (ret < 0) {
+        ret = usbh_msc_scsi_requestsense(msc_class);
+        if (ret < 0) {
+            USB_LOG_ERR("Fail to scsi_testunitready\r\n");
+            return ret;
+        }
+    }
+
+    ret = usbh_msc_scsi_inquiry(msc_class);
+    if (ret < 0) {
+        USB_LOG_ERR("Fail to scsi_inquiry\r\n");
+        return ret;
+    }
+    ret = usbh_msc_scsi_readcapacity10(msc_class);
+    if (ret < 0) {
+        USB_LOG_ERR("Fail to scsi_readcapacity10\r\n");
+        return ret;
+    }
+
+    if (msc_class->blocksize > 0) {
+        USB_LOG_INFO("Capacity info:\r\n");
+        USB_LOG_INFO("Block num:%d,block size:%d\r\n", (unsigned int)msc_class->blocknum, (unsigned int)msc_class->blocksize);
+    } else {
+        USB_LOG_ERR("Invalid block size\r\n");
+        return -USB_ERR_RANGE;
+    }
+
+    snprintf(hport->config.intf[intf].devname, CONFIG_USBHOST_DEV_NAMELEN, DEV_FORMAT, msc_class->sdchar);
+
+    USB_LOG_INFO("Register MSC Class:%s\r\n", hport->config.intf[intf].devname);
+
+    usbh_msc_run(msc_class);
+    return ret;
+}
+
+static int usbh_msc_disconnect(struct usbh_hubport *hport, uint8_t intf)
+{
+    int ret = 0;
+
+    struct usbh_msc *msc_class = (struct usbh_msc *)hport->config.intf[intf].priv;
+
+    if (msc_class) {
+        if (msc_class->bulkin) {
+            usbh_kill_urb(&msc_class->bulkin_urb);
+        }
+
+        if (msc_class->bulkout) {
+            usbh_kill_urb(&msc_class->bulkout_urb);
+        }
+
+        if (hport->config.intf[intf].devname[0] != '\0') {
+            USB_LOG_INFO("Unregister MSC Class:%s\r\n", hport->config.intf[intf].devname);
+            usbh_msc_stop(msc_class);
+        }
+
+        usbh_msc_class_free(msc_class);
+    }
+
+    return ret;
+}
+
+
 int usbh_msc_scsi_write10(struct usbh_msc *msc_class, uint32_t start_sector, const uint8_t *buffer, uint32_t nsectors)
 {
     struct CBW *cbw;
@@ -282,130 +410,6 @@ void usbh_msc_modeswitch_enable(struct usbh_msc_modeswitch_config *config)
     } else {
         g_msc_modeswitch_config = NULL;
     }
-}
-
-void usbh_msc_modeswitch(struct usbh_msc *msc_class, const uint8_t *message)
-{
-    struct CBW *cbw;
-
-    /* Construct the CBW */
-    cbw = (struct CBW *)g_msc_buf;
-
-    memcpy(g_msc_buf, message, 31);
-
-    usbh_bulk_cbw_csw_xfer(msc_class, cbw, (struct CSW *)g_msc_buf, NULL);
-}
-
-static int usbh_msc_connect(struct usbh_hubport *hport, uint8_t intf)
-{
-    struct usb_endpoint_descriptor *ep_desc;
-    int ret;
-    struct usbh_msc_modeswitch_config *config;
-
-    struct usbh_msc *msc_class = usbh_msc_class_alloc();
-    if (msc_class == NULL) {
-        USB_LOG_ERR("Fail to alloc msc_class\r\n");
-        return -ENOMEM;
-    }
-
-    msc_class->hport = hport;
-    msc_class->intf = intf;
-
-    hport->config.intf[intf].priv = msc_class;
-
-    ret = usbh_msc_get_maxlun(msc_class, g_msc_buf);
-    if (ret < 0) {
-        return ret;
-    }
-
-    USB_LOG_INFO("Get max LUN:%u\r\n", g_msc_buf[0] + 1);
-
-    for (uint8_t i = 0; i < hport->config.intf[intf].altsetting[0].intf_desc.bNumEndpoints; i++) {
-        ep_desc = &hport->config.intf[intf].altsetting[0].ep[i].ep_desc;
-        if (ep_desc->bEndpointAddress & 0x80) {
-            usbh_hport_activate_epx(&msc_class->bulkin, hport, ep_desc);
-        } else {
-            usbh_hport_activate_epx(&msc_class->bulkout, hport, ep_desc);
-        }
-    }
-
-    if (g_msc_modeswitch_config) {
-        uint8_t num = 0;
-        while (1) {
-            config = &g_msc_modeswitch_config[num];
-            if (config) {
-                if ((hport->device_desc.idVendor == config->vid) &&
-                    (hport->device_desc.idProduct == config->pid)) {
-                    USB_LOG_INFO("%s usb_modeswitch enable\r\n", config->name);
-                    usbh_msc_modeswitch(msc_class, config->message_content);
-                    return 0;
-                }
-            } else {
-                break;
-            }
-        }
-    }
-
-    ret = usbh_msc_scsi_testunitready(msc_class);
-    if (ret < 0) {
-        ret = usbh_msc_scsi_requestsense(msc_class);
-        if (ret < 0) {
-            USB_LOG_ERR("Fail to scsi_testunitready\r\n");
-            return ret;
-        }
-    }
-
-    ret = usbh_msc_scsi_inquiry(msc_class);
-    if (ret < 0) {
-        USB_LOG_ERR("Fail to scsi_inquiry\r\n");
-        return ret;
-    }
-    ret = usbh_msc_scsi_readcapacity10(msc_class);
-    if (ret < 0) {
-        USB_LOG_ERR("Fail to scsi_readcapacity10\r\n");
-        return ret;
-    }
-
-    if (msc_class->blocksize > 0) {
-        USB_LOG_INFO("Capacity info:\r\n");
-        USB_LOG_INFO("Block num:%d,block size:%d\r\n", (unsigned int)msc_class->blocknum, (unsigned int)msc_class->blocksize);
-    } else {
-        USB_LOG_ERR("Invalid block size\r\n");
-        return -ERANGE;
-    }
-
-    snprintf(hport->config.intf[intf].devname, CONFIG_USBHOST_DEV_NAMELEN, DEV_FORMAT, msc_class->sdchar);
-
-    USB_LOG_INFO("Register MSC Class:%s\r\n", hport->config.intf[intf].devname);
-
-    usbh_msc_run(msc_class);
-    return ret;
-}
-
-static int usbh_msc_disconnect(struct usbh_hubport *hport, uint8_t intf)
-{
-    int ret = 0;
-
-    struct usbh_msc *msc_class = (struct usbh_msc *)hport->config.intf[intf].priv;
-
-    if (msc_class) {
-        if (msc_class->bulkin) {
-            usbh_pipe_free(msc_class->bulkin);
-        }
-
-        if (msc_class->bulkout) {
-            usbh_pipe_free(msc_class->bulkout);
-        }
-
-        if (hport->config.intf[intf].devname[0] != '\0') {
-            USB_LOG_INFO("Unregister MSC Class:%s\r\n", hport->config.intf[intf].devname);
-            usbh_msc_stop(msc_class);
-        }
-
-        usbh_msc_class_free(msc_class);
-    }
-
-    return ret;
 }
 
 __WEAK void usbh_msc_run(struct usbh_msc *msc_class)

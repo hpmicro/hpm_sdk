@@ -15,4 +15,4 @@ sdk_app_inc(../../common)
 
 sdk_app_src(../../common/multicore_common.c)
 sdk_app_src(src/demo.c src/sec_core_img.c)
-generate_ses_project()
+generate_ide_projects()

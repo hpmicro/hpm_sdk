@@ -14,13 +14,14 @@ void cam_get_default_config(CAM_Type *ptr, cam_config_t *config, display_pixel_f
     (void) ptr;
     config->width = 320;
     config->height = 240;
+    config->buffer1 = -1;
+    config->buffer2 = -1;
     config->pixclk_sampling_falling = false;
     config->hsync_active_low = false;
     config->vsync_active_low = false;
     config->de_active_low = false;
     config->color_ext = false;
     config->data_pack_msb = false;
-    config->enable_buffer2 = false;
     config->data_store_mode = CAM_DATA_STORE_MODE_NORMAL;
     config->color_format = pixel_format;
     config->sensor_bitwidth = CAM_SENSOR_BITWIDTH_10BITS;
@@ -80,6 +81,10 @@ hpm_stat_t cam_init(CAM_Type *ptr, cam_config_t *config)
     pixel_format = config->color_format;
     width = config->width;
 
+    if ((int)config->buffer1 < 0) {
+        return status_invalid_argument;
+    }
+
     if (pixel_format == CAM_COLOR_FORMAT_RAW8) {
         if ((width % 2) != 0) {
             return status_invalid_argument;
@@ -115,7 +120,9 @@ hpm_stat_t cam_init(CAM_Type *ptr, cam_config_t *config)
     ptr->CR2 = CAM_CR2_DMA_REQ_EN_RFF_MASK
         | CAM_CR2_RXFF_LEVEL_SET(CAM_RX_FIFO_THRESHOLD);
     ptr->DMASA_FB1 = config->buffer1;
-    if (config->enable_buffer2) {
+    if ((int)config->buffer2 < 0) {
+        ptr->DMASA_FB2 = config->buffer1;
+    } else {
         ptr->DMASA_FB2 = config->buffer2;
     }
 
@@ -130,11 +137,6 @@ hpm_stat_t cam_init(CAM_Type *ptr, cam_config_t *config)
                     | CAM_CSC_COEF2_C3_SET(config->csc_config.yuv2rgb_coef.c3);
 
     return stat;
-}
-
-void cam_update_buffer(CAM_Type *ptr, uint32_t buffer)
-{
-    ptr->DMASA_FB1 = buffer;
 }
 
 void cam_stop(CAM_Type *ptr)

@@ -32,7 +32,7 @@ After running the agent, reset the board.
 
 ## Running the example
 Open a new terminal
-```bash  
+```bash
 source /opt/ros/foxy/setup.bash
 ```
 type

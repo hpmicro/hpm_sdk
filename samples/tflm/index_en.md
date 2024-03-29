@@ -2,10 +2,8 @@
 
 :::{eval-rst}
 .. toctree::
-   :maxdepth: 3
-   :numbered:
+    :maxdepth: 3
+    :glob:
 
-   detection_responder/README_en
-   face_obj/README_en
-   mlperf/README_en
+    **/*_en
 :::

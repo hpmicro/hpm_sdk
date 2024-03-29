@@ -18,9 +18,10 @@
 
 - Nuvoton all series
 
-## Before Use
+### Artinchip
 
-Your should implement `usb_hc_low_level_init`.
-- Enable USB PHY、USB clock and set USB clock for 48M.
-- Enable usb irq
-- Config EHCI BASE and other macros in `cherryusb_config_tempate.h`
+- d13x, d21x
+
+### Intel
+
+- Intel 6 Series Chipset and Intel C200 Series Chipset

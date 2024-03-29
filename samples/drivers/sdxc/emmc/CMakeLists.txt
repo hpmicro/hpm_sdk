@@ -12,4 +12,4 @@ project(emmc_example)
 sdk_inc(src)
 
 sdk_app_src(src/emmc_example.c)
-generate_ses_project()
+generate_ide_projects()

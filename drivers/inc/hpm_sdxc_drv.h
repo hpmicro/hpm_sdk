@@ -23,7 +23,7 @@
 
 /**
  * @brief Generic Definitions
- * @Note:
+ * @note:
  *  If the Host support 1.8V, it means:
  *    1. For SD card, it supports:
  *      - SDR12
@@ -1045,7 +1045,7 @@ hpm_stat_t sdxc_send_command(SDXC_Type *base, sdxc_command_t *cmd);
 /**
  * @brief Receive command response
  * @param [in] base SDXC base address
- * @param [in/out] cmd Command
+ * @param [in,out] cmd Command
  * @return status_success if no error happened
  */
 hpm_stat_t sdxc_receive_cmd_response(SDXC_Type *base, sdxc_command_t *cmd);
@@ -1127,7 +1127,7 @@ void sdxc_init(SDXC_Type *base, const sdxc_config_t *config);
  * @brief Set the Data Timeout Counter value for an SD/eMMC device
  * @param [in] base SDXC base address
  * @param [in] timeout_in_ms Required timeout value in milliseconds, maximum value is 131,072ms
- * @param [out] actual_timeout_us Actual timeout in milliseconds, reported by this API
+ * @param [out] actual_timeout_ms Actual timeout in milliseconds, reported by this API
  */
 void sdxc_set_data_timeout(SDXC_Type *base, uint32_t timeout_in_ms, uint32_t *actual_timeout_ms);
 

@@ -80,7 +80,9 @@ else()
 endif()
 
 set(CROSS_COMPILE ${TOOLCHAIN_HOME}/bin/${CROSS_COMPILE_TARGET}-)
-set(SYSROOT_DIR   ${TOOLCHAIN_HOME}/${SYSROOT_TARGET})
+if(SYSROOT_TARGET)
+  set(SYSROOT_DIR ${TOOLCHAIN_HOME}/${SYSROOT_TARGET}/include/c++/${COMPILER_VERSION})
+endif()
 
 message(STATUS "Found toolchain: gnu (${GNURISCV_TOOLCHAIN_PATH})")
 
@@ -154,3 +156,9 @@ find_program(CMAKE_CXX_COMPILER ${CROSS_COMPILE}${CXX}   PATHS ${TOOLCHAIN_HOME}
 # include toolchain specific settings
 include(${HPM_SDK_BASE}/cmake/toolchain/${TOOLCHAIN_CMAKE})
 
+function (generate_bin2c_array c_array_path)
+    add_custom_command(
+        TARGET ${APP_ELF_NAME}
+        COMMAND ${PYTHON_EXECUTABLE} $ENV{HPM_SDK_BASE}/scripts/bin2c.py ${EXECUTABLE_OUTPUT_PATH}/${APP_BIN_NAME} sec_core_img > ${c_array_path}
+    )
+endfunction ()

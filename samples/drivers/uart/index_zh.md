@@ -1,4 +1,4 @@
-# UART example
+# UART
 
 ```{eval-rst}
 .. toctree::

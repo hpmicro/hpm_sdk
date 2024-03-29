@@ -99,7 +99,10 @@ Boolean netShutdown(NetPath *netPath)
 
     /* leave multicast group */
     multicastAaddr.addr = netPath->multicastAddr;
-    igmp_leavegroup(IP_ADDR_ANY, &multicastAaddr);
+    if (multicastAaddr.addr != 0)
+    {
+        igmp_leavegroup(IP_ADDR_ANY, &multicastAaddr);
+    }
 
     /* Disconnect and close the Event UDP interface */
 
@@ -156,7 +159,7 @@ static Integer32 findIface(const Octet *ifaceName, Octet *uuid, NetPath *netPath
   * @retval None
   */
 static void netRecvEventCallback(void *arg, struct udp_pcb *pcb, struct pbuf *p,
-                                 ip_addr_t *addr, u16_t port)
+                                 const ip_addr_t *addr, u16_t port)
 {
     NetPath *netPath = (NetPath *)arg;
 
@@ -181,7 +184,7 @@ static void netRecvEventCallback(void *arg, struct udp_pcb *pcb, struct pbuf *p,
   * @retval None
   */
 static void netRecvGeneralCallback(void *arg, struct udp_pcb *pcb, struct pbuf *p,
-                                   ip_addr_t *addr, u16_t port)
+                                   const ip_addr_t *addr, u16_t port)
 {
     NetPath *netPath = (NetPath *)arg;
 

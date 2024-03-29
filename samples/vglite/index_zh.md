@@ -1,9 +1,9 @@
-# VGLite 例程
+# VGLite
 
 :::{eval-rst}
 .. toctree::
    :maxdepth: 3
+   :glob:
 
-   tiger/README_zh
-
+   **/*_zh
 :::

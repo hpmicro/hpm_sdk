@@ -18,10 +18,10 @@
 
 #define FEMC_PRESCALER_MAX (256UL)
 
-static void femc_config_delay_cell(FEMC_Type *ptr, uint32_t delay_cell_value)
+static void femc_config_delay_cell(FEMC_Type *ptr, bool delay_cell_en, uint32_t delay_cell_value)
 {
     ptr->DLYCFG &= ~FEMC_DLYCFG_OE_MASK;
-    ptr->DLYCFG = FEMC_DLYCFG_DLYSEL_SET(delay_cell_value) | FEMC_DLYCFG_DLYEN_MASK;
+    ptr->DLYCFG = FEMC_DLYCFG_DLYSEL_SET(delay_cell_value) | FEMC_DLYCFG_DLYEN_SET(delay_cell_en);
     ptr->DLYCFG |= FEMC_DLYCFG_OE_MASK;
 }
 
@@ -310,7 +310,7 @@ hpm_stat_t femc_config_sdram(FEMC_Type *ptr, uint32_t clk_in_hz, femc_sdram_conf
     /*
      * config delay cell
      */
-    femc_config_delay_cell(ptr, config->delay_cell_value);
+    femc_config_delay_cell(ptr, !config->delay_cell_disable, config->delay_cell_value);
 
     cmd.opcode = FEMC_CMD_SDRAM_PRECHARGE_ALL;
     cmd.data = 0;

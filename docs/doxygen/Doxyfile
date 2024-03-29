@@ -2226,7 +2226,22 @@ INCLUDE_FILE_PATTERNS  =
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
 PREDEFINED             = "HPM_EN_MATH_NN_LIB=1" \
-						"HPM_EN_MATH_DSP_LIB=1"
+						"HPM_EN_MATH_DSP_LIB=1" \
+                        "HPM_IP_FEATURE_UART_RX_IDLE_DETECT=1" \
+                        "HPM_IP_FEATURE_UART_FCRR=1" \
+                        "HPM_IP_FEATURE_UART_RX_EN=1" \
+                        "HPM_IP_FEATURE_UART_E00018_FIX=1" \
+                        "HPM_IP_FEATURE_UART_9BIT_MODE=1" \
+                        "HPM_IP_FEATURE_UART_ADDR_MATCH=1" \
+                        "HPM_IP_FEATURE_UART_TRIG_MODE=1" \
+                        "HPM_IP_FEATURE_UART_FINE_FIFO_THRLD=1" \
+                        "HPM_IP_FEATURE_UART_IIR2=1" \
+                        "HPM_IP_FEATURE_PWM_COUNTER_RESET=1"  \
+                        "HPM_IP_FEATURE_PWM_HRPWM=1"    \
+                        "HPM_IP_FEATURE_SPI_NEW_TRANS_COUNT=1" \
+                        "HPM_IP_FEATURE_SPI_CS_SELECT=1" \
+                        "HPM_IP_FEATURE_SPI_SUPPORT_DIRECTIO=1" \
+                        "HPM_IP_FEATURE_I2C_SUPPORT_RESET=1" \
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The

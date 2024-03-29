@@ -29,23 +29,22 @@ This example shows a functionality of PTP V2 Master
   This is an ethernet demo: PTP V2 Master
   LwIP Version: 2.1.2
   Enet phy init passed !
-  Static IP: 192.168.100.10
-  Netmask  : 255.255.255.0
-  Gateway  : 192.168.100.1
-  (D 1651074120.007102500) event POWER UP
-  (D 1651074120.010687940) state PTP_INITIALIZING
-  (D 1651074120.014967740) manufacturerIdentity: PTPd;2.0.1
-  (D 1651074120.020130140) netShutdown
-  igmp_leavegroup: attempt to leave non-multicast address(D 1651074120.028251540) netInit
-  (D 1651074120.031339180) initData
-  (D 1651074120.034417820) initTimer
-  (D 1651074120.037566500) initClock
-  (D 1651074120.040746420) state PTP_SLAVE
-  (D 1651074120.044416740) initClock
-  (D 1651074120.047563940) state PTP_MASTER
-  (D 1651074120.051320740) SYNC INTERVAL TIMER : 1000
-
   Link Status: Up
   Link Speed:  1000Mbps
   Link Duplex: Full duplex
+  IPv4 Address: 192.168.100.10
+  IPv4 Netmask: 255.255.255.0
+  IPv4 Gateway: 192.168.100.1
+  (D 1651074124.010746860) event POWER UP
+  (D 1651074124.014339620) state PTP_INITIALIZING
+  (D 1651074124.018623220) manufacturerIdentity: PTPd;2.0.1
+  (D 1651074124.023781780) netShutdown
+  (D 1651074124.027104980) netInit
+  (D 1651074124.030203300) initData
+  (D 1651074124.033282940) initTimer
+  (D 1651074124.036426580) initClock
+  (D 1651074124.039606060) state PTP_SLAVE
+  (D 1651074124.043276300) initClock
+(D 1651074124.046417700) state PTP_MASTER
+  (D 1651074124.050168420) SYNC INTERVAL TIMER : 1000
   ```

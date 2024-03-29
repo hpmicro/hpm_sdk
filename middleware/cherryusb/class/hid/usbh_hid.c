@@ -6,6 +6,10 @@
 #include "usbh_core.h"
 #include "usbh_hid.h"
 
+#undef USB_DBG_TAG
+#define USB_DBG_TAG "usbh_hid"
+#include "usb_log.h"
+
 #define DEV_FORMAT "/dev/input%d"
 
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_hid_buf[128];
@@ -49,7 +53,7 @@ static int usbh_hid_get_report_descriptor(struct usbh_hid *hid_class, uint8_t *b
     setup->wIndex = hid_class->intf;
     setup->wLength = 128;
 
-    ret = usbh_control_transfer(hid_class->hport->ep0, setup, g_hid_buf);
+    ret = usbh_control_transfer(hid_class->hport, setup, g_hid_buf);
     if (ret < 0) {
         return ret;
     }
@@ -67,7 +71,7 @@ int usbh_hid_set_idle(struct usbh_hid *hid_class, uint8_t report_id, uint8_t dur
     setup->wIndex = hid_class->intf;
     setup->wLength = 0;
 
-    return usbh_control_transfer(hid_class->hport->ep0, setup, NULL);
+    return usbh_control_transfer(hid_class->hport, setup, NULL);
 }
 
 int usbh_hid_get_idle(struct usbh_hid *hid_class, uint8_t *buffer)
@@ -81,7 +85,7 @@ int usbh_hid_get_idle(struct usbh_hid *hid_class, uint8_t *buffer)
     setup->wIndex = hid_class->intf;
     setup->wLength = 1;
 
-    ret = usbh_control_transfer(hid_class->hport->ep0, setup, g_hid_buf);
+    ret = usbh_control_transfer(hid_class->hport, setup, g_hid_buf);
     if (ret < 0) {
         return ret;
     }
@@ -99,7 +103,7 @@ int usbh_hid_set_protocol(struct usbh_hid *hid_class, uint8_t protocol)
     setup->wIndex = 0;
     setup->wLength = 0;
 
-    return usbh_control_transfer(hid_class->hport->ep0, setup, NULL);
+    return usbh_control_transfer(hid_class->hport, setup, NULL);
 }
 
 int usbh_hid_connect(struct usbh_hubport *hport, uint8_t intf)
@@ -110,7 +114,7 @@ int usbh_hid_connect(struct usbh_hubport *hport, uint8_t intf)
     struct usbh_hid *hid_class = usbh_hid_class_alloc();
     if (hid_class == NULL) {
         USB_LOG_ERR("Fail to alloc hid_class\r\n");
-        return -ENOMEM;
+        return -USB_ERR_NOMEM;
     }
 
     hid_class->hport = hport;
@@ -137,9 +141,9 @@ int usbh_hid_connect(struct usbh_hubport *hport, uint8_t intf)
     for (uint8_t i = 0; i < hport->config.intf[intf].altsetting[0].intf_desc.bNumEndpoints; i++) {
         ep_desc = &hport->config.intf[intf].altsetting[0].ep[i].ep_desc;
         if (ep_desc->bEndpointAddress & 0x80) {
-            usbh_hport_activate_epx(&hid_class->intin, hport, ep_desc);
+            USBH_EP_INIT(hid_class->intin, ep_desc);
         } else {
-            usbh_hport_activate_epx(&hid_class->intout, hport, ep_desc);
+            USBH_EP_INIT(hid_class->intout, ep_desc);
         }
     }
 
@@ -159,11 +163,11 @@ int usbh_hid_disconnect(struct usbh_hubport *hport, uint8_t intf)
 
     if (hid_class) {
         if (hid_class->intin) {
-            usbh_pipe_free(hid_class->intin);
+            usbh_kill_urb(&hid_class->intin_urb);
         }
 
         if (hid_class->intout) {
-            usbh_pipe_free(hid_class->intout);
+            usbh_kill_urb(&hid_class->intout_urb);
         }
 
         if (hport->config.intf[intf].devname[0] != '\0') {

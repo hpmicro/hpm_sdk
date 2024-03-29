@@ -1,10 +1,9 @@
-# hpm_math
+# HPM Math
 
-```{eval-rst}
+:::{eval-rst}
 .. toctree::
    :maxdepth: 3
+   :glob:
 
-   fft_perf_test/README_zh
-   rfft/README_zh
-
-```
+   **/*_zh
+:::

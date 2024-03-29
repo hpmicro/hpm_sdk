@@ -19,4 +19,4 @@ sdk_compile_options(-Os)
 sdk_inc(src)
 
 sdk_app_src(src/sd_fatfs.c)
-generate_ses_project()
+generate_ide_projects()

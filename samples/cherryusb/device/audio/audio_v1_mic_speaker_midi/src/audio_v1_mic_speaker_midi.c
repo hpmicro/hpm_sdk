@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -229,22 +229,22 @@ static struct usbd_interface intf1;
 static struct usbd_interface intf2;
 static struct usbd_interface intf3;
 
-static void usbd_audio_in_callback(uint8_t ep, uint32_t nbytes);
+static void usbd_audio_in_callback(uint8_t busid, uint8_t ep, uint32_t nbytes);
 static struct usbd_endpoint audio_in_ep = {
     .ep_cb = usbd_audio_in_callback,
     .ep_addr = AUDIO_IN_EP
 };
-static void usbd_audio_out_callback(uint8_t ep, uint32_t nbytes);
+static void usbd_audio_out_callback(uint8_t busid, uint8_t ep, uint32_t nbytes);
 static struct usbd_endpoint audio_out_ep = {
     .ep_cb = usbd_audio_out_callback,
     .ep_addr = AUDIO_OUT_EP
 };
-static void usbd_midi_bulk_out_callback(uint8_t ep, uint32_t nbytes);
+static void usbd_midi_bulk_out_callback(uint8_t busid, uint8_t ep, uint32_t nbytes);
 struct usbd_endpoint midi_out_ep = {
     .ep_cb = usbd_midi_bulk_out_callback,
     .ep_addr = MIDI_OUT_EP
 };
-static void usbd_midi_bulk_in_callback(uint8_t ep, uint32_t nbytes);
+static void usbd_midi_bulk_in_callback(uint8_t busid, uint8_t ep, uint32_t nbytes);
 struct usbd_endpoint midi_in_ep = {
     .ep_cb = usbd_midi_bulk_in_callback,
     .ep_addr = MIDI_IN_EP
@@ -270,8 +270,10 @@ static bool speaker_out_buff_is_empty(void);
 static bool mic_in_buff_is_empty(void);
 
 /* extern function definition */
-void usbd_event_handler(uint8_t event)
+static void usbd_event_handler(uint8_t busid, uint8_t event)
 {
+    (void)busid;
+
     switch (event) {
     case USBD_EVENT_RESET:
         break;
@@ -295,9 +297,11 @@ void usbd_event_handler(uint8_t event)
     }
 }
 
-void usbd_audio_set_volume(uint8_t ep, uint8_t ch, int volume)
+void usbd_audio_set_volume(uint8_t busid, uint8_t ep, uint8_t ch, int volume)
 {
+    (void)busid;
     (void)ch;
+
     if (ep == AUDIO_OUT_EP) {
         s_speaker_volume_percent = volume;
         /* Do Nothing */
@@ -309,9 +313,11 @@ void usbd_audio_set_volume(uint8_t ep, uint8_t ch, int volume)
     }
 }
 
-int usbd_audio_get_volume(uint8_t ep, uint8_t ch)
+int usbd_audio_get_volume(uint8_t busid, uint8_t ep, uint8_t ch)
 {
+    (void)busid;
     (void)ch;
+
     int volume = 0;
 
     if (ep == AUDIO_OUT_EP) {
@@ -325,9 +331,11 @@ int usbd_audio_get_volume(uint8_t ep, uint8_t ch)
     return volume;
 }
 
-void usbd_audio_set_mute(uint8_t ep, uint8_t ch, bool mute)
+void usbd_audio_set_mute(uint8_t busid, uint8_t ep, uint8_t ch, bool mute)
 {
+    (void)busid;
     (void)ch;
+
     if (ep == AUDIO_OUT_EP) {
         s_speaker_mute = mute;
         if (s_speaker_mute) {
@@ -347,9 +355,11 @@ void usbd_audio_set_mute(uint8_t ep, uint8_t ch, bool mute)
     }
 }
 
-bool usbd_audio_get_mute(uint8_t ep, uint8_t ch)
+bool usbd_audio_get_mute(uint8_t busid, uint8_t ep, uint8_t ch)
 {
+    (void)busid;
     (void)ch;
+
     bool mute = false;
 
     if (ep == AUDIO_OUT_EP) {
@@ -363,8 +373,10 @@ bool usbd_audio_get_mute(uint8_t ep, uint8_t ch)
     return mute;
 }
 
-void usbd_audio_set_sampling_freq(uint8_t ep, uint32_t sampling_freq)
+void usbd_audio_set_sampling_freq(uint8_t busid, uint8_t ep, uint32_t sampling_freq)
 {
+    (void)busid;
+
     if (ep == AUDIO_OUT_EP) {
         s_speaker_sample_rate = sampling_freq;
     } else if (ep == AUDIO_IN_EP) {
@@ -374,8 +386,10 @@ void usbd_audio_set_sampling_freq(uint8_t ep, uint32_t sampling_freq)
     }
 }
 
-uint32_t usbd_audio_get_sampling_freq(uint8_t ep)
+uint32_t usbd_audio_get_sampling_freq(uint8_t busid, uint8_t ep)
 {
+    (void)busid;
+
     uint32_t freq = 0;
 
     if (ep == AUDIO_OUT_EP) {
@@ -389,7 +403,7 @@ uint32_t usbd_audio_get_sampling_freq(uint8_t ep)
     return freq;
 }
 
-void usbd_audio_open(uint8_t intf)
+void usbd_audio_open(uint8_t busid, uint8_t intf)
 {
     if (intf == 1) {
         s_speaker_rx_flag = 1;
@@ -397,7 +411,7 @@ void usbd_audio_open(uint8_t intf)
         s_speaker_out_buffer_rear = 0;
         s_speaker_dma_transfer_req = true;
         /* setup first out ep read transfer */
-        usbd_ep_start_read(AUDIO_OUT_EP, (uint8_t *)&s_speaker_out_buffer[s_speaker_out_buffer_rear][0], AUDIO_OUT_PACKET);
+        usbd_ep_start_read(busid, AUDIO_OUT_EP, (uint8_t *)&s_speaker_out_buffer[s_speaker_out_buffer_rear][0], AUDIO_OUT_PACKET);
         dao_start(HPM_DAO);
         printf("OPEN SPEAKER\r\n");
     } else {
@@ -412,8 +426,10 @@ void usbd_audio_open(uint8_t intf)
     }
 }
 
-void usbd_audio_close(uint8_t intf)
+void usbd_audio_close(uint8_t busid, uint8_t intf)
 {
+    (void)busid;
+
     if (intf == 1) {
         s_speaker_rx_flag = 0;
         dao_stop(HPM_DAO);
@@ -425,22 +441,22 @@ void usbd_audio_close(uint8_t intf)
     }
 }
 
-void audio_init(void)
+void audio_v1_init(uint8_t busid, uint32_t reg_base)
 {
-    usbd_desc_register(audio_v1_descriptor);
-    usbd_add_interface(usbd_audio_init_intf(&intf0, AUDIO_VERSION, audio_entity_table, 2));
-    usbd_add_interface(usbd_audio_init_intf(&intf1, AUDIO_VERSION, audio_entity_table, 2));
-    usbd_add_interface(usbd_audio_init_intf(&intf2, AUDIO_VERSION, audio_entity_table, 2));
-    usbd_add_interface(&intf3);
-    usbd_add_endpoint(&audio_in_ep);
-    usbd_add_endpoint(&audio_out_ep);
-    usbd_add_endpoint(&midi_out_ep);
-    usbd_add_endpoint(&midi_in_ep);
+    usbd_desc_register(busid, audio_v1_descriptor);
+    usbd_add_interface(busid, usbd_audio_init_intf(busid, &intf0, AUDIO_VERSION, audio_entity_table, 2));
+    usbd_add_interface(busid, usbd_audio_init_intf(busid, &intf1, AUDIO_VERSION, audio_entity_table, 2));
+    usbd_add_interface(busid, usbd_audio_init_intf(busid, &intf2, AUDIO_VERSION, audio_entity_table, 2));
+    usbd_add_interface(busid, &intf3);
+    usbd_add_endpoint(busid, &audio_in_ep);
+    usbd_add_endpoint(busid, &audio_out_ep);
+    usbd_add_endpoint(busid, &midi_out_ep);
+    usbd_add_endpoint(busid, &midi_in_ep);
 
-    usbd_initialize();
+    usbd_initialize(busid, reg_base, usbd_event_handler);
 }
 
-void audio_task(void)
+void audio_v1_task(uint8_t busid)
 {
     if (s_speaker_rx_flag) {
         if (!speaker_out_buff_is_empty()) {
@@ -479,7 +495,7 @@ void audio_task(void)
         if (!mic_in_buff_is_empty()) {
             if (!s_mic_ep_tx_busy_flag) {
                 s_mic_ep_tx_busy_flag = true;
-                usbd_ep_start_write(AUDIO_IN_EP, &s_mic_in_buffer[s_mic_in_buffer_front][0], AUDIO_IN_PACKET);
+                usbd_ep_start_write(busid, AUDIO_IN_EP, &s_mic_in_buffer[s_mic_in_buffer_front][0], AUDIO_IN_PACKET);
                 s_mic_in_buffer_front++;
                 if (s_mic_in_buffer_front >= AUDIO_BUFFER_COUNT) {
                     s_mic_in_buffer_front = 0;
@@ -489,7 +505,7 @@ void audio_task(void)
     }
 }
 
-void midi_task(void)
+void midi_v1_task(uint8_t busid)
 {
     static uint8_t s_midi_state;
     static uint8_t s_note_pos;
@@ -512,7 +528,7 @@ void midi_task(void)
                 s_midi_in_buffer[2] = s_note_sequence[s_note_pos];
                 s_midi_in_buffer[3] = 0;  /* velocity */
                 s_midi_in_busy = true;
-                ret = usbd_ep_start_write(MIDI_IN_EP, s_midi_in_buffer, 4);
+                ret = usbd_ep_start_write(busid, MIDI_IN_EP, s_midi_in_buffer, 4);
                 if (ret < 0) {
                     s_midi_in_busy = false;
                     printf("midi ep write error1\n");
@@ -536,7 +552,7 @@ void midi_task(void)
                 s_midi_in_buffer[2] = s_note_sequence[s_note_pos];
                 s_midi_in_buffer[3] = 100;  /* velocity */
                 s_midi_in_busy = true;
-                ret = usbd_ep_start_write(MIDI_IN_EP, s_midi_in_buffer, 4);
+                ret = usbd_ep_start_write(busid, MIDI_IN_EP, s_midi_in_buffer, 4);
                 if (ret < 0) {
                     s_midi_in_busy = false;
                     printf("midi ep write error0\n");
@@ -643,7 +659,7 @@ void isr_dma(void)
 SDK_DECLARE_EXT_ISR_M(BOARD_APP_HDMA_IRQ, isr_dma)
 
 /* static function definition */
-static void usbd_audio_out_callback(uint8_t ep, uint32_t nbytes)
+static void usbd_audio_out_callback(uint8_t busid, uint8_t ep, uint32_t nbytes)
 {
     if (s_speaker_rx_flag) {
         s_speaker_out_buffer_size[s_speaker_out_buffer_rear] = nbytes;
@@ -651,27 +667,32 @@ static void usbd_audio_out_callback(uint8_t ep, uint32_t nbytes)
         if (s_speaker_out_buffer_rear >= AUDIO_BUFFER_COUNT) {
             s_speaker_out_buffer_rear = 0;
         }
-        usbd_ep_start_read(ep, &s_speaker_out_buffer[s_speaker_out_buffer_rear][0], AUDIO_OUT_PACKET);
+        usbd_ep_start_read(busid, ep, &s_speaker_out_buffer[s_speaker_out_buffer_rear][0], AUDIO_OUT_PACKET);
     }
 }
 
-static void usbd_audio_in_callback(uint8_t ep, uint32_t nbytes)
+static void usbd_audio_in_callback(uint8_t busid, uint8_t ep, uint32_t nbytes)
 {
+    (void)busid;
     (void)ep;
     (void)nbytes;
+
     s_mic_ep_tx_busy_flag = false;
 }
 
-static void usbd_midi_bulk_out_callback(uint8_t ep, uint32_t nbytes)
+static void usbd_midi_bulk_out_callback(uint8_t busid, uint8_t ep, uint32_t nbytes)
 {
+    (void)busid;
     (void)ep;
     (void)nbytes;
 }
 
-static void usbd_midi_bulk_in_callback(uint8_t ep, uint32_t nbytes)
+static void usbd_midi_bulk_in_callback(uint8_t busid, uint8_t ep, uint32_t nbytes)
 {
+    (void)busid;
     (void)ep;
     (void)nbytes;
+
     s_midi_in_busy = false;
 }
 

@@ -83,6 +83,7 @@ static void print_matrix(Matrix matrix_ptr)
  */
 static void eRPCReadyEventHandler(uint16_t eventData, void *context)
 {
+    (void)context;
     eRPCReadyEventData = eventData;
 }
 

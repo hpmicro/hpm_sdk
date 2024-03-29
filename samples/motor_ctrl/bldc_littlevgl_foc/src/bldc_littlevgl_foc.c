@@ -135,7 +135,7 @@ void bldc_init_par(void)
     par->pwmpar.pwmout.i_motor_id = BLDC_MOTOR0_INDEX;
 
     par->samplcurpar.func_sampl = (void(*)(void *))&hpm_mcl_bldc_foc_current_cal;
-    par->func_dqsvpwm =  (void *)&hpm_mcl_bldc_foc_ctrl_dq_to_pwm;
+    par->func_dqsvpwm =  (void (*)(void *, void *, void *, void *))&hpm_mcl_bldc_foc_ctrl_dq_to_pwm;
 
     /*速度环参数*/
     motor0.speedloop_para.func_pid  = (void(*)(void *))&hpm_mcl_bldc_foc_pi_contrl;

@@ -82,21 +82,61 @@ static inline uint32_t ppor_reset_get_flags(PPOR_Type *ptr)
  */
 static inline void ppor_reset_clear_flags(PPOR_Type *ptr, uint32_t mask)
 {
-    ptr->RESET_FLAG |= mask;
+    ptr->RESET_FLAG = mask;
+}
+
+/*
+ * get reset hold
+ */
+static inline uint32_t ppor_reset_get_hold(PPOR_Type *ptr)
+{
+    return ptr->RESET_HOLD;
+}
+
+/*
+ * set reset hold
+ */
+static inline void ppor_reset_set_hold_enable(PPOR_Type *ptr, uint32_t mask)
+{
+    ptr->RESET_HOLD |= mask;
+}
+
+/*
+ * clear reset hold
+ */
+static inline void ppor_reset_clear_hold_enable(PPOR_Type *ptr, uint32_t mask)
+{
+    ptr->RESET_HOLD &= ~mask;
 }
 
 /*
  * set cold reset
  */
-static inline void ppor_reset_set_reset_type(PPOR_Type *ptr, uint32_t mask)
+static inline void ppor_reset_set_cold_reset_enable(PPOR_Type *ptr, uint32_t mask)
 {
-    ptr->RESET_TYPE = mask;
+    ptr->RESET_TYPE &= ~mask;
 }
 
 /*
  * clear cold reset
  */
-static inline void ppor_reset_clear_reset_type(PPOR_Type *ptr, uint32_t mask)
+static inline void ppor_reset_clear_cold_reset_enable(PPOR_Type *ptr, uint32_t mask)
+{
+    ptr->RESET_TYPE |= mask;
+}
+
+/*
+ * set hot reset
+ */
+static inline void ppor_reset_set_hot_reset_enable(PPOR_Type *ptr, uint32_t mask)
+{
+    ptr->RESET_TYPE |= mask;
+}
+
+/*
+ * clear hot reset
+ */
+static inline void ppor_reset_clear_hot_reset_enable(PPOR_Type *ptr, uint32_t mask)
 {
     ptr->RESET_TYPE &= ~mask;
 }

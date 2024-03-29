@@ -1,3 +1,3 @@
 dependency:
-  - sdcard
-  - lcd
+  - board_sdcard
+  - lcdc

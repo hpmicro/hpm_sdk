@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -363,19 +363,19 @@ void init_sequence_config(void)
     dma_cfg.stop_en            = false;
     dma_cfg.stop_pos           = 0;
 
-#if !defined(ADC_SOC_NO_HW_TRIG_SRC) && !defined(__ADC16_USE_SW_TRIG)
-    /* Trigger source initialization */
-    init_trigger_source(APP_ADC16_HW_TRIG_SRC);
-
-    /* Trigger mux initialization */
-    init_trigger_mux(APP_ADC16_HW_TRGM, APP_ADC16_HW_TRGM_OUT_SEQ);
-#endif
-
     /* Initialize DMA for the sequence mode */
     adc16_init_seq_dma(BOARD_APP_ADC16_BASE, &dma_cfg);
 
     /* Enable sequence complete interrupt */
     adc16_enable_interrupts(BOARD_APP_ADC16_BASE, APP_ADC16_SEQ_IRQ_EVENT);
+
+#if !defined(ADC_SOC_NO_HW_TRIG_SRC) && !defined(__ADC16_USE_SW_TRIG)
+    /* Trigger mux initialization */
+    init_trigger_mux(APP_ADC16_HW_TRGM, APP_ADC16_HW_TRGM_OUT_SEQ);
+
+    /* Trigger source initialization */
+    init_trigger_source(APP_ADC16_HW_TRIG_SRC);
+#endif
 }
 
 void sequence_handler(void)
@@ -411,14 +411,6 @@ void init_preemption_config(void)
         adc16_init_channel(BOARD_APP_ADC16_BASE, &ch_cfg);
     }
 
-#if !defined(ADC_SOC_NO_HW_TRIG_SRC) && !defined(__ADC16_USE_SW_TRIG)
-    /* Trigger source initialization */
-    init_trigger_source(APP_ADC16_HW_TRIG_SRC);
-
-    /* Trigger mux initialization */
-    init_trigger_mux(APP_ADC16_HW_TRGM, APP_ADC16_HW_TRGM_OUT_PMT);
-#endif
-
     /* Trigger target initialization */
     init_trigger_target(BOARD_APP_ADC16_BASE, APP_ADC16_PMT_TRIG_CH);
 
@@ -427,6 +419,14 @@ void init_preemption_config(void)
 
     /* Enable trigger complete interrupt */
     adc16_enable_interrupts(BOARD_APP_ADC16_BASE, APP_ADC16_PMT_IRQ_EVENT);
+
+#if !defined(ADC_SOC_NO_HW_TRIG_SRC) && !defined(__ADC16_USE_SW_TRIG)
+    /* Trigger mux initialization */
+    init_trigger_mux(APP_ADC16_HW_TRGM, APP_ADC16_HW_TRGM_OUT_PMT);
+
+    /* Trigger source initialization */
+    init_trigger_source(APP_ADC16_HW_TRIG_SRC);
+#endif
 }
 
 void preemption_handler(void)

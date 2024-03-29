@@ -34,9 +34,10 @@
 #include "freertos_mpool.h"             // osMemoryPool definitions
 #include "freertos_os2.h"               // Configuration check and setup
 
-#include "hpm_csr_regs.h"
-#include "hpm_csr_drv.h"
+#include "hpm_soc.h"
 #include "hpm_mchtmr_drv.h"
+
+
 /*---------------------------------------------------------------------------*/
 #ifndef __ARM_ARCH_6M__
   #define __ARM_ARCH_6M__         0

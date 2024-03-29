@@ -68,7 +68,8 @@ void i2s_slave_config(uint32_t sample_rate, uint8_t audio_depth, uint8_t channel
     i2s_transfer_config_t transfer;
 
     i2s_get_default_config(I2S_SLAVE, &i2s_config);
-    i2s_config.fifo_threshold = I2S_SLAVE_FIFO_THR;
+    i2s_config.tx_fifo_threshold = I2S_SLAVE_FIFO_THR;
+    i2s_config.rx_fifo_threshold = I2S_SLAVE_FIFO_THR;
     i2s_config.use_external_mclk = true;
     i2s_config.use_external_bclk = true;
     i2s_config.use_external_fclk = true;
@@ -79,8 +80,8 @@ void i2s_slave_config(uint32_t sample_rate, uint8_t audio_depth, uint8_t channel
     transfer.sample_rate = sample_rate;
     transfer.audio_depth = audio_depth;
     transfer.master_mode = false;
-    transfer.audio_depth = audio_depth;
     transfer.channel_length = i2s_channel_length_32_bits;
+    transfer.channel_num_per_frame = channel_num;
 
     i2s_config_tx_slave(I2S_SLAVE, &transfer);
     i2s_enable_tx_dma_request(I2S_SLAVE);

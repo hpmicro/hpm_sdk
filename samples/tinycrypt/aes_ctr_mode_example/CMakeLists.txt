@@ -10,4 +10,4 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(aes_ctr_mode_example)
 
 sdk_app_src(src/aes_ctr_mode_example.c)
-generate_ses_project()
+generate_ide_projects()

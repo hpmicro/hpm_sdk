@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -340,6 +340,51 @@ clk_src_t clock_get_source(clock_name_t clock_name)
     }
 
     return clk_src;
+}
+
+uint32_t clock_get_divider(clock_name_t clock_name)
+{
+    uint32_t clk_divider = CLOCK_DIV_INVALID;
+    uint32_t clk_src_type = GET_CLK_SRC_GROUP_FROM_NAME(clock_name);
+    uint32_t node_or_instance = GET_CLK_NODE_FROM_NAME(clock_name);
+    switch (clk_src_type) {
+    case CLK_SRC_GROUP_COMMON:
+        clk_divider = 1UL + SYSCTL_CLOCK_DIV_GET(HPM_SYSCTL->CLOCK[node_or_instance]);
+        break;
+    case CLK_SRC_GROUP_WDG:
+        if (node_or_instance < WDG_INSTANCE_NUM) {
+            clk_divider = 1UL;
+        }
+        break;
+    case CLK_SRC_GROUP_PWDG:
+        clk_divider = 1UL;
+        break;
+    case CLK_SRC_GROUP_PMIC:
+        clk_divider = 1UL;
+        break;
+    case CLK_SRC_GROUP_AHB:
+        clk_divider = 1UL + SYSCTL_CLOCK_DIV_GET(HPM_SYSCTL->CLOCK[(uint32_t) clock_node_ahb0]);
+        break;
+    case CLK_SRC_GROUP_AXI0:
+        clk_divider = 1UL + SYSCTL_CLOCK_DIV_GET(HPM_SYSCTL->CLOCK[(uint32_t) clock_node_axi0]);
+        break;
+    case CLK_SRC_GROUP_AXI1:
+        clk_divider = 1UL + SYSCTL_CLOCK_DIV_GET(HPM_SYSCTL->CLOCK[(uint32_t) clock_node_axi1]);
+        break;
+    case CLK_SRC_GROUP_AXI2:
+        clk_divider = SYSCTL_CLOCK_DIV_GET(HPM_SYSCTL->CLOCK[(uint32_t) clock_node_axi2]);
+        break;
+    case CLK_SRC_GROUP_CPU0:
+        clk_divider = 1UL + SYSCTL_CLOCK_DIV_GET(HPM_SYSCTL->CLOCK[(uint32_t) clock_node_cpu0]);
+        break;
+    case CLK_SRC_GROUP_CPU1:
+        clk_divider = 1UL + SYSCTL_CLOCK_DIV_GET(HPM_SYSCTL->CLOCK[(uint32_t) clock_node_cpu1]);
+        break;
+    default:
+        clk_divider = CLOCK_DIV_INVALID;
+        break;
+    }
+    return clk_divider;
 }
 
 hpm_stat_t clock_set_adc_source(clock_name_t clock_name, clk_src_t src)

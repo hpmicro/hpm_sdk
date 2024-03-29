@@ -11,37 +11,7 @@ board:
       type: qspi-nor-flash
       size: 1M
     feature:
-      - sei
-      - sdp
-      - rng
-      - rdc
-      - qeiv2
-      - linv2
-      - dmav2
-      - qeo
-      - pwm
-      - mmc
-      - uart_hardware_rx_idle
-      - uart_tamagawa
-      - uart_9bit
-      - uart
-      - plb
-      - dac
-      - adc16
-      - pdgo
-      - mcan
-      - ewdg
-      - gpiom
-      - tsns
-      - crc
-      - spi
-      - i2c
-      - usb-otg
-      - ptp
-      - motor-control
-      - bldc_hfi
-      - bldc_smc
-      - opamp
-      - gpt_pin
-      - acmp
-      - ptpc
+      - board_gpt_pin
+      - board_motor_control
+    excluded_samples:
+      - samples/motor_ctrl/bldc_block

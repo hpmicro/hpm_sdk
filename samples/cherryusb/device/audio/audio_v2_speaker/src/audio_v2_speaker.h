@@ -34,11 +34,9 @@
 /*
  * Function Declaration
  */
-void cherryusb_audio_init(void);
+void audio_v2_init(uint8_t busid, uint32_t reg_base);
+void audio_v2_task(uint8_t busid);
 void speaker_init_i2s_dao_codec(void);
 void i2s_enable_dma_irq_with_priority(int32_t priority);
-void cherryusb_audio_main_task(void);
-
-
 
 #endif

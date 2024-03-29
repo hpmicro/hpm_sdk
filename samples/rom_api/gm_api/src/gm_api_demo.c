@@ -92,7 +92,7 @@ hpm_stat_t sm3_api_demo(void)
 hpm_stat_t sm4_api_ecb_demo(void)
 {
     printf("%s, start...\n", __func__);
-    uint8_t plain_text[16] = {};
+    uint8_t plain_text[16] = { 0 };
     uint8_t key[16];
     uint32_t error_cnt = 0;
 
@@ -141,7 +141,7 @@ hpm_stat_t sm4_api_ecb_demo(void)
 hpm_stat_t sm4_api_cbc_demo(void)
 {
     printf("%s, start...\n", __func__);
-    uint8_t plain_text[16] = {};
+    uint8_t plain_text[16] = { 0 };
     uint8_t key[16];
     uint8_t iv[16];
     uint32_t error_cnt = 0;

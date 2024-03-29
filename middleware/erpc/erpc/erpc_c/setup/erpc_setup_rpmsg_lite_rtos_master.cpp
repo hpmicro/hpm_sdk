@@ -23,17 +23,7 @@ using namespace erpc;
 #define SH_MEM_TOTAL_SIZE (6144U)
 #endif
 
-#if defined(__ICCARM__) /* IAR Workbench */
-#pragma location = "rpmsg_sh_mem_section"
-char rpmsg_lite_base[SH_MEM_TOTAL_SIZE];
-#elif defined(__CC_ARM) || defined(__ARMCC_VERSION) /* Keil MDK */
-char rpmsg_lite_base[SH_MEM_TOTAL_SIZE] __attribute__((section("rpmsg_sh_mem_section")));
-#elif defined(__GNUC__)
-static ATTR_SHARE_MEM char rpmsg_lite_base[SH_MEM_TOTAL_SIZE];
-#else
-#error "RPMsg: Please provide your definition of rpmsg_lite_base[]!"
-#endif
-
+ATTR_SHARE_MEM char rpmsg_lite_base[SH_MEM_TOTAL_SIZE];
 ERPC_MANUALLY_CONSTRUCTED(RPMsgRTOSTransport, s_transport);
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -159,7 +159,7 @@ void test_pdm_to_dao(float volume_scale)
     dao_start(HPM_DAO);
 
     recording = true;
-    for (uint8_t k = 0; k < 3; k++) {
+    for (uint8_t k = 0; k < 2; k++) {
         i = 0;
         if (recording) {
             printf("Recording...\nPlease make some sound to mic0\n");

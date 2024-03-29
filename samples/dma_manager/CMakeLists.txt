@@ -10,4 +10,4 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(dma_manager)
 
 sdk_app_src(src/dma_manager.c)
-generate_ses_project()
+generate_ide_projects()

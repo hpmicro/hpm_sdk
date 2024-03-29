@@ -9,4 +9,4 @@ project(opamp_example)
 
 sdk_inc(src)
 sdk_app_src(src/opamp.c)
-generate_ses_project()
+generate_ide_projects()

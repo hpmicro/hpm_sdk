@@ -115,8 +115,10 @@ void usbd_rndis_data_recv_done(void)
     usb_osal_sem_give(sema_rndis_data);
 }
 
-void usbd_event_handler(uint8_t event)
+static void usbd_event_handler(uint8_t busid, uint8_t event)
 {
+    (void)busid;
+
     switch (event) {
     case USBD_EVENT_RESET:
         break;
@@ -143,12 +145,12 @@ void usbd_event_handler(uint8_t event)
 struct usbd_interface intf0;
 struct usbd_interface intf1;
 
-void cdc_rndis_init(void)
+void cdc_rndis_init(uint8_t busid, uint32_t reg_base)
 {
     sema_rndis_data = usb_osal_sem_create(0);
     assert(sema_rndis_data != NULL);
-    usbd_desc_register(cdc_descriptor);
-    usbd_add_interface(usbd_rndis_init_intf(&intf0, CDC_OUT_EP, CDC_IN_EP, CDC_INT_EP, rndis_mac));
-    usbd_add_interface(usbd_rndis_init_intf(&intf1, CDC_OUT_EP, CDC_IN_EP, CDC_INT_EP, rndis_mac));
-    usbd_initialize();
+    usbd_desc_register(busid, cdc_descriptor);
+    usbd_add_interface(busid, usbd_rndis_init_intf(&intf0, CDC_OUT_EP, CDC_IN_EP, CDC_INT_EP, rndis_mac));
+    usbd_add_interface(busid, usbd_rndis_init_intf(&intf1, CDC_OUT_EP, CDC_IN_EP, CDC_INT_EP, rndis_mac));
+    usbd_initialize(busid, reg_base, usbd_event_handler);
 }

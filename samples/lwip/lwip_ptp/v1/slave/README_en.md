@@ -29,399 +29,515 @@ This example shows a functionality of PTP V1 Slave
   This is an ethernet demo: PTP V1 Slave
   LwIP Version: 2.1.2
   Enet phy init passed !
-  Static IP: 192.168.100.11
-  Netmask  : 255.255.255.0
-  Gateway  : 192.168.100.1
-  (D 1651074120.007099320) event POWER UP
-  (D 1651074120.010684080) initClock
-  (D 1651074120.013845920) state PTP_INITIALIZING
-  (D 1651074120.018134040) manufacturerIdentity: PTPd;1.0.1
-  (D 1651074120.023292440) netShutdown
-  igmp_leavegroup: attempt to leave non-multicast address(D 1651074120.031424000) netInit
-  (D 1651074120.034514640) initData
-  (D 1651074120.037589240) initTimer
-  (D 1651074120.040733520) initClock
-  (D 1651074120.043891800) sync message interval: 1000
-  (D 1651074120.048611720) clock identifier: DFLT
-  (D 1651074120.052897280) 256*log2(clock variance): -4000
-  (D 1651074120.057968040) clock stratum: 255
-  (D 1651074120.061900040) clock preferred?: no
-  (D 1651074120.066008000) bound interface name:
-  (D 1651074120.070288760) communication technology: 1
-  (D 1651074120.075004240) uuid: 04:00:00:00:e0:d8
-  (D 1651074120.079382440) PTP subdomain name: _DFLT
-  (D 1651074120.083924240) subdomain address: 224.0.1.129
-  (D 1651074120.088904400) event port address: 3f 1
-  (D 1651074120.093360000) general port address: 40 1
-  (D 1651074120.097992080) initClock
-  (D 1651074120.101136200) state PTP_LISTENING
-  (D 1651074120.105154240) initClock
-  (D 1651074120.108295480) state PTP_SLAVE
-  (D 1651074123.300347360) addForeign: new record (0,1) 1 1 cc:00:00:00:80:85
-(D 1651074123.307125280) event MASTER_CLOCK_CHANGED
-  (D 1651074123.311744080) state PTP_UNCALIBRATED
-(D 1651074123.316015160) toState: Q = 0, R = 6
+  Link Status: Down
   Link Status: Up
   Link Speed:  1000Mbps
   Link Duplex: Full duplex
-(D 1651074124.299456640) updateOffset
-  (D 1651074124.302869960) updateClock seconds
-  (D 1651074589.017716080) setTime: resetting system clock to 1651074589s 17715780ns
-  (D 1651074589.025053600) initClock
-  (D 1651074589.028204720) one-way delay:           0s          0ns
-(D 1651074589.034057680) offset from master:      -464s -710834980ns
-  (D 1651074589.040172080) observed drift:          0
-  (D 1651074590.010209400) updateOffset
-  (D 1651074590.013647800) one-way delay:           0s          0ns
-  (D 1651074590.019500240) offset from master:      0s     -54040ns
-  (D 1651074590.025351300) observed drift:          -3602
-  (D 1651074591.010164580) updateOffset
-  (D 1651074591.013587700) one-way delay:           0s          0ns
-(D 1651074591.019436680) offset from master:      0s     -64920ns
-  (D 1651074591.025284480) observed drift:          -7930
-  (D 1651074592.010144460) updateOffset
-  (D 1651074592.013564160) one-way delay:           0s          0ns
-  (D 1651074592.019413580) offset from master:      0s     -76320ns
-(D 1651074592.025261680) observed drift:          -13018
-  (D 1651074593.010137760) updateOffset
-  (D 1651074593.013557540) one-way delay:           0s          0ns
-  (D 1651074593.019408440) offset from master:      0s     -82580ns
-  (D 1651074593.025257840) observed drift:          -18523
-(D 1651074594.010138260) handleSync: Q = 0, R = 4
-  (D 1651074594.014617580) updateOffset
-  (D 1651074594.018027180) one-way delay:           0s          0ns
-  (D 1651074594.023875160) offset from master:      0s     -81950ns
-  (D 1651074594.029723260) observed drift:          -23986
-(D 1651074595.010166100) updateOffset
-  (D 1651074595.013583400) one-way delay:           0s          0ns
-  (D 1651074595.019435840) offset from master:      0s     -75315ns
-  (D 1651074595.025288860) observed drift:          -29007
-  (D 1651074596.010169680) updateOffset
-(D 1651074596.013582440) one-way delay:           0s          0ns
-  (D 1651074596.019431580) offset from master:      0s     -64788ns
-  (D 1651074596.025279640) observed drift:          -33326
-  (D 1651074597.010183160) updateOffset
-  (D 1651074597.013598920) one-way delay:           0s          0ns
-  (D 1651074597.019452760) offset from master:      0s     -52804ns
-(D 1651074597.025303540) observed drift:          -36846
-  (D 1651074598.010190380) handleSync: Q = 0, R = 4
-  (D 1651074598.014670140) updateOffset
-  (D 1651074598.018081040) one-way delay:           0s          0ns
-  (D 1651074598.023931720) offset from master:      0s     -41322ns
-(D 1651074598.029781100) observed drift:          -39600
-  (D 1651074599.010207520) updateOffset
-  (D 1651074599.013621040) one-way delay:           0s          0ns
-  (D 1651074599.019473860) offset from master:      0s     -31571ns
-  (D 1651074599.025327900) observed drift:          -41704
-(D 1651074600.010208160) updateOffset
-  (D 1651074600.013617080) one-way delay:           0s          0ns
-  (D 1651074600.019464920) offset from master:      0s     -24075ns
-  (D 1651074600.025313420) observed drift:          -43309
-  (D 1651074601.010213640) updateOffset
-(D 1651074601.013626040) one-way delay:           0s          0ns
-  (D 1651074601.019476060) offset from master:      0s     -18798ns
-  (D 1651074601.025324980) observed drift:          -44562
-  (D 1651074602.010206680) handleSync: Q = 0, R = 4
-  (D 1651074602.014686480) updateOffset
-(D 1651074602.018090880) one-way delay:           0s          0ns
-  (D 1651074602.023938740) offset from master:      0s     -15299ns
-  (D 1651074602.029786700) observed drift:          -45581
-  (D 1651074603.010212440) updateOffset
-  (D 1651074603.013625860) one-way delay:           0s          0ns
-(D 1651074603.019476660) offset from master:      0s     -13069ns
-  (D 1651074603.025326720) observed drift:          -46452
-  (D 1651074604.010215340) updateOffset
-  (D 1651074604.013623100) one-way delay:           0s          0ns
-  (D 1651074604.019472120) offset from master:      0s     -11605ns
-(D 1651074604.025320480) observed drift:          -47225
-  (D 1651074605.010213140) updateOffset
-  (D 1651074605.013621840) one-way delay:           0s          0ns
-  (D 1651074605.019470900) offset from master:      0s     -10492ns
-  (D 1651074605.025319260) observed drift:          -47924
-(D 1651074606.010199780) handleSync: Q = 0, R = 4
-  (D 1651074606.014671420) updateOffset
-  (D 1651074606.018076320) one-way delay:           0s          0ns
-  (D 1651074606.023924000) offset from master:      0s      -9486ns
-  (D 1651074606.029771740) observed drift:          -48556
-(D 1651074606.034837020) event MASTER_CLOCK_SELECTED
-  (D 1651074606.039536500) state PTP_SLAVE
-  (D 1651074607.010218960) updateOffset
-  (D 1651074607.013634780) one-way delay:           0s          0ns
-  (D 1651074607.019487340) offset from master:      0s      -8473ns
-(D 1651074607.025341940) observed drift:          -49120
-  (D 1651074608.010223680) updateOffset
-  (D 1651074608.013634620) one-way delay:           0s          0ns
-  (D 1651074608.019487140) offset from master:      0s      -7437ns
-  (D 1651074608.025340920) observed drift:          -49615
-(D 1651074609.010230540) updateOffset
-  (D 1651074609.013639240) one-way delay:           0s          0ns
-  (D 1651074609.019488340) offset from master:      0s      -6398ns
-  (D 1651074609.025336620) observed drift:          -50041
-  (D 1651074610.010316980) handleSync: Q = 0, R = 4
-(D 1651074610.014811860) updateOffset
-  (D 1651074610.018223400) one-way delay:           0s          0ns
-  (D 1651074610.024073780) offset from master:      0s      -5399ns
-  (D 1651074610.029921940) observed drift:          -50400
-  (D 1651074610.035041700) updateDelay
-(D 1651074611.010234880) updateOffset
-  (D 1651074611.013655740) one-way delay:           0s        560ns
-  (D 1651074611.019509560) offset from master:      0s      -4760ns
-  (D 1651074611.025357760) observed drift:          -50717
-  (D 1651074612.010226080) updateOffset
-(D 1651074612.013634580) one-way delay:           0s        560ns
-  (D 1651074612.019482460) offset from master:      0s      -4040ns
-  (D 1651074612.025330080) observed drift:          -50986
-  (D 1651074613.010218900) updateOffset
-  (D 1651074613.013633040) one-way delay:           0s        560ns
-(D 1651074613.019480940) offset from master:      0s      -3310ns
-  (D 1651074613.025328900) observed drift:          -51206
-  (D 1651074614.010274600) handleSync: Q = 0, R = 4
-  (D 1651074614.014781000) updateOffset
-  (D 1651074614.018189140) one-way delay:           0s        560ns
-(D 1651074614.024042200) offset from master:      0s      -2665ns
-  (D 1651074614.029893600) observed drift:          -51383
-  (D 1651074614.035011100) updateDelay
-  (D 1651074615.010239400) updateOffset
-  (D 1651074615.013655900) one-way delay:           0s        565ns
-  (D 1651074615.019505320) offset from master:      0s      -2125ns
-(D 1651074615.025353460) observed drift:          -51524
-  (D 1651074616.010227540) updateOffset
-  (D 1651074616.013642960) one-way delay:           0s        565ns
-  (D 1651074616.019496780) offset from master:      0s      -1715ns
-  (D 1651074616.025344860) observed drift:          -51638
-(D 1651074617.010223120) updateOffset
-  (D 1651074617.013635980) one-way delay:           0s        565ns
-  (D 1651074617.019487520) offset from master:      0s      -1400ns
-  (D 1651074617.025335620) observed drift:          -51731
-  (D 1651074618.010260740) handleSync: Q = 0, R = 4
-(D 1651074618.014748420) updateOffset
-  (D 1651074618.018161560) one-way delay:           0s        565ns
-  (D 1651074618.024013060) offset from master:      0s      -1172ns
-  (D 1651074618.029863860) observed drift:          -51809
-  (D 1651074618.034981640) updateDelay
-(D 1651074619.010244340) updateOffset
-  (D 1651074619.013667640) one-way delay:           0s        567ns
-  (D 1651074619.019519740) offset from master:      0s      -1020ns
-  (D 1651074619.025375300) observed drift:          -51877
-  (D 1651074620.010238040) updateOffset
-(D 1651074620.013652620) one-way delay:           0s        567ns
-  (D 1651074620.019509500) offset from master:      0s       -893ns
-  (D 1651074620.025368000) observed drift:          -51936
-  (D 1651074621.010231220) updateOffset
-  (D 1651074621.013646480) one-way delay:           0s        567ns
-(D 1651074621.019496320) offset from master:      0s       -780ns
-  (D 1651074621.025346060) observed drift:          -51988
-  (D 1651074622.010260040) handleSync: Q = 0, R = 4
-  (D 1651074622.014751920) updateOffset
-  (D 1651074622.018162220) one-way delay:           0s        567ns
-(D 1651074622.024016680) offset from master:      0s       -674ns
-  (D 1651074622.029866640) observed drift:          -52032
-  (D 1651074622.034981900) updateDelay
-  (D 1651074623.010244060) updateOffset
-  (D 1651074623.013664480) one-way delay:           0s        568ns
-(D 1651074623.019517820) offset from master:      0s       -581ns
-  (D 1651074623.025368760) observed drift:          -52070
-  (D 1651074624.010227260) updateOffset
-  (D 1651074624.013637640) one-way delay:           0s        568ns
-  (D 1651074624.019494140) offset from master:      0s       -504ns
-(D 1651074624.025353000) observed drift:          -52103
-  (D 1651074625.010218440) updateOffset
-  (D 1651074625.013631660) one-way delay:           0s        568ns
-  (D 1651074625.019486940) offset from master:      0s       -436ns
-  (D 1651074625.025336360) observed drift:          -52132
-(D 1651074626.010263600) handleSync: Q = 0, R = 4
-  (D 1651074626.014755600) updateOffset
-  (D 1651074626.018161180) one-way delay:           0s        568ns
-  (D 1651074626.024009960) offset from master:      0s       -382ns
-  (D 1651074626.029857980) observed drift:          -52157
-  (D 1651074626.034967380) updateDelay
-  (D 1651074627.010237260) updateOffset
-  (D 1651074627.013654920) one-way delay:           0s        566ns
-  (D 1651074627.019512640) offset from master:      0s       -314ns
-  (D 1651074627.025367660) observed drift:          -52177
-  (D 1651074628.010232000) updateOffset
-  (D 1651074628.013645700) one-way delay:           0s        566ns
-  (D 1651074628.019503440) offset from master:      0s       -270ns
-  (D 1651074628.025361880) observed drift:          -52195
-  (D 1651074629.010231220) updateOffset
-  (D 1651074629.013648080) one-way delay:           0s        566ns
-  (D 1651074629.019506260) offset from master:      0s       -228ns
-  (D 1651074629.025360640) observed drift:          -52210
-  (D 1651074630.010265460) handleSync: Q = 0, R = 4
-  (D 1651074630.014750980) updateOffset
-  (D 1651074630.018160500) one-way delay:           0s        566ns
-  (D 1651074630.024013820) offset from master:      0s       -177ns
-  (D 1651074630.029863920) observed drift:          -52221
-  (D 1651074630.034971540) updateDelay
-  (D 1651074631.010242760) updateOffset
-  (D 1651074631.013663780) one-way delay:           0s        567ns
-  (D 1651074631.019520240) offset from master:      0s       -142ns
-  (D 1651074631.025371320) observed drift:          -52230
-  (D 1651074632.010235660) updateOffset
-  (D 1651074632.013655600) one-way delay:           0s        567ns
-  (D 1651074632.019508900) offset from master:      0s       -125ns
-  (D 1651074632.025362500) observed drift:          -52238
-  (D 1651074633.010233480) updateOffset
-  (D 1651074633.013648620) one-way delay:           0s        567ns
-  (D 1651074633.019506200) offset from master:      0s        -96ns
-  (D 1651074633.025360240) observed drift:          -52244
-  (D 1651074634.010262300) handleSync: Q = 0, R = 4
-  (D 1651074634.014755220) updateOffset
-  (D 1651074634.018160120) one-way delay:           0s        567ns
-  (D 1651074634.024008020) offset from master:      0s        -81ns
-  (D 1651074634.029855800) observed drift:          -52249
-  (D 1651074634.034962780) updateDelay
-  (D 1651074635.010224140) updateOffset
-  (D 1651074635.013639720) one-way delay:           0s        568ns
-  (D 1651074635.019488860) offset from master:      0s        -65ns
-  (D 1651074635.025336700) observed drift:          -52253
-  (D 1651074636.010221340) updateOffset
-  (D 1651074636.013628000) one-way delay:           0s        568ns
-  (D 1651074636.019477480) offset from master:      0s        -46ns
-  (D 1651074636.025325660) observed drift:          -52256
-  (D 1651074637.010223860) updateOffset
-  (D 1651074637.013633880) one-way delay:           0s        568ns
-  (D 1651074637.019481960) offset from master:      0s        -47ns
-  (D 1651074637.025329740) observed drift:          -52259
-  (D 1651074638.010256200) handleSync: Q = 0, R = 4
-  (D 1651074638.014745220) updateOffset
-  (D 1651074638.018148720) one-way delay:           0s        568ns
-  (D 1651074638.023996560) offset from master:      0s        -48ns
-  (D 1651074638.029844220) observed drift:          -52262
-  (D 1651074638.034956880) updateDelay
-  (D 1651074639.010234880) updateOffset
-  (D 1651074639.013645140) one-way delay:           0s        568ns
-  (D 1651074639.019500400) offset from master:      0s        -48ns
-  (D 1651074639.025350060) observed drift:          -52265
-  (D 1651074640.010222640) updateOffset
-  (D 1651074640.013631780) one-way delay:           0s        568ns
-  (D 1651074640.019487040) offset from master:      0s        -28ns
-  (D 1651074640.025337360) observed drift:          -52266
-  (D 1651074641.010222280) updateOffset
-  (D 1651074641.013635780) one-way delay:           0s        568ns
-  (D 1651074641.019488280) offset from master:      0s        -18ns
-  (D 1651074641.025336320) observed drift:          -52267
-  (D 1651074642.010260000) handleSync: Q = 0, R = 4
-  (D 1651074642.014753760) updateOffset
-  (D 1651074642.018160020) one-way delay:           0s        568ns
-  (D 1651074642.024009240) offset from master:      0s        -23ns
-  (D 1651074642.029858500) observed drift:          -52268
-  (D 1651074642.034965020) updateDelay
-  (D 1651074643.010233720) updateOffset
-  (D 1651074643.013650740) one-way delay:           0s        567ns
-  (D 1651074643.019499440) offset from master:      0s        -25ns
-  (D 1651074643.025349320) observed drift:          -52269
-  (D 1651074644.010235520) updateOffset
-  (D 1651074644.013650340) one-way delay:           0s        567ns
-  (D 1651074644.019499880) offset from master:      0s        -26ns
-  (D 1651074644.025349880) observed drift:          -52270
-  (D 1651074645.010227720) updateOffset
-  (D 1651074645.013642980) one-way delay:           0s        567ns
-  (D 1651074645.019494320) offset from master:      0s        -16ns
-  (D 1651074645.025344360) observed drift:          -52271
-  (D 1651074646.010256640) handleSync: Q = 0, R = 4
-  (D 1651074646.014753640) updateOffset
-  (D 1651074646.018162060) one-way delay:           0s        567ns
-  (D 1651074646.024016040) offset from master:      0s        -22ns
-  (D 1651074646.029863860) observed drift:          -52272
-  (D 1651074646.034970500) updateDelay
-  (D 1651074647.010231560) updateOffset
-  (D 1651074647.013649300) one-way delay:           0s        566ns
-  (D 1651074647.019507000) offset from master:      0s        -14ns
-  (D 1651074647.025362720) observed drift:          -52272
-  (D 1651074648.010229080) updateOffset
-  (D 1651074648.013643140) one-way delay:           0s        566ns
-  (D 1651074648.019494440) offset from master:      0s        -20ns
-  (D 1651074648.025345040) observed drift:          -52273
-  (D 1651074649.010225760) updateOffset
-  (D 1651074649.013644780) one-way delay:           0s        566ns
-  (D 1651074649.019500940) offset from master:      0s        -23ns
-  (D 1651074649.025351400) observed drift:          -52274
-  (D 1651074650.010269460) handleSync: Q = 0, R = 4
-  (D 1651074650.014763440) updateOffset
-  (D 1651074650.018172780) one-way delay:           0s        566ns
-  (D 1651074650.024020540) offset from master:      0s        -14ns
-  (D 1651074650.029868160) observed drift:          -52274
-  (D 1651074650.034975940) updateDelay
-  (D 1651074651.010225500) updateOffset
-  (D 1651074651.013636400) one-way delay:           0s        568ns
-  (D 1651074651.019484180) offset from master:      0s        -21ns
-  (D 1651074651.025331880) observed drift:          -52275
-  (D 1651074652.010221860) updateOffset
-  (D 1651074652.013629880) one-way delay:           0s        568ns
-  (D 1651074652.019478940) offset from master:      0s        -15ns
-  (D 1651074652.025326720) observed drift:          -52276
-  (D 1651074653.010222260) updateOffset
-  (D 1651074653.013635200) one-way delay:           0s        568ns
-  (D 1651074653.019483060) offset from master:      0s        -11ns
-  (D 1651074653.025330840) observed drift:          -52276
-  (D 1651074654.010264020) handleSync: Q = 0, R = 4
-  (D 1651074654.014752220) updateOffset
-  (D 1651074654.018166480) one-way delay:           0s        568ns
-  (D 1651074654.024024660) offset from master:      0s        -20ns
-  (D 1651074654.029882040) observed drift:          -52277
-  (D 1651074654.034988440) updateDelay
-  (D 1651074655.010235260) updateOffset
-  (D 1651074655.013646880) one-way delay:           0s        568ns
-  (D 1651074655.019496720) offset from master:      0s        -24ns
-  (D 1651074655.025346900) observed drift:          -52278
-  (D 1651074656.010219840) updateOffset
-  (D 1651074656.013627100) one-way delay:           0s        568ns
-  (D 1651074656.019480920) offset from master:      0s        -16ns
-  (D 1651074656.025332620) observed drift:          -52279
-  (D 1651074657.010220840) updateOffset
-  (D 1651074657.013629140) one-way delay:           0s        568ns
-  (D 1651074657.019477880) offset from master:      0s        -12ns
-  (D 1651074657.025325680) observed drift:          -52279
-  (D 1651074658.010261900) handleSync: Q = 0, R = 4
-  (D 1651074658.014756360) updateOffset
-  (D 1651074658.018163980) one-way delay:           0s        568ns
-  (D 1651074658.024018280) offset from master:      0s        -10ns
-  (D 1651074658.029869280) observed drift:          -52279
-  (D 1651074658.034979180) updateDelay
-  (D 1651074659.010225260) updateOffset
-  (D 1651074659.013640360) one-way delay:           0s        569ns
-  (D 1651074659.019491060) offset from master:      0s        -19ns
-  (D 1651074659.025338600) observed drift:          -52280
-  (D 1651074660.010225860) updateOffset
-  (D 1651074660.013638080) one-way delay:           0s        569ns
-  (D 1651074660.019490740) offset from master:      0s        -24ns
-  (D 1651074660.025340140) observed drift:          -52281
-  (D 1651074661.010220160) updateOffset
-  (D 1651074661.013631220) one-way delay:           0s        569ns
-  (D 1651074661.019481840) offset from master:      0s        -17ns
-  (D 1651074661.025331020) observed drift:          -52282
-  (D 1651074662.010269520) handleSync: Q = 0, R = 4
-  (D 1651074662.014765400) updateOffset
-  (D 1651074662.018171300) one-way delay:           0s        569ns
-  (D 1651074662.024020320) offset from master:      0s         -3ns
-  (D 1651074662.029868160) observed drift:          -52282
-  (D 1651074662.034976860) updateDelay
-  (D 1651074663.010228560) updateOffset
-  (D 1651074663.013640460) one-way delay:           0s        571ns
-  (D 1651074663.019488700) offset from master:      0s         -7ns
-  (D 1651074663.025336200) observed drift:          -52282
-  (D 1651074664.010226940) updateOffset
-  (D 1651074664.013634660) one-way delay:           0s        571ns
-  (D 1651074664.019488620) offset from master:      0s         -9ns
-  (D 1651074664.025340800) observed drift:          -52282
-  (D 1651074665.010226780) updateOffset
-  (D 1651074665.013639920) one-way delay:           0s        571ns
-  (D 1651074665.019491860) offset from master:      0s        -20ns
-  (D 1651074665.025341080) observed drift:          -52283
-  (D 1651074666.010259480) handleSync: Q = 0, R = 4
-  (D 1651074666.014748740) updateOffset
-  (D 1651074666.018153080) one-way delay:           0s        571ns
-  (D 1651074666.024000920) offset from master:      0s        -25ns
-  (D 1651074666.029848620) observed drift:          -52284
-  (D 1651074666.034965520) updateDelay
-  (D 1651074667.010242640) updateOffset
-  (D 1651074667.013664340) one-way delay:           0s        571ns
-  (D 1651074667.019516660) offset from master:      0s        -18ns
-  (D 1651074667.025365320) observed drift:          -52285
-  (D 1651074668.010228100) updateOffset
-  (D 1651074668.013639840) one-way delay:           0s        571ns
-  (D 1651074668.019494060) offset from master:      0s         -5ns
-  (D 1651074668.025344040) observed drift:          -52285
-
+  IPv4 Address: 192.168.100.11
+  IPv4 Netmask: 255.255.255.0
+  IPv4 Gateway: 192.168.100.1
+  (D 1651074123.993902300) event POWER UP
+  (D 1651074123.997489380) initClock
+  (D 1651074124.000649820) state PTP_INITIALIZING
+  (D 1651074124.004933940) manufacturerIdentity: PTPd;1.0.1
+  (D 1651074124.010095340) netShutdown
+  (D 1651074124.013421580) netInit
+  (D 1651074124.016526860) initData
+  (D 1651074124.019606220) initTimer
+  (D 1651074124.022750940) initClock
+  (D 1651074124.025905620) sync message interval: 1000
+  (D 1651074124.030634220) clock identifier: DFLT
+  (D 1651074124.034926540) 256*log2(clock variance): -4000
+  (D 1651074124.039995820) clock stratum: 255
+  (D 1651074124.043927540) clock preferred?: no
+  (D 1651074124.048035100) bound interface name:
+  (D 1651074124.052314300) communication technology: 1
+  (D 1651074124.057029420) uuid: dc:00:00:00:20:71
+  (D 1651074124.061406540) PTP subdomain name: _DFLT
+  (D 1651074124.065947540) subdomain address: 224.0.1.129
+  (D 1651074124.070926140) event port address: 3f 1
+  (D 1651074124.075381620) general port address: 40 1
+  (D 1651074124.080016180) initClock
+  (D 1651074124.083159380) state PTP_LISTENING
+  (D 1651074124.087180620) initClock
+  (D 1651074124.090327300) state PTP_SLAVE
+  (D 1651074124.868703220) addForeign: new record (0,1) 1 1 cc:00:00:00:80:85
+  (D 1651074124.875498660) event MASTER_CLOCK_CHANGED
+  (D 1651074124.880117380) state PTP_UNCALIBRATED
+  (D 1651074124.884387660) toState: Q = 0, R = 4
+  (D 1651074125.868021740) updateOffset
+  (D 1651074125.871449820) updateClock seconds
+  (D 1651074131.029693340) setTime: resetting system clock to 1651074131s 29693040ns
+  (D 1651074131.037027340) initClock
+  (D 1651074131.040176420) one-way delay:           0s          0ns
+  (D 1651074131.046027100) offset from master:      -5s -154233620ns
+  (D 1651074131.051963740) observed drift:          0
+  (D 1651074132.022183220) updateOffset
+  (D 1651074132.025622140) one-way delay:           0s          0ns
+  (D 1651074132.031472420) offset from master:      0s     -60440ns
+  (D 1651074132.037320540) observed drift:          -4029
+  (D 1651074133.022158920) updateOffset
+  (D 1651074133.025579460) one-way delay:           0s          0ns
+  (D 1651074133.031428620) offset from master:      0s     -72640ns
+  (D 1651074133.037276680) observed drift:          -8871
+  (D 1651074134.022127220) handleSync: Q = 0, R = 2
+  (D 1651074134.026617500) updateOffset
+  (D 1651074134.030030460) one-way delay:           0s          0ns
+  (D 1651074134.035879680) offset from master:      0s     -85410ns
+  (D 1651074134.041727880) observed drift:          -14565
+  (D 1651074135.022131000) updateOffset
+  (D 1651074135.025550520) one-way delay:           0s          0ns
+  (D 1651074135.031399780) offset from master:      0s     -92475ns
+  (D 1651074135.037248140) observed drift:          -20730
+  (D 1651074136.022127940) handleSync: Q = 0, R = 2
+  (D 1651074136.026608280) updateOffset
+  (D 1651074136.030020940) one-way delay:           0s          0ns
+  (D 1651074136.035869880) offset from master:      0s     -91798ns
+  (D 1651074136.041718460) observed drift:          -26849
+  (D 1651074137.022146280) updateOffset
+  (D 1651074137.025568320) one-way delay:           0s          0ns
+  (D 1651074137.031419120) offset from master:      0s     -84349ns
+  (D 1651074137.037267600) observed drift:          -32472
+  (D 1651074138.022159560) handleSync: Q = 0, R = 2
+  (D 1651074138.026636640) updateOffset
+  (D 1651074138.030048900) one-way delay:           0s          0ns
+  (D 1651074138.035898340) offset from master:      0s     -72564ns
+  (D 1651074138.041746680) observed drift:          -37309
+  (D 1651074139.022181280) updateOffset
+  (D 1651074139.025603400) one-way delay:           0s          0ns
+  (D 1651074139.031456340) offset from master:      0s     -59132ns
+  (D 1651074139.037307280) observed drift:          -41251
+  (D 1651074140.022187100) handleSync: Q = 0, R = 2
+  (D 1651074140.026660900) updateOffset
+  (D 1651074140.030068620) one-way delay:           0s          0ns
+  (D 1651074140.035916420) offset from master:      0s     -46256ns
+  (D 1651074140.041764320) observed drift:          -44334
+  (D 1651074141.022201800) updateOffset
+  (D 1651074141.025622100) one-way delay:           0s          0ns
+  (D 1651074141.031473800) offset from master:      0s     -35328ns
+  (D 1651074141.037322460) observed drift:          -46689
+  (D 1651074142.022198640) handleSync: Q = 0, R = 2
+  (D 1651074142.026674560) updateOffset
+  (D 1651074142.030085740) one-way delay:           0s          0ns
+  (D 1651074142.035935060) offset from master:      0s     -26934ns
+  (D 1651074142.041783300) observed drift:          -48484
+  (D 1651074143.022206560) updateOffset
+  (D 1651074143.025624700) one-way delay:           0s          0ns
+  (D 1651074143.031477720) offset from master:      0s     -21007ns
+  (D 1651074143.037333400) observed drift:          -49884
+  (D 1651074144.022204680) handleSync: Q = 0, R = 2
+  (D 1651074144.026683660) updateOffset
+  (D 1651074144.030092240) one-way delay:           0s          0ns
+  (D 1651074144.035940260) offset from master:      0s     -17094ns
+  (D 1651074144.041788440) observed drift:          -51023
+  (D 1651074145.022213260) updateOffset
+  (D 1651074145.025630820) one-way delay:           0s          0ns
+  (D 1651074145.031485320) offset from master:      0s     -14597ns
+  (D 1651074145.037341040) observed drift:          -51996
+  (D 1651074146.022207660) handleSync: Q = 0, R = 2
+  (D 1651074146.026685580) updateOffset
+  (D 1651074146.030100740) one-way delay:           0s          0ns
+  (D 1651074146.035953800) offset from master:      0s     -12958ns
+  (D 1651074146.041802760) observed drift:          -52859
+  (D 1651074147.022217600) updateOffset
+  (D 1651074147.025629640) one-way delay:           0s          0ns
+  (D 1651074147.031482720) offset from master:      0s     -11709ns
+  (D 1651074147.037338380) observed drift:          -53639
+  (D 1651074148.022209300) handleSync: Q = 0, R = 2
+  (D 1651074148.026685520) updateOffset
+  (D 1651074148.030095640) one-way delay:           0s          0ns
+  (D 1651074148.035945000) offset from master:      0s     -10585ns
+  (D 1651074148.041795300) observed drift:          -54344
+  (D 1651074149.022222380) updateOffset
+  (D 1651074149.025633460) one-way delay:           0s          0ns
+  (D 1651074149.031484560) offset from master:      0s      -9452ns
+  (D 1651074149.037334600) observed drift:          -54974
+  (D 1651074149.042400340) event MASTER_CLOCK_SELECTED
+  (D 1651074149.047105780) state PTP_SLAVE
+  (D 1651074150.022349200) handleSync: Q = 0, R = 2
+  (D 1651074150.026861380) updateOffset
+  (D 1651074150.030277440) one-way delay:           0s          0ns
+  (D 1651074150.036131700) offset from master:      0s      -8286ns
+  (D 1651074150.041987460) observed drift:          -55526
+  (D 1651074150.047118240) updateDelay
+  (D 1651074151.022244660) updateOffset
+  (D 1651074151.025669380) one-way delay:           0s        560ns
+  (D 1651074151.031528020) offset from master:      0s      -7383ns
+  (D 1651074151.037383640) observed drift:          -56018
+  (D 1651074152.022294860) handleSync: Q = 0, R = 2
+  (D 1651074152.026798240) updateOffset
+  (D 1651074152.030222160) one-way delay:           0s        560ns
+  (D 1651074152.036076160) offset from master:      0s      -6312ns
+  (D 1651074152.041924460) observed drift:          -56438
+  (D 1651074152.047037160) updateDelay
+  (D 1651074153.022235120) updateOffset
+  (D 1651074153.025661720) one-way delay:           0s        565ns
+  (D 1651074153.031526120) offset from master:      0s      -5218ns
+  (D 1651074153.037376700) observed drift:          -56785
+  (D 1651074154.022285480) handleSync: Q = 0, R = 2
+  (D 1651074154.026782980) updateOffset
+  (D 1651074154.030198080) one-way delay:           0s        565ns
+  (D 1651074154.036049540) offset from master:      0s      -4212ns
+  (D 1651074154.041900560) observed drift:          -57065
+  (D 1651074154.047022820) updateDelay
+  (D 1651074155.022246780) updateOffset
+  (D 1651074155.025667980) one-way delay:           0s        567ns
+  (D 1651074155.031523320) offset from master:      0s      -3369ns
+  (D 1651074155.037380940) observed drift:          -57289
+  (D 1651074156.022295180) handleSync: Q = 0, R = 2
+  (D 1651074156.026792780) updateOffset
+  (D 1651074156.030208820) one-way delay:           0s        567ns
+  (D 1651074156.036062760) offset from master:      0s      -2698ns
+  (D 1651074156.041913540) observed drift:          -57468
+  (D 1651074156.047027400) updateDelay
+  (D 1651074157.022244880) updateOffset
+  (D 1651074157.025664760) one-way delay:           0s        568ns
+  (D 1651074157.031518220) offset from master:      0s      -2183ns
+  (D 1651074157.037369980) observed drift:          -57613
+  (D 1651074158.022295760) handleSync: Q = 0, R = 2
+  (D 1651074158.026793260) updateOffset
+  (D 1651074158.030206820) one-way delay:           0s        568ns
+  (D 1651074158.036059800) offset from master:      0s      -1816ns
+  (D 1651074158.041908220) observed drift:          -57734
+  (D 1651074158.047010360) updateDelay
+  (D 1651074159.022246480) updateOffset
+  (D 1651074159.025662440) one-way delay:           0s        563ns
+  (D 1651074159.031516900) offset from master:      0s      -1539ns
+  (D 1651074159.037367040) observed drift:          -57836
+  (D 1651074160.022280360) handleSync: Q = 0, R = 2
+  (D 1651074160.026776180) updateOffset
+  (D 1651074160.030191540) one-way delay:           0s        563ns
+  (D 1651074160.036043200) offset from master:      0s      -1331ns
+  (D 1651074160.041891340) observed drift:          -57924
+  (D 1651074160.046988680) updateDelay
+  (D 1651074161.022237580) updateOffset
+  (D 1651074161.025659820) one-way delay:           0s        563ns
+  (D 1651074161.031508880) offset from master:      0s      -1167ns
+  (D 1651074161.037357060) observed drift:          -58001
+  (D 1651074162.022277680) handleSync: Q = 0, R = 2
+  (D 1651074162.026779440) updateOffset
+  (D 1651074162.030200880) one-way delay:           0s        563ns
+  (D 1651074162.036057500) offset from master:      0s      -1025ns
+  (D 1651074162.041905720) observed drift:          -58069
+  (D 1651074162.047007260) updateDelay
+  (D 1651074163.022242580) updateOffset
+  (D 1651074163.025651380) one-way delay:           0s        564ns
+  (D 1651074163.031503100) offset from master:      0s       -895ns
+  (D 1651074163.037351040) observed drift:          -58128
+  (D 1651074164.022282960) handleSync: Q = 0, R = 2
+  (D 1651074164.026780900) updateOffset
+  (D 1651074164.030198860) one-way delay:           0s        564ns
+  (D 1651074164.036052260) offset from master:      0s       -769ns
+  (D 1651074164.041900520) observed drift:          -58179
+  (D 1651074164.047005020) updateDelay
+  (D 1651074165.022235160) updateOffset
+  (D 1651074165.025646800) one-way delay:           0s        565ns
+  (D 1651074165.031497740) offset from master:      0s       -657ns
+  (D 1651074165.037345900) observed drift:          -58222
+  (D 1651074166.022270960) handleSync: Q = 0, R = 2
+  (D 1651074166.026802220) updateOffset
+  (D 1651074166.030221020) one-way delay:           0s        565ns
+  (D 1651074166.036077800) offset from master:      0s       -551ns
+  (D 1651074166.041926100) observed drift:          -58258
+  (D 1651074166.047003240) updateDelay
+  (D 1651074167.022234160) updateOffset
+  (D 1651074167.025647120) one-way delay:           0s        566ns
+  (D 1651074167.031497680) offset from master:      0s       -459ns
+  (D 1651074167.037345980) observed drift:          -58288
+  (D 1651074168.022290800) handleSync: Q = 0, R = 2
+  (D 1651074168.026784560) updateOffset
+  (D 1651074168.030199120) one-way delay:           0s        566ns
+  (D 1651074168.036051740) offset from master:      0s       -372ns
+  (D 1651074168.041901680) observed drift:          -58312
+  (D 1651074168.046999940) updateDelay
+  (D 1651074169.022239620) updateOffset
+  (D 1651074169.025654900) one-way delay:           0s        566ns
+  (D 1651074169.031505680) offset from master:      0s       -309ns
+  (D 1651074169.037353700) observed drift:          -58332
+  (D 1651074170.022282480) handleSync: Q = 0, R = 2
+  (D 1651074170.026775380) updateOffset
+  (D 1651074170.030190700) one-way delay:           0s        566ns
+  (D 1651074170.036044240) offset from master:      0s       -258ns
+  (D 1651074170.041892460) observed drift:          -58349
+  (D 1651074170.046989600) updateDelay
+  (D 1651074171.022240140) updateOffset
+  (D 1651074171.025655340) one-way delay:           0s        567ns
+  (D 1651074171.031508000) offset from master:      0s       -222ns
+  (D 1651074171.037358320) observed drift:          -58363
+  (D 1651074172.022279060) handleSync: Q = 0, R = 2
+  (D 1651074172.026776640) updateOffset
+  (D 1651074172.030201240) one-way delay:           0s        567ns
+  (D 1651074172.036058380) offset from master:      0s       -185ns
+  (D 1651074172.041909100) observed drift:          -58375
+  (D 1651074172.047019720) updateDelay
+  (D 1651074173.022239760) updateOffset
+  (D 1651074173.025654960) one-way delay:           0s        566ns
+  (D 1651074173.031505680) offset from master:      0s       -145ns
+  (D 1651074173.037354100) observed drift:          -58384
+  (D 1651074174.022284220) handleSync: Q = 0, R = 2
+  (D 1651074174.026784160) updateOffset
+  (D 1651074174.030205480) one-way delay:           0s        566ns
+  (D 1651074174.036057360) offset from master:      0s       -126ns
+  (D 1651074174.041905420) observed drift:          -58392
+  (D 1651074174.047008800) updateDelay
+  (D 1651074175.022231160) updateOffset
+  (D 1651074175.025646360) one-way delay:           0s        565ns
+  (D 1651074175.031497740) offset from master:      0s        -95ns
+  (D 1651074175.037345840) observed drift:          -58398
+  (D 1651074176.022266600) handleSync: Q = 0, R = 2
+  (D 1651074176.026763580) updateOffset
+  (D 1651074176.030178580) one-way delay:           0s        565ns
+  (D 1651074176.036032100) offset from master:      0s        -80ns
+  (D 1651074176.041880280) observed drift:          -58403
+  (D 1651074176.046985820) updateDelay
+  (D 1651074177.022241760) updateOffset
+  (D 1651074177.025661280) one-way delay:           0s        566ns
+  (D 1651074177.031512060) offset from master:      0s        -63ns
+  (D 1651074177.037360100) observed drift:          -58407
+  (D 1651074178.022274280) handleSync: Q = 0, R = 2
+  (D 1651074178.026769540) updateOffset
+  (D 1651074178.030184420) one-way delay:           0s        566ns
+  (D 1651074178.036032460) offset from master:      0s        -45ns
+  (D 1651074178.041880240) observed drift:          -58410
+  (D 1651074178.046976280) updateDelay
+  (D 1651074179.022229760) updateOffset
+  (D 1651074179.025651120) one-way delay:           0s        565ns
+  (D 1651074179.031512020) offset from master:      0s        -35ns
+  (D 1651074179.037367040) observed drift:          -58412
+  (D 1651074180.022265620) handleSync: Q = 0, R = 2
+  (D 1651074180.026772640) updateOffset
+  (D 1651074180.030192840) one-way delay:           0s        565ns
+  (D 1651074180.036042560) offset from master:      0s        -20ns
+  (D 1651074180.041890700) observed drift:          -58413
+  (D 1651074180.046984760) updateDelay
+  (D 1651074181.022233120) updateOffset
+  (D 1651074181.025649000) one-way delay:           0s        565ns
+  (D 1651074181.031503780) offset from master:      0s        -12ns
+  (D 1651074181.037351620) observed drift:          -58413
+  (D 1651074182.022272700) handleSync: Q = 0, R = 2
+  (D 1651074182.026771060) updateOffset
+  (D 1651074182.030187140) one-way delay:           0s        565ns
+  (D 1651074182.036038120) offset from master:      0s        -19ns
+  (D 1651074182.041886340) observed drift:          -58414
+  (D 1651074182.046995840) updateDelay
+  (D 1651074183.022237840) updateOffset
+  (D 1651074183.025656880) one-way delay:           0s        564ns
+  (D 1651074183.031513440) offset from master:      0s        -11ns
+  (D 1651074183.037362820) observed drift:          -58414
+  (D 1651074184.022271060) handleSync: Q = 0, R = 2
+  (D 1651074184.026769580) updateOffset
+  (D 1651074184.030191700) one-way delay:           0s        564ns
+  (D 1651074184.036041040) offset from master:      0s         -8ns
+  (D 1651074184.041891100) observed drift:          -58414
+  (D 1651074184.046989920) updateDelay
+  (D 1651074185.022235000) updateOffset
+  (D 1651074185.025659560) one-way delay:           0s        564ns
+  (D 1651074185.031507460) offset from master:      0s          4ns
+  (D 1651074185.037355120) observed drift:          -58414
+  (D 1651074186.022271100) handleSync: Q = 0, R = 2
+  (D 1651074186.026764800) updateOffset
+  (D 1651074186.030182280) one-way delay:           0s        564ns
+  (D 1651074186.036034420) offset from master:      0s         10ns
+  (D 1651074186.041882320) observed drift:          -58414
+  (D 1651074186.046983140) updateDelay
+  (D 1651074187.022232620) updateOffset
+  (D 1651074187.025655580) one-way delay:           0s        564ns
+  (D 1651074187.031505240) offset from master:      0s         13ns
+  (D 1651074187.037353140) observed drift:          -58414
+  (D 1651074188.022262160) handleSync: Q = 0, R = 2
+  (D 1651074188.026775100) updateOffset
+  (D 1651074188.030200860) one-way delay:           0s        564ns
+  (D 1651074188.036052160) offset from master:      0s         15ns
+  (D 1651074188.041900180) observed drift:          -58413
+  (D 1651074188.046981040) updateDelay
+  (D 1651074189.022237600) updateOffset
+  (D 1651074189.025657280) one-way delay:           0s        565ns
+  (D 1651074189.031507980) offset from master:      0s         15ns
+  (D 1651074189.037356080) observed drift:          -58412
+  (D 1651074190.022266640) handleSync: Q = 0, R = 2
+  (D 1651074190.026783840) updateOffset
+  (D 1651074190.030208440) one-way delay:           0s        565ns
+  (D 1651074190.036058860) offset from master:      0s         15ns
+  (D 1651074190.041906840) observed drift:          -58411
+  (D 1651074190.046988100) updateDelay
+  (D 1651074191.022243760) updateOffset
+  (D 1651074191.025664240) one-way delay:           0s        564ns
+  (D 1651074191.031513560) offset from master:      0s         25ns
+  (D 1651074191.037361580) observed drift:          -58410
+  (D 1651074192.022267000) handleSync: Q = 0, R = 2
+  (D 1651074192.026788080) updateOffset
+  (D 1651074192.030214880) one-way delay:           0s        564ns
+  (D 1651074192.036067660) offset from master:      0s         31ns
+  (D 1651074192.041916120) observed drift:          -58408
+  (D 1651074192.046993100) updateDelay
+  (D 1651074193.022242080) updateOffset
+  (D 1651074193.025659440) one-way delay:           0s        564ns
+  (D 1651074193.031511940) offset from master:      0s         33ns
+  (D 1651074193.037359960) observed drift:          -58406
+  (D 1651074194.022273560) handleSync: Q = 0, R = 2
+  (D 1651074194.026770340) updateOffset
+  (D 1651074194.030187500) one-way delay:           0s        564ns
+  (D 1651074194.036040960) offset from master:      0s         35ns
+  (D 1651074194.041889340) observed drift:          -58404
+  (D 1651074194.046990840) updateDelay
+  (D 1651074195.022238820) updateOffset
+  (D 1651074195.025663060) one-way delay:           0s        564ns
+  (D 1651074195.031512240) offset from master:      0s         35ns
+  (D 1651074195.037360380) observed drift:          -58402
+  (D 1651074196.022269800) handleSync: Q = 0, R = 2
+  (D 1651074196.026787700) updateOffset
+  (D 1651074196.030206820) one-way delay:           0s        564ns
+  (D 1651074196.036061200) offset from master:      0s         46ns
+  (D 1651074196.041909100) observed drift:          -58399
+  (D 1651074196.046985440) updateDelay
+  (D 1651074197.022238900) updateOffset
+  (D 1651074197.025653700) one-way delay:           0s        564ns
+  (D 1651074197.031504200) offset from master:      0s         41ns
+  (D 1651074197.037352380) observed drift:          -58397
+  (D 1651074198.022269840) handleSync: Q = 0, R = 2
+  (D 1651074198.026767380) updateOffset
+  (D 1651074198.030185860) one-way delay:           0s        564ns
+  (D 1651074198.036039280) offset from master:      0s         28ns
+  (D 1651074198.041887700) observed drift:          -58396
+  (D 1651074198.046983120) updateDelay
+  (D 1651074199.022242060) updateOffset
+  (D 1651074199.025656060) one-way delay:           0s        563ns
+  (D 1651074199.031505040) offset from master:      0s         33ns
+  (D 1651074199.037353140) observed drift:          -58394
+  (D 1651074200.022269600) handleSync: Q = 0, R = 2
+  (D 1651074200.026792060) updateOffset
+  (D 1651074200.030217340) one-way delay:           0s        563ns
+  (D 1651074200.036074440) offset from master:      0s         35ns
+  (D 1651074200.041931220) observed drift:          -58392
+  (D 1651074200.047010480) updateDelay
+  (D 1651074201.022237760) updateOffset
+  (D 1651074201.025656240) one-way delay:           0s        563ns
+  (D 1651074201.031511220) offset from master:      0s         36ns
+  (D 1651074201.037367180) observed drift:          -58390
+  (D 1651074202.022276420) handleSync: Q = 0, R = 2
+  (D 1651074202.026770640) updateOffset
+  (D 1651074202.030187720) one-way delay:           0s        563ns
+  (D 1651074202.036036820) offset from master:      0s         36ns
+  (D 1651074202.041884720) observed drift:          -58388
+  (D 1651074202.046981540) updateDelay
+  (D 1651074203.022239940) updateOffset
+  (D 1651074203.025653180) one-way delay:           0s        563ns
+  (D 1651074203.031504080) offset from master:      0s         27ns
+  (D 1651074203.037353680) observed drift:          -58387
+  (D 1651074204.022274080) handleSync: Q = 0, R = 2
+  (D 1651074204.026769060) updateOffset
+  (D 1651074204.030191980) one-way delay:           0s        563ns
+  (D 1651074204.036042840) offset from master:      0s         32ns
+  (D 1651074204.041893320) observed drift:          -58385
+  (D 1651074204.046992440) updateDelay
+  (D 1651074205.022238180) updateOffset
+  (D 1651074205.025649980) one-way delay:           0s        564ns
+  (D 1651074205.031499600) offset from master:      0s         34ns
+  (D 1651074205.037348980) observed drift:          -58383
+  (D 1651074206.022273420) handleSync: Q = 0, R = 2
+  (D 1651074206.026776560) updateOffset
+  (D 1651074206.030201800) one-way delay:           0s        564ns
+  (D 1651074206.036054660) offset from master:      0s         35ns
+  (D 1651074206.041905240) observed drift:          -58381
+  (D 1651074206.047009460) updateDelay
+  (D 1651074207.022241700) updateOffset
+  (D 1651074207.025657980) one-way delay:           0s        563ns
+  (D 1651074207.031517000) offset from master:      0s         26ns
+  (D 1651074207.037371820) observed drift:          -58380
+  (D 1651074208.022269020) handleSync: Q = 0, R = 2
+  (D 1651074208.026778420) updateOffset
+  (D 1651074208.030195660) one-way delay:           0s        563ns
+  (D 1651074208.036053720) offset from master:      0s         31ns
+  (D 1651074208.041908660) observed drift:          -58378
+  (D 1651074208.047015120) updateDelay
+  (D 1651074209.022237600) updateOffset
+  (D 1651074209.025652580) one-way delay:           0s        563ns
+  (D 1651074209.031505660) offset from master:      0s         44ns
+  (D 1651074209.037355880) observed drift:          -58376
+  (D 1651074210.022269700) handleSync: Q = 0, R = 2
+  (D 1651074210.026770240) updateOffset
+  (D 1651074210.030191760) one-way delay:           0s        563ns
+  (D 1651074210.036045440) offset from master:      0s         41ns
+  (D 1651074210.041896540) observed drift:          -58374
+  (D 1651074210.046996140) updateDelay
+  (D 1651074211.022243140) updateOffset
+  (D 1651074211.025659540) one-way delay:           0s        564ns
+  (D 1651074211.031507960) offset from master:      0s         38ns
+  (D 1651074211.037355900) observed drift:          -58372
+  (D 1651074212.022273620) handleSync: Q = 0, R = 2
+  (D 1651074212.026770720) updateOffset
+  (D 1651074212.030189840) one-way delay:           0s        564ns
+  (D 1651074212.036048860) offset from master:      0s         27ns
+  (D 1651074212.041896960) observed drift:          -58371
+  (D 1651074212.046990100) updateDelay
+  (D 1651074213.022234920) updateOffset
+  (D 1651074213.025652640) one-way delay:           0s        563ns
+  (D 1651074213.031503380) offset from master:      0s         32ns
+  (D 1651074213.037351380) observed drift:          -58369
+  (D 1651074214.022271240) handleSync: Q = 0, R = 2
+  (D 1651074214.026775420) updateOffset
+  (D 1651074214.030191500) one-way delay:           0s        563ns
+  (D 1651074214.036048200) offset from master:      0s         25ns
+  (D 1651074214.041896140) observed drift:          -58368
+  (D 1651074214.046998200) updateDelay
+  (D 1651074215.022241400) updateOffset
+  (D 1651074215.025658400) one-way delay:           0s        563ns
+  (D 1651074215.031511460) offset from master:      0s         31ns
+  (D 1651074215.037359640) observed drift:          -58366
+  (D 1651074216.022272320) handleSync: Q = 0, R = 2
+  (D 1651074216.026775780) updateOffset
+  (D 1651074216.030195700) one-way delay:           0s        563ns
+  (D 1651074216.036057280) offset from master:      0s         24ns
+  (D 1651074216.041906700) observed drift:          -58365
+  (D 1651074216.047004240) updateDelay
+  (D 1651074217.022244300) updateOffset
+  (D 1651074217.025659540) one-way delay:           0s        563ns
+  (D 1651074217.031509920) offset from master:      0s         20ns
+  (D 1651074217.037357900) observed drift:          -58364
+  (D 1651074218.022276340) handleSync: Q = 0, R = 2
+  (D 1651074218.026772200) updateOffset
+  (D 1651074218.030185840) one-way delay:           0s        563ns
+  (D 1651074218.036036540) offset from master:      0s         19ns
+  (D 1651074218.041884800) observed drift:          -58363
+  (D 1651074218.046983500) updateDelay
+  (D 1651074219.022232880) updateOffset
+  (D 1651074219.025646720) one-way delay:           0s        563ns
+  (D 1651074219.031496500) offset from master:      0s         18ns
+  (D 1651074219.037344520) observed drift:          -58362
+  (D 1651074220.022270600) handleSync: Q = 0, R = 2
+  (D 1651074220.026764380) updateOffset
+  (D 1651074220.030179940) one-way delay:           0s        563ns
+  (D 1651074220.036035680) offset from master:      0s         27ns
+  (D 1651074220.041884020) observed drift:          -58361
+  (D 1651074220.046985640) updateDelay
+  (D 1651074221.022241580) updateOffset
+  (D 1651074221.025657740) one-way delay:           0s        563ns
+  (D 1651074221.031509000) offset from master:      0s         32ns
+  (D 1651074221.037356880) observed drift:          -58359
+  (D 1651074222.022273620) handleSync: Q = 0, R = 2
+  (D 1651074222.026767720) updateOffset
+  (D 1651074222.030189560) one-way delay:           0s        563ns
+  (D 1651074222.036040300) offset from master:      0s         35ns
+  (D 1651074222.041888960) observed drift:          -58357
+  (D 1651074222.046991100) updateDelay
+  (D 1651074223.022240400) updateOffset
+  (D 1651074223.025655320) one-way delay:           0s        563ns
+  (D 1651074223.031504380) offset from master:      0s         46ns
+  (D 1651074223.037352320) observed drift:          -58354
+  (D 1651074224.022270680) handleSync: Q = 0, R = 2
+  (D 1651074224.026760180) updateOffset
+  (D 1651074224.030173420) one-way delay:           0s        563ns
+  (D 1651074224.036029920) offset from master:      0s         51ns
+  (D 1651074224.041878460) observed drift:          -58351
+  (D 1651074224.046981400) updateDelay
+  (D 1651074225.022231840) updateOffset
+  (D 1651074225.025650000) one-way delay:           0s        563ns
+  (D 1651074225.031504140) offset from master:      0s         34ns
+  (D 1651074225.037352320) observed drift:          -58349
+  (D 1651074226.022281340) handleSync: Q = 0, R = 2
+  (D 1651074226.026770800) updateOffset
+  (D 1651074226.030184960) one-way delay:           0s        563ns
+  (D 1651074226.036039340) offset from master:      0s         26ns
+  (D 1651074226.041887840) observed drift:          -58348
+  (D 1651074226.046989140) updateDelay
   ```

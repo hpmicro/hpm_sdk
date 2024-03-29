@@ -10,16 +10,3 @@ board:
     on-board-flash:
       type: qspi-nor-flash
       size: 1M
-    feature:
-      - uart_hardware_rx_idle
-      - uart
-      - adc16
-      - pdgo
-      - ewdg
-      - gpiom
-      - tsns
-      - crc
-      - spi
-      - i2c
-      - usb-otg
-      - acmp

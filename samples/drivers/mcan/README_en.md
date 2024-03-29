@@ -1,4 +1,4 @@
-# MCAN Demo
+# MCAN
 
 ## Overview
 

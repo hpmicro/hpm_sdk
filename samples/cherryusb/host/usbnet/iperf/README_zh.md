@@ -15,6 +15,9 @@
 - 将程序分别下载至开发板中，并接好连线，开发板(RNDIS Host)串口控制台输出如下，表示air780e模块已经初始化成功，若没有则检查上模块是否上电
 ```console
 Start rndis host iperf task...
+[I/USB] EHCI HCIVERSION:0100
+[I/USB] EHCI HCSPARAMS:010011
+[I/USB] EHCI HCCPARAMS:0006
 [I/USB] New high-speed device on Hub 1, Port 1 connected
 [I/USB] New device found,idVendor:19d1,idProduct:0001,bcdDevice:0200
 [I/USB] The device has 8 interfaces
@@ -56,10 +59,14 @@ Start rndis host iperf task...
 [E/USB] do not support Class:0x0a,Subclass:0x00,Protocl:0x00
 [E/USB] do not support Class:0x02,Subclass:0x02,Protocl:0x01
 [E/USB] do not support Class:0x0a,Subclass:0x00,Protocl:0x00
-oading cdc_data clinkup!!!!!!
- DHCP state       : SELECTING
- DHCP state       : REQUESTING
- DHCP state       : BOUND
+
+*********************************************************************************
+
+input the iperf tcp server IP or URL address and press the enter key to end
+
+if want to terminate midway, please press the esc key
+
+*********************************************************************************
 
  IPv4 Address     : 192.168.10.2
  IPv4 Subnet mask : 255.255.255.0
@@ -70,7 +77,9 @@ oading cdc_data clinkup!!!!!!
 - 当连接的是EC20模块，则打印以下信息，表示EC20初始化成功并分配好IP
 
 ```console
-
+[I/USB] EHCI HCIVERSION:0100
+[I/USB] EHCI HCSPARAMS:010011
+[I/USB] EHCI HCCPARAMS:0006
 [I/USB] New high-speed device on Hub 1, Port 1 connected
 [I/USB] New device found,idVendor:2c7c,idProduct:0125,bcdDevice:0318
 [I/USB] The device has 6 interfaces
@@ -89,19 +98,7 @@ oading cdc_data clinkup!!!!!!
 [I/USB] Set CDC ECM packet filter:000c
 [I/USB] Register CDC ECM Class:/dev/cdc_ether
 [E/USB] do not support Class:0x0a,Subclass:0x00,Protocl:0x00
- DHCP state       : SELECTING
- DHCP state       : BOUND
 
- IPv4 Address     : 192.168.225.27
- IPv4 Subnet mask : 255.255.255.0
- IPv4 Gateway     : 192.168.225.1
-
-```
-
-
-- 之后会打印以下提示, 需要在终端输入已经建立好iperf服务器的IP地址或者域名, 并且按enter表示完成输入
-
-```console
 *********************************************************************************
 
 input the iperf tcp server IP or URL address and press the enter key to end
@@ -109,6 +106,17 @@ input the iperf tcp server IP or URL address and press the enter key to end
 if want to terminate midway, please press the esc key
 
 *********************************************************************************
+
+ IPv4 Address     : 192.168.225.27
+ IPv4 Subnet mask : 255.255.255.0
+ IPv4 Gateway     : 192.168.225.1
+
+```
+
+- 然后请在终端输入已经建立好iperf服务器的IP地址或者域名，例如输入11.23.63.183, 并且按enter表示完成输入
+
+```console
+
 clinet connecting to 11.23.63.183, TCP port 5001
 
 iperf report: type=1, remote: 11.23.63.183:5001, total bytes: 1125684, duration in ms: 10035, kbits/s: 904

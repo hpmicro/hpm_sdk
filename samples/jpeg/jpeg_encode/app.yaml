@@ -7,5 +7,5 @@ excluded_targets:
   - flash_uf2_release
 dependency:
   - cam
-  - lcd
-  - sdcard
+  - lcdc
+  - board_sdcard

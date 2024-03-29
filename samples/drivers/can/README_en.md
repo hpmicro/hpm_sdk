@@ -1,4 +1,4 @@
-# CAN Demo
+# CAN
 
 ## Overview
 

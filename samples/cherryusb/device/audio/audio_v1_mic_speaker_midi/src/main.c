@@ -32,13 +32,13 @@ int main(void)
 
     printf("cherry usb audio v1 mic speaker midi sample.\n");
 
-    audio_init();
+    audio_v1_init(0, CONFIG_HPM_USBD_BASE);
     mic_init_i2s_pdm();
     speaker_init_i2s_dao();
 
     while (1) {
-        audio_task();
-        midi_task();
+        audio_v1_task(0);
+        midi_v1_task(0);
     }
     return 0;
 }

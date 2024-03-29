@@ -85,7 +85,6 @@ typedef struct {
     bool vsync_active_low;
     bool color_ext;
     bool data_pack_msb;
-    bool enable_buffer2;
     uint16_t data_store_mode;
     uint8_t color_format;
     uint8_t sensor_bitwidth;
@@ -190,7 +189,27 @@ void cam_start(CAM_Type *ptr);
  */
 void cam_stop(CAM_Type *ptr);
 
-void cam_update_buffer(CAM_Type *ptr, uint32_t buffer);
+/**
+ * @brief CAM update DMASA_FB1 buffer
+ *
+ * @param [in] ptr CAM base address
+ * @param [in] buffer buffer point address
+ */
+static inline void cam_update_buffer(CAM_Type *ptr, uint32_t buffer)
+{
+    ptr->DMASA_FB1 = buffer;
+}
+
+/**
+ * @brief CAM update DMASA_FB2 buffer
+ *
+ * @param [in] ptr CAM base address
+ * @param [in] buffer buffer point address
+ */
+static inline void cam_update_buffer2(CAM_Type *ptr, uint32_t buffer)
+{
+    ptr->DMASA_FB2 = buffer;
+}
 
 /**
  * @brief CAM enable binary output

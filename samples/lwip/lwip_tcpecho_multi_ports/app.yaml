@@ -1,4 +1,3 @@
 dependency:
   - enet
-  - enet_phy_on_board
-  - enet_multi_port
+  - board_enet_dual_phy

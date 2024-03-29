@@ -2,65 +2,9 @@
 
 :::{eval-rst}
 .. toctree::
-   :maxdepth: 3
-   :numbered:
+    :maxdepth: 3
+    :numbered:
+    :glob:
 
-   acmp/README_zh
-   adc/index_zh
-   butn/README_zh
-   cam/README_zh
-   can/README_zh
-   crc/README_zh
-   dac/README_zh
-   dma/index_zh
-   dmav2/index_zh
-   enet/index_zh
-   ewdg/README_zh
-   femc/sdram/README_zh
-   gpio/README_zh
-   gpiom/README_zh
-   gptmr/index_zh
-   gwc/README_zh
-   hall/README_zh
-   i2c/index_zh
-   i2s/index_zh
-   jpeg/README_zh
-   l1c/README_zh
-   lcdc/README_zh
-   lin/index_zh
-   linv2/index_zh
-   mbx/index_zh
-   mchtmr/README_zh
-   mipi_csi/README_zh
-   pdma/README_zh
-   plic/README_zh
-   pllctl/README_zh
-   pllctlv2/README_zh
-   pmp/README_zh
-   ptpc/README_zh
-   pwm/index_zh
-   qei/README_zh
-   rng/README_zh
-   rtc/README_zh
-   sdm/README_zh
-   sdxc/index_zh
-   spi/index_zh
-   synt/README_zh
-   sysctl/README_zh
-   tsns/README_zh
-   uart/index_zh
-   vad/README_zh
-   wdg/README_zh
-   mcan/README_zh
-   pla/index_zh
-   ffa/README_zh
-   qeo/index_zh
-   mmc/index_zh
-   pdgo/README_zh
-   plb/index_zh
-   sei/index_zh
-   qeiv2/index_zh
-   rdc/README_zh
-   opamp/README_zh
-   smix/mixer/README_zh
+    */*_zh
 :::

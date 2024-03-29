@@ -9,6 +9,7 @@
 #define HPM_SOC_FEATURE_H
 
 #include "hpm_soc.h"
+#include "hpm_soc_ip_feature.h"
 
 /*
  * PLIC feature
@@ -25,7 +26,6 @@
  */
 #define I2C_SOC_FIFO_SIZE (4U)
 #define I2C_SOC_TRANSFER_COUNT_MAX (4096U)
-#define I2C_SOC_SUPPORT_RESET (1U)
 
 /*
  * PMIC Section
@@ -77,9 +77,7 @@
 
 #define USB_SOC_DCD_QTD_NEXT_INVALID               (1U)
 #define USB_SOC_DCD_QHD_BUFFER_COUNT               (5U)
-#define USB_SOC_DCD_QTD_ALIGNMENT                  (32U)
-#define USB_SOC_DCD_QHD_ALIGNMENT                  (64U)
-#define USB_SOC_DCD_MAX_ENDPOINT_COUNT             (8U)
+#define USB_SOC_DCD_MAX_ENDPOINT_COUNT             (16U)
 #ifndef USB_SOC_DCD_QTD_COUNT_EACH_ENDPOINT
 #define USB_SOC_DCD_QTD_COUNT_EACH_ENDPOINT        (8U)
 #endif
@@ -87,11 +85,7 @@
 #define USB_SOS_DCD_MAX_QHD_COUNT                  (USB_SOC_DCD_MAX_ENDPOINT_COUNT * 2U)
 #define USB_SOC_DCD_DATA_RAM_ADDRESS_ALIGNMENT     (2048U)
 
-#define USB_SOC_HCD_QTD_BUFFER_COUNT               (5U)
-#define USB_SOC_HCD_QTD_ALIGNMENT                  (32U)
-#define USB_SOC_HCD_QHD_ALIGNMENT                  (32U)
 #define USB_SOC_HCD_FRAMELIST_MAX_ELEMENTS         (1024U)
-#define USB_SOC_HCD_DATA_RAM_ADDRESS_ALIGNMENT     (4096U)
 
 /*
  * ADC Section
@@ -141,14 +135,6 @@
  * UART Section
  */
 #define UART_SOC_FIFO_SIZE       (16U)
-#define UART_SOC_HAS_RXLINE_IDLE_DETECTION (1U)
-#define UART_SOC_HAS_RXEN_CFG    (1U)
-#define UART_SOC_HAS_FINE_FIFO_THR (1U)
-#define UART_SOC_HAS_FCCR_REG     (1U) /* has FCRR register */
-#define UART_SOC_HAS_TXLINE_IDLE_DETECTION (1U)
-#define UART_SOC_HAS_ADDR_MATCH   (1U)
-#define UART_SOC_HAS_IIR2_REG     (1U) /* has IIR2 register */
-#define UART_SOC_HAS_TRIG_MODE    (1U)
 #define UART_SOC_OVERSAMPLE_MAX   (30U) /* only support 30 oversample rate for rx idle detection */
 
 /*
@@ -156,9 +142,6 @@
  */
 #define SPI_SOC_TRANSFER_COUNT_MAX  (0xFFFFFFFFU)
 #define SPI_SOC_FIFO_DEPTH          (8U)
-#define SPI_SOC_HAS_NEW_TRANS_COUNT (1U)
-#define SPI_SOC_HAS_CS_SELECT       (1U)
-#define SPI_SOC_SUPPORT_DIRECTIO    (1U)
 
 /*
  * OTP Section

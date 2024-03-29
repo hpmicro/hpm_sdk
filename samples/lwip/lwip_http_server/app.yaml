@@ -3,4 +3,4 @@ excluded_targets:
   - release
 dependency:
   - enet
-  - enet_phy_on_board
+  - board_enet_phy

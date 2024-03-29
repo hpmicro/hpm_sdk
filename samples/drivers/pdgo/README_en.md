@@ -1,4 +1,4 @@
-# PDGO Demo
+# PDGO
 
 ## Overview
 

@@ -47,7 +47,7 @@
             .left_input  = wm8960_input_closed,
             .right_input = wm8960_input_closed,
             .play_source = wm8960_play_source_dac,
-            .bus         = wm8960_bus_i2s,
+            .bus         = wm8960_bus_left_justified,
             .format = {.mclk_hz = 0U, .sample_rate = 0U, .bit_width = 32U},
         };
 
@@ -429,9 +429,6 @@ static hpm_stat_t init_i2s_playback(uint32_t sample_rate, uint8_t audio_depth, u
     transfer.audio_depth = audio_depth;
     transfer.channel_num_per_frame = 2; /* non TDM mode, channel num fix to 2. */
     transfer.channel_slot_mask = 0x3; /* data from hpm_wav_decode API is 2 channels */
-#if defined(CONFIG_CODEC_WM8960) && CONFIG_CODEC_WM8960
-    transfer.protocol = I2S_PROTOCOL_I2S_PHILIPS;
-#endif
 
     i2s_mclk_hz = board_config_i2s_clock(TARGET_I2S, sample_rate);
 

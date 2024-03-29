@@ -691,7 +691,7 @@ static inline void rdc_interrupt_clear_flag_bits(RDC_Type *ptr, uint32_t mask)
  * @brief Get the interrupt status object
  *
  * @param ptr @ref RDC_Type base
- * @retval @ref rdc_interrupt_stat_t
+ * @return @ref rdc_interrupt_stat_t
  */
 static inline uint32_t get_interrupt_status(RDC_Type *ptr)
 {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -21,10 +21,10 @@ static void tcp_echo_thread(void *arg)
 
 #if LWIP_IPV6
     conn = netconn_new(NETCONN_TCP_IPV6);
-    netconn_bind(conn, IP6_ADDR_ANY, TCP_ECHO_PORT);
+    netconn_bind(conn, IP6_ADDR_ANY, TCP_LOCAL_PORT);
 #else /* LWIP_IPV6 */
     conn = netconn_new(NETCONN_TCP);
-    netconn_bind(conn, IP_ADDR_ANY, TCP_ECHO_PORT);
+    netconn_bind(conn, IP_ADDR_ANY, TCP_LOCAL_PORT);
 #endif /* LWIP_IPV6 */
     LWIP_ASSERT("tcpecho: invalid conn", (conn != NULL));
 

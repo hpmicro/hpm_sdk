@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -32,13 +32,13 @@ static void show_power_status(uint32_t retention_mask)
     static const char * const domain_name[] = {
         "SOC Power & Mem", "SOC Periph & Registers",
         "CPU0 Power & Mem", "CPU0 Periph & Registers",
-        "CONN Power & Mem", "CONN Periph & Registers",
+        "CONN Periph & Registers",
         "VIS Power & Mem", "VIS Periph & Registers",
         "GPU Power & Mem", "GPU Periph & Registers",
         "XTAL", "PLL0", "PLL1", "PLL2", "PLL3", "PLL4",
     };
     printf("---------------------------------------------\n");
-    for (uint32_t i = 0; i < 16; i++) {
+    for (uint32_t i = 0; i < ARRAY_SIZE(domain_name); i++) {
         if (retention_mask & (1 << i)) {
             printf("%s: ON\n", domain_name[i]);
         } else {
@@ -48,40 +48,42 @@ static void show_power_status(uint32_t retention_mask)
     printf("---------------------------------------------\n");
 }
 
-
 void enter_wait_mode(void)
 {
-    uint32_t retention = 0xFFCFUL;
+    uint32_t retention = 0x7FFFUL;
     printf("Entering wait mode\n");
     show_power_status(retention);
     printf("Send 'w' to wakeup from the wait mode\n");
 
+    sysctl_clock_preserve_settings(HPM_SYSCTL, clock_node_axif);
+    sysctl_clock_preserve_settings(HPM_SYSCTL, clock_node_xpi0);
+    sysctl_clock_set_preset(HPM_SYSCTL, sysctl_preset_0);
+
     /*
      * Keep PUART clock
      */
-    pcfg_set_periph_clock_mode(HPM_PCFG, PCFG_PERIPH_KEEP_CLOCK_ON(pcfg_pmc_periph_uart));
     sysctl_set_cpu0_lp_retention(HPM_SYSCTL, retention);
-    sysctl_clock_set_preset(HPM_SYSCTL, sysctl_preset_0);
     pcfg_disable_power_trap(HPM_PCFG);
     sysctl_set_cpu0_lp_mode(HPM_SYSCTL, cpu_lp_mode_gate_cpu_clock);
     WFI();
+    sysctl_clock_set_preset(HPM_SYSCTL, sysctl_preset_1);
 }
 
 void enter_stop_mode(void)
 {
     uint32_t retention = 0x40FUL;
-
     printf("Entering stop mode\n");
     show_power_status(retention);
     printf("Send 'w' to wakeup from the stop mode\n");
 
+    sysctl_resource_target_set_mode(HPM_SYSCTL, sysctl_resource_ddr0, sysctl_resource_mode_force_on);
     /*
      * Keep PUART clock
      */
-    pcfg_set_periph_clock_mode(HPM_PCFG, PCFG_PERIPH_KEEP_CLOCK_ON(pcfg_pmc_periph_uart));
     sysctl_set_cpu0_lp_retention(HPM_SYSCTL, retention);
     sysctl_clear_cpu0_flags(HPM_SYSCTL, cpu_event_flag_mask_all);
     sysctl_set_cpu0_lp_mode(HPM_SYSCTL, cpu_lp_mode_trigger_system_lp);
+
     WFI();
 }
 
@@ -97,7 +99,6 @@ void enter_standby_mode(void)
     /*
      * Keep PUART clock
      */
-    pcfg_set_periph_clock_mode(HPM_PCFG, PCFG_PERIPH_KEEP_CLOCK_ON(pcfg_pmc_periph_uart));
     sysctl_set_cpu0_lp_retention(HPM_SYSCTL, retention);
     sysctl_set_cpu0_lp_mode(HPM_SYSCTL, cpu_lp_mode_trigger_system_lp);
     WFI();

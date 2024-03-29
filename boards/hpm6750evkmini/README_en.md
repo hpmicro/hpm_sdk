@@ -88,19 +88,16 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 
 | Function      | Position |
 | ------------- | -------- |
-| GPTMR2.CAPT_2 | P2[15]   |
-| GPTMR2.COMP_0 | P2[19]   |
-| GPTMR2.COMP_1 | P2[22]   |
+| GPTMR5.CAPT_1 | P1[12] |
+| GPTMR5.COMP_0 | P1[31] |
+| GPTMR5.COMP_1 | P1[35] |
 
 - ADC12 Pin
 
 | Function                         | Position |
 | -------------------------------- | -------- |
 | ADC12 Reference Voltage Setting | N/A      |
-| ADC0/1/2.VINP7                   | P2[11]   |
-| ADC0/1/2.VINP8                   | P2[13]   |
-| ADC0/1/2.VINP9                   | P2[15]   |
-| ADC0/1/2.VINP10                  | P2[16]   |
+| ADC0.VINP14                      | P1[33]   |
 
 - ADC16 Pin
 
@@ -140,7 +137,9 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 | ENET0.EVTO1 | P1[12]   |
 | ENET0.EVTO2 | P1[35]   |
 
-- UART pin for uart_software_rx_idle sample or uart_rx_timeout sample
+- UART13 pin
+
+ The UART13 is used for core1 debug console or some functional testing using UART, such as uart_software_rx_idle, uart_rx_timeout, uart_software_lin, MICROROS_UART, USB_CDC_ACM_UART, MODBUS_RTU etc.
 
 | Function   | Position |
 | ---------- | ------ |
@@ -156,6 +155,14 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 - Motor Pin:
 
  Refer to section [HPM6750EVKMINI-TO-MOTOR Extension Board ](lab_board_hpm6750evkmini-to-motor-220530RevA) for configuration
+
+- Tamper Pin
+
+| Function | Pin    | Position |  Mode  |
+|----------|--------|--------|----------|
+| TAMP.08  | PZ08   | P1[10] | Active Mode |
+| TAMP.09  | PZ09   | P1[8]  | Active Mode |
+| TAMP.10  | PZ10   | P1[22] | Passive Mode |
 
 ## Known Issues
 

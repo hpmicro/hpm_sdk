@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -20,14 +20,14 @@
 #define IRQn_GPIO0_X                   7       /* GPIO0_X IRQ */
 #define IRQn_GPIO0_Y                   8       /* GPIO0_Y IRQ */
 #define IRQn_GPIO0_Z                   9       /* GPIO0_Z IRQ */
-#define IRQn_CAN0                      10      /* CAN0 IRQ */
-#define IRQn_CAN1                      11      /* CAN1 IRQ */
-#define IRQn_CAN2                      12      /* CAN2 IRQ */
-#define IRQn_CAN3                      13      /* CAN3 IRQ */
-#define IRQn_CAN4                      14      /* CAN4 IRQ */
-#define IRQn_CAN5                      15      /* CAN5 IRQ */
-#define IRQn_CAN6                      16      /* CAN6 IRQ */
-#define IRQn_CAN7                      17      /* CAN7 IRQ */
+#define IRQn_MCAN0                     10      /* MCAN0 IRQ */
+#define IRQn_MCAN1                     11      /* MCAN1 IRQ */
+#define IRQn_MCAN2                     12      /* MCAN2 IRQ */
+#define IRQn_MCAN3                     13      /* MCAN3 IRQ */
+#define IRQn_MCAN4                     14      /* MCAN4 IRQ */
+#define IRQn_MCAN5                     15      /* MCAN5 IRQ */
+#define IRQn_MCAN6                     16      /* MCAN6 IRQ */
+#define IRQn_MCAN7                     17      /* MCAN7 IRQ */
 #define IRQn_PTPC                      18      /* PTPC IRQ */
 #define IRQn_UART0                     27      /* UART0 IRQ */
 #define IRQn_UART1                     28      /* UART1 IRQ */
@@ -53,8 +53,8 @@
 #define IRQn_GPTMR5                    48      /* GPTMR5 IRQ */
 #define IRQn_GPTMR6                    49      /* GPTMR6 IRQ */
 #define IRQn_GPTMR7                    50      /* GPTMR7 IRQ */
-#define IRQn_WDG0                      51      /* WDG0 IRQ */
-#define IRQn_WDG1                      52      /* WDG1 IRQ */
+#define IRQn_EWDG0                     51      /* EWDG0 IRQ */
+#define IRQn_EWDG1                     52      /* EWDG1 IRQ */
 #define IRQn_MBX0A                     53      /* MBX0A IRQ */
 #define IRQn_MBX0B                     54      /* MBX0B IRQ */
 #define IRQn_MBX1A                     55      /* MBX1A IRQ */
@@ -173,27 +173,6 @@
 #define HPM_CRC_BASE (0xF000C000UL)
 /* CRC base pointer */
 #define HPM_CRC ((CRC_Type *) HPM_CRC_BASE)
-
-#include "hpm_opamp_regs.h"
-/* Address of OPAMP instances */
-/* OPAMP base address */
-#define HPM_OPAMP_BASE (0xF0014000UL)
-/* OPAMP base pointer */
-#define HPM_OPAMP ((OPAMP_Type *) HPM_OPAMP_BASE)
-
-#include "hpm_sdadc_regs.h"
-/* Address of SDADC instances */
-/* ADC1 base address */
-#define HPM_ADC1_BASE (0xF0018000UL)
-/* ADC1 base pointer */
-#define HPM_ADC1 ((SDADC_Type *) HPM_ADC1_BASE)
-
-#include "hpm_sdmv2_regs.h"
-/* Address of SDMV2 instances */
-/* SDMV2 base address */
-#define HPM_SDMV2_BASE (0xF001C000UL)
-/* SDMV2 base pointer */
-#define HPM_SDMV2 ((SDMV2_Type *) HPM_SDMV2_BASE)
 
 #include "hpm_uart_regs.h"
 /* Address of UART instances */
@@ -336,18 +315,18 @@
 
 #include "hpm_ewdg_regs.h"
 /* Address of EWDG instances */
-/* WDG0 base address */
-#define HPM_WDG0_BASE (0xF00B0000UL)
-/* WDG0 base pointer */
-#define HPM_WDG0 ((EWDG_Type *) HPM_WDG0_BASE)
-/* WDG1 base address */
-#define HPM_WDG1_BASE (0xF00B4000UL)
-/* WDG1 base pointer */
-#define HPM_WDG1 ((EWDG_Type *) HPM_WDG1_BASE)
-/* PWDG base address */
-#define HPM_PWDG_BASE (0xF4128000UL)
-/* PWDG base pointer */
-#define HPM_PWDG ((EWDG_Type *) HPM_PWDG_BASE)
+/* EWDG0 base address */
+#define HPM_EWDG0_BASE (0xF00B0000UL)
+/* EWDG0 base pointer */
+#define HPM_EWDG0 ((EWDG_Type *) HPM_EWDG0_BASE)
+/* EWDG1 base address */
+#define HPM_EWDG1_BASE (0xF00B4000UL)
+/* EWDG1 base pointer */
+#define HPM_EWDG1 ((EWDG_Type *) HPM_EWDG1_BASE)
+/* PEWDG base address */
+#define HPM_PEWDG_BASE (0xF4128000UL)
+/* PEWDG base pointer */
+#define HPM_PEWDG ((EWDG_Type *) HPM_PEWDG_BASE)
 
 #include "hpm_dmamux_regs.h"
 /* Address of DMAMUX instances */

@@ -103,4 +103,4 @@ sdk_src(src/lv_demo_music/assets/hpmicro_logo.c)
 sdk_src(src/lv_demo_music/assets/hpmicro_logo_large.c)
 sdk_src(src/lv_demo_music/assets/SourceHanSansCN_Normal_16.c)
 
-generate_ses_project()
+generate_ide_projects()

@@ -9,6 +9,7 @@
 #include "hpm_clock_drv.h"
 #include "hpm_gpio_drv.h"
 #include "hpm_ptpc_drv.h"
+#include "hpm_mchtmr_drv.h"
 #if defined(HPMSOC_HAS_HPMSDK_PTPC)
 #include "hpm_ptpc_drv.h"
 #elif defined(HPMSOC_HAS_HPMSDK_GPTMR)
@@ -48,23 +49,40 @@
 #endif
 
 #define MAX_TOGGLE_IN_NESTED_IRQ 5
+#define DEBOUNCE_THRESHOLD_IN_MS 150
+#define MCHTMR_CLK_NAME (clock_mchtmr0)
 
 void test_plicsw_interrupt(void);
 static volatile uint32_t toggled;
+static volatile uint64_t gpio_isr_rel_time; /* mark the real time from mchtimer */
+static volatile uint64_t gpio_isr_pre_time; /* mark the last time marked on gpio_isr */
+static volatile uint32_t level_value; /* mark the level */
+static volatile uint32_t pre_level_value; /* mark the level before enter the isr */
+static uint32_t debounce_threshold; /* debounce threshold */
 
 void isr_gpio(void)
 {
-    if (toggled < MAX_TOGGLE_IN_NESTED_IRQ) {
-        printf("gpio interrupt occurred in nested irq context\n");
+   /*  To eliminate debounce,here do 3 doftware judgments:
+    *  1.mark the time and pre_time, if difference less than 150ms(experimental value), judge as jitter;
+    *  2.read the level, if is 1, then judge as jitter;
+    *  3.mark the pre_level,if pre_level is 0, then judge as jitter.
+    */
+    gpio_isr_rel_time = mchtmr_get_count(HPM_MCHTMR);
+    level_value = gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN);
+    if ((gpio_isr_rel_time - gpio_isr_pre_time > debounce_threshold) && (level_value == 0) && (pre_level_value == 1)) {
+        if (toggled < MAX_TOGGLE_IN_NESTED_IRQ) {
+            printf("gpio interrupt occurred in nested irq context\n");
+        }
+        printf("gpio interrupt start, toggled %d times\n", toggled + 1);
+        toggled++;
+    #ifdef BOARD_LED_GPIO_CTRL
+        gpio_toggle_pin(BOARD_LED_GPIO_CTRL, BOARD_LED_GPIO_INDEX, BOARD_LED_GPIO_PIN);
+    #endif
+        test_plicsw_interrupt();
+        gpio_isr_pre_time = gpio_isr_rel_time;
+        printf("gpio interrupt end\n");
     }
-    printf("gpio interrupt start, toggled %d times\n", toggled + 1);
-    toggled++;
     gpio_clear_pin_interrupt_flag(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN);
-#ifdef BOARD_LED_GPIO_CTRL
-    gpio_toggle_pin(BOARD_LED_GPIO_CTRL, BOARD_LED_GPIO_INDEX, BOARD_LED_GPIO_PIN);
-#endif
-    test_plicsw_interrupt();
-    printf("gpio interrupt end\n");
 }
 #ifdef TEST_S_MODE
 SDK_DECLARE_EXT_ISR_S(BOARD_APP_GPIO_IRQ, isr_gpio)
@@ -98,6 +116,7 @@ void isr_ptpc(void)
     printf("+ now next %d gpio interrupts will occur in nested irq context\n", MAX_TOGGLE_IN_NESTED_IRQ);
     toggled = 0;
     while (toggled < MAX_TOGGLE_IN_NESTED_IRQ) {
+        pre_level_value = gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN);
     }
     ptpc_clear_irq_status(HPM_PTPC, PTPC_EVENT_COMPARE0_MASK);
     printf("ptpc interrupt end\n");
@@ -141,6 +160,7 @@ void tick_ms_isr(void)
     printf("+ now next %d gpio interrupts will occur in nested irq context\n", MAX_TOGGLE_IN_NESTED_IRQ);
     toggled = 0;
     while (toggled < MAX_TOGGLE_IN_NESTED_IRQ) {
+        pre_level_value = gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN);
     }
     gptmr_clear_status(APP_BOARD_GPTMR, GPTMR_CH_RLD_STAT_MASK(APP_BOARD_GPTMR_CH));
     gptmr_disable_irq(APP_BOARD_GPTMR, GPTMR_CH_RLD_IRQ_MASK(APP_BOARD_GPTMR_CH));
@@ -209,8 +229,13 @@ void test_plicsw_interrupt(void)
 
 int main(void)
 {
+    uint32_t mchtmr_freq;
+
     board_init();
     board_init_gpio_pins();
+
+    mchtmr_freq = clock_get_frequency(MCHTMR_CLK_NAME);
+    debounce_threshold = DEBOUNCE_THRESHOLD_IN_MS * mchtmr_freq / 1000;
 
     printf("%s (%s %s) interrupt test\n", PLIC_TEST_MODE, VECTOR_MODE, PREEMPTIVE_MODE);
     printf("Press button will trigger GPIO interrupt, in which software interrupt will be triggered as well.\n");
@@ -221,6 +246,8 @@ int main(void)
     test_interrupt_nesting();
 #endif
 
-    while(1);
+    while (1) {
+        pre_level_value = gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN);
+    }
     return 0;
 }

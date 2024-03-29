@@ -12,4 +12,4 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(multicore_core1)
 
 sdk_app_src(src/demo.c)
-generate_ses_project()
+generate_ide_projects()

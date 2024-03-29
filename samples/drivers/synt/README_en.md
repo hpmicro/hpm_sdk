@@ -1,4 +1,4 @@
-# Synchronous timer
+# SYNT
 
 ## Overview
 

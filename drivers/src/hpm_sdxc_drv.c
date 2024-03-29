@@ -112,10 +112,14 @@ hpm_stat_t sdxc_receive_cmd_response(SDXC_Type *base, sdxc_command_t *cmd)
             /* R3-R2-R1-R0 (lowest 8 bits are invalid bits) has the same format as R2 format in SD spec
              *  after removing internal CRC7 and end bit
              */
-            cmd->response[0] = (base->RESP[0] << 8);
-            cmd->response[1] = (base->RESP[1] << 8) | (base->RESP[0] >> 24);
-            cmd->response[2] = (base->RESP[2] << 8) | (base->RESP[1] >> 24);
-            cmd->response[3] = (base->RESP[3] << 8) | (base->RESP[2] >> 24);
+            uint32_t resp0 = base->RESP[0];
+            uint32_t resp1 = base->RESP[1];
+            uint32_t resp2 = base->RESP[2];
+            uint32_t resp3 = base->RESP[3];
+            cmd->response[0] = (resp0 << 8);
+            cmd->response[1] = (resp1 << 8) | (resp0 >> 24);
+            cmd->response[2] = (resp2 << 8) | (resp1 >> 24);
+            cmd->response[3] = (resp3 << 8) | (resp2 >> 24);
         }
 
         if (SDXC_CMD_XFER_AUTO_CMD_ENABLE_GET(base->CMD_XFER) == sdxc_auto_cmd12_enabled) {
@@ -772,7 +776,7 @@ void sdxc_select_voltage(SDXC_Type *base, sdxc_bus_voltage_option_t option)
     base->PROT_CTRL =
             (base->PROT_CTRL & ~SDXC_PROT_CTRL_SD_BUS_VOL_VDD1_MASK) | SDXC_PROT_CTRL_SD_BUS_VOL_VDD1_SET(option_u32);
 
-    if ((option == sdxc_bus_voltage_sd_1v8) || (option == sdxc_bus_voltage_emmc_1v8)) {
+    if (option == sdxc_bus_voltage_sd_1v8) {
         base->AC_HOST_CTRL |= SDXC_AC_HOST_CTRL_SIGNALING_EN_MASK;
     } else {
         base->AC_HOST_CTRL &= ~SDXC_AC_HOST_CTRL_SIGNALING_EN_MASK;

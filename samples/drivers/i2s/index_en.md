@@ -1,4 +1,4 @@
-# I2S example
+# I2S
 
 ```{eval-rst}
 .. toctree::

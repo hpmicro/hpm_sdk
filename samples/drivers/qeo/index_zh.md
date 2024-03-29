@@ -1,4 +1,4 @@
-# QEO example
+# QEO
 
 ```{eval-rst}
 .. toctree::

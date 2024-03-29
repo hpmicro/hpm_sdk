@@ -6,5 +6,5 @@ excluded_targets:
   - flash_xip
   - flash_xip_release
 dependency:
-  - lcd
+  - lcdc
   - cam

@@ -13,7 +13,7 @@ MEMORY
     ILM (wx) : ORIGIN = 0x00000000, LENGTH = 256K
     DLM (w) : ORIGIN = 0x00080000, LENGTH = 256K
     AXI_SRAM (wx) : ORIGIN = 0x01080000, LENGTH = 512K    /* AXI SRAM0 */
-    NONCACHEABLE_RAM (w) : ORIGIN = 0x01100000, LENGTH = 256K    /* AXI SRAM1 */
+    NONCACHEABLE_RAM (wx) : ORIGIN = 0x01100000, LENGTH = 256K    /* AXI SRAM1 */
     SHARE_RAM (w) : ORIGIN = 0x0117C000, LENGTH = 16K
     AHB_SRAM (w) : ORIGIN = 0xF0300000, LENGTH = 32k
     APB_SRAM (w): ORIGIN = 0xF40F0000, LENGTH = 8k
@@ -258,5 +258,6 @@ SECTIONS
     __share_mem_end__ = ORIGIN(SHARE_RAM) + LENGTH(SHARE_RAM);
 
     __fw_size__ = SIZEOF(.start) + SIZEOF(.vectors) + SIZEOF(.rel) + SIZEOF(.text) + SIZEOF(.data) + SIZEOF(.fast) + SIZEOF(.tdata) + SIZEOF(.noncacheable.init);
-    ASSERT(__fw_size__ <= LENGTH(ILM), "******  FAILED! ILM has not enough space!  ******")
+    __last_addr__ = __noncacheable_init_load_addr__ + SIZEOF(.noncacheable.init);
+    ASSERT(((__fw_size__ <= LENGTH(ILM)) && (__last_addr__ <= (ORIGIN(ILM) + LENGTH(ILM)))), "******  FAILED! ILM has not enough space!  ******")
 }

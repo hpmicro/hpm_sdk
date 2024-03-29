@@ -69,7 +69,7 @@ static inline void mcan_set_tsu_ext_timebase_src(MCAN_Type *ptr, uint8_t src)
  *
  * @param [in] ptr MCAN base
  * @param [in] ext_tbsel External TBSEL index
- * @param [in] tbsel_src Timebase source selection
+ * @param [in] tbsel_option Timebase source selection
  */
 static inline void mcan_set_tsu_tbsel_option(MCAN_Type *ptr, uint8_t ext_tbsel, uint8_t tbsel_option)
 {

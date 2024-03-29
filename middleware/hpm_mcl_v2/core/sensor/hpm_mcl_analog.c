@@ -111,14 +111,14 @@ hpm_mcl_stat_t hpm_mcl_analog_step_convert(mcl_analog_t *analog, float value, mc
     MCL_ASSERT_OPT(output != NULL, mcl_invalid_pointer);
     switch (chn) {
     case analog_a_current:
-        if ((angle >= (0.75 * MCL_PI)) && (angle <= (1.75 * MCL_PI))) {
+        if ((angle >= (0.75f * MCL_PI)) && (angle <= (1.75f * MCL_PI))) {
             *output = -value;
         } else {
             *output = value;
         }
         break;
     case analog_b_current:
-        if ((angle <= (0.25 * MCL_PI)) || (angle >= (1.25 * MCL_PI))) {
+        if ((angle <= (0.25f * MCL_PI)) || (angle >= (1.25f * MCL_PI))) {
             *output = -value;
         } else {
             *output = value;

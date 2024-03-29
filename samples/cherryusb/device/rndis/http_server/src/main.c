@@ -88,7 +88,7 @@ int main(void)
 
     printf("cherry usb rndis device sample.\n");
 
-    cdc_rndis_init();
+    cdc_rndis_init(0, CONFIG_HPM_USBD_BASE);    /* BUSID must be 0 */
 
     user_init_lwip();
     while (!netif_is_up(&netif_data)) {

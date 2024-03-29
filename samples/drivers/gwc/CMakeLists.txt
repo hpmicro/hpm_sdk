@@ -14,4 +14,4 @@ project(gwc_example)
 
 sdk_app_src(src/gwc.c)
 
-generate_ses_project()
+generate_ide_projects()

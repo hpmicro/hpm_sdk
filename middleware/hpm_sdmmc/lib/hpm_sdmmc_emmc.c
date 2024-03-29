@@ -1050,3 +1050,62 @@ hpm_stat_t emmc_switch_function(emmc_card_t *card, emmc_switch_cmd_arg_t arg, ui
 
     return error;
 }
+
+hpm_stat_t emmc_configure_partition(emmc_card_t *card, emmc_config_partition_option_t option)
+{
+    uint8_t partition_config = 0U;
+
+    if (option.enable_boot_ack) {
+        partition_config |= (1UL << 6);
+    }
+
+    switch (option.boot_partition_enable_option) {
+    default:
+        /* Do nothing */
+        break;
+    case boot_partition_enable_option_boot_partition1:
+        partition_config |= (1UL << 3);
+        break;
+    case boot_partition_enable_option_boot_partition2:
+        partition_config |= (2UL << 3);
+        break;
+    case boot_partition_enable_option_user_area:
+        partition_config |= (7UL << 3);
+        break;
+    }
+
+    switch (option.partition_access_option) {
+    default:
+        /* Do nothing */
+        break;
+    case emmc_partition_access_read_or_write_boot_partition1:
+        partition_config |= (1UL << 0);
+        break;
+    case emmc_partition_access_read_or_write_boot_partition2:
+        partition_config |= (2UL << 0);
+        break;
+    case emmc_partition_access_read_or_write_rpmb:
+        partition_config |= (3UL << 0);
+        break;
+    case emmc_partition_access_access_to_gp_partition1:
+        partition_config |= (4UL << 0);
+        break;
+    case emmc_partition_access_access_to_gp_partition2:
+        partition_config |= (5UL << 0);
+        break;
+    case emmc_partition_access_access_to_gp_partition3:
+        partition_config |= (6UL << 0);
+        break;
+    case emmc_partition_access_access_to_gp_partition4:
+        partition_config |= (7UL << 0);
+        break;
+    }
+
+    emmc_switch_cmd_arg_t switch_arg = { .argument = 0U };
+    switch_arg.access = emmc_switch_cmd_access_mode_write_byte;
+    switch_arg.index = EMMC_EXT_CSD_INDEX_PARTITION_CONFIG;
+    switch_arg.value = partition_config;
+
+    uint32_t timeous_in_us = card->device_attribute.partition_switch_timeout_ms * 1000UL;
+    return emmc_switch_function(card, switch_arg, timeous_in_us);
+}

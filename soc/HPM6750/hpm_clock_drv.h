@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -17,6 +17,8 @@
  * @{
  *
  */
+
+#define CLOCK_DIV_INVALID (~0UL)
 
 /**
  * @brief Error codes for clock driver
@@ -218,14 +220,14 @@ typedef enum _clock_name {
     clock_i2s3 = MAKE_CLOCK_NAME(sysctl_resource_i2s3, CLK_SRC_GROUP_I2S, 3),
 
     /* Clock sources */
-    clk_osc0clk0 = MAKE_CLOCK_NAME(RESOURCE_INVALID, CLK_SRC_GROUP_SRC, 0),
-    clk_pll0clk0 = MAKE_CLOCK_NAME(RESOURCE_INVALID, CLK_SRC_GROUP_SRC, 1),
-    clk_pll1clk0 = MAKE_CLOCK_NAME(RESOURCE_INVALID, CLK_SRC_GROUP_SRC, 2),
-    clk_pll1clk1 = MAKE_CLOCK_NAME(RESOURCE_INVALID, CLK_SRC_GROUP_SRC, 3),
-    clk_pll2clk0 = MAKE_CLOCK_NAME(RESOURCE_INVALID, CLK_SRC_GROUP_SRC, 4),
-    clk_pll2clk1 = MAKE_CLOCK_NAME(RESOURCE_INVALID, CLK_SRC_GROUP_SRC, 5),
-    clk_pll3clk0 = MAKE_CLOCK_NAME(RESOURCE_INVALID, CLK_SRC_GROUP_SRC, 6),
-    clk_pll4clk0 = MAKE_CLOCK_NAME(RESOURCE_INVALID, CLK_SRC_GROUP_SRC, 7),
+    clk_osc0clk0 = MAKE_CLOCK_NAME(sysctl_resource_xtal, CLK_SRC_GROUP_SRC, 0),
+    clk_pll0clk0 = MAKE_CLOCK_NAME(sysctl_resource_clk0_pll0, CLK_SRC_GROUP_SRC, 1),
+    clk_pll1clk0 = MAKE_CLOCK_NAME(sysctl_resource_clk0_pll1, CLK_SRC_GROUP_SRC, 2),
+    clk_pll1clk1 = MAKE_CLOCK_NAME(sysctl_resource_clk1_pll1, CLK_SRC_GROUP_SRC, 3),
+    clk_pll2clk0 = MAKE_CLOCK_NAME(sysctl_resource_clk0_pll2, CLK_SRC_GROUP_SRC, 4),
+    clk_pll2clk1 = MAKE_CLOCK_NAME(sysctl_resource_clk1_pll2, CLK_SRC_GROUP_SRC, 5),
+    clk_pll3clk0 = MAKE_CLOCK_NAME(sysctl_resource_clk0_pll3, CLK_SRC_GROUP_SRC, 6),
+    clk_pll4clk0 = MAKE_CLOCK_NAME(sysctl_resource_clk0_pll4, CLK_SRC_GROUP_SRC, 7),
 } clock_name_t;
 
 #ifdef __cplusplus
@@ -233,133 +235,142 @@ extern "C"
 {
 #endif
 
-    /**
-     * @brief Get specified IP frequency
-     * @param[in] clock_name IP clock name
-     *
-     * @return IP clock frequency in Hz
-     */
-    uint32_t clock_get_frequency(clock_name_t clock_name);
+/**
+ * @brief Get specified IP frequency
+ * @param[in] clock_name IP clock name
+ *
+ * @return IP clock frequency in Hz
+ */
+uint32_t clock_get_frequency(clock_name_t clock_name);
 
-    /**
-     * @brief Get the IP clock source
-     *        Note: This API return the direct clock source
-     * @return IP clock source
-     */
-    clk_src_t clock_get_source(clock_name_t clock_name);
+/**
+ * @brief Get the IP clock source
+ * @param[in] clock_name IP clock name
+ *
+ * @return IP clock source
+ */
+clk_src_t clock_get_source(clock_name_t clock_name);
 
-    /**
-     * @brief Set ADC clock source
-     * @param[in] clock_name ADC clock name
-     * @param[in] src ADC clock source
-     *
-     * @retval status_success Setting ADC clock source is successful
-     * @retval status_clk_invalid Invalid ADC clock
-     * @retval status_clk_src_invalid Invalid ADC clock source
-     */
-    hpm_stat_t clock_set_adc_source(clock_name_t clock_name, clk_src_t src);
+/**
+ * @brief Get the IP clock divider
+ *        Note:This API return the direct clock divider
+ * @param [in] clock_name clock name
+ * @return IP clock divider
+ */
+uint32_t clock_get_divider(clock_name_t clock_name);
 
-    /**
-     * @brief Set I2S clock source
-     * @param[in] clock_name I2S clock name
-     * @param[in] src I2S clock source
-     *
-     * @retval status_success Setting I2S clock source is successful
-     * @retval status_clk_invalid Invalid I2S clock
-     * @retval status_clk_src_invalid Invalid I2S clock source
-     */
-    hpm_stat_t clock_set_i2s_source(clock_name_t clock_name, clk_src_t src);
+/**
+ * @brief Set ADC clock source
+ * @param[in] clock_name ADC clock name
+ * @param[in] src ADC clock source
+ *
+ * @retval status_success Setting ADC clock source is successful
+ * @retval status_clk_invalid Invalid ADC clock
+ * @retval status_clk_src_invalid Invalid ADC clock source
+ */
+hpm_stat_t clock_set_adc_source(clock_name_t clock_name, clk_src_t src);
 
-    /**
-     * @brief Set the IP clock source and divider
-     * @param[in] clock_name clock name
-     * @param[in] src clock source
-     * @param[in] div clock divider, valid range (1 - 256)
-     *
-     * @retval status_success Setting Clock source and divider is successful.
-     * @retval status_clk_set_by_other_api The clock should be set by other API
-     * @retval status_clk_src_invalid clock source is invalid.
-     * @retval status_clk_fixed clock source and divider is a fixed value
-     * @retval status_clk_shared_ahb Clock is shared with the AHB clock
-     * @retval status_clk_shared_axi0 Clock is shared with the AXI0 clock
-     * @retval status_clk_shared_axi1 CLock is shared with the AXI1 clock
-     * @retval status_clk_shared_axi2 Clock is shared with the AXI2 clock
-     * @retval status_clk_shared_cpu0 Clock is shared with the CPU0 clock
-     * @retval status_clk_shared_cpu1 Clock is shared with the CPU1 clock
-     */
-    hpm_stat_t clock_set_source_divider(clock_name_t clock_name, clk_src_t src, uint32_t div);
+/**
+ * @brief Set I2S clock source
+ * @param[in] clock_name I2S clock name
+ * @param[in] src I2S clock source
+ *
+ * @retval status_success Setting I2S clock source is successful
+ * @retval status_clk_invalid Invalid I2S clock
+ * @retval status_clk_src_invalid Invalid I2S clock source
+ */
+hpm_stat_t clock_set_i2s_source(clock_name_t clock_name, clk_src_t src);
 
-    /**
-     * @brief Enable IP clock
-     * @param[in] clock_name IP clock name
-     */
-    void clock_enable(clock_name_t clock_name);
+/**
+ * @brief Set the IP clock source and divider
+ * @param[in] clock_name clock name
+ * @param[in] src clock source
+ * @param[in] div clock divider, valid range (1 - 256)
+ *
+ * @retval status_success Setting Clock source and divider is successful.
+ * @retval status_clk_set_by_other_api The clock should be set by other API
+ * @retval status_clk_src_invalid clock source is invalid.
+ * @retval status_clk_fixed clock source and divider is a fixed value
+ * @retval status_clk_shared_ahb Clock is shared with the AHB clock
+ * @retval status_clk_shared_axi0 Clock is shared with the AXI0 clock
+ * @retval status_clk_shared_axi1 CLock is shared with the AXI1 clock
+ * @retval status_clk_shared_axi2 Clock is shared with the AXI2 clock
+ * @retval status_clk_shared_cpu0 Clock is shared with the CPU0 clock
+ * @retval status_clk_shared_cpu1 Clock is shared with the CPU1 clock
+ */
+hpm_stat_t clock_set_source_divider(clock_name_t clock_name, clk_src_t src, uint32_t div);
 
-    /**
-     * @brief Disable IP clock
-     * @param[in] clock_name IP clock name
-     */
-    void clock_disable(clock_name_t clock_name);
+/**
+ * @brief Enable IP clock
+ * @param[in] clock_name IP clock name
+ */
+void clock_enable(clock_name_t clock_name);
 
-    /**
-     * @brief Add IP to specified group
-     * @param[in] clock_name IP clock name
-     * @param[in] group resource group index, valid value: 0/1/2/3
-     */
-    void clock_add_to_group(clock_name_t clock_name, uint32_t group);
+/**
+ * @brief Disable IP clock
+ * @param[in] clock_name IP clock name
+ */
+void clock_disable(clock_name_t clock_name);
 
-    /**
-     * @brief Remove IP from specified group
-     * @param[in] clock_name IP clock name
-     * @param[in] group resource group index, valid value: 0/1/2/3
-     */
-    void clock_remove_from_group(clock_name_t clock_name, uint32_t group);
+/**
+ * @brief Add IP to specified group
+ * @param[in] clock_name IP clock name
+ * @param[in] group resource group index, valid value: 0/1/2/3
+ */
+void clock_add_to_group(clock_name_t clock_name, uint32_t group);
 
-    /**
-     * @brief Check IP in specified group
-     * @param[in] clock_name IP clock name
-     * @return true if in group, false if not in group
-     */
-    bool clock_check_in_group(clock_name_t clock_name, uint32_t group);
+/**
+ * @brief Remove IP from specified group
+ * @param[in] clock_name IP clock name
+ * @param[in] group resource group index, valid value: 0/1/2/3
+ */
+void clock_remove_from_group(clock_name_t clock_name, uint32_t group);
 
-    /**
-     * @brief Disconnect the clock group from specified CPU
-     * @param[in] group clock group index, value value is 0/1/2/3
-     * @param[in] cpu CPU index, valid value is 0/1
-     */
-    void clock_connect_group_to_cpu(uint32_t group, uint32_t cpu);
+/**
+ * @brief Check IP in specified group
+ * @param[in] clock_name IP clock name
+ * @param[in] group resource group index, valid value: 0/1/2/3
+ * @return true if in group, false if not in group
+ */
+bool clock_check_in_group(clock_name_t clock_name, uint32_t group);
 
-    /**
-     * @brief Disconnect the clock group from specified CPU
-     * @param[in] group clock group index, value value is 0/1/2/3
-     * @param[in] cpu CPU index, valid value is 0/1
-     */
-    void clock_disconnect_group_from_cpu(uint32_t group, uint32_t cpu);
+/**
+ * @brief Disconnect the clock group from specified CPU
+ * @param[in] group clock group index, value value is 0/1/2/3
+ * @param[in] cpu CPU index, valid value is 0/1
+ */
+void clock_connect_group_to_cpu(uint32_t group, uint32_t cpu);
 
+/**
+ * @brief Disconnect the clock group from specified CPU
+ * @param[in] group clock group index, value value is 0/1/2/3
+ * @param[in] cpu CPU index, valid value is 0/1
+ */
+void clock_disconnect_group_from_cpu(uint32_t group, uint32_t cpu);
 
-    /**
-     * @brief Delay specified microseconds
-     *
-     * @param [in] us expected delay interval in microseconds
-     */
-    void clock_cpu_delay_us(uint32_t us);
+/**
+ * @brief Delay specified microseconds
+ *
+ * @param [in] us expected delay interval in microseconds
+ */
+void clock_cpu_delay_us(uint32_t us);
 
-    /**
-     * @brief Delay specified milliseconds
-     *
-     * @param [in] ms expected delay interval in milliseconds
-     */
-    void clock_cpu_delay_ms(uint32_t ms);
+/**
+ * @brief Delay specified milliseconds
+ *
+ * @param [in] ms expected delay interval in milliseconds
+ */
+void clock_cpu_delay_ms(uint32_t ms);
 
-    /**
-     * @brief Update the Core clock frequency
-     */
-    void clock_update_core_clock(void);
+/**
+ * @brief Update the Core clock frequency
+ */
+void clock_update_core_clock(void);
 
-    /**
-     * @brief HPM Core clock variable
-     */
-    extern uint32_t hpm_core_clock;
+/**
+ * @brief HPM Core clock variable
+ */
+extern uint32_t hpm_core_clock;
 
 #ifdef __cplusplus
 }

@@ -47,7 +47,7 @@ hpm_stat_t i2s_fill_tx_dummy_data(I2S_Type *ptr, uint8_t data_line, uint8_t data
     while (i2s_get_tx_line_fifo_level(ptr, data_line) < data_count) {
         ptr->TXD[data_line] = 0;
         if (retry > HPM_I2S_DRV_DEFAULT_RETRY_COUNT * data_count) {
-            return false;
+            return status_timeout;
         }
         retry++;
     }
@@ -55,18 +55,28 @@ hpm_stat_t i2s_fill_tx_dummy_data(I2S_Type *ptr, uint8_t data_line, uint8_t data
     return status_success;
 }
 
+/* The I2S software reset function relies on a working BCLK */
 void i2s_reset_all(I2S_Type *ptr)
 {
+    uint32_t cfgr_temp, misc_cfgr_temp;
+
     /* disable I2S */
     ptr->CTRL &= ~I2S_CTRL_I2S_EN_MASK;
-    /* gate off bclk */
-    ptr->CFGR |= I2S_CFGR_BCLK_GATEOFF_MASK;
-    /* gate off mclk */
-    ptr->MISC_CFGR |= I2S_MISC_CFGR_MCLK_GATEOFF_MASK;
+
+    /* enable internal clock for software reset function */
+    cfgr_temp = ptr->CFGR;
+    ptr->CFGR |= I2S_CFGR_BCLK_DIV_SET(1);
+    ptr->CFGR &= ~(I2S_CFGR_MCK_SEL_OP_MASK | I2S_CFGR_BCLK_SEL_OP_MASK | I2S_CFGR_FCLK_SEL_OP_MASK | I2S_CFGR_BCLK_GATEOFF_MASK);
+    misc_cfgr_temp = ptr->MISC_CFGR;
+    ptr->MISC_CFGR &= ~I2S_MISC_CFGR_MCLK_GATEOFF_MASK;
 
     /* reset function block and clear fifo */
     ptr->CTRL |= (I2S_CTRL_TXFIFOCLR_MASK | I2S_CTRL_RXFIFOCLR_MASK | I2S_CTRL_SFTRST_CLKGEN_MASK | I2S_CTRL_SFTRST_TX_MASK | I2S_CTRL_SFTRST_RX_MASK);
     ptr->CTRL &= ~(I2S_CTRL_TXFIFOCLR_MASK | I2S_CTRL_RXFIFOCLR_MASK | I2S_CTRL_SFTRST_CLKGEN_MASK | I2S_CTRL_SFTRST_TX_MASK | I2S_CTRL_SFTRST_RX_MASK);
+
+    /* Restore the value of the register */
+    ptr->CFGR = cfgr_temp;
+    ptr->MISC_CFGR = misc_cfgr_temp;
 }
 
 void i2s_get_default_config(I2S_Type *ptr, i2s_config_t *config)
@@ -83,7 +93,8 @@ void i2s_get_default_config(I2S_Type *ptr, i2s_config_t *config)
     config->use_external_fclk = false;
     config->enable_mclk_out = false;
     config->frame_start_at_rising_edge = false;
-    config->fifo_threshold = 4;
+    config->tx_fifo_threshold = 4;
+    config->rx_fifo_threshold = 4;
 }
 
 void i2s_init(I2S_Type *ptr, i2s_config_t *config)
@@ -104,8 +115,8 @@ void i2s_init(I2S_Type *ptr, i2s_config_t *config)
             & ~(I2S_MISC_CFGR_MCLKOE_MASK
                 | I2S_MISC_CFGR_MCLK_GATEOFF_MASK))
         | I2S_MISC_CFGR_MCLKOE_SET(config->enable_mclk_out);
-    ptr->FIFO_THRESH = I2S_FIFO_THRESH_TX_SET(config->fifo_threshold)
-        | I2S_FIFO_THRESH_RX_SET(config->fifo_threshold);
+    ptr->FIFO_THRESH = I2S_FIFO_THRESH_TX_SET(config->tx_fifo_threshold)
+        | I2S_FIFO_THRESH_RX_SET(config->rx_fifo_threshold);
 }
 
 static void i2s_config_cfgr(I2S_Type *ptr,

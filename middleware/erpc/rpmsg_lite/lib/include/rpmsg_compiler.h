@@ -58,6 +58,20 @@
 #define RL_PACKED_END
 #endif
 
+#elif defined(__ICCRISCV__)
+
+#include <intrinsics.h>
+
+#define MEM_BARRIER() __asm("fence rw, rw");
+
+#ifndef RL_PACKED_BEGIN
+#define RL_PACKED_BEGIN __packed
+#endif
+
+#ifndef RL_PACKED_END
+#define RL_PACKED_END
+#endif
+
 /* ARM GCC */
 #elif defined(__CC_ARM) || (defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050))
 

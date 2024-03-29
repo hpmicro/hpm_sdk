@@ -9,8 +9,8 @@
 
 #include "lwip/netif.h"
 
-#define TCP_ECHO_PORT0 (5001U)
-#define TCP_ECHO_PORT1 (5002U)
+#define TCP_LOCAL_PORT0 (5001U)
+#define TCP_LOCAL_PORT1 (5002U)
 
 #if defined(__cplusplus)
 extern "C" {

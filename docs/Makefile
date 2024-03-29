@@ -6,9 +6,25 @@
 SPHINXOPTS    ?=
 #SPHINXBUILD   ?= sphinx-build
 SPHINXBUILD   ?= python3 -m sphinx.cmd.build
+CMAKE_RST_GEN ?= python3 ../scripts/generate_cmake_rst.py --skip_private --skip_undocumented --headline="SDK CMake API Reference" ../cmake
+
+all: html
+
+cmake_intro:
+	@$(CMAKE_RST_GEN) -o cmake_intro.rst
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
-html: Makefile
+html: Makefile cmake_intro
 	@$(SPHINXBUILD) -M $@ "en" "output/en" $(SPHINXOPTS) $(O)
 	@$(SPHINXBUILD) -M $@ "zh" "output/zh" $(SPHINXOPTS) $(O)
+
+
+.PHONY: all
+
+clean:
+	@rm -rf output
+	@rm -rf en/boards
+	@rm -rf en/samples
+	@rm -rf zh/boards
+	@rm -rf zh/samples

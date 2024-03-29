@@ -11,41 +11,8 @@ board:
       type: qspi-nor-flash
       size: 16M
     feature:
-      - butn
-      - sdp
-      - rng
-      - rtc
-      - wdg
-      - lin
-      - sdm
-      - adc16
-      - usb-otg
-      - spi
-      - uart
-      - mcan
-      - i2c
-      - dual-i2c
-      - gpio
-      - gpio-led
-      - gpio-key
-      - gpiom
-      - pwm
-      - hall
-      - qei
-      - motor-control
-      - multicore
-      - tsns
-      - dac
-      - ptp
-      - uart_hardware_rx_idle
-      - hrpwm
-      - pla
-      - pwm-rgb-led
-      - crc
-      - motor-phase-voltage
-      - bldc_smc
-      - bldc_hfi
-      - puart
-      - gpt_pin
-      - acmp
-      - ptpc
+      - board_pwm_rgb_led
+      - board_gpt_pin
+      - board_motor_control
+      - board_motor_control_phase_voltage_sampling
+      - board_puart_pin

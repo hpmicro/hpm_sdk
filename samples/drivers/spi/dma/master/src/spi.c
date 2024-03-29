@@ -143,6 +143,8 @@ int main(void)
     timing_config.master_config.sclk_freq_in_hz = TEST_SPI_SCLK_FREQ;
     if (status_success != spi_master_timing_init(TEST_SPI, &timing_config)) {
         printf("SPI master timing init failed\n");
+        while (1) {
+        }
     }
 
     /* set SPI format config for master */

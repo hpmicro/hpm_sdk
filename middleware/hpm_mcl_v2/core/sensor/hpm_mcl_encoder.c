@@ -41,6 +41,7 @@ hpm_mcl_stat_t hpm_mcl_encoder_init(mcl_encoder_t *encoder, mcl_cfg_t *mcl_cfg, 
      *
      */
     encoder->cfg = encoder_cfg;
+    encoder->phase = &mcl_cfg->physical.motor.hall;
     encoder->result.speed = 0;
     encoder->result.theta = 0;
     encoder->result.theta_forecast = 0;
@@ -135,8 +136,8 @@ hpm_mcl_stat_t hpm_mcl_encoder_process(mcl_encoder_t *encoder, uint32_t tick_det
     case encoder_method_t:
         ts = tick_deta / (*encoder->mcu_clock_tick);
         theta_deta = MCL_ANGLE_MOD_X((-MCL_PI), MCL_PI, (theta - encoder->cal_speed.t_method.theta_last));
+        encoder->cal_speed.t_method.ts_sigma += ts;
         if (MCL_FLOAT_IS_ZERO(theta_deta)) {
-            encoder->cal_speed.t_method.ts_sigma += ts;
             speed = encoder->cal_speed.t_method.speed_last;
         } else {
             speed = theta_deta / encoder->cal_speed.t_method.ts_sigma;
@@ -154,7 +155,7 @@ hpm_mcl_stat_t hpm_mcl_encoder_process(mcl_encoder_t *encoder, uint32_t tick_det
         theta_deta = MCL_ANGLE_MOD_X((-MCL_PI), MCL_PI, (theta - encoder->cal_speed.m_t_method.theta_last));
         encoder->cal_speed.m_t_method.ts_sigma += ts;
         encoder->cal_speed.m_t_method.theta_sigma += theta_deta;
-        if (fabs(encoder->cal_speed.m_t_method.speed_filter_last) > encoder->cfg->speed_abs_switch_m_t) {
+        if ((float)fabs((double)encoder->cal_speed.m_t_method.speed_filter_last) > encoder->cfg->speed_abs_switch_m_t) {
             speed = encoder->cal_speed.m_t_method.theta_sigma / encoder->cal_speed.m_t_method.ts_sigma;
             encoder->cal_speed.m_t_method.ts_sigma = 0;
             encoder->cal_speed.m_t_method.theta_sigma = 0;
@@ -236,5 +237,11 @@ float hpm_mcl_encoder_get_forecast_theta(mcl_encoder_t *encoder)
 hpm_mcl_stat_t hpm_mcl_encoder_get_absolute_theta(mcl_encoder_t *encoder, float *theta)
 {
     MCL_ASSERT(encoder->cfg->callback.get_absolute_theta(theta) == mcl_success, mcl_encoder_get_theta_error);
+    return mcl_success;
+}
+
+hpm_mcl_stat_t hpm_mcl_encoder_get_uvw_status(mcl_encoder_t *encoder, mcl_encoder_uvw_level_t *level)
+{
+    MCL_ASSERT(encoder->cfg->callback.get_uvw_level(level) == mcl_success, mcl_encoder_get_uvw_error);
     return mcl_success;
 }

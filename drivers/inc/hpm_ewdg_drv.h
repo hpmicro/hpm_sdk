@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -32,8 +32,7 @@ enum {
 /**
  * @brief EWDG Password Definitions
  *
- * @defgroup ewdg_password_def
- * @ingroup ewdg_password_def
+ * @defgroup ewdg_password_def EWDG Password definitions
  * @{
  */
 #define EWDG_REFRESH_UNLOCK_PASSWORD_DEFAULT (0xED09U)          /*!< Default EWDG Refresh Password */
@@ -47,8 +46,7 @@ enum {
 /**
  * @brief EWDG Events
  *
- * @defgroup ewdg_event
- * @ingroup ewdg_event
+ * @defgroup ewdg_event EWDG Event definitions
  * @{
  */
 #define EWDG_EVENT_PARITY_ERROR                 (1UL << 6)    /*!< Parity Error Event */
@@ -64,8 +62,7 @@ enum {
 
 /**
  * @brief EWDG Interrupts
- * @defgroup ewdg_interrupt
- * @ingroup ewdg_interrupt
+ * @defgroup ewdg_interrupt EWDG interrupt definitions
  * @{
  */
 #define EWDG_INT_PARITY_FAIL            (1UL << 2)      /*!< Parity Error Interrupt */
@@ -84,8 +81,7 @@ enum {
 /**
  * @brief EWDG Resets
  *
- * @defgroup ewdg_reset_source
- * @ingroup ewdg_reset_source
+ * @defgroup ewdg_reset_source EWDG reset source definitions
  * @{
  */
 #define EWDG_RST_PARITY_FAIL            (1UL << 3)      /*!< Parity Error Reset */
@@ -149,14 +145,14 @@ typedef enum {
  * The Actual Upper Window = Lower Window + Upper Window Limit
  */
 typedef enum {
-    ewdg_window_upper_timeout_period_8_div_16 = 0,     /*!< 8/16 of @ref timeout_reset_val */
-    ewdg_window_upper_timeout_period_1_div_16 = 1,     /*!< 1/16 of @ref timeout_reset_val */
-    ewdg_window_upper_timeout_period_2_div_16 = 2,     /*!< 2/16 of @ref timeout_reset_val */
-    ewdg_window_upper_timeout_period_3_div_16 = 3,     /*!< 3/16 of @ref timeout_reset_val */
-    ewdg_window_upper_timeout_period_4_div_16 = 4,     /*!< 4/16 of @ref timeout_reset_val */
-    ewdg_window_upper_timeout_period_5_div_16 = 5,     /*!< 5/16 of @ref timeout_reset_val */
-    ewdg_window_upper_timeout_period_6_div_16 = 6,     /*!< 6/16 of @ref timeout_reset_val */
-    ewdg_window_upper_timeout_period_7_div_16 = 8,     /*!< 7/16 of @ref timeout_reset_val */
+    ewdg_window_upper_timeout_period_8_div_16 = 0,     /*!< 8/16 of timeout_reset_val */
+    ewdg_window_upper_timeout_period_1_div_16 = 1,     /*!< 1/16 of timeout_reset_val */
+    ewdg_window_upper_timeout_period_2_div_16 = 2,     /*!< 2/16 of timeout_reset_val */
+    ewdg_window_upper_timeout_period_3_div_16 = 3,     /*!< 3/16 of timeout_reset_val */
+    ewdg_window_upper_timeout_period_4_div_16 = 4,     /*!< 4/16 of timeout_reset_val */
+    ewdg_window_upper_timeout_period_5_div_16 = 5,     /*!< 5/16 of timeout_reset_val */
+    ewdg_window_upper_timeout_period_6_div_16 = 6,     /*!< 6/16 of timeout_reset_val */
+    ewdg_window_upper_timeout_period_7_div_16 = 8,     /*!< 7/16 of timeout_reset_val */
     /*! Maximum allowed upper limit */
     ewdg_window_upper_timeout_period_max = ewdg_window_upper_timeout_period_7_div_16
 } ewdg_window_upper_limit_t;
@@ -387,6 +383,7 @@ void ewdg_disable(EWDG_Type *ptr);
  *
  * @param [in] ptr EWDG base
  * @param [in] config Control Function Configuration
+ * @param [in] cnt_src_freq Source frequency for EWDG counter
  *
  * @retval status_invalid_argument Invalid argument was detected
  * @retval status_success No error happened
@@ -471,7 +468,7 @@ uint64_t ewdg_convert_timeout_us_to_timeout_ticks(uint32_t src_clk_freq, uint32_
  *
  * @return timeout in terms of counter clock ticks
  */
-uint32_t ewdg_convert_timeout_ticks_to_timeout_us(EWDG_Type *ptr, uint32_t srk_clk_freq, uint32_t timeout_ticks);
+uint32_t ewdg_convert_timeout_ticks_to_timeout_us(EWDG_Type *ptr, uint32_t src_clk_freq, uint32_t timeout_ticks);
 
 /**
  * @brief Enable EWDG interrupt

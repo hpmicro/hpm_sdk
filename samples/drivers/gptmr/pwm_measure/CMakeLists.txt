@@ -12,4 +12,4 @@ sdk_compile_definitions(-DCONFIG_USE_DMA=1)
 project(gptmr_pwm_measure)
 
 sdk_app_src(src/pwm_measure.c)
-generate_ses_project()
+generate_ide_projects()

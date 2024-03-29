@@ -17,10 +17,10 @@
 #include "hpm_l1c_drv.h"
 #include "hpm_common.h"
 
-#define TEST_UART                   BOARD_UART_IDLE
-#define TEST_UART_IRQ               BOARD_UART_IDLE_IRQ
-#define TEST_UART_CLK_NAME          BOARD_UART_IDLE_CLK_NAME
-#define TEST_UART_TX_DMA_REQ        BOARD_UART_IDLE_TX_DMA_SRC
+#define TEST_UART                   BOARD_APP_UART_BASE
+#define TEST_UART_IRQ               BOARD_APP_UART_IRQ
+#define TEST_UART_CLK_NAME          BOARD_APP_UART_CLK_NAME
+#define TEST_UART_TX_DMA_REQ        BOARD_APP_UART_TX_DMA_REQ
 
 #define TEST_UART_DMA_CONTROLLER    BOARD_APP_HDMA
 #define TEST_UART_DMAMUX_CONTROLLER BOARD_APP_DMAMUX

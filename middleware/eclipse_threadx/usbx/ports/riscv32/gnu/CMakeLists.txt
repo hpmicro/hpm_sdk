@@ -1,0 +1,3 @@
+# Copyright (c) 2024 HPMicro
+# SPDX-License-Identifier: BSD-3-Clause
+sdk_inc(${CMAKE_CURRENT_LIST_DIR}/inc)

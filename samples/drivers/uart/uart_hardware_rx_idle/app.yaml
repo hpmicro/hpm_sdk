@@ -1,2 +1,2 @@
 dependency:
-  - uart_hardware_rx_idle
+  - ip_feature_uart_rx_idle_detect

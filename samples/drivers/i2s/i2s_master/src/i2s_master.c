@@ -68,7 +68,8 @@ void i2s_master_config(void)
 
     /* Config I2S interface */
     i2s_get_default_config(I2S_MASTER, &i2s_config);
-    i2s_config.fifo_threshold = I2S_MASTER_FIFO_THR;
+    i2s_config.tx_fifo_threshold = I2S_MASTER_FIFO_THR;
+    i2s_config.rx_fifo_threshold = I2S_MASTER_FIFO_THR;
     i2s_config.enable_mclk_out = true;
     i2s_init(I2S_MASTER, &i2s_config);
 
@@ -99,7 +100,7 @@ void i2s_dao_config(uint32_t sample_rate, uint8_t audio_depth, uint8_t channel_n
     dao_config_t dao_config;
 
     i2s_get_default_config(I2S_DAO, &i2s_config);
-    i2s_config.fifo_threshold = 2;
+    i2s_config.tx_fifo_threshold = 2;
     i2s_init(I2S_DAO, &i2s_config);
 
     /*
@@ -108,6 +109,7 @@ void i2s_dao_config(uint32_t sample_rate, uint8_t audio_depth, uint8_t channel_n
     i2s_get_default_transfer_config_for_dao(&transfer);
     transfer.sample_rate = sample_rate;
     transfer.audio_depth = audio_depth;
+    transfer.channel_num_per_frame = channel_num;
 
     i2s_mclk_hz = clock_get_frequency(I2S_DAO_CLK_NAME);
 

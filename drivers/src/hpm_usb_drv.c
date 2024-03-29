@@ -44,11 +44,6 @@ static void usb_phy_deinit(USB_Type *ptr)
     ptr->PHY_CTRL1 &= ~USB_PHY_CTRL1_UTMI_OTG_SUSPENDM_MASK;       /* clear otg_suspendm */
 }
 
-static uint8_t usb_phy_get_line_state(USB_Type *ptr)
-{
-    return USB_PHY_STATUS_LINE_STATE_GET(ptr->PHY_STATUS);
-}
-
 /*---------------------------------------------------------------------
  * Driver API
  *---------------------------------------------------------------------

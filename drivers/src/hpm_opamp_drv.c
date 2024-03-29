@@ -97,7 +97,7 @@ hpm_stat_t opamp_init(OPAMP_Type *opamp, opamp_cfg_t *cfg)
         opamp_mode_set(opamp, OPAMP_MODE_NON_INVERT_INDEX4_KEY);
         break;
     case mode_user:
-        return status_success;
+        opamp_mode_set(opamp, OPAMP_MODE_USER_DEFINE_KEY);
         break;
     default:
         return status_invalid_argument;

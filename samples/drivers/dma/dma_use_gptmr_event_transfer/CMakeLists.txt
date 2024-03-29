@@ -8,4 +8,4 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(use_gptmr_event_dma_transfer)
 
 sdk_app_src(src/dma_transfer_use_gptmr_event.c)
-generate_ses_project()
+generate_ide_projects()

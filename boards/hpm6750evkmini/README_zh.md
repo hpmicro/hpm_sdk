@@ -70,13 +70,6 @@ HPM6750是一款主频达816Mhz的双核微控制器。该芯片拥有最大2M�
 | I2C0.SCL | P1[13] |
 | I2C0.SDA | P1[15] |
 
-- CORE1调试串口引脚：
-
-| 功能       | 位置   |
-| ---------- | ------ |
-| UART13.TXD | P1[8]  |
-| UART13.RXD | P1[10] |
-
 - ACMP引脚
 
 | 功能       | 位置   |
@@ -88,19 +81,16 @@ HPM6750是一款主频达816Mhz的双核微控制器。该芯片拥有最大2M�
 
 | 功能          | 位置   |
 | ------------- | ------ |
-| GPTMR2.CAPT_2 | P2[15] |
-| GPTMR2.COMP_0 | P2[19] |
-| GPTMR2.COMP_1 | P2[22] |
+| GPTMR5.CAPT_1 | P1[12] |
+| GPTMR5.COMP_0 | P1[31] |
+| GPTMR5.COMP_1 | P1[35] |
 
 - ADC12引脚
 
 | 功能              | 位置   |
 | ----------------- | ------ |
 | ADC12参考电压设置 | 无     |
-| ADC0/1/2.VINP7    | P2[11] |
-| ADC0/1/2.VINP8    | P2[13] |
-| ADC0/1/2.VINP9    | P2[15] |
-| ADC0/1/2.VINP10   | P2[16] |
+| ADC0.VINP14       | P1[33] |
 
 - ADC16引脚
 
@@ -140,7 +130,9 @@ HPM6750是一款主频达816Mhz的双核微控制器。该芯片拥有最大2M�
 | ENET0.EVTO1 | P1[12] |
 | ENET0.EVTO2 | P1[35] |
 
-- UART引脚用于uart_software_rx_idle或uart_rx_timeout或uart_lin工程
+- UART13引脚
+
+ UART13用于CORE1调试串口或一些使用UART的功能测试，例如uart_software_rx_idle，uart_rx_timeout，uart_software_lin，MICROROS_UART，USB_CDC_ACM_UART, MODBUS_RTU等。
 
 | 功能       | 位置   |
 | ---------- | ------ |
@@ -156,6 +148,14 @@ HPM6750是一款主频达816Mhz的双核微控制器。该芯片拥有最大2M�
 - 电机引脚
 
   参考 [HPM6750EVKMINI-TO-MOTOR扩展板章节](lab_board_hpm6750evkmini-to-motor-220530RevA) 进行连接
+
+- Tamper 接口
+
+| 功能     | 引脚   | 位置   |  模式   |
+|----------|--------|--------|--------|
+| TAMP.08  | PZ08   | P1[10] | 主动模式 |
+| TAMP.09  | PZ09   | P1[8]  | 主动模式 |
+| TAMP.10  | PZ10   | P1[22] | 被动模式 |
 
 ## 已知问题：
 - 一些例程在运行过程中有可能会进入trap handler，同时mcause为2（指令错误），这是由于ILM的缺陷导致的，详见《勘误手册E00001》。

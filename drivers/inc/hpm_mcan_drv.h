@@ -38,6 +38,7 @@ enum {
     status_mcan_tx_evt_fifo_empty,
     status_mcan_timestamp_not_exist,
     status_mcan_ram_out_of_range,
+    status_mcan_timeout,
 };
 
 /**
@@ -78,12 +79,12 @@ enum {
 #define MCAN_INT_RXFIFO0_MSG_LOST           MCAN_IR_RF0L_MASK   /*!< RX FIFO0 Message Lost */
 #define MCAN_INT_RXFIFO0_FULL               MCAN_IR_RF0F_MASK   /*!< RX FIFO0 Full */
 #define MCAN_INT_RXFIFO0_WMK_REACHED        MCAN_IR_RF0W_MASK   /*!< RX FIFO0 Watermark Reached */
-#define MCAN_INT_RXFIFI0_NEW_MSG            MCAN_IR_RF0N_MASK   /*!< RX FIFO0 New Message */
+#define MCAN_INT_RXFIFO0_NEW_MSG            MCAN_IR_RF0N_MASK   /*!< RX FIFO0 New Message */
 
 /**
  * @brief MCAN Receive Event Flags
  */
-#define MCAN_EVENT_RECEIVE (MCAN_INT_RXFIFI0_NEW_MSG | MCAN_INT_RXFIFO1_NEW_MSG | MCAN_INT_MSG_STORE_TO_RXBUF)
+#define MCAN_EVENT_RECEIVE (MCAN_INT_RXFIFO0_NEW_MSG | MCAN_INT_RXFIFO1_NEW_MSG | MCAN_INT_MSG_STORE_TO_RXBUF)
 
 /**
  * @brief MCAN Transmit Event Flags
@@ -410,7 +411,7 @@ typedef union {
 /**
  * @brief MCAN RAM Flexible Configuration
  *
- * @Note This Configuration provides the full MCAN RAM configuration, this configuration is recommended only for
+ * @note This Configuration provides the full MCAN RAM configuration, this configuration is recommended only for
  *       experienced developers who is skilled at the MCAN IP
  */
 typedef struct mcan_ram_flexible_config_struct {
@@ -438,7 +439,7 @@ typedef struct mcan_ram_flexible_config_struct {
 /**
  * @brief MCAN RAM configuration
  *
- * @Note: This Configuration focuses on the minimum required information for MCAN RAM configuration
+ * @note: This Configuration focuses on the minimum required information for MCAN RAM configuration
  *        The Start address of each BUF/FIFO will be automatically calculated by the MCAN Driver API
  *        This RAM configuration is recommended for the most developers
  */
@@ -561,7 +562,7 @@ typedef struct mcan_filter_elem_list_struct {
 /**
  * @brief MCAN Configuration for all filters
  *
- * @Note The MCAN RAM related settings are excluded
+ * @note The MCAN RAM related settings are excluded
  */
 typedef struct mcan_all_filters_config_struct {
     mcan_global_filter_config_t global_filter_config;   /*!< Global Filter configuration */
@@ -627,11 +628,30 @@ typedef struct mcan_internal_timestamp_config_struct {
 } mcan_internal_timestamp_config_t;
 
 /**
+ * @brief MCAN Timeout Selection Options
+ */
+typedef enum mcan_timeout_sel_enum {
+    mcan_timeout_continuous_operation     = 0,  /*!< Continuously count down timeout after writing to TOCV register */
+    mcan_timeout_triggered_by_tx_evt_fifo = 1,  /*!< Count down if the TX EVT FIFO is not empty */
+    mcan_timeout_triggered_by_rx_fifo0    = 2,  /*!< Count down if the RX FIFO0 is not empty */
+    mcan_timeout_triggered_by_rx_fifo1    = 3,  /*!< Count down if the RX FIFO1 is not empty */
+} mcan_timeout_sel_t;
+
+/**
+ * @brief MCAN Timeout configuration structure
+ */
+typedef struct mcan_timeout_config_struct {
+    bool enable_timeout_counter;        /*!< Enable Timeout Counter */
+    mcan_timeout_sel_t timeout_sel;     /*!< Timeout source selection */
+    uint16_t timeout_period;            /*!< Timeout period */
+} mcan_timeout_config_t;
+
+/**
  * @brief MCAN Configuration Structure
  */
 typedef struct mcan_config_struct {
     union {
-        /* This struct takes effect if use_lowlevl_timing_setting = false */
+        /* This struct takes effect if "use_lowlevel_timing_setting = false" */
         struct {
             uint32_t baudrate;                      /*!< CAN 2.0 baudrate/CAN-FD Nominal Baudrate, in terms of bps */
             uint32_t baudrate_fd;                   /*!< CANFD data baudrate, in terms of bps */
@@ -640,7 +660,7 @@ typedef struct mcan_config_struct {
             uint16_t canfd_samplepoint_min;         /*!< Value = Minimum CANFD sample point * 10 */
             uint16_t canfd_samplepoint_max;         /*!< Value = Maximum CANFD sample point * 10 */
         };
-        /* This struct takes effect if use_lowlevl_timing_setting = true */
+        /* This struct takes effect if "use_lowlevel_timing_setting = true" */
         struct {
             mcan_bit_timing_param_t can_timing;     /*!< CAN2.0/CANFD nominal timing setting */
             mcan_bit_timing_param_t canfd_timing;   /*!< CANFD data timing setting */
@@ -656,13 +676,15 @@ typedef struct mcan_config_struct {
     bool use_timestamping_unit;                     /*!< Use external Timestamp Unit */
     bool enable_canfd;                              /*!< Enable CANFD mode */
     bool enable_tdc;                                /*!< Enable transmitter delay compensation */
-    bool enable_restricted_operation_mode;          /*!< Enable Resricted Operation Mode: Receive only */
+    bool enable_restricted_operation_mode;          /*!< Enable Restricted Operation Mode: Receive only */
     bool disable_auto_retransmission;               /*!< Disable auto retransmission */
     uint8_t padding[2];
     mcan_internal_timestamp_config_t timestamp_cfg; /*!< Internal Timestamp Configuration */
     mcan_tsu_config_t tsu_config;                   /*!< TSU configuration */
     mcan_ram_config_t ram_config;                   /*!< MCAN RAM configuration */
     mcan_all_filters_config_t all_filters_config;   /*!< All Filter configuration */
+
+    mcan_timeout_config_t timeout_cfg;              /*!< Timeout configuration */
 
     uint32_t interrupt_mask;                        /*!< Interrupt Enable mask */
     uint32_t txbuf_trans_interrupt_mask;            /*!< Tx Buffer Transmission Interrupt Enable mask */
@@ -1009,6 +1031,16 @@ static inline void mcan_enter_normal_mode(MCAN_Type *ptr)
 static inline uint16_t mcan_get_timeout_counter_value(MCAN_Type *ptr)
 {
     return ptr->TOCV;
+}
+
+/**
+ * @brief Reset Timeout counter value
+ *
+ * @param [in] ptr MCAN base
+ */
+static inline void mcan_reset_timeout_counter_value(MCAN_Type *ptr)
+{
+    *((volatile uint32_t *) &ptr->TOCV) = 0;
 }
 
 /**
@@ -1436,16 +1468,21 @@ uint8_t mcan_get_data_field_size(uint8_t data_field_size_option);
  *      - Dedicated TXBUF element count: 16
  *      - TXFIFO/QQueue element count: 16
  *      - Data Field Size: 8
+ *      .
  *   - RXFIFO0 Elements Info:
  *      - Element Count :32
  *      - Data Field Size: 8
+ *      .
  *   - RXFIFO1 Elements Info:
  *      - Element Count : 32
  *      - Data Field Size: 8
+ *      .
  *    - RXBUF Element Info:
  *      - Element Count: 16
  *      - Data Field Size : 8
+ *      .
  *    - TX Event FIFO Element Count: 32
+ *  .
  * If the device is configured as CANFD node, the default CAN RAM settings are as below:
  *  - Standard Identifier Filter Elements: 16
  *  - Extended Identifier Filter Elements: 16
@@ -1454,17 +1491,21 @@ uint8_t mcan_get_data_field_size(uint8_t data_field_size_option);
  *      - Dedicated TXBUF element count: 4
  *      - TXFIFO/QQueue element count: 4
  *      - Data Field Size: 64
+ *      .
  *   - RXFIFO0 Elements Info:
  *      - Element Count : 8
  *      - Data Field Size: 64
+ *      .
  *   - RXFIFO1 Elements Info:
  *      - Element Count : 8
  *      - Data Field Size: 64
+ *      .
  *    - RXBUF Element Info:
  *      - Element Count: 4
  *      - Data Field Size : 64
+ *      .
  *    - TX Event FIFO Element Count: 8
- *
+ *    .
  * @param [in] ptr MCAN base
  * @param [out] ram_config CAN RAM Configuration
  * @param [in] enable_canfd CANFD enable flag
@@ -1481,16 +1522,21 @@ void mcan_get_default_ram_flexible_config(MCAN_Type *ptr, mcan_ram_flexible_conf
  *      - Dedicated TXBUF element count: 16
  *      - TXFIFO/QQueue element count: 16
  *      - Data Field Size: 8
+ *      .
  *   - RXFIFO0 Elements Info:
  *      - Element Count :32
  *      - Data Field Size: 8
+ *      .
  *   - RXFIFO1 Elements Info:
  *      - Element Count : 32
  *      - Data Field Size: 8
+ *      .
  *    - RXBUF Element Info:
  *      - Element Count: 16
  *      - Data Field Size : 8
+ *      .
  *    - TX Event FIFO Element Count: 32
+ *    .
  * If the device is configured as CANFD node, the default CAN RAM settings are as below:
  *  - Standard Identifier Filter Elements: 16
  *  - Extended Identifier Filter Elements: 16
@@ -1499,19 +1545,23 @@ void mcan_get_default_ram_flexible_config(MCAN_Type *ptr, mcan_ram_flexible_conf
  *      - Dedicated TXBUF element count: 4
  *      - TXFIFO/QQueue element count: 4
  *      - Data Field Size: 64
+ *      .
  *   - RXFIFO0 Elements Info:
  *      - Element Count : 8
  *      - Data Field Size: 64
+ *      .
  *   - RXFIFO1 Elements Info:
  *      - Element Count : 8
  *      - Data Field Size: 64
+ *      .
  *    - RXBUF Element Info:
  *      - Element Count: 4
  *      - Data Field Size : 64
+ *      .
  *    - TX Event FIFO Element Count: 8
- *
+ *    .
  * @param [in] ptr MCAN base
- * @param [out] ram_config CAN RAM Configuration
+ * @param [out] simple_config Simple CAN RAM Configuration
  * @param [in] enable_canfd CANFD enable flag
  */
 void mcan_get_default_ram_config(MCAN_Type *ptr, mcan_ram_config_t *simple_config, bool enable_canfd);

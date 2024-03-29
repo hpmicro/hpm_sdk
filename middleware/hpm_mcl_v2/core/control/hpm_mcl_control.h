@@ -95,6 +95,7 @@ typedef struct {
                     hpm_mcl_type_t cos_x, hpm_mcl_type_t *alpha, hpm_mcl_type_t *beta);
     hpm_mcl_stat_t (*svpwm)(hpm_mcl_type_t alpha, hpm_mcl_type_t beta, hpm_mcl_type_t vbus, mcl_control_svpwm_duty_t *duty);
     hpm_mcl_stat_t (*step_svpwm)(hpm_mcl_type_t alpha, hpm_mcl_type_t beta, hpm_mcl_type_t vbus, mcl_control_svpwm_duty_t *duty);
+    hpm_mcl_stat_t (*get_block_sector)(hall_phase_t hall, uint8_t u, uint8_t v, uint8_t w, uint8_t *sector);
 } mcl_control_method_t;
 
 /**

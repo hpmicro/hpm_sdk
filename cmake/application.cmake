@@ -71,11 +71,19 @@ if(NOT RV_ARCH)
     set(RV_ARCH "rv32imac")
 endif()
 
-# add extention
+# add basic extentions
 include(${HPM_SDK_BASE}/cmake/python.cmake)
 include(${HPM_SDK_BASE}/cmake/cmake-ext.cmake)
+
+if(APP_YAML_PATH)
+    get_app_linked_project_name("${APP_YAML_PATH}/app.yaml" LINKED_PROJECT_NAME)
+    get_app_linked_project_path("${APP_YAML_PATH}/app.yaml" LINKED_PROJECT_PATH)
+    get_app_excluded_ides("${APP_YAML_PATH}/app.yaml" EXCLUDED_IDES)
+endif()
+
+# include more advanced extentions
 include(${HPM_SDK_BASE}/cmake/toolchain.cmake)
-include(${HPM_SDK_BASE}/cmake/ide/segger.cmake)
+include(${HPM_SDK_BASE}/cmake/ide.cmake)
 include(${HPM_SDK_BASE}/cmake/extra_flags.cmake)
 include(${HPM_SDK_BASE}/cmake/ccache.cmake)
 include(${HPM_SDK_BASE}/cmake/version.cmake)
@@ -86,6 +94,14 @@ add_custom_target(
     COMMAND ${CMAKE_COMMAND} -DBIN_DIR=${APP_BIN_DIR}
     -DSRC_DIR=${APP_SRC_DIR} -P ${HPM_SDK_BASE}/cmake/cleanup.cmake
 )
+
+if(NOT LOCALIZATION_DST)
+    set(LOCALIZATION_DST ${APP_SRC_DIR})
+endif()
+
+if(NOT EXISTS ${LOCALIZATION_DST})
+    message(FATAL_ERROR "localization dest folder: \"${LOCALIZATION_DST}\" can not be found")
+endif()
 
 add_custom_command(
     TARGET ${APP_ELF_NAME}
@@ -101,6 +117,9 @@ if(APP_YAML_PATH)
     check_board_capability(${BOARD_YAML} "${APP_YAML_PATH}/app.yaml" result)
     if(${result} STREQUAL "1")
         message(FATAL_ERROR "${BOARD} can not support this sample")
+    endif()
+    if(${result} STREQUAL "2")
+        message(FATAL_ERROR "Failed to build core1 project for this sample")
     endif()
     check_excluded_targets("${APP_YAML_PATH}/app.yaml" excluded_targets)
     # check if specific minimum SDK version is needed
@@ -125,6 +144,34 @@ endif()
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
     set(CMAKE_BUILD_TYPE debug)
 endif()
+
+# target of "localize_sdk"
+add_custom_target(
+    localize_sdk
+    COMMAND ${CMAKE_COMMAND}
+    -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
+    -DHPM_SDK_BASE=${HPM_SDK_BASE}
+    -DSRC_DIR=${APP_SRC_DIR}
+    -DDST_DIR=${LOCALIZATION_DST}
+    -DBIN_DIR=${APP_BIN_DIR}
+    -DBUILD_TYPE=${CMAKE_BUILD_TYPE}
+    -DGENERATOR=${CMAKE_GENERATOR}
+    -DBOARD=${BOARD}
+    -P ${HPM_SDK_BASE}/cmake/localize_sdk.cmake
+)
+
+add_custom_target(
+    unlocalize_sdk
+    COMMAND ${CMAKE_COMMAND}
+    -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
+    -DHPM_SDK_BASE=${HPM_SDK_BASE}
+    -DSRC_DIR=${APP_SRC_DIR}
+    -DBIN_DIR=${APP_BIN_DIR}
+    -DDST_DIR=${LOCALIZATION_DST}
+    -DGENERATOR=${CMAKE_GENERATOR}
+    -DUNLOCALIZE_PROJECT=1
+    -P ${HPM_SDK_BASE}/cmake/localize_sdk.cmake
+)
 
 if((excluded_targets) AND (NOT ${CMAKE_BUILD_TYPE} STREQUAL ""))
     foreach(t IN ITEMS  ${excluded_targets})
@@ -168,7 +215,6 @@ set(CMAKE_C_COMPILER_FORCED 1)
 set(CMAKE_CXX_COMPILER_FORCED 1)
 
 enable_language(C CXX ASM)
-
 add_subdirectory(${HPM_SDK_BASE} ${__build_dir})
 
 if (DEFINED GEN_SEC_CORE_IMG_C_ARRAY)
@@ -179,7 +225,7 @@ if (DEFINED GEN_SEC_CORE_IMG_C_ARRAY)
 endif()
 
 # link final executable
-target_link_libraries(app PUBLIC ${HPM_SDK_LIB_ITF})
+target_link_libraries(app PUBLIC ${HPM_SDK_LIB_ITF} ${HPM_SDK_GCC_LIB_ITF})
 
 if(${APP_SRC_DIR} STREQUAL ${APP_BIN_DIR})
     message(FATAL_ERROR "source directory is the same with binary directory.\

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -27,10 +27,10 @@ typedef struct {
     } AFFILIATE[1];
     __R  uint8_t  RESERVED2[16];               /* 0x910 - 0x91F: Reserved */
     struct {
-        __RW uint32_t VALUE;                   /* 0x920: Retention Contol */
-        __RW uint32_t SET;                     /* 0x924: Retention Contol */
-        __RW uint32_t CLEAR;                   /* 0x928: Retention Contol */
-        __RW uint32_t TOGGLE;                  /* 0x92C: Retention Contol */
+        __RW uint32_t VALUE;                   /* 0x920: Retention Control */
+        __RW uint32_t SET;                     /* 0x924: Retention Control */
+        __RW uint32_t CLEAR;                   /* 0x928: Retention Control */
+        __RW uint32_t TOGGLE;                  /* 0x92C: Retention Control */
     } RETENTION[1];
     __R  uint8_t  RESERVED3[1744];             /* 0x930 - 0xFFF: Reserved */
     struct {
@@ -432,7 +432,7 @@ typedef struct {
  *
  * perform reset and release imediately
  * 0: reset is released
- * 1 reset is asserted and will release automaticly
+ * 1 reset is asserted and will release automatically
  */
 #define SYSCTL_RESET_CONTROL_RESET_MASK (0x1U)
 #define SYSCTL_RESET_CONTROL_RESET_SHIFT (0U)
@@ -860,7 +860,7 @@ typedef struct {
 /*
  * REFERENCE (RW)
  *
- * refrence clock selection,
+ * reference clock selection,
  * 0: 32k
  * 1: 24M
  */
@@ -1085,10 +1085,6 @@ typedef struct {
 #define SYSCTL_RESOURCE_CLK_TOP_CAN1 (67UL)
 #define SYSCTL_RESOURCE_CLK_TOP_CAN2 (68UL)
 #define SYSCTL_RESOURCE_CLK_TOP_CAN3 (69UL)
-#define SYSCTL_RESOURCE_CLK_TOP_LIN0 (70UL)
-#define SYSCTL_RESOURCE_CLK_TOP_LIN1 (71UL)
-#define SYSCTL_RESOURCE_CLK_TOP_LIN2 (72UL)
-#define SYSCTL_RESOURCE_CLK_TOP_LIN3 (73UL)
 #define SYSCTL_RESOURCE_CLK_TOP_TMR0 (74UL)
 #define SYSCTL_RESOURCE_CLK_TOP_TMR1 (75UL)
 #define SYSCTL_RESOURCE_CLK_TOP_TMR2 (76UL)
@@ -1129,10 +1125,6 @@ typedef struct {
 #define SYSCTL_RESOURCE_CAN2 (262UL)
 #define SYSCTL_RESOURCE_CAN3 (263UL)
 #define SYSCTL_RESOURCE_PTPC (264UL)
-#define SYSCTL_RESOURCE_LIN0 (265UL)
-#define SYSCTL_RESOURCE_LIN1 (266UL)
-#define SYSCTL_RESOURCE_LIN2 (267UL)
-#define SYSCTL_RESOURCE_LIN3 (268UL)
 #define SYSCTL_RESOURCE_TMR0 (269UL)
 #define SYSCTL_RESOURCE_TMR1 (270UL)
 #define SYSCTL_RESOURCE_TMR2 (271UL)
@@ -1202,10 +1194,6 @@ typedef struct {
 #define SYSCTL_CLOCK_CLK_TOP_CAN1 (2UL)
 #define SYSCTL_CLOCK_CLK_TOP_CAN2 (3UL)
 #define SYSCTL_CLOCK_CLK_TOP_CAN3 (4UL)
-#define SYSCTL_CLOCK_CLK_TOP_LIN0 (5UL)
-#define SYSCTL_CLOCK_CLK_TOP_LIN1 (6UL)
-#define SYSCTL_CLOCK_CLK_TOP_LIN2 (7UL)
-#define SYSCTL_CLOCK_CLK_TOP_LIN3 (8UL)
 #define SYSCTL_CLOCK_CLK_TOP_TMR0 (9UL)
 #define SYSCTL_CLOCK_CLK_TOP_TMR1 (10UL)
 #define SYSCTL_CLOCK_CLK_TOP_TMR2 (11UL)

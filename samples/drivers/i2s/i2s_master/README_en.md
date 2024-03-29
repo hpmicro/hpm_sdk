@@ -20,7 +20,7 @@ When using DAO to play some audio, it may generate noise.
   Connect Master RXD with Slave TXD
 
   Connect GND together between board and board
-  
+
   Connect a speaker on the DAO interface on the development board
 
 ## Running the example

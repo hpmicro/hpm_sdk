@@ -83,11 +83,14 @@ static void print_matrix(Matrix matrix_ptr)
  */
 static void eRPCReadyEventHandler(uint16_t eventData, void *context)
 {
+    (void)context;
     eRPCReadyEventData = eventData;
 }
 
 static void client_task(void *param)
 {
+    (void)param;
+
     Matrix matrix1 = { 0 }, matrix2 = { 0 }, result_matrix = { 0 };
 
     /* Register the application event before starting the secondary core */

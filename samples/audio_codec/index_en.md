@@ -1,10 +1,9 @@
 # Audio Codec
 
-```{eval-rst}
+:::{eval-rst}
 .. toctree::
-   :maxdepth: 3
+    :maxdepth: 3
+    :glob:
 
-   audio_loopback/README_en
-   decoder_wav/README_en
-   lvgl_audio_player/README_en
-```
+    **/*_en
+:::

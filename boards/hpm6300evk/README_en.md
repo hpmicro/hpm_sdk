@@ -95,17 +95,17 @@ Plug-in
 
 - ADC16 Pin
 
-| Function                       | Position |
-| ------------------------------ | -------- |
-| ADC16 Reference Voltage        | J108[2]  |
-| ADC0.INA13/ADC1.INA9/ADC2.INA5 | J26[6]   |
-
-- DAC Pin
-
 | Function                | Position |
 | ----------------------- | -------- |
 | ADC16 Reference Voltage | J108[2]  |
-| DAC0.OUT                | J26[11]  |
+| ADC0.INA6               | J28[38]  |
+
+- DAC Pin
+
+| Function              | Position |
+| --------------------- | -------- |
+| DAC Reference Voltage | J108[2]  |
+| DAC0.OUT              | J26[11]  |
 
 - PWM Pin
 
@@ -121,7 +121,9 @@ Plug-in
 | ENET0.EVTO0 | J28[19]  |
 | ENET0.EVTO1 | J28[23]  |
 
-- UART pin for uart_software_rx_idle sample or uart_rx_timeout sample
+- UART pin
+
+ The UART2 is used for some functional testing using UART, such as uart_software_rx_idle, uart_rx_timeout, uart_software_lin, MICROROS_UART, USB_CDC_ACM_UART, MODBUS_RTU etc.
 
 | Function  | Position |
 | --------- | -------- |
@@ -137,3 +139,10 @@ Plug-in
 - Motor Pin:
 
   Refer to section [DRV-LV50A-MP1907 Motor Driver Board ](lab_drv_lv50a_mp1907) for configuration
+
+- Tamper Pin
+
+| Function | Pin    | Position |  Mode  |
+|----------|--------|--------|----------|
+| TAMP.06  | PZ06   | J28[8] | Active Mode |
+| TAMP.07  | PZ07   | J28[10]| Active Mode |

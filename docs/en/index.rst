@@ -18,7 +18,9 @@ Sections
    boards/index_en
    samples/index_en
    samples/drivers/index_en
+   docs/cmake_intro
    api_doc
+   CHANGELOG
 
 .. _BSD 3-Clause license:
    https://github.com/hpmicro/hpm_sdk/blob/main/LICENSE

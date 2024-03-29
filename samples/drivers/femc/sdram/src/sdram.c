@@ -122,7 +122,11 @@ uint32_t initialize_sdram(void)
     femc_sdram_config_t sdram_config = {0};
 
     femc_default_config(HPM_FEMC, &config);
+#if defined(BOARD_FEMC_DQS_FLOATING) && BOARD_FEMC_DQS_FLOATING
+    config.dqs = FEMC_DQS_FROM_PAD;
+#else
     config.dqs = FEMC_DQS_INTERNAL;
+#endif
     femc_init(HPM_FEMC, &config);
 
     sdram_config.bank_num = FEMC_SDRAM_BANK_NUM_4;
@@ -152,7 +156,13 @@ uint32_t initialize_sdram(void)
     sdram_config.refresh_count = BOARD_SDRAM_REFRESH_COUNT;
     sdram_config.refresh_in_ms = BOARD_SDRAM_REFRESH_IN_MS;
     sdram_config.data_width_in_byte = BOARD_SDRAM_DATA_WIDTH_IN_BYTE;
+#if defined(BOARD_FEMC_DQS_FLOATING) && BOARD_FEMC_DQS_FLOATING
+    sdram_config.delay_cell_disable = true;
+    sdram_config.delay_cell_value = 0;
+#else
+    sdram_config.delay_cell_disable = false;
     sdram_config.delay_cell_value = 29;
+#endif
 
     femc_config_sdram(HPM_FEMC, femc_clk_in_hz, &sdram_config);
     return femc_clk_in_hz;

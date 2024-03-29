@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2023 HPMicro
+# Copyright (c) 2022-2024 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 sdk_inc(.)
@@ -21,4 +21,9 @@ endif()
 if($ENV{CONFIG_ENET_PHY_DP83848})
     add_subdirectory(dp83848)
     message(STATUS "ENet PHY Enabled: DP83848")
+endif()
+
+if($ENV{CONFIG_ENET_PHY_LAN8720})
+    add_subdirectory(lan8720)
+    message(STATUS "ENet PHY Enabled: LAN8720")
 endif()

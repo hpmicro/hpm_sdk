@@ -8,12 +8,10 @@
 #include "board.h"
 #include "hpm_clock_drv.h"
 #include "hpm_uart_drv.h"
-#include "hpm_trgm_soc_drv.h"
-#include "hpm_trgm_drv.h"
 
-#define TEST_UART BOARD_FREEMASTER_UART_BASE
-#define TEST_UART_IRQ BOARD_FREEMASTER_UART_IRQ
-#define TEST_UART_CLK_NAME BOARD_FREEMASTER_UART_CLK_NAME
+#define TEST_UART BOARD_APP_UART_BASE
+#define TEST_UART_IRQ BOARD_APP_UART_IRQ
+#define TEST_UART_CLK_NAME BOARD_APP_UART_CLK_NAME
 
 #define TEST_UART_CORRECT_ADDR (0x77U)
 #define TEST_UART_WRONG_ADDR   (0x76U)

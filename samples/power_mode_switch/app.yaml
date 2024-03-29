@@ -2,4 +2,4 @@ excluded_targets:
   - debug
   - release
 dependency:
-  - puart
+  - board_puart_pin

@@ -17,14 +17,17 @@
 #include "hpm_uart_drv.h"
 
 /* Define */
-#define TEST_UART BOARD_APP_UART_BASE
-#define TEST_UART_CLK_NAME BOARD_APP_UART_CLK_NAME
-#define TEST_UART_DMA_CONTROLLER BOARD_APP_HDMA
+#define TEST_UART            BOARD_CONSOLE_UART_BASE
+#define TEST_UART_CLK_NAME   BOARD_CONSOLE_UART_CLK_NAME
+#define TEST_UART_DMA_SRC_RX BOARD_CONSOLE_UART_RX_DMA_REQ
+#define TEST_UART_DMA_SRC_TX BOARD_CONSOLE_UART_TX_DMA_REQ
+
+#define TEST_UART_DMA_CONTROLLER    BOARD_APP_HDMA
 #define TEST_UART_DMAMUX_CONTROLLER BOARD_APP_DMAMUX
-#define TEST_UART_RX_DMA_CH 0
-#define TEST_UART_TX_DMA_CH 1
-#define TEST_UART_RX_DMAMUX_CH DMA_SOC_CHN_TO_DMAMUX_CHN(TEST_UART_DMA_CONTROLLER, TEST_UART_RX_DMA_CH)
-#define TEST_UART_TX_DMAMUX_CH DMA_SOC_CHN_TO_DMAMUX_CHN(TEST_UART_DMA_CONTROLLER, TEST_UART_TX_DMA_CH)
+#define TEST_UART_RX_DMA_CH         0
+#define TEST_UART_TX_DMA_CH         1
+#define TEST_UART_RX_DMAMUX_CH      DMA_SOC_CHN_TO_DMAMUX_CHN(TEST_UART_DMA_CONTROLLER, TEST_UART_RX_DMA_CH)
+#define TEST_UART_TX_DMAMUX_CH      DMA_SOC_CHN_TO_DMAMUX_CHN(TEST_UART_DMA_CONTROLLER, TEST_UART_TX_DMA_CH)
 
 #define TEST_BUFFER_SIZE 64
 
@@ -36,11 +39,12 @@ ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(8) dma_linked_descriptor_t descrip
 static uint32_t rx_front_index;
 static uint32_t rx_rear_index;
 
-
 void init_board_app_uart(void)
 {
     hpm_stat_t stat;
     uart_config_t config = { 0 };
+
+    board_init_uart(TEST_UART);
 
     uart_default_config(TEST_UART, &config);
     config.fifo_enable = true;
@@ -48,7 +52,6 @@ void init_board_app_uart(void)
     config.src_freq_in_hz = clock_get_frequency(TEST_UART_CLK_NAME);
     config.tx_fifo_level = uart_tx_fifo_trg_not_full;
     config.rx_fifo_level = uart_rx_fifo_trg_not_empty;
-    board_init_uart(TEST_UART);
     stat = uart_init(TEST_UART, &config);
     if (stat != status_success) {
         while (1) {
@@ -62,21 +65,21 @@ void init_board_app_dma(void)
     dma_channel_config_t rx_ch_config = { 0 };
     dma_handshake_config_t tx_ch_config = { 0 };
 
-/* 1. config uart circle rx dma */
-    dmamux_config(TEST_UART_DMAMUX_CONTROLLER, TEST_UART_RX_DMAMUX_CH, HPM_DMA_SRC_UART0_RX, true);
+    /* 1. config uart circle rx dma */
+    dmamux_config(TEST_UART_DMAMUX_CONTROLLER, TEST_UART_RX_DMAMUX_CH, TEST_UART_DMA_SRC_RX, true);
 
     /* 1.1 config chain descriptors */
     dma_default_channel_config(TEST_UART_DMA_CONTROLLER, &rx_ch_config);
     rx_ch_config.src_addr = (uint32_t)&TEST_UART->RBR;
-    rx_ch_config.src_width = DMA_TRANSFER_WIDTH_BYTE;  /*  In DMA handshake case, source width and destination width must be BYTE. */
+    rx_ch_config.src_width = DMA_TRANSFER_WIDTH_BYTE; /*  In DMA handshake case, source width and destination width must be BYTE. */
     rx_ch_config.src_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
     rx_ch_config.src_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
     rx_ch_config.dst_addr = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)uart_rx_buf);
-    rx_ch_config.dst_width = DMA_TRANSFER_WIDTH_BYTE;  /*  In DMA handshake case, source width and destination width must be BYTE. */
+    rx_ch_config.dst_width = DMA_TRANSFER_WIDTH_BYTE; /*  In DMA handshake case, source width and destination width must be BYTE. */
     rx_ch_config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_INCREMENT;
     rx_ch_config.dst_mode = DMA_HANDSHAKE_MODE_NORMAL;
     rx_ch_config.size_in_byte = TEST_BUFFER_SIZE;
-    rx_ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;  /*  In DMA handshake case, source burst size must be 1 transfer, that is 0. */
+    rx_ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T; /*  In DMA handshake case, source burst size must be 1 transfer, that is 0. */
     rx_ch_config.linked_ptr = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)&descriptors[1]);
     stat = dma_config_linked_descriptor(TEST_UART_DMA_CONTROLLER, &descriptors[0], TEST_UART_RX_DMA_CH, &rx_ch_config);
     if (stat != status_success) {
@@ -99,8 +102,8 @@ void init_board_app_dma(void)
         };
     }
 
-/* 2. config uart tx dma */
-    dmamux_config(TEST_UART_DMAMUX_CONTROLLER, TEST_UART_TX_DMAMUX_CH, HPM_DMA_SRC_UART0_TX, true);
+    /* 2. config uart tx dma */
+    dmamux_config(TEST_UART_DMAMUX_CONTROLLER, TEST_UART_TX_DMAMUX_CH, TEST_UART_DMA_SRC_TX, true);
     dma_default_handshake_config(TEST_UART_DMA_CONTROLLER, &tx_ch_config);
     tx_ch_config.ch_index = TEST_UART_TX_DMA_CH;
     tx_ch_config.dst = (uint32_t)&TEST_UART->THR;

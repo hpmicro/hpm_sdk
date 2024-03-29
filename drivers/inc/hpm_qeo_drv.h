@@ -13,7 +13,7 @@
 /**
  * @brief QEO driver APIs
  * @defgroup qeo_interface QEO driver APIs
- * @ingroup qeo_interface
+ * @ingroup qeo_interfaces
  * @{
  */
 
@@ -182,7 +182,7 @@ static inline void qeo_wave_enable_vd_vq_inject(QEO_Type *base, uint8_t index, i
 {
     (void) vd_val;
     assert(index < 3);
-    base->WAVE.MODE |= (1U << (QEO_WAVE_MODE_EN_WAVE0_VD_VQ_INJECT_MASK + index));
+    base->WAVE.MODE |= (1U << (QEO_WAVE_MODE_EN_WAVE0_VD_VQ_INJECT_SHIFT + index));
     base->WAVE.VD_VQ_INJECT[index] = QEO_WAVE_VD_VQ_INJECT_VQ_VAL_SET(vq_val) | QEO_WAVE_VD_VQ_INJECT_VD_VAL_SET(vq_val);
 }
 
@@ -194,7 +194,7 @@ static inline void qeo_wave_enable_vd_vq_inject(QEO_Type *base, uint8_t index, i
 static inline void qeo_wave_disable_vd_vq_inject(QEO_Type *base, uint8_t index)
 {
     assert(index < 3);
-    base->WAVE.MODE &= ~(1U << (QEO_WAVE_MODE_EN_WAVE0_VD_VQ_INJECT_MASK + index));
+    base->WAVE.MODE &= ~(1U << (QEO_WAVE_MODE_EN_WAVE0_VD_VQ_INJECT_SHIFT + index));
 }
 
 /**
@@ -508,6 +508,7 @@ void qeo_pwm_config_safety_table(QEO_Type *base, qeo_pwm_safety_output_table_t *
 /**
  * @brief QEO PWM onfig phase table
  * @param [in] base QEO base address
+ * @param [in] index phase table index
  * @param [in] table qeo_pwm_phase_output_table_t
  */
 void qeo_pwm_config_phase_table(QEO_Type *base, uint8_t index, qeo_pwm_phase_output_table_t *table);
@@ -524,7 +525,7 @@ static inline void qeo_enable_software_position_inject(QEO_Type *base)
 /**
  * @brief QEO software inject position
  * @param [in] base QEO base address
- * @param [in] base position value
+ * @param [in] position position value
  */
 static inline void qeo_software_position_inject(QEO_Type *base, uint32_t position)
 {

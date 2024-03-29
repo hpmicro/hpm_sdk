@@ -12,4 +12,4 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(butn)
 
 sdk_app_src(src/butn.c)
-generate_ses_project()
+generate_ide_projects()

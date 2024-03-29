@@ -8,4 +8,4 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(pwm_output_example)
 
 sdk_app_src(src/pwm.c)
-generate_ses_project()
+generate_ide_projects()

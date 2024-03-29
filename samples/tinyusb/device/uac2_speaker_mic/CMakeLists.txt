@@ -19,4 +19,4 @@ sdk_inc(inc)
 sdk_app_src(src/main.c)
 sdk_app_src(src/usb_descriptors.c)
 
-generate_ses_project()
+generate_ide_projects()

@@ -1,4 +1,4 @@
-# l1 cache
+# L1 Cache
 
 ## Overview
 

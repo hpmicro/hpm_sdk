@@ -12,6 +12,7 @@
 extern "C" {
 #endif
 void init_uart_pins(UART_Type *ptr);
+void init_uart_pin_as_gpio(UART_Type *ptr);
 void init_cap_pins(void);
 void init_i2c_pins_as_gpio(I2C_Type *ptr);
 void init_i2c_pins(I2C_Type *ptr);
@@ -53,6 +54,7 @@ void init_pdm_pins(void);
 void init_enet_pins(ENET_Type *ptr);
 void init_enet_pps_pins(void);
 void init_adc_pins(void);
+void init_tamper_pins(void);
 
 #ifdef __cplusplus
 }

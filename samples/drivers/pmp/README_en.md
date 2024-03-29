@@ -1,4 +1,4 @@
-# PMP Example
+# PMP
 
 ## Overview
 

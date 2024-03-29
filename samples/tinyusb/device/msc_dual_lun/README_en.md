@@ -2,7 +2,7 @@
 
 ## Overview
 
-This  example project shows  USB MSC storage device
+This example project shows  USB MSC storage device
 
 - PC shows two USB drives
 

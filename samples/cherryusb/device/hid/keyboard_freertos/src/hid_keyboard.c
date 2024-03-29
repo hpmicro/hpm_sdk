@@ -174,8 +174,10 @@ static const uint8_t hid_keyboard_report_desc[HID_KEYBOARD_REPORT_DESC_SIZE] = {
 static USB_NOCACHE_RAM_SECTION uint8_t s_sendbuffer[8];
 usb_osal_sem_t semaphore_tx_done;
 
-void usbd_event_handler(uint8_t event)
+static void usbd_event_handler(uint8_t busid, uint8_t event)
 {
+    (void)busid;
+
     switch (event) {
     case USBD_EVENT_RESET:
         break;
@@ -202,10 +204,12 @@ void usbd_event_handler(uint8_t event)
 #define HID_STATE_IDLE 0
 #define HID_STATE_BUSY 1
 
-void usbd_hid_int_callback(uint8_t ep, uint32_t nbytes)
+void usbd_hid_int_callback(uint8_t busid, uint8_t ep, uint32_t nbytes)
 {
+    (void)busid;
     (void)ep;
     (void)nbytes;
+
     if (semaphore_tx_done != NULL) {
         if (usb_osal_sem_give(semaphore_tx_done) != 0) {
             USB_LOG_ERR("usb_osal_sem_give error\r\n");
@@ -220,7 +224,7 @@ static struct usbd_endpoint hid_in_ep = {
 
 struct usbd_interface intf0;
 
-void hid_keyboard_init(void)
+void hid_keyboard_init(uint8_t busid, uint32_t reg_base)
 {
     semaphore_tx_done = usb_osal_sem_create(0);
     if (semaphore_tx_done == NULL) {
@@ -229,22 +233,22 @@ void hid_keyboard_init(void)
             usb_osal_msleep(10);
         }
     }
-    usbd_desc_register(hid_descriptor);
-    usbd_add_interface(usbd_hid_init_intf(&intf0, hid_keyboard_report_desc, HID_KEYBOARD_REPORT_DESC_SIZE));
-    usbd_add_endpoint(&hid_in_ep);
+    usbd_desc_register(busid, hid_descriptor);
+    usbd_add_interface(busid, usbd_hid_init_intf(busid, &intf0, hid_keyboard_report_desc, HID_KEYBOARD_REPORT_DESC_SIZE));
+    usbd_add_endpoint(busid, &hid_in_ep);
 
-    usbd_initialize();
+    usbd_initialize(busid, reg_base, usbd_event_handler);
     memset(s_sendbuffer, 0, 8);
 }
 
-void hid_keyboard_test(void)
+void hid_keyboard_test(uint8_t busid)
 {
     bool key_pushed = false;
 
     if (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) == APP_BUTTON_PRESSED_VALUE) {
         key_pushed = true;
         s_sendbuffer[2] = HID_KBD_USAGE_A;    /* a */
-        int ret = usbd_ep_start_write(HID_INT_EP, s_sendbuffer, 8);
+        int ret = usbd_ep_start_write(busid, HID_INT_EP, s_sendbuffer, 8);
         if (ret < 0) {
             return;
         }
@@ -259,7 +263,7 @@ void hid_keyboard_test(void)
         while (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) == APP_BUTTON_PRESSED_VALUE) {
         }
         s_sendbuffer[2] = 0;
-        int ret = usbd_ep_start_write(HID_INT_EP, s_sendbuffer, 8);
+        int ret = usbd_ep_start_write(busid, HID_INT_EP, s_sendbuffer, 8);
         if (ret < 0) {
             return;
         }

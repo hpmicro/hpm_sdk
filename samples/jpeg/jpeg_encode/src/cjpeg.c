@@ -12,6 +12,7 @@
 #include "hpm_lcdc_drv.h"
 #include "hpm_gpio_drv.h"
 #include "hpm_l1c_drv.h"
+#include "hpm_clock_drv.h"
 #include "file_op.h"
 
 #ifndef JPEG_HW_MODE
@@ -184,7 +185,6 @@ void init_cam(uint8_t *buffer)
     cam_config.height = IMAGE_HEIGHT;
     cam_config.hsync_active_low = true;
     cam_config.buffer1 = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)buffer);
-    cam_config.enable_buffer2 = true;
     cam_config.buffer2 = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)buffer);
 
     if (PIXEL_FORMAT == display_pixel_format_rgb565) {
@@ -497,31 +497,16 @@ void jpeg_add_header(uint8_t *file_buf, uint32_t width, uint32_t height)
 /*
  * GPIO button setup
  */
-static volatile bool pressed;
-void isr_gpio(void)
-{
-    gpio_clear_pin_interrupt_flag(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX,
-                        BOARD_APP_GPIO_PIN);
-    if (!pressed) {
-        pressed = true;
-    }
-}
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_GPIO_IRQ, isr_gpio)
-
 void init_gpio_button(void)
 {
-    gpio_interrupt_trigger_t trigger;
     gpio_set_pin_input(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX,
-                           BOARD_APP_GPIO_PIN);
-
-    trigger = gpio_interrupt_trigger_edge_falling;
-
-    gpio_config_pin_interrupt(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX,
-                           BOARD_APP_GPIO_PIN, trigger);
-    gpio_enable_pin_interrupt(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX,
                            BOARD_APP_GPIO_PIN);
 }
 
+bool gpio_button_is_pressed(void)
+{
+    return !gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN);
+}
 
 uint32_t jpeg_encode(uint8_t *src_buf, uint32_t width, uint32_t height, uint8_t *file_buf, uint32_t buffer_size)
 {
@@ -587,13 +572,65 @@ void init_lcd(uint32_t buffer)
     lcdc_turn_on_display(LCD);
 }
 
+static uint64_t clock_cpu_get_us(void)
+{
+    uint32_t ticks_per_us = (hpm_core_clock + 1000000U - 1U) / 1000000U;
+    uint64_t result;
+    uint32_t resultl_first = read_csr(CSR_MCYCLE);
+    uint32_t resulth = read_csr(CSR_MCYCLEH);
+    uint32_t resultl_second = read_csr(CSR_MCYCLE);
+
+    if (resultl_first < resultl_second) {
+        result = ((uint64_t)resulth << 32) | resultl_first;
+    } else {
+        resulth = read_csr(CSR_MCYCLEH);
+        result = ((uint64_t)resulth << 32) | resultl_second;
+    }
+
+    return result / ticks_per_us;
+}
+
+uint32_t clock_cpu_elapsed_us(uint64_t start)
+{
+    return clock_cpu_get_us() - start;
+}
+
 static void wait_for_button_press(void)
 {
-    intc_m_enable_irq(BOARD_APP_GPIO_IRQ);
-    while (!pressed) {
+    const uint32_t filter_us = 10000;
+    uint64_t start;
+
+    /*
+     * wait for pressed
+     */
+    while (!gpio_button_is_pressed()) {
+
     }
-    intc_m_disable_irq(BOARD_APP_GPIO_IRQ);
-    pressed = false;
+
+    /*
+     * debounce for pressed
+     */
+    start = clock_cpu_get_us();
+    while (clock_cpu_elapsed_us(start) < filter_us) {
+        if (!gpio_button_is_pressed())
+            start = clock_cpu_get_us();
+    }
+
+    /*
+     * wait for released
+     */
+    while (gpio_button_is_pressed()) {
+
+    }
+
+    /*
+     * debounce for released
+     */
+    start = clock_cpu_get_us();
+    while (clock_cpu_elapsed_us(start) < filter_us) {
+        if (gpio_button_is_pressed())
+            start = clock_cpu_get_us();
+    }
 }
 
 static void update_lcd_buffer(uint32_t buffer)

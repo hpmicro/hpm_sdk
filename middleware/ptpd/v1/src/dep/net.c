@@ -72,7 +72,10 @@ Boolean netShutdown(NetPath *netPath)
 
     /* leave multicast group */
     multicastAaddr.addr = netPath->multicastAddr;
-    igmp_leavegroup(IP_ADDR_ANY, &multicastAaddr);
+    if (multicastAaddr.addr != 0)
+    {
+        igmp_leavegroup(IP_ADDR_ANY, &multicastAaddr);
+    }
 
     /* Disconnect and close the Event UDP interface */
 

@@ -21,4 +21,4 @@ sdk_app_src(src/main.c)
 sdk_app_src(src/msc_disk.c)
 sdk_app_src(src/usb_descriptors.c)
 
-generate_ses_project()
+generate_ide_projects()

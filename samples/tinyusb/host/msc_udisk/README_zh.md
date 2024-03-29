@@ -13,7 +13,7 @@
 
 ## 工程配置
 
-- 文件`CMakeLists.txt`中设置BOARD_HOST_RHPORT_NUM为0或1，0表示USB0, 1表示USB1
+- 文件`CMakeLists.txt`中设置BOARD_TUH_RHPORT为0或1，0表示USB0, 1表示USB1
 - USB host 属性可通过tusb_config.h或CMakeListx.txt配置
 
 ## 运行现象

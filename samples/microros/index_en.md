@@ -1,10 +1,9 @@
 # Microros
 
-```{eval-rst}
+:::{eval-rst}
 .. toctree::
-   :maxdepth: 3
+    :maxdepth: 3
+    :glob:
 
-   publisher/README_en
-   service/README_en
-   subscriber/README_en
-```
+    **/*_en
+:::

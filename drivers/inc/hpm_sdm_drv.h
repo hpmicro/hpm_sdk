@@ -11,6 +11,13 @@
 #include "hpm_common.h"
 #include "hpm_sdm_regs.h"
 
+/**
+ * @brief SDM APIs
+ * @defgroup sdm_interface SDM driver APIs
+ * @ingroup sdm_interfaces
+ * @{
+ */
+
 /* defined channel mask macro */
 #define SAMPLING_MODE_MASK (0x7U)
 #define CHN_SAMPLING_MODE_SHIFT(ch) ((ch) * 3U + SDM_CTRL_CHMD_SHIFT)

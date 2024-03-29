@@ -106,6 +106,16 @@ void board_can_tx_event_test(void);
 void board_can_timestamp_test(void);
 
 /**
+ * @brief CAN timeout counter test
+ *  This sample demonstrate the timeout feature supported by MCAN IP, the following scenarios are supported:
+ *    1. Continuous mode. Timeout occurs if the TOCV register counts down to zero
+ *    2. Triggered by TX Event FIFO. Timeout occurs if the data in TX Event FIFO is not handled in timeout period
+ *    3. Triggered by RXFIFO0. Timeout occurs if the data in RXFIFO0 is not handed in timeout period
+ *    4. Triggered by RXFIFO1. Timeout occurs if the data in RXFIFO1 is not handled in timeout period
+ */
+void board_can_timeout_counter_test(void);
+
+/**
  * @brief Display the CAN message content
  *
  * @param [in] rx_msg CAN message buffer
@@ -139,28 +149,28 @@ char *get_timestamp_hex_string(const mcan_timestamp_value_t *ts_val);
 
 static can_info_t s_can_info[] = {
 #if defined(HPM_MCAN0)
-    { .can_base = HPM_MCAN0, .irq_num = IRQn_CAN0 },
+    { .can_base = HPM_MCAN0, .irq_num = IRQn_MCAN0 },
 #endif
 #if defined(HPM_MCAN1)
-    { .can_base = HPM_MCAN1, .irq_num = IRQn_CAN1 },
+    { .can_base = HPM_MCAN1, .irq_num = IRQn_MCAN1 },
 #endif
 #if defined(HPM_MCAN2)
-    { .can_base = HPM_MCAN2, .irq_num = IRQn_CAN2 },
+    { .can_base = HPM_MCAN2, .irq_num = IRQn_MCAN2 },
 #endif
 #if defined (HPM_MCAN3)
-    { .can_base = HPM_MCAN3, .irq_num = IRQn_CAN3 },
+    { .can_base = HPM_MCAN3, .irq_num = IRQn_MCAN3 },
 #endif
 #if defined (HPM_MCAN4)
-    { .can_base = HPM_MCAN4, .irq_num = IRQn_CAN4 },
+    { .can_base = HPM_MCAN4, .irq_num = IRQn_MCAN4 },
 #endif
 #if defined (HPM_MCAN5)
-    { .can_base = HPM_MCAN5, .irq_num = IRQn_CAN5 },
+    { .can_base = HPM_MCAN5, .irq_num = IRQn_MCAN5 },
 #endif
 #if defined (HPM_MCAN6)
-    { .can_base = HPM_MCAN6, .irq_num = IRQn_CAN6 },
+    { .can_base = HPM_MCAN6, .irq_num = IRQn_MCAN6 },
 #endif
 #if defined (HPM_MCAN7)
-    { .can_base = HPM_MCAN7, .irq_num = IRQn_CAN7 },
+    { .can_base = HPM_MCAN7, .irq_num = IRQn_MCAN7 },
 #endif
 };
 
@@ -171,6 +181,12 @@ static volatile bool has_sent_out;
 static volatile bool has_error;
 
 static volatile bool tx_event_occurred;
+
+static volatile bool timeout_event_occurred;
+
+static volatile bool rxfifo0_event_occurred;
+
+static volatile bool rxfifo1_event_occurred;
 
 static volatile mcan_rx_message_t s_can_rx_buf;
 
@@ -189,14 +205,16 @@ void board_can_isr(void)
     MCAN_Type *base = BOARD_APP_CAN_BASE;
     uint32_t flags = mcan_get_interrupt_flags(base);
     /* New message is available in RXFIFO0 */
-    if ((flags & MCAN_INT_RXFIFI0_NEW_MSG) != 0) {
+    if ((flags & MCAN_INT_RXFIFO0_NEW_MSG) != 0) {
         mcan_read_rxfifo(base, 0, (mcan_rx_message_t *) &s_can_rx_buf);
         has_new_rcv_msg = true;
+        rxfifo0_event_occurred = true;
     }
     /* New message is available in RXFIFO1 */
     if ((flags & MCAN_INT_RXFIFO1_NEW_MSG) != 0U) {
         mcan_read_rxfifo(base, 1, (mcan_rx_message_t *) &s_can_rx_buf);
         has_new_rcv_msg = true;
+        rxfifo1_event_occurred = true;
     }
     /* New message is available in RXBUF */
     if ((flags & MCAN_INT_MSG_STORE_TO_RXBUF) != 0U) {
@@ -223,6 +241,10 @@ void board_can_isr(void)
     /* Error happened */
     if ((flags & MCAN_EVENT_ERROR) != 0) {
         has_error = true;
+    }
+
+    if ((flags & MCAN_INT_TIMEOUT_OCCURRED) != 0) {
+        timeout_event_occurred = true;
     }
     mcan_clear_interrupt_flags(BOARD_APP_CAN_BASE, flags);
 }
@@ -1419,6 +1441,190 @@ void handle_can_error(MCAN_Type *ptr)
     }
 }
 
+void board_can_timeout_counter_test(void)
+{
+    /***********************************************************************************************************
+     * Case 1: Timeout counter works in continuous mode
+     ***********************************************************************************************************/
+    MCAN_Type *ptr = BOARD_APP_CAN_BASE;
+    mcan_filter_elem_t can_filters[16];
+    mcan_config_t can_config;
+    mcan_get_default_config(ptr, &can_config);
+
+    board_init_can(ptr);
+    uint32_t can_src_clk_freq = board_init_can_clock(ptr);
+
+    can_config.baudrate = 1000000; /* 1Mbps */
+    can_config.mode = mcan_mode_loopback_internal;
+    uint32_t int_mask = MCAN_INT_TIMEOUT_OCCURRED;
+    uint32_t txbuf_int_mask = ~0UL;
+    can_config.interrupt_mask = int_mask;
+    can_config.txbuf_trans_interrupt_mask = txbuf_int_mask;
+    can_config.timeout_cfg.enable_timeout_counter = true;
+    can_config.timeout_cfg.timeout_sel = mcan_timeout_continuous_operation;
+    can_config.timeout_cfg.timeout_period = 1000;
+    hpm_stat_t status = mcan_init(ptr, &can_config, can_src_clk_freq);
+    if (status != status_success) {
+        printf("CAN initialization failed, error code: %d\n", status);
+        return;
+    }
+    intc_m_enable_irq_with_priority(BOARD_APP_CAN_IRQn, 1);
+    mcan_reset_timeout_counter_value(ptr);
+
+    while (!timeout_event_occurred) {
+    }
+    mcan_deinit(ptr);
+    printf("CAN Timeout test passed in Continuous mode\n");
+
+    /***********************************************************************************************************
+     * Case 2: Timeout counter is triggered by TX Event FIFO
+     ***********************************************************************************************************/
+    timeout_event_occurred = false;
+    can_config.baudrate = 1000000; /* 1Mbps */
+    can_config.mode = mcan_mode_loopback_internal;
+    int_mask = MCAN_INT_TIMEOUT_OCCURRED;
+    txbuf_int_mask = ~0UL;
+    can_config.interrupt_mask = int_mask;
+    can_config.txbuf_trans_interrupt_mask = txbuf_int_mask;
+    can_config.timeout_cfg.enable_timeout_counter = true;
+    can_config.timeout_cfg.timeout_sel = mcan_timeout_triggered_by_tx_evt_fifo;
+    can_config.timeout_cfg.timeout_period = 1000;
+    status = mcan_init(ptr, &can_config, can_src_clk_freq);
+    if (status != status_success) {
+        printf("CAN initialization failed, error code: %d\n", status);
+        return;
+    }
+    intc_m_enable_irq_with_priority(BOARD_APP_CAN_IRQn, 1);
+    mcan_tx_frame_t tx_buf;
+    memset(&tx_buf, 0, sizeof(tx_buf));
+    tx_buf.dlc = 8;
+
+    for (uint32_t i = 0; i < 8; i++) {
+        tx_buf.data_8[i] = (uint8_t) i | (i << 4);
+    }
+    tx_buf.std_id = 0x123;
+    tx_buf.event_fifo_control = 1U; /* Store into TX Event FIFO */
+    tx_buf.message_marker_l = 0x123 & 0xFF;
+    /* Demonstrate the Transmit via TXFIFO in nonblocking mode here */
+    mcan_transmit_via_txfifo_nonblocking(ptr, &tx_buf, NULL);
+    while (!timeout_event_occurred) {
+    }
+    if (tx_event_occurred) {
+        printf("CAN Timeout test passed in TX EVENT FIFO triggered mode\n");
+    } else {
+        printf("CAN Timeout test failed in TX EVENT FIFO triggered mode\n");
+    }
+    tx_event_occurred = false;
+
+    /***********************************************************************************************************
+     * Case 3: Timeout counter is triggered by RX FIFO0
+     ***********************************************************************************************************/
+    can_config.baudrate = 1000000; /* 1Mbps */
+    can_config.mode = mcan_mode_loopback_internal;
+    int_mask = MCAN_INT_TIMEOUT_OCCURRED;
+    txbuf_int_mask = ~0UL;
+    can_config.interrupt_mask = int_mask;
+    can_config.txbuf_trans_interrupt_mask = txbuf_int_mask;
+    can_config.timeout_cfg.enable_timeout_counter = true;
+    can_config.timeout_cfg.timeout_sel = mcan_timeout_triggered_by_rx_fifo0;
+    can_config.timeout_cfg.timeout_period = 1000;
+    can_filters[0].filter_type = MCAN_FILTER_TYPE_CLASSIC_FILTER;
+    can_filters[0].filter_config = MCAN_FILTER_ELEM_CFG_STORE_IN_RX_FIFO0_IF_MATCH;
+    can_filters[0].can_id_type = MCAN_CAN_ID_TYPE_STANDARD;
+    can_filters[0].filter_id = 0x123;
+    can_filters[0].filter_mask = 0xfff;
+    can_config.all_filters_config.ext_id_filter_list.mcan_filter_elem_count = 0;
+    can_config.all_filters_config.std_id_filter_list.filter_elem_list = &can_filters[0];
+    can_config.all_filters_config.std_id_filter_list.mcan_filter_elem_count = 1;
+    can_config.all_filters_config.global_filter_config.accept_non_matching_std_frame_option =
+            MCAN_ACCEPT_NON_MATCHING_FRAME_OPTION_REJECT;
+    can_config.all_filters_config.global_filter_config.accept_non_matching_ext_frame_option =
+            MCAN_ACCEPT_NON_MATCHING_FRAME_OPTION_REJECT;
+    can_config.all_filters_config.global_filter_config.reject_remote_std_frame = true;
+    can_config.all_filters_config.global_filter_config.reject_remote_ext_frame = true;
+
+    can_config.txbuf_trans_interrupt_mask = ~0UL;
+    can_config.interrupt_mask = int_mask;
+    status = mcan_init(ptr, &can_config, can_src_clk_freq);
+    if (status != status_success) {
+        printf("CAN initialization failed, error code: %d\n", status);
+        return;
+    }
+    intc_m_enable_irq_with_priority(BOARD_APP_CAN_IRQn, 1);
+    memset(&tx_buf, 0, sizeof(tx_buf));
+    tx_buf.dlc = 8;
+
+    for (uint32_t i = 0; i < 8; i++) {
+        tx_buf.data_8[i] = (uint8_t) i | (i << 4);
+    }
+    tx_buf.std_id = 0x123;
+    mcan_transmit_blocking(ptr, &tx_buf);
+    while (!timeout_event_occurred) {
+    }
+    mcan_deinit(ptr);
+    timeout_event_occurred = false;
+    if (rxfifo0_event_occurred) {
+        printf("CAN Timeout test passed in RX FIFO0 triggered mode\n");
+    } else {
+        printf("CAN Timeout test failed in RX FIFO0 triggered mode\n");
+    }
+    rxfifo0_event_occurred = false;
+
+    /***********************************************************************************************************
+     * Case 4: Timeout counter is triggered by RX FIFO1
+     ***********************************************************************************************************/
+    can_config.baudrate = 1000000; /* 1Mbps */
+    can_config.mode = mcan_mode_loopback_internal;
+    int_mask = MCAN_INT_TIMEOUT_OCCURRED;
+    txbuf_int_mask = ~0UL;
+    can_config.interrupt_mask = int_mask;
+    can_config.txbuf_trans_interrupt_mask = txbuf_int_mask;
+    can_config.timeout_cfg.enable_timeout_counter = true;
+    can_config.timeout_cfg.timeout_sel = mcan_timeout_triggered_by_rx_fifo1;
+    can_config.timeout_cfg.timeout_period = 1000;
+    can_filters[0].filter_type = MCAN_FILTER_TYPE_CLASSIC_FILTER;
+    can_filters[0].filter_config = MCAN_FILTER_ELEM_CFG_STORE_IN_RX_FIFO1_IF_MATCH;
+    can_filters[0].can_id_type = MCAN_CAN_ID_TYPE_STANDARD;
+    can_filters[0].filter_id = 0x234;
+    can_filters[0].filter_mask = 0xfff;
+    can_config.all_filters_config.ext_id_filter_list.mcan_filter_elem_count = 0;
+    can_config.all_filters_config.std_id_filter_list.filter_elem_list = &can_filters[0];
+    can_config.all_filters_config.std_id_filter_list.mcan_filter_elem_count = 1;
+    can_config.all_filters_config.global_filter_config.accept_non_matching_std_frame_option =
+            MCAN_ACCEPT_NON_MATCHING_FRAME_OPTION_REJECT;
+    can_config.all_filters_config.global_filter_config.accept_non_matching_ext_frame_option =
+            MCAN_ACCEPT_NON_MATCHING_FRAME_OPTION_REJECT;
+    can_config.all_filters_config.global_filter_config.reject_remote_std_frame = true;
+    can_config.all_filters_config.global_filter_config.reject_remote_ext_frame = true;
+
+    can_config.txbuf_trans_interrupt_mask = ~0UL;
+    can_config.interrupt_mask = int_mask;
+    status = mcan_init(ptr, &can_config, can_src_clk_freq);
+    if (status != status_success) {
+        printf("CAN initialization failed, error code: %d\n", status);
+        return;
+    }
+    intc_m_enable_irq_with_priority(BOARD_APP_CAN_IRQn, 1);
+    memset(&tx_buf, 0, sizeof(tx_buf));
+    tx_buf.dlc = 8;
+
+    for (uint32_t i = 0; i < 8; i++) {
+        tx_buf.data_8[i] = (uint8_t) i | (i << 4);
+    }
+    tx_buf.std_id = 0x234;
+    mcan_transmit_blocking(ptr, &tx_buf);
+    while (!timeout_event_occurred) {
+    }
+    mcan_deinit(ptr);
+    timeout_event_occurred = false;
+    if (rxfifo1_event_occurred) {
+        printf("CAN Timeout test passed in RX FIFO1 triggered mode\n");
+    } else {
+        printf("CAN Timeout test failed in RX FIFO1 triggered mode\n");
+    }
+    rxfifo1_event_occurred = false;
+}
+
 void handle_can_test(void)
 {
     show_help();
@@ -1464,6 +1670,9 @@ void handle_can_test(void)
         case 'a':
             board_can_timestamp_test();
             break;
+        case 'b':
+            board_can_timeout_counter_test();
+            break;
         }
     }
 }
@@ -1486,6 +1695,7 @@ void show_help(void)
                                     "* 8 - CAN RXBUF test                                                          *\n"
                                     "* 9 - CAN TX EVENT FIFO test                                                  *\n"
                                     "* a - CAN Timestamp Test                                                      *\n"
+                                    "* b - CAN timeout counter Test                                                *\n"
                                     "*                                                                             *\n"
                                     "*******************************************************************************\n";
     printf("%s\n", help_info);

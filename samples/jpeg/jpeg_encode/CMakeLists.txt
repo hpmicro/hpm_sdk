@@ -25,7 +25,6 @@ if(DEFINED JPEG_USE_SDCARD)
 elseif(DEFINED JPEG_USE_UDISK)
   set(CONFIG_TINYUSB 1)
   set(CONFIG_TINYUSB_HOST 1)
-  set(CONFIG_USB_HOST 1)
   set(CONFIG_USB_FATFS 1)
   set(CONFIG_USB_FATFS_TINYUSB 1)
 else()
@@ -45,7 +44,7 @@ else()
   set(HEAP_SIZE 0x100000)
 endif()
 
-set(STACK_SIZE 0x40000)
+set(STACK_SIZE 0x20000)
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
@@ -75,4 +74,4 @@ else()
   sdk_compile_definitions(-DJPEG_HW_MODE=0)
 endif()
 
-generate_ses_project()
+generate_ide_projects()

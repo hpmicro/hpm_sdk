@@ -1,2 +1,2 @@
 dependency:
-  - uart_9bit
+  - ip_feature_uart_9bit_mode

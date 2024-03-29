@@ -82,6 +82,21 @@ The UART0 pin leads to three positions:
 
 > **_Note_:**To avoid abnormal functions caused by multiple connections, please ensure that there is only one connection. For example, if the JTAG interface is connected to UART0, USB2UART0 interface send data to UART0 will be abnormal.
 
+- UART13 Pin：
+
+ The UART13 is used for core1 debug console or some functional testing using UART, such as uart_software_rx_idle, uart_rx_timeout, uart_software_lin, MICROROS_UART, USB_CDC_ACM_UART, MODBUS_RTU etc.
+
+| Function   | Pin  | Position |
+| ---------- | ---- | -------- |
+| UART13.TXD | PZ09 | J11[5]   |
+| UART13.RXD | PZ08 | J11[6]   |
+
+- TRGMUX pin for uart_software_rx_idle sample
+
+| Function       | Position |
+| -------------- | -------- |
+| TRGM2_P9(PD19) | J10[20]  |
+
 - SPI Pin：
 
 | Function  | Pin  | Position |
@@ -97,13 +112,6 @@ The UART0 pin leads to three positions:
 | -------- | ---- | -------- |
 | I2C0.SCL | PZ11 | J11[3]   |
 | I2C0.SDA | PZ10 | J11[4]   |
-
-- UART for core1 debug console：
-
-| Function   | Pin  | Position |
-| ---------- | ---- | -------- |
-| UART13.TXD | PZ09 | J11[5]   |
-| UART13.RXD | PZ08 | J11[6]   |
 
 - PWM Pin:
 
@@ -132,9 +140,7 @@ The UART0 pin leads to three positions:
 | Function          | Pin   | Position |
 | ----------------- | ----- | -------- |
 | Reference Voltage | VREFH | J108[2]  |
-| ADC0/1/2.VINP11   | PE25  | J10[6]   |
-| ADC0/1/2.VINP10   | PE24  | J10[7]   |
-| ADC0/1/2.VINP7    | PE21  | J10[8]   |
+| ADC0.VINP11       | PE25  | J10[6]   |
 
 - ADC16 Pin
 
@@ -167,19 +173,6 @@ The UART0 pin leads to three positions:
 | ----------- | -------- |
 | ENET0.EVTO0 | U11[3]   |
 
-- UART pin for uart_software_rx_idle sample or uart_rx_timeout sample
-
-| Function   | Position |
-| ---------- | -------- |
-| UART13.TXD | J11[5]   |
-| UART13.RXD | J11[6]   |
-
-- TRGMUX pin for uart_software_rx_idle sample
-
-| Function       | Position |
-| -------------- | -------- |
-| TRGM2_P9(PD19) | J10[20]  |
-
 - Motor Pin:
 
   Need to remove all the resistors selected by `GigEPOP` silkscreen and make sure all the resistors selected by `MOTOR POP` silkscreen are soldered, the development board list is as follows.
@@ -187,3 +180,11 @@ The UART0 pin leads to three positions:
   Using the high-frequency injection demo, need to remove PWM ground resistors R436-R441.
 
   Refer to section [DRV-LV50A-MP1907 Motor Driver Board ](lab_drv_lv50a_mp1907) for configuration
+
+- Tamper Pin
+
+| Function | Pin    | Position |  Mode  |
+|----------|--------|--------|----------|
+| TAMP.08  | PZ08   | J11[6] | Active Mode |
+| TAMP.09  | PZ09   | J11[5] | Active Mode |
+| TAMP.10  | PZ10   | J11[4] | Passive Mode |

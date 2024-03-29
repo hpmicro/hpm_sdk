@@ -11,9 +11,13 @@
 #include "eeprom_emulation.h"
 #include "hpm_nor_flash.h"
 
-#define DEMO_RX_SIZE (512)
+#define DEMO_RX_SIZE        (512)
 #define DEMO_BLOCK_SIZE_MAX (32)
 #define DEMO_WRITE_CYCLE    (5)
+#define DEMO_ERASE_SIZE     (4096)
+#define DEMO_SECTOR_CNT     (32)
+#define DEMO_MANAGE_SIZE    (DEMO_ERASE_SIZE * DEMO_SECTOR_CNT)
+#define DEMO_MANAGE_OFFSET  (BOARD_FLASH_SIZE - DEMO_MANAGE_SIZE)
 
 #define PERF_CONFIG_TEST     ('1')
 #define PERF_FLUSH_TEST      ('2')
@@ -132,10 +136,10 @@ static uint32_t eeprom_perf_read_time(void)
 static void eeprom_init(void)
 {
     e2p_demo.nor_config.xpi_base = BOARD_APP_XPI_NOR_XPI_BASE;
-    e2p_demo.nor_config.base_addr = 0x80000000;
-    e2p_demo.config.start_addr = 0x80080000;
-    e2p_demo.config.erase_size = 4096;
-    e2p_demo.config.sector_cnt = 128;
+    e2p_demo.nor_config.base_addr = BOARD_FLASH_BASE_ADDRESS;
+    e2p_demo.config.start_addr = e2p_demo.nor_config.base_addr + DEMO_MANAGE_OFFSET;
+    e2p_demo.config.erase_size = DEMO_ERASE_SIZE;
+    e2p_demo.config.sector_cnt = DEMO_SECTOR_CNT;
     e2p_demo.config.version = 0x4553; /* 'E' 'S' */
     e2p_demo.nor_config.opt_header = BOARD_APP_XPI_NOR_CFG_OPT_HDR;
     e2p_demo.nor_config.opt0 = BOARD_APP_XPI_NOR_CFG_OPT_OPT0;
@@ -144,7 +148,8 @@ static void eeprom_init(void)
     e2p_demo.config.flash_write = demo_write;
     e2p_demo.config.flash_erase = demo_erase;
 
-    nor_flash_init(&e2p_demo.nor_config);   
+    nor_flash_init(&e2p_demo.nor_config);
+    e2p_config(&e2p_demo);
 }
 
 static void eeprom_show_info(void)

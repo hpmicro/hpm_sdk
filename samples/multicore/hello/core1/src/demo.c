@@ -187,6 +187,8 @@ int main(void)
 {
     uint32_t freq;
     uint32_t hw_event_cmp;
+
+    board_init_core1();
     board_init_rgb_pwm_pins();
 
     freq = clock_get_frequency(RED_PWM_CLOCK_NAME);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -12,6 +12,10 @@
 
 extern void system_init(void);
 
+#ifndef MAIN_ENTRY
+#define MAIN_ENTRY main
+#endif
+extern int MAIN_ENTRY(void);
 
 __attribute__((weak)) void _clean_up(void)
 {
@@ -99,7 +103,7 @@ __attribute__((weak)) void reset_handler(void)
     system_init();
 
     /* Entry function */
-    main();
+    MAIN_ENTRY();
 }
 
 /*
@@ -114,10 +118,41 @@ __attribute__((weak)) void __cxa_atexit(void (*arg1)(void *), void *arg2, void *
     (void) arg3;
 }
 
-#if !defined(__SEGGER_RTL_VERSION) || defined(__riscv_xandes)
+#if (!defined(__SEGGER_RTL_VERSION) || defined(__riscv_xandes)) && !defined(__ICCRISCV__)
 void *__dso_handle = (void *) &__dso_handle;
 #endif
 
 __attribute__((weak)) void _init(void)
 {
 }
+
+
+#ifdef __ICCRISCV__
+int __low_level_init(void)
+{
+#ifdef IAR_MANUAL_COPY /* Enable this code snippet if the .isr_vector and .vector_table need to be copied to RAM manually */
+#pragma section = ".isr_vector"
+#pragma section = ".isr_vector_init"
+#pragma section = ".vector_table"
+#pragma section = ".vector_table_init"
+    /* Initialize section .isr_vector, section .vector_table */
+    uint8_t *__isr_vector_ram_start = __section_begin(".isr_vector");
+    uint32_t __isr_vector_ram_size = __section_size(".isr_vector");
+    uint8_t *__isr_vector_rom_start = __section_begin(".isr_vector_init");
+
+    for (uint32_t i = 0; i < __isr_vector_ram_size; i++) {
+        __isr_vector_ram_start[i] = __isr_vector_rom_start[i];
+    }
+
+    uint8_t *__vector_table_ram_start = __section_begin(".vector_table");
+    uint32_t __vector_table_ram_size = __section_size(".vector_table");
+    uint8_t *__vector_rom_start = __section_begin(".vector_table_init");
+
+    for (uint32_t i = 0; i < __vector_table_ram_size; i++) {
+        __vector_table_ram_start[i] = __vector_rom_start[i];
+    }
+#endif
+
+    return 1;
+}
+#endif

@@ -10,4 +10,4 @@ project(uart_interrupt_example)
 sdk_compile_definitions(-DCONFIG_UART_FIFO_MODE=1)
 
 sdk_app_src(src/uart.c)
-generate_ses_project()
+generate_ide_projects()

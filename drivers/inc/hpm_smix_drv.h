@@ -16,7 +16,7 @@
 /**
  * @brief SMIX driver APIs
  * @defgroup smix_interface SMIX driver APIs
- * @ingroup smix_interface
+ * @ingroup smix_interfaces
  * @{
  */
 
@@ -499,17 +499,17 @@ hpm_stat_t smix_mixer_config_source_ch(SMIX_Type *ptr, uint8_t ch, smix_mixer_so
  *
  * @param [in] ptr SMIX base address
  * @param [in] ch dst channel
- * @param [in] src smix_mixer_dst_config_t
+ * @param [in] dst smix_mixer_dst_config_t
  * @retval status_success if no error occurs
  */
 hpm_stat_t smix_mixer_config_dst_ch(SMIX_Type *ptr, uint8_t ch, smix_mixer_dst_config_t *dst);
 
-/**
- * @}
- */
-
 #ifdef __cplusplus
 }
 #endif
+
+/**
+ * @}
+ */
 
 #endif /* HPM_SMIX_DRV_H */

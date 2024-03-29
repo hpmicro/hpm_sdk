@@ -940,7 +940,7 @@ static inline bool sysctl_clock_any_is_busy(SYSCTL_Type *ptr)
  * @return true if target clock is busy
  */
 static inline bool sysctl_clock_target_is_busy(SYSCTL_Type *ptr,
-                                               uint32_t clock)
+                                               clock_node_t clock)
 {
     return ptr->CLOCK[clock] & SYSCTL_CLOCK_LOC_BUSY_MASK;
 }
@@ -1545,7 +1545,7 @@ hpm_stat_t sysctl_enable_group_resource(SYSCTL_Type *ptr,
  * @param[in] resource target resource to be checked from group
  * @return enable true if resource enable, false if resource disable
  */
-bool sysctl_check_group_resource_enable(SYSCTL_Type *ptr, uint8_t group, sysctl_resource_t linkable_resource);
+bool sysctl_check_group_resource_enable(SYSCTL_Type *ptr, uint8_t group, sysctl_resource_t resource);
 
 /**
  * @brief Get group resource value

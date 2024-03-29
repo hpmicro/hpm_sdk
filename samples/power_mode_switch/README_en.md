@@ -14,10 +14,10 @@ When the project runs correctly, and the serial port terminal will output the fo
 
 ```console
 Power mode switch demo:
-1 - Enter wait mode
-2 - Enter stop mode
-3 - Enter standby mode
-4 - Enter shutdown mode
+  1 - Enter wait mode
+  2 - Enter stop mode
+  3 - Enter standby mode
+  4 - Enter shutdown mode
 ```
 
 Switch to different power mode by enter different option on serial port terminal.

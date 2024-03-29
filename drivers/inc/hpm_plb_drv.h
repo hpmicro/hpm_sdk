@@ -13,10 +13,16 @@
 
 /**
  * @brief PLB driver APIs
- * @defgroup pla_interface PLB driver APIs
+ * @defgroup plb_interface PLB driver APIs
  * @ingroup io_interfaces
  * @{
  */
+
+#define PLB_SLICE_MASK  (0xf)
+#define PLB_SLICE_HIGH_BIT_MASK_SET(slice) (PLB_SLICE_MASK << ((slice - plb_type_b_slice_8) << 2))
+#define PLB_SLICE_HIGH_BIT_SHIFT(slice) ((slice - plb_type_b_slice_8) << 2)
+#define PLB_SLICE_LOW_BIT_MASK_SET(slice) (PLB_SLICE_MASK << (slice << 2))
+#define PLB_SLICE_LOW_BIT_SHIFT(slice) (slice << 2)
 
 /**
  * @brief plb channels

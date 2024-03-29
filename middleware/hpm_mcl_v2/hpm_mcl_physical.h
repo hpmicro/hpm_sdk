@@ -10,6 +10,21 @@
 
 #define MCL_ANALOG_CHN_NUM  10 /**< @ref mcl_analog_chn_t */
 
+/**
+ * @brief The mounting angle of the Hall sensor, 60 degrees or 120 degrees,
+ * is an inherent property of the motor.
+ *
+ */
+typedef enum {
+    phase_60, /*60*/
+    phase_120 /*120*/
+} hall_phase_t;
+
+typedef enum {
+    motor_dir_forward = 1,
+    motor_dir_back = 2
+} mcl_motor_dir_t;
+
 typedef struct {
     float res;    /**< Motor resistance in ohms */
     int32_t pole_num;  /**< Motor pole number */
@@ -21,6 +36,7 @@ typedef struct {
     float power;    /**< Rated power */
     float inertia; /**< kgm^2 */
     float rpm_max; /**< Maximum RPM */
+    hall_phase_t hall;
 } physical_motor_t;
 
 typedef struct {
@@ -34,6 +50,7 @@ typedef struct {
     int32_t power;
     int32_t inertia; /**< kgm^2 */
     int32_t rpm_max;
+    hall_phase_t hall;
 } physical_motor_q_t;
 
 typedef struct {

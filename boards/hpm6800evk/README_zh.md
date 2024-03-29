@@ -2,7 +2,7 @@
 
 ## 概述
 
-HPM6800是一款主频达816MHz的双核微控制器。该芯片拥有最大1M字节的连续片上RAM，并集成了丰富的存储接口，如SDRAM，Quad SPI NOR flash， SD/eMMC卡。同时它也提供多种音视频接口包括LCD显示，像素DMA，摄像头以及I2S音频接口。
+HPM6800是一款主频达600MHz的单核微控制器。该芯片拥有最大1M字节的连续片上RAM，并集成了丰富的存储接口，如SDRAM，Quad SPI NOR flash， SD/eMMC卡。同时它也提供多种音视频接口包括LCD显示，像素DMA，摄像头以及I2S音频接口。
 
  ![hpm6800evk](doc/hpm6800evk.png "hpm6800evk")
 
@@ -10,9 +10,9 @@ HPM6800是一款主频达816MHz的双核微控制器。该芯片拥有最大1M�
 
 - HPM6800 微控制器 (主频600Mhz, 1M片上SRAM)
 - 板载存储
-  - 256MB SDRAM
+  - 512MB SDRAM (DDR3L 16bits)
   - 16MB Quad SPI NOR Flash
-  - 8GB eMMC
+  - 16GB eMMC
 - 显示/摄像头
   - LCD接口
   - MIPI-DSI
@@ -73,12 +73,30 @@ HPM6800是一款主频达816MHz的双核微控制器。该芯片拥有最大1M�
 
 - UART0串口引脚：
 
- UART0的引脚引出至两个位置：
+ UART0用于调试控制台串口。
 
 | 功能     | 引脚 |   位置     |
 | -------- | ---- |  --------- |
 | UART0.TX | PA00 | DEBUGUART0 |
 | UART0.RX | PA01 | DEBUGUART0 |
+
+- UART3串口引脚：
+
+ UART3用于一些使用UART的功能测试，例如MICROROS_UART，USB_CDC_ACM_UART, MODBUS_RTU等。
+
+| 功能     | 引脚 |   位置     |
+| -------- | ---- |  --------- |
+| UART3.TX | PE15 | P2[8]  |
+| UART3.RX | PE14 | P2[10] |
+
+- PUART串口引脚：
+
+ PUART用于低功耗测试，例如唤醒等。
+
+| 功能     | 引脚 |   位置     |
+| -------- | ---- |  --------- |
+| PUART.TX | PY00 | P2[32]  |
+| PUART.RX | PY01 | P2[29]  |
 
 - SPI引脚：
 
@@ -142,3 +160,11 @@ HPM6800是一款主频达816MHz的双核微控制器。该芯片拥有最大1M�
 | MCAN3.TXD  | PD15   | U25[1] | CAN.H J13[3] |
 | MCAN3.RXD  | PD14   | U25[4] | CAN.L J13[2] |
 | MCAN3.STBY | PD13   | U25[8] |              |
+
+- Tamper 接口
+
+| 功能     | 引脚   | 位置   |   模式   |
+|----------|--------|--------|---------|
+| TAMP.04  | PZ04   | P2[35] | 主动模式 |
+| TAMP.05  | PZ05   | P2[38] | 主动模式 |
+| TAMP.06  | PZ06   | P2[37] | 被动模式 |

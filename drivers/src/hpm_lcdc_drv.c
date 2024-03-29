@@ -71,6 +71,7 @@ void lcdc_get_default_layer_config(LCDC_Type *ptr, lcdc_layer_config_t *layer, d
     layer->alphablend.src_alpha_op = display_alpha_op_invalid;
     layer->alphablend.dst_alpha_op = display_alpha_op_invalid;
     layer->alphablend.mode = display_alphablend_mode_clear;
+    layer->stride = 0;
 
     switch (pixel_format) {
     case display_pixel_format_yuv422:
@@ -214,7 +215,7 @@ hpm_stat_t lcdc_config_layer(LCDC_Type *ptr,
     ptr->LAYER[layer_index].ALPHAS = LCDC_LAYER_ALPHAS_LOCD_SET(layer->alphablend.src_alpha)
         | LCDC_LAYER_ALPHAS_IND_SET(layer->alphablend.dst_alpha);
 
-    pitch = display_get_pitch_length_in_byte(layer->pixel_format, layer->width);
+    pitch = layer->stride > 0 ? layer->stride : display_get_pitch_length_in_byte(layer->pixel_format, layer->width);
     ptr->LAYER[layer_index].LINECFG = LCDC_LAYER_LINECFG_MPT_SIZE_SET(layer->max_bytes)
         | LCDC_LAYER_LINECFG_MAX_OT_SET(layer->max_ot)
         | LCDC_LAYER_LINECFG_PITCH_SET(pitch);

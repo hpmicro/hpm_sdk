@@ -3,6 +3,5 @@ excluded_targets:
   - release # exclude the release target
   - sec_core_img #exclude the sec_core_img target
 dependency:
-  - ptp
   - enet
-  - enet_phy_on_board
+  - board_enet_phy

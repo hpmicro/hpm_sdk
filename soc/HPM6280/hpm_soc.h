@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -47,10 +47,10 @@
 #define IRQn_UART5                     34      /* UART5 IRQ */
 #define IRQn_UART6                     35      /* UART6 IRQ */
 #define IRQn_UART7                     36      /* UART7 IRQ */
-#define IRQn_CAN0                      37      /* CAN0 IRQ */
-#define IRQn_CAN1                      38      /* CAN1 IRQ */
-#define IRQn_CAN2                      39      /* CAN2 IRQ */
-#define IRQn_CAN3                      40      /* CAN3 IRQ */
+#define IRQn_MCAN0                     37      /* MCAN0 IRQ */
+#define IRQn_MCAN1                     38      /* MCAN1 IRQ */
+#define IRQn_MCAN2                     39      /* MCAN2 IRQ */
+#define IRQn_MCAN3                     40      /* MCAN3 IRQ */
 #define IRQn_PTPC                      41      /* PTPC IRQ */
 #define IRQn_WDG0                      42      /* WDG0 IRQ */
 #define IRQn_WDG1                      43      /* WDG1 IRQ */

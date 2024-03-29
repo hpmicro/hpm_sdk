@@ -1,4 +1,4 @@
-# WDG API demo
+# WDG
 
 ## Overview
 

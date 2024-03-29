@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -26,10 +26,6 @@
 #define HPM_DMA_SRC_GPTMR3_1                               (0xDUL)
 #define HPM_DMA_SRC_GPTMR3_2                               (0xEUL)
 #define HPM_DMA_SRC_GPTMR3_3                               (0xFUL)
-#define HPM_DMA_SRC_LIN0                                   (0x10UL)
-#define HPM_DMA_SRC_LIN1                                   (0x11UL)
-#define HPM_DMA_SRC_LIN2                                   (0x12UL)
-#define HPM_DMA_SRC_LIN3                                   (0x13UL)
 #define HPM_DMA_SRC_UART0_RX                               (0x14UL)
 #define HPM_DMA_SRC_UART0_TX                               (0x15UL)
 #define HPM_DMA_SRC_UART1_RX                               (0x16UL)
@@ -58,10 +54,10 @@
 #define HPM_DMA_SRC_SPI2_TX                                (0x2DUL)
 #define HPM_DMA_SRC_SPI3_RX                                (0x2EUL)
 #define HPM_DMA_SRC_SPI3_TX                                (0x2FUL)
-#define HPM_DMA_SRC_CAN0                                   (0x30UL)
-#define HPM_DMA_SRC_CAN1                                   (0x31UL)
-#define HPM_DMA_SRC_CAN2                                   (0x32UL)
-#define HPM_DMA_SRC_CAN3                                   (0x33UL)
+#define HPM_DMA_SRC_MCAN0                                  (0x30UL)
+#define HPM_DMA_SRC_MCAN1                                  (0x31UL)
+#define HPM_DMA_SRC_MCAN2                                  (0x32UL)
+#define HPM_DMA_SRC_MCAN3                                  (0x33UL)
 #define HPM_DMA_SRC_MOT_0                                  (0x34UL)
 #define HPM_DMA_SRC_MOT_1                                  (0x35UL)
 #define HPM_DMA_SRC_MOT_2                                  (0x36UL)

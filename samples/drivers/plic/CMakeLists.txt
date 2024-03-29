@@ -14,4 +14,4 @@ project(plic_example)
 #sdk_compile_definitions(-DUSE_NONVECTOR_MODE=1)
 
 sdk_app_src(src/plic.c)
-generate_ses_project()
+generate_ide_projects()

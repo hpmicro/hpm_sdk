@@ -1,4 +1,4 @@
-# I2C Samples
+# I2C
 
 :::{eval-rst}
 .. toctree::

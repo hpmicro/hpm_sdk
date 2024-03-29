@@ -15,4 +15,4 @@ sdk_app_src(src/bldc_smc_callback.c)
 sdk_app_src(src/bldc_smc.c)
 sdk_ld_options("-lm")
 
-generate_ses_project()
+generate_ide_projects()

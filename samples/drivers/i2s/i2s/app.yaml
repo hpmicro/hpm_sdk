@@ -1,2 +1,4 @@
 dependency:
   - i2s
+  - board_audio_in
+  - board_audio_out

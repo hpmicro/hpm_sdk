@@ -29,7 +29,7 @@
         .left_input  = wm8960_input_closed,
         .right_input = wm8960_input_differential_mic_input2,
         .play_source = wm8960_play_source_dac,
-        .bus         = wm8960_bus_i2s,
+        .bus         = wm8960_bus_left_justified,
         .format = {.mclk_hz = 0U, .sample_rate = CODEC_SAMPLE_RATE_HZ, .bit_width = CODEC_BIT_WIDTH},
     };
 
@@ -73,9 +73,6 @@ void test_codec_playback_record(void)
     transfer.data_line = CODEC_I2S_DATA_LINE;
     transfer.sample_rate = CODEC_SAMPLE_RATE_HZ;
     transfer.master_mode = true;
-#if defined(CONFIG_CODEC_WM8960) && CONFIG_CODEC_WM8960
-    transfer.protocol = I2S_PROTOCOL_I2S_PHILIPS;
-#endif
     i2s_mclk_hz = clock_get_frequency(CODEC_I2S_CLK_NAME);
     /* configure I2S RX and TX */
     if (status_success != i2s_config_transfer(CODEC_I2S, i2s_mclk_hz, &transfer))

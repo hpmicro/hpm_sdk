@@ -28,7 +28,11 @@ extern "C"
     #if __riscv_xlen == 64
         #include <nds_intrinsic.h>
     #else
-        #include <nds32_intrinsic.h>
+        #if defined(__iar_riscv_andes_dsp) && (__iar_riscv_andes_dsp)
+        #include "nds_intrinsic.h"
+        #else
+        #include "nds32_intrinsic.h"
+        #endif
     #endif
 #endif
 

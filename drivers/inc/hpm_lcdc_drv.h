@@ -101,6 +101,7 @@ typedef struct lcdc_layer_config {
     uint16_t position_y;                                /**< Layer output position Y coord */
     display_color_32b_t background;                     /**< Background color */
     uint32_t buffer;                                    /**< Pointer of layer display buffer */
+    uint32_t stride;                                    /**< stride of lines in bytes. stride is calculated by driver if stride == 0. */
 } lcdc_layer_config_t;
 
 #ifdef __cplusplus

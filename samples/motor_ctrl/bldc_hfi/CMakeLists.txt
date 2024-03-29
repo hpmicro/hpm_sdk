@@ -18,4 +18,4 @@ sdk_app_src(src/bldc_hfi_callback.c)
 sdk_app_src(src/bldc_hfi.c)
 sdk_ld_options("-lm")
 
-generate_ses_project()
+generate_ide_projects()

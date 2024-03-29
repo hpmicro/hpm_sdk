@@ -284,6 +284,7 @@ MARK_FUNC __SEGGER_init_done
     csrci CSR_MMISC_CTL, 2
 #endif
 
+__startup_complete:
 MARK_FUNC start
 #ifndef FULL_LIBRARY
         //

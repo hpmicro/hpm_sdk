@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -7,8 +7,6 @@
 /* FreeRTOS kernel includes. */
 #include "FreeRTOS.h"
 #include "task.h"
-#include "semphr.h"
-#include "timers.h"
 
 #include <stdio.h>
 #include "board.h"
@@ -16,8 +14,6 @@
 #include "lwip/dhcp.h"
 #include "lwip/prot/dhcp.h"
 #include "usbh_core.h"
-#include "usbh_rndis.h"
-#include "rndis_protocol.h"
 #include "ping.h"
 
 /* Macro Definition */
@@ -27,14 +23,7 @@
 #define CONFIG_PING_COUNT     (5U)
 #endif
 
-#define PING_TASK_PRIO          (tskIDLE_PRIORITY + 1)
-
-/* Static Variable Definition*/
-TaskHandle_t print_dhcp_state_task_handle;
-TaskHandle_t print_ping_state_task_handle;
-
 /* Static Function Declaration */
-static void printf_dhcp_state(uint8_t sta);
 static void ping_task(void *pdata);
 
 int main(void)
@@ -50,10 +39,9 @@ int main(void)
     /* Initialize the LwIP stack */
     tcpip_init(NULL, NULL);
 
-    usbh_initialize();
+    usbh_initialize(0, CONFIG_HPM_USBH_BASE);
 
-    if (xTaskCreate(ping_task, "ping_task", configMINIMAL_STACK_SIZE + 256U,
-                    NULL, PING_TASK_PRIO, &print_ping_state_task_handle) != pdPASS) {
+    if (usb_osal_thread_create("ping_task", 2048, CONFIG_USBHOST_PSC_PRIO + 2, ping_task, NULL) == NULL) {
         printf("ping_task task creation failed!.\n");
         for (;;) {
             ;
@@ -65,54 +53,11 @@ int main(void)
     return 0;
 }
 
-static void printf_dhcp_state(uint8_t sta)
-{
-    printf(" DHCP state       : ");
-    switch (sta) {
-    case DHCP_STATE_OFF:
-        printf("OFF");
-        break;
-    case DHCP_STATE_REQUESTING:
-        printf("REQUESTING");
-        break;
-    case DHCP_STATE_INIT:
-        printf("INIT");
-        break;
-    case DHCP_STATE_REBOOTING:
-        printf("REBOOTING");
-        break;
-    case DHCP_STATE_REBINDING:
-        printf("REBINDING");
-        break;
-    case DHCP_STATE_RENEWING:
-        printf("RENEWING");
-        break;
-    case DHCP_STATE_SELECTING:
-        printf("SELECTING");
-        break;
-    case DHCP_STATE_INFORMING:
-        printf("INFORMING");
-        break;
-    case DHCP_STATE_CHECKING:
-        printf("CHECKING");
-        break;
-    case DHCP_STATE_BOUND:
-        printf("BOUND");
-        break;
-    case DHCP_STATE_BACKING_OFF:
-        printf("BACKING_OFF");
-        break;
-    default:
-        printf("%u", sta);
-        assert(0);
-        break;
-    }
-    printf("\r\n");
-}
-
 static void ping_task(void *pdata)
 {
-    struct netif *netif = (struct netif *)pdata;
+    (void)pdata;
+
+    struct netif *netif;
     bool dhcp_check = false;
     bool ready_ping = false;
     uint8_t dhcp_last_state = DHCP_STATE_OFF;
@@ -130,8 +75,6 @@ static void ping_task(void *pdata)
         break;
     }
 
-    dhcp_start(netif);
-
     while (1) {
         ready_ping = false;
         i = 0;
@@ -141,17 +84,14 @@ static void ping_task(void *pdata)
                 dhcp_last_state = DHCP_STATE_OFF;
             } else if (dhcp_last_state != dhcp->state) {
                 dhcp_last_state = dhcp->state;
-                printf_dhcp_state(dhcp_last_state);
                 if (dhcp_last_state == DHCP_STATE_BOUND) {
-                    printf("\r\n IPv4 Address     : %s\r\n", ipaddr_ntoa(&netif->ip_addr));
-                    printf(" IPv4 Subnet mask : %s\r\n", ipaddr_ntoa(&netif->netmask));
-                    printf(" IPv4 Gateway     : %s\r\n\r\n", ipaddr_ntoa(&netif->gw));
                     dhcp_check = true;
                 } else {
                     dhcp_check = false;
                 }
             }
             if (dhcp_check == true) {
+                vTaskDelay(5);
                 printf("\n***********************************************************"
                         "**********************\n");
                 printf("\r\ninput ping the IP or URL address and "

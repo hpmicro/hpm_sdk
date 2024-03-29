@@ -16,7 +16,7 @@ ATTR_PLACE_AT_NONCACHEABLE_INIT char rbuff[50] = {0};
 
 #if CFG_TUH_MSC
 ATTR_PLACE_AT_NONCACHEABLE static scsi_inquiry_resp_t inquiry_resp;
-ATTR_PLACE_AT_NONCACHEABLE FATFS fatfs[CFG_TUSB_HOST_DEVICE_MAX];
+ATTR_PLACE_AT_NONCACHEABLE FATFS fatfs[CFG_TUH_DEVICE_MAX];
 ATTR_PLACE_AT_NONCACHEABLE FIL file;
 
 FRESULT set_timestamp (
@@ -98,14 +98,12 @@ bool file_system_mount(uint8_t dev_addr)
     return true;
 }
 
-bool inquiry_complete_cb(uint8_t dev_addr, msc_cbw_t const* cbw, msc_csw_t const* csw)
+bool inquiry_complete_cb(uint8_t dev_addr, tuh_msc_complete_data_t const *cb_data)
 {
     uint32_t block_count;
     uint32_t block_size;
 
-
-    if (csw->status != 0)
-    {
+    if (cb_data->csw->status != 0) {
         printf("Inquiry failed\r\n");
         return false;
     }
@@ -114,15 +112,15 @@ bool inquiry_complete_cb(uint8_t dev_addr, msc_cbw_t const* cbw, msc_csw_t const
     printf("%.8s %.16s rev %.4s\r\n", inquiry_resp.vendor_id, inquiry_resp.product_id, inquiry_resp.product_rev);
 
     /* Get capacity of device */
-    block_count = tuh_msc_get_block_count(dev_addr, cbw->lun);
-    block_size = tuh_msc_get_block_size(dev_addr, cbw->lun);
+    block_count = tuh_msc_get_block_count(dev_addr, cb_data->cbw->lun);
+    block_size = tuh_msc_get_block_size(dev_addr, cb_data->cbw->lun);
 
     printf("Disk Size: %lu MB\r\n", block_count / ((1024*1024)/block_size));
     printf("Block Count = %lu, Block Size: %lu\r\n", block_count, block_size);
 
     file_system_mount(dev_addr);
 
-  return true;
+    return true;
 }
 
 void tuh_msc_mount_cb(uint8_t dev_addr)
@@ -130,7 +128,7 @@ void tuh_msc_mount_cb(uint8_t dev_addr)
     uint8_t const lun = 0;
     printf("\nA MassStorage device is mounted.\r\n");
     led_set_blinking_mounted_interval();
-    tuh_msc_inquiry(dev_addr, lun, &inquiry_resp, inquiry_complete_cb);
+    tuh_msc_inquiry(dev_addr, lun, &inquiry_resp, inquiry_complete_cb, NULL);
 }
 
 void tuh_msc_unmount_cb(uint8_t dev_addr)
@@ -146,4 +144,5 @@ void tuh_msc_unmount_cb(uint8_t dev_addr)
         disk_deinitialize(phy_disk);
     }
 }
+
 #endif /* End of CFG_TUH_MSC */

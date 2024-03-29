@@ -6,4 +6,8 @@ excluded_targets:
   - flash_uf2
   - flash_uf2_release
 dependency:
-  - tflm
+  - cam
+  - lcdc
+  - board_sdram
+excluded_ides:
+  - iar

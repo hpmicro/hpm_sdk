@@ -13,4 +13,4 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(touch_pannel)
 
 sdk_app_src(src/touch_panel.c)
-generate_ses_project()
+generate_ide_projects()

@@ -52,7 +52,7 @@ typedef enum word_length {
 
 /* @brief UART fifo trigger levels */
 typedef enum uart_fifo_trg_lvl {
-#if defined(UART_SOC_HAS_FINE_FIFO_THR) && (UART_SOC_HAS_FINE_FIFO_THR == 1)
+#if defined(HPM_IP_FEATURE_UART_FINE_FIFO_THRLD) && (HPM_IP_FEATURE_UART_FINE_FIFO_THRLD == 1)
     uart_fifo_1_byte  = 0,
     uart_fifo_2_bytes = 1,
     uart_fifo_3_bytes = 2,
@@ -115,13 +115,13 @@ typedef enum uart_intr_enable {
     uart_intr_tx_slot_avail = UART_IER_ETHEI_MASK,
     uart_intr_rx_line_stat = UART_IER_ELSI_MASK,
     uart_intr_modem_stat = UART_IER_EMSI_MASK,
-#if defined(UART_SOC_HAS_RXLINE_IDLE_DETECTION) && (UART_SOC_HAS_RXLINE_IDLE_DETECTION == 1)
+#if defined(HPM_IP_FEATURE_UART_RX_IDLE_DETECT) && (HPM_IP_FEATURE_UART_RX_IDLE_DETECT == 1)
     uart_intr_rx_line_idle = UART_IER_ERXIDLE_MASK,
 #endif
-#if defined(UART_SOC_HAS_TXLINE_IDLE_DETECTION) && (UART_SOC_HAS_TXLINE_IDLE_DETECTION == 1)
+#if defined(HPM_IP_FEATURE_UART_9BIT_MODE) && (HPM_IP_FEATURE_UART_9BIT_MODE == 1)
     uart_intr_tx_line_idle = UART_IER_ETXIDLE_MASK,
 #endif
-#if defined(UART_SOC_HAS_ADDR_MATCH) && (UART_SOC_HAS_ADDR_MATCH == 1)
+#if defined(HPM_IP_FEATURE_UART_ADDR_MATCH) && (HPM_IP_FEATURE_UART_ADDR_MATCH == 1)
     uart_intr_addr_match = UART_IER_EADDRM_MASK,
     uart_intr_addr_match_and_rxidle = UART_IER_EADDRM_IDLE_MASK,
     uart_intr_addr_datalost = UART_IER_EDATLOST_MASK,
@@ -158,7 +158,7 @@ typedef struct uart_modem_config {
     bool set_rts_high;          /**< Set signal RTS level high flag */
 } uart_modem_config_t;
 
-#if defined(UART_SOC_HAS_RXLINE_IDLE_DETECTION) && (UART_SOC_HAS_RXLINE_IDLE_DETECTION == 1)
+#if defined(HPM_IP_FEATURE_UART_RX_IDLE_DETECT) && (HPM_IP_FEATURE_UART_RX_IDLE_DETECT == 1)
 /**
  * @brief UART Idle detection conditions， suitable for RX and TX
  */
@@ -192,18 +192,18 @@ typedef struct hpm_uart_config {
     bool dma_enable;                            /**< DMA Enable flag */
     bool fifo_enable;                           /**< Fifo Enable flag */
     uart_modem_config_t modem_config;           /**< Modem config */
-#if defined(UART_SOC_HAS_RXLINE_IDLE_DETECTION) && (UART_SOC_HAS_RXLINE_IDLE_DETECTION == 1)
+#if defined(HPM_IP_FEATURE_UART_RX_IDLE_DETECT) && (HPM_IP_FEATURE_UART_RX_IDLE_DETECT == 1)
     uart_rxline_idle_config_t  rxidle_config;   /**< RX Idle configuration */
 #endif
-#if defined(UART_SOC_HAS_TXLINE_IDLE_DETECTION) && (UART_SOC_HAS_TXLINE_IDLE_DETECTION == 1)
+#if defined(HPM_IP_FEATURE_UART_9BIT_MODE) && (HPM_IP_FEATURE_UART_9BIT_MODE == 1)
     uart_rxline_idle_config_t  txidle_config;   /**< TX Idle configuration */
 #endif
-#if defined(UART_SOC_HAS_RXEN_CFG) && (UART_SOC_HAS_RXEN_CFG == 1)
+#if defined(HPM_IP_FEATURE_UART_RX_EN) && (HPM_IP_FEATURE_UART_RX_EN == 1)
     bool rx_enable;                             /**< RX Enable configuration */
 #endif
 } uart_config_t;
 
-#if defined(UART_SOC_HAS_TRIG_MODE) && (UART_SOC_HAS_TRIG_MODE == 1)
+#if defined(HPM_IP_FEATURE_UART_TRIG_MODE) && (HPM_IP_FEATURE_UART_TRIG_MODE == 1)
 typedef struct {
     uint16_t stop_bit_len;
     bool en_stop_bit_insert;
@@ -269,7 +269,7 @@ static inline void uart_clear_rx_fifo(UART_Type *ptr)
  */
 static inline void uart_reset_tx_fifo(UART_Type *ptr)
 {
-#if defined(UART_SOC_HAS_FCCR_REG) && (UART_SOC_HAS_FCCR_REG == 1)
+#if defined(HPM_IP_FEATURE_UART_FCRR) && (HPM_IP_FEATURE_UART_FCRR == 1)
     ptr->FCRR |= UART_FCRR_TFIFORST_MASK;
 #else
     ptr->FCR = UART_FCR_TFIFORST_MASK | (ptr->GPR);
@@ -283,7 +283,7 @@ static inline void uart_reset_tx_fifo(UART_Type *ptr)
  */
 static inline void uart_reset_rx_fifo(UART_Type *ptr)
 {
-#if defined(UART_SOC_HAS_FCCR_REG) && (UART_SOC_HAS_FCCR_REG == 1)
+#if defined(HPM_IP_FEATURE_UART_FCRR) && (HPM_IP_FEATURE_UART_FCRR == 1)
     ptr->FCRR |= UART_FCRR_RFIFORST_MASK;
 #else
     ptr->FCR = UART_FCR_RFIFORST_MASK | (ptr->GPR);
@@ -297,7 +297,7 @@ static inline void uart_reset_rx_fifo(UART_Type *ptr)
  */
 static inline void uart_reset_all_fifo(UART_Type *ptr)
 {
-#if defined(UART_SOC_HAS_FCCR_REG) && (UART_SOC_HAS_FCCR_REG == 1)
+#if defined(HPM_IP_FEATURE_UART_FCRR) && (HPM_IP_FEATURE_UART_FCRR == 1)
     ptr->FCRR |= UART_FCRR_TFIFORST_MASK | UART_FCRR_RFIFORST_MASK;
 #else
     ptr->FCR = UART_FCR_RFIFORST_MASK | UART_FCR_TFIFORST_MASK | (ptr->GPR);
@@ -449,10 +449,10 @@ static inline uint8_t uart_get_irq_id(UART_Type *ptr)
     return (ptr->IIR & UART_IIR_INTRID_MASK);
 }
 
-#if defined(UART_SOC_HAS_RXLINE_IDLE_DETECTION) && (UART_SOC_HAS_RXLINE_IDLE_DETECTION == 1)
+#if defined(HPM_IP_FEATURE_UART_RX_IDLE_DETECT) && (HPM_IP_FEATURE_UART_RX_IDLE_DETECT == 1)
 
-/* if UART_SOC_HAS_IIR2_REG = 1, the IIR2 register exists, should use IIR2 to get/clear rx idle status */
-#if !defined(UART_SOC_HAS_IIR2_REG) || (UART_SOC_HAS_IIR2_REG == 0)
+/* if HPM_IP_FEATURE_UART_E00018_FIX = 1, the IIR2 register exists, should use IIR2 to get/clear rx idle status */
+#if !defined(HPM_IP_FEATURE_UART_E00018_FIX) || (HPM_IP_FEATURE_UART_E00018_FIX == 0)
 /**
  * @brief Determine whether UART RX Line is idle
  * @param [in] ptr UART base address
@@ -502,7 +502,7 @@ hpm_stat_t uart_init_rxline_idle_detection(UART_Type *ptr, uart_rxline_idle_conf
 
 #endif
 
-#if defined(UART_SOC_HAS_IIR2_REG) && (UART_SOC_HAS_IIR2_REG == 1)
+#if defined(HPM_IP_FEATURE_UART_E00018_FIX) && (HPM_IP_FEATURE_UART_E00018_FIX == 1)
 /**
  * @brief Determine whether UART TX Line is idle
  * @param [in] ptr UART base address
@@ -540,7 +540,7 @@ static inline void uart_clear_rxline_idle_flag(UART_Type *ptr)
 }
 #endif
 
-#if defined(UART_SOC_HAS_TXLINE_IDLE_DETECTION) && (UART_SOC_HAS_TXLINE_IDLE_DETECTION == 1)
+#if defined(HPM_IP_FEATURE_UART_9BIT_MODE) && (HPM_IP_FEATURE_UART_9BIT_MODE == 1)
 /**
  * @brief Enable UART TX Idle Line detection logic
  * @param [in] ptr UART base address
@@ -586,6 +586,7 @@ static inline uint8_t uart_get_status(UART_Type *ptr)
 /**
  * @brief Check uart status according to the given status mask
  *
+ * @note maybe clear other bits, such as PE/OE/LBREAK/ERRF bit. use uart_get_status API if you need to get these bits
  * @param [in] ptr UART base address
  * @param mask Status mask value to be checked against
  * @retval true if any bit in given mask is set
@@ -685,14 +686,14 @@ hpm_stat_t uart_send_data(UART_Type *ptr, uint8_t *buf, uint32_t size_in_byte);
 hpm_stat_t uart_set_baudrate(UART_Type *ptr, uint32_t baudrate, uint32_t src_clock_hz);
 
 
-#if defined(UART_SOC_HAS_TRIG_MODE) && (UART_SOC_HAS_TRIG_MODE == 1)
+#if defined(HPM_IP_FEATURE_UART_TRIG_MODE) && (HPM_IP_FEATURE_UART_TRIG_MODE == 1)
 /**
  * @brief uart configure transfer trigger mode
  *
  * This function can configure uart to send data in fifo after being triggered
  *
  * @param ptr UART base address
- * @param uart_trig_config_t config
+ * @param config uart_trig_config_t config
  */
 void uart_config_transfer_trig_mode(UART_Type *ptr, uart_trig_config_t *config);
 
@@ -749,7 +750,7 @@ static inline uint8_t uart_get_data_count_in_tx_fifo(UART_Type *ptr)
 }
 #endif
 
-#if defined(UART_SOC_HAS_ADDR_MATCH) && (UART_SOC_HAS_ADDR_MATCH == 1)
+#if defined(HPM_IP_FEATURE_UART_ADDR_MATCH) && (HPM_IP_FEATURE_UART_ADDR_MATCH == 1)
 /**
  * @brief uart enable 9bit transmit mode
  *

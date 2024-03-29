@@ -8,4 +8,4 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(gptmr_t_shape_accel_decel)
 
 sdk_app_src(src/t_shape_accel_decel.c)
-generate_ses_project()
+generate_ide_projects()

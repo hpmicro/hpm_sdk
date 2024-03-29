@@ -16,16 +16,24 @@
 
 ```console
 
-Start cherryusb rndis host task...
+
+Start cherryusb host usbnet task...
+
+************************************************
+ DHCP example
+************************************************
+[I/USB] EHCI HCIVERSION:0100
+[I/USB] EHCI HCSPARAMS:010011
+[I/USB] EHCI HCCPARAMS:0006
 [I/USB] New high-speed device on Hub 1, Port 1 connected
-[I/USB] New device found,idVendor:34b7,idProduct:ffff,bcdDevice:0100
-[I/USB] The device has 2 interfaces
+[I/USB] New device found,idVendor:19d1,idProduct:0001,bcdDevice:0200
+[I/USB] The device has 8 interfaces
 [I/USB] Enumeration success, start loading class driver
 [I/USB] Loading rndis class driver
-[I/USB] Ep=02 Attr=02 Mps=512 Interval=00 Mult=00
-[I/USB] Ep=81 Attr=02 Mps=512 Interval=00 Mult=00
+[I/USB] Ep=01 Attr=02 Mps=512 Interval=00 Mult=00
+[I/USB] Ep=82 Attr=02 Mps=512 Interval=00 Mult=00
 [I/USB] rndis init success
-[I/USB] rndis query OID_GEN_SUPPORTED_LIST success,oid num :29
+[I/USB] rndis query OID_GEN_SUPPORTED_LIST success,oid num :22
 [W/USB] Ignore rndis query iod:00010101
 [W/USB] Ignore rndis query iod:00010102
 [W/USB] Ignore rndis query iod:00010103
@@ -39,37 +47,31 @@ Start cherryusb rndis host task...
 [W/USB] Ignore rndis query iod:00010116
 [W/USB] Ignore rndis query iod:0001010e
 [W/USB] Ignore rndis query iod:00010111
+[W/USB] Ignore rndis query iod:00010112
+[W/USB] Ignore rndis query iod:00010113
 [I/USB] rndis query iod:00010114 success
-[I/USB] rndis query iod:00010202 success
-[W/USB] Ignore rndis query iod:00020101
-[W/USB] Ignore rndis query iod:00020102
-[W/USB] Ignore rndis query iod:00020103
-[W/USB] Ignore rndis query iod:00020104
-[W/USB] Ignore rndis query iod:00020105
-[W/USB] Ignore rndis query iod:0001021b
+[W/USB] Ignore rndis query iod:00010115
 [I/USB] rndis query iod:01010101 success
 [I/USB] rndis query iod:01010102 success
 [W/USB] Ignore rndis query iod:01010103
 [I/USB] rndis query iod:01010104 success
-[W/USB] Ignore rndis query iod:01020101
-[W/USB] Ignore rndis query iod:00000001
-[W/USB] Ignore rndis query iod:00000000
-[W/USB] Ignore rndis query iod:000001a1
+[W/USB] Ignore rndis query iod:01010105
 [I/USB] rndis set OID_GEN_CURRENT_PACKET_FILTER success
 [I/USB] rndis set OID_802_3_MULTICAST_LIST success
+[I/USB] rndis MAC address 20:89:84:6a:96:ab
 [I/USB] Register RNDIS Class:/dev/rndis
+[I/US[E/USB]B] Create rn do not supdis rx threaport Class:d
+0x0a,Subclass:0x00,Protocl:0x00
+[E/USB] do not support Class:0x02,Subclass:0x02,Protocl:0x01
+[E/USB] do not support Class:0x0a,Subclass:0x00,Protocl:0x00
+[E/USB] do not support Class:0x02,Subclass:0x02,Protocl:0x01
+[E/USB] do not support Class:0x0a,Subclass:0x00,Protocl:0x00
+[E/USB] do not support Class:0x02,Subclass:0x02,Protocl:0x01
+[E/USB] do not support Class:0x0a,Subclass:0x00,Protocl:0x00
 
-************************************************
- DHCP example
-************************************************
-[I/USB] Loading cdc_data class driver
- DHCP state       : SELECTING
- DHCP state       : REQUESTING
- DHCP state       : BOUND
-
- IPv4 Address     : 192.168.7.2
+ IPv4 Address     : 192.168.10.2
  IPv4 Subnet mask : 255.255.255.0
- IPv4 Gateway     : 192.168.7.1
+ IPv4 Gateway     : 192.168.10.1
 
 ```
 
@@ -95,8 +97,6 @@ Start cherryusb rndis host task...
 [I/USB] Set CDC ECM packet filter:000c
 [I/USB] Register CDC ECM Class:/dev/cdc_ether
 [E/USB] do not support Class:0x0a,Subclass:0x00,Protocl:0x00
- DHCP state       : SELECTING
- DHCP state       : BOUND
 
  IPv4 Address     : 192.168.225.27
  IPv4 Subnet mask : 255.255.255.0

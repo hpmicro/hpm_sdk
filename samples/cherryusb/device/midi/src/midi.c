@@ -159,8 +159,10 @@ static const uint8_t s_note_sequence[] = {
     56, 61, 64, 68, 74, 78, 81, 86, 90, 93, 98, 102
 };
 
-void usbd_event_handler(uint8_t event)
+static void usbd_event_handler(uint8_t busid, uint8_t event)
 {
+    (void)busid;
+
     switch (event) {
     case USBD_EVENT_RESET:
         break;
@@ -184,16 +186,19 @@ void usbd_event_handler(uint8_t event)
     }
 }
 
-void usbd_midi_bulk_out(uint8_t ep, uint32_t nbytes)
+void usbd_midi_bulk_out(uint8_t busid, uint8_t ep, uint32_t nbytes)
 {
+    (void)busid;
     (void)ep;
     (void)nbytes;
 }
 
-void usbd_midi_bulk_in(uint8_t ep, uint32_t nbytes)
+void usbd_midi_bulk_in(uint8_t busid, uint8_t ep, uint32_t nbytes)
 {
+    (void)busid;
     (void)ep;
     (void)nbytes;
+
     s_midi_usb_busy = false;
 }
 
@@ -212,18 +217,18 @@ void midi_set_auto_play(bool set)
     s_auto_play = set;
 }
 
-void midi_init(void)
+void midi_init(uint8_t busid, uint32_t reg_base)
 {
-    usbd_desc_register(midi_descriptor);
-    usbd_add_interface(&intf0);
-    usbd_add_interface(&intf1);
-    usbd_add_endpoint(&midi_out_ep);
-    usbd_add_endpoint(&midi_in_ep);
+    usbd_desc_register(busid, midi_descriptor);
+    usbd_add_interface(busid, &intf0);
+    usbd_add_interface(busid, &intf1);
+    usbd_add_endpoint(busid, &midi_out_ep);
+    usbd_add_endpoint(busid, &midi_in_ep);
 
-    usbd_initialize();
+    usbd_initialize(busid, reg_base, usbd_event_handler);
 }
 
-void midi_task_286ms(void)
+void midi_task_286ms(uint8_t busid)
 {
     const uint8_t cable_num = 0; /* MIDI jack associated with USB endpoint */
     const uint8_t channel = 0;   /* 0 for channel 1 */
@@ -235,7 +240,7 @@ void midi_task_286ms(void)
         s_sendbuffer[2] = s_note_sequence[s_note_pos];
         s_sendbuffer[3] = 127;  /* velocity */
         s_midi_usb_busy = true;
-        ret = usbd_ep_start_write(MIDI_IN_EP, s_sendbuffer, 4);
+        ret = usbd_ep_start_write(busid, MIDI_IN_EP, s_sendbuffer, 4);
         if (ret < 0) {
             printf("error\n");
             return;
@@ -253,7 +258,7 @@ void midi_task_286ms(void)
         s_sendbuffer[2] = s_note_sequence[s_note_pos_prev];
         s_sendbuffer[3] = 0;  /* velocity */
         s_midi_usb_busy = true;
-        ret = usbd_ep_start_write(MIDI_IN_EP, s_sendbuffer, 4);
+        ret = usbd_ep_start_write(busid, MIDI_IN_EP, s_sendbuffer, 4);
         if (ret < 0) {
             printf("error\n");
             return;
@@ -268,7 +273,7 @@ void midi_task_286ms(void)
     }
 }
 
-void midi_task_main(void)
+void midi_task_main(uint8_t busid)
 {
     const uint8_t cable_num = 0; /* MIDI jack associated with USB endpoint */
     const uint8_t channel = 0;   /* 0 for channel 1 */
@@ -283,7 +288,7 @@ void midi_task_main(void)
             s_sendbuffer[2] = s_note_sequence[s_note_pos];
             s_sendbuffer[3] = 100;  /* velocity */
             s_midi_usb_busy = true;
-            ret = usbd_ep_start_write(MIDI_IN_EP, s_sendbuffer, 4);
+            ret = usbd_ep_start_write(busid, MIDI_IN_EP, s_sendbuffer, 4);
             if (ret < 0) {
                 printf("error\n");
                 return;
@@ -301,7 +306,7 @@ void midi_task_main(void)
             s_sendbuffer[2] = s_note_sequence[s_note_pos];
             s_sendbuffer[3] = 0;  /* velocity */
             s_midi_usb_busy = true;
-            ret = usbd_ep_start_write(MIDI_IN_EP, s_sendbuffer, 4);
+            ret = usbd_ep_start_write(busid, MIDI_IN_EP, s_sendbuffer, 4);
             if (ret < 0) {
                 printf("error\n");
                 return;

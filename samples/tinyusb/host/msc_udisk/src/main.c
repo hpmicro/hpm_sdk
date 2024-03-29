@@ -74,7 +74,7 @@ int main(void)
     board_init_usb_pins();
     board_timer_create(USB_APP_DELAY_INTERVAL, board_timer_callback);
     print_greeting();
-    printf("USB%d Host Mass Storage Demo\r\n", BOARD_HOST_RHPORT_NUM);
+    printf("USB%d Host Mass Storage Demo\r\n", BOARD_TUH_RHPORT);
 
     tusb_init();
 

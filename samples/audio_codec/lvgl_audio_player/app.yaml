@@ -8,5 +8,6 @@ excluded_targets:
   - sec_core_img
   - sec_core_img_release
 dependency:
-  - lcd
-  - audio-codec || dao
+  - lcdc
+  - i2s
+  - board_audio_out

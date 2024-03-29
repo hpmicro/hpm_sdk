@@ -39,7 +39,7 @@
 #define TIMER_TIMES_1MS             (10)
 
 int32_t motor_clock_hz;
-#define PWM_RELOAD                  (motor_clock_hz/PWM_FREQUENCY)
+#define PWM_RELOAD                  ((motor_clock_hz/PWM_FREQUENCY) - 1)
 #define SENSORLESS_TMR_RELOAD       (BOARD_BLDC_TMR_RELOAD / 10)
 
 hpm_mcl_over_zero_cfg_t sensorless_cfg;

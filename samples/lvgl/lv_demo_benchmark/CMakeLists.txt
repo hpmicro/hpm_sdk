@@ -29,4 +29,4 @@ sdk_compile_definitions(-DCONFIG_LV_HAS_EXTRA_CONFIG="lv_app_conf.h")
 sdk_inc(src)
 sdk_app_src(src/lvgl.c)
 
-generate_ses_project()
+generate_ide_projects()

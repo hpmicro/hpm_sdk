@@ -20,7 +20,7 @@ typedef struct {
 } spi_sdcard_info_t;
 
 typedef struct {
-    void       (*set_spi_speed)     (uint32_t freq);
+    hpm_stat_t (*set_spi_speed)     (uint32_t freq);
     void       (*cs_select)         (void);
     void       (*cs_relese)         (void);
     bool       (*sdcard_is_present) (void);

@@ -17,4 +17,4 @@ sdk_inc(src)
 sdk_app_src(src/main.c)
 sdk_app_src(src/audio_v1_mic_speaker.c)
 
-generate_ses_project()
+generate_ide_projects()

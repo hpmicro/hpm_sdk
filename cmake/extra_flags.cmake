@@ -20,7 +20,7 @@ endif()
 
 if(EXTRA_LD_FLAGS_LIST)
     foreach(flag ${EXTRA_LD_FLAGS_LIST})
-        sdk_link_libraries(${EXTRA_LD_FLAGS})
+        sdk_ld_options(${EXTRA_LD_FLAGS})
     endforeach()
 endif()
 

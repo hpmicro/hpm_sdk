@@ -14,7 +14,7 @@ define region AXI_SRAM = [from 0x01150000 size 176k];
 define region SHARE_RAM = [from 0x0117C000 size 16k];
 
 /* Blocks */
-define block vectors with fixed order       { section .isr_vector, section .vector_table };
+define block vectors with fixed order       { section .vector_table, section .isr_vector };
 define block ctors                          { section .ctors,     section .ctors.*, block with         alphabetical order { init_array } };
 define block dtors                          { section .dtors,     section .dtors.*, block with reverse alphabetical order { fini_array } };
 define block eh_frame                       { section .eh_frame,  section .eh_frame.* };

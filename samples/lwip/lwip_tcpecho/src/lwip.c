@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -8,7 +8,7 @@
 /*---------------------------------------------------------------------*
  * Includes
  *---------------------------------------------------------------------*/
-#include "common_lwip.h"
+#include "common.h"
 #include "netconf.h"
 #include "sys_arch.h"
 #include "lwip.h"
@@ -30,9 +30,11 @@ __RW uint8_t tx_buff[ENET_TX_BUFF_COUNT][ENET_TX_BUFF_SIZE]; /* Ethernet Transmi
 enet_desc_t desc;
 uint8_t mac[ENET_MAC];
 
-#if __ENABLE_ENET_RECEIVE_INTERRUPT
+#if defined(__ENABLE_ENET_RECEIVE_INTERRUPT) && __ENABLE_ENET_RECEIVE_INTERRUPT
 volatile bool rx_flag;
 #endif
+
+struct netif gnetif;
 
 /*---------------------------------------------------------------------*
  * Initialization
@@ -94,7 +96,7 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     /* Set SARC */
     enet_config.sarc = enet_sarc_replace_mac0;
 
-    #if __ENABLE_ENET_RECEIVE_INTERRUPT
+    #if defined(__ENABLE_ENET_RECEIVE_INTERRUPT) && __ENABLE_ENET_RECEIVE_INTERRUPT
     /* Enable Enet IRQ */
     board_enable_enet_irq(ENET);
 
@@ -111,7 +113,7 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     /* Initialize enet controller */
     enet_controller_init(ptr, ENET_INF_TYPE, &desc, &enet_config, &int_config);
 
-    #if __ENABLE_ENET_RECEIVE_INTERRUPT
+    #if defined(__ENABLE_ENET_RECEIVE_INTERRUPT) && __ENABLE_ENET_RECEIVE_INTERRUPT
     /* Disable LPI interrupt */
     enet_disable_lpi_interrupt(ENET);
     #endif
@@ -120,7 +122,7 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     #if defined(RGMII) && RGMII
         #if defined(__USE_DP83867) && __USE_DP83867
         dp83867_reset(ptr);
-        #if __DISABLE_AUTO_NEGO
+        #if defined(__DISABLE_AUTO_NEGO) && __DISABLE_AUTO_NEGO
         dp83867_set_mdi_crossover_mode(ENET, enet_phy_mdi_crossover_manual_mdix);
         #endif
         dp83867_basic_mode_default_config(ptr, &phy_config);
@@ -163,7 +165,7 @@ int main(void)
     /* Reset an enet PHY */
     board_reset_enet_phy(ENET);
 
-    #if __ENABLE_ENET_RECEIVE_INTERRUPT
+    #if defined(__ENABLE_ENET_RECEIVE_INTERRUPT) && __ENABLE_ENET_RECEIVE_INTERRUPT
     printf("This is an ethernet demo: TCP Echo (Interrupt Usage)\n");
     #else
     printf("This is an ethernet demo: TCP Echo (Polling Usage)\n");
@@ -187,8 +189,7 @@ int main(void)
     if (enet_init(ENET) == 0) {
         /* Initialize the Lwip stack */
         lwip_init();
-        netif_config();
-        user_notification(&gnetif);
+        netif_config(&gnetif);
 
         /* Start services */
         enet_services(&gnetif);

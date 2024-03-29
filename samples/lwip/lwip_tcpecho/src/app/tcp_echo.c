@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -11,7 +11,6 @@
 static err_t tcpecho_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
 {
     (void)arg;
-    (void)err;
 
     if (p != NULL) {
         tcp_recved(tpcb, p->tot_len);
@@ -38,7 +37,7 @@ void tcp_echo_init(void)
     struct tcp_pcb *pcb = NULL;
 
     pcb = tcp_new();
-    tcp_bind(pcb, IP_ADDR_ANY, TCP_ECHO_PORT);
+    tcp_bind(pcb, IP_ADDR_ANY, TCP_LOCAL_PORT);
     pcb = tcp_listen(pcb);
     tcp_accept(pcb, tcpecho_accept);
 }

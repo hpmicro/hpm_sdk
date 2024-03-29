@@ -18,4 +18,4 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(mipi_csi_example)
 
 sdk_app_src(src/mipi_csi.c)
-generate_ses_project()
+generate_ide_projects()

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This  example project shows USB HID Keyboard
+This example project shows USB HID Keyboard
 
 - PC sees a keyboard via Device Manager
 

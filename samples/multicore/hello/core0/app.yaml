@@ -1,9 +1,10 @@
 dependency:
-  - pwm-rgb-led
+  - board_pwm_rgb_led
   - multicore
 
 linked_project:
   project_name: multicore/hello/core1
+  project_path: ../core1
   build_type: sec_core_img
 
 debug:

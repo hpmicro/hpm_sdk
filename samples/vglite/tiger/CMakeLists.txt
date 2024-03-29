@@ -15,7 +15,7 @@ set(CONFIG_HPM_PANEL 1)
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
-project(tiger)
+project(vglite_tiger)
 sdk_ld_options("-lm")
 sdk_compile_definitions(-D__freertos_irq_stack_top=_stack)
 sdk_compile_definitions(-DCONFIG_FREERTOS=1)
@@ -27,4 +27,4 @@ sdk_inc(src)
 sdk_app_src(src/main.c)
 sdk_app_src(src/lcdc_panel.c)
 
-generate_ses_project()
+generate_ide_projects()

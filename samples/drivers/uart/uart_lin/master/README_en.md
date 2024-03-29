@@ -4,13 +4,19 @@
 This project demonstrates the functionality of UART simulation LIN master.
 
 ## Note
+
 The interval between LIN frames should be greater than or equal to the transmission time of 4 UART bytes。
 
 ## Board Setting
 
-Requires a LIN transceiver and USB_LIN debugger
+- On development boards without onboard LIN transceivers:
+  Need a LIN transceiver and a USB_LIN debugger
+  Connect the UART TX/RX pins on the development board to the TX/RX signal of the LIN transceiver, and connect the USB_LIN debugger to the LIN signal of the LIN transceiver.
+- On development boards with onboard LIN transceivers:
+  Need a USB_LIN debugger
+  Connect the LIN signal and GND of the debugger to the corresponding pins on the development board.
+
 Please refer to [Pin Description](lab_board_resource) for specific board.
-connect LIN transceiver mcu signal to UART's TX and RX on board, connect LIN transceiver LIN signal to USB_LIN debugger.
 
 ## Running the example
 

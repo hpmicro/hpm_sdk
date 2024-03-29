@@ -20,9 +20,6 @@ int main(void)
     board_init();
     board_init_led_pins();
 
-    intc_m_init_swi();
-    intc_m_enable_swi();
-
     OSInit(&err);
     CPU_CRITICAL_ENTER();
     OSTaskCreate((OS_TCB *)&StartTaskTCB,

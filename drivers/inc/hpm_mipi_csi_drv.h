@@ -45,7 +45,7 @@ extern "C" {
 /**
  * @brief get MIPI_CSI default config
  *
- * @cfg: MIPI_CSI default config
+ * @param cfg: MIPI_CSI default config
  */
 void mipi_csi_get_defconfig(mipi_csi_config_t *cfg);
 
@@ -71,7 +71,7 @@ void mipi_csi_phy_poweron(MIPI_CSI_Type *ptr);
  */
 void mipi_csi_phy_powerdown(MIPI_CSI_Type *ptr);
 
-/*
+/**
  * @brief MIPI_CSI check clklane whether on HS state
  *
  * @param ptr MIPI_DCI base address

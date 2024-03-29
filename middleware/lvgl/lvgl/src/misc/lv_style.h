@@ -421,7 +421,7 @@ lv_style_res_t lv_style_get_prop(const lv_style_t * style, lv_style_prop_t prop,
  * @param delay     delay before the transition in [ms]
  * @param user_data any custom data that will be saved in the transition animation and will be available when `path_cb` is called
  * @example
- * const static lv_style_prop_t trans_props[] = { LV_STYLE_BG_OPA, LV_STYLE_BG_COLOR, 0 };
+ * static const lv_style_prop_t trans_props[] = { LV_STYLE_BG_OPA, LV_STYLE_BG_COLOR, 0 };
  *  static lv_style_transition_dsc_t trans1;
  *  lv_style_transition_dsc_init(&trans1, trans_props, NULL, 300, 0, NULL);
  */

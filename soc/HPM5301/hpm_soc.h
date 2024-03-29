@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -32,11 +32,9 @@
 #define IRQn_TSNS                      29      /* TSNS IRQ */
 #define IRQn_MBX0A                     30      /* MBX0A IRQ */
 #define IRQn_MBX0B                     31      /* MBX0B IRQ */
-#define IRQn_WDG0                      32      /* WDG0 IRQ */
-#define IRQn_WDG1                      33      /* WDG1 IRQ */
+#define IRQn_EWDG0                     32      /* EWDG0 IRQ */
+#define IRQn_EWDG1                     33      /* EWDG1 IRQ */
 #define IRQn_HDMA                      34      /* HDMA IRQ */
-#define IRQn_TRGMUX0                   44      /* TRGMUX0 IRQ */
-#define IRQn_TRGMUX1                   49      /* TRGMUX1 IRQ */
 #define IRQn_USB0                      51      /* USB0 IRQ */
 #define IRQn_XPI0                      52      /* XPI0 IRQ */
 #define IRQn_PSEC                      54      /* PSEC IRQ */
@@ -49,7 +47,7 @@
 #define IRQn_PGPIO                     65      /* PGPIO IRQ */
 #define IRQn_PTMR                      66      /* PTMR IRQ */
 #define IRQn_PUART                     67      /* PUART IRQ */
-#define IRQn_PWDG                      68      /* PWDG IRQ */
+#define IRQn_PEWDG                     68      /* PEWDG IRQ */
 #define IRQn_BROWNOUT                  69      /* BROWNOUT IRQ */
 #define IRQn_PAD_WAKEUP                70      /* PAD_WAKEUP IRQ */
 #define IRQn_DEBUG0                    71      /* DEBUG0 IRQ */
@@ -200,18 +198,18 @@
 
 #include "hpm_ewdg_regs.h"
 /* Address of EWDG instances */
-/* WDG0 base address */
-#define HPM_WDG0_BASE (0xF00B0000UL)
-/* WDG0 base pointer */
-#define HPM_WDG0 ((EWDG_Type *) HPM_WDG0_BASE)
-/* WDG1 base address */
-#define HPM_WDG1_BASE (0xF00B4000UL)
-/* WDG1 base pointer */
-#define HPM_WDG1 ((EWDG_Type *) HPM_WDG1_BASE)
-/* PWDG base address */
-#define HPM_PWDG_BASE (0xF4128000UL)
-/* PWDG base pointer */
-#define HPM_PWDG ((EWDG_Type *) HPM_PWDG_BASE)
+/* EWDG0 base address */
+#define HPM_EWDG0_BASE (0xF00B0000UL)
+/* EWDG0 base pointer */
+#define HPM_EWDG0 ((EWDG_Type *) HPM_EWDG0_BASE)
+/* EWDG1 base address */
+#define HPM_EWDG1_BASE (0xF00B4000UL)
+/* EWDG1 base pointer */
+#define HPM_EWDG1 ((EWDG_Type *) HPM_EWDG1_BASE)
+/* PEWDG base address */
+#define HPM_PEWDG_BASE (0xF4128000UL)
+/* PEWDG base pointer */
+#define HPM_PEWDG ((EWDG_Type *) HPM_PEWDG_BASE)
 
 #include "hpm_dmamux_regs.h"
 /* Address of DMAMUX instances */
@@ -234,27 +232,6 @@
 /* GPIOM base pointer */
 #define HPM_GPIOM ((GPIOM_Type *) HPM_GPIOM_BASE)
 
-#include "hpm_plb_regs.h"
-/* Address of PLB instances */
-/* PLB base address */
-#define HPM_PLB_BASE (0xF0324000UL)
-/* PLB base pointer */
-#define HPM_PLB ((PLB_Type *) HPM_PLB_BASE)
-
-#include "hpm_synt_regs.h"
-/* Address of SYNT instances */
-/* SYNT base address */
-#define HPM_SYNT_BASE (0xF0328000UL)
-/* SYNT base pointer */
-#define HPM_SYNT ((SYNT_Type *) HPM_SYNT_BASE)
-
-#include "hpm_trgm_regs.h"
-/* Address of TRGM instances */
-/* TRGM0 base address */
-#define HPM_TRGM0_BASE (0xF033C000UL)
-/* TRGM0 base pointer */
-#define HPM_TRGM0 ((TRGM_Type *) HPM_TRGM0_BASE)
-
 #include "hpm_usb_regs.h"
 /* Address of USB instances */
 /* USB0 base address */
@@ -265,13 +242,6 @@
 /* Address of ROMC instances */
 /* ROMC base address */
 #define HPM_ROMC_BASE (0xF3014000UL)
-
-#include "hpm_sdp_regs.h"
-/* Address of SDP instances */
-/* SDP base address */
-#define HPM_SDP_BASE (0xF3040000UL)
-/* SDP base pointer */
-#define HPM_SDP ((SDP_Type *) HPM_SDP_BASE)
 
 #include "hpm_sec_regs.h"
 /* Address of SEC instances */
@@ -378,7 +348,6 @@
 #include "hpm_interrupt.h"
 #include "hpm_misc.h"
 #include "hpm_dmamux_src.h"
-#include "hpm_trgmmux_src.h"
 #include "hpm_iomux.h"
 #include "hpm_pmic_iomux.h"
 #endif /* HPM_SOC_H */

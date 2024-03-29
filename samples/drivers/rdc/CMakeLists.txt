@@ -10,4 +10,4 @@ sdk_ld_options("-lm")
 project(rdc_example)
 
 sdk_app_src(src/rdc.c)
-generate_ses_project()
+generate_ide_projects()

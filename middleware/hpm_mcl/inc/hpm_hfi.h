@@ -14,7 +14,7 @@
 #include "hpm_smc.h"
 
 /**
- * @addtogroup mcl_smc_interface HPMicro MCL HFI APIs
+ * @addtogroup mcl_hfi_interface HPMicro MCL HFI APIs
  * @ingroup middleware_hfi_interfaces
  * @{
  *
@@ -25,7 +25,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 #ifndef PI
-#define PI (3.1415926)
+#define PI (3.1415926f)
 #endif
 
 /**
@@ -57,7 +57,7 @@ typedef struct  hpm_hfi_para {
  */
 typedef struct hpm_hfi_pole_detect_para {
     int16_t    currentd_force;
-    uint8_t     status;
+    volatile uint8_t     status;
     uint16_t    times;
     uint16_t    current_d_init_val;     /**< Voltage injected during identification */
     int32_t     theta_pi;               /**< Voltage at 180 degrees */

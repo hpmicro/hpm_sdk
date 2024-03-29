@@ -31,22 +31,22 @@
   Enet1 Reference Clock: Internal Clock
   Enet0 init passed!
   Enet1 init passed!
-  ================ Network Interface 0 ================
-  Static IP:  192.168.100.10
-  Netmask  : 255.255.255.0
-  Gateway  : 192.168.100.1
-  ================ Network Interface 1 ================
-  Static IP:  192.168.200.10
-  Netmask  : 255.255.255.0
-  Gateway  : 192.168.200.1
   ================ Network Interface 1 ================
   Link Status: Up
   Link Speed:  100Mbps
   Link Duplex: Full duplex
+  ================ Network Interface 1 ================
+  IPv4 Address: 192.168.200.10
+  IPv4 Netmask: 255.255.255.0
+  IPv4 Gateway: 192.168.200.1
   ================ Network Interface 0 ================
   Link Status: Up
   Link Speed:  1000Mbps
   Link Duplex: Full duplex
+  ================ Network Interface 0 ================
+  IPv4 Address: 192.168.100.10
+  IPv4 Netmask: 255.255.255.0
+  IPv4 Gateway: 192.168.100.1
   ```
 * 打开以太网调试工具
 
@@ -55,19 +55,21 @@
     TCP服务端1 IP: 192.168.200.10/端口: 5002
 
     **注：实际需要根据PC所在局域网段调整服务端IP**
+
   - 连接
+
   - 在数据发送窗口(192.168.100.10/5001)编辑发送字符
 
-  ![img](doc/lwip_tcpecho_multi_ports_0_1.png)
+    <img src=../doc/lwip_tcpecho_multi_ports_0_1.png align=left>
 
   - 观察回送数据窗口(192.168.100.10/5001)
 
-  ![img](doc/lwip_tcpecho_multi_ports_0_2.png)
+    <img src=../doc/lwip_tcpecho_multi_ports_0_2.png align=left>
 
   - 在数据发送窗口(192.168.200.10/5002)编辑发送字符
 
-  ![img](doc/lwip_tcpecho_multi_ports_1_1.png)
+    <img src=../doc/lwip_tcpecho_multi_ports_1_1.png align=left>
 
   - 观察回送数据窗口(192.168.200.10/5002)
 
-  ![img](doc/lwip_tcpecho_multi_ports_1_2.png)
+    <img src=../doc/lwip_tcpecho_multi_ports_1_2.png align=left>

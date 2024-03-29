@@ -1,2 +1,8 @@
+excluded_targets:
+  - flash_xip
+  - flash_xip_release
+  - flash_uf2
+  - flash_uf2_release
+
 dependency:
-  - drv_pllctlv2
+  - pllctlv2

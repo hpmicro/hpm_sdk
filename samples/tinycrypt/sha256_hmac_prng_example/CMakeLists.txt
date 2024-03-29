@@ -14,4 +14,4 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(sha256_hmac_prng_example)
 
 sdk_app_src(src/sha256_hmac_prng_example.c)
-generate_ses_project()
+generate_ide_projects()

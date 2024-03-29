@@ -1,12 +1,9 @@
-# lvgl
+# LVGL
 
-```{eval-rst}
+:::{eval-rst}
 .. toctree::
-   :maxdepth: 3
+    :maxdepth: 3
+    :glob:
 
-   lv_demo_benchmark/README_en
-   lv_demo_music/README_en
-   lv_demo_widgets/README_en
-   lv_demo_stress/README_en
-
-```
+    **/*_en
+:::

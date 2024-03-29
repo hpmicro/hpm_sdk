@@ -175,7 +175,7 @@ void lvb_init(LVB_Type *ptr, lvb_config_t *cfg);
 /**
  * @brief get LVB channel of default config
  *
- * @param[out] cfg config of LVB
+ * @param[out] ch_cfg config of LVB
  */
 void lvb_get_ch_default_config(lvb_ch_config_t *ch_cfg);
 
@@ -184,7 +184,7 @@ void lvb_get_ch_default_config(lvb_ch_config_t *ch_cfg);
  *
  * @param[in] ptr LVB base address
  * @param[in] ch_num LVB channel number
- * @param[in] cfg config of LVB channel
+ * @param[in] ch_cfg config of LVB channel
  */
 void lvb_ch_config(LVB_Type *ptr, lvb_ch_num_t ch_num, lvb_ch_config_t *ch_cfg);
 

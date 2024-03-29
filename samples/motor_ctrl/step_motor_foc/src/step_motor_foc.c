@@ -26,7 +26,7 @@
 
 #define CURRENT_SET_TIME_MS    (200)
 #define PWM_FREQUENCY               (40000)
-#define PWM_RELOAD                  (motor_clock_hz/PWM_FREQUENCY)
+#define PWM_RELOAD                  ((motor_clock_hz/PWM_FREQUENCY) - 1)
 #define MOTOR0_BLDCPWM              BOARD_BLDCPWM
 #define ADCU_INDEX 0
 #define ADCV_INDEX 1

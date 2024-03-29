@@ -2,7 +2,7 @@
 
 ## Overview
 
-This  example project shows USB HID HOST
+This example project shows USB HID HOST
 
 ## Board Setting
 

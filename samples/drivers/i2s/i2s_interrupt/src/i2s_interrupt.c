@@ -86,7 +86,8 @@ hpm_stat_t board_i2s_init(audio_data_t *audio_data, uint32_t mclk_freq)
 
     /* Config I2S interface to CODEC */
     i2s_get_default_config(CODEC_I2S, &i2s_config);
-    i2s_config.fifo_threshold = TEST_I2S_TX_FIFO_THRESHOLD; /* tx fifo data <= threshold will generate irq */
+    i2s_config.tx_fifo_threshold = TEST_I2S_TX_FIFO_THRESHOLD; /* tx fifo data <= threshold will generate irq */
+    i2s_config.rx_fifo_threshold = TEST_I2S_TX_FIFO_THRESHOLD; /* rx fifo data >= threshold will generate irq */
     i2s_config.enable_mclk_out = true;
     i2s_init(CODEC_I2S, &i2s_config);
 
@@ -97,9 +98,6 @@ hpm_stat_t board_i2s_init(audio_data_t *audio_data, uint32_t mclk_freq)
     transfer.channel_slot_mask = (1 << audio_data->channel_num) - 1;
     transfer.data_line = CODEC_I2S_DATA_LINE;
     transfer.master_mode = true;
-#ifdef CONFIG_CODEC_WM8960
-    transfer.protocol = I2S_PROTOCOL_I2S_PHILIPS;
-#endif
 
     stat = i2s_config_tx(CODEC_I2S, mclk_freq, &transfer);
     if (stat != status_success) {
@@ -127,7 +125,7 @@ hpm_stat_t board_codec_init(audio_data_t *audio_data, uint32_t mclk_freq)
         .left_input  = wm8960_input_closed,
         .right_input = wm8960_input_closed,
         .play_source = wm8960_play_source_dac,
-        .bus         = wm8960_bus_i2s,
+        .bus         = wm8960_bus_left_justified,
         .format = {.mclk_hz = mclk_freq, .sample_rate = sample_rate, .bit_width = audio_depth},
     };
 

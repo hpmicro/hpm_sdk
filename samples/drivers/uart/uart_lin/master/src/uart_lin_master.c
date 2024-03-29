@@ -167,6 +167,9 @@ int main(void)
 {
     board_init();
     board_init_uart(TEST_UART);
+#if defined(BOARD_SUPPORT_LIN_TRANSCEIVER_CONTROL) && (BOARD_SUPPORT_LIN_TRANSCEIVER_CONTROL == 1)
+    board_lin_transceiver_control(true);
+#endif
 
     uart_config_t config = {0};
     uart_default_config(TEST_UART, &config);

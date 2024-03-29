@@ -1,4 +1,4 @@
-# Core Mark
+# CoreMark
 
 ## 概述
 

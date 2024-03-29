@@ -1,5 +1,5 @@
 dependency:
-  - pwm-rgb-led
+  - board_pwm_rgb_led
   - multicore
 debug:
     ses:

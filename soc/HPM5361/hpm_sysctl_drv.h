@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -189,10 +189,6 @@ typedef enum {
     clock_node_can1 = SYSCTL_CLOCK_CLK_TOP_CAN1,
     clock_node_can2 = SYSCTL_CLOCK_CLK_TOP_CAN2,
     clock_node_can3 = SYSCTL_CLOCK_CLK_TOP_CAN3,
-    clock_node_lin0 = SYSCTL_CLOCK_CLK_TOP_LIN0,
-    clock_node_lin1 = SYSCTL_CLOCK_CLK_TOP_LIN1,
-    clock_node_lin2 = SYSCTL_CLOCK_CLK_TOP_LIN2,
-    clock_node_lin3 = SYSCTL_CLOCK_CLK_TOP_LIN3,
     clock_node_gptmr0 = SYSCTL_CLOCK_CLK_TOP_TMR0,
     clock_node_gptmr1 = SYSCTL_CLOCK_CLK_TOP_TMR1,
     clock_node_gptmr2 = SYSCTL_CLOCK_CLK_TOP_TMR2,
@@ -733,9 +729,31 @@ static inline bool sysctl_clock_any_is_busy(SYSCTL_Type *ptr)
  * @param[in] clock target clock
  * @return true if target clock is busy
  */
-static inline bool sysctl_clock_target_is_busy(SYSCTL_Type *ptr, uint32_t clock)
+static inline bool sysctl_clock_target_is_busy(SYSCTL_Type *ptr, clock_node_t clock)
 {
     return ptr->CLOCK[clock] & SYSCTL_CLOCK_LOC_BUSY_MASK;
+}
+
+/**
+ * @brief Preserve clock setting for certain node
+ *
+ * @param[in] ptr SYSCTL_Type base address
+ * @param[in] clock target clock
+ */
+static inline void sysctl_clock_preserve_settings(SYSCTL_Type *ptr, clock_node_t clock)
+{
+    ptr->CLOCK[clock] |= SYSCTL_CLOCK_PRESERVE_MASK;
+}
+
+/**
+ * @brief Unpreserve clock setting for certain node
+ *
+ * @param[in] ptr SYSCTL_Type base address
+ * @param[in] clock target clock
+ */
+static inline void sysctl_clock_unpreserve_settings(SYSCTL_Type *ptr, clock_node_t clock)
+{
+    ptr->CLOCK[clock] &= ~SYSCTL_CLOCK_PRESERVE_MASK;
 }
 
 /**
@@ -1147,7 +1165,7 @@ hpm_stat_t sysctl_enable_group_resource(SYSCTL_Type *ptr, uint8_t group, sysctl_
  * @param[in] resource target resource to be checked from group
  * @return enable true if resource enable, false if resource disable
  */
-bool sysctl_check_group_resource_enable(SYSCTL_Type *ptr, uint8_t group, sysctl_resource_t linkable_resource);
+bool sysctl_check_group_resource_enable(SYSCTL_Type *ptr, uint8_t group, sysctl_resource_t resource);
 
 /**
  * @brief Get group resource value

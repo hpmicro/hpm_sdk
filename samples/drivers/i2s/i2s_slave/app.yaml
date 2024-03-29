@@ -3,4 +3,5 @@ excluded_targets:
   - release
 
 dependency:
-  - i2s_pinout
+  - i2s
+  - board_i2s_pin

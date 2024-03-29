@@ -1,4 +1,4 @@
-# RTC Demo
+# RTC
 
 ## Overview
 
@@ -34,5 +34,5 @@ When the example runs successfully, the demo will shoe the menu on the console U
 Type one of the listed option to run corresponding example.
 
 ## NOTE
-- Example #3 will reset the SoC, so it is better to run it with `flash_xip` or `flash_sdram-xip` related builds for better user experience
+- Example #3 will reset the SoC, so it is better to run it with `flash_xip` or `flash_sdram_xip` related builds for better user experience
 

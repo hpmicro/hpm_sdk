@@ -33,6 +33,7 @@ int main(void)
     show_menu();
 
     while (true) {
+
         char ch = uart_get_char();
         if (ch == 'w') {
             continue;
@@ -40,21 +41,22 @@ int main(void)
         switch (ch) {
         case '1':
             enter_wait_mode();
-            printf("Waked up from the wait mode\r\n");
+            printf("Woke up from the wait mode\r\n");
             break;
         case '2':
             enter_stop_mode();
-            printf("Waked up from the stop mode\r\n");
+            printf("Woke up from the stop mode\r\n");
             break;
         case '3':
             enter_standby_mode();
-            printf("Waked up from the standby mode\r\n");
+            printf("Woke up from the standby mode\r\n");
             break;
         case '4':
             enter_shutdown_mode();
-            printf("Waked up from the shutdown mode\r\n");
+            printf("Woke up from the shutdown mode\r\n");
             break;
         default:
+            printf("[!!] Please choose options listed above.\r\n");
             break;
         }
         show_menu();
@@ -64,11 +66,11 @@ int main(void)
 void show_menu(void)
 {
     const char menu_str[] =
-        "Power mode switch demo:\r\n"
-        "1 - Enter wait mode\r\n"
-        "2 - Enter stop mode\r\n"
-        "3 - Enter standby mode\r\n"
-        "4 - Enter shutdown mode\r\n";
+        "\r\nPower mode switch demo:\r\n"
+        "  1 - Enter wait mode\r\n"
+        "  2 - Enter stop mode\r\n"
+        "  3 - Enter standby mode\r\n"
+        "  4 - Enter shutdown mode\r\n\r\n";
     printf(menu_str);
 }
 

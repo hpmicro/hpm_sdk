@@ -4,4 +4,5 @@
 sdk_inc(.)
 sdk_src(
     hpm_mcl_abz.c
+    hpm_mcl_uvw.c
     )

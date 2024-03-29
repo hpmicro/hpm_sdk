@@ -17,4 +17,4 @@ project(ecc_dh_example)
 
 sdk_app_src(src/ecc_dh_example.c)
 sdk_app_src(src/ecc_utils.c)
-generate_ses_project()
+generate_ide_projects()

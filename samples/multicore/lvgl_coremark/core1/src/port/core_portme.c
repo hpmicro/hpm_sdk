@@ -169,7 +169,8 @@ void portable_init(core_portable *p, int *argc, char *argv[])
 {
     coremark_context_t *ctx = COREMARK_CTX;
 
-    board_init_pmp();
+    board_init_core1();
+
     memset(ctx, 0, sizeof(*ctx));
     ctx->current_idx = 0;
     ctx->s_buffer[0] = '\0';

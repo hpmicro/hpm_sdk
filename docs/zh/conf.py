@@ -12,6 +12,7 @@ import subprocess
 import shutil
 import re
 import sys
+import datetime
 from pathlib import Path
 import sphinx_rtd_theme
 
@@ -23,7 +24,7 @@ sys.path.insert(0, str(HPM_SDK_BASE / "docs" / "_ext"))
 
 os.environ["HPM_SDK_BASE"] = str(HPM_SDK_BASE)
 project = 'HPMico Software Development Kit'
-copyright = '2020-2023, HPMicro'
+copyright = '2020-%s, HPMicro' % datetime.date.today().year
 author = '先楫半导体软件组'
 
 # -- General configuration ---------------------------------------------------
@@ -37,6 +38,7 @@ extensions = [
     'sphinx.ext.duration',
     'sphinx_inline_tabs',
     "sphinx.ext.viewcode",
+    'sphinxcontrib.moderncmakedomain',
     "external_content",
     "doxyrunner",
 ]
@@ -63,6 +65,8 @@ source_suffix = {
 }
 
 external_content_contents = [
+    (HPM_SDK_BASE, "CHANGELOG.md"),
+    (HPM_SDK_BASE, "docs/*.rst"),
     (HPM_SDK_BASE / "docs/zh", "[!_]*"),
     (HPM_SDK_BASE, "boards/**/*_zh.md",),
     (HPM_SDK_BASE, "boards/**/doc"),

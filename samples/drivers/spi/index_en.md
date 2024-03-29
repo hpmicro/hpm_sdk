@@ -1,4 +1,4 @@
-# SPI Samples
+# SPI
 
 :::{eval-rst}
 .. toctree::

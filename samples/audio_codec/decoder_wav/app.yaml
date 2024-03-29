@@ -1,2 +1,3 @@
 dependency:
-  - audio-codec || dao
+  - i2s
+  - board_audio_out

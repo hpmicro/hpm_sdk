@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -174,7 +174,7 @@ typedef struct {
  * MODE (RW)
  *
  * DCDC work mode
- * XX0: trun off
+ * XX0: turn off
  * 001: basic mode
  * 011: generic mode
  * 101: automatic mode
@@ -264,7 +264,7 @@ typedef struct {
 /*
  * DISABLE_OVERVOLTAGE (RW)
  *
- * ouput over voltage protection
+ * output over voltage protection
  * 0: protection enabled, DCDC will shut down is output voltage is unexpected high
  * 1: protection disabled, DCDC continue to adjust output voltage
  */
@@ -288,7 +288,7 @@ typedef struct {
  * DISABLE_SHORT (RW)
  *
  * disable output short circuit protection
- * 0: short circuits protection enabled, DCDC shut down if short circuit on ouput detected
+ * 0: short circuits protection enabled, DCDC shut down if short circuit on output detected
  * 1: short circuit protection disabled
  */
 #define PCFG_DCDC_PROT_DISABLE_SHORT_MASK (0x80U)
@@ -404,18 +404,6 @@ typedef struct {
 #define PCFG_DCDC_ADVMODE_EN_FF_LOOP_SHIFT (5U)
 #define PCFG_DCDC_ADVMODE_EN_FF_LOOP_SET(x) (((uint32_t)(x) << PCFG_DCDC_ADVMODE_EN_FF_LOOP_SHIFT) & PCFG_DCDC_ADVMODE_EN_FF_LOOP_MASK)
 #define PCFG_DCDC_ADVMODE_EN_FF_LOOP_GET(x) (((uint32_t)(x) & PCFG_DCDC_ADVMODE_EN_FF_LOOP_MASK) >> PCFG_DCDC_ADVMODE_EN_FF_LOOP_SHIFT)
-
-/*
- * EN_AUTOLP (RW)
- *
- * enable auto enter low power mode
- * 0: do not enter low power mode
- * 1: enter low power mode if current is detected low
- */
-#define PCFG_DCDC_ADVMODE_EN_AUTOLP_MASK (0x10U)
-#define PCFG_DCDC_ADVMODE_EN_AUTOLP_SHIFT (4U)
-#define PCFG_DCDC_ADVMODE_EN_AUTOLP_SET(x) (((uint32_t)(x) << PCFG_DCDC_ADVMODE_EN_AUTOLP_SHIFT) & PCFG_DCDC_ADVMODE_EN_AUTOLP_MASK)
-#define PCFG_DCDC_ADVMODE_EN_AUTOLP_GET(x) (((uint32_t)(x) & PCFG_DCDC_ADVMODE_EN_AUTOLP_MASK) >> PCFG_DCDC_ADVMODE_EN_AUTOLP_SHIFT)
 
 /*
  * EN_DCM_EXIT (RW)

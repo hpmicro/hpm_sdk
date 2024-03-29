@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 HPMicro
+ * Copyright (c) 2022-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -177,7 +177,7 @@ static volatile bool s_mic_mute;
 static struct usbd_interface intf0;
 static struct usbd_interface intf1;
 
-static void usbd_audio_iso_callback(uint8_t ep, uint32_t nbytes);
+static void usbd_audio_iso_callback(uint8_t busid, uint8_t ep, uint32_t nbytes);
 static struct usbd_endpoint audio_in_ep = {
     .ep_cb = usbd_audio_iso_callback,
     .ep_addr = AUDIO_IN_EP
@@ -197,8 +197,10 @@ static bool in_buff_is_full(void);
 static bool in_buff_is_empty(void);
 
 /* extern function definition */
-void usbd_event_handler(uint8_t event)
+static void usbd_event_handler(uint8_t busid, uint8_t event)
 {
+    (void)busid;
+
     switch (event) {
     case USBD_EVENT_RESET:
         break;
@@ -222,18 +224,22 @@ void usbd_event_handler(uint8_t event)
     }
 }
 
-void usbd_audio_set_volume(uint8_t ep, uint8_t ch, int volume)
+void usbd_audio_set_volume(uint8_t busid, uint8_t ep, uint8_t ch, int volume)
 {
+    (void)busid;
     (void)ch;
+
     if (ep == AUDIO_IN_EP) {
         s_mic_volume_percent = volume;
         /* Do Nothing */
     }
 }
 
-int usbd_audio_get_volume(uint8_t ep, uint8_t ch)
+int usbd_audio_get_volume(uint8_t busid, uint8_t ep, uint8_t ch)
 {
+    (void)busid;
     (void)ch;
+
     int volume = 0;
 
     if (ep == AUDIO_IN_EP) {
@@ -243,9 +249,11 @@ int usbd_audio_get_volume(uint8_t ep, uint8_t ch)
     return volume;
 }
 
-void usbd_audio_set_mute(uint8_t ep, uint8_t ch, bool mute)
+void usbd_audio_set_mute(uint8_t busid, uint8_t ep, uint8_t ch, bool mute)
 {
+    (void)busid;
     (void)ch;
+
     if (ep == AUDIO_IN_EP) {
         s_mic_mute = mute;
         if (s_mic_mute) {
@@ -256,9 +264,11 @@ void usbd_audio_set_mute(uint8_t ep, uint8_t ch, bool mute)
     }
 }
 
-bool usbd_audio_get_mute(uint8_t ep, uint8_t ch)
+bool usbd_audio_get_mute(uint8_t busid, uint8_t ep, uint8_t ch)
 {
+    (void)busid;
     (void)ch;
+
     bool mute = false;
 
     if (ep == AUDIO_IN_EP) {
@@ -268,15 +278,19 @@ bool usbd_audio_get_mute(uint8_t ep, uint8_t ch)
     return mute;
 }
 
-void usbd_audio_set_sampling_freq(uint8_t ep, uint32_t sampling_freq)
+void usbd_audio_set_sampling_freq(uint8_t busid, uint8_t ep, uint32_t sampling_freq)
 {
+    (void)busid;
+
     if (ep == AUDIO_IN_EP) {
         s_mic_sample_rate = sampling_freq;
     }
 }
 
-uint32_t usbd_audio_get_sampling_freq(uint8_t ep)
+uint32_t usbd_audio_get_sampling_freq(uint8_t busid, uint8_t ep)
 {
+    (void)busid;
+
     uint32_t freq = 0;
 
     if (ep == AUDIO_IN_EP) {
@@ -286,8 +300,10 @@ uint32_t usbd_audio_get_sampling_freq(uint8_t ep)
     return freq;
 }
 
-void usbd_audio_open(uint8_t intf)
+void usbd_audio_open(uint8_t busid, uint8_t intf)
 {
+    (void)busid;
+
     if (intf == 1) {
         tx_flag = 1;
         ep_tx_busy_flag = false;
@@ -301,8 +317,10 @@ void usbd_audio_open(uint8_t intf)
     }
 }
 
-void usbd_audio_close(uint8_t intf)
+void usbd_audio_close(uint8_t busid, uint8_t intf)
 {
+    (void)busid;
+
     if (intf == 1) {
         tx_flag = 0;
         pdm_stop(HPM_PDM);
@@ -310,17 +328,17 @@ void usbd_audio_close(uint8_t intf)
     }
 }
 
-void audio_init(void)
+void audio_v1_init(uint8_t busid, uint32_t reg_base)
 {
-    usbd_desc_register(audio_v1_descriptor);
-    usbd_add_interface(usbd_audio_init_intf(&intf0, AUDIO_VERSION, audio_entity_table, 1));
-    usbd_add_interface(usbd_audio_init_intf(&intf1, AUDIO_VERSION, audio_entity_table, 1));
-    usbd_add_endpoint(&audio_in_ep);
+    usbd_desc_register(busid, audio_v1_descriptor);
+    usbd_add_interface(busid, usbd_audio_init_intf(busid, &intf0, AUDIO_VERSION, audio_entity_table, 1));
+    usbd_add_interface(busid, usbd_audio_init_intf(busid, &intf1, AUDIO_VERSION, audio_entity_table, 1));
+    usbd_add_endpoint(busid, &audio_in_ep);
 
-    usbd_initialize();
+    usbd_initialize(busid, reg_base, usbd_event_handler);
 }
 
-void audio_test(void)
+void audio_v1_task(uint8_t busid)
 {
     if (tx_flag) {
         if (!in_buff_is_full()) {
@@ -337,7 +355,7 @@ void audio_test(void)
         if (!in_buff_is_empty()) {
             if (!ep_tx_busy_flag) {
                 ep_tx_busy_flag = true;
-                usbd_ep_start_write(AUDIO_IN_EP, &s_in_buffer[s_in_buffer_front][0], AUDIO_IN_PACKET);
+                usbd_ep_start_write(busid, AUDIO_IN_EP, &s_in_buffer[s_in_buffer_front][0], AUDIO_IN_PACKET);
                 s_in_buffer_front++;
                 if (s_in_buffer_front >= AUDIO_BUFFER_COUNT) {
                     s_in_buffer_front = 0;
@@ -397,10 +415,12 @@ void isr_dma(void)
 SDK_DECLARE_EXT_ISR_M(BOARD_APP_HDMA_IRQ, isr_dma)
 
 /* static function definition */
-static void usbd_audio_iso_callback(uint8_t ep, uint32_t nbytes)
+static void usbd_audio_iso_callback(uint8_t busid, uint8_t ep, uint32_t nbytes)
 {
+    (void)busid;
     (void)ep;
     (void)nbytes;
+
     ep_tx_busy_flag = false;
 }
 

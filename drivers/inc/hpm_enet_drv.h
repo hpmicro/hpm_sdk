@@ -557,7 +557,7 @@ uint32_t enet_get_interrupt_status(ENET_Type *ptr);
  * @brief Mask the specified mmc interrupt evenets of received frames
  *
  * @param[in] ptr An Ethernet peripheral base address
- * @param[in] config A mask of the specified evenets
+ * @param[in] mask A mask of the specified evenets
  */
 void enet_mask_mmc_rx_interrupt_event(ENET_Type *ptr, uint32_t mask);
 
@@ -565,7 +565,7 @@ void enet_mask_mmc_rx_interrupt_event(ENET_Type *ptr, uint32_t mask);
  * @brief Mask the specified mmc interrupt evenets of transmitted frames
  *
  * @param[in] ptr An Ethernet peripheral base address
- * @param[in] config A mask of the specified evenets
+ * @param[in] mask A mask of the specified evenets
  */
 void enet_mask_mmc_tx_interrupt_event(ENET_Type *ptr, uint32_t mask);
 
@@ -591,7 +591,7 @@ uint32_t enet_get_mmc_tx_interrupt_status(ENET_Type *ptr);
  * @param[in] inf_type the specified interface
  * @param[in] desc A pointer to descriptor config
  * @param[in] cfg A pointer to mac config
- * @param[in] int_cfg A pointer to the masks of the specified enabled interrupts and the specified masked interrupts
+ * @param[in] int_config A pointer to the masks of the specified enabled interrupts and the specified masked interrupts
  * @return A result of the specified controller initialization
  */
 hpm_stat_t enet_controller_init(ENET_Type *ptr, enet_inf_type_t inf_type, enet_desc_t *desc, enet_mac_config_t *cfg, enet_int_config_t *int_config);
@@ -600,7 +600,7 @@ hpm_stat_t enet_controller_init(ENET_Type *ptr, enet_inf_type_t inf_type, enet_d
  * @brief Set port line speed
  *
  * @param[in] ptr An Ethernet peripheral base address
- * @param[in] line_speed An enum variable of @ref enet_line_speed_t
+ * @param[in] speed An enum variable of @ref enet_line_speed_t
  */
 void enet_set_line_speed(ENET_Type *ptr, enet_line_speed_t speed);
 
@@ -809,7 +809,7 @@ void enet_set_snapshot_ptp_message_type(ENET_Type *ptr, enet_ts_ss_ptp_msg_t ts_
  * @brief Set the pps0 control output
  *
  * @param[in] ptr An Ethernet peripheral base address
- * @param[in] enet_pps_ctrl_t An enum value indicating the specified pps frequency
+ * @param[in] freq An enum value indicating the specified pps frequency
  */
 void enet_set_pps0_control_output(ENET_Type *ptr, enet_pps_ctrl_t freq);
 
@@ -827,7 +827,7 @@ hpm_stat_t enet_set_ppsx_command(ENET_Type *ptr, enet_pps_cmd_t cmd, enet_pps_id
  * @brief Set a pps config for ppsx
  *
  * @param[in] ptr An Ethernet peripheral base address
- * @param[in] cmd An enum value indicating the specified pps config
+ * @param[in] cmd_cfg An enum value indicating the specified pps config
  * @param[in] idx An enum value indicating the index of pps instance
  * @retval hpm_stat_t @ref status_invalid_argument or @ref status_success
  */

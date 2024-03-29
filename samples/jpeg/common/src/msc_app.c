@@ -21,7 +21,7 @@
  */
 #if CFG_TUH_MSC
 static ATTR_PLACE_AT_NONCACHEABLE_BSS scsi_inquiry_resp_t inquiry_resp;
-static ATTR_PLACE_AT_NONCACHEABLE_BSS FATFS udisk[CFG_TUSB_HOST_DEVICE_MAX];
+static ATTR_PLACE_AT_NONCACHEABLE_BSS FATFS udisk[CFG_TUH_DEVICE_MAX];
 static bool disk_mounted;
 /*
  * Tinyusb FatFs module reads image file data
@@ -60,12 +60,12 @@ bool file_system_mount(uint8_t dev_addr)
  * inquiry_complete_cb
  *
  */
-bool inquiry_complete_cb(uint8_t dev_addr, msc_cbw_t const *cbw, msc_csw_t const *csw)
+bool inquiry_complete_cb(uint8_t dev_addr, tuh_msc_complete_data_t const *cb_data)
 {
     uint32_t block_count;
     uint32_t block_size;
 
-    if (csw->status != 0) {
+    if (cb_data->csw->status != 0) {
         printf("Inquiry failed\r\n");
         return false;
     }
@@ -74,8 +74,8 @@ bool inquiry_complete_cb(uint8_t dev_addr, msc_cbw_t const *cbw, msc_csw_t const
     printf("%.8s %.16s rev %.4s\r\n", inquiry_resp.vendor_id, inquiry_resp.product_id, inquiry_resp.product_rev);
 
     /* Get capacity of device */
-    block_count = tuh_msc_get_block_count(dev_addr, cbw->lun);
-    block_size = tuh_msc_get_block_size(dev_addr, cbw->lun);
+    block_count = tuh_msc_get_block_count(dev_addr, cb_data->cbw->lun);
+    block_size = tuh_msc_get_block_size(dev_addr, cb_data->cbw->lun);
 
     printf("Disk Size: %lu MB\r\n", block_count / ((1024 * 1024) / block_size));
     printf("Block Count = %lu, Block Size: %lu\r\n", block_count, block_size);
@@ -92,7 +92,7 @@ void tuh_msc_mount_cb(uint8_t dev_addr)
     uint8_t const lun = 0;
 
     printf("\nA MassStorage device is mounted.\r\n");
-    tuh_msc_inquiry(dev_addr, lun, &inquiry_resp, inquiry_complete_cb);
+    tuh_msc_inquiry(dev_addr, lun, &inquiry_resp, inquiry_complete_cb, NULL);
 }
 
 void tuh_msc_unmount_cb(uint8_t dev_addr)
@@ -112,6 +112,8 @@ void tuh_msc_unmount_cb(uint8_t dev_addr)
 
 void init_disk(void)
 {
+    /* tinyusb Device initialization */
+    board_init_usb_pins();
     tusb_init();
 }
 
@@ -122,7 +124,7 @@ void init_disk(void)
 bool check_disk(void)
 {
     if (!disk_mounted) {
-        for (uint32_t i = 0; i < 10000; i++) {
+        for (uint32_t i = 0; i < 50000; i++) {
             tuh_task();
         }
     }

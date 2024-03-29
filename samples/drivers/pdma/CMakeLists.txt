@@ -14,4 +14,4 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(pdma_example)
 
 sdk_app_src(src/pdma.c)
-generate_ses_project()
+generate_ide_projects()

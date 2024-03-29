@@ -194,7 +194,7 @@ static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX struct hid_mouse mouse_cfg;
 /*!< hid state ! Data can be sent only when state is idle  */
 static volatile uint8_t hid_state = HID_STATE_IDLE;
 
-void usbd_event_handler(uint8_t event)
+static void usbd_event_handler(uint8_t busid, uint8_t event)
 {
     switch (event) {
         case USBD_EVENT_RESET:
@@ -220,7 +220,7 @@ void usbd_event_handler(uint8_t event)
 }
 
 /* function ------------------------------------------------------------------*/
-static void usbd_hid_int_callback(uint8_t ep, uint32_t nbytes)
+static void usbd_hid_int_callback(uint8_t busid, uint8_t ep, uint32_t nbytes)
 {
     hid_state = HID_STATE_IDLE;
 }
@@ -233,13 +233,13 @@ static struct usbd_endpoint hid_in_ep = {
 
 struct usbd_interface intf0;
 
-void hid_mouse_init(void)
+void hid_mouse_init(uint8_t busid, uint32_t reg_base)
 {
-    usbd_desc_register(hid_descriptor);
-    usbd_add_interface(usbd_hid_init_intf(&intf0, hid_mouse_report_desc, HID_MOUSE_REPORT_DESC_SIZE));
-    usbd_add_endpoint(&hid_in_ep);
+    usbd_desc_register(busid, hid_descriptor);
+    usbd_add_interface(busid, usbd_hid_init_intf(busid, &intf0, hid_mouse_report_desc, HID_MOUSE_REPORT_DESC_SIZE));
+    usbd_add_endpoint(busid, &hid_in_ep);
 
-    usbd_initialize();
+    usbd_initialize(busid, reg_base, usbd_event_handler);
 
     /*!< init mouse report data */
     mouse_cfg.buttons = 0;
@@ -254,7 +254,7 @@ void hid_mouse_init(void)
   * @param[in]        none
   * @retval           none
   */
-void hid_mouse_test(void)
+void hid_mouse_test(uint8_t busid)
 {
     int counter = 0;
     while (counter < 1000) {
@@ -262,7 +262,7 @@ void hid_mouse_test(void)
         mouse_cfg.x += 40;
         mouse_cfg.y += 0;
 
-        int ret = usbd_ep_start_write(HID_INT_EP, (uint8_t *)&mouse_cfg, 4);
+        int ret = usbd_ep_start_write(busid, HID_INT_EP, (uint8_t *)&mouse_cfg, 4);
         if (ret < 0) {
             return;
         }

@@ -1,2 +1,2 @@
 dependency:
-  - motor-control
+  - board_motor_control

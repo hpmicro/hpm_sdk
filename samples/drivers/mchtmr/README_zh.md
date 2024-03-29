@@ -1,4 +1,4 @@
-# mchtmr
+# MCHTMR
 
 ## 概述
 

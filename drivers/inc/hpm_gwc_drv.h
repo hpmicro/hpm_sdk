@@ -145,7 +145,7 @@ void gwc_freeze_interrupt_control(GWC_Type *ptr);
  * @brief init gwc channel
  *
  * @param[in] ptr GWC base address
- * @param[in] ch_index channel index @ref GWC_CHANNEL_CHn
+ * @param[in] ch_index channel index ref GWC_CHANNEL_CHn
  * @param[in] cfg config of gwc channel
  *
  * @note the function is called while gwc channel is disable only
@@ -156,7 +156,7 @@ void gwc_ch_init(GWC_Type *ptr, uint8_t ch_index, gwc_ch_config_t *cfg);
  * @brief enable gwc channel
  *
  * @param[in] ptr GWC base address
- * @param[in] ch_index channel index @ref GWC_CHANNEL_CHn
+ * @param[in] ch_index channel index ref GWC_CHANNEL_CHn
  */
 static inline void gwc_ch_enable(GWC_Type *ptr, uint8_t ch_index)
 {
@@ -168,7 +168,7 @@ static inline void gwc_ch_enable(GWC_Type *ptr, uint8_t ch_index)
  * @brief disable gwc channel
  *
  * @param[in] ptr GWC base address
- * @param[in] ch_index channel index @ref GWC_CHANNEL_CHn
+ * @param[in] ch_index channel index ref GWC_CHANNEL_CHn
  */
 static inline void gwc_ch_disable(GWC_Type *ptr, uint8_t ch_index)
 {
@@ -180,7 +180,7 @@ static inline void gwc_ch_disable(GWC_Type *ptr, uint8_t ch_index)
  * @brief get gwc channel calc crc
  *
  * @param[in] ptr GWC base address
- * @param[in] ch_index channel index @ref GWC_CHANNEL_CHn
+ * @param[in] ch_index channel index ref GWC_CHANNEL_CHn
  */
 static inline uint32_t gwc_ch_get_crc(GWC_Type *ptr, uint8_t ch_index)
 {

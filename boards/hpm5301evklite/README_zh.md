@@ -41,6 +41,8 @@ HPM5301EVKLite是基于先楫的入门级高性能MCU HPM5301的开发板。HPM5
 (lab_hpm5301_evklite_board)=
 
 - UART引脚
+  - UART0用于调试控制台串口或一些使用UART的功能测试
+  - UART3用于一些使用UART的功能测试，例如MICROROS_UART，USB_CDC_ACM_UART, MODBUS_RTU等。
 
 | 功能      | 位置   |
 | --------- | ------ |

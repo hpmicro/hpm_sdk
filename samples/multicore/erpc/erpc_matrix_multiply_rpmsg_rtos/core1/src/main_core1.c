@@ -28,7 +28,7 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-static ATTR_SHARE_MEM char rpmsg_lite_base[SH_MEM_TOTAL_SIZE];
+ATTR_SHARE_MEM char rpmsg_lite_base[SH_MEM_TOTAL_SIZE];
 
 /*******************************************************************************
  * Prototypes
@@ -81,6 +81,8 @@ static void SignalReady(void)
 
 static void server_task(void *param)
 {
+    (void)param;
+
     /* ERPC server initialization */
     erpc_server_t erpc_server;
 
@@ -126,9 +128,7 @@ static void server_task(void *param)
  */
 int main(void)
 {
-    /* use uart13 as console*/
-    board_init_console();
-    board_init_pmp();
+    board_init_core1();
     board_init_led_pins();
     ipc_init();
     ipc_enable_event_interrupt(2u);

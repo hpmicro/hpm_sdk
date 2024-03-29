@@ -2590,334 +2590,6 @@
       <BitField name="SWSYNCT" start="0" size="4"/>
     </Register>
   </RegisterGroup>
-  <RegisterGroup start="0xf0020000" name="LIN0">
-    <Register name="DATA_DATA0" start="+0x0" size="0x4">
-      <BitField name="DATA" start="0" size="32"/>
-    </Register>
-    <Register name="DATA_DATA1" start="+0x4" size="0x4">
-      <BitField name="DATA" start="0" size="32"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE0" start="+0x0" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE1" start="+0x1" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE2" start="+0x2" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE3" start="+0x3" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE4" start="+0x4" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE5" start="+0x5" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE6" start="+0x6" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE7" start="+0x7" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_LEN_ID" start="+0x8" size="0x4">
-      <BitField name="CHECKSUM" start="16" size="8"/>
-      <BitField name="ID_PARITY" start="14" size="2"/>
-      <BitField name="ID" start="8" size="6"/>
-      <BitField name="ENH_CHECK" start="7" size="1"/>
-      <BitField name="DATA_LEN" start="0" size="4"/>
-    </Register>
-    <Register name="CONTROL_STATUS" start="+0xc" size="0x4">
-      <BitField name="BREAK_ERR_DIS" start="21" size="1"/>
-      <BitField name="BREAK_ERR" start="20" size="1"/>
-      <BitField name="PARITY_ERROR" start="19" size="1"/>
-      <BitField name="TIME_OUT" start="18" size="1"/>
-      <BitField name="CHK_ERROR" start="17" size="1"/>
-      <BitField name="BIT_ERROR" start="16" size="1"/>
-      <BitField name="LIN_ACTIVE" start="15" size="1"/>
-      <BitField name="BUS_IDLE_TIMEOUT" start="14" size="1"/>
-      <BitField name="ABORTED" start="13" size="1"/>
-      <BitField name="DATA_REQ" start="12" size="1"/>
-      <BitField name="INT" start="11" size="1"/>
-      <BitField name="ERROR" start="10" size="1"/>
-      <BitField name="WAKEUP" start="9" size="1"/>
-      <BitField name="COMPLETE" start="8" size="1"/>
-      <BitField name="STOP" start="7" size="1"/>
-      <BitField name="SLEEP" start="6" size="1"/>
-      <BitField name="TRANSMIT" start="5" size="1"/>
-      <BitField name="DATA_ACK" start="4" size="1"/>
-      <BitField name="RESET_INT" start="3" size="1"/>
-      <BitField name="RESET_ERROR" start="2" size="1"/>
-      <BitField name="WAKEUP_REQ" start="1" size="1"/>
-      <BitField name="START_REQ" start="0" size="1"/>
-    </Register>
-    <Register name="TIMING_CONTROL" start="+0x10" size="0x4">
-      <BitField name="WAKE_LEN" start="27" size="3"/>
-      <BitField name="BRK_LEN" start="24" size="3"/>
-      <BitField name="LINBUSDISABLE" start="22" size="1"/>
-      <BitField name="LIN_INITIAL" start="21" size="1"/>
-      <BitField name="MASTER_MODE" start="20" size="1"/>
-      <BitField name="BUS_INACTIVE_TIME" start="18" size="2"/>
-      <BitField name="WUP_REPEAT_TIME" start="16" size="2"/>
-      <BitField name="PRESCL" start="14" size="2"/>
-      <BitField name="BT_MUL" start="9" size="5"/>
-      <BitField name="BT_DIV" start="0" size="9"/>
-    </Register>
-    <Register name="DMA_CONTROL" start="+0x14" size="0x4">
-      <BitField name="DMA_REQ_ENH_CHK" start="12" size="1"/>
-      <BitField name="DMA_REQ_LEN" start="8" size="4"/>
-      <BitField name="DMA_REQ_ID_TYPE" start="7" size="1"/>
-      <BitField name="DMA_REQ_ID" start="1" size="6"/>
-      <BitField name="DMA_REQ_ENABLE" start="0" size="1"/>
-    </Register>
-  </RegisterGroup>
-  <RegisterGroup start="0xf0024000" name="LIN1">
-    <Register name="DATA_DATA0" start="+0x0" size="0x4">
-      <BitField name="DATA" start="0" size="32"/>
-    </Register>
-    <Register name="DATA_DATA1" start="+0x4" size="0x4">
-      <BitField name="DATA" start="0" size="32"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE0" start="+0x0" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE1" start="+0x1" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE2" start="+0x2" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE3" start="+0x3" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE4" start="+0x4" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE5" start="+0x5" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE6" start="+0x6" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE7" start="+0x7" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_LEN_ID" start="+0x8" size="0x4">
-      <BitField name="CHECKSUM" start="16" size="8"/>
-      <BitField name="ID_PARITY" start="14" size="2"/>
-      <BitField name="ID" start="8" size="6"/>
-      <BitField name="ENH_CHECK" start="7" size="1"/>
-      <BitField name="DATA_LEN" start="0" size="4"/>
-    </Register>
-    <Register name="CONTROL_STATUS" start="+0xc" size="0x4">
-      <BitField name="BREAK_ERR_DIS" start="21" size="1"/>
-      <BitField name="BREAK_ERR" start="20" size="1"/>
-      <BitField name="PARITY_ERROR" start="19" size="1"/>
-      <BitField name="TIME_OUT" start="18" size="1"/>
-      <BitField name="CHK_ERROR" start="17" size="1"/>
-      <BitField name="BIT_ERROR" start="16" size="1"/>
-      <BitField name="LIN_ACTIVE" start="15" size="1"/>
-      <BitField name="BUS_IDLE_TIMEOUT" start="14" size="1"/>
-      <BitField name="ABORTED" start="13" size="1"/>
-      <BitField name="DATA_REQ" start="12" size="1"/>
-      <BitField name="INT" start="11" size="1"/>
-      <BitField name="ERROR" start="10" size="1"/>
-      <BitField name="WAKEUP" start="9" size="1"/>
-      <BitField name="COMPLETE" start="8" size="1"/>
-      <BitField name="STOP" start="7" size="1"/>
-      <BitField name="SLEEP" start="6" size="1"/>
-      <BitField name="TRANSMIT" start="5" size="1"/>
-      <BitField name="DATA_ACK" start="4" size="1"/>
-      <BitField name="RESET_INT" start="3" size="1"/>
-      <BitField name="RESET_ERROR" start="2" size="1"/>
-      <BitField name="WAKEUP_REQ" start="1" size="1"/>
-      <BitField name="START_REQ" start="0" size="1"/>
-    </Register>
-    <Register name="TIMING_CONTROL" start="+0x10" size="0x4">
-      <BitField name="WAKE_LEN" start="27" size="3"/>
-      <BitField name="BRK_LEN" start="24" size="3"/>
-      <BitField name="LINBUSDISABLE" start="22" size="1"/>
-      <BitField name="LIN_INITIAL" start="21" size="1"/>
-      <BitField name="MASTER_MODE" start="20" size="1"/>
-      <BitField name="BUS_INACTIVE_TIME" start="18" size="2"/>
-      <BitField name="WUP_REPEAT_TIME" start="16" size="2"/>
-      <BitField name="PRESCL" start="14" size="2"/>
-      <BitField name="BT_MUL" start="9" size="5"/>
-      <BitField name="BT_DIV" start="0" size="9"/>
-    </Register>
-    <Register name="DMA_CONTROL" start="+0x14" size="0x4">
-      <BitField name="DMA_REQ_ENH_CHK" start="12" size="1"/>
-      <BitField name="DMA_REQ_LEN" start="8" size="4"/>
-      <BitField name="DMA_REQ_ID_TYPE" start="7" size="1"/>
-      <BitField name="DMA_REQ_ID" start="1" size="6"/>
-      <BitField name="DMA_REQ_ENABLE" start="0" size="1"/>
-    </Register>
-  </RegisterGroup>
-  <RegisterGroup start="0xf0028000" name="LIN2">
-    <Register name="DATA_DATA0" start="+0x0" size="0x4">
-      <BitField name="DATA" start="0" size="32"/>
-    </Register>
-    <Register name="DATA_DATA1" start="+0x4" size="0x4">
-      <BitField name="DATA" start="0" size="32"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE0" start="+0x0" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE1" start="+0x1" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE2" start="+0x2" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE3" start="+0x3" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE4" start="+0x4" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE5" start="+0x5" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE6" start="+0x6" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE7" start="+0x7" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_LEN_ID" start="+0x8" size="0x4">
-      <BitField name="CHECKSUM" start="16" size="8"/>
-      <BitField name="ID_PARITY" start="14" size="2"/>
-      <BitField name="ID" start="8" size="6"/>
-      <BitField name="ENH_CHECK" start="7" size="1"/>
-      <BitField name="DATA_LEN" start="0" size="4"/>
-    </Register>
-    <Register name="CONTROL_STATUS" start="+0xc" size="0x4">
-      <BitField name="BREAK_ERR_DIS" start="21" size="1"/>
-      <BitField name="BREAK_ERR" start="20" size="1"/>
-      <BitField name="PARITY_ERROR" start="19" size="1"/>
-      <BitField name="TIME_OUT" start="18" size="1"/>
-      <BitField name="CHK_ERROR" start="17" size="1"/>
-      <BitField name="BIT_ERROR" start="16" size="1"/>
-      <BitField name="LIN_ACTIVE" start="15" size="1"/>
-      <BitField name="BUS_IDLE_TIMEOUT" start="14" size="1"/>
-      <BitField name="ABORTED" start="13" size="1"/>
-      <BitField name="DATA_REQ" start="12" size="1"/>
-      <BitField name="INT" start="11" size="1"/>
-      <BitField name="ERROR" start="10" size="1"/>
-      <BitField name="WAKEUP" start="9" size="1"/>
-      <BitField name="COMPLETE" start="8" size="1"/>
-      <BitField name="STOP" start="7" size="1"/>
-      <BitField name="SLEEP" start="6" size="1"/>
-      <BitField name="TRANSMIT" start="5" size="1"/>
-      <BitField name="DATA_ACK" start="4" size="1"/>
-      <BitField name="RESET_INT" start="3" size="1"/>
-      <BitField name="RESET_ERROR" start="2" size="1"/>
-      <BitField name="WAKEUP_REQ" start="1" size="1"/>
-      <BitField name="START_REQ" start="0" size="1"/>
-    </Register>
-    <Register name="TIMING_CONTROL" start="+0x10" size="0x4">
-      <BitField name="WAKE_LEN" start="27" size="3"/>
-      <BitField name="BRK_LEN" start="24" size="3"/>
-      <BitField name="LINBUSDISABLE" start="22" size="1"/>
-      <BitField name="LIN_INITIAL" start="21" size="1"/>
-      <BitField name="MASTER_MODE" start="20" size="1"/>
-      <BitField name="BUS_INACTIVE_TIME" start="18" size="2"/>
-      <BitField name="WUP_REPEAT_TIME" start="16" size="2"/>
-      <BitField name="PRESCL" start="14" size="2"/>
-      <BitField name="BT_MUL" start="9" size="5"/>
-      <BitField name="BT_DIV" start="0" size="9"/>
-    </Register>
-    <Register name="DMA_CONTROL" start="+0x14" size="0x4">
-      <BitField name="DMA_REQ_ENH_CHK" start="12" size="1"/>
-      <BitField name="DMA_REQ_LEN" start="8" size="4"/>
-      <BitField name="DMA_REQ_ID_TYPE" start="7" size="1"/>
-      <BitField name="DMA_REQ_ID" start="1" size="6"/>
-      <BitField name="DMA_REQ_ENABLE" start="0" size="1"/>
-    </Register>
-  </RegisterGroup>
-  <RegisterGroup start="0xf002c000" name="LIN3">
-    <Register name="DATA_DATA0" start="+0x0" size="0x4">
-      <BitField name="DATA" start="0" size="32"/>
-    </Register>
-    <Register name="DATA_DATA1" start="+0x4" size="0x4">
-      <BitField name="DATA" start="0" size="32"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE0" start="+0x0" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE1" start="+0x1" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE2" start="+0x2" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE3" start="+0x3" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE4" start="+0x4" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE5" start="+0x5" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE6" start="+0x6" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_BYTE_DATA_BYTE7" start="+0x7" size="0x1">
-      <BitField name="DATA_BYTE" start="0" size="8"/>
-    </Register>
-    <Register name="DATA_LEN_ID" start="+0x8" size="0x4">
-      <BitField name="CHECKSUM" start="16" size="8"/>
-      <BitField name="ID_PARITY" start="14" size="2"/>
-      <BitField name="ID" start="8" size="6"/>
-      <BitField name="ENH_CHECK" start="7" size="1"/>
-      <BitField name="DATA_LEN" start="0" size="4"/>
-    </Register>
-    <Register name="CONTROL_STATUS" start="+0xc" size="0x4">
-      <BitField name="BREAK_ERR_DIS" start="21" size="1"/>
-      <BitField name="BREAK_ERR" start="20" size="1"/>
-      <BitField name="PARITY_ERROR" start="19" size="1"/>
-      <BitField name="TIME_OUT" start="18" size="1"/>
-      <BitField name="CHK_ERROR" start="17" size="1"/>
-      <BitField name="BIT_ERROR" start="16" size="1"/>
-      <BitField name="LIN_ACTIVE" start="15" size="1"/>
-      <BitField name="BUS_IDLE_TIMEOUT" start="14" size="1"/>
-      <BitField name="ABORTED" start="13" size="1"/>
-      <BitField name="DATA_REQ" start="12" size="1"/>
-      <BitField name="INT" start="11" size="1"/>
-      <BitField name="ERROR" start="10" size="1"/>
-      <BitField name="WAKEUP" start="9" size="1"/>
-      <BitField name="COMPLETE" start="8" size="1"/>
-      <BitField name="STOP" start="7" size="1"/>
-      <BitField name="SLEEP" start="6" size="1"/>
-      <BitField name="TRANSMIT" start="5" size="1"/>
-      <BitField name="DATA_ACK" start="4" size="1"/>
-      <BitField name="RESET_INT" start="3" size="1"/>
-      <BitField name="RESET_ERROR" start="2" size="1"/>
-      <BitField name="WAKEUP_REQ" start="1" size="1"/>
-      <BitField name="START_REQ" start="0" size="1"/>
-    </Register>
-    <Register name="TIMING_CONTROL" start="+0x10" size="0x4">
-      <BitField name="WAKE_LEN" start="27" size="3"/>
-      <BitField name="BRK_LEN" start="24" size="3"/>
-      <BitField name="LINBUSDISABLE" start="22" size="1"/>
-      <BitField name="LIN_INITIAL" start="21" size="1"/>
-      <BitField name="MASTER_MODE" start="20" size="1"/>
-      <BitField name="BUS_INACTIVE_TIME" start="18" size="2"/>
-      <BitField name="WUP_REPEAT_TIME" start="16" size="2"/>
-      <BitField name="PRESCL" start="14" size="2"/>
-      <BitField name="BT_MUL" start="9" size="5"/>
-      <BitField name="BT_DIV" start="0" size="9"/>
-    </Register>
-    <Register name="DMA_CONTROL" start="+0x14" size="0x4">
-      <BitField name="DMA_REQ_ENH_CHK" start="12" size="1"/>
-      <BitField name="DMA_REQ_LEN" start="8" size="4"/>
-      <BitField name="DMA_REQ_ID_TYPE" start="7" size="1"/>
-      <BitField name="DMA_REQ_ID" start="1" size="6"/>
-      <BitField name="DMA_REQ_ENABLE" start="0" size="1"/>
-    </Register>
-  </RegisterGroup>
   <RegisterGroup start="0xf0040000" name="UART0">
     <Register name="IDLE_CFG" start="+0x4" size="0x4">
       <BitField name="TX_IDLE_COND" start="25" size="1"/>
@@ -5186,7 +4858,7 @@
       <BitField name="RXFIFO" start="0" size="32"/>
     </Register>
   </RegisterGroup>
-  <RegisterGroup start="0xf00b0000" name="WDG0">
+  <RegisterGroup start="0xf00b0000" name="EWDG0">
     <Register name="CTRL0" start="+0x0" size="0x4">
       <BitField name="CLK_SEL" start="29" size="1"/>
       <BitField name="DIV_VALUE" start="25" size="3"/>
@@ -5247,7 +4919,7 @@
       <BitField name="REFRESH_PERIOD" start="0" size="16"/>
     </Register>
   </RegisterGroup>
-  <RegisterGroup start="0xf00b4000" name="WDG1">
+  <RegisterGroup start="0xf00b4000" name="EWDG1">
     <Register name="CTRL0" start="+0x0" size="0x4">
       <BitField name="CLK_SEL" start="29" size="1"/>
       <BitField name="DIV_VALUE" start="25" size="3"/>
@@ -5308,7 +4980,7 @@
       <BitField name="REFRESH_PERIOD" start="0" size="16"/>
     </Register>
   </RegisterGroup>
-  <RegisterGroup start="0xf4128000" name="PWDG">
+  <RegisterGroup start="0xf4128000" name="PEWDG">
     <Register name="CTRL0" start="+0x0" size="0x4">
       <BitField name="CLK_SEL" start="29" size="1"/>
       <BitField name="DIV_VALUE" start="25" size="3"/>
@@ -13477,15 +13149,6 @@
       <BitField name="MAX_BIT" start="8" size="5"/>
       <BitField name="MIN_BIT" start="0" size="5"/>
     </Register>
-    <Register name="CTRL_0_CMD_GOLD" start="+0xc8" size="0x4">
-      <BitField name="GOLD_VALUE" start="0" size="32"/>
-    </Register>
-    <Register name="CTRL_0_CMD_CRCINIT" start="+0xcc" size="0x4">
-      <BitField name="CRC_INIT" start="0" size="32"/>
-    </Register>
-    <Register name="CTRL_0_CMD_CRCPOLY" start="+0xd0" size="0x4">
-      <BitField name="CRC_POLY" start="0" size="32"/>
-    </Register>
     <Register name="CTRL_0_CMD_CMD" start="+0xe0" size="0x4">
       <BitField name="DATA" start="0" size="32"/>
     </Register>
@@ -13505,7 +13168,6 @@
       <BitField name="DATA_OUT" start="0" size="32"/>
     </Register>
     <Register name="CTRL_0_CMD_STS" start="+0xf8" size="0x4">
-      <BitField name="CRC_IDX" start="24" size="5"/>
       <BitField name="WORD_IDX" start="16" size="5"/>
       <BitField name="WORD_CNT" start="8" size="5"/>
       <BitField name="BIT_IDX" start="0" size="5"/>
@@ -14018,7 +13680,7 @@
       <BitField name="PTR1_ST" start="5" size="1"/>
       <BitField name="PTR0_ST" start="4" size="1"/>
       <BitField name="WDOG" start="2" size="1"/>
-      <BitField name="EXECPT" start="1" size="1"/>
+      <BitField name="EXCEPT" start="1" size="1"/>
       <BitField name="STALL" start="0" size="1"/>
     </Register>
     <Register name="CTRL_0_IRQ_INT_FLAG" start="+0x304" size="0x4">
@@ -14046,7 +13708,7 @@
       <BitField name="PTR1_ST" start="5" size="1"/>
       <BitField name="PTR0_ST" start="4" size="1"/>
       <BitField name="WDOG" start="2" size="1"/>
-      <BitField name="EXECPT" start="1" size="1"/>
+      <BitField name="EXCEPT" start="1" size="1"/>
       <BitField name="STALL" start="0" size="1"/>
     </Register>
     <Register name="CTRL_0_IRQ_INT_STS" start="+0x308" size="0x4">
@@ -14074,7 +13736,7 @@
       <BitField name="PTR1_ST" start="5" size="1"/>
       <BitField name="PTR0_ST" start="4" size="1"/>
       <BitField name="WDOG" start="2" size="1"/>
-      <BitField name="EXECPT" start="1" size="1"/>
+      <BitField name="EXCEPT" start="1" size="1"/>
       <BitField name="STALL" start="0" size="1"/>
     </Register>
     <Register name="CTRL_0_IRQ_POINTER0" start="+0x310" size="0x4">
@@ -14241,15 +13903,6 @@
       <BitField name="MAX_BIT" start="8" size="5"/>
       <BitField name="MIN_BIT" start="0" size="5"/>
     </Register>
-    <Register name="CTRL_1_CMD_GOLD" start="+0x4c8" size="0x4">
-      <BitField name="GOLD_VALUE" start="0" size="32"/>
-    </Register>
-    <Register name="CTRL_1_CMD_CRCINIT" start="+0x4cc" size="0x4">
-      <BitField name="CRC_INIT" start="0" size="32"/>
-    </Register>
-    <Register name="CTRL_1_CMD_CRCPOLY" start="+0x4d0" size="0x4">
-      <BitField name="CRC_POLY" start="0" size="32"/>
-    </Register>
     <Register name="CTRL_1_CMD_CMD" start="+0x4e0" size="0x4">
       <BitField name="DATA" start="0" size="32"/>
     </Register>
@@ -14269,7 +13922,6 @@
       <BitField name="DATA_OUT" start="0" size="32"/>
     </Register>
     <Register name="CTRL_1_CMD_STS" start="+0x4f8" size="0x4">
-      <BitField name="CRC_IDX" start="24" size="5"/>
       <BitField name="WORD_IDX" start="16" size="5"/>
       <BitField name="WORD_CNT" start="8" size="5"/>
       <BitField name="BIT_IDX" start="0" size="5"/>
@@ -14782,7 +14434,7 @@
       <BitField name="PTR1_ST" start="5" size="1"/>
       <BitField name="PTR0_ST" start="4" size="1"/>
       <BitField name="WDOG" start="2" size="1"/>
-      <BitField name="EXECPT" start="1" size="1"/>
+      <BitField name="EXCEPT" start="1" size="1"/>
       <BitField name="STALL" start="0" size="1"/>
     </Register>
     <Register name="CTRL_1_IRQ_INT_FLAG" start="+0x704" size="0x4">
@@ -14810,7 +14462,7 @@
       <BitField name="PTR1_ST" start="5" size="1"/>
       <BitField name="PTR0_ST" start="4" size="1"/>
       <BitField name="WDOG" start="2" size="1"/>
-      <BitField name="EXECPT" start="1" size="1"/>
+      <BitField name="EXCEPT" start="1" size="1"/>
       <BitField name="STALL" start="0" size="1"/>
     </Register>
     <Register name="CTRL_1_IRQ_INT_STS" start="+0x708" size="0x4">
@@ -14838,7 +14490,7 @@
       <BitField name="PTR1_ST" start="5" size="1"/>
       <BitField name="PTR0_ST" start="4" size="1"/>
       <BitField name="WDOG" start="2" size="1"/>
-      <BitField name="EXECPT" start="1" size="1"/>
+      <BitField name="EXCEPT" start="1" size="1"/>
       <BitField name="STALL" start="0" size="1"/>
     </Register>
     <Register name="CTRL_1_IRQ_POINTER0" start="+0x710" size="0x4">
@@ -16933,6 +16585,7 @@
       <BitField name="FS_2" start="15" size="1"/>
       <BitField name="ATDTW" start="14" size="1"/>
       <BitField name="SUTW" start="13" size="1"/>
+      <BitField name="PRM" start="12" size="1"/>
       <BitField name="ASPE" start="11" size="1"/>
       <BitField name="ASP" start="8" size="2"/>
       <BitField name="IAA" start="6" size="1"/>
@@ -17004,12 +16657,12 @@
       <BitField name="TXSCHOH" start="0" size="7"/>
     </Register>
     <Register name="ENDPTNAK" start="+0x178" size="0x4">
-      <BitField name="EPTN" start="16" size="8"/>
-      <BitField name="EPRN" start="0" size="8"/>
+      <BitField name="EPTN" start="16" size="16"/>
+      <BitField name="EPRN" start="0" size="16"/>
     </Register>
     <Register name="ENDPTNAKEN" start="+0x17c" size="0x4">
-      <BitField name="EPTNE" start="16" size="8"/>
-      <BitField name="EPRNE" start="0" size="8"/>
+      <BitField name="EPTNE" start="16" size="16"/>
+      <BitField name="EPRNE" start="0" size="16"/>
     </Register>
     <Register name="PORTSC1" start="+0x184" size="0x4">
       <BitField name="STS" start="29" size="1"/>
@@ -17055,23 +16708,23 @@
       <BitField name="CM" start="0" size="2"/>
     </Register>
     <Register name="ENDPTSETUPSTAT" start="+0x1ac" size="0x4">
-      <BitField name="ENDPTSETUPSTAT" start="0" size="8"/>
+      <BitField name="ENDPTSETUPSTAT" start="0" size="16"/>
     </Register>
     <Register name="ENDPTPRIME" start="+0x1b0" size="0x4">
-      <BitField name="PETB" start="16" size="8"/>
-      <BitField name="PERB" start="0" size="8"/>
+      <BitField name="PETB" start="16" size="16"/>
+      <BitField name="PERB" start="0" size="16"/>
     </Register>
     <Register name="ENDPTFLUSH" start="+0x1b4" size="0x4">
-      <BitField name="FETB" start="16" size="8"/>
-      <BitField name="FERB" start="0" size="8"/>
+      <BitField name="FETB" start="16" size="16"/>
+      <BitField name="FERB" start="0" size="16"/>
     </Register>
     <Register name="ENDPTSTAT" start="+0x1b8" size="0x4">
-      <BitField name="ETBR" start="16" size="8"/>
-      <BitField name="ERBR" start="0" size="8"/>
+      <BitField name="ETBR" start="16" size="16"/>
+      <BitField name="ERBR" start="0" size="16"/>
     </Register>
     <Register name="ENDPTCOMPLETE" start="+0x1bc" size="0x4">
-      <BitField name="ETCE" start="16" size="8"/>
-      <BitField name="ERCE" start="0" size="8"/>
+      <BitField name="ETCE" start="16" size="16"/>
+      <BitField name="ERCE" start="0" size="16"/>
     </Register>
     <Register name="ENDPTCTRL_ENDPTCTRL0" start="+0x1c0" size="0x4">
       <BitField name="TXE" start="23" size="1"/>
@@ -17144,6 +16797,86 @@
       <BitField name="RXS" start="0" size="1"/>
     </Register>
     <Register name="ENDPTCTRL_ENDPTCTRL7" start="+0x1dc" size="0x4">
+      <BitField name="TXE" start="23" size="1"/>
+      <BitField name="TXR" start="22" size="1"/>
+      <BitField name="TXT" start="18" size="2"/>
+      <BitField name="TXS" start="16" size="1"/>
+      <BitField name="RXE" start="7" size="1"/>
+      <BitField name="RXR" start="6" size="1"/>
+      <BitField name="RXT" start="2" size="2"/>
+      <BitField name="RXS" start="0" size="1"/>
+    </Register>
+    <Register name="ENDPTCTRL_ENDPTCTRL8" start="+0x1e0" size="0x4">
+      <BitField name="TXE" start="23" size="1"/>
+      <BitField name="TXR" start="22" size="1"/>
+      <BitField name="TXT" start="18" size="2"/>
+      <BitField name="TXS" start="16" size="1"/>
+      <BitField name="RXE" start="7" size="1"/>
+      <BitField name="RXR" start="6" size="1"/>
+      <BitField name="RXT" start="2" size="2"/>
+      <BitField name="RXS" start="0" size="1"/>
+    </Register>
+    <Register name="ENDPTCTRL_ENDPTCTRL9" start="+0x1e4" size="0x4">
+      <BitField name="TXE" start="23" size="1"/>
+      <BitField name="TXR" start="22" size="1"/>
+      <BitField name="TXT" start="18" size="2"/>
+      <BitField name="TXS" start="16" size="1"/>
+      <BitField name="RXE" start="7" size="1"/>
+      <BitField name="RXR" start="6" size="1"/>
+      <BitField name="RXT" start="2" size="2"/>
+      <BitField name="RXS" start="0" size="1"/>
+    </Register>
+    <Register name="ENDPTCTRL_ENDPTCTRL10" start="+0x1e8" size="0x4">
+      <BitField name="TXE" start="23" size="1"/>
+      <BitField name="TXR" start="22" size="1"/>
+      <BitField name="TXT" start="18" size="2"/>
+      <BitField name="TXS" start="16" size="1"/>
+      <BitField name="RXE" start="7" size="1"/>
+      <BitField name="RXR" start="6" size="1"/>
+      <BitField name="RXT" start="2" size="2"/>
+      <BitField name="RXS" start="0" size="1"/>
+    </Register>
+    <Register name="ENDPTCTRL_ENDPTCTRL11" start="+0x1ec" size="0x4">
+      <BitField name="TXE" start="23" size="1"/>
+      <BitField name="TXR" start="22" size="1"/>
+      <BitField name="TXT" start="18" size="2"/>
+      <BitField name="TXS" start="16" size="1"/>
+      <BitField name="RXE" start="7" size="1"/>
+      <BitField name="RXR" start="6" size="1"/>
+      <BitField name="RXT" start="2" size="2"/>
+      <BitField name="RXS" start="0" size="1"/>
+    </Register>
+    <Register name="ENDPTCTRL_ENDPTCTRL12" start="+0x1f0" size="0x4">
+      <BitField name="TXE" start="23" size="1"/>
+      <BitField name="TXR" start="22" size="1"/>
+      <BitField name="TXT" start="18" size="2"/>
+      <BitField name="TXS" start="16" size="1"/>
+      <BitField name="RXE" start="7" size="1"/>
+      <BitField name="RXR" start="6" size="1"/>
+      <BitField name="RXT" start="2" size="2"/>
+      <BitField name="RXS" start="0" size="1"/>
+    </Register>
+    <Register name="ENDPTCTRL_ENDPTCTRL13" start="+0x1f4" size="0x4">
+      <BitField name="TXE" start="23" size="1"/>
+      <BitField name="TXR" start="22" size="1"/>
+      <BitField name="TXT" start="18" size="2"/>
+      <BitField name="TXS" start="16" size="1"/>
+      <BitField name="RXE" start="7" size="1"/>
+      <BitField name="RXR" start="6" size="1"/>
+      <BitField name="RXT" start="2" size="2"/>
+      <BitField name="RXS" start="0" size="1"/>
+    </Register>
+    <Register name="ENDPTCTRL_ENDPTCTRL14" start="+0x1f8" size="0x4">
+      <BitField name="TXE" start="23" size="1"/>
+      <BitField name="TXR" start="22" size="1"/>
+      <BitField name="TXT" start="18" size="2"/>
+      <BitField name="TXS" start="16" size="1"/>
+      <BitField name="RXE" start="7" size="1"/>
+      <BitField name="RXR" start="6" size="1"/>
+      <BitField name="RXT" start="2" size="2"/>
+      <BitField name="RXS" start="0" size="1"/>
+    </Register>
+    <Register name="ENDPTCTRL_ENDPTCTRL15" start="+0x1fc" size="0x4">
       <BitField name="TXE" start="23" size="1"/>
       <BitField name="TXR" start="22" size="1"/>
       <BitField name="TXT" start="18" size="2"/>
@@ -18927,7 +18660,6 @@
     <Register name="ADC_CFG0" start="+0x1108" size="0x4">
       <BitField name="SEL_SYNC_AHB" start="31" size="1"/>
       <BitField name="ADC_AHB_EN" start="29" size="1"/>
-      <BitField name="CONVERT_DURATION" start="12" size="16"/>
       <BitField name="PORT3_REALTIME" start="0" size="1"/>
     </Register>
     <Register name="INT_STS" start="+0x1110" size="0x4">
@@ -18942,7 +18674,7 @@
       <BitField name="SEQ_CVC" start="23" size="1"/>
       <BitField name="DMA_FIFO_FULL" start="22" size="1"/>
       <BitField name="AHB_ERR" start="21" size="1"/>
-      <BitField name="WDOG" start="0" size="14"/>
+      <BitField name="WDOG" start="0" size="16"/>
     </Register>
     <Register name="INT_EN" start="+0x1114" size="0x4">
       <BitField name="TRIG_CMPT" start="31" size="1"/>
@@ -18956,7 +18688,7 @@
       <BitField name="SEQ_CVC" start="23" size="1"/>
       <BitField name="DMA_FIFO_FULL" start="22" size="1"/>
       <BitField name="AHB_ERR" start="21" size="1"/>
-      <BitField name="WDOG" start="0" size="14"/>
+      <BitField name="WDOG" start="0" size="16"/>
     </Register>
     <Register name="ANA_CTRL0" start="+0x1200" size="0x4">
       <BitField name="MOTO_EN" start="31" size="1"/>
@@ -19635,7 +19367,6 @@
     <Register name="ADC_CFG0" start="+0x1108" size="0x4">
       <BitField name="SEL_SYNC_AHB" start="31" size="1"/>
       <BitField name="ADC_AHB_EN" start="29" size="1"/>
-      <BitField name="CONVERT_DURATION" start="12" size="16"/>
       <BitField name="PORT3_REALTIME" start="0" size="1"/>
     </Register>
     <Register name="INT_STS" start="+0x1110" size="0x4">
@@ -19650,7 +19381,7 @@
       <BitField name="SEQ_CVC" start="23" size="1"/>
       <BitField name="DMA_FIFO_FULL" start="22" size="1"/>
       <BitField name="AHB_ERR" start="21" size="1"/>
-      <BitField name="WDOG" start="0" size="14"/>
+      <BitField name="WDOG" start="0" size="16"/>
     </Register>
     <Register name="INT_EN" start="+0x1114" size="0x4">
       <BitField name="TRIG_CMPT" start="31" size="1"/>
@@ -19664,7 +19395,7 @@
       <BitField name="SEQ_CVC" start="23" size="1"/>
       <BitField name="DMA_FIFO_FULL" start="22" size="1"/>
       <BitField name="AHB_ERR" start="21" size="1"/>
-      <BitField name="WDOG" start="0" size="14"/>
+      <BitField name="WDOG" start="0" size="16"/>
     </Register>
     <Register name="ANA_CTRL0" start="+0x1200" size="0x4">
       <BitField name="MOTO_EN" start="31" size="1"/>
@@ -20537,26 +20268,6 @@
       <BitField name="LOC_BUSY" start="30" size="1"/>
       <BitField name="MODE" start="0" size="2"/>
     </Register>
-    <Register name="RESOURCE_CLK_TOP_LIN0" start="+0x118" size="0x4">
-      <BitField name="GLB_BUSY" start="31" size="1"/>
-      <BitField name="LOC_BUSY" start="30" size="1"/>
-      <BitField name="MODE" start="0" size="2"/>
-    </Register>
-    <Register name="RESOURCE_CLK_TOP_LIN1" start="+0x11c" size="0x4">
-      <BitField name="GLB_BUSY" start="31" size="1"/>
-      <BitField name="LOC_BUSY" start="30" size="1"/>
-      <BitField name="MODE" start="0" size="2"/>
-    </Register>
-    <Register name="RESOURCE_CLK_TOP_LIN2" start="+0x120" size="0x4">
-      <BitField name="GLB_BUSY" start="31" size="1"/>
-      <BitField name="LOC_BUSY" start="30" size="1"/>
-      <BitField name="MODE" start="0" size="2"/>
-    </Register>
-    <Register name="RESOURCE_CLK_TOP_LIN3" start="+0x124" size="0x4">
-      <BitField name="GLB_BUSY" start="31" size="1"/>
-      <BitField name="LOC_BUSY" start="30" size="1"/>
-      <BitField name="MODE" start="0" size="2"/>
-    </Register>
     <Register name="RESOURCE_CLK_TOP_TMR0" start="+0x128" size="0x4">
       <BitField name="GLB_BUSY" start="31" size="1"/>
       <BitField name="LOC_BUSY" start="30" size="1"/>
@@ -20753,26 +20464,6 @@
       <BitField name="MODE" start="0" size="2"/>
     </Register>
     <Register name="RESOURCE_PTPC" start="+0x420" size="0x4">
-      <BitField name="GLB_BUSY" start="31" size="1"/>
-      <BitField name="LOC_BUSY" start="30" size="1"/>
-      <BitField name="MODE" start="0" size="2"/>
-    </Register>
-    <Register name="RESOURCE_LIN0" start="+0x424" size="0x4">
-      <BitField name="GLB_BUSY" start="31" size="1"/>
-      <BitField name="LOC_BUSY" start="30" size="1"/>
-      <BitField name="MODE" start="0" size="2"/>
-    </Register>
-    <Register name="RESOURCE_LIN1" start="+0x428" size="0x4">
-      <BitField name="GLB_BUSY" start="31" size="1"/>
-      <BitField name="LOC_BUSY" start="30" size="1"/>
-      <BitField name="MODE" start="0" size="2"/>
-    </Register>
-    <Register name="RESOURCE_LIN2" start="+0x42c" size="0x4">
-      <BitField name="GLB_BUSY" start="31" size="1"/>
-      <BitField name="LOC_BUSY" start="30" size="1"/>
-      <BitField name="MODE" start="0" size="2"/>
-    </Register>
-    <Register name="RESOURCE_LIN3" start="+0x430" size="0x4">
       <BitField name="GLB_BUSY" start="31" size="1"/>
       <BitField name="LOC_BUSY" start="30" size="1"/>
       <BitField name="MODE" start="0" size="2"/>
@@ -21117,34 +20808,6 @@
       <BitField name="DIV" start="0" size="8"/>
     </Register>
     <Register name="CLOCK_CLK_TOP_CAN3" start="+0x1814" size="0x4">
-      <BitField name="GLB_BUSY" start="31" size="1"/>
-      <BitField name="LOC_BUSY" start="30" size="1"/>
-      <BitField name="PRESERVE" start="28" size="1"/>
-      <BitField name="MUX" start="8" size="3"/>
-      <BitField name="DIV" start="0" size="8"/>
-    </Register>
-    <Register name="CLOCK_CLK_TOP_LIN0" start="+0x1818" size="0x4">
-      <BitField name="GLB_BUSY" start="31" size="1"/>
-      <BitField name="LOC_BUSY" start="30" size="1"/>
-      <BitField name="PRESERVE" start="28" size="1"/>
-      <BitField name="MUX" start="8" size="3"/>
-      <BitField name="DIV" start="0" size="8"/>
-    </Register>
-    <Register name="CLOCK_CLK_TOP_LIN1" start="+0x181c" size="0x4">
-      <BitField name="GLB_BUSY" start="31" size="1"/>
-      <BitField name="LOC_BUSY" start="30" size="1"/>
-      <BitField name="PRESERVE" start="28" size="1"/>
-      <BitField name="MUX" start="8" size="3"/>
-      <BitField name="DIV" start="0" size="8"/>
-    </Register>
-    <Register name="CLOCK_CLK_TOP_LIN2" start="+0x1820" size="0x4">
-      <BitField name="GLB_BUSY" start="31" size="1"/>
-      <BitField name="LOC_BUSY" start="30" size="1"/>
-      <BitField name="PRESERVE" start="28" size="1"/>
-      <BitField name="MUX" start="8" size="3"/>
-      <BitField name="DIV" start="0" size="8"/>
-    </Register>
-    <Register name="CLOCK_CLK_TOP_LIN3" start="+0x1824" size="0x4">
       <BitField name="GLB_BUSY" start="31" size="1"/>
       <BitField name="LOC_BUSY" start="30" size="1"/>
       <BitField name="PRESERVE" start="28" size="1"/>

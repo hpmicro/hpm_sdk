@@ -25,6 +25,7 @@ project(lv_demo_dualcore_coremark)
 sdk_compile_definitions(-DCONFIG_LV_TOUCH=1)
 sdk_compile_definitions(-DLV_USE_DEMO_WIDGETS=1)
 sdk_compile_definitions(-DCONFIG_LV_HAS_EXTRA_CONFIG="lv_app_conf.h")
+sdk_compile_definitions(-DMAIN_ENTRY=app_main)
 
 set(opt_string "-O3 -funroll-all-loops -finline-limit=600 -ftree-dominator-opts -fno-if-conversion2 -fselective-scheduling -fno-code-hoisting")
 separate_arguments(opt_list UNIX_COMMAND ${opt_string})
@@ -46,4 +47,4 @@ sdk_app_src(src/demo_dualcore_coremark.c
 
 sdk_ses_compile_options(-mabi=ilp32d)
 sdk_ses_compile_options(-march=rv32gc)
-generate_ses_project()
+generate_ide_projects()

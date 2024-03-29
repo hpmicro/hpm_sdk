@@ -158,7 +158,6 @@ static inline void pcfg_dcdc_set_mode(PCFG_Type *ptr, uint8_t mode)
  *
  * @param[in] ptr base address
  * @param[in] limit current limit at low power mode
- * @param[in] over_limit set to true means current is greater than limit
  */
 static inline void pcfg_dcdc_set_lp_current_limit(PCFG_Type *ptr, pcfg_dcdc_lp_current_limit_t limit)
 {

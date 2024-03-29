@@ -203,22 +203,22 @@ hpm_stat_t sysctl_set_cpu0_wakeup_entry(SYSCTL_Type *ptr, uint32_t entry)
 
 hpm_stat_t sysctl_enable_group_resource(SYSCTL_Type *ptr,
                                         uint8_t group,
-                                        sysctl_resource_t linkable_resource,
+                                        sysctl_resource_t resource,
                                         bool enable)
 {
     uint32_t index, offset;
-    if (linkable_resource < sysctl_resource_linkable_start) {
+    if (resource < sysctl_resource_linkable_start) {
         return status_invalid_argument;
     }
 
-    index = (linkable_resource - sysctl_resource_linkable_start) / 32;
-    offset = (linkable_resource - sysctl_resource_linkable_start) % 32;
+    index = (resource - sysctl_resource_linkable_start) / 32;
+    offset = (resource - sysctl_resource_linkable_start) % 32;
     switch (group) {
     case SYSCTL_RESOURCE_GROUP0:
         ptr->GROUP0[index].VALUE = (ptr->GROUP0[index].VALUE & ~(1UL << offset))
             | (enable ? (1UL << offset) : 0);
         if (enable) {
-            while (sysctl_resource_target_is_busy(ptr, linkable_resource)) {
+            while (sysctl_resource_target_is_busy(ptr, resource)) {
                 ;
             }
         }
@@ -227,7 +227,7 @@ hpm_stat_t sysctl_enable_group_resource(SYSCTL_Type *ptr,
         ptr->GROUP1[index].VALUE = (ptr->GROUP1[index].VALUE & ~(1UL << offset))
             | (enable ? (1UL << offset) : 0);
         if (enable) {
-            while (sysctl_resource_target_is_busy(ptr, linkable_resource)) {
+            while (sysctl_resource_target_is_busy(ptr, resource)) {
                 ;
             }
         }
@@ -241,13 +241,13 @@ hpm_stat_t sysctl_enable_group_resource(SYSCTL_Type *ptr,
 
 bool sysctl_check_group_resource_enable(SYSCTL_Type *ptr,
                                         uint8_t group,
-                                        sysctl_resource_t linkable_resource)
+                                        sysctl_resource_t resource)
 {
     uint32_t index, offset;
     bool enable;
 
-    index = (linkable_resource - sysctl_resource_linkable_start) / 32;
-    offset = (linkable_resource - sysctl_resource_linkable_start) % 32;
+    index = (resource - sysctl_resource_linkable_start) / 32;
+    offset = (resource - sysctl_resource_linkable_start) % 32;
     switch (group) {
     case SYSCTL_RESOURCE_GROUP0:
         enable = ((ptr->GROUP0[index].VALUE & (1UL << offset)) != 0) ? true : false;
@@ -336,9 +336,8 @@ hpm_stat_t sysctl_set_adc_i2s_clock_mux(SYSCTL_Type *ptr,
     return status_success;
 }
 
-hpm_stat_t sysctl_update_divider(SYSCTL_Type *ptr, clock_node_t node_index, uint32_t divide_by)
+hpm_stat_t sysctl_update_divider(SYSCTL_Type *ptr, clock_node_t node, uint32_t divide_by)
 {
-    uint32_t node = (uint32_t) node_index;
     if (node >= clock_node_adc_i2s_start) {
         return status_invalid_argument;
     }
@@ -349,11 +348,9 @@ hpm_stat_t sysctl_update_divider(SYSCTL_Type *ptr, clock_node_t node_index, uint
     return status_success;
 }
 
-
-hpm_stat_t sysctl_config_clock(SYSCTL_Type *ptr, clock_node_t node_index,
+hpm_stat_t sysctl_config_clock(SYSCTL_Type *ptr, clock_node_t node,
                                 clock_source_t source, uint32_t divide_by)
 {
-    uint32_t node = (uint32_t) node_index;
     if (node >= clock_node_adc_i2s_start) {
         return status_invalid_argument;
     }

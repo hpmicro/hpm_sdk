@@ -2,7 +2,7 @@
 
 ## Overview
 
-This  example shows TCP echo communication.
+This example shows TCP echo communication.
 
 - PC sends TCP data frames to MCU,  and then MCU sends the data frames back to PC
 
@@ -28,14 +28,13 @@ This  example shows TCP echo communication.
      ```console
      This is an ethernet demo: TCP Echo (Polling Usage)
      LwIP Version: 2.1.2
-     Reference Clock: Internal Clock
      Enet phy init passed !
-     Static IP: 192.168.100.10
-     Netmask  : 255.255.255.0
-     Gateway  : 192.168.100.1
      Link Status: Up
-     Link Speed:  100Mbps
+     Link Speed:  1000Mbps
      Link Duplex: Full duplex
+     IPv4 Address: 192.168.100.10
+     IPv4 Netmask: 255.255.255.0
+     IPv4 Gateway: 192.168.100.1
      ```
 
 - Run an Ethernet debugging tool
@@ -48,8 +47,8 @@ This  example shows TCP echo communication.
 
   - Enter and send any characters in the edit window
 
-    ![](../doc/lwip_tcpecho_1.png)
+    <img src=../doc/lwip_tcpecho_1.png align=left>
 
   - Watch the characters echoed from MCU
+    <img src=../doc/lwip_tcpecho_2.png align=left>
 
-    ![](../doc/lwip_tcpecho_2.png)

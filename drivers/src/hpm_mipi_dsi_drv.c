@@ -21,23 +21,15 @@
     (cond) ? true : false; \
 })
 
-/**
- * struct mipi_dsi_packet - represents a MIPI DSI packet in protocol format
- * @size: size (in bytes) of the packet
- * @header: the four bytes that make up the header (Data ID, Word Count or
- *     Packet Data, and ECC)
- * @payload_length: number of bytes in the payload
- * @payload: a pointer to a buffer containing the payload, if any
- */
 typedef struct mipi_dsi_packet {
-    uint8_t header[4];
-    uint16_t payload_length;
-    const uint8_t *payload;
+    uint8_t header[4]; /*!< the four bytes that make up the header (Data ID, Word Count or Packet Data, and ECC) */
+    uint16_t payload_length; /*!< number of bytes in the payload */
+    const uint8_t *payload; /*!< a pointer to a buffer containing the payload, if any */
 } mipi_dsi_packet_t;
 
 /**
  * mipi_dsi_packet_format_is_short - check if a packet is of the short format
- * @type: MIPI DSI data type of the packet
+ * @param type: MIPI DSI data type of the packet
  *
  * @return: true if the packet for the given data type is a short packet, false
  * otherwise.
@@ -65,7 +57,7 @@ static bool mipi_dsi_packet_format_is_short(uint8_t type)
 
 /**
  * mipi_dsi_packet_format_is_long - check if a packet is of the long format
- * @type: MIPI DSI data type of the packet
+ * @param type: MIPI DSI data type of the packet
  *
  * @return: true if the packet for the given data type is a long packet, false
  * otherwise.
@@ -84,8 +76,8 @@ static bool mipi_dsi_packet_format_is_long(uint8_t type)
 /**
  * mipi_dsi_create_packet - create a packet from a message according to the
  *	DSI protocol
- * @packet: pointer to a DSI packet structure
- * @msg: message to translate into a packet
+ * @param packet: pointer to a DSI packet structure
+ * @param msg: message to translate into a packet
  *
  * @return: true on success or false on failure.
  */

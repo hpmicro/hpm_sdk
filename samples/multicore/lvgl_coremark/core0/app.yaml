@@ -1,5 +1,6 @@
 linked_project:
   project_name: multicore/lvgl_coremark/core1
+  project_path: ../core1
   build_type: sec_core_img
 
 debug:
@@ -9,7 +10,7 @@ debug:
 
 dependency:
   - multicore
-  - lcd
+  - lcdc
 
 excluded_targets:
   - debug

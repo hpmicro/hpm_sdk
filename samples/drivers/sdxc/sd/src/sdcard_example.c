@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -11,7 +11,7 @@
 #include "hpm_clock_drv.h"
 
 ATTR_PLACE_AT_NONCACHEABLE_BSS sdmmc_host_t g_sdmmc_host;
-static sd_card_t g_sd = {.host = &g_sdmmc_host};
+static sd_card_t g_sd = { .host = &g_sdmmc_host };
 
 /***********************************************************************************
  *
@@ -76,7 +76,7 @@ static void show_card_info(const sd_card_t *card)
 }
 
 int main(void)
- {
+{
     sd_card_t *card = &g_sd;
     board_init();
     hpm_stat_t status;
@@ -174,8 +174,9 @@ void test_write_read_last_1024_blocks(void)
     uint32_t sector_addr = g_sd.block_count - 1024U;
     hpm_stat_t status;
 
+    srand((unsigned int) HPM_MCHTMR->MTIME);
     for (uint32_t i = 0; i < ARRAY_SIZE(s_write_buf); i++) {
-        s_write_buf[i] = i << 16 | i;
+        s_write_buf[i] = ((uint32_t) rand() << 16) | rand();
     }
 
     status = sd_erase_blocks(&g_sd, sector_addr, 1024);
@@ -183,7 +184,7 @@ void test_write_read_last_1024_blocks(void)
         printf("SD Card Erase operation failed, status=%d\n", status);
     }
     bool result = false;
-    uint32_t step = sizeof(s_write_buf) / 512;
+    uint32_t step = sizeof(s_write_buf) / g_sd.block_size;
     uint64_t write_ticks = 0;
     uint64_t read_ticks = 0;
     if (step > 1024) {
@@ -191,6 +192,9 @@ void test_write_read_last_1024_blocks(void)
     }
     for (uint32_t i = 0; i < 1024; i += step) {
         result = false;
+        if ((i + step) > 1024) {
+            step = 1024 - i;
+        }
         uint64_t start_ticks = mchtmr_get_count(HPM_MCHTMR);
         status = sd_write_blocks(&g_sd, (uint8_t *) s_write_buf, sector_addr + i, step);
         if (status != status_success) {
@@ -207,7 +211,9 @@ void test_write_read_last_1024_blocks(void)
         end_ticks = mchtmr_get_count(HPM_MCHTMR);
         read_ticks += (end_ticks - start_ticks);
         result = (memcmp(s_write_buf, s_read_buf, sizeof(s_write_buf)) == 0);
-        printf("SD write-read-verify block range 0x%08x-0x%08x %s\n", sector_addr + i, sector_addr + i + step - 1U,
+        printf("SD write-read-verify block range 0x%08x-0x%08x %s\n",
+               sector_addr + i,
+               sector_addr + i + step - 1U,
                result ? "PASSED" : "FAILED");
         if (!result) {
             break;
@@ -220,7 +226,7 @@ void test_write_read_last_1024_blocks(void)
     printf("Test completed, %s\n", result ? "PASSED" : "FAILED");
 
     if (result) {
-        uint32_t xfer_bytes = 1024 * 512U;
+        uint32_t xfer_bytes = 1024 * g_sd.block_size;
         float write_speed = 1.0f * xfer_bytes / (1.0f * write_ticks / clock_get_frequency(clock_mchtmr0));
         float read_speed = 1.0f * xfer_bytes / (1.0f * read_ticks / clock_get_frequency(clock_mchtmr0));
 
@@ -255,13 +261,13 @@ void test_sd_stress_test(void)
     hpm_stat_t status;
 
     printf("SD card stress test...\n");
-
+    srand((unsigned int) HPM_MCHTMR->MTIME);
     for (uint32_t i = 0; i < ARRAY_SIZE(s_write_buf); i++) {
-        s_write_buf[i] = i << 16 | i;
+        s_write_buf[i] = ((uint32_t) rand() << 16) | rand();
     }
 
     /* Erase, Write, read 200MB */
-    uint32_t max_test_blocks = MIN(2048 * 200, g_sd.block_count);
+    uint32_t max_test_blocks = MIN(200 * 1024 * 1024 / g_sd.block_size, g_sd.block_count);
 
     uint32_t sector_addr;
     uint32_t start_sector = g_sd.block_count - max_test_blocks;
@@ -272,7 +278,7 @@ void test_sd_stress_test(void)
     uint32_t blocks_per_loop;
     for (uint32_t offset = 0; offset < max_test_blocks; offset += step) {
         sector_addr = start_sector + offset;
-        blocks_per_loop = MIN(step, (step - offset));
+        blocks_per_loop = MIN(step, (max_test_blocks - offset));
         result = false;
         uint64_t start_ticks = mchtmr_get_count(HPM_MCHTMR);
         status = sd_write_blocks(&g_sd, (uint8_t *) s_write_buf, sector_addr, blocks_per_loop);
@@ -291,22 +297,27 @@ void test_sd_stress_test(void)
         read_ticks += (end_ticks - start_ticks);
         result = (memcmp(s_write_buf, s_read_buf, sizeof(s_write_buf)) == 0);
         if (!result) {
-            printf("SD write-read-verify block range 0x%08x-0x%08x %s\n", sector_addr,
-                   sector_addr + blocks_per_loop - 1U, result ? "PASSED" : "FAILED");
+            printf("SD write-read-verify block range 0x%08x-0x%08x %s\n",
+                   sector_addr,
+                   sector_addr + blocks_per_loop - 1U,
+                   result ? "PASSED" : "FAILED");
             break;
         } else {
             printf(".");
+#if !defined(__ICCRISCV__) || (defined(_DLIB_FILE_DESCRIPTOR) && (_DLIB_FILE_DESCRIPTOR == 1))
             fflush(stdout);
+#endif
         }
     }
     printf("\n");
     printf("Test completed, %s\n", result ? "PASSED" : "FAILED");
 
     if (result) {
-        uint32_t xfer_bytes = max_test_blocks * 512U;
+        uint32_t xfer_bytes = max_test_blocks * g_sd.block_size;
         float write_speed = 1.0f * xfer_bytes / (1.0f * write_ticks / clock_get_frequency(clock_mchtmr0));
         float read_speed = 1.0f * xfer_bytes / (1.0f * read_ticks / clock_get_frequency(clock_mchtmr0));
 
         printf("Write Speed: %.2fMB/s, Read Speed: %.2fMB/s\n", write_speed / 1024 / 1024, read_speed / 1024 / 1024);
+        printf("NOTE: Increasing the MAX_BUF_SIZE_DEFAULT can achieve higher Read/write performance\n");
     }
 }

@@ -246,10 +246,6 @@ int main(void)
     FRESULT stat;
 
     board_init();
-    board_init_usb_pins();
-
-    board_delay_ms(100);  /* Wait for USB Power stable */
-
     store_device_init();
 
     board_init_lcd();

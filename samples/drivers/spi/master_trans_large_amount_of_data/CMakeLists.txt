@@ -9,4 +9,4 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(spi_master_trans_large_amount_of_data)
 
 sdk_app_src(src/spi.c)
-generate_ses_project()
+generate_ide_projects()

@@ -13,17 +13,17 @@
 #include "hpm_linv2_regs.h"
 #include "hpm_soc_feature.h"
 
+/**
+ * @brief LINV2 driver APIs
+ * @defgroup linv2_interface LINV2 driver APIs
+ * @ingroup linv2_interfaces
+ * @{
+ */
+
 /** bit4 and bit5 encode data length in ID */
 #define LIN_ID_DATA_LEN_SHIFT 4U
 #define LIN_ID_DATA_LEN_MASK  0x30U
 #define LIN_ID_DATA_LEN_GET(x) (((uint8_t)(x) & LIN_ID_DATA_LEN_MASK) >> LIN_ID_DATA_LEN_SHIFT)
-
-/**
- * @brief LINV2 driver APIs
- * @defgroup linv2_interface LINV2 driver APIs
- * @ingroup linv2_interface
- * @{
- */
 
 /**
  * @brief data length in ID bit4 and bit5
@@ -191,7 +191,7 @@ static inline void lin_set_mode(LINV2_Type *ptr, bool master)
  * @brief lin set checksum mode
  *
  * @param ptr lin base address
- * @param enhance_check true for enhance checksum mode, false for normal checksum mode
+ * @param enhance_checksum true for enhance checksum mode, false for normal checksum mode
  */
 static inline void lin_set_checksum_mode(LINV2_Type *ptr, bool enhance_checksum)
 {
@@ -364,13 +364,13 @@ hpm_stat_t lin_slave_receive(LINV2_Type *ptr, lin_trans_config_t *config);
  */
 void lin_slave_dma_transfer(LINV2_Type *ptr, lin_trans_config_t *config);
 
-/**
- * @}
- */
-
 #ifdef __cplusplus
 }
 #endif
+
+/**
+ * @}
+ */
 
 #endif /* HPM_LINV2_DRV_H */
 

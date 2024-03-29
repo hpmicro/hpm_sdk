@@ -1,4 +1,4 @@
-# PLL controller
+# PLLCTL
 
 ## Overview
 

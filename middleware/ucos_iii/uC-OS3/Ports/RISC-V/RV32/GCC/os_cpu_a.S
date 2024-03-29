@@ -59,6 +59,8 @@
 
     .equ  RISCV_PRCI_BASE_ADDR,      0xE6401000
 
+    .equ  RISCV_PRCI_EN_ADDR,        0xE6402000
+
     .equ  HPM_PLICSW_CLAIM_ADDR,     0xE6600004
 
 
@@ -178,6 +180,10 @@ OSIntCtxSw:
     li     t0, RISCV_MIE_MSIE
     csrrs  zero, mie, t0
 
+    li     t0, RISCV_PRCI_EN_ADDR
+    li     t1, 0x2
+    sw     t1, 0x0(t0)
+
 # This will trigger a synchronous software interrupt; PRCI->MSIP[0] = 0x02;
     li     t0, RISCV_PRCI_BASE_ADDR
     li     t1, 0x2
@@ -240,6 +246,13 @@ Software_IRQHandler:
 # SP = OSTCBHighRdyPtr->StkPtr;
     lw     sp, 0(t1)
 
+#   mscratch is indicating interrupt nest count
+#   Before exiting the software interrupt routinue, reduce mscratch
+#   Added by Hpmicro
+    csrr t0, mscratch
+    addi t0, t0, -1
+    csrw mscratch, t0
+
 # Restore Fpu registers when fpu is enabled. Added by Hpmicro
 #ifdef __riscv_flen
     call   portasmRESTORE_FPU_REGISTERS
@@ -280,12 +293,6 @@ Software_IRQHandler:
     lw     t6,  30 * 4(sp)
 
     addi   sp, sp, 4 * 32
-
-#   mscratch is indicating interrupt nest count
-#   Before exiting the software interrupt routinue, reduce mscratch
-    csrr t0, mscratch
-    addi t0, t0, -1
-    csrw mscratch, t0
 
 # Exception return will restore remaining context
     mret

@@ -44,6 +44,7 @@ hpm_mcl_stat_t hpm_mcl_loop_init(mcl_loop_t *loop, mcl_loop_cfg_t *cfg, mcl_cfg_
     loop->exec_ref.iq = 0;
     loop->exec_ref.position = 0;
     loop->exec_ref.speed = 0;
+    loop->rundata.block.dir = motor_dir_forward;
 
     hpm_mcl_loop_disable_all_user_set_value(loop);
 
@@ -89,7 +90,7 @@ hpm_mcl_stat_t hpm_mcl_loop_disable_all_user_set_value(mcl_loop_t *loop)
 }
 
 
-hpm_mcl_stat_t hpm_mcl_bldc_loop(mcl_loop_t *loop)
+hpm_mcl_stat_t hpm_mcl_current_foc_loop(mcl_loop_t *loop)
 {
     float ref_speed = 0;
     float ref_position = 0;
@@ -182,7 +183,7 @@ hpm_mcl_stat_t hpm_mcl_bldc_loop(mcl_loop_t *loop)
     return  mcl_success;
 }
 
-hpm_mcl_stat_t hpm_mcl_step_loop(mcl_loop_t *loop)
+hpm_mcl_stat_t hpm_mcl_step_foc_loop(mcl_loop_t *loop)
 {
     float ia, ib;
     float theta;
@@ -197,7 +198,7 @@ hpm_mcl_stat_t hpm_mcl_step_loop(mcl_loop_t *loop)
 
     MCL_ASSERT_OPT(loop != NULL, mcl_invalid_pointer);
     theta =  hpm_mcl_path_get_current_theta(loop->path);
-    theta_ = MCL_ANGLE_MOD_X(0, MCL_PI * 2, (hpm_mcl_path_get_next_theta(loop->path) - (0.25 * MCL_PI)));
+    theta_ = MCL_ANGLE_MOD_X(0, MCL_PI * 2, (hpm_mcl_path_get_next_theta(loop->path) - (0.25f * MCL_PI)));
 
     if (loop->enable) {
         MCL_STATUS_SET_IF_TRUE(mcl_success != hpm_mcl_analog_get_value(loop->analog, analog_a_current, &ia), loop->status, loop_status_fail);
@@ -205,7 +206,7 @@ hpm_mcl_stat_t hpm_mcl_step_loop(mcl_loop_t *loop)
         MCL_STATUS_SET_IF_TRUE(mcl_success != hpm_mcl_analog_step_convert(loop->analog, ia, analog_a_current, theta, &ia), loop->status, loop_status_fail);
         MCL_STATUS_SET_IF_TRUE(mcl_success != hpm_mcl_analog_step_convert(loop->analog, ib, analog_b_current, theta, &ib), loop->status, loop_status_fail);
 
-        theta =  MCL_ANGLE_MOD_X(0, MCL_PI * 2, (theta - (0.25 * MCL_PI)));
+        theta =  MCL_ANGLE_MOD_X(0, MCL_PI * 2, (theta - (0.25f * MCL_PI)));
         MCL_VALUE_SET_IF_TRUE(loop->ref_id.enable, ref_d, loop->ref_id.value);
         alpha = ia;
         beta = ib;
@@ -229,18 +230,85 @@ hpm_mcl_stat_t hpm_mcl_step_loop(mcl_loop_t *loop)
     return  mcl_success;
 }
 
+hpm_mcl_stat_t hpm_mcl_block_loop(mcl_loop_t *loop)
+{
+    hpm_mcl_type_t speed_pi_out;
+    float speed_pi_out_fp;
+    float ref_speed = 0;
+    mcl_control_svpwm_duty_t duty;
+
+    MCL_ASSERT_OPT(loop != NULL, mcl_invalid_pointer);
+    if (loop->enable) {
+        if (loop->cfg->enable_position_loop) {
+            MCL_ASSERT_EXEC_CODE_AND_RETURN(false, loop->status = loop_status_fail, mcl_invalid_argument);
+        }
+        if (loop->cfg->enable_speed_loop) {
+            loop->time.speed_ts += *loop->const_time.speed_ts;
+            MCL_FUNCTION_SET_IF_ELSE_TRUE(loop->ref_speed.enable, ref_speed, loop->ref_speed.value, loop->exec_ref.speed);
+            if (loop->time.speed_ts >= *loop->const_time.speed_ts) {
+                loop->time.speed_ts = 0;
+                loop->control->method.speed_pid(ref_speed, hpm_mcl_encoder_get_speed(loop->encoder),
+                &loop->control->cfg->speed_pid_cfg, &speed_pi_out);
+            }
+        } else {
+            MCL_ASSERT_EXEC_CODE_AND_RETURN(false, loop->status = loop_status_fail, mcl_invalid_argument);
+        }
+        speed_pi_out_fp = MCL_MATH_CONVERT_FLOAT(speed_pi_out);
+        if (speed_pi_out_fp < 0) {
+            speed_pi_out_fp = -speed_pi_out_fp;
+            loop->rundata.block.dir = motor_dir_forward;
+        } else {
+            loop->rundata.block.dir = motor_dir_back;
+        }
+        duty.a = speed_pi_out_fp;
+        duty.b = speed_pi_out_fp;
+        duty.c = speed_pi_out_fp;
+        hpm_mcl_drivers_update_bldc_duty(loop->drivers, duty.a, duty.b, duty.c);
+    } else {
+        duty.a = 0;
+        duty.b = 0;
+        duty.c = 0;
+        hpm_mcl_drivers_update_bldc_duty(loop->drivers, duty.a, duty.b, duty.c);
+    }
+    return  mcl_success;
+}
+
+hpm_mcl_stat_t hpm_mcl_loop_refresh_block(mcl_loop_t *loop)
+{
+    uint8_t sector;
+    mcl_encoder_uvw_level_t level;
+
+    hpm_mcl_encoder_get_uvw_status(loop->encoder, &level);
+    loop->control->method.get_block_sector(*loop->encoder->phase, level.u, level.v, level.w, &sector);
+    hpm_mcl_drivers_block_update(loop->drivers, loop->rundata.block.dir, sector);
+
+    return mcl_success;
+}
+
+hpm_mcl_stat_t hpm_mcl_loop_start_block(mcl_loop_t *loop)
+{
+    uint8_t sector;
+    mcl_encoder_uvw_level_t level;
+
+    hpm_mcl_encoder_get_uvw_status(loop->encoder, &level);
+    loop->control->method.get_block_sector(*loop->encoder->phase, level.u, level.v, level.w, &sector);
+    hpm_mcl_drivers_block_update(loop->drivers, loop->rundata.block.dir, ((sector + 1) % 7) + 1);
+
+    return mcl_success;
+}
+
 hpm_mcl_stat_t hpm_mcl_loop(mcl_loop_t *loop)
 {
     MCL_ASSERT_OPT(loop != NULL, mcl_invalid_pointer);
     switch (loop->cfg->mode) {
     case mcl_mode_foc:
     case mcl_mode_hardware_foc:
-        return hpm_mcl_bldc_loop(loop);
+        return hpm_mcl_current_foc_loop(loop);
     case mcl_mode_block:
-        MCL_ASSERT_EXEC_CODE_AND_RETURN(false, loop->status = loop_status_fail, mcl_in_development);
+        return hpm_mcl_block_loop(loop);
         break;
     case mcl_mode_step_foc:
-        return hpm_mcl_step_loop(loop);
+        return hpm_mcl_step_foc_loop(loop);
         break;
     default:
         MCL_ASSERT_EXEC_CODE_AND_RETURN(false, loop->status = loop_status_fail, mcl_fail);

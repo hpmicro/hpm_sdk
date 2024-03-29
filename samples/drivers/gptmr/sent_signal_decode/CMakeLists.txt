@@ -13,4 +13,4 @@ sdk_compile_definitions(-DCONFIG_SENT_IDLE_INTERVAL_US=1000)
 project(gptmr_sent_decode_demo)
 
 sdk_app_src(src/sent_signal_decode.c)
-generate_ses_project()
+generate_ide_projects()

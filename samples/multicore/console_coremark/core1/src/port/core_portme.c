@@ -161,7 +161,7 @@ const ee_u32 default_num_contexts = 1;
  */
 void portable_init(core_portable *p, int *argc, char *argv[])
 {
-    board_init_pmp();
+    board_init_core1();
 
     memset(ctx, 0, sizeof(*ctx));
     ctx->current_idx = 0;

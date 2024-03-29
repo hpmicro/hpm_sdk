@@ -8,4 +8,4 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(dma_uart_circle_rx_example)
 
 sdk_app_src(src/dma_uart_circle_rx.c)
-generate_ses_project()
+generate_ide_projects()

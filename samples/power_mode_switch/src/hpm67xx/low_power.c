@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -50,24 +50,45 @@ static void show_power_status(uint32_t retention_mask)
     printf("---------------------------------------------\n");
 }
 
+ATTR_RAMFUNC void switch_preset_and_restore_xpi_clk(sysctl_preset_t preset, uint32_t xpi_clk_setting)
+{
+    sysctl_clock_set_preset(HPM_SYSCTL, preset);
+    HPM_SYSCTL->CLOCK[SYSCTL_CLOCK_CLK_TOP_XPI0] = xpi_clk_setting;
+    fencei();
+    for (volatile uint32_t delay_cnt = 1000; delay_cnt > 0; delay_cnt--) {
+        ;
+    }
+}
 
 void enter_wait_mode(void)
 {
     uint32_t retention = 0xFFCFUL;
+    uint32_t xpi_clk_setting, femc_clk_setting;
     printf("Entering wait mode\n");
     show_power_status(retention);
     printf("Send 'w' to wakeup from the wait mode\n");
 
     /*
+     * Save xpi and femc clock settings before switch to preset 0. It will be restored
+     * after being woke up.
+     */
+    xpi_clk_setting = HPM_SYSCTL->CLOCK[SYSCTL_CLOCK_CLK_TOP_XPI0];
+    femc_clk_setting = HPM_SYSCTL->CLOCK[SYSCTL_CLOCK_CLK_TOP_FEMC];
+    sysctl_clock_set_preset(HPM_SYSCTL, sysctl_preset_0);
+
+    /*
      * Keep PUART clock
      */
-    pcfg_set_periph_clock_mode(HPM_PCFG, PCFG_PERIPH_KEEP_CLOCK_ON(pcfg_pmc_periph_uart));
     sysctl_set_cpu0_lp_retention(HPM_SYSCTL, retention);
-    sysctl_clock_set_preset(HPM_SYSCTL, sysctl_preset_0);
     pcfg_disable_power_trap(HPM_PCFG);
     sysctl_set_cpu0_lp_mode(HPM_SYSCTL, cpu_lp_mode_gate_cpu_clock);
     WFI();
-    sysctl_clock_set_preset(HPM_SYSCTL, sysctl_preset_1);
+
+    /* Switch to preset 1 and restore xpi clock */
+    switch_preset_and_restore_xpi_clk(sysctl_preset_1, xpi_clk_setting);
+
+    /* Restore femc clock */
+    HPM_SYSCTL->CLOCK[SYSCTL_CLOCK_CLK_TOP_FEMC] = femc_clk_setting;
 }
 
 void enter_stop_mode(void)
@@ -78,10 +99,10 @@ void enter_stop_mode(void)
     show_power_status(retention);
     printf("Send 'w' to wakeup from the stop mode\n");
 
+    sysctl_resource_target_set_mode(HPM_SYSCTL, sysctl_resource_femc, sysctl_resource_mode_force_on);
     /*
      * Keep PUART clock
      */
-    pcfg_set_periph_clock_mode(HPM_PCFG, PCFG_PERIPH_KEEP_CLOCK_ON(pcfg_pmc_periph_uart));
     sysctl_set_cpu0_lp_retention(HPM_SYSCTL, retention);
     sysctl_clear_cpu0_flags(HPM_SYSCTL, cpu_event_flag_mask_all);
     sysctl_set_cpu0_lp_mode(HPM_SYSCTL, cpu_lp_mode_trigger_system_lp);
@@ -100,7 +121,6 @@ void enter_standby_mode(void)
     /*
      * Keep PUART clock
      */
-    pcfg_set_periph_clock_mode(HPM_PCFG, PCFG_PERIPH_KEEP_CLOCK_ON(pcfg_pmc_periph_uart));
     sysctl_set_cpu0_lp_retention(HPM_SYSCTL, retention);
     sysctl_set_cpu0_lp_mode(HPM_SYSCTL, cpu_lp_mode_trigger_system_lp);
     WFI();

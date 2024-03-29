@@ -5,4 +5,4 @@ excluded_targets:
   - flash_sdram_uf2
 
 dependency:
-  - sdram
+  - board_sdram

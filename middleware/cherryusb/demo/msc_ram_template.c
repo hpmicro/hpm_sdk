@@ -95,7 +95,7 @@ const uint8_t msc_ram_descriptor[] = {
     0x00
 };
 
-void usbd_event_handler(uint8_t event)
+static void usbd_event_handler(uint8_t busid, uint8_t event)
 {
     switch (event) {
         case USBD_EVENT_RESET:
@@ -130,19 +130,19 @@ typedef struct
 
 BLOCK_TYPE mass_block[BLOCK_COUNT];
 
-void usbd_msc_get_cap(uint8_t lun, uint32_t *block_num, uint16_t *block_size)
+void usbd_msc_get_cap(uint8_t busid, uint8_t lun, uint32_t *block_num, uint32_t *block_size)
 {
     *block_num = 1000; //Pretend having so many buffer,not has actually.
     *block_size = BLOCK_SIZE;
 }
-int usbd_msc_sector_read(uint32_t sector, uint8_t *buffer, uint32_t length)
+int usbd_msc_sector_read(uint8_t busid, uint8_t lun, uint32_t sector, uint8_t *buffer, uint32_t length)
 {
     if (sector < BLOCK_COUNT)
         memcpy(buffer, mass_block[sector].BlockSpace, length);
     return 0;
 }
 
-int usbd_msc_sector_write(uint32_t sector, uint8_t *buffer, uint32_t length)
+int usbd_msc_sector_write(uint8_t busid, uint8_t lun, uint32_t sector, uint8_t *buffer, uint32_t length)
 {
     if (sector < BLOCK_COUNT)
         memcpy(mass_block[sector].BlockSpace, buffer, length);
@@ -151,10 +151,10 @@ int usbd_msc_sector_write(uint32_t sector, uint8_t *buffer, uint32_t length)
 
 struct usbd_interface intf0;
 
-void msc_ram_init(void)
+void msc_ram_init(uint8_t busid, uint32_t reg_base)
 {
-    usbd_desc_register(msc_ram_descriptor);
-    usbd_add_interface(usbd_msc_init_intf(&intf0, MSC_OUT_EP, MSC_IN_EP));
+    usbd_desc_register(busid, msc_ram_descriptor);
+    usbd_add_interface(busid, usbd_msc_init_intf(busid, &intf0, MSC_OUT_EP, MSC_IN_EP));
 
-    usbd_initialize();
+    usbd_initialize(busid, reg_base, usbd_event_handler);
 }

@@ -182,7 +182,7 @@ static inline void pdgo_disable_pulldown_resistor_for_wakeup_pin(PDGO_Type *ptr)
 /**
  * @brief Set DGO wakeup counter
  * @param [in] ptr DGO base address
- * @param [in] counter Wakeup counter value. clock source is 32K
+ * @param [in] wakeup_ctr Wakeup counter value. clock source is 32K
  */
 static inline void pdgo_set_wakeup_counter(PDGO_Type *ptr, uint32_t wakeup_ctr)
 {

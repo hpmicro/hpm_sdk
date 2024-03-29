@@ -2,9 +2,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 cmake_minimum_required(VERSION 3.13)
 
-if(${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.20)
-    cmake_policy(SET CMP0116 OLD)
-endif()
 cmake_policy(SET CMP0079 NEW)
 
 project(hpm_sdk)
@@ -14,6 +11,11 @@ target_link_libraries(${HPM_SDK_LIB} PUBLIC ${HPM_SDK_LIB_ITF})
 
 add_library(${HPM_SDK_GCC_LIB} STATIC "")
 target_link_libraries(${HPM_SDK_GCC_LIB} PUBLIC ${HPM_SDK_GCC_LIB_ITF} ${HPM_SDK_LIB_ITF})
+
+target_link_libraries(${HPM_SDK_LIB} PUBLIC ${HPM_SDK_GCC_LIB_ITF})
+if("${TOOLCHAIN_VARIANT}" STREQUAL "nds-gcc")
+target_link_libraries(${HPM_SDK_LIB} PUBLIC ${HPM_SDK_NDSGCC_LIB_ITF})
+endif()
 
 if(flash_size)
     sdk_linker_global_symbols("_flash_size=${flash_size}")
@@ -120,6 +122,11 @@ if(DEFINED CUSTOM_SES_STARTUP_FILE)
     sdk_ses_src(${CUSTOM_SES_STARTUP_FILE})
 endif()
 
+if(DEFINED CUSTOM_IAR_STARTUP_FILE)
+    set(USE_CUSTOM_STARTUP 1)
+    sdk_iar_src(${CUSTOM_IAR_STARTUP_FILE})
+endif()
+
 sdk_sys_inc(${SYSROOT_DIR}/include)
 
 # parse module list file provided in soc folder, it will decide which modules to be enabled under drivers folder
@@ -194,6 +201,7 @@ if(${HPM_SDK_LD_NO_WHOLE_SDK})
 endif()
 
 if("${TOOLCHAIN_VARIANT}" STREQUAL "nds-gcc")
+    target_link_libraries(${HPM_SDK_LIB} PUBLIC ${HPM_SDK_NDSGCC_LIB_ITF})
     target_link_libraries(${APP_ELF_NAME}
         "-Wl,-Map=${EXECUTABLE_OUTPUT_PATH}/${APP_MAP_NAME}"
         ${HPM_SDK_WHOLE_ARCHIVE_OPT}

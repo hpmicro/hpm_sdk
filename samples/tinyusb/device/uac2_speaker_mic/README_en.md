@@ -2,7 +2,7 @@
 
 ## Overview
 
-This  example project shows USB hid generic transfers
+This example project shows USB hid generic transfers
 
 - PC transmits a HID report to MCU,  and then MC send it back to PC
 

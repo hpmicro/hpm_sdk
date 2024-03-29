@@ -1,4 +1,4 @@
-# Copyright (c) 2023 HPMicro
+# Copyright (c) 2023-2024 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -22,17 +22,16 @@ sdk_compile_definitions(-DENET_MULTIPLE_PORT=1)
 sdk_compile_definitions(-DLWIP_DHCP=0)
 
 project(lwip_tcpecho_multi_ports_example)
-
+sdk_inc(../ports/baremetal/multiple)
+sdk_inc(../ports/baremetal/multiple/arch)
+sdk_inc(../common/multiple)
 sdk_inc(inc)
-sdk_inc(inc/arch)
-sdk_inc(inc/feature)
-sdk_inc(inc/eth)
 sdk_inc(inc/app)
 
-sdk_app_src(src/arch/sys_arch.c)
-sdk_app_src(src/arch/ethernetif.c)
-sdk_app_src(src/feature/common_lwip.c)
-sdk_app_src(src/eth/netconf.c)
+sdk_app_src(../ports/baremetal/multiple/arch/sys_arch.c)
+sdk_app_src(../ports/baremetal/multiple/ethernetif.c)
+sdk_app_src(../common/multiple/common.c)
+sdk_app_src(../common/multiple/netconf.c)
 sdk_app_src(src/app/tcp_echo.c)
 sdk_app_src(src/lwip.c)
-generate_ses_project()
+generate_ide_projects()

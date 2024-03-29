@@ -23,7 +23,7 @@ hpm_stat_t lin_master_configure_timing(LINV2_Type *ptr, lin_timing_t *timing)
     ptr->TIMING_CONTROL &= ~LINV2_TIMING_CONTROL_LIN_INITIAL_MASK;
 
     bt_mul = 20000U / timing->baudrate - 1U;
-    prescaler = log((timing->src_freq_in_hz / ((bt_mul + 1U) * timing->baudrate * 200U))) / log(2U) - 1U;
+    prescaler = (uint8_t)(log((timing->src_freq_in_hz / ((bt_mul + 1U) * timing->baudrate * 200U))) / log(2U) - 1U);
     bt_div = timing->src_freq_in_hz / ((1U << (prescaler + 1U)) * (bt_mul + 1U) * timing->baudrate);
 
     if ((bt_div < 200) || (bt_div > 512)) {
@@ -51,7 +51,7 @@ hpm_stat_t lin_slave_configure_timing(LINV2_Type *ptr, uint32_t src_freq_in_hz)
     ptr->TIMING_CONTROL |= LINV2_TIMING_CONTROL_LIN_INITIAL_MASK;
     ptr->TIMING_CONTROL &= ~LINV2_TIMING_CONTROL_LIN_INITIAL_MASK;
 
-    prescaler = log((src_freq_in_hz / (20000U * 200U))) / log(2U) - 1U;
+    prescaler = (uint8_t)(log((src_freq_in_hz / (20000U * 200U))) / log(2U) - 1U);
     bt_div = src_freq_in_hz / ((1U << (prescaler + 1U)) * 20000U);
 
     if ((bt_div < 200) || (bt_div >= 512)) {

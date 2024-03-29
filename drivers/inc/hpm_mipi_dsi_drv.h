@@ -107,21 +107,14 @@ typedef enum mipi_dsi_video_mode {
 
 /**
  * mipi_dsi_msg_t - read/write DSI buffer
- * @channel: virtual channel id
- * @type: payload data type
- * @flags: flags controlling this message transmission
- * @tx_len: length of @tx_buf
- * @tx_buf: data to be written
- * @rx_len: length of @rx_buf
- * @rx_buf: data to be read, or NULL
  */
 typedef struct mipi_dsi_msg {
-    uint8_t channel;
-    uint8_t type;
-    uint16_t tx_len;
-    const void *tx_buf;
-    uint16_t rx_len;
-    void *rx_buf;
+    uint8_t channel; /*!< virtual channel id */
+    uint8_t type; /*!< payload data type */
+    uint16_t tx_len; /*!< length of tx_buf */
+    const void *tx_buf; /*!< data to be written */
+    uint16_t rx_len; /*!< length of rx_buf */
+    void *rx_buf; /*!< data to be read, or NULL */
 } mipi_dsi_msg_t;
 
 typedef struct mipi_video_para {
@@ -155,7 +148,7 @@ extern "C" {
 /**
  * @brief get MIPI_DSI default config on video mode
  *
- * @cfg: MIPI_DSI default config
+ * @param cfg: MIPI_DSI default config
  */
 void mipi_dsi_get_defconfig_on_video(mipi_dsi_config_t *cfg);
 
@@ -211,9 +204,9 @@ int mipi_dsi_lp_cmd_transfer(MIPI_DSI_Type *ptr, const mipi_dsi_msg_t *msg);
  *	the payload in a long packet transmitted from the peripheral back to the
  *	host processor
  *
- * @ptr: MIPI_DSI base address
- * @channel: virtual channel
- * @value: the maximum size of the payload
+ * @param ptr: MIPI_DSI base address
+ * @param channel: virtual channel
+ * @param value: the maximum size of the payload
  *
  * @return: true on success or false on failure.
  */
@@ -222,10 +215,10 @@ int mipi_dsi_set_maximum_return_packet_size(MIPI_DSI_Type *ptr, uint8_t channel,
 /**
  * @brief transmit data using a generic write packet
  *
- * @ptr: MIPI_DSI base address
- * @channel: virtual channel
- * @payload: buffer containing the payload
- * @size: size of payload buffer
+ * @param ptr: MIPI_DSI base address
+ * @param channel: virtual channel
+ * @param payload: buffer containing the payload
+ * @param size: size of payload buffer
  *
  * This function will automatically choose the right data type depending on
  * the payload length.
@@ -239,12 +232,12 @@ int mipi_dsi_generic_write(MIPI_DSI_Type *ptr, uint8_t channel, const void *payl
 /**
  * @brief receive data using a generic read packet
  *
- * @ptr: MIPI_DSI base address
- * @channel: virtual channel
- * @params: buffer containing the request parameters
- * @num_params: number of request parameters
- * @data: buffer in which to return the received data
- * @size: size of receive buffer
+ * @param ptr: MIPI_DSI base address
+ * @param channel: virtual channel
+ * @param params: buffer containing the request parameters
+ * @param num_params: number of request parameters
+ * @param data: buffer in which to return the received data
+ * @param size: size of receive buffer
  *
  * This function will automatically choose the right data type depending on
  * the number of parameters passed in.
@@ -258,10 +251,10 @@ int mipi_dsi_generic_read(MIPI_DSI_Type *ptr, uint8_t channel, const void *param
 /**
  * @brief transmit a DCS command with payload
  *
- * @ptr: MIPI_DSI base address
- * @channel: virtual channel
- * @data: buffer containing data to be transmitted
- * @len: size of transmission buffer
+ * @param ptr: MIPI_DSI base address
+ * @param channel: virtual channel
+ * @param data: buffer containing data to be transmitted
+ * @param len: size of transmission buffer
  *
  * This function will automatically choose the right data type depending on
  * the command payload length.
@@ -275,11 +268,11 @@ int mipi_dsi_dcs_write_buffer(MIPI_DSI_Type *ptr, uint8_t channel,
 /**
  * @brief send DCS write command
  *
- * @ptr: MIPI_DSI base address
- * @channel: virtual channel
- * @cmd: DCS command
- * @data: buffer containing the command payload
- * @len: command payload length
+ * @param ptr: MIPI_DSI base address
+ * @param channel: virtual channel
+ * @param cmd: DCS command
+ * @param data: buffer containing the command payload
+ * @param len: command payload length
  *
  * This function will automatically choose the right data type depending on
  * the command payload length.
@@ -293,11 +286,11 @@ int mipi_dsi_dcs_write(MIPI_DSI_Type *ptr, uint8_t channel, uint8_t cmd,
 /**
  * @brief send DCS read request command
  *
- * @ptr: MIPI_DSI base address
- * @channel: virtual channel
- * @cmd: DCS command
- * @data: buffer in which to receive data
- * @len: size of receive buffer
+ * @param ptr: MIPI_DSI base address
+ * @param channel: virtual channel
+ * @param cmd: DCS command
+ * @param data: buffer in which to receive data
+ * @param len: size of receive buffer
  *
  * @return: The number of bytes read or a negative error code on failure.
  */

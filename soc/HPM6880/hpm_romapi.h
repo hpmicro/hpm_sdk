@@ -727,7 +727,7 @@ static inline bool rom_xpi_nor_exip_region_config(XPI_Type *base, uint32_t index
 
 /**
  * @brief Disable EXiP Feature on specified EXiP Region
- * @@param [in] base XPI base address
+ * @param [in] base XPI base address
  * @param [in] index EXiP Region index
  */
 ATTR_RAMFUNC
@@ -747,7 +747,7 @@ static inline void rom_xpi_nor_exip_region_disable(XPI_Type *base, uint32_t inde
 
 /**
  * @brief Enable global EXiP logic
- * @@param [in] base XPI base address
+ * @param [in] base XPI base address
  */
 ATTR_RAMFUNC
 static inline void rom_xpi_nor_exip_enable(XPI_Type *base)
@@ -764,7 +764,7 @@ static inline void rom_xpi_nor_exip_enable(XPI_Type *base)
 
 /**
  * @brief Disable global EXiP logic
- * @@param [in] base XPI base address
+ * @param [in] base XPI base address
  */
 ATTR_RAMFUNC
 static inline void rom_xpi_nor_exip_disable(XPI_Type *base)

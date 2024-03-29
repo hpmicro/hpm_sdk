@@ -22,5 +22,5 @@ This example project shows USB Audio V1 speaker, microphone and midi device.
 - Select the speaker device as the default player, and the PC will play audio through the DAO interface
 - Select the microphone device as the default audio input device, and the PC will input audio through the PDM interface.
 - Taking Windows MIDI-OX as an example
-    - Open MIDI-OX Software, click menu **"options-MIDI devices..."**, MIDI Inputs select "CherryUSB UAC MIDI"，MIDI Outputs select "Microsoft GS Wavetable Synth". 
+    - Open MIDI-OX Software, click menu **"options-MIDI devices..."**, MIDI Inputs select "CherryUSB UAC MIDI"，MIDI Outputs select "Microsoft GS Wavetable Synth".
     - Pushing PBUTN or User key button that will simulate pressing the piano keys, and users can listen to them through computer default speaker.

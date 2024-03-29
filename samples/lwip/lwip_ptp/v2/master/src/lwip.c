@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -8,7 +8,7 @@
 /*---------------------------------------------------------------------*
  * Includes
  *---------------------------------------------------------------------*/
-#include "common_lwip.h"
+#include "common.h"
 #include "netconf.h"
 #include "lwip.h"
 #include "lwip/init.h"
@@ -29,6 +29,8 @@ __RW uint8_t tx_buff[ENET_TX_BUFF_COUNT][ENET_TX_BUFF_SIZE]; /* Ethernet Transmi
 enet_desc_t desc;
 uint32_t localtime;
 uint8_t mac[ENET_MAC];
+struct netif gnetif;
+
 /*---------------------------------------------------------------------*
  * Initialization
  *---------------------------------------------------------------------*/
@@ -204,11 +206,14 @@ int main(void)
 
         /* Initialize the Lwip stack */
         lwip_init();
-        netif_config();
-        user_notification(&gnetif);
+        netif_config(&gnetif);
 
         /* Start services */
         enet_services(&gnetif);
+
+        do {
+            board_delay_ms(100);
+        } while (!netif_is_link_up(&gnetif));
 
         /* Initialize ptpd */
         ptpd_Init();

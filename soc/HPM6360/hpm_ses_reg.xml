@@ -3870,7 +3870,6 @@
     <Register name="ADC_CFG0" start="+0x1108" size="0x4">
       <BitField name="SEL_SYNC_AHB" start="31" size="1"/>
       <BitField name="ADC_AHB_EN" start="29" size="1"/>
-      <BitField name="CONVERT_DURATION" start="12" size="16"/>
       <BitField name="PORT3_REALTIME" start="0" size="1"/>
     </Register>
     <Register name="INT_STS" start="+0x1110" size="0x4">
@@ -3885,7 +3884,7 @@
       <BitField name="SEQ_CVC" start="23" size="1"/>
       <BitField name="DMA_FIFO_FULL" start="22" size="1"/>
       <BitField name="AHB_ERR" start="21" size="1"/>
-      <BitField name="WDOG" start="0" size="14"/>
+      <BitField name="WDOG" start="0" size="16"/>
     </Register>
     <Register name="INT_EN" start="+0x1114" size="0x4">
       <BitField name="TRIG_CMPT" start="31" size="1"/>
@@ -3899,7 +3898,7 @@
       <BitField name="SEQ_CVC" start="23" size="1"/>
       <BitField name="DMA_FIFO_FULL" start="22" size="1"/>
       <BitField name="AHB_ERR" start="21" size="1"/>
-      <BitField name="WDOG" start="0" size="14"/>
+      <BitField name="WDOG" start="0" size="16"/>
     </Register>
     <Register name="ANA_CTRL0" start="+0x1200" size="0x4">
       <BitField name="ADC_CLK_ON" start="12" size="1"/>
@@ -4569,7 +4568,6 @@
     <Register name="ADC_CFG0" start="+0x1108" size="0x4">
       <BitField name="SEL_SYNC_AHB" start="31" size="1"/>
       <BitField name="ADC_AHB_EN" start="29" size="1"/>
-      <BitField name="CONVERT_DURATION" start="12" size="16"/>
       <BitField name="PORT3_REALTIME" start="0" size="1"/>
     </Register>
     <Register name="INT_STS" start="+0x1110" size="0x4">
@@ -4584,7 +4582,7 @@
       <BitField name="SEQ_CVC" start="23" size="1"/>
       <BitField name="DMA_FIFO_FULL" start="22" size="1"/>
       <BitField name="AHB_ERR" start="21" size="1"/>
-      <BitField name="WDOG" start="0" size="14"/>
+      <BitField name="WDOG" start="0" size="16"/>
     </Register>
     <Register name="INT_EN" start="+0x1114" size="0x4">
       <BitField name="TRIG_CMPT" start="31" size="1"/>
@@ -4598,7 +4596,7 @@
       <BitField name="SEQ_CVC" start="23" size="1"/>
       <BitField name="DMA_FIFO_FULL" start="22" size="1"/>
       <BitField name="AHB_ERR" start="21" size="1"/>
-      <BitField name="WDOG" start="0" size="14"/>
+      <BitField name="WDOG" start="0" size="16"/>
     </Register>
     <Register name="ANA_CTRL0" start="+0x1200" size="0x4">
       <BitField name="ADC_CLK_ON" start="12" size="1"/>
@@ -5268,7 +5266,6 @@
     <Register name="ADC_CFG0" start="+0x1108" size="0x4">
       <BitField name="SEL_SYNC_AHB" start="31" size="1"/>
       <BitField name="ADC_AHB_EN" start="29" size="1"/>
-      <BitField name="CONVERT_DURATION" start="12" size="16"/>
       <BitField name="PORT3_REALTIME" start="0" size="1"/>
     </Register>
     <Register name="INT_STS" start="+0x1110" size="0x4">
@@ -5283,7 +5280,7 @@
       <BitField name="SEQ_CVC" start="23" size="1"/>
       <BitField name="DMA_FIFO_FULL" start="22" size="1"/>
       <BitField name="AHB_ERR" start="21" size="1"/>
-      <BitField name="WDOG" start="0" size="14"/>
+      <BitField name="WDOG" start="0" size="16"/>
     </Register>
     <Register name="INT_EN" start="+0x1114" size="0x4">
       <BitField name="TRIG_CMPT" start="31" size="1"/>
@@ -5297,7 +5294,7 @@
       <BitField name="SEQ_CVC" start="23" size="1"/>
       <BitField name="DMA_FIFO_FULL" start="22" size="1"/>
       <BitField name="AHB_ERR" start="21" size="1"/>
-      <BitField name="WDOG" start="0" size="14"/>
+      <BitField name="WDOG" start="0" size="16"/>
     </Register>
     <Register name="ANA_CTRL0" start="+0x1200" size="0x4">
       <BitField name="ADC_CLK_ON" start="12" size="1"/>
@@ -12341,6 +12338,12 @@
     <Register name="DMA_CURR_HOST_RX_BUF" start="+0x1054" size="0x4">
       <BitField name="CURRBUFAPTR" start="0" size="32"/>
     </Register>
+    <Register name="CTRL2" start="+0x3008" size="0x4">
+      <BitField name="ENET0_LPI_IRQ_EN" start="29" size="1"/>
+      <BitField name="ENET0_REFCLK_OE" start="19" size="1"/>
+      <BitField name="ENET0_PHY_INF_SEL" start="13" size="3"/>
+      <BitField name="ENET0_FLOWCTRL" start="12" size="1"/>
+    </Register>
   </RegisterGroup>
   <RegisterGroup start="0xf2010000" name="NTMR0">
     <Register name="CHANNEL_CH0_CR" start="+0x0" size="0x4">
@@ -13694,12 +13697,12 @@
       <BitField name="TXSCHOH" start="0" size="7"/>
     </Register>
     <Register name="ENDPTNAK" start="+0x178" size="0x4">
-      <BitField name="EPTN" start="16" size="8"/>
-      <BitField name="EPRN" start="0" size="8"/>
+      <BitField name="EPTN" start="16" size="16"/>
+      <BitField name="EPRN" start="0" size="16"/>
     </Register>
     <Register name="ENDPTNAKEN" start="+0x17c" size="0x4">
-      <BitField name="EPTNE" start="16" size="8"/>
-      <BitField name="EPRNE" start="0" size="8"/>
+      <BitField name="EPTNE" start="16" size="16"/>
+      <BitField name="EPRNE" start="0" size="16"/>
     </Register>
     <Register name="PORTSC1" start="+0x184" size="0x4">
       <BitField name="STS" start="29" size="1"/>
@@ -13745,23 +13748,23 @@
       <BitField name="CM" start="0" size="2"/>
     </Register>
     <Register name="ENDPTSETUPSTAT" start="+0x1ac" size="0x4">
-      <BitField name="ENDPTSETUPSTAT" start="0" size="8"/>
+      <BitField name="ENDPTSETUPSTAT" start="0" size="16"/>
     </Register>
     <Register name="ENDPTPRIME" start="+0x1b0" size="0x4">
-      <BitField name="PETB" start="16" size="8"/>
-      <BitField name="PERB" start="0" size="8"/>
+      <BitField name="PETB" start="16" size="16"/>
+      <BitField name="PERB" start="0" size="16"/>
     </Register>
     <Register name="ENDPTFLUSH" start="+0x1b4" size="0x4">
-      <BitField name="FETB" start="16" size="8"/>
-      <BitField name="FERB" start="0" size="8"/>
+      <BitField name="FETB" start="16" size="16"/>
+      <BitField name="FERB" start="0" size="16"/>
     </Register>
     <Register name="ENDPTSTAT" start="+0x1b8" size="0x4">
-      <BitField name="ETBR" start="16" size="8"/>
-      <BitField name="ERBR" start="0" size="8"/>
+      <BitField name="ETBR" start="16" size="16"/>
+      <BitField name="ERBR" start="0" size="16"/>
     </Register>
     <Register name="ENDPTCOMPLETE" start="+0x1bc" size="0x4">
-      <BitField name="ETCE" start="16" size="8"/>
-      <BitField name="ERCE" start="0" size="8"/>
+      <BitField name="ETCE" start="16" size="16"/>
+      <BitField name="ERCE" start="0" size="16"/>
     </Register>
     <Register name="ENDPTCTRL_ENDPTCTRL0" start="+0x1c0" size="0x4">
       <BitField name="TXE" start="23" size="1"/>
@@ -23507,7 +23510,6 @@
       <BitField name="DC_R" start="16" size="4"/>
       <BitField name="EN_FF_DET" start="6" size="1"/>
       <BitField name="EN_FF_LOOP" start="5" size="1"/>
-      <BitField name="EN_AUTOLP" start="4" size="1"/>
       <BitField name="EN_DCM_EXIT" start="3" size="1"/>
       <BitField name="EN_SKIP" start="2" size="1"/>
       <BitField name="EN_IDLE" start="1" size="1"/>

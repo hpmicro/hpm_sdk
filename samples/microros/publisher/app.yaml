@@ -9,3 +9,7 @@ excluded_targets:
 dependency:
   - uart
   - femc
+
+excluded_ides:
+  - iar
+  - ses

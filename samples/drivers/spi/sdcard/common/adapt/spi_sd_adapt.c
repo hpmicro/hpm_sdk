@@ -11,7 +11,7 @@
 #include "hpm_clock_drv.h"
 #include "board.h"
 
-static void set_spi_speed(uint32_t freq);
+static hpm_stat_t set_spi_speed(uint32_t freq);
 static void cs_select(void);
 static void cs_relese(void);
 static bool sdcard_is_present(void);
@@ -35,7 +35,11 @@ hpm_stat_t spi_sd_init(void)
     spi_master_get_default_timing_config(&timing_config);
     timing_config.master_config.clk_src_freq_in_hz = clock_get_frequency(BOARD_APP_SPI_CLK_NAME);;
     timing_config.master_config.sclk_freq_in_hz = 400000;
-    spi_master_timing_init(BOARD_APP_SPI_BASE, &timing_config);
+    if (status_success != spi_master_timing_init(BOARD_APP_SPI_BASE, &timing_config)) {
+        printf("SPI master timming init failed\n");
+        while (1) {
+        }
+    }
 
      /* set SPI format config for master */
     spi_master_get_default_format_config(&format_config);
@@ -56,13 +60,13 @@ hpm_stat_t spi_sd_init(void)
     return sdcard_spi_init(&g_spi_io);
 }
 
-static void set_spi_speed(uint32_t freq)
+static hpm_stat_t set_spi_speed(uint32_t freq)
 {
     /* set SPI sclk frequency for master */
     spi_master_get_default_timing_config(&timing_config);
     timing_config.master_config.clk_src_freq_in_hz = clock_get_frequency(BOARD_APP_SPI_CLK_NAME);
     timing_config.master_config.sclk_freq_in_hz = freq;
-    spi_master_timing_init(BOARD_APP_SPI_BASE, &timing_config);
+    return spi_master_timing_init(BOARD_APP_SPI_BASE, &timing_config);
 }
 
 static void cs_select(void)

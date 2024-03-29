@@ -216,7 +216,7 @@ static inline void opamp_preset_opamp_disable(OPAMP_Type *opamp, uint8_t preset_
  * @brief opamp miller cap selection
  *
  * @param opamp @ref OPAMP_Type
- * @param select @ref opamp_iref_select_t
+ * @param select @ref opamp_miller_cap_t
  */
 static inline void opamp_miller_cap_select(OPAMP_Type *opamp, opamp_miller_cap_t select)
 {
@@ -228,7 +228,7 @@ static inline void opamp_miller_cap_select(OPAMP_Type *opamp, opamp_miller_cap_t
  *
  * @param opamp @ref OPAMP_Type
  * @param preset_chn preset channel
- * @param select @ref opamp_iref_select_t
+ * @param select @ref opamp_miller_cap_t
  */
 static inline void opamp_preset_miller_cap_select(OPAMP_Type *opamp, uint8_t preset_chn, opamp_miller_cap_t select)
 {
@@ -515,7 +515,7 @@ static inline void opamp_preset_disable_hw_trig(OPAMP_Type *opamp, uint8_t prese
  * @brief opamp set mode
  *
  * @param opamp @ref OPAMP_Type
- * @param mode @ref OPAMP_MODE_XX
+ * @param mode OPAMP_MODE_XX
  */
 static inline void opamp_mode_set(OPAMP_Type *opamp, uint8_t mode)
 {
@@ -527,7 +527,7 @@ static inline void opamp_mode_set(OPAMP_Type *opamp, uint8_t mode)
  *
  * @param opamp @ref OPAMP_Type
  * @param preset_chn preset channel
- * @param mode @ref OPAMP_MODE_XX
+ * @param mode OPAMP_MODE_XX
  */
 static inline void opamp_preset_mode_set(OPAMP_Type *opamp, uint8_t preset_chn, uint8_t mode)
 {

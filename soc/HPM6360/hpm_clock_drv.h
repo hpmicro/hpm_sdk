@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -11,6 +11,7 @@
 #include "hpm_sysctl_drv.h"
 #include "hpm_csr_drv.h"
 
+#define CLOCK_DIV_INVALID (~0UL)
 
 /**
  * @brief Error codes for clock driver
@@ -141,7 +142,7 @@ typedef enum _clock_name {
     clock_ptpc = MAKE_CLOCK_NAME(sysctl_resource_ptpc, CLK_SRC_GROUP_COMMON, clock_node_ptpc),
     clock_ptp0 = MAKE_CLOCK_NAME(RESOURCE_SHARED_PTPC, CLK_SRC_GROUP_COMMON, clock_node_ptp0),
     clock_ref0 = MAKE_CLOCK_NAME(sysctl_resource_ref0, CLK_SRC_GROUP_COMMON, clock_node_ref0),
-    clock_ref1 = MAKE_CLOCK_NAME(sysctl_resource_ref1, CLK_SRC_GROUP_COMMON, clock_node_ref0),
+    clock_ref1 = MAKE_CLOCK_NAME(sysctl_resource_ref1, CLK_SRC_GROUP_COMMON, clock_node_ref1),
     clock_watchdog0 = MAKE_CLOCK_NAME(sysctl_resource_wdg0, CLK_SRC_GROUP_WDG, 0),
     clock_watchdog1 = MAKE_CLOCK_NAME(sysctl_resource_wdg1, CLK_SRC_GROUP_WDG, 1),
     clock_puart = MAKE_CLOCK_NAME(RESOURCE_INVALID, CLK_SRC_GROUP_PMIC, 0),
@@ -188,7 +189,7 @@ typedef enum _clock_name {
 
     /* Clock sources */
     clk_osc0clk0 = MAKE_CLOCK_NAME(sysctl_resource_xtal, CLK_SRC_GROUP_SRC, 0),
-    clk_pll0clk0 = MAKE_CLOCK_NAME(sysctl_resource_clk0_pll1, CLK_SRC_GROUP_SRC, 1),
+    clk_pll0clk0 = MAKE_CLOCK_NAME(sysctl_resource_clk0_pll0, CLK_SRC_GROUP_SRC, 1),
     clk_pll0clk1 = MAKE_CLOCK_NAME(sysctl_resource_clk1_pll0, CLK_SRC_GROUP_SRC, 2),
     clk_pll0clk2 = MAKE_CLOCK_NAME(sysctl_resource_clk2_pll0, CLK_SRC_GROUP_SRC, 3),
     clk_pll1clk0 = MAKE_CLOCK_NAME(sysctl_resource_clk0_pll1, CLK_SRC_GROUP_SRC, 4),
@@ -224,6 +225,14 @@ uint32_t get_frequency_for_source(clock_source_t source);
  * @return IP clock source
  */
 clk_src_t clock_get_source(clock_name_t clock_name);
+
+/**
+ * @brief Get the IP clock divider
+ *        Note:This API return the direct clock divider
+ * @param [in] clock_name clock name
+ * @return IP clock divider
+ */
+uint32_t clock_get_divider(clock_name_t clock_name);
 
 /**
  * @brief Set ADC clock source
@@ -305,6 +314,7 @@ void clock_remove_from_group(clock_name_t clock_name, uint32_t group);
 /**
  * @brief Check IP in specified group
  * @param[in] clock_name IP clock name
+ * @param[in] group resource group index, valid value: 0/1/2/3
  * @return true if in group, false if not in group
  */
 bool clock_check_in_group(clock_name_t clock_name, uint32_t group);

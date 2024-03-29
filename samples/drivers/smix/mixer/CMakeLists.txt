@@ -14,4 +14,4 @@ project(mixer)
 
 sdk_inc(src)
 sdk_app_src(src/mixer.c)
-generate_ses_project()
+generate_ide_projects()

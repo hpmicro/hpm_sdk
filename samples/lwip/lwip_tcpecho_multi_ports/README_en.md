@@ -23,6 +23,7 @@ This example shows TCP echo communication on multiple ports.
 ## Run Example
 
 - Compiling and Downloading
+
 - Running log is shown in the serial terminal as follows:
 
   ```console
@@ -32,13 +33,15 @@ This example shows TCP echo communication on multiple ports.
   Enet0 init passed!
   Enet1 init passed!
   ================ Network Interface 0 ================
-  Static IP:  192.168.100.10
-  Netmask  : 255.255.255.0
-  Gateway  : 192.168.100.1
+  Static IP Information
+  IPv4 Address: 192.168.100.10
+  IPv4 Netmask: 255.255.255.0
+  IPv4 Gateway: 192.168.100.1
   ================ Network Interface 1 ================
-  Static IP:  192.168.200.10
-  Netmask  : 255.255.255.0
-  Gateway  : 192.168.200.1
+  Static IP Information
+  IPv4 Address: 192.168.200.10
+  IPv4 Netmask: 255.255.255.0
+  IPv4 Gateway: 192.168.200.1
   ================ Network Interface 1 ================
   Link Status: Up
   Link Speed:  100Mbps
@@ -48,6 +51,7 @@ This example shows TCP echo communication on multiple ports.
   Link Speed:  1000Mbps
   Link Duplex: Full duplex
   ```
+
 - Run an Ethernet debugging tool
 
   - create and set two TCP clients:
@@ -55,19 +59,22 @@ This example shows TCP echo communication on multiple ports.
     TCP Server 1 IP: 192.168.200.10/Port: 5002
 
     **Note: There is a necessary adjustment for Server IP according to the segment of  LAN where PC resides**
+
   - Connect
+
   - Enter and send any characters in the edit window(192.168.100.10/5001)
 
-  ![img](doc/lwip_tcpecho_multi_ports_0_1.png)
+    <img src=../doc/lwip_tcpecho_multi_ports_0_1.png align=left>
 
   - Watch the characters echoed from MCU window(192.168.100.10/5001)
 
-  ![img](doc/lwip_tcpecho_multi_ports_0_2.png)
+    <img src=../doc/lwip_tcpecho_multi_ports_0_2.png align=left>
 
   - Enter and send any characters in the edit window(192.168.200.10/5002)
 
-  ![img](doc/lwip_tcpecho_multi_ports_1_1.png)
+    <img src=../doc/lwip_tcpecho_multi_ports_1_1.png align=left>
 
   - Watch the characters echoed from MCU window(192.168.200.10/5002)
 
-  ![img](doc/lwip_tcpecho_multi_ports_1_2.png)
+    <img src=../doc/lwip_tcpecho_multi_ports_1_2.png align=left>
+

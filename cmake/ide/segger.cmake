@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2022 HPMicro
+# Copyright (c) 2021-2024 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 # add ses library interface to store ses specific configurations
@@ -20,30 +20,60 @@ set(SES_DBG_CONN_GDB_SRV "GDB Server")
 set(HPM_SDK_SES_OPTS hpm_sdk_ses_opts)
 define_property(GLOBAL PROPERTY ${HPM_SDK_SES_OPTS} BRIEF_DOCS "ses options" FULL_DOCS "ses options")
 
+# Set compile options for SES
+#
+# Example:
+#   sdk_ses_compile_options(opts)
+# :param opts: compile options
+# @public
+#
 function(sdk_ses_compile_options)
     foreach(opt ${ARGN})
         target_compile_options(${HPM_SDK_SES_LIB_ITF} INTERFACE ${opt})
     endforeach()
 endfunction()
 
+# Set compile definitions for SES
+#
+# Example:
+#   sdk_ses_compile_definitions(def)
+# :param def: compiler preprocesing definition
+# @public
+#
 function(sdk_ses_compile_definitions)
     foreach(def ${ARGN})
         target_compile_definitions(${HPM_SDK_SES_LIB_ITF} INTERFACE ${def})
     endforeach()
 endfunction()
 
+# link libraries for SES
+#
+# Example:
+#   sdk_ses_link_libraries(libs)
+# :param libs: standard libraries to be linked for SES
+# @public
+#
 function(sdk_ses_link_libraries)
     foreach(lib ${ARGN})
         target_link_libraries(${HPM_SDK_SES_LIB_ITF} INTERFACE ${lib})
     endforeach()
 endfunction()
 
+# @private
+#
 function(sdk_ses_ld_options)
     foreach(opt ${ARGN})
         target_link_libraries(${HPM_SDK_SES_LIB_ITF} INTERFACE ${opt})
     endforeach()
 endfunction()
 
+# link libraries for SES
+#
+# Example:
+#   sdk_ses_ld_libs(libs)
+# :param libs: libraries to be linked for SES
+# @private
+#
 function(sdk_ses_ld_lib)
     foreach(l ${ARGN})
         if(IS_ABSOLUTE ${l})
@@ -59,12 +89,39 @@ function(sdk_ses_ld_lib)
     endforeach()
 endfunction()
 
+# Add include path for SES
+#
+# Example:
+#   sdk_ses_link_libraries(libs)
+# :param libs: libraries to be linked for SES
+# @public
+#
+function(sdk_ses_inc)
+    foreach(inc ${ARGN})
+        if(IS_ABSOLUTE ${inc})
+            set(path ${inc})
+        else()
+            set(path ${CMAKE_CURRENT_SOURCE_DIR}/${inc})
+        endif()
+        target_include_directories(${HPM_SDK_SES_LIB_ITF} INTERFACE ${path})
+    endforeach()
+endfunction()
+
+# @private
+#
 function(sdk_ses_ld_lib_ifdef feature)
     if((${feature}) AND (NOT ${${feature}} EQUAL 0))
         sdk_ses_ld_lib(${ARGN})
     endif()
 endfunction()
 
+# Add source file for SES
+#
+# Example:
+#   sdk_ses_src(SOURCE_FILE)
+# :param SOURCE_FILE: source file added for SES
+# @public
+#
 function(sdk_ses_src)
     foreach(file ${ARGN})
         if(IS_DIRECTORY ${file})
@@ -77,6 +134,22 @@ function(sdk_ses_src)
         endif()
         set_property(GLOBAL APPEND PROPERTY ${HPM_SDK_SES_LIB} ${path})
     endforeach()
+endfunction()
+
+# Add source file (glob pattern) for SES
+#
+# Example:
+#   sdk_gcc_src_glob(SOURCE_FILE_GLOB)
+# :param SOURCE_FILE_GLOB: source files to be added to SES,
+#    like ./**/*.c to add all .c files under current directory recursively
+# @public
+#
+function(sdk_ses_src_glob)
+    foreach(g ${ARGN})
+        file(GLOB src ${g})
+        list(APPEND globbed_src ${src})
+    endforeach()
+    sdk_ses_src(${globbed_src})
 endfunction()
 
 function(sdk_ses_options)
@@ -111,6 +184,7 @@ function (generate_ses_project)
     get_property(target_ses_source_files GLOBAL PROPERTY ${HPM_SDK_SES_LIB})
     get_property(target_ses_options GLOBAL PROPERTY ${HPM_SDK_SES_OPTS})
     get_property(target_gcc_source_files TARGET ${HPM_SDK_GCC_LIB} PROPERTY SOURCES)
+    get_property(target_ses_include_dirs TARGET ${HPM_SDK_SES_LIB_ITF} PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
 
     if(NOT SES_TOOLCHAIN_VARIANT)
         set(SES_TOOLCHAIN_VARIANT "Standard")
@@ -301,12 +375,10 @@ function (generate_ses_project)
         # if Andes toolchain has not been specified, gcc linker script should be used
         set(target_linker ${target_linker_script})
     else()
-        if(SEGGER_LINKER_FILE)
-            # SEGGER_LINKER_FILE is specified
-            set(target_linker ${SEGGER_LINKER_FILE})
+        if(CUSTOM_SES_LINKER_FILE)
+            set(target_linker ${CUSTOM_SES_LINKER_FILE})
         else()
-            # if SEGGER_LINKER_FILE is not specified, try to locate segger linker
-            # located in segger folder naming with ".icf" rather than ".ld"
+            # if no specific linker file is set, try to locate it
             string(REPLACE ".ld" ".icf" target_linker ${target_linker_script})
             string(REPLACE "/gcc/" "/segger/" target_linker ${target_linker})
         endif()
@@ -440,6 +512,21 @@ function (generate_ses_project)
         endif()
     endforeach ()
 
+    foreach (target_source IN ITEMS ${target_ses_include_dirs})
+        string(FIND ${target_source} $ENV{GNURISCV_TOOLCHAIN_PATH} position)
+        if(${position} EQUAL 0)
+            continue()
+        endif()
+        if(NOT IS_ABSOLUTE ${target_source})
+            set(target_source ${CMAKE_CURRENT_SOURCE_DIR}/${target_source})
+        endif()
+        if("${target_include_dirs_with_macro}" STREQUAL "")
+            set(target_include_dirs_with_macro ${target_source})
+        else()
+            set(target_include_dirs_with_macro "${target_include_dirs_with_macro},${target_source}")
+        endif()
+    endforeach ()
+
     foreach (target_source IN ITEMS ${target_app_include_dirs})
         string(FIND ${target_source} $ENV{GNURISCV_TOOLCHAIN_PATH} position)
         if(${position} EQUAL 0)
@@ -511,6 +598,7 @@ function (generate_ses_project)
     else()
         set(SES_DEVICE_NAME ${HPM_DEVICE_NAME})
     endif()
+    message(STATUS "Segger device name: ${SES_DEVICE_NAME}")
 
     if(${is_secondary_core})
         set(SES_DEVICE_NAME "${HPM_DEVICE_NAME}_CPU1")
@@ -571,8 +659,10 @@ function (generate_ses_project)
         endif()
     endif()
 
-    message(STATUS "Segger device name: ${SES_DEVICE_NAME}")
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}.json
+    set(SES_PROJECT_PATH "${CMAKE_CURRENT_BINARY_DIR}/segger_embedded_studio")
+    set(SES_JSON_FILE_PATH "${SES_PROJECT_PATH}/${CMAKE_PROJECT_NAME}.json")
+    set(SDK_SCRIPT_IDE_PATH "${HPM_SDK_BASE}/scripts/ide")
+    file(WRITE ${SES_JSON_FILE_PATH}
         "{
             \"target\": {
                 ${target_data}
@@ -580,7 +670,7 @@ function (generate_ses_project)
         }")
 
     execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} ${HPM_SDK_BASE}/scripts/segger/embedded_studio_proj_gen.py "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}.json" "${CMAKE_CURRENT_BINARY_DIR}/segger_embedded_studio" "${CMAKE_CURRENT_SOURCE_DIR}"
-        WORKING_DIRECTORY  ${HPM_SDK_BASE}/scripts/segger
+        COMMAND ${PYTHON_EXECUTABLE} ${SDK_SCRIPT_IDE_PATH}/segger/embedded_studio_proj_gen.py "${SES_JSON_FILE_PATH}" "${SES_PROJECT_PATH}" "${CMAKE_CURRENT_SOURCE_DIR}"
+        WORKING_DIRECTORY  ${SDK_SCRIPT_IDE_PATH}/segger
         )
 endfunction ()

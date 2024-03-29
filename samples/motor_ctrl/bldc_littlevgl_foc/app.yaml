@@ -6,5 +6,5 @@ excluded_targets:
   - flash_uf2
   - flash_uf2_release
 dependency:
-  - motor-control
-  - lcd
+  - board_motor_control
+  - lcdc

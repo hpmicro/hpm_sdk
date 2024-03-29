@@ -2,7 +2,7 @@
 
 ## Overview
 
-This  example project shows USB MSC devcie
+This example project shows USB MSC devcie
 
 - PC sees a USB disk via Device Manager
 

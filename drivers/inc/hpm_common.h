@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2023 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -211,6 +211,60 @@ ATTR_PLACE_AT(section_name) ATTR_ALIGN(alignment)
 
 #define NOP() __asm volatile("nop")
 #define WFI() __asm volatile("wfi")
+
+#define HPM_ATTR_MACHINE_INTERRUPT __attribute__ ((section(".isr_vector"), interrupt("machine"), aligned(4)))
+#define HPM_ATTR_SUPERVISOR_INTERRUPT __attribute__ ((section(".isr_s_vector"), interrupt("supervisor"), aligned(4)))
+
+#elif defined(__ICCRISCV__)
+
+
+/* alway_inline */
+#define ATTR_ALWAYS_INLINE __attribute__((always_inline))
+
+/* weak */
+#define ATTR_WEAK __weak
+
+/* alignment */
+#define ATTR_ALIGN(alignment) __attribute__((aligned(alignment)))
+
+/* place var_declare at section_name, e.x. PLACE_AT(".target_section", var); */
+#define ATTR_PLACE_AT(section_name) __attribute__((section(section_name)))
+
+#define ATTR_PLACE_AT_WITH_ALIGNMENT(section_name, alignment) \
+ATTR_PLACE_AT(section_name) ATTR_ALIGN(alignment)
+
+#define ATTR_PLACE_AT_NONCACHEABLE ATTR_PLACE_AT(".noncacheable.bss")
+#define ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(alignment) \
+    ATTR_PLACE_AT_NONCACHEABLE ATTR_ALIGN(alignment)
+
+#define ATTR_PLACE_AT_NONCACHEABLE_BSS ATTR_PLACE_AT(".noncacheable.bss")
+#define ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(alignment) \
+    ATTR_PLACE_AT_NONCACHEABLE_BSS ATTR_ALIGN(alignment)
+
+/* initialize variable x with y using PLACE_AT_NONCACHEABLE_INIT(x) = {y}; */
+#define ATTR_PLACE_AT_NONCACHEABLE_INIT ATTR_PLACE_AT(".noncacheable.init")
+#define ATTR_PLACE_AT_NONCACHEABLE_INIT_WITH_ALIGNMENT(alignment) \
+    ATTR_PLACE_AT_NONCACHEABLE_INIT ATTR_ALIGN(alignment)
+
+#define ATTR_RAMFUNC ATTR_PLACE_AT(".fast")
+#define ATTR_RAMFUNC_WITH_ALIGNMENT(alignment) \
+    ATTR_RAMFUNC ATTR_ALIGN(alignment)
+
+#define ATTR_SHARE_MEM ATTR_PLACE_AT(".sh_mem")
+
+#define NOP() __asm volatile("nop")
+#define WFI() __asm volatile("wfi")
+
+#define HPM_ATTR_MACHINE_INTERRUPT __machine __interrupt
+#define HPM_ATTR_SUPERVISOR_INTERRUPT __supervisor __interrupt
+
+#ifndef __TIMEVAL_DEFINED
+#define __TIMEVAL_DEFINED 1
+struct timeval {
+  long tv_sec;    /* Seconds since the Epoch */
+  long tv_usec;   /* Microseconds */
+};
+#endif
 
 #else
 #error Unknown toolchain

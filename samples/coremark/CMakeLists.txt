@@ -28,4 +28,4 @@ sdk_app_src(src/core_list_join.c
 # Set optimized compile option for SES
 sdk_ses_compile_options(-mabi=ilp32d)
 sdk_ses_compile_options(-march=rv32gc)
-generate_ses_project()
+generate_ide_projects()

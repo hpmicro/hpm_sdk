@@ -219,8 +219,8 @@ static inline bool dma_channel_is_enable(DMAV2_Type *ptr, uint32_t ch_index)
  * @param[in] ptr DMA base address
  * @param[in] ch_index Index of the channel
  * @param[in] priority dma priority
- *  @arg @ref DMA_PRIORITY_LOW
- *  @arg @ref DMA_PRIORITY_HIGH
+ *  @arg @ref DMA_CHANNEL_PRIORITY_LOW
+ *  @arg @ref DMA_CHANNEL_PRIORITY_HIGH
  *
  */
 static inline void dma_set_priority(DMAV2_Type *ptr, uint32_t ch_index, uint8_t priority)

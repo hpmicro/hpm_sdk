@@ -7,7 +7,6 @@ The TFLM example demos the use of a camera to capture an image, perform human de
 ## Configurations
 
 - Connect the camera device to the CAM interface on the board
-- Connect LCD to the LCD interface on the board
 - Click [LCD-800480W070TC](lab_lcd_800480w070tc) section and connect
 
 ## Code Options

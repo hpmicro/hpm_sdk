@@ -16,6 +16,9 @@
 ```console
 
 Start rndis host ping task...
+[I/USB] EHCI HCIVERSION:0100
+[I/USB] EHCI HCSPARAMS:010011
+[I/USB] EHCI HCCPARAMS:0006
 [I/USB] New high-speed device on Hub 1, Port 1 connected
 [I/USB] New device found,idVendor:19d1,idProduct:0001,bcdDevice:0200
 [I/USB] The device has 8 interfaces
@@ -57,9 +60,14 @@ Start rndis host ping task...
 [E/USB] do not support Class:0x0a,Subclass:0x00,Protocl:0x00
 [E/USB] do not support Class:0x02,Subclass:0x02,Protocl:0x01
 [E/USB] do not support Class:0x0a,Subclass:0x00,Protocl:0x00
- DHCP state       : SELECTING
- DHCP state       : REQUESTING
- DHCP state       : BOUND
+
+*********************************************************************************
+
+input ping the IP or URL address and press the enter key to end
+
+if want to terminate midway, please press the esc key
+
+*********************************************************************************
 
  IPv4 Address     : 192.168.10.2
  IPv4 Subnet mask : 255.255.255.0
@@ -70,7 +78,9 @@ Start rndis host ping task...
 - 当连接的是EC20模块，则打印以下信息，表示EC20初始化成功并分配好IP
 
 ```console
-
+[I/USB] EHCI HCIVERSION:0100
+[I/USB] EHCI HCSPARAMS:010011
+[I/USB] EHCI HCCPARAMS:0006
 [I/USB] New high-speed device on Hub 1, Port 1 connected
 [I/USB] New device found,idVendor:2c7c,idProduct:0125,bcdDevice:0318
 [I/USB] The device has 6 interfaces
@@ -89,18 +99,7 @@ Start rndis host ping task...
 [I/USB] Set CDC ECM packet filter:000c
 [I/USB] Register CDC ECM Class:/dev/cdc_ether
 [E/USB] do not support Class:0x0a,Subclass:0x00,Protocl:0x00
- DHCP state       : SELECTING
- DHCP state       : BOUND
 
- IPv4 Address     : 192.168.225.27
- IPv4 Subnet mask : 255.255.255.0
- IPv4 Gateway     : 192.168.225.1
-
-```
-
-- 之后会打印以下提示, 需要在终端输入待ping的IP地址或者域名，比如输入www.baidu.com, 并且按enter表示完成输入
-
-```console
 *********************************************************************************
 
 input ping the IP or URL address and press the enter key to end
@@ -108,6 +107,16 @@ input ping the IP or URL address and press the enter key to end
 if want to terminate midway, please press the esc key
 
 *********************************************************************************
+
+ IPv4 Address     : 192.168.225.27
+ IPv4 Subnet mask : 255.255.255.0
+ IPv4 Gateway     : 192.168.225.1
+
+```
+
+- 然后请在终端输入待ping的IP地址或者域名，比如输入www.baidu.com, 并且按enter表示完成输入
+
+```console
 Pinging www.baidu.com [120.232.145.144] ..................
 from 120.232.145.144 bytes=60 icmp_seq=0 ttl=52 time=53 ms
 from 120.232.145.144 bytes=60 icmp_seq=1 ttl=52 time=77 ms

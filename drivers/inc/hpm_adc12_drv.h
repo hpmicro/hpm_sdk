@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -24,6 +24,9 @@
 
 /** @brief Define ADC12 validity check for the channel number */
 #define ADC12_IS_CHANNEL_INVALID(CH) (CH > ADC12_SOC_MAX_CH_NUM)
+
+/** @brief Define ADC12 validity check for the channel sample cycle */
+#define ADC12_IS_CHANNEL_SAMPLE_CYCLE_INVALID(CYC) (CYC == 0)
 
 /** @brief Define ADC12 validity check for the trigger number */
 #define ADC12_IS_TRIG_CH_INVLAID(CH) (CH > ADC_SOC_MAX_TRIG_CH_NUM)

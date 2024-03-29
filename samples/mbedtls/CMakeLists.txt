@@ -14,4 +14,4 @@ sdk_compile_definitions(-DCONFIG_MBEDTLS_USE_HPM_SDP=1)
 project(mebedtls)
 sdk_app_src(src/mbedtls_test.c)
 
-generate_ses_project()
+generate_ide_projects()

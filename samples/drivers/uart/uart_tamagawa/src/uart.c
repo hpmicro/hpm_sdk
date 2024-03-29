@@ -8,12 +8,14 @@
 #include "board.h"
 #include "hpm_clock_drv.h"
 #include "hpm_uart_drv.h"
+#ifdef HPMSOC_HAS_HPMSDK_TRGM
 #include "hpm_trgm_soc_drv.h"
 #include "hpm_trgm_drv.h"
+#endif
 
-#define TEST_UART BOARD_FREEMASTER_UART_BASE
-#define TEST_UART_IRQ BOARD_FREEMASTER_UART_IRQ
-#define TEST_UART_CLK_NAME BOARD_FREEMASTER_UART_CLK_NAME
+#define TEST_UART BOARD_APP_UART_BASE
+#define TEST_UART_IRQ BOARD_APP_UART_IRQ
+#define TEST_UART_CLK_NAME BOARD_APP_UART_CLK_NAME
 
 volatile bool receive_spec_count_data_complete;
 volatile bool timeout_before_receive_spec_count_data;
@@ -45,12 +47,14 @@ void uart_isr(void)
 }
 SDK_DECLARE_EXT_ISR_M(TEST_UART_IRQ, uart_isr)
 
+#ifdef HPMSOC_HAS_HPMSDK_TRGM
 void uart_hardware_trig(void)
 {
     /* UART0~3 use HPM_TRGM0_OUTPUT_SRC_UART_TRIG0, UART4~7 sue HPM_TRGM0_OUTPUT_SRC_UART_TRIG1 */
     trgm_output_update_source(HPM_TRGM0, HPM_TRGM0_OUTPUT_SRC_UART_TRIG0, HPM_TRGM0_INPUT_SRC_VDD);
     trgm_output_update_source(HPM_TRGM0, HPM_TRGM0_OUTPUT_SRC_UART_TRIG0, HPM_TRGM0_INPUT_SRC_VSS);
 }
+#endif
 
 int main(void)
 {
@@ -91,7 +95,11 @@ int main(void)
         /* write data into txfifo and not sent out */
         uint8_t cmd = 0x2;
         uart_write_byte(TEST_UART, cmd);
+#ifdef HPMSOC_HAS_HPMSDK_TRGM
         uart_hardware_trig(); /* generate a hardware trigger signal */
+#else
+        uart_software_trig_transfer(TEST_UART); /*disable hardware trig and triggered by sofware */
+#endif
 
         while ((!receive_spec_count_data_complete) && (!timeout_before_receive_spec_count_data)) {
         }

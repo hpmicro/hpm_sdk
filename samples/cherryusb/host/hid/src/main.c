@@ -26,7 +26,7 @@ int main(void)
     intc_set_irq_priority(CONFIG_HPM_USBH_IRQn, 1);
 
     printf("Start usb host task...\r\n");
-    usbh_initialize();
+    usbh_initialize(0, CONFIG_HPM_USBH_BASE);
     usbh_class_test();
     vTaskStartScheduler();
     for (;;) {

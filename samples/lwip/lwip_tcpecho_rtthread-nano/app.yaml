@@ -5,4 +5,4 @@ excluded_targets:
   - sec_core_img_release
 dependency:
   - enet
-  - enet_phy_on_board
+  - board_enet_phy

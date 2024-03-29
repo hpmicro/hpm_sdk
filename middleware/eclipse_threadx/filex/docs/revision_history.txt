@@ -1,0 +1,673 @@
+                                            FileX
+                                            
+For version 6 and higher, please refer to the release notes on GitHub at https://github.com/eclipse-threadx/filex/releases.
+Below is the revision history for 5.x.
+
+
+08/15/2019  FileX generic code version 5.7.  This release includes the following
+
+            Files modified or added to improve string length verification:
+
+            fx_api.h
+            fx_directory.h
+            fx_directory_exFAT_free_search.c
+            fx_directory_exFAT_unicode_entry_write.c
+            fx_directory_long_name_get.c
+            fx_directory_long_name_get_extended.c
+            fx_directory_short_name_get.c
+            fx_directory_short_name_get_extended.c
+            fx_media.h
+            fx_media_volume_get.c
+            fx_media_volume_get_extended.c
+            fx_system_initialize.c
+            fx_unicode.h
+            fx_utility_absolute_path_get.c
+            fx_unicode_directory_create.c
+            fx_unicode_directory_rename.c
+            fx_unicode_directory_search.c
+            fx_unicode_file_create.c
+            fx_unicode_file_rename.c
+            fx_unicode_length_get.c
+            fx_unicode_length_get_extended.c
+            fx_unicode_name_get.c
+            fx_unicode_name_get_extended.c
+            fx_unicode_short_name_get.c
+            fx_unicode_short_name_get_extended.c
+            fx_utility_token_length_get.c
+            fxe_directory_long_name_get_extended.c
+            fxe_directory_short_name_get_extended.c
+            fxe_media_volume_get_extended.c
+            fxe_unicode_name_get_extended.c
+            fxe_unicode_short_name_get_extended.c
+
+            Files modified to add zero divisor checking:
+
+            fx_directory_entry_read.c
+            fx_file_extended_allocate.c
+            fx_file_extended_best_effort_allocate.c
+            fx_file_extended_seek.c
+            fx_file_extended_truncate_release.c
+            fx_file_open.c
+            fx_file_write.c
+            fx_unicode_directory_entry_read.c
+            fx_utility_FAT_flush.c
+
+
+            The following files are modified:
+
+            fx_directory_free_search.c                      Added check for directory entry write result.
+            fx_directory_rename.c                           Skipped directory name exceeded maximum length.
+            fx_media_boot_info_extract.c                    Added fx_media_exfat_bytes_per_sector_shift value validation, fixed 
+                                                              fx_media_exfat_sector_per_clusters_shift validation, fixed partition 
+                                                              offset extraction for exFAT.
+            fx_media_exFAT_format.c                         Added check for invalid arguments, added media driver uninitialization.
+            fx_media_format.c                               Added check for invalid arguments.
+
+
+12/01/2018  FileX generic code version 5.6.  This release includes the following
+
+            fx_directory_create.c                           Skipped directory name exceeded maximum length.
+            fx_fault_tolerant_enable.c                      Updated the available clusters when
+                                                              additional information was used.
+            fx_fault_tolerant_write_log_file.c              Fixed read overflow of fault tolerant memory buffer.
+            fx_file_extended_allocate.c                     Corrected the file offset.
+            fx_file_extended_best_effort_allocate.c         Corrected the file offset.
+            fx_file_extended_truncate_release.c             Cleared FAT chain when fault tolerant was enabled.
+            fx_file_write.c                                 Fixed a bug of overwriting data when fault tolerant was enabled,
+                                                              improved overwrite performance when the data
+                                                              to be overwritten are in one sector.
+            fx_media_boot_info_extract.c                    Improved internal logic.
+            fx_media_check.c                                Fixed entries of root directory.
+            fx_media_check_FAT_chain_check.c                Fixed the up bound check for the value of cluster.
+            fx_media_flush.c                                Fixed a bug of missing bitmap flush for exFAT and fixed bug for exFAT directory entry write.
+            fx_media_close.c                                Fixed a bug for exFAT directory entry write.
+            fx_media_volume_get.c                           Supported space characters in volume name.
+                                                            Read volume name from boot sector if it
+                                                              is not found in directory sector.
+            fx_ram_driver.c                                 Checked buffer overflow.
+            fx_utility_logical_sector_write.c               Invalidated the cache entries when they were
+                                                              polluted by fault tolerant.
+            fx_directory_entry_write.c                      Fixed a bug that lower case name used for short name.
+            fx_media_open.c                                 Added the initialization of fx_media_FAT_type.
+                                                              Improved internal logic.
+            fx_user.h                                       Removed symbol FX_FAULT_TOLERANT_MINIMAL_CLUSTER.
+
+            Files modified to fix compiler warnings:
+
+            fx_directory_attributes_set.c
+            fx_directory_exFAT_entry_read.c
+            fx_media_check.c
+            fx_media_check_FAT_chain_check.c
+            fx_fault_tolerant_transaction_fail.c
+            fx_utility_exFAT_cluster_state_set.c
+
+            Files modified to add port-specific extended processing macros:
+
+            fx_fault_tolerant.h
+            fx_fault_tolerant_enable.c
+            fx_fault_tolerant_apply_logs.c
+            fx_fault_tolerant_write_log_file.c
+
+            Files modified to remove cluster limitation for fault tolerant feature:
+
+            fx_api.h
+            fx_fault_tolerant_create_log_file.c
+            fx_fault_tolerant_enable.c
+            fx_fault_tolerant_read_log_file.c
+            fx_fault_tolerant_write_log_file.c
+            fx_media_check.c
+
+            Files modified or added to fix reversed FAT chain update caused by FAT cache:
+
+            fx_api.h
+            fx_fault_tolerant_cleanup_FAT_chain.c
+            fx_fault_tolerant_enable.c
+            fx_file_extended_allocate.c
+            fx_utility.h
+            fx_utility_FAT_entry_write.c
+            fx_utility_FAT_flush.c
+            fx_utility_FAT_sector_get.c
+
+            Files modified to support exFAT media check:
+
+            fx_api.h
+            fx_media_check.c
+            fx_media_check_FAT_chain_check.c
+            fx_media_check_lost_cluster_check.c
+
+            Files are modified to avoid static analysis error report:
+
+            fx_directory_entry_read.c
+            fx_media_check.c
+            fx_media_volume_get.c
+            fx_unicode_directory_entry_change.c
+
+
+04/03/2017  FileX generic code version 5.5.  This release includes the following
+            modifications:
+
+            fx_api.h                                        Added a macro to disable warning of parameter not used.
+            fx_directory_entry_read.c                       Fixed a bug of checking incorrect dir_entries.
+            fx_directory_entry_write.c                      Modified logic to better handle short name processing, corrected
+                                                              last cluster check, and added port-specific extended processing macro.
+                                                              Removed unreachable code.
+            fx_directory_free_search.c                      Corrected the method to determine whether a directory entry is free.
+            fx_directory_next_entry_finc.d                  Corrected the method to determine whether a directory entry is free.
+            fx_directory_next_full_entry_find.c             Corrected the method to determine whether a directory entry is free.
+            fx_directory_search.c                           Removed unnecessary check and avoided potential illegal accessing.
+            fx_fault_tolerant.h                             Corrected the variable name in FX_FAULT_TOLERANT_TRANSACTION_FAIL,
+                                                              defined macros of fault tolerant state as unsigned const number.
+            fx_fault_tolerant_cleanup_FAT_chain.c           Removed an unused variable.
+            fx_fault_tolerant_enable.c                      Fixed a bug that mutex was not released before return.
+            fx_file_delete.c                                Removed unreachable code.
+            fx_file_extended_allocate.c                     Added exFAT conditional, modified maximum file size logic,
+                                                              modified file pointer update logic when at the end of the file and
+                                                              removed unreachable code.
+            fx_file_extended_seek.c                         Modified FAT chain error logic and removed an unnecessary assignment.
+            fx_file_extended_truncate_release.c             Modified I/O and FAT chain error logic, and simplified the cluster
+                                                              count calculation, fixed compiler warnings, removed an unnecessary
+                                                              assignment.
+            fx_file_open.c                                  Cleared the write notify function pointer, disabled
+                                                              needless overflow checking and ensured all variables initialized
+                                                              before being accessed.
+            fx_file_write.c                                 Fixed last cluster relative cluster when fault tolerant was enabled.
+                                                              Fixed FAT chain when it was allocated previously.
+                                                              Removed unreachable code and uninitialized variables.
+            fx_media_check.c                                Fixed FAT chain check when fault tolerant is enabled.
+                                                              Corrected the method to determine whether a directory entry is free.
+            fx_media_open.c                                 Removed unnecessary check, changed the initialization of cache entries.
+                                                              Fixed compiler warnings.
+                                                              Modified the check of return value for exFAT.
+            fx_media_volume_set.c                           Corrected the method to determine whether a directory entry is free.
+            fx_unicode_directory_create.c                   Optimized the logic to get short name.
+                                                              Fixed a bug that mutex was not released.
+            fx_unicode_directory_entry_change.c             Simplified logic, removed unreachable code and removed an unnecessary
+                                                              assignment.
+            fx_unicode_directory_entry_read.c               Removed unsafe cast.
+            fx_unicode_directory_rename.c                   Fixed bugs to rename to existing directory name and to continue
+                                                              running while FX_ALREADY_CREATED is not returned.
+                                                              Optimized the logic to get short name.
+            fx_unicode_directory_search.c                   Removed unreachable branches.
+            fx_unicode_file_create.c                        Optimized the logic to get short name.
+            fx_unicode_file_rename.c                        Optimized the logic to get short name.
+            fx_unicode_short_name_get.c                     Simplified logic.
+            fx_utility_exFAT_bitmap_free_cluster_find.c     Unified the return value for exFAT and FAT.
+            fx_utility_exFAT_bitmap_cache_prepare.c         Unified the return value for exFAT and FAT.
+            fx_utility_FAT_flush.c                          Removed an unnecessary assignment and corrected an error in type casting.
+            fx_utility_logical_sector_flush.c               Added port-specific extended processing macro.
+                                                              Optimized out bitset comparisons.
+                                                              Reordered sector validity testing for performance.
+                                                              Removed unreachable code.
+            fx_utility_logical_sector_read.c                Added port-specific extended processing macros.
+                                                              Removed redundant cached sector validity checks.
+                                                              Removed unreachable code.
+            fxe_file_write_notify_set.c                     Fixed the function name.
+
+
+            Files added:
+
+            fx_fault_tolerant_transaction_fail.c            Cleanup resources created by fault tolerant when transaction fails.
+
+
+            Files modified to check unicode zero in string:
+
+            fxe_unicode_directory_create.c
+            fxe_unicode_directory_rename.c
+            fxe_unicode_file_create.c
+            fxe_unicode_file_rename.c
+            fxe_unicode_short_name_get.c
+
+
+            Files modified to fix compiler warnings:
+
+            fx_directory_create.c
+            fx_directory_entry_read.c
+            fx_directory_entry_write.c
+            fx_directory_exFAT_entry_read.c
+            fx_directory_exFAT_unicode_entry_write.c
+            fx_directory.h
+            fx_directory_next_entry_find.c
+            fx_directory_next_full_entry_find.c
+            fx_directory_rename.c
+            fx_directory_search.c
+            fxe_directory_attributes_set.c
+            fxe_file_attributes_set.c
+            fx_fault_tolerant_add_checksum_log.c
+            fx_fault_tolerant_apply_logs.c
+            fx_fault_tolerant_calculate_checksum.c
+            fx_fault_tolerant.h
+            fx_fault_tolerant_read_directory_sector.c
+            fx_fault_tolerant_read_FAT.c
+            fx_fault_tolerant_set_FAT_chain.c
+            fx_file_create.c
+            fx_file_extended_allocate.c
+            fx_file_extended_best_effort_allocate.c
+            fx_file_extended_truncate.c
+            fx_file_extended_truncate_release.c
+            fx_file_open.c
+            fx_file_rename.c
+            fx_file_write.c
+            fx_media_boot_info_extract.c
+            fx_media_check.c
+            fx_media_check_FAT_chain_check.c
+            fx_media_exFAT_format.c
+            fx_media_format.c
+            fx_media_open.c
+            fx_media_volume_get.c
+            fx_media_volume_set.c
+            fx_ram_driver.c
+            fx_trace_event_insert.c
+            fx_trace_event_update.c
+            fx_trace_object_register.c
+            fx_trace_object_unregister.c
+            fx_unicode_directory_create.c
+            fx_unicode_directory_rename.c
+            fx_unicode_directory_search.c
+            fx_unicode_file_create.c
+            fx_unicode_file_rename.c
+            fx_utility_exFAT_allocate_new_cluster.c
+            fx_utility_exFAT_bitmap_start_sector_get.c
+            fx_utility_exFAT_cluster_state_set.c
+            fx_utility_exFAT_name_hash_get.c
+            fx_utility_exFAT_system_sector_write.c
+            fx_utility_exFAT_unicode_name_hash_get.c
+            fx_utility_exFAT_upcase_table.c
+            fx_utility_FAT_flush.c
+            fx_utility_FAT_map_flush.c
+            fx_utility.h
+            fx_utility_logical_sector_cache_entry_read.c
+            fx_utility_logical_sector_flush.c
+            fx_utility_logical_sector_write.c
+
+
+04/15/2016  FileX generic code version 5.4.  This release includes the following
+            modifications:
+
+            fx_api.h                                        Defined the update rate of system timer.
+
+            fx_user.h                                       Modified the default values of symbols,
+                                                            added new symbols for fault tolerant and 64-bit sector addresses in I/O driver.
+
+            fx_media_close.c                                Checked the return status of directory entry write.
+
+            Files modified to cleanup internal logic:
+
+            fx_directory_default_set.c
+            fx_directory_entry_read.c
+            fx_directory_exFAT_entry_read.c
+            fx_directory_exFAT_unicode_entry_write.c
+            fx_directory_next_entry_find.c
+            fx_directory_next_full_entry_find.c
+            fx_directory_search.c
+            fx_fault_tolerant_cleanup_FAT_chain.c
+            fx_fault_tolerant_create_log_file.c
+            fx_file_attributes_read.c
+            fx_file_attributes_set.c
+            fx_file_delete.c
+            fx_file_extended_allocate.c
+            fx_file_extended_best_effort_allocate.c
+            fx_file_extended_seek.c
+            fx_file_extended_truncate.c
+            fx_file_extended_truncate_release.c
+            fx_file_open.c
+            fx_file_write.c
+            fx_media_check_FAT_chain_check.c
+            fx_media_check_lost_cluster_check.c
+            fx_media_open.c
+            fx_system_initialize.c
+            fx_unicode_directory_entry_read.c
+            fx_unicode_directory_search.c
+            fx_utility_exFAT_allocate_new_cluster.c
+            fx_utility_exFAT_cluster_free.c
+            fx_utility_FAT_map_flush.c
+
+
+11/01/2015  FileX generic code version 5.3.  This release includes the following
+            modifications:
+
+            fx_api.h                                        Added major/minor release defines,
+                                                            added support for exFAT, added fault
+                                                            tolerant support, changed the initial
+                                                            date, and added new APIs.
+            fx_system.h                                     Added define for timer ID.
+            fx_unicode_directory_search.c                   Used FAT reserved and FAT last from
+                                                            media structure, fixed data compare
+                                                            between singed and unsigned char.
+            fx_system_initialize.c                          Fixed compiler warnings.
+            fx_system_timer_entry.c                         Added check for timer ID.
+            fx_trace_event_insert.c                         Added conditional compilation logic.
+            fx_trace_event_update.c                         Added conditional compilation logic.
+            fx_trace_object_register.c                      Added conditional compilation logic.
+            fx_trace_object_unregister.c                    Added conditional compilation logic.
+
+            Files added to support exFAT:
+
+            fx_directory_exFAT.h
+            fx_directory_exFAT_entry_read.c
+            fx_directory_exFAT_entry_write.c
+            fx_directory_exFAT_free_search.c
+            fx_directory_exFAT_unicode_entry_write.c
+            fx_file_extended_allocate.c
+            fx_file_extended_best_effort_allocate.c
+            fx_file_extended_relative_seek.c
+            fx_file_extended_seek.c
+            fx_file_extended_truncate.c
+            fx_file_extended_truncate_release.c
+            fx_media_exFAT_format.c
+            fx_media_extended_space_available.c
+            fx_unicode_directory_rename.c
+            fx_unicode_file_rename.c
+            fx_utility_64_unsigned_read.c
+            fx_utility_64_unsigned_write.c
+            fx_utility_absolute_path_get.c
+            fx_utility_exFAT_allocate_new_cluster.c
+            fx_utility_exFAT_bitmap_cache_prepare.c
+            fx_utility_exFAT_bitmap_cache_update.c
+            fx_utility_exFAT_bitmap_flush.c
+            fx_utility_exFAT_bitmap_free_cluster_find.c
+            fx_utility_exFAT_bitmap_initialize.c
+            fx_utility_exFAT_bitmap_start_sector_get.c
+            fx_utility_exFAT_cluster_free.c
+            fx_utility_exFAT_cluster_state_get.c
+            fx_utility_exFAT_cluster_state_set.c
+            fx_utility_exFAT_geometry_check.c
+            fx_utility_exFAT_name_hash_get.c
+            fx_utility_exFAT_size_calculate.c
+            fx_utility_exFAT_system_area_checksum_verify.c
+            fx_utility_exFAT_system_area_checksum_write.c
+            fx_utility_exFAT_system_area_format.c
+            fx_utility_exFAT_system_sector_write.c
+            fx_utility_exFAT_unicode_name_hash_get.c
+            fx_utility_exFAT_upcase_table.c
+            fx_utility_memory_set.c
+            fx_utility_string_length_get.c
+            fx_utility_token_length_get.c
+            fxe_file_extended_allocate.c
+            fxe_file_extended_best_effort_allocate.c
+            fxe_file_extended_relative_seek.c
+            fxe_file_extended_seek.c
+            fxe_file_extended_truncate.c
+            fxe_file_extended_truncate_release.c
+            fxe_media_exFAT_format.c
+            fxe_media_extended_space_available.c
+            fxe_unicode_directory_rename.c
+            fxe_unicode_file_rename.c
+
+            Files added to support fault tolerant:
+
+            fx_api.h
+            fx_fault_tolerant.h
+            fx_fault_tolerant_add_bitmap_log.c
+            fx_fault_tolerant_add_checksum_log.c
+            fx_fault_tolerant_add_dir_log.c
+            fx_fault_tolerant_add_FAT_log.c
+            fx_fault_tolerant_apply_logs.c
+            fx_fault_tolerant_calculate_checksum.c
+            fx_fault_tolerant_cleanup_FAT_chain.c
+            fx_fault_tolerant_create_log_file.c
+            fx_fault_tolerant_enable.c
+            fx_fault_tolerant_read_directory_sector.c
+            fx_fault_tolerant_read_FAT.c
+            fx_fault_tolerant_revolver.c
+            fx_fault_tolerant_reset_log_file.c
+            fx_fault_tolerant_set_FAT_chain.c
+            fx_fault_tolerant_transaction_end.c
+            fx_fault_tolerant_transaction_start.c
+            fx_fault_tolerant_write_log_file.c
+            fxe_fault_tolerant_enable.c
+
+
+
+            Files added to support notify functions:
+
+
+            fx_file_write_notify_set.c
+            fx_media_close_notify_set.c
+            fx_media_open_notify_set.c
+            fxe_file_write_notify_set.c
+            fxe_media_close_notify_set.c
+            fxe_media_open_notify_set.c
+
+
+            Files modified to support exFAT and fault tolerant:
+
+            fx_directory.h
+            fx_directory_attributes_read.c
+            fx_directory_attributes_set.c
+            fx_directory_create.c
+            fx_directory_default_get.c
+            fx_directory_default_set.c
+            fx_directory_delete.c
+            fx_directory_entry_read.c
+            fx_directory_entry_write.c
+            fx_directory_first_entry_find.c
+            fx_directory_first_full_entry_find.c
+            fx_directory_free_search.c
+            fx_directory_information_get.c
+            fx_directory_local_path_clear.c
+            fx_directory_local_path_get.c
+            fx_directory_local_path_restore.c
+            fx_directory_local_path_set.c
+            fx_directory_long_name_get.c
+            fx_directory_name_extract.c
+            fx_directory_name_test.c
+            fx_directory_next_entry_find.c
+            fx_directory_next_full_entry_find.c
+            fx_directory_rename.c
+            fx_directory_search.c
+            fx_directory_short_name_get.c
+            fx_file_open.c
+            fx_file_read.c
+            fx_file_relative_seek.c
+            fx_file_rename.c
+            fx_file_seek.c
+            fx_file_truncate.c
+            fx_file_truncate_release.c
+            fx_file_write.c
+            fx_media.h fx_media_abort.c
+            fx_media_boot_info_extract.c
+            fx_media_cache_invalidate.c
+            fx_media_check.c
+            fx_media_check_FAT_chain_check.c
+            fx_media_check_lost_cluster_check.c
+            fx_media_close.c
+            fx_media_flush.c
+            fx_media_format.c
+            fx_media_open.c
+            fx_media_read.c
+            fx_media_space_available.c
+            fx_media_volume_get.c
+            fx_media_volume_set.c
+            fx_media_write.c
+            fx_ram_driver.c
+            fx_system.h
+            fx_system_date_get.c
+            fx_system_date_set.c
+            fx_system_initialize.c
+            fx_system_time_get.c
+            fx_system_time_set.c
+            fx_system_timer_entry.c
+            fx_trace_event_insert.c
+            fx_trace_event_update.c
+            fx_trace_object_register.c
+            fx_trace_object_unregister.c
+            fx_unicode.h
+            fx_unicode_directory_create.c
+            fx_unicode_directory_entry_change.c
+            fx_unicode_directory_entry_read.c
+            fx_unicode_directory_search.c
+            fx_unicode_file_create.c
+            fx_unicode_length_get.c
+            fx_unicode_name_get.c
+            fx_unicode_short_name_get.c
+            fx_user.h
+            fx_utility.h
+            fx_utility_16_unsigned_read.c
+            fx_utility_16_unsigned_write.c
+            fx_utility_32_unsigned_read.c
+            fx_utility_32_unsigned_write.c
+            fx_utility_FAT_entry_read.c
+            fx_utility_FAT_entry_write.c
+            fx_utility_FAT_flush.c
+            fx_utility_FAT_map_flush.c
+            fx_utility_logical_sector_cache_entry_read.c
+            fx_utility_logical_sector_flush.c
+            fx_utility_logical_sector_read.c
+            fx_utility_logical_sector_write.c
+            fx_utility_memory_copy.c
+            fxe_directory_attributes_read.c
+            fxe_directory_attributes_set.c
+            fxe_directory_create.c
+            fxe_directory_default_get.c
+            fxe_directory_default_set.c
+            fxe_directory_delete.c
+            fxe_directory_first_entry_find.c
+            fxe_directory_first_full_entry_find.c
+            fxe_directory_information_get.c
+            fxe_directory_local_path_clear.c
+            fxe_directory_local_path_get.c
+            fxe_directory_local_path_restore.c
+            fxe_directory_local_path_set.c
+            fxe_directory_long_name_get.c
+            fxe_directory_name_test.c
+            fxe_directory_next_entry_find.c
+            fxe_directory_next_full_entry_find.c
+            fxe_directory_rename.c
+            fxe_directory_short_name_get.c
+            fxe_file_allocate.c
+            fxe_file_attributes_read.c
+            fxe_file_attributes_set.c
+            fxe_file_best_effort_allocate.c
+            fxe_file_close.c
+            fxe_file_create.c
+            fxe_file_date_time_set.c
+            fxe_file_delete.c
+            fxe_file_open.c
+            fxe_file_read.c
+            fxe_file_relative_seek.c
+            fxe_file_rename.c
+            fxe_file_seek.c
+            fxe_file_truncate.c
+            fxe_file_truncate_release.c
+            fxe_file_write.c
+            fxe_media_abort.c
+            fxe_media_cache_invalidate.c
+            fxe_media_check.c
+            fxe_media_close.c
+            fxe_media_flush.c
+            fxe_media_format.c
+            fxe_media_open.c
+            fxe_media_read.c
+            fxe_media_space_available.c
+            fxe_media_volume_get.c
+            fxe_media_volume_set.c
+            fxe_media_write.c
+            fxe_system_date_get.c
+            fxe_system_date_set.c
+            fxe_system_time_get.c
+            fxe_system_time_set.c
+            fxe_unicode_directory_create.c
+            fxe_unicode_file_create.c
+            fxe_unicode_name_get.c
+            fxe_unicode_short_name_get.c
+
+
+
+03/01/2009  FileX generic code version 5.2. This release includes the following
+            modifications:
+
+            fx_api.h                                        Added logic for trace support, added macros
+                                                            to override interrupt protection in port
+                                                            files to simply use ThreadX interrupt macros.
+            fx_user.h                                       Added new conditional define to support
+                                                            disabling of cache fill on direct reads.
+            fx_directory_information_get.c                  Added logic to look for the most current
+                                                            file size.
+            fx_directory_rename.c                           Corrected compile problem when search
+                                                            cache is disabled.
+            fx_file_rename.c                                Corrected compile problem when search
+                                                            cache is disabled.
+            fx_media_check.c                                Corrected check for valid directory entry.
+            fx_media_check_lost_cluster_check.c             Corrected update of available clusters.
+            fx_media_open.c                                 Corrected compiler warning.
+            fx_media_space_available.c                      Added logic to report at least 4GB if there
+                                                            is more than 4GB free.
+            fx_system_initialize.c                          Added trace capability.
+            fx_trace_object_register.c                      Added new file to register object in trace.
+            fx_trace_object_unregister.c                    Added new file to unregister object in trace.
+            fx_trace_event_insert.c                         Added new file to insert trace event.
+            fx_utility_logical_sector_flush.c               Added safety check on cache size.
+            fx_utility_logical_sector_read.c                Added conditional to disable direct read
+                                                            updates of the logical sector cache.
+            fx*.c                                           Added trace logic.
+            fx*.h                                           Modified comment(s).
+            fx*.c                                           Modified comment(s).
+
+
+07/18/2007  FileX generic code version 5.1. This release includes the following
+            modifications:
+
+            fx_api.h                                        Changed the default file and path length
+                                                            to 256, added burst cache disable flags
+                                                            to the media and file structures, added boot
+                                                            signature offset for FAT32, added volume ID
+                                                            offset for FAT32, changed size of rename
+                                                            buffer, and changed UL to ULONG cast.
+            fx_directory_entry_read.c                       Removed an unnecessary length check.
+            fx_directory_entry_write.c                      Corrected short name issue with an
+                                                            exact 8.3 long name that only has
+                                                            lower case letter(s), and added logic
+                                                            to create short names in the format
+                                                            xxx~NNNN.ext where NNNN is a number from
+                                                            0 to 0xFFFF in hex.
+            fx_directory_rename.c                           Changed loops to not exceed maximum path constant,
+                                                            and added logic to support simple directory
+                                                            case change rename requests.
+            fx_directory_search.c                           Added array boundary checks.
+            fx_file_allocate.c                              Changed logic to write out new information
+                                                            regardless of whether or not the file
+                                                            already had clusters allocated, added
+                                                            conditional logic to update file size,
+                                                            and changed UL to ULONG cast.
+            fx_file_open.c                                  Added initialization of the burst cache flag,
+                                                            and changed UL to ULONG cast.
+            fx_file_read.c                                  Added setup of burst cache flag.
+            fx_file_rename.c                                Changed loops to not exceed maximum path constant,
+                                                            and added logic to support simple file
+                                                            case change rename requests.
+            fx_file_seek.c                                  Added check to return if we are already
+                                                            at the desired offset.
+            fx_file_truncate_release.c                      Added logic to check status return from
+                                                            several calls.
+            fx_file_write.c                                 Changed UL to ULONG cast.
+            fx_media_abort.c                                Corrected logic removing FX_MEDIA
+                                                            structure.
+            fx_media_check.c                                Added error checking.
+            fx_media_check_lost_cluster_check.c             Added logic to check status return from
+                                                            FAT read call.
+            fx_media_close.c                                Changed UL to ULONG cast, and added
+                                                            fx_media_abort calls in several
+                                                            error paths.
+            fx_media_flush.c                                Changed UL to ULONG cast.
+            fx_media_format.c                               Added OEM name support, added media
+                                                            type setup, added boot signature setup,
+                                                            added volume id setup, and corrected
+                                                            volume name offset problem.
+            fx_media_open.c                                 Added disable of burst cache, and changed
+                                                            UL to ULONG cast.
+            fx_system_initialize.c                          Changed UL to ULONG cast.
+            fx_unicode_directory_entry_read.c               Removed an unnecessary length check.
+            fx_utility_FAT_entry_read.c                     Moved the FAT flush to before any additional
+                                                            sectors are read.
+            fx_utility_logical_sector_cache_entry_read.c    Corrected problem finding hashed
+                                                            cache entries.
+            fx_utility_logical_sector_flush.c               Changed UL to ULONG cast.
+            fx_utility_logical_sector_read.c                Changed UL to ULONG cast.
+            fx_utility_logical_sector_write.c               Changed UL to ULONG cast.
+            fx_media_format_type_set.c                      Added new FileX utility.
+            fx_media_format_volume_id_set.c                 Added new FileX utility.
+            fx_media_format_oem_name_set.c                  Added new FileX utility.
+            fx*.h                                           Modified comment(s).
+            fx*.c                                           Modified comment(s).
+
+12/12/2005  Initial FileX generic code version 5.0.

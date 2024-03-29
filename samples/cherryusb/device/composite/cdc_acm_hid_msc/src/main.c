@@ -11,11 +11,12 @@
 #include "usb_config.h"
 
 #define LED_FLASH_PERIOD_IN_MS 300
+#define USB_BUS_ID 0
 
 extern volatile bool dtr_enable;
-extern void cdc_acm_hid_msc_descriptor_init(void);
-extern void hid_mouse_test(void);
-extern void cdc_acm_data_send_with_dtr_test(void);
+extern void cdc_acm_hid_msc_descriptor_init(uint8_t busid, uint32_t reg_base);
+extern void hid_mouse_test(uint8_t busid);
+extern void cdc_acm_data_send_with_dtr_test(uint8_t busid);
 
 int main(void)
 {
@@ -32,19 +33,19 @@ int main(void)
 
     printf("cherry usb composite cdc_acm_hid_msc sample.\n");
 
-    cdc_acm_hid_msc_descriptor_init();
+    cdc_acm_hid_msc_descriptor_init(USB_BUS_ID, CONFIG_HPM_USBD_BASE);
 
     while (u < 2) {
-        hid_mouse_test();
+        hid_mouse_test(USB_BUS_ID);
         if (dtr_enable) {
             u++;
             board_delay_ms(50);
-            cdc_acm_data_send_with_dtr_test();
+            cdc_acm_data_send_with_dtr_test(USB_BUS_ID);
         }
     }
 
     while (1) {
-        hid_mouse_test();
+        hid_mouse_test(USB_BUS_ID);
     }
 
     return 0;

@@ -116,9 +116,7 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 | Function                        | Position |
 | ------------------------------- | -------- |
 | ADC12 Reference Voltage Setting | N/A      |
-| ADC0/1/2.VINP11                 | J12[6]   |
-| ADC0/1/2.VINP10                 | J12[7]   |
-| ADC0/1/2.VINP7                  | J12[8]   |
+| ADC0.VINP11                     | J12[6]   |
 
 - ADC16 Pin
 
@@ -151,7 +149,8 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 | ----------- | -------- |
 | ENET0.EVTO0 | U29[2]   |
 
-- UART pin for uart_software_rx_idle sample or uart_rx_timeout sample
+- UART13 pin
+ The UART13 is used for core1 debug console or some functional testing using UART, such as uart_software_rx_idle, uart_rx_timeout, uart_software_lin, MICROROS_UART, USB_CDC_ACM_UART, MODBUS_RTU etc.
 
 | Function   | Position |
 | ---------- | -------- |
@@ -167,3 +166,11 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 - Motor Pin:
 
   Refer to section [DRV-LV50A-MP1907 Motor Driver Board ](lab_drv_lv50a_mp1907) for configuration
+
+- Tamper Pin
+
+| Function | Pin    | Position |  Mode  |
+|----------|--------|--------|----------|
+| TAMP.08  | PZ08   | J20[6] | Active Mode |
+| TAMP.09  | PZ09   | J20[5] | Active Mode |
+| TAMP.10  | PZ10   | J20[4] | Passive Mode |

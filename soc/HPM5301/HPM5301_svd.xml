@@ -7,7 +7,7 @@
   <description>HPM5300 device</description>
   <licenseText>
     /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -49,7 +49,7 @@
         <cluster>
           <dim>15</dim>
           <dimIncrement>0x10</dimIncrement>
-          <dimIndex>gpioa,gpiob,rsv3,rsv4,rsv5,rsv6,rsv7,rsv8,rsv9,rsv10,rsv11,rsv12,rsv13,gpiox,gpioy</dimIndex>
+          <dimIndex>gpioa,gpiob,rsv2,rsv3,rsv4,rsv5,rsv6,rsv7,rsv8,rsv9,rsv10,rsv11,rsv12,gpiox,gpioy</dimIndex>
           <name>DI[%s]</name>
           <description>no description available</description>
           <addressOffset>0x0</addressOffset>
@@ -76,7 +76,7 @@
         <cluster>
           <dim>15</dim>
           <dimIncrement>0x10</dimIncrement>
-          <dimIndex>gpioa,gpiob,rsv3,rsv4,rsv5,rsv6,rsv7,rsv8,rsv9,rsv10,rsv11,rsv12,rsv13,gpiox,gpioy</dimIndex>
+          <dimIndex>gpioa,gpiob,rsv2,rsv3,rsv4,rsv5,rsv6,rsv7,rsv8,rsv9,rsv10,rsv11,rsv12,gpiox,gpioy</dimIndex>
           <name>DO[%s]</name>
           <description>no description available</description>
           <addressOffset>0x100</addressOffset>
@@ -160,7 +160,7 @@
         <cluster>
           <dim>15</dim>
           <dimIncrement>0x10</dimIncrement>
-          <dimIndex>gpioa,gpiob,rsv3,rsv4,rsv5,rsv6,rsv7,rsv8,rsv9,rsv10,rsv11,rsv12,rsv13,gpiox,gpioy</dimIndex>
+          <dimIndex>gpioa,gpiob,rsv2,rsv3,rsv4,rsv5,rsv6,rsv7,rsv8,rsv9,rsv10,rsv11,rsv12,gpiox,gpioy</dimIndex>
           <name>OE[%s]</name>
           <description>no description available</description>
           <addressOffset>0x200</addressOffset>
@@ -244,7 +244,7 @@
         <cluster>
           <dim>15</dim>
           <dimIncrement>0x10</dimIncrement>
-          <dimIndex>gpioa,gpiob,rsv3,rsv4,rsv5,rsv6,rsv7,rsv8,rsv9,rsv10,rsv11,rsv12,rsv13,gpiox,gpioy</dimIndex>
+          <dimIndex>gpioa,gpiob,rsv2,rsv3,rsv4,rsv5,rsv6,rsv7,rsv8,rsv9,rsv10,rsv11,rsv12,gpiox,gpioy</dimIndex>
           <name>IF[%s]</name>
           <description>no description available</description>
           <addressOffset>0x300</addressOffset>
@@ -271,7 +271,7 @@
         <cluster>
           <dim>15</dim>
           <dimIncrement>0x10</dimIncrement>
-          <dimIndex>gpioa,gpiob,rsv3,rsv4,rsv5,rsv6,rsv7,rsv8,rsv9,rsv10,rsv11,rsv12,rsv13,gpiox,gpioy</dimIndex>
+          <dimIndex>gpioa,gpiob,rsv2,rsv3,rsv4,rsv5,rsv6,rsv7,rsv8,rsv9,rsv10,rsv11,rsv12,gpiox,gpioy</dimIndex>
           <name>IE[%s]</name>
           <description>no description available</description>
           <addressOffset>0x400</addressOffset>
@@ -355,7 +355,7 @@
         <cluster>
           <dim>15</dim>
           <dimIncrement>0x10</dimIncrement>
-          <dimIndex>gpioa,gpiob,rsv3,rsv4,rsv5,rsv6,rsv7,rsv8,rsv9,rsv10,rsv11,rsv12,rsv13,gpiox,gpioy</dimIndex>
+          <dimIndex>gpioa,gpiob,rsv2,rsv3,rsv4,rsv5,rsv6,rsv7,rsv8,rsv9,rsv10,rsv11,rsv12,gpiox,gpioy</dimIndex>
           <name>PL[%s]</name>
           <description>no description available</description>
           <addressOffset>0x500</addressOffset>
@@ -439,7 +439,7 @@
         <cluster>
           <dim>15</dim>
           <dimIncrement>0x10</dimIncrement>
-          <dimIndex>gpioa,gpiob,rsv3,rsv4,rsv5,rsv6,rsv7,rsv8,rsv9,rsv10,rsv11,rsv12,rsv13,gpiox,gpioy</dimIndex>
+          <dimIndex>gpioa,gpiob,rsv2,rsv3,rsv4,rsv5,rsv6,rsv7,rsv8,rsv9,rsv10,rsv11,rsv12,gpiox,gpioy</dimIndex>
           <name>TP[%s]</name>
           <description>no description available</description>
           <addressOffset>0x600</addressOffset>
@@ -523,7 +523,7 @@
         <cluster>
           <dim>15</dim>
           <dimIncrement>0x10</dimIncrement>
-          <dimIndex>gpioa,gpiob,rsv3,rsv4,rsv5,rsv6,rsv7,rsv8,rsv9,rsv10,rsv11,rsv12,rsv13,gpiox,gpioy</dimIndex>
+          <dimIndex>gpioa,gpiob,rsv2,rsv3,rsv4,rsv5,rsv6,rsv7,rsv8,rsv9,rsv10,rsv11,rsv12,gpiox,gpioy</dimIndex>
           <name>AS[%s]</name>
           <description>no description available</description>
           <addressOffset>0x700</addressOffset>
@@ -611,7 +611,7 @@ Note: combinational interrupt is sensitive to environment noise</description>
         <cluster>
           <dim>15</dim>
           <dimIncrement>0x10</dimIncrement>
-          <dimIndex>gpioa,gpiob,rsv3,rsv4,rsv5,rsv6,rsv7,rsv8,rsv9,rsv10,rsv11,rsv12,rsv13,gpiox,gpioy</dimIndex>
+          <dimIndex>gpioa,gpiob,rsv2,rsv3,rsv4,rsv5,rsv6,rsv7,rsv8,rsv9,rsv10,rsv11,rsv12,gpiox,gpioy</dimIndex>
           <name>PD[%s]</name>
           <description>no description available</description>
           <addressOffset>0x800</addressOffset>
@@ -1582,7 +1582,7 @@ User should set this bit before set CMPEN to 1.</description>
           <fields>
             <field>
               <name>SWSYNCT</name>
-              <description>set this bitfield to trigger software coutner sync event</description>
+              <description>set this bitfield to trigger software counter sync event</description>
               <bitOffset>0</bitOffset>
               <bitWidth>4</bitWidth>
               <access>read-write</access>
@@ -2549,7 +2549,7 @@ register is read.</description>
           <fields>
             <field>
               <name>DATA</name>
-              <description>An one-byte storage register</description>
+              <description>A one-byte storage register</description>
               <bitOffset>0</bitOffset>
               <bitWidth>8</bitWidth>
               <access>read-write</access>
@@ -3488,7 +3488,7 @@ The transfer sequence could be
             <field>
               <name>TOKENEN</name>
               <description>Token transfer enable (Master mode only)
-Append an one-byte special token following the address phase for SPI read transfers. The value of the special token should be selected in TokenValue.
+Append a one-byte special token following the address phase for SPI read transfers. The value of the special token should be selected in TokenValue.
 0x0: Disable the one-byte special token
 0x1: Enable the one-byte special token</description>
               <bitOffset>21</bitOffset>
@@ -3605,7 +3605,7 @@ If more data is written to the TX FIFO than the write transfer count (WrTranCnt)
           <fields>
             <field>
               <name>CS_EN</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>24</bitOffset>
               <bitWidth>4</bitWidth>
               <access>read-write</access>
@@ -3974,7 +3974,7 @@ When an SPI transaction other than slave status-reading command ends, this bit w
           <fields>
             <field>
               <name>VAL</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>0</bitOffset>
               <bitWidth>32</bitWidth>
               <access>read-only</access>
@@ -3991,7 +3991,7 @@ When an SPI transaction other than slave status-reading command ends, this bit w
           <fields>
             <field>
               <name>VAL</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>0</bitOffset>
               <bitWidth>32</bitWidth>
               <access>read-only</access>
@@ -4422,7 +4422,7 @@ always read 0.</description>
             </field>
             <field>
               <name>SPEED</name>
-              <description>cycles of a progressive step in 24M clock, valide from 24-255, default 96
+              <description>cycles of a progressive step in 24M clock, valid from 24-255, default 96
 24: 24 cycle for a step
 25: 25 cycle for a step
 26: 26 cycle for a step
@@ -4711,7 +4711,7 @@ always read 0.</description>
             </field>
             <field>
               <name>BARCTL</name>
-              <description>Bus Acccess Response Control, when bit 15:14=
+              <description>Bus Access Response Control, when bit 15:14=
 00: no bus error will be generated,      no wait for fifo write when fifo full and  no wait for word/fifo read when word message invalid or fifo empty; or when write to word/fifo message will be ignored.
  01: bus error will be generated when: 1, access invalid address; 2, write to ready only addr; 3, write to fulled fifo or valid message; 4, read from a emptied fifo/word message.
 10: no error will be generated, but bus will wait when 1, write to fulled fifo/reg message; 2, read from a emptied fifo/reg message; write to word message will overwrite the existing reg value enven word message are still valid; read from invalid word message will read out last read out message data.happen.
@@ -5004,8 +5004,8 @@ can also use 4x32 burst read from 0x020 to read 4 words from the FIFO.</descript
       <baseAddress>0xf00a4000</baseAddress>
     </peripheral>
     <peripheral>
-      <name>WDG0</name>
-      <description>WDG0</description>
+      <name>EWDG0</name>
+      <description>EWDG0</description>
       <groupName>EWDG</groupName>
       <baseAddress>0xf00b0000</baseAddress>
       <addressBlock>
@@ -5427,15 +5427,15 @@ Note: the refresh overtime counter works in bus clock domain, not in wdt functio
         </register>
       </registers>
     </peripheral>
-    <peripheral derivedFrom="WDG0">
-      <name>WDG1</name>
-      <description>WDG1</description>
+    <peripheral derivedFrom="EWDG0">
+      <name>EWDG1</name>
+      <description>EWDG1</description>
       <groupName>EWDG</groupName>
       <baseAddress>0xf00b4000</baseAddress>
     </peripheral>
-    <peripheral derivedFrom="WDG0">
-      <name>PWDG</name>
-      <description>PWDG</description>
+    <peripheral derivedFrom="EWDG0">
+      <name>PEWDG</name>
+      <description>PEWDG</description>
       <groupName>EWDG</groupName>
       <baseAddress>0xf4128000</baseAddress>
     </peripheral>
@@ -6068,7 +6068,7 @@ This address must be aligned to the destination transfer size; otherwise the err
         <cluster>
           <dim>15</dim>
           <dimIncrement>0x80</dimIncrement>
-          <dimIndex>gpioa,gpiob,rsv3,rsv4,rsv5,rsv6,rsv7,rsv8,rsv9,rsv10,rsv11,rsv12,rsv13,gpiox,gpioy</dimIndex>
+          <dimIndex>gpioa,gpiob,rsv2,rsv3,rsv4,rsv5,rsv6,rsv7,rsv8,rsv9,rsv10,rsv11,rsv12,gpiox,gpioy</dimIndex>
           <name>ASSIGN[%s]</name>
           <description>no description available</description>
           <addressOffset>0x0</addressOffset>
@@ -6113,1198 +6113,6 @@ bit2: 1, invisible to cpu0 fast gpio; 0: visible to cpu0 fast gpio</description>
             </fields>
           </register>
         </cluster>
-      </registers>
-    </peripheral>
-    <peripheral>
-      <name>PTPC</name>
-      <description>PTPC</description>
-      <groupName>PTPC</groupName>
-      <baseAddress>0xf02fc000</baseAddress>
-      <addressBlock>
-        <offset>0x0</offset>
-        <size>0x3004</size>
-        <usage>registers</usage>
-      </addressBlock>
-      <registers>
-        <cluster>
-          <dim>2</dim>
-          <dimIncrement>0x1000</dimIncrement>
-          <dimIndex>0,1</dimIndex>
-          <name>PTPC[%s]</name>
-          <description>no description available</description>
-          <addressOffset>0x0</addressOffset>
-          <register>
-            <name>Ctrl0</name>
-            <description>Control Register 0</description>
-            <addressOffset>0x0</addressOffset>
-            <size>32</size>
-            <resetValue>0x00000000</resetValue>
-            <resetMask>0x000003FF</resetMask>
-            <fields>
-              <field>
-                <name>SUBSEC_DIGITAL_ROLLOVER</name>
-                <description>Format for ns counter rollover,
-1-digital, overflow time 1000000000/0x3B9ACA00
-0-binary, overflow time  0x7FFFFFFF</description>
-                <bitOffset>9</bitOffset>
-                <bitWidth>1</bitWidth>
-                <access>read-write</access>
-              </field>
-              <field>
-                <name>CAPT_SNAP_KEEP</name>
-                <description>set  will keep capture snap till software read capt_snapl.
-If this bit is set, software should read capt_snaph first to avoid wrong result.
-If this bit is cleared, capture result will be updated at each capture event</description>
-                <bitOffset>8</bitOffset>
-                <bitWidth>1</bitWidth>
-                <access>read-write</access>
-              </field>
-              <field>
-                <name>CAPT_SNAP_POS_EN</name>
-                <description>set will use posege of input capture signal to latch timestamp value</description>
-                <bitOffset>7</bitOffset>
-                <bitWidth>1</bitWidth>
-                <access>read-write</access>
-              </field>
-              <field>
-                <name>CAPT_SNAP_NEG_EN</name>
-                <description>No description avaiable</description>
-                <bitOffset>6</bitOffset>
-                <bitWidth>1</bitWidth>
-                <access>read-write</access>
-              </field>
-              <field>
-                <name>COMP_EN</name>
-                <description>set to enable compare, will be cleared by HW when compare event triggered</description>
-                <bitOffset>4</bitOffset>
-                <bitWidth>1</bitWidth>
-                <access>read-write</access>
-              </field>
-              <field>
-                <name>UPDATE_TIMER</name>
-                <description>update timer with +/- ts_updt, pulse, clear after set</description>
-                <bitOffset>3</bitOffset>
-                <bitWidth>1</bitWidth>
-                <access>write-only</access>
-              </field>
-              <field>
-                <name>INIT_TIMER</name>
-                <description>initial timer with ts_updt, pulse, clear after set</description>
-                <bitOffset>2</bitOffset>
-                <bitWidth>1</bitWidth>
-                <access>write-only</access>
-              </field>
-              <field>
-                <name>FINE_COARSE_SEL</name>
-                <description>0: coarse update, ns counter add ss_incr[7:0] each clk
-1: fine update, ns counter add ss_incr[7:0] each time addend counter overflow</description>
-                <bitOffset>1</bitOffset>
-                <bitWidth>1</bitWidth>
-                <access>read-write</access>
-              </field>
-              <field>
-                <name>TIMER_ENABLE</name>
-                <description>No description avaiable</description>
-                <bitOffset>0</bitOffset>
-                <bitWidth>1</bitWidth>
-                <access>read-write</access>
-              </field>
-            </fields>
-          </register>
-          <register>
-            <name>ctrl1</name>
-            <description>Control Register 1</description>
-            <addressOffset>0x4</addressOffset>
-            <size>32</size>
-            <resetValue>0x00000000</resetValue>
-            <resetMask>0x000000FF</resetMask>
-            <fields>
-              <field>
-                <name>SS_INCR</name>
-                <description>constant value used to add ns counter;
-such as for 50MHz timer clock, set it to 8'd20</description>
-                <bitOffset>0</bitOffset>
-                <bitWidth>8</bitWidth>
-                <access>read-write</access>
-              </field>
-            </fields>
-          </register>
-          <register>
-            <name>timeh</name>
-            <description>timestamp high</description>
-            <addressOffset>0x8</addressOffset>
-            <size>32</size>
-            <resetValue>0x00000000</resetValue>
-            <resetMask>0xFFFFFFFF</resetMask>
-            <fields>
-              <field>
-                <name>TIMESTAMP_HIGH</name>
-                <description>No description avaiable</description>
-                <bitOffset>0</bitOffset>
-                <bitWidth>32</bitWidth>
-                <access>read-only</access>
-              </field>
-            </fields>
-          </register>
-          <register>
-            <name>timel</name>
-            <description>timestamp low</description>
-            <addressOffset>0xc</addressOffset>
-            <size>32</size>
-            <resetValue>0x00000000</resetValue>
-            <resetMask>0xFFFFFFFF</resetMask>
-            <fields>
-              <field>
-                <name>TIMESTAMP_LOW</name>
-                <description>No description avaiable</description>
-                <bitOffset>0</bitOffset>
-                <bitWidth>32</bitWidth>
-                <access>read-only</access>
-              </field>
-            </fields>
-          </register>
-          <register>
-            <name>ts_updth</name>
-            <description>timestamp update high</description>
-            <addressOffset>0x10</addressOffset>
-            <size>32</size>
-            <resetValue>0x00000000</resetValue>
-            <resetMask>0xFFFFFFFF</resetMask>
-            <fields>
-              <field>
-                <name>SEC_UPDATE</name>
-                <description>together with ts_updtl, used to initial or update timestamp</description>
-                <bitOffset>0</bitOffset>
-                <bitWidth>32</bitWidth>
-                <access>read-write</access>
-              </field>
-            </fields>
-          </register>
-          <register>
-            <name>ts_updtl</name>
-            <description>timestamp update low</description>
-            <addressOffset>0x14</addressOffset>
-            <size>32</size>
-            <resetValue>0x00000000</resetValue>
-            <resetMask>0xFFFFFFFF</resetMask>
-            <fields>
-              <field>
-                <name>ADD_SUB</name>
-                <description>1 for sub; 0 for add, used only at update</description>
-                <bitOffset>31</bitOffset>
-                <bitWidth>1</bitWidth>
-                <access>read-write</access>
-              </field>
-              <field>
-                <name>NS_UPDATE</name>
-                <description>No description avaiable</description>
-                <bitOffset>0</bitOffset>
-                <bitWidth>31</bitWidth>
-                <access>read-write</access>
-              </field>
-            </fields>
-          </register>
-          <register>
-            <name>addend</name>
-            <description>No description avaiable</description>
-            <addressOffset>0x18</addressOffset>
-            <size>32</size>
-            <resetValue>0x00000000</resetValue>
-            <resetMask>0xFFFFFFFF</resetMask>
-            <fields>
-              <field>
-                <name>ADDEND</name>
-                <description>used in fine update mode only</description>
-                <bitOffset>0</bitOffset>
-                <bitWidth>32</bitWidth>
-                <access>read-write</access>
-              </field>
-            </fields>
-          </register>
-          <register>
-            <name>tarh</name>
-            <description>No description avaiable</description>
-            <addressOffset>0x1c</addressOffset>
-            <size>32</size>
-            <resetValue>0x00000000</resetValue>
-            <resetMask>0xFFFFFFFF</resetMask>
-            <fields>
-              <field>
-                <name>TARGET_TIME_HIGH</name>
-                <description>used for generate compare signal if enabled</description>
-                <bitOffset>0</bitOffset>
-                <bitWidth>32</bitWidth>
-                <access>read-write</access>
-              </field>
-            </fields>
-          </register>
-          <register>
-            <name>tarl</name>
-            <description>No description avaiable</description>
-            <addressOffset>0x20</addressOffset>
-            <size>32</size>
-            <resetValue>0x00000000</resetValue>
-            <resetMask>0xFFFFFFFF</resetMask>
-            <fields>
-              <field>
-                <name>TARGET_TIME_LOW</name>
-                <description>No description avaiable</description>
-                <bitOffset>0</bitOffset>
-                <bitWidth>32</bitWidth>
-                <access>read-write</access>
-              </field>
-            </fields>
-          </register>
-          <register>
-            <name>pps_ctrl</name>
-            <description>No description avaiable</description>
-            <addressOffset>0x2c</addressOffset>
-            <size>32</size>
-            <resetValue>0x00000000</resetValue>
-            <resetMask>0x0000000F</resetMask>
-            <fields>
-              <field>
-                <name>PPS_CTRL</name>
-                <description>No description avaiable</description>
-                <bitOffset>0</bitOffset>
-                <bitWidth>4</bitWidth>
-                <access>read-write</access>
-              </field>
-            </fields>
-          </register>
-          <register>
-            <name>capt_snaph</name>
-            <description>No description avaiable</description>
-            <addressOffset>0x30</addressOffset>
-            <size>32</size>
-            <resetValue>0x00000000</resetValue>
-            <resetMask>0xFFFFFFFF</resetMask>
-            <fields>
-              <field>
-                <name>CAPT_SNAP_HIGH</name>
-                <description>take snapshot for input capture signal, at pos or neg or both;
-the result can be kept or updated at each event according to cfg0.bit8</description>
-                <bitOffset>0</bitOffset>
-                <bitWidth>32</bitWidth>
-                <access>read-only</access>
-              </field>
-            </fields>
-          </register>
-          <register>
-            <name>capt_snapl</name>
-            <description>No description avaiable</description>
-            <addressOffset>0x34</addressOffset>
-            <size>32</size>
-            <resetValue>0x00000000</resetValue>
-            <resetMask>0xFFFFFFFF</resetMask>
-            <fields>
-              <field>
-                <name>CAPT_SNAP_LOW</name>
-                <description>No description avaiable</description>
-                <bitOffset>0</bitOffset>
-                <bitWidth>32</bitWidth>
-                <access>read-write</access>
-              </field>
-            </fields>
-          </register>
-        </cluster>
-        <register>
-          <name>time_sel</name>
-          <description>No description avaiable</description>
-          <addressOffset>0x2000</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0x0000000F</resetMask>
-          <fields>
-            <field>
-              <name>CAN3_TIME_SEL</name>
-              <description>No description avaiable</description>
-              <bitOffset>3</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>CAN2_TIME_SEL</name>
-              <description>No description avaiable</description>
-              <bitOffset>2</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>CAN1_TIME_SEL</name>
-              <description>No description avaiable</description>
-              <bitOffset>1</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>CAN0_TIME_SEL</name>
-              <description>set to use ptpc1 for canx
-clr to use ptpc0 for canx</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>int_sts</name>
-          <description>No description avaiable</description>
-          <addressOffset>0x2004</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0x00070007</resetMask>
-          <fields>
-            <field>
-              <name>COMP_INT_STS1</name>
-              <description>No description avaiable</description>
-              <bitOffset>18</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>write-only</access>
-            </field>
-            <field>
-              <name>CAPTURE_INT_STS1</name>
-              <description>No description avaiable</description>
-              <bitOffset>17</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>write-only</access>
-            </field>
-            <field>
-              <name>PPS_INT_STS1</name>
-              <description>No description avaiable</description>
-              <bitOffset>16</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>write-only</access>
-            </field>
-            <field>
-              <name>COMP_INT_STS0</name>
-              <description>No description avaiable</description>
-              <bitOffset>2</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>write-only</access>
-            </field>
-            <field>
-              <name>CAPTURE_INT_STS0</name>
-              <description>No description avaiable</description>
-              <bitOffset>1</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>write-only</access>
-            </field>
-            <field>
-              <name>PPS_INT_STS0</name>
-              <description>No description avaiable</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>write-only</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>int_en</name>
-          <description>No description avaiable</description>
-          <addressOffset>0x2008</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0x00070007</resetMask>
-          <fields>
-            <field>
-              <name>COMP_INT_STS1</name>
-              <description>No description avaiable</description>
-              <bitOffset>18</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>CAPTURE_INT_STS1</name>
-              <description>No description avaiable</description>
-              <bitOffset>17</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>PPS_INT_STS1</name>
-              <description>No description avaiable</description>
-              <bitOffset>16</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>COMP_INT_STS0</name>
-              <description>No description avaiable</description>
-              <bitOffset>2</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>CAPTURE_INT_STS0</name>
-              <description>No description avaiable</description>
-              <bitOffset>1</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>PPS_INT_STS0</name>
-              <description>No description avaiable</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>ptpc_can_ts_sel</name>
-          <description>No description avaiable</description>
-          <addressOffset>0x3000</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFF00</resetMask>
-          <fields>
-            <field>
-              <name>TSU_TBIN3_SEL</name>
-              <description>No description avaiable</description>
-              <bitOffset>26</bitOffset>
-              <bitWidth>6</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>TSU_TBIN2_SEL</name>
-              <description>No description avaiable</description>
-              <bitOffset>20</bitOffset>
-              <bitWidth>6</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>TSU_TBIN1_SEL</name>
-              <description>No description avaiable</description>
-              <bitOffset>14</bitOffset>
-              <bitWidth>6</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>TSU_TBIN0_SEL</name>
-              <description>No description avaiable</description>
-              <bitOffset>8</bitOffset>
-              <bitWidth>6</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-      </registers>
-    </peripheral>
-    <peripheral>
-      <name>PLB</name>
-      <description>PLB</description>
-      <groupName>PLB</groupName>
-      <baseAddress>0xf0324000</baseAddress>
-      <addressBlock>
-        <offset>0x0</offset>
-        <size>0x480</size>
-        <usage>registers</usage>
-      </addressBlock>
-      <registers>
-        <cluster>
-          <dim>4</dim>
-          <dimIncrement>0x20</dimIncrement>
-          <dimIndex>0,1,2,3</dimIndex>
-          <name>TYPE_A[%s]</name>
-          <description>no description available</description>
-          <addressOffset>0x0</addressOffset>
-          <register>
-            <dim>4</dim>
-            <dimIncrement>0x4</dimIncrement>
-            <dimIndex>0,1,2,3</dimIndex>
-            <name>LOOKUP_TABLE[%s]</name>
-            <description>no description available</description>
-            <addressOffset>0x0</addressOffset>
-            <size>32</size>
-            <resetValue>0x00000000</resetValue>
-            <resetMask>0x0000FFFF</resetMask>
-            <fields>
-              <field>
-                <name>LOOKUP_TABLE</name>
-                <description>using 4 bit trig_in as lookup index. software can program this register as trig_in's true table.</description>
-                <bitOffset>0</bitOffset>
-                <bitWidth>16</bitWidth>
-                <access>read-write</access>
-              </field>
-            </fields>
-          </register>
-          <register>
-            <name>sw_inject</name>
-            <description>TYPE A CHN&amp;index0 software inject</description>
-            <addressOffset>0x10</addressOffset>
-            <size>32</size>
-            <resetValue>0x00000000</resetValue>
-            <resetMask>0x0000000F</resetMask>
-            <fields>
-              <field>
-                <name>SW_INJECT</name>
-                <description>software can inject value to TYPEA's output</description>
-                <bitOffset>0</bitOffset>
-                <bitWidth>4</bitWidth>
-                <access>read-write</access>
-              </field>
-            </fields>
-          </register>
-        </cluster>
-        <cluster>
-          <dim>4</dim>
-          <dimIncrement>0x20</dimIncrement>
-          <dimIndex>0,1,2,3</dimIndex>
-          <name>TYPE_B[%s]</name>
-          <description>no description available</description>
-          <addressOffset>0x400</addressOffset>
-          <register>
-            <dim>2</dim>
-            <dimIncrement>0x4</dimIncrement>
-            <dimIndex>0,1</dimIndex>
-            <name>LUT[%s]</name>
-            <description>no description available</description>
-            <addressOffset>0x0</addressOffset>
-            <size>32</size>
-            <resetValue>0x00000000</resetValue>
-            <resetMask>0xFFFFFFFF</resetMask>
-            <fields>
-              <field>
-                <name>LOOKUP_TABLE</name>
-                <description>lut0 and lut1 union as 64bit, consider each 4bit as one slice. then, total 16 slice. slice0 as bit3:0, slice1 as bit7:4...etc. using 4bit trig in as index of slice. the operate sel in data unit of type B channle is decided by which slice value choosed by trig_in</description>
-                <bitOffset>0</bitOffset>
-                <bitWidth>32</bitWidth>
-                <access>read-write</access>
-              </field>
-            </fields>
-          </register>
-          <register>
-            <dim>4</dim>
-            <dimIncrement>0x4</dimIncrement>
-            <dimIndex>0,1,2,3</dimIndex>
-            <name>CMP[%s]</name>
-            <description>no description available</description>
-            <addressOffset>0x8</addressOffset>
-            <size>32</size>
-            <resetValue>0x00000000</resetValue>
-            <resetMask>0xFFFFFFFF</resetMask>
-            <fields>
-              <field>
-                <name>CMP_VALUE</name>
-                <description>cmp value, using as data unit operation</description>
-                <bitOffset>0</bitOffset>
-                <bitWidth>32</bitWidth>
-                <access>read-write</access>
-              </field>
-            </fields>
-          </register>
-          <register>
-            <name>mode</name>
-            <description>TYPE B CHN&amp;index0 mode ctrl</description>
-            <addressOffset>0x18</addressOffset>
-            <size>32</size>
-            <resetValue>0x00000000</resetValue>
-            <resetMask>0x0001FFFF</resetMask>
-            <fields>
-              <field>
-                <name>OPT_SEL</name>
-                <description>operation selection in data unit.</description>
-                <bitOffset>16</bitOffset>
-                <bitWidth>1</bitWidth>
-                <access>read-write</access>
-              </field>
-              <field>
-                <name>OUT3_SEL</name>
-                <description>trig out 3 output type in current channel</description>
-                <bitOffset>12</bitOffset>
-                <bitWidth>4</bitWidth>
-                <access>read-write</access>
-              </field>
-              <field>
-                <name>OUT2_SEL</name>
-                <description>trig out 2 output type in current channel</description>
-                <bitOffset>8</bitOffset>
-                <bitWidth>4</bitWidth>
-                <access>read-write</access>
-              </field>
-              <field>
-                <name>OUT1_SEL</name>
-                <description>trig out 1 output type in current channel</description>
-                <bitOffset>4</bitOffset>
-                <bitWidth>4</bitWidth>
-                <access>read-write</access>
-              </field>
-              <field>
-                <name>OUT0_SEL</name>
-                <description>trig out 0 output type in current channel</description>
-                <bitOffset>0</bitOffset>
-                <bitWidth>4</bitWidth>
-                <access>read-write</access>
-              </field>
-            </fields>
-          </register>
-          <register>
-            <name>sw_inject</name>
-            <description>TYPE B CHN&amp;index0 software inject</description>
-            <addressOffset>0x1c</addressOffset>
-            <size>32</size>
-            <resetValue>0x00000000</resetValue>
-            <resetMask>0xFFFFFFFF</resetMask>
-            <fields>
-              <field>
-                <name>SOFTWARE_INJECT</name>
-                <description>data unit value can be changed if program this register</description>
-                <bitOffset>0</bitOffset>
-                <bitWidth>32</bitWidth>
-                <access>read-write</access>
-              </field>
-            </fields>
-          </register>
-        </cluster>
-      </registers>
-    </peripheral>
-    <peripheral>
-      <name>SYNT</name>
-      <description>SYNT</description>
-      <groupName>SYNT</groupName>
-      <baseAddress>0xf0328000</baseAddress>
-      <addressBlock>
-        <offset>0x0</offset>
-        <size>0x30</size>
-        <usage>registers</usage>
-      </addressBlock>
-      <registers>
-        <register>
-          <name>gcr</name>
-          <description>Global control register</description>
-          <addressOffset>0x0</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xF0000037</resetMask>
-          <fields>
-            <field>
-              <name>TIMESTAMP_INC_NEW</name>
-              <description>set to increase the timesamp with new value, auto clr</description>
-              <bitOffset>31</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>write-only</access>
-            </field>
-            <field>
-              <name>TIMESTAMP_DEC_NEW</name>
-              <description>set to decrease the timesamp with new value, auto clr</description>
-              <bitOffset>30</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>write-only</access>
-            </field>
-            <field>
-              <name>TIMESTAMP_SET_NEW</name>
-              <description>set  the timesamp to new value, auto clr</description>
-              <bitOffset>29</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>write-only</access>
-            </field>
-            <field>
-              <name>TIMESTAMP_RESET</name>
-              <description>reset timesamp  to 0, auto clr</description>
-              <bitOffset>28</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>write-only</access>
-            </field>
-            <field>
-              <name>TIMESTAMP_DEBUG_EN</name>
-              <description>set to enable cpu_debug_mode to stop the timesamp</description>
-              <bitOffset>5</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>TIMESTAMP_ENABLE</name>
-              <description>set to enable the timesamp , clr to stop</description>
-              <bitOffset>4</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>COUNTER_DEBUG_EN</name>
-              <description>set to enable cpu_debug_mode to stop the counter</description>
-              <bitOffset>2</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>CRST</name>
-              <description>1- Reset counter</description>
-              <bitOffset>1</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>CEN</name>
-              <description>1- Enable counter</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>rld</name>
-          <description>Counter reload register</description>
-          <addressOffset>0x4</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>RLD</name>
-              <description>counter reload value</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>32</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>timestamp_new</name>
-          <description>timestamp new value register</description>
-          <addressOffset>0x8</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>VALUE</name>
-              <description>new value for timesamp , can be used as set/inc/dec</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>32</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>cnt</name>
-          <description>Counter</description>
-          <addressOffset>0xc</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>CNT</name>
-              <description>counter</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>32</bitWidth>
-              <access>read-only</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>timestamp_sav</name>
-          <description>timestamp trig save value</description>
-          <addressOffset>0x10</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>VALUE</name>
-              <description>use the trigger to save timesamp  here</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>32</bitWidth>
-              <access>read-only</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>timestamp_cur</name>
-          <description>timestamp read value</description>
-          <addressOffset>0x14</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>VALUE</name>
-              <description>current timesamp  value</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>32</bitWidth>
-              <access>read-only</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <dim>4</dim>
-          <dimIncrement>0x4</dimIncrement>
-          <dimIndex>0,1,2,3</dimIndex>
-          <name>CMP[%s]</name>
-          <description>no description available</description>
-          <addressOffset>0x20</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>CMP</name>
-              <description>comparator value, the output will assert when counter count to this value</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>32</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-      </registers>
-    </peripheral>
-    <peripheral>
-      <name>TRGM0</name>
-      <description>TRGM0</description>
-      <groupName>TRGM</groupName>
-      <baseAddress>0xf033c000</baseAddress>
-      <addressBlock>
-        <offset>0x0</offset>
-        <size>0x634</size>
-        <usage>registers</usage>
-      </addressBlock>
-      <registers>
-        <register>
-          <dim>28</dim>
-          <dimIncrement>0x4</dimIncrement>
-          <dimIndex>PWM0_IN0,PWM0_IN1,PWM0_IN2,PWM0_IN3,PWM0_IN4,PWM0_IN5,PWM0_IN6,PWM0_IN7,PWM1_IN0,PWM1_IN1,PWM1_IN2,PWM1_IN3,PWM1_IN4,PWM1_IN5,PWM1_IN6,PWM1_IN7,MOTO_GPIO_IN0,MOTO_GPIO_IN1,MOTO_GPIO_IN2,MOTO_GPIO_IN3,MOTO_GPIO_IN4,MOTO_GPIO_IN5,MOTO_GPIO_IN6,MOTO_GPIO_IN7,PWM0_FAULT0,PWM0_FAULT1,PWM1_FAULT0,PWM1_FAULT1</dimIndex>
-          <name>FILTCFG[%s]</name>
-          <description>no description available</description>
-          <addressOffset>0x0</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0x0001FFFF</resetMask>
-          <fields>
-            <field>
-              <name>OUTINV</name>
-              <description>1- Filter will invert the output
-0- Filter will not invert the output</description>
-              <bitOffset>16</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>MODE</name>
-              <description>This bitfields defines the filter mode
-000-bypass;
-100-rapid change mode;
-101-delay filter mode;
-110-stalbe low mode;
-111-stable high mode</description>
-              <bitOffset>13</bitOffset>
-              <bitWidth>3</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>SYNCEN</name>
-              <description>set to enable sychronization input signal with TRGM clock</description>
-              <bitOffset>12</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>FILTLEN_SHIFT</name>
-              <description>No description avaiable</description>
-              <bitOffset>9</bitOffset>
-              <bitWidth>3</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>FILTLEN_BASE</name>
-              <description>This bitfields defines the filter counter length.</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>9</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <dim>137</dim>
-          <dimIncrement>0x4</dimIncrement>
-          <dimIndex>MOT2OPAMP0_0,MOT2OPAMP0_1,MOT2OPAMP0_2,MOT2OPAMP0_3,MOT2OPAMP0_4,MOT2OPAMP0_5,MOT2OPAMP0_6,MOT2OPAMP0_7,MOT2OPAMP1_0,MOT2OPAMP1_1,MOT2OPAMP1_2,MOT2OPAMP1_3,MOT2OPAMP1_4,MOT2OPAMP1_5,MOT2OPAMP1_6,MOT2OPAMP1_7,GPTMR0_IN2,GPTMR0_IN3,GPTMR0_SYNCI,GPTMR1_IN2,GPTMR1_IN3,GPTMR1_SYNCI,GPTMR2_IN2,GPTMR2_IN3,GPTMR2_SYNCI,GPTMR3_IN2,GPTMR3_IN3,GPTMR3_SYNCI,CMP0_WIN,CMP1_WIN,DAC0_BUFTRG,DAC1_BUFTRG,ADC0_STRGI,ADC1_STRGI,ADCx_PTRGI0A,ADCx_PTRGI0B,ADCx_PTRGI0C,ADCx_PTRGI1A,ADCx_PTRGI1B,ADCx_PTRGI1C,ADCx_PTRGI2A,ADCx_PTRGI2B,ADCx_PTRGI2C,ADCx_PTRGI3A,ADCx_PTRGI3B,ADCx_PTRGI3C,CAN_PTPC0_CAP,CAN_PTPC1_CAP,QEO0_TRIG_IN0,QEO0_TRIG_IN1,QEO1_TRIG_IN0,QEO1_TRIG_IN1,SEI_TRIG_IN0,SEI_TRIG_IN1,SEI_TRIG_IN2,SEI_TRIG_IN3,SEI_TRIG_IN4,SEI_TRIG_IN5,SEI_TRIG_IN6,SEI_TRIG_IN7,MMC0_TRIG_IN0,MMC0_TRIG_IN1,MMC1_TRIG_IN0,MMC1_TRIG_IN1,PLB_IN_00,PLB_IN_01,PLB_IN_02,PLB_IN_03,PLB_IN_04,PLB_IN_05,PLB_IN_06,PLB_IN_07,PLB_IN_08,PLB_IN_09,PLB_IN_10,PLB_IN_11,PLB_IN_12,PLB_IN_13,PLB_IN_14,PLB_IN_15,PLB_IN_16,PLB_IN_17,PLB_IN_18,PLB_IN_19,PLB_IN_20,PLB_IN_21,PLB_IN_22,PLB_IN_23,PLB_IN_24,PLB_IN_25,PLB_IN_26,PLB_IN_27,PLB_IN_28,PLB_IN_29,PLB_IN_30,PLB_IN_31,MOT_GPIO0,MOT_GPIO1,MOT_GPIO2,MOT_GPIO3,MOT_GPIO4,MOT_GPIO5,MOT_GPIO6,MOT_GPIO7,PWM_IN8,PWM_IN9,PWM_IN10,PWM_IN11,PWM_IN12,PWM_IN13,PWM_IN14,PWM_IN15,PWM0_FRCI,PWM0_FRCSYNCI,PWM0_SYNCI,PWM0_SHRLDSYNCI,PWM0_FAULTI0,PWM0_FAULTI1,PWM1_FRCI,PWM1_FRCSYNCI,PWM1_SYNCI,PWM1_SHRLDSYNCI,PWM1_FAULTI0,PWM1_FAULTI1,RDC_TRIG_IN0,RDC_TRIG_IN1,SYNCTIMER_TRIG,QEI0_TRIG_IN,QEI1_TRIG_IN,QEI0_PAUSE,QEI1_PAUSE,UART_TRIG0,UART_TRIG1,TRGM_IRQ0,TRGM_IRQ1,TRGM_DMA0,TRGM_DMA1</dimIndex>
-          <name>TRGOCFG[%s]</name>
-          <description>no description available</description>
-          <addressOffset>0x100</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0x00000E7F</resetMask>
-          <fields>
-            <field>
-              <name>OUTINV</name>
-              <description>1- Invert the output</description>
-              <bitOffset>11</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>FEDG2PEN</name>
-              <description>1- The selected input signal falling edge will be convert to an pulse on output.</description>
-              <bitOffset>10</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>REDG2PEN</name>
-              <description>1- The selected input signal rising edge will be convert to an pulse on output.</description>
-              <bitOffset>9</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>TRIGOSEL</name>
-              <description>This bitfield selects one of the TRGM inputs as output.</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>7</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <dim>8</dim>
-          <dimIncrement>0x4</dimIncrement>
-          <dimIndex>0,1,2,3,4,5,6,7</dimIndex>
-          <name>DMACFG[%s]</name>
-          <description>no description available</description>
-          <addressOffset>0x400</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0x8000003F</resetMask>
-          <fields>
-            <field>
-              <name>DMAMUX_EN</name>
-              <description>No description avaiable</description>
-              <bitOffset>31</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>DMASRCSEL</name>
-              <description>This field selects one of the DMA requests as the DMA request output.</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>6</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>GCR</name>
-          <description>General Control Register</description>
-          <addressOffset>0x500</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0x000000FF</resetMask>
-          <fields>
-            <field>
-              <name>TRGOPEN</name>
-              <description>The bitfield enable the TRGM outputs.</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>8</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>ADC_MATRIX_SEL</name>
-          <description>adc matrix select register</description>
-          <addressOffset>0x510</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>QEI1_ADC1_SEL</name>
-              <description>0-adc0;  1-adc1;  2-rdc_adc0; 3-rdc_adc1;
-bit7 is used to invert adc_value;
-others reserved</description>
-              <bitOffset>24</bitOffset>
-              <bitWidth>8</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>QEI1_ADC0_SEL</name>
-              <description>No description avaiable</description>
-              <bitOffset>16</bitOffset>
-              <bitWidth>8</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>QEI0_ADC1_SEL</name>
-              <description>No description avaiable</description>
-              <bitOffset>8</bitOffset>
-              <bitWidth>8</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>QEI0_ADC0_SEL</name>
-              <description>No description avaiable</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>8</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>DAC_MATRIX_SEL</name>
-          <description>dac matrix select register</description>
-          <addressOffset>0x514</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>DAC1_DAC_SEL</name>
-              <description>0-qeo0_dac0;   1-qeo0_dac1;  2-qeo0_dac2;
-3-qeo1_dac0;   4-qeo1_dac1;  5-qeo1_dac2;
-6-rdc_dac0;      7-rdc_dac1;
-bit7 is used to invert dac_value;
-others reserved</description>
-              <bitOffset>24</bitOffset>
-              <bitWidth>8</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>DAC0_DAC_SEL</name>
-              <description>No description avaiable</description>
-              <bitOffset>16</bitOffset>
-              <bitWidth>8</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>ACMP1_DAC_SEL</name>
-              <description>No description avaiable</description>
-              <bitOffset>8</bitOffset>
-              <bitWidth>8</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>ACMP0_DAC_SEL</name>
-              <description>No description avaiable</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>8</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>POS_MATRIX_SEL0</name>
-          <description>position matrix select register0</description>
-          <addressOffset>0x518</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>MMC1_POSIN_SEL</name>
-              <description>0-sei_pos_out0;       1-sei_pos_out1;
-2-qei0_pos;             3-qei1_pos;
-4-mmc0_pos_out0;  5-mmc0_pos_out1;
-6-mmc1_pos_out0;  7-mmc1_pos_out1;
-bit7 is used to invert position value;
- others reserved</description>
-              <bitOffset>24</bitOffset>
-              <bitWidth>8</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>MMC0_POSIN_SEL</name>
-              <description>No description avaiable</description>
-              <bitOffset>16</bitOffset>
-              <bitWidth>8</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>SEI_POSIN1_SEL</name>
-              <description>No description avaiable</description>
-              <bitOffset>8</bitOffset>
-              <bitWidth>8</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>SEI_POSIN0_SEL</name>
-              <description>No description avaiable</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>8</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>POS_MATRIX_SEL1</name>
-          <description>position matrix select register1</description>
-          <addressOffset>0x51c</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0x0000FFFF</resetMask>
-          <fields>
-            <field>
-              <name>QEO1_POS_SEL</name>
-              <description>No description avaiable</description>
-              <bitOffset>8</bitOffset>
-              <bitWidth>8</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>QEO0_POS_SEL</name>
-              <description>No description avaiable</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>8</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <dim>4</dim>
-          <dimIncrement>0x4</dimIncrement>
-          <dimIndex>0,1,2,3</dimIndex>
-          <name>TRGM_IN[%s]</name>
-          <description>no description available</description>
-          <addressOffset>0x600</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>TRGM_IN</name>
-              <description>mmc1_trig_out[1:0], mmc0_trig_out[1:0],sync_pulse[3:0],moto_gpio_in_sync[7:0],//31:16
- gtmr3_to_motor_sync[1:0],gtmr2_to_motor_sync[1:0],gtmr1_to_motor_sync[1:0],gtmr0_to_motor_sync[1:0],  //15:8
- acmp_out_sync[1:0],can2mot_event_sync[1:0],usb0_sof_tog_sync,pwm_debug,1'b1,1'b0       //7:0</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>32</bitWidth>
-              <access>read-only</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <dim>5</dim>
-          <dimIncrement>0x4</dimIncrement>
-          <dimIndex>0,1,2,3,4</dimIndex>
-          <name>TRGM_OUT[%s]</name>
-          <description>no description available</description>
-          <addressOffset>0x620</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>TRGM_OUT</name>
-              <description>motor_to_opamp0[7:0]     = trig_mux_out[7:0];
-motor_to_opamp1[7:0]     = trig_mux_out[15:8];
-motor_to_gtmr0_capt[1:0] = trig_mux_out[17:16];
-motor_to_gtmr0_sync      = trig_mux_out[18];
-motor_to_gtmr1_capt[1:0] = trig_mux_out[20:19];
-motor_to_gtmr1_sync      = trig_mux_out[21];
-motor_to_gtmr2_capt[1:0] = trig_mux_out[23:22];
-motor_to_gtmr2_sync      = trig_mux_out[24];
-motor_to_gtmr3_capt[1:0] = trig_mux_out[26:25];
-motor_to_gtmr3_sync      = trig_mux_out[27];
-acmp_window[1:0]         = trig_mux_out[29:28];
-dac0_buf_trigger         = trig_mux_out[30];
-dac1_buf_trigger         = trig_mux_out[31];
-dac0_step_trigger[3:0]   = {trig_mux_out[24:22],trig_mux_out[30]};//use same buf_trig, and gtmr2
-dac1_step_trigger[3:0]   = {trig_mux_out[27:25],trig_mux_out[31]}; //use same buf_trig, and gtmr3</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>32</bitWidth>
-              <access>read-only</access>
-            </field>
-          </fields>
-        </register>
       </registers>
     </peripheral>
     <peripheral>
@@ -7503,7 +6311,7 @@ NOTE: This register overrides n_BURSTSIZE register when its value is not zero.
           <addressOffset>0x140</addressOffset>
           <size>32</size>
           <resetValue>0x00080000</resetValue>
-          <resetMask>0x00FFEB7F</resetMask>
+          <resetMask>0x00FFFB7F</resetMask>
           <fields>
             <field>
               <name>ITC</name>
@@ -7569,6 +6377,14 @@ This bit would also be cleared by hardware when a hazard detected.</description>
               <bitOffset>13</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
+            </field>
+            <field>
+              <name>PRM</name>
+              <description>Asynchronous Schedule start- Write only， host mode only。
+this bit is used to notify hostcontroller to start async schedule immediately.</description>
+              <bitOffset>12</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>write-only</access>
             </field>
             <field>
               <name>ASPE</name>
@@ -8267,7 +7083,7 @@ Default value is '08h' for OTG controller core .</description>
           <addressOffset>0x178</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0x00FF00FF</resetMask>
+          <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>
               <name>EPTN</name>
@@ -8277,7 +7093,7 @@ Each TX endpoint has 1 bit in this field. The bit is set when the
 device sends a NAK handshake on a received IN token for the corresponding endpoint.
 Bit [N] - Endpoint #[N], N is 0-7</description>
               <bitOffset>16</bitOffset>
-              <bitWidth>8</bitWidth>
+              <bitWidth>16</bitWidth>
               <access>read-write</access>
             </field>
             <field>
@@ -8288,7 +7104,7 @@ Each RX endpoint has 1 bit in this field. The bit is set when the
 device sends a NAK handshake on a received OUT or PING token for the corresponding endpoint.
 Bit [N] - Endpoint #[N], N is 0-7</description>
               <bitOffset>0</bitOffset>
-              <bitWidth>8</bitWidth>
+              <bitWidth>16</bitWidth>
               <access>read-write</access>
             </field>
           </fields>
@@ -8299,7 +7115,7 @@ Bit [N] - Endpoint #[N], N is 0-7</description>
           <addressOffset>0x17c</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0x00FF00FF</resetMask>
+          <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>
               <name>EPTNE</name>
@@ -8309,7 +7125,7 @@ Each bit is an enable bit for the corresponding TX Endpoint NAK bit. If this bit
 corresponding TX Endpoint NAK bit is set, the NAK Interrupt bit is set.
 Bit [N] - Endpoint #[N], N is 0-7</description>
               <bitOffset>16</bitOffset>
-              <bitWidth>8</bitWidth>
+              <bitWidth>16</bitWidth>
               <access>read-write</access>
             </field>
             <field>
@@ -8320,7 +7136,7 @@ Each bit is an enable bit for the corresponding RX Endpoint NAK bit. If this bit
 corresponding RX Endpoint NAK bit is set, the NAK Interrupt bit is set.
 Bit [N] - Endpoint #[N], N is 0-7</description>
               <bitOffset>0</bitOffset>
-              <bitWidth>8</bitWidth>
+              <bitWidth>16</bitWidth>
               <access>read-write</access>
             </field>
           </fields>
@@ -8843,7 +7659,7 @@ For OTG controller core, reset value is '00b'.
           <addressOffset>0x1ac</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0x000000FF</resetMask>
+          <resetMask>0x0000FFFF</resetMask>
           <fields>
             <field>
               <name>ENDPTSETUPSTAT</name>
@@ -8853,7 +7669,7 @@ Software must clear or acknowledge the setup transfer by writing a one to a resp
 The response to a setup packet as in the order of operations and total response time is crucial to limit bus time outs while the setup lock out mechanism is engaged.
 This register is only used in device mode.</description>
               <bitOffset>0</bitOffset>
-              <bitWidth>8</bitWidth>
+              <bitWidth>16</bitWidth>
               <access>read-write</access>
             </field>
           </fields>
@@ -8864,7 +7680,7 @@ This register is only used in device mode.</description>
           <addressOffset>0x1b0</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0x00FF00FF</resetMask>
+          <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>
               <name>PETB</name>
@@ -8879,7 +7695,7 @@ NOTE: These bits are momentarily set by hardware during hardware re-priming oper
 is retired, and the dQH is updated.
 PETB[N] - Endpoint #N, N is in 0..7</description>
               <bitOffset>16</bitOffset>
-              <bitWidth>8</bitWidth>
+              <bitWidth>16</bitWidth>
               <access>read-write</access>
             </field>
             <field>
@@ -8893,7 +7709,7 @@ NOTE: These bits are momentarily set by hardware during hardware re-priming oper
 is retired, and the dQH is updated.
 PERB[N] - Endpoint #N, N is in 0..7</description>
               <bitOffset>0</bitOffset>
-              <bitWidth>8</bitWidth>
+              <bitWidth>16</bitWidth>
               <access>read-write</access>
             </field>
           </fields>
@@ -8904,7 +7720,7 @@ PERB[N] - Endpoint #N, N is in 0..7</description>
           <addressOffset>0x1b4</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0x00FF00FF</resetMask>
+          <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>
               <name>FETB</name>
@@ -8914,7 +7730,7 @@ If a packet is in progress for one of the associated endpoints, then that transf
 Hardware clears this register after the endpoint flush operation is successful.
 FETB[N] - Endpoint #N, N is in 0..7</description>
               <bitOffset>16</bitOffset>
-              <bitWidth>8</bitWidth>
+              <bitWidth>16</bitWidth>
               <access>read-write</access>
             </field>
             <field>
@@ -8925,7 +7741,7 @@ Flush Endpoint Receive Buffer - R/WS. Writing one to a bit(s) causes the associa
 Hardware clears this register after the endpoint flush operation is successful.
 FERB[N] - Endpoint #N, N is in 0..7</description>
               <bitOffset>0</bitOffset>
-              <bitWidth>8</bitWidth>
+              <bitWidth>16</bitWidth>
               <access>read-write</access>
             </field>
           </fields>
@@ -8936,7 +7752,7 @@ FERB[N] - Endpoint #N, N is in 0..7</description>
           <addressOffset>0x1b8</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0x00FF00FF</resetMask>
+          <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>
               <name>ETBR</name>
@@ -8949,7 +7765,7 @@ Buffer ready is cleared by USB reset, by the USB DMA system, or through the ENDP
 NOTE: These bits are momentarily cleared by hardware during hardware endpoint re-priming operations when a dTD is retired, and the dQH is updated.
 ETBR[N] - Endpoint #N, N is in 0..7</description>
               <bitOffset>16</bitOffset>
-              <bitWidth>8</bitWidth>
+              <bitWidth>16</bitWidth>
               <access>read-only</access>
             </field>
             <field>
@@ -8965,7 +7781,7 @@ NOTE: These bits are momentarily cleared by hardware during hardware endpoint re
 when a dTD is retired, and the dQH is updated.
 ERBR[N] - Endpoint #N, N is in 0..7</description>
               <bitOffset>0</bitOffset>
-              <bitWidth>8</bitWidth>
+              <bitWidth>16</bitWidth>
               <access>read-only</access>
             </field>
           </fields>
@@ -8976,7 +7792,7 @@ ERBR[N] - Endpoint #N, N is in 0..7</description>
           <addressOffset>0x1bc</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0x00FF00FF</resetMask>
+          <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>
               <name>ETCE</name>
@@ -8985,7 +7801,7 @@ Endpoint Transmit Complete Event - R/WC. Each bit indicates a transmit event (IN
 If the corresponding IOC bit is set in the Transfer Descriptor, then this bit is set simultaneously with the USBINT . Writing one clears the corresponding bit in this register.
 ETCE[N] - Endpoint #N, N is in 0..7</description>
               <bitOffset>16</bitOffset>
-              <bitWidth>8</bitWidth>
+              <bitWidth>16</bitWidth>
               <access>read-write</access>
             </field>
             <field>
@@ -8997,15 +7813,15 @@ corresponding IOC bit is set in the Transfer Descriptor, then this bit is set si
 USBINT . Writing one clears the corresponding bit in this register.
 ERCE[N] - Endpoint #N, N is in 0..7</description>
               <bitOffset>0</bitOffset>
-              <bitWidth>8</bitWidth>
+              <bitWidth>16</bitWidth>
               <access>read-write</access>
             </field>
           </fields>
         </register>
         <register>
-          <dim>8</dim>
+          <dim>16</dim>
           <dimIncrement>0x4</dimIncrement>
-          <dimIndex>ENDPTCTRL0,ENDPTCTRL1,ENDPTCTRL2,ENDPTCTRL3,ENDPTCTRL4,ENDPTCTRL5,ENDPTCTRL6,ENDPTCTRL7</dimIndex>
+          <dimIndex>ENDPTCTRL0,ENDPTCTRL1,ENDPTCTRL2,ENDPTCTRL3,ENDPTCTRL4,ENDPTCTRL5,ENDPTCTRL6,ENDPTCTRL7,ENDPTCTRL8,ENDPTCTRL9,ENDPTCTRL10,ENDPTCTRL11,ENDPTCTRL12,ENDPTCTRL13,ENDPTCTRL14,ENDPTCTRL15</dimIndex>
           <name>ENDPTCTRL[%s]</name>
           <description>no description available</description>
           <addressOffset>0x1c0</addressOffset>
@@ -9124,7 +7940,7 @@ Bit.</description>
         </register>
         <register>
           <name>OTG_CTRL0</name>
-          <description>No description avaiable</description>
+          <description>No description available</description>
           <addressOffset>0x200</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
@@ -9132,35 +7948,35 @@ Bit.</description>
           <fields>
             <field>
               <name>OTG_WKDPDMCHG_EN</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>25</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>AUTORESUME_EN</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>19</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>OTG_VBUS_WAKEUP_EN</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>17</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>OTG_ID_WAKEUP_EN</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>16</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>OTG_VBUS_SOURCE_SEL</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>13</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -9181,28 +7997,28 @@ Bit.</description>
             </field>
             <field>
               <name>OTG_WAKEUP_INT_ENABLE</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>10</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>OTG_POWER_MASK</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>9</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>OTG_OVER_CUR_POL</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>8</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>OTG_OVER_CUR_DIS</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>7</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -9218,7 +8034,7 @@ Bit.</description>
         </register>
         <register>
           <name>PHY_CTRL0</name>
-          <description>No description avaiable</description>
+          <description>No description available</description>
           <addressOffset>0x210</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
@@ -9226,49 +8042,49 @@ Bit.</description>
           <fields>
             <field>
               <name>GPIO_ID_SEL_N</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>25</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>ID_DIG_OVERRIDE</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>14</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>SESS_VALID_OVERRIDE</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>13</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>VBUS_VALID_OVERRIDE</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>12</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>ID_DIG_OVERRIDE_EN</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>2</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>SESS_VALID_OVERRIDE_EN</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>1</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>VBUS_VALID_OVERRIDE_EN</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>0</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -9277,7 +8093,7 @@ Bit.</description>
         </register>
         <register>
           <name>PHY_CTRL1</name>
-          <description>No description avaiable</description>
+          <description>No description available</description>
           <addressOffset>0x214</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
@@ -9285,7 +8101,7 @@ Bit.</description>
           <fields>
             <field>
               <name>UTMI_CFG_RST_N</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>20</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -9301,7 +8117,7 @@ Bit.</description>
         </register>
         <register>
           <name>TOP_STATUS</name>
-          <description>No description avaiable</description>
+          <description>No description available</description>
           <addressOffset>0x220</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
@@ -9309,7 +8125,7 @@ Bit.</description>
           <fields>
             <field>
               <name>WAKEUP_INT_STATUS</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>31</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -9318,7 +8134,7 @@ Bit.</description>
         </register>
         <register>
           <name>PHY_STATUS</name>
-          <description>No description avaiable</description>
+          <description>No description available</description>
           <addressOffset>0x224</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
@@ -9326,655 +8142,44 @@ Bit.</description>
           <fields>
             <field>
               <name>UTMI_CLK_VALID</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>31</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>LINE_STATE</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>6</bitOffset>
               <bitWidth>2</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>HOST_DISCONNECT</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>5</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>ID_DIG</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>4</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>UTMI_SESS_VALID</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>2</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>VBUS_VALID</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>0</bitOffset>
               <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-      </registers>
-    </peripheral>
-    <peripheral>
-      <name>SDP</name>
-      <description>SDP</description>
-      <groupName>SDP</groupName>
-      <baseAddress>0xf3040000</baseAddress>
-      <addressBlock>
-        <offset>0x0</offset>
-        <size>0x60</size>
-        <usage>registers</usage>
-      </addressBlock>
-      <registers>
-        <register>
-          <name>SDPCR</name>
-          <description>SDP control register</description>
-          <addressOffset>0x0</addressOffset>
-          <size>32</size>
-          <resetValue>0x30000000</resetValue>
-          <resetMask>0xFFFE0101</resetMask>
-          <fields>
-            <field>
-              <name>SFTRST</name>
-              <description>soft reset.
-Write 1 then 0, to reset the SDP block.</description>
-              <bitOffset>31</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>CLKGAT</name>
-              <description>Clock Gate for the SDP main logic.
-Write to 1 will clock gate for most logic of the SDP block, dynamic power saving when not use SDP block.</description>
-              <bitOffset>30</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>CIPDIS</name>
-              <description>Cipher Disable, read the info, whether the CIPHER features is besing disable in this chip or not.
-1, Cipher is disabled in this chip.
-0, Cipher is enabled in this chip.</description>
-              <bitOffset>29</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-only</access>
-            </field>
-            <field>
-              <name>HASDIS</name>
-              <description>HASH Disable, read the info, whether the HASH features is besing disable in this chip or not.
-1, HASH is disabled in this chip.
-0, HASH is enabled in this chip.</description>
-              <bitOffset>28</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-only</access>
-            </field>
-            <field>
-              <name>CIPHEN</name>
-              <description>Cipher Enablement, controlled by SW.
-1, Cipher is Enabled.
-0, Cipher is Disabled.</description>
-              <bitOffset>23</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>HASHEN</name>
-              <description>HASH Enablement, controlled by SW.
-1, HASH is Enabled.
-0, HASH is Disabled.</description>
-              <bitOffset>22</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>MCPEN</name>
-              <description>Memory Copy Enablement, controlled by SW.
-1, Memory copy is Enabled.
-0, Memory copy is Disabled.</description>
-              <bitOffset>21</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>CONFEN</name>
-              <description>Constant Fill to memory, controlled by SW.
-1, Constant fill is Enabled.
-0, Constant fill is Disabled.</description>
-              <bitOffset>20</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>DCRPDI</name>
-              <description>Decryption Disable bit, Write to 1 to disable the decryption.</description>
-              <bitOffset>19</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>TSTPKT0IRQ</name>
-              <description>Test purpose for interrupt when Packet counter reachs "0", but CHAIN=1 in the current packet.</description>
-              <bitOffset>17</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>RDSCEN</name>
-              <description>when set to "1", the 1st data packet descriptor loacted in the register(CMDPTR, NPKTPTR, ...)
-when set to "0", the 1st data packet descriptor loacted in the memeory(pointed by CMDPTR)</description>
-              <bitOffset>8</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>INTEN</name>
-              <description>Interrupt Enablement, controlled by SW.
-1, SDP interrupt is enabled.
-0, SDP interrupt is disabled.</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>MODCTRL</name>
-          <description>Mod control register.</description>
-          <addressOffset>0x4</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>AESALG</name>
-              <description>AES algorithem selection.
-0x0 = AES 128;
-0x1 = AES 256;
-0x8 = SM4；
-Others, reserved.</description>
-              <bitOffset>28</bitOffset>
-              <bitWidth>4</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>AESMOD</name>
-              <description>AES mode selection.
-0x0 = ECB;
-0x1 = CBC;
-Others, reserved.</description>
-              <bitOffset>24</bitOffset>
-              <bitWidth>4</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>AESKS</name>
-              <description>AES Key Selection.
-These regisgers are being used to select the AES key that stored in the 16x128 key ram of the SDP, or select the key from the OTP. Detail as following:
-0x00: key from the 16x128, this is the key read address, valid for AES128; AES256 will use 128 bit from this address and 128 bit key from next address as 256 bit AES key.
-0x01: key from the 16x128, this is the key read address, valid for AES128, not valid for AES286.
-....
-0x0E: key from the 16x128, this is the key read address, valid for AES128; AES256 will use 128 from this add and 128 from next add for the AES key.
-0x0F: key from the 16x128, this is the key read address, valid for AES128, not valid for AES286.
-0x20: kman_sk0[127:0] from the key manager for AES128; AES256 will use kman_sk0[255:0] as AES key.
-0x21: kman_sk0[255:128] from the key manager for AES128; not valid for AES256.
-0x22: kman_sk1[127:0] from the key manager for AES128; AES256 will use kman_sk1[255:0] as AES key.
-0x23: kman_sk1[255:128] from the key manager for AES128; not valid for AES256.
-0x24: kman_sk2[127:0] from the key manager for AES128; AES256 will use kman_sk2[255:0] as AES key.
-0x25: kman_sk2[255:128] from the key manager for AES128; not valid for AES256.
-0x26: kman_sk3[127:0] from the key manager for AES128; AES256 will use kman_sk3[255:0] as AES key.
-0x27: kman_sk3[255:128] from the key manager for AES128; not valid for AES256.
-0x30: exip0_key[127:0] from OTP for AES128; AES256 will use exip0_key[255:0] as AES key.
-0x31: exip0_key[255:128] from OTP for AES128; not valid for AES256.
-0x32: exip1_key[127:0] from OTP for AES128; AES256 will use exip1_key[255:0] as AES key.
-0x33: exip1_key[255:128] from OTP for AES128; not valid for AES256.
-Other values, reserved.</description>
-              <bitOffset>18</bitOffset>
-              <bitWidth>6</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>AESDIR</name>
-              <description>AES direction
-1x1, AES Decryption
-1x0, AES Encryption.</description>
-              <bitOffset>16</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>HASALG</name>
-              <description>HASH Algorithem selection.
-0x0 SHA1 —
-0x1 CRC32 —
-0x2 SHA256 —</description>
-              <bitOffset>12</bitOffset>
-              <bitWidth>4</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>CRCEN</name>
-              <description>CRC enable.
-1x1, CRC is enabled.
-1x0, CRC is disabled.</description>
-              <bitOffset>11</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>HASCHK</name>
-              <description>HASH Check Enable Bit.
-1x1, HASH check need, hash result will compare with the HASHRSLT 0-7 registers;
-1x0, HASH check is not enabled, HASHRSLT0-7 store the HASH result.
-For SHA1, will use HASHRSLT0-3 words, and HASH 256 will use HASH0-7 words.</description>
-              <bitOffset>10</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>HASOUT</name>
-              <description>When hashing is enabled, this bit controls the input or output data of the AES engine is hashed.
-0 INPUT HASH
-1 OUTPUT HASH</description>
-              <bitOffset>9</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>DINSWP</name>
-              <description>Decide whether the SDP byteswaps the input data (big-endian data);
-When all bits are set, the data is assumed to be in the big-endian format</description>
-              <bitOffset>4</bitOffset>
-              <bitWidth>2</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>DOUTSWP</name>
-              <description>Decide whether the SDP byteswaps the output data (big-endian data); When all bits are set, the data is assumed to be in the big-endian format</description>
-              <bitOffset>2</bitOffset>
-              <bitWidth>2</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>KEYSWP</name>
-              <description>Decide whether the SDP byteswaps the Key (big-endian data).
-When all bits are set, the data is assumed to be in the big-endian format</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>2</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>PKTCNT</name>
-          <description>packet counter registers.</description>
-          <addressOffset>0x8</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>CNTVAL</name>
-              <description>This read-only field shows the current (instantaneous) value of the packet counter</description>
-              <bitOffset>16</bitOffset>
-              <bitWidth>8</bitWidth>
-              <access>read-only</access>
-            </field>
-            <field>
-              <name>CNTINCR</name>
-              <description>The value written to this field is added to the spacket count.</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>8</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>STA</name>
-          <description>Status Registers</description>
-          <addressOffset>0xc</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>TAG</name>
-              <description>packet tag.</description>
-              <bitOffset>24</bitOffset>
-              <bitWidth>8</bitWidth>
-              <access>read-only</access>
-            </field>
-            <field>
-              <name>IRQ</name>
-              <description>interrupt Request, requested when error happen, or when packet processing done, packet counter reach to zero.</description>
-              <bitOffset>23</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>write-only</access>
-            </field>
-            <field>
-              <name>CHN1PKT0</name>
-              <description>the chain buffer "chain" bit is "1", while packet counter is "0", now, waiting for new buffer data.</description>
-              <bitOffset>20</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>write-only</access>
-            </field>
-            <field>
-              <name>AESBSY</name>
-              <description>AES Busy</description>
-              <bitOffset>19</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-only</access>
-            </field>
-            <field>
-              <name>HASBSY</name>
-              <description>Hashing Busy</description>
-              <bitOffset>18</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-only</access>
-            </field>
-            <field>
-              <name>PKTCNT0</name>
-              <description>Packet Counter registers reachs to ZERO now.</description>
-              <bitOffset>17</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>write-only</access>
-            </field>
-            <field>
-              <name>PKTDON</name>
-              <description>Packet processing done, will trigger this itnerrrupt when the "PKTINT" bit set in the packet control word.</description>
-              <bitOffset>16</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>write-only</access>
-            </field>
-            <field>
-              <name>ERRSET</name>
-              <description>Working mode setup error.</description>
-              <bitOffset>5</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>write-only</access>
-            </field>
-            <field>
-              <name>ERRPKT</name>
-              <description>Packet head access error, or status update error.</description>
-              <bitOffset>4</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>write-only</access>
-            </field>
-            <field>
-              <name>ERRSRC</name>
-              <description>Source Buffer Access Error</description>
-              <bitOffset>3</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>write-only</access>
-            </field>
-            <field>
-              <name>ERRDST</name>
-              <description>Destination Buffer Error</description>
-              <bitOffset>2</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>write-only</access>
-            </field>
-            <field>
-              <name>ERRHAS</name>
-              <description>Hashing Check Error</description>
-              <bitOffset>1</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>write-only</access>
-            </field>
-            <field>
-              <name>ERRCHAIN</name>
-              <description>buffer chain error happen when packet's CHAIN bit=0, but the Packet counter is still not zero.</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>write-only</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>KEYADDR</name>
-          <description>Key Address</description>
-          <addressOffset>0x10</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000040</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>INDEX</name>
-              <description>To write a key to the SDP KEY RAM, the software must first write the desired key index/subword to this register.
-Key index pointer. The valid indices are 0-[number_keys].
-In the SDP, there is a 16x128 key ram can store 16 AES128 keys or 8 AES 256 Keys; this index is for addressing the 16 128-bit key addresses.</description>
-              <bitOffset>16</bitOffset>
-              <bitWidth>8</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>SUBWRD</name>
-              <description>Key subword pointer. The valid indices are 0-3. After each write to the key data register, this field
-increments; To write a key, the software must first write the desired key index/subword to this register.</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>2</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>KEYDAT</name>
-          <description>Key Data</description>
-          <addressOffset>0x14</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000030</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>KEYDAT</name>
-              <description>This register provides the write access to the key/key subword specified by the key index register.
-Writing this location updates the selected subword for the key located at the index
-specified by the key index register. The write also triggers the SUBWORD field of the
-KEY register to increment to the next higher word in the key</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>32</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <dim>4</dim>
-          <dimIncrement>0x4</dimIncrement>
-          <dimIndex>CIPHIV0,CIPHIV1,CIPHIV2,CIPHIV3</dimIndex>
-          <name>CIPHIV[%s]</name>
-          <description>no description available</description>
-          <addressOffset>0x18</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>CIPHIV</name>
-              <description>cipher initialization vector.</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>32</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <dim>8</dim>
-          <dimIncrement>0x4</dimIncrement>
-          <dimIndex>HASWRD0,HASWRD1,HASWRD2,HASWRD3,HASWRD4,HASWRD5,HASWRD6,HASWRD7</dimIndex>
-          <name>HASWRD[%s]</name>
-          <description>no description available</description>
-          <addressOffset>0x28</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000030</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>HASWRD</name>
-              <description>Hash Data Word x - HASH result bit; will store the expected hash result bit if hash check enabled; when hash check is not enabled,  the hash engine will store the final hash result[31:0] here.
-If CRC mode enabled, this work store the CRC expected result if the check enabled, or store the final calcuated CRC result.</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>32</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>CMDPTR</name>
-          <description>Command Pointer</description>
-          <addressOffset>0x48</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>CMDPTR</name>
-              <description>current command addresses the register points to the multiword
-descriptor that is to be executed (or is currently being executed)</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>32</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>NPKTPTR</name>
-          <description>Next Packet Address Pointer</description>
-          <addressOffset>0x4c</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>NPKTPTR</name>
-              <description>Next Packet Address Pointer</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>32</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>PKTCTL</name>
-          <description>Packet Control Registers</description>
-          <addressOffset>0x50</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>PKTTAG</name>
-              <description>packet tag</description>
-              <bitOffset>24</bitOffset>
-              <bitWidth>8</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>CIPHIV</name>
-              <description>Load Initial Vector for the AES in this packet.</description>
-              <bitOffset>6</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>HASFNL</name>
-              <description>Hash Termination packet</description>
-              <bitOffset>5</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>HASINI</name>
-              <description>Hash Initialization packat</description>
-              <bitOffset>4</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>CHAIN</name>
-              <description>whether the next command pointer register must be loaded into the channel's current descriptor
-pointer.</description>
-              <bitOffset>3</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>DCRSEMA</name>
-              <description>whether the channel's semaphore must be decremented at the end of the current operation.
-When the semaphore reaches a value of zero, no more operations are issued from the channel.</description>
-              <bitOffset>2</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>PKTINT</name>
-              <description>Reflects whether the channel must issue an interrupt upon the completion of the packet</description>
-              <bitOffset>1</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>PKTSRC</name>
-          <description>Packet Memory Source Address</description>
-          <addressOffset>0x54</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>PKTSRC</name>
-              <description>Packet Memory Source Address</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>32</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>PKTDST</name>
-          <description>Packet Memory Destination Address</description>
-          <addressOffset>0x58</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>PKTDST</name>
-              <description>Packet Memory Destination Address</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>32</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>PKTBUF</name>
-          <description>Packet buffer size.</description>
-          <addressOffset>0x5c</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>PKTBUF</name>
-              <description>No description avaiable</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>32</bitWidth>
               <access>read-write</access>
             </field>
           </fields>
@@ -10263,7 +8468,7 @@ bit0: lifecycle_unknow</description>
               <field>
                 <name>ACTIVE</name>
                 <description>select glitch works in active mode or passve mode.
-0: passive mode, depends on power glitch destory DFF value
+0: passive mode, depends on power glitch destroy DFF value
 1: active mode, check glitch by DFF chain</description>
                 <bitOffset>4</bitOffset>
                 <bitWidth>1</bitWidth>
@@ -10302,7 +8507,7 @@ bit0: lifecycle_unknow</description>
         </cluster>
         <register>
           <name>IRQ_FLAG</name>
-          <description>No description avaiable</description>
+          <description>No description available</description>
           <addressOffset>0x40</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
@@ -10321,7 +8526,7 @@ bit0: lifecycle_unknow</description>
         </register>
         <register>
           <name>IRQ_ENABLE</name>
-          <description>No description avaiable</description>
+          <description>No description available</description>
           <addressOffset>0x44</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
@@ -10335,264 +8540,6 @@ bit0: lifecycle_unknow</description>
               <bitOffset>0</bitOffset>
               <bitWidth>4</bitWidth>
               <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-      </registers>
-    </peripheral>
-    <peripheral>
-      <name>RNG</name>
-      <description>RNG</description>
-      <groupName>RNG</groupName>
-      <baseAddress>0xf304c000</baseAddress>
-      <addressBlock>
-        <offset>0x0</offset>
-        <size>0x40</size>
-        <usage>registers</usage>
-      </addressBlock>
-      <registers>
-        <register>
-          <name>CMD</name>
-          <description>Command Register</description>
-          <addressOffset>0x0</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>SFTRST</name>
-              <description>Soft Reset, Perform a software reset of the RNG This bit is self-clearing.
-0 Do not perform a software reset.
-1 Software reset</description>
-              <bitOffset>6</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>CLRERR</name>
-              <description>Clear the Error, clear the errors in the ESR register and the RNG interrupt. This bit is self-clearing.
-0 Do not clear the errors and the interrupt.
-1 Clear the errors and the interrupt.</description>
-              <bitOffset>5</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>CLRINT</name>
-              <description>Clear the Interrupt, clear the RNG interrupt if an error is not present. This bit is self-clearing.
-0 Do not clear the interrupt.
-1 Clear the interrupt</description>
-              <bitOffset>4</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>GENSD</name>
-              <description>Generate Seed, when both ST and GS triggered, ST first and GS next.</description>
-              <bitOffset>1</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>SLFCHK</name>
-              <description>Self Test, when both ST and GS triggered, ST first and GS next.</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>CTRL</name>
-          <description>Control Register</description>
-          <addressOffset>0x4</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>MIRQERR</name>
-              <description>Mask Interrupt Request for Error</description>
-              <bitOffset>6</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>MIRQDN</name>
-              <description>Mask Interrupt Request for Done Event, asks the interrupts generated upon the completion of the seed and self-test modes. The status of these jobs can be viewed by:
-• Reading the STA and viewing the seed done and the self-test done bits (STA[SDN, STDN]).
-• Viewing the RNG_CMD for the generate-seed or the self-test bits (CMD[GS,ST]) being set, indicating that the operation is still taking place.</description>
-              <bitOffset>5</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>AUTRSD</name>
-              <description>Auto Reseed</description>
-              <bitOffset>4</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>FUFMOD</name>
-              <description>FIFO underflow response mode
-00 Return all zeros and set the ESR[FUFE].
-01 Return all zeros and set the ESR[FUFE].
-10 Generate the bus transfer error
-11 Generate the interrupt and return all zeros (overrides the CTRL[MASKERR]).</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>2</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>STA</name>
-          <description>Status Register</description>
-          <addressOffset>0x8</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>SCPF</name>
-              <description>Self Check Pass Fail</description>
-              <bitOffset>21</bitOffset>
-              <bitWidth>3</bitWidth>
-              <access>read-only</access>
-            </field>
-            <field>
-              <name>FUNCERR</name>
-              <description>Error was detected, check ESR register for details</description>
-              <bitOffset>16</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-only</access>
-            </field>
-            <field>
-              <name>FSIZE</name>
-              <description>Fifo Size, it is 5 in this design.</description>
-              <bitOffset>12</bitOffset>
-              <bitWidth>4</bitWidth>
-              <access>read-only</access>
-            </field>
-            <field>
-              <name>FRNNU</name>
-              <description>Fifo Level, Indicates the number of random words currently in the output FIFO</description>
-              <bitOffset>8</bitOffset>
-              <bitWidth>4</bitWidth>
-              <access>read-only</access>
-            </field>
-            <field>
-              <name>NSDDN</name>
-              <description>New seed done.</description>
-              <bitOffset>6</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-only</access>
-            </field>
-            <field>
-              <name>FSDDN</name>
-              <description>1st Seed done
-When "1", Indicates that the RNG generated the first seed.</description>
-              <bitOffset>5</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-only</access>
-            </field>
-            <field>
-              <name>SCDN</name>
-              <description>Self Check Done
-Indicates whether Self Test is done or not. Can be cleared by the hardware reset or a new self test is
-initiated by setting the CMD[ST].
-0 Self test not completed
-1 Completed a self test since the last reset.</description>
-              <bitOffset>4</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-only</access>
-            </field>
-            <field>
-              <name>RSDREQ</name>
-              <description>Reseed needed
-Indicates that the RNG needs to be reseeded. This is done by setting the CMD[GS], or
-automatically if the CTRL[ARS] is set.</description>
-              <bitOffset>3</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-only</access>
-            </field>
-            <field>
-              <name>IDLE</name>
-              <description>Idle, the RNG is in the idle mode, and internal clocks are disabled, in this mode, access to the FIFO is allowed. Once the FIFO is empty, the RNGB fills the FIFO and then enters idle mode again.</description>
-              <bitOffset>2</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-only</access>
-            </field>
-            <field>
-              <name>BUSY</name>
-              <description>when 1, means the RNG engine is busy for seeding or random number generation, self test and so on.</description>
-              <bitOffset>1</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-only</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>ERR</name>
-          <description>Error Registers</description>
-          <addressOffset>0xc</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFF3F</resetMask>
-          <fields>
-            <field>
-              <name>FUFE</name>
-              <description>FIFO access error(underflow)</description>
-              <bitOffset>5</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-only</access>
-            </field>
-            <field>
-              <name>SCKERR</name>
-              <description>Self-test error
-Indicates that the RNG failed the most recent self test. This bit is sticky and can only be reset by a
-hardware reset or by writing 1 to the CMD[CE]</description>
-              <bitOffset>3</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-only</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>FO2B</name>
-          <description>FIFO out to bus/cpu</description>
-          <addressOffset>0x10</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>FO2B</name>
-              <description>SW read the FIFO output.</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>32</bitWidth>
-              <access>read-only</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <dim>8</dim>
-          <dimIncrement>0x4</dimIncrement>
-          <dimIndex>FO2S0,FO2S1,FO2S2,FO2S3,FO2S4,FO2S5,FO2S6,FO2S7</dimIndex>
-          <name>R2SK[%s]</name>
-          <description>no description available</description>
-          <addressOffset>0x20</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>FO2S0</name>
-              <description>FIFO out to KMAN, will be SDP engine key.</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>32</bitWidth>
-              <access>read-only</access>
             </field>
           </fields>
         </register>
@@ -11035,7 +8982,7 @@ This key os read once, sencondary read will read out 0</description>
             </field>
             <field>
               <name>KEY_SEL</name>
-              <description>secure symmtric key synthesize setting, key is a XOR of followings
+              <description>secure symmtric key synthesize setting, key is a XOR of following
 bit0: fuse mk, 0: not selected, 1:selected
 bit1: zmk from batt, 0: not selected, 1:selected
 bit2: software key 0: not selected, 1:selected</description>
@@ -11098,7 +9045,7 @@ bit2: software key 0: not selected, 1:selected</description>
             </field>
             <field>
               <name>KEY_SEL</name>
-              <description>non-secure symmtric key synthesize setting, key is a XOR of followings
+              <description>non-secure symmtric key synthesize setting, key is a XOR of following
 bit0: fuse mk, 0: not selected, 1:selected
 bit1: zmk from batt, 0: not selected, 1:selected
 bit2: software key 0: not selected, 1:selected</description>
@@ -11197,7 +9144,7 @@ bit2: software key 0: not selected, 1:selected</description>
             </field>
             <field>
               <name>INTEN3</name>
-              <description>interupt enable for 4th conversion</description>
+              <description>interrupt enable for 4th conversion</description>
               <bitOffset>29</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -11211,7 +9158,7 @@ bit2: software key 0: not selected, 1:selected</description>
             </field>
             <field>
               <name>INTEN2</name>
-              <description>interupt enable for 3rd conversion</description>
+              <description>interrupt enable for 3rd conversion</description>
               <bitOffset>21</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -11225,7 +9172,7 @@ bit2: software key 0: not selected, 1:selected</description>
             </field>
             <field>
               <name>INTEN1</name>
-              <description>interupt enable for 2nd conversion</description>
+              <description>interrupt enable for 2nd conversion</description>
               <bitOffset>13</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -11246,7 +9193,7 @@ bit2: software key 0: not selected, 1:selected</description>
             </field>
             <field>
               <name>INTEN0</name>
-              <description>interupt enable for 1st conversion</description>
+              <description>interrupt enable for 1st conversion</description>
               <bitOffset>5</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -11262,7 +9209,7 @@ bit2: software key 0: not selected, 1:selected</description>
         </register>
         <register>
           <name>trg_dma_addr</name>
-          <description>No description avaiable</description>
+          <description>No description available</description>
           <addressOffset>0x30</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
@@ -11279,7 +9226,7 @@ bit2: software key 0: not selected, 1:selected</description>
         </register>
         <register>
           <name>trg_sw_sta</name>
-          <description>No description avaiable</description>
+          <description>No description available</description>
           <addressOffset>0x34</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
@@ -11337,7 +9284,7 @@ If wait_dis bit is 0, SW can get the current conversion result with holding the 
         </register>
         <register>
           <name>buf_cfg0</name>
-          <description>No description avaiable</description>
+          <description>No description available</description>
           <addressOffset>0x500</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
@@ -11361,7 +9308,7 @@ If wait_dis bit is 0, SW can get the current conversion result with holding the 
         </register>
         <register>
           <name>seq_cfg0</name>
-          <description>No description avaiable</description>
+          <description>No description available</description>
           <addressOffset>0x800</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
@@ -11421,7 +9368,7 @@ If cont_en is 0, this bit is not used</description>
         </register>
         <register>
           <name>seq_dma_addr</name>
-          <description>No description avaiable</description>
+          <description>No description available</description>
           <addressOffset>0x804</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
@@ -11438,7 +9385,7 @@ If cont_en is 0, this bit is not used</description>
         </register>
         <register>
           <name>seq_wr_addr</name>
-          <description>No description avaiable</description>
+          <description>No description available</description>
           <addressOffset>0x808</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
@@ -11456,7 +9403,7 @@ dma write address is (tar_addr+seq_wr_pointer)*4</description>
         </register>
         <register>
           <name>seq_dma_cfg</name>
-          <description>No description avaiable</description>
+          <description>No description available</description>
           <addressOffset>0x80c</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
@@ -11464,7 +9411,7 @@ dma write address is (tar_addr+seq_wr_pointer)*4</description>
           <fields>
             <field>
               <name>STOP_POS</name>
-              <description>if stop_en is set, SW is responsible to udpate this field to the next read point, HW should not write data to this point since it's not read out by SW yet</description>
+              <description>if stop_en is set, SW is responsible to update this field to the next read point, HW should not write data to this point since it's not read out by SW yet</description>
               <bitOffset>16</bitOffset>
               <bitWidth>12</bitWidth>
               <access>read-write</access>
@@ -11524,7 +9471,7 @@ SW should clear all cycle bit in buffer to 0 before clear dma_rst</description>
         </register>
         <register>
           <name>seq_high_cfg</name>
-          <description>No description avaiable</description>
+          <description>No description available</description>
           <addressOffset>0x850</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
@@ -11532,14 +9479,14 @@ SW should clear all cycle bit in buffer to 0 before clear dma_rst</description>
           <fields>
             <field>
               <name>STOP_POS_HIGH</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>12</bitOffset>
               <bitWidth>12</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>BUF_LEN_HIGH</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>0</bitOffset>
               <bitWidth>12</bitWidth>
               <access>read-write</access>
@@ -11555,7 +9502,7 @@ SW should clear all cycle bit in buffer to 0 before clear dma_rst</description>
           <addressOffset>0xc00</addressOffset>
           <register>
             <name>prd_cfg</name>
-            <description>No description avaiable</description>
+            <description>No description available</description>
             <addressOffset>0x0</addressOffset>
             <size>32</size>
             <resetValue>0x00000000</resetValue>
@@ -11580,7 +9527,7 @@ Set to 0 means disable current channel</description>
           </register>
           <register>
             <name>prd_thshd_cfg</name>
-            <description>No description avaiable</description>
+            <description>No description available</description>
             <addressOffset>0x4</addressOffset>
             <size>32</size>
             <resetValue>0x00000000</resetValue>
@@ -11604,7 +9551,7 @@ Set to 0 means disable current channel</description>
           </register>
           <register>
             <name>prd_result</name>
-            <description>No description avaiable</description>
+            <description>No description available</description>
             <addressOffset>0x8</addressOffset>
             <size>32</size>
             <resetValue>0x00000000</resetValue>
@@ -11650,7 +9597,7 @@ it may be updated period according to config, also may be updated due to other q
         </register>
         <register>
           <name>conv_cfg1</name>
-          <description>No description avaiable</description>
+          <description>No description available</description>
           <addressOffset>0x1104</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
@@ -11659,8 +9606,8 @@ it may be updated period according to config, also may be updated due to other q
             <field>
               <name>CONVERT_CLOCK_NUMBER</name>
               <description>convert clock numbers, set to 21 (0x15) for 16bit mode, which means convert need 21 adc clock cycles(based on clock after divider);
-user can use small value to get faster convertion, but less accuracy, need to config cov_end_cnt at adc16_config1 also.
-Ex: use 200MHz bus clock for adc, set sample_clock_number to 4, sample_clock_number_shift to 0, covert_clk_number to 21 for 16bit mode, clock_divder to 3, then each ADC convertion(plus sample) need 25 cycles(50MHz).</description>
+user can use small value to get faster conversion, but less accuracy, need to config cov_end_cnt at adc16_config1 also.
+Ex: use 200MHz bus clock for adc, set sample_clock_number to 4, sample_clock_number_shift to 0, covert_clk_number to 21 for 16bit mode, clock_divder to 3, then each ADC conversion(plus sample) need 25 cycles(50MHz).</description>
               <bitOffset>4</bitOffset>
               <bitWidth>5</bitWidth>
               <access>read-write</access>
@@ -11682,11 +9629,11 @@ Note: set to 2 can genenerate 66.7MHz adc_clk at 200MHz bus_clk</description>
         </register>
         <register>
           <name>adc_cfg0</name>
-          <description>No description avaiable</description>
+          <description>No description available</description>
           <addressOffset>0x1108</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0xAFFFF001</resetMask>
+          <resetMask>0xA0000001</resetMask>
           <fields>
             <field>
               <name>SEL_SYNC_AHB</name>
@@ -11704,13 +9651,6 @@ Adc_clk must to be set to same as bus clock at this mode</description>
               <access>read-write</access>
             </field>
             <field>
-              <name>CONVERT_DURATION</name>
-              <description>for trigger queue, from trg_sample_req to trg_convert_req</description>
-              <bitOffset>12</bitOffset>
-              <bitWidth>16</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
               <name>PORT3_REALTIME</name>
               <description>set to enable trg queue stop other queues</description>
               <bitOffset>0</bitOffset>
@@ -11721,11 +9661,11 @@ Adc_clk must to be set to same as bus clock at this mode</description>
         </register>
         <register>
           <name>int_sts</name>
-          <description>No description avaiable</description>
+          <description>No description available</description>
           <addressOffset>0x1110</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFE03FFF</resetMask>
+          <resetMask>0xFFE0FFFF</resetMask>
           <fields>
             <field>
               <name>TRIG_CMPT</name>
@@ -11736,35 +9676,35 @@ Adc_clk must to be set to same as bus clock at this mode</description>
             </field>
             <field>
               <name>TRIG_SW_CFLCT</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>30</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>TRIG_HW_CFLCT</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>29</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>READ_CFLCT</name>
-              <description>read conflict interrup, set if wait_dis is set, one conversion is in progress, SW read another channel</description>
+              <description>read conflict interrupt, set if wait_dis is set, one conversion is in progress, SW read another channel</description>
               <bitOffset>28</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>SEQ_SW_CFLCT</name>
-              <description>sequence queue conflict interrup, set if HW or SW trigger received during conversion</description>
+              <description>sequence queue conflict interrupt, set if HW or SW trigger received during conversion</description>
               <bitOffset>27</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>SEQ_HW_CFLCT</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>26</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -11808,18 +9748,18 @@ Adc_clk must to be set to same as bus clock at this mode</description>
               <name>WDOG</name>
               <description>set if one chanel watch dog event triggered</description>
               <bitOffset>0</bitOffset>
-              <bitWidth>14</bitWidth>
+              <bitWidth>16</bitWidth>
               <access>read-write</access>
             </field>
           </fields>
         </register>
         <register>
           <name>int_en</name>
-          <description>No description avaiable</description>
+          <description>No description available</description>
           <addressOffset>0x1114</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFE03FFF</resetMask>
+          <resetMask>0xFFE0FFFF</resetMask>
           <fields>
             <field>
               <name>TRIG_CMPT</name>
@@ -11830,35 +9770,35 @@ Adc_clk must to be set to same as bus clock at this mode</description>
             </field>
             <field>
               <name>TRIG_SW_CFLCT</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>30</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>TRIG_HW_CFLCT</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>29</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>READ_CFLCT</name>
-              <description>read conflict interrup, set if wait_dis is set, one conversion is in progress, SW read another channel</description>
+              <description>read conflict interrupt, set if wait_dis is set, one conversion is in progress, SW read another channel</description>
               <bitOffset>28</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>SEQ_SW_CFLCT</name>
-              <description>sequence queue conflict interrup, set if HW or SW trigger received during conversion</description>
+              <description>sequence queue conflict interrupt, set if HW or SW trigger received during conversion</description>
               <bitOffset>27</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>SEQ_HW_CFLCT</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>26</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -11902,14 +9842,14 @@ Adc_clk must to be set to same as bus clock at this mode</description>
               <name>WDOG</name>
               <description>set if one chanel watch dog event triggered</description>
               <bitOffset>0</bitOffset>
-              <bitWidth>14</bitWidth>
+              <bitWidth>16</bitWidth>
               <access>read-write</access>
             </field>
           </fields>
         </register>
         <register>
           <name>ana_ctrl0</name>
-          <description>No description avaiable</description>
+          <description>No description available</description>
           <addressOffset>0x1200</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
@@ -11942,7 +9882,7 @@ MUST set clock_period to 0 or 1 for adc16 reg access</description>
         </register>
         <register>
           <name>ana_status</name>
-          <description>No description avaiable</description>
+          <description>No description available</description>
           <addressOffset>0x1210</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
@@ -11970,7 +9910,7 @@ MUST set clock_period to 0 or 1 for adc16 reg access</description>
           <fields>
             <field>
               <name>PARAM_VAL</name>
-              <description>No description avaiable</description>
+              <description>No description available</description>
               <bitOffset>0</bitOffset>
               <bitWidth>16</bitWidth>
               <access>read-write</access>
@@ -11979,7 +9919,7 @@ MUST set clock_period to 0 or 1 for adc16 reg access</description>
         </register>
         <register>
           <name>adc16_config0</name>
-          <description>No description avaiable</description>
+          <description>No description available</description>
           <addressOffset>0x1444</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
@@ -12017,7 +9957,7 @@ MUST set clock_period to 0 or 1 for adc16 reg access</description>
             </field>
             <field>
               <name>CONV_PARAM</name>
-              <description>convertion parameter</description>
+              <description>conversion parameter</description>
               <bitOffset>0</bitOffset>
               <bitWidth>14</bitWidth>
               <access>read-write</access>
@@ -12026,7 +9966,7 @@ MUST set clock_period to 0 or 1 for adc16 reg access</description>
         </register>
         <register>
           <name>adc16_config1</name>
-          <description>No description avaiable</description>
+          <description>No description available</description>
           <addressOffset>0x1460</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
@@ -12292,9 +10232,9 @@ should set to (21-convert_clock_number+1).</description>
       </addressBlock>
       <registers>
         <register>
-          <dim>113</dim>
+          <dim>105</dim>
           <dimIncrement>0x4</dimIncrement>
-          <dimIndex>cpu0,cpx0,pow_cpu0,rst_soc,rst_cpu0,clk_src_xtal,clk_src_pll0,clk_src_clk0_pll0,clk_src_clk1_pll0,clk_src_clk2_pll0,clk_src_pll1,clk_src_clk0_pll1,clk_src_clk1_pll1,clk_src_clk2_pll1,clk_src_clk3_pll1,clk_src_pll0_ref,clk_src_pll1_ref,clk_top_cpu0,clk_top_mct0,clk_top_can0,clk_top_can1,clk_top_can2,clk_top_can3,clk_top_lin0,clk_top_lin1,clk_top_lin2,clk_top_lin3,clk_top_tmr0,clk_top_tmr1,clk_top_tmr2,clk_top_tmr3,clk_top_i2c0,clk_top_i2c1,clk_top_i2c2,clk_top_i2c3,clk_top_spi0,clk_top_spi1,clk_top_spi2,clk_top_spi3,clk_top_urt0,clk_top_urt1,clk_top_urt2,clk_top_urt3,clk_top_urt4,clk_top_urt5,clk_top_urt6,clk_top_urt7,clk_top_xpi0,clk_top_ana0,clk_top_ana1,clk_top_ana2,clk_top_ana3,clk_top_ref0,clk_top_ref1,clk_top_adc0,clk_top_adc1,clk_top_dac0,clk_top_dac1,ahb0,lmm0,mct0,rom0,can0,can1,can2,can3,ptpc,lin0,lin1,lin2,lin3,tmr0,tmr1,tmr2,tmr3,i2c0,i2c1,i2c2,i2c3,spi0,spi1,spi2,spi3,urt0,urt1,urt2,urt3,urt4,urt5,urt6,urt7,wdg0,wdg1,mbx0,tsns,crc0,adc0,adc1,dac0,dac1,acmp,opa0,opa1,mot0,rng0,sdp0,kman,gpio,hdma,xpi0,usb0,ref0,ref1</dimIndex>
+          <dimIndex>cpu0,cpx0,rsv2,rsv3,rsv4,rsv5,rsv6,rsv7,rsv8,rsv9,rsv10,rsv11,rsv12,rsv13,rsv14,rsv15,rsv16,rsv17,rsv18,rsv19,rsv20,pow_cpu0,rst_soc,rst_cpu0,rsv24,rsv25,rsv26,rsv27,rsv28,rsv29,rsv30,rsv31,clk_src_xtal,clk_src_pll0,clk_src_clk0_pll0,clk_src_clk1_pll0,clk_src_clk2_pll0,clk_src_pll1,clk_src_clk0_pll1,clk_src_clk1_pll1,clk_src_clk2_pll1,clk_src_clk3_pll1,clk_src_pll0_ref,clk_src_pll1_ref,rsv44,rsv45,rsv46,rsv47,rsv48,rsv49,rsv50,rsv51,rsv52,rsv53,rsv54,rsv55,rsv56,rsv57,rsv58,rsv59,rsv60,rsv61,rsv62,rsv63,clk_top_cpu0,clk_top_mct0,clk_top_can0,clk_top_can1,clk_top_can2,clk_top_can3,rsv70,rsv71,rsv72,rsv73,clk_top_tmr0,clk_top_tmr1,clk_top_tmr2,clk_top_tmr3,clk_top_i2c0,clk_top_i2c1,clk_top_i2c2,clk_top_i2c3,clk_top_spi0,clk_top_spi1,clk_top_spi2,clk_top_spi3,clk_top_urt0,clk_top_urt1,clk_top_urt2,clk_top_urt3,clk_top_urt4,clk_top_urt5,clk_top_urt6,clk_top_urt7,clk_top_xpi0,clk_top_ana0,clk_top_ana1,clk_top_ana2,clk_top_ana3,clk_top_ref0,clk_top_ref1,clk_top_adc0,clk_top_adc1,clk_top_dac0,clk_top_dac1,rsv105,rsv106,rsv107,rsv108,rsv109,rsv110,rsv111,rsv112,rsv113,rsv114,rsv115,rsv116,rsv117,rsv118,rsv119,rsv120,rsv121,rsv122,rsv123,rsv124,rsv125,rsv126,rsv127,rsv128,rsv129,rsv130,rsv131,rsv132,rsv133,rsv134,rsv135,rsv136,rsv137,rsv138,rsv139,rsv140,rsv141,rsv142,rsv143,rsv144,rsv145,rsv146,rsv147,rsv148,rsv149,rsv150,rsv151,rsv152,rsv153,rsv154,rsv155,rsv156,rsv157,rsv158,rsv159,rsv160,rsv161,rsv162,rsv163,rsv164,rsv165,rsv166,rsv167,rsv168,rsv169,rsv170,rsv171,rsv172,rsv173,rsv174,rsv175,rsv176,rsv177,rsv178,rsv179,rsv180,rsv181,rsv182,rsv183,rsv184,rsv185,rsv186,rsv187,rsv188,rsv189,rsv190,rsv191,rsv192,rsv193,rsv194,rsv195,rsv196,rsv197,rsv198,rsv199,rsv200,rsv201,rsv202,rsv203,rsv204,rsv205,rsv206,rsv207,rsv208,rsv209,rsv210,rsv211,rsv212,rsv213,rsv214,rsv215,rsv216,rsv217,rsv218,rsv219,rsv220,rsv221,rsv222,rsv223,rsv224,rsv225,rsv226,rsv227,rsv228,rsv229,rsv230,rsv231,rsv232,rsv233,rsv234,rsv235,rsv236,rsv237,rsv238,rsv239,rsv240,rsv241,rsv242,rsv243,rsv244,rsv245,rsv246,rsv247,rsv248,rsv249,rsv250,rsv251,rsv252,rsv253,rsv254,rsv255,ahb0,lmm0,mct0,rom0,can0,can1,can2,can3,ptpc,rsv265,rsv266,rsv267,rsv268,tmr0,tmr1,tmr2,tmr3,i2c0,i2c1,i2c2,i2c3,spi0,spi1,spi2,spi3,urt0,urt1,urt2,urt3,urt4,urt5,urt6,urt7,wdg0,wdg1,mbx0,tsns,crc0,adc0,adc1,dac0,dac1,acmp,opa0,opa1,mot0,rng0,sdp0,kman,gpio,hdma,xpi0,usb0,ref0,ref1</dimIndex>
           <name>RESOURCE[%s]</name>
           <description>no description available</description>
           <addressOffset>0x0</addressOffset>
@@ -12512,7 +10452,7 @@ bit3: cpu0 depends on group3</description>
           <addressOffset>0x920</addressOffset>
           <register>
             <name>VALUE</name>
-            <description>Retention Contol</description>
+            <description>Retention Control</description>
             <addressOffset>0x0</addressOffset>
             <size>32</size>
             <resetValue>0x00000000</resetValue>
@@ -12536,7 +10476,7 @@ bit06: pll1_hold is kept on while cpu0 stop</description>
           </register>
           <register>
             <name>SET</name>
-            <description>Retention Contol</description>
+            <description>Retention Control</description>
             <addressOffset>0x4</addressOffset>
             <size>32</size>
             <resetValue>0x00000000</resetValue>
@@ -12555,7 +10495,7 @@ bit06: pll1_hold is kept on while cpu0 stop</description>
           </register>
           <register>
             <name>CLEAR</name>
-            <description>Retention Contol</description>
+            <description>Retention Control</description>
             <addressOffset>0x8</addressOffset>
             <size>32</size>
             <resetValue>0x00000000</resetValue>
@@ -12574,7 +10514,7 @@ bit06: pll1_hold is kept on while cpu0 stop</description>
           </register>
           <register>
             <name>TOGGLE</name>
-            <description>Retention Contol</description>
+            <description>Retention Control</description>
             <addressOffset>0xc</addressOffset>
             <size>32</size>
             <resetValue>0x00000000</resetValue>
@@ -12773,7 +10713,7 @@ clock cycles count on 24MHz</description>
                 <name>RESET</name>
                 <description>perform reset and release imediately
 0: reset is released
-1 reset is asserted and will release automaticly</description>
+1 reset is asserted and will release automatically</description>
                 <bitOffset>0</bitOffset>
                 <bitWidth>1</bitWidth>
                 <access>read-write</access>
@@ -12925,9 +10865,9 @@ Note, clock cycle is base on 24M</description>
           </fields>
         </register>
         <register>
-          <dim>36</dim>
+          <dim>32</dim>
           <dimIncrement>0x4</dimIncrement>
-          <dimIndex>clk_top_mct0,clk_top_can0,clk_top_can1,clk_top_can2,clk_top_can3,clk_top_lin0,clk_top_lin1,clk_top_lin2,clk_top_lin3,clk_top_tmr0,clk_top_tmr1,clk_top_tmr2,clk_top_tmr3,clk_top_i2c0,clk_top_i2c1,clk_top_i2c2,clk_top_i2c3,clk_top_spi0,clk_top_spi1,clk_top_spi2,clk_top_spi3,clk_top_urt0,clk_top_urt1,clk_top_urt2,clk_top_urt3,clk_top_urt4,clk_top_urt5,clk_top_urt6,clk_top_urt7,clk_top_xpi0,clk_top_ana0,clk_top_ana1,clk_top_ana2,clk_top_ana3,clk_top_ref0,clk_top_ref1</dimIndex>
+          <dimIndex>clk_top_mct0,clk_top_can0,clk_top_can1,clk_top_can2,clk_top_can3,rsv5,rsv6,rsv7,rsv8,clk_top_tmr0,clk_top_tmr1,clk_top_tmr2,clk_top_tmr3,clk_top_i2c0,clk_top_i2c1,clk_top_i2c2,clk_top_i2c3,clk_top_spi0,clk_top_spi1,clk_top_spi2,clk_top_spi3,clk_top_urt0,clk_top_urt1,clk_top_urt2,clk_top_urt3,clk_top_urt4,clk_top_urt5,clk_top_urt6,clk_top_urt7,clk_top_xpi0,clk_top_ana0,clk_top_ana1,clk_top_ana2,clk_top_ana3,clk_top_ref0,clk_top_ref1</dimIndex>
           <name>CLOCK[%s]</name>
           <description>no description available</description>
           <addressOffset>0x1804</addressOffset>
@@ -13200,7 +11140,7 @@ bit7: override to preset7</description>
               </field>
               <field>
                 <name>REFERENCE</name>
-                <description>refrence clock selection,
+                <description>reference clock selection,
 0: 32k
 1: 24M</description>
                 <bitOffset>8</bitOffset>
@@ -13458,7 +11398,7 @@ bit7: override to preset7</description>
         <cluster>
           <dim>456</dim>
           <dimIncrement>0x8</dimIncrement>
-          <dimIndex>pa00,pa01,pa02,pa03,pa04,pa05,pa06,pa07,pa08,pa09,pa10,pa11,pa12,pa13,pa14,pa15,pa16,pa17,pa18,pa19,pa20,pa21,pa22,pa23,pa24,pa25,pa26,pa27,pa28,pa29,pa30,pa31,pb00,pb01,pb02,pb03,pb04,pb05,pb06,pb07,pb08,pb09,pb10,pb11,pb12,pb13,pb14,pb15,rsv49,rsv50,rsv51,rsv52,rsv53,rsv54,rsv55,rsv56,rsv57,rsv58,rsv59,rsv60,rsv61,rsv62,rsv63,rsv64,rsv65,rsv66,rsv67,rsv68,rsv69,rsv70,rsv71,rsv72,rsv73,rsv74,rsv75,rsv76,rsv77,rsv78,rsv79,rsv80,rsv81,rsv82,rsv83,rsv84,rsv85,rsv86,rsv87,rsv88,rsv89,rsv90,rsv91,rsv92,rsv93,rsv94,rsv95,rsv96,rsv97,rsv98,rsv99,rsv100,rsv101,rsv102,rsv103,rsv104,rsv105,rsv106,rsv107,rsv108,rsv109,rsv110,rsv111,rsv112,rsv113,rsv114,rsv115,rsv116,rsv117,rsv118,rsv119,rsv120,rsv121,rsv122,rsv123,rsv124,rsv125,rsv126,rsv127,rsv128,rsv129,rsv130,rsv131,rsv132,rsv133,rsv134,rsv135,rsv136,rsv137,rsv138,rsv139,rsv140,rsv141,rsv142,rsv143,rsv144,rsv145,rsv146,rsv147,rsv148,rsv149,rsv150,rsv151,rsv152,rsv153,rsv154,rsv155,rsv156,rsv157,rsv158,rsv159,rsv160,rsv161,rsv162,rsv163,rsv164,rsv165,rsv166,rsv167,rsv168,rsv169,rsv170,rsv171,rsv172,rsv173,rsv174,rsv175,rsv176,rsv177,rsv178,rsv179,rsv180,rsv181,rsv182,rsv183,rsv184,rsv185,rsv186,rsv187,rsv188,rsv189,rsv190,rsv191,rsv192,rsv193,rsv194,rsv195,rsv196,rsv197,rsv198,rsv199,rsv200,rsv201,rsv202,rsv203,rsv204,rsv205,rsv206,rsv207,rsv208,rsv209,rsv210,rsv211,rsv212,rsv213,rsv214,rsv215,rsv216,rsv217,rsv218,rsv219,rsv220,rsv221,rsv222,rsv223,rsv224,rsv225,rsv226,rsv227,rsv228,rsv229,rsv230,rsv231,rsv232,rsv233,rsv234,rsv235,rsv236,rsv237,rsv238,rsv239,rsv240,rsv241,rsv242,rsv243,rsv244,rsv245,rsv246,rsv247,rsv248,rsv249,rsv250,rsv251,rsv252,rsv253,rsv254,rsv255,rsv256,rsv257,rsv258,rsv259,rsv260,rsv261,rsv262,rsv263,rsv264,rsv265,rsv266,rsv267,rsv268,rsv269,rsv270,rsv271,rsv272,rsv273,rsv274,rsv275,rsv276,rsv277,rsv278,rsv279,rsv280,rsv281,rsv282,rsv283,rsv284,rsv285,rsv286,rsv287,rsv288,rsv289,rsv290,rsv291,rsv292,rsv293,rsv294,rsv295,rsv296,rsv297,rsv298,rsv299,rsv300,rsv301,rsv302,rsv303,rsv304,rsv305,rsv306,rsv307,rsv308,rsv309,rsv310,rsv311,rsv312,rsv313,rsv314,rsv315,rsv316,rsv317,rsv318,rsv319,rsv320,rsv321,rsv322,rsv323,rsv324,rsv325,rsv326,rsv327,rsv328,rsv329,rsv330,rsv331,rsv332,rsv333,rsv334,rsv335,rsv336,rsv337,rsv338,rsv339,rsv340,rsv341,rsv342,rsv343,rsv344,rsv345,rsv346,rsv347,rsv348,rsv349,rsv350,rsv351,rsv352,rsv353,rsv354,rsv355,rsv356,rsv357,rsv358,rsv359,rsv360,rsv361,rsv362,rsv363,rsv364,rsv365,rsv366,rsv367,rsv368,rsv369,rsv370,rsv371,rsv372,rsv373,rsv374,rsv375,rsv376,rsv377,rsv378,rsv379,rsv380,rsv381,rsv382,rsv383,rsv384,rsv385,rsv386,rsv387,rsv388,rsv389,rsv390,rsv391,rsv392,rsv393,rsv394,rsv395,rsv396,rsv397,rsv398,rsv399,rsv400,rsv401,rsv402,rsv403,rsv404,rsv405,rsv406,rsv407,rsv408,rsv409,rsv410,rsv411,rsv412,rsv413,rsv414,rsv415,rsv416,px00,px01,px02,px03,px04,px05,px06,px07,rsv425,rsv426,rsv427,rsv428,rsv429,rsv430,rsv431,rsv432,rsv433,rsv434,rsv435,rsv436,rsv437,rsv438,rsv439,rsv440,rsv441,rsv442,rsv443,rsv444,rsv445,rsv446,rsv447,rsv448,py00,py01,py02,py03,py04,py05,py06,py07</dimIndex>
+          <dimIndex>pa00,pa01,pa02,pa03,pa04,pa05,pa06,pa07,pa08,pa09,pa10,pa11,pa12,pa13,pa14,pa15,pa16,pa17,pa18,pa19,pa20,pa21,pa22,pa23,pa24,pa25,pa26,pa27,pa28,pa29,pa30,pa31,pb00,pb01,pb02,pb03,pb04,pb05,pb06,pb07,pb08,pb09,pb10,pb11,pb12,pb13,pb14,pb15,rsv48,rsv49,rsv50,rsv51,rsv52,rsv53,rsv54,rsv55,rsv56,rsv57,rsv58,rsv59,rsv60,rsv61,rsv62,rsv63,rsv64,rsv65,rsv66,rsv67,rsv68,rsv69,rsv70,rsv71,rsv72,rsv73,rsv74,rsv75,rsv76,rsv77,rsv78,rsv79,rsv80,rsv81,rsv82,rsv83,rsv84,rsv85,rsv86,rsv87,rsv88,rsv89,rsv90,rsv91,rsv92,rsv93,rsv94,rsv95,rsv96,rsv97,rsv98,rsv99,rsv100,rsv101,rsv102,rsv103,rsv104,rsv105,rsv106,rsv107,rsv108,rsv109,rsv110,rsv111,rsv112,rsv113,rsv114,rsv115,rsv116,rsv117,rsv118,rsv119,rsv120,rsv121,rsv122,rsv123,rsv124,rsv125,rsv126,rsv127,rsv128,rsv129,rsv130,rsv131,rsv132,rsv133,rsv134,rsv135,rsv136,rsv137,rsv138,rsv139,rsv140,rsv141,rsv142,rsv143,rsv144,rsv145,rsv146,rsv147,rsv148,rsv149,rsv150,rsv151,rsv152,rsv153,rsv154,rsv155,rsv156,rsv157,rsv158,rsv159,rsv160,rsv161,rsv162,rsv163,rsv164,rsv165,rsv166,rsv167,rsv168,rsv169,rsv170,rsv171,rsv172,rsv173,rsv174,rsv175,rsv176,rsv177,rsv178,rsv179,rsv180,rsv181,rsv182,rsv183,rsv184,rsv185,rsv186,rsv187,rsv188,rsv189,rsv190,rsv191,rsv192,rsv193,rsv194,rsv195,rsv196,rsv197,rsv198,rsv199,rsv200,rsv201,rsv202,rsv203,rsv204,rsv205,rsv206,rsv207,rsv208,rsv209,rsv210,rsv211,rsv212,rsv213,rsv214,rsv215,rsv216,rsv217,rsv218,rsv219,rsv220,rsv221,rsv222,rsv223,rsv224,rsv225,rsv226,rsv227,rsv228,rsv229,rsv230,rsv231,rsv232,rsv233,rsv234,rsv235,rsv236,rsv237,rsv238,rsv239,rsv240,rsv241,rsv242,rsv243,rsv244,rsv245,rsv246,rsv247,rsv248,rsv249,rsv250,rsv251,rsv252,rsv253,rsv254,rsv255,rsv256,rsv257,rsv258,rsv259,rsv260,rsv261,rsv262,rsv263,rsv264,rsv265,rsv266,rsv267,rsv268,rsv269,rsv270,rsv271,rsv272,rsv273,rsv274,rsv275,rsv276,rsv277,rsv278,rsv279,rsv280,rsv281,rsv282,rsv283,rsv284,rsv285,rsv286,rsv287,rsv288,rsv289,rsv290,rsv291,rsv292,rsv293,rsv294,rsv295,rsv296,rsv297,rsv298,rsv299,rsv300,rsv301,rsv302,rsv303,rsv304,rsv305,rsv306,rsv307,rsv308,rsv309,rsv310,rsv311,rsv312,rsv313,rsv314,rsv315,rsv316,rsv317,rsv318,rsv319,rsv320,rsv321,rsv322,rsv323,rsv324,rsv325,rsv326,rsv327,rsv328,rsv329,rsv330,rsv331,rsv332,rsv333,rsv334,rsv335,rsv336,rsv337,rsv338,rsv339,rsv340,rsv341,rsv342,rsv343,rsv344,rsv345,rsv346,rsv347,rsv348,rsv349,rsv350,rsv351,rsv352,rsv353,rsv354,rsv355,rsv356,rsv357,rsv358,rsv359,rsv360,rsv361,rsv362,rsv363,rsv364,rsv365,rsv366,rsv367,rsv368,rsv369,rsv370,rsv371,rsv372,rsv373,rsv374,rsv375,rsv376,rsv377,rsv378,rsv379,rsv380,rsv381,rsv382,rsv383,rsv384,rsv385,rsv386,rsv387,rsv388,rsv389,rsv390,rsv391,rsv392,rsv393,rsv394,rsv395,rsv396,rsv397,rsv398,rsv399,rsv400,rsv401,rsv402,rsv403,rsv404,rsv405,rsv406,rsv407,rsv408,rsv409,rsv410,rsv411,rsv412,rsv413,rsv414,rsv415,px00,px01,px02,px03,px04,px05,px06,px07,rsv424,rsv425,rsv426,rsv427,rsv428,rsv429,rsv430,rsv431,rsv432,rsv433,rsv434,rsv435,rsv436,rsv437,rsv438,rsv439,rsv440,rsv441,rsv442,rsv443,rsv444,rsv445,rsv446,rsv447,py00,py01,py02,py03,py04,py05,py06,py07</dimIndex>
           <name>PAD[%s]</name>
           <description>no description available</description>
           <addressOffset>0x0</addressOffset>
@@ -14271,7 +12211,7 @@ This register should not be changed during PLL and spread spectrum enabled.  If 
             <field>
               <name>MODE</name>
               <description>DCDC work mode
-XX0: trun off
+XX0: turn off
 001: basic mode
 011: generic mode
 101: automatic mode
@@ -14351,7 +12291,7 @@ XX0: trun off
             </field>
             <field>
               <name>DISABLE_OVERVOLTAGE</name>
-              <description>ouput over voltage protection
+              <description>output over voltage protection
 0: protection enabled, DCDC will shut down is output voltage is unexpected high
 1: protection disabled, DCDC continue to adjust output voltage</description>
               <bitOffset>15</bitOffset>
@@ -14370,7 +12310,7 @@ XX0: trun off
             <field>
               <name>DISABLE_SHORT</name>
               <description>disable output short circuit protection
-0: short circuits protection enabled, DCDC shut down if short circuit on ouput detected
+0: short circuits protection enabled, DCDC shut down if short circuit on output detected
 1: short circuit protection disabled</description>
               <bitOffset>7</bitOffset>
               <bitWidth>1</bitWidth>

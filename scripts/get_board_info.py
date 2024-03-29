@@ -1,6 +1,8 @@
 # Copyright (c) 2021 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
+import os
+import re
 import sys
 import yaml
 
@@ -13,12 +15,24 @@ BOARD_INFO_FEATURE_KEY="feature"
 BOARD_INFO_FLASH_KEY="on-board-flash"
 BOARD_INFO_EXTRAM_KEY="on-board-ram"
 BOARD_INFO_SIZE_KEY="size"
+BOARD_INFO_EXCLUDED_SAMPLES_KEY="excluded_samples"
 BOARD_FEATURE_DELIM=":"
+SOC_MODULES_LIST_NAME = 'soc_modules.list'
+
+def get_soc_ip_list(soc_name):
+    ip_list = []
+    module_list = os.path.join(os.environ['HPM_SDK_BASE'], "soc", soc_name, SOC_MODULES_LIST_NAME)
+    with open(module_list, "r") as f:
+        lines = f.readlines()
+        for l in lines:
+            if ip := re.match(r'HPMSOC_HAS_HPMSDK_(\w+)', l):
+                ip_list.append(ip.group(1).lower())
+    f.close()
+    return ip_list
 
 def get_info(board_yml, info_type = "soc"):
-    is_error = False
-    ip_list = ""
     result = "not found"
+    board_info = None
     with open(board_yml, "r") as stream:
         try:
             board_info = yaml.safe_load(stream)
@@ -46,6 +60,9 @@ def get_info(board_yml, info_type = "soc"):
             elif(info_type == "device"):
                 if BOARD_INFO_DEVICE_NAME_KEY in board_info["board"].keys():
                     result = ("%s" % board_info["board"][BOARD_INFO_DEVICE_NAME_KEY])
+            elif(info_type == "excluded_samples"):
+                if BOARD_INFO_EXCLUDED_SAMPLES_KEY in board_info["board"].keys():
+                    result = BOARD_FEATURE_DELIM.join(board_info["board"][BOARD_INFO_EXCLUDED_SAMPLES_KEY])
         except yaml.YAMLError as e:
             pass
     stream.close()

@@ -1,4 +1,4 @@
-# Copyright (c) 2023 HPMicro
+# Copyright (c) 2023-2024 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -10,6 +10,7 @@ endif()
 set(CONFIG_RTTHREAD_NANO 1)
 set(CONFIG_LWIP 1)
 set(CONFIG_LWIP_STRERR 1)
+set(CONFIG_LWIP_NETCONN_API 1)
 
 set(APP_USE_ENET_PORT_COUNT 1)
 #set(APP_USE_ENET_ITF_RGMII 1)
@@ -38,20 +39,16 @@ sdk_compile_definitions(-D__ENABLE_ENET_RECEIVE_INTERRUPT=1)
 sdk_compile_definitions(-DLWIP_DHCP=0)
 
 project(lwip_tcpecho_rtthread-nano)
-sdk_inc(../common)
-sdk_inc(../common/rtthread-nano)
-sdk_inc(../common/rtthread-nano/arch)
-sdk_inc(../common/rtthread-nano/feature)
+sdk_inc(../ports/rtthread-nano/single)
+sdk_inc(../ports/rtthread-nano/single/arch)
+sdk_inc(../common/single)
 sdk_inc(inc)
-sdk_inc(inc/eth)
 sdk_inc(inc/app)
-sdk_inc(src)
 
-sdk_app_src(../common/rtthread-nano/arch/sys_arch.c)
-sdk_app_src(../common/rtthread-nano/arch/ethernetif.c)
-sdk_app_src(../common/rtthread-nano/feature/common_lwip.c)
-sdk_app_src(src/eth/netconf.c)
+sdk_app_src(../ports/rtthread-nano/single/arch/sys_arch.c)
+sdk_app_src(../ports/rtthread-nano/single/ethernetif.c)
+sdk_app_src(../common/single/common.c)
+sdk_app_src(../common/single/netconf.c)
 sdk_app_src(src/app/tcp_echo.c)
 sdk_app_src(src/lwip.c)
-
-generate_ses_project()
+generate_ide_projects()

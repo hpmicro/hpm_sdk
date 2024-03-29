@@ -56,12 +56,8 @@
  *   #define TU_VERIFY(cond)                  if(cond) return false;
  *   #define TU_VERIFY(cond,ret)              if(cond) return ret;
  *
- *   #define TU_VERIFY_HDLR(cond,handler)     if(cond) {handler; return false;}
- *   #define TU_VERIFY_HDLR(cond,ret,handler) if(cond) {handler; return ret;}
- *
  *   #define TU_ASSERT(cond)                  if(cond) {_MESS_FAILED(); TU_BREAKPOINT(), return false;}
  *   #define TU_ASSERT(cond,ret)              if(cond) {_MESS_FAILED(); TU_BREAKPOINT(), return ret;}
- *
  *------------------------------------------------------------------*/
 
 #ifdef __cplusplus
@@ -74,10 +70,8 @@
 
 #if CFG_TUSB_DEBUG
   #include <stdio.h>
-  #define _MESS_ERR(_err)   tu_printf("%s %d: failed, error = %s\r\n", __func__, __LINE__, tusb_strerr[_err])
   #define _MESS_FAILED()    tu_printf("%s %d: ASSERT FAILED\r\n", __func__, __LINE__)
 #else
-  #define _MESS_ERR(_err) do {} while (0)
   #define _MESS_FAILED() do {} while (0)
 #endif
 
@@ -92,49 +86,36 @@
 #elif defined(__riscv)
   #define TU_BREAKPOINT() do { __asm("ebreak\n"); } while(0)
 
+#elif defined(_mips)
+  #define TU_BREAKPOINT() do { __asm("sdbbp 0"); } while (0)
+
 #else
   #define TU_BREAKPOINT() do {} while (0)
 #endif
 
-/*------------------------------------------------------------------*/
-/* Macro Generator
- *------------------------------------------------------------------*/
-
 // Helper to implement optional parameter for TU_VERIFY Macro family
-#define GET_1ST_ARG(arg1, ...)                    arg1
-#define GET_2ND_ARG(arg1, arg2, ...)              arg2
-#define GET_3RD_ARG(arg1, arg2, arg3, ...)        arg3
-#define GET_4TH_ARG(arg1, arg2, arg3, arg4, ...)  arg4
+#define _GET_1ST_ARG(arg1, ...)                    arg1
+#define _GET_2ND_ARG(arg1, arg2, ...)              arg2
+#define _GET_3RD_ARG(arg1, arg2, arg3, ...)        arg3
+#define _GET_4TH_ARG(arg1, arg2, arg3, arg4, ...)  arg4
 
-#define GET_1ST_2ND_ARGS(...)     GET_1ST_ARG(__VA_ARGS__), GET_2ND_ARG(__VA_ARGS__)
-#define GET_3RD_4TH_ARGS(...)     GET_3RD_ARG(__VA_ARGS__), GET_4TH_ARG(__VA_ARGS__)
-
-/*------------- Generator for TU_VERIFY and TU_VERIFY_HDLR -------------*/
-#define TU_VERIFY_DEFINE(_cond, _handler, _ret)  do            \
-{                                                              \
-  if ( !(_cond) ) { _handler; return _ret;  }                  \
-} while(0)
+#define GET_1ST_2ND_ARGS(...)     _GET_1ST_ARG(__VA_ARGS__), _GET_2ND_ARG(__VA_ARGS__)
+#define GET_3RD_4TH_ARGS(...)     _GET_3RD_ARG(__VA_ARGS__), _GET_4TH_ARG(__VA_ARGS__)
 
 /*------------------------------------------------------------------*/
 /* TU_VERIFY
  * - TU_VERIFY_1ARGS : return false if failed
  * - TU_VERIFY_2ARGS : return provided value if failed
  *------------------------------------------------------------------*/
-#define TU_VERIFY_1ARGS(_cond)                         TU_VERIFY_DEFINE(_cond, , false)
-#define TU_VERIFY_2ARGS(_cond, _ret)                   TU_VERIFY_DEFINE(_cond, , _ret)
+#define TU_VERIFY_DEFINE(_cond, _ret)    \
+  do {                                   \
+    if ( !(_cond) ) { return _ret; }     \
+  } while(0)
 
-#define TU_VERIFY(...)                   GET_3RD_ARG(__VA_ARGS__, TU_VERIFY_2ARGS, TU_VERIFY_1ARGS, UNUSED)(__VA_ARGS__)
+#define TU_VERIFY_1ARGS(_cond)         TU_VERIFY_DEFINE(_cond, false)
+#define TU_VERIFY_2ARGS(_cond, _ret)   TU_VERIFY_DEFINE(_cond, _ret)
 
-
-/*------------------------------------------------------------------*/
-/* TU_VERIFY WITH HANDLER
- * - TU_VERIFY_HDLR_2ARGS : execute handler, return false if failed
- * - TU_VERIFY_HDLR_3ARGS : execute handler, return provided error if failed
- *------------------------------------------------------------------*/
-#define TU_VERIFY_HDLR_2ARGS(_cond, _handler)           TU_VERIFY_DEFINE(_cond, _handler, false)
-#define TU_VERIFY_HDLR_3ARGS(_cond, _handler, _ret)     TU_VERIFY_DEFINE(_cond, _handler, _ret)
-
-#define TU_VERIFY_HDLR(...)              GET_4TH_ARG(__VA_ARGS__, TU_VERIFY_HDLR_3ARGS, TU_VERIFY_HDLR_2ARGS,UNUSED)(__VA_ARGS__)
+#define TU_VERIFY(...)                 _GET_3RD_ARG(__VA_ARGS__, TU_VERIFY_2ARGS, TU_VERIFY_1ARGS, _dummy)(__VA_ARGS__)
 
 /*------------------------------------------------------------------*/
 /* ASSERT
@@ -142,45 +123,20 @@
  * - 1 arg : return false if failed
  * - 2 arg : return error if failed
  *------------------------------------------------------------------*/
-#define ASSERT_1ARGS(_cond)            TU_VERIFY_DEFINE(_cond, _MESS_FAILED(); TU_BREAKPOINT(), false)
-#define ASSERT_2ARGS(_cond, _ret)      TU_VERIFY_DEFINE(_cond, _MESS_FAILED(); TU_BREAKPOINT(), _ret)
+#define TU_ASSERT_DEFINE(_cond, _ret)                                 \
+  do {                                                                \
+    if ( !(_cond) ) { _MESS_FAILED(); TU_BREAKPOINT(); return _ret; } \
+  } while(0)
+
+#define TU_ASSERT_1ARGS(_cond)         TU_ASSERT_DEFINE(_cond, false)
+#define TU_ASSERT_2ARGS(_cond, _ret)   TU_ASSERT_DEFINE(_cond, _ret)
 
 #ifndef TU_ASSERT
-#define TU_ASSERT(...)             GET_3RD_ARG(__VA_ARGS__, ASSERT_2ARGS, ASSERT_1ARGS,UNUSED)(__VA_ARGS__)
+#define TU_ASSERT(...)                 _GET_3RD_ARG(__VA_ARGS__, TU_ASSERT_2ARGS, TU_ASSERT_1ARGS, _dummy)(__VA_ARGS__)
 #endif
-
-// TODO remove TU_ASSERT_ERR() later
-
-/*------------- Generator for TU_VERIFY_ERR and TU_VERIFY_ERR_HDLR -------------*/
-#define TU_VERIFY_ERR_DEF2(_error, _handler)  do               \
-{                                                              \
-  uint32_t _err = (uint32_t)(_error);                          \
-  if ( 0 != _err ) { _MESS_ERR(_err); _handler; return _err; } \
-} while(0)
-
-#define TU_VERIFY_ERR_DEF3(_error, _handler, _ret) do          \
-{                                                              \
-  uint32_t _err = (uint32_t)(_error);                          \
-  if ( 0 != _err ) { _MESS_ERR(_err); _handler; return _ret; } \
-} while(0)
-
-/*------------------------------------------------------------------*/
-/* ASSERT Error
- * basically TU_VERIFY Error with TU_BREAKPOINT() as handler
- *------------------------------------------------------------------*/
-#define ASSERT_ERR_1ARGS(_error)         TU_VERIFY_ERR_DEF2(_error, TU_BREAKPOINT())
-#define ASSERT_ERR_2ARGS(_error, _ret)   TU_VERIFY_ERR_DEF3(_error, TU_BREAKPOINT(), _ret)
-
-#ifndef TU_ASSERT_ERR
-#define TU_ASSERT_ERR(...)         GET_3RD_ARG(__VA_ARGS__, ASSERT_ERR_2ARGS, ASSERT_ERR_1ARGS,UNUSED)(__VA_ARGS__)
-#endif
-
-/*------------------------------------------------------------------*/
-/* ASSERT HDLR
- *------------------------------------------------------------------*/
 
 #ifdef __cplusplus
  }
 #endif
 
-#endif /* TUSB_VERIFY_H_ */
+#endif

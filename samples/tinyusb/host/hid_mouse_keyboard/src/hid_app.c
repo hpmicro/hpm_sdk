@@ -166,7 +166,9 @@ static void process_kbd_report(hid_keyboard_report_t const *report)
           putchar('\n'); /* added new line for enter key */
         }
 
+#if !defined(__ICCRISCV__) || (defined(_DLIB_FILE_DESCRIPTOR) && (_DLIB_FILE_DESCRIPTOR == 1))
         fflush(stdout); /* flush right away, else nanolib will wait for newline */
+#endif
       }
     }
     /* TODO example skips key released */

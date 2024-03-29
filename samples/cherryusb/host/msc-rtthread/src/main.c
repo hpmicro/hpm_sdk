@@ -26,7 +26,7 @@ void rt_hw_board_init(void)
 int main(void)
 {
     printf("Start usb host task...\r\n");
-    usbh_initialize();
+    usbh_initialize(0, CONFIG_HPM_USBH_BASE);
     usbh_class_test();
 
     return 0;

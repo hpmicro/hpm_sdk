@@ -11,7 +11,7 @@ set(CONFIG_USB_DEVICE_AUDIO 1)
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
-project(cherryusb_device_audio_v2_speaker)
+project(cherryusb_device_audio_v2_speaker_sync)
 
 if(DEFINED CONFIG_CODEC)
 sdk_compile_definitions(-DUSING_CODEC=1)
@@ -26,4 +26,4 @@ sdk_inc(src)
 sdk_app_src(src/main.c)
 sdk_app_src(src/audio_v2_speaker_sync.c)
 
-generate_ses_project()
+generate_ide_projects()

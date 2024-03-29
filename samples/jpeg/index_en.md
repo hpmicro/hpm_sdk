@@ -1,10 +1,9 @@
 # JPEG
 
-```{eval-rst}
+:::{eval-rst}
 .. toctree::
-   :maxdepth: 3
+    :maxdepth: 3
+    :glob:
 
-   jpeg_decode/README_en
-   jpeg_encode/README_en
-
-```
+    **/*_en
+:::

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -38,10 +38,6 @@
 #define HPM_DMA_SRC_SPI2_TX                                (0x2DUL)
 #define HPM_DMA_SRC_SPI3_RX                                (0x2EUL)
 #define HPM_DMA_SRC_SPI3_TX                                (0x2FUL)
-#define HPM_DMA_SRC_CAN0                                   (0x30UL)
-#define HPM_DMA_SRC_CAN1                                   (0x31UL)
-#define HPM_DMA_SRC_CAN2                                   (0x32UL)
-#define HPM_DMA_SRC_CAN3                                   (0x33UL)
 #define HPM_DMA_SRC_MOT_0                                  (0x34UL)
 #define HPM_DMA_SRC_MOT_1                                  (0x35UL)
 #define HPM_DMA_SRC_MOT_2                                  (0x36UL)

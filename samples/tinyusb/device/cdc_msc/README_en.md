@@ -2,7 +2,7 @@
 
 ## Overview
 
-This  example project shows a USB CDC virtual serial port and a MSC virtual U disk
+This example project shows a USB CDC virtual serial port and a MSC virtual U disk
 
 - a virtual serial port is listed on Device Manager
 - a virtual u disk is shown in Resouce Manager

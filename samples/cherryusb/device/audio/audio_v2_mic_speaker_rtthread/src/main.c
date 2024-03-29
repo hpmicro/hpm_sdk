@@ -44,7 +44,7 @@ int main(void)
 {
     printf("cherry usb audio v2 mic and speaker sample.\n");
 
-    cherryusb_audio_v2_init();
+    audio_v2_init(0, CONFIG_HPM_USBD_BASE);
     speaker_init_i2s_dao_codec();
     mic_init_i2s_pdm();
 

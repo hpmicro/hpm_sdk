@@ -1,4 +1,4 @@
-# OPAMP Demo
+# OPAMP
 
 ## Overview
 

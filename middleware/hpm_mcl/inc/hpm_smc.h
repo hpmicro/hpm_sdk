@@ -89,7 +89,7 @@ void hpm_mcl_smc_const_cal(hpm_motor_para_t *par);
 /**
  * @brief Phase-locked loop filtering of angles after smc processing
  *
- * @param[in] par @refhpm_mcl_para_t
+ * @param[in] par @ref hpm_mcl_para_t
  * @param[inout] pll @ref hpm_smc_pll_para_t
  * @return angle
  */

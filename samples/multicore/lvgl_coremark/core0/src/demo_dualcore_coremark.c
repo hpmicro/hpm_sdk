@@ -36,8 +36,6 @@ void isr_mchtmr(void)
 }
 SDK_DECLARE_MCHTMR_ISR(isr_mchtmr)
 
-void reset_handler(void);
-
 void update_coremark_result(lv_coremark_ctx_t *cm_ctx);
 
 int app_main(void)
@@ -74,16 +72,4 @@ void init_coremark_result(lv_coremark_ctx_t *cm_ctx)
     cm_ctx->bus_freq[1] = clock_get_frequency(clock_axi0);
     cm_ctx->result_ready[0] = false;
     cm_ctx->result_ready[1] = false;
-}
-
-extern void system_init(void);
-void reset_handler(void)
-{
-    fencei();
-
-    /* Call platform specific hardware initialization */
-    system_init();
-
-    /* Entry function */
-    app_main();
 }

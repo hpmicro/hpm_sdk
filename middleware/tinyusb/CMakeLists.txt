@@ -1,8 +1,8 @@
-# Copyright (c) 2021 HPMicro
+# Copyright (c) 2021-2024 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 sdk_inc(src)
-sdk_inc(src/portable)
+sdk_inc(src/portable/ehci)
 
 if(CONFIG_USB_DEVICE_CDC OR CONFIG_USB_DEVICE_HID OR CONFIG_USB_DEVICE_MSC
   OR CONFIG_USB_DEVICE_AUDIO)
@@ -23,10 +23,10 @@ sdk_src(src/portable/hpm/dcd_hpm.c)
 endif()
 
 if(CONFIG_TINYUSB_HOST)
+sdk_src(src/portable/ehci/ehci.c)
+sdk_src(src/portable/hpm/ehci_glue_hpm.c)
 sdk_src(src/class/msc/msc_host.c)
 sdk_src(src/class/hid/hid_host.c)
 sdk_src(src/host/hub.c)
 sdk_src(src/host/usbh.c)
-sdk_src(src/host/usbh_control.c)
-sdk_src(src/portable/hpm/hcd_hpm.c)
 endif()

@@ -10,4 +10,4 @@ project(spi_interrupt_master)
 # The frequency of SCLK should adapt to SPI interrupt response time, otherwise it may cause overrun or underrun
 sdk_compile_definitions(-DEXAMPLE_SPI_SCLK_FREQ=2000000)
 sdk_app_src(src/spi.c)
-generate_ses_project()
+generate_ide_projects()

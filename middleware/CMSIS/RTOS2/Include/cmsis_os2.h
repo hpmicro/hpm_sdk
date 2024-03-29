@@ -70,7 +70,7 @@
 #define __NO_RETURN __attribute__((__noreturn__))
 #elif defined(__GNUC__)
 #define __NO_RETURN __attribute__((__noreturn__))
-#elif defined(__ICCARM__)
+#elif defined(__ICCARM__) || defined(__ICCRISCV__)
 #define __NO_RETURN __noreturn
 #else
 #define __NO_RETURN

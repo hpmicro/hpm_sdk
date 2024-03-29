@@ -11,7 +11,7 @@
 
 #define LED_FLASH_PERIOD_IN_MS 300
 
-extern void hid_custom_init(void);
+extern void hid_custom_init(uint8_t busid, uint32_t reg_base);
 
 int main(void)
 {
@@ -24,7 +24,7 @@ int main(void)
 
     printf("cherry usb hid_custom in/out device sample.\n");
 
-    hid_custom_init();
+    hid_custom_init(0, CONFIG_HPM_USBD_BASE);
     while (1) {
         ;
     }

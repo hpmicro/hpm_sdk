@@ -39,7 +39,7 @@
 int32_t motor_clock_hz;
 
 #define PWM_FREQUENCY               (20000)
-#define PWM_RELOAD                  (motor_clock_hz/PWM_FREQUENCY)
+#define PWM_RELOAD                  ((motor_clock_hz/PWM_FREQUENCY) - 1)
 
 #define MOTOR0_SPD                  (15)
 #define BLDC_ANGLE_SET_TIME_MS      (2000)
@@ -143,7 +143,7 @@ void bldc_init_par(void)
     par->pwmpar.pwmout.i_motor_id = BLDC_MOTOR0_INDEX;
 
     par->samplcurpar.func_sampl = (void(*)(void *))&hpm_mcl_bldc_foc_current_cal;
-    par->func_dqsvpwm =  (void *)hpm_mcl_smc_loop;
+    par->func_dqsvpwm =  (void (*)(void *, void *, void *, void *))hpm_mcl_smc_loop;
 
     motor0.speedloop_para.func_pid  = (void(*)(void *))hpm_mcl_bldc_foc_pi_contrl;
     motor0.speedloop_para.i_kp      = 46;

@@ -11,4 +11,4 @@ project(eeprom_perf)
 
 sdk_inc(.)
 sdk_app_src(main.c)
-generate_ses_project()
+generate_ide_projects()

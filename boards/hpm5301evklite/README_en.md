@@ -40,7 +40,9 @@ By default, UART0 is used for console printing. Connect UART0.TXD (J3.36) and UA
 
 (lab_hpm5301_evklite_board)=
 
-- UART Pin:
+- UART Pin: modbus_rtu sample
+  - The UART0 used for debugger console or some functional testing using UART
+  - The UART3 is used for some functional testing using UART, such as MICROROS_UART, USB_CDC_ACM_UART, MODBUS_RTU etc.
 
 | Function  | Position |
 | --------- | -------- |

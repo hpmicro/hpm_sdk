@@ -144,6 +144,11 @@ typedef struct hpm_dma_mgr_linked_descriptor {
 } dma_mgr_linked_descriptor_t;
 
 /**
+ * @brief DMA Manager ISR handler
+ */
+void dma_mgr_isr_handler(DMA_Type *ptr, uint32_t instance);
+
+/**
  * @brief Initialize DMA Manager Context
  */
 void dma_mgr_init(void);

@@ -28,7 +28,9 @@ The HPM6200EVK provides a series of interfaces for the characteristic peripheral
 
 (lab_hpm6200_evk_board)=
 
-- UART for core1 debug console
+- UART pin
+
+ The UART2 is used for core1 debug console or some functional testing using UART, such as MICROROS_UART, USB_CDC_ACM_UART, MODBUS_RTU etc.
 
 | Function   | Position |
 | ---------- | -------- |
@@ -62,8 +64,8 @@ The HPM6200EVK provides a series of interfaces for the characteristic peripheral
 
 | Function | Position |
 | -------- | ------ |
-| I2C0.SCL | P1[5] |
-| I2C0.SDA | P1[3] |
+| I2C0.SCL | P2[7] |
+| I2C0.SDA | P2[10] |
 
 - ACMP Pin:
 
@@ -76,18 +78,15 @@ The HPM6200EVK provides a series of interfaces for the characteristic peripheral
 
 | Function | Position |
 | ------------- | ------ |
-| GPTMR2.CAPT_0 | J4[15] |
-| GPTMR2.COMP_0 | J4[17] |
-| GPTMR2.COMP_1 | J4[1]  |
+| GPTMR1.CAPT_0 | P2[3] |
+| GPTMR1.COMP_0 | P2[23] |
+| GPTMR1.COMP_1 | P2[24]  |
 
 - ADC16 Pin:
 
-| Function                       | Position |
-| ------------------------------ | -------- |
-| ADC0.INA1                      | J4[5]    |
-| ADC0.INA12/ADC1.INA8/ADC2.INA4 | J4[6]    |
-| ADC0.INA13/ADC1.INA9/ADC2.INA5 | J4[7]    |
-| ADC0.INA11/ADC1.INA7.ADC2.INA3 | J4[8]    |
+| Function  | Position |
+| --------- | -------- |
+| ADC0.INA8 | P2[11]   |
 
 - DAC Pin:
 
@@ -130,3 +129,11 @@ The HPM6200EVK provides a series of interfaces for the characteristic peripheral
   | HALL.V    | J4[18]      | J12[4]      |
   | HALL.W    | J4[16]      | J12[5]      |
   | GND       | J4[4]       | J12[1]      |
+
+- Tamper Pin
+
+| Function | Pin    | Position |  Mode  |
+|----------|--------|--------|----------|
+| TAMP.04  | PZ04   | P1[33] | Active Mode |
+| TAMP.05  | PZ05   | P1[36] | Active Mode |
+| TAMP.06  | PZ06   | P1[38] | Passive Mode |

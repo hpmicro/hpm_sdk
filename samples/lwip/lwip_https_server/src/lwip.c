@@ -1,17 +1,16 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
 
 #include "lwip.h"
-#include "common_lwip.h"
+#include "common.h"
 #include "httpd_mbedtls.h"
 #include "lwip/init.h"
 #include "netconf.h"
 #include "sys_arch.h"
-#include "tcp_echo.h"
 
 #include "mbedtls/entropy.h"
 
@@ -55,6 +54,8 @@ mbedtls_ssl_cache_context cache;
 #if defined(__USE_ENET_RECEIVE_INTERRUPT) && __USE_ENET_RECEIVE_INTERRUPT
 volatile bool rx_flag;
 #endif
+
+struct netif gnetif;
 
 /* Entropy poll callback for a hardware source */
 #if defined(MBEDTLS_ENTROPY_HARDWARE_ALT)
@@ -235,8 +236,7 @@ int main(void)
     if (enet_init(ENET) == 0) {
         /* Initialize the Lwip stack */
         lwip_init();
-        netif_config();
-        user_notification(&gnetif);
+        netif_config(&gnetif);
 
         /* Start services */
         enet_services(&gnetif);

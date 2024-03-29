@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -7,7 +7,7 @@
 
 /*  HPM example includes. */
 #include <stdio.h>
-#include "common_lwip.h"
+#include "common.h"
 #include "lwip.h"
 #include "lwip/init.h"
 #include "lwip/tcpip.h"
@@ -16,8 +16,9 @@
 
 
 /*--------------- Tasks Priority -------------*/
-#define MAIN_TASK_PRIO   (tskIDLE_PRIORITY + 1)
-#define DHCP_TASK_PRIO   (tskIDLE_PRIORITY + 4)
+#define MAIN_TASK_PRIO      (tskIDLE_PRIORITY + 1)
+#define DHCP_TASK_PRIO      (tskIDLE_PRIORITY + 4)
+#define NETIF_STA_TASK_PRIO (tskIDLE_PRIORITY + 4)
 
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ENET_SOC_DESC_ADDR_ALIGNMENT)
 __RW enet_rx_desc_t dma_rx_desc_tab[ENET_RX_BUFF_COUNT]; /* Ethernet Rx DMA Descriptor */
@@ -33,6 +34,7 @@ __RW uint8_t tx_buff[ENET_TX_BUFF_COUNT][ENET_TX_BUFF_SIZE]; /* Ethernet Transmi
 
 enet_desc_t desc;
 uint8_t mac[ENET_MAC];
+struct netif gnetif;
 
 void Main_task(void *pvParameters);
 
@@ -139,7 +141,7 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     #if defined(RGMII) && RGMII
         #if defined(__USE_DP83867) && __USE_DP83867
         dp83867_reset(ptr);
-        #if __DISABLE_AUTO_NEGO
+        #if defined(__DISABLE_AUTO_NEGO) && __DISABLE_AUTO_NEGO
         dp83867_set_mdi_crossover_mode(ENET, enet_phy_mdi_crossover_manual_mdix);
         #endif
         dp83867_basic_mode_default_config(ptr, &phy_config);
@@ -194,14 +196,17 @@ void Main_task(void *pvParameters)
     enet_init(ENET);
 
     /* Initialize LwIP stack */
-    LwIP_Init();
+    tcpip_init(NULL, NULL);
+    netif_config(&gnetif);
 
     tcp_echo_init();
 
-#if LWIP_DHCP
+#if defined(LWIP_DHCP) && LWIP_DHCP
     /* Start DHCP Client */
-    xTaskCreate(LwIP_DHCP_task, "DHCP", configMINIMAL_STACK_SIZE * 2, NULL, DHCP_TASK_PRIO, NULL);
+    xTaskCreate(LwIP_DHCP_task, "DHCP", configMINIMAL_STACK_SIZE * 2, &gnetif, DHCP_TASK_PRIO, NULL);
 #endif
+
+    xTaskCreate(netif_update_link_status, "netif update status", configMINIMAL_STACK_SIZE * 2, &gnetif, NETIF_STA_TASK_PRIO, NULL);
 
     timer_handle = xTimerCreate((const char *)NULL,
                                 (TickType_t)1000,

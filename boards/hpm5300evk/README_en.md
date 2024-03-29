@@ -30,7 +30,9 @@ The HPM5300EVK provides a series of interfaces for the characteristic peripheral
 
 (lab_hpm5300_evk_board)=
 
-- UART Pin:
+- UART Pin: modbus_rtu sample
+
+- The UART2 is used for some functional testing using UART, such as MICROROS_UART, USB_CDC_ACM_UART, etc.
 
 | Function  | Position |
 | --------- | -------- |
@@ -38,11 +40,11 @@ The HPM5300EVK provides a series of interfaces for the characteristic peripheral
 | UART2.RXD | P1[10]   |
 | UART2.DE  | P1[38] |
 
-- LIN Pin:
+- LIN Pin (UART_LIN case):
 
 | Function | Position |
 | -------- | -------- |
-| LIN3     | J9[5]    |
+| LIN     | J9[5]    |
 
 - SPI Pin：
 
@@ -77,14 +79,9 @@ The HPM5300EVK provides a series of interfaces for the characteristic peripheral
 
 - ADC16 Pin:
 
-| Function   | Position |
-| ---------- | -------- |
-| ADC0.INA4  | J7[15]   |
-| ADC0.INA11 | J7[20]   |
-| ADC1.INA1  | J7[2]    |
-| ADC1.INA2  | J7[6]    |
-| ADC1.INA3  | J7[4]    |
-| ADC1.INA5  | J7[13]   |
+| Function   | Position | Remark   |
+| ---------- | -------- | -------- |
+| ADC0.INA13 | P1[32]   |  ADC16   |
 
 - DAC Pin:
 
@@ -162,6 +159,13 @@ The HPM5300EVK provides a series of interfaces for the characteristic peripheral
 | Function  | Position   | Note |
 | --------- | ------ |------|
 | SEI1.CLK Section  | J5 | Master side, CLKO active. Slave side，CLKI active |
+
+- QEIV2 Sin/Cos Pin:
+
+| Function   | Position | Remark   |
+| ---------- | -------- | -------- |
+| ADC0.INA4  | J7[15]   | ADC_IW (Cos) |
+| ADC1.INA5  | J7[13]   | ADC_IU (Sin) |
 
 - Motor Pin:
 

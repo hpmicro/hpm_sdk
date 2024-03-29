@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -11,91 +11,351 @@
 #include "hpm_pwm_drv.h"
 #include "hpm_trgm_drv.h"
 #include "hpm_hall_drv.h"
-#include "hpm_qei_drv.h"
 #include "hpm_gptmr_drv.h"
-
 #include "hpm_clock_drv.h"
 #include "hpm_uart_drv.h"
+#include "hpm_mcl_loop.h"
+#include "hpm_mcl_uvw.h"
+#include "hpm_mcl_detect.h"
 
-#include "hpm_bldc_define.h"
-#include "bldc_block_cfg.h"
-#include "hpm_block.h"
-
-/*motor_speed set*/
-#define MOTOR0_SPD                  (20.0)  /*r/s   delta:0.1r/s    -40-40r/s */
+#define MOTOR0_SPD                  (20.0)  /* r/s   delta:0.1r/s    -40 - -5 r/s 40 - 5 r/s */
 #define SPEED_MAX                   (40)
-/*USER define*/
-#define MOTOR_PWM_DUTY_INIT_VAL     (10)  /*percentage such: 70 mean  700*/
-#define QEI_WDOG_TIMEOUT            (200000)      
+#define SPEED_MIN                   (5)
+#define BLOCK_TMR_RLD (BOARD_BLDC_TMR_RELOAD / 10) /** 100us */
+#define MOTOR_POLE_NUM              (2)
+#define PWM_FREQUENCY               (20000)
+#define PWM_RELOAD                  ((motor_clock_hz/PWM_FREQUENCY) - 1) /*20K hz  = 200 000 000/PWM_RELOAD */
+#define MOTOR0_BLDCPWM              BOARD_BLDCPWM
 
-uint8_t motor_dir = (MOTOR0_SPD > 0 ? BLDC_MOTOR_DIR_FORWARD:BLDC_MOTOR_DIR_REVERSE);
-int32_t pwm_out_global = 0;
-float  current_speed_global = 0;
-/*
-*freemaster use global
-*/
-float fre_pid_p = PI_P_VAL;
-float fre_pid_i = PI_I_VAL;
-float fre_setspeed = MOTOR0_SPD;
-float fre_curspeed = 0.0;
-uint16_t fre_set_times = 1;
-float motor_pi_ctrl_mem = 0.0;
-int32_t qei_clock_hz = 0;
+#ifdef HPMSOC_HAS_HPMSDK_QEIV2
+#define BOARD_QEI_BASE              BOARD_BLDC_QEIV2_BASE
+#endif
 
-/*speed filter*/
-int32_t speed_filter_tbl[SPEED_FILT_NUM] ={0} ; /*累加*/
-int32_t speed_filter_sum = 0;
-uint8_t speed_filter_num = 0;
-uint8_t speed_filter_pos = 0;
+int32_t motor_clock_hz;
 
-/*speed Filter*/
-int32_t bldc_block_speed_filter(int32_t input_speed)
+typedef struct {
+    mcl_encoder_t encoder;
+    mcl_filter_iir_df1_t encoder_iir;
+    mcl_filter_iir_df1_memory_t encoder_iir_mem[2];
+    mcl_drivers_t drivers;
+    mcl_control_t control;
+    mcl_loop_t loop;
+    mcl_analog_t analog;
+    mcl_detect_t detect;
+    struct {
+        mcl_cfg_t mcl;
+        mcl_encoer_cfg_t encoder;
+        mcl_filter_iir_df1_cfg_t encoder_iir;
+        mcl_filter_iir_df1_matrix_t encoder_iir_mat[2];
+        mcl_drivers_cfg_t drivers;
+        mcl_control_cfg_t control;
+        mcl_loop_cfg_t loop;
+        mcl_detect_cfg_t detect;
+    } cfg;
+} motor0_t;
+
+motor0_t motor0;
+float encoder_theta;
+
+hpm_mcl_stat_t enable_all_pwm_output(void);
+hpm_mcl_stat_t disable_all_pwm_output(void);
+hpm_mcl_stat_t pwm_duty_set(mcl_drivers_channel_t chn, float duty);
+hpm_mcl_stat_t pwm_enable_channel(mcl_drivers_channel_t chn);
+hpm_mcl_stat_t pwm_disable_channel(mcl_drivers_channel_t chn);
+void pwm_init(void);
+hpm_mcl_stat_t encoder_init(void);
+hpm_mcl_stat_t encoder_get_theta(float *theta);
+hpm_mcl_stat_t encoder_get_abs_theta(float *theta);
+hpm_mcl_stat_t encoder_get_uvw_level(mcl_encoder_uvw_level_t *level);
+
+void motor0_control_init(void)
 {
-    
-    if(speed_filter_num >= SPEED_FILT_NUM){
-        speed_filter_sum -= speed_filter_tbl[speed_filter_pos];
-        speed_filter_num--;
-    }
 
-    speed_filter_tbl[speed_filter_pos++] = input_speed;
-    if(speed_filter_pos >= SPEED_FILT_NUM){
-        speed_filter_pos = 0;
-    }
-    speed_filter_sum += input_speed;
-
-    speed_filter_num++;
-    return (speed_filter_sum/speed_filter_num);
 }
 
-/*HALL ISR*/
-void isr_hall(void)
+hpm_mcl_stat_t analog_update_sample_location(mcl_analog_chn_t chn, uint32_t tick)
 {
-    /*在这个中断内换向*/
-    uint8_t hall_stat;
-    uint8_t motor_step;
-    uint8_t u, v, w;
-    
-    hall_clear_status(BOARD_BLDC_HALL_BASE, hall_get_status(BOARD_BLDC_HALL_BASE));
+    (void)chn;
+    (void)tick;
 
+    return mcl_success;
+}
+
+hpm_mcl_stat_t encoder_start_sample(void)
+{
+    return mcl_success;
+}
+
+void motor_init(void)
+{
+    motor0.cfg.mcl.physical.board.num_current_sample_res = 2;
+    motor0.cfg.mcl.physical.board.pwm_dead_time_tick = 0;
+    motor0.cfg.mcl.physical.board.pwm_frequency = PWM_FREQUENCY;
+    motor0.cfg.mcl.physical.board.pwm_reload = PWM_RELOAD;
+    motor0.cfg.mcl.physical.motor.i_max = 9;
+    motor0.cfg.mcl.physical.motor.inertia = 0.075;
+    motor0.cfg.mcl.physical.motor.ls = 0.00263;
+    motor0.cfg.mcl.physical.motor.pole_num = MOTOR_POLE_NUM;
+    motor0.cfg.mcl.physical.motor.power = 50;
+    motor0.cfg.mcl.physical.motor.res = 0.0011;
+    motor0.cfg.mcl.physical.motor.rpm_max = 3500;
+    motor0.cfg.mcl.physical.motor.vbus = 24;
+    motor0.cfg.mcl.physical.time.encoder_process_ts = 0.0001f;
+    motor0.cfg.mcl.physical.time.speed_loop_ts = 0.0001f * 2;
+    motor0.cfg.mcl.physical.time.mcu_clock_tick = clock_get_frequency(clock_cpu0);
+    motor0.cfg.mcl.physical.time.pwm_clock_tick = clock_get_frequency(BOARD_BLDC_QEI_CLOCK_SOURCE);
+
+    motor0.cfg.encoder.communication_interval_us = 0;
+    motor0.cfg.encoder.disable_start_sample_interrupt = true;
+    motor0.cfg.encoder.period_call_time_s = 0.0001f;
+    motor0.cfg.encoder.precision = 6;
+    motor0.cfg.encoder.speed_abs_switch_m_t = 5;
+    motor0.cfg.encoder.speed_cal_method = encoder_method_m;
+    motor0.cfg.encoder.timeout_s = 0.5;
+
+    /**
+     * @brief loop pass fpass 100 fstop 2000
+     *
+     */
+    motor0.cfg.encoder_iir.section = 2;
+    motor0.cfg.encoder_iir.matrix = motor0.cfg.encoder_iir_mat;
+    motor0.cfg.encoder_iir_mat[0].a1 = -1.947404031871316831825424742419272661209f;
+    motor0.cfg.encoder_iir_mat[0].a2 = 0.95152023575172306468772376319975592196f;
+    motor0.cfg.encoder_iir_mat[0].b0 = 1;
+    motor0.cfg.encoder_iir_mat[0].b1 = 2;
+    motor0.cfg.encoder_iir_mat[0].b2 = 1;
+    motor0.cfg.encoder_iir_mat[0].scale = 0.001029050970101526990552187612593115773f;
+
+    motor0.cfg.encoder_iir_mat[1].a1 = -1.88285893096534651114382086234400048852f;
+    motor0.cfg.encoder_iir_mat[1].a2 = 0.886838706662149367510039610351668670774f;
+    motor0.cfg.encoder_iir_mat[1].b0 = 1;
+    motor0.cfg.encoder_iir_mat[1].b1 = 2;
+    motor0.cfg.encoder_iir_mat[1].b2 = 1;
+    motor0.cfg.encoder_iir_mat[1].scale = 0.000994943924200649039424337871651005116f;
+
+    motor0.cfg.control.callback.init = motor0_control_init;
+
+    motor0.cfg.control.speed_pid_cfg.cfg.integral_max = 0.95;
+    motor0.cfg.control.speed_pid_cfg.cfg.integral_min = -0.95;
+    motor0.cfg.control.speed_pid_cfg.cfg.output_max = 1;
+    motor0.cfg.control.speed_pid_cfg.cfg.output_min = -1;
+    motor0.cfg.control.speed_pid_cfg.cfg.kp = 0.00005;
+    motor0.cfg.control.speed_pid_cfg.cfg.ki = 0.000004;
+
+    motor0.cfg.drivers.callback.init = pwm_init;
+    motor0.cfg.drivers.callback.enable_all_drivers = enable_all_pwm_output;
+    motor0.cfg.drivers.callback.disable_all_drivers = disable_all_pwm_output;
+    motor0.cfg.drivers.callback.update_duty_cycle = pwm_duty_set;
+    motor0.cfg.drivers.callback.disable_drivers = pwm_disable_channel;
+    motor0.cfg.drivers.callback.enable_drivers = pwm_enable_channel;
+
+    motor0.cfg.encoder.callback.init = encoder_init;
+    motor0.cfg.encoder.callback.start_sample = encoder_start_sample;
+    motor0.cfg.encoder.callback.get_theta = encoder_get_theta;
+    motor0.cfg.encoder.callback.get_absolute_theta = encoder_get_abs_theta;
+    motor0.cfg.encoder.callback.get_uvw_level = encoder_get_uvw_level;
+
+    motor0.cfg.loop.mode = mcl_mode_block;
+    motor0.cfg.loop.enable_speed_loop = true;
+
+    motor0.cfg.detect.enable_detect = true;
+    motor0.cfg.detect.en_submodule_detect.analog = false;
+    motor0.cfg.detect.en_submodule_detect.drivers = true;
+    motor0.cfg.detect.en_submodule_detect.encoder = true;
+    motor0.cfg.detect.en_submodule_detect.loop = true;
+    motor0.cfg.detect.callback.disable_output = disable_all_pwm_output;
+
+    hpm_mcl_filter_iir_df1_init(&motor0.encoder_iir, &motor0.cfg.encoder_iir, &motor0.encoder_iir_mem[0]);
+    hpm_mcl_encoder_init(&motor0.encoder, &motor0.cfg.mcl, &motor0.cfg.encoder, &motor0.encoder_iir);
+    hpm_mcl_drivers_init(&motor0.drivers, &motor0.cfg.drivers);
+    hpm_mcl_control_init(&motor0.control, &motor0.cfg.control);
+    hpm_mcl_loop_init(&motor0.loop, &motor0.cfg.loop, &motor0.cfg.mcl,
+                    &motor0.encoder, &motor0.analog, &motor0.control, &motor0.drivers, NULL);
+    hpm_mcl_detect_init(&motor0.detect, &motor0.cfg.detect, &motor0.loop, &motor0.encoder, &motor0.analog, &motor0.drivers);
+}
+
+hpm_mcl_stat_t pwm_duty_set(mcl_drivers_channel_t chn, float duty)
+{
+    (void)chn;
+    uint32_t pwm_reload;
+    uint32_t pwm_cmp_half, pwm_reload_half;
+
+    pwm_reload = PWM_RELOAD * 0.98;
+    pwm_cmp_half = (uint32_t)(duty * pwm_reload) >> 1;
+    pwm_reload_half =  PWM_RELOAD >> 1;
+    pwm_cmp_force_value(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_INDEX_0, PWM_CMP_CMP_SET((pwm_reload_half - pwm_cmp_half)));
+    pwm_cmp_force_value(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_INDEX_1, PWM_CMP_CMP_SET((pwm_reload_half + pwm_cmp_half)));
+    pwm_issue_shadow_register_lock_event(MOTOR0_BLDCPWM);
+
+    return mcl_success;
+}
+
+hpm_mcl_stat_t encoder_get_theta(float *theta)
+{
+    *theta = encoder_theta;
+
+    return mcl_success;
+}
+
+hpm_mcl_stat_t encoder_get_abs_theta(float *theta)
+{
+    *theta = encoder_theta;
+
+    return mcl_success;
+}
+
+void reset_pwm_counter(void)
+{
+    pwm_enable_reload_at_synci(MOTOR0_BLDCPWM);
+}
+
+hpm_mcl_stat_t enable_all_pwm_output(void)
+{
+    pwm_disable_sw_force(MOTOR0_BLDCPWM);
+
+    return mcl_success;
+}
+
+hpm_mcl_stat_t disable_all_pwm_output(void)
+{
+    pwm_config_force_cmd_timing(MOTOR0_BLDCPWM, pwm_force_immediately);
+    pwm_enable_pwm_sw_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_UH_PWM_OUTPIN);
+    pwm_enable_pwm_sw_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_UL_PWM_OUTPIN);
+    pwm_enable_pwm_sw_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_VH_PWM_OUTPIN);
+    pwm_enable_pwm_sw_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_VL_PWM_OUTPIN);
+    pwm_enable_pwm_sw_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_WH_PWM_OUTPIN);
+    pwm_enable_pwm_sw_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_WL_PWM_OUTPIN);
+    pwm_set_force_output(MOTOR0_BLDCPWM,
+                        PWM_FORCE_OUTPUT(BOARD_BLDC_UH_PWM_OUTPIN, pwm_output_0)
+                        | PWM_FORCE_OUTPUT(BOARD_BLDC_UL_PWM_OUTPIN, pwm_output_0)
+                        | PWM_FORCE_OUTPUT(BOARD_BLDC_VH_PWM_OUTPIN, pwm_output_0)
+                        | PWM_FORCE_OUTPUT(BOARD_BLDC_VL_PWM_OUTPIN, pwm_output_0)
+                        | PWM_FORCE_OUTPUT(BOARD_BLDC_WH_PWM_OUTPIN, pwm_output_0)
+                        | PWM_FORCE_OUTPUT(BOARD_BLDC_WL_PWM_OUTPIN, pwm_output_0));
+    pwm_enable_sw_force(MOTOR0_BLDCPWM);
+
+    return mcl_success;
+}
+
+hpm_mcl_stat_t pwm_enable_channel(mcl_drivers_channel_t chn)
+{
+    switch (chn) {
+    case mcl_drivers_chn_ah:
+        pwm_disable_pwm_sw_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_UH_PWM_OUTPIN);
+        break;
+    case mcl_drivers_chn_al:
+        pwm_disable_pwm_sw_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_UL_PWM_OUTPIN);
+        break;
+    case mcl_drivers_chn_bh:
+        pwm_disable_pwm_sw_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_VH_PWM_OUTPIN);
+        break;
+    case mcl_drivers_chn_bl:
+        pwm_disable_pwm_sw_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_VL_PWM_OUTPIN);
+        break;
+    case mcl_drivers_chn_ch:
+        pwm_disable_pwm_sw_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_WH_PWM_OUTPIN);
+        break;
+    case mcl_drivers_chn_cl:
+        pwm_disable_pwm_sw_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_WL_PWM_OUTPIN);
+        break;
+    default:
+        return mcl_invalid_argument;
+        break;
+    }
+
+    return mcl_success;
+}
+
+hpm_mcl_stat_t pwm_disable_channel(mcl_drivers_channel_t chn)
+{
+    switch (chn) {
+    case mcl_drivers_chn_ah:
+        pwm_enable_pwm_sw_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_UH_PWM_OUTPIN);
+        break;
+    case mcl_drivers_chn_al:
+        pwm_enable_pwm_sw_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_UL_PWM_OUTPIN);
+        break;
+    case mcl_drivers_chn_bh:
+        pwm_enable_pwm_sw_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_VH_PWM_OUTPIN);
+        break;
+    case mcl_drivers_chn_bl:
+        pwm_enable_pwm_sw_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_VL_PWM_OUTPIN);
+        break;
+    case mcl_drivers_chn_ch:
+        pwm_enable_pwm_sw_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_WH_PWM_OUTPIN);
+        break;
+    case mcl_drivers_chn_cl:
+        pwm_enable_pwm_sw_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_WL_PWM_OUTPIN);
+        break;
+    default:
+        return mcl_invalid_argument;
+        break;
+    }
+
+    return mcl_success;
+}
+
+void mcl_user_delay_us(uint64_t tick)
+{
+    board_delay_us(tick);
+}
+
+hpm_mcl_stat_t encoder_get_uvw_level(mcl_encoder_uvw_level_t *level)
+{
+#ifdef HPMSOC_HAS_HPMSDK_HALL
+    uint8_t hall_stat;
     /* the following u, v, w count value read out on read event at u signal toggle */
     hall_stat = hall_get_current_uvw_stat(BOARD_BLDC_HALL_BASE);
-    w = ((hall_stat >> 0)& 0x01);
-    v = ((hall_stat >> 1)& 0x01);
-    u = ((hall_stat >> 2)& 0x01);
-    motor_step = hpm_mcl_bldc_block_step_get(MOTOR0_HALL_ANGLE, u, v, w);
+    level->w = ((hall_stat >> 0) & 0x01);
+    level->v = ((hall_stat >> 1) & 0x01);
+    level->u = ((hall_stat >> 2) & 0x01);
+#endif
+#ifdef HPMSOC_HAS_HPMSDK_QEIV2
+    uint32_t pos;
+    const uint8_t level_tbl[6] = {5, 4, 6, 2, 3, 1};
+    pos = qeiv2_get_postion(BOARD_QEI_BASE);
+    pos /= QEIV2_ANGLE_PRE;
+    pos = (pos) / 2;
+    level->w = ((level_tbl[pos] >> 0) & 0x01);
+    level->v = ((level_tbl[pos] >> 1) & 0x01);
+    level->u = ((level_tbl[pos] >> 2) & 0x01);
+#endif
 
-    hpm_mcl_bldc_block_ctrl(BLDC_MOTOR0_INDEX, motor_dir, motor_step);
+    return mcl_success;
 }
 
-SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_HALL_IRQ, isr_hall)
-
-int hall_init(void)
+#ifdef HPMSOC_HAS_HPMSDK_HALL
+void isr_hall(void)
 {
+    hall_clear_status(BOARD_BLDC_HALL_BASE, hall_get_status(BOARD_BLDC_HALL_BASE));
+    hpm_mcl_uvw_get_theta(BOARD_BLDC_HALL_BASE, NULL, MCL_PI_DIV3 / MOTOR_POLE_NUM, &encoder_theta);
+    hpm_mcl_loop_refresh_block(&motor0.loop);
+}
+SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_HALL_IRQ, isr_hall)
+#endif
 
+#ifdef HPMSOC_HAS_HPMSDK_QEIV2
+uint8_t last_position;
+void isr_qei(void)
+{
+    uint32_t status = qeiv2_get_status(BOARD_BLDC_QEIV2_BASE);
+
+    qeiv2_clear_status(BOARD_BLDC_QEIV2_BASE, status);
+    hpm_mcl_uvw_get_theta(BOARD_BLDC_QEIV2_BASE, &last_position, MCL_PI_DIV3 / MOTOR_POLE_NUM, &encoder_theta);
+    hpm_mcl_loop_refresh_block(&motor0.loop);
+}
+SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_QEIV2_IRQ, isr_qei)
+#endif
+
+hpm_mcl_stat_t encoder_init(void)
+{
+#ifdef HPMSOC_HAS_HPMSDK_HALL
     trgm_output_t config = {0};
-    init_hall_trgm_pins();
-    config.invert = false;
 
+    encoder_theta = 0;
+    init_hall_trgm_pins();
+
+    config.invert = false;
     config.input = BOARD_BLDC_HALL_TRGM_HALL_U_SRC;
     trgm_output_config(BOARD_BLDC_HALL_TRGM, TRGM_TRGOCFG_HALL_U, &config);
 
@@ -110,90 +370,26 @@ int hall_init(void)
     hall_counter_reset_assert(BOARD_BLDC_HALL_BASE);
     hall_phase_config(BOARD_BLDC_HALL_BASE, 1, hall_count_delay_start_after_uvw_toggle);
     hall_load_read_trigger_event_enable(BOARD_BLDC_HALL_BASE, HALL_EVENT_PHUPT_FLAG_MASK);
-    hall_irq_enable(BOARD_BLDC_HALL_BASE, HALL_EVENT_PHUPT_FLAG_MASK);
     hall_counter_reset_release(BOARD_BLDC_HALL_BASE);
-    return 0;
+#endif
+#ifdef HPMSOC_HAS_HPMSDK_QEIV2
+    qeiv2_uvw_config_t uvw_config;
+
+    last_position = 0;
+    init_qeiv2_uvw_pins(BOARD_BLDC_QEIV2_BASE);
+    qeiv2_reset_counter(BOARD_BLDC_QEIV2_BASE);
+    qeiv2_set_work_mode(BOARD_BLDC_QEIV2_BASE, qeiv2_work_mode_uvw);
+    qeiv2_config_abz_uvw_signal_edge(BOARD_BLDC_QEIV2_BASE, true, true, true, true, true);
+    qeiv2_get_uvw_position_defconfig(&uvw_config);
+    uvw_config.pos_opt = qeiv2_uvw_pos_opt_next;
+    (void)qeiv2_config_uvw_position(BOARD_BLDC_QEIV2_BASE, &uvw_config);
+    qeiv2_release_counter(BOARD_BLDC_QEIV2_BASE);
+    qeiv2_release_counter(BOARD_BLDC_QEIV2_BASE);
+    qeiv2_set_pulse0_num(BOARD_BLDC_QEIV2_BASE, 1);
+    intc_m_enable_irq_with_priority(BOARD_BLDC_QEIV2_IRQ, 1);
+#endif
+    return mcl_success;
 }
-
-/*
-* return r/s
-*/
-float qei_get_speed(bool zero)
-{
-    int32_t spd;
-    float fspd;
-    uint8_t dir;
-    if(zero == 0){
-        spd =0;
-    }
-    else{
-        spd = qei_get_speed_history(BOARD_BLDC_QEI_BASE, qei_speed_his0)+\
-            qei_get_speed_history(BOARD_BLDC_QEI_BASE, qei_speed_his1)+\
-            qei_get_speed_history(BOARD_BLDC_QEI_BASE, qei_speed_his2)+\
-            qei_get_speed_history(BOARD_BLDC_QEI_BASE, qei_speed_his3);
-    }
-    /*get dir*/
-    dir = qei_get_count_on_read_event(BOARD_BLDC_QEI_BASE, qei_counter_type_speed) >> QEI_COUNT_SPD_DIR_SHIFT;
-    if(dir == 0){
-        spd = -spd;
-    }
-
-    spd = bldc_block_speed_filter(spd);
-    if(spd == 0){
-        fspd = 0.0;
-    }
-    else{
-        fspd = spd;
-        fspd = qei_clock_hz/spd;//hz
-        fspd = (fspd*QEI_A_PHASE_ANGLE_CYCLE)/360;//r/s
-    }
-
-    return fspd;
-}
-/*pi --->>>> pwm*/
-int32_t pival_to_pwmoutput(float pi)
-{
-    float duty; 
-    uint32_t  pwm_out;
-
-    duty = (PWM_RELOAD / PI_PWM_RANGE)*pi;
-    pwm_out_global -= duty;
-    if(pwm_out_global > PI_PWM_OUT_MAX){
-        pwm_out_global = PI_PWM_OUT_MAX;
-    }
-    if(pwm_out_global < -PI_PWM_OUT_MAX){
-        pwm_out_global = -PI_PWM_OUT_MAX;
-    }
-    if(pwm_out_global < 0){
-        pwm_out = -pwm_out_global;
-        motor_dir = BLDC_MOTOR_DIR_REVERSE;
-    }
-    else{
-        pwm_out = pwm_out_global;
-        motor_dir = BLDC_MOTOR_DIR_FORWARD;
-    }
-    
-    if(pwm_out < PI_PWM_OUT_MIN){
-        pwm_out = PI_PWM_OUT_MIN;
-    }
-    return pwm_out;
-}
-
-void reset_pwm_counter(void)
-{
-    pwm_enable_reload_at_synci(MOTOR0_BLDCPWM);
-    trgm_output_update_source(BOARD_BLDCPWM_TRGM, TRGM_TRGOCFG_PWM_SYNCI, 1);
-    trgm_output_update_source(BOARD_BLDCPWM_TRGM, TRGM_TRGOCFG_PWM_SYNCI, 0);
-}
-
-/*PWMISR*/
-void isr_pwm(void)
-{
-    pwm_clear_status(MOTOR0_BLDCPWM, pwm_get_status(MOTOR0_BLDCPWM));
-
-}
-
-SDK_DECLARE_EXT_ISR_M(BOARD_BLDCAPP_PWM_IRQ, isr_pwm)
 
 void pwm_init(void)
 {
@@ -205,15 +401,9 @@ void pwm_init(void)
     reset_pwm_counter();
     pwm_get_default_pwm_config(MOTOR0_BLDCPWM, &pwm_config);
 
-    /*
-     * reload and start counter
-     */
     pwm_set_reload(MOTOR0_BLDCPWM, 0, PWM_RELOAD);
     pwm_set_start_count(MOTOR0_BLDCPWM, 0, 0);
 
-    /*
-     * config cmp1 and cmp2
-     */
     cmp_config[0].mode = pwm_cmp_mode_output_compare;
     cmp_config[0].cmp = PWM_RELOAD + 1;
     cmp_config[0].update_trigger = pwm_shadow_register_update_on_shlk;
@@ -226,9 +416,6 @@ void pwm_init(void)
     pwm_config.dead_zone_in_half_cycle = 100;
     pwm_config.invert_output = false;
 
-/*
-     * config pwm
-     */
     if (status_success != pwm_setup_waveform(MOTOR0_BLDCPWM, BOARD_BLDC_UH_PWM_OUTPIN, &pwm_config, cmp_index, cmp_config, 2)) {
         printf("failed to setup waveform\n");
         while(1);
@@ -254,8 +441,6 @@ void pwm_init(void)
         while(1);
     }
 
-
-
     /*force pwm*/
     pwm_config_force_cmd_timing(MOTOR0_BLDCPWM, pwm_force_immediately);
     pwm_disable_pwm_sw_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_UH_PWM_OUTPIN);
@@ -273,119 +458,30 @@ void pwm_init(void)
                         | PWM_FORCE_OUTPUT(BOARD_BLDC_WL_PWM_OUTPIN, pwm_output_0));
     pwm_enable_sw_force(MOTOR0_BLDCPWM);
     pwm_start_counter(MOTOR0_BLDCPWM);
-
+    pwm_update_raw_cmp_central_aligned(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_INDEX_0, BOARD_BLDCPWM_CMP_INDEX_1,
+                   PWM_RELOAD >> 1, PWM_RELOAD >> 1);
+    pwm_issue_shadow_register_lock_event(MOTOR0_BLDCPWM);
 }
 
-void disable_all_pwm_output(void)
-{
-    pwm_disable_output(MOTOR0_BLDCPWM, BOARD_BLDC_UH_PWM_OUTPIN);
-    pwm_disable_output(MOTOR0_BLDCPWM, BOARD_BLDC_UL_PWM_OUTPIN);
-    pwm_disable_output(MOTOR0_BLDCPWM, BOARD_BLDC_VH_PWM_OUTPIN);
-    pwm_disable_output(MOTOR0_BLDCPWM, BOARD_BLDC_VL_PWM_OUTPIN);
-    pwm_disable_output(MOTOR0_BLDCPWM, BOARD_BLDC_WH_PWM_OUTPIN);
-    pwm_disable_output(MOTOR0_BLDCPWM, BOARD_BLDC_WL_PWM_OUTPIN);
-
-}
-/*qei*/
-void isr_qei(void)
-{
-    if (qei_get_bit_status(BOARD_BLDC_QEI_BASE, QEI_EVENT_WDOG_FLAG_MASK)) {
-        current_speed_global = qei_get_speed(0);            
-    }
-    if (qei_get_bit_status(BOARD_BLDC_QEI_BASE, QEI_EVENT_POSITIVE_COMPARE_FLAG_MASK)) {
-        current_speed_global = qei_get_speed(1);
-    }
-    qei_clear_status(BOARD_BLDC_QEI_BASE, qei_get_status(BOARD_BLDC_QEI_BASE));
-}
-
-SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_QEI_IRQ, isr_qei)
-
-int qei_init(void)
-{
-    init_qei_trgm_pins();
-
-    trgm_output_t config = {0};
-    config.invert = false;
-    config.input = BOARD_BLDC_QEI_TRGM_QEI_A_SRC;
-
-    trgm_output_config(BOARD_BLDC_QEI_TRGM, TRGM_TRGOCFG_QEI_A, &config);
-    config.input = BOARD_BLDC_QEI_TRGM_QEI_B_SRC;
-    trgm_output_config(BOARD_BLDC_QEI_TRGM, TRGM_TRGOCFG_QEI_B, &config);
-
-    intc_m_enable_irq_with_priority(BOARD_BLDC_QEI_IRQ, 1);
-
-    qei_wdog_config(BOARD_BLDC_QEI_BASE, QEI_WDOG_TIMEOUT, 1);
-    qei_wdog_enable(BOARD_BLDC_QEI_BASE);
-
-    qei_counter_reset_assert(BOARD_BLDC_QEI_BASE);
-    qei_phase_config(BOARD_BLDC_QEI_BASE, BOARD_BLDC_QEI_MOTOR_PHASE_COUNT_PER_REV,
-            qei_z_count_inc_on_phase_count_max, false);
-    qei_phase_cmp_set(BOARD_BLDC_QEI_BASE, (BOARD_BLDC_QEI_MOTOR_PHASE_COUNT_PER_REV>>2),
-            false, qei_rotation_dir_cmp_ignore);
-    qei_load_read_trigger_event_enable(BOARD_BLDC_QEI_BASE,
-            QEI_EVENT_POSITIVE_COMPARE_FLAG_MASK);
-    qei_irq_enable(BOARD_BLDC_QEI_BASE, QEI_EVENT_POSITIVE_COMPARE_FLAG_MASK|QEI_EVENT_WDOG_FLAG_MASK);
-    qei_counter_reset_release(BOARD_BLDC_QEI_BASE);
-    qei_clock_hz = clock_get_frequency(BOARD_BLDC_QEI_CLOCK_SOURCE);
-    return 0;
-}
-
-/*1ms*/
-uint8_t timer_times = 0;
-
-static float last_set_speed = 10.0;
-static uint32_t  speed_cal_times =0;
 void isr_gptmr(void)
 {
-    volatile uint32_t s = BOARD_BLDC_TMR_1MS->SR;
-    BOARD_BLDC_TMR_1MS->SR = s;
-    if (s & GPTMR_CH_CMP_STAT_MASK(BOARD_BLDC_TMR_CH, BOARD_BLDC_TMR_CMP)) {
-        timer_times++;
-        if(timer_times >= fre_set_times){
-            float pi;
-            uint32_t block_pwm_out;
-            float setspeed;
-            timer_times = 0;
-            setspeed = fre_setspeed;
-            if((last_set_speed > 0)&&(fre_setspeed <0)){
-                speed_cal_times++;
-                if(speed_cal_times >= 10){
-                    last_set_speed = fre_setspeed;
-                    pwm_out_global = (PWM_DUTY_CYCLE_FP_MAX *0.4);
-                   speed_cal_times = 0;
-                }
-            }
-            if((last_set_speed < 0)&&(fre_setspeed >0)){
-                speed_cal_times++;
-
-                if(speed_cal_times >= 10){
-                   last_set_speed = fre_setspeed;
-                   pwm_out_global = -(PWM_DUTY_CYCLE_FP_MAX *0.4);
-                   speed_cal_times = 0;
-                }
-            }
-            
-            pi = hpm_mcl_al_pi_ctrl_func(&motor_pi_ctrl_mem, setspeed, current_speed_global, fre_pid_p, fre_pid_i, PI_PWM_RANGE);
-            fre_curspeed = current_speed_global;
-            block_pwm_out = pival_to_pwmoutput(pi);
-            pwm_update_raw_cmp_central_aligned(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_INDEX_0, BOARD_BLDCPWM_CMP_INDEX_1,
-                 (PWM_RELOAD - block_pwm_out)<<1, (PWM_RELOAD + block_pwm_out)<<1);
-            pwm_issue_shadow_register_lock_event(MOTOR0_BLDCPWM);
-        }
+    if (gptmr_check_status(BOARD_BLDC_TMR_1MS, GPTMR_CH_CMP_IRQ_MASK(BOARD_BLDC_TMR_CH, BOARD_BLDC_TMR_CMP))) {
+        gptmr_clear_status(BOARD_BLDC_TMR_1MS, GPTMR_CH_CMP_IRQ_MASK(BOARD_BLDC_TMR_CH, BOARD_BLDC_TMR_CMP));
+        hpm_mcl_detect_loop(&motor0.detect);
+        hpm_mcl_encoder_process(&motor0.encoder, motor0.cfg.mcl.physical.time.mcu_clock_tick / 10000);
+        hpm_mcl_loop(&motor0.loop);
     }
 }
 SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_TMR_IRQ, isr_gptmr)
 
-/*Timer init 1ms_isr*/
 static void timer_init(void)
 {
     gptmr_channel_config_t config;
 
     gptmr_channel_get_default_config(BOARD_BLDC_TMR_1MS, &config);
-    config.cmp[0] = BOARD_BLDC_TMR_RELOAD;
+    config.cmp[0] = BLOCK_TMR_RLD;
     config.debug_mode = 0;
-    config.reload = BOARD_BLDC_TMR_RELOAD+1;
-
+    config.reload = BLOCK_TMR_RLD + 1;
     gptmr_enable_irq(BOARD_BLDC_TMR_1MS, GPTMR_CH_CMP_IRQ_MASK(BOARD_BLDC_TMR_CH, BOARD_BLDC_TMR_CMP));
     gptmr_channel_config(BOARD_BLDC_TMR_1MS, BOARD_BLDC_TMR_CH, &config, true);
     intc_m_enable_irq_with_priority(BOARD_BLDC_TMR_IRQ, 1);
@@ -396,34 +492,30 @@ int main(void)
 {
     char input_data[100], input_end;
     uint8_t i;
-    int32_t block_pwm_out = 0;
-    uint8_t motor_step;  
-    uint8_t hal_stat;
-    uint8_t u, v, w;
     float speed;
+    mcl_user_value_t  user_speed;
 
     board_init();
+    motor_clock_hz = clock_get_frequency(BOARD_BLDC_QEI_CLOCK_SOURCE);
     init_pwm_pins(MOTOR0_BLDCPWM);
-    hall_init();
-    qei_init();
     printf("motor test example\n");
+    motor_init();
     pwm_init();
     timer_init();
-    block_pwm_out = 0;
-    pwm_update_raw_cmp_central_aligned(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_INDEX_0, BOARD_BLDCPWM_CMP_INDEX_1,
-                 (PWM_RELOAD - block_pwm_out)<<1, (PWM_RELOAD + block_pwm_out)<<1);
-    pwm_issue_shadow_register_lock_event(MOTOR0_BLDCPWM);
-
     /*start motor By Hall position , Get motor step*/
-    hal_stat = hall_get_current_uvw_stat(BOARD_BLDC_HALL_BASE);
-    w = ((hal_stat >> 0)& 0x01);
-    v = ((hal_stat >> 1)& 0x01);
-    u = ((hal_stat >> 2)& 0x01);
-    motor_step = hpm_mcl_bldc_block_step_get(MOTOR0_HALL_ANGLE, u, v, w);
-
-    hpm_mcl_bldc_block_ctrl(BLDC_MOTOR0_INDEX, motor_dir, motor_step);
-
-    printf("\r\nSpeed mode, motor run, speed is: %f.\r\nInput speed:\r\n", fre_setspeed);
+    hpm_mcl_loop_start_block(&motor0.loop);
+#ifdef HPMSOC_HAS_HPMSDK_HALL
+    hall_irq_enable(BOARD_BLDC_HALL_BASE, HALL_EVENT_PHUPT_FLAG_MASK);
+#endif
+#ifdef HPMSOC_HAS_HPMSDK_QEIV2
+    qeiv2_enable_irq(BOARD_BLDC_QEIV2_BASE, QEIV2_EVENT_PULSE0_FLAG_MASK);
+#endif
+    hpm_mcl_loop_enable(&motor0.loop);
+    speed = MOTOR0_SPD;
+    user_speed.enable = true;
+    user_speed.value = speed * MCL_2PI * MOTOR_POLE_NUM;
+    hpm_mcl_loop_set_speed(&motor0.loop, user_speed);
+    printf("\r\nSpeed mode, motor run, speed is: %f.\r\nInput speed:\r\n", speed);
     while (1) {
         memset(input_data, 0, sizeof(input_data));
         input_end = 1;
@@ -449,13 +541,18 @@ int main(void)
         if (i != 0) {
             speed = atof(input_data);
             if (speed > SPEED_MAX) {
-                fre_setspeed = SPEED_MAX;
+                speed = SPEED_MAX;
             } else if (speed < -SPEED_MAX) {
-                fre_setspeed = -SPEED_MAX;
-            } else {
-                fre_setspeed = speed;
+                speed = -SPEED_MAX;
             }
-            printf("\r\nSpeed mode, motor run, speed is: %f.\r\nInput speed:\r\n", fre_setspeed);
+            if ((speed < SPEED_MIN) && (speed > 0)) {
+                speed = SPEED_MIN;
+            } else if ((speed > -SPEED_MIN) && (speed < 0)) {
+                speed = -SPEED_MIN;
+            }
+            user_speed.value = speed * MCL_2PI * MOTOR_POLE_NUM;
+            hpm_mcl_loop_set_speed(&motor0.loop, user_speed);
+            printf("\r\nSpeed mode, motor run, speed is: %f.\r\nInput speed:\r\n", speed);
         }
     }
     return 0;

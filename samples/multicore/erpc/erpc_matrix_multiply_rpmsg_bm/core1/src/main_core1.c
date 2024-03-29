@@ -26,7 +26,7 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-static ATTR_SHARE_MEM char rpmsg_lite_base[SH_MEM_TOTAL_SIZE];
+ATTR_SHARE_MEM char rpmsg_lite_base[SH_MEM_TOTAL_SIZE];
 
 /*******************************************************************************
  * Prototypes
@@ -82,9 +82,7 @@ static void SignalReady(void)
  */
 int main(void)
 {
-    /* use uart13 as console*/
-    board_init_console();
-    board_init_pmp();
+    board_init_core1();
     board_init_led_pins();
     ipc_init();
     ipc_enable_event_interrupt(2u);

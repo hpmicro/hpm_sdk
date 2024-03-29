@@ -1,9 +1,6 @@
 # Copyright (c) 2021 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
-
-sdk_inc(${TOOLCHAIN_HOME}/lib/gcc/${CROSS_COMPILE_TARGET}/${COMPILER_VERSION}/include)
-sdk_sys_inc(${TOOLCHAIN_HOME}/${CROSS_COMPILE_TARGET}/include/c++/${COMPILER_VERSION})
 sdk_compile_options("-Wall")
 sdk_compile_options("-Wundef")
 sdk_compile_options("-Wno-format")
@@ -34,9 +31,3 @@ endif()
 
 endif()
 
-function (generate_bin2c_array c_array_path)
-    add_custom_command(
-        TARGET ${APP_ELF_NAME}
-        COMMAND ${PYTHON_EXECUTABLE} $ENV{HPM_SDK_BASE}/scripts/bin2c.py ${EXECUTABLE_OUTPUT_PATH}/${APP_BIN_NAME} sec_core_img > ${c_array_path}
-    )
-endfunction ()

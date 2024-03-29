@@ -123,7 +123,7 @@ static inline void trgm_input_filter_set_filter_length(TRGM_Type *ptr, uint8_t i
  *
  * @param[in] ptr TRGM base address
  * @param[in] input Input selection
- * @param[in] length Filter length in TRGM clock cycles (0 ~ 0xFFF)
+ * @param[in] shift Filter length shift
  */
 static inline void trgm_input_filter_set_filter_shift(TRGM_Type *ptr, uint8_t input, uint8_t shift)
 {

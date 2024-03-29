@@ -14,4 +14,4 @@ project(i2s_dma)
 
 sdk_inc(src)
 sdk_app_src(src/i2s_dma.c)
-generate_ses_project()
+generate_ide_projects()

@@ -1,9 +1,9 @@
-# VGLite Samples
+# VGLite
 
 :::{eval-rst}
 .. toctree::
-   :maxdepth: 3
+    :maxdepth: 3
+    :glob:
 
-   tiger/README_en
-
+    **/*_en
 :::

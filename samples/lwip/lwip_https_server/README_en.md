@@ -26,20 +26,17 @@ This example shows how to use lwip and bedtls to setup a https server.
 ```console
 This is an ethernet demo: https server (Polling Usage)
 LwIP Version: 2.1.2
-Reference Clock: Internal Clock
 Enet phy init passed !
-Static IP: 192.168.100.10
-Netmask  : 255.255.255.0
-Gateway  : 192.168.100.1
 
 ************************************************
  mbedTLS HTTPS Server example
 ************************************************
-Link Status: Down
-Link Status: Down
 Link Status: Up
-Link Speed:  100Mbps
+Link Speed:  1000Mbps
 Link Duplex: Full duplex
+IPv4 Address: 192.168.100.10
+IPv4 Netmask: 255.255.255.0
+IPv4 Gateway: 192.168.100.1
 ```
 
 Open browser on pc, type https://192.168.100.10 and press enter, the web page will appear：

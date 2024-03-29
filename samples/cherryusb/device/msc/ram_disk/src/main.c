@@ -12,7 +12,7 @@
 
 #define LED_FLASH_PERIOD_IN_MS 300
 
-extern void msc_ram_init(void);
+extern void msc_ram_init(uint8_t busid, uint32_t reg_base);
 
 int main(void)
 {
@@ -25,7 +25,7 @@ int main(void)
 
     printf("cherry usb msc_ram sample.\n");
 
-    msc_ram_init();
+    msc_ram_init(0, CONFIG_HPM_USBD_BASE);
     while (1) {
     }
 

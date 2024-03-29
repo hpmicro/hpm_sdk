@@ -81,9 +81,9 @@ hpm_mcl_stat_t hpm_mcl_path_t_cure_generate(mcl_path_plan_t *path)
             t0 = path->t_cure.current.acc_time;
             t2 = path->t_cure.current.dec_time;
             t1 = path->t_cure.current.time - t0 - t2;
-            num0 = t0 / path->cfg->loop_ts;
-            num1 = t1 / path->cfg->loop_ts;
-            num2 = t2 / path->cfg->loop_ts;
+            num0 = (int32_t)(t0 / path->cfg->loop_ts);
+            num1 = (int32_t)(t1 / path->cfg->loop_ts);
+            num2 = (int32_t)(t2 / path->cfg->loop_ts);
 
             path->t_cure.t0 = num0;
             path->t_cure.t1 = num0 + num1;

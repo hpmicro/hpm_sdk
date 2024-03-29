@@ -54,6 +54,7 @@ static volatile uint16_t eRPCReadyEventData;
  */
 static void eRPCReadyEventHandler(uint16_t eventData, void *context)
 {
+    (void)context;
     eRPCReadyEventData = eventData;
 }
 
@@ -79,6 +80,8 @@ void getNumberFromCore0(uint32_t *number)
 
 static void client_task(void *param)
 {
+    (void)param;
+
     int32_t core;
     uint32_t number;
 
@@ -173,6 +176,8 @@ static void client_task(void *param)
 
 static void server_task(void *param)
 {
+    (void)param;
+
     /* Wait for client initialization. */
     while (s_transportArbitrator == NULL) {
         vTaskDelay(100);

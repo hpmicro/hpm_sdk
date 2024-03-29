@@ -52,6 +52,9 @@ hpm_stat_t wm8960_init(wm8960_control_t *control, wm8960_config_t *config)
     /* set wm8960 as slave */
     HPM_CHECK_RET(wm8960_modify_reg(control, WM8960_IFACE1, WM8960_IFACE1_MS_MASK, WM8960_IFACE1_MS_SET(0)));
 
+    /* invert LRCLK */
+    HPM_CHECK_RET(wm8960_modify_reg(control, WM8960_IFACE1, WM8960_IFACE1_LRP_MASK, WM8960_IFACE1_LRP_SET(1)));
+
     HPM_CHECK_RET(wm8960_write_reg(control, WM8960_ADDCTL1, 0xC0));
     HPM_CHECK_RET(wm8960_write_reg(control, WM8960_ADDCTL4, 0x40));
 

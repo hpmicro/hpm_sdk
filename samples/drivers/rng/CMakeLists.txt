@@ -8,4 +8,4 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(rng_example)
 
 sdk_app_src(src/rng.c)
-generate_ses_project()
+generate_ide_projects()

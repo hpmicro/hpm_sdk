@@ -1,0 +1,156 @@
+# Eclipse ThreadX NetX Duo
+
+This advanced, industrial-grade TCP/IP network stack is designed specifically for deeply embedded real-time and IoT applications. Eclipse ThreadX NetX Duo is a dual IPv4 and IPv6 network stack.
+
+Here are the key features and modules of NetX Duo:
+
+![NetX Duo Key Features](./docs/netx-duo-features.png)
+
+## Getting Started
+
+NetX Duo as part of Eclipse ThreadX has been integrated to the semiconductor's SDKs and development environment. You can develop using the tools of choice from [STMicro](https://www.st.com/content/st_com/en/campaigns/x-cube-azrtos-azure-rtos-stm32.html), [NXP](https://www.nxp.com/design/software/embedded-software/azure-rtos-for-nxp-microcontrollers:AZURE-RTOS), [Renesas](https://github.com/renesas/azure-rtos) and [Microchip](https://mu.microchip.com/get-started-simplifying-your-iot-design-with-azure-rtos).
+
+We also provide [getting started guide](https://github.com/eclipse-threadx/getting-started) and [samples](https://github.com/eclipse-threadx/samples) using hero development boards from semiconductors you can build and test with.
+
+See [Overview of Eclipse ThreadX NetX Duo](https://github.com/eclipse-threadx/rtos-docs/blob/main/rtos-docs/netx-duo/overview-netx-duo.md) for the high-level overview.
+
+## Repository Structure and Usage
+
+### Directory layout
+
+    .
+    ├── addons                  # NetX Duo addon modules for protocols and connectivity
+    ├── cmake                   # CMakeList files for building the project
+    ├── common                  # Core NetX Duo files
+    ├── crypto_libraries        # NetX Crypto files
+    ├── nx_secure               # NetX Secure files
+    ├── ports                   # Architecture and compiler specific files
+    ├── samples                 # Sample codes
+    ├── utility                 # Test cases and utilities (e.g. iperf)
+    ├── LICENSE.txt             # License terms
+    ├── LICENSE-HARDWARE.txt    # Licensed hardware from semiconductors
+    ├── CONTRIBUTING.md         # Contribution guidance
+    └── SECURITY.md             # Microsoft repo security guidance
+
+### Branches & Releases
+
+The master branch has the most recent code with all new features and bug fixes. It does not represent the latest General Availability (GA) release of the library. Each official release (preview or GA) will be tagged to mark the commit and push it into the Github releases tab, e.g. `v6.2-rel`.
+
+> When you see xx-xx-xxxx, 6.x or x.x in function header, this means the file is not officially released yet. They will be updated in the next release. See example below.
+```
+/**************************************************************************/
+/*                                                                        */
+/*  FUNCTION                                               RELEASE        */
+/*                                                                        */
+/*    _tx_initialize_low_level                          Cortex-M23/GNU    */
+/*                                                           6.x          */
+/*  AUTHOR                                                                */
+/*                                                                        */
+/*    Scott Larson, Microsoft Corporation                                 */
+/*                                                                        */
+/*  DESCRIPTION                                                           */
+/*                                                                        */
+/*    This function is responsible for any low-level processor            */
+/*    initialization, including setting up interrupt vectors, setting     */
+/*    up a periodic timer interrupt source, saving the system stack       */
+/*    pointer for use in ISR processing later, and finding the first      */
+/*    available RAM memory address for tx_application_define.             */
+/*                                                                        */
+/*  INPUT                                                                 */
+/*                                                                        */
+/*    None                                                                */
+/*                                                                        */
+/*  OUTPUT                                                                */
+/*                                                                        */
+/*    None                                                                */
+/*                                                                        */
+/*  CALLS                                                                 */
+/*                                                                        */
+/*    None                                                                */
+/*                                                                        */
+/*  CALLED BY                                                             */
+/*                                                                        */
+/*    _tx_initialize_kernel_enter           ThreadX entry function        */
+/*                                                                        */
+/*  RELEASE HISTORY                                                       */
+/*                                                                        */
+/*    DATE              NAME                      DESCRIPTION             */
+/*                                                                        */
+/*  09-30-2020      Scott Larson            Initial Version 6.1           */
+/*  xx-xx-xxxx      Scott Larson            Include tx_user.h,            */
+/*                                            resulting in version 6.x    */
+/*                                                                        */
+/**************************************************************************/ 
+```
+
+## Protocols and connectivity
+
+Protocols and connectivity support are provided as addon modules within NetX Duo in `addons` folder. Some key modules are: [**azure_iot**](https://github.com/eclipse-threadx/netxduo/tree/master/addons/azure_iot), [**dhcp**](https://github.com/eclipse-threadx/rtos-docs/blob/main/rtos-docs/netx-duo/netx-duo-dhcp-client/chapter1.md), [**dns**](https://github.com/eclipse-threadx/rtos-docs/blob/main/rtos-docs/netx-duo/netx-duo-dns/chapter1.md), [**ftp**](https://github.com/eclipse-threadx/rtos-docs/blob/main/rtos-docs/netx-duo/netx-duo-ftp/chapter1.md), [**http**](https://github.com/eclipse-threadx/rtos-docs/blob/main/rtos-docs/netx-duo/netx-duo-http/Chapter1.md), [**mqtt**](https://github.com/eclipse-threadx/rtos-docs/blob/main/rtos-docs/netx-duo/netx-duo-mqtt/chapter1.md), [**pop3**](https://github.com/eclipse-threadx/rtos-docs/blob/main/rtos-docs/netx-duo/netx-duo-pop3-client/chapter1.md), [**ppp**](https://github.com/eclipse-threadx/rtos-docs/blob/main/rtos-docs/netx-duo/netx-duo-ppp/chapter1.md), [**rtp**](https://github.com/eclipse-threadx/rtos-docs/blob/main/rtos-docs/netx-duo/netx-duo-rtp/chapter1.md), [**rtsp**](https://github.com/eclipse-threadx/rtos-docs/blob/main/rtos-docs/netx-duo/netx-duo-rtsp/chapter1.md), [**sntp**](https://github.com/eclipse-threadx/rtos-docs/blob/main/rtos-docs/netx-duo/netx-duo-sntp-client/chapter1.md), and [**web**](https://github.com/eclipse-threadx/rtos-docs/blob/main/rtos-docs/netx-duo/netx-duo-telnet/chapter1.md). For a full list of NetX Duo addons, you can find in the same [Eclipse ThreadX NetX Duo documentation](https://github.com/eclipse-threadx/rtos-docs/blob/main/rtos-docs/netx-duo/overview-netx-duo.md).
+
+### Samples
+
+We provide sample codes about how to use various addons in the [`samples`](./samples/) folder.
+
+## Component dependencies
+
+The main components of Eclipse ThreadX are each provided in their own repository, but there are dependencies between them, as shown in the following graph. This is important to understand when setting up your builds.
+
+![dependency graph](docs/deps.png)
+
+> You will have to take the dependency graph above into account when building anything other than ThreadX itself.
+
+### Building and using the library
+
+Instruction for building the NetX Duo as static library using Arm GNU Toolchain and CMake. If you are using toolchain and IDE from semiconductor, you might follow its own instructions to use Eclipse ThreadX components as explained in the [Getting Started](#getting-started) section.
+
+1. Install the following tools:
+
+    * [CMake](https://cmake.org/download/) version 3.0 or later
+    * [Arm GNU Toolchain for arm-none-eabi](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads)
+    * [Ninja](https://ninja-build.org/)
+
+1. Build the [ThreadX library](https://github.com/eclipse-threadx/threadx#building-and-using-the-library) as the dependency.
+
+1. Cloning the repo. NetX Duo has a couple of dependencies that are included as submodules.
+
+    ```bash
+    $ git clone --recursive https://github.com/eclipse-threadx/netxduo.git
+    ```
+
+1. Define the features and addons you need in `nx_user.h` and build together with the component source code. You can refer to [`nx_user_sample.h`](https://github.com/eclipse-threadx/netxduo/blob/master/common/inc/nx_user_sample.h) as an example.
+
+1. Building as a static library
+
+    Each component of Eclipse ThreadX comes with a composable CMake-based build system that supports many different MCUs and host systems. Integrating any of these components into your device app code is as simple as adding a git submodule and then including it in your build using the CMake `add_subdirectory()`.
+
+    While the typical usage pattern is to include NetX Duo into your device code source tree to be built & linked with your code, you can compile this project as a standalone static library to confirm your build is set up correctly.
+
+    An example of building the library for Cortex-M4:
+
+    ```bash
+    $ cmake -Bbuild -GNinja -DCMAKE_TOOLCHAIN_FILE=cmake/cortex_m4.cmake .
+
+    $ cmake --build ./build
+    ```
+
+## Licensing
+
+License terms for using Eclipse ThreadX are defined in the LICENSE.txt file of this repo. Please refer to this file for all definitive licensing information. 
+
+## Resources
+
+The following are references to additional Eclipse ThreadX resources:
+
+- **Product introduction**: https://github.com/eclipse-threadx/rtos-docs
+- **Product issues and bugs, or feature requests**: https://github.com/eclipse-threadx/netxduo/issues
+- **TraceX Installer**: https://aka.ms/azrtos-tracex-installer
+
+You can also check [previous questions](https://stackoverflow.com/questions/tagged/threadx-rtos+netxduo) or ask new ones on StackOverflow using the `threadx-rtos` and `netxduo` tags.
+
+## Security
+
+Eclipse ThreadX provides OEMs with components to secure communication and to create code and data isolation using underlying MCU/MPU hardware protection mechanisms. It is ultimately the responsibility of the device builder to ensure the device fully meets the evolving security requirements associated with its specific use case.
+
+## Contribution
+
+Please follow the instructions provided in the [CONTRIBUTING.md](./CONTRIBUTING.md) for the corresponding repository.

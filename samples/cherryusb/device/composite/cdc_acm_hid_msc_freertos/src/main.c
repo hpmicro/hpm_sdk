@@ -15,10 +15,11 @@
 #include "usb_config.h"
 
 #define LED_FLASH_PERIOD_IN_MS 300
+#define USB_BUS_ID 0
 
-extern void cdc_acm_hid_msc_descriptor_init(void);
-extern void hid_mouse_test(void);
-extern void cdc_acm_data_send_with_dtr_test(void);
+extern void cdc_acm_hid_msc_descriptor_init(uint8_t busid, uint32_t reg_base);
+extern void hid_mouse_test(uint8_t busid);
+extern void cdc_acm_data_send_with_dtr_test(uint8_t busid);
 
 #define task1_PRIORITY    (configMAX_PRIORITIES - 5U)
 #define task2_PRIORITY    (configMAX_PRIORITIES - 4U)
@@ -29,7 +30,7 @@ static void task1(void *pvParameters)
     printf("[cherryusb hid mouse with freertos sample]: task started.\n");
 
     while (1) {
-        hid_mouse_test();
+        hid_mouse_test(USB_BUS_ID);
     }
 }
 
@@ -38,7 +39,7 @@ static void task2(void *pvParameters)
     (void)pvParameters;
     printf("[cherryusb cdc acm with freertos sample]: task started.\n");
 
-    cdc_acm_data_send_with_dtr_test();
+    cdc_acm_data_send_with_dtr_test(USB_BUS_ID);
 
     usb_osal_thread_delete(NULL);
 }
@@ -56,7 +57,7 @@ int main(void)
 
     printf("cherry usb composite cdc_acm_hid_msc freertos sample.\n");
 
-    cdc_acm_hid_msc_descriptor_init();
+    cdc_acm_hid_msc_descriptor_init(USB_BUS_ID, CONFIG_HPM_USBD_BASE);
     if (usb_osal_thread_create("task1", 8192U, task1_PRIORITY, task1, NULL) == NULL) {
         printf("Task1 creation failed!.\n");
         for (;;) {

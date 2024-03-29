@@ -2,7 +2,7 @@
 
 ## Overview
 
-This  example shows TCP/UDP throughput performance test through iperf (https://iperf.fr/iperf-download.php) with a total of four mode as follows:
+This example shows TCP/UDP throughput performance test through iperf (https://iperf.fr/iperf-download.php) with a total of four mode as follows:
 
 - MCU acts as TCP Server / PC acts as TCP Client
 - MCU acts as TCP Client / PC acts as TCP Server
@@ -31,14 +31,13 @@ This  example shows TCP/UDP throughput performance test through iperf (https://i
   ```console
   This is an ethernet demo: Iperf
   LwIP Version: 2.1.2
-  Reference Clock: Internal Clock
   Enet phy init passed !
-  Static IP: 192.168.100.10
-  Netmask  : 255.255.255.0
-  Gateway  : 192.168.100.1
   Link Status: Up
-  Link Speed:  100Mbps
+  Link Speed:  1000Mbps
   Link Duplex: Full duplex
+  IPv4 Address: 192.168.100.10
+  IPv4 Netmask: 255.255.255.0
+  IPv4 Gateway: 192.168.100.1
 
   1: TCP Server Mode
   2: TCP Client Mode

@@ -43,7 +43,8 @@ typedef struct i2s_config {
     bool use_external_fclk;
     bool enable_mclk_out;
     bool frame_start_at_rising_edge;
-    uint16_t fifo_threshold;
+    uint16_t tx_fifo_threshold;
+    uint16_t rx_fifo_threshold;
 } i2s_config_t;
 
 /**
@@ -327,6 +328,7 @@ static inline void i2s_reset_clock_gen(I2S_Type *ptr)
  * @brief I2S reset tx function
  *
  * @note This API will disable I2S, reset tx function
+ * Please ensure that there is a valid BCLK when calling this function
  *
  * @param [in] ptr I2S base address
  */
@@ -344,6 +346,7 @@ static inline void i2s_reset_tx(I2S_Type *ptr)
  * @brief I2S reset rx function
  *
  * @note This API will disable I2S, reset rx function
+ * Please ensure that there is a valid BCLK when calling this function
  *
  * @param [in] ptr I2S base address
  */
@@ -361,6 +364,7 @@ static inline void i2s_reset_rx(I2S_Type *ptr)
  * @brief I2S reset tx and rx function
  *
  * @note This API will disable I2S, reset tx/rx function
+ * Please ensure that there is a valid BCLK when calling this function
  *
  * @param [in] ptr I2S base address
  */
@@ -373,6 +377,17 @@ static inline void i2s_reset_tx_rx(I2S_Type *ptr)
     ptr->CTRL |= (I2S_CTRL_TXFIFOCLR_MASK | I2S_CTRL_RXFIFOCLR_MASK | I2S_CTRL_SFTRST_TX_MASK | I2S_CTRL_SFTRST_RX_MASK);
     ptr->CTRL &= ~(I2S_CTRL_TXFIFOCLR_MASK | I2S_CTRL_RXFIFOCLR_MASK | I2S_CTRL_SFTRST_TX_MASK | I2S_CTRL_SFTRST_RX_MASK);
 }
+
+/**
+ * @brief I2S reset tx/rx and clock generator module
+ *
+ * @note This API will disable I2S, reset tx/rx and clock generator module
+ * This function uses an internal clock to generate BCLK, then do reset operation,
+ * and finally restores the previous clock settings
+ *
+ * @param [in] ptr I2S base address
+ */
+void i2s_reset_all(I2S_Type *ptr);
 
 /**
  * @brief I2S get tx fifo level

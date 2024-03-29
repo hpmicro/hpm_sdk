@@ -15,4 +15,4 @@ project(lcdc_example)
 
 sdk_app_src(src/lcdc.c)
 
-generate_ses_project()
+generate_ide_projects()

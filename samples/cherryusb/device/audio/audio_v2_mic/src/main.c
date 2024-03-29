@@ -25,10 +25,10 @@ int main(void)
 
     printf("cherry usb audio v2 mic sample.\n");
 
-    audio_init();
+    audio_v2_init(0, CONFIG_HPM_USBD_BASE);
     init_mic_i2s_pdm();
 
     while (1) {
-        audio_test();
+        audio_v2_task(0);
     }
 }

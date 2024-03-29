@@ -26,6 +26,13 @@ void init_xtal_pins(void)
 
 void init_py_pins_as_pgpio(void)
 {
+    /* Set PY00-PY05 default function to PGPIO */
+    HPM_PIOC->PAD[IOC_PAD_PY00].FUNC_CTL = PIOC_PY00_FUNC_CTL_PGPIO_Y_00;
+    HPM_PIOC->PAD[IOC_PAD_PY01].FUNC_CTL = PIOC_PY01_FUNC_CTL_PGPIO_Y_01;
+    HPM_PIOC->PAD[IOC_PAD_PY02].FUNC_CTL = PIOC_PY02_FUNC_CTL_PGPIO_Y_02;
+    HPM_PIOC->PAD[IOC_PAD_PY03].FUNC_CTL = PIOC_PY03_FUNC_CTL_PGPIO_Y_03;
+    HPM_PIOC->PAD[IOC_PAD_PY04].FUNC_CTL = PIOC_PY04_FUNC_CTL_PGPIO_Y_04;
+    HPM_PIOC->PAD[IOC_PAD_PY05].FUNC_CTL = PIOC_PY05_FUNC_CTL_PGPIO_Y_05;
 }
 
 void init_uart_pins(UART_Type *ptr)
@@ -38,6 +45,20 @@ void init_uart_pins(UART_Type *ptr)
         HPM_IOC->PAD[IOC_PAD_PB14].FUNC_CTL = IOC_PB14_FUNC_CTL_UART3_RXD;
     } else {
         ;
+    }
+}
+
+/* for uart_lin case, need to configure pin as gpio to sent break signal */
+void init_uart_pin_as_gpio(UART_Type *ptr)
+{
+    /* pull-up */
+    uint32_t pad_ctl = IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(1);
+
+    if (ptr == HPM_UART3) {
+        HPM_IOC->PAD[IOC_PAD_PB15].PAD_CTL = pad_ctl;
+        HPM_IOC->PAD[IOC_PAD_PB14].PAD_CTL = pad_ctl;
+        HPM_IOC->PAD[IOC_PAD_PB15].FUNC_CTL = IOC_PB15_FUNC_CTL_GPIO_B_15;
+        HPM_IOC->PAD[IOC_PAD_PB14].FUNC_CTL = IOC_PB14_FUNC_CTL_GPIO_B_14;
     }
 }
 
@@ -140,9 +161,9 @@ void init_usb_pins(void)
     HPM_IOC->PAD[IOC_PAD_PY02].FUNC_CTL = IOC_PY02_FUNC_CTL_USB0_PWR;
 
     /* PY port IO needs to configure PIOC as well */
-    HPM_PIOC->PAD[IOC_PAD_PY00].FUNC_CTL = IOC_PY00_FUNC_CTL_SOC_GPIO_Y_00;
-    HPM_PIOC->PAD[IOC_PAD_PY01].FUNC_CTL = IOC_PY01_FUNC_CTL_SOC_GPIO_Y_01;
-    HPM_PIOC->PAD[IOC_PAD_PY02].FUNC_CTL = IOC_PY02_FUNC_CTL_SOC_GPIO_Y_02;
+    HPM_PIOC->PAD[IOC_PAD_PY00].FUNC_CTL = PIOC_PY00_FUNC_CTL_SOC_GPIO_Y_00;
+    HPM_PIOC->PAD[IOC_PAD_PY01].FUNC_CTL = PIOC_PY01_FUNC_CTL_SOC_GPIO_Y_01;
+    HPM_PIOC->PAD[IOC_PAD_PY02].FUNC_CTL = PIOC_PY02_FUNC_CTL_SOC_GPIO_Y_02;
 }
 
 void init_led_pins_as_gpio(void)

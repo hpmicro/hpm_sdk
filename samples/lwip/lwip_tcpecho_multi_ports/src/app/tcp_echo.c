@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -11,6 +11,8 @@
 
 static err_t tcpecho_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
 {
+    (void)arg;
+
     if (p != NULL) {
         tcp_recved(tpcb, p->tot_len);
         tcp_write(tpcb, p->payload, p->tot_len, 1);
@@ -24,6 +26,9 @@ static err_t tcpecho_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t
 
 static err_t tcpecho_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
 {
+    (void)arg;
+    (void)err;
+
     tcp_recv(newpcb, tcpecho_recv);
     return ERR_OK;
 }
@@ -31,7 +36,7 @@ static err_t tcpecho_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
 void tcp_echo_init(struct netif *netif)
 {
     struct tcp_pcb *pcb = NULL;
-    uint16_t tcp_port[] = {TCP_ECHO_PORT0, TCP_ECHO_PORT1};
+    uint16_t tcp_port[] = {TCP_LOCAL_PORT0, TCP_LOCAL_PORT1};
 
     pcb = tcp_new();
     tcp_bind(pcb, IP_ADDR_ANY, tcp_port[netif->num]);

@@ -8,4 +8,4 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(gptmr_output_compare)
 
 sdk_app_src(src/output_compare.c)
-generate_ses_project()
+generate_ide_projects()

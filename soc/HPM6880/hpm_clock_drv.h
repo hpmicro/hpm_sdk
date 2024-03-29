@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 HPMicro
+ * Copyright (c) 2022-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -11,6 +11,7 @@
 #include "hpm_sysctl_drv.h"
 #include "hpm_csr_drv.h"
 
+#define CLOCK_DIV_INVALID (~0UL)
 
 /**
  * @brief Error codes for clock driver
@@ -37,8 +38,8 @@ enum {
 #define CLK_SRC_GROUP_COMMON            (0U)
 #define CLK_SRC_GROUP_ADC               (1U)
 #define CLK_SRC_GROUP_I2S               (2U)
-#define CLK_SRC_GROUP_WDG               (3U)
-#define CLK_SRC_GROUP_PWDG              (4U)
+#define CLK_SRC_GROUP_EWDG               (3U)
+#define CLK_SRC_GROUP_PEWDG              (4U)
 #define CLK_SRC_GROUP_PMIC              (5U)
 #define CLK_SRC_GROUP_AXI_SOC           (6U)
 #define CLK_SRC_GROUP_AXI_FAST          (7U)
@@ -74,13 +75,13 @@ typedef enum _clock_sources {
     clk_i2s_src_aud1 = MAKE_CLK_SRC(CLK_SRC_GROUP_I2S, 0),
     clk_i2s_src_aud2 = MAKE_CLK_SRC(CLK_SRC_GROUP_I2S, 0),
     clk_i2s_src_aud3 = MAKE_CLK_SRC(CLK_SRC_GROUP_I2S, 0),
-    clk_i2s_src_ahb0 = MAKE_CLK_SRC(CLK_SRC_GROUP_I2S, 1),
+    clk_i2s_src_audx = MAKE_CLK_SRC(CLK_SRC_GROUP_I2S, 1),
 
-    clk_wdg_src_ahb0 = MAKE_CLK_SRC(CLK_SRC_GROUP_WDG, 0),
-    clk_wdg_src_osc32k = MAKE_CLK_SRC(CLK_SRC_GROUP_WDG, 1),
+    clk_wdg_src_ahb0 = MAKE_CLK_SRC(CLK_SRC_GROUP_EWDG, 0),
+    clk_wdg_src_osc32k = MAKE_CLK_SRC(CLK_SRC_GROUP_EWDG, 1),
 
-    clk_pwdg_src_osc24m = MAKE_CLK_SRC(CLK_SRC_GROUP_PWDG, 0),
-    clk_pwdg_src_osc32k = MAKE_CLK_SRC(CLK_SRC_GROUP_PWDG, 1),
+    clk_pwdg_src_osc24m = MAKE_CLK_SRC(CLK_SRC_GROUP_PEWDG, 0),
+    clk_pwdg_src_osc32k = MAKE_CLK_SRC(CLK_SRC_GROUP_PEWDG, 1),
 
     clk_src_invalid = MAKE_CLK_SRC(CLK_SRC_GROUP_INVALID, 15),
 } clk_src_t;
@@ -194,11 +195,11 @@ typedef enum _clock_name {
     clock_lcb = MAKE_CLOCK_NAME(sysctl_resource_lcb0, CLK_SRC_GROUP_AXI_VIDEO, clock_node_invalid),
 
     clock_ffa = MAKE_CLOCK_NAME(sysctl_resource_ffa0, CLK_SRC_GROUP_AXI_SOC, clock_node_invalid),
-    clock_tsns = MAKE_CLOCK_NAME(RESOURCE_INVALID, CLK_SRC_GROUP_PMIC, clock_node_invalid),
+    clock_tsns = MAKE_CLOCK_NAME(sysctl_resource_tsns, CLK_SRC_GROUP_PMIC, clock_node_invalid),
 
     clock_ptpc = MAKE_CLOCK_NAME(sysctl_resource_ptpc, CLK_SRC_GROUP_AXI_SOC, clock_node_invalid),
-    clock_watchdog0 = MAKE_CLOCK_NAME(sysctl_resource_wdg0, CLK_SRC_GROUP_WDG, 0),    /* 0 - instance */
-    clock_watchdog1 = MAKE_CLOCK_NAME(sysctl_resource_wdg1, CLK_SRC_GROUP_WDG, 1),    /* 1 - instance */
+    clock_watchdog0 = MAKE_CLOCK_NAME(sysctl_resource_wdg0, CLK_SRC_GROUP_EWDG, 0),    /* 0 - instance */
+    clock_watchdog1 = MAKE_CLOCK_NAME(sysctl_resource_wdg1, CLK_SRC_GROUP_EWDG, 1),    /* 1 - instance */
     clock_puart = MAKE_CLOCK_NAME(RESOURCE_INVALID, CLK_SRC_GROUP_PMIC, clock_node_invalid),
     clock_pwdg = MAKE_CLOCK_NAME(RESOURCE_INVALID, CLK_SRC_GROUP_PMIC, clock_node_invalid),
     clock_sdp = MAKE_CLOCK_NAME(sysctl_resource_sdp0, CLK_SRC_GROUP_AXI_SOC, clock_node_invalid),
@@ -276,6 +277,14 @@ uint32_t get_frequency_for_source(clock_source_t source);
  * @return IP clock source
  */
 clk_src_t clock_get_source(clock_name_t clock_name);
+
+/**
+ * @brief Get the IP clock divider
+ *        Note:This API return the direct clock divider
+ * @param [in] clock_name clock name
+ * @return IP clock divider
+ */
+uint32_t clock_get_divider(clock_name_t clock_name);
 
 /**
  * @brief Set ADC clock source

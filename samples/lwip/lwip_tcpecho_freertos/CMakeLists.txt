@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2023 HPMicro
+# Copyright (c) 2021-2024 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -10,6 +10,7 @@ endif()
 set(CONFIG_FREERTOS 1)
 set(CONFIG_LWIP 1)
 set(CONFIG_LWIP_STRERR 1)
+set(CONFIG_LWIP_NETCONN_API 1)
 
 set(APP_USE_ENET_PORT_COUNT 1)
 #set(APP_USE_ENET_ITF_RGMII 1)
@@ -37,25 +38,22 @@ sdk_compile_definitions(-D__DISABLE_AUTO_NEGO=0)
 sdk_compile_definitions(-D__ENABLE_ENET_RECEIVE_INTERRUPT=1)
 sdk_compile_definitions(-DLWIP_DHCP=0)
 
-project(lwip_tcpecho_freertos_example)
-sdk_inc(../common)
-sdk_inc(../common/freertos)
-sdk_inc(../common/freertos/arch)
-sdk_inc(../common/freertos/feature)
-sdk_inc(inc)
-sdk_inc(inc/eth)
-sdk_inc(inc/app)
-sdk_inc(src)
-
 sdk_compile_definitions(-D__freertos_irq_stack_top=_stack)
 sdk_compile_definitions(-DCONFIG_FREERTOS=1)
 sdk_compile_definitions(-DUSE_NONVECTOR_MODE=1)
 sdk_compile_definitions(-DDISABLE_IRQ_PREEMPTIVE=1)
 
-sdk_app_src(../common/freertos/arch/sys_arch.c)
-sdk_app_src(../common/freertos/arch/ethernetif.c)
-sdk_app_src(../common/freertos/feature/common_lwip.c)
-sdk_app_src(src/eth/netconf.c)
+project(lwip_tcpecho_freertos_example)
+sdk_inc(../ports/freertos/single)
+sdk_inc(../ports/freertos/single/arch)
+sdk_inc(../common/single)
+sdk_inc(inc)
+sdk_inc(inc/app)
+
+sdk_app_src(../ports/freertos/single/arch/sys_arch.c)
+sdk_app_src(../ports/freertos/single/ethernetif.c)
+sdk_app_src(../common/single/common.c)
+sdk_app_src(../common/single/netconf.c)
 sdk_app_src(src/app/tcp_echo.c)
 sdk_app_src(src/lwip.c)
-generate_ses_project()
+generate_ide_projects()

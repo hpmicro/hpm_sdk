@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -8,7 +8,7 @@
 /*---------------------------------------------------------------------*
  * Includes
  *---------------------------------------------------------------------*/
-#include "common_lwip.h"
+#include "common.h"
 #include "netconf.h"
 #include "sys_arch.h"
 #include "ethernetif.h"
@@ -43,6 +43,7 @@ __RW uint8_t tx_buff[ENET_TX_BUFF_COUNT][ENET_TX_BUFF_SIZE]; /* Ethernet Transmi
 
 enet_desc_t desc;
 uint8_t mac[ENET_MAC];
+struct netif gnetif;
 
 /*---------------------------------------------------------------------*
  * Initialization
@@ -153,11 +154,11 @@ lwiperf_report(void *arg, enum lwiperf_report_type report_type,
     (int)report_type, ipaddr_ntoa(remote_addr), (int)remote_port, bytes_transferred, ms_duration, bandwidth_kbitpsec));
 }
 
-static bool select_mode(bool *server_mode, bool *tcp, enum lwiperf_client_type *client_type)
+static bool select_mode(struct netif *netif, bool *server_mode, bool *tcp, enum lwiperf_client_type *client_type)
 {
     char code;
 
-    if (!enet_get_link_status()) {
+    if (!netif_is_link_up(netif)) {
         return false;
     }
 
@@ -211,7 +212,7 @@ void *start_iperf(void)
     void *session;
     ip_addr_t remote_addr;
 
-    if (!select_mode(&server, &tcp, &client_type)) {
+    if (!select_mode(&gnetif, &server, &tcp, &client_type)) {
         return NULL;
     }
 
@@ -279,8 +280,7 @@ int main(void)
          /* Initialize the Lwip stack */
         lwip_init();
         board_timer_create(LWIP_APP_TIMER_INTERVAL, sys_timer_callback);
-        netif_config();
-        user_notification(&gnetif);
+        netif_config(&gnetif);
 
         while (1) {
             ethernetif_input(&gnetif);

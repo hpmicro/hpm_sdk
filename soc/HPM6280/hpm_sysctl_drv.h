@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022-2023 HPMicro
+ * Copyright (c) 2022-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -805,9 +805,31 @@ static inline bool sysctl_clock_any_is_busy(SYSCTL_Type *ptr)
  * @param[in] clock target clock
  * @return true if target clock is busy
  */
-static inline bool sysctl_clock_target_is_busy(SYSCTL_Type *ptr, uint32_t clock)
+static inline bool sysctl_clock_target_is_busy(SYSCTL_Type *ptr, clock_node_t clock)
 {
     return ptr->CLOCK[clock] & SYSCTL_CLOCK_LOC_BUSY_MASK;
+}
+
+/**
+ * @brief Preserve clock setting for certain node
+ *
+ * @param[in] ptr SYSCTL_Type base address
+ * @param[in] clock target clock
+ */
+static inline void sysctl_clock_preserve_settings(SYSCTL_Type *ptr, clock_node_t clock)
+{
+    ptr->CLOCK[clock] |= SYSCTL_CLOCK_PRESERVE_MASK;
+}
+
+/**
+ * @brief Unpreserve clock setting for certain node
+ *
+ * @param[in] ptr SYSCTL_Type base address
+ * @param[in] clock target clock
+ */
+static inline void sysctl_clock_unpreserve_settings(SYSCTL_Type *ptr, clock_node_t clock)
+{
+    ptr->CLOCK[clock] &= ~SYSCTL_CLOCK_PRESERVE_MASK;
 }
 
 /**
@@ -1407,7 +1429,7 @@ hpm_stat_t sysctl_enable_group_resource(SYSCTL_Type *ptr,
  * @param[in] resource target resource to be checked from group
  * @return enable true if resource enable, false if resource disable
  */
-bool sysctl_check_group_resource_enable(SYSCTL_Type *ptr, uint8_t group, sysctl_resource_t linkable_resource);
+bool sysctl_check_group_resource_enable(SYSCTL_Type *ptr, uint8_t group, sysctl_resource_t resource);
 
 /**
  * @brief Get group resource value

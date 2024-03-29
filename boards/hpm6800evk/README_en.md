@@ -2,7 +2,7 @@
 
 ## Overview
 
-The HPM6800 is a dual-core flashless MCU running 600Mhz. It has a 1MB continuous on-chip ram. Also, it provides various memory interfaces, including SDRAM, Quad SPI NOR Flash, SD/eMMC. It integrates rich audio and video interfaces, including LCD, pixel DMA, camera， and I2S audio interfaces.
+The HPM6800 is a single-core flashless MCU running 600Mhz. It has a 1MB continuous on-chip ram. Also, it provides various memory interfaces, including SDRAM, Quad SPI NOR Flash, SD/eMMC. It integrates rich audio and video interfaces, including LCD, pixel DMA, camera， and I2S audio interfaces.
 
  ![hpm6800evk](doc/hpm6800evk.png "hpm6800evk")
 
@@ -10,9 +10,9 @@ The HPM6800 is a dual-core flashless MCU running 600Mhz. It has a 1MB continuous
 
 - HPM6800 MCU (600MHz, 1MB SRAM)
 - Onboard Memory
-  - 256MB SDRAM
+  - 512MB SDRAM (DDR3L 16bits)
   - 16MB Quad SPI NOR Flash
-  - 8GB eMMC
+  - 16GB eMMC
 - Display & Camera
   - LCD connector
   - MIPI-DSI
@@ -72,12 +72,30 @@ Note: User should short VCCQ and 1.8V pin for eMMC testing
 
 - UART0 Pin:
 
-The UART0 pin leads to two positions:
+The UART0 use for debugger console:
 
-| Function | Pin  | Position2 |
+| Function | Pin  | Position |
 | -------- | ---- | ----------|
 | UART0.TX | PA00 | DEBUGUART0 |
 | UART0.RX | PA01 | DEBUGUART0 |
+
+- UART3 Pin:
+
+ The UART3 is used for some functional testing using UART, such as MICROROS_UART, USB_CDC_ACM_UART, MODBUS_RTU etc.
+
+| Function | Pin  | Position |
+| -------- | ---- | ----------|
+| UART3.TX | PE15 | P2[8]  |
+| UART3.RX | PE14 | P2[10] |
+
+- PUART Pin:
+
+ The PUART is used for low power mode testing, such as wakeup, etc.
+
+| Function | Pin  | Position |
+| -------- | ---- |  --------- |
+| PUART.TX | PY00 | P2[32]  |
+| PUART.RX | PY01 | P2[29]  |
 
 - SPI Pin：
 
@@ -141,3 +159,11 @@ The UART0 pin leads to two positions:
 | MCAN3.TXD  | PD15   | U25[1]    |  CAN.H J13[3] |
 | MCAN3.RXD  | PD14   | U25[4]    |  CAN.L J13[2] |
 | MCAN3.STBY | PD13   | U25[8]    |               |
+
+- Tamper Pin
+
+| Function | Pin    | Position |  Mode  |
+|----------|--------|--------|----------|
+| TAMP.04  | PZ04   | P2[35] | Active Mode |
+| TAMP.05  | PZ05   | P2[38] | Active Mode |
+| TAMP.06  | PZ06   | P2[37] | Passive Mode |

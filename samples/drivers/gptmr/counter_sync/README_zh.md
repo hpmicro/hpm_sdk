@@ -2,7 +2,7 @@
 
 ## 概述
 
-counter_sync示例工程演示了GPTMR同步计数器的功能. 
+counter_sync示例工程演示了GPTMR同步计数器的功能.
 
 ## 硬件设置
 

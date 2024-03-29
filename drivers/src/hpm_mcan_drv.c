@@ -644,6 +644,10 @@ void mcan_get_default_config(MCAN_Type *ptr, mcan_config_t *config)
     tsu_config->use_ext_timebase = false;
     tsu_config->capture_on_sof = false;
     tsu_config->enable_tsu = false;
+
+    config->timeout_cfg.enable_timeout_counter = false;
+    config->timeout_cfg.timeout_period = 0xFFFFU;
+    config->timeout_cfg.timeout_sel = mcan_timeout_continuous_operation;
 }
 
 static void mcan_config_rxfifo(MCAN_Type *ptr, uint32_t index, uint32_t reg_val)
@@ -1175,6 +1179,12 @@ hpm_stat_t mcan_init(MCAN_Type *ptr, mcan_config_t *config, uint32_t src_clk_fre
 
         /* Clear all Interrupt Flags */
         mcan_clear_interrupt_flags(ptr, ~0UL);
+
+        /* Configure timeout */
+        const mcan_timeout_config_t *timeout_cfg = &config->timeout_cfg;
+        ptr->TOCC = MCAN_TOCC_RP_SET(timeout_cfg->enable_timeout_counter) |
+                    MCAN_TOCC_TOP_SET(timeout_cfg->timeout_period) |
+                    MCAN_TOCC_TOS_SET(timeout_cfg->timeout_sel);
 
         ptr->CCCR &= ~MCAN_CCCR_INIT_MASK;
         while ((ptr->CCCR & MCAN_CCCR_INIT_MASK) != 0U) {

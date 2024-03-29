@@ -37,7 +37,9 @@ static void enet_ptp_init(void)
  *---------------------------------------------------------------------*/
 int main(void)
 {
+#if !defined(__PPS0_CONTROL_OUTPUT_ENABLE) || !__PPS0_CONTROL_OUTPUT_ENABLE
     enet_ptp_ts_system_t timestamp;
+#endif
 
     /* Initialize BSP */
     board_init();

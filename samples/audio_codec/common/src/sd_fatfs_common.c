@@ -18,7 +18,7 @@
  * Define
  *---------------------------------------------------------------------
  */
-#define FIL_SEARCH_NUM 20
+#define FIL_SEARCH_NUM 10
 #define FIL_SEARCH_LENGTH 128
 
 /*---------------------------------------------------------------------*
@@ -62,6 +62,7 @@ FRESULT sd_choose_music(char *target_filetype, char *filename)
     FILINFO fil;
     FRESULT rsl;
     char *ret;
+    char option;
 
     rsl = f_opendir(&dir, c_driver_num_buf);
     if (rsl != FR_OK) {
@@ -69,6 +70,8 @@ FRESULT sd_choose_music(char *target_filetype, char *filename)
     }
 
     printf("\r\n\r\n***********Music List**********\r\n");
+    printf("\r\n**Enter any non-numeric key to change pages or music number to choose music**\r\n");
+    printf("\r\n\r\n***********Page**********\r\n");
     s_search_file_cnt = 0;
     do {
         rsl = f_readdir(&dir, &fil);
@@ -87,18 +90,23 @@ FRESULT sd_choose_music(char *target_filetype, char *filename)
             s_search_file_cnt++;
         }
         if (s_search_file_cnt >= FIL_SEARCH_NUM) {
-            break;
+            option = getchar();
+            if (('0' <= option) && (option <= '9')) { /* choose music */
+                break;
+            } else { /* change page */
+                memset(s_search_file_buff, 0, sizeof(s_search_file_buff));
+                s_search_file_cnt = 0;
+                printf("\r\n\r\n***********Page**********\r\n");
+            }
         }
     } while (1);
 
     rsl = FR_NO_FILE;
-    printf("\r\n**Any non-numeric key to change pages**\r\n");
-    if (s_search_file_cnt != 0) {
-        printf("\r\nEnter Music Number:\r\n");
+    if ((s_search_file_cnt != FIL_SEARCH_NUM) && (s_search_file_cnt != 0)) { /* choose remaining music */
+        option = getchar();
     }
-    char option = getchar();
-    printf("%c\r\n\r\n", option);
     if (('0' <= option) && (option <= '9')) {
+        printf("%c\r\n\r\n", option);
         strncpy(filename, (char *)s_search_file_buff[option - '0'], FIL_SEARCH_LENGTH);
         rsl = FR_OK;
     }

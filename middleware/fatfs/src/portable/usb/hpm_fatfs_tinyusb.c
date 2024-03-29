@@ -7,25 +7,26 @@
 #include "tusb.h"
 #include "hpm_fatfs_usb.h"
 
-static DSTATUS usb_disk_stat[CFG_TUSB_HOST_DEVICE_MAX];
+static DSTATUS usb_disk_stat[CFG_TUH_DEVICE_MAX];
+static volatile bool usb_xfer_busy[CFG_TUH_DEVICE_MAX];
 
-static bool usb_disk_wait_for_complete(uint8_t usb_addr)
+static bool usb_disk_io_complete_cb(uint8_t dev_addr, tuh_msc_complete_data_t const *cb_data)
 {
-#if CFG_TUSB_OS != OPT_OS_NONE
-    int32_t retry_cnt = 200;
-#else
-    int32_t retry_cnt = 5000000;
-#endif
+    (void)dev_addr;
+    *(bool *)cb_data->user_arg = false;
 
-    while (!tuh_msc_idle(usb_addr) && retry_cnt--) {
-#if CFG_TUSB_OS != OPT_OS_NONE
-        osal_task_delay(10);
-#else
+    return true;
+}
+
+static void usb_wait_for_disk_io(BYTE pdrv)
+{
+    while (usb_xfer_busy[pdrv]) {
+#if CFG_TUSB_OS == OPT_OS_NONE
         tuh_task();
+#else
+        osal_task_delay(10);
 #endif
     }
-
-    return retry_cnt > 0 ? true : false;
 }
 
 DSTATUS usb_disk_status(BYTE pdrv)
@@ -33,7 +34,7 @@ DSTATUS usb_disk_status(BYTE pdrv)
     uint8_t usb_addr = pdrv + 1;
 
     /* set the default status as STA_NOINIT */
-    memset(usb_disk_stat, STA_NOINIT, CFG_TUSB_HOST_DEVICE_MAX);
+    memset(usb_disk_stat, STA_NOINIT, CFG_TUH_DEVICE_MAX);
 
     if (tuh_msc_mounted(usb_addr) == true) {
         usb_disk_stat[pdrv] &= ~STA_NOINIT;
@@ -55,7 +56,7 @@ DSTATUS usb_disk_initialize(BYTE pdrv)
     uint8_t usb_addr = pdrv + 1;
 
     /* set the default status as STA_NOINIT */
-    memset(usb_disk_stat, STA_NOINIT, CFG_TUSB_HOST_DEVICE_MAX);
+    memset(usb_disk_stat, STA_NOINIT, CFG_TUH_DEVICE_MAX);
 
     if (tuh_msc_mounted(usb_addr) == true) {
         usb_disk_stat[pdrv] &= ~STA_NOINIT;
@@ -71,10 +72,11 @@ DRESULT usb_disk_read(BYTE pdrv, BYTE *buff, DWORD sector, BYTE count)
     uint8_t usb_addr = pdrv + 1;
     bool result;
 
-    result = tuh_msc_read10(usb_addr, LUN_USB, buff, sector, count, NULL);
+    usb_xfer_busy[pdrv] = true;
+    result = tuh_msc_read10(usb_addr, LUN_USB, buff, sector, count, usb_disk_io_complete_cb, (uintptr_t)&usb_xfer_busy[pdrv]);
 
     if (result) {
-        result = usb_disk_wait_for_complete(usb_addr);
+        usb_wait_for_disk_io(pdrv);
     }
 
     return result ? RES_OK : RES_ERROR;
@@ -85,10 +87,11 @@ DRESULT usb_disk_write(BYTE pdrv, const BYTE *buff, DWORD sector, BYTE count)
     uint8_t usb_addr = pdrv + 1;
     bool result;
 
-    result = tuh_msc_write10(usb_addr, LUN_USB, buff, sector, count, NULL);
+    usb_xfer_busy[pdrv] = true;
+    result = tuh_msc_write10(usb_addr, LUN_USB, buff, sector, count, usb_disk_io_complete_cb, (uintptr_t)&usb_xfer_busy[pdrv]);
 
     if (result) {
-        result = usb_disk_wait_for_complete(usb_addr);
+        usb_wait_for_disk_io(pdrv);
     }
 
     return result ? RES_OK : RES_ERROR;

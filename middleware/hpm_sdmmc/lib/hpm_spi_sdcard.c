@@ -43,7 +43,7 @@ hpm_stat_t sdcard_spi_init(sdcard_spi_interface_t *spi_io)
     assert(spi_io);
     hpm_stat_t sta = status_success;
     uint8_t buffer[4];
-    uint32_t timeout = WAIT_IDLE_TIMEOUT;
+    volatile uint32_t timeout = WAIT_IDLE_TIMEOUT;
     uint8_t response = 0;
     sdcard_init_status = false;
     g_spi_dev = spi_io;
@@ -54,7 +54,10 @@ hpm_stat_t sdcard_spi_init(sdcard_spi_interface_t *spi_io)
     }
 
     g_spi_dev->cs_relese();
-    g_spi_dev->set_spi_speed(SPI_SPEED_INIT_HZ);
+    sta = g_spi_dev->set_spi_speed(SPI_SPEED_INIT_HZ);
+    if (sta != status_success) {
+        return sta;
+    }
 
     /* Start send 74 clocks at least, it means send 10 byte at least*/
     for (uint32_t i = 0; i < 20; i++) {

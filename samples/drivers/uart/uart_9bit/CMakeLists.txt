@@ -8,4 +8,4 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(uart_9bit)
 
 sdk_app_src(src/uart_9bit.c)
-generate_ses_project()
+generate_ide_projects()

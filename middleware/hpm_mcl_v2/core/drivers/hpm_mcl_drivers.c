@@ -70,3 +70,137 @@ hpm_mcl_stat_t hpm_mcl_enable_all_drivers(mcl_drivers_t *drivers)
 
     return mcl_success;
 }
+
+hpm_mcl_stat_t hpm_mcl_disable_drivers(mcl_drivers_t *drivers, mcl_drivers_channel_t chn)
+{
+    MCL_ASSERT_EXEC_CODE_AND_RETURN(drivers->cfg->callback.disable_drivers(chn) == mcl_success,
+                                drivers->status = drivers_status_fail,
+                                mcl_fail);
+
+    return mcl_success;
+}
+
+hpm_mcl_stat_t hpm_mcl_enable_drivers(mcl_drivers_t *drivers, mcl_drivers_channel_t chn)
+{
+    MCL_ASSERT_EXEC_CODE_AND_RETURN(drivers->cfg->callback.enable_drivers(chn) == mcl_success,
+                                drivers->status = drivers_status_fail,
+                                mcl_fail);
+
+    return mcl_success;
+}
+
+hpm_mcl_stat_t hpm_mcl_drivers_block_update(mcl_drivers_t *drivers, mcl_motor_dir_t dir, uint8_t sector)
+{
+    if (dir == motor_dir_back) {
+        switch (sector) {
+        case 2:
+            hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_ah);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_al);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_bh);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_bl);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_ch);
+            hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_cl);
+            break;
+        case 3:
+            hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_ah);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_al);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_bh);
+            hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_bl);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_ch);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_cl);
+            break;
+        case 4:
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_ah);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_al);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_bh);
+            hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_bl);
+            hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_ch);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_cl);
+            break;
+        case 5:
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_ah);
+            hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_al);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_bh);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_bl);
+            hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_ch);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_cl);
+            break;
+        case 6:
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_ah);
+            hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_al);
+            hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_bh);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_bl);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_ch);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_cl);
+            break;
+        case 1:
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_ah);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_al);
+            hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_bh);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_bl);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_ch);
+            hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_cl);
+            break;
+
+        default:
+            break;
+        }
+    } else if (dir == motor_dir_forward) {
+        switch (sector) {
+        case 2:
+            hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_al);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_ah);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_bl);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_bh);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_cl);
+            hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_ch);
+            break;
+        case 3:
+            hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_al);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_ah);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_bl);
+            hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_bh);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_cl);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_ch);
+            break;
+        case 4:
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_ah);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_al);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_bl);
+            hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_bh);
+            hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_cl);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_ch);
+            break;
+        case 5:
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_al);
+            hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_ah);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_bh);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_bl);
+            hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_cl);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_ch);
+            break;
+        case 6:
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_al);
+            hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_ah);
+            hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_bl);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_bh);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_ch);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_cl);
+            break;
+        case 1:
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_ah);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_al);
+            hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_bl);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_bh);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_cl);
+            hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_ch);
+            break;
+
+        default:
+            break;
+        }
+    } else {
+        MCL_ASSERT(false, mcl_invalid_argument);
+    }
+    return mcl_success;
+}

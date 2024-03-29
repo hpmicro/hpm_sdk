@@ -5,7 +5,9 @@
  *
  */
 
+#ifndef __ICCRISCV__
 #include <sys/stat.h>
+#endif
 #include "hpm_debug_console.h"
 #include "hpm_uart_drv.h"
 
@@ -146,9 +148,26 @@ int _read(int file, char *s, int size)
     return 1;
 }
 
+#ifndef __ICCRISCV__
 int _fstat(int file, struct stat *s)
 {
     (void) file;
     s->st_mode = S_IFCHR;
     return 0;
 }
+#else
+
+#ifndef _DLIB_FILE_DESCRIPTOR
+#define _DLIB_FILE_DESCRIPTOR 0
+#endif
+
+int __write(int file, char *data, int size)
+{
+    return _write(file, data, size);
+}
+
+int __read(int file, char *s, int size)
+{
+    return _read(file, s, size);
+}
+#endif

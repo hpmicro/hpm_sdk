@@ -17,6 +17,9 @@
 
 ```console
 Start rndis host ping task...
+[I/USB] EHCI HCIVERSION:0100
+[I/USB] EHCI HCSPARAMS:010011
+[I/USB] EHCI HCCPARAMS:0006
 [I/USB] New high-speed device on Hub 1, Port 1 connected
 [I/USB] New device found,idVendor:19d1,idProduct:0001,bcdDevice:0200
 [I/USB] The device has 8 interfaces
@@ -58,10 +61,14 @@ Start rndis host ping task...
 [E/USB] do not support Class:0x0a,Subclass:0x00,Protocl:0x00
 [E/USB] do not support Class:0x02,Subclass:0x02,Protocl:0x01
 [E/USB] do not support Class:0x0a,Subclass:0x00,Protocl:0x00
-oading cdc_data clinkup!!!!!!
- DHCP state       : SELECTING
- DHCP state       : REQUESTING
- DHCP state       : BOUND
+
+*********************************************************************************
+
+input ping the IP or URL address and press the enter key to end
+
+if want to terminate midway, please press the esc key
+
+*********************************************************************************
 
  IPv4 Address     : 192.168.10.2
  IPv4 Subnet mask : 255.255.255.0
@@ -72,7 +79,9 @@ oading cdc_data clinkup!!!!!!
 - when the EC20 module is connected, the following information is printed, indicating that the EC20 initialization is successful and the IP is assigned.
 
 ```console
-
+[I/USB] EHCI HCIVERSION:0100
+[I/USB] EHCI HCSPARAMS:010011
+[I/USB] EHCI HCCPARAMS:0006
 [I/USB] New high-speed device on Hub 1, Port 1 connected
 [I/USB] New device found,idVendor:2c7c,idProduct:0125,bcdDevice:0318
 [I/USB] The device has 6 interfaces
@@ -91,19 +100,7 @@ oading cdc_data clinkup!!!!!!
 [I/USB] Set CDC ECM packet filter:000c
 [I/USB] Register CDC ECM Class:/dev/cdc_ether
 [E/USB] do not support Class:0x0a,Subclass:0x00,Protocl:0x00
- DHCP state       : SELECTING
- DHCP state       : BOUND
 
- IPv4 Address     : 192.168.225.27
- IPv4 Subnet mask : 255.255.255.0
- IPv4 Gateway     : 192.168.225.1
-
-```
-
-- after that, the following logs will be printed, need to enter the IP addrees or domain name to be ping, and press enter key when done
-- for example: www.baidu.com
-
-```console
 *********************************************************************************
 
 input ping the IP or URL address and press the enter key to end
@@ -111,6 +108,18 @@ input ping the IP or URL address and press the enter key to end
 if want to terminate midway, please press the esc key
 
 *********************************************************************************
+
+ IPv4 Address     : 192.168.225.27
+ IPv4 Subnet mask : 255.255.255.0
+ IPv4 Gateway     : 192.168.225.1
+
+```
+
+- after that, need to enter the IP addrees or domain name to be ping, and press enter key when done
+- for example: www.baidu.com
+
+```console
+
 Pinging www.baidu.com [120.232.145.144] ..................
 from 120.232.145.144 bytes=60 icmp_seq=0 ttl=52 time=53 ms
 from 120.232.145.144 bytes=60 icmp_seq=1 ttl=52 time=77 ms

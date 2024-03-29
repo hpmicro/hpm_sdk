@@ -1,4 +1,4 @@
-# GPTMR generate PWM 
+# GPTMR generate PWM
 
 ## Overview
 

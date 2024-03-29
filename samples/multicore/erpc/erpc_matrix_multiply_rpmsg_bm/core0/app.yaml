@@ -4,6 +4,7 @@ excluded_targets:
 
 linked_project:
   project_name: multicore/erpc/erpc_matrix_multiply_rpmsg_bm/core1
+  project_path: ../core1
   build_type: sec_core_img
 
 debug:

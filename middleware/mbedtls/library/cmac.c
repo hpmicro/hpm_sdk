@@ -486,7 +486,7 @@ static const unsigned char test_message[] = {
 
 #if defined(MBEDTLS_AES_C)
 /* Truncation point of message for AES CMAC tests  */
-static const  unsigned int  aes_message_lengths[NB_CMAC_TESTS_PER_KEY] = {
+static const unsigned int  aes_message_lengths[NB_CMAC_TESTS_PER_KEY] = {
     /* Mlen */
     0,
     16,

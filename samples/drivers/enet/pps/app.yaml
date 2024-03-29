@@ -1,4 +1,3 @@
 dependency:
   - enet
-  - ptp
-  - enet_pps_pinout
+  - board_enet_pps_pin

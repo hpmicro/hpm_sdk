@@ -3,3 +3,4 @@ excluded_targets:
   - release
 dependency:
   - butn
+  - board_wakeup_button

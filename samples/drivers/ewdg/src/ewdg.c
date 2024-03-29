@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -44,7 +44,7 @@ void ewdg_interrupt_test(void);
 
 void ewdg_isr(void);
 
-SDK_DECLARE_EXT_ISR_M(IRQn_WDG0, ewdg_isr);
+SDK_DECLARE_EXT_ISR_M(IRQn_EWDG0, ewdg_isr);
 
 /***********************************************************************************
  *
@@ -126,7 +126,7 @@ void show_menu(void)
 }
 
 /**
- * This function initialize the EWDG Reset timeout to 101us, and it services the EWDG before EWDG timeout
+ * This function initialize the EWDG Reset timeout to 101ms, and it services the EWDG before EWDG timeout
  */
 void ewdg_service_test(void)
 {
@@ -135,10 +135,10 @@ void ewdg_service_test(void)
     hpm_stat_t status;
 
     /**
-     * Case 1: Use the high-level timeout setting (provide the timeout in terms of microseconds
+     * Case 1: Use the high-level timeout setting (provide the timeout in terms of microseconds)
      */
     printf("Case 1: Use the high-level timeout setting\n");
-    ewdg_get_default_config(HPM_WDG0, &config);
+    ewdg_get_default_config(HPM_EWDG0, &config);
     /* Enable EWDG */
     config.enable_watchdog = true;
     config.ctrl_config.use_lowlevel_timeout = false;
@@ -152,28 +152,28 @@ void ewdg_service_test(void)
     config.ctrl_config.timeout_reset_us = 101UL * 1000UL;
 
     /* Initialize the EWDG */
-    status = ewdg_init(HPM_WDG0, &config);
+    status = ewdg_init(HPM_EWDG0, &config);
     if (status != status_success) {
         printf(" EWDG initialization failed, error_code=%d\n", status);
     }
 
     board_delay_ms(100UL);
     /* Service EWDG */
-    ewdg_refresh(HPM_WDG0);
+    ewdg_refresh(HPM_EWDG0);
 
     /* Disable EWDG */
-    ewdg_disable(HPM_WDG0);
+    ewdg_disable(HPM_EWDG0);
 
-    uint32_t actual_timeout_us = ewdg_convert_timeout_ticks_to_timeout_us(HPM_WDG0, ewdg_src_clk_freq,
-                                                                          ewdg_get_timeout_reset_ticks(HPM_WDG0));
+    uint32_t actual_timeout_us = ewdg_convert_timeout_ticks_to_timeout_us(HPM_EWDG0, ewdg_src_clk_freq,
+                                                                          ewdg_get_timeout_reset_ticks(HPM_EWDG0));
     printf("Actual EWDG reset timeout is %dus\n", actual_timeout_us);
 
 
     /**
-     * Case 2: Use the low-level timeout setting (provide the timeout in terms of counter ticks
+     * Case 2: Use the low-level timeout setting (provide the timeout in terms of counter ticks)
      */
     printf("Case 2: Use the low-level timeout setting\n");
-    ewdg_get_default_config(HPM_WDG0, &config);
+    ewdg_get_default_config(HPM_EWDG0, &config);
     /* Enable EWDG */
     config.enable_watchdog = true;
     config.ctrl_config.use_lowlevel_timeout = true;
@@ -207,20 +207,20 @@ void ewdg_service_test(void)
     config.ctrl_config.clock_div_by_power_of_2 = cnt_clk_div_by_pwr_2;
 
     /* Initialize the EWDG */
-    status = ewdg_init(HPM_WDG0, &config);
+    status = ewdg_init(HPM_EWDG0, &config);
     if (status != status_success) {
         printf(" EWDG initialization failed, error_code=%d\n", status);
     }
 
     board_delay_ms(100UL);
     /* Service EWDG */
-    ewdg_refresh(HPM_WDG0);
+    ewdg_refresh(HPM_EWDG0);
 
     /* Disable EWDG */
-    ewdg_disable(HPM_WDG0);
+    ewdg_disable(HPM_EWDG0);
 
-    actual_timeout_us = ewdg_convert_timeout_ticks_to_timeout_us(HPM_WDG0, ewdg_src_clk_freq,
-                                                                 ewdg_get_timeout_reset_ticks(HPM_WDG0));
+    actual_timeout_us = ewdg_convert_timeout_ticks_to_timeout_us(HPM_EWDG0, ewdg_src_clk_freq,
+                                                                 ewdg_get_timeout_reset_ticks(HPM_EWDG0));
     printf("Actual EWDG reset timeout is %dus\n", actual_timeout_us);
 
 
@@ -228,7 +228,7 @@ void ewdg_service_test(void)
      * Case 3: Use Configuration Protection, Refresh Period, Refresh lock, etc
      */
     printf("Case 3: Use complicated EWDG protection and refresh unlock method\n");
-    ewdg_get_default_config(HPM_WDG0, &config);
+    ewdg_get_default_config(HPM_EWDG0, &config);
 
     config.enable_watchdog = true;/* Enable EWDG */
     config.ctrl_config.use_lowlevel_timeout = false;
@@ -246,7 +246,7 @@ void ewdg_service_test(void)
     config.ctrl_config.timeout_reset_us = 101UL * 1000UL;
 
     /* Initialize the EWDG */
-    status = ewdg_init(HPM_WDG0, &config);
+    status = ewdg_init(HPM_EWDG0, &config);
     if (status != status_success) {
         printf(" EWDG initialization failed, error_code=%d\n", status);
     }
@@ -255,10 +255,10 @@ void ewdg_service_test(void)
     while (service_cnt++ < 10) {
         board_delay_ms(90UL);
         /* Service EWDG */
-        ewdg_refresh(HPM_WDG0);
+        ewdg_refresh(HPM_EWDG0);
     }
     /* Disable EWDG */
-    ewdg_disable(HPM_WDG0);
+    ewdg_disable(HPM_EWDG0);
 
 
     printf("EWDG Serving test PASSED!\n");
@@ -271,7 +271,7 @@ void ewdg_service_test(void)
 void ewdg_reset_test(void)
 {
     ewdg_config_t config;
-    ewdg_get_default_config(HPM_WDG0, &config);
+    ewdg_get_default_config(HPM_EWDG0, &config);
 
     config.enable_watchdog = true;
     config.int_rst_config.enable_timeout_reset = true;
@@ -284,7 +284,7 @@ void ewdg_reset_test(void)
     config.ctrl_config.timeout_reset_us = 1000UL * 1000;
 
     /* Initialize the WDG */
-    hpm_stat_t status = ewdg_init(HPM_WDG0, &config);
+    hpm_stat_t status = ewdg_init(HPM_EWDG0, &config);
     if (status != status_success) {
         printf(" EWDG initialization failed, error_code=%d\n", status);
     }
@@ -295,7 +295,7 @@ void ewdg_reset_test(void)
 void ewdg_window_test(void)
 {
     ewdg_config_t config;
-    ewdg_get_default_config(HPM_WDG0, &config);
+    ewdg_get_default_config(HPM_EWDG0, &config);
 
     /* Enable EWDG */
     config.enable_watchdog = true;
@@ -326,7 +326,7 @@ void ewdg_window_test(void)
     config.ctrl_config.timeout_reset_us = 100UL * 1000UL;
 
     /* Initialize the WDG */
-    hpm_stat_t status = ewdg_init(HPM_WDG0, &config);
+    hpm_stat_t status = ewdg_init(HPM_EWDG0, &config);
     if (status != status_success) {
         printf(" EWDG initialization failed, error_code=%d\n", status);
     }
@@ -335,13 +335,13 @@ void ewdg_window_test(void)
     while (service_cnt++ < 10) {
         board_delay_ms(100UL);
         /* Service EWDG */
-        ewdg_refresh(HPM_WDG0);
+        ewdg_refresh(HPM_EWDG0);
     }
 
     printf("EWDG Window test in expected window PASSED!\n");
 
     printf("Test servicing EWDG in invalid window, EWDG will trigger reset\n");
-    ewdg_refresh(HPM_WDG0);
+    ewdg_refresh(HPM_EWDG0);
 }
 
 void ewdg_interrupt_test(void)
@@ -349,7 +349,7 @@ void ewdg_interrupt_test(void)
     uint32_t ewdg_src_clk_freq = EWDG_CNT_CLK_FREQ;
     ewdg_config_t config;
     hpm_stat_t status;
-    ewdg_get_default_config(HPM_WDG0, &config);
+    ewdg_get_default_config(HPM_EWDG0, &config);
     /* Enable EWDG */
     config.enable_watchdog = true;
     config.ctrl_config.use_lowlevel_timeout = false;
@@ -368,34 +368,34 @@ void ewdg_interrupt_test(void)
     config.ctrl_config.timeout_interrupt_us = 100UL * 1000UL;
 
     /* Initialize the EWDG */
-    status = ewdg_init(HPM_WDG0, &config);
+    status = ewdg_init(HPM_EWDG0, &config);
     if (status != status_success) {
         printf(" EWDG initialization failed, error_code=%d\n", status);
         return;
     }
 
 #if defined(EWDG_TIMEOUT_INTERRUPT_REQUIRE_EDGE_TRIGGER) && (EWDG_TIMEOUT_INTERRUPT_REQUIRE_EDGE_TRIGGER == 1)
-    __plic_enable_irq_edge_trigger(HPM_PLIC_BASE, IRQn_WDG0);
+    __plic_enable_irq_edge_trigger(HPM_PLIC_BASE, IRQn_EWDG0);
 #endif
-    intc_m_enable_irq_with_priority(IRQn_WDG0, 1);
+    intc_m_enable_irq_with_priority(IRQn_EWDG0, 1);
 
     while (!has_interrupt) {
     }
     /* Service EWDG */
-    ewdg_refresh(HPM_WDG0);
+    ewdg_refresh(HPM_EWDG0);
 
     /* Disable EWDG */
-    ewdg_disable(HPM_WDG0);
+    ewdg_disable(HPM_EWDG0);
 
     printf("EWDG timeout interrupt test passed\n");
 }
 
 void ewdg_isr(void)
 {
-    uint32_t ewdg_stat = ewdg_get_status_flags(HPM_WDG0);
+    uint32_t ewdg_stat = ewdg_get_status_flags(HPM_EWDG0);
     has_interrupt = true;
     if ((ewdg_stat & EWDG_INT_TIMEOUT) != 0) {
-        ewdg_refresh(HPM_WDG0);
+        ewdg_refresh(HPM_EWDG0);
     }
-    ewdg_clear_status_flags(HPM_WDG0, ewdg_stat);
+    ewdg_clear_status_flags(HPM_EWDG0, ewdg_stat);
 }

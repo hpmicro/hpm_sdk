@@ -96,15 +96,4 @@ typedef struct
     BufQueue      generalQ;
 } NetPath;
 
-/* define compiler specific symbols */
-#if defined   ( __CC_ARM   )
-typedef long ssize_t;
-#elif defined ( __ICCARM__ )
-typedef long ssize_t;
-#elif defined (  __GNUC__  )
-
-#elif defined   (  __TASKING__  )
-typedef long ssize_t;
-#endif
-
 #endif /*DATATYPES_DEP_H_*/

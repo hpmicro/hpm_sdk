@@ -154,7 +154,6 @@ void init_cam(void)
     cam_config.hsync_active_low  = false;
     cam_config.vsync_active_low  = false;
     cam_config.buffer1 = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)buffer);
-    cam_config.enable_buffer2 = true;
     cam_config.buffer2 = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)buffer);
     cam_config.color_format = cam_get_pixel_format(PIXEL_FORMAT);
     cam_config.sensor_bitwidth = CAM_SENSOR_BITWIDTH_24BITS; /* For MIPI-CSI2 */

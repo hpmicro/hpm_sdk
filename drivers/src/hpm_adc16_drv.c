@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -206,6 +206,11 @@ hpm_stat_t adc16_init_channel(ADC16_Type *ptr, adc16_channel_config_t *config)
 {
     /* Check the specified channel number */
     if (ADC16_IS_CHANNEL_INVALID(config->ch)) {
+        return status_invalid_argument;
+    }
+
+    /* Check sample cycle */
+    if (ADC16_IS_CHANNEL_SAMPLE_CYCLE_INVALID(config->sample_cycle)) {
         return status_invalid_argument;
     }
 

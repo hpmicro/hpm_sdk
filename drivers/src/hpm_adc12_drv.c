@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -39,10 +39,11 @@ static hpm_stat_t adc12_do_calibration(ADC12_Type *ptr, adc12_sample_signal_t di
     }
 
     /*Set diff_sel temporarily */
-    ptr->SAMPLE_CFG[0] = ADC12_SAMPLE_CFG_DIFF_SEL_SET(diff_sel);
+    ptr->SAMPLE_CFG[0] &= ~ADC12_SAMPLE_CFG_DIFF_SEL_MASK;
+    ptr->SAMPLE_CFG[0] |= ADC12_SAMPLE_CFG_DIFF_SEL_SET(diff_sel);
 
     /* Set resetcal and resetadc */
-    ptr->ANA_CTRL0 |= ADC12_ANA_CTRL0_RESETCAL_MASK;
+    ptr->ANA_CTRL0 |= ADC12_ANA_CTRL0_RESETCAL_MASK | ADC12_ANA_CTRL0_RESETADC_MASK;
 
     /* Clear resetcal and resetadc */
     ptr->ANA_CTRL0 &= ~(ADC12_ANA_CTRL0_RESETCAL_MASK | ADC12_ANA_CTRL0_RESETADC_MASK);
@@ -169,6 +170,11 @@ hpm_stat_t adc12_init_channel(ADC12_Type *ptr, adc12_channel_config_t *config)
 {
     /* Check the specified channel number */
     if (ADC12_IS_CHANNEL_INVALID(config->ch)) {
+        return status_invalid_argument;
+    }
+
+    /* Check sample cycle */
+    if (ADC12_IS_CHANNEL_SAMPLE_CYCLE_INVALID(config->sample_cycle)) {
         return status_invalid_argument;
     }
 

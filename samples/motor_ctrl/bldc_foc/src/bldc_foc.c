@@ -28,7 +28,7 @@
 #define CURRENT_SET_TIME_MS    (200)
 #define SPEED_MAX              (40)
 #define PWM_FREQUENCY               (20000)
-#define PWM_RELOAD                  (motor_clock_hz/PWM_FREQUENCY)
+#define PWM_RELOAD                  ((motor_clock_hz/PWM_FREQUENCY) - 1)
 #define MOTOR0_BLDCPWM              BOARD_BLDCPWM
 #define PWM_DEAD_TICK   (50)
 #define MOTOR0_CURRENT_LOOP_BANDWIDTH (500)
@@ -178,20 +178,20 @@ void motor_init(void)
     motor0.cfg.control.currentd_pid_cfg.cfg.output_min = -15;
     motor0.cfg.control.currentd_pid_cfg.cfg.kp = motor0.cfg.mcl.physical.motor.ls *
                                                 (powf(MOTOR0_CURRENT_LOOP_BANDWIDTH * 2 * MCL_PI, 2)) *
-                                                motor0.cfg.mcl.physical.time.current_loop_ts * 1.5;
+                                                motor0.cfg.mcl.physical.time.current_loop_ts * 1.5f;
     motor0.cfg.control.currentd_pid_cfg.cfg.ki = motor0.cfg.mcl.physical.motor.res *
                                                 (powf(MOTOR0_CURRENT_LOOP_BANDWIDTH * 2 * MCL_PI, 2)) *
-                                                motor0.cfg.mcl.physical.time.current_loop_ts * 1.5;
+                                                motor0.cfg.mcl.physical.time.current_loop_ts * 1.5f;
     motor0.cfg.control.currentq_pid_cfg.cfg.integral_max = 100;
     motor0.cfg.control.currentq_pid_cfg.cfg.integral_min = -100;
     motor0.cfg.control.currentq_pid_cfg.cfg.output_max = 15;
     motor0.cfg.control.currentq_pid_cfg.cfg.output_min = -15;
     motor0.cfg.control.currentq_pid_cfg.cfg.kp = motor0.cfg.mcl.physical.motor.ls *
                                                 (powf(MOTOR0_CURRENT_LOOP_BANDWIDTH * 2 * MCL_PI, 2)) *
-                                                motor0.cfg.mcl.physical.time.current_loop_ts * 1.5;
+                                                motor0.cfg.mcl.physical.time.current_loop_ts * 1.5f;
     motor0.cfg.control.currentq_pid_cfg.cfg.ki = motor0.cfg.mcl.physical.motor.res *
                                                 (powf(MOTOR0_CURRENT_LOOP_BANDWIDTH * 2 * MCL_PI, 2)) *
-                                                motor0.cfg.mcl.physical.time.current_loop_ts * 1.5;
+                                                motor0.cfg.mcl.physical.time.current_loop_ts * 1.5f;
 
     motor0.cfg.control.speed_pid_cfg.cfg.integral_max = 100;
     motor0.cfg.control.speed_pid_cfg.cfg.integral_min = -100;
@@ -252,16 +252,16 @@ void motor0_speed_loop_para_init(void)
 
     motor0.cfg.control.currentd_pid_cfg.cfg.kp = motor0.cfg.mcl.physical.motor.ls *
                                                 (powf(MOTOR0_CURRENT_LOOP_BANDWIDTH / 100 * 2 * MCL_PI, 2)) *
-                                                motor0.cfg.mcl.physical.time.current_loop_ts * 1.5;
+                                                motor0.cfg.mcl.physical.time.current_loop_ts * 1.5f;
     motor0.cfg.control.currentd_pid_cfg.cfg.ki = motor0.cfg.mcl.physical.motor.res *
                                                 (powf(MOTOR0_CURRENT_LOOP_BANDWIDTH / 100 * 2 * MCL_PI, 2)) *
-                                                motor0.cfg.mcl.physical.time.current_loop_ts * 1.5;
+                                                motor0.cfg.mcl.physical.time.current_loop_ts * 1.5f;
     motor0.cfg.control.currentq_pid_cfg.cfg.kp = motor0.cfg.mcl.physical.motor.ls *
                                                 (powf(MOTOR0_CURRENT_LOOP_BANDWIDTH / 100 * 2 * MCL_PI, 2)) *
-                                                motor0.cfg.mcl.physical.time.current_loop_ts * 1.5;
+                                                motor0.cfg.mcl.physical.time.current_loop_ts * 1.5f;
     motor0.cfg.control.currentq_pid_cfg.cfg.ki = motor0.cfg.mcl.physical.motor.res *
                                                 (powf(MOTOR0_CURRENT_LOOP_BANDWIDTH / 100 * 2 * MCL_PI, 2)) *
-                                                motor0.cfg.mcl.physical.time.current_loop_ts * 1.5;
+                                                motor0.cfg.mcl.physical.time.current_loop_ts * 1.5f;
 }
 
 hpm_mcl_stat_t pwm_duty_set(mcl_drivers_channel_t chn, float duty)
@@ -270,7 +270,7 @@ hpm_mcl_stat_t pwm_duty_set(mcl_drivers_channel_t chn, float duty)
     uint32_t pwm_cmp_half, pwm_reload_half;
     uint32_t index0, index1;
 
-    pwm_reload = PWM_RELOAD * 0.98;
+    pwm_reload = (int32_t)(PWM_RELOAD * 0.98f);
     pwm_cmp_half = (uint32_t)(duty * pwm_reload) >> 1;
     pwm_reload_half =  PWM_RELOAD >> 1;
     switch (chn) {
@@ -733,7 +733,7 @@ int main(void)
     }
     if (user_mode == 1) {
         motor0_speed_loop_para_init();
-        printf("\r\nSpeed mode, motor run, speed is: %f.\r\nInput speed:\r\n", speed);
+        printf("\r\nSpeed mode, motor run, speed is: %f.\r\nInput speed:\r\n", (double)speed);
         while (1) {
             memset(input_data, 0, sizeof(input_data));
             input_end = 1;
@@ -764,7 +764,7 @@ int main(void)
                 }
                 user_speed.value = speed * MCL_PI * 2;
                 hpm_mcl_loop_set_speed(&motor0.loop, user_speed);
-                printf("\r\nSpeed mode, motor run, speed is: %f.\r\nInput speed:\r\n", speed);
+                printf("\r\nSpeed mode, motor run, speed is: %f.\r\nInput speed:\r\n", (double)speed);
             }
         }
     } else if (user_mode == 0) {

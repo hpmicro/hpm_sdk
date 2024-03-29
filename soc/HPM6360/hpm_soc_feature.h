@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,6 +9,7 @@
 #define HPM_SOC_FEATURE_H
 
 #include "hpm_soc.h"
+#include "hpm_soc_ip_feature.h"
 
 /*
  * I2C Section
@@ -87,8 +88,6 @@
 
 #define USB_SOC_DCD_QTD_NEXT_INVALID               (1U)
 #define USB_SOC_DCD_QHD_BUFFER_COUNT               (5U)
-#define USB_SOC_DCD_QTD_ALIGNMENT                  (32U)
-#define USB_SOC_DCD_QHD_ALIGNMENT                  (64U)
 #define USB_SOC_DCD_MAX_ENDPOINT_COUNT             (8U)
 #ifndef USB_SOC_DCD_QTD_COUNT_EACH_ENDPOINT
 #define USB_SOC_DCD_QTD_COUNT_EACH_ENDPOINT        (8U)
@@ -97,11 +96,7 @@
 #define USB_SOS_DCD_MAX_QHD_COUNT                  (USB_SOC_DCD_MAX_ENDPOINT_COUNT * 2U)
 #define USB_SOC_DCD_DATA_RAM_ADDRESS_ALIGNMENT     (2048U)
 
-#define USB_SOC_HCD_QTD_BUFFER_COUNT               (5U)
-#define USB_SOC_HCD_QTD_ALIGNMENT                  (32U)
-#define USB_SOC_HCD_QHD_ALIGNMENT                  (32U)
 #define USB_SOC_HCD_FRAMELIST_MAX_ELEMENTS         (1024U)
-#define USB_SOC_HCD_DATA_RAM_ADDRESS_ALIGNMENT     (4096U)
 
 /*
 * ENET Section
@@ -200,6 +195,9 @@
 /*
  * OTP Section
  */
+#define OTP_SOC_MAC0_IDX   (65U)
+#define OTP_SOC_MAC0_LEN   (6U)  /* in bytes */
+
 #define OTP_SOC_UUID_IDX   (88U)
 #define OTP_SOC_UUID_LEN   (16U) /* in bytes */
 
@@ -210,11 +208,5 @@
 #define PWM_SOC_HRPWM_SUPPORT  (0U)
 #define PWM_SOC_SHADOW_TRIG_SUPPORT (0U)
 #define PWM_SOC_TIMER_RESET_SUPPORT (1U)
-
-/**
- * IOC Section
- *
- */
-#define IOC_SOC_PAD_MAX     (487)
 
 #endif /* HPM_SOC_FEATURE_H */

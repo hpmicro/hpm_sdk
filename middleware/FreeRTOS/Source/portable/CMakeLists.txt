@@ -1,13 +1,25 @@
 # Copyright (c) 2021 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
-sdk_inc(GCC/RISC-V)
-sdk_src(
+sdk_gcc_inc(GCC/RISC-V)
+sdk_ses_inc(GCC/RISC-V)
+sdk_iar_inc(IAR/RISC-V)
+
+sdk_gcc_src(
     GCC/RISC-V/port.c
     GCC/RISC-V/chip_specific_extensions/HPMicro/hpm_port.c
     GCC/RISC-V/portASM.S
     )
-
+sdk_ses_src(
+    GCC/RISC-V/port.c
+    GCC/RISC-V/chip_specific_extensions/HPMicro/hpm_port.c
+    GCC/RISC-V/portASM.S
+    )
+sdk_iar_src(
+    IAR/RISC-V/port.c
+    IAR/RISC-V/chip_specific_extensions/HPMicro/hpm_port.c
+    IAR/RISC-V/portASM.S
+    )
 # If CONFIG_FREERTOS_TIMER_RESOURCE_NOT_MTIMER is not defined, the mtimer is used to generate systic
 # Otherwise use the gptimer to generate systic
 if(NOT DEFINED CONFIG_FREERTOS_TIMER_RESOURCE_NOT_MTIMER)

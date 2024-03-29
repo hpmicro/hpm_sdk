@@ -213,8 +213,9 @@ void dcd_int_handler(uint8_t rhport)
 {
     uint32_t int_status;
     uint32_t speed;
-    uint32_t transfer_len = 0;
+    uint32_t transfer_len;
     uint8_t result = XFER_RESULT_SUCCESS;
+    bool qtd_active;
     usb_device_handle_t *handle = &usb_device_handle[rhport];
 
     /* Acknowledge handled interrupt */
@@ -246,13 +247,6 @@ void dcd_int_handler(uint8_t rhport)
         if (!usb_device_get_port_ccs(handle)) {
             dcd_event_t event = {.rhport = rhport, .event_id = DCD_EVENT_UNPLUGGED};
             dcd_event_handler(&event, true);
-        } else {
-            dcd_event_t event = {.rhport = rhport, .event_id = DCD_EVENT_PLUGGED};
-            if (usb_device_get_port_reset_status(handle) == 0) {
-                 uint32_t speed = usb_device_get_port_speed(handle);
-                 event.plugged.speed = speed;
-                 dcd_event_handler(&event, true);
-            }
         }
     }
 
@@ -271,6 +265,9 @@ void dcd_int_handler(uint8_t rhport)
         if (edpt_complete) {
             for(uint8_t ep_idx = 0; ep_idx < USB_SOS_DCD_MAX_QHD_COUNT; ep_idx++) {
                 if (tu_bit_test(edpt_complete, ep_idx2bit(ep_idx))) {
+                    transfer_len = 0;
+                    qtd_active = false;
+
                     /* Failed QTD also get ENDPTCOMPLETE set */
                     dcd_qtd_t *p_qtd = usb_device_qtd_get(&usb_device_handle[rhport], ep_idx);
                     while (1) {
@@ -280,8 +277,10 @@ void dcd_int_handler(uint8_t rhport)
                         } else if (p_qtd->xact_err || p_qtd->buffer_err) {
                             result = XFER_RESULT_FAILED;
                             break;
-                        }
-                        else {
+                        } else if (p_qtd->active) {
+                            qtd_active = true;
+                            break;
+                        } else {
                             transfer_len += p_qtd->expected_bytes - p_qtd->total_bytes;
                         }
 
@@ -292,8 +291,10 @@ void dcd_int_handler(uint8_t rhport)
                         }
                     }
 
-                    uint8_t const ep_addr = (ep_idx/2) | ( (ep_idx & 0x01) ? TUSB_DIR_IN_MASK : 0);
-                    dcd_event_xfer_complete(rhport, ep_addr, transfer_len, result, true);
+                    if (!qtd_active) {
+                        uint8_t const ep_addr = (ep_idx/2) | ( (ep_idx & 0x01) ? TUSB_DIR_IN_MASK : 0);
+                        dcd_event_xfer_complete(rhport, ep_addr, transfer_len, result, true);
+                    }
                 }
             }
         }

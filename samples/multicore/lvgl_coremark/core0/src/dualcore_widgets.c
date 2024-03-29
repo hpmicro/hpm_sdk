@@ -577,7 +577,10 @@ void update_coremark_result(lv_coremark_ctx_t *cm_ctx)
 
 void run_button_click_cb(lv_event_t *e)
 {
+    (void)e;
+
     lv_obj_add_state(s_ui.run_btn, LV_STATE_DISABLED);
+    lv_obj_add_state(s_ui.freqswitch_btn, LV_STATE_DISABLED);
     lv_label_set_text(s_ui.run_btn_label, "Running...");
     init_coremark_result(&g_lv_cm_ctx);
     init_coremark_context();
@@ -640,6 +643,7 @@ void refresh_coremark_info(void)
     }
     if (g_cm_ctx[0]->has_done && g_cm_ctx[1]->has_done) {
         lv_obj_clear_state(s_ui.run_btn, LV_STATE_DISABLED);
+        lv_obj_clear_state(s_ui.freqswitch_btn, LV_STATE_DISABLED);
         lv_label_set_text(s_ui.run_btn_label, "Start");
     }
 
@@ -682,6 +686,8 @@ void run_coremark_for_cpu(uint32_t index)
 
 void freqswitch_button_click_cb(lv_event_t *e)
 {
+    (void)e;
+
     typedef struct {
         uint32_t freq;
         bool need_overdrive;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -19,10 +19,6 @@
 #define IRQn_GPTMR1                    6       /* GPTMR1 IRQ */
 #define IRQn_GPTMR2                    7       /* GPTMR2 IRQ */
 #define IRQn_GPTMR3                    8       /* GPTMR3 IRQ */
-#define IRQn_LIN0                      9       /* LIN0 IRQ */
-#define IRQn_LIN1                      10      /* LIN1 IRQ */
-#define IRQn_LIN2                      11      /* LIN2 IRQ */
-#define IRQn_LIN3                      12      /* LIN3 IRQ */
 #define IRQn_UART0                     13      /* UART0 IRQ */
 #define IRQn_UART1                     14      /* UART1 IRQ */
 #define IRQn_UART2                     15      /* UART2 IRQ */
@@ -42,13 +38,13 @@
 #define IRQn_TSNS                      29      /* TSNS IRQ */
 #define IRQn_MBX0A                     30      /* MBX0A IRQ */
 #define IRQn_MBX0B                     31      /* MBX0B IRQ */
-#define IRQn_WDG0                      32      /* WDG0 IRQ */
-#define IRQn_WDG1                      33      /* WDG1 IRQ */
+#define IRQn_EWDG0                     32      /* EWDG0 IRQ */
+#define IRQn_EWDG1                     33      /* EWDG1 IRQ */
 #define IRQn_HDMA                      34      /* HDMA IRQ */
-#define IRQn_CAN0                      35      /* CAN0 IRQ */
-#define IRQn_CAN1                      36      /* CAN1 IRQ */
-#define IRQn_CAN2                      37      /* CAN2 IRQ */
-#define IRQn_CAN3                      38      /* CAN3 IRQ */
+#define IRQn_MCAN0                     35      /* MCAN0 IRQ */
+#define IRQn_MCAN1                     36      /* MCAN1 IRQ */
+#define IRQn_MCAN2                     37      /* MCAN2 IRQ */
+#define IRQn_MCAN3                     38      /* MCAN3 IRQ */
 #define IRQn_PTPC                      39      /* PTPC IRQ */
 #define IRQn_PWM0                      40      /* PWM0 IRQ */
 #define IRQn_QEI0                      41      /* QEI0 IRQ */
@@ -78,7 +74,7 @@
 #define IRQn_PGPIO                     65      /* PGPIO IRQ */
 #define IRQn_PTMR                      66      /* PTMR IRQ */
 #define IRQn_PUART                     67      /* PUART IRQ */
-#define IRQn_PWDG                      68      /* PWDG IRQ */
+#define IRQn_PEWDG                     68      /* PEWDG IRQ */
 #define IRQn_BROWNOUT                  69      /* BROWNOUT IRQ */
 #define IRQn_PAD_WAKEUP                70      /* PAD_WAKEUP IRQ */
 #define IRQn_DEBUG0                    71      /* DEBUG0 IRQ */
@@ -148,25 +144,6 @@
 #define HPM_PTMR_BASE (0xF4120000UL)
 /* PTMR base pointer */
 #define HPM_PTMR ((GPTMR_Type *) HPM_PTMR_BASE)
-
-#include "hpm_linv2_regs.h"
-/* Address of LINV2 instances */
-/* LIN0 base address */
-#define HPM_LIN0_BASE (0xF0020000UL)
-/* LIN0 base pointer */
-#define HPM_LIN0 ((LINV2_Type *) HPM_LIN0_BASE)
-/* LIN1 base address */
-#define HPM_LIN1_BASE (0xF0024000UL)
-/* LIN1 base pointer */
-#define HPM_LIN1 ((LINV2_Type *) HPM_LIN1_BASE)
-/* LIN2 base address */
-#define HPM_LIN2_BASE (0xF0028000UL)
-/* LIN2 base pointer */
-#define HPM_LIN2 ((LINV2_Type *) HPM_LIN2_BASE)
-/* LIN3 base address */
-#define HPM_LIN3_BASE (0xF002C000UL)
-/* LIN3 base pointer */
-#define HPM_LIN3 ((LINV2_Type *) HPM_LIN3_BASE)
 
 #include "hpm_uart_regs.h"
 /* Address of UART instances */
@@ -272,18 +249,18 @@
 
 #include "hpm_ewdg_regs.h"
 /* Address of EWDG instances */
-/* WDG0 base address */
-#define HPM_WDG0_BASE (0xF00B0000UL)
-/* WDG0 base pointer */
-#define HPM_WDG0 ((EWDG_Type *) HPM_WDG0_BASE)
-/* WDG1 base address */
-#define HPM_WDG1_BASE (0xF00B4000UL)
-/* WDG1 base pointer */
-#define HPM_WDG1 ((EWDG_Type *) HPM_WDG1_BASE)
-/* PWDG base address */
-#define HPM_PWDG_BASE (0xF4128000UL)
-/* PWDG base pointer */
-#define HPM_PWDG ((EWDG_Type *) HPM_PWDG_BASE)
+/* EWDG0 base address */
+#define HPM_EWDG0_BASE (0xF00B0000UL)
+/* EWDG0 base pointer */
+#define HPM_EWDG0 ((EWDG_Type *) HPM_EWDG0_BASE)
+/* EWDG1 base address */
+#define HPM_EWDG1_BASE (0xF00B4000UL)
+/* EWDG1 base pointer */
+#define HPM_EWDG1 ((EWDG_Type *) HPM_EWDG1_BASE)
+/* PEWDG base address */
+#define HPM_PEWDG_BASE (0xF4128000UL)
+/* PEWDG base pointer */
+#define HPM_PEWDG ((EWDG_Type *) HPM_PEWDG_BASE)
 
 #include "hpm_dmamux_regs.h"
 /* Address of DMAMUX instances */

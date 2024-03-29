@@ -27,7 +27,6 @@ extern int main(void);
 #define COREMARK_MAIN main
 
 void run_coremark_for_cpu(uint32_t index);
-void reset_handler(void);
 
 volatile coremark_context_t *core0_cm_ctx;
 volatile coremark_context_t *core1_cm_ctx;
@@ -76,18 +75,6 @@ int app_main(void)
         putchar('\n');
     }
     return 0;
-}
-
-extern void system_init(void);
-void reset_handler(void)
-{
-    fencei();
-
-    /* Call platform specific hardware initialization */
-    system_init();
-
-    /* Entry function */
-    app_main();
 }
 
 void run_coremark_for_cpu(uint32_t index)

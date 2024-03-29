@@ -8,4 +8,4 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(rgb_led)
 
 sdk_app_src(src/rgb_led.c)
-generate_ses_project()
+generate_ide_projects()

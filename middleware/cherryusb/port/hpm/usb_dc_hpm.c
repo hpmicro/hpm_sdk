@@ -1,17 +1,8 @@
 #include "usbd_core.h"
 #include "hpm_usb_device.h"
-#include "board.h"
-
-#ifndef USBD_IRQHandler
-#define USBD_IRQHandler USBD_IRQHandler // use actual usb irq name instead
-#endif
 
 #ifndef USB_NUM_BIDIR_ENDPOINTS
-#define USB_NUM_BIDIR_ENDPOINTS USB_SOC_DCD_MAX_ENDPOINT_COUNT
-#endif
-
-#if !defined(CONFIG_HPM_USBD_BASE) || !defined(CONFIG_HPM_USBD_IRQn)
-#error "hpm dcd must config CONFIG_HPM_USBD_BASE and CONFIG_HPM_USBD_IRQn"
+#define USB_NUM_BIDIR_ENDPOINTS CONFIG_USBDEV_EP_NUM
 #endif
 
 /* USBSTS, USBINTR */
@@ -36,15 +27,23 @@ struct hpm_ep_state {
     uint32_t actual_xfer_len;
 };
 
+/*---------------------------------------------------------------------*
+ * Variable Definitions
+ *---------------------------------------------------------------------*/
 /* Driver state */
 struct hpm_udc {
     usb_device_handle_t *handle;
     struct hpm_ep_state in_ep[USB_NUM_BIDIR_ENDPOINTS];  /*!< IN endpoint parameters*/
     struct hpm_ep_state out_ep[USB_NUM_BIDIR_ENDPOINTS]; /*!< OUT endpoint parameters */
-} g_hpm_udc;
+} g_hpm_udc[CONFIG_USBDEV_MAX_BUS];
 
-static ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(USB_SOC_DCD_DATA_RAM_ADDRESS_ALIGNMENT) dcd_data_t _dcd_data;
-static ATTR_PLACE_AT_NONCACHEABLE usb_device_handle_t usb_device_handle[USB_SOC_MAX_COUNT];
+static ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(USB_SOC_DCD_DATA_RAM_ADDRESS_ALIGNMENT) dcd_data_t _dcd_data0;
+#ifdef HPM_USB1_BASE
+static ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(USB_SOC_DCD_DATA_RAM_ADDRESS_ALIGNMENT) dcd_data_t _dcd_data1;
+#endif
+static ATTR_PLACE_AT_NONCACHEABLE usb_device_handle_t usb_device_handle[CONFIG_USBDEV_MAX_BUS];
+static uint32_t _dcd_irqnum[CONFIG_USBDEV_MAX_BUS];
+static uint8_t _dcd_busid[CONFIG_USBDEV_MAX_BUS];
 
 /* Index to bit position in register */
 static inline uint8_t ep_idx2bit(uint8_t ep_idx)
@@ -52,55 +51,78 @@ static inline uint8_t ep_idx2bit(uint8_t ep_idx)
     return ep_idx / 2 + ((ep_idx % 2) ? 16 : 0);
 }
 
-__WEAK void usb_dc_low_level_init(void)
+__WEAK void usb_dc_low_level_init(uint8_t busid)
 {
+    (void)busid;
 }
 
-__WEAK void usb_dc_low_level_deinit(void)
+__WEAK void usb_dc_low_level_deinit(uint8_t busid)
 {
+    (void)busid;
 }
 
-int usb_dc_init(void)
+int usb_dc_init(uint8_t busid)
 {
-    usb_dc_low_level_init();
+    usb_dc_low_level_init(busid);
 
-    memset(&g_hpm_udc, 0, sizeof(struct hpm_udc));
-    g_hpm_udc.handle = &usb_device_handle[0];
-    g_hpm_udc.handle->regs = (USB_Type *)CONFIG_HPM_USBD_BASE;
-    g_hpm_udc.handle->dcd_data = &_dcd_data;
+    memset(&g_hpm_udc[busid], 0, sizeof(struct hpm_udc));
+    g_hpm_udc[busid].handle = &usb_device_handle[busid];
+    g_hpm_udc[busid].handle->regs = (USB_Type *)g_usbdev_bus[busid].reg_base;
+
+    if (g_usbdev_bus[busid].reg_base == HPM_USB0_BASE) {
+        _dcd_irqnum[busid] = IRQn_USB0;
+        _dcd_busid[0] = busid;
+    } else {
+#ifdef HPM_USB1_BASE
+        if (g_usbdev_bus[busid].reg_base == HPM_USB1_BASE) {
+            _dcd_irqnum[busid] = IRQn_USB1;
+            _dcd_busid[1] = busid;
+        }
+#endif
+    }
+
+    if (busid == 0) {
+        g_hpm_udc[busid].handle->dcd_data = &_dcd_data0;
+    } else if (busid == 1) {
+#ifdef HPM_USB1_BASE
+        g_hpm_udc[busid].handle->dcd_data = &_dcd_data1;
+#endif
+    } else {
+        ;
+    }
 
     uint32_t int_mask;
     int_mask = (USB_USBINTR_UE_MASK | USB_USBINTR_UEE_MASK |
                 USB_USBINTR_PCE_MASK | USB_USBINTR_URE_MASK);
 
-    usb_device_init(g_hpm_udc.handle, int_mask);
+    usb_device_init(g_hpm_udc[busid].handle, int_mask);
 
-    intc_m_enable_irq(CONFIG_HPM_USBD_IRQn);
+    intc_m_enable_irq(_dcd_irqnum[busid]);
     return 0;
 }
 
-int usb_dc_deinit(void)
+int usb_dc_deinit(uint8_t busid)
 {
-    intc_m_disable_irq(CONFIG_HPM_USBD_IRQn);
+    intc_m_disable_irq(_dcd_irqnum[busid]);
 
-    usb_device_deinit(g_hpm_udc.handle);
+    usb_device_deinit(g_hpm_udc[busid].handle);
 
     return 0;
 }
 
-int usbd_set_address(const uint8_t addr)
+int usbd_set_address(uint8_t busid, const uint8_t addr)
 {
-    usb_device_handle_t *handle = g_hpm_udc.handle;
+    usb_device_handle_t *handle = g_hpm_udc[busid].handle;
     usb_dcd_set_address(handle->regs, addr);
     return 0;
 }
 
-uint8_t usbd_get_port_speed(const uint8_t port)
+uint8_t usbd_get_port_speed(uint8_t busid, const uint8_t port)
 {
     (void)port;
     uint8_t speed;
 
-    speed = usb_get_port_speed(g_hpm_udc.handle->regs);
+    speed = usb_get_port_speed(g_hpm_udc[busid].handle->regs);
 
     if (speed == 0x00) {
         return USB_SPEED_FULL;
@@ -115,110 +137,119 @@ uint8_t usbd_get_port_speed(const uint8_t port)
     return 0;
 }
 
-int usbd_ep_open(const struct usbd_endpoint_cfg *ep_cfg)
+int usbd_ep_open(uint8_t busid, const struct usb_endpoint_descriptor *ep)
 {
     usb_endpoint_config_t tmp_ep_cfg;
-    usb_device_handle_t *handle = g_hpm_udc.handle;
+    usb_device_handle_t *handle = g_hpm_udc[busid].handle;
+    uint8_t ep_idx = USB_EP_GET_IDX(ep->bEndpointAddress);
 
-    uint8_t ep_idx = USB_EP_GET_IDX(ep_cfg->ep_addr);
-
-    if (USB_EP_DIR_IS_OUT(ep_cfg->ep_addr)) {
-        g_hpm_udc.out_ep[ep_idx].ep_mps = ep_cfg->ep_mps;
-        g_hpm_udc.out_ep[ep_idx].ep_type = ep_cfg->ep_type;
-        g_hpm_udc.out_ep[ep_idx].ep_enable = true;
-    } else {
-        g_hpm_udc.in_ep[ep_idx].ep_mps = ep_cfg->ep_mps;
-        g_hpm_udc.in_ep[ep_idx].ep_type = ep_cfg->ep_type;
-        g_hpm_udc.in_ep[ep_idx].ep_enable = true;
-    }
-
-    tmp_ep_cfg.xfer = ep_cfg->ep_type;
-    tmp_ep_cfg.ep_addr = ep_cfg->ep_addr;
-    tmp_ep_cfg.max_packet_size = ep_cfg->ep_mps;
+    tmp_ep_cfg.xfer = USB_GET_ENDPOINT_TYPE(ep->bmAttributes);
+    tmp_ep_cfg.ep_addr = ep->bEndpointAddress;
+    tmp_ep_cfg.max_packet_size = USB_GET_MAXPACKETSIZE(ep->wMaxPacketSize);
 
     usb_device_edpt_open(handle, &tmp_ep_cfg);
+
+    if (USB_EP_DIR_IS_OUT(ep->bEndpointAddress)) {
+        g_hpm_udc[busid].out_ep[ep_idx].ep_mps = USB_GET_MAXPACKETSIZE(ep->wMaxPacketSize);
+        g_hpm_udc[busid].out_ep[ep_idx].ep_type = USB_GET_ENDPOINT_TYPE(ep->bmAttributes);
+        g_hpm_udc[busid].out_ep[ep_idx].ep_enable = true;
+    } else {
+        g_hpm_udc[busid].in_ep[ep_idx].ep_mps = USB_GET_MAXPACKETSIZE(ep->wMaxPacketSize);
+        g_hpm_udc[busid].in_ep[ep_idx].ep_type = USB_GET_ENDPOINT_TYPE(ep->bmAttributes);
+        g_hpm_udc[busid].in_ep[ep_idx].ep_enable = true;
+    }
+
     return 0;
 }
 
-int usbd_ep_close(const uint8_t ep)
+int usbd_ep_close(uint8_t busid, const uint8_t ep)
 {
-    usb_device_handle_t *handle = g_hpm_udc.handle;
+    usb_device_handle_t *handle = g_hpm_udc[busid].handle;
+    uint8_t ep_idx = USB_EP_GET_IDX(ep);
+
+    if (USB_EP_DIR_IS_OUT(ep)) {
+        g_hpm_udc[busid].out_ep[ep_idx].ep_enable = false;
+    } else {
+        g_hpm_udc[busid].in_ep[ep_idx].ep_enable = false;
+    }
 
     usb_device_edpt_close(handle, ep);
+
     return 0;
 }
 
-int usbd_ep_set_stall(const uint8_t ep)
+int usbd_ep_set_stall(uint8_t busid, const uint8_t ep)
 {
-    usb_device_handle_t *handle = g_hpm_udc.handle;
+    usb_device_handle_t *handle = g_hpm_udc[busid].handle;
 
     usb_device_edpt_stall(handle, ep);
     return 0;
 }
 
-int usbd_ep_clear_stall(const uint8_t ep)
+int usbd_ep_clear_stall(uint8_t busid, const uint8_t ep)
 {
-    usb_device_handle_t *handle = g_hpm_udc.handle;
+    usb_device_handle_t *handle = g_hpm_udc[busid].handle;
 
     usb_device_edpt_clear_stall(handle, ep);
     return 0;
 }
 
-int usbd_ep_is_stalled(const uint8_t ep, uint8_t *stalled)
+int usbd_ep_is_stalled(uint8_t busid, const uint8_t ep, uint8_t *stalled)
 {
-    usb_device_handle_t *handle = g_hpm_udc.handle;
+    usb_device_handle_t *handle = g_hpm_udc[busid].handle;
 
     *stalled = usb_device_edpt_check_stall(handle, ep);
     return 0;
 }
 
-int usbd_ep_start_write(const uint8_t ep, const uint8_t *data, uint32_t data_len)
+int usbd_ep_start_write(uint8_t busid, const uint8_t ep, const uint8_t *data, uint32_t data_len)
 {
     uint8_t ep_idx = USB_EP_GET_IDX(ep);
-    usb_device_handle_t *handle = g_hpm_udc.handle;
+    usb_device_handle_t *handle = g_hpm_udc[busid].handle;
 
     if (!data && data_len) {
         return -1;
     }
-    if (!g_hpm_udc.in_ep[ep_idx].ep_enable) {
+    if (!g_hpm_udc[busid].in_ep[ep_idx].ep_enable) {
         return -2;
     }
 
-    g_hpm_udc.in_ep[ep_idx].xfer_buf = (uint8_t *)data;
-    g_hpm_udc.in_ep[ep_idx].xfer_len = data_len;
-    g_hpm_udc.in_ep[ep_idx].actual_xfer_len = 0;
+    g_hpm_udc[busid].in_ep[ep_idx].xfer_buf = (uint8_t *)data;
+    g_hpm_udc[busid].in_ep[ep_idx].xfer_len = data_len;
+    g_hpm_udc[busid].in_ep[ep_idx].actual_xfer_len = 0;
 
     usb_device_edpt_xfer(handle, ep, (uint8_t *)data, data_len);
 
     return 0;
 }
 
-int usbd_ep_start_read(const uint8_t ep, uint8_t *data, uint32_t data_len)
+int usbd_ep_start_read(uint8_t busid, const uint8_t ep, uint8_t *data, uint32_t data_len)
 {
     uint8_t ep_idx = USB_EP_GET_IDX(ep);
-    usb_device_handle_t *handle = g_hpm_udc.handle;
+    usb_device_handle_t *handle = g_hpm_udc[busid].handle;
 
     if (!data && data_len) {
         return -1;
     }
-    if (!g_hpm_udc.out_ep[ep_idx].ep_enable) {
+    if (!g_hpm_udc[busid].out_ep[ep_idx].ep_enable) {
         return -2;
     }
 
-    g_hpm_udc.out_ep[ep_idx].xfer_buf = (uint8_t *)data;
-    g_hpm_udc.out_ep[ep_idx].xfer_len = data_len;
-    g_hpm_udc.out_ep[ep_idx].actual_xfer_len = 0;
+    g_hpm_udc[busid].out_ep[ep_idx].xfer_buf = (uint8_t *)data;
+    g_hpm_udc[busid].out_ep[ep_idx].xfer_len = data_len;
+    g_hpm_udc[busid].out_ep[ep_idx].actual_xfer_len = 0;
 
     usb_device_edpt_xfer(handle, ep, data, data_len);
 
     return 0;
 }
 
-void USBD_IRQHandler(void)
+void USBD_IRQHandler(uint8_t busid)
 {
     uint32_t int_status;
-    usb_device_handle_t *handle = g_hpm_udc.handle;
-    uint32_t transfer_len = 0;
+    usb_device_handle_t *handle = g_hpm_udc[busid].handle;
+    uint32_t transfer_len;
+    bool ep_cb_req;
 
     /* Acknowledge handled interrupt */
     int_status = usb_device_status_flags(handle);
@@ -230,17 +261,21 @@ void USBD_IRQHandler(void)
         return;
     }
 
+    if (int_status & intr_error) {
+        USB_LOG_ERR("usbd intr error!\r\n");
+    }
+
     if (int_status & intr_reset) {
-        memset(g_hpm_udc.in_ep, 0, sizeof(struct hpm_ep_state) * USB_NUM_BIDIR_ENDPOINTS);
-        memset(g_hpm_udc.out_ep, 0, sizeof(struct hpm_ep_state) * USB_NUM_BIDIR_ENDPOINTS);
-        usbd_event_reset_handler();
+        memset(g_hpm_udc[busid].in_ep, 0, sizeof(struct hpm_ep_state) * USB_NUM_BIDIR_ENDPOINTS);
+        memset(g_hpm_udc[busid].out_ep, 0, sizeof(struct hpm_ep_state) * USB_NUM_BIDIR_ENDPOINTS);
+        usbd_event_reset_handler(busid);
         usb_device_bus_reset(handle, 64);
     }
 
     if (int_status & intr_suspend) {
         if (usb_device_get_suspend_status(handle)) {
-            /* Note: Host may delay more than 3 ms before and/or after bus reset
-       * before doing enumeration. */
+            usbd_event_suspend_handler(busid);
+            /* Note: Host may delay more than 3 ms before and/or after bus reset before doing enumeration. */
             if (usb_device_get_address(handle)) {
             }
         }
@@ -248,9 +283,9 @@ void USBD_IRQHandler(void)
 
     if (int_status & intr_port_change) {
         if (!usb_device_get_port_ccs(handle)) {
+            usbd_event_disconnect_handler(busid);
         } else {
-            if (usb_device_get_port_reset_status(handle) == 0) {
-            }
+            usbd_event_connect_handler(busid);
         }
     }
 
@@ -263,18 +298,25 @@ void USBD_IRQHandler(void)
             /*------------- Set up Received -------------*/
             usb_device_clear_setup_status(handle, edpt_setup_status);
             dcd_qhd_t *qhd0 = usb_device_qhd_get(handle, 0);
-            usbd_event_ep0_setup_complete_handler((uint8_t *)&qhd0->setup_request);
+            usbd_event_ep0_setup_complete_handler(busid, (uint8_t *)&qhd0->setup_request);
         }
 
         if (edpt_complete) {
             for (uint8_t ep_idx = 0; ep_idx < USB_SOS_DCD_MAX_QHD_COUNT; ep_idx++) {
                 if (edpt_complete & (1 << ep_idx2bit(ep_idx))) {
+                    transfer_len = 0;
+                    ep_cb_req = true;
+
                     /* Failed QTD also get ENDPTCOMPLETE set */
                     dcd_qtd_t *p_qtd = usb_device_qtd_get(handle, ep_idx);
                     while (1) {
                         if (p_qtd->halted || p_qtd->xact_err || p_qtd->buffer_err) {
                             USB_LOG_ERR("usbd transfer error!\r\n");
-                            return;
+                            ep_cb_req = false;
+                            break;
+                        } else if (p_qtd->active) {
+                            ep_cb_req = false;
+                            break;
                         } else {
                             transfer_len += p_qtd->expected_bytes - p_qtd->total_bytes;
                         }
@@ -286,11 +328,13 @@ void USBD_IRQHandler(void)
                         }
                     }
 
-                    uint8_t const ep_addr = (ep_idx / 2) | ((ep_idx & 0x01) ? 0x80 : 0);
-                    if (ep_addr & 0x80) {
-                        usbd_event_ep_in_complete_handler(ep_addr, transfer_len);
-                    } else {
-                        usbd_event_ep_out_complete_handler(ep_addr, transfer_len);
+                    if (ep_cb_req) {
+                        uint8_t const ep_addr = (ep_idx / 2) | ((ep_idx & 0x01) ? 0x80 : 0);
+                        if (ep_addr & 0x80) {
+                            usbd_event_ep_in_complete_handler(busid, ep_addr, transfer_len);
+                        } else {
+                            usbd_event_ep_out_complete_handler(busid, ep_addr, transfer_len);
+                        }
                     }
                 }
             }
@@ -298,8 +342,16 @@ void USBD_IRQHandler(void)
     }
 }
 
-void isr_usbd(void)
+void isr_usbd0(void)
 {
-    USBD_IRQHandler();
+    USBD_IRQHandler(_dcd_busid[0]);
 }
-SDK_DECLARE_EXT_ISR_M(CONFIG_HPM_USBD_IRQn, isr_usbd)
+SDK_DECLARE_EXT_ISR_M(IRQn_USB0, isr_usbd0)
+
+#ifdef HPM_USB1_BASE
+void isr_usbd1(void)
+{
+    USBD_IRQHandler(_dcd_busid[1]);
+}
+SDK_DECLARE_EXT_ISR_M(IRQn_USB1, isr_usbd1)
+#endif

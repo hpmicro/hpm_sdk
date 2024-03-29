@@ -22,4 +22,4 @@ sdk_app_src(src/start_task.c)
 sdk_app_src(src/float_task.c)
 sdk_app_src(../ucos_cfg/os_app_hooks.c)
 
-generate_ses_project()
+generate_ide_projects()

@@ -18,4 +18,6 @@ sdk_compile_definitions(-D__freertos_irq_stack_top=_stack)
 sdk_compile_definitions(-DCONFIG_FREERTOS=1)
 sdk_compile_definitions(-DUSE_NONVECTOR_MODE=1)
 sdk_compile_definitions(-DDISABLE_IRQ_PREEMPTIVE=1)
-generate_ses_project()
+sdk_compile_definitions(-DCONFIG_USBDEV_MSC_THREAD=1)
+
+generate_ide_projects()

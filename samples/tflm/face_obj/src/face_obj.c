@@ -63,6 +63,8 @@ uint32_t tf_run_inference;
 
 uint32_t run_times;
 uint64_t delta_time;
+camera_context_t camera_context = {0};
+camera_config_t camera_config;
 
 void start_time(void)
 {
@@ -111,9 +113,6 @@ void init_lcd(void)
 
 void init_camera_device(void)
 {
-    camera_context_t camera_context = {NULL, NULL, NULL, NULL, 0};
-    camera_config_t camera_config;
-
     camera_context.i2c_device_addr = CAMERA_DEVICE_ADDR;
     camera_context.ptr = CAM_I2C;
     camera_context.delay_ms = board_delay_ms;
@@ -124,30 +123,41 @@ void init_camera_device(void)
     camera_context.write_pwdn = board_write_cam_pwdn;
 #endif
 
-    camera_config.width = CAM_IMAGE_WIDTH;
-    camera_config.height = CAM_IMAGE_HEIGHT;
+    camera_config.width = IMAGE_WIDTH;
+    camera_config.height = IMAGE_HEIGHT;
     camera_config.pixel_format = PIXEL_FORMAT;
     camera_config.interface = CAMERA_INTERFACE;
 
+    /* get dvp interface parameters */
+    if (CAMERA_INTERFACE == camera_interface_dvp) {
+        camera_device_get_dvp_param(&camera_context, &camera_config);
+    }
+
     if (status_success != camera_device_init(&camera_context, &camera_config)) {
         printf("failed to init camera device\n");
-        while(1);
+        while (1) {
+        }
     }
 }
 
 void init_cam(void)
 {
     cam_config_t cam_config;
-
+    camera_param_dvp_t *dvp;
+    assert((camera_config.interface == camera_interface_dvp) && (camera_config.interface_param != NULL));
+    dvp = (camera_param_dvp_t *)camera_config.interface_param;
     cam_get_default_config(TEST_CAM, &cam_config, PIXEL_FORMAT);
-
-    cam_config.width = CAM_IMAGE_WIDTH;
-    cam_config.height = CAM_IMAGE_HEIGHT;
-    cam_config.hsync_active_low = true;
-    cam_config.buffer1 = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)buffer[0]);
-    if (PIXEL_FORMAT == display_pixel_format_rgb565) {
-        cam_config.color_format = CAM_COLOR_FORMAT_YUV444;
+    cam_config.width = IMAGE_WIDTH;
+    cam_config.height = IMAGE_HEIGHT;
+    cam_config.hsync_active_low  = dvp->hsync_active_low;
+    cam_config.vsync_active_low  = dvp->vsync_active_low;
+    cam_config.buffer1 = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)buffer);
+    cam_config.color_format = cam_get_pixel_format(PIXEL_FORMAT);
+    if (CAM_COLOR_FORMAT_UNSUPPORTED == cam_config.color_format) {
+        printf("cam does not support this pixel format\n");
+        return;
     }
+
     cam_init(TEST_CAM, &cam_config);
 }
 void writefount2screen(uint16_t or_x, uint16_t or_y, uint16_t x_end, uint16_t y_end, uint8_t assic_id, uint16_t colour,

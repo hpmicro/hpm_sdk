@@ -1,2 +1,3 @@
 dependency:
   - pdm
+  - board_audio_in

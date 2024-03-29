@@ -1,4 +1,4 @@
-# SDXC example
+# SDXC
 
 ```{eval-rst}
 .. toctree::

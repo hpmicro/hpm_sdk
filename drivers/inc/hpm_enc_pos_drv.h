@@ -10,6 +10,14 @@
 
 #include "hpm_common.h"
 
+/**
+ *
+ * @brief enc pos driver APIs
+ * @defgroup enc_pos_interface Encode Position driver APIs
+ * @ingroup io_interface
+ * @{
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -49,7 +57,9 @@ uint32_t encoder_rad_to_position(float rad);
 #ifdef __cplusplus
 }
 #endif
+
 /**
  * @}
  */
+
 #endif /* HPM_ENC_POS_COMMON_H */

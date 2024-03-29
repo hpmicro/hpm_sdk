@@ -24,7 +24,7 @@ float hpm_mcl_control_cos(float x)
 
 float hpm_mcl_control_arctan(float y, float x)
 {
-    return atan2(y, x);
+    return atan2((double)y, (double)x);
 }
 
 hpm_mcl_stat_t hpm_mcl_control_clarke(float ia, float ib, float ic,
@@ -221,6 +221,21 @@ hpm_mcl_stat_t hpm_mcl_control_step_svpwm(float alpha, float beta, float vbus, m
     return mcl_success;
 }
 
+hpm_mcl_stat_t hpm_mcl_control_get_block_sector(hall_phase_t hall, uint8_t u, uint8_t v, uint8_t w, uint8_t *sector)
+{
+    const uint8_t hall_tbl_120[8] = {0, 4, 2, 3, 6, 5, 1, 0};
+    const uint8_t hall_tbl_60[8] = {5, 4, 0, 3, 6, 0, 1, 2};
+
+    if (hall == phase_120) {
+        *sector = hall_tbl_120[(u<<2) | (v<<1) | w];
+    } else if (hall == phase_60) {
+        *sector = hall_tbl_60[(u<<2) | (v<<1) | w];
+    } else {
+        MCL_ASSERT(false, mcl_invalid_argument);
+    }
+    return mcl_success;
+}
+
 hpm_mcl_stat_t hpm_mcl_control_init(mcl_control_t *control, mcl_control_cfg_t *cfg)
 {
     MCL_ASSERT(control != NULL, mcl_invalid_pointer);
@@ -252,6 +267,7 @@ hpm_mcl_stat_t hpm_mcl_control_init(mcl_control_t *control, mcl_control_cfg_t *c
     control->method.speed_pid = &hpm_mcl_control_pi;
     control->method.svpwm = &hpm_mcl_control_svpwm;
     control->method.step_svpwm = &hpm_mcl_control_step_svpwm;
+    control->method.get_block_sector = &hpm_mcl_control_get_block_sector;
     MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.arctan_x, control->cfg->callback.method.arctan_x);
     MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.clarke, control->cfg->callback.method.clarke);
     MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.cos_x, control->cfg->callback.method.cos_x);
@@ -262,7 +278,8 @@ hpm_mcl_stat_t hpm_mcl_control_init(mcl_control_t *control, mcl_control_cfg_t *c
     MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.sin_x, control->cfg->callback.method.sin_x);
     MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.speed_pid, control->cfg->callback.method.speed_pid);
     MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.svpwm, control->cfg->callback.method.svpwm);
-    MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.svpwm, control->cfg->callback.method.step_svpwm);
+    MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.step_svpwm, control->cfg->callback.method.step_svpwm);
+    MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.get_block_sector, control->cfg->callback.method.get_block_sector);
 
     control->cfg->callback.init();
 

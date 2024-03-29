@@ -16,16 +16,16 @@
 #endif
 #include "hpm_dmamux_drv.h"
 
-#define TEST_UART                     BOARD_APP_UART_BASE
-#define TEST_UART_IRQ                 BOARD_APP_UART_IRQ
-#define TEST_UART_BAUDRATE            BOARD_APP_UART_BAUDRATE
-#define TEST_UART_CLK_NAME            BOARD_APP_UART_CLK_NAME
+#define TEST_UART                     BOARD_CONSOLE_UART_BASE
+#define TEST_UART_IRQ                 BOARD_CONSOLE_UART_IRQ
+#define TEST_UART_BAUDRATE            BOARD_CONSOLE_UART_BAUDRATE
+#define TEST_UART_CLK_NAME            BOARD_CONSOLE_UART_CLK_NAME
 
 #define TEST_DMA                      BOARD_APP_HDMA
 #define TEST_DMA_CHANNEL              (0U)
 #define TEST_DMAMUX                   BOARD_APP_DMAMUX
 #define TEST_DMAMUX_CHANNEL           DMA_SOC_CHN_TO_DMAMUX_CHN(TEST_DMA, TEST_DMA_CHANNEL)
-#define TEST_DMAMUX_SRC               BOARD_APP_UART_RX_DMA_REQ
+#define TEST_DMAMUX_SRC               BOARD_CONSOLE_UART_RX_DMA_REQ
 
 #define BUFF_SIZE                     (1024U)
 uint8_t uart_buff[BUFF_SIZE];

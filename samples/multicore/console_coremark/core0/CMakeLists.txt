@@ -22,6 +22,7 @@ foreach(opt ${opt_list})
 endforeach()
 sdk_get_compile_options(all_opts)
 sdk_compile_definitions(COMPILER_FLAGS="${all_opts}")
+sdk_compile_definitions(-DMAIN_ENTRY=app_main)
 
 sdk_inc(src/port)
 sdk_inc(src)
@@ -35,4 +36,4 @@ sdk_app_src(src/demo_dualcore_coremark.c
 
 sdk_ses_compile_options(-mabi=ilp32d)
 sdk_ses_compile_options(-march=rv32gc)
-generate_ses_project()
+generate_ide_projects()

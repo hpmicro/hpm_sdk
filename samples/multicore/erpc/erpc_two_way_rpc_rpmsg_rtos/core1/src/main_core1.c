@@ -28,7 +28,7 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-static ATTR_SHARE_MEM char rpmsg_lite_base[SH_MEM_TOTAL_SIZE];
+ATTR_SHARE_MEM char rpmsg_lite_base[SH_MEM_TOTAL_SIZE];
 static TaskHandle_t s_client_task_handle;
 static TaskHandle_t s_server_task_handle;
 static erpc_transport_t s_transportArbitrator;
@@ -77,6 +77,8 @@ void getNumberFromCore1(uint32_t *number)
 
 static void client_task(void *param)
 {
+    (void)param;
+
     /* ERPC client initialization */
     erpc_client_t erpc_client;
 
@@ -118,6 +120,8 @@ static void client_task(void *param)
 
 static void server_task(void *param)
 {
+    (void)param;
+
     /* Wait for client initialization. */
     while (s_transportArbitrator == NULL) {
         vTaskDelay(100);
@@ -151,9 +155,7 @@ static void server_task(void *param)
  */
 int main(void)
 {
-    /* use uart13 as console*/
-    board_init_console();
-    board_init_pmp();
+    board_init_core1();
     ipc_init();
     ipc_enable_event_interrupt(2u);
 

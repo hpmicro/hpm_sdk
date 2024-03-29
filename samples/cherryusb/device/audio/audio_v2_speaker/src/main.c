@@ -33,11 +33,11 @@ int main(void)
 
     printf("cherry usb audio v2 speaker sample.\n");
 
-    cherryusb_audio_init();
+    audio_v2_init(0, CONFIG_HPM_USBD_BASE);
     speaker_init_i2s_dao_codec();
 
     while (1) {
-        cherryusb_audio_main_task();
+        audio_v2_task(0);
     }
     return 0;
 }

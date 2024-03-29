@@ -7,4 +7,4 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(pulseoutput)
 
 sdk_app_src(src/pulseoutput.c)
-generate_ses_project()
+generate_ide_projects()

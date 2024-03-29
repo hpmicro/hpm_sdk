@@ -349,7 +349,7 @@ static inline void qeiv2_release_counter(QEIV2_Type *qeiv2_x)
  * @brief select spd and tmr register content
  *
  * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
- * @param[in] mode @ref qeiv2_spd_tmr_content_select_t
+ * @param[in] content @ref qeiv2_spd_tmr_content_t
  */
 static inline void qeiv2_select_spd_tmr_register_content(QEIV2_Type *qeiv2_x, qeiv2_spd_tmr_content_t content)
 {
@@ -890,23 +890,6 @@ static inline void qeiv2_set_cmp2_match_option(QEIV2_Type *qeiv2_x, bool ignore_
 }
 
 /**
- * @brief config signal filter
- *
- * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
- * @param[in] idx filter index
- *  @arg @ref qeiv2_filter_phase_t
- * @param[in] outinv Filter will invert the output
- * @param[in] mode qeiv2_filter_mode_t
- * @param[in] sync set to enable sychronization input signal with TRGM clock
- * @param[in] filtlen defines the filter counter length.
- */
-static inline void qeiv2_config_filter(QEIV2_Type *qeiv2_x, qeiv2_filter_phase_t phase, bool outinv, qeiv2_filter_mode_t mode, bool sync, uint16_t filtlen)
-{
-    qeiv2_x->FILT_CFG[phase] =
-        QEIV2_FILT_CFG_OUTINV_SET(outinv) | QEIV2_FILT_CFG_MODE_SET(mode) | QEIV2_FILT_CFG_SYNCEN_SET(sync) | QEIV2_FILT_CFG_FILTLEN_SET(filtlen);
-}
-
-/**
  * @brief config signal enablement and edge
  *
  * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
@@ -1120,6 +1103,7 @@ static inline void qeiv2_clear_counter_when_dir_chg(QEIV2_Type *qeiv2_x, bool en
  *
  * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
  * @param[in] config qeiv2_adc_config_t
+ * @param[in] enable enable or disable adcx
  */
 static inline void qeiv2_config_adcx(QEIV2_Type *qeiv2_x, qeiv2_adc_config_t *config, bool enable)
 {
@@ -1140,6 +1124,7 @@ static inline void qeiv2_config_adcx(QEIV2_Type *qeiv2_x, qeiv2_adc_config_t *co
  *
  * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
  * @param[in] config qeiv2_adc_config_t
+ * @param[in] enable enable or disable adcy
  */
 static inline void qeiv2_config_adcy(QEIV2_Type *qeiv2_x, qeiv2_adc_config_t *config, bool enable)
 {
@@ -1281,7 +1266,7 @@ static inline uint32_t qeiv2_get_phase_cnt(QEIV2_Type *qeiv2_x)
  *
  * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
  * @param[in] inc set to add value to phase_cnt
- * @param[in] inc set to minus value to phase_cnt (set inc and dec same time willl act inc)
+ * @param[in] dec set to minus value to phase_cnt (set inc and dec same time willl act inc)
  * @param[in] value value to be added or minus from phase_cnt. only valid when inc or dec is set in one 32bit write operation.
  */
 static inline void qeiv2_update_phase_cnt(QEIV2_Type *qeiv2_x, bool inc, bool dec, uint32_t value)
@@ -1316,7 +1301,7 @@ static inline uint32_t qeiv2_get_postion(QEIV2_Type *qeiv2_x)
  *
  * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
  * @param[in] inc set to add value to position
- * @param[in] inc set to minus cnt value to position (set inc and dec same time willl act inc)
+ * @param[in] dec set to minus cnt value to position (set inc and dec same time willl act inc)
  * @param[in] value value to be added or minus from position. only valid when inc or dec is set in one 32bit write operation.
  */
 static inline void qeiv2_update_position(QEIV2_Type *qeiv2_x, bool inc, bool dec, uint32_t value)
@@ -1416,6 +1401,19 @@ void qeiv2_get_uvw_position_defconfig(qeiv2_uvw_config_t *config);
  * @return status_invalid_argument or status_success
  */
 hpm_stat_t qeiv2_config_uvw_position(QEIV2_Type *qeiv2_x, qeiv2_uvw_config_t *config);
+
+/**
+ * @brief config signal filter
+ *
+ * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
+ * @param[in] phase filter phase
+ *  @arg @ref qeiv2_filter_phase_t
+ * @param[in] outinv Filter will invert the output
+ * @param[in] mode qeiv2_filter_mode_t
+ * @param[in] sync set to enable sychronization input signal with TRGM clock
+ * @param[in] filtlen defines the filter counter length.
+ */
+void qeiv2_config_filter(QEIV2_Type *qeiv2_x, qeiv2_filter_phase_t phase, bool outinv, qeiv2_filter_mode_t mode, bool sync, uint32_t filtlen);
 
 #ifdef __cplusplus
 }

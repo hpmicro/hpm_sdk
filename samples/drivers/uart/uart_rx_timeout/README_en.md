@@ -1,4 +1,4 @@
-# UART rx timeout 
+# UART rx timeout
 ## Overview
 
 In this example project, UART can use the principle of rx fifo timeout to receives variable length data (data size less than defined BUFF_SIZE in program).

@@ -453,7 +453,6 @@ static inline void sei_set_trig_input_period_enable(SEI_Type *ptr, uint8_t idx, 
  * @brief Set the SEI trigger input soft enable or disable
  * @param [in] ptr SEI base address
  * @param [in] idx SEI ctrl index, such as SEI_CTRL_0, SEI_CTRL_1, etc.
- * @param [in] enable enable or disable
  *  @arg true enable
  *  @arg false disable
  */

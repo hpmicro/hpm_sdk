@@ -93,7 +93,11 @@ int main(void)
     spi_master_get_default_timing_config(&timing_config);
     timing_config.master_config.clk_src_freq_in_hz = spi_clcok;
     timing_config.master_config.sclk_freq_in_hz = TEST_SPI_SCLK_FREQ;
-    spi_master_timing_init(TEST_SPI, &timing_config);
+    if (status_success != spi_master_timing_init(TEST_SPI, &timing_config)) {
+        printf("SPI master timing init failed\n");
+        while (1) {
+        }
+    }
     printf("SPI-Master transfer timing is configured.\n");
     printf("SPI-Master transfer source clock frequency: %dHz\n", timing_config.master_config.clk_src_freq_in_hz);
     printf("SPI-Master tannsfer sclk frequecny: %dHz\n", timing_config.master_config.sclk_freq_in_hz);

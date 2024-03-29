@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -8,14 +8,14 @@
 /*---------------------------------------------------------------------*
  * Includes
  *---------------------------------------------------------------------*/
-#include "common_lwip.h"
+#include "common.h"
 #include "netconf.h"
 #include "sys_arch.h"
 #include "lwip.h"
 #include "lwip/init.h"
 #include "tcp_echo.h"
 
-#if __ENABLE_ENET_RECEIVE_INTERRUPT
+#if defined(__ENABLE_ENET_RECEIVE_INTERRUPT) && __ENABLE_ENET_RECEIVE_INTERRUPT
 volatile bool rx_flag[BOARD_ENET_COUNT];
 #endif
 
@@ -28,10 +28,10 @@ typedef struct {
 
 ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(ENET_SOC_DESC_ADDR_ALIGNMENT)
 enet_desc_init_t desc_init[BOARD_ENET_COUNT];
-
 enet_desc_t desc[BOARD_ENET_COUNT];
-
 uint8_t mac[BOARD_ENET_COUNT][ENET_MAC];
+
+struct netif gnetif[BOARD_ENET_COUNT];
 
 /*---------------------------------------------------------------------*
  * Initialization
@@ -86,7 +86,7 @@ static hpm_stat_t enet_init(uint8_t idx)
     /* Set SARC */
     enet_config.sarc = enet_sarc_replace_mac0;
 
-    #if __ENABLE_ENET_RECEIVE_INTERRUPT
+    #if defined(__ENABLE_ENET_RECEIVE_INTERRUPT) && __ENABLE_ENET_RECEIVE_INTERRUPT
     /* Enable Enet IRQ */
     board_enable_enet_irq(base);
 
@@ -112,7 +112,7 @@ static hpm_stat_t enet_init(uint8_t idx)
         return status_fail;
     }
 
-    #if __ENABLE_ENET_RECEIVE_INTERRUPT
+    #if defined(__ENABLE_ENET_RECEIVE_INTERRUPT) && __ENABLE_ENET_RECEIVE_INTERRUPT
     /* Disable LPI interrupt */
     enet_disable_lpi_interrupt(base);
     #endif
@@ -134,7 +134,7 @@ int main(void)
     /* Reset Enet PHYs */
     board_reset_multiple_enet_phy();
 
-    #if __ENABLE_ENET_RECEIVE_INTERRUPT
+    #if defined(__ENABLE_ENET_RECEIVE_INTERRUPT) && __ENABLE_ENET_RECEIVE_INTERRUPT
     printf("This is an ethernet demo: TCP Echo On Multiple Ports (Interrupt Usage)\n");
     #else
     printf("This is an ethernet demo: TCP Echo On Multiple Ports (Polling Usage)\n");
@@ -146,7 +146,7 @@ int main(void)
     board_init_multiple_enet_clock();
 
     /* Initialize MAC and DMA */
-    for (int i = 0; i < BOARD_ENET_COUNT; i++) {
+    for (uint8_t i = 0; i < BOARD_ENET_COUNT; i++) {
         if (enet_init(i) == status_success) {
             printf("Enet%d init passed!\n", i);
         } else {
@@ -161,16 +161,15 @@ int main(void)
     lwip_init();
 
     /* Initialize network setting, services and apps */
-    for (int i = 0; i < BOARD_ENET_COUNT; i++) {
-        netif_config(i);
-        user_notification(gnetif[i]);
-        enet_services(gnetif[i]);
-        tcp_echo_init(gnetif[i]);
+    for (uint8_t i = 0; i < BOARD_ENET_COUNT; i++) {
+        netif_config(&gnetif[i], i);
+        enet_services(&gnetif[i]);
+        tcp_echo_init(&gnetif[i]);
     }
 
     while (1) {
-        for (int i = 0; i < BOARD_ENET_COUNT; i++) {
-            enet_common_handler(gnetif[i]);
+        for (uint8_t i = 0; i < BOARD_ENET_COUNT; i++) {
+            enet_common_handler(&gnetif[i]);
         }
     }
 

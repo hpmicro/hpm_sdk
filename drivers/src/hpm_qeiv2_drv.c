@@ -116,3 +116,24 @@ hpm_stat_t qeiv2_config_uvw_position(QEIV2_Type *qeiv2_x, qeiv2_uvw_config_t *co
 
     return status_success;
 }
+
+void qeiv2_config_filter(QEIV2_Type *qeiv2_x, qeiv2_filter_phase_t phase, bool outinv, qeiv2_filter_mode_t mode, bool sync, uint32_t filtlen)
+{
+    uint32_t len = filtlen;
+    uint8_t shift;
+    for (shift = 0; shift <= 7u; shift++) {
+        if (shift > 0) {
+            len >>= 1u;
+        }
+        if (len <= 0x1FFu) {
+            break;
+        }
+    }
+    if (len > 0x1FFu) {
+        len = 0x1FFu;
+        shift = 7u;
+    }
+
+    qeiv2_x->FILT_CFG[phase] =
+        QEIV2_FILT_CFG_OUTINV_SET(outinv) | QEIV2_FILT_CFG_MODE_SET(mode) | QEIV2_FILT_CFG_SYNCEN_SET(sync) | QEIV2_FILT_CFG_FILTLEN_SET(((shift << 9u) | len));
+}

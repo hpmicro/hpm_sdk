@@ -1,10 +1,9 @@
-# Eeprom Emulation
+# EEPROM Emulation
 
-```{eval-rst}
+:::{eval-rst}
 .. toctree::
    :maxdepth: 3
+   :glob:
 
-   base/README_zh
-   perf/README_zh
-
-```
+   **/*_zh
+:::

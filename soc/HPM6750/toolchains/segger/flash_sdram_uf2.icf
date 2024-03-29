@@ -19,7 +19,7 @@ define region SDRAM  = [from 0x40000000 size _extram_size - 4M];
 define region NONCACHEABLE_RAM = [from 0x40000000 + _extram_size - 4M size 4M];
 
 /* Blocks */
-define block vectors with fixed order       { section .isr_vector, section .vector_table };
+define block vectors with fixed order       { section .vector_table, section .isr_vector };
 define block ctors                          { section .ctors,     section .ctors.*, block with         alphabetical order { init_array } };
 define block dtors                          { section .dtors,     section .dtors.*, block with reverse alphabetical order { fini_array } };
 define block eh_frame                       { section .eh_frame,  section .eh_frame.* };

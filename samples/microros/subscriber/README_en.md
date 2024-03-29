@@ -16,7 +16,7 @@ ros2 foxy install:
 `1.`Installation steps on the official website [https://docs.ros.org/en/foxy/Installation/Alternatives/Ubuntu-Development-Setup.html].
 
 `2.`Installing through APT(If necessary，change the source of ubuntu)
-```bash  
+```bash
 sudo apt update
 sudo apt install ros-foxy-desktop
 ```

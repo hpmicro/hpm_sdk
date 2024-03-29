@@ -29,13 +29,14 @@
   ```console
   This is an ethernet demo: TCP Echo on FreeRTOS
   LwIP Version: 2.1.2
-  Reference Clock: Internal Clock
   Enet phy init passed !
-
-  Static IP address
-  IP       : 192.168.100.10
-  Netmask  : 255.255.255.0
-  Gateway  : 192.168.100.1
+  Link Status: Down
+  Link Status: Up
+  Link Speed:  1000Mbps
+  Link Duplex: Full duplex
+  IPv4 Address: 192.168.100.10
+  IPv4 Netmask: 255.255.255.0
+  IPv4 Gateway: 192.168.100.1
   ```
 
 * 打开以太网调试工具
@@ -48,11 +49,9 @@
 
   - 在数据发送窗口编辑发送字符
 
-    ![](../doc/lwip_tcpecho_1.png)
-
-
+    <img src=../doc/lwip_tcpecho_1.png align=left>
 
   - 观察回送数据
 
-    ![](../doc/lwip_tcpecho_2.png)
+    <img src=../doc/lwip_tcpecho_2.png align=left>
 

@@ -95,10 +95,10 @@ HPM6300EVK提供了HPM6300微控制器大部分外设的接口，包括1个SD卡
 
 - ADC16引脚
 
-| 功能                           | 位置    |
-| ------------------------------ | ------- |
-| ADC16参考电压                  | J108[2] |
-| ADC0.INA13/ADC1.INA9/ADC2.INA5 | J26[6]  |
+| 功能          | 位置    |
+| ------------- | ------- |
+| ADC16参考电压 | J108[2] |
+| ADC0.INA6     | J28[38] |
 
 - DAC引脚
 
@@ -120,7 +120,9 @@ HPM6300EVK提供了HPM6300微控制器大部分外设的接口，包括1个SD卡
 | ENET0.EVTO0 | J28[19] |
 | ENET0.EVTO1 | J28[23] |
 
-- UART引脚用于uart_software_rx_idle或uart_rx_timeout或uart_lin工程
+- UART引脚
+
+ UART2用于一些使用UART的功能测试，例如uart_software_rx_idle，uart_rx_timeout，uart_software_lin，MICROROS_UART，USB_CDC_ACM_UART, MODBUS_RTU等。
 
 | 功能      | 位置    |
 | --------- | ------- |
@@ -136,3 +138,10 @@ HPM6300EVK提供了HPM6300微控制器大部分外设的接口，包括1个SD卡
 - 电机引脚
 
   参考 [DRV-LV50A-MP1907 电机驱动板章节](lab_drv_lv50a_mp1907) 进行连接
+
+- Tamper 接口
+
+| 功能     | 引脚   | 位置   |   模式   |
+|----------|--------|--------|---------|
+| TAMP.06  | PZ06   | J28[8] | 主动模式 |
+| TAMP.07  | PZ07   | J28[10]| 主动模式 |

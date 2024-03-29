@@ -2,7 +2,7 @@
 
 ## 概述
 
-input_captrue示例工程演示了GPTMR输入捕获的功能. 
+input_captrue示例工程演示了GPTMR输入捕获的功能.
 
 ## 硬件设置
 

@@ -1,4 +1,4 @@
-# MMC example
+# MMC
 
 ```{eval-rst}
 .. toctree::

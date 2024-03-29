@@ -1,4 +1,4 @@
-# lin example
+# LIN
 
 ```{eval-rst}
 .. toctree::

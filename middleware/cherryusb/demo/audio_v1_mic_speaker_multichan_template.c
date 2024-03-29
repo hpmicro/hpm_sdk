@@ -147,7 +147,7 @@ volatile bool tx_flag = 0;
 volatile bool rx_flag = 0;
 volatile bool ep_tx_busy_flag = false;
 
-void usbd_event_handler(uint8_t event)
+static void usbd_event_handler(uint8_t busid, uint8_t event)
 {
     switch (event) {
         case USBD_EVENT_RESET:
@@ -172,12 +172,12 @@ void usbd_event_handler(uint8_t event)
     }
 }
 
-void usbd_audio_open(uint8_t intf)
+void usbd_audio_open(uint8_t busid, uint8_t intf)
 {
     if (intf == 1) {
         rx_flag = 1;
         /* setup first out ep read transfer */
-        usbd_ep_start_read(AUDIO_OUT_EP, read_buffer, AUDIO_OUT_PACKET);
+        usbd_ep_start_read(busid, AUDIO_OUT_EP, read_buffer, AUDIO_OUT_PACKET);
         printf("OPEN1\r\n");
     } else {
         tx_flag = 1;
@@ -185,7 +185,7 @@ void usbd_audio_open(uint8_t intf)
     }
 }
 
-void usbd_audio_close(uint8_t intf)
+void usbd_audio_close(uint8_t busid, uint8_t intf)
 {
     if (intf == 1) {
         rx_flag = 1;
@@ -196,13 +196,13 @@ void usbd_audio_close(uint8_t intf)
     }
 }
 
-void usbd_audio_out_callback(uint8_t ep, uint32_t nbytes)
+void usbd_audio_out_callback(uint8_t busid, uint8_t ep, uint32_t nbytes)
 {
     USB_LOG_RAW("actual out len:%d\r\n", nbytes);
-    usbd_ep_start_read(AUDIO_OUT_EP, read_buffer, AUDIO_OUT_PACKET);
+    usbd_ep_start_read(busid, AUDIO_OUT_EP, read_buffer, AUDIO_OUT_PACKET);
 }
 
-void usbd_audio_in_callback(uint8_t ep, uint32_t nbytes)
+void usbd_audio_in_callback(uint8_t busid, uint8_t ep, uint32_t nbytes)
 {
     USB_LOG_RAW("actual in len:%d\r\n", nbytes);
     ep_tx_busy_flag = false;
@@ -231,24 +231,24 @@ struct audio_entity_info audio_entity_table[] = {
       .ep = AUDIO_OUT_EP },
 };
 
-void audio_v1_init(void)
+void audio_v1_init(uint8_t busid, uint32_t reg_base)
 {
-    usbd_desc_register(audio_v1_descriptor);
-    usbd_add_interface(usbd_audio_init_intf(&intf0, 0x0100, audio_entity_table, 2));
-    usbd_add_interface(usbd_audio_init_intf(&intf1, 0x0100, audio_entity_table, 2));
-    usbd_add_interface(usbd_audio_init_intf(&intf2, 0x0100, audio_entity_table, 2));
-    usbd_add_endpoint(&audio_in_ep);
-    usbd_add_endpoint(&audio_out_ep);
+    usbd_desc_register(busid, audio_v1_descriptor);
+    usbd_add_interface(busid, usbd_audio_init_intf(busid, &intf0, 0x0100, audio_entity_table, 2));
+    usbd_add_interface(busid, usbd_audio_init_intf(busid, &intf1, 0x0100, audio_entity_table, 2));
+    usbd_add_interface(busid, usbd_audio_init_intf(busid, &intf2, 0x0100, audio_entity_table, 2));
+    usbd_add_endpoint(busid, &audio_in_ep);
+    usbd_add_endpoint(busid, &audio_out_ep);
 
-    usbd_initialize();
+    usbd_initialize(busid, reg_base, usbd_event_handler);
 }
 
-void audio_v1_test(void)
+void audio_v1_test(uint8_t busid)
 {
     if (tx_flag) {
         memset(write_buffer, 'a', AUDIO_IN_PACKET);
         ep_tx_busy_flag = true;
-        usbd_ep_start_write(AUDIO_IN_EP, write_buffer, AUDIO_IN_PACKET);
+        usbd_ep_start_write(busid, AUDIO_IN_EP, write_buffer, AUDIO_IN_PACKET);
         while (ep_tx_busy_flag) {
             if (tx_flag == false) {
                 break;

@@ -1,4 +1,4 @@
-# linv2 example
+# LINV2
 
 ```{eval-rst}
 .. toctree::

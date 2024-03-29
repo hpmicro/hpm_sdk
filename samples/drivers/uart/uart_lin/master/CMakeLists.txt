@@ -9,4 +9,4 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(uart_lin_master)
 
 sdk_app_src(src/uart_lin_master.c)
-generate_ses_project()
+generate_ide_projects()

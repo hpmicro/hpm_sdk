@@ -17,8 +17,8 @@ void plb_type_b_set_lut(PLB_Type *plb, plb_chn_t chn, plb_type_b_lut_slice_t sli
         plb->TYPE_B[chn].MODE &= ~PLB_TYPE_B_MODE_OPT_SEL_MASK;
     }
     if (slice >= plb_type_b_slice_8) {
-        plb->TYPE_B[chn].LUT[1] = (plb->TYPE_B[chn].LUT[1] & (~((uint32_t)0xf))) | PLB_TYPE_B_LUT_LOOKUP_TABLE_SET(opt << ((slice - plb_type_b_slice_8) << 2));
+        plb->TYPE_B[chn].LUT[1] = (plb->TYPE_B[chn].LUT[1] & (~PLB_TYPE_B_LUT_LOOKUP_TABLE_SET(PLB_SLICE_HIGH_BIT_MASK_SET(slice)))) | PLB_TYPE_B_LUT_LOOKUP_TABLE_SET(opt << PLB_SLICE_HIGH_BIT_SHIFT(slice));
     } else {
-        plb->TYPE_B[chn].LUT[0] = (plb->TYPE_B[chn].LUT[0] & (~((uint32_t)0xf))) | PLB_TYPE_B_LUT_LOOKUP_TABLE_SET(opt << (slice << 2));
+        plb->TYPE_B[chn].LUT[0] = (plb->TYPE_B[chn].LUT[0] & (~PLB_TYPE_B_LUT_LOOKUP_TABLE_SET(PLB_SLICE_LOW_BIT_MASK_SET(slice)))) | PLB_TYPE_B_LUT_LOOKUP_TABLE_SET(opt << PLB_SLICE_LOW_BIT_SHIFT(slice));
     }
 }

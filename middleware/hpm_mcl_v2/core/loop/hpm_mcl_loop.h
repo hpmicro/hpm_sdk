@@ -60,6 +60,11 @@ typedef struct {
         float *speed_ts;
         float *position_ts;
     } const_time;
+    struct {
+        struct {
+            mcl_motor_dir_t dir;
+        } block;
+    } rundata;
     mcl_user_value_t ref_id;
     mcl_user_value_t ref_iq;
     mcl_user_value_t ref_speed;
@@ -150,6 +155,22 @@ hpm_mcl_stat_t hpm_mcl_loop_disable_all_user_set_value(mcl_loop_t *loop);
  * @return hpm_mcl_stat_t
  */
 hpm_mcl_stat_t hpm_mcl_loop(mcl_loop_t *loop);
+
+/**
+ * @brief Call this function in the interrupt function to update the motor's sector
+ *
+ * @param loop @ref mcl_loop_t
+ * @return hpm_mcl_stat_t
+ */
+hpm_mcl_stat_t hpm_mcl_loop_refresh_block(mcl_loop_t *loop);
+
+/**
+ * @brief Call this function in the interrupt function to start the motor's sector
+ *
+ * @param loop @ref mcl_loop_t
+ * @return hpm_mcl_stat_t
+ */
+hpm_mcl_stat_t hpm_mcl_loop_start_block(mcl_loop_t *loop);
 
 /**
  * @brief Enable Loop

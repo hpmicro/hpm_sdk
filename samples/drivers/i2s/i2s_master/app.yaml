@@ -1,3 +1,5 @@
 dependency:
-  - i2s_pinout
+  - i2s
   - dao
+  - board_audio_out
+  - board_i2s_pin

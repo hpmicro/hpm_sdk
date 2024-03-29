@@ -15,9 +15,9 @@ This example project shows access to a U disk (Filesystem format: FAT).
 
 - File `CMakeLists.txt`：
 
-  When BOARD_HOST_RHPORT_NUM is defined as 0, it means to use USB0.
+  When BOARD_TUH_RHPORT is defined as 0, it means to use USB0.
 
-  When BOARD_HOST_RHPORT_NUM is defined as 1, it means to use USB1.
+  When BOARD_TUH_RHPORT is defined as 1, it means to use USB1.
 - The property of USB host can be configured by "tusb_config.h" or "CMakeListx.txt"
 
 ## Running the example

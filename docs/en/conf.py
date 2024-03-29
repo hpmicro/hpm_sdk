@@ -12,6 +12,7 @@ import subprocess
 import shutil
 import re
 import sys
+import datetime
 from pathlib import Path
 import sphinx_rtd_theme
 
@@ -20,10 +21,10 @@ HTML_STATIC_DIR = Path(__file__).resolve().parents[0] / "_static"
 DOXY_OUT = HTML_STATIC_DIR / "api_doc"
 
 sys.path.insert(0, str(HPM_SDK_BASE / "docs" / "_ext"))
-
+ 
 os.environ["HPM_SDK_BASE"] = str(HPM_SDK_BASE)
 project = 'HPMicro Software Development Kit'
-copyright = '2020-2023, HPMicro'
+copyright = '2020-%s, HPMicro' % datetime.date.today().year
 author = 'HPMicro Software Team'
 
 # -- General configuration ---------------------------------------------------
@@ -37,6 +38,7 @@ extensions = [
     'sphinx.ext.duration',
     'sphinx_inline_tabs',
     "sphinx.ext.viewcode",
+    'sphinxcontrib.moderncmakedomain',
     "external_content",
     "doxyrunner",
 ]
@@ -47,8 +49,6 @@ DOXY_OUT.mkdir(parents = True, exist_ok = True)
 doxyrunner_doxygen = os.environ.get("DOXYGEN_EXECUTABLE", "doxygen")
 doxyrunner_doxyfile = HPM_SDK_BASE / "docs" / "doxygen" / "Doxyfile" 
 doxyrunner_outdir = DOXY_OUT
-doxyrunner_fmt = True
-doxyrunner_fmt_vars = {"HPM_SDK_BASE": str(HPM_SDK_BASE)}
 doxyrunner_outdir_var = "DOXYGEN_OUTPUT_DIR"
 
 # List of patterns, relative to source directory, that match files and
@@ -63,6 +63,8 @@ source_suffix = {
 }
 
 external_content_contents = [
+    (HPM_SDK_BASE,  "CHANGELOG.md"),
+    (HPM_SDK_BASE,  "docs/*.rst"),
     (HPM_SDK_BASE / "docs/en", "[!_]*"),
     (HPM_SDK_BASE, "boards/**/*_en.md",),
     (HPM_SDK_BASE, "boards/**/doc"),

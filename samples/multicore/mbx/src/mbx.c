@@ -221,7 +221,11 @@ static void test_singleword_communication(void)
 
 int main(void)
 {
+#if BOARD_RUNNING_CORE == HPM_CORE0
     board_init();
+#else
+    board_init_core1();
+#endif
     printf("mbx example for core %d\n", BOARD_RUNNING_CORE);
     intc_m_enable_irq_with_priority(MBX_IRQ, 1);
 #if BOARD_RUNNING_CORE == HPM_CORE0

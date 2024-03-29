@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 hpmicro
+ * Copyright (c) 2023-2024 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
@@ -8,7 +8,7 @@
 #include "rtt_port.h"
 #include <rtthread.h>
 
-#include "common_lwip.h"
+#include "common.h"
 #include "lwip.h"
 #include "lwip/init.h"
 #include "lwip/tcpip.h"
@@ -19,8 +19,10 @@
 #define TIMER_TIMEOUT_CNT    1000
 
 /*--------------- Tasks Priority -------------*/
-#define MAIN_TASK_PRIO   (tskIDLE_PRIORITY + 1)
-#define DHCP_TASK_PRIO   (tskIDLE_PRIORITY + 4)
+#define IDLE_TASK_PRIO      (RT_THREAD_PRIORITY_MAX - 1)
+#define MAIN_TASK_PRIO      (IDLE_TASK_PRIO - 1)
+#define DHCP_TASK_PRIO      (IDLE_TASK_PRIO - 4)
+#define NETIF_STA_TASK_PRIO (IDLE_TASK_PRIO - 4)
 
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ENET_SOC_DESC_ADDR_ALIGNMENT)
 __RW enet_rx_desc_t dma_rx_desc_tab[ENET_RX_BUFF_COUNT]; /* Ethernet Rx DMA Descriptor */
@@ -36,6 +38,7 @@ __RW uint8_t tx_buff[ENET_TX_BUFF_COUNT][ENET_TX_BUFF_SIZE]; /* Ethernet Transmi
 
 enet_desc_t desc;
 uint8_t mac[ENET_MAC];
+struct netif gnetif;
 
 void Main_task(void *pvParameters);
 void thread_entry(void *arg);
@@ -144,7 +147,7 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     #if defined(RGMII) && RGMII
         #if defined(__USE_DP83867) && __USE_DP83867
         dp83867_reset(ptr);
-        #if __DISABLE_AUTO_NEGO
+        #if defined(__DISABLE_AUTO_NEGO) && __DISABLE_AUTO_NEGO
         dp83867_set_mdi_crossover_mode(ENET, enet_phy_mdi_crossover_manual_mdix);
         #endif
         dp83867_basic_mode_default_config(ptr, &phy_config);
@@ -185,13 +188,16 @@ int rtthread_init(void)
 {
     static rt_timer_t timer = RT_NULL;
 
-    rt_thread_t main_thread = rt_thread_create("main", thread_entry, NULL, 1024, 1, 10);
+    rt_thread_t main_thread = rt_thread_create("main", thread_entry, NULL, 1024, MAIN_TASK_PRIO, 10);
     rt_thread_startup(main_thread);
 
-#if LWIP_DHCP
-    rt_thread_t dhcp_thread = rt_thread_create("DHCP", LwIP_DHCP_task, NULL, 1024, 5, 10);
+#if defined(LWIP_DHCP) && LWIP_DHCP
+    rt_thread_t dhcp_thread = rt_thread_create("DHCP", LwIP_DHCP_task, &gnetif, 1024, DHCP_TASK_PRIO, 10);
     rt_thread_startup(dhcp_thread);
 #endif
+
+    rt_thread_t netif_update_link_status_thread = rt_thread_create("netif update status", netif_update_link_status, &gnetif, 1024, NETIF_STA_TASK_PRIO, 10);
+    rt_thread_startup(netif_update_link_status_thread);
 
     timer = rt_timer_create("timer", timer_callback, RT_NULL, TIMER_TIMEOUT_CNT, RT_TIMER_FLAG_PERIODIC);
     rt_timer_start(timer);
@@ -214,7 +220,8 @@ void thread_entry(void *arg)
     enet_init(ENET);
 
     /* Initialize LwIP stack */
-    LwIP_Init();
+    tcpip_init(NULL, NULL);
+    netif_config(&gnetif);
 
     tcp_echo_init();
 }

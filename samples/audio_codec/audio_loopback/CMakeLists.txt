@@ -13,4 +13,4 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(audio_loopback)
 
 sdk_app_src(src/audio_codec.c)
-generate_ses_project()
+generate_ide_projects()

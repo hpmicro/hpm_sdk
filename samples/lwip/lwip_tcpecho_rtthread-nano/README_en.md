@@ -2,7 +2,7 @@
 
 ## Overview
 
-This  example shows TCP echo communication on RTThread-Nanno.
+This example shows TCP echo communication on RTThread-Nano.
 
 - PC sends TCP data frames to MCU,  and then MCU sends the data frames back to PC
 
@@ -15,35 +15,31 @@ This  example shows TCP echo communication on RTThread-Nanno.
 
 - Ethernet Port Settings: Refer to [Ethernet common project settings](../doc/Ethernet_Common_Project_Settings_en.md)
 - Ethernet DHCP Configurations
-    - the configurations in the `CMakeLists.txt` as follows:
-      - sdk_compile_definitions(-DLWIP_DHCP=0): Disable DHCP feature
-      - sdk_compile_definitions(-DLWIP_DHCP=1): Enable DHCP feature
-
+  - the configurations in the `CMakeLists.txt` as follows:
+    - sdk_compile_definitions(-DLWIP_DHCP=0): Disable DHCP feature
+    - sdk_compile_definitions(-DLWIP_DHCP=1): Enable DHCP feature
 
 ## Run Example
 
 - Compiling and Downloading
 - Running log is shown in the serial terminal as follows:
 
-     ```console
-     This is an ethernet demo: TCP Echo on RTThread-Nano
-     LwIP Version: 2.1.2
+  ```console
+  This is an ethernet demo: TCP Echo on RTThread-Nano
+  LwIP Version: 2.1.2
 
-      \ | /
-     - RT -     Thread Operating System
-      / | \     3.1.5 build Dec  6 2023
-      2006 - 2020 Copyright by rt-thread team
-     Enet phy init passed !
-
-     Static IP address
-     IP       : 192.168.100.10
-     Netmask  : 255.255.255.0
-     Gateway  : 192.168.100.1
-     msh >Link Status: Up
-     Link Speed:  1000Mbps
-     Link Duplex: Full duplex
-     ```
-
+   \ | /
+  - RT -     Thread Operating System
+   / | \     3.1.5 build Jan 10 2024
+   2006 - 2020 Copyright by rt-thread team
+  Enet phy init passed !
+msh >Link Status: Up
+  Link Speed:  1000Mbps
+  Link Duplex: Full duplex
+  IPv4 Address: 192.168.100.10
+  IPv4 Netmask: 255.255.255.0
+  IPv4 Gateway: 192.168.100.1
+  ```
 - Run an Ethernet debugging tool
 
   - create and set a TCP client:  TCP Server IP: 192.168.100.10/Port: 5001
@@ -54,8 +50,8 @@ This  example shows TCP echo communication on RTThread-Nanno.
 
   - Enter and send any characters in the edit window
 
-    ![](../doc/lwip_tcpecho_1.png)
+    <img src=../doc/lwip_tcpecho_1.png align=left>
 
   - Watch the characters echoed from MCU
+    <img src=../doc/lwip_tcpecho_2.png align=left>
 
-    ![](../doc/lwip_tcpecho_2.png)

@@ -62,7 +62,7 @@ Additional information:
           WrOff == (RdOff - 1): Buffer is full
           WrOff >  RdOff:       Free space includes wrap-around
           WrOff <  RdOff:       Used space includes wrap-around
-          (WrOff == (SizeOfBuffer - 1)) && (RdOff == 0):  
+          (WrOff == (SizeOfBuffer - 1)) && (RdOff == 0):
                                 Buffer full and wrap-around after next byte
 
 
@@ -181,14 +181,14 @@ Additional information:
 *
 **********************************************************************
 */
-#if (defined __ICCARM__) || (defined __ICCRX__)
+#if (defined __ICCARM__) || (defined __ICCRX__) || (defined __ICCRISCV__)
   #define RTT_PRAGMA(P) _Pragma(#P)
 #endif
 
 #if SEGGER_RTT_ALIGNMENT || SEGGER_RTT_BUFFER_ALIGNMENT
   #if ((defined __GNUC__) || (defined __clang__))
     #define SEGGER_RTT_ALIGN(Var, Alignment) Var __attribute__ ((aligned (Alignment)))
-  #elif (defined __ICCARM__) || (defined __ICCRX__)
+  #elif (defined __ICCARM__) || (defined __ICCRX__) || (defined __ICCRISCV__)
     #define PRAGMA(A) _Pragma(#A)
 #define SEGGER_RTT_ALIGN(Var, Alignment) RTT_PRAGMA(data_alignment=Alignment) \
                                   Var
@@ -204,7 +204,7 @@ Additional information:
 #if defined(SEGGER_RTT_SECTION) || defined (SEGGER_RTT_BUFFER_SECTION)
   #if ((defined __GNUC__) || (defined __clang__))
     #define SEGGER_RTT_PUT_SECTION(Var, Section) __attribute__ ((section (Section))) Var
-  #elif (defined __ICCARM__) || (defined __ICCRX__)
+  #elif (defined __ICCARM__) || (defined __ICCRX__) || (defined __ICCRISCV__)
 #define SEGGER_RTT_PUT_SECTION(Var, Section) RTT_PRAGMA(location=Section) \
                                         Var
   #elif (defined __CC_ARM)
@@ -554,7 +554,7 @@ static unsigned _GetAvailWriteSpace(SEGGER_RTT_BUFFER_UP* pRing) {
 *    Reads characters from SEGGER real-time-terminal control block
 *    which have been previously stored by the application.
 *    Do not lock against interrupts and multiple access.
-*    Used to do the same operation that J-Link does, to transfer 
+*    Used to do the same operation that J-Link does, to transfer
 *    RTT data via other channels, such as TCP/IP or UART.
 *
 *  Parameters
@@ -739,7 +739,7 @@ unsigned SEGGER_RTT_ReadNoLock(unsigned BufferIndex, void* pData, unsigned Buffe
 *  Function description
 *    Reads characters from SEGGER real-time-terminal control block
 *    which have been previously stored by the application.
-*    Used to do the same operation that J-Link does, to transfer 
+*    Used to do the same operation that J-Link does, to transfer
 *    RTT data via other channels, such as TCP/IP or UART.
 *
 *  Parameters
@@ -754,7 +754,7 @@ unsigned SEGGER_RTT_ReadNoLock(unsigned BufferIndex, void* pData, unsigned Buffe
 *    This function must not be called when J-Link might also do RTT.
 *    This function locks against all other RTT operations. I.e. during
 *    the read operation, writing is also locked.
-*    If only one consumer reads from the up buffer, 
+*    If only one consumer reads from the up buffer,
 *    call sEGGER_RTT_ReadUpBufferNoLock() instead.
 */
 unsigned SEGGER_RTT_ReadUpBuffer(unsigned BufferIndex, void* pBuffer, unsigned BufferSize) {
@@ -812,7 +812,7 @@ unsigned SEGGER_RTT_Read(unsigned BufferIndex, void* pBuffer, unsigned BufferSiz
 *  Function description
 *    Stores a specified number of characters in SEGGER RTT
 *    control block.
-*    SEGGER_RTT_WriteWithOverwriteNoLock does not lock the application 
+*    SEGGER_RTT_WriteWithOverwriteNoLock does not lock the application
 *    and overwrites data if the data does not fit into the buffer.
 *
 *  Parameters
@@ -825,7 +825,7 @@ unsigned SEGGER_RTT_Read(unsigned BufferIndex, void* pBuffer, unsigned BufferSiz
 *    (2) For performance reasons this function does not call Init()
 *        and may only be called after RTT has been initialized.
 *        Either by calling SEGGER_RTT_Init() or calling another RTT API function first.
-*    (3) Do not use SEGGER_RTT_WriteWithOverwriteNoLock if a J-Link 
+*    (3) Do not use SEGGER_RTT_WriteWithOverwriteNoLock if a J-Link
 *        connection reads RTT data.
 */
 void SEGGER_RTT_WriteWithOverwriteNoLock(unsigned BufferIndex, const void* pBuffer, unsigned NumBytes) {
@@ -999,7 +999,7 @@ CopyStraight:
 *    Stores a specified number of characters in SEGGER RTT
 *    control block inside a <Down> buffer.
 *    SEGGER_RTT_WriteDownBufferNoLock does not lock the application.
-*    Used to do the same operation that J-Link does, to transfer 
+*    Used to do the same operation that J-Link does, to transfer
 *    RTT data from other channels, such as TCP/IP or UART.
 *
 *  Parameters
@@ -1167,7 +1167,7 @@ unsigned SEGGER_RTT_WriteNoLock(unsigned BufferIndex, const void* pBuffer, unsig
 *    This function must not be called when J-Link might also do RTT.
 *    This function locks against all other RTT operations. I.e. during
 *    the write operation, writing from the application is also locked.
-*    If only one consumer writes to the down buffer, 
+*    If only one consumer writes to the down buffer,
 *    call SEGGER_RTT_WriteDownBufferNoLock() instead.
 */
 unsigned SEGGER_RTT_WriteDownBuffer(unsigned BufferIndex, const void* pBuffer, unsigned NumBytes) {

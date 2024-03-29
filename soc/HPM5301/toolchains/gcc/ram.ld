@@ -242,5 +242,6 @@ SECTIONS
     } > DLM
 
     __fw_size__ = SIZEOF(.start) + SIZEOF(.vectors) + SIZEOF(.rel) + SIZEOF(.text) + SIZEOF(.data) + SIZEOF(.fast) + SIZEOF(.tdata) + SIZEOF(.noncacheable.init);
-    ASSERT(__fw_size__ <= LENGTH(ILM), "******  FAILED! ILM has not enough space!  ******")
+    __last_addr__ = __noncacheable_init_load_addr__ + SIZEOF(.noncacheable.init);
+    ASSERT(((__fw_size__ <= LENGTH(ILM)) && (__last_addr__ <= (ORIGIN(ILM) + LENGTH(ILM)))), "******  FAILED! ILM has not enough space!  ******")
 }

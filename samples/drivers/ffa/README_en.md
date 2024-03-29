@@ -1,4 +1,4 @@
-# FFA Demo
+# FFA
 
 ## Overview
 

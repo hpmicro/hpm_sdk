@@ -100,7 +100,7 @@ static void dma_transfer_config(void)
     dma_default_channel_config(APP_GPTMR_DMA, &ch_config);
     ch_config.src_addr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)&shape_table[0]);
     ch_config.dst_addr = (uint32_t)&APP_BOARD_GPTMR->CHANNEL[APP_BOARD_GPTMR_CH].RLD;
-    ch_config.src_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
+    ch_config.src_mode = DMA_HANDSHAKE_MODE_NORMAL;
     ch_config.src_width = APP_DMA_SRC_WIDTH;
     ch_config.src_addr_ctrl = DMA_ADDRESS_CONTROL_INCREMENT;
     ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;

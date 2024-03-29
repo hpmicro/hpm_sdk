@@ -20,4 +20,4 @@ sdk_inc(../common/adapt)
 
 sdk_app_src(../common/adapt/spi_sd_adapt.c)
 sdk_app_src(src/spi_sd_fatfs.c)
-generate_ses_project()
+generate_ide_projects()

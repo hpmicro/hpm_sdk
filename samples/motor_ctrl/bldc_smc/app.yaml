@@ -1,6 +1,5 @@
 dependency:
-  - motor-control
-  - bldc_smc
+  - board_motor_control
 
 excluded_targets:
   - flash_sdram_xip_release

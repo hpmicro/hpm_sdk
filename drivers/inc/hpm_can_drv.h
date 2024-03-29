@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -239,12 +239,12 @@ typedef struct {
         };
     };
 
-    can_node_mode_t mode;                            /**< CAN work mode */
+    can_node_mode_t mode;                       /**< CAN work mode */
     bool use_lowlevel_timing_setting;           /**< Use low-level timing setting */
     bool enable_canfd;                          /**< Enable CAN FD */
     bool enable_self_ack;                       /**< CAN self-ack flag */
-    bool disable_re_transmission_for_ptb;       /**< disable re-transmission for primary transmit buffer */
-    bool disable_re_transmission_for_stb;       /**< disable re-transmission for secondary transmit buffer */
+    bool disable_ptb_retransmission;            /**< disable re-transmission for primary transmit buffer */
+    bool disable_stb_retransmission;            /**< disable re-transmission for secondary transmit buffer */
     bool enable_tdc;                            /**< Enable transmittor delay compensation */
 
     uint8_t filter_list_num;                    /**< element number of CAN filters in filter list */
@@ -335,6 +335,61 @@ static inline void can_enter_standby_mode(CAN_Type *base, bool enable)
         base->CMD_STA_CMD_CTRL &= ~CAN_CMD_STA_CMD_CTRL_STBY_MASK;
     }
 }
+
+/**
+ * @brief Disable the re-transmission for the primary transmission buffer
+ *
+ * @param [in] base CAN base address
+ * @param [in] enable Flag for disabling re-transmission for PTB
+ */
+static inline void can_disable_ptb_retransmission(CAN_Type *base, bool enable)
+{
+    if (enable) {
+        base->CMD_STA_CMD_CTRL |= CAN_CMD_STA_CMD_CTRL_TPSS_MASK;
+    } else {
+        base->CMD_STA_CMD_CTRL &= ~CAN_CMD_STA_CMD_CTRL_TPSS_MASK;
+    }
+}
+
+/**
+ * @brief Check whether re-transmission is disabled for PTB or not
+ *
+ * @param [in] base CAN base address
+ * @return true Re-transmission is disabled for PTB
+ * @return false Re-transmission is enabled for PTB
+ */
+static inline bool can_is_ptb_retransmission_disabled(CAN_Type *base)
+{
+    return ((base->CMD_STA_CMD_CTRL & CAN_CMD_STA_CMD_CTRL_TPSS_MASK) != 0);
+}
+
+/**
+ * @brief Disable the re-transmission for the secondary transmission buffer
+ *
+ * @param [in] base CAN base address
+ * @param [in] enable Flag for disabling re-transmission for STB
+ */
+static inline void can_disable_stb_retransmission(CAN_Type *base, bool enable)
+{
+    if (enable) {
+        base->CMD_STA_CMD_CTRL |= CAN_CMD_STA_CMD_CTRL_TSSS_MASK;
+    } else {
+        base->CMD_STA_CMD_CTRL &= ~CAN_CMD_STA_CMD_CTRL_TSSS_MASK;
+    }
+}
+
+/**
+ * @brief Check whether re-transmission is disabled for STB or not
+ *
+ * @param [in] base CAN base address
+ * @return true Re-transmission is disabled for STB
+ * @return false Re-transmission is enabled for STB
+ */
+static inline bool can_is_stb_retransmission_disabled(CAN_Type *base)
+{
+    return ((base->CMD_STA_CMD_CTRL & CAN_CMD_STA_CMD_CTRL_TSSS_MASK) != 0);
+}
+
 
 /**
  * @brief Select CAN TX buffer

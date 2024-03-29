@@ -574,7 +574,6 @@ static inline void pcfg_ddr_dcdc_set_voltage_output(PCFG_Type *ptr, uint8_t volt
  *
  * @param[in] ptr base address
  * @param[in] limit current limit at low power mode
- * @param[in] over_limit unused
  */
 static inline void pcfg_ddr_dcdc_set_lp_current_limit(PCFG_Type *ptr, pcfg_dcdc_lp_current_limit_t limit)
 {

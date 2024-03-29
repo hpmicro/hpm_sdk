@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -21,8 +21,8 @@
 #define FREQ_PRESET1_PLL1_CLK2 (250000000UL)
 #define FREQ_PRESET1_PLL1_CLK0 (480000000UL)
 #define FREQ_PRESET1_PLL1_CLK1 (320000000UL)
-#define FREQ_PRESET1_PLL2_CLK0 (5160960000UL)
-#define FREQ_PRESET1_PLL2_CLK1 (4515840000UL)
+#define FREQ_PRESET1_PLL2_CLK0 (516096000UL)
+#define FREQ_PRESET1_PLL2_CLK1 (451584000UL)
 #define FREQ_32KHz (32768UL)
 #define ADC_INSTANCE_NUM ARRAY_SIZE(HPM_SYSCTL->ADCCLK)
 #define DAC_INSTANCE_NUM ARRAY_SIZE(HPM_SYSCTL->DACCLK)
@@ -369,6 +369,42 @@ clk_src_t clock_get_source(clock_name_t clock_name)
     }
 
     return clk_src;
+}
+
+uint32_t clock_get_divider(clock_name_t clock_name)
+{
+    uint32_t clk_divider = CLOCK_DIV_INVALID;
+    uint32_t clk_src_type = GET_CLK_SRC_GROUP_FROM_NAME(clock_name);
+    uint32_t node_or_instance = GET_CLK_NODE_FROM_NAME(clock_name);
+    switch (clk_src_type) {
+    case CLK_SRC_GROUP_COMMON:
+        clk_divider = 1UL + SYSCTL_CLOCK_DIV_GET(HPM_SYSCTL->CLOCK[node_or_instance]);
+        break;
+    case CLK_SRC_GROUP_WDG:
+        if (node_or_instance < WDG_INSTANCE_NUM) {
+            clk_divider = 1UL;
+        }
+        break;
+    case CLK_SRC_GROUP_PWDG:
+        clk_divider = 1UL;
+        break;
+    case CLK_SRC_GROUP_PMIC:
+        clk_divider = 1UL;
+        break;
+    case CLK_SRC_GROUP_CPU0:
+        clk_divider = 1UL + SYSCTL_CLOCK_CPU_DIV_GET(HPM_SYSCTL->CLOCK_CPU[0]);
+        break;
+    case CLK_SRC_GROUP_AHB:
+         clk_divider = 1UL + SYSCTL_CLOCK_CPU_SUB1_DIV_GET(HPM_SYSCTL->CLOCK_CPU[0]);
+        break;
+    case CLK_SRC_GROUP_AXI:
+       clk_divider = 1UL + SYSCTL_CLOCK_CPU_SUB0_DIV_GET(HPM_SYSCTL->CLOCK_CPU[0]);
+       break;
+    default:
+        clk_divider = CLOCK_DIV_INVALID;
+        break;
+    }
+    return clk_divider;
 }
 
 hpm_stat_t clock_set_adc_source(clock_name_t clock_name, clk_src_t src)

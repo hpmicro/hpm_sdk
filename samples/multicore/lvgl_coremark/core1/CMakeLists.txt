@@ -29,4 +29,4 @@ sdk_app_src(src/port/core_portme.c)
 
 sdk_ses_compile_options(-mabi=ilp32d)
 sdk_ses_compile_options(-march=rv32gc)
-generate_ses_project()
+generate_ide_projects()

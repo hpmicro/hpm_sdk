@@ -2,7 +2,7 @@
 
 ## Overview
 
-This  example project shows USB hid generic transfers
+This example project shows USB hid generic transfers
 
 - PC transmits a HID report to MCU,  and then MC send it back to PC
 
@@ -28,7 +28,7 @@ When the project runs correctly
 - Run hid_echo.py
 - View  "USB HID Write" log： PC transmits 1024 bytes to MCU through USB and the first byte is the output report id
 
-  ![1646393534874.png](doc/1646393534874.png)
+  ![1646393298095.png](doc/1646393298095.png)
 - View "USB HID Read" log: PC receives 1024 bytes to MCU through USB and the first byte is the output report id
 
-  ![1646393553543.png](doc/1646393553543.png)
+  ![1646386827393.png](doc/1646386827393.png)

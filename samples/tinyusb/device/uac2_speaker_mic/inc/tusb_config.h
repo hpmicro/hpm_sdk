@@ -66,7 +66,7 @@ extern "C" {
 /* Can be set during compilation i.e.: make LOG=<value for CFG_TUSB_DEBUG> BOARD=<bsp> */
 /* Keep in mind that enabling logs when data is streaming can disrupt data flow. */
 /* It can be very helpful though when audio unit requests are tested/debugged. */
-#define CFG_TUSB_DEBUG              1
+#define CFG_TUSB_DEBUG              0
 #endif
 
 /* USB DMA on some MCUs can only access a specific SRAM region with restriction on alignment.

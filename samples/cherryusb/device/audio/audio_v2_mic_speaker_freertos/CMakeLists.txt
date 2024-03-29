@@ -24,4 +24,4 @@ sdk_compile_definitions(-DUSE_NONVECTOR_MODE=1)
 sdk_compile_definitions(-DDISABLE_IRQ_PREEMPTIVE=1)
 sdk_compile_definitions(-DCONFIG_USB_DBG_LEVEL=USB_DBG_WARNING)
 
-generate_ses_project()
+generate_ide_projects()

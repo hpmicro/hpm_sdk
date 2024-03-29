@@ -38,6 +38,7 @@
 #define HPM_MATH_DSP_SORT 1
 
 #define HPM_MATH_NN_ACTIVATION 1
+#define HPM_MATH_NN_TINYENGINE 1
 #define HPM_MATH_NN_BASIC  1
 #define HPM_MATH_NN_CONCATENATION 1
 #define HPM_MATH_NN_CONVOLUTION 1
@@ -1557,7 +1558,7 @@ static inline void hpm_dsp_shift_u8(uint8_t *src, int8_t shift, uint8_t *dst, ui
  * @param[in]       low  lower bound.
  * @param[in]       high higher bound.
  * @param[in]       size number of elements in a vector
- * @return none.
+ *
  */
 static inline void hpm_dsp_clip_f32(float32_t *src, float32_t *dst, float32_t low, float32_t high, uint32_t size)
 {
@@ -1572,7 +1573,7 @@ static inline void hpm_dsp_clip_f32(float32_t *src, float32_t *dst, float32_t lo
  * @param[in]       low  lower bound.
  * @param[in]       high higher bound.
  * @param[in]       size number of elements in a vector
- * @return none.
+ *
  */
 static inline void hpm_dsp_clip_q31(q31_t *src, q31_t *dst, q31_t low, q31_t high, uint32_t size)
 {
@@ -1587,7 +1588,7 @@ static inline void hpm_dsp_clip_q31(q31_t *src, q31_t *dst, q31_t low, q31_t hig
  * @param[in]       low  lower bound.
  * @param[in]       high higher bound.
  * @param[in]       size number of elements in a vector
- * @return none.
+ *
  */
 static inline void hpm_dsp_clip_q15(q15_t *src, q15_t *dst, q15_t low, q15_t high, uint32_t size)
 {
@@ -1602,7 +1603,7 @@ static inline void hpm_dsp_clip_q15(q15_t *src, q15_t *dst, q15_t low, q15_t hig
  * @param[in]       low  lower bound.
  * @param[in]       high higher bound.
  * @param[in]       size number of elements in a vector
- * @return none.
+ *
  */
 static inline void hpm_dsp_clip_q7(q7_t *src, q7_t *dst, q7_t low, q7_t high, uint32_t size)
 {
@@ -1631,7 +1632,7 @@ static inline void hpm_dsp_clip_q7(q7_t *src, q7_t *dst, q7_t low, q7_t high, ui
  * @param[in]       *src2 pointer of the second input vector
  * @param[out]      *dst pointer of the output vector
  * @param[in]       size number of elements in a vector
- * @return none.
+ *
  */
 static inline void hpm_dsp_and_u32(u32_t *src1, u32_t *src2, u32_t *dst, uint32_t size)
 {
@@ -1645,7 +1646,7 @@ static inline void hpm_dsp_and_u32(u32_t *src1, u32_t *src2, u32_t *dst, uint32_
  * @param[in]       *src2 pointer of the second input vector
  * @param[out]      *dst pointer of the output vector
  * @param[in]       size number of elements in a vector
- * @return none.
+ *
  */
 static inline void hpm_dsp_and_u8(u8_t *src1, u8_t *src2, u8_t *dst, uint32_t size)
 {
@@ -1674,7 +1675,7 @@ static inline void hpm_dsp_and_u8(u8_t *src1, u8_t *src2, u8_t *dst, uint32_t si
  * @param[in]       *src2 pointer of the second input vector
  * @param[out]      *dst pointer of the output vector
  * @param[in]       size number of elements in a vector
- * @return none.
+ *
  */
 static inline void hpm_dsp_or_u32(u32_t *src1, u32_t *src2, u32_t *dst, uint32_t size)
 {
@@ -1688,7 +1689,7 @@ static inline void hpm_dsp_or_u32(u32_t *src1, u32_t *src2, u32_t *dst, uint32_t
  * @param[in]       *src2 pointer of the second input vector
  * @param[out]      *dst pointer of the output vector
  * @param[in]       size number of elements in a vector
- * @return none.
+ *
  */
 static inline void hpm_dsp_or_u16(u16_t *src1, u16_t *src2, u16_t *dst, uint32_t size)
 {
@@ -1702,7 +1703,7 @@ static inline void hpm_dsp_or_u16(u16_t *src1, u16_t *src2, u16_t *dst, uint32_t
  * @param[in]       *src2 pointer of the second input vector
  * @param[out]      *dst pointer of the output vector
  * @param[in]       size number of elements in a vector
- * @return none.
+ *
  */
 static inline void hpm_dsp_or_u8(u8_t *src1, u8_t *src2, u8_t *dst, uint32_t size)
 {
@@ -1731,7 +1732,7 @@ static inline void hpm_dsp_or_u8(u8_t *src1, u8_t *src2, u8_t *dst, uint32_t siz
  * @param[in]       *src2 pointer of the second input vector
  * @param[out]      *dst pointer of the output vector
  * @param[in]       size number of elements in a vector
- * @return none.
+ *
  */
 static inline void hpm_dsp_xor_u32(u32_t *src1, u32_t *src2, u32_t *dst, uint32_t size)
 {
@@ -1745,7 +1746,7 @@ static inline void hpm_dsp_xor_u32(u32_t *src1, u32_t *src2, u32_t *dst, uint32_
  * @param[in]       *src2 pointer of the second input vector
  * @param[out]      *dst pointer of the output vector
  * @param[in]       size number of elements in a vector
- * @return none.
+ *
  */
 static inline void hpm_dsp_xor_u16(u16_t *src1, u16_t *src2, u16_t *dst, uint32_t size)
 {
@@ -1759,7 +1760,7 @@ static inline void hpm_dsp_xor_u16(u16_t *src1, u16_t *src2, u16_t *dst, uint32_
  * @param[in]       *src2 pointer of the second input vector
  * @param[out]      *dst pointer of the output vector
  * @param[in]       size number of elements in a vector
- * @return none.
+ *
  */
 static inline void hpm_dsp_xor_u8(u8_t *src1, u8_t *src2, u8_t *dst, uint32_t size)
 {
@@ -1787,7 +1788,7 @@ static inline void hpm_dsp_xor_u8(u8_t *src1, u8_t *src2, u8_t *dst, uint32_t si
  * @param[in]       *src pointer of the input vector
  * @param[out]      *dst pointer of the output vector
  * @param[in]       size number of elements in a vector
- * @return none.
+ *
  */
 static inline void hpm_dsp_not_u32(u32_t *src, u32_t *dst, uint32_t size)
 {
@@ -1800,7 +1801,7 @@ static inline void hpm_dsp_not_u32(u32_t *src, u32_t *dst, uint32_t size)
  * @param[in]       *src pointer of the input vector
  * @param[out]      *dst pointer of the output vector
  * @param[in]       size number of elements in a vector
- * @return none.
+ *
  */
 static inline void hpm_dsp_not_u16(u16_t *src, u16_t *dst, uint32_t size)
 {
@@ -1813,7 +1814,7 @@ static inline void hpm_dsp_not_u16(u16_t *src, u16_t *dst, uint32_t size)
  * @param[in]       *src pointer of the input vector
  * @param[out]      *dst pointer of the output vector
  * @param[in]       size number of elements in a vector
- * @return none.
+ *
  */
 static inline void hpm_dsp_not_u8(u8_t *src, u8_t *dst, uint32_t size)
 {
@@ -1861,13 +1862,7 @@ uint32_t hpm_math_sw_reverse_bit32_lsb_to_msb(uint32_t lsb);
  */
 uint32_t hpm_math_sw_reverse_bit32_msb_to_lsb(uint32_t msb);
 
-
 #endif
-
-/**
- * @}
- *
- */
 
 #ifdef HPM_MATH_DSP_COMPLEX
 
@@ -3796,7 +3791,7 @@ static inline void hpm_dsp_mat_scale_q31(const q31_t *src, q31_t scale_fract, in
  * @param[out] dst pointer of the output matrix
  * @param[in] row number of rows in a matrix
  * @param[in] col number of columns in a matrix
- * @return none.
+ *
  */
 static inline void hpm_dsp_mat_sub_f64(const float64_t *src1, const float64_t *src2,
                        float64_t *dst, uint32_t row, uint32_t col)
@@ -3863,7 +3858,7 @@ static inline void hpm_dsp_mat_sub_q31(const q31_t *src1, const q31_t *src2, q31
  * @param[out]      dst  pointer of the output matrix
  * @param[in]       row   number of rows in a matrix
  * @param[in]       col   number of columns in a matrix
- * @return none.
+ *
  */
 static inline void hpm_dsp_mat_trans_f64(const float64_t *src, float64_t *dst, uint32_t row, uint32_t col)
 {
@@ -3934,7 +3929,7 @@ static inline void hpm_dsp_mat_trans_u8(const uint8_t *src, uint8_t *dst, uint32
  * @param[out]      dst  pointer of the output matrix
  * @param[in]       row   number of rows in a matrix
  * @param[in]       col   number of columns in a matrix
- * @return none.
+ *
  */
 static inline void hpm_dsp_mat_trans_q7(const q7_t *src, q7_t *dst, uint32_t row, uint32_t col)
 {
@@ -3950,7 +3945,7 @@ static inline void hpm_dsp_mat_trans_q7(const q7_t *src, q7_t *dst, uint32_t row
  * @param[out]      dst  pointer of the output matrix with a size of size1 * size2
  * @param[in]       size1 number of rows in the first input matrix.
  * @param[in]       size2 number of columns in the second input matrix.
- * @return none.
+ *
  *
  * @b Note:
  *
@@ -3989,7 +3984,7 @@ static inline void hpm_dsp_mat_oprod_q31(const q31_t * src1, const q31_t * src2,
  * @param[out]  dst  pointer of the output vector
  * @param[in]   row  number of rows in the matrix
  * @param[in]   col  number of columns in the matrix and the elements size of vector
- * @return none.
+ *
  *
  * @b Example
  *  <pre>
@@ -4018,7 +4013,7 @@ static inline void hpm_dsp_mat_mul_mxv_f32(const float32_t *src1, const float32_
  * @param[out]  dst  pointer of the output vector
  * @param[in]   row  number of rows in the matrix
  * @param[in]   col  number of columns in the matrix and the elements size of vector
- * @return none.
+ *
  */
 static inline void hpm_dsp_mat_mul_mxv_q15(const q15_t *src1, const q15_t *src2,
                        q15_t *dst, uint32_t row, uint32_t col)
@@ -4034,7 +4029,7 @@ static inline void hpm_dsp_mat_mul_mxv_q15(const q15_t *src1, const q15_t *src2,
  * @param[out]  dst  pointer of the output vector
  * @param[in]   row  number of rows in the matrix
  * @param[in]   col  number of columns in the matrix and the elements size of vector
- * @return none.
+ *
  */
 static inline void hpm_dsp_mat_mul_mxv_q31(const q31_t *src1, const q31_t *src2,
                        q31_t *dst, uint32_t row, uint32_t col)
@@ -4050,7 +4045,7 @@ static inline void hpm_dsp_mat_mul_mxv_q31(const q31_t *src1, const q31_t *src2,
  * @param[out]  dst  pointer of the output vector
  * @param[in]   row  number of rows in the matrix
  * @param[in]   col  number of columns in the matrix and the elements size of vector
- * @return none.
+ *
  */
 static inline void hpm_dsp_mat_mul_mxv_q7(const q7_t *src1, const q7_t *src2,
                        q7_t *dst, uint32_t row, uint32_t col)
@@ -4164,7 +4159,7 @@ static inline void hpm_dsp_svm_poly_est_f32(const riscv_dsp_svm_poly_f32_t *inst
  * Given 128 samples (that is, FFT_LOGN = 7), the example of floating-point Radix-2 CFFT and
  * CIFFT is as follows:
  *      \#define FFT_LOGN 7
- *      float32_t src[2* (1 << FFT_LOGN)] = {â€?};
+ *      float32_t src[2* (1 << FFT_LOGN)] = {};
  *      int32_t ret;
  *      ret = hpm_dsp_cfft_rd2_f32(src, FFT_LOGN);
  *      if (ret == 0)
@@ -4294,7 +4289,7 @@ static inline int32_t hpm_dsp_cifft_rd2_q31(q31_t *src, uint32_t m)
  * Given 256 samples (that is, FFT_LOGN = 8), the example of floating-point Radix-4 CFFT and
  * CIFFT is as follows:
  *      \#define FFT_LOGN 8
- *      float32_t src[2* (1 << FFT_LOGN)] = {â€?};
+ *      float32_t src[2* (1 << FFT_LOGN)] = {};
  *      int32_t ret;
  *      ret = hpm_dsp_cfft_rd4_f32(src, FFT_LOGN);
  *      if (ret == 0)
@@ -4423,7 +4418,7 @@ static inline int32_t hpm_dsp_cifft_rd4_q31(q31_t *src, uint32_t m)
  * Given 128 samples (that is, FFT_LOGN = 7), the example of floating-point CFFT and
  * CIFFT is as follows:
  *      \#define FFT_LOGN 7
- *      float32_t src[2* (1 << FFT_LOGN)] = {â€?};
+ *      float32_t src[2* (1 << FFT_LOGN)] = {};
  *      int32_t ret;
  *      hpm_dsp_cfft_f32(src, FFT_LOGN);
  *      hpm_dsp_cifft_f32(src, FFT_LOGN);
@@ -4567,7 +4562,7 @@ static inline void hpm_dsp_cifft_q31(q31_t *src, uint32_t m)
  * Given 128 samples (that is, FFT_LOGN = 7), the example of floating-point RFFT and RIFFT
  * is as follows:
  *      \#define FFT_LOGN 7
- *      float32_t src[(1 << FFT_LOGN)] = {â€?};
+ *      float32_t src[(1 << FFT_LOGN)] = {};
  *      int32_t ret;
  *      ret = hpm_dsp_rfft_f32(src, FFT_LOGN);
  *      if (ret == 0)
@@ -4717,14 +4712,14 @@ static inline int32_t hpm_dsp_rifft_q31(q31_t *src, uint32_t m)
  * @param[in, out] src   pointer of the input vector. After the function is executed, the
  *                       output will be stored in the input vector.
  * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 8
- * @return none
+ *
  *
  * @b Example
  *  <pre>
  * Given 256 samples (that is, FFT_LOGN = 8), the example of floating-point (DCT) type II and
  * IDCT is as follows:
  *      \#define FFT_LOGN 8
- *      float32_t src[(1 << FFT_LOGN)] = {â€?};
+ *      float32_t src[(1 << FFT_LOGN)] = {};
  *      riscv_dsp_dct_f32(src, FFT_LOGN);
  *      riscv_dsp_idct_f32(src, FFT_LOGN);
  * This example also serves as a reference for examples of Q31 or Q15 DCT type II and IDCT
@@ -4742,7 +4737,7 @@ static inline void hpm_dsp_dct_f32(float32_t *src, uint32_t m)
  * @param[in, out] src   pointer of the input vector. After the function is executed, the
  *                       output will be stored in the input vector.
  * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 8
- * @return none
+ *
  */
 static inline void hpm_dsp_idct_f32(float32_t *src, uint32_t m)
 {
@@ -4755,7 +4750,7 @@ static inline void hpm_dsp_idct_f32(float32_t *src, uint32_t m)
  * @param[in, out] src   pointer of the input vector. After the function is executed, the
  *                       output will be stored in the input vector.
  * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 8
- * @return none
+ *
  *
  * @b Note:
  *
@@ -4774,7 +4769,7 @@ static inline void hpm_dsp_dct_q15(q15_t *src, uint32_t m)
  * @param[in, out] src   pointer of the input vector. After the function is executed, the
  *                       output will be stored in the input vector.
  * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 8
- * @return none
+ *
  *
  * @b Note:
  *
@@ -4793,7 +4788,7 @@ static inline void hpm_dsp_idct_q15(q15_t *src, uint32_t m)
  * @param[in, out] src   pointer of the input vector. After the function is executed, the
  *                       output will be stored in the input vector.
  * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 8
- * @return none
+ *
  *
  * @b Note:
  *
@@ -4812,7 +4807,7 @@ static inline void hpm_dsp_dct_q31(q31_t *src, uint32_t m)
  * @param[in, out] src   pointer of the input vector. After the function is executed, the
  *                       output will be stored in the input vector.
  * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 8
- * @return none
+ *
  *
  * @b Note:
  *
@@ -4831,14 +4826,14 @@ static inline void hpm_dsp_idct_q31(q31_t *src, uint32_t m)
  * @param[in, out] src   pointer of the input vector. After the function is executed, the
  *                       output will be stored in the input vector.
  * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 7
- * @return none
+ *
  *
  * @b Example
  *  <pre>
  * Given 128 samples (that is, FFT_LOGN = 7), the example of floating-point DCT or IDCT type
  * IV transform is as follows:
  *      \#define FFT_LOGN 7
- *      float32_t src[(1 << FFT_LOGN)] = {â€?};
+ *      float32_t src[(1 << FFT_LOGN)] = {};
  *      riscv_dsp_dct4_f32(src, FFT_LOGN);
  *      riscv_dsp_idct4_f32(src, FFT_LOGN);
  * This example also serves as a reference for examples of Q31 or Q15 DCT type IV and IDCT
@@ -4856,7 +4851,7 @@ static inline void hpm_dsp_dct4_f32(float32_t *src, uint32_t m)
  * @param[in, out] src   pointer of the input vector. After the function is executed, the
  *                       output will be stored in the input vector.
  * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 7
- * @return none
+ *
  */
 static inline void hpm_dsp_idct4_f32(float32_t *src, uint32_t m)
 {
@@ -4869,7 +4864,7 @@ static inline void hpm_dsp_idct4_f32(float32_t *src, uint32_t m)
  * @param[in, out] src   pointer of the input vector. After the function is executed, the
  *                       output will be stored in the input vector.
  * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 7
- * @return none
+ *
  *
  * @b Note:
  *
@@ -4888,7 +4883,7 @@ static inline void hpm_dsp_dct4_q15(q15_t *src, uint32_t m)
  * @param[in, out] src   pointer of the input vector. After the function is executed, the
  *                       output will be stored in the input vector.
  * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 7
- * @return none
+ *
  *
  * @b Note:
  *
@@ -4907,7 +4902,7 @@ static inline void hpm_dsp_idct4_q15(q15_t *src, uint32_t m)
  * @param[in, out] src   pointer of the input vector. After the function is executed, the
  *                       output will be stored in the input vector.
  * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 7
- * @return none
+ *
  *
  * @b Note:
  *
@@ -4926,7 +4921,7 @@ static inline void hpm_dsp_dct4_q31(q31_t *src, uint32_t m)
  * @param[in, out] src   pointer of the input vector. After the function is executed, the
  *                       output will be stored in the input vector.
  * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 7
- * @return none
+ *
  *
  * @b Note:
  *
@@ -4956,7 +4951,8 @@ void hpm_software_cfft_float(float *src, uint32_t m);
 
 #endif
 
-#ifdef HPMSOC_HAS_HPMSDK_FFA
+#if defined(HPMSOC_HAS_HPMSDK_FFA) && defined(HPM_EN_MATH_DSP_LIB)
+
 #include "hpm_ffa_drv.h"
 #include "hpm_soc.h"
 /**
@@ -5040,8 +5036,6 @@ static inline void hpm_ffa_cifft_q31(q31_t *src, uint32_t m)
     xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
     ffa_calculate_fft_blocking(HPM_FFA, &xfer);
 }
-
-
 #endif
 
 #endif
@@ -5648,7 +5642,7 @@ static inline void hpm_dsp_sort_init_f32(riscv_dsp_sort_f32_t * instance, riscv_
  *
  *          \#define size 100
  *          riscv_dsp_sort_f32_t *instance;
- *          float32_t src[size] = {â€?};
+ *          float32_t src[size] = {};
  *          float32_t dst[size];
  *          riscv_dsp_sort_init_f32(instance, RISCV_DSP_SORT_QUICK,
  *          RISCV_DSP_SORT_ASCENDING);
@@ -5710,7 +5704,7 @@ static inline void hpm_dsp_sort_merge_init_f32(riscv_dsp_sort_merge_f32_t * inst
  *
  *     \#define size 100
  *     riscv_dsp_sort_merge_f32_t *instance;
- *     float32_t src[size] = {â€?};
+ *     float32_t src[size] = {};
  *     float32_t buf[size];
  *     float32_t dst[size];
  *     riscv_dsp_sort_merge_init_f32(instance, RISCV_DSP_SORT_DESCENDING, buf);
@@ -5727,8 +5721,211 @@ static inline void hpm_dsp_sort_merge_f32(const riscv_dsp_sort_merge_f32_t * ins
 #endif
 #endif
 
+#ifdef HPM_MATH_NN_TINYENGINE
+#ifdef HPM_EN_MATH_DSP_LIB
+
+#include "riscv_math_types.h"
+#include <string.h>
+#include "riscv_simd_convert.h"
+
+#define LEFT_SHIFT(_shift)  (_shift > 0 ? _shift : 0)
+#define RIGHT_SHIFT(_shift) (_shift > 0 ? 0 : -_shift)
+#define Q31_MAX   ((q31_t)(0x7FFFFFFFL))
+#define Q31_MIN   ((q31_t)(0x80000000L))
+
+static inline void write_q15x2_ia(
+    q15_t **pQ15,
+    q31_t   value)
+{
+    q31_t val = value;
+    (*pQ15)[0] = (val & 0x0FFFF);
+    (*pQ15)[1] = (val >> 16) & 0x0FFFF;
+    *pQ15 += 2;
+}
+
+/**
+ * @brief         Read 2 q15 elements and post increment pointer.
+ *
+ * @param[in]     in_q15   Pointer to pointer that holds address of input.
+ * @return        q31 value
+ */
+__STATIC_FORCEINLINE q31_t hpm_nn_read_q15x2_ia(const q15_t **in_q15)
+{
+    q31_t val;
+
+    val = *(q31_t *)(*in_q15);
+    *in_q15 += 2;
+
+    return val;
+}
+
+/**
+ * @brief           Saturating doubling high multiply. Result matches
+ *                  NEON instruction VQRDMULH.
+ * @param[in]       m1        Multiplicand
+ * @param[in]       m2        Multiplier
+ * @return          Result of multiplication.
+ *
+ */
+__STATIC_FORCEINLINE q31_t hpm_nn_sat_doubling_high_mult(const q31_t m1, const q31_t m2)
+{
+    q31_t result = 0;
+    q63_t mult = 1 << 30;
+
+    if ((m1 < 0) ^ (m2 < 0)) {
+        mult = 1 - mult;
+    }
+    mult = mult + (q63_t)m1 * m2;
+    result = mult / (1UL << 31);
+
+    if ((m1 == m2) && (m1 == (int32_t)Q31_MIN)) {
+        result = Q31_MAX;
+    }
+    return result;
+}
+
+/**
+ * @brief           Rounding divide by power of two.
+ * @param[in]       dividend - Dividend
+ * @param[in]       exponent - Divisor = power(2, exponent)
+ *                             Range: [0, 31]
+ * @return          Rounded result of division. Midpoint is rounded away from zero.
+ *
+ */
+__STATIC_FORCEINLINE q31_t hpm_nn_divide_by_power_of_two(const q31_t dividend, const q31_t exponent)
+{
+    q31_t result = 0;
+
+    const q31_t remainder_mask = (1l << exponent) - 1;
+    int32_t remainder = remainder_mask & dividend;
+
+    result = dividend >> exponent;
+    q31_t threshold = remainder_mask >> 1;
+    if (result < 0) {
+        threshold++;
+    }
+    if (remainder > threshold) {
+        result++;
+    }
+
+    return result;
+}
+
+__STATIC_FORCEINLINE q31_t hpm_nn_requantize(const q31_t val, const q31_t multiplier, const q31_t shift)
+{
+    return hpm_nn_divide_by_power_of_two(hpm_nn_sat_doubling_high_mult(val * (1 << LEFT_SHIFT(shift)), multiplier),
+                                       RIGHT_SHIFT(shift));
+}
+
+/**
+ * @brief         Read 4 q7 from q7 pointer and post increment pointer.
+ * @param[in]     in_q7       Pointer to pointer that holds address of input.
+ * @return        q31 value
+ */
+__STATIC_FORCEINLINE q31_t hpm_nn_read_q7x4_ia(const q7_t **in_q7)
+{
+    q31_t val;
+
+    val = *(q31_t *)(*in_q7);
+    *in_q7 += 4;
+
+    return val;
+}
+
+/**
+ * @brief read and expand one q7 word into two q15 words with reordering
+ */
+
+__STATIC_FORCEINLINE const q7_t *read_and_pad_reordered(const q7_t *source, q31_t *out1, q31_t *out2)
+{
+    q31_t     inA = hpm_nn_read_q7x4_ia(&source);
+
+    *out2 = __SXTB16_ROR(inA, 8);
+    *out1 = __SXTB16(inA);
+
+    return source;
+}
+
+/**
+ * @brief read and expand one q7 word into two q15 words
+ */
+
+__STATIC_FORCEINLINE const q7_t *read_and_pad(const q7_t *source, q31_t *out1, q31_t *out2)
+{
+    q31_t     inA = hpm_nn_read_q7x4_ia(&source);
+    q31_t     inAbuf1 = __SXTB16_ROR(inA, 8);
+    q31_t     inAbuf2 = __SXTB16(inA);
+
+    *out2 = __PKHTB(inAbuf1, inAbuf2, 16);
+    *out1 = __PKHBT(inAbuf2, inAbuf1, 16);
+
+    return source;
+}
+
+/**
+ * @brief         Read 4 s8 from s8 pointer and post increment pointer.
+ * @param[in]     in_s8       Pointer to pointer that holds address of input.
+ * @return        q31 value
+ */
+__STATIC_FORCEINLINE int32_t hpm_nn_read_s8x4_ia(const int8_t **in_s8)
+{
+    int32_t val;
+
+    val = *(int32_t *)(*in_s8);
+    *in_s8 += 4;
+
+    return val;
+}
+
+__STATIC_FORCEINLINE void hpm_nn_q7_to_q15_with_offset(const int8_t *src, int16_t *dst, int32_t block_size, int16_t offset)
+{
+    int32_t block_cnt;
+
+    /* Run the below code for cores that support SIMD instructions  */
+    int32_t in_q7x4;
+    int32_t in_q15x2_1;
+    int32_t in_q15x2_2;
+    int32_t out_q15x2_1;
+    int32_t out_q15x2_2;
+
+    /*loop unrolling */
+    block_cnt = block_size >> 2;
+
+    /* First part of the processing with loop unrolling.  Compute 4 outputs at a time. */
+    const int32_t offset_q15x2 = __PKHBT(offset, offset, 16);
+    while (block_cnt > 0) {
+        /* convert from s8 to s16 and then store the results in the destination buffer */
+        in_q7x4 = hpm_nn_read_s8x4_ia(&src);
+
+        /* Extract and sign extend each of the four s8 values to s16 */
+        in_q15x2_1 = __SXTAB16(offset_q15x2, __ROR(in_q7x4, 8));
+        in_q15x2_2 = __SXTAB16(offset_q15x2, in_q7x4);
+
+        out_q15x2_2 = __PKHTB(in_q15x2_1, in_q15x2_2, 16);
+        out_q15x2_1 = __PKHBT(in_q15x2_2, in_q15x2_1, 16);
+
+        write_q15x2_ia(&dst, out_q15x2_1);
+        write_q15x2_ia(&dst, out_q15x2_2);
+
+        block_cnt--;
+    }
+    /* Handle left over samples */
+    block_cnt = block_size % 0x4;
+
+    while (block_cnt > 0) {
+        *dst++ = (int16_t)*src++ + offset;
+
+        /* Decrement the loop counter */
+        block_cnt--;
+    }
+}
+
+#endif
+#endif
+
 #ifdef HPM_MATH_NN_ACTIVATION
 #ifdef HPM_EN_MATH_NN_LIB
+
 #include "riscv_nn_activation.h"
 /**
  * @defgroup nnactivation NN Activation Functions
@@ -13500,6 +13697,10 @@ static inline void hpm_nn_reshape_s8(const int8_t *in_tensor,
 }
 
 #endif
+
+/**
+ * @}
+ */
 
 #endif
 

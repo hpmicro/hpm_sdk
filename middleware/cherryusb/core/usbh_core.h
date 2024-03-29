@@ -16,11 +16,10 @@
 #include "usb_errno.h"
 #include "usb_def.h"
 #include "usb_list.h"
-#include "usb_mem.h"
 #include "usb_log.h"
 #include "usb_hc.h"
 #include "usb_osal.h"
-#include "usb_hub.h"
+#include "usbh_hub.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,62 +38,21 @@ extern "C" {
 #define CLASS_INFO_DEFINE __attribute__((section("usbh_class_info"))) __USED __ALIGNED(1)
 #elif defined(__GNUC__)
 #define CLASS_INFO_DEFINE __attribute__((section(".usbh_class_info"))) __USED __ALIGNED(1)
-#elif defined(__ICCARM__) || defined(__ICCRX__)
-#pragma section = "usbh_class_info"
-#define CLASS_INFO_DEFINE __attribute__((section("usbh_class_info"))) __USED __ALIGNED(1)
+#elif defined(__ICCARM__) || defined(__ICCRX__) || defined(__ICCRISCV__)
+#pragma section = ".usbh_class_info"
+#define CLASS_INFO_DEFINE __attribute__((section(".usbh_class_info"))) __USED __ALIGNED(1)
 #endif
 
-static inline void usbh_control_urb_fill(struct usbh_urb *urb,
-                                         usbh_pipe_t pipe,
-                                         struct usb_setup_packet *setup,
-                                         uint8_t *transfer_buffer,
-                                         uint32_t transfer_buffer_length,
-                                         uint32_t timeout,
-                                         usbh_complete_callback_t complete,
-                                         void *arg)
-{
-    urb->pipe = pipe;
-    urb->setup = setup;
-    urb->transfer_buffer = transfer_buffer;
-    urb->transfer_buffer_length = transfer_buffer_length;
-    urb->timeout = timeout;
-    urb->complete = complete;
-    urb->arg = arg;
-}
-
-static inline void usbh_bulk_urb_fill(struct usbh_urb *urb,
-                                      usbh_pipe_t pipe,
-                                      uint8_t *transfer_buffer,
-                                      uint32_t transfer_buffer_length,
-                                      uint32_t timeout,
-                                      usbh_complete_callback_t complete,
-                                      void *arg)
-{
-    urb->pipe = pipe;
-    urb->setup = NULL;
-    urb->transfer_buffer = transfer_buffer;
-    urb->transfer_buffer_length = transfer_buffer_length;
-    urb->timeout = timeout;
-    urb->complete = complete;
-    urb->arg = arg;
-}
-
-static inline void usbh_int_urb_fill(struct usbh_urb *urb,
-                                     usbh_pipe_t pipe,
-                                     uint8_t *transfer_buffer,
-                                     uint32_t transfer_buffer_length,
-                                     uint32_t timeout,
-                                     usbh_complete_callback_t complete,
-                                     void *arg)
-{
-    urb->pipe = pipe;
-    urb->setup = NULL;
-    urb->transfer_buffer = transfer_buffer;
-    urb->transfer_buffer_length = transfer_buffer_length;
-    urb->timeout = timeout;
-    urb->complete = complete;
-    urb->arg = arg;
-}
+#define USBH_EP_INIT(ep, ep_desc)                                            \
+    do {                                                                     \
+        ep = ep_desc;                                                        \
+        USB_LOG_INFO("Ep=%02x Attr=%02u Mps=%d Interval=%02u Mult=%02u\r\n", \
+                     ep_desc->bEndpointAddress,                              \
+                     USB_GET_ENDPOINT_TYPE(ep_desc->bmAttributes),           \
+                     USB_GET_MAXPACKETSIZE(ep_desc->wMaxPacketSize),         \
+                     ep_desc->bInterval,                                     \
+                     USB_GET_MULT(ep_desc->bmAttributes));                   \
+    } while (0)
 
 struct usbh_class_info {
     uint8_t match_flags; /* Used for product specific matches; range is inclusive */
@@ -140,7 +98,6 @@ struct usbh_hubport {
     uint8_t port;     /* Hub port index */
     uint8_t dev_addr; /* device address */
     uint8_t speed;    /* device speed */
-    usbh_pipe_t ep0;  /* control ep pipe info */
     struct usb_device_descriptor device_desc;
     struct usbh_configuration config;
     const char *iManufacturer;
@@ -149,10 +106,13 @@ struct usbh_hubport {
     uint8_t *raw_config_desc;
     struct usb_setup_packet *setup;
     struct usbh_hub *parent;
+    struct usbh_bus *bus;
 #ifdef CONFIG_USBHOST_XHCI
     uint32_t protocol; /* port protocol, for xhci, some ports are USB2.0, others are USB3.0 */
 #endif
-    usb_osal_thread_t thread;
+    struct usb_endpoint_descriptor ep0;
+    struct usbh_urb ep0_urb;
+    usb_osal_mutex_t mutex;
 };
 
 struct usbh_hub {
@@ -161,25 +121,105 @@ struct usbh_hub {
     bool is_roothub;
     uint8_t index;
     uint8_t hub_addr;
-    usbh_pipe_t intin;
-    uint8_t *int_buffer;
-    struct usbh_urb intin_urb;
     struct usb_hub_descriptor hub_desc;
     struct usbh_hubport child[CONFIG_USBHOST_MAX_EHPORTS];
     struct usbh_hubport *parent;
+    struct usbh_bus *bus;
+    struct usb_endpoint_descriptor *intin;
+    struct usbh_urb intin_urb;
+    uint8_t *int_buffer;
 };
 
-/**
- * @brief Activates an endpoint for a USB host pipe on a specific hub port.
- *
- * This function is responsible for activating the specified endpoint
- * described by the given endpoint descriptor on the USB host pipe.
- * @param pipe Pointer to the USB host pipe structure.
- * @param hport Pointer to the USB hub port structure.
- * @param ep_desc Pointer to the USB endpoint descriptor.
- * @return On success will return 0, and others indicate fail.
- */
-int usbh_hport_activate_epx(usbh_pipe_t *pipe, struct usbh_hubport *hport, struct usb_endpoint_descriptor *ep_desc);
+struct usbh_devaddr_map {
+    /**
+     * alloctab[0]:addr from 0~31
+     * alloctab[1]:addr from 32~63
+     * alloctab[2]:addr from 64~95
+     * alloctab[3]:addr from 96~127
+     *
+     */
+    uint8_t next;         /* Next device address */
+    uint32_t alloctab[4]; /* Bit allocation table */
+};
+
+struct usbh_hcd {
+    uint32_t reg_base;
+    uint8_t hcd_id;
+    uint8_t roothub_intbuf[1];
+    struct usbh_hub roothub;
+};
+
+struct usbh_bus {
+    usb_slist_t list;
+    uint8_t busid;
+    struct usbh_hcd hcd;
+    struct usbh_devaddr_map devgen;
+    usb_osal_thread_t hub_thread;
+    usb_osal_mq_t hub_mq;
+    usb_slist_t hub_list;
+};
+
+static inline void usbh_control_urb_fill(struct usbh_urb *urb,
+                                         struct usbh_hubport *hport,
+                                         struct usb_setup_packet *setup,
+                                         uint8_t *transfer_buffer,
+                                         uint32_t transfer_buffer_length,
+                                         uint32_t timeout,
+                                         usbh_complete_callback_t complete,
+                                         void *arg)
+{
+    urb->hport = hport;
+    urb->ep = &hport->ep0;
+    urb->setup = setup;
+    urb->transfer_buffer = transfer_buffer;
+    urb->transfer_buffer_length = transfer_buffer_length;
+    urb->timeout = timeout;
+    urb->complete = complete;
+    urb->arg = arg;
+}
+
+static inline void usbh_bulk_urb_fill(struct usbh_urb *urb,
+                                      struct usbh_hubport *hport,
+                                      struct usb_endpoint_descriptor *ep,
+                                      uint8_t *transfer_buffer,
+                                      uint32_t transfer_buffer_length,
+                                      uint32_t timeout,
+                                      usbh_complete_callback_t complete,
+                                      void *arg)
+{
+    urb->hport = hport;
+    urb->ep = ep;
+    urb->setup = NULL;
+    urb->transfer_buffer = transfer_buffer;
+    urb->transfer_buffer_length = transfer_buffer_length;
+    urb->timeout = timeout;
+    urb->complete = complete;
+    urb->arg = arg;
+}
+
+static inline void usbh_int_urb_fill(struct usbh_urb *urb,
+                                     struct usbh_hubport *hport,
+                                     struct usb_endpoint_descriptor *ep,
+                                     uint8_t *transfer_buffer,
+                                     uint32_t transfer_buffer_length,
+                                     uint32_t timeout,
+                                     usbh_complete_callback_t complete,
+                                     void *arg)
+{
+    urb->hport = hport;
+    urb->ep = ep;
+    urb->setup = NULL;
+    urb->transfer_buffer = transfer_buffer;
+    urb->transfer_buffer_length = transfer_buffer_length;
+    urb->timeout = timeout;
+    urb->complete = complete;
+    urb->arg = arg;
+}
+
+extern struct usbh_bus g_usbhost_bus[];
+#ifdef USBH_IRQHandler
+#error USBH_IRQHandler is obsolete, please call USBH_IRQHandler(xxx) in your irq
+#endif
 
 /**
  * @brief Submit an control transfer to an endpoint.
@@ -191,7 +231,7 @@ int usbh_hport_activate_epx(usbh_pipe_t *pipe, struct usbh_hubport *hport, struc
  * @param buffer buffer used for sending the request and for returning any responses.
  * @return On success will return 0, and others indicate fail.
  */
-int usbh_control_transfer(usbh_pipe_t pipe, struct usb_setup_packet *setup, uint8_t *buffer);
+int usbh_control_transfer(struct usbh_hubport *hport, struct usb_setup_packet *setup, uint8_t *buffer);
 
 /**
  * @brief Retrieves a USB string descriptor from a specific hub port.
@@ -221,7 +261,8 @@ int usbh_get_string_desc(struct usbh_hubport *hport, uint8_t index, uint8_t *out
  */
 int usbh_set_interface(struct usbh_hubport *hport, uint8_t intf, uint8_t altsetting);
 
-int usbh_initialize(void);
+int usbh_initialize(uint8_t busid, uint32_t reg_base);
+int usbh_deinitialize(uint8_t busid);
 void *usbh_find_class_instance(const char *devname);
 
 int lsusb(int argc, char **argv);

@@ -83,8 +83,10 @@ int main(void)
 {
     board_init();
 
+#if !defined(__ICCRISCV__) || (defined(_DLIB_FILE_DESCRIPTOR) && (_DLIB_FILE_DESCRIPTOR == 1))
     /* disable printf buffering for stdout */
     setbuf(stdout, NULL);
+#endif
 
     tsns_enable_continuous_mode(TEST_TSNS);
     tsns_enable(TEST_TSNS);

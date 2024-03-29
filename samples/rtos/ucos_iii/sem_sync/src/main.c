@@ -19,8 +19,6 @@ int main(void)
     CPU_SR_ALLOC();
     board_init();
     board_init_gpio_pins();
-    intc_m_init_swi();
-    intc_m_enable_swi();
 
 #ifdef BOARD_LED_GPIO_CTRL
     gpio_set_pin_output(BOARD_LED_GPIO_CTRL, BOARD_LED_GPIO_INDEX, BOARD_LED_GPIO_PIN);

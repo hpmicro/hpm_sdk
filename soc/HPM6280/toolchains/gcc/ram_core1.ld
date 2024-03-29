@@ -12,7 +12,7 @@ MEMORY
 {
     ILM (wx) : ORIGIN = 0x00020000, LENGTH = 128K
     DLM (w) : ORIGIN = 0x000A0000, LENGTH = 96K
-    NONCACHEABLE_RAM (w) : ORIGIN = 0x000B8000, LENGTH = 32K
+    NONCACHEABLE_RAM (wx) : ORIGIN = 0x000B8000, LENGTH = 32K
     SHARE_RAM (w) : ORIGIN = 0x010BC000, LENGTH = 16K
 }
 
@@ -27,6 +27,8 @@ SECTIONS
         . = ALIGN(8);
         KEEP(*(.isr_vector))
         KEEP(*(.vector_table))
+        KEEP(*(.isr_s_vector))
+        KEEP(*(.vector_s_table))
         . = ALIGN(8);
     } > ILM
 
@@ -247,5 +249,6 @@ SECTIONS
     __share_mem_end__ = ORIGIN(SHARE_RAM) + LENGTH(SHARE_RAM);
 
     __fw_size__ = SIZEOF(.start) + SIZEOF(.vectors) + SIZEOF(.rel) + SIZEOF(.text) + SIZEOF(.data) + SIZEOF(.fast) + SIZEOF(.tdata) + SIZEOF(.noncacheable.init);
-    ASSERT(__fw_size__ <= LENGTH(ILM), "******  FAILED! ILM has not enough space!  ******")
+    __last_addr__ = __noncacheable_init_load_addr__ + SIZEOF(.noncacheable.init);
+    ASSERT(((__fw_size__ <= LENGTH(ILM)) && (__last_addr__ <= (ORIGIN(ILM) + LENGTH(ILM)))), "******  FAILED! ILM has not enough space!  ******")
 }

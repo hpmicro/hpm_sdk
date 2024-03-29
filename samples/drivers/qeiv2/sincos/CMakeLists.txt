@@ -8,4 +8,4 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(qeiv2_sincos_example)
 
 sdk_app_src(src/qeiv2.c)
-generate_ses_project()
+generate_ide_projects()

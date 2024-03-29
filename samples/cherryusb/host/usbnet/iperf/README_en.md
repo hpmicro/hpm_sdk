@@ -17,6 +17,9 @@
 
 ```console
 Start rndis host iperf task...
+[I/USB] EHCI HCIVERSION:0100
+[I/USB] EHCI HCSPARAMS:010011
+[I/USB] EHCI HCCPARAMS:0006
 [I/USB] New high-speed device on Hub 1, Port 1 connected
 [I/USB] New device found,idVendor:19d1,idProduct:0001,bcdDevice:0200
 [I/USB] The device has 8 interfaces
@@ -58,10 +61,14 @@ Start rndis host iperf task...
 [E/USB] do not support Class:0x0a,Subclass:0x00,Protocl:0x00
 [E/USB] do not support Class:0x02,Subclass:0x02,Protocl:0x01
 [E/USB] do not support Class:0x0a,Subclass:0x00,Protocl:0x00
-oading cdc_data clinkup!!!!!!
- DHCP state       : SELECTING
- DHCP state       : REQUESTING
- DHCP state       : BOUND
+
+*********************************************************************************
+
+input the iperf tcp server IP or URL address and press the enter key to end
+
+if want to terminate midway, please press the esc key
+
+*********************************************************************************
 
  IPv4 Address     : 192.168.10.2
  IPv4 Subnet mask : 255.255.255.0
@@ -73,6 +80,9 @@ oading cdc_data clinkup!!!!!!
 
 ```console
 
+[I/USB] EHCI HCIVERSION:0100
+[I/USB] EHCI HCSPARAMS:010011
+[I/USB] EHCI HCCPARAMS:0006
 [I/USB] New high-speed device on Hub 1, Port 1 connected
 [I/USB] New device found,idVendor:2c7c,idProduct:0125,bcdDevice:0318
 [I/USB] The device has 6 interfaces
@@ -91,20 +101,7 @@ oading cdc_data clinkup!!!!!!
 [I/USB] Set CDC ECM packet filter:000c
 [I/USB] Register CDC ECM Class:/dev/cdc_ether
 [E/USB] do not support Class:0x0a,Subclass:0x00,Protocl:0x00
- DHCP state       : SELECTING
- DHCP state       : BOUND
 
- IPv4 Address     : 192.168.225.27
- IPv4 Subnet mask : 255.255.255.0
- IPv4 Gateway     : 192.168.225.1
-
-```
-
-- After that, the following logs will be printed, you need to enter the IP address or domain name of the iperf server in the terminal,and press enter key when done
-
-- for example: 11.23.63.183
-
-```console
 *********************************************************************************
 
 input the iperf tcp server IP or URL address and press the enter key to end
@@ -112,6 +109,17 @@ input the iperf tcp server IP or URL address and press the enter key to end
 if want to terminate midway, please press the esc key
 
 *********************************************************************************
+
+ IPv4 Address     : 192.168.225.27
+ IPv4 Subnet mask : 255.255.255.0
+ IPv4 Gateway     : 192.168.225.1
+
+```
+
+- After that, you need to enter the IP address or domain name of the iperf server in the terminal, such as 11.23.63.183, then press enter key
+
+```console
+
 clinet connecting to 11.23.63.183, TCP port 5001
 
 iperf report: type=1, remote: 11.23.63.183:5001, total bytes: 1125684, duration in ms: 10035, kbits/s: 904

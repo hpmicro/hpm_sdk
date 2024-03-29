@@ -31,7 +31,7 @@ typedef enum {
  */
 typedef enum {
 /**
- * @brief Drive channels for three-phase motors.
+ * @brief Drive channels for three-phase motors in pair.
  *
  */
     mcl_drivers_chn_a,
@@ -45,6 +45,17 @@ typedef enum {
     mcl_drivers_chn_a1,
     mcl_drivers_chn_b0,
     mcl_drivers_chn_b1,
+/**
+ * @brief Drive channels for three-phase motors no pair.
+ *
+ */
+    mcl_drivers_chn_ah,
+    mcl_drivers_chn_al,
+    mcl_drivers_chn_bh,
+    mcl_drivers_chn_bl,
+    mcl_drivers_chn_ch,
+    mcl_drivers_chn_cl,
+
 } mcl_drivers_channel_t;
 
 /**
@@ -130,6 +141,34 @@ hpm_mcl_stat_t hpm_mcl_disable_all_drivers(mcl_drivers_t *drivers);
  * @return hpm_mcl_stat_t
  */
 hpm_mcl_stat_t hpm_mcl_enable_all_drivers(mcl_drivers_t *drivers);
+
+/**
+ * @brief Turns off the output of the specified channel of the driver
+ *
+ * @param drivers @ref mcl_drivers_t
+ * @param chn @ref mcl_drivers_channel_t
+ * @return hpm_mcl_stat_t
+ */
+hpm_mcl_stat_t hpm_mcl_disable_drivers(mcl_drivers_t *drivers, mcl_drivers_channel_t chn);
+
+/**
+ * @brief Starts the output of the specified channel of the driver
+ *
+ * @param drivers @ref mcl_drivers_t
+ * @param chn @ref mcl_drivers_channel_t
+ * @return hpm_mcl_stat_t
+ */
+hpm_mcl_stat_t hpm_mcl_enable_drivers(mcl_drivers_t *drivers, mcl_drivers_channel_t chn);
+
+/**
+ * @brief Block mode updates the outputs of the driver peripherals
+ *
+ * @param drivers @ref mcl_drivers_t
+ * @param dir @ref mcl_motor_dir_t
+ * @param sector 1 - 6
+ * @return hpm_mcl_stat_t
+ */
+hpm_mcl_stat_t hpm_mcl_drivers_block_update(mcl_drivers_t *drivers, mcl_motor_dir_t dir, uint8_t sector);
 
 #ifdef __cplusplus
 }

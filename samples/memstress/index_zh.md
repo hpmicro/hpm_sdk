@@ -1,10 +1,9 @@
 # Memory Stress
 
-```{eval-rst}
+:::{eval-rst}
 .. toctree::
    :maxdepth: 3
+   :glob:
 
-   flashstress/README_zh
-   ramstress/README_zh
-
-```
+   **/*_zh
+:::

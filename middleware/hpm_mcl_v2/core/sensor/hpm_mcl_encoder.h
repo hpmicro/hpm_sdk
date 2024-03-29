@@ -15,6 +15,7 @@ enum {
     mcl_encoder_update_tick_error = MAKE_STATUS(mcl_group_encoder, 2),
     mcl_encoder_get_theta_error = MAKE_STATUS(mcl_group_encoder, 3),
     mcl_encoder_not_ready = MAKE_STATUS(mcl_group_encoder, 4),
+    mcl_encoder_get_uvw_error = MAKE_STATUS(mcl_group_encoder, 5),
 };
 
 typedef enum {
@@ -36,6 +37,17 @@ typedef enum {
     encoder_method_user,
 } mcl_encoder_cal_speed_function_t;
 
+
+/**
+ * @brief uvw level 0 or 1
+ *
+ */
+typedef struct {
+    bool u;
+    bool v;
+    bool w;
+} mcl_encoder_uvw_level_t;
+
 /**
  * @brief callback function
  *
@@ -47,6 +59,7 @@ typedef struct  mcl_encoder_callback {
     hpm_mcl_stat_t (*start_sample)(void);
     hpm_mcl_stat_t (*get_theta)(float *theta);
     _FUNC_OPTIONAL_ hpm_mcl_stat_t (*get_absolute_theta)(float *theta);
+    _FUNC_OPTIONAL_ hpm_mcl_stat_t (*get_uvw_level)(mcl_encoder_uvw_level_t *level);
     _FUNC_OPTIONAL_ hpm_mcl_stat_t (*process_by_user)(float theta, float *speed, float *theta_forecast);
 } mcl_encoder_callback_t;
 
@@ -129,6 +142,7 @@ typedef struct {
     mcl_encoer_cfg_t *cfg;
     int32_t *mcu_clock_tick;
     int32_t *pole_num;
+    hall_phase_t *phase;
     float theta_initial;
     float *current_loop_ts;
     mcl_user_value_t force_set_theta;
@@ -238,6 +252,16 @@ void hpm_mcl_encoder_force_theta(mcl_encoder_t *encoder, float theta, bool enabl
  * @return hpm_mcl_stat_t
  */
 hpm_mcl_stat_t hpm_mcl_encoder_get_absolute_theta(mcl_encoder_t *encoder, float *theta);
+
+/**
+ * @brief Get level status of uvw
+ *
+ * @param encoder @ref mcl_encoder_t
+ * @param level 0: low , 1: high
+ * @return hpm_mcl_stat_t
+ */
+hpm_mcl_stat_t hpm_mcl_encoder_get_uvw_status(mcl_encoder_t *encoder, mcl_encoder_uvw_level_t *level);
+
 
 #ifdef __cplusplus
 }

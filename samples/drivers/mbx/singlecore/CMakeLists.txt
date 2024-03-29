@@ -8,4 +8,4 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(mbx_singlecore)
 
 sdk_app_src(src/mbx_singlecore.c)
-generate_ses_project()
+generate_ide_projects()

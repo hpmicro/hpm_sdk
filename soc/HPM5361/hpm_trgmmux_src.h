@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -186,8 +186,8 @@
 #define HPM_TRGM0_OUTPUT_SRC_ADCX_PTRGI3A                  (0x2BUL)
 #define HPM_TRGM0_OUTPUT_SRC_ADCX_PTRGI3B                  (0x2CUL)
 #define HPM_TRGM0_OUTPUT_SRC_ADCX_PTRGI3C                  (0x2DUL)
-#define HPM_TRGM0_OUTPUT_SRC_CAN_PTPC0_CAP                 (0x2EUL)
-#define HPM_TRGM0_OUTPUT_SRC_CAN_PTPC1_CAP                 (0x2FUL)
+#define HPM_TRGM0_OUTPUT_SRC_MCAN_PTPC0_CAP                (0x2EUL)
+#define HPM_TRGM0_OUTPUT_SRC_MCAN_PTPC1_CAP                (0x2FUL)
 #define HPM_TRGM0_OUTPUT_SRC_QEO0_TRIG_IN0                 (0x30UL)
 #define HPM_TRGM0_OUTPUT_SRC_QEO0_TRIG_IN1                 (0x31UL)
 #define HPM_TRGM0_OUTPUT_SRC_QEO1_TRIG_IN0                 (0x32UL)

@@ -10,9 +10,14 @@
 
 ## 硬件设置
 
-需要一个LIN收发器和一个USB_LIN调试器
+- 在没有板载LIN收发器的开发板上：
+  需要一个LIN收发器和一个USB_LIN调试器
+  将开发板上的UART TX和RX引脚与LIN收发器的MCU信号相连，将USB_LIN调试器与LIN收发器的LIN信号相连。
+- 在有板载LIN收发器的开发板上：
+  需要一个USB_LIN调试器
+  将调试器的LIN信号和GND与开发板上的对应引脚相连。
+
 请参考具体开发板{ref}`引脚描述 <lab_board_resource>`部分的描述。
-将开发板上的UART TX和RX引脚与LIN收发器的MCU信号相连，将USB_LIN调试器与LIN收发器的LIN信号相连。
 
 ## 运行现象
 

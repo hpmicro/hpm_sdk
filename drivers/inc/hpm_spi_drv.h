@@ -216,7 +216,7 @@ typedef struct {
     uint8_t trans_mode;
     uint8_t data_phase_fmt;
     uint8_t dummy_cnt;
-#if defined(SPI_SOC_HAS_CS_SELECT) && (SPI_SOC_HAS_CS_SELECT == 1)
+#if defined(HPM_IP_FEATURE_SPI_CS_SELECT) && (HPM_IP_FEATURE_SPI_CS_SELECT == 1)
     uint8_t cs_index;
 #endif
 } spi_common_control_config_t; /*!< value in spi_cs_index_t */
@@ -230,7 +230,7 @@ typedef struct {
     spi_common_control_config_t common_config;
 } spi_control_config_t;
 
-#if defined(SPI_SOC_HAS_CS_SELECT) && (SPI_SOC_HAS_CS_SELECT == 1)
+#if defined(HPM_IP_FEATURE_SPI_CS_SELECT) && (HPM_IP_FEATURE_SPI_CS_SELECT == 1)
 typedef enum {
     spi_cs_0 = 1,
     spi_cs_1 = 2,
@@ -246,7 +246,7 @@ typedef enum {
     addrlen_32bit
 } spi_address_len_t;
 
-#if defined(SPI_SOC_SUPPORT_DIRECTIO) && (SPI_SOC_SUPPORT_DIRECTIO == 1)
+#if defined(HPM_IP_FEATURE_SPI_SUPPORT_DIRECTIO) && (HPM_IP_FEATURE_SPI_SUPPORT_DIRECTIO == 1)
 typedef enum {
     hold_pin = 0,
     wp_pin,
@@ -646,7 +646,7 @@ static inline void spi_disable_rx_dma(SPI_Type *ptr)
  */
 static inline uint32_t spi_slave_get_sent_data_count(SPI_Type *ptr)
 {
-#if defined(SPI_SOC_HAS_NEW_TRANS_COUNT) && (SPI_SOC_HAS_NEW_TRANS_COUNT == 1)
+#if defined(HPM_IP_FEATURE_SPI_NEW_TRANS_COUNT) && (HPM_IP_FEATURE_SPI_NEW_TRANS_COUNT == 1)
     return ptr->SLVDATAWCNT;
 #else
     return SPI_SLVDATACNT_WCNT_GET(ptr->SLVDATACNT);
@@ -661,7 +661,7 @@ static inline uint32_t spi_slave_get_sent_data_count(SPI_Type *ptr)
  */
 static inline uint32_t spi_slave_get_received_data_count(SPI_Type *ptr)
 {
-#if defined(SPI_SOC_HAS_NEW_TRANS_COUNT) && (SPI_SOC_HAS_NEW_TRANS_COUNT == 1)
+#if defined(HPM_IP_FEATURE_SPI_NEW_TRANS_COUNT) && (HPM_IP_FEATURE_SPI_NEW_TRANS_COUNT == 1)
     return ptr->SLVDATARCNT;
 #else
     return SPI_SLVDATACNT_RCNT_GET(ptr->SLVDATACNT);
@@ -716,7 +716,7 @@ static inline spi_sclk_idle_state_t spi_get_clock_polarity(SPI_Type *ptr)
  * @brief set spi the length of each data unit in bits
  *
  * @param [in] ptr SPI base address
- * @param [in] nbit the actual bits number of a data
+ * @param [in] nbits the actual bits number of a data
  * @retval hpm_stat_t status_success if spi transfer without any error
  */
 static inline hpm_stat_t spi_set_data_bits(SPI_Type *ptr, uint8_t nbits)
@@ -790,7 +790,7 @@ static inline void spi_disable_data_merge(SPI_Type *ptr)
     ptr->TRANSFMT &= ~SPI_TRANSFMT_DATAMERGE_MASK;
 }
 
-#if defined(SPI_SOC_SUPPORT_DIRECTIO) && (SPI_SOC_SUPPORT_DIRECTIO == 1)
+#if defined(HPM_IP_FEATURE_SPI_SUPPORT_DIRECTIO) && (HPM_IP_FEATURE_SPI_SUPPORT_DIRECTIO == 1)
 /**
  * @brief enable specific pin output for spi directio
  *

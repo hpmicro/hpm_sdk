@@ -1,0 +1,6 @@
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/core)
+add_subdirectory_ifdef(CONFIG_ECLIPSE_THREADX_USBX_DEVICE ${CMAKE_CURRENT_LIST_DIR}/usbx_device_classes)
+add_subdirectory_ifdef(CONFIG_ECLIPSE_THREADX_USBX_HOST ${CMAKE_CURRENT_LIST_DIR}/usbx_host_classes)
+add_subdirectory_ifdef(CONFIG_ECLIPSE_THREADX_USBX_HOST ${CMAKE_CURRENT_LIST_DIR}/usbx_host_controllers)
+add_subdirectory_ifdef(CONFIG_ECLIPSE_THREADX_USBX_NETWORK ${CMAKE_CURRENT_LIST_DIR}/usbx_network)
+add_subdirectory_ifdef(CONFIG_ECLIPSE_THREADX_USBX_PICTBRIDGE ${CMAKE_CURRENT_LIST_DIR}/usbx_pictbridge)

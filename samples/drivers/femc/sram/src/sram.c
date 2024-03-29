@@ -73,7 +73,6 @@ static void init_sram_config(void)
     femc_sram_config_t sram_config = {0};
 
     femc_default_config(HPM_FEMC, &config);
-    config.dqs = FEMC_DQS_INTERNAL;
     femc_init(HPM_FEMC, &config);
 
     femc_get_typical_sram_config(HPM_FEMC, &sram_config);

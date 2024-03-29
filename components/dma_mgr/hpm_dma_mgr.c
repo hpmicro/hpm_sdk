@@ -83,7 +83,7 @@ static dma_mgr_context_t s_dma_mngr_ctx;
  *  Codes
  *
  *****************************************************************************************************************/
-static inline void handle_dma_isr(DMA_Type *ptr, uint32_t instance)
+void dma_mgr_isr_handler(DMA_Type *ptr, uint32_t instance)
 {
     uint32_t int_disable_mask;
     uint32_t chn_int_stat;
@@ -119,13 +119,13 @@ static inline void handle_dma_isr(DMA_Type *ptr, uint32_t instance)
 
 void dma0_isr(void)
 {
-    handle_dma_isr(HPM_HDMA, 0);
+    dma_mgr_isr_handler(HPM_HDMA, 0);
 }
 
 #if defined(DMA_SOC_MAX_COUNT) && (DMA_SOC_MAX_COUNT > 1)
 void dma1_isr(void)
 {
-    handle_dma_isr(HPM_XDMA, 1);
+    dma_mgr_isr_handler(HPM_XDMA, 1);
 }
 #endif
 

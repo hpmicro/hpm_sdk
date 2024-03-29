@@ -15,7 +15,7 @@ typedef struct mipi_cmd_list {
     uint8_t cmd[4];
 } mipi_cmd_list_t;
 
-const static mipi_cmd_list_t mipi_panel_cmd[] = {
+static const mipi_cmd_list_t mipi_panel_cmd[] = {
     {4, {0xFF, 0x98, 0x81, 0x03}},
     {2, {0x01, 0x00}},
     {2, {0x02, 0x00}},

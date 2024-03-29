@@ -1,7 +1,7 @@
 #ifndef _NDS32_INTRINSIC_H
 #define _NDS32_INTRINSIC_H
 
-#include <nds_intrinsic.h>
+#include <gcc_nds_intrinsic.h>
 
 #if __riscv_xlen == 32
 #define __nds32__msync_all __nds__msync_all

@@ -75,7 +75,7 @@ static inline unsigned char mbedtls_nist_kw_safer_memcmp( const void *a, const v
 /*! The 64-bit default integrity check value (ICV) for KW mode. */
 static const unsigned char NIST_KW_ICV1[] = {0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6};
 /*! The 32-bit default integrity check value (ICV) for KWP mode. */
-static const  unsigned char NIST_KW_ICV2[] = {0xA6, 0x59, 0x59, 0xA6};
+static const unsigned char NIST_KW_ICV2[] = {0xA6, 0x59, 0x59, 0xA6};
 
 #ifndef GET_UINT32_BE
 #define GET_UINT32_BE(n,b,i)                            \

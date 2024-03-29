@@ -124,7 +124,11 @@ int main(void)
     spi_master_get_default_timing_config(&timing_config);
     timing_config.master_config.clk_src_freq_in_hz = spi_clcok;
     timing_config.master_config.sclk_freq_in_hz = BOARD_APP_SPI_SCLK_FREQ;
-    spi_master_timing_init(BOARD_APP_SPI_BASE, &timing_config);
+    if (status_success != spi_master_timing_init(BOARD_APP_SPI_BASE, &timing_config)) {
+        printf("SPI master timming init failed\n");
+        while (1) {
+        }
+    }
     printf("SPI-Master transfer timing is configured.\n");
     printf("SPI-Master transfer source clock frequency: %dHz\n", timing_config.master_config.clk_src_freq_in_hz);
     printf("SPI-Master transfer sclk frequency: %dHz\n", timing_config.master_config.sclk_freq_in_hz);

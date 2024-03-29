@@ -18,7 +18,9 @@ hpm_sdk遵循 `BSD 3-Clause license`_ 许可 (许可文件具体内容请 查看
    boards/index_zh
    samples/index_zh
    samples/drivers/index_zh
+   docs/cmake_intro
    api_doc
+   CHANGELOG
 
 .. _BSD 3-Clause license:
    https://github.com/hpmicro/hpm_sdk/blob/main/LICENSE

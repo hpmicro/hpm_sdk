@@ -8,4 +8,4 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(gptmr_timer_basic)
 
 sdk_app_src(src/timer_basic.c)
-generate_ses_project()
+generate_ide_projects()

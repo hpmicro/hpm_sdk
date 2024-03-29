@@ -25,7 +25,7 @@ wm8960_config_t wm8960_config = {
     .left_input = wm8960_input_closed,
     .right_input = wm8960_input_closed,
     .play_source = wm8960_play_source_dac,
-    .bus = wm8960_bus_i2s,
+    .bus = wm8960_bus_left_justified,
     .format = { .mclk_hz = 0U, .sample_rate = 0U, .bit_width = 32U },
 };
 
@@ -243,7 +243,7 @@ static volatile bool s_speaker_mute;
 static struct usbd_interface intf0;
 static struct usbd_interface intf1;
 
-static void usbd_audio_iso_out_callback(uint8_t ep, uint32_t nbytes);
+static void usbd_audio_iso_out_callback(uint8_t busid, uint8_t ep, uint32_t nbytes);
 static struct usbd_endpoint audio_out_ep = {
     .ep_cb = usbd_audio_iso_out_callback,
     .ep_addr = AUDIO_OUT_EP
@@ -268,14 +268,41 @@ static void speaker_i2s_dma_start_transfer(uint32_t addr, uint32_t size);
 static bool speaker_out_buff_is_empty(void);
 
 /* Extern Functions Definition */
-void cherryusb_audio_init(void)
+static void usbd_event_handler(uint8_t busid, uint8_t event)
 {
-    usbd_desc_register(audio_v2_descriptor);
-    usbd_add_interface(usbd_audio_init_intf(&intf0, AUDIO_VERSION, audio_entity_table, 2));
-    usbd_add_interface(usbd_audio_init_intf(&intf1, AUDIO_VERSION, audio_entity_table, 2));
-    usbd_add_endpoint(&audio_out_ep);
+    (void)busid;
 
-    usbd_initialize();
+    switch (event) {
+    case USBD_EVENT_RESET:
+        break;
+    case USBD_EVENT_CONNECTED:
+        break;
+    case USBD_EVENT_DISCONNECTED:
+        break;
+    case USBD_EVENT_RESUME:
+        break;
+    case USBD_EVENT_SUSPEND:
+        break;
+    case USBD_EVENT_CONFIGURED:
+        break;
+    case USBD_EVENT_SET_REMOTE_WAKEUP:
+        break;
+    case USBD_EVENT_CLR_REMOTE_WAKEUP:
+        break;
+
+    default:
+        break;
+    }
+}
+
+void audio_v2_init(uint8_t busid, uint32_t reg_base)
+{
+    usbd_desc_register(busid, audio_v2_descriptor);
+    usbd_add_interface(busid, usbd_audio_init_intf(busid, &intf0, AUDIO_VERSION, audio_entity_table, 2));
+    usbd_add_interface(busid, usbd_audio_init_intf(busid, &intf1, AUDIO_VERSION, audio_entity_table, 2));
+    usbd_add_endpoint(busid, &audio_out_ep);
+
+    usbd_initialize(busid, reg_base, usbd_event_handler);
 }
 
 void speaker_init_i2s_dao_codec(void)
@@ -327,8 +354,10 @@ void isr_dma(void)
 }
 SDK_DECLARE_EXT_ISR_M(BOARD_APP_HDMA_IRQ, isr_dma)
 
-void cherryusb_audio_main_task(void)
+void audio_v2_task(uint8_t busid)
 {
+    (void)busid;
+
     if (s_speaker_rx_flag) {
         if (!speaker_out_buff_is_empty()) {
             if (s_speaker_dma_transfer_req) {
@@ -355,24 +384,27 @@ void cherryusb_audio_main_task(void)
     }
 }
 
-void usbd_audio_open(uint8_t intf)
+void usbd_audio_open(uint8_t busid, uint8_t intf)
 {
     (void)intf;
+
     s_speaker_rx_flag = 1;
     s_speaker_out_buffer_front = 0;
     s_speaker_out_buffer_rear = 0;
     s_speaker_dma_transfer_req = true;
     /* setup first out ep read transfer */
-    usbd_ep_start_read(AUDIO_OUT_EP, (uint8_t *)&s_speaker_out_buffer[s_speaker_out_buffer_rear][0], AUDIO_OUT_PACKET);
+    usbd_ep_start_read(busid, AUDIO_OUT_EP, (uint8_t *)&s_speaker_out_buffer[s_speaker_out_buffer_rear][0], AUDIO_OUT_PACKET);
 #if defined(USING_DAO) && USING_DAO
     dao_start(HPM_DAO);
 #endif
     USB_LOG_RAW("OPEN SPEAKER\r\n");
 }
 
-void usbd_audio_close(uint8_t intf)
+void usbd_audio_close(uint8_t busid, uint8_t intf)
 {
+    (void)busid;
     (void)intf;
+
     s_speaker_rx_flag = 0;
 #if defined(USING_DAO) && USING_DAO
     dao_stop(HPM_DAO);
@@ -380,34 +412,11 @@ void usbd_audio_close(uint8_t intf)
     USB_LOG_RAW("CLOSE SPEAKER\r\n");
 }
 
-void usbd_event_handler(uint8_t event)
+void usbd_audio_set_volume(uint8_t busid, uint8_t ep, uint8_t ch, int volume)
 {
-    switch (event) {
-    case USBD_EVENT_RESET:
-        break;
-    case USBD_EVENT_CONNECTED:
-        break;
-    case USBD_EVENT_DISCONNECTED:
-        break;
-    case USBD_EVENT_RESUME:
-        break;
-    case USBD_EVENT_SUSPEND:
-        break;
-    case USBD_EVENT_CONFIGURED:
-        break;
-    case USBD_EVENT_SET_REMOTE_WAKEUP:
-        break;
-    case USBD_EVENT_CLR_REMOTE_WAKEUP:
-        break;
-
-    default:
-        break;
-    }
-}
-
-void usbd_audio_set_volume(uint8_t ep, uint8_t ch, int volume)
-{
+    (void)busid;
     (void)ch;
+
     if (ep == AUDIO_OUT_EP) {
         s_speaker_volume_percent = volume;
 #if defined(USING_CODEC) && USING_CODEC
@@ -426,9 +435,11 @@ void usbd_audio_set_volume(uint8_t ep, uint8_t ch, int volume)
     }
 }
 
-int usbd_audio_get_volume(uint8_t ep, uint8_t ch)
+int usbd_audio_get_volume(uint8_t busid, uint8_t ep, uint8_t ch)
 {
+    (void)busid;
     (void)ch;
+
     int volume = 0;
 
     if (ep == AUDIO_OUT_EP) {
@@ -438,9 +449,11 @@ int usbd_audio_get_volume(uint8_t ep, uint8_t ch)
     return volume;
 }
 
-void usbd_audio_set_mute(uint8_t ep, uint8_t ch, bool mute)
+void usbd_audio_set_mute(uint8_t busid, uint8_t ep, uint8_t ch, bool mute)
 {
+    (void)busid;
     (void)ch;
+
 #if defined(USING_CODEC) && USING_CODEC
     uint32_t volume;
 #endif
@@ -472,9 +485,11 @@ void usbd_audio_set_mute(uint8_t ep, uint8_t ch, bool mute)
     }
 }
 
-bool usbd_audio_get_mute(uint8_t ep, uint8_t ch)
+bool usbd_audio_get_mute(uint8_t busid, uint8_t ep, uint8_t ch)
 {
+    (void)busid;
     (void)ch;
+
     bool mute = false;
 
     if (ep == AUDIO_OUT_EP) {
@@ -484,8 +499,10 @@ bool usbd_audio_get_mute(uint8_t ep, uint8_t ch)
     return mute;
 }
 
-void usbd_audio_set_sampling_freq(uint8_t ep, uint32_t sampling_freq)
+void usbd_audio_set_sampling_freq(uint8_t busid, uint8_t ep, uint32_t sampling_freq)
 {
+    (void)busid;
+
     hpm_stat_t state;
 
     if (ep == AUDIO_OUT_EP) {
@@ -508,8 +525,10 @@ void usbd_audio_set_sampling_freq(uint8_t ep, uint32_t sampling_freq)
     }
 }
 
-uint32_t usbd_audio_get_sampling_freq(uint8_t ep)
+uint32_t usbd_audio_get_sampling_freq(uint8_t busid, uint8_t ep)
 {
+    (void)busid;
+
     uint32_t freq = 0;
 
     if (ep == AUDIO_OUT_EP) {
@@ -519,15 +538,17 @@ uint32_t usbd_audio_get_sampling_freq(uint8_t ep)
     return freq;
 }
 
-void usbd_audio_get_sampling_freq_table(uint8_t ep, uint8_t **sampling_freq_table)
+void usbd_audio_get_sampling_freq_table(uint8_t busid, uint8_t ep, uint8_t **sampling_freq_table)
 {
+    (void)busid;
+
     if (ep == AUDIO_OUT_EP) {
         *sampling_freq_table = (uint8_t *)default_sampling_freq_table;
     }
 }
 
 /* Static Function Definition */
-static void usbd_audio_iso_out_callback(uint8_t ep, uint32_t nbytes)
+static void usbd_audio_iso_out_callback(uint8_t busid, uint8_t ep, uint32_t nbytes)
 {
     if (s_speaker_rx_flag) {
         s_speaker_out_buffer_size[s_speaker_out_buffer_rear] = nbytes;
@@ -535,7 +556,7 @@ static void usbd_audio_iso_out_callback(uint8_t ep, uint32_t nbytes)
         if (s_speaker_out_buffer_rear >= AUDIO_BUFFER_COUNT) {
             s_speaker_out_buffer_rear = 0;
         }
-        usbd_ep_start_read(ep, &s_speaker_out_buffer[s_speaker_out_buffer_rear][0], AUDIO_OUT_PACKET);
+        usbd_ep_start_read(busid, ep, &s_speaker_out_buffer[s_speaker_out_buffer_rear][0], AUDIO_OUT_PACKET);
     }
 }
 
@@ -560,9 +581,6 @@ static hpm_stat_t speaker_init_i2s_playback(uint32_t sample_rate, uint8_t audio_
     transfer.audio_depth = audio_depth;
     transfer.channel_num_per_frame = 2; /* non TDM mode, channel num fix to 2. */
     transfer.channel_slot_mask = 0x3;   /* data from hpm_wav_decode API is 2 channels */
-#if defined(CONFIG_CODEC_WM8960) && CONFIG_CODEC_WM8960
-    transfer.protocol = I2S_PROTOCOL_I2S_PHILIPS;
-#endif
 
     s_speaker_i2s_mclk_hz = clock_get_frequency(TARGET_I2S_CLK_NAME);
 

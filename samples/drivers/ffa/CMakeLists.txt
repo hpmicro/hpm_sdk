@@ -9,4 +9,4 @@ project(ffa_demo)
 
 sdk_app_src(src/ffa_demo.c
             src/ffa_test_data.c)
-generate_ses_project()
+generate_ide_projects()

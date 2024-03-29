@@ -45,7 +45,11 @@ ATTR_PLACE_AT_NONCACHEABLE uint8_t receive_buff[SPI_TRANS_DATA_BUFF_SIZE];
 /* dma descriptors buff */
 #define SPI_TRANS_COUNT     MAX(sizeof(sent_buff), sizeof(receive_buff)) / TEST_SPI_DATA_LEN_IN_BYTE
 /* According to the maximum transmission capacity, the transmission count after subcontracting */
+#if (SPI_SOC_TRANSFER_COUNT_MAX >= SPI_TRANS_DATA_BUFF_SIZE)
+#define SPI_TRANS_COUNT2    SPI_TRANS_DATA_BUFF_SIZE
+#else
 #define SPI_TRANS_COUNT2    ((SPI_TRANS_COUNT + SPI_SOC_TRANSFER_COUNT_MAX - 1) / SPI_SOC_TRANSFER_COUNT_MAX)
+#endif
 /* dma descriptors need align 8 bytes */
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(8) dma_linked_descriptor_t dma_linked_descriptor[SPI_TRANS_COUNT2 * SPI_DMA_DESC_COUNT_PER_TRANS];
 ATTR_PLACE_AT_NONCACHEABLE uint32_t spi_transctrl[SPI_TRANS_COUNT2];
@@ -152,8 +156,9 @@ int main(void)
     timing_config.master_config.sclk_freq_in_hz = TEST_SPI_SCLK_FREQ;
     if (status_success != spi_master_timing_init(TEST_SPI, &timing_config)) {
         printf("SPI master timming init failed\n");
+        while (1) {
+        }
     }
-
     /* set SPI format config for master */
     spi_master_get_default_format_config(&format_config);
     format_config.master_config.addr_len_in_bytes = 1U;

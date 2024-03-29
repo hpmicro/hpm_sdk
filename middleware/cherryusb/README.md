@@ -70,7 +70,7 @@ CherryUSB Device Stack has the following functions：
 - Support USB2.0 full and high speed, USB3.0 super speed
 - Support endpoint irq callback register by users, let users do whatever they wants in endpoint irq callback.
 - Support Composite Device
-- Support Communication Device Class (CDC)
+- Support Communication Device Class (CDC_ACM, CDC_ECM)
 - Support Human Interface Device (HID)
 - Support Mass Storage Class (MSC)
 - Support USB VIDEO CLASS (UVC1.0、UVC1.5)
@@ -103,36 +103,41 @@ CherryUSB Host Stack has the following functions：
 - Support blocking transfers and asynchronous transfers
 - Support Composite Device
 - Multi-level HUB support, expandable up to 7 levels
-- Support Communication Device Class (CDC)
+- Support Communication Device Class (CDC_ACM, CDC_ECM)
 - Support Human Interface Device (HID)
 - Support Mass Storage Class (MSC)
 - Support USB Video CLASS
 - Support USB Audio CLASS
 - Support Remote NDIS (RNDIS)
+- Support USB Bluetooth class (support nimble and zephyr bluetooth stack, support **CLASS:0xE0** or vendor class like cdc acm)
 - Support Vendor class
+- Support USB modeswitch
+- Support multi host with the same USB IP
 
 The CherryUSB Host stack also provides the lsusb function, which allows you to view information about all mounted devices, including those on external hubs, with the help of a shell plugin.
 
 CherryUSB Host Stack resource usage (GCC 10.2 with -O2):
 
-|   file        |  FLASH (Byte)  |  No Cache RAM (Byte)            |  RAM (Byte)                 |  Heap (Byte)                    |
-|:-------------:|:--------------:|:-------------------------------:|:---------------------------:|:-------------------------------:|
-|usbh_core.c    |  4237          | 512 + 8 * (1+x) *n              | 28                          | sizeof(struct usbh_urb)         |
-|usbh_hub.c     |  2919          | 32 + 4* (1+x) | 12 + sizeof(struct usbh_hub) * (1+x)          | 0                               |
-|usbh_cdc_acm.c |  1099          | 7             | 4  + sizeof(struct usbh_cdc_acm) * x          | 0                               |
-|usbh_msc.c     |  2502          | 32            | 4  + sizeof(struct usbh_msc) * x              | 0                               |
-|usbh_hid.c     |  956           | 128           | 4  + sizeof(struct usbh_hid) * x              | 0                               |
-|usbh_video.c   |  2330          | 128           | 4  + sizeof(struct usbh_video) * x            | 0                               |
-|usbh_audio.c   |  3168          | 128           | 4  + sizeof(struct usbh_audio) * x            | 0                               |
-|usbh_rndis.c   |  3030          | 4096          | 4  + sizeof(struct usbh_rndis) * x            | 0                               |
+|   file        |  FLASH (Byte)  |  No Cache RAM (Byte)            |  RAM (Byte)                 |  Heap (Byte) |
+|:-------------:|:--------------:|:-------------------------------:|:---------------------------:|:------------:|
+|usbh_core.c    |  ~7700          | 512 + 8 * (1+x) *n              | 28                          | 0            |
+|usbh_hub.c     |  ~5600          | 32 + 4* (1+x) | 12 + sizeof(struct usbh_hub) * (1+x)          | 0            |
+|usbh_cdc_acm.c |  ~1200          | 7             | 4  + sizeof(struct usbh_cdc_acm) * x          | 0            |
+|usbh_msc.c     |  ~2500          | 32            | 4  + sizeof(struct usbh_msc) * x              | 0            |
+|usbh_hid.c     |  ~1000          | 128           | 4  + sizeof(struct usbh_hid) * x              | 0            |
+|usbh_video.c   |  ~3700          | 128           | 4  + sizeof(struct usbh_video) * x            | 0            |
+|usbh_audio.c   |  ~3100          | 128           | 4  + sizeof(struct usbh_audio) * x            | 0            |
+|usbh_rndis.c   |  ~3900          | 4096 + 2 * 2048         | sizeof(struct usbh_rndis) * 1       | 0            |
+|usbh_cdc_ecm.c |  ~2500          | 2 * 1514              | sizeof(struct usbh_cdc_ecm) * 1       | 0            |
+|usbh_bluetooth.c |  ~2300        | 2 * 2048(default)   | sizeof(struct usbh_bluetooth) * 1       | 0            |
 
 Among them, `sizeof(struct usbh_hub)` and `sizeof(struct usbh_hubport)` are affected by the following macros：
 
 ```
 #define CONFIG_USBHOST_MAX_EXTHUBS          1
 #define CONFIG_USBHOST_MAX_EHPORTS          4
-#define CONFIG_USBHOST_MAX_INTERFACES       6
-#define CONFIG_USBHOST_MAX_INTF_ALTSETTINGS 1
+#define CONFIG_USBHOST_MAX_INTERFACES       8
+#define CONFIG_USBHOST_MAX_INTF_ALTSETTINGS 8
 #define CONFIG_USBHOST_MAX_ENDPOINTS        4
 ```
 
@@ -144,8 +149,6 @@ x is affected by the following macros：
 #define CONFIG_USBHOST_MAX_MSC_CLASS     2
 #define CONFIG_USBHOST_MAX_AUDIO_CLASS   1
 #define CONFIG_USBHOST_MAX_VIDEO_CLASS   1
-#define CONFIG_USBHOST_MAX_RNDIS_CLASS   1
-
 ```
 
 ## Documentation Tutorial
@@ -162,21 +165,19 @@ USB basic concepts and how the CherryUSB Device stack is implemented, see [Cherr
 
 ## Demo Repo
 
-|   Manufacturer       |  CHIP or Series    | USB IP| Repo Url |Current version|
-|:--------------------:|:------------------:|:-----:|:--------:|:---------------------------:|
-|Bouffalolab    |  BL702/BL616/BL808 | bouffalolab/ehci|[bouffalo_sdk](https://github.com/CherryUSB/cherryusb_bouffalolab)| v0.10.1 |
-|ST    |  STM32F1x | fsdev |[stm32_repo](https://github.com/CherryUSB/cherryusb_stm32)|≤ v0.10.1 |
-|ST    |  STM32F4/STM32H7 | dwc2 |[stm32_repo](https://github.com/CherryUSB/cherryusb_stm32)|≤ v0.10.1 |
-|HPMicro    |  HPM6750 | hpm/ehci |[hpm_sdk](https://github.com/CherryUSB/cherryusb_hpmicro)| v0.10.1 |
-|Essemi    |  ES32F36xx | musb |[es32f369_repo](https://github.com/CherryUSB/cherryusb_es32)|≤ v0.10.1 |
-|AllwinnerTech    |  F1C100S/F1C200S | musb |[cherryusb_rtt_f1c100s](https://github.com/CherryUSB/cherryusb_rtt_f1c100s)|≤ v0.10.1 |
-|Phytium |  e2000 | xhci |[phytium_repo](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)|v0.9.0 |
-|Raspberry pi |  rp2040 | rp2040 |[pico-examples](https://github.com/CherryUSB/pico-examples)|≤ v0.10.1 |
-|WCH    |  CH32V307/ch58x | ch32_usbfs/ch32_usbhs/ch58x |[wch_repo](https://github.com/CherryUSB/cherryusb_wch)|≤ v0.10.1 |
-|Nordicsemi |  Nrf52840 | nrf5x |[nrf5x_repo](https://github.com/CherryUSB/cherryusb_nrf5x)|≤ v0.10.1 |
-|Espressif    |  esp32s3 | dwc2 |[esp32_repo](https://github.com/CherryUSB/cherryusb_esp32)|≤ v0.10.1 |
-|Bekencorp    |  BK72xx | musb |[armino](https://github.com/CherryUSB/armino)|v0.7.0 |
-|Sophgo    |  cv18xx | dwc2 |[cvi_alios_open](https://github.com/CherryUSB/cvi_alios_open)|v0.7.0 |
+|   Manufacturer       |  CHIP or Series    | USB IP| Repo Url | Support version     | Support status |
+|:--------------------:|:------------------:|:-----:|:--------:|:------------------:|:-------------:|
+|Bouffalolab    |  BL702/BL616/BL808 | bouffalolab/ehci|[bouffalo_sdk](https://github.com/CherryUSB/bouffalo_sdk)|<= latest | Long-term |
+|ST    |  STM32F1x | fsdev |[stm32_repo](https://github.com/CherryUSB/cherryusb_stm32)|<= latest | Long-term |
+|ST    |  STM32F4/STM32H7 | dwc2 |[stm32_repo](https://github.com/CherryUSB/cherryusb_stm32)|<= latest | Long-term |
+|HPMicro    |  HPM6750 | hpm/ehci |[hpm_sdk](https://github.com/CherryUSB/hpm_sdk)|<= latest | Long-term |
+|Essemi    |  ES32F36xx | musb |[es32f369_repo](https://github.com/CherryUSB/cherryusb_es32)|<= latest | Long-term |
+|AllwinnerTech    |  F1C100S/F1C200S | musb |[cherryusb_rtt_f1c100s](https://github.com/CherryUSB/cherryusb_rtt_f1c100s)|<= latest | the same with Essemi |
+|Phytium |  e2000 | pusb2/xhci |[phytium_repo](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)|v0.10.2  | Long-term |
+|WCH    |  CH32V307/ch58x | ch32_usbfs/ch32_usbhs/ch58x |[wch_repo](https://github.com/CherryUSB/cherryusb_wch)|<= v0.10.2 | TBD |
+|Espressif    |  esp32s3 | dwc2 |[esp32_repo](https://github.com/CherryUSB/cherryusb_esp32)|<= latest | the same with ST |
+|Nordicsemi |  Nrf52840 | nrf5x |[nrf5x_repo](https://github.com/CherryUSB/cherryusb_nrf5x)|<= v0.10.2 | No more updated |
+|Raspberry pi |  rp2040 | rp2040 |[pico-examples](https://github.com/CherryUSB/pico-examples)|<= v0.10.2 | No more updated |
 
 ## Contact
 

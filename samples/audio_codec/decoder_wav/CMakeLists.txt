@@ -31,4 +31,4 @@ sdk_inc(../common/inc)
 sdk_app_src(../common/src/audio_codec_common.c)
 sdk_app_src(../common/src/sd_fatfs_common.c)
 
-generate_ses_project()
+generate_ide_projects()

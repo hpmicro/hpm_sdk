@@ -1,18 +1,13 @@
-# hpm_mcl
+# HPM Motor Ctrl
 
 ```{warning}
 Ensure board [ADC reference voltage plug-in](lab_board_resource) is connected before motor demo runs.
 ```
 
-```{eval-rst}
+:::{eval-rst}
 .. toctree::
-   :maxdepth: 3
+    :maxdepth: 3
+    :glob:
 
-   bldc_block/README_en
-   bldc_foc/README_en
-   bldc_littlevgl_foc/README_en
-   bldc_over_zero/README_en
-   bldc_smc/README_en
-   bldc_hfi/README_en
-   step_motor_foc/README_en
-```
+    **/*_en
+:::

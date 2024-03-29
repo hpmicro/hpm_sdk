@@ -26,12 +26,12 @@ int main(void)
     intc_set_irq_priority(CONFIG_HPM_USBD_IRQn, 2);
     i2s_enable_dma_irq_with_priority(1);
 
-    cherryusb_audio_v2_init();
+    audio_v2_init(0, CONFIG_HPM_USBD_BASE);
     speaker_init_i2s_dao_codec();
     mic_init_i2s_pdm();
 
     while (1) {
-        cherryusb_audio_v2_main_task();
+        audio_v2_task(0);
     }
     return 0;
 }

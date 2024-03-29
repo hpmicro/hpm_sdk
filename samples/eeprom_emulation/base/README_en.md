@@ -18,7 +18,7 @@ EEPROM BASE example tests the write, read, and flush interfaces. It's contain th
 **update data**
 
 - update written data
-- view updates  
+- view updates
 
 **flush data**
 
@@ -96,7 +96,7 @@ sector count: 128
 flash earse granularity: 4096
 version: 0x4553
 end address: 0x80100000
-data 
+data
 [11:39:52.133]收←◆write addr = 0x8008004e, info write addr = 0x800fff40, remain flash size = 0x7fef2
 
 valid count percent info count( 4 / 10 )

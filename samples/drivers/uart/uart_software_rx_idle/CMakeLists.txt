@@ -9,4 +9,4 @@ project(uart_software_rx_idle)
 
 sdk_inc(src)
 sdk_app_src(src/uart.c)
-generate_ses_project()
+generate_ide_projects()

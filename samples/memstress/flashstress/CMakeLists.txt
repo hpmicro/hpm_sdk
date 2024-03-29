@@ -9,4 +9,4 @@ project(flashstress)
 
 sdk_app_src(src/flashstress.c)
 sdk_app_src(src/flashstress_lib.c)
-generate_ses_project()
+generate_ide_projects()

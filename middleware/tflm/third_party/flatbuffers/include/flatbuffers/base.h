@@ -64,7 +64,7 @@
   #include <android/api-level.h>
 #endif
 
-#if defined(__ICCARM__)
+#if defined(__ICCARM__) || defined(__ICCRISCV__)
 #include <intrinsics.h>
 #endif
 
@@ -130,7 +130,7 @@
   #define FLATBUFFERS_LITTLEENDIAN 0
 #endif // __s390x__
 #if !defined(FLATBUFFERS_LITTLEENDIAN)
-  #if defined(__GNUC__) || defined(__clang__) || defined(__ICCARM__)
+  #if defined(__GNUC__) || defined(__clang__) || defined(__ICCARM__) || defined(__ICCRISCV__)
     #if (defined(__BIG_ENDIAN__) || \
          (defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__))
       #define FLATBUFFERS_LITTLEENDIAN 0

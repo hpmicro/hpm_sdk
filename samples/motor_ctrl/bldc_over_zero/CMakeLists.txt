@@ -18,4 +18,4 @@ sdk_app_inc(src)
 sdk_app_src(src/bldc_over_zero_callback.c)
 sdk_app_src(src/bldc_over_zero.c)
 
-generate_ses_project()
+generate_ide_projects()

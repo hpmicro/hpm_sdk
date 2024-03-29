@@ -55,10 +55,10 @@ void rt_hw_console_output(const char *str)
     while (*str != '\0')
     {
         if (*str == '\n') {
-            while (status_success != uart_send_byte(BOARD_APP_UART_BASE, '\r')) {
+            while (status_success != uart_send_byte(BOARD_RT_CONSOLE_BASE, '\r')) {
             }
         }
-        uart_send_byte(BOARD_APP_UART_BASE, *str++);
+        uart_send_byte(BOARD_RT_CONSOLE_BASE, *str++);
     }
 }
 
@@ -67,8 +67,8 @@ char rt_hw_console_getchar(void)
 {
     int ch = -1;
 
-    if (uart_check_status(BOARD_APP_UART_BASE, uart_stat_data_ready)) {
-        uart_receive_byte(BOARD_APP_UART_BASE, (uint8_t *)&ch);
+    if (uart_check_status(BOARD_RT_CONSOLE_BASE, uart_stat_data_ready)) {
+        uart_receive_byte(BOARD_RT_CONSOLE_BASE, (uint8_t *)&ch);
     } else {
         rt_thread_mdelay(10);
     }
@@ -96,3 +96,20 @@ void rt_hw_cpu_reset(void)
 }
 
 MSH_CMD_EXPORT_ALIAS(rt_hw_cpu_reset, reset, reset the board);
+
+/**
+ * @brief halt cpu when exception occur
+ * 
+ * @param cause mcause
+ * @param epc mepc
+ * @return long 
+ */
+long exception_handler(long cause, long epc) 
+{
+    (void)cause;
+    
+    while (1) {
+
+    };
+    return epc;
+}

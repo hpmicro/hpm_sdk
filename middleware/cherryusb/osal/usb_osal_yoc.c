@@ -51,6 +51,11 @@ int usb_osal_sem_give(usb_osal_sem_t sem)
     return 0;
 }
 
+void usb_osal_sem_reset(usb_osal_sem_t sem)
+{
+    
+}
+
 usb_osal_mutex_t usb_osal_mutex_create(void)
 {
     aos_mutex_t mutex = NULL;
@@ -82,6 +87,11 @@ usb_osal_mq_t usb_osal_mq_create(uint32_t max_msgs)
     aos_queue_create(&queue, sizeof(uintptr_t), max_msgs, 0);
 
     return (usb_osal_mq_t)queue;
+}
+
+void usb_osal_mq_delete(usb_osal_mq_t mq)
+{
+    aos_queue_free((aos_queue_t)mq);
 }
 
 int usb_osal_mq_send(usb_osal_mq_t mq, uintptr_t addr)

@@ -218,6 +218,16 @@ static inline uint8_t usb_get_port_speed(USB_Type *ptr)
 void usb_phy_init(USB_Type *ptr);
 
 /**
+ * @brief USB phy get line status
+ *
+ * @param[in] ptr A USB peripheral base address
+ */
+static inline uint8_t usb_phy_get_line_state(USB_Type *ptr)
+{
+    return USB_PHY_STATUS_LINE_STATE_GET(ptr->PHY_STATUS);
+}
+
+/**
  * @brief USB phy using internal vbus
  *
  * @param[in] ptr A USB peripheral base address

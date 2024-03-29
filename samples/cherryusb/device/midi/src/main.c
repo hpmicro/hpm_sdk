@@ -13,9 +13,14 @@
 #define LED_FLASH_PERIOD_IN_MS 286
 
 extern void midi_set_auto_play(bool set);
-extern void midi_init(void);
-extern void midi_task_286ms(void);
-extern void midi_task_main(void);
+extern void midi_init(uint8_t busid, uint32_t reg_base);
+extern void midi_task_286ms(uint8_t busid);
+extern void midi_task_main(uint8_t busid);
+
+void timer_cb(void)
+{
+    midi_task_286ms(0);
+}
 
 int main(void)
 {
@@ -31,8 +36,8 @@ int main(void)
 
     printf("cherry usb midi device sample.\n");
 
-    midi_init();
-    board_timer_create(LED_FLASH_PERIOD_IN_MS, midi_task_286ms);
+    midi_init(0, CONFIG_HPM_USBD_BASE);
+    board_timer_create(LED_FLASH_PERIOD_IN_MS, timer_cb);
 
     printf("\r\n***********Select Work Mode**********\r\n");
     printf("1 - Auto Play\r\n");
@@ -49,7 +54,7 @@ int main(void)
     }
 
     while (1) {
-        midi_task_main();
+        midi_task_main(0);
     }
     return 0;
 }

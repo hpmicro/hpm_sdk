@@ -1,4 +1,4 @@
-# EWDG example
+# EWDG
 
 ## Overview
 
