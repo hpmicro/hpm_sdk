@@ -14,7 +14,9 @@ target_link_libraries(${HPM_SDK_GCC_LIB} PUBLIC ${HPM_SDK_GCC_LIB_ITF} ${HPM_SDK
 
 target_link_libraries(${HPM_SDK_LIB} PUBLIC ${HPM_SDK_GCC_LIB_ITF})
 if("${TOOLCHAIN_VARIANT}" STREQUAL "nds-gcc")
-target_link_libraries(${HPM_SDK_LIB} PUBLIC ${HPM_SDK_NDSGCC_LIB_ITF})
+    target_link_libraries(${HPM_SDK_LIB} PUBLIC ${HPM_SDK_NDSGCC_LIB_ITF})
+elseif("${TOOLCHAIN_VARIANT}" STREQUAL "zcc")
+    target_link_libraries(${HPM_SDK_LIB} PUBLIC ${HPM_SDK_ZCC_LIB_ITF})
 endif()
 
 if(flash_size)
@@ -206,6 +208,15 @@ if("${TOOLCHAIN_VARIANT}" STREQUAL "nds-gcc")
         "-Wl,-Map=${EXECUTABLE_OUTPUT_PATH}/${APP_MAP_NAME}"
         ${HPM_SDK_WHOLE_ARCHIVE_OPT}
         ${HPM_SDK_NDSGCC_LIB_ITF}
+        ${HPM_SDK_GCC_LIB} ${HPM_SDK_GCC_LIB_ITF}
+        ${HPM_SDK_LIB} ${HPM_SDK_LIB_ITF} app
+        "-Wl,--no-whole-archive")
+elseif("${TOOLCHAIN_VARIANT}" STREQUAL "zcc")
+    target_link_libraries(${HPM_SDK_LIB} PUBLIC ${HPM_SDK_ZCC_LIB_ITF})
+    target_link_libraries(${APP_ELF_NAME}
+        "-Wl,-Map=${EXECUTABLE_OUTPUT_PATH}/${APP_MAP_NAME}"
+        ${HPM_SDK_WHOLE_ARCHIVE_OPT}
+        ${HPM_SDK_ZCC_LIB_ITF}
         ${HPM_SDK_GCC_LIB} ${HPM_SDK_GCC_LIB_ITF}
         ${HPM_SDK_LIB} ${HPM_SDK_LIB_ITF} app
         "-Wl,--no-whole-archive")

@@ -48,6 +48,10 @@ Public CMake functions / macros
  * :cmake:command:`sdk_nds_compile_options`
  * :cmake:command:`sdk_nds_ld_options`
  * :cmake:command:`sdk_nds_link_libraries`
+ * :cmake:command:`sdk_zcc_compile_definitions`
+ * :cmake:command:`sdk_zcc_compile_options`
+ * :cmake:command:`sdk_zcc_ld_options`
+ * :cmake:command:`sdk_zcc_link_libraries`
  * :cmake:command:`sdk_raise_fatal_error_if_all_invalid`
  * :cmake:command:`sdk_raise_fatal_error_if_all_valid`
  * :cmake:command:`sdk_raise_fatal_error_if_valid_at_least_one`
@@ -596,6 +600,70 @@ Public CMake functions / macros
 
  Example:
    sdk_nds_link_libraries(libs)
+ :param libs: libraries to be linked, support both file path
+    (like USER_LIB.a) and standard libraries provided by toolchain (like m)
+
+.. _`sdk_zcc_compile_definitions_ref`:
+
+`sdk_zcc_compile_definitions`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. cmake:command:: sdk_zcc_compile_definitions()
+
+ *[function defined in cmake-ext.cmake]*
+
+ Set defnitions for zcc toolchain
+
+ Example:
+   sdk_zcc_compie_definitions(defs)
+ :param defs: definitions for zcc toolchain
+
+
+.. _`sdk_zcc_compile_options_ref`:
+
+`sdk_zcc_compile_options`
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. cmake:command:: sdk_zcc_compile_options()
+
+ *[function defined in cmake-ext.cmake]*
+
+ Set compile options for zcc toolchain
+
+ Example:
+   sdk_zcc_compile_options(opts)
+ :param opts: options for zcc toolchain
+
+
+.. _`sdk_zcc_ld_options_ref`:
+
+`sdk_zcc_ld_options`
+~~~~~~~~~~~~~~~~~~~~
+
+.. cmake:command:: sdk_zcc_ld_options()
+
+ *[function defined in cmake-ext.cmake]*
+
+ Set linker options
+
+ Example:
+   sdk_zcc_ld_options(opts)
+ :param opts: linker options
+
+
+.. _`sdk_zcc_link_libraries_ref`:
+
+`sdk_zcc_link_libraries`
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. cmake:command:: sdk_zcc_link_libraries()
+
+ *[function defined in cmake-ext.cmake]*
+
+ Link libraries for andes toolchains
+
+ Example:
+   sdk_zcc_link_libraries(libs)
  :param libs: libraries to be linked, support both file path
     (like USER_LIB.a) and standard libraries provided by toolchain (like m)
 

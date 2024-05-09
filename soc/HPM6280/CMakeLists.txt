@@ -32,6 +32,22 @@ endif()
 
 sdk_nds_compile_options(-mcpu=d45)
 
+if("${TOOLCHAIN_VARIANT}" STREQUAL "zcc")
+    sdk_compile_options(--target=riscv32-unknown-elf)
+    sdk_compile_options(-march=rv32imafdcxandes)
+    sdk_compile_options(-mabi=ilp32d)
+    sdk_compile_options(-mtune=andes-kavalan)
+endif()
+
+sdk_zcc_ld_options(--target=riscv32-unknown-elf)
+sdk_zcc_ld_options(-march=rv32imafdcxandes)
+sdk_zcc_ld_options(-mabi=ilp32d)
+sdk_zcc_ld_options(-mtune=andes-kavalan)
+sdk_zcc_ld_options(-Wl,-mllvm,--align-all-nofallthru-blocks=2)
+sdk_zcc_ld_options(-falign-functions=4)
+sdk_zcc_ld_options(-flate-loop-unroll)
+sdk_zcc_ld_options(-Wl,-mllvm,--jump-is-expensive=true)
+
 set(SOC_LINKER_SCRIPT "" PARENT_SCOPE)
 if(NOT DEFINED USE_CUSTOM_LINKER)
     if(${LINK_TO_FLASH})

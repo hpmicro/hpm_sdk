@@ -3,14 +3,21 @@
 
 cmake_minimum_required(VERSION 3.13)
 
-set(SES_TOOLCHAIN_VARIANT "Andes")
-
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(coremark)
 
-set(opt_string "-O3 -funroll-all-loops -finline-limit=600 -ftree-dominator-opts -fno-if-conversion2 -fselective-scheduling -fno-code-hoisting -mstrict-align")
+if("${TOOLCHAIN_VARIANT}" STREQUAL "zcc")
+  set(SES_TOOLCHAIN_VARIANT "Terapines")
+  set(opt_string "-O3 -flto -falign-functions=4 -flate-loop-unroll")
+else()
+  set(SES_TOOLCHAIN_VARIANT "Andes")
+  set(opt_string "-O3 -funroll-all-loops -finline-limit=600 -ftree-dominator-opts -fno-if-conversion2 -fselective-scheduling -fno-code-hoisting -mstrict-align")
+endif()
 separate_arguments(opt_list UNIX_COMMAND ${opt_string})
+
+sdk_zcc_ld_options(-O3)
+sdk_zcc_ld_options("-fuse-size-lib")
 
 foreach(opt ${opt_list})
 sdk_compile_options(${opt})

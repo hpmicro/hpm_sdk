@@ -24,6 +24,17 @@ function(get_compiler_version compiler version_text compiler_version)
             OUTPUT_STRIP_TRAILING_WHITESPACE
             )
         set(${compiler_version} ${v} PARENT_SCOPE)
+    elseif("${compiler}" STREQUAL "zcc")
+        execute_process(
+            COMMAND
+            ${PYTHON_EXECUTABLE}
+            ${HPM_SDK_BASE}/scripts/get_gcc_version.py
+            "${version_text}"
+            RESULT_VARIABLE result
+            OUTPUT_VARIABLE v
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            )
+        set(${compiler_version} ${v} PARENT_SCOPE)
 
     else()
         message(FATAL_ERROR "Unsupported compiler ${compiler}")
@@ -32,6 +43,9 @@ endfunction()
 
 set(HPM_SDK_NDSGCC_LIB_ITF hpm_sdk_ndsgcc_lib_itf)
 add_library(${HPM_SDK_NDSGCC_LIB_ITF} INTERFACE)
+
+set(HPM_SDK_ZCC_LIB_ITF hpm_sdk_zcc_lib_itf)
+add_library(${HPM_SDK_ZCC_LIB_ITF} INTERFACE)
 
 set(HPM_SDK_GCC_LIB_ITF hpm_sdk_gcc_lib_itf)
 set(HPM_SDK_GCC_LIB hpm_sdk_gcc_lib)
@@ -59,6 +73,13 @@ if("${TOOLCHAIN_VARIANT}" STREQUAL "nds-gcc")
   set(CROSS_COMPILE_TARGET riscv32-elf)
   set(SYSROOT_TARGET       riscv32-elf)
   set(TOOLCHAIN_CMAKE gcc.cmake)
+elseif("${TOOLCHAIN_VARIANT}" STREQUAL "zcc")
+  set(COMPILER zcc)
+  set(LINKER ld.lld)
+  set(BINTOOLS gnu)
+  set(C++ z++)
+  set(SYSROOT_TARGET       riscv32-unknown-elf)
+  set(TOOLCHAIN_CMAKE llvm.cmake)
 elseif("${TOOLCHAIN_VARIANT}" STREQUAL "gcc")
   set(COMPILER gcc)
   set(LINKER ld)
@@ -79,7 +100,11 @@ else()
   message(FATAL_ERROR "${TOOLCHAIN_VARIANT} is not supported")
 endif()
 
-set(CROSS_COMPILE ${TOOLCHAIN_HOME}/bin/${CROSS_COMPILE_TARGET}-)
+if("${TOOLCHAIN_VARIANT}" STREQUAL "zcc")
+  set(CROSS_COMPILE ${TOOLCHAIN_HOME}/bin/)
+else()
+  set(CROSS_COMPILE ${TOOLCHAIN_HOME}/bin/${CROSS_COMPILE_TARGET}-)
+endif()
 if(SYSROOT_TARGET)
   set(SYSROOT_DIR ${TOOLCHAIN_HOME}/${SYSROOT_TARGET}/include/c++/${COMPILER_VERSION})
 endif()
