@@ -3851,7 +3851,6 @@ static inline int32_t hpm_dsp_cifft_rd2_q31(q31_t *src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
 #ifdef __zcc__
   tpt_cfft_q31(src, m, true);
-  tpt_shift_q31(src, src , m, 1<<(m+1));
   return 0;
 #else
   return riscv_dsp_cifft_rd2_q31(src, m);
