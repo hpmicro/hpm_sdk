@@ -18,6 +18,8 @@ separate_arguments(opt_list UNIX_COMMAND ${opt_string})
 
 sdk_zcc_ld_options(-O3)
 sdk_zcc_ld_options("-fuse-size-lib")
+sdk_zcc_ld_options(-Wl,-mllvm,--riscv-misched-load-clustering=true)
+sdk_zcc_ld_options(-Wl,-mllvm,--misfetch-cost=8)
 
 foreach(opt ${opt_list})
 sdk_compile_options(${opt})

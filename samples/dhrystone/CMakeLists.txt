@@ -8,7 +8,7 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(dhrystone)
 
 if("${TOOLCHAIN_VARIANT}" STREQUAL "zcc")
-  set(opt_string "-O3 -flto -fno-inline -fbuiltin -fno-builtin-printf -funroll-loops -falign-functions=4 -falign-loops=4 -finline-functions -flate-loop-unroll -malign-branch -Wno-error=deprecated-non-prototype -Wno-error=implicit-int -Wno-error=implicit-function-declaration")
+  set(opt_string "-O3 -flto -fno-inline -fmessage-length=0 -Wno-implicit-int -Wno-implicit-function-declaration -Wno-return-type -Wno-deprecated-non-prototype -fbuiltin -fno-builtin-printf -falign-functions=16 -falign-loops=4 -flate-loop-unroll -malign-branch -Wno-error=deprecated-non-prototype -Wno-error=implicit-int -Wno-error=implicit-function-declaration")
   # set(opt_string "-Ofast -flto -finline -fbuiltin -fno-builtin-printf -funroll-loops -falign-functions=4 -falign-loops=4 -finline-functions -flate-loop-unroll -malign-branch -Wno-error=deprecated-non-prototype -Wno-error=implicit-int -Wno-error=implicit-function-declaration")
 else()
   sdk_clear_compile_options()
@@ -16,6 +16,9 @@ else()
 endif()
 
 sdk_zcc_ld_options(-O3)
+sdk_zcc_ld_options(-Wl,-mllvm,--riscv-default-unroll=true)
+sdk_zcc_ld_options(-Wl,-mllvm,--riscv-misched-load-clustering=true)
+sdk_zcc_ld_options(-Wl,-mllvm,--misfetch-cost=8)
 
 separate_arguments(opt_list UNIX_COMMAND ${opt_string})
 
