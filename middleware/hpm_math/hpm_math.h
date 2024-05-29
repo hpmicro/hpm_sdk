@@ -39,7 +39,7 @@
 
 #define HPM_MATH_NN_ACTIVATION 1
 #define HPM_MATH_NN_TINYENGINE 1
-#define HPM_MATH_NN_BASIC  1
+#define HPM_MATH_NN_BASIC 1
 #define HPM_MATH_NN_CONCATENATION 1
 #define HPM_MATH_NN_CONVOLUTION 1
 #define HPM_MATH_NN_CONNECTED 1
@@ -52,20 +52,21 @@
 #define HPM_MATH_PI (3.1415926535898)
 
 /**
- * @brief HPM_MATH_SW_FFT_CHECKLIST Enabled to use table lookup to speed up the software fft,
- *  but will increase the code space,and only support sampling points 2^( 2-10).
+ * @brief HPM_MATH_SW_FFT_CHECKLIST Enabled to use table lookup to speed up the
+ * software fft, but will increase the code space,and only support sampling
+ * points 2^( 2-10).
  *
  * With this option turned off,
- * the software fft can support as many sample points as necessary with sufficient space
+ * the software fft can support as many sample points as necessary with
+ * sufficient space
  *
  */
 #define HPM_MATH_SW_FFT_CHECKLIST
 
 #endif
 
-#ifdef  __cplusplus
-extern "C"
-{
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 #ifdef HPM_MATH_DSP_STATISTICS
@@ -77,6 +78,11 @@ extern "C"
  */
 
 #ifdef HPM_EN_MATH_DSP_LIB
+
+#ifdef __zcc__
+#include "tpt_math.h"
+#endif
+
 #include "riscv_dsp_statistics_math.h"
 
 // Maximum
@@ -87,16 +93,24 @@ extern "C"
  * @param[out]      *index	index of the maximum value.
  * @return maximum value.
  */
-static inline float32_t hpm_dsp_max_f32(const float32_t *src, uint32_t size, uint32_t *index)
-{
+static inline float32_t hpm_dsp_max_f32(const float32_t* src,
+                                        uint32_t size,
+                                        uint32_t* index) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_max_f32(src, size, index);
+#ifdef __zcc__
+  f32_t res;
+  tpt_max_f32(&res,index,src,size);
+  return res;
+#else
+  return riscv_dsp_max_f32(src, size, index);
+#endif
 #endif
 }
-static inline float32_t hpm_dsp_max_val_f32(const float32_t *src, uint32_t size)
-{
+
+static inline float32_t hpm_dsp_max_val_f32(const float32_t* src,
+                                            uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_max_val_f32(src, size);
+  return riscv_dsp_max_val_f32(src, size);
 #endif
 }
 /**
@@ -106,10 +120,17 @@ static inline float32_t hpm_dsp_max_val_f32(const float32_t *src, uint32_t size)
  * @param[out]      *index	index of the maximum value.
  * @return maximum value.
  */
-static inline q15_t hpm_dsp_max_q15(const q15_t *src, uint32_t size, uint32_t *index)
-{
+static inline q15_t hpm_dsp_max_q15(const q15_t* src,
+                                    uint32_t size,
+                                    uint32_t* index) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_max_q15(src, size, index);
+#ifdef __zcc__
+  q15_t res;
+  tpt_max_q15(&res, index, src, size);
+  return res;
+#else
+  return riscv_dsp_max_q15(src, size, index);
+#endif
 #endif
 }
 
@@ -120,10 +141,17 @@ static inline q15_t hpm_dsp_max_q15(const q15_t *src, uint32_t size, uint32_t *i
  * @param[out]      *index	index of the maximum value.
  * @return maximum value.
  */
-static inline q31_t hpm_dsp_max_q31(const q31_t *src, uint32_t size, uint32_t *index)
-{
+static inline q31_t hpm_dsp_max_q31(const q31_t* src,
+                                    uint32_t size,
+                                    uint32_t* index) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_max_q31(src, size, index);
+#ifdef __zcc__
+  q31_t res;
+  tpt_max_q31(&res, index, src, size);
+  return res;
+#else
+  return riscv_dsp_max_q31(src, size, index);
+#endif
 #endif
 }
 
@@ -134,10 +162,17 @@ static inline q31_t hpm_dsp_max_q31(const q31_t *src, uint32_t size, uint32_t *i
  * @param[out]      *index	index of the maximum value.
  * @return maximum value.
  */
-static inline q7_t hpm_dsp_max_q7(const q7_t *src, uint32_t size, uint32_t *index)
-{
+static inline q7_t hpm_dsp_max_q7(const q7_t* src,
+                                  uint32_t size,
+                                  uint32_t* index) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_max_q7(src, size, index);
+#ifdef __zcc__
+  q7_t res;
+  tpt_max_q7(&res, index, src, size);
+  return res;
+#else
+  return riscv_dsp_max_q7(src, size, index);
+#endif
 #endif
 }
 
@@ -148,10 +183,11 @@ static inline q7_t hpm_dsp_max_q7(const q7_t *src, uint32_t size, uint32_t *inde
  * @param[out]      *index  index of the maximum value.
  * @return max value.
  */
-static inline uint8_t hpm_dsp_max_u8(const uint8_t *src, uint32_t size, uint32_t *index)
-{
+static inline uint8_t hpm_dsp_max_u8(const uint8_t* src,
+                                     uint32_t size,
+                                     uint32_t* index) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_max_u8(src, size, index);
+  return riscv_dsp_max_u8(src, size, index);
 #endif
 }
 
@@ -163,10 +199,17 @@ static inline uint8_t hpm_dsp_max_u8(const uint8_t *src, uint32_t size, uint32_t
  * @param[out]      *index	index of the minimum value.
  * @return minimum value.
  */
-static inline float32_t hpm_dsp_min_f32(const float32_t *src, uint32_t size, uint32_t *index)
-{
+static inline float32_t hpm_dsp_min_f32(const float32_t* src,
+                                        uint32_t size,
+                                        uint32_t* index) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_min_f32(src, size, index);
+#ifdef __zcc__
+  f32_t res;
+  tpt_min_f32(&res, index, src, size);
+  return res;
+#else
+  return riscv_dsp_min_f32(src, size, index);
+#endif
 #endif
 }
 
@@ -177,10 +220,17 @@ static inline float32_t hpm_dsp_min_f32(const float32_t *src, uint32_t size, uin
  * @param[out]      *index	index of the minimum value.
  * @return minimum value.
  */
-static inline q15_t hpm_dsp_min_q15(const q15_t *src, uint32_t size, uint32_t *index)
-{
+static inline q15_t hpm_dsp_min_q15(const q15_t* src,
+                                    uint32_t size,
+                                    uint32_t* index) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_min_q15(src, size, index);
+#ifdef __zcc__
+  q15_t res;
+  tpt_min_q15(&res, index, src, size);
+  return res;
+#else
+  return riscv_dsp_min_q15(src, size, index);
+#endif
 #endif
 }
 
@@ -191,10 +241,17 @@ static inline q15_t hpm_dsp_min_q15(const q15_t *src, uint32_t size, uint32_t *i
  * @param[out]      *index	index of the minimum value.
  * @return minimum value.
  */
-static inline q31_t hpm_dsp_min_q31(const q31_t *src, uint32_t size, uint32_t *index)
-{
+static inline q31_t hpm_dsp_min_q31(const q31_t* src,
+                                    uint32_t size,
+                                    uint32_t* index) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_min_q31(src, size, index);
+#ifdef __zcc__
+  q31_t res;
+  tpt_min_q31(&res, index, src, size);
+  return res;
+#else
+  return riscv_dsp_min_q31(src, size, index);
+#endif
 #endif
 }
 
@@ -205,10 +262,17 @@ static inline q31_t hpm_dsp_min_q31(const q31_t *src, uint32_t size, uint32_t *i
  * @param[out]      *index	index of the minimum value.
  * @return minimum value.
  */
-static inline q7_t hpm_dsp_min_q7(const q7_t *src, uint32_t size, uint32_t *index)
-{
+static inline q7_t hpm_dsp_min_q7(const q7_t* src,
+                                  uint32_t size,
+                                  uint32_t* index) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_min_q7(src, size, index);
+#ifdef __zcc__
+  q7_t res;
+  tpt_min_q7(&res, index, src, size);
+  return res;
+#else
+  return riscv_dsp_min_q7(src, size, index);
+#endif
 #endif
 }
 
@@ -219,10 +283,11 @@ static inline q7_t hpm_dsp_min_q7(const q7_t *src, uint32_t size, uint32_t *inde
  * @param[out]      *index  index of the minimum value.
  * @return minimum value.
  */
-static inline uint8_t hpm_dsp_min_u8(const uint8_t *src, uint32_t size, uint32_t *index)
-{
+static inline uint8_t hpm_dsp_min_u8(const uint8_t* src,
+                                     uint32_t size,
+                                     uint32_t* index) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_min_u8(src, size, index);
+  return riscv_dsp_min_u8(src, size, index);
 #endif
 }
 
@@ -233,10 +298,15 @@ static inline uint8_t hpm_dsp_min_u8(const uint8_t *src, uint32_t size, uint32_t
  * @param[in]       size	size of the vectors.
  * @return mean value.
  */
-static inline float32_t hpm_dsp_mean_f32(const float32_t *src, uint32_t size)
-{
+static inline float32_t hpm_dsp_mean_f32(const float32_t* src, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_mean_f32(src, size);
+#ifdef __zcc__
+  f32_t res;
+  tpt_mean_f32(&res, src, size);
+  return res;
+#else
+  return riscv_dsp_mean_f32(src, size);
+#endif
 #endif
 }
 
@@ -251,10 +321,15 @@ static inline float32_t hpm_dsp_mean_f32(const float32_t *src, uint32_t size)
  * The 1.15 format input is accumulated in a 32-bit accumulator in 17.15
  * format and then truncated to yield a result of 1.15 format.
  */
-static inline q15_t hpm_dsp_mean_q15(const q15_t *src, uint32_t size)
-{
+static inline q15_t hpm_dsp_mean_q15(const q15_t* src, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_mean_q15(src, size);
+#ifdef __zcc__
+  q15_t res;
+  tpt_mean_q15(&res, src, size);
+  return res;
+#else
+  return riscv_dsp_mean_q15(src, size);
+#endif
 #endif
 }
 
@@ -269,10 +344,15 @@ static inline q15_t hpm_dsp_mean_q15(const q15_t *src, uint32_t size)
  * The 1.31 format input is accumulated in a 64-bit accumulator in 33.31
  * format and then truncated to yield a result of 1.31 format.
  */
-static inline q31_t hpm_dsp_mean_q31(const q31_t *src, uint32_t size)
-{
+static inline q31_t hpm_dsp_mean_q31(const q31_t* src, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_mean_q31(src, size);
+#ifdef __zcc__
+  q31_t res;
+  tpt_mean_q31(&res, src, size);
+  return res;
+#else
+  return riscv_dsp_mean_q31(src, size);
+#endif
 #endif
 }
 
@@ -287,10 +367,15 @@ static inline q31_t hpm_dsp_mean_q31(const q31_t *src, uint32_t size)
  * The 1.7 format input is accumulated in a 32-bit accumulator in 25.7
  * format and then truncated to yield a result of 1.7 format.
  */
-static inline q7_t hpm_dsp_mean_q7(const q7_t *src, uint32_t size)
-{
+static inline q7_t hpm_dsp_mean_q7(const q7_t* src, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_mean_q7(src, size);
+#ifdef __zcc__
+  q7_t res;
+  tpt_mean_q7(&res, src, size);
+  return res;
+#else
+  return riscv_dsp_mean_q7(src, size);
+#endif
 #endif
 }
 
@@ -303,10 +388,9 @@ static inline q7_t hpm_dsp_mean_q7(const q7_t *src, uint32_t size)
  * The 8-bit format input is accumulated in a 32-bit accumulator
  * and then truncated to yield a result of 8-bit format.
  */
-static inline uint8_t hpm_dsp_mean_u8(const uint8_t *src, uint32_t size)
-{
+static inline uint8_t hpm_dsp_mean_u8(const uint8_t* src, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_mean_u8(src, size);
+  return riscv_dsp_mean_u8(src, size);
 #endif
 }
 
@@ -317,10 +401,15 @@ static inline uint8_t hpm_dsp_mean_u8(const uint8_t *src, uint32_t size)
  * @param[in]       size	size of the vectors.
  * @return Sum of the squares value.
  */
-static inline float32_t hpm_dsp_pwr_f32(const float32_t *src, uint32_t size)
-{
+static inline float32_t hpm_dsp_pwr_f32(const float32_t* src, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_pwr_f32(src, size);
+#ifdef __zcc__
+  f32_t res;
+  tpt_power_f32(&res, src, size);
+  return res;
+#else
+  return riscv_dsp_pwr_f32(src, size);
+#endif
 #endif
 }
 
@@ -336,10 +425,15 @@ static inline float32_t hpm_dsp_pwr_f32(const float32_t *src, uint32_t size)
  * without saturation to a 64-bit accumulator in 34.30 format. Finally,
  * the return result is in 34.30 format.
  */
-static inline q63_t hpm_dsp_pwr_q15(const q15_t *src, uint32_t size)
-{
+static inline q63_t hpm_dsp_pwr_q15(const q15_t* src, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_pwr_q15(src, size);
+#ifdef __zcc__
+  q63_t res;
+  tpt_power_q15(&res, src, size);
+  return res;
+#else
+  return riscv_dsp_pwr_q15(src, size);
+#endif
 #endif
 }
 
@@ -356,10 +450,15 @@ static inline q63_t hpm_dsp_pwr_q15(const q15_t *src, uint32_t size)
  * result is then added without saturation to a 64-bit accumulator in 16.48
  * format. Finally, the return result is in 16.48 format.
  */
-static inline q63_t hpm_dsp_pwr_q31(const q31_t *src, uint32_t size)
-{
+static inline q63_t hpm_dsp_pwr_q31(const q31_t* src, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_pwr_q31(src, size);
+#ifdef __zcc__
+  q63_t res;
+  tpt_power_q31(&res, src, size);
+  return res;
+#else
+  return riscv_dsp_pwr_q31(src, size);
+#endif
 #endif
 }
 
@@ -375,10 +474,15 @@ static inline q63_t hpm_dsp_pwr_q31(const q31_t *src, uint32_t size)
  * without saturation to a 32-bit accumulator in 18.14 format. Finally,
  * the return result is in 18.14 format.
  */
-static inline q31_t hpm_dsp_pwr_q7(const q7_t *src, uint32_t size)
-{
+static inline q31_t hpm_dsp_pwr_q7(const q7_t* src, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_pwr_q7(src, size);
+#ifdef __zcc__
+  q31_t res;
+  tpt_power_q7(&res, src, size);
+  return res;
+#else
+  return riscv_dsp_pwr_q7(src, size);
+#endif
 #endif
 }
 
@@ -389,10 +493,15 @@ static inline q31_t hpm_dsp_pwr_q7(const q7_t *src, uint32_t size)
  * @param[in]       size	size of the vectors.
  * @return RMS value.
  */
-static inline float32_t hpm_dsp_rms_f32(const float32_t *src, uint32_t size)
-{
+static inline float32_t hpm_dsp_rms_f32(const float32_t* src, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_rms_f32(src, size);
+#ifdef __zcc__
+  f32_t res;
+  tpt_rms_f32(&res, src, size);
+  return res;
+#else
+  return riscv_dsp_rms_f32(src, size);
+#endif
 #endif
 }
 
@@ -409,10 +518,15 @@ static inline float32_t hpm_dsp_rms_f32(const float32_t *src, uint32_t size)
  * the added output is truncated to 34.15 format by discarding the lower 15
  * bits, and then saturated to yield a result in 1.15 format.
  */
-static inline q15_t hpm_dsp_rms_q15(const q15_t *src, uint32_t size)
-{
+static inline q15_t hpm_dsp_rms_q15(const q15_t* src, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_rms_q15(src, size);
+#ifdef __zcc__
+  q15_t res;
+  tpt_rms_q15(&res, src, size);
+  return res;
+#else
+  return riscv_dsp_rms_q15(src, size);
+#endif
 #endif
 }
 
@@ -429,10 +543,15 @@ static inline q15_t hpm_dsp_rms_q15(const q15_t *src, uint32_t size)
  * <code>log2(size)</code> bits, Finally, the 2.62 accumulator is right
  * shifted  by 31 bits to yield a 1.31 format value.
  */
-static inline q31_t hpm_dsp_rms_q31(const q31_t *src, uint32_t size)
-{
+static inline q31_t hpm_dsp_rms_q31(const q31_t* src, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_rms_q31(src, size);
+#ifdef __zcc__
+  q31_t res;
+  tpt_rms_q31(&res, src, size);
+  return res;
+#else
+  return riscv_dsp_rms_q31(src, size);
+  #endif
 #endif
 }
 
@@ -443,10 +562,15 @@ static inline q31_t hpm_dsp_rms_q31(const q31_t *src, uint32_t size)
  * @param[in]       size	size of the vectors.
  * @return Standard deviation value.
  */
-static inline float32_t hpm_dsp_std_f32(const float32_t *src, uint32_t size)
-{
+static inline float32_t hpm_dsp_std_f32(const float32_t* src, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_std_f32(src, size);
+#ifdef __zcc__
+  f32_t res;
+  tpt_std_f32(&res, src, size);
+  return res;
+#else
+  return riscv_dsp_std_f32(src, size);
+#endif
 #endif
 }
 
@@ -463,10 +587,15 @@ static inline float32_t hpm_dsp_std_f32(const float32_t *src, uint32_t size)
  * the added output is truncated to 34.15 format by discarding the lower 15
  * bits, and then saturated to yield a result in 1.15 format.
  */
-static inline q15_t hpm_dsp_std_q15(const q15_t *src, uint32_t size)
-{
+static inline q15_t hpm_dsp_std_q15(const q15_t* src, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_std_q15(src, size);
+#ifdef __zcc__
+  q15_t res;
+  tpt_std_q15(&res, src, size);
+  return res;
+#else
+  return riscv_dsp_std_q15(src, size);
+#endif
 #endif
 }
 
@@ -483,10 +612,15 @@ static inline q15_t hpm_dsp_std_q15(const q15_t *src, uint32_t size)
  * <code>log2(size)</code> bits, Finally, the 2.62 accumulator is right
  * shifted  by 31 bits to yield a 1.31 format value.
  */
-static inline q31_t hpm_dsp_std_q31(const q31_t *src, uint32_t size)
-{
+static inline q31_t hpm_dsp_std_q31(const q31_t* src, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_std_q31(src, size);
+#ifdef __zcc__
+  q31_t res;
+  tpt_std_q31(&res, src, size);
+  return res;
+#else
+  return riscv_dsp_std_q31(src, size);
+#endif
 #endif
 }
 
@@ -502,10 +636,9 @@ static inline q31_t hpm_dsp_std_q31(const q31_t *src, uint32_t size)
  * the added output is truncated to 34.15 format by discarding the lower 1
  * bits, and then saturated to yield a result in 1.15 format.
  */
-static inline q15_t hpm_dsp_std_u8(const uint8_t *src, uint32_t size)
-{
+static inline q15_t hpm_dsp_std_u8(const uint8_t* src, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_std_u8(src, size);
+  return riscv_dsp_std_u8(src, size);
 #endif
 }
 
@@ -516,10 +649,15 @@ static inline q15_t hpm_dsp_std_u8(const uint8_t *src, uint32_t size)
  * @param[in]       size	size of the vectors.
  * @return Variance value.
  */
-static inline float32_t hpm_dsp_var_f32(const float32_t *src, uint32_t size)
-{
+static inline float32_t hpm_dsp_var_f32(const float32_t* src, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_var_f32(src, size);
+#ifdef __zcc__
+  f32_t res;
+  tpt_var_f32(&res, src, size);
+  return res;
+#else
+  return riscv_dsp_var_f32(src, size);
+#endif
 #endif
 }
 
@@ -536,10 +674,15 @@ static inline float32_t hpm_dsp_var_f32(const float32_t *src, uint32_t size)
  * the added output is truncated to 34.15 format by discarding the lower 15
  * bits, and then saturated to yield a result in 1.15 format.
  */
-static inline q31_t hpm_dsp_var_q15(const q15_t *src, uint32_t size)
-{
+static inline q31_t hpm_dsp_var_q15(const q15_t* src, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_var_q15(src, size);
+#ifdef __zcc__
+  q15_t res;
+  tpt_var_q15(&res, src, size);
+  return res;
+#else
+  return riscv_dsp_var_q15(src, size);
+#endif
 #endif
 }
 
@@ -556,10 +699,15 @@ static inline q31_t hpm_dsp_var_q15(const q15_t *src, uint32_t size)
  * <code>log2(size)</code> bits, Finally, the 2.62 accumulator is right
  * shifted  by 31 bits to yield a 1.31 format value.
  */
-static inline q63_t hpm_dsp_var_q31(const q31_t *src, uint32_t size)
-{
+static inline q63_t hpm_dsp_var_q31(const q31_t* src, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_var_q31(src, size);
+#ifdef __zcc__
+  q31_t res;
+  tpt_var_q31(&res, src, size);
+  return res;
+#else
+  return riscv_dsp_var_q31(src, size);
+#endif
 #endif
 }
 
@@ -571,13 +719,16 @@ static inline q63_t hpm_dsp_var_q31(const q31_t *src, uint32_t size)
  *
  * E = -sum (P .* log2 (P))
  */
-static inline float32_t hpm_dsp_entropy_f32(const float32_t *src, uint32_t size)
-{
+static inline float32_t hpm_dsp_entropy_f32(const float32_t* src,
+                                            uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_entropy_f32(src, size);
+#ifdef __zcc__
+  return tpt_entropy_f32(src, size);
+#else
+  return riscv_dsp_entropy_f32(src, size);
+#endif
 #endif
 }
-
 
 /**
  * @brief Relative Entropy of the floating-potint vector.
@@ -590,10 +741,15 @@ static inline float32_t hpm_dsp_entropy_f32(const float32_t *src, uint32_t size)
  * D(A || B) = A * ln(A / B);
  *
  */
-static inline float32_t hpm_dsp_relative_entropy_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
-{
+static inline float32_t hpm_dsp_relative_entropy_f32(const float32_t* src1,
+                                                     const float32_t* src2,
+                                                     uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_relative_entropy_f32(src1, src2, size);
+#ifdef __zcc__
+  return tpt_relative_entropy_f32(src1, src2, size);
+#else
+  return riscv_dsp_relative_entropy_f32(src1, src2, size);
+#endif
 #endif
 }
 
@@ -604,10 +760,13 @@ static inline float32_t hpm_dsp_relative_entropy_f32(const float32_t *src1, cons
  * @return lse value.
  *
  */
-static inline float32_t hpm_dsp_lse_f32(const float32_t *src, uint32_t size)
-{
+static inline float32_t hpm_dsp_lse_f32(const float32_t* src, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_lse_f32(src, size);
+#ifdef __zcc__
+  tpt_lse_f32(src, size);
+#else
+  return riscv_dsp_lse_f32(src, size);
+#endif
 #endif
 }
 
@@ -620,10 +779,16 @@ static inline float32_t hpm_dsp_lse_f32(const float32_t *src, uint32_t size)
  * @return the Log-Sum-Exp of dot product value.
  *
  */
-static inline float32_t hpm_dsp_lse_dprod_f32(const float32_t *src1, const float32_t *src2, uint32_t size, float32_t *buffer)
-{
+static inline float32_t hpm_dsp_lse_dprod_f32(const float32_t* src1,
+                                              const float32_t* src2,
+                                              uint32_t size,
+                                              float32_t* buffer) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_lse_dprod_f32(src1, src2, size, buffer);
+#ifdef __zcc__
+  return tpt_lse_dprod_f32(src1, src2, size, buffer);
+#else
+  return riscv_dsp_lse_dprod_f32(src1, src2, size, buffer);
+#endif
 #endif
 }
 
@@ -632,14 +797,17 @@ static inline float32_t hpm_dsp_lse_dprod_f32(const float32_t *src1, const float
  *
  * @param[in]  *instance  points to a naive bayes instance
  * @param[in]  *src       points to the elements of the input vector.
- * @param[in]  *buf       points to a buffer of length numofclass /numberOfClasses
+ * @param[in]  *buf       points to a buffer of length numofclass
+ * /numberOfClasses
  * @return The predicted class
  *
  */
-static inline uint32_t hpm_dsp_gaussian_naive_bayes_est_f32(const riscv_dsp_gaussian_naivebayes_f32_t *instance, const float32_t * src, float32_t *buf)
-{
+static inline uint32_t hpm_dsp_gaussian_naive_bayes_est_f32(
+    const riscv_dsp_gaussian_naivebayes_f32_t* instance,
+    const float32_t* src,
+    float32_t* buf) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_gaussian_naive_bayes_est_f32(instance, src, buf);
+  return riscv_dsp_gaussian_naive_bayes_est_f32(instance, src, buf);
 #endif
 }
 
@@ -650,10 +818,12 @@ static inline uint32_t hpm_dsp_gaussian_naive_bayes_est_f32(const riscv_dsp_gaus
  * @param[out]      index   index of the maximum value
  * @return Maximum value
  */
-static inline float32_t hpm_dsp_absmax_f32(const float32_t* src, uint32_t size, uint32_t* index)
-{
+static inline float32_t hpm_dsp_absmax_f32(const float32_t* src,
+                                           uint32_t size,
+                                           uint32_t* index) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_absmax_f32(src, size, index);
+
+  return riscv_dsp_absmax_f32(src, size, index);
 #endif
 }
 
@@ -664,10 +834,11 @@ static inline float32_t hpm_dsp_absmax_f32(const float32_t* src, uint32_t size, 
  * @param[out]      index   index of the maximum value
  * @return Maximum value
  */
-static inline q15_t hpm_dsp_absmax_q15(const q15_t* src, uint32_t size, uint32_t* index)
-{
+static inline q15_t hpm_dsp_absmax_q15(const q15_t* src,
+                                       uint32_t size,
+                                       uint32_t* index) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_absmax_q15(src, size, index);
+  return riscv_dsp_absmax_q15(src, size, index);
 #endif
 }
 
@@ -678,10 +849,11 @@ static inline q15_t hpm_dsp_absmax_q15(const q15_t* src, uint32_t size, uint32_t
  * @param[out]      index   index of the maximum value
  * @return Maximum value
  */
-static inline q31_t hpm_dsp_absmax_q31(const q31_t* src, uint32_t size, uint32_t* index)
-{
+static inline q31_t hpm_dsp_absmax_q31(const q31_t* src,
+                                       uint32_t size,
+                                       uint32_t* index) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_absmax_q31(src, size, index);
+  return riscv_dsp_absmax_q31(src, size, index);
 #endif
 }
 
@@ -692,10 +864,11 @@ static inline q31_t hpm_dsp_absmax_q31(const q31_t* src, uint32_t size, uint32_t
  * @param[out]      index   index of the maximum value
  * @return Maximum value
  */
-static inline q7_t hpm_dsp_absmax_q7(const q7_t* src, uint32_t size, uint32_t* index)
-{
+static inline q7_t hpm_dsp_absmax_q7(const q7_t* src,
+                                     uint32_t size,
+                                     uint32_t* index) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_absmax_q7(src, size, index);
+  return riscv_dsp_absmax_q7(src, size, index);
 #endif
 }
 
@@ -706,10 +879,11 @@ static inline q7_t hpm_dsp_absmax_q7(const q7_t* src, uint32_t size, uint32_t* i
  * @param[out]      index   index of the maximum value
  * @return Minimum value
  */
-static inline float32_t hpm_dsp_absmin_f32(const float32_t* src, uint32_t size, uint32_t* index)
-{
+static inline float32_t hpm_dsp_absmin_f32(const float32_t* src,
+                                           uint32_t size,
+                                           uint32_t* index) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_absmin_f32(src, size, index);
+  return riscv_dsp_absmin_f32(src, size, index);
 #endif
 }
 
@@ -720,10 +894,11 @@ static inline float32_t hpm_dsp_absmin_f32(const float32_t* src, uint32_t size, 
  * @param[out]      index   index of the maximum value
  * @return Minimum value
  */
-static inline q31_t hpm_dsp_absmin_q31(const q31_t* src, uint32_t size, uint32_t* index)
-{
+static inline q31_t hpm_dsp_absmin_q31(const q31_t* src,
+                                       uint32_t size,
+                                       uint32_t* index) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_absmin_q31(src, size, index);
+  return riscv_dsp_absmin_q31(src, size, index);
 #endif
 }
 
@@ -734,10 +909,11 @@ static inline q31_t hpm_dsp_absmin_q31(const q31_t* src, uint32_t size, uint32_t
  * @param[out]      index   index of the maximum value
  * @return Minimum value
  */
-static inline q15_t hpm_dsp_absmin_q15(const q15_t* src, uint32_t size, uint32_t* index)
-{
+static inline q15_t hpm_dsp_absmin_q15(const q15_t* src,
+                                       uint32_t size,
+                                       uint32_t* index) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_absmin_q15(src, size, index);
+  return riscv_dsp_absmin_q15(src, size, index);
 #endif
 }
 
@@ -748,10 +924,11 @@ static inline q15_t hpm_dsp_absmin_q15(const q15_t* src, uint32_t size, uint32_t
  * @param[out]      index   index of the maximum value
  * @return Minimum value
  */
-static inline q7_t hpm_dsp_absmin_q7(const q7_t* src, uint32_t size, uint32_t* index)
-{
+static inline q7_t hpm_dsp_absmin_q7(const q7_t* src,
+                                     uint32_t size,
+                                     uint32_t* index) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_absmin_q7(src, size, index);
+  return riscv_dsp_absmin_q7(src, size, index);
 #endif
 }
 
@@ -771,6 +948,11 @@ static inline q7_t hpm_dsp_absmin_q7(const q7_t* src, uint32_t size, uint32_t* i
  * @{
  */
 #ifdef HPM_EN_MATH_DSP_LIB
+
+#ifdef __zcc__
+#include "tpt_math.h"
+#endif
+
 #include "riscv_dsp_basic_math.h"
 
 // Absolute value
@@ -780,10 +962,15 @@ static inline q7_t hpm_dsp_absmin_q7(const q7_t* src, uint32_t size, uint32_t* i
  * @param[out]      *dst points to the output vector.
  * @param[in]       size size of the vectors.
  */
-static inline void hpm_dsp_abs_f32(float32_t *src, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_abs_f32(float32_t* src,
+                                   float32_t* dst,
+                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_abs_f32(src, dst, size);
+#ifdef __zcc__
+  tpt_abs_f32(dst, src, size);
+#else
+  riscv_dsp_abs_f32(src, dst, size);
+#endif
 #endif
 }
 
@@ -796,10 +983,13 @@ static inline void hpm_dsp_abs_f32(float32_t *src, float32_t *dst, uint32_t size
  * The Q31 value INT32_MIN (0x80000000) will be saturated to the maximum
  * allowable positive value INT32_MAX.
  */
-static inline void hpm_dsp_abs_q31(q31_t *src, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_abs_q31(q31_t* src, q31_t* dst, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_abs_q31(src, dst, size);
+#ifdef __zcc__
+  tpt_abs_q31(dst, src, size);
+#else
+  riscv_dsp_abs_q31(src, dst, size);
+#endif
 #endif
 }
 
@@ -812,10 +1002,13 @@ static inline void hpm_dsp_abs_q31(q31_t *src, q31_t *dst, uint32_t size)
  * The Q15 value INT16_MIN (0x8000) will be saturated to the maximum
  * allowable positive value INT16_MAX.
  */
-static inline void hpm_dsp_abs_q15(q15_t *src, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_abs_q15(q15_t* src, q15_t* dst, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_abs_q15(src, dst, size);
+#ifdef __zcc__
+  tpt_abs_q15(dst, src, size);
+#else
+  riscv_dsp_abs_q15(src, dst, size);
+#endif
 #endif
 }
 
@@ -828,10 +1021,13 @@ static inline void hpm_dsp_abs_q15(q15_t *src, q15_t *dst, uint32_t size)
  * The Q7 value INT8_MIN (0x8000) will be saturated to the maximum
  * allowable positive value INT8_MAX.
  */
-static inline void hpm_dsp_abs_q7(q7_t *src, q7_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_abs_q7(q7_t* src, q7_t* dst, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_abs_q7(src, dst, size);
+#ifdef __zcc__
+  tpt_abs_q7(dst, src, size);
+#else
+  riscv_dsp_abs_q7(src, dst, size);
+#endif
 #endif
 }
 
@@ -843,10 +1039,16 @@ static inline void hpm_dsp_abs_q7(q7_t *src, q7_t *dst, uint32_t size)
  * @param[out]      *dst  points to the output vector.
  * @param[in]       size  size of the vectors.
  */
-static inline void hpm_dsp_add_f32(float32_t *src1, float32_t *src2, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_add_f32(float32_t* src1,
+                                   float32_t* src2,
+                                   float32_t* dst,
+                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_add_f32(src1, src2, dst, size);
+#ifdef __zcc__
+  tpt_add_f32(dst, src1, src2, size);
+#else
+  riscv_dsp_add_f32(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -859,10 +1061,16 @@ static inline void hpm_dsp_add_f32(float32_t *src1, float32_t *src2, float32_t *
  *
  * Ouput results will be saturated in Q31 range [0x80000000 0x7FFFFFFF].
  */
-static inline void hpm_dsp_add_q31(q31_t *src1, q31_t *src2, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_add_q31(q31_t* src1,
+                                   q31_t* src2,
+                                   q31_t* dst,
+                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_add_q31(src1, src2, dst, size);
+#ifdef __zcc__
+  tpt_add_q31(dst, src1, src2, size);
+#else
+  riscv_dsp_add_q31(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -875,10 +1083,16 @@ static inline void hpm_dsp_add_q31(q31_t *src1, q31_t *src2, q31_t *dst, uint32_
  *
  * The output results will be saturated in Q15 range [0x8000 0x7FFF].
  */
-static inline void hpm_dsp_add_q15(q15_t *src1, q15_t *src2, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_add_q15(q15_t* src1,
+                                   q15_t* src2,
+                                   q15_t* dst,
+                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_add_q15(src1, src2, dst, size);
+#ifdef __zcc__
+  tpt_add_q15(dst, src1, src2, size);
+#else
+  riscv_dsp_add_q15(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -891,10 +1105,16 @@ static inline void hpm_dsp_add_q15(q15_t *src1, q15_t *src2, q15_t *dst, uint32_
  *
  * Ouput results will be saturated in Q7 range [0x80 0x7F].
  */
-static inline void hpm_dsp_add_q7(q7_t *src1, q7_t *src2, q7_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_add_q7(q7_t* src1,
+                                  q7_t* src2,
+                                  q7_t* dst,
+                                  uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_add_q7(src1, src2, dst, size);
+#ifdef __zcc__
+  tpt_add_q7(dst, src1, src2, size);
+#else
+  riscv_dsp_add_q7(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -907,10 +1127,16 @@ static inline void hpm_dsp_add_q7(q7_t *src1, q7_t *src2, q7_t *dst, uint32_t si
  *
  * Ouput results will be saturated in U16 range [0x0000 0xFFFF].
  */
-static inline void hpm_dsp_add_u8_u16(uint8_t *src1, uint8_t *src2, uint16_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_add_u8_u16(uint8_t* src1,
+                                      uint8_t* src2,
+                                      uint16_t* dst,
+                                      uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_add_u8_u16(src1, src2, dst, size);
+#ifdef __zcc__
+  tpt_add_u8_u16(dst, src1, src2, size);
+#else
+  riscv_dsp_add_u8_u16(src1, src2, dst, size);
+#endif  
 #endif
 }
 
@@ -922,10 +1148,16 @@ static inline void hpm_dsp_add_u8_u16(uint8_t *src1, uint8_t *src2, uint16_t *ds
  * @param[out]      *dst  points to the output vector.
  * @param[in]       size  size of the vectors.
  */
-static inline void hpm_dsp_sub_f32(float32_t *src1, float32_t *src2, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_sub_f32(float32_t* src1,
+                                   float32_t* src2,
+                                   float32_t* dst,
+                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_sub_f32(src1, src2, dst, size);
+#ifdef __zcc__
+  tpt_sub_f32(dst, src1, src2, size);
+#else
+  riscv_dsp_sub_f32(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -938,10 +1170,16 @@ static inline void hpm_dsp_sub_f32(float32_t *src1, float32_t *src2, float32_t *
  *
  * Ouput results will be saturated in Q31 range [0x80000000 0x7FFFFFFF].
  */
-static inline void hpm_dsp_sub_q31(q31_t *src1, q31_t *src2, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_sub_q31(q31_t* src1,
+                                   q31_t* src2,
+                                   q31_t* dst,
+                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_sub_q31(src1, src2, dst, size);
+#ifdef __zcc__
+  tpt_sub_q31(dst, src1, src2, size);
+#else
+  riscv_dsp_sub_q31(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -954,10 +1192,16 @@ static inline void hpm_dsp_sub_q31(q31_t *src1, q31_t *src2, q31_t *dst, uint32_
  *
  * The output results will be saturated in Q15 range [0x8000 0x7FFF].
  */
-static inline void hpm_dsp_sub_q15(q15_t *src1, q15_t *src2, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_sub_q15(q15_t* src1,
+                                   q15_t* src2,
+                                   q15_t* dst,
+                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_sub_q15(src1, src2, dst, size);
+#ifdef __zcc__
+  tpt_sub_q15(dst, src1, src2, size);
+#else
+  riscv_dsp_sub_q15(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -970,10 +1214,16 @@ static inline void hpm_dsp_sub_q15(q15_t *src1, q15_t *src2, q15_t *dst, uint32_
  *
  * Ouput results will be saturated in Q7 range [0x80 0x7F].
  */
-static inline void hpm_dsp_sub_q7(q7_t *src1, q7_t *src2, q7_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_sub_q7(q7_t* src1,
+                                  q7_t* src2,
+                                  q7_t* dst,
+                                  uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_sub_q7(src1, src2, dst, size);
+#ifdef __zcc__
+  tpt_sub_q7(dst, src1, src2, size);
+#else
+  riscv_dsp_sub_q7(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -986,10 +1236,12 @@ static inline void hpm_dsp_sub_q7(q7_t *src1, q7_t *src2, q7_t *dst, uint32_t si
  *
  * Ouput results will be saturated in Q7 range [0x80 0x7F].
  */
-static inline void hpm_dsp_sub_u8_q7(uint8_t *src1, uint8_t *src2, q7_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_sub_u8_q7(uint8_t* src1,
+                                     uint8_t* src2,
+                                     q7_t* dst,
+                                     uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_sub_u8_q7(src1, src2, dst, size);
+  riscv_dsp_sub_u8_q7(src1, src2, dst, size);
 #endif
 }
 
@@ -1001,10 +1253,16 @@ static inline void hpm_dsp_sub_u8_q7(uint8_t *src1, uint8_t *src2, q7_t *dst, ui
  * @param[out]      *dst  points to the output vector.
  * @param[in]       size  size of the vectors.
  */
-static inline void hpm_dsp_mul_f32(float32_t *src1, float32_t *src2, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_mul_f32(float32_t* src1,
+                                   float32_t* src2,
+                                   float32_t* dst,
+                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mul_f32(src1, src2, dst, size);
+#ifdef __zcc__
+  tpt_mult_f32(dst, src1, src2, size);
+#else
+  riscv_dsp_mul_f32(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -1017,10 +1275,16 @@ static inline void hpm_dsp_mul_f32(float32_t *src1, float32_t *src2, float32_t *
  *
  * Ouput results will be saturated in Q31 range [0x80000000 0x7FFFFFFF].
  */
-static inline void hpm_dsp_mul_q31(q31_t *src1, q31_t *src2, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_mul_q31(q31_t* src1,
+                                   q31_t* src2,
+                                   q31_t* dst,
+                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mul_q31(src1, src2, dst, size);
+#ifdef __zcc__
+  tpt_mult_q31(dst, src1, src2, size);
+#else
+  riscv_dsp_mul_q31(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -1033,10 +1297,16 @@ static inline void hpm_dsp_mul_q31(q31_t *src1, q31_t *src2, q31_t *dst, uint32_
  *
  * Output results will be saturated in Q15 range [0x8000 0x7FFF].
  */
-static inline void hpm_dsp_mul_q15(q15_t *src1, q15_t *src2, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_mul_q15(q15_t* src1,
+                                   q15_t* src2,
+                                   q15_t* dst,
+                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mul_q15(src1, src2, dst, size);
+#ifdef __zcc__
+  tpt_mult_q15(dst, src1, src2, size);
+#else
+  riscv_dsp_mul_q15(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -1049,10 +1319,16 @@ static inline void hpm_dsp_mul_q15(q15_t *src1, q15_t *src2, q15_t *dst, uint32_
  *
  * Ouput results will be saturated in Q7 range [0x80 0x7F].
  */
-static inline void hpm_dsp_mul_q7(q7_t *src1, q7_t *src2, q7_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_mul_q7(q7_t* src1,
+                                  q7_t* src2,
+                                  q7_t* dst,
+                                  uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mul_q7(src1, src2, dst, size);
+#ifdef __zcc__
+  tpt_mult_q7(dst, src1, src2, size);
+#else
+  riscv_dsp_mul_q7(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -1065,10 +1341,12 @@ static inline void hpm_dsp_mul_q7(q7_t *src1, q7_t *src2, q7_t *dst, uint32_t si
  *
  * Ouput results will be in U16 range [0x00 0xFFFF].
  */
-static inline void hpm_dsp_mul_u8_u16(uint8_t *src1, uint8_t *src2, uint16_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_mul_u8_u16(uint8_t* src1,
+                                      uint8_t* src2,
+                                      uint16_t* dst,
+                                      uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mul_u8_u16(src1, src2, dst, size);
+  riscv_dsp_mul_u8_u16(src1, src2, dst, size);
 #endif
 }
 
@@ -1080,10 +1358,16 @@ static inline void hpm_dsp_mul_u8_u16(uint8_t *src1, uint8_t *src2, uint16_t *ds
  * @param[out]      *dst  points to the output vector.
  * @param[in]       size  size of the vectors.
  */
-static inline void hpm_dsp_div_f32(float32_t *src1, float32_t *src2, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_div_f32(float32_t* src1,
+                                   float32_t* src2,
+                                   float32_t* dst,
+                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_div_f32(src1, src2, dst, size);
+#ifdef __zcc__
+  tpt_div_f32(dst, src1, src2, size);
+#else
+  riscv_dsp_div_f32(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -1093,10 +1377,13 @@ static inline void hpm_dsp_div_f32(float32_t *src1, float32_t *src2, float32_t *
  * @param[in]       src2 the larger input value.
  * @return division of two inputs.
  */
-static inline q31_t hpm_dsp_div_q31(q31_t src1, q31_t src2)
-{
+static inline q31_t hpm_dsp_div_q31(q31_t src1, q31_t src2) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_div_q31(src1, src2);
+#ifdef __zcc__
+  return tpt_div_q31(src1, src2);
+#else
+  return riscv_dsp_div_q31(src1, src2);
+#endif
 #endif
 }
 
@@ -1106,10 +1393,13 @@ static inline q31_t hpm_dsp_div_q31(q31_t src1, q31_t src2)
  * @param[in]       src2 the positive 32 bits input value.
  * @return division of two inputs.
  */
-static inline q31_t hpm_dsp_div_s64_u32(q63_t src1, uint32_t src2)
-{
+static inline q31_t hpm_dsp_div_s64_u32(q63_t src1, uint32_t src2) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_div_s64_u32(src1, src2);
+#ifdef __zcc__
+  return tpt_div_s64_u32(src1, src2);
+#else
+  return riscv_dsp_div_s64_u32(src1, src2);
+#endif
 #endif
 }
 
@@ -1119,10 +1409,13 @@ static inline q31_t hpm_dsp_div_s64_u32(q63_t src1, uint32_t src2)
  * @param[in]       src2 the positive 32-bits input value.
  * @return division of two inputs.
  */
-static inline q31_t hpm_dsp_div_u64_u32(uint64_t src1, uint32_t src2)
-{
+static inline q31_t hpm_dsp_div_u64_u32(uint64_t src1, uint32_t src2) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_div_u64_u32(src1, src2);
+#ifdef __zcc__
+  return tpt_div_u64_u32(src1, src2);
+#else
+  return riscv_dsp_div_u64_u32(src1, src2);
+#endif
 #endif
 }
 
@@ -1133,10 +1426,15 @@ static inline q31_t hpm_dsp_div_u64_u32(uint64_t src1, uint32_t src2)
  * @param[out]      *dst points to the output vector.
  * @param[in]       size size of the vectors.
  */
-static inline void hpm_dsp_neg_f32(float32_t *src, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_neg_f32(float32_t* src,
+                                   float32_t* dst,
+                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_neg_f32(src, dst, size);
+#ifdef __zcc__
+  tpt_negate_f32(dst, src, size);
+#else
+  riscv_dsp_neg_f32(src, dst, size);
+#endif
 #endif
 }
 
@@ -1149,10 +1447,13 @@ static inline void hpm_dsp_neg_f32(float32_t *src, float32_t *dst, uint32_t size
  * The Q31 value INT32_MIN (0x80000000) will be saturated to the maximum
  * allowable positive value INT32_MAX.
  */
-static inline void hpm_dsp_neg_q31(q31_t *src, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_neg_q31(q31_t* src, q31_t* dst, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_neg_q31(src, dst, size);
+#ifdef __zcc__
+  tpt_negate_q31(dst, src, size);
+#else
+  riscv_dsp_neg_q31(src, dst, size);
+#endif
 #endif
 }
 
@@ -1165,10 +1466,13 @@ static inline void hpm_dsp_neg_q31(q31_t *src, q31_t *dst, uint32_t size)
  * The Q15 value INT16_MIN (0x8000) will be saturated to the maximum
  * allowable positive value INT16_MAX.
  */
-static inline void hpm_dsp_neg_q15(q15_t *src, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_neg_q15(q15_t* src, q15_t* dst, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_neg_q15(src, dst, size);
+#ifdef __zcc__
+  tpt_negate_q15(dst, src, size);
+#else
+  riscv_dsp_neg_q15(src, dst, size);
+#endif
 #endif
 }
 
@@ -1181,10 +1485,13 @@ static inline void hpm_dsp_neg_q15(q15_t *src, q15_t *dst, uint32_t size)
  * The Q7 value INT8_MIN (0x80) will be saturated to the maximum allowable
  * positive value INT8_MAX.
  */
-static inline void hpm_dsp_neg_q7(q7_t *src, q7_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_neg_q7(q7_t* src, q7_t* dst, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_neg_q7(src, dst, size);
+#ifdef __zcc__
+  tpt_negate_q7(dst, src, size);
+#else
+  riscv_dsp_neg_q7(src, dst, size);
+#endif
 #endif
 }
 
@@ -1196,10 +1503,17 @@ static inline void hpm_dsp_neg_q7(q7_t *src, q7_t *dst, uint32_t size)
  * @param[in]       size  size of the vectors.
  * @return dot product of two input vectors.
  */
-static inline float32_t hpm_dsp_dprod_f32(float32_t *src1, float32_t *src2, uint32_t size)
-{
+static inline float32_t hpm_dsp_dprod_f32(float32_t* src1,
+                                          float32_t* src2,
+                                          uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_dprod_f32(src1, src2, size);
+#ifdef __zcc__
+  f32_t res;
+  tpt_dot_prod_f32(&res, src1, src2, size);
+  return res;
+#else
+  return riscv_dsp_dprod_f32(src1, src2, size);
+#endif
 #endif
 }
 
@@ -1215,10 +1529,15 @@ static inline float32_t hpm_dsp_dprod_f32(float32_t *src1, float32_t *src2, uint
  * is in 16.48 format. When the size of the vectors less than 2^16, there is
  * no risk to overflow.
  */
-static inline q63_t hpm_dsp_dprod_q31(q31_t *src1, q31_t *src2, uint32_t size)
-{
+static inline q63_t hpm_dsp_dprod_q31(q31_t* src1, q31_t* src2, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_dprod_q31(src1, src2, size);
+#ifdef __zcc__
+  q63_t res;
+  tpt_dot_prod_q31(&res, src1, src2, size);
+  return res;
+#else
+  return riscv_dsp_dprod_q31(src1, src2, size);
+#endif
 #endif
 }
 
@@ -1232,10 +1551,15 @@ static inline q63_t hpm_dsp_dprod_q31(q31_t *src1, q31_t *src2, uint32_t size)
  * The output of multiplications is in 2.30 format and then added to a
  * 64-bit accumulator in 34.30 format. The return value is in 34.30 format.
  */
-static inline q63_t hpm_dsp_dprod_q15(q15_t *src1, q15_t *src2, uint32_t size)
-{
+static inline q63_t hpm_dsp_dprod_q15(q15_t* src1, q15_t* src2, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_dprod_q15(src1, src2, size);
+#ifdef __zcc__
+  q63_t res;
+  tpt_dot_prod_q15(&res, src1, src2, size);
+  return res;
+#else
+  return riscv_dsp_dprod_q15(src1, src2, size);
+#endif
 #endif
 }
 
@@ -1250,13 +1574,13 @@ static inline q63_t hpm_dsp_dprod_q15(q15_t *src1, q15_t *src2, uint32_t size)
  * accumulator in 9.23 format. The return result is in 9.23 format.
  */
 
-static inline q31_t hpm_dsp_dprod_u8xq15(uint8_t *src1, q15_t *src2, uint32_t size)
-{
+static inline q31_t hpm_dsp_dprod_u8xq15(uint8_t* src1,
+                                         q15_t* src2,
+                                         uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_dprod_u8xq15(src1, src2, size);
+  return riscv_dsp_dprod_u8xq15(src1, src2, size);
 #endif
 }
-
 
 /**
  * @brief Dot production of q7 vectors.
@@ -1268,10 +1592,15 @@ static inline q31_t hpm_dsp_dprod_u8xq15(uint8_t *src1, q15_t *src2, uint32_t si
  * The output of multiplications is in 2.14 format and then added to an
  * accumulator in 18.14 format. The return result is in 18.14 format.
  */
-static inline q31_t hpm_dsp_dprod_q7(q7_t *src1, q7_t *src2, uint32_t size)
-{
+static inline q31_t hpm_dsp_dprod_q7(q7_t* src1, q7_t* src2, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_dprod_q7(src1, src2, size);
+#ifdef __zcc__
+  q31_t res;
+  tpt_dot_prod_q7(&res, src1, src2, size);
+  return res;
+#else
+  return riscv_dsp_dprod_q7(src1, src2, size);
+#endif
 #endif
 }
 
@@ -1285,10 +1614,11 @@ static inline q31_t hpm_dsp_dprod_q7(q7_t *src1, q7_t *src2, uint32_t size)
  * The output of multiplications is in 1.22 format and then added to an
  * accumulator in 10.22 format. The return result is in 10.22 format.
  */
-static inline q31_t hpm_dsp_dprod_q7xq15(q7_t *src1, q15_t *src2, uint32_t size)
-{
+static inline q31_t hpm_dsp_dprod_q7xq15(q7_t* src1,
+                                         q15_t* src2,
+                                         uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_dprod_q7xq15(src1, src2, size);
+  return riscv_dsp_dprod_q7xq15(src1, src2, size);
 #endif
 }
 
@@ -1302,10 +1632,11 @@ static inline q31_t hpm_dsp_dprod_q7xq15(q7_t *src1, q15_t *src2, uint32_t size)
  * The output of multiplications is in 0.16 format and then added to an
  * accumulator in 16.16 format. The return result is in 16.16 format.
  */
-static inline uint32_t hpm_dsp_dprod_u8(uint8_t *src1, uint8_t *src2, uint32_t size)
-{
+static inline uint32_t hpm_dsp_dprod_u8(uint8_t* src1,
+                                        uint8_t* src2,
+                                        uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_dprod_u8(src1, src2, size);
+  return riscv_dsp_dprod_u8(src1, src2, size);
 #endif
 }
 
@@ -1317,10 +1648,16 @@ static inline uint32_t hpm_dsp_dprod_u8(uint8_t *src1, uint8_t *src2, uint32_t s
  * @param[out]      *dst points to the output vector.
  * @param[in]       size size of the vectors.
  */
-static inline void hpm_dsp_offset_f32(float32_t *src, float32_t offset, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_offset_f32(float32_t* src,
+                                      float32_t offset,
+                                      float32_t* dst,
+                                      uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_offset_f32(src, offset, dst, size);
+#ifdef __zcc__
+  tpt_offset_f32(dst, src, offset, size);
+#else
+  riscv_dsp_offset_f32(src, offset, dst, size);
+#endif
 #endif
 }
 
@@ -1333,10 +1670,16 @@ static inline void hpm_dsp_offset_f32(float32_t *src, float32_t offset, float32_
  *
  * Output results are saturated in Q31 range [0x80000000 0x7FFFFFFF].
  */
-static inline void hpm_dsp_offset_q31(q31_t *src, q31_t offset, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_offset_q31(q31_t* src,
+                                      q31_t offset,
+                                      q31_t* dst,
+                                      uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_offset_q31(src, offset, dst, size);
+#ifdef __zcc__
+  tpt_offset_q31(dst, src, offset, size);
+#else
+  riscv_dsp_offset_q31(src, offset, dst, size);
+#endif
 #endif
 }
 
@@ -1349,10 +1692,16 @@ static inline void hpm_dsp_offset_q31(q31_t *src, q31_t offset, q31_t *dst, uint
  *
  * Output results are saturated in Q15 range [0x8000 0x7FFF].
  */
-static inline void hpm_dsp_offset_q15(q15_t *src, q15_t offset, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_offset_q15(q15_t* src,
+                                      q15_t offset,
+                                      q15_t* dst,
+                                      uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_offset_q15(src, offset, dst, size);
+#ifdef __zcc__
+  tpt_offset_q15(dst, src, offset, size);
+#else
+  riscv_dsp_offset_q15(src, offset, dst, size);
+#endif
 #endif
 }
 
@@ -1365,10 +1714,16 @@ static inline void hpm_dsp_offset_q15(q15_t *src, q15_t offset, q15_t *dst, uint
  *
  * Output results are saturated in Q7 range [0x80 0x7F].
  */
-static inline void hpm_dsp_offset_q7(q7_t *src, q7_t offset, q7_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_offset_q7(q7_t* src,
+                                     q7_t offset,
+                                     q7_t* dst,
+                                     uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_offset_q7(src, offset, dst, size);
+#ifdef __zcc__
+  tpt_offset_q7(dst, src, offset, size);
+#else
+  riscv_dsp_offset_q7(src, offset, dst, size);
+#endif
 #endif
 }
 
@@ -1381,10 +1736,12 @@ static inline void hpm_dsp_offset_q7(q7_t *src, q7_t offset, q7_t *dst, uint32_t
  *
  * Output results are saturated in U8 range [0x00 0xFF].
  */
-static inline void hpm_dsp_offset_u8(uint8_t *src, q7_t offset, uint8_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_offset_u8(uint8_t* src,
+                                     q7_t offset,
+                                     uint8_t* dst,
+                                     uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_offset_u8(src, offset, dst, size);
+  riscv_dsp_offset_u8(src, offset, dst, size);
 #endif
 }
 
@@ -1396,10 +1753,16 @@ static inline void hpm_dsp_offset_u8(uint8_t *src, q7_t offset, uint8_t *dst, ui
  * @param[out]      *dst points to the output vector.
  * @param[in]       size size of the vectors.
  */
-static inline void hpm_dsp_scale_f32(float32_t *src, float32_t scale, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_scale_f32(float32_t* src,
+                                     float32_t scale,
+                                     float32_t* dst,
+                                     uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_scale_f32(src, scale, dst, size);
+#ifdef __zcc__
+  tpt_scale_f32(dst, src, scale, size);
+#else
+  riscv_dsp_scale_f32(src, scale, dst, size);
+#endif
 #endif
 }
 
@@ -1415,10 +1778,17 @@ static inline void hpm_dsp_scale_f32(float32_t *src, float32_t scale, float32_t 
  * These are multiplied to yield a 2.62 output and then is shift with
  * saturation to 1.31 format.
  */
-static inline void hpm_dsp_scale_q31(q31_t *src, q31_t scalefract, int8_t shift, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_scale_q31(q31_t* src,
+                                     q31_t scalefract,
+                                     int8_t shift,
+                                     q31_t* dst,
+                                     uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_scale_q31(src, scalefract, shift, dst, size);
+#ifdef __zcc__
+  tpt_scale_q31(dst, src, scalefract, shift, size);
+#else
+  riscv_dsp_scale_q31(src, scalefract, shift, dst, size);
+#endif
 #endif
 }
 
@@ -1434,10 +1804,17 @@ static inline void hpm_dsp_scale_q31(q31_t *src, q31_t scalefract, int8_t shift,
  * These are multiplied to yield a 2.30 output and then is shifted with
  * saturation to 1.15 format.
  */
-static inline void hpm_dsp_scale_q15(q15_t *src, q15_t scalefract, int8_t shift, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_scale_q15(q15_t* src,
+                                     q15_t scalefract,
+                                     int8_t shift,
+                                     q15_t* dst,
+                                     uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_scale_q15(src, scalefract, shift, dst, size);
+#ifdef __zcc__
+  tpt_scale_q15(dst, src, scalefract, shift, size);
+#else
+  riscv_dsp_scale_q15(src, scalefract, shift, dst, size);
+#endif
 #endif
 }
 
@@ -1453,10 +1830,17 @@ static inline void hpm_dsp_scale_q15(q15_t *src, q15_t scalefract, int8_t shift,
  * These are multiplied to yield a 2.14 output and then is shifted with
  * saturation to 1.7 format.
  */
-static inline void hpm_dsp_scale_q7(q7_t *src, q7_t scalefract, int8_t shift, q7_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_scale_q7(q7_t* src,
+                                    q7_t scalefract,
+                                    int8_t shift,
+                                    q7_t* dst,
+                                    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_scale_q7(src, scalefract, shift, dst, size);
+#ifdef __zcc__
+  tpt_scale_q7(dst, src, scalefract, shift, size);
+#else
+  riscv_dsp_scale_q7(src, scalefract, shift, dst, size);
+#endif
 #endif
 }
 
@@ -1471,10 +1855,13 @@ static inline void hpm_dsp_scale_q7(q7_t *src, q7_t scalefract, int8_t shift, q7
  * The inputs are multiplied to yield a 1.15 output and then are shift with
  * saturation to 8-bit formats.
  */
-static inline void hpm_dsp_scale_u8(uint8_t *src, q7_t scalefract, int8_t shift, uint8_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_scale_u8(uint8_t* src,
+                                    q7_t scalefract,
+                                    int8_t shift,
+                                    uint8_t* dst,
+                                    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_scale_u8(src, scalefract, shift, dst, size);
+  riscv_dsp_scale_u8(src, scalefract, shift, dst, size);
 #endif
 }
 
@@ -1489,10 +1876,16 @@ static inline void hpm_dsp_scale_u8(uint8_t *src, q7_t scalefract, int8_t shift,
  *
  * The input and output are all saturated to q15 range [0x8000 0x7FFF].
  */
-static inline void hpm_dsp_shift_q15(q15_t *src, int8_t shift, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_shift_q15(q15_t* src,
+                                     int8_t shift,
+                                     q15_t* dst,
+                                     uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_shift_q15(src, shift, dst, size);
+#ifdef __zcc__
+  tpt_shift_q15(dst, src, shift, size);
+#else
+  riscv_dsp_shift_q15(src, shift, dst, size);
+#endif
 #endif
 }
 
@@ -1506,10 +1899,16 @@ static inline void hpm_dsp_shift_q15(q15_t *src, int8_t shift, q15_t *dst, uint3
  *
  * The input and output are all saturated to q31 range [0x80000000 0x7FFFFFFF].
  */
-static inline void hpm_dsp_shift_q31(q31_t *src, int8_t shift, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_shift_q31(q31_t* src,
+                                     int8_t shift,
+                                     q31_t* dst,
+                                     uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_shift_q31(src, shift, dst, size);
+#ifdef __zcc__
+  tpt_shift_q31(dst, src, shift, size);
+#else
+  riscv_dsp_shift_q31(src, shift, dst, size);
+#endif
 #endif
 }
 
@@ -1523,10 +1922,16 @@ static inline void hpm_dsp_shift_q31(q31_t *src, int8_t shift, q31_t *dst, uint3
  *
  * The input and output are all saturated to q7 range [0x80 0x7F].
  */
-static inline void hpm_dsp_shift_q7(q7_t *src, int8_t shift, q7_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_shift_q7(q7_t* src,
+                                    int8_t shift,
+                                    q7_t* dst,
+                                    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_shift_q7(src, shift, dst, size);
+#ifdef __zcc__
+  tpt_shift_q7(dst, src, shift, size);
+#else
+  riscv_dsp_shift_q7(src, shift, dst, size);
+#endif
 #endif
 }
 
@@ -1540,10 +1945,12 @@ static inline void hpm_dsp_shift_q7(q7_t *src, int8_t shift, q7_t *dst, uint32_t
  *
  * The input and output are all saturated to u8 range [0x00 0xFF].
  */
-static inline void hpm_dsp_shift_u8(uint8_t *src, int8_t shift, uint8_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_shift_u8(uint8_t* src,
+                                    int8_t shift,
+                                    uint8_t* dst,
+                                    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_shift_u8(src, shift, dst, size);
+  riscv_dsp_shift_u8(src, shift, dst, size);
 #endif
 }
 
@@ -1560,10 +1967,17 @@ static inline void hpm_dsp_shift_u8(uint8_t *src, int8_t shift, uint8_t *dst, ui
  * @param[in]       size number of elements in a vector
  *
  */
-static inline void hpm_dsp_clip_f32(float32_t *src, float32_t *dst, float32_t low, float32_t high, uint32_t size)
-{
+static inline void hpm_dsp_clip_f32(float32_t* src,
+                                    float32_t* dst,
+                                    float32_t low,
+                                    float32_t high,
+                                    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_clip_f32(src, dst, low, high, size);
+#ifdef __zcc__
+  tpt_clip_f32(dst, src, low, high, size);
+#else
+  riscv_dsp_clip_f32(src, dst, low, high, size);
+#endif
 #endif
 }
 /**
@@ -1575,10 +1989,17 @@ static inline void hpm_dsp_clip_f32(float32_t *src, float32_t *dst, float32_t lo
  * @param[in]       size number of elements in a vector
  *
  */
-static inline void hpm_dsp_clip_q31(q31_t *src, q31_t *dst, q31_t low, q31_t high, uint32_t size)
-{
+static inline void hpm_dsp_clip_q31(q31_t* src,
+                                    q31_t* dst,
+                                    q31_t low,
+                                    q31_t high,
+                                    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_clip_q31(src, dst, low, high, size);
+#ifdef __zcc__
+  tpt_clip_q31(dst, src, low, high, size);
+#else
+  riscv_dsp_clip_q31(src, dst, low, high, size);
+#endif
 #endif
 }
 /**
@@ -1590,10 +2011,17 @@ static inline void hpm_dsp_clip_q31(q31_t *src, q31_t *dst, q31_t low, q31_t hig
  * @param[in]       size number of elements in a vector
  *
  */
-static inline void hpm_dsp_clip_q15(q15_t *src, q15_t *dst, q15_t low, q15_t high, uint32_t size)
-{
+static inline void hpm_dsp_clip_q15(q15_t* src,
+                                    q15_t* dst,
+                                    q15_t low,
+                                    q15_t high,
+                                    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_clip_q15(src, dst, low, high, size);
+#ifdef __zcc__
+  tpt_clip_q15(dst, src, low, high, size);
+#else
+  riscv_dsp_clip_q15(src, dst, low, high, size);
+#endif
 #endif
 }
 /**
@@ -1605,10 +2033,17 @@ static inline void hpm_dsp_clip_q15(q15_t *src, q15_t *dst, q15_t low, q15_t hig
  * @param[in]       size number of elements in a vector
  *
  */
-static inline void hpm_dsp_clip_q7(q7_t *src, q7_t *dst, q7_t low, q7_t high, uint32_t size)
-{
+static inline void hpm_dsp_clip_q7(q7_t* src,
+                                   q7_t* dst,
+                                   q7_t low,
+                                   q7_t high,
+                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_clip_q7(src, dst, low, high, size);
+#ifdef __zcc__
+  tpt_clip_q7(dst, src, low, high, size);
+#else
+  riscv_dsp_clip_q7(src, dst, low, high, size);
+#endif
 #endif
 }
 /** @} basic_clip */
@@ -1618,9 +2053,11 @@ static inline void hpm_dsp_clip_q7(q7_t *src, q7_t *dst, q7_t low, q7_t high, ui
  * @defgroup basic_and Bitwise AND Functions
  * @brief  Bitwise AND Functions
  *
- * Bitwise AND functions calculate logical bitwise AND value from separate source vectors and write the results one-by-one into a destination vector.
+ * Bitwise AND functions calculate logical bitwise AND value from separate
+ * source vectors and write the results one-by-one into a destination vector.
  *
- * Andes DSP library supports distinct bitwise AND functions for U32, U15 and U8 data types. These functions are introduced in the subsections below.
+ * Andes DSP library supports distinct bitwise AND functions for U32, U15 and U8
+ * data types. These functions are introduced in the subsections below.
  */
 /**
  * @addtogroup basic_and
@@ -1634,10 +2071,16 @@ static inline void hpm_dsp_clip_q7(q7_t *src, q7_t *dst, q7_t low, q7_t high, ui
  * @param[in]       size number of elements in a vector
  *
  */
-static inline void hpm_dsp_and_u32(u32_t *src1, u32_t *src2, u32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_and_u32(u32_t* src1,
+                                   u32_t* src2,
+                                   u32_t* dst,
+                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_and_u32(src1, src2, dst, size);
+#ifdef __zcc__
+  tpt_and_32bit(dst, src1, src2, size);
+#else
+  riscv_dsp_and_u32(src1, src2, dst, size);
+#endif
 #endif
 }
 /**
@@ -1648,10 +2091,16 @@ static inline void hpm_dsp_and_u32(u32_t *src1, u32_t *src2, u32_t *dst, uint32_
  * @param[in]       size number of elements in a vector
  *
  */
-static inline void hpm_dsp_and_u8(u8_t *src1, u8_t *src2, u8_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_and_u8(u8_t* src1,
+                                  u8_t* src2,
+                                  u8_t* dst,
+                                  uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_and_u8(src1, src2, dst, size);
+#ifdef __zcc__
+  tpt_and_8bit(dst, src1, src2, size);
+#else
+  riscv_dsp_and_u8(src1, src2, dst, size);
+#endif
 #endif
 }
 /** @} basic_and */
@@ -1661,9 +2110,13 @@ static inline void hpm_dsp_and_u8(u8_t *src1, u8_t *src2, u8_t *dst, uint32_t si
  * @defgroup basic_or Bitwise Inclusive OR Functions
  * @brief  Bitwise Inclusive OR Functions
  *
- * Bitwise inclusive OR functions calculate logical bitwise OR value from separate source vectors and write the results one-by-one into a destination vector.
+ * Bitwise inclusive OR functions calculate logical bitwise OR value from
+ * separate source vectors and write the results one-by-one into a destination
+ * vector.
  *
- * Andes DSP library supports distinct bitwise inclusive OR functions for U32, U15 and U8 data types. These functions are introduced in the subsections below.
+ * Andes DSP library supports distinct bitwise inclusive OR functions for U32,
+ * U15 and U8 data types. These functions are introduced in the subsections
+ * below.
  */
 /**
  * @addtogroup basic_or
@@ -1677,10 +2130,16 @@ static inline void hpm_dsp_and_u8(u8_t *src1, u8_t *src2, u8_t *dst, uint32_t si
  * @param[in]       size number of elements in a vector
  *
  */
-static inline void hpm_dsp_or_u32(u32_t *src1, u32_t *src2, u32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_or_u32(u32_t* src1,
+                                  u32_t* src2,
+                                  u32_t* dst,
+                                  uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_or_u32(src1, src2, dst, size);
+#ifdef __zcc__
+  tpt_or_32bit(dst, src1, src2, size);
+#else
+  riscv_dsp_or_u32(src1, src2, dst, size);
+#endif
 #endif
 }
 /**
@@ -1691,10 +2150,16 @@ static inline void hpm_dsp_or_u32(u32_t *src1, u32_t *src2, u32_t *dst, uint32_t
  * @param[in]       size number of elements in a vector
  *
  */
-static inline void hpm_dsp_or_u16(u16_t *src1, u16_t *src2, u16_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_or_u16(u16_t* src1,
+                                  u16_t* src2,
+                                  u16_t* dst,
+                                  uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_or_u16(src1, src2, dst, size);
+#ifdef __zcc__
+  tpt_or_16bit(dst, src1, src2, size);
+#else
+  riscv_dsp_or_u16(src1, src2, dst, size);
+#endif
 #endif
 }
 /**
@@ -1705,10 +2170,16 @@ static inline void hpm_dsp_or_u16(u16_t *src1, u16_t *src2, u16_t *dst, uint32_t
  * @param[in]       size number of elements in a vector
  *
  */
-static inline void hpm_dsp_or_u8(u8_t *src1, u8_t *src2, u8_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_or_u8(u8_t* src1,
+                                 u8_t* src2,
+                                 u8_t* dst,
+                                 uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_or_u8(src1, src2, dst, size);
+#ifdef __zcc__
+  tpt_or_8bit(dst, src1, src2, size);
+#else
+  riscv_dsp_or_u8(src1, src2, dst, size);
+#endif
 #endif
 }
 /** @} basic_or */
@@ -1718,9 +2189,12 @@ static inline void hpm_dsp_or_u8(u8_t *src1, u8_t *src2, u8_t *dst, uint32_t siz
  * @defgroup basic_xor Bitwise exclusive OR Functions
  * @brief  Bitwise exclusive OR Functions
  *
- * Bitwise exclusive OR (XOR) functions calculate logical bitwise XOR value from separate source vectors and write the results one-by-one into a destination vector.
+ * Bitwise exclusive OR (XOR) functions calculate logical bitwise XOR value from
+ * separate source vectors and write the results one-by-one into a destination
+ * vector.
  *
- * Andes DSP library supports distinct bitwise XOR functions for U32, U15 and U8 data types. These functions are introduced in the subsections below.
+ * Andes DSP library supports distinct bitwise XOR functions for U32, U15 and U8
+ * data types. These functions are introduced in the subsections below.
  */
 /**
  * @addtogroup basic_xor
@@ -1734,10 +2208,16 @@ static inline void hpm_dsp_or_u8(u8_t *src1, u8_t *src2, u8_t *dst, uint32_t siz
  * @param[in]       size number of elements in a vector
  *
  */
-static inline void hpm_dsp_xor_u32(u32_t *src1, u32_t *src2, u32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_xor_u32(u32_t* src1,
+                                   u32_t* src2,
+                                   u32_t* dst,
+                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_xor_u32(src1, src2, dst, size);
+#ifdef __zcc__
+  tpt_xor_32bit(dst, src1, src2, size);
+#else
+  riscv_dsp_xor_u32(src1, src2, dst, size);
+#endif
 #endif
 }
 /**
@@ -1748,10 +2228,16 @@ static inline void hpm_dsp_xor_u32(u32_t *src1, u32_t *src2, u32_t *dst, uint32_
  * @param[in]       size number of elements in a vector
  *
  */
-static inline void hpm_dsp_xor_u16(u16_t *src1, u16_t *src2, u16_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_xor_u16(u16_t* src1,
+                                   u16_t* src2,
+                                   u16_t* dst,
+                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_xor_u16(src1, src2, dst, size);
+#ifdef __zcc__
+  tpt_xor_16bit(dst, src1, src2, size);
+#else
+  riscv_dsp_xor_u16(src1, src2, dst, size);
+#endif
 #endif
 }
 /**
@@ -1762,10 +2248,16 @@ static inline void hpm_dsp_xor_u16(u16_t *src1, u16_t *src2, u16_t *dst, uint32_
  * @param[in]       size number of elements in a vector
  *
  */
-static inline void hpm_dsp_xor_u8(u8_t *src1, u8_t *src2, u8_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_xor_u8(u8_t* src1,
+                                  u8_t* src2,
+                                  u8_t* dst,
+                                  uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_xor_u8(src1, src2, dst, size);
+#ifdef __zcc__
+  tpt_xor_8bit(dst, src1, src2, size);
+#else
+  riscv_dsp_xor_u8(src1, src2, dst, size);
+#endif
 #endif
 }
 /** @} basic_xor */
@@ -1775,9 +2267,11 @@ static inline void hpm_dsp_xor_u8(u8_t *src1, u8_t *src2, u8_t *dst, uint32_t si
  * @defgroup basic_not Bitwise NOT Functions
  * @brief  Bitwise NOT Functions
  *
- * Bitwise NOT functions calculate logical bitwise NOT value from elements of a source vector and write them one-by-one into a destination vector.
+ * Bitwise NOT functions calculate logical bitwise NOT value from elements of a
+ * source vector and write them one-by-one into a destination vector.
  *
- * Andes DSP library supports distinct bitwise NOT functions for U32, U15 and U8 data types. These functions are introduced in the subsections below.
+ * Andes DSP library supports distinct bitwise NOT functions for U32, U15 and U8
+ * data types. These functions are introduced in the subsections below.
  */
 /**
  * @addtogroup basic_not
@@ -1790,10 +2284,13 @@ static inline void hpm_dsp_xor_u8(u8_t *src1, u8_t *src2, u8_t *dst, uint32_t si
  * @param[in]       size number of elements in a vector
  *
  */
-static inline void hpm_dsp_not_u32(u32_t *src, u32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_not_u32(u32_t* src, u32_t* dst, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_not_u32(src, dst, size);
+#ifdef __zcc__
+  tpt_not_32bit(dst, src, size);
+#else
+  riscv_dsp_not_u32(src, dst, size);
+#endif
 #endif
 }
 /**
@@ -1803,10 +2300,13 @@ static inline void hpm_dsp_not_u32(u32_t *src, u32_t *dst, uint32_t size)
  * @param[in]       size number of elements in a vector
  *
  */
-static inline void hpm_dsp_not_u16(u16_t *src, u16_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_not_u16(u16_t* src, u16_t* dst, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_not_u16(src, dst, size);
+#ifdef __zcc__
+  tpt_not_16bit(dst, src, size);
+#else
+  riscv_dsp_not_u16(src, dst, size);
+#endif
 #endif
 }
 /**
@@ -1816,10 +2316,13 @@ static inline void hpm_dsp_not_u16(u16_t *src, u16_t *dst, uint32_t size)
  * @param[in]       size number of elements in a vector
  *
  */
-static inline void hpm_dsp_not_u8(u8_t *src, u8_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_not_u8(u8_t* src, u8_t* dst, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_not_u8(src, dst, size);
+#ifdef __zcc__
+  tpt_not_8bit(dst, src, size);
+#else
+  riscv_dsp_not_u8(src, dst, size);
+#endif
 #endif
 }
 /** @} basic_not */
@@ -1876,6 +2379,11 @@ uint32_t hpm_math_sw_reverse_bit32_msb_to_lsb(uint32_t msb);
  */
 
 #ifdef HPM_EN_MATH_DSP_LIB
+
+#ifdef __zcc__
+#include "tpt_math.h"
+#endif
+
 #include "riscv_dsp_complex_math.h"
 
 // Complex Conjugate
@@ -1885,10 +2393,15 @@ uint32_t hpm_math_sw_reverse_bit32_msb_to_lsb(uint32_t msb);
  * @param[out]		*dst the output complex vector.
  * @param[in]		size size of the vectors.
  */
-static inline void hpm_dsp_cconj_f32(const float32_t *src, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_cconj_f32(const float32_t* src,
+                                     float32_t* dst,
+                                     uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cconj_f32(src, dst, size);
+#ifdef __zcc__
+  tpt_cmplx_conj_f32(dst, src, size);
+#else
+  riscv_dsp_cconj_f32(src, dst, size);
+#endif
 #endif
 }
 
@@ -1901,10 +2414,15 @@ static inline void hpm_dsp_cconj_f32(const float32_t *src, float32_t *dst, uint3
  * The Q15 value INT16_MIN (0x8000) will be saturated to the maximum
  * allowable positive value INT16_MAX.
  */
-static inline void hpm_dsp_cconj_q15(const q15_t *src, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_cconj_q15(const q15_t* src,
+                                     q15_t* dst,
+                                     uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cconj_q15(src, dst, size);
+#ifdef __zcc__
+  tpt_cmplx_conj_q15(dst, src, size);
+#else
+  riscv_dsp_cconj_q15(src, dst, size);
+#endif
 #endif
 }
 
@@ -1917,10 +2435,15 @@ static inline void hpm_dsp_cconj_q15(const q15_t *src, q15_t *dst, uint32_t size
  * The Q31 value INT32_MIN (0x80000000) will be saturated to the maximum
  * allowable positive value INT32_MAX.
  */
-static inline void hpm_dsp_cconj_q31(const q31_t *src, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_cconj_q31(const q31_t* src,
+                                     q31_t* dst,
+                                     uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cconj_q31(src, dst, size);
+#ifdef __zcc__
+  tpt_cmplx_conj_q31(dst, src, size);
+#else
+  riscv_dsp_cconj_q31(src, dst, size);
+#endif
 #endif
 }
 
@@ -1932,10 +2455,12 @@ static inline void hpm_dsp_cconj_q31(const q31_t *src, q31_t *dst, uint32_t size
  * @param[in]		size  size of the vectors.
  * @param[out]		*dst  the output vector.
  */
-static inline void hpm_dsp_cdprod_f32(const float32_t *src1, const float32_t *src2, uint32_t size, float32_t *dst)
-{
+static inline void hpm_dsp_cdprod_f32(const float32_t* src1,
+                                      const float32_t* src2,
+                                      uint32_t size,
+                                      float32_t* dst) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cdprod_f32(src1, src2, size, dst);
+  riscv_dsp_cdprod_f32(src1, src2, size, dst);
 #endif
 }
 
@@ -1947,10 +2472,17 @@ static inline void hpm_dsp_cdprod_f32(const float32_t *src1, const float32_t *sr
  * @param[out]		*rout the real sum of the output.
  * @param[out]		*iout the imag sum of the output.
  */
-static inline void hpm_dsp_cdprod_typ2_f32(const float32_t *src1, const float32_t *src2, uint32_t size, float32_t *rout, float32_t *iout)
-{
+static inline void hpm_dsp_cdprod_typ2_f32(const float32_t* src1,
+                                           const float32_t* src2,
+                                           uint32_t size,
+                                           float32_t* rout,
+                                           float32_t* iout) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cdprod_typ2_f32(src1, src2, size, rout, iout);
+#ifdef __zcc__
+  tpt_cmplx_dot_prod_f32(rout, iout, src1, src2, size);
+#else
+  riscv_dsp_cdprod_typ2_f32(src1, src2, size, rout, iout);
+#endif
 #endif
 }
 
@@ -1964,10 +2496,12 @@ static inline void hpm_dsp_cdprod_typ2_f32(const float32_t *src1, const float32_
  * The multiplication outputs are in 1.15 x 1.15 = 2.30 format and
  * finally output is shift into 3.13 format.
  */
-static inline void hpm_dsp_cdprod_q15(const q15_t *src1, const q15_t *src2, uint32_t size, q15_t *dst)
-{
+static inline void hpm_dsp_cdprod_q15(const q15_t* src1,
+                                      const q15_t* src2,
+                                      uint32_t size,
+                                      q15_t* dst) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cdprod_q15(src1, src2, size, dst);
+  riscv_dsp_cdprod_q15(src1, src2, size, dst);
 #endif
 }
 
@@ -1982,10 +2516,13 @@ static inline void hpm_dsp_cdprod_q15(const q15_t *src1, const q15_t *src2, uint
  * The multiplication outputs are in 1.15 x 1.15 = 2.30 format and
  * finally output is shift into q24 format.
  */
-static inline void hpm_dsp_cdprod_typ2_q15(const q15_t *src1, const q15_t *src2, uint32_t size, q31_t *rout, q31_t *iout)
-{
+static inline void hpm_dsp_cdprod_typ2_q15(const q15_t* src1,
+                                           const q15_t* src2,
+                                           uint32_t size,
+                                           q31_t* rout,
+                                           q31_t* iout) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cdprod_typ2_q15(src1, src2, size, rout, iout);
+  riscv_dsp_cdprod_typ2_q15(src1, src2, size, rout, iout);
 #endif
 }
 
@@ -1999,13 +2536,14 @@ static inline void hpm_dsp_cdprod_typ2_q15(const q15_t *src1, const q15_t *src2,
  * The multiplication outputs are in 1.31 x 1.31 = 2.62 format and
  * finally output is shift into 3.29 format.
  */
-static inline void hpm_dsp_cdprod_q31(const q31_t *src1, const q31_t *src2, uint32_t size, q31_t *dst)
-{
+static inline void hpm_dsp_cdprod_q31(const q31_t* src1,
+                                      const q31_t* src2,
+                                      uint32_t size,
+                                      q31_t* dst) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cdprod_q31(src1, src2, size, dst);
+  riscv_dsp_cdprod_q31(src1, src2, size, dst);
 #endif
 }
-
 
 /**
  * @brief Compute the dot product type2 of the q31 complex vector.
@@ -2018,10 +2556,17 @@ static inline void hpm_dsp_cdprod_q31(const q31_t *src1, const q31_t *src2, uint
  * The multiplication outputs are in 1.31 x 1.31 = 2.62 format and
  * finally output is shift into q48 format.
  */
-static inline void hpm_dsp_cdprod_typ2_q31(const q31_t *src1, const q31_t *src2, uint32_t size, q63_t *rout, q63_t *iout)
-{
+static inline void hpm_dsp_cdprod_typ2_q31(const q31_t* src1,
+                                           const q31_t* src2,
+                                           uint32_t size,
+                                           q63_t* rout,
+                                           q63_t* iout) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cdprod_typ2_q31(src1, src2, size, rout, iout);
+#ifdef __zcc__
+  tpt_cmplx_dot_prod_q31(rout, iout, src1, src2, size);
+#else
+  riscv_dsp_cdprod_typ2_q31(src1, src2, size, rout, iout);
+#endif
 #endif
 }
 
@@ -2032,10 +2577,15 @@ static inline void hpm_dsp_cdprod_typ2_q31(const q31_t *src1, const q31_t *src2,
  * @param[out]		*dst points to the output complex vector.
  * @param[in]		size size of the vectors.
  */
-static inline void hpm_dsp_cmag_f32(const float32_t *src, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_cmag_f32(const float32_t* src,
+                                    float32_t* dst,
+                                    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cmag_f32(src, dst, size);
+#ifdef __zcc__
+  tpt_cmplx_mag_f32(dst, src, size);
+#else
+  riscv_dsp_cmag_f32(src, dst, size);
+#endif
 #endif
 }
 
@@ -2048,10 +2598,15 @@ static inline void hpm_dsp_cmag_f32(const float32_t *src, float32_t *dst, uint32
  * The multiplication outputs are in 1.15 x 1.15 = 2.30 format and
  * finally output is shift into 2.14 format.
  */
-static inline void hpm_dsp_cmag_q15(const q15_t *src, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_cmag_q15(const q15_t* src,
+                                    q15_t* dst,
+                                    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cmag_q15(src, dst, size);
+#ifdef __zcc__
+  tpt_cmplx_mag_q15(dst, src, size);
+#else
+  riscv_dsp_cmag_q15(src, dst, size);
+#endif
 #endif
 }
 
@@ -2064,10 +2619,15 @@ static inline void hpm_dsp_cmag_q15(const q15_t *src, q15_t *dst, uint32_t size)
  * The multiplication outputs are in 1.31 x 1.31 = 2.62 format and
  * finally output is shift into 2.30 format.
  */
-static inline void hpm_dsp_cmag_q31(const q31_t *src, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_cmag_q31(const q31_t* src,
+                                    q31_t* dst,
+                                    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cmag_q31(src, dst, size);
+#ifdef __zcc__
+  tpt_cmplx_mag_q31(dst, src, size);
+#else
+  riscv_dsp_cmag_q31(src, dst, size);
+#endif
 #endif
 }
 
@@ -2079,10 +2639,15 @@ static inline void hpm_dsp_cmag_q31(const q31_t *src, q31_t *dst, uint32_t size)
  * @param[out]		*dst points to the output complex vector.
  * @param[in]		size size of the vectors.
  */
-static inline void hpm_dsp_cmag_sqr_f32(const float32_t *src, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_cmag_sqr_f32(const float32_t* src,
+                                        float32_t* dst,
+                                        uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cmag_sqr_f32(src, dst, size);
+#ifdef __zcc__
+  tpt_cmplx_mag_squared_f32(dst, src, size);
+#else
+  riscv_dsp_cmag_sqr_f32(src, dst, size);
+#endif
 #endif
 }
 
@@ -2095,10 +2660,15 @@ static inline void hpm_dsp_cmag_sqr_f32(const float32_t *src, float32_t *dst, ui
  * The multiplication outputs are in 1.15 x 1.15 = 2.30 format and
  * finally output is shift into 3.13 format.
  */
-static inline void hpm_dsp_cmag_sqr_q15(const q15_t *src, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_cmag_sqr_q15(const q15_t* src,
+                                        q15_t* dst,
+                                        uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cmag_sqr_q15(src, dst, size);
+#ifdef __zcc__
+  tpt_cmplx_mag_squared_q15(dst, src, size);
+#else
+  riscv_dsp_cmag_sqr_q15(src, dst, size);
+#endif
 #endif
 }
 
@@ -2111,10 +2681,15 @@ static inline void hpm_dsp_cmag_sqr_q15(const q15_t *src, q15_t *dst, uint32_t s
  * The multiplication outputs are in 1.31 x 1.31 = 2.62 format and
  * finally output is shift into 3.29 format.
  */
-static inline void hpm_dsp_cmag_sqr_q31(const q31_t *src, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_cmag_sqr_q31(const q31_t* src,
+                                        q31_t* dst,
+                                        uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cmag_sqr_q31(src, dst, size);
+#ifdef __zcc__
+  tpt_cmplx_mag_squared_q31(dst, src, size);
+#else
+  riscv_dsp_cmag_sqr_q31(src, dst, size);
+#endif
 #endif
 }
 
@@ -2126,10 +2701,16 @@ static inline void hpm_dsp_cmag_sqr_q31(const q31_t *src, q31_t *dst, uint32_t s
  * @param[out]		*dst  output complex vector.
  * @param[in]		size size of the vectors.
  */
-static inline void hpm_dsp_cmul_f32(const float32_t *src1, const float32_t *src2, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_cmul_f32(const float32_t* src1,
+                                    const float32_t* src2,
+                                    float32_t* dst,
+                                    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cmul_f32(src1, src2, dst, size);
+#ifdef __zcc__
+  tpt_cmplx_mult_cmplx_f32(dst, src1, src2, size);
+#else
+  riscv_dsp_cmul_f32(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -2143,10 +2724,16 @@ static inline void hpm_dsp_cmul_f32(const float32_t *src1, const float32_t *src2
  * The multiplication outputs are in 1.15 x 1.15 = 2.30 format and
  * finally output is shift into 3.13 format.
  */
-static inline void hpm_dsp_cmul_q15(const q15_t *src1, const q15_t *src2, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_cmul_q15(const q15_t* src1,
+                                    const q15_t* src2,
+                                    q15_t* dst,
+                                    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cmul_q15(src1, src2, dst, size);
+#ifdef __zcc__
+  tpt_cmplx_mult_cmplx_q15(dst, src1, src2, size);
+#else
+  riscv_dsp_cmul_q15(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -2160,10 +2747,16 @@ static inline void hpm_dsp_cmul_q15(const q15_t *src1, const q15_t *src2, q15_t 
  * The multiplication outputs are in 1.31 x 1.31 = 2.62 format and
  * finally output is shift into 3.29 format.
  */
-static inline void hpm_dsp_cmul_q31(const q31_t *src1, const q31_t *src2, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_cmul_q31(const q31_t* src1,
+                                    const q31_t* src2,
+                                    q31_t* dst,
+                                    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cmul_q31(src1, src2, dst, size);
+#ifdef __zcc__
+  tpt_cmplx_mult_cmplx_q31(dst, src1, src2, size);
+#else
+  riscv_dsp_cmul_q31(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -2175,10 +2768,16 @@ static inline void hpm_dsp_cmul_q31(const q31_t *src1, const q31_t *src2, q31_t 
  * @param[out]		*dst  output complex vector.
  * @param[in]		size size of the vectors.
  */
-static inline void hpm_dsp_cmul_real_f32(const float32_t *src, const float32_t *real, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_cmul_real_f32(const float32_t* src,
+                                         const float32_t* real,
+                                         float32_t* dst,
+                                         uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cmul_real_f32(src, real, dst, size);
+#ifdef __zcc__
+  tpt_cmplx_mult_real_f32(dst, src, real, size);
+#else
+  riscv_dsp_cmul_real_f32(src, real, dst, size);
+#endif
 #endif
 }
 
@@ -2191,10 +2790,16 @@ static inline void hpm_dsp_cmul_real_f32(const float32_t *src, const float32_t *
  *
  * Output results will be saturated in Q15 range [0x8000 0x7FFF].
  */
-static inline void hpm_dsp_cmul_real_q15(const q15_t *src, const q15_t *real, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_cmul_real_q15(const q15_t* src,
+                                         const q15_t* real,
+                                         q15_t* dst,
+                                         uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cmul_real_q15(src, real, dst, size);
+#ifdef __zcc__
+  tpt_cmplx_mult_real_q15(dst, src, real, size);
+#else
+  riscv_dsp_cmul_real_q15(src, real, dst, size);
+#endif
 #endif
 }
 
@@ -2207,10 +2812,16 @@ static inline void hpm_dsp_cmul_real_q15(const q15_t *src, const q15_t *real, q1
  *
  * Output results will be saturated in Q31 range[0x80000000 0x7FFFFFFF].
  */
-static inline void hpm_dsp_cmul_real_q31(const q31_t *src, const q31_t *real, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_cmul_real_q31(const q31_t* src,
+                                         const q31_t* real,
+                                         q31_t* dst,
+                                         uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cmul_real_q31(src, real, dst, size);
+#ifdef __zcc__
+  tpt_cmplx_mult_real_q31(dst, src, real, size);
+#else
+  riscv_dsp_cmul_real_q31(src, real, dst, size);
+#endif
 #endif
 }
 #endif
@@ -2240,10 +2851,12 @@ static inline void hpm_dsp_cmul_real_q31(const q31_t *src, const q31_t *real, q3
  * @param[out]      *alpha  output two-phase orthogonal vector axis alpha.
  * @param[out]      *beta   output two-phase orthogonal vector axis beta.
  */
-static inline void hpm_dsp_clarke_f32(float32_t a, float32_t b, float32_t *alpha, float32_t *beta)
-{
+static inline void hpm_dsp_clarke_f32(float32_t a,
+                                      float32_t b,
+                                      float32_t* alpha,
+                                      float32_t* beta) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_clarke_f32(a, b, alpha, beta);
+  riscv_dsp_clarke_f32(a, b, alpha, beta);
 #endif
 }
 /**
@@ -2256,10 +2869,12 @@ static inline void hpm_dsp_clarke_f32(float32_t a, float32_t b, float32_t *alpha
  * The internal 32-bit accumulator maintains 1.31 format by truncating lower
  * 31 bits of the intermediate multiplication in 2.62 format.
  */
-static inline void hpm_dsp_clarke_q31(q31_t a, q31_t b, q31_t *alpha, q31_t *beta)
-{
+static inline void hpm_dsp_clarke_q31(q31_t a,
+                                      q31_t b,
+                                      q31_t* alpha,
+                                      q31_t* beta) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_clarke_q31(a, b, alpha, beta);
+  riscv_dsp_clarke_q31(a, b, alpha, beta);
 #endif
 }
 
@@ -2271,10 +2886,12 @@ static inline void hpm_dsp_clarke_q31(q31_t a, q31_t b, q31_t *alpha, q31_t *bet
  * @param[out]      *a      output three-phase coordinate a.
  * @param[in]       *b      output three-phase coordinate b.
  */
-static inline void hpm_dsp_inv_clarke_f32(float32_t alpha, float32_t beta, float32_t *a, float32_t *b)
-{
+static inline void hpm_dsp_inv_clarke_f32(float32_t alpha,
+                                          float32_t beta,
+                                          float32_t* a,
+                                          float32_t* b) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_inv_clarke_f32(alpha, beta, a, b);
+  riscv_dsp_inv_clarke_f32(alpha, beta, a, b);
 #endif
 }
 /**
@@ -2287,10 +2904,12 @@ static inline void hpm_dsp_inv_clarke_f32(float32_t alpha, float32_t beta, float
  * The internal 32-bit accumulator maintains 1.31 format by truncating lower
  * 31 bits of the intermediate multiplication in 2.62 format.
  */
-static inline void hpm_dsp_inv_clarke_q31(q31_t alpha, q31_t beta, q31_t *a, q31_t *b)
-{
+static inline void hpm_dsp_inv_clarke_q31(q31_t alpha,
+                                          q31_t beta,
+                                          q31_t* a,
+                                          q31_t* b) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_inv_clarke_q31(alpha, beta, a, b);
+  riscv_dsp_inv_clarke_q31(alpha, beta, a, b);
 #endif
 }
 
@@ -2304,10 +2923,14 @@ static inline void hpm_dsp_inv_clarke_q31(q31_t alpha, q31_t beta, q31_t *a, q31
  * @param[in]       sin   sine value of rotation angle .
  * @param[in]       cos   cosine value of rotation angle .
  */
-static inline void hpm_dsp_park_f32(float32_t alpha, float32_t beta, float32_t *a, float32_t *b, float32_t sin, float32_t cos)
-{
+static inline void hpm_dsp_park_f32(float32_t alpha,
+                                    float32_t beta,
+                                    float32_t* a,
+                                    float32_t* b,
+                                    float32_t sin,
+                                    float32_t cos) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_park_f32(alpha, beta, a, b, sin, cos);
+  riscv_dsp_park_f32(alpha, beta, a, b, sin, cos);
 #endif
 }
 
@@ -2323,10 +2946,14 @@ static inline void hpm_dsp_park_f32(float32_t alpha, float32_t beta, float32_t *
  * The internal 32-bit accumulator maintains 1.31 format by truncating lower
  * 31 bits of the intermediate multiplication in 2.62 format.
  */
-static inline void hpm_dsp_park_q31(q31_t alpha, q31_t beta, q31_t *a, q31_t *b, q31_t sin, q31_t cos)
-{
+static inline void hpm_dsp_park_q31(q31_t alpha,
+                                    q31_t beta,
+                                    q31_t* a,
+                                    q31_t* b,
+                                    q31_t sin,
+                                    q31_t cos) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_park_q31(alpha, beta, a, b, sin, cos);
+  riscv_dsp_park_q31(alpha, beta, a, b, sin, cos);
 #endif
 }
 
@@ -2340,10 +2967,14 @@ static inline void hpm_dsp_park_q31(q31_t alpha, q31_t beta, q31_t *a, q31_t *b,
  * @param[in]       sin     sine value of rotation angle .
  * @param[in]       cos     cosine value of rotation angle .
  */
-static inline void hpm_dsp_inv_park_f32(float32_t a, float32_t b, float32_t *alpha, float32_t *beta, float32_t sin, float32_t cos)
-{
+static inline void hpm_dsp_inv_park_f32(float32_t a,
+                                        float32_t b,
+                                        float32_t* alpha,
+                                        float32_t* beta,
+                                        float32_t sin,
+                                        float32_t cos) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_inv_park_f32(a, b, alpha, beta, sin, cos);
+  riscv_dsp_inv_park_f32(a, b, alpha, beta, sin, cos);
 #endif
 }
 /**
@@ -2358,10 +2989,14 @@ static inline void hpm_dsp_inv_park_f32(float32_t a, float32_t b, float32_t *alp
  * The internal 32-bit accumulator maintains 1.31 format by truncating lower
  * 31 bits of the intermediate multiplication in 2.62 format.
  */
-static inline void hpm_dsp_inv_park_q31(q31_t a, q31_t b, q31_t *alpha, q31_t *beta, q31_t sin, q31_t cos)
-{
+static inline void hpm_dsp_inv_park_q31(q31_t a,
+                                        q31_t b,
+                                        q31_t* alpha,
+                                        q31_t* beta,
+                                        q31_t sin,
+                                        q31_t cos) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_inv_park_q31(a, b, alpha, beta, sin, cos);
+  riscv_dsp_inv_park_q31(a, b, alpha, beta, sin, cos);
 #endif
 }
 /**
@@ -2371,10 +3006,10 @@ static inline void hpm_dsp_inv_park_q31(q31_t a, q31_t b, q31_t *alpha, q31_t *b
  * @param[in] src    input data.
  * @return output data.
  */
-static inline float32_t hpm_dsp_pid_f32(riscv_dsp_pid_f32_t *instance, float32_t src)
-{
+static inline float32_t hpm_dsp_pid_f32(riscv_dsp_pid_f32_t* instance,
+                                        float32_t src) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_pid_f32(instance, src);
+  return riscv_dsp_pid_f32(instance, src);
 #endif
 }
 /**
@@ -2389,10 +3024,10 @@ static inline float32_t hpm_dsp_pid_f32(riscv_dsp_pid_f32_t *instance, float32_t
  * the variable <code>Kp</code>, <code>Ki</code> and <code>Kd</code>. The
  * state variable will set to all zeros.
  */
-static inline void hpm_dsp_init_pid_f32(riscv_dsp_pid_f32_t *instance, int32_t set)
-{
+static inline void hpm_dsp_init_pid_f32(riscv_dsp_pid_f32_t* instance,
+                                        int32_t set) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_init_pid_f32(instance, set);
+  riscv_dsp_init_pid_f32(instance, set);
 #endif
 }
 
@@ -2403,10 +3038,9 @@ static inline void hpm_dsp_init_pid_f32(riscv_dsp_pid_f32_t *instance, int32_t s
  * @param[in] src    input data.
  * @return output data.
  */
-static inline q31_t hpm_dsp_pid_q31(riscv_dsp_pid_q31_t *instance, q31_t src)
-{
+static inline q31_t hpm_dsp_pid_q31(riscv_dsp_pid_q31_t* instance, q31_t src) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_pid_q31(instance, src);
+  return riscv_dsp_pid_q31(instance, src);
 #endif
 }
 
@@ -2422,17 +3056,16 @@ static inline q31_t hpm_dsp_pid_q31(riscv_dsp_pid_q31_t *instance, q31_t src)
  * the variable <code>Kp</code>, <code>Ki</code> and <code>Kd</code>. The
  * state variable will set to all zeros.
  */
-static inline void hpm_dsp_init_pid_q31(riscv_dsp_pid_q31_t *instance, int32_t set)
-{
+static inline void hpm_dsp_init_pid_q31(riscv_dsp_pid_q31_t* instance,
+                                        int32_t set) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_init_pid_q31(instance, set);
+  riscv_dsp_init_pid_q31(instance, set);
 #endif
 }
 
-static inline q15_t hpm_dsp_pid_q15(riscv_dsp_pid_q15_t *instance, q15_t src)
-{
+static inline q15_t hpm_dsp_pid_q15(riscv_dsp_pid_q15_t* instance, q15_t src) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_pid_q15(instance, src);
+  return riscv_dsp_pid_q15(instance, src);
 #endif
 }
 /**
@@ -2447,10 +3080,10 @@ static inline q15_t hpm_dsp_pid_q15(riscv_dsp_pid_q15_t *instance, q15_t src)
  * the variable <code>Kp</code>, <code>Ki</code> and <code>Kd</code>. The
  * state variable will set to all zeros.
  */
-static inline void hpm_dsp_init_pid_q15(riscv_dsp_pid_q15_t *instance, int32_t set)
-{
+static inline void hpm_dsp_init_pid_q15(riscv_dsp_pid_q15_t* instance,
+                                        int32_t set) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_init_pid_q15(instance, set);
+  riscv_dsp_init_pid_q15(instance, set);
 #endif
 }
 #endif
@@ -2469,9 +3102,10 @@ static inline void hpm_dsp_init_pid_q15(riscv_dsp_pid_q15_t *instance, int32_t s
  * @{
  */
 #ifdef HPM_EN_MATH_DSP_LIB
-
+#ifdef __zcc__
+#include "tpt_math.h"
+#endif
 #include "riscv_dsp_distance_math.h"
-
 
 /**
  * @brief        Bray-Curtis distance between two vectors
@@ -2480,10 +3114,15 @@ static inline void hpm_dsp_init_pid_q15(riscv_dsp_pid_q15_t *instance, int32_t s
  * @param[in]    size         vector length
  * @return distance
  */
-static inline float32_t hpm_dsp_dist_bray_curtis_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
-{
+static inline float32_t hpm_dsp_dist_bray_curtis_f32(const float32_t* src1,
+                                                     const float32_t* src2,
+                                                     uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_dist_bray_curtis_f32(src1, src2, size);
+#ifdef __zcc__
+  return tpt_braycurtis_distance_f32(src1, src2, size);
+#else
+  return riscv_dsp_dist_bray_curtis_f32(src1, src2, size);
+#endif
 #endif
 }
 
@@ -2494,10 +3133,15 @@ static inline float32_t hpm_dsp_dist_bray_curtis_f32(const float32_t *src1, cons
  * @param[in]    size         vector length
  * @return distance
  */
-static inline float32_t hpm_dsp_dist_canberra_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
-{
+static inline float32_t hpm_dsp_dist_canberra_f32(const float32_t* src1,
+                                                  const float32_t* src2,
+                                                  uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_dist_canberra_f32(src1, src2, size);
+#ifdef __zcc__
+  return tpt_canberra_distance_f32(src1, src2, size);
+#else
+  return riscv_dsp_dist_canberra_f32(src1, src2, size);
+#endif
 #endif
 }
 
@@ -2508,10 +3152,15 @@ static inline float32_t hpm_dsp_dist_canberra_f32(const float32_t *src1, const f
  * @param[in]    size         vector length
  * @return distance
  */
-static inline float32_t hpm_dsp_dist_chebyshev_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
-{
+static inline float32_t hpm_dsp_dist_chebyshev_f32(const float32_t* src1,
+                                                   const float32_t* src2,
+                                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_dist_chebyshev_f32(src1, src2, size);
+#ifdef __zcc__
+  return tpt_chebyshev_distance_f32(src1, src2, size);
+#else
+  return riscv_dsp_dist_chebyshev_f32(src1, src2, size);
+#endif
 #endif
 }
 
@@ -2522,10 +3171,15 @@ static inline float32_t hpm_dsp_dist_chebyshev_f32(const float32_t *src1, const 
  * @param[in]    size         vector length
  * @return distance
  */
-static inline float32_t hpm_dsp_dist_city_block_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
-{
+static inline float32_t hpm_dsp_dist_city_block_f32(const float32_t* src1,
+                                                    const float32_t* src2,
+                                                    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_dist_city_block_f32(src1, src2, size);
+#ifdef __zcc__
+  return tpt_cityblock_distance_f32(src1, src2, size);
+#else
+  return riscv_dsp_dist_city_block_f32(src1, src2, size);
+#endif
 #endif
 }
 
@@ -2536,10 +3190,15 @@ static inline float32_t hpm_dsp_dist_city_block_f32(const float32_t *src1, const
  * @param[in]    size         vector length
  * @return distance
  */
-static inline float32_t hpm_dsp_dist_corr_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
-{
+static inline float32_t hpm_dsp_dist_corr_f32(const float32_t* src1,
+                                              const float32_t* src2,
+                                              uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_dist_corr_f32(src1, src2, size);
+#ifdef __zcc__
+  return tpt_correlation_distance_f32(src1, src2, size);
+#else
+  return riscv_dsp_dist_corr_f32(src1, src2, size);
+#endif
 #endif
 }
 
@@ -2550,10 +3209,15 @@ static inline float32_t hpm_dsp_dist_corr_f32(const float32_t *src1, const float
  * @param[in]    size         vector length
  * @return distance
  */
-static inline float32_t hpm_dsp_dist_cos_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
-{
+static inline float32_t hpm_dsp_dist_cos_f32(const float32_t* src1,
+                                             const float32_t* src2,
+                                             uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_dist_cos_f32(src1, src2, size);
+#ifdef __zcc__
+  return tpt_cosine_distance_f32(src1, src2, size);
+#else
+  return riscv_dsp_dist_cos_f32(src1, src2, size);
+#endif
 #endif
 }
 
@@ -2564,10 +3228,15 @@ static inline float32_t hpm_dsp_dist_cos_f32(const float32_t *src1, const float3
  * @param[in]    size         vector length
  * @return distance
  */
-static inline float32_t hpm_dsp_dist_euclidean_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
-{
+static inline float32_t hpm_dsp_dist_euclidean_f32(const float32_t* src1,
+                                                   const float32_t* src2,
+                                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_dist_euclidean_f32(src1, src2, size);
+#ifdef __zcc__
+  return tpt_euclidean_distance_f32(src1, src2, size);
+#else
+  return riscv_dsp_dist_euclidean_f32(src1, src2, size);
+#endif
 #endif
 }
 
@@ -2578,10 +3247,15 @@ static inline float32_t hpm_dsp_dist_euclidean_f32(const float32_t *src1, const 
  * @param[in]    size         vector length
  * @return distance
  */
-static inline float32_t hpm_dsp_dist_jensen_shannon_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
-{
+static inline float32_t hpm_dsp_dist_jensen_shannon_f32(const float32_t* src1,
+                                                        const float32_t* src2,
+                                                        uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_dist_jensen_shannon_f32(src1, src2, size);
+#ifdef __zcc__
+  return tpt_jensenshannon_distance_f32(src1, src2, size);
+#else
+  return riscv_dsp_dist_jensen_shannon_f32(src1, src2, size);
+#endif
 #endif
 }
 
@@ -2593,10 +3267,16 @@ static inline float32_t hpm_dsp_dist_jensen_shannon_f32(const float32_t *src1, c
  * @param[in]    size         vector length
  * @return distance
  */
-static inline float32_t hpm_dsp_dist_minkowski_f32(const float32_t *src1, const float32_t *src2, int32_t order, uint32_t size)
-{
+static inline float32_t hpm_dsp_dist_minkowski_f32(const float32_t* src1,
+                                                   const float32_t* src2,
+                                                   int32_t order,
+                                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_dist_minkowski_f32(src1, src2, order, size);
+#ifdef __zcc__
+  return tpt_minkowski_distance_f32(src1, src2, order, size);
+#else
+  return riscv_dsp_dist_minkowski_f32(src1, src2, order, size);
+#endif
 #endif
 }
 
@@ -2607,10 +3287,15 @@ static inline float32_t hpm_dsp_dist_minkowski_f32(const float32_t *src1, const 
  * @param[in]    numofbool    Number of booleans
  * @return distance
  */
-static inline float32_t hpm_dsp_bdist_dice_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
-{
+static inline float32_t hpm_dsp_bdist_dice_u32_f32(const uint32_t* src1,
+                                                   const uint32_t* src2,
+                                                   uint32_t numofbool) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_bdist_dice_u32_f32(src1, src2, numofbool);
+#ifdef __zcc__
+  return tpt_dice_distance(src1, src2, numofbool);
+#else
+  return riscv_dsp_bdist_dice_u32_f32(src1, src2, numofbool);
+#endif
 #endif
 }
 
@@ -2621,10 +3306,15 @@ static inline float32_t hpm_dsp_bdist_dice_u32_f32(const uint32_t *src1, const u
  * @param[in]    numofbool    Number of booleans
  * @return distance
  */
-static inline float32_t hpm_dsp_bdist_hamming_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
-{
+static inline float32_t hpm_dsp_bdist_hamming_u32_f32(const uint32_t* src1,
+                                                      const uint32_t* src2,
+                                                      uint32_t numofbool) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_bdist_hamming_u32_f32(src1, src2, numofbool);
+#ifdef __zcc__
+  return tpt_hamming_distance(src1, src2, numofbool);
+#else
+  return riscv_dsp_bdist_hamming_u32_f32(src1, src2, numofbool);
+#endif
 #endif
 }
 
@@ -2635,10 +3325,15 @@ static inline float32_t hpm_dsp_bdist_hamming_u32_f32(const uint32_t *src1, cons
  * @param[in]    numofbool    Number of booleans
  * @return distance
  */
-static inline float32_t hpm_dsp_bdist_jaccard_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
-{
+static inline float32_t hpm_dsp_bdist_jaccard_u32_f32(const uint32_t* src1,
+                                                      const uint32_t* src2,
+                                                      uint32_t numofbool) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_bdist_jaccard_u32_f32(src1, src2, numofbool);
+#ifdef __zcc__
+  return tpt_jaccard_distance(src1, src2, numofbool);
+#else
+  return riscv_dsp_bdist_jaccard_u32_f32(src1, src2, numofbool);
+#endif
 #endif
 }
 
@@ -2649,10 +3344,15 @@ static inline float32_t hpm_dsp_bdist_jaccard_u32_f32(const uint32_t *src1, cons
  * @param[in]    numofbool    Number of booleans
  * @return distance
  */
-static inline float32_t hpm_dsp_bdist_kulsinski_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
-{
+static inline float32_t hpm_dsp_bdist_kulsinski_u32_f32(const uint32_t* src1,
+                                                        const uint32_t* src2,
+                                                        uint32_t numofbool) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_bdist_kulsinski_u32_f32(src1, src2, numofbool);
+#ifdef __zcc__
+  return tpt_kulsinski_distance(src1, src2, numofbool);
+#else
+  return riscv_dsp_bdist_kulsinski_u32_f32(src1, src2, numofbool);
+#endif
 #endif
 }
 
@@ -2663,10 +3363,16 @@ static inline float32_t hpm_dsp_bdist_kulsinski_u32_f32(const uint32_t *src1, co
  * @param[in]    numofbool    Number of booleans
  * @return distance
  */
-static inline float32_t hpm_dsp_bdist_sokal_michener_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
-{
+static inline float32_t hpm_dsp_bdist_sokal_michener_u32_f32(
+    const uint32_t* src1,
+    const uint32_t* src2,
+    uint32_t numofbool) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_bdist_sokal_michener_u32_f32(src1, src2, numofbool);
+#ifdef __zcc__
+  return tpt_sokalmichener_distance(src1, src2, numofbool);
+#else
+  return riscv_dsp_bdist_sokal_michener_u32_f32(src1, src2, numofbool);
+#endif
 #endif
 }
 
@@ -2677,10 +3383,15 @@ static inline float32_t hpm_dsp_bdist_sokal_michener_u32_f32(const uint32_t *src
  * @param[in]    numofbool    Number of booleans
  * @return distance
  */
-static inline float32_t hpm_dsp_bdist_sokal_sneath_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
-{
+static inline float32_t hpm_dsp_bdist_sokal_sneath_u32_f32(const uint32_t* src1,
+                                                           const uint32_t* src2,
+                                                           uint32_t numofbool) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_bdist_sokal_sneath_u32_f32(src1, src2, numofbool);
+#ifdef __zcc__
+  return tpt_sokalsneath_distance(src1, src2, numofbool);
+#else
+  return riscv_dsp_bdist_sokal_sneath_u32_f32(src1, src2, numofbool);
+#endif
 #endif
 }
 
@@ -2691,10 +3402,16 @@ static inline float32_t hpm_dsp_bdist_sokal_sneath_u32_f32(const uint32_t *src1,
  * @param[in]    numofbool    Number of booleans
  * @return distance
  */
-static inline float32_t hpm_dsp_bdist_rogers_tanimoto_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
-{
+static inline float32_t hpm_dsp_bdist_rogers_tanimoto_u32_f32(
+    const uint32_t* src1,
+    const uint32_t* src2,
+    uint32_t numofbool) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_bdist_rogers_tanimoto_u32_f32(src1, src2, numofbool);
+#ifdef __zcc__
+  return tpt_rogerstanimoto_distance(src1, src2, numofbool);
+#else
+  return riscv_dsp_bdist_rogers_tanimoto_u32_f32(src1, src2, numofbool);
+#endif
 #endif
 }
 
@@ -2705,10 +3422,15 @@ static inline float32_t hpm_dsp_bdist_rogers_tanimoto_u32_f32(const uint32_t *sr
  * @param[in]    numofbool    Number of booleans
  * @return distance
  */
-static inline float32_t hpm_dsp_bdist_yule_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
-{
+static inline float32_t hpm_dsp_bdist_yule_u32_f32(const uint32_t* src1,
+                                                   const uint32_t* src2,
+                                                   uint32_t numofbool) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_bdist_yule_u32_f32(src1, src2, numofbool);
+#ifdef __zcc__
+  return tpt_yule_distance(src1, src2, numofbool);
+#else
+  return riscv_dsp_bdist_yule_u32_f32(src1, src2, numofbool);
+#endif
 #endif
 }
 
@@ -2719,10 +3441,15 @@ static inline float32_t hpm_dsp_bdist_yule_u32_f32(const uint32_t *src1, const u
  * @param[in]    numofbool    Number of booleans
  * @return distance
  */
-static inline float32_t hpm_dsp_bdist_russell_rao_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
-{
+static inline float32_t hpm_dsp_bdist_russell_rao_u32_f32(const uint32_t* src1,
+                                                          const uint32_t* src2,
+                                                          uint32_t numofbool) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_bdist_russell_rao_u32_f32(src1, src2, numofbool);
+#ifdef __zcc__
+  return tpt_russellrao_distance(src1, src2, numofbool);
+#else
+  return riscv_dsp_bdist_russell_rao_u32_f32(src1, src2, numofbool);
+#endif
 #endif
 }
 #endif
@@ -2741,6 +3468,11 @@ static inline float32_t hpm_dsp_bdist_russell_rao_u32_f32(const uint32_t *src1, 
  * @{
  */
 #ifdef HPM_EN_MATH_DSP_LIB
+
+#ifdef __zcc__
+#include "tpt_math.h"
+#endif
+
 #include "riscv_dsp_filtering_math.h"
 
 /**
@@ -2750,10 +3482,12 @@ static inline float32_t hpm_dsp_bdist_russell_rao_u32_f32(const uint32_t *src1, 
  * @param[out]      *dst      points to the output block data.
  * @param[in]       size      number of the blocksize.
  */
-static inline void hpm_dsp_fir_f32(const riscv_dsp_fir_f32_t *instance, float32_t *src, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_fir_f32(const riscv_dsp_fir_f32_t* instance,
+                                   float32_t* src,
+                                   float32_t* dst,
+                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_fir_f32(instance, src, dst, size);
+  riscv_dsp_fir_f32(instance, src, dst, size);
 #endif
 }
 
@@ -2771,10 +3505,12 @@ static inline void hpm_dsp_fir_f32(const riscv_dsp_fir_f32_t *instance, float32_
  * 1.31 formatthe to yield the final result. In order to avoid overflows
  * completely the input signal must be scaled down by log2(coeff_size) bits.
  */
-static inline void hpm_dsp_fir_q31(const riscv_dsp_fir_q31_t *instance, q31_t *src, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_fir_q31(const riscv_dsp_fir_q31_t* instance,
+                                   q31_t* src,
+                                   q31_t* dst,
+                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_fir_q31(instance, src, dst, size);
+  riscv_dsp_fir_q31(instance, src, dst, size);
 #endif
 }
 
@@ -2792,10 +3528,12 @@ static inline void hpm_dsp_fir_q31(const riscv_dsp_fir_q31_t *instance, q31_t *s
  * converted to a 1.31 result. In order to avoid overflows
  * completely the input signal must be scaled down by log2(coeff_size) bits.
  */
-static inline void hpm_dsp_fir_fast_q31(const riscv_dsp_fir_q31_t *instance, q31_t *src, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_fir_fast_q31(const riscv_dsp_fir_q31_t* instance,
+                                        q31_t* src,
+                                        q31_t* dst,
+                                        uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_fir_fast_q31(instance, src, dst, size);
+  riscv_dsp_fir_fast_q31(instance, src, dst, size);
 #endif
 }
 /**
@@ -2812,10 +3550,12 @@ static inline void hpm_dsp_fir_fast_q31(const riscv_dsp_fir_q31_t *instance, q31
  * to 34.15 format by discarding low 15 bits. Lastly, the outputs is
  * saturated to yield a result in 1.15 format.
  */
-static inline void hpm_dsp_fir_q15(const riscv_dsp_fir_q15_t *instance, q15_t *src, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_fir_q15(const riscv_dsp_fir_q15_t* instance,
+                                   q15_t* src,
+                                   q15_t* dst,
+                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_fir_q15(instance, src, dst, size);
+  riscv_dsp_fir_q15(instance, src, dst, size);
 #endif
 }
 
@@ -2827,14 +3567,17 @@ static inline void hpm_dsp_fir_q15(const riscv_dsp_fir_q15_t *instance, q15_t *s
  * @param[in]       size      number of the blocksize.
  *
  * Function notes:
- * Both coefficients and state variables are represented in Q15 format and multiplications yield
- * a Q30 result. The results are accumulated in a 32-bit accumulator in Q2.30 format. Lastly, the
- * outputs are saturated to yield a result in Q1.15 format.
+ * Both coefficients and state variables are represented in Q15 format and
+ * multiplications yield a Q30 result. The results are accumulated in a 32-bit
+ * accumulator in Q2.30 format. Lastly, the outputs are saturated to yield a
+ * result in Q1.15 format.
  */
-static inline void hpm_dsp_fir_fast_q15(const riscv_dsp_fir_q15_t *instance, q15_t *src, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_fir_fast_q15(const riscv_dsp_fir_q15_t* instance,
+                                        q15_t* src,
+                                        q15_t* dst,
+                                        uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_fir_fast_q15(instance, src, dst, size);
+  riscv_dsp_fir_fast_q15(instance, src, dst, size);
 #endif
 }
 /**
@@ -2850,10 +3593,12 @@ static inline void hpm_dsp_fir_fast_q15(const riscv_dsp_fir_q15_t *instance, q15
  * 18.14 format. The 18.14 result is then converted to 18.7 format by
  * discarding the low 7 bits and then saturated to 1.7 format.
  */
-static inline void hpm_dsp_fir_q7(const riscv_dsp_fir_q7_t *instance, q7_t *src, q7_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_fir_q7(const riscv_dsp_fir_q7_t* instance,
+                                  q7_t* src,
+                                  q7_t* dst,
+                                  uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_fir_q7(instance, src, dst, size);
+  riscv_dsp_fir_q7(instance, src, dst, size);
 #endif
 }
 
@@ -2865,10 +3610,12 @@ static inline void hpm_dsp_fir_q7(const riscv_dsp_fir_q7_t *instance, q7_t *src,
  * @param[out]      *dst      points to the output block data.
  * @param[in]       size      number of the blocksize.
  */
-static inline void hpm_dsp_lfir_f32(const riscv_dsp_lfir_f32_t *instance, float32_t *src, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_lfir_f32(const riscv_dsp_lfir_f32_t* instance,
+                                    float32_t* src,
+                                    float32_t* dst,
+                                    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_lfir_f32(instance, src, dst, size);
+  riscv_dsp_lfir_f32(instance, src, dst, size);
 #endif
 }
 
@@ -2880,10 +3627,12 @@ static inline void hpm_dsp_lfir_f32(const riscv_dsp_lfir_f32_t *instance, float3
  * @param[out]      *dst      points to the output block data.
  * @param[in]       size      number of the blocksize.
  */
-static inline void hpm_dsp_lfir_q15(const riscv_dsp_lfir_q15_t *instance, q15_t *src, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_lfir_q15(const riscv_dsp_lfir_q15_t* instance,
+                                    q15_t* src,
+                                    q15_t* dst,
+                                    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_lfir_q15(instance, src, dst, size);
+  riscv_dsp_lfir_q15(instance, src, dst, size);
 #endif
 }
 
@@ -2899,82 +3648,119 @@ static inline void hpm_dsp_lfir_q15(const riscv_dsp_lfir_q15_t *instance, q15_t 
  * In order to avoid overflows the input signal must be scaled down by
  * 2*log2(stage) bits.
  */
-static inline void hpm_dsp_lfir_q31(const riscv_dsp_lfir_q31_t *instance, q31_t *src, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_lfir_q31(const riscv_dsp_lfir_q31_t* instance,
+                                    q31_t* src,
+                                    q31_t* dst,
+                                    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_lfir_q31(instance, src, dst, size);
+  riscv_dsp_lfir_q31(instance, src, dst, size);
 #endif
 }
-static inline void hpm_dsp_dcmfir_f32(const riscv_dsp_dcmfir_f32_t *instance, float32_t *src, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_dcmfir_f32(const riscv_dsp_dcmfir_f32_t* instance,
+                                      float32_t* src,
+                                      float32_t* dst,
+                                      uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_dcmfir_f32(instance, src, dst, size);
+  riscv_dsp_dcmfir_f32(instance, src, dst, size);
 #endif
 }
-static inline void hpm_dsp_dcmfir_q15(const riscv_dsp_dcmfir_q15_t *instance, q15_t *src, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_dcmfir_q15(const riscv_dsp_dcmfir_q15_t* instance,
+                                      q15_t* src,
+                                      q15_t* dst,
+                                      uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_dcmfir_q15(instance, src, dst, size);
+  riscv_dsp_dcmfir_q15(instance, src, dst, size);
 #endif
 }
-static inline void hpm_dsp_dcmfir_q31(const riscv_dsp_dcmfir_q31_t *instance, q31_t *src, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_dcmfir_q31(const riscv_dsp_dcmfir_q31_t* instance,
+                                      q31_t* src,
+                                      q31_t* dst,
+                                      uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_dcmfir_q31(instance, src, dst, size);
+  riscv_dsp_dcmfir_q31(instance, src, dst, size);
 #endif
 }
-static inline void hpm_dsp_dcmfir_fast_q31(const riscv_dsp_dcmfir_q31_t *instance, q31_t *src, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_dcmfir_fast_q31(
+    const riscv_dsp_dcmfir_q31_t* instance,
+    q31_t* src,
+    q31_t* dst,
+    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_dcmfir_fast_q31(instance, src, dst, size);
+  riscv_dsp_dcmfir_fast_q31(instance, src, dst, size);
 #endif
 }
-static inline void hpm_dsp_dcmfir_fast_q15(const riscv_dsp_dcmfir_q15_t *instance, q15_t *src,  q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_dcmfir_fast_q15(
+    const riscv_dsp_dcmfir_q15_t* instance,
+    q15_t* src,
+    q15_t* dst,
+    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_dcmfir_fast_q15(instance, src, dst, size);
+  riscv_dsp_dcmfir_fast_q15(instance, src, dst, size);
 #endif
 }
-static inline void hpm_dsp_upsplfir_f32(const riscv_dsp_upsplfir_f32_t *instance, float32_t *src, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_upsplfir_f32(
+    const riscv_dsp_upsplfir_f32_t* instance,
+    float32_t* src,
+    float32_t* dst,
+    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_upsplfir_f32(instance, src, dst, size);
+  riscv_dsp_upsplfir_f32(instance, src, dst, size);
 #endif
 }
-static inline void hpm_dsp_upsplfir_q15(const riscv_dsp_upsplfir_q15_t *instance, q15_t *src, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_upsplfir_q15(
+    const riscv_dsp_upsplfir_q15_t* instance,
+    q15_t* src,
+    q15_t* dst,
+    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_upsplfir_q15(instance, src, dst, size);
+  riscv_dsp_upsplfir_q15(instance, src, dst, size);
 #endif
 }
-static inline void hpm_dsp_upsplfir_q31(const riscv_dsp_upsplfir_q31_t *instance, q31_t *src, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_upsplfir_q31(
+    const riscv_dsp_upsplfir_q31_t* instance,
+    q31_t* src,
+    q31_t* dst,
+    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_upsplfir_q31(instance, src, dst, size);
+  riscv_dsp_upsplfir_q31(instance, src, dst, size);
 #endif
 }
-static inline void hpm_dsp_spafir_f32(riscv_dsp_spafir_f32_t *instance, float32_t *src, float32_t *dst, float32_t *buf, uint32_t size)
-{
+static inline void hpm_dsp_spafir_f32(riscv_dsp_spafir_f32_t* instance,
+                                      float32_t* src,
+                                      float32_t* dst,
+                                      float32_t* buf,
+                                      uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_spafir_f32(instance, src, dst, buf, size);
+  riscv_dsp_spafir_f32(instance, src, dst, buf, size);
 #endif
 }
-static inline void hpm_dsp_spafir_q15(riscv_dsp_spafir_q15_t *instance, q15_t *src, q15_t *dst, q15_t *buf1, q31_t *buf2, uint32_t size)
-{
+static inline void hpm_dsp_spafir_q15(riscv_dsp_spafir_q15_t* instance,
+                                      q15_t* src,
+                                      q15_t* dst,
+                                      q15_t* buf1,
+                                      q31_t* buf2,
+                                      uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_spafir_q15(instance, src, dst, buf1, buf2, size);
+  riscv_dsp_spafir_q15(instance, src, dst, buf1, buf2, size);
 #endif
 }
-static inline void hpm_dsp_spafir_q31(riscv_dsp_spafir_q31_t *instance, q31_t *src, q31_t *dst, q31_t *buf, uint32_t size)
-{
+static inline void hpm_dsp_spafir_q31(riscv_dsp_spafir_q31_t* instance,
+                                      q31_t* src,
+                                      q31_t* dst,
+                                      q31_t* buf,
+                                      uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_spafir_q31(instance, src, dst, buf, size);
+  riscv_dsp_spafir_q31(instance, src, dst, buf, size);
 #endif
 }
-static inline void hpm_dsp_spafir_q7(riscv_dsp_spafir_q7_t *instance, q7_t *src, q7_t *dst, q7_t *buf1, q31_t *buf2, uint32_t size)
-{
+static inline void hpm_dsp_spafir_q7(riscv_dsp_spafir_q7_t* instance,
+                                     q7_t* src,
+                                     q7_t* dst,
+                                     q7_t* buf1,
+                                     q31_t* buf2,
+                                     uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_spafir_q7(instance, src, dst, buf1, buf2, size);
+  riscv_dsp_spafir_q7(instance, src, dst, buf1, buf2, size);
 #endif
 }
 
@@ -2992,10 +3778,14 @@ static inline void hpm_dsp_spafir_q7(riscv_dsp_spafir_q7_t *instance, q7_t *src,
  * @param[out]      *err      points to the error data.
  * @param[in]       size      number of the blocksize.
  */
-static inline void hpm_dsp_lms_f32(const riscv_dsp_lms_f32_t *instance, float32_t *src, float32_t *ref, float32_t *dst, float32_t *err, uint32_t size)
-{
+static inline void hpm_dsp_lms_f32(const riscv_dsp_lms_f32_t* instance,
+                                   float32_t* src,
+                                   float32_t* ref,
+                                   float32_t* dst,
+                                   float32_t* err,
+                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_lms_f32(instance, src, ref, dst, err, size);
+  riscv_dsp_lms_f32(instance, src, ref, dst, err, size);
 #endif
 }
 
@@ -3015,10 +3805,14 @@ static inline void hpm_dsp_lms_f32(const riscv_dsp_lms_f32_t *instance, float32_
  * 1.31 formatthe to yield the final result. In order to avoid overflows
  * completely the input signal must be scaled down by log2(coeff_size) bits.
  */
-static inline void hpm_dsp_lms_q31(const riscv_dsp_lms_q31_t *instance, q31_t *src, q31_t *ref, q31_t *dst, q31_t *err, uint32_t size)
-{
+static inline void hpm_dsp_lms_q31(const riscv_dsp_lms_q31_t* instance,
+                                   q31_t* src,
+                                   q31_t* ref,
+                                   q31_t* dst,
+                                   q31_t* err,
+                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_lms_q31(instance, src, ref, dst, err, size);
+  riscv_dsp_lms_q31(instance, src, ref, dst, err, size);
 #endif
 }
 
@@ -3038,10 +3832,14 @@ static inline void hpm_dsp_lms_q31(const riscv_dsp_lms_q31_t *instance, q31_t *s
  * to 34.15 format by discarding low 15 bits. Lastly, the outputs is
  * saturated to yield a result in 1.15 format.
  */
-static inline void hpm_dsp_lms_q15(const riscv_dsp_lms_q15_t *instance, q15_t *src, q15_t *ref, q15_t *dst, q15_t *err, uint32_t size)
-{
+static inline void hpm_dsp_lms_q15(const riscv_dsp_lms_q15_t* instance,
+                                   q15_t* src,
+                                   q15_t* ref,
+                                   q15_t* dst,
+                                   q15_t* err,
+                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_lms_q15(instance, src, ref, dst, err, size);
+  riscv_dsp_lms_q15(instance, src, ref, dst, err, size);
 #endif
 }
 
@@ -3049,33 +3847,42 @@ static inline void hpm_dsp_lms_q15(const riscv_dsp_lms_q15_t *instance, q15_t *s
  * @brief Structure for the f32 normalized LMS filter.
  */
 
-static inline void hpm_dsp_nlms_f32(riscv_dsp_nlms_f32_t *instance, float32_t *src, float32_t *ref, float32_t *dst, float32_t *err, uint32_t size)
-{
+static inline void hpm_dsp_nlms_f32(riscv_dsp_nlms_f32_t* instance,
+                                    float32_t* src,
+                                    float32_t* ref,
+                                    float32_t* dst,
+                                    float32_t* err,
+                                    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_nlms_f32(instance, src, ref, dst, err, size);
+  riscv_dsp_nlms_f32(instance, src, ref, dst, err, size);
 #endif
 }
-
 
 /**
  * @brief Structure for the q31 normalized LMS filter.
  */
 
-static inline void hpm_dsp_nlms_q31(riscv_dsp_nlms_q31_t *instance, q31_t *src, q31_t *ref, q31_t *dst, q31_t *err, uint32_t size)
-{
+static inline void hpm_dsp_nlms_q31(riscv_dsp_nlms_q31_t* instance,
+                                    q31_t* src,
+                                    q31_t* ref,
+                                    q31_t* dst,
+                                    q31_t* err,
+                                    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_nlms_q31(instance, src, ref, dst, err, size);
+  riscv_dsp_nlms_q31(instance, src, ref, dst, err, size);
 #endif
 }
 
-
-static inline void hpm_dsp_nlms_q15(riscv_dsp_nlms_q15_t *instance, q15_t *src, q15_t *ref, q15_t *dst, q15_t *err, uint32_t size)
-{
+static inline void hpm_dsp_nlms_q15(riscv_dsp_nlms_q15_t* instance,
+                                    q15_t* src,
+                                    q15_t* ref,
+                                    q15_t* dst,
+                                    q15_t* err,
+                                    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_nlms_q15(instance, src, ref, dst, err, size);
+  riscv_dsp_nlms_q15(instance, src, ref, dst, err, size);
 #endif
 }
-
 
 // Convolution
 /**
@@ -3087,10 +3894,17 @@ static inline void hpm_dsp_nlms_q15(riscv_dsp_nlms_q15_t *instance, q15_t *src, 
  * @param[out]      *dst  points to the output vector where the length is
  *                        len1 + len2 - 1.
  */
-static inline void hpm_dsp_conv_f32(float32_t *src1, uint32_t len1, float32_t *src2, uint32_t len2, float32_t *dst)
-{
+static inline void hpm_dsp_conv_f32(float32_t* src1,
+                                    uint32_t len1,
+                                    float32_t* src2,
+                                    uint32_t len2,
+                                    float32_t* dst) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_conv_f32(src1, len1, src2, len2, dst);
+#ifdef __zcc__
+  tpt_conv_f32(dst, src1, len1, src2, len2);
+#else
+  riscv_dsp_conv_f32(src1, len1, src2, len2, dst);
+#endif
 #endif
 }
 
@@ -3109,10 +3923,17 @@ static inline void hpm_dsp_conv_f32(float32_t *src1, uint32_t len1, float32_t *s
  * 34.30 format. The 34.30 result is then truncated to 34.15 format by
  * discarding the low 15 bits and then saturated to 1.15 format.
  */
-static inline void hpm_dsp_conv_q15(q15_t *src1, uint32_t len1, q15_t *src2, uint32_t len2, q15_t *dst)
-{
+static inline void hpm_dsp_conv_q15(q15_t* src1,
+                                    uint32_t len1,
+                                    q15_t* src2,
+                                    uint32_t len2,
+                                    q15_t* dst) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_conv_q15(src1, len1, src2, len2, dst);
+#ifdef __zcc__
+  tpt_conv_q15(dst, src1, len1, src2, len2);
+#else
+  riscv_dsp_conv_q15(src1, len1, src2, len2, dst);
+#endif
 #endif
 }
 
@@ -3133,10 +3954,17 @@ static inline void hpm_dsp_conv_q15(q15_t *src1, uint32_t len1, q15_t *src2, uin
  * log2(min(srcALen, srcBLen)), The 2.62 accumulator is right shifted by 31
  * bits and saturated to 1.31 forma t to yield the final result.
  */
-static inline void hpm_dsp_conv_q31(q31_t *src1, uint32_t len1, q31_t *src2, uint32_t len2, q31_t *dst)
-{
+static inline void hpm_dsp_conv_q31(q31_t* src1,
+                                    uint32_t len1,
+                                    q31_t* src2,
+                                    uint32_t len2,
+                                    q31_t* dst) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_conv_q31(src1, len1, src2, len2, dst);
+#ifdef __zcc__
+  tpt_conv_q31(dst, src1, len1, src2, len2);
+#else
+  riscv_dsp_conv_q31(src1, len1, src2, len2, dst);
+#endif
 #endif
 }
 
@@ -3155,10 +3983,17 @@ static inline void hpm_dsp_conv_q31(q31_t *src1, uint32_t len1, q31_t *src2, uin
  * 18.14 format. The 18.14 result is then truncated to 18.7 format by
  * discarding the low 7 bits and then saturated to 1.7 format.
  */
-static inline void hpm_dsp_conv_q7(q7_t *src1, uint32_t len1, q7_t *src2, uint32_t len2, q7_t *dst)
-{
+static inline void hpm_dsp_conv_q7(q7_t* src1,
+                                   uint32_t len1,
+                                   q7_t* src2,
+                                   uint32_t len2,
+                                   q7_t* dst) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_conv_q7(src1, len1, src2, len2, dst);
+#ifdef __zcc__
+  tpt_conv_q7(dst, src1, len1, src2, len2);
+#else
+  riscv_dsp_conv_q7(src1, len1, src2, len2, dst);
+#endif
 #endif
 }
 
@@ -3174,12 +4009,23 @@ static inline void hpm_dsp_conv_q7(q7_t *src1, uint32_t len1, q7_t *src2, uint32
  * @param[in]       size is the number of output points to be computed.
  * @return          Returns
  *                  0; success
- *                  -1; fail,  the input subset are not between 0 and len1+len2-2.
+ *                  -1; fail,  the input subset are not between 0 and
+ * len1+len2-2.
  */
-static inline int32_t hpm_dsp_conv_partial_f32(float32_t *src1, uint32_t len1, float32_t *src2, uint32_t len2, float32_t *dst, uint32_t startindex, uint32_t size)
-{
+static inline int32_t hpm_dsp_conv_partial_f32(float32_t* src1,
+                                               uint32_t len1,
+                                               float32_t* src2,
+                                               uint32_t len2,
+                                               float32_t* dst,
+                                               uint32_t startindex,
+                                               uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_conv_partial_f32(src1, len1, src2, len2, dst, startindex, size);
+#ifdef __zcc__
+  return tpt_conv_partial_f32(dst, src1, len1, src2, len2, startindex, size);
+#else
+  return riscv_dsp_conv_partial_f32(src1, len1, src2, len2, dst, startindex,
+                                    size);
+#endif                                
 #endif
 }
 
@@ -3195,12 +4041,23 @@ static inline int32_t hpm_dsp_conv_partial_f32(float32_t *src1, uint32_t len1, f
  * @param[in]       size is the number of output points to be computed.
  * @return          Returns
  *                  0; success
- *                  -1; fail,  the input subset are not between 0 and len1+len2-2.
+ *                  -1; fail,  the input subset are not between 0 and
+ * len1+len2-2.
  */
-static inline int32_t hpm_dsp_conv_partial_q15(q15_t *src1, uint32_t len1, q15_t *src2, uint32_t len2, q15_t *dst, uint32_t startindex, uint32_t size)
-{
+static inline int32_t hpm_dsp_conv_partial_q15(q15_t* src1,
+                                               uint32_t len1,
+                                               q15_t* src2,
+                                               uint32_t len2,
+                                               q15_t* dst,
+                                               uint32_t startindex,
+                                               uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_conv_partial_q15(src1, len1, src2, len2, dst, startindex, size);
+#ifdef __zcc__
+  return tpt_conv_partial_q15(dst, src1, len1, src2, len2, startindex, size);
+#else
+  return riscv_dsp_conv_partial_q15(src1, len1, src2, len2, dst, startindex,
+                                    size);
+#endif
 #endif
 }
 
@@ -3216,12 +4073,23 @@ static inline int32_t hpm_dsp_conv_partial_q15(q15_t *src1, uint32_t len1, q15_t
  * @param[in]       size is the number of output points to be computed.
  * @return          Returns
  *                  0; success
- *                  -1; fail,  the input subset are not between 0 and len1+len2-2.
+ *                  -1; fail,  the input subset are not between 0 and
+ * len1+len2-2.
  */
-static inline int32_t hpm_dsp_conv_partial_q31(q31_t *src1, uint32_t len1, q31_t *src2, uint32_t len2, q31_t *dst, uint32_t startindex, uint32_t size)
-{
+static inline int32_t hpm_dsp_conv_partial_q31(q31_t* src1,
+                                               uint32_t len1,
+                                               q31_t* src2,
+                                               uint32_t len2,
+                                               q31_t* dst,
+                                               uint32_t startindex,
+                                               uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_conv_partial_q31(src1, len1, src2, len2, dst, startindex, size);
+#ifdef __zcc__
+  return tpt_conv_partial_q31(dst, src1, len1, src2, len2, startindex, size);
+#else
+  return riscv_dsp_conv_partial_q31(src1, len1, src2, len2, dst, startindex,
+                                    size);
+#endif
 #endif
 }
 
@@ -3237,15 +4105,25 @@ static inline int32_t hpm_dsp_conv_partial_q31(q31_t *src1, uint32_t len1, q31_t
  * @param[in]       size is the number of output points to be computed.
  * @return          Returns
  *                  0; success
- *                  -1; fail,  the input subset are not between 0 and len1+len2-2.
+ *                  -1; fail,  the input subset are not between 0 and
+ * len1+len2-2.
  */
-static inline int32_t hpm_dsp_conv_partial_q7(q7_t *src1, uint32_t len1, q7_t *src2, uint32_t len2, q7_t *dst, uint32_t startindex, uint32_t size)
-{
+static inline int32_t hpm_dsp_conv_partial_q7(q7_t* src1,
+                                              uint32_t len1,
+                                              q7_t* src2,
+                                              uint32_t len2,
+                                              q7_t* dst,
+                                              uint32_t startindex,
+                                              uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_conv_partial_q7(src1, len1, src2, len2, dst, startindex, size);
+#ifdef __zcc__
+  return tpt_conv_partial_q7(dst, src1, len1, src2, len2, startindex, size);
+#else
+  return riscv_dsp_conv_partial_q7(src1, len1, src2, len2, dst, startindex,
+                                   size);
+#endif
 #endif
 }
-
 
 // Correlation
 /**
@@ -3257,10 +4135,17 @@ static inline int32_t hpm_dsp_conv_partial_q7(q7_t *src1, uint32_t len1, q7_t *s
  * @param[out]      *dst  points to the output vector where the length is
  *                        2 * max(len1, len2) - 1.
  */
-static inline void hpm_dsp_corr_f32(float32_t *src1, uint32_t len1, float32_t *src2, uint32_t len2, float32_t *dst)
-{
+static inline void hpm_dsp_corr_f32(float32_t* src1,
+                                    uint32_t len1,
+                                    float32_t* src2,
+                                    uint32_t len2,
+                                    float32_t* dst) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_corr_f32(src1, len1, src2, len2, dst);
+#ifdef __zcc__
+  tpt_correlate_f32(dst, src1, len1, src2, len2);
+#else
+  riscv_dsp_corr_f32(src1, len1, src2, len2, dst);
+#endif
 #endif
 }
 
@@ -3279,10 +4164,17 @@ static inline void hpm_dsp_corr_f32(float32_t *src1, uint32_t len1, float32_t *s
  * 34.30 format. The 34.30 result is then truncated to 34.15 format by
  * discarding the low 15 bits and then saturated to 1.15 format.
  */
-static inline void hpm_dsp_corr_q15(q15_t *src1, uint32_t len1, q15_t *src2, uint32_t len2, q15_t *dst)
-{
+static inline void hpm_dsp_corr_q15(q15_t* src1,
+                                    uint32_t len1,
+                                    q15_t* src2,
+                                    uint32_t len2,
+                                    q15_t* dst) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_corr_q15(src1, len1, src2, len2, dst);
+#ifdef __zcc__
+  tpt_correlate_q15(dst, src1, len1, src2, len2);
+#else
+  riscv_dsp_corr_q15(src1, len1, src2, len2, dst);
+#endif
 #endif
 }
 
@@ -3305,10 +4197,17 @@ static inline void hpm_dsp_corr_q15(q15_t *src1, uint32_t len1, q15_t *src2, uin
  * carried internally. The 2.62 accumulator is right shifted by 31 bits and
  * saturated to 1.31 forma t to yield the final result.
  */
-static inline void hpm_dsp_corr_q31(q31_t *src1, uint32_t len1, q31_t *src2, uint32_t len2, q31_t *dst)
-{
+static inline void hpm_dsp_corr_q31(q31_t* src1,
+                                    uint32_t len1,
+                                    q31_t* src2,
+                                    uint32_t len2,
+                                    q31_t* dst) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_corr_q31(src1, len1, src2, len2, dst);
+#ifdef __zcc__
+  tpt_correlate_q31(dst, src1, len1, src2, len2);
+#else
+  riscv_dsp_corr_q31(src1, len1, src2, len2, dst);
+#endif
 #endif
 }
 
@@ -3327,95 +4226,134 @@ static inline void hpm_dsp_corr_q31(q31_t *src1, uint32_t len1, q31_t *src2, uin
  * 18.14 format. The 18.14 result is then truncated to 18.7 format by
  * discarding the low 7 bits and then saturated to 1.7 format.
  */
-static inline void hpm_dsp_corr_q7(q7_t *src1, uint32_t len1, q7_t *src2, uint32_t len2, q7_t *dst)
-{
+static inline void hpm_dsp_corr_q7(q7_t* src1,
+                                   uint32_t len1,
+                                   q7_t* src2,
+                                   uint32_t len2,
+                                   q7_t* dst) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_corr_q7(src1, len1, src2, len2, dst);
+#ifdef __zcc__
+  tpt_correlate_q7(dst, src1, len1, src2, len2);
+#else
+  riscv_dsp_corr_q7(src1, len1, src2, len2, dst);
+#endif
 #endif
 }
-static inline void hpm_dsp_bq_df1_f32(const riscv_dsp_bq_df1_f32_t *instance, float32_t *src, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_bq_df1_f32(const riscv_dsp_bq_df1_f32_t* instance,
+                                      float32_t* src,
+                                      float32_t* dst,
+                                      uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_bq_df1_f32(instance, src, dst, size);
+  riscv_dsp_bq_df1_f32(instance, src, dst, size);
 #endif
 }
-static inline void hpm_dsp_bq_df1_q15(const riscv_dsp_bq_df1_q15_t *instance, q15_t *src, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_bq_df1_q15(const riscv_dsp_bq_df1_q15_t* instance,
+                                      q15_t* src,
+                                      q15_t* dst,
+                                      uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_bq_df1_q15(instance, src, dst, size);
+  riscv_dsp_bq_df1_q15(instance, src, dst, size);
 #endif
 }
-static inline void hpm_dsp_bq_df1_fast_q15(const riscv_dsp_bq_df1_q15_t *instance, q15_t *src, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_bq_df1_fast_q15(
+    const riscv_dsp_bq_df1_q15_t* instance,
+    q15_t* src,
+    q15_t* dst,
+    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_bq_df1_fast_q15(instance, src, dst, size);
+  riscv_dsp_bq_df1_fast_q15(instance, src, dst, size);
 #endif
 }
-static inline void hpm_dsp_bq_df1_q31(const riscv_dsp_bq_df1_q31_t *instance, q31_t *src, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_bq_df1_q31(const riscv_dsp_bq_df1_q31_t* instance,
+                                      q31_t* src,
+                                      q31_t* dst,
+                                      uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_bq_df1_q31(instance, src, dst, size);
+  riscv_dsp_bq_df1_q31(instance, src, dst, size);
 #endif
 }
-static inline void hpm_dsp_bq_df1_fast_q31(const riscv_dsp_bq_df1_q31_t *instance, q31_t *src, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_bq_df1_fast_q31(
+    const riscv_dsp_bq_df1_q31_t* instance,
+    q31_t* src,
+    q31_t* dst,
+    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_bq_df1_fast_q31(instance, src, dst, size);
+  riscv_dsp_bq_df1_fast_q31(instance, src, dst, size);
 #endif
 }
-static inline void hpm_dsp_bq_df1_32x64_q31(const riscv_dsp_bq_df1_32x64_q31_t *instance, q31_t *src, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_bq_df1_32x64_q31(
+    const riscv_dsp_bq_df1_32x64_q31_t* instance,
+    q31_t* src,
+    q31_t* dst,
+    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_bq_df1_32x64_q31(instance, src, dst, size);
+  riscv_dsp_bq_df1_32x64_q31(instance, src, dst, size);
 #endif
 }
-static inline void hpm_dsp_bq_df2T_f32(const riscv_dsp_bq_df2T_f32_t *instance, float32_t *src, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_bq_df2T_f32(const riscv_dsp_bq_df2T_f32_t* instance,
+                                       float32_t* src,
+                                       float32_t* dst,
+                                       uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_bq_df2T_f32(instance, src, dst, size);
+  riscv_dsp_bq_df2T_f32(instance, src, dst, size);
 #endif
 }
-static inline void hpm_dsp_bq_df2T_f64(const riscv_dsp_bq_df2T_f64_t *instance, float64_t *src, float64_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_bq_df2T_f64(const riscv_dsp_bq_df2T_f64_t* instance,
+                                       float64_t* src,
+                                       float64_t* dst,
+                                       uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_bq_df2T_f64(instance, src, dst, size);
+  riscv_dsp_bq_df2T_f64(instance, src, dst, size);
 #endif
 }
-static inline void hpm_dsp_bq_stereo_df2T_f32(const riscv_dsp_bq_stereo_df2T_f32_t *instance, float32_t *src, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_bq_stereo_df2T_f32(
+    const riscv_dsp_bq_stereo_df2T_f32_t* instance,
+    float32_t* src,
+    float32_t* dst,
+    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_bq_stereo_df2T_f32(instance, src, dst, size);
+  riscv_dsp_bq_stereo_df2T_f32(instance, src, dst, size);
 #endif
 }
 
-static inline void hpm_dsp_liir_f32(const riscv_dsp_liir_f32_t *instance, float32_t *src, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_liir_f32(const riscv_dsp_liir_f32_t* instance,
+                                    float32_t* src,
+                                    float32_t* dst,
+                                    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_liir_f32(instance, src, dst, size);
+  riscv_dsp_liir_f32(instance, src, dst, size);
 #endif
 }
-static inline void hpm_dsp_liir_q31(const riscv_dsp_liir_q31_t *instance, q31_t *src, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_liir_q31(const riscv_dsp_liir_q31_t* instance,
+                                    q31_t* src,
+                                    q31_t* dst,
+                                    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_liir_q31(instance, src, dst, size);
+  riscv_dsp_liir_q31(instance, src, dst, size);
 #endif
 }
-static inline void hpm_dsp_liir_fast_q31(const riscv_dsp_liir_q31_t *instance, q31_t *src, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_liir_fast_q31(const riscv_dsp_liir_q31_t* instance,
+                                         q31_t* src,
+                                         q31_t* dst,
+                                         uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_liir_fast_q31(instance, src, dst, size);
+  riscv_dsp_liir_fast_q31(instance, src, dst, size);
 #endif
 }
-static inline void hpm_dsp_liir_q15(const riscv_dsp_liir_q15_t *instance, q15_t *src, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_liir_q15(const riscv_dsp_liir_q15_t* instance,
+                                    q15_t* src,
+                                    q15_t* dst,
+                                    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_liir_q15(instance, src, dst, size);
+  riscv_dsp_liir_q15(instance, src, dst, size);
 #endif
 }
-static inline void hpm_dsp_liir_fast_q15(const riscv_dsp_liir_q15_t *instance, q15_t *src, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_liir_fast_q15(const riscv_dsp_liir_q15_t* instance,
+                                         q15_t* src,
+                                         q15_t* dst,
+                                         uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_liir_fast_q15(instance, src, dst, size);
+  riscv_dsp_liir_fast_q15(instance, src, dst, size);
 #endif
 }
 #endif
@@ -3452,6 +4390,9 @@ static inline void hpm_dsp_liir_fast_q15(const riscv_dsp_liir_q15_t *instance, q
  * @{
  */
 #ifdef HPM_EN_MATH_DSP_LIB
+#ifdef __zcc__
+#include "tpt_math.h"
+#endif
 #include "riscv_dsp_matrix_math.h"
 
 // Matrix Addition
@@ -3463,10 +4404,17 @@ static inline void hpm_dsp_liir_fast_q15(const riscv_dsp_liir_q15_t *instance, q
  * @param[in]       row   number of the matrix rows.
  * @param[in]       col   number of the matrix columns.
  */
-static inline void hpm_dsp_mat_add_f32(const float32_t *src1, const float32_t *src2, float32_t *dst, uint32_t row, uint32_t col)
-{
+static inline void hpm_dsp_mat_add_f32(const float32_t* src1,
+                                       const float32_t* src2,
+                                       float32_t* dst,
+                                       uint32_t row,
+                                       uint32_t col) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_add_f32(src1, src2, dst, row, col);
+#ifdef __zcc__
+  tpt_mat_add_f32(dst, src1, src2, row, col);
+#else
+  riscv_dsp_mat_add_f32(src1, src2, dst, row, col);
+#endif
 #endif
 }
 
@@ -3480,10 +4428,17 @@ static inline void hpm_dsp_mat_add_f32(const float32_t *src1, const float32_t *s
  *
  * The output results will be saturated in Q15 range [0x8000 0x7FFF].
  */
-static inline void hpm_dsp_mat_add_q15(const q15_t *src1, const q15_t *src2, q15_t *dst, uint32_t row, uint32_t col)
-{
+static inline void hpm_dsp_mat_add_q15(const q15_t* src1,
+                                       const q15_t* src2,
+                                       q15_t* dst,
+                                       uint32_t row,
+                                       uint32_t col) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_add_q15(src1, src2, dst, row, col);
+#ifdef __zcc__
+  tpt_mat_add_q15(dst, src1, src2, row, col);
+#else
+  riscv_dsp_mat_add_q15(src1, src2, dst, row, col);
+#endif
 #endif
 }
 
@@ -3497,10 +4452,17 @@ static inline void hpm_dsp_mat_add_q15(const q15_t *src1, const q15_t *src2, q15
  *
  * Ouput results will be saturated in Q31 range [0x80000000 0x7FFFFFFF].
  */
-static inline void hpm_dsp_mat_add_q31(const q31_t *src1, const q31_t *src2, q31_t *dst, uint32_t row, uint32_t col)
-{
+static inline void hpm_dsp_mat_add_q31(const q31_t* src1,
+                                       const q31_t* src2,
+                                       q31_t* dst,
+                                       uint32_t row,
+                                       uint32_t col) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_add_q31(src1, src2, dst, row, col);
+#ifdef __zcc__
+  tpt_mat_add_q31(dst, src1, src2, row, col);
+#else
+  riscv_dsp_mat_add_q31(src1, src2, dst, row, col);
+#endif
 #endif
 }
 
@@ -3512,16 +4474,26 @@ static inline void hpm_dsp_mat_add_q31(const q31_t *src1, const q31_t *src2, q31
  * @param[in]       size  number of the matrix row or column.
  * @return the inverse process success or not.
  */
-static inline int32_t hpm_dsp_mat_inv_f32(float32_t *src, float32_t *dst, uint32_t size)
-{
+static inline int32_t hpm_dsp_mat_inv_f32(float32_t* src,
+                                          float32_t* dst,
+                                          uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_mat_inv_f32(src, dst, size);
+#ifdef __zcc__
+  return tpt_mat_inverse_f32(dst, src, size);
+#else
+  return riscv_dsp_mat_inv_f32(src, dst, size);
+#endif
 #endif
 }
-static inline int32_t hpm_dsp_mat_inv_f64(float64_t *src, float64_t *dst, uint32_t size)
-{
+static inline int32_t hpm_dsp_mat_inv_f64(float64_t* src,
+                                          float64_t* dst,
+                                          uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_mat_inv_f64(src, dst, size);
+#ifdef __zcc__
+  return tpt_mat_inverse_f64(dst, src, size);
+#else
+  return riscv_dsp_mat_inv_f64(src, dst, size);
+#endif
 #endif
 }
 
@@ -3535,17 +4507,33 @@ static inline int32_t hpm_dsp_mat_inv_f64(float64_t *src, float64_t *dst, uint32
  * @param[in]       col   number of the first input matrix columns.
  * @param[in]       col2  number of the second input matrix columns.
  */
-static inline void hpm_dsp_mat_mul_f32(const float32_t *src1, const float32_t *src2, float32_t *dst, uint32_t row, uint32_t col, uint32_t col2)
-{
+static inline void hpm_dsp_mat_mul_f32(const float32_t* src1,
+                                       const float32_t* src2,
+                                       float32_t* dst,
+                                       uint32_t row,
+                                       uint32_t col,
+                                       uint32_t col2) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_mul_f32(src1, src2, dst, row, col, col2);
+#ifdef __zcc__
+  return tpt_mat_mult_f32(dst, src1, src2, row, col, col2);
+#else
+  riscv_dsp_mat_mul_f32(src1, src2, dst, row, col, col2);
+#endif
 #endif
 }
 
-static inline void hpm_dsp_mat_mul_f64(const float64_t *src1, const float64_t *src2, float64_t *dst, uint32_t row, uint32_t col, uint32_t col2)
-{
+static inline void hpm_dsp_mat_mul_f64(const float64_t* src1,
+                                       const float64_t* src2,
+                                       float64_t* dst,
+                                       uint32_t row,
+                                       uint32_t col,
+                                       uint32_t col2) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_mul_f64(src1, src2, dst, row, col, col2);
+#ifdef __zcc__
+  return tpt_mat_mult_f64(dst, src1, src2, row, col, col2);
+#else
+  riscv_dsp_mat_mul_f64(src1, src2, dst, row, col, col2);
+#endif
 #endif
 }
 
@@ -3558,10 +4546,18 @@ static inline void hpm_dsp_mat_mul_f64(const float64_t *src1, const float64_t *s
  * @param[in]       col   number of the first input matrix columns.
  * @param[in]       col2  number of the second input matrix columns.
  */
-static inline void hpm_dsp_cmat_mul_f32(const float32_t *src1, const float32_t *src2, float32_t *dst, uint32_t row, uint32_t col, uint32_t col2)
-{
+static inline void hpm_dsp_cmat_mul_f32(const float32_t* src1,
+                                        const float32_t* src2,
+                                        float32_t* dst,
+                                        uint32_t row,
+                                        uint32_t col,
+                                        uint32_t col2) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cmat_mul_f32(src1, src2, dst, row, col, col2);
+#ifdef __zcc__
+  return tpt_mat_cmplx_mult_f32(dst, src1, src2, row, col, col2);
+#else
+  riscv_dsp_cmat_mul_f32(src1, src2, dst, row, col, col2);
+#endif
 #endif
 }
 
@@ -3581,16 +4577,32 @@ static inline void hpm_dsp_cmat_mul_f32(const float32_t *src1, const float32_t *
  * the added output is truncated to 34.15 format by discarding the lower 15
  * bits, and then saturated to yield a result in 1.15 format.
  */
-static inline void hpm_dsp_mat_mul_q15(const q15_t *src1, const q15_t *src2, q15_t *dst, uint32_t row, uint32_t col, uint32_t col2)
-{
+static inline void hpm_dsp_mat_mul_q15(const q15_t* src1,
+                                       const q15_t* src2,
+                                       q15_t* dst,
+                                       uint32_t row,
+                                       uint32_t col,
+                                       uint32_t col2) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_mul_q15(src1, src2, dst, row, col, col2);
+#ifdef __zcc__
+  return tpt_mat_mult_q15(dst, src1, src2, row, col, col2);
+#else
+  riscv_dsp_mat_mul_q15(src1, src2, dst, row, col, col2);
+#endif
 #endif
 }
-static inline void hpm_dsp_mat_mul_fast_q15(const q15_t *src1, const q15_t *src2, q15_t *dst, uint32_t row, uint32_t col, uint32_t col2)
-{
+static inline void hpm_dsp_mat_mul_fast_q15(const q15_t* src1,
+                                            const q15_t* src2,
+                                            q15_t* dst,
+                                            uint32_t row,
+                                            uint32_t col,
+                                            uint32_t col2) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_mul_fast_q15(src1, src2, dst, row, col, col2);
+#ifdef __zcc__
+  return tpt_mat_mult_q15(dst, src1, src2, row, col, col2);
+#else
+  riscv_dsp_mat_mul_fast_q15(src1, src2, dst, row, col, col2);
+#endif
 #endif
 }
 
@@ -3610,10 +4622,18 @@ static inline void hpm_dsp_mat_mul_fast_q15(const q15_t *src1, const q15_t *src2
  * the added output is truncated to 34.15 format by discarding the lower 15
  * bits, and then saturated to yield a result in 1.15 format.
  */
-static inline void hpm_dsp_cmat_mul_q15(const q15_t *src1, const q15_t *src2, q15_t *dst, uint32_t row, uint32_t col, uint32_t col2)
-{
+static inline void hpm_dsp_cmat_mul_q15(const q15_t* src1,
+                                        const q15_t* src2,
+                                        q15_t* dst,
+                                        uint32_t row,
+                                        uint32_t col,
+                                        uint32_t col2) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cmat_mul_q15(src1, src2, dst, row, col, col2);
+#ifdef __zcc__
+  return tpt_mat_cmplx_mult_q15(dst, src1, src2, row, col, col2);
+#else
+  riscv_dsp_cmat_mul_q15(src1, src2, dst, row, col, col2);
+#endif
 #endif
 }
 
@@ -3633,16 +4653,32 @@ static inline void hpm_dsp_cmat_mul_q15(const q15_t *src1, const q15_t *src2, q1
  * <code>log2(col)</code> bits, Finally, the 2.62 accumulator is right
  * shifted by 31 bits to yield a 1.31 format value.
  */
-static inline void hpm_dsp_mat_mul_q31(const q31_t *src1, const q31_t *src2, q31_t *dst, uint32_t row, uint32_t col, uint32_t col2)
-{
+static inline void hpm_dsp_mat_mul_q31(const q31_t* src1,
+                                       const q31_t* src2,
+                                       q31_t* dst,
+                                       uint32_t row,
+                                       uint32_t col,
+                                       uint32_t col2) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_mul_q31(src1, src2, dst, row, col, col2);
+#ifdef __zcc__
+  return tpt_mat_mult_q31(dst, src1, src2, row, col, col2);
+#else
+  riscv_dsp_mat_mul_q31(src1, src2, dst, row, col, col2);
+#endif
 #endif
 }
-static inline void hpm_dsp_mat_mul_fast_q31(const q31_t *src1, const q31_t *src2, q31_t *dst, uint32_t row, uint32_t col, uint32_t col2)
-{
+static inline void hpm_dsp_mat_mul_fast_q31(const q31_t* src1,
+                                            const q31_t* src2,
+                                            q31_t* dst,
+                                            uint32_t row,
+                                            uint32_t col,
+                                            uint32_t col2) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_mul_fast_q31(src1, src2, dst, row, col, col2);
+#ifdef __zcc__
+  return tpt_mat_mult_q31(dst, src1, src2, row, col, col2);
+#else
+  riscv_dsp_mat_mul_fast_q31(src1, src2, dst, row, col, col2);
+#endif
 #endif
 }
 
@@ -3662,10 +4698,18 @@ static inline void hpm_dsp_mat_mul_fast_q31(const q31_t *src1, const q31_t *src2
  * <code>log2(col)</code> bits, Finally, the 2.62 accumulator is right
  * shifted by 31 bits to yield a 1.31 format value.
  */
-static inline void hpm_dsp_cmat_mul_q31(const q31_t *src1, const q31_t *src2, q31_t *dst, uint32_t row, uint32_t col, uint32_t col2)
-{
+static inline void hpm_dsp_cmat_mul_q31(const q31_t* src1,
+                                        const q31_t* src2,
+                                        q31_t* dst,
+                                        uint32_t row,
+                                        uint32_t col,
+                                        uint32_t col2) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cmat_mul_q31(src1, src2, dst, row, col, col2);
+#ifdef __zcc__
+  return tpt_mat_cmplx_mult_q31(dst, src1, src2, row, col, col2);
+#else
+  riscv_dsp_cmat_mul_q31(src1, src2, dst, row, col, col2);
+#endif
 #endif
 }
 
@@ -3685,10 +4729,14 @@ static inline void hpm_dsp_cmat_mul_q31(const q31_t *src1, const q31_t *src2, q3
  * the added output is truncated to 17.7 format by discarding the lower 7
  * bits, and then saturated to yield a result in 1.7 format.
  */
-static inline void hpm_dsp_mat_mul_q7(const q7_t *src1, const q7_t *src2, q7_t *dst, uint32_t row, uint32_t col, uint32_t col2)
-{
+static inline void hpm_dsp_mat_mul_q7(const q7_t* src1,
+                                      const q7_t* src2,
+                                      q7_t* dst,
+                                      uint32_t row,
+                                      uint32_t col,
+                                      uint32_t col2) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_mul_q7(src1, src2, dst, row, col, col2);
+  riscv_dsp_mat_mul_q7(src1, src2, dst, row, col, col2);
 #endif
 }
 
@@ -3707,20 +4755,28 @@ static inline void hpm_dsp_mat_mul_q7(const q7_t *src1, const q7_t *src2, q7_t *
  * the added output is truncated to 17.7 format by discarding the lower 7
  * bits, and then saturated to yield a result in 1.7 format.
  */
-static inline void hpm_dsp_mat_mul_vxm_q7(const q7_t * src1, const q7_t * src2, q7_t * dst, uint32_t col, uint32_t col2)
-{
+static inline void hpm_dsp_mat_mul_vxm_q7(const q7_t* src1,
+                                          const q7_t* src2,
+                                          q7_t* dst,
+                                          uint32_t col,
+                                          uint32_t col2) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_mul_vxm_q7(src1, src2, dst, col, col2);
+#ifdef __zcc__
+  tpt_mat_mul_mxv_q7(dst, src1, src2, col, col2);
+#else
+  riscv_dsp_mat_mul_vxm_q7(src1, src2, dst, col, col2);
+#endif
 #endif
 }
 
 // Matrix Power 2 Function
 //
 // The input is a square matrix for riscv_dsp_mat_pow2_cache_f64.
-static inline int32_t hpm_dsp_mat_pwr2_cache_f64(const float64_t *src, float64_t *dst, uint32_t size)
-{
+static inline int32_t hpm_dsp_mat_pwr2_cache_f64(const float64_t* src,
+                                                 float64_t* dst,
+                                                 uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_mat_pwr2_cache_f64(src, dst, size);
+  return riscv_dsp_mat_pwr2_cache_f64(src, dst, size);
 #endif
 }
 
@@ -3733,10 +4789,17 @@ static inline int32_t hpm_dsp_mat_pwr2_cache_f64(const float64_t *src, float64_t
  * @param[in]       row   number of the matrix rows.
  * @param[in]       col   number of the matrix columns.
  */
-static inline void hpm_dsp_mat_scale_f32(const float32_t *src, float32_t scale, float32_t *dst, uint32_t row, uint32_t col)
-{
+static inline void hpm_dsp_mat_scale_f32(const float32_t* src,
+                                         float32_t scale,
+                                         float32_t* dst,
+                                         uint32_t row,
+                                         uint32_t col) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_scale_f32(src, scale, dst, row, col);
+#ifdef __zcc__
+  tpt_mat_scale_f32(dst, src, row, col, scale);
+#else
+  riscv_dsp_mat_scale_f32(src, scale, dst, row, col);
+#endif
 #endif
 }
 
@@ -3754,10 +4817,18 @@ static inline void hpm_dsp_mat_scale_f32(const float32_t *src, float32_t scale, 
  * The 1.15 format inputs are multiplied to yield a 2.30 intermediate result
  * and this is shifted with saturation to 1.15 format.
  */
-static inline void hpm_dsp_mat_scale_q15(const q15_t *src, q15_t scale_fract, int32_t shift, q15_t *dst, uint32_t row, uint32_t col)
-{
+static inline void hpm_dsp_mat_scale_q15(const q15_t* src,
+                                         q15_t scale_fract,
+                                         int32_t shift,
+                                         q15_t* dst,
+                                         uint32_t row,
+                                         uint32_t col) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_scale_q15(src, scale_fract, shift, dst, row, col);
+#ifdef __zcc__
+  tpt_mat_scale_q15(dst, src, row, col, scale_fract, shift);
+#else
+  riscv_dsp_mat_scale_q15(src, scale_fract, shift, dst, row, col);
+#endif
 #endif
 }
 
@@ -3775,10 +4846,18 @@ static inline void hpm_dsp_mat_scale_q15(const q15_t *src, q15_t scale_fract, in
  * The 1.31 format input are multiplied to yield a 2.62 intermediate result
  * and this is shifted with saturation to 1.31 format.
  */
-static inline void hpm_dsp_mat_scale_q31(const q31_t *src, q31_t scale_fract, int32_t shift, q31_t *dst, uint32_t row, uint32_t col)
-{
+static inline void hpm_dsp_mat_scale_q31(const q31_t* src,
+                                         q31_t scale_fract,
+                                         int32_t shift,
+                                         q31_t* dst,
+                                         uint32_t row,
+                                         uint32_t col) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_scale_q31(src, scale_fract, shift, dst, row, col);
+#ifdef __zcc__
+  tpt_mat_scale_q31(dst, src, row, col, scale_fract, shift);
+#else
+  riscv_dsp_mat_scale_q31(src, scale_fract, shift, dst, row, col);
+#endif
 #endif
 }
 
@@ -3793,11 +4872,17 @@ static inline void hpm_dsp_mat_scale_q31(const q31_t *src, q31_t scale_fract, in
  * @param[in] col number of columns in a matrix
  *
  */
-static inline void hpm_dsp_mat_sub_f64(const float64_t *src1, const float64_t *src2,
-                       float64_t *dst, uint32_t row, uint32_t col)
-{
+static inline void hpm_dsp_mat_sub_f64(const float64_t* src1,
+                                       const float64_t* src2,
+                                       float64_t* dst,
+                                       uint32_t row,
+                                       uint32_t col) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_sub_f64(src1, src2, dst, row, col);
+#ifdef __zcc__
+  tpt_mat_sub_f64(dst, src1, src2, row, col);
+#else
+  riscv_dsp_mat_sub_f64(src1, src2, dst, row, col);
+#endif
 #endif
 }
 
@@ -3809,10 +4894,17 @@ static inline void hpm_dsp_mat_sub_f64(const float64_t *src1, const float64_t *s
  * @param[in]       row   number of the matrix rows.
  * @param[in]       col   number of the matrix columns.
  */
-static inline void hpm_dsp_mat_sub_f32(const float32_t *src1, const float32_t *src2, float32_t *dst, uint32_t row, uint32_t col)
-{
+static inline void hpm_dsp_mat_sub_f32(const float32_t* src1,
+                                       const float32_t* src2,
+                                       float32_t* dst,
+                                       uint32_t row,
+                                       uint32_t col) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_sub_f32(src1, src2, dst, row, col);
+#ifdef __zcc__
+  tpt_mat_sub_f32(dst, src1, src2, row, col);
+#else
+  riscv_dsp_mat_sub_f32(src1, src2, dst, row, col);
+#endif
 #endif
 }
 
@@ -3826,10 +4918,17 @@ static inline void hpm_dsp_mat_sub_f32(const float32_t *src1, const float32_t *s
  *
  * The output results will be saturated in Q15 range [0x8000 0x7FFF].
  */
-static inline void hpm_dsp_mat_sub_q15(const q15_t *src1, const q15_t *src2, q15_t *dst, uint32_t row, uint32_t col)
-{
+static inline void hpm_dsp_mat_sub_q15(const q15_t* src1,
+                                       const q15_t* src2,
+                                       q15_t* dst,
+                                       uint32_t row,
+                                       uint32_t col) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_sub_q15(src1, src2, dst, row, col);
+#ifdef __zcc__
+  tpt_mat_sub_q15(dst, src1, src2, row, col);
+#else
+  riscv_dsp_mat_sub_q15(src1, src2, dst, row, col);
+#endif
 #endif
 }
 
@@ -3843,10 +4942,17 @@ static inline void hpm_dsp_mat_sub_q15(const q15_t *src1, const q15_t *src2, q15
  *
  * Ouput results will be saturated in Q31 range [0x80000000 0x7FFFFFFF].
  */
-static inline void hpm_dsp_mat_sub_q31(const q31_t *src1, const q31_t *src2, q31_t *dst, uint32_t row, uint32_t col)
-{
+static inline void hpm_dsp_mat_sub_q31(const q31_t* src1,
+                                       const q31_t* src2,
+                                       q31_t* dst,
+                                       uint32_t row,
+                                       uint32_t col) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_sub_q31(src1, src2, dst, row, col);
+#ifdef __zcc__
+  tpt_mat_sub_q31(dst, src1, src2, row, col);
+#else
+  riscv_dsp_mat_sub_q31(src1, src2, dst, row, col);
+#endif
 #endif
 }
 
@@ -3860,25 +4966,37 @@ static inline void hpm_dsp_mat_sub_q31(const q31_t *src1, const q31_t *src2, q31
  * @param[in]       col   number of columns in a matrix
  *
  */
-static inline void hpm_dsp_mat_trans_f64(const float64_t *src, float64_t *dst, uint32_t row, uint32_t col)
-{
+static inline void hpm_dsp_mat_trans_f64(const float64_t* src,
+                                         float64_t* dst,
+                                         uint32_t row,
+                                         uint32_t col) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_trans_f64(src, dst, row, col);
+#ifdef __zcc__
+  tpt_mat_trans_f64(dst, src, row, col);
+#else
+  riscv_dsp_mat_trans_f64(src, dst, row, col);
+#endif
+#endif
+    }
+
+    /**
+     * @brief Transpose the floating-potint matricex.
+     * @param[in]       *src  points to the input matrix.
+     * @param[out]      *dst  points to the output matrix.
+     * @param[in]       row   number of the matrix rows.
+     * @param[in]       col   number of the matrix columns.
+     */
+    static inline void hpm_dsp_mat_trans_f32(const float32_t *src, float32_t *dst, uint32_t row, uint32_t col)
+    {
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+        riscv_dsp_mat_trans_f32(src, dst, row, col);
 #endif
 }
 
 /**
  * @brief Transpose the floating-potint matricex.
  * @param[in]       *src  points to the input matrix.
- * @param[out]      *dst  points to the output matrix.
- * @param[in]       row   number of the matrix rows.
- * @param[in]       col   number of the matrix columns.
- */
-static inline void hpm_dsp_mat_trans_f32(const float32_t *src, float32_t *dst, uint32_t row, uint32_t col)
-{
-#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_trans_f32(src, dst, row, col);
-#endif
+ * @param[out]      *dst_
 }
 
 /**
@@ -3888,10 +5006,16 @@ static inline void hpm_dsp_mat_trans_f32(const float32_t *src, float32_t *dst, u
  * @param[in]       row   number of the matrix rows.
  * @param[in]       col   number of the matrix columns.
  */
-static inline void hpm_dsp_mat_trans_q15(const q15_t *src, q15_t *dst, uint32_t row, uint32_t col)
-{
+static inline void hpm_dsp_mat_trans_q15(const q15_t* src,
+                                         q15_t* dst,
+                                         uint32_t row,
+                                         uint32_t col) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_trans_q15(src, dst, row, col);
+#ifdef __zcc__
+  tpt_mat_trans_q15(dst, src, row, col);
+#else
+  riscv_dsp_mat_trans_q15(src, dst, row, col);
+#endif
 #endif
 }
 
@@ -3902,10 +5026,16 @@ static inline void hpm_dsp_mat_trans_q15(const q15_t *src, q15_t *dst, uint32_t 
  * @param[in]       row   number of the matrix rows.
  * @param[in]       col   number of the matrix columns.
  */
-static inline void hpm_dsp_mat_trans_q31(const q31_t *src, q31_t *dst, uint32_t row, uint32_t col)
-{
+static inline void hpm_dsp_mat_trans_q31(const q31_t* src,
+                                         q31_t* dst,
+                                         uint32_t row,
+                                         uint32_t col) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_trans_q31(src, dst, row, col);
+#ifdef __zcc__
+  tpt_mat_trans_q31(dst, src, row, col);
+#else
+  riscv_dsp_mat_trans_q31(src, dst, row, col);
+#endif
 #endif
 }
 
@@ -3916,10 +5046,12 @@ static inline void hpm_dsp_mat_trans_q31(const q31_t *src, q31_t *dst, uint32_t 
  * @param[in]       row   number of the matrix rows.
  * @param[in]       col   number of the matrix columns.
  */
-static inline void hpm_dsp_mat_trans_u8(const uint8_t *src, uint8_t *dst, uint32_t row, uint32_t col)
-{
+static inline void hpm_dsp_mat_trans_u8(const uint8_t* src,
+                                        uint8_t* dst,
+                                        uint32_t row,
+                                        uint32_t col) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_trans_u8(src, dst, row, col);
+  riscv_dsp_mat_trans_u8(src, dst, row, col);
 #endif
 }
 
@@ -3931,32 +5063,39 @@ static inline void hpm_dsp_mat_trans_u8(const uint8_t *src, uint8_t *dst, uint32
  * @param[in]       col   number of columns in a matrix
  *
  */
-static inline void hpm_dsp_mat_trans_q7(const q7_t *src, q7_t *dst, uint32_t row, uint32_t col)
-{
+static inline void hpm_dsp_mat_trans_q7(const q7_t* src,
+                                        q7_t* dst,
+                                        uint32_t row,
+                                        uint32_t col) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_trans_q7(src, dst, row, col);
+  riscv_dsp_mat_trans_q7(src, dst, row, col);
 #endif
 }
 
 /**
  * @brief Outer production of two q31 matrices.
- * @param[in]       src1 pointer of the first input matrix with a size of size1*1
- * @param[in]       src2 pointer of the second input matrix with a size of 1*size2
- * @param[out]      dst  pointer of the output matrix with a size of size1 * size2
+ * @param[in]       src1 pointer of the first input matrix with a size of
+ * size1*1
+ * @param[in]       src2 pointer of the second input matrix with a size of
+ * 1*size2
+ * @param[out]      dst  pointer of the output matrix with a size of size1 *
+ * size2
  * @param[in]       size1 number of rows in the first input matrix.
  * @param[in]       size2 number of columns in the second input matrix.
  *
  *
  * @b Note:
  *
- * This function multiplies a one-column matrix with size1 rows, src1[size1, 1], with a
- * one-row matrix with size2 columns, src2[1, size2], and stores the result into a matrix
- * with size1 rows and size2 columns, dst[size1, size2]. It achieves better efficiency for
- * vector-wise matrix multiplication than for regular matrix multiplication.
+ * This function multiplies a one-column matrix with size1 rows, src1[size1, 1],
+ * with a one-row matrix with size2 columns, src2[1, size2], and stores the
+ * result into a matrix with size1 rows and size2 columns, dst[size1, size2]. It
+ * achieves better efficiency for vector-wise matrix multiplication than for
+ * regular matrix multiplication.
  *
  * @b Example
  *     <pre>
- * The following equation shows the outer product of two matrices and its result.
+ * The following equation shows the outer product of two matrices and its
+ * result.
  *
  *
  * Its code example is as follows:
@@ -3969,11 +5108,17 @@ static inline void hpm_dsp_mat_trans_q7(const q7_t *src, q7_t *dst, uint32_t row
  *      hpm_dsp_mat_oprod_q31 (src1, src2, dst, Arow, Bcol);
  *     </pre>
  */
-static inline void hpm_dsp_mat_oprod_q31(const q31_t * src1, const q31_t * src2,
-                       q31_t * dst, uint32_t size1, uint32_t size2)
-{
+static inline void hpm_dsp_mat_oprod_q31(const q31_t* src1,
+                                         const q31_t* src2,
+                                         q31_t* dst,
+                                         uint32_t size1,
+                                         uint32_t size2) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_oprod_q31(src1, src2, dst, size1, size2);
+#ifdef __zcc__
+  tpt_mat_oprod_q31(dst, src1, src2, size1, size2);
+#else
+  riscv_dsp_mat_oprod_q31(src1, src2, dst, size1, size2);
+#endif
 #endif
 }
 
@@ -3983,7 +5128,8 @@ static inline void hpm_dsp_mat_oprod_q31(const q31_t * src1, const q31_t * src2,
  * @param[in]   src2 pointer of the input vector
  * @param[out]  dst  pointer of the output vector
  * @param[in]   row  number of rows in the matrix
- * @param[in]   col  number of columns in the matrix and the elements size of vector
+ * @param[in]   col  number of columns in the matrix and the elements size of
+ * vector
  *
  *
  * @b Example
@@ -3996,14 +5142,21 @@ static inline void hpm_dsp_mat_oprod_q31(const q31_t * src1, const q31_t * src2,
  *     float32_t dst[Arow];
  *     hpm_dsp_mat_mul_mxv_f32 (src1, src2, dst, Arow, Acol);
  *
- * This example also serves as a reference for examples of Q31, Q15 or Q7 functions.
+ * This example also serves as a reference for examples of Q31, Q15 or Q7
+ * functions.
  *  </pre>
  */
-static inline void hpm_dsp_mat_mul_mxv_f32(const float32_t *src1, const float32_t *src2,
-                       float32_t *dst, uint32_t row, uint32_t col)
-{
+static inline void hpm_dsp_mat_mul_mxv_f32(const float32_t* src1,
+                                           const float32_t* src2,
+                                           float32_t* dst,
+                                           uint32_t row,
+                                           uint32_t col) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_mul_mxv_f32(src1, src2, dst, row, col);
+#ifdef __zcc__
+  tpt_mat_mul_mxv_f32(dst, src1, src2, row, col);
+#else
+  riscv_dsp_mat_mul_mxv_f32(src1, src2, dst, row, col);
+#endif
 #endif
 }
 /**
@@ -4012,14 +5165,21 @@ static inline void hpm_dsp_mat_mul_mxv_f32(const float32_t *src1, const float32_
  * @param[in]   src2 pointer of the input vector
  * @param[out]  dst  pointer of the output vector
  * @param[in]   row  number of rows in the matrix
- * @param[in]   col  number of columns in the matrix and the elements size of vector
+ * @param[in]   col  number of columns in the matrix and the elements size of
+ * vector
  *
  */
-static inline void hpm_dsp_mat_mul_mxv_q15(const q15_t *src1, const q15_t *src2,
-                       q15_t *dst, uint32_t row, uint32_t col)
-{
+static inline void hpm_dsp_mat_mul_mxv_q15(const q15_t* src1,
+                                           const q15_t* src2,
+                                           q15_t* dst,
+                                           uint32_t row,
+                                           uint32_t col) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_mul_mxv_q15(src1, src2, dst, row, col);
+#ifdef __zcc__
+  tpt_mat_mul_mxv_q15(dst, src1, src2, row, col);
+#else
+  riscv_dsp_mat_mul_mxv_q15(src1, src2, dst, row, col);
+#endif
 #endif
 }
 /**
@@ -4028,14 +5188,21 @@ static inline void hpm_dsp_mat_mul_mxv_q15(const q15_t *src1, const q15_t *src2,
  * @param[in]   src2 pointer of the input vector
  * @param[out]  dst  pointer of the output vector
  * @param[in]   row  number of rows in the matrix
- * @param[in]   col  number of columns in the matrix and the elements size of vector
+ * @param[in]   col  number of columns in the matrix and the elements size of
+ * vector
  *
  */
-static inline void hpm_dsp_mat_mul_mxv_q31(const q31_t *src1, const q31_t *src2,
-                       q31_t *dst, uint32_t row, uint32_t col)
-{
+static inline void hpm_dsp_mat_mul_mxv_q31(const q31_t* src1,
+                                           const q31_t* src2,
+                                           q31_t* dst,
+                                           uint32_t row,
+                                           uint32_t col) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_mul_mxv_q31(src1, src2, dst, row, col);
+#ifdef __zcc__
+  tpt_mat_mul_mxv_q31(dst, src1, src2, row, col);
+#else
+  riscv_dsp_mat_mul_mxv_q31(src1, src2, dst, row, col);
+#endif
 #endif
 }
 /**
@@ -4044,14 +5211,21 @@ static inline void hpm_dsp_mat_mul_mxv_q31(const q31_t *src1, const q31_t *src2,
  * @param[in]   src2 pointer of the input vector
  * @param[out]  dst  pointer of the output vector
  * @param[in]   row  number of rows in the matrix
- * @param[in]   col  number of columns in the matrix and the elements size of vector
+ * @param[in]   col  number of columns in the matrix and the elements size of
+ * vector
  *
  */
-static inline void hpm_dsp_mat_mul_mxv_q7(const q7_t *src1, const q7_t *src2,
-                       q7_t *dst, uint32_t row, uint32_t col)
-{
+static inline void hpm_dsp_mat_mul_mxv_q7(const q7_t* src1,
+                                          const q7_t* src2,
+                                          q7_t* dst,
+                                          uint32_t row,
+                                          uint32_t col) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_mat_mul_mxv_q7(src1, src2, dst, row, col);
+#ifdef __zcc__
+  tpt_mat_mul_mxv_q7(dst, src1, src2, row, col);
+#else
+  riscv_dsp_mat_mul_mxv_q7(src1, src2, dst, row, col);
+#endif
 #endif
 }
 
@@ -4072,60 +5246,75 @@ static inline void hpm_dsp_mat_mul_mxv_q7(const q7_t *src1, const q7_t *src2,
  */
 
 #ifdef HPM_EN_MATH_DSP_LIB
+#ifdef __zcc__
+#include "tpt_math.h"
+#endif
 #include "riscv_dsp_svm_math.h"
 /**
  * @brief SVM linear prediction
- * @param[in]    instance          Pointer to an instance of the linear SVM structure.
+ * @param[in]    instance          Pointer to an instance of the linear SVM
+ * structure.
  * @param[in]    src         Pointer to input vector
  * @param[out]   result    Decision value
  */
 
-static inline void hpm_dsp_svm_linear_est_f32(const riscv_dsp_svm_linear_f32_t *instance, const float32_t *src, int32_t *result)
-{
+static inline void hpm_dsp_svm_linear_est_f32(
+    const riscv_dsp_svm_linear_f32_t* instance,
+    const float32_t* src,
+    int32_t* result) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_svm_linear_est_f32(instance, src, result);
+  riscv_dsp_svm_linear_est_f32(instance, src, result);
 #endif
 }
 
 /**
  * @brief SVM Sigmoid prediction
- * @param[in]    instance          Pointer to an instance of the linear SVM structure.
+ * @param[in]    instance          Pointer to an instance of the linear SVM
+ * structure.
  * @param[in]    src         Pointer to input vector
  * @param[out]   result    Decision value
  */
 
-static inline void hpm_dsp_svm_sigmoid_est_f32(const riscv_dsp_svm_sigmoid_f32_t *instance, const float32_t *src, int32_t *result)
-{
+static inline void hpm_dsp_svm_sigmoid_est_f32(
+    const riscv_dsp_svm_sigmoid_f32_t* instance,
+    const float32_t* src,
+    int32_t* result) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_svm_sigmoid_est_f32(instance, src, result);
+  riscv_dsp_svm_sigmoid_est_f32(instance, src, result);
 #endif
 }
 
 /**
  * @brief SVM rbf prediction
- * @param[in]    instance          Pointer to an instance of the linear SVM structure.
+ * @param[in]    instance          Pointer to an instance of the linear SVM
+ * structure.
  * @param[in]    src         Pointer to input vector
  * @param[out]   result    Decision value
  */
 
-static inline void hpm_dsp_svm_rbf_est_f32(const riscv_dsp_svm_rbf_f32_t *instance, const float32_t *src, int32_t *result)
-{
+static inline void hpm_dsp_svm_rbf_est_f32(
+    const riscv_dsp_svm_rbf_f32_t* instance,
+    const float32_t* src,
+    int32_t* result) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_svm_rbf_est_f32(instance, src, result);
+  riscv_dsp_svm_rbf_est_f32(instance, src, result);
 #endif
 }
 
 /**
  * @brief SVM polynomial prediction
- * @param[in]    instance          Pointer to an instance of the linear SVM structure.
+ * @param[in]    instance          Pointer to an instance of the linear SVM
+ * structure.
  * @param[in]    src         Pointer to input vector
  * @param[out]   result    Decision value
  */
 
-static inline void hpm_dsp_svm_poly_est_f32(const riscv_dsp_svm_poly_f32_t *instance, const float32_t *src, int32_t *result)
-{
+static inline void hpm_dsp_svm_poly_est_f32(
+    const riscv_dsp_svm_poly_f32_t* instance,
+    const float32_t* src,
+    int32_t* result) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_svm_poly_est_f32(instance, src, result);
+  riscv_dsp_svm_poly_est_f32(instance, src, result);
 #endif
 }
 
@@ -4145,19 +5334,22 @@ static inline void hpm_dsp_svm_poly_est_f32(const riscv_dsp_svm_poly_f32_t *inst
  * @{
  */
 #ifdef HPM_EN_MATH_DSP_LIB
-
+#ifdef __zcc__
+#include "tpt_math.h"
+#endif
 #include "riscv_dsp_transform_math.h"
 /**
  * @brief cfft_rd2 of f32 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 13
  * @return 0 success; -1 failure
  *
  * @b Example
  *     <pre>
- * Given 128 samples (that is, FFT_LOGN = 7), the example of floating-point Radix-2 CFFT and
- * CIFFT is as follows:
+ * Given 128 samples (that is, FFT_LOGN = 7), the example of floating-point
+ * Radix-2 CFFT and CIFFT is as follows:
  *      \#define FFT_LOGN 7
  *      float32_t src[2* (1 << FFT_LOGN)] = {};
  *      int32_t ret;
@@ -4172,122 +5364,146 @@ static inline void hpm_dsp_svm_poly_est_f32(const riscv_dsp_svm_poly_f32_t *inst
  *      Else
  *           Fail
  *
- * This example also serves as a reference for examples of Q31 and Q15 Radix-2 CFFT and
- * CIFFT functions.
+ * This example also serves as a reference for examples of Q31 and Q15 Radix-2
+ * CFFT and CIFFT functions.
  *     </pre>
  */
-static inline int32_t hpm_dsp_cfft_rd2_f32(float32_t *src, uint32_t m)
-{
+static inline int32_t hpm_dsp_cfft_rd2_f32(float32_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_cfft_rd2_f32(src, m);
+#ifdef __zcc__
+  return tpt_cfft_f32(src, m, false);
+#else
+  return riscv_dsp_cfft_rd2_f32(src, m);
+#endif
 #endif
 }
 
 /**
  * @brief cifft_rd2 of f32 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 13
  * @return 0 success; -1 failure
  */
-static inline int32_t hpm_dsp_cifft_rd2_f32(float32_t *src, uint32_t m)
-{
+static inline int32_t hpm_dsp_cifft_rd2_f32(float32_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_cifft_rd2_f32(src, m);
+#ifdef __zcc__
+  return tpt_cfft_f32(src, m, true);
+#else
+  return riscv_dsp_cifft_rd2_f32(src, m);
+#endif
 #endif
 }
 
 /**
  * @brief cfft_rd2 of q15 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 13
  * @return 0 success; -1 failure
  *
  * @b Note:
  *
- * The input and output formats are listed below. To satisfy the input format corresponding to
- * your input size, you may need to perform an arithmetic shift operation before calling this
- * function.
+ * The input and output formats are listed below. To satisfy the input format
+ * corresponding to your input size, you may need to perform an arithmetic shift
+ * operation before calling this function.
  */
-static inline int32_t hpm_dsp_cfft_rd2_q15(q15_t *src, uint32_t m)
-{
+static inline int32_t hpm_dsp_cfft_rd2_q15(q15_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_cfft_rd2_q15(src, m);
+#ifdef __zcc__
+  return tpt_cfft_q15(src, m, false);
+#else
+  return riscv_dsp_cfft_rd2_q15(src, m);
+#endif
 #endif
 }
 
 /**
  * @brief cifft_rd2 of q15 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 13
  * @return 0 success; -1 failure
  *
  * @b Note:
  *
- * The input and output formats are listed below. To satisfy the input format corresponding to
- * your input size, you may need to perform an arithmetic shift operation before calling this
- * function.
+ * The input and output formats are listed below. To satisfy the input format
+ * corresponding to your input size, you may need to perform an arithmetic shift
+ * operation before calling this function.
  */
-static inline int32_t hpm_dsp_cifft_rd2_q15(q15_t *src, uint32_t m)
-{
+static inline int32_t hpm_dsp_cifft_rd2_q15(q15_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_cifft_rd2_q15(src, m);
+#ifdef __zcc__
+  return tpt_cfft_q15(src, m, true);
+#else
+  return riscv_dsp_cifft_rd2_q15(src, m);
+#endif
 #endif
 }
 
 /**
  * @brief cfft_rd2 of q31 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 13
  * @return 0 success; -1 failure
  *
  * @b Note:
  *
- * The input and output formats are listed below. To satisfy the input format corresponding to
- * your input size, you may need to perform an arithmetic shift operation before calling this
- * function.
+ * The input and output formats are listed below. To satisfy the input format
+ * corresponding to your input size, you may need to perform an arithmetic shift
+ * operation before calling this function.
  */
-static inline int32_t hpm_dsp_cfft_rd2_q31(q31_t *src, uint32_t m)
-{
+static inline int32_t hpm_dsp_cfft_rd2_q31(q31_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_cfft_rd2_q31(src, m);
+#ifdef __zcc__
+  return tpt_cfft_q31(src, m, false);
+#else
+  return riscv_dsp_cfft_rd2_q31(src, m);
+#endif
 #endif
 }
 
 /**
  * @brief cfft_rd2 of q31 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 13
  * @return 0 success; -1 failure
  *
  * @b Note:
  *
- * The input and output formats are listed below. To satisfy the input format corresponding to
- * your input size, you may need to perform an arithmetic shift operation before calling this
- * function.
+ * The input and output formats are listed below. To satisfy the input format
+ * corresponding to your input size, you may need to perform an arithmetic shift
+ * operation before calling this function.
  */
-static inline int32_t hpm_dsp_cifft_rd2_q31(q31_t *src, uint32_t m)
-{
+static inline int32_t hpm_dsp_cifft_rd2_q31(q31_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_cifft_rd2_q31(src, m);
+#ifdef __zcc__
+  return tpt_cfft_q31(src, m, true);
+#else
+  return riscv_dsp_cifft_rd2_q31(src, m);
+#endif
 #endif
 }
 
 /**
  * @brief cfft_rd4 of f32 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set as 4, 6, 8 or 10
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set as 4, 6, 8 or 10
  * @return 0 success; -1 failure
  *
  * @b Example
  *     <pre>
- * Given 256 samples (that is, FFT_LOGN = 8), the example of floating-point Radix-4 CFFT and
- * CIFFT is as follows:
+ * Given 256 samples (that is, FFT_LOGN = 8), the example of floating-point
+ * Radix-4 CFFT and CIFFT is as follows:
  *      \#define FFT_LOGN 8
  *      float32_t src[2* (1 << FFT_LOGN)] = {};
  *      int32_t ret;
@@ -4302,265 +5518,320 @@ static inline int32_t hpm_dsp_cifft_rd2_q31(q31_t *src, uint32_t m)
  *      Else
  *          Fail
  *
- * This example also serves as a reference for examples of Q31 or Q15 Radix-4 CFFT and
- * CIFFT functions.
+ * This example also serves as a reference for examples of Q31 or Q15 Radix-4
+ * CFFT and CIFFT functions.
  *     </pre>
  */
-static inline int32_t hpm_dsp_cfft_rd4_f32(float32_t *src, uint32_t m)
-{
+static inline int32_t hpm_dsp_cfft_rd4_f32(float32_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_cfft_rd4_f32(src, m);
+#ifdef __zcc__
+  return tpt_cfft_f32(src, m, false);
+#else
+  return riscv_dsp_cfft_rd4_f32(src, m);
+#endif
 #endif
 }
 
 /**
  * @brief cifft_rd4 of f32 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set as 4, 6, 8 or 10
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set as 4, 6, 8 or 10
  * @return 0 success; -1 failure
  */
-static inline int32_t hpm_dsp_cifft_rd4_f32(float32_t *src, uint32_t m)
-{
+static inline int32_t hpm_dsp_cifft_rd4_f32(float32_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_cifft_rd4_f32(src, m);
+#ifdef __zcc__
+  return tpt_cfft_f32(src, m, true);
+#else
+  return riscv_dsp_cifft_rd4_f32(src, m);
+#endif
 #endif
 }
 
 /**
  * @brief cfft_rd4 of q15 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set as 4, 6, 8 or 10
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set as 4, 6, 8 or 10
  * @return 0 success; -1 failure
  *
  * @b Note:
  *
- * The input and output formats are listed below. To satisfy the input format corresponding to
- * your input size, you may need to perform an arithmetic shift operation before calling this
- * function.
+ * The input and output formats are listed below. To satisfy the input format
+ * corresponding to your input size, you may need to perform an arithmetic shift
+ * operation before calling this function.
  */
-static inline int32_t hpm_dsp_cfft_rd4_q15(q15_t *src, uint32_t m)
-{
+static inline int32_t hpm_dsp_cfft_rd4_q15(q15_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_cfft_rd4_q15(src, m);
+#ifdef __zcc__
+  return tpt_cfft_q15(src, m, false);
+#else
+  return riscv_dsp_cfft_rd4_q15(src, m);
+#endif
 #endif
 }
 
 /**
  * @brief cifft_rd4 of q15 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set as 4, 6, 8 or 10
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set as 4, 6, 8 or 10
  * @return 0 success; -1 failure
  *
  * @b Note:
  *
- * The input and output formats are listed below. To satisfy the input format corresponding to
- * your input size, you may need to perform an arithmetic shift operation before calling this
- * function.
+ * The input and output formats are listed below. To satisfy the input format
+ * corresponding to your input size, you may need to perform an arithmetic shift
+ * operation before calling this function.
  */
-static inline int32_t hpm_dsp_cifft_rd4_q15(q15_t *src, uint32_t m)
-{
+static inline int32_t hpm_dsp_cifft_rd4_q15(q15_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_cifft_rd4_q15(src, m);
+#ifdef __zcc__
+  return tpt_cfft_q15(src, m, true);
+#else
+  return riscv_dsp_cifft_rd4_q15(src, m);
+#endif
 #endif
 }
 
 /**
  * @brief cfft_rd4 of q31 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set as 4, 6, 8 or 10
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set as 4, 6, 8 or 10
  * @return 0 success; -1 failure
  *
  * @b Note:
  *
- * The input and output formats are listed below. To satisfy the input format corresponding to
- * your input size, you may need to perform an arithmetic shift operation before calling this
- * function.
+ * The input and output formats are listed below. To satisfy the input format
+ * corresponding to your input size, you may need to perform an arithmetic shift
+ * operation before calling this function.
  */
-static inline int32_t hpm_dsp_cfft_rd4_q31(q31_t *src, uint32_t m)
-{
+static inline int32_t hpm_dsp_cfft_rd4_q31(q31_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_cfft_rd4_q31(src, m);
+#ifdef __zcc__
+  return tpt_cfft_q31(src, m, false);
+#else
+  return riscv_dsp_cfft_rd4_q31(src, m);
+#endif
 #endif
 }
 
 /**
  * @brief cifft_rd4 of q31 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set as 4, 6, 8 or 10
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set as 4, 6, 8 or 10
  * @return 0 success; -1 failure
  *
  * @b Note:
  *
- * The input and output formats are listed below. To satisfy the input format corresponding to
- * your input size, you may need to perform an arithmetic shift operation before calling this
- * function.
+ * The input and output formats are listed below. To satisfy the input format
+ * corresponding to your input size, you may need to perform an arithmetic shift
+ * operation before calling this function.
  */
-static inline int32_t hpm_dsp_cifft_rd4_q31(q31_t *src, uint32_t m)
-{
+static inline int32_t hpm_dsp_cifft_rd4_q31(q31_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_cifft_rd4_q31(src, m);
+#ifdef __zcc__
+  return tpt_cfft_q31(src, m, true);
+#else
+  return riscv_dsp_cifft_rd4_q31(src, m);
+#endif
 #endif
 }
 
 /**
  * @brief cfft of f32 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 13
  *
  * @b Example
  *     <pre>
- * Given 128 samples (that is, FFT_LOGN = 7), the example of floating-point CFFT and
- * CIFFT is as follows:
+ * Given 128 samples (that is, FFT_LOGN = 7), the example of floating-point CFFT
+ * and CIFFT is as follows:
  *      \#define FFT_LOGN 7
  *      float32_t src[2* (1 << FFT_LOGN)] = {};
  *      int32_t ret;
  *      hpm_dsp_cfft_f32(src, FFT_LOGN);
  *      hpm_dsp_cifft_f32(src, FFT_LOGN);
  *
- * This example also serves as a reference for examples of F16, F64, Q31 and Q15 CFFT and
- * CIFFT functions.
+ * This example also serves as a reference for examples of F16, F64, Q31 and Q15
+ * CFFT and CIFFT functions.
  *     </pre>
  */
-static inline void hpm_dsp_cfft_f32(float32_t *src, uint32_t m)
-{
+static inline void hpm_dsp_cfft_f32(float32_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cfft_f32(src, m);
+#ifdef __zcc__
+  tpt_cfft_f32(src, m, false);
+#else
+  riscv_dsp_cfft_f32(src, m);
+#endif
 #endif
 }
 
 /**
  * @brief cfft of f64 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 13
  */
-static inline void hpm_dsp_cfft_f64(float64_t *src, uint32_t m)
-{
+static inline void hpm_dsp_cfft_f64(float64_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cfft_f64(src, m);
+#ifdef __zcc__
+  tpt_cfft_f64(src, m, false);
+#else
+  riscv_dsp_cfft_f64(src, m);
+#endif
 #endif
 }
 
 /**
  * @brief cifft of f32 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 13
  */
-static inline void hpm_dsp_cifft_f32(float32_t *src, uint32_t m)
-{
+static inline void hpm_dsp_cifft_f32(float32_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cifft_f32(src, m);
+#ifdef __zcc__
+  tpt_cfft_f32(src, m, true);
+#else
+  riscv_dsp_cifft_f32(src, m);
+#endif
 #endif
 }
 
 /**
  * @brief cifft of f64 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 13
  */
-static inline void hpm_dsp_cifft_f64(float64_t *src, uint32_t m)
-{
+static inline void hpm_dsp_cifft_f64(float64_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cifft_f64(src, m);
+#ifdef __zcc__
+  tpt_cfft_f64(src, m, true);
+#else
+  riscv_dsp_cifft_f64(src, m);
+#endif
 #endif
 }
 
-
 /**
  * @brief cfft of q15 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 13
  *
  * @b Note:
  *
- * The input and output formats are listed below. To satisfy the input format corresponding to
- * your input size, you may need to perform an arithmetic shift operation before calling this
- * function.
+ * The input and output formats are listed below. To satisfy the input format
+ * corresponding to your input size, you may need to perform an arithmetic shift
+ * operation before calling this function.
  */
-static inline void hpm_dsp_cfft_q15(q15_t *src, uint32_t m)
-{
+static inline void hpm_dsp_cfft_q15(q15_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cfft_q15(src, m);
+#ifdef __zcc__
+  tpt_cfft_q15(src, m, false);
+#else
+  riscv_dsp_cfft_q15(src, m);
+#endif
 #endif
 }
 
 /**
  * @brief cifft of q15 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 13
  *
  * @b Note:
  *
- * The input and output formats are listed below. To satisfy the input format corresponding to
- * your input size, you may need to perform an arithmetic shift operation before calling this
- * function.
+ * The input and output formats are listed below. To satisfy the input format
+ * corresponding to your input size, you may need to perform an arithmetic shift
+ * operation before calling this function.
  */
-static inline void hpm_dsp_cifft_q15(q15_t *src, uint32_t m)
-{
+static inline void hpm_dsp_cifft_q15(q15_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cifft_q15(src, m);
+#ifdef __zcc__
+  tpt_cfft_q15(src, m, true);
+#else
+  riscv_dsp_cifft_q15(src, m);
+#endif
 #endif
 }
 
 /**
  * @brief cfft of q31 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 13
  *
  * @b Note:
  *
- * The input and output formats are listed below. To satisfy the input format corresponding to
- * your input size, you may need to perform an arithmetic shift operation before calling this
- * function.
+ * The input and output formats are listed below. To satisfy the input format
+ * corresponding to your input size, you may need to perform an arithmetic shift
+ * operation before calling this function.
  */
-static inline void hpm_dsp_cfft_q31(q31_t *src, uint32_t m)
-{
+static inline void hpm_dsp_cfft_q31(q31_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cfft_q31(src, m);
+#ifdef __zcc__
+  tpt_cfft_q31(src, m, false);
+#else
+  riscv_dsp_cfft_q31(src, m);
+#endif
 #endif
 }
 
 /**
  * @brief cifft of q31 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 13
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 13
  *
  * @b Note:
  *
- * The input and output formats are listed below. To satisfy the input format corresponding to
- * your input size, you may need to perform an arithmetic shift operation before calling this
- * function.
+ * The input and output formats are listed below. To satisfy the input format
+ * corresponding to your input size, you may need to perform an arithmetic shift
+ * operation before calling this function.
  */
-static inline void hpm_dsp_cifft_q31(q31_t *src, uint32_t m)
-{
+static inline void hpm_dsp_cifft_q31(q31_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_cifft_q31(src, m);
+#ifdef __zcc__
+  tpt_cfft_q31(src, m, true);
+#else
+  riscv_dsp_cifft_q31(src, m);
+#endif
 #endif
 }
 
 /**
  * @brief rfft of f32 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 4 to 14
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 4 to 14
  * @return 0 success; -1 failure
  *
  * @b Example
  *     <pre>
- * Given 128 samples (that is, FFT_LOGN = 7), the example of floating-point RFFT and RIFFT
- * is as follows:
+ * Given 128 samples (that is, FFT_LOGN = 7), the example of floating-point RFFT
+ * and RIFFT is as follows:
  *      \#define FFT_LOGN 7
  *      float32_t src[(1 << FFT_LOGN)] = {};
  *      int32_t ret;
@@ -4575,364 +5846,363 @@ static inline void hpm_dsp_cifft_q31(q31_t *src, uint32_t m)
  *      else
  *          Fail
  *
- * This example also serves as a reference for examples of Q31 or Q15 RFFT and RIFFT
- * functions.
+ * This example also serves as a reference for examples of Q31 or Q15 RFFT and
+ * RIFFT functions.
  *     </pre>
  */
-static inline int32_t hpm_dsp_rfft_f32(float32_t *src, uint32_t m)
-{
+static inline int32_t hpm_dsp_rfft_f32(float32_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_rfft_f32(src, m);
+  return riscv_dsp_rfft_f32(src, m);
 #endif
 }
 
 /**
  * @brief rfft of f64 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 4 to 14
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 4 to 14
  * @return 0 success; -1 failure
  */
-static inline int32_t hpm_dsp_rfft_f64(float64_t *src, uint32_t m)
-{
+static inline int32_t hpm_dsp_rfft_f64(float64_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_rfft_f64(src, m);
+  return riscv_dsp_rfft_f64(src, m);
 #endif
 }
 
 /**
  * @brief rifft of f32 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 4 to 14
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 4 to 14
  * @return 0 success; -1 failure
  */
-static inline int32_t hpm_dsp_rifft_f32(float32_t *src, uint32_t m)
-{
+static inline int32_t hpm_dsp_rifft_f32(float32_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_rifft_f32(src, m);
+  return riscv_dsp_rifft_f32(src, m);
 #endif
 }
 
 /**
  * @brief rifft of f64 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 4 to 14
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 4 to 14
  * @return 0 success; -1 failure
  */
-static inline int32_t hpm_dsp_rifft_f64(float64_t *src, uint32_t m)
-{
+static inline int32_t hpm_dsp_rifft_f64(float64_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_rifft_f64(src, m);
+  return riscv_dsp_rifft_f64(src, m);
 #endif
 }
 
 /**
  * @brief rfft of q15 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 4 to 14
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 4 to 14
  * @return 0 success; -1 failure
  *
  * @b Note:
  *
- * The input and output formats are listed below. To satisfy the input format corresponding to
- * your input size, you may need to perform an arithmetic shift operation before calling this
- * function.
+ * The input and output formats are listed below. To satisfy the input format
+ * corresponding to your input size, you may need to perform an arithmetic shift
+ * operation before calling this function.
  */
-static inline int32_t hpm_dsp_rfft_q15(q15_t *src, uint32_t m)
-{
+static inline int32_t hpm_dsp_rfft_q15(q15_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_rfft_q15(src, m);
+  return riscv_dsp_rfft_q15(src, m);
 #endif
 }
 
 /**
  * @brief rifft of q15 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 4 to 14
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 4 to 14
  * @return 0 success; -1 failure
  *
  * @b Note:
  *
- * The input and output formats are listed below. To satisfy the input format corresponding to
- * your input size, you may need to perform an arithmetic shift operation before calling this
- * function.
+ * The input and output formats are listed below. To satisfy the input format
+ * corresponding to your input size, you may need to perform an arithmetic shift
+ * operation before calling this function.
  */
-static inline int32_t hpm_dsp_rifft_q15(q15_t *src, uint32_t m)
-{
+static inline int32_t hpm_dsp_rifft_q15(q15_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_rifft_q15(src, m);
+  return riscv_dsp_rifft_q15(src, m);
 #endif
 }
 
 /**
  * @brief rfft of q31 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 4 to 14
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 4 to 14
  * @return 0 success; -1 failure
  *
  * @b Note:
  *
- * The input and output formats are listed below. To satisfy the input format corresponding to
- * your input size, you may need to perform an arithmetic shift operation before calling this
- * function.
+ * The input and output formats are listed below. To satisfy the input format
+ * corresponding to your input size, you may need to perform an arithmetic shift
+ * operation before calling this function.
  */
-static inline int32_t hpm_dsp_rfft_q31(q31_t *src, uint32_t m)
-{
+static inline int32_t hpm_dsp_rfft_q31(q31_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_rfft_q31(src, m);
+  return riscv_dsp_rfft_q31(src, m);
 #endif
 }
 
 /**
  * @brief rifft of q31 vectors.
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 4 to 14
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 4 to 14
  * @return 0 success; -1 failure
  *
  * @b Note:
  *
- * The input and output formats are listed below. To satisfy the input format corresponding to
- * your input size, you may need to perform an arithmetic shift operation before calling this
- * function.
+ * The input and output formats are listed below. To satisfy the input format
+ * corresponding to your input size, you may need to perform an arithmetic shift
+ * operation before calling this function.
  */
-static inline int32_t hpm_dsp_rifft_q31(q31_t *src, uint32_t m)
-{
+static inline int32_t hpm_dsp_rifft_q31(q31_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_rifft_q31(src, m);
+  return riscv_dsp_rifft_q31(src, m);
 #endif
 }
 
 /**
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 8
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 8
  *
  *
  * @b Example
  *  <pre>
- * Given 256 samples (that is, FFT_LOGN = 8), the example of floating-point (DCT) type II and
- * IDCT is as follows:
+ * Given 256 samples (that is, FFT_LOGN = 8), the example of floating-point
+ * (DCT) type II and IDCT is as follows:
  *      \#define FFT_LOGN 8
  *      float32_t src[(1 << FFT_LOGN)] = {};
  *      riscv_dsp_dct_f32(src, FFT_LOGN);
  *      riscv_dsp_idct_f32(src, FFT_LOGN);
- * This example also serves as a reference for examples of Q31 or Q15 DCT type II and IDCT
- * functions.
+ * This example also serves as a reference for examples of Q31 or Q15 DCT type
+ * II and IDCT functions.
  *  </pre>
  */
-static inline void hpm_dsp_dct_f32(float32_t *src, uint32_t m)
-{
+static inline void hpm_dsp_dct_f32(float32_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_dct_f32(src, m);
+  riscv_dsp_dct_f32(src, m);
 #endif
 }
 
 /**
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 8
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 8
  *
  */
-static inline void hpm_dsp_idct_f32(float32_t *src, uint32_t m)
-{
+static inline void hpm_dsp_idct_f32(float32_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_idct_f32(src, m);
+  riscv_dsp_idct_f32(src, m);
 #endif
 }
 
 /**
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 8
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 8
  *
  *
  * @b Note:
  *
- * The input and output formats are listed below. To satisfy the input format corresponding to
- * your input size, you may need to perform an arithmetic shift operation before calling this
- * function.
+ * The input and output formats are listed below. To satisfy the input format
+ * corresponding to your input size, you may need to perform an arithmetic shift
+ * operation before calling this function.
  */
-static inline void hpm_dsp_dct_q15(q15_t *src, uint32_t m)
-{
+static inline void hpm_dsp_dct_q15(q15_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_dct_q15(src, m);
+  riscv_dsp_dct_q15(src, m);
 #endif
 }
 
 /**
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 8
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 8
  *
  *
  * @b Note:
  *
- * The input and output formats are listed below. To satisfy the input format corresponding to
- * your input size, you may need to perform an arithmetic shift operation before calling this
- * function.
+ * The input and output formats are listed below. To satisfy the input format
+ * corresponding to your input size, you may need to perform an arithmetic shift
+ * operation before calling this function.
  */
-static inline void hpm_dsp_idct_q15(q15_t *src, uint32_t m)
-{
+static inline void hpm_dsp_idct_q15(q15_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_idct_q15(src, m);
+  riscv_dsp_idct_q15(src, m);
 #endif
 }
 
 /**
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 8
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 8
  *
  *
  * @b Note:
  *
- * The input and output formats are listed below. To satisfy the input format corresponding to
- * your input size, you may need to perform an arithmetic shift operation before calling this
- * function.
+ * The input and output formats are listed below. To satisfy the input format
+ * corresponding to your input size, you may need to perform an arithmetic shift
+ * operation before calling this function.
  */
-static inline void hpm_dsp_dct_q31(q31_t *src, uint32_t m)
-{
+static inline void hpm_dsp_dct_q31(q31_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_dct_q31(src, m);
+  riscv_dsp_dct_q31(src, m);
 #endif
 }
 
 /**
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 8
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 8
  *
  *
  * @b Note:
  *
- * The input and output formats are listed below. To satisfy the input format corresponding to
- * your input size, you may need to perform an arithmetic shift operation before calling this
- * function.
+ * The input and output formats are listed below. To satisfy the input format
+ * corresponding to your input size, you may need to perform an arithmetic shift
+ * operation before calling this function.
  */
-static inline void hpm_dsp_idct_q31(q31_t *src, uint32_t m)
-{
+static inline void hpm_dsp_idct_q31(q31_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_idct_q31(src, m);
+  riscv_dsp_idct_q31(src, m);
 #endif
 }
 
 /**
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 7
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 7
  *
  *
  * @b Example
  *  <pre>
- * Given 128 samples (that is, FFT_LOGN = 7), the example of floating-point DCT or IDCT type
- * IV transform is as follows:
+ * Given 128 samples (that is, FFT_LOGN = 7), the example of floating-point DCT
+ * or IDCT type IV transform is as follows:
  *      \#define FFT_LOGN 7
  *      float32_t src[(1 << FFT_LOGN)] = {};
  *      riscv_dsp_dct4_f32(src, FFT_LOGN);
  *      riscv_dsp_idct4_f32(src, FFT_LOGN);
- * This example also serves as a reference for examples of Q31 or Q15 DCT type IV and IDCT
- * functions.
+ * This example also serves as a reference for examples of Q31 or Q15 DCT type
+ * IV and IDCT functions.
  *  </pre>
  */
-static inline void hpm_dsp_dct4_f32(float32_t *src, uint32_t m)
-{
+static inline void hpm_dsp_dct4_f32(float32_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_dct4_f32(src, m);
+  riscv_dsp_dct4_f32(src, m);
 #endif
 }
 
 /**
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 7
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 7
  *
  */
-static inline void hpm_dsp_idct4_f32(float32_t *src, uint32_t m)
-{
+static inline void hpm_dsp_idct4_f32(float32_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_idct4_f32(src, m);
+  riscv_dsp_idct4_f32(src, m);
 #endif
 }
 
 /**
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 7
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 7
  *
  *
  * @b Note:
  *
- * The input and output formats are listed below. To satisfy the input format corresponding to
- * your input size, you may need to perform an arithmetic shift operation before calling this
- * function.
+ * The input and output formats are listed below. To satisfy the input format
+ * corresponding to your input size, you may need to perform an arithmetic shift
+ * operation before calling this function.
  */
-static inline void hpm_dsp_dct4_q15(q15_t *src, uint32_t m)
-{
+static inline void hpm_dsp_dct4_q15(q15_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_dct4_q15(src, m);
+  riscv_dsp_dct4_q15(src, m);
 #endif
 }
 
 /**
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 7
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 7
  *
  *
  * @b Note:
  *
- * The input and output formats are listed below. To satisfy the input format corresponding to
- * your input size, you may need to perform an arithmetic shift operation before calling this
- * function.
+ * The input and output formats are listed below. To satisfy the input format
+ * corresponding to your input size, you may need to perform an arithmetic shift
+ * operation before calling this function.
  */
-static inline void hpm_dsp_idct4_q15(q15_t *src, uint32_t m)
-{
+static inline void hpm_dsp_idct4_q15(q15_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_idct4_q15(src, m);
+  riscv_dsp_idct4_q15(src, m);
 #endif
 }
 
 /**
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 7
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 7
  *
  *
  * @b Note:
  *
- * The input and output formats are listed below. To satisfy the input format corresponding to
- * your input size, you may need to perform an arithmetic shift operation before calling this
- * function.
+ * The input and output formats are listed below. To satisfy the input format
+ * corresponding to your input size, you may need to perform an arithmetic shift
+ * operation before calling this function.
  */
-static inline void hpm_dsp_dct4_q31(q31_t *src, uint32_t m)
-{
+static inline void hpm_dsp_dct4_q31(q31_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_dct4_q31(src, m);
+  riscv_dsp_dct4_q31(src, m);
 #endif
 }
 
 /**
- * @param[in, out] src   pointer of the input vector. After the function is executed, the
- *                       output will be stored in the input vector.
- * @param[in]        m   base 2 logarithm value of the sample number and it can be set from 3 to 7
+ * @param[in, out] src   pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector.
+ * @param[in]        m   base 2 logarithm value of the sample number and it can
+ * be set from 3 to 7
  *
  *
  * @b Note:
  *
- * The input and output formats are listed below. To satisfy the input format corresponding to
- * your input size, you may need to perform an arithmetic shift operation before calling this
- * function.
+ * The input and output formats are listed below. To satisfy the input format
+ * corresponding to your input size, you may need to perform an arithmetic shift
+ * operation before calling this function.
  */
-static inline void hpm_dsp_idct4_q31(q31_t *src, uint32_t m)
-{
+static inline void hpm_dsp_idct4_q31(q31_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_idct4_q31(src, m);
+  riscv_dsp_idct4_q31(src, m);
 #endif
 }
 
@@ -4944,10 +6214,11 @@ static inline void hpm_dsp_idct4_q31(q31_t *src, uint32_t m)
 /**
  * @brief Construct a new hpm software cfft float object
  *
- * @param src requires double the space than other interfaces, 0-n for input data, n-2n for buffers, 0-n for output data
+ * @param src requires double the space than other interfaces, 0-n for input
+ * data, n-2n for buffers, 0-n for output data
  * @param m 2^n sampling points, including real and imaginary parts
  */
-void hpm_software_cfft_float(float *src, uint32_t m);
+void hpm_software_cfft_float(float* src, uint32_t m);
 
 #endif
 
@@ -4962,79 +6233,83 @@ void hpm_software_cfft_float(float *src, uint32_t m);
 /**
  * @brief fft calculation using ffa hardware acceleration unit, q15 format
  *
- * @param[in,out] src pointer of the input vector. After the function is executed,
- *  the output will be stored in the input vector.
- *  The complex data in the input vector are arranged as [real, imaginary,real, imaginary..., real, imaginary].
- * @param[in] m base 2 logarithm value of the sample number and it can be set from 3 to 9
+ * @param[in,out] src pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector. The complex data in
+ * the input vector are arranged as [real, imaginary,real, imaginary..., real,
+ * imaginary].
+ * @param[in] m base 2 logarithm value of the sample number and it can be set
+ * from 3 to 9
  */
-static inline void hpm_ffa_cfft_q15(q15_t *src, uint32_t m)
-{
-    fft_xfer_t xfer = { 0 };
-    xfer.num_points = 1 << m;
-    xfer.src = src;
-    xfer.dst = src;
-    xfer.is_ifft = false;
-    xfer.src_data_type = FFA_DATA_TYPE_COMPLEX_Q15;
-    xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q15;
-    ffa_calculate_fft_blocking(HPM_FFA, &xfer);
+static inline void hpm_ffa_cfft_q15(q15_t* src, uint32_t m) {
+  fft_xfer_t xfer = {0};
+  xfer.num_points = 1 << m;
+  xfer.src = src;
+  xfer.dst = src;
+  xfer.is_ifft = false;
+  xfer.src_data_type = FFA_DATA_TYPE_COMPLEX_Q15;
+  xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q15;
+  ffa_calculate_fft_blocking(HPM_FFA, &xfer);
 }
 /**
  * @brief fft calculation using ffa hardware acceleration unit, q31 format
  *
- * @param[in,out] src pointer of the input vector. After the function is executed,
- *  the output will be stored in the input vector.
- * The complex data in the input vector are arranged as [real, imaginary,real, imaginary..., real, imaginary].
- * @param[in] m base 2 logarithm value of the sample number and it can be set from 3 to 9
+ * @param[in,out] src pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector. The complex data in
+ * the input vector are arranged as [real, imaginary,real, imaginary..., real,
+ * imaginary].
+ * @param[in] m base 2 logarithm value of the sample number and it can be set
+ * from 3 to 9
  */
-static inline void hpm_ffa_cfft_q31(q31_t *src, uint32_t m)
-{
-    fft_xfer_t xfer = { 0 };
-    xfer.num_points = 1 << m;
-    xfer.src = src;
-    xfer.dst = src;
-    xfer.is_ifft = false;
-    xfer.src_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
-    xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
-    ffa_calculate_fft_blocking(HPM_FFA, &xfer);
+static inline void hpm_ffa_cfft_q31(q31_t* src, uint32_t m) {
+  fft_xfer_t xfer = {0};
+  xfer.num_points = 1 << m;
+  xfer.src = src;
+  xfer.dst = src;
+  xfer.is_ifft = false;
+  xfer.src_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
+  xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
+  ffa_calculate_fft_blocking(HPM_FFA, &xfer);
 }
 /**
  * @brief ifft calculation using ffa hardware acceleration unit, q15 format
  *
- * @param[in,out] src pointer of the input vector. After the function is executed,
- *  the output will be stored in the input vector.
- * The complex data in the input vector are arranged as [real, imaginary,real, imaginary..., real, imaginary].
- * @param[in] m base 2 logarithm value of the sample number and it can be set from 3 to 9
+ * @param[in,out] src pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector. The complex data in
+ * the input vector are arranged as [real, imaginary,real, imaginary..., real,
+ * imaginary].
+ * @param[in] m base 2 logarithm value of the sample number and it can be set
+ * from 3 to 9
  */
-static inline void hpm_ffa_cifft_q15(q15_t *src, uint32_t m)
-{
-    fft_xfer_t xfer = { 0 };
-    xfer.num_points = 1 << m;
-    xfer.src = src;
-    xfer.dst = src;
-    xfer.is_ifft = true;
-    xfer.src_data_type = FFA_DATA_TYPE_COMPLEX_Q15;
-    xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q15;
-    ffa_calculate_fft_blocking(HPM_FFA, &xfer);
+static inline void hpm_ffa_cifft_q15(q15_t* src, uint32_t m) {
+  fft_xfer_t xfer = {0};
+  xfer.num_points = 1 << m;
+  xfer.src = src;
+  xfer.dst = src;
+  xfer.is_ifft = true;
+  xfer.src_data_type = FFA_DATA_TYPE_COMPLEX_Q15;
+  xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q15;
+  ffa_calculate_fft_blocking(HPM_FFA, &xfer);
 }
 
 /**
  * @brief ifft calculation using ffa hardware acceleration unit, q31 format
  *
- * @param[in,out] src pointer of the input vector. After the function is executed,
- *  the output will be stored in the input vector.
- * The complex data in the input vector are arranged as [real, imaginary,real, imaginary..., real, imaginary].
- * @param[in] m base 2 logarithm value of the sample number and it can be set from 3 to 9
+ * @param[in,out] src pointer of the input vector. After the function is
+ * executed, the output will be stored in the input vector. The complex data in
+ * the input vector are arranged as [real, imaginary,real, imaginary..., real,
+ * imaginary].
+ * @param[in] m base 2 logarithm value of the sample number and it can be set
+ * from 3 to 9
  */
-static inline void hpm_ffa_cifft_q31(q31_t *src, uint32_t m)
-{
-    fft_xfer_t xfer = { 0 };
-    xfer.num_points = 1 << m;
-    xfer.src = src;
-    xfer.dst = src;
-    xfer.is_ifft = true;
-    xfer.src_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
-    xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
-    ffa_calculate_fft_blocking(HPM_FFA, &xfer);
+static inline void hpm_ffa_cifft_q31(q31_t* src, uint32_t m) {
+  fft_xfer_t xfer = {0};
+  xfer.num_points = 1 << m;
+  xfer.src = src;
+  xfer.dst = src;
+  xfer.is_ifft = true;
+  xfer.src_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
+  xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
+  ffa_calculate_fft_blocking(HPM_FFA, &xfer);
 }
 #endif
 
@@ -5056,95 +6331,85 @@ static inline void hpm_ffa_cifft_q31(q31_t *src, uint32_t m)
  */
 
 #ifdef HPM_EN_MATH_DSP_LIB
+#ifdef __zcc__
+#include <tpt_math.h>
+#endif
 #include "riscv_dsp_utils_math.h"
 // Cosine and Sine
-static inline float32_t hpm_dsp_cos_f32(float32_t src)
-{
+static inline float32_t hpm_dsp_cos_f32(float32_t src) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_cos_f32(src);
+  return riscv_dsp_cos_f32(src);
 #endif
 }
-static inline q31_t hpm_dsp_cos_q31(q31_t src)
-{
+static inline q31_t hpm_dsp_cos_q31(q31_t src) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_cos_q31(src);
+  return riscv_dsp_cos_q31(src);
 #endif
 }
-static inline q15_t hpm_dsp_cos_q15(q15_t src)
-{
+static inline q15_t hpm_dsp_cos_q15(q15_t src) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_cos_q15(src);
+  return riscv_dsp_cos_q15(src);
 #endif
 }
 
-static inline float32_t hpm_dsp_sin_f32(float32_t src)
-{
+static inline float32_t hpm_dsp_sin_f32(float32_t src) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_sin_f32(src);
+  return riscv_dsp_sin_f32(src);
 #endif
 }
 
-#if defined (__riscv_zfh)
+#if defined(__riscv_zfh)
 /**
  * @param[in] src input value (radian)
  * @return Sine value of the input
  */
-static inline float16_t hpm_dsp_sin_f16(float16_t src)
-{
+static inline float16_t hpm_dsp_sin_f16(float16_t src) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_sin_f16(src);
+  return riscv_dsp_sin_f16(src);
 #endif
 }
 #endif
 
-static inline q31_t hpm_dsp_sin_q31(q31_t src)
-{
+static inline q31_t hpm_dsp_sin_q31(q31_t src) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_sin_q31(src);
+  return riscv_dsp_sin_q31(src);
 #endif
 }
-static inline q15_t hpm_dsp_sin_q15(q15_t src)
-{
+static inline q15_t hpm_dsp_sin_q15(q15_t src) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_sin_q15(src);
+  return riscv_dsp_sin_q15(src);
 #endif
 }
 
 // Arc tangent
-static inline float32_t hpm_dsp_atan_f32(float32_t src)
-{
+static inline float32_t hpm_dsp_atan_f32(float32_t src) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_atan_f32(src);
+  return riscv_dsp_atan_f32(src);
 #endif
 }
-static inline q31_t hpm_dsp_atan_q31(q31_t src)
-{
+static inline q31_t hpm_dsp_atan_q31(q31_t src) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_atan_q31(src);
+  return riscv_dsp_atan_q31(src);
 #endif
 }
-static inline q15_t hpm_dsp_atan_q15(q15_t src)
-{
+static inline q15_t hpm_dsp_atan_q15(q15_t src) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_atan_q15(src);
+  return riscv_dsp_atan_q15(src);
 #endif
 }
-static inline float32_t hpm_dsp_atan2_f32(float32_t srcy, float32_t src2)
-{
+static inline float32_t hpm_dsp_atan2_f32(float32_t srcy, float32_t src2) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_atan2_f32(srcy, src2);
+  return riscv_dsp_atan2_f32(srcy, src2);
 #endif
 }
-static inline q15_t hpm_dsp_atan2_q15(q15_t srcy, q15_t src2)
-{
+static inline q15_t hpm_dsp_atan2_q15(q15_t srcy, q15_t src2) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_atan2_q15(srcy, src2);
+  return riscv_dsp_atan2_q15(srcy, src2);
 #endif
 }
-static inline q31_t hpm_dsp_atan2_q31(q31_t srcy, q31_t src2)
-{
+static inline q31_t hpm_dsp_atan2_q31(q31_t srcy, q31_t src2) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_atan2_q31(srcy, src2);
+  return riscv_dsp_atan2_q31(srcy, src2);
 #endif
 }
 
@@ -5154,10 +6419,9 @@ static inline q31_t hpm_dsp_atan2_q31(q31_t srcy, q31_t src2)
  * @param[in]       src the input value.
  * @return the suqare root of input.
  */
-static inline float32_t hpm_dsp_sqrt_f32(float32_t src)
-{
+static inline float32_t hpm_dsp_sqrt_f32(float32_t src) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_sqrt_f32(src);
+  return riscv_dsp_sqrt_f32(src);
 #endif
 }
 
@@ -5166,10 +6430,9 @@ static inline float32_t hpm_dsp_sqrt_f32(float32_t src)
  * @param[in]       src the input value.
  * @return the suqare root of input.
  */
-static inline q31_t hpm_dsp_sqrt_q31(q31_t src)
-{
+static inline q31_t hpm_dsp_sqrt_q31(q31_t src) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_sqrt_q31(src);
+  return riscv_dsp_sqrt_q31(src);
 #endif
 }
 
@@ -5178,10 +6441,9 @@ static inline q31_t hpm_dsp_sqrt_q31(q31_t src)
  * @param[in]       src the input value.
  * @return the suqare root of input.
  */
-static inline q15_t hpm_dsp_sqrt_q15(q15_t src)
-{
+static inline q15_t hpm_dsp_sqrt_q15(q15_t src) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_sqrt_q15(src);
+  return riscv_dsp_sqrt_q15(src);
 #endif
 }
 
@@ -5192,10 +6454,11 @@ static inline q15_t hpm_dsp_sqrt_q15(q15_t src)
  * @param[out]      *dst yhe output vector point.
  * @param[in]       size size of vector.
  */
-static inline void hpm_dsp_convert_f32_q15(float32_t *src, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_convert_f32_q15(float32_t* src,
+                                           q15_t* dst,
+                                           uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_convert_f32_q15(src, dst, size);
+  riscv_dsp_convert_f32_q15(src, dst, size);
 #endif
 }
 
@@ -5205,10 +6468,15 @@ static inline void hpm_dsp_convert_f32_q15(float32_t *src, q15_t *dst, uint32_t 
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vectors.
  */
-static inline void hpm_dsp_convert_f32_q31(float32_t *src, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_convert_f32_q31(float32_t* src,
+                                           q31_t* dst,
+                                           uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_convert_f32_q31(src, dst, size);
+#ifdef __zcc__
+  tpt_f32_to_q31(dst, src, size);
+#else
+  riscv_dsp_convert_f32_q31(src, dst, size);
+#endif
 #endif
 }
 
@@ -5218,10 +6486,11 @@ static inline void hpm_dsp_convert_f32_q31(float32_t *src, q31_t *dst, uint32_t 
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vectors.
  */
-static inline void hpm_dsp_convert_f32_q7(float32_t *src, q7_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_convert_f32_q7(float32_t* src,
+                                          q7_t* dst,
+                                          uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_convert_f32_q7(src, dst, size);
+  riscv_dsp_convert_f32_q7(src, dst, size);
 #endif
 }
 
@@ -5231,10 +6500,11 @@ static inline void hpm_dsp_convert_f32_q7(float32_t *src, q7_t *dst, uint32_t si
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vector.
  */
-static inline void hpm_dsp_convert_q15_f32(q15_t *src, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_convert_q15_f32(q15_t* src,
+                                           float32_t* dst,
+                                           uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_convert_q15_f32(src, dst, size);
+  riscv_dsp_convert_q15_f32(src, dst, size);
 #endif
 }
 
@@ -5244,10 +6514,11 @@ static inline void hpm_dsp_convert_q15_f32(q15_t *src, float32_t *dst, uint32_t 
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vector.
  */
-static inline void hpm_dsp_convert_q15_q31(q15_t *src, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_convert_q15_q31(q15_t* src,
+                                           q31_t* dst,
+                                           uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_convert_q15_q31(src, dst, size);
+  riscv_dsp_convert_q15_q31(src, dst, size);
 #endif
 }
 
@@ -5257,10 +6528,11 @@ static inline void hpm_dsp_convert_q15_q31(q15_t *src, q31_t *dst, uint32_t size
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vector.
  */
-static inline void hpm_dsp_convert_q15_q7(q15_t *src, q7_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_convert_q15_q7(q15_t* src,
+                                          q7_t* dst,
+                                          uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_convert_q15_q7(src, dst, size);
+  riscv_dsp_convert_q15_q7(src, dst, size);
 #endif
 }
 
@@ -5270,10 +6542,15 @@ static inline void hpm_dsp_convert_q15_q7(q15_t *src, q7_t *dst, uint32_t size)
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vector.
  */
-static inline void hpm_dsp_convert_q31_f32(q31_t *src, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_convert_q31_f32(q31_t* src,
+                                           float32_t* dst,
+                                           uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_convert_q31_f32(src, dst, size);
+#ifdef __zcc__
+  tpt_q31_to_f32(dst, src, size);
+#else
+  riscv_dsp_convert_q31_f32(src, dst, size);
+#endif
 #endif
 }
 
@@ -5283,10 +6560,11 @@ static inline void hpm_dsp_convert_q31_f32(q31_t *src, float32_t *dst, uint32_t 
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vector.
  */
-static inline void hpm_dsp_convert_q31_q15(q31_t *src, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_convert_q31_q15(q31_t* src,
+                                           q15_t* dst,
+                                           uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_convert_q31_q15(src, dst, size);
+  riscv_dsp_convert_q31_q15(src, dst, size);
 #endif
 }
 
@@ -5296,10 +6574,11 @@ static inline void hpm_dsp_convert_q31_q15(q31_t *src, q15_t *dst, uint32_t size
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vector.
  */
-static inline void hpm_dsp_convert_q31_q7(q31_t *src, q7_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_convert_q31_q7(q31_t* src,
+                                          q7_t* dst,
+                                          uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_convert_q31_q7(src, dst, size);
+  riscv_dsp_convert_q31_q7(src, dst, size);
 #endif
 }
 
@@ -5309,10 +6588,11 @@ static inline void hpm_dsp_convert_q31_q7(q31_t *src, q7_t *dst, uint32_t size)
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vector.
  */
-static inline void hpm_dsp_convert_q7_f32(q7_t *src, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_convert_q7_f32(q7_t* src,
+                                          float32_t* dst,
+                                          uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_convert_q7_f32(src, dst, size);
+  riscv_dsp_convert_q7_f32(src, dst, size);
 #endif
 }
 
@@ -5322,10 +6602,11 @@ static inline void hpm_dsp_convert_q7_f32(q7_t *src, float32_t *dst, uint32_t si
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vector.
  */
-static inline void hpm_dsp_convert_q7_q15(q7_t *src, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_convert_q7_q15(q7_t* src,
+                                          q15_t* dst,
+                                          uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_convert_q7_q15(src, dst, size);
+  riscv_dsp_convert_q7_q15(src, dst, size);
 #endif
 }
 
@@ -5335,10 +6616,11 @@ static inline void hpm_dsp_convert_q7_q15(q7_t *src, q15_t *dst, uint32_t size)
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vector.
  */
-static inline void hpm_dsp_convert_q7_q31(q7_t *src, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_convert_q7_q31(q7_t* src,
+                                          q31_t* dst,
+                                          uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_convert_q7_q31(src, dst, size);
+  riscv_dsp_convert_q7_q31(src, dst, size);
 #endif
 }
 
@@ -5349,10 +6631,11 @@ static inline void hpm_dsp_convert_q7_q31(q7_t *src, q31_t *dst, uint32_t size)
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vectors.
  */
-static inline void hpm_dsp_dup_f32(float32_t *src, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_dup_f32(float32_t* src,
+                                   float32_t* dst,
+                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_dup_f32(src, dst, size);
+  riscv_dsp_dup_f32(src, dst, size);
 #endif
 }
 
@@ -5362,10 +6645,9 @@ static inline void hpm_dsp_dup_f32(float32_t *src, float32_t *dst, uint32_t size
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vectors.
  */
-static inline void hpm_dsp_dup_q15(q15_t *src, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_dup_q15(q15_t* src, q15_t* dst, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_dup_q15(src, dst, size);
+  riscv_dsp_dup_q15(src, dst, size);
 #endif
 }
 
@@ -5375,10 +6657,9 @@ static inline void hpm_dsp_dup_q15(q15_t *src, q15_t *dst, uint32_t size)
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vectors.
  */
-static inline void hpm_dsp_dup_q31(q31_t *src, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_dup_q31(q31_t* src, q31_t* dst, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_dup_q31(src, dst, size);
+  riscv_dsp_dup_q31(src, dst, size);
 #endif
 }
 
@@ -5388,10 +6669,9 @@ static inline void hpm_dsp_dup_q31(q31_t *src, q31_t *dst, uint32_t size)
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of vectors.
  */
-static inline void hpm_dsp_dup_q7(q7_t *src, q7_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_dup_q7(q7_t* src, q7_t* dst, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_dup_q7(src, dst, size);
+  riscv_dsp_dup_q7(src, dst, size);
 #endif
 }
 
@@ -5402,10 +6682,11 @@ static inline void hpm_dsp_dup_q7(q7_t *src, q7_t *dst, uint32_t size)
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of the vector.
  */
-static inline void hpm_dsp_set_f32(float32_t val, float32_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_set_f32(float32_t val,
+                                   float32_t* dst,
+                                   uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_set_f32(val, dst, size);
+  riscv_dsp_set_f32(val, dst, size);
 #endif
 }
 
@@ -5415,10 +6696,9 @@ static inline void hpm_dsp_set_f32(float32_t val, float32_t *dst, uint32_t size)
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of the vector.
  */
-static inline void hpm_dsp_set_q15(q15_t val, q15_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_set_q15(q15_t val, q15_t* dst, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_set_q15(val, dst, size);
+  riscv_dsp_set_q15(val, dst, size);
 #endif
 }
 
@@ -5428,10 +6708,9 @@ static inline void hpm_dsp_set_q15(q15_t val, q15_t *dst, uint32_t size)
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of the vector.
  */
-static inline void hpm_dsp_set_q31(q31_t val, q31_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_set_q31(q31_t val, q31_t* dst, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_set_q31(val, dst, size);
+  riscv_dsp_set_q31(val, dst, size);
 #endif
 }
 
@@ -5441,10 +6720,9 @@ static inline void hpm_dsp_set_q31(q31_t val, q31_t *dst, uint32_t size)
  * @param[out]      *dst the output vector point.
  * @param[in]       size size of the vector.
  */
-static inline void hpm_dsp_set_q7(q7_t val, q7_t *dst, uint32_t size)
-{
+static inline void hpm_dsp_set_q7(q7_t val, q7_t* dst, uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_set_q7(val, dst, size);
+  riscv_dsp_set_q7(val, dst, size);
 #endif
 }
 
@@ -5456,10 +6734,11 @@ static inline void hpm_dsp_set_q7(q7_t val, q7_t *dst, uint32_t size)
  * @return Weighted Sumvalue.
  *
  */
-static inline float32_t hpm_dsp_weighted_sum_f32(const float32_t *src, const float32_t *weight, uint32_t size)
-{
+static inline float32_t hpm_dsp_weighted_sum_f32(const float32_t* src,
+                                                 const float32_t* weight,
+                                                 uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_weighted_sum_f32(src, weight, size);
+  return riscv_dsp_weighted_sum_f32(src, weight, size);
 #endif
 }
 
@@ -5472,10 +6751,13 @@ static inline float32_t hpm_dsp_weighted_sum_f32(const float32_t *src, const flo
  * @param[in]       dimofvec    size of the vectors.
  *
  */
-static inline void hpm_dsp_barycenter_f32(const float32_t *src, const float32_t *weights, float32_t *out, uint32_t numofvec, uint32_t dimofvec)
-{
+static inline void hpm_dsp_barycenter_f32(const float32_t* src,
+                                          const float32_t* weights,
+                                          float32_t* out,
+                                          uint32_t numofvec,
+                                          uint32_t dimofvec) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_barycenter_f32(src, weights, out, numofvec, dimofvec);
+  riscv_dsp_barycenter_f32(src, weights, out, numofvec, dimofvec);
 #endif
 }
 
@@ -5484,23 +6766,21 @@ static inline void hpm_dsp_barycenter_f32(const float32_t *src, const float32_t 
  * @param[in] src input value
  * @return exponential value of the input
  */
-static inline float32_t hpm_dsp_exp_f32(float32_t src)
-{
+static inline float32_t hpm_dsp_exp_f32(float32_t src) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_exp_f32(src);
+  return riscv_dsp_exp_f32(src);
 #endif
 }
 
-#if defined (__riscv_zfh)
+#if defined(__riscv_zfh)
 /**
  * @brief Calculate exponential value of f16 vector.
  * @param[in] src input value
  * @return exponential value of the input
  */
-static inline float16_t hpm_dsp_exp_f16(float16_t src)
-{
+static inline float16_t hpm_dsp_exp_f16(float16_t src) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_exp_f16(src);
+  return riscv_dsp_exp_f16(src);
 #endif
 }
 #endif
@@ -5510,23 +6790,21 @@ static inline float16_t hpm_dsp_exp_f16(float16_t src)
  * @param[in] src input value
  * @return sigmoid value of the input
  */
-static inline float32_t hpm_dsp_sigmoid_f32(float32_t src)
-{
+static inline float32_t hpm_dsp_sigmoid_f32(float32_t src) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_sigmoid_f32(src);
+  return riscv_dsp_sigmoid_f32(src);
 #endif
 }
 
-#if defined (__riscv_zfh)
+#if defined(__riscv_zfh)
 /**
  * @brief Calculate sigmoid value of f16 vector.
  * @param[in] src input value
  * @return sigmoid value of the input
  */
-static inline float16_t hpm_dsp_sigmoid_f16(float16_t src)
-{
+static inline float16_t hpm_dsp_sigmoid_f16(float16_t src) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_sigmoid_f16(src);
+  return riscv_dsp_sigmoid_f16(src);
 #endif
 }
 #endif
@@ -5536,23 +6814,21 @@ static inline float16_t hpm_dsp_sigmoid_f16(float16_t src)
  * @param[in] src input value
  * @return natural logarithm value of the input
  */
-static inline float32_t hpm_dsp_log_f32(float32_t src)
-{
+static inline float32_t hpm_dsp_log_f32(float32_t src) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_log_f32(src);
+  return riscv_dsp_log_f32(src);
 #endif
 }
 
-#if defined (__riscv_zfh)
+#if defined(__riscv_zfh)
 /**
  * @brief Calculate the natural logarithm value of f16 vector.
  * @param[in] src input value
  * @return natural logarithm value of the input
  */
-static inline float16_t hpm_dsp_log_f16(float16_t src)
-{
+static inline float16_t hpm_dsp_log_f16(float16_t src) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_log_f16(src);
+  return riscv_dsp_log_f16(src);
 #endif
 }
 #endif
@@ -5562,7 +6838,6 @@ static inline float16_t hpm_dsp_log_f16(float16_t src)
  *
  */
 
-
 #endif
 #endif
 
@@ -5570,10 +6845,11 @@ static inline float16_t hpm_dsp_log_f16(float16_t src)
 
 /**
  * @defgroup sort DSP Sort Functions
- * The generic sort function sorts elements of a vector by the algorithm and sorting order specified
- * in its instance structure. The algorithms to be chosen from to perform the generic sorting
- * include bitonic sort, bubble sort, heap sort, insertion sort, quick sort and selection sort.
- * Andes DSP library only supports the generic sort function for floating-point data.
+ * The generic sort function sorts elements of a vector by the algorithm and
+ * sorting order specified in its instance structure. The algorithms to be
+ * chosen from to perform the generic sorting include bitonic sort, bubble sort,
+ * heap sort, insertion sort, quick sort and selection sort. Andes DSP library
+ * only supports the generic sort function for floating-point data.
  * @ingroup hpmmath
  * @{
  */
@@ -5587,10 +6863,11 @@ static inline float16_t hpm_dsp_log_f16(float16_t src)
  *
  * @b Note:
  *
- * 1. This function has to be called to initialize the instance structure before the function
- *    riscv_dsp_sort_f32 is executed. Please refer to code examples.
+ * 1. This function has to be called to initialize the instance structure before
+ * the function riscv_dsp_sort_f32 is executed. Please refer to code examples.
  *
- * 2. The possible sorting algorithms for the generic sorting (i.e., options for alg) include
+ * 2. The possible sorting algorithms for the generic sorting (i.e., options for
+ * alg) include
  *    - RISCV_DSP_SORT_BITONIC      bitonic sort
  *    - RISCV_DSP_SORT_BUBBLE       bubble sort
  *    - RISCV_DSP_SORT_HEAP         heap sort
@@ -5598,14 +6875,16 @@ static inline float16_t hpm_dsp_log_f16(float16_t src)
  *    - RISCV_DSP_SORT_QUICK        quick sort
  *    - RISCV_DSP_SORT_SELECTION    selection sort
  *
- * 3. The possible sorting orders for the generic sorting (i.e., options for order) include
+ * 3. The possible sorting orders for the generic sorting (i.e., options for
+ * order) include
  *    - RISCV_DSP_SORT_DESCENDING   descending order
  *    - RISCV_DSP_SORT_ASCENDING    ascending order
  */
-static inline void hpm_dsp_sort_init_f32(riscv_dsp_sort_f32_t * instance, riscv_dsp_sort_alg alg, riscv_dsp_sort_order order)
-{
+static inline void hpm_dsp_sort_init_f32(riscv_dsp_sort_f32_t* instance,
+                                         riscv_dsp_sort_alg alg,
+                                         riscv_dsp_sort_order order) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_sort_init_f32(instance, alg, order);
+  riscv_dsp_sort_init_f32(instance, alg, order);
 #endif
 }
 
@@ -5619,7 +6898,8 @@ static inline void hpm_dsp_sort_init_f32(riscv_dsp_sort_f32_t * instance, riscv_
  *
  * @b Note:
  *
- * 1. The possible sorting algorithms for the generic sorting (i.e., options for alg) include
+ * 1. The possible sorting algorithms for the generic sorting (i.e., options for
+ * alg) include
  *    - RISCV_DSP_SORT_BITONIC      bitonic sort
  *    - RISCV_DSP_SORT_BUBBLE       bubble sort
  *    - RISCV_DSP_SORT_HEAP         heap sort
@@ -5627,18 +6907,20 @@ static inline void hpm_dsp_sort_init_f32(riscv_dsp_sort_f32_t * instance, riscv_
  *    - RISCV_DSP_SORT_QUICK        quick sort
  *    - RISCV_DSP_SORT_SELECTION    selection sort
  *
- * 2. The possible sorting orders for the generic sorting (i.e., options for order) include
+ * 2. The possible sorting orders for the generic sorting (i.e., options for
+ * order) include
  *    - RISCV_DSP_SORT_DESCENDING   descending order
  *    - RISCV_DSP_SORT_ASCENDING    ascending order
  *
- * 3. To ensure correct results, you must initialize the instance structure with the function
- *    riscv_dsp_sort_init_f32 before using this function riscv_dsp_sort_f32. For
- *    how to use the two functions, please refer to the code examples below.
+ * 3. To ensure correct results, you must initialize the instance structure with
+ * the function riscv_dsp_sort_init_f32 before using this function
+ * riscv_dsp_sort_f32. For how to use the two functions, please refer to the
+ * code examples below.
  *
  * @b Example
  *     <pre>
- *       With the input size as 100, sorting order as ascending and sorting algorithm as quick
- *       sort, the code example of generic sorting is as follows:
+ *       With the input size as 100, sorting order as ascending and sorting
+ * algorithm as quick sort, the code example of generic sorting is as follows:
  *
  *          \#define size 100
  *          riscv_dsp_sort_f32_t *instance;
@@ -5649,10 +6931,12 @@ static inline void hpm_dsp_sort_init_f32(riscv_dsp_sort_f32_t * instance, riscv_
  *          riscv_dsp_sort_f32(instance, src, dst, size);
  *     </pre>
  */
-static inline void hpm_dsp_sort_f32(const riscv_dsp_sort_f32_t * instance,float32_t * src, float32_t * dst, uint32_t size)
-{
+static inline void hpm_dsp_sort_f32(const riscv_dsp_sort_f32_t* instance,
+                                    float32_t* src,
+                                    float32_t* dst,
+                                    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_sort_f32(instance, src, dst, size);
+  riscv_dsp_sort_f32(instance, src, dst, size);
 #endif
 }
 
@@ -5663,18 +6947,21 @@ static inline void hpm_dsp_sort_f32(const riscv_dsp_sort_f32_t * instance,float3
  *
  * @b Note:
  *
- * 1. This function has to be called to initialize the instance structure before the function
- *    riscv_dsp_sort_merge_f32 is executed. Please refer to Section 2.11.2.2 for a code
- *    example.
+ * 1. This function has to be called to initialize the instance structure before
+ * the function riscv_dsp_sort_merge_f32 is executed. Please refer to
+ * Section 2.11.2.2 for a code example.
  *
- * 2. The possible sorting orders for the merge sorting (i.e., options for order) include
+ * 2. The possible sorting orders for the merge sorting (i.e., options for
+ * order) include
  *    - RISCV_DSP_SORT_DESCENDING   descending order
  *    - RISCV_DSP_SORT_ASCENDING    ascending order
  */
-static inline void hpm_dsp_sort_merge_init_f32(riscv_dsp_sort_merge_f32_t * instance, riscv_dsp_sort_order order, float32_t * buf)
-{
+static inline void hpm_dsp_sort_merge_init_f32(
+    riscv_dsp_sort_merge_f32_t* instance,
+    riscv_dsp_sort_order order,
+    float32_t* buf) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_sort_merge_init_f32(instance, order, buf);
+  riscv_dsp_sort_merge_init_f32(instance, order, buf);
 #endif
 }
 
@@ -5688,19 +6975,20 @@ static inline void hpm_dsp_sort_merge_init_f32(riscv_dsp_sort_merge_f32_t * inst
  *
  * @b Note:
  *
- * 1. The possible sorting orders for the merge sorting (i.e., options for order) include
+ * 1. The possible sorting orders for the merge sorting (i.e., options for
+ * order) include
  *    - RISCV_DSP_SORT_DESCENDING   descending order
  *    - RISCV_DSP_SORT_ASCENDING    ascending order
  *
- * 2. To ensure correct results, you must initialize the instance structure with the function
- *    riscv_dsp_sort_merge_init_f32 before using this function
- *    riscv_dsp_sort_merge_f32. For how to use the two functions, please refer to the
- *    code example below.
+ * 2. To ensure correct results, you must initialize the instance structure with
+ * the function riscv_dsp_sort_merge_init_f32 before using this function
+ *    riscv_dsp_sort_merge_f32. For how to use the two functions, please refer
+ * to the code example below.
  *
  * @b Example
  *     <pre>
- *     With the input size as 100 and sorting order as descending, the code example of merge
- *     sorting is as follows:
+ *     With the input size as 100 and sorting order as descending, the code
+ * example of merge sorting is as follows:
  *
  *     \#define size 100
  *     riscv_dsp_sort_merge_f32_t *instance;
@@ -5711,10 +6999,13 @@ static inline void hpm_dsp_sort_merge_init_f32(riscv_dsp_sort_merge_f32_t * inst
  *     riscv_dsp_sort_merge_f32(instance, src, dst, size);
  *     </pre>
  */
-static inline void hpm_dsp_sort_merge_f32(const riscv_dsp_sort_merge_f32_t * instance, float32_t * src, float32_t * dst, uint32_t size)
-{
+static inline void hpm_dsp_sort_merge_f32(
+    const riscv_dsp_sort_merge_f32_t* instance,
+    float32_t* src,
+    float32_t* dst,
+    uint32_t size) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    riscv_dsp_sort_merge_f32(instance, src, dst, size);
+  riscv_dsp_sort_merge_f32(instance, src, dst, size);
 #endif
 }
 
@@ -5728,19 +7019,16 @@ static inline void hpm_dsp_sort_merge_f32(const riscv_dsp_sort_merge_f32_t * ins
 #include <string.h>
 #include "riscv_simd_convert.h"
 
-#define LEFT_SHIFT(_shift)  (_shift > 0 ? _shift : 0)
+#define LEFT_SHIFT(_shift) (_shift > 0 ? _shift : 0)
 #define RIGHT_SHIFT(_shift) (_shift > 0 ? 0 : -_shift)
-#define Q31_MAX   ((q31_t)(0x7FFFFFFFL))
-#define Q31_MIN   ((q31_t)(0x80000000L))
+#define Q31_MAX ((q31_t)(0x7FFFFFFFL))
+#define Q31_MIN ((q31_t)(0x80000000L))
 
-static inline void write_q15x2_ia(
-    q15_t **pQ15,
-    q31_t   value)
-{
-    q31_t val = value;
-    (*pQ15)[0] = (val & 0x0FFFF);
-    (*pQ15)[1] = (val >> 16) & 0x0FFFF;
-    *pQ15 += 2;
+static inline void write_q15x2_ia(q15_t** pQ15, q31_t value) {
+  q31_t val = value;
+  (*pQ15)[0] = (val & 0x0FFFF);
+  (*pQ15)[1] = (val >> 16) & 0x0FFFF;
+  *pQ15 += 2;
 }
 
 /**
@@ -5749,14 +7037,13 @@ static inline void write_q15x2_ia(
  * @param[in]     in_q15   Pointer to pointer that holds address of input.
  * @return        q31 value
  */
-__STATIC_FORCEINLINE q31_t hpm_nn_read_q15x2_ia(const q15_t **in_q15)
-{
-    q31_t val;
+__STATIC_FORCEINLINE q31_t hpm_nn_read_q15x2_ia(const q15_t** in_q15) {
+  q31_t val;
 
-    val = *(q31_t *)(*in_q15);
-    *in_q15 += 2;
+  val = *(q31_t*)(*in_q15);
+  *in_q15 += 2;
 
-    return val;
+  return val;
 }
 
 /**
@@ -5767,21 +7054,21 @@ __STATIC_FORCEINLINE q31_t hpm_nn_read_q15x2_ia(const q15_t **in_q15)
  * @return          Result of multiplication.
  *
  */
-__STATIC_FORCEINLINE q31_t hpm_nn_sat_doubling_high_mult(const q31_t m1, const q31_t m2)
-{
-    q31_t result = 0;
-    q63_t mult = 1 << 30;
+__STATIC_FORCEINLINE q31_t hpm_nn_sat_doubling_high_mult(const q31_t m1,
+                                                         const q31_t m2) {
+  q31_t result = 0;
+  q63_t mult = 1 << 30;
 
-    if ((m1 < 0) ^ (m2 < 0)) {
-        mult = 1 - mult;
-    }
-    mult = mult + (q63_t)m1 * m2;
-    result = mult / (1UL << 31);
+  if ((m1 < 0) ^ (m2 < 0)) {
+    mult = 1 - mult;
+  }
+  mult = mult + (q63_t)m1 * m2;
+  result = mult / (1UL << 31);
 
-    if ((m1 == m2) && (m1 == (int32_t)Q31_MIN)) {
-        result = Q31_MAX;
-    }
-    return result;
+  if ((m1 == m2) && (m1 == (int32_t)Q31_MIN)) {
+    result = Q31_MAX;
+  }
+  return result;
 }
 
 /**
@@ -5789,32 +7076,35 @@ __STATIC_FORCEINLINE q31_t hpm_nn_sat_doubling_high_mult(const q31_t m1, const q
  * @param[in]       dividend - Dividend
  * @param[in]       exponent - Divisor = power(2, exponent)
  *                             Range: [0, 31]
- * @return          Rounded result of division. Midpoint is rounded away from zero.
+ * @return          Rounded result of division. Midpoint is rounded away from
+ * zero.
  *
  */
-__STATIC_FORCEINLINE q31_t hpm_nn_divide_by_power_of_two(const q31_t dividend, const q31_t exponent)
-{
-    q31_t result = 0;
+__STATIC_FORCEINLINE q31_t hpm_nn_divide_by_power_of_two(const q31_t dividend,
+                                                         const q31_t exponent) {
+  q31_t result = 0;
 
-    const q31_t remainder_mask = (1l << exponent) - 1;
-    int32_t remainder = remainder_mask & dividend;
+  const q31_t remainder_mask = (1l << exponent) - 1;
+  int32_t remainder = remainder_mask & dividend;
 
-    result = dividend >> exponent;
-    q31_t threshold = remainder_mask >> 1;
-    if (result < 0) {
-        threshold++;
-    }
-    if (remainder > threshold) {
-        result++;
-    }
+  result = dividend >> exponent;
+  q31_t threshold = remainder_mask >> 1;
+  if (result < 0) {
+    threshold++;
+  }
+  if (remainder > threshold) {
+    result++;
+  }
 
-    return result;
+  return result;
 }
 
-__STATIC_FORCEINLINE q31_t hpm_nn_requantize(const q31_t val, const q31_t multiplier, const q31_t shift)
-{
-    return hpm_nn_divide_by_power_of_two(hpm_nn_sat_doubling_high_mult(val * (1 << LEFT_SHIFT(shift)), multiplier),
-                                       RIGHT_SHIFT(shift));
+__STATIC_FORCEINLINE q31_t hpm_nn_requantize(const q31_t val,
+                                             const q31_t multiplier,
+                                             const q31_t shift) {
+  return hpm_nn_divide_by_power_of_two(
+      hpm_nn_sat_doubling_high_mult(val * (1 << LEFT_SHIFT(shift)), multiplier),
+      RIGHT_SHIFT(shift));
 }
 
 /**
@@ -5822,44 +7112,45 @@ __STATIC_FORCEINLINE q31_t hpm_nn_requantize(const q31_t val, const q31_t multip
  * @param[in]     in_q7       Pointer to pointer that holds address of input.
  * @return        q31 value
  */
-__STATIC_FORCEINLINE q31_t hpm_nn_read_q7x4_ia(const q7_t **in_q7)
-{
-    q31_t val;
+__STATIC_FORCEINLINE q31_t hpm_nn_read_q7x4_ia(const q7_t** in_q7) {
+  q31_t val;
 
-    val = *(q31_t *)(*in_q7);
-    *in_q7 += 4;
+  val = *(q31_t*)(*in_q7);
+  *in_q7 += 4;
 
-    return val;
+  return val;
 }
 
 /**
  * @brief read and expand one q7 word into two q15 words with reordering
  */
 
-__STATIC_FORCEINLINE const q7_t *read_and_pad_reordered(const q7_t *source, q31_t *out1, q31_t *out2)
-{
-    q31_t     inA = hpm_nn_read_q7x4_ia(&source);
+__STATIC_FORCEINLINE const q7_t* read_and_pad_reordered(const q7_t* source,
+                                                        q31_t* out1,
+                                                        q31_t* out2) {
+  q31_t inA = hpm_nn_read_q7x4_ia(&source);
 
-    *out2 = __SXTB16_ROR(inA, 8);
-    *out1 = __SXTB16(inA);
+  *out2 = __SXTB16_ROR(inA, 8);
+  *out1 = __SXTB16(inA);
 
-    return source;
+  return source;
 }
 
 /**
  * @brief read and expand one q7 word into two q15 words
  */
 
-__STATIC_FORCEINLINE const q7_t *read_and_pad(const q7_t *source, q31_t *out1, q31_t *out2)
-{
-    q31_t     inA = hpm_nn_read_q7x4_ia(&source);
-    q31_t     inAbuf1 = __SXTB16_ROR(inA, 8);
-    q31_t     inAbuf2 = __SXTB16(inA);
+__STATIC_FORCEINLINE const q7_t* read_and_pad(const q7_t* source,
+                                              q31_t* out1,
+                                              q31_t* out2) {
+  q31_t inA = hpm_nn_read_q7x4_ia(&source);
+  q31_t inAbuf1 = __SXTB16_ROR(inA, 8);
+  q31_t inAbuf2 = __SXTB16(inA);
 
-    *out2 = __PKHTB(inAbuf1, inAbuf2, 16);
-    *out1 = __PKHBT(inAbuf2, inAbuf1, 16);
+  *out2 = __PKHTB(inAbuf1, inAbuf2, 16);
+  *out1 = __PKHBT(inAbuf2, inAbuf1, 16);
 
-    return source;
+  return source;
 }
 
 /**
@@ -5867,57 +7158,60 @@ __STATIC_FORCEINLINE const q7_t *read_and_pad(const q7_t *source, q31_t *out1, q
  * @param[in]     in_s8       Pointer to pointer that holds address of input.
  * @return        q31 value
  */
-__STATIC_FORCEINLINE int32_t hpm_nn_read_s8x4_ia(const int8_t **in_s8)
-{
-    int32_t val;
+__STATIC_FORCEINLINE int32_t hpm_nn_read_s8x4_ia(const int8_t** in_s8) {
+  int32_t val;
 
-    val = *(int32_t *)(*in_s8);
-    *in_s8 += 4;
+  val = *(int32_t*)(*in_s8);
+  *in_s8 += 4;
 
-    return val;
+  return val;
 }
 
-__STATIC_FORCEINLINE void hpm_nn_q7_to_q15_with_offset(const int8_t *src, int16_t *dst, int32_t block_size, int16_t offset)
-{
-    int32_t block_cnt;
+__STATIC_FORCEINLINE void hpm_nn_q7_to_q15_with_offset(const int8_t* src,
+                                                       int16_t* dst,
+                                                       int32_t block_size,
+                                                       int16_t offset) {
+  int32_t block_cnt;
 
-    /* Run the below code for cores that support SIMD instructions  */
-    int32_t in_q7x4;
-    int32_t in_q15x2_1;
-    int32_t in_q15x2_2;
-    int32_t out_q15x2_1;
-    int32_t out_q15x2_2;
+  /* Run the below code for cores that support SIMD instructions  */
+  int32_t in_q7x4;
+  int32_t in_q15x2_1;
+  int32_t in_q15x2_2;
+  int32_t out_q15x2_1;
+  int32_t out_q15x2_2;
 
-    /*loop unrolling */
-    block_cnt = block_size >> 2;
+  /*loop unrolling */
+  block_cnt = block_size >> 2;
 
-    /* First part of the processing with loop unrolling.  Compute 4 outputs at a time. */
-    const int32_t offset_q15x2 = __PKHBT(offset, offset, 16);
-    while (block_cnt > 0) {
-        /* convert from s8 to s16 and then store the results in the destination buffer */
-        in_q7x4 = hpm_nn_read_s8x4_ia(&src);
+  /* First part of the processing with loop unrolling.  Compute 4 outputs at a
+   * time. */
+  const int32_t offset_q15x2 = __PKHBT(offset, offset, 16);
+  while (block_cnt > 0) {
+    /* convert from s8 to s16 and then store the results in the destination
+     * buffer */
+    in_q7x4 = hpm_nn_read_s8x4_ia(&src);
 
-        /* Extract and sign extend each of the four s8 values to s16 */
-        in_q15x2_1 = __SXTAB16(offset_q15x2, __ROR(in_q7x4, 8));
-        in_q15x2_2 = __SXTAB16(offset_q15x2, in_q7x4);
+    /* Extract and sign extend each of the four s8 values to s16 */
+    in_q15x2_1 = __SXTAB16(offset_q15x2, __ROR(in_q7x4, 8));
+    in_q15x2_2 = __SXTAB16(offset_q15x2, in_q7x4);
 
-        out_q15x2_2 = __PKHTB(in_q15x2_1, in_q15x2_2, 16);
-        out_q15x2_1 = __PKHBT(in_q15x2_2, in_q15x2_1, 16);
+    out_q15x2_2 = __PKHTB(in_q15x2_1, in_q15x2_2, 16);
+    out_q15x2_1 = __PKHBT(in_q15x2_2, in_q15x2_1, 16);
 
-        write_q15x2_ia(&dst, out_q15x2_1);
-        write_q15x2_ia(&dst, out_q15x2_2);
+    write_q15x2_ia(&dst, out_q15x2_1);
+    write_q15x2_ia(&dst, out_q15x2_2);
 
-        block_cnt--;
-    }
-    /* Handle left over samples */
-    block_cnt = block_size % 0x4;
+    block_cnt--;
+  }
+  /* Handle left over samples */
+  block_cnt = block_size % 0x4;
 
-    while (block_cnt > 0) {
-        *dst++ = (int16_t)*src++ + offset;
+  while (block_cnt > 0) {
+    *dst++ = (int16_t)*src++ + offset;
 
-        /* Decrement the loop counter */
-        block_cnt--;
-    }
+    /* Decrement the loop counter */
+    block_cnt--;
+  }
 }
 
 #endif
@@ -5925,8 +7219,11 @@ __STATIC_FORCEINLINE void hpm_nn_q7_to_q15_with_offset(const int8_t *src, int16_
 
 #ifdef HPM_MATH_NN_ACTIVATION
 #ifdef HPM_EN_MATH_NN_LIB
-
+#if defined(__zcc__)
+#include "tpt_nn_activation.h"
+#else
 #include "riscv_nn_activation.h"
+#endif
 /**
  * @defgroup nnactivation NN Activation Functions
  * @ingroup hpmmath
@@ -5958,12 +7255,15 @@ __STATIC_FORCEINLINE void hpm_nn_q7_to_q15_with_offset(const int8_t *src, int16_
  * hpm_nn_activate_s8(in_out, SIZE, 0, NN_SIGMOID);
  * @endcode
  */
-static inline void hpm_nn_activate_s8(q7_t *in_out,
-                        uint32_t size,
-                        uint16_t int_bits,
-                        riscv_nn_activation_fun act_fun)
-{
-    riscv_nn_activate_s8(in_out, size, int_bits, act_fun);
+static inline void hpm_nn_activate_s8(q7_t* in_out,
+                                      uint32_t size,
+                                      uint16_t int_bits,
+                                      riscv_nn_activation_fun act_fun) {
+#if defined(__zcc__)
+  tpt_nn_activate_s8(in_out, size, int_bits, act_fun);
+#else
+  riscv_nn_activate_s8(in_out, size, int_bits, act_fun);
+#endif
 }
 
 /**
@@ -5981,12 +7281,15 @@ static inline void hpm_nn_activate_s8(q7_t *in_out,
  *  - NN_SIGMOID: Use the sigmoid activation function
  *  - NN_TANH: Use the tanh activation function
  */
-static inline void hpm_nn_activate_s16(q15_t *in_out,
-                        uint32_t size,
-                        uint16_t int_bits,
-                        riscv_nn_activation_fun act_fun)
-{
-    riscv_nn_activate_s16(in_out, size, int_bits, act_fun);
+static inline void hpm_nn_activate_s16(q15_t* in_out,
+                                       uint32_t size,
+                                       uint16_t int_bits,
+                                       riscv_nn_activation_fun act_fun) {
+#if defined(__zcc__)
+  tpt_nn_activate_s16(in_out, size, int_bits, act_fun);
+#else
+  riscv_nn_activate_s16(in_out, size, int_bits, act_fun);
+#endif
 }
 
 /**
@@ -6006,11 +7309,14 @@ static inline void hpm_nn_activate_s16(q15_t *in_out,
  * hpm_nn_leaky_relu_s8(in_out, SIZE, slope);
  * @endcode
  */
-static inline void hpm_nn_leaky_relu_s8(q7_t *in_out,
-                        uint32_t size,
-                        q15_t slope)
-{
-    riscv_nn_leaky_relu_s8(in_out, size, slope);
+static inline void hpm_nn_leaky_relu_s8(q7_t* in_out,
+                                        uint32_t size,
+                                        q15_t slope) {
+#if defined(__zcc__)
+  tpt_nn_leaky_relu_s8(in_out, size, slope);
+#else
+  riscv_nn_leaky_relu_s8(in_out, size, slope);
+#endif
 }
 
 /**
@@ -6020,9 +7326,12 @@ static inline void hpm_nn_leaky_relu_s8(q7_t *in_out,
  * @param[in]       size        number of elements in the input/output vector
  * @param[in]       max_val     maximum value to limit the output vector
  */
-static inline void hpm_nn_relu_any_s8(q7_t *data, uint16_t size, q7_t max_val)
-{
-    riscv_nn_relu_any_s8(data, size, max_val);
+static inline void hpm_nn_relu_any_s8(q7_t* data, uint16_t size, q7_t max_val) {
+#if defined(__zcc__)
+  tpt_nn_relu_any_s8(data, size, max_val);
+#else
+  riscv_nn_relu_any_s8(data, size, max_val);
+#endif
 }
 
 /**
@@ -6041,9 +7350,12 @@ static inline void hpm_nn_relu_any_s8(q7_t *data, uint16_t size, q7_t max_val)
  * hpm_nn_relu_s8(in_out, NUM);
  * @endcode
  */
-static inline void hpm_nn_relu_s8(q7_t *in_out, uint32_t size)
-{
-    riscv_nn_relu_s8(in_out, size);
+static inline void hpm_nn_relu_s8(q7_t* in_out, uint32_t size) {
+#if defined(__zcc__)
+  tpt_nn_relu_s8(in_out, size);
+#else
+  riscv_nn_relu_s8(in_out, size);
+#endif
 }
 
 /**
@@ -6052,9 +7364,12 @@ static inline void hpm_nn_relu_s8(q7_t *in_out, uint32_t size)
  * @param[in,out]   in_out      pointer of the input/output vector
  * @param[in]       size        number of elements in the input/output vector
  */
-static inline void hpm_nn_relu_s16(q15_t *in_out, uint32_t size)
-{
-    riscv_nn_relu_s16(in_out, size);
+static inline void hpm_nn_relu_s16(q15_t* in_out, uint32_t size) {
+#if defined(__zcc__)
+  tpt_nn_relu_s16(in_out, size);
+#else
+  riscv_nn_relu_s16(in_out, size);
+#endif
 }
 
 #ifdef __riscv_zfh
@@ -6067,11 +7382,14 @@ static inline void hpm_nn_relu_s16(q15_t *in_out, uint32_t size)
  * @param[out]      out_vec     pointer of the output vector
  * @return          This function returns 0.
  */
-static inline int32_t hpm_nn_sigmoid_f16(const float16_t *in_vec,
-                            uint32_t size,
-                            float16_t *out_vec)
-{
-    return riscv_nn_sigmoid_f16(in_vec, size, out_vec);
+static inline int32_t hpm_nn_sigmoid_f16(const float16_t* in_vec,
+                                         uint32_t size,
+                                         float16_t* out_vec) {
+#if defined(__zcc__)
+  return tpt_nn_sigmoid_f16(in_vec, size, out_vec);
+#else
+  return riscv_nn_sigmoid_f16(in_vec, size, out_vec);
+#endif
 }
 
 /**
@@ -6082,11 +7400,14 @@ static inline int32_t hpm_nn_sigmoid_f16(const float16_t *in_vec,
  * @param[out]      out_vec     pointer of the output vector
  * @return          This function returns 0.
  */
-static inline int32_t hpm_nn_tanh_f16(const float16_t *in_vec,
-                        uint32_t size,
-                        float16_t *out_vec)
-{
-    return riscv_nn_tanh_f16(in_vec, size, out_vec);
+static inline int32_t hpm_nn_tanh_f16(const float16_t* in_vec,
+                                      uint32_t size,
+                                      float16_t* out_vec) {
+#if defined(__zcc__)
+  return tpt_nn_tanh_f16(in_vec, size, out_vec);
+#else
+  return riscv_nn_tanh_f16(in_vec, size, out_vec);
+#endif
 }
 #endif
 
@@ -6098,8 +7419,11 @@ static inline int32_t hpm_nn_tanh_f16(const float16_t *in_vec,
 
 #ifdef HPM_MATH_NN_BASIC
 #ifdef HPM_EN_MATH_NN_LIB
+#if defined(__zcc__)
+#include "tpt_nn_basic.h"
+#else
 #include "riscv_nn_basic.h"
-
+#endif
 /**
  * @defgroup nnbasic NN Basic Functions
  * @ingroup hpmmath
@@ -6128,8 +7452,10 @@ static inline int32_t hpm_nn_tanh_f16(const float16_t *in_vec,
  * @code
  * #define SIZE 1024
  * uint16_t pre_rshift = 8;        // The addition results of both scaled input
- *                                 // tensors are in the range of 24-bit; thus, the
- *                                 // pre_rshift should be in the range of [0, 24].
+ *                                 // tensors are in the range of 24-bit; thus,
+ * the
+ *                                 // pre_rshift should be in the range of [0,
+ * 24].
  *                                 // Here we scale down the results into 16-bit
  *                                 // range.
  * uint16_t out_scale = 3;         // Scale up the result into 18-bit range.
@@ -6145,17 +7471,22 @@ static inline int32_t hpm_nn_tanh_f16(const float16_t *in_vec,
  *     out_scale, post_rshift, out);
  * @endcode
  */
-static inline void hpm_nn_add_s8_sym(const q7_t *in_tensor1,
-                        const q7_t *in_tensor2,
-                        const int16_t *scale1,
-                        const int16_t *scale2,
-                        const uint32_t size,
-                        const uint16_t pre_rshift,
-                        const uint16_t out_scale,
-                        const uint16_t post_rshift,
-                        q7_t *out)
-{
-        riscv_nn_add_s8_sym(in_tensor1, in_tensor2, scale1, scale2, size, pre_rshift, out_scale, post_rshift, out);
+static inline void hpm_nn_add_s8_sym(const q7_t* in_tensor1,
+                                     const q7_t* in_tensor2,
+                                     const int16_t* scale1,
+                                     const int16_t* scale2,
+                                     const uint32_t size,
+                                     const uint16_t pre_rshift,
+                                     const uint16_t out_scale,
+                                     const uint16_t post_rshift,
+                                     q7_t* out) {
+#if defined(__zcc__)
+  tpt_nn_add_s8_sym(in_tensor1, in_tensor2, scale1, scale2, size, pre_rshift,
+                    out_scale, post_rshift, out);
+#else
+  riscv_nn_add_s8_sym(in_tensor1, in_tensor2, scale1, scale2, size, pre_rshift,
+                      out_scale, post_rshift, out);
+#endif
 }
 
 /**
@@ -6177,17 +7508,22 @@ static inline void hpm_nn_add_s8_sym(const q7_t *in_tensor1,
  * @param[out]      out         pointer of element-wise addition results
  *
  */
-static inline void hpm_nn_add_s8_sym_round(const q7_t *in_tensor1,
-                            const q7_t *in_tensor2,
-                            const uint32_t scale1,
-                            const uint32_t scale2,
-                            const uint32_t size,
-                            const uint16_t pre_rshift,
-                            const uint16_t out_scale,
-                            const uint16_t post_rshift,
-                            q7_t *out)
-{
-        riscv_nn_add_s8_sym_round(in_tensor1, in_tensor2, scale1, scale2, size, pre_rshift, out_scale, post_rshift, out);
+static inline void hpm_nn_add_s8_sym_round(const q7_t* in_tensor1,
+                                           const q7_t* in_tensor2,
+                                           const uint32_t scale1,
+                                           const uint32_t scale2,
+                                           const uint32_t size,
+                                           const uint16_t pre_rshift,
+                                           const uint16_t out_scale,
+                                           const uint16_t post_rshift,
+                                           q7_t* out) {
+#if defined(__zcc__)
+  tpt_nn_add_s8_sym_round(in_tensor1, in_tensor2, scale1, scale2, size,
+                          pre_rshift, out_scale, post_rshift, out);
+#else
+  riscv_nn_add_s8_sym_round(in_tensor1, in_tensor2, scale1, scale2, size,
+                            pre_rshift, out_scale, post_rshift, out);
+#endif
 }
 
 /**
@@ -6241,24 +7577,33 @@ static inline void hpm_nn_add_s8_sym_round(const q7_t *in_tensor1,
  *     out_scale, out_rshift, act_min, act_max, SIZE);
  * @endcode
  */
-static inline int hpm_nn_ew_add_s8_asym(const int8_t *in_tensor1,
-                            const int8_t *in_tensor2,
-                            const int32_t in_offset1,
-                            const int32_t in_scale1,
-                            const int32_t in_rshift1,
-                            const int32_t in_offset2,
-                            const int32_t in_scale2,
-                            const int32_t in_rshift2,
-                            const int32_t lshift,
-                            int8_t *out,
-                            const int32_t out_offset,
-                            const int32_t out_scale,
-                            const int32_t out_rshift,
-                            const int32_t act_min,
-                            const int32_t act_max,
-                            const uint32_t size)
-{
-        return riscv_nn_ew_add_s8_asym(in_tensor1, in_tensor2, in_offset1, in_scale1, in_rshift1, in_offset2, in_scale2, in_rshift2, lshift, out, out_offset, out_scale, out_rshift, act_min, act_max, size);
+static inline int hpm_nn_ew_add_s8_asym(const int8_t* in_tensor1,
+                                        const int8_t* in_tensor2,
+                                        const int32_t in_offset1,
+                                        const int32_t in_scale1,
+                                        const int32_t in_rshift1,
+                                        const int32_t in_offset2,
+                                        const int32_t in_scale2,
+                                        const int32_t in_rshift2,
+                                        const int32_t lshift,
+                                        int8_t* out,
+                                        const int32_t out_offset,
+                                        const int32_t out_scale,
+                                        const int32_t out_rshift,
+                                        const int32_t act_min,
+                                        const int32_t act_max,
+                                        const uint32_t size) {
+#if defined(__zcc__)
+  return tpt_nn_ew_add_s8_asym(in_tensor1, in_tensor2, in_offset1, in_scale1,
+                               in_rshift1, in_offset2, in_scale2, in_rshift2,
+                               lshift, out, out_offset, out_scale, out_rshift,
+                               act_min, act_max, size);
+#else
+  return riscv_nn_ew_add_s8_asym(in_tensor1, in_tensor2, in_offset1, in_scale1,
+                                 in_rshift1, in_offset2, in_scale2, in_rshift2,
+                                 lshift, out, out_offset, out_scale, out_rshift,
+                                 act_min, act_max, size);
+#endif
 }
 
 /**
@@ -6300,19 +7645,26 @@ static inline int hpm_nn_ew_add_s8_asym(const int8_t *in_tensor1,
  *     out_offset, out_scale, out_shift, act_min, act_max, SIZE);
  * @endcode
  */
-static inline int hpm_nn_ew_mul_s8_asym(const int8_t *in_tensor1,
-                            const int8_t *in_tensor2,
-                            const int32_t in_offset1,
-                            const int32_t in_offset2,
-                            int8_t *out,
-                            const int32_t out_offset,
-                            const int32_t out_scale,
-                            const int32_t out_shift,
-                            const int32_t act_min,
-                            const int32_t act_max,
-                            const uint32_t size)
-{
-        return riscv_nn_ew_mul_s8_asym(in_tensor1, in_tensor2, in_offset1, in_offset2, out, out_offset, out_scale, out_shift, act_min, act_max, size);
+static inline int hpm_nn_ew_mul_s8_asym(const int8_t* in_tensor1,
+                                        const int8_t* in_tensor2,
+                                        const int32_t in_offset1,
+                                        const int32_t in_offset2,
+                                        int8_t* out,
+                                        const int32_t out_offset,
+                                        const int32_t out_scale,
+                                        const int32_t out_shift,
+                                        const int32_t act_min,
+                                        const int32_t act_max,
+                                        const uint32_t size) {
+#if defined(__zcc__)
+  return tpt_nn_ew_mul_s8_asym(in_tensor1, in_tensor2, in_offset1, in_offset2,
+                               out, out_offset, out_scale, out_shift, act_min,
+                               act_max, size);
+#else
+  return riscv_nn_ew_mul_s8_asym(in_tensor1, in_tensor2, in_offset1, in_offset2,
+                                 out, out_offset, out_scale, out_shift, act_min,
+                                 act_max, size);
+#endif
 }
 
 /**
@@ -6322,7 +7674,11 @@ static inline int hpm_nn_ew_mul_s8_asym(const int8_t *in_tensor1,
 #endif
 
 #ifdef HPM_EN_MATH_NN_RVP32_LIB
+#if defined(__zcc__)
+#include "tpt_nn_basic.h"
+#else
 #include "riscv_nn_basic.h"
+#endif
 
 /**
  * @brief           This function performs element-wise addition for signed
@@ -6376,24 +7732,33 @@ static inline int hpm_nn_ew_mul_s8_asym(const int8_t *in_tensor1,
  *     out_scale, out_rshift, act_min, act_max, SIZE);
  * @endcode
  */
-static inline int hpm_nn_ew_add_s8_asym(const int8_t *in_tensor1,
-                            const int8_t *in_tensor2,
-                            const int32_t in_offset1,
-                            const int32_t in_scale1,
-                            const int32_t in_rshift1,
-                            const int32_t in_offset2,
-                            const int32_t in_scale2,
-                            const int32_t in_rshift2,
-                            const int32_t lshift,
-                            int8_t *out,
-                            const int32_t out_offset,
-                            const int32_t out_scale,
-                            const int32_t out_rshift,
-                            const int32_t act_min,
-                            const int32_t act_max,
-                            const uint32_t size)
-{
-        return riscv_nn_ew_add_s8_asym(in_tensor1, in_tensor2, in_offset1, in_scale1, in_rshift1, in_offset2, in_scale2, in_rshift2, lshift, out, out_offset, out_scale, out_rshift, act_min, act_max, size);
+static inline int hpm_nn_ew_add_s8_asym(const int8_t* in_tensor1,
+                                        const int8_t* in_tensor2,
+                                        const int32_t in_offset1,
+                                        const int32_t in_scale1,
+                                        const int32_t in_rshift1,
+                                        const int32_t in_offset2,
+                                        const int32_t in_scale2,
+                                        const int32_t in_rshift2,
+                                        const int32_t lshift,
+                                        int8_t* out,
+                                        const int32_t out_offset,
+                                        const int32_t out_scale,
+                                        const int32_t out_rshift,
+                                        const int32_t act_min,
+                                        const int32_t act_max,
+                                        const uint32_t size) {
+#if defined(__zcc__)
+  return tpt_nn_ew_add_s8_asym(in_tensor1, in_tensor2, in_offset1, in_scale1,
+                               in_rshift1, in_offset2, in_scale2, in_rshift2,
+                               lshift, out, out_offset, out_scale, out_rshift,
+                               act_min, act_max, size);
+#else
+  return riscv_nn_ew_add_s8_asym(in_tensor1, in_tensor2, in_offset1, in_scale1,
+                                 in_rshift1, in_offset2, in_scale2, in_rshift2,
+                                 lshift, out, out_offset, out_scale, out_rshift,
+                                 act_min, act_max, size);
+#endif
 }
 
 #endif
@@ -6402,7 +7767,11 @@ static inline int hpm_nn_ew_add_s8_asym(const int8_t *in_tensor1,
 
 #ifdef HPM_MATH_NN_CONCATENATION
 #ifdef HPM_EN_MATH_NN_LIB
+#if defined(__zcc__)
+#include "tpt_nn_concatenation.h"
+#else
 #include "riscv_nn_concatenation.h"
+#endif
 
 /**
  * @defgroup nnconcatenation NN Concatenation Functions
@@ -6429,15 +7798,20 @@ static inline int hpm_nn_ew_add_s8_asym(const int8_t *in_tensor1,
  * The x, y and z dimension of the output tensor will be the same as those of
  * the input tensor.
  */
-static inline void hpm_nn_concate_s8_w(const int8_t *in_tensor,
-                        const uint16_t in_tensor_x,
-                        const uint16_t in_tensor_y,
-                        const uint16_t in_tensor_z,
-                        const uint16_t in_tensor_w,
-                        int8_t *out_tensor,
-                        const uint32_t out_offset_w)
-{
-    riscv_nn_concate_s8_w(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z, in_tensor_w, out_tensor, out_offset_w);
+static inline void hpm_nn_concate_s8_w(const int8_t* in_tensor,
+                                       const uint16_t in_tensor_x,
+                                       const uint16_t in_tensor_y,
+                                       const uint16_t in_tensor_z,
+                                       const uint16_t in_tensor_w,
+                                       int8_t* out_tensor,
+                                       const uint32_t out_offset_w) {
+#if defined(__zcc__)
+  tpt_nn_concate_s8_w(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z,
+                      in_tensor_w, out_tensor, out_offset_w);
+#else
+  riscv_nn_concate_s8_w(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z,
+                        in_tensor_w, out_tensor, out_offset_w);
+#endif
 }
 
 /**
@@ -6458,16 +7832,21 @@ static inline void hpm_nn_concate_s8_w(const int8_t *in_tensor,
  * The y, z and w dimensions of the output tensor will be the same as those of
  * the input tensor.
  */
-static inline void hpm_nn_concate_s8_x(const int8_t *in_tensor,
-                        const uint16_t in_tensor_x,
-                        const uint16_t in_tensor_y,
-                        const uint16_t in_tensor_z,
-                        const uint16_t in_tensor_w,
-                        int8_t *out_tensor,
-                        const uint16_t out_tensor_x,
-                        const uint32_t out_offset_x)
-{
-    riscv_nn_concate_s8_x(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z, in_tensor_w, out_tensor, out_tensor_x, out_offset_x);
+static inline void hpm_nn_concate_s8_x(const int8_t* in_tensor,
+                                       const uint16_t in_tensor_x,
+                                       const uint16_t in_tensor_y,
+                                       const uint16_t in_tensor_z,
+                                       const uint16_t in_tensor_w,
+                                       int8_t* out_tensor,
+                                       const uint16_t out_tensor_x,
+                                       const uint32_t out_offset_x) {
+#if defined(__zcc__)
+  tpt_nn_concate_s8_x(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z,
+                      in_tensor_w, out_tensor, out_tensor_x, out_offset_x);
+#else
+  riscv_nn_concate_s8_x(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z,
+                        in_tensor_w, out_tensor, out_tensor_x, out_offset_x);
+#endif
 }
 
 /**
@@ -6487,16 +7866,21 @@ static inline void hpm_nn_concate_s8_x(const int8_t *in_tensor,
  * The x, z and w dimensions of the output tensor will be the same as those of
  * the input tensor.
  */
-static inline void hpm_nn_concate_s8_y(const int8_t *in_tensor,
-                        const uint16_t in_tensor_x,
-                        const uint16_t in_tensor_y,
-                        const uint16_t in_tensor_z,
-                        const uint16_t in_tensor_w,
-                        int8_t *out_tensor,
-                        const uint16_t out_tensor_y,
-                        const uint32_t out_offset_y)
-{
-    riscv_nn_concate_s8_y(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z, in_tensor_w, out_tensor, out_tensor_y, out_offset_y);
+static inline void hpm_nn_concate_s8_y(const int8_t* in_tensor,
+                                       const uint16_t in_tensor_x,
+                                       const uint16_t in_tensor_y,
+                                       const uint16_t in_tensor_z,
+                                       const uint16_t in_tensor_w,
+                                       int8_t* out_tensor,
+                                       const uint16_t out_tensor_y,
+                                       const uint32_t out_offset_y) {
+#if defined(__zcc__)
+  tpt_nn_concate_s8_y(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z,
+                      in_tensor_w, out_tensor, out_tensor_y, out_offset_y);
+#else
+  riscv_nn_concate_s8_y(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z,
+                        in_tensor_w, out_tensor, out_tensor_y, out_offset_y);
+#endif
 }
 
 /**
@@ -6516,16 +7900,21 @@ static inline void hpm_nn_concate_s8_y(const int8_t *in_tensor,
  * The x, y and w dimensions of the output tensor will be the same as those of
  * the input tensor.
  */
-static inline void hpm_nn_concate_s8_z(const int8_t *in_tensor,
-                        const uint16_t in_tensor_x,
-                        const uint16_t in_tensor_y,
-                        const uint16_t in_tensor_z,
-                        const uint16_t in_tensor_w,
-                        int8_t *out_tensor,
-                        const uint16_t out_tensor_z,
-                        const uint32_t out_offset_z)
-{
-    riscv_nn_concate_s8_z(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z, in_tensor_w, out_tensor, out_tensor_z, out_offset_z);
+static inline void hpm_nn_concate_s8_z(const int8_t* in_tensor,
+                                       const uint16_t in_tensor_x,
+                                       const uint16_t in_tensor_y,
+                                       const uint16_t in_tensor_z,
+                                       const uint16_t in_tensor_w,
+                                       int8_t* out_tensor,
+                                       const uint16_t out_tensor_z,
+                                       const uint32_t out_offset_z) {
+#if defined(__zcc__)
+  tpt_nn_concate_s8_z(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z,
+                      in_tensor_w, out_tensor, out_tensor_z, out_offset_z);
+#else
+  riscv_nn_concate_s8_z(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z,
+                        in_tensor_w, out_tensor, out_tensor_z, out_offset_z);
+#endif
 }
 
 /**
@@ -6537,7 +7926,11 @@ static inline void hpm_nn_concate_s8_z(const int8_t *in_tensor,
 
 #ifdef HPM_MATH_NN_CONVOLUTION
 #ifdef HPM_EN_MATH_NN_LIB
+#if defined(__zcc__)
+#include "tpt_nn_convolution.h"
+#else
 #include "riscv_nn_convolution.h"
+#endif
 
 /**
  * @defgroup nnconvolution NN Convolution Functions
@@ -6626,28 +8019,40 @@ static inline void hpm_nn_concate_s8_z(const int8_t *in_tensor,
  * @endcode
  */
 
-static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_sft_bias_fast_any(const q7_t *in_tensor,
-                                                const uint16_t in_tensor_dim_x,
-                                                const uint16_t in_tensor_dim_y,
-                                                const uint16_t in_tensor_ch,
-                                                const q7_t *ker_weight,
-                                                const uint16_t out_tensor_ch,
-                                                const uint16_t ker_dim_x,
-                                                const uint16_t ker_dim_y,
-                                                const uint16_t pad_x,
-                                                const uint16_t pad_y,
-                                                const uint16_t stride_x,
-                                                const uint16_t stride_y,
-                                                const q7_t *bias,
-                                                const uint16_t bias_lshift,
-                                                const uint16_t out_rshift,
-                                                q7_t *out_tensor,
-                                                const uint16_t out_tensor_dim_x,
-                                                const uint16_t out_tensor_dim_y,
-                                                q15_t *in_tmp_buf,
-                                                q7_t *tmp_buf)
-{
-    return riscv_nn_conv_1x1_HWC_s8_s8_s8_sft_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf, tmp_buf);
+static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_sft_bias_fast_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const q7_t* bias,
+    const uint16_t bias_lshift,
+    const uint16_t out_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf,
+    q7_t* tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_1x1_HWC_s8_s8_s8_sft_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#else
+  return riscv_nn_conv_1x1_HWC_s8_s8_s8_sft_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#endif
 }
 
 /**
@@ -6701,22 +8106,32 @@ static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_sft_bias_fast_any(const q7_t 
  * @endcode
  */
 
-static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_RGB_sft_bias(const q7_t *in_tensor,
-                                                const uint16_t in_tensor_dim,
-                                                const q7_t *ker_weight,
-                                                const uint16_t out_tensor_ch,
-                                                const uint16_t ker_dim,
-                                                const uint16_t pad,
-                                                const uint16_t stride,
-                                                const q7_t *bias,
-                                                const uint16_t bias_lshift,
-                                                const uint16_t out_rshift,
-                                                q7_t *out_tensor,
-                                                const uint16_t out_tensor_dim,
-                                                q15_t *in_tmp_buf,
-                                                q7_t *tmp_buf)
-{
-    return riscv_nn_conv_HWC_s8_s8_s8_RGB_sft_bias(in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim, in_tmp_buf, tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_RGB_sft_bias(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const q7_t* bias,
+    const uint16_t bias_lshift,
+    const uint16_t out_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf,
+    q7_t* tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_s8_s8_s8_RGB_sft_bias(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim, in_tmp_buf,
+      tmp_buf);
+#else
+  return riscv_nn_conv_HWC_s8_s8_s8_RGB_sft_bias(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim, in_tmp_buf,
+      tmp_buf);
+#endif
 }
 
 /**
@@ -6740,8 +8155,8 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_RGB_sft_bias(const q7_t *in_tenso
  *                                  ker_dim * ker_dim + 1)".
  * @param[in]       wt_tmp_buf      temporary buffer for kernel weights. It is
  *                                  required when -mext-dsp or -mext-vector
- *                                  enabled and its size must be "out_tensor_ch *
- *                                  (3 * ker_dim * ker_dim + 1)".
+ *                                  enabled and its size must be "out_tensor_ch
+ * * (3 * ker_dim * ker_dim + 1)".
  * @return          This function only returns 0.
  *
  * @b Example:
@@ -6770,24 +8185,33 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_RGB_sft_bias(const q7_t *in_tenso
  *      OUT_DIM, in_tmp_buf, wt_tmp_buf);
  * @endcode
  */
-static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_RGB_sft_bias_fast(const q7_t *in_tensor,
-                                                const uint16_t in_tensor_dim,
-                                                const q7_t *ker_weight,
-                                                const uint16_t out_tensor_ch,
-                                                const uint16_t ker_dim,
-                                                const uint16_t pad,
-                                                const uint16_t stride,
-                                                const q7_t *bias,
-                                                const uint16_t bias_lshift,
-                                                const uint16_t out_rshift,
-                                                q7_t *out_tensor,
-                                                const uint16_t out_tensor_dim,
-                                                q15_t *in_tmp_buf,
-                                                q15_t *wt_tmp_buf)
-{
-    return riscv_nn_conv_HWC_s8_s8_s8_RGB_sft_bias_fast(in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim, in_tmp_buf, wt_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_RGB_sft_bias_fast(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const q7_t* bias,
+    const uint16_t bias_lshift,
+    const uint16_t out_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf,
+    q15_t* wt_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_s8_s8_s8_RGB_sft_bias_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim, in_tmp_buf,
+      wt_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_s8_s8_s8_RGB_sft_bias_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim, in_tmp_buf,
+      wt_tmp_buf);
+#endif
 }
-
 
 /**
  * @brief           This function performs signed 8-bit integer convolution with
@@ -6839,23 +8263,33 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_RGB_sft_bias_fast(const q7_t *in_
  * @endcode
  */
 
-static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sft_bias(const q7_t *in_tensor,
-                                            const uint16_t in_tensor_dim,
-                                            const uint16_t in_tensor_ch,
-                                            const q7_t *ker_weight,
-                                            const uint16_t out_tensor_ch,
-                                            const uint16_t ker_dim,
-                                            const uint16_t pad,
-                                            const uint16_t stride,
-                                            const q7_t *bias,
-                                            const uint16_t bias_lshift,
-                                            const uint16_t out_rshift,
-                                            q7_t *out_tensor,
-                                            const uint16_t out_tensor_dim,
-                                            q15_t *in_tmp_buf,
-                                            q7_t *tmp_buf)
-{
-    return riscv_nn_conv_HWC_s8_s8_s8_sft_bias(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim, in_tmp_buf, tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sft_bias(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const q7_t* bias,
+    const uint16_t bias_lshift,
+    const uint16_t out_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf,
+    q7_t* tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_s8_s8_s8_sft_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf, tmp_buf);
+#else
+  return riscv_nn_conv_HWC_s8_s8_s8_sft_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf, tmp_buf);
+#endif
 }
 
 /**
@@ -6919,28 +8353,40 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sft_bias(const q7_t *in_tensor,
  * @endcode
  */
 
-static inline void hpm_nn_conv_HWC_s8_s8_s8_sft_bias_any(const q7_t *in_tensor,
-                                            const uint16_t in_tensor_dim_x,
-                                            const uint16_t in_tensor_dim_y,
-                                            const uint16_t in_tensor_ch,
-                                            const q7_t *ker_weight,
-                                            const uint16_t out_tensor_ch,
-                                            const uint16_t ker_dim_x,
-                                            const uint16_t ker_dim_y,
-                                            const uint16_t pad_x,
-                                            const uint16_t pad_y,
-                                            const uint16_t stride_x,
-                                            const uint16_t stride_y,
-                                            const q7_t *bias,
-                                            const uint16_t bias_lshift,
-                                            const uint16_t out_rshift,
-                                            q7_t *out_tensor,
-                                            const uint16_t out_tensor_dim_x,
-                                            const uint16_t out_tensor_dim_y,
-                                            q15_t *in_tmp_buf,
-                                            q7_t *tmp_buf)
-{
-	riscv_nn_conv_HWC_s8_s8_s8_sft_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf, tmp_buf);
+static inline void hpm_nn_conv_HWC_s8_s8_s8_sft_bias_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const q7_t* bias,
+    const uint16_t bias_lshift,
+    const uint16_t out_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf,
+    q7_t* tmp_buf) {
+#if defined(__zcc__)
+  tpt_nn_conv_HWC_s8_s8_s8_sft_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#else
+  riscv_nn_conv_HWC_s8_s8_s8_sft_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#endif
 }
 
 /**
@@ -6995,23 +8441,33 @@ static inline void hpm_nn_conv_HWC_s8_s8_s8_sft_bias_any(const q7_t *in_tensor,
  * @endcode
  */
 
-static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sft_bias_fast(const q7_t *in_tensor,
-                                const uint16_t in_tensor_dim,
-                                const uint16_t in_tensor_ch,
-                                const q7_t *ker_weight,
-                                const uint16_t out_tensor_ch,
-                                const uint16_t ker_dim,
-                                const uint16_t pad,
-                                const uint16_t stride,
-                                const q7_t *bias,
-                                const uint16_t bias_lshift,
-                                const uint16_t out_rshift,
-                                q7_t *out_tensor,
-                                const uint16_t out_tensor_dim,
-                                q15_t *in_tmp_buf,
-                                q7_t *tmp_buf)
-{
-    return riscv_nn_conv_HWC_s8_s8_s8_sft_bias_fast(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim, in_tmp_buf, tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sft_bias_fast(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const q7_t* bias,
+    const uint16_t bias_lshift,
+    const uint16_t out_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf,
+    q7_t* tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_s8_s8_s8_sft_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf, tmp_buf);
+#else
+  return riscv_nn_conv_HWC_s8_s8_s8_sft_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf, tmp_buf);
+#endif
 }
 
 /**
@@ -7039,7 +8495,8 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sft_bias_fast(const q7_t *in_tens
  * @param[in]       in_tmp_buf          temporary buffer for the input tensor.
  *                                      It is required when -mext-dsp or
  *                                      -mext-vector enabled and its size must
- *                                      be equal to "2 * in_tensor_ch * ker_dim_x
+ *                                      be equal to "2 * in_tensor_ch *
+ * ker_dim_x
  *                                      * ker_dim_y".
  * @param[in]       tmp_buf             dummy
  * @return          This function returns 0 on success; otherwise, it returns -1
@@ -7080,30 +8537,41 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sft_bias_fast(const q7_t *in_tens
  * @endcode
  */
 
-static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sft_bias_fast_any(const q7_t *in_tensor,
-                                                const uint16_t in_tensor_dim_x,
-                                                const uint16_t in_tensor_dim_y,
-                                                const uint16_t in_tensor_ch,
-                                                const q7_t *ker_weight,
-                                                const uint16_t out_tensor_ch,
-                                                const uint16_t ker_dim_x,
-                                                const uint16_t ker_dim_y,
-                                                const uint16_t pad_x,
-                                                const uint16_t pad_y,
-                                                const uint16_t stride_x,
-                                                const uint16_t stride_y,
-                                                const q7_t *bias,
-                                                const uint16_t bias_lshift,
-                                                const uint16_t out_rshift,
-                                                q7_t *out_tensor,
-                                                const uint16_t out_tensor_dim_x,
-                                                const uint16_t out_tensor_dim_y,
-                                                q15_t *in_tmp_buf,
-                                                q7_t *tmp_buf)
-{
-    return riscv_nn_conv_HWC_s8_s8_s8_sft_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf, tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sft_bias_fast_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const q7_t* bias,
+    const uint16_t bias_lshift,
+    const uint16_t out_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf,
+    q7_t* tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_s8_s8_s8_sft_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#else
+  return riscv_nn_conv_HWC_s8_s8_s8_sft_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#endif
 }
-
 
 /**
  * @brief           This function performs signed 16-bit integer convolution
@@ -7155,23 +8623,33 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sft_bias_fast_any(const q7_t *in_
  * @endcode
  */
 
-static inline int32_t hpm_nn_conv_HWC_s16_s16_s16_sft_bias(const q15_t *in_tensor,
-                                            const uint16_t in_tensor_dim,
-                                            const uint16_t in_tensor_ch,
-                                            const q15_t *ker_weight,
-                                            const uint16_t out_tensor_ch,
-                                            const uint16_t ker_dim,
-                                            const uint16_t pad,
-                                            const uint16_t stride,
-                                            const q15_t *bias,
-                                            const uint16_t bias_lshift,
-                                            const uint16_t out_rshift,
-                                            q15_t *out_tensor,
-                                            const uint16_t out_tensor_dim,
-                                            q15_t *in_tmp_buf,
-                                            q7_t *tmp_buf)
-{
-    return riscv_nn_conv_HWC_s16_s16_s16_sft_bias(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim, in_tmp_buf, tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_s16_s16_s16_sft_bias(
+    const q15_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const q15_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const q15_t* bias,
+    const uint16_t bias_lshift,
+    const uint16_t out_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf,
+    q7_t* tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_s16_s16_s16_sft_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf, tmp_buf);
+#else
+  return riscv_nn_conv_HWC_s16_s16_s16_sft_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf, tmp_buf);
+#endif
 }
 
 /**
@@ -7226,23 +8704,33 @@ static inline int32_t hpm_nn_conv_HWC_s16_s16_s16_sft_bias(const q15_t *in_tenso
  * @endcode
  */
 
-static inline int32_t hpm_nn_conv_HWC_s16_s16_s16_sft_bias_fast(const q15_t *in_tensor,
-                                                const uint16_t in_tensor_dim,
-                                                const uint16_t in_tensor_ch,
-                                                const q15_t *ker_weight,
-                                                const uint16_t out_tensor_ch,
-                                                const uint16_t ker_dim,
-                                                const uint16_t pad,
-                                                const uint16_t stride,
-                                                const q15_t *bias,
-                                                const uint16_t bias_lshift,
-                                                const uint16_t out_rshift,
-                                                q15_t *out_tensor,
-                                                const uint16_t out_tensor_dim,
-                                                q15_t *in_tmp_buf,
-                                                q7_t *tmp_buf)
-{
-    return riscv_nn_conv_HWC_s16_s16_s16_sft_bias_fast(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim, in_tmp_buf, tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_s16_s16_s16_sft_bias_fast(
+    const q15_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const q15_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const q15_t* bias,
+    const uint16_t bias_lshift,
+    const uint16_t out_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf,
+    q7_t* tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_s16_s16_s16_sft_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf, tmp_buf);
+#else
+  return riscv_nn_conv_HWC_s16_s16_s16_sft_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf, tmp_buf);
+#endif
 }
 
 /**
@@ -7311,28 +8799,40 @@ static inline int32_t hpm_nn_conv_HWC_s16_s16_s16_sft_bias_fast(const q15_t *in_
  * @endcode
  */
 
-static inline int32_t hpm_nn_conv_HWC_s16_s16_s16_sft_bias_fast_any(const q15_t *in_tensor,
-                                                const uint16_t in_tensor_dim_x,
-                                                const uint16_t in_tensor_dim_y,
-                                                const uint16_t in_tensor_ch,
-                                                const q15_t *ker_weight,
-                                                const uint16_t out_tensor_ch,
-                                                const uint16_t ker_dim_x,
-                                                const uint16_t ker_dim_y,
-                                                const uint16_t pad_x,
-                                                const uint16_t pad_y,
-                                                const uint16_t stride_x,
-                                                const uint16_t stride_y,
-                                                const q15_t *bias,
-                                                const uint16_t bias_lshift,
-                                                const uint16_t out_rshift,
-                                                q15_t *out_tensor,
-                                                const uint16_t out_tensor_dim_x,
-                                                const uint16_t out_tensor_dim_y,
-                                                q15_t *in_tmp_buf,
-                                                q7_t *tmp_buf)
-{
-    return riscv_nn_conv_HWC_s16_s16_s16_sft_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf, tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_s16_s16_s16_sft_bias_fast_any(
+    const q15_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q15_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const q15_t* bias,
+    const uint16_t bias_lshift,
+    const uint16_t out_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf,
+    q7_t* tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_s16_s16_s16_sft_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#else
+  return riscv_nn_conv_HWC_s16_s16_s16_sft_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#endif
 }
 
 /**
@@ -7354,7 +8854,8 @@ static inline int32_t hpm_nn_conv_HWC_s16_s16_s16_sft_bias_fast_any(const q15_t 
  * @param[in]       in_tmp_buf      temporary buffer for the input tensor. It is
  *                                  required when -mext-dsp or -mext-vector is
  *                                  enabled and its size must be equal to
- *                                  "(in_tensor_ch * ker_dim * ker_dim + 1) / 2".
+ *                                  "(in_tensor_ch * ker_dim * ker_dim + 1) /
+ * 2".
  * @param[in]       tmp_buf         dummy
  * @return          This function returns 0 on success; otherwise, it returns -1
  *                  if its inputs do not meet the constraints that in_tensor_ch
@@ -7386,23 +8887,33 @@ static inline int32_t hpm_nn_conv_HWC_s16_s16_s16_sft_bias_fast_any(const q15_t 
  * @endcode
  */
 
-static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sft_bias(const q7_t *in_tensor,
-                                            const uint16_t in_tensor_dim,
-                                            const uint16_t in_tensor_ch,
-                                            const q7_t *ker_weight,
-                                            const uint16_t out_tensor_ch,
-                                            const uint16_t ker_dim,
-                                            const uint16_t pad,
-                                            const uint16_t stride,
-                                            const q7_t *bias,
-                                            const uint16_t bias_lshift,
-                                            const uint16_t out_rshift,
-                                            q7_t *out_tensor,
-                                            const uint16_t out_tensor_dim,
-                                            q15_t *in_tmp_buf,
-                                            q7_t *tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_s8_s8_s8_sft_bias(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim, in_tmp_buf, tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sft_bias(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const q7_t* bias,
+    const uint16_t bias_lshift,
+    const uint16_t out_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf,
+    q7_t* tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_s8_s8_s8_sft_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf, tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_s8_s8_s8_sft_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf, tmp_buf);
+#endif
 }
 
 /**
@@ -7467,28 +8978,40 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sft_bias(const q7_t *in_tensor
  *      NULL);
  *  @endcode
  */
-static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sft_bias_any(const q7_t *in_tensor,
-                                                const uint16_t in_tensor_dim_x,
-                                                const uint16_t in_tensor_dim_y,
-                                                const uint16_t in_tensor_ch,
-                                                const q7_t *ker_weight,
-                                                const uint16_t out_tensor_ch,
-                                                const uint16_t ker_dim_x,
-                                                const uint16_t ker_dim_y,
-                                                const uint16_t pad_x,
-                                                const uint16_t pad_y,
-                                                const uint16_t stride_x,
-                                                const uint16_t stride_y,
-                                                const q7_t *bias,
-                                                const uint16_t bias_lshift,
-                                                const uint16_t out_rshift,
-                                                q7_t *out_tensor,
-                                                const uint16_t out_tensor_dim_x,
-                                                const uint16_t out_tensor_dim_y,
-                                                q15_t *in_tmp_buf,
-                                                q7_t *tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_s8_s8_s8_sft_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf, tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sft_bias_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const q7_t* bias,
+    const uint16_t bias_lshift,
+    const uint16_t out_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf,
+    q7_t* tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_s8_s8_s8_sft_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_s8_s8_s8_sft_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#endif
 }
 
 /**
@@ -7536,28 +9059,40 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sft_bias_any(const q7_t *in_te
  * - The outputs will be 2-stage shifted before being stored, i.e.,
  *   out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_sym_bias_fast_any(const q7_t *in_tensor,
-                                                const uint16_t in_tensor_dim_x,
-                                                const uint16_t in_tensor_dim_y,
-                                                const uint16_t in_tensor_ch,
-                                                const q7_t *ker_weight,
-                                                const uint16_t out_tensor_ch,
-                                                const uint16_t ker_dim_x,
-                                                const uint16_t ker_dim_y,
-                                                const uint16_t pad_x,
-                                                const uint16_t pad_y,
-                                                const uint16_t stride_x,
-                                                const uint16_t stride_y,
-                                                const q31_t *bias,
-                                                const uint16_t pre_rshift,
-                                                const uint16_t out_scale,
-                                                const uint16_t post_rshift,
-                                                q7_t *out_tensor,
-                                                const uint16_t out_tensor_dim_x,
-                                                const uint16_t out_tensor_dim_y,
-                                                q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_1x1_HWC_s8_s8_s8_sym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_sym_bias_fast_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_1x1_HWC_s8_s8_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_1x1_HWC_s8_s8_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -7606,28 +9141,40 @@ static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_sym_bias_fast_any(const q7_t 
  * - The outputs will be 2-stage shifted before being stored, i.e.,
  *   out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_1x1_HWC_s8_s16_s8_sym_bias_fast_any(const q7_t *in_tensor,
-                                                    const uint16_t in_tensor_dim_x,
-                                                    const uint16_t in_tensor_dim_y,
-                                                    const uint16_t in_tensor_ch,
-                                                    const q7_t *ker_weight,
-                                                    const uint16_t out_tensor_ch,
-                                                    const uint16_t ker_dim_x,
-                                                    const uint16_t ker_dim_y,
-                                                    const uint16_t pad_x,
-                                                    const uint16_t pad_y,
-                                                    const uint16_t stride_x,
-                                                    const uint16_t stride_y,
-                                                    const q31_t *bias,
-                                                    const uint16_t pre_rshift,
-                                                    const uint16_t out_scale,
-                                                    const uint16_t post_rshift,
-                                                    q15_t *out_tensor,
-                                                    const uint16_t out_tensor_dim_x,
-                                                    const uint16_t out_tensor_dim_y,
-                                                    q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_1x1_HWC_s8_s16_s8_sym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_1x1_HWC_s8_s16_s8_sym_bias_fast_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_1x1_HWC_s8_s16_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_1x1_HWC_s8_s16_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -7675,28 +9222,40 @@ static inline int32_t hpm_nn_conv_1x1_HWC_s8_s16_s8_sym_bias_fast_any(const q7_t
  * - The outputs will be 2-stage shifted before being stored, i.e.,
  *   out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_1x1_HWC_u8_u8_s8_sym_bias_fast_any(const u8_t *in_tensor,
-                                                const uint16_t in_tensor_dim_x,
-                                                const uint16_t in_tensor_dim_y,
-                                                const uint16_t in_tensor_ch,
-                                                const q7_t *ker_weight,
-                                                const uint16_t out_tensor_ch,
-                                                const uint16_t ker_dim_x,
-                                                const uint16_t ker_dim_y,
-                                                const uint16_t pad_x,
-                                                const uint16_t pad_y,
-                                                const uint16_t stride_x,
-                                                const uint16_t stride_y,
-                                                const q31_t *bias,
-                                                const uint16_t pre_rshift,
-                                                const uint16_t out_scale,
-                                                const uint16_t post_rshift,
-                                                u8_t *out_tensor,
-                                                const uint16_t out_tensor_dim_x,
-                                                const uint16_t out_tensor_dim_y,
-                                                q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_1x1_HWC_u8_u8_s8_sym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_1x1_HWC_u8_u8_s8_sym_bias_fast_any(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    u8_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_1x1_HWC_u8_u8_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_1x1_HWC_u8_u8_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -7745,28 +9304,40 @@ static inline int32_t hpm_nn_conv_1x1_HWC_u8_u8_s8_sym_bias_fast_any(const u8_t 
  * - The outputs will be 2-stage shifted before being stored, i.e.,
  *   out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_1x1_HWC_u8_s8_s8_sym_bias_fast_any(const u8_t *in_tensor,
-                                                    const uint16_t in_tensor_dim_x,
-                                                    const uint16_t in_tensor_dim_y,
-                                                    const uint16_t in_tensor_ch,
-                                                    const q7_t *ker_weight,
-                                                    const uint16_t out_tensor_ch,
-                                                    const uint16_t ker_dim_x,
-                                                    const uint16_t ker_dim_y,
-                                                    const uint16_t pad_x,
-                                                    const uint16_t pad_y,
-                                                    const uint16_t stride_x,
-                                                    const uint16_t stride_y,
-                                                    const q31_t *bias,
-                                                    const uint16_t pre_rshift,
-                                                    const uint16_t out_scale,
-                                                    const uint16_t post_rshift,
-                                                    q7_t *out_tensor,
-                                                    const uint16_t out_tensor_dim_x,
-                                                    const uint16_t out_tensor_dim_y,
-                                                    q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_1x1_HWC_u8_s8_s8_sym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_1x1_HWC_u8_s8_s8_sym_bias_fast_any(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_1x1_HWC_u8_s8_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_1x1_HWC_u8_s8_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -7815,28 +9386,40 @@ static inline int32_t hpm_nn_conv_1x1_HWC_u8_s8_s8_sym_bias_fast_any(const u8_t 
  * - The outputs will be 2-stage shifted before being stored, i.e.,
  *   out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_1x1_HWC_u8_s16_s8_sym_bias_fast_any(const u8_t *in_tensor,
-                                                    const uint16_t in_tensor_dim_x,
-                                                    const uint16_t in_tensor_dim_y,
-                                                    const uint16_t in_tensor_ch,
-                                                    const q7_t *ker_weight,
-                                                    const uint16_t out_tensor_ch,
-                                                    const uint16_t ker_dim_x,
-                                                    const uint16_t ker_dim_y,
-                                                    const uint16_t pad_x,
-                                                    const uint16_t pad_y,
-                                                    const uint16_t stride_x,
-                                                    const uint16_t stride_y,
-                                                    const q31_t *bias,
-                                                    const uint16_t pre_rshift,
-                                                    const uint16_t out_scale,
-                                                    const uint16_t post_rshift,
-                                                    q15_t *out_tensor,
-                                                    const uint16_t out_tensor_dim_x,
-                                                    const uint16_t out_tensor_dim_y,
-                                                    q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_1x1_HWC_u8_s16_s8_sym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_1x1_HWC_u8_s16_s8_sym_bias_fast_any(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_1x1_HWC_u8_s16_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_1x1_HWC_u8_s16_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -7883,27 +9466,39 @@ static inline int32_t hpm_nn_conv_1x1_HWC_u8_s16_s8_sym_bias_fast_any(const u8_t
  * - The outputs will be 2-stage shifted before being stored, i.e.,
  *   out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_sym_fast_any(const q7_t *in_tensor,
-                                            const uint16_t in_tensor_dim_x,
-                                            const uint16_t in_tensor_dim_y,
-                                            const uint16_t in_tensor_ch,
-                                            const q7_t *ker_weight,
-                                            const uint16_t out_tensor_ch,
-                                            const uint16_t ker_dim_x,
-                                            const uint16_t ker_dim_y,
-                                            const uint16_t pad_x,
-                                            const uint16_t pad_y,
-                                            const uint16_t stride_x,
-                                            const uint16_t stride_y,
-                                            const uint16_t pre_rshift,
-                                            const uint16_t out_scale,
-                                            const uint16_t post_rshift,
-                                            q7_t *out_tensor,
-                                            const uint16_t out_tensor_dim_x,
-                                            const uint16_t out_tensor_dim_y,
-                                            q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_1x1_HWC_s8_s8_s8_sym_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_sym_fast_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_1x1_HWC_s8_s8_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_1x1_HWC_s8_s8_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -7951,27 +9546,39 @@ static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_sym_fast_any(const q7_t *in_t
  * - The outputs will be 2-stage shifted before being stored, i.e.,
  *   out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_1x1_HWC_s8_s16_s8_sym_fast_any(const q7_t *in_tensor,
-                                                const uint16_t in_tensor_dim_x,
-                                                const uint16_t in_tensor_dim_y,
-                                                const uint16_t in_tensor_ch,
-                                                const q7_t *ker_weight,
-                                                const uint16_t out_tensor_ch,
-                                                const uint16_t ker_dim_x,
-                                                const uint16_t ker_dim_y,
-                                                const uint16_t pad_x,
-                                                const uint16_t pad_y,
-                                                const uint16_t stride_x,
-                                                const uint16_t stride_y,
-                                                const uint16_t pre_rshift,
-                                                const uint16_t out_scale,
-                                                const uint16_t post_rshift,
-                                                q15_t *out_tensor,
-                                                const uint16_t out_tensor_dim_x,
-                                                const uint16_t out_tensor_dim_y,
-                                                q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_1x1_HWC_s8_s16_s8_sym_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_1x1_HWC_s8_s16_s8_sym_fast_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_1x1_HWC_s8_s16_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_1x1_HWC_s8_s16_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -8018,27 +9625,39 @@ static inline int32_t hpm_nn_conv_1x1_HWC_s8_s16_s8_sym_fast_any(const q7_t *in_
  * - The outputs will be 2-stage shifted before being stored, i.e.,
  *   out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_1x1_HWC_u8_u8_s8_sym_fast_any(const u8_t *in_tensor,
-                                            const uint16_t in_tensor_dim_x,
-                                            const uint16_t in_tensor_dim_y,
-                                            const uint16_t in_tensor_ch,
-                                            const q7_t *ker_weight,
-                                            const uint16_t out_tensor_ch,
-                                            const uint16_t ker_dim_x,
-                                            const uint16_t ker_dim_y,
-                                            const uint16_t pad_x,
-                                            const uint16_t pad_y,
-                                            const uint16_t stride_x,
-                                            const uint16_t stride_y,
-                                            const uint16_t pre_rshift,
-                                            const uint16_t out_scale,
-                                            const uint16_t post_rshift,
-                                            u8_t *out_tensor,
-                                            const uint16_t out_tensor_dim_x,
-                                            const uint16_t out_tensor_dim_y,
-                                            q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_1x1_HWC_u8_u8_s8_sym_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_1x1_HWC_u8_u8_s8_sym_fast_any(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    u8_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_1x1_HWC_u8_u8_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_1x1_HWC_u8_u8_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -8086,27 +9705,39 @@ static inline int32_t hpm_nn_conv_1x1_HWC_u8_u8_s8_sym_fast_any(const u8_t *in_t
  * - The outputs will be 2-stage shifted before being stored, i.e.,
  *   out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_1x1_HWC_u8_s8_s8_sym_fast_any(const u8_t *in_tensor,
-                                                const uint16_t in_tensor_dim_x,
-                                                const uint16_t in_tensor_dim_y,
-                                                const uint16_t in_tensor_ch,
-                                                const q7_t *ker_weight,
-                                                const uint16_t out_tensor_ch,
-                                                const uint16_t ker_dim_x,
-                                                const uint16_t ker_dim_y,
-                                                const uint16_t pad_x,
-                                                const uint16_t pad_y,
-                                                const uint16_t stride_x,
-                                                const uint16_t stride_y,
-                                                const uint16_t pre_rshift,
-                                                const uint16_t out_scale,
-                                                const uint16_t post_rshift,
-                                                q7_t *out_tensor,
-                                                const uint16_t out_tensor_dim_x,
-                                                const uint16_t out_tensor_dim_y,
-                                                q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_1x1_HWC_u8_s8_s8_sym_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_1x1_HWC_u8_s8_s8_sym_fast_any(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_1x1_HWC_u8_s8_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_1x1_HWC_u8_s8_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -8154,27 +9785,39 @@ static inline int32_t hpm_nn_conv_1x1_HWC_u8_s8_s8_sym_fast_any(const u8_t *in_t
  * - The outputs will be 2-stage shifted before being stored, i.e.,
  *   out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_1x1_HWC_u8_s16_s8_sym_fast_any(const u8_t *in_tensor,
-                                                const uint16_t in_tensor_dim_x,
-                                                const uint16_t in_tensor_dim_y,
-                                                const uint16_t in_tensor_ch,
-                                                const q7_t *ker_weight,
-                                                const uint16_t out_tensor_ch,
-                                                const uint16_t ker_dim_x,
-                                                const uint16_t ker_dim_y,
-                                                const uint16_t pad_x,
-                                                const uint16_t pad_y,
-                                                const uint16_t stride_x,
-                                                const uint16_t stride_y,
-                                                const uint16_t pre_rshift,
-                                                const uint16_t out_scale,
-                                                const uint16_t post_rshift,
-                                                q15_t *out_tensor,
-                                                const uint16_t out_tensor_dim_x,
-                                                const uint16_t out_tensor_dim_y,
-                                                q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_1x1_HWC_u8_s16_s8_sym_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_1x1_HWC_u8_s16_s8_sym_fast_any(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_1x1_HWC_u8_s16_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_1x1_HWC_u8_s16_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -8200,31 +9843,41 @@ static inline int32_t hpm_nn_conv_1x1_HWC_u8_s16_s8_sym_fast_any(const u8_t *in_
  *                                  ker_dim * ker_dim + 1)".
  * @param[in]       wt_tmp_buf      temporary buffer for kernel weights. It is
  *                                  required when -mext-dsp or -mext-vector
- *                                  enabled and its size must be "out_tensor_ch *
- *                                  (3 * ker_dim * ker_dim + 1)".
+ *                                  enabled and its size must be "out_tensor_ch
+ * * (3 * ker_dim * ker_dim + 1)".
  * @return          This function only returns 0.
  *
  * @note
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_RGB_sym_bias_fast(const q7_t *in_tensor,
-                                            const uint16_t in_tensor_dim,
-                                            const q7_t *ker_weight,
-                                            const uint16_t out_tensor_ch,
-                                            const uint16_t ker_dim,
-                                            const uint16_t pad,
-                                            const uint16_t stride,
-                                            const q31_t *bias,
-                                            const uint16_t pre_rshift,
-                                            const uint16_t out_scale,
-                                            const uint16_t post_rshift,
-                                            q7_t *out_tensor,
-                                            const uint16_t out_tensor_dim,
-                                            q15_t *in_tmp_buf,
-                                            q15_t *wt_tmp_buf)
-{
-    return riscv_nn_conv_HWC_s8_s8_s8_RGB_sym_bias_fast(in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf, wt_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_RGB_sym_bias_fast(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf,
+    q15_t* wt_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_s8_s8_s8_RGB_sym_bias_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_s8_s8_s8_RGB_sym_bias_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#endif
 }
 
 /**
@@ -8251,31 +9904,41 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_RGB_sym_bias_fast(const q7_t *in_
  *                                  ker_dim * ker_dim + 1)".
  * @param[in]       wt_tmp_buf      temporary buffer for kernel weights. It is
  *                                  required when -mext-dsp or -mext-vector
- *                                  enabled and its size must be "out_tensor_ch *
- *                                  (3 * ker_dim * ker_dim + 1)".
+ *                                  enabled and its size must be "out_tensor_ch
+ * * (3 * ker_dim * ker_dim + 1)".
  * @return          This function only returns 0.
  *
  * @note
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_RGB_sym_bias_fast(const q7_t *in_tensor,
-                                                const uint16_t in_tensor_dim,
-                                                const q7_t *ker_weight,
-                                                const uint16_t out_tensor_ch,
-                                                const uint16_t ker_dim,
-                                                const uint16_t pad,
-                                                const uint16_t stride,
-                                                const q31_t *bias,
-                                                const uint16_t pre_rshift,
-                                                const uint16_t out_scale,
-                                                const uint16_t post_rshift,
-                                                q15_t *out_tensor,
-                                                const uint16_t out_tensor_dim,
-                                                q15_t *in_tmp_buf,
-                                                q15_t *wt_tmp_buf)
-{
-    return riscv_nn_conv_HWC_s8_s16_s8_RGB_sym_bias_fast(in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf, wt_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_RGB_sym_bias_fast(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf,
+    q15_t* wt_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_s8_s16_s8_RGB_sym_bias_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_s8_s16_s8_RGB_sym_bias_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#endif
 }
 
 /**
@@ -8301,31 +9964,41 @@ static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_RGB_sym_bias_fast(const q7_t *in
  *                                  ker_dim * ker_dim + 1)".
  * @param[in]       wt_tmp_buf      temporary buffer for kernel weights. It is
  *                                  required when -mext-dsp or -mext-vector
- *                                  enabled and its size must be "out_tensor_ch *
- *                                  (3 * ker_dim * ker_dim + 1)".
+ *                                  enabled and its size must be "out_tensor_ch
+ * * (3 * ker_dim * ker_dim + 1)".
  * @return          This function only returns 0.
  *
  * @note
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_RGB_sym_bias_fast(const u8_t *in_tensor,
-                                            const uint16_t in_tensor_dim,
-                                            const q7_t *ker_weight,
-                                            const uint16_t out_tensor_ch,
-                                            const uint16_t ker_dim,
-                                            const uint16_t pad,
-                                            const uint16_t stride,
-                                            const q31_t *bias,
-                                            const uint16_t pre_rshift,
-                                            const uint16_t out_scale,
-                                            const uint16_t post_rshift,
-                                            u8_t *out_tensor,
-                                            const uint16_t out_tensor_dim,
-                                            q15_t *in_tmp_buf,
-                                            q15_t *wt_tmp_buf)
-{
-    return riscv_nn_conv_HWC_u8_u8_s8_RGB_sym_bias_fast(in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf, wt_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_RGB_sym_bias_fast(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    u8_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf,
+    q15_t* wt_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_u8_u8_s8_RGB_sym_bias_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_u8_u8_s8_RGB_sym_bias_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#endif
 }
 
 /**
@@ -8351,31 +10024,41 @@ static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_RGB_sym_bias_fast(const u8_t *in_
  *                                  ker_dim * ker_dim + 1)".
  * @param[in]       wt_tmp_buf      temporary buffer for kernel weights. It is
  *                                  required when -mext-dsp or -mext-vector
- *                                  enabled and its size must be "out_tensor_ch *
- *                                  (3 * ker_dim * ker_dim + 1)".
+ *                                  enabled and its size must be "out_tensor_ch
+ * * (3 * ker_dim * ker_dim + 1)".
  * @return          This function only returns 0.
  *
  * @note
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_RGB_sym_bias_fast(const u8_t *in_tensor,
-                                                const uint16_t in_tensor_dim,
-                                                const q7_t *ker_weight,
-                                                const uint16_t out_tensor_ch,
-                                                const uint16_t ker_dim,
-                                                const uint16_t pad,
-                                                const uint16_t stride,
-                                                const q31_t *bias,
-                                                const uint16_t pre_rshift,
-                                                const uint16_t out_scale,
-                                                const uint16_t post_rshift,
-                                                q7_t *out_tensor,
-                                                const uint16_t out_tensor_dim,
-                                                q15_t *in_tmp_buf,
-                                                q15_t *wt_tmp_buf)
-{
-    return riscv_nn_conv_HWC_u8_s8_s8_RGB_sym_bias_fast(in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf, wt_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_RGB_sym_bias_fast(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf,
+    q15_t* wt_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_u8_s8_s8_RGB_sym_bias_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_u8_s8_s8_RGB_sym_bias_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#endif
 }
 
 /**
@@ -8402,31 +10085,41 @@ static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_RGB_sym_bias_fast(const u8_t *in_
  *                                  ker_dim * ker_dim + 1)".
  * @param[in]       wt_tmp_buf      temporary buffer for kernel weights. It is
  *                                  required when -mext-dsp or -mext-vector
- *                                  enabled and its size must be "out_tensor_ch *
- *                                  (3 * ker_dim * ker_dim + 1)".
+ *                                  enabled and its size must be "out_tensor_ch
+ * * (3 * ker_dim * ker_dim + 1)".
  * @return          This function only returns 0.
  *
  * @note
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_RGB_sym_bias_fast(const u8_t *in_tensor,
-                                                const uint16_t in_tensor_dim,
-                                                const q7_t *ker_weight,
-                                                const uint16_t out_tensor_ch,
-                                                const uint16_t ker_dim,
-                                                const uint16_t pad,
-                                                const uint16_t stride,
-                                                const q31_t *bias,
-                                                const uint16_t pre_rshift,
-                                                const uint16_t out_scale,
-                                                const uint16_t post_rshift,
-                                                q15_t *out_tensor,
-                                                const uint16_t out_tensor_dim,
-                                                q15_t *in_tmp_buf,
-                                                q15_t *wt_tmp_buf)
-{
-    return riscv_nn_conv_HWC_u8_s16_s8_RGB_sym_bias_fast(in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf, wt_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_RGB_sym_bias_fast(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf,
+    q15_t* wt_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_u8_s16_s8_RGB_sym_bias_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_u8_s16_s8_RGB_sym_bias_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#endif
 }
 
 /**
@@ -8451,30 +10144,40 @@ static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_RGB_sym_bias_fast(const u8_t *in
  *                                  ker_dim * ker_dim + 1)".
  * @param[in]       wt_tmp_buf      temporary buffer for kernel weights. It is
  *                                  required when -mext-dsp or -mext-vector
- *                                  enabled and its size must be "out_tensor_ch *
- *                                  (3 * ker_dim * ker_dim + 1)".
+ *                                  enabled and its size must be "out_tensor_ch
+ * * (3 * ker_dim * ker_dim + 1)".
  * @return          This function only returns 0.
  *
  * @note
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_RGB_sym_fast(const q7_t *in_tensor,
-                                        const uint16_t in_tensor_dim,
-                                        const q7_t *ker_weight,
-                                        const uint16_t out_tensor_ch,
-                                        const uint16_t ker_dim,
-                                        const uint16_t pad,
-                                        const uint16_t stride,
-                                        const uint16_t pre_rshift,
-                                        const uint16_t out_scale,
-                                        const uint16_t post_rshift,
-                                        q7_t *out_tensor,
-                                        const uint16_t out_tensor_dim,
-                                        q15_t *in_tmp_buf,
-                                        q15_t *wt_tmp_buf)
-{
-    return riscv_nn_conv_HWC_s8_s8_s8_RGB_sym_fast(in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf, wt_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_RGB_sym_fast(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf,
+    q15_t* wt_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_s8_s8_s8_RGB_sym_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_s8_s8_s8_RGB_sym_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#endif
 }
 
 /**
@@ -8499,30 +10202,40 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_RGB_sym_fast(const q7_t *in_tenso
  *                                  ker_dim * ker_dim + 1)".
  * @param[in]       wt_tmp_buf      temporary buffer for kernel weights. It is
  *                                  required when -mext-dsp or -mext-vector
- *                                  enabled and its size must be "out_tensor_ch *
- *                                  (3 * ker_dim * ker_dim + 1)".
+ *                                  enabled and its size must be "out_tensor_ch
+ * * (3 * ker_dim * ker_dim + 1)".
  * @return          This function only returns 0.
  *
  * @note
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_RGB_sym_fast(const q7_t *in_tensor,
-                                            const uint16_t in_tensor_dim,
-                                            const q7_t *ker_weight,
-                                            const uint16_t out_tensor_ch,
-                                            const uint16_t ker_dim,
-                                            const uint16_t pad,
-                                            const uint16_t stride,
-                                            const uint16_t pre_rshift,
-                                            const uint16_t out_scale,
-                                            const uint16_t post_rshift,
-                                            q15_t *out_tensor,
-                                            const uint16_t out_tensor_dim,
-                                            q15_t *in_tmp_buf,
-                                            q15_t *wt_tmp_buf)
-{
-    return riscv_nn_conv_HWC_s8_s16_s8_RGB_sym_fast(in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf, wt_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_RGB_sym_fast(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf,
+    q15_t* wt_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_s8_s16_s8_RGB_sym_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_s8_s16_s8_RGB_sym_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#endif
 }
 
 /**
@@ -8547,30 +10260,40 @@ static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_RGB_sym_fast(const q7_t *in_tens
  *                                  ker_dim * ker_dim + 1)".
  * @param[in]       wt_tmp_buf      temporary buffer for kernel weights. It is
  *                                  required when -mext-dsp or -mext-vector
- *                                  enabled and its size must be "out_tensor_ch *
- *                                  (3 * ker_dim * ker_dim + 1)".
+ *                                  enabled and its size must be "out_tensor_ch
+ * * (3 * ker_dim * ker_dim + 1)".
  * @return          This function only returns 0.
  *
  * @note
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_RGB_sym_fast(const u8_t *in_tensor,
-                                        const uint16_t in_tensor_dim,
-                                        const q7_t *ker_weight,
-                                        const uint16_t out_tensor_ch,
-                                        const uint16_t ker_dim,
-                                        const uint16_t pad,
-                                        const uint16_t stride,
-                                        const uint16_t pre_rshift,
-                                        const uint16_t out_scale,
-                                        const uint16_t post_rshift,
-                                        u8_t *out_tensor,
-                                        const uint16_t out_tensor_dim,
-                                        q15_t *in_tmp_buf,
-                                        q15_t *wt_tmp_buf)
-{
-    return riscv_nn_conv_HWC_u8_u8_s8_RGB_sym_fast(in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf, wt_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_RGB_sym_fast(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    u8_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf,
+    q15_t* wt_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_u8_u8_s8_RGB_sym_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_u8_u8_s8_RGB_sym_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#endif
 }
 
 /**
@@ -8595,30 +10318,40 @@ static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_RGB_sym_fast(const u8_t *in_tenso
  *                                  ker_dim * ker_dim + 1)".
  * @param[in]       wt_tmp_buf      temporary buffer for kernel weights. It is
  *                                  required when -mext-dsp or -mext-vector
- *                                  enabled and its size must be "out_tensor_ch *
- *                                  (3 * ker_dim * ker_dim + 1)".
+ *                                  enabled and its size must be "out_tensor_ch
+ * * (3 * ker_dim * ker_dim + 1)".
  * @return          This function only returns 0.
  *
  * @note
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_RGB_sym_fast(const u8_t *in_tensor,
-                                            const uint16_t in_tensor_dim,
-                                            const q7_t *ker_weight,
-                                            const uint16_t out_tensor_ch,
-                                            const uint16_t ker_dim,
-                                            const uint16_t pad,
-                                            const uint16_t stride,
-                                            const uint16_t pre_rshift,
-                                            const uint16_t out_scale,
-                                            const uint16_t post_rshift,
-                                            q7_t *out_tensor,
-                                            const uint16_t out_tensor_dim,
-                                            q15_t *in_tmp_buf,
-                                            q15_t *wt_tmp_buf)
-{
-    return riscv_nn_conv_HWC_u8_s8_s8_RGB_sym_fast(in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf, wt_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_RGB_sym_fast(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf,
+    q15_t* wt_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_u8_s8_s8_RGB_sym_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_u8_s8_s8_RGB_sym_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#endif
 }
 
 /**
@@ -8643,30 +10376,40 @@ static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_RGB_sym_fast(const u8_t *in_tenso
  *                                  ker_dim * ker_dim + 1)".
  * @param[in]       wt_tmp_buf      temporary buffer for kernel weights. It is
  *                                  required when -mext-dsp or -mext-vector
- *                                  enabled and its size must be "out_tensor_ch *
- *                                  (3 * ker_dim * ker_dim + 1)".
+ *                                  enabled and its size must be "out_tensor_ch
+ * * (3 * ker_dim * ker_dim + 1)".
  * @return          This function only returns 0.
  *
  * @note
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_RGB_sym_fast(const u8_t *in_tensor,
-                                            const uint16_t in_tensor_dim,
-                                            const q7_t *ker_weight,
-                                            const uint16_t out_tensor_ch,
-                                            const uint16_t ker_dim,
-                                            const uint16_t pad,
-                                            const uint16_t stride,
-                                            const uint16_t pre_rshift,
-                                            const uint16_t out_scale,
-                                            const uint16_t post_rshift,
-                                            q15_t *out_tensor,
-                                            const uint16_t out_tensor_dim,
-                                            q15_t *in_tmp_buf,
-                                            q15_t *wt_tmp_buf)
-{
-    return riscv_nn_conv_HWC_u8_s16_s8_RGB_sym_fast(in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf, wt_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_RGB_sym_fast(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf,
+    q15_t* wt_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_u8_s16_s8_RGB_sym_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_u8_s16_s8_RGB_sym_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#endif
 }
 
 /**
@@ -8699,23 +10442,33 @@ static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_RGB_sym_fast(const u8_t *in_tens
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sym_bias_fast(const q7_t *in_tensor,
-                                        const uint16_t in_tensor_dim,
-                                        const uint16_t in_tensor_ch,
-                                        const q7_t *ker_weight,
-                                        const uint16_t out_tensor_ch,
-                                        const uint16_t ker_dim,
-                                        const uint16_t pad,
-                                        const uint16_t stride,
-                                        const q31_t *bias,
-                                        const uint16_t pre_rshift,
-                                        const uint16_t out_scale,
-                                        const uint16_t post_rshift,
-                                        q7_t *out_tensor,
-                                        const uint16_t out_tensor_dim,
-                                        q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_HWC_s8_s8_s8_sym_bias_fast(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sym_bias_fast(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_s8_s8_s8_sym_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_s8_s8_s8_sym_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -8748,23 +10501,33 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sym_bias_fast(const q7_t *in_tens
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_sym_bias_fast(const q7_t *in_tensor,
-                                            const uint16_t in_tensor_dim,
-                                            const uint16_t in_tensor_ch,
-                                            const q7_t *ker_weight,
-                                            const uint16_t out_tensor_ch,
-                                            const uint16_t ker_dim,
-                                            const uint16_t pad,
-                                            const uint16_t stride,
-                                            const q31_t *bias,
-                                            const uint16_t pre_rshift,
-                                            const uint16_t out_scale,
-                                            const uint16_t post_rshift,
-                                            q15_t *out_tensor,
-                                            const uint16_t out_tensor_dim,
-                                            q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_HWC_s8_s16_s8_sym_bias_fast(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_sym_bias_fast(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_s8_s16_s8_sym_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_s8_s16_s8_sym_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -8797,23 +10560,33 @@ static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_sym_bias_fast(const q7_t *in_ten
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_sym_bias_fast(const u8_t *in_tensor,
-                                        const uint16_t in_tensor_dim,
-                                        const uint16_t in_tensor_ch,
-                                        const q7_t *ker_weight,
-                                        const uint16_t out_tensor_ch,
-                                        const uint16_t ker_dim,
-                                        const uint16_t pad,
-                                        const uint16_t stride,
-                                        const q31_t *bias,
-                                        const uint16_t pre_rshift,
-                                        const uint16_t out_scale,
-                                        const uint16_t post_rshift,
-                                        u8_t *out_tensor,
-                                        const uint16_t out_tensor_dim,
-                                        q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_HWC_u8_u8_s8_sym_bias_fast(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_sym_bias_fast(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    u8_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_u8_u8_s8_sym_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_u8_u8_s8_sym_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -8846,23 +10619,33 @@ static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_sym_bias_fast(const u8_t *in_tens
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_sym_bias_fast(const u8_t *in_tensor,
-                                            const uint16_t in_tensor_dim,
-                                            const uint16_t in_tensor_ch,
-                                            const q7_t *ker_weight,
-                                            const uint16_t out_tensor_ch,
-                                            const uint16_t ker_dim,
-                                            const uint16_t pad,
-                                            const uint16_t stride,
-                                            const q31_t *bias,
-                                            const uint16_t pre_rshift,
-                                            const uint16_t out_scale,
-                                            const uint16_t post_rshift,
-                                            q7_t *out_tensor,
-                                            const uint16_t out_tensor_dim,
-                                            q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_HWC_u8_s8_s8_sym_bias_fast(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_sym_bias_fast(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_u8_s8_s8_sym_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_u8_s8_s8_sym_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -8895,23 +10678,33 @@ static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_sym_bias_fast(const u8_t *in_tens
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_sym_bias_fast(const u8_t *in_tensor,
-                                            const uint16_t in_tensor_dim,
-                                            const uint16_t in_tensor_ch,
-                                            const q7_t *ker_weight,
-                                            const uint16_t out_tensor_ch,
-                                            const uint16_t ker_dim,
-                                            const uint16_t pad,
-                                            const uint16_t stride,
-                                            const q31_t *bias,
-                                            const uint16_t pre_rshift,
-                                            const uint16_t out_scale,
-                                            const uint16_t post_rshift,
-                                            q15_t *out_tensor,
-                                            const uint16_t out_tensor_dim,
-                                            q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_HWC_u8_s16_s8_sym_bias_fast(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_sym_bias_fast(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_u8_s16_s8_sym_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_u8_s16_s8_sym_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -8943,22 +10736,32 @@ static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_sym_bias_fast(const u8_t *in_ten
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sym_fast(const q7_t *in_tensor,
-                                    const uint16_t in_tensor_dim,
-                                    const uint16_t in_tensor_ch,
-                                    const q7_t *ker_weight,
-                                    const uint16_t out_tensor_ch,
-                                    const uint16_t ker_dim,
-                                    const uint16_t pad,
-                                    const uint16_t stride,
-                                    const uint16_t pre_rshift,
-                                    const uint16_t out_scale,
-                                    const uint16_t post_rshift,
-                                    q7_t *out_tensor,
-                                    const uint16_t out_tensor_dim,
-                                    q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_HWC_s8_s8_s8_sym_fast(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sym_fast(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_s8_s8_s8_sym_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_s8_s8_s8_sym_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -8990,22 +10793,32 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sym_fast(const q7_t *in_tensor,
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_sym_fast(const q7_t *in_tensor,
-                                        const uint16_t in_tensor_dim,
-                                        const uint16_t in_tensor_ch,
-                                        const q7_t *ker_weight,
-                                        const uint16_t out_tensor_ch,
-                                        const uint16_t ker_dim,
-                                        const uint16_t pad,
-                                        const uint16_t stride,
-                                        const uint16_t pre_rshift,
-                                        const uint16_t out_scale,
-                                        const uint16_t post_rshift,
-                                        q15_t *out_tensor,
-                                        const uint16_t out_tensor_dim,
-                                        q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_HWC_s8_s16_s8_sym_fast(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_sym_fast(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_s8_s16_s8_sym_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_s8_s16_s8_sym_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9037,22 +10850,32 @@ static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_sym_fast(const q7_t *in_tensor,
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_sym_fast(const u8_t *in_tensor,
-                                    const uint16_t in_tensor_dim,
-                                    const uint16_t in_tensor_ch,
-                                    const q7_t *ker_weight,
-                                    const uint16_t out_tensor_ch,
-                                    const uint16_t ker_dim,
-                                    const uint16_t pad,
-                                    const uint16_t stride,
-                                    const uint16_t pre_rshift,
-                                    const uint16_t out_scale,
-                                    const uint16_t post_rshift,
-                                    u8_t *out_tensor,
-                                    const uint16_t out_tensor_dim,
-                                    q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_HWC_u8_u8_s8_sym_fast(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_sym_fast(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    u8_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_u8_u8_s8_sym_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_u8_u8_s8_sym_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9084,22 +10907,32 @@ static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_sym_fast(const u8_t *in_tensor,
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_sym_fast(const u8_t *in_tensor,
-                                        const uint16_t in_tensor_dim,
-                                        const uint16_t in_tensor_ch,
-                                        const q7_t *ker_weight,
-                                        const uint16_t out_tensor_ch,
-                                        const uint16_t ker_dim,
-                                        const uint16_t pad,
-                                        const uint16_t stride,
-                                        const uint16_t pre_rshift,
-                                        const uint16_t out_scale,
-                                        const uint16_t post_rshift,
-                                        q7_t *out_tensor,
-                                        const uint16_t out_tensor_dim,
-                                        q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_HWC_u8_s8_s8_sym_fast(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_sym_fast(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_u8_s8_s8_sym_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_u8_s8_s8_sym_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9131,22 +10964,32 @@ static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_sym_fast(const u8_t *in_tensor,
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_sym_fast(const u8_t *in_tensor,
-                                        const uint16_t in_tensor_dim,
-                                        const uint16_t in_tensor_ch,
-                                        const q7_t *ker_weight,
-                                        const uint16_t out_tensor_ch,
-                                        const uint16_t ker_dim,
-                                        const uint16_t pad,
-                                        const uint16_t stride,
-                                        const uint16_t pre_rshift,
-                                        const uint16_t out_scale,
-                                        const uint16_t post_rshift,
-                                        q15_t *out_tensor,
-                                        const uint16_t out_tensor_dim,
-                                        q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_HWC_u8_s16_s8_sym_fast(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_sym_fast(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_u8_s16_s8_sym_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_u8_s16_s8_sym_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9175,7 +11018,8 @@ static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_sym_fast(const u8_t *in_tensor,
  * @param[in]       in_tmp_buf          temporary buffer for the input tensor.
  *                                      It is required when -mext-dsp or
  *                                      -mext-vector enabled and its size must
- *                                      be equal to "2 * in_tensor_ch * ker_dim_x
+ *                                      be equal to "2 * in_tensor_ch *
+ * ker_dim_x
  *                                      * ker_dim_y".
  * @return          This function returns 0 on success; otherwise, it returns -1
  *                  if its inputs do not meet the constraints that in_tensor_ch
@@ -9185,28 +11029,40 @@ static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_sym_fast(const u8_t *in_tensor,
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sym_bias_fast_any(const q7_t *in_tensor,
-                                            const uint16_t in_tensor_dim_x,
-                                            const uint16_t in_tensor_dim_y,
-                                            const uint16_t in_tensor_ch,
-                                            const q7_t *ker_weight,
-                                            const uint16_t out_tensor_ch,
-                                            const uint16_t ker_dim_x,
-                                            const uint16_t ker_dim_y,
-                                            const uint16_t pad_x,
-                                            const uint16_t pad_y,
-                                            const uint16_t stride_x,
-                                            const uint16_t stride_y,
-                                            const q31_t *bias,
-                                            const uint16_t pre_rshift,
-                                            const uint16_t out_scale,
-                                            const uint16_t post_rshift,
-                                            q7_t *out_tensor,
-                                            const uint16_t out_tensor_dim_x,
-                                            const uint16_t out_tensor_dim_y,
-                                            q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_HWC_s8_s8_s8_sym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sym_bias_fast_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_s8_s8_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_s8_s8_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9236,7 +11092,8 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sym_bias_fast_any(const q7_t *in_
  * @param[in]       in_tmp_buf          temporary buffer for the input tensor.
  *                                      It is required when -mext-dsp or
  *                                      -mext-vector enabled and its size must
- *                                      be equal to "2 * in_tensor_ch * ker_dim_x
+ *                                      be equal to "2 * in_tensor_ch *
+ * ker_dim_x
  *                                      * ker_dim_y".
  * @return          This function returns 0 on success; otherwise, it returns -1
  *                  if its inputs do not meet the constraints that in_tensor_ch
@@ -9246,28 +11103,40 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sym_bias_fast_any(const q7_t *in_
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_sym_bias_fast_any(const q7_t *in_tensor,
-                                                const uint16_t in_tensor_dim_x,
-                                                const uint16_t in_tensor_dim_y,
-                                                const uint16_t in_tensor_ch,
-                                                const q7_t *ker_weight,
-                                                const uint16_t out_tensor_ch,
-                                                const uint16_t ker_dim_x,
-                                                const uint16_t ker_dim_y,
-                                                const uint16_t pad_x,
-                                                const uint16_t pad_y,
-                                                const uint16_t stride_x,
-                                                const uint16_t stride_y,
-                                                const q31_t *bias,
-                                                const uint16_t pre_rshift,
-                                                const uint16_t out_scale,
-                                                const uint16_t post_rshift,
-                                                q15_t *out_tensor,
-                                                const uint16_t out_tensor_dim_x,
-                                                const uint16_t out_tensor_dim_y,
-                                                q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_HWC_s8_s16_s8_sym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_sym_bias_fast_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_s8_s16_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_s8_s16_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9296,7 +11165,8 @@ static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_sym_bias_fast_any(const q7_t *in
  * @param[in]       in_tmp_buf          temporary buffer for the input tensor.
  *                                      It is required when -mext-dsp or
  *                                      -mext-vector enabled and its size must
- *                                      be equal to "2 * in_tensor_ch * ker_dim_x
+ *                                      be equal to "2 * in_tensor_ch *
+ * ker_dim_x
  *                                      * ker_dim_y".
  * @return          This function returns 0 on success; otherwise, it returns -1
  *                  if its inputs do not meet the constraints that in_tensor_ch
@@ -9306,28 +11176,40 @@ static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_sym_bias_fast_any(const q7_t *in
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_sym_bias_fast_any(const u8_t *in_tensor,
-                                            const uint16_t in_tensor_dim_x,
-                                            const uint16_t in_tensor_dim_y,
-                                            const uint16_t in_tensor_ch,
-                                            const q7_t *ker_weight,
-                                            const uint16_t out_tensor_ch,
-                                            const uint16_t ker_dim_x,
-                                            const uint16_t ker_dim_y,
-                                            const uint16_t pad_x,
-                                            const uint16_t pad_y,
-                                            const uint16_t stride_x,
-                                            const uint16_t stride_y,
-                                            const q31_t *bias,
-                                            const uint16_t pre_rshift,
-                                            const uint16_t out_scale,
-                                            const uint16_t post_rshift,
-                                            u8_t *out_tensor,
-                                            const uint16_t out_tensor_dim_x,
-                                            const uint16_t out_tensor_dim_y,
-                                            q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_HWC_u8_u8_s8_sym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_sym_bias_fast_any(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    u8_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_u8_u8_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_u8_u8_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9357,7 +11239,8 @@ static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_sym_bias_fast_any(const u8_t *in_
  * @param[in]       in_tmp_buf          temporary buffer for the input tensor.
  *                                      It is required when -mext-dsp or
  *                                      -mext-vector enabled and its size must
- *                                      be equal to "2 * in_tensor_ch * ker_dim_x
+ *                                      be equal to "2 * in_tensor_ch *
+ * ker_dim_x
  *                                      * ker_dim_y".
  * @return          This function returns 0 on success; otherwise, it returns -1
  *                  if its inputs do not meet the constraints that in_tensor_ch
@@ -9367,28 +11250,40 @@ static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_sym_bias_fast_any(const u8_t *in_
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_sym_bias_fast_any(const u8_t *in_tensor,
-                                                const uint16_t in_tensor_dim_x,
-                                                const uint16_t in_tensor_dim_y,
-                                                const uint16_t in_tensor_ch,
-                                                const q7_t *ker_weight,
-                                                const uint16_t out_tensor_ch,
-                                                const uint16_t ker_dim_x,
-                                                const uint16_t ker_dim_y,
-                                                const uint16_t pad_x,
-                                                const uint16_t pad_y,
-                                                const uint16_t stride_x,
-                                                const uint16_t stride_y,
-                                                const q31_t *bias,
-                                                const uint16_t pre_rshift,
-                                                const uint16_t out_scale,
-                                                const uint16_t post_rshift,
-                                                q7_t *out_tensor,
-                                                const uint16_t out_tensor_dim_x,
-                                                const uint16_t out_tensor_dim_y,
-                                                q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_HWC_u8_s8_s8_sym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_sym_bias_fast_any(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_u8_s8_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_u8_s8_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9418,7 +11313,8 @@ static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_sym_bias_fast_any(const u8_t *in_
  * @param[in]       in_tmp_buf          temporary buffer for the input tensor.
  *                                      It is required when -mext-dsp or
  *                                      -mext-vector enabled and its size must
- *                                      be equal to "2 * in_tensor_ch * ker_dim_x
+ *                                      be equal to "2 * in_tensor_ch *
+ * ker_dim_x
  *                                      * ker_dim_y".
  * @return          This function returns 0 on success; otherwise, it returns -1
  *                  if its inputs do not meet the constraints that in_tensor_ch
@@ -9428,28 +11324,40 @@ static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_sym_bias_fast_any(const u8_t *in_
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_sym_bias_fast_any(const u8_t *in_tensor,
-                                                const uint16_t in_tensor_dim_x,
-                                                const uint16_t in_tensor_dim_y,
-                                                const uint16_t in_tensor_ch,
-                                                const q7_t *ker_weight,
-                                                const uint16_t out_tensor_ch,
-                                                const uint16_t ker_dim_x,
-                                                const uint16_t ker_dim_y,
-                                                const uint16_t pad_x,
-                                                const uint16_t pad_y,
-                                                const uint16_t stride_x,
-                                                const uint16_t stride_y,
-                                                const q31_t *bias,
-                                                const uint16_t pre_rshift,
-                                                const uint16_t out_scale,
-                                                const uint16_t post_rshift,
-                                                q15_t *out_tensor,
-                                                const uint16_t out_tensor_dim_x,
-                                                const uint16_t out_tensor_dim_y,
-                                                q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_HWC_u8_s16_s8_sym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_sym_bias_fast_any(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_u8_s16_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_u8_s16_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9477,7 +11385,8 @@ static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_sym_bias_fast_any(const u8_t *in
  * @param[in]       in_tmp_buf          temporary buffer for the input tensor.
  *                                      It is required when -mext-dsp or
  *                                      -mext-vector enabled and its size must
- *                                      be equal to "2 * in_tensor_ch * ker_dim_x
+ *                                      be equal to "2 * in_tensor_ch *
+ * ker_dim_x
  *                                      * ker_dim_y".
  * @return          This function returns 0 on success; otherwise, it returns -1
  *                  if its inputs do not meet the constraints that in_tensor_ch
@@ -9487,27 +11396,39 @@ static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_sym_bias_fast_any(const u8_t *in
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sym_fast_any(const q7_t *in_tensor,
-                                        const uint16_t in_tensor_dim_x,
-                                        const uint16_t in_tensor_dim_y,
-                                        const uint16_t in_tensor_ch,
-                                        const q7_t *ker_weight,
-                                        const uint16_t out_tensor_ch,
-                                        const uint16_t ker_dim_x,
-                                        const uint16_t ker_dim_y,
-                                        const uint16_t pad_x,
-                                        const uint16_t pad_y,
-                                        const uint16_t stride_x,
-                                        const uint16_t stride_y,
-                                        const uint16_t pre_rshift,
-                                        const uint16_t out_scale,
-                                        const uint16_t post_rshift,
-                                        q7_t *out_tensor,
-                                        const uint16_t out_tensor_dim_x,
-                                        const uint16_t out_tensor_dim_y,
-                                        q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_HWC_s8_s8_s8_sym_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sym_fast_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_s8_s8_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_s8_s8_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9535,7 +11456,8 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sym_fast_any(const q7_t *in_tenso
  * @param[in]       in_tmp_buf          temporary buffer for the input tensor.
  *                                      It is required when -mext-dsp or
  *                                      -mext-vector enabled and its size must
- *                                      be equal to "2 * in_tensor_ch * ker_dim_x
+ *                                      be equal to "2 * in_tensor_ch *
+ * ker_dim_x
  *                                      * ker_dim_y".
  * @return          This function returns 0 on success; otherwise, it returns -1
  *                  if its inputs do not meet the constraints that in_tensor_ch
@@ -9545,27 +11467,39 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sym_fast_any(const q7_t *in_tenso
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_sym_fast_any(const q7_t *in_tensor,
-                                            const uint16_t in_tensor_dim_x,
-                                            const uint16_t in_tensor_dim_y,
-                                            const uint16_t in_tensor_ch,
-                                            const q7_t *ker_weight,
-                                            const uint16_t out_tensor_ch,
-                                            const uint16_t ker_dim_x,
-                                            const uint16_t ker_dim_y,
-                                            const uint16_t pad_x,
-                                            const uint16_t pad_y,
-                                            const uint16_t stride_x,
-                                            const uint16_t stride_y,
-                                            const uint16_t pre_rshift,
-                                            const uint16_t out_scale,
-                                            const uint16_t post_rshift,
-                                            q15_t *out_tensor,
-                                            const uint16_t out_tensor_dim_x,
-                                            const uint16_t out_tensor_dim_y,
-                                            q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_HWC_s8_s16_s8_sym_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_sym_fast_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_s8_s16_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_s8_s16_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9593,7 +11527,8 @@ static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_sym_fast_any(const q7_t *in_tens
  * @param[in]       in_tmp_buf          temporary buffer for the input tensor.
  *                                      It is required when -mext-dsp or
  *                                      -mext-vector enabled and its size must
- *                                      be equal to "2 * in_tensor_ch * ker_dim_x
+ *                                      be equal to "2 * in_tensor_ch *
+ * ker_dim_x
  *                                      * ker_dim_y".
  * @return          This function returns 0 on success; otherwise, it returns -1
  *                  if its inputs do not meet the constraints that in_tensor_ch
@@ -9603,27 +11538,39 @@ static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_sym_fast_any(const q7_t *in_tens
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_sym_fast_any(const u8_t *in_tensor,
-                                        const uint16_t in_tensor_dim_x,
-                                        const uint16_t in_tensor_dim_y,
-                                        const uint16_t in_tensor_ch,
-                                        const q7_t *ker_weight,
-                                        const uint16_t out_tensor_ch,
-                                        const uint16_t ker_dim_x,
-                                        const uint16_t ker_dim_y,
-                                        const uint16_t pad_x,
-                                        const uint16_t pad_y,
-                                        const uint16_t stride_x,
-                                        const uint16_t stride_y,
-                                        const uint16_t pre_rshift,
-                                        const uint16_t out_scale,
-                                        const uint16_t post_rshift,
-                                        u8_t *out_tensor,
-                                        const uint16_t out_tensor_dim_x,
-                                        const uint16_t out_tensor_dim_y,
-                                        q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_HWC_u8_u8_s8_sym_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_sym_fast_any(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    u8_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_u8_u8_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_u8_u8_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9651,7 +11598,8 @@ static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_sym_fast_any(const u8_t *in_tenso
  * @param[in]       in_tmp_buf          temporary buffer for the input tensor.
  *                                      It is required when -mext-dsp or
  *                                      -mext-vector enabled and its size must
- *                                      be equal to "2 * in_tensor_ch * ker_dim_x
+ *                                      be equal to "2 * in_tensor_ch *
+ * ker_dim_x
  *                                      * ker_dim_y".
  * @return          This function returns 0 on success; otherwise, it returns -1
  *                  if its inputs do not meet the constraints that in_tensor_ch
@@ -9661,27 +11609,39 @@ static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_sym_fast_any(const u8_t *in_tenso
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_sym_fast_any(const u8_t *in_tensor,
-                                            const uint16_t in_tensor_dim_x,
-                                            const uint16_t in_tensor_dim_y,
-                                            const uint16_t in_tensor_ch,
-                                            const q7_t *ker_weight,
-                                            const uint16_t out_tensor_ch,
-                                            const uint16_t ker_dim_x,
-                                            const uint16_t ker_dim_y,
-                                            const uint16_t pad_x,
-                                            const uint16_t pad_y,
-                                            const uint16_t stride_x,
-                                            const uint16_t stride_y,
-                                            const uint16_t pre_rshift,
-                                            const uint16_t out_scale,
-                                            const uint16_t post_rshift,
-                                            q7_t *out_tensor,
-                                            const uint16_t out_tensor_dim_x,
-                                            const uint16_t out_tensor_dim_y,
-                                            q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_HWC_u8_s8_s8_sym_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_sym_fast_any(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_u8_s8_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_u8_s8_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9709,7 +11669,8 @@ static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_sym_fast_any(const u8_t *in_tenso
  * @param[in]       in_tmp_buf          temporary buffer for the input tensor.
  *                                      It is required when -mext-dsp or
  *                                      -mext-vector enabled and its size must
- *                                      be equal to "2 * in_tensor_ch * ker_dim_x
+ *                                      be equal to "2 * in_tensor_ch *
+ * ker_dim_x
  *                                      * ker_dim_y".
  * @return          This function returns 0 on success; otherwise, it returns -1
  *                  if its inputs do not meet the constraints that in_tensor_ch
@@ -9719,29 +11680,40 @@ static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_sym_fast_any(const u8_t *in_tenso
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_sym_fast_any(const u8_t *in_tensor,
-                                            const uint16_t in_tensor_dim_x,
-                                            const uint16_t in_tensor_dim_y,
-                                            const uint16_t in_tensor_ch,
-                                            const q7_t *ker_weight,
-                                            const uint16_t out_tensor_ch,
-                                            const uint16_t ker_dim_x,
-                                            const uint16_t ker_dim_y,
-                                            const uint16_t pad_x,
-                                            const uint16_t pad_y,
-                                            const uint16_t stride_x,
-                                            const uint16_t stride_y,
-                                            const uint16_t pre_rshift,
-                                            const uint16_t out_scale,
-                                            const uint16_t post_rshift,
-                                            q15_t *out_tensor,
-                                            const uint16_t out_tensor_dim_x,
-                                            const uint16_t out_tensor_dim_y,
-                                            q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_HWC_u8_s16_s8_sym_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_sym_fast_any(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_u8_s16_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_u8_s16_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
-
 
 /**
  * @brief           This function performs depthwise convolution for signed
@@ -9764,7 +11736,8 @@ static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_sym_fast_any(const u8_t *in_tens
  * @param[in]       in_tmp_buf      temporary buffer for the input tensor. It is
  *                                  required when -mext-dsp or -mext-vector is
  *                                  enabled and its size must be equal to
- *                                  "(in_tensor_ch * ker_dim * ker_dim + 1) / 2".
+ *                                  "(in_tensor_ch * ker_dim * ker_dim + 1) /
+ * 2".
  * @return          This function returns 0 on success; otherwise, it returns -1
  *                  if its inputs do not meet the constraints that in_tensor_ch
  *                  has to be equal to out_tensor_ch.
@@ -9773,23 +11746,33 @@ static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_sym_fast_any(const u8_t *in_tens
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sym_bias(const q7_t *in_tensor,
-                                        const uint16_t in_tensor_dim,
-                                        const uint16_t in_tensor_ch,
-                                        const q7_t *ker_weight,
-                                        const uint16_t out_tensor_ch,
-                                        const uint16_t ker_dim,
-                                        const uint16_t pad,
-                                        const uint16_t stride,
-                                        const q31_t *bias,
-                                        const uint16_t pre_rshift,
-                                        const uint16_t out_scale,
-                                        const uint16_t post_rshift,
-                                        q7_t *out_tensor,
-                                        const uint16_t out_tensor_dim,
-                                        q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_s8_s8_s8_sym_bias(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sym_bias(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_s8_s8_s8_sym_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_s8_s8_s8_sym_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9813,7 +11796,8 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sym_bias(const q7_t *in_tensor
  * @param[in]       in_tmp_buf      temporary buffer for the input tensor. It is
  *                                  required when -mext-dsp or -mext-vector is
  *                                  enabled and its size must be equal to
- *                                  "(in_tensor_ch * ker_dim * ker_dim + 1) / 2".
+ *                                  "(in_tensor_ch * ker_dim * ker_dim + 1) /
+ * 2".
  * @return          This function returns 0 on success; otherwise, it returns -1
  *                  if its inputs do not meet the constraints that in_tensor_ch
  *                  has to be equal to out_tensor_ch.
@@ -9822,23 +11806,33 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sym_bias(const q7_t *in_tensor
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_s8_s16_s8_sym_bias(const q7_t *in_tensor,
-                                            const uint16_t in_tensor_dim,
-                                            const uint16_t in_tensor_ch,
-                                            const q7_t *ker_weight,
-                                            const uint16_t out_tensor_ch,
-                                            const uint16_t ker_dim,
-                                            const uint16_t pad,
-                                            const uint16_t stride,
-                                            const q31_t *bias,
-                                            const uint16_t pre_rshift,
-                                            const uint16_t out_scale,
-                                            const uint16_t post_rshift,
-                                            q15_t *out_tensor,
-                                            const uint16_t out_tensor_dim,
-                                            q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_s8_s16_s8_sym_bias(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_s8_s16_s8_sym_bias(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_s8_s16_s8_sym_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_s8_s16_s8_sym_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9862,7 +11856,8 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s16_s8_sym_bias(const q7_t *in_tenso
  * @param[in]       in_tmp_buf      temporary buffer for the input tensor. It is
  *                                  required when -mext-dsp or -mext-vector is
  *                                  enabled and its size must be equal to
- *                                  "(in_tensor_ch * ker_dim * ker_dim + 1) / 2".
+ *                                  "(in_tensor_ch * ker_dim * ker_dim + 1) /
+ * 2".
  * @return          This function returns 0 on success; otherwise, it returns -1
  *                  if its inputs do not meet the constraints that in_tensor_ch
  *                  has to be equal to out_tensor_ch.
@@ -9871,23 +11866,33 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s16_s8_sym_bias(const q7_t *in_tenso
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_u8_u8_s8_sym_bias(const u8_t *in_tensor,
-                                        const uint16_t in_tensor_dim,
-                                        const uint16_t in_tensor_ch,
-                                        const q7_t *ker_weight,
-                                        const uint16_t out_tensor_ch,
-                                        const uint16_t ker_dim,
-                                        const uint16_t pad,
-                                        const uint16_t stride,
-                                        const q31_t *bias,
-                                        const uint16_t pre_rshift,
-                                        const uint16_t out_scale,
-                                        const uint16_t post_rshift,
-                                        u8_t *out_tensor,
-                                        const uint16_t out_tensor_dim,
-                                        q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_u8_u8_s8_sym_bias(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_u8_u8_s8_sym_bias(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    u8_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_u8_u8_s8_sym_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_u8_u8_s8_sym_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9911,7 +11916,8 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_u8_s8_sym_bias(const u8_t *in_tensor
  * @param[in]       in_tmp_buf      temporary buffer for the input tensor. It is
  *                                  required when -mext-dsp or -mext-vector is
  *                                  enabled and its size must be equal to
- *                                  "(in_tensor_ch * ker_dim * ker_dim + 1) / 2".
+ *                                  "(in_tensor_ch * ker_dim * ker_dim + 1) /
+ * 2".
  * @return          This function returns 0 on success; otherwise, it returns -1
  *                  if its inputs do not meet the constraints that in_tensor_ch
  *                  has to be equal to out_tensor_ch.
@@ -9920,23 +11926,33 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_u8_s8_sym_bias(const u8_t *in_tensor
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_u8_s8_s8_sym_bias(const u8_t *in_tensor,
-                                        const uint16_t in_tensor_dim,
-                                        const uint16_t in_tensor_ch,
-                                        const q7_t *ker_weight,
-                                        const uint16_t out_tensor_ch,
-                                        const uint16_t ker_dim,
-                                        const uint16_t pad,
-                                        const uint16_t stride,
-                                        const q31_t *bias,
-                                        const uint16_t pre_rshift,
-                                        const uint16_t out_scale,
-                                        const uint16_t post_rshift,
-                                        q7_t *out_tensor,
-                                        const uint16_t out_tensor_dim,
-                                        q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_u8_s8_s8_sym_bias(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_u8_s8_s8_sym_bias(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_u8_s8_s8_sym_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_u8_s8_s8_sym_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9960,7 +11976,8 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_s8_s8_sym_bias(const u8_t *in_tensor
  * @param[in]       in_tmp_buf      temporary buffer for the input tensor. It is
  *                                  required when -mext-dsp or -mext-vector is
  *                                  enabled and its size must be equal to
- *                                  "(in_tensor_ch * ker_dim * ker_dim + 1) / 2".
+ *                                  "(in_tensor_ch * ker_dim * ker_dim + 1) /
+ * 2".
  * @return          This function returns 0 on success; otherwise, it returns -1
  *                  if its inputs do not meet the constraints that in_tensor_ch
  *                  has to be equal to out_tensor_ch.
@@ -9969,23 +11986,33 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_s8_s8_sym_bias(const u8_t *in_tensor
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_u8_s16_s8_sym_bias(const u8_t *in_tensor,
-                                            const uint16_t in_tensor_dim,
-                                            const uint16_t in_tensor_ch,
-                                            const q7_t *ker_weight,
-                                            const uint16_t out_tensor_ch,
-                                            const uint16_t ker_dim,
-                                            const uint16_t pad,
-                                            const uint16_t stride,
-                                            const q31_t *bias,
-                                            const uint16_t pre_rshift,
-                                            const uint16_t out_scale,
-                                            const uint16_t post_rshift,
-                                            q15_t *out_tensor,
-                                            const uint16_t out_tensor_dim,
-                                            q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_u8_s16_s8_sym_bias(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_u8_s16_s8_sym_bias(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_u8_s16_s8_sym_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_u8_s16_s8_sym_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10008,7 +12035,8 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_s16_s8_sym_bias(const u8_t *in_tenso
  * @param[in]       in_tmp_buf      temporary buffer for the input tensor. It is
  *                                  required when -mext-dsp or -mext-vector is
  *                                  enabled and its size must be equal to
- *                                  "(in_tensor_ch * ker_dim * ker_dim + 1) / 2".
+ *                                  "(in_tensor_ch * ker_dim * ker_dim + 1) /
+ * 2".
  * @return          This function returns 0 on success; otherwise, it returns -1
  *                  if its inputs do not meet the constraints that in_tensor_ch
  *                  has to be equal to out_tensor_ch.
@@ -10017,22 +12045,32 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_s16_s8_sym_bias(const u8_t *in_tenso
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sym(const q7_t *in_tensor,
-                                const uint16_t in_tensor_dim,
-                                const uint16_t in_tensor_ch,
-                                const q7_t *ker_weight,
-                                const uint16_t out_tensor_ch,
-                                const uint16_t ker_dim,
-                                const uint16_t pad,
-                                const uint16_t stride,
-                                const uint16_t pre_rshift,
-                                const uint16_t out_scale,
-                                const uint16_t post_rshift,
-                                q7_t *out_tensor,
-                                const uint16_t out_tensor_dim,
-                                q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_s8_s8_s8_sym(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sym(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_s8_s8_s8_sym(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_s8_s8_s8_sym(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10055,7 +12093,8 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sym(const q7_t *in_tensor,
  * @param[in]       in_tmp_buf      temporary buffer for the input tensor. It is
  *                                  required when -mext-dsp or -mext-vector is
  *                                  enabled and its size must be equal to
- *                                  "(in_tensor_ch * ker_dim * ker_dim + 1) / 2".
+ *                                  "(in_tensor_ch * ker_dim * ker_dim + 1) /
+ * 2".
  * @return          This function returns 0 on success; otherwise, it returns -1
  *                  if its inputs do not meet the constraints that in_tensor_ch
  *                  has to be equal to out_tensor_ch.
@@ -10064,22 +12103,32 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sym(const q7_t *in_tensor,
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_s8_s16_s8_sym(const q7_t *in_tensor,
-                                    const uint16_t in_tensor_dim,
-                                    const uint16_t in_tensor_ch,
-                                    const q7_t *ker_weight,
-                                    const uint16_t out_tensor_ch,
-                                    const uint16_t ker_dim,
-                                    const uint16_t pad,
-                                    const uint16_t stride,
-                                    const uint16_t pre_rshift,
-                                    const uint16_t out_scale,
-                                    const uint16_t post_rshift,
-                                    q15_t *out_tensor,
-                                    const uint16_t out_tensor_dim,
-                                    q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_s8_s16_s8_sym(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_s8_s16_s8_sym(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_s8_s16_s8_sym(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_s8_s16_s8_sym(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10111,22 +12160,32 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s16_s8_sym(const q7_t *in_tensor,
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_u8_u8_s8_sym(const u8_t *in_tensor,
-                                const uint16_t in_tensor_dim,
-                                const uint16_t in_tensor_ch,
-                                const q7_t *ker_weight,
-                                const uint16_t out_tensor_ch,
-                                const uint16_t ker_dim,
-                                const uint16_t pad,
-                                const uint16_t stride,
-                                const uint16_t pre_rshift,
-                                const uint16_t out_scale,
-                                const uint16_t post_rshift,
-                                u8_t *out_tensor,
-                                const uint16_t out_tensor_dim,
-                                q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_u8_u8_s8_sym(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_u8_u8_s8_sym(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    u8_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_u8_u8_s8_sym(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_u8_u8_s8_sym(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10149,7 +12208,8 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_u8_s8_sym(const u8_t *in_tensor,
  * @param[in]       in_tmp_buf      temporary buffer for the input tensor. It is
  *                                  required when -mext-dsp or -mext-vector is
  *                                  enabled and its size must be equal to
- *                                  "(in_tensor_ch * ker_dim * ker_dim + 1) / 2".
+ *                                  "(in_tensor_ch * ker_dim * ker_dim + 1) /
+ * 2".
  * @return          This function returns 0 on success; otherwise, it returns -1
  *                  if its inputs do not meet the constraints that in_tensor_ch
  *                  has to be equal to out_tensor_ch.
@@ -10158,22 +12218,32 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_u8_s8_sym(const u8_t *in_tensor,
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_u8_s8_s8_sym(const u8_t *in_tensor,
-                                    const uint16_t in_tensor_dim,
-                                    const uint16_t in_tensor_ch,
-                                    const q7_t *ker_weight,
-                                    const uint16_t out_tensor_ch,
-                                    const uint16_t ker_dim,
-                                    const uint16_t pad,
-                                    const uint16_t stride,
-                                    const uint16_t pre_rshift,
-                                    const uint16_t out_scale,
-                                    const uint16_t post_rshift,
-                                    q7_t *out_tensor,
-                                    const uint16_t out_tensor_dim,
-                                    q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_u8_s8_s8_sym(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_u8_s8_s8_sym(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_u8_s8_s8_sym(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_u8_s8_s8_sym(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10196,7 +12266,8 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_s8_s8_sym(const u8_t *in_tensor,
  * @param[in]       in_tmp_buf      temporary buffer for the input tensor. It is
  *                                  required when -mext-dsp or -mext-vector is
  *                                  enabled and its size must be equal to
- *                                  "(in_tensor_ch * ker_dim * ker_dim + 1) / 2".
+ *                                  "(in_tensor_ch * ker_dim * ker_dim + 1) /
+ * 2".
  * @return          This function returns 0 on success; otherwise, it returns -1
  *                  if its inputs do not meet the constraints that in_tensor_ch
  *                  has to be equal to out_tensor_ch.
@@ -10205,22 +12276,32 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_s8_s8_sym(const u8_t *in_tensor,
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_u8_s16_s8_sym(const u8_t *in_tensor,
-                                    const uint16_t in_tensor_dim,
-                                    const uint16_t in_tensor_ch,
-                                    const q7_t *ker_weight,
-                                    const uint16_t out_tensor_ch,
-                                    const uint16_t ker_dim,
-                                    const uint16_t pad,
-                                    const uint16_t stride,
-                                    const uint16_t pre_rshift,
-                                    const uint16_t out_scale,
-                                    const uint16_t post_rshift,
-                                    q15_t *out_tensor,
-                                    const uint16_t out_tensor_dim,
-                                    q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_u8_s16_s8_sym(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_u8_s16_s8_sym(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_u8_s16_s8_sym(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_u8_s16_s8_sym(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10259,28 +12340,40 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_s16_s8_sym(const u8_t *in_tensor,
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sym_bias_any(const q7_t *in_tensor,
-                                            const uint16_t in_tensor_dim_x,
-                                            const uint16_t in_tensor_dim_y,
-                                            const uint16_t in_tensor_ch,
-                                            const q7_t *ker_weight,
-                                            const uint16_t out_tensor_ch,
-                                            const uint16_t ker_dim_x,
-                                            const uint16_t ker_dim_y,
-                                            const uint16_t pad_x,
-                                            const uint16_t pad_y,
-                                            const uint16_t stride_x,
-                                            const uint16_t stride_y,
-                                            const q31_t *bias,
-                                            const uint16_t pre_rshift,
-                                            const uint16_t out_scale,
-                                            const uint16_t post_rshift,
-                                            q7_t *out_tensor,
-                                            const uint16_t out_tensor_dim_x,
-                                            const uint16_t out_tensor_dim_y,
-                                            q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_s8_s8_s8_sym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sym_bias_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_s8_s8_s8_sym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_s8_s8_s8_sym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10320,28 +12413,40 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sym_bias_any(const q7_t *in_te
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_s8_s16_s8_sym_bias_any(const q7_t *in_tensor,
-                                                const uint16_t in_tensor_dim_x,
-                                                const uint16_t in_tensor_dim_y,
-                                                const uint16_t in_tensor_ch,
-                                                const q7_t *ker_weight,
-                                                const uint16_t out_tensor_ch,
-                                                const uint16_t ker_dim_x,
-                                                const uint16_t ker_dim_y,
-                                                const uint16_t pad_x,
-                                                const uint16_t pad_y,
-                                                const uint16_t stride_x,
-                                                const uint16_t stride_y,
-                                                const q31_t *bias,
-                                                const uint16_t pre_rshift,
-                                                const uint16_t out_scale,
-                                                const uint16_t post_rshift,
-                                                q15_t *out_tensor,
-                                                const uint16_t out_tensor_dim_x,
-                                                const uint16_t out_tensor_dim_y,
-                                                q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_s8_s16_s8_sym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_s8_s16_s8_sym_bias_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_s8_s16_s8_sym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_s8_s16_s8_sym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10380,28 +12485,40 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s16_s8_sym_bias_any(const q7_t *in_t
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_u8_u8_s8_sym_bias_any(const u8_t *in_tensor,
-                                            const uint16_t in_tensor_dim_x,
-                                            const uint16_t in_tensor_dim_y,
-                                            const uint16_t in_tensor_ch,
-                                            const q7_t *ker_weight,
-                                            const uint16_t out_tensor_ch,
-                                            const uint16_t ker_dim_x,
-                                            const uint16_t ker_dim_y,
-                                            const uint16_t pad_x,
-                                            const uint16_t pad_y,
-                                            const uint16_t stride_x,
-                                            const uint16_t stride_y,
-                                            const q31_t *bias,
-                                            const uint16_t pre_rshift,
-                                            const uint16_t out_scale,
-                                            const uint16_t post_rshift,
-                                            u8_t *out_tensor,
-                                            const uint16_t out_tensor_dim_x,
-                                            const uint16_t out_tensor_dim_y,
-                                            q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_u8_u8_s8_sym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_u8_u8_s8_sym_bias_any(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    u8_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_u8_u8_s8_sym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_u8_u8_s8_sym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10441,28 +12558,40 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_u8_s8_sym_bias_any(const u8_t *in_te
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_u8_s8_s8_sym_bias_any(const u8_t *in_tensor,
-                                            const uint16_t in_tensor_dim_x,
-                                            const uint16_t in_tensor_dim_y,
-                                            const uint16_t in_tensor_ch,
-                                            const q7_t *ker_weight,
-                                            const uint16_t out_tensor_ch,
-                                            const uint16_t ker_dim_x,
-                                            const uint16_t ker_dim_y,
-                                            const uint16_t pad_x,
-                                            const uint16_t pad_y,
-                                            const uint16_t stride_x,
-                                            const uint16_t stride_y,
-                                            const q31_t *bias,
-                                            const uint16_t pre_rshift,
-                                            const uint16_t out_scale,
-                                            const uint16_t post_rshift,
-                                            q7_t *out_tensor,
-                                            const uint16_t out_tensor_dim_x,
-                                            const uint16_t out_tensor_dim_y,
-                                            q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_u8_s8_s8_sym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_u8_s8_s8_sym_bias_any(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_u8_s8_s8_sym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_u8_s8_s8_sym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10502,28 +12631,40 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_s8_s8_sym_bias_any(const u8_t *in_te
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_u8_s16_s8_sym_bias_any(const u8_t *in_tensor,
-                                                const uint16_t in_tensor_dim_x,
-                                                const uint16_t in_tensor_dim_y,
-                                                const uint16_t in_tensor_ch,
-                                                const q7_t *ker_weight,
-                                                const uint16_t out_tensor_ch,
-                                                const uint16_t ker_dim_x,
-                                                const uint16_t ker_dim_y,
-                                                const uint16_t pad_x,
-                                                const uint16_t pad_y,
-                                                const uint16_t stride_x,
-                                                const uint16_t stride_y,
-                                                const q31_t *bias,
-                                                const uint16_t pre_rshift,
-                                                const uint16_t out_scale,
-                                                const uint16_t post_rshift,
-                                                q15_t *out_tensor,
-                                                const uint16_t out_tensor_dim_x,
-                                                const uint16_t out_tensor_dim_y,
-                                                q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_u8_s16_s8_sym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_u8_s16_s8_sym_bias_any(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const q31_t* bias,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_u8_s16_s8_sym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_u8_s16_s8_sym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10561,27 +12702,39 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_s16_s8_sym_bias_any(const u8_t *in_t
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sym_any(const q7_t *in_tensor,
-                                    const uint16_t in_tensor_dim_x,
-                                    const uint16_t in_tensor_dim_y,
-                                    const uint16_t in_tensor_ch,
-                                    const q7_t *ker_weight,
-                                    const uint16_t out_tensor_ch,
-                                    const uint16_t ker_dim_x,
-                                    const uint16_t ker_dim_y,
-                                    const uint16_t pad_x,
-                                    const uint16_t pad_y,
-                                    const uint16_t stride_x,
-                                    const uint16_t stride_y,
-                                    const uint16_t pre_rshift,
-                                    const uint16_t out_scale,
-                                    const uint16_t post_rshift,
-                                    q7_t *out_tensor,
-                                    const uint16_t out_tensor_dim_x,
-                                    const uint16_t out_tensor_dim_y,
-                                    q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_s8_s8_s8_sym_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sym_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_s8_s8_s8_sym_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_s8_s8_s8_sym_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10620,27 +12773,39 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sym_any(const q7_t *in_tensor,
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_s8_s16_s8_sym_any(const q7_t *in_tensor,
-                                        const uint16_t in_tensor_dim_x,
-                                        const uint16_t in_tensor_dim_y,
-                                        const uint16_t in_tensor_ch,
-                                        const q7_t *ker_weight,
-                                        const uint16_t out_tensor_ch,
-                                        const uint16_t ker_dim_x,
-                                        const uint16_t ker_dim_y,
-                                        const uint16_t pad_x,
-                                        const uint16_t pad_y,
-                                        const uint16_t stride_x,
-                                        const uint16_t stride_y,
-                                        const uint16_t pre_rshift,
-                                        const uint16_t out_scale,
-                                        const uint16_t post_rshift,
-                                        q15_t *out_tensor,
-                                        const uint16_t out_tensor_dim_x,
-                                        const uint16_t out_tensor_dim_y,
-                                        q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_s8_s16_s8_sym_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_s8_s16_s8_sym_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_s8_s16_s8_sym_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_s8_s16_s8_sym_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10678,27 +12843,39 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s16_s8_sym_any(const q7_t *in_tensor
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_u8_u8_s8_sym_any(const u8_t *in_tensor,
-                                    const uint16_t in_tensor_dim_x,
-                                    const uint16_t in_tensor_dim_y,
-                                    const uint16_t in_tensor_ch,
-                                    const q7_t *ker_weight,
-                                    const uint16_t out_tensor_ch,
-                                    const uint16_t ker_dim_x,
-                                    const uint16_t ker_dim_y,
-                                    const uint16_t pad_x,
-                                    const uint16_t pad_y,
-                                    const uint16_t stride_x,
-                                    const uint16_t stride_y,
-                                    const uint16_t pre_rshift,
-                                    const uint16_t out_scale,
-                                    const uint16_t post_rshift,
-                                    u8_t *out_tensor,
-                                    const uint16_t out_tensor_dim_x,
-                                    const uint16_t out_tensor_dim_y,
-                                    q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_u8_u8_s8_sym_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_u8_u8_s8_sym_any(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    u8_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_u8_u8_s8_sym_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_u8_u8_s8_sym_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10737,27 +12914,39 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_u8_s8_sym_any(const u8_t *in_tensor,
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_u8_s8_s8_sym_any(const u8_t *in_tensor,
-                                        const uint16_t in_tensor_dim_x,
-                                        const uint16_t in_tensor_dim_y,
-                                        const uint16_t in_tensor_ch,
-                                        const q7_t *ker_weight,
-                                        const uint16_t out_tensor_ch,
-                                        const uint16_t ker_dim_x,
-                                        const uint16_t ker_dim_y,
-                                        const uint16_t pad_x,
-                                        const uint16_t pad_y,
-                                        const uint16_t stride_x,
-                                        const uint16_t stride_y,
-                                        const uint16_t pre_rshift,
-                                        const uint16_t out_scale,
-                                        const uint16_t post_rshift,
-                                        q7_t *out_tensor,
-                                        const uint16_t out_tensor_dim_x,
-                                        const uint16_t out_tensor_dim_y,
-                                        q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_u8_s8_s8_sym_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_u8_s8_s8_sym_any(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q7_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_u8_s8_s8_sym_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_u8_s8_s8_sym_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10796,27 +12985,39 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_s8_s8_sym_any(const u8_t *in_tensor,
  *  The outputs will be 2-stage shifted before being stored, i.e.,
  *  out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_u8_s16_s8_sym_any(const u8_t *in_tensor,
-                                        const uint16_t in_tensor_dim_x,
-                                        const uint16_t in_tensor_dim_y,
-                                        const uint16_t in_tensor_ch,
-                                        const q7_t *ker_weight,
-                                        const uint16_t out_tensor_ch,
-                                        const uint16_t ker_dim_x,
-                                        const uint16_t ker_dim_y,
-                                        const uint16_t pad_x,
-                                        const uint16_t pad_y,
-                                        const uint16_t stride_x,
-                                        const uint16_t stride_y,
-                                        const uint16_t pre_rshift,
-                                        const uint16_t out_scale,
-                                        const uint16_t post_rshift,
-                                        q15_t *out_tensor,
-                                        const uint16_t out_tensor_dim_x,
-                                        const uint16_t out_tensor_dim_y,
-                                        q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_u8_s16_s8_sym_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_u8_s16_s8_sym_any(
+    const u8_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    q15_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_u8_s16_s8_sym_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_u8_s16_s8_sym_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10841,9 +13042,11 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_s16_s8_sym_any(const u8_t *in_tensor
  * @param[in]       out_scale           pointer of the scaling vector for output
  *                                      tensor
  * @param[in]       out_offset          value of offset for the output tensor.
- *                                      It should be in the range of -128 to 127.
+ *                                      It should be in the range of -128 to
+ * 127.
  * @param[in]       in_offset           value of offset for the input tensor
- *                                      It should be in the range of -127 to 128.
+ *                                      It should be in the range of -127 to
+ * 128.
  * @param[in]       act_min             minimum value to clip out the ouput
  *                                      tensor. It should be in the range of
  *                                      -128 to 127.
@@ -10865,41 +13068,62 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_s16_s8_sym_any(const u8_t *in_tensor
  *     - stride_x is 1
  *     - stride_y is 1
  */
-static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(const q7_t *in_tensor,
-                                    const uint16_t in_tensor_dim_x,
-                                    const uint16_t in_tensor_dim_y,
-                                    const uint16_t in_tensor_ch,
-                                    const uint16_t in_tensor_group,
-                                    const q7_t *ker_weight,
-                                    const uint16_t out_tensor_ch,
-                                    const uint16_t pad_x,
-                                    const uint16_t pad_y,
-                                    const uint16_t stride_x,
-                                    const uint16_t stride_y,
-                                    const int32_t *bias,
-                                    q7_t *out_tensor,
-                                    const int32_t *out_shift,
-                                    const int32_t *out_scale,
-                                    const int32_t out_offset,
-                                    const int32_t in_offset,
-                                    const int32_t act_min,
-                                    const int32_t act_max,
-                                    const uint16_t out_tensor_dim_x,
-                                    const uint16_t out_tensor_dim_y,
-                                    q15_t *tmp_buf)
-{
-    return riscv_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, in_tensor_group, ker_weight, out_tensor_ch, pad_x, pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale, out_offset, in_offset, act_min, act_max, out_tensor_dim_x, out_tensor_dim_y, tmp_buf);
+static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const uint16_t in_tensor_group,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const int32_t* bias,
+    q7_t* out_tensor,
+    const int32_t* out_shift,
+    const int32_t* out_scale,
+    const int32_t out_offset,
+    const int32_t in_offset,
+    const int32_t act_min,
+    const int32_t act_max,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+      in_tensor_group, ker_weight, out_tensor_ch, pad_x, pad_y, stride_x,
+      stride_y, bias, out_tensor, out_shift, out_scale, out_offset, in_offset,
+      act_min, act_max, out_tensor_dim_x, out_tensor_dim_y, tmp_buf);
+#else
+  return riscv_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+      in_tensor_group, ker_weight, out_tensor_ch, pad_x, pad_y, stride_x,
+      stride_y, bias, out_tensor, out_shift, out_scale, out_offset, in_offset,
+      act_min, act_max, out_tensor_dim_x, out_tensor_dim_y, tmp_buf);
+#endif
 }
 
 /**
  * @brief           This function is used to get the needed size, in bytes, by
- *                  the input temporary buffer of riscv_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any.
+ *                  the input temporary buffer of
+ * riscv_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any.
  * @param[in]       in_tensor_ch        number of input tensor channels
- * @return          This function returns the needed size by the temporary buffer.
+ * @return          This function returns the needed size by the temporary
+ * buffer.
  */
-static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(const uint16_t in_tensor_ch)
-{
-    return riscv_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(in_tensor_ch);
+static inline int32_t
+hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
+    const uint16_t in_tensor_ch) {
+#if defined(__zcc__)
+  return tpt_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
+      in_tensor_ch);
+#else
+  return riscv_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
+      in_tensor_ch);
+#endif
 }
 
 /**
@@ -10922,9 +13146,11 @@ static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer
  * @param[in]       out_scale           pointer of the scaling vector for output
  *                                      tensor
  * @param[in]       out_offset          value of offset for the output tensor.
- *                                      It should be in the range of -128 to 127.
+ *                                      It should be in the range of -128 to
+ * 127.
  * @param[in]       in_offset           value of offset for the input tensor
- *                                      It should be in the range of -127 to 128.
+ *                                      It should be in the range of -127 to
+ * 128.
  * @param[in]       act_min             minimum value to clip out the ouput
  *                                      tensor. It should be in the range of
  *                                      -128 to 127.
@@ -10935,48 +13161,70 @@ static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer
  * @param[in]       in_tmp_buf          temporary buffer for the input tensor.
  *                                      It is required when -mext-dsp or
  *                                      -mext-vector is enabled and its needed
- *                                      size could be get by calling riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size.
+ *                                      size could be get by calling
+ * riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size.
  * @return          This function returns 0 on success; otherwise, it returns -1
  *                  if its inputs do not meet the constraint that
  *                  out_tensor_dim_x is a multiple of 4.
  */
-static inline int hpm_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_tensor,
-                                                const uint16_t in_tensor_dim_x,
-                                                const uint16_t in_tensor_ch,
-                                                const uint16_t in_tensor_group,
-                                                const q7_t *ker_weight,
-                                                const uint16_t out_tensor_ch,
-                                                const uint16_t ker_dim_x,
-                                                const uint16_t pad_x,
-                                                const uint16_t stride_x,
-                                                const int32_t *bias,
-                                                q7_t *out_tensor,
-                                                const int32_t *out_shift,
-                                                const int32_t *out_scale,
-                                                const int32_t out_offset,
-                                                const int32_t in_offset,
-                                                const int32_t act_min,
-                                                const int32_t act_max,
-                                                const uint16_t out_tensor_dim_x,
-                                                q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_ch, in_tensor_group, ker_weight, out_tensor_ch, ker_dim_x, pad_x, stride_x, bias, out_tensor, out_shift, out_scale, out_offset, in_offset, act_min, act_max, out_tensor_dim_x, in_tmp_buf);
+static inline int hpm_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_ch,
+    const uint16_t in_tensor_group,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t pad_x,
+    const uint16_t stride_x,
+    const int32_t* bias,
+    q7_t* out_tensor,
+    const int32_t* out_shift,
+    const int32_t* out_scale,
+    const int32_t out_offset,
+    const int32_t in_offset,
+    const int32_t act_min,
+    const int32_t act_max,
+    const uint16_t out_tensor_dim_x,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_ch, in_tensor_group, ker_weight,
+      out_tensor_ch, ker_dim_x, pad_x, stride_x, bias, out_tensor, out_shift,
+      out_scale, out_offset, in_offset, act_min, act_max, out_tensor_dim_x,
+      in_tmp_buf);
+#else
+  return riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_ch, in_tensor_group, ker_weight,
+      out_tensor_ch, ker_dim_x, pad_x, stride_x, bias, out_tensor, out_shift,
+      out_scale, out_offset, in_offset, act_min, act_max, out_tensor_dim_x,
+      in_tmp_buf);
+#endif
 }
 
 /**
  * @brief           This function is used to get the needed size, in bytes, by
- *                  the input temporary buffer of riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any.
+ *                  the input temporary buffer of
+ * riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any.
  * @param[in]       in_tensor_ch        number of input tensor channels
  * @param[in]       ker_dim_x           x dimension of the filter kernel
  * @param[in]       ker_dim_y           y dimension of the filter kernel. It is
  *                                      always 1 here.
- * @return          This function returns the needed size by the temporary buffer.
+ * @return          This function returns the needed size by the temporary
+ * buffer.
  */
-static inline int32_t hpm_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(const uint16_t in_tensor_ch,
-                                                const uint16_t ker_dim_x,
-                                                const uint16_t ker_dim_y)
-{
-    return riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(in_tensor_ch, ker_dim_x, ker_dim_y);
+static inline int32_t
+hpm_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(
+    const uint16_t in_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y) {
+#if defined(__zcc__)
+  return tpt_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(
+      in_tensor_ch, ker_dim_x, ker_dim_y);
+#else
+  return riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(
+      in_tensor_ch, ker_dim_x, ker_dim_y);
+#endif
 }
 
 /**
@@ -11003,9 +13251,11 @@ static inline int32_t hpm_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size
  * @param[in]       out_scale           pointer of the scaling vector for output
  *                                      tensor
  * @param[in]       out_offset          value of offset for the output tensor.
- *                                      It should be in the range of -128 to 127.
+ *                                      It should be in the range of -128 to
+ * 127.
  * @param[in]       in_offset           value of offset for the input tensor
- *                                      It should be in the range of -127 to 128.
+ *                                      It should be in the range of -127 to
+ * 128.
  * @param[in]       act_min             minimum value to clip out the ouput
  *                                      tensor. It should be in the range of
  *                                      -128 to 127.
@@ -11017,50 +13267,73 @@ static inline int32_t hpm_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size
  * @param[in]       in_tmp_buf          temporary buffer for the input tensor.
  *                                      It is required when -mext-dsp or
  *                                      -mext-vector is enabled and its needed
- *                                      size could be get by calling riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size.
+ *                                      size could be get by calling
+ * riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size.
  * @return          This function only returns 0.
  */
-static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_tensor,
-                                                const uint16_t in_tensor_dim_x,
-                                                const uint16_t in_tensor_dim_y,
-                                                const uint16_t in_tensor_ch,
-                                                const uint16_t in_tensor_group,
-                                                const q7_t *ker_weight,
-                                                const uint16_t out_tensor_ch,
-                                                const uint16_t ker_dim_x,
-                                                const uint16_t ker_dim_y,
-                                                const uint16_t pad_x,
-                                                const uint16_t pad_y,
-                                                const uint16_t stride_x,
-                                                const uint16_t stride_y,
-                                                const int32_t *bias,
-                                                q7_t *out_tensor,
-                                                const int32_t *out_shift,
-                                                const int32_t *out_scale,
-                                                const int32_t out_offset,
-                                                const int32_t in_offset,
-                                                const int32_t act_min,
-                                                const int32_t act_max,
-                                                const uint16_t out_tensor_dim_x,
-                                                const uint16_t out_tensor_dim_y,
-                                                q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, in_tensor_group, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale, out_offset, in_offset, act_min, act_max, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_asym_bias_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const uint16_t in_tensor_group,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const int32_t* bias,
+    q7_t* out_tensor,
+    const int32_t* out_shift,
+    const int32_t* out_scale,
+    const int32_t out_offset,
+    const int32_t in_offset,
+    const int32_t act_min,
+    const int32_t act_max,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+      in_tensor_group, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x,
+      pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale,
+      out_offset, in_offset, act_min, act_max, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+      in_tensor_group, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x,
+      pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale,
+      out_offset, in_offset, act_min, act_max, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
  * @brief           This function is used to get the needed size, in bytes, by
- *                  the input temporary buffer of riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any.
+ *                  the input temporary buffer of
+ * riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any.
  * @param[in]       in_tensor_ch        number of input tensor channels
  * @param[in]       ker_dim_x           x dimension of the filter kernel
  * @param[in]       ker_dim_y           y dimension of the filter kernel
- * @return          This function returns the needed size by the temporary buffer.
+ * @return          This function returns the needed size by the temporary
+ * buffer.
  */
-static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(const uint16_t in_tensor_ch,
-                                        const uint16_t ker_dim_x,
-                                        const uint16_t ker_dim_y)
-{
-    return riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(in_tensor_ch, ker_dim_x, ker_dim_y);
+static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(
+    const uint16_t in_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(
+      in_tensor_ch, ker_dim_x, ker_dim_y);
+#else
+  return riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(
+      in_tensor_ch, ker_dim_x, ker_dim_y);
+#endif
 }
 
 /**
@@ -11086,9 +13359,11 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(con
  * @param[in]       out_tensor_dim_x    x dimension of the output tensor
  * @param[in]       out_tensor_dim_y    y dimension of the output tensor
  * @param[in]       out_offset          value of offset for the output tensor.
- *                                      It should be in the range of -128 to 127.
+ *                                      It should be in the range of -128 to
+ * 127.
  * @param[in]       in_offset           value of offset for the input tensor
- *                                      It should be in the range of -127 to 128.
+ *                                      It should be in the range of -127 to
+ * 128.
  * @param[in]       act_min             minimum value to clip out the ouput
  *                                      tensor. It should be in the range of
  *                                      -128 to 127.
@@ -11102,31 +13377,43 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(con
  *                  if its inputs do not meet the constraints that in_tensor_ch
  *                  has to be equal to out_tensor_ch and pad_x is less than 1.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_3x3_s8_s8_s8_asym_bias_any(const int8_t *in_tensor,
-                                                const int32_t in_tensor_dim_x,
-                                                const int32_t in_tensor_dim_y,
-                                                const int32_t in_tensor_ch,
-                                                const int8_t *ker_weight,
-                                                const int32_t out_tensor_ch,
-                                                const int32_t pad_x,
-                                                const int32_t pad_y,
-                                                const int32_t stride_x,
-                                                const int32_t stride_y,
-                                                const int32_t *bias,
-                                                int8_t *out_tensor,
-                                                const int32_t *out_shift,
-                                                const int32_t *out_scale,
-                                                const int32_t out_tensor_dim_x,
-                                                const int32_t out_tensor_dim_y,
-                                                const int32_t out_offset,
-                                                const int32_t in_offset,
-                                                const int32_t act_min,
-                                                const int32_t act_max,
-                                                const int32_t dilation_x,
-                                                const int32_t dilation_y,
-                                                int16_t *tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_3x3_s8_s8_s8_asym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, pad_x, pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale, out_tensor_dim_x, out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x, dilation_y, tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_3x3_s8_s8_s8_asym_bias_any(
+    const int8_t* in_tensor,
+    const int32_t in_tensor_dim_x,
+    const int32_t in_tensor_dim_y,
+    const int32_t in_tensor_ch,
+    const int8_t* ker_weight,
+    const int32_t out_tensor_ch,
+    const int32_t pad_x,
+    const int32_t pad_y,
+    const int32_t stride_x,
+    const int32_t stride_y,
+    const int32_t* bias,
+    int8_t* out_tensor,
+    const int32_t* out_shift,
+    const int32_t* out_scale,
+    const int32_t out_tensor_dim_x,
+    const int32_t out_tensor_dim_y,
+    const int32_t out_offset,
+    const int32_t in_offset,
+    const int32_t act_min,
+    const int32_t act_max,
+    const int32_t dilation_x,
+    const int32_t dilation_y,
+    int16_t* tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_3x3_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, pad_x, pad_y, stride_x, stride_y, bias, out_tensor,
+      out_shift, out_scale, out_tensor_dim_x, out_tensor_dim_y, out_offset,
+      in_offset, act_min, act_max, dilation_x, dilation_y, tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_3x3_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, pad_x, pad_y, stride_x, stride_y, bias, out_tensor,
+      out_shift, out_scale, out_tensor_dim_x, out_tensor_dim_y, out_offset,
+      in_offset, act_min, act_max, dilation_x, dilation_y, tmp_buf);
+#endif
 }
 
 /**
@@ -11157,9 +13444,11 @@ static inline int32_t hpm_nn_conv_dw_HWC_3x3_s8_s8_s8_asym_bias_any(const int8_t
  * @param[in]       out_tensor_dim_x    x dimension of the output tensor
  * @param[in]       out_tensor_dim_y    y dimension of the output tensor
  * @param[in]       out_offset          value of offset for the output tensor.
- *                                      It should be in the range of -128 to 127.
+ *                                      It should be in the range of -128 to
+ * 127.
  * @param[in]       in_offset           value of offset for the input tensor
- *                                      It should be in the range of -127 to 128.
+ *                                      It should be in the range of -127 to
+ * 128.
  * @param[in]       act_min             minimum value to clip out the ouput
  *                                      tensor. It should be in the range of
  *                                      -128 to 127.
@@ -11176,34 +13465,48 @@ static inline int32_t hpm_nn_conv_dw_HWC_3x3_s8_s8_s8_asym_bias_any(const int8_t
  *  to be modified...
  * @endcode
  */
-static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_tensor,
-                                const uint16_t in_tensor_dim_x,
-                                const uint16_t in_tensor_dim_y,
-                                const uint16_t in_tensor_ch,
-                                const q7_t *ker_weight,
-                                const uint16_t out_tensor_ch,
-                                const uint16_t ch_mult,
-                                const uint16_t ker_dim_x,
-                                const uint16_t ker_dim_y,
-                                const uint16_t pad_x,
-                                const uint16_t pad_y,
-                                const uint16_t stride_x,
-                                const uint16_t stride_y,
-                                const int32_t *bias,
-                                q7_t *out_tensor,
-                                const int32_t *out_shift,
-                                const int32_t *out_scale,
-                                const uint16_t out_tensor_dim_x,
-                                const uint16_t out_tensor_dim_y,
-                                const int32_t out_offset,
-                                const int32_t in_offset,
-                                const int32_t act_min,
-                                const int32_t act_max,
-                                const uint16_t dilation_x,
-                                const uint16_t dilation_y,
-                                q15_t *tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ch_mult, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale, out_tensor_dim_x, out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x, dilation_y, tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ch_mult,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const int32_t* bias,
+    q7_t* out_tensor,
+    const int32_t* out_shift,
+    const int32_t* out_scale,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    const int32_t out_offset,
+    const int32_t in_offset,
+    const int32_t act_min,
+    const int32_t act_max,
+    const uint16_t dilation_x,
+    const uint16_t dilation_y,
+    q15_t* tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ch_mult, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x,
+      stride_y, bias, out_tensor, out_shift, out_scale, out_tensor_dim_x,
+      out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x,
+      dilation_y, tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ch_mult, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x,
+      stride_y, bias, out_tensor, out_shift, out_scale, out_tensor_dim_x,
+      out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x,
+      dilation_y, tmp_buf);
+#endif
 }
 
 /**
@@ -11231,9 +13534,11 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_t
  * @param[in]       out_tensor_dim_x    x dimension of the output tensor
  * @param[in]       out_tensor_dim_y    y dimension of the output tensor
  * @param[in]       out_offset          value of offset for the output tensor.
- *                                      It should be in the range of -128 to 127.
+ *                                      It should be in the range of -128 to
+ * 127.
  * @param[in]       in_offset           value of offset for the input tensor
- *                                      It should be in the range of -127 to 128.
+ *                                      It should be in the range of -127 to
+ * 128.
  * @param[in]       act_min             minimum value to clip out the ouput
  *                                      tensor. It should be in the range of
  *                                      -128 to 127.
@@ -11245,53 +13550,77 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_t
  * @param[in]       in_tmp_buf          temporary buffer for the input tensor.
  *                                      It is required when -mext-dsp or
  *                                      -mext-vector is enabled and its needed
- *                                      size could be get by calling riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size.
+ *                                      size could be get by calling
+ * riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size.
  * @return          This function returns 0 on success; otherwise, it returns -1
  *                  if its inputs do not meet the constraint that in_tensor_ch
  *                  has to be equal to out_tensor_ch.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(const q7_t *in_tensor,
-                                     const uint16_t in_tensor_dim_x,
-                                     const uint16_t in_tensor_dim_y,
-                                     const uint16_t in_tensor_ch,
-                                     const q7_t *ker_weight,
-                                     const uint16_t out_tensor_ch,
-                                     const uint16_t ker_dim_x,
-                                     const uint16_t ker_dim_y,
-                                     const uint16_t pad_x,
-                                     const uint16_t pad_y,
-                                     const uint16_t stride_x,
-                                     const uint16_t stride_y,
-                                     const int32_t *bias,
-                                     q7_t *out_tensor,
-                                     const int32_t *out_shift,
-                                     const int32_t *out_scale,
-                                     const uint16_t out_tensor_dim_x,
-                                     const uint16_t out_tensor_dim_y,
-                                     const int32_t out_offset,
-                                     const int32_t in_offset,
-                                     const int32_t act_min,
-                                     const int32_t act_max,
-                                     const uint16_t dilation_x,
-                                     const uint16_t dilation_y,
-                                     q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale, out_tensor_dim_x, out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x, dilation_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const int32_t* bias,
+    q7_t* out_tensor,
+    const int32_t* out_shift,
+    const int32_t* out_scale,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    const int32_t out_offset,
+    const int32_t in_offset,
+    const int32_t act_min,
+    const int32_t act_max,
+    const uint16_t dilation_x,
+    const uint16_t dilation_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, out_tensor, out_shift, out_scale, out_tensor_dim_x,
+      out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x,
+      dilation_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, out_tensor, out_shift, out_scale, out_tensor_dim_x,
+      out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x,
+      dilation_y, in_tmp_buf);
+#endif
 }
 
 /**
  * @brief           This function is used to get the needed size, in bytes, by
- *                  the input temporary buffer of riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any.
+ *                  the input temporary buffer of
+ * riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any.
  * @param[in]       in_tensor_ch        number of input tensor channels
  * @param[in]       ker_dim_x           x dimension of the filter kernel
  * @param[in]       ker_dim_y           y dimension of the filter kernel
- * @return          This function returns the needed size by the temporary buffer.
+ * @return          This function returns the needed size by the temporary
+ * buffer.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(const uint16_t in_tensor_ch,
-                                                  const uint16_t ker_dim_x,
-                                                  const uint16_t ker_dim_y)
-{
-    return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(in_tensor_ch, ker_dim_x, ker_dim_y);
+static inline int32_t
+hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
+    const uint16_t in_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
+      in_tensor_ch, ker_dim_x, ker_dim_y);
+#else
+  return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
+      in_tensor_ch, ker_dim_x, ker_dim_y);
+#endif
 }
 
 /**
@@ -11334,33 +13663,47 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_
  *                  if its inputs do not meet the constraint that both ch_mult
  *                  and ker_dim_x are multiple of 2.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_u8_u8_u8_asym_bias_any(const uint8_t *in_tensor,
-                                    const uint16_t in_tensor_dim_x,
-                                    const uint16_t in_tensor_dim_y,
-                                    const uint16_t in_tensor_ch,
-                                    const uint8_t *ker_weight,
-                                    const uint16_t ker_dim_x,
-                                    const uint16_t ker_dim_y,
-                                    const int16_t ch_mult,
-                                    const int16_t pad_x,
-                                    const int16_t pad_y,
-                                    const int16_t stride_x,
-                                    const int16_t stride_y,
-                                    const int16_t dilation_x,
-                                    const int16_t dilation_y,
-                                    const int32_t *bias,
-                                    const int32_t in_offset,
-                                    const int32_t ker_offset,
-                                    const int32_t out_offset,
-                                    uint8_t *out_tensor,
-                                    const uint16_t out_tensor_dim_x,
-                                    const uint16_t out_tensor_dim_y,
-                                    const int32_t act_min,
-                                    const int32_t act_max,
-                                    const int32_t out_shift,
-                                    const int32_t out_scale)
-{
-    return riscv_nn_conv_dw_HWC_u8_u8_u8_asym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, ker_dim_x, ker_dim_y, ch_mult, pad_x, pad_y, stride_x, stride_y, dilation_x, dilation_y, bias, in_offset, ker_offset, out_offset, out_tensor, out_tensor_dim_x, out_tensor_dim_y, act_min, act_max, out_shift, out_scale);
+static inline int32_t hpm_nn_conv_dw_HWC_u8_u8_u8_asym_bias_any(
+    const uint8_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const uint8_t* ker_weight,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const int16_t ch_mult,
+    const int16_t pad_x,
+    const int16_t pad_y,
+    const int16_t stride_x,
+    const int16_t stride_y,
+    const int16_t dilation_x,
+    const int16_t dilation_y,
+    const int32_t* bias,
+    const int32_t in_offset,
+    const int32_t ker_offset,
+    const int32_t out_offset,
+    uint8_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    const int32_t act_min,
+    const int32_t act_max,
+    const int32_t out_shift,
+    const int32_t out_scale) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_u8_u8_u8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      ker_dim_x, ker_dim_y, ch_mult, pad_x, pad_y, stride_x, stride_y,
+      dilation_x, dilation_y, bias, in_offset, ker_offset, out_offset,
+      out_tensor, out_tensor_dim_x, out_tensor_dim_y, act_min, act_max,
+      out_shift, out_scale);
+#else
+  return riscv_nn_conv_dw_HWC_u8_u8_u8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      ker_dim_x, ker_dim_y, ch_mult, pad_x, pad_y, stride_x, stride_y,
+      dilation_x, dilation_y, bias, in_offset, ker_offset, out_offset,
+      out_tensor, out_tensor_dim_x, out_tensor_dim_y, act_min, act_max,
+      out_shift, out_scale);
+#endif
 }
 
 #ifdef __riscv_zfh
@@ -11399,26 +13742,38 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_u8_u8_asym_bias_any(const uint8_t *i
  *     - stride_x is 1
  *     - stride_y is 1
  */
-static inline int32_t hpm_nn_conv_1x1_HWC_f16_f16_f16_bias_any(const float16_t *in_tensor,
-                                                const uint16_t in_tensor_dim_x,
-                                                const uint16_t in_tensor_dim_y,
-                                                const uint16_t in_tensor_ch,
-                                                const float16_t *ker_weight,
-                                                const uint16_t out_tensor_ch,
-                                                const uint16_t ker_dim_x,
-                                                const uint16_t ker_dim_y,
-                                                const uint16_t pad_x,
-                                                const uint16_t pad_y,
-                                                const uint16_t stride_x,
-                                                const uint16_t stride_y,
-                                                const float16_t *bias,
-                                                float16_t *out_tensor,
-                                                const uint16_t out_tensor_dim_x,
-                                                const uint16_t out_tensor_dim_y,
-                                                float16_t *in_tmp_buf,
-                                                float16_t *tmp_buf)
-{
-    return riscv_nn_conv_1x1_HWC_f16_f16_f16_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf, tmp_buf);
+static inline int32_t hpm_nn_conv_1x1_HWC_f16_f16_f16_bias_any(
+    const float16_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const float16_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const float16_t* bias,
+    float16_t* out_tensor,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    float16_t* in_tmp_buf,
+    float16_t* tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_1x1_HWC_f16_f16_f16_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf,
+      tmp_buf);
+#else
+  return riscv_nn_conv_1x1_HWC_f16_f16_f16_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf,
+      tmp_buf);
+#endif
 }
 
 /**
@@ -11442,21 +13797,31 @@ static inline int32_t hpm_nn_conv_1x1_HWC_f16_f16_f16_bias_any(const float16_t *
  * @param[in]       tmp_buf             dummy
  * @return          This function returns 0.
  */
-static inline int32_t hpm_nn_conv_HWC_f16_f16_f16_bias(const float16_t *in_tensor,
-                                        const uint16_t in_tensor_dim,
-                                        const uint16_t in_tensor_ch,
-                                        const float16_t *ker_weight,
-                                        const uint16_t out_tensor_ch,
-                                        const uint16_t ker_dim,
-                                        const uint16_t pad,
-                                        const uint16_t stride,
-                                        const float16_t *bias,
-                                        float16_t *out_tensor,
-                                        const uint16_t out_tensor_dim,
-                                        float16_t *in_tmp_buf,
-                                        float16_t *tmp_buf)
-{
-    return riscv_nn_conv_HWC_f16_f16_f16_bias(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, out_tensor, out_tensor_dim, in_tmp_buf, tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_f16_f16_f16_bias(
+    const float16_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const float16_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const float16_t* bias,
+    float16_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    float16_t* in_tmp_buf,
+    float16_t* tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_f16_f16_f16_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, out_tensor, out_tensor_dim, in_tmp_buf,
+      tmp_buf);
+#else
+  return riscv_nn_conv_HWC_f16_f16_f16_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, out_tensor, out_tensor_dim, in_tmp_buf,
+      tmp_buf);
+#endif
 }
 
 /**
@@ -11480,21 +13845,31 @@ static inline int32_t hpm_nn_conv_HWC_f16_f16_f16_bias(const float16_t *in_tenso
  * @param[in]       tmp_buf             dummy
  * @return          This function returns 0.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_f16_f16_f16_bias(const float16_t *in_tensor,
-                                            const uint16_t in_tensor_dim,
-                                            const uint16_t in_tensor_ch,
-                                            const float16_t *ker_weight,
-                                            const uint16_t out_tensor_ch,
-                                            const uint16_t ker_dim,
-                                            const uint16_t pad,
-                                            const uint16_t stride,
-                                            const float16_t *bias,
-                                            float16_t *out_tensor,
-                                            const uint16_t out_tensor_dim,
-                                            float16_t *in_tmp_buf,
-                                            float16_t *tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_f16_f16_f16_bias(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, out_tensor, out_tensor_dim, in_tmp_buf, tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_f16_f16_f16_bias(
+    const float16_t* in_tensor,
+    const uint16_t in_tensor_dim,
+    const uint16_t in_tensor_ch,
+    const float16_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim,
+    const uint16_t pad,
+    const uint16_t stride,
+    const float16_t* bias,
+    float16_t* out_tensor,
+    const uint16_t out_tensor_dim,
+    float16_t* in_tmp_buf,
+    float16_t* tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_f16_f16_f16_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, out_tensor, out_tensor_dim, in_tmp_buf,
+      tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_f16_f16_f16_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, out_tensor, out_tensor_dim, in_tmp_buf,
+      tmp_buf);
+#endif
 }
 #endif
 
@@ -11505,8 +13880,12 @@ static inline int32_t hpm_nn_conv_dw_HWC_f16_f16_f16_bias(const float16_t *in_te
 #endif
 
 #ifdef HPM_EN_MATH_NN_RVP32_LIB
-
+#if defined(__zcc__)
+#include "tpt_nn_convolution.h"
+#else
 #include "riscv_nn_convolution.h"
+#endif
+
 /**
  * @brief           This function performs convolution for signed 8-bit integer
  *                  inputs/outputs in any x and y dimensions with asymmetric
@@ -11531,9 +13910,11 @@ static inline int32_t hpm_nn_conv_dw_HWC_f16_f16_f16_bias(const float16_t *in_te
  * @param[in]       out_scale           pointer of the scaling vector for output
  *                                      tensor
  * @param[in]       out_offset          value of offset for the output tensor.
- *                                      It should be in the range of -128 to 127.
+ *                                      It should be in the range of -128 to
+ * 127.
  * @param[in]       in_offset           value of offset for the input tensor
- *                                      It should be in the range of -127 to 128.
+ *                                      It should be in the range of -127 to
+ * 128.
  * @param[in]       act_min             minimum value to clip out the ouput
  *                                      tensor. It should be in the range of
  *                                      -128 to 127.
@@ -11545,35 +13926,50 @@ static inline int32_t hpm_nn_conv_dw_HWC_f16_f16_f16_bias(const float16_t *in_te
  * @param[in]       in_tmp_buf          temporary buffer for the input tensor.
  *                                      It is required when -mext-dsp or
  *                                      -mext-vector is enabled and its needed
- *                                      size could be get by calling riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size.
+ *                                      size could be get by calling
+ * riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size.
  * @return          This function only returns 0.
  */
-static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_tensor,
-                                                const uint16_t in_tensor_dim_x,
-                                                const uint16_t in_tensor_dim_y,
-                                                const uint16_t in_tensor_ch,
-                                                const uint16_t in_tensor_group,
-                                                const q7_t *ker_weight,
-                                                const uint16_t out_tensor_ch,
-                                                const uint16_t ker_dim_x,
-                                                const uint16_t ker_dim_y,
-                                                const uint16_t pad_x,
-                                                const uint16_t pad_y,
-                                                const uint16_t stride_x,
-                                                const uint16_t stride_y,
-                                                const int32_t *bias,
-                                                q7_t *out_tensor,
-                                                const int32_t *out_shift,
-                                                const int32_t *out_scale,
-                                                const int32_t out_offset,
-                                                const int32_t in_offset,
-                                                const int32_t act_min,
-                                                const int32_t act_max,
-                                                const uint16_t out_tensor_dim_x,
-                                                const uint16_t out_tensor_dim_y,
-                                                q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, in_tensor_group, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale, out_offset, in_offset, act_min, act_max, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_asym_bias_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const uint16_t in_tensor_group,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const int32_t* bias,
+    q7_t* out_tensor,
+    const int32_t* out_shift,
+    const int32_t* out_scale,
+    const int32_t out_offset,
+    const int32_t in_offset,
+    const int32_t act_min,
+    const int32_t act_max,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+      in_tensor_group, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x,
+      pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale,
+      out_offset, in_offset, act_min, act_max, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+      in_tensor_group, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x,
+      pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale,
+      out_offset, in_offset, act_min, act_max, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -11598,9 +13994,11 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_tens
  * @param[in]       out_scale           pointer of the scaling vector for output
  *                                      tensor
  * @param[in]       out_offset          value of offset for the output tensor.
- *                                      It should be in the range of -128 to 127.
+ *                                      It should be in the range of -128 to
+ * 127.
  * @param[in]       in_offset           value of offset for the input tensor
- *                                      It should be in the range of -127 to 128.
+ *                                      It should be in the range of -127 to
+ * 128.
  * @param[in]       act_min             minimum value to clip out the ouput
  *                                      tensor. It should be in the range of
  *                                      -128 to 127.
@@ -11622,30 +14020,42 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_tens
  *     - stride_x is 1
  *     - stride_y is 1
  */
-static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(const q7_t *in_tensor,
-                                    const uint16_t in_tensor_dim_x,
-                                    const uint16_t in_tensor_dim_y,
-                                    const uint16_t in_tensor_ch,
-                                    const uint16_t in_tensor_group,
-                                    const q7_t *ker_weight,
-                                    const uint16_t out_tensor_ch,
-                                    const uint16_t pad_x,
-                                    const uint16_t pad_y,
-                                    const uint16_t stride_x,
-                                    const uint16_t stride_y,
-                                    const int32_t *bias,
-                                    q7_t *out_tensor,
-                                    const int32_t *out_shift,
-                                    const int32_t *out_scale,
-                                    const int32_t out_offset,
-                                    const int32_t in_offset,
-                                    const int32_t act_min,
-                                    const int32_t act_max,
-                                    const uint16_t out_tensor_dim_x,
-                                    const uint16_t out_tensor_dim_y,
-                                    q15_t *tmp_buf)
-{
-    return riscv_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, in_tensor_group, ker_weight, out_tensor_ch, pad_x, pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale, out_offset, in_offset, act_min, act_max, out_tensor_dim_x, out_tensor_dim_y, tmp_buf);
+static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const uint16_t in_tensor_group,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const int32_t* bias,
+    q7_t* out_tensor,
+    const int32_t* out_shift,
+    const int32_t* out_scale,
+    const int32_t out_offset,
+    const int32_t in_offset,
+    const int32_t act_min,
+    const int32_t act_max,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    q15_t* tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+      in_tensor_group, ker_weight, out_tensor_ch, pad_x, pad_y, stride_x,
+      stride_y, bias, out_tensor, out_shift, out_scale, out_offset, in_offset,
+      act_min, act_max, out_tensor_dim_x, out_tensor_dim_y, tmp_buf);
+#else
+  return riscv_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+      in_tensor_group, ker_weight, out_tensor_ch, pad_x, pad_y, stride_x,
+      stride_y, bias, out_tensor, out_shift, out_scale, out_offset, in_offset,
+      act_min, act_max, out_tensor_dim_x, out_tensor_dim_y, tmp_buf);
+#endif
 }
 
 /**
@@ -11676,9 +14086,11 @@ static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(const q7_t
  * @param[in]       out_tensor_dim_x    x dimension of the output tensor
  * @param[in]       out_tensor_dim_y    y dimension of the output tensor
  * @param[in]       out_offset          value of offset for the output tensor.
- *                                      It should be in the range of -128 to 127.
+ *                                      It should be in the range of -128 to
+ * 127.
  * @param[in]       in_offset           value of offset for the input tensor
- *                                      It should be in the range of -127 to 128.
+ *                                      It should be in the range of -127 to
+ * 128.
  * @param[in]       act_min             minimum value to clip out the ouput
  *                                      tensor. It should be in the range of
  *                                      -128 to 127.
@@ -11695,34 +14107,48 @@ static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(const q7_t
  *  to be modified...
  * @endcode
  */
-static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_tensor,
-                                const uint16_t in_tensor_dim_x,
-                                const uint16_t in_tensor_dim_y,
-                                const uint16_t in_tensor_ch,
-                                const q7_t *ker_weight,
-                                const uint16_t out_tensor_ch,
-                                const uint16_t ch_mult,
-                                const uint16_t ker_dim_x,
-                                const uint16_t ker_dim_y,
-                                const uint16_t pad_x,
-                                const uint16_t pad_y,
-                                const uint16_t stride_x,
-                                const uint16_t stride_y,
-                                const int32_t *bias,
-                                q7_t *out_tensor,
-                                const int32_t *out_shift,
-                                const int32_t *out_scale,
-                                const uint16_t out_tensor_dim_x,
-                                const uint16_t out_tensor_dim_y,
-                                const int32_t out_offset,
-                                const int32_t in_offset,
-                                const int32_t act_min,
-                                const int32_t act_max,
-                                const uint16_t dilation_x,
-                                const uint16_t dilation_y,
-                                q15_t *tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ch_mult, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale, out_tensor_dim_x, out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x, dilation_y, tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ch_mult,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const int32_t* bias,
+    q7_t* out_tensor,
+    const int32_t* out_shift,
+    const int32_t* out_scale,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    const int32_t out_offset,
+    const int32_t in_offset,
+    const int32_t act_min,
+    const int32_t act_max,
+    const uint16_t dilation_x,
+    const uint16_t dilation_y,
+    q15_t* tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ch_mult, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x,
+      stride_y, bias, out_tensor, out_shift, out_scale, out_tensor_dim_x,
+      out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x,
+      dilation_y, tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ch_mult, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x,
+      stride_y, bias, out_tensor, out_shift, out_scale, out_tensor_dim_x,
+      out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x,
+      dilation_y, tmp_buf);
+#endif
 }
 
 /**
@@ -11746,9 +14172,11 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_t
  * @param[in]       out_scale           pointer of the scaling vector for output
  *                                      tensor
  * @param[in]       out_offset          value of offset for the output tensor.
- *                                      It should be in the range of -128 to 127.
+ *                                      It should be in the range of -128 to
+ * 127.
  * @param[in]       in_offset           value of offset for the input tensor
- *                                      It should be in the range of -127 to 128.
+ *                                      It should be in the range of -127 to
+ * 128.
  * @param[in]       act_min             minimum value to clip out the ouput
  *                                      tensor. It should be in the range of
  *                                      -128 to 127.
@@ -11759,32 +14187,45 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_t
  * @param[in]       in_tmp_buf          temporary buffer for the input tensor.
  *                                      It is required when -mext-dsp or
  *                                      -mext-vector is enabled and its needed
- *                                      size could be get by calling riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size.
+ *                                      size could be get by calling
+ * riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size.
  * @return          This function returns 0 on success; otherwise, it returns -1
  *                  if its inputs do not meet the constraint that
  *                  out_tensor_dim_x is a multiple of 4.
  */
-static inline int hpm_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_tensor,
-                                                const uint16_t in_tensor_dim_x,
-                                                const uint16_t in_tensor_ch,
-                                                const uint16_t in_tensor_group,
-                                                const q7_t *ker_weight,
-                                                const uint16_t out_tensor_ch,
-                                                const uint16_t ker_dim_x,
-                                                const uint16_t pad_x,
-                                                const uint16_t stride_x,
-                                                const int32_t *bias,
-                                                q7_t *out_tensor,
-                                                const int32_t *out_shift,
-                                                const int32_t *out_scale,
-                                                const int32_t out_offset,
-                                                const int32_t in_offset,
-                                                const int32_t act_min,
-                                                const int32_t act_max,
-                                                const uint16_t out_tensor_dim_x,
-                                                q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_ch, in_tensor_group, ker_weight, out_tensor_ch, ker_dim_x, pad_x, stride_x, bias, out_tensor, out_shift, out_scale, out_offset, in_offset, act_min, act_max, out_tensor_dim_x, in_tmp_buf);
+static inline int hpm_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_ch,
+    const uint16_t in_tensor_group,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t pad_x,
+    const uint16_t stride_x,
+    const int32_t* bias,
+    q7_t* out_tensor,
+    const int32_t* out_shift,
+    const int32_t* out_scale,
+    const int32_t out_offset,
+    const int32_t in_offset,
+    const int32_t act_min,
+    const int32_t act_max,
+    const uint16_t out_tensor_dim_x,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_ch, in_tensor_group, ker_weight,
+      out_tensor_ch, ker_dim_x, pad_x, stride_x, bias, out_tensor, out_shift,
+      out_scale, out_offset, in_offset, act_min, act_max, out_tensor_dim_x,
+      in_tmp_buf);
+#else
+  return riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_ch, in_tensor_group, ker_weight,
+      out_tensor_ch, ker_dim_x, pad_x, stride_x, bias, out_tensor, out_shift,
+      out_scale, out_offset, in_offset, act_min, act_max, out_tensor_dim_x,
+      in_tmp_buf);
+#endif
 }
 
 /**
@@ -11812,9 +14253,11 @@ static inline int hpm_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_tens
  * @param[in]       out_tensor_dim_x    x dimension of the output tensor
  * @param[in]       out_tensor_dim_y    y dimension of the output tensor
  * @param[in]       out_offset          value of offset for the output tensor.
- *                                      It should be in the range of -128 to 127.
+ *                                      It should be in the range of -128 to
+ * 127.
  * @param[in]       in_offset           value of offset for the input tensor
- *                                      It should be in the range of -127 to 128.
+ *                                      It should be in the range of -127 to
+ * 128.
  * @param[in]       act_min             minimum value to clip out the ouput
  *                                      tensor. It should be in the range of
  *                                      -128 to 127.
@@ -11826,95 +14269,145 @@ static inline int hpm_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_tens
  * @param[in]       in_tmp_buf          temporary buffer for the input tensor.
  *                                      It is required when -mext-dsp or
  *                                      -mext-vector is enabled and its needed
- *                                      size could be get by calling riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size.
+ *                                      size could be get by calling
+ * riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size.
  * @return          This function returns 0 on success; otherwise, it returns -1
  *                  if its inputs do not meet the constraint that in_tensor_ch
  *                  has to be equal to out_tensor_ch.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(const q7_t *in_tensor,
-                                     const uint16_t in_tensor_dim_x,
-                                     const uint16_t in_tensor_dim_y,
-                                     const uint16_t in_tensor_ch,
-                                     const q7_t *ker_weight,
-                                     const uint16_t out_tensor_ch,
-                                     const uint16_t ker_dim_x,
-                                     const uint16_t ker_dim_y,
-                                     const uint16_t pad_x,
-                                     const uint16_t pad_y,
-                                     const uint16_t stride_x,
-                                     const uint16_t stride_y,
-                                     const int32_t *bias,
-                                     q7_t *out_tensor,
-                                     const int32_t *out_shift,
-                                     const int32_t *out_scale,
-                                     const uint16_t out_tensor_dim_x,
-                                     const uint16_t out_tensor_dim_y,
-                                     const int32_t out_offset,
-                                     const int32_t in_offset,
-                                     const int32_t act_min,
-                                     const int32_t act_max,
-                                     const uint16_t dilation_x,
-                                     const uint16_t dilation_y,
-                                     q15_t *in_tmp_buf)
-{
-    return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale, out_tensor_dim_x, out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x, dilation_y, in_tmp_buf);
+static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(
+    const q7_t* in_tensor,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_ch,
+    const q7_t* ker_weight,
+    const uint16_t out_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y,
+    const uint16_t pad_x,
+    const uint16_t pad_y,
+    const uint16_t stride_x,
+    const uint16_t stride_y,
+    const int32_t* bias,
+    q7_t* out_tensor,
+    const int32_t* out_shift,
+    const int32_t* out_scale,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    const int32_t out_offset,
+    const int32_t in_offset,
+    const int32_t act_min,
+    const int32_t act_max,
+    const uint16_t dilation_x,
+    const uint16_t dilation_y,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, out_tensor, out_shift, out_scale, out_tensor_dim_x,
+      out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x,
+      dilation_y, in_tmp_buf);
+#else
+  return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, out_tensor, out_shift, out_scale, out_tensor_dim_x,
+      out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x,
+      dilation_y, in_tmp_buf);
+#endif
 }
 
 /**
  * @brief           This function is used to get the needed size, in bytes, by
- *                  the input temporary buffer of riscv_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any.
+ *                  the input temporary buffer of
+ * riscv_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any.
  * @param[in]       in_tensor_ch        number of input tensor channels
- * @return          This function returns the needed size by the temporary buffer.
+ * @return          This function returns the needed size by the temporary
+ * buffer.
  */
-static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(const uint16_t in_tensor_ch)
-{
-    return riscv_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(in_tensor_ch);
+static inline int32_t
+hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
+    const uint16_t in_tensor_ch) {
+#if defined(__zcc__)
+  return tpt_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
+      in_tensor_ch);
+#else
+  return riscv_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
+      in_tensor_ch);
+#endif
 }
 
 /**
  * @brief           This function is used to get the needed size, in bytes, by
- *                  the input temporary buffer of riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any.
+ *                  the input temporary buffer of
+ * riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any.
  * @param[in]       in_tensor_ch        number of input tensor channels
  * @param[in]       ker_dim_x           x dimension of the filter kernel
  * @param[in]       ker_dim_y           y dimension of the filter kernel
- * @return          This function returns the needed size by the temporary buffer.
+ * @return          This function returns the needed size by the temporary
+ * buffer.
  */
-static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(const uint16_t in_tensor_ch,
-                                                  const uint16_t ker_dim_x,
-                                                  const uint16_t ker_dim_y)
-{
-    return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(in_tensor_ch, ker_dim_x, ker_dim_y);
+static inline int32_t
+hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
+    const uint16_t in_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y) {
+#if defined(__zcc__)
+  return tpt_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
+      in_tensor_ch, ker_dim_x, ker_dim_y);
+#else
+  return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
+      in_tensor_ch, ker_dim_x, ker_dim_y);
+#endif
 }
 
 /**
  * @brief           This function is used to get the needed size, in bytes, by
- *                  the input temporary buffer of riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any.
+ *                  the input temporary buffer of
+ * riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any.
  * @param[in]       in_tensor_ch        number of input tensor channels
  * @param[in]       ker_dim_x           x dimension of the filter kernel
  * @param[in]       ker_dim_y           y dimension of the filter kernel. It is
  *                                      always 1 here.
- * @return          This function returns the needed size by the temporary buffer.
+ * @return          This function returns the needed size by the temporary
+ * buffer.
  */
-static inline int32_t hpm_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(const uint16_t in_tensor_ch,
-                                                const uint16_t ker_dim_x,
-                                                const uint16_t ker_dim_y)
-{
-    return riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(in_tensor_ch, ker_dim_x, ker_dim_y);
+static inline int32_t
+hpm_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(
+    const uint16_t in_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y) {
+#if defined(__zcc__)
+  return tpt_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(
+      in_tensor_ch, ker_dim_x, ker_dim_y);
+#else
+  return riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(
+      in_tensor_ch, ker_dim_x, ker_dim_y);
+#endif
 }
 
 /**
  * @brief           This function is used to get the needed size, in bytes, by
- *                  the input temporary buffer of riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any.
+ *                  the input temporary buffer of
+ * riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any.
  * @param[in]       in_tensor_ch        number of input tensor channels
  * @param[in]       ker_dim_x           x dimension of the filter kernel
  * @param[in]       ker_dim_y           y dimension of the filter kernel
- * @return          This function returns the needed size by the temporary buffer.
+ * @return          This function returns the needed size by the temporary
+ * buffer.
  */
-static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(const uint16_t in_tensor_ch,
-                                        const uint16_t ker_dim_x,
-                                        const uint16_t ker_dim_y)
-{
-    return riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(in_tensor_ch, ker_dim_x, ker_dim_y);
+static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(
+    const uint16_t in_tensor_ch,
+    const uint16_t ker_dim_x,
+    const uint16_t ker_dim_y) {
+#if defined(__zcc__)
+  return tpt_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(
+      in_tensor_ch, ker_dim_x, ker_dim_y);
+#else
+  return riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(
+      in_tensor_ch, ker_dim_x, ker_dim_y);
+#endif
 }
 
 #endif
@@ -11923,17 +14416,22 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(con
 
 #ifdef HPM_MATH_NN_CONNECTED
 #ifdef HPM_EN_MATH_NN_LIB
+#if defined(__zcc__)
+#include "tpt_nn_fully_connected.h"
+#else
 #include "riscv_nn_fully_connected.h"
+#endif
 
 /**
  * @defgroup nnfullyconnect NN Fully Connected Functions
  * @ingroup hpmmath
  * @brief The fully connected functions multiply the input vector by a weight
  * matrix and add a bias, if any, to the result. The supported combinations of
- * input vector and weight matrix are (signed 8-bit integer, signed 8-bit integer),
- * (unsigned 8-bit integer, signed 8-bit integer), (signed 16-bit integer,
- * signed 8-bit integer), (signed 16-bit integer, signed 16-bit integer) and
- * (16-bit half-precision floating point, 16-bit half-precision floating point).
+ * input vector and weight matrix are (signed 8-bit integer, signed 8-bit
+ * integer), (unsigned 8-bit integer, signed 8-bit integer), (signed 16-bit
+ * integer, signed 8-bit integer), (signed 16-bit integer, signed 16-bit
+ * integer) and (16-bit half-precision floating point, 16-bit half-precision
+ * floating point).
  *
  * @{
  */
@@ -11968,17 +14466,24 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(con
  *     OUT_RSHIFT, bias, out_vec, NULL);
  * @endcode
  */
-static inline int32_t hpm_nn_fc_s8_s8_s8_sft_bias(const q7_t *in_vec,
-                                    const q7_t *wt_mat,
-                                    const uint16_t size,
-                                    const uint16_t wt_row_num,
-                                    const uint16_t bias_lshift,
-                                    const uint16_t out_rshift,
-                                    const q7_t *bias,
-                                    q7_t *out_vec,
-                                    q15_t *in_tmp_buf)
-{
-    return riscv_nn_fc_s8_s8_s8_sft_bias(in_vec, wt_mat, size, wt_row_num, bias_lshift, out_rshift, bias, out_vec, in_tmp_buf);
+static inline int32_t hpm_nn_fc_s8_s8_s8_sft_bias(const q7_t* in_vec,
+                                                  const q7_t* wt_mat,
+                                                  const uint16_t size,
+                                                  const uint16_t wt_row_num,
+                                                  const uint16_t bias_lshift,
+                                                  const uint16_t out_rshift,
+                                                  const q7_t* bias,
+                                                  q7_t* out_vec,
+                                                  q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_s8_s8_s8_sft_bias(in_vec, wt_mat, size, wt_row_num,
+                                     bias_lshift, out_rshift, bias, out_vec,
+                                     in_tmp_buf);
+#else
+  return riscv_nn_fc_s8_s8_s8_sft_bias(in_vec, wt_mat, size, wt_row_num,
+                                       bias_lshift, out_rshift, bias, out_vec,
+                                       in_tmp_buf);
+#endif
 }
 
 /**
@@ -12002,17 +14507,25 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_sft_bias(const q7_t *in_vec,
  * In this function, the input vector is multiplied by the weight matrix in
  * interleaved formats which could be obtained by riscv_nn_fc_s8_wt_converter.
  */
-static inline int32_t hpm_nn_fc_s8_s8_s8_sft_bias_fast(const q7_t *in_vec,
-                                        const q7_t *wt_mat,
-                                        const uint16_t size,
-                                        const uint16_t wt_row_num,
-                                        const uint16_t bias_lshift,
-                                        const uint16_t out_rshift,
-                                        const q7_t *bias,
-                                        q7_t *out_vec,
-                                        q15_t *in_tmp_buf)
-{
-    return riscv_nn_fc_s8_s8_s8_sft_bias_fast(in_vec, wt_mat, size, wt_row_num, bias_lshift, out_rshift, bias, out_vec, in_tmp_buf);
+static inline int32_t hpm_nn_fc_s8_s8_s8_sft_bias_fast(
+    const q7_t* in_vec,
+    const q7_t* wt_mat,
+    const uint16_t size,
+    const uint16_t wt_row_num,
+    const uint16_t bias_lshift,
+    const uint16_t out_rshift,
+    const q7_t* bias,
+    q7_t* out_vec,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_s8_s8_s8_sft_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                          bias_lshift, out_rshift, bias,
+                                          out_vec, in_tmp_buf);
+#else
+  return riscv_nn_fc_s8_s8_s8_sft_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                            bias_lshift, out_rshift, bias,
+                                            out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12029,17 +14542,24 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_sft_bias_fast(const q7_t *in_vec,
  * @param[in]       tmp_buf         dummy
  * @return          This function only returns 0.
  */
-static inline int32_t hpm_nn_fc_s16_s16_s16_sft_bias(const q15_t *in_vec,
-                                        const q15_t *wt_mat,
-                                        const uint16_t size,
-                                        const uint16_t wt_row_num,
-                                        const uint16_t bias_lshift,
-                                        const uint16_t out_rshift,
-                                        const q15_t *bias,
-                                        q15_t *out_vec,
-                                        q15_t *tmp_buf)
-{
-    return riscv_nn_fc_s16_s16_s16_sft_bias(in_vec, wt_mat, size, wt_row_num, bias_lshift, out_rshift, bias, out_vec, tmp_buf);
+static inline int32_t hpm_nn_fc_s16_s16_s16_sft_bias(const q15_t* in_vec,
+                                                     const q15_t* wt_mat,
+                                                     const uint16_t size,
+                                                     const uint16_t wt_row_num,
+                                                     const uint16_t bias_lshift,
+                                                     const uint16_t out_rshift,
+                                                     const q15_t* bias,
+                                                     q15_t* out_vec,
+                                                     q15_t* tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_s16_s16_s16_sft_bias(in_vec, wt_mat, size, wt_row_num,
+                                        bias_lshift, out_rshift, bias, out_vec,
+                                        tmp_buf);
+#else
+  return riscv_nn_fc_s16_s16_s16_sft_bias(in_vec, wt_mat, size, wt_row_num,
+                                          bias_lshift, out_rshift, bias,
+                                          out_vec, tmp_buf);
+#endif
 }
 
 /**
@@ -12064,17 +14584,25 @@ static inline int32_t hpm_nn_fc_s16_s16_s16_sft_bias(const q15_t *in_vec,
  * In this function, the input vector is multiplied by a weight matrix in
  * interleaved formats which could be obtained by riscv_nn_fc_s16_wt_converter.
  */
-static inline int32_t hpm_nn_fc_s16_s16_s16_sft_bias_fast(const q15_t *in_vec,
-                                            const q15_t *wt_mat,
-                                            const uint16_t size,
-                                            const uint16_t wt_row_num,
-                                            const uint16_t bias_lshift,
-                                            const uint16_t out_rshift,
-                                            const q15_t *bias,
-                                            q15_t *out_vec,
-                                            q15_t *in_tmp_buf)
-{
-    return riscv_nn_fc_s16_s16_s16_sft_bias_fast(in_vec, wt_mat, size, wt_row_num, bias_lshift, out_rshift, bias, out_vec, in_tmp_buf);
+static inline int32_t hpm_nn_fc_s16_s16_s16_sft_bias_fast(
+    const q15_t* in_vec,
+    const q15_t* wt_mat,
+    const uint16_t size,
+    const uint16_t wt_row_num,
+    const uint16_t bias_lshift,
+    const uint16_t out_rshift,
+    const q15_t* bias,
+    q15_t* out_vec,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_s16_s16_s16_sft_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                             bias_lshift, out_rshift, bias,
+                                             out_vec, in_tmp_buf);
+#else
+  return riscv_nn_fc_s16_s16_s16_sft_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                               bias_lshift, out_rshift, bias,
+                                               out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12092,17 +14620,25 @@ static inline int32_t hpm_nn_fc_s16_s16_s16_sft_bias_fast(const q15_t *in_vec,
  * @param[in]       tmp_buf         dummy
  * @return          This function only returns 0.
  */
-static inline int32_t hpm_nn_fc_mat_vec_s16_s16_s8_sft_bias(const q15_t *in_vec,
-                                                const q7_t *wt_mat,
-                                                const uint16_t size,
-                                                const uint16_t wt_row_num,
-                                                const uint16_t bias_lshift,
-                                                const uint16_t out_rshift,
-                                                const q7_t *bias,
-                                                q15_t *out_vec,
-                                                q15_t *tmp_buf)
-{
-    return riscv_nn_fc_mat_vec_s16_s16_s8_sft_bias(in_vec, wt_mat, size, wt_row_num, bias_lshift, out_rshift, bias, out_vec, tmp_buf);
+static inline int32_t hpm_nn_fc_mat_vec_s16_s16_s8_sft_bias(
+    const q15_t* in_vec,
+    const q7_t* wt_mat,
+    const uint16_t size,
+    const uint16_t wt_row_num,
+    const uint16_t bias_lshift,
+    const uint16_t out_rshift,
+    const q7_t* bias,
+    q15_t* out_vec,
+    q15_t* tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_mat_vec_s16_s16_s8_sft_bias(in_vec, wt_mat, size, wt_row_num,
+                                               bias_lshift, out_rshift, bias,
+                                               out_vec, tmp_buf);
+#else
+  return riscv_nn_fc_mat_vec_s16_s16_s8_sft_bias(
+      in_vec, wt_mat, size, wt_row_num, bias_lshift, out_rshift, bias, out_vec,
+      tmp_buf);
+#endif
 }
 
 /**
@@ -12126,17 +14662,25 @@ static inline int32_t hpm_nn_fc_mat_vec_s16_s16_s8_sft_bias(const q15_t *in_vec,
  * interleaved formats which could be obtained by
  * hpm_nn_fc_mat_vec_s8_wt_converter.
  */
-static inline int32_t hpm_nn_fc_mat_vec_s16_s16_s8_sft_bias_fast(const q15_t *in_vec,
-                                                    const q7_t *wt_mat,
-                                                    const uint16_t size,
-                                                    const uint16_t wt_row_num,
-                                                    const uint16_t bias_lshift,
-                                                    const uint16_t out_rshift,
-                                                    const q7_t *bias,
-                                                    q15_t *out_vec,
-                                                    q15_t *tmp_buf)
-{
-    return riscv_nn_fc_mat_vec_s16_s16_s8_sft_bias_fast(in_vec, wt_mat, size, wt_row_num, bias_lshift, out_rshift, bias, out_vec, tmp_buf);
+static inline int32_t hpm_nn_fc_mat_vec_s16_s16_s8_sft_bias_fast(
+    const q15_t* in_vec,
+    const q7_t* wt_mat,
+    const uint16_t size,
+    const uint16_t wt_row_num,
+    const uint16_t bias_lshift,
+    const uint16_t out_rshift,
+    const q7_t* bias,
+    q15_t* out_vec,
+    q15_t* tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_mat_vec_s16_s16_s8_sft_bias_fast(
+      in_vec, wt_mat, size, wt_row_num, bias_lshift, out_rshift, bias, out_vec,
+      tmp_buf);
+#else
+  return riscv_nn_fc_mat_vec_s16_s16_s8_sft_bias_fast(
+      in_vec, wt_mat, size, wt_row_num, bias_lshift, out_rshift, bias, out_vec,
+      tmp_buf);
+#endif
 }
 
 /**
@@ -12163,18 +14707,25 @@ static inline int32_t hpm_nn_fc_mat_vec_s16_s16_s8_sft_bias_fast(const q15_t *in
  * The outputs will be two-stage shifted before being stored, i.e.,
  * out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_fc_s8_s8_s8_sym_bias(const q7_t *in_vec,
-                                    const q7_t *wt_mat,
-                                    const uint16_t size,
-                                    const uint16_t wt_row_num,
-                                    const uint16_t pre_rshift,
-                                    const uint16_t out_scale,
-                                    const uint16_t post_rshift,
-                                    const q31_t *bias,
-                                    q7_t *out_vec,
-                                    q15_t *in_tmp_buf)
-{
-    return riscv_nn_fc_s8_s8_s8_sym_bias(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, bias, out_vec, in_tmp_buf);
+static inline int32_t hpm_nn_fc_s8_s8_s8_sym_bias(const q7_t* in_vec,
+                                                  const q7_t* wt_mat,
+                                                  const uint16_t size,
+                                                  const uint16_t wt_row_num,
+                                                  const uint16_t pre_rshift,
+                                                  const uint16_t out_scale,
+                                                  const uint16_t post_rshift,
+                                                  const q31_t* bias,
+                                                  q7_t* out_vec,
+                                                  q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_s8_s8_s8_sym_bias(in_vec, wt_mat, size, wt_row_num,
+                                     pre_rshift, out_scale, post_rshift, bias,
+                                     out_vec, in_tmp_buf);
+#else
+  return riscv_nn_fc_s8_s8_s8_sym_bias(in_vec, wt_mat, size, wt_row_num,
+                                       pre_rshift, out_scale, post_rshift, bias,
+                                       out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12201,18 +14752,25 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_sym_bias(const q7_t *in_vec,
  * The outputs will be two-stage shifted before being stored, i.e.,
  * out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_fc_s8_s16_s8_sym_bias(const q7_t *in_vec,
-                                    const q7_t *wt_mat,
-                                    const uint16_t size,
-                                    const uint16_t wt_row_num,
-                                    const uint16_t pre_rshift,
-                                    const uint16_t out_scale,
-                                    const uint16_t post_rshift,
-                                    const q31_t *bias,
-                                    q15_t *out_vec,
-                                    q15_t *in_tmp_buf)
-{
-    return riscv_nn_fc_s8_s16_s8_sym_bias(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, bias, out_vec, in_tmp_buf);
+static inline int32_t hpm_nn_fc_s8_s16_s8_sym_bias(const q7_t* in_vec,
+                                                   const q7_t* wt_mat,
+                                                   const uint16_t size,
+                                                   const uint16_t wt_row_num,
+                                                   const uint16_t pre_rshift,
+                                                   const uint16_t out_scale,
+                                                   const uint16_t post_rshift,
+                                                   const q31_t* bias,
+                                                   q15_t* out_vec,
+                                                   q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_s8_s16_s8_sym_bias(in_vec, wt_mat, size, wt_row_num,
+                                      pre_rshift, out_scale, post_rshift, bias,
+                                      out_vec, in_tmp_buf);
+#else
+  return riscv_nn_fc_s8_s16_s8_sym_bias(in_vec, wt_mat, size, wt_row_num,
+                                        pre_rshift, out_scale, post_rshift,
+                                        bias, out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12239,18 +14797,25 @@ static inline int32_t hpm_nn_fc_s8_s16_s8_sym_bias(const q7_t *in_vec,
  * The outputs will be two-stage shifted before being stored, i.e.,
  * out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_fc_u8_u8_s8_sym_bias(const u8_t *in_vec,
-                                    const q7_t *wt_mat,
-                                    const uint16_t size,
-                                    const uint16_t wt_row_num,
-                                    const uint16_t pre_rshift,
-                                    const uint16_t out_scale,
-                                    const uint16_t post_rshift,
-                                    const q31_t *bias,
-                                    u8_t *out_vec,
-                                    q15_t *in_tmp_buf)
-{
-    return riscv_nn_fc_u8_u8_s8_sym_bias(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, bias, out_vec, in_tmp_buf);
+static inline int32_t hpm_nn_fc_u8_u8_s8_sym_bias(const u8_t* in_vec,
+                                                  const q7_t* wt_mat,
+                                                  const uint16_t size,
+                                                  const uint16_t wt_row_num,
+                                                  const uint16_t pre_rshift,
+                                                  const uint16_t out_scale,
+                                                  const uint16_t post_rshift,
+                                                  const q31_t* bias,
+                                                  u8_t* out_vec,
+                                                  q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_u8_u8_s8_sym_bias(in_vec, wt_mat, size, wt_row_num,
+                                     pre_rshift, out_scale, post_rshift, bias,
+                                     out_vec, in_tmp_buf);
+#else
+  return riscv_nn_fc_u8_u8_s8_sym_bias(in_vec, wt_mat, size, wt_row_num,
+                                       pre_rshift, out_scale, post_rshift, bias,
+                                       out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12277,18 +14842,25 @@ static inline int32_t hpm_nn_fc_u8_u8_s8_sym_bias(const u8_t *in_vec,
  * The outputs will be two-stage shifted before being stored, i.e.,
  * out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_fc_u8_s8_s8_sym_bias(const u8_t *in_vec,
-                                    const q7_t *wt_mat,
-                                    const uint16_t size,
-                                    const uint16_t wt_row_num,
-                                    const uint16_t pre_rshift,
-                                    const uint16_t out_scale,
-                                    const uint16_t post_rshift,
-                                    const q31_t *bias,
-                                    q7_t *out_vec,
-                                    q15_t *in_tmp_buf)
-{
-    return riscv_nn_fc_u8_s8_s8_sym_bias(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, bias, out_vec, in_tmp_buf);
+static inline int32_t hpm_nn_fc_u8_s8_s8_sym_bias(const u8_t* in_vec,
+                                                  const q7_t* wt_mat,
+                                                  const uint16_t size,
+                                                  const uint16_t wt_row_num,
+                                                  const uint16_t pre_rshift,
+                                                  const uint16_t out_scale,
+                                                  const uint16_t post_rshift,
+                                                  const q31_t* bias,
+                                                  q7_t* out_vec,
+                                                  q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_u8_s8_s8_sym_bias(in_vec, wt_mat, size, wt_row_num,
+                                     pre_rshift, out_scale, post_rshift, bias,
+                                     out_vec, in_tmp_buf);
+#else
+  return riscv_nn_fc_u8_s8_s8_sym_bias(in_vec, wt_mat, size, wt_row_num,
+                                       pre_rshift, out_scale, post_rshift, bias,
+                                       out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12315,18 +14887,25 @@ static inline int32_t hpm_nn_fc_u8_s8_s8_sym_bias(const u8_t *in_vec,
  * The outputs will be two-stage shifted before being stored, i.e.,
  * out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_fc_u8_s16_s8_sym_bias(const u8_t *in_vec,
-                                    const q7_t *wt_mat,
-                                    const uint16_t size,
-                                    const uint16_t wt_row_num,
-                                    const uint16_t pre_rshift,
-                                    const uint16_t out_scale,
-                                    const uint16_t post_rshift,
-                                    const q31_t *bias,
-                                    q15_t *out_vec,
-                                    q15_t *in_tmp_buf)
-{
-    return riscv_nn_fc_u8_s16_s8_sym_bias(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, bias, out_vec, in_tmp_buf);
+static inline int32_t hpm_nn_fc_u8_s16_s8_sym_bias(const u8_t* in_vec,
+                                                   const q7_t* wt_mat,
+                                                   const uint16_t size,
+                                                   const uint16_t wt_row_num,
+                                                   const uint16_t pre_rshift,
+                                                   const uint16_t out_scale,
+                                                   const uint16_t post_rshift,
+                                                   const q31_t* bias,
+                                                   q15_t* out_vec,
+                                                   q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_u8_s16_s8_sym_bias(in_vec, wt_mat, size, wt_row_num,
+                                      pre_rshift, out_scale, post_rshift, bias,
+                                      out_vec, in_tmp_buf);
+#else
+  return riscv_nn_fc_u8_s16_s8_sym_bias(in_vec, wt_mat, size, wt_row_num,
+                                        pre_rshift, out_scale, post_rshift,
+                                        bias, out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12352,17 +14931,22 @@ static inline int32_t hpm_nn_fc_u8_s16_s8_sym_bias(const u8_t *in_vec,
  * The outputs will be two-stage shifted before being stored, i.e.,
  * out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_fc_s8_s8_s8_sym(const q7_t *in_vec,
-                                const q7_t *wt_mat,
-                                const uint16_t size,
-                                const uint16_t wt_row_num,
-                                const uint16_t pre_rshift,
-                                const uint16_t out_scale,
-                                const uint16_t post_rshift,
-                                q7_t *out_vec,
-                                q15_t *in_tmp_buf)
-{
-    return riscv_nn_fc_s8_s8_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, out_vec, in_tmp_buf);
+static inline int32_t hpm_nn_fc_s8_s8_s8_sym(const q7_t* in_vec,
+                                             const q7_t* wt_mat,
+                                             const uint16_t size,
+                                             const uint16_t wt_row_num,
+                                             const uint16_t pre_rshift,
+                                             const uint16_t out_scale,
+                                             const uint16_t post_rshift,
+                                             q7_t* out_vec,
+                                             q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_s8_s8_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift,
+                                out_scale, post_rshift, out_vec, in_tmp_buf);
+#else
+  return riscv_nn_fc_s8_s8_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift,
+                                  out_scale, post_rshift, out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12388,17 +14972,22 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_sym(const q7_t *in_vec,
  * The outputs will be two-stage shifted before being stored, i.e.,
  * out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_fc_s8_s16_s8_sym(const q7_t *in_vec,
-                                const q7_t *wt_mat,
-                                const uint16_t size,
-                                const uint16_t wt_row_num,
-                                const uint16_t pre_rshift,
-                                const uint16_t out_scale,
-                                const uint16_t post_rshift,
-                                q15_t *out_vec,
-                                q15_t *in_tmp_buf)
-{
-    return riscv_nn_fc_s8_s16_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, out_vec, in_tmp_buf);
+static inline int32_t hpm_nn_fc_s8_s16_s8_sym(const q7_t* in_vec,
+                                              const q7_t* wt_mat,
+                                              const uint16_t size,
+                                              const uint16_t wt_row_num,
+                                              const uint16_t pre_rshift,
+                                              const uint16_t out_scale,
+                                              const uint16_t post_rshift,
+                                              q15_t* out_vec,
+                                              q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_s8_s16_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift,
+                                 out_scale, post_rshift, out_vec, in_tmp_buf);
+#else
+  return riscv_nn_fc_s8_s16_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift,
+                                   out_scale, post_rshift, out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12424,17 +15013,22 @@ static inline int32_t hpm_nn_fc_s8_s16_s8_sym(const q7_t *in_vec,
  * The outputs will be two-stage shifted before being stored, i.e.,
  * out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_fc_u8_u8_s8_sym(const u8_t *in_vec,
-                                const q7_t *wt_mat,
-                                const uint16_t size,
-                                const uint16_t wt_row_num,
-                                const uint16_t pre_rshift,
-                                const uint16_t out_scale,
-                                const uint16_t post_rshift,
-                                u8_t *out_vec,
-                                q15_t *in_tmp_buf)
-{
-    return riscv_nn_fc_u8_u8_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, out_vec, in_tmp_buf);
+static inline int32_t hpm_nn_fc_u8_u8_s8_sym(const u8_t* in_vec,
+                                             const q7_t* wt_mat,
+                                             const uint16_t size,
+                                             const uint16_t wt_row_num,
+                                             const uint16_t pre_rshift,
+                                             const uint16_t out_scale,
+                                             const uint16_t post_rshift,
+                                             u8_t* out_vec,
+                                             q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_u8_u8_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift,
+                                out_scale, post_rshift, out_vec, in_tmp_buf);
+#else
+  return riscv_nn_fc_u8_u8_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift,
+                                  out_scale, post_rshift, out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12460,17 +15054,22 @@ static inline int32_t hpm_nn_fc_u8_u8_s8_sym(const u8_t *in_vec,
  * The outputs will be two-stage shifted before being stored, i.e.,
  * out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_fc_u8_s8_s8_sym(const u8_t *in_vec,
-                                const q7_t *wt_mat,
-                                const uint16_t size,
-                                const uint16_t wt_row_num,
-                                const uint16_t pre_rshift,
-                                const uint16_t out_scale,
-                                const uint16_t post_rshift,
-                                q7_t *out_vec,
-                                q15_t *in_tmp_buf)
-{
-    return riscv_nn_fc_u8_s8_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, out_vec, in_tmp_buf);
+static inline int32_t hpm_nn_fc_u8_s8_s8_sym(const u8_t* in_vec,
+                                             const q7_t* wt_mat,
+                                             const uint16_t size,
+                                             const uint16_t wt_row_num,
+                                             const uint16_t pre_rshift,
+                                             const uint16_t out_scale,
+                                             const uint16_t post_rshift,
+                                             q7_t* out_vec,
+                                             q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_u8_s8_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift,
+                                out_scale, post_rshift, out_vec, in_tmp_buf);
+#else
+  return riscv_nn_fc_u8_s8_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift,
+                                  out_scale, post_rshift, out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12496,17 +15095,22 @@ static inline int32_t hpm_nn_fc_u8_s8_s8_sym(const u8_t *in_vec,
  * The outputs will be two-stage shifted before being stored, i.e.,
  * out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_fc_u8_s16_s8_sym(const u8_t *in_vec,
-                                const q7_t *wt_mat,
-                                const uint16_t size,
-                                const uint16_t wt_row_num,
-                                const uint16_t pre_rshift,
-                                const uint16_t out_scale,
-                                const uint16_t post_rshift,
-                                q15_t *out_vec,
-                                q15_t *in_tmp_buf)
-{
-    return riscv_nn_fc_u8_s16_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, out_vec, in_tmp_buf);
+static inline int32_t hpm_nn_fc_u8_s16_s8_sym(const u8_t* in_vec,
+                                              const q7_t* wt_mat,
+                                              const uint16_t size,
+                                              const uint16_t wt_row_num,
+                                              const uint16_t pre_rshift,
+                                              const uint16_t out_scale,
+                                              const uint16_t post_rshift,
+                                              q15_t* out_vec,
+                                              q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_u8_s16_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift,
+                                 out_scale, post_rshift, out_vec, in_tmp_buf);
+#else
+  return riscv_nn_fc_u8_s16_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift,
+                                   out_scale, post_rshift, out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12533,18 +15137,26 @@ static inline int32_t hpm_nn_fc_u8_s16_s8_sym(const u8_t *in_vec,
  *  - The outputs will be two-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_fc_s8_s8_s8_sym_bias_fast(const q7_t *in_vec,
-                                        const q7_t *wt_mat,
-                                        const uint16_t size,
-                                        const uint16_t wt_row_num,
-                                        const uint16_t pre_rshift,
-                                        const uint16_t out_scale,
-                                        const uint16_t post_rshift,
-                                        const q31_t *bias,
-                                        q7_t *out_vec,
-                                        q15_t *in_tmp_buf)
-{
-    return riscv_nn_fc_s8_s8_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, bias, out_vec, in_tmp_buf);
+static inline int32_t hpm_nn_fc_s8_s8_s8_sym_bias_fast(
+    const q7_t* in_vec,
+    const q7_t* wt_mat,
+    const uint16_t size,
+    const uint16_t wt_row_num,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    const q31_t* bias,
+    q7_t* out_vec,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_s8_s8_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                          pre_rshift, out_scale, post_rshift,
+                                          bias, out_vec, in_tmp_buf);
+#else
+  return riscv_nn_fc_s8_s8_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                            pre_rshift, out_scale, post_rshift,
+                                            bias, out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12572,18 +15184,26 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_sym_bias_fast(const q7_t *in_vec,
  *  - The outputs will be two-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_fc_s8_s16_s8_sym_bias_fast(const q7_t *in_vec,
-                                            const q7_t *wt_mat,
-                                            const uint16_t size,
-                                            const uint16_t wt_row_num,
-                                            const uint16_t pre_rshift,
-                                            const uint16_t out_scale,
-                                            const uint16_t post_rshift,
-                                            const q31_t *bias,
-                                            q15_t *out_vec,
-                                            q15_t *in_tmp_buf)
-{
-    return riscv_nn_fc_s8_s16_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, bias, out_vec, in_tmp_buf);
+static inline int32_t hpm_nn_fc_s8_s16_s8_sym_bias_fast(
+    const q7_t* in_vec,
+    const q7_t* wt_mat,
+    const uint16_t size,
+    const uint16_t wt_row_num,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    const q31_t* bias,
+    q15_t* out_vec,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_s8_s16_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                           pre_rshift, out_scale, post_rshift,
+                                           bias, out_vec, in_tmp_buf);
+#else
+  return riscv_nn_fc_s8_s16_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                             pre_rshift, out_scale, post_rshift,
+                                             bias, out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12610,18 +15230,26 @@ static inline int32_t hpm_nn_fc_s8_s16_s8_sym_bias_fast(const q7_t *in_vec,
  *  - The outputs will be two-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_fc_u8_u8_s8_sym_bias_fast(const u8_t *in_vec,
-                                        const q7_t *wt_mat,
-                                        const uint16_t size,
-                                        const uint16_t wt_row_num,
-                                        const uint16_t pre_rshift,
-                                        const uint16_t out_scale,
-                                        const uint16_t post_rshift,
-                                        const q31_t *bias,
-                                        u8_t *out_vec,
-                                        q15_t *in_tmp_buf)
-{
-    return riscv_nn_fc_u8_u8_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, bias, out_vec, in_tmp_buf);
+static inline int32_t hpm_nn_fc_u8_u8_s8_sym_bias_fast(
+    const u8_t* in_vec,
+    const q7_t* wt_mat,
+    const uint16_t size,
+    const uint16_t wt_row_num,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    const q31_t* bias,
+    u8_t* out_vec,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_u8_u8_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                          pre_rshift, out_scale, post_rshift,
+                                          bias, out_vec, in_tmp_buf);
+#else
+  return riscv_nn_fc_u8_u8_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                            pre_rshift, out_scale, post_rshift,
+                                            bias, out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12649,18 +15277,26 @@ static inline int32_t hpm_nn_fc_u8_u8_s8_sym_bias_fast(const u8_t *in_vec,
  *  - The outputs will be two-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_fc_u8_s8_s8_sym_bias_fast(const u8_t *in_vec,
-                                        const q7_t *wt_mat,
-                                        const uint16_t size,
-                                        const uint16_t wt_row_num,
-                                        const uint16_t pre_rshift,
-                                        const uint16_t out_scale,
-                                        const uint16_t post_rshift,
-                                        const q31_t *bias,
-                                        q7_t *out_vec,
-                                        q15_t *in_tmp_buf)
-{
-    return riscv_nn_fc_u8_s8_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, bias, out_vec, in_tmp_buf);
+static inline int32_t hpm_nn_fc_u8_s8_s8_sym_bias_fast(
+    const u8_t* in_vec,
+    const q7_t* wt_mat,
+    const uint16_t size,
+    const uint16_t wt_row_num,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    const q31_t* bias,
+    q7_t* out_vec,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_u8_s8_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                          pre_rshift, out_scale, post_rshift,
+                                          bias, out_vec, in_tmp_buf);
+#else
+  return riscv_nn_fc_u8_s8_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                            pre_rshift, out_scale, post_rshift,
+                                            bias, out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12688,18 +15324,26 @@ static inline int32_t hpm_nn_fc_u8_s8_s8_sym_bias_fast(const u8_t *in_vec,
  *  - The outputs will be two-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_fc_u8_s16_s8_sym_bias_fast(const u8_t *in_vec,
-                                        const q7_t *wt_mat,
-                                        const uint16_t size,
-                                        const uint16_t wt_row_num,
-                                        const uint16_t pre_rshift,
-                                        const uint16_t out_scale,
-                                        const uint16_t post_rshift,
-                                        const q31_t *bias,
-                                        q15_t *out_vec,
-                                        q15_t *in_tmp_buf)
-{
-    return riscv_nn_fc_u8_s16_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, bias, out_vec, in_tmp_buf);
+static inline int32_t hpm_nn_fc_u8_s16_s8_sym_bias_fast(
+    const u8_t* in_vec,
+    const q7_t* wt_mat,
+    const uint16_t size,
+    const uint16_t wt_row_num,
+    const uint16_t pre_rshift,
+    const uint16_t out_scale,
+    const uint16_t post_rshift,
+    const q31_t* bias,
+    q15_t* out_vec,
+    q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_u8_s16_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                           pre_rshift, out_scale, post_rshift,
+                                           bias, out_vec, in_tmp_buf);
+#else
+  return riscv_nn_fc_u8_s16_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                             pre_rshift, out_scale, post_rshift,
+                                             bias, out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12725,17 +15369,24 @@ static inline int32_t hpm_nn_fc_u8_s16_s8_sym_bias_fast(const u8_t *in_vec,
  *  - The outputs will be two-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_fc_s8_s8_s8_sym_fast(const q7_t *in_vec,
-                                    const q7_t *wt_mat,
-                                    const uint16_t size,
-                                    const uint16_t wt_row_num,
-                                    const uint16_t pre_rshift,
-                                    const uint16_t out_scale,
-                                    const uint16_t post_rshift,
-                                    q7_t *out_vec,
-                                    q15_t *in_tmp_buf)
-{
-    return riscv_nn_fc_s8_s8_s8_sym_fast(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, out_vec, in_tmp_buf);
+static inline int32_t hpm_nn_fc_s8_s8_s8_sym_fast(const q7_t* in_vec,
+                                                  const q7_t* wt_mat,
+                                                  const uint16_t size,
+                                                  const uint16_t wt_row_num,
+                                                  const uint16_t pre_rshift,
+                                                  const uint16_t out_scale,
+                                                  const uint16_t post_rshift,
+                                                  q7_t* out_vec,
+                                                  q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_s8_s8_s8_sym_fast(in_vec, wt_mat, size, wt_row_num,
+                                     pre_rshift, out_scale, post_rshift,
+                                     out_vec, in_tmp_buf);
+#else
+  return riscv_nn_fc_s8_s8_s8_sym_fast(in_vec, wt_mat, size, wt_row_num,
+                                       pre_rshift, out_scale, post_rshift,
+                                       out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12762,17 +15413,24 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_sym_fast(const q7_t *in_vec,
  *  - The outputs will be two-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_fc_s8_s16_s8_sym_fast(const q7_t *in_vec,
-                                    const q7_t *wt_mat,
-                                    const uint16_t size,
-                                    const uint16_t wt_row_num,
-                                    const uint16_t pre_rshift,
-                                    const uint16_t out_scale,
-                                    const uint16_t post_rshift,
-                                    q15_t *out_vec,
-                                    q15_t *in_tmp_buf)
-{
-    return riscv_nn_fc_s8_s16_s8_sym_fast(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, out_vec, in_tmp_buf);
+static inline int32_t hpm_nn_fc_s8_s16_s8_sym_fast(const q7_t* in_vec,
+                                                   const q7_t* wt_mat,
+                                                   const uint16_t size,
+                                                   const uint16_t wt_row_num,
+                                                   const uint16_t pre_rshift,
+                                                   const uint16_t out_scale,
+                                                   const uint16_t post_rshift,
+                                                   q15_t* out_vec,
+                                                   q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_s8_s16_s8_sym_fast(in_vec, wt_mat, size, wt_row_num,
+                                      pre_rshift, out_scale, post_rshift,
+                                      out_vec, in_tmp_buf);
+#else
+  return riscv_nn_fc_s8_s16_s8_sym_fast(in_vec, wt_mat, size, wt_row_num,
+                                        pre_rshift, out_scale, post_rshift,
+                                        out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12798,17 +15456,24 @@ static inline int32_t hpm_nn_fc_s8_s16_s8_sym_fast(const q7_t *in_vec,
  *  - The outputs will be two-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_fc_u8_u8_s8_sym_fast(const u8_t *in_vec,
-                                    const q7_t *wt_mat,
-                                    const uint16_t size,
-                                    const uint16_t wt_row_num,
-                                    const uint16_t pre_rshift,
-                                    const uint16_t out_scale,
-                                    const uint16_t post_rshift,
-                                    u8_t *out_vec,
-                                    q15_t *in_tmp_buf)
-{
-    return riscv_nn_fc_u8_u8_s8_sym_fast(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, out_vec, in_tmp_buf);
+static inline int32_t hpm_nn_fc_u8_u8_s8_sym_fast(const u8_t* in_vec,
+                                                  const q7_t* wt_mat,
+                                                  const uint16_t size,
+                                                  const uint16_t wt_row_num,
+                                                  const uint16_t pre_rshift,
+                                                  const uint16_t out_scale,
+                                                  const uint16_t post_rshift,
+                                                  u8_t* out_vec,
+                                                  q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_u8_u8_s8_sym_fast(in_vec, wt_mat, size, wt_row_num,
+                                     pre_rshift, out_scale, post_rshift,
+                                     out_vec, in_tmp_buf);
+#else
+  return riscv_nn_fc_u8_u8_s8_sym_fast(in_vec, wt_mat, size, wt_row_num,
+                                       pre_rshift, out_scale, post_rshift,
+                                       out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12835,17 +15500,24 @@ static inline int32_t hpm_nn_fc_u8_u8_s8_sym_fast(const u8_t *in_vec,
  *  - The outputs will be two-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_fc_u8_s8_s8_sym_fast(const u8_t *in_vec,
-                                    const q7_t *wt_mat,
-                                    const uint16_t size,
-                                    const uint16_t wt_row_num,
-                                    const uint16_t pre_rshift,
-                                    const uint16_t out_scale,
-                                    const uint16_t post_rshift,
-                                    q7_t *out_vec,
-                                    q15_t *in_tmp_buf)
-{
-    return riscv_nn_fc_u8_s8_s8_sym_fast(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, out_vec, in_tmp_buf);
+static inline int32_t hpm_nn_fc_u8_s8_s8_sym_fast(const u8_t* in_vec,
+                                                  const q7_t* wt_mat,
+                                                  const uint16_t size,
+                                                  const uint16_t wt_row_num,
+                                                  const uint16_t pre_rshift,
+                                                  const uint16_t out_scale,
+                                                  const uint16_t post_rshift,
+                                                  q7_t* out_vec,
+                                                  q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_u8_s8_s8_sym_fast(in_vec, wt_mat, size, wt_row_num,
+                                     pre_rshift, out_scale, post_rshift,
+                                     out_vec, in_tmp_buf);
+#else
+  return riscv_nn_fc_u8_s8_s8_sym_fast(in_vec, wt_mat, size, wt_row_num,
+                                       pre_rshift, out_scale, post_rshift,
+                                       out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12872,17 +15544,24 @@ static inline int32_t hpm_nn_fc_u8_s8_s8_sym_fast(const u8_t *in_vec,
  *  - The outputs will be two-stage shifted before being stored, i.e.,
  *    out = ((out >> pre_rshift) *out_scale) >> post_rshift.
  */
-static inline int32_t hpm_nn_fc_u8_s16_s8_sym_fast(const u8_t *in_vec,
-                                    const q7_t *wt_mat,
-                                    const uint16_t size,
-                                    const uint16_t wt_row_num,
-                                    const uint16_t pre_rshift,
-                                    const uint16_t out_scale,
-                                    const uint16_t post_rshift,
-                                    q15_t *out_vec,
-                                    q15_t *in_tmp_buf)
-{
-    return riscv_nn_fc_u8_s16_s8_sym_fast(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, out_vec, in_tmp_buf);
+static inline int32_t hpm_nn_fc_u8_s16_s8_sym_fast(const u8_t* in_vec,
+                                                   const q7_t* wt_mat,
+                                                   const uint16_t size,
+                                                   const uint16_t wt_row_num,
+                                                   const uint16_t pre_rshift,
+                                                   const uint16_t out_scale,
+                                                   const uint16_t post_rshift,
+                                                   q15_t* out_vec,
+                                                   q15_t* in_tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_u8_s16_s8_sym_fast(in_vec, wt_mat, size, wt_row_num,
+                                      pre_rshift, out_scale, post_rshift,
+                                      out_vec, in_tmp_buf);
+#else
+  return riscv_nn_fc_u8_s16_s8_sym_fast(in_vec, wt_mat, size, wt_row_num,
+                                        pre_rshift, out_scale, post_rshift,
+                                        out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12895,12 +15574,15 @@ static inline int32_t hpm_nn_fc_u8_s16_s8_sym_fast(const u8_t *in_vec,
  * @param[out]      wt_mat_out      pointer of the weight matrix stored in
  *                                  specific ordering
  */
-static inline void hpm_nn_fc_s8_wt_converter(const q7_t *wt_mat,
-                                const uint32_t size,
-                                const uint32_t wt_row_num,
-                                q7_t *wt_mat_out)
-{
-    riscv_nn_fc_s8_wt_converter(wt_mat, size, wt_row_num, wt_mat_out);
+static inline void hpm_nn_fc_s8_wt_converter(const q7_t* wt_mat,
+                                             const uint32_t size,
+                                             const uint32_t wt_row_num,
+                                             q7_t* wt_mat_out) {
+#if defined(__zcc__)
+  tpt_nn_fc_s8_wt_converter(wt_mat, size, wt_row_num, wt_mat_out);
+#else
+  riscv_nn_fc_s8_wt_converter(wt_mat, size, wt_row_num, wt_mat_out);
+#endif
 }
 
 /**
@@ -12913,12 +15595,15 @@ static inline void hpm_nn_fc_s8_wt_converter(const q7_t *wt_mat,
  * @param[out]      wt_mat_out      pointer of the weight matrix stored in
  *                                  specific ordering
  */
-static inline void hpm_nn_fc_s16_wt_converter(const q15_t *wt_mat,
-                                const uint32_t size,
-                                const uint32_t wt_row_num,
-                                q15_t *wt_mat_out)
-{
-    riscv_nn_fc_s16_wt_converter(wt_mat, size, wt_row_num, wt_mat_out);
+static inline void hpm_nn_fc_s16_wt_converter(const q15_t* wt_mat,
+                                              const uint32_t size,
+                                              const uint32_t wt_row_num,
+                                              q15_t* wt_mat_out) {
+#if defined(__zcc__)
+  tpt_nn_fc_s16_wt_converter(wt_mat, size, wt_row_num, wt_mat_out);
+#else
+  riscv_nn_fc_s16_wt_converter(wt_mat, size, wt_row_num, wt_mat_out);
+#endif
 }
 
 /**
@@ -12930,12 +15615,15 @@ static inline void hpm_nn_fc_s16_wt_converter(const q15_t *wt_mat,
  * @param[out]      wt_mat_out      pointer of the weight matrix stored in
  *                                  specific ordering
  */
-static inline void hpm_nn_fc_mat_vec_s8_wt_converter(const q7_t *wt_mat,
-                                        const uint32_t size,
-                                        const uint32_t wt_row_num,
-                                        q7_t *wt_mat_out)
-{
-    riscv_nn_fc_mat_vec_s8_wt_converter(wt_mat, size, wt_row_num, wt_mat_out);
+static inline void hpm_nn_fc_mat_vec_s8_wt_converter(const q7_t* wt_mat,
+                                                     const uint32_t size,
+                                                     const uint32_t wt_row_num,
+                                                     q7_t* wt_mat_out) {
+#if defined(__zcc__)
+  tpt_nn_fc_mat_vec_s8_wt_converter(wt_mat, size, wt_row_num, wt_mat_out);
+#else
+  riscv_nn_fc_mat_vec_s8_wt_converter(wt_mat, size, wt_row_num, wt_mat_out);
+#endif
 }
 
 /**
@@ -12968,23 +15656,32 @@ static inline void hpm_nn_fc_mat_vec_s8_wt_converter(const q7_t *wt_mat,
  * @param[in]       tmp_buf         dummy
  * @return          This function only returns 0.
  */
-static inline int32_t hpm_nn_fc_s8_s8_s8_asym_bias(const int8_t *in_vec,
-                                    const int8_t *wt_mat,
-                                    const uint16_t in_vec_col,
-                                    const uint16_t wt_mat_row,
-                                    const uint16_t in_vec_group,
-                                    const int32_t in_offset,
-                                    const int32_t wt_offset,
-                                    const int32_t out_scale,
-                                    const int32_t out_shift,
-                                    const int32_t out_offset,
-                                    const int32_t *bias,
-                                    int8_t *out_vec,
-                                    const int32_t act_min,
-                                    const int32_t act_max,
-                                    q15_t *tmp_buf)
-{
-    return riscv_nn_fc_s8_s8_s8_asym_bias(in_vec, wt_mat, in_vec_col, wt_mat_row, in_vec_group, in_offset, wt_offset, out_scale, out_shift, out_offset, bias, out_vec, act_min, act_max, tmp_buf);
+static inline int32_t hpm_nn_fc_s8_s8_s8_asym_bias(const int8_t* in_vec,
+                                                   const int8_t* wt_mat,
+                                                   const uint16_t in_vec_col,
+                                                   const uint16_t wt_mat_row,
+                                                   const uint16_t in_vec_group,
+                                                   const int32_t in_offset,
+                                                   const int32_t wt_offset,
+                                                   const int32_t out_scale,
+                                                   const int32_t out_shift,
+                                                   const int32_t out_offset,
+                                                   const int32_t* bias,
+                                                   int8_t* out_vec,
+                                                   const int32_t act_min,
+                                                   const int32_t act_max,
+                                                   q15_t* tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_s8_s8_s8_asym_bias(in_vec, wt_mat, in_vec_col, wt_mat_row,
+                                      in_vec_group, in_offset, wt_offset,
+                                      out_scale, out_shift, out_offset, bias,
+                                      out_vec, act_min, act_max, tmp_buf);
+#else
+  return riscv_nn_fc_s8_s8_s8_asym_bias(in_vec, wt_mat, in_vec_col, wt_mat_row,
+                                        in_vec_group, in_offset, wt_offset,
+                                        out_scale, out_shift, out_offset, bias,
+                                        out_vec, act_min, act_max, tmp_buf);
+#endif
 }
 
 /**
@@ -12992,11 +15689,16 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_asym_bias(const int8_t *in_vec,
  *                  the temporary buffer of riscv_nn_fc_s8_s8_s8_asym_bias.
  * @param[in]       in_vec_col      number of columns in the input vector (or
  *                                  transposed weight matrix)
- * @return          This function returns the needed size by the temporary buffer.
+ * @return          This function returns the needed size by the temporary
+ * buffer.
  */
-static inline int32_t hpm_nn_fc_s8_s8_s8_asym_bias_get_buffer_size(const uint16_t in_vec_col)
-{
-    return riscv_nn_fc_s8_s8_s8_asym_bias_get_buffer_size(in_vec_col);
+static inline int32_t hpm_nn_fc_s8_s8_s8_asym_bias_get_buffer_size(
+    const uint16_t in_vec_col) {
+#if defined(__zcc__)
+  return tpt_nn_fc_s8_s8_s8_asym_bias_get_buffer_size(in_vec_col);
+#else
+  return riscv_nn_fc_s8_s8_s8_asym_bias_get_buffer_size(in_vec_col);
+#endif
 }
 
 /**
@@ -13006,7 +15708,11 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_asym_bias_get_buffer_size(const uint16_
 #endif
 
 #ifdef HPM_EN_MATH_NN_RVP32_LIB
+#if defined(__zcc__)
+#include "tpt_nn_fully_connected.h"
+#else
 #include "riscv_nn_fully_connected.h"
+#endif
 
 /**
  * @brief           This is a fully connected layer function for signed 8-bit
@@ -13038,23 +15744,32 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_asym_bias_get_buffer_size(const uint16_
  * @param[in]       tmp_buf         dummy
  * @return          This function only returns 0.
  */
-static inline int32_t hpm_nn_fc_s8_s8_s8_asym_bias(const int8_t *in_vec,
-                                    const int8_t *wt_mat,
-                                    const uint16_t in_vec_col,
-                                    const uint16_t wt_mat_row,
-                                    const uint16_t in_vec_group,
-                                    const int32_t in_offset,
-                                    const int32_t wt_offset,
-                                    const int32_t out_scale,
-                                    const int32_t out_shift,
-                                    const int32_t out_offset,
-                                    const int32_t *bias,
-                                    int8_t *out_vec,
-                                    const int32_t act_min,
-                                    const int32_t act_max,
-                                    q15_t *tmp_buf)
-{
-    return riscv_nn_fc_s8_s8_s8_asym_bias(in_vec, wt_mat, in_vec_col, wt_mat_row, in_vec_group, in_offset, wt_offset, out_scale, out_shift, out_offset, bias, out_vec, act_min, act_max, tmp_buf);
+static inline int32_t hpm_nn_fc_s8_s8_s8_asym_bias(const int8_t* in_vec,
+                                                   const int8_t* wt_mat,
+                                                   const uint16_t in_vec_col,
+                                                   const uint16_t wt_mat_row,
+                                                   const uint16_t in_vec_group,
+                                                   const int32_t in_offset,
+                                                   const int32_t wt_offset,
+                                                   const int32_t out_scale,
+                                                   const int32_t out_shift,
+                                                   const int32_t out_offset,
+                                                   const int32_t* bias,
+                                                   int8_t* out_vec,
+                                                   const int32_t act_min,
+                                                   const int32_t act_max,
+                                                   q15_t* tmp_buf) {
+#if defined(__zcc__)
+  return tpt_nn_fc_s8_s8_s8_asym_bias(in_vec, wt_mat, in_vec_col, wt_mat_row,
+                                      in_vec_group, in_offset, wt_offset,
+                                      out_scale, out_shift, out_offset, bias,
+                                      out_vec, act_min, act_max, tmp_buf);
+#else
+  return riscv_nn_fc_s8_s8_s8_asym_bias(in_vec, wt_mat, in_vec_col, wt_mat_row,
+                                        in_vec_group, in_offset, wt_offset,
+                                        out_scale, out_shift, out_offset, bias,
+                                        out_vec, act_min, act_max, tmp_buf);
+#endif
 }
 
 /**
@@ -13062,11 +15777,16 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_asym_bias(const int8_t *in_vec,
  *                  the temporary buffer of riscv_nn_fc_s8_s8_s8_asym_bias.
  * @param[in]       in_vec_col      number of columns in the input vector (or
  *                                  transposed weight matrix)
- * @return          This function returns the needed size by the temporary buffer.
+ * @return          This function returns the needed size by the temporary
+ * buffer.
  */
-static inline int32_t hpm_nn_fc_s8_s8_s8_asym_bias_get_buffer_size(const uint16_t in_vec_col)
-{
-    return riscv_nn_fc_s8_s8_s8_asym_bias_get_buffer_size(in_vec_col);
+static inline int32_t hpm_nn_fc_s8_s8_s8_asym_bias_get_buffer_size(
+    const uint16_t in_vec_col) {
+#if defined(__zcc__)
+  return tpt_nn_fc_s8_s8_s8_asym_bias_get_buffer_size(in_vec_col);
+#else
+  return riscv_nn_fc_s8_s8_s8_asym_bias_get_buffer_size(in_vec_col);
+#endif
 }
 
 #endif /* HPM_EN_MATH_NN_RVP32_LIB */
@@ -13075,7 +15795,11 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_asym_bias_get_buffer_size(const uint16_
 
 #ifdef HPM_MATH_NN_POOLING
 #ifdef HPM_EN_MATH_NN_LIB
+#if defined(__zcc__)
+#include "tpt_nn_pooling.h"
+#else
 #include "riscv_nn_pooling.h"
+#endif
 
 /**
  * @defgroup nnpooling NN Pooling Functions
@@ -13119,17 +15843,22 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_asym_bias_get_buffer_size(const uint16_
  *      OUT_DIM, in_tmp_buf, out_data);
  * @endcode
  */
-static inline void hpm_nn_avepool_HWC_s8(q7_t *in_tensor,
-                           const uint16_t in_tensor_dim,
-                           const uint16_t in_tensor_ch,
-                           const uint16_t ker_dim,
-                           const uint16_t pad,
-                           const uint16_t stride,
-                           const uint16_t out_tensor_dim,
-                           q7_t *in_tmp_buf,
-                           q7_t *out_tensor)
-{
-    riscv_nn_avepool_HWC_s8(in_tensor, in_tensor_dim, in_tensor_ch, ker_dim, pad, stride, out_tensor_dim, in_tmp_buf, out_tensor);
+static inline void hpm_nn_avepool_HWC_s8(q7_t* in_tensor,
+                                         const uint16_t in_tensor_dim,
+                                         const uint16_t in_tensor_ch,
+                                         const uint16_t ker_dim,
+                                         const uint16_t pad,
+                                         const uint16_t stride,
+                                         const uint16_t out_tensor_dim,
+                                         q7_t* in_tmp_buf,
+                                         q7_t* out_tensor) {
+#if defined(__zcc__)
+  tpt_nn_avepool_HWC_s8(in_tensor, in_tensor_dim, in_tensor_ch, ker_dim, pad,
+                        stride, out_tensor_dim, in_tmp_buf, out_tensor);
+#else
+  riscv_nn_avepool_HWC_s8(in_tensor, in_tensor_dim, in_tensor_ch, ker_dim, pad,
+                          stride, out_tensor_dim, in_tmp_buf, out_tensor);
+#endif
 }
 
 /**
@@ -13178,23 +15907,32 @@ static inline void hpm_nn_avepool_HWC_s8(q7_t *in_tensor,
  *      OUT_LSHIFT);
  * @endcode
  */
-static inline void hpm_nn_avepool_HWC_s8_any(q7_t *in_tensor,
-                               const uint16_t in_tensor_dim_x,
-                               const uint16_t in_tensor_dim_y,
-                               const uint16_t in_tensor_ch,
-                               const uint16_t ker_dim_x,
-                               const uint16_t ker_dim_y,
-                               const uint16_t pad_x,
-                               const uint16_t pad_y,
-                               const uint16_t stride_x,
-                               const uint16_t stride_y,
-                               const uint16_t out_tensor_dim_x,
-                               const uint16_t out_tensor_dim_y,
-                               q7_t *in_tmp_buf,
-                               q7_t *out_tensor,
-                               const uint16_t out_lshift)
-{
-    riscv_nn_avepool_HWC_s8_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf, out_tensor, out_lshift);
+static inline void hpm_nn_avepool_HWC_s8_any(q7_t* in_tensor,
+                                             const uint16_t in_tensor_dim_x,
+                                             const uint16_t in_tensor_dim_y,
+                                             const uint16_t in_tensor_ch,
+                                             const uint16_t ker_dim_x,
+                                             const uint16_t ker_dim_y,
+                                             const uint16_t pad_x,
+                                             const uint16_t pad_y,
+                                             const uint16_t stride_x,
+                                             const uint16_t stride_y,
+                                             const uint16_t out_tensor_dim_x,
+                                             const uint16_t out_tensor_dim_y,
+                                             q7_t* in_tmp_buf,
+                                             q7_t* out_tensor,
+                                             const uint16_t out_lshift) {
+#if defined(__zcc__)
+  tpt_nn_avepool_HWC_s8_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_dim_x,
+      ker_dim_y, pad_x, pad_y, stride_x, stride_y, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf, out_tensor, out_lshift);
+#else
+  riscv_nn_avepool_HWC_s8_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_dim_x,
+      ker_dim_y, pad_x, pad_y, stride_x, stride_y, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf, out_tensor, out_lshift);
+#endif
 }
 
 /**
@@ -13221,41 +15959,59 @@ static inline void hpm_nn_avepool_HWC_s8_any(q7_t *in_tensor,
  * @param[in]       in_tensor           pointer of the input tensor
  * @param[in]       in_tmp_buf          temporary buffer for the input tensor.
  *                                      Its needed size could be obtained by
- *                                      calling riscv_nn_avepool_s8_HWC_any_get_buffer_size.
+ *                                      calling
+ * riscv_nn_avepool_s8_HWC_any_get_buffer_size.
  * @param[out]      out_tensor          pointer of the output tensor
  * @return          This function only returns 0.
  */
 static inline int32_t hpm_nn_avepool_HWC_s8_any_act(const int in_tensor_dim_y,
-                                const int in_tensor_dim_x,
-                                const int out_tensor_dim_y,
-                                const int out_tensor_dim_x,
-                                const int stride_y,
-                                const int stride_x,
-                                const int ker_dim_y,
-                                const int ker_dim_x,
-                                const int pad_y,
-                                const int pad_x,
-                                const int act_min,
-                                const int act_max,
-                                const int in_tensor_ch,
-                                int8_t *in_tensor,
-                                int16_t *in_tmp_buf,
-                                int8_t *out_tensor)
-{
-    return riscv_nn_avepool_HWC_s8_any_act(in_tensor_dim_y, in_tensor_dim_x, out_tensor_dim_y, out_tensor_dim_x, stride_y, stride_x, ker_dim_y, ker_dim_x, pad_y, pad_x, act_min, act_max, in_tensor_ch, in_tensor, in_tmp_buf, out_tensor);
+                                                    const int in_tensor_dim_x,
+                                                    const int out_tensor_dim_y,
+                                                    const int out_tensor_dim_x,
+                                                    const int stride_y,
+                                                    const int stride_x,
+                                                    const int ker_dim_y,
+                                                    const int ker_dim_x,
+                                                    const int pad_y,
+                                                    const int pad_x,
+                                                    const int act_min,
+                                                    const int act_max,
+                                                    const int in_tensor_ch,
+                                                    int8_t* in_tensor,
+                                                    int16_t* in_tmp_buf,
+                                                    int8_t* out_tensor) {
+#if defined(__zcc__)
+  return tpt_nn_avepool_HWC_s8_any_act(
+      in_tensor_dim_y, in_tensor_dim_x, out_tensor_dim_y, out_tensor_dim_x,
+      stride_y, stride_x, ker_dim_y, ker_dim_x, pad_y, pad_x, act_min, act_max,
+      in_tensor_ch, in_tensor, in_tmp_buf, out_tensor);
+#else
+  return riscv_nn_avepool_HWC_s8_any_act(
+      in_tensor_dim_y, in_tensor_dim_x, out_tensor_dim_y, out_tensor_dim_x,
+      stride_y, stride_x, ker_dim_y, ker_dim_x, pad_y, pad_x, act_min, act_max,
+      in_tensor_ch, in_tensor, in_tmp_buf, out_tensor);
+#endif
 }
 
 /**
  * @brief           This function is used to obtain the required size, in bytes,
- *                  for the input temporary buffer of riscv_nn_avepool_HWC_s8_any_act.
+ *                  for the input temporary buffer of
+ * riscv_nn_avepool_HWC_s8_any_act.
  * @param[in]       out_tensor_dim_x    x dimension of the output tensor
  * @param[in]       in_tensor_ch        number of input tensor channels
  * @return          This function returns the size required by the temporary
  *                  buffer.
  */
-static inline int32_t hpm_nn_avepool_HWC_s8_any_act_get_buffer_size(const int out_tensor_dim_x, const int in_tensor_ch)
-{
-    return riscv_nn_avepool_HWC_s8_any_act_get_buffer_size(out_tensor_dim_x, in_tensor_ch);
+static inline int32_t hpm_nn_avepool_HWC_s8_any_act_get_buffer_size(
+    const int out_tensor_dim_x,
+    const int in_tensor_ch) {
+#if defined(__zcc__)
+  return tpt_nn_avepool_HWC_s8_any_act_get_buffer_size(out_tensor_dim_x,
+                                                       in_tensor_ch);
+#else
+  return riscv_nn_avepool_HWC_s8_any_act_get_buffer_size(out_tensor_dim_x,
+                                                         in_tensor_ch);
+#endif
 }
 
 /**
@@ -13287,17 +16043,22 @@ static inline int32_t hpm_nn_avepool_HWC_s8_any_act_get_buffer_size(const int ou
  *      OUT_DIM, NULL, out_data);
  * @endcode
  */
- static inline void hpm_nn_maxpool_HWC_s8(q7_t *in_tensor,
-                            const uint16_t in_tensor_dim,
-                            const uint16_t in_tensor_ch,
-                            const uint16_t ker_dim,
-                            const uint16_t pad,
-                            const uint16_t stride,
-                            const uint16_t out_tensor_dim,
-                            q7_t *in_tmp_buf,
-                            q7_t *out_tensor)
-{
-    riscv_nn_maxpool_HWC_s8(in_tensor, in_tensor_dim, in_tensor_ch, ker_dim, pad, stride, out_tensor_dim, in_tmp_buf, out_tensor);
+static inline void hpm_nn_maxpool_HWC_s8(q7_t* in_tensor,
+                                         const uint16_t in_tensor_dim,
+                                         const uint16_t in_tensor_ch,
+                                         const uint16_t ker_dim,
+                                         const uint16_t pad,
+                                         const uint16_t stride,
+                                         const uint16_t out_tensor_dim,
+                                         q7_t* in_tmp_buf,
+                                         q7_t* out_tensor) {
+#if defined(__zcc__)
+  tpt_nn_maxpool_HWC_s8(in_tensor, in_tensor_dim, in_tensor_ch, ker_dim, pad,
+                        stride, out_tensor_dim, in_tmp_buf, out_tensor);
+#else
+  riscv_nn_maxpool_HWC_s8(in_tensor, in_tensor_dim, in_tensor_ch, ker_dim, pad,
+                          stride, out_tensor_dim, in_tmp_buf, out_tensor);
+#endif
 }
 
 /**
@@ -13326,24 +16087,34 @@ static inline int32_t hpm_nn_avepool_HWC_s8_any_act_get_buffer_size(const int ou
  * @param[in]       out_tensor          pointer of the output tensor
  * @return          This function only returns 0.
  */
-static inline int32_t hpm_nn_maxpool_HWC_s8_any_act(const uint16_t in_tensor_dim_y,
-                                        const uint16_t in_tensor_dim_x,
-                                        const uint16_t out_tensor_dim_y,
-                                        const uint16_t out_tensor_dim_x,
-                                        const uint16_t stride_y,
-                                        const uint16_t stride_x,
-                                        const uint16_t ker_dim_y,
-                                        const uint16_t ker_dim_x,
-                                        const uint16_t pad_y,
-                                        const uint16_t pad_x,
-                                        const int8_t act_min,
-                                        const int8_t act_max,
-                                        const uint16_t in_tensor_ch,
-                                        int8_t *in_tensor,
-                                        int16_t *tmp_buffer,
-                                        int8_t *out_tensor)
-{
-    return riscv_nn_maxpool_HWC_s8_any_act(in_tensor_dim_y, in_tensor_dim_x, out_tensor_dim_y, out_tensor_dim_x, stride_y, stride_x, ker_dim_y, ker_dim_x, pad_y, pad_x, act_min, act_max, in_tensor_ch, in_tensor, tmp_buffer, out_tensor);
+static inline int32_t hpm_nn_maxpool_HWC_s8_any_act(
+    const uint16_t in_tensor_dim_y,
+    const uint16_t in_tensor_dim_x,
+    const uint16_t out_tensor_dim_y,
+    const uint16_t out_tensor_dim_x,
+    const uint16_t stride_y,
+    const uint16_t stride_x,
+    const uint16_t ker_dim_y,
+    const uint16_t ker_dim_x,
+    const uint16_t pad_y,
+    const uint16_t pad_x,
+    const int8_t act_min,
+    const int8_t act_max,
+    const uint16_t in_tensor_ch,
+    int8_t* in_tensor,
+    int16_t* tmp_buffer,
+    int8_t* out_tensor) {
+#if defined(__zcc__)
+  return tpt_nn_maxpool_HWC_s8_any_act(
+      in_tensor_dim_y, in_tensor_dim_x, out_tensor_dim_y, out_tensor_dim_x,
+      stride_y, stride_x, ker_dim_y, ker_dim_x, pad_y, pad_x, act_min, act_max,
+      in_tensor_ch, in_tensor, tmp_buffer, out_tensor);
+#else
+  return riscv_nn_maxpool_HWC_s8_any_act(
+      in_tensor_dim_y, in_tensor_dim_x, out_tensor_dim_y, out_tensor_dim_x,
+      stride_y, stride_x, ker_dim_y, ker_dim_x, pad_y, pad_x, act_min, act_max,
+      in_tensor_ch, in_tensor, tmp_buffer, out_tensor);
+#endif
 }
 
 /**
@@ -13353,7 +16124,11 @@ static inline int32_t hpm_nn_maxpool_HWC_s8_any_act(const uint16_t in_tensor_dim
 #endif
 
 #ifdef HPM_EN_MATH_NN_RVP32_LIB
+#if defined(__zcc__)
+#include "tpt_nn_pooling.h"
+#else
 #include "riscv_nn_pooling.h"
+#endif
 
 /**
  * @brief           This is an average pooling function for S8 inputs with any x
@@ -13379,41 +16154,59 @@ static inline int32_t hpm_nn_maxpool_HWC_s8_any_act(const uint16_t in_tensor_dim
  * @param[in]       in_tensor           pointer of the input tensor
  * @param[in]       in_tmp_buf          temporary buffer for the input tensor.
  *                                      Its needed size could be obtained by
- *                                      calling riscv_nn_avepool_s8_HWC_any_get_buffer_size.
+ *                                      calling
+ * riscv_nn_avepool_s8_HWC_any_get_buffer_size.
  * @param[out]      out_tensor          pointer of the output tensor
  * @return          This function only returns 0.
  */
 static inline int32_t hpm_nn_avepool_HWC_s8_any_act(const int in_tensor_dim_y,
-                                const int in_tensor_dim_x,
-                                const int out_tensor_dim_y,
-                                const int out_tensor_dim_x,
-                                const int stride_y,
-                                const int stride_x,
-                                const int ker_dim_y,
-                                const int ker_dim_x,
-                                const int pad_y,
-                                const int pad_x,
-                                const int act_min,
-                                const int act_max,
-                                const int in_tensor_ch,
-                                int8_t *in_tensor,
-                                int16_t *in_tmp_buf,
-                                int8_t *out_tensor)
-{
-    return riscv_nn_avepool_HWC_s8_any_act(in_tensor_dim_y, in_tensor_dim_x, out_tensor_dim_y, out_tensor_dim_x, stride_y, stride_x, ker_dim_y, ker_dim_x, pad_y, pad_x, act_min, act_max, in_tensor_ch, in_tensor, in_tmp_buf, out_tensor);
+                                                    const int in_tensor_dim_x,
+                                                    const int out_tensor_dim_y,
+                                                    const int out_tensor_dim_x,
+                                                    const int stride_y,
+                                                    const int stride_x,
+                                                    const int ker_dim_y,
+                                                    const int ker_dim_x,
+                                                    const int pad_y,
+                                                    const int pad_x,
+                                                    const int act_min,
+                                                    const int act_max,
+                                                    const int in_tensor_ch,
+                                                    int8_t* in_tensor,
+                                                    int16_t* in_tmp_buf,
+                                                    int8_t* out_tensor) {
+#if defined(__zcc__)
+  return tpt_nn_avepool_HWC_s8_any_act(
+      in_tensor_dim_y, in_tensor_dim_x, out_tensor_dim_y, out_tensor_dim_x,
+      stride_y, stride_x, ker_dim_y, ker_dim_x, pad_y, pad_x, act_min, act_max,
+      in_tensor_ch, in_tensor, in_tmp_buf, out_tensor);
+#else
+  return riscv_nn_avepool_HWC_s8_any_act(
+      in_tensor_dim_y, in_tensor_dim_x, out_tensor_dim_y, out_tensor_dim_x,
+      stride_y, stride_x, ker_dim_y, ker_dim_x, pad_y, pad_x, act_min, act_max,
+      in_tensor_ch, in_tensor, in_tmp_buf, out_tensor);
+#endif
 }
 
 /**
  * @brief           This function is used to obtain the required size, in bytes,
- *                  for the input temporary buffer of riscv_nn_avepool_HWC_s8_any_act.
+ *                  for the input temporary buffer of
+ * riscv_nn_avepool_HWC_s8_any_act.
  * @param[in]       out_tensor_dim_x    x dimension of the output tensor
  * @param[in]       in_tensor_ch        number of input tensor channels
  * @return          This function returns the size required by the temporary
  *                  buffer.
  */
-static inline int32_t hpm_nn_avepool_HWC_s8_any_act_get_buffer_size(const int out_tensor_dim_x, const int in_tensor_ch)
-{
-    return riscv_nn_avepool_HWC_s8_any_act_get_buffer_size(out_tensor_dim_x, in_tensor_ch);
+static inline int32_t hpm_nn_avepool_HWC_s8_any_act_get_buffer_size(
+    const int out_tensor_dim_x,
+    const int in_tensor_ch) {
+#if defined(__zcc__)
+  return tpt_nn_avepool_HWC_s8_any_act_get_buffer_size(out_tensor_dim_x,
+                                                       in_tensor_ch);
+#else
+  return riscv_nn_avepool_HWC_s8_any_act_get_buffer_size(out_tensor_dim_x,
+                                                         in_tensor_ch);
+#endif
 }
 
 #endif
@@ -13421,7 +16214,11 @@ static inline int32_t hpm_nn_avepool_HWC_s8_any_act_get_buffer_size(const int ou
 
 #ifdef HPM_MATH_NN_SOFTMAX
 #ifdef HPM_EN_MATH_NN_LIB
+#if defined(__zcc__)
+#include "tpt_nn_softmax.h"
+#else
 #include "riscv_nn_softmax.h"
+#endif
 
 /**
  * @defgroup nnsoftmax NN Softmax Functions
@@ -13447,11 +16244,14 @@ static inline int32_t hpm_nn_avepool_HWC_s8_any_act_get_buffer_size(const int ou
  * hpm_nn_softmax_s8_fast(in_data, LENGTH, out_data);
  * @endcode
  */
-static inline void hpm_nn_softmax_s8_fast(const q7_t *in_vec,
-                            const uint16_t size,
-                            q7_t *out_vec)
-{
-    riscv_nn_softmax_s8_fast(in_vec, size, out_vec);
+static inline void hpm_nn_softmax_s8_fast(const q7_t* in_vec,
+                                          const uint16_t size,
+                                          q7_t* out_vec) {
+#if defined(__zcc__)
+  tpt_nn_softmax_s8_fast(in_vec, size, out_vec);
+#else
+  riscv_nn_softmax_s8_fast(in_vec, size, out_vec);
+#endif
 }
 
 /**
@@ -13461,11 +16261,14 @@ static inline void hpm_nn_softmax_s8_fast(const q7_t *in_vec,
  * @param[in]       size        number of elements in the input vector
  * @param[out]      out_vec     pointer of the output vector
  */
-static inline void hpm_nn_softmax_s16_fast(const q15_t *in_vec,
-                            const uint16_t size,
-                            q15_t *out_vec)
-{
-    riscv_nn_softmax_s16_fast(in_vec, size, out_vec);
+static inline void hpm_nn_softmax_s16_fast(const q15_t* in_vec,
+                                           const uint16_t size,
+                                           q15_t* out_vec) {
+#if defined(__zcc__)
+  tpt_nn_softmax_s16_fast(in_vec, size, out_vec);
+#else
+  riscv_nn_softmax_s16_fast(in_vec, size, out_vec);
+#endif
 }
 
 /**
@@ -13482,15 +16285,20 @@ static inline void hpm_nn_softmax_s16_fast(const q15_t *in_vec,
  *                                  maximum in row.
  * @param[out]      out_tensor      pointer of the output tensor
  */
-static inline void hpm_nn_softmax_s8_hp(const int8_t *in_tensor,
-                            const int32_t in_tensor_row,
-                            const int32_t in_tensor_col,
-                            const int32_t scale,
-                            const int32_t lshift,
-                            const int32_t diff_min,
-                            int8_t *out_tensor)
-{
-    riscv_nn_softmax_s8_hp(in_tensor, in_tensor_row, in_tensor_col, scale, lshift, diff_min, out_tensor);
+static inline void hpm_nn_softmax_s8_hp(const int8_t* in_tensor,
+                                        const int32_t in_tensor_row,
+                                        const int32_t in_tensor_col,
+                                        const int32_t scale,
+                                        const int32_t lshift,
+                                        const int32_t diff_min,
+                                        int8_t* out_tensor) {
+#if defined(__zcc__)
+  tpt_nn_softmax_s8_hp(in_tensor, in_tensor_row, in_tensor_col, scale, lshift,
+                       diff_min, out_tensor);
+#else
+  riscv_nn_softmax_s8_hp(in_tensor, in_tensor_row, in_tensor_col, scale, lshift,
+                         diff_min, out_tensor);
+#endif
 }
 
 /**
@@ -13507,15 +16315,20 @@ static inline void hpm_nn_softmax_s8_hp(const int8_t *in_tensor,
  *                                  maximum in row.
  * @param[out]      out_tensor      pointer of the output tensor
  */
-static inline void hpm_nn_softmax_u8_hp(const uint8_t *in_tensor,
-                            const int32_t in_tensor_row,
-                            const int32_t in_tensor_col,
-                            const int32_t scale,
-                            const int32_t lshift,
-                            const int32_t diff_min,
-                            uint8_t *out_tensor)
-{
-    riscv_nn_softmax_u8_hp(in_tensor, in_tensor_row, in_tensor_col, scale, lshift, diff_min, out_tensor);
+static inline void hpm_nn_softmax_u8_hp(const uint8_t* in_tensor,
+                                        const int32_t in_tensor_row,
+                                        const int32_t in_tensor_col,
+                                        const int32_t scale,
+                                        const int32_t lshift,
+                                        const int32_t diff_min,
+                                        uint8_t* out_tensor) {
+#if defined(__zcc__)
+  tpt_nn_softmax_u8_hp(in_tensor, in_tensor_row, in_tensor_col, scale, lshift,
+                       diff_min, out_tensor);
+#else
+  riscv_nn_softmax_u8_hp(in_tensor, in_tensor_row, in_tensor_col, scale, lshift,
+                         diff_min, out_tensor);
+#endif
 }
 
 /**
@@ -13525,7 +16338,12 @@ static inline void hpm_nn_softmax_u8_hp(const uint8_t *in_tensor,
 #endif
 
 #ifdef HPM_EN_MATH_NN_RVP32_LIB
+#if defined(__zcc__)
+#include "tpt_nn_softmax.h"
+#else
 #include "riscv_nn_softmax.h"
+#endif
+
 /**
  * @brief           This is a softmax function for signed 8-bit integer input
  *                  tensor with high precision algorithm.
@@ -13540,15 +16358,20 @@ static inline void hpm_nn_softmax_u8_hp(const uint8_t *in_tensor,
  *                                  maximum in row.
  * @param[out]      out_tensor      pointer of the output tensor
  */
-static inline void hpm_nn_softmax_s8_hp(const int8_t *in_tensor,
-                            const int32_t in_tensor_row,
-                            const int32_t in_tensor_col,
-                            const int32_t scale,
-                            const int32_t lshift,
-                            const int32_t diff_min,
-                            int8_t *out_tensor)
-{
-    riscv_nn_softmax_s8_hp(in_tensor, in_tensor_row, in_tensor_col, scale, lshift, diff_min, out_tensor);
+static inline void hpm_nn_softmax_s8_hp(const int8_t* in_tensor,
+                                        const int32_t in_tensor_row,
+                                        const int32_t in_tensor_col,
+                                        const int32_t scale,
+                                        const int32_t lshift,
+                                        const int32_t diff_min,
+                                        int8_t* out_tensor) {
+#if defined(__zcc__)
+  tpt_nn_softmax_s8_hp(in_tensor, in_tensor_row, in_tensor_col, scale, lshift,
+                       diff_min, out_tensor);
+#else
+  riscv_nn_softmax_s8_hp(in_tensor, in_tensor_row, in_tensor_col, scale, lshift,
+                         diff_min, out_tensor);
+#endif
 }
 #endif
 
@@ -13556,7 +16379,11 @@ static inline void hpm_nn_softmax_s8_hp(const int8_t *in_tensor,
 
 #ifdef HPM_MATH_NN_UTIL
 #ifdef HPM_EN_MATH_NN_LIB
+#if defined(__zcc__)
+#include "tpt_nn_util.h"
+#else
 #include "riscv_nn_util.h"
+#endif
 
 /**
  * @defgroup nnutils NN Utils Functions
@@ -13575,11 +16402,14 @@ static inline void hpm_nn_softmax_s8_hp(const int8_t *in_tensor,
  * @param[out]      out_vec         pointer of the output vector
  * @return          This function only returns 0.
  */
-static inline int32_t hpm_nn_exp_f16(const float16_t *in_vec,
-                        const uint32_t size,
-                        float16_t *out_vec)
-{
-    return riscv_nn_exp_f16(in_vec, size, out_vec);
+static inline int32_t hpm_nn_exp_f16(const float16_t* in_vec,
+                                     const uint32_t size,
+                                     float16_t* out_vec) {
+#if defined(__zcc__)
+  return tpt_nn_exp_f16(in_vec, size, out_vec);
+#else
+  return riscv_nn_exp_f16(in_vec, size, out_vec);
+#endif
 }
 #endif
 
@@ -13599,11 +16429,14 @@ static inline int32_t hpm_nn_exp_f16(const float16_t *in_vec,
  * hpm_nn_reshape_s8(in_tensor, out_tensor, SIZE);
  * @endcode
  */
-static inline void hpm_nn_reshape_s8(const int8_t *in_tensor,
-                        int8_t *out_tensor,
-                        const uint32_t size)
-{
-    riscv_nn_reshape_s8(in_tensor, out_tensor, size);
+static inline void hpm_nn_reshape_s8(const int8_t* in_tensor,
+                                     int8_t* out_tensor,
+                                     const uint32_t size) {
+#if defined(__zcc__)
+  tpt_nn_reshape_s8(in_tensor, out_tensor, size);
+#else
+  riscv_nn_reshape_s8(in_tensor, out_tensor, size);
+#endif
 }
 
 /**
@@ -13625,13 +16458,16 @@ static inline void hpm_nn_reshape_s8(const int8_t *in_tensor,
  *   "val" output vector. If there is a number of elements with the same value,
  *   the elements will be sorted from smallest index to largest index.
  */
-static inline int32_t hpm_nn_top_k_s8(q7_t *in_vec,
-                        uint32_t size,
-                        uint32_t k,
-                        q7_t *val,
-                        uint32_t *idx)
-{
-    return riscv_nn_top_k_s8(in_vec, size, k, val, idx);
+static inline int32_t hpm_nn_top_k_s8(q7_t* in_vec,
+                                      uint32_t size,
+                                      uint32_t k,
+                                      q7_t* val,
+                                      uint32_t* idx) {
+#if defined(__zcc__)
+  return tpt_nn_top_k_s8(in_vec, size, k, val, idx);
+#else
+  return riscv_nn_top_k_s8(in_vec, size, k, val, idx);
+#endif
 }
 
 #ifdef __riscv_zfh
@@ -13654,13 +16490,16 @@ static inline int32_t hpm_nn_top_k_s8(q7_t *in_vec,
  *   "val" output vector. If there is a number of elements with the same value,
  *   the elements will be sorted from smallest index to largest index.
  */
-static inline int32_t hpm_nn_top_k_f16(float16_t *in_vec,
-                        uint32_t size,
-                        uint32_t k,
-                        float16_t *val,
-                        uint32_t *idx)
-{
-    return riscv_nn_top_k_f16(in_vec, size, k, val, idx);
+static inline int32_t hpm_nn_top_k_f16(float16_t* in_vec,
+                                       uint32_t size,
+                                       uint32_t k,
+                                       float16_t* val,
+                                       uint32_t* idx) {
+#if defined(__zcc__)
+  return tpt_nn_top_k_f16(in_vec, size, k, val, idx);
+#else
+  return riscv_nn_top_k_f16(in_vec, size, k, val, idx);
+#endif
 }
 #endif
 
@@ -13671,8 +16510,12 @@ static inline int32_t hpm_nn_top_k_f16(float16_t *in_vec,
 #endif
 
 #ifdef HPM_EN_MATH_NN_RVP32_LIB
-
+#if defined(__zcc__)
+#include "tpt_nn_util.h"
+#else
 #include "riscv_nn_util.h"
+#endif
+
 /**
  * @brief           This function turns the input tensor into another tensor
  *                  with the same data but in a different shape.
@@ -13689,11 +16532,14 @@ static inline int32_t hpm_nn_top_k_f16(float16_t *in_vec,
  * hpm_nn_reshape_s8(in_tensor, out_tensor, SIZE);
  * @endcode
  */
-static inline void hpm_nn_reshape_s8(const int8_t *in_tensor,
-                        int8_t *out_tensor,
-                        const uint32_t size)
-{
-    riscv_nn_reshape_s8(in_tensor, out_tensor, size);
+static inline void hpm_nn_reshape_s8(const int8_t* in_tensor,
+                                     int8_t* out_tensor,
+                                     const uint32_t size) {
+#if defined(__zcc__)
+  tpt_nn_reshape_s8(in_tensor, out_tensor, size);
+#else
+  riscv_nn_reshape_s8(in_tensor, out_tensor, size);
+#endif
 }
 
 #endif
@@ -13704,7 +16550,7 @@ static inline void hpm_nn_reshape_s8(const int8_t *in_tensor,
 
 #endif
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 #endif

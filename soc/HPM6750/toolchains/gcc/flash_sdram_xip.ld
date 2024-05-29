@@ -70,9 +70,6 @@ SECTIONS
         *(.gnu*)
         *(.pl*)
 
-        KEEP(*(.eh_frame))
-        *(.eh_frame*)
-
         KEEP (*(.init))
         KEEP (*(.fini))
 
@@ -109,6 +106,20 @@ SECTIONS
         /* RT-Thread related sections - end */
         . = ALIGN(8);
     } > XPI0
+
+    .eh_frame :
+    {
+        __eh_frame_start = .;
+        KEEP(*(.eh_frame))
+        __eh_frame_end = .;
+    }  > XPI0
+
+    .eh_frame_hdr :
+    {
+        KEEP(*(.eh_frame_hdr))
+    }  > XPI0
+    __eh_frame_hdr_start = SIZEOF(.eh_frame_hdr) > 0 ? ADDR(.eh_frame_hdr) : 0;
+    __eh_frame_hdr_end = SIZEOF(.eh_frame_hdr) > 0 ? . : 0;
 
     .rel : {
         KEEP(*(.rel*))
