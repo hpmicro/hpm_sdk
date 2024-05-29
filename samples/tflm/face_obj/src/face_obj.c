@@ -292,6 +292,7 @@ int main(void)
         start_time();
         loop();
         run_times = get_end_time();
+        printf("loop time %d\n",run_times);
         tf_run_inference = clock_get_frequency(clock_cpu0) / run_times;
     }
 }
