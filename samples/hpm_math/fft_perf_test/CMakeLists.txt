@@ -15,4 +15,7 @@ project(fft_perf_test)
 sdk_app_src(src/fft_perf_test.c)
 sdk_compile_options("-O3")
 
+sdk_ses_compile_options(-mabi=ilp32d)
+sdk_ses_compile_options(-march=rv32gc)
+
 generate_ide_projects()
