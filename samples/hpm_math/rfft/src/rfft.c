@@ -66,7 +66,7 @@ void rfft_printf(rfft_type_t *buf, rfft_type_t *output, uint16_t num)
 {
     unsigned int i, j = 0;
     hpm_dsp_cmag_f32(buf, output, num);
-    riscv_dsp_cmag_f32(buf, output, num);
+    //riscv_dsp_cmag_f32(buf, output, num);
     printf("------------------------------------\r\n");
     printf("DC component amplitude:%f.\r\n", output[0]/(num * 2));
     for (i = 1; i <  num; i++) {

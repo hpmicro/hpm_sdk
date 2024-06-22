@@ -1,0 +1,87 @@
+/******************************************************************************
+ * Copyright (C) 2010-2018 Arm Limited or its affiliates. All rights reserved.*
+ * Copyright (C) 2018-2023 Andes Technology Corporation. All rights reserved. *
+ *                                                                            *
+ * SPDX-License-Identifier: Apache-2.0                                        *
+ *                                                                            *
+ * Licensed under the Apache License, Version 2.0 (the License); you may      *
+ * not use this file except in compliance with the License.                   *
+ * You may obtain a copy of the License at                                    *
+ *                                                                            *
+ * www.apache.org/licenses/LICENSE-2.0                                        *
+ *                                                                            *
+ * Unless required by applicable law or agreed to in writing, software        *
+ * distributed under the License is distributed on an AS IS BASIS, WITHOUT    *
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.           *
+ * See the License for the specific language governing permissions and        *
+ * limitations under the License.                                             *
+ ******************************************************************************/
+
+/** @file*/
+
+#include "internal_nn_math.h"
+#include "tpt_nn_support.h"
+
+//// Convolution Functions
+extern void tpt_nn_dup_s8_s16(const q7_t * src, q15_t * dst, uint32_t size);
+extern q7_t *tpt_nn_mat_mul_kernel_q7_q15(const q7_t * src1,
+        const q15_t * src2,
+        const uint16_t out_tensor_ch,
+        const uint16_t col_src1,
+        const uint16_t bias_lshift,
+        const uint16_t out_rshift,
+        const q7_t * bias,
+        q7_t * out);
+
+int32_t tpt_nn_conv_HWC_s8_s8_s8_sft_bias(const q7_t * in_tensor,
+                       const uint16_t in_tensor_dim,
+                       const uint16_t in_tensor_ch,
+                       const q7_t * ker_weight,
+                       const uint16_t out_tensor_ch,
+                       const uint16_t ker_dim,
+                       const uint16_t pad,
+                       const uint16_t stride,
+                       const q7_t * bias,
+                       const uint16_t bias_lshift,
+                       const uint16_t out_rshift,
+                       q7_t * out_tensor,
+                       const uint16_t out_tensor_dim,
+                       q15_t * in_tmp_buf,
+                       q7_t * tmp_buf)
+{
+    uint16_t  i, j, k, l, m, n;
+    int       conv_out;
+    long in_row, in_col;
+
+    for (i = 0; i < out_tensor_ch; i++)
+    {
+        for (j = 0; j < out_tensor_dim; j++)
+        {
+            for (k = 0; k < out_tensor_dim; k++)
+            {
+                conv_out = ((q31_t)bias[i] << bias_lshift) + NN_ROUND(out_rshift);
+                for (m = 0; m < ker_dim; m++)
+                {
+                    for (n = 0; n < ker_dim; n++)
+                    {
+                        // if-for implementation
+                        in_row = stride * j + m - pad;
+                        in_col = stride * k + n - pad;
+                        if (in_row >= 0 && in_col >= 0 && in_row < in_tensor_dim && in_col < in_tensor_dim)
+                        {
+                            for (l = 0; l < in_tensor_ch; l++)
+                            {
+                                conv_out +=
+                                    in_tensor[(in_row * in_tensor_dim + in_col) * in_tensor_ch + l]
+                                    * ker_weight[i * in_tensor_ch * ker_dim * ker_dim + (m * ker_dim + n) * in_tensor_ch + l];
+                            }
+                        }
+                    }
+                }
+                out_tensor[i + (j * out_tensor_dim + k) * out_tensor_ch] = (q7_t) NDS_ISA_SATS((conv_out >> out_rshift), 8);
+            }
+        }
+    }
+
+    return 0;
+}

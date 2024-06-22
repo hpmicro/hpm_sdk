@@ -5852,7 +5852,11 @@ static inline void hpm_dsp_cifft_q31(q31_t* src, uint32_t m) {
  */
 static inline int32_t hpm_dsp_rfft_f32(float32_t* src, uint32_t m) {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+  return tpt_rfft_f32(src,src,m,false);
+#else
   return riscv_dsp_rfft_f32(src, m);
+#endif
 #endif
 }
 

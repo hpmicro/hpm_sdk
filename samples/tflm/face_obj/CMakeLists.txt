@@ -19,6 +19,10 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "")
     SET(CMAKE_BUILD_TYPE flash_sdram_xip)
 endif()
 
+set(RV_ABI "ilp32d")
+set(RV_ARCH "rv32gc")
+set(CONFIG_HPM_MATH_NN_RVP32 1)
+
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(tflm_face_obj_example)

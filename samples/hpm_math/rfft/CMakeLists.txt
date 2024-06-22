@@ -12,8 +12,10 @@ set(HPM_MATH_DSP_SES_LIB "libdspf")
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(rfft)
-sdk_compile_definitions(-DBOARD_SHOW_CLOCK=0)
+#sdk_compile_definitions(-DBOARD_SHOW_CLOCK=0)
 sdk_app_src(src/rfft.c)
 sdk_compile_options("-O3")
 
+sdk_ses_compile_options(-mabi=ilp32d)
+sdk_ses_compile_options(-march=rv32gc)
 generate_ide_projects()

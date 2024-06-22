@@ -30,3 +30,4 @@ board:
       - board_enet_phy
       - board_enet_dual_phy
       - board_dual_usb
+      - tflm
