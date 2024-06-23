@@ -99,7 +99,16 @@ sdk_src(micro/kernels/softmax_common.cc)
 sdk_src(micro/kernels/sub.cc)
 sdk_src(micro/kernels/strided_slice.cc)
 sdk_src(micro/kernels/sub_common.cc)
-sdk_src(micro/kernels/svdf_common.cc)
+
+# WORKAOURD: Whether can conditional add target sources?
+if(ENABLED_ZME)
+  # target_sources(${HPM_SDK_LIB} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/micro/kernels/svdf_common_ime.cc)
+  sdk_src(micro/kernels/svdf_common_zme.cc)
+else()
+  # target_sources(${HPM_SDK_ZME_LIB} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/micro/kernels/svdf_common.cc)
+  sdk_src(micro/kernels/svdf_common.cc)
+endif()
+
 sdk_src(micro/kernels/svdf.cc)
 sdk_src(micro/kernels/tanh.cc)
 sdk_src(micro/kernels/transpose_conv.cc)

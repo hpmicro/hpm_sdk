@@ -32,4 +32,9 @@ sdk_ses_compile_options("-mabi=ilp32d")
 sdk_ses_compile_options("-march=rv32gcv")
 #sdk_ses_compile_options("-march=rv32gcxandes")
 sdk_compile_options("-O3")
+
+# WORKAROUND for import all project(with/without zme extension lib and demo) once. Seem don't work
+# set(APP_NAME demo_zme)
+# set(HPM_SDK_LIB     ${HPM_SDK_ZME_LIB})
 generate_ses_project()
+# set(HPM_SDK_LIB     ${HPM_SDK_LIB})

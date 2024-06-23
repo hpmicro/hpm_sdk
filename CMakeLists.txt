@@ -12,6 +12,13 @@ target_link_libraries(${HPM_SDK_LIB} PUBLIC ${HPM_SDK_LIB_ITF})
 add_library(${HPM_SDK_GCC_LIB} STATIC "")
 target_link_libraries(${HPM_SDK_GCC_LIB} PUBLIC ${HPM_SDK_GCC_LIB_ITF} ${HPM_SDK_LIB_ITF})
 
+# WORKAROUND for import all project(with/without zme extension lib and demo) once
+# if("${TOOLCHAIN_VARIANT}" STREQUAL "zcc")
+  #  add_library(${HPM_SDK_ZME_LIB} STATIC "")
+   # target_link_libraries(${HPM_SDK_ZME_LIB} PUBLIC ${HPM_SDK_LIB_ITF})
+   # target_link_libraries(${HPM_SDK_ZME_LIB} PUBLIC ${HPM_SDK_ZCC_LIB_ITF})
+# endif()
+
 target_link_libraries(${HPM_SDK_LIB} PUBLIC ${HPM_SDK_GCC_LIB_ITF})
 if("${TOOLCHAIN_VARIANT}" STREQUAL "nds-gcc")
     target_link_libraries(${HPM_SDK_LIB} PUBLIC ${HPM_SDK_NDSGCC_LIB_ITF})

@@ -21,6 +21,12 @@ function(sdk_src)
             set(path ${CMAKE_CURRENT_SOURCE_DIR}/${file})
         endif()
         target_sources(${HPM_SDK_LIB} PRIVATE ${path})
+
+        # WORKAROUND for import all project(with/without zme extension lib and demo) once
+        # if("${TOOLCHAIN_VARIANT}" STREQUAL "zcc")
+            # target_sources(${HPM_SDK_ZME_LIB} PRIVATE ${path})
+        # endif()
+
     endforeach()
 endfunction()
 

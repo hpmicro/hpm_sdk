@@ -17,7 +17,13 @@ set(APP_BIN_NAME ${APP_NAME}.bin)
 set(APP_MAP_NAME ${APP_NAME}.map)
 set(APP_ASM_NAME ${APP_NAME}.asm)
 
-set(HPM_SDK_LIB hpm_sdk_lib)
+# Use to control whether has zme extension
+if(ENABLED_ZME)
+  set(HPM_SDK_LIB hpm_sdk_zme_lib)
+else()
+  set(HPM_SDK_LIB hpm_sdk_lib)
+endif()
+
 set(HPM_SDK_LIB_ITF hpm_sdk_lib_itf)
 
 # store all options
