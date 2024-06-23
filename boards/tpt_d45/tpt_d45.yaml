@@ -1,0 +1,31 @@
+# Copyright (c) 2022-2023 HPMicro
+# SPDX-License-Identifier: BSD-3-Clause
+
+board:
+    name: tpt_d45
+    soc: TPT_D45
+    device: HPM6750xVMx
+    on-board-ram:
+      type: sdram
+      size: 32M
+      width: 32bit
+    on-board-flash:
+      type: qspi-nor-flash
+      size: 16M
+    feature:
+      - board_audio_in
+      - board_audio_out
+      - board_audio_in_vad
+      - board_audio_codec
+      - board_uart_software_rx_idle_pin
+      - board_gpt_pin
+      - board_motor_control
+      - board_pwm_rgb_led
+      - board_puart_pin
+      - board_enet_pps_pin
+      - board_sdcard
+      - board_sdram
+      - board_enet_phy
+      - board_enet_dual_phy
+      - board_dual_usb
+      - tflm
