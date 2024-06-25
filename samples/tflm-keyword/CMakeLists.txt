@@ -25,7 +25,7 @@ sdk_app_src(src/keyword_scrambled_model_data.cc)
 
 sdk_app_inc(src)
 
-sdk_ld_options("-lm")
+# sdk_ld_options("-lm")
 sdk_ld_options("--std=c++11")
 sdk_compile_definitions(__HPMICRO__)
 sdk_ses_compile_options("-mabi=ilp32d")

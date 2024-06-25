@@ -29,5 +29,8 @@ board:
       - board_sdcard
       - board_sdram
       - board_i2s_pin
+      - tflm
+      - tflm-keyword
+      - tflm-test
     excluded_samples:
       - samples/motor_ctrl/bldc_hfi

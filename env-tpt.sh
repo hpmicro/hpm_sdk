@@ -17,7 +17,7 @@
 #export HPM_SDK_TOOLCHAIN_VARIANT=zcc
 #export HPM_SDK_BASE=$HOME/work/code/git/hpm_sdk
 
-export GNURISCV_TOOLCHAIN_PATH=~/project/install-zcc
+export GNURISCV_TOOLCHAIN_PATH=/home/crux/workspace/test_suit/install-zcc
 export HPM_SDK_TOOLCHAIN_VARIANT=zcc
 
 #Andes
