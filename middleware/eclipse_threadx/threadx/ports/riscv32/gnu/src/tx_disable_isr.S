@@ -11,7 +11,7 @@
 .global __get_interrupt_state
 .global __set_interrupt_state
 
-.section .isr_vector
+.section .isr_vector, "ax"
 .type __disable_interrupt, function
 __disable_interrupt:
 # Disable global interupt
@@ -19,14 +19,14 @@ __disable_interrupt:
     csrrc  zero, mstatus, t0
     ret
 
-.section .isr_vector
+.section .isr_vector, "ax"
 .type __get_interrupt_state, function
 __get_interrupt_state:
 # Save the Machine status register
     csrr   a0, mstatus
     ret
 
-.section .isr_vector
+.section .isr_vector, "ax"
 .type __set_interrupt_state, function
 __set_interrupt_state:
 # restore the Machine status register previous state

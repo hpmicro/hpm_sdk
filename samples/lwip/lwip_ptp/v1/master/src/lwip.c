@@ -110,9 +110,6 @@ static hpm_stat_t enet_init(ENET_Type *ptr)
     /* Set SARC */
     enet_config.sarc = enet_sarc_replace_mac0;
 
-    int_config.mmc_intr_mask_rx = 0x03ffffff;   /* Disable all mmc rx interrupt events */
-    int_config.mmc_intr_mask_tx = 0x03ffffff;   /* Disable all mmc tx interrupt events */
-
     /* Initialize enet controller */
     enet_controller_init(ptr, ENET_INF_TYPE, &desc, &enet_config, &int_config);
 
@@ -185,7 +182,7 @@ int main(void)
     #if defined(RGMII) && RGMII
     /* Set RGMII clock delay */
     board_init_enet_rgmii_clock_delay(ENET);
-    #else
+    #elif defined(RMII) && RMII
     /* Set RMII reference clock */
     board_init_enet_rmii_reference_clock(ENET, BOARD_ENET_RMII_INT_REF_CLK);
     printf("Reference Clock: %s\n", BOARD_ENET_RMII_INT_REF_CLK ? "Internal Clock" : "External Clock");

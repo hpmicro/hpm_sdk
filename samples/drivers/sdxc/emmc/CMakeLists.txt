@@ -9,6 +9,8 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(emmc_example)
 
+sdk_compile_definitions(-DHPM_SDMMC_ENABLE_CACHE_MAINTENANCE=0)
+
 sdk_inc(src)
 
 sdk_app_src(src/emmc_example.c)

@@ -86,10 +86,11 @@ The UART0 pin leads to three positions:
 
  The UART13 is used for core1 debug console or some functional testing using UART, such as uart_software_rx_idle, uart_rx_timeout, uart_software_lin, MICROROS_UART, USB_CDC_ACM_UART, MODBUS_RTU etc.
 
-| Function   | Pin  | Position |
-| ---------- | ---- | -------- |
+| Function   | Pin  | Position | Remark   |
+| ---------- | ---- | -------- | ------   |
 | UART13.TXD | PZ09 | J11[5]   |
 | UART13.RXD | PZ08 | J11[6]   |
+| UART13.break | PE31 | J11[7]   | generate uart break signal |
 
 - TRGMUX pin for uart_software_rx_idle sample
 
@@ -129,11 +130,12 @@ The UART0 pin leads to three positions:
 
 - GPTMR Pin
 
-| Function      | Pin  | Position |
-| ------------- | ---- | -------- |
+| Function      | Pin  | Position | Remark   |
+| ------------- | ---- | -------- | -------- |
 | GPTMR4.CAPT_1 | PE25 | J10[6]   |
-| GPTMR5.COMP_2 | PD24 | J10[18]  |
-| GPTMR5.COMP_3 | PD23 | J10[16]  |
+| GPTMR3.COMP_1 | PE24 | J10[8]   | MCLK of i2s emulation  |
+| GPTMR5.COMP_2 | PD24 | J10[18]  | LRCK of i2s emulation |
+| GPTMR5.COMP_3 | PD23 | J10[16]  | BLCK of i2s emulation  |
 
 - ADC12 Pin
 
@@ -188,3 +190,9 @@ The UART0 pin leads to three positions:
 | TAMP.08  | PZ08   | J11[6] | Active Mode |
 | TAMP.09  | PZ09   | J11[5] | Active Mode |
 | TAMP.10  | PZ10   | J11[4] | Passive Mode |
+
+- CS Pin of i2s emulation
+
+| Function | Position   |  Remark |
+| ----     | -----      | ------ |
+| PD25      | J10[16]    | the pin that controls the SPI slave CS |

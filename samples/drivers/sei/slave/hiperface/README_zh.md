@@ -31,18 +31,13 @@ $$ |  $$ |$$ |      $$ | \_/ $$ |$$ |\$$$$$$$\ $$ |      \$$$$$$  |
 ----------------------------------------------------------------------
 SEI slave hiperface sample
 Started sei engine!
-ADDR:0x40, CMD:0x42, POS:0xa5a5, sample_tm1:1952301066, sample_tm2:0, sample_interval:10846117 us
-ADDR:0x40, CMD:0x42, POS:0xa5a6, sample_tm1:2088895956, sample_tm2:1952301066, sample_interval:758860 us
-ADDR:0x40, CMD:0x42, POS:0xa5a7, sample_tm1:2263472347, sample_tm2:2088895956, sample_interval:969868 us
-ADDR:0x40, CMD:0x42, POS:0xa5a8, sample_tm1:2294733614, sample_tm2:2263472347, sample_interval:173673 us
-ADDR:0x40, CMD:0x42, POS:0xa5a9, sample_tm1:2341120092, sample_tm2:2294733614, sample_interval:257702 us
-ADDR:0x40, CMD:0x42, POS:0xa5aa, sample_tm1:2378596173, sample_tm2:2341120092, sample_interval:208200 us
-ADDR:0x40, CMD:0x42, POS:0xa5ab, sample_tm1:2412964847, sample_tm2:2378596173, sample_interval:190937 us
-ADDR:0x40, CMD:0x42, POS:0xa5ac, sample_tm1:2443402462, sample_tm2:2412964847, sample_interval:169097 us
-ADDR:0x40, CMD:0x42, POS:0xa5ad, sample_tm1:2475131711, sample_tm2:2443402462, sample_interval:176273 us
-ADDR:0x40, CMD:0x42, POS:0xa5ae, sample_tm1:2507853084, sample_tm2:2475131711, sample_interval:181785 us
-ADDR:0x40, CMD:0x42, POS:0xa5af, sample_tm1:2537055225, sample_tm2:2507853084, sample_interval:162234 us
-ADDR:0x40, CMD:0x42, POS:0xa5b0, sample_tm1:2562569660, sample_tm2:2537055225, sample_interval:141746 us
-ADDR:0x40, CMD:0x42, POS:0xa5b1, sample_tm1:2592295941, sample_tm2:2562569660, sample_interval:165146 us
+ADDR:0x40, CMD:0x42, POS:0xa5a5, CRC:0x40, sample_tm1:301346678, sample_tm2:0, sample_interval:1883416 us
+ADDR:0x40, CMD:0x42, POS:0xa5a6, CRC:0x80, sample_tm1:333346343, sample_tm2:301346678, sample_interval:199997 us
+ADDR:0x40, CMD:0x42, POS:0xa5a7, CRC:0x0, sample_tm1:365346007, sample_tm2:333346343, sample_interval:199997 us
+ADDR:0x40, CMD:0x42, POS:0xa5a8, CRC:0xf0, sample_tm1:397345672, sample_tm2:365346007, sample_interval:199997 us
+ADDR:0x40, CMD:0x42, POS:0xa5a9, CRC:0x70, sample_tm1:429345337, sample_tm2:397345672, sample_interval:199997 us
+ADDR:0x40, CMD:0x42, POS:0xa5aa, CRC:0xb0, sample_tm1:461345002, sample_tm2:429345337, sample_interval:199997 us
+ADDR:0x40, CMD:0x42, POS:0xa5ab, CRC:0x30, sample_tm1:493344667, sample_tm2:461345002, sample_interval:199997 us
+ADDR:0x40, CMD:0x42, POS:0xa5ac, CRC:0xd0, sample_tm1:525344332, sample_tm2:493344667, sample_interval:199997 us
 
 ```

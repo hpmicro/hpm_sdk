@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022,2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -77,6 +77,11 @@ extern "C"
  */
 
 #ifdef HPM_EN_MATH_DSP_LIB
+
+#ifdef __zcc__
+#include "tpt_math.h"
+#endif
+
 #include "riscv_dsp_statistics_math.h"
 
 // Maximum
@@ -90,7 +95,13 @@ extern "C"
 static inline float32_t hpm_dsp_max_f32(const float32_t *src, uint32_t size, uint32_t *index)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    f32_t res;
+    tpt_max_f32(&res, index, src, size);
+    return res;
+#else
     return riscv_dsp_max_f32(src, size, index);
+#endif
 #endif
 }
 static inline float32_t hpm_dsp_max_val_f32(const float32_t *src, uint32_t size)
@@ -109,7 +120,13 @@ static inline float32_t hpm_dsp_max_val_f32(const float32_t *src, uint32_t size)
 static inline q15_t hpm_dsp_max_q15(const q15_t *src, uint32_t size, uint32_t *index)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    q15_t res;
+    tpt_max_q15(&res, index, src, size);
+    return res;
+#else
     return riscv_dsp_max_q15(src, size, index);
+#endif
 #endif
 }
 
@@ -123,7 +140,13 @@ static inline q15_t hpm_dsp_max_q15(const q15_t *src, uint32_t size, uint32_t *i
 static inline q31_t hpm_dsp_max_q31(const q31_t *src, uint32_t size, uint32_t *index)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+ #ifdef __zcc__
+    q31_t res;
+    tpt_max_q31(&res, index, src, size);
+    return res;
+#else
     return riscv_dsp_max_q31(src, size, index);
+#endif
 #endif
 }
 
@@ -137,7 +160,13 @@ static inline q31_t hpm_dsp_max_q31(const q31_t *src, uint32_t size, uint32_t *i
 static inline q7_t hpm_dsp_max_q7(const q7_t *src, uint32_t size, uint32_t *index)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    q7_t res;
+    tpt_max_q7(&res, index, src, size);
+    return res;
+#else
     return riscv_dsp_max_q7(src, size, index);
+#endif
 #endif
 }
 
@@ -166,7 +195,13 @@ static inline uint8_t hpm_dsp_max_u8(const uint8_t *src, uint32_t size, uint32_t
 static inline float32_t hpm_dsp_min_f32(const float32_t *src, uint32_t size, uint32_t *index)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    f32_t res;
+    tpt_min_f32(&res, index, src, size);
+    return res;
+#else
     return riscv_dsp_min_f32(src, size, index);
+#endif
 #endif
 }
 
@@ -180,7 +215,13 @@ static inline float32_t hpm_dsp_min_f32(const float32_t *src, uint32_t size, uin
 static inline q15_t hpm_dsp_min_q15(const q15_t *src, uint32_t size, uint32_t *index)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    q15_t res;
+    tpt_min_q15(&res, index, src, size);
+    return res;
+#else
     return riscv_dsp_min_q15(src, size, index);
+#endif
 #endif
 }
 
@@ -194,7 +235,13 @@ static inline q15_t hpm_dsp_min_q15(const q15_t *src, uint32_t size, uint32_t *i
 static inline q31_t hpm_dsp_min_q31(const q31_t *src, uint32_t size, uint32_t *index)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    q31_t res;
+    tpt_min_q31(&res, index, src, size);
+    return res;
+#else
     return riscv_dsp_min_q31(src, size, index);
+#endif
 #endif
 }
 
@@ -208,7 +255,13 @@ static inline q31_t hpm_dsp_min_q31(const q31_t *src, uint32_t size, uint32_t *i
 static inline q7_t hpm_dsp_min_q7(const q7_t *src, uint32_t size, uint32_t *index)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    q7_t res;
+    tpt_min_q7(&res, index, src, size);
+    return res;
+#else
     return riscv_dsp_min_q7(src, size, index);
+#endif
 #endif
 }
 
@@ -236,7 +289,13 @@ static inline uint8_t hpm_dsp_min_u8(const uint8_t *src, uint32_t size, uint32_t
 static inline float32_t hpm_dsp_mean_f32(const float32_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    f32_t res;
+    tpt_mean_f32(&res, src, size);
+    return res;
+#else
     return riscv_dsp_mean_f32(src, size);
+#endif
 #endif
 }
 
@@ -254,7 +313,13 @@ static inline float32_t hpm_dsp_mean_f32(const float32_t *src, uint32_t size)
 static inline q15_t hpm_dsp_mean_q15(const q15_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    q15_t res;
+    tpt_mean_q15(&res, src, size);
+    return res;
+#else
     return riscv_dsp_mean_q15(src, size);
+#endif
 #endif
 }
 
@@ -272,7 +337,13 @@ static inline q15_t hpm_dsp_mean_q15(const q15_t *src, uint32_t size)
 static inline q31_t hpm_dsp_mean_q31(const q31_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    q31_t res;
+    tpt_mean_q31(&res, src, size);
+    return res;
+#else
     return riscv_dsp_mean_q31(src, size);
+#endif
 #endif
 }
 
@@ -290,7 +361,13 @@ static inline q31_t hpm_dsp_mean_q31(const q31_t *src, uint32_t size)
 static inline q7_t hpm_dsp_mean_q7(const q7_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    q7_t res;
+    tpt_mean_q7(&res, src, size);
+    return res;
+#else
     return riscv_dsp_mean_q7(src, size);
+#endif
 #endif
 }
 
@@ -320,7 +397,13 @@ static inline uint8_t hpm_dsp_mean_u8(const uint8_t *src, uint32_t size)
 static inline float32_t hpm_dsp_pwr_f32(const float32_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    f32_t res;
+    tpt_power_f32(&res, src, size);
+    return res;
+#else
     return riscv_dsp_pwr_f32(src, size);
+#endif
 #endif
 }
 
@@ -339,7 +422,13 @@ static inline float32_t hpm_dsp_pwr_f32(const float32_t *src, uint32_t size)
 static inline q63_t hpm_dsp_pwr_q15(const q15_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    q63_t res;
+    tpt_power_q15(&res, src, size);
+    return res;
+#else
     return riscv_dsp_pwr_q15(src, size);
+#endif
 #endif
 }
 
@@ -359,7 +448,13 @@ static inline q63_t hpm_dsp_pwr_q15(const q15_t *src, uint32_t size)
 static inline q63_t hpm_dsp_pwr_q31(const q31_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    q63_t res;
+    tpt_power_q31(&res, src, size);
+    return res;
+#else
     return riscv_dsp_pwr_q31(src, size);
+#endif
 #endif
 }
 
@@ -378,7 +473,13 @@ static inline q63_t hpm_dsp_pwr_q31(const q31_t *src, uint32_t size)
 static inline q31_t hpm_dsp_pwr_q7(const q7_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    q31_t res;
+    tpt_power_q7(&res, src, size);
+    return res;
+#else
     return riscv_dsp_pwr_q7(src, size);
+#endif
 #endif
 }
 
@@ -392,7 +493,13 @@ static inline q31_t hpm_dsp_pwr_q7(const q7_t *src, uint32_t size)
 static inline float32_t hpm_dsp_rms_f32(const float32_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    f32_t res;
+    tpt_rms_f32(&res, src, size);
+    return res;
+#else
     return riscv_dsp_rms_f32(src, size);
+#endif
 #endif
 }
 
@@ -412,7 +519,13 @@ static inline float32_t hpm_dsp_rms_f32(const float32_t *src, uint32_t size)
 static inline q15_t hpm_dsp_rms_q15(const q15_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    q15_t res;
+    tpt_rms_q15(&res, src, size);
+    return res;
+#else
     return riscv_dsp_rms_q15(src, size);
+#endif
 #endif
 }
 
@@ -432,7 +545,13 @@ static inline q15_t hpm_dsp_rms_q15(const q15_t *src, uint32_t size)
 static inline q31_t hpm_dsp_rms_q31(const q31_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    q31_t res;
+    tpt_rms_q31(&res, src, size);
+    return res;
+#else
     return riscv_dsp_rms_q31(src, size);
+#endif
 #endif
 }
 
@@ -446,7 +565,13 @@ static inline q31_t hpm_dsp_rms_q31(const q31_t *src, uint32_t size)
 static inline float32_t hpm_dsp_std_f32(const float32_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    f32_t res;
+    tpt_std_f32(&res, src, size);
+    return res;
+#else
     return riscv_dsp_std_f32(src, size);
+#endif
 #endif
 }
 
@@ -466,7 +591,13 @@ static inline float32_t hpm_dsp_std_f32(const float32_t *src, uint32_t size)
 static inline q15_t hpm_dsp_std_q15(const q15_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    q15_t res;
+    tpt_std_q15(&res, src, size);
+    return res;
+#else
     return riscv_dsp_std_q15(src, size);
+#endif
 #endif
 }
 
@@ -486,7 +617,13 @@ static inline q15_t hpm_dsp_std_q15(const q15_t *src, uint32_t size)
 static inline q31_t hpm_dsp_std_q31(const q31_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    q31_t res;
+    tpt_std_q31(&res, src, size);
+    return res;
+#else
     return riscv_dsp_std_q31(src, size);
+#endif
 #endif
 }
 
@@ -519,7 +656,13 @@ static inline q15_t hpm_dsp_std_u8(const uint8_t *src, uint32_t size)
 static inline float32_t hpm_dsp_var_f32(const float32_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    f32_t res;
+    tpt_var_f32(&res, src, size);
+    return res;
+#else
     return riscv_dsp_var_f32(src, size);
+#endif
 #endif
 }
 
@@ -539,7 +682,13 @@ static inline float32_t hpm_dsp_var_f32(const float32_t *src, uint32_t size)
 static inline q31_t hpm_dsp_var_q15(const q15_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    q15_t res;
+    tpt_var_q15(&res, src, size);
+    return res;
+#else
     return riscv_dsp_var_q15(src, size);
+#endif
 #endif
 }
 
@@ -559,7 +708,13 @@ static inline q31_t hpm_dsp_var_q15(const q15_t *src, uint32_t size)
 static inline q63_t hpm_dsp_var_q31(const q31_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    q31_t res;
+    tpt_var_q31(&res, src, size);
+    return res;
+#else
     return riscv_dsp_var_q31(src, size);
+#endif
 #endif
 }
 
@@ -574,7 +729,11 @@ static inline q63_t hpm_dsp_var_q31(const q31_t *src, uint32_t size)
 static inline float32_t hpm_dsp_entropy_f32(const float32_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_entropy_f32(src, size);
+#else
     return riscv_dsp_entropy_f32(src, size);
+#endif
 #endif
 }
 
@@ -593,7 +752,11 @@ static inline float32_t hpm_dsp_entropy_f32(const float32_t *src, uint32_t size)
 static inline float32_t hpm_dsp_relative_entropy_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_relative_entropy_f32(src1, src2, size);
+#else
     return riscv_dsp_relative_entropy_f32(src1, src2, size);
+#endif
 #endif
 }
 
@@ -607,7 +770,11 @@ static inline float32_t hpm_dsp_relative_entropy_f32(const float32_t *src1, cons
 static inline float32_t hpm_dsp_lse_f32(const float32_t *src, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_lse_f32(src, size);
+#else
     return riscv_dsp_lse_f32(src, size);
+#endif
 #endif
 }
 
@@ -623,7 +790,11 @@ static inline float32_t hpm_dsp_lse_f32(const float32_t *src, uint32_t size)
 static inline float32_t hpm_dsp_lse_dprod_f32(const float32_t *src1, const float32_t *src2, uint32_t size, float32_t *buffer)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_lse_dprod_f32(src1, src2, size, buffer);
+#else
     return riscv_dsp_lse_dprod_f32(src1, src2, size, buffer);
+#endif
 #endif
 }
 
@@ -771,6 +942,11 @@ static inline q7_t hpm_dsp_absmin_q7(const q7_t* src, uint32_t size, uint32_t* i
  * @{
  */
 #ifdef HPM_EN_MATH_DSP_LIB
+
+#ifdef __zcc__
+#include "tpt_math.h"
+#endif
+
 #include "riscv_dsp_basic_math.h"
 
 // Absolute value
@@ -783,7 +959,11 @@ static inline q7_t hpm_dsp_absmin_q7(const q7_t* src, uint32_t size, uint32_t* i
 static inline void hpm_dsp_abs_f32(float32_t *src, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_abs_f32(dst, src, size);
+#else
     riscv_dsp_abs_f32(src, dst, size);
+#endif
 #endif
 }
 
@@ -799,7 +979,12 @@ static inline void hpm_dsp_abs_f32(float32_t *src, float32_t *dst, uint32_t size
 static inline void hpm_dsp_abs_q31(q31_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_abs_q31(dst, src, size);
+#else
     riscv_dsp_abs_q31(src, dst, size);
+#endif
+
 #endif
 }
 
@@ -815,7 +1000,11 @@ static inline void hpm_dsp_abs_q31(q31_t *src, q31_t *dst, uint32_t size)
 static inline void hpm_dsp_abs_q15(q15_t *src, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_abs_q15(dst, src, size);
+#else
     riscv_dsp_abs_q15(src, dst, size);
+#endif
 #endif
 }
 
@@ -831,7 +1020,11 @@ static inline void hpm_dsp_abs_q15(q15_t *src, q15_t *dst, uint32_t size)
 static inline void hpm_dsp_abs_q7(q7_t *src, q7_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_abs_q7(dst, src, size);
+#else
     riscv_dsp_abs_q7(src, dst, size);
+#endif
 #endif
 }
 
@@ -846,7 +1039,11 @@ static inline void hpm_dsp_abs_q7(q7_t *src, q7_t *dst, uint32_t size)
 static inline void hpm_dsp_add_f32(float32_t *src1, float32_t *src2, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_add_f32(dst, src1, src2, size);
+#else
     riscv_dsp_add_f32(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -862,7 +1059,11 @@ static inline void hpm_dsp_add_f32(float32_t *src1, float32_t *src2, float32_t *
 static inline void hpm_dsp_add_q31(q31_t *src1, q31_t *src2, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_add_q31(dst, src1, src2, size);
+#else
     riscv_dsp_add_q31(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -878,7 +1079,11 @@ static inline void hpm_dsp_add_q31(q31_t *src1, q31_t *src2, q31_t *dst, uint32_
 static inline void hpm_dsp_add_q15(q15_t *src1, q15_t *src2, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_add_q15(dst, src1, src2, size);
+#else
     riscv_dsp_add_q15(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -894,7 +1099,11 @@ static inline void hpm_dsp_add_q15(q15_t *src1, q15_t *src2, q15_t *dst, uint32_
 static inline void hpm_dsp_add_q7(q7_t *src1, q7_t *src2, q7_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_add_q7(dst, src1, src2, size);
+#else
     riscv_dsp_add_q7(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -910,7 +1119,11 @@ static inline void hpm_dsp_add_q7(q7_t *src1, q7_t *src2, q7_t *dst, uint32_t si
 static inline void hpm_dsp_add_u8_u16(uint8_t *src1, uint8_t *src2, uint16_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_add_u8_u16(dst, src1, src2, size);
+#else
     riscv_dsp_add_u8_u16(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -925,7 +1138,11 @@ static inline void hpm_dsp_add_u8_u16(uint8_t *src1, uint8_t *src2, uint16_t *ds
 static inline void hpm_dsp_sub_f32(float32_t *src1, float32_t *src2, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_sub_f32(dst, src1, src2, size);
+#else
     riscv_dsp_sub_f32(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -941,7 +1158,11 @@ static inline void hpm_dsp_sub_f32(float32_t *src1, float32_t *src2, float32_t *
 static inline void hpm_dsp_sub_q31(q31_t *src1, q31_t *src2, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_sub_q31(dst, src1, src2, size);
+#else
     riscv_dsp_sub_q31(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -957,7 +1178,11 @@ static inline void hpm_dsp_sub_q31(q31_t *src1, q31_t *src2, q31_t *dst, uint32_
 static inline void hpm_dsp_sub_q15(q15_t *src1, q15_t *src2, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_sub_q15(dst, src1, src2, size);
+#else
     riscv_dsp_sub_q15(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -973,7 +1198,11 @@ static inline void hpm_dsp_sub_q15(q15_t *src1, q15_t *src2, q15_t *dst, uint32_
 static inline void hpm_dsp_sub_q7(q7_t *src1, q7_t *src2, q7_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_sub_q7(dst, src1, src2, size);
+#else
     riscv_dsp_sub_q7(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -1004,7 +1233,11 @@ static inline void hpm_dsp_sub_u8_q7(uint8_t *src1, uint8_t *src2, q7_t *dst, ui
 static inline void hpm_dsp_mul_f32(float32_t *src1, float32_t *src2, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_mult_f32(dst, src1, src2, size);
+#else
     riscv_dsp_mul_f32(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -1020,7 +1253,11 @@ static inline void hpm_dsp_mul_f32(float32_t *src1, float32_t *src2, float32_t *
 static inline void hpm_dsp_mul_q31(q31_t *src1, q31_t *src2, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_mult_q31(dst, src1, src2, size);
+#else
     riscv_dsp_mul_q31(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -1036,7 +1273,11 @@ static inline void hpm_dsp_mul_q31(q31_t *src1, q31_t *src2, q31_t *dst, uint32_
 static inline void hpm_dsp_mul_q15(q15_t *src1, q15_t *src2, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_mult_q15(dst, src1, src2, size);
+#else
     riscv_dsp_mul_q15(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -1052,7 +1293,11 @@ static inline void hpm_dsp_mul_q15(q15_t *src1, q15_t *src2, q15_t *dst, uint32_
 static inline void hpm_dsp_mul_q7(q7_t *src1, q7_t *src2, q7_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_mult_q7(dst, src1, src2, size);
+#else
     riscv_dsp_mul_q7(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -1083,7 +1328,11 @@ static inline void hpm_dsp_mul_u8_u16(uint8_t *src1, uint8_t *src2, uint16_t *ds
 static inline void hpm_dsp_div_f32(float32_t *src1, float32_t *src2, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_div_f32(dst, src1, src2, size);
+#else
     riscv_dsp_div_f32(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -1096,7 +1345,11 @@ static inline void hpm_dsp_div_f32(float32_t *src1, float32_t *src2, float32_t *
 static inline q31_t hpm_dsp_div_q31(q31_t src1, q31_t src2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_div_q31(src1, src2);
+#else
     return riscv_dsp_div_q31(src1, src2);
+#endif
 #endif
 }
 
@@ -1109,7 +1362,11 @@ static inline q31_t hpm_dsp_div_q31(q31_t src1, q31_t src2)
 static inline q31_t hpm_dsp_div_s64_u32(q63_t src1, uint32_t src2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_div_s64_u32(src1, src2);
+#else
     return riscv_dsp_div_s64_u32(src1, src2);
+#endif
 #endif
 }
 
@@ -1122,7 +1379,11 @@ static inline q31_t hpm_dsp_div_s64_u32(q63_t src1, uint32_t src2)
 static inline q31_t hpm_dsp_div_u64_u32(uint64_t src1, uint32_t src2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_div_u64_u32(src1, src2);
+#else
     return riscv_dsp_div_u64_u32(src1, src2);
+#endif
 #endif
 }
 
@@ -1136,7 +1397,11 @@ static inline q31_t hpm_dsp_div_u64_u32(uint64_t src1, uint32_t src2)
 static inline void hpm_dsp_neg_f32(float32_t *src, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_negate_f32(dst, src, size);
+#else
     riscv_dsp_neg_f32(src, dst, size);
+#endif
 #endif
 }
 
@@ -1152,7 +1417,11 @@ static inline void hpm_dsp_neg_f32(float32_t *src, float32_t *dst, uint32_t size
 static inline void hpm_dsp_neg_q31(q31_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_negate_q31(dst, src, size);
+#else
     riscv_dsp_neg_q31(src, dst, size);
+#endif
 #endif
 }
 
@@ -1168,7 +1437,11 @@ static inline void hpm_dsp_neg_q31(q31_t *src, q31_t *dst, uint32_t size)
 static inline void hpm_dsp_neg_q15(q15_t *src, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_negate_q15(dst, src, size);
+#else
     riscv_dsp_neg_q15(src, dst, size);
+#endif
 #endif
 }
 
@@ -1184,7 +1457,11 @@ static inline void hpm_dsp_neg_q15(q15_t *src, q15_t *dst, uint32_t size)
 static inline void hpm_dsp_neg_q7(q7_t *src, q7_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_negate_q7(dst, src, size);
+#else
     riscv_dsp_neg_q7(src, dst, size);
+#endif
 #endif
 }
 
@@ -1199,7 +1476,13 @@ static inline void hpm_dsp_neg_q7(q7_t *src, q7_t *dst, uint32_t size)
 static inline float32_t hpm_dsp_dprod_f32(float32_t *src1, float32_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    f32_t res;
+    tpt_dot_prod_f32(&res, src1, src2, size);
+    return res;
+#else
     return riscv_dsp_dprod_f32(src1, src2, size);
+#endif
 #endif
 }
 
@@ -1218,7 +1501,13 @@ static inline float32_t hpm_dsp_dprod_f32(float32_t *src1, float32_t *src2, uint
 static inline q63_t hpm_dsp_dprod_q31(q31_t *src1, q31_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    q63_t res;
+    tpt_dot_prod_q31(&res, src1, src2, size);
+    return res;
+#else
     return riscv_dsp_dprod_q31(src1, src2, size);
+#endif
 #endif
 }
 
@@ -1235,7 +1524,13 @@ static inline q63_t hpm_dsp_dprod_q31(q31_t *src1, q31_t *src2, uint32_t size)
 static inline q63_t hpm_dsp_dprod_q15(q15_t *src1, q15_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    q63_t res;
+    tpt_dot_prod_q15(&res, src1, src2, size);
+    return res;
+#else
     return riscv_dsp_dprod_q15(src1, src2, size);
+#endif
 #endif
 }
 
@@ -1271,7 +1566,13 @@ static inline q31_t hpm_dsp_dprod_u8xq15(uint8_t *src1, q15_t *src2, uint32_t si
 static inline q31_t hpm_dsp_dprod_q7(q7_t *src1, q7_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    q31_t res;
+    tpt_dot_prod_q7(&res, src1, src2, size);
+    return res;
+#else
     return riscv_dsp_dprod_q7(src1, src2, size);
+#endif
 #endif
 }
 
@@ -1320,7 +1621,11 @@ static inline uint32_t hpm_dsp_dprod_u8(uint8_t *src1, uint8_t *src2, uint32_t s
 static inline void hpm_dsp_offset_f32(float32_t *src, float32_t offset, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_offset_f32(dst, src, offset, size);
+#else
     riscv_dsp_offset_f32(src, offset, dst, size);
+#endif
 #endif
 }
 
@@ -1336,7 +1641,11 @@ static inline void hpm_dsp_offset_f32(float32_t *src, float32_t offset, float32_
 static inline void hpm_dsp_offset_q31(q31_t *src, q31_t offset, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_offset_q31(dst, src, offset, size);
+#else
     riscv_dsp_offset_q31(src, offset, dst, size);
+#endif
 #endif
 }
 
@@ -1352,7 +1661,11 @@ static inline void hpm_dsp_offset_q31(q31_t *src, q31_t offset, q31_t *dst, uint
 static inline void hpm_dsp_offset_q15(q15_t *src, q15_t offset, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_offset_q15(dst, src, offset, size);
+#else
     riscv_dsp_offset_q15(src, offset, dst, size);
+#endif
 #endif
 }
 
@@ -1368,7 +1681,11 @@ static inline void hpm_dsp_offset_q15(q15_t *src, q15_t offset, q15_t *dst, uint
 static inline void hpm_dsp_offset_q7(q7_t *src, q7_t offset, q7_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_offset_q7(dst, src, offset, size);
+#else
     riscv_dsp_offset_q7(src, offset, dst, size);
+#endif
 #endif
 }
 
@@ -1399,7 +1716,11 @@ static inline void hpm_dsp_offset_u8(uint8_t *src, q7_t offset, uint8_t *dst, ui
 static inline void hpm_dsp_scale_f32(float32_t *src, float32_t scale, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_scale_f32(dst, src, scale, size);
+#else
     riscv_dsp_scale_f32(src, scale, dst, size);
+#endif
 #endif
 }
 
@@ -1418,7 +1739,11 @@ static inline void hpm_dsp_scale_f32(float32_t *src, float32_t scale, float32_t 
 static inline void hpm_dsp_scale_q31(q31_t *src, q31_t scalefract, int8_t shift, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_scale_q31(dst, src, scalefract, shift, size);
+#else
     riscv_dsp_scale_q31(src, scalefract, shift, dst, size);
+#endif
 #endif
 }
 
@@ -1437,7 +1762,11 @@ static inline void hpm_dsp_scale_q31(q31_t *src, q31_t scalefract, int8_t shift,
 static inline void hpm_dsp_scale_q15(q15_t *src, q15_t scalefract, int8_t shift, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_scale_q15(dst, src, scalefract, shift, size);
+#else
     riscv_dsp_scale_q15(src, scalefract, shift, dst, size);
+#endif
 #endif
 }
 
@@ -1456,7 +1785,11 @@ static inline void hpm_dsp_scale_q15(q15_t *src, q15_t scalefract, int8_t shift,
 static inline void hpm_dsp_scale_q7(q7_t *src, q7_t scalefract, int8_t shift, q7_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_scale_q7(dst, src, scalefract, shift, size);
+#else
     riscv_dsp_scale_q7(src, scalefract, shift, dst, size);
+#endif
 #endif
 }
 
@@ -1492,7 +1825,11 @@ static inline void hpm_dsp_scale_u8(uint8_t *src, q7_t scalefract, int8_t shift,
 static inline void hpm_dsp_shift_q15(q15_t *src, int8_t shift, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_shift_q15(dst, src, shift, size);
+#else
     riscv_dsp_shift_q15(src, shift, dst, size);
+#endif
 #endif
 }
 
@@ -1509,7 +1846,11 @@ static inline void hpm_dsp_shift_q15(q15_t *src, int8_t shift, q15_t *dst, uint3
 static inline void hpm_dsp_shift_q31(q31_t *src, int8_t shift, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_shift_q31(dst, src, shift, size);
+#else
     riscv_dsp_shift_q31(src, shift, dst, size);
+#endif
 #endif
 }
 
@@ -1526,7 +1867,11 @@ static inline void hpm_dsp_shift_q31(q31_t *src, int8_t shift, q31_t *dst, uint3
 static inline void hpm_dsp_shift_q7(q7_t *src, int8_t shift, q7_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_shift_q7(dst, src, shift, size);
+#else
     riscv_dsp_shift_q7(src, shift, dst, size);
+#endif
 #endif
 }
 
@@ -1563,7 +1908,11 @@ static inline void hpm_dsp_shift_u8(uint8_t *src, int8_t shift, uint8_t *dst, ui
 static inline void hpm_dsp_clip_f32(float32_t *src, float32_t *dst, float32_t low, float32_t high, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_clip_f32(dst, src, low, high, size);
+#else
     riscv_dsp_clip_f32(src, dst, low, high, size);
+#endif
 #endif
 }
 /**
@@ -1578,7 +1927,11 @@ static inline void hpm_dsp_clip_f32(float32_t *src, float32_t *dst, float32_t lo
 static inline void hpm_dsp_clip_q31(q31_t *src, q31_t *dst, q31_t low, q31_t high, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_clip_q31(dst, src, low, high, size);
+#else
     riscv_dsp_clip_q31(src, dst, low, high, size);
+#endif
 #endif
 }
 /**
@@ -1593,7 +1946,11 @@ static inline void hpm_dsp_clip_q31(q31_t *src, q31_t *dst, q31_t low, q31_t hig
 static inline void hpm_dsp_clip_q15(q15_t *src, q15_t *dst, q15_t low, q15_t high, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_clip_q15(dst, src, low, high, size);
+#else
     riscv_dsp_clip_q15(src, dst, low, high, size);
+#endif
 #endif
 }
 /**
@@ -1608,7 +1965,11 @@ static inline void hpm_dsp_clip_q15(q15_t *src, q15_t *dst, q15_t low, q15_t hig
 static inline void hpm_dsp_clip_q7(q7_t *src, q7_t *dst, q7_t low, q7_t high, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_clip_q7(dst, src, low, high, size);
+#else
     riscv_dsp_clip_q7(src, dst, low, high, size);
+#endif
 #endif
 }
 /** @} basic_clip */
@@ -1637,7 +1998,11 @@ static inline void hpm_dsp_clip_q7(q7_t *src, q7_t *dst, q7_t low, q7_t high, ui
 static inline void hpm_dsp_and_u32(u32_t *src1, u32_t *src2, u32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_and_32bit(dst, src1, src2, size);
+#else
     riscv_dsp_and_u32(src1, src2, dst, size);
+#endif
 #endif
 }
 /**
@@ -1651,7 +2016,11 @@ static inline void hpm_dsp_and_u32(u32_t *src1, u32_t *src2, u32_t *dst, uint32_
 static inline void hpm_dsp_and_u8(u8_t *src1, u8_t *src2, u8_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_and_8bit(dst, src1, src2, size);
+#else
     riscv_dsp_and_u8(src1, src2, dst, size);
+#endif
 #endif
 }
 /** @} basic_and */
@@ -1680,7 +2049,11 @@ static inline void hpm_dsp_and_u8(u8_t *src1, u8_t *src2, u8_t *dst, uint32_t si
 static inline void hpm_dsp_or_u32(u32_t *src1, u32_t *src2, u32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_or_32bit(dst, src1, src2, size);
+#else
     riscv_dsp_or_u32(src1, src2, dst, size);
+#endif
 #endif
 }
 /**
@@ -1694,7 +2067,11 @@ static inline void hpm_dsp_or_u32(u32_t *src1, u32_t *src2, u32_t *dst, uint32_t
 static inline void hpm_dsp_or_u16(u16_t *src1, u16_t *src2, u16_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_or_16bit(dst, src1, src2, size);
+#else
     riscv_dsp_or_u16(src1, src2, dst, size);
+#endif
 #endif
 }
 /**
@@ -1708,7 +2085,11 @@ static inline void hpm_dsp_or_u16(u16_t *src1, u16_t *src2, u16_t *dst, uint32_t
 static inline void hpm_dsp_or_u8(u8_t *src1, u8_t *src2, u8_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_or_8bit(dst, src1, src2, size);
+#else
     riscv_dsp_or_u8(src1, src2, dst, size);
+#endif
 #endif
 }
 /** @} basic_or */
@@ -1737,7 +2118,11 @@ static inline void hpm_dsp_or_u8(u8_t *src1, u8_t *src2, u8_t *dst, uint32_t siz
 static inline void hpm_dsp_xor_u32(u32_t *src1, u32_t *src2, u32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_xor_32bit(dst, src1, src2, size);
+#else
     riscv_dsp_xor_u32(src1, src2, dst, size);
+#endif
 #endif
 }
 /**
@@ -1751,7 +2136,11 @@ static inline void hpm_dsp_xor_u32(u32_t *src1, u32_t *src2, u32_t *dst, uint32_
 static inline void hpm_dsp_xor_u16(u16_t *src1, u16_t *src2, u16_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_xor_16bit(dst, src1, src2, size);
+#else
     riscv_dsp_xor_u16(src1, src2, dst, size);
+#endif
 #endif
 }
 /**
@@ -1765,7 +2154,11 @@ static inline void hpm_dsp_xor_u16(u16_t *src1, u16_t *src2, u16_t *dst, uint32_
 static inline void hpm_dsp_xor_u8(u8_t *src1, u8_t *src2, u8_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_xor_8bit(dst, src1, src2, size);
+#else
     riscv_dsp_xor_u8(src1, src2, dst, size);
+#endif
 #endif
 }
 /** @} basic_xor */
@@ -1793,7 +2186,11 @@ static inline void hpm_dsp_xor_u8(u8_t *src1, u8_t *src2, u8_t *dst, uint32_t si
 static inline void hpm_dsp_not_u32(u32_t *src, u32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_not_32bit(dst, src, size);
+#else
     riscv_dsp_not_u32(src, dst, size);
+#endif
 #endif
 }
 /**
@@ -1806,7 +2203,11 @@ static inline void hpm_dsp_not_u32(u32_t *src, u32_t *dst, uint32_t size)
 static inline void hpm_dsp_not_u16(u16_t *src, u16_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_not_16bit(dst, src, size);
+#else
     riscv_dsp_not_u16(src, dst, size);
+#endif
 #endif
 }
 /**
@@ -1819,7 +2220,11 @@ static inline void hpm_dsp_not_u16(u16_t *src, u16_t *dst, uint32_t size)
 static inline void hpm_dsp_not_u8(u8_t *src, u8_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_not_8bit(dst, src, size);
+#else
     riscv_dsp_not_u8(src, dst, size);
+#endif
 #endif
 }
 /** @} basic_not */
@@ -1876,6 +2281,11 @@ uint32_t hpm_math_sw_reverse_bit32_msb_to_lsb(uint32_t msb);
  */
 
 #ifdef HPM_EN_MATH_DSP_LIB
+
+#ifdef __zcc__
+#include "tpt_math.h"
+#endif
+
 #include "riscv_dsp_complex_math.h"
 
 // Complex Conjugate
@@ -1888,7 +2298,11 @@ uint32_t hpm_math_sw_reverse_bit32_msb_to_lsb(uint32_t msb);
 static inline void hpm_dsp_cconj_f32(const float32_t *src, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_cmplx_conj_f32(dst, src, size);
+#else
     riscv_dsp_cconj_f32(src, dst, size);
+#endif
 #endif
 }
 
@@ -1904,7 +2318,11 @@ static inline void hpm_dsp_cconj_f32(const float32_t *src, float32_t *dst, uint3
 static inline void hpm_dsp_cconj_q15(const q15_t *src, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_cmplx_conj_q15(dst, src, size);
+#else
     riscv_dsp_cconj_q15(src, dst, size);
+#endif
 #endif
 }
 
@@ -1920,7 +2338,11 @@ static inline void hpm_dsp_cconj_q15(const q15_t *src, q15_t *dst, uint32_t size
 static inline void hpm_dsp_cconj_q31(const q31_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_cmplx_conj_q31(dst, src, size);
+#else
     riscv_dsp_cconj_q31(src, dst, size);
+#endif
 #endif
 }
 
@@ -1950,7 +2372,11 @@ static inline void hpm_dsp_cdprod_f32(const float32_t *src1, const float32_t *sr
 static inline void hpm_dsp_cdprod_typ2_f32(const float32_t *src1, const float32_t *src2, uint32_t size, float32_t *rout, float32_t *iout)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_cmplx_dot_prod_f32(rout, iout, src1, src2, size);
+#else
     riscv_dsp_cdprod_typ2_f32(src1, src2, size, rout, iout);
+#endif
 #endif
 }
 
@@ -2021,7 +2447,11 @@ static inline void hpm_dsp_cdprod_q31(const q31_t *src1, const q31_t *src2, uint
 static inline void hpm_dsp_cdprod_typ2_q31(const q31_t *src1, const q31_t *src2, uint32_t size, q63_t *rout, q63_t *iout)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_cmplx_dot_prod_q31(rout, iout, src1, src2, size);
+#else
     riscv_dsp_cdprod_typ2_q31(src1, src2, size, rout, iout);
+#endif
 #endif
 }
 
@@ -2035,7 +2465,11 @@ static inline void hpm_dsp_cdprod_typ2_q31(const q31_t *src1, const q31_t *src2,
 static inline void hpm_dsp_cmag_f32(const float32_t *src, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_cmplx_mag_f32(dst, src, size);
+#else
     riscv_dsp_cmag_f32(src, dst, size);
+#endif
 #endif
 }
 
@@ -2051,7 +2485,11 @@ static inline void hpm_dsp_cmag_f32(const float32_t *src, float32_t *dst, uint32
 static inline void hpm_dsp_cmag_q15(const q15_t *src, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_cmplx_mag_q15(dst, src, size);
+#else
     riscv_dsp_cmag_q15(src, dst, size);
+#endif
 #endif
 }
 
@@ -2067,7 +2505,11 @@ static inline void hpm_dsp_cmag_q15(const q15_t *src, q15_t *dst, uint32_t size)
 static inline void hpm_dsp_cmag_q31(const q31_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_cmplx_mag_q31(dst, src, size);
+#else
     riscv_dsp_cmag_q31(src, dst, size);
+#endif
 #endif
 }
 
@@ -2082,7 +2524,11 @@ static inline void hpm_dsp_cmag_q31(const q31_t *src, q31_t *dst, uint32_t size)
 static inline void hpm_dsp_cmag_sqr_f32(const float32_t *src, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_cmplx_mag_squared_f32(dst, src, size);
+#else
     riscv_dsp_cmag_sqr_f32(src, dst, size);
+#endif
 #endif
 }
 
@@ -2098,7 +2544,11 @@ static inline void hpm_dsp_cmag_sqr_f32(const float32_t *src, float32_t *dst, ui
 static inline void hpm_dsp_cmag_sqr_q15(const q15_t *src, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_cmplx_mag_squared_q15(dst, src, size);
+#else
     riscv_dsp_cmag_sqr_q15(src, dst, size);
+#endif
 #endif
 }
 
@@ -2114,7 +2564,11 @@ static inline void hpm_dsp_cmag_sqr_q15(const q15_t *src, q15_t *dst, uint32_t s
 static inline void hpm_dsp_cmag_sqr_q31(const q31_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_cmplx_mag_squared_q31(dst, src, size);
+#else
     riscv_dsp_cmag_sqr_q31(src, dst, size);
+#endif
 #endif
 }
 
@@ -2129,7 +2583,11 @@ static inline void hpm_dsp_cmag_sqr_q31(const q31_t *src, q31_t *dst, uint32_t s
 static inline void hpm_dsp_cmul_f32(const float32_t *src1, const float32_t *src2, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_cmplx_mult_cmplx_f32(dst, src1, src2, size);
+#else
     riscv_dsp_cmul_f32(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -2146,7 +2604,11 @@ static inline void hpm_dsp_cmul_f32(const float32_t *src1, const float32_t *src2
 static inline void hpm_dsp_cmul_q15(const q15_t *src1, const q15_t *src2, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_cmplx_mult_cmplx_q15(dst, src1, src2, size);
+#else
     riscv_dsp_cmul_q15(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -2163,7 +2625,11 @@ static inline void hpm_dsp_cmul_q15(const q15_t *src1, const q15_t *src2, q15_t 
 static inline void hpm_dsp_cmul_q31(const q31_t *src1, const q31_t *src2, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_cmplx_mult_cmplx_q31(dst, src1, src2, size);
+#else
     riscv_dsp_cmul_q31(src1, src2, dst, size);
+#endif
 #endif
 }
 
@@ -2178,7 +2644,11 @@ static inline void hpm_dsp_cmul_q31(const q31_t *src1, const q31_t *src2, q31_t 
 static inline void hpm_dsp_cmul_real_f32(const float32_t *src, const float32_t *real, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_cmplx_mult_real_f32(dst, src, real, size);
+#else
     riscv_dsp_cmul_real_f32(src, real, dst, size);
+#endif
 #endif
 }
 
@@ -2194,7 +2664,11 @@ static inline void hpm_dsp_cmul_real_f32(const float32_t *src, const float32_t *
 static inline void hpm_dsp_cmul_real_q15(const q15_t *src, const q15_t *real, q15_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_cmplx_mult_real_q15(dst, src, real, size);
+#else
     riscv_dsp_cmul_real_q15(src, real, dst, size);
+#endif
 #endif
 }
 
@@ -2210,7 +2684,11 @@ static inline void hpm_dsp_cmul_real_q15(const q15_t *src, const q15_t *real, q1
 static inline void hpm_dsp_cmul_real_q31(const q31_t *src, const q31_t *real, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_cmplx_mult_real_q31(dst, src, real, size);
+#else
     riscv_dsp_cmul_real_q31(src, real, dst, size);
+#endif
 #endif
 }
 #endif
@@ -2469,7 +2947,9 @@ static inline void hpm_dsp_init_pid_q15(riscv_dsp_pid_q15_t *instance, int32_t s
  * @{
  */
 #ifdef HPM_EN_MATH_DSP_LIB
-
+#ifdef __zcc__
+#include "tpt_math.h"
+#endif
 #include "riscv_dsp_distance_math.h"
 
 
@@ -2483,7 +2963,11 @@ static inline void hpm_dsp_init_pid_q15(riscv_dsp_pid_q15_t *instance, int32_t s
 static inline float32_t hpm_dsp_dist_bray_curtis_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_braycurtis_distance_f32(src1, src2, size);
+#else
     return riscv_dsp_dist_bray_curtis_f32(src1, src2, size);
+#endif
 #endif
 }
 
@@ -2497,7 +2981,11 @@ static inline float32_t hpm_dsp_dist_bray_curtis_f32(const float32_t *src1, cons
 static inline float32_t hpm_dsp_dist_canberra_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_canberra_distance_f32(src1, src2, size);
+#else
     return riscv_dsp_dist_canberra_f32(src1, src2, size);
+#endif
 #endif
 }
 
@@ -2511,7 +2999,11 @@ static inline float32_t hpm_dsp_dist_canberra_f32(const float32_t *src1, const f
 static inline float32_t hpm_dsp_dist_chebyshev_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_chebyshev_distance_f32(src1, src2, size);
+#else
     return riscv_dsp_dist_chebyshev_f32(src1, src2, size);
+#endif
 #endif
 }
 
@@ -2525,7 +3017,11 @@ static inline float32_t hpm_dsp_dist_chebyshev_f32(const float32_t *src1, const 
 static inline float32_t hpm_dsp_dist_city_block_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_cityblock_distance_f32(src1, src2, size);
+#else
     return riscv_dsp_dist_city_block_f32(src1, src2, size);
+#endif
 #endif
 }
 
@@ -2539,7 +3035,11 @@ static inline float32_t hpm_dsp_dist_city_block_f32(const float32_t *src1, const
 static inline float32_t hpm_dsp_dist_corr_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_correlation_distance_f32(src1, src2, size);
+#else
     return riscv_dsp_dist_corr_f32(src1, src2, size);
+#endif
 #endif
 }
 
@@ -2553,7 +3053,11 @@ static inline float32_t hpm_dsp_dist_corr_f32(const float32_t *src1, const float
 static inline float32_t hpm_dsp_dist_cos_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_cosine_distance_f32(src1, src2, size);
+#else
     return riscv_dsp_dist_cos_f32(src1, src2, size);
+#endif
 #endif
 }
 
@@ -2567,7 +3071,11 @@ static inline float32_t hpm_dsp_dist_cos_f32(const float32_t *src1, const float3
 static inline float32_t hpm_dsp_dist_euclidean_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_euclidean_distance_f32(src1, src2, size);
+#else
     return riscv_dsp_dist_euclidean_f32(src1, src2, size);
+#endif
 #endif
 }
 
@@ -2581,7 +3089,11 @@ static inline float32_t hpm_dsp_dist_euclidean_f32(const float32_t *src1, const 
 static inline float32_t hpm_dsp_dist_jensen_shannon_f32(const float32_t *src1, const float32_t *src2, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_jensenshannon_distance_f32(src1, src2, size);
+#else
     return riscv_dsp_dist_jensen_shannon_f32(src1, src2, size);
+#endif
 #endif
 }
 
@@ -2596,7 +3108,11 @@ static inline float32_t hpm_dsp_dist_jensen_shannon_f32(const float32_t *src1, c
 static inline float32_t hpm_dsp_dist_minkowski_f32(const float32_t *src1, const float32_t *src2, int32_t order, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_minkowski_distance_f32(src1, src2, order, size);
+#else
     return riscv_dsp_dist_minkowski_f32(src1, src2, order, size);
+#endif
 #endif
 }
 
@@ -2610,7 +3126,11 @@ static inline float32_t hpm_dsp_dist_minkowski_f32(const float32_t *src1, const 
 static inline float32_t hpm_dsp_bdist_dice_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_dice_distance(src1, src2, numofbool);
+#else
     return riscv_dsp_bdist_dice_u32_f32(src1, src2, numofbool);
+#endif
 #endif
 }
 
@@ -2624,7 +3144,11 @@ static inline float32_t hpm_dsp_bdist_dice_u32_f32(const uint32_t *src1, const u
 static inline float32_t hpm_dsp_bdist_hamming_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_hamming_distance(src1, src2, numofbool);
+#else
     return riscv_dsp_bdist_hamming_u32_f32(src1, src2, numofbool);
+#endif
 #endif
 }
 
@@ -2638,7 +3162,11 @@ static inline float32_t hpm_dsp_bdist_hamming_u32_f32(const uint32_t *src1, cons
 static inline float32_t hpm_dsp_bdist_jaccard_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_jaccard_distance(src1, src2, numofbool);
+#else
     return riscv_dsp_bdist_jaccard_u32_f32(src1, src2, numofbool);
+#endif
 #endif
 }
 
@@ -2652,7 +3180,11 @@ static inline float32_t hpm_dsp_bdist_jaccard_u32_f32(const uint32_t *src1, cons
 static inline float32_t hpm_dsp_bdist_kulsinski_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_kulsinski_distance(src1, src2, numofbool);
+#else
     return riscv_dsp_bdist_kulsinski_u32_f32(src1, src2, numofbool);
+#endif
 #endif
 }
 
@@ -2666,7 +3198,11 @@ static inline float32_t hpm_dsp_bdist_kulsinski_u32_f32(const uint32_t *src1, co
 static inline float32_t hpm_dsp_bdist_sokal_michener_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_sokalmichener_distance(src1, src2, numofbool);
+#else
     return riscv_dsp_bdist_sokal_michener_u32_f32(src1, src2, numofbool);
+#endif
 #endif
 }
 
@@ -2680,7 +3216,11 @@ static inline float32_t hpm_dsp_bdist_sokal_michener_u32_f32(const uint32_t *src
 static inline float32_t hpm_dsp_bdist_sokal_sneath_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_sokalsneath_distance(src1, src2, numofbool);
+#else
     return riscv_dsp_bdist_sokal_sneath_u32_f32(src1, src2, numofbool);
+#endif
 #endif
 }
 
@@ -2694,7 +3234,11 @@ static inline float32_t hpm_dsp_bdist_sokal_sneath_u32_f32(const uint32_t *src1,
 static inline float32_t hpm_dsp_bdist_rogers_tanimoto_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_rogerstanimoto_distance(src1, src2, numofbool);
+#else
     return riscv_dsp_bdist_rogers_tanimoto_u32_f32(src1, src2, numofbool);
+#endif
 #endif
 }
 
@@ -2708,7 +3252,11 @@ static inline float32_t hpm_dsp_bdist_rogers_tanimoto_u32_f32(const uint32_t *sr
 static inline float32_t hpm_dsp_bdist_yule_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_yule_distance(src1, src2, numofbool);
+#else
     return riscv_dsp_bdist_yule_u32_f32(src1, src2, numofbool);
+#endif
 #endif
 }
 
@@ -2722,7 +3270,11 @@ static inline float32_t hpm_dsp_bdist_yule_u32_f32(const uint32_t *src1, const u
 static inline float32_t hpm_dsp_bdist_russell_rao_u32_f32(const uint32_t *src1, const uint32_t *src2, uint32_t numofbool)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_russellrao_distance(src1, src2, numofbool);
+#else
     return riscv_dsp_bdist_russell_rao_u32_f32(src1, src2, numofbool);
+#endif
 #endif
 }
 #endif
@@ -2741,6 +3293,11 @@ static inline float32_t hpm_dsp_bdist_russell_rao_u32_f32(const uint32_t *src1, 
  * @{
  */
 #ifdef HPM_EN_MATH_DSP_LIB
+
+#ifdef __zcc__
+#include "tpt_math.h"
+#endif
+
 #include "riscv_dsp_filtering_math.h"
 
 /**
@@ -3090,7 +3647,11 @@ static inline void hpm_dsp_nlms_q15(riscv_dsp_nlms_q15_t *instance, q15_t *src, 
 static inline void hpm_dsp_conv_f32(float32_t *src1, uint32_t len1, float32_t *src2, uint32_t len2, float32_t *dst)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_conv_f32(dst, src1, len1, src2, len2);
+#else
     riscv_dsp_conv_f32(src1, len1, src2, len2, dst);
+#endif
 #endif
 }
 
@@ -3112,7 +3673,11 @@ static inline void hpm_dsp_conv_f32(float32_t *src1, uint32_t len1, float32_t *s
 static inline void hpm_dsp_conv_q15(q15_t *src1, uint32_t len1, q15_t *src2, uint32_t len2, q15_t *dst)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_conv_q15(dst, src1, len1, src2, len2);
+#else
     riscv_dsp_conv_q15(src1, len1, src2, len2, dst);
+#endif
 #endif
 }
 
@@ -3136,7 +3701,11 @@ static inline void hpm_dsp_conv_q15(q15_t *src1, uint32_t len1, q15_t *src2, uin
 static inline void hpm_dsp_conv_q31(q31_t *src1, uint32_t len1, q31_t *src2, uint32_t len2, q31_t *dst)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_conv_q31(dst, src1, len1, src2, len2);
+#else
     riscv_dsp_conv_q31(src1, len1, src2, len2, dst);
+#endif
 #endif
 }
 
@@ -3158,7 +3727,11 @@ static inline void hpm_dsp_conv_q31(q31_t *src1, uint32_t len1, q31_t *src2, uin
 static inline void hpm_dsp_conv_q7(q7_t *src1, uint32_t len1, q7_t *src2, uint32_t len2, q7_t *dst)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_conv_q7(dst, src1, len1, src2, len2);
+#else
     riscv_dsp_conv_q7(src1, len1, src2, len2, dst);
+#endif
 #endif
 }
 
@@ -3179,7 +3752,12 @@ static inline void hpm_dsp_conv_q7(q7_t *src1, uint32_t len1, q7_t *src2, uint32
 static inline int32_t hpm_dsp_conv_partial_f32(float32_t *src1, uint32_t len1, float32_t *src2, uint32_t len2, float32_t *dst, uint32_t startindex, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_conv_partial_f32(src1, len1, src2, len2, dst, startindex, size);
+#ifdef __zcc__
+    return tpt_conv_partial_f32(dst, src1, len1, src2, len2, startindex, size);
+#else
+    return riscv_dsp_conv_partial_f32(src1, len1, src2, len2, dst, startindex,
+                                    size);
+#endif
 #endif
 }
 
@@ -3200,7 +3778,12 @@ static inline int32_t hpm_dsp_conv_partial_f32(float32_t *src1, uint32_t len1, f
 static inline int32_t hpm_dsp_conv_partial_q15(q15_t *src1, uint32_t len1, q15_t *src2, uint32_t len2, q15_t *dst, uint32_t startindex, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_conv_partial_q15(src1, len1, src2, len2, dst, startindex, size);
+#ifdef __zcc__
+    return tpt_conv_partial_q15(dst, src1, len1, src2, len2, startindex, size);
+#else
+    return riscv_dsp_conv_partial_q15(src1, len1, src2, len2, dst, startindex,
+                                    size);
+#endif
 #endif
 }
 
@@ -3221,7 +3804,12 @@ static inline int32_t hpm_dsp_conv_partial_q15(q15_t *src1, uint32_t len1, q15_t
 static inline int32_t hpm_dsp_conv_partial_q31(q31_t *src1, uint32_t len1, q31_t *src2, uint32_t len2, q31_t *dst, uint32_t startindex, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_conv_partial_q31(src1, len1, src2, len2, dst, startindex, size);
+#ifdef __zcc__
+    return tpt_conv_partial_q31(dst, src1, len1, src2, len2, startindex, size);
+#else
+    return riscv_dsp_conv_partial_q31(src1, len1, src2, len2, dst, startindex,
+                                    size);
+#endif
 #endif
 }
 
@@ -3242,7 +3830,12 @@ static inline int32_t hpm_dsp_conv_partial_q31(q31_t *src1, uint32_t len1, q31_t
 static inline int32_t hpm_dsp_conv_partial_q7(q7_t *src1, uint32_t len1, q7_t *src2, uint32_t len2, q7_t *dst, uint32_t startindex, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-    return riscv_dsp_conv_partial_q7(src1, len1, src2, len2, dst, startindex, size);
+#ifdef __zcc__
+    return tpt_conv_partial_q7(dst, src1, len1, src2, len2, startindex, size);
+#else
+    return riscv_dsp_conv_partial_q7(src1, len1, src2, len2, dst, startindex,
+                                   size);
+#endif
 #endif
 }
 
@@ -3260,7 +3853,11 @@ static inline int32_t hpm_dsp_conv_partial_q7(q7_t *src1, uint32_t len1, q7_t *s
 static inline void hpm_dsp_corr_f32(float32_t *src1, uint32_t len1, float32_t *src2, uint32_t len2, float32_t *dst)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_correlate_f32(dst, src1, len1, src2, len2);
+#else
     riscv_dsp_corr_f32(src1, len1, src2, len2, dst);
+#endif
 #endif
 }
 
@@ -3282,7 +3879,11 @@ static inline void hpm_dsp_corr_f32(float32_t *src1, uint32_t len1, float32_t *s
 static inline void hpm_dsp_corr_q15(q15_t *src1, uint32_t len1, q15_t *src2, uint32_t len2, q15_t *dst)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_correlate_q15(dst, src1, len1, src2, len2);
+#else
     riscv_dsp_corr_q15(src1, len1, src2, len2, dst);
+#endif
 #endif
 }
 
@@ -3308,7 +3909,11 @@ static inline void hpm_dsp_corr_q15(q15_t *src1, uint32_t len1, q15_t *src2, uin
 static inline void hpm_dsp_corr_q31(q31_t *src1, uint32_t len1, q31_t *src2, uint32_t len2, q31_t *dst)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_correlate_q31(dst, src1, len1, src2, len2);
+#else
     riscv_dsp_corr_q31(src1, len1, src2, len2, dst);
+#endif
 #endif
 }
 
@@ -3330,7 +3935,11 @@ static inline void hpm_dsp_corr_q31(q31_t *src1, uint32_t len1, q31_t *src2, uin
 static inline void hpm_dsp_corr_q7(q7_t *src1, uint32_t len1, q7_t *src2, uint32_t len2, q7_t *dst)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_correlate_q7(dst, src1, len1, src2, len2);
+#else
     riscv_dsp_corr_q7(src1, len1, src2, len2, dst);
+#endif
 #endif
 }
 static inline void hpm_dsp_bq_df1_f32(const riscv_dsp_bq_df1_f32_t *instance, float32_t *src, float32_t *dst, uint32_t size)
@@ -3452,6 +4061,9 @@ static inline void hpm_dsp_liir_fast_q15(const riscv_dsp_liir_q15_t *instance, q
  * @{
  */
 #ifdef HPM_EN_MATH_DSP_LIB
+#ifdef __zcc__
+#include "tpt_math.h"
+#endif
 #include "riscv_dsp_matrix_math.h"
 
 // Matrix Addition
@@ -3466,7 +4078,11 @@ static inline void hpm_dsp_liir_fast_q15(const riscv_dsp_liir_q15_t *instance, q
 static inline void hpm_dsp_mat_add_f32(const float32_t *src1, const float32_t *src2, float32_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_mat_add_f32(dst, src1, src2, row, col);
+#else
     riscv_dsp_mat_add_f32(src1, src2, dst, row, col);
+#endif
 #endif
 }
 
@@ -3483,7 +4099,11 @@ static inline void hpm_dsp_mat_add_f32(const float32_t *src1, const float32_t *s
 static inline void hpm_dsp_mat_add_q15(const q15_t *src1, const q15_t *src2, q15_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_mat_add_q15(dst, src1, src2, row, col);
+#else
     riscv_dsp_mat_add_q15(src1, src2, dst, row, col);
+#endif
 #endif
 }
 
@@ -3500,7 +4120,11 @@ static inline void hpm_dsp_mat_add_q15(const q15_t *src1, const q15_t *src2, q15
 static inline void hpm_dsp_mat_add_q31(const q31_t *src1, const q31_t *src2, q31_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_mat_add_q31(dst, src1, src2, row, col);
+#else
     riscv_dsp_mat_add_q31(src1, src2, dst, row, col);
+#endif
 #endif
 }
 
@@ -3515,13 +4139,21 @@ static inline void hpm_dsp_mat_add_q31(const q31_t *src1, const q31_t *src2, q31
 static inline int32_t hpm_dsp_mat_inv_f32(float32_t *src, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_mat_inverse_f32(dst, src, size);
+#else
     return riscv_dsp_mat_inv_f32(src, dst, size);
+#endif
 #endif
 }
 static inline int32_t hpm_dsp_mat_inv_f64(float64_t *src, float64_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_mat_inverse_f64(dst, src, size);
+#else
     return riscv_dsp_mat_inv_f64(src, dst, size);
+#endif
 #endif
 }
 
@@ -3538,14 +4170,22 @@ static inline int32_t hpm_dsp_mat_inv_f64(float64_t *src, float64_t *dst, uint32
 static inline void hpm_dsp_mat_mul_f32(const float32_t *src1, const float32_t *src2, float32_t *dst, uint32_t row, uint32_t col, uint32_t col2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_mat_mult_f32(dst, src1, src2, row, col, col2);
+#else
     riscv_dsp_mat_mul_f32(src1, src2, dst, row, col, col2);
+#endif
 #endif
 }
 
 static inline void hpm_dsp_mat_mul_f64(const float64_t *src1, const float64_t *src2, float64_t *dst, uint32_t row, uint32_t col, uint32_t col2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_mat_mult_f64(dst, src1, src2, row, col, col2);
+#else
     riscv_dsp_mat_mul_f64(src1, src2, dst, row, col, col2);
+#endif
 #endif
 }
 
@@ -3561,7 +4201,11 @@ static inline void hpm_dsp_mat_mul_f64(const float64_t *src1, const float64_t *s
 static inline void hpm_dsp_cmat_mul_f32(const float32_t *src1, const float32_t *src2, float32_t *dst, uint32_t row, uint32_t col, uint32_t col2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_mat_cmplx_mult_f32(dst, src1, src2, row, col, col2);
+#else
     riscv_dsp_cmat_mul_f32(src1, src2, dst, row, col, col2);
+#endif
 #endif
 }
 
@@ -3584,13 +4228,21 @@ static inline void hpm_dsp_cmat_mul_f32(const float32_t *src1, const float32_t *
 static inline void hpm_dsp_mat_mul_q15(const q15_t *src1, const q15_t *src2, q15_t *dst, uint32_t row, uint32_t col, uint32_t col2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_mat_mult_q15(dst, src1, src2, row, col, col2);
+#else
     riscv_dsp_mat_mul_q15(src1, src2, dst, row, col, col2);
+#endif
 #endif
 }
 static inline void hpm_dsp_mat_mul_fast_q15(const q15_t *src1, const q15_t *src2, q15_t *dst, uint32_t row, uint32_t col, uint32_t col2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_mat_mult_q15(dst, src1, src2, row, col, col2);
+#else
     riscv_dsp_mat_mul_fast_q15(src1, src2, dst, row, col, col2);
+#endif
 #endif
 }
 
@@ -3613,7 +4265,11 @@ static inline void hpm_dsp_mat_mul_fast_q15(const q15_t *src1, const q15_t *src2
 static inline void hpm_dsp_cmat_mul_q15(const q15_t *src1, const q15_t *src2, q15_t *dst, uint32_t row, uint32_t col, uint32_t col2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_mat_cmplx_mult_q15(dst, src1, src2, row, col, col2);
+#else
     riscv_dsp_cmat_mul_q15(src1, src2, dst, row, col, col2);
+#endif
 #endif
 }
 
@@ -3636,13 +4292,21 @@ static inline void hpm_dsp_cmat_mul_q15(const q15_t *src1, const q15_t *src2, q1
 static inline void hpm_dsp_mat_mul_q31(const q31_t *src1, const q31_t *src2, q31_t *dst, uint32_t row, uint32_t col, uint32_t col2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_mat_mult_q31(dst, src1, src2, row, col, col2);
+#else
     riscv_dsp_mat_mul_q31(src1, src2, dst, row, col, col2);
+#endif
 #endif
 }
 static inline void hpm_dsp_mat_mul_fast_q31(const q31_t *src1, const q31_t *src2, q31_t *dst, uint32_t row, uint32_t col, uint32_t col2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_mat_mult_q31(dst, src1, src2, row, col, col2);
+#else
     riscv_dsp_mat_mul_fast_q31(src1, src2, dst, row, col, col2);
+#endif
 #endif
 }
 
@@ -3665,7 +4329,11 @@ static inline void hpm_dsp_mat_mul_fast_q31(const q31_t *src1, const q31_t *src2
 static inline void hpm_dsp_cmat_mul_q31(const q31_t *src1, const q31_t *src2, q31_t *dst, uint32_t row, uint32_t col, uint32_t col2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_mat_cmplx_mult_q31(dst, src1, src2, row, col, col2);
+#else
     riscv_dsp_cmat_mul_q31(src1, src2, dst, row, col, col2);
+#endif
 #endif
 }
 
@@ -3710,7 +4378,11 @@ static inline void hpm_dsp_mat_mul_q7(const q7_t *src1, const q7_t *src2, q7_t *
 static inline void hpm_dsp_mat_mul_vxm_q7(const q7_t * src1, const q7_t * src2, q7_t * dst, uint32_t col, uint32_t col2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_mat_mul_mxv_q7(dst, src1, src2, col, col2);
+#else
     riscv_dsp_mat_mul_vxm_q7(src1, src2, dst, col, col2);
+#endif
 #endif
 }
 
@@ -3736,7 +4408,11 @@ static inline int32_t hpm_dsp_mat_pwr2_cache_f64(const float64_t *src, float64_t
 static inline void hpm_dsp_mat_scale_f32(const float32_t *src, float32_t scale, float32_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_mat_scale_f32(dst, src, row, col, scale);
+#else
     riscv_dsp_mat_scale_f32(src, scale, dst, row, col);
+#endif
 #endif
 }
 
@@ -3757,7 +4433,11 @@ static inline void hpm_dsp_mat_scale_f32(const float32_t *src, float32_t scale, 
 static inline void hpm_dsp_mat_scale_q15(const q15_t *src, q15_t scale_fract, int32_t shift, q15_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_mat_scale_q15(dst, src, row, col, scale_fract, shift);
+#else
     riscv_dsp_mat_scale_q15(src, scale_fract, shift, dst, row, col);
+#endif
 #endif
 }
 
@@ -3778,7 +4458,11 @@ static inline void hpm_dsp_mat_scale_q15(const q15_t *src, q15_t scale_fract, in
 static inline void hpm_dsp_mat_scale_q31(const q31_t *src, q31_t scale_fract, int32_t shift, q31_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_mat_scale_q31(dst, src, row, col, scale_fract, shift);
+#else
     riscv_dsp_mat_scale_q31(src, scale_fract, shift, dst, row, col);
+#endif
 #endif
 }
 
@@ -3797,7 +4481,11 @@ static inline void hpm_dsp_mat_sub_f64(const float64_t *src1, const float64_t *s
                        float64_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_mat_sub_f64(dst, src1, src2, row, col);
+#else
     riscv_dsp_mat_sub_f64(src1, src2, dst, row, col);
+#endif
 #endif
 }
 
@@ -3812,7 +4500,11 @@ static inline void hpm_dsp_mat_sub_f64(const float64_t *src1, const float64_t *s
 static inline void hpm_dsp_mat_sub_f32(const float32_t *src1, const float32_t *src2, float32_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_mat_sub_f32(dst, src1, src2, row, col);
+#else
     riscv_dsp_mat_sub_f32(src1, src2, dst, row, col);
+#endif
 #endif
 }
 
@@ -3829,7 +4521,11 @@ static inline void hpm_dsp_mat_sub_f32(const float32_t *src1, const float32_t *s
 static inline void hpm_dsp_mat_sub_q15(const q15_t *src1, const q15_t *src2, q15_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_mat_sub_q15(dst, src1, src2, row, col);
+#else
     riscv_dsp_mat_sub_q15(src1, src2, dst, row, col);
+#endif
 #endif
 }
 
@@ -3846,7 +4542,11 @@ static inline void hpm_dsp_mat_sub_q15(const q15_t *src1, const q15_t *src2, q15
 static inline void hpm_dsp_mat_sub_q31(const q31_t *src1, const q31_t *src2, q31_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_mat_sub_q31(dst, src1, src2, row, col);
+#else
     riscv_dsp_mat_sub_q31(src1, src2, dst, row, col);
+#endif
 #endif
 }
 
@@ -3863,7 +4563,11 @@ static inline void hpm_dsp_mat_sub_q31(const q31_t *src1, const q31_t *src2, q31
 static inline void hpm_dsp_mat_trans_f64(const float64_t *src, float64_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_mat_trans_f64(dst, src, row, col);
+#else
     riscv_dsp_mat_trans_f64(src, dst, row, col);
+#endif
 #endif
 }
 
@@ -3891,7 +4595,11 @@ static inline void hpm_dsp_mat_trans_f32(const float32_t *src, float32_t *dst, u
 static inline void hpm_dsp_mat_trans_q15(const q15_t *src, q15_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_mat_trans_q15(dst, src, row, col);
+#else
     riscv_dsp_mat_trans_q15(src, dst, row, col);
+#endif
 #endif
 }
 
@@ -3905,7 +4613,11 @@ static inline void hpm_dsp_mat_trans_q15(const q15_t *src, q15_t *dst, uint32_t 
 static inline void hpm_dsp_mat_trans_q31(const q31_t *src, q31_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_mat_trans_q31(dst, src, row, col);
+#else
     riscv_dsp_mat_trans_q31(src, dst, row, col);
+#endif
 #endif
 }
 
@@ -3973,7 +4685,11 @@ static inline void hpm_dsp_mat_oprod_q31(const q31_t * src1, const q31_t * src2,
                        q31_t * dst, uint32_t size1, uint32_t size2)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_mat_oprod_q31(dst, src1, src2, size1, size2);
+#else
     riscv_dsp_mat_oprod_q31(src1, src2, dst, size1, size2);
+#endif
 #endif
 }
 
@@ -4003,7 +4719,11 @@ static inline void hpm_dsp_mat_mul_mxv_f32(const float32_t *src1, const float32_
                        float32_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_mat_mul_mxv_f32(dst, src1, src2, row, col);
+#else
     riscv_dsp_mat_mul_mxv_f32(src1, src2, dst, row, col);
+#endif
 #endif
 }
 /**
@@ -4019,7 +4739,11 @@ static inline void hpm_dsp_mat_mul_mxv_q15(const q15_t *src1, const q15_t *src2,
                        q15_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_mat_mul_mxv_q15(dst, src1, src2, row, col);
+#else
     riscv_dsp_mat_mul_mxv_q15(src1, src2, dst, row, col);
+#endif
 #endif
 }
 /**
@@ -4035,7 +4759,11 @@ static inline void hpm_dsp_mat_mul_mxv_q31(const q31_t *src1, const q31_t *src2,
                        q31_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_mat_mul_mxv_q31(dst, src1, src2, row, col);
+#else
     riscv_dsp_mat_mul_mxv_q31(src1, src2, dst, row, col);
+#endif
 #endif
 }
 /**
@@ -4051,7 +4779,11 @@ static inline void hpm_dsp_mat_mul_mxv_q7(const q7_t *src1, const q7_t *src2,
                        q7_t *dst, uint32_t row, uint32_t col)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_mat_mul_mxv_q7(dst, src1, src2, row, col);
+#else
     riscv_dsp_mat_mul_mxv_q7(src1, src2, dst, row, col);
+#endif
 #endif
 }
 
@@ -4072,6 +4804,9 @@ static inline void hpm_dsp_mat_mul_mxv_q7(const q7_t *src1, const q7_t *src2,
  */
 
 #ifdef HPM_EN_MATH_DSP_LIB
+#ifdef __zcc__
+#include "tpt_math.h"
+#endif
 #include "riscv_dsp_svm_math.h"
 /**
  * @brief SVM linear prediction
@@ -4145,7 +4880,9 @@ static inline void hpm_dsp_svm_poly_est_f32(const riscv_dsp_svm_poly_f32_t *inst
  * @{
  */
 #ifdef HPM_EN_MATH_DSP_LIB
-
+#ifdef __zcc__
+#include "tpt_math.h"
+#endif
 #include "riscv_dsp_transform_math.h"
 /**
  * @brief cfft_rd2 of f32 vectors.
@@ -4179,7 +4916,11 @@ static inline void hpm_dsp_svm_poly_est_f32(const riscv_dsp_svm_poly_f32_t *inst
 static inline int32_t hpm_dsp_cfft_rd2_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_cfft_f32(src, m, false);
+#else
     return riscv_dsp_cfft_rd2_f32(src, m);
+#endif
 #endif
 }
 
@@ -4193,7 +4934,12 @@ static inline int32_t hpm_dsp_cfft_rd2_f32(float32_t *src, uint32_t m)
 static inline int32_t hpm_dsp_cifft_rd2_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_cfft_f32(src, m, true);
+#else
     return riscv_dsp_cifft_rd2_f32(src, m);
+#endif
+
 #endif
 }
 
@@ -4213,7 +4959,11 @@ static inline int32_t hpm_dsp_cifft_rd2_f32(float32_t *src, uint32_t m)
 static inline int32_t hpm_dsp_cfft_rd2_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_cfft_q15(src, m, false);
+#else
     return riscv_dsp_cfft_rd2_q15(src, m);
+#endif
 #endif
 }
 
@@ -4233,7 +4983,11 @@ static inline int32_t hpm_dsp_cfft_rd2_q15(q15_t *src, uint32_t m)
 static inline int32_t hpm_dsp_cifft_rd2_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_cfft_q15(src, m, true);
+#else
     return riscv_dsp_cifft_rd2_q15(src, m);
+#endif
 #endif
 }
 
@@ -4253,7 +5007,12 @@ static inline int32_t hpm_dsp_cifft_rd2_q15(q15_t *src, uint32_t m)
 static inline int32_t hpm_dsp_cfft_rd2_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_cfft_q31(src, m, false);
+#else
     return riscv_dsp_cfft_rd2_q31(src, m);
+#endif
+
 #endif
 }
 
@@ -4273,7 +5032,12 @@ static inline int32_t hpm_dsp_cfft_rd2_q31(q31_t *src, uint32_t m)
 static inline int32_t hpm_dsp_cifft_rd2_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_cfft_q31(src, m, true);
+#else
     return riscv_dsp_cifft_rd2_q31(src, m);
+#endif
+
 #endif
 }
 
@@ -4309,7 +5073,12 @@ static inline int32_t hpm_dsp_cifft_rd2_q31(q31_t *src, uint32_t m)
 static inline int32_t hpm_dsp_cfft_rd4_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_cfft_f32(src, m, false);
+#else
     return riscv_dsp_cfft_rd4_f32(src, m);
+#endif
+
 #endif
 }
 
@@ -4323,7 +5092,11 @@ static inline int32_t hpm_dsp_cfft_rd4_f32(float32_t *src, uint32_t m)
 static inline int32_t hpm_dsp_cifft_rd4_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_cfft_f32(src, m, true);
+#else
     return riscv_dsp_cifft_rd4_f32(src, m);
+#endif
 #endif
 }
 
@@ -4343,7 +5116,11 @@ static inline int32_t hpm_dsp_cifft_rd4_f32(float32_t *src, uint32_t m)
 static inline int32_t hpm_dsp_cfft_rd4_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_cfft_q15(src, m, false);
+#else
     return riscv_dsp_cfft_rd4_q15(src, m);
+#endif
 #endif
 }
 
@@ -4363,7 +5140,11 @@ static inline int32_t hpm_dsp_cfft_rd4_q15(q15_t *src, uint32_t m)
 static inline int32_t hpm_dsp_cifft_rd4_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_cfft_q15(src, m, true);
+#else
     return riscv_dsp_cifft_rd4_q15(src, m);
+#endif
 #endif
 }
 
@@ -4383,7 +5164,11 @@ static inline int32_t hpm_dsp_cifft_rd4_q15(q15_t *src, uint32_t m)
 static inline int32_t hpm_dsp_cfft_rd4_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_cfft_q31(src, m, false);
+#else
     return riscv_dsp_cfft_rd4_q31(src, m);
+#endif
 #endif
 }
 
@@ -4403,7 +5188,11 @@ static inline int32_t hpm_dsp_cfft_rd4_q31(q31_t *src, uint32_t m)
 static inline int32_t hpm_dsp_cifft_rd4_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_cfft_q31(src, m, true);
+#else
     return riscv_dsp_cifft_rd4_q31(src, m);
+#endif
 #endif
 }
 
@@ -4430,7 +5219,11 @@ static inline int32_t hpm_dsp_cifft_rd4_q31(q31_t *src, uint32_t m)
 static inline void hpm_dsp_cfft_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_cfft_f32(src, m, false);
+#else
     riscv_dsp_cfft_f32(src, m);
+#endif
 #endif
 }
 
@@ -4443,7 +5236,11 @@ static inline void hpm_dsp_cfft_f32(float32_t *src, uint32_t m)
 static inline void hpm_dsp_cfft_f64(float64_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_cfft_f64(src, m, false);
+#else
     riscv_dsp_cfft_f64(src, m);
+#endif
 #endif
 }
 
@@ -4456,7 +5253,11 @@ static inline void hpm_dsp_cfft_f64(float64_t *src, uint32_t m)
 static inline void hpm_dsp_cifft_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_cfft_f32(src, m, true);
+#else
     riscv_dsp_cifft_f32(src, m);
+#endif
 #endif
 }
 
@@ -4469,7 +5270,11 @@ static inline void hpm_dsp_cifft_f32(float32_t *src, uint32_t m)
 static inline void hpm_dsp_cifft_f64(float64_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_cfft_f64(src, m, true);
+#else
     riscv_dsp_cifft_f64(src, m);
+#endif
 #endif
 }
 
@@ -4489,7 +5294,11 @@ static inline void hpm_dsp_cifft_f64(float64_t *src, uint32_t m)
 static inline void hpm_dsp_cfft_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_cfft_q15(src, m, false);
+#else
     riscv_dsp_cfft_q15(src, m);
+#endif
 #endif
 }
 
@@ -4508,7 +5317,11 @@ static inline void hpm_dsp_cfft_q15(q15_t *src, uint32_t m)
 static inline void hpm_dsp_cifft_q15(q15_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_cfft_q15(src, m, true);
+#else
     riscv_dsp_cifft_q15(src, m);
+#endif
 #endif
 }
 
@@ -4527,7 +5340,11 @@ static inline void hpm_dsp_cifft_q15(q15_t *src, uint32_t m)
 static inline void hpm_dsp_cfft_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_cfft_q31(src, m, false);
+#else
     riscv_dsp_cfft_q31(src, m);
+#endif
 #endif
 }
 
@@ -4546,7 +5363,11 @@ static inline void hpm_dsp_cfft_q31(q31_t *src, uint32_t m)
 static inline void hpm_dsp_cifft_q31(q31_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_cfft_q31(src, m, true);
+#else
     riscv_dsp_cifft_q31(src, m);
+#endif
 #endif
 }
 
@@ -4582,7 +5403,11 @@ static inline void hpm_dsp_cifft_q31(q31_t *src, uint32_t m)
 static inline int32_t hpm_dsp_rfft_f32(float32_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_rfft_f32(src, src, m, false);
+#else
     return riscv_dsp_rfft_f32(src, m);
+#endif
 #endif
 }
 
@@ -4596,7 +5421,11 @@ static inline int32_t hpm_dsp_rfft_f32(float32_t *src, uint32_t m)
 static inline int32_t hpm_dsp_rfft_f64(float64_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    return tpt_rfft_f64(src, src, m, false);
+#else
     return riscv_dsp_rfft_f64(src, m);
+#endif
 #endif
 }
 
@@ -4997,6 +5826,24 @@ static inline void hpm_ffa_cfft_q31(q31_t *src, uint32_t m)
     xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
     ffa_calculate_fft_blocking(HPM_FFA, &xfer);
 }
+
+#if defined(HPM_IP_FEATURE_FFA_FP32) && HPM_IP_FEATURE_FFA_FP32
+static inline void hpm_ffa_cfft_f32(float *src, uint32_t m)
+{
+    fft_xfer_t xfer = { 0 };
+    xfer.num_points = 1 << m;
+    xfer.src = src;
+    xfer.dst = src;
+    xfer.is_ifft = false;
+    xfer.src_data_type = FFA_DATA_TYPE_COMPLEX_FP32;
+    xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_FP32;
+    ffa_enable_fp_bias(HPM_FFA);
+    ffa_set_coef_max_index(HPM_FFA, 0);
+    ffa_set_output_max_index(HPM_FFA, 20);
+    ffa_set_input_max_index(HPM_FFA, 20 -  m);
+    ffa_calculate_fft_blocking(HPM_FFA, &xfer);
+}
+#endif
 /**
  * @brief ifft calculation using ffa hardware acceleration unit, q15 format
  *
@@ -5036,6 +5883,25 @@ static inline void hpm_ffa_cifft_q31(q31_t *src, uint32_t m)
     xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
     ffa_calculate_fft_blocking(HPM_FFA, &xfer);
 }
+
+#if defined(HPM_IP_FEATURE_FFA_FP32) && HPM_IP_FEATURE_FFA_FP32
+static inline void hpm_ffa_cifft_f32(float *src, uint32_t m)
+{
+    fft_xfer_t xfer = { 0 };
+    xfer.num_points = 1 << m;
+    xfer.src = src;
+    xfer.dst = src;
+    xfer.is_ifft = true;
+    xfer.src_data_type = FFA_DATA_TYPE_COMPLEX_FP32;
+    xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_FP32;
+    ffa_enable_fp_bias(HPM_FFA);
+    ffa_set_coef_max_index(HPM_FFA, 0x0);
+    ffa_set_output_max_index(HPM_FFA, 10);
+    ffa_set_input_max_index(HPM_FFA, 20);
+    ffa_calculate_fft_blocking(HPM_FFA, &xfer);
+}
+#endif
+
 #endif
 
 #endif
@@ -5056,6 +5922,9 @@ static inline void hpm_ffa_cifft_q31(q31_t *src, uint32_t m)
  */
 
 #ifdef HPM_EN_MATH_DSP_LIB
+#ifdef __zcc__
+#include <tpt_math.h>
+#endif
 #include "riscv_dsp_utils_math.h"
 // Cosine and Sine
 static inline float32_t hpm_dsp_cos_f32(float32_t src)
@@ -5208,7 +6077,11 @@ static inline void hpm_dsp_convert_f32_q15(float32_t *src, q15_t *dst, uint32_t 
 static inline void hpm_dsp_convert_f32_q31(float32_t *src, q31_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_f32_to_q31(dst, src, size);
+#else
     riscv_dsp_convert_f32_q31(src, dst, size);
+#endif
 #endif
 }
 
@@ -5273,7 +6146,11 @@ static inline void hpm_dsp_convert_q15_q7(q15_t *src, q7_t *dst, uint32_t size)
 static inline void hpm_dsp_convert_q31_f32(q31_t *src, float32_t *dst, uint32_t size)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_q31_to_f32(dst, src, size);
+#else
     riscv_dsp_convert_q31_f32(src, dst, size);
+#endif
 #endif
 }
 
@@ -5730,8 +6607,10 @@ static inline void hpm_dsp_sort_merge_f32(const riscv_dsp_sort_merge_f32_t * ins
 
 #define LEFT_SHIFT(_shift)  (_shift > 0 ? _shift : 0)
 #define RIGHT_SHIFT(_shift) (_shift > 0 ? 0 : -_shift)
+#ifndef __zcc__
 #define Q31_MAX   ((q31_t)(0x7FFFFFFFL))
 #define Q31_MIN   ((q31_t)(0x80000000L))
+#endif
 
 static inline void write_q15x2_ia(
     q15_t **pQ15,
@@ -5925,8 +6804,11 @@ __STATIC_FORCEINLINE void hpm_nn_q7_to_q15_with_offset(const int8_t *src, int16_
 
 #ifdef HPM_MATH_NN_ACTIVATION
 #ifdef HPM_EN_MATH_NN_LIB
-
+#if defined(__zcc__)
+#include "tpt_nn_activation.h"
+#else
 #include "riscv_nn_activation.h"
+#endif
 /**
  * @defgroup nnactivation NN Activation Functions
  * @ingroup hpmmath
@@ -5963,7 +6845,11 @@ static inline void hpm_nn_activate_s8(q7_t *in_out,
                         uint16_t int_bits,
                         riscv_nn_activation_fun act_fun)
 {
+#if defined(__zcc__)
+    tpt_nn_activate_s8(in_out, size, int_bits, act_fun);
+#else
     riscv_nn_activate_s8(in_out, size, int_bits, act_fun);
+#endif
 }
 
 /**
@@ -5986,7 +6872,11 @@ static inline void hpm_nn_activate_s16(q15_t *in_out,
                         uint16_t int_bits,
                         riscv_nn_activation_fun act_fun)
 {
+#if defined(__zcc__)
+    tpt_nn_activate_s16(in_out, size, int_bits, act_fun);
+#else
     riscv_nn_activate_s16(in_out, size, int_bits, act_fun);
+#endif
 }
 
 /**
@@ -6009,8 +6899,11 @@ static inline void hpm_nn_activate_s16(q15_t *in_out,
 static inline void hpm_nn_leaky_relu_s8(q7_t *in_out,
                         uint32_t size,
                         q15_t slope)
-{
+#if defined(__zcc__)
+    tpt_nn_leaky_relu_s8(in_out, size, slope);
+#else
     riscv_nn_leaky_relu_s8(in_out, size, slope);
+#endif
 }
 
 /**
@@ -6022,7 +6915,11 @@ static inline void hpm_nn_leaky_relu_s8(q7_t *in_out,
  */
 static inline void hpm_nn_relu_any_s8(q7_t *data, uint16_t size, q7_t max_val)
 {
+#if defined(__zcc__)
+    tpt_nn_relu_any_s8(data, size, max_val);
+#else
     riscv_nn_relu_any_s8(data, size, max_val);
+#endif
 }
 
 /**
@@ -6043,7 +6940,11 @@ static inline void hpm_nn_relu_any_s8(q7_t *data, uint16_t size, q7_t max_val)
  */
 static inline void hpm_nn_relu_s8(q7_t *in_out, uint32_t size)
 {
+#if defined(__zcc__)
+    tpt_nn_relu_s8(in_out, size);
+#else
     riscv_nn_relu_s8(in_out, size);
+#endif
 }
 
 /**
@@ -6054,7 +6955,11 @@ static inline void hpm_nn_relu_s8(q7_t *in_out, uint32_t size)
  */
 static inline void hpm_nn_relu_s16(q15_t *in_out, uint32_t size)
 {
+#if defined(__zcc__)
+    tpt_nn_relu_s16(in_out, size);
+#else
     riscv_nn_relu_s16(in_out, size);
+#endif
 }
 
 #ifdef __riscv_zfh
@@ -6071,7 +6976,11 @@ static inline int32_t hpm_nn_sigmoid_f16(const float16_t *in_vec,
                             uint32_t size,
                             float16_t *out_vec)
 {
+#if defined(__zcc__)
+    return tpt_nn_sigmoid_f16(in_vec, size, out_vec);
+#else
     return riscv_nn_sigmoid_f16(in_vec, size, out_vec);
+#endif
 }
 
 /**
@@ -6086,7 +6995,11 @@ static inline int32_t hpm_nn_tanh_f16(const float16_t *in_vec,
                         uint32_t size,
                         float16_t *out_vec)
 {
+#if defined(__zcc__)
+    return tpt_nn_tanh_f16(in_vec, size, out_vec);
+#else
     return riscv_nn_tanh_f16(in_vec, size, out_vec);
+#endif
 }
 #endif
 
@@ -6098,8 +7011,11 @@ static inline int32_t hpm_nn_tanh_f16(const float16_t *in_vec,
 
 #ifdef HPM_MATH_NN_BASIC
 #ifdef HPM_EN_MATH_NN_LIB
+#if defined(__zcc__)
+#include "tpt_nn_basic.h"
+#else
 #include "riscv_nn_basic.h"
-
+#endif
 /**
  * @defgroup nnbasic NN Basic Functions
  * @ingroup hpmmath
@@ -6155,7 +7071,13 @@ static inline void hpm_nn_add_s8_sym(const q7_t *in_tensor1,
                         const uint16_t post_rshift,
                         q7_t *out)
 {
-        riscv_nn_add_s8_sym(in_tensor1, in_tensor2, scale1, scale2, size, pre_rshift, out_scale, post_rshift, out);
+#if defined(__zcc__)
+    tpt_nn_add_s8_sym(in_tensor1, in_tensor2, scale1, scale2, size, pre_rshift,
+                    out_scale, post_rshift, out);
+#else
+    riscv_nn_add_s8_sym(in_tensor1, in_tensor2, scale1, scale2, size, pre_rshift,
+                      out_scale, post_rshift, out);
+#endif
 }
 
 /**
@@ -6187,7 +7109,13 @@ static inline void hpm_nn_add_s8_sym_round(const q7_t *in_tensor1,
                             const uint16_t post_rshift,
                             q7_t *out)
 {
-        riscv_nn_add_s8_sym_round(in_tensor1, in_tensor2, scale1, scale2, size, pre_rshift, out_scale, post_rshift, out);
+#if defined(__zcc__)
+    tpt_nn_add_s8_sym_round(in_tensor1, in_tensor2, scale1, scale2, size,
+                          pre_rshift, out_scale, post_rshift, out);
+#else
+    riscv_nn_add_s8_sym_round(in_tensor1, in_tensor2, scale1, scale2, size,
+                            pre_rshift, out_scale, post_rshift, out);
+#endif
 }
 
 /**
@@ -6258,7 +7186,17 @@ static inline int hpm_nn_ew_add_s8_asym(const int8_t *in_tensor1,
                             const int32_t act_max,
                             const uint32_t size)
 {
-        return riscv_nn_ew_add_s8_asym(in_tensor1, in_tensor2, in_offset1, in_scale1, in_rshift1, in_offset2, in_scale2, in_rshift2, lshift, out, out_offset, out_scale, out_rshift, act_min, act_max, size);
+#if defined(__zcc__)
+    return tpt_nn_ew_add_s8_asym(in_tensor1, in_tensor2, in_offset1, in_scale1,
+                               in_rshift1, in_offset2, in_scale2, in_rshift2,
+                               lshift, out, out_offset, out_scale, out_rshift,
+                               act_min, act_max, size);
+#else
+    return riscv_nn_ew_add_s8_asym(in_tensor1, in_tensor2, in_offset1, in_scale1,
+                                 in_rshift1, in_offset2, in_scale2, in_rshift2,
+                                 lshift, out, out_offset, out_scale, out_rshift,
+                                 act_min, act_max, size);
+#endif
 }
 
 /**
@@ -6312,7 +7250,15 @@ static inline int hpm_nn_ew_mul_s8_asym(const int8_t *in_tensor1,
                             const int32_t act_max,
                             const uint32_t size)
 {
-        return riscv_nn_ew_mul_s8_asym(in_tensor1, in_tensor2, in_offset1, in_offset2, out, out_offset, out_scale, out_shift, act_min, act_max, size);
+#if defined(__zcc__)
+    return tpt_nn_ew_mul_s8_asym(in_tensor1, in_tensor2, in_offset1, in_offset2,
+                               out, out_offset, out_scale, out_shift, act_min,
+                               act_max, size);
+#else
+    return riscv_nn_ew_mul_s8_asym(in_tensor1, in_tensor2, in_offset1, in_offset2,
+                                 out, out_offset, out_scale, out_shift, act_min,
+                                 act_max, size);
+#endif
 }
 
 /**
@@ -6322,7 +7268,11 @@ static inline int hpm_nn_ew_mul_s8_asym(const int8_t *in_tensor1,
 #endif
 
 #ifdef HPM_EN_MATH_NN_RVP32_LIB
+#if defined(__zcc__)
+#include "tpt_nn_basic.h"
+#else
 #include "riscv_nn_basic.h"
+#endif
 
 /**
  * @brief           This function performs element-wise addition for signed
@@ -6393,7 +7343,17 @@ static inline int hpm_nn_ew_add_s8_asym(const int8_t *in_tensor1,
                             const int32_t act_max,
                             const uint32_t size)
 {
-        return riscv_nn_ew_add_s8_asym(in_tensor1, in_tensor2, in_offset1, in_scale1, in_rshift1, in_offset2, in_scale2, in_rshift2, lshift, out, out_offset, out_scale, out_rshift, act_min, act_max, size);
+#if defined(__zcc__)
+    return tpt_nn_ew_add_s8_asym(in_tensor1, in_tensor2, in_offset1, in_scale1,
+                               in_rshift1, in_offset2, in_scale2, in_rshift2,
+                               lshift, out, out_offset, out_scale, out_rshift,
+                               act_min, act_max, size);
+#else
+    return riscv_nn_ew_add_s8_asym(in_tensor1, in_tensor2, in_offset1, in_scale1,
+                                 in_rshift1, in_offset2, in_scale2, in_rshift2,
+                                 lshift, out, out_offset, out_scale, out_rshift,
+                                 act_min, act_max, size);
+#endif
 }
 
 #endif
@@ -6402,7 +7362,11 @@ static inline int hpm_nn_ew_add_s8_asym(const int8_t *in_tensor1,
 
 #ifdef HPM_MATH_NN_CONCATENATION
 #ifdef HPM_EN_MATH_NN_LIB
+#if defined(__zcc__)
+#include "tpt_nn_concatenation.h"
+#else
 #include "riscv_nn_concatenation.h"
+#endif
 
 /**
  * @defgroup nnconcatenation NN Concatenation Functions
@@ -6437,7 +7401,13 @@ static inline void hpm_nn_concate_s8_w(const int8_t *in_tensor,
                         int8_t *out_tensor,
                         const uint32_t out_offset_w)
 {
-    riscv_nn_concate_s8_w(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z, in_tensor_w, out_tensor, out_offset_w);
+#if defined(__zcc__)
+    tpt_nn_concate_s8_w(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z,
+                      in_tensor_w, out_tensor, out_offset_w);
+#else
+    riscv_nn_concate_s8_w(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z,
+                        in_tensor_w, out_tensor, out_offset_w);
+#endif
 }
 
 /**
@@ -6467,7 +7437,13 @@ static inline void hpm_nn_concate_s8_x(const int8_t *in_tensor,
                         const uint16_t out_tensor_x,
                         const uint32_t out_offset_x)
 {
-    riscv_nn_concate_s8_x(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z, in_tensor_w, out_tensor, out_tensor_x, out_offset_x);
+#if defined(__zcc__)
+    tpt_nn_concate_s8_x(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z,
+                      in_tensor_w, out_tensor, out_tensor_x, out_offset_x);
+#else
+    riscv_nn_concate_s8_x(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z,
+                        in_tensor_w, out_tensor, out_tensor_x, out_offset_x);
+#endif
 }
 
 /**
@@ -6496,7 +7472,13 @@ static inline void hpm_nn_concate_s8_y(const int8_t *in_tensor,
                         const uint16_t out_tensor_y,
                         const uint32_t out_offset_y)
 {
-    riscv_nn_concate_s8_y(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z, in_tensor_w, out_tensor, out_tensor_y, out_offset_y);
+#if defined(__zcc__)
+    tpt_nn_concate_s8_y(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z,
+                      in_tensor_w, out_tensor, out_tensor_y, out_offset_y);
+#else
+    riscv_nn_concate_s8_y(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z,
+                        in_tensor_w, out_tensor, out_tensor_y, out_offset_y);
+#endif
 }
 
 /**
@@ -6525,7 +7507,13 @@ static inline void hpm_nn_concate_s8_z(const int8_t *in_tensor,
                         const uint16_t out_tensor_z,
                         const uint32_t out_offset_z)
 {
-    riscv_nn_concate_s8_z(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z, in_tensor_w, out_tensor, out_tensor_z, out_offset_z);
+#if defined(__zcc__)
+    tpt_nn_concate_s8_z(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z,
+                      in_tensor_w, out_tensor, out_tensor_z, out_offset_z);
+#else
+    riscv_nn_concate_s8_z(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z,
+                        in_tensor_w, out_tensor, out_tensor_z, out_offset_z);
+#endif
 }
 
 /**
@@ -6537,7 +7525,11 @@ static inline void hpm_nn_concate_s8_z(const int8_t *in_tensor,
 
 #ifdef HPM_MATH_NN_CONVOLUTION
 #ifdef HPM_EN_MATH_NN_LIB
+#if defined(__zcc__)
+#include "tpt_nn_convolution.h"
+#else
 #include "riscv_nn_convolution.h"
+#endif
 
 /**
  * @defgroup nnconvolution NN Convolution Functions
@@ -6647,7 +7639,19 @@ static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_sft_bias_fast_any(const q7_t 
                                                 q15_t *in_tmp_buf,
                                                 q7_t *tmp_buf)
 {
-    return riscv_nn_conv_1x1_HWC_s8_s8_s8_sft_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_1x1_HWC_s8_s8_s8_sft_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#else
+    return riscv_nn_conv_1x1_HWC_s8_s8_s8_sft_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#endif
 }
 
 /**
@@ -6716,7 +7720,17 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_RGB_sft_bias(const q7_t *in_tenso
                                                 q15_t *in_tmp_buf,
                                                 q7_t *tmp_buf)
 {
-    return riscv_nn_conv_HWC_s8_s8_s8_RGB_sft_bias(in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim, in_tmp_buf, tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_s8_s8_s8_RGB_sft_bias(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim, in_tmp_buf,
+      tmp_buf);
+#else
+    return riscv_nn_conv_HWC_s8_s8_s8_RGB_sft_bias(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim, in_tmp_buf,
+      tmp_buf);
+#endif
 }
 
 /**
@@ -6785,7 +7799,17 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_RGB_sft_bias_fast(const q7_t *in_
                                                 q15_t *in_tmp_buf,
                                                 q15_t *wt_tmp_buf)
 {
-    return riscv_nn_conv_HWC_s8_s8_s8_RGB_sft_bias_fast(in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim, in_tmp_buf, wt_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_s8_s8_s8_RGB_sft_bias_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim, in_tmp_buf,
+      wt_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_s8_s8_s8_RGB_sft_bias_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim, in_tmp_buf,
+      wt_tmp_buf);
+#endif
 }
 
 
@@ -6855,7 +7879,17 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sft_bias(const q7_t *in_tensor,
                                             q15_t *in_tmp_buf,
                                             q7_t *tmp_buf)
 {
-    return riscv_nn_conv_HWC_s8_s8_s8_sft_bias(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim, in_tmp_buf, tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_s8_s8_s8_sft_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf, tmp_buf);
+#else
+    return riscv_nn_conv_HWC_s8_s8_s8_sft_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf, tmp_buf);
+#endif
 }
 
 /**
@@ -6940,7 +7974,19 @@ static inline void hpm_nn_conv_HWC_s8_s8_s8_sft_bias_any(const q7_t *in_tensor,
                                             q15_t *in_tmp_buf,
                                             q7_t *tmp_buf)
 {
-	riscv_nn_conv_HWC_s8_s8_s8_sft_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#if defined(__zcc__)
+    tpt_nn_conv_HWC_s8_s8_s8_sft_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#else
+    riscv_nn_conv_HWC_s8_s8_s8_sft_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#endif
 }
 
 /**
@@ -7011,7 +8057,17 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sft_bias_fast(const q7_t *in_tens
                                 q15_t *in_tmp_buf,
                                 q7_t *tmp_buf)
 {
-    return riscv_nn_conv_HWC_s8_s8_s8_sft_bias_fast(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim, in_tmp_buf, tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_s8_s8_s8_sft_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf, tmp_buf);
+#else
+    return riscv_nn_conv_HWC_s8_s8_s8_sft_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf, tmp_buf);
+#endif
 }
 
 /**
@@ -7101,7 +8157,19 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sft_bias_fast_any(const q7_t *in_
                                                 q15_t *in_tmp_buf,
                                                 q7_t *tmp_buf)
 {
-    return riscv_nn_conv_HWC_s8_s8_s8_sft_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_s8_s8_s8_sft_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#else
+    return riscv_nn_conv_HWC_s8_s8_s8_sft_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#endif
 }
 
 
@@ -7171,7 +8239,17 @@ static inline int32_t hpm_nn_conv_HWC_s16_s16_s16_sft_bias(const q15_t *in_tenso
                                             q15_t *in_tmp_buf,
                                             q7_t *tmp_buf)
 {
-    return riscv_nn_conv_HWC_s16_s16_s16_sft_bias(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim, in_tmp_buf, tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_s16_s16_s16_sft_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf, tmp_buf);
+#else
+    return riscv_nn_conv_HWC_s16_s16_s16_sft_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf, tmp_buf);
+#endif
 }
 
 /**
@@ -7242,7 +8320,17 @@ static inline int32_t hpm_nn_conv_HWC_s16_s16_s16_sft_bias_fast(const q15_t *in_
                                                 q15_t *in_tmp_buf,
                                                 q7_t *tmp_buf)
 {
-    return riscv_nn_conv_HWC_s16_s16_s16_sft_bias_fast(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim, in_tmp_buf, tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_s16_s16_s16_sft_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf, tmp_buf);
+#else
+    return riscv_nn_conv_HWC_s16_s16_s16_sft_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf, tmp_buf);
+#endif
 }
 
 /**
@@ -7332,7 +8420,19 @@ static inline int32_t hpm_nn_conv_HWC_s16_s16_s16_sft_bias_fast_any(const q15_t 
                                                 q15_t *in_tmp_buf,
                                                 q7_t *tmp_buf)
 {
-    return riscv_nn_conv_HWC_s16_s16_s16_sft_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_s16_s16_s16_sft_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#else
+    return riscv_nn_conv_HWC_s16_s16_s16_sft_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#endif
 }
 
 /**
@@ -7402,7 +8502,17 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sft_bias(const q7_t *in_tensor
                                             q15_t *in_tmp_buf,
                                             q7_t *tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_s8_s8_s8_sft_bias(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim, in_tmp_buf, tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_s8_s8_s8_sft_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf, tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_s8_s8_s8_sft_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, bias_lshift, out_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf, tmp_buf);
+#endif
 }
 
 /**
@@ -7488,7 +8598,19 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sft_bias_any(const q7_t *in_te
                                                 q15_t *in_tmp_buf,
                                                 q7_t *tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_s8_s8_s8_sft_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_s8_s8_s8_sft_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_s8_s8_s8_sft_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, bias_lshift, out_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#endif
 }
 
 /**
@@ -7557,7 +8679,19 @@ static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_sym_bias_fast_any(const q7_t 
                                                 const uint16_t out_tensor_dim_y,
                                                 q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_1x1_HWC_s8_s8_s8_sym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_1x1_HWC_s8_s8_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_1x1_HWC_s8_s8_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -7627,7 +8761,19 @@ static inline int32_t hpm_nn_conv_1x1_HWC_s8_s16_s8_sym_bias_fast_any(const q7_t
                                                     const uint16_t out_tensor_dim_y,
                                                     q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_1x1_HWC_s8_s16_s8_sym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_1x1_HWC_s8_s16_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_1x1_HWC_s8_s16_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -7696,7 +8842,19 @@ static inline int32_t hpm_nn_conv_1x1_HWC_u8_u8_s8_sym_bias_fast_any(const u8_t 
                                                 const uint16_t out_tensor_dim_y,
                                                 q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_1x1_HWC_u8_u8_s8_sym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_1x1_HWC_u8_u8_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_1x1_HWC_u8_u8_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -7766,7 +8924,19 @@ static inline int32_t hpm_nn_conv_1x1_HWC_u8_s8_s8_sym_bias_fast_any(const u8_t 
                                                     const uint16_t out_tensor_dim_y,
                                                     q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_1x1_HWC_u8_s8_s8_sym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_1x1_HWC_u8_s8_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_1x1_HWC_u8_s8_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -7836,7 +9006,19 @@ static inline int32_t hpm_nn_conv_1x1_HWC_u8_s16_s8_sym_bias_fast_any(const u8_t
                                                     const uint16_t out_tensor_dim_y,
                                                     q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_1x1_HWC_u8_s16_s8_sym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_1x1_HWC_u8_s16_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_1x1_HWC_u8_s16_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -7903,7 +9085,19 @@ static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_sym_fast_any(const q7_t *in_t
                                             const uint16_t out_tensor_dim_y,
                                             q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_1x1_HWC_s8_s8_s8_sym_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_1x1_HWC_s8_s8_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_1x1_HWC_s8_s8_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -7971,7 +9165,19 @@ static inline int32_t hpm_nn_conv_1x1_HWC_s8_s16_s8_sym_fast_any(const q7_t *in_
                                                 const uint16_t out_tensor_dim_y,
                                                 q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_1x1_HWC_s8_s16_s8_sym_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_1x1_HWC_s8_s16_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_1x1_HWC_s8_s16_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -8038,7 +9244,19 @@ static inline int32_t hpm_nn_conv_1x1_HWC_u8_u8_s8_sym_fast_any(const u8_t *in_t
                                             const uint16_t out_tensor_dim_y,
                                             q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_1x1_HWC_u8_u8_s8_sym_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_1x1_HWC_u8_u8_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_1x1_HWC_u8_u8_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -8106,7 +9324,19 @@ static inline int32_t hpm_nn_conv_1x1_HWC_u8_s8_s8_sym_fast_any(const u8_t *in_t
                                                 const uint16_t out_tensor_dim_y,
                                                 q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_1x1_HWC_u8_s8_s8_sym_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_1x1_HWC_u8_s8_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_1x1_HWC_u8_s8_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -8174,7 +9404,19 @@ static inline int32_t hpm_nn_conv_1x1_HWC_u8_s16_s8_sym_fast_any(const u8_t *in_
                                                 const uint16_t out_tensor_dim_y,
                                                 q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_1x1_HWC_u8_s16_s8_sym_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_1x1_HWC_u8_s16_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_1x1_HWC_u8_s16_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -8224,7 +9466,17 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_RGB_sym_bias_fast(const q7_t *in_
                                             q15_t *in_tmp_buf,
                                             q15_t *wt_tmp_buf)
 {
-    return riscv_nn_conv_HWC_s8_s8_s8_RGB_sym_bias_fast(in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf, wt_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_s8_s8_s8_RGB_sym_bias_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_s8_s8_s8_RGB_sym_bias_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#endif
 }
 
 /**
@@ -8275,7 +9527,17 @@ static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_RGB_sym_bias_fast(const q7_t *in
                                                 q15_t *in_tmp_buf,
                                                 q15_t *wt_tmp_buf)
 {
-    return riscv_nn_conv_HWC_s8_s16_s8_RGB_sym_bias_fast(in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf, wt_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_s8_s16_s8_RGB_sym_bias_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_s8_s16_s8_RGB_sym_bias_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#endif
 }
 
 /**
@@ -8325,7 +9587,17 @@ static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_RGB_sym_bias_fast(const u8_t *in_
                                             q15_t *in_tmp_buf,
                                             q15_t *wt_tmp_buf)
 {
-    return riscv_nn_conv_HWC_u8_u8_s8_RGB_sym_bias_fast(in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf, wt_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_u8_u8_s8_RGB_sym_bias_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_u8_u8_s8_RGB_sym_bias_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#endif
 }
 
 /**
@@ -8375,7 +9647,17 @@ static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_RGB_sym_bias_fast(const u8_t *in_
                                                 q15_t *in_tmp_buf,
                                                 q15_t *wt_tmp_buf)
 {
-    return riscv_nn_conv_HWC_u8_s8_s8_RGB_sym_bias_fast(in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf, wt_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_u8_s8_s8_RGB_sym_bias_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_u8_s8_s8_RGB_sym_bias_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#endif
 }
 
 /**
@@ -8426,7 +9708,17 @@ static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_RGB_sym_bias_fast(const u8_t *in
                                                 q15_t *in_tmp_buf,
                                                 q15_t *wt_tmp_buf)
 {
-    return riscv_nn_conv_HWC_u8_s16_s8_RGB_sym_bias_fast(in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf, wt_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_u8_s16_s8_RGB_sym_bias_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_u8_s16_s8_RGB_sym_bias_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#endif
 }
 
 /**
@@ -8474,7 +9766,17 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_RGB_sym_fast(const q7_t *in_tenso
                                         q15_t *in_tmp_buf,
                                         q15_t *wt_tmp_buf)
 {
-    return riscv_nn_conv_HWC_s8_s8_s8_RGB_sym_fast(in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf, wt_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_s8_s8_s8_RGB_sym_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_s8_s8_s8_RGB_sym_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#endif
 }
 
 /**
@@ -8522,7 +9824,17 @@ static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_RGB_sym_fast(const q7_t *in_tens
                                             q15_t *in_tmp_buf,
                                             q15_t *wt_tmp_buf)
 {
-    return riscv_nn_conv_HWC_s8_s16_s8_RGB_sym_fast(in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf, wt_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_s8_s16_s8_RGB_sym_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_s8_s16_s8_RGB_sym_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#endif
 }
 
 /**
@@ -8570,7 +9882,17 @@ static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_RGB_sym_fast(const u8_t *in_tenso
                                         q15_t *in_tmp_buf,
                                         q15_t *wt_tmp_buf)
 {
-    return riscv_nn_conv_HWC_u8_u8_s8_RGB_sym_fast(in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf, wt_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_u8_u8_s8_RGB_sym_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_u8_u8_s8_RGB_sym_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#endif
 }
 
 /**
@@ -8618,7 +9940,17 @@ static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_RGB_sym_fast(const u8_t *in_tenso
                                             q15_t *in_tmp_buf,
                                             q15_t *wt_tmp_buf)
 {
-    return riscv_nn_conv_HWC_u8_s8_s8_RGB_sym_fast(in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf, wt_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_u8_s8_s8_RGB_sym_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_u8_s8_s8_RGB_sym_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#endif
 }
 
 /**
@@ -8666,7 +9998,17 @@ static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_RGB_sym_fast(const u8_t *in_tens
                                             q15_t *in_tmp_buf,
                                             q15_t *wt_tmp_buf)
 {
-    return riscv_nn_conv_HWC_u8_s16_s8_RGB_sym_fast(in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf, wt_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_u8_s16_s8_RGB_sym_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_u8_s16_s8_RGB_sym_fast(
+      in_tensor, in_tensor_dim, ker_weight, out_tensor_ch, ker_dim, pad, stride,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim,
+      in_tmp_buf, wt_tmp_buf);
+#endif
 }
 
 /**
@@ -8715,7 +10057,17 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sym_bias_fast(const q7_t *in_tens
                                         const uint16_t out_tensor_dim,
                                         q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_HWC_s8_s8_s8_sym_bias_fast(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_s8_s8_s8_sym_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_s8_s8_s8_sym_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -8764,7 +10116,17 @@ static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_sym_bias_fast(const q7_t *in_ten
                                             const uint16_t out_tensor_dim,
                                             q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_HWC_s8_s16_s8_sym_bias_fast(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_s8_s16_s8_sym_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_s8_s16_s8_sym_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -8813,7 +10175,17 @@ static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_sym_bias_fast(const u8_t *in_tens
                                         const uint16_t out_tensor_dim,
                                         q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_HWC_u8_u8_s8_sym_bias_fast(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_u8_u8_s8_sym_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_u8_u8_s8_sym_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -8862,7 +10234,17 @@ static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_sym_bias_fast(const u8_t *in_tens
                                             const uint16_t out_tensor_dim,
                                             q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_HWC_u8_s8_s8_sym_bias_fast(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_u8_s8_s8_sym_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_u8_s8_s8_sym_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -8911,7 +10293,17 @@ static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_sym_bias_fast(const u8_t *in_ten
                                             const uint16_t out_tensor_dim,
                                             q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_HWC_u8_s16_s8_sym_bias_fast(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_u8_s16_s8_sym_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_u8_s16_s8_sym_bias_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -8958,7 +10350,17 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sym_fast(const q7_t *in_tensor,
                                     const uint16_t out_tensor_dim,
                                     q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_HWC_s8_s8_s8_sym_fast(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_s8_s8_s8_sym_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_s8_s8_s8_sym_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9005,7 +10407,17 @@ static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_sym_fast(const q7_t *in_tensor,
                                         const uint16_t out_tensor_dim,
                                         q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_HWC_s8_s16_s8_sym_fast(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_s8_s16_s8_sym_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_s8_s16_s8_sym_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9052,7 +10464,17 @@ static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_sym_fast(const u8_t *in_tensor,
                                     const uint16_t out_tensor_dim,
                                     q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_HWC_u8_u8_s8_sym_fast(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_u8_u8_s8_sym_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_u8_u8_s8_sym_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9099,7 +10521,17 @@ static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_sym_fast(const u8_t *in_tensor,
                                         const uint16_t out_tensor_dim,
                                         q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_HWC_u8_s8_s8_sym_fast(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_u8_s8_s8_sym_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_u8_s8_s8_sym_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9146,7 +10578,17 @@ static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_sym_fast(const u8_t *in_tensor,
                                         const uint16_t out_tensor_dim,
                                         q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_HWC_u8_s16_s8_sym_fast(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_u8_s16_s8_sym_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_u8_s16_s8_sym_fast(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9206,7 +10648,19 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sym_bias_fast_any(const q7_t *in_
                                             const uint16_t out_tensor_dim_y,
                                             q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_HWC_s8_s8_s8_sym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_s8_s8_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_s8_s8_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9267,7 +10721,19 @@ static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_sym_bias_fast_any(const q7_t *in
                                                 const uint16_t out_tensor_dim_y,
                                                 q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_HWC_s8_s16_s8_sym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_s8_s16_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_s8_s16_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9327,7 +10793,19 @@ static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_sym_bias_fast_any(const u8_t *in_
                                             const uint16_t out_tensor_dim_y,
                                             q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_HWC_u8_u8_s8_sym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_u8_u8_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_u8_u8_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9388,7 +10866,19 @@ static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_sym_bias_fast_any(const u8_t *in_
                                                 const uint16_t out_tensor_dim_y,
                                                 q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_HWC_u8_s8_s8_sym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_u8_s8_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_u8_s8_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9449,7 +10939,19 @@ static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_sym_bias_fast_any(const u8_t *in
                                                 const uint16_t out_tensor_dim_y,
                                                 q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_HWC_u8_s16_s8_sym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_u8_s16_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_u8_s16_s8_sym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9507,7 +11009,19 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_sym_fast_any(const q7_t *in_tenso
                                         const uint16_t out_tensor_dim_y,
                                         q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_HWC_s8_s8_s8_sym_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_s8_s8_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_s8_s8_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9565,7 +11079,19 @@ static inline int32_t hpm_nn_conv_HWC_s8_s16_s8_sym_fast_any(const q7_t *in_tens
                                             const uint16_t out_tensor_dim_y,
                                             q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_HWC_s8_s16_s8_sym_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_s8_s16_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_s8_s16_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9623,7 +11149,19 @@ static inline int32_t hpm_nn_conv_HWC_u8_u8_s8_sym_fast_any(const u8_t *in_tenso
                                         const uint16_t out_tensor_dim_y,
                                         q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_HWC_u8_u8_s8_sym_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_u8_u8_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_u8_u8_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9681,7 +11219,19 @@ static inline int32_t hpm_nn_conv_HWC_u8_s8_s8_sym_fast_any(const u8_t *in_tenso
                                             const uint16_t out_tensor_dim_y,
                                             q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_HWC_u8_s8_s8_sym_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_u8_s8_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_u8_s8_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9739,7 +11289,19 @@ static inline int32_t hpm_nn_conv_HWC_u8_s16_s8_sym_fast_any(const u8_t *in_tens
                                             const uint16_t out_tensor_dim_y,
                                             q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_HWC_u8_s16_s8_sym_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_u8_s16_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_u8_s16_s8_sym_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 
@@ -9789,7 +11351,17 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sym_bias(const q7_t *in_tensor
                                         const uint16_t out_tensor_dim,
                                         q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_s8_s8_s8_sym_bias(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_s8_s8_s8_sym_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_s8_s8_s8_sym_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9838,7 +11410,17 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s16_s8_sym_bias(const q7_t *in_tenso
                                             const uint16_t out_tensor_dim,
                                             q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_s8_s16_s8_sym_bias(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_s8_s16_s8_sym_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_s8_s16_s8_sym_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9887,7 +11469,17 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_u8_s8_sym_bias(const u8_t *in_tensor
                                         const uint16_t out_tensor_dim,
                                         q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_u8_u8_s8_sym_bias(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_u8_u8_s8_sym_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_u8_u8_s8_sym_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9936,7 +11528,17 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_s8_s8_sym_bias(const u8_t *in_tensor
                                         const uint16_t out_tensor_dim,
                                         q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_u8_s8_s8_sym_bias(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_u8_s8_s8_sym_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_u8_s8_s8_sym_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -9985,7 +11587,17 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_s16_s8_sym_bias(const u8_t *in_tenso
                                             const uint16_t out_tensor_dim,
                                             q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_u8_s16_s8_sym_bias(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_u8_s16_s8_sym_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_u8_s16_s8_sym_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, pre_rshift, out_scale, post_rshift,
+      out_tensor, out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10032,7 +11644,17 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sym(const q7_t *in_tensor,
                                 const uint16_t out_tensor_dim,
                                 q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_s8_s8_s8_sym(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_s8_s8_s8_sym(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_s8_s8_s8_sym(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10079,7 +11701,17 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s16_s8_sym(const q7_t *in_tensor,
                                     const uint16_t out_tensor_dim,
                                     q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_s8_s16_s8_sym(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_s8_s16_s8_sym(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_s8_s16_s8_sym(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10126,7 +11758,17 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_u8_s8_sym(const u8_t *in_tensor,
                                 const uint16_t out_tensor_dim,
                                 q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_u8_u8_s8_sym(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_u8_u8_s8_sym(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_u8_u8_s8_sym(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10173,7 +11815,17 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_s8_s8_sym(const u8_t *in_tensor,
                                     const uint16_t out_tensor_dim,
                                     q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_u8_s8_s8_sym(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_u8_s8_s8_sym(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_u8_s8_s8_sym(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10220,7 +11872,17 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_s16_s8_sym(const u8_t *in_tensor,
                                     const uint16_t out_tensor_dim,
                                     q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_u8_s16_s8_sym(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_u8_s16_s8_sym(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_u8_s16_s8_sym(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, pre_rshift, out_scale, post_rshift, out_tensor,
+      out_tensor_dim, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10280,7 +11942,19 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sym_bias_any(const q7_t *in_te
                                             const uint16_t out_tensor_dim_y,
                                             q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_s8_s8_s8_sym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_s8_s8_s8_sym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_s8_s8_s8_sym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10341,7 +12015,19 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s16_s8_sym_bias_any(const q7_t *in_t
                                                 const uint16_t out_tensor_dim_y,
                                                 q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_s8_s16_s8_sym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_s8_s16_s8_sym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_s8_s16_s8_sym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10401,7 +12087,19 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_u8_s8_sym_bias_any(const u8_t *in_te
                                             const uint16_t out_tensor_dim_y,
                                             q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_u8_u8_s8_sym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_u8_u8_s8_sym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_u8_u8_s8_sym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10462,7 +12160,19 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_s8_s8_sym_bias_any(const u8_t *in_te
                                             const uint16_t out_tensor_dim_y,
                                             q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_u8_s8_s8_sym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_u8_s8_s8_sym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_u8_s8_s8_sym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10523,7 +12233,19 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_s16_s8_sym_bias_any(const u8_t *in_t
                                                 const uint16_t out_tensor_dim_y,
                                                 q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_u8_s16_s8_sym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_u8_s16_s8_sym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_u8_s16_s8_sym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10581,7 +12303,19 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_sym_any(const q7_t *in_tensor,
                                     const uint16_t out_tensor_dim_y,
                                     q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_s8_s8_s8_sym_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_s8_s8_s8_sym_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_s8_s8_s8_sym_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10640,7 +12374,19 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s16_s8_sym_any(const q7_t *in_tensor
                                         const uint16_t out_tensor_dim_y,
                                         q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_s8_s16_s8_sym_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_s8_s16_s8_sym_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_s8_s16_s8_sym_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10698,7 +12444,19 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_u8_s8_sym_any(const u8_t *in_tensor,
                                     const uint16_t out_tensor_dim_y,
                                     q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_u8_u8_s8_sym_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_u8_u8_s8_sym_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_u8_u8_s8_sym_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10757,7 +12515,19 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_s8_s8_sym_any(const u8_t *in_tensor,
                                         const uint16_t out_tensor_dim_y,
                                         q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_u8_s8_s8_sym_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_u8_s8_s8_sym_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_u8_s8_s8_sym_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10816,7 +12586,19 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_s16_s8_sym_any(const u8_t *in_tensor
                                         const uint16_t out_tensor_dim_y,
                                         q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_u8_s16_s8_sym_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_u8_s16_s8_sym_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_u8_s16_s8_sym_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -10888,7 +12670,19 @@ static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(const q7_t
                                     const uint16_t out_tensor_dim_y,
                                     q15_t *tmp_buf)
 {
-    return riscv_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, in_tensor_group, ker_weight, out_tensor_ch, pad_x, pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale, out_offset, in_offset, act_min, act_max, out_tensor_dim_x, out_tensor_dim_y, tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+      in_tensor_group, ker_weight, out_tensor_ch, pad_x, pad_y, stride_x,
+      stride_y, bias, out_tensor, out_shift, out_scale, out_offset, in_offset,
+      act_min, act_max, out_tensor_dim_x, out_tensor_dim_y, tmp_buf);
+#else
+    return riscv_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+      in_tensor_group, ker_weight, out_tensor_ch, pad_x, pad_y, stride_x,
+      stride_y, bias, out_tensor, out_shift, out_scale, out_offset, in_offset,
+      act_min, act_max, out_tensor_dim_x, out_tensor_dim_y, tmp_buf);
+#endif
 }
 
 /**
@@ -10899,7 +12693,13 @@ static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(const q7_t
  */
 static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(const uint16_t in_tensor_ch)
 {
-    return riscv_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(in_tensor_ch);
+#if defined(__zcc__)
+    return tpt_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
+      in_tensor_ch);
+#else
+    return riscv_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
+      in_tensor_ch);
+#endif
 }
 
 /**
@@ -10960,7 +12760,19 @@ static inline int hpm_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_tens
                                                 const uint16_t out_tensor_dim_x,
                                                 q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_ch, in_tensor_group, ker_weight, out_tensor_ch, ker_dim_x, pad_x, stride_x, bias, out_tensor, out_shift, out_scale, out_offset, in_offset, act_min, act_max, out_tensor_dim_x, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_ch, in_tensor_group, ker_weight,
+      out_tensor_ch, ker_dim_x, pad_x, stride_x, bias, out_tensor, out_shift,
+      out_scale, out_offset, in_offset, act_min, act_max, out_tensor_dim_x,
+      in_tmp_buf);
+#else
+    return riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_ch, in_tensor_group, ker_weight,
+      out_tensor_ch, ker_dim_x, pad_x, stride_x, bias, out_tensor, out_shift,
+      out_scale, out_offset, in_offset, act_min, act_max, out_tensor_dim_x,
+      in_tmp_buf);
+#endif
 }
 
 /**
@@ -10976,7 +12788,13 @@ static inline int32_t hpm_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size
                                                 const uint16_t ker_dim_x,
                                                 const uint16_t ker_dim_y)
 {
-    return riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(in_tensor_ch, ker_dim_x, ker_dim_y);
+#if defined(__zcc__)
+    return tpt_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(
+      in_tensor_ch, ker_dim_x, ker_dim_y);
+#else
+    return riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(
+      in_tensor_ch, ker_dim_x, ker_dim_y);
+#endif
 }
 
 /**
@@ -11045,7 +12863,21 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_tens
                                                 const uint16_t out_tensor_dim_y,
                                                 q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, in_tensor_group, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale, out_offset, in_offset, act_min, act_max, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+      in_tensor_group, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x,
+      pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale,
+      out_offset, in_offset, act_min, act_max, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+      in_tensor_group, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x,
+      pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale,
+      out_offset, in_offset, act_min, act_max, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -11060,7 +12892,13 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(con
                                         const uint16_t ker_dim_x,
                                         const uint16_t ker_dim_y)
 {
-    return riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(in_tensor_ch, ker_dim_x, ker_dim_y);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(
+      in_tensor_ch, ker_dim_x, ker_dim_y);
+#else
+    return riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(
+      in_tensor_ch, ker_dim_x, ker_dim_y);
+#endif
 }
 
 /**
@@ -11126,7 +12964,19 @@ static inline int32_t hpm_nn_conv_dw_HWC_3x3_s8_s8_s8_asym_bias_any(const int8_t
                                                 const int32_t dilation_y,
                                                 int16_t *tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_3x3_s8_s8_s8_asym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, pad_x, pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale, out_tensor_dim_x, out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x, dilation_y, tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_3x3_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, pad_x, pad_y, stride_x, stride_y, bias, out_tensor,
+      out_shift, out_scale, out_tensor_dim_x, out_tensor_dim_y, out_offset,
+      in_offset, act_min, act_max, dilation_x, dilation_y, tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_3x3_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, pad_x, pad_y, stride_x, stride_y, bias, out_tensor,
+      out_shift, out_scale, out_tensor_dim_x, out_tensor_dim_y, out_offset,
+      in_offset, act_min, act_max, dilation_x, dilation_y, tmp_buf);
+#endif
 }
 
 /**
@@ -11203,7 +13053,21 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_t
                                 const uint16_t dilation_y,
                                 q15_t *tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ch_mult, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale, out_tensor_dim_x, out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x, dilation_y, tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ch_mult, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x,
+      stride_y, bias, out_tensor, out_shift, out_scale, out_tensor_dim_x,
+      out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x,
+      dilation_y, tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ch_mult, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x,
+      stride_y, bias, out_tensor, out_shift, out_scale, out_tensor_dim_x,
+      out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x,
+      dilation_y, tmp_buf);
+#endif
 }
 
 /**
@@ -11276,7 +13140,21 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(const q7_t 
                                      const uint16_t dilation_y,
                                      q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale, out_tensor_dim_x, out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x, dilation_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, out_tensor, out_shift, out_scale, out_tensor_dim_x,
+      out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x,
+      dilation_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, out_tensor, out_shift, out_scale, out_tensor_dim_x,
+      out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x,
+      dilation_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -11291,7 +13169,13 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_
                                                   const uint16_t ker_dim_x,
                                                   const uint16_t ker_dim_y)
 {
-    return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(in_tensor_ch, ker_dim_x, ker_dim_y);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
+      in_tensor_ch, ker_dim_x, ker_dim_y);
+#else
+    return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
+      in_tensor_ch, ker_dim_x, ker_dim_y);
+#endif
 }
 
 /**
@@ -11360,7 +13244,21 @@ static inline int32_t hpm_nn_conv_dw_HWC_u8_u8_u8_asym_bias_any(const uint8_t *i
                                     const int32_t out_shift,
                                     const int32_t out_scale)
 {
-    return riscv_nn_conv_dw_HWC_u8_u8_u8_asym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, ker_dim_x, ker_dim_y, ch_mult, pad_x, pad_y, stride_x, stride_y, dilation_x, dilation_y, bias, in_offset, ker_offset, out_offset, out_tensor, out_tensor_dim_x, out_tensor_dim_y, act_min, act_max, out_shift, out_scale);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_u8_u8_u8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      ker_dim_x, ker_dim_y, ch_mult, pad_x, pad_y, stride_x, stride_y,
+      dilation_x, dilation_y, bias, in_offset, ker_offset, out_offset,
+      out_tensor, out_tensor_dim_x, out_tensor_dim_y, act_min, act_max,
+      out_shift, out_scale);
+#else
+    return riscv_nn_conv_dw_HWC_u8_u8_u8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      ker_dim_x, ker_dim_y, ch_mult, pad_x, pad_y, stride_x, stride_y,
+      dilation_x, dilation_y, bias, in_offset, ker_offset, out_offset,
+      out_tensor, out_tensor_dim_x, out_tensor_dim_y, act_min, act_max,
+      out_shift, out_scale);
+#endif
 }
 
 #ifdef __riscv_zfh
@@ -11418,7 +13316,19 @@ static inline int32_t hpm_nn_conv_1x1_HWC_f16_f16_f16_bias_any(const float16_t *
                                                 float16_t *in_tmp_buf,
                                                 float16_t *tmp_buf)
 {
-    return riscv_nn_conv_1x1_HWC_f16_f16_f16_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf, tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_1x1_HWC_f16_f16_f16_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf,
+      tmp_buf);
+#else
+    return riscv_nn_conv_1x1_HWC_f16_f16_f16_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, out_tensor, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf,
+      tmp_buf);
+#endif
 }
 
 /**
@@ -11456,7 +13366,17 @@ static inline int32_t hpm_nn_conv_HWC_f16_f16_f16_bias(const float16_t *in_tenso
                                         float16_t *in_tmp_buf,
                                         float16_t *tmp_buf)
 {
-    return riscv_nn_conv_HWC_f16_f16_f16_bias(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, out_tensor, out_tensor_dim, in_tmp_buf, tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_f16_f16_f16_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, out_tensor, out_tensor_dim, in_tmp_buf,
+      tmp_buf);
+#else
+    return riscv_nn_conv_HWC_f16_f16_f16_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, out_tensor, out_tensor_dim, in_tmp_buf,
+      tmp_buf);
+#endif
 }
 
 /**
@@ -11494,7 +13414,17 @@ static inline int32_t hpm_nn_conv_dw_HWC_f16_f16_f16_bias(const float16_t *in_te
                                             float16_t *in_tmp_buf,
                                             float16_t *tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_f16_f16_f16_bias(in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim, pad, stride, bias, out_tensor, out_tensor_dim, in_tmp_buf, tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_f16_f16_f16_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, out_tensor, out_tensor_dim, in_tmp_buf,
+      tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_f16_f16_f16_bias(
+      in_tensor, in_tensor_dim, in_tensor_ch, ker_weight, out_tensor_ch,
+      ker_dim, pad, stride, bias, out_tensor, out_tensor_dim, in_tmp_buf,
+      tmp_buf);
+#endif
 }
 #endif
 
@@ -11505,8 +13435,12 @@ static inline int32_t hpm_nn_conv_dw_HWC_f16_f16_f16_bias(const float16_t *in_te
 #endif
 
 #ifdef HPM_EN_MATH_NN_RVP32_LIB
-
+#if defined(__zcc__)
+#include "tpt_nn_convolution.h"
+#else
 #include "riscv_nn_convolution.h"
+#endif
+
 /**
  * @brief           This function performs convolution for signed 8-bit integer
  *                  inputs/outputs in any x and y dimensions with asymmetric
@@ -11573,7 +13507,21 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_tens
                                                 const uint16_t out_tensor_dim_y,
                                                 q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, in_tensor_group, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale, out_offset, in_offset, act_min, act_max, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+      in_tensor_group, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x,
+      pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale,
+      out_offset, in_offset, act_min, act_max, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+      in_tensor_group, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x,
+      pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale,
+      out_offset, in_offset, act_min, act_max, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -11645,7 +13593,19 @@ static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(const q7_t
                                     const uint16_t out_tensor_dim_y,
                                     q15_t *tmp_buf)
 {
-    return riscv_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, in_tensor_group, ker_weight, out_tensor_ch, pad_x, pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale, out_offset, in_offset, act_min, act_max, out_tensor_dim_x, out_tensor_dim_y, tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+      in_tensor_group, ker_weight, out_tensor_ch, pad_x, pad_y, stride_x,
+      stride_y, bias, out_tensor, out_shift, out_scale, out_offset, in_offset,
+      act_min, act_max, out_tensor_dim_x, out_tensor_dim_y, tmp_buf);
+#else
+    return riscv_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+      in_tensor_group, ker_weight, out_tensor_ch, pad_x, pad_y, stride_x,
+      stride_y, bias, out_tensor, out_shift, out_scale, out_offset, in_offset,
+      act_min, act_max, out_tensor_dim_x, out_tensor_dim_y, tmp_buf);
+#endif
 }
 
 /**
@@ -11722,7 +13682,21 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_t
                                 const uint16_t dilation_y,
                                 q15_t *tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ch_mult, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale, out_tensor_dim_x, out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x, dilation_y, tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ch_mult, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x,
+      stride_y, bias, out_tensor, out_shift, out_scale, out_tensor_dim_x,
+      out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x,
+      dilation_y, tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ch_mult, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x,
+      stride_y, bias, out_tensor, out_shift, out_scale, out_tensor_dim_x,
+      out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x,
+      dilation_y, tmp_buf);
+#endif
 }
 
 /**
@@ -11784,7 +13758,19 @@ static inline int hpm_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_tens
                                                 const uint16_t out_tensor_dim_x,
                                                 q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(in_tensor, in_tensor_dim_x, in_tensor_ch, in_tensor_group, ker_weight, out_tensor_ch, ker_dim_x, pad_x, stride_x, bias, out_tensor, out_shift, out_scale, out_offset, in_offset, act_min, act_max, out_tensor_dim_x, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_ch, in_tensor_group, ker_weight,
+      out_tensor_ch, ker_dim_x, pad_x, stride_x, bias, out_tensor, out_shift,
+      out_scale, out_offset, in_offset, act_min, act_max, out_tensor_dim_x,
+      in_tmp_buf);
+#else
+    return riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(
+      in_tensor, in_tensor_dim_x, in_tensor_ch, in_tensor_group, ker_weight,
+      out_tensor_ch, ker_dim_x, pad_x, stride_x, bias, out_tensor, out_shift,
+      out_scale, out_offset, in_offset, act_min, act_max, out_tensor_dim_x,
+      in_tmp_buf);
+#endif
 }
 
 /**
@@ -11857,7 +13843,21 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(const q7_t 
                                      const uint16_t dilation_y,
                                      q15_t *in_tmp_buf)
 {
-    return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale, out_tensor_dim_x, out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x, dilation_y, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, out_tensor, out_shift, out_scale, out_tensor_dim_x,
+      out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x,
+      dilation_y, in_tmp_buf);
+#else
+    return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
+      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
+      bias, out_tensor, out_shift, out_scale, out_tensor_dim_x,
+      out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x,
+      dilation_y, in_tmp_buf);
+#endif
 }
 
 /**
@@ -11868,7 +13868,13 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(const q7_t 
  */
 static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(const uint16_t in_tensor_ch)
 {
-    return riscv_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(in_tensor_ch);
+#if defined(__zcc__)
+    return tpt_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
+      in_tensor_ch);
+#else
+    return riscv_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
+      in_tensor_ch);
+#endif
 }
 
 /**
@@ -11883,7 +13889,13 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_
                                                   const uint16_t ker_dim_x,
                                                   const uint16_t ker_dim_y)
 {
-    return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(in_tensor_ch, ker_dim_x, ker_dim_y);
+#if defined(__zcc__)
+    return tpt_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
+      in_tensor_ch, ker_dim_x, ker_dim_y);
+#else
+    return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
+      in_tensor_ch, ker_dim_x, ker_dim_y);
+#endif
 }
 
 /**
@@ -11899,7 +13911,13 @@ static inline int32_t hpm_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size
                                                 const uint16_t ker_dim_x,
                                                 const uint16_t ker_dim_y)
 {
-    return riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(in_tensor_ch, ker_dim_x, ker_dim_y);
+#if defined(__zcc__)
+    return tpt_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(
+      in_tensor_ch, ker_dim_x, ker_dim_y);
+#else
+    return riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(
+      in_tensor_ch, ker_dim_x, ker_dim_y);
+#endif
 }
 
 /**
@@ -11913,8 +13931,15 @@ static inline int32_t hpm_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size
 static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(const uint16_t in_tensor_ch,
                                         const uint16_t ker_dim_x,
                                         const uint16_t ker_dim_y)
+
 {
-    return riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(in_tensor_ch, ker_dim_x, ker_dim_y);
+#if defined(__zcc__)
+    return tpt_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(
+      in_tensor_ch, ker_dim_x, ker_dim_y);
+#else
+    return riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(
+      in_tensor_ch, ker_dim_x, ker_dim_y);
+#endif
 }
 
 #endif
@@ -11923,7 +13948,11 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(con
 
 #ifdef HPM_MATH_NN_CONNECTED
 #ifdef HPM_EN_MATH_NN_LIB
+#if defined(__zcc__)
+#include "tpt_nn_fully_connected.h"
+#else
 #include "riscv_nn_fully_connected.h"
+#endif
 
 /**
  * @defgroup nnfullyconnect NN Fully Connected Functions
@@ -11977,8 +14006,15 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_sft_bias(const q7_t *in_vec,
                                     const q7_t *bias,
                                     q7_t *out_vec,
                                     q15_t *in_tmp_buf)
-{
-    return riscv_nn_fc_s8_s8_s8_sft_bias(in_vec, wt_mat, size, wt_row_num, bias_lshift, out_rshift, bias, out_vec, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_s8_s8_s8_sft_bias(in_vec, wt_mat, size, wt_row_num,
+                                     bias_lshift, out_rshift, bias, out_vec,
+                                     in_tmp_buf);
+#else
+    return riscv_nn_fc_s8_s8_s8_sft_bias(in_vec, wt_mat, size, wt_row_num,
+                                       bias_lshift, out_rshift, bias, out_vec,
+                                       in_tmp_buf);
+#endif
 }
 
 /**
@@ -12012,7 +14048,15 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_sft_bias_fast(const q7_t *in_vec,
                                         q7_t *out_vec,
                                         q15_t *in_tmp_buf)
 {
-    return riscv_nn_fc_s8_s8_s8_sft_bias_fast(in_vec, wt_mat, size, wt_row_num, bias_lshift, out_rshift, bias, out_vec, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_s8_s8_s8_sft_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                          bias_lshift, out_rshift, bias,
+                                          out_vec, in_tmp_buf);
+#else
+    return riscv_nn_fc_s8_s8_s8_sft_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                            bias_lshift, out_rshift, bias,
+                                            out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12039,7 +14083,15 @@ static inline int32_t hpm_nn_fc_s16_s16_s16_sft_bias(const q15_t *in_vec,
                                         q15_t *out_vec,
                                         q15_t *tmp_buf)
 {
-    return riscv_nn_fc_s16_s16_s16_sft_bias(in_vec, wt_mat, size, wt_row_num, bias_lshift, out_rshift, bias, out_vec, tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_s16_s16_s16_sft_bias(in_vec, wt_mat, size, wt_row_num,
+                                        bias_lshift, out_rshift, bias, out_vec,
+                                        tmp_buf);
+#else
+    return riscv_nn_fc_s16_s16_s16_sft_bias(in_vec, wt_mat, size, wt_row_num,
+                                          bias_lshift, out_rshift, bias,
+                                          out_vec, tmp_buf);
+#endif
 }
 
 /**
@@ -12074,7 +14126,15 @@ static inline int32_t hpm_nn_fc_s16_s16_s16_sft_bias_fast(const q15_t *in_vec,
                                             q15_t *out_vec,
                                             q15_t *in_tmp_buf)
 {
-    return riscv_nn_fc_s16_s16_s16_sft_bias_fast(in_vec, wt_mat, size, wt_row_num, bias_lshift, out_rshift, bias, out_vec, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_s16_s16_s16_sft_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                             bias_lshift, out_rshift, bias,
+                                             out_vec, in_tmp_buf);
+#else
+    return riscv_nn_fc_s16_s16_s16_sft_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                               bias_lshift, out_rshift, bias,
+                                               out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12102,7 +14162,15 @@ static inline int32_t hpm_nn_fc_mat_vec_s16_s16_s8_sft_bias(const q15_t *in_vec,
                                                 q15_t *out_vec,
                                                 q15_t *tmp_buf)
 {
-    return riscv_nn_fc_mat_vec_s16_s16_s8_sft_bias(in_vec, wt_mat, size, wt_row_num, bias_lshift, out_rshift, bias, out_vec, tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_mat_vec_s16_s16_s8_sft_bias(in_vec, wt_mat, size, wt_row_num,
+                                               bias_lshift, out_rshift, bias,
+                                               out_vec, tmp_buf);
+#else
+    return riscv_nn_fc_mat_vec_s16_s16_s8_sft_bias(
+      in_vec, wt_mat, size, wt_row_num, bias_lshift, out_rshift, bias, out_vec,
+      tmp_buf);
+#endif
 }
 
 /**
@@ -12136,7 +14204,15 @@ static inline int32_t hpm_nn_fc_mat_vec_s16_s16_s8_sft_bias_fast(const q15_t *in
                                                     q15_t *out_vec,
                                                     q15_t *tmp_buf)
 {
-    return riscv_nn_fc_mat_vec_s16_s16_s8_sft_bias_fast(in_vec, wt_mat, size, wt_row_num, bias_lshift, out_rshift, bias, out_vec, tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_mat_vec_s16_s16_s8_sft_bias_fast(
+      in_vec, wt_mat, size, wt_row_num, bias_lshift, out_rshift, bias, out_vec,
+      tmp_buf);
+#else
+    return riscv_nn_fc_mat_vec_s16_s16_s8_sft_bias_fast(
+      in_vec, wt_mat, size, wt_row_num, bias_lshift, out_rshift, bias, out_vec,
+      tmp_buf);
+#endif
 }
 
 /**
@@ -12174,7 +14250,15 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_sym_bias(const q7_t *in_vec,
                                     q7_t *out_vec,
                                     q15_t *in_tmp_buf)
 {
-    return riscv_nn_fc_s8_s8_s8_sym_bias(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, bias, out_vec, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_s8_s8_s8_sym_bias(in_vec, wt_mat, size, wt_row_num,
+                                     pre_rshift, out_scale, post_rshift, bias,
+                                     out_vec, in_tmp_buf);
+#else
+    return riscv_nn_fc_s8_s8_s8_sym_bias(in_vec, wt_mat, size, wt_row_num,
+                                       pre_rshift, out_scale, post_rshift, bias,
+                                       out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12212,7 +14296,15 @@ static inline int32_t hpm_nn_fc_s8_s16_s8_sym_bias(const q7_t *in_vec,
                                     q15_t *out_vec,
                                     q15_t *in_tmp_buf)
 {
-    return riscv_nn_fc_s8_s16_s8_sym_bias(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, bias, out_vec, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_s8_s16_s8_sym_bias(in_vec, wt_mat, size, wt_row_num,
+                                      pre_rshift, out_scale, post_rshift, bias,
+                                      out_vec, in_tmp_buf);
+#else
+    return riscv_nn_fc_s8_s16_s8_sym_bias(in_vec, wt_mat, size, wt_row_num,
+                                        pre_rshift, out_scale, post_rshift,
+                                        bias, out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12250,7 +14342,15 @@ static inline int32_t hpm_nn_fc_u8_u8_s8_sym_bias(const u8_t *in_vec,
                                     u8_t *out_vec,
                                     q15_t *in_tmp_buf)
 {
-    return riscv_nn_fc_u8_u8_s8_sym_bias(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, bias, out_vec, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_u8_u8_s8_sym_bias(in_vec, wt_mat, size, wt_row_num,
+                                     pre_rshift, out_scale, post_rshift, bias,
+                                     out_vec, in_tmp_buf);
+#else
+    return riscv_nn_fc_u8_u8_s8_sym_bias(in_vec, wt_mat, size, wt_row_num,
+                                       pre_rshift, out_scale, post_rshift, bias,
+                                       out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12288,7 +14388,15 @@ static inline int32_t hpm_nn_fc_u8_s8_s8_sym_bias(const u8_t *in_vec,
                                     q7_t *out_vec,
                                     q15_t *in_tmp_buf)
 {
-    return riscv_nn_fc_u8_s8_s8_sym_bias(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, bias, out_vec, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_u8_s8_s8_sym_bias(in_vec, wt_mat, size, wt_row_num,
+                                     pre_rshift, out_scale, post_rshift, bias,
+                                     out_vec, in_tmp_buf);
+#else
+    return riscv_nn_fc_u8_s8_s8_sym_bias(in_vec, wt_mat, size, wt_row_num,
+                                       pre_rshift, out_scale, post_rshift, bias,
+                                       out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12326,7 +14434,15 @@ static inline int32_t hpm_nn_fc_u8_s16_s8_sym_bias(const u8_t *in_vec,
                                     q15_t *out_vec,
                                     q15_t *in_tmp_buf)
 {
-    return riscv_nn_fc_u8_s16_s8_sym_bias(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, bias, out_vec, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_u8_s16_s8_sym_bias(in_vec, wt_mat, size, wt_row_num,
+                                      pre_rshift, out_scale, post_rshift, bias,
+                                      out_vec, in_tmp_buf);
+#else
+    return riscv_nn_fc_u8_s16_s8_sym_bias(in_vec, wt_mat, size, wt_row_num,
+                                        pre_rshift, out_scale, post_rshift,
+                                        bias, out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12362,7 +14478,13 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_sym(const q7_t *in_vec,
                                 q7_t *out_vec,
                                 q15_t *in_tmp_buf)
 {
-    return riscv_nn_fc_s8_s8_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, out_vec, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_s8_s8_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift,
+                                out_scale, post_rshift, out_vec, in_tmp_buf);
+#else
+    return riscv_nn_fc_s8_s8_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift,
+                                  out_scale, post_rshift, out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12398,7 +14520,13 @@ static inline int32_t hpm_nn_fc_s8_s16_s8_sym(const q7_t *in_vec,
                                 q15_t *out_vec,
                                 q15_t *in_tmp_buf)
 {
-    return riscv_nn_fc_s8_s16_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, out_vec, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_s8_s16_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift,
+                                 out_scale, post_rshift, out_vec, in_tmp_buf);
+#else
+    return riscv_nn_fc_s8_s16_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift,
+                                   out_scale, post_rshift, out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12434,7 +14562,13 @@ static inline int32_t hpm_nn_fc_u8_u8_s8_sym(const u8_t *in_vec,
                                 u8_t *out_vec,
                                 q15_t *in_tmp_buf)
 {
-    return riscv_nn_fc_u8_u8_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, out_vec, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_u8_u8_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift,
+                                out_scale, post_rshift, out_vec, in_tmp_buf);
+#else
+    return riscv_nn_fc_u8_u8_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift,
+                                  out_scale, post_rshift, out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12470,7 +14604,13 @@ static inline int32_t hpm_nn_fc_u8_s8_s8_sym(const u8_t *in_vec,
                                 q7_t *out_vec,
                                 q15_t *in_tmp_buf)
 {
-    return riscv_nn_fc_u8_s8_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, out_vec, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_u8_s8_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift,
+                                out_scale, post_rshift, out_vec, in_tmp_buf);
+#else
+    return riscv_nn_fc_u8_s8_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift,
+                                  out_scale, post_rshift, out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12506,7 +14646,13 @@ static inline int32_t hpm_nn_fc_u8_s16_s8_sym(const u8_t *in_vec,
                                 q15_t *out_vec,
                                 q15_t *in_tmp_buf)
 {
-    return riscv_nn_fc_u8_s16_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, out_vec, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_u8_s16_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift,
+                                 out_scale, post_rshift, out_vec, in_tmp_buf);
+#else
+    return riscv_nn_fc_u8_s16_s8_sym(in_vec, wt_mat, size, wt_row_num, pre_rshift,
+                                   out_scale, post_rshift, out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12544,7 +14690,15 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_sym_bias_fast(const q7_t *in_vec,
                                         q7_t *out_vec,
                                         q15_t *in_tmp_buf)
 {
-    return riscv_nn_fc_s8_s8_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, bias, out_vec, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_s8_s8_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                          pre_rshift, out_scale, post_rshift,
+                                          bias, out_vec, in_tmp_buf);
+#else
+    return riscv_nn_fc_s8_s8_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                            pre_rshift, out_scale, post_rshift,
+                                            bias, out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12583,7 +14737,15 @@ static inline int32_t hpm_nn_fc_s8_s16_s8_sym_bias_fast(const q7_t *in_vec,
                                             q15_t *out_vec,
                                             q15_t *in_tmp_buf)
 {
-    return riscv_nn_fc_s8_s16_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, bias, out_vec, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_s8_s16_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                           pre_rshift, out_scale, post_rshift,
+                                           bias, out_vec, in_tmp_buf);
+#else
+    return riscv_nn_fc_s8_s16_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                             pre_rshift, out_scale, post_rshift,
+                                             bias, out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12621,7 +14783,15 @@ static inline int32_t hpm_nn_fc_u8_u8_s8_sym_bias_fast(const u8_t *in_vec,
                                         u8_t *out_vec,
                                         q15_t *in_tmp_buf)
 {
-    return riscv_nn_fc_u8_u8_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, bias, out_vec, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_u8_u8_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                          pre_rshift, out_scale, post_rshift,
+                                          bias, out_vec, in_tmp_buf);
+#else
+    return riscv_nn_fc_u8_u8_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                            pre_rshift, out_scale, post_rshift,
+                                            bias, out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12660,7 +14830,15 @@ static inline int32_t hpm_nn_fc_u8_s8_s8_sym_bias_fast(const u8_t *in_vec,
                                         q7_t *out_vec,
                                         q15_t *in_tmp_buf)
 {
-    return riscv_nn_fc_u8_s8_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, bias, out_vec, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_u8_s8_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                          pre_rshift, out_scale, post_rshift,
+                                          bias, out_vec, in_tmp_buf);
+#else
+    return riscv_nn_fc_u8_s8_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                            pre_rshift, out_scale, post_rshift,
+                                            bias, out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12699,7 +14877,15 @@ static inline int32_t hpm_nn_fc_u8_s16_s8_sym_bias_fast(const u8_t *in_vec,
                                         q15_t *out_vec,
                                         q15_t *in_tmp_buf)
 {
-    return riscv_nn_fc_u8_s16_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, bias, out_vec, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_u8_s16_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                           pre_rshift, out_scale, post_rshift,
+                                           bias, out_vec, in_tmp_buf);
+#else
+    return riscv_nn_fc_u8_s16_s8_sym_bias_fast(in_vec, wt_mat, size, wt_row_num,
+                                             pre_rshift, out_scale, post_rshift,
+                                             bias, out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12735,7 +14921,15 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_sym_fast(const q7_t *in_vec,
                                     q7_t *out_vec,
                                     q15_t *in_tmp_buf)
 {
-    return riscv_nn_fc_s8_s8_s8_sym_fast(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, out_vec, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_s8_s8_s8_sym_fast(in_vec, wt_mat, size, wt_row_num,
+                                     pre_rshift, out_scale, post_rshift,
+                                     out_vec, in_tmp_buf);
+#else
+    return riscv_nn_fc_s8_s8_s8_sym_fast(in_vec, wt_mat, size, wt_row_num,
+                                       pre_rshift, out_scale, post_rshift,
+                                       out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12772,7 +14966,15 @@ static inline int32_t hpm_nn_fc_s8_s16_s8_sym_fast(const q7_t *in_vec,
                                     q15_t *out_vec,
                                     q15_t *in_tmp_buf)
 {
-    return riscv_nn_fc_s8_s16_s8_sym_fast(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, out_vec, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_s8_s16_s8_sym_fast(in_vec, wt_mat, size, wt_row_num,
+                                      pre_rshift, out_scale, post_rshift,
+                                      out_vec, in_tmp_buf);
+#else
+    return riscv_nn_fc_s8_s16_s8_sym_fast(in_vec, wt_mat, size, wt_row_num,
+                                        pre_rshift, out_scale, post_rshift,
+                                        out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12808,7 +15010,15 @@ static inline int32_t hpm_nn_fc_u8_u8_s8_sym_fast(const u8_t *in_vec,
                                     u8_t *out_vec,
                                     q15_t *in_tmp_buf)
 {
-    return riscv_nn_fc_u8_u8_s8_sym_fast(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, out_vec, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_u8_u8_s8_sym_fast(in_vec, wt_mat, size, wt_row_num,
+                                     pre_rshift, out_scale, post_rshift,
+                                     out_vec, in_tmp_buf);
+#else
+    return riscv_nn_fc_u8_u8_s8_sym_fast(in_vec, wt_mat, size, wt_row_num,
+                                       pre_rshift, out_scale, post_rshift,
+                                       out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12845,7 +15055,15 @@ static inline int32_t hpm_nn_fc_u8_s8_s8_sym_fast(const u8_t *in_vec,
                                     q7_t *out_vec,
                                     q15_t *in_tmp_buf)
 {
-    return riscv_nn_fc_u8_s8_s8_sym_fast(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, out_vec, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_u8_s8_s8_sym_fast(in_vec, wt_mat, size, wt_row_num,
+                                     pre_rshift, out_scale, post_rshift,
+                                     out_vec, in_tmp_buf);
+#else
+    return riscv_nn_fc_u8_s8_s8_sym_fast(in_vec, wt_mat, size, wt_row_num,
+                                       pre_rshift, out_scale, post_rshift,
+                                       out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12882,7 +15100,15 @@ static inline int32_t hpm_nn_fc_u8_s16_s8_sym_fast(const u8_t *in_vec,
                                     q15_t *out_vec,
                                     q15_t *in_tmp_buf)
 {
-    return riscv_nn_fc_u8_s16_s8_sym_fast(in_vec, wt_mat, size, wt_row_num, pre_rshift, out_scale, post_rshift, out_vec, in_tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_u8_s16_s8_sym_fast(in_vec, wt_mat, size, wt_row_num,
+                                      pre_rshift, out_scale, post_rshift,
+                                      out_vec, in_tmp_buf);
+#else
+    return riscv_nn_fc_u8_s16_s8_sym_fast(in_vec, wt_mat, size, wt_row_num,
+                                        pre_rshift, out_scale, post_rshift,
+                                        out_vec, in_tmp_buf);
+#endif
 }
 
 /**
@@ -12900,7 +15126,11 @@ static inline void hpm_nn_fc_s8_wt_converter(const q7_t *wt_mat,
                                 const uint32_t wt_row_num,
                                 q7_t *wt_mat_out)
 {
+#if defined(__zcc__)
+    tpt_nn_fc_s8_wt_converter(wt_mat, size, wt_row_num, wt_mat_out);
+#else
     riscv_nn_fc_s8_wt_converter(wt_mat, size, wt_row_num, wt_mat_out);
+#endif
 }
 
 /**
@@ -12918,7 +15148,11 @@ static inline void hpm_nn_fc_s16_wt_converter(const q15_t *wt_mat,
                                 const uint32_t wt_row_num,
                                 q15_t *wt_mat_out)
 {
+#if defined(__zcc__)
+    tpt_nn_fc_s16_wt_converter(wt_mat, size, wt_row_num, wt_mat_out);
+#else
     riscv_nn_fc_s16_wt_converter(wt_mat, size, wt_row_num, wt_mat_out);
+#endif
 }
 
 /**
@@ -12935,7 +15169,11 @@ static inline void hpm_nn_fc_mat_vec_s8_wt_converter(const q7_t *wt_mat,
                                         const uint32_t wt_row_num,
                                         q7_t *wt_mat_out)
 {
+#if defined(__zcc__)
+    tpt_nn_fc_mat_vec_s8_wt_converter(wt_mat, size, wt_row_num, wt_mat_out);
+#else
     riscv_nn_fc_mat_vec_s8_wt_converter(wt_mat, size, wt_row_num, wt_mat_out);
+#endif
 }
 
 /**
@@ -12984,7 +15222,17 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_asym_bias(const int8_t *in_vec,
                                     const int32_t act_max,
                                     q15_t *tmp_buf)
 {
-    return riscv_nn_fc_s8_s8_s8_asym_bias(in_vec, wt_mat, in_vec_col, wt_mat_row, in_vec_group, in_offset, wt_offset, out_scale, out_shift, out_offset, bias, out_vec, act_min, act_max, tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_s8_s8_s8_asym_bias(in_vec, wt_mat, in_vec_col, wt_mat_row,
+                                      in_vec_group, in_offset, wt_offset,
+                                      out_scale, out_shift, out_offset, bias,
+                                      out_vec, act_min, act_max, tmp_buf);
+#else
+    return riscv_nn_fc_s8_s8_s8_asym_bias(in_vec, wt_mat, in_vec_col, wt_mat_row,
+                                        in_vec_group, in_offset, wt_offset,
+                                        out_scale, out_shift, out_offset, bias,
+                                        out_vec, act_min, act_max, tmp_buf);
+#endif
 }
 
 /**
@@ -12996,7 +15244,11 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_asym_bias(const int8_t *in_vec,
  */
 static inline int32_t hpm_nn_fc_s8_s8_s8_asym_bias_get_buffer_size(const uint16_t in_vec_col)
 {
+#if defined(__zcc__)
+    return tpt_nn_fc_s8_s8_s8_asym_bias_get_buffer_size(in_vec_col);
+#else
     return riscv_nn_fc_s8_s8_s8_asym_bias_get_buffer_size(in_vec_col);
+#endif
 }
 
 /**
@@ -13006,7 +15258,11 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_asym_bias_get_buffer_size(const uint16_
 #endif
 
 #ifdef HPM_EN_MATH_NN_RVP32_LIB
+#if defined(__zcc__)
+#include "tpt_nn_fully_connected.h"
+#else
 #include "riscv_nn_fully_connected.h"
+#endif
 
 /**
  * @brief           This is a fully connected layer function for signed 8-bit
@@ -13054,7 +15310,17 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_asym_bias(const int8_t *in_vec,
                                     const int32_t act_max,
                                     q15_t *tmp_buf)
 {
-    return riscv_nn_fc_s8_s8_s8_asym_bias(in_vec, wt_mat, in_vec_col, wt_mat_row, in_vec_group, in_offset, wt_offset, out_scale, out_shift, out_offset, bias, out_vec, act_min, act_max, tmp_buf);
+#if defined(__zcc__)
+    return tpt_nn_fc_s8_s8_s8_asym_bias(in_vec, wt_mat, in_vec_col, wt_mat_row,
+                                      in_vec_group, in_offset, wt_offset,
+                                      out_scale, out_shift, out_offset, bias,
+                                      out_vec, act_min, act_max, tmp_buf);
+#else
+    return riscv_nn_fc_s8_s8_s8_asym_bias(in_vec, wt_mat, in_vec_col, wt_mat_row,
+                                        in_vec_group, in_offset, wt_offset,
+                                        out_scale, out_shift, out_offset, bias,
+                                        out_vec, act_min, act_max, tmp_buf);
+#endif
 }
 
 /**
@@ -13066,7 +15332,11 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_asym_bias(const int8_t *in_vec,
  */
 static inline int32_t hpm_nn_fc_s8_s8_s8_asym_bias_get_buffer_size(const uint16_t in_vec_col)
 {
+#if defined(__zcc__)
+    return tpt_nn_fc_s8_s8_s8_asym_bias_get_buffer_size(in_vec_col);
+#else
     return riscv_nn_fc_s8_s8_s8_asym_bias_get_buffer_size(in_vec_col);
+#endif
 }
 
 #endif /* HPM_EN_MATH_NN_RVP32_LIB */
@@ -13075,7 +15345,11 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_asym_bias_get_buffer_size(const uint16_
 
 #ifdef HPM_MATH_NN_POOLING
 #ifdef HPM_EN_MATH_NN_LIB
+#if defined(__zcc__)
+#include "tpt_nn_pooling.h"
+#else
 #include "riscv_nn_pooling.h"
+#endif
 
 /**
  * @defgroup nnpooling NN Pooling Functions
@@ -13129,7 +15403,13 @@ static inline void hpm_nn_avepool_HWC_s8(q7_t *in_tensor,
                            q7_t *in_tmp_buf,
                            q7_t *out_tensor)
 {
-    riscv_nn_avepool_HWC_s8(in_tensor, in_tensor_dim, in_tensor_ch, ker_dim, pad, stride, out_tensor_dim, in_tmp_buf, out_tensor);
+#if defined(__zcc__)
+    tpt_nn_avepool_HWC_s8(in_tensor, in_tensor_dim, in_tensor_ch, ker_dim, pad,
+                        stride, out_tensor_dim, in_tmp_buf, out_tensor);
+#else
+    riscv_nn_avepool_HWC_s8(in_tensor, in_tensor_dim, in_tensor_ch, ker_dim, pad,
+                          stride, out_tensor_dim, in_tmp_buf, out_tensor);
+#endif
 }
 
 /**
@@ -13194,7 +15474,17 @@ static inline void hpm_nn_avepool_HWC_s8_any(q7_t *in_tensor,
                                q7_t *out_tensor,
                                const uint16_t out_lshift)
 {
-    riscv_nn_avepool_HWC_s8_any(in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y, out_tensor_dim_x, out_tensor_dim_y, in_tmp_buf, out_tensor, out_lshift);
+#if defined(__zcc__)
+    tpt_nn_avepool_HWC_s8_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_dim_x,
+      ker_dim_y, pad_x, pad_y, stride_x, stride_y, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf, out_tensor, out_lshift);
+#else
+    riscv_nn_avepool_HWC_s8_any(
+      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_dim_x,
+      ker_dim_y, pad_x, pad_y, stride_x, stride_y, out_tensor_dim_x,
+      out_tensor_dim_y, in_tmp_buf, out_tensor, out_lshift);
+#endif
 }
 
 /**
@@ -13242,7 +15532,17 @@ static inline int32_t hpm_nn_avepool_HWC_s8_any_act(const int in_tensor_dim_y,
                                 int16_t *in_tmp_buf,
                                 int8_t *out_tensor)
 {
-    return riscv_nn_avepool_HWC_s8_any_act(in_tensor_dim_y, in_tensor_dim_x, out_tensor_dim_y, out_tensor_dim_x, stride_y, stride_x, ker_dim_y, ker_dim_x, pad_y, pad_x, act_min, act_max, in_tensor_ch, in_tensor, in_tmp_buf, out_tensor);
+#if defined(__zcc__)
+    return tpt_nn_avepool_HWC_s8_any_act(
+      in_tensor_dim_y, in_tensor_dim_x, out_tensor_dim_y, out_tensor_dim_x,
+      stride_y, stride_x, ker_dim_y, ker_dim_x, pad_y, pad_x, act_min, act_max,
+      in_tensor_ch, in_tensor, in_tmp_buf, out_tensor);
+#else
+    return riscv_nn_avepool_HWC_s8_any_act(
+      in_tensor_dim_y, in_tensor_dim_x, out_tensor_dim_y, out_tensor_dim_x,
+      stride_y, stride_x, ker_dim_y, ker_dim_x, pad_y, pad_x, act_min, act_max,
+      in_tensor_ch, in_tensor, in_tmp_buf, out_tensor);
+#endif
 }
 
 /**
@@ -13255,7 +15555,13 @@ static inline int32_t hpm_nn_avepool_HWC_s8_any_act(const int in_tensor_dim_y,
  */
 static inline int32_t hpm_nn_avepool_HWC_s8_any_act_get_buffer_size(const int out_tensor_dim_x, const int in_tensor_ch)
 {
-    return riscv_nn_avepool_HWC_s8_any_act_get_buffer_size(out_tensor_dim_x, in_tensor_ch);
+#if defined(__zcc__)
+    return tpt_nn_avepool_HWC_s8_any_act_get_buffer_size(out_tensor_dim_x,
+                                                       in_tensor_ch);
+#else
+    return riscv_nn_avepool_HWC_s8_any_act_get_buffer_size(out_tensor_dim_x,
+                                                         in_tensor_ch);
+#endif
 }
 
 /**
@@ -13297,7 +15603,13 @@ static inline int32_t hpm_nn_avepool_HWC_s8_any_act_get_buffer_size(const int ou
                             q7_t *in_tmp_buf,
                             q7_t *out_tensor)
 {
-    riscv_nn_maxpool_HWC_s8(in_tensor, in_tensor_dim, in_tensor_ch, ker_dim, pad, stride, out_tensor_dim, in_tmp_buf, out_tensor);
+#if defined(__zcc__)
+    tpt_nn_maxpool_HWC_s8(in_tensor, in_tensor_dim, in_tensor_ch, ker_dim, pad,
+                        stride, out_tensor_dim, in_tmp_buf, out_tensor);
+#else
+    riscv_nn_maxpool_HWC_s8(in_tensor, in_tensor_dim, in_tensor_ch, ker_dim, pad,
+                          stride, out_tensor_dim, in_tmp_buf, out_tensor);
+#endif
 }
 
 /**
@@ -13343,7 +15655,17 @@ static inline int32_t hpm_nn_maxpool_HWC_s8_any_act(const uint16_t in_tensor_dim
                                         int16_t *tmp_buffer,
                                         int8_t *out_tensor)
 {
-    return riscv_nn_maxpool_HWC_s8_any_act(in_tensor_dim_y, in_tensor_dim_x, out_tensor_dim_y, out_tensor_dim_x, stride_y, stride_x, ker_dim_y, ker_dim_x, pad_y, pad_x, act_min, act_max, in_tensor_ch, in_tensor, tmp_buffer, out_tensor);
+#if defined(__zcc__)
+    return tpt_nn_maxpool_HWC_s8_any_act(
+      in_tensor_dim_y, in_tensor_dim_x, out_tensor_dim_y, out_tensor_dim_x,
+      stride_y, stride_x, ker_dim_y, ker_dim_x, pad_y, pad_x, act_min, act_max,
+      in_tensor_ch, in_tensor, tmp_buffer, out_tensor);
+#else
+    return riscv_nn_maxpool_HWC_s8_any_act(
+      in_tensor_dim_y, in_tensor_dim_x, out_tensor_dim_y, out_tensor_dim_x,
+      stride_y, stride_x, ker_dim_y, ker_dim_x, pad_y, pad_x, act_min, act_max,
+      in_tensor_ch, in_tensor, tmp_buffer, out_tensor);
+#endif
 }
 
 /**
@@ -13353,7 +15675,11 @@ static inline int32_t hpm_nn_maxpool_HWC_s8_any_act(const uint16_t in_tensor_dim
 #endif
 
 #ifdef HPM_EN_MATH_NN_RVP32_LIB
+#if defined(__zcc__)
+#include "tpt_nn_pooling.h"
+#else
 #include "riscv_nn_pooling.h"
+#endif
 
 /**
  * @brief           This is an average pooling function for S8 inputs with any x
@@ -13400,7 +15726,17 @@ static inline int32_t hpm_nn_avepool_HWC_s8_any_act(const int in_tensor_dim_y,
                                 int16_t *in_tmp_buf,
                                 int8_t *out_tensor)
 {
-    return riscv_nn_avepool_HWC_s8_any_act(in_tensor_dim_y, in_tensor_dim_x, out_tensor_dim_y, out_tensor_dim_x, stride_y, stride_x, ker_dim_y, ker_dim_x, pad_y, pad_x, act_min, act_max, in_tensor_ch, in_tensor, in_tmp_buf, out_tensor);
+#if defined(__zcc__)
+    return tpt_nn_avepool_HWC_s8_any_act(
+      in_tensor_dim_y, in_tensor_dim_x, out_tensor_dim_y, out_tensor_dim_x,
+      stride_y, stride_x, ker_dim_y, ker_dim_x, pad_y, pad_x, act_min, act_max,
+      in_tensor_ch, in_tensor, in_tmp_buf, out_tensor);
+#else
+    return riscv_nn_avepool_HWC_s8_any_act(
+      in_tensor_dim_y, in_tensor_dim_x, out_tensor_dim_y, out_tensor_dim_x,
+      stride_y, stride_x, ker_dim_y, ker_dim_x, pad_y, pad_x, act_min, act_max,
+      in_tensor_ch, in_tensor, in_tmp_buf, out_tensor);
+#endif
 }
 
 /**
@@ -13413,7 +15749,13 @@ static inline int32_t hpm_nn_avepool_HWC_s8_any_act(const int in_tensor_dim_y,
  */
 static inline int32_t hpm_nn_avepool_HWC_s8_any_act_get_buffer_size(const int out_tensor_dim_x, const int in_tensor_ch)
 {
-    return riscv_nn_avepool_HWC_s8_any_act_get_buffer_size(out_tensor_dim_x, in_tensor_ch);
+#if defined(__zcc__)
+    return tpt_nn_avepool_HWC_s8_any_act_get_buffer_size(out_tensor_dim_x,
+                                                       in_tensor_ch);
+#else
+    return riscv_nn_avepool_HWC_s8_any_act_get_buffer_size(out_tensor_dim_x,
+                                                         in_tensor_ch);
+#endif
 }
 
 #endif
@@ -13421,7 +15763,11 @@ static inline int32_t hpm_nn_avepool_HWC_s8_any_act_get_buffer_size(const int ou
 
 #ifdef HPM_MATH_NN_SOFTMAX
 #ifdef HPM_EN_MATH_NN_LIB
+#if defined(__zcc__)
+#include "tpt_nn_softmax.h"
+#else
 #include "riscv_nn_softmax.h"
+#endif
 
 /**
  * @defgroup nnsoftmax NN Softmax Functions
@@ -13451,7 +15797,11 @@ static inline void hpm_nn_softmax_s8_fast(const q7_t *in_vec,
                             const uint16_t size,
                             q7_t *out_vec)
 {
+#if defined(__zcc__)
+    tpt_nn_softmax_s8_fast(in_vec, size, out_vec);
+#else
     riscv_nn_softmax_s8_fast(in_vec, size, out_vec);
+#endif
 }
 
 /**
@@ -13465,7 +15815,11 @@ static inline void hpm_nn_softmax_s16_fast(const q15_t *in_vec,
                             const uint16_t size,
                             q15_t *out_vec)
 {
+#if defined(__zcc__)
+    tpt_nn_softmax_s16_fast(in_vec, size, out_vec);
+#else
     riscv_nn_softmax_s16_fast(in_vec, size, out_vec);
+#endif
 }
 
 /**
@@ -13490,7 +15844,13 @@ static inline void hpm_nn_softmax_s8_hp(const int8_t *in_tensor,
                             const int32_t diff_min,
                             int8_t *out_tensor)
 {
-    riscv_nn_softmax_s8_hp(in_tensor, in_tensor_row, in_tensor_col, scale, lshift, diff_min, out_tensor);
+#if defined(__zcc__)
+    tpt_nn_softmax_s8_hp(in_tensor, in_tensor_row, in_tensor_col, scale, lshift,
+                       diff_min, out_tensor);
+#else
+    riscv_nn_softmax_s8_hp(in_tensor, in_tensor_row, in_tensor_col, scale, lshift,
+                         diff_min, out_tensor);
+#endif
 }
 
 /**
@@ -13515,7 +15875,13 @@ static inline void hpm_nn_softmax_u8_hp(const uint8_t *in_tensor,
                             const int32_t diff_min,
                             uint8_t *out_tensor)
 {
-    riscv_nn_softmax_u8_hp(in_tensor, in_tensor_row, in_tensor_col, scale, lshift, diff_min, out_tensor);
+#if defined(__zcc__)
+    tpt_nn_softmax_u8_hp(in_tensor, in_tensor_row, in_tensor_col, scale, lshift,
+                       diff_min, out_tensor);
+#else
+    riscv_nn_softmax_u8_hp(in_tensor, in_tensor_row, in_tensor_col, scale, lshift,
+                         diff_min, out_tensor);
+#endif
 }
 
 /**
@@ -13525,7 +15891,12 @@ static inline void hpm_nn_softmax_u8_hp(const uint8_t *in_tensor,
 #endif
 
 #ifdef HPM_EN_MATH_NN_RVP32_LIB
+#if defined(__zcc__)
+#include "tpt_nn_softmax.h"
+#else
 #include "riscv_nn_softmax.h"
+#endif
+
 /**
  * @brief           This is a softmax function for signed 8-bit integer input
  *                  tensor with high precision algorithm.
@@ -13548,7 +15919,13 @@ static inline void hpm_nn_softmax_s8_hp(const int8_t *in_tensor,
                             const int32_t diff_min,
                             int8_t *out_tensor)
 {
-    riscv_nn_softmax_s8_hp(in_tensor, in_tensor_row, in_tensor_col, scale, lshift, diff_min, out_tensor);
+#if defined(__zcc__)
+    tpt_nn_softmax_s8_hp(in_tensor, in_tensor_row, in_tensor_col, scale, lshift,
+                       diff_min, out_tensor);
+#else
+    riscv_nn_softmax_s8_hp(in_tensor, in_tensor_row, in_tensor_col, scale, lshift,
+                         diff_min, out_tensor);
+#endif
 }
 #endif
 
@@ -13556,7 +15933,11 @@ static inline void hpm_nn_softmax_s8_hp(const int8_t *in_tensor,
 
 #ifdef HPM_MATH_NN_UTIL
 #ifdef HPM_EN_MATH_NN_LIB
+#if defined(__zcc__)
+#include "tpt_nn_util.h"
+#else
 #include "riscv_nn_util.h"
+#endif
 
 /**
  * @defgroup nnutils NN Utils Functions
@@ -13579,7 +15960,11 @@ static inline int32_t hpm_nn_exp_f16(const float16_t *in_vec,
                         const uint32_t size,
                         float16_t *out_vec)
 {
+#if defined(__zcc__)
+    return tpt_nn_exp_f16(in_vec, size, out_vec);
+#else
     return riscv_nn_exp_f16(in_vec, size, out_vec);
+#endif
 }
 #endif
 
@@ -13603,7 +15988,11 @@ static inline void hpm_nn_reshape_s8(const int8_t *in_tensor,
                         int8_t *out_tensor,
                         const uint32_t size)
 {
+#if defined(__zcc__)
+    tpt_nn_reshape_s8(in_tensor, out_tensor, size);
+#else
     riscv_nn_reshape_s8(in_tensor, out_tensor, size);
+#endif
 }
 
 /**
@@ -13631,7 +16020,11 @@ static inline int32_t hpm_nn_top_k_s8(q7_t *in_vec,
                         q7_t *val,
                         uint32_t *idx)
 {
+#if defined(__zcc__)
+    return tpt_nn_top_k_s8(in_vec, size, k, val, idx);
+#else
     return riscv_nn_top_k_s8(in_vec, size, k, val, idx);
+#endif
 }
 
 #ifdef __riscv_zfh
@@ -13660,7 +16053,11 @@ static inline int32_t hpm_nn_top_k_f16(float16_t *in_vec,
                         float16_t *val,
                         uint32_t *idx)
 {
+#if defined(__zcc__)
+    return tpt_nn_top_k_f16(in_vec, size, k, val, idx);
+#else
     return riscv_nn_top_k_f16(in_vec, size, k, val, idx);
+#endif
 }
 #endif
 
@@ -13671,8 +16068,12 @@ static inline int32_t hpm_nn_top_k_f16(float16_t *in_vec,
 #endif
 
 #ifdef HPM_EN_MATH_NN_RVP32_LIB
-
+#if defined(__zcc__)
+#include "tpt_nn_util.h"
+#else
 #include "riscv_nn_util.h"
+#endif
+
 /**
  * @brief           This function turns the input tensor into another tensor
  *                  with the same data but in a different shape.
@@ -13693,7 +16094,11 @@ static inline void hpm_nn_reshape_s8(const int8_t *in_tensor,
                         int8_t *out_tensor,
                         const uint32_t size)
 {
+#if defined(__zcc__)
+    tpt_nn_reshape_s8(in_tensor, out_tensor, size);
+#else
     riscv_nn_reshape_s8(in_tensor, out_tensor, size);
+#endif
 }
 
 #endif

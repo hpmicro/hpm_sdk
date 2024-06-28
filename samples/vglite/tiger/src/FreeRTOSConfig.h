@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -22,8 +22,13 @@
 
 #include "board.h"
 
+#if (portasmHAS_MTIME == 0)
+#define configMTIME_BASE_ADDRESS                (0)
+#define configMTIMECMP_BASE_ADDRESS             (0)
+#else
 #define configMTIME_BASE_ADDRESS                (HPM_MCHTMR_BASE)
 #define configMTIMECMP_BASE_ADDRESS             (HPM_MCHTMR_BASE + 8UL)
+#endif
 
 #define configUSE_PREEMPTION                    1
 #define configCPU_CLOCK_HZ                      ((uint32_t) 24000000)

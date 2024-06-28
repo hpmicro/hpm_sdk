@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2001-2003 Swedish Institute of Computer Science.
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -38,7 +38,7 @@
 #define SYS_LIGHTWEIGHT_PROT            0
 #define LWIP_PROVIDE_ERRNO              1
 
-#if defined(__SEGGER_RTL_VERSION)
+#if defined(__SEGGER_RTL_VERSION) || defined(__zcc__)
 #define LWIP_TIMEVAL_PRIVATE            1
 #else
 #define LWIP_TIMEVAL_PRIVATE            0
@@ -63,7 +63,7 @@
 #define ETH_PAD_SIZE                    0
 #define LWIP_IP_ACCEPT_UDP_PORT(p)      ((p) == PP_NTOHS(67))
 
-#define MEM_SIZE                        (15 * 1024)
+#define MEM_SIZE                        (11 * 1024)
 #define TCP_MSS                         (1500 /*mtu*/ - 20 /*iphdr*/ - 20 /*tcphhr*/)
 #define TCP_SND_BUF                     (8 * TCP_MSS)
 

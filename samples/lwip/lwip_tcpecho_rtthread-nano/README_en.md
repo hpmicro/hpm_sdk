@@ -33,7 +33,7 @@ This example shows TCP echo communication on RTThread-Nano.
    / | \     3.1.5 build Jan 10 2024
    2006 - 2020 Copyright by rt-thread team
   Enet phy init passed !
-msh >Link Status: Up
+  msh >Link Status: Up
   Link Speed:  1000Mbps
   Link Duplex: Full duplex
   IPv4 Address: 192.168.100.10

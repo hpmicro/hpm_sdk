@@ -7,6 +7,7 @@
     filex/README_zh
     hello_world/README_zh
     hello_world_mchtmr/README_zh
+    lowpower/README_zh
     tracex/README_zh
     netxduo/index_zh
     usbx/index_zh

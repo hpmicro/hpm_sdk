@@ -16,6 +16,7 @@ typedef struct {
     sd_cid_t cid;
     uint64_t         capacity;           /* Card Capacity */
     uint32_t         block_size;         /* Card Block Size */
+    uint32_t         block_count;
     uint8_t          card_type;
 } spi_sdcard_info_t;
 
@@ -24,7 +25,7 @@ typedef struct {
     void       (*cs_select)         (void);
     void       (*cs_relese)         (void);
     bool       (*sdcard_is_present) (void);
-    uint8_t    (*write_read_byte)   (uint8_t byte);
+    hpm_stat_t (*write_read_byte)   (uint8_t *in_byte, uint8_t *out_byte);
     hpm_stat_t (*write_cmd_data)    (uint8_t cmd, uint8_t *buffer, uint32_t size);
     hpm_stat_t (*write)             (uint8_t *buffer, uint32_t size);
     hpm_stat_t (*read)              (uint8_t *buffer, uint32_t size);

@@ -3,8 +3,8 @@
 
 cmake_minimum_required(VERSION 3.13)
 
-if("${CMAKE_BUILD_TYPE}" STREQUAL "")
-    SET(CMAKE_BUILD_TYPE flash_xip)
+if("${HPM_BUILD_TYPE}" STREQUAL "")
+    SET(HPM_BUILD_TYPE flash_xip)
 endif()
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
@@ -25,5 +25,7 @@ elseif("${HPM_SOC}" STREQUAL "HPM6880")
     sdk_app_src(src/hpm68xx/low_power.c)
 elseif("${HPM_SOC}" MATCHES "^HPM53")
     sdk_app_src(src/hpm53xx/low_power.c)
+elseif("${HPM_SOC}" STREQUAL "HPM6E80")
+    sdk_app_src(src/hpm6exx/low_power.c)
 endif()
 generate_ide_projects()

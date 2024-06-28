@@ -9,29 +9,50 @@
 #include "hpm_spi_sdcard.h"
 #include "board.h"
 
+#ifndef SPI_SD_LOG
+#define SPI_SD_LOG(....)
+#endif
+
+#define  CSD_VERSION_V1_0             (0U)
+#define  CSD_VERSION_V2_0             (1U)
+#define  CSD_VERSION_V3_0             (2U)
+
 /* CMD wait response timeout*/
-#define CMD_WAIT_RESP_TIMEOUT               (1500U)
-/* wait idle timeout*/
-#define WAIT_IDLE_TIMEOUT                   (100U)
+#define CMD_WAIT_RESP_TIMEOUT         (0xFFFFFFFFU)
 /* spi clk frequency in init */
-#define SPI_SPEED_INIT_HZ                   (400000U)
+#define SPI_SPEED_INIT_HZ             (400000U)
 /* spi clk frequency in running */
-#define SPI_SPEED_MAX_HZ                    (25000000U)
-#define SPI_AUTO_PROBE_COUNT          (2)
+#if defined(USE_DMA_TRANSFER) && (USE_DMA_TRANSFER == 1)
+#ifndef SPI_SD_SPEED_MAX_HZ
+#define SPI_SD_SPEED_MAX_HZ           (25000000U)
+#endif
+#else
+#ifndef SPI_SD_SPEED_MAX_HZ
+#define SPI_SD_SPEED_MAX_HZ           (20000000U)
+#endif
+#endif
+#define SPI_AUTO_PROBE_COUNT          (5)
 #define SPI_SPEED_PROBE_FREQ          (12000000U)
 
-static uint8_t wait_sdcard_ready(void);
-static uint8_t send_sdcard_command(uint8_t cmd, uint32_t arg, uint8_t crc);
-static uint8_t send_sdcard_command_recv_response(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t *data, uint32_t size);
-static uint8_t send_sdcard_command_hold(uint8_t cmd, uint32_t arg, uint8_t crc);
+#define CRC16_CCITT_SEED              0
+#define CRC16_CCITT_POLY16            0x1021
+
+static hpm_stat_t send_sdcard_command(uint8_t cmd, uint32_t arg, uint8_t crc);
 static hpm_stat_t read_sdcard_buffer(uint8_t *buf, uint32_t len);
 static hpm_stat_t read_sdcard_info(spi_sdcard_info_t *cardinfo);
+static uint8_t crc7_calc(uint8_t *data, uint8_t len);
+static bool check_cid_data(bool check_crc);
+static hpm_stat_t sdcard_wait_not_busy(void);
+static uint8_t sdcard_read_r1_status(void);
+static hpm_stat_t sdcard_wait_data_token(uint8_t token);
 
-static sdcard_type_t g_card_type;
+static volatile sdcard_type_t g_card_type;
 static spi_sdcard_info_t g_card_info;
-static bool sdcard_init_status;
-static sdcard_spi_interface_t *g_spi_dev = NULL;
-static uint32_t g_spi_max_speed;
+static volatile bool sdcard_init_status;
+static volatile sdcard_spi_interface_t *g_spi_dev = NULL;
+static volatile uint32_t g_spi_max_speed;
+static uint8_t dummy_write_byte = SPISD_DUMMY_BYTE;
+static uint8_t dummy_read_byte;
 
 hpm_stat_t sdcard_spi_status(void)
 {
@@ -41,99 +62,151 @@ hpm_stat_t sdcard_spi_status(void)
 hpm_stat_t sdcard_spi_init(sdcard_spi_interface_t *spi_io)
 {
     assert(spi_io);
+    uint32_t i;
     hpm_stat_t sta = status_success;
+    bool probe_cid_check = false;
     uint8_t buffer[4];
-    volatile uint32_t timeout = WAIT_IDLE_TIMEOUT;
     uint8_t response = 0;
     sdcard_init_status = false;
     g_spi_dev = spi_io;
 
     if (!g_spi_dev->sdcard_is_present()) {
-        printf("sdcard no detected !\r\n");
+        SPI_SD_LOG("[spi_sdcard] [spi_sdcard] sdcard no detected !\r\n");
         return status_fail;
     }
 
-    g_spi_dev->cs_relese();
     sta = g_spi_dev->set_spi_speed(SPI_SPEED_INIT_HZ);
     if (sta != status_success) {
         return sta;
     }
 
-    /* Start send 74 clocks at least, it means send 10 byte at least*/
-    for (uint32_t i = 0; i < 20; i++) {
-        g_spi_dev->write_read_byte(SPISD_DUMMY_BYTE);
+    /* Step 1. Start send 80 clocks at least, it means send 10 byte at least*/
+    g_spi_dev->cs_relese();
+    for (uint32_t i = 0; i < 10; i++) {
+        g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
     }
 
-    do {
-        response = send_sdcard_command((uint8_t)sdmmc_cmd_go_idle_state, 0, 0x95);
-        timeout--;
-    } while ((response != SPISD_R1_IDLE_FLAG) && (timeout > 0));
-
-    response = send_sdcard_command_recv_response((uint8_t)sd_cmd_send_if_cond, 0x1AA, 0x87, buffer, sizeof(buffer));
-
-    if (response == SPISD_R1_IDLE_FLAG) {
-
-        /* Check voltage range be 2.7-3.6V    */
-        if ((buffer[2] == 0X01) && (buffer[3] == 0xAA)) {
-            for (uint16_t i = 0; i < 0xFFF; i++) {
-
-                /* should be return 0x01 */
-                response = send_sdcard_command((uint8_t)sdmmc_cmd_app_cmd, 0, 0);
-
-                if (response != 0x01) {
-                    printf("send CMD55 should return 0x01, but response is 0x%02x\n", response);
-                    return status_timeout;
-                }
-
-                /* should be return 0x00 */
-                response = send_sdcard_command((uint8_t)sd_acmd_sd_send_op_cond, 0x40000000, 1);
-
-                if (response == 0x00) {
-                    break;
-                }
-            }
-
-            if (response != 0x00) {
-                printf("send ACMD41 should return 0x00, but response is 0x%02x\n", response);
-                return status_timeout;
-            }
-
-             /* Read OCR by CMD58 */
-            response = send_sdcard_command_recv_response((uint8_t)sdmmc_cmd_read_ocr, 0, 0, buffer, sizeof(buffer));
-
-            if (response != 0x00) {
-                printf("Send CMD58 should return 0x00, response=0x%02x\r\n", response);
-                return status_timeout;
-            }
-
-            /* OCR -> CCS(bit30)  1: SDV2HC     0: SDV2 */
-            g_card_type = (buffer[0] & 0x40) ? card_type_sd_v2_hc : card_type_sd_v2;
-
-            response = send_sdcard_command((uint8_t)sd_cmd_crc_option, 0, 0);
-
-            if (response != 0x00) {
-                printf("Send CMD59 should return 0x00, response=0x%02x\r\n", response);
-                return status_timeout;
-            }
-
-            /* using the module with multiple buffers, maybe cause abnormal communication in spi clk high frequency */
-            g_spi_max_speed = SPI_SPEED_MAX_HZ;
-            for (uint8_t i = 0; i < SPI_AUTO_PROBE_COUNT; i++) {
-                g_spi_dev->set_spi_speed(g_spi_max_speed);
-                sta = read_sdcard_info(&g_card_info);
-                if (sta == status_fail) {
-                    g_spi_max_speed = SPI_SPEED_PROBE_FREQ;
-                    continue;
-                }
-                break;
-            }
-        }
-    } else {
+    g_spi_dev->cs_select();
+    /* Step 2. Send CMD0 (GO_IDLE_STATE): Reset the SD card. */
+    if (sdcard_wait_not_busy() != status_success) {
+        g_spi_dev->cs_relese();
         return status_fail;
     }
-    if (sta == status_success) {
-        sdcard_init_status = true;
+
+    if (send_sdcard_command((uint8_t)sdmmc_cmd_go_idle_state, 0, 0x95) != status_success) {
+        SPI_SD_LOG("[spi_sdcard] reset SDcard fail\n");
+        g_spi_dev->cs_relese();
+        return status_fail;
     }
+    if (sdcard_read_r1_status() != SPISD_R1_IDLE_FLAG) {
+        g_spi_dev->cs_relese();
+        SPI_SD_LOG("[spi_sdcard] not go idle status\n");
+        return status_fail;
+    }
+
+    /* Step 3. read CMD8 */
+    if (sdcard_wait_not_busy() != status_success) {
+        g_spi_dev->cs_relese();
+        return status_fail;
+    }
+    if (send_sdcard_command((uint8_t)sd_cmd_send_if_cond, 0x1AA, 0x86) != status_success) {
+        g_spi_dev->cs_relese();
+        return status_fail;
+    }
+    if (sdcard_read_r1_status() != SPISD_R1_IDLE_FLAG) {
+        g_spi_dev->cs_relese();
+        SPI_SD_LOG("[spi_sdcard] not support V1.X SDcard or not SDcard\\n");
+        return status_fail;
+    }
+    sta = g_spi_dev->read(buffer, sizeof(buffer));
+    if (sta != status_success) {
+        g_spi_dev->cs_relese();
+        return sta;
+    }
+    /* Check voltage range be 2.7-3.6V    */
+    if (((buffer[2] & 0x01) != 1) || (buffer[3] != 0xAA)) {
+        g_spi_dev->cs_relese();
+        return status_fail;
+    }
+
+    /* Step 3. init CMD41  with HCS flag (bit 30) */
+    for (i = 0; i < 0xFFFFFFFF; i++) {
+        if (sdcard_wait_not_busy() != status_success) {
+            g_spi_dev->cs_relese();
+            return status_fail;
+        }
+        if (send_sdcard_command((uint8_t)sdmmc_cmd_app_cmd, 0, (0x7F << 1) | 1) != status_success) {
+            g_spi_dev->cs_relese();
+            return status_fail;
+        }
+        response = sdcard_read_r1_status();
+        if ((response != SPISD_R1_IDLE_FLAG) && (response > 0)) {
+            g_spi_dev->cs_relese();
+            SPI_SD_LOG("[spi_sdcard] send CMD55 should return 0x01, but response is 0x%02x\n", response);
+            return status_fail;
+        }
+        if (sdcard_wait_not_busy() != status_success) {
+            g_spi_dev->cs_relese();
+            return status_fail;
+        }
+        if (send_sdcard_command((uint8_t)sd_acmd_sd_send_op_cond, 0x40000000, 1) != status_success) {
+            g_spi_dev->cs_relese();
+            return status_fail;
+        }
+        response = sdcard_read_r1_status();
+        if (response == 0x00) {
+            break;
+        }
+        if (response != 0x01) {
+            g_spi_dev->cs_relese();
+            SPI_SD_LOG("[spi_sdcard] send ACMD41 should return 0x00, but response is 0x%02x\n", response);
+            return status_timeout;
+        }
+    }
+
+    /* Step 5. read OCR(CMD58) and check CCS flag to check he card is a high-capacity card known as SDHC/SDXC */
+    if (sdcard_wait_not_busy() != status_success) {
+        g_spi_dev->cs_relese();
+        return status_fail;
+    }
+    /* Read OCR by CMD58 */
+    if (send_sdcard_command((uint8_t)sdmmc_cmd_read_ocr, 0, (0x7F << 1) | 1) != status_success) {
+        g_spi_dev->cs_relese();
+        return status_fail;
+    }
+    response = sdcard_read_r1_status();
+    if (response != 0x00) {
+        g_spi_dev->cs_relese();
+        SPI_SD_LOG("[spi_sdcard] Send CMD58 should return 0x00, response=0x%02x\r\n", response);
+        return status_timeout;
+    }
+    sta = g_spi_dev->read(buffer, sizeof(buffer));
+    if (sta != status_success) {
+        g_spi_dev->cs_relese();
+        return sta;
+    }
+    /* OCR -> CCS(bit30)  1: SDV2HC     0: SDV2 */
+    g_card_type = (buffer[0] & 0x40) ? card_type_sd_v2_hc : card_type_sd_v2;
+
+    /* Step 6. read CSD info */
+    sta = read_sdcard_info(&g_card_info);
+    if (sta != status_success) {
+        SPI_SD_LOG("[spi_sdcard] read sdcard info fail\n");
+        return sta;
+    }
+    /* using the module with multiple buffers, maybe cause abnormal communication in spi clk high frequency */
+    g_spi_max_speed = SPI_SD_SPEED_MAX_HZ;
+    for (uint8_t i = 0; i < SPI_AUTO_PROBE_COUNT; i++) {
+        g_spi_dev->set_spi_speed(g_spi_max_speed);
+        probe_cid_check = check_cid_data(false);
+        if (probe_cid_check == false) {
+            g_spi_max_speed = SPI_SPEED_PROBE_FREQ;
+            continue;
+        }
+        break;
+    }
+    sdcard_init_status = true;
+    g_spi_dev->cs_relese();
     return sta;
 }
 
@@ -149,270 +222,383 @@ hpm_stat_t sdcard_spi_get_card_info(spi_sdcard_info_t *cardinfo)
 
 hpm_stat_t sdcard_spi_read_block(uint32_t sector, uint8_t *buffer)
 {
-    hpm_stat_t sta = status_fail;
+    hpm_stat_t sta = status_success;
+    uint8_t response;
     assert(g_spi_dev);
     if (g_card_type != card_type_sd_v2_hc) {
         sector = sector << 9;
     }
     g_spi_dev->cs_select();
-    if (send_sdcard_command_hold((uint8_t)sdmmc_cmd_read_single_block, sector, 0x00) == 0x00) {
-        sta = read_sdcard_buffer(buffer, SPI_SD_BLOCK_SIZE);
+    if (sdcard_wait_not_busy() != status_success) {
+        g_spi_dev->cs_relese();
+        return status_fail;
+    }
+    if (send_sdcard_command((uint8_t)sdmmc_cmd_read_single_block, sector, (0x7F << 1) | 1) != status_success) {
+        g_spi_dev->cs_relese();
+        return status_fail;
+    }
+    response = sdcard_read_r1_status();
+    if (response != 0x00) {
+        g_spi_dev->cs_relese();
+        return status_timeout;
+    }
+    if (sdcard_wait_data_token(SPISD_START_TOKEN) != status_success) {
+        g_spi_dev->cs_relese();
+        return status_timeout;
+    }
+    if (read_sdcard_buffer(buffer, SPI_SD_BLOCK_SIZE) != status_success) {
+        g_spi_dev->cs_relese();
+        return status_timeout;
     }
     g_spi_dev->cs_relese();
-    g_spi_dev->write_read_byte(SPISD_DUMMY_BYTE);
     return sta;
 }
 
 hpm_stat_t sdcard_spi_write_block(uint32_t sector, uint8_t *buffer)
 {
     assert(g_spi_dev);
-    hpm_stat_t ret = status_fail;
-
+    hpm_stat_t ret = status_success;
+    uint8_t response;
+    uint8_t data;
     if (g_card_type != card_type_sd_v2_hc) {
         sector = sector << 9;
     }
-    if (send_sdcard_command((uint8_t)sdmmc_cmd_write_single_block, sector, 0) != 0x00) {
-        return ret;
-    }
-
     g_spi_dev->cs_select();
-    g_spi_dev->write_read_byte(SPISD_DUMMY_BYTE);
-    g_spi_dev->write_read_byte(SPISD_DUMMY_BYTE);
-    g_spi_dev->write_read_byte(SPISD_DUMMY_BYTE);
-
-    /* Start data write token: 0xFE */
-    g_spi_dev->write_read_byte(0xFE);
-
+    if (sdcard_wait_not_busy() != status_success) {
+        g_spi_dev->cs_relese();
+        return status_fail;
+    }
+    if (send_sdcard_command((uint8_t)sdmmc_cmd_write_single_block, sector, (0x7F << 1) | 1) != status_success) {
+        g_spi_dev->cs_relese();
+        return status_fail;
+    }
+    response = sdcard_read_r1_status();
+    if (response != 0x00) {
+        g_spi_dev->cs_relese();
+        return status_timeout;
+    }
+   /* Start data write token: 0xFE */
+    data = SPISD_START_TOKEN;
+    ret = g_spi_dev->write_read_byte(&data, &dummy_read_byte);
     ret = g_spi_dev->write(buffer, SPI_SD_BLOCK_SIZE);
-
     /* 2Bytes dummy CRC */
-    g_spi_dev->write_read_byte(SPISD_DUMMY_BYTE);
-    g_spi_dev->write_read_byte(SPISD_DUMMY_BYTE);
+    g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
+    g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
+
 
     /* MSD card accept the data */
-    uint8_t response = g_spi_dev->write_read_byte(SPISD_DUMMY_BYTE);
-
-    if ((response & 0x1F) == 0x05) {
-
-        /* Wait all the data program finished */
-        for (uint32_t i = 0; i < 0x40000; i++) {
-            if (g_spi_dev->write_read_byte(SPISD_DUMMY_BYTE) != 0x00) {
-                ret = status_success;
-                break;
-            }
-        }
+    ret = g_spi_dev->write_read_byte(&dummy_write_byte, &response);
+    if (ret != status_success) {
+        g_spi_dev->cs_relese();
+        return status_timeout;
     }
-
+    if ((response & 0x1F) != 0x05) {
+        g_spi_dev->cs_relese();
+        return status_fail;
+    }
+    if (sdcard_wait_not_busy() != status_success) {
+        g_spi_dev->cs_relese();
+        return status_fail;
+    }
     g_spi_dev->cs_relese();
-    g_spi_dev->write_read_byte(SPISD_DUMMY_BYTE);
-
     return ret;
 }
 
 hpm_stat_t sdcard_spi_read_multi_block(uint8_t *buffer, uint32_t start_sector, uint32_t num_sectors)
 {
+    uint8_t response;
+    hpm_stat_t stat = status_success;
     assert(g_spi_dev);
     if (g_card_type != card_type_sd_v2_hc) {
         start_sector = start_sector << 9;
     }
-    g_spi_dev->write_read_byte(SPISD_DUMMY_BYTE);
+    /* step1. read begin */
     g_spi_dev->cs_select();
-
-    if (send_sdcard_command((uint8_t)sdmmc_cmd_read_multiple_block, start_sector, 0xff) != 0x00) {
+    if (sdcard_wait_not_busy() != status_success) {
+        g_spi_dev->cs_relese();
         return status_fail;
     }
+    if (send_sdcard_command((uint8_t)sdmmc_cmd_read_multiple_block, start_sector, (0x7F << 1) | 1) != status_success) {
+        g_spi_dev->cs_relese();
+        return status_fail;
+    }
+    response = sdcard_read_r1_status();
+    if (response != 0x00) {
+        g_spi_dev->cs_relese();
+        return status_timeout;
+    }
 
+    /* step2. read data */
     for (uint32_t i = 0; i < num_sectors; i++) {
-
-        hpm_stat_t ret = read_sdcard_buffer(&buffer[i * SPI_SD_BLOCK_SIZE], SPI_SD_BLOCK_SIZE);
-
-        if (ret != status_success) {
-            /* Send stop data transmit command - CMD12    */
-            send_sdcard_command((uint8_t)sdmmc_cmd_stop_transmission, 0, 0xff);
-            return status_fail;
+        if (sdcard_wait_data_token(SPISD_START_TOKEN) != status_success) {
+            g_spi_dev->cs_relese();
+            return status_timeout;
+        }
+        if (read_sdcard_buffer(&buffer[i * SPI_SD_BLOCK_SIZE], SPI_SD_BLOCK_SIZE) != status_success) {
+            send_sdcard_command((uint8_t)sdmmc_cmd_stop_transmission, 0, (0x7F << 1) | 1);
+            g_spi_dev->cs_relese();
+            return status_timeout;
         }
     }
 
-    /* Send stop data transmit command - CMD12 */
-    send_sdcard_command((uint8_t)sdmmc_cmd_stop_transmission, 0, 0xff);
-
+    /* step3. read end */
+    if (send_sdcard_command((uint8_t)sdmmc_cmd_stop_transmission, 0, (0x7F << 1) | 1) != status_success) {
+        g_spi_dev->cs_relese();
+        return status_fail;
+    }
+    stat = g_spi_dev->write_read_byte(&dummy_write_byte, &response);
+    if (stat != status_success) {
+        g_spi_dev->cs_relese();
+        return status_timeout;
+    }
     g_spi_dev->cs_relese();
-    g_spi_dev->write_read_byte(SPISD_DUMMY_BYTE);
-
     return status_success;
 }
 
 hpm_stat_t sdcard_spi_write_multi_block(uint8_t *buffer, uint32_t sector, uint32_t num_sectors)
 {
     hpm_stat_t sta = status_success;
-    assert(g_spi_dev);
-
+    uint8_t start_token = SPISD_START_MULTI_WRITE_TOKEN;
+    uint8_t end_token = SPISD_END_MULTI_WRITE_TOKEN;
+    uint8_t response;
+    uint32_t i;
     if (g_card_type != card_type_sd_v2_hc) {
         sector = sector << 9;
     }
+    g_spi_dev->cs_select();
+    if (sdcard_wait_not_busy() != status_success) {
+        g_spi_dev->cs_relese();
+        return status_fail;
+    }
+    if (send_sdcard_command((uint8_t)sdmmc_cmd_write_multiple_block, sector, (0x7F << 1) | 1) != status_success) {
+        g_spi_dev->cs_relese();
+        return status_fail;
+    }
+    response = sdcard_read_r1_status();
+    if (response != 0x00) {
+        g_spi_dev->cs_relese();
+        return status_timeout;
+    }
 
-    for (uint32_t i = 0; i < num_sectors; i++) {
-        sta = sdcard_spi_write_block(sector + i, &buffer[i * SPI_SD_BLOCK_SIZE]);
-        if (sta != status_success) {
-            break;
+    for (i = 0; i < num_sectors; i++) {
+        /* Start multi block write token: 0xFC */
+        g_spi_dev->write_read_byte(&start_token, &dummy_read_byte);
+        g_spi_dev->write(&buffer[i * SPI_SD_BLOCK_SIZE], SPI_SD_BLOCK_SIZE);
+        /* 2Bytes dummy CRC */
+        g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
+        g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
+
+        /* MSD card accept the data */
+        g_spi_dev->write_read_byte(&dummy_write_byte, &response);
+        if ((response & 0x1F) != 0x05) {
+            g_spi_dev->cs_relese();
+            return status_fail;
+        }
+        if (sdcard_wait_not_busy() != status_success) {
+            g_spi_dev->cs_relese();
+            return status_fail;
         }
     }
+
+    /* Send end of transmit token: 0xFD */
+    sta = g_spi_dev->write_read_byte(&end_token, &response);
+    if (sta != status_success) {
+        g_spi_dev->cs_relese();
+        return status_timeout;
+    }
+    g_spi_dev->write_read_byte(&dummy_write_byte, &response);
+    if (sdcard_wait_not_busy() != status_success) {
+        g_spi_dev->cs_relese();
+        return status_fail;
+    }
+    g_spi_dev->cs_relese();
     return sta;
 }
 
-static uint8_t wait_sdcard_ready(void)
+static uint8_t sdcard_read_r1_status(void)
 {
-    uint8_t response = 0;
-    for (uint32_t i = 0; i < CMD_WAIT_RESP_TIMEOUT; i++) {
-        g_spi_dev->cs_select();
-        response = g_spi_dev->write_read_byte(SPISD_DUMMY_BYTE);
+    uint8_t r1 = 0xFF;
+    uint32_t repeat = CMD_WAIT_RESP_TIMEOUT;
+    while (repeat--) {
+        if (g_spi_dev->write_read_byte(&dummy_write_byte, &r1) != status_success) {
+            return dummy_write_byte;
+        }
+        if ((r1 & 0x80) == 0) {
+            break;
+        }
+    }
+    return r1;
+}
+
+static hpm_stat_t sdcard_wait_not_busy(void)
+{
+    hpm_stat_t stat = status_success;
+    uint8_t busy;
+    uint32_t repeat = CMD_WAIT_RESP_TIMEOUT;
+    while (1) {
+        stat = g_spi_dev->write_read_byte(&dummy_write_byte, &busy);
+        if (stat != status_success) {
+            return stat;
+        }
+        if (busy == SPISD_DUMMY_BYTE) {
+            break;
+        }
+        repeat--;
+        if (repeat == 0) {
+            return status_timeout;
+        }
+    }
+    return stat;
+}
+
+static hpm_stat_t sdcard_wait_data_token(uint8_t token)
+{
+    hpm_stat_t stat = status_success;
+    uint8_t read_byte;
+    uint32_t repeat = CMD_WAIT_RESP_TIMEOUT;
+    while (1) {
+        stat = g_spi_dev->write_read_byte(&dummy_write_byte, &read_byte);
+        if (stat != status_success) {
+            return stat;
+        }
+        if (read_byte == token) {
+            break;
+        }
+        if (read_byte != 0xFF) {
+            return status_fail;
+        }
+        repeat--;
+        if (repeat == 0) {
+            return status_timeout;
+        }
+    }
+    return stat;
+}
+static uint8_t crc7_calc(uint8_t *data, uint8_t len)
+{
+    uint8_t crc = 0x00;
+    uint8_t crc_polynomial = 0x89;
+    uint8_t i, j;
+    for (i = 0; i < len; i++) {
+        crc ^= data[i];
+        for (j = 0; j < 8; j++) {
+            if (crc & 0x80) {
+                crc ^= crc_polynomial;
+            }
+            crc = crc << 1;
+        }
+    }
+    crc = crc >> 1;
+    return crc;
+}
+
+static bool check_cid_data(bool check_crc)
+{
+    uint8_t temp[16];
+    uint8_t response;
+    hpm_stat_t sta;
+    uint32_t i;
+    uint8_t crc = 0;
+    /* Send CMD10, Read CID */
+    g_spi_dev->cs_select();
+    if (sdcard_wait_not_busy() != status_success) {
         g_spi_dev->cs_relese();
-        if (response == 0xFF) {
-            break;
+        return false;
+    }
+    if (send_sdcard_command((uint8_t)sdmmc_cmd_send_csd, 0, (0x7F << 1) | 1) != status_success) {
+        g_spi_dev->cs_relese();
+        return false;
+    }
+    response = sdcard_read_r1_status();
+    if (response != 0x00) {
+        g_spi_dev->cs_relese();
+        SPI_SD_LOG("[spi_sdcard] Send CMD9 should return 0x00, response=0x%02x\r\n", response);
+        return false;
+    }
+    sta = sdcard_wait_data_token(SPISD_START_TOKEN);
+    if (sta != status_success) {
+        g_spi_dev->cs_relese();
+        return false;
+    }
+    for (i = 0; i < sizeof(temp); i++) {
+        sta = g_spi_dev->write_read_byte(&dummy_write_byte, &temp[i]);
+        if (sta != status_success) {
+            g_spi_dev->cs_relese();
+            return false;
         }
     }
-    return response;
+    sta = g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
+    sta = g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
+    if (check_crc == true) {
+        crc = crc7_calc(temp, sizeof(temp) - 1);
+        if (crc == (temp[15] >> 1)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    return true;
 }
 
-static uint8_t send_sdcard_command(uint8_t cmd, uint32_t arg, uint8_t crc)
-{
-    uint8_t response = 0xFF;
+static hpm_stat_t send_sdcard_command(uint8_t cmd, uint32_t arg, uint8_t crc)
+{;
     uint8_t _cmd = cmd | 0x40;
-    uint8_t packet[] = {arg >> 24, arg >> 16, arg >> 8, arg, crc};
-    uint8_t dummy = SPISD_DUMMY_BYTE;
-    if (wait_sdcard_ready() != 0xFF) {
-        return 0xFF;
-    }
-    g_spi_dev->cs_select();
-    g_spi_dev->write_cmd_data(_cmd, packet, sizeof(packet));
-    /* Wait response, quit till timeout */
-    for (uint32_t i = 0; i < CMD_WAIT_RESP_TIMEOUT; i++) {
-        response = g_spi_dev->write_read_byte(dummy);
-        if (response != 0xFF) {
-            break;
-        }
-    }
-    /* Chip disable */
-    g_spi_dev->cs_relese();
-
-    return response;
-}
-
-static uint8_t send_sdcard_command_recv_response(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t *data, uint32_t size)
-{
-    /* Dummy byte and chip enable */
-    g_spi_dev->write_read_byte(SPISD_DUMMY_BYTE);
-    if (wait_sdcard_ready() != 0xFF) {
-        return 0xFF;
-    }
-    uint8_t _cmd = cmd | 0x40;
-    uint8_t packet[] = {arg >> 24, arg >> 16, arg >> 8, arg, crc};
-    uint8_t response = SPISD_DUMMY_BYTE;
-    g_spi_dev->cs_select();
-
-    g_spi_dev->write_cmd_data(_cmd, packet, sizeof(packet));
-
-     /* Wait response, quit till timeout */
-    for (uint32_t i = 0; i < CMD_WAIT_RESP_TIMEOUT; i++) {
-        response = g_spi_dev->write_read_byte(SPISD_DUMMY_BYTE);
-        if (response != SPISD_DUMMY_BYTE) {
-            g_spi_dev->read(data, size);
-            break;
-        }
-    }
-    /* Chip disable and dummy byte */
-    g_spi_dev->cs_relese();
-    g_spi_dev->write_read_byte(SPISD_DUMMY_BYTE);
-
-    return response;
-}
-
-static uint8_t send_sdcard_command_hold(uint8_t cmd, uint32_t arg, uint8_t crc)
-{
-    uint8_t _cmd = cmd | 0x40;
-    uint8_t packet[] = {arg >> 24, arg >> 16, arg >> 8, arg, crc};
-    uint8_t response = SPISD_DUMMY_BYTE;
-
-    /* Dummy byte and chip enable */
-    g_spi_dev->write_read_byte(SPISD_DUMMY_BYTE);
-    if (wait_sdcard_ready() != 0xFF) {
-        return 0xFF;
-    }
-    g_spi_dev->cs_select();
-    g_spi_dev->write_cmd_data(_cmd, packet, sizeof(packet));
-
-    /* Wait response, quit till timeout */
-    for (uint32_t i = 0; i < CMD_WAIT_RESP_TIMEOUT; i++) {
-
-        response = g_spi_dev->write_read_byte(SPISD_DUMMY_BYTE);
-
-        if (response != 0xFF) {
-            break;
-        }
-    }
-    g_spi_dev->cs_relese();
-    g_spi_dev->write_read_byte(SPISD_DUMMY_BYTE);
-
-    return response;
+    uint8_t packet[] = { arg >> 24, arg >> 16, arg >> 8, arg, crc};
+    return g_spi_dev->write_cmd_data(_cmd, packet, sizeof(packet));
 }
 
 static hpm_stat_t read_sdcard_buffer(uint8_t *buf, uint32_t len)
 {
-    uint8_t response = 0;
-    g_spi_dev->cs_select();
-        /* Wait start-token 0xFE */
-    for (uint32_t i = 0; i < CMD_WAIT_RESP_TIMEOUT; i++) {
-        response = g_spi_dev->write_read_byte(SPISD_DUMMY_BYTE);
-        if (response == 0xFE) {
-            break;
-        }
-    }
-
-    if (response != 0xFE) {
-        return status_fail;
-    }
-
-    g_spi_dev->read(buf, len);
+    hpm_stat_t stat = status_success;
+    stat = g_spi_dev->read(buf, len);
 
     /* 2bytes dummy CRC */
-    g_spi_dev->write_read_byte(SPISD_DUMMY_BYTE);
-    g_spi_dev->write_read_byte(SPISD_DUMMY_BYTE);
-    g_spi_dev->cs_relese();
-
-    return status_success;
+    stat = g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
+    stat = g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
+    return stat;
 }
 
 static hpm_stat_t read_sdcard_info(spi_sdcard_info_t *cardinfo)
 {
+    uint8_t crc7 = 0;
     uint8_t temp[16];
+    uint8_t response;
+    hpm_stat_t sta;
+    uint8_t i = 0;
     assert(g_spi_dev);
-
-    /* Start send 74 clocks at least, it means send 10 byte at least*/
-    for (uint32_t i = 0; i < 20; i++) {
-        g_spi_dev->cs_select();
-        g_spi_dev->write_read_byte(SPISD_DUMMY_BYTE);
+    if (sdcard_wait_not_busy() != status_success) {
         g_spi_dev->cs_relese();
-    }
-
-    /* Send CMD9, Read CSD */
-    uint8_t response = send_sdcard_command((uint8_t)sdmmc_cmd_send_csd, 0, 0xFF);
-
-    if (response != 0x00) {
         return status_fail;
     }
-
-    g_spi_dev->cs_select();
-
-    hpm_stat_t ret = read_sdcard_buffer(temp, sizeof(temp));
-
-    /* chip disable and dummy byte */
-    g_spi_dev->cs_relese();
-    g_spi_dev->write_read_byte(SPISD_DUMMY_BYTE);
-
-    if (ret != status_success) {
-        return ret;
+    if (send_sdcard_command((uint8_t)sdmmc_cmd_send_csd, 0, (0x7F << 1) | 1) != status_success) {
+        g_spi_dev->cs_relese();
+        return status_fail;
     }
+    response = sdcard_read_r1_status();
+    if (response != 0x00) {
+        g_spi_dev->cs_relese();
+        SPI_SD_LOG("[spi_sdcard] Send CMD9 should return 0x00, response=0x%02x\r\n", response);
+        return status_timeout;
+    }
+    sta = sdcard_wait_data_token(SPISD_START_TOKEN);
+    if (sta != status_success) {
+        g_spi_dev->cs_relese();
+        return sta;
+    }
+    for (i = 0; i < sizeof(temp); i++) {
+        sta = g_spi_dev->write_read_byte(&dummy_write_byte, &temp[i]);
+        if (sta != status_success) {
+            g_spi_dev->cs_relese();
+            return sta;
+        }
+    }
+    sta = g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
+    sta = g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
 
+    crc7 = crc7_calc(temp, sizeof(temp) - 1);
+    if (crc7 != (temp[15] >> 1)) {
+        SPI_SD_LOG("[spi_sdcard] not support read CSD info, because CRC7 check error\n");
+    }
     /* Byte 0 */
     cardinfo->csd.csd_structure              = (temp[0] & 0xC0) >> 6;
     /* Byte 1 */
@@ -439,17 +625,47 @@ static hpm_stat_t read_sdcard_info(spi_sdcard_info_t *cardinfo)
     if (((temp[6] & 0x10) >> 4) != 0) {
         cardinfo->csd.is_dsr_implemented = true;
     }
-    cardinfo->csd.device_size               = (temp[6] & 0x03) << 10;
-    /* Byte 7 */
-    cardinfo->csd.device_size              |= (temp[7]) << 2;
-    /* Byte 8 */
-    cardinfo->csd.device_size              |= (temp[8] & 0xC0) >> 6;
-    cardinfo->csd.read_current_vdd_min      = (temp[8] & 0x38) >> 3;
-    cardinfo->csd.read_current_vdd_max      = (temp[8] & 0x07);
-    /* Byte 9 */
-    cardinfo->csd.write_current_vdd_min     = (temp[9] & 0xE0) >> 5;
-    cardinfo->csd.write_current_vdd_max     = (temp[9] & 0x1C) >> 2;
-    cardinfo->csd.device_size_multiplier    = (temp[9] & 0x03) << 1;
+    if (cardinfo->csd.csd_structure == CSD_VERSION_V1_0) {
+        cardinfo->csd.device_size               = (temp[6] & 0x03) << 10;
+        /* Byte 7 */
+        cardinfo->csd.device_size              |= (temp[7]) << 2;
+        /* Byte 8 */
+        cardinfo->csd.device_size              |= (temp[8] & 0xC0) >> 6;
+        cardinfo->csd.read_current_vdd_min      = (temp[8] & 0x38) >> 3;
+        cardinfo->csd.read_current_vdd_max      = (temp[8] & 0x07);
+        /* Byte 9 */
+        cardinfo->csd.write_current_vdd_min     = (temp[9] & 0xE0) >> 5;
+        cardinfo->csd.write_current_vdd_max     = (temp[9] & 0x1C) >> 2;
+        cardinfo->csd.device_size_multiplier    = (temp[9] & 0x03) << 1;
+         /* Get card total block count and block size. */
+        uint32_t c_size_mult = 1UL << (cardinfo->csd.device_size_multiplier + 2);
+        cardinfo->block_count = (cardinfo->csd.device_size + 1U) * c_size_mult;
+        cardinfo->block_size = (1UL << (cardinfo->csd.read_block_len));
+        if (cardinfo->block_size != SPI_SD_BLOCK_SIZE) {
+            cardinfo->block_count *= cardinfo->block_size;
+            cardinfo->block_size = SPI_SD_BLOCK_SIZE;
+            cardinfo->block_count /= cardinfo->block_size;
+        }
+        cardinfo->capacity = (uint64_t) cardinfo->block_size * cardinfo->block_count;
+    } else if (cardinfo->csd.csd_structure == CSD_VERSION_V2_0) {
+        cardinfo->block_size = SPI_SD_BLOCK_SIZE;
+        /* Byte 7 */
+        cardinfo->csd.device_size              |= (((temp[7]) & 0x3F) << 16);
+        /* Byte 8 */
+        cardinfo->csd.device_size              |= ((temp[8]) << 8);
+        cardinfo->csd.device_size              |= (temp[9]);
+        if (cardinfo->csd.device_size >= 0xFFFFU) {
+            cardinfo->csd.support_sdxc = true;
+            SPI_SD_LOG("[spi_sdcard] Unsupported SDXC: > 32G\n");
+            return status_invalid_argument;
+        }
+        cardinfo->block_count = ((cardinfo->csd.device_size + 1U) * 1024U);
+        cardinfo->capacity = (uint64_t) (cardinfo->csd.device_size + 1U) * 512UL * 1024UL;
+    } else {
+        SPI_SD_LOG("[spi_sdcard] Unsupported csd version V3.0\n");
+        return status_invalid_argument;
+    }
+
     /* Byte 10 */
     if ((uint8_t) ((temp[10] & 0x80) >> 7) != 0U) {
         cardinfo->csd.is_erase_block_enabled = true;
@@ -483,35 +699,32 @@ static hpm_stat_t read_sdcard_info(spi_sdcard_info_t *cardinfo)
     }
     cardinfo->csd.file_format             = (temp[14] & 0x0C) >> 2;
     cardinfo->card_type = g_card_type;
-    if (cardinfo->card_type == card_type_sd_v2_hc) {
-        /* Byte 7 */
-        cardinfo->csd.device_size         = temp[9] + (temp[8] << 8) + 1;
-        /* Byte 8 */
-        cardinfo->csd.device_size         = cardinfo->csd.device_size << 10;
-    }
 
-    cardinfo->capacity                    = (uint64_t)(cardinfo->csd.device_size) * SPI_SD_BLOCK_SIZE;
-    cardinfo->block_size                  = SPI_SD_BLOCK_SIZE;
 
-    /* Send CMD10, Read CID */
-    response = send_sdcard_command((uint8_t)sdmmc_cmd_send_cid, 0, 0xFF);
-
-    if (response != 0x00) {
+    if (sdcard_wait_not_busy() != status_success) {
+        g_spi_dev->cs_relese();
         return status_fail;
     }
-
-    g_spi_dev->cs_select();
-    ret = read_sdcard_buffer(temp, sizeof(temp));
-
-    /* chip disable and dummy byte */
-    g_spi_dev->cs_relese();
-    g_spi_dev->write_read_byte(SPISD_DUMMY_BYTE);
-
-    if (ret != status_success) {
-        return ret;
+    /* Send CMD10, Read CID */
+    if (send_sdcard_command((uint8_t)sdmmc_cmd_send_cid, 0, (0x7F << 1) | 1) != status_success) {
+        g_spi_dev->cs_relese();
+        return status_fail;
     }
-
-
+    response = sdcard_read_r1_status();
+    if (response != 0x00) {
+        g_spi_dev->cs_relese();
+        SPI_SD_LOG("[spi_sdcard] Send CMD10 should return 0x00, response=0x%02x\r\n", response);
+        return status_timeout;
+    }
+    if (sta != sdcard_wait_data_token(SPISD_START_TOKEN)) {
+        g_spi_dev->cs_relese();
+        return sta;
+    }
+    sta = g_spi_dev->read(temp, sizeof(temp));
+    if (sta != status_success) {
+        g_spi_dev->cs_relese();
+        return sta;
+    }
     /* Byte 0 */
     cardinfo->cid.mid   = temp[0];
     /* Byte 1 */
@@ -545,6 +758,5 @@ static hpm_stat_t read_sdcard_info(spi_sdcard_info_t *cardinfo)
     cardinfo->cid.mdt  |= temp[14];
     /* Byte 16 */
     cardinfo->cid.crc7  = (temp[15] & 0xFE) >> 1;
-
     return status_success;
 }

@@ -160,25 +160,39 @@ void lcdc_all_layer_config(void)
     intc_m_enable_irq_with_priority(BOARD_LCD_IRQ, 4);
 }
 
+#define TIGER_CENTRE_X 20
+#define TIGER_CENTRE_Y 25
+#define TIGER_SIZE 160.0f
+
 void double_buffer_display(void)
 {
     struct lcdc_layer_info *layer_info = &lcdc_ctx.info[0];
     vg_lite_matrix_t matrix;
-    vg_lite_float_t degrees = 3.3;
-    uint32_t ori_tiger_h = 140;
-    float scale = BOARD_LCD_HEIGHT * 1.0 / ori_tiger_h;
+    vg_lite_float_t degrees = 0;
+    float scale0;
+    float scale1;
+    float scale;
     vg_lite_buffer_t *draw_buf;
 
-    vg_lite_identity(&matrix);
-    vg_lite_translate(BOARD_LCD_WIDTH / 2, BOARD_LCD_HEIGHT / 2, &matrix);
-    vg_lite_scale(scale, scale, &matrix);
-
+    scale0 = BOARD_LCD_WIDTH / TIGER_SIZE;
+    scale1 = BOARD_LCD_HEIGHT / TIGER_SIZE;
+    scale = scale0 > scale1 ? scale1 : scale0;
 
     while (1) {
         draw_buf = layer_wait_free_vg_buffer(layer_info);
-
-        vg_lite_rotate(degrees, &matrix);
         vg_lite_clear(draw_buf, NULL, 0x00FF0000);
+
+        degrees += 3.3;
+        if (degrees > 360)
+            degrees = 0;
+
+        vg_lite_identity(&matrix);
+        /* Move tiger centre to screen centre */
+        vg_lite_translate(BOARD_LCD_WIDTH / 2 - TIGER_CENTRE_X, BOARD_LCD_HEIGHT / 2 - TIGER_CENTRE_Y, &matrix);
+        vg_lite_translate(TIGER_CENTRE_X, TIGER_CENTRE_Y, &matrix);
+        vg_lite_rotate(degrees, &matrix);
+        vg_lite_scale(scale, scale, &matrix);
+        vg_lite_translate(-TIGER_CENTRE_X, -TIGER_CENTRE_Y, &matrix);
 
         /* Draw the path using the matrix. */
         for (int i = 0; i < pathCount; i++) {

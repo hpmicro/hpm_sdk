@@ -138,6 +138,36 @@ void mcl_user_delay_us(uint64_t tick);
 })
 
 /**
+ * @brief Calculate the difference in angle,
+ * because the angle is then changed between 0-360 degrees,
+ * there are 350 degrees to 0 degrees of the process of change,
+ * as well as 10 degrees to 360 degrees of the process of change,
+ * in this process, the actual angle change is 10 degrees,
+ * but it may be calculated as 350 degrees,
+ * so the role of the calculation is to strive for an angle value of 10 degrees,
+ * the offset value of the maximum angle value, the default is 2pi
+ *
+ */
+#define MCL_GET_ANGLE_DELTA(val, offset)  \
+({    \
+    float val_; \
+    float temp; \
+    if ((val) > 0) { \
+        temp = (val) - offset;    \
+    } else if ((val) < 0) {    \
+        temp = (val) + offset;   \
+    } else {    \
+        val_ = 0; \
+    }   \
+    if (fabs(val) < fabs(temp)) { \
+        val_ = val; \
+    } else {\
+        val_ = temp; \
+    } \
+    (val_);  \
+})
+
+/**
  * @brief Data Range Limits
  *
  */

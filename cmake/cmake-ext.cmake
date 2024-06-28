@@ -567,6 +567,60 @@ function(sdk_nds_ld_options)
     endforeach()
 endfunction()
 
+#### ZCC sections ####
+
+# Set compile options for zcc toolchain
+#
+# Example:
+#   sdk_zcc_compile_options(opts)
+# :param opts: options for zcc toolchain
+# @public
+#
+function(sdk_zcc_compile_options)
+    foreach(opt ${ARGN})
+        target_compile_options(${HPM_SDK_ZCC_LIB_ITF} INTERFACE ${opt})
+    endforeach()
+endfunction()
+
+# Set defnitions for zcc toolchain
+#
+# Example:
+#   sdk_zcc_compile_definitions(defs)
+# :param defs: definitions for zcc toolchain
+# @public
+#
+function(sdk_zcc_compile_definitions)
+    foreach(def ${ARGN})
+        target_compile_definitions(${HPM_SDK_ZCC_LIB_ITF} INTERFACE ${def})
+    endforeach()
+endfunction()
+
+# Link libraries for zcc toolchains
+#
+# Example:
+#   sdk_zcc_link_libraries(libs)
+# :param libs: libraries to be linked, support both file path
+#    (like USER_LIB.a) and standard libraries provided by toolchain (like m)
+# @public
+function(sdk_zcc_link_libraries)
+    foreach(lib ${ARGN})
+        target_link_libraries(${HPM_SDK_ZCC_LIB_ITF} INTERFACE ${lib})
+    endforeach()
+endfunction()
+
+# Set linker options
+#
+# Example:
+#   sdk_zcc_ld_options(opts)
+# :param opts: linker options
+# @public
+#
+function(sdk_zcc_ld_options)
+    foreach(opt ${ARGN})
+        target_link_libraries(${HPM_SDK_ZCC_LIB_ITF} INTERFACE ${opt})
+    endforeach()
+endfunction()
+
 # Add directory if feature is false
 function(add_subdirectory_ifndef feature dir)
     if(NOT DEFINED ${feature} OR "${${feature}}" EQUAL "0")
@@ -683,7 +737,7 @@ endfunction()
 #
 function(sdk_src_glob)
     foreach(g ${ARGN})
-        file(GLOB src ${g})
+        file(GLOB_RECURSE src ${g})
         list(APPEND globbed_src ${src})
     endforeach()
     sdk_src(${globbed_src})
@@ -699,7 +753,7 @@ endfunction()
 #
 function(sdk_app_src_glob)
     foreach(g ${ARGN})
-        file(GLOB src ${g})
+        file(GLOB_RECURSE src ${g})
         list(APPEND globbed_src ${src})
     endforeach()
     sdk_app_src(${globbed_src})
@@ -715,7 +769,7 @@ endfunction()
 #
 function(sdk_gcc_src_glob)
     foreach(g ${ARGN})
-        file(GLOB src ${g})
+        file(GLOB_RECURSE src ${g})
         list(APPEND globbed_src ${src})
     endforeach()
     sdk_gcc_src(${globbed_src})

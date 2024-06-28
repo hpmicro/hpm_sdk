@@ -1,2 +1,3 @@
 dependency:
+  - femc
   - board_femc_sram

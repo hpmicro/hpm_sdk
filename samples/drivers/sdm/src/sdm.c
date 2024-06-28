@@ -11,6 +11,9 @@
 #include "hpm_trgmmux_src.h"
 #include "hpm_trgm_drv.h"
 #include "hpm_gptmr_drv.h"
+#if defined(BOARD_SDM_SENSOR_REQUIRE_CLK) && BOARD_SDM_SENSOR_REQUIRE_CLK
+#include "hpm_pwmv2_drv.h"
+#endif
 
 #define TEST_SDM         BOARD_SDM
 #define TEST_SDM_IRQ     BOARD_SDM_IRQ
@@ -22,6 +25,7 @@
 #define TEST_SDM_TRGM_GPTMR_CH            BOARD_SDM_TRGM_GPTMR_CH
 #define TEST_SDM_TRGM_INPUT_SRC           BOARD_SDM_TRGM_INPUT_SRC
 #define TEST_SDM_TRGM_OUTPUT_DST          BOARD_SDM_TRGM_OUTPUT_DST
+#define TEST_SDM_SYNC_SRC                 BOARD_SDM_TRGM_SYNC_SRC
 
 #define  TEST_DATA_COUNT  (1024U)
 int32_t filter_result[TEST_DATA_COUNT];
@@ -215,7 +219,7 @@ void test_sdm_sync_filter_receive(void)
     filter_config.filter_type = sdm_filter_sinc3;
     filter_config.oversampling_rate = 256; /** 1- 256 */
     filter_config.ignore_invalid_samples = 2;
-    filter_config.sync_source = 15;
+    filter_config.sync_source = TEST_SDM_SYNC_SRC;
     filter_config.fifo_clean_on_sync = 0; /** new sync event will clear fifo */
     filter_config.wtsynaclr = 0; /** sync flag clean by software */
     filter_config.wtsynmclr = 0;
@@ -251,12 +255,50 @@ void test_sdm_sync_filter_receive(void)
     }
 }
 
+#if defined(BOARD_SDM_SENSOR_REQUIRE_CLK) && BOARD_SDM_SENSOR_REQUIRE_CLK
+void gen_pwm_as_sdm_clock(void)
+{
+    uint32_t freq, reload;
+    freq = clock_get_frequency(BOARD_SDM_CLK_PWM_CLK_NAME);
+    reload = freq / 10000000; /* 10MHz */
+
+    init_pwm_pin_as_sdm_clock();
+
+    pwmv2_disable_counter(BOARD_SDM_CLK_PWM, pwm_counter_1);
+    pwmv2_reset_counter(BOARD_SDM_CLK_PWM, pwm_counter_1);
+    pwmv2_shadow_register_unlock(BOARD_SDM_CLK_PWM);
+
+    pwmv2_set_shadow_val(BOARD_SDM_CLK_PWM, PWMV2_SHADOW_INDEX(0), reload, 0, false);
+    pwmv2_set_shadow_val(BOARD_SDM_CLK_PWM, PWMV2_SHADOW_INDEX(1), ((reload >> 1) - (reload >> 2)), 0, false);
+    pwmv2_set_shadow_val(BOARD_SDM_CLK_PWM, PWMV2_SHADOW_INDEX(2), ((reload >> 1) + (reload >> 2)), 0, false);
+
+    pwmv2_counter_select_data_offset_from_shadow_value(BOARD_SDM_CLK_PWM, pwm_counter_1, PWMV2_SHADOW_INDEX(0));
+    pwmv2_counter_burst_disable(BOARD_SDM_CLK_PWM, pwm_counter_1);
+    pwmv2_set_reload_update_time(BOARD_SDM_CLK_PWM, pwm_counter_1, pwm_reload_update_on_reload);
+
+    pwmv2_select_cmp_source(BOARD_SDM_CLK_PWM, PWMV2_CMP_INDEX(4), cmp_value_from_shadow_val, PWMV2_SHADOW_INDEX(1));
+    pwmv2_select_cmp_source(BOARD_SDM_CLK_PWM, PWMV2_CMP_INDEX(5), cmp_value_from_shadow_val, PWMV2_SHADOW_INDEX(2));
+
+    pwmv2_select_cmp_source(BOARD_SDM_CLK_PWM, PWMV2_CMP_INDEX(6), cmp_value_from_shadow_val, PWMV2_SHADOW_INDEX(1));
+    pwmv2_select_cmp_source(BOARD_SDM_CLK_PWM, PWMV2_CMP_INDEX(7), cmp_value_from_shadow_val, PWMV2_SHADOW_INDEX(2));
+
+    pwmv2_shadow_register_lock(BOARD_SDM_CLK_PWM);
+    pwmv2_disable_four_cmp(BOARD_SDM_CLK_PWM, BOARD_SDM_CLK_PWM_OUT);
+    pwmv2_channel_enable_output(BOARD_SDM_CLK_PWM, BOARD_SDM_CLK_PWM_OUT);
+    pwmv2_enable_counter(BOARD_SDM_CLK_PWM, pwm_counter_1);
+    pwmv2_start_pwm_output(BOARD_SDM_CLK_PWM, pwm_counter_1);
+}
+#endif
 
 int main(void)
 {
     board_init();
     init_sdm_pins();
     printf("sdm example\n");
+
+#if defined(BOARD_SDM_SENSOR_REQUIRE_CLK) && BOARD_SDM_SENSOR_REQUIRE_CLK
+    gen_pwm_as_sdm_clock();
+#endif
 
     /* sdm receive filter data by polling mode */
     test_sdm_filter_receive();

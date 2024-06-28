@@ -40,10 +40,9 @@
 #endif
     .global _tx_thread_context_restore
 
-.section .isr_vector
+.section .isr_vector, "ax"
 .align 8
 .type _tx_thread_context_restore, function
-.func
 /**************************************************************************/
 /*                                                                        */
 /*  FUNCTION                                               RELEASE        */

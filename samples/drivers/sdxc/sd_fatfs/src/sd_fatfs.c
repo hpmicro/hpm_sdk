@@ -16,7 +16,7 @@ DIR s_dir;
 FRESULT fatfs_result;
 BYTE work[FF_MAX_SS];
 
-const TCHAR driver_num_buf[3] = {DEV_SD + '0', ':', '/'};
+const TCHAR driver_num_buf[3] = { DEV_SD + '0', ':', '/' };
 
 #define TEST_DIR_NAME "hpmicro_sd_test_dir0"
 
@@ -38,18 +38,40 @@ static FRESULT sd_big_file_test(void);
 
 int main(void)
 {
+    bool need_init_filesystem = true;
     board_init();
-
     show_menu();
-
-    fatfs_result = sd_mount_fs();
-    if (fatfs_result == FR_NO_FILESYSTEM) {
-        printf("There is no File system available, making file system...\n");
-        fatfs_result = sd_mkfs();
-    }
 
     while (1) {
         char option = getchar();
+
+        /* Before doing FATFS operation, ensure the SD card is present */
+        DSTATUS dstatus = disk_status(DEV_SD);
+        if (dstatus == STA_NODISK) {
+            printf("No disk in the SD slot, please insert an SD card...\n");
+            do {
+                dstatus = disk_status(DEV_SD);
+            } while (dstatus == STA_NODISK);
+            board_delay_ms(100);
+            printf("Detected SD card, re-initialize the filesystem...\n");
+            need_init_filesystem = true;
+        }
+        dstatus = disk_initialize(DEV_SD);
+        if (dstatus != RES_OK) {
+            printf("Failed to initialize SD disk\n");
+        }
+        if (need_init_filesystem) {
+            fatfs_result = sd_mount_fs();
+            if (fatfs_result == FR_NO_FILESYSTEM) {
+                printf("There is no File system available, making file system...\n");
+                fatfs_result = sd_mkfs();
+                if (fatfs_result != FR_OK) {
+                    printf("Failed to make filesystem, cause:%s\n", show_error_string(fatfs_result));
+                } else {
+                    need_init_filesystem = false;
+                }
+            }
+        }
 
         switch (option) {
         case '1':

@@ -26,11 +26,11 @@
 
 lvgl music将会显示在LCD屏上，可以操作播放/暂停、下一首、上一首。
 
-![lv_demo_music](../../lvgl/lv_demo_music/doc/lv_demo_music.gif "lv_demo_music")
-
 ## 备注
 
-由于framebuffer所占内存较多，请指定CMAKE_BUILD_TYPE为flash_sdram_xip，可执行指令如下：
+- 由于framebuffer和mp3解码所占内存较多，请指定HPM_BUILD_TYPE为flash_sdram_xip，可执行指令如下：
 ```
-cmake -GNinja -DBOARD=hpm6750evkmini -DCMAKE_BUILD_TYPE=flash_sdram_xip ..
+cmake -GNinja -DBOARD=hpm6750evkmini -DHPM_BUILD_TYPE=flash_sdram_xip -DCMAKE_BUILD_TYPE=debug ..
 ```
+
+- MP3文件的采样率 Sample rate 需小于等于 48000 Hz。

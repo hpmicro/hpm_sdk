@@ -8,8 +8,8 @@ set(CONFIG_CAMERA "ov5640")
 endif()
 set(CONFIG_HPM_CAMERA 1)
 
-if("${CMAKE_BUILD_TYPE}" STREQUAL "")
-    SET(CMAKE_BUILD_TYPE flash_sdram_xip)
+if("${HPM_BUILD_TYPE}" STREQUAL "")
+    SET(HPM_BUILD_TYPE flash_sdram_xip)
 endif()
 
 set(CONFIG_HPM_PANEL 1)

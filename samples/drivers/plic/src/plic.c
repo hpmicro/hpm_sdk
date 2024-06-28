@@ -27,7 +27,7 @@
 #define PLIC_TEST_MODE "Machine mode"
 #endif
 
-#ifndef USE_NONVECTOR_MODE
+#if !defined(USE_NONVECTOR_MODE) || (USE_NONVECTOR_MODE == 0)
 #define VECTOR_MODE "Vector"
 #else
 #define VECTOR_MODE "Non-Vector"

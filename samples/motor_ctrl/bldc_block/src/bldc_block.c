@@ -8,9 +8,13 @@
 #include <stdio.h>
 #include "hpm_debug_console.h"
 #include "hpm_sysctl_drv.h"
+#if defined(HPMSOC_HAS_HPMSDK_PWM)
 #include "hpm_pwm_drv.h"
+#endif
+#if defined(HPMSOC_HAS_HPMSDK_PWMV2)
+#include "hpm_pwmv2_drv.h"
+#endif
 #include "hpm_trgm_drv.h"
-#include "hpm_hall_drv.h"
 #include "hpm_gptmr_drv.h"
 #include "hpm_clock_drv.h"
 #include "hpm_uart_drv.h"
@@ -26,6 +30,11 @@
 #define PWM_FREQUENCY               (20000)
 #define PWM_RELOAD                  ((motor_clock_hz/PWM_FREQUENCY) - 1) /*20K hz  = 200 000 000/PWM_RELOAD */
 #define MOTOR0_BLDCPWM              BOARD_BLDCPWM
+#if defined(BOARD_BLDC_HALL_DIR_INV) && BOARD_BLDC_HALL_DIR_INV
+#define MOTOR_ANGLE_DETA    -MCL_PI_DIV3 / MOTOR_POLE_NUM
+#else
+#define MOTOR_ANGLE_DETA    MCL_PI_DIV3 / MOTOR_POLE_NUM
+#endif
 
 #ifdef HPMSOC_HAS_HPMSDK_QEIV2
 #define BOARD_QEI_BASE              BOARD_BLDC_QEIV2_BASE
@@ -183,10 +192,17 @@ hpm_mcl_stat_t pwm_duty_set(mcl_drivers_channel_t chn, float duty)
     pwm_reload = PWM_RELOAD * 0.98;
     pwm_cmp_half = (uint32_t)(duty * pwm_reload) >> 1;
     pwm_reload_half =  PWM_RELOAD >> 1;
+#if defined(HPMSOC_HAS_HPMSDK_PWM)
     pwm_cmp_force_value(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_INDEX_0, PWM_CMP_CMP_SET((pwm_reload_half - pwm_cmp_half)));
     pwm_cmp_force_value(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_INDEX_1, PWM_CMP_CMP_SET((pwm_reload_half + pwm_cmp_half)));
     pwm_issue_shadow_register_lock_event(MOTOR0_BLDCPWM);
-
+#endif
+#if defined(HPMSOC_HAS_HPMSDK_PWMV2)
+    pwmv2_shadow_register_unlock(MOTOR0_BLDCPWM);
+    pwmv2_set_shadow_val(MOTOR0_BLDCPWM, (BOARD_BLDCPWM_CMP_INDEX_0 + 1), (pwm_reload_half - pwm_cmp_half), 0, false);
+    pwmv2_set_shadow_val(MOTOR0_BLDCPWM, (BOARD_BLDCPWM_CMP_INDEX_1 + 1), (pwm_reload_half + pwm_cmp_half), 0, false);
+    pwmv2_shadow_register_lock(MOTOR0_BLDCPWM);
+#endif
     return mcl_success;
 }
 
@@ -206,18 +222,29 @@ hpm_mcl_stat_t encoder_get_abs_theta(float *theta)
 
 void reset_pwm_counter(void)
 {
+#if defined(HPMSOC_HAS_HPMSDK_PWM)
     pwm_enable_reload_at_synci(MOTOR0_BLDCPWM);
+#endif
+#if defined(HPMSOC_HAS_HPMSDK_PWMV2)
+
+#endif
 }
 
 hpm_mcl_stat_t enable_all_pwm_output(void)
 {
+#if defined(HPMSOC_HAS_HPMSDK_PWM)
     pwm_disable_sw_force(MOTOR0_BLDCPWM);
+#endif
+#if defined(HPMSOC_HAS_HPMSDK_PWMV2)
+
+#endif
 
     return mcl_success;
 }
 
 hpm_mcl_stat_t disable_all_pwm_output(void)
 {
+#if defined(HPMSOC_HAS_HPMSDK_PWM)
     pwm_config_force_cmd_timing(MOTOR0_BLDCPWM, pwm_force_immediately);
     pwm_enable_pwm_sw_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_UH_PWM_OUTPIN);
     pwm_enable_pwm_sw_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_UL_PWM_OUTPIN);
@@ -233,10 +260,37 @@ hpm_mcl_stat_t disable_all_pwm_output(void)
                         | PWM_FORCE_OUTPUT(BOARD_BLDC_WH_PWM_OUTPIN, pwm_output_0)
                         | PWM_FORCE_OUTPUT(BOARD_BLDC_WL_PWM_OUTPIN, pwm_output_0));
     pwm_enable_sw_force(MOTOR0_BLDCPWM);
+#endif
+#if defined(HPMSOC_HAS_HPMSDK_PWMV2)
+
+    pwmv2_enable_force_by_software(MOTOR0_BLDCPWM, BOARD_BLDC_UH_PWM_OUTPIN);
+    pwmv2_enable_force_by_software(MOTOR0_BLDCPWM, BOARD_BLDC_UL_PWM_OUTPIN);
+    pwmv2_enable_force_by_software(MOTOR0_BLDCPWM, BOARD_BLDC_VH_PWM_OUTPIN);
+    pwmv2_enable_force_by_software(MOTOR0_BLDCPWM, BOARD_BLDC_VL_PWM_OUTPIN);
+    pwmv2_enable_force_by_software(MOTOR0_BLDCPWM, BOARD_BLDC_WH_PWM_OUTPIN);
+    pwmv2_enable_force_by_software(MOTOR0_BLDCPWM, BOARD_BLDC_WL_PWM_OUTPIN);
+
+    pwmv2_enable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_UH_PWM_OUTPIN);
+    pwmv2_enable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_UL_PWM_OUTPIN);
+    pwmv2_enable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_VH_PWM_OUTPIN);
+    pwmv2_enable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_VL_PWM_OUTPIN);
+    pwmv2_enable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_WH_PWM_OUTPIN);
+    pwmv2_enable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_WL_PWM_OUTPIN);
+
+    pwmv2_shadow_register_unlock(MOTOR0_BLDCPWM);
+    pwmv2_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_UH_PWM_OUTPIN, pwm_force_output_0, false);
+    pwmv2_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_UL_PWM_OUTPIN, pwm_force_output_0, false);
+    pwmv2_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_VH_PWM_OUTPIN, pwm_force_output_0, false);
+    pwmv2_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_VL_PWM_OUTPIN, pwm_force_output_0, false);
+    pwmv2_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_WH_PWM_OUTPIN, pwm_force_output_0, false);
+    pwmv2_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_WL_PWM_OUTPIN, pwm_force_output_0, false);
+    pwmv2_shadow_register_lock(MOTOR0_BLDCPWM);
+#endif
 
     return mcl_success;
 }
 
+#if defined(HPMSOC_HAS_HPMSDK_PWM)
 hpm_mcl_stat_t pwm_enable_channel(mcl_drivers_channel_t chn)
 {
     switch (chn) {
@@ -294,6 +348,67 @@ hpm_mcl_stat_t pwm_disable_channel(mcl_drivers_channel_t chn)
 
     return mcl_success;
 }
+#endif
+
+#if defined(HPMSOC_HAS_HPMSDK_PWMV2)
+hpm_mcl_stat_t pwm_enable_channel(mcl_drivers_channel_t chn)
+{
+    switch (chn) {
+    case mcl_drivers_chn_ah:
+        pwmv2_disable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_UH_PWM_OUTPIN);
+        break;
+    case mcl_drivers_chn_al:
+        pwmv2_disable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_UL_PWM_OUTPIN);
+        break;
+    case mcl_drivers_chn_bh:
+        pwmv2_disable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_VH_PWM_OUTPIN);
+        break;
+    case mcl_drivers_chn_bl:
+        pwmv2_disable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_VL_PWM_OUTPIN);
+        break;
+    case mcl_drivers_chn_ch:
+        pwmv2_disable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_WH_PWM_OUTPIN);
+        break;
+    case mcl_drivers_chn_cl:
+        pwmv2_disable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_WL_PWM_OUTPIN);
+        break;
+    default:
+        return mcl_invalid_argument;
+        break;
+    }
+
+    return mcl_success;
+}
+
+hpm_mcl_stat_t pwm_disable_channel(mcl_drivers_channel_t chn)
+{
+    switch (chn) {
+    case mcl_drivers_chn_ah:
+        pwmv2_enable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_UH_PWM_OUTPIN);
+        break;
+    case mcl_drivers_chn_al:
+        pwmv2_enable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_UL_PWM_OUTPIN);
+        break;
+    case mcl_drivers_chn_bh:
+        pwmv2_enable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_VH_PWM_OUTPIN);
+        break;
+    case mcl_drivers_chn_bl:
+        pwmv2_enable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_VL_PWM_OUTPIN);
+        break;
+    case mcl_drivers_chn_ch:
+        pwmv2_enable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_WH_PWM_OUTPIN);
+        break;
+    case mcl_drivers_chn_cl:
+        pwmv2_enable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_WL_PWM_OUTPIN);
+        break;
+    default:
+        return mcl_invalid_argument;
+        break;
+    }
+
+    return mcl_success;
+}
+#endif
 
 void mcl_user_delay_us(uint64_t tick)
 {
@@ -328,7 +443,7 @@ hpm_mcl_stat_t encoder_get_uvw_level(mcl_encoder_uvw_level_t *level)
 void isr_hall(void)
 {
     hall_clear_status(BOARD_BLDC_HALL_BASE, hall_get_status(BOARD_BLDC_HALL_BASE));
-    hpm_mcl_uvw_get_theta(BOARD_BLDC_HALL_BASE, NULL, MCL_PI_DIV3 / MOTOR_POLE_NUM, &encoder_theta);
+    hpm_mcl_uvw_get_theta(BOARD_BLDC_HALL_BASE, NULL, MOTOR_ANGLE_DETA, &encoder_theta);
     hpm_mcl_loop_refresh_block(&motor0.loop);
 }
 SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_HALL_IRQ, isr_hall)
@@ -341,7 +456,7 @@ void isr_qei(void)
     uint32_t status = qeiv2_get_status(BOARD_BLDC_QEIV2_BASE);
 
     qeiv2_clear_status(BOARD_BLDC_QEIV2_BASE, status);
-    hpm_mcl_uvw_get_theta(BOARD_BLDC_QEIV2_BASE, &last_position, MCL_PI_DIV3 / MOTOR_POLE_NUM, &encoder_theta);
+    hpm_mcl_uvw_get_theta(BOARD_BLDC_QEIV2_BASE, &last_position, MOTOR_ANGLE_DETA, &encoder_theta);
     hpm_mcl_loop_refresh_block(&motor0.loop);
 }
 SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_QEIV2_IRQ, isr_qei)
@@ -383,14 +498,26 @@ hpm_mcl_stat_t encoder_init(void)
     qeiv2_get_uvw_position_defconfig(&uvw_config);
     uvw_config.pos_opt = qeiv2_uvw_pos_opt_next;
     (void)qeiv2_config_uvw_position(BOARD_BLDC_QEIV2_BASE, &uvw_config);
-    qeiv2_release_counter(BOARD_BLDC_QEIV2_BASE);
-    qeiv2_release_counter(BOARD_BLDC_QEIV2_BASE);
+#if defined(HPM_IP_FEATURE_QEIV2_ONESHOT_MODE) && HPM_IP_FEATURE_QEIV2_ONESHOT_MODE
+    qeiv2_disable_pulse0_oneshot_mode(BOARD_BLDC_QEIV2_BASE);
+#endif
+
+#if defined(HPM_IP_FEATURE_QEIV2_SW_RESTART_TRG) && HPM_IP_FEATURE_QEIV2_SW_RESTART_TRG
+    qeiv2_enable_trig_pulse0(BOARD_BLDC_QEIV2_BASE);
+#endif
     qeiv2_set_pulse0_num(BOARD_BLDC_QEIV2_BASE, 1);
+    qeiv2_enable_irq(BOARD_BLDC_QEIV2_BASE, QEIV2_EVENT_PULSE0_FLAG_MASK);
+#if defined(HPM_IP_FEATURE_QEIV2_SW_RESTART_TRG) && HPM_IP_FEATURE_QEIV2_SW_RESTART_TRG
+    qeiv2_sw_restart_pulse0(BOARD_BLDC_QEIV2_BASE);
+    qeiv2_sw_restart_cycle0(BOARD_BLDC_QEIV2_BASE);
+#endif
     intc_m_enable_irq_with_priority(BOARD_BLDC_QEIV2_IRQ, 1);
+    qeiv2_release_counter(BOARD_BLDC_QEIV2_BASE);
 #endif
     return mcl_success;
 }
 
+#if defined(HPMSOC_HAS_HPMSDK_PWM)
 void pwm_init(void)
 {
     uint8_t cmp_index = BOARD_BLDCPWM_CMP_INDEX_0;
@@ -462,7 +589,110 @@ void pwm_init(void)
                    PWM_RELOAD >> 1, PWM_RELOAD >> 1);
     pwm_issue_shadow_register_lock_event(MOTOR0_BLDCPWM);
 }
+#endif
 
+#if defined(HPMSOC_HAS_HPMSDK_PWMV2)
+void pwm_init(void)
+{
+    pwmv2_cmp_config_t cmp_cfg[2];
+    pwmv2_config_t pwm_cfg;
+
+    cmp_cfg[0].cmp = PWM_RELOAD;
+    cmp_cfg[0].enable_half_cmp = false;
+    cmp_cfg[0].enable_hrcmp = false;
+    cmp_cfg[0].cmp_source = cmp_value_from_shadow_val;
+    cmp_cfg[0].cmp_source_index = PWMV2_SHADOW_INDEX(1);
+    cmp_cfg[0].update_trigger = pwm_shadow_register_update_on_reload;
+    cmp_cfg[1].cmp = PWM_RELOAD;
+    cmp_cfg[1].enable_half_cmp = false;
+    cmp_cfg[1].enable_hrcmp = false;
+    cmp_cfg[1].cmp_source = cmp_value_from_shadow_val;
+    cmp_cfg[1].cmp_source_index = PWMV2_SHADOW_INDEX(2);
+    cmp_cfg[1].update_trigger = pwm_shadow_register_update_on_reload;
+
+    pwm_cfg.enable_output = true;
+    pwm_cfg.enable_async_fault = false;
+    pwm_cfg.enable_sync_fault = false;
+    pwm_cfg.invert_output = false;
+    pwm_cfg.enable_four_cmp = false;
+    pwm_cfg.update_trigger = pwm_reload_update_on_reload;
+    pwm_cfg.force_shadow_trigger = pwm_force_update_shadow_immediately;
+    pwm_cfg.force_trigger = pwm_force_immediately;
+
+    pwmv2_disable_counter(MOTOR0_BLDCPWM, pwm_counter_0);
+    pwmv2_reset_counter(MOTOR0_BLDCPWM, pwm_counter_0);
+    pwmv2_shadow_register_unlock(MOTOR0_BLDCPWM);
+
+    pwmv2_set_shadow_val(MOTOR0_BLDCPWM, PWMV2_SHADOW_INDEX(0), PWM_RELOAD, 0, false);
+    pwmv2_shadow_register_lock(MOTOR0_BLDCPWM);
+
+    pwmv2_setup_waveform(MOTOR0_BLDCPWM, pwm_channel_0, &pwm_cfg, PWMV2_CMP_INDEX(0), &cmp_cfg[0], 2);
+    pwmv2_setup_waveform(MOTOR0_BLDCPWM, pwm_channel_1, &pwm_cfg, PWMV2_CMP_INDEX(2), &cmp_cfg[0], 2);
+    pwmv2_setup_waveform(MOTOR0_BLDCPWM, pwm_channel_2, &pwm_cfg, PWMV2_CMP_INDEX(4), &cmp_cfg[0], 2);
+    pwmv2_setup_waveform(MOTOR0_BLDCPWM, pwm_channel_3, &pwm_cfg, PWMV2_CMP_INDEX(6), &cmp_cfg[0], 2);
+    pwmv2_setup_waveform(MOTOR0_BLDCPWM, pwm_channel_4, &pwm_cfg, PWMV2_CMP_INDEX(8), &cmp_cfg[0], 2);
+    pwmv2_setup_waveform(MOTOR0_BLDCPWM, pwm_channel_5, &pwm_cfg, PWMV2_CMP_INDEX(10), &cmp_cfg[0], 2);
+
+    pwmv2_counter_select_data_offset_from_shadow_value(MOTOR0_BLDCPWM, pwm_counter_0, PWMV2_SHADOW_INDEX(0));
+    pwmv2_counter_burst_disable(MOTOR0_BLDCPWM, pwm_counter_0);
+    pwmv2_set_reload_update_time(MOTOR0_BLDCPWM, pwm_counter_0, pwm_reload_update_on_reload);
+
+    pwmv2_counter_select_data_offset_from_shadow_value(MOTOR0_BLDCPWM, pwm_counter_1, PWMV2_SHADOW_INDEX(0));
+    pwmv2_counter_burst_disable(MOTOR0_BLDCPWM, pwm_counter_1);
+    pwmv2_set_reload_update_time(MOTOR0_BLDCPWM, pwm_counter_1, pwm_reload_update_on_reload);
+
+    pwmv2_counter_select_data_offset_from_shadow_value(MOTOR0_BLDCPWM, pwm_counter_2, PWMV2_SHADOW_INDEX(0));
+    pwmv2_counter_burst_disable(MOTOR0_BLDCPWM, pwm_counter_2);
+    pwmv2_set_reload_update_time(MOTOR0_BLDCPWM, pwm_counter_2, pwm_reload_update_on_reload);
+
+    pwmv2_enable_counter(MOTOR0_BLDCPWM, pwm_counter_0);
+    pwmv2_enable_counter(MOTOR0_BLDCPWM, pwm_counter_1);
+    pwmv2_enable_counter(MOTOR0_BLDCPWM, pwm_counter_2);
+    pwmv2_start_pwm_output(MOTOR0_BLDCPWM, pwm_counter_0);
+    pwmv2_start_pwm_output(MOTOR0_BLDCPWM, pwm_counter_1);
+    pwmv2_start_pwm_output(MOTOR0_BLDCPWM, pwm_counter_2);
+    pwmv2_shadow_register_unlock(MOTOR0_BLDCPWM);
+    pwmv2_set_shadow_val(MOTOR0_BLDCPWM, PWMV2_SHADOW_INDEX(9), 1, 0, false);
+    pwmv2_shadow_register_lock(MOTOR0_BLDCPWM);
+
+    pwmv2_set_force_update_time(MOTOR0_BLDCPWM, BOARD_BLDC_UH_PWM_OUTPIN, pwm_force_immediately);
+    pwmv2_set_force_update_time(MOTOR0_BLDCPWM, BOARD_BLDC_UL_PWM_OUTPIN, pwm_force_immediately);
+    pwmv2_set_force_update_time(MOTOR0_BLDCPWM, BOARD_BLDC_VH_PWM_OUTPIN, pwm_force_immediately);
+    pwmv2_set_force_update_time(MOTOR0_BLDCPWM, BOARD_BLDC_VL_PWM_OUTPIN, pwm_force_immediately);
+    pwmv2_set_force_update_time(MOTOR0_BLDCPWM, BOARD_BLDC_WH_PWM_OUTPIN, pwm_force_immediately);
+    pwmv2_set_force_update_time(MOTOR0_BLDCPWM, BOARD_BLDC_WL_PWM_OUTPIN, pwm_force_immediately);
+
+    pwmv2_force_update_time_by_shadow(MOTOR0_BLDCPWM, BOARD_BLDC_UH_PWM_OUTPIN, pwm_force_update_shadow_immediately);
+    pwmv2_force_update_time_by_shadow(MOTOR0_BLDCPWM, BOARD_BLDC_UL_PWM_OUTPIN, pwm_force_update_shadow_immediately);
+    pwmv2_force_update_time_by_shadow(MOTOR0_BLDCPWM, BOARD_BLDC_VH_PWM_OUTPIN, pwm_force_update_shadow_immediately);
+    pwmv2_force_update_time_by_shadow(MOTOR0_BLDCPWM, BOARD_BLDC_VL_PWM_OUTPIN, pwm_force_update_shadow_immediately);
+    pwmv2_force_update_time_by_shadow(MOTOR0_BLDCPWM, BOARD_BLDC_WH_PWM_OUTPIN, pwm_force_update_shadow_immediately);
+    pwmv2_force_update_time_by_shadow(MOTOR0_BLDCPWM, BOARD_BLDC_WL_PWM_OUTPIN, pwm_force_update_shadow_immediately);
+
+    pwmv2_enable_force_by_software(MOTOR0_BLDCPWM, BOARD_BLDC_UH_PWM_OUTPIN);
+    pwmv2_enable_force_by_software(MOTOR0_BLDCPWM, BOARD_BLDC_UL_PWM_OUTPIN);
+    pwmv2_enable_force_by_software(MOTOR0_BLDCPWM, BOARD_BLDC_VH_PWM_OUTPIN);
+    pwmv2_enable_force_by_software(MOTOR0_BLDCPWM, BOARD_BLDC_VL_PWM_OUTPIN);
+    pwmv2_enable_force_by_software(MOTOR0_BLDCPWM, BOARD_BLDC_WH_PWM_OUTPIN);
+    pwmv2_enable_force_by_software(MOTOR0_BLDCPWM, BOARD_BLDC_WL_PWM_OUTPIN);
+
+    pwmv2_enable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_UH_PWM_OUTPIN);
+    pwmv2_enable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_UL_PWM_OUTPIN);
+    pwmv2_enable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_VH_PWM_OUTPIN);
+    pwmv2_enable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_VL_PWM_OUTPIN);
+    pwmv2_enable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_WH_PWM_OUTPIN);
+    pwmv2_enable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_WL_PWM_OUTPIN);
+
+    pwmv2_shadow_register_unlock(MOTOR0_BLDCPWM);
+    pwmv2_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_UH_PWM_OUTPIN, pwm_force_output_0, false);
+    pwmv2_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_UL_PWM_OUTPIN, pwm_force_output_0, false);
+    pwmv2_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_VH_PWM_OUTPIN, pwm_force_output_0, false);
+    pwmv2_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_VL_PWM_OUTPIN, pwm_force_output_0, false);
+    pwmv2_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_WH_PWM_OUTPIN, pwm_force_output_0, false);
+    pwmv2_force_output(MOTOR0_BLDCPWM, BOARD_BLDC_WL_PWM_OUTPIN, pwm_force_output_0, false);
+    pwmv2_shadow_register_lock(MOTOR0_BLDCPWM);
+}
+#endif
 void isr_gptmr(void)
 {
     if (gptmr_check_status(BOARD_BLDC_TMR_1MS, GPTMR_CH_CMP_IRQ_MASK(BOARD_BLDC_TMR_CH, BOARD_BLDC_TMR_CMP))) {

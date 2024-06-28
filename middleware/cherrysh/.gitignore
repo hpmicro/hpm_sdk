@@ -1,0 +1,4 @@
+.vscode
+**/build
+**/.cache
+samples/hpm/barebone_uart/Makefile

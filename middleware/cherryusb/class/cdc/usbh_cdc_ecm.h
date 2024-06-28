@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, sakumisu
+ * Copyright (c) 2024, sakumisu
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -23,7 +23,7 @@ struct usbh_cdc_ecm {
     uint8_t ctrl_intf; /* Control interface number */
     uint8_t data_intf; /* Data interface number */
     uint8_t minor;
-    
+
     uint8_t mac[6];
     bool connect_status;
     uint16_t max_segment_size;
@@ -32,6 +32,8 @@ struct usbh_cdc_ecm {
     ip_addr_t ipaddr;
     ip_addr_t netmask;
     ip_addr_t gateway;
+
+    void *user_data;
 };
 
 #ifdef __cplusplus
@@ -50,4 +52,4 @@ void usbh_cdc_ecm_rx_thread(void *argument);
 }
 #endif
 
-#endif /* USBH_CDC_ACM_H */
+#endif /* USBH_CDC_ECM_H */

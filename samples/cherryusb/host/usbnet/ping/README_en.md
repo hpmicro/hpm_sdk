@@ -127,5 +127,3 @@ from 120.232.145.144 bytes=60 icmp_seq=2 ttl=52 time=91 ms
 from 120.232.145.144 bytes=60 icmp_seq=3 ttl=52 time=104 ms
 from 120.232.145.144 bytes=60 icmp_seq=4 ttl=52 time=82 ms
 ```
-
-note: when switching the rndis module or ecm module, you also need to reset the development board.

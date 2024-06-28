@@ -39,6 +39,7 @@ Please enter one of ADC conversion modes above (e.g. 1 or 2 ...):
   Oneshot Mode - ADC3 [channel 2] - Result: 0xfff4
   Oneshot Mode - ADC3 [channel 2] - Result: 0xffff
   ```
+
   - Period mode
 
   ```console
@@ -47,6 +48,7 @@ Please enter one of ADC conversion modes above (e.g. 1 or 2 ...):
   Period Mode - ADC3 [channel 2] - Result: 0xfff5
   Period Mode - ADC3 [channel 2] - Result: 0xfff7
   ```
+
   - Sequence mode
 
   ```console
@@ -55,6 +57,7 @@ Please enter one of ADC conversion modes above (e.g. 1 or 2 ...):
   Sequence Mode - ADC3 - Cycle Bit: 00 - Sequence Number:00 - ADC Channel: 02 - Result: 0xffd9
   Sequence Mode - ADC3 - Cycle Bit: 01 - Sequence Number:00 - ADC Channel: 02 - Result: 0xffff
   ```
+
   - Preemption mode
 
   ```console
@@ -71,19 +74,22 @@ Please enter one of ADC conversion modes above (e.g. 1 or 2 ...):
   - Channel initialization
 
     - Set ch_cfg. wdog_int_en to true
-
     - Set ch_cfg.thshdl/ch_cfg.thshdh
 
-       The ch_cfg.thshdl/ch_cfg.thshdh can be configured from 0 to 65535. If any ADC conversion result is out of the thresholds (thshdl, thsdhh), a WDOG interrupt will occur.
-
+      The ch_cfg.thshdl/ch_cfg.thshdh can be configured from 0 to 65535. If any ADC conversion result is out of the thresholds (thshdl, thsdhh), a WDOG interrupt will occur.
   - Call adc16_init_channel () API.
-
   - ISR
 
     - Set one or more WDOG event flags depending on  ADC channels
     - Disable one or more corresponding WDOG interrupts
-
   - Main loop
 
     - Handle with WDOG events
     - Enable one or more corresponding WDOG interrupts
+- Trigger source
+
+  - In this sample, for sequence mode and preemption mode, PWM is selected as the trigger source. Other peripherals can also be selected as the trigger source.
+  - The frequency of the trigger signal(20KHz by default) can be configured in sample-level CMakeLists.txt(e.g. sdk_compile_definitions(-DAPP_ADC16_TRIG_SRC_FREQUENCY=20000))
+- Exception exit
+
+  Press the "space" key to abort the test, and then a test mode can be reselected.

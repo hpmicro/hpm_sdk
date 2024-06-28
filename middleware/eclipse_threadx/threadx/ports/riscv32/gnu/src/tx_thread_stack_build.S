@@ -30,10 +30,9 @@
 
 .global _tx_thread_stack_build
 
-.section .isr_vector
+.section .isr_vector, "ax"
 .align 8
 .type _tx_thread_stack_build, function
-.func
 /**************************************************************************/
 /*                                                                        */
 /*  FUNCTION                                               RELEASE        */

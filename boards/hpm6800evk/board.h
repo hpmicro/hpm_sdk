@@ -24,15 +24,6 @@
 #define BOARD_NAME          "hpm6800evk"
 #define BOARD_UF2_SIGNATURE (0x0A4D5048UL)
 
-/* dma section */
-#define BOARD_APP_XDMA      HPM_XDMA
-#define BOARD_APP_HDMA      HPM_HDMA
-#define BOARD_APP_XDMA_IRQ  IRQn_XDMA
-#define BOARD_APP_HDMA_IRQ  IRQn_HDMA
-#define BOARD_APP_DMAMUX    HPM_DMAMUX
-#define TEST_DMA_CONTROLLER HPM_HDMA
-#define TEST_DMA_IRQ        IRQn_HDMA
-
 #ifndef BOARD_RUNNING_CORE
 #define BOARD_RUNNING_CORE HPM_CORE0
 #endif
@@ -46,6 +37,8 @@
 #define BOARD_APP_UART_RX_DMA_REQ HPM_DMA_SRC_UART3_RX
 #define BOARD_APP_UART_TX_DMA_REQ HPM_DMA_SRC_UART3_TX
 #endif
+
+#define BOARD_APP_UART_BREAK_SIGNAL_PIN   IOC_PAD_PE04
 
 /* uart lin sample section */
 #define BOARD_UART_LIN          BOARD_APP_UART_BASE
@@ -160,6 +153,8 @@
 #define BOARD_APP_XDMA_IRQ IRQn_XDMA
 #define BOARD_APP_HDMA_IRQ IRQn_HDMA
 #define BOARD_APP_DMAMUX   HPM_DMAMUX
+#define TEST_DMA_CONTROLLER HPM_HDMA
+#define TEST_DMA_IRQ        IRQn_HDMA
 
 /* gptmr section */
 #define BOARD_GPTMR                   HPM_GPTMR2
@@ -316,11 +311,21 @@
 #define BOARD_FREERTOS_TIMER_IRQ      IRQn_GPTMR2
 #define BOARD_FREERTOS_TIMER_CLK_NAME clock_gptmr2
 
+#define BOARD_FREERTOS_LOWPOWER_TIMER          HPM_PTMR
+#define BOARD_FREERTOS_LOWPOWER_TIMER_CHANNEL  1
+#define BOARD_FREERTOS_LOWPOWER_TIMER_IRQ      IRQn_PTMR
+#define BOARD_FREERTOS_LOWPOWER_TIMER_CLK_NAME clock_ptmr
+
 /* Threadx Definitions */
 #define BOARD_THREADX_TIMER           HPM_GPTMR2
 #define BOARD_THREADX_TIMER_CHANNEL   1
 #define BOARD_THREADX_TIMER_IRQ       IRQn_GPTMR2
 #define BOARD_THREADX_TIMER_CLK_NAME  clock_gptmr2
+
+#define BOARD_THREADX_LOWPOWER_TIMER           HPM_PTMR
+#define BOARD_THREADX_LOWPOWER_TIMER_CHANNEL   1
+#define BOARD_THREADX_LOWPOWER_TIMER_IRQ       IRQn_PTMR
+#define BOARD_THREADX_LOWPOWER_TIMER_CLK_NAME  clock_ptmr
 /* SDXC section */
 #define BOARD_APP_SDCARD_SDXC_BASE              (HPM_SDXC1)
 #define BOARD_APP_SDCARD_SUPPORT_3V3            (1)
@@ -383,6 +388,29 @@
 /* Tamper Section */
 #define BOARD_TAMP_ACTIVE_CH    4
 #define BOARD_TAMP_LOW_LEVEL_CH 6
+
+/* i2s over spi Section*/
+#define BOARD_I2S_SPI_CS_GPIO_CTRL         HPM_GPIO0
+#define BOARD_I2S_SPI_CS_GPIO_INDEX        GPIO_DI_GPIOE
+#define BOARD_I2S_SPI_CS_GPIO_PIN          27
+#define BOARD_I2S_SPI_CS_GPIO_PAD          IOC_PAD_PE27
+
+#define BOARD_GPTMR_I2S_MCLK               HPM_GPTMR2
+#define BOARD_GPTMR_I2S_MCLK_CHANNEL       0
+#define BOARD_GPTMR_I2S_MCLK_CLK_NAME      clock_gptmr2
+
+#define BOARD_GPTMR_I2S_LRCK               HPM_GPTMR2
+#define BOARD_GPTMR_I2S_LRCK_CHANNEL       1
+#define BOARD_GPTMR_I2S_LRCK_CLK_NAME      clock_gptmr2
+
+#define BOARD_GPTMR_I2S_BCLK               HPM_GPTMR2
+#define BOARD_GPTMR_I2S_BLCK_CHANNEL       2
+#define BOARD_GPTMR_I2S_BLCK_CLK_NAME      clock_gptmr2
+
+#define BOARD_GPTMR_I2S_FINSH              HPM_GPTMR2
+#define BOARD_GPTMR_I2S_FINSH_IRQ          IRQn_GPTMR5
+#define BOARD_GPTMR_I2S_FINSH_CHANNEL      3
+#define BOARD_GPTMR_I2S_FINSH_CLK_NAME     clock_gptmr2
 
 #if defined(__cplusplus)
 extern "C" {
@@ -455,11 +483,10 @@ bool board_sd_detect_card(SDXC_Type *ptr);
 
 uint32_t board_init_dao_clock(void);
 uint32_t board_init_pdm_clock(void);
-uint32_t board_init_i2s_clock(I2S_Type *ptr);
 uint32_t board_config_i2s_clock(I2S_Type *ptr, uint32_t sample_rate);
 
 void board_init_adc16_pins(void);
-uint32_t board_init_adc16_clock(ADC16_Type *ptr, bool clk_src_ahb);
+uint32_t board_init_adc_clock(void *ptr, bool clk_src_ahb);
 
 void board_init_cam_pins(void);
 void board_write_cam_rst(uint8_t state);

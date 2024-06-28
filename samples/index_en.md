@@ -16,7 +16,7 @@
     freemaster/README_en
     hello_world/README_en
     hpm_math/index_en
-    jpeg/index_en
+    image/index_en
     lvgl/index_en
     lwip/index_en
     mbedtls/README_en
@@ -37,5 +37,9 @@
     tinyusb/index_en
     touch_panel/README_en
     vglite/index_en
-
+    spi_components/index_en
+    i2s_emulation/README_en
+    spi_sdcard/index_en
+    cherrysh/index_en
+    ethercat/index_en
 :::

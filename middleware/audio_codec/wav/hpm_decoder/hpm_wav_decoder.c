@@ -129,7 +129,9 @@ uint32_t hpm_wav_decode(hpm_wav_ctrl *wav_ctrl, uint8_t *buf, uint32_t size)
             wav_ctrl->func.read_file(wav_ctrl->func.file, readlen, &buf[size - readlen], &read);
             p8 = &buf[size - readlen];
             for (n = 0; n < word_size;) {
-                pbuf[n++] = (*(uint32_t *)&p8[0]) << 8;
+                pbuf[n] = (*(uint32_t *)&p8[0]) << 8;
+                pbuf[n + 1] = pbuf[n];
+                n += 2;
                 p8 += 3;
             }
             buf_len = (read << 3) / 3;
@@ -163,9 +165,9 @@ uint32_t hpm_wav_decode(hpm_wav_ctrl *wav_ctrl, uint8_t *buf, uint32_t size)
             wav_ctrl->func.read_file(wav_ctrl->func.file, readlen, &buf[size - readlen], &read);
             p8 = &buf[size - readlen];
             for (n = 0; n < word_size;) {
-                pbuf[n++] = (*(uint32_t *)&p8[0]) << 16;
-                pbuf[n] = pbuf[n-1];
-                n += 1;
+                pbuf[n] = (*(uint32_t *)&p8[0]) << 16;
+                pbuf[n + 1] = pbuf[n];
+                n += 2;
                 p8 += 2;
             }
             buf_len = read << 2;
@@ -199,7 +201,7 @@ uint32_t hpm_wav_decode(hpm_wav_ctrl *wav_ctrl, uint8_t *buf, uint32_t size)
             wav_ctrl->func.read_file(wav_ctrl->func.file, readlen, &buf[size - readlen], &read);
             p8 = &buf[size - readlen];
             for (n = 0; n < word_size;) {
-                pbuf[n++] = (*(uint32_t *)&p8[0]) << 24;
+                pbuf[n] = (*(uint32_t *)&p8[0]) << 24;
                 pbuf[n + 1] = pbuf[n];
                 n += 2;
                 p8 += 1;

@@ -80,7 +80,7 @@ static bool invert_led_level;
  *      0 - 4MB / 1 - 8MB / 2 - 16MB
  */
 #if defined(FLASH_XIP) && FLASH_XIP
-__attribute__ ((section(".nor_cfg_option"))) const uint32_t option[4] = {0xfcf90001, 0x00000007, 0x0, 0x0};
+__attribute__ ((section(".nor_cfg_option"))) const uint32_t option[4] = {0xfcf90002, 0x00000007, 0xE, 0x0};
 #endif
 
 #if defined(FLASH_UF2) && FLASH_UF2
@@ -692,7 +692,7 @@ void board_init_clock(void)
     clock_add_to_group(clock_mot3, 0);
     clock_add_to_group(clock_acmp, 0);
     clock_add_to_group(clock_dao, 0);
-    clock_add_to_group(clock_msyn, 0);
+    clock_add_to_group(clock_synt, 0);
     clock_add_to_group(clock_lmm0, 0);
     clock_add_to_group(clock_lmm1, 0);
     clock_add_to_group(clock_pdm, 0);
@@ -765,8 +765,7 @@ uint32_t board_init_dao_clock(void)
 {
     clock_add_to_group(clock_dao, 0);
 
-    sysctl_config_clock(HPM_SYSCTL, clock_node_aud1, clock_source_pll3_clk0, 25);
-    sysctl_set_adc_i2s_clock_mux(HPM_SYSCTL, clock_node_i2s1, clock_source_i2s_aud1_clk);
+    board_config_i2s_clock(DAO_I2S, 48000);
 
     return clock_get_frequency(clock_dao);
 }
@@ -775,8 +774,7 @@ uint32_t board_init_pdm_clock(void)
 {
     clock_add_to_group(clock_pdm, 0);
 
-    sysctl_config_clock(HPM_SYSCTL, clock_node_aud0, clock_source_pll3_clk0, 25);
-    sysctl_set_adc_i2s_clock_mux(HPM_SYSCTL, clock_node_i2s0, clock_source_i2s_aud0_clk);
+    board_config_i2s_clock(PDM_I2S, 16000);
 
     return clock_get_frequency(clock_pdm);
 }
@@ -791,32 +789,6 @@ void board_init_i2s_pins(I2S_Type *ptr)
     init_i2s_pins(ptr);
 }
 
-uint32_t board_init_i2s_clock(I2S_Type *ptr)
-{
-    uint32_t freq = 0;
-
-    if (ptr == HPM_I2S0) {
-        clock_add_to_group(clock_i2s0, 0);
-
-        sysctl_config_clock(HPM_SYSCTL, clock_node_aud0, clock_source_pll3_clk0, 25);
-        sysctl_set_adc_i2s_clock_mux(HPM_SYSCTL, clock_node_i2s0, clock_source_i2s_aud0_clk);
-
-        freq = clock_get_frequency(clock_i2s0);
-    } else if (ptr == HPM_I2S1) {
-        clock_add_to_group(clock_i2s1, 0);
-
-        sysctl_config_clock(HPM_SYSCTL, clock_node_aud1, clock_source_pll3_clk0, 25);
-        sysctl_set_adc_i2s_clock_mux(HPM_SYSCTL, clock_node_i2s1, clock_source_i2s_aud1_clk);
-
-        freq = clock_get_frequency(clock_i2s1);
-    } else {
-        ;
-    }
-
-    return freq;
-}
-
-/* adjust I2S source clock base on sample rate */
 uint32_t board_config_i2s_clock(I2S_Type *ptr, uint32_t sample_rate)
 {
     uint32_t freq = 0;
@@ -846,11 +818,21 @@ uint32_t board_config_i2s_clock(I2S_Type *ptr, uint32_t sample_rate)
     return freq;
 }
 
-uint32_t board_init_adc12_clock(ADC12_Type *ptr, bool clk_src_ahb)
+void board_init_adc12_pins(void)
+{
+    init_adc12_pins();
+}
+
+void board_init_adc16_pins(void)
+{
+    init_adc16_pins();
+}
+
+uint32_t board_init_adc_clock(void *ptr, bool clk_src_ahb)
 {
     uint32_t freq = 0;
 
-    if (ptr == HPM_ADC0) {
+    if (ptr == (void *)HPM_ADC0) {
         if (clk_src_ahb) {
             /* Configure the ADC clock from AHB (@200MHz by default)*/
             clock_set_adc_source(clock_adc0, clk_adc_src_ahb0);
@@ -860,7 +842,7 @@ uint32_t board_init_adc12_clock(ADC12_Type *ptr, bool clk_src_ahb)
             clock_set_source_divider(clock_ana0, clk_src_pll1_clk1, 2U);
         }
         freq = clock_get_frequency(clock_adc0);
-    } else if (ptr == HPM_ADC1) {
+    } else if (ptr == (void *)HPM_ADC1) {
         if (clk_src_ahb) {
             /* Configure the ADC clock from AHB (@200MHz by default)*/
             clock_set_adc_source(clock_adc1, clk_adc_src_ahb0);
@@ -870,7 +852,7 @@ uint32_t board_init_adc12_clock(ADC12_Type *ptr, bool clk_src_ahb)
             clock_set_source_divider(clock_ana1, clk_src_pll1_clk1, 2U);
         }
         freq = clock_get_frequency(clock_adc1);
-    } else if (ptr == HPM_ADC2) {
+    } else if (ptr == (void *)HPM_ADC2) {
         if (clk_src_ahb) {
             /* Configure the ADC clock from AHB (@200MHz by default)*/
             clock_set_adc_source(clock_adc2, clk_adc_src_ahb0);
@@ -880,16 +862,7 @@ uint32_t board_init_adc12_clock(ADC12_Type *ptr, bool clk_src_ahb)
             clock_set_source_divider(clock_ana2, clk_src_pll1_clk1, 2U);
         }
         freq = clock_get_frequency(clock_adc2);
-    }
-
-    return freq;
-}
-
-uint32_t board_init_adc16_clock(ADC16_Type *ptr, bool clk_src_ahb)
-{
-    uint32_t freq = 0;
-
-    if (ptr == HPM_ADC3) {
+    } else if (ptr == (void *)HPM_ADC3) {
         if (clk_src_ahb) {
             /* Configure the ADC clock from AHB (@200MHz by default)*/
             clock_set_adc_source(clock_adc3, clk_adc_src_ahb0);
@@ -898,7 +871,6 @@ uint32_t board_init_adc16_clock(ADC16_Type *ptr, bool clk_src_ahb)
             clock_set_adc_source(clock_adc3, clk_adc_src_ana2);
             clock_set_source_divider(clock_ana2, clk_src_pll1_clk1, 2U);
         }
-
         freq = clock_get_frequency(clock_adc3);
     }
 
@@ -952,6 +924,8 @@ void _init_ext_ram(void)
     femc_default_config(HPM_FEMC, &config);
     femc_init(HPM_FEMC, &config);
 
+    femc_get_typical_sdram_config(HPM_FEMC, &sdram_config);
+
     sdram_config.bank_num = FEMC_SDRAM_BANK_NUM_4;
     sdram_config.prescaler = 0x3;
     sdram_config.burst_len_in_byte = 8;
@@ -959,18 +933,14 @@ void _init_ext_ram(void)
     sdram_config.col_addr_bits = FEMC_SDRAM_COLUMN_ADDR_9_BITS;
     sdram_config.cas_latency = FEMC_SDRAM_CAS_LATENCY_3;
 
-    sdram_config.precharge_to_act_in_ns = 18;   /* Trp */
-    sdram_config.act_to_rw_in_ns = 18;          /* Trcd */
-    sdram_config.refresh_recover_in_ns = 70;     /* Trfc/Trc */
-    sdram_config.write_recover_in_ns = 12;      /* Twr/Tdpl */
-    sdram_config.cke_off_in_ns = 42;             /* Trcd */
-    sdram_config.act_to_precharge_in_ns = 42;   /* Tras */
-
-    sdram_config.self_refresh_recover_in_ns = 66;   /* Txsr */
-    sdram_config.refresh_to_refresh_in_ns = 66;     /* Trfc/Trc */
+    sdram_config.refresh_to_refresh_in_ns = 60;     /* Trc */
+    sdram_config.refresh_recover_in_ns = 60;        /* Trc */
+    sdram_config.act_to_precharge_in_ns = 42;       /* Tras */
+    sdram_config.act_to_rw_in_ns = 18;              /* Trcd */
+    sdram_config.precharge_to_act_in_ns = 18;       /* Trp */
     sdram_config.act_to_act_in_ns = 12;             /* Trrd */
-    sdram_config.idle_timeout_in_ns = 6;
-    sdram_config.cs_mux_pin = FEMC_IO_MUX_NOT_USED;
+    sdram_config.write_recover_in_ns = 12;          /* Twr/Tdpl */
+    sdram_config.self_refresh_recover_in_ns = 72;   /* Txsr */
 
     sdram_config.cs = BOARD_SDRAM_CS;
     sdram_config.base_address = BOARD_SDRAM_ADDRESS;
@@ -978,7 +948,6 @@ void _init_ext_ram(void)
     sdram_config.port_size = BOARD_SDRAM_PORT_SIZE;
     sdram_config.refresh_count = BOARD_SDRAM_REFRESH_COUNT;
     sdram_config.refresh_in_ms = BOARD_SDRAM_REFRESH_IN_MS;
-    sdram_config.data_width_in_byte = BOARD_SDRAM_DATA_WIDTH_IN_BYTE;
     sdram_config.delay_cell_disable = true;
     sdram_config.delay_cell_value = 0;
 
@@ -1144,16 +1113,6 @@ hpm_stat_t board_init_enet_rmii_reference_clock(ENET_Type *ptr, bool internal)
     enet_rmii_enable_clock(ptr, internal);
 
     return status_success;
-}
-
-void board_init_adc12_pins(void)
-{
-    init_adc12_pins();
-}
-
-void board_init_adc16_pins(void)
-{
-    init_adc16_pins();
 }
 
 hpm_stat_t board_init_enet_pins(ENET_Type *ptr)

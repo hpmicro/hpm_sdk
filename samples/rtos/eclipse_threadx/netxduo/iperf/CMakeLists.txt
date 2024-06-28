@@ -1,4 +1,4 @@
-# Copyright (c) 2023 HPMicro
+# Copyright (c) 2023-2024 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -12,6 +12,8 @@ set(CONFIG_ECLIPSE_THREADX_NETXDUO_UTILITY_IPERF 1)
 # This should be defined to include DHCP source code
 set(CONFIG_ECLIPSE_THREADX_NETXDUO_ADDONS_DHCP 1)
 
+# Select the phy on the board
+set(CONFIG_ENET_PHY 1)
 set(APP_USE_ENET_PORT_COUNT 1)
 #set(APP_USE_ENET_ITF_RGMII 1)
 #set(APP_USE_ENET_ITF_RMII 1)
@@ -29,11 +31,11 @@ if(NOT APP_USE_ENET_PORT_COUNT EQUAL 1)
 endif()
 
 if (APP_USE_ENET_ITF_RGMII AND APP_USE_ENET_ITF_RMII)
-    message(FATAL_ERROR "This sample doesn't supported more than one Ethernet phy!")
+    message(FATAL_ERROR "This sample doesn't support more than one Ethernet phy!")
 endif()
 
-if("${CMAKE_BUILD_TYPE}" STREQUAL "")
-    SET(CMAKE_BUILD_TYPE flash_sdram_xip)
+if("${HPM_BUILD_TYPE}" STREQUAL "")
+    SET(HPM_BUILD_TYPE flash_sdram_xip)
 endif()
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})

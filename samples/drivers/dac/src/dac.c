@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -185,46 +185,52 @@ int main(void)
     /* Initialize a DAC pin */
     board_init_dac_pins(BOARD_DAC_BASE);
 
-    /* Get the output mode from a console */
-    output_mode = get_dac_mode();
-
-    /* Initialize a DAC peripheral with a common config */
-    init_common_config(output_mode);
-
-    /* Enable the DAC IRQ */
-    intc_m_enable_irq(BOARD_DAC_IRQn);
-
-    /* Enable DAC conversion */
-    dac_enable_conversion(BOARD_DAC_BASE, true);
-
-    /* Set a specified DAC output config */
-    switch (output_mode) {
-    case dac_mode_direct:
-        set_direct_mode_config();
-        break;
-
-    case dac_mode_step:
-        set_step_mode_config();
-        break;
-
-    case dac_mode_buffer:
-        set_buffer_mode_config();
-        break;
-
-    default:
-        break;
-    }
-
-    /* Main loop */
     while (1) {
-        if (output_mode == dac_mode_direct) {
-            direct_mode_handler();
-        } else if (output_mode == dac_mode_step) {
-            step_mode_handler();
-        } else if (output_mode == dac_mode_buffer) {
-            buffer_mode_handler();
-        } else {
-            printf("Output mode is not supported!\n");
+        /* Get the output mode from a console */
+        output_mode = get_dac_mode();
+
+        /* Initialize a DAC peripheral with a common config */
+        init_common_config(output_mode);
+
+        /* Enable the DAC IRQ */
+        intc_m_enable_irq(BOARD_DAC_IRQn);
+
+        /* Enable DAC conversion */
+        dac_enable_conversion(BOARD_DAC_BASE, true);
+
+        /* Set a specified DAC output config */
+        switch (output_mode) {
+        case dac_mode_direct:
+            set_direct_mode_config();
+            break;
+
+        case dac_mode_step:
+            set_step_mode_config();
+            break;
+
+        case dac_mode_buffer:
+            set_buffer_mode_config();
+            break;
+
+        default:
+            break;
+        }
+
+        /* Main loop */
+        while (1) {
+            if (output_mode == dac_mode_direct) {
+                direct_mode_handler();
+            } else if (output_mode == dac_mode_step) {
+                step_mode_handler();
+            } else if (output_mode == dac_mode_buffer) {
+                buffer_mode_handler();
+            } else {
+                printf("Output mode is not supported!\n");
+            }
+
+            if (console_try_receive_byte() == ' ') {
+                break;
+            }
         }
     }
 }

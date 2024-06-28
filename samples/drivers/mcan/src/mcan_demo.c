@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -711,14 +711,17 @@ void board_can_send_multiple_canfd_messages(void)
 
     /*
      * Baudrate Calculation formula:
-     *  CAN baudrate = clock_freq / prescaler/ (1 + seg1 + seg2)
+     *  CAN baudrate = clock_freq / prescaler/ (1 + num_seg1 + num_seg2)
      *
      *  Sample Point Calculation formula:
-     *  Sample point = (1 + SEG1) / (1 + SEG1 + SGE2) * 100
+     *  Sample point = (1 + SEG1) / (1 + SEG1 + SGE2) * 100%
      *  Recommended Sample point setting:
      *   75% if baudrate >= 800Kbps
      *   80% if baudrate > 500kbps
      *   87.5% if baudrate <= 500kbps
+     *  In the below example,
+     *      the sample point of arbitration phase is: (1 + 29) / (1 + 29 + 10) * 100% = 75%
+     *      the sample point of data phase is: (1 + 14) / (1 + 14 + 5) * 100% = 75%
      */
     /* CAN Baudrate = 1Mbps */
     seg1 = 29;
@@ -738,7 +741,18 @@ void board_can_send_multiple_canfd_messages(void)
     can_config.canfd_timing.num_seg1 = seg1_fd;
     can_config.canfd_timing.num_seg2 = seg2_fd;
     can_config.canfd_timing.num_sjw = sjw_fd;
+    /* Note: Check the CAN Transceiver datasheet carefully, if the loop delay exceeds 1 data bit time
+     * Please enable the Transmitter Delay Compensation feature and configure the `ssp_offset` properly
+     * Below is an example setting.
+     * */
+#ifdef CANFD_ENABLE_TRANSMITTER_DELAY_COMPENSATION
+    can_config.canfd_timing.enable_tdc = true;
+    /* If the ssp_offset is set to 0, then the following configuration is used by default */
+    can_config.tdc_config.ssp_offset = seg1_fd + 1;
+    can_config.tdc_config.filter_window_length = can_config.tdc_config.ssp_offset;
+#else
     can_config.canfd_timing.enable_tdc = false;
+#endif
     can_config.enable_canfd = true;
     can_config.enable_tdc = can_config.canfd_timing.enable_tdc;
     can_config.mode = mcan_mode_normal;

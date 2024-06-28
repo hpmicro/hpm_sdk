@@ -16,25 +16,9 @@
 #include "hpm_mchtmr_drv.h"
 #include "dualcore_widgets.h"
 
-#include "lvgl.h"
-#include "lv_adapter.h"
-
-#define LV_TICK 10
-
-#ifndef TIMER_CLK_NAME
-#define TIMER_CLK_NAME clock_mchtmr0
-#endif
-
-uint32_t mchtmr_freq_in_khz;
+#include "hpm_lvgl.h"
 
 lv_coremark_ctx_t g_lv_cm_ctx;
-
-void isr_mchtmr(void)
-{
-    lv_tick_inc(LV_TICK);
-    mchtmr_delay(HPM_MCHTMR, mchtmr_freq_in_khz * LV_TICK);
-}
-SDK_DECLARE_MCHTMR_ISR(isr_mchtmr)
 
 void update_coremark_result(lv_coremark_ctx_t *cm_ctx);
 
@@ -44,21 +28,15 @@ int app_main(void)
     board_init_cap_touch();
     board_init_lcd();
 
-    lv_init();
-    lv_adapter_init();
+    hpm_lvgl_init();
 
-    mchtmr_freq_in_khz = clock_get_frequency(TIMER_CLK_NAME) / 1000;
-    printf("lvgl example\n");
-    printf("%d color depth @%d\n", LV_COLOR_SIZE, clock_get_frequency(clock_display));
+    printf("lvgl dualcore coremark example\n");
     init_coremark_context();
     init_coremark_result(&g_lv_cm_ctx);
     lv_dualcore_coremark_demo();
 
-    mchtmr_delay(HPM_MCHTMR, mchtmr_freq_in_khz * LV_TICK);
-    enable_mchtmr_irq();
-
     while (1) {
-        lv_task_handler();
+        lv_timer_periodic_handler();
         refresh_coremark_info();
     }
     return 0;

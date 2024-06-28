@@ -1,4 +1,4 @@
-# Copyright 2021-2022 HPMicro
+# Copyright 2021-2022,2024 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 cmake_minimum_required(VERSION 3.13)
 
@@ -14,7 +14,10 @@ target_link_libraries(${HPM_SDK_GCC_LIB} PUBLIC ${HPM_SDK_GCC_LIB_ITF} ${HPM_SDK
 
 target_link_libraries(${HPM_SDK_LIB} PUBLIC ${HPM_SDK_GCC_LIB_ITF})
 if("${TOOLCHAIN_VARIANT}" STREQUAL "nds-gcc")
-target_link_libraries(${HPM_SDK_LIB} PUBLIC ${HPM_SDK_NDSGCC_LIB_ITF})
+    target_link_libraries(${HPM_SDK_LIB} PUBLIC ${HPM_SDK_NDSGCC_LIB_ITF})
+elseif("${TOOLCHAIN_VARIANT}" STREQUAL "zcc")
+    target_link_libraries(${HPM_SDK_LIB} PUBLIC ${HPM_SDK_ZCC_LIB_ITF})
+    target_link_libraries(${HPM_SDK_GCC_LIB} PUBLIC ${HPM_SDK_ZCC_LIB_ITF})
 endif()
 
 if(flash_size)
@@ -33,64 +36,63 @@ if(NOT ${CMAKE_BUILD_TYPE} STREQUAL "")
     else()
         sdk_compile_options("-g")
     endif()
+endif()
 
-    SET(FLASH_XIP 0)
-    SET(FLASH_SDRAM_XIP 0)
-    SET(LINK_TO_FLASH 0)
+string(TOLOWER ${HPM_BUILD_TYPE} hpm_build_type)
+SET(FLASH_XIP 0)
+SET(FLASH_SDRAM_XIP 0)
+SET(LINK_TO_FLASH 0)
 
-    if(NOT DEFINED INCLUDE_BOOTHEADER)
-        SET(INCLUDE_BOOTHEADER 0)
-    endif()
-    string(FIND ${build_type} "flash_" found)
+if(NOT DEFINED INCLUDE_BOOTHEADER)
+    SET(INCLUDE_BOOTHEADER 0)
+endif()
+
+string(FIND ${hpm_build_type} "flash_" found)
+if(${found} GREATER_EQUAL 0)
+    string(FIND ${hpm_build_type} "flash_xip" found)
     if(${found} GREATER_EQUAL 0)
-        string(FIND ${build_type} "flash_xip" found)
-        if(${found} GREATER_EQUAL 0)
-            set(FLASH_XIP 1)
-            set(LINK_TO_FLASH 1)
-            set(INCLUDE_BOOTHEADER 1)
-            sdk_compile_definitions("-DFLASH_XIP=1")
-        endif()
-        string(FIND ${build_type} "flash_sdram_xip" found)
-        if(${found} GREATER_EQUAL 0)
-            set(FLASH_SDRAM_XIP 1)
-            set(LINK_TO_FLASH 1)
-            set(INCLUDE_BOOTHEADER 1)
-            sdk_compile_definitions("-DFLASH_XIP=1")
-            sdk_compile_definitions("-DINIT_EXT_RAM_FOR_DATA=1")
-        endif()
-
-        string(FIND ${build_type} "flash_uf2" found)
-        if(${found} GREATER_EQUAL 0)
-            set(FLASH_UF2 1)
-            set(LINK_TO_FLASH 1)
-            set(EXCLUDE_BOOTHEADER 1)
-            sdk_compile_definitions("-DFLASH_UF2=1")
-        endif()
-
-        string(FIND ${build_type} "flash_sdram_uf2" found)
-        if(${found} GREATER_EQUAL 0)
-            set(FLASH_SDRAM_UF2 1)
-            set(LINK_TO_FLASH 1)
-            set(EXCLUDE_BOOTHEADER 1)
-            sdk_compile_definitions("-DFLASH_UF2=1")
-            sdk_compile_definitions("-DINIT_EXT_RAM_FOR_DATA=1")
-        endif()
-
-
-        if(DEFINED EXCLUDE_BOOTHEADER)
-            if (${EXCLUDE_BOOTHEADER})
-                set(INCLUDE_BOOTHEADER 0)
-            endif()
-        endif()
+        set(FLASH_XIP 1)
+        set(LINK_TO_FLASH 1)
+        set(INCLUDE_BOOTHEADER 1)
+        sdk_compile_definitions("-DFLASH_XIP=1")
     endif()
-
-    string(FIND ${build_type} "sec_core_img" found)
+    string(FIND ${hpm_build_type} "flash_sdram_xip" found)
     if(${found} GREATER_EQUAL 0)
-        set(GEN_SEC_CORE_IMG_C_ARRAY true PARENT_SCOPE)
+        set(FLASH_SDRAM_XIP 1)
+        set(LINK_TO_FLASH 1)
+        set(INCLUDE_BOOTHEADER 1)
+        sdk_compile_definitions("-DFLASH_XIP=1")
+        sdk_compile_definitions("-DINIT_EXT_RAM_FOR_DATA=1")
     endif()
 
-else()
-    sdk_compile_options("-g")
+    string(FIND ${hpm_build_type} "flash_uf2" found)
+    if(${found} GREATER_EQUAL 0)
+        set(FLASH_UF2 1)
+        set(LINK_TO_FLASH 1)
+        set(EXCLUDE_BOOTHEADER 1)
+        sdk_compile_definitions("-DFLASH_UF2=1")
+    endif()
+
+    string(FIND ${hpm_build_type} "flash_sdram_uf2" found)
+    if(${found} GREATER_EQUAL 0)
+        set(FLASH_SDRAM_UF2 1)
+        set(LINK_TO_FLASH 1)
+        set(EXCLUDE_BOOTHEADER 1)
+        sdk_compile_definitions("-DFLASH_UF2=1")
+        sdk_compile_definitions("-DINIT_EXT_RAM_FOR_DATA=1")
+    endif()
+
+    if(DEFINED EXCLUDE_BOOTHEADER)
+        if (${EXCLUDE_BOOTHEADER})
+            set(INCLUDE_BOOTHEADER 0)
+        endif()
+    endif()
+endif()
+
+string(FIND ${hpm_build_type} "sec_core_img" found)
+if(${found} GREATER_EQUAL 0)
+    set(BUILD_FOR_SECONDARY_CORE true CACHE INTERNAL "")
+    set(GEN_SEC_CORE_IMG_C_ARRAY true PARENT_SCOPE)
 endif()
 
 set(USE_PRESET_FLASH_LINKER 0)
@@ -130,7 +132,7 @@ endif()
 sdk_sys_inc(${SYSROOT_DIR}/include)
 
 # parse module list file provided in soc folder, it will decide which modules to be enabled under drivers folder
-import_soc_modules(soc/${HPM_SOC}/soc_modules.list)
+import_soc_modules(soc/${HPM_SOC_SERIES}/${HPM_SOC}/soc_modules.list)
 
 add_subdirectory(arch)
 add_subdirectory(boards)
@@ -151,13 +153,13 @@ if(DEFINED USE_LINKER_TEMPLATE)
    add_custom_command(
        OUTPUT ${LINKER_SCRIPT}
        DEPENDS
-       ${HPM_SDK_BASE}/soc/${HPM_SOC}/toolchains/gcc/linker.ld
+       ${HPM_SDK_BASE}/soc/${HPM_SOC_SERIES}/${HPM_SOC}/toolchains/gcc/linker.ld
        ${linker_script_dep}
        COMMAND ${CMAKE_C_COMPILER}
        -x assembler-with-cpp
        -MD -MF ${LINKER_SCRIPT}.dep -MT ${base_name}/${LINKER_SCRIPT}
        ${all_defs}
-       -E ${HPM_SDK_BASE}/soc/${HPM_SOC}/toolchains/gcc/linker.ld
+       -E ${HPM_SDK_BASE}/soc/${HPM_SOC_SERIES}/${HPM_SOC}/toolchains/gcc/linker.ld
        -P
        -o ${LINKER_SCRIPT}
        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
@@ -206,6 +208,15 @@ if("${TOOLCHAIN_VARIANT}" STREQUAL "nds-gcc")
         "-Wl,-Map=${EXECUTABLE_OUTPUT_PATH}/${APP_MAP_NAME}"
         ${HPM_SDK_WHOLE_ARCHIVE_OPT}
         ${HPM_SDK_NDSGCC_LIB_ITF}
+        ${HPM_SDK_GCC_LIB} ${HPM_SDK_GCC_LIB_ITF}
+        ${HPM_SDK_LIB} ${HPM_SDK_LIB_ITF} app
+        "-Wl,--no-whole-archive")
+elseif("${TOOLCHAIN_VARIANT}" STREQUAL "zcc")
+    target_link_libraries(${HPM_SDK_LIB} PUBLIC ${HPM_SDK_ZCC_LIB_ITF})
+    target_link_libraries(${APP_ELF_NAME}
+        "-Wl,-Map=${EXECUTABLE_OUTPUT_PATH}/${APP_MAP_NAME}"
+        ${HPM_SDK_WHOLE_ARCHIVE_OPT}
+        ${HPM_SDK_ZCC_LIB_ITF}
         ${HPM_SDK_GCC_LIB} ${HPM_SDK_GCC_LIB_ITF}
         ${HPM_SDK_LIB} ${HPM_SDK_LIB_ITF} app
         "-Wl,--no-whole-archive")

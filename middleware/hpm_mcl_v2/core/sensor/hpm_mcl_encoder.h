@@ -151,6 +151,10 @@ typedef struct {
         float theta;
         float theta_forecast;
     } result;
+    struct {
+        bool *enable;
+        float *theta;
+    } sensorless;
 } mcl_encoder_t;
 
 #ifdef __cplusplus
@@ -261,6 +265,14 @@ hpm_mcl_stat_t hpm_mcl_encoder_get_absolute_theta(mcl_encoder_t *encoder, float 
  * @return hpm_mcl_stat_t
  */
 hpm_mcl_stat_t hpm_mcl_encoder_get_uvw_status(mcl_encoder_t *encoder, mcl_encoder_uvw_level_t *level);
+
+/**
+ * @brief Get sensorless theta
+ *
+ * @param encoder @ref mcl_encoder_t
+ * @return theta
+ */
+float hpm_mcl_encoder_get_sensorless_theta(mcl_encoder_t *encoder);
 
 
 #ifdef __cplusplus

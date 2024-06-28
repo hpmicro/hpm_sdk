@@ -2,7 +2,7 @@
 
 ## Overview
 
-This example shows TCP/UDP throughput performance test through iperf (https://iperf.fr/iperf-download.php) with a total of four mode as follows:
+This example shows TCP/UDP throughput performance test through iperf (https://iperf.fr/iperf-download.php) with a total of four modes as follows:
 
 - MCU acts as TCP Server / PC acts as TCP Client
 - MCU acts as TCP Client / PC acts as TCP Server
@@ -51,7 +51,7 @@ This example shows TCP/UDP throughput performance test through iperf (https://ip
 
     - Press "RESETN" key on the development board, and wait for the hints
 
-      ```
+      ```console
       1: TCP Server Mode
       2: TCP Client Mode
       3: UDP Server Mode
@@ -152,6 +152,9 @@ This example shows TCP/UDP throughput performance test through iperf (https://ip
       ```console
       iperf -u -c 192.168.100.10 -i 1 -b 100M
       ```
+
+      **Note: If the RGMII port is selected, the maximum bandwidth can be set to 1000M**.
+
     - Watch test result
 
       ```console
@@ -229,3 +232,6 @@ This example shows TCP/UDP throughput performance test through iperf (https://ip
       [  3]  0.0-10.0 sec   112 MBytes  94.1 Mbits/sec   0.234 ms  135/79952 (0.17%)
       [  3] 0.00-9.97 sec  59861 datagrams received out-of-order
       ```
+- Exception exit
+
+  Press the "space" key to abort the test, and then a test mode can be reselected.

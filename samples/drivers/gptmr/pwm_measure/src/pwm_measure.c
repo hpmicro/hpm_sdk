@@ -114,7 +114,7 @@ static void dma_transfer_config(void)
     ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
     ch_config.dst_width = APP_DMA_DST_WIDTH;
     ch_config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_INCREMENT;
-    ch_config.dst_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
+    ch_config.dst_mode = DMA_HANDSHAKE_MODE_NORMAL;
     ch_config.size_in_byte = sizeof(pwm_meas_table);
     if (status_success != dma_setup_channel(APP_GPTMR_DMA, APP_DMA_CH, &ch_config, false)) {
         printf(" dma setup channel failed\n");

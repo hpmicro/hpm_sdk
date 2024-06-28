@@ -25,3 +25,9 @@ After the initialization operation, the screen will display the interface, click
 - Pay attention to the current size, when abnormalities occur, please cut off the power at any time
 
 ```
+
+```{note}
+
+- Dependency on lvgl version 8.3.5
+
+```

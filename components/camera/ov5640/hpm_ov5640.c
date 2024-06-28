@@ -706,13 +706,20 @@ hpm_stat_t ov5640_stop(camera_context_t *context)
     return ov5640_write_register(context, 0x3008, 0x42);
 }
 
-hpm_stat_t ov5640_flip(camera_context_t *context)
+hpm_stat_t ov5640_flip(camera_context_t *context, bool enable)
 {
     hpm_stat_t stat = status_success;
-    HPM_CHECK_RET(ov5640_write_register(context, 0x3821, 1));
+    uint8_t val;
+
+    ov5640_read_register(context, 0x3820, &val);
+    val &= 0xf9;
+    if (enable) {
+        val |= 0x06;
+    }
+
+    HPM_CHECK_RET(ov5640_write_register(context, 0x3820, val));
     return stat;
 }
-
 
 hpm_stat_t ov5640_set_brightness(camera_context_t *context, int32_t brightness)
 {
@@ -840,6 +847,20 @@ hpm_stat_t ov5640_set_special_effect(camera_context_t *context, int32_t effect)
     return status_invalid_argument;
 }
 
+hpm_stat_t ov5640_mirror(camera_context_t *context, bool enable)
+{
+    hpm_stat_t stat = status_success;
+    uint8_t val;
+
+    ov5640_read_register(context, 0x3821, &val);
+    val &= 0xf9;
+    if (enable) {
+        val |= 0x06;
+    }
+    HPM_CHECK_RET(ov5640_write_register(context, 0x3821, val));
+    return stat;
+}
+
 hpm_stat_t ov5640_init(camera_context_t *context, camera_config_t *ov_config)
 {
     hpm_stat_t stat = status_success;
@@ -853,7 +874,7 @@ hpm_stat_t ov5640_init(camera_context_t *context, camera_config_t *ov_config)
     /* configure image windowing */
     HPM_CHECK_RET(ov5640_set_image_size(context, ov_config));
 
-    HPM_CHECK_RET(ov5640_flip(context));
+    HPM_CHECK_RET(ov5640_flip(context, false));
 
     /* configure Pixel format */
     HPM_CHECK_RET(ov5640_set_pixel_format(context, ov_config->pixel_format));

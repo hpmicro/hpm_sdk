@@ -299,14 +299,14 @@ hpm_stat_t sdmmchost_transfer(sdmmc_host_t *host, sdmmchost_xfer_t *content)
         /***************************************************************************************************************
          *  Calculate the data timeout interval in millisecond =
          *  (block_count * block_size) / tx_rx_bytes_per_sec * 1000 + margin time
-         *  Here set the margin time to 100 milliseconds
+         *  Here set the margin time to 500 milliseconds
          **************************************************************************************************************/
         uint32_t bus_width = sdxc_get_data_bus_width(host->host_param.base);
         uint32_t tx_rx_bytes_per_sec = host->clock_freq * bus_width / 8;
         uint32_t block_cnt = content->data->block_cnt;
         uint32_t block_size = content->data->block_size;
         uint32_t read_write_size = block_cnt * block_size;
-        uint32_t timeout_ms = (uint32_t) (1.0f * read_write_size / tx_rx_bytes_per_sec) * 1000 + 100;
+        uint32_t timeout_ms = (uint32_t) (1.0f * read_write_size / tx_rx_bytes_per_sec) * 1000 + 500;
         sdxc_set_data_timeout(host->host_param.base, timeout_ms, NULL);
     }
     status = sdxc_transfer_nonblocking(host->host_param.base, config_ptr, content);

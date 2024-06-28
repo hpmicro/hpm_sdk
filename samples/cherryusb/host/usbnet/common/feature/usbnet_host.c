@@ -106,6 +106,8 @@ void usbh_cdc_ecm_stop(struct usbh_cdc_ecm *cdc_ecm_class)
 #if LWIP_DHCP
     dhcp_stop(netif);
     dhcp_cleanup(netif);
+    xTimerStop(dhcp_handle1, 0);
+    xTimerDelete(dhcp_handle1, 0);
 #endif
     netif_set_down(netif);
     netif_remove(netif);
@@ -187,6 +189,8 @@ void usbh_rndis_stop(struct usbh_rndis *rndis_class)
 #if LWIP_DHCP
     dhcp_stop(netif);
     dhcp_cleanup(netif);
+    xTimerStop(dhcp_handle2, 0);
+    xTimerDelete(dhcp_handle2, 0);
 #endif
     netif_set_down(netif);
     netif_remove(netif);

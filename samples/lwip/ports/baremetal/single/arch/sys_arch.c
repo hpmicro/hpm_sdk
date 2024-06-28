@@ -632,7 +632,7 @@ sys_check_core_locking(void)
 #endif /* LWIP_FREERTOS_CHECK_CORE_LOCKING*/
 
 #else
-static uint32_t sys_tick = 0;
+static volatile uint32_t sys_tick = 0;
 
 void sys_timer_callback(void)
 {
@@ -646,6 +646,15 @@ void sys_timer_callback(void)
 u32_t sys_now(void)
 {
     return (u32_t)sys_tick;
+}
+
+void sys_arch_msleep(u32_t delay_ms)
+{
+    uint32_t target_sys_tick = sys_now() + delay_ms;
+
+    while (sys_now() < target_sys_tick) {
+
+    }
 }
 
 #endif

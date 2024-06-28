@@ -104,4 +104,3 @@ Start cherryusb host usbnet task...
 
 ```
 
-note: when switching the rndis module or ecm module, you also need to reset the development board.

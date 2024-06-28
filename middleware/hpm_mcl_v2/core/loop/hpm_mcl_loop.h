@@ -13,6 +13,7 @@
 #include "hpm_mcl_control.h"
 #include "hpm_mcl_drivers.h"
 #include "hpm_mcl_path_plan.h"
+#include "hpm_mcl_debug.h"
 
 typedef enum {
     loop_status_null = 0,
@@ -40,7 +41,26 @@ typedef struct {
     mcl_loop_mode_t mode;
     bool enable_speed_loop;
     bool enable_position_loop;
+#if defined(MCL_CFG_EN_SENSORLESS_SMC) && MCL_CFG_EN_SENSORLESS_SMC
+    bool enable_smc;
+#endif
+#if defined(MCL_CFG_EN_DQ_AXIS_DECOUPLING) && MCL_CFG_EN_DQ_AXIS_DECOUPLING
+    bool enable_dq_axis_decoupling;
+#endif
+#if defined(MCL_CFG_EN_DEAD_AREA_COMPENSATION) && MCL_CFG_EN_DEAD_AREA_COMPENSATION
+    bool enable_dead_area_compensation;
+#endif
 } mcl_loop_cfg_t;
+
+typedef enum {
+    loop_chn_id = 0,
+    loop_chn_iq = 1
+} mcl_loop_chn_t;
+
+typedef struct {
+    void (*clc_set_val)(mcl_loop_chn_t chn, int32_t val);
+    int32_t (*convert_float_to_clc_val)(float realdata);
+} mcl_hardware_clc_cfg_t;
 
 /**
  * @brief Loop operation data
@@ -53,12 +73,17 @@ typedef struct {
     mcl_analog_t *analog;
     mcl_control_t *control;
     mcl_drivers_t *drivers;
+    mcl_debug_t *debug;
     mcl_path_plan_t *path;
     hpm_mcl_type_t *const_vbus;
+    hpm_mcl_type_t *lq;
+    hpm_mcl_type_t *ld;
+    hpm_mcl_type_t *flux;
     struct {
         float *current_ts;
         float *speed_ts;
         float *position_ts;
+        float dead_area_ts;
     } const_time;
     struct {
         struct {
@@ -230,6 +255,70 @@ static inline void hpm_mcl_enable_speed_loop(mcl_loop_t *loop)
 static inline void hpm_mcl_disable_speed_loop(mcl_loop_t *loop)
 {
     loop->cfg->enable_speed_loop = false;
+}
+
+/**
+ * @brief disable dead area compensation
+ *
+ * @param loop @ref mcl_loop_t
+ */
+static inline hpm_mcl_stat_t hpm_mcl_disable_dead_area_compensation(mcl_loop_t *loop)
+{
+#if defined(MCL_CFG_EN_DEAD_AREA_COMPENSATION) && MCL_CFG_EN_DEAD_AREA_COMPENSATION
+    loop->cfg->enable_dead_area_compensation = false;
+    return mcl_success;
+#else
+    (void)loop;
+    return mcl_fail;
+#endif
+}
+
+/**
+ * @brief enable dead area compensation
+ *
+ * @param loop @ref mcl_loop_t
+ */
+static inline hpm_mcl_stat_t hpm_mcl_enable_dead_area_compensation(mcl_loop_t *loop)
+{
+#if defined(MCL_CFG_EN_DEAD_AREA_COMPENSATION) && MCL_CFG_EN_DEAD_AREA_COMPENSATION
+    loop->cfg->enable_dead_area_compensation = true;
+    return mcl_success;
+#else
+    (void)loop;
+    return mcl_fail;
+#endif
+}
+
+/**
+ * @brief disable dq axis decoupling
+ *
+ * @param loop @ref mcl_loop_t
+ */
+static inline hpm_mcl_stat_t hpm_mcl_disable_dq_axis_decoupling(mcl_loop_t *loop)
+{
+#if defined(MCL_CFG_EN_DQ_AXIS_DECOUPLING) && MCL_CFG_EN_DQ_AXIS_DECOUPLING
+    loop->cfg->enable_dq_axis_decoupling = false;
+    return mcl_success;
+#else
+    (void)loop;
+    return mcl_fail;
+#endif
+}
+
+/**
+ * @brief enable dq axis decoupling
+ *
+ * @param loop @ref mcl_loop_t
+ */
+static inline hpm_mcl_stat_t hpm_mcl_enable_dq_axis_decoupling(mcl_loop_t *loop)
+{
+#if defined(MCL_CFG_EN_DQ_AXIS_DECOUPLING) && MCL_CFG_EN_DQ_AXIS_DECOUPLING
+    loop->cfg->enable_dq_axis_decoupling = true;
+    return mcl_success;
+#else
+    (void)loop;
+    return mcl_fail;
+#endif
 }
 
 #ifdef __cplusplus

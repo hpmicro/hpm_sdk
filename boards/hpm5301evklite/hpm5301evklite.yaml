@@ -10,3 +10,5 @@ board:
     on-board-flash:
       type: qspi-nor-flash
       size: 1M
+    feature:
+      - board_gpt_pin

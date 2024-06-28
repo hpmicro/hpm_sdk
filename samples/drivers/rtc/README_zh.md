@@ -34,4 +34,4 @@ RTC 例程提供如下功能：
 
 ## 注意：
 
-示例#3 会触发系统复位，建立只在`flash_xip`或`flash_sdram_xip`相关的构建中执行该示例
+示例#3 会触发系统复位，建议只在`flash_xip`或`flash_sdram_xip`相关的构建中执行该示例

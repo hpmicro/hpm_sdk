@@ -1,0 +1,13 @@
+excluded_targets:
+  - debug
+  - release
+  - flash_xip
+  - flash_xip_release
+  - flash_uf2
+  - flash_uf2_release
+
+dependency:
+  - sdxc
+  - i2s
+  - board_audio_out
+  - board_sdram

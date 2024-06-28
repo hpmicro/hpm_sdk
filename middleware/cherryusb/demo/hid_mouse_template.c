@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2024, sakumisu
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 #include "usbd_core.h"
 #include "usbd_hid.h"
 
@@ -208,6 +213,7 @@ static void usbd_event_handler(uint8_t busid, uint8_t event)
         case USBD_EVENT_SUSPEND:
             break;
         case USBD_EVENT_CONFIGURED:
+            hid_state = HID_STATE_IDLE;
             break;
         case USBD_EVENT_SET_REMOTE_WAKEUP:
             break;

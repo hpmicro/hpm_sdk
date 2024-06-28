@@ -17,23 +17,10 @@ static struct usbd_endpoint rndis_ep_data[3];
 #define RNDIS_INQUIRY_PUT(src, len)   (memcpy(infomation_buffer, src, len))
 #define RNDIS_INQUIRY_PUT_LE32(value) (*(uint32_t *)infomation_buffer = (value))
 
-#ifdef CONFIG_USB_HS
-#define RNDIS_MAX_PACKET_SIZE 512
-#else
-#define RNDIS_MAX_PACKET_SIZE 64
-#endif
-
-#ifndef CONFIG_USB_HS
-#define RNDIS_LINK_SPEED 12000000 /* Link baudrate (12Mbit/s for USB-FS) */
-#else
-#define RNDIS_LINK_SPEED 480000000 /* Link baudrate (480Mbit/s for USB-HS) */
-#endif
-
 /* Device data structure */
 struct usbd_rndis_priv {
     uint32_t drv_version;
     uint32_t link_status;
-    uint32_t speed;
     uint32_t net_filter;
     usb_eth_stat_t eth_state;
     rndis_state_t init_state;
@@ -45,8 +32,13 @@ struct usbd_rndis_priv {
 #define CONFIG_USBDEV_RNDIS_RESP_BUFFER_SIZE 156
 #endif
 
-static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_rndis_rx_buffer[CONFIG_USBDEV_RNDIS_ETH_MAX_FRAME_SIZE + 44];
-static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_rndis_tx_buffer[CONFIG_USBDEV_RNDIS_ETH_MAX_FRAME_SIZE + 44];
+#if CONFIG_USBDEV_RNDIS_ETH_MAX_FRAME_SIZE < 1580
+#undef CONFIG_USBDEV_RNDIS_ETH_MAX_FRAME_SIZE
+#define CONFIG_USBDEV_RNDIS_ETH_MAX_FRAME_SIZE 1580
+#endif
+
+static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_rndis_rx_buffer[CONFIG_USBDEV_RNDIS_ETH_MAX_FRAME_SIZE];
+static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_rndis_tx_buffer[CONFIG_USBDEV_RNDIS_ETH_MAX_FRAME_SIZE];
 
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t rndis_encapsulated_resp_buffer[CONFIG_USBDEV_RNDIS_RESP_BUFFER_SIZE];
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t NOTIFY_RESPONSE_AVAILABLE[8];
@@ -169,8 +161,8 @@ static int rndis_init_cmd_handler(uint8_t *data, uint32_t len)
     resp->Status = RNDIS_STATUS_SUCCESS;
     resp->DeviceFlags = RNDIS_DF_CONNECTIONLESS;
     resp->Medium = RNDIS_MEDIUM_802_3;
-    resp->MaxPacketsPerTransfer = 1;
-    resp->MaxTransferSize = CONFIG_USBDEV_RNDIS_ETH_MAX_FRAME_SIZE + sizeof(rndis_data_packet_t);
+    resp->MaxPacketsPerTransfer = CONFIG_USBDEV_RNDIS_ETH_MAX_FRAME_SIZE / 1580;
+    resp->MaxTransferSize = CONFIG_USBDEV_RNDIS_ETH_MAX_FRAME_SIZE;
     resp->PacketAlignmentFactor = 0;
     resp->AfListOffset = 0;
     resp->AfListSize = 0;
@@ -225,7 +217,7 @@ static int rndis_query_cmd_handler(uint8_t *data, uint32_t len)
         case OID_GEN_MAXIMUM_FRAME_SIZE:
         case OID_GEN_TRANSMIT_BLOCK_SIZE:
         case OID_GEN_RECEIVE_BLOCK_SIZE:
-            RNDIS_INQUIRY_PUT_LE32(CONFIG_USBDEV_RNDIS_ETH_MAX_FRAME_SIZE);
+            RNDIS_INQUIRY_PUT_LE32(0x05DC);
             infomation_len = 4;
             break;
         case OID_GEN_VENDOR_ID:
@@ -250,7 +242,11 @@ static int rndis_query_cmd_handler(uint8_t *data, uint32_t len)
             infomation_len = 4;
             break;
         case OID_GEN_LINK_SPEED:
-            RNDIS_INQUIRY_PUT_LE32(RNDIS_LINK_SPEED / 100);
+            if (usbd_get_ep_mps(0, rndis_ep_data[RNDIS_OUT_EP_IDX].ep_addr) > 64) {
+                RNDIS_INQUIRY_PUT_LE32(480000000 / 100);
+            } else {
+                RNDIS_INQUIRY_PUT_LE32(12000000 / 100);
+            }
             infomation_len = 4;
             break;
         case OID_GEN_CURRENT_PACKET_FILTER:
@@ -464,7 +460,7 @@ void rndis_bulk_out(uint8_t busid, uint8_t ep, uint32_t nbytes)
 
 void rndis_bulk_in(uint8_t busid, uint8_t ep, uint32_t nbytes)
 {
-    if ((nbytes % RNDIS_MAX_PACKET_SIZE) == 0 && nbytes) {
+    if ((nbytes % usbd_get_ep_mps(busid, ep)) == 0 && nbytes) {
         /* send zlp */
         usbd_ep_start_write(0, ep, NULL, 0);
     } else {
@@ -548,7 +544,6 @@ struct usbd_interface *usbd_rndis_init_intf(struct usbd_interface *intf,
 
     g_usbd_rndis.drv_version = 0x0001;
     g_usbd_rndis.link_status = NDIS_MEDIA_STATE_DISCONNECTED;
-    g_usbd_rndis.speed = RNDIS_LINK_SPEED;
 
     rndis_ep_data[RNDIS_OUT_EP_IDX].ep_addr = out_ep;
     rndis_ep_data[RNDIS_OUT_EP_IDX].ep_cb = rndis_bulk_out;

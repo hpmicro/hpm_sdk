@@ -247,6 +247,12 @@ void dcd_int_handler(uint8_t rhport)
         if (!usb_device_get_port_ccs(handle)) {
             dcd_event_t event = {.rhport = rhport, .event_id = DCD_EVENT_UNPLUGGED};
             dcd_event_handler(&event, true);
+        } else {
+            dcd_event_t event = {.rhport = rhport, .event_id = DCD_EVENT_PLUGGED};
+            if (usb_device_get_port_reset_status(handle) == 0) {
+                event.plugged.speed = usb_device_get_port_speed(handle);
+                dcd_event_handler(&event, true);
+            }
         }
     }
 

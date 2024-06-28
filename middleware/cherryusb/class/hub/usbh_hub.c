@@ -22,8 +22,8 @@
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_hub_buf[CONFIG_USBHOST_MAX_BUS][USB_ALIGN_UP(32, CONFIG_USB_ALIGN_SIZE)];
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_hub_intbuf[CONFIG_USBHOST_MAX_BUS][CONFIG_USBHOST_MAX_EXTHUBS + 1][USB_ALIGN_UP(1, CONFIG_USB_ALIGN_SIZE)];
 
-extern int usbh_free_devaddr(struct usbh_hubport *hport);
 extern int usbh_enumerate(struct usbh_hubport *hport);
+extern void usbh_hubport_release(struct usbh_hubport *hport);
 
 static const char *speed_table[] = { "error-speed", "low-speed", "full-speed", "high-speed", "wireless-speed", "super-speed", "superplus-speed" };
 
@@ -91,7 +91,7 @@ static int _usbh_hub_get_hub_descriptor(struct usbh_hub *hub, uint8_t *buffer)
     if (ret < 0) {
         return ret;
     }
-    memcpy(buffer, g_hub_buf, USB_SIZEOF_HUB_DESC);
+    memcpy(buffer, g_hub_buf[hub->bus->busid], USB_SIZEOF_HUB_DESC);
     return ret;
 }
 #if 0
@@ -108,11 +108,11 @@ static int _usbh_hub_get_status(struct usbh_hub *hub, uint8_t *buffer)
     setup->wIndex = 0;
     setup->wLength = 2;
 
-    ret = usbh_control_transfer(hub->parent, setup, g_hub_buf);
+    ret = usbh_control_transfer(hub->parent, setup, g_hub_buf[hub->bus->busid]);
     if (ret < 0) {
         return ret;
     }
-    memcpy(buffer, g_hub_buf, 2);
+    memcpy(buffer, g_hub_buf[hub->bus->busid], 2);
     return ret;
 }
 #endif
@@ -280,22 +280,6 @@ static int usbh_hub_set_depth(struct usbh_hub *hub, uint16_t depth)
     }
 }
 
-static void usbh_hubport_release(struct usbh_hubport *child)
-{
-    if (child->connected) {
-        child->connected = false;
-        usbh_free_devaddr(child);
-        for (uint8_t i = 0; i < child->config.config_desc.bNumInterfaces; i++) {
-            if (child->config.intf[i].class_driver && child->config.intf[i].class_driver->disconnect) {
-                CLASS_DISCONNECT(child, i);
-            }
-        }
-        child->config.config_desc.bNumInterfaces = 0;
-        usbh_kill_urb(&child->ep0_urb);
-        usb_osal_mutex_delete(child->mutex);
-    }
-}
-
 #if CONFIG_USBHOST_MAX_EXTHUBS > 0
 static void hub_int_complete_callback(void *arg, int nbytes)
 {
@@ -304,9 +288,19 @@ static void hub_int_complete_callback(void *arg, int nbytes)
     if (nbytes > 0) {
         usbh_hub_thread_wakeup(hub);
     } else if (nbytes == -USB_ERR_NAK) {
-        usbh_submit_urb(&hub->intin_urb);
+        /* Restart timer to submit urb again */
+        USB_LOG_DBG("Restart timer\r\n");
+        usb_osal_timer_start(hub->int_timer);
     } else {
     }
+}
+
+static void hub_int_timeout(void *arg)
+{
+    struct usbh_hub *hub = (struct usbh_hub *)arg;
+
+    usbh_int_urb_fill(&hub->intin_urb, hub->parent, hub->intin, hub->int_buffer, 1, 0, hub_int_complete_callback, hub);
+    usbh_submit_urb(&hub->intin_urb);
 }
 
 static int usbh_hub_connect(struct usbh_hubport *hport, uint8_t intf)
@@ -384,8 +378,13 @@ static int usbh_hub_connect(struct usbh_hubport *hport, uint8_t intf)
     USB_LOG_INFO("Register HUB Class:%s\r\n", hport->config.intf[intf].devname);
 
     hub->int_buffer = g_hub_intbuf[hub->bus->busid][hub->index - 1];
-    usbh_int_urb_fill(&hub->intin_urb, hub->parent, hub->intin, hub->int_buffer, 1, 0, hub_int_complete_callback, hub);
-    usbh_submit_urb(&hub->intin_urb);
+
+    hub->int_timer = usb_osal_timer_create("hubint_tim", USBH_GET_URB_INTERVAL(hub->intin->bInterval, hport->speed), hub_int_timeout, hub, 0);
+    if (hub->int_timer == NULL) {
+        USB_LOG_ERR("No memory to alloc int_timer\r\n");
+        return -USB_ERR_NOMEM;
+    }
+    usb_osal_timer_start(hub->int_timer);
     return 0;
 }
 
@@ -399,6 +398,10 @@ static int usbh_hub_disconnect(struct usbh_hubport *hport, uint8_t intf)
     if (hub) {
         if (hub->intin) {
             usbh_kill_urb(&hub->intin_urb);
+        }
+
+        if (hub->int_timer) {
+            usb_osal_timer_delete(hub->int_timer);
         }
 
         for (uint8_t port = 0; port < hub->hub_desc.bNbrPorts; port++) {
@@ -616,7 +619,7 @@ static void usbh_hub_events(struct usbh_hub *hub)
 
     /* Start next hub int transfer */
     if (!hub->is_roothub && hub->connected) {
-        usbh_submit_urb(&hub->intin_urb);
+        usb_osal_timer_start(hub->int_timer);
     }
 }
 
@@ -702,8 +705,7 @@ CLASS_INFO_DEFINE const struct usbh_class_info hub_class_info = {
     .class = USB_DEVICE_CLASS_HUB,
     .subclass = 0,
     .protocol = 0,
-    .vid = 0x00,
-    .pid = 0x00,
+    .id_table = NULL,
     .class_driver = &hub_class_driver
 };
 #endif

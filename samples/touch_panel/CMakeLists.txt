@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.13)
 
 if(NOT DEFINED CONFIG_TOUCH)
-set(CONFIG_TOUCH "gt911")
+set(CONFIG_TOUCH "gt9xx")
 endif()
 set(CONFIG_HPM_PANEL 1)
 set(CONFIG_HPM_TOUCH 1)

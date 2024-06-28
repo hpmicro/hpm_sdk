@@ -15,6 +15,15 @@
 extern "C" {
 #endif /* __cplusplus  */
 
+/**
+ * @brief eeprom emulation default in ram, avoid flash crash
+ */
+#ifndef E2P_PLACE_FLASH
+#define E2P_ATTR ATTR_RAMFUNC
+#else
+#define E2P_ATTR
+#endif
+
 typedef struct {
     XPI_Type *xpi_base;
     uint32_t base_addr;

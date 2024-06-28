@@ -53,13 +53,15 @@ hpm_panel_t panel_tm070rdh13 = {
         .pixel_clock_khz = 60000,
         .hactive = 800,
         .hfront_porch = 50,
-        .hback_porch = 46,
+        .hback_porch = 36,
         .hsync_len = 10,
+        .hsync_pol = 1,
 
         .vactive = 480,
         .vfront_porch = 10,
-        .vback_porch = 23,
+        .vback_porch = 20,
         .vsync_len = 3,
+        .vsync_pol = 1,
     },
     .funcs = {
         .reset = reset,

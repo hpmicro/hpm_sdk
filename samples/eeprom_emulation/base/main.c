@@ -71,32 +71,32 @@ static void eeprom_init(void)
     e2p_demo.config.flash_erase = demo_erase;
 
     nor_flash_init(&e2p_demo.nor_config);
-    e2p_config(&e2p_demo);   
+    e2p_config(&e2p_demo);
 }
 
 static void eeprom_write_test(void)
 {
-    DEMO_RET_CHECK(e2p_write(&e2p_demo, var1, sizeof("abcdef"), (uint8_t *)"abcdef"));
-    DEMO_RET_CHECK(e2p_write(&e2p_demo, var2, sizeof("1234"), (uint8_t *)"1234"));
-    DEMO_RET_CHECK(e2p_write(&e2p_demo, var3, sizeof("hello,world"), (uint8_t *)"hello,world"));
-    DEMO_RET_CHECK(e2p_write(&e2p_demo, var4, sizeof("eeprom_demo"), (uint8_t *)"eeprom_demo"));    
+    DEMO_RET_CHECK(e2p_write(var1, sizeof("abcdef"), (uint8_t *)"abcdef"));
+    DEMO_RET_CHECK(e2p_write(var2, sizeof("1234"), (uint8_t *)"1234"));
+    DEMO_RET_CHECK(e2p_write(var3, sizeof("hello,world"), (uint8_t *)"hello,world"));
+    DEMO_RET_CHECK(e2p_write(var4, sizeof("eeprom_demo"), (uint8_t *)"eeprom_demo"));
 }
 
 static void eeprom_read_test(void)
 {
-    DEMO_RET_CHECK(e2p_read(&e2p_demo, var1, DEMO_BLOCK_SIZE_MAX, read_buf));
+    DEMO_RET_CHECK(e2p_read(var1, DEMO_BLOCK_SIZE_MAX, read_buf));
     printf("var1 = %s\n", read_buf);
 
-    DEMO_RET_CHECK(e2p_read(&e2p_demo, var2, DEMO_BLOCK_SIZE_MAX, read_buf));
+    DEMO_RET_CHECK(e2p_read(var2, DEMO_BLOCK_SIZE_MAX, read_buf));
     printf("var2 = %s\n", read_buf);
 
-    DEMO_RET_CHECK(e2p_read(&e2p_demo, var3, DEMO_BLOCK_SIZE_MAX, read_buf));
+    DEMO_RET_CHECK(e2p_read(var3, DEMO_BLOCK_SIZE_MAX, read_buf));
     printf("var3 = %s\n", read_buf);
     if (0 != memcmp(read_buf, "hello,world", sizeof("hello,world"))) {
         printf("test var3 failed\n");
     }
 
-    DEMO_RET_CHECK(e2p_read(&e2p_demo, var4, DEMO_BLOCK_SIZE_MAX, read_buf));
+    DEMO_RET_CHECK(e2p_read(var4, DEMO_BLOCK_SIZE_MAX, read_buf));
     printf("var4 = %s\n", read_buf);
     if (0 != memcmp(read_buf, "eeprom_demo", sizeof("eeprom_demo"))) {
         printf("test var4 failed\n");
@@ -106,14 +106,14 @@ static void eeprom_read_test(void)
 static void eeprom_update_test(void)
 {
     eeprom_write_test();
-    DEMO_RET_CHECK(e2p_write(&e2p_demo, var1, sizeof("qwe"), (uint8_t *)"qwe"));
-    DEMO_RET_CHECK(e2p_write(&e2p_demo, var2, sizeof("5678"), (uint8_t *)"5678"));
-    DEMO_RET_CHECK(e2p_read(&e2p_demo, var1, DEMO_BLOCK_SIZE_MAX, read_buf));
+    DEMO_RET_CHECK(e2p_write(var1, sizeof("qwe"), (uint8_t *)"qwe"));
+    DEMO_RET_CHECK(e2p_write(var2, sizeof("5678"), (uint8_t *)"5678"));
+    DEMO_RET_CHECK(e2p_read(var1, DEMO_BLOCK_SIZE_MAX, read_buf));
     if (0 != memcmp(read_buf, "qwe", sizeof("qwe"))) {
         printf("update var1 failed\n");
     }
 
-    DEMO_RET_CHECK(e2p_read(&e2p_demo, var2,  DEMO_BLOCK_SIZE_MAX, read_buf));
+    DEMO_RET_CHECK(e2p_read(var2,  DEMO_BLOCK_SIZE_MAX, read_buf));
     if (0 != memcmp(read_buf, "5678", sizeof("5678"))) {
         printf("update var2 failed\n");
     }
@@ -121,13 +121,13 @@ static void eeprom_update_test(void)
 
 static void eeprom_flush_test(void)
 {
-    e2p_flush(&e2p_demo, E2P_FLUSH_BEGIN);
-    e2p_show_info(&e2p_demo);
+    e2p_flush(E2P_FLUSH_BEGIN);
+    e2p_show_info();
 }
 
 static void eeprom_show_info(void)
 {
-    e2p_show_info(&e2p_demo);
+    e2p_show_info();
 }
 
 static void eeprom_show_index(void)

@@ -2,8 +2,9 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
-set(CONFIG_LWIP 1)
 
+set(CONFIG_LWIP 1)
+set(CONFIG_ENET_PHY 1)
 set(APP_USE_ENET_PORT_COUNT 2)
 
 if(NOT DEFINED APP_USE_ENET_PORT_COUNT)

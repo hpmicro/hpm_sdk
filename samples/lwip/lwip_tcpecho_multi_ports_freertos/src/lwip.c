@@ -107,15 +107,9 @@ static hpm_stat_t enet_init(uint8_t idx)
     /* Enable Enet IRQ */
     board_enable_enet_irq(base);
 
-    /* Set the interrupt enable mask */
-    int_config.int_enable = enet_normal_int_sum_en    /* Enable normal interrupt summary */
-                          | enet_receive_int_en;      /* Enable receive interrupt */
-
-    int_config.int_mask = enet_rgsmii_int_mask | ENET_INTR_MASK_LPIIM_MASK; /* Disable RGSMII interrupt */
+    /* Get the default interrupt config */
+    enet_get_default_interrupt_config(ENET, &int_config);
     #endif
-
-    int_config.mmc_intr_mask_rx = 0x03ffffff;   /* Disable all mmc rx interrupt events */
-    int_config.mmc_intr_mask_tx = 0x03ffffff;   /* Disable all mmc tx interrupt events */
 
     /* Initialize enet controller */
     if (enet_controller_init(base, itf, &desc[idx], &enet_config, &int_config) != status_success) {

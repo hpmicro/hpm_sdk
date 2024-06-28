@@ -105,25 +105,25 @@
 
 #define NX_RX_PACKET_POOL_SIZE ((1536 + sizeof(NX_PACKET)) * RX_POOL_PACKET_NUM)
 NX_PACKET_POOL pool_receive; /* the receive packet pool */
-ATTR_PLACE_AT_NONCACHEABLE ULONG pool_receive_data[NX_RX_PACKET_POOL_SIZE >> 2];
+ATTR_PLACE_AT_NONCACHEABLE_BSS ULONG pool_receive_data[NX_RX_PACKET_POOL_SIZE >> 2];
 
 #endif
 
 static const CHAR *nx_hpmicro_interface_name = NX_HPMICRO_INTERFACE_NAME;
 
-ATTR_PLACE_AT_NONCACHEABLE NX_DRIVER_INFORMATION nx_driver_information;
+ATTR_PLACE_AT_NONCACHEABLE_BSS NX_DRIVER_INFORMATION nx_driver_information;
 
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ENET_SOC_DESC_ADDR_ALIGNMENT)
+ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(ENET_SOC_DESC_ADDR_ALIGNMENT)
 __RW enet_rx_desc_t dma_rx_desc_tab[ENET_RX_BUFF_COUNT]; /* Ethernet Rx DMA Descriptor */
 
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ENET_SOC_DESC_ADDR_ALIGNMENT)
+ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(ENET_SOC_DESC_ADDR_ALIGNMENT)
 __RW enet_tx_desc_t dma_tx_desc_tab[ENET_TX_BUFF_COUNT]; /* Ethernet Tx DMA Descriptor */
 
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ENET_SOC_BUFF_ADDR_ALIGNMENT)
+ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(ENET_SOC_BUFF_ADDR_ALIGNMENT)
 __RW UCHAR rx_buff[ENET_RX_BUFF_COUNT][ENET_RX_BUFF_SIZE]; /* Ethernet Receive Buffer */
 
 #if (NETX_TX_DATA_COPY_ALGORITHM == NETX_DATA_COPY_CPU)
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ENET_SOC_BUFF_ADDR_ALIGNMENT)
+ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(ENET_SOC_BUFF_ADDR_ALIGNMENT)
 __RW UCHAR tx_buff[ENET_TX_BUFF_COUNT][ENET_TX_BUFF_SIZE]; /* Ethernet Transmit Buffer */
 #endif
 
@@ -661,15 +661,15 @@ static UINT _nx_driver_hardware_enable(NX_IP_DRIVER *driver_req_ptr)
     /* Enable Enet IRQ */
     board_enable_enet_irq(ENET);
 
+    /* Get the default interrupt config */
+    enet_get_default_interrupt_config(ENET, &int_config);
+
     /* Set the interrupt enable mask */
 #if NETX_TX_DATA_COPY_ALGORITHM == NETX_DATA_DIRECT
-    int_config.int_enable = enet_normal_int_sum_en | enet_receive_int_en | ENET_DMA_INTR_EN_TIE_MASK;
+    int_config.int_enable = enet_normal_int_sum_en | enet_receive_int_en | enet_transmit_int_en;
 #else
     int_config.int_enable = enet_normal_int_sum_en | enet_receive_int_en;
-
 #endif
-
-    int_config.int_mask = enet_rgsmii_int_mask; /* Disable RGSMII interrupt */
 
     /* Initialize enet controller */
 

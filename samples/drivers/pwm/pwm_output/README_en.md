@@ -7,6 +7,7 @@
 
 - Forced output
 - Edge-aligned
+- Fault mode
 - Center-aligned
 - Center-aligned complementary
 
@@ -31,6 +32,10 @@ Output high
 Output low
 
 >> Generate edge aligned waveform
+Two waveforms will be generated, PWM P0 is the target waveform
+whose duty cycle will be updated from 0 - 100 and back to 0; PWM P1 is a reference
+
+>> Generate edge aligned waveform and fault mode enable
 Two waveforms will be generated, PWM P0 is the target waveform
 whose duty cycle will be updated from 0 - 100 and back to 0; PWM P1 is a reference
 

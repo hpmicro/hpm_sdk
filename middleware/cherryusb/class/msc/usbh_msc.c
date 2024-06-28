@@ -13,7 +13,7 @@
 
 #define DEV_FORMAT "/dev/sd%c"
 
-USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_msc_buf[32];
+USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_msc_buf[64];
 
 static struct usbh_msc g_msc_class[CONFIG_USBHOST_MAX_MSC_CLASS];
 static uint32_t g_devinuse = 0;
@@ -431,7 +431,6 @@ CLASS_INFO_DEFINE const struct usbh_class_info msc_class_info = {
     .class = USB_DEVICE_CLASS_MASS_STORAGE,
     .subclass = MSC_SUBCLASS_SCSI,
     .protocol = MSC_PROTOCOL_BULK_ONLY,
-    .vid = 0x00,
-    .pid = 0x00,
+    .id_table = NULL,
     .class_driver = &msc_class_driver
 };

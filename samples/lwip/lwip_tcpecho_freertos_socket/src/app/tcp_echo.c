@@ -49,7 +49,7 @@ static void tcp_echo_thread(void *arg)
         goto __exit;
     }
 
-    if (listen(sock, 5) == -1) {
+    if (listen(sock, TCP_DEFAULT_LISTEN_BACKLOG) == -1) {
         printf("Listen error\n");
         goto __exit;
     }

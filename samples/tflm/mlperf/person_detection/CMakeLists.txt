@@ -10,8 +10,8 @@ set(CONFIG_HPM_MATH_NN_RVP32_ONLY_SES 1)
 set(CONFIG_TFLM 1)
 set(STACK_SIZE 0x10000)
 
-if("${CMAKE_BUILD_TYPE}" STREQUAL "")
-    SET(CMAKE_BUILD_TYPE flash_sdram_xip)
+if("${HPM_BUILD_TYPE}" STREQUAL "")
+    SET(HPM_BUILD_TYPE flash_sdram_xip)
 endif()
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})

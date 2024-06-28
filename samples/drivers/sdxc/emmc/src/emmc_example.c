@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -37,6 +37,8 @@ void test_write_read_last_block(void);
 
 void test_write_read_last_1024_blocks(void);
 
+void test_emmc_sleep_awake(void);
+
 
 int main(void)
 {
@@ -71,6 +73,9 @@ int main(void)
             case '2':
                 test_write_read_last_1024_blocks();
                 break;
+            case '3':
+                test_emmc_sleep_awake();
+                break;
             }
         }
     } else {
@@ -90,6 +95,7 @@ void show_help(void)
                                     "*                                                                                 *\n"
                                     "*        1. Write & Read the last block                                           *\n"
                                     "*        2. Write & Read the last 1024 blocks                                     *\n"
+                                    "*        3. Demonstrate eMMC sleep & awake                                        *\n"
                                     "*                                                                                 *\n"
                                     "*---------------------------------------------------------------------------------*\n";
     printf("%s", help_info);
@@ -240,4 +246,22 @@ void show_emmc_info(emmc_card_t *card)
     printf("RPMB partition size: %dKB\n", card->device_attribute.rpmb_partition_size / SIZE_1KB);
     printf("Sectors: %d\n", card->device_attribute.sector_count);
     printf("Sector Size: %d\n", card->device_attribute.sector_size);
+}
+
+void test_emmc_sleep_awake(void)
+{
+    printf("Demonstrate the eMMC sleep/awake feature\n");
+
+    static bool stay_in_sleep_mode = false;
+    if (!stay_in_sleep_mode) {
+        emmc_select_card(&g_emmc, false);
+        emmc_enter_sleep_mode(&g_emmc);
+        stay_in_sleep_mode = true;
+        printf("Switched eMMC to sleep mode\n");
+    } else {
+        emmc_exit_sleep_mode(&g_emmc);
+        emmc_select_card(&g_emmc, true);
+        stay_in_sleep_mode = false;
+        printf("Awoken eMMC from sleep mode\n");
+    }
 }

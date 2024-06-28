@@ -15,8 +15,8 @@ set(CONFIG_TFLM 1)
 set(CONFIG_TFLM_MODELS_PERSON_DETECT 1)
 set(STACK_SIZE 0x10000)
 
-if("${CMAKE_BUILD_TYPE}" STREQUAL "")
-    SET(CMAKE_BUILD_TYPE flash_sdram_xip)
+if("${HPM_BUILD_TYPE}" STREQUAL "")
+    SET(HPM_BUILD_TYPE flash_sdram_xip)
 endif()
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})

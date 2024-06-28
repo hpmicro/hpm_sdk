@@ -12,6 +12,7 @@
 #include "hpm_clock_drv.h"
 #include "hpm_soc.h"
 #include "hpm_soc_feature.h"
+#include "hpm_trgm_drv.h"
 #include "pinmux.h"
 #if !defined(CONFIG_NDEBUG_CONSOLE) || !CONFIG_NDEBUG_CONSOLE
 #include "hpm_debug_console.h"
@@ -19,13 +20,6 @@
 
 #define BOARD_NAME          "hpm6300evk"
 #define BOARD_UF2_SIGNATURE (0x0A4D5048UL)
-
-/* dma section */
-#define BOARD_APP_XDMA     HPM_XDMA
-#define BOARD_APP_HDMA     HPM_HDMA
-#define BOARD_APP_XDMA_IRQ IRQn_XDMA
-#define BOARD_APP_HDMA_IRQ IRQn_HDMA
-#define BOARD_APP_DMAMUX   HPM_DMAMUX
 
 #ifndef BOARD_RUNNING_CORE
 #define BOARD_RUNNING_CORE HPM_CORE0
@@ -40,6 +34,8 @@
 #define BOARD_APP_UART_RX_DMA_REQ HPM_DMA_SRC_UART2_RX
 #define BOARD_APP_UART_TX_DMA_REQ HPM_DMA_SRC_UART2_TX
 #endif
+
+#define BOARD_APP_UART_BREAK_SIGNAL_PIN   IOC_PAD_PC18
 
 #if !defined(CONFIG_NDEBUG_CONSOLE) || !CONFIG_NDEBUG_CONSOLE
 #ifndef BOARD_CONSOLE_TYPE
@@ -119,7 +115,6 @@
 #define BOARD_SDRAM_PORT_SIZE          FEMC_SDRAM_PORT_SIZE_16_BITS
 #define BOARD_SDRAM_REFRESH_COUNT      (8192UL)
 #define BOARD_SDRAM_REFRESH_IN_MS      (64UL)
-#define BOARD_SDRAM_DATA_WIDTH_IN_BYTE (4UL)
 
 /* nor flash section */
 #define BOARD_FLASH_BASE_ADDRESS (0x80000000UL)
@@ -233,11 +228,12 @@
 #define BOARD_APP_ADC16_CH_1     (6U)
 #define BOARD_APP_ADC16_CLK_NAME (clock_adc0)
 
-#define BOARD_APP_ADC16_HW_TRIG_SRC     HPM_PWM0
-#define BOARD_APP_ADC16_HW_TRGM         HPM_TRGM0
-#define BOARD_APP_ADC16_HW_TRGM_IN      HPM_TRGM0_INPUT_SRC_PWM0_CH8REF
-#define BOARD_APP_ADC16_HW_TRGM_OUT_SEQ TRGM_TRGOCFG_ADC0_STRGI
-#define BOARD_APP_ADC16_HW_TRGM_OUT_PMT TRGM_TRGOCFG_ADCX_PTRGI0A
+#define BOARD_APP_ADC16_HW_TRIG_SRC_CLK_NAME clock_mot0
+#define BOARD_APP_ADC16_HW_TRIG_SRC          HPM_PWM0
+#define BOARD_APP_ADC16_HW_TRGM              HPM_TRGM0
+#define BOARD_APP_ADC16_HW_TRGM_IN           HPM_TRGM0_INPUT_SRC_PWM0_CH8REF
+#define BOARD_APP_ADC16_HW_TRGM_OUT_SEQ      TRGM_TRGOCFG_ADC0_STRGI
+#define BOARD_APP_ADC16_HW_TRGM_OUT_PMT      TRGM_TRGOCFG_ADCX_PTRGI0A
 
 #define BOARD_APP_ADC16_PMT_TRIG_CH ADC16_CONFIG_TRG0A
 
@@ -379,14 +375,47 @@
 #define BOARD_FREERTOS_TIMER_IRQ      IRQn_GPTMR1
 #define BOARD_FREERTOS_TIMER_CLK_NAME clock_gptmr1
 
+#define BOARD_FREERTOS_LOWPOWER_TIMER          HPM_PTMR
+#define BOARD_FREERTOS_LOWPOWER_TIMER_CHANNEL  1
+#define BOARD_FREERTOS_LOWPOWER_TIMER_IRQ      IRQn_PTMR
+#define BOARD_FREERTOS_LOWPOWER_TIMER_CLK_NAME clock_ptmr
+
 /* Threadx Definitions */
 #define BOARD_THREADX_TIMER           HPM_GPTMR1
 #define BOARD_THREADX_TIMER_CHANNEL   1
 #define BOARD_THREADX_TIMER_IRQ       IRQn_GPTMR1
 #define BOARD_THREADX_TIMER_CLK_NAME  clock_gptmr1
+
+#define BOARD_THREADX_LOWPOWER_TIMER           HPM_PTMR
+#define BOARD_THREADX_LOWPOWER_TIMER_CHANNEL   1
+#define BOARD_THREADX_LOWPOWER_TIMER_IRQ       IRQn_PTMR
+#define BOARD_THREADX_LOWPOWER_TIMER_CLK_NAME  clock_ptmr
 /* Tamper Section */
 #define BOARD_TAMP_NO_LEVEL_PINS
 #define BOARD_TAMP_ACTIVE_CH 6
+
+/* i2s over spi Section*/
+#define BOARD_I2S_SPI_CS_GPIO_CTRL         HPM_GPIO0
+#define BOARD_I2S_SPI_CS_GPIO_INDEX        GPIO_DI_GPIOA
+#define BOARD_I2S_SPI_CS_GPIO_PIN          7
+#define BOARD_I2S_SPI_CS_GPIO_PAD          IOC_PAD_PA07
+
+#define BOARD_GPTMR_I2S_MCLK               HPM_GPTMR2
+#define BOARD_GPTMR_I2S_MCLK_CHANNEL       0
+#define BOARD_GPTMR_I2S_MCLK_CLK_NAME      clock_gptmr2
+
+#define BOARD_GPTMR_I2S_LRCK               HPM_GPTMR2
+#define BOARD_GPTMR_I2S_LRCK_CHANNEL       1
+#define BOARD_GPTMR_I2S_LRCK_CLK_NAME      clock_gptmr2
+
+#define BOARD_GPTMR_I2S_BCLK               HPM_GPTMR2
+#define BOARD_GPTMR_I2S_BLCK_CHANNEL       2
+#define BOARD_GPTMR_I2S_BLCK_CLK_NAME      clock_gptmr2
+
+#define BOARD_GPTMR_I2S_FINSH              HPM_GPTMR2
+#define BOARD_GPTMR_I2S_FINSH_IRQ          IRQn_GPTMR2
+#define BOARD_GPTMR_I2S_FINSH_CHANNEL      3
+#define BOARD_GPTMR_I2S_FINSH_CLK_NAME     clock_gptmr2
 
 #if defined(__cplusplus)
 extern "C" {
@@ -419,7 +448,7 @@ void board_init_clock(void);
 
 uint32_t board_init_spi_clock(SPI_Type *ptr);
 
-uint32_t board_init_adc16_clock(ADC16_Type *ptr, bool clk_src_ahb);
+uint32_t board_init_adc_clock(void *ptr, bool clk_src_ahb);
 
 uint32_t board_init_dac_clock(DAC_Type *ptr, bool clk_src_ahb);
 
@@ -428,11 +457,6 @@ void board_init_adc16_pins(void);
 void board_init_dac_pins(DAC_Type *ptr);
 
 uint32_t board_init_can_clock(CAN_Type *ptr);
-
-hpm_stat_t board_set_audio_pll_clock(uint32_t freq);
-uint32_t board_init_i2s_clock(I2S_Type *ptr);
-uint32_t board_init_pdm_clock(void);
-uint32_t board_init_dao_clock(void);
 
 uint32_t board_sd_configure_clock(SDXC_Type *ptr, uint32_t freq, bool need_inverse);
 void board_sd_switch_pins_to_1v8(SDXC_Type *ptr);

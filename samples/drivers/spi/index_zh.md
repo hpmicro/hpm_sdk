@@ -11,7 +11,5 @@
    interrupt/master/README_zh
    interrupt/slave/README_zh
    master_trans_large_amount_of_data/README_zh
-   sdcard/sd/README_zh
-   sdcard/sd_fatfs/README_zh
 
 :::

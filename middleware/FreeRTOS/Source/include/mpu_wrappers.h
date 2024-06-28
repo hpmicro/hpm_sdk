@@ -1,5 +1,5 @@
 /*
- * FreeRTOS Kernel V10.4.4
+ * FreeRTOS Kernel V10.5.1
  * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * SPDX-License-Identifier: MIT
@@ -46,7 +46,7 @@
  * privileges.
  */
 
-/* Map standard tasks.h API functions to the MPU equivalents. */
+/* Map standard task.h API functions to the MPU equivalents. */
         #define xTaskCreate                            MPU_xTaskCreate
         #define xTaskCreateStatic                      MPU_xTaskCreateStatic
         #define vTaskDelete                            MPU_vTaskDelete
@@ -77,6 +77,7 @@
         #define vTaskList                              MPU_vTaskList
         #define vTaskGetRunTimeStats                   MPU_vTaskGetRunTimeStats
         #define ulTaskGetIdleRunTimeCounter            MPU_ulTaskGetIdleRunTimeCounter
+        #define ulTaskGetIdleRunTimePercent            MPU_ulTaskGetIdleRunTimePercent
         #define xTaskGenericNotify                     MPU_xTaskGenericNotify
         #define xTaskGenericNotifyWait                 MPU_xTaskGenericNotifyWait
         #define ulTaskGenericNotifyTake                MPU_ulTaskGenericNotifyTake
@@ -119,13 +120,10 @@
         #endif
 
 /* Map standard timer.h API functions to the MPU equivalents. */
-        #define xTimerCreate                           MPU_xTimerCreate
-        #define xTimerCreateStatic                     MPU_xTimerCreateStatic
         #define pvTimerGetTimerID                      MPU_pvTimerGetTimerID
         #define vTimerSetTimerID                       MPU_vTimerSetTimerID
         #define xTimerIsTimerActive                    MPU_xTimerIsTimerActive
         #define xTimerGetTimerDaemonTaskHandle         MPU_xTimerGetTimerDaemonTaskHandle
-        #define xTimerPendFunctionCall                 MPU_xTimerPendFunctionCall
         #define pcTimerGetName                         MPU_pcTimerGetName
         #define vTimerSetReloadMode                    MPU_vTimerSetReloadMode
         #define uxTimerGetReloadMode                   MPU_uxTimerGetReloadMode

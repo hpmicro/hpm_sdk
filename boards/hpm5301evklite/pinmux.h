@@ -11,7 +11,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-void init_xtal_pins(void);
 void init_py_pins_as_pgpio(void);
 void init_uart_pins(UART_Type *ptr);
 void init_uart_pin_as_gpio(UART_Type *ptr);
@@ -26,6 +25,7 @@ void init_adc_pins(void);
 void init_adc_bldc_pins(void);
 void init_usb_pins(void);
 void init_led_pins_as_gpio(void);
+void init_uart_break_signal_pin(void);
 #ifdef __cplusplus
 }
 #endif

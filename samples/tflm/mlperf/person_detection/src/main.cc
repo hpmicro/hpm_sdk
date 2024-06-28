@@ -16,12 +16,11 @@ limitations under the License.
 #include "api/submitter_implemented.h"
 /*-fno-rtti -fno-exceptions*/
 int main(int argc, char *argv[]) {
-  int32_t buf_size;
   ee_benchmark_initialize();
   while (1) {
     char c;
     c = th_getchar();
-	th_printf("%c", buf_size);
+    th_printf("%c", c);
     ee_serial_callback(c);
   }
   return 0;

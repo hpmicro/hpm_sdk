@@ -17,7 +17,6 @@
  */
 #include <stdio.h>
 #include "coremark.h"
-#include "core_portme.h"
 #include "board.h"
 #include "hpm_uart_drv.h"
 #include "hpm_clock_drv.h"

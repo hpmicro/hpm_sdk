@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,32 +9,31 @@
 #include "hpm_soc_feature.h"
 #include "hpm_trgm_soc_drv.h"
 #include "hpm_trgm_drv.h"
+#ifdef HPMSOC_HAS_HPMSDK_PWMV2
+#include "hpm_pwmv2_drv.h"
+#else
 #include "hpm_pwm_drv.h"
+#endif
 #include "hpm_adc16_drv.h"
 #include "hpm_qeiv2_drv.h"
 
 #ifndef APP_QEI_BASE
-#define APP_QEI_BASE BOARD_BLDC_QEIV2_BASE
+#define APP_QEI_BASE BOARD_APP_QEIV2_BASE
 #endif
 #ifndef APP_QEI_IRQ
-#define APP_QEI_IRQ  BOARD_BLDC_QEIV2_IRQ
+#define APP_QEI_IRQ BOARD_APP_QEIV2_IRQ
 #endif
 #ifndef APP_MOTOR_CLK
-#define APP_MOTOR_CLK BOARD_BLDC_QEI_CLOCK_SOURCE
+#define APP_MOTOR_CLK BOARD_APP_QEI_CLOCK_SOURCE
 #endif
 
-#define BOARD_ADC_COS_BASE  HPM_ADC0
-#define BOARD_ADC_COS_CHN     (4U)
-#define BOARD_ADC_SIN_BASE  HPM_ADC1
-#define BOARD_ADC_SIN_CHN     (5U)
-#define PWM_FREQ              30000
+#define PWM_FREQ 30000
 
 static volatile bool s_qei_data_ready;
 static volatile uint32_t z, ph, pos, ang;
 static uint32_t s_record_data[5][500];
-static uint32_t s_cos_adc_data[ADC_SOC_PMT_MAX_DMA_BUFF_LEN_IN_4BYTES];
-static uint32_t s_sin_adc_data[ADC_SOC_PMT_MAX_DMA_BUFF_LEN_IN_4BYTES];
-
+volatile ATTR_PLACE_AT_NONCACHEABLE uint32_t s_cos_adc_data[ADC_SOC_PMT_MAX_DMA_BUFF_LEN_IN_4BYTES];
+volatile ATTR_PLACE_AT_NONCACHEABLE uint32_t s_sin_adc_data[ADC_SOC_PMT_MAX_DMA_BUFF_LEN_IN_4BYTES];
 
 /* Static function declaration */
 static void pwm_init(void);
@@ -42,11 +41,12 @@ static void trigger_mux_init(void);
 static void adc_init(void);
 static void qeiv2_init(void);
 
-
 /* Function definition */
 int main(void)
 {
     board_init();
+    board_init_adc_clock(BOARD_APP_QEI_ADC_COS_BASE, true);
+    board_init_adc_clock(BOARD_APP_QEI_ADC_SIN_BASE, true);
     board_init_adc_qeiv2_pins();
 
     pwm_init();
@@ -65,7 +65,8 @@ int main(void)
     }
 
     for (uint16_t i = 0; i < 500; i++) {
-        printf("ch0:%#x, ch1:%#x, pos:%#x, ang:%#x, ph:%#x\n", s_record_data[0][i], s_record_data[1][i], s_record_data[2][i], s_record_data[3][i], s_record_data[4][i]);
+        printf("ch0:%#x, ch1:%#x, pos:%#x, ang:%#x, ph:%#x\n", s_record_data[0][i], s_record_data[1][i], s_record_data[2][i], s_record_data[3][i],
+               s_record_data[4][i]);
     }
 
     while (1) {
@@ -97,30 +98,69 @@ void isr_qei(void)
 }
 SDK_DECLARE_EXT_ISR_M(APP_QEI_IRQ, isr_qei)
 
+#ifdef HPMSOC_HAS_HPMSDK_PWMV2
+static void pwm_init(void)
+{
+    uint32_t reload = clock_get_frequency(APP_MOTOR_CLK) / PWM_FREQ;
+
+    pwmv2_disable_counter(BOARD_APP_PWM, pwm_counter_0);
+    pwmv2_reset_counter(BOARD_APP_PWM, pwm_counter_0);
+
+    pwmv2_shadow_register_unlock(BOARD_APP_PWM);
+    pwmv2_set_shadow_val(BOARD_APP_PWM, PWMV2_SHADOW_INDEX(0), reload - 1, 0, false);
+    pwmv2_set_shadow_val(BOARD_APP_PWM, PWMV2_SHADOW_INDEX(1), (reload / 2) - 1, 0, false);
+    pwmv2_shadow_register_lock(BOARD_APP_PWM);
+
+    pwmv2_counter_select_data_offset_from_shadow_value(BOARD_APP_PWM, pwm_counter_0, PWMV2_SHADOW_INDEX(0));
+    pwmv2_counter_burst_disable(BOARD_APP_PWM, pwm_counter_0);
+    pwmv2_set_reload_update_time(BOARD_APP_PWM, pwm_counter_0, pwm_reload_update_on_reload);
+
+    pwmv2_cmp_update_trig_time(BOARD_APP_PWM, PWMV2_CMP_INDEX(16), pwm_shadow_register_update_on_modify);
+    pwmv2_select_cmp_source(BOARD_APP_PWM, PWMV2_CMP_INDEX(16), cmp_value_from_shadow_val, PWMV2_SHADOW_INDEX(1));
+    pwmv2_cmp_select_counter(BOARD_APP_PWM, PWMV2_CMP_INDEX(16), pwm_counter_0);
+
+    pwmv2_set_trigout_cmp_index(BOARD_APP_PWM, pwm_channel_0, PWMV2_CMP_INDEX(16));
+
+    pwmv2_enable_counter(BOARD_APP_PWM, pwm_counter_0);
+    pwmv2_start_pwm_output(BOARD_APP_PWM, pwm_counter_0);
+}
+
+static void trigger_mux_init(void)
+{
+    trgm_output_t trgm_config;
+
+    /* pwm trigout0 trig adc and vsc */
+    trgm_config.invert = false;
+    trgm_config.type = trgm_output_pulse_at_input_rising_edge;
+    trgm_config.input = BOARD_APP_TRGM_PWM_INPUT;
+    trgm_output_config(HPM_TRGM0, HPM_TRGM0_OUTPUT_SRC_ADCX_PTRGI0A, &trgm_config);
+}
+#else
 static void pwm_init(void)
 {
     pwm_cmp_config_t pwm_cmp_cfg;
     pwm_output_channel_t pwm_output_ch_cfg;
+    uint32_t reload = clock_get_frequency(APP_MOTOR_CLK) / PWM_FREQ;
 
-    pwm_set_reload(HPM_PWM0, 0, clock_get_frequency(APP_MOTOR_CLK) / PWM_FREQ - 1);
+    pwm_set_reload(HPM_PWM0, 0, reload - 1);
 
     /* Set a comparator */
     memset(&pwm_cmp_cfg, 0x00, sizeof(pwm_cmp_config_t));
-    pwm_cmp_cfg.enable_ex_cmp  = false;
-    pwm_cmp_cfg.mode           = pwm_cmp_mode_output_compare;
+    pwm_cmp_cfg.enable_ex_cmp = false;
+    pwm_cmp_cfg.mode = pwm_cmp_mode_output_compare;
     pwm_cmp_cfg.update_trigger = pwm_shadow_register_update_on_shlk;
 
     /* Select comp8 and trigger at the middle of a pwm cycle */
-    pwm_cmp_cfg.cmp = clock_get_frequency(APP_MOTOR_CLK) / (PWM_FREQ * 2) - 1;
+    pwm_cmp_cfg.cmp = (reload / 2) - 1;
     pwm_config_cmp(HPM_PWM0, 8, &pwm_cmp_cfg);
 
     /* Issue a shadow lock */
     pwm_issue_shadow_register_lock_event(HPM_PWM0);
 
     /* Set comparator channel to generate a trigger signal */
-    pwm_output_ch_cfg.cmp_start_index = 8;   /* start channel */
-    pwm_output_ch_cfg.cmp_end_index   = 8;   /* end channel */
-    pwm_output_ch_cfg.invert_output   = false;
+    pwm_output_ch_cfg.cmp_start_index = 8; /* start channel */
+    pwm_output_ch_cfg.cmp_end_index = 8;   /* end channel */
+    pwm_output_ch_cfg.invert_output = false;
     pwm_config_output_channel(HPM_PWM0, 8, &pwm_output_ch_cfg);
 
     /* Start the comparator counter */
@@ -132,10 +172,11 @@ static void trigger_mux_init(void)
     trgm_output_t trgm_output_cfg;
 
     trgm_output_cfg.invert = false;
-    trgm_output_cfg.type   = trgm_output_pulse_at_input_falling_edge;
-    trgm_output_cfg.input  = HPM_TRGM0_INPUT_SRC_PWM0_CH8REF;
+    trgm_output_cfg.type = trgm_output_pulse_at_input_falling_edge;
+    trgm_output_cfg.input = HPM_TRGM0_INPUT_SRC_PWM0_CH8REF;
     trgm_output_config(HPM_TRGM0, TRGM_TRGOCFG_ADCX_PTRGI0A, &trgm_output_cfg);
 }
+#endif
 
 static void adc_init(void)
 {
@@ -145,66 +186,65 @@ static void adc_init(void)
 
     /* initialize ADC instances */
     adc16_get_default_config(&cfg);
-    cfg.res            = adc16_res_16_bits;
-    cfg.conv_mode      = adc16_conv_mode_preemption;
-    cfg.adc_clk_div    = adc16_clock_divider_4;
-    cfg.sel_sync_ahb   = true;
-    cfg.adc_ahb_en     = true;
-    adc16_init(BOARD_ADC_COS_BASE, &cfg);
-    adc16_init(BOARD_ADC_SIN_BASE, &cfg);
+    cfg.res = adc16_res_16_bits;
+    cfg.conv_mode = adc16_conv_mode_preemption;
+    cfg.adc_clk_div = adc16_clock_divider_4;
+    cfg.sel_sync_ahb = true;
+    cfg.adc_ahb_en = true;
+    adc16_init(BOARD_APP_QEI_ADC_COS_BASE, &cfg);
+    adc16_init(BOARD_APP_QEI_ADC_SIN_BASE, &cfg);
 
     /* initialize ADC channels */
     adc16_get_channel_default_config(&ch_cfg);
-    ch_cfg.sample_cycle  = 20;
-    ch_cfg.ch            = BOARD_ADC_COS_CHN;
-    adc16_init_channel(BOARD_ADC_COS_BASE, &ch_cfg);
-    ch_cfg.sample_cycle  = 20;
-    ch_cfg.ch            = BOARD_ADC_SIN_CHN;
-    adc16_init_channel(BOARD_ADC_SIN_BASE, &ch_cfg);
+    ch_cfg.sample_cycle = 20;
+    ch_cfg.ch = BOARD_APP_QEI_ADC_COS_CHN;
+    adc16_init_channel(BOARD_APP_QEI_ADC_COS_BASE, &ch_cfg);
+    ch_cfg.sample_cycle = 20;
+    ch_cfg.ch = BOARD_APP_QEI_ADC_SIN_CHN;
+    adc16_init_channel(BOARD_APP_QEI_ADC_SIN_BASE, &ch_cfg);
 
     /* initialize preempt config */
-    pmt_cfg.adc_ch[0] = BOARD_ADC_COS_CHN;
+    pmt_cfg.adc_ch[0] = BOARD_APP_QEI_ADC_COS_CHN;
     pmt_cfg.inten[0] = false;
     pmt_cfg.trig_ch = ADC16_CONFIG_TRG0A;
     pmt_cfg.trig_len = 1;
-    adc16_set_pmt_config(BOARD_ADC_COS_BASE, &pmt_cfg);
-    adc16_set_pmt_queue_enable(BOARD_ADC_COS_BASE, pmt_cfg.trig_ch, true);
-    pmt_cfg.adc_ch[0] = BOARD_ADC_SIN_CHN;
+    adc16_set_pmt_config(BOARD_APP_QEI_ADC_COS_BASE, &pmt_cfg);
+    adc16_set_pmt_queue_enable(BOARD_APP_QEI_ADC_COS_BASE, pmt_cfg.trig_ch, true);
+    pmt_cfg.adc_ch[0] = BOARD_APP_QEI_ADC_SIN_CHN;
     pmt_cfg.inten[0] = false;
     pmt_cfg.trig_ch = ADC16_CONFIG_TRG0A;
     pmt_cfg.trig_len = 1;
-    adc16_set_pmt_config(BOARD_ADC_SIN_BASE, &pmt_cfg);
-    adc16_set_pmt_queue_enable(BOARD_ADC_SIN_BASE, pmt_cfg.trig_ch, true);
+    adc16_set_pmt_config(BOARD_APP_QEI_ADC_SIN_BASE, &pmt_cfg);
+    adc16_set_pmt_queue_enable(BOARD_APP_QEI_ADC_SIN_BASE, pmt_cfg.trig_ch, true);
 
     /* Set DMA start address for preemption mode */
-    adc16_init_pmt_dma(BOARD_ADC_COS_BASE, (uint32_t)&s_cos_adc_data[0]);
-    adc16_init_pmt_dma(BOARD_ADC_SIN_BASE, (uint32_t)&s_sin_adc_data[0]);
+    adc16_init_pmt_dma(BOARD_APP_QEI_ADC_COS_BASE, (uint32_t)&s_cos_adc_data[0]);
+    adc16_init_pmt_dma(BOARD_APP_QEI_ADC_SIN_BASE, (uint32_t)&s_sin_adc_data[0]);
 
-    adc16_enable_motor(BOARD_ADC_COS_BASE);
-    adc16_enable_motor(BOARD_ADC_SIN_BASE);
+    adc16_enable_motor(BOARD_APP_QEI_ADC_COS_BASE);
+    adc16_enable_motor(BOARD_APP_QEI_ADC_SIN_BASE);
 }
 
 static void qeiv2_init(void)
 {
     qeiv2_adc_config_t adc_config;
-    qeiv2_pos_cmp_match_config_t pos_cmp_config = {0};
+    qeiv2_pos_cmp_match_config_t pos_cmp_config = { 0 };
 
-    trgm_adc_matrix_config(BOARD_BLDC_QEI_TRGM, BOARD_BLDC_QEI_ADC_MATRIX_ADC0, trgm_adc_matrix_in_from_adc0, false);
-    trgm_adc_matrix_config(BOARD_BLDC_QEI_TRGM, BOARD_BLDC_QEI_ADC_MATRIX_ADC1, trgm_adc_matrix_in_from_adc1, false);
+    trgm_adc_matrix_config(HPM_TRGM0, BOARD_APP_QEI_ADC_MATRIX_TO_ADC0, BOARD_APP_QEI_ADC_MATRIX_FROM_ADC_COS, false);
+    trgm_adc_matrix_config(HPM_TRGM0, BOARD_APP_QEI_ADC_MATRIX_TO_ADC1, BOARD_APP_QEI_ADC_MATRIX_FROM_ADC_SIN, false);
 
-    adc_config.adc_select  = 0;
-    adc_config.adc_channel = BOARD_ADC_COS_CHN;
-    adc_config.offset      = 0x80000000;
-    adc_config.param0      = 0x4000;
-    adc_config.param1      = 0;
+    adc_config.adc_select = 0;
+    adc_config.adc_channel = BOARD_APP_QEI_ADC_COS_CHN;
+    adc_config.offset = 0x80000000;    /* middle point */
+    adc_config.param0 = 0x4000;
+    adc_config.param1 = 0;
     qeiv2_config_adcx(APP_QEI_BASE, &adc_config, true);
-    adc_config.adc_select  = 1;
-    adc_config.adc_channel = BOARD_ADC_SIN_CHN;
-    adc_config.offset      = 0x80000000;
-    adc_config.param0      = 0;
-    adc_config.param1      = 0x4000;
+    adc_config.adc_select = 1;
+    adc_config.adc_channel = BOARD_APP_QEI_ADC_SIN_CHN;
+    adc_config.offset = 0x80000000;    /* middle point */
+    adc_config.param0 = 0;
+    adc_config.param1 = 0x4000;
     qeiv2_config_adcy(APP_QEI_BASE, &adc_config, true);
-    qeiv2_set_adc_xy_delay(APP_QEI_BASE, 0xFFFFFF);
 
     qeiv2_reset_counter(APP_QEI_BASE);
 
@@ -224,5 +264,3 @@ static void qeiv2_init(void)
 
     qeiv2_release_counter(APP_QEI_BASE);
 }
-
-

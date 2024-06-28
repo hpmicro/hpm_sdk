@@ -1,0 +1,12 @@
+excluded_targets:
+  - debug
+  - release
+  - flash_sdram_xip
+  - flash_sdram_xip_release
+  - flash_sdram_uf2
+  - flash_sdram_uf2_release
+  - sec_core_img
+  - sec_core_img_release
+dependency:
+  - enet
+  - board_enet_dual_phy

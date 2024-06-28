@@ -123,6 +123,8 @@ void init_sdram_pins(void)
     HPM_IOC->PAD[IOC_PAD_PB29].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);
     HPM_IOC->PAD[IOC_PAD_PB30].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);
     HPM_IOC->PAD[IOC_PAD_PB31].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12);
+
+    HPM_IOC->PAD[IOC_PAD_PX07].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(12) | IOC_PAD_FUNC_CTL_LOOP_BACK_SET(1);    /* DQS */
 }
 
 void init_sram_pins(void)
@@ -209,8 +211,18 @@ void init_gptmr_pins(GPTMR_Type *ptr)
 {
     if (ptr == HPM_GPTMR2) {
         HPM_IOC->PAD[IOC_PAD_PC06].FUNC_CTL = IOC_PC06_FUNC_CTL_GPTMR2_CAPT_0;
+        /* TMR2 compare 0 */
         HPM_IOC->PAD[IOC_PAD_PC08].FUNC_CTL = IOC_PC08_FUNC_CTL_GPTMR2_COMP_0;
+        /* TMR2 compare 1 */
         HPM_IOC->PAD[IOC_PAD_PC09].FUNC_CTL = IOC_PC09_FUNC_CTL_GPTMR2_COMP_1;
+        /* TMR2 compare 2 */
+        HPM_IOC->PAD[IOC_PAD_PA24].FUNC_CTL = IOC_PA24_FUNC_CTL_TRGM1_P_04;
+        trgm_output_t trgm1_io_config0 = {0};
+        trgm1_io_config0.invert = 0;
+        trgm1_io_config0.type = trgm_output_same_as_input;
+        trgm1_io_config0.input = HPM_TRGM1_INPUT_SRC_GPTMR2_OUT2;
+        trgm_output_config(HPM_TRGM1, HPM_TRGM1_OUTPUT_SRC_TRGM1_P4, &trgm1_io_config0);
+        trgm_enable_io_output(HPM_TRGM1, 1 << 4);
     }
 }
 
@@ -390,4 +402,11 @@ void init_tamper_pins(void)
 {
     HPM_BIOC->PAD[IOC_PAD_PZ06].FUNC_CTL = BIOC_PZ06_FUNC_CTL_TAMP_06 | IOC_PAD_FUNC_CTL_LOOP_BACK_MASK;
     HPM_BIOC->PAD[IOC_PAD_PZ07].FUNC_CTL = BIOC_PZ07_FUNC_CTL_TAMP_07;
+}
+
+/* for uart_rx_line_status case, need to a gpio pin to sent break signal */
+void init_uart_break_signal_pin(void)
+{
+    HPM_IOC->PAD[IOC_PAD_PC18].PAD_CTL = IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(1);
+    HPM_IOC->PAD[IOC_PAD_PC18].FUNC_CTL = IOC_PC18_FUNC_CTL_GPIO_C_18;
 }

@@ -91,6 +91,39 @@ typedef struct {
 #define GW1_ADDR2   200
 #define GW1_ADDR3   1
 
+/* Remote IP Address */
+#ifndef REMOTE_IP0_ADDR0
+#define REMOTE_IP0_ADDR0 192
+#endif
+
+#ifndef REMOTE_IP0_ADDR1
+#define REMOTE_IP0_ADDR1 168
+#endif
+
+#ifndef REMOTE_IP0_ADDR2
+#define REMOTE_IP0_ADDR2 100
+#endif
+
+#ifndef REMOTE_IP0_ADDR3
+#define REMOTE_IP0_ADDR3 5
+#endif
+
+#ifndef REMOTE_IP1_ADDR0
+#define REMOTE_IP1_ADDR0 192
+#endif
+
+#ifndef REMOTE_IP1_ADDR1
+#define REMOTE_IP1_ADDR1 168
+#endif
+
+#ifndef REMOTE_IP1_ADDR2
+#define REMOTE_IP1_ADDR2 200
+#endif
+
+#ifndef REMOTE_IP1_ADDR3
+#define REMOTE_IP1_ADDR3 5
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -1623,7 +1623,11 @@ lwiperf_abort(void *lwiperf_session)
       if (last != NULL) {
         last->next = i;
       }
-      LWIPERF_FREE(lwiperf_state_tcp_t, dealloc); /* @todo: type? */
+      if (dealloc->tcp) {
+        lwiperf_tcp_close((lwiperf_state_tcp_t *)dealloc, LWIPERF_TCP_ABORTED_LOCAL);
+      } else {
+        lwiperf_udp_close((lwiperf_state_udp_t *)dealloc, LWIPERF_UDP_ABORTED_LOCAL);
+      }
     } else {
       last = i;
       i = i->next;

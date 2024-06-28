@@ -33,10 +33,9 @@
 .extern portasmHANDLE_INTERRUPT
 
 /*-----------------------------------------------------------*/
-.section .isr_vector
+.section .isr_vector, "ax"
 .align 8
 .type tx_risc_v_trap_handler, function
-.func
 tx_risc_v_trap_handler:
 #ifdef __riscv_flen
 #if __riscv_flen == 32
@@ -129,4 +128,3 @@ is_exception:
 
 processed_source:
     j _tx_thread_context_restore     #Jump to ThreadX context restore function. Note: this does not return!
-    .endfunc

@@ -1,4 +1,4 @@
-# Copyright (c) 2022 HPMicro
+# Copyright (c) 2022,2024 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 sdk_inc(./)
 sdk_inc_ifdef(CONFIG_HPM_MATH_DSP nds_dsp)
@@ -6,6 +6,9 @@ sdk_inc_ifdef(CONFIG_HPM_MATH_NN_RVP32 nds_nn)
 sdk_inc_ifdef(CONFIG_HPM_MATH_NN_RVP32_ONLY_SES nds_nn)
 sdk_nds_compile_options("-mext-dsp")
 sdk_ld_options_ifdef(CONFIG_HPM_MATH_DSP "-ldsp")
+if("${TOOLCHAIN_VARIANT}" STREQUAL "zcc" AND CONFIG_HPM_MATH_DSP)
+    sdk_compile_options("-march=${RV_ARCH}_zp052b")
+endif()
 if(CONFIG_HPM_MATH_NN_RVP32_ONLY_SES OR CONFIG_HPM_MATH_NN_NORMAL OR CONFIG_HPM_MATH_NN_RVP32)
   sdk_ld_options("-lnn")
 endif()

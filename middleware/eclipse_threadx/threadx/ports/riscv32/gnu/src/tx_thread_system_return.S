@@ -39,10 +39,9 @@
 
 .global _tx_thread_system_return
 
-.section .isr_vector
+.section .isr_vector, "ax"
 .align 8
 .type _tx_thread_system_return, function
-.func
 /**************************************************************************/
 /*                                                                        */
 /*  FUNCTION                                               RELEASE        */

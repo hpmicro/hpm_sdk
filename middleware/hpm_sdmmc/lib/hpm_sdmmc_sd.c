@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -7,6 +7,7 @@
 
 #include "hpm_sdmmc_sd.h"
 #include "hpm_l1c_drv.h"
+#include "hpm_clock_drv.h"
 
 #define SPEED_1Kbps (1000U)
 #define SPEED_1Mbps (1000UL * 1000UL)
@@ -485,11 +486,15 @@ void sd_decode_scr(sd_card_t *card, uint32_t *raw_scr)
     if ((scr->sd_bus_widths & 0x04) != 0) {
         card->sd_flags.support_4bit_width = 1;
     }
-    if (scr->support_cmd20 == 1) {
-        card->sd_flags.support_speed_class_control_cmd = 1;
-    }
-    if (scr->support_cmd23) {
-        card->sd_flags.support_set_block_count_cmd = 1;
+
+    /* The following fields are supported by SD spec 3.0 or above */
+    if (scr->sd_spec3 == 1) {
+        if (scr->support_cmd20 == 1) {
+            card->sd_flags.support_speed_class_control_cmd = 1;
+        }
+        if (scr->support_cmd23) {
+            card->sd_flags.support_set_block_count_cmd = 1;
+        }
     }
 }
 
@@ -916,13 +921,17 @@ hpm_stat_t sd_read_blocks(sd_card_t *card, uint8_t *buffer, uint32_t start_block
             data->rx_data = (uint32_t *) sdmmc_get_sys_addr(card->host, (uint32_t) buffer);
             content->data = data;
             content->command = cmd;
+#if !defined(HPM_SDMMC_ENABLE_CACHE_MAINTENANCE) || (HPM_SDMMC_ENABLE_CACHE_MAINTENANCE == 1)
             uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) data->rx_data);
             uint32_t end_addr = (uint32_t) data->rx_data + card->block_size * block_count;
             uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP(end_addr);
             uint32_t aligned_size = aligned_end - aligned_start;
             l1c_dc_flush(aligned_start, aligned_size);
+#endif
             status = sd_transfer(card, content);
+#if !defined(HPM_SDMMC_ENABLE_CACHE_MAINTENANCE) || (HPM_SDMMC_ENABLE_CACHE_MAINTENANCE == 1)
             l1c_dc_invalidate(aligned_start, aligned_size);
+#endif
             if (status != status_success) {
                 break;
             }
@@ -985,11 +994,13 @@ hpm_stat_t sd_write_blocks(sd_card_t *card, const uint8_t *buffer, uint32_t star
             data->tx_data = (const uint32_t *) sdmmc_get_sys_addr(card->host, (uint32_t) buffer);
             content->data = data;
             content->command = cmd;
+#if !defined(HPM_SDMMC_ENABLE_CACHE_MAINTENANCE) || (HPM_SDMMC_ENABLE_CACHE_MAINTENANCE == 1)
             uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) data->tx_data);
             uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP(
                     (uint32_t) data->tx_data + card->block_size * write_block_count);
             uint32_t aligned_size = aligned_end - aligned_start;
             l1c_dc_flush(aligned_start, aligned_size);
+#endif
             status = sd_transfer(card, content);
             if (status != status_success) {
                 break;
@@ -1101,6 +1112,9 @@ hpm_stat_t sd_polling_card_status_busy(sd_card_t *card, uint32_t timeout_ms)
 {
     hpm_stat_t status = status_invalid_argument;
     bool is_busy = true;
+
+    volatile uint64_t start_tick = hpm_csr_get_core_mcycle();
+    uint64_t timeout_ms_in_ticks = (uint64_t) timeout_ms * (clock_get_frequency(clock_cpu0) / 1000UL);
     do {
         HPM_BREAK_IF((card == NULL) || (card->host == NULL));
 
@@ -1110,8 +1124,10 @@ hpm_stat_t sd_polling_card_status_busy(sd_card_t *card, uint32_t timeout_ms)
         }
         if ((card->r1_status.status == sdmmc_state_program) || (card->r1_status.ready_for_data == 0U)) {
             is_busy = true;
-            card->host->host_param.delay_ms(1);
-            timeout_ms--;
+            uint64_t current_tick = hpm_csr_get_core_mcycle();
+            if (current_tick - start_tick > timeout_ms_in_ticks) {
+                break;
+            }
         } else {
             is_busy = false;
         }

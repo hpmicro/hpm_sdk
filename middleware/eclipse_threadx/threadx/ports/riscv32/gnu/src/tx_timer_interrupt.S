@@ -40,10 +40,9 @@
 
 .global _tx_timer_interrupt
 
-.section .isr_vector
+.section .isr_vector, "ax"
 .align 8
 .type _tx_timer_interrupt, function
-.func
 /**************************************************************************/
 /*                                                                        */
 /*  FUNCTION                                               RELEASE        */

@@ -128,7 +128,7 @@ void tuh_msc_mount_cb(uint8_t dev_addr)
     uint8_t const lun = 0;
     printf("\nA MassStorage device is mounted.\r\n");
     led_set_blinking_mounted_interval();
-    tuh_msc_inquiry(dev_addr, lun, &inquiry_resp, inquiry_complete_cb, NULL);
+    tuh_msc_inquiry(dev_addr, lun, &inquiry_resp, inquiry_complete_cb, (uintptr_t) NULL);
 }
 
 void tuh_msc_unmount_cb(uint8_t dev_addr)

@@ -7,7 +7,7 @@ set(CONFIG_ECLIPSE_THREADX 1)
 set(CONFIG_CMSIS_RTOS2 1)
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
-project(cmsis_os2_msg_queue_threadx)
+project(cmsis_os2_mem_pool_threadx)
 
 sdk_compile_definitions(-D__threadx_irq_stack_top=_stack)
 sdk_compile_definitions(-DCONFIG_THREADX=1)

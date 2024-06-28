@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2024, sakumisu
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 #include "usbd_core.h"
 #include "usbd_cdc.h"
 
@@ -82,7 +87,7 @@ __ALIGN_BEGIN const uint8_t WINUSB_IF0_WCIDProperties [142] __ALIGN_END = {
   0x00, 0x01,                                       /* bcdVersion */
   0x05, 0x00,                                       /* wIndex */
   0x01, 0x00,                                       /* wCount */
-  
+
   ///////////////////////////////////////
   /// registry propter descriptor
   ///////////////////////////////////////
@@ -117,7 +122,7 @@ __ALIGN_BEGIN const uint8_t WINUSB_IF1_WCIDProperties [142] __ALIGN_END = {
   0x00, 0x01,                                       /* bcdVersion */
   0x05, 0x00,                                       /* wIndex */
   0x01, 0x00,                                       /* wCount */
-  
+
   ///////////////////////////////////////
   /// registry propter descriptor
   ///////////////////////////////////////
@@ -281,7 +286,7 @@ const uint8_t winusb_descriptor[] = {
     'E', 0x00,                  /* wcChar18 */
     'M', 0x00,                  /* wcChar19 */
     'O', 0x00,                  /* wcChar20 */
-        ' ', 0x00,                  /* wcChar16 */
+    ' ', 0x00,                  /* wcChar16 */
     '1', 0x00,                  /* wcChar21 */
     ///////////////////////////////////////
     /// string5 descriptor
@@ -309,7 +314,7 @@ const uint8_t winusb_descriptor[] = {
     'E', 0x00,                  /* wcChar18 */
     'M', 0x00,                  /* wcChar19 */
     'O', 0x00,                  /* wcChar20 */
-        ' ', 0x00,                  /* wcChar16 */
+    ' ', 0x00,                  /* wcChar16 */
     '2', 0x00,                  /* wcChar21 */
 #ifdef CONFIG_USB_HS
     ///////////////////////////////////////
@@ -348,6 +353,7 @@ static void usbd_event_handler(uint8_t busid, uint8_t event)
         case USBD_EVENT_SUSPEND:
             break;
         case USBD_EVENT_CONFIGURED:
+            ep_tx_busy_flag = false;
             /* setup first out ep read transfer */
             usbd_ep_start_read(busid, WINUSB_OUT_EP, read_buffer, 2048);
 #if DOUBLE_WINUSB == 1
@@ -418,7 +424,7 @@ void usbd_winusb_in2(uint8_t busid, uint8_t ep, uint32_t nbytes)
 {
     USB_LOG_RAW("actual in len:%d\r\n", nbytes);
 
-    if ((nbytes % WINUSB_EP_MPS) == 0 && nbytes) {
+    if ((nbytes % usbd_get_ep_mps(busid, ep)) == 0 && nbytes) {
         /* send zlp */
         usbd_ep_start_write(busid, WINUSB_IN_EP2, NULL, 0);
     } else {

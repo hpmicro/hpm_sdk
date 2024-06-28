@@ -14,10 +14,10 @@
 #define DEV_FORMAT "/dev/asix"
 
 static struct usbh_asix g_asix_class;
-#define CONFIG_USBHOST_ASIX_ETH_MAX_SEGSZE (1514U + 8)
+#define CONFIG_USBHOST_ASIX_ETH_MAX_SIZE (1514U + 8)
 
-static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_asix_rx_buffer[CONFIG_USBHOST_ASIX_ETH_MAX_SEGSZE];
-static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_asix_tx_buffer[CONFIG_USBHOST_ASIX_ETH_MAX_SEGSZE];
+static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_asix_rx_buffer[CONFIG_USBHOST_ASIX_ETH_MAX_SIZE];
+static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_asix_tx_buffer[CONFIG_USBHOST_ASIX_ETH_MAX_SIZE];
 static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_asix_inttx_buffer[16];
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_asix_buf[32];
 
@@ -358,7 +358,7 @@ static int usbh_ax88772a_hw_reset(struct usbh_asix *asix_class)
     if (ret < 0)
         goto out;
 
-    ret = usbh_asix_write_cmd(asix_class, AX_CMD_SW_PHY_SELECT, asix_class->embd_phy | AX_PHYSEL_SSEN, 0, 0, NULL);
+    ret = usbh_asix_write_cmd(asix_class, AX_CMD_SW_PHY_SELECT, asix_class->embd_phy | AX_PHYSEL_SSEN, 0, NULL, 0);
     if (ret < 0) {
         USB_LOG_ERR("Select PHY #1 failed: %d\r\n", ret);
         goto out;
@@ -422,7 +422,7 @@ static int usbh_ax88772a_hw_reset(struct usbh_asix *asix_class)
 
     ret = usbh_asix_write_cmd(asix_class, AX_CMD_WRITE_IPG0,
                               AX88772_IPG0_DEFAULT | AX88772_IPG1_DEFAULT,
-                              AX88772_IPG2_DEFAULT, 0, NULL);
+                              AX88772_IPG2_DEFAULT, NULL, 0);
     if (ret < 0) {
         USB_LOG_ERR("Write IPG,IPG1,IPG2 failed: %d\r\n", ret);
         goto out;
@@ -657,6 +657,11 @@ void usbh_asix_rx_thread(void *argument)
     uint16_t len;
     uint16_t len_crc;
     struct pbuf *p;
+#if LWIP_TCPIP_CORE_LOCKING_INPUT
+    pbuf_type type = PBUF_ROM;
+#else
+    pbuf_type type = PBUF_POOL;
+#endif
     struct netif *netif = (struct netif *)argument;
 
     USB_LOG_INFO("Create asix rx thread\r\n");
@@ -678,7 +683,7 @@ find_class:
 
     g_asix_rx_length = 0;
     while (1) {
-        usbh_bulk_urb_fill(&g_asix_class.bulkin_urb, g_asix_class.hport, g_asix_class.bulkin, &g_asix_rx_buffer[g_asix_rx_length], USB_GET_MAXPACKETSIZE(g_asix_class.bulkin->wMaxPacketSize), USB_OSAL_WAITING_FOREVER, NULL, NULL);
+        usbh_bulk_urb_fill(&g_asix_class.bulkin_urb, g_asix_class.hport, g_asix_class.bulkin, &g_asix_rx_buffer[g_asix_rx_length], CONFIG_USBHOST_ASIX_ETH_MAX_SIZE, USB_OSAL_WAITING_FOREVER, NULL, NULL);
         ret = usbh_submit_urb(&g_asix_class.bulkin_urb);
         if (ret < 0) {
             goto find_class;
@@ -697,9 +702,13 @@ find_class:
 
             USB_LOG_DBG("rxlen:%d\r\n", g_asix_rx_length);
 
-            p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
+            p = pbuf_alloc(PBUF_RAW, len, type);
             if (p != NULL) {
+#if LWIP_TCPIP_CORE_LOCKING_INPUT
+                p->payload = (uint8_t *)&g_asix_rx_buffer[4];
+#else
                 memcpy(p->payload, (uint8_t *)&g_asix_rx_buffer[4], len);
+#endif
                 g_asix_rx_length = 0;
 
                 err = netif->input(p, netif);
@@ -711,6 +720,10 @@ find_class:
                 USB_LOG_ERR("No memory to alloc pbuf for asix rx\r\n");
             }
         } else {
+            if (g_asix_rx_length > CONFIG_USBHOST_ASIX_ETH_MAX_SIZE) {
+                USB_LOG_ERR("Rx packet is overflow\r\n");
+                g_asix_rx_length = 0;
+            }
         }
     }
     // clang-format off
@@ -770,28 +783,23 @@ __WEAK void usbh_asix_stop(struct usbh_asix *asix_class)
 {
 }
 
+static const uint16_t asix_id_table[][2] = {
+    { 0x0B95, 0x772B },
+    { 0x0B95, 0x7720 },
+    { 0, 0 },
+};
+
 static const struct usbh_class_driver asix_class_driver = {
     .driver_name = "asix",
     .connect = usbh_asix_connect,
     .disconnect = usbh_asix_disconnect
 };
 
-CLASS_INFO_DEFINE const struct usbh_class_info ax88772b_class_info = {
-    .match_flags = USB_CLASS_MATCH_VENDOR | USB_CLASS_MATCH_PRODUCT | USB_CLASS_MATCH_INTF_CLASS,
+CLASS_INFO_DEFINE const struct usbh_class_info asix_class_info = {
+    .match_flags = USB_CLASS_MATCH_VID_PID | USB_CLASS_MATCH_INTF_CLASS,
     .class = 0xff,
     .subclass = 0x00,
     .protocol = 0x00,
-    .vid = 0x0B95,
-    .pid = 0x772B,
-    .class_driver = &asix_class_driver
-};
-
-CLASS_INFO_DEFINE const struct usbh_class_info ax88772_class_info = {
-    .match_flags = USB_CLASS_MATCH_VENDOR | USB_CLASS_MATCH_PRODUCT | USB_CLASS_MATCH_INTF_CLASS,
-    .class = 0xff,
-    .subclass = 0x00,
-    .protocol = 0x00,
-    .vid = 0x0B95,
-    .pid = 0x7720,
+    .id_table = asix_id_table,
     .class_driver = &asix_class_driver
 };

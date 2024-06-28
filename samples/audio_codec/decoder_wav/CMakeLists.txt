@@ -30,5 +30,6 @@ sdk_app_src(src/audio_codec.c)
 sdk_inc(../common/inc)
 sdk_app_src(../common/src/audio_codec_common.c)
 sdk_app_src(../common/src/sd_fatfs_common.c)
+sdk_app_src(../common/src/wav_ctrl_common.c)
 
 generate_ide_projects()

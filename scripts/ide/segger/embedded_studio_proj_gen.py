@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2022 HPMicro
+# Copyright (c) 2021-2022,2024 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 #!/usr/bin/env python3
@@ -278,12 +278,12 @@ def process_extra_options(config):
     opts = []
     printf, scanf = init_printf_scanf_properties()
     printf_scanf_opt_names = get_all_printf_scanf_opt_names(printf, scanf)
-    for o in config["target"]["extra_ses_options"]:
-        o = o.strip()
+    for o in config["target"]["extra_ses_options"].split(","):
+        o = re.sub(r"^[\"']*(.*)[\"']*$", r'\1', o.strip())
         if not len(o):
             continue
         opt_name = re.sub(r"(.*)=.*", r'\1', o).strip()
-        opt_val = re.sub(r".*=\"+(.*)\"+", r'\1', o).strip()
+        opt_val = re.sub(r".*=\"*(.*)\"*", r'\1', o).strip()
         if opt_name in printf_scanf_opt_names:
             # printf/scanf related properties will be popluated later with default values
             update_printf_scanf_properties(printf, scanf, opt_name, opt_val)

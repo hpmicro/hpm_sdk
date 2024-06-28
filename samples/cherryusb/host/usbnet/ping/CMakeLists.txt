@@ -12,8 +12,8 @@ set(CONFIG_LWIP_STRERR 1)
 set(CONFIG_LWIP_NETDB 1)
 set(CONFIG_LWIP_SOCKET_API 1)
 
-if("${CMAKE_BUILD_TYPE}" STREQUAL "")
-    SET(CMAKE_BUILD_TYPE flash_xip)
+if("${HPM_BUILD_TYPE}" STREQUAL "")
+    SET(HPM_BUILD_TYPE flash_xip)
 endif()
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})

@@ -34,11 +34,12 @@ The HPM5300EVK provides a series of interfaces for the characteristic peripheral
 
 - The UART2 is used for some functional testing using UART, such as MICROROS_UART, USB_CDC_ACM_UART, etc.
 
-| Function  | Position |
-| --------- | -------- |
+| Function  | Position | Remark   |
+| --------- | -------- | ------   |
 | UART2.TXD | P1[8]    |
 | UART2.RXD | P1[10]   |
-| UART2.DE  | P1[38] |
+| UART2.DE  | P1[38]   |
+| UART2.break | P1[24] | generate uart break signal |
 
 - LIN Pin (UART_LIN case):
 
@@ -71,11 +72,12 @@ The HPM5300EVK provides a series of interfaces for the characteristic peripheral
 
 - GPTMR Pin:
 
-| Function      | Position |
-| ------------- | -------- |
+| Function      | Position | Remark   |
+| ------------- | -------- | -------- |
 | GPTMR0.CAPT_0 | P1[3]    |
-| GPTMR0.COMP_0 | P1[5]    |
-| GPTMR0.COMP_1 | P1[8]    |
+| GPTMR0.COMP_0 | P1[5]    | BLCK of i2s emulation |
+| GPTMR0.COMP_1 | P1[8]    | LRCK of i2s emulation |
+| GPTMR0.COMP_3 | J7[18] | MCLK of i2s emulation |
 
 - ADC16 Pin:
 
@@ -170,3 +172,9 @@ The HPM5300EVK provides a series of interfaces for the characteristic peripheral
 - Motor Pin:
 
   Refer to section [DRV-LV50A-MP1907 Motor Driver Board ](lab_drv_lv50a_mp1907) for configuration
+
+- CS Pin of i2s emulation
+
+| Function | Position   |  Remark |
+| ----     | -----      | ------ |
+| PA11      | P1[16]     | the pin that controls the SPI slave CS |

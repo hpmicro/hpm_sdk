@@ -64,6 +64,7 @@ HPM6300EVK提供了HPM6300微控制器大部分外设的接口，包括1个SD卡
 
 - SPI引脚：
 
+
 | 功能      | 位置    |
 | --------- | ------- |
 | SPI3.CSN  | J28[24] |
@@ -87,11 +88,13 @@ HPM6300EVK提供了HPM6300微控制器大部分外设的接口，包括1个SD卡
 
 - GPTMR引脚
 
-| 功能          | 位置    |
-| ------------- | ------- |
+| 功能          | 位置    |  备注 |
+| ------------- | ------- | ------ |
 | GPTMR2.CAPT_0 | J28[40] |
-| GPTMR2.COMP_0 | J28[35] |
-| GPTMR2.COMP_1 | J28[12] |
+| GPTMR2.COMP_0 | J28[35] | SPI模拟I2S的MCLK |
+| GPTMR2.COMP_1 | J28[12] | SPI模拟I2S的LRCK |
+| GPTMR2.COMP_2 | J28[16] | SPI模拟I2S的BLCK |
+
 
 - ADC16引脚
 
@@ -124,10 +127,11 @@ HPM6300EVK提供了HPM6300微控制器大部分外设的接口，包括1个SD卡
 
  UART2用于一些使用UART的功能测试，例如uart_software_rx_idle，uart_rx_timeout，uart_software_lin，MICROROS_UART，USB_CDC_ACM_UART, MODBUS_RTU等。
 
-| 功能      | 位置    |
-| --------- | ------- |
+| 功能      | 位置    | 备注     |
+| --------- | ------- |  ------ |
 | UART2.TXD | J28[18] |
 | UART2.RXD | J28[22] |
+| UART2.break | J28[24] | 产生uart break信号|
 
 - TRGMUX引脚用于uart_software_rx_idle工程
 
@@ -145,3 +149,9 @@ HPM6300EVK提供了HPM6300微控制器大部分外设的接口，包括1个SD卡
 |----------|--------|--------|---------|
 | TAMP.06  | PZ06   | J28[8] | 主动模式 |
 | TAMP.07  | PZ07   | J28[10]| 主动模式 |
+
+- SPI模拟I2S CS引脚
+
+| 功能 | 位置   |  备注 |
+| ---- | ----- | ------ |
+| PA07  | J28[11] | 控制SPI从机CS的引脚 |

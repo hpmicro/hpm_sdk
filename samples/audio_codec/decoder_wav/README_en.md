@@ -29,6 +29,11 @@ SD card has been mounted successfully
 
 
 ***********Music List**********
+
+**Enter any non-numeric key to change pages or music number to choose music**
+
+
+***********Page**********
 0: music1.wav
 
 1: music2.wav
@@ -48,15 +53,5 @@ SD card has been mounted successfully
 8: on_phone.wav
 
 9: calling.wav
-
-
-**Any non-numeric key to change pages**
-
-Enter Music Number:
-2
-
-wav_name:music3.wav.
-music playing time:174 seconds ...
-music end.
 
 ```

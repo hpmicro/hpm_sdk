@@ -180,11 +180,6 @@ int main(void)
     state_transition_config.disable_instr_ptr_check = true;
     sei_state_transition_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0, SEI_CTRL_LATCH_TRAN_3_0, &state_transition_config);
 
-    state_transition_latch_config.enable = true;
-    state_transition_latch_config.output_select = SEI_CTRL_LATCH_TRAN_0_1;
-    state_transition_latch_config.delay = (48 * (clock_get_frequency(BOARD_MOTOR_CLK_NAME) / 1000000)) / 100;    /*  unit: 1us, 0.48us */
-    sei_state_transition_latch_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0, &state_transition_latch_config);
-
     /* latch1 */
     state_transition_config.disable_clk_check = true;
     state_transition_config.disable_txd_check = true;
@@ -213,11 +208,6 @@ int main(void)
     state_transition_config.disable_instr_ptr_check = true;
     sei_state_transition_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_1, SEI_CTRL_LATCH_TRAN_3_0, &state_transition_config);
 
-    state_transition_latch_config.enable = true;
-    state_transition_latch_config.output_select = SEI_CTRL_LATCH_TRAN_0_1;
-    state_transition_latch_config.delay = 0;
-    sei_state_transition_latch_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_1, &state_transition_latch_config);
-
     /* [5] sample config*/
     sample_config.latch_select = SEI_LATCH_0;
     sei_sample_config_init(BOARD_SEI, BOARD_SEI_CTRL, &sample_config);
@@ -234,6 +224,7 @@ int main(void)
 
     /* [7] interrupt config */
     intc_m_enable_irq_with_priority(BOARD_SEI_IRQn, 1);
+    sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch1_event | sei_irq_trx_err_event);
     sei_set_irq_enable(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch1_event | sei_irq_trx_err_event, true);
 
     /* [8] enbale sync timer timestamp */
@@ -250,9 +241,21 @@ int main(void)
     engine_config.wdg_instr_idx = (instr_idx - 1);
     engine_config.wdg_time = 1000;    /* 1000 bits time */
     sei_engine_config_init(BOARD_SEI, BOARD_SEI_CTRL, &engine_config);
+
+    /* [10] start engine and latch modules */
+
+    state_transition_latch_config.enable = true;
+    state_transition_latch_config.output_select = SEI_CTRL_LATCH_TRAN_0_1;
+    state_transition_latch_config.delay = (48 * (clock_get_frequency(BOARD_MOTOR_CLK_NAME) / 1000000)) / 100;    /*  unit: 1us, 0.48us */
+    sei_state_transition_latch_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0, &state_transition_latch_config);
+
+    state_transition_latch_config.enable = true;
+    state_transition_latch_config.output_select = SEI_CTRL_LATCH_TRAN_0_1;
+    state_transition_latch_config.delay = 0;
+    sei_state_transition_latch_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_1, &state_transition_latch_config);
     sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, true);
 
-    /* [10] trigger config */
+    /* [11] trigger config */
     trigger_input_conifg.trig_period_enable = true;
     trigger_input_conifg.trig_period_arming_mode = sei_arming_direct_exec;
     trigger_input_conifg.trig_period_sync_enable = false;
@@ -279,7 +282,7 @@ void isr_sei(void)
                 sei_get_data_value(BOARD_SEI, SEI_DAT_7),
                 sei_get_data_value(BOARD_SEI, SEI_DAT_5),
                 sei_get_data_value(BOARD_SEI, SEI_DAT_8),
-                sei_get_data_value(BOARD_SEI, SEI_DAT_9),
+                sei_get_data_value(BOARD_SEI, SEI_DAT_9) & 0xFF,
                 sample_latch_tm, update_latch_tm, delta / (clock_get_frequency(BOARD_MOTOR_CLK_NAME) / 10000000));
     }
 

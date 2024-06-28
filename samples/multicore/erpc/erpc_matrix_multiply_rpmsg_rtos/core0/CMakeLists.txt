@@ -10,8 +10,8 @@ set(CONFIG_IPC_EVENT_MGR 1)
 set(CONFIG_IPC_EVENT_MGR_MBX 1)
 set(CONFIG_FREERTOS 1)
 
-if("${CMAKE_BUILD_TYPE}" STREQUAL "")
-    SET(CMAKE_BUILD_TYPE flash_xip)
+if("${HPM_BUILD_TYPE}" STREQUAL "")
+    SET(HPM_BUILD_TYPE flash_xip)
 endif()
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})

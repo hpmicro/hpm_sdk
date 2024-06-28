@@ -1,4 +1,4 @@
-# Copyright (c) 2023 HPMicro
+# Copyright (c) 2023,2024 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 board:
@@ -13,5 +13,6 @@ board:
     feature:
       - board_gpt_pin
       - board_motor_control
+      - board_power_button
     excluded_samples:
       - samples/motor_ctrl/bldc_block

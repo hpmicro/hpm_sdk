@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.13)
 set(CONFIG_HPM_PANEL 1)
 set(CONFIG_LVGL 1)
 if(NOT DEFINED CONFIG_TOUCH)
-set(CONFIG_TOUCH "gt911")
+set(CONFIG_TOUCH "gt9xx")
 endif()
 set(CONFIG_HPM_TOUCH 1)
 
@@ -20,9 +20,13 @@ set(CONFIG_FATFS 1)
 set(CONFIG_AUDIO_CODEC 1)
 set(CONFIG_AUDIO_DECODER_WAV 1)
 
-if("${CMAKE_BUILD_TYPE}" STREQUAL "")
-    SET(CMAKE_BUILD_TYPE flash_sdram_xip)
+set(CONFIG_MINIMP3 1)
+
+if("${HPM_BUILD_TYPE}" STREQUAL "")
+    SET(HPM_BUILD_TYPE flash_sdram_xip)
 endif()
+
+set(STACK_SIZE 0x10000)
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
@@ -41,10 +45,11 @@ sdk_compile_definitions(-DFF_CODE_PAGE=936)
 sdk_compile_definitions(-DHPM_LCD_IRQ_PRIORITY=6)
 sdk_compile_definitions(-DHPM_LVGL_FRAMEBUFFER_NONCACHEABLE)
 
-
 sdk_inc(../common/inc)
 sdk_app_src(../common/src/audio_codec_common.c)
 sdk_app_src(../common/src/sd_fatfs_common.c)
+sdk_app_src(../common/src/wav_ctrl_common.c)
+sdk_app_src(../common/src/mp3_ctrl_common.c)
 
 sdk_inc(src)
 sdk_app_src(src/lvgl_audio_player_main.c)

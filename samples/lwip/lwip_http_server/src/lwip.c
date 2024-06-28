@@ -100,15 +100,9 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     /* Enable Enet IRQ */
     board_enable_enet_irq(ENET);
 
-    /* Set the interrupt enable mask */
-    int_config.int_enable = enet_normal_int_sum_en    /* Enable normal interrupt summary */
-                          | enet_receive_int_en;      /* Enable receive interrupt */
-
-    int_config.int_mask = enet_rgsmii_int_mask;     /* Disable RGSMII interrupt */
+    /* Get the default interrupt config */
+    enet_get_default_interrupt_config(ENET, &int_config);
     #endif
-
-    int_config.mmc_intr_mask_rx = 0x03ffffff;   /* Disable all mmc rx interrupt events */
-    int_config.mmc_intr_mask_tx = 0x03ffffff;   /* Disable all mmc tx interrupt events */
 
     /* Initialize enet controller */
     enet_controller_init(ptr, ENET_INF_TYPE, &desc, &enet_config, &int_config);
@@ -176,7 +170,7 @@ int main(void)
     /* Set RGMII clock delay */
     #if defined(RGMII) && RGMII
     board_init_enet_rgmii_clock_delay(ENET);
-    #else
+    #elif defined(RMII) && RMII
     /* Set RMII reference clock */
     board_init_enet_rmii_reference_clock(ENET, BOARD_ENET_RMII_INT_REF_CLK);
     printf("Reference Clock: %s\n", BOARD_ENET_RMII_INT_REF_CLK ? "Internal Clock" : "External Clock");

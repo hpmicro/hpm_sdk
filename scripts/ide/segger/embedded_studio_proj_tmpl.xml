@@ -45,14 +45,14 @@
       {%- if target["compiler_abi"] %}
       rv_abi="{{ target["compiler_abi"] }}"
       {%- endif %}
-      {%- if target["compiler_arch"] %}
-      rv_architecture="{{ target["compiler_arch"] }}"
+      {%- if target["compiler_isa"] %}
+      rv_architecture="{{ target["compiler_isa"] }}"
       {%- endif %}
+      c_additional_options="{{ target["cflags"] }}"
       {%- if target["toolchain_variant"] == "Andes" %}
       link_symbol_definitions="{{ target["segger_rtl_linker_symbols"]}}"
       arm_linker_variant="GNU"
       build_generic_options_file_name="$(StudioDir)/targets/Andes_build_options.xml"
-      c_additional_options="{{ target["cflags"] }}"
       link_use_linker_script_file="Yes"
       rv_arch_zicsr="No"
       rv_arch_zifencei="No"
@@ -79,6 +79,18 @@
       rv_arch_zifencei="Yes"
       {%- else %}
       rv_arch_zifencei="No"
+      {%- endif %}
+      {%- if target["compiler_arch_exts_zba"] == "1" %}
+      rv_arch_zba="Yes"
+      {%- endif %}
+      {%- if target["compiler_arch_exts_zbb"] == "1" %}
+      rv_arch_zbb="Yes"
+      {%- endif %}
+      {%- if target["compiler_arch_exts_zbc"] == "1" %}
+      rv_arch_zbc="Yes"
+      {%- endif %}
+      {%- if target["compiler_arch_exts_zbs"] == "1" %}
+      rv_arch_zbs="Yes"
       {%- endif %}
       rv_debug_extensions="None"
       rv_toolchain_prefix=""

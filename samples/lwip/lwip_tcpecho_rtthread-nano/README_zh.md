@@ -33,12 +33,12 @@
    / | \     3.1.5 build Jan 10 2024
    2006 - 2020 Copyright by rt-thread team
   Enet phy init passed !
-msh >Link Status: Up
+  msh >Link Status: Up
   Link Speed:  1000Mbps
   Link Duplex: Full duplex
   IPv4 Address: 192.168.100.10
   IPv4 Netmask: 255.255.255.0
-IPv4 Gateway: 192.168.100.1
+  IPv4 Gateway: 192.168.100.1
   ```
 
 * 打开以太网调试工具

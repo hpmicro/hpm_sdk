@@ -7,14 +7,25 @@
 #ifndef TCP_CLIENT_H
 #define TCP_CLIENT_H
 
+#include <stdint.h>
+#include "lwip/netif.h"
+
 #define TCP_DEST_PORT   (5001U)
-#define TCP_POOL_INTERVAL (2)       /* 1s */
+#define TCP_POLL_INTERVAL (2)       /* 1s */
 
 #if defined(__cplusplus)
 extern "C" {
 #endif /* __cplusplus */
 
+typedef struct {
+    uint8_t state;
+    struct tcp_pcb *pcb;
+    struct pbuf *p;
+} tcp_client_t;
+
 void tcp_client_init(void);
+void tcp_client_reconnect(struct netif *netif);
+
 #if defined(__cplusplus)
 }
 #endif /* __cplusplus */

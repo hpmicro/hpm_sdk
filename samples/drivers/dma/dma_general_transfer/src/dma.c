@@ -5,7 +5,6 @@
  *
  */
 
-#include <stdarg.h>
 #include <stdio.h>
 #include "board.h"
 #include "hpm_clock_drv.h"
@@ -15,8 +14,6 @@
 #else
 #include "hpm_dma_drv.h"
 #endif
-#include "hpm_femc_drv.h"
-#include "hpm_sysctl_drv.h"
 #include "hpm_l1c_drv.h"
 
 #define SIZE_PER_TEST   (0x00004000UL)

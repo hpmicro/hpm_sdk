@@ -3,8 +3,7 @@
 
 cmake_minimum_required(VERSION 3.13)
 
-set(CMAKE_BUILD_TYPE sec_core_img)
-set(BUILD_FOR_SECONDARY_CORE 1)
+set(HPM_BUILD_TYPE "sec_core_img")
 set(SEC_CORE_IMG_C_ARRAY_OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/../core0/src/sec_core_img.c)
 set(CONFIG_ERPC 1)
 set(CONFIG_ERPC_SERVER 1)

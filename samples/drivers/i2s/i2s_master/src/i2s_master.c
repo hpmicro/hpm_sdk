@@ -135,7 +135,7 @@ int main(void)
 {
     board_init();
 
-    board_init_i2s_clock(I2S_MASTER);
+    board_config_i2s_clock(I2S_MASTER, 48000);
     board_init_dao_clock();
 
     board_init_i2s_pins(I2S_MASTER);

@@ -1,4 +1,4 @@
-# Copyright (c) 2023 HPMicro
+# Copyright (c) 2023-2024 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -9,6 +9,7 @@ set(CONFIG_AGILE_MODBUS_TCP 1)
 if (CONFIG_AGILE_MODBUS_TCP)
 set(CONFIG_MODBUS_NETWORK 1)
 set(CONFIG_LWIP 1)
+set(CONFIG_ENET_PHY 1)
 set(APP_USE_ENET_PORT_COUNT 1)
 endif()
 

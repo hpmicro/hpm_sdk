@@ -23,10 +23,6 @@ extern "C" {
 /*********************
  *      DEFINES
  *********************/
-/*Test  lvgl version*/
-#if LV_VERSION_CHECK(8, 0, 0) == 0
-#error "lv_demo: Wrong lvgl version"
-#endif
 
 /**********************
  *      TYPEDEFS

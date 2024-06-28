@@ -114,15 +114,9 @@ static hpm_stat_t enet_init(uint8_t idx)
     /* Enable Enet IRQ */
     board_enable_enet_irq(base);
 
-    /* Set the interrupt enable mask */
-    int_config.int_enable = enet_normal_int_sum_en    /* Enable normal interrupt summary */
-                          | enet_receive_int_en;      /* Enable receive interrupt */
-
-    int_config.int_mask = enet_rgsmii_int_mask | ENET_INTR_MASK_LPIIM_MASK; /* Disable RGSMII interrupt */
+    /* Get the default interrupt config */
+    enet_get_default_interrupt_config(ENET, &int_config);
     #endif
-
-    int_config.mmc_intr_mask_rx = 0x03ffffff;   /* Disable all mmc rx interrupt events */
-    int_config.mmc_intr_mask_tx = 0x03ffffff;   /* Disable all mmc tx interrupt events */
 
     /* Initialize enet controller */
     if (enet_controller_init(base, itf, &desc[idx], &enet_config, &int_config) != status_success) {
@@ -154,26 +148,8 @@ void rt_hw_board_init(void)
 
 int rtthread_init(void)
 {
-    static rt_timer_t timer = RT_NULL;
-    osTaskFunction_t pxTaskCode[] = {netif0_update_link_status, netif1_update_link_status};
-    char task_name[30] = {0};
-
     rt_thread_t main_thread = rt_thread_create("main", thread_entry, NULL, 1024, MAIN_TASK_PRIO, 10);
     rt_thread_startup(main_thread);
-
-#if defined(LWIP_DHCP) && LWIP_DHCP
-    rt_thread_t dhcp_thread = rt_thread_create("DHCP", LwIP_DHCP_task, gnetif, 1024, DHCP_TASK_PRIO, 10);
-    rt_thread_startup(dhcp_thread);
-#endif
-
-    for (uint8_t i = 0; i < BOARD_ENET_COUNT; i++) {
-        sprintf(task_name, "Netif%d Link Status Update", i);
-        rt_thread_t netif_update_link_status_thread = rt_thread_create(task_name, pxTaskCode[i], &gnetif[i], 1024, NETIF_STA_TASK_PRIO, 10);
-        rt_thread_startup(netif_update_link_status_thread);
-    }
-
-    timer = rt_timer_create("timer", timer_callback, RT_NULL, TIMER_TIMEOUT_CNT, RT_TIMER_FLAG_PERIODIC);
-    rt_timer_start(timer);
 
     return 0;
 }
@@ -188,6 +164,10 @@ int main(void)
 void thread_entry(void *arg)
 {
     (void)arg;
+
+    static rt_timer_t timer = RT_NULL;
+    osTaskFunction_t pxTaskCode[] = {netif0_update_link_status, netif1_update_link_status};
+    char task_name[30] = {0};
 
     /* Initialize MAC and DMA */
     for (uint8_t i = 0; i < BOARD_ENET_COUNT; i++) {
@@ -206,5 +186,19 @@ void thread_entry(void *arg)
         netif_config(&gnetif[i], i);
         tcp_echo_init(&gnetif[i]);
     }
+
+#if defined(LWIP_DHCP) && LWIP_DHCP
+    rt_thread_t dhcp_thread = rt_thread_create("DHCP", LwIP_DHCP_task, gnetif, 1024, DHCP_TASK_PRIO, 10);
+    rt_thread_startup(dhcp_thread);
+#endif
+
+    for (uint8_t i = 0; i < BOARD_ENET_COUNT; i++) {
+        sprintf(task_name, "Netif%d Link Status Update", i);
+        rt_thread_t netif_update_link_status_thread = rt_thread_create(task_name, pxTaskCode[i], &gnetif[i], 1024, NETIF_STA_TASK_PRIO, 10);
+        rt_thread_startup(netif_update_link_status_thread);
+    }
+
+    timer = rt_timer_create("timer", timer_callback, RT_NULL, TIMER_TIMEOUT_CNT, RT_TIMER_FLAG_PERIODIC);
+    rt_timer_start(timer);
 }
 

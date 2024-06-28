@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -525,9 +525,15 @@ void board_can_send_multiple_canfd_messages(void)
     can_config.baudrate = 500000; /* 500kbps */
     can_config.baudrate_fd = 5000000; /* 5Mbps */
 #else
-    /* Assume the CAN clock is 80MHz, configure the nominal baudrate to 500kbit/s, configure the canfd baudrate to 5Mbit/s */
+    /* Assume the CAN clock is 80MHz, configure the nominal baudrate to 500kbit/s, configure the canfd baudrate to 5Mbit/s
+     *
+     * sample point:  100% * num_seg1 / (num_seg1 + num_seg2)
+     * In the below example,
+     *      the sample point of arbitration phase is: 100% * 60 / (60 + 20) = 75%
+     *      the sample point of data phase is: 100% * 12 / (12 + 4) = 80%
+     */
     can_config.use_lowlevel_timing_setting = true;
-    /* bitrate = can_freq / prescale / (seq1 + seg2) */
+    /* bitrate = can_src_clk_freq / prescaler / (num_seg1 + num_seg2) */
     can_config.can_timing.num_seg1 = 60;
     can_config.can_timing.num_seg2 = 20;
     can_config.can_timing.num_sjw = 16;
@@ -577,7 +583,7 @@ void board_can_error_test(void)
     can_config.baudrate = 500000; /* 500kbps */
     can_config.mode = can_mode_normal;
     can_config.irq_txrx_enable_mask = CAN_EVENT_RECEIVE | CAN_EVENT_TX_PRIMARY_BUF | CAN_EVENT_TX_SECONDARY_BUF | CAN_EVENT_ERROR;
-    can_config.irq_error_enable_mask = CAN_ERROR_ARBITRAITION_LOST_INT_ENABLE | CAN_ERROR_PASSIVE_INT_ENABLE | CAN_ERROR_BUS_ERROR_INT_ENABLE;
+    can_config.irq_error_enable_mask = CAN_ERROR_ARBITRATION_LOST_INT_ENABLE | CAN_ERROR_PASSIVE_INT_ENABLE | CAN_ERROR_BUS_ERROR_INT_ENABLE;
     board_init_can(ptr);
     uint32_t can_src_clk_freq = board_init_can_clock(ptr);
     hpm_stat_t status = can_init(ptr, &can_config, can_src_clk_freq);
@@ -611,6 +617,55 @@ void board_can_error_test(void)
     } else {
         printf("Current hardware setup cannot trigger CAN error\n");
     }
+}
+
+void board_can_error_test_with_no_retransmission(void)
+{
+    CAN_Type *ptr = BOARD_APP_CAN_BASE;
+    can_config_t can_config;
+    can_get_default_config(&can_config);
+    can_config.baudrate = 500000; /* 500kbps */
+    can_config.mode = can_mode_normal;
+    can_config.disable_stb_retransmission = true;
+    /* Due to re-transmission is disabled, user should enable interrupt to confirm either transmission completes or interrupt occurs */
+    can_config.irq_txrx_enable_mask = CAN_EVENT_RECEIVE | CAN_EVENT_TX_PRIMARY_BUF | CAN_EVENT_TX_SECONDARY_BUF | CAN_EVENT_ERROR;
+    can_config.irq_error_enable_mask = CAN_ERROR_ARBITRATION_LOST_INT_ENABLE | CAN_ERROR_PASSIVE_INT_ENABLE | CAN_ERROR_BUS_ERROR_INT_ENABLE;
+    board_init_can(ptr);
+    uint32_t can_src_clk_freq = board_init_can_clock(ptr);
+    hpm_stat_t status = can_init(ptr, &can_config, can_src_clk_freq);
+    if (status != status_success) {
+        printf("CAN initialization failed, error code: %d\n", status);
+        return;
+    }
+    intc_m_enable_irq_with_priority(BOARD_APP_CAN_IRQn, 1);
+
+    can_transmit_buf_t tx_buf;
+    memset(&tx_buf, 0, sizeof(tx_buf));
+    tx_buf.dlc = 8;
+    uint32_t msg_len = can_get_data_bytes_from_dlc(tx_buf.dlc);
+    for (uint32_t i = 0; i < msg_len; i++) {
+        tx_buf.data[i] = i | (i << 4);
+    }
+    tx_buf.id = 0x123;
+
+    has_error = false;
+    has_sent_out = false;
+    can_send_message_nonblocking(ptr, &tx_buf);
+    /* Wait transmission interrupt or error interrupt */
+    while ((!has_sent_out) && (!has_error)) {
+    }
+    /* Here software can check has_error flag to confirm whether error happened or not */
+    if (has_error) {
+        uint8_t error_kind = can_get_last_error_kind(ptr);
+        uint8_t tcnt = can_get_transmit_error_count(ptr);
+        uint8_t rcnt = can_get_receive_error_count(ptr);
+        printf("can error exists: last error kind: %s\n", get_can_error_kind_str(error_kind));
+        printf("Transmission Error Count: %d\n", tcnt);
+        printf("Receiving Error Count: %d\n", rcnt);
+    } else {
+        printf("Current hardware setup cannot trigger CAN error\n");
+    }
+    can_deinit(ptr);
 }
 
 static const char *get_can_error_kind_str(uint8_t error_kind)
@@ -651,13 +706,13 @@ void board_can_filter_test(void)
     /***********************************************************************************************************
      * NOTE
      *
-     * 1. The CAN filter can only be confiured with the CAN IP is in reset mode, it is recommended to configure
-     * the CAN filters in can_init() API instead of spearate can_set_filter API call, otherwise, users need to
+     * 1. The CAN filter can only be configured with the CAN IP is in reset mode, it is recommended to configure
+     * the CAN filters in can_init() API instead of separate can_set_filter API call, otherwise, users need to
      * take care of registers bits reset by the can_reset() API.
      *
      * 2. The 'mask' field in can_filter_config_t structure is used for masking corresponding bits
-     *    - bit value 1 means the bit will be ignored during ID comparasion
-     *    - bit value 0 means the bit will participate into the ID comparasion
+     *    - bit value 1 means the bit will be ignored during ID comparison
+     *    - bit value 0 means the bit will participate into the ID comparison
      *    See the following cases for more details.
      ***********************************************************************************************************/
     can_filter_config_t can_filters[16];
@@ -710,7 +765,7 @@ void board_can_filter_test(void)
             printf("New message received, ID=%08x\n", s_can_rx_buf.id);
         }
     }
-    printf("Recevied message count: %d, %s\n", rcv_msg_cnt, (rcv_msg_cnt == 1024) ? "PASSED" : "Failed");
+    printf("Received message count: %d, %s\n", rcv_msg_cnt, (rcv_msg_cnt == 1024) ? "PASSED" : "Failed");
     printf("CAN Filter test case 1: only accept message with specified CAN ID\n");
     for (uint32_t i = 0; i < ARRAY_SIZE(can_filters); i++) {
         can_filters[i].enable = true;
@@ -741,7 +796,7 @@ void board_can_filter_test(void)
             printf("New message received, ID=%08x\n", s_can_rx_buf.id);
         }
     }
-    printf("Recevied message count: %d, %s\n", rcv_msg_cnt, (rcv_msg_cnt == ARRAY_SIZE(can_filters)) ? "PASSED" : "Failed");
+    printf("Received message count: %d, %s\n", rcv_msg_cnt, (rcv_msg_cnt == ARRAY_SIZE(can_filters)) ? "PASSED" : "Failed");
 }
 
 
@@ -781,6 +836,10 @@ void handle_can_test(void)
             break;
         case '7':
             board_can_send_multiple_canfd_messages();
+            break;
+        case '8':
+            board_can_error_test_with_no_retransmission();
+            break;
         }
     }
 }
@@ -796,10 +855,11 @@ void show_help(void)
                                     "* 1 - Run loopback test for board supported CAN controller (interrupt mode)     *\n"
                                     "* 2 - Echo test between two boards:initiator                                    *\n"
                                     "* 3 - Echo test between two boards:responder                                    *\n"
-                                    "* 4 - Send mulitple messages for transmission check                             *\n"
+                                    "* 4 - Send multiple messages for transmission check                             *\n"
                                     "* 5 - CAN error test (Need to remove current node from CAN BUS for this test)   *\n"
                                     "* 6 - CAN filter test                                                           *\n"
                                     "* 7 - Send multiple CANFD messages for transmission check                       *\n"
+                                    "* 8 - CAN error test with re-transmission disabled                              *\n"
                                     "*                                                                               *\n"
                                     "*********************************************************************************\n";
     printf("%s\n", help_info);

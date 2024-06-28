@@ -5,6 +5,7 @@
    :maxdepth: 2
 
    abz/README_en
+   abz_oneshot/README_en
    sincos/README_en
    uvw/README_en
 

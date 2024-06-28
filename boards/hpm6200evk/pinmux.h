@@ -41,6 +41,7 @@ void init_sdm_pins(void);
 void init_pla_tamagawa_pins(void);
 void init_motor_over_zero_sensorless_adc_pins(void);
 void init_tamper_pins(void);
+void init_uart_break_signal_pin(void);
 
 #ifdef __cplusplus
 }

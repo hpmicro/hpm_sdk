@@ -20,6 +20,8 @@
 
 struct usbd_tx_rx_msg {
     uint8_t ep;
+    uint8_t ep_mult;
+    uint16_t ep_mps;
     uint32_t nbytes;
     usbd_endpoint_callback cb;
 };
@@ -49,9 +51,11 @@ USB_NOCACHE_RAM_SECTION struct usbd_core_priv {
 
     /** Currently selected configuration */
     uint8_t configuration;
+#ifdef CONFIG_USBDEV_ADVANCE_DESC
     uint8_t speed;
+#endif
 #ifdef CONFIG_USBDEV_TEST_MODE
-    bool test_mode;
+    bool test_req;
 #endif
     struct usbd_interface *intf[8];
     uint8_t intf_offset;
@@ -99,6 +103,14 @@ static bool usbd_set_endpoint(uint8_t busid, const struct usb_endpoint_descripto
                  USB_GET_ENDPOINT_TYPE(ep->bmAttributes),
                  USB_GET_MAXPACKETSIZE(ep->wMaxPacketSize));
 
+    if (ep->bEndpointAddress & 0x80) {
+        g_usbd_core[busid].tx_msg[ep->bEndpointAddress & 0x7f].ep_mps = USB_GET_MAXPACKETSIZE(ep->wMaxPacketSize);
+        g_usbd_core[busid].tx_msg[ep->bEndpointAddress & 0x7f].ep_mult = USB_GET_MULT(ep->wMaxPacketSize);
+    } else {
+        g_usbd_core[busid].rx_msg[ep->bEndpointAddress & 0x7f].ep_mps = USB_GET_MAXPACKETSIZE(ep->wMaxPacketSize);
+        g_usbd_core[busid].rx_msg[ep->bEndpointAddress & 0x7f].ep_mult = USB_GET_MULT(ep->wMaxPacketSize);
+    }
+
     return usbd_ep_open(busid, ep) == 0 ? true : false;
 }
 /**
@@ -139,6 +151,7 @@ static bool usbd_get_descriptor(uint8_t busid, uint16_t type_index, uint8_t **da
     uint8_t index = 0U;
     bool found = true;
     uint32_t desc_len = 0;
+    const char *string = NULL;
     const uint8_t *desc = NULL;
 
     type = HI_BYTE(type_index);
@@ -146,6 +159,7 @@ static bool usbd_get_descriptor(uint8_t busid, uint16_t type_index, uint8_t **da
 
     switch (type) {
         case USB_DESCRIPTOR_TYPE_DEVICE:
+            g_usbd_core[busid].speed = usbd_get_port_speed(busid); /* before we get device descriptor, we have known steady port speed */
             desc = g_usbd_core[busid].descriptors->device_descriptor_callback(g_usbd_core[busid].speed);
             if (desc == NULL) {
                 found = false;
@@ -173,15 +187,45 @@ static bool usbd_get_descriptor(uint8_t busid, uint16_t type_index, uint8_t **da
                 desc = (uint8_t *)g_usbd_core[busid].descriptors->msosv1_descriptor->string;
                 desc_len = g_usbd_core[busid].descriptors->msosv1_descriptor->string[0];
             } else {
-                desc = g_usbd_core[busid].descriptors->string_descriptor_callback(g_usbd_core[busid].speed, index);
-                if (desc == NULL) {
+                string = g_usbd_core[busid].descriptors->string_descriptor_callback(g_usbd_core[busid].speed, index);
+                if (string == NULL) {
                     found = false;
                     break;
                 }
-                desc_len = desc[0];
+
+                if (index == USB_STRING_LANGID_INDEX) {
+                    (*data)[0] = 4;
+                    (*data)[1] = USB_DESCRIPTOR_TYPE_STRING;
+                    (*data)[2] = string[0];
+                    (*data)[3] = string[1];
+
+                    *len = 4;
+                    return true;
+                }
+
+                uint16_t str_size = strlen(string);
+                uint16_t total_size = 2 * str_size + 2;
+                if (total_size > CONFIG_USBDEV_REQUEST_BUFFER_LEN) {
+                    USB_LOG_ERR("string size overflow\r\n");
+                    return false;
+                }
+
+                (*data)[0] = total_size;
+                (*data)[1] = USB_DESCRIPTOR_TYPE_STRING;
+
+                for (uint16_t i = 0; i < str_size; i++) {
+                    (*data)[2 * i + 2] = string[i];
+                    (*data)[2 * i + 3] = 0x00;
+                }
+
+                *len = total_size;
+                return true;
             }
             break;
         case USB_DESCRIPTOR_TYPE_DEVICE_QUALIFIER:
+#ifndef CONFIG_USB_HS
+            return false;
+#else
             desc = g_usbd_core[busid].descriptors->device_quality_descriptor_callback(g_usbd_core[busid].speed);
             if (desc == NULL) {
                 found = false;
@@ -189,6 +233,7 @@ static bool usbd_get_descriptor(uint8_t busid, uint16_t type_index, uint8_t **da
             }
             desc_len = desc[0];
             break;
+#endif
         case USB_DESCRIPTOR_TYPE_OTHER_SPEED:
             desc = g_usbd_core[busid].descriptors->other_speed_descriptor_callback(g_usbd_core[busid].speed);
             if (desc == NULL) {
@@ -219,8 +264,8 @@ static bool usbd_get_descriptor(uint8_t busid, uint16_t type_index, uint8_t **da
         /* nothing found */
         USB_LOG_ERR("descriptor <type:%x,index:%x> not found!\r\n", type, index);
     } else {
-        // *data = desc;
-        memcpy(*data, desc, desc_len);
+        *data = (uint8_t *)desc;
+        //memcpy(*data, desc, desc_len);
         *len = desc_len;
     }
     return found;
@@ -244,8 +289,8 @@ static bool usbd_get_descriptor(uint8_t busid, uint16_t type_index, uint8_t **da
             return false;
         }
 
-        //*data = (uint8_t *)g_usbd_core[busid].msosv1_desc->string;
-        memcpy(*data, (uint8_t *)g_usbd_core[busid].msosv1_desc->string, g_usbd_core[busid].msosv1_desc->string[0]);
+        *data = (uint8_t *)g_usbd_core[busid].msosv1_desc->string;
+        //memcpy(*data, (uint8_t *)g_usbd_core[busid].msosv1_desc->string, g_usbd_core[busid].msosv1_desc->string[0]);
         *len = g_usbd_core[busid].msosv1_desc->string[0];
 
         return true;
@@ -256,8 +301,8 @@ static bool usbd_get_descriptor(uint8_t busid, uint16_t type_index, uint8_t **da
             return false;
         }
 
-        //*data = g_usbd_core[busid].bos_desc->string;
-        memcpy(*data, (uint8_t *)g_usbd_core[busid].bos_desc->string, g_usbd_core[busid].bos_desc->string_len);
+        *data = (uint8_t *)g_usbd_core[busid].bos_desc->string;
+        //memcpy(*data, (uint8_t *)g_usbd_core[busid].bos_desc->string, g_usbd_core[busid].bos_desc->string_len);
         *len = g_usbd_core[busid].bos_desc->string_len;
         return true;
     }
@@ -303,7 +348,8 @@ static bool usbd_get_descriptor(uint8_t busid, uint16_t type_index, uint8_t **da
             /* normally length is at offset 0 */
             *len = p[DESC_bLength];
         }
-        memcpy(*data, p, *len);
+        *data = p;
+        //memcpy(*data, p, *len);
     } else {
         /* nothing found */
         USB_LOG_ERR("descriptor <type:0x%02x,index:0x%02x> not found!\r\n", type, index);
@@ -498,8 +544,7 @@ static bool usbd_std_device_req_handler(uint8_t busid, struct usb_setup_packet *
                 }
             } else if (value == USB_FEATURE_TEST_MODE) {
 #ifdef CONFIG_USBDEV_TEST_MODE
-                g_usbd_core[busid].test_mode = true;
-                usbd_execute_test_mode(busid, setup);
+                g_usbd_core[busid].test_req = true;
 #endif
             }
             *len = 0;
@@ -584,8 +629,8 @@ static bool usbd_std_interface_req_handler(uint8_t busid, struct usb_setup_packe
                     struct usbd_interface *intf = g_usbd_core[busid].intf[i];
 
                     if (intf && (intf->intf_num == intf_num)) {
-                        //*data = (uint8_t *)intf->hid_report_descriptor;
-                        memcpy(*data, intf->hid_report_descriptor, intf->hid_report_descriptor_len);
+                        *data = (uint8_t *)intf->hid_report_descriptor;
+                        //memcpy(*data, intf->hid_report_descriptor, intf->hid_report_descriptor_len);
                         *len = intf->hid_report_descriptor_len;
                         return true;
                     }
@@ -774,8 +819,8 @@ static int usbd_vendor_request_handler(uint8_t busid, struct usb_setup_packet *s
                               (g_usbd_core[busid].descriptors->msosv1_descriptor->compat_id[2] << 16) +
                               (g_usbd_core[busid].descriptors->msosv1_descriptor->compat_id[3] << 24);
 
-                    //*data = (uint8_t *)g_usbd_core[busid].descriptors->msosv1_descriptor->compat_id;
-                    memcpy(*data, g_usbd_core[busid].descriptors->msosv1_descriptor->compat_id, desclen);
+                    *data = (uint8_t *)g_usbd_core[busid].descriptors->msosv1_descriptor->compat_id;
+                    //memcpy(*data, g_usbd_core[busid].descriptors->msosv1_descriptor->compat_id, desclen);
                     *len = desclen;
                     return 0;
                 case 0x05:
@@ -785,8 +830,8 @@ static int usbd_vendor_request_handler(uint8_t busid, struct usb_setup_packet *s
                               (g_usbd_core[busid].descriptors->msosv1_descriptor->comp_id_property[setup->wValue][2] << 16) +
                               (g_usbd_core[busid].descriptors->msosv1_descriptor->comp_id_property[setup->wValue][3] << 24);
 
-                    //*data = (uint8_t *)g_usbd_core[busid].descriptors->msosv1_descriptor->comp_id_property[setup->wValue];
-                    memcpy(*data, g_usbd_core[busid].descriptors->msosv1_descriptor->comp_id_property[setup->wValue], desclen);
+                    *data = (uint8_t *)g_usbd_core[busid].descriptors->msosv1_descriptor->comp_id_property[setup->wValue];
+                    //memcpy(*data, g_usbd_core[busid].descriptors->msosv1_descriptor->comp_id_property[setup->wValue], desclen);
                     *len = desclen;
                     return 0;
                 default:
@@ -801,8 +846,8 @@ static int usbd_vendor_request_handler(uint8_t busid, struct usb_setup_packet *s
                     USB_LOG_INFO("GET MS OS 2.0 Descriptor\r\n");
 
                     desclen = g_usbd_core[busid].descriptors->msosv2_descriptor->compat_id_len;
-                    //*data = (uint8_t *)g_usbd_core[busid].descriptors->msosv2_descriptor->compat_id;
-                    memcpy(*data, g_usbd_core[busid].descriptors->msosv2_descriptor->compat_id, desclen);
+                    *data = (uint8_t *)g_usbd_core[busid].descriptors->msosv2_descriptor->compat_id;
+                    //memcpy(*data, g_usbd_core[busid].descriptors->msosv2_descriptor->compat_id, desclen);
                     *len = g_usbd_core[busid].descriptors->msosv2_descriptor->compat_id_len;
                     return 0;
                 default:
@@ -817,8 +862,8 @@ static int usbd_vendor_request_handler(uint8_t busid, struct usb_setup_packet *s
                     USB_LOG_INFO("GET Webusb url Descriptor\r\n");
 
                     desclen = g_usbd_core[busid].descriptors->webusb_url_descriptor->string_len;
-                    //*data = (uint8_t *)g_usbd_core[busid].descriptors->webusb_url_descriptor->string;
-                    memcpy(*data, g_usbd_core[busid].descriptors->webusb_url_descriptor->string, desclen);
+                    *data = (uint8_t *)g_usbd_core[busid].descriptors->webusb_url_descriptor->string;
+                    //memcpy(*data, g_usbd_core[busid].descriptors->webusb_url_descriptor->string, desclen);
                     *len = desclen;
                     return 0;
                 default:
@@ -833,22 +878,22 @@ static int usbd_vendor_request_handler(uint8_t busid, struct usb_setup_packet *s
             switch (setup->wIndex) {
                 case 0x04:
                     USB_LOG_INFO("get Compat ID\r\n");
-                    //*data = (uint8_t *)msosv1_desc->compat_id;
+                    *data = (uint8_t *)g_usbd_core[busid].msosv1_desc->compat_id;
                     desclen = g_usbd_core[busid].msosv1_desc->compat_id[0] +
                               (g_usbd_core[busid].msosv1_desc->compat_id[1] << 8) +
                               (g_usbd_core[busid].msosv1_desc->compat_id[2] << 16) +
                               (g_usbd_core[busid].msosv1_desc->compat_id[3] << 24);
-                    memcpy(*data, g_usbd_core[busid].msosv1_desc->compat_id, desclen);
+                    //memcpy(*data, g_usbd_core[busid].msosv1_desc->compat_id, desclen);
                     *len = desclen;
                     return 0;
                 case 0x05:
                     USB_LOG_INFO("get Compat id properties\r\n");
-                    //*data = (uint8_t *)msosv1_desc->comp_id_property[setup->wValue];
+                    *data = (uint8_t *)g_usbd_core[busid].msosv1_desc->comp_id_property[setup->wValue];
                     desclen = g_usbd_core[busid].msosv1_desc->comp_id_property[setup->wValue][0] +
                               (g_usbd_core[busid].msosv1_desc->comp_id_property[setup->wValue][1] << 8) +
                               (g_usbd_core[busid].msosv1_desc->comp_id_property[setup->wValue][2] << 16) +
                               (g_usbd_core[busid].msosv1_desc->comp_id_property[setup->wValue][3] << 24);
-                    memcpy(*data, g_usbd_core[busid].msosv1_desc->comp_id_property[setup->wValue], desclen);
+                    //memcpy(*data, g_usbd_core[busid].msosv1_desc->comp_id_property[setup->wValue], desclen);
                     *len = desclen;
                     return 0;
                 default:
@@ -861,8 +906,8 @@ static int usbd_vendor_request_handler(uint8_t busid, struct usb_setup_packet *s
             switch (setup->wIndex) {
                 case WINUSB_REQUEST_GET_DESCRIPTOR_SET:
                     USB_LOG_INFO("GET MS OS 2.0 Descriptor\r\n");
-                    //*data = (uint8_t *)msosv2_desc->compat_id;
-                    memcpy(*data, g_usbd_core[busid].msosv2_desc->compat_id, g_usbd_core[busid].msosv2_desc->compat_id_len);
+                    *data = (uint8_t *)g_usbd_core[busid].msosv2_desc->compat_id;
+                    //memcpy(*data, g_usbd_core[busid].msosv2_desc->compat_id, g_usbd_core[busid].msosv2_desc->compat_id_len);
                     *len = g_usbd_core[busid].msosv2_desc->compat_id_len;
                     return 0;
                 default:
@@ -896,14 +941,12 @@ static bool usbd_setup_request_handler(uint8_t busid, struct usb_setup_packet *s
 {
     switch (setup->bmRequestType & USB_REQUEST_TYPE_MASK) {
         case USB_REQUEST_STANDARD:
-#ifndef CONFIG_USB_HS
-            //g_usbd_core[busid].speed = USB_SPEED_FULL; /* next time will support getting device speed */
-            if ((setup->bRequest == 0x06) && (setup->wValue == 0x0600) && (g_usbd_core[busid].speed <= USB_SPEED_FULL)) {
-                USB_LOG_WRN("Ignore DQD in fs\r\n"); /* Device Qualifier Descriptor */
-                return false;
-            }
-#endif
             if (usbd_standard_request_handler(busid, setup, data, len) < 0) {
+                /* Ignore error log for getting Device Qualifier Descriptor request */
+                if ((setup->bRequest == 0x06) && (setup->wValue == 0x0600)) {
+                    //USB_LOG_DBG("Ignore DQD in fs\r\n");
+                    return false;
+                }
                 USB_LOG_ERR("standard request error\r\n");
                 usbd_print_setup(setup);
                 return false;
@@ -973,9 +1016,8 @@ void usbd_event_reset_handler(uint8_t busid)
 {
     usbd_set_address(busid, 0);
     g_usbd_core[busid].configuration = 0;
-
-#ifdef CONFIG_USBDEV_TEST_MODE
-    g_usbd_core[busid].test_mode = false;
+#ifdef CONFIG_USBDEV_ADVANCE_DESC
+    g_usbd_core[busid].speed = USB_SPEED_UNKNOWN;
 #endif
     struct usb_endpoint_descriptor ep0;
 
@@ -997,6 +1039,7 @@ void usbd_event_reset_handler(uint8_t busid)
 void usbd_event_ep0_setup_complete_handler(uint8_t busid, uint8_t *psetup)
 {
     struct usb_setup_packet *setup = &g_usbd_core[busid].setup;
+    uint8_t *buf;
 
     memcpy(setup, psetup, 8);
 #ifdef CONFIG_USBDEV_SETUP_LOG_PRINT
@@ -1014,6 +1057,7 @@ void usbd_event_ep0_setup_complete_handler(uint8_t busid, uint8_t *psetup)
     g_usbd_core[busid].ep0_data_buf_residue = setup->wLength;
     g_usbd_core[busid].ep0_data_buf_len = setup->wLength;
     g_usbd_core[busid].zlp_flag = false;
+    buf = g_usbd_core[busid].ep0_data_buf;
 
     /* handle class request when all the data is received */
     if (setup->wLength && ((setup->bmRequestType & USB_REQUEST_DIR_MASK) == USB_REQUEST_DIR_OUT)) {
@@ -1023,22 +1067,30 @@ void usbd_event_ep0_setup_complete_handler(uint8_t busid, uint8_t *psetup)
     }
 
     /* Ask installed handler to process request */
-    if (!usbd_setup_request_handler(busid, setup, &g_usbd_core[busid].ep0_data_buf, &g_usbd_core[busid].ep0_data_buf_len)) {
+    if (!usbd_setup_request_handler(busid, setup, &buf, &g_usbd_core[busid].ep0_data_buf_len)) {
         usbd_ep_set_stall(busid, USB_CONTROL_IN_EP0);
         return;
     }
-#ifdef CONFIG_USBDEV_TEST_MODE
-    /* send status in test mode, so do not execute downward, just return */
-    if (g_usbd_core[busid].test_mode) {
-        g_usbd_core[busid].test_mode = false;
-        return;
-    }
-#endif
+
     /* Send smallest of requested and offered length */
     g_usbd_core[busid].ep0_data_buf_residue = MIN(g_usbd_core[busid].ep0_data_buf_len, setup->wLength);
     if (g_usbd_core[busid].ep0_data_buf_residue > CONFIG_USBDEV_REQUEST_BUFFER_LEN) {
         USB_LOG_ERR("Request buffer too small\r\n");
+        usbd_ep_set_stall(busid, USB_CONTROL_IN_EP0);
         return;
+    }
+
+    /* use *data = xxx; g_usbd_core[busid].ep0_data_buf records real data address, we should copy data into ep0 buffer.
+     * Why we should copy once? because some chips are not access to flash with dma if real data address is in flash address(such as ch32).
+     */
+    if (buf != g_usbd_core[busid].ep0_data_buf) {
+#ifdef CONFIG_USBDEV_EP0_INDATA_NO_COPY
+        g_usbd_core[busid].ep0_data_buf = buf;
+#else
+        memcpy(g_usbd_core[busid].ep0_data_buf, buf, g_usbd_core[busid].ep0_data_buf_residue);
+#endif
+    } else {
+        /* use memcpy(*data, xxx, len); has copied into ep0 buffer, we do nothing */
     }
 
     /* Send data or status to host */
@@ -1082,6 +1134,13 @@ void usbd_event_ep0_in_complete_handler(uint8_t busid, uint8_t ep, uint32_t nbyt
                 /* if all data has sent completely, start reading out status */
                 usbd_ep_start_read(busid, USB_CONTROL_OUT_EP0, NULL, 0);
             }
+
+#ifdef CONFIG_USBDEV_TEST_MODE
+            if (g_usbd_core[busid].test_req) {
+                usbd_execute_test_mode(busid, HI_BYTE(setup->wIndex));
+                g_usbd_core[busid].test_req = false;
+            }
+#endif
         }
     }
 }
@@ -1190,6 +1249,24 @@ void usbd_add_endpoint(uint8_t busid, struct usbd_endpoint *ep)
     } else {
         g_usbd_core[busid].rx_msg[ep->ep_addr & 0x7f].ep = ep->ep_addr;
         g_usbd_core[busid].rx_msg[ep->ep_addr & 0x7f].cb = ep->ep_cb;
+    }
+}
+
+uint16_t usbd_get_ep_mps(uint8_t busid, uint8_t ep)
+{
+    if (ep & 0x80) {
+        return g_usbd_core[busid].tx_msg[ep & 0x7f].ep_mps;
+    } else {
+        return g_usbd_core[busid].rx_msg[ep & 0x7f].ep_mps;
+    }
+}
+
+uint8_t usbd_get_ep_mult(uint8_t busid, uint8_t ep)
+{
+    if (ep & 0x80) {
+        return g_usbd_core[busid].tx_msg[ep & 0x7f].ep_mult;
+    } else {
+        return g_usbd_core[busid].rx_msg[ep & 0x7f].ep_mult;
     }
 }
 

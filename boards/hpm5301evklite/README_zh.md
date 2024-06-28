@@ -44,12 +44,13 @@ HPM5301EVKLite是基于先楫的入门级高性能MCU HPM5301的开发板。HPM5
   - UART0用于调试控制台串口或一些使用UART的功能测试
   - UART3用于一些使用UART的功能测试，例如MICROROS_UART，USB_CDC_ACM_UART, MODBUS_RTU等。
 
-| 功能      | 位置   |
-| --------- | ------ |
+| 功能      | 位置   | 备注     |
+| --------- | ------ |  ------ |
 | UART3.TXD | J3[8]  |
 | UART3.RXD | J3[10] |
 | UART0.TXD | J3[36] |
 | UART0.RXD | J3[38] |
+| UART3.break | J3[24]  | 产生uart break信号|
 
 - SPI引脚：
 
@@ -78,10 +79,8 @@ HPM5301EVKLite是基于先楫的入门级高性能MCU HPM5301的开发板。HPM5
 
 | 功能       | 位置    |
 | ---------- | ------ |
-| ADC0.INA11 | J3[5]  |
+| ADC0.INA2  | J3[26] |
 | ADC1.INA1  | J3[3]  |
-| ADC1.INA2  | J3[26] |
-| ADC1.INA3  | J3[13] |
 
 - TinyUF2引脚 :
 
@@ -93,3 +92,18 @@ HPM5301EVKLite是基于先楫的入门级高性能MCU HPM5301的开发板。HPM5
 | -------------- | ------ |
 | TinyUF2 Button | J3[32] |
 
+- GPTMR引脚
+
+| 功能          | 位置    |  备注 |
+| ------------- | -----  | ------
+| GPTMR0.CAPT_1 | J3[32]  |
+| GPTMR0.COMP_1 | J5[3]  | 此引脚缺省为JTAG TRST，建议用做GPTMR功能时断开调试器|
+| GPTMR0.COMP_3 | J3[8]  | SPI模拟I2S的BLCK |
+| GPTMR0.COMP_2 | J3[26] | SPI模拟I2S的LRCK |
+| GPTMR1.COMP_3 | J3[28]  | SPI模拟I2S的MCLK |
+
+- SPI模拟I2S CS引脚
+
+| 功能 | 位置   |  备注 |
+| ---- | ----- | ------ |
+| PA31  | J3[11] | 控制SPI从机CS的引脚 |

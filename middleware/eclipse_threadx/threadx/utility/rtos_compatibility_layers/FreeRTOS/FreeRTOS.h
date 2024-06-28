@@ -44,7 +44,9 @@
 #define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS()
 #define portPRIVILEGE_BIT ((UBaseType_t)0x00)
 #define portYIELD_WITHIN_API portYIELD
+#ifndef portSUPPRESS_TICKS_AND_SLEEP
 #define portSUPPRESS_TICKS_AND_SLEEP(xExpectedIdleTime)
+#endif
 #define portTASK_USES_FLOATING_POINT()
 #define portALLOCATE_SECURE_CONTEXT(ulSecureStackSize)
 #define portDONT_DISCARD

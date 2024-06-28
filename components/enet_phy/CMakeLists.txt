@@ -27,3 +27,9 @@ if($ENV{CONFIG_ENET_PHY_LAN8720})
     add_subdirectory(lan8720)
     message(STATUS "ENet PHY Enabled: LAN8720")
 endif()
+
+if($ENV{CONFIG_ENET_PHY_JL1111})
+    add_subdirectory(jl1111)
+    message(STATUS "ENet PHY Enabled: JL1111")
+endif()
+

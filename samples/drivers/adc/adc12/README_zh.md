@@ -86,3 +86,12 @@ Please enter one of ADC conversion modes above (e.g. 1 or 2 ...):
 
     - 处理WDOG事件
     - 使能一个或多个相应的WDOG中断
+
+- 触发源
+
+  - 本示例中使用PWM作为序列模式和抢占模式的触发源，也可以选择其他外设作为触发源
+  - 触发信号频率（默认为20KHz）可以在sample级的CMakeLists.txt中重新定义(例如：sdk_compile_definitions(-DAPP_ADC12_TRIG_SRC_FREQUENCY=20000))
+
+- 异常退出
+
+  按空格键退出测试，重新选择测试模式

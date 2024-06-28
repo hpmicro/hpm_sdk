@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -85,7 +85,7 @@ INT main(VOID)
 /* Set RGMII clock delay */
 #if defined(RGMII) && RGMII
     board_init_enet_rgmii_clock_delay(ENET);
-#else
+#elif defined(RMII) && RMII
     /* Set RMII reference clock */
     board_init_enet_rmii_reference_clock(ENET, BOARD_ENET_RMII_INT_REF_CLK);
     printf("Reference Clock: %s\n", BOARD_ENET_RMII_INT_REF_CLK ? "Internal Clock" : "External Clock");

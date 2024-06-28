@@ -5,10 +5,22 @@
  *
  */
 
+#include "eeprom_emulation.h"
 #include "hpm_nor_flash.h"
 #include "hpm_l1c_drv.h"
 #include "board.h"
 
+void e2p_enter_critical(void)
+{
+    disable_global_irq(CSR_MSTATUS_MIE_MASK);
+}
+
+void e2p_exit_critical(void)
+{
+    enable_global_irq(CSR_MSTATUS_MIE_MASK);
+}
+
+E2P_ATTR
 hpm_stat_t nor_flash_init(nor_flash_config_t *cfg)
 {
     xpi_nor_config_option_t option;
@@ -26,6 +38,7 @@ hpm_stat_t nor_flash_init(nor_flash_config_t *cfg)
     return status_success;
 }
 
+E2P_ATTR
 hpm_stat_t nor_flash_read(nor_flash_config_t *cfg, uint8_t *buf, uint32_t addr, uint32_t size)
 {
     uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN(addr);
@@ -39,6 +52,7 @@ hpm_stat_t nor_flash_read(nor_flash_config_t *cfg, uint8_t *buf, uint32_t addr, 
     return status_success;
 }
 
+E2P_ATTR
 hpm_stat_t nor_flash_write(nor_flash_config_t *cfg, uint8_t *buf, uint32_t addr, uint32_t size)
 {
     addr > cfg->base_addr ? (addr -= cfg->base_addr) : addr;
@@ -48,6 +62,7 @@ hpm_stat_t nor_flash_write(nor_flash_config_t *cfg, uint8_t *buf, uint32_t addr,
     return status;
 }
 
+E2P_ATTR
 static hpm_stat_t nor_flash_erase_sector(nor_flash_config_t *cfg, uint32_t start_addr)
 {
     start_addr > cfg->base_addr ? (start_addr -= cfg->base_addr) : start_addr;
@@ -56,6 +71,7 @@ static hpm_stat_t nor_flash_erase_sector(nor_flash_config_t *cfg, uint32_t start
     return status;
 }
 
+E2P_ATTR
 void nor_flash_erase(nor_flash_config_t *cfg, uint32_t start_addr, uint32_t size)
 {
     uint32_t sector_size = cfg->sector_size;

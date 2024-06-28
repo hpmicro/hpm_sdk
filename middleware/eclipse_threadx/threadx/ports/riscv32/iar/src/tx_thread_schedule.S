@@ -38,7 +38,10 @@ RISCV_MEIE_MTIE     DEFINE  0x880
 #if defined(TX_ENABLE_EXECUTION_CHANGE_NOTIFY) || defined(TX_EXECUTION_PROFILE_ENABLE)
     EXTERN      _tx_execution_thread_enter
 #endif
-
+#ifdef TX_LOW_POWER
+    EXTERN      tx_low_power_enter
+    EXTERN      tx_low_power_exit
+#endif
 
     SECTION `.isr_vector`:CODE:REORDER:NOROOT(2)
     CODE
@@ -102,8 +105,25 @@ _tx_thread_schedule:
     la      t0, _tx_thread_execute_ptr                  ; Pickup address of execute ptr
 _tx_thread_schedule_loop:
     lw      t1, 0(t0)                                   ; Pickup next thread to execute
+#ifndef TX_LOW_POWER
     beqz    t1, _tx_thread_schedule_loop                ; If NULL, wait for thread to execute
+#else
+    bnez    t1, _tx_thread_ready                        ; If NULL, wait for thread to execute
+    csrci   mstatus, 0x08                               ; Lockout interrupts
+    addi    sp, sp, -4
+    sw      ra, 0(sp)
+    call    tx_low_power_enter                      // Possibly enter low power mode
+    wfi                                             // Wait for interrupt
+    call    tx_low_power_exit                       // Exit low power mode
+    lw      ra, 0(sp)
+    addi    sp, sp, 4
+    csrsi   mstatus, 0x08                               ; Enable interrupts
+    /* Repick the address of execute ptr, so we don't need to save context before call tx_low_power_enter or tx_low_power_exit */
+    la      t0, _tx_thread_execute_ptr                  ; Repickup address of execute ptr
+    j       _tx_thread_schedule_loop
+#endif
 
+_tx_thread_ready:
     /* }
     while(_tx_thread_execute_ptr == TX_NULL);  */
 

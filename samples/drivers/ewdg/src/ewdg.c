@@ -394,7 +394,7 @@ void ewdg_isr(void)
 {
     uint32_t ewdg_stat = ewdg_get_status_flags(HPM_EWDG0);
     has_interrupt = true;
-    if ((ewdg_stat & EWDG_INT_TIMEOUT) != 0) {
+    if ((ewdg_stat & EWDG_EVENT_TIMEOUT_INTERRUPT) != 0) {
         ewdg_refresh(HPM_EWDG0);
     }
     ewdg_clear_status_flags(HPM_EWDG0, ewdg_stat);

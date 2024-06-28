@@ -5,6 +5,7 @@
 The demo provides the following features:
 - Write the last sector and verify the data
 - Write the last 1024 sectors and verify the data
+- eMMC sleep & awake
 
 ## Board Setting
 
@@ -23,6 +24,7 @@ When the example runs successfully, the board shows the following menu, please i
 *                                                                                 *
 *        1. Write & Read the last block                                           *
 *        2. Write & Read the last 1024 blocks                                     *
+*        3. Demonstrate eMMC sleep & awake                                        *
 *                                                                                 *
 *---------------------------------------------------------------------------------*
 

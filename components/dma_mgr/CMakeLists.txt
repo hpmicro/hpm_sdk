@@ -1,4 +1,4 @@
-# Copyright (c) 2022 HPMicro
+# Copyright (c) 2022-2024 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 sdk_inc(.)

@@ -93,17 +93,18 @@ HPM6750是一款主频达816Mhz的双核微控制器。该芯片拥有最大2M�
 - ACMP引脚
 
 | 功能       | 位置   |
-| ---------- | ------ |
+| ---------- | ------ | ------ |
 | CMP.INN6   | J12[8] |
 | CMP.COMP_1 | J12[6] |
 
 - GPTMR引脚
 
-| 功能          | 位置   |
-| ------------- | ------ |
+| 功能          | 位置   |  备注 |
+| ------------- | ------ | ------ |
 | GPTMR4.CAPT_1 | J12[6] |
-| GPTMR5.COMP_2 | J12[18] |
-| GPTMR5.COMP_3 | J12[16] |
+| GPTMR3.COMP_1 | J12[8] | SPI模拟I2S的MCLK |
+| GPTMR5.COMP_2 | J12[18] | SPI模拟I2S的LRCK |
+| GPTMR5.COMP_3 | J12[16] | SPI模拟I2S的BLCK |
 
 - ADC12引脚
 
@@ -146,10 +147,11 @@ HPM6750是一款主频达816Mhz的双核微控制器。该芯片拥有最大2M�
 - UART13引脚
  UART13用于Core1调试串口或一些使用UART的功能测试，例如uart_software_rx_idle，uart_rx_timeout，uart_software_lin，MICROROS_UART，USB_CDC_ACM_UART, MODBUS_RTU等。
 
-| 功能       | 位置   |
-| ---------- | ------ |
+| 功能       | 位置   | 备注     |
+| ---------- | ------ |  ------ |
 | UART13.TXD | J20[5] |
 | UART13.RXD | J20[6] |
+| UART13.break | J20[7] | 产生uart break信号|
 
 - TRGMUX引脚用于uart_software_rx_idle工程
 
@@ -168,3 +170,9 @@ HPM6750是一款主频达816Mhz的双核微控制器。该芯片拥有最大2M�
 | TAMP.08  | PZ08   | J20[6] | 主动模式 |
 | TAMP.09  | PZ09   | J20[5] | 主动模式 |
 | TAMP.10  | PZ10   | J20[4] | 被动模式 |
+
+- SPI模拟I2S CS引脚
+
+| 功能 | 位置   |  备注 |
+| ---- | ----- | ------ |
+| PD25  | J12[16] | 控制SPI从机CS的引脚 |

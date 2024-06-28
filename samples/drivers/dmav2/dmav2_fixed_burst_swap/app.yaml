@@ -1,0 +1,3 @@
+dependency:
+  - ip_feature_dmav2_burst_in_fixed_trans
+  - ip_feature_dmav2_byte_order_swap

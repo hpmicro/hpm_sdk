@@ -1,4 +1,5 @@
 #include "usbd_core.h"
+#include "usb_audio.h"
 #include "usb_midi.h"
 #include "board.h"
 #include "hpm_gpio_drv.h"
@@ -12,137 +13,142 @@
 #define MIDI_OUT_EP 0x02
 #define MIDI_IN_EP  0x81
 
-#define USB_CONFIG_SIZE (9 + 9 + 9 + 9 + 7 + MIDI_SIZEOF_JACK_DESC + 9 + 5 + 9 + 5)
+#define AUDIO_MS_SIZ (7 + MIDI_SIZEOF_JACK_DESC + 9 + 5 + 9 + 5)
 
-#ifdef CONFIG_USB_HS
-#define MIDI_EP_MPS 512
-#else
-#define MIDI_EP_MPS 64
-#endif
+#define USB_AUDIO_CONFIG_DESC_SIZ (unsigned long)(9 +                                       \
+                                                  AUDIO_AC_DESCRIPTOR_INIT_LEN(1) +         \
+                                                  AUDIO_MS_STANDARD_DESCRIPTOR_INIT_LEN +   \
+                                                  AUDIO_MS_SIZ)
 
-const uint8_t midi_descriptor[] = {
-    USB_DEVICE_DESCRIPTOR_INIT(USB_2_0, 0x00, 0x00, 0x00, USBD_VID, USBD_PID, 0x0100, 0x01),
-    USB_CONFIG_DESCRIPTOR_INIT(USB_CONFIG_SIZE, 0x02, 0x01, USB_CONFIG_BUS_POWERED, USBD_MAX_POWER),
-    /* Standard AC Interface Descriptor */
-    0x09,
-    0x04,
-    0x00,
-    0x00,
-    0x00,
-    0x01,
-    0x01,
-    0x00,
-    0x00,
-    /* Class-specific AC Interface Descriptor */
-    0x09,
-    0x24,
-    0x01,
-    0x00,
-    0x01,
-    0x09,
-    0x00,
-    0x01,
-    0x01,
-    /* MIDIStreaming Interface Descriptors */
-    0x09,
-    0x04,
-    0x01,
-    0x00,
-    0x02,
-    0x01,
-    0x03,
-    0x00,
-    0x00,
-    /* Class-Specific MS Interface Header Descriptor */
-    0x07,
-    0x24,
-    0x01,
-    0x00,
-    0x01,
-    WBVAL(65),
+#define AUDIO_AC_SIZ (AUDIO_SIZEOF_AC_HEADER_DESC(1))
 
+static const uint8_t device_descriptor[] = {
+    USB_DEVICE_DESCRIPTOR_INIT(USB_2_0, 0xEF, 0x02, 0x01, USBD_VID, USBD_PID, 0x0100, 0x01),
+};
+
+static const uint8_t config_descriptor_hs[] = {
+    USB_CONFIG_DESCRIPTOR_INIT(USB_AUDIO_CONFIG_DESC_SIZ, 0x02, 0x01, USB_CONFIG_BUS_POWERED, USBD_MAX_POWER),
+    AUDIO_AC_DESCRIPTOR_INIT(0x00, 0x02, AUDIO_AC_SIZ, 0x00, 0x01),
+    AUDIO_MS_STANDARD_DESCRIPTOR_INIT(0x01, 0x02),
+    MIDI_CS_HEADER_DESCRIPTOR_INIT(AUDIO_MS_SIZ),
     MIDI_JACK_DESCRIPTOR_INIT(0x01),
     /* OUT endpoint descriptor */
-    0x09, 0x05, MIDI_OUT_EP, 0x02, WBVAL(MIDI_EP_MPS), 0x00, 0x00, 0x00,
+    0x09, 0x05, MIDI_OUT_EP, 0x02, WBVAL(USB_BULK_EP_MPS_HS), 0x00, 0x00, 0x00,
     0x05, 0x25, 0x01, 0x01, 0x01,
 
     /* IN endpoint descriptor */
-    0x09, 0x05, MIDI_IN_EP, 0x02, WBVAL(MIDI_EP_MPS), 0x00, 0x00, 0x00,
+    0x09, 0x05, MIDI_IN_EP, 0x02, WBVAL(USB_BULK_EP_MPS_HS), 0x00, 0x00, 0x00,
     0x05, 0x25, 0x01, 0x01, 0x03,
+};
 
-    /*
-     * string0 descriptor
-     */
-    USB_LANGID_INIT(USBD_LANGID_STRING),
-    /*
-     * string1 descriptor
-     */
-    0x14,                       /* bLength */
-    USB_DESCRIPTOR_TYPE_STRING, /* bDescriptorType */
-    'C', 0x00,                  /* wcChar0 */
-    'h', 0x00,                  /* wcChar1 */
-    'e', 0x00,                  /* wcChar2 */
-    'r', 0x00,                  /* wcChar3 */
-    'r', 0x00,                  /* wcChar4 */
-    'y', 0x00,                  /* wcChar5 */
-    'U', 0x00,                  /* wcChar6 */
-    'S', 0x00,                  /* wcChar7 */
-    'B', 0x00,                  /* wcChar8 */
-    /*
-     * string2 descriptor
-     */
-    0x28,                       /* bLength */
-    USB_DESCRIPTOR_TYPE_STRING, /* bDescriptorType */
-    'C', 0x00,                  /* wcChar0 */
-    'h', 0x00,                  /* wcChar1 */
-    'e', 0x00,                  /* wcChar2 */
-    'r', 0x00,                  /* wcChar3 */
-    'r', 0x00,                  /* wcChar4 */
-    'y', 0x00,                  /* wcChar5 */
-    'U', 0x00,                  /* wcChar6 */
-    'S', 0x00,                  /* wcChar7 */
-    'B', 0x00,                  /* wcChar8 */
-    ' ', 0x00,                  /* wcChar9 */
-    'M', 0x00,                  /* wcChar10 */
-    'I', 0x00,                  /* wcChar11 */
-    'D', 0x00,                  /* wcChar12 */
-    'I', 0x00,                  /* wcChar13 */
-    ' ', 0x00,                  /* wcChar14 */
-    'D', 0x00,                  /* wcChar15 */
-    'E', 0x00,                  /* wcChar16 */
-    'M', 0x00,                  /* wcChar17 */
-    'O', 0x00,                  /* wcChar18 */
-    /*
-     * string3 descriptor
-     */
-    0x16,                       /* bLength */
-    USB_DESCRIPTOR_TYPE_STRING, /* bDescriptorType */
-    '2', 0x00,                  /* wcChar0 */
-    '0', 0x00,                  /* wcChar1 */
-    '2', 0x00,                  /* wcChar2 */
-    '1', 0x00,                  /* wcChar3 */
-    '0', 0x00,                  /* wcChar4 */
-    '3', 0x00,                  /* wcChar5 */
-    '1', 0x00,                  /* wcChar6 */
-    '0', 0x00,                  /* wcChar7 */
-    '0', 0x00,                  /* wcChar8 */
-    '0', 0x00,                  /* wcChar9 */
-#ifdef CONFIG_USB_HS
-    /*
-     * device qualifier descriptor
-     */
-    0x0a,
-    USB_DESCRIPTOR_TYPE_DEVICE_QUALIFIER,
-    0x00,
-    0x02,
-    0x02,
-    0x02,
-    0x01,
-    0x40,
-    0x01,
-    0x00,
-#endif
-    0x00
+static const uint8_t config_descriptor_fs[] = {
+    USB_CONFIG_DESCRIPTOR_INIT(USB_AUDIO_CONFIG_DESC_SIZ, 0x02, 0x01, USB_CONFIG_BUS_POWERED, USBD_MAX_POWER),
+    AUDIO_AC_DESCRIPTOR_INIT(0x00, 0x01, AUDIO_AC_SIZ, 0x00, 0x01),
+    AUDIO_MS_STANDARD_DESCRIPTOR_INIT(0x01, 0x02),
+    MIDI_CS_HEADER_DESCRIPTOR_INIT(AUDIO_MS_SIZ),
+    MIDI_JACK_DESCRIPTOR_INIT(0x01),
+    /* OUT endpoint descriptor */
+    0x09, 0x05, MIDI_OUT_EP, 0x02, WBVAL(USB_BULK_EP_MPS_FS), 0x00, 0x00, 0x00,
+    0x05, 0x25, 0x01, 0x01, 0x01,
+
+    /* IN endpoint descriptor */
+    0x09, 0x05, MIDI_IN_EP, 0x02, WBVAL(USB_BULK_EP_MPS_FS), 0x00, 0x00, 0x00,
+    0x05, 0x25, 0x01, 0x01, 0x03,
+};
+
+static const uint8_t device_quality_descriptor[] = {
+    USB_DEVICE_QUALIFIER_DESCRIPTOR_INIT(USB_2_0, 0xEF, 0x02, 0x01, 0x01),
+};
+
+static const uint8_t other_speed_config_descriptor_hs[] = {
+    USB_OTHER_SPEED_CONFIG_DESCRIPTOR_INIT(USB_AUDIO_CONFIG_DESC_SIZ, 0x02, 0x01, USB_CONFIG_BUS_POWERED, USBD_MAX_POWER),
+    AUDIO_AC_DESCRIPTOR_INIT(0x00, 0x01, AUDIO_AC_SIZ, 0x00, 0x01),
+    AUDIO_MS_STANDARD_DESCRIPTOR_INIT(0x01, 0x02),
+    MIDI_CS_HEADER_DESCRIPTOR_INIT(AUDIO_MS_SIZ),
+    MIDI_JACK_DESCRIPTOR_INIT(0x01),
+    /* OUT endpoint descriptor */
+    0x09, 0x05, MIDI_OUT_EP, 0x02, WBVAL(USB_BULK_EP_MPS_FS), 0x00, 0x00, 0x00,
+    0x05, 0x25, 0x01, 0x01, 0x01,
+
+    /* IN endpoint descriptor */
+    0x09, 0x05, MIDI_IN_EP, 0x02, WBVAL(USB_BULK_EP_MPS_FS), 0x00, 0x00, 0x00,
+    0x05, 0x25, 0x01, 0x01, 0x03,
+};
+
+static const uint8_t other_speed_config_descriptor_fs[] = {
+    USB_OTHER_SPEED_CONFIG_DESCRIPTOR_INIT(USB_AUDIO_CONFIG_DESC_SIZ, 0x02, 0x01, USB_CONFIG_BUS_POWERED, USBD_MAX_POWER),
+    AUDIO_AC_DESCRIPTOR_INIT(0x00, 0x01, AUDIO_AC_SIZ, 0x00, 0x01),
+    AUDIO_MS_STANDARD_DESCRIPTOR_INIT(0x01, 0x02),
+    MIDI_CS_HEADER_DESCRIPTOR_INIT(AUDIO_MS_SIZ),
+    MIDI_JACK_DESCRIPTOR_INIT(0x01),
+    /* OUT endpoint descriptor */
+    0x09, 0x05, MIDI_OUT_EP, 0x02, WBVAL(USB_BULK_EP_MPS_HS), 0x00, 0x00, 0x00,
+    0x05, 0x25, 0x01, 0x01, 0x01,
+
+    /* IN endpoint descriptor */
+    0x09, 0x05, MIDI_IN_EP, 0x02, WBVAL(USB_BULK_EP_MPS_HS), 0x00, 0x00, 0x00,
+    0x05, 0x25, 0x01, 0x01, 0x03,
+};
+
+static const char *string_descriptors[] = {
+    (const char[]){ 0x09, 0x04 }, /* Langid */
+    "HPMicro",                    /* Manufacturer */
+    "HPMicro MIDI DEMO",           /* Product */
+    "2024051701",                 /* Serial Number */
+};
+
+static const uint8_t *device_descriptor_callback(uint8_t speed)
+{
+    (void)speed;
+
+    return device_descriptor;
+}
+
+static const uint8_t *config_descriptor_callback(uint8_t speed)
+{
+    if (speed == USB_SPEED_HIGH) {
+        return config_descriptor_hs;
+    } else if (speed == USB_SPEED_FULL) {
+        return config_descriptor_fs;
+    } else {
+        return NULL;
+    }
+}
+
+static const uint8_t *device_quality_descriptor_callback(uint8_t speed)
+{
+    (void)speed;
+
+    return device_quality_descriptor;
+}
+
+static const uint8_t *other_speed_config_descriptor_callback(uint8_t speed)
+{
+    if (speed == USB_SPEED_HIGH) {
+        return other_speed_config_descriptor_hs;
+    } else if (speed == USB_SPEED_FULL) {
+        return other_speed_config_descriptor_fs;
+    } else {
+        return NULL;
+    }
+}
+
+static const char *string_descriptor_callback(uint8_t speed, uint8_t index)
+{
+    (void)speed;
+
+    if (index >= (sizeof(string_descriptors) / sizeof(char *))) {
+        return NULL;
+    }
+    return string_descriptors[index];
+}
+
+const struct usb_descriptor midi_descriptor = {
+    .device_descriptor_callback = device_descriptor_callback,
+    .config_descriptor_callback = config_descriptor_callback,
+    .device_quality_descriptor_callback = device_quality_descriptor_callback,
+    .other_speed_descriptor_callback = other_speed_config_descriptor_callback,
+    .string_descriptor_callback = string_descriptor_callback,
 };
 
 static struct usbd_interface intf0;
@@ -219,7 +225,7 @@ void midi_set_auto_play(bool set)
 
 void midi_init(uint8_t busid, uint32_t reg_base)
 {
-    usbd_desc_register(busid, midi_descriptor);
+    usbd_desc_register(busid, &midi_descriptor);
     usbd_add_interface(busid, &intf0);
     usbd_add_interface(busid, &intf1);
     usbd_add_endpoint(busid, &midi_out_ep);

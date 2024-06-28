@@ -8,6 +8,7 @@
 - USB CDC ACM对接了MCU的UART串口，引脚可查看板级文件的readme，名称为：USB_CDC_ACM_UART。
 - UART接收数据采用DMA循环接收方式。启动定时器周期性查询数据，若有数据则通过USB IN事务发送出去。
 - UART发送数据采用DMA普通模式，当USB OUT事务收到数据时，启动UART DMA发送数据。
+- 设计的最大波特率为115200。
 
 ## 硬件设置
 

@@ -53,7 +53,6 @@ int main(void)
             break;
         case '4':
             enter_shutdown_mode();
-            printf("Woke up from the shutdown mode\r\n");
             break;
         default:
             printf("[!!] Please choose options listed above.\r\n");

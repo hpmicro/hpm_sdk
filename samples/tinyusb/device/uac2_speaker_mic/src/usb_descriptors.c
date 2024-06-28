@@ -79,13 +79,23 @@ uint8_t const *tud_descriptor_device_cb(void)
 #define EPNUM_AUDIO_IN    0x01
 #define EPNUM_AUDIO_OUT   0x02
 
-uint8_t const desc_configuration[] = {
+uint8_t const desc_fs_configuration[] = {
     /* Interface count, string index, total length, attribute, power in mA */
     TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, 0x00, 100),
 
     /* Interface number, string index, EP Out & EP In address, EP size */
-    TUD_AUDIO_HEADSET_STEREO_DESCRIPTOR(2, EPNUM_AUDIO_OUT, EPNUM_AUDIO_IN | 0x80)
+    TUD_AUDIO_HEADSET_STEREO_DESCRIPTOR(2, EPNUM_AUDIO_OUT, EPNUM_AUDIO_IN | 0x80, 1)
 };
+
+#if TUD_OPT_HIGH_SPEED
+uint8_t const desc_hs_configuration[] = {
+    /* Interface count, string index, total length, attribute, power in mA */
+    TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, 0x00, 100),
+
+    /* Interface number, string index, EP Out & EP In address, EP size */
+    TUD_AUDIO_HEADSET_STEREO_DESCRIPTOR(2, EPNUM_AUDIO_OUT, EPNUM_AUDIO_IN | 0x80, 4)
+};
+#endif
 
 /* Invoked when received GET CONFIGURATION DESCRIPTOR */
 /* Application return pointer to descriptor */
@@ -93,7 +103,13 @@ uint8_t const desc_configuration[] = {
 uint8_t const *tud_descriptor_configuration_cb(uint8_t index)
 {
     (void)index; /* for multiple configurations */
-    return desc_configuration;
+
+#if TUD_OPT_HIGH_SPEED
+    /* Although we are highspeed, host may be fullspeed. */
+    return (tud_speed_get() == TUSB_SPEED_HIGH) ?  desc_hs_configuration : desc_fs_configuration;
+#else
+    return desc_fs_configuration;
+#endif
 }
 
 /*---------------------------------------------------------------------*

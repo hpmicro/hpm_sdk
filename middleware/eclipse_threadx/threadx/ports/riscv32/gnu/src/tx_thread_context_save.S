@@ -36,10 +36,9 @@
     .extern      _tx_execution_isr_enter
 #endif
     .global _tx_thread_context_save
-.section .isr_vector
+.section .isr_vector, "ax"
 .align 8
 .type _tx_thread_context_save, function
-.func
 /**************************************************************************/
 /*                                                                        */
 /*  FUNCTION                                               RELEASE        */

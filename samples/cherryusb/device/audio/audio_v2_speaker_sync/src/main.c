@@ -20,7 +20,7 @@ int main(void)
 #if defined(USING_CODEC) && USING_CODEC
     board_init_i2c(CODEC_I2C);
     init_i2s_pins(TARGET_I2S);
-    board_init_i2s_clock(TARGET_I2S);
+    board_config_i2s_clock(TARGET_I2S, 48000);
 #elif defined(USING_DAO) && USING_DAO
     init_dao_pins();
     board_init_dao_clock();

@@ -88,10 +88,11 @@ HPM6750是一款主频达816MHz的双核微控制器。该芯片拥有最大2M�
 
  UART13用于CORE1调试串口或一些使用UART的功能测试，例如uart_software_rx_idle，uart_rx_timeout，uart_software_lin，MICROROS_UART，USB_CDC_ACM_UART, MODBUS_RTU等。
 
-| 功能       | 引脚 | 位置   |
-| ---------- | ---- | ------ |
+| 功能       | 引脚 | 位置   | 备注     |
+| ---------- | ---- | ------ |  ------ |
 | UART13.TXD | PZ09 | J11[5] |
 | UART13.RXD | PZ08 | J11[6] |
+| UART13.break | PE31 | J11[7] | 产生uart break信号|
 
 - TRGMUX引脚用于uart_software_rx_idle工程
 
@@ -132,11 +133,12 @@ HPM6750是一款主频达816MHz的双核微控制器。该芯片拥有最大2M�
 
 - GPTMR引脚
 
-| 功能          | 引脚 | 位置   |
+| 功能          | 引脚 | 位置     |   备注 |
 | ------------- | ---- | ------  |
 | GPTMR4.CAPT_1 | PE25 | J10[6]  |
-| GPTMR5.COMP_2 | PD24 | J10[18] |
-| GPTMR5.COMP_3 | PD23 | J10[16] |
+| GPTMR3.COMP_1 | PE24 | J12[8]  | SPI模拟I2S的MCLK |
+| GPTMR5.COMP_2 | PD24 | J10[18] | SPI模拟I2S的LRCK |
+| GPTMR5.COMP_3 | PD23 | J10[16] | SPI模拟I2S的BLCK |
 
 - ADC12引脚
 
@@ -191,3 +193,10 @@ HPM6750是一款主频达816MHz的双核微控制器。该芯片拥有最大2M�
 | TAMP.08  | PZ08   | J11[6] | 主动模式 |
 | TAMP.09  | PZ09   | J11[5] | 主动模式 |
 | TAMP.10  | PZ10   | J11[4] | 被动模式 |
+
+- SPI模拟I2S CS引脚
+
+| 功能 | 位置   |  备注 |
+| ---- | ----- | ------ |
+| PD25  | J10[16] | 控制SPI从机CS的引脚 |
+

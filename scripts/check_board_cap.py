@@ -86,7 +86,7 @@ def build_linked_project(sdk_base, app_info, board_name, board_dir, app_yml_base
             if not is_sdk_board(sdk_base, board_dir):
                 extra_option = "-DBOARD_SEARCH_PATH=" + os.path.dirname(board_dir)
             print('-- Started to build core1 project...')
-            build_linked_proj_cmd = "cmake -GNinja -DBOARD=" + board_name + " -DCMAKE_BUILD_TYPE=" + build_type + " " + extra_option + " -B " + linked_proj_build_dir + " -S " + linked_proj_root_dir
+            build_linked_proj_cmd = "cmake -GNinja -DBOARD=" + board_name + " -DHPM_BUILD_TYPE=" + build_type + " " + extra_option + " -B " + linked_proj_build_dir + " -S " + linked_proj_root_dir
             build_linked_proj_cmd += " && ninja"
             p = subprocess.Popen(build_linked_proj_cmd, shell=True,  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             retval = p.wait()
@@ -96,12 +96,8 @@ def build_linked_project(sdk_base, app_info, board_name, board_dir, app_yml_base
                 print('-- Finished building core1 project successfully!')
             return retval
 
-def get_soc_ip_list(soc_name):
-    ip_list = get_board_info.get_soc_ip_list(soc_name)
-    return ip_list
-
-def get_soc_ip_feature_list(sdk_base, soc_name):
-    soc_ip_feature_file = os.path.join(sdk_base, "soc", soc_name, SOC_IP_FEATURE_FILE_NAME)
+def get_soc_ip_feature_list(sdk_base, soc_series, soc_name):
+    soc_ip_feature_file = os.path.join(sdk_base, "soc", soc_series, soc_name, SOC_IP_FEATURE_FILE_NAME)
     feature_list = []
     if os.path.exists(soc_ip_feature_file):
         with open(soc_ip_feature_file, 'r', encoding='utf-8') as stream:
@@ -114,10 +110,11 @@ def get_soc_ip_feature_list(sdk_base, soc_name):
 
 
 def check_ip_dependency(sdk_base, soc_name, app_dependency):
+    soc_series = get_board_info.get_soc_series_name(soc_name)
     # check ip dependency
-    ip_list = get_board_info.get_soc_ip_list(soc_name)
+    ip_list = get_board_info.get_soc_ip_list(soc_series, soc_name)
 
-    feature_list = get_soc_ip_feature_list(sdk_base, soc_name)
+    feature_list = get_soc_ip_feature_list(sdk_base, soc_series, soc_name)
     for d in app_dep:
         if not re.match('ip_feature_', d):
             # process OR logic

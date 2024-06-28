@@ -8,6 +8,7 @@
   - 全FLASH擦除
   - 全FLASH写入
   - 全FLASH读回
+- 演示使用命令序列和基本XPI API 与FLASH通信
 
 ## 硬件设置
 
@@ -22,5 +23,6 @@ XPI NOR demo
  1 - Test FLASH at the last Sector
  2 - Stress test on the FLASH
      NOTE: This case cannot be tested on flash_xip build
+ 3 - Access FLASH via instruction sequence and basic XPI API
  Others - Show menu
 ```

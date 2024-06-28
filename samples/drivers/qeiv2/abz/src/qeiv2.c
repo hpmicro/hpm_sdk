@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -174,17 +174,39 @@ static void qeiv2_init(void)
     qeiv2_enable_load_read_trigger_event(APP_QEI_BASE, QEIV2_EVENT_POSITION_COMPARE_FLAG_MASK);
     qeiv2_enable_irq(APP_QEI_BASE, QEIV2_EVENT_POSITION_COMPARE_FLAG_MASK);
 
+#if defined (HPM_IP_FEATURE_QEIV2_ONESHOT_MODE) && HPM_IP_FEATURE_QEIV2_ONESHOT_MODE
+    qeiv2_disable_pulse0_oneshot_mode(APP_QEI_BASE);
+    qeiv2_disable_pulse1_oneshot_mode(APP_QEI_BASE);
+    qeiv2_disable_cycle0_oneshot_mode(APP_QEI_BASE);
+    qeiv2_disable_cycle1_oneshot_mode(APP_QEI_BASE);
+#endif
+
+#if defined (HPM_IP_FEATURE_QEIV2_SW_RESTART_TRG) && HPM_IP_FEATURE_QEIV2_SW_RESTART_TRG
+    qeiv2_enable_trig_pulse0(APP_QEI_BASE);
+    qeiv2_enable_trig_pulse1(APP_QEI_BASE);
+    qeiv2_enable_trig_cycle0(APP_QEI_BASE);
+    qeiv2_enable_trig_cycle1(APP_QEI_BASE);
+#endif
     qeiv2_set_pulse0_num(APP_QEI_BASE, PULSE0_NUM);
     qeiv2_enable_irq(APP_QEI_BASE, QEIV2_EVENT_PULSE0_FLAG_MASK);
-
+#if defined (HPM_IP_FEATURE_QEIV2_SW_RESTART_TRG) && HPM_IP_FEATURE_QEIV2_SW_RESTART_TRG
+    qeiv2_sw_restart_pulse0(APP_QEI_BASE);
+#endif
     qeiv2_set_pulse1_num(APP_QEI_BASE, PULSE1_NUM);
     qeiv2_enable_irq(APP_QEI_BASE, QEIV2_EVENT_PULSE1_FLAG_MASK);
-
+#if defined (HPM_IP_FEATURE_QEIV2_SW_RESTART_TRG) && HPM_IP_FEATURE_QEIV2_SW_RESTART_TRG
+    qeiv2_sw_restart_pulse1(APP_QEI_BASE);
+#endif
     qeiv2_set_cycle0_num(APP_QEI_BASE, 2500000);
     qeiv2_enable_irq(APP_QEI_BASE, QEIV2_EVENT_CYCLE0_FLAG_MASK);
-
+#if defined (HPM_IP_FEATURE_QEIV2_SW_RESTART_TRG) && HPM_IP_FEATURE_QEIV2_SW_RESTART_TRG
+    qeiv2_sw_restart_cycle0(APP_QEI_BASE);
+#endif
     qeiv2_set_cycle1_num(APP_QEI_BASE, 25000000);
     qeiv2_enable_irq(APP_QEI_BASE, QEIV2_EVENT_CYCLE1_FLAG_MASK);
+#if defined (HPM_IP_FEATURE_QEIV2_SW_RESTART_TRG) && HPM_IP_FEATURE_QEIV2_SW_RESTART_TRG
+    qeiv2_sw_restart_cycle1(APP_QEI_BASE);
+#endif
 
     qeiv2_release_counter(APP_QEI_BASE);
 

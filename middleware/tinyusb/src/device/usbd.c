@@ -302,6 +302,7 @@ tu_static char const* const _usbd_event_str[DCD_EVENT_COUNT] =
   "Invalid"        ,
   "Bus Reset"      ,
   "Unplugged"      ,
+  "Plugged"        ,
   "SOF"            ,
   "Suspend"        ,
   "Resume"         ,
@@ -502,6 +503,11 @@ void tud_task_ext(uint32_t timeout_ms, bool in_isr)
 
         // invoke callback
         if (tud_umount_cb) tud_umount_cb();
+      break;
+
+      case DCD_EVENT_PLUGGED:
+        TU_LOG_USBD(": %s Speed\r\n", tu_str_speed[event.plugged.speed]);
+        _usbd_dev.speed = event.plugged.speed;
       break;
 
       case DCD_EVENT_SETUP_RECEIVED:

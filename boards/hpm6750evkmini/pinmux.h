@@ -55,6 +55,7 @@ void init_led_pins_as_gpio(void);
 void init_trgmux_pins(uint32_t pin);
 void init_enet_pps_pins(void);
 void init_tamper_pins(void);
+void init_uart_break_signal_pin(void);
 
 #ifdef __cplusplus
 }

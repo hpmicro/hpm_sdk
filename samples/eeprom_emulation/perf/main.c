@@ -71,7 +71,7 @@ static void eeprom_perf_write_data(void)
         blob++;
         while (count_per_blob < DEMO_WRITE_CYCLE) {
             blob_data[1] += 10;
-            e2p_write(&e2p_demo, blob, sizeof(blob_data), (uint8_t *)blob_data);
+            e2p_write(blob, sizeof(blob_data), (uint8_t *)blob_data);
             count_per_blob++;        
         }
         i++;
@@ -84,7 +84,7 @@ static uint32_t eeprom_perf_config_time(void)
     uint32_t run_us;
     uint32_t tick_per_us = clock_get_frequency(clock_cpu0) / 1000 / 1000;
 
-    e2p_format(&e2p_demo);
+    e2p_clear();
     e2p_config(&e2p_demo);
 
     eeprom_perf_write_data();
@@ -107,7 +107,7 @@ static uint32_t eeprom_perf_flush_time(void)
 
     eeprom_perf_write_data();
     start_time();
-    e2p_flush(&e2p_demo, E2P_FLUSH_BEGIN);
+    e2p_flush(E2P_FLUSH_BEGIN);
     run_time = get_end_time();
 
     run_us = run_time / tick_per_us;
@@ -125,7 +125,7 @@ static uint32_t eeprom_perf_read_time(void)
 
     eeprom_perf_write_data();
     start_time();
-    e2p_read(&e2p_demo, EEPROM_MAX_VAR_CNT, DEMO_BLOCK_SIZE_MAX, _read_buf);
+    e2p_read(EEPROM_MAX_VAR_CNT, DEMO_BLOCK_SIZE_MAX, _read_buf);
     run_time = get_end_time();
 
     run_us = run_time / tick_per_us;
@@ -154,7 +154,7 @@ static void eeprom_init(void)
 
 static void eeprom_show_info(void)
 {
-    e2p_show_info(&e2p_demo);
+    e2p_show_info();
 }
 
 static void eeprom_show_index(void)

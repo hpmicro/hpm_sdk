@@ -1,4 +1,4 @@
-# Copyright (c) 2021 HPMicro
+# Copyright (c) 2021,2024 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -9,7 +9,15 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(coremark)
 
-set(opt_string "-O3 -funroll-all-loops -finline-limit=600 -ftree-dominator-opts -fno-if-conversion2 -fselective-scheduling -fno-code-hoisting -mstrict-align")
+if("${TOOLCHAIN_VARIANT}" STREQUAL "zcc")
+    set(opt_string "-O3 -flto -falign-functions=4 -flate-loop-unroll")
+    sdk_zcc_ld_options(-O3)
+    sdk_zcc_ld_options("-fuse-size-lib")
+    sdk_zcc_ld_options(-Wl,-mllvm,--riscv-misched-load-clustering=true)
+    sdk_zcc_ld_options(-Wl,-mllvm,--misfetch-cost=8)
+else()
+    set(opt_string "-O3 -funroll-all-loops -finline-limit=600 -fno-code-hoisting -fselective-scheduling -fno-forward-propagate -fno-tree-ter -fipa-pta -fno-tree-vrp")
+endif()
 separate_arguments(opt_list UNIX_COMMAND ${opt_string})
 
 foreach(opt ${opt_list})
@@ -17,6 +25,7 @@ sdk_compile_options(${opt})
 endforeach()
 sdk_get_compile_options(all_opts)
 sdk_compile_definitions(COMPILER_FLAGS="${all_opts}")
+sdk_nds_compile_options(-mcmov)
 sdk_app_inc(src src/port)
 sdk_app_src(src/core_list_join.c
             src/core_main.c

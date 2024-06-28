@@ -49,6 +49,7 @@
   - Supported toolchains:
     - gnu-gcc <-- default toolchain
     - nds-gcc
+    - zcc
   - Toolchain setup:
     - gnu-gcc:
       1. Grab a copy of toolchain zip package and unzip to certain path, take TOOLCHAIN_PATH for example, (riscv32-unknown-elf-gcc is supposed to be found in TOOLCHAIN_PATH/bin)
@@ -80,6 +81,19 @@
              - cygwin1.dll
              - cygncursesw-10.dll
            make sure its path is appended to the system environment variable "PATH".
+    - zcc:
+      1. Grab a copy of toolchain zip package and unzip to certain path, take TOOLCHAIN_PATH for example
+      2. Declare a system environment variable of "GNURISCV_TOOLCHAIN_PATH" to the path of toolchain:
+        - Linux, taking zsh for example (replace TOOLCHAIN_PATH with the path of toolchain on your workstation):
+      ```shell
+        export GNURISCV_TOOLCHAIN_PATH=TOOLCHAIN_PATH
+        export HPM_SDK_TOOLCHAIN_VARIANT=zcc
+      ```
+        - Windows command prompt:
+      ```batch
+        set GNURISCV_TOOLCHAIN_PATH=TOOLCHAIN_PATH
+        set HPM_SDK_TOOLCHAIN_VARIANT=zcc
+      ```
   - Environment Variables:
     - Using provided scripts to set the environment variable:
       - Linux:

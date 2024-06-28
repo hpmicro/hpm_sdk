@@ -1,24 +1,12 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
 
-#if __riscv_xlen == 64
-    #define portWORD_SIZE 8
-    #define store_x sd
-    #define load_x ld
-#elif __riscv_xlen == 32
-    #define store_x sw
-    #define load_x lw
-    #define portWORD_SIZE 4
-#else
-    #error Assembler did not define __riscv_xlen
-#endif
-
 #include "ucos_risc_v_chip_specific_extensions.h"
-
+#include "context.h"
 #ifndef portasmHANDLE_INTERRUPT
     #error portasmHANDLE_INTERRUPT must be defined to the function to be called to handle external/peripheral interrupts.
 #endif
@@ -45,8 +33,6 @@
     .global  OSCtxSw
     .global  OSIntCtxSw
     .global  Software_IRQHandler
-    .global  portasmSAVE_FPU_REGISTERS
-    .global  portasmRESTORE_FPU_REGISTERS
 
 #********************************************************************************************************
 #                                               EQUATES
@@ -59,133 +45,6 @@
     .equ  RISCV_MEIE_MTIE,           0x880           # M Extral MachineTimer Interrupt bit
 
     .equ  RISCV_PRCI_BASE_ADDR,      0xE6401000
-
-#ifdef __riscv_flen
-
-#define MSTATUS_FS           0x00006000 /* Floating-point Status */
-    #define MSTATUS_FS_OFF       0x00000000
-    #define MSTATUS_FS_INITIAL   0x00002000
-    #define MSTATUS_FS_CLEAN     0x00004000
-    #define MSTATUS_FS_DIRTY     0x00006000
-
-#if __riscv_flen == 32
-    #define store_fpu           fsw
-    #define load_fpu            flw
-    #define FREGBYTES           4
-#endif
-#if __riscv_flen == 64
-    #define store_fpu           fsd
-    #define load_fpu            fld
-    #define FREGBYTES           8
-#endif
-
-#define portFPU_CONTEXT_WORDS   34
-#define portFPU_CONTEXT_SIZE (portFPU_CONTEXT_WORDS * FREGBYTES)
-
-.type portasmSAVE_FPU_REGISTERS, function
-.func
-portasmSAVE_FPU_REGISTERS:
-    addi    sp, sp, -portFPU_CONTEXT_SIZE
-    /* get FS field from mstatus */
-    li t0, MSTATUS_FS
-    csrr    t1, mstatus
-    store_x t1, 33 * FREGBYTES(sp)
-    and t0, t1, t0
-    li t2, MSTATUS_FS_DIRTY
-    bne t2, t0, 1f
-    /* FS == dirty */
-    /* Make room for the additional FPU registers. */
-    store_fpu  f0, 1 * FREGBYTES(sp)
-    store_fpu  f1, 2 * FREGBYTES(sp)
-    store_fpu  f2, 3 * FREGBYTES(sp)
-    store_fpu  f3, 4 * FREGBYTES(sp)
-    store_fpu  f4, 5 * FREGBYTES(sp)
-    store_fpu  f5, 6 * FREGBYTES(sp)
-    store_fpu  f6, 7 * FREGBYTES(sp)
-    store_fpu  f7, 8 * FREGBYTES(sp)
-    store_fpu  f8, 9 * FREGBYTES(sp)
-    store_fpu  f9, 10 * FREGBYTES(sp)
-    store_fpu  f10, 11 * FREGBYTES(sp)
-    store_fpu  f11, 12 * FREGBYTES(sp)
-    store_fpu  f12, 13 * FREGBYTES(sp)
-    store_fpu  f13, 14 * FREGBYTES(sp)
-    store_fpu  f14, 15 * FREGBYTES(sp)
-    store_fpu  f15, 16 * FREGBYTES(sp)
-    store_fpu  f16, 17 * FREGBYTES(sp)
-    store_fpu  f17, 18 * FREGBYTES(sp)
-    store_fpu  f18, 19 * FREGBYTES(sp)
-    store_fpu  f19, 20 * FREGBYTES(sp)
-    store_fpu  f20, 21 * FREGBYTES(sp)
-    store_fpu  f21, 22 * FREGBYTES(sp)
-    store_fpu  f22, 23 * FREGBYTES(sp)
-    store_fpu  f23, 24 * FREGBYTES(sp)
-    store_fpu  f24, 25 * FREGBYTES(sp)
-    store_fpu  f25, 26 * FREGBYTES(sp)
-    store_fpu  f26, 27 * FREGBYTES(sp)
-    store_fpu  f27, 28 * FREGBYTES(sp)
-    store_fpu  f28, 29 * FREGBYTES(sp)
-    store_fpu  f29, 30 * FREGBYTES(sp)
-    store_fpu  f30, 31 * FREGBYTES(sp)
-    store_fpu  f31, 32 * FREGBYTES(sp)
-
-    /* must set FS to clean */
-    csrc    mstatus, t0
-    li  t1, MSTATUS_FS_CLEAN
-    csrs    mstatus, t1
-1:
-    ret
-    .endfunc
-
-.type portasmRESTORE_FPU_REGISTERS, function
-.func
-portasmRESTORE_FPU_REGISTERS:
-    load_x  t1, 33 * FREGBYTES(sp)
-    /* get FS field from mstatus */
-    li t0, MSTATUS_FS
-    and t0, t1, t0
-    li t2, MSTATUS_FS_DIRTY
-    bne t2, t0, 1f
-     /* FS == dirty */
-    csrs    mstatus, t0
-    load_fpu   f0, 1 * FREGBYTES(sp)
-    load_fpu   f1, 2 * FREGBYTES(sp)
-    load_fpu   f2, 3 * FREGBYTES(sp)
-    load_fpu   f3, 4 * FREGBYTES(sp)
-    load_fpu   f4, 5 * FREGBYTES(sp)
-    load_fpu   f5, 6 * FREGBYTES(sp)
-    load_fpu   f6, 7 * FREGBYTES(sp)
-    load_fpu   f7, 8 * FREGBYTES(sp)
-    load_fpu   f8, 9 * FREGBYTES(sp)
-    load_fpu   f9, 10 * FREGBYTES(sp)
-    load_fpu   f10, 11 * FREGBYTES(sp)
-    load_fpu   f11, 12 * FREGBYTES(sp)
-    load_fpu   f12, 13 * FREGBYTES(sp)
-    load_fpu   f13, 14 * FREGBYTES(sp)
-    load_fpu   f14, 15 * FREGBYTES(sp)
-    load_fpu   f15, 16 * FREGBYTES(sp)
-    load_fpu   f16, 17 * FREGBYTES(sp)
-    load_fpu   f17, 18 * FREGBYTES(sp)
-    load_fpu   f18, 19 * FREGBYTES(sp)
-    load_fpu   f19, 20 * FREGBYTES(sp)
-    load_fpu   f20, 21 * FREGBYTES(sp)
-    load_fpu   f21, 22 * FREGBYTES(sp)
-    load_fpu   f22, 23 * FREGBYTES(sp)
-    load_fpu   f23, 24 * FREGBYTES(sp)
-    load_fpu   f24, 25 * FREGBYTES(sp)
-    load_fpu   f25, 26 * FREGBYTES(sp)
-    load_fpu   f26, 27 * FREGBYTES(sp)
-    load_fpu   f27, 28 * FREGBYTES(sp)
-    load_fpu   f28, 29 * FREGBYTES(sp)
-    load_fpu   f29, 30 * FREGBYTES(sp)
-    load_fpu   f30, 31 * FREGBYTES(sp)
-    load_fpu   f31, 32 * FREGBYTES(sp)
-1:
-    csrw    mstatus, t1
-    addi    sp, sp, portFPU_CONTEXT_SIZE
-    ret
-    .endfunc
-
-#endif
 
 .global ucos_risc_v_trap_handler
 .extern OSTCBCurPtr
@@ -202,10 +61,10 @@ portasmRESTORE_FPU_REGISTERS:
 .extern portasmHANDLE_INTERRUPT
 
 /*-----------------------------------------------------------*/
-.section .isr_vector
+.section .isr_vector, "ax"
 .align 8
 .type ucos_risc_v_trap_handler, function
-.func
+
 ucos_risc_v_trap_handler:
     addi sp, sp, -4 * 32
     store_x     ra,   0 * 4(sp)
@@ -240,9 +99,8 @@ ucos_risc_v_trap_handler:
     store_x     t0,  31 * 4(sp)
 
     portasmSAVE_ADDITIONAL_REGISTERS    /* Defined in ucos_risc_v_chip_specific_extensions.h to save any registers unique to the RISC-V implementation. */
-#ifdef __riscv_flen
-    call portasmSAVE_FPU_REGISTERS
-#endif
+    
+    portasmSAVE_FPU_REGISTERS
 
     csrr t0, mscratch
     bne t0, x0, skip0
@@ -328,8 +186,6 @@ _skip1:
 
         call OSTimeTick
         call OSIntExit
-#        beqz a0, processed_source        /* Don't switch context if incrementing tick didn't unblock a task. */
-#        call vTaskSwitchContext
         j processed_source
 
 #endif /* portasmHAS_MTIME */
@@ -387,10 +243,7 @@ skip4:
     load_x  t1, OSTCBCurPtr            /* Load OSTCBCurPtr. */
     load_x  sp, 0( t1 )                     /* Read sp from first TCB member. */
 skip5:
-#ifdef __riscv_flen
-    call portasmRESTORE_FPU_REGISTERS
-#endif
-
+    portasmRESTORE_FPU_REGISTERS
     portasmRESTORE_ADDITIONAL_REGISTERS    /* Defined in ucos_risc_v_chip_specific_extensions.h to restore any registers unique to the RISC-V implementation. */
 
 # Retrieve the address at which exception happened
@@ -434,4 +287,3 @@ skip5:
 
 # Exception return will restore remaining context
     mret
-    .endfunc

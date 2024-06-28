@@ -7,7 +7,9 @@ The SDM example shows data filter and comparator functions.
 ## Board Setting
 
 Please refer to [Pin Description](lab_board_resource) for specific board.
-Connect analog signal to AD7400 input pin, connect AD7400 output CLK and DAT pin to SDM's CLK and DAT pin on board.
+Different hardware setting are used depending on whether an AD sampling chip is on the development board.
+- If there is no onboard AD sampling chip on the development board, please using an external sampling chip and connect the output CLK and DAT pins of the sampling chip to the CLK and DAT pins of the SDM on the board.
+- If there is onboard AD sampling chip, simply connect the analog signal to the input interface of the sampling chip.
 
 
 ## Running the example

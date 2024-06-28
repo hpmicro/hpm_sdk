@@ -15,6 +15,10 @@
 extern struct netif gnetif;
 uint8_t send_buf[] = "This is a TCP Client test...\n";
 
+#ifndef TCP_CLIENT_DEBUG
+#define TCP_CLIENT_DEBUG  LWIP_DBG_OFF
+#endif
+
 static void tcp_client_thread(void *arg)
 {
     (void)arg;
@@ -43,17 +47,17 @@ static void tcp_client_thread(void *arg)
         memset(&(client_addr.sin_zero), 0, sizeof(client_addr.sin_zero));
 
         if (connect(sock, (struct sockaddr *)&client_addr, sizeof(struct sockaddr)) == -1) {
-            printf("Connect error!\n");
+            LWIP_DEBUGF(TCP_CLIENT_DEBUG, ("Connect error!\n"));
             closesocket(sock);
             vTaskDelay(10);
             continue;
         }
 
-        printf("Connect to server successfully!\n");
+        LWIP_DEBUGF(LWIP_DBG_ON | LWIP_DBG_TRACE, ("Connect to server successfully!\n"));
 
         while (1) {
             if (write(sock, send_buf, sizeof(send_buf)) < 0) {
-                printf("Send error\n");
+                LWIP_DEBUGF(TCP_CLIENT_DEBUG, ("Send error!\n"));
                 break;
             }
             vTaskDelay(1000);

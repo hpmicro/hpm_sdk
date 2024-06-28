@@ -29,19 +29,13 @@ $$ |  $$ |$$ |      $$ | \_/ $$ |$$ |\$$$$$$$\ $$ |      \$$$$$$  |
 ----------------------------------------------------------------------
 SEI master nikon sample
 Started sei engine!
-ST:0xfffa5, MT:0x8888, sample_tm:224294997, update_tm:224299900, TimeDelay:306*0.1us
-ST:0xfffa6, MT:0x8888, sample_tm:256294997, update_tm:256299900, TimeDelay:306*0.1us
-ST:0xfffa7, MT:0x8888, sample_tm:288294997, update_tm:288299900, TimeDelay:306*0.1us
-ST:0xfffa8, MT:0x8888, sample_tm:320294997, update_tm:320299900, TimeDelay:306*0.1us
-ST:0xfffa9, MT:0x8888, sample_tm:352294997, update_tm:352299900, TimeDelay:306*0.1us
-ST:0xfffaa, MT:0x8888, sample_tm:384294997, update_tm:384299900, TimeDelay:306*0.1us
-ST:0xfffab, MT:0x8888, sample_tm:416294997, update_tm:416299900, TimeDelay:306*0.1us
-ST:0xfffac, MT:0x8888, sample_tm:448294997, update_tm:448299900, TimeDelay:306*0.1us
-ST:0xfffad, MT:0x8888, sample_tm:480294997, update_tm:480299900, TimeDelay:306*0.1us
-ST:0xfffae, MT:0x8888, sample_tm:512294997, update_tm:512299900, TimeDelay:306*0.1us
-ST:0xfffaf, MT:0x8888, sample_tm:544294997, update_tm:544299900, TimeDelay:306*0.1us
-ST:0xfffb0, MT:0x8888, sample_tm:576294997, update_tm:576299901, TimeDelay:306*0.1us
-ST:0xfffb1, MT:0x8888, sample_tm:608294997, update_tm:608299900, TimeDelay:306*0.1us
-ST:0xfffb2, MT:0x8888, sample_tm:640294997, update_tm:640299901, TimeDelay:306*0.1us
+ST:0xfffa5, MT:0x8888, CRC:0xa9, sample_tm:320369459, update_tm:320375597, TimeDelay:306*0.1us
+ST:0xfffa6, MT:0x8888, CRC:0x7a, sample_tm:360369459, update_tm:360375597, TimeDelay:306*0.1us
+ST:0xfffa7, MT:0x8888, CRC:0x59, sample_tm:400369459, update_tm:400375598, TimeDelay:306*0.1us
+ST:0xfffa8, MT:0x8888, CRC:0xca, sample_tm:440369459, update_tm:440375597, TimeDelay:306*0.1us
+ST:0xfffa9, MT:0x8888, CRC:0xe9, sample_tm:480369459, update_tm:480375597, TimeDelay:306*0.1us
+ST:0xfffaa, MT:0x8888, CRC:0x55, sample_tm:520369459, update_tm:520375597, TimeDelay:306*0.1us
+ST:0xfffab, MT:0x8888, CRC:0x76, sample_tm:560369459, update_tm:560375598, TimeDelay:306*0.1us
+ST:0xfffac, MT:0x8888, CRC:0xb, sample_tm:600369459, update_tm:600375598, TimeDelay:306*0.1us
 
 ```

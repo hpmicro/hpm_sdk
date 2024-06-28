@@ -184,6 +184,10 @@ hpm_mcl_stat_t hpm_mcl_control_svpwm(float alpha, float beta, float vbus, mcl_co
         break;
     }
 
+    MCL_VALUE_LIMIT(duty->a, 0, 1);
+    MCL_VALUE_LIMIT(duty->b, 0, 1);
+    MCL_VALUE_LIMIT(duty->c, 0, 1);
+
     return mcl_success;
 }
 
@@ -236,6 +240,118 @@ hpm_mcl_stat_t hpm_mcl_control_get_block_sector(hall_phase_t hall, uint8_t u, ui
     return mcl_success;
 }
 
+float hpm_mcl_control_lowpass_filter(float input, float *mem, float k)
+{
+    float output;
+
+    output = k * input + (1 - k) * (*mem);
+    *mem = output;
+
+    return output;
+}
+
+hpm_mcl_stat_t hpm_mcl_control_dead_area_polarity_detection(mcl_control_dead_area_compensation_t *dead_area,
+                float id, float iq, float theta,
+                float deadtime, float ts, mcl_control_dead_area_pwm_offset_t *pwm_out)
+{
+    float out_d, out_q, sens_theta;
+    int8_t ia = 0, ib = 0, ic = 0;
+
+    out_q = hpm_mcl_control_lowpass_filter(iq, &dead_area->q_mem, dead_area->cfg.lowpass_k);
+    out_d = hpm_mcl_control_lowpass_filter(id, &dead_area->d_mem, dead_area->cfg.lowpass_k);
+    sens_theta = atan2f(out_q, out_d);
+    theta += sens_theta;
+    theta = MCL_ANGLE_MOD_X(0, MCL_2PI, theta);
+
+    if ((theta >= (MCL_PI * (11.0f / 6))) || (theta < (MCL_PI * (1.0f / 6)))) {
+        ia = 1;
+        ib = -1;
+        ic = -1;
+    } else if ((theta >= (MCL_PI * (1.0f / 6))) && (theta < (MCL_PI * (1.0f / 2)))) {
+        ia = 1;
+        ib = 1;
+        ic = -1;
+    } else if ((theta >= (MCL_PI * (1.0f / 2))) && (theta < (MCL_PI * (5.0f / 6)))) {
+        ia = -1;
+        ib = 1;
+        ic = -1;
+    } else if ((theta >= (MCL_PI * (5.0f / 6))) && (theta < (MCL_PI * (7.0f / 6)))) {
+        ia = -1;
+        ib = 1;
+        ic = 1;
+    } else if ((theta >= (MCL_PI * (7.0f / 6))) && (theta < (MCL_PI * (3.0f / 2)))) {
+        ia = -1;
+        ib = -1;
+        ic = 1;
+    } else if ((theta >= (MCL_PI * (3.0f / 2))) && (theta < (MCL_PI * (11.0f / 6)))) {
+        ia = 1;
+        ib = -1;
+        ic = 1;
+    }
+    pwm_out->a_offset = 2.0f * deadtime * ia / ts;
+    pwm_out->b_offset = 2.0f * deadtime * ib / ts;
+    pwm_out->c_offset = 2.0f * deadtime * ic / ts;
+
+    return mcl_success;
+}
+
+void hpm_mcl_control_smc_init(mcl_control_smc_t *smc_cfg)
+{
+    smc_cfg->cfg.factor.smc_g = smc_cfg->cfg.const_data.sample_ts /
+                                            smc_cfg->cfg.const_data.inductor;
+    smc_cfg->cfg.factor.smc_f = 1 - (smc_cfg->cfg.const_data.res / smc_cfg->cfg.const_data.inductor)
+                                            * smc_cfg->cfg.const_data.sample_ts;
+}
+
+void hpm_mcl_control_smc_process(mcl_control_smc_t *smc_cfg, float ualpha, float ubeta, float ialpha, float ibeta)
+{
+    float alhpa_err;
+    float beta_err;
+    float speed;
+    float sens, ref;
+
+    smc_cfg->ialpha_mem = smc_cfg->cfg.factor.smc_f *
+                                        smc_cfg->ialpha_mem + smc_cfg->cfg.factor.smc_g *
+                                        (ualpha - smc_cfg->alpha_cal - smc_cfg->zalpha_cal);
+    smc_cfg->ibeta_mem = smc_cfg->cfg.factor.smc_f *
+                                        smc_cfg->ibeta_mem + smc_cfg->cfg.factor.smc_g *
+                                        (ubeta - smc_cfg->beta_cal - smc_cfg->zbeta_cal);
+
+    alhpa_err = smc_cfg->ialpha_mem - ialpha;
+    beta_err = smc_cfg->ibeta_mem - ibeta;
+
+    if (fabs(alhpa_err) < smc_cfg->cfg.factor.zero) {
+        smc_cfg->zalpha_cal = 2 * alhpa_err * smc_cfg->cfg.factor.ksmc;
+    } else if (alhpa_err >= smc_cfg->cfg.factor.zero) {
+        smc_cfg->zalpha_cal = smc_cfg->cfg.factor.ksmc;
+    } else if (alhpa_err <= -smc_cfg->cfg.factor.zero) {
+        smc_cfg->zalpha_cal = -smc_cfg->cfg.factor.ksmc;
+    }
+
+    if (fabs(beta_err) < smc_cfg->cfg.factor.zero) {
+        smc_cfg->zbeta_cal = 2 * alhpa_err * smc_cfg->cfg.factor.ksmc;
+    } else if (beta_err >= smc_cfg->cfg.factor.zero) {
+        smc_cfg->zbeta_cal = smc_cfg->cfg.factor.ksmc;
+    } else if (beta_err <= -smc_cfg->cfg.factor.zero) {
+        smc_cfg->zbeta_cal = -smc_cfg->cfg.factor.ksmc;
+    }
+
+    smc_cfg->alpha_cal = (1 - smc_cfg->cfg.factor.filter_coeff) *
+                                        smc_cfg->alpha_cal + smc_cfg->cfg.factor.filter_coeff *
+                                        smc_cfg->zalpha_cal;
+
+    smc_cfg->beta_cal = (1 - smc_cfg->cfg.factor.filter_coeff) *
+                                        smc_cfg->beta_cal + smc_cfg->cfg.factor.filter_coeff *
+                                        smc_cfg->zbeta_cal;
+    ref = -smc_cfg->alpha_cal * cosf(smc_cfg->theta_mem);
+    sens = smc_cfg->beta_cal * sinf(smc_cfg->theta_mem);
+    hpm_mcl_control_pi(ref, sens, &smc_cfg->cfg.pll, &speed);
+    smc_cfg->theta_mem += speed * smc_cfg->cfg.const_data.loop_ts;
+    smc_cfg->theta_mem = MCL_ANGLE_MOD_X(0, MCL_2PI, smc_cfg->theta_mem);
+    smc_cfg->theta = MCL_ANGLE_MOD_X(0, MCL_2PI, smc_cfg->theta_mem + smc_cfg->cfg.theta0);
+
+}
+
 hpm_mcl_stat_t hpm_mcl_control_init(mcl_control_t *control, mcl_control_cfg_t *cfg)
 {
     MCL_ASSERT(control != NULL, mcl_invalid_pointer);
@@ -250,6 +366,11 @@ hpm_mcl_stat_t hpm_mcl_control_init(mcl_control_t *control, mcl_control_cfg_t *c
     control->cfg->currentq_pid_cfg.integral = 0;
     control->cfg->position_pid_cfg.integral = 0;
     control->cfg->speed_pid_cfg.integral = 0;
+    control->cfg->dead_area_compensation_cfg.d_mem = 0;
+    control->cfg->dead_area_compensation_cfg.q_mem = 0;
+    control->cfg->smc_cfg.ialpha_mem = 0;
+    control->cfg->smc_cfg.ibeta_mem = 0;
+    control->cfg->smc_cfg.cfg.pll.integral = 0;
 
     /**
      * @brief function initialisation
@@ -268,6 +389,9 @@ hpm_mcl_stat_t hpm_mcl_control_init(mcl_control_t *control, mcl_control_cfg_t *c
     control->method.svpwm = &hpm_mcl_control_svpwm;
     control->method.step_svpwm = &hpm_mcl_control_step_svpwm;
     control->method.get_block_sector = &hpm_mcl_control_get_block_sector;
+    control->method.dead_area_polarity_detection = &hpm_mcl_control_dead_area_polarity_detection;
+    control->method.smc_init = &hpm_mcl_control_smc_init;
+    control->method.smc_process = &hpm_mcl_control_smc_process;
     MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.arctan_x, control->cfg->callback.method.arctan_x);
     MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.clarke, control->cfg->callback.method.clarke);
     MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.cos_x, control->cfg->callback.method.cos_x);
@@ -280,6 +404,9 @@ hpm_mcl_stat_t hpm_mcl_control_init(mcl_control_t *control, mcl_control_cfg_t *c
     MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.svpwm, control->cfg->callback.method.svpwm);
     MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.step_svpwm, control->cfg->callback.method.step_svpwm);
     MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.get_block_sector, control->cfg->callback.method.get_block_sector);
+    MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.dead_area_polarity_detection, control->cfg->callback.method.dead_area_polarity_detection);
+    MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.smc_init, control->cfg->callback.method.smc_init);
+    MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.smc_process, control->cfg->callback.method.smc_process);
 
     control->cfg->callback.init();
 

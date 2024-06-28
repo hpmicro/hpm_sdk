@@ -6,8 +6,8 @@ cmake_minimum_required(VERSION 3.13)
 set(HEAP_SIZE 0x40000)
 set(STACK_SIZE 0x10000)
 
-if("${CMAKE_BUILD_TYPE}" STREQUAL "")
-    SET(CMAKE_BUILD_TYPE flash_sdram_xip)
+if("${HPM_BUILD_TYPE}" STREQUAL "")
+    SET(HPM_BUILD_TYPE flash_sdram_xip)
 endif()
 
 set(CONFIG_LWIP 1)
@@ -17,6 +17,7 @@ set(CONFIG_LWIP_HTTPSSRV 1)
 set(CONFIG_MBEDTLS 1)
 set(CONFIG_MBEDTLS_USE_HPM_SDP 1)
 
+set(CONFIG_ENET_PHY 1)
 set(APP_USE_ENET_PORT_COUNT 1)
 #set(APP_USE_ENET_ITF_RGMII 1)
 #set(APP_USE_ENET_ITF_RMII 1)
@@ -34,14 +35,14 @@ if(NOT APP_USE_ENET_PORT_COUNT EQUAL 1)
 endif()
 
 if (APP_USE_ENET_ITF_RGMII AND APP_USE_ENET_ITF_RMII)
-    message(FATAL_ERROR "This sample doesn't supported more than one Ethernet phy!")
+    message(FATAL_ERROR "This sample doesn't support more than one Ethernet phy!")
 endif()
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 sdk_compile_definitions(-D__DISABLE_AUTO_NEGO=0)
 sdk_compile_definitions(-D__USE_ENET_RECEIVE_INTERRUPT=0)
 sdk_compile_definitions(-DLWIP_DHCP=0)
-
+sdk_compile_definitions(-DLWIP_HTTPD_MAX_REQ_LENGTH=1460)
 sdk_compile_definitions(-DMBEDTLS_CONFIG_FILE="hpm_sdk_mbedtls_config.h")
 sdk_compile_definitions(-DCONFIG_MBEDTLS_USE_HPM_SDP=1)
 

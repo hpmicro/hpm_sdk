@@ -97,7 +97,7 @@ static void dma_transfer_config(void)
         printf(" dma setup channel failed\n");
         return;
     }
-    intc_m_enable_irq_with_priority(BOARD_APP_HDMA_IRQ, 4);
+    intc_m_enable_irq_with_priority(APP_GPTMR_DMA_IRQ, 4);
 }
 
 static void gptmr_config(gptmr_dma_request_event_t event)

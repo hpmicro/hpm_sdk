@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2023 HPMicro
+# Copyright (c) 2021-2024 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 board:
@@ -30,3 +30,4 @@ board:
       - board_enet_phy
       - board_enet_dual_phy
       - board_dual_usb
+      - board_power_button

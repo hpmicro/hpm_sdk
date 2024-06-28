@@ -15,6 +15,7 @@ This chapter describes the board-related configuration
    hpm5300evk/README_en
    hpm5301evklite/README_en
    hpm6800evk/README_en
+   hpm6e00evk/README_en
    extension/README_en
 
 :::
@@ -47,6 +48,9 @@ Click [here](lab_hpm5301_evklite_board) to view the HPM5301EVKLITE development b
 :::{tab} HPM6800EVK
 Click [here](lab_hpm6800_evk_board) to view the HPM6800EVK development board
 :::
+:::{tab} HPM6E00EVK
+Click [here](lab_hpm6e00_evk_board) to view the HPM6E00EVK development board
+:::
 
 (lab_board_lcd_pin)=
 (lab_board_app_i2c_pin)=
@@ -66,3 +70,4 @@ Click [here](lab_hpm6800_evk_board) to view the HPM6800EVK development board
 (lab_board_app_i2s_pin)=
 (lab_board_app_pla_pin)=
 (lab_board_app_plb_pin)=
+(lab_board_puart_pin)=

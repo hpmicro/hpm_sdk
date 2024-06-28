@@ -44,12 +44,13 @@ By default, UART0 is used for console printing. Connect UART0.TXD (J3.36) and UA
   - The UART0 used for debugger console or some functional testing using UART
   - The UART3 is used for some functional testing using UART, such as MICROROS_UART, USB_CDC_ACM_UART, MODBUS_RTU etc.
 
-| Function  | Position |
-| --------- | -------- |
+| Function  | Position | Remark   |
+| --------- | -------- | ------   |
 | UART3.TXD | J3[8]    |
 | UART3.RXD | J3[10]   |
 | UART0.TXD | J3[36]   |
 | UART0.RXD | J3[38]   |
+| UART3.break | J3[24] | generate uart break signal |
 
 - SPI Pin：
 
@@ -78,10 +79,8 @@ By default, UART0 is used for console printing. Connect UART0.TXD (J3.36) and UA
 
 | Function   | Position |
 | ---------- | -------- |
-| ADC0.INA11 | J3[5]    |
+| ADC0.INA2  | J3[26]   |
 | ADC1.INA1  | J3[3]    |
-| ADC1.INA2  | J3[26]   |
-| ADC1.INA3  | J3[13]   |
 
 - TinyUF2 Pin :
 
@@ -92,4 +91,21 @@ By default, UART0 is used for console printing. Connect UART0.TXD (J3.36) and UA
 | 功能           | 位置    |
 | -------------- | ------ |
 | TinyUF2 Button | J3[32] |
+
+- GPTMR Pin:
+
+| Function      | Position | Remark   |
+| ------------- | -----    | ------  |
+| GPTMR0.CAPT_1 | J3[32]    |
+| GPTMR0.COMP_1 | J5[3]    | Please disconnect debug probe when this pin is used as GPTMR, since its default function is JTAG TRST.|
+| GPTMR0.COMP_3 | J3[8]    | BCLK of i2s emulation |
+| GPTMR0.COMP_2 | J3[26]   | LRCK of i2s emulation |
+| GPTMR1.COMP_3 | J3[28]    | MLCK of i2s emulation |
+
+- CS Pin of i2s emulation
+
+| Function | Position   |  Remark |
+| ----     | -----      | ------ |
+| PA31     | J3[11]     | the pin that controls the SPI slave CS |
+
 

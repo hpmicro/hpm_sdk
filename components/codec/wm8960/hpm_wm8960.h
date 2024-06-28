@@ -7,8 +7,8 @@
  *
  */
 
-#ifndef _HPM_SGTL5000_H_
-#define _HPM_SGTL5000_H_
+#ifndef _HPM_W8960_H_
+#define _HPM_W8960_H_
 
 #include "hpm_i2c_drv.h"
 #include "hpm_common.h"
@@ -219,5 +219,8 @@ hpm_stat_t wm8960_read_reg(uint8_t reg, uint16_t *val);
  */
 hpm_stat_t wm8960_modify_reg(wm8960_control_t *control, uint8_t reg, uint16_t mask, uint16_t val);
 
+#ifdef __cplusplus
+}
+#endif
 
-#endif /* _HPM_SGTL5000_H_ */
+#endif /* _WM8960_H_ */

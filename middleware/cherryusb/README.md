@@ -4,7 +4,7 @@
 
 CherryUSB is a tiny, beautiful and portable USB host and device stack for embedded system with USB IP.
 
-![CherryUSB](./docs/assets/CherryUSB.svg)
+![CherryUSB](CherryUSB.svg)
 
 ## Why choose
 
@@ -80,6 +80,7 @@ CherryUSB Device Stack has the following functions：
 - Support Remote NDIS (RNDIS)
 - Support WINUSB1.0、WINUSB2.0(with BOS)
 - Support Vendor class
+- Support multi device with the same USB IP
 
 CherryUSB Device Stack resource usage (GCC 10.2 with -O2):
 
@@ -102,12 +103,12 @@ CherryUSB Host Stack has the following functions：
 - Automatic loading of supported Class drivers
 - Support blocking transfers and asynchronous transfers
 - Support Composite Device
-- Multi-level HUB support, expandable up to 7 levels
+- Multi-level HUB support, expandable up to 7 levels(Testing hub with 10 ports works well,only support dwc2 and ehci now)
 - Support Communication Device Class (CDC_ACM, CDC_ECM)
 - Support Human Interface Device (HID)
 - Support Mass Storage Class (MSC)
-- Support USB Video CLASS
-- Support USB Audio CLASS
+- Support USB Video CLASS (commercial charge)
+- Support USB Audio CLASS (commercial charge)
 - Support Remote NDIS (RNDIS)
 - Support USB Bluetooth class (support nimble and zephyr bluetooth stack, support **CLASS:0xE0** or vendor class like cdc acm)
 - Support Vendor class
@@ -151,6 +152,23 @@ x is affected by the following macros：
 #define CONFIG_USBHOST_MAX_VIDEO_CLASS   1
 ```
 
+## USB IP Support
+
+Only standard and commercial USB IP are listed.
+
+|   IP             |  device    | host     | Support status |
+|:----------------:|:----------:|:--------:|:--------------:|
+|  OHCI(intel)     |  none      | OHCI     |  ×   |
+|  EHCI(intel)     |  none      | EHCI     |  √   |
+|  XHCI(intel)     |  none      | XHCI     |  √   |
+|  UHCI(intel)     |  none      | UHCI     |  ×  |
+|  DWC2(synopsys)  |  DWC2      | DWC2     |  √   |
+|  MUSB(mentor)    |  MUSB      | MUSB     |  √   |
+|  FOTG210(faraday)|  FOTG210   | EHCI     |  √   |
+|  CDNS2(cadence)  |  CDNS2     | CDNS2    |  √   |
+|  CDNS3(cadence)  |  CDNS3     | XHCI     |  ×   |
+|  DWC3(synopsys)  |  DWC3      | XHCI     |  ×   |
+
 ## Documentation Tutorial
 
 Quickly start, USB basic concepts, API manual, Class basic concepts and examples, see [CherryUSB Documentation Tutorial](https://cherryusb.readthedocs.io/)
@@ -172,13 +190,20 @@ USB basic concepts and how the CherryUSB Device stack is implemented, see [Cherr
 |ST    |  STM32F4/STM32H7 | dwc2 |[stm32_repo](https://github.com/CherryUSB/cherryusb_stm32)|<= latest | Long-term |
 |HPMicro    |  HPM6750 | hpm/ehci |[hpm_sdk](https://github.com/CherryUSB/hpm_sdk)|<= latest | Long-term |
 |Essemi    |  ES32F36xx | musb |[es32f369_repo](https://github.com/CherryUSB/cherryusb_es32)|<= latest | Long-term |
-|AllwinnerTech    |  F1C100S/F1C200S | musb |[cherryusb_rtt_f1c100s](https://github.com/CherryUSB/cherryusb_rtt_f1c100s)|<= latest | the same with Essemi |
 |Phytium |  e2000 | pusb2/xhci |[phytium_repo](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)|v0.10.2  | Long-term |
+|artinchip |  d12x/d13x/d21x | aic/ehci/ohci |[luban-lite](https://gitee.com/artinchip/luban-lite)|<= latest  | Long-term |
+|Espressif    |  esp32s2/esp32s3 | dwc2 |[esp32_repo](https://github.com/CherryUSB/cherryusb_esp32)|<= latest | the same with ST |
+|AllwinnerTech    |  F1C100S/F1C200S | musb |[cherryusb_rtt_f1c100s](https://github.com/CherryUSB/cherryusb_rtt_f1c100s)|<= latest | the same with Essemi |
 |WCH    |  CH32V307/ch58x | ch32_usbfs/ch32_usbhs/ch58x |[wch_repo](https://github.com/CherryUSB/cherryusb_wch)|<= v0.10.2 | TBD |
-|Espressif    |  esp32s3 | dwc2 |[esp32_repo](https://github.com/CherryUSB/cherryusb_esp32)|<= latest | the same with ST |
 |Nordicsemi |  Nrf52840 | nrf5x |[nrf5x_repo](https://github.com/CherryUSB/cherryusb_nrf5x)|<= v0.10.2 | No more updated |
 |Raspberry pi |  rp2040 | rp2040 |[pico-examples](https://github.com/CherryUSB/pico-examples)|<= v0.10.2 | No more updated |
 
 ## Contact
 
-QQ group: 642693751
+CherryUSB discord: https://discord.com/invite/wFfvrSAey8.
+
+## Company Support
+
+Thanks to the following companies for their support (in no particular order).
+
+<img src="docs/assets/bouffalolab.jpg"  width="100" height="100"/> <img src="docs/assets/hpmicro.jpg"  width="100" height="100" /> <img src="docs/assets/eastsoft.jpg"  width="100" height="100" /> <img src="docs/assets/rtthread.jpg"  width="100" height="100" /> <img src="docs/assets/sophgo.jpg"  width="100" height="100" /> <img src="docs/assets/phytium.jpg"  width="100" height="100" /> <img src="docs/assets/thead.jpg"  width="100" height="100" /> <img src="docs/assets/nuvoton.jpg"  width="100" height="100" /> <img src="docs/assets/artinchip.jpg"  width="100" height="100" />

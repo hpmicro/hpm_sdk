@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -774,6 +774,20 @@ hpm_stat_t emmc_write_blocks(emmc_card_t *card, const uint8_t *buffer, uint32_t 
  * @return
  */
 hpm_stat_t emmc_erase_blocks(emmc_card_t *card, uint32_t start_block, uint32_t block_count, emmc_erase_option_t option);
+
+/**
+ * @brief Switch eMMC device into sleep mode
+ * @param [in] card
+ * @return
+ */
+hpm_stat_t emmc_enter_sleep_mode(emmc_card_t *card);
+
+/**
+ * @brief Switch eMMC device into standby mode
+ * @param [in] card
+ * @return
+ */
+hpm_stat_t emmc_exit_sleep_mode(emmc_card_t *card);
 
 
 #ifdef __cplusplus

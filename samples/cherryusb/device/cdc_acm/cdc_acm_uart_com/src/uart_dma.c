@@ -162,7 +162,7 @@ void dma_isr(void)
     status = dma_check_transfer_status(TEST_UART_DMA_CONTROLLER, TEST_UART_TX_DMA_CH);
 
     if ((status & DMA_CHANNEL_STATUS_TC) != 0) {
-        usbd_ep_start_read(USB_BUS_ID, CDC_OUT_EP, usbd_get_read_buffer_ptr(), TEST_BUFFER_SIZE);
+        usbd_ep_start_read(USB_BUS_ID, CDC_OUT_EP, usbd_get_read_buffer_ptr(), usbd_get_ep_mps(USB_BUS_ID, CDC_OUT_EP));
     }
 }
 SDK_DECLARE_EXT_ISR_M(TEST_UART_DMA_IRQ, dma_isr)

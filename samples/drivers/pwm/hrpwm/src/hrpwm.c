@@ -46,12 +46,42 @@ void reset_pwm_counter(void)
     trgm_output_update_source(TRGM, TRGM_TRGOCFG_PWM_SYNCI, 0);
 }
 
-void generate_edge_aligned_waveform(void)
+void isr_pwm(void)
+{
+    uint32_t status;
+    status = pwm_get_status(HRPWM);
+    pwm_clear_status(HRPWM, status);
+    if ((status & PWM_IRQ_CMP(BOARD_APP_HRPWM_FAULT_CAP_CMP_INDEX))) {
+        pwm_recovery_hrpwm_output(HRPWM);
+    }
+}
+
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_HRPWM_IRQ, isr_pwm)
+
+void config_pwm_fault_capture(void)
+{
+    pwm_cmp_config_t cmp_config;
+    trgm_output_t trgm_output_cfg;
+
+    cmp_config.mode = pwm_cmp_mode_input_capture;
+    pwm_config_cmp(HRPWM, BOARD_APP_HRPWM_FAULT_CAP_CMP_INDEX, &cmp_config);
+    intc_m_enable_irq_with_priority(BOARD_APP_HRPWM_IRQ, 1);
+    pwm_enable_irq(HRPWM, PWM_IRQ_CMP(BOARD_APP_HRPWM_FAULT_CAP_CMP_INDEX));
+
+    trgm_output_cfg.invert = false;
+    trgm_output_cfg.type   = trgm_output_same_as_input;
+    trgm_output_cfg.input  = BOARD_APP_HRPWM_FAULT_TRGM_SRC;
+    trgm_output_config(BOARD_APP_HRPWM_TRGM, BOARD_APP_HRPWM_FAULT_TRGM_OUT, &trgm_output_cfg);
+
+}
+
+void generate_edge_aligned_waveform_fault_mode(void)
 {
     uint8_t cmp_index = 0;
     uint32_t duty, duty_step;
     pwm_cmp_config_t cmp_config[2] = {0};
     pwm_config_t pwm_config = {0};
+    pwm_fault_source_config_t fault_config = {0};
 
     pwm_stop_counter(HRPWM);
     pwm_disable_hrpwm(HRPWM);
@@ -61,6 +91,8 @@ void generate_edge_aligned_waveform(void)
     pwm_config.enable_output = true;
     pwm_config.dead_zone_in_half_cycle = 0;
     pwm_config.invert_output = false;
+    pwm_config.fault_mode = pwm_fault_mode_force_output_0;
+    pwm_config.fault_recovery_trigger = pwm_fault_recovery_immediately;
 
     pwm_cal_hrpwm_chn_start(HRPWM, cmp_index);
     pwm_cal_hrpwm_chn_start(HRPWM, cmp_index + 1);
@@ -73,6 +105,10 @@ void generate_edge_aligned_waveform(void)
      */
     pwm_set_hrpwm_reload(HRPWM, 0, reload);
     pwm_set_start_count(HRPWM, 0, 0);
+    fault_config.fault_external_0_active_low = true;
+    fault_config.source_mask = pwm_fault_source_debug;
+    pwm_config_fault_source(HRPWM, &fault_config);
+    config_pwm_fault_capture();
 
     /*
      * config cmp = RELOAD + 1
@@ -326,7 +362,7 @@ int main(void)
     printf("\n\n>> Generate edge aligned waveform\n");
     printf("Two waveforms will be generated, HRPWM P%d is the target waveform\n", PWM_OUTPUT_PIN1);
     printf("whose duty cycle will be updated from 0 - 100; HRPWM P%d is a reference\n", PWM_OUTPUT_PIN2);
-    generate_edge_aligned_waveform();
+    generate_edge_aligned_waveform_fault_mode();
     printf("\n\n>> Generate central aligned waveform\n");
     printf("Two waveforms will be generated, HRPWM P%d is the target waveform\n", PWM_OUTPUT_PIN1);
     printf("whose duty cycle will be updated from 0 - 100; HRPWM P%d is a reference\n", PWM_OUTPUT_PIN2);

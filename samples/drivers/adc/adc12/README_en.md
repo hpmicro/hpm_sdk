@@ -83,6 +83,14 @@ Please enter one of ADC conversion modes above (e.g. 1 or 2 ...):
     - Disable one or more corresponding WDOG interrupts
 
   - Main loop
-
     - Handle with WDOG events
     - Enable one or more corresponding WDOG interrupts
+
+- Trigger source
+
+  - In this sample, for sequence mode and preemption mode, PWM is selected as the trigger source. Other peripherals can also be selected as the trigger source.
+  - The frequency of the trigger signal(20KHz by default) can be configured in sample-level CMakeLists.txt(e.g. sdk_compile_definitions(-DAPP_ADC12_TRIG_SRC_FREQUENCY=20000))
+
+- Exception exit
+
+  Press the "space" key to abort the test, and then a test mode can be reselected.

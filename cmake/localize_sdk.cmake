@@ -1,6 +1,7 @@
 # Copyright (c) 2024 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
+set(result 0)
 if(UNLOCALIZE_PROJECT)
     if(EXISTS "${SRC_DIR}/CMakeLists.txt.localized.bak")
         file(TO_CMAKE_PATH ${HPM_SDK_BASE}/scripts/localize_sdk.py LOCALIZE_PYTHON_SCRIPT)
@@ -16,6 +17,7 @@ if(UNLOCALIZE_PROJECT)
             --brd=${BOARD}
             --unlocalize
             WORKING_DIRECTORY ${BIN_DIR}
+            RESULT_VARIABLE result
         )
     else()
         message(WARNING "\nproject has not been localized yet, localize it first!")
@@ -35,8 +37,13 @@ else()
             --brd=${BOARD}
             -f
             WORKING_DIRECTORY ${BIN_DIR}
+            RESULT_VARIABLE result
         )
     else()
         message(WARNING "\nproject has been localized already, unlocalize it first!")
     endif()
+endif()
+
+if(NOT ${result} EQUAL 0)
+    message(FATAL_ERROR "\nLocalization failed, abort!")
 endif()

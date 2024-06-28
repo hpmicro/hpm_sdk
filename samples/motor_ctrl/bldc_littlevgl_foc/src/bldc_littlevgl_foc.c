@@ -503,9 +503,13 @@ void adc_init(void)
 {
     adc_config_t cfg;
     adc_channel_config_t ch_cfg;
+
     cfg.module = BOARD_BLDC_ADC_MODULE;
     hpm_adc_init_default_config(&cfg);
 #if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC12
+    board_init_adc_clock(BOARD_BLDC_ADC_U_BASE, true);
+    board_init_adc_clock(BOARD_BLDC_ADC_V_BASE, true);
+    board_init_adc_clock(BOARD_BLDC_ADC_W_BASE, true);
     cfg.config.adc12.res            = adc12_res_12_bits;
     cfg.config.adc12.conv_mode      = adc12_conv_mode_preemption;
     cfg.config.adc12.adc_clk_div    = adc12_clock_divider_3;
@@ -521,6 +525,9 @@ void adc_init(void)
     cfg.adc_base.adc12 = BOARD_BLDC_ADC_W_BASE;
     hpm_adc_init(&cfg);
 #else
+    board_init_adc_clock(BOARD_BLDC_ADC_U_BASE, true);
+    board_init_adc_clock(BOARD_BLDC_ADC_V_BASE, true);
+    board_init_adc_clock(BOARD_BLDC_ADC_W_BASE, true);
     cfg.config.adc16.res            = adc16_res_16_bits;
     cfg.config.adc16.conv_mode      = adc16_conv_mode_preemption;
     cfg.config.adc16.adc_clk_div    = adc16_clock_divider_4;

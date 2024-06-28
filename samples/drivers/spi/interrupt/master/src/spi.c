@@ -134,16 +134,17 @@ int main(void)
         return -1;
     }
 
+    /* setup fifo threshold interrupt and transfer complete interrupt */
+    spi_set_tx_fifo_threshold(TEST_SPI, SPI_SOC_FIFO_DEPTH - 1U);
+    spi_set_rx_fifo_threshold(TEST_SPI, 1U);
+    spi_enable_interrupt(TEST_SPI, spi_tx_fifo_threshold_int | spi_rx_fifo_threshold_int | spi_end_int);
+
+    /* start a SPI transfer */
     stat = spi_write_command(TEST_SPI, spi_master_mode, &control_config, &cmd);
     if (stat != status_success) {
         printf("SPI write command failed.\n");
         return -1;
     }
-
-    /* setup fifo threshold interrupt and transfer complete interrupt */
-    spi_set_tx_fifo_threshold(TEST_SPI, SPI_SOC_FIFO_DEPTH - 1U);
-    spi_set_rx_fifo_threshold(TEST_SPI, 1U);
-    spi_enable_interrupt(TEST_SPI, spi_tx_fifo_threshold_int | spi_rx_fifo_threshold_int | spi_end_int);
 
     while (!spi_transfer_done) {
         __asm("nop");

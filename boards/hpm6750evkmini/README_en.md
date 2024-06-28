@@ -72,10 +72,11 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 
 - UART for core1 debug console：
 
-| Function   | Position |
-| ---------- | -------- |
+| Function   | Position | Remark   |
+| ---------- | -------- | ------   |
 | UART13.TXD | P1[8]    |
 | UART13.RXD | P1[10]   |
+| UART13.break | P1[24]   | generate uart break signal |
 
 - ACMP Pin
 
@@ -86,11 +87,12 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 
 - GPTMR Pin
 
-| Function      | Position |
-| ------------- | -------- |
+| Function      | Position | Remark   |
+| ------------- | -------- | -------- |
 | GPTMR5.CAPT_1 | P1[12] |
-| GPTMR5.COMP_0 | P1[31] |
-| GPTMR5.COMP_1 | P1[35] |
+| GPTMR5.COMP_0 | P1[31] | MCLK of i2s emulation  |
+| GPTMR5.COMP_1 | P1[35] | LRCK of i2s emulation |
+| GPTMR5.COMP_2 | P2[38] | BLCK of i2s emulation  |
 
 - ADC12 Pin
 
@@ -164,8 +166,16 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 | TAMP.09  | PZ09   | P1[8]  | Active Mode |
 | TAMP.10  | PZ10   | P1[22] | Passive Mode |
 
+- CS Pin of i2s emulation
+
+| Function | Position   |  Remark |
+| ----     | -----      | ------ |
+| PD25      | P2[40]    | the pin that controls the SPI slave CS |
+
+
 ## Known Issues
 
 - Some samples may enter the trap handler during runtime, with a MCAUSE == 2 (instruction error). This is due to a flaw in ILM, as detailed in the Errata Manual E00001.
 
   - Solution: Change the ILM interface address in the link script to ILM_ SLV address.
+

@@ -7,5 +7,6 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(sdram_example)
 
+sdk_compile_definitions(-DINIT_EXT_RAM_FOR_DATA)
 sdk_app_src(src/sdram.c)
 generate_ide_projects()

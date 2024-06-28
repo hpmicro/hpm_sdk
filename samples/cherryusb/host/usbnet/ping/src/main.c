@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include "board.h"
+#include "hpm_uart_drv.h"
 #include "lwip/tcpip.h"
 #include "lwip/dhcp.h"
 #include "lwip/prot/dhcp.h"
@@ -100,18 +101,26 @@ static void ping_task(void *pdata)
                 printf("***********************************************************"
                         "**********************\n");
                 while (1) {
-                    ch = getchar();
-                    putchar(ch);
-                    buffer[i++] = ch;
-                    /*esc key*/
-                    if (ch == 0x1B) {
-                        break;
-                    }
-                    /* enter key*/
-                    if (ch == 0x0d) {
-                        if (i > 5) {
-                            ready_ping = true;
+                    if (uart_check_status(BOARD_CONSOLE_UART_BASE, uart_stat_data_ready) == true) {
+                        ch = uart_read_byte(BOARD_CONSOLE_UART_BASE);
+                        buffer[i++] = ch;
+                        /*esc key*/
+                        if (ch == 0x1B) {
+                            break;
+                        } else {
+                            uart_send_byte(BOARD_CONSOLE_UART_BASE, ch);
                         }
+                        /* enter key*/
+                        if (ch == 0x0d) {
+                            if (i > 5) {
+                                ready_ping = true;
+                            }
+                            break;
+                        }
+                    }
+                    if (netif_is_up(netif) == false) {
+                        dhcp_check = false;
+                        printf("netif is down\n");
                         break;
                     }
                     vTaskDelay(2);

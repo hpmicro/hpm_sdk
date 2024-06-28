@@ -121,10 +121,11 @@ hpm_stat_t ov5640_set_interface(camera_context_t *context, camera_config_t *ov_c
 /**
  * @brief set ov5640 flip
  *
- * @param context @ref camera_context_t
+ * @param [in] context camera_context_t
+ * @param [in] enable enable flip if true
  * @return hpm_stat_t
  */
-hpm_stat_t ov5640_flip(camera_context_t *context);
+hpm_stat_t ov5640_flip(camera_context_t *context, bool enable);
 
 /*
  * ov5640 start
@@ -167,6 +168,15 @@ hpm_stat_t ov5640_set_special_effect(camera_context_t *context, int32_t effect);
  * @param [in] context camera_context_t
  */
 void ov5640_power_up(camera_context_t *context);
+
+/**
+ * @brief set ov5640 mirror
+ *
+ * @param [in] context camera_context_t
+ * @param [in] enable enable mirror if true
+ * @return hpm_stat_t
+ */
+hpm_stat_t ov5640_mirror(camera_context_t *context, bool enable);
 
 #ifdef __cplusplus
 }

@@ -1,0 +1,3 @@
+[submodule "CherryRL"]
+	path = CherryRL
+	url = https://github.com/cherry-embedded/CherryRL.git

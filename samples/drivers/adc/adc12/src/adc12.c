@@ -23,8 +23,8 @@
 #define APP_ADC12_SEQ_DMA_BUFF_LEN_IN_4BYTES (1024U)
 #define APP_ADC12_SEQ_IRQ_EVENT              adc12_event_seq_single_complete
 
-#define APP_ADC12_HW_TRIGSRC_PWM_REFCH_A     (8U)
-#define APP_ADC12_HW_TRIGSRC_PWM             BOARD_APP_ADC12_HW_TRIG_SRC
+#define APP_ADC12_HW_TRIG_SRC_PWM_REFCH_A    (8U)
+#define APP_ADC12_HW_TRIG_SRC                BOARD_APP_ADC12_HW_TRIG_SRC
 #define APP_ADC12_HW_TRGM                    BOARD_APP_ADC12_HW_TRGM
 #define APP_ADC12_HW_TRGM_IN                 BOARD_APP_ADC12_HW_TRGM_IN
 #define APP_ADC12_HW_TRGM_OUT_SEQ            BOARD_APP_ADC12_HW_TRGM_OUT_SEQ
@@ -33,6 +33,10 @@
 #define APP_ADC12_PMT_TRIG_CH                BOARD_APP_ADC12_PMT_TRIG_CH
 #define APP_ADC12_PMT_DMA_BUFF_LEN_IN_4BYTES ADC_SOC_PMT_MAX_DMA_BUFF_LEN_IN_4BYTES
 #define APP_ADC12_PMT_IRQ_EVENT              adc12_event_trig_complete
+
+#ifndef APP_ADC12_TRIG_SRC_FREQUENCY
+#define APP_ADC12_TRIG_SRC_FREQUENCY         (20000U)
+#endif
 
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t seq_buff[APP_ADC12_SEQ_DMA_BUFF_LEN_IN_4BYTES];
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t pmt_buff[APP_ADC12_PMT_DMA_BUFF_LEN_IN_4BYTES];
@@ -140,10 +144,11 @@ void init_trigger_source(PWM_Type *ptr)
     pwm_cmp_config_t pwm_cmp_cfg;
     pwm_output_channel_t pwm_output_ch_cfg;
 
-    /* TODO: Set PWM Clock Source and divider */
+    int mot_clock_freq;
 
-    /* 33.33KHz reload at 200MHz */
-    pwm_set_reload(ptr, 0, 5999);
+    mot_clock_freq = clock_get_frequency(BOARD_APP_ADC12_HW_TRIG_SRC_CLK_NAME);
+    /* reload value */
+    pwm_set_reload(ptr, 0, (mot_clock_freq/APP_ADC12_TRIG_SRC_FREQUENCY) - 1);
 
     /* Set a comparator */
     memset(&pwm_cmp_cfg, 0x00, sizeof(pwm_cmp_config_t));
@@ -152,30 +157,30 @@ void init_trigger_source(PWM_Type *ptr)
     pwm_cmp_cfg.update_trigger = pwm_shadow_register_update_on_shlk;
 
     /* Select comp8 and trigger at the middle of a pwm cycle */
-    pwm_cmp_cfg.cmp = 2999;
-    pwm_config_cmp(ptr, APP_ADC12_HW_TRIGSRC_PWM_REFCH_A, &pwm_cmp_cfg);
+    pwm_cmp_cfg.cmp = ((mot_clock_freq/APP_ADC12_TRIG_SRC_FREQUENCY) - 1) >> 1;
+    pwm_config_cmp(ptr, APP_ADC12_HW_TRIG_SRC_PWM_REFCH_A, &pwm_cmp_cfg);
 
     /* Issue a shadow lock */
-    pwm_issue_shadow_register_lock_event(APP_ADC12_HW_TRIGSRC_PWM);
+    pwm_issue_shadow_register_lock_event(APP_ADC12_HW_TRIG_SRC);
 
     /* Set comparator channel to generate a trigger signal */
-    pwm_output_ch_cfg.cmp_start_index = APP_ADC12_HW_TRIGSRC_PWM_REFCH_A;   /* start channel */
-    pwm_output_ch_cfg.cmp_end_index   = APP_ADC12_HW_TRIGSRC_PWM_REFCH_A;   /* end channel */
+    pwm_output_ch_cfg.cmp_start_index = APP_ADC12_HW_TRIG_SRC_PWM_REFCH_A;   /* start channel */
+    pwm_output_ch_cfg.cmp_end_index   = APP_ADC12_HW_TRIG_SRC_PWM_REFCH_A;   /* end channel */
     pwm_output_ch_cfg.invert_output   = false;
-    pwm_config_output_channel(ptr, APP_ADC12_HW_TRIGSRC_PWM_REFCH_A, &pwm_output_ch_cfg);
+    pwm_config_output_channel(ptr, APP_ADC12_HW_TRIG_SRC_PWM_REFCH_A, &pwm_output_ch_cfg);
 
 	/* Start the comparator counter */
     pwm_start_counter(ptr);
 }
 
-void init_trigger_mux(TRGM_Type * ptr, uint8_t output)
+void init_trigger_mux(TRGM_Type *ptr, uint8_t input, uint8_t output)
 {
     trgm_output_t trgm_output_cfg;
 
     trgm_output_cfg.invert = false;
     trgm_output_cfg.type = trgm_output_same_as_input;
 
-    trgm_output_cfg.input  = APP_ADC12_HW_TRGM_IN;
+    trgm_output_cfg.input  = input;
     trgm_output_config(ptr, output, &trgm_output_cfg);
 }
 
@@ -356,10 +361,10 @@ void init_sequence_config(void)
 
 #ifndef __ADC12_USE_SW_TRIG
     /* Trigger mux initialization */
-    init_trigger_mux(APP_ADC12_HW_TRGM, APP_ADC12_HW_TRGM_OUT_SEQ);
+    init_trigger_mux(APP_ADC12_HW_TRGM, APP_ADC12_HW_TRGM_IN, APP_ADC12_HW_TRGM_OUT_SEQ);
 
     /* Trigger source initialization */
-    init_trigger_source(APP_ADC12_HW_TRIGSRC_PWM);
+    init_trigger_source(APP_ADC12_HW_TRIG_SRC);
 #endif
 }
 
@@ -408,10 +413,10 @@ void init_preemption_config(void)
 
 #ifndef __ADC12_USE_SW_TRIG
     /* Trigger mux initialization */
-    init_trigger_mux(APP_ADC12_HW_TRGM, APP_ADC12_HW_TRGM_OUT_PMT);
+    init_trigger_mux(APP_ADC12_HW_TRGM, APP_ADC12_HW_TRGM_IN, APP_ADC12_HW_TRGM_OUT_PMT);
 
     /* Trigger source initialization */
-    init_trigger_source(APP_ADC12_HW_TRIGSRC_PWM);
+    init_trigger_source(APP_ADC12_HW_TRIG_SRC);
 #endif
 }
 
@@ -445,18 +450,19 @@ int main(void)
     board_init_adc12_pins();
 
     /* ADC clock initialization */
-    board_init_adc12_clock(BOARD_APP_ADC12_BASE, true);
+    board_init_adc_clock(BOARD_APP_ADC12_BASE, true);
 
     printf("This is an ADC12 demo:\n");
 
-    /* Get a conversion mode from a console window */
-    conv_mode = get_adc_conv_mode();
+    while (1) {
+        /* Get a conversion mode from a console window */
+        conv_mode = get_adc_conv_mode();
 
-    /* ADC12 common initialization */
-    init_common_config(conv_mode);
+        /* ADC12 common initialization */
+        init_common_config(conv_mode);
 
-    /* ADC12 read patter and DMA initialization */
-    switch (conv_mode) {
+        /* ADC12 read patter and DMA initialization */
+        switch (conv_mode) {
         case adc12_conv_mode_oneshot:
             init_oneshot_config();
             break;
@@ -475,24 +481,27 @@ int main(void)
 
         default:
             break;
-    }
+        }
 
-    /* Main loop */
-    while (1) {
-        board_delay_ms(1000);
+        /* Main loop */
+        while (1) {
+            channel_result_out_of_threshold_handler();
 
-        channel_result_out_of_threshold_handler();
+            if (conv_mode == adc12_conv_mode_oneshot) {
+                oneshot_handler();
+            } else if (conv_mode == adc12_conv_mode_period) {
+                period_handler();
+            } else if (conv_mode == adc12_conv_mode_sequence) {
+                sequence_handler();
+            } else if (conv_mode == adc12_conv_mode_preemption) {
+                preemption_handler();
+            } else {
+                printf("Conversion mode is not supported!\n");
+            }
 
-        if (conv_mode == adc12_conv_mode_oneshot) {
-            oneshot_handler();
-        } else if (conv_mode == adc12_conv_mode_period) {
-            period_handler();
-        } else if (conv_mode == adc12_conv_mode_sequence) {
-            sequence_handler();
-        } else if (conv_mode == adc12_conv_mode_preemption) {
-            preemption_handler();
-        } else {
-            printf("Conversion mode is not supported!\n");
+            if (console_try_receive_byte() == ' ') {
+                break;
+            }
         }
     }
 }

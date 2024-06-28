@@ -111,7 +111,12 @@ int main(void)
     config.dma_enable = true;
     config.src_freq_in_hz = clock_get_frequency(TEST_UART_CLK_NAME);
     config.tx_fifo_level = uart_tx_fifo_trg_not_full;
+    /* rx fifo level should more than 13 bytes */
+#if defined(HPM_IP_FEATURE_UART_FINE_FIFO_THRLD) && (HPM_IP_FEATURE_UART_FINE_FIFO_THRLD == 1)
+    config.rx_fifo_level = uart_fifo_14_bytes;
+#else
     config.rx_fifo_level = uart_rx_fifo_trg_gt_three_quarters;
+#endif
     stat = uart_init(TEST_UART, &config);
     if (stat != status_success) {
         printf("failed to initialize uart\n");

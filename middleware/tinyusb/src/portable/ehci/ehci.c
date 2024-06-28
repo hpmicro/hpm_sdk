@@ -65,7 +65,7 @@
 
 // Total queue head pool. TODO should be user configurable and more optimize memory usage in the future
 #define QHD_MAX      (CFG_TUH_DEVICE_MAX*CFG_TUH_ENDPOINT_MAX + CFG_TUH_HUB)
-#define QTD_MAX      QHD_MAX
+#define QTD_MAX      (QHD_MAX * 3u)
 
 typedef struct
 {
@@ -471,6 +471,10 @@ bool hcd_edpt_xfer(uint8_t rhport, uint8_t dev_addr, uint8_t ep_addr, uint8_t * 
 
   ehci_qhd_t* qhd = qhd_get_from_addr(dev_addr, ep_addr);
   ehci_qtd_t* qtd;
+  ehci_qtd_t* first_qtd = NULL;
+  ehci_qtd_t* prev_qtd = NULL;
+
+  uint32_t xfer_len;
 
   if (epnum == 0) {
     // Control endpoint never be stalled. Skip reset Data Toggle since it is fixed per stage
@@ -484,15 +488,40 @@ bool hcd_edpt_xfer(uint8_t rhport, uint8_t dev_addr, uint8_t ep_addr, uint8_t * 
     // first data toggle is always 1 (data & setup stage)
     qtd->data_toggle = 1;
     qtd->pid = dir ? EHCI_PID_IN : EHCI_PID_OUT;
+    first_qtd = qtd;
   } else {
     // skip if endpoint is halted
     TU_VERIFY(!qhd->qtd_overlay.halted);
 
-    qtd = qtd_find_free();
-    TU_ASSERT(qtd);
+    while (1) {
+      qtd = qtd_find_free();
+      TU_ASSERT(qtd);
 
-    qtd_init(qtd, buffer, buflen);
-    qtd->pid = qhd->pid;
+      if (buflen > 0x4000) {
+        xfer_len = 0x4000;
+        buflen -= 0x4000;
+      } else {
+        xfer_len = buflen;
+        buflen = 0;
+      }
+
+      qtd_init(qtd, buffer, xfer_len);
+      qtd->pid = qhd->pid;
+      if (prev_qtd) {
+        prev_qtd->next.address = ((uint32_t)qtd & ~0x1Fu);
+      } else {
+        first_qtd = qtd;
+      }
+      prev_qtd = qtd;
+
+      buffer += xfer_len;
+      if (buflen == 0) {
+        qtd->int_on_complete = 1;
+        break;
+      } else {
+        qtd->int_on_complete = 0;
+      }
+    }
   }
 
   // IN transfer: invalidate buffer, OUT transfer: clean buffer
@@ -503,7 +532,7 @@ bool hcd_edpt_xfer(uint8_t rhport, uint8_t dev_addr, uint8_t ep_addr, uint8_t * 
   }
 
   // attach TD to QHD -> start transferring
-  qhd_attach_qtd(qhd, qtd);
+  qhd_attach_qtd(qhd, first_qtd);
 
   return true;
 }
@@ -624,46 +653,47 @@ void port_connect_status_change_isr(uint8_t rhport) {
 TU_ATTR_ALWAYS_INLINE static inline
 void qhd_xfer_complete_isr(ehci_qhd_t * qhd) {
   hcd_dcache_invalidate(qhd, sizeof(ehci_qhd_t)); // HC may have updated the overlay
-  volatile ehci_qtd_t *qtd_overlay = &qhd->qtd_overlay;
+  ehci_qtd_t * volatile qtd = qhd->attached_qtd;
+  xfer_result_t xfer_result = XFER_RESULT_SUCCESS;;
+  uint32_t xferred_bytes = 0;
 
   // process non-active (completed) QHD with attached (scheduled) TD
-  if ( !qtd_overlay->active && qhd->attached_qtd != NULL ) {
-    xfer_result_t xfer_result;
+  if (qtd == NULL) {
+    return;
+  }
 
-    if ( qtd_overlay->halted ) {
-      if (qtd_overlay->xact_err || qtd_overlay->err_count == 0 || qtd_overlay->buffer_err || qtd_overlay->babble_err) {
-        // Error count = 0 often occurs when device disconnected, or other bus-related error
-        // clear halted bit if not caused by STALL to allow more transfer
-        xfer_result = XFER_RESULT_FAILED;
-        qtd_overlay->halted = false;
-        TU_LOG3("  QHD xfer err count: %d\n", qtd_overlay->err_count);
-        // TU_BREAKPOINT(); // TODO skip unplugged device
-      }else {
-        // no error bits are set, endpoint is halted due to STALL
-        xfer_result = XFER_RESULT_STALLED;
-      }
-    } else {
-      xfer_result = XFER_RESULT_SUCCESS;
-    }
-
-    ehci_qtd_t * volatile qtd = qhd->attached_qtd;
+  while (qtd) {
     hcd_dcache_invalidate(qtd, sizeof(ehci_qtd_t)); // HC may have written back TD
 
-    uint8_t const dir = (qtd->pid == EHCI_PID_IN) ? 1 : 0;
-    uint32_t const xferred_bytes = qtd->expected_bytes - qtd->total_bytes;
-
-    // invalidate dcache if IN transfer with data
-    if (dir == 1 && qhd->attached_buffer != 0 && xferred_bytes > 0) {
-      hcd_dcache_invalidate((void*) qhd->attached_buffer, xferred_bytes);
+    if (qtd->halted) { 
+      if (qtd->buffer_err || qtd->babble_err || qtd->xact_err) {
+        xfer_result = XFER_RESULT_FAILED;
+        TU_LOG3("  QHD xfer err count: %d\n", qtd->err_count);
+      } else {
+        xfer_result = XFER_RESULT_STALLED;
+      }
+      break;
+    } else if (qtd->active) {
+      return;
+    } else {
+      xferred_bytes += qtd->expected_bytes - qtd->total_bytes;
     }
 
-    // remove and free TD before invoking callback
-    qhd_remove_qtd(qhd);
-
-    // notify usbh
-    uint8_t const ep_addr = tu_edpt_addr(qhd->ep_number, dir);
-    hcd_event_xfer_complete(qhd->dev_addr, ep_addr, xferred_bytes, xfer_result, true);
+    qtd = (ehci_qtd_t *)(qtd->next.address & ~0x1F);
   }
+
+  uint8_t const dir = (qhd->pid == EHCI_PID_IN) ? 1 : 0;
+  // invalidate dcache if IN transfer with data
+  if (dir == 1 && qhd->attached_buffer != 0 && xferred_bytes > 0) {
+    hcd_dcache_invalidate((void*) qhd->attached_buffer, xferred_bytes);
+  }
+
+  // remove and free TD before invoking callback
+  qhd_remove_qtd(qhd);
+
+  // notify usbh
+  uint8_t const ep_addr = tu_edpt_addr(qhd->ep_number, dir);
+  hcd_event_xfer_complete(qhd->dev_addr, ep_addr, xferred_bytes, xfer_result, true);
 }
 
 TU_ATTR_ALWAYS_INLINE static inline
@@ -961,8 +991,11 @@ static void qhd_remove_qtd(ehci_qhd_t *qhd) {
   qhd->attached_buffer = 0;
   hcd_dcache_clean(qhd, sizeof(ehci_qhd_t));
 
-  qtd->used = 0; // free QTD
-  hcd_dcache_clean(qtd, sizeof(ehci_qtd_t));
+  while (qtd) {
+    qtd->used = 0; // free QTD
+    hcd_dcache_clean(qtd, sizeof(ehci_qtd_t));
+    qtd = (ehci_qtd_t *)(qtd->next.address & ~0x1F);
+  };
 }
 
 //--------------------------------------------------------------------+

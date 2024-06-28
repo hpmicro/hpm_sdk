@@ -126,4 +126,3 @@ iperf report: type=1, remote: 11.23.63.183:5001, total bytes: 1125684, duration 
 
 ```
 
-note: when switching the rndis module or ecm module, you also need to reset the development board.

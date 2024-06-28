@@ -83,11 +83,7 @@ ATTR_RAMFUNC_WITH_ALIGNMENT(8) volatile uint32_t tmgw_dma_link_src_spirx_dma_siz
 ATTR_PLACE_AT_AHBSRAM_WITH_ALIGNMENT(8) volatile uint32_t tmgw_dma_link_src_spirx_source_addr;
 ATTR_PLACE_AT_AHBSRAM_WITH_ALIGNMENT(8) volatile uint32_t tmgw_dma_link_src_spirx_dma_enable;
 
-ATTR_PLACE_AT_AHBSRAM_WITH_ALIGNMENT(8) volatile uint32_t tmgw_dma_link_src_hall_cr_assert;
 ATTR_PLACE_AT_AHBSRAM_WITH_ALIGNMENT(8) volatile uint32_t tmgw_dma_link_src_hall_cr_release;
-ATTR_PLACE_AT_AHBSRAM_WITH_ALIGNMENT(8) volatile uint32_t tmgw_dma_link_src_hall_dma_size;
-ATTR_PLACE_AT_AHBSRAM_WITH_ALIGNMENT(8) volatile uint32_t tmgw_dma_link_src_hall_source_addr;
-ATTR_PLACE_AT_AHBSRAM_WITH_ALIGNMENT(8) volatile uint32_t tmgw_dma_link_src_hall_dma_enable;
 
 ATTR_PLACE_AT_AHBSRAM_WITH_ALIGNMENT(8) volatile uint32_t tmgw_dma_link_src_link_dma_size;
 ATTR_PLACE_AT_AHBSRAM_WITH_ALIGNMENT(8) volatile uint32_t tmgw_dma_link_src_link_source_addr;
@@ -115,6 +111,7 @@ void pla_tmgw_init(void);
 hpm_stat_t qei_positive_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, QEI_Type *qei_x, uint32_t src, uint8_t data_width, uint32_t size);
 void init_qei(void);
 hpm_stat_t tmgw_dma_chained_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, uint32_t src, uint32_t dst, uint8_t data_width, uint32_t size);
+void tamagawa_get_time(uint32_t *times);
 
 uint8_t tmgw_cmd;
 
@@ -946,6 +943,7 @@ void pwm_isr(void)
     irq_status = pwm_get_status(TEST_MOTOR_PWM_BASE);
     pwm_clear_status(TEST_MOTOR_PWM_BASE, irq_status);
     if ((irq_status & PWM_IRQ_CMP(TEST_MOTOR_PWM_INT_CMP))) {
+        tamagawa_get_time((uint32_t *)&hall_buff[0]);
         tmgw_message_process(&tmgw_status_completed, &tmgw_dev, &tmgw_msg);
         refresh_comm_start_time(tmgw_dev.comm_time_delay_config);
 #ifdef PLA_DMA_REFRESH_BY_DMA_LINK
@@ -1184,30 +1182,14 @@ void init_qei(void)
     trgm_output_config(PLA_TMGW_QEI_TRGM, PLA_TMGW_QEI_TRGM_QEI_PLA_IN, &config);
 }
 
-hpm_stat_t hall_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, HALL_Type  *hall_ptr, uint32_t dst, uint8_t data_width, uint32_t size)
+void tamagawa_get_time(uint32_t *time)
 {
-    dma_handshake_config_t config;
-    config.ch_index = ch_num;
-    config.dst = dst;
-    config.dst_fixed = true;
-    config.src = (uint32_t)&hall_ptr->HIS[0].HIS0;
-    config.src_fixed = true;
-    config.data_width = data_width;
-    config.size_in_byte = size;
-
-    return dma_setup_handshake(dma_ptr, &config, true);
+    *time = hall_get_u_history0(PLA_TMGW_HALL_BASE);
 }
 
 void tmgw_hall_init(void)
 {
     hall_counter_reset_assert(PLA_TMGW_HALL_BASE);
-    hall_trigger_dma(PLA_TMGW_HALL_DMA, PLA_TMGW_HALL_DMA_CH, PLA_TMGW_HALL_BASE,
-        core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)hall_buff), DMA_TRANSFER_WIDTH_WORD,
-        PLA_TMGW_HALL_TRAN_SIZE * sizeof(hall_buff));
-    dmamux_config(PLA_TMGW_HALL_DMAMUX, PLA_TMGW_HALL_DMAMUX_CH, PLA_TMGW_HALL_DMA_REQ, true);
-    hall_load_read_trigger_event_enable(PLA_TMGW_HALL_BASE, HALL_EVENT_U_FLAG_MASK);
-    hall_dma_request_enable(PLA_TMGW_HALL_BASE, HALL_EVENT_U_FLAG_MASK);
-    trgm_dma_request_config(PLA_TMGW_HALL_TRGM, TRGM_DMACFG_1, HPM_TRGM0_DMA_SRC_HALL0);
     hall_counter_reset_release(PLA_TMGW_HALL_BASE);
 }
 
@@ -1221,7 +1203,7 @@ hpm_stat_t tmgw_dma_chained_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, uint3
     config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
     config.dst_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
     config.src_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
-    config.src_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
+    config.src_mode = DMA_HANDSHAKE_MODE_NORMAL;
 
     config.src_width = data_width;
     config.dst_width = data_width;
@@ -1457,55 +1439,6 @@ void tmgw_dma_chained(void)
             | DMA_CHCTRL_CTRL_DSTADDRCTRL_SET(DMA_ADDRESS_CONTROL_FIXED);
    tmgw_dma_linked_descriptors[pos].linked_ptr = SET_DMA_LINK_PTR((uint32_t)&tmgw_dma_linked_descriptors[pos + 1]);
 
-    /**
-     * @brief HALL counter_reset assert
-     *
-     */
-    pos++;
-    tmgw_dma_link_src_hall_cr_assert = PLA_TMGW_HALL_BASE->CR;
-    tmgw_dma_link_src_hall_cr_assert |= HALL_CR_RSTCNT_MASK;
-    tmgw_dma_linked_descriptors[pos].trans_size = 1;
-    tmgw_dma_linked_descriptors[pos].src_addr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)&tmgw_dma_link_src_hall_cr_assert);
-    tmgw_dma_linked_descriptors[pos].dst_addr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)&PLA_TMGW_HALL_BASE->CR);
-    tmgw_dma_linked_descriptors[pos].ctrl = DMA_CHCTRL_CTRL_SRCWIDTH_SET(DMA_TRANSFER_WIDTH_WORD)
-            | DMA_CHCTRL_CTRL_DSTWIDTH_SET(DMA_TRANSFER_WIDTH_WORD)
-            | DMA_CHCTRL_CTRL_SRCBURSTSIZE_SET(DMA_NUM_TRANSFER_PER_BURST_1T)
-            | DMA_CHCTRL_CTRL_SRCADDRCTRL_SET(DMA_ADDRESS_CONTROL_FIXED)
-            | DMA_CHCTRL_CTRL_DSTADDRCTRL_SET(DMA_ADDRESS_CONTROL_FIXED);
-    tmgw_dma_linked_descriptors[pos].linked_ptr = SET_DMA_LINK_PTR((uint32_t)&tmgw_dma_linked_descriptors[pos + 1]);
-
-    /**
-     * @brief HALL DMA set transfer size
-     *
-     */
-    pos++;
-    tmgw_dma_link_src_hall_dma_size = PLA_TMGW_HALL_TRAN_SIZE;
-    tmgw_dma_linked_descriptors[pos].trans_size = 1;
-    tmgw_dma_linked_descriptors[pos].src_addr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)&tmgw_dma_link_src_hall_dma_size);
-    tmgw_dma_linked_descriptors[pos].dst_addr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)&PLA_TMGW_HALL_DMA->CHCTRL[PLA_TMGW_HALL_DMA_CH].TRANSIZE);
-    tmgw_dma_linked_descriptors[pos].ctrl = DMA_CHCTRL_CTRL_SRCWIDTH_SET(DMA_TRANSFER_WIDTH_WORD)
-            | DMA_CHCTRL_CTRL_DSTWIDTH_SET(DMA_TRANSFER_WIDTH_WORD)
-            | DMA_CHCTRL_CTRL_SRCBURSTSIZE_SET(DMA_NUM_TRANSFER_PER_BURST_1T)
-            | DMA_CHCTRL_CTRL_SRCADDRCTRL_SET(DMA_ADDRESS_CONTROL_FIXED)
-            | DMA_CHCTRL_CTRL_DSTADDRCTRL_SET(DMA_ADDRESS_CONTROL_FIXED);
-   tmgw_dma_linked_descriptors[pos].linked_ptr = SET_DMA_LINK_PTR((uint32_t)&tmgw_dma_linked_descriptors[pos + 1]);
-
-    /**
-     * @brief HALL DMA enable
-     *
-     */
-    pos++;
-    tmgw_dma_link_src_hall_dma_enable = PLA_TMGW_HALL_DMA->CHCTRL[PLA_TMGW_HALL_DMA_CH].CTRL;
-    tmgw_dma_link_src_hall_dma_enable |= DMA_CHCTRL_CTRL_ENABLE_MASK;
-    tmgw_dma_linked_descriptors[pos].trans_size = 1;
-    tmgw_dma_linked_descriptors[pos].src_addr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)&tmgw_dma_link_src_hall_dma_enable);
-    tmgw_dma_linked_descriptors[pos].dst_addr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)&PLA_TMGW_HALL_DMA->CHCTRL[PLA_TMGW_HALL_DMA_CH].CTRL);
-    tmgw_dma_linked_descriptors[pos].ctrl = DMA_CHCTRL_CTRL_SRCWIDTH_SET(DMA_TRANSFER_WIDTH_WORD)
-            | DMA_CHCTRL_CTRL_DSTWIDTH_SET(DMA_TRANSFER_WIDTH_WORD)
-            | DMA_CHCTRL_CTRL_SRCBURSTSIZE_SET(DMA_NUM_TRANSFER_PER_BURST_1T)
-            | DMA_CHCTRL_CTRL_SRCADDRCTRL_SET(DMA_ADDRESS_CONTROL_FIXED)
-            | DMA_CHCTRL_CTRL_DSTADDRCTRL_SET(DMA_ADDRESS_CONTROL_FIXED);
-    tmgw_dma_linked_descriptors[pos].linked_ptr = SET_DMA_LINK_PTR((uint32_t)&tmgw_dma_linked_descriptors[pos + 1]);
 
     /**
      * @brief hall counter reset release
@@ -1567,7 +1500,7 @@ void tmgw_dma_chained(void)
                                                 |DMA_CHCTRL_CTRL_SRCBURSTSIZE_SET(0)
                                                 | DMA_CHCTRL_CTRL_SRCWIDTH_SET(DMA_TRANSFER_WIDTH_WORD)
                                                 | DMA_CHCTRL_CTRL_DSTWIDTH_SET(DMA_TRANSFER_WIDTH_WORD)
-                                                | DMA_CHCTRL_CTRL_SRCMODE_SET(DMA_HANDSHAKE_MODE_HANDSHAKE)
+                                                | DMA_CHCTRL_CTRL_SRCMODE_SET(DMA_HANDSHAKE_MODE_NORMAL)
                                                 | DMA_CHCTRL_CTRL_DSTMODE_SET(DMA_HANDSHAKE_MODE_HANDSHAKE)
                                                 | DMA_CHCTRL_CTRL_SRCADDRCTRL_SET(DMA_ADDRESS_CONTROL_FIXED)
                                                 | DMA_CHCTRL_CTRL_DSTADDRCTRL_SET(DMA_ADDRESS_CONTROL_FIXED)

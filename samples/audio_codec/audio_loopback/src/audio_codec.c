@@ -110,7 +110,7 @@ int main(void)
     board_init_i2c(CODEC_I2C);
 
     init_i2s_pins(CODEC_I2S);
-    board_init_i2s_clock(CODEC_I2S);
+    board_config_i2s_clock(CODEC_I2S, CODEC_SAMPLE_RATE_HZ);
 
     printf("audio codec example\n");
     test_codec_playback_record();

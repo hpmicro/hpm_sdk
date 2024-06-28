@@ -299,7 +299,9 @@ typedef enum {
  * @brief Dummy Byte for SD when Card works in SPI mode
  */
 #define SPISD_DUMMY_BYTE                  0xFFU
-
+#define SPISD_START_TOKEN                 0xFEU
+#define SPISD_START_MULTI_WRITE_TOKEN     0xFCU
+#define SPISD_END_MULTI_WRITE_TOKEN       0xFDU
 /**
  * @brief sdcard block size in SPI mode
  */

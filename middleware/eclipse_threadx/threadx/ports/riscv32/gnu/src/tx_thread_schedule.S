@@ -30,8 +30,12 @@
     #include "tx_timer.h"  */
 
 
-    .extern      _tx_thread_execute_ptr
-    .extern      _tx_thread_current_ptr
+    .extern _tx_thread_execute_ptr
+    .extern _tx_thread_current_ptr
+#ifdef TX_LOW_POWER
+    .extern tx_low_power_enter
+    .extern tx_low_power_exit
+#endif
     .extern      _tx_timer_time_slice
     .equ  RISCV_MSTATUS_MIE,         0x08
     .equ  RISCV_MEIE_MTIE,           0x880           # M Extral MachineTimer Interrupt bit
@@ -40,10 +44,9 @@
 #endif
 .global _tx_thread_schedule
 
-.section .isr_vector
+.section .isr_vector, "ax"
 .align 8
 .type _tx_thread_schedule, function
-.func
 /**************************************************************************/
 /*                                                                        */
 /*  FUNCTION                                               RELEASE        */
@@ -102,8 +105,25 @@ _tx_thread_schedule:
     la      t0, _tx_thread_execute_ptr                  # Pickup address of execute ptr
 _tx_thread_schedule_loop:
     lw      t1, 0(t0)                                   # Pickup next thread to execute
+#ifndef TX_LOW_POWER
     beqz    t1, _tx_thread_schedule_loop                # If NULL, wait for thread to execute
+#else
+    bnez    t1, _tx_thread_ready                        # If NULL, wait for thread to execute
+    csrci   mstatus, 0x08                               # Lockout interrupts
+    addi    sp, sp, -4
+    sw      ra, 0(sp)
+    call    tx_low_power_enter                      // Possibly enter low power mode
+    wfi                                             // Wait for interrupt
+    call    tx_low_power_exit                       // Exit low power mode
+    lw      ra, 0(sp)
+    addi    sp, sp, 4
+    csrsi   mstatus, 0x08                               # Enable interrupts
+    /* Repick the address of execute ptr, so we don't need to save context before call tx_low_power_enter or tx_low_power_exit */
+    la      t0, _tx_thread_execute_ptr                  # Repickup address of execute ptr
+    j       _tx_thread_schedule_loop
+#endif
 
+_tx_thread_ready:
     /* }
     while(_tx_thread_execute_ptr == TX_NULL)#  */
 

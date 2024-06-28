@@ -9,15 +9,24 @@
 #include "board.h"
 #include "hpm_debug_console.h"
 #include "hpm_plb_drv.h"
+#if defined(HPMSOC_HAS_HPMSDK_PWM)
 #include "hpm_pwm_drv.h"
+#endif
 #include "hpm_trgm_drv.h"
+#if defined(HPMSOC_HAS_HPMSDK_PWMV2)
+#include "hpm_pwmv2_drv.h"
+#endif
 
 #define PWM_PERIOD_IN_MS (1)
 uint32_t reload;
 
 void plb_set_counter(uint32_t val)
 {
+#if defined(HPMSOC_HAS_HPMSDK_PWMV2)
+    plb_type_b_set_cmp_val(BOARD_PLB_COUNTER, BOARD_PLB_CHN, plb_type_b_cmp0, val);
+#else
     plb_type_b_set_cmp_val(BOARD_PLB_COUNTER, BOARD_PLB_CHN, plb_type_b_cmp0, val + 1);
+#endif
 }
 
 void plb_reset_counter(void)
@@ -66,7 +75,7 @@ void init_pwm_plb_trgm(TRGM_Type *ptr)
 
     trgm_output_cfg.invert = false;
     trgm_output_cfg.type   = trgm_output_same_as_input;
-    trgm_output_cfg.input  = HPM_TRGM0_INPUT_SRC_PLB_OUT16;
+    trgm_output_cfg.input  = BOARD_PLB_CLR_SIGNAL_INPUT;
     trgm_output_config(ptr, TRGM_TRGOCFG_PLB_IN_01, &trgm_output_cfg);
 
 
@@ -78,7 +87,7 @@ void init_pwm_plb_trgm(TRGM_Type *ptr)
     trgm_output_cfg.invert = true;
     trgm_output_cfg.type   = trgm_output_same_as_input;
     trgm_output_cfg.input  = HPM_TRGM0_INPUT_SRC_PLB_OUT01;
-    trgm_output_config(ptr, TRGM_TRGOCFG_PLB_IN_16, &trgm_output_cfg);
+    trgm_output_config(ptr, BOARD_PLB_TYPEB_INPUT0, &trgm_output_cfg);
 
     trgm_output_cfg.invert = false;
     trgm_output_cfg.type   = trgm_output_same_as_input;
@@ -89,6 +98,7 @@ void init_pwm_plb_trgm(TRGM_Type *ptr)
 
 void init_pwm(void)
 {
+#if defined(HPMSOC_HAS_HPMSDK_PWM)
     pwm_cmp_config_t cmp_config[2] = {0};
     pwm_config_t pwm_config = {0};
     pwm_output_channel_t pwm_output_ch_cfg;
@@ -122,6 +132,36 @@ void init_pwm(void)
 
     pwm_start_counter(BOARD_PLB_PWM_BASE);
     pwm_issue_shadow_register_lock_event(BOARD_PLB_PWM_BASE);
+#endif
+#if defined(HPMSOC_HAS_HPMSDK_PWMV2)
+
+    pwmv2_enable_counter(BOARD_PLB_PWM_BASE, pwm_counter_0);
+    pwmv2_reset_counter(BOARD_PLB_PWM_BASE, pwm_counter_0);
+    pwmv2_shadow_register_unlock(BOARD_PLB_PWM_BASE);
+
+    pwmv2_set_shadow_val(BOARD_PLB_PWM_BASE, PWMV2_SHADOW_INDEX(0), reload, 0, false);
+    pwmv2_set_shadow_val(BOARD_PLB_PWM_BASE, PWMV2_SHADOW_INDEX(1), reload + 1, 0, false);
+
+    pwmv2_counter_select_data_offset_from_shadow_value(BOARD_PLB_PWM_BASE, pwm_counter_0, PWMV2_SHADOW_INDEX(0));
+    pwmv2_counter_burst_disable(BOARD_PLB_PWM_BASE, pwm_counter_0);
+    pwmv2_set_reload_update_time(BOARD_PLB_PWM_BASE, pwm_counter_0, pwm_reload_update_on_reload);
+
+    pwmv2_select_cmp_source(BOARD_PLB_PWM_BASE, PWMV2_CMP_INDEX(0), cmp_value_from_shadow_val, PWMV2_SHADOW_INDEX(1));
+    pwmv2_select_cmp_source(BOARD_PLB_PWM_BASE, PWMV2_CMP_INDEX(1), cmp_value_from_shadow_val, PWMV2_SHADOW_INDEX(2));
+
+    pwmv2_shadow_register_lock(BOARD_PLB_PWM_BASE);
+    pwmv2_disable_four_cmp(BOARD_PLB_PWM_BASE, pwm_channel_0);
+
+    pwmv2_enable_counter(BOARD_PLB_PWM_BASE, pwm_counter_0);
+    pwmv2_start_pwm_output(BOARD_PLB_PWM_BASE, pwm_counter_0);
+
+    pwmv2_set_trigout_cmp_index(BOARD_PLB_PWM_BASE, pwm_channel_0, 0);
+
+    pwmv2_shadow_register_unlock(BOARD_PLB_PWM_BASE);
+    pwmv2_set_shadow_val(BOARD_PLB_PWM_BASE, PWMV2_SHADOW_INDEX(1), reload >> 1, 0, false);
+    pwmv2_shadow_register_lock(BOARD_PLB_PWM_BASE);
+
+#endif
 
 }
 

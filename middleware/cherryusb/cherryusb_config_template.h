@@ -6,8 +6,8 @@
 #ifndef CHERRYUSB_CONFIG_H
 #define CHERRYUSB_CONFIG_H
 
-#define CHERRYUSB_VERSION     0x010100
-#define CHERRYUSB_VERSION_STR "v1.1.0"
+#define CHERRYUSB_VERSION     0x010300
+#define CHERRYUSB_VERSION_STR "v1.3.0"
 
 /* ================ USB common Configuration ================ */
 
@@ -33,13 +33,18 @@
 
 /* ================= USB Device Stack Configuration ================ */
 
-#define CONFIG_USBDEV_MAX_BUS 1    // for now, bus num must be 1 except hpm ip
-
-/* Ep0 max transfer buffer, specially for receiving data from ep0 out */
-#define CONFIG_USBDEV_REQUEST_BUFFER_LEN 256
+/* Ep0 in and out transfer buffer */
+#ifndef CONFIG_USBDEV_REQUEST_BUFFER_LEN
+#define CONFIG_USBDEV_REQUEST_BUFFER_LEN 512
+#endif
 
 /* Setup packet log for debug */
 // #define CONFIG_USBDEV_SETUP_LOG_PRINT
+
+/* Send ep0 in data from user buffer instead of copying into ep0 reqdata
+ * Please note that user buffer must be aligned with CONFIG_USB_ALIGN_SIZE
+*/
+// #define CONFIG_USBDEV_EP0_INDATA_NO_COPY
 
 /* Check if the input descriptor is correct */
 // #define CONFIG_USBDEV_DESC_CHECK
@@ -81,8 +86,9 @@
 #define CONFIG_USBDEV_RNDIS_RESP_BUFFER_SIZE 156
 #endif
 
+/* rndis transfer buffer size, must be a multiple of (1536 + 44)*/
 #ifndef CONFIG_USBDEV_RNDIS_ETH_MAX_FRAME_SIZE
-#define CONFIG_USBDEV_RNDIS_ETH_MAX_FRAME_SIZE 1536
+#define CONFIG_USBDEV_RNDIS_ETH_MAX_FRAME_SIZE 1580
 #endif
 
 #ifndef CONFIG_USBDEV_RNDIS_VENDOR_ID
@@ -97,7 +103,6 @@
 
 /* ================ USB HOST Stack Configuration ================== */
 
-#define CONFIG_USBHOST_MAX_BUS              1
 #define CONFIG_USBHOST_MAX_RHPORTS          1
 #define CONFIG_USBHOST_MAX_EXTHUBS          1
 #define CONFIG_USBHOST_MAX_EHPORTS          4
@@ -123,10 +128,14 @@
 //#define CONFIG_USBHOST_GET_STRING_DESC
 
 // #define CONFIG_USBHOST_MSOS_ENABLE
+#ifndef CONFIG_USBHOST_MSOS_VENDOR_CODE
 #define CONFIG_USBHOST_MSOS_VENDOR_CODE 0x00
+#endif
 
 /* Ep0 max transfer buffer */
+#ifndef CONFIG_USBHOST_REQUEST_BUFFER_LEN
 #define CONFIG_USBHOST_REQUEST_BUFFER_LEN 512
+#endif
 
 #ifndef CONFIG_USBHOST_CONTROL_TRANSFER_TIMEOUT
 #define CONFIG_USBHOST_CONTROL_TRANSFER_TIMEOUT 500
@@ -134,6 +143,40 @@
 
 #ifndef CONFIG_USBHOST_MSC_TIMEOUT
 #define CONFIG_USBHOST_MSC_TIMEOUT 5000
+#endif
+
+/* This parameter affects usb performance, and depends on (TCP_WND)tcp eceive windows size,
+ * you can change to 2K ~ 16K and must be larger than TCP RX windows size in order to avoid being overflow.
+ */
+#ifndef CONFIG_USBHOST_RNDIS_ETH_MAX_RX_SIZE
+#define CONFIG_USBHOST_RNDIS_ETH_MAX_RX_SIZE (2048)
+#endif
+
+/* Because lwip do not support multi pbuf at a time, so increasing this variable has no performance improvement */
+#ifndef CONFIG_USBHOST_RNDIS_ETH_MAX_TX_SIZE
+#define CONFIG_USBHOST_RNDIS_ETH_MAX_TX_SIZE (2048)
+#endif
+
+/* This parameter affects usb performance, and depends on (TCP_WND)tcp eceive windows size,
+ * you can change to 2K ~ 16K and must be larger than TCP RX windows size in order to avoid being overflow.
+ */
+#ifndef CONFIG_USBHOST_CDC_NCM_ETH_MAX_RX_SIZE
+#define CONFIG_USBHOST_CDC_NCM_ETH_MAX_RX_SIZE (2048)
+#endif
+/* Because lwip do not support multi pbuf at a time, so increasing this variable has no performance improvement */
+#ifndef CONFIG_USBHOST_CDC_NCM_ETH_MAX_TX_SIZE
+#define CONFIG_USBHOST_CDC_NCM_ETH_MAX_TX_SIZE (2048)
+#endif
+
+/* This parameter affects usb performance, and depends on (TCP_WND)tcp eceive windows size,
+ * you can change to 2K ~ 16K and must be larger than TCP RX windows size in order to avoid being overflow.
+ */
+#ifndef CONFIG_USBHOST_RTL8152_ETH_MAX_RX_SIZE
+#define CONFIG_USBHOST_RTL8152_ETH_MAX_RX_SIZE (2048)
+#endif
+/* Because lwip do not support multi pbuf at a time, so increasing this variable has no performance improvement */
+#ifndef CONFIG_USBHOST_RTL8152_ETH_MAX_TX_SIZE
+#define CONFIG_USBHOST_RTL8152_ETH_MAX_TX_SIZE (2048)
 #endif
 
 #define CONFIG_USBHOST_BLUETOOTH_HCI_H4
@@ -148,23 +191,71 @@
 
 /* ================ USB Device Port Configuration ================*/
 
+#ifndef CONFIG_USBDEV_MAX_BUS
+#define CONFIG_USBDEV_MAX_BUS 1 // for now, bus num must be 1 except hpm ip
+#endif
+
 #ifndef CONFIG_USBDEV_EP_NUM
 #define CONFIG_USBDEV_EP_NUM 8
 #endif
 
+/* ---------------- FSDEV Configuration ---------------- */
+//#define CONFIG_USBDEV_FSDEV_PMA_ACCESS 2 // maybe 1 or 2, many chips may have a difference
+
+/* ---------------- DWC2 Configuration ---------------- */
+// #define CONFIG_USB_DWC2_RXALL_FIFO_SIZE (1024 / 4)
+// #define CONFIG_USB_DWC2_TX0_FIFO_SIZE (64 / 4)
+// #define CONFIG_USB_DWC2_TX1_FIFO_SIZE (512 / 4)
+// #define CONFIG_USB_DWC2_TX2_FIFO_SIZE (64 / 4)
+// #define CONFIG_USB_DWC2_TX3_FIFO_SIZE (64 / 4)
+// #define CONFIG_USB_DWC2_TX4_FIFO_SIZE (0 / 4)
+// #define CONFIG_USB_DWC2_TX5_FIFO_SIZE (0 / 4)
+// #define CONFIG_USB_DWC2_TX6_FIFO_SIZE (0 / 4)
+// #define CONFIG_USB_DWC2_TX7_FIFO_SIZE (0 / 4)
+// #define CONFIG_USB_DWC2_TX8_FIFO_SIZE (0 / 4)
+
+/* ---------------- MUSB Configuration ---------------- */
+// #define CONFIG_USB_MUSB_SUNXI
+
 /* ================ USB Host Port Configuration ==================*/
+#ifndef CONFIG_USBHOST_MAX_BUS
+#define CONFIG_USBHOST_MAX_BUS 1
+#endif
 
-// #define CONFIG_USBHOST_PIPE_NUM 10
+#ifndef CONFIG_USBHOST_PIPE_NUM
+#define CONFIG_USBHOST_PIPE_NUM 10
+#endif
 
-/* ================ EHCI Configuration ================ */
+/* ---------------- EHCI Configuration ---------------- */
 
 #define CONFIG_USB_EHCI_HCCR_OFFSET     (0x0)
-#define CONFIG_USB_EHCI_HCOR_OFFSET     (0x10)
 #define CONFIG_USB_EHCI_FRAME_LIST_SIZE 1024
-// #define CONFIG_USB_EHCI_INFO_ENABLE
+#define CONFIG_USB_EHCI_QH_NUM          CONFIG_USBHOST_PIPE_NUM
+#define CONFIG_USB_EHCI_QTD_NUM         3
+#define CONFIG_USB_EHCI_ITD_NUM         20
 // #define CONFIG_USB_EHCI_HCOR_RESERVED_DISABLE
 // #define CONFIG_USB_EHCI_CONFIGFLAG
-// #define CONFIG_USB_EHCI_PORT_POWER
-// #define CONFIG_USB_EHCI_PRINT_HW_PARAM
+// #define CONFIG_USB_EHCI_ISO
+// #define CONFIG_USB_EHCI_WITH_OHCI
+
+/* ---------------- OHCI Configuration ---------------- */
+#define CONFIG_USB_OHCI_HCOR_OFFSET (0x0)
+
+/* ---------------- XHCI Configuration ---------------- */
+#define CONFIG_USB_XHCI_HCCR_OFFSET (0x0)
+
+/* ---------------- DWC2 Configuration ---------------- */
+/* largest non-periodic USB packet used / 4 */
+// #define CONFIG_USB_DWC2_NPTX_FIFO_SIZE (512 / 4)
+/* largest periodic USB packet used / 4 */
+// #define CONFIG_USB_DWC2_PTX_FIFO_SIZE (1024 / 4)
+/*
+ * (largest USB packet used / 4) + 1 for status information + 1 transfer complete +
+ * 1 location each for Bulk/Control endpoint for handling NAK/NYET scenario
+ */
+// #define CONFIG_USB_DWC2_RX_FIFO_SIZE ((1012 - CONFIG_USB_DWC2_NPTX_FIFO_SIZE - CONFIG_USB_DWC2_PTX_FIFO_SIZE) / 4)
+
+/* ---------------- MUSB Configuration ---------------- */
+// #define CONFIG_USB_MUSB_SUNXI
 
 #endif

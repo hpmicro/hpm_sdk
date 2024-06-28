@@ -38,13 +38,14 @@ HPM5300EVK提供了一系列HPM5300系列微控制器特色外设的接口，包
 
 - UART引脚 可用于modbus rtu工程
 
- UART2用于一些使用UART的功能测试，例如MICROROS_UART，USB_CDC_ACM_UART等。
+ UART2用于一些使用UART的功能测试，例如USB_CDC_ACM_UART等。
 
-| 功能      | 位置   |
-| --------- | ------ |
+| 功能      | 位置   | 备注     |
+| --------- | ------ |  ------ |
 | UART2.TXD | P1[8]  |
 | UART2.RXD | P1[10] |
 | UART2.DE  | P1[38] |
+| UART2.break | P1[24] | 产生uart break信号|
 
 - SPI引脚：
 
@@ -71,11 +72,12 @@ HPM5300EVK提供了一系列HPM5300系列微控制器特色外设的接口，包
 
 - GPTMR引脚
 
-| 功能          | 位置  |
-| ------------- | ----- |
+| 功能          | 位置   |  备注 |
+| ------------- | ----- | ------ |
 | GPTMR0.CAPT_0 | P1[3] |
-| GPTMR0.COMP_0 | P1[5] |
-| GPTMR0.COMP_1 | P1[8] |
+| GPTMR0.COMP_0 | P1[5] | SPI模拟I2S的BLCK |
+| GPTMR0.COMP_1 | P1[8] | SPI模拟I2S的LRCK |
+| GPTMR0.COMP_3 | J7[18] | SPI模拟I2S的MCLK |
 
 - ADC16引脚
 
@@ -170,3 +172,9 @@ HPM5300EVK提供了一系列HPM5300系列微控制器特色外设的接口，包
 - 电机引脚
 
   参考 [DRV-LV50A-MP1907 电机驱动板章节](lab_drv_lv50a_mp1907) 进行连接
+
+- SPI模拟I2S CS引脚
+
+| 功能 | 位置   |  备注 |
+| ---- | ----- | ------ |
+| PA11  | P1[16] | 控制SPI从机CS的引脚 |

@@ -50,3 +50,10 @@ Please enter the DAC mode code:
   DAC is outputting a sine waveform in buffer mode
   ```
   ![](doc/dac_buffer_mode.png)
+
+## 注意
+
+  - 异常退出
+
+    1. 在step模式或buffer模式中，按空格键退出测试，重新选择测试模式
+    2. 在direct模式中，在测试完成后，按空格键退出循环，重新选择测试模式

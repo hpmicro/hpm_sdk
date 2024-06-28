@@ -123,4 +123,3 @@ iperf report: type=1, remote: 11.23.63.183:5001, total bytes: 1125684, duration 
 
 ```
 
-注意: 切换rndis模块或者ecm模块的时候，也需要复位下开发板。

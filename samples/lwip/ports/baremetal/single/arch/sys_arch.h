@@ -104,5 +104,7 @@ void sys_arch_netconn_sem_free(void);
 #endif /* LWIP_NETCONN_SEM_PER_THREAD */
 #else
 void sys_timer_callback(void);
+void sys_arch_msleep(u32_t delay_ms);
+#define sys_msleep(ms) sys_arch_msleep(ms)
 #endif /* defined(NO_SYS) && !NO_SYS */
 #endif /* LWIP_ARCH_SYS_ARCH_H */

@@ -104,4 +104,8 @@ void enter_shutdown_mode(void)
     printf("Press WAKEUP or RESETN to wake up from the shutdown mode\n");
 
     pdgo_set_turnoff_counter(HPM_PDGO, 0x100000);
+
+    while (1) {
+        ;
+    }
 }

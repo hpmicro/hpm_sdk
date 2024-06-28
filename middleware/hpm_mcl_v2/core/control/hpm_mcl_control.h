@@ -57,6 +57,74 @@ typedef struct {
 } mcl_control_pid_t;
 
 /**
+ * @brief Used to compensate for pwm dead zones, Duty cycle ratio, between 0 and 1
+ *
+ */
+typedef struct {
+    float a_offset;
+    float b_offset;
+    float c_offset;
+} mcl_control_dead_area_pwm_offset_t;
+
+/**
+ * @brief DeadAera Compensation Configuration
+ *
+ */
+typedef struct {
+    float lowpass_k;
+} mcl_control_dead_area_compensation_cfg_t;
+
+/**
+ * @brief DeadAera Compensation data
+ *
+ */
+typedef struct {
+    mcl_control_dead_area_compensation_cfg_t cfg;
+    float d_mem;
+    float q_mem;
+} mcl_control_dead_area_compensation_t;
+
+/**
+ * @brief Sensorless smc configuration
+ *
+ */
+typedef struct {
+    struct {
+        float res;          /**< Stator resistance (in ohm) */
+        float inductor;     /**< Stator inductor */
+        float sample_ts;    /**< Current sampling period */
+        float loop_ts;      /**< cycle time in s */
+    } const_data;
+    struct {
+        float smc_f;
+        float smc_g;
+        float zero;    /**< slip mode convergence */
+        float ksmc;   /**< Slide coefficient */
+        float filter_coeff;   /**< low-pass filter coefficients */
+    } factor;
+    float theta0;       /**< initial angle */
+    mcl_control_pid_t pll;
+} mcl_control_smc_cfg_t;
+
+/**
+ * @brief Sensorless smc structure
+ *
+ */
+typedef struct {
+    mcl_control_smc_cfg_t cfg;
+    float ialpha_mem;   /**< Internal Data */
+    float ibeta_mem;    /**< Internal Data */
+    float alpha_cal;    /**< Internal Data */
+    float zalpha_cal;   /**< Internal Data */
+    float beta_cal;     /**< Internal Data */
+    float zbeta_cal;    /**< Internal Data */
+    float theta_mem;
+    float theta;
+    float ualpha;
+    float ubeta;
+} mcl_control_smc_t;
+
+/**
  * @brief pwm duty cycle
  *
  */
@@ -96,6 +164,11 @@ typedef struct {
     hpm_mcl_stat_t (*svpwm)(hpm_mcl_type_t alpha, hpm_mcl_type_t beta, hpm_mcl_type_t vbus, mcl_control_svpwm_duty_t *duty);
     hpm_mcl_stat_t (*step_svpwm)(hpm_mcl_type_t alpha, hpm_mcl_type_t beta, hpm_mcl_type_t vbus, mcl_control_svpwm_duty_t *duty);
     hpm_mcl_stat_t (*get_block_sector)(hall_phase_t hall, uint8_t u, uint8_t v, uint8_t w, uint8_t *sector);
+    hpm_mcl_stat_t (*dead_area_polarity_detection)(mcl_control_dead_area_compensation_t *dead_area,
+                float id, float iq, float theta,
+                float deadtime, float ts, mcl_control_dead_area_pwm_offset_t *pwm_out);
+    void (*smc_init)(mcl_control_smc_t *smc_cfg);
+    void (*smc_process)(mcl_control_smc_t *smc_cfg, float ualpha, float ubeta, float ialpha, float ibeta);
 } mcl_control_method_t;
 
 /**
@@ -117,6 +190,8 @@ typedef struct {
     mcl_control_pid_t currentq_pid_cfg;
     mcl_control_pid_t speed_pid_cfg;
     mcl_control_pid_t position_pid_cfg;
+    mcl_control_dead_area_compensation_t dead_area_compensation_cfg;
+    mcl_control_smc_t smc_cfg;
 } mcl_control_cfg_t;
 
 /**

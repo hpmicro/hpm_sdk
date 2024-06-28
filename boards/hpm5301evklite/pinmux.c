@@ -15,15 +15,6 @@
 #include "board.h"
 #include "pinmux.h"
 
-void init_xtal_pins(void)
-{
-    /* Package QFN32 should be set PA30 and PA31 pins as analog type to enable xtal. */
-    /*
-     * HPM_IOC->PAD[IOC_PAD_PA30].FUNC_CTL = IOC_PAD_FUNC_CTL_ANALOG_MASK;
-     * HPM_IOC->PAD[IOC_PAD_PA31].FUNC_CTL = IOC_PAD_FUNC_CTL_ANALOG_MASK;
-     */
-}
-
 void init_py_pins_as_pgpio(void)
 {
     /* Set PY00-PY05 default function to PGPIO */
@@ -108,7 +99,14 @@ void init_spi_pins_with_gpio_as_cs(SPI_Type *ptr)
 
 void init_gptmr_pins(GPTMR_Type *ptr)
 {
-    (void) ptr;
+    if (ptr == HPM_GPTMR0) {
+        HPM_IOC->PAD[IOC_PAD_PB10].FUNC_CTL = IOC_PB10_FUNC_CTL_GPTMR0_COMP_2;
+        HPM_IOC->PAD[IOC_PAD_PB15].FUNC_CTL = IOC_PB15_FUNC_CTL_GPTMR0_COMP_3;
+        HPM_IOC->PAD[IOC_PAD_PA09].FUNC_CTL = IOC_PA09_FUNC_CTL_GPTMR0_CAPT_1;
+        HPM_IOC->PAD[IOC_PAD_PA08].FUNC_CTL = IOC_PA08_FUNC_CTL_GPTMR0_COMP_1;
+    } else if (ptr == HPM_GPTMR1) {
+        HPM_IOC->PAD[IOC_PAD_PB13].FUNC_CTL = IOC_PB13_FUNC_CTL_GPTMR1_COMP_3;
+    }
 }
 
 void init_butn_pins(void)
@@ -169,5 +167,12 @@ void init_usb_pins(void)
 void init_led_pins_as_gpio(void)
 {
     HPM_IOC->PAD[IOC_PAD_PA10].FUNC_CTL = IOC_PA10_FUNC_CTL_GPIO_A_10;
+}
+
+/* for uart_rx_line_status case, need to a gpio pin to sent break signal */
+void init_uart_break_signal_pin(void)
+{
+    HPM_IOC->PAD[IOC_PAD_PA26].PAD_CTL = IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(1);
+    HPM_IOC->PAD[IOC_PAD_PA26].FUNC_CTL = IOC_PA26_FUNC_CTL_GPIO_A_26;
 }
 

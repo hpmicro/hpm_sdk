@@ -87,11 +87,13 @@ Plug-in
 
 - GPTMR Pin
 
-| Function      | Position |
-| ------------- | -------- |
-| GPTMR2.CAPT_0 | J28[40]  |
-| GPTMR2.COMP_0 | J28[35]  |
-| GPTMR2.COMP_1 | J28[12]  |
+| Function      | Position | Remark   |
+| ------------- | -------- | -------- |
+| GPTMR2.CAPT_0 | J28[40] |
+| GPTMR2.COMP_0 | J28[35] | MCLK of i2s emulation  |
+| GPTMR2.COMP_1 | J28[12] | LRCK of i2s emulation |
+| GPTMR2.COMP_2 | J28[16] | BLCK of i2s emulation  |
+
 
 - ADC16 Pin
 
@@ -125,10 +127,11 @@ Plug-in
 
  The UART2 is used for some functional testing using UART, such as uart_software_rx_idle, uart_rx_timeout, uart_software_lin, MICROROS_UART, USB_CDC_ACM_UART, MODBUS_RTU etc.
 
-| Function  | Position |
-| --------- | -------- |
+| Function  | Position | Remark   |
+| --------- | -------- | ------   |
 | UART2.TXD | J28[18]  |
 | UART2.RXD | J28[22]  |
+| UART2.break | J28[24] | generate uart break signal |
 
 - TRGMUX pin for uart_software_rx_idle sample
 
@@ -146,3 +149,10 @@ Plug-in
 |----------|--------|--------|----------|
 | TAMP.06  | PZ06   | J28[8] | Active Mode |
 | TAMP.07  | PZ07   | J28[10]| Active Mode |
+
+
+- CS Pin of i2s emulation
+
+| Function | Position   |  Remark |
+| ----     | -----      | ------ |
+| PA07     | J28[11]    | the pin that controls the SPI slave CS |

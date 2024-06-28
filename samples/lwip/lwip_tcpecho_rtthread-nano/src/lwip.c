@@ -60,7 +60,7 @@ void bsp_init(void)
     #if defined(RGMII) && RGMII
     /* Set RGMII clock delay */
     board_init_enet_rgmii_clock_delay(ENET);
-    #else
+    #elif defined(RMII) && RMII
     /* Set RMII reference clock */
     board_init_enet_rmii_reference_clock(ENET, BOARD_ENET_RMII_INT_REF_CLK);
     printf("Reference Clock: %s\n", BOARD_ENET_RMII_INT_REF_CLK ? "Internal Clock" : "External Clock");
@@ -128,14 +128,8 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     /* Enable Enet IRQ */
     board_enable_enet_irq(ENET);
 
-    /* Set the interrupt enable mask */
-    int_config.int_enable = enet_normal_int_sum_en    /* Enable normal interrupt summary */
-                          | enet_receive_int_en;      /* Enable receive interrupt */
-
-    int_config.int_mask = enet_rgsmii_int_mask | ENET_INTR_MASK_LPIIM_MASK; /* Disable RGSMII interrupt */
-
-    int_config.mmc_intr_mask_rx = 0x03ffffff;   /* Disable all mmc rx interrupt events */
-    int_config.mmc_intr_mask_tx = 0x03ffffff;   /* Disable all mmc tx interrupt events */
+    /* Get the default interrupt config */
+    enet_get_default_interrupt_config(ENET, &int_config);
 
     /* Initialize enet controller */
     enet_controller_init(ptr, ENET_INF_TYPE, &desc, &enet_config, &int_config);
@@ -186,21 +180,8 @@ void rt_hw_board_init(void)
 
 int rtthread_init(void)
 {
-    static rt_timer_t timer = RT_NULL;
-
     rt_thread_t main_thread = rt_thread_create("main", thread_entry, NULL, 1024, MAIN_TASK_PRIO, 10);
     rt_thread_startup(main_thread);
-
-#if defined(LWIP_DHCP) && LWIP_DHCP
-    rt_thread_t dhcp_thread = rt_thread_create("DHCP", LwIP_DHCP_task, &gnetif, 1024, DHCP_TASK_PRIO, 10);
-    rt_thread_startup(dhcp_thread);
-#endif
-
-    rt_thread_t netif_update_link_status_thread = rt_thread_create("netif update status", netif_update_link_status, &gnetif, 1024, NETIF_STA_TASK_PRIO, 10);
-    rt_thread_startup(netif_update_link_status_thread);
-
-    timer = rt_timer_create("timer", timer_callback, RT_NULL, TIMER_TIMEOUT_CNT, RT_TIMER_FLAG_PERIODIC);
-    rt_timer_start(timer);
 
     return 0;
 }
@@ -216,6 +197,8 @@ void thread_entry(void *arg)
 {
     (void)arg;
 
+    static rt_timer_t timer = RT_NULL;
+
     /* Initialize MAC and DMA */
     enet_init(ENET);
 
@@ -224,5 +207,16 @@ void thread_entry(void *arg)
     netif_config(&gnetif);
 
     tcp_echo_init();
+
+#if defined(LWIP_DHCP) && LWIP_DHCP
+    rt_thread_t dhcp_thread = rt_thread_create("DHCP", LwIP_DHCP_task, &gnetif, 1024, DHCP_TASK_PRIO, 10);
+    rt_thread_startup(dhcp_thread);
+#endif
+
+    rt_thread_t netif_update_link_status_thread = rt_thread_create("netif update status", netif_update_link_status, &gnetif, 1024, NETIF_STA_TASK_PRIO, 10);
+    rt_thread_startup(netif_update_link_status_thread);
+
+    timer = rt_timer_create("timer", timer_callback, RT_NULL, TIMER_TIMEOUT_CNT, RT_TIMER_FLAG_PERIODIC);
+    rt_timer_start(timer);
 }
 

@@ -1,8 +1,8 @@
 excluded_targets:
   - flash_sdram_xip
   - flash_sdram_xip_release
-  - flash_uf2
   - flash_sdram_uf2
+  - flash_sdram_uf2_release
 
 dependency:
   - board_sdram

@@ -15,7 +15,7 @@
 #include "hpm_l1c_drv.h"
 #include "hpm_pllctl_drv.h"
 #include "hpm_clock_drv.h"
-#include "core_portme.h"
+#include "coremark.h"
 #include "demos/lv_demos.h"
 #include "dualcore_widgets.h"
 
@@ -105,13 +105,13 @@ void lv_dualcore_coremark_demo(void)
     font_large = LV_FONT_DEFAULT;
     font_normal = LV_FONT_DEFAULT;
 
-    lv_coord_t tab_h;
+    int32_t tab_h;
     if (disp_size == DISP_LARGE) {
-        tab_h = 70;
-#if LV_FONT_MONTSERRAT_24
-        font_large     =  &lv_font_montserrat_24;
+        tab_h = 50;
+#if LV_FONT_MONTSERRAT_20
+        font_large     =  &lv_font_montserrat_20;
 #else
-        LV_LOG_WARN("LV_FONT_MONTSERRAT_24 is not enabled for the widgets demo. Using LV_FONT_DEFAULT instead.");
+        LV_LOG_WARN("LV_FONT_MONTSERRAT_20 is not enabled for the widgets demo. Using LV_FONT_DEFAULT instead.");
 #endif
 #if LV_FONT_MONTSERRAT_16
         font_normal    =  &lv_font_montserrat_16;
@@ -166,25 +166,29 @@ void lv_dualcore_coremark_demo(void)
     lv_style_set_border_width(&style_bullet, 0);
     lv_style_set_radius(&style_bullet, LV_RADIUS_CIRCLE);
 
-    tv = lv_tabview_create(lv_scr_act(), LV_DIR_TOP, tab_h);
+    tv = lv_tabview_create(lv_screen_active());
+    lv_tabview_set_tab_bar_size(tv, tab_h);
 
-    lv_obj_set_style_text_font(lv_scr_act(), font_normal, 0);
+    lv_obj_set_style_text_font(lv_screen_active(), font_normal, 0);
 
     if (disp_size == DISP_LARGE) {
         lv_obj_t *tab_btns = lv_tabview_get_tab_btns(tv);
         lv_obj_set_style_pad_left(tab_btns, LV_HOR_RES / 2, 0);
-        lv_obj_t *logo = lv_img_create(tab_btns);
-        LV_IMG_DECLARE(img_lvgl_logo);
-        lv_img_set_src(logo, &img_lvgl_logo);
-        lv_obj_align(logo, LV_ALIGN_LEFT_MID, -LV_HOR_RES / 2 + 25, 0);
+        lv_obj_t *logo = lv_image_create(tab_btns);
+        lv_obj_add_flag(logo, LV_OBJ_FLAG_IGNORE_LAYOUT);
+        LV_IMAGE_DECLARE(img_lvgl_logo);
+        lv_image_set_src(logo, &img_lvgl_logo);
+        lv_obj_align(logo, LV_ALIGN_TOP_LEFT, -LV_HOR_RES / 2 + 25, 0);
 
         lv_obj_t *label = lv_label_create(tab_btns);
         lv_obj_add_style(label, &style_title, 0);
+        lv_obj_add_flag(label, LV_OBJ_FLAG_IGNORE_LAYOUT);
         lv_label_set_text(label, "HPMicro");
         lv_obj_align_to(label, logo, LV_ALIGN_OUT_RIGHT_TOP, 10, 0);
 
         label = lv_label_create(tab_btns);
-        lv_label_set_text(label, "LittleVGL demo");
+        lv_label_set_text(label, "Coremark demo");
+        lv_obj_add_flag(label, LV_OBJ_FLAG_IGNORE_LAYOUT);
         lv_obj_add_style(label, &style_text_muted, 0);
         lv_obj_align_to(label, logo, LV_ALIGN_OUT_RIGHT_BOTTOM, 10, 0);
     }
@@ -206,9 +210,9 @@ static void profile_create(lv_obj_t *parent, ui_component_t *ui)
     lv_obj_t *panel1 = lv_obj_create(parent);
     lv_obj_set_height(panel1, LV_SIZE_CONTENT);
 
-    LV_IMG_DECLARE(hpmlogo_180x120);
-    lv_obj_t *avatar = lv_img_create(panel1);
-    lv_img_set_src(avatar, &hpmlogo_180x120);
+    LV_IMAGE_DECLARE(hpmlogo_180x120);
+    lv_obj_t *avatar = lv_image_create(panel1);
+    lv_image_set_src(avatar, &hpmlogo_180x120);
 
     lv_obj_t *name = lv_label_create(panel1);
     lv_label_set_text(name, "HPMICRO Semiconductor Co, Ltd.");
@@ -233,7 +237,7 @@ static void profile_create(lv_obj_t *parent, ui_component_t *ui)
     lv_obj_t *call_label = lv_label_create(panel1);
     lv_label_set_text(call_label, "+86-21-58993108");
 
-    ui->run_btn = lv_btn_create(panel1);
+    ui->run_btn = lv_button_create(panel1);
     lv_obj_set_height(ui->run_btn, LV_SIZE_CONTENT);
     lv_obj_add_event_cb(ui->run_btn, run_button_click_cb, LV_EVENT_CLICKED, NULL);
 
@@ -241,7 +245,7 @@ static void profile_create(lv_obj_t *parent, ui_component_t *ui)
     lv_label_set_text(ui->run_btn_label, "Start");
     lv_obj_center(ui->run_btn_label);
 
-    ui->freqswitch_btn = lv_btn_create(panel1);
+    ui->freqswitch_btn = lv_button_create(panel1);
     lv_obj_set_height(ui->freqswitch_btn, LV_SIZE_CONTENT);
     lv_obj_add_event_cb(ui->freqswitch_btn, freqswitch_button_click_cb, LV_EVENT_CLICKED, NULL);
 
@@ -250,10 +254,7 @@ static void profile_create(lv_obj_t *parent, ui_component_t *ui)
     cpu_freq_in_hz = clock_get_frequency(clock_cpu0);
     sprintf(str_buf, "%dMHz", cpu_freq_in_hz / 1000000U);
     lv_label_set_text(ui->freqswitch_btn_label, str_buf);
-    lv_label_set_recolor(ui->freqswitch_btn_label, true);
     lv_obj_center(ui->freqswitch_btn_label);
-
-
 
     /*Create the second panel*/
     lv_obj_t *panel2 = lv_obj_create(parent);
@@ -269,7 +270,6 @@ static void profile_create(lv_obj_t *parent, ui_component_t *ui)
 
     ui->core_freq_result_label[0] = lv_label_create(panel2);
     lv_label_set_text(ui->core_freq_result_label[0], "816MHz(1.15V)");
-    lv_label_set_recolor(ui->core_freq_result_label[0], true);
     lv_obj_add_style(ui->core_freq_result_label[0], &style_text_muted, 0);
 
     ui->bus_freq_tips_label[0] = lv_label_create(panel2);
@@ -277,7 +277,6 @@ static void profile_create(lv_obj_t *parent, ui_component_t *ui)
     lv_obj_add_style(ui->bus_freq_tips_label[0], &style_text_muted, 0);
 
     ui->bus_freq_result_label[0] = lv_label_create(panel2);
-    lv_label_set_recolor(ui->bus_freq_result_label[0], true);
     lv_label_set_text(ui->bus_freq_result_label[0], "200MHz");
     lv_obj_add_style(ui->bus_freq_result_label[0], &style_text_muted, 0);
 
@@ -287,7 +286,6 @@ static void profile_create(lv_obj_t *parent, ui_component_t *ui)
 
 
     ui->coremark_result_label[0] = lv_label_create(panel2);
-    lv_label_set_recolor(ui->coremark_result_label[0], true);
     lv_label_set_text(ui->coremark_result_label[0], "--");
     lv_obj_add_style(ui->coremark_result_label[0], &style_text_muted, 0);
 
@@ -297,7 +295,6 @@ static void profile_create(lv_obj_t *parent, ui_component_t *ui)
     lv_obj_add_style(ui->coremarkmhz_tips_label[0], &style_text_muted, 0);
 
     ui->coremarkmhz_result_label[0] = lv_label_create(panel2);
-    lv_label_set_recolor(ui->coremarkmhz_result_label[0], true);
     lv_label_set_text(ui->coremarkmhz_result_label[0], "--");
     lv_obj_add_style(ui->coremarkmhz_result_label[0], &style_text_muted, 0);
 
@@ -313,7 +310,6 @@ static void profile_create(lv_obj_t *parent, ui_component_t *ui)
 
     ui->core_freq_result_label[1] = lv_label_create(panel3);
     lv_label_set_text(ui->core_freq_result_label[1], "816MHz");
-    lv_label_set_recolor(ui->core_freq_result_label[1], true);
     lv_obj_add_style(ui->core_freq_result_label[1], &style_text_muted, 0);
 
     ui->bus_freq_tips_label[1] = lv_label_create(panel3);
@@ -321,7 +317,6 @@ static void profile_create(lv_obj_t *parent, ui_component_t *ui)
     lv_obj_add_style(ui->bus_freq_tips_label[1], &style_text_muted, 0);
 
     ui->bus_freq_result_label[1] = lv_label_create(panel3);
-    lv_label_set_recolor(ui->bus_freq_result_label[1], true);
     lv_label_set_text(ui->bus_freq_result_label[1], "200MHz");
     lv_obj_add_style(ui->bus_freq_result_label[1], &style_text_muted, 0);
 
@@ -329,49 +324,45 @@ static void profile_create(lv_obj_t *parent, ui_component_t *ui)
     lv_label_set_text(ui->coremark_tips_label[1], "CoreMark");
     lv_obj_add_style(ui->coremark_tips_label[1], &style_text_muted, 0);
 
-
     ui->coremark_result_label[1] = lv_label_create(panel3);
-    lv_label_set_recolor(ui->coremark_result_label[1], true);
     lv_label_set_text(ui->coremark_result_label[1], "--");
     lv_obj_add_style(ui->coremark_result_label[1], &style_text_muted, 0);
-
 
     ui->coremarkmhz_tips_label[1] = lv_label_create(panel3);
     lv_label_set_text(ui->coremarkmhz_tips_label[1], "CoreMark / MHz");
     lv_obj_add_style(ui->coremarkmhz_tips_label[1], &style_text_muted, 0);
 
     ui->coremarkmhz_result_label[1] = lv_label_create(panel3);
-    lv_label_set_recolor(ui->coremarkmhz_result_label[1], true);
     lv_label_set_text(ui->coremarkmhz_result_label[1], "--");
     lv_obj_add_style(ui->coremarkmhz_result_label[1], &style_text_muted, 0);
 
     if (disp_size == DISP_LARGE) {
-        static lv_coord_t grid_main_col_dsc[] = {
+        static int32_t grid_main_col_dsc[] = {
             LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST
         };
-        static lv_coord_t grid_main_row_dsc[] = {
+        static int32_t grid_main_row_dsc[] = {
             LV_GRID_CONTENT, LV_GRID_CONTENT, LV_GRID_TEMPLATE_LAST
         };
 
         /*Create the top panel*/
-        static lv_coord_t grid_1_col_dsc[] = {
+        static int32_t grid_1_col_dsc[] = {
             LV_GRID_CONTENT, 5, LV_GRID_CONTENT, LV_GRID_FR(2), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST
         };
-        static lv_coord_t grid_1_row_dsc[] = {
-            LV_GRID_CONTENT, LV_GRID_CONTENT, 10, LV_GRID_CONTENT, LV_GRID_CONTENT, LV_GRID_TEMPLATE_LAST
+        static int32_t grid_1_row_dsc[] = {
+            LV_GRID_CONTENT, LV_GRID_CONTENT, 1, LV_GRID_CONTENT, LV_GRID_CONTENT, LV_GRID_TEMPLATE_LAST
         };
 
-        static lv_coord_t grid_2_col_dsc[] = {
+        static int32_t grid_2_col_dsc[] = {
             LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST
         };
-        static lv_coord_t grid_2_row_dsc[] = {
+        static int32_t grid_2_row_dsc[] = {
             LV_GRID_CONTENT,  /*Title*/
-            5,                /*Separator*/
+            1,                /*Separator*/
             LV_GRID_CONTENT,  /*Box title*/
-            10,               /*Boxes*/
-            5,                /*Separator*/
+            1,                /*Boxes*/
+            1,                /*Separator*/
             LV_GRID_CONTENT,  /*Box title*/
-            10,               /*Boxes*/
+            1,                /*Boxes*/
             LV_GRID_TEMPLATE_LAST
         };
 
@@ -416,24 +407,25 @@ static void profile_create(lv_obj_t *parent, ui_component_t *ui)
         lv_obj_set_grid_cell(ui->coremark_result_label[1], LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_CENTER, 6, 1);
         lv_obj_set_grid_cell(ui->coremark_tips_label[1], LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_START, 5, 1);
     } else if (disp_size == DISP_MEDIUM) {
-        static lv_coord_t grid_main_col_dsc[] = { LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST };
-        static lv_coord_t grid_main_row_dsc[] = { LV_GRID_CONTENT, LV_GRID_CONTENT, LV_GRID_TEMPLATE_LAST };
+        static int32_t grid_main_col_dsc[] = { LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST };
+        static int32_t grid_main_row_dsc[] = { LV_GRID_CONTENT, LV_GRID_CONTENT, LV_GRID_TEMPLATE_LAST };
 
 
         /*Create the top panel*/
-        static lv_coord_t
+        static int32_t
             grid_1_col_dsc[] = { LV_GRID_CONTENT, 1, LV_GRID_CONTENT, LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST };
-        static lv_coord_t grid_1_row_dsc[] = {
+        static int32_t grid_1_row_dsc[] = {
             LV_GRID_CONTENT, /*Name*/
             LV_GRID_CONTENT, /*Description*/
             LV_GRID_CONTENT, /*Email*/
-            -20, LV_GRID_CONTENT, /*Phone*/
+            -20,
+            LV_GRID_CONTENT, /*Phone*/
             LV_GRID_CONTENT, /*Buttons*/
             LV_GRID_TEMPLATE_LAST
         };
 
-        static lv_coord_t grid_2_col_dsc[] = { LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST };
-        static lv_coord_t grid_2_row_dsc[] = {
+        static int32_t grid_2_col_dsc[] = { LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST };
+        static int32_t grid_2_row_dsc[] = {
             LV_GRID_CONTENT,  /*Title*/
             5,                /*Separator*/
             LV_GRID_CONTENT,  /*Box title*/
@@ -481,15 +473,15 @@ static void profile_create(lv_obj_t *parent, ui_component_t *ui)
         lv_obj_set_grid_dsc_array(panel3, grid_2_col_dsc, grid_2_row_dsc);
         lv_obj_set_grid_cell(panel3_title, LV_GRID_ALIGN_START, 0, 2, LV_GRID_ALIGN_CENTER, 0, 1);
     } else if (disp_size == DISP_SMALL) {
-        static lv_coord_t grid_main_col_dsc[] = { LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST };
-        static lv_coord_t
+        static int32_t grid_main_col_dsc[] = { LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST };
+        static int32_t
             grid_main_row_dsc[] = { LV_GRID_CONTENT, LV_GRID_CONTENT, LV_GRID_CONTENT, LV_GRID_TEMPLATE_LAST };
         lv_obj_set_grid_dsc_array(parent, grid_main_col_dsc, grid_main_row_dsc);
 
 
         /*Create the top panel*/
-        static lv_coord_t grid_1_col_dsc[] = { LV_GRID_CONTENT, LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST };
-        static lv_coord_t grid_1_row_dsc[] = {
+        static int32_t grid_1_col_dsc[] = { LV_GRID_CONTENT, LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST };
+        static int32_t grid_1_row_dsc[] = {
             LV_GRID_CONTENT, /*Avatar*/
             LV_GRID_CONTENT, /*Name*/
             LV_GRID_CONTENT, /*Description*/
@@ -503,8 +495,8 @@ static void profile_create(lv_obj_t *parent, ui_component_t *ui)
         lv_obj_set_grid_dsc_array(panel1, grid_1_col_dsc, grid_1_row_dsc);
 
 
-        static lv_coord_t grid_2_col_dsc[] = { LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST };
-        static lv_coord_t grid_2_row_dsc[] = {
+        static int32_t grid_2_col_dsc[] = { LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST };
+        static int32_t grid_2_row_dsc[] = {
             LV_GRID_CONTENT,  /*Title*/
             5,                /*Separator*/
             LV_GRID_CONTENT,  /*Box title*/
@@ -563,9 +555,9 @@ void update_coremark_result(lv_coremark_ctx_t *cm_ctx)
         sprintf(str_buf, "%dMHz", cm_ctx->bus_freq[i] / 1000000U);
         lv_label_set_text(s_ui.bus_freq_result_label[i], str_buf);
         if (cm_ctx->result_ready[i]) {
-            sprintf(str_buf, "#ff0000 %d", cm_ctx->coremark[i]);
+            sprintf(str_buf, "%d", cm_ctx->coremark[i]);
             lv_label_set_text(s_ui.coremark_result_label[i], str_buf);
-            sprintf(str_buf, "#ff0000  %.2f", cm_ctx->coremarkmhz[i]);
+            sprintf(str_buf, "%.2f", cm_ctx->coremarkmhz[i]);
             lv_label_set_text(s_ui.coremarkmhz_result_label[i], str_buf);
         } else {
             lv_label_set_text(s_ui.bus_freq_result_label[i], str_buf);
@@ -717,7 +709,7 @@ void freqswitch_button_click_cb(lv_event_t *e)
 
     char label_str[100];
     if (k_clock_setting_list[freq_idx].need_overdrive) {
-        sprintf(label_str, "#ff0000 %dMHz", k_clock_setting_list[freq_idx].freq / 1000000U);
+        sprintf(label_str, "%dMHz", k_clock_setting_list[freq_idx].freq / 1000000U);
     } else {
         sprintf(label_str, "%dMHz", k_clock_setting_list[freq_idx].freq / 1000000U);
     }

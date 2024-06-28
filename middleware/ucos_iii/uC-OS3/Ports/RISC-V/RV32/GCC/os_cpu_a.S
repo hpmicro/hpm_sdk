@@ -25,7 +25,7 @@
 #********************************************************************************************************
 # Note(s)   : Hardware FP is not supported.
 #********************************************************************************************************
-
+#include "context.h"
 #********************************************************************************************************
 #                                          PUBLIC FUNCTIONS
 #********************************************************************************************************
@@ -37,10 +37,6 @@
     .extern  OSTCBHighRdyPtr
     .extern  OSIntExit
     .extern  OSTaskSwHook
-#ifdef __riscv_flen
-    .extern  portasmSAVE_FPU_REGISTERS
-    .extern  portasmRESTORE_FPU_REGISTERS
-#endif
     .global  OSStartHighRdy                          # Functions declared in this file
     .global  OSCtxSw
     .global  OSIntCtxSw
@@ -104,9 +100,7 @@ OSStartHighRdy:
     lw     sp, 0(t1)
 
 # Restore Fpu registers when fpu is enabled
-#ifdef __riscv_flen
-    call   portasmRESTORE_FPU_REGISTERS
-#endif
+    portasmRESTORE_FPU_REGISTERS
 
 # Retrieve the location where to jump
     lw     t0, 31 * 4(sp)
@@ -254,9 +248,7 @@ Software_IRQHandler:
     csrw mscratch, t0
 
 # Restore Fpu registers when fpu is enabled. Added by Hpmicro
-#ifdef __riscv_flen
-    call   portasmRESTORE_FPU_REGISTERS
-#endif
+    portasmRESTORE_FPU_REGISTERS
 
 # Retrieve the address at which exception happened
     lw     t0, 31 * 4(sp)

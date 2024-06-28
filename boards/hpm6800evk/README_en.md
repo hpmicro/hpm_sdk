@@ -49,7 +49,7 @@ The HPM6800 is a single-core flashless MCU running 600Mhz. It has a 1MB continuo
 
 | Name         | FUNCTIONS                                      |
 | ------------ | ---------------------------------------------- |
-| PBUTN (KEY1)  | GPIO Button                                   |
+| USER BUTTON(KEY1)  | User Button                                   |
 | WBUTN (KEY2)  | WAKE UP Button                                 |
 | RESETN (SW1)  | Reset Button                                   |
 
@@ -83,10 +83,11 @@ The UART0 use for debugger console:
 
  The UART3 is used for some functional testing using UART, such as MICROROS_UART, USB_CDC_ACM_UART, MODBUS_RTU etc.
 
-| Function | Pin  | Position |
-| -------- | ---- | ----------|
+| Function | Pin  | Position | Remark   |
+| -------- | ---- | ----------| ------   |
 | UART3.TX | PE15 | P2[8]  |
 | UART3.RX | PE14 | P2[10] |
+| UART3.break | PE04 | P2[24] | generate uart break signal |
 
 - PUART Pin:
 
@@ -121,11 +122,12 @@ The UART0 use for debugger console:
 
 - GPTMR Pin
 
-| Function      | Pin   | Position|
-| ------------- | ----- | ------- |
+| Function      | Pin   | Position| Remark   |
+| ------------- | ----- | ------- | -------- |
 | GPTMR2.CAPT_0 | PE22  | J19[9]  |
-| GPTMR2.COMP_0 | PE23  | J19[12] |
-| GPTMR2.COMP_1 | PE24  | J19[10] |
+| GPTMR2.COMP_0 | PE23  | J19[12] | MCLK of i2s emulation  |
+| GPTMR2.COMP_1 | PE24  | J19[10] | LRCK of i2s emulation |
+| GPTMR2.COMP_2 | PE26  | J19[6]  | BLCK of i2s emulation |
 
 - headphone interface
 
@@ -167,3 +169,9 @@ The UART0 use for debugger console:
 | TAMP.04  | PZ04   | P2[35] | Active Mode |
 | TAMP.05  | PZ05   | P2[38] | Active Mode |
 | TAMP.06  | PZ06   | P2[37] | Passive Mode |
+
+- CS Pin of i2s emulation
+
+| Function | Position   |  Remark |
+| ----     | -----      | ------ |
+| PE27      | J19[5]    | the pin that controls the SPI slave CS |

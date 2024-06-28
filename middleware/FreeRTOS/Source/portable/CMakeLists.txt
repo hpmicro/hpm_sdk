@@ -1,4 +1,4 @@
-# Copyright (c) 2021 HPMicro
+# Copyright (c) 2021-2024 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 sdk_gcc_inc(GCC/RISC-V)
@@ -19,7 +19,13 @@ sdk_iar_src(
     IAR/RISC-V/port.c
     IAR/RISC-V/chip_specific_extensions/HPMicro/hpm_port.c
     IAR/RISC-V/portASM.S
+    IAR/RISC-V/default_isr.S
     )
+
+# Use PTMR to generate system tic if tickless stop mode is set
+if(DEFINED CONFIG_FREERTOS_TICKLESS_USE_STOP_MODE)
+    set(CONFIG_FREERTOS_TIMER_RESOURCE_NOT_MTIMER 1)
+endif()
 # If CONFIG_FREERTOS_TIMER_RESOURCE_NOT_MTIMER is not defined, the mtimer is used to generate systic
 # Otherwise use the gptimer to generate systic
 if(NOT DEFINED CONFIG_FREERTOS_TIMER_RESOURCE_NOT_MTIMER)
@@ -27,6 +33,12 @@ if(NOT DEFINED CONFIG_FREERTOS_TIMER_RESOURCE_NOT_MTIMER)
 else()
     sdk_compile_definitions("-DportasmHAS_MTIME=0")
 endif()
+
+if(DEFINED CONFIG_FREERTOS_TICKLESS)
+    sdk_compile_definitions(-DconfigUSE_TICKLESS_IDLE=1)
+endif()
+add_subdirectory_ifdef(CONFIG_FREERTOS_TICKLESS tickless)   
+
 if(DEFINED CONFIG_FREERTOS_HEAP)
     if("${CONFIG_FREERTOS_HEAP}" STREQUAL "")
         sdk_src(MemMang/heap_4.c)

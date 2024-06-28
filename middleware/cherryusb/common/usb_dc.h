@@ -36,11 +36,11 @@ int usbd_set_address(uint8_t busid, const uint8_t addr);
 /**
  * @brief Get USB device speed
  *
- * @param[in] port port index
+ * @param[in] busid bus index
  *
  * @return port speed, USB_SPEED_LOW or USB_SPEED_FULL or USB_SPEED_HIGH
  */
-uint8_t usbd_get_port_speed(uint8_t busid, const uint8_t port);
+uint8_t usbd_get_port_speed(uint8_t busid);
 
 /**
  * @brief configure and enable endpoint.
@@ -177,6 +177,15 @@ void usbd_event_ep_in_complete_handler(uint8_t busid, uint8_t ep, uint32_t nbyte
  * @param[in]  nbytes    How many nbytes have transferred.
  */
 void usbd_event_ep_out_complete_handler(uint8_t busid, uint8_t ep, uint32_t nbytes);
+
+#ifdef CONFIG_USBDEV_TEST_MODE
+/**
+ * @brief Usb execute test mode
+ * @param[in]  busid     device busid
+ * @param[in]  test_mode usb test mode
+ */
+void usbd_execute_test_mode(uint8_t busid, uint8_t test_mode);
+#endif
 
 #ifdef __cplusplus
 }

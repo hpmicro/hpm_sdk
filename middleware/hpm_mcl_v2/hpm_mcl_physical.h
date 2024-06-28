@@ -36,6 +36,7 @@ typedef struct {
     float power;    /**< Rated power */
     float inertia; /**< kgm^2 */
     float rpm_max; /**< Maximum RPM */
+    float flux;
     hall_phase_t hall;
 } physical_motor_t;
 
@@ -50,6 +51,7 @@ typedef struct {
     int32_t power;
     int32_t inertia; /**< kgm^2 */
     int32_t rpm_max;
+    int32_t flux;
     hall_phase_t hall;
 } physical_motor_q_t;
 

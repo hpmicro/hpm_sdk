@@ -105,11 +105,13 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 
 - GPTMR Pin
 
-| Function      | Position |
-| ------------- | -------- |
+| Function      | Position | Remark   |
+| ------------- | -------- | -------- |
 | GPTMR4.CAPT_1 | J12[6]   |
-| GPTMR5.COMP_2 | J12[18]  |
-| GPTMR5.COMP_3 | J12[16]  |
+| GPTMR3.COMP_1 | J12[8]   | MCLK of i2s emulation  |
+| GPTMR5.COMP_2 | J12[18]  | LRCK of i2s emulation |
+| GPTMR5.COMP_3 | J12[16]  | BLCK of i2s emulation  |
+
 
 - ADC12 Pin
 
@@ -152,10 +154,11 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 - UART13 pin
  The UART13 is used for core1 debug console or some functional testing using UART, such as uart_software_rx_idle, uart_rx_timeout, uart_software_lin, MICROROS_UART, USB_CDC_ACM_UART, MODBUS_RTU etc.
 
-| Function   | Position |
-| ---------- | -------- |
+| Function   | Position | Remark   |
+| ---------- | -------- | ------   |
 | UART13.TXD | J20[5]   |
 | UART13.RXD | J20[6]   |
+| UART13.break | J20[7]   | generate uart break signal |
 
 - TRGMUX pin for uart_software_rx_idle sample
 
@@ -174,3 +177,9 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 | TAMP.08  | PZ08   | J20[6] | Active Mode |
 | TAMP.09  | PZ09   | J20[5] | Active Mode |
 | TAMP.10  | PZ10   | J20[4] | Passive Mode |
+
+- CS Pin of i2s emulation
+
+| Function | Position   |  Remark |
+| ----     | -----      | ------ |
+| PD25      | J12[16]    | the pin that controls the SPI slave CS |

@@ -2242,6 +2242,13 @@ PREDEFINED             = "HPM_EN_MATH_NN_LIB=1" \
                         "HPM_IP_FEATURE_SPI_CS_SELECT=1" \
                         "HPM_IP_FEATURE_SPI_SUPPORT_DIRECTIO=1" \
                         "HPM_IP_FEATURE_I2C_SUPPORT_RESET=1" \
+                        "HPM_IP_FEATURE_SEI_RX_LATCH_FEATURE=1" \
+                        "HPM_IP_FEATURE_SEI_ASYNCHRONOUS_MODE_V2=1" \
+                        "HPM_IP_FEATURE_SEI_TIMEOUT_REWIND_FEATURE=1" \
+                        "HPM_IP_FEATURE_SEI_HAVE_DAT10_31=1" \
+                        "HPM_IP_FEATURE_SEI_HAVE_INTR64_255=1" \
+                        "HPM_IP_FEATURE_SEI_HAVE_CTRL2_12=1" \
+                        "HPM_IP_FEATURE_SEI_HAVE_PTCD=1"
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The

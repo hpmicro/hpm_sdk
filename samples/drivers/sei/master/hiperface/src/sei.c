@@ -109,6 +109,53 @@ int main(void)
     data_format_config.min_bit = 0;
     data_format_config.gold_value = 0x42;
     sei_cmd_data_format_config_init(BOARD_SEI, SEI_SELECT_DATA, SEI_DAT_6, &data_format_config);
+
+    /* Depending on the soc, there are different numbers of DAT registers available */
+#if defined(HPM_IP_FEATURE_SEI_HAVE_DAT10_31) && HPM_IP_FEATURE_SEI_HAVE_DAT10_31
+    /* data register 9: recv pos */
+    data_format_config.mode = sei_data_mode;
+    data_format_config.signed_flag = false;
+    data_format_config.bit_order = sei_bit_lsb_first;
+    data_format_config.word_order = sei_word_reverse;
+    data_format_config.word_len = 8;
+    data_format_config.last_bit = 7;
+    data_format_config.first_bit = 0;
+    data_format_config.max_bit = 7;
+    data_format_config.min_bit = 0;
+    sei_cmd_data_format_config_init(BOARD_SEI, SEI_SELECT_DATA, SEI_DAT_9, &data_format_config);
+    /* data register 11: recv pos */
+    data_format_config.mode = sei_data_mode;
+    data_format_config.signed_flag = false;
+    data_format_config.bit_order = sei_bit_lsb_first;
+    data_format_config.word_order = sei_word_reverse;
+    data_format_config.word_len = 8;
+    data_format_config.last_bit = 3;
+    data_format_config.first_bit = 4;
+    data_format_config.max_bit = 11;
+    data_format_config.min_bit = 0;
+    sei_cmd_data_format_config_init(BOARD_SEI, SEI_SELECT_DATA, SEI_DAT_11, &data_format_config);
+    /* data register 10: recv pos */
+    data_format_config.mode = sei_data_mode;
+    data_format_config.signed_flag = false;
+    data_format_config.bit_order = sei_bit_lsb_first;
+    data_format_config.word_order = sei_word_reverse;
+    data_format_config.word_len = 8;
+    data_format_config.last_bit = 27;
+    data_format_config.first_bit = 28;
+    data_format_config.max_bit = 31;
+    data_format_config.min_bit = 20;
+    sei_cmd_data_format_config_init(BOARD_SEI, SEI_SELECT_DATA, SEI_DAT_10, &data_format_config);
+    data_format_config.mode = sei_data_mode;
+    data_format_config.signed_flag = false;
+    data_format_config.bit_order = sei_bit_lsb_first;
+    data_format_config.word_order = sei_word_reverse;
+    data_format_config.word_len = 8;
+    data_format_config.last_bit = 7;
+    data_format_config.first_bit = 0;
+    data_format_config.max_bit = 7;
+    data_format_config.min_bit = 0;
+    sei_cmd_data_format_config_init(BOARD_SEI, SEI_SELECT_DATA, SEI_DAT_12, &data_format_config);
+#else
     /* data register 7: recv pos */
     data_format_config.mode = sei_data_mode;
     data_format_config.signed_flag = false;
@@ -120,6 +167,7 @@ int main(void)
     data_format_config.max_bit = 31;
     data_format_config.min_bit = 0;
     sei_cmd_data_format_config_init(BOARD_SEI, SEI_SELECT_DATA, SEI_DAT_7, &data_format_config);
+#endif
     /* data register 8: check crc */
     data_format_config.mode = sei_crc_mode;
     data_format_config.signed_flag = false;
@@ -146,12 +194,31 @@ int main(void)
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_8, SEI_DAT_5, 1);  /* recv addr */
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_8, SEI_DAT_5, 7);  /* recv addr */
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_8, SEI_DAT_6, 8);  /* recv cmd */
+    /* Depending on the soc, there are different numbers of DAT registers available */
+#if defined(HPM_IP_FEATURE_SEI_HAVE_DAT10_31) && HPM_IP_FEATURE_SEI_HAVE_DAT10_31
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_8, SEI_DAT_9, 8); /* recv null */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_8, SEI_DAT_11, 8); /* recv rev */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_8, SEI_DAT_10, 4); /* recv pos */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_8, SEI_DAT_11, 4); /* recv rev */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_8, SEI_DAT_10, 8); /* recv pos */
+#else
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_8, SEI_DAT_7, 32); /* recv pos */
+#endif
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_0, SEI_DAT_8, 8);  /* check crc */
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_HALT, 0, SEI_DAT_0, SEI_DAT_0, 0);
 
     /* [4] state transition config */
     /* latch0 */
+#if defined(HPM_IP_FEATURE_SEI_RX_LATCH_FEATURE) && HPM_IP_FEATURE_SEI_RX_LATCH_FEATURE
+    state_transition_config.disable_clk_check = true;
+    state_transition_config.disable_txd_check = true;
+    state_transition_config.disable_rxd_check = false;
+    state_transition_config.rxd_cfg = sei_state_tran_condition_fall_leave;
+    state_transition_config.disable_timeout_check = true;
+    state_transition_config.disable_instr_ptr_check = false;
+    state_transition_config.instr_ptr_cfg = sei_state_tran_condition_high_match;
+    state_transition_config.instr_ptr_value = 4;
+#else
     state_transition_config.disable_clk_check = true;
     state_transition_config.disable_txd_check = true;
     state_transition_config.disable_rxd_check = true;
@@ -159,6 +226,7 @@ int main(void)
     state_transition_config.disable_instr_ptr_check = false;
     state_transition_config.instr_ptr_cfg = sei_state_tran_condition_fall_leave;
     state_transition_config.instr_ptr_value = 4;
+#endif
     sei_state_transition_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0, SEI_CTRL_LATCH_TRAN_0_1, &state_transition_config);
     state_transition_config.disable_clk_check = true;
     state_transition_config.disable_txd_check = true;
@@ -180,11 +248,6 @@ int main(void)
     state_transition_config.instr_ptr_cfg = sei_state_tran_condition_fall_leave;
     state_transition_config.instr_ptr_value = (instr_idx - 2);
     sei_state_transition_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0, SEI_CTRL_LATCH_TRAN_3_0, &state_transition_config);
-
-    state_transition_latch_config.enable = true;
-    state_transition_latch_config.output_select = SEI_CTRL_LATCH_TRAN_0_1;
-    state_transition_latch_config.delay = 0;
-    sei_state_transition_latch_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0, &state_transition_latch_config);
 
     /* latch1 */
     state_transition_config.disable_clk_check = true;
@@ -214,11 +277,6 @@ int main(void)
     state_transition_config.disable_instr_ptr_check = true;
     sei_state_transition_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_1, SEI_CTRL_LATCH_TRAN_3_0, &state_transition_config);
 
-    state_transition_latch_config.enable = true;
-    state_transition_latch_config.output_select = SEI_CTRL_LATCH_TRAN_0_1;
-    state_transition_latch_config.delay = 0;
-    sei_state_transition_latch_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_1, &state_transition_latch_config);
-
     /* [5] sample config*/
     sample_config.latch_select = SEI_LATCH_0;
     sei_sample_config_init(BOARD_SEI, BOARD_SEI_CTRL, &sample_config);
@@ -233,6 +291,7 @@ int main(void)
 
     /* [7] interrupt config */
     intc_m_enable_irq_with_priority(BOARD_SEI_IRQn, 1);
+    sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch1_event | sei_irq_trx_err_event);
     sei_set_irq_enable(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch1_event | sei_irq_trx_err_event, true);
 
     /* [8] enbale sync timer timestamp */
@@ -249,9 +308,21 @@ int main(void)
     engine_config.wdg_instr_idx = (instr_idx - 1);
     engine_config.wdg_time = 500;    /* 500 bits time */
     sei_engine_config_init(BOARD_SEI, BOARD_SEI_CTRL, &engine_config);
+
+    /* [10] start engine and latch modules */
+
+    state_transition_latch_config.enable = true;
+    state_transition_latch_config.output_select = SEI_CTRL_LATCH_TRAN_0_1;
+    state_transition_latch_config.delay = 0;
+    sei_state_transition_latch_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0, &state_transition_latch_config);
+
+    state_transition_latch_config.enable = true;
+    state_transition_latch_config.output_select = SEI_CTRL_LATCH_TRAN_0_1;
+    state_transition_latch_config.delay = 0;
+    sei_state_transition_latch_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_1, &state_transition_latch_config);
     sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, true);
 
-    /* [10] trigger config */
+    /* [11] trigger config */
     trigger_input_conifg.trig_period_enable = true;
     trigger_input_conifg.trig_period_arming_mode = sei_arming_direct_exec;
     trigger_input_conifg.trig_period_sync_enable = false;
@@ -274,9 +345,20 @@ void isr_sei(void)
         sample_latch_tm = sei_get_latch_time(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0);
         update_latch_tm = sei_get_latch_time(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_1);
         delta = (update_latch_tm > sample_latch_tm) ? (update_latch_tm - sample_latch_tm) : (update_latch_tm - sample_latch_tm + 0xFFFFFFFFu);
-        printf("POS:%#x, addr:%#x, sample_tm:%u, update_tm:%u, TimeDelay:%d us\n",
-                sei_get_data_value(BOARD_SEI, SEI_DAT_7), sei_get_data_value(BOARD_SEI, SEI_DAT_5),
-                sample_latch_tm, update_latch_tm, delta / (clock_get_frequency(BOARD_MOTOR_CLK_NAME) / 1000000));
+#if defined(HPM_IP_FEATURE_SEI_HAVE_DAT10_31) && HPM_IP_FEATURE_SEI_HAVE_DAT10_31
+        printf("rev:%#x, pos:%#x, addr:%#x, CRC:%#x, sample_tm:%u, update_tm:%u, TimeDelay:%d us\n",
+                sei_get_data_value(BOARD_SEI, SEI_DAT_11),
+                sei_get_data_value(BOARD_SEI, SEI_DAT_10),
+                sei_get_data_value(BOARD_SEI, SEI_DAT_5),
+#else
+        printf("POS:%#x, addr:%#x, CRC:%#x, sample_tm:%u, update_tm:%u, TimeDelay:%d us\n",
+                sei_get_data_value(BOARD_SEI, SEI_DAT_7),
+                sei_get_data_value(BOARD_SEI, SEI_DAT_5),
+#endif
+                sei_get_data_value(BOARD_SEI, SEI_DAT_8) & 0xFF,
+                sample_latch_tm,
+                update_latch_tm,
+                delta / (clock_get_frequency(BOARD_MOTOR_CLK_NAME) / 1000000));
     }
 
     if (sei_get_irq_status(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_trx_err_event)) {

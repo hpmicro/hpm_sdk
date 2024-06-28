@@ -6,7 +6,10 @@ power_mode_switch shows how different power modes are switched to/from
 
 ## Board Setting
 
-No special settings
+Connect serial port (from PUART, refer to [PUART pins](lab_board_puart_pin)) to PC
+
+__Note__:
+  - Please power cycle the board (boot from flash) is needed to run the demo application after this firmware is downloaded.
 
 ## Running the example
 

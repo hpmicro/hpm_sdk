@@ -49,6 +49,8 @@
 #define BOARD_APP_UART_TX_DMA_REQ HPM_DMA_SRC_UART2_TX
 #endif
 
+#define BOARD_APP_UART_BREAK_SIGNAL_PIN   IOC_PAD_PA26
+
 /* uart lin sample section */
 #define BOARD_UART_LIN          HPM_UART3
 #define BOARD_UART_LIN_IRQ      IRQn_UART3
@@ -165,11 +167,12 @@
 #define BOARD_APP_ADC16_CH_1     (13U)
 #define BOARD_APP_ADC16_CLK_NAME (clock_adc0)
 
-#define BOARD_APP_ADC16_HW_TRIG_SRC     HPM_PWM0
-#define BOARD_APP_ADC16_HW_TRGM         HPM_TRGM0
-#define BOARD_APP_ADC16_HW_TRGM_IN      HPM_TRGM0_INPUT_SRC_PWM0_CH8REF
-#define BOARD_APP_ADC16_HW_TRGM_OUT_SEQ TRGM_TRGOCFG_ADC0_STRGI
-#define BOARD_APP_ADC16_HW_TRGM_OUT_PMT TRGM_TRGOCFG_ADCX_PTRGI0A
+#define BOARD_APP_ADC16_HW_TRIG_SRC_CLK_NAME clock_mot0
+#define BOARD_APP_ADC16_HW_TRIG_SRC          HPM_PWM0
+#define BOARD_APP_ADC16_HW_TRGM              HPM_TRGM0
+#define BOARD_APP_ADC16_HW_TRGM_IN           HPM_TRGM0_INPUT_SRC_PWM0_CH8REF
+#define BOARD_APP_ADC16_HW_TRGM_OUT_SEQ      TRGM_TRGOCFG_ADC0_STRGI
+#define BOARD_APP_ADC16_HW_TRGM_OUT_PMT      TRGM_TRGOCFG_ADCX_PTRGI0A
 
 #define BOARD_APP_ADC16_PMT_TRIG_CH ADC16_CONFIG_TRG0A
 
@@ -206,6 +209,7 @@
 #define BOARD_APP_TRGM            HPM_TRGM0
 #define BOARD_APP_PWM_IRQ         IRQn_PWM0
 #define BOARD_APP_TRGM_PWM_OUTPUT TRGM_TRGOCFG_PWM0_SYNCI
+#define BOARD_APP_TRGM_PWM_INPUT  HPM_TRGM0_INPUT_SRC_PWM0_TRGO_0
 
 /*BLDC pwm*/
 /*PWM define*/
@@ -231,6 +235,7 @@
 /*HALL define*/
 
 /*RDC*/
+#define BOARD_RDC_BASE            HPM_RDC
 #define BOARD_RDC_TRGM            HPM_TRGM0
 #define BOARD_RDC_TRGIGMUX_IN_NUM HPM_TRGM0_INPUT_SRC_RDC_TRGO_0
 #define BOARD_RDC_TRG_NUM         TRGM_TRGOCFG_MOT_GPIO0
@@ -250,8 +255,18 @@
 #define BOARD_BLDC_QEI_MOTOR_PHASE_COUNT_PER_REV (16U)
 #define BOARD_BLDC_QEI_CLOCK_SOURCE              clock_mot0
 #define BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV   (4000U)
-#define BOARD_BLDC_QEI_ADC_MATRIX_ADC0           trgm_adc_matrix_output_to_qei1_adc0
-#define BOARD_BLDC_QEI_ADC_MATRIX_ADC1           trgm_adc_matrix_output_to_qei1_adc1
+
+#define BOARD_APP_QEIV2_BASE             HPM_QEI1
+#define BOARD_APP_QEIV2_IRQ              IRQn_QEI1
+#define BOARD_APP_QEI_CLOCK_SOURCE       clock_mot0
+#define BOARD_APP_QEI_ADC_COS_BASE       HPM_ADC0
+#define BOARD_APP_QEI_ADC_COS_CHN        (4U)
+#define BOARD_APP_QEI_ADC_SIN_BASE       HPM_ADC1
+#define BOARD_APP_QEI_ADC_SIN_CHN        (5U)
+#define BOARD_APP_QEI_ADC_MATRIX_TO_ADC0 trgm_adc_matrix_output_to_qei1_adc0
+#define BOARD_APP_QEI_ADC_MATRIX_TO_ADC1 trgm_adc_matrix_output_to_qei1_adc1
+#define BOARD_APP_QEI_ADC_MATRIX_FROM_ADC_COS trgm_adc_matrix_in_from_adc0
+#define BOARD_APP_QEI_ADC_MATRIX_FROM_ADC_SIN trgm_adc_matrix_in_from_adc1
 
 /*Timer define*/
 #define BOARD_BLDC_TMR_1MS    HPM_GPTMR2
@@ -285,6 +300,8 @@
 #define BOARD_PLB_PWM_TRG              (HPM_TRGM0_INPUT_SRC_PWM0_CH8REF)
 #define BOARD_PLB_IN_PWM_TRG_NUM       (TRGM_TRGOCFG_PLB_IN_00)
 #define BOARD_PLB_IN_PWM_PULSE_TRG_NUM (TRGM_TRGOCFG_PLB_IN_02)
+#define BOARD_PLB_CLR_SIGNAL_INPUT     (HPM_TRGM0_INPUT_SRC_PLB_OUT16)
+#define BOARD_PLB_TYPEB_INPUT0         (TRGM_TRGOCFG_PLB_IN_16)
 #define BOARD_PLB_OUT_TRG              (HPM_TRGM0_INPUT_SRC_PLB_OUT00)
 #define BOARD_PLB_IO_TRG_NUM           (TRGM_TRGOCFG_MOT_GPIO2)
 #define BOARD_PLB_IO_TRG_SHIFT         (2)
@@ -323,11 +340,45 @@
 #define BOARD_FREERTOS_TIMER_IRQ      IRQn_GPTMR2
 #define BOARD_FREERTOS_TIMER_CLK_NAME clock_gptmr2
 
+#define BOARD_FREERTOS_LOWPOWER_TIMER          HPM_PTMR
+#define BOARD_FREERTOS_LOWPOWER_TIMER_CHANNEL  1
+#define BOARD_FREERTOS_LOWPOWER_TIMER_IRQ      IRQn_PTMR
+#define BOARD_FREERTOS_LOWPOWER_TIMER_CLK_NAME clock_ptmr
+
 /* Threadx Definitions */
 #define BOARD_THREADX_TIMER           HPM_GPTMR2
 #define BOARD_THREADX_TIMER_CHANNEL   1
 #define BOARD_THREADX_TIMER_IRQ       IRQn_GPTMR2
 #define BOARD_THREADX_TIMER_CLK_NAME  clock_gptmr2
+
+#define BOARD_THREADX_LOWPOWER_TIMER           HPM_PTMR
+#define BOARD_THREADX_LOWPOWER_TIMER_CHANNEL   1
+#define BOARD_THREADX_LOWPOWER_TIMER_IRQ       IRQn_PTMR
+#define BOARD_THREADX_LOWPOWER_TIMER_CLK_NAME  clock_ptmr
+
+/* i2s over spi Section*/
+#define BOARD_I2S_SPI_CS_GPIO_CTRL         HPM_GPIO0
+#define BOARD_I2S_SPI_CS_GPIO_INDEX        GPIO_DI_GPIOA
+#define BOARD_I2S_SPI_CS_GPIO_PIN          11
+#define BOARD_I2S_SPI_CS_GPIO_PAD          IOC_PAD_PA11
+
+#define BOARD_GPTMR_I2S_MCLK               HPM_GPTMR0
+#define BOARD_GPTMR_I2S_MCLK_CHANNEL       3
+#define BOARD_GPTMR_I2S_MCLK_CLK_NAME      clock_gptmr0
+
+#define BOARD_GPTMR_I2S_LRCK               HPM_GPTMR0
+#define BOARD_GPTMR_I2S_LRCK_CHANNEL       1
+#define BOARD_GPTMR_I2S_LRCK_CLK_NAME      clock_gptmr0
+
+#define BOARD_GPTMR_I2S_BCLK               HPM_GPTMR0
+#define BOARD_GPTMR_I2S_BLCK_CHANNEL       0
+#define BOARD_GPTMR_I2S_BLCK_CLK_NAME      clock_gptmr0
+
+#define BOARD_GPTMR_I2S_FINSH              HPM_GPTMR0
+#define BOARD_GPTMR_I2S_FINSH_IRQ          IRQn_GPTMR0
+#define BOARD_GPTMR_I2S_FINSH_CHANNEL      2
+#define BOARD_GPTMR_I2S_FINSH_CLK_NAME     clock_gptmr0
+
 #if defined(__cplusplus)
 extern "C" {
 #endif /* __cplusplus */
@@ -345,7 +396,7 @@ void board_init_uart(UART_Type *ptr);
 uint32_t board_init_spi_clock(SPI_Type *ptr);
 void board_init_spi_pins(SPI_Type *ptr);
 void board_usb_vbus_ctrl(uint8_t usb_index, uint8_t level);
-uint32_t board_init_adc16_clock(ADC16_Type *ptr, bool clk_src_ahb);
+uint32_t board_init_adc_clock(void *ptr, bool clk_src_ahb);
 void board_init_adc16_pins(void);
 uint32_t board_init_dac_clock(DAC_Type *ptr, bool clk_src_ahb);
 void board_init_can(MCAN_Type *ptr);

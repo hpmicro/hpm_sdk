@@ -11,7 +11,9 @@
 #include "hpm_gpio_drv.h"
 #include <math.h>
 #include "hpm_math.h"
+#ifdef HPMSOC_HAS_HPMSDK_FFA
 #include "hpm_ffa_drv.h"
+#endif
 #include "hpm_l1c_drv.h"
 
 typedef float fft_type_t;
@@ -24,7 +26,12 @@ fft_type_t fft_buf_copy[FFT_COMPLEX_MAX];
 fft_type_t fft_mag_output[FFT_COMPLEX_MAGNITUDE];
 
 fft_type_t fft_buf_conversion[FFT_COMPLEX_MAX];
+
+#ifdef HPMSOC_HAS_HPMSDK_FFA
 ffa_q31_t ffa_buf[FFT_COMPLEX_MAX];
+#else
+q31_t ffa_buf[FFT_COMPLEX_MAX];
+#endif
 
 uint32_t run_times;
 uint64_t delta_time;

@@ -3,8 +3,7 @@
 ```{eval-rst}
 .. toctree::
    :maxdepth: 3
+   :glob:
 
-   dmav2_uart_rx_circle_transfer/README_en
-   dmav2_half_tc_irq/README_en
-
+   **/*_en
 ```

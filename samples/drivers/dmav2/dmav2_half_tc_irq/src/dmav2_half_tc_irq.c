@@ -22,7 +22,8 @@
 #define TEST_UART_DMA_SRC_RX BOARD_CONSOLE_UART_RX_DMA_REQ
 #define TEST_UART_DMA_SRC_TX BOARD_CONSOLE_UART_TX_DMA_REQ
 
-#define TEST_UART_DMA_CONTROLLER    BOARD_APP_HDMA
+#define TEST_UART_DMA_CONTROLLER    TEST_DMA_CONTROLLER
+#define TEST_UART_DMA_IRQ           TEST_DMA_IRQ
 #define TEST_UART_DMAMUX_CONTROLLER BOARD_APP_DMAMUX
 #define TEST_UART_RX_DMA_CH         30
 #define TEST_UART_TX_DMA_CH         31
@@ -88,7 +89,7 @@ void init_board_app_dma(void)
     dma_setup_handshake(TEST_UART_DMA_CONTROLLER, &ch_config, false);
 
     /* 3. enable irq */
-    intc_m_enable_irq_with_priority(TEST_DMA_IRQ, 1);
+    intc_m_enable_irq_with_priority(TEST_UART_DMA_IRQ, 1);
 }
 
 void dma_isr(void)
@@ -97,7 +98,7 @@ void dma_isr(void)
     uint32_t rx_data_size;
     uint32_t dma_remaining_size;
 
-    status = dma_check_transfer_status(TEST_DMA_CONTROLLER, TEST_UART_RX_DMA_CH);
+    status = dma_check_transfer_status(TEST_UART_DMA_CONTROLLER, TEST_UART_RX_DMA_CH);
 
     if (((status & DMA_CHANNEL_STATUS_HALF_TC) != 0) || ((status & DMA_CHANNEL_STATUS_TC) != 0)) {
         dma_remaining_size = dma_get_remaining_transfer_size(TEST_UART_DMA_CONTROLLER, TEST_UART_RX_DMA_CH);
@@ -127,7 +128,7 @@ void dma_isr(void)
         }
     }
 }
-SDK_DECLARE_EXT_ISR_M(TEST_DMA_IRQ, dma_isr)
+SDK_DECLARE_EXT_ISR_M(TEST_UART_DMA_IRQ, dma_isr)
 
 int main(void)
 {

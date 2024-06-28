@@ -13,4 +13,5 @@
    uart_tamagawa/README_en
    uart_lin/master/README_en
    uart_lin/slave/README_en
+   uart_rx_line_status/README_en
 ```

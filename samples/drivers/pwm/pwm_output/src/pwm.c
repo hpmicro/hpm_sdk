@@ -118,6 +118,87 @@ void generate_edge_aligned_waveform(void)
     }
 }
 
+void generate_edge_aligned_waveform_fault_mode(void)
+{
+    uint8_t cmp_index = 0;
+    uint32_t duty, duty_step;
+    bool increase_duty_cycle = true;
+    pwm_cmp_config_t cmp_config[2] = {0};
+    pwm_config_t pwm_config = {0};
+    pwm_fault_source_config_t fault_config = {0};
+
+    pwm_stop_counter(PWM);
+    reset_pwm_counter();
+    pwm_get_default_pwm_config(PWM, &pwm_config);
+
+    pwm_config.enable_output = true;
+    pwm_config.dead_zone_in_half_cycle = 0;
+    pwm_config.invert_output = false;
+    pwm_config.fault_mode = pwm_fault_mode_force_output_0;
+    pwm_config.fault_recovery_trigger = pwm_fault_recovery_immediately;
+
+    fault_config.source_mask = pwm_fault_source_debug;
+    pwm_config_fault_source(PWM, &fault_config);
+
+    /*
+     * reload and start counter
+     */
+    pwm_set_reload(PWM, 0, reload);
+    pwm_set_start_count(PWM, 0, 0);
+
+    /*
+     * config cmp = RELOAD + 1
+     */
+    cmp_config[0].mode = pwm_cmp_mode_output_compare;
+    cmp_config[0].cmp = reload + 1;
+    cmp_config[0].update_trigger = pwm_shadow_register_update_on_hw_event;
+
+    cmp_config[1].mode = pwm_cmp_mode_output_compare;
+    cmp_config[1].cmp = reload;
+    cmp_config[1].update_trigger = pwm_shadow_register_update_on_modify;
+    /*
+     * config pwm as output driven by cmp
+     */
+    if (status_success != pwm_setup_waveform(PWM, PWM_OUTPUT_PIN1, &pwm_config, cmp_index, &cmp_config[0], 1)) {
+        printf("failed to setup waveform\n");
+        while (1) {
+        }
+    }
+    cmp_config[0].cmp = reload >> 1;
+    /*
+     * config pwm as reference
+     */
+    if (status_success != pwm_setup_waveform(PWM, PWM_OUTPUT_PIN2, &pwm_config, cmp_index + 1, &cmp_config[0], 1)) {
+        printf("failed to setup waveform\n");
+        while (1) {
+        }
+    }
+    pwm_load_cmp_shadow_on_match(PWM, cmp_index + 2, &cmp_config[1]);
+
+    pwm_start_counter(PWM);
+    pwm_issue_shadow_register_lock_event(PWM);
+    duty_step = reload / 100;
+    duty = reload / 100;
+    increase_duty_cycle = true;
+    for (uint32_t i = 0; i < TEST_LOOP; i++) {
+        if (increase_duty_cycle) {
+            if ((duty + duty_step) >= reload) {
+                increase_duty_cycle = false;
+                continue;
+            }
+            duty += duty_step;
+        } else {
+            if (duty <= duty_step) {
+                increase_duty_cycle = true;
+                continue;
+            }
+            duty -= duty_step;
+        }
+        pwm_update_raw_cmp_edge_aligned(PWM, cmp_index, reload - duty);
+        board_delay_ms(100);
+    }
+}
+
 void generate_central_aligned_waveform(void)
 {
     uint8_t cmp_index = 0;
@@ -394,6 +475,10 @@ int main(void)
     printf("Two waveforms will be generated, PWM P%d is the target waveform\n", PWM_OUTPUT_PIN1);
     printf("whose duty cycle will be updated from 0 - 100 and back to 0; PWM P%d is a reference\n", PWM_OUTPUT_PIN2);
     generate_edge_aligned_waveform();
+    printf("\n\n>> Generate edge aligned waveform and fault mode enable\n");
+    printf("Two waveforms will be generated, PWM P%d is the target waveform\n", PWM_OUTPUT_PIN1);
+    printf("whose duty cycle will be updated from 0 - 100 and back to 0; PWM P%d is a reference\n", PWM_OUTPUT_PIN2);
+    generate_edge_aligned_waveform_fault_mode();
     printf("\n\n>> Generate central aligned waveform\n");
     printf("Two waveforms will be generated, PWM P%d is the target waveform\n", PWM_OUTPUT_PIN1);
     printf("whose duty cycle will be updated from 0 - 100 and back to 0; PWM P%d is a reference\n", PWM_OUTPUT_PIN2);

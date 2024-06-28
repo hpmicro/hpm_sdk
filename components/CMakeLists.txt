@@ -1,9 +1,7 @@
-# Copyright (c) 2021 HPMicro
+# Copyright (c) 2021-2024 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
-sdk_inc(usb)
-
-add_subdirectory(enet_phy)
+add_subdirectory_ifdef(CONFIG_ENET_PHY enet_phy)
 add_subdirectory_ifndef(CONFIG_NDEBUG_CONSOLE debug_console)
 add_subdirectory_ifdef(CONFIG_CAMERA camera)
 add_subdirectory_ifdef(CONFIG_CODEC codec)
@@ -19,3 +17,5 @@ add_subdirectory_ifdef(CONFIG_HPM_UART_LIN uart_lin)
 add_subdirectory_ifdef(CONFIG_EEPROM_EMULATION eeprom_emulation)
 add_subdirectory_ifdef(CONFIG_SPI_NOR_FLASH serial_nor)
 add_subdirectory_ifdef(CONFIG_HPM_PANEL panel)
+add_subdirectory_ifdef(CONFIG_HPM_PPI ppi)
+add_subdirectory_ifdef(CONFIG_HPM_I2S_OVER_SPI i2s_over_spi)

@@ -39,7 +39,6 @@
 #endif
 #include "hpm_dmamux_drv.h"
 #include "hpm_l1c_drv.h"
-#include "hpm_pllctl_drv.h"
 #include "hpm_pdm_drv.h"
 
 /*

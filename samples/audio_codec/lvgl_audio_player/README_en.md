@@ -26,11 +26,11 @@ When using DAO to play some audio, it may generate noise.
 
 lvgl music will be shown on the LCD panel and can operate play/pause, next, previous.
 
-![lv_demo_music](../../lvgl/lv_demo_music/doc/lv_demo_music.gif "lv_demo_music")
-
 ## Remark
 
-As framebuffer occupies a large amount of memory, please specify CMAKE_BUILD_TYPE as flash_sdram_xip. The following commands can be executed:
+- As framebuffer and mp3 decoder occupies a large amount of memory, please specify HPM_BUILD_TYPE as flash_sdram_xip. The following commands can be executed:
 ```
-cmake -GNinja -DBOARD=hpm6750evkmini -DCMAKE_BUILD_TYPE=flash_sdram_xip ..
+cmake -GNinja -DBOARD=hpm6750evkmini -DHPM_BUILD_TYPE=flash_sdram_xip -DCMAKE_BUILD_TYPE=debug ..
 ```
+
+- The sample rate of MP3 files must be less than or equal to 48000 Hz

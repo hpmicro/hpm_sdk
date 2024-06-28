@@ -100,5 +100,3 @@ Start cherryusb host usbnet task...
  IPv4 Gateway     : 192.168.225.1
 
 ```
-
-注意: 切换rndis模块或者ecm模块的时候，也需要复位下开发板。

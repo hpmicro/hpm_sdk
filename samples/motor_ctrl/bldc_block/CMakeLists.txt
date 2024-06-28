@@ -8,7 +8,8 @@ set(RV_ARCH "rv32imafc")
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(bldc_block)
-
+sdk_compile_definitions(-DCONFIG_MCL_HAS_EXTRA_CONFIG="mcl_app_config.h")
+sdk_inc(src)
 sdk_app_src(src/bldc_block.c)
 sdk_ld_options("-lm")
 generate_ide_projects()

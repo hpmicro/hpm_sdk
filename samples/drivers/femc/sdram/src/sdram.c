@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include "hpm_l1c_drv.h"
 #include "hpm_clock_drv.h"
-#include "hpm_femc_drv.h"
 #include "hpm_mchtmr_drv.h"
 #include "hpm_sysctl_drv.h"
 
@@ -115,71 +114,12 @@ void check_freq(void)
     printf("freq = %d\n", freq);
 }
 
-uint32_t initialize_sdram(void)
-{
-    uint32_t femc_clk_in_hz = board_init_femc_clock();
-    femc_config_t config = {0};
-    femc_sdram_config_t sdram_config = {0};
-
-    femc_default_config(HPM_FEMC, &config);
-#if defined(BOARD_FEMC_DQS_FLOATING) && BOARD_FEMC_DQS_FLOATING
-    config.dqs = FEMC_DQS_FROM_PAD;
-#else
-    config.dqs = FEMC_DQS_INTERNAL;
-#endif
-    femc_init(HPM_FEMC, &config);
-
-    sdram_config.bank_num = FEMC_SDRAM_BANK_NUM_4;
-    sdram_config.prescaler = 0x3;
-    sdram_config.burst_len_in_byte = 8;
-    sdram_config.auto_refresh_count_in_one_burst = 1;
-    sdram_config.col_addr_bits = FEMC_SDRAM_COLUMN_ADDR_9_BITS;
-    sdram_config.cas_latency = FEMC_SDRAM_CAS_LATENCY_3;
-
-    sdram_config.precharge_to_act_in_ns = 18;   /* Trp */
-    sdram_config.act_to_rw_in_ns = 18;          /* Trcd */
-    sdram_config.refresh_recover_in_ns = 70;     /* Trfc/Trc */
-    sdram_config.write_recover_in_ns = 12;      /* Twr/Tdpl */
-    sdram_config.cke_off_in_ns = 42;             /* Trcd */
-    sdram_config.act_to_precharge_in_ns = 42;   /* Tras */
-
-    sdram_config.self_refresh_recover_in_ns = 66;   /* Txsr */
-    sdram_config.refresh_to_refresh_in_ns = 66;     /* Trfc/Trc */
-    sdram_config.act_to_act_in_ns = 12;             /* Trrd */
-    sdram_config.idle_timeout_in_ns = 6;
-    sdram_config.cs_mux_pin = FEMC_IO_MUX_NOT_USED;
-
-    sdram_config.cs = BOARD_SDRAM_CS;
-    sdram_config.base_address = BOARD_SDRAM_ADDRESS;
-    sdram_config.size_in_byte = BOARD_SDRAM_SIZE;
-    sdram_config.port_size = BOARD_SDRAM_PORT_SIZE;
-    sdram_config.refresh_count = BOARD_SDRAM_REFRESH_COUNT;
-    sdram_config.refresh_in_ms = BOARD_SDRAM_REFRESH_IN_MS;
-    sdram_config.data_width_in_byte = BOARD_SDRAM_DATA_WIDTH_IN_BYTE;
-#if defined(BOARD_FEMC_DQS_FLOATING) && BOARD_FEMC_DQS_FLOATING
-    sdram_config.delay_cell_disable = true;
-    sdram_config.delay_cell_value = 0;
-#else
-    sdram_config.delay_cell_disable = false;
-    sdram_config.delay_cell_value = 29;
-#endif
-
-    femc_config_sdram(HPM_FEMC, femc_clk_in_hz, &sdram_config);
-    return femc_clk_in_hz;
-}
-
 int main(void)
-  {
-    uint32_t femc_clk_in_hz;
-
+{
     board_init();
 
     timer_freq_in_hz = clock_get_frequency(TIMER_CLOCK_NAME);
-    /* board_init_sdram_1_8v_pins(); */
-    board_init_sdram_pins();
-    
-    femc_clk_in_hz = initialize_sdram();
-    printf("sdram example start @ %d\n", femc_clk_in_hz);
+    printf("sdram example start @ %d\n", clock_get_frequency(clock_femc));
 
     if (!l1c_dc_is_enabled()) {
         l1c_dc_enable();

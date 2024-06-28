@@ -141,16 +141,22 @@ static void gpu_vg_lite_startup(void)
     printf("gpu: name: %s, id: 0x%08X, rev: 0x%08X, cid: 0x%08X\n", name, chip_id, chip_rev, chip_cid);
 }
 
+#define TIGER_CENTRE_X 20
+#define TIGER_CENTRE_Y 25
+#define TIGER_SIZE 160.0f
+
 void tiger_path_display(void)
 {
     vg_lite_buffer_t vg_buffer;
     vg_lite_matrix_t matrix;
+    float scale0;
+    float scale1;
+    float scale;
 
     gpu_vg_lite_startup();
 
     /*vg_buffer init value must be zreo*/
     memset(&vg_buffer, 0x00, sizeof(vg_buffer));
-    vg_lite_identity(&matrix);
 
     vg_buffer.width  = BOARD_LCD_WIDTH;
     vg_buffer.height = BOARD_LCD_HEIGHT;
@@ -159,8 +165,16 @@ void tiger_path_display(void)
     vg_lite_clear(&vg_buffer, NULL, 0xFF00FF00);
     vg_lite_finish();
 
-    vg_lite_translate(BOARD_LCD_WIDTH / 2, BOARD_LCD_HEIGHT / 2, &matrix);
-    vg_lite_scale(4, 4, &matrix);
+    scale0 = BOARD_LCD_WIDTH / TIGER_SIZE;
+    scale1 = BOARD_LCD_HEIGHT / TIGER_SIZE;
+    scale = scale0 > scale1 ? scale1 : scale0;
+
+    vg_lite_identity(&matrix);
+    /* Move tiger centre to screen centre */
+    vg_lite_translate(BOARD_LCD_WIDTH / 2 - TIGER_CENTRE_X, BOARD_LCD_HEIGHT / 2 - TIGER_CENTRE_Y, &matrix);
+    vg_lite_translate(TIGER_CENTRE_X, TIGER_CENTRE_Y, &matrix);
+    vg_lite_scale(scale, scale, &matrix);
+    vg_lite_translate(-TIGER_CENTRE_X, -TIGER_CENTRE_Y, &matrix);
 
     /* Draw the path using the matrix. */
     for (int i = 0; i < pathCount; i++) {

@@ -71,6 +71,7 @@ sdk_compile_definitions_ifdef(CONFIG_AZURE_RTOS_TRACE "-DTX_ENABLE_EVENT_TRACE=1
 
 sdk_compile_definitions_ifdef(CONFIG_AZURE_RTOS_PROFILE "-DTX_EXECUTION_PROFILE_ENABLE=1")
 add_subdirectory_ifdef(CONFIG_AZURE_RTOS_PROFILE utility/execution_profile_kit)
+add_subdirectory_ifdef(CONFIG_ECLIPSE_THREADX_LOWPOWER utility/low_power)
 
 # Define the FreeRTOS adaptation layer
 add_library(freertos-threadx EXCLUDE_FROM_ALL)

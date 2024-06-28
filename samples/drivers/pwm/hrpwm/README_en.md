@@ -6,6 +6,7 @@
 **pwm** project configures several different types of waveforms and outputs them.
 
 - Forced output
+- Fault mode
 - Edge-aligned
 - Center-aligned
 

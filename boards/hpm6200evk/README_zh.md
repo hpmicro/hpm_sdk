@@ -31,12 +31,13 @@ HPM6200EVK提供了一系列HPM6200系列微控制器特色外设的接口，包
 
 - UART引脚
 
- UART2用于CORE1调试串口或一些使用UART的功能测试，例如MICROROS_UART，USB_CDC_ACM_UART, MODBUS_RTU等。
+ UART2用于CORE1调试串口或一些使用UART的功能测试，例如USB_CDC_ACM_UART, MODBUS_RTU等。
 
-| 功能       | 位置   |
-| ---------- | ------ |
+| 功能       | 位置   | 备注     |
+| ---------- | ------ | ------ |
 | UART2.TXD | P1[8] |
 | UART2.RXD | P1[10] |
+| UART2.break | P2[29] | 产生uart break信号|
 
 - LIN引脚
 
@@ -77,11 +78,12 @@ HPM6200EVK提供了一系列HPM6200系列微控制器特色外设的接口，包
 
 - GPTMR引脚
 
-| 功能          | 位置   |
-| ------------- | ------ |
+| 功能          | 位置   |  备注 |
+| ------------- | ------ | ------ |
 | GPTMR1.CAPT_0 | P2[3] |
-| GPTMR1.COMP_0 | P2[23] |
-| GPTMR1.COMP_1 | P2[24]  |
+| GPTMR1.COMP_0 | P2[23] | SPI模拟I2S的MCLK |
+| GPTMR1.COMP_1 | P2[24]  | SPI模拟I2S的LRCK |
+| GPTMR1.COMP_2 | P2[5]  | SPI模拟I2S的BLCK |
 
 - ADC16引脚
 
@@ -125,10 +127,10 @@ HPM6200EVK提供了一系列HPM6200系列微控制器特色外设的接口，包
 
     | 功能      | evk板位置    |电机板位置    |
     | --------- | ------      | ------      |
-    | HALL.U    | J4[20]      | J12[3]      |
-    | HALL.V    | J4[18]      | J12[4]      |
-    | HALL.W    | J4[16]      | J12[5]      |
-    | GND       | J4[4]       | J12[1]      |
+    | HALL.U    | J4[20]      | J22[3]      |
+    | HALL.V    | J4[18]      | J22[4]      |
+    | HALL.W    | J4[16]      | J22[5]      |
+    | GND       | J4[4]       | J22[1]      |
 
 - Tamper 接口
 
@@ -137,3 +139,9 @@ HPM6200EVK提供了一系列HPM6200系列微控制器特色外设的接口，包
 | TAMP.04  | PZ04   | P1[33] | 主动模式 |
 | TAMP.05  | PZ05   | P1[36] | 主动模式 |
 | TAMP.06  | PZ06   | P1[38] | 被动模式 |
+
+- SPI模拟I2S CS引脚
+
+| 功能 | 位置   |  备注 |
+| ---- | ----- | ------ |
+| PB31  | P1[7] | 控制SPI从机CS的引脚 |

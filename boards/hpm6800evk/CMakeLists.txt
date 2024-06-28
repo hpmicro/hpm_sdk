@@ -1,4 +1,4 @@
-# Copyright 2023 hpmicro
+# Copyright 2023-2024 hpmicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 sdk_inc(.)
@@ -12,4 +12,5 @@ set(ENV{CONFIG_PANEL_LVDS_TM103XDGP01} 0)
 
 if(APP_USE_ENET_PORT_COUNT EQUAL 1)
     set(ENV{CONFIG_ENET_PHY_RTL8211} 1)
+    sdk_compile_definitions(-DRGMII=1)
 endif()

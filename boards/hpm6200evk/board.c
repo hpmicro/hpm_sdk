@@ -8,7 +8,6 @@
 #include "board.h"
 #include "hpm_uart_drv.h"
 #include "hpm_gptmr_drv.h"
-#include "hpm_lcdc_drv.h"
 #include "hpm_i2c_drv.h"
 #include "hpm_gpio_drv.h"
 #include "pinmux.h"
@@ -518,7 +517,7 @@ void board_init_clock(void)
     clock_add_to_group(clock_mot2, 0);
     clock_add_to_group(clock_mot3, 0);
     clock_add_to_group(clock_acmp, 0);
-    clock_add_to_group(clock_msyn, 0);
+    clock_add_to_group(clock_synt, 0);
     clock_add_to_group(clock_lmm0, 0);
     clock_add_to_group(clock_lmm1, 0);
 
@@ -561,11 +560,11 @@ void board_init_clock(void)
     clock_set_source_divider(clock_mchtmr1, clk_src_osc24m, 1);
 }
 
-uint32_t board_init_adc16_clock(ADC16_Type *ptr, bool clk_src_ahb)
+uint32_t board_init_adc_clock(void *ptr, bool clk_src_ahb)
 {
     uint32_t freq = 0;
 
-    if (ptr == HPM_ADC0) {
+    if (ptr == (void *)HPM_ADC0) {
         if (clk_src_ahb) {
             /* Configure the ADC clock from AHB (@200MHz by default)*/
             clock_set_adc_source(clock_adc0, clk_adc_src_ahb0);
@@ -576,7 +575,7 @@ uint32_t board_init_adc16_clock(ADC16_Type *ptr, bool clk_src_ahb)
         }
 
         freq = clock_get_frequency(clock_adc0);
-    } else if (ptr == HPM_ADC1) {
+    } else if (ptr == (void *)HPM_ADC1) {
         if (clk_src_ahb) {
             /* Configure the ADC clock from AHB (@200MHz by default)*/
             clock_set_adc_source(clock_adc1, clk_adc_src_ahb0);
@@ -587,7 +586,7 @@ uint32_t board_init_adc16_clock(ADC16_Type *ptr, bool clk_src_ahb)
         }
 
         freq = clock_get_frequency(clock_adc1);
-    } else if (ptr == HPM_ADC2) {
+    } else if (ptr == (void *)HPM_ADC2) {
         if (clk_src_ahb) {
             /* Configure the ADC clock from AHB (@200MHz by default)*/
             clock_set_adc_source(clock_adc2, clk_adc_src_ahb0);

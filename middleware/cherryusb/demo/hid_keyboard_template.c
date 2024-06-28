@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2024, sakumisu
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 #include "usbd_core.h"
 #include "usbd_hid.h"
 
@@ -172,6 +177,12 @@ static const uint8_t hid_keyboard_report_desc[HID_KEYBOARD_REPORT_DESC_SIZE] = {
     0xc0        // END_COLLECTION
 };
 
+#define HID_STATE_IDLE 0
+#define HID_STATE_BUSY 1
+
+/*!< hid state ! Data can be sent only when state is idle  */
+static volatile uint8_t hid_state = HID_STATE_IDLE;
+
 static void usbd_event_handler(uint8_t busid, uint8_t event)
 {
     switch (event) {
@@ -186,6 +197,7 @@ static void usbd_event_handler(uint8_t busid, uint8_t event)
         case USBD_EVENT_SUSPEND:
             break;
         case USBD_EVENT_CONFIGURED:
+            hid_state = HID_STATE_IDLE;
             break;
         case USBD_EVENT_SET_REMOTE_WAKEUP:
             break;
@@ -196,12 +208,6 @@ static void usbd_event_handler(uint8_t busid, uint8_t event)
             break;
     }
 }
-
-#define HID_STATE_IDLE 0
-#define HID_STATE_BUSY 1
-
-/*!< hid state ! Data can be sent only when state is idle  */
-static volatile uint8_t hid_state = HID_STATE_IDLE;
 
 void usbd_hid_int_callback(uint8_t busid, uint8_t ep, uint32_t nbytes)
 {

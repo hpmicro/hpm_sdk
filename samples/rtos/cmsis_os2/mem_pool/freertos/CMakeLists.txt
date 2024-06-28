@@ -7,7 +7,7 @@ set(CONFIG_FREERTOS 1)
 set(CONFIG_CMSIS_RTOS2 1)
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
-project(cmsis_os2_msg_queue_freertos)
+project(cmsis_os2_mem_pool_freertos)
 
 sdk_compile_definitions(-D__freertos_irq_stack_top=_stack)
 sdk_compile_definitions(-DCONFIG_FREERTOS=1)

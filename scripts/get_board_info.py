@@ -19,9 +19,25 @@ BOARD_INFO_EXCLUDED_SAMPLES_KEY="excluded_samples"
 BOARD_FEATURE_DELIM=":"
 SOC_MODULES_LIST_NAME = 'soc_modules.list'
 
-def get_soc_ip_list(soc_name):
+# get soc series name according to file origination
+def get_soc_series_name(soc_name):
+    soc_series_name = ""
+    soc_dir = os.path.join(os.environ['HPM_SDK_BASE'], "soc")
+    subdirectories = [d for d in os.listdir(soc_dir) if os.path.isdir(os.path.join(soc_dir, d))]
+
+    for subdir in subdirectories:
+        subdir_path = os.path.join(soc_dir, subdir)
+        if os.path.isdir(subdir_path):
+            sub_subdirectories = [d for d in os.listdir(subdir_path) if os.path.isdir(os.path.join(subdir_path, d))]
+            if soc_name in sub_subdirectories:
+                soc_series_name = subdir
+                break
+    return soc_series_name
+
+
+def get_soc_ip_list(soc_series, soc_name):
     ip_list = []
-    module_list = os.path.join(os.environ['HPM_SDK_BASE'], "soc", soc_name, SOC_MODULES_LIST_NAME)
+    module_list = os.path.join(os.environ['HPM_SDK_BASE'], "soc", soc_series, soc_name, SOC_MODULES_LIST_NAME)
     with open(module_list, "r") as f:
         lines = f.readlines()
         for l in lines:

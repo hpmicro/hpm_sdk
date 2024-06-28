@@ -50,3 +50,10 @@ Please enter the DAC mode code:
   DAC is outputting a sine waveform in buffer mode
   ```
   ![](doc/dac_buffer_mode.png)
+
+## Note
+
+  - Exception exit
+
+    1. In step mode or in buffer mode, press the "space" key to abort the test, and then a test mode can be reselected.
+    2. In direct mode, press the "space" key to abort the loop after the test is finished, and then a test mode can be reselected.

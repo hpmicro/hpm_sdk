@@ -270,6 +270,21 @@ CHAR                            _tx_version_id[] =
 extern  CHAR                    _tx_version_id[];
 #endif
 
+#ifdef TX_LOW_POWER
+
+#ifndef TX_LOW_POWER_TIMER_SETUP
+/* Low power timer function prototype. */
+VOID low_power_timer_config(ULONG ticks);
+#define TX_LOW_POWER_TIMER_SETUP low_power_timer_config
+#endif /* TX_LOW_POWER_TIMER_SETUP */
+
+#ifndef TX_LOW_POWER_USER_TIMER_ADJUST
+ULONG low_power_timer_adjust(VOID);
+#define TX_LOW_POWER_USER_TIMER_ADJUST low_power_timer_adjust()
+#endif /* TX_LOW_POWER_USER_TIMER_ADJUST */
+
+#endif /* TX_LOW_POWER */
+
 #endif
 
 

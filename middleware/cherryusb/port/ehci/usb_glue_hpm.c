@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2022-2024 HPMicro
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ */
 #include "usbh_core.h"
 #include "hpm_common.h"
 #include "hpm_soc.h"
@@ -7,12 +13,8 @@
 #error "hpm ehci must set CONFIG_USB_EHCI_HPMICRO=1"
 #endif
 
-#if !defined(CONFIG_USB_EHCI_HCOR_OFFSET) || CONFIG_USB_EHCI_HCOR_OFFSET != 0x140
-#error "hpm ehci must config CONFIG_USB_EHCI_HCOR_OFFSET to 0x140"
-#endif
-
-#if !defined(CONFIG_USB_EHCI_PORT_POWER)
-#error "hpm ehci must enable CONFIG_USB_EHCI_PORT_POWER"
+#if !defined(CONFIG_USB_EHCI_HCCR_OFFSET) || CONFIG_USB_EHCI_HCCR_OFFSET != 0x100
+#error "hpm ehci must config CONFIG_USB_EHCI_HCCR_OFFSET to 0x100"
 #endif
 
 static uint32_t _hcd_irqnum[CONFIG_USBHOST_MAX_BUS];
@@ -80,6 +82,8 @@ uint8_t usbh_get_port_speed(struct usbh_bus *bus, const uint8_t port)
     return 0;
 }
 
+#if !defined(USBH_USE_CUSTOM_ISR) || !USBH_USE_CUSTOM_ISR
+
 extern void USBH_IRQHandler(uint8_t busid);
 
 void isr_usbh0(void)
@@ -94,4 +98,6 @@ void isr_usbh1(void)
     USBH_IRQHandler(_hcd_busid[1]);
 }
 SDK_DECLARE_EXT_ISR_M(IRQn_USB1, isr_usbh1)
+#endif
+
 #endif

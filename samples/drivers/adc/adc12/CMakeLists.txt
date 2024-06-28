@@ -8,5 +8,6 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(adc12_example)
 
 #sdk_compile_definitions(-D__ADC12_USE_SW_TRIG)
+#sdk_compile_definitions(-DAPP_ADC12_TRIG_SRC_FREQUENCY=20000)
 sdk_app_src(src/adc12.c)
 generate_ide_projects()

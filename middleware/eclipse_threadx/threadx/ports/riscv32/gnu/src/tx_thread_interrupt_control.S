@@ -30,10 +30,9 @@
 #define RETURN_MASK      0x0000000F
 #define SET_SR_MASK      0xFFFFFFF0
 
-.section .isr_vector
+.section .isr_vector, "ax"
 .align 8
 .type _tx_thread_interrupt_control, function
-.func
 /**************************************************************************/ 
 /*                                                                        */ 
 /*  FUNCTION                                               RELEASE        */ 

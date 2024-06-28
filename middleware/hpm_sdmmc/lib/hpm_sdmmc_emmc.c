@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -7,6 +7,7 @@
 
 #include "hpm_sdmmc_emmc.h"
 #include "hpm_l1c_drv.h"
+#include "hpm_clock_drv.h"
 
 #define SPEED_1Kbps (1000U)
 #define SPEED_1Mbps (1000UL * 1000UL)
@@ -853,13 +854,17 @@ hpm_stat_t emmc_read_blocks(emmc_card_t *card, uint8_t *buffer, uint32_t start_b
             data->rx_data = (uint32_t *) sdmmc_get_sys_addr(card->host, (uint32_t) buffer);
             content->data = data;
             content->command = cmd;
+#if !defined(HPM_SDMMC_ENABLE_CACHE_MAINTENANCE) || (HPM_SDMMC_ENABLE_CACHE_MAINTENANCE == 1)
             uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) data->rx_data);
             uint32_t end_addr = (uint32_t) data->rx_data + card->device_attribute.sector_size * block_count;
             uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP(end_addr);
             uint32_t aligned_size = aligned_end - aligned_start;
             l1c_dc_flush(aligned_start, aligned_size);
+#endif
             status = emmc_transfer(card, content);
+#if !defined(HPM_SDMMC_ENABLE_CACHE_MAINTENANCE) || (HPM_SDMMC_ENABLE_CACHE_MAINTENANCE == 1)
             l1c_dc_invalidate(aligned_start, aligned_size);
+#endif
             if (status != status_success) {
                 break;
             }
@@ -908,11 +913,13 @@ hpm_stat_t emmc_write_blocks(emmc_card_t *card, const uint8_t *buffer, uint32_t 
             data->tx_data = (const uint32_t *) sdmmc_get_sys_addr(card->host, (uint32_t) buffer);
             content->data = data;
             content->command = cmd;
+#if !defined(HPM_SDMMC_ENABLE_CACHE_MAINTENANCE) || (HPM_SDMMC_ENABLE_CACHE_MAINTENANCE == 1)
             uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) data->tx_data);
             uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP(
                     (uint32_t) data->tx_data + card->device_attribute.sector_size * write_block_count);
             uint32_t aligned_size = aligned_end - aligned_start;
             l1c_dc_flush(aligned_start, aligned_size);
+#endif
             status = emmc_transfer(card, content);
             if (status != status_success) {
                 break;
@@ -1006,6 +1013,8 @@ hpm_stat_t emmc_polling_card_status_busy(emmc_card_t *card, uint32_t timeout_ms)
 {
     hpm_stat_t status = status_invalid_argument;
     bool is_busy = true;
+    volatile uint64_t start_tick = hpm_csr_get_core_mcycle();
+    uint64_t timeout_ms_in_ticks = (uint64_t) timeout_ms * (clock_get_frequency(clock_cpu0) / 1000UL);
     do {
         HPM_BREAK_IF((card == NULL) || (card->host == NULL));
 
@@ -1016,8 +1025,10 @@ hpm_stat_t emmc_polling_card_status_busy(emmc_card_t *card, uint32_t timeout_ms)
         if ((card->current_r1_status.current_state == sdmmc_state_program) ||
             (card->current_r1_status.ready_for_data == 0U)) {
             is_busy = true;
-            card->host->host_param.delay_ms(1);
-            timeout_ms--;
+            uint64_t current_tick = hpm_csr_get_core_mcycle();
+            if (current_tick - start_tick > timeout_ms_in_ticks) {
+                break;
+            }
         } else {
             is_busy = false;
         }
@@ -1106,6 +1117,51 @@ hpm_stat_t emmc_configure_partition(emmc_card_t *card, emmc_config_partition_opt
     switch_arg.index = EMMC_EXT_CSD_INDEX_PARTITION_CONFIG;
     switch_arg.value = partition_config;
 
-    uint32_t timeous_in_us = card->device_attribute.partition_switch_timeout_ms * 1000UL;
-    return emmc_switch_function(card, switch_arg, timeous_in_us);
+    uint32_t timeout_in_us = card->device_attribute.partition_switch_timeout_ms * 1000UL;
+    return emmc_switch_function(card, switch_arg, timeout_in_us);
 }
+
+hpm_stat_t emmc_enter_sleep_mode(emmc_card_t *card)
+{
+    hpm_stat_t error = status_invalid_argument;
+    do {
+        HPM_BREAK_IF(card == NULL);
+
+        sdmmchost_cmd_t *cmd = &card->host->cmd;
+        (void) memset(cmd, 0, sizeof(sdmmchost_cmd_t));
+
+        cmd->cmd_index = emmc_cmd_sleep_awake;
+        cmd->cmd_argument = ((uint32_t)card->relative_addr << 16) | (1UL << 15);
+        cmd->resp_type = (sdxc_dev_resp_type_t) sdmmc_resp_r1b;
+        /* Calculate the command timeout in ms, see 7.4.50 section in JESD84-B51A for more details */
+        uint32_t timeout_in_ns = 100UL * (1UL << card->ext_csd.sleep_or_awake_timeout);
+        cmd->cmd_timeout_ms =  (timeout_in_ns + 999999UL) / 1000000UL;
+        error = emmc_send_cmd(card, cmd);
+
+    } while (false);
+
+    return error;
+}
+
+hpm_stat_t emmc_exit_sleep_mode(emmc_card_t *card)
+{
+    hpm_stat_t error = status_invalid_argument;
+    do {
+        HPM_BREAK_IF(card == NULL);
+
+        sdmmchost_cmd_t *cmd = &card->host->cmd;
+        (void) memset(cmd, 0, sizeof(sdmmchost_cmd_t));
+
+        cmd->cmd_index = emmc_cmd_sleep_awake;
+        cmd->cmd_argument = ((uint32_t)card->relative_addr << 16);
+        cmd->resp_type = (sdxc_dev_resp_type_t) sdmmc_resp_r1b;
+        /* Calculate the command timeout in ms, see 7.4.50 section in JESD84-B51A for more details */
+        uint32_t timeout_in_ns = 100UL * (1UL << card->ext_csd.sleep_or_awake_timeout);
+        cmd->cmd_timeout_ms =  (timeout_in_ns + 999999UL) / 1000000UL;
+        error = emmc_send_cmd(card, cmd);
+
+    } while (false);
+
+    return error;
+}
+

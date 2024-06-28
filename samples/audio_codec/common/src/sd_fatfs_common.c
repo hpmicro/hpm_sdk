@@ -9,7 +9,6 @@
  *---------------------------------------------------------------------
  */
 #include "board.h"
-#include "hpm_sdmmc_sd.h"
 #include "ff.h"
 #include "diskio.h"
 #include "sd_fatfs_common.h"
@@ -18,7 +17,7 @@
  * Define
  *---------------------------------------------------------------------
  */
-#define FIL_SEARCH_NUM 10
+#define FIL_SEARCH_NUM 20
 #define FIL_SEARCH_LENGTH 128
 
 /*---------------------------------------------------------------------*
@@ -89,7 +88,7 @@ FRESULT sd_choose_music(char *target_filetype, char *filename)
             printf("%d: %s\r\n\r\n", s_search_file_cnt, s_search_file_buff[s_search_file_cnt]);
             s_search_file_cnt++;
         }
-        if (s_search_file_cnt >= FIL_SEARCH_NUM) {
+        if (s_search_file_cnt >= 10) {
             option = getchar();
             if (('0' <= option) && (option <= '9')) { /* choose music */
                 break;
@@ -102,7 +101,7 @@ FRESULT sd_choose_music(char *target_filetype, char *filename)
     } while (1);
 
     rsl = FR_NO_FILE;
-    if ((s_search_file_cnt != FIL_SEARCH_NUM) && (s_search_file_cnt != 0)) { /* choose remaining music */
+    if ((s_search_file_cnt != 10) && (s_search_file_cnt != 0)) { /* choose remaining music */
         option = getchar();
     }
     if (('0' <= option) && (option <= '9')) {
@@ -114,12 +113,12 @@ FRESULT sd_choose_music(char *target_filetype, char *filename)
     return rsl;
 }
 
-FRESULT sd_search_music_name(char *target_filetype)
+FRESULT sd_search_music_name(char *target_filetype1, char *target_filetype2)
 {
     DIR dir;
     FILINFO fil;
     FRESULT rsl;
-    char *ret;
+    char *ret1, *ret2;
 
     rsl = f_opendir(&dir, c_driver_num_buf);
     if (rsl != FR_OK) {
@@ -136,8 +135,9 @@ FRESULT sd_search_music_name(char *target_filetype)
         if (fil.fattrib == AM_DIR) {
             continue;
         }
-        ret = strstr(fil.fname, target_filetype);
-        if (ret == NULL) {
+        ret1 = strstr(fil.fname, target_filetype1);
+        ret2 = strstr(fil.fname, target_filetype2);
+        if ((ret1 == NULL) && (ret2 == NULL)) {
             continue;
         } else {
             strncpy((char *)s_search_file_buff[s_search_file_cnt], fil.fname, FIL_SEARCH_LENGTH);

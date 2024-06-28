@@ -124,5 +124,3 @@ from 120.232.145.144 bytes=60 icmp_seq=2 ttl=52 time=91 ms
 from 120.232.145.144 bytes=60 icmp_seq=3 ttl=52 time=104 ms
 from 120.232.145.144 bytes=60 icmp_seq=4 ttl=52 time=82 ms
 ```
-
-注意: 切换rndis模块或者ecm模块的时候，也需要复位下开发板。

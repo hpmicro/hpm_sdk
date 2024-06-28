@@ -1,0 +1,8 @@
+excluded_targets:
+  - flash_sdram_xip         # exclude the flash_sdram_xip target to avoid pins conflict
+  - flash_sdram_xip_release # exclude the flash_sdram_xip_release target to avoid pins conflict
+  - flash_sdram_uf2
+  - flash_sdram_uf2_release
+
+dependency:
+  - ppi

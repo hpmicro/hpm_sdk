@@ -54,6 +54,7 @@
 - 支持的工具链:
   - gnu-gcc <-- 缺省工具链
   - nds-gcc
+  - zcc
 - 工具链:
   - gnu-gcc:
       - 下载工具链压缩包,并解压.假定TOOLCHAIN_PATH作为工具链的解压目录(需要满足在TOOLCHAIN_PATH\bin下可以找到riscv32-unknown-elf-gcc)
@@ -85,6 +86,19 @@
            - cygwin1.dll
            - cygncursesw-10.dll
           务必确保以上库文件所在目录被包含在系统环境变量PATH中
+  - zcc:
+      - 下载工具链压缩包,并解压.假定TOOLCHAIN_PATH作为工具链的解压目录
+      - 申明系统环境变量"GNURISCV_TOOLCHAIN_PATH"指向工具链路径:
+        - Linux, 以zsh为例(确保将TOOLCHAIN_PATH替换成你自己的路径):
+    ```shell
+      export GNURISCV_TOOLCHAIN_PATH=TOOLCHAIN_PATH
+      export HPM_SDK_TOOLCHAIN_VARIANT=zcc
+    ```
+    - Windows命令行:
+    ```shell
+      set GNURISCV_TOOLCHAIN_PATH=TOOLCHAIN_PATH
+      set HPM_SDK_TOOLCHAIN_VARIANT=zcc
+    ```
 
 - SDK编译所需环境变量设置:
   - 通过运行提供的脚本执行:

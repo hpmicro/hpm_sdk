@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -64,6 +64,14 @@ extern "C" {
 #define E2P_MAX_VAR_CNT     EEPROM_MAX_VAR_CNT
 #endif
 
+enum {
+    e2p_state_valid = 0,
+    e2p_state_finish = 8,
+    e2p_state_write = 12,
+    e2p_state_start = 14,
+    e2p_state_invalid = 15
+};
+
 typedef enum {
     e2p_invalid = 0xCCCC,
     e2p_valid = 0xEEEE,
@@ -81,12 +89,20 @@ enum {
 };
 
 typedef struct {
+    uint32_t version;
+    uint32_t magic;
+    uint32_t state;
+} e2p_header;
+
+#pragma pack(push, 1)
+typedef struct {
     uint32_t block_id;
     uint32_t data_addr;
     uint16_t length;
-    e2p_valid_state valid_state;
+    uint16_t valid_state;
     uint32_t crc;
-} e2p_block; 
+} e2p_block;
+#pragma pack(pop)
 
 typedef struct {
     uint32_t start_addr;
@@ -110,11 +126,17 @@ typedef struct {
 
 #define E2P_MAGIC_ID (0x48504D43)       /*'H' 'P' 'M' 'C'*/
 
+#define E2P_VALID_STATE     (0xFFFFFFF0)
 #define E2P_EARSED_ID       (0xFFFFFFFF)
 #define E2P_EARSED_VAR      (0xFF)
 
 #define E2P_FLUSH_TRY       (0)
 #define E2P_FLUSH_BEGIN     (1)
+#define E2P_CRITICAL_ENTER()   e2p_enter_critical()
+#define E2P_CRITICAL_EXIT()    e2p_exit_critical()
+
+void e2p_enter_critical(void);
+void e2p_exit_critical(void);
 
 /**
  * @brief eeprom emulation config
@@ -127,33 +149,30 @@ hpm_stat_t e2p_config(e2p_t *e2p);
 /**
  * @brief eeprom emulation flush whole area, remove redundancy
  * 
- * @param e2p instance context
  * @param flag E2P_FLUSH_TRY - conditional flush, E2P_FLUSH_BEGIN - force flush
  * @return hpm_stat_t 
  */
-hpm_stat_t e2p_flush(e2p_t *e2p, uint8_t flag);
+hpm_stat_t e2p_flush(uint8_t flag);
 
 /**
  * @brief eeprom emulation write
  * 
- * @param e2p instance context
  * @param block_id custom id
  * @param length data length
  * @param data 
  * @return hpm_stat_t 
  */
-hpm_stat_t e2p_write(e2p_t *e2p, uint32_t block_id, uint16_t length, uint8_t *data);
+hpm_stat_t e2p_write(uint32_t block_id, uint16_t length, uint8_t *data);
 
 /**
  * @brief eeprom emulation read
  * 
- * @param e2p instance context
  * @param block_id custom id
  * @param length data length
  * @param data 
  * @return hpm_stat_t 
  */
-hpm_stat_t e2p_read(e2p_t *e2p, uint32_t block_id, uint16_t length, uint8_t *data);
+hpm_stat_t e2p_read(uint32_t block_id, uint16_t length, uint8_t *data);
 
 /**
  * @brief generate custom id
@@ -165,17 +184,13 @@ uint32_t e2p_generate_id(const char *name);
 
 /**
  * @brief format whole area, 0xFF
- * 
- * @param e2p 
  */
-void e2p_format(e2p_t *e2p);
+void e2p_clear(void);
 
 /**
  * @brief show e2p instance info include config info and store info
- * 
- * @param e2p 
  */
-void e2p_show_info(e2p_t *e2p);
+void e2p_show_info(void);
 
 /* 
     e2p_t demo = {

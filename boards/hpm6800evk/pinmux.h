@@ -55,6 +55,7 @@ void init_enet_pins(ENET_Type *ptr);
 void init_enet_pps_pins(void);
 void init_adc_pins(void);
 void init_tamper_pins(void);
+void init_uart_break_signal_pin(void);
 
 #ifdef __cplusplus
 }

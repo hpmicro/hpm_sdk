@@ -144,7 +144,6 @@ void board_print_clock_freq(void)
 
 void board_init(void)
 {
-    init_xtal_pins();
     init_py_pins_as_pgpio();
     board_init_usb_dp_dm_pins();
 
@@ -304,7 +303,7 @@ void board_init_usb_pins(void)
     /* Wait USB_PWR pin control vbus power stable. Time depend on decoupling capacitor, you can decrease or increase this time */
     board_delay_ms(100);
 
-    /* As QFN32, QFN48 and LQFP64 has no vbus pin, so should be call usb_phy_using_internal_vbus() API to use internal vbus. */
+    /* As QFN48 and LQFP64 has no vbus pin, so should be call usb_phy_using_internal_vbus() API to use internal vbus. */
     usb_phy_using_internal_vbus(BOARD_USB);
 }
 
@@ -363,11 +362,11 @@ void board_usb_vbus_ctrl(uint8_t usb_index, uint8_t level)
     (void) level;
 }
 
-uint32_t board_init_adc16_clock(ADC16_Type *ptr, bool clk_src_ahb)
+uint32_t board_init_adc_clock(void *ptr, bool clk_src_ahb)
 {
     uint32_t freq = 0;
 
-    if (ptr == HPM_ADC0) {
+    if (ptr == (void *)HPM_ADC0) {
         if (clk_src_ahb) {
             /* Configure the ADC clock from AHB (@200MHz by default)*/
             clock_set_adc_source(clock_adc0, clk_adc_src_ahb0);

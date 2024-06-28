@@ -8,6 +8,8 @@ The can_demo provides the following features:
 - loopback test for the board supported CAN controllers using interrupt mode
 - Dual-board Echo test
 - Send out multiple messages for the CAN bus connection check
+- CAN Error Detection
+- CAN Filter
 
 ## Board Setting
 
@@ -31,6 +33,7 @@ When the example runs successfully, the board shows the following menu:
 * 5 - CAN error test (Need to remove current node from CAN BUS for this test)   *
 * 6 - CAN filter test                                                           *
 * 7 - Send multiple CANFD messages for transmission check                       *
+* 8 - CAN error test with re-transmission disabled                              *
 *                                                                               *
 *********************************************************************************
 
@@ -39,8 +42,8 @@ When the example runs successfully, the board shows the following menu:
 
 ### Note
 
-- For option 0 and option 1, users can start the test by typine the option directly
+- For option 0 and option 1, users can start the test by typing the option directly
 - For option 2 and 3, users must connect two boards and run this demo, start the responder first, then start the initiator.
 - For option 4, users must ensure that the board is attached to a valid CAN bus. If the board is connected to a CAN monitor, users can see multiple CAN messages will be sent out after this option is chosen.
-- For option 7, users must ensure that the board is attached to a valid CAN bus and the bus now supports 5Mbis/s CANFD buadrate. If the board is connected
+- For option 7, users must ensure that the board is attached to a valid CAN bus and the bus now supports 5Mbits/s CANFD baudrate. If the board is connected
 to a CANFD monitor, users will see multiple CANFD messages are sent out after this option is chosen.

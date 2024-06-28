@@ -118,7 +118,8 @@ def is_sdk_file(sdk_base, file_name, include_samples = False):
     return False
 
 def is_sdk_soc_file(sdk_base, file_name):
-    if re.search(re.escape(os.path.join(sdk_base, 'soc', 'HPM')) + r'\w+', file_name):
+    # soc directory pattern: HPM_SDK_BASE/soc/HPM\w+/HPM\w+
+    if re.search(re.escape(os.path.join(sdk_base, 'soc', 'HPM')) + r'\w+[/\\]HPM\w+', file_name):
         return True
     return False
 
@@ -149,7 +150,7 @@ def locate_cmake_file_api_files(sdk_base, src_dir, build_dir, cmake_cmd = None, 
         query_entry = os.path.join(build_dir, cmake_file_api_query, "codemodel-v2")
         if not os.path.exists(query_dir):
             os.makedirs(query_dir)
-        open(os.path.join(build_dir, cmake_file_api_query, "codemodel-v2"), "w").close()
+        open(query_entry, "w").close()
     elif cmake_cmd is None or len(cmake_cmd) == 0:
         sys.stderr.write("\nError: failed to locate cmake file api reply dir: %s\n" % reply_dir)
         return None
@@ -276,16 +277,19 @@ def copy_sdk_soc_board_files(sdk_base, dst_dir, file_list):
     board_src = None
     board_path = None
     for f in file_list.get_soc_files():
-        if re.match(re.escape(os.path.join(sdk_base, 'soc', 'HPM')) + r'\w+$', f):
-            soc_src = f
+        if is_sdk_soc_file(sdk_base, f):
+            # soc directory pattern: HPM_SDK_BASE/soc/HPM\w+/HPM\w+
+            soc_src = re.sub(r'(' + re.escape(sdk_base) + r'[/\\]soc[/\\]HPM\w+[/\\]HPM\w+)[/\\].*', r'\1', f)
             soc_path = re.sub(re.escape(sdk_base) + r'[/\\]', '', f)
+            soc_path = re.sub(r'(soc[/\\]HPM\w+[/\\]HPM\w+)[/\\].*', r'\1', soc_path)
             break
     if soc_path is None:
         sys.stderr.write("\nError: no soc path is found\n")
         return False
     # all soc file needs to be copied
-    os.makedirs(os.path.join(dst_dir, "soc"))
     dst_soc_path = os.path.join(dst_dir, soc_path)
+    if not os.path.exists(os.path.dirname(dst_soc_path)):
+        os.makedirs(os.path.dirname(dst_soc_path))
     shutil.copytree(soc_src, dst_soc_path)
 
     for f in file_list.get_board_files():
@@ -393,8 +397,9 @@ def update_cmakelists(src_dir, dst_dir, dst_sdk_dir_name, board_name, generator,
         return False
 
     backup_cmake_list = cmake_list + localized_cmakelist_bak_surfix
-    if not os.path.exists(backup_cmake_list):
-        shutil.move(cmake_list, backup_cmake_list)
+    if os.path.exists(backup_cmake_list):
+        sys.stderr.write("\nError: localization backup file exists, please remove it: %s" % backup_cmake_list)
+        return False
 
     new_sdk_base = os.path.join(dst_dir, dst_sdk_dir_name)
     if not os.path.exists(new_sdk_base):
@@ -407,29 +412,41 @@ def update_cmakelists(src_dir, dst_dir, dst_sdk_dir_name, board_name, generator,
             new_sdk_base = new_sdk_base
     new_sdk_base = re.sub(r'\\', '/', new_sdk_base)
 
-    new = open(cmake_list, "w")
-    org = open(backup_cmake_list, "r")
+    new_cmake_list = tempfile.mktemp()
+    new = open(new_cmake_list, "w", encoding = "utf-8")
+    org = open(cmake_list, "r", encoding = "utf-8")
 
-    for line in org.readlines():
-        if re.match(r'^\s*find_package\(hpm-sdk ', line):
-            new.write("\n")
-            new.write("# the following lines before \"### END ###\" are added during project localization\n")
-            new.write("### START ###\n")
-            new.write("set(ENV{HPM_SDK_BASE} \"%s\")\n" % new_sdk_base)
-            new.write("set(LOCALIZED_BOARD \"%s\")\n" % board_name)
-            new.write("if(BOARD)\n")
-            new.write("  if(NOT ${BOARD} MATCHES ${LOCALIZED_BOARD})\n")
-            new.write("    message(FATAL_ERROR \"ABORT:\\n hpm sdk has been localized for ${LOCALIZED_BOARD} already.\")\n")
-            new.write("  endif()\n")
-            new.write("endif()\n")
-            new.write("set(BOARD ${LOCALIZED_BOARD})\n")
-            new.write("### END ###\n")
-            new.write("\n")
-            new.write("\n")
-        new.write(line)
+    result = False
+    try:
+        for line in org.readlines():
+            if re.match(r'^\s*find_package\(hpm-sdk ', line):
+                new.write("\n")
+                new.write("# the following lines before \"### END ###\" are added during project localization\n")
+                new.write("### START ###\n")
+                new.write("set(ENV{HPM_SDK_BASE} \"%s\")\n" % new_sdk_base)
+                new.write("set(LOCALIZED_BOARD \"%s\")\n" % board_name)
+                new.write("if(BOARD)\n")
+                new.write("  if(NOT ${BOARD} MATCHES ${LOCALIZED_BOARD})\n")
+                new.write("    message(FATAL_ERROR \"ABORT:\\n hpm sdk has been localized for ${LOCALIZED_BOARD} already.\")\n")
+                new.write("  endif()\n")
+                new.write("endif()\n")
+                new.write("set(BOARD ${LOCALIZED_BOARD})\n")
+                new.write("### END ###\n")
+                new.write("\n")
+                new.write("\n")
+            new.write(line)
+        result = True
+    except UnicodeDecodeError:
+        sys.stderr.write("\nError: Decoding unicode error, update CMakeLists.txt failed\n")
 
     org.close()
     new.close()
+
+    if not result:
+        return False
+
+    shutil.move(cmake_list, backup_cmake_list)
+    shutil.move(new_cmake_list, cmake_list)
 
     cmake_cmd = ["cmake", "-G" + args.gnt, "-B" + build_dir, "-S" + src_dir]
     p = subprocess.run(cmake_cmd)
@@ -497,7 +514,7 @@ def restore_cmakefile(src_dir):
 
     return True
 
-def unlocalize_sdk(sdk_base, src_dir, dst_dir, dst_sdk_prefix, board_name, generator, build_dir):
+def unlocalize_sdk(src_dir, board_name, generator, build_dir):
     linked_project_path = get_linked_project(src_dir)
     if linked_project_path is not None:
         if not os.path.isabs(linked_project_path):
@@ -507,7 +524,7 @@ def unlocalize_sdk(sdk_base, src_dir, dst_dir, dst_sdk_prefix, board_name, gener
     if not restore_cmakefile(src_dir):
         return False
 
-    cmake_cmd = ["cmake", "-G" + generator, "-B" + build_dir, "-S" + src_dir]
+    cmake_cmd = ["cmake", "-G" + generator, "-B" + build_dir, "-S" + src_dir, "-DBOARD=" + board_name]
     p = subprocess.run(cmake_cmd)
     if p.returncode:
         sys.stderr.write("\nError: failed to execute cmake cmd: %s\n" % cmake_cmd)
@@ -581,31 +598,31 @@ if __name__ == "__main__":
             sys.stderr.write("\nError: can not locate CMakeLists.txt in %s\n" % src_dir)
             sys.exit(1)
 
-    if args.sdk is None and sdk_base_env_name not in os.environ:
-        sys.stderr.write("\nError: no valid HPM_SDK_BASE is given, either set it as environment variable or pass it using --sdk SDK\n")
-        sys.exit(1)
-
-    if args.sdk is not None:
-        sdk_base = args.sdk
-    else:
-        sdk_base = os.environ[sdk_base_env_name]
-
-    sdk_base = os.path.realpath(sdk_base)
-    if not os.path.exists(sdk_base):
-        sys.stderr.write("\nError: HPM_SDK_BASE (%s) can not be located\n" % sdk_base)
-        sys.exit(1)
-    else:
-        os.environ[sdk_base_env_name] = sdk_base
-
-    if args.dst is not None:
-        dst_dir = os.path.realpath(args.dst)
-    else:
-        dst_dir = os.path.realpath(src_dir)
-
     result = True
     if not args.unlocalize:
+        if args.sdk is None and sdk_base_env_name not in os.environ:
+            sys.stderr.write("\nError: no valid HPM_SDK_BASE is given, either set it as environment variable or pass it using --sdk SDK\n")
+            sys.exit(1)
+
+        if args.sdk is not None:
+            sdk_base = args.sdk
+        else:
+            sdk_base = os.environ[sdk_base_env_name]
+
+        sdk_base = os.path.realpath(sdk_base)
+        if not os.path.exists(sdk_base):
+            sys.stderr.write("\nError: HPM_SDK_BASE (%s) can not be located\n" % sdk_base)
+            sys.exit(1)
+        else:
+            os.environ[sdk_base_env_name] = sdk_base
+
+        if args.dst is not None:
+            dst_dir = os.path.realpath(args.dst)
+        else:
+            dst_dir = os.path.realpath(src_dir)
+
         result = localize_sdk(sdk_base, src_dir, dst_dir, DST_SDK_DIR_PREFIX, args.brd, args.gnt, args.bld, args.f)
     else:
-        result = unlocalize_sdk(sdk_base, src_dir, dst_dir, DST_SDK_DIR_PREFIX, args.brd, args.gnt, args.bld)
+        result = unlocalize_sdk(src_dir, args.brd, args.gnt, args.bld)
 
     sys.exit(not result)

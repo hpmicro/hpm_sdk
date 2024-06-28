@@ -1,0 +1,3 @@
+dependency:
+  - spi
+  - ip_feature_spi_new_trans_count

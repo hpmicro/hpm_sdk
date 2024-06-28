@@ -144,8 +144,12 @@ DSTATUS sd_disk_initialize(BYTE pdrv)
     }
 
     if (has_card_initialized) {
-        return RES_OK;
+        status = sd_read_status(&s_sd);
+        if (status == status_success) {
+            return RES_OK;
+        }
     }
+    has_card_initialized = false;
 
     status = board_init_sd_host_params(&s_sd_host, BOARD_APP_SDCARD_SDXC_BASE);
     if (status != status_success) {
@@ -219,6 +223,10 @@ DSTATUS sd_disk_status(BYTE pdrv)
 {
     if (pdrv != DEV_SD) {
         return STA_NOINIT;
+    }
+
+    if (!sdmmchost_is_card_detected(&s_sd_host)) {
+        return STA_NODISK;
     }
 
     return RES_OK;
