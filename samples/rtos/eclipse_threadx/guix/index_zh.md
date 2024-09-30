@@ -1,4 +1,4 @@
-# GUIX 效果
+# GUIX 例程
 
 :::{eval-rst}
 .. toctree::

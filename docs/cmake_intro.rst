@@ -55,6 +55,7 @@ Public CMake functions / macros
  * :cmake:command:`sdk_ses_compile_options`
  * :cmake:command:`sdk_ses_inc`
  * :cmake:command:`sdk_ses_link_libraries`
+ * :cmake:command:`sdk_ses_options`
  * :cmake:command:`sdk_ses_src`
  * :cmake:command:`sdk_ses_src_glob`
  * :cmake:command:`sdk_src`
@@ -713,6 +714,23 @@ Public CMake functions / macros
  Example:
    sdk_ses_link_libraries(libs)
  :param libs: standard libraries to be linked for SES
+
+
+.. _`sdk_ses_options_ref`:
+
+`sdk_ses_options`
+~~~~~~~~~~~~~~~~~
+
+.. cmake:command:: sdk_ses_options()
+
+ *[function defined in ide/segger.cmake]*
+
+ Add options for SES project
+
+ Example:
+   sdk_ses_options(option_key_value_list)
+ :param option_key_value_list: list of option key-value pair, split with space
+    like "option_a_name=option_a_value" to add option_a_name with value of option_a_value in the project file
 
 
 .. _`sdk_ses_src_ref`:

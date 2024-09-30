@@ -21,6 +21,7 @@
 #include "hpm_femc_drv.h"
 #include "hpm_pwmv2_drv.h"
 #include "hpm_esc_drv.h"
+#include "hpm_tsw_drv.h"
 
 static board_timer_cb timer_cb;
 
@@ -78,11 +79,11 @@ static board_timer_cb timer_cb;
  *      0 - 4MB / 1 - 8MB / 2 - 16MB
  */
 #if defined(FLASH_XIP) && FLASH_XIP
-__attribute__((section(".nor_cfg_option"))) const uint32_t option[4] = { 0xfcf90001, 0x00000007, 0x0, 0x0 };
+__attribute__((section(".nor_cfg_option"), used)) const uint32_t option[4] = { 0xfcf90001, 0x00000007, 0x0, 0x0 };
 #endif
 
 #if defined(FLASH_UF2) && FLASH_UF2
-ATTR_PLACE_AT(".uf2_signature") const uint32_t uf2_signature = BOARD_UF2_SIGNATURE;
+ATTR_PLACE_AT(".uf2_signature") __attribute__((used)) const uint32_t uf2_signature = BOARD_UF2_SIGNATURE;
 #endif
 
 void board_init_console(void)
@@ -270,7 +271,7 @@ void board_i2c_bus_clear(I2C_Type *ptr)
         printf("I2C bus is ready\n");
         return;
     }
-    i2s_gen_reset_signal(ptr, 9);
+    i2c_gen_reset_signal(ptr, 9);
     board_delay_ms(100);
     printf("I2C bus is cleared\n");
 }
@@ -283,9 +284,6 @@ void board_init_i2c(I2C_Type *ptr)
     if (ptr == NULL) {
         return;
     }
-
-    init_i2c_pins(ptr);
-    board_i2c_bus_clear(ptr);
 
     if (ptr == HPM_I2C0) {
         clock_add_to_group(clock_i2c0, 0);
@@ -306,6 +304,9 @@ void board_init_i2c(I2C_Type *ptr)
     } else {
         ;
     }
+
+    init_i2c_pins(ptr);
+    board_i2c_bus_clear(ptr);
 
     /* Configure the I2C clock to 24MHz */
     /* clock_set_source_divider(BOARD_APP_I2C_CLK_NAME, clk_src_osc24m, 1U); */
@@ -434,7 +435,11 @@ void board_led_write(uint8_t state)
 
 static void set_rgb_output_off(PWMV2_Type *ptr, uint8_t counter, uint8_t channel, uint8_t shadow_id, uint8_t cmp_id)
 {
-
+    (void) ptr;
+    (void) counter;
+    (void) channel;
+    (void) shadow_id;
+    (void) cmp_id;
 }
 
 void board_init_rgb_pwm_pins(void)
@@ -647,14 +652,17 @@ void board_init_clock(void)
     clock_connect_group_to_cpu(0, 0);
 
     /* Add the CPU1 clock to Group1 */
-    clock_add_to_group(clock_cpu1, 0);
+    clock_add_to_group(clock_cpu1, 1);
     clock_add_to_group(clock_mchtmr1, 1);
 
     /* Connect Group1 to CPU1 */
     clock_connect_group_to_cpu(1, 1);
 
-    /* Bump up DCDC voltage to 1200mv */
-    pcfg_dcdc_set_voltage(HPM_PCFG, 1200);
+    /* Bump up DCDC voltage to 1250mv */
+    pcfg_dcdc_set_voltage(HPM_PCFG, 1250);
+
+    /* Set CPU0 clock to 600MHz */
+    clock_set_source_divider(clock_cpu0, clk_src_pll0_clk0, 1);
 
     /* Configure mchtmr to 24MHz */
     clock_set_source_divider(clock_mchtmr0, clk_src_osc24m, 1);
@@ -785,7 +793,7 @@ uint32_t board_config_i2s_clock(I2S_Type *ptr, uint32_t sample_rate)
         } else {
             clock_set_source_divider(clock_aud0, clk_src_pll2_clk0, 21); /* default 24576000Hz */
         }
-        clock_set_i2s_source(clock_i2s0, clk_i2s_src_aud0);
+        clock_set_i2s_source(clock_i2s0, clk_i2s_src_audn);  /* clk_i2s_src_audn is equal to clk_i2s_src_aud0 */
         freq = clock_get_frequency(clock_i2s0);
     } else if (ptr == HPM_I2S1) {
         clock_add_to_group(clock_i2s1, 0);
@@ -794,7 +802,7 @@ uint32_t board_config_i2s_clock(I2S_Type *ptr, uint32_t sample_rate)
         } else {
             clock_set_source_divider(clock_aud1, clk_src_pll2_clk0, 21); /* default 24576000Hz */
         }
-        clock_set_i2s_source(clock_i2s1, clk_i2s_src_aud1);
+        clock_set_i2s_source(clock_i2s1, clk_i2s_src_audn);  /* clk_i2s_src_audn is equal to clk_i2s_src_aud1 */
         freq = clock_get_frequency(clock_i2s1);
     } else {
         ;
@@ -808,12 +816,12 @@ void board_init_adc16_pins(void)
     init_adc16_pins();
 }
 
-uint32_t board_init_adc_clock(void *ptr, bool clk_src_ahb)  /* motor system should be use clk_adc_src_ahb0 */
+uint32_t board_init_adc_clock(void *ptr, bool clk_src_bus)  /* motor system should be use clk_adc_src_ahb0 */
 {
     uint32_t freq = 0;
 
     if (ptr == (void *)HPM_ADC0) {
-        if (clk_src_ahb) {
+        if (clk_src_bus) {
             /* Configure the ADC clock from AHB (@200MHz by default)*/
             clock_set_adc_source(clock_adc0, clk_adc_src_ahb0);
         } else {
@@ -823,7 +831,7 @@ uint32_t board_init_adc_clock(void *ptr, bool clk_src_ahb)  /* motor system shou
         }
         freq = clock_get_frequency(clock_adc0);
     } else if (ptr == (void *)HPM_ADC1) {
-        if (clk_src_ahb) {
+        if (clk_src_bus) {
             /* Configure the ADC clock from AHB (@200MHz by default)*/
             clock_set_adc_source(clock_adc1, clk_adc_src_ahb0);
         } else {
@@ -833,7 +841,7 @@ uint32_t board_init_adc_clock(void *ptr, bool clk_src_ahb)  /* motor system shou
         }
         freq = clock_get_frequency(clock_adc1);
     } else if (ptr == (void *)HPM_ADC2) {
-        if (clk_src_ahb) {
+        if (clk_src_bus) {
             /* Configure the ADC clock from AHB (@200MHz by default)*/
             clock_set_adc_source(clock_adc2, clk_adc_src_ahb0);
         } else {
@@ -843,7 +851,7 @@ uint32_t board_init_adc_clock(void *ptr, bool clk_src_ahb)  /* motor system shou
         }
         freq = clock_get_frequency(clock_adc2);
     } else if (ptr == (void *)HPM_ADC3) {
-        if (clk_src_ahb) {
+        if (clk_src_bus) {
             /* Configure the ADC clock from AHB (@200MHz by default)*/
             clock_set_adc_source(clock_adc3, clk_adc_src_ahb0);
         } else {
@@ -855,6 +863,11 @@ uint32_t board_init_adc_clock(void *ptr, bool clk_src_ahb)  /* motor system shou
     }
 
     return freq;
+}
+
+void board_init_acmp_pins(void)
+{
+    init_acmp_pins();
 }
 
 void board_init_can(MCAN_Type *ptr)
@@ -987,6 +1000,12 @@ void board_init_enet_pps_pins(ENET_Type *ptr)
     init_enet_pps_pins();
 }
 
+void board_init_enet_pps_capture_pins(ENET_Type *ptr)
+{
+    (void) ptr;
+    init_enet_pps_capture_pins();
+}
+
 hpm_stat_t board_init_enet_rmii_reference_clock(ENET_Type *ptr, bool internal)
 {
     /* Configure Enet clock to output reference clock */
@@ -1046,27 +1065,39 @@ void board_init_switch_led(void)
     gpio_set_pin_output_with_initial(BOARD_ECAT_OUT2_GPIO, BOARD_ECAT_OUT2_GPIO_PORT_INDEX, BOARD_ECAT_OUT2_GPIO_PIN_INDEX, 0);
 }
 
-void board_init_tsw(TSW_Type *ptr)
+void board_init_tsw_pins(TSW_Type *ptr)
 {
-    (void)ptr;
+    (void) ptr;
 
     init_tsw_pins();
-
-    /* PORT1/PORT2: JL1111 RST(PA10) */
-    gpio_set_pin_output_with_initial(HPM_GPIO0, GPIO_DO_GPIOA, 10, 0);
-    gpio_write_pin(HPM_GPIO0, GPIO_DO_GPIOA, 10, 0);
-    board_delay_ms(100);
-    gpio_write_pin(HPM_GPIO0, GPIO_DO_GPIOA, 10, 1);
-
-    /* PORT3: RTL8211 RST(PA10) */
-    gpio_set_pin_output_with_initial(HPM_GPIO0, GPIO_DO_GPIOA, 14, 0);
-    gpio_write_pin(HPM_GPIO0, GPIO_DO_GPIOA, 14, 0);
-    board_delay_ms(100);
-    gpio_write_pin(HPM_GPIO0, GPIO_DO_GPIOA, 14, 1);
 
     /* Enable XI clock for JL1111 */
     esc_core_enable_clock(HPM_ESC, true);
     esc_phy_enable_clock(HPM_ESC, true);
+}
+
+void board_reset_tsw_phy(TSW_Type *ptr, uint8_t port)
+{
+    (void) ptr;
+
+    if (port == TSW_TSNPORT_PORT1 || port == TSW_TSNPORT_PORT2) {
+        gpio_set_pin_output_with_initial(BOARD_TSW_PORT1_PORT2_PHY_RST_GPIO, BOARD_TSW_PORT1_PORT2_PHY_RST_GPIO_INDEX, BOARD_TSW_PORT1_PORT2_PHY_RST_GPIO_PIN, 0);
+        gpio_write_pin(BOARD_TSW_PORT1_PORT2_PHY_RST_GPIO, BOARD_TSW_PORT1_PORT2_PHY_RST_GPIO_INDEX, BOARD_TSW_PORT1_PORT2_PHY_RST_GPIO_PIN, 0);
+        board_delay_ms(100);
+        gpio_write_pin(BOARD_TSW_PORT1_PORT2_PHY_RST_GPIO, BOARD_TSW_PORT1_PORT2_PHY_RST_GPIO_INDEX, BOARD_TSW_PORT1_PORT2_PHY_RST_GPIO_PIN, 1);
+    }
+
+    if (port == TSW_TSNPORT_PORT3) {
+        gpio_set_pin_output_with_initial(BOARD_TSW_PORT3_PHY_RST_GPIO, BOARD_TSW_PORT3_PHY_RST_GPIO_INDEX, BOARD_TSW_PORT3_PHY_RST_GPIO_PIN, 0);
+        gpio_write_pin(BOARD_TSW_PORT3_PHY_RST_GPIO, BOARD_TSW_PORT3_PHY_RST_GPIO_INDEX, BOARD_TSW_PORT3_PHY_RST_GPIO_PIN, 0);
+        board_delay_ms(100);
+        gpio_write_pin(BOARD_TSW_PORT3_PHY_RST_GPIO, BOARD_TSW_PORT3_PHY_RST_GPIO_INDEX, BOARD_TSW_PORT3_PHY_RST_GPIO_PIN, 1);
+    }
+}
+
+void board_init_tsw_rgmii_clock_delay(TSW_Type *ptr, uint8_t port)
+{
+    tsw_set_port_clock_delay(ptr, port, BOARD_TSW_PORT3_RGMII_TX_DLY, BOARD_TSW_PORT3_RGMII_TX_DLY);
 }
 
 void board_init_sei_pins(SEI_Type *ptr, uint8_t sei_ctrl_idx)
@@ -1077,4 +1108,9 @@ void board_init_sei_pins(SEI_Type *ptr, uint8_t sei_ctrl_idx)
 void board_init_adc_qeiv2_pins(void)
 {
     init_adc_qeiv2_pins();
+}
+
+void board_init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp)
+{
+    init_gptmr_channel_pin(ptr, channel, as_comp);
 }

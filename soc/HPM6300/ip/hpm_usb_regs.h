@@ -2126,6 +2126,16 @@ typedef struct {
 #define USB_PHY_CTRL0_VBUS_VALID_OVERRIDE_GET(x) (((uint32_t)(x) & USB_PHY_CTRL0_VBUS_VALID_OVERRIDE_MASK) >> USB_PHY_CTRL0_VBUS_VALID_OVERRIDE_SHIFT)
 
 /*
+ * OP_MODE_SUSPENDM_ENJ (RW)
+ *
+ * set op_mode to 2'b01 in suspend, for naneng usbphy
+ */
+#define USB_PHY_CTRL0_OP_MODE_SUSPENDM_ENJ_MASK (0x800U)
+#define USB_PHY_CTRL0_OP_MODE_SUSPENDM_ENJ_SHIFT (11U)
+#define USB_PHY_CTRL0_OP_MODE_SUSPENDM_ENJ_SET(x) (((uint32_t)(x) << USB_PHY_CTRL0_OP_MODE_SUSPENDM_ENJ_SHIFT) & USB_PHY_CTRL0_OP_MODE_SUSPENDM_ENJ_MASK)
+#define USB_PHY_CTRL0_OP_MODE_SUSPENDM_ENJ_GET(x) (((uint32_t)(x) & USB_PHY_CTRL0_OP_MODE_SUSPENDM_ENJ_MASK) >> USB_PHY_CTRL0_OP_MODE_SUSPENDM_ENJ_SHIFT)
+
+/*
  * ID_DIG_OVERRIDE_EN (RW)
  *
  */
@@ -2165,7 +2175,9 @@ typedef struct {
 /*
  * UTMI_OTG_SUSPENDM (RW)
  *
- * OTG suspend, not utmi_suspendm
+ * OTG suspend, not utmi_suspendm.
+ * setting this bit also enable host high-speed disconnect detection logic(check DP/DM voltage at end of SOF, to determine whether 50Ohm are still there on DP/DM)
+ * should clear this bit before entering into suspend state(setting portsc.phcd), avoide unwanted glitch on vbus/sess_vld/sess_end
  */
 #define USB_PHY_CTRL1_UTMI_OTG_SUSPENDM_MASK (0x2U)
 #define USB_PHY_CTRL1_UTMI_OTG_SUSPENDM_SHIFT (1U)

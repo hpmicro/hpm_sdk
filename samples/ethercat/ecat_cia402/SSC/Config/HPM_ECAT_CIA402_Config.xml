@@ -1,0 +1,124 @@
+<?xml version="1.0"?>
+<SscToolConfiguration SSCVersion="5.13" VendorID="#x0048504D" VendorName="HPMicro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="SscToolConfiguration.xsd">
+	<Configurations>
+		<Configuration Name="HPMicro ECAT CiA402 configuration" Version="1.0.0.0" Info="">
+			<Setting CodeDefine="MCI_HW" Value="0">
+				<Flags Visible="False"/>
+			</Setting>
+			<Setting CodeDefine="EL9800_HW" Value="0">
+				<Flags Visible="False"/>
+			</Setting>
+			<Setting CodeDefine="FC1100_HW" Value="0">
+				<Flags Visible="False"/>
+			</Setting>
+			<Setting CodeDefine="_PIC18" Value="0">
+				<Flags Visible="False"/>
+			</Setting>
+			<Setting CodeDefine="_PIC24" Value="0">
+				<Flags Visible="False"/>
+			</Setting>
+			<Setting CodeDefine="EL9800_APPLICATION" Value="0">
+				<Flags Visible="False"/>
+			</Setting>
+			<Setting CodeDefine="TEST_APPLICATION" Value="0">
+				<Flags Visible="False"/>
+			</Setting>
+			<Setting CodeDefine="SAMPLE_APPLICATION" Value="0"/>
+			<Setting CodeDefine="SAMPLE_APPLICATION_INTERFACE" Value="0"/>
+			<Setting CodeDefine="ESC_16BIT_ACCESS" Value="0"/>
+			<Setting CodeDefine="ESC_32BIT_ACCESS" Value="1"/>
+			<Setting CodeDefine="MBX_16BIT_ACCESS" Value="0"/>
+			<Setting CodeDefine="BIG_ENDIAN_16BIT" Value="0">
+				<Flags Visible="False"/>
+			</Setting>
+			<Setting CodeDefine="BIG_ENDIAN_FORMAT" Value="0">
+				<Flags Visible="False"/>
+			</Setting>
+			<Setting CodeDefine="CONTROLLER_32BIT" Value="1">
+				<Flags Visible="True"/>
+			</Setting>
+			<Setting CodeDefine="CONTROLLER_16BIT" Value="0">
+				<Flags Visible="False"/>
+			</Setting>
+			<Setting CodeDefine="OBJ_DWORD_ALIGN" Value="0"/>
+			<Setting CodeDefine="OBJ_WORD_ALIGN" Value="0"/>
+			<Setting CodeDefine="MAILBOX_QUEUE" Value="1"/>
+			<Setting CodeDefine="AOE_SUPPORTED" Value="0"/>
+			<Setting CodeDefine="COE_SUPPORTED" Value="1"/>
+			<Setting CodeDefine="COMPLETE_ACCESS_SUPPORTED" Value="1"/>
+			<Setting CodeDefine="SEGMENTED_SDO_SUPPORTED" Value="1"/>
+			<Setting CodeDefine="BACKUP_PARAMETER_SUPPORTED" Value="0"/>
+			<Setting CodeDefine="SDO_RES_INTERFACE" Value="1"/>
+			<Setting CodeDefine="DIAGNOSIS_SUPPORTED" Value="0"/>
+			<Setting CodeDefine="EMERGENCY_SUPPORTED" Value="0"/>
+			<Setting CodeDefine="EOE_SUPPORTED" Value="0"/>
+			<Setting CodeDefine="FOE_SUPPORTED" Value="0"/>
+			<Setting CodeDefine="BOOTSTRAPMODE_SUPPORTED" Value="0"/>
+			<Setting CodeDefine="MAILBOX_SUPPORTED" Value="1"/>
+			<Setting CodeDefine="VOE_SUPPORTED" Value="0"/>
+			<Setting CodeDefine="SOE_SUPPORTED" Value="0"/>
+			<Setting CodeDefine="ESC_SM_WD_SUPPORTED" Value="1"/>
+			<Setting CodeDefine="OP_PD_REQUIRED" Value="1"/>
+			<Setting CodeDefine="UC_SET_ECAT_LED" Value="0"/>
+			<Setting CodeDefine="ESC_SUPPORT_ECAT_LED" Value="1"/>
+			<Setting CodeDefine="ECAT_TIMER_INT" Value="0"/>
+			<Setting CodeDefine="EXPLICIT_DEVICE_ID" Value="1"/>
+			<Setting CodeDefine="EXT_DEBUGER_INTERFACE" Value="0">
+				<Flags Visible="False"/>
+			</Setting>
+			<Setting CodeDefine="CiA402_SAMPLE_APPLICATION" Value="1"/>
+			<Setting CodeDefine="SYSTEM_HEADER_FILE" Value="#include &quot;hpm_common.h&quot;"/>
+			<Setting CodeDefine="STATIC_OBJECT_DIC" Value="0"/>
+			<Setting CodeDefine="ESC_EEPROM_ACCESS_SUPPORT" Value="0"/>
+			<Setting CodeDefine="ESC_EEPROM_EMULATION" Value="1"/>
+			<Setting CodeDefine="CREATE_EEPROM_CONTENT" Value="1"/>
+			<Setting CodeDefine="ESC_EEPROM_SIZE" Value="0x800"/>
+			<Setting CodeDefine="ESC_CONFIG_DATA" Value="800C8166000000001234"/>
+			<Setting CodeDefine="HW_ACCESS_FILE" Value="#include &quot;hpm_ecat_hw.h&quot;"/>
+			<Setting CodeDefine="APPLICATION_FILE" Value="#include &quot;sample_cia402.h&quot;"/>
+			<Setting CodeDefine="USE_DEFAULT_MAIN" Value="0"/>
+			<Setting CodeDefine="BOOL" Value="uint8_t"/>
+			<Setting CodeDefine="UINT8" Value="uint8_t"/>
+			<Setting CodeDefine="UINT16" Value="uint16_t"/>
+			<Setting CodeDefine="UINT32" Value="uint32_t"/>
+			<Setting CodeDefine="UINT64" Value="uint64_t"/>
+			<Setting CodeDefine="USHORT" Value="uint16_t"/>
+			<Setting CodeDefine="INT8" Value="int8_t"/>
+			<Setting CodeDefine="INT16" Value="int16_t"/>
+			<Setting CodeDefine="INT32" Value="int32_t"/>
+			<Setting CodeDefine="INT64" Value="int64_t"/>
+			<Setting CodeDefine="CHAR" Value="char"/>
+			<Setting CodeDefine="UCHAR" Value="unsigned char"/>
+			<Setting CodeDefine="SIZEOF(x)" Value="sizeof(x)"/>
+			<Setting CodeDefine="STRUCT_PACKED_START" Value="ATTR_PACKED"/>
+			<Setting CodeDefine="MBX_STRUCT_PACKED_START" Value="ATTR_PACKED"/>
+			<Setting CodeDefine="OBJ_STRUCT_PACKED_START" Value="ATTR_PACKED"/>
+			<Setting CodeDefine="VENDOR_ID" Value="0x0048504D"/>
+			<Setting CodeDefine="VENDOR_NAME" Value="HPMicro"/>
+			<Setting CodeDefine="PRODUCT_CODE" Value="0x00000003"/>
+			<Setting CodeDefine="REVISION_NUMBER" Value="0x00000001"/>
+			<Setting CodeDefine="DEVICE_NAME" Value="ECAT_CIA402"/>
+			<Setting CodeDefine="GROUP_NAME" Value="ECAT_Device"/>
+			<Setting CodeDefine="DEVICE_HW_VERSION" Value="ECAT_Device"/>
+			<Setting CodeDefine="DEVICE_SW_VERSION" Value="1.0"/>
+			<Setting CodeDefine="MIN_PD_CYCLE_TIME" Value="0x79E0"/>
+			<Setting CodeDefine="AL_EVENT_ENABLED" Value="1"/>
+			<Setting CodeDefine="DC_SUPPORTED" Value="1"/>
+			<Setting CodeDefine="MAX_MBX_SIZE" Value="0x10C"/>
+			<Setting CodeDefine="MAX_PD_INPUT_SIZE" Value="0x40"/>
+			<Setting CodeDefine="MAX_PD_OUTPUT_SIZE" Value="0x40"/>
+			<Setting CodeDefine="DEVICE_PROFILE_TYPE" Value="402"/>
+			<Setting CodeDefine="MAKE_HUGE_PTR" Value=""/>
+			<ESI Path="/EtherCATInfo/Descriptions/Devices/Device/Info">
+				<Value>
+					<EtherCATController>
+						<DpramSize>61440</DpramSize>
+						<SmCount>8</SmCount>
+						<FmmuCount>8</FmmuCount>
+					</EtherCATController>
+				</Value>
+				<!--ESC Parameter-->
+			</ESI>
+		</Configuration>
+	</Configurations>
+</SscToolConfiguration>

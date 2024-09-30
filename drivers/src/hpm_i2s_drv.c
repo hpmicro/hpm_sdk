@@ -117,6 +117,11 @@ void i2s_init(I2S_Type *ptr, i2s_config_t *config)
         | I2S_MISC_CFGR_MCLKOE_SET(config->enable_mclk_out);
     ptr->FIFO_THRESH = I2S_FIFO_THRESH_TX_SET(config->tx_fifo_threshold)
         | I2S_FIFO_THRESH_RX_SET(config->rx_fifo_threshold);
+
+#if defined(HPM_IP_FEATURE_I2S_BUFF_ALIGN_FRAME) && (HPM_IP_FEATURE_I2S_BUFF_ALIGN_FRAME)
+    /* make the buffer always frame aligned even in case of buffer underflow or overflow */
+    ptr->CTRL |= I2S_CTRL_FRC_ALIGN_FBUF_MASK;
+#endif
 }
 
 static void i2s_config_cfgr(I2S_Type *ptr,
@@ -190,8 +195,25 @@ static hpm_stat_t _i2s_config_tx(I2S_Type *ptr, i2s_transfer_config_t *config)
     ptr->TXDSLOT[config->data_line] = config->channel_slot_mask;
 
     /* work around: fill dummy data into TX fifo to avoid TX underflow during tx start */
-    if (i2s_fill_tx_dummy_data(ptr, config->data_line, config->channel_num_per_frame) != status_success) {
-        return status_invalid_argument;
+    if (!(config->master_mode)) { /* enable internal clock to fill dummy data in slave mode */
+        uint32_t cfgr_temp, misc_cfgr_temp;
+        cfgr_temp = ptr->CFGR;
+        ptr->CFGR |= I2S_CFGR_BCLK_DIV_SET(1);
+        ptr->CFGR &= ~(I2S_CFGR_MCK_SEL_OP_MASK | I2S_CFGR_BCLK_SEL_OP_MASK | I2S_CFGR_FCLK_SEL_OP_MASK | I2S_CFGR_BCLK_GATEOFF_MASK);
+        misc_cfgr_temp = ptr->MISC_CFGR;
+        ptr->MISC_CFGR &= ~I2S_MISC_CFGR_MCLK_GATEOFF_MASK;
+
+        if (i2s_fill_tx_dummy_data(ptr, config->data_line, config->channel_num_per_frame) != status_success) {
+            return status_invalid_argument;
+        }
+
+        /* Restore the value of the CFGR and MISC_CFGR register in slave mode */
+        ptr->CFGR = cfgr_temp;
+        ptr->MISC_CFGR = misc_cfgr_temp;
+    } else { /* master mode */
+        if (i2s_fill_tx_dummy_data(ptr, config->data_line, config->channel_num_per_frame) != status_success) {
+            return status_invalid_argument;
+        }
     }
 
     ptr->CTRL = (ptr->CTRL & ~(I2S_CTRL_TX_EN_MASK))
@@ -240,8 +262,25 @@ static hpm_stat_t _i2s_config_transfer(I2S_Type *ptr, i2s_transfer_config_t *con
     ptr->TXDSLOT[config->data_line] = config->channel_slot_mask;
 
     /* work around: fill dummy data into TX fifo to avoid TX underflow during tx start */
-    if (i2s_fill_tx_dummy_data(ptr, config->data_line, config->channel_num_per_frame) != status_success) {
-        return status_invalid_argument;
+    if (!(config->master_mode)) { /* enable internal clock to fill dummy data in slave mode */
+        uint32_t cfgr_temp, misc_cfgr_temp;
+        cfgr_temp = ptr->CFGR;
+        ptr->CFGR |= I2S_CFGR_BCLK_DIV_SET(1);
+        ptr->CFGR &= ~(I2S_CFGR_MCK_SEL_OP_MASK | I2S_CFGR_BCLK_SEL_OP_MASK | I2S_CFGR_FCLK_SEL_OP_MASK | I2S_CFGR_BCLK_GATEOFF_MASK);
+        misc_cfgr_temp = ptr->MISC_CFGR;
+        ptr->MISC_CFGR &= ~I2S_MISC_CFGR_MCLK_GATEOFF_MASK;
+
+        if (i2s_fill_tx_dummy_data(ptr, config->data_line, config->channel_num_per_frame) != status_success) {
+            return status_invalid_argument;
+        }
+
+        /* Restore the value of the CFGR and MISC_CFGR register in slave mode */
+        ptr->CFGR = cfgr_temp;
+        ptr->MISC_CFGR = misc_cfgr_temp;
+    } else { /* master mode */
+        if (i2s_fill_tx_dummy_data(ptr, config->data_line, config->channel_num_per_frame) != status_success) {
+            return status_invalid_argument;
+        }
     }
 
     ptr->CTRL = (ptr->CTRL & ~(I2S_CTRL_RX_EN_MASK | I2S_CTRL_TX_EN_MASK))

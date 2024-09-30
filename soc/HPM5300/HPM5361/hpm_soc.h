@@ -543,6 +543,7 @@
 #include "hpm_csr_regs.h"
 #include "hpm_interrupt.h"
 #include "hpm_misc.h"
+#include "hpm_otp_table.h"
 #include "hpm_dmamux_src.h"
 #include "hpm_trgmmux_src.h"
 #include "hpm_iomux.h"

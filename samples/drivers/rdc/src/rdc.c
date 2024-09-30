@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -170,8 +170,8 @@ int main(void)
     adc_init();
     init_pwm_pla_trgm(BOARD_RDC_TRGM);
     init_trigger_cfg(BOARD_RDC_ADC_TRG, true);
-    adc16_set_pmt_queue_enable(BOARD_RDC_ADC_I_BASE, BOARD_RDC_ADC_TRG, true);
-    adc16_set_pmt_queue_enable(BOARD_RDC_ADC_Q_BASE, BOARD_RDC_ADC_TRG, true);
+    adc16_enable_pmt_queue(BOARD_RDC_ADC_I_BASE, BOARD_RDC_ADC_TRG);
+    adc16_enable_pmt_queue(BOARD_RDC_ADC_Q_BASE, BOARD_RDC_ADC_TRG);
     freq = clock_get_frequency(BOARD_PLB_PWM_CLOCK_NAME);
     printf("freq:%d.\r\n", freq);
     rdc_cfg(BOARD_RDC_BASE);
@@ -217,7 +217,7 @@ int main(void)
     while (1) {
         val_acc_i = rdc_get_acc_avl(BOARD_RDC_BASE, rdc_acc_chn_i);
         val_acc_q = rdc_get_acc_avl(BOARD_RDC_BASE, rdc_acc_chn_q);
-        theta = (atanf(((float)val_acc_i)/val_acc_q) * 180 / 3.141592) + 90;
+        theta = (atanf(((float)val_acc_i)/val_acc_q) * 180 / HPM_PI) + 90;
         if (init_theta < 0) {
           init_theta = theta;
         }

@@ -263,7 +263,12 @@ typedef enum {
 
 #endif
 
-
+/**
+ * @brief SPI status
+ */
+enum {
+    status_spi_master_busy = MAKE_STATUS(status_group_spi, 1),
+};
 
 #if defined(__cplusplus)
 extern "C" {
@@ -881,7 +886,7 @@ static inline uint8_t spi_get_directio_enable_status(SPI_Type *ptr)
  */
 static inline uint8_t spi_get_rx_fifo_valid_data_size(SPI_Type *ptr)
 {
-    return ((SPI_STATUS_RXNUM_7_6_GET(ptr->STATUS) << 5) | SPI_STATUS_RXNUM_5_0_GET(ptr->STATUS));
+    return ((SPI_STATUS_RXNUM_7_6_GET(ptr->STATUS) << 6) | SPI_STATUS_RXNUM_5_0_GET(ptr->STATUS));
 }
 
 /**
@@ -893,7 +898,7 @@ static inline uint8_t spi_get_rx_fifo_valid_data_size(SPI_Type *ptr)
  */
 static inline uint8_t spi_get_tx_fifo_valid_data_size(SPI_Type *ptr)
 {
-    return ((SPI_STATUS_TXNUM_7_6_GET(ptr->STATUS) << 5) | SPI_STATUS_TXNUM_5_0_GET(ptr->STATUS));
+    return ((SPI_STATUS_TXNUM_7_6_GET(ptr->STATUS) << 6) | SPI_STATUS_TXNUM_5_0_GET(ptr->STATUS));
 }
 
 /**

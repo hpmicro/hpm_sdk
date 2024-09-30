@@ -848,13 +848,14 @@ hpm_stat_t i2c_master_configure_transfer(I2C_Type *i2c_ptr, const uint16_t devic
     return status_success;
 }
 
-hpm_stat_t i2c_master_seq_transmit(I2C_Type *ptr, const uint16_t device_address,
-                                    uint8_t *buf, const uint32_t size, i2c_seq_transfer_opt_t opt)
+hpm_stat_t i2c_master_seq_transmit_check_ack(I2C_Type *ptr, const uint16_t device_address,
+                                    uint8_t *buf, const uint32_t size, i2c_seq_transfer_opt_t opt, bool ack_check)
 {
     uint32_t ctrl;
     uint32_t retry = 0;
     uint32_t left = 0;
-
+    volatile uint32_t status;
+    hpm_stat_t stat = status_success;
     if (((size == 0) || (size > I2C_SOC_TRANSFER_COUNT_MAX))) {
         return status_invalid_argument;
     }
@@ -893,17 +894,42 @@ hpm_stat_t i2c_master_seq_transmit(I2C_Type *ptr, const uint16_t device_address,
 
     retry = 0;
     left = size;
+    if (ack_check == true) {
+        ptr->STATUS = I2C_STATUS_BYTETRANS_MASK;
+    }
     while (left) {
-        if (!(ptr->STATUS & I2C_STATUS_FIFOFULL_MASK)) {
+        if (ack_check == true) {
             ptr->DATA = *(buf++);
             left--;
             retry = 0;
-        } else {
-            if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
+            while (!(ptr->STATUS & I2C_STATUS_BYTETRANS_MASK)) {
+                if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
+                    break;
+                }
+                retry++;
+            }
+            ptr->STATUS = I2C_STATUS_BYTETRANS_MASK;
+            /* NACK request */
+            if (!(I2C_STATUS_ACK_GET(ptr->STATUS))) {
+                ptr->CTRL = I2C_CTRL_PHASE_STOP_SET(true);
+                ptr->CMD = I2C_CMD_ISSUE_DATA_TRANSMISSION;
+                stat = status_i2c_no_ack;
                 break;
             }
-            retry++;
+        } else {
+            status = ptr->STATUS;
+            if (!(status & I2C_STATUS_FIFOFULL_MASK)) {
+                ptr->DATA = *(buf++);
+                left--;
+                retry = 0;
+            } else {
+                if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
+                    break;
+                }
+                retry++;
+            }
         }
+
     }
     if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
         return status_timeout;
@@ -924,13 +950,13 @@ hpm_stat_t i2c_master_seq_transmit(I2C_Type *ptr, const uint16_t device_address,
     }
     /* clear status, CMPL must to be cleared at slave mode before next transaction */
     ptr->STATUS = I2C_STATUS_CMPL_MASK;
-    return status_success;
+    return stat;
 }
 
 hpm_stat_t i2c_master_seq_receive(I2C_Type *ptr, const uint16_t device_address,
                                     uint8_t *buf, const uint32_t size, i2c_seq_transfer_opt_t opt)
 {
-   uint32_t ctrl;
+    uint32_t ctrl;
     uint32_t retry = 0;
     uint32_t left = 0;
 
@@ -990,6 +1016,10 @@ hpm_stat_t i2c_master_seq_receive(I2C_Type *ptr, const uint16_t device_address,
             retry++;
         }
     }
+
+    /* default auto ack */
+    ptr->INTEN &= ~I2C_EVENT_BYTE_RECEIVED;
+
     if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
         return status_timeout;
     }
@@ -1011,8 +1041,6 @@ hpm_stat_t i2c_master_seq_receive(I2C_Type *ptr, const uint16_t device_address,
     }
     /* clear status, CMPL must to be cleared at slave mode before next transaction */
     ptr->STATUS = I2C_STATUS_CMPL_MASK;
-    /* default auto ack */
-    ptr->INTEN &= ~I2C_EVENT_BYTE_RECEIVED;
 
     return status_success;
 }
@@ -1020,9 +1048,11 @@ hpm_stat_t i2c_master_seq_receive(I2C_Type *ptr, const uint16_t device_address,
 hpm_stat_t i2c_master_transfer(I2C_Type *ptr, const uint16_t device_address,
                                     uint8_t *buf, const uint32_t size,  uint16_t flags)
 {
+    volatile uint32_t status;
     uint32_t ctrl = 0;
     uint32_t retry = 0;
     uint32_t left = 0;
+    hpm_stat_t stat = status_success;
     if (((size == 0) || (size > I2C_SOC_TRANSFER_COUNT_MAX))) {
         return status_invalid_argument;
     }
@@ -1086,25 +1116,48 @@ hpm_stat_t i2c_master_transfer(I2C_Type *ptr, const uint16_t device_address,
                 retry++;
             }
         }
-        if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
-            return status_timeout;
-        }
     } else {
+        if (flags & I2C_WRITE_CHECK_ACK) {
+            ptr->STATUS = I2C_STATUS_BYTETRANS_MASK;
+        }
         while (left) {
-            if (!(ptr->STATUS & I2C_STATUS_FIFOFULL_MASK)) {
+            if (flags & I2C_WRITE_CHECK_ACK) {
                 ptr->DATA = *(buf++);
                 left--;
                 retry = 0;
-            } else {
-                if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
+                while (!(ptr->STATUS & I2C_STATUS_BYTETRANS_MASK)) {
+                    if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
+                        break;
+                    }
+                    retry++;
+                }
+                ptr->STATUS = I2C_STATUS_BYTETRANS_MASK;
+                /* NACK request */
+                if (!(I2C_STATUS_ACK_GET(ptr->STATUS))) {
+                    ptr->CTRL = I2C_CTRL_PHASE_STOP_SET(true);
+                    ptr->CMD = I2C_CMD_ISSUE_DATA_TRANSMISSION;
+                    stat = status_i2c_no_ack;
                     break;
                 }
-                retry++;
+            } else {
+                status = ptr->STATUS;
+                if (!(status & I2C_STATUS_FIFOFULL_MASK)) {
+                    ptr->DATA = *(buf++);
+                    left--;
+                    retry = 0;
+                } else {
+                    if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
+                        break;
+                    }
+                    retry++;
+                }
             }
         }
-        if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
-            return status_timeout;
-        }
+    }
+    if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
+        /* default auto ack */
+        ptr->INTEN &= ~I2C_EVENT_BYTE_RECEIVED;
+        return status_timeout;
     }
     retry = 0;
     while (!(ptr->STATUS & I2C_STATUS_CMPL_MASK)) {
@@ -1114,11 +1167,17 @@ hpm_stat_t i2c_master_transfer(I2C_Type *ptr, const uint16_t device_address,
         retry++;
     }
     if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
+        /* default auto ack */
+        ptr->INTEN &= ~I2C_EVENT_BYTE_RECEIVED;
         return status_timeout;
     }
 
     if (i2c_get_data_count(ptr) && (size)) {
+        /* default auto ack */
+        ptr->INTEN &= ~I2C_EVENT_BYTE_RECEIVED;
         return status_i2c_transmit_not_completed;
     }
-    return status_success;
+    /* default auto ack */
+    ptr->INTEN &= ~I2C_EVENT_BYTE_RECEIVED;
+    return stat;
 }

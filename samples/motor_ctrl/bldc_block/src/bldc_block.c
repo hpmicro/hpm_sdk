@@ -709,13 +709,13 @@ static void timer_init(void)
     gptmr_channel_config_t config;
 
     gptmr_channel_get_default_config(BOARD_BLDC_TMR_1MS, &config);
-    config.cmp[0] = BLOCK_TMR_RLD;
     config.debug_mode = 0;
     config.reload = BLOCK_TMR_RLD + 1;
+    config.cmp[0] = BLOCK_TMR_RLD;
+    config.cmp[1] = config.reload;
     gptmr_enable_irq(BOARD_BLDC_TMR_1MS, GPTMR_CH_CMP_IRQ_MASK(BOARD_BLDC_TMR_CH, BOARD_BLDC_TMR_CMP));
     gptmr_channel_config(BOARD_BLDC_TMR_1MS, BOARD_BLDC_TMR_CH, &config, true);
     intc_m_enable_irq_with_priority(BOARD_BLDC_TMR_IRQ, 1);
-
 }
 
 int main(void)

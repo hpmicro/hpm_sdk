@@ -34,7 +34,7 @@ hpm_stat_t nor_flash_init(nor_flash_config_t *cfg)
     }
 
     rom_xpi_nor_get_property(cfg->xpi_base, &cfg->nor_config, xpi_nor_property_sector_size, &cfg->sector_size);
-
+    __asm volatile ("fence.i");
     return status_success;
 }
 

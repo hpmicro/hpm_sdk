@@ -187,7 +187,11 @@ int main(void)
         printf("total times:%d tick.\r\n", run_times);
         hpm_dsp_convert_q31_f32(ffa_buf, fft_buf, point * 2);
         for (uint32_t i = 0; i < 2 * point; i++) {
+#ifdef __zcc__
+            fft_buf[i] = fft_buf[i] * point * point;
+#else
             fft_buf[i] = fft_buf[i] * point * point * 2;
+#endif
         }
         fft_printf(&fft_buf[0], &fft_mag_output[0], point);
 

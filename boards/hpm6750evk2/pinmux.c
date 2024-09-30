@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -284,6 +284,11 @@ void init_spi_pins(SPI_Type *ptr)
         HPM_IOC->PAD[IOC_PAD_PE30].FUNC_CTL = IOC_PE30_FUNC_CTL_SPI2_MOSI;
         HPM_IOC->PAD[IOC_PAD_PE28].FUNC_CTL = IOC_PE28_FUNC_CTL_SPI2_MISO;
         HPM_IOC->PAD[IOC_PAD_PE27].FUNC_CTL = IOC_PE27_FUNC_CTL_SPI2_SCLK | IOC_PAD_FUNC_CTL_LOOP_BACK_SET(1);
+
+        HPM_IOC->PAD[IOC_PAD_PE31].PAD_CTL = IOC_PAD_PAD_CTL_DS_SET(6) | IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(1);
+        HPM_IOC->PAD[IOC_PAD_PE30].PAD_CTL = IOC_PAD_PAD_CTL_DS_SET(6) | IOC_PAD_PAD_CTL_PE_SET(1);
+        HPM_IOC->PAD[IOC_PAD_PE28].PAD_CTL = IOC_PAD_PAD_CTL_DS_SET(6) | IOC_PAD_PAD_CTL_PE_SET(1);
+        HPM_IOC->PAD[IOC_PAD_PE27].PAD_CTL = IOC_PAD_PAD_CTL_DS_SET(6) | IOC_PAD_PAD_CTL_PE_SET(1);
     }
 }
 
@@ -294,6 +299,11 @@ void init_spi_pins_with_gpio_as_cs(SPI_Type *ptr)
         HPM_IOC->PAD[IOC_PAD_PE30].FUNC_CTL = IOC_PE30_FUNC_CTL_SPI2_MOSI;
         HPM_IOC->PAD[IOC_PAD_PE28].FUNC_CTL = IOC_PE28_FUNC_CTL_SPI2_MISO;
         HPM_IOC->PAD[IOC_PAD_PE27].FUNC_CTL = IOC_PE27_FUNC_CTL_SPI2_SCLK | IOC_PAD_FUNC_CTL_LOOP_BACK_SET(1);
+
+        HPM_IOC->PAD[IOC_PAD_PE31].PAD_CTL = IOC_PAD_PAD_CTL_DS_SET(6) | IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(1);
+        HPM_IOC->PAD[IOC_PAD_PE30].PAD_CTL = IOC_PAD_PAD_CTL_DS_SET(6) | IOC_PAD_PAD_CTL_PE_SET(1);
+        HPM_IOC->PAD[IOC_PAD_PE28].PAD_CTL = IOC_PAD_PAD_CTL_DS_SET(6) | IOC_PAD_PAD_CTL_PE_SET(1);
+        HPM_IOC->PAD[IOC_PAD_PE27].PAD_CTL = IOC_PAD_PAD_CTL_DS_SET(6) | IOC_PAD_PAD_CTL_PE_SET(1);
     }
 }
 
@@ -568,7 +578,7 @@ void init_sdxc_clk_data_pins(SDXC_Type *ptr, uint32_t width, bool is_1v8)
         /* SDXC1.DATA0 */
         HPM_IOC->PAD[IOC_PAD_PD18].FUNC_CTL = func_ctl;
         HPM_IOC->PAD[IOC_PAD_PD18].PAD_CTL = pad_ctl;
-        if ((width == 4)) {
+        if (width == 4) {
             /* SDXC1.DATA1 */
             HPM_IOC->PAD[IOC_PAD_PD17].FUNC_CTL = func_ctl;
             HPM_IOC->PAD[IOC_PAD_PD17].PAD_CTL = pad_ctl;
@@ -622,6 +632,11 @@ void init_enet_pps_pins(void)
     HPM_IOC->PAD[IOC_PAD_PF05].FUNC_CTL = IOC_PF05_FUNC_CTL_ETH0_EVTO_0;
 }
 
+void init_enet_pps_capture_pins(void)
+{
+    HPM_IOC->PAD[IOC_PAD_PE25].FUNC_CTL = IOC_PE25_FUNC_CTL_ETH0_EVTI_1;
+}
+
 void init_tamper_pins(void)
 {
     HPM_BIOC->PAD[IOC_PAD_PZ08].FUNC_CTL = BIOC_PZ08_FUNC_CTL_TAMP_08 | IOC_PAD_FUNC_CTL_LOOP_BACK_MASK;
@@ -634,4 +649,42 @@ void init_uart_break_signal_pin(void)
 {
     HPM_IOC->PAD[IOC_PAD_PE31].PAD_CTL = IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(1);
     HPM_IOC->PAD[IOC_PAD_PE31].FUNC_CTL = IOC_PE31_FUNC_CTL_GPIO_E_31;
+}
+
+void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp)
+{
+    if (ptr == HPM_GPTMR3) {
+        if ((channel == 1) && (as_comp == true)) {
+            HPM_IOC->PAD[IOC_PAD_PE24].FUNC_CTL = IOC_PE24_FUNC_CTL_GPTMR3_COMP_1;
+        }
+    } else if (ptr == HPM_GPTMR4) {
+        if ((channel == 1) && (as_comp == false)) {
+            HPM_IOC->PAD[IOC_PAD_PE25].FUNC_CTL = IOC_PE25_FUNC_CTL_GPTMR4_CAPT_1;
+        }
+    } else if (ptr == HPM_GPTMR5) {
+        if (as_comp == true) {
+            switch (channel) {
+            case 2:
+                HPM_IOC->PAD[IOC_PAD_PD24].FUNC_CTL = IOC_PD24_FUNC_CTL_TRGM2_P_10;
+                trgm_enable_io_output(HPM_TRGM2, 1 << 10);
+                trgm_output_t trgm2IoConfig0;
+                trgm2IoConfig0.invert = 0;
+                trgm2IoConfig0.type = trgm_output_same_as_input;
+                trgm2IoConfig0.input = HPM_TRGM2_INPUT_SRC_GPTMR5_OUT2;
+                trgm_output_config(HPM_TRGM2, HPM_TRGM2_OUTPUT_SRC_TRGM2_P10, &trgm2IoConfig0);
+                break;
+            case 3:
+                HPM_IOC->PAD[IOC_PAD_PD23].FUNC_CTL = IOC_PD23_FUNC_CTL_TRGM2_P_11;
+                trgm_enable_io_output(HPM_TRGM2, 1 << 11);
+                trgm_output_t trgm2IoConfig1;
+                trgm2IoConfig1.invert = 0;
+                trgm2IoConfig1.type = trgm_output_same_as_input;
+                trgm2IoConfig1.input = HPM_TRGM2_INPUT_SRC_GPTMR5_OUT3;
+                trgm_output_config(HPM_TRGM2, HPM_TRGM2_OUTPUT_SRC_TRGM2_P11, &trgm2IoConfig1);
+                break;
+            default:
+                break;
+            }
+        }
+    }
 }

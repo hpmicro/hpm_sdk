@@ -150,9 +150,12 @@ The UART0 use for debugger console:
 
 - Ethernet PPS Pin
 
-| Function    | Position |
-| ----------- | -------- |
-| ENET0.EVTO0 | J20[7]   |
+| Function    | Pin  | Position |
+| ----------- | ---- | -------- |
+| ENET0.EVTO0 | PD31 | J20[7]  |
+| ENET0.EVTO1 | PE10 | P2[11]  |
+| ENET0.EVTI0 | PE17 | J19[16]  |
+| ENET0.EVTI1 | PE19 | J19[14]  |
 
 - CAN Pin
 

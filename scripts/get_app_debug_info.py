@@ -14,7 +14,7 @@ def get_ses_info(input_yml, info_type = "auto_start_gdb_server"):
     gdb_auto_start = "Yes"
     gdb_server_port = 3333
     gdb_server_reset_command = "reset halt"
-    with open(input_yml, "r") as stream:
+    with open(input_yml, "r", encoding="utf-8", errors="ignore") as stream:
         try:
             info = yaml.safe_load(stream)
             if not info is None and DEBUG_INFO in info.keys() and DEBUG_INFO_SES in info[DEBUG_INFO].keys():

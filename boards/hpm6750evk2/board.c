@@ -83,11 +83,11 @@ static board_timer_cb timer_cb;
  *      0 - 4MB / 1 - 8MB / 2 - 16MB
  */
 #if defined(FLASH_XIP) && FLASH_XIP
-__attribute__ ((section(".nor_cfg_option"))) const uint32_t option[4] = {0xfcf90002, 0x00000007, 0xE, 0x0};
+__attribute__ ((section(".nor_cfg_option"), used)) const uint32_t option[4] = {0xfcf90002, 0x00000007, 0xE, 0x0};
 #endif
 
 #if defined(FLASH_UF2) && FLASH_UF2
-ATTR_PLACE_AT(".uf2_signature") const uint32_t uf2_signature = BOARD_UF2_SIGNATURE;
+ATTR_PLACE_AT(".uf2_signature") __attribute__((used)) const uint32_t uf2_signature = BOARD_UF2_SIGNATURE;
 #endif
 
 void board_init_console(void)
@@ -462,8 +462,8 @@ void board_init_cap_touch(void)
     gpio_write_pin(BOARD_CAP_INTR_GPIO, BOARD_CAP_INTR_GPIO_INDEX, BOARD_CAP_INTR_GPIO_PIN, 0);
     board_delay_ms(1);
     gpio_write_pin(BOARD_CAP_RST_GPIO, BOARD_CAP_RST_GPIO_INDEX, BOARD_CAP_RST_GPIO_PIN, 1);
-    board_delay_ms(6);
-    gpio_write_pin(BOARD_CAP_RST_GPIO, BOARD_CAP_INTR_GPIO_INDEX, BOARD_CAP_INTR_GPIO_PIN, 0);
+    board_delay_ms(55);
+    gpio_set_pin_input(BOARD_CAP_RST_GPIO, BOARD_CAP_INTR_GPIO_INDEX, BOARD_CAP_INTR_GPIO_PIN);
 
     board_init_i2c(BOARD_CAP_I2C_BASE);
 }
@@ -812,12 +812,12 @@ void board_init_adc16_pins(void)
     init_adc16_pins();
 }
 
-uint32_t board_init_adc_clock(void *ptr, bool clk_src_ahb)
+uint32_t board_init_adc_clock(void *ptr, bool clk_src_bus)
 {
     uint32_t freq = 0;
 
     if (ptr == (void *)HPM_ADC0) {
-        if (clk_src_ahb) {
+        if (clk_src_bus) {
             /* Configure the ADC clock from AHB (@200MHz by default)*/
             clock_set_adc_source(clock_adc0, clk_adc_src_ahb0);
         } else {
@@ -827,7 +827,7 @@ uint32_t board_init_adc_clock(void *ptr, bool clk_src_ahb)
         }
         freq = clock_get_frequency(clock_adc0);
     } else if (ptr == (void *)HPM_ADC1) {
-        if (clk_src_ahb) {
+        if (clk_src_bus) {
             /* Configure the ADC clock from AHB (@200MHz by default)*/
             clock_set_adc_source(clock_adc1, clk_adc_src_ahb0);
         } else {
@@ -837,7 +837,7 @@ uint32_t board_init_adc_clock(void *ptr, bool clk_src_ahb)
         }
         freq = clock_get_frequency(clock_adc1);
     } else if (ptr == (void *)HPM_ADC2) {
-        if (clk_src_ahb) {
+        if (clk_src_bus) {
             /* Configure the ADC clock from AHB (@200MHz by default)*/
             clock_set_adc_source(clock_adc2, clk_adc_src_ahb0);
         } else {
@@ -847,7 +847,7 @@ uint32_t board_init_adc_clock(void *ptr, bool clk_src_ahb)
         }
         freq = clock_get_frequency(clock_adc2);
     } else if (ptr == (void *)HPM_ADC3) {
-        if (clk_src_ahb) {
+        if (clk_src_bus) {
             /* Configure the ADC clock from AHB (@200MHz by default)*/
             clock_set_adc_source(clock_adc3, clk_adc_src_ahb0);
         } else {
@@ -859,6 +859,11 @@ uint32_t board_init_adc_clock(void *ptr, bool clk_src_ahb)
     }
 
     return freq;
+}
+
+void board_init_acmp_pins(void)
+{
+    init_acmp_pins();
 }
 
 void board_init_can(CAN_Type *ptr)
@@ -1191,6 +1196,12 @@ void board_init_enet_pps_pins(ENET_Type *ptr)
     init_enet_pps_pins();
 }
 
+void board_init_enet_pps_capture_pins(ENET_Type *ptr)
+{
+    (void) ptr;
+    init_enet_pps_capture_pins();
+}
+
 #if defined(ENET_MULTIPLE_PORT) && ENET_MULTIPLE_PORT
 
 hpm_stat_t board_init_multiple_enet_pins(void)
@@ -1281,3 +1292,9 @@ void board_init_dao_pins(void)
 {
     init_dao_pins();
 }
+
+void board_init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp)
+{
+    init_gptmr_channel_pin(ptr, channel, as_comp);
+}
+

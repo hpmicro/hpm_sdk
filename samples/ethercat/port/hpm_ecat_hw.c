@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -12,6 +12,7 @@
 #include "hpm_gptmr_drv.h"
 #include "hpm_ppor_drv.h"
 #include "hpm_sysctl_drv.h"
+#include "esc.h"
 
 MEM_ADDR ESCMEM * pEsc;
 static UINT32 ecat_time_ms = 0;
@@ -72,6 +73,9 @@ hpm_stat_t ecat_hardware_init(ESC_Type *esc_ptr)
     /* PHY reset */
     ecat_phy_reset();
 
+    /* Set PHY OFFSET */
+    esc_set_phy_offset(esc_ptr, BOARD_ECAT_PHY_ADDR_OFFSET);
+
     /* PHY LED mode configuration */
     stat = ecat_phy_config(esc_ptr);
     if (stat != status_success) {
@@ -122,7 +126,7 @@ void ecat_timer_ms_enable(void)
     gptmr_start_counter(ECAT_TIMER_GPTMR, ECAT_TIMER_GPTMR_CH);
 
     gptmr_enable_irq(ECAT_TIMER_GPTMR, GPTMR_CH_RLD_IRQ_MASK(ECAT_TIMER_GPTMR_CH));
-    intc_m_enable_irq_with_priority(ECAT_TIMER_GPTRM_IRQ, 1);
+    intc_m_enable_irq_with_priority(ECAT_TIMER_GPTRM_IRQ, 2);
 }
 
 /* gptmr irq handler */
@@ -151,8 +155,8 @@ SDK_DECLARE_EXT_ISR_M(IRQn_ESC, ecat_pdi_isr)
 /* ECAT SYNC0 IRQ handler */
 void ecat_sync0_isr(void)
 {
-    UINT8 SyncState = 0;
-    HW_EscReadByte(SyncState, 0x098E); /* Sync0 acknowledge action */
+    volatile UINT32 SyncState = 0;
+    HW_EscReadDWord(SyncState, ESC_DC_SYNC_STATUS); /* Read Sync0/1 Status Register to acknowledge */
     (void) SyncState;
 
     /* call handler in SSC */
@@ -165,8 +169,8 @@ SDK_DECLARE_EXT_ISR_M(IRQn_ESC_SYNC0, ecat_sync0_isr)
 /* ECAT SYNC0 IRQ handler */
 void ecat_sync1_isr(void)
 {
-    UINT8 SyncState = 0;
-    HW_EscReadByte(SyncState, 0x098F); /* Sync1 acknowledge action */
+    volatile UINT32 SyncState = 0;
+    HW_EscReadDWord(SyncState, ESC_DC_SYNC_STATUS); /* Read Sync0/1 Status Register to acknowledge */
     (void) SyncState;
 
     /* call handler in SSC */
@@ -196,6 +200,8 @@ void ecat_reset_isr(void)
     /* keep phy in reset before reset esc peripheral */
     ecat_phy_keep_reset();
     ppor_sw_reset(HPM_PPOR, 2); /* software reset */
+    while (1) {
+    }
 #else
     #error please specify ECAT reset type
 #endif
@@ -228,14 +234,14 @@ void HW_Release(void)
 /* if ESC_SUPPORT_ECAT_LED = 1, no need to implement this function */
 void HW_SetLed(BOOL RunLed, BOOL ErrLed)
 {
-    UINT8 runled, errled;
+    uint8_t runled, errled;
+    uint32_t led;
 
     if (RunLed) {
         runled = ESC_LED_ON;
     } else {
         runled = ESC_LED_OFF;
     }
-    HW_EscWriteByte(runled, ESC_REG_RUN_LED_OVERRIDE);
 
     if (ErrLed) {
         errled = ESC_LED_ON;
@@ -243,7 +249,9 @@ void HW_SetLed(BOOL RunLed, BOOL ErrLed)
         errled = ESC_LED_OFF;
     }
 
-    HW_EscWriteByte(errled, ESC_REG_ERROR_LED_OVERRIDE);
+    led = (errled << 8U) + runled;
+
+    HW_EscWriteDWord(led, ESC_REG_RUN_LED_OVERRIDE);
 }
 
 void DISABLE_ESC_INT(void)
@@ -260,10 +268,10 @@ void ENABLE_ESC_INT(void)
 {
     HPM_ESC->GPR_CFG1 |= ESC_GPR_CFG1_SYNC0_IRQ_EN_MASK | ESC_GPR_CFG1_SYNC1_IRQ_EN_MASK | ESC_GPR_CFG1_RSTO_IRQ_EN_MASK;
 
-    intc_m_enable_irq_with_priority(IRQn_ESC_SYNC0, 2);
-    intc_m_enable_irq_with_priority(IRQn_ESC_SYNC1, 2);
-    intc_m_enable_irq_with_priority(IRQn_ESC, 1);
-    intc_m_enable_irq_with_priority(IRQn_ESC_RESET, 1);
+    intc_m_enable_irq_with_priority(IRQn_ESC_SYNC0, 3);
+    intc_m_enable_irq_with_priority(IRQn_ESC_SYNC1, 3);
+    intc_m_enable_irq_with_priority(IRQn_ESC, 3);
+    intc_m_enable_irq_with_priority(IRQn_ESC_RESET, 3);
 }
 
 #if defined(ESC_EEPROM_EMULATION) && ESC_EEPROM_EMULATION
@@ -396,3 +404,34 @@ UINT16 HW_EepromReload(void)
 }
 #endif /* ESC_EEPROM_EMULATION */
 
+/**
+ * @brief Reads and copies data from a source to a destination in 4-byte chunks
+ *
+ * @param dest Pointer to the destination memory location
+ * @param src Pointer to the source memory location
+ * @param size Total number of bytes to be copied
+ *
+ * @note The source memory address must be 4-byte aligned.
+ */
+void hw_esc_read_4bytes(void *dest, const void *src, uint16_t size)
+{
+    assert(((uint32_t)src % 4) == 0); /* Ensure src is 4-byte aligned */
+
+    uint32_t *d = (uint32_t *)dest;   /* Destination pointer, cast to 4-byte (uint32_t) */
+    const uint32_t *s = (const uint32_t *)src; /* Source pointer, cast to 4-byte (const uint32_t) */
+
+    uint16_t count = size / 4;       /* Number of 4-byte blocks to copy */
+    uint16_t remainder = size % 4;   /* Remaining bytes after full 4-byte block copies */
+    uint16_t index;
+
+    /* Copy data in 4-byte chunks */
+    for (index = 0; index < count; index++) {
+        d[index] = s[index]; /* Always read in 4-byte */
+    }
+
+    /* Handle any remaining bytes after the last full 4-byte block */
+    if (remainder > 0) {
+        uint32_t last_4bytes = s[index]; /* Read the last 4-byte block */
+        memcpy(&d[index], &last_4bytes, remainder); /* Copy only the remaining bytes */
+    }
+}

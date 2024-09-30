@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -22,8 +22,8 @@
 
 #define ENET_TX_BUFF_COUNT  (10U)
 #define ENET_RX_BUFF_COUNT  (20U)
-#define ENET_RX_BUFF_SIZE   ENET_MAX_FRAME_SIZE
-#define ENET_TX_BUFF_SIZE   ENET_MAX_FRAME_SIZE
+#define ENET_TX_BUFF_SIZE   ENET_MAX_BUFF_SIZE
+#define ENET_RX_BUFF_SIZE   ENET_MAX_BUFF_SIZE
 
 /* Exported Variables ------------------------------------------------------*/
 extern enet_desc_t desc;

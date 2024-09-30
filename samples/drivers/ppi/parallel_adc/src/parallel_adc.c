@@ -9,16 +9,16 @@
 #include <stdio.h>
 #include "hpm_ppi.h"
 
-#define SRAM_BASE_ADDR 0xF8000000U    /* Base address should be aligned by 1MB */
-#define SRAM_SIZE 2
+#define ADC_DATA_BASE_ADDR 0xF9000000U    /* Base address should be aligned by 1MB */
+#define ADC_DATA_SIZE 2
 
-static void init_sram_config(void)
+static void init_parallel_adc_config(void)
 {
     ppi_async_sram_config_t config;
     ppi_clk_pin_config_t clk_config;
 
-    config.base_address = SRAM_BASE_ADDR;
-    config.size_in_byte = SRAM_SIZE;
+    config.base_address = ADC_DATA_BASE_ADDR;
+    config.size_in_byte = ADC_DATA_SIZE;
     config.port_size = ppi_port_size_16bits;
     config.ad_mux_mode = false;
     config.cs_valid_polarity = false;
@@ -33,7 +33,7 @@ static void init_sram_config(void)
     config.reh_in_ns = 0;
     config.wel_in_ns = 20;
     config.weh_in_ns = 0;
-    ppi_config_async_sram(HPM_PPI, 0, 0, &config);
+    ppi_config_async_sram(HPM_PPI, BOARD_PPI_ADC_CS_INDEX, 8, &config);
 
     clk_config.cycle_num = 6;
     clk_config.high_num = 3;
@@ -45,7 +45,7 @@ static void init_sram_config(void)
 
 static void read_adc_data(void)
 {
-    uint16_t *data_ptr = (uint16_t *)SRAM_BASE_ADDR;
+    uint16_t *data_ptr = (uint16_t *)ADC_DATA_BASE_ADDR;
 
     printf("adc data: %#x\n", (*data_ptr) & 0x03FF);
 }
@@ -54,7 +54,7 @@ int main(void)
 {
     board_init();
     init_ppi_pins();
-    init_sram_config();
+    init_parallel_adc_config();
 
     printf("ppi parallel adc example\n");
 

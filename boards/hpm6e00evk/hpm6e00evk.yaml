@@ -27,3 +27,5 @@ board:
       - board_motor_control
       - board_puart_pin
       - board_gpt_pin
+      - board_enet_pps_output_pin
+      - board_enet_pps_input_pin

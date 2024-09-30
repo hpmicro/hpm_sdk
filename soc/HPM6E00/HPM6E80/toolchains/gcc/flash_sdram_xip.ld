@@ -281,8 +281,8 @@ SECTIONS
 
     .fast_ram.bss (NOLOAD) : {
         . = ALIGN(8);
-        __fast_ram_bss_start__ = .;
         KEEP(*(.fast_ram))
+        __fast_ram_bss_start__ = .;
         KEEP(*(.fast_ram.bss))
         __fast_ram_bss_end__ = .;
         . = ALIGN(8);

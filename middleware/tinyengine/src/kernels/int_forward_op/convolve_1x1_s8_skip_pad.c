@@ -94,7 +94,7 @@ tinyengine_status convolve_1x1_s8_skip_pad(const q7_t *input, const uint16_t inp
             q7_q15_offset_reordered_ele(src, dst) q7_q15_offset_reordered_ele(src, dst) cnt--;
         }
 
-        out = mat_mult_kernel_s8_s16_reordered(kernel, two_column_buffer, output_ch, output_shift, output_mult,
+        out = hpm_nn_mat_mult_kernel_s8_s16_reordered_8mul(kernel, two_column_buffer, output_ch, output_shift, output_mult,
                                                (q7_t)out_offset, out_activation_min, out_activation_max,
                                                input_ch * DIM_KER_Y * DIM_KER_X, bias, out);
     }

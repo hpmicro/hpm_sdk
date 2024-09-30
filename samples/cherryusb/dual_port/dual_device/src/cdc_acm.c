@@ -6,7 +6,7 @@
  */
 
 #include "usbd_core.h"
-#include "usbd_cdc.h"
+#include "usbd_cdc_acm.h"
 
 /*!< endpoint address */
 #define CDC_IN_EP  0x81

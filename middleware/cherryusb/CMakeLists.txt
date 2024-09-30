@@ -12,20 +12,18 @@ sdk_inc(class/hub)
 sdk_inc(class/wireless)
 sdk_inc(port/ehci)
 
-if(CONFIG_USB_DEVICE_CDC_ACM OR CONFIG_USB_DEVICE_CDC_ECM)
-  set(CONFIG_USB_DEVICE_CDC 1)
-endif()
-
-if(CONFIG_USB_DEVICE_CDC OR CONFIG_USB_DEVICE_HID OR CONFIG_USB_DEVICE_MSC
-    OR CONFIG_USB_DEVICE_AUDIO OR CONFIG_USB_DEVICE_VIDEO OR CONFIG_USB_DEVICE_RNDIS
-    OR CONFIG_USB_DEVICE_MIDI)
+if(CONFIG_USB_DEVICE_CDC OR CONFIG_USB_DEVICE_CDC_ACM OR CONFIG_USB_DEVICE_CDC_ECM
+    OR CONFIG_USB_DEVICE_HID OR CONFIG_USB_DEVICE_MSC
+    OR CONFIG_USB_DEVICE_AUDIO OR CONFIG_USB_DEVICE_VIDEO
+    OR CONFIG_USB_DEVICE_RNDIS OR CONFIG_USB_DEVICE_MIDI)
   set(CONFIG_CHERRYUSB_DEVICE 1)
 endif()
 
 if(CONFIG_CHERRYUSB_DEVICE)
   sdk_src(core/usbd_core.c)
   sdk_src(port/hpm/usb_dc_hpm.c)
-  sdk_src_ifdef(CONFIG_USB_DEVICE_CDC class/cdc/usbd_cdc.c)
+  sdk_src_ifdef(CONFIG_USB_DEVICE_CDC class/cdc/usbd_cdc_acm.c)  ## legacy for old version
+  sdk_src_ifdef(CONFIG_USB_DEVICE_CDC_ACM class/cdc/usbd_cdc_acm.c)
   sdk_src_ifdef(CONFIG_USB_DEVICE_CDC_ECM class/cdc/usbd_cdc_ecm.c)
   sdk_src_ifdef(CONFIG_USB_DEVICE_HID class/hid/usbd_hid.c)
   sdk_src_ifdef(CONFIG_USB_DEVICE_MSC class/msc/usbd_msc.c)
@@ -49,6 +47,9 @@ if(CONFIG_CHERRYUSB_HOST)
   sdk_src_ifdef(CONFIG_USB_HOST_HID class/hid/usbh_hid.c)
   sdk_src_ifdef(CONFIG_USB_HOST_MSC class/msc/usbh_msc.c)
   sdk_src_ifdef(CONFIG_USB_HOST_RNDIS class/wireless/usbh_rndis.c)
+  if(CONFIG_USB_HOST_CDC_ECM OR CONFIG_USB_HOST_RNDIS)
+    sdk_src(platform/none/usbh_lwip.c)
+  endif()
 endif()
 
 if(CONFIG_FREERTOS)

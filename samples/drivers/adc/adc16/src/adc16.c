@@ -26,6 +26,8 @@
 #define APP_ADC16_CORE BOARD_RUNNING_CORE
 #endif
 
+#define APP_ADC16_CLOCK_BUS  BOARD_APP_ADC16_CLK_BUS
+
 #define APP_ADC16_CH_SAMPLE_CYCLE            (20U)
 #define APP_ADC16_CH_WDOG_EVENT              (1 << BOARD_APP_ADC16_CH_1)
 
@@ -278,7 +280,7 @@ void init_trigger_target(ADC16_Type *ptr, uint8_t trig_ch)
     pmt_cfg.inten[pmt_cfg.trig_len - 1] = true;
 
     adc16_set_pmt_config(ptr, &pmt_cfg);
-    adc16_set_pmt_queue_enable(ptr, trig_ch, true);
+    adc16_enable_pmt_queue(ptr, trig_ch);
 }
 
 hpm_stat_t init_common_config(adc16_conversion_mode_t conv_mode)
@@ -291,7 +293,7 @@ hpm_stat_t init_common_config(adc16_conversion_mode_t conv_mode)
     cfg.res            = adc16_res_16_bits;
     cfg.conv_mode      = conv_mode;
     cfg.adc_clk_div    = adc16_clock_divider_4;
-    cfg.sel_sync_ahb   = (clk_adc_src_ahb0 == clock_get_source(BOARD_APP_ADC16_CLK_NAME)) ? true : false;
+    cfg.sel_sync_ahb   = (APP_ADC16_CLOCK_BUS == clock_get_source(BOARD_APP_ADC16_CLK_NAME)) ? true : false;
 
     if (cfg.conv_mode == adc16_conv_mode_sequence ||
         cfg.conv_mode == adc16_conv_mode_preemption) {
@@ -560,7 +562,7 @@ bool abort_handler(uint8_t conv_mode)
         }
 
         if (conv_mode == adc16_conv_mode_preemption) {
-            adc16_set_pmt_queue_enable(BOARD_APP_ADC16_BASE, APP_ADC16_PMT_TRIG_CH, false);
+            adc16_disable_pmt_queue(BOARD_APP_ADC16_BASE, APP_ADC16_PMT_TRIG_CH);
         }
 
         stop_trigger_source(APP_ADC16_HW_TRIG_SRC);

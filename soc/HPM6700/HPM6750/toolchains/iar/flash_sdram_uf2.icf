@@ -79,7 +79,6 @@ initialize by copy with packing=auto        { section .noncacheable.init, sectio
 initialize by copy with packing=auto        { section .fast, section .fast.*, section .*.fast, section .*.fast.* };               // "RAM Code" sections
 initialize by copy with packing=none        { section .vector_table };
 initialize by copy with packing=none        { section .isr_vector };
-initialize by copy with packing=auto        { section .usbh_class_info };
 initialize by copy                          { readwrite };
 
 /* Placement */
@@ -89,13 +88,13 @@ place in XPI0                               { block rtthread_FSymTab,
                                               block rtthread_VSymTab,
                                               block rtthread_rti_fn,
                                               block rtthread_RTMSymTab,
+                                              block cherryusb_usbh_class_info,
                                               readonly
                                             };
 place at start of ILM                       { block vectors };
 place in ILM                                {
                                               section .fast, section .fast.*,                       // "ramfunc" section
                                             };
-place in SDRAM                              { block cherryusb_usbh_class_info };
 place in SDRAM                              { block framebuffer };
 place in AXI_SRAM | SDRAM                   {
                                               block RW_DATA

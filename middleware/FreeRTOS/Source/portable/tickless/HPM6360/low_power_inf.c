@@ -16,7 +16,6 @@ __attribute__( ( weak ) ) void soc_lowpower_init(void)
 {
     bcfg_vbg_enable_lp_mode(HPM_BCFG);
     pcfg_dcdc_set_lp_current_limit(HPM_PCFG, pcfg_dcdc_lp_current_limit_250ma, false);
-    pcfg_dcdc_set_current_hys_range(HPM_PCFG, pcfg_dcdc_current_hys_25mv);
 }
 
 /* This function do necessary things before entering lowpower mode, and call the user custom code to allow user

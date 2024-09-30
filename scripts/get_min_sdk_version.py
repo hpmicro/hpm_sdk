@@ -8,7 +8,7 @@ MIN_SDK_VERSION="minimum_sdk_version"
 
 def get_min_sdk_version(input_yml):
     min_version = ""
-    with open(input_yml, "r") as stream:
+    with open(input_yml, "r", encoding="utf-8", errors="ignore") as stream:
         try:
             info = yaml.safe_load(stream)
             if not info is None and MIN_SDK_VERSION in info.keys() and info[MIN_SDK_VERSION] is not None:

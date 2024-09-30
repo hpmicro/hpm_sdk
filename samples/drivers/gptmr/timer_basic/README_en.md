@@ -11,5 +11,15 @@ None
 
 ## Running the example
 
-Running the example,  and onboard LED will blink at regular intervals.
+Running the example, displaying the following message on the serial terminal and onboard LED will blink at regular intervals.
+
+```console
+gptmr timer basic test
+timer tick 1000 ms
+timer tick 1000 ms
+timer tick 1000 ms
+timer tick 1000 ms
+timer tick 1000 ms
+
+```
 

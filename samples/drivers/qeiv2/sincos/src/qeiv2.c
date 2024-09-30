@@ -28,10 +28,11 @@
 #endif
 
 #define PWM_FREQ 30000
+#define RECORD_DATA_SIZE 1000
 
 static volatile bool s_qei_data_ready;
 static volatile uint32_t z, ph, pos, ang;
-static uint32_t s_record_data[5][500];
+static uint32_t s_record_data[5][RECORD_DATA_SIZE];
 volatile ATTR_PLACE_AT_NONCACHEABLE uint32_t s_cos_adc_data[ADC_SOC_PMT_MAX_DMA_BUFF_LEN_IN_4BYTES];
 volatile ATTR_PLACE_AT_NONCACHEABLE uint32_t s_sin_adc_data[ADC_SOC_PMT_MAX_DMA_BUFF_LEN_IN_4BYTES];
 
@@ -56,15 +57,16 @@ int main(void)
 
     printf("qeiv2 sincos encoder example\n");
 
-    for (uint16_t i = 0; i < 500; i++) {
+    for (uint16_t i = 0; i < RECORD_DATA_SIZE; i++) {
         s_record_data[0][i] = s_cos_adc_data[0] & 0xFFFF;
         s_record_data[1][i] = s_sin_adc_data[0] & 0xFFFF;
         s_record_data[2][i] = qeiv2_get_postion(APP_QEI_BASE);
         s_record_data[3][i] = qeiv2_get_angle(APP_QEI_BASE);
         s_record_data[4][i] = qeiv2_get_phase_cnt(APP_QEI_BASE);
+        board_delay_us(20);
     }
 
-    for (uint16_t i = 0; i < 500; i++) {
+    for (uint16_t i = 0; i < RECORD_DATA_SIZE; i++) {
         printf("ch0:%#x, ch1:%#x, pos:%#x, ang:%#x, ph:%#x\n", s_record_data[0][i], s_record_data[1][i], s_record_data[2][i], s_record_data[3][i],
                s_record_data[4][i]);
     }
@@ -209,13 +211,13 @@ static void adc_init(void)
     pmt_cfg.trig_ch = ADC16_CONFIG_TRG0A;
     pmt_cfg.trig_len = 1;
     adc16_set_pmt_config(BOARD_APP_QEI_ADC_COS_BASE, &pmt_cfg);
-    adc16_set_pmt_queue_enable(BOARD_APP_QEI_ADC_COS_BASE, pmt_cfg.trig_ch, true);
+    adc16_enable_pmt_queue(BOARD_APP_QEI_ADC_COS_BASE, pmt_cfg.trig_ch);
     pmt_cfg.adc_ch[0] = BOARD_APP_QEI_ADC_SIN_CHN;
     pmt_cfg.inten[0] = false;
     pmt_cfg.trig_ch = ADC16_CONFIG_TRG0A;
     pmt_cfg.trig_len = 1;
     adc16_set_pmt_config(BOARD_APP_QEI_ADC_SIN_BASE, &pmt_cfg);
-    adc16_set_pmt_queue_enable(BOARD_APP_QEI_ADC_SIN_BASE, pmt_cfg.trig_ch, true);
+    adc16_enable_pmt_queue(BOARD_APP_QEI_ADC_SIN_BASE, pmt_cfg.trig_ch);
 
     /* Set DMA start address for preemption mode */
     adc16_init_pmt_dma(BOARD_APP_QEI_ADC_COS_BASE, (uint32_t)&s_cos_adc_data[0]);
@@ -245,6 +247,8 @@ static void qeiv2_init(void)
     adc_config.param0 = 0;
     adc_config.param1 = 0x4000;
     qeiv2_config_adcy(APP_QEI_BASE, &adc_config, true);
+
+    /* Note: adc param0 and param1 can be also config by this API: qeiv2_config_adcx_adcy_param() */
 
     qeiv2_reset_counter(APP_QEI_BASE);
 

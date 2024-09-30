@@ -279,7 +279,7 @@ void mipi_dsi_init(MIPI_DSI_Type *ptr, mipi_dsi_config_t *cfg)
     mipi_dsi_config_format(ptr, cfg->pixel_format);
     ptr->DPI_VCID = MIPI_DSI_DPI_VCID_DPI_VCID_SET(cfg->channel);
     ptr->DPI_LP_CMD_TIM = MIPI_DSI_DPI_LP_CMD_TIM_OUTVACT_LPCMD_TIME_SET(4) |
-                            MIPI_DSI_DPI_LP_CMD_TIM_OUTVACT_LPCMD_TIME_SET(4);
+                            MIPI_DSI_DPI_LP_CMD_TIM_INVACT_LPCMD_TIME_SET(4);
 
     val = MIPI_DSI_PCKHDL_CFG_BTA_EN_MASK |
             MIPI_DSI_PCKHDL_CFG_EOTP_TX_EN_MASK |
@@ -307,8 +307,8 @@ void mipi_dsi_init(MIPI_DSI_Type *ptr, mipi_dsi_config_t *cfg)
 
     mipi_dsi_video_para_config(ptr, cfg);
 
-    ptr->PHY_TMR_CFG = MIPI_DSI_PHY_TMR_CFG_PHY_HS2LP_TIME_SET(0x40) |
-                        MIPI_DSI_PHY_TMR_CFG_PHY_LP2HS_TIME_SET(0x40);
+    ptr->PHY_TMR_CFG = MIPI_DSI_PHY_TMR_CFG_PHY_HS2LP_TIME_SET(0x14) |
+                        MIPI_DSI_PHY_TMR_CFG_PHY_LP2HS_TIME_SET(0x10);
     ptr->PHY_TMR_RD = 10000;
     ptr->PHY_TMR_LPCLK_CFG = MIPI_DSI_PHY_TMR_LPCLK_CFG_PHY_CLKHS2LP_TIME_SET(0x40) |
                                 MIPI_DSI_PHY_TMR_LPCLK_CFG_PHY_CLKLP2HS_TIME_SET(0x40);

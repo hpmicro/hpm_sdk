@@ -20,22 +20,32 @@
 
 static void timer_config(void);
 
+static bool timer_flag;
+
 void tick_ms_isr(void)
 {
     if (gptmr_check_status(APP_BOARD_GPTMR, GPTMR_CH_RLD_STAT_MASK(APP_BOARD_GPTMR_CH))) {
         gptmr_clear_status(APP_BOARD_GPTMR, GPTMR_CH_RLD_STAT_MASK(APP_BOARD_GPTMR_CH));
         board_led_toggle();
+        timer_flag = true;
     }
 }
 SDK_DECLARE_EXT_ISR_M(APP_BOARD_GPTMR_IRQ, tick_ms_isr);
 
 int main(void)
 {
+    timer_flag = false;
     board_init();
     board_init_led_pins();
     init_gptmr_pins(APP_BOARD_GPTMR);
     printf("gptmr timer basic test\n");
     timer_config();
+    while (1) {
+        if (timer_flag == true) {
+            timer_flag = false;
+            printf("timer tick %d ms\n", APP_TICK_MS);
+        }
+    }
 }
 
 static void timer_config(void)

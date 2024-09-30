@@ -253,7 +253,7 @@ typedef struct mcan_rx_message_struct {
         uint16_t dlc: 4;                            /*!< Data Length Code */
         uint16_t bitrate_switch: 1;                 /*!< Bit rate switch flag */
         uint16_t canfd_frame: 1;                    /*!< CANFD Frame flag */
-        uint16_t : 1;
+        uint16_t : 2;
         uint16_t filter_index: 7;                   /*!< CAN filter index */
         uint16_t accepted_non_matching_frame: 1;    /*!< Accept non-matching Frame flag */
     };

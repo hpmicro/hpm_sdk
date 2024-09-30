@@ -34,6 +34,18 @@ typedef enum {
 } mcl_svpwm_sector_t;
 
 /**
+ * @brief Results of offline parameter testing
+ *
+ */
+typedef struct {
+    float rs;
+    float ld;
+    float lq;
+    float ls;
+    float flux;
+} mcl_offline_param_detection_result_t;
+
+/**
  * @brief Configuration data for pid
  *
  */
@@ -125,6 +137,43 @@ typedef struct {
 } mcl_control_smc_t;
 
 /**
+ * @brief Offline Detection Configuration
+ *
+ */
+typedef struct {
+    float current_half_rated; /**< Half the rated current */
+    float ud_delta; /**< Measurement of resistance, the value of each voltage increment, the use of smaller values of error is small, the use of larger values, speed */
+    float vbus; /**< power supply voltage */
+    float inductor_detection_times; /**< Number of times to detect the inductor, The time is not easy to be too large, usually 1ms*/
+    float flux_detection_times; /**< Number of times to detect the flux, The longer the time, the more accurate*/
+    float delay_times;  /**< Intervals between different tests, Ensure that the current drain is clean to prevent interference with the next item. */
+    float detection_loop_ts;    /**< Recall interval for detecting loops */
+    float lowpass_k; /**< Low-pass filter coefficients, used when solving for magnetic chains */
+} mcl_control_offline_param_detection_cfg_t;
+
+/**
+ * @brief Offline Detection Data
+ *
+ */
+typedef struct {
+    mcl_control_offline_param_detection_cfg_t cfg;
+    mcl_offline_param_detection_result_t result;
+    float tick_count;
+    struct {
+        float ud_mem;
+    } rs;
+    struct {
+        float is_last;
+    } ls;
+    struct {
+        float val0_mem;
+        float val1_mem;
+        float val_filter;
+        float val_filter_mem;
+    } flux;
+} mcl_control_offline_param_detection_t;
+
+/**
  * @brief pwm duty cycle
  *
  */
@@ -169,6 +218,12 @@ typedef struct {
                 float deadtime, float ts, mcl_control_dead_area_pwm_offset_t *pwm_out);
     void (*smc_init)(mcl_control_smc_t *smc_cfg);
     void (*smc_process)(mcl_control_smc_t *smc_cfg, float ualpha, float ubeta, float ialpha, float ibeta);
+    hpm_mcl_stat_t (*offline_param_detection_rs)(mcl_control_offline_param_detection_t *detection, float ialpha, float ibeta, float *ud, float *uq);
+    hpm_mcl_stat_t (*offline_param_detection_ld)(mcl_control_offline_param_detection_t *detection, float ialpha, float ibeta, float *ud, float *uq);
+    hpm_mcl_stat_t (*offline_param_detection_lq)(mcl_control_offline_param_detection_t *detection, float ialpha, float ibeta, float *ud, float *uq);
+    hpm_mcl_stat_t (*offline_param_detection_ls)(mcl_control_offline_param_detection_t *detection);
+    hpm_mcl_stat_t (*offline_param_detection_flux)(mcl_control_offline_param_detection_t *detection, float ialpha, float ibeta, float ualpha, float ubeta, float *ref_d, float *ref_q);
+    hpm_mcl_stat_t (*offline_param_detection_init)(mcl_control_offline_param_detection_t *detection);
 } mcl_control_method_t;
 
 /**
@@ -192,6 +247,7 @@ typedef struct {
     mcl_control_pid_t position_pid_cfg;
     mcl_control_dead_area_compensation_t dead_area_compensation_cfg;
     mcl_control_smc_t smc_cfg;
+    mcl_control_offline_param_detection_t offline_param_detection_cfg;
 } mcl_control_cfg_t;
 
 /**

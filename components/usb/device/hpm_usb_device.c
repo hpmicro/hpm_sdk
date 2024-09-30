@@ -91,15 +91,14 @@ bool usb_device_init(usb_device_handle_t *handle, uint32_t int_mask)
 
 void usb_device_deinit(usb_device_handle_t *handle)
 {
-    /* Clear memroy */
-    memset(handle->dcd_data, 0, sizeof(dcd_data_t));
-
-    usb_dcd_deinit(handle->regs);
-
     for (uint32_t i = 0; i < USB_SOC_DCD_MAX_ENDPOINT_COUNT; i++) {
         usb_dcd_edpt_close(handle->regs, (i | (usb_dir_in  << 0x07)));
         usb_dcd_edpt_close(handle->regs, (i | (usb_dir_out << 0x07)));
     }
+
+    usb_dcd_deinit(handle->regs);
+
+    memset(handle->dcd_data, 0, sizeof(dcd_data_t));
 }
 
 uint32_t usb_device_status_flags(usb_device_handle_t *handle)

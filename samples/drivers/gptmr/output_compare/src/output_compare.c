@@ -15,7 +15,6 @@
 #define APP_BOARD_GPTMR_CH            BOARD_GPTMR_PWM_CHANNEL
 #define APP_BOARD_GPTMR_IRQ           BOARD_GPTMR_PWM_IRQ
 #define APP_BOARD_GPTMR_CLOCK         BOARD_GPTMR_PWM_CLK_NAME
-#define APP_BOARD_GPTMR_CMP           (0)
 #define APP_BOARD_GPTMR_CMPINIT       (0)         /*it's mean compare output start state, now is low*/
 #define APP_BOARD_RELOAD_MS           (1000)
 #define APP_BOARD_CMP_MS              (300)
@@ -27,8 +26,8 @@ volatile uint32_t count;
 
 void isr_gptmr(void)
 {
-    if (gptmr_check_status(APP_BOARD_GPTMR, GPTMR_CH_CMP_STAT_MASK(APP_BOARD_GPTMR_CH, APP_BOARD_GPTMR_CMP))) {
-        gptmr_clear_status(APP_BOARD_GPTMR, GPTMR_CH_CMP_STAT_MASK(APP_BOARD_GPTMR_CH, APP_BOARD_GPTMR_CMP));
+    if (gptmr_check_status(APP_BOARD_GPTMR, GPTMR_CH_CMP_STAT_MASK(APP_BOARD_GPTMR_CH, 0))) {
+        gptmr_clear_status(APP_BOARD_GPTMR, GPTMR_CH_CMP_STAT_MASK(APP_BOARD_GPTMR_CH, 0));
         time_is_up = true;
         count = gptmr_channel_get_counter(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH, gptmr_counter_type_normal);
     }
@@ -59,10 +58,11 @@ static void output_compare_config(void)
     gptmr_channel_get_default_config(APP_BOARD_GPTMR, &config);
     gptmr_freq = clock_get_frequency(APP_BOARD_GPTMR_CLOCK);
     config.reload = gptmr_freq / 1000 * APP_BOARD_RELOAD_MS;
-    config.cmp[APP_BOARD_GPTMR_CMP] = gptmr_freq / 1000 * APP_BOARD_CMP_MS;
+    config.cmp[0] = gptmr_freq / 1000 * APP_BOARD_CMP_MS;
+    config.cmp[1] = config.reload;
     config.cmp_initial_polarity_high = APP_BOARD_GPTMR_CMPINIT;
 
-    gptmr_enable_irq(APP_BOARD_GPTMR, GPTMR_CH_CMP_IRQ_MASK(APP_BOARD_GPTMR_CH, APP_BOARD_GPTMR_CMP));
+    gptmr_enable_irq(APP_BOARD_GPTMR, GPTMR_CH_CMP_IRQ_MASK(APP_BOARD_GPTMR_CH, 0));
     gptmr_channel_config(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH, &config, false);
     gptmr_channel_reset_count(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH);
     gptmr_start_counter(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH);

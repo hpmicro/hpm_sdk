@@ -528,7 +528,7 @@ typedef struct {
 /*
  * OL_THRE (RW)
  *
- * overload for threshold for lod power mode
+ * overload threshold in low power mode
  */
 #define PCFG_DCDC_MISC_OL_THRE_MASK (0x300U)
 #define PCFG_DCDC_MISC_OL_THRE_SHIFT (8U)
@@ -538,7 +538,7 @@ typedef struct {
 /*
  * OL_HYST (RW)
  *
- * current hysteres range
+ * voltage ripple threshold in low power mode
  * 0: 12.5mV
  * 1: 25mV
  */

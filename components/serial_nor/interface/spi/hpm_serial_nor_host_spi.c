@@ -16,6 +16,10 @@
 #include "board.h"
 #include "hpm_serial_nor_host.h"
 
+#ifndef HPM_SERIAL_NOR_SPI_RETRY_COUNT
+#define HPM_SERIAL_NOR_SPI_RETRY_COUNT         (0xFFFFFF)
+#endif
+
 static hpm_stat_t spi_nor_rx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_ptr,
                                         uint32_t dst, uint8_t data_width, uint32_t size, uint8_t burst_size);
 
@@ -192,7 +196,7 @@ static hpm_stat_t hpm_spi_transfer_via_dma(hpm_serial_nor_host_t *host, spi_cont
                                             uint8_t cmd, uint32_t addr,
                                             uint8_t *buf, uint32_t len, bool is_read)
 {
-    hpm_stat_t stat;
+    hpm_stat_t stat = status_success;
     uint32_t data_width = 0;
     uint8_t burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
     uint32_t timeout_count = 0;
@@ -205,7 +209,7 @@ static hpm_stat_t hpm_spi_transfer_via_dma(hpm_serial_nor_host_t *host, spi_cont
         } else {
             dma_send_size = ((len >> 2) + 1) << 2;
         }
-        stat = spi_setup_dma_transfer((SPI_Type *)host->host_param.param.host_base, control_config, &cmd, &addr, 0, len);
+        HPM_CHECK_RET(spi_setup_dma_transfer((SPI_Type *)host->host_param.param.host_base, control_config, &cmd, &addr, 0, len));
         stat = spi_nor_rx_trigger_dma((DMA_Type *)host->host_param.param.dma_control.dma_base,
                                 host->host_param.param.dma_control.rx_dma_ch,
                                 (SPI_Type *)host->host_param.param.host_base,
@@ -214,18 +218,18 @@ static hpm_stat_t hpm_spi_transfer_via_dma(hpm_serial_nor_host_t *host, spi_cont
                                 dma_send_size, burst_size);
         while (spi_is_active((SPI_Type *)host->host_param.param.host_base)) {
             timeout_count++;
-            if (timeout_count >= 0xFFFFFF) {
+            if (timeout_count >= HPM_SERIAL_NOR_SPI_RETRY_COUNT) {
                 stat = status_timeout;
                 break;
             }
         }
         timeout_count = 0;
-        if ((dma_check_transfer_status(
-                    (DMA_Type *)host->host_param.param.dma_control.dma_base,
-                    host->host_param.param.dma_control.rx_dma_ch) &&
-                DMA_CHANNEL_STATUS_TC) == 0) {
-            dma_disable_channel((DMA_Type *)host->host_param.param.dma_control.dma_base, host->host_param.param.dma_control.rx_dma_ch);
-            dma_reset((DMA_Type *)host->host_param.param.dma_control.dma_base);
+        while ((dma_check_transfer_status((DMA_Type *)host->host_param.param.dma_control.dma_base, host->host_param.param.dma_control.rx_dma_ch) & DMA_CHANNEL_STATUS_TC) == 0) {
+            timeout_count++;
+            if (timeout_count >= HPM_SERIAL_NOR_SPI_RETRY_COUNT) {
+                stat = status_timeout;
+                break;
+            }
         }
     } else {
         if ((len % 4) == 0) {
@@ -236,7 +240,7 @@ static hpm_stat_t hpm_spi_transfer_via_dma(hpm_serial_nor_host_t *host, spi_cont
         }
         spi_set_tx_fifo_threshold((SPI_Type *)host->host_param.param.host_base, 3);
         burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
-        stat = spi_setup_dma_transfer((SPI_Type *)host->host_param.param.host_base, control_config, &cmd, &addr, len, 0);
+        HPM_CHECK_RET(spi_setup_dma_transfer((SPI_Type *)host->host_param.param.host_base, control_config, &cmd, &addr, len, 0));
 
         stat = spi_nor_tx_trigger_dma((DMA_Type *)host->host_param.param.dma_control.dma_base,
                                         host->host_param.param.dma_control.tx_dma_ch,
@@ -246,7 +250,7 @@ static hpm_stat_t hpm_spi_transfer_via_dma(hpm_serial_nor_host_t *host, spi_cont
 
         while (spi_is_active((SPI_Type *)host->host_param.param.host_base)) {
             timeout_count++;
-            if (timeout_count >= 0xFFFFFF) {
+            if (timeout_count >= HPM_SERIAL_NOR_SPI_RETRY_COUNT) {
                 stat = status_timeout;
                 break;
             }
@@ -345,6 +349,9 @@ static hpm_stat_t read(void *ops, hpm_serial_nor_transfer_seq_t *cmd_seq)
         if ((host->host_param.flags & SERIAL_NOR_HOST_SUPPORT_DMA) && (cmd_seq->use_dma == 1)) {
             spi_enable_data_merge((SPI_Type *)host->host_param.param.host_base);
             stat = hpm_spi_transfer_via_dma(host, &control_config, cmd_seq->cmd_phase.cmd, read_start, dst_8, read_size, true);
+            if (stat != status_success) {
+                break;
+            }
         } else {
             stat = spi_transfer((SPI_Type *)host->host_param.param.host_base, &control_config, &cmd_seq->cmd_phase.cmd,
                                     &read_start, NULL, 0, dst_8, read_size);

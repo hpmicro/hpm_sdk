@@ -85,6 +85,8 @@ static inline void sdxc_select_cardclk_delay_source(SDXC_Type *base, bool loopba
  */
 static inline void sdxc_set_cardclk_delay_chain(SDXC_Type *base, uint32_t number_of_delaycells)
 {
+    (void) base;
+    (void) number_of_delaycells;
 }
 
 /**
@@ -95,6 +97,8 @@ static inline void sdxc_set_cardclk_delay_chain(SDXC_Type *base, uint32_t number
  */
 static inline void sdxc_set_data_strobe_delay(SDXC_Type *base, uint8_t num_of_delaycells)
 {
+    (void) base;
+    (void) num_of_delaycells;
 }
 
 static inline uint32_t sdxc_get_default_strobe_delay(SDXC_Type *base)

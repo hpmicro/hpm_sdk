@@ -16,7 +16,7 @@ extern uint32_t __app_offset__[];
 extern uint32_t __fw_size__[];
 
 #define FW_SIZE (32768)
-__attribute__ ((section(".fw_info_table"))) const fw_info_table_t fw_info = {
+__attribute__ ((section(".fw_info_table"), used)) const fw_info_table_t fw_info = {
     (uint32_t)__app_offset__,   /* offset */
     (uint32_t)__fw_size__,      /* size */
     0,                          /* flags */
@@ -29,7 +29,7 @@ __attribute__ ((section(".fw_info_table"))) const fw_info_table_t fw_info = {
     {0},                          /* iv */
 };
 
-__attribute__ ((section(".boot_header"))) const boot_header_t header = {
+__attribute__ ((section(".boot_header"), used)) const boot_header_t header = {
     HPM_BOOTHEADER_TAG,                         /* tag */
     0x10,                                       /* version*/
     sizeof(header) + sizeof(fw_info),

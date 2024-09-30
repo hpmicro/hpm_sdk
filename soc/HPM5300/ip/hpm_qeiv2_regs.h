@@ -84,7 +84,7 @@ typedef struct {
     __W  uint32_t PHASE_UPDATE;                /* 0x284: phase_update */
     __RW uint32_t POSITION;                    /* 0x288: position */
     __W  uint32_t POSITION_UPDATE;             /* 0x28C: position_update */
-    __R  uint32_t ANGLE;                       /* 0x290:  */
+    __R  uint32_t ANGLE;                       /* 0x290: angle */
     __RW uint32_t POS_TIMEOUT;                 /* 0x294: pos_timeout */
 } QEIV2_Type;
 

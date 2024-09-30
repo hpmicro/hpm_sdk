@@ -130,19 +130,6 @@ char arm_convolve_s8_4col(const q7_t *input,
                 /* Computation is filed for every 2 columns */
                 if (four_column_buf == buffer_a + 4 * input_ch * kernel_y * kernel_x)
                 {
-                    out =
-                        hpm_nn_mat_mult_kernel_s8_s16_4col(kernel,
-                                                      buffer_a,
-                                                      output_ch,
-                                                      output_shift,
-                                                      output_mult,
-                                                      out_offset,
-                                                      out_activation_min,
-                                                      out_activation_max,
-                                                      input_ch * kernel_y * kernel_x,
-                                                      bias,
-                                                      out);
-
                     /* counter reset */
                     four_column_buf = buffer_a;
                 }
@@ -152,19 +139,6 @@ char arm_convolve_s8_4col(const q7_t *input,
         q15_t *four_column_buf_mid = buffer_a;
 
         if (four_column_buf >= four_column_buf_mid + 2 * input_ch * kernel_y * kernel_x) {
-            out =
-                hpm_nn_mat_mult_kernel_s8_s16(kernel,
-                                              four_column_buf_mid,
-                                              output_ch,
-                                              output_shift,
-                                              output_mult,
-                                              out_offset,
-                                              out_activation_min,
-                                              out_activation_max,
-                                              input_ch * kernel_y * kernel_x,
-                                              bias,
-                                              out);
-
             four_column_buf_mid = buffer_a + 2 * input_ch * kernel_y * kernel_x;
 
         }

@@ -7,7 +7,7 @@
 ## Configurations
 
 - Use a signal generator to generate a set of sine and cosine waves, with a frequency of 1kHz, a peak to peak value of 3V, and a center voltage offset of 1.65V. The phase difference between the two is 90°.
-- Connect sine signal to CH4 of ADC0 and cosine signal to CH5 of ADC1.
+- Connect sine signal to QEIV2 Sin pin, and cosine signal to QEIV2 Cos pin, as detailed in the development board documentation[QEIV2 Sin/Cos Pin](QEIV2_Sin/Cos_Pin).
 
 ## Running the Demo
 

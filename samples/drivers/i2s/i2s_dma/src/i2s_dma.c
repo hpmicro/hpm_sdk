@@ -34,9 +34,9 @@
 #define CODEC_I2S_CLK_NAME   BOARD_APP_I2S_CLK_NAME
 #define CODEC_I2S_DATA_LINE  BOARD_APP_I2S_DATA_LINE
 
-#define TEST_DMA             BOARD_APP_HDMA
+#define TEST_DMA             BOARD_APP_XDMA
 #define TEST_DMA_CHANNEL     (2U)
-#define TEST_I2S_DMA_IRQ     BOARD_APP_HDMA_IRQ
+#define TEST_I2S_DMA_IRQ     BOARD_APP_XDMA_IRQ
 #define TEST_DMA_SRC_REQ     BOARD_APP_I2S_TX_DMA_REQ
 #define TEST_DMAMUX_CH       DMA_SOC_CHN_TO_DMAMUX_CHN(TEST_DMA, TEST_DMA_CHANNEL)
 
@@ -187,7 +187,7 @@ hpm_stat_t test_i2s_dma_play(audio_data_t *audio_data)
     hpm_stat_t stat;
 
     dmamux_config(BOARD_APP_DMAMUX, TEST_DMAMUX_CH, TEST_DMA_SRC_REQ, true);
-    intc_m_enable_irq_with_priority(BOARD_APP_HDMA_IRQ, 1);
+    intc_m_enable_irq_with_priority(BOARD_APP_XDMA_IRQ, 1);
 
     for (uint8_t i = 0; i < 10; i++) {
         dma_transfer_done = false;

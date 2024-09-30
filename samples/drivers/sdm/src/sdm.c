@@ -22,6 +22,7 @@
 /* trgmux info */
 #define TEST_SDM_TRGM                     BOARD_SDM_TRGM
 #define TEST_SDM_TRGM_GPTMR               BOARD_SDM_TRGM_GPTMR
+#define TEST_SDM_TRGM_GPTMR_CLK           BOARD_SDM_TRGM_GPTMR_CLK
 #define TEST_SDM_TRGM_GPTMR_CH            BOARD_SDM_TRGM_GPTMR_CH
 #define TEST_SDM_TRGM_INPUT_SRC           BOARD_SDM_TRGM_INPUT_SRC
 #define TEST_SDM_TRGM_OUTPUT_DST          BOARD_SDM_TRGM_OUTPUT_DST
@@ -235,8 +236,9 @@ void test_sdm_sync_filter_receive(void)
     /* config gptmr */
     gptmr_channel_config_t config;
     gptmr_channel_get_default_config(TEST_SDM_TRGM_GPTMR, &config);
-    config.reload = 0xFFFFFFFFUL;
-    config.cmp[0] = 0x20000;
+    config.reload = 0xFFFFFFFEUL;
+    config.cmp[0] = clock_get_frequency(TEST_SDM_TRGM_GPTMR_CLK); /* 1s */
+    config.cmp[1] = config.reload;
     config.cmp_initial_polarity_high = false;
     gptmr_channel_config(TEST_SDM_TRGM_GPTMR, TEST_SDM_TRGM_GPTMR_CH, &config, false);
     gptmr_start_counter(TEST_SDM_TRGM_GPTMR, TEST_SDM_TRGM_GPTMR_CH);

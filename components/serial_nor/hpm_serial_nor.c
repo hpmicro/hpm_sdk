@@ -815,7 +815,7 @@ hpm_stat_t hpm_serial_nor_erase_sector_blocking(hpm_serial_nor_t *flash, uint32_
     return stat;
 }
 
-hpm_stat_t hpm_serial_nor_erase_block_noblocking(hpm_serial_nor_t *flash, uint32_t block_addr)
+hpm_stat_t hpm_serial_nor_erase_block_nonblocking(hpm_serial_nor_t *flash, uint32_t block_addr)
 {
     hpm_stat_t stat;
     uint32_t addr;
@@ -848,7 +848,7 @@ hpm_stat_t hpm_serial_nor_erase_block_noblocking(hpm_serial_nor_t *flash, uint32
     return stat;
 }
 
-hpm_stat_t hpm_serial_nor_erase_sector_noblocking(hpm_serial_nor_t *flash, uint32_t sector_addr)
+hpm_stat_t hpm_serial_nor_erase_sector_nonblocking(hpm_serial_nor_t *flash, uint32_t sector_addr)
 {
     hpm_stat_t stat;
     uint32_t addr;
@@ -1028,7 +1028,7 @@ hpm_stat_t hpm_serial_nor_program_blocking(hpm_serial_nor_t *flash, uint8_t *buf
     return stat;
 }
 
-hpm_stat_t hpm_serial_nor_page_program_noblocking(hpm_serial_nor_t *flash, uint8_t *buf, uint32_t data_len, uint32_t address)
+hpm_stat_t hpm_serial_nor_page_program_nonblocking(hpm_serial_nor_t *flash, uint8_t *buf, uint32_t data_len, uint32_t address)
 {
     hpm_stat_t stat = status_success;
     uint32_t program_size = 0;

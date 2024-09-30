@@ -96,6 +96,7 @@ static void test_write_read_last_block(void)
         uint64_t start_ticks = mchtmr_get_count(HPM_MCHTMR);
         status = sdcard_spi_write_multi_block(s_write_buf, start_sector_addr, WRITE_READ_BLOCK_COUNT);
         if (status != status_success) {
+            printf("sdcard multi write failed\n");
             break;
         }
         uint64_t end_ticks = mchtmr_get_count(HPM_MCHTMR);
@@ -104,6 +105,7 @@ static void test_write_read_last_block(void)
         start_ticks = mchtmr_get_count(HPM_MCHTMR);
         status = sdcard_spi_read_multi_block(s_read_buf, start_sector_addr, WRITE_READ_BLOCK_COUNT);
         if (status != status_success) {
+            printf("sdcard multi read failed\n");
             break;
         }
         end_ticks = mchtmr_get_count(HPM_MCHTMR);

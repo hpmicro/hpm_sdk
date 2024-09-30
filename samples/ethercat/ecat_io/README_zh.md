@@ -2,16 +2,12 @@
 
 ## 1. 概述
 
-ECAT_IO示例用于演示基于HPM6E80的ECAT外设和从站协议栈代码(SSC)实现ECAT数字IO从站的步骤。
-- 输入IO(2bit): SW6
-- 输出IO(2bit): LED8/LED3
-- RUN LED: LED7
-- ERR LED: LED6
+ECAT_IO示例用于演示使用ESC外设和从站协议栈代码(SSC)实现ECAT数字IO从站的功能。
 
 ## 2. 准备
 
 ### 2.1 硬件
-  - HPM6E00EVK(RevA)
+  - 带ECAT的开发板，请参考具体开发板{ref}`引脚描述 <lab_board_resource>`查看ECAT网口/RUN LED/ERR LED等硬件
   - 带网口的PC
       - TwinCAT3软件对PC网卡有适配问题, [部分支持的Intel网卡](https://infosys.beckhoff.com/english.php?content=../content/1033/tc3_overview/9309844363.html&id=1489698440745036069)
 ### 2.2 软件
@@ -22,7 +18,10 @@ ECAT_IO示例用于演示基于HPM6E80的ECAT外设和从站协议栈代码(SSC)
 ## 3. 工程设置
 
 ### 3.1 使用Flash模拟EEPROM
-默认设置为使用flash模拟eeprom, 无需修改工程设置。
+  默认设置为使用flash模拟eeprom, 无需修改工程设置。
+
+  **注意**：使用FLASH模拟EEPROM功能时，需要为FLASH_EEPROM内容分配合适的flash空间， 避免与其他的flash内容产生冲突。
+
 ### 3.2 使用实际EEPROM
   - 如需使用实际的eeprom器件, 请在使用SSC Tool时将"Hardware"属性下的"ESC_EEPROM_EMULATION"和"CREATE_EEPROM_CONTENT"设置为0, 再生成从站协议栈代码。
   - 使用实际eeprom时, 在文件`CMakeLists.txt`中, 设置"set(CONFIG_EEPROM_EMULATION 0)"。
@@ -64,6 +63,15 @@ ECAT_IO示例用于演示基于HPM6E80的ECAT外设和从站协议栈代码(SSC)
   2. 选择输出路径, 须设置Src输出路径为ecat_io/SSC/Src路径, 或者设置其他路径将生成的生成的Src复制到ecat_io/SSC/Src目录下
   3. 点击Start生成从站代码和ESI文件
     ![](doc/SSC_Create_Slave_2.png)
+
+### 4.5 SSC协议栈代码修改
+
+  ESC IP支持产生独立的Sync0\Sync1中断，同时Sync0\Sync1请求还可以触发PDI中断，为避免在使用独立的Sync0\Sync1中断的情况下，Sync0\Sync1请求触发不必要的PDI中断， 需要设置AL Event Mask Register(0x204)进行屏蔽
+  ![](doc/ssc_pdi_int.png)
+  通过打patch的方式修改SSC代码，在SSC目录下的命令行窗口执行：patch -d Src < ssc_pdi_mask.patch
+  ![](doc/ssc_patch.png)
+
+  **注意**：如果你的电脑上没有安装patch命令，你需要安装2.5.9版或更高版本的GNU patch。如果已安装，请跳过此步骤。从以下网页下载patch命令（当前版本为2.5.9），并将“patch.exe”存储在一个文件夹中，该文件夹的路径使文件可以从命令提示符执行。http://gnuwin32.sourceforge.net/packages/patch.htm
 
 ## 5. TwinCAT工程设置
 
@@ -116,16 +124,12 @@ ECAT_IO示例用于演示基于HPM6E80的ECAT外设和从站协议栈代码(SSC)
   3. LED7为ECAT的RUN_LED, LED6为ECAT的ERROR_LED
 
 ### 5.7 DC设置
-  1. 双击Box, 选择DC, 点击Advanced Settings
-      ![](doc/Twincat_DC_1.png)
-  2. 设置模式为DC-Synchron并设置Shift Time(通常为Sync Unit Cycle时间的20%~30%)
-      ![](doc/Twincat_DC_2.png)
-  3. 双击Device, 选择EtherCAT, 点击Advanced Settings进行配置
-      ![](doc/Twincat_DC_3.png)
-  4. 选择Distributed Clock, 勾选DC in use, 之后点击确定
-      ![](doc/Twincat_DC_4.png)
-  5. 点击Restart TwinCAT
-      ![](doc/Twincat_DC_5.png)
+  1. 设置从站的同步模式，此处可以为从站设置单独的Shift Time(Shift Time用于保证所有的从站都能在DC同步事件到来前收到主站发来的数据)
+      ![](doc/twincat_slave_set_dc.png)
+  2. 设置主站的同步模式，通过主站的Sync Shift Time可以设置所有DC同步模式从站的shift time(通常为Sync Unit Cycle时间的20%~30%)， 单个从站的实际Shift Time = 主站设置的Shift Time + 从站设置的Shift Time
+      ![](doc/twincat_master_set_dc.png)
+  3. 点击Restart TwinCAT（Config Mode)，从站可以在DC同步模式下进入OP状态，实际使用中应该在TwinCAT中创建任务(如PLC task或NC Task)，设置从站与主站任务进行同步，激活配置后进入Run Mode，保证同步性能，实现在DC同步模式下工作
+      ![](doc/twincat_restart_config_mode.png)
 
 
 ## 6. 运行现象
@@ -142,29 +146,3 @@ but PDI not operational, please update eeprom  context.
 EtherCAT IO sample
 EEPROM loading successful, no checksum error.
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

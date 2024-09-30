@@ -11,7 +11,7 @@
 #include "hpm_foc.h"
 #include <math.h>
 
-#define PI (3.1415926)
+#define PI HPM_PI
 
 static void hpm_mcl_sin_cos(float angle, float *sin_angle, float *cos_angle)
 {

@@ -37,13 +37,6 @@
 
 #define SYS_LIGHTWEIGHT_PROT            0
 #define LWIP_PROVIDE_ERRNO              1
-
-#if defined(__SEGGER_RTL_VERSION) || defined(__zcc__)
-#define LWIP_TIMEVAL_PRIVATE            1
-#else
-#define LWIP_TIMEVAL_PRIVATE            0
-#endif
-
 #define LWIP_RAND                       rand
 
 #define NO_SYS                          0

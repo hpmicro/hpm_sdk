@@ -77,6 +77,7 @@ static void pwm_config(GPTMR_Type *ptr, gptmr_cfg_t *cfg)
     reload = cfg->gptmr_frequency / cfg->pwm_frequency;
     config.reload = reload;
     config.cmp[0] = (reload * cfg->pwm_duty) / 100;
+    config.cmp[1] = reload;
     config.cmp_initial_polarity_high = cfg->cmp_init_high;
     config.enable_software_sync = true;
     config.enable_cmp_output = false;

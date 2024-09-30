@@ -33,6 +33,7 @@ typedef struct {
     float lq;   /**< q-axis inductors */
     float ls;       /**< inductors */
     float i_max;    /**< Maximum current */
+    float i_rated;  /**< Rated current */
     float power;    /**< Rated power */
     float inertia; /**< kgm^2 */
     float rpm_max; /**< Maximum RPM */
@@ -48,6 +49,7 @@ typedef struct {
     int32_t lq;
     int32_t ls;
     int32_t i_max;
+    int32_t i_rated;
     int32_t power;
     int32_t inertia; /**< kgm^2 */
     int32_t rpm_max;

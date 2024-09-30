@@ -6,9 +6,8 @@
  */
 
 
-#include "hpm_common.h"
 #include "hpm_soc.h"
-#include "hpm_l1c_drv.h"
+#include "hpm_bpor_drv.h"
 
 #ifndef CONFIG_DISABLE_GLOBAL_IRQ_ON_STARTUP
 #define CONFIG_DISABLE_GLOBAL_IRQ_ON_STARTUP 0
@@ -41,5 +40,9 @@ __attribute__((weak)) void system_init(void)
 #ifndef CONFIG_NOT_ENALBE_ACCESS_TO_CYCLE_CSR
     uint32_t mcounteren = read_csr(CSR_MCOUNTEREN);
     write_csr(CSR_MCOUNTEREN, mcounteren | 1); /* Enable MCYCLE */
+#endif
+
+#if defined(CONFIG_ENABLE_BPOR_RETENTION) && CONFIG_ENABLE_BPOR_RETENTION
+    bpor_enable_reg_value_retention(HPM_BPOR);
 #endif
 }

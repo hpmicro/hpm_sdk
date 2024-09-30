@@ -3,15 +3,11 @@
 ## 1. Overview
 
 The ECAT_IO example demonstrates the steps to implement an ECAT digital IO slave station with the slave stack code (SSC).
-- Input IO(2bit): SW6
-- Output IO(2bit): LED8/LED3
-- RUN LED: LED7
-- ERR LED: LED6
 
 ## 2. Prepare
 
 ### 2.1 Hardware
-  - HPM6E00EVK(RevA)
+  - Development board with ECAT, please refer to [Pin Description](lab_board_resource) of the development board. Check the ECAT network port/RUN LED/ERR LED and other hardware
   - PC with Ethernet port
       - TWinCAT3 software has compatibility issues with PC network cards. [some supported Intel network cards](https://infosys.beckhoff.com/english.php?content=../content/1033/tc3_overview/9309844363.html&id=1489698440745036069)
 ### 2.2 Software
@@ -23,6 +19,8 @@ The ECAT_IO example demonstrates the steps to implement an ECAT digital IO slave
 
 ### 3.1 EEPROM Emulation Setting
   - The default setting is to use Flash to simulate EEPROM
+  - **Note**: Please allocate appropriate flash space for FLASH-EEPROM content to avoid conflicts with other flash contents
+
 ### 3.2 Using actual EEPROM
   - set the "ESC_EEPROM_EMULATION" and "CREATE_EEPROM_CONTENT" under the "Hardware" attribute to 0 in SSC Tool, then generate the slave protocol stack code.
   - Modify `CMakeLists.txt` context to "set(CONFIG_EEPROM_EMULATION 0)".
@@ -63,6 +61,17 @@ Due to licensing issues, HPMSDK does not provide EtherCAT slave protocol stack c
     ![](doc/SSC_Create_Slave_1.png)
   2. Specify the output path, the output source folder have to set to <ecat_io sample path>/SSC/Src, if other path, have to copy generated SRC folder to <ecat_io sample path>/SSC/Src
     ![](doc/SSC_Create_Slave_2.png)
+
+### 4.5 SSC code change
+
+  ESC IP supports generating independent Sync0 \ Sync1 interrupts, and Sync0 \ Sync1 requests can also trigger PDI interrupts. To avoid unnecessary PDI interrupts triggered by Sync0 \ Sync1 requests when using independent Sync0 \ Sync1 interrupts, AL Event Mask Register (0x204) needs to be set for masking
+  ![](doc/ssc_pdi_int.png)
+
+  Execute in the command line window under the SSC directory：patch -d Src < ssc_pdi_mask.patch
+  ![](doc/ssc_patch.png)
+
+  **Note**：If the patch command is not installed on your PC, you will need to install ver. 2.5.9 or a laterversion of GNU patch. If it is already installed, skip this step. Download the patch command (currently ver. 2.5.9) from the following Web page and store "patch.exe" in a folder on a path that makes the file executable from the command prompt. http://gnuwin32.sourceforge.net/packages/patch.htm
+
 
 ## 5. TwinCAT Project setting
 
@@ -115,16 +124,12 @@ Due to licensing issues, HPMSDK does not provide EtherCAT slave protocol stack c
   3. Check RUN LED and ERR_LED status
 
 ### 5.7 DC setting
-  1. double clcik "Box", click "DC", click "Advanced Settings"
-      ![](doc/Twincat_DC_1.png)
-  2. Set mode  to "DC-Synchron", set Shift Time(Usually 20% to 30% of Sync Unit Cycle time)
-      ![](doc/Twincat_DC_2.png)
-  3. double click "Device", click "EtherCAT", click "Advanced Settings"
-      ![](doc/Twincat_DC_3.png)
-  4. click "Distributed Clock", choose "DC in use", click "OK"
-      ![](doc/Twincat_DC_4.png)
-  5. Restart TwinCAT
-      ![](doc/Twincat_DC_5.png)
+  1. Set the synchronization mode of the slave station, where you can set an individual Shift Time for the slave station (Shift Time is used to ensure that all slave stations receive data from the master station before the DC sync event)
+      ![](doc/twincat_slave_set_dc.png)
+  2. Set the synchronization mode of the master station, through the Sync Shift Time of the master station, you can set the shift time for all DC sync mode slave stations (usually 20%~30% of the Sync Unit Cycle time), Actual Shift Time of a single slave station = Shift Time set by the master station + Shift Time set by the slave station
+      ![](doc/twincat_master_set_dc.png)
+  3. Click Restart TwinCAT (Config Mode), slave stations can enter OP state under DC sync mode. In actual use, tasks should be created in TwinCAT (such as PLC task or NC Task), set the synchronization between slave and master station tasks, activate the configuration, and enter Run Mode to ensure synchronization performance, working under DC sync mode
+      ![](doc/twincat_restart_config_mode.png)
 
 
 ## 6. Running the example

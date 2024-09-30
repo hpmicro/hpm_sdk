@@ -26,7 +26,7 @@
  *  Macro Constant Declarations
  *---------------------------------------------------------------------
  */
-#define USB_PHY_INIT_DELAY_COUNT  (16U) /**< a delay count for USB phy initialization */
+#define USB_PHY_INIT_DELAY_COUNT  (100U) /**< a delay count for USB phy initialization */
 #define USB_HOST_FRAMELIST_SIZE   (8U)  /**< a frame list size in USB host mode */
 
 /*---------------------------------------------------------------------
@@ -165,6 +165,17 @@ static inline void usb_enable_interrupts(USB_Type *ptr, uint32_t mask)
 }
 
 /**
+ * @brief Disable interrupts
+ *
+ * @param[in] ptr A USB peripheral base address
+ * @param[in] mask Mask value for interrupt events
+ */
+static inline void usb_disable_interrupts(USB_Type *ptr, uint32_t mask)
+{
+    ptr->USBINTR &= ~mask;
+}
+
+/**
  * @brief Get all USB status flags
  *
  * @param[in] ptr A USB peripheral base address
@@ -190,23 +201,63 @@ static inline void usb_clear_status_flags(USB_Type *ptr, uint32_t mask)
 }
 
 /**
- * @brief Enable otg vbus wakeup
+ * @brief Enable otg dp/dm change wakeup
+ *
+ * @param[in] ptr A USB peripheral base address
+ */
+static inline void usb_otg_enable_dpdm_wakeup(USB_Type *ptr)
+{
+    ptr->OTG_CTRL0 |= USB_OTG_CTRL0_OTG_WKDPDMCHG_EN_MASK;
+}
+
+/**
+ * @brief Disbable otg dp/dm change  wakeup
+ *
+ * @param[in] ptr A USB peripheral base address
+ */
+static inline void usb_otg_disable_dpdm_wakeup(USB_Type *ptr)
+{
+    ptr->OTG_CTRL0 &= ~USB_OTG_CTRL0_OTG_WKDPDMCHG_EN_MASK;
+}
+
+/**
+ * @brief Enable otg id change wakeup
+ *
+ * @param[in] ptr A USB peripheral base address
+ */
+static inline void usb_otg_enable_id_wakeup(USB_Type *ptr)
+{
+    ptr->OTG_CTRL0 |= USB_OTG_CTRL0_OTG_ID_WAKEUP_EN_MASK;
+}
+
+/**
+ * @brief Disbable otg id change  wakeup
+ *
+ * @param[in] ptr A USB peripheral base address
+ */
+static inline void usb_otg_disable_id_wakeup(USB_Type *ptr)
+{
+    ptr->OTG_CTRL0 &= ~USB_OTG_CTRL0_OTG_ID_WAKEUP_EN_MASK;
+}
+
+/**
+ * @brief Enable otg vbus change wakeup
  *
  * @param[in] ptr A USB peripheral base address
  */
 static inline void usb_otg_enable_vbus_wakeup(USB_Type *ptr)
 {
-    ptr->OTG_CTRL0 |=  USB_OTG_CTRL0_OTG_VBUS_WAKEUP_EN_MASK;
+    ptr->OTG_CTRL0 |= USB_OTG_CTRL0_OTG_VBUS_WAKEUP_EN_MASK;
 }
 
 /**
- * @brief Disbable otg vbus wakeup
+ * @brief Disbable otg vbus change wakeup
  *
  * @param[in] ptr A USB peripheral base address
  */
 static inline void usb_otg_disable_vbus_wakeup(USB_Type *ptr)
 {
-    ptr->OTG_CTRL0 &=  ~USB_OTG_CTRL0_OTG_VBUS_WAKEUP_EN_MASK;
+    ptr->OTG_CTRL0 &= ~USB_OTG_CTRL0_OTG_VBUS_WAKEUP_EN_MASK;
 }
 
 /**
@@ -310,11 +361,10 @@ static inline void usb_set_port_test_mode(USB_Type *ptr, usb_test_mode_t test_mo
  * @brief USB set port suspend
  *
  * @param[in] ptr A USB peripheral base address
- * @param[in] suspend true - suspend, false - not suspend
  */
-static inline void usb_set_port_suspend(USB_Type *ptr, bool suspend)
+static inline void usb_set_port_suspend(USB_Type *ptr)
 {
-    ptr->PORTSC1 = (ptr->PORTSC1 & ~USB_PORTSC1_SUSP_MASK) | USB_PORTSC1_SUSP_SET(suspend);
+    ptr->PORTSC1 |= USB_PORTSC1_SUSP_MASK;
 }
 
 /**
@@ -325,6 +375,8 @@ static inline void usb_set_port_suspend(USB_Type *ptr, bool suspend)
 static inline void usb_force_port_resume(USB_Type *ptr)
 {
     ptr->PORTSC1 |= USB_PORTSC1_FPR_MASK;
+    while ((ptr->PORTSC1 & USB_PORTSC1_FPR_MASK) != 0) {
+    }
 }
 
 /**
@@ -384,6 +436,17 @@ static inline void usb_otgsc_disable_session_valid_chg_int(USB_Type *ptr)
 }
 
 /**
+ * @brief check otgsc session valid change interrupt is enable
+ *
+ * @param[in] ptr A USB peripheral base address
+ * @retval true interrupt is enable, false interrupt is disable
+ */
+static inline bool usb_otgsc_session_valid_chg_int_is_enable(USB_Type *ptr)
+{
+    return ((ptr->OTGSC & USB_OTGSC_ASVIE_MASK) != 0);
+}
+
+/**
  * @brief get otgsc session valid change flag
  *
  * @param[in] ptr A USB peripheral base address
@@ -420,7 +483,7 @@ static inline bool usb_otgsc_get_session_valid_flag(USB_Type *ptr)
  *
  * @param[in] ptr A USB peripheral base address
  */
-void usb_phy_init(USB_Type *ptr);
+void usb_phy_init(USB_Type *ptr, bool host);
 
 /**
  * @brief USB phy get line status
@@ -784,6 +847,29 @@ static inline void usb_hcd_run(USB_Type *ptr)
 static inline void usb_hcd_stop(USB_Type *ptr)
 {
     ptr->USBCMD &= ~USB_USBCMD_RS_MASK;
+}
+
+/**
+ * @brief Disable hcd controller Asynchronous Schedule and Periodic Schedule
+ *
+ * @param[in] ptr A USB peripheral base address
+ */
+static inline void usb_hcd_disable_ase_pse(USB_Type *ptr)
+{
+    ptr->USBCMD &= ~(USB_USBCMD_PSE_MASK | USB_USBCMD_ASE_MASK);
+    while (ptr->USBCMD & (USB_USBCMD_PSE_MASK | USB_USBCMD_ASE_MASK)) {
+        ;
+    }
+}
+
+/**
+ * @brief Enable hcd controller Asynchronous Schedule and Periodic Schedule
+ *
+ * @param[in] ptr A USB peripheral base address
+ */
+static inline void usb_hcd_enable_ase_pse(USB_Type *ptr)
+{
+    ptr->USBCMD |= (USB_USBCMD_PSE_MASK | USB_USBCMD_ASE_MASK);
 }
 
 #if defined __cplusplus

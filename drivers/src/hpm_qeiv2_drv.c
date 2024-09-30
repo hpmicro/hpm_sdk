@@ -7,6 +7,7 @@
 
 #include "hpm_qeiv2_drv.h"
 #include "hpm_enc_pos_drv.h"
+#include <assert.h>
 
 hpm_stat_t qeiv2_config_phcnt_cmp_match_condition(QEIV2_Type *qeiv2_x, qeiv2_phcnt_cmp_match_config_t *config)
 {
@@ -137,3 +138,45 @@ void qeiv2_config_filter(QEIV2_Type *qeiv2_x, qeiv2_filter_phase_t phase, bool o
     qeiv2_x->FILT_CFG[phase] =
         QEIV2_FILT_CFG_OUTINV_SET(outinv) | QEIV2_FILT_CFG_MODE_SET(mode) | QEIV2_FILT_CFG_SYNCEN_SET(sync) | QEIV2_FILT_CFG_FILTLEN_SET(((shift << 9u) | len));
 }
+
+static int32_t qeiv2_convert_param(float param)
+{
+    int32_t ret;
+
+    if (param >= 2) {
+        ret = 0x7FFF;
+    } else if (param < -2) {
+        ret = 0x8000;
+    } else {
+        ret = param * 0x4000;
+    }
+
+    return ret;
+}
+
+void qeiv2_config_adcx_adcy_param(QEIV2_Type *qeiv2_x, float tan_delta, float cos_delta, float x_magnification, float y_magnification)
+{
+    float x_param0;
+    float x_param1;
+    float y_param1;
+
+    assert(cos_delta != 0);
+
+    x_param0 = x_magnification;
+    x_param1 = (-tan_delta) * y_magnification;
+    y_param1 = y_magnification / cos_delta;
+
+    qeiv2_x->ADCX_CFG1 = QEIV2_ADCX_CFG1_X_PARAM1_SET(qeiv2_convert_param(x_param1)) | QEIV2_ADCX_CFG1_X_PARAM0_SET(qeiv2_convert_param(x_param0));
+    qeiv2_x->ADCY_CFG1 = QEIV2_ADCY_CFG1_Y_PARAM1_SET(qeiv2_convert_param(y_param1)) | QEIV2_ADCY_CFG1_Y_PARAM0_SET(0);
+}
+
+#if defined (HPM_IP_FEATURE_QEIV2_SIN_TOGI) && HPM_IP_FEATURE_QEIV2_SIN_TOGI
+void qeiv2_config_togi_w_param(QEIV2_Type *qeiv2_x, uint32_t signal_hz, uint32_t adc_sample_rate)
+{
+    float w_param;
+
+    w_param = HPM_2_PI * (float)signal_hz * ((float)0x10000000 / (float)adc_sample_rate);
+
+    qeiv2_x->TOGI_CFG1 = (qeiv2_x->TOGI_CFG1 & ~QEIV2_TOGI_CFG1_W_PARAM_MASK) | QEIV2_TOGI_CFG1_W_PARAM_SET((uint32_t)w_param);
+}
+#endif

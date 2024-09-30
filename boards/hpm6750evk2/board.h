@@ -33,14 +33,14 @@
 
 /* uart section */
 #ifndef BOARD_APP_UART_BASE
-#define BOARD_APP_UART_BASE HPM_UART13
-#define BOARD_APP_UART_IRQ  IRQn_UART13
+#define BOARD_APP_UART_BASE       HPM_UART13
+#define BOARD_APP_UART_IRQ        IRQn_UART13
 #define BOARD_APP_UART_BAUDRATE   (115200UL)
 #define BOARD_APP_UART_CLK_NAME   clock_uart13
 #define BOARD_APP_UART_RX_DMA_REQ HPM_DMA_SRC_UART13_RX
 #define BOARD_APP_UART_TX_DMA_REQ HPM_DMA_SRC_UART13_TX
 #endif
-#define BOARD_APP_UART_BREAK_SIGNAL_PIN   IOC_PAD_PE31
+#define BOARD_APP_UART_BREAK_SIGNAL_PIN IOC_PAD_PE31
 
 /* uart rx idle demo section */
 #define BOARD_UART_IDLE            BOARD_APP_UART_BASE
@@ -67,7 +67,7 @@
 #define BOARD_MICROROS_UART_CLK_NAME BOARD_APP_UART_CLK_NAME
 
 /* rtthread-nano finsh section */
-#define BOARD_RT_CONSOLE_BASE        BOARD_CONSOLE_UART_BASE
+#define BOARD_RT_CONSOLE_BASE BOARD_CONSOLE_UART_BASE
 
 /* usb cdc acm uart section */
 #define BOARD_USB_CDC_ACM_UART            BOARD_APP_UART_BASE
@@ -96,15 +96,15 @@
 #if BOARD_CONSOLE_TYPE == CONSOLE_TYPE_UART
 #ifndef BOARD_CONSOLE_UART_BASE
 #if BOARD_RUNNING_CORE == HPM_CORE0
-#define BOARD_CONSOLE_UART_BASE     HPM_UART0
-#define BOARD_CONSOLE_UART_CLK_NAME clock_uart0
-#define BOARD_CONSOLE_UART_IRQ      IRQn_UART0
+#define BOARD_CONSOLE_UART_BASE       HPM_UART0
+#define BOARD_CONSOLE_UART_CLK_NAME   clock_uart0
+#define BOARD_CONSOLE_UART_IRQ        IRQn_UART0
 #define BOARD_CONSOLE_UART_TX_DMA_REQ HPM_DMA_SRC_UART0_TX
 #define BOARD_CONSOLE_UART_RX_DMA_REQ HPM_DMA_SRC_UART0_RX
 #else
-#define BOARD_CONSOLE_UART_BASE     HPM_UART13
-#define BOARD_CONSOLE_UART_CLK_NAME clock_uart13
-#define BOARD_CONSOLE_UART_IRQ      IRQn_UART13
+#define BOARD_CONSOLE_UART_BASE       HPM_UART13
+#define BOARD_CONSOLE_UART_CLK_NAME   clock_uart13
+#define BOARD_CONSOLE_UART_IRQ        IRQn_UART13
 #define BOARD_CONSOLE_UART_TX_DMA_REQ HPM_DMA_SRC_UART13_TX
 #define BOARD_CONSOLE_UART_RX_DMA_REQ HPM_DMA_SRC_UART13_RX
 #endif
@@ -114,12 +114,12 @@
 #endif
 
 /* sdram section */
-#define BOARD_SDRAM_ADDRESS            (0x40000000UL)
-#define BOARD_SDRAM_SIZE               (32 * SIZE_1MB)
-#define BOARD_SDRAM_CS                 FEMC_SDRAM_CS0
-#define BOARD_SDRAM_PORT_SIZE          FEMC_SDRAM_PORT_SIZE_32_BITS
-#define BOARD_SDRAM_REFRESH_COUNT      (8192UL)
-#define BOARD_SDRAM_REFRESH_IN_MS      (64UL)
+#define BOARD_SDRAM_ADDRESS       (0x40000000UL)
+#define BOARD_SDRAM_SIZE          (32 * SIZE_1MB)
+#define BOARD_SDRAM_CS            FEMC_SDRAM_CS0
+#define BOARD_SDRAM_PORT_SIZE     FEMC_SDRAM_PORT_SIZE_32_BITS
+#define BOARD_SDRAM_REFRESH_COUNT (8192UL)
+#define BOARD_SDRAM_REFRESH_IN_MS (64UL)
 
 #define BOARD_FLASH_BASE_ADDRESS (0x80000000UL)
 #define BOARD_FLASH_SIZE         (16 << 20)
@@ -266,13 +266,34 @@
 #define BOARD_PDMA_BASE HPM_PDMA
 
 /* i2s section */
-#define BOARD_APP_I2S_BASE            HPM_I2S0
-#define BOARD_APP_I2S_DATA_LINE       (2U)
-#define BOARD_APP_I2S_CLK_NAME        clock_i2s0
-#define BOARD_APP_I2S_TX_DMA_REQ      HPM_DMA_SRC_I2S0_TX
-#define BOARD_APP_I2S_IRQ             IRQn_I2S0
-#define BOARD_APP_AUDIO_CLK_SRC       clock_source_pll3_clk0
-#define BOARD_APP_AUDIO_CLK_SRC_NAME  clk_pll3clk0
+#define BOARD_APP_I2S_BASE           HPM_I2S0
+#define BOARD_APP_I2S_DATA_LINE      I2S_DATA_LINE_2
+#define BOARD_APP_I2S_CLK_NAME       clock_i2s0
+#define BOARD_APP_I2S_TX_DMA_REQ     HPM_DMA_SRC_I2S0_TX
+#define BOARD_APP_I2S_IRQ            IRQn_I2S0
+#define BOARD_APP_AUDIO_CLK_SRC      clock_source_pll3_clk0
+#define BOARD_APP_AUDIO_CLK_SRC_NAME clk_pll3clk0
+
+#define BOARD_MIC_I2S               HPM_I2S0
+#define BOARD_MIC_I2S_CLK_NAME      clock_i2s0
+#define BOARD_MIC_I2S_DATA_LINE     I2S_DATA_LINE_0
+#define BOARD_MIC_I2S_RX_DMAMUX_SRC HPM_DMA_SRC_I2S0_RX
+
+#define BOARD_SPEAKER_I2S               HPM_I2S1
+#define BOARD_SPEAKER_I2S_CLK_NAME      clock_i2s1
+#define BOARD_SPEAKER_I2S_DATA_LINE     I2S_DATA_LINE_0
+#define BOARD_SPEAKER_I2S_TX_DMAMUX_SRC HPM_DMA_SRC_I2S1_TX
+
+#define BOARD_MASTER_I2S               HPM_I2S0
+#define BOARD_MASTER_I2S_CLK_NAME      clock_i2s0
+#define BOARD_MASTER_I2S_RX_LINE       I2S_DATA_LINE_1
+#define BOARD_MASTER_I2S_RX_DMAMUX_SRC HPM_DMA_SRC_I2S0_RX
+
+#define BOARD_SLAVE_I2S               HPM_I2S0
+#define BOARD_SLAVE_I2S_DATA_LINE     I2S_DATA_LINE_1
+#define BOARD_SLAVE_I2S_TX_DMAMUX_SRC HPM_DMA_SRC_I2S0_TX
+
+/* pdm selection */
 #define BOARD_PDM_SINGLE_CHANNEL_MASK (1U)
 #define BOARD_PDM_DUAL_CHANNEL_MASK   (0x11U)
 
@@ -281,6 +302,10 @@
 #define BOARD_ENET_PPS           HPM_ENET0
 #define BOARD_ENET_PPS_IDX       enet_pps_0
 #define BOARD_ENET_PPS_PTP_CLOCK clock_ptp0
+
+#define BOARD_ENET_AUXI_SNAPSHOT           HPM_ENET0
+#define BOARD_ENET_AUXI_SNAPSHOT_IDX       enet_ptp_auxi_snapshot_trigger_1
+#define BOARD_ENET_AUXI_SNAPSHOT_PTP_CLOCK clock_ptp0
 
 #define BOARD_ENET_RGMII_PHY_ITF        enet_inf_rgmii
 #define BOARD_ENET_RGMII_RST_GPIO       HPM_GPIO0
@@ -313,6 +338,7 @@
 #define BOARD_APP_ADC16_IRQn     IRQn_ADC3
 #define BOARD_APP_ADC16_CH_1     (2U)
 #define BOARD_APP_ADC16_CLK_NAME (clock_adc3)
+#define BOARD_APP_ADC16_CLK_BUS  (clk_adc_src_ahb0)
 
 #define BOARD_APP_ADC12_HW_TRIG_SRC_CLK_NAME clock_mot0
 #define BOARD_APP_ADC12_HW_TRIG_SRC          HPM_PWM0
@@ -534,42 +560,42 @@
 #define BOARD_FREERTOS_LOWPOWER_TIMER_CLK_NAME clock_ptmr
 
 /* Threadx Definitions */
-#define BOARD_THREADX_TIMER           HPM_GPTMR6
-#define BOARD_THREADX_TIMER_CHANNEL   1
-#define BOARD_THREADX_TIMER_IRQ       IRQn_GPTMR6
-#define BOARD_THREADX_TIMER_CLK_NAME  clock_gptmr6
+#define BOARD_THREADX_TIMER          HPM_GPTMR6
+#define BOARD_THREADX_TIMER_CHANNEL  1
+#define BOARD_THREADX_TIMER_IRQ      IRQn_GPTMR6
+#define BOARD_THREADX_TIMER_CLK_NAME clock_gptmr6
 
-#define BOARD_THREADX_LOWPOWER_TIMER           HPM_PTMR
-#define BOARD_THREADX_LOWPOWER_TIMER_CHANNEL   1
-#define BOARD_THREADX_LOWPOWER_TIMER_IRQ       IRQn_PTMR
-#define BOARD_THREADX_LOWPOWER_TIMER_CLK_NAME  clock_ptmr
+#define BOARD_THREADX_LOWPOWER_TIMER          HPM_PTMR
+#define BOARD_THREADX_LOWPOWER_TIMER_CHANNEL  1
+#define BOARD_THREADX_LOWPOWER_TIMER_IRQ      IRQn_PTMR
+#define BOARD_THREADX_LOWPOWER_TIMER_CLK_NAME clock_ptmr
 
 /* Tamper Section */
 #define BOARD_TAMP_ACTIVE_CH    8
 #define BOARD_TAMP_LOW_LEVEL_CH 10
 
 /* i2s over spi Section*/
-#define BOARD_I2S_SPI_CS_GPIO_CTRL         HPM_GPIO0
-#define BOARD_I2S_SPI_CS_GPIO_INDEX        GPIO_DI_GPIOD
-#define BOARD_I2S_SPI_CS_GPIO_PIN          25
-#define BOARD_I2S_SPI_CS_GPIO_PAD          IOC_PAD_PD25
+#define BOARD_I2S_SPI_CS_GPIO_CTRL  HPM_GPIO0
+#define BOARD_I2S_SPI_CS_GPIO_INDEX GPIO_DI_GPIOD
+#define BOARD_I2S_SPI_CS_GPIO_PIN   25
+#define BOARD_I2S_SPI_CS_GPIO_PAD   IOC_PAD_PD25
 
-#define BOARD_GPTMR_I2S_MCLK               HPM_GPTMR3
-#define BOARD_GPTMR_I2S_MCLK_CHANNEL       1
-#define BOARD_GPTMR_I2S_MCLK_CLK_NAME      clock_gptmr3
+#define BOARD_GPTMR_I2S_MCLK          HPM_GPTMR3
+#define BOARD_GPTMR_I2S_MCLK_CHANNEL  1
+#define BOARD_GPTMR_I2S_MCLK_CLK_NAME clock_gptmr3
 
-#define BOARD_GPTMR_I2S_LRCK               HPM_GPTMR5
-#define BOARD_GPTMR_I2S_LRCK_CHANNEL       2
-#define BOARD_GPTMR_I2S_LRCK_CLK_NAME      clock_gptmr5
+#define BOARD_GPTMR_I2S_LRCK          HPM_GPTMR5
+#define BOARD_GPTMR_I2S_LRCK_CHANNEL  2
+#define BOARD_GPTMR_I2S_LRCK_CLK_NAME clock_gptmr5
 
-#define BOARD_GPTMR_I2S_BCLK               HPM_GPTMR5
-#define BOARD_GPTMR_I2S_BLCK_CHANNEL       3
-#define BOARD_GPTMR_I2S_BLCK_CLK_NAME      clock_gptmr5
+#define BOARD_GPTMR_I2S_BCLK          HPM_GPTMR5
+#define BOARD_GPTMR_I2S_BLCK_CHANNEL  3
+#define BOARD_GPTMR_I2S_BLCK_CLK_NAME clock_gptmr5
 
-#define BOARD_GPTMR_I2S_FINSH              HPM_GPTMR5
-#define BOARD_GPTMR_I2S_FINSH_IRQ          IRQn_GPTMR5
-#define BOARD_GPTMR_I2S_FINSH_CHANNEL      1
-#define BOARD_GPTMR_I2S_FINSH_CLK_NAME     clock_gptmr5
+#define BOARD_GPTMR_I2S_FINSH          HPM_GPTMR5
+#define BOARD_GPTMR_I2S_FINSH_IRQ      IRQn_GPTMR5
+#define BOARD_GPTMR_I2S_FINSH_CHANNEL  1
+#define BOARD_GPTMR_I2S_FINSH_CLK_NAME clock_gptmr5
 
 #if defined(__cplusplus)
 extern "C" {
@@ -622,7 +648,7 @@ uint32_t board_init_lcd_clock(void);
 
 uint32_t board_init_spi_clock(SPI_Type *ptr);
 
-uint32_t board_init_adc_clock(void *ptr, bool clk_src_ahb);
+uint32_t board_init_adc_clock(void *ptr, bool clk_src_bus);
 
 uint32_t board_init_can_clock(CAN_Type *ptr);
 
@@ -639,11 +665,12 @@ void board_init_dao_pins(void);
 
 void board_init_adc12_pins(void);
 void board_init_adc16_pins(void);
-
+void board_init_acmp_pins(void);
 void board_init_usb_pins(void);
 void board_usb_vbus_ctrl(uint8_t usb_index, uint8_t level);
 
 void board_init_enet_pps_pins(ENET_Type *ptr);
+void board_init_enet_pps_capture_pins(ENET_Type *ptr);
 uint8_t board_get_enet_dma_pbl(ENET_Type *ptr);
 hpm_stat_t board_reset_enet_phy(ENET_Type *ptr);
 hpm_stat_t board_init_enet_pins(ENET_Type *ptr);
@@ -692,6 +719,9 @@ uint8_t board_get_led_pwm_off_level(void);
  * Get GPIO pin level of onboard LED
  */
 uint8_t board_get_led_gpio_off_level(void);
+
+void board_init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp);
+
 #if defined(__cplusplus)
 }
 #endif /* __cplusplus */

@@ -18,7 +18,7 @@
 #define I2S_MCLK_FREQ_IN_HZ (24576000UL)
 #define DAO_I2S_CLK_NAME (clock_dao)
 
-#ifndef USING_SMALL_BUFF
+#ifndef BOARD_PDM_USING_SMALL_BUFF
 #define DATA_BUFF_SIZE 50960
 #else
 #define DATA_BUFF_SIZE 20480

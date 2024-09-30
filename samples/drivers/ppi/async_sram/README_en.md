@@ -7,9 +7,16 @@ The PPI memory address region is 0xF8000000~0xFFFFFFFF, base address should be a
 
 ## Board Setting
 
-External async SRAM module is required. The tested async SRAM is IS62WV51216EBLL45TLI.
+External async SRAM module is required. The tested async SRAM is IS62WV51216EBLL45TLI. When in AD Mux mode, the address latch chip used in this sample is SN74HC573APWR.
 
-This use address and data Non-Mux mode, DQ0~DQ15 as data lines, DQ16~DQ31 as address lines. The high address lines above A16 of IS62WV51216EBLL45TLI must be connected to GND.
+The PPI component supports both AD MUX mode and AD Non-MUx mode.
+
+[1] When AD Non-Mux mode, `DQ0-DQ15` as data lines, `DQ16-DQ31` as address lines. The high address lines above A16 of IS62WV51216EBLL45TLI must be connected to GND.
+[2] When AD Mux mode, `DQ0-DQ15` as data lines and address lines. The high address lines above A16 of IS62WV51216EBLL45TLI must be connected to GND.
+
+In this example, select the AD mode using the macro `BOARD_PPI_ASYNC_SRAM_AD_MUX_MODE`, select the CS signal using the macro `BOARD_PPI_ASYNC_SRAM_CS_INDEX`, select the ADV signal using the macro `BOARD_PPI_ASYNC_SRAM_ADV_CTRL_PIN`, select the REL signal using the macro `BOARD_PPI_ASYNC_SRAM_OE_CTRL_PIN`, and select the WEL signal using the macro `BOARD_PPI_ASYNC_SRAM_WE_CTRL_PIN`. Users can make modifications based on their actual schematic diagram.
+
+For more information on PPI components, please refer to: [PPI Components Readme.md](../../../../components/ppi/README_en.md)
 
 ## Running the example
 

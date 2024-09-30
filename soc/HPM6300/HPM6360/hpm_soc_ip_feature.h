@@ -10,4 +10,7 @@
 /* PWM related feature */
 #define HPM_IP_FEATURE_PWM_COUNTER_RESET 1
 
+/* ENET related feature */
+#define HPM_IP_FEATURE_ENET_HAS_PPSEN1 1
+
 #endif /* HPM_SOC_IP_FEATURE_H */

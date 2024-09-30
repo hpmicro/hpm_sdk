@@ -909,6 +909,28 @@ static inline void uart_modem_write_rts_pin(UART_Type *ptr, uint8_t high)
     }
 }
 
+#if defined(HPM_IP_FEATURE_UART_DISABLE_DMA_TIMEOUT) && (HPM_IP_FEATURE_UART_DISABLE_DMA_TIMEOUT == 1)
+/**
+ * @brief Diable rx timeout trigger dma
+ *
+ * @param [in] ptr UART base address
+ */
+static inline void uart_disable_rx_timeout_trig_dma(UART_Type *ptr)
+{
+    ptr->FCRR |= UART_FCRR_TMOUT_RXDMA_DIS_MASK;
+}
+
+/**
+ * @brief Enable rx timeout trigger dma
+ *
+ * @param [in] ptr UART base address
+ */
+static inline void uart_enable_rx_timeout_trig_dma(UART_Type *ptr)
+{
+    ptr->FCRR &= ~UART_FCRR_TMOUT_RXDMA_DIS_MASK;
+}
+#endif
+
 #ifdef __cplusplus
 }
 #endif

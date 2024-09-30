@@ -14,7 +14,7 @@
 #define DAC_BUFF0_COUNT (DAC_SOC_MAX_BUFF_COUNT / 32)  /* 2048 */
 #define DAC_BUFF1_COUNT (DAC_SOC_MAX_BUFF_COUNT / 32)  /* 2048 */
 
-#define PI (3.1415926f)
+#define PI HPM_PI
 
 static __RW uint8_t direct_cmpt_flag;
 static __RW uint8_t step_running_flag;
@@ -112,7 +112,7 @@ static void set_buffer_mode_config(void)
 
     /* sine waveform */
     for (uint16_t i = 0; i < (DAC_SOC_MAX_DATA + 1) / 2; i += 1) {
-        buffer0[i] = ((DAC_SOC_MAX_DATA + 1) / 2) * sin(i * 2 * PI / (DAC_SOC_MAX_DATA + 1)) + ((DAC_SOC_MAX_DATA + 1) / 2);
+        buffer0[i] = ((DAC_SOC_MAX_DATA + 1) / 2) * sin(i * 2 * PI / (DAC_SOC_MAX_DATA + 1)) + ((DAC_SOC_MAX_DATA + 1) / 2 - 1);
         buffer1[i] = ((DAC_SOC_MAX_DATA + 1) / 2) * sin((i + (DAC_SOC_MAX_DATA + 1) / 2) * 2 * PI / (DAC_SOC_MAX_DATA + 1)) + ((DAC_SOC_MAX_DATA + 1) / 2);
     }
 
@@ -148,6 +148,15 @@ static void buffer_mode_handler(void)
     if (buf1_cmpt_flag == 1) {
         buf1_cmpt_flag = 0;
     }
+}
+
+static void stop_handler(void)
+{
+    direct_cmpt_flag = 0;
+    step_running_flag = 0;
+    buffer_running_flag = 0;
+    buf0_cmpt_flag = 0;
+    buf1_cmpt_flag = 0;
 }
 
 static uint8_t get_dac_mode(void)
@@ -229,6 +238,8 @@ int main(void)
             }
 
             if (console_try_receive_byte() == ' ') {
+                dac_enable_conversion(BOARD_DAC_BASE, false);
+                stop_handler();
                 break;
             }
         }

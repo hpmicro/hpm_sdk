@@ -7,7 +7,6 @@
 
 #include "usbh_core.h"
 #include "usbh_hid.h"
-#include "usb_ehci_priv.h"
 
 static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t hid_keyboard_buffer[64];
 static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t hid_mouse_buffer[64];

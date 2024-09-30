@@ -7,10 +7,6 @@
 
 #include "hpm_mcl_control.h"
 #include "hpm_mcl_math.h"
-#include "math.h"
-
-#define SQRT3      (1.7320508075688773f)    /**< sqrt(3) */
-#define SQRT3_DIV3 (0.5773502691896258f)    /**< sqrt(3)/3 */
 
 float hpm_mcl_control_sin(float x)
 {
@@ -352,6 +348,125 @@ void hpm_mcl_control_smc_process(mcl_control_smc_t *smc_cfg, float ualpha, float
 
 }
 
+hpm_mcl_stat_t hpm_mcl_control_offline_param_detection_rs(mcl_control_offline_param_detection_t *detection, float ialpha, float ibeta, float *ud, float *uq)
+{
+    float is;
+
+    *uq = 0;
+    is = MCL_SUM_OF_SQUARE_MODE(ialpha, ibeta);
+    if (is >= detection->cfg.current_half_rated) {
+        detection->result.rs = detection->rs.ud_mem / is;
+        return mcl_success;
+    } else {
+        detection->rs.ud_mem += detection->cfg.ud_delta;
+        *ud = detection->rs.ud_mem;
+        if (*ud > detection->cfg.vbus) {
+            return mcl_fail;
+        }
+    }
+
+    return mcl_running;
+}
+
+hpm_mcl_stat_t hpm_mcl_control_offline_param_detection_ld(mcl_control_offline_param_detection_t *detection, float ialpha, float ibeta, float *ud, float *uq)
+{
+    float is;
+
+    *uq = 0;
+    *ud = detection->cfg.vbus;
+    if (detection->tick_count == 0) {
+        detection->ls.is_last = MCL_SUM_OF_SQUARE_MODE(ialpha, ibeta);
+    }
+    detection->tick_count++;
+
+    if (detection->tick_count > detection->cfg.inductor_detection_times) {
+        detection->tick_count = 0;
+        is = MCL_SUM_OF_SQUARE_MODE(ialpha, ibeta);
+        if (MCL_FLOAT_IS_ZERO(is - detection->ls.is_last)) {
+            return mcl_fail;
+        }
+        detection->result.ld = detection->cfg.vbus / 2 / ((is - detection->ls.is_last) /
+                        ((detection->cfg.inductor_detection_times - 1) * detection->cfg.detection_loop_ts));
+        return mcl_success;
+    }
+
+    return mcl_running;
+}
+
+hpm_mcl_stat_t hpm_mcl_control_offline_param_detection_lq(mcl_control_offline_param_detection_t *detection, float ialpha, float ibeta, float *ud, float *uq)
+{
+    float is;
+
+    *ud = 0;
+    *uq = detection->cfg.vbus;
+    if (detection->tick_count == 0) {
+        detection->ls.is_last = MCL_SUM_OF_SQUARE_MODE(ialpha, ibeta);
+    }
+    detection->tick_count++;
+
+    if (detection->tick_count > detection->cfg.inductor_detection_times) {
+        detection->tick_count = 0;
+        is = MCL_SUM_OF_SQUARE_MODE(ialpha, ibeta);
+        detection->result.lq = detection->cfg.vbus / 2 / ((is - detection->ls.is_last) /
+                        ((detection->cfg.inductor_detection_times - 1) * detection->cfg.detection_loop_ts));
+        return mcl_success;
+    }
+
+    return mcl_running;
+}
+
+hpm_mcl_stat_t hpm_mcl_control_offline_param_detection_ls(mcl_control_offline_param_detection_t *detection)
+{
+    detection->result.ls = detection->result.ld + detection->result.lq;
+
+    return mcl_success;
+}
+
+hpm_mcl_stat_t hpm_mcl_control_offline_param_detection_flux(mcl_control_offline_param_detection_t *detection, float ialpha, float ibeta,
+            float ualpha, float ubeta, float *ref_d, float *ref_q)
+{
+    float alpha, beta, flux;
+
+    *ref_d = 0;
+    *ref_q = detection->cfg.vbus;
+    detection->tick_count++;
+    detection->flux.val0_mem += (ualpha - ialpha * detection->result.rs) * detection->cfg.detection_loop_ts;
+    detection->flux.val1_mem += (ubeta - ibeta * detection->result.rs) * detection->cfg.detection_loop_ts;
+    alpha = detection->flux.val0_mem - (ialpha * detection->result.ls);
+    beta = detection->flux.val1_mem - (ibeta * detection->result.ls);
+    flux = MCL_SUM_OF_SQUARE_MODE(alpha, beta);
+    detection->flux.val_filter = detection->flux.val_filter * (1 - detection->cfg.lowpass_k) +
+                                    flux * detection->cfg.lowpass_k;
+    if (detection->flux.val_filter > detection->flux.val_filter_mem) {
+        detection->flux.val_filter_mem = detection->flux.val_filter;
+    }
+    if (detection->tick_count > detection->cfg.flux_detection_times) {
+        detection->tick_count = 0;
+        detection->result.flux = detection->flux.val_filter_mem;
+        return mcl_success;
+    }
+    return mcl_running;
+}
+
+hpm_mcl_stat_t hpm_mcl_control_detection_init(mcl_control_offline_param_detection_t *detection)
+{
+    MCL_ASSERT(detection != NULL, mcl_invalid_pointer);
+
+    detection->result.flux = 0;
+    detection->result.ld = 0;
+    detection->result.lq = 0;
+    detection->result.rs = 0;
+    detection->result.ls = 0;
+    detection->flux.val0_mem = 0;
+    detection->flux.val1_mem = 0;
+    detection->flux.val_filter = 0;
+    detection->flux.val_filter_mem = 0;
+    detection->tick_count = 0;
+    detection->rs.ud_mem = 0;
+
+    return mcl_success;
+}
+
 hpm_mcl_stat_t hpm_mcl_control_init(mcl_control_t *control, mcl_control_cfg_t *cfg)
 {
     MCL_ASSERT(control != NULL, mcl_invalid_pointer);
@@ -392,6 +507,12 @@ hpm_mcl_stat_t hpm_mcl_control_init(mcl_control_t *control, mcl_control_cfg_t *c
     control->method.dead_area_polarity_detection = &hpm_mcl_control_dead_area_polarity_detection;
     control->method.smc_init = &hpm_mcl_control_smc_init;
     control->method.smc_process = &hpm_mcl_control_smc_process;
+    control->method.offline_param_detection_flux = &hpm_mcl_control_offline_param_detection_flux;
+    control->method.offline_param_detection_ld = &hpm_mcl_control_offline_param_detection_ld;
+    control->method.offline_param_detection_lq = &hpm_mcl_control_offline_param_detection_lq;
+    control->method.offline_param_detection_rs = &hpm_mcl_control_offline_param_detection_rs;
+    control->method.offline_param_detection_ls = &hpm_mcl_control_offline_param_detection_ls;
+    control->method.offline_param_detection_init = &hpm_mcl_control_detection_init;
     MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.arctan_x, control->cfg->callback.method.arctan_x);
     MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.clarke, control->cfg->callback.method.clarke);
     MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.cos_x, control->cfg->callback.method.cos_x);
@@ -407,8 +528,16 @@ hpm_mcl_stat_t hpm_mcl_control_init(mcl_control_t *control, mcl_control_cfg_t *c
     MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.dead_area_polarity_detection, control->cfg->callback.method.dead_area_polarity_detection);
     MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.smc_init, control->cfg->callback.method.smc_init);
     MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.smc_process, control->cfg->callback.method.smc_process);
+    MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.offline_param_detection_rs, control->cfg->callback.method.offline_param_detection_rs);
+    MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.offline_param_detection_ls, control->cfg->callback.method.offline_param_detection_ls);
+    MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.offline_param_detection_ld, control->cfg->callback.method.offline_param_detection_ld);
+    MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.offline_param_detection_lq, control->cfg->callback.method.offline_param_detection_lq);
+    MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.offline_param_detection_flux, control->cfg->callback.method.offline_param_detection_flux);
+    MCL_FUNCTION_INIT_IF_NO_EMPTY(control->method.offline_param_detection_init, control->cfg->callback.method.offline_param_detection_init);
 
+    control->method.offline_param_detection_init(&control->cfg->offline_param_detection_cfg);
     control->cfg->callback.init();
 
     return mcl_success;
 }
+

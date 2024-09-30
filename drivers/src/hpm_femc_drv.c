@@ -281,7 +281,6 @@ hpm_stat_t femc_config_sdram(FEMC_Type *ptr, uint32_t clk_in_hz, femc_sdram_conf
      *     1b - 1
      *     2b - 2
      *     3b - 3
-     *   > 3b - 4
      */
     ptr->DATSZ = FEMC_DATSZ_DATSZ_SET((config->cmd_data_width & (0x3UL)));
     ptr->BYTEMSK = 0;

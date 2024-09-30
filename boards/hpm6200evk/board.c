@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  *
  *
@@ -75,11 +75,11 @@ static board_timer_cb timer_cb;
  *      0 - 4MB / 1 - 8MB / 2 - 16MB
  */
 #if defined(FLASH_XIP) && FLASH_XIP
-__attribute__((section(".nor_cfg_option"))) const uint32_t option[4] = { 0xfcf90001, 0x00000007, 0x0, 0x0 };
+__attribute__((section(".nor_cfg_option"), used)) const uint32_t option[4] = { 0xfcf90001, 0x00000007, 0x0, 0x0 };
 #endif
 
 #if defined(FLASH_UF2) && FLASH_UF2
-ATTR_PLACE_AT(".uf2_signature") const uint32_t uf2_signature = BOARD_UF2_SIGNATURE;
+ATTR_PLACE_AT(".uf2_signature") __attribute__((used)) const uint32_t uf2_signature = BOARD_UF2_SIGNATURE;
 #endif
 
 void board_init_console(void)
@@ -560,12 +560,12 @@ void board_init_clock(void)
     clock_set_source_divider(clock_mchtmr1, clk_src_osc24m, 1);
 }
 
-uint32_t board_init_adc_clock(void *ptr, bool clk_src_ahb)
+uint32_t board_init_adc_clock(void *ptr, bool clk_src_bus)
 {
     uint32_t freq = 0;
 
     if (ptr == (void *)HPM_ADC0) {
-        if (clk_src_ahb) {
+        if (clk_src_bus) {
             /* Configure the ADC clock from AHB (@200MHz by default)*/
             clock_set_adc_source(clock_adc0, clk_adc_src_ahb0);
         } else {
@@ -576,7 +576,7 @@ uint32_t board_init_adc_clock(void *ptr, bool clk_src_ahb)
 
         freq = clock_get_frequency(clock_adc0);
     } else if (ptr == (void *)HPM_ADC1) {
-        if (clk_src_ahb) {
+        if (clk_src_bus) {
             /* Configure the ADC clock from AHB (@200MHz by default)*/
             clock_set_adc_source(clock_adc1, clk_adc_src_ahb0);
         } else {
@@ -587,7 +587,7 @@ uint32_t board_init_adc_clock(void *ptr, bool clk_src_ahb)
 
         freq = clock_get_frequency(clock_adc1);
     } else if (ptr == (void *)HPM_ADC2) {
-        if (clk_src_ahb) {
+        if (clk_src_bus) {
             /* Configure the ADC clock from AHB (@200MHz by default)*/
             clock_set_adc_source(clock_adc2, clk_adc_src_ahb0);
         } else {
@@ -668,6 +668,11 @@ void board_init_adc16_pins(void)
     init_adc_pins();
 }
 
+void board_init_acmp_pins(void)
+{
+    init_acmp_pins();
+}
+
 void board_init_rgb_pwm_pins(void)
 {
     init_led_pins_as_pwm();
@@ -735,3 +740,9 @@ uint32_t board_init_uart_clock(UART_Type *ptr)
     }
     return freq;
 }
+
+void board_init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp)
+{
+    init_gptmr_channel_pin(ptr, channel, as_comp);
+}
+

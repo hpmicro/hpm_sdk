@@ -39,6 +39,7 @@ struct hpm_ep_state {
 /* Driver state */
 struct hpm_udc {
     usb_device_handle_t *handle;
+    bool is_suspend;
     struct hpm_ep_state in_ep[USB_NUM_BIDIR_ENDPOINTS];  /*!< IN endpoint parameters*/
     struct hpm_ep_state out_ep[USB_NUM_BIDIR_ENDPOINTS]; /*!< OUT endpoint parameters */
 } g_hpm_udc[CONFIG_USBDEV_MAX_BUS];
@@ -91,7 +92,7 @@ int usb_dc_init(uint8_t busid)
     }
 
     uint32_t int_mask;
-    int_mask = (USB_USBINTR_UE_MASK | USB_USBINTR_UEE_MASK |
+    int_mask = (USB_USBINTR_UE_MASK | USB_USBINTR_UEE_MASK | USB_USBINTR_SLE_MASK |
                 USB_USBINTR_PCE_MASK | USB_USBINTR_URE_MASK);
 
     usb_device_init(g_hpm_udc[busid].handle, int_mask);
@@ -113,6 +114,21 @@ int usbd_set_address(uint8_t busid, const uint8_t addr)
 {
     usb_device_handle_t *handle = g_hpm_udc[busid].handle;
     usb_dcd_set_address(handle->regs, addr);
+    return 0;
+}
+
+int usbd_set_remote_wakeup(uint8_t busid)
+{
+    USB_Type *ptr;
+
+    ptr = g_hpm_udc[busid].handle->regs;
+
+    if (!usb_get_suspend_status(ptr)) {
+        return -1;
+    }
+
+    usb_force_port_resume(ptr);
+
     return 0;
 }
 
@@ -259,6 +275,7 @@ void USBD_IRQHandler(uint8_t busid)
     }
 
     if (int_status & intr_reset) {
+        g_hpm_udc[busid].is_suspend = false;
         memset(g_hpm_udc[busid].in_ep, 0, sizeof(struct hpm_ep_state) * USB_NUM_BIDIR_ENDPOINTS);
         memset(g_hpm_udc[busid].out_ep, 0, sizeof(struct hpm_ep_state) * USB_NUM_BIDIR_ENDPOINTS);
         usbd_event_reset_handler(busid);
@@ -267,10 +284,12 @@ void USBD_IRQHandler(uint8_t busid)
 
     if (int_status & intr_suspend) {
         if (usb_device_get_suspend_status(handle)) {
-            usbd_event_suspend_handler(busid);
             /* Note: Host may delay more than 3 ms before and/or after bus reset before doing enumeration. */
             if (usb_device_get_address(handle)) {
+                g_hpm_udc[busid].is_suspend = true;
+                usbd_event_suspend_handler(busid);
             }
+        } else {
         }
     }
 
@@ -278,6 +297,10 @@ void USBD_IRQHandler(uint8_t busid)
         if (!usb_device_get_port_ccs(handle)) {
             usbd_event_disconnect_handler(busid);
         } else {
+            if (g_hpm_udc[busid].is_suspend) {
+                g_hpm_udc[busid].is_suspend = false;
+                usbd_event_resume_handler(busid);
+            }
             usbd_event_connect_handler(busid);
         }
     }
@@ -314,7 +337,7 @@ void USBD_IRQHandler(uint8_t busid)
                             transfer_len += p_qtd->expected_bytes - p_qtd->total_bytes;
                         }
 
-                        if (p_qtd->next == USB_SOC_DCD_QTD_NEXT_INVALID){
+                        if (p_qtd->next == USB_SOC_DCD_QTD_NEXT_INVALID) {
                             break;
                         } else {
                             p_qtd = (dcd_qtd_t *)p_qtd->next;

@@ -210,6 +210,7 @@ hpm_stat_t init_common_config(adc12_conversion_mode_t conv_mode)
 
     cfg.res            = adc12_res_12_bits;
     cfg.conv_mode      = conv_mode;
+    cfg.diff_sel       = adc12_sample_signal_single_ended;
     cfg.adc_clk_div    = adc12_clock_divider_3;
     cfg.sel_sync_ahb   = (clk_adc_src_ahb0 == clock_get_source(BOARD_APP_ADC12_CLK_NAME)) ? true : false;
 

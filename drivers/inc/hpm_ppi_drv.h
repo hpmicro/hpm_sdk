@@ -357,6 +357,15 @@ void ppi_config_cs_pin(PPI_Type *ppi, uint8_t index, ppi_cs_pin_config_t *config
  */
 void ppi_config_cmd(PPI_Type *ppi, uint8_t index, ppi_cmd_config_t *config);
 
+/**
+ * @brief convert ns to cycle
+ *
+ * @param[in] freq_in_hz PPI clock frequency in Hz
+ * @param[in] ns time in ns
+ * @return cycle count
+ */
+uint32_t ppi_ns2cycle(uint32_t freq_in_hz, uint32_t ns);
+
 #ifdef __cplusplus
 }
 #endif

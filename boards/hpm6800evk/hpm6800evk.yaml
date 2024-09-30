@@ -19,7 +19,8 @@ board:
       - board_audio_out
       - board_audio_codec
       - board_gpt_pin
-      - board_enet_pps_pin
+      - board_enet_pps_output_pin
+      - board_enet_pps_input_pin
       - board_enet_phy
       - board_sdcard
       - board_sdram

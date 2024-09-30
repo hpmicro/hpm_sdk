@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -85,12 +85,6 @@ static INT enet_mac_init(ENET_Type *ptr, enet_mac_config_t *config, enet_inf_typ
     ptr->MACCFG |= ENET_MACCFG_TE_MASK | ENET_MACCFG_RE_MASK;
 
     return true;
-}
-
-static void enet_mask_interrupt_event(ENET_Type *ptr, UINT mask)
-{
-    /* mask the specified interrupts */
-    ptr->INTR_MASK |= mask;
 }
 
 static void enet_mode_init(ENET_Type *ptr, UINT intr)

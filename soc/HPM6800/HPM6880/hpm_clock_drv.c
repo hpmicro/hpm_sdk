@@ -364,7 +364,7 @@ hpm_stat_t clock_set_adc_source(clock_name_t clock_name, clk_src_t src)
         return status_clk_invalid;
     }
 
-    if ((src < clk_adc_src_ana0) || (src > clk_adc_src_ahb0)) {
+    if ((src < clk_adc_src_ana0) || (src > clk_adc_src_axi0)) {
         return status_clk_src_invalid;
     }
 
@@ -384,7 +384,7 @@ hpm_stat_t clock_set_i2s_source(clock_name_t clock_name, clk_src_t src)
         return status_clk_invalid;
     }
 
-    if ((src < clk_i2s_src_aud0) || (src > clk_i2s_src_audx)) {
+    if ((src < clk_i2s_src_audn) || (src > clk_i2s_src_audx)) {
         return status_clk_src_invalid;
     }
 
@@ -410,8 +410,8 @@ hpm_stat_t clock_set_wdg_source(clock_name_t clock_name, clk_src_t src)
         }
     } else {
         uint32_t instance = GET_CLK_SRC_INDEX(clock_name);
-        if ((src == clk_wdg_src_ahb0) || (src == clk_wdg_src_osc32k)) {
-             uint32_t wdg_clk_src_in_ip = (uint32_t)(src - clk_wdg_src_ahb0);
+        if ((src == clk_wdg_src_axi0) || (src == clk_wdg_src_osc32k)) {
+             uint32_t wdg_clk_src_in_ip = (uint32_t)(src - clk_wdg_src_axi0);
             s_wdgs[instance]->CTRL0 = (s_wdgs[instance]->CTRL0 & ~EWDG_CTRL0_CLK_SEL_MASK) | EWDG_CTRL0_CLK_SEL_SET(wdg_clk_src_in_ip);
         } else {
             return status_invalid_argument;

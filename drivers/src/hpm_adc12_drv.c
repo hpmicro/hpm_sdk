@@ -146,11 +146,8 @@ hpm_stat_t adc12_init(ADC12_Type *ptr, adc12_config_t *config)
     /* Set enadc */
     ptr->ANA_CTRL0 |= ADC12_ANA_CTRL0_ENADC_MASK;
 
-    /* Do a calibration for single-ended mode */
-    adc12_do_calibration(ptr, adc12_sample_signal_single_ended);
-
-    /* Do a calibration for differential mode */
-    adc12_do_calibration(ptr, adc12_sample_signal_differential);
+    /* Do a calibration corresponding to the configured mode */
+    adc12_do_calibration(ptr, config->diff_sel);
 
     /* Set ADC clock divider */
     if (adc_clk_div == ADC12_SOC_CLOCK_CLK_DIV) {

@@ -107,7 +107,6 @@
 /*
 * ENET Section
 */
-#define ENET_SOC_RGMII_EN                          (0U)
 #define ENET_SOC_DESC_ADDR_ALIGNMENT               (32U)
 #define ENET_SOC_BUFF_ADDR_ALIGNMENT               (4U)
 #define ENET_SOC_ADDR_MAX_COUNT                    (5U)
@@ -115,7 +114,22 @@
 #define ENET_SOC_ALT_EHD_DES_MAX_LEN               (8U)
 #define ENET_SOC_ALT_EHD_DES_LEN                   (8U)
 #define ENET_SOC_PPS_MAX_COUNT                     (2L)
-#define ENET_SOC_PPS1_EN                           (0U)
+#define ENET_SOC_DMA_BUS_WIDTH_IN_BYTES            (8U)
+
+/*
+ * TSW Section
+ */
+#define TSW_SOC_DATA_BUS_WIDTH                     (4U)
+#define TSW_SOC_SWITCH_HEADER_LEN                  (16U)
+#define TSW_SOC_DMA_MAX_DESC_COUNT                 (16U)
+#define TSW_SOC_TX_CMD_BUF_DEPTH                   (16U)
+#define TSW_SOC_RX_CMD_BUF_DEPTH                   (16U)
+#define TSW_SOC_PTP_SYNC_TIMER_COUNT               (5U)
+#define TSW_SOC_PTP_BIN_SIZE                       (256U)
+#define TSW_SOC_PTP_BIN_COUNT                      (8U)
+#define TSW_SOC_SHAP_MAX_QUEUES                    (8U)
+#define TSW_SOC_SHAP_MAX_CL_ENTRIES                (256U)
+#define TSW_SOC_RTC_PORT                           (0U)
 
 /*
 * ADC Section
@@ -171,7 +185,7 @@
 /*
  * SPI Section
  */
-#define SPI_SOC_TRANSFER_COUNT_MAX  (512U)
+#define SPI_SOC_TRANSFER_COUNT_MAX  (0xFFFFFFFFU)
 #define SPI_SOC_FIFO_DEPTH          (4U)
 
 /*

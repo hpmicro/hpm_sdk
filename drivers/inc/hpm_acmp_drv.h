@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -61,6 +61,14 @@
 #define ACMP_EVENT_FALLING_EDGE (2U)
 
 /**
+ * @brief ACMP cap selection mask
+ */
+#define ACMP_CAP_SEL_LEVEL_0 (0U)
+#define ACMP_CAP_SEL_LEVEL_1 (1U)
+#define ACMP_CAP_SEL_LEVEL_2 (2U)
+#define ACMP_CAP_SEL_LEVEL_3 (3U)
+
+/**
  * @brief ACMP channel config
  */
 
@@ -92,8 +100,24 @@ extern "C" {
  */
 static inline void acmp_channel_config_dac(ACMP_Type *ptr, uint8_t ch, uint32_t value)
 {
-    ptr->CHANNEL[ch].DACCFG = ACMP_CHANNEL_DACCFG_DACCFG_SET(value);
+    ptr->CHANNEL[ch].DACCFG = (ptr->CHANNEL[ch].DACCFG & ~ACMP_CHANNEL_DACCFG_DACCFG_MASK) | ACMP_CHANNEL_DACCFG_DACCFG_SET(value);
 }
+
+#if defined(HPM_IP_FEATURE_ACMP_HAS_CAP_SEL) && HPM_IP_FEATURE_ACMP_HAS_CAP_SEL
+/**
+ * @brief Configure the capacitor selection for an ACMP channel
+ *
+ * Configures the capacitor selection for a given ACMP channel based on the channel number and capacitor level.
+ *
+ * @param ptr ACMP base address
+ * @param ch Channel number
+ * @param level Capacitor level
+ */
+static inline void acmp_channel_config_cap_selection(ACMP_Type *ptr, uint8_t ch, uint32_t level)
+{
+    ptr->CHANNEL[ch].DACCFG = (ptr->CHANNEL[ch].DACCFG & ~ACMP_CHANNEL_DACCFG_CAP_SEL_MASK) | ACMP_CHANNEL_DACCFG_CAP_SEL_SET(level);
+}
+#endif
 
 /**
  * @brief ACMP channel clear status

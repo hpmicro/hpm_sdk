@@ -4075,6 +4075,15 @@ typedef struct {
 #define ESC_PHY_CFG0_MAC_SPEED_GET(x) (((uint32_t)(x) & ESC_PHY_CFG0_MAC_SPEED_MASK) >> ESC_PHY_CFG0_MAC_SPEED_SHIFT)
 
 /*
+ * PHY_OFFSET_VAL (RW)
+ *
+ */
+#define ESC_PHY_CFG0_PHY_OFFSET_VAL_MASK (0x1F000000UL)
+#define ESC_PHY_CFG0_PHY_OFFSET_VAL_SHIFT (24U)
+#define ESC_PHY_CFG0_PHY_OFFSET_VAL_SET(x) (((uint32_t)(x) << ESC_PHY_CFG0_PHY_OFFSET_VAL_SHIFT) & ESC_PHY_CFG0_PHY_OFFSET_VAL_MASK)
+#define ESC_PHY_CFG0_PHY_OFFSET_VAL_GET(x) (((uint32_t)(x) & ESC_PHY_CFG0_PHY_OFFSET_VAL_MASK) >> ESC_PHY_CFG0_PHY_OFFSET_VAL_SHIFT)
+
+/*
  * PORT2_RMII_EN (RW)
  *
  */
@@ -4236,7 +4245,8 @@ typedef struct {
  * select the trigger signal to latch GPI.
  * 0000: SOF;  0001: EOF;  0010: pos of  SYNC0;  0011: pos of SYNC1;
  * 0100: pos of LATCH0;   0101: pos of LATCH1;   0110: neg of LATCH0;   0111: neg of LATCH1
- * 1000: wdog trigger;   1001: sw set gpio_ctrl[31];   others no trigger
+ * 1000: wdog trigger;   1001: sw set gpio_ctrl[31];
+ * others no trigger
  */
 #define ESC_GPIO_CTRL_GPI_TRIG_SEL_MASK (0xF00U)
 #define ESC_GPIO_CTRL_GPI_TRIG_SEL_SHIFT (8U)
@@ -4261,7 +4271,8 @@ typedef struct {
  * select the trigger signal to latch GPO.
  * 0000: SOF;  0001: EOF;  0010: pos of  SYNC0;  0011: pos of SYNC1;
  * 0100: pos of LATCH0;   0101: pos of LATCH1;   0110: neg of LATCH0;   0111: neg of LATCH1
- * 1000: wdog trigger;   1001: sw set gpio_ctrl[30];   others no trigger
+ * 1000: wdog trigger;   1001: sw set gpio_ctrl[30];
+ * others no trigger
  */
 #define ESC_GPIO_CTRL_GPO_TRIG_SEL_MASK (0xFU)
 #define ESC_GPIO_CTRL_GPO_TRIG_SEL_SHIFT (0U)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -19,6 +19,7 @@
 #define TEST_ACMP_CHANNEL BOARD_ACMP_CHANNEL
 #define TEST_ACMP_PLUS_INPUT BOARD_ACMP_PLUS_INPUT /* use internal DAC */
 #define TEST_ACMP_MINUS_INPUT BOARD_ACMP_MINUS_INPUT /* align with used pin */
+#define TEST_ACMP_DAC_MAX_VALUE ACMP_CHANNEL_DACCFG_DACCFG_MASK
 
 volatile bool acmp_output_toggle;
 
@@ -37,7 +38,7 @@ int main(void)
 #if defined(ACMP_SOC_BANDGAP) && ACMP_SOC_BANDGAP
     acmp_enable_bandgap();
 #endif
-    init_acmp_pins();
+    board_init_acmp_pins();
 
     acmp_channel_get_default_config(TEST_ACMP, &acmp_channel_configure);
     acmp_channel_configure.plus_input = TEST_ACMP_PLUS_INPUT;
@@ -58,10 +59,10 @@ int main(void)
         acmp_channel_clear_status(TEST_ACMP, TEST_ACMP_CHANNEL, ACMP_EVENT_RISING_EDGE);
         acmp_channel_enable_irq(TEST_ACMP, TEST_ACMP_CHANNEL, ACMP_EVENT_RISING_EDGE, true);
 
-        for (uint32_t dac_value = 0; dac_value <= 0xff; dac_value++)
+        for (uint32_t dac_value = 0; dac_value <= TEST_ACMP_DAC_MAX_VALUE; dac_value++)
         {
             acmp_channel_config_dac(TEST_ACMP, TEST_ACMP_CHANNEL, dac_value);
-            board_delay_ms(15U);
+            board_delay_us(100U);
             if (acmp_output_toggle) {
                 printf("acmp out toggled, the dac set value is 0x%x\n", dac_value);
                 acmp_output_toggle = false;

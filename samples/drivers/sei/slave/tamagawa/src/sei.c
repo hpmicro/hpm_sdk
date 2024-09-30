@@ -17,6 +17,7 @@ static uint32_t sample_latch_tm1;
 static uint32_t sample_latch_tm2;
 static uint32_t s_eeprom_page;
 static uint32_t s_eeprom[6][127];
+volatile bool flag_trx_error;
 
 int main(void)
 {
@@ -35,7 +36,7 @@ int main(void)
     printf("SEI slave tamagawa sample\n");
 
     sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, false);
-
+    flag_trx_error = false;
     /* [1] tranceiver config */
     tranceiver_config.mode = sei_asynchronous_mode;
     tranceiver_config.tri_sample = false;
@@ -273,7 +274,6 @@ int main(void)
     state_transition_config.disable_instr_ptr_check = true;
     sei_state_transition_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0, SEI_CTRL_LATCH_TRAN_3_0, &state_transition_config);
 
-    /* [6] state transition config */
     /* latch1 */
     state_transition_config.disable_clk_check = true;
     state_transition_config.disable_txd_check = true;
@@ -302,6 +302,35 @@ int main(void)
     state_transition_config.disable_instr_ptr_check = true;
     sei_state_transition_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_1, SEI_CTRL_LATCH_TRAN_3_0, &state_transition_config);
 
+    /* latch2 */
+    /* used to clear trx error flag */
+    state_transition_config.disable_clk_check = true;
+    state_transition_config.disable_txd_check = true;
+    state_transition_config.disable_rxd_check = true;
+    state_transition_config.disable_timeout_check = true;
+    state_transition_config.disable_instr_ptr_check = false;
+    state_transition_config.instr_ptr_cfg = sei_state_tran_condition_rise_entry;
+    state_transition_config.instr_ptr_value = 0;
+    sei_state_transition_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_2, SEI_CTRL_LATCH_TRAN_0_1, &state_transition_config);
+    state_transition_config.disable_clk_check = true;
+    state_transition_config.disable_txd_check = true;
+    state_transition_config.disable_rxd_check = true;
+    state_transition_config.disable_timeout_check = true;
+    state_transition_config.disable_instr_ptr_check = true;
+    sei_state_transition_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_2, SEI_CTRL_LATCH_TRAN_1_2, &state_transition_config);
+    state_transition_config.disable_clk_check = true;
+    state_transition_config.disable_txd_check = true;
+    state_transition_config.disable_rxd_check = true;
+    state_transition_config.disable_timeout_check = true;
+    state_transition_config.disable_instr_ptr_check = true;
+    sei_state_transition_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_2, SEI_CTRL_LATCH_TRAN_2_3, &state_transition_config);
+    state_transition_config.disable_clk_check = true;
+    state_transition_config.disable_txd_check = true;
+    state_transition_config.disable_rxd_check = true;
+    state_transition_config.disable_timeout_check = true;
+    state_transition_config.disable_instr_ptr_check = true;
+    sei_state_transition_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_2, SEI_CTRL_LATCH_TRAN_3_0, &state_transition_config);
+
     /* [6] sample config*/
     sample_config.pos_data_idx = SEI_DAT_5;
     sample_config.rev_data_idx = SEI_DAT_7;
@@ -310,15 +339,15 @@ int main(void)
     sample_config.sample_window = 0x5;
     sample_config.sample_once = true;
     sample_config.latch_select = SEI_LATCH_0;
-    sample_config.data_register_select = BIT5_MASK | BIT7_MASK; /* SEI_DAT_5, SEI_DAT_7 */
+    sample_config.data_register_select = BIT5_MASK | BIT7_MASK | BIT9_MASK; /* POS and REV data will be sampled into DAT5 and DAT7, CRC(DAT9) value will be set to init value */
     sei_sample_config_init(BOARD_SEI, BOARD_SEI_CTRL, &sample_config);
     sei_set_sample_pos_override_value(BOARD_SEI, BOARD_SEI_CTRL, mock_pos);
     sei_set_sample_rev_override_value(BOARD_SEI, BOARD_SEI_CTRL, mock_rev);
 
     /* [7] interrupt config */
     intc_m_enable_irq_with_priority(BOARD_SEI_IRQn, 1);
-    sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event | sei_irq_latch1_event | sei_irq_wdog_event | sei_irq_trx_err_event);
-    sei_set_irq_enable(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event | sei_irq_latch1_event | sei_irq_wdog_event | sei_irq_trx_err_event, true);
+    sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event | sei_irq_latch1_event | sei_irq_latch2_event | sei_irq_wdog_event | sei_irq_trx_err_event);
+    sei_set_irq_enable(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event | sei_irq_latch1_event | sei_irq_latch2_event | sei_irq_wdog_event | sei_irq_trx_err_event, true);
 
     /* [8] enbale sync timer timestamp */
     synt_enable_timestamp(HPM_SYNT, true);
@@ -347,6 +376,12 @@ int main(void)
     sei_state_transition_latch_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_1, &state_transition_latch_config);
     sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, true);
 
+    state_transition_latch_config.enable = true;
+    state_transition_latch_config.output_select = SEI_CTRL_LATCH_TRAN_0_1;
+    state_transition_latch_config.delay = 0;
+    sei_state_transition_latch_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_2, &state_transition_latch_config);
+    sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, true);
+
     while (1) {
         ;
     }
@@ -356,54 +391,72 @@ void isr_sei(void)
 {
     uint32_t delta;
     uint32_t cmd;
-
+    if (sei_get_irq_status(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_trx_err_event)) {
+        sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_trx_err_event);
+        flag_trx_error = true;
+        sei_set_engine_rewind(BOARD_SEI, BOARD_SEI_CTRL);
+        printf("TRX Error!\n");
+    }
+    if (sei_get_irq_status(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch2_event)) {
+        flag_trx_error = false;
+    }
     if (sei_get_irq_status(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event)) {
         sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event);
-        sample_latch_tm1 = sei_get_latch_time(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0);
-        mock_pos++;
-        if (mock_pos > 0x00FFFFFF) {
-            mock_pos = 0;
-            mock_rev++;
-            if (mock_rev > 0x00FFFFFF) {
-                mock_rev = 0;
+        /* Something wrong happened, so we rewind engine to the init instr */
+        if (flag_trx_error) {
+            sei_set_engine_rewind(BOARD_SEI, BOARD_SEI_CTRL);
+        } else {
+            sample_latch_tm1 = sei_get_latch_time(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0);
+            mock_pos++;
+            if (mock_pos > 0x00FFFFFF) {
+                mock_pos = 0;
+                mock_rev++;
+                if (mock_rev > 0x00FFFFFF) {
+                    mock_rev = 0;
+                }
             }
+            sei_set_sample_pos_override_value(BOARD_SEI, BOARD_SEI_CTRL, mock_pos);
+            sei_set_sample_rev_override_value(BOARD_SEI, BOARD_SEI_CTRL, mock_rev);
+            sei_set_data_value(BOARD_SEI, SEI_DAT_4, 0x00);
+            sei_set_data_value(BOARD_SEI, SEI_DAT_6, 0x17);
+            sei_set_data_value(BOARD_SEI, SEI_DAT_8, 0x00);
+            delta = (sample_latch_tm1 > sample_latch_tm2) ? (sample_latch_tm1 - sample_latch_tm2) : (sample_latch_tm1 - sample_latch_tm2 + 0xFFFFFFFFu);
+            printf("CMD:%#x, SF:%#x, ST:%#x, ENID:%#x, MT:%#x, ALMC:%#x, CRC:%#x, sample_tm1:%u, sample_tm2:%u, sample_interval:%d us\n",
+                    sei_get_command_value(BOARD_SEI, BOARD_SEI_CTRL),
+                    sei_get_data_value(BOARD_SEI, SEI_DAT_4),
+                    sei_get_data_value(BOARD_SEI, SEI_DAT_5),
+                    sei_get_data_value(BOARD_SEI, SEI_DAT_6),
+                    sei_get_data_value(BOARD_SEI, SEI_DAT_7),
+                    sei_get_data_value(BOARD_SEI, SEI_DAT_8),
+                    sei_get_data_value(BOARD_SEI, SEI_DAT_9) & 0xFF,
+                    sample_latch_tm1, sample_latch_tm2, delta / (clock_get_frequency(BOARD_MOTOR_CLK_NAME) / 1000000));
+            sample_latch_tm2 = sample_latch_tm1;
         }
-        sei_set_sample_pos_override_value(BOARD_SEI, BOARD_SEI_CTRL, mock_pos);
-        sei_set_sample_rev_override_value(BOARD_SEI, BOARD_SEI_CTRL, mock_rev);
-        sei_set_data_value(BOARD_SEI, SEI_DAT_4, 0x00);
-        sei_set_data_value(BOARD_SEI, SEI_DAT_6, 0x17);
-        sei_set_data_value(BOARD_SEI, SEI_DAT_8, 0x00);
-        delta = (sample_latch_tm1 > sample_latch_tm2) ? (sample_latch_tm1 - sample_latch_tm2) : (sample_latch_tm1 - sample_latch_tm2 + 0xFFFFFFFFu);
-        printf("CMD:%#x, SF:%#x, ST:%#x, ENID:%#x, MT:%#x, ALMC:%#x, CRC:%#x, sample_tm1:%u, sample_tm2:%u, sample_interval:%d us\n",
-                sei_get_command_value(BOARD_SEI, BOARD_SEI_CTRL),
-                sei_get_data_value(BOARD_SEI, SEI_DAT_4),
-                sei_get_data_value(BOARD_SEI, SEI_DAT_5),
-                sei_get_data_value(BOARD_SEI, SEI_DAT_6),
-                sei_get_data_value(BOARD_SEI, SEI_DAT_7),
-                sei_get_data_value(BOARD_SEI, SEI_DAT_8),
-                sei_get_data_value(BOARD_SEI, SEI_DAT_9) & 0xFF,
-                sample_latch_tm1, sample_latch_tm2, delta / (clock_get_frequency(BOARD_MOTOR_CLK_NAME) / 1000000));
-        sample_latch_tm2 = sample_latch_tm1;
     } else if (sei_get_irq_status(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch1_event)) {
         sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch1_event);
-        cmd = sei_get_command_value(BOARD_SEI, BOARD_SEI_CTRL);
-        if (cmd == 0x32u) {
-            uint32_t addr = sei_get_data_value(BOARD_SEI, SEI_DAT_2) & 0x7Fu;
-            uint32_t data = sei_get_data_value(BOARD_SEI, SEI_DAT_3);
-            if (addr == 127) {
-                s_eeprom_page = data;
-                printf("Change EEPORM page to %d\n", s_eeprom_page);
-            } else {
-                s_eeprom[s_eeprom_page][addr] = data;
-                printf("Write EEPORM - Page: %d, Addr: %d, Data: %d\n", s_eeprom_page, addr, data);
-            }
-        } else if (cmd == 0xEAu) {
-            uint32_t addr = sei_get_data_value(BOARD_SEI, SEI_DAT_2) & 0x7Fu;
-            sei_set_data_value(BOARD_SEI, SEI_DAT_2, addr);
-            sei_set_data_value(BOARD_SEI, SEI_DAT_3, s_eeprom[s_eeprom_page][addr]);
-            printf("Read EEPORM - Page: %d, Addr: %d, Data: %d\n", s_eeprom_page, addr, s_eeprom[s_eeprom_page][addr]);
+        /* Something wrong happened, so we rewind engine to the init instr */
+        if (flag_trx_error) {
+            sei_set_engine_rewind(BOARD_SEI, BOARD_SEI_CTRL);
         } else {
-            ;
+            cmd = sei_get_command_value(BOARD_SEI, BOARD_SEI_CTRL);
+            if (cmd == 0x32u) {
+                uint32_t addr = sei_get_data_value(BOARD_SEI, SEI_DAT_2) & 0x7Fu;
+                uint32_t data = sei_get_data_value(BOARD_SEI, SEI_DAT_3);
+                if (addr == 127) {
+                    s_eeprom_page = data;
+                    printf("Change EEPORM page to %d\n", s_eeprom_page);
+                } else {
+                    s_eeprom[s_eeprom_page][addr] = data;
+                    printf("Write EEPORM - Page: %d, Addr: %d, Data: %d\n", s_eeprom_page, addr, data);
+                }
+            } else if (cmd == 0xEAu) {
+                uint32_t addr = sei_get_data_value(BOARD_SEI, SEI_DAT_2) & 0x7Fu;
+                sei_set_data_value(BOARD_SEI, SEI_DAT_2, addr);
+                sei_set_data_value(BOARD_SEI, SEI_DAT_3, s_eeprom[s_eeprom_page][addr]);
+                printf("Read EEPORM - Page: %d, Addr: %d, Data: %d\n", s_eeprom_page, addr, s_eeprom[s_eeprom_page][addr]);
+            } else {
+                ;
+            }
         }
     } else {
         ;
@@ -412,11 +465,6 @@ void isr_sei(void)
     if (sei_get_irq_status(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_wdog_event)) {
         sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_wdog_event);
         sei_set_command_rewind(BOARD_SEI, BOARD_SEI_CTRL);
-    }
-
-    if (sei_get_irq_status(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_trx_err_event)) {
-        sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_trx_err_event);
-        printf("TRX Error!\n");
     }
 }
 SDK_DECLARE_EXT_ISR_M(BOARD_SEI_IRQn, isr_sei)

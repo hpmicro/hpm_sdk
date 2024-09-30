@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2023 HPMicro
+# Copyright (c) 2021-2024 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 add_subdirectory_ifdef(CONFIG_LVGL lvgl)
@@ -32,6 +32,8 @@ add_subdirectory_ifdef(CONFIG_CHERRYRB cherryrb)
 add_subdirectory_ifdef(CONFIG_MINIMP3 minimp3)
 add_subdirectory_ifdef(CONFIG_LODEPNG lodepng)
 add_subdirectory_ifdef(CONFIG_CHERRYSH cherrysh)
+add_subdirectory_ifdef(CONFIG_HPM_MONITOR hpm_monitor)
+add_subdirectory_ifdef(CONFIG_TSN tsn)
 if(CONFIG_CHERRYSH)
 add_subdirectory(cherryrb)
 endif()

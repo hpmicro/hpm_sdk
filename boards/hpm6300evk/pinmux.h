@@ -1,5 +1,5 @@
 /*
- *Copyright (c) 2022 HPMicro
+ *Copyright (c) 2022-2024 HPMicro
  *
  *SPDX-License-Identifier: BSD-3-Clause
  *
@@ -40,8 +40,10 @@ void init_i2c_pins_as_gpio(I2C_Type *ptr);
 void init_led_pins(void);
 void init_trgmux_pins(uint32_t pin);
 void init_enet_pps_pins(void);
+void init_enet_pps_capture_pins(void);
 void init_tamper_pins(void);
 void init_uart_break_signal_pin(void);
+void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp);
 
 #ifdef __cplusplus
 }

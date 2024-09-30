@@ -197,6 +197,37 @@ static inline void esc_pdi_reset(ESC_Type *ptr)
     ptr->ESC_RST_PDI = 0x53; /* S */
 }
 
+/**
+ * @brief ESC set phy offset
+ *
+ * @param[in] ptr ESC base address
+ * @param[in] offset PHY register offset
+ */
+static inline void esc_set_phy_offset(ESC_Type *ptr, uint8_t offset)
+{
+    ptr->PHY_CFG0 = (ptr->PHY_CFG0 & ~ESC_PHY_CFG0_PHY_OFFSET_VAL_MASK) | (offset << ESC_PHY_CFG0_PHY_OFFSET_VAL_SHIFT);
+}
+
+/**
+ * @brief ESC enable PDI to access MII management
+ *
+ * @param[in] ptr ESC base address
+ */
+static inline void esc_enable_pdi_access_mii_management(ESC_Type *ptr)
+{
+    ptr->MIIM_PDI_ACC_STAT |= ESC_MIIM_PDI_ACC_STAT_ACC_MASK;
+}
+
+/**
+ * @brief ESC disable PDI to access MII management
+ *
+ * @param[in] ptr ESC base address
+ */
+static inline void esc_disable_pdi_access_mii_management(ESC_Type *ptr)
+{
+    ptr->MIIM_PDI_ACC_STAT &= ~ESC_MIIM_PDI_ACC_STAT_ACC_MASK;
+}
+
 /*!
  * @brief ESC read PHY register via ESC MII Management Interface
  *
@@ -205,7 +236,6 @@ static inline void esc_pdi_reset(ESC_Type *ptr)
  * @param[in] reg_addr Register address.
  * @param[in] data PHY data returned.
  */
-
 hpm_stat_t esc_mdio_read(ESC_Type *ptr, uint8_t phy_addr, uint8_t reg_addr, uint16_t *data);
 
 /*!

@@ -43,6 +43,7 @@ The HPM SDK Project is a software development kit based on HPMicro's MCUs, which
 ## Repositories
 - hpm_sdk: https://github.com/hpmicro/hpm_sdk
 - sdk_env: https://github.com/hpmicro/sdk_env
+- hpm_apps: https://github.com/hpmicro/hpm_apps
 - sdk extra demo: https://github.com/hpmicro/hpm_sdk_extra
 - openocd (hpmicro patched): https://github.com/hpmicro/riscv-openocd
 - gnu gcc toolchain: https://github.com/hpmicro/riscv-gnu-toolchain

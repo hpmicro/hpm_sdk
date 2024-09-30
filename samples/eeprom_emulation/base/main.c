@@ -174,6 +174,10 @@ int main(void)
             case DEMO_SHOW_INFO:
                 eeprom_show_info();
                 break;
+            case '\r':
+                break;
+            case '\n':
+                break;
             default:
                 eeprom_show_index();
                 break;

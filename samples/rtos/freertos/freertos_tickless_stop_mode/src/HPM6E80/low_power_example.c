@@ -6,9 +6,6 @@
  */
 
 #include "board.h"
-#include "hpm_sysctl_drv.h"
-#include "hpm_pcfg_drv.h"
-#include "hpm_bcfg_drv.h"
 #include "hpm_gpio_drv.h"
 
 /* In order to further reduce power consumption, turn off unnecessary peripherals here,

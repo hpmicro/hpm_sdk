@@ -28,6 +28,9 @@ static const hcd_controller_t _hcd_controller[] =
  *---------------------------------------------------------------------*/
 static void usb_host_mode_init(USB_Type *ptr)
 {
+    /* Stop */
+    ptr->USBCMD &= ~USB_USBCMD_RS_MASK;
+
     /* Reset controller */
     ptr->USBCMD |= USB_USBCMD_RST_MASK;
     while (USB_USBCMD_RST_GET(ptr->USBCMD)) {
@@ -56,7 +59,7 @@ bool hcd_init(uint8_t rhport)
         return false;
     }
 
-    usb_phy_init(_hcd_controller[rhport].regs);
+    usb_phy_init(_hcd_controller[rhport].regs, true);
     usb_host_mode_init(_hcd_controller[rhport].regs);
     ehci_init(rhport, ((uint32_t)(_hcd_controller[rhport].regs) + 0x100u), (uint32_t)(&_hcd_controller[rhport].regs->USBCMD));
 

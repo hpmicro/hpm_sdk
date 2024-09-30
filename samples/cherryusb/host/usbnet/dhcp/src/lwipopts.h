@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2001-2003 Swedish Institute of Computer Science.
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -37,13 +37,6 @@
 
 #define SYS_LIGHTWEIGHT_PROT            0
 #define LWIP_PROVIDE_ERRNO              1
-
-#if defined(__SEGGER_RTL_VERSION)
-#define LWIP_TIMEVAL_PRIVATE            1
-#else
-#define LWIP_TIMEVAL_PRIVATE            0
-#endif
-
 #define LWIP_RAND                       rand
 
 #define NO_SYS                          0

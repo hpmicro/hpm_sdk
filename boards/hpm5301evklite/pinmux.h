@@ -26,6 +26,8 @@ void init_adc_bldc_pins(void);
 void init_usb_pins(void);
 void init_led_pins_as_gpio(void);
 void init_uart_break_signal_pin(void);
+void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp);
+
 #ifdef __cplusplus
 }
 #endif

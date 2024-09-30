@@ -2,13 +2,15 @@
 
 ## 概述
 
-HPM6E00是一款运行于600MHz的双核MCU。它有一个2MB的连续片上ram。HPM6E00EVK为HPM6E00系列微控制器的特色外设提供了一系列接口，包括ADC输入SMA接口、SDM输入SMA接口，电机控制接口、ABZ接口、RS485/422接口、Ethernet接口、两个EtherCAT接口、一个PPI/FEMC接口和一个树莓派接口。HPM6E00EVK集成了一个板载调试器。
+HPM6E00是一款运行于600MHz的双核RISC-V MCU，具有很高的算力和丰富的外设资源，片上具有2MB的RAM。
+
+HPM6E00EVK为HPM6E00系列MCU的评估板，提供了一系列接口，包括ADC输入SMA接口、SDM输入SMA接口，电机控制接口(QEO/QEI/SEI/PWM/ADC)、CAN接口、Ethernet接口、EtherCAT接口、USB接口、音频接口、PPI/FEMC接口和树莓派接口，并集成板载调试器FT2232，方便用户进行调试。
 
  ![hpm6e00evk](doc/hpm6e00evk.png "hpm6e00evk")
 
 ## 板上硬件资源
 
-- HPM6E00 微控制器 (主频600Mhz, 1M片上SRAM)
+- HPM6E00 微控制器 (主频600Mhz双核，2MB片上RAM)
 - 板载存储
   - 16MB Quad SPI NOR Flash
 - 以太网
@@ -45,7 +47,6 @@ HPM6E00是一款运行于600MHz的双核MCU。它有一个2MB的连续片上ram�
 | Bit[2:1] | 功能描述                |
 | -------- | ----------------------- |
 | OFF, OFF | Quad SPI NOR flash 启动 |
-| OFF, ON  | eMMC启动                |
 | ON, OFF  | 在系统编程              |
 
 (lab_hpm6e00_evk_board)=
@@ -56,8 +57,8 @@ HPM6E00是一款运行于600MHz的双核MCU。它有一个2MB的连续片上ram�
 
 | 名称         | 功能                                  |
 | ------------ | ------------------------------------- |
-| PBUTN (KEYA) | GPIO 按键                             |
-| PBUTN2 (KEYB) | GPIO 按键2                             |
+| PB24 (KEYA) | GPIO 按键A                             |
+| PB25 (KEYB) | GPIO 按键B                             |
 | WBUTN (WKUP) | WAKE UP 按键                          |
 | RESETN (RESET) | Reset 按键                            |
 
@@ -93,7 +94,7 @@ PUART用于低功耗测试，例如唤醒等。
 
 - UART0串口引脚：
 
- UART0用于调试控制台串口。
+ UART0用于Core0的调试控制台串口。
 
 | 功能     | 引脚 |   位置     |
 | -------- | ---- |  --------- |
@@ -102,7 +103,7 @@ PUART用于低功耗测试，例如唤醒等。
 
 - UART1串口引脚：
 
- UART1用于一些使用UART的功能测试，例如MICROROS_UART，USB_CDC_ACM_UART, MODBUS_RTU, lin等。
+ UART1用于Core1的调试控制台串口或一些使用UART的功能测试，例如MICROROS_UART，USB_CDC_ACM_UART, MODBUS_RTU, lin等。
 
 | 功能     | 引脚 |   位置     | 位置     |
 | -------- | ---- |  --------- | ------ |
@@ -156,10 +157,10 @@ PUART用于低功耗测试，例如唤醒等。
 | --------- | ------ |
 | PWM.WL  | J4[12] |
 | PWM.WH  | J4[11] |
-| PWM.VL  | J4[10] |
-| PWM.VH  | J4[9] |
-| PWM.UL  | J4[8] |
-| PWM.UH  | J4[7] |
+| PWM.VL / PWM1.P3 | J4[10] |
+| PWM.VH / PWM1.P2 | J4[9] |
+| PWM.UL / PWM1.P1 | J4[8] |
+| PWM.UH / PWM1.P0 | J4[7] |
 
 - SEI 接口
 
@@ -171,12 +172,6 @@ PUART用于低功耗测试，例如唤醒等。
 | SEI.CLK_OUT_N  | J4[25] |从机模式下时钟差分输入N|
 | SEI.DATA_P  | J4[23] |数据差分信号线P|
 | SEI.DATA_N  | J4[21] |数据差分信号线N|
-
-- SEI CLK选择
-
-| 功能      | 位置   | 说明 |
-| --------- | ------ |------|
-| SEI.CLK选择  | J3 | Master侧，选择CLKO；Slave侧，选择CLKI |
 
 - QEIV2 Sin/Cos引脚
 
@@ -242,3 +237,22 @@ PUART用于低功耗测试，例如唤醒等。
 | -------- | ------ |
 | I2C0.SCL | P5[28] |
 | I2C0.SDA | P5[27] |
+
+- 以太网PPS引脚:
+
+| 功能        | 引脚 | 位置   |
+| ----------- | ---- | ------ |
+| ENET0.EVTO0 | PE06 | J4[24] |
+| ENET0.EVTO1 | PF20 | J4[4]  |
+| ENET0.EVTI1 | PE07 | J4[26] |
+
+- ECAT:
+
+| 功能        | 引脚 | 位置   |
+| ----------- | ---- | ------ |
+| 网口(Port0) | - | P1 |
+| 网口(Port1) | - | P2 |
+| RUN LED | PE03 | LED7 |
+| ERR LED | PE02 | LED6 |
+| 输入IO(2bit) | PC31/PD09 | SW6 |
+| 输出IO(2bit) | PD08/PE14 | LED8/LED3 |

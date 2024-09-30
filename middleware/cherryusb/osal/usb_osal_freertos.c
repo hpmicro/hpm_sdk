@@ -126,6 +126,7 @@ static void __usb_timeout(TimerHandle_t *handle)
 struct usb_osal_timer *usb_osal_timer_create(const char *name, uint32_t timeout_ms, usb_timer_handler_t handler, void *argument, bool is_period)
 {
     struct usb_osal_timer *timer;
+    (void)name;
 
     timer = pvPortMalloc(sizeof(struct usb_osal_timer));
 
@@ -197,4 +198,14 @@ void usb_osal_leave_critical_section(size_t flag)
 void usb_osal_msleep(uint32_t delay)
 {
     vTaskDelay(pdMS_TO_TICKS(delay));
+}
+
+void *usb_osal_malloc(size_t size)
+{
+    return pvPortMalloc(size);
+}
+
+void usb_osal_free(void *ptr)
+{
+    vPortFree(ptr);
 }

@@ -4431,6 +4431,17 @@ ICMP payload */
 #define ENET_PPS_CTRL_TRGTMODSEL1_GET(x) (((uint32_t)(x) & ENET_PPS_CTRL_TRGTMODSEL1_MASK) >> ENET_PPS_CTRL_TRGTMODSEL1_SHIFT)
 
 /*
+ * PPSEN1 (RW)
+ *
+ * "Flexible PPS Output Mode Enable
+ * When set low, Bits [3:0] function as PPSCTRL (backward compatible). When set high, Bits[3:0] function as PPSCMD."
+ */
+#define ENET_PPS_CTRL_PPSEN1_MASK (0x1000U)
+#define ENET_PPS_CTRL_PPSEN1_SHIFT (12U)
+#define ENET_PPS_CTRL_PPSEN1_SET(x) (((uint32_t)(x) << ENET_PPS_CTRL_PPSEN1_SHIFT) & ENET_PPS_CTRL_PPSEN1_MASK)
+#define ENET_PPS_CTRL_PPSEN1_GET(x) (((uint32_t)(x) & ENET_PPS_CTRL_PPSEN1_MASK) >> ENET_PPS_CTRL_PPSEN1_SHIFT)
+
+/*
  * PPSCMD1 (WO)
  *
  * Flexible PPS1 Output Control

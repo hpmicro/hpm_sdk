@@ -82,7 +82,7 @@ hpm_stat_t spi_sd_init(void)
     txdma_complete = false;
 #endif
     memset(tx_dummy, 0xFF, sizeof(tx_dummy));
-    g_spi_io.set_spi_speed = set_spi_speed;
+    g_spi_io.set_spi_speed     = set_spi_speed;
     g_spi_io.cs_select         = cs_select;
     g_spi_io.cs_relese         = cs_relese;
     g_spi_io.sdcard_is_present = sdcard_is_present;
@@ -90,6 +90,8 @@ hpm_stat_t spi_sd_init(void)
     g_spi_io.write_cmd_data    = write_cmd_data;
     g_spi_io.write             = write;
     g_spi_io.read              = read;
+    g_spi_io.delay_ms          = board_delay_ms;
+    g_spi_io.delay_us          = board_delay_us;
     return sdcard_spi_init(&g_spi_io);
 }
 

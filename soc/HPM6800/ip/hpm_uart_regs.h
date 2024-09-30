@@ -333,7 +333,7 @@ typedef struct {
 /*
  * RFIFOT (WO)
  *
- * Receiver FIFO trigger level
+ * Receiver FIFO trigger level(0 for 1byte, 0x3 for 4bytes). Uart will send rx_dma_req if data in fifo reachs the threshold
  */
 #define UART_FCR_RFIFOT_MASK (0xC0U)
 #define UART_FCR_RFIFOT_SHIFT (6U)
@@ -343,7 +343,7 @@ typedef struct {
 /*
  * TFIFOT (WO)
  *
- * Transmitter FIFO trigger level
+ * Transmitter FIFO trigger level(0 for 1byte, 0x3 for 4bytes), uart will send tx_dma_req when data in fifo is less than threshold.
  */
 #define UART_FCR_TFIFOT_MASK (0x30U)
 #define UART_FCR_TFIFOT_SHIFT (4U)

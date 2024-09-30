@@ -39,7 +39,7 @@ void isr_dma(void)
 {
     volatile hpm_stat_t stat;
 
-    stat = dma_check_transfer_status(BOARD_APP_HDMA, TARGET_I2S_TX_DMA_CH);
+    stat = dma_check_transfer_status(BOARD_APP_XDMA, TARGET_I2S_TX_DMA_CH);
 
     if (0 != (stat & DMA_CHANNEL_STATUS_TC)) {
         if (!is_i2s_buff_empty()) {
@@ -53,7 +53,7 @@ void isr_dma(void)
         }
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_HDMA_IRQ, isr_dma)
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 
 int main(void)
 {

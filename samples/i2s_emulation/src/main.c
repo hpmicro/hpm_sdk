@@ -19,7 +19,7 @@
 #else
 #define RX_SIZE_MAX             (4096U)
 #endif
-#define TX_SIZE_MAX             (94208U)
+#define TX_SIZE_MAX             (90112U)
 
 #define WM8978_I2C                  BOARD_APP_I2C_BASE
 #define WM8978_I2C_CLOCK_NAME       BOARD_APP_I2C_CLK_NAME
@@ -59,10 +59,10 @@ ATTR_PLACE_AT_WITH_ALIGNMENT(".ahb_sram", 8) dma_linked_descriptor_t rx_descript
 ATTR_PLACE_AT(".ahb_sram") uint8_t rx_buffer[2][RX_SIZE_MAX];
 uint8_t tx_buffer[TX_SIZE_MAX];
 
-bool rx_flag;
-bool ready_play;
-uint8_t rx_index;
-uint32_t index_count;
+volatile bool rx_flag;
+volatile bool ready_play;
+volatile uint8_t rx_index;
+volatile uint32_t index_count;
 
 hpm_i2s_over_spi_t i2s_device;
 wm8978_context_t wm8978_device;
@@ -87,7 +87,7 @@ void rx_callback(uint32_t addr)
 
 int main(void)
 {
-    uint8_t ch;
+    uint8_t ch = 0;
     hpm_stat_t stat;
     i2s_test_e num = none;
     i2c_config_t i2c_config;
@@ -211,7 +211,7 @@ static bool get_char(uint8_t *ch)
 
 static void play_start(void)
 {
-    uint8_t ch;
+    uint8_t ch = 0;
     uint32_t size = 0;
     int remain_size = 0;
     int index = 0;
@@ -234,7 +234,15 @@ static void play_start(void)
         size = TX_SIZE_MAX;
         while (size > 0) {
             remain_size = (size > max_transfer_len) ? max_transfer_len : size;
-            hpm_i2s_master_over_spi_tx_buffer(&i2s_device, protocol, sample_rate, audio_depth, (uint8_t *)&tx_buffer[index], remain_size);
+            hpm_i2s_master_over_spi_tx_buffer_nonblocking(&i2s_device, protocol, sample_rate, audio_depth, (uint8_t *)&tx_buffer[index], remain_size);
+            while (hpm_i2s_master_over_spi_tx_is_busy(&i2s_device) == true) {
+                if ((get_char(&ch) == true) && ((ch - '0') != start_play)) {
+                    play_stop();
+                    return;
+                }
+            };
+            /* In order to continue the next transmission, it needs to be stopped */
+            hpm_i2s_master_over_spi_tx_stop(&i2s_device);
             size -= remain_size;
             index += remain_size;
         }
@@ -252,14 +260,17 @@ static void play_stop(void)
 
 static void record_start(void)
 {
-    uint8_t ch;
+    uint8_t ch = 0;
     printf("record start enter....\n");
     wm8978_cfg_audio_channel(&wm8978_device, mic_left_on | mic_right_on | adc_on, output_off);
     hpm_i2s_master_over_spi_rx_config(&i2s_device, protocol, sample_rate, audio_depth, rx_buffer[0], rx_buffer[1], RX_SIZE_MAX);
     hpm_i2s_master_over_spi_rx_start(&i2s_device, rx_callback);
+    memset(&tx_buffer, 0, TX_SIZE_MAX);
     while (1) {
         if (get_char(&ch) == true) {
             if ((ch - '0') != start_record) {
+                record_stop();
+                memset(&tx_buffer[index_count], 0, TX_SIZE_MAX - index_count);
                 printf("start record exit...\n");
                 break;
             }

@@ -13,6 +13,14 @@
 
 #define TRANSFORM_SAMPLES_LOG 5
 
+#ifdef __zcc__
+#define NRSD_FFT    (0.0002f)
+#define NRSD_FFT_INV (0.005f)
+#else
+#define NRSD_FFT    (0.00007f)
+#define NRSD_FFT_INV (0.0003f)
+#endif
+
 static const unsigned char golden_cifft_rd2_f32[] = {
     0xa0, 0xc2, 0x6e, 0xb2, 0xa0, 0xc2, 0x6e, 0xb2,
     0xbd, 0xc5, 0x47, 0x3e, 0xc4, 0xc5, 0x47, 0x3e,
@@ -339,6 +347,11 @@ int main(void)
     dump_q15("randomly generated input array", buf, 2 * TRANSFORM_SAMPLES);
 
     hpm_dsp_cfft_rd2_q15(buf, TRANSFORM_SAMPLES_LOG);
+#ifdef __zcc__
+    for (i = 0; i < TRANSFORM_SAMPLES * 2; i++) {
+        buf[i] = buf[i] >> 1;
+    }
+#endif
     dump_q15("after cFFT", buf, 2 * TRANSFORM_SAMPLES);
 
     /* check dct with golden */
@@ -347,9 +360,9 @@ int main(void)
     printf("CFFT_RD2 out scaleup by %d\n", (2 << TRANSFORM_SAMPLES_LOG));
     LOG("--------------\n");
 
-    if (NRMSD > 0.00007)
+    if (NRMSD > NRSD_FFT)
     {
-        printf("NRMSD = %2.8f > 0.00007, CFFT_RD2 FAIL\n", NRMSD);
+        printf("NRMSD = %2.8f > %f, CFFT_RD2 FAIL\n", NRMSD, NRSD_FFT);
         return -1;
     }
 
@@ -357,6 +370,9 @@ int main(void)
     for (i = 0; i < 2 * TRANSFORM_SAMPLES; i++)
     {
         buf[i] = (convert_float_to_q15(golden_buf[i] / (4 << TRANSFORM_SAMPLES_LOG)));
+#ifdef __zcc__
+        buf[i] = buf[i] << 1;
+#endif
     }
     dump_q15("randomly generated input array", buf, TRANSFORM_SAMPLES);
 
@@ -369,13 +385,13 @@ int main(void)
     LOG("--------------\n");
     if (TRANSFORM_SAMPLES_LOG <= 10)
     {
-        if (NRMSD < 0.0003)
+        if (NRMSD < NRSD_FFT_INV)
         {
             printf("CIFFT_RD2 PASS\n");
         }
         else
         {
-            printf("NRMSD = %2.8f > 0.0003, CIFFT_RD2 FAIL\n", NRMSD);
+            printf("NRMSD = %2.8f > %f, CIFFT_RD2 FAIL\n", NRMSD, NRSD_FFT_INV);
             return -1;
         }
     }

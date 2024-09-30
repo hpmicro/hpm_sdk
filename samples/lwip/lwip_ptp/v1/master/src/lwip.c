@@ -27,7 +27,7 @@ ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ENET_SOC_BUFF_ADDR_ALIGNMENT)
 __RW uint8_t tx_buff[ENET_TX_BUFF_COUNT][ENET_TX_BUFF_SIZE]; /* Ethernet Transmit Buffer */
 
 enet_desc_t desc;
-uint32_t localtime;
+uint32_t glocaltime;
 uint8_t mac[ENET_MAC];
 struct netif gnetif;
 /*---------------------------------------------------------------------*
@@ -111,7 +111,9 @@ static hpm_stat_t enet_init(ENET_Type *ptr)
     enet_config.sarc = enet_sarc_replace_mac0;
 
     /* Initialize enet controller */
-    enet_controller_init(ptr, ENET_INF_TYPE, &desc, &enet_config, &int_config);
+    if (enet_controller_init(ptr, ENET_INF_TYPE, &desc, &enet_config, &int_config) != status_success) {
+        return status_fail;
+    }
 
     /* Initialize phy */
     #if defined(RGMII) && RGMII
@@ -145,7 +147,7 @@ static hpm_stat_t enet_init(ENET_Type *ptr)
 
 static void local_timer_callback(void)
 {
-    localtime += LWIP_APP_TIMER_INTERVAL;
+    glocaltime += LWIP_APP_TIMER_INTERVAL;
 }
 
 void timer_callback(void)
@@ -216,7 +218,7 @@ int main(void)
 
         while (1) {
             enet_common_handler(&gnetif);
-            ptpd_periodic_handle(localtime);
+            ptpd_periodic_handle(glocaltime);
         }
     } else {
         printf("Enet initialization fails !!!\n");

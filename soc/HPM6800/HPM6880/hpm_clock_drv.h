@@ -69,15 +69,16 @@ typedef enum _clock_sources {
 
     clk_adc_src_ana0 = MAKE_CLK_SRC(CLK_SRC_GROUP_ADC, 0),
     clk_adc_src_ana1 = MAKE_CLK_SRC(CLK_SRC_GROUP_ADC, 0),
-    clk_adc_src_ahb0 = MAKE_CLK_SRC(CLK_SRC_GROUP_ADC, 1),
+    clk_adc_src_axi0 = MAKE_CLK_SRC(CLK_SRC_GROUP_ADC, 1),
 
     clk_i2s_src_aud0 = MAKE_CLK_SRC(CLK_SRC_GROUP_I2S, 0),
     clk_i2s_src_aud1 = MAKE_CLK_SRC(CLK_SRC_GROUP_I2S, 0),
     clk_i2s_src_aud2 = MAKE_CLK_SRC(CLK_SRC_GROUP_I2S, 0),
     clk_i2s_src_aud3 = MAKE_CLK_SRC(CLK_SRC_GROUP_I2S, 0),
+    clk_i2s_src_audn = MAKE_CLK_SRC(CLK_SRC_GROUP_I2S, 0),    /* clk_i2s_src_audn is equal to clk_i2s_src_aud0, clk_i2s_src_aud1, clk_i2s_src_aud2 and clk_i2s_src_aud3, n is the num */
     clk_i2s_src_audx = MAKE_CLK_SRC(CLK_SRC_GROUP_I2S, 1),
 
-    clk_wdg_src_ahb0 = MAKE_CLK_SRC(CLK_SRC_GROUP_EWDG, 0),
+    clk_wdg_src_axi0 = MAKE_CLK_SRC(CLK_SRC_GROUP_EWDG, 0),
     clk_wdg_src_osc32k = MAKE_CLK_SRC(CLK_SRC_GROUP_EWDG, 1),
 
     clk_pwdg_src_osc24m = MAKE_CLK_SRC(CLK_SRC_GROUP_PEWDG, 0),

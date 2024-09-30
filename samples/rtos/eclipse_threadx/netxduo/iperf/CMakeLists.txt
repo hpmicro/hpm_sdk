@@ -46,6 +46,11 @@ sdk_compile_definitions(-DCONFIG_THREADX=1)
 sdk_compile_definitions(-DNETX_TX_DATA_COPY_ALGORITHM=1)
 sdk_compile_definitions(-DNETX_RX_DATA_COPY_ALGORITHM=1)
 sdk_compile_definitions(-DNX_DRIVER_ENABLE_DEFERRED=1)
+
+# Increse buffer count to improve performance
+sdk_compile_definitions(-DENET_TX_BUFF_COUNT=60)
+sdk_compile_definitions(-DENET_RX_BUFF_COUNT=50)
+
 # Comment this if there is no need to enable DHCP
 sdk_compile_definitions(-DCONFIG_NETX_ENABLE_DHCP=1)
 

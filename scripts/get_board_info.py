@@ -38,7 +38,7 @@ def get_soc_series_name(soc_name):
 def get_soc_ip_list(soc_series, soc_name):
     ip_list = []
     module_list = os.path.join(os.environ['HPM_SDK_BASE'], "soc", soc_series, soc_name, SOC_MODULES_LIST_NAME)
-    with open(module_list, "r") as f:
+    with open(module_list, "r", encoding="utf-8", errors="ignore") as f:
         lines = f.readlines()
         for l in lines:
             if ip := re.match(r'HPMSOC_HAS_HPMSDK_(\w+)', l):
@@ -49,7 +49,7 @@ def get_soc_ip_list(soc_series, soc_name):
 def get_info(board_yml, info_type = "soc"):
     result = "not found"
     board_info = None
-    with open(board_yml, "r") as stream:
+    with open(board_yml, "r", encoding="utf-8", errors="ignore") as stream:
         try:
             board_info = yaml.safe_load(stream)
             if(info_type == "soc"):

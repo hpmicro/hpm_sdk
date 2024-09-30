@@ -6,7 +6,7 @@
 
 ## 硬件设置
 
-请参考开发板的README文档，将PUART连接到USB串口转换器上。如无特殊描述，默认接到DEBUG串口即可。
+请参考开发板的README文档[PUART引脚](lab_board_puart_pin)，将PUART连接到PC上。
 
 ## 运行现象
 

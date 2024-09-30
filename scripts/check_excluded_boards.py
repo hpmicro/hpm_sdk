@@ -8,7 +8,7 @@ EXCLUDED_boards="excluded_boards"
 
 def get_excluded_boards(input_yml):
     excluded = []
-    with open(input_yml, "r") as stream:
+    with open(input_yml, 'r', encoding='utf-8', errors='ignore') as stream:
         try:
             info = yaml.safe_load(stream)
             if not info is None and EXCLUDED_boards in info.keys():

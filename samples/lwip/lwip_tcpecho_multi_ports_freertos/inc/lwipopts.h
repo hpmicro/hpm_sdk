@@ -12,7 +12,7 @@
  * critical regions during buffer allocation, deallocation and memory
  * allocation and deallocation.
  */
-#define SYS_LIGHTWEIGHT_PROT    0
+#define SYS_LIGHTWEIGHT_PROT    1
 #define ETHARP_TRUST_IP_MAC     0
 #define IP_REASSEMBLY           0
 #define IP_FRAG                 0

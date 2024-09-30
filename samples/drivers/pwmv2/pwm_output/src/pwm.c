@@ -28,16 +28,6 @@
 #define PWM_PERIOD_IN_MS (1)
 uint32_t reload;
 
-void config_hw_event(uint8_t cmp_index, uint32_t cmp)
-{
-
-}
-
-void reset_pwm_counter(void)
-{
-
-}
-
 void generate_edge_aligned_waveform(void)
 {
     uint32_t duty, duty_step;
@@ -622,7 +612,7 @@ int main(void)
     printf("pwm example\n");
 
     freq = clock_get_frequency(PWM_CLOCK_NAME);
-    reload = freq / 10000 * PWM_PERIOD_IN_MS - 1;
+    reload = freq / 1000 * PWM_PERIOD_IN_MS - 1;
 
     pwm_fault_async();
     printf("\n\n>> Test force PWM output on P%d and P%d\n", PWM_OUTPUT_PIN1, PWM_OUTPUT_PIN2);

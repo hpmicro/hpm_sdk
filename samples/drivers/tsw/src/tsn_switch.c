@@ -34,14 +34,12 @@ int main(void)
 {
     board_init();
 
-    board_init_tsw(APP_TSW);
+    board_init_tsw_pins(APP_TSW);
 
     printf("This is a TSN switch demo\n");
 
-    /* Disable MAC(TX/RX) */
-    tsw_ep_enable_mac_ctrl(APP_TSW, TSW_TSNPORT_PORT1, TSW_RXFIFO_E1, false);
-    tsw_ep_enable_mac_ctrl(APP_TSW, TSW_TSNPORT_PORT2, TSW_RXFIFO_E1, false);
-    tsw_ep_enable_mac_ctrl(APP_TSW, TSW_TSNPORT_PORT3, TSW_RXFIFO_E1, false);
+    /* Disable All MACs(TX/RX) */
+    tsw_ep_disable_all_mac_ctrl(APP_TSW, TSW_RXFIFO_E1);
 
     /* Set Mac Address */
     tsw_ep_set_mac_addr(APP_TSW, TSW_TSNPORT_PORT1, mac1, true);
@@ -58,10 +56,8 @@ int main(void)
     tsw_port_gpr(APP_TSW, TSW_TSNPORT_PORT2, tsw_port_speed_100mbps,  tsw_port_phy_itf_mii, 0, 0);
     tsw_port_gpr(APP_TSW, TSW_TSNPORT_PORT3, tsw_port_speed_1000mbps, tsw_port_phy_itf_rgmii, 0, 0);
 
-    /* Enable MAC(TX/RX) */
-    tsw_ep_enable_mac_ctrl(APP_TSW, TSW_TSNPORT_PORT1, TSW_RXFIFO_E1, true);
-    tsw_ep_enable_mac_ctrl(APP_TSW, TSW_TSNPORT_PORT2, TSW_RXFIFO_E1, true);
-    tsw_ep_enable_mac_ctrl(APP_TSW, TSW_TSNPORT_PORT3, TSW_RXFIFO_E1, true);
+    /* Enable All MACs(TX/RX) */
+    tsw_ep_enable_all_mac_ctrl(APP_TSW, TSW_RXFIFO_E1);
 
     /* Clear CAM */
     tsw_clear_cam(APP_TSW);

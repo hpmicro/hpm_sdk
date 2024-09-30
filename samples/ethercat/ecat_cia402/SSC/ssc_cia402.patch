@@ -1,0 +1,365 @@
+diff -uN Src/cia402appl.c Src_modify/cia402appl.c
+--- Src/cia402appl.c	2024-09-04 14:17:45.008980900 +0800
++++ Src_modify/cia402appl.c	2024-09-04 14:31:36.719808400 +0800
+@@ -61,6 +61,12 @@
+ #include "cia402appl.h"
+ #undef _CiA402_
+ 
++#if defined(CONFIG_CIA402_USING_ACTUAL_MOTOR) && CONFIG_CIA402_USING_ACTUAL_MOTOR
++#include "bldc_foc.h"
++extern mcl_user_value_t motor_speed;
++extern mcl_user_value_t motor_position;
++#endif
++
+ 
+ /*--------------------------------------------------------------------------------------
+ ------
+@@ -380,6 +386,9 @@
+             else if (((ControlWord6040 & CONTROLWORD_COMMAND_SWITCHON_MASK) == CONTROLWORD_COMMAND_SWITCHON) ||
+                     ((ControlWord6040 & CONTROLWORD_COMMAND_SWITCHON_ENABLEOPERATION_MASK) == CONTROLWORD_COMMAND_SWITCHON_ENABLEOPERATION))
+                 {
++                    #if defined(CONFIG_CIA402_USING_ACTUAL_MOTOR) && CONFIG_CIA402_USING_ACTUAL_MOTOR
++                    motor_enable();
++                    #endif
+                     pCiA402Axis->i16State = STATE_SWITCHED_ON;           // Transition 3
+                 }
+                 break;
+@@ -388,17 +397,26 @@
+ 
+             if ((ControlWord6040 & CONTROLWORD_COMMAND_SHUTDOWN_MASK) == CONTROLWORD_COMMAND_SHUTDOWN)
+             {
++                #if defined(CONFIG_CIA402_USING_ACTUAL_MOTOR) && CONFIG_CIA402_USING_ACTUAL_MOTOR
++                motor_disable();
++                #endif
+                 pCiA402Axis->i16State = STATE_READY_TO_SWITCH_ON; // Transition 6
+ 
+             } 
+             else if (((ControlWord6040 & CONTROLWORD_COMMAND_QUICKSTOP_MASK) == CONTROLWORD_COMMAND_QUICKSTOP
+                     || (ControlWord6040 & CONTROLWORD_COMMAND_DISABLEVOLTAGE_MASK) == CONTROLWORD_COMMAND_DISABLEVOLTAGE))
+                 {
++                    #if defined(CONFIG_CIA402_USING_ACTUAL_MOTOR) && CONFIG_CIA402_USING_ACTUAL_MOTOR
++                    motor_disable();
++                    #endif
+                     pCiA402Axis->i16State = STATE_SWITCH_ON_DISABLED; // Transition 10
+ 
+                 } 
+             else if ((ControlWord6040 & CONTROLWORD_COMMAND_ENABLEOPERATION_MASK) == CONTROLWORD_COMMAND_ENABLEOPERATION)
+                     {
++                        #if defined(CONFIG_CIA402_USING_ACTUAL_MOTOR) && CONFIG_CIA402_USING_ACTUAL_MOTOR
++                        motor_enable();
++                        #endif
+                         pCiA402Axis->i16State = STATE_OPERATION_ENABLED;  // Transition 4
+                         //The Axis function shall be enabled and all internal set-points cleared.
+                     }
+@@ -428,12 +446,17 @@
+                             pCiA402Axis->u16PendingOptionCode = 0x605B; //STATE_TRANSITION (STATE_OPERATION_ENABLED,STATE_READY_TO_SWITCH_ON);
+                             return;
+                         }
+-
++                        #if defined(CONFIG_CIA402_USING_ACTUAL_MOTOR) && CONFIG_CIA402_USING_ACTUAL_MOTOR
++                        motor_disable();
++                        #endif
+                         pCiA402Axis->i16State = STATE_READY_TO_SWITCH_ON; // Transition 8
+ 
+                     } else
+                         if ((ControlWord6040 & CONTROLWORD_COMMAND_DISABLEVOLTAGE_MASK) == CONTROLWORD_COMMAND_DISABLEVOLTAGE)
+                         {
++                            #if defined(CONFIG_CIA402_USING_ACTUAL_MOTOR) && CONFIG_CIA402_USING_ACTUAL_MOTOR
++                            motor_disable();
++                            #endif
+                             pCiA402Axis->i16State = STATE_SWITCH_ON_DISABLED; // Transition 9
+                         }
+                         break;
+@@ -450,6 +473,9 @@
+ 
+             if ((ControlWord6040 & CONTROLWORD_COMMAND_DISABLEVOLTAGE_MASK) == CONTROLWORD_COMMAND_DISABLEVOLTAGE)
+             {
++                #if defined(CONFIG_CIA402_USING_ACTUAL_MOTOR) && CONFIG_CIA402_USING_ACTUAL_MOTOR
++                motor_disable();
++                #endif
+                 pCiA402Axis->i16State = STATE_SWITCH_ON_DISABLED; // Transition 12
+             }
+ 
+@@ -472,6 +498,9 @@
+ 
+             if ((ControlWord6040 & CONTROLWORD_COMMAND_FAULTRESET_MASK) == CONTROLWORD_COMMAND_FAULTRESET)
+             {
++                #if defined(CONFIG_CIA402_USING_ACTUAL_MOTOR) && CONFIG_CIA402_USING_ACTUAL_MOTOR
++                motor_disable();
++                #endif
+                 pCiA402Axis->i16State = STATE_SWITCH_ON_DISABLED;// Transition 15
+             }
+             break;
+@@ -563,6 +592,53 @@
+  \brief    CiA402_DummyMotionControl
+  \brief this functions provides an simple feedback functionality
+ *////////////////////////////////////////////////////////////////////////////////////////
++#if defined(CONFIG_CIA402_USING_ACTUAL_MOTOR) && CONFIG_CIA402_USING_ACTUAL_MOTOR
++void CiA402_DummyMotionControl(TCiA402Axis *pCiA402Axis)
++{
++    if(pCiA402Axis->bAxisFunctionEnabled &&
++    pCiA402Axis->bLowLevelPowerApplied &&
++    pCiA402Axis->bHighLevelPowerApplied &&
++    !pCiA402Axis->bBrakeApplied)
++    {
++        if((pCiA402Axis->Objects.objSoftwarePositionLimit.i32MaxLimit> pCiA402Axis->Objects.objPositionActualValue
++            || pCiA402Axis->Objects.objPositionActualValue > pCiA402Axis->Objects.objTargetPosition) &&
++            (pCiA402Axis->Objects.objSoftwarePositionLimit.i32MinLimit < pCiA402Axis->Objects.objPositionActualValue
++            || pCiA402Axis->Objects.objPositionActualValue < pCiA402Axis->Objects.objTargetPosition))
++        {
++            pCiA402Axis->Objects.objStatusWord &= ~STATUSWORD_INTERNAL_LIMIT;
++
++            switch(pCiA402Axis->Objects.objModesOfOperationDisplay)
++            {
++            case CYCLIC_SYNC_POSITION_MODE:
++                motor_position_loop_set(pCiA402Axis->Objects.objTargetPosition);
++                break;
++            case CYCLIC_SYNC_VELOCITY_MODE:
++                    if (pCiA402Axis->i16State == STATE_OPERATION_ENABLED)
++                    {
++                        motor_speed_loop_set(pCiA402Axis->Objects.objTargetVelocity);
++                    }
++                    else
++                    {
++                        motor_speed_loop_set(0);
++                    }
++                break;
++            default:
++                break;
++            }
++        }
++        else
++        {
++            pCiA402Axis->Objects.objStatusWord |= STATUSWORD_INTERNAL_LIMIT;
++        }
++    }
++    pCiA402Axis->Objects.objVelocityActualValue= motor_get_actual_speed();
++    pCiA402Axis->Objects.objPositionActualValue = motor_get_actual_position();
++
++    /*Accept new mode of operation*/
++    pCiA402Axis->Objects.objModesOfOperationDisplay = pCiA402Axis->Objects.objModesOfOperation;
++
++}
++#else
+ void CiA402_DummyMotionControl(TCiA402Axis *pCiA402Axis)
+ {
+     float IncFactor    = (float)0.0010922 * (float) pCiA402Axis->u32CycleTime;
+@@ -625,6 +701,8 @@
+     pCiA402Axis->Objects.objModesOfOperationDisplay = pCiA402Axis->Objects.objModesOfOperation;
+ 
+ }
++#endif
++
+ /////////////////////////////////////////////////////////////////////////////////////////
+ /**
+  \return TRUE if moving on predefined ramp is finished
+@@ -1314,8 +1392,13 @@
+                 TCiA402PDO1A00 *pInputs = (TCiA402PDO1A00 *)pTmpData;
+ 
+                 pInputs->ObjStatusWord = SWAPWORD(LocalAxes[AxisIndex].Objects.objStatusWord);
++                #if defined(CONFIG_CIA402_USING_ACTUAL_MOTOR) && CONFIG_CIA402_USING_ACTUAL_MOTOR
++                pInputs->ObjPositionActualValue = SWAPDWORD(motor_get_actual_position());
++                pInputs->ObjVelocityActualValue = SWAPDWORD(motor_get_actual_speed());
++                #else
+                 pInputs->ObjPositionActualValue = SWAPDWORD(LocalAxes[AxisIndex].Objects.objPositionActualValue);
+                 pInputs->ObjVelocityActualValue = SWAPDWORD(LocalAxes[AxisIndex].Objects.objVelocityActualValue);
++                #endif
+                 pInputs->ObjModesOfOperationDisplay = SWAPWORD((LocalAxes[AxisIndex].Objects.objModesOfOperationDisplay & 0x00FF));
+ 
+                 /*shift pointer PDO mapping object following*/
+@@ -1328,7 +1411,11 @@
+                 TCiA402PDO1A01 *pInputs = (TCiA402PDO1A01 *)pTmpData;
+ 
+                 pInputs->ObjStatusWord = SWAPWORD(LocalAxes[AxisIndex].Objects.objStatusWord);
++                #if defined(CONFIG_CIA402_USING_ACTUAL_MOTOR) && CONFIG_CIA402_USING_ACTUAL_MOTOR
++                pInputs->ObjPositionActualValue = SWAPDWORD(motor_get_actual_position());
++                #else
+                 pInputs->ObjPositionActualValue = SWAPDWORD(LocalAxes[AxisIndex].Objects.objPositionActualValue);
++                #endif
+ 
+                 /*shift pointer PDO mapping object following*/
+                 if (j < (sTxPDOassign.u16SubIndex0 - 1))
+@@ -1342,7 +1429,11 @@
+                 TCiA402PDO1A02 *pInputs = (TCiA402PDO1A02 *)pTmpData;
+ 
+                 pInputs->ObjStatusWord = SWAPWORD(LocalAxes[AxisIndex].Objects.objStatusWord);
++                #if defined(CONFIG_CIA402_USING_ACTUAL_MOTOR) && CONFIG_CIA402_USING_ACTUAL_MOTOR
++                pInputs->ObjPositionActualValue = SWAPDWORD(motor_get_actual_position());
++                #else
+                 pInputs->ObjPositionActualValue = SWAPDWORD(LocalAxes[AxisIndex].Objects.objPositionActualValue);
++                #endif
+             
+                 /*shift pointer PDO mapping object following*/
+                 if (j < (sTxPDOassign.u16SubIndex0 - 1))
+@@ -1384,6 +1475,15 @@
+             LocalAxes[AxisIndex].Objects.objTargetVelocity    = SWAPDWORD(pOutputs->ObjTargetVelocity);
+             LocalAxes[AxisIndex].Objects.objModesOfOperation = SWAPWORD((pOutputs->ObjModesOfOperation & 0x00FF));
+ 
++            #if defined(CONFIG_CIA402_USING_ACTUAL_MOTOR) && CONFIG_CIA402_USING_ACTUAL_MOTOR
++            if (LocalAxes[0].Objects.objModesOfOperation == CYCLIC_SYNC_POSITION_MODE) {
++                motor_postion_loop_init();
++            } else if (LocalAxes[0].Objects.objModesOfOperation == CYCLIC_SYNC_VELOCITY_MODE) {
++                motor_speed_loop_init();
++            }
++            #endif
++
++
+             /*shift pointer PDO mapping object following*/
+             if (j < (sRxPDOassign.u16SubIndex0 - 1))
+             {
+@@ -1451,6 +1551,85 @@
+     return 0x0005;
+ }
+ 
++#if defined(CONFIG_CIA402_USING_ACTUAL_MOTOR) && CONFIG_CIA402_USING_ACTUAL_MOTOR
++UINT8 ObjRead0x6064( UINT16 Index, UINT8 Subindex, UINT32 Size, UINT16 MBXMEM * pData, UINT8 bCompleteAccess)
++{
++    if(bCompleteAccess)
++    {
++        return ABORTIDX_UNSUPPORTED_ACCESS;
++    }
++
++    if(Subindex == 0)
++    {
++        *(INT32 *)pData = motor_get_actual_position();
++    } else {
++        return ABORTIDX_SUBINDEX_NOT_EXISTING;
++    }
++ return 0;
++}
++
++UINT8 ObjRead0x606c( UINT16 Index, UINT8 Subindex, UINT32 Size, UINT16 MBXMEM * pData, UINT8 bCompleteAccess)
++{
++    if(bCompleteAccess)
++    {
++        return ABORTIDX_UNSUPPORTED_ACCESS;
++    }
++
++    if(Subindex == 0)
++    {
++            *(UINT32 *)pData = motor_get_actual_speed();
++    } else {
++        return ABORTIDX_SUBINDEX_NOT_EXISTING;
++    }
++ return 0;
++}
++
++UINT8 ObjRead0x6060( UINT16 Index, UINT8 Subindex, UINT32 Size, UINT16 MBXMEM * pData, UINT8 bCompleteAccess)
++{
++    if(bCompleteAccess)
++    {
++        return ABORTIDX_UNSUPPORTED_ACCESS;
++    }
++
++    if(Subindex == 0)
++    {
++        if (motor_speed.enable)
++            *pData = CYCLIC_SYNC_VELOCITY_MODE;
++        else if (motor_position.enable)
++            *pData = CYCLIC_SYNC_POSITION_MODE;
++        else
++            *pData = NO_MODE;
++    } else {
++        return ABORTIDX_SUBINDEX_NOT_EXISTING;
++    }
++ return 0;
++}
++
++UINT8 ObjWrite0x6060( UINT16 Index, UINT8 Subindex, UINT32 Size, UINT16 MBXMEM * pData, UINT8 bCompleteAccess)
++{
++   if ( bCompleteAccess )
++   {
++      /* Complete Access is not supported for object 0x1010 */
++      return ABORTIDX_UNSUPPORTED_ACCESS;
++   }
++
++   if ( Subindex == 0 )
++   {
++      if (*pData == CYCLIC_SYNC_POSITION_MODE) {
++          motor_postion_loop_init();
++          LocalAxes[0].Objects.objModesOfOperation = CYCLIC_SYNC_POSITION_MODE;
++      } else if (*pData == CYCLIC_SYNC_VELOCITY_MODE) {
++          motor_speed_loop_init();
++          LocalAxes[0].Objects.objModesOfOperation = CYCLIC_SYNC_VELOCITY_MODE;
++      } else
++          return ABORTIDX_PARAM_IS_INCOMPATIBLE;
++   } else {
++      return ABORTIDX_SUBINDEX_NOT_EXISTING;
++   }
++ return 0;
++}
++#endif
++
+ 
+ /** @} */
+ 
+diff -uN Src/cia402appl.h Src_modify/cia402appl.h
+--- Src/cia402appl.h	2024-09-04 14:17:45.013005900 +0800
++++ Src_modify/cia402appl.h	2024-09-04 14:36:03.883914000 +0800
+@@ -39,6 +39,13 @@
+ #ifndef _CIA402_H_
+ #define _CIA402_H_
+ 
++#if defined(CONFIG_CIA402_USING_ACTUAL_MOTOR) && CONFIG_CIA402_USING_ACTUAL_MOTOR
++UINT8 ObjRead0x6060( UINT16 Index, UINT8 Subindex, UINT32 Size, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
++UINT8 ObjWrite0x6060( UINT16 Index, UINT8 Subindex, UINT32 Size, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
++UINT8 ObjRead0x6064( UINT16 Index, UINT8 Subindex, UINT32 Size, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
++UINT8 ObjRead0x606c( UINT16 Index, UINT8 Subindex, UINT32 Size, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
++#endif
++
+ /*-----------------------------------------------------------------------------------------
+ ------
+ ------    Defines and Types
+@@ -1209,6 +1216,16 @@
+    {NULL,NULL, 0x605C, {DEFTYPE_INTEGER16 , 0 | (OBJCODE_VAR << 8)}, &sEntryDesc0x605C, aName0x605C, NULL, NULL, NULL, 0x0000 },
+    /* Object 0x605E */
+    {NULL,NULL, 0x605E, {DEFTYPE_INTEGER16 , 0 | (OBJCODE_VAR << 8)}, &sEntryDesc0x605E, aName0x605E, NULL, NULL, NULL, 0x0000 },
++#if defined(CONFIG_CIA402_USING_ACTUAL_MOTOR) && CONFIG_CIA402_USING_ACTUAL_MOTOR
++   /* Object 0x6060 */
++    {NULL,NULL, 0x6060, {DEFTYPE_INTEGER8 , 0 | (OBJCODE_VAR << 8)}, &sEntryDesc0x6060, aName0x6060, NULL, ObjRead0x6060, ObjWrite0x6060, 0x0000 },
++   /* Object 0x6061 */
++   {NULL,NULL, 0x6061, {DEFTYPE_INTEGER8 , 0 | (OBJCODE_VAR << 8)}, &sEntryDesc0x6061, aName0x6061, NULL, NULL, NULL, 0x0000 },
++   /* Object 0x6064 */
++   {NULL,NULL, 0x6064, {DEFTYPE_INTEGER32 , 0 | (OBJCODE_VAR << 8)}, &sEntryDesc0x6064, aName0x6064, NULL, ObjRead0x6064, NULL, 0x0000 },
++   /* Object 0x606C */
++   {NULL,NULL, 0x606C, {DEFTYPE_INTEGER32 , 0 | (OBJCODE_VAR << 8)}, &sEntryDesc0x606C, aName0x606C, NULL, ObjRead0x606c, NULL, 0x0000 },
++#else
+    /* Object 0x6060 */
+     {NULL,NULL, 0x6060, {DEFTYPE_INTEGER8 , 0 | (OBJCODE_VAR << 8)}, &sEntryDesc0x6060, aName0x6060, NULL, NULL, NULL, 0x0000 },
+    /* Object 0x6061 */
+@@ -1217,6 +1234,7 @@
+    {NULL,NULL, 0x6064, {DEFTYPE_INTEGER32 , 0 | (OBJCODE_VAR << 8)}, &sEntryDesc0x6064, aName0x6064, NULL, NULL, NULL, 0x0000 },
+    /* Object 0x606C */
+    {NULL,NULL, 0x606C, {DEFTYPE_INTEGER32 , 0 | (OBJCODE_VAR << 8)}, &sEntryDesc0x606C, aName0x606C, NULL, NULL, NULL, 0x0000 },
++#endif
+    /* Object 0x6077 */
+    {NULL,NULL, 0x6077, {DEFTYPE_INTEGER16 , 0 | (OBJCODE_VAR << 8)}, &sEntryDesc0x6077, aName0x6077, NULL, NULL, NULL, 0x0000 },
+    /* Object 0x607D */
+@@ -1253,5 +1271,8 @@
+ PROTO void CiA402_LocalError(UINT16 ErrorCode);
+ PROTO void CiA402_StateMachine(void);
+ 
++UINT16 CiA402_Init(void);
++void CiA402_DeallocateAxis(void);
++
+ #undef PROTO
+ /** @}*/
+diff -uN Src/ecatslv.c Src_modify/ecatslv.c
+--- Src/ecatslv.c	2024-09-04 14:17:45.031822100 +0800
++++ Src_modify/ecatslv.c	2024-09-02 14:42:49.502617300 +0800
+@@ -270,6 +270,7 @@
+     UINT32 u32Mask = 0;
+     HW_EscReadDWord(u32Mask, ESC_AL_EVENTMASK_OFFSET);
+     u32Mask &= (UINT32)intMask;
++    u32Mask &= ~(SYNC0_EVENT | SYNC1_EVENT); /* mask Sync0\Sync1 for PDI IRQ, because there are independent Sync0\Sync1 IRQ */
+ 
+ 
+ 
+@@ -290,6 +291,7 @@
+     UINT32 u32Mask = 0;
+     HW_EscReadDWord(u32Mask, ESC_AL_EVENTMASK_OFFSET);
+     u32Mask |= (UINT32)intMask;
++    u32Mask &= ~(SYNC0_EVENT | SYNC1_EVENT); /* mask Sync0\Sync1 for PDI IRQ, because there are independent Sync0\Sync1 IRQ */
+ 
+ 
+     DISABLE_ESC_INT();

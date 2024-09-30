@@ -596,11 +596,11 @@ static hpm_stat_t wait_spi_slave_active(SPI_Type *ptr, bool active_status, uint3
 {
     uint32_t ticks_per_us = (hpm_core_clock + 1000000 - 1U) / 1000000;
     uint64_t expected_ticks = hpm_csr_get_core_cycle() + (uint64_t)ticks_per_us * 1000UL * timeout;
-    do {
+    while (spi_is_active(ptr) != active_status) {
         if (hpm_csr_get_core_cycle() > expected_ticks) {
             return status_timeout;
         }
-    } while (spi_is_active(ptr) == !active_status);
+    }
     return status_success;
 }
 
@@ -617,7 +617,7 @@ static hpm_spi_cfg_t *hpm_spi_get_cfg_obj(SPI_Type *ptr)
     return NULL;
 }
 
-static void hpm_spi_transfer_init(SPI_Type *ptr, spi_trans_mode_t mode, uint32_t size)
+static hpm_stat_t hpm_spi_transfer_init(SPI_Type *ptr, spi_trans_mode_t mode, uint32_t size)
 {
     uint32_t slv_mode = SPI_TRANSFMT_SLVMODE_GET(ptr->TRANSFMT);
     uint8_t data_len_in_bytes = spi_get_data_length_in_bytes(ptr);
@@ -625,6 +625,9 @@ static void hpm_spi_transfer_init(SPI_Type *ptr, spi_trans_mode_t mode, uint32_t
         data_len_in_bytes = 4;
     }
     if (slv_mode == spi_master_mode) {
+        if (spi_is_active(ptr) == true) {
+            return status_spi_master_busy;
+        }
         spi_set_transfer_mode(ptr, mode);
     } else {
         /* for slave mode, only support trans_write_read_together mode in only_data_mode */
@@ -646,6 +649,7 @@ static void hpm_spi_transfer_init(SPI_Type *ptr, spi_trans_mode_t mode, uint32_t
     spi_receive_fifo_reset(ptr);
     while (ptr->CTRL & (SPI_CTRL_TXFIFORST_MASK | SPI_CTRL_RXFIFORST_MASK)) {
     }
+    return status_success;
 }
 
 static hpm_stat_t write_read_data_together(SPI_Type *ptr, uint8_t data_len_in_bytes, uint8_t *wbuff, uint32_t wsize,
@@ -893,7 +897,7 @@ hpm_stat_t hpm_spi_transmit_receive_blocking(SPI_Type *ptr, uint8_t *wbuff, uint
         return status_invalid_argument;
     }
     count = (size / data_len_in_bytes);
-    hpm_spi_transfer_init(ptr, spi_trans_write_read_together, size);
+    HPM_CHECK_RET(hpm_spi_transfer_init(ptr, spi_trans_write_read_together, size));
     /* for master mode, This CMD register must be written with a dummy value
      *  to start a SPI transfer even when the command phase is not enabled
      */
@@ -938,7 +942,7 @@ hpm_stat_t hpm_spi_receive_blocking(SPI_Type *ptr, uint8_t *buff, uint32_t size,
         return status_invalid_argument;
     }
     count = (size / data_len_in_bytes);
-    hpm_spi_transfer_init(ptr, spi_trans_read_only, size);
+    HPM_CHECK_RET(hpm_spi_transfer_init(ptr, spi_trans_read_only, size));
     /* for master mode, This CMD register must be written with a dummy value
      * to start a SPI transfer even when the command phase is not enabled
      */
@@ -976,7 +980,7 @@ hpm_stat_t hpm_spi_transmit_blocking(SPI_Type *ptr, uint8_t *buff, uint32_t size
         return status_invalid_argument;
     }
     count = (size / data_len_in_bytes);
-    hpm_spi_transfer_init(ptr, spi_trans_write_only, size);
+    HPM_CHECK_RET(hpm_spi_transfer_init(ptr, spi_trans_write_only, size));
     /* for master mode, This CMD register must be written with a dummy value
      * to start a SPI transfer even when the command phase is not enabled
      */
@@ -1019,7 +1023,7 @@ hpm_stat_t hpm_spi_transmit_receive_setup_dma(SPI_Type *ptr, uint32_t size)
         ((SPI_SOC_TRANSFER_COUNT_MAX == 512) && (size > (SPI_SOC_TRANSFER_COUNT_MAX * data_len_in_bytes)))) {
         return status_invalid_argument;
     }
-    hpm_spi_transfer_init(ptr, spi_trans_write_read_together, size);
+    HPM_CHECK_RET(hpm_spi_transfer_init(ptr, spi_trans_write_read_together, size));
     spi_enable_tx_dma(ptr);
     spi_enable_rx_dma(ptr);
     /* for master mode, This CMD register must be written with a dummy value
@@ -1042,7 +1046,7 @@ hpm_stat_t hpm_spi_receive_setup_dma(SPI_Type *ptr, uint32_t size)
         ((SPI_SOC_TRANSFER_COUNT_MAX == 512) && (size > (SPI_SOC_TRANSFER_COUNT_MAX * data_len_in_bytes)))) {
         return status_invalid_argument;
     }
-    hpm_spi_transfer_init(ptr, spi_trans_read_only, size);
+    HPM_CHECK_RET(hpm_spi_transfer_init(ptr, spi_trans_read_only, size));
     spi_disable_tx_dma(ptr);
     spi_enable_rx_dma(ptr);
     /* for master mode, This CMD register must be written with a dummy value
@@ -1065,7 +1069,7 @@ hpm_stat_t hpm_spi_transmit_setup_dma(SPI_Type *ptr, uint32_t size)
         ((SPI_SOC_TRANSFER_COUNT_MAX == 512) && (size > (SPI_SOC_TRANSFER_COUNT_MAX * data_len_in_bytes)))) {
         return status_invalid_argument;
     }
-    hpm_spi_transfer_init(ptr, spi_trans_write_only, size);
+    HPM_CHECK_RET(hpm_spi_transfer_init(ptr, spi_trans_write_only, size));
     spi_enable_tx_dma(ptr);
     spi_disable_rx_dma(ptr);
     /* for master mode, This CMD register must be written with a dummy value

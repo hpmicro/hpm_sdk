@@ -6,7 +6,7 @@ The freertos_tickless example shows freertos tickless stop mode. Soc will enter 
 
 ## Board Setting
 
-Please refer to the README documentation of the development board and connect PUART to the USB serial converter. If there is no special description, it can be connected to the DEBUG serial port by default.
+Please refer to [PUART pins](lab_board_puart_pin) from the README documentation of the development board and connect PUART to PC.
 
 ## Running the example
 

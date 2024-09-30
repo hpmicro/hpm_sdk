@@ -93,13 +93,6 @@
 /** The resolution of the clock in microseconds */
 #define CLOCK_RESOLUTION_US 1000u
 
-
-/** Added for compatibility */
-struct lwip_timespec {
-  long tv_sec;
-  long tv_nsec;
-};
-
 /** This is the Iperf settings struct sent from the client */
 typedef struct _lwiperf_settings {
 #define LWIPERF_FLAGS_ANSWER_TEST 0x80000000
@@ -180,7 +173,7 @@ typedef struct _lwiperf_state_udp {
   u64_t bytes_transferred;
   lwiperf_report_fn report_fn;
   void *report_arg;
-  struct lwip_timespec udp_lastpkt;
+  struct timespec udp_lastpkt;
   u32_t udp_seq;
   u32_t udp_rx_lost;
   u32_t udp_rx_outorder;
@@ -264,9 +257,11 @@ static void lwiperf_udp_recv(void *arg, struct udp_pcb *pcb, struct pbuf *p,
                              const ip_addr_t *addr, u16_t port);
 static err_t lwiperf_udp_tx_start(lwiperf_state_udp_t *conn);
 
-static int
-clock_gettime(int clk_id, struct lwip_timespec *tp)
+int
+clock_gettime(clockid_t clk_id, struct timespec *tp)
 {
+  (void) clk_id;
+
   u32_t now = sys_now();
 
   tp->tv_sec = now / 1000;
@@ -276,7 +271,7 @@ clock_gettime(int clk_id, struct lwip_timespec *tp)
 }
 
 static inline void
-diff_ts(const struct lwip_timespec *start, const struct lwip_timespec *stop, struct lwip_timespec *result)
+diff_ts(const struct timespec *start, const struct timespec *stop, struct timespec *result)
 {
   if ((stop->tv_nsec - start->tv_nsec) < 0) {
     result->tv_sec = stop->tv_sec - start->tv_sec - 1;
@@ -1082,10 +1077,9 @@ static void
 lwiperf_udp_client_send_more(lwiperf_state_udp_t *conn)
 {
   struct pbuf *p;
-  struct lwip_timespec ts, dt;
+  struct timespec ts, dt;
   err_t err;
   int ending = 0;
-  int i;
 
   LWIP_ASSERT("conn invalid", (conn != NULL) && !conn->base.tcp && (conn->base.server == 0));
 
@@ -1116,10 +1110,10 @@ lwiperf_udp_client_send_more(lwiperf_state_udp_t *conn)
   /* check time/bw */
   clock_gettime(CLOCK_ID, &ts);
   diff_ts(&conn->udp_lastpkt, &ts, &dt);
-  if ((uint32_t)((dt.tv_sec * 1000000) + (dt.tv_nsec / 1000)) < conn->delay_target)
+  if ((u32_t)((dt.tv_sec * 1000000) + (dt.tv_nsec / 1000)) < conn->delay_target)
     return;
 
-  for (i = 0; i < conn->frames_per_delay; i++) {
+  for (u32_t i = 0; i < conn->frames_per_delay; i++) {
     /* make pbuf to transmit */
     p = pbuf_alloc(PBUF_TRANSPORT, lwip_ntohl(conn->settings.base.buffer_len), PBUF_POOL);
     if (p) {
@@ -1294,7 +1288,7 @@ lwiperf_udp_recv(void *arg, struct udp_pcb *pcb, struct pbuf *p,
     conn->report_count++;
   }
   else if (datagramID >= 0) {
-    struct lwip_timespec ts, dt;
+    struct timespec ts, dt;
     uint32_t transit;
     clock_gettime(1, &ts);
     if (!conn || !conn->have_settings_buf) {

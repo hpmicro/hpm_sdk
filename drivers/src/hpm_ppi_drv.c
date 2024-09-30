@@ -101,3 +101,18 @@ void ppi_config_cmd(PPI_Type *ppi, uint8_t index, ppi_cmd_config_t *config)
         | PPI_CMD_CTRL_CFG_IO_CFG0_SET(config->ctrl_pin_value[0]);
     ppi->CMD[index].CTRL_CFG = tmp;
 }
+
+uint32_t ppi_ns2cycle(uint32_t freq_in_hz, uint32_t ns)
+{
+    uint32_t max_cycle = PPI_CMD_CMD_CFG_CYCLE_NUM_MASK >> PPI_CMD_CMD_CFG_CYCLE_NUM_SHIFT;
+    float ns_per_cycle;
+    uint32_t cycle;
+
+    ns_per_cycle = (float)1000000000 / (float)freq_in_hz;
+    cycle = (uint32_t)((float)ns / ns_per_cycle);
+    if (cycle > max_cycle) {
+        cycle = max_cycle;
+    }
+
+    return cycle;
+}

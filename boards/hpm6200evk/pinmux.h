@@ -42,6 +42,7 @@ void init_pla_tamagawa_pins(void);
 void init_motor_over_zero_sensorless_adc_pins(void);
 void init_tamper_pins(void);
 void init_uart_break_signal_pin(void);
+void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp);
 
 #ifdef __cplusplus
 }

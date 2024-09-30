@@ -14,6 +14,10 @@
 #include "ethernetif.h"
 #include "common.h"
 
+#if defined(LWIP_DHCP) && LWIP_DHCP
+#include "lwip/dhcp.h"
+#endif
+
 #if defined(__ENABLE_FREERTOS) && __ENABLE_FREERTOS
 #include "FreeRTOS.h"
 #include "task.h"

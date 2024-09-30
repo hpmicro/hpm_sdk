@@ -10,13 +10,17 @@
 #include "ff.h"
 #include "hpm_fatfs_usb.h"
 
+#define DEV_NO DEV_USB_MSC_0
+
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t read_write_buffer[25 * 100];
 
 USB_NOCACHE_RAM_SECTION FATFS fs;
 USB_NOCACHE_RAM_SECTION FIL fnew;
 UINT fnum;
 FRESULT res_sd;
-static volatile bool mounted_flag;
+static volatile bool connected_flag;
+static volatile bool mount_flag;
+const char driver_num_buf[4] = { DEV_NO + '0', ':', '/', '\0' };
 
 int usb_msc_fatfs_write_read_test(void)
 {
@@ -61,7 +65,7 @@ int usb_msc_fatfs_write_read_test(void)
     return 0;
 
 unmount:
-    f_unmount("0:");
+    f_unmount(driver_num_buf);
     return -1;
 }
 
@@ -100,28 +104,39 @@ void usb_msc_fatfs_scan_file_test(char *path)
 void usbh_msc_run(struct usbh_msc *msc_class)
 {
     if (msc_class != NULL) {
-        usb_disk_set_active_msc_class((void *)msc_class);
-        mounted_flag = true;
+        if (!connected_flag) {
+            usb_disk_set_active_msc_class(DEV_NO, (void *)msc_class);
+            mount_flag = true;
+            connected_flag = true;
+        }
     }
 }
 
 void usbh_msc_stop(struct usbh_msc *msc_class)
 {
-    (void)msc_class;
-    mounted_flag = false;
+    uint8_t pdrv;
+
+    pdrv = usb_disk_free_active_msc_class(msc_class);
+    if (pdrv == DEV_NO) {
+        connected_flag = false;
+    }
 }
 
 static void msc_test(void)
 {
-    res_sd = f_mount(&fs, "0:", 1);
+    res_sd = f_mount(&fs, driver_num_buf, 1);
     if (res_sd != FR_OK) {
         USB_LOG_RAW("FATFS cherryusb mount fail,res:%d\r\n", res_sd);
     } else {
         USB_LOG_RAW("FATFS cherryusb mount succeeded!\r\n");
+        /* change to newly mounted drive */
+        f_chdrive(driver_num_buf);
+        /* set root directory as current directory */
+        f_chdir("/");
         if (usb_msc_fatfs_write_read_test() == 0) {
             usb_msc_fatfs_scan_file_test("/");
-            f_unmount("0:");
-            mounted_flag = false;
+            f_unmount(driver_num_buf);
+            mount_flag = false;
         }
     }
 }
@@ -131,7 +146,7 @@ static void usbh_class_test_thread(void *argument)
     (void)argument;
     while (1) {
         usb_osal_msleep(1000);
-        if (mounted_flag) {
+        if (mount_flag) {
             usb_osal_msleep(1000);
             msc_test();
         }

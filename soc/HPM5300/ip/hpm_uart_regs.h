@@ -326,9 +326,9 @@ typedef struct {
 /*
  * TFIFOT4 (RW)
  *
- * txfifo threshold(0 for 1byte, 0xF for 16bytes), uart will send tx_dma_req when data in fifo is less than threshold.
+ * txfifo threshold(0 for 1byte, 0xF for 32bytes), uart will send tx_dma_req when data in fifo is less than threshold.
  */
-#define UART_FCRR_TFIFOT4_MASK (0xF0000UL)
+#define UART_FCRR_TFIFOT4_MASK (0x1F0000UL)
 #define UART_FCRR_TFIFOT4_SHIFT (16U)
 #define UART_FCRR_TFIFOT4_SET(x) (((uint32_t)(x) << UART_FCRR_TFIFOT4_SHIFT) & UART_FCRR_TFIFOT4_MASK)
 #define UART_FCRR_TFIFOT4_GET(x) (((uint32_t)(x) & UART_FCRR_TFIFOT4_MASK) >> UART_FCRR_TFIFOT4_SHIFT)
@@ -336,10 +336,10 @@ typedef struct {
 /*
  * RFIFOT4 (RW)
  *
- * rxfifo threshold(0 for 1byte, 0xF for 16bytes).
+ * rxfifo threshold(0 for 1byte, 0xF for 32bytes).
  * Uart will send rx_dma_req if data in fifo reachs the threshold, also will set the rxdata irq if enabled
  */
-#define UART_FCRR_RFIFOT4_MASK (0xF00U)
+#define UART_FCRR_RFIFOT4_MASK (0x1F00U)
 #define UART_FCRR_RFIFOT4_SHIFT (8U)
 #define UART_FCRR_RFIFOT4_SET(x) (((uint32_t)(x) << UART_FCRR_RFIFOT4_SHIFT) & UART_FCRR_RFIFOT4_MASK)
 #define UART_FCRR_RFIFOT4_GET(x) (((uint32_t)(x) & UART_FCRR_RFIFOT4_MASK) >> UART_FCRR_RFIFOT4_SHIFT)
@@ -665,7 +665,7 @@ typedef struct {
 /*
  * RFIFOT (WO)
  *
- * Receiver FIFO trigger level
+ * Receiver FIFO trigger level(0 for 1byte, 0x3 for 4bytes). Uart will send rx_dma_req if data in fifo reachs the threshold
  */
 #define UART_FCR_RFIFOT_MASK (0xC0U)
 #define UART_FCR_RFIFOT_SHIFT (6U)
@@ -675,7 +675,7 @@ typedef struct {
 /*
  * TFIFOT (WO)
  *
- * Transmitter FIFO trigger level
+ * Transmitter FIFO trigger level(0 for 1byte, 0x3 for 4bytes), uart will send tx_dma_req when data in fifo is less than threshold.
  */
 #define UART_FCR_TFIFOT_MASK (0x30U)
 #define UART_FCR_TFIFOT_SHIFT (4U)

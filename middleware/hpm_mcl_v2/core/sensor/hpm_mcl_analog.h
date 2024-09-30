@@ -75,6 +75,7 @@ typedef struct {
     mcl_analog_cfg_t *cfg;
     physical_board_analog_t *board_parameter;
     mcl_filter_iir_df1_t *iir[MCL_ANALOG_CHN_NUM];
+    float current[MCL_ANALOG_CHN_NUM];
     int32_t *num_current_sample_res;
     mcl_analog_status_t status;
 } mcl_analog_t;

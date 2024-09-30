@@ -78,7 +78,8 @@ static void set_pwm_waveform_edge_aligned_duty(uint8_t duty)
     if (duty > 100) {
         duty = 100;
     }
-    cmp = ((current_reload * duty) / 100) + 1;
+    cmp = (current_reload * duty) / 100;
     gptmr_update_cmp(APP_BOARD_PWM, APP_BOARD_PWM_CH, 0, cmp);
+    gptmr_update_cmp(APP_BOARD_PWM, APP_BOARD_PWM_CH, 1, current_reload);
 }
 

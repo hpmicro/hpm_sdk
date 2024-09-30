@@ -42,6 +42,8 @@ void init_qeiv2_abz_pins(QEIV2_Type *ptr);
 void init_opamp_pins(void);
 void init_lin_transceiver_ctrl_pin(void);
 void init_uart_break_signal_pin(void);
+void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp);
+
 #ifdef __cplusplus
 }
 #endif

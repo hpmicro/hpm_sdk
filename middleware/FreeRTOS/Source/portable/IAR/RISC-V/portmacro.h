@@ -120,6 +120,12 @@ extern size_t xCriticalNesting;
 
 /*-----------------------------------------------------------*/
 
+/* Tickless idle/low power functionality. */
+#ifndef portSUPPRESS_TICKS_AND_SLEEP
+	extern void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime );
+	#define portSUPPRESS_TICKS_AND_SLEEP( xExpectedIdleTime )    vPortSuppressTicksAndSleep( xExpectedIdleTime )
+#endif
+
 /* Architecture specific optimisations. */
 #if( configUSE_PORT_OPTIMISED_TASK_SELECTION == 1 )
 

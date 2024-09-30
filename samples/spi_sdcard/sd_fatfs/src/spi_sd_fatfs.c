@@ -42,7 +42,7 @@ ATTR_PLACE_AT_NONCACHEABLE FIL s_file;
 ATTR_PLACE_AT_NONCACHEABLE DIR s_dir;
 FRESULT fatfs_result;
 
-const TCHAR driver_num_buf[3] = {DEV_SD + '0', ':', '/'};
+const TCHAR driver_num_buf[4] = {DEV_SD + '0', ':', '/', '\0'};
 
 const test_number_t test_table[] = {
     {create_txt,                "*        1 - Create hello.txt                                 *\n"},

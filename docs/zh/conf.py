@@ -70,6 +70,8 @@ external_content_contents = [
     (HPM_SDK_BASE / "docs/zh", "[!_]*"),
     (HPM_SDK_BASE, "boards/**/*_zh.md",),
     (HPM_SDK_BASE, "boards/**/doc"),
+    (HPM_SDK_BASE, "components/**/*_zh.md"),
+    (HPM_SDK_BASE, "components/**/doc"),
     (HPM_SDK_BASE, "samples/**/*_zh.md",),
     (HPM_SDK_BASE, "samples/**/doc"),
 ]

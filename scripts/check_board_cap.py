@@ -21,7 +21,7 @@ SOC_IP_FEATURE_PREFIX="HPM_IP_FEATURE_"
 
 def parse_app_yml(app_yml):
     app_info = None
-    with open(app_yml, "r") as stream:
+    with open(app_yml, "r", encoding='utf-8', errors='ignore') as stream:
         try:
             app_info = yaml.safe_load(stream)
         except yaml.YAMLError as e:
@@ -100,7 +100,7 @@ def get_soc_ip_feature_list(sdk_base, soc_series, soc_name):
     soc_ip_feature_file = os.path.join(sdk_base, "soc", soc_series, soc_name, SOC_IP_FEATURE_FILE_NAME)
     feature_list = []
     if os.path.exists(soc_ip_feature_file):
-        with open(soc_ip_feature_file, 'r', encoding='utf-8') as stream:
+        with open(soc_ip_feature_file, 'r', encoding='utf-8', errors='ignore') as stream:
             for line in stream.readlines():
                 regex_result = re.match(r'^#define\s+(%s.*)\s+1' % SOC_IP_FEATURE_PREFIX, line)
                 if regex_result:

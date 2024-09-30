@@ -31,7 +31,7 @@
 uint8_t uart_buff[BUFF_SIZE];
 ATTR_PLACE_AT_NONCACHEABLE uint8_t dma_buff[BUFF_SIZE];
 
-bool uart_rx_idle;
+volatile bool uart_rx_idle;
 
 void uart_isr(void)
 {

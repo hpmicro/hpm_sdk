@@ -10,7 +10,7 @@
 #include "board.h"
 
 #define TEST_SPI                    BOARD_APP_SPI_BASE
-#define TEST_SPI_SCLK_FREQ          BOARD_APP_SPI_SCLK_FREQ
+#define TEST_SPI_SCLK_FREQ          (2000000UL)
 #define TEST_SPI_DATA_LEN_BITS      (8U)
 #define TEST_SPI_DATA_LEN_BYTES     ((TEST_SPI_DATA_LEN_BITS + 7) / 8)
 #if (SPI_SOC_TRANSFER_COUNT_MAX == 512)

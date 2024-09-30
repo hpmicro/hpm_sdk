@@ -255,6 +255,36 @@ static inline void plb_type_b_inject_by_sw(PLB_Type *plb, plb_chn_t chn, uint32_
     plb->TYPE_B[chn].SW_INJECT = val;
 }
 
+#ifdef PLB_TYPE_B_LUT_CMP_LUT_CMP_MASK
+/**
+ * @brief  Set this cmp lut as cmp load control's true table
+ *
+ * @param plb @ref PLB_Type plb base
+ * @param chn @ref plb_chn_t
+ * @param cmp_index @ref plb_type_b_cmp_t
+ * @param val cmp value
+ */
+static inline void plb_type_b_set_cmp_lut(PLB_Type *plb, plb_chn_t chn, plb_type_b_cmp_t cmp_index, uint16_t val)
+{
+    plb->TYPE_B[chn].LUT_CMP[cmp_index] = PLB_TYPE_B_LUT_CMP_LUT_CMP_SET(val);
+}
+#endif
+
+/**
+ * @brief Get the counter value for PLB Type B
+ *
+ * Retrieve the value of the SW_INJECT field for the specified channel from the given PLB Type B structure.
+ *
+ * @param plb Pointer to the PLB Type B structure
+ * @param chn Channel number
+ *
+ * @return The value of the SW_INJECT field for the corresponding channel
+ */
+static inline uint32_t plb_type_b_get_counter(PLB_Type *plb, plb_chn_t chn)
+{
+    return plb->TYPE_B[chn].SW_INJECT;
+}
+
 /**
  * @brief Configuring the PLB type_b's lookup table
  *
@@ -264,6 +294,25 @@ static inline void plb_type_b_inject_by_sw(PLB_Type *plb, plb_chn_t chn, uint32_
  * @param opt @ref plb_type_b_slice_opt_t
  */
 void plb_type_b_set_lut(PLB_Type *plb, plb_chn_t chn, plb_type_b_lut_slice_t slice, plb_type_b_slice_opt_t opt);
+
+/**
+ * @brief Batch set plb lut b type data, the unit corresponding to the bit marked with a mask of 1 is configured
+ *
+ * @param plb @ref PLB_Type plb base
+ * @param chn @ref plb_chn_t
+ * @param mask bit16
+ * @param opt @ref plb_type_b_slice_opt_t
+ */
+void plb_type_b_set_lut_range_mask(PLB_Type *plb, plb_chn_t chn, uint16_t mask, plb_type_b_slice_opt_t opt);
+
+/**
+ * @brief Configure all lut to the same configuration
+ *
+ * @param plb @ref PLB_Type plb base
+ * @param chn @ref plb_chn_t
+ * @param opt @ref plb_type_b_slice_opt_t
+ */
+void plb_type_b_set_all_slice(PLB_Type *plb, plb_chn_t chn, plb_type_b_slice_opt_t opt);
 
 #ifdef __cplusplus
 }

@@ -91,6 +91,7 @@ enum {
 #define I2C_NO_START         (1u << 4)  /* no start */
 #define I2C_NO_READ_ACK      (1u << 6)  /* when I2C reading, we do not ACK */
 #define I2C_NO_STOP          (1u << 7)  /* no stop */
+#define I2C_WRITE_CHECK_ACK  (1u << 8)  /* when I2C writing, need check the slave returns ack */
 
 /**
  * @brief I2C config
@@ -609,7 +610,21 @@ static inline uint8_t i2c_get_direction(I2C_Type *ptr)
 hpm_stat_t i2c_master_configure_transfer(I2C_Type *i2c_ptr, const uint16_t device_address, uint32_t size, bool read);
 
 /**
- * @brief sequential transmit in master I2C mode an amount of data in blocking
+ * @brief sequential transmit in master I2C mode an amount of data and checks ACK in blocking
+ *
+ * @param [in] ptr ptr I2C base address
+ * @param [in] device_address I2C slave address
+ * @param [in] buf pointer of the buffer to store data sent from device
+ * @param [in] size size of data to be sent in bytes
+ * @param [in] opt I2c sequential transfer options
+ * @param [in] ack_check true to check ack, false to not check ack
+ * @retval hpm_stat_t status_success if transmit is completed without any error
+ */
+hpm_stat_t i2c_master_seq_transmit_check_ack(I2C_Type *ptr, const uint16_t device_address,
+                                   uint8_t *buf, const uint32_t size, i2c_seq_transfer_opt_t opt, bool ack_check);
+
+/**
+ * @brief sequential transmit in master I2C mode an amount of data and checks ACK in blocking, but does not check for ACK signals.
  *
  * @param [in] ptr ptr I2C base address
  * @param [in] device_address I2C slave address
@@ -618,8 +633,7 @@ hpm_stat_t i2c_master_configure_transfer(I2C_Type *i2c_ptr, const uint16_t devic
  * @param [in] opt I2c sequential transfer options
  * @retval hpm_stat_t status_success if transmit is completed without any error
  */
-hpm_stat_t i2c_master_seq_transmit(I2C_Type *ptr, const uint16_t device_address,
-                                   uint8_t *buf, const uint32_t size, i2c_seq_transfer_opt_t opt);
+#define i2c_master_seq_transmit(ptr, device_address, buf, size, opt)  i2c_master_seq_transmit_check_ack(ptr, device_address, buf, size, opt, false)
 
 /**
  * @brief sequential receive in master I2C mode an amount of data in blocking
@@ -641,7 +655,7 @@ hpm_stat_t i2c_master_seq_receive(I2C_Type *ptr, const uint16_t device_address,
  * @param ptr [in] ptr I2C base address
  * @param [in] clk_len SCL clock length
  */
-static inline void i2s_gen_reset_signal(I2C_Type *ptr, uint8_t clk_len)
+static inline void i2c_gen_reset_signal(I2C_Type *ptr, uint8_t clk_len)
 {
     ptr->CTRL = (ptr->CTRL & ~I2C_CTRL_RESET_LEN_MASK) | I2C_CTRL_RESET_LEN_SET(clk_len) \
                 | I2C_CTRL_RESET_HOLD_SCKIN_MASK | I2C_CTRL_RESET_ON_MASK;

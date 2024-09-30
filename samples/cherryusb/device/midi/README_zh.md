@@ -23,7 +23,7 @@
 
     - 将程序下载至开发板运行，电脑可自动识别并枚举出一个MIDI设备。
 
-    - 打开MIDI-OX软件，点击菜单 **"options-MIDI devices..."**，MIDI Inputs选择 "CherryUSB MIDI DEMO"，MIDI Outputs选择 "Microsoft GS Wavetable Synth"
+    - 打开MIDI-OX软件，点击菜单 **"options-MIDI devices..."**，MIDI Inputs选择 "HPMicro MIDI DEMO"，MIDI Outputs选择 "Microsoft GS Wavetable Synth"
     ![MIDI-OX_select_device.png](doc/MIDI-OX_select_device.png)
 
     - 串口终端显示log如下，用户选择工作模式：1-自动弹奏，2-手动弹奏。

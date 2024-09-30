@@ -63,7 +63,6 @@ initialize by copy with packing=auto        { section .noncacheable.init, sectio
 initialize by copy with packing=auto        { section .fast, section .fast.*, section .*.fast, section .*.fast.* };               // "RAM Code" sections
 initialize by copy with packing=none        { section .vector_table };
 initialize by copy with packing=none        { section .isr_vector };
-initialize by copy with packing=auto        { section .usbh_class_info };
 initialize by copy                          { readwrite };
 
 /* Placement */
@@ -75,9 +74,9 @@ place in ILM                                {
                                               block rtthread_VSymTab,
                                               block rtthread_rti_fn,
                                               block rtthread_RTMSymTab,
+                                              block cherryusb_usbh_class_info,
                                               readonly
                                             };
-place in AXI_SRAM                           { block cherryusb_usbh_class_info };
 place in AXI_SRAM                           { block framebuffer };
 place in AXI_SRAM                           {
                                               block RW_DATA

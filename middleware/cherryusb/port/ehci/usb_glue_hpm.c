@@ -53,7 +53,7 @@ void usb_hc_low_level_init(struct usbh_bus *bus)
 #endif
     }
 
-    usb_phy_init((USB_Type *)(bus->hcd.reg_base));
+    usb_phy_init((USB_Type *)(bus->hcd.reg_base), true);
     intc_m_enable_irq(_hcd_irqnum[bus->hcd.hcd_id]);
 }
 

@@ -7,7 +7,6 @@ This chapter describes the board-related configuration
    :maxdepth: 3
    :numbered:
 
-   hpm6750evk/README_en
    hpm6750evk2/README_en
    hpm6750evkmini/README_en
    hpm6300evk/README_en
@@ -24,9 +23,6 @@ This chapter describes the board-related configuration
 
 (lab_board_resource)=
 
-:::{tab} HPM6750EVK
-Click [here](lab_hpm6750_evk_board) to view the HPM6750EVK development board
-:::
 :::{tab} HPM6750EVK2
 Click [here](lab_hpm6750_evk2_board) to view the HPM6750EVK2 development board
 :::
@@ -51,7 +47,6 @@ Click [here](lab_hpm6800_evk_board) to view the HPM6800EVK development board
 :::{tab} HPM6E00EVK
 Click [here](lab_hpm6e00_evk_board) to view the HPM6E00EVK development board
 :::
-
 (lab_board_lcd_pin)=
 (lab_board_app_i2c_pin)=
 (lab_board_cam_i2c_pin)=

@@ -99,7 +99,7 @@ hpm_stat_t init_i2s_playback(uint32_t sample_rate, uint8_t audio_depth, uint8_t 
 
     i2s_enable_tx_dma_request(TARGET_I2S);
     dmamux_config(BOARD_APP_DMAMUX, TARGET_I2S_TX_DMAMUX_CH, TARGET_I2S_TX_DMAMUX_SRC, true);
-    intc_m_enable_irq_with_priority(BOARD_APP_HDMA_IRQ, TARGET_I2S_TX_DMA_IRQ_PRIORITY);
+    intc_m_enable_irq_with_priority(BOARD_APP_XDMA_IRQ, TARGET_I2S_TX_DMA_IRQ_PRIORITY);
 
     i2s_get_default_transfer_config_for_dao(&transfer);
     transfer.data_line = TARGET_I2S_DATA_LINE;
@@ -149,7 +149,7 @@ void i2s_dma_start_transfer(uint32_t addr, uint32_t size)
 {
     dma_channel_config_t ch_config = { 0 };
 
-    dma_default_channel_config(BOARD_APP_HDMA, &ch_config);
+    dma_default_channel_config(BOARD_APP_XDMA, &ch_config);
     ch_config.src_addr = core_local_mem_to_sys_address(HPM_CORE0, addr);
     ch_config.dst_addr = (uint32_t)&TARGET_I2S->TXD[TARGET_I2S_DATA_LINE];
     ch_config.src_width = DMA_TRANSFER_WIDTH_WORD;
@@ -160,7 +160,7 @@ void i2s_dma_start_transfer(uint32_t addr, uint32_t size)
     ch_config.dst_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
     ch_config.src_burst_size = 0;
 
-    if (status_success != dma_setup_channel(BOARD_APP_HDMA, TARGET_I2S_TX_DMA_CH, &ch_config, true)) {
+    if (status_success != dma_setup_channel(BOARD_APP_XDMA, TARGET_I2S_TX_DMA_CH, &ch_config, true)) {
         printf(" dma setup channel failed\n");
         return;
     }

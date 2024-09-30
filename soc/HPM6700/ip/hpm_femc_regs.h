@@ -23,8 +23,8 @@ typedef struct {
     __RW uint32_t SDRCTRL2;                    /* 0x48: SDRAM Control Register 2 */
     __RW uint32_t SDRCTRL3;                    /* 0x4C: SDRAM Control Register 3 */
     __R  uint8_t  RESERVED1[32];               /* 0x50 - 0x6F: Reserved */
-    __RW uint32_t SRCTRL0;                     /* 0x70: SRAM control register 0 */
-    __RW uint32_t SRCTRL1;                     /* 0x74: SRAM control register 1 */
+    __RW uint32_t SRCTRL0;                     /* 0x70: SRAM0 control register 0 */
+    __RW uint32_t SRCTRL1;                     /* 0x74: SRAM0 control register 1 */
     __R  uint8_t  RESERVED2[24];               /* 0x78 - 0x8F: Reserved */
     __RW uint32_t SADDR;                       /* 0x90: IP Command Control Register 0 */
     __RW uint32_t DATSZ;                       /* 0x94: IP Command Control Register 1 */
@@ -109,7 +109,7 @@ typedef struct {
  *
  * IO_CSX output selection
  * 0001b - SDRAM CS1
- * 0110b - SRAM CE#
+ * 0110b - SRAM CE0#
  */
 #define FEMC_IOCTRL_IO_CSX_MASK (0xF0U)
 #define FEMC_IOCTRL_IO_CSX_SHIFT (4U)

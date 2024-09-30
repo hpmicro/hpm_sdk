@@ -13,30 +13,17 @@
 #include "hpm_ppi.h"
 #include "hpm_clock_drv.h"
 
-static uint32_t ppi_ns2cycle(uint32_t ns)
-{
-    uint32_t ppi_freq = clock_get_frequency(clock_ppi0);
-    uint32_t max_cycle = PPI_CMD_CMD_CFG_CYCLE_NUM_MASK >> PPI_CMD_CMD_CFG_CYCLE_NUM_SHIFT;
-    uint32_t ns_per_cycle;
-    uint32_t cycle;
-
-    ns_per_cycle = 1000000000 / ppi_freq;
-    cycle = ns / ns_per_cycle;
-    if (cycle > max_cycle) {
-        cycle = max_cycle;
-    }
-
-    return cycle;
-}
-
 /* API */
 void ppi_config_async_sram(PPI_Type *ppi, uint8_t cs_index, uint8_t cmd_start_index, ppi_async_sram_config_t *config)
 {
-    ppi_cs_pin_config_t cs_config;
-    ppi_cmd_config_t cmd_config;
-
-    assert(!config->ad_mux_mode && (config->port_size != ppi_port_size_32bits));
+    assert((config->ad_mux_mode) || (config->port_size != ppi_port_size_32bits));
     assert(((config->base_address & 0xFFFFF) == 0) && (config->size_in_byte > 0));    /* Addr should be aligned by 1MB */
+    assert(((cmd_start_index & 0x07) == 0) && (cmd_start_index < 64));
+    assert(cs_index < 4);
+
+    uint32_t ppi_freq = clock_get_frequency(clock_ppi0);
+    ppi_cs_pin_config_t cs_config = { 0 };
+    ppi_cmd_config_t cmd_config = { 0 };
 
     /*
      * Pin polarity Config
@@ -99,7 +86,7 @@ void ppi_config_async_sram(PPI_Type *ppi, uint8_t cs_index, uint8_t cmd_start_in
     cmd_config.ctrl_pin_value[config->wel_ctrl_pin] = true;
 
     /* AS Stage */
-    cmd_config.cmd_cycle = ppi_ns2cycle(config->as_in_ns);
+    cmd_config.cmd_cycle = ppi_ns2cycle(ppi_freq, config->as_in_ns);
     if (config->ad_mux_mode) {
         for (uint8_t i = 0; i < 4; i++) {
             cmd_config.ad_func_sel[i] = ppi_ad_func_addr;
@@ -111,7 +98,7 @@ void ppi_config_async_sram(PPI_Type *ppi, uint8_t cs_index, uint8_t cmd_start_in
     ppi_config_cmd(ppi, cmd_start_index, &cmd_config);
 
     /* AH Stage */
-    cmd_config.cmd_cycle = ppi_ns2cycle(config->ah_in_ns);
+    cmd_config.cmd_cycle = ppi_ns2cycle(ppi_freq, config->ah_in_ns);
     if (config->ad_mux_mode) {
         for (uint8_t i = 0; i < 4; i++) {
             cmd_config.ad_func_sel[i] = ppi_ad_func_addr;
@@ -123,9 +110,9 @@ void ppi_config_async_sram(PPI_Type *ppi, uint8_t cs_index, uint8_t cmd_start_in
     ppi_config_cmd(ppi, cmd_start_index + 1, &cmd_config);
 
     /* REL Stage */
-    cmd_config.cmd_cycle = ppi_ns2cycle(config->rel_in_ns);
+    cmd_config.cmd_cycle = ppi_ns2cycle(ppi_freq, config->rel_in_ns);
     if (config->ad_mux_mode) {
-        for (uint8_t i = 0; i < 4; i++) {
+        for (uint8_t i = 0; i < (1u << config->port_size); i++) {
             cmd_config.ad_func_sel[i] = ppi_ad_func_data;
             cmd_config.ad_pin_dir[i] = ppi_ad_pin_dir_input;
         }
@@ -135,9 +122,9 @@ void ppi_config_async_sram(PPI_Type *ppi, uint8_t cs_index, uint8_t cmd_start_in
     ppi_config_cmd(ppi, cmd_start_index + 2, &cmd_config);
 
     /* REH Stage */
-    cmd_config.cmd_cycle = ppi_ns2cycle(config->reh_in_ns);
+    cmd_config.cmd_cycle = ppi_ns2cycle(ppi_freq, config->reh_in_ns);
     if (config->ad_mux_mode) {
-        for (uint8_t i = 0; i < 4; i++) {
+        for (uint8_t i = 0; i < (1u << config->port_size); i++) {
             cmd_config.ad_func_sel[i] = ppi_ad_func_data;
             cmd_config.ad_pin_dir[i] = ppi_ad_pin_dir_input;
         }
@@ -189,7 +176,7 @@ void ppi_config_async_sram(PPI_Type *ppi, uint8_t cs_index, uint8_t cmd_start_in
     cmd_config.ctrl_pin_value[config->rel_ctrl_pin] = true;
 
     /* AS Stage */
-    cmd_config.cmd_cycle = ppi_ns2cycle(config->as_in_ns);
+    cmd_config.cmd_cycle = ppi_ns2cycle(ppi_freq, config->as_in_ns);
     if (config->ad_mux_mode) {
         for (uint8_t i = 0; i < 4; i++) {
             cmd_config.ad_func_sel[i] = ppi_ad_func_addr;
@@ -201,7 +188,7 @@ void ppi_config_async_sram(PPI_Type *ppi, uint8_t cs_index, uint8_t cmd_start_in
     ppi_config_cmd(ppi, cmd_start_index + 4, &cmd_config);
 
     /* AH Stage */
-    cmd_config.cmd_cycle = ppi_ns2cycle(config->ah_in_ns);
+    cmd_config.cmd_cycle = ppi_ns2cycle(ppi_freq, config->ah_in_ns);
     if (config->ad_mux_mode) {
         for (uint8_t i = 0; i < 4; i++) {
             cmd_config.ad_func_sel[i] = ppi_ad_func_addr;
@@ -213,9 +200,9 @@ void ppi_config_async_sram(PPI_Type *ppi, uint8_t cs_index, uint8_t cmd_start_in
     ppi_config_cmd(ppi, cmd_start_index + 5, &cmd_config);
 
     /* WEL Stage */
-    cmd_config.cmd_cycle = ppi_ns2cycle(config->wel_in_ns);
+    cmd_config.cmd_cycle = ppi_ns2cycle(ppi_freq, config->wel_in_ns);
     if (config->ad_mux_mode) {
-        for (uint8_t i = 0; i < 4; i++) {
+        for (uint8_t i = 0; i < (1u << config->port_size); i++) {
             cmd_config.ad_func_sel[i] = ppi_ad_func_data;
             cmd_config.ad_pin_dir[i] = ppi_ad_pin_dir_output;
         }
@@ -225,9 +212,9 @@ void ppi_config_async_sram(PPI_Type *ppi, uint8_t cs_index, uint8_t cmd_start_in
     ppi_config_cmd(ppi, cmd_start_index + 6, &cmd_config);
 
     /* WEH Stage */
-    cmd_config.cmd_cycle = ppi_ns2cycle(config->weh_in_ns);
+    cmd_config.cmd_cycle = ppi_ns2cycle(ppi_freq, config->weh_in_ns);
     if (config->ad_mux_mode) {
-        for (uint8_t i = 0; i < 4; i++) {
+        for (uint8_t i = 0; i < (1u << config->port_size); i++) {
             cmd_config.ad_func_sel[i] = ppi_ad_func_data;
             cmd_config.ad_pin_dir[i] = ppi_ad_pin_dir_output;
         }

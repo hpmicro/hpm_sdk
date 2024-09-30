@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -414,6 +414,7 @@ void adc_init(void)
 #if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC12
     cfg.config.adc12.res            = adc12_res_12_bits;
     cfg.config.adc12.conv_mode      = adc12_conv_mode_preemption;
+    cfg.config.adc12.diff_sel       = adc12_sample_signal_single_ended;
     cfg.config.adc12.adc_clk_div    = 2;
     cfg.config.adc12.sel_sync_ahb   = false;
     cfg.config.adc12.adc_ahb_en = true;
@@ -479,7 +480,7 @@ void adc_init(void)
     init_trigger_cfg(BOARD_BLDC_ADC_PHASE_TRG, true);
 
 #if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC16
-    adc16_set_pmt_queue_enable(hpm_adc_u.adc_base.adc16, BOARD_BLDC_ADC_PHASE_TRG, true);
+    adc16_enable_pmt_queue(hpm_adc_u.adc_base.adc16, BOARD_BLDC_ADC_PHASE_TRG);
 #endif
 
      /* Set DMA start address for preemption mode */
@@ -544,14 +545,13 @@ void timer_init(void)
     gptmr_channel_config_t config;
 
     gptmr_channel_get_default_config(BOARD_BLDC_TMR_1MS, &config);
-    config.cmp[0] = SENSORLESS_TMR_RELOAD;
     config.debug_mode = 0;
     config.reload = SENSORLESS_TMR_RELOAD + 1;
-
+    config.cmp[0] = SENSORLESS_TMR_RELOAD;
+    config.cmp[1] = config.reload;
     gptmr_enable_irq(BOARD_BLDC_TMR_1MS, GPTMR_CH_CMP_IRQ_MASK(BOARD_BLDC_TMR_CH, BOARD_BLDC_TMR_CMP));
     gptmr_channel_config(BOARD_BLDC_TMR_1MS, BOARD_BLDC_TMR_CH, &config, true);
     intc_m_enable_irq_with_priority(BOARD_BLDC_TMR_IRQ, 1);
-
 }
 
 void init_over_zero_para(hpm_mcl_over_zero_cfg_t *cfg)

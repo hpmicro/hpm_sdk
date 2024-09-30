@@ -14,7 +14,7 @@ The **bldc_foc** project contains the speed control and position control of DC b
 ## Running the demo
 
 The motor runs at a speed of 20r/s.
-The following data can be configured by serial console ：
+The following data can be configured by serial console:
 
 `speed` float, range +40~-40, unit r/s
 

@@ -1,4 +1,4 @@
-# Eclipse samples
+# ThreadX samples
 
 :::{eval-rst}
 .. toctree::

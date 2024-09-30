@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 add_subdirectory_ifdef(CONFIG_ENET_PHY enet_phy)
-add_subdirectory_ifndef(CONFIG_NDEBUG_CONSOLE debug_console)
+add_subdirectory_ifdef(CONFIG_TSW_PHY tsw_phy)
+add_subdirectory(debug_console)
 add_subdirectory_ifdef(CONFIG_CAMERA camera)
 add_subdirectory_ifdef(CONFIG_CODEC codec)
 add_subdirectory_ifdef(CONFIG_USB_DEVICE usb/device)
@@ -19,3 +20,5 @@ add_subdirectory_ifdef(CONFIG_SPI_NOR_FLASH serial_nor)
 add_subdirectory_ifdef(CONFIG_HPM_PANEL panel)
 add_subdirectory_ifdef(CONFIG_HPM_PPI ppi)
 add_subdirectory_ifdef(CONFIG_HPM_I2S_OVER_SPI i2s_over_spi)
+add_subdirectory_ifdef(CONFIG_HPM_PLB_QEI_ENCODER plb/qei_encoder)
+add_subdirectory_ifdef(CONFIG_HPM_PMBUS pmbus smbus)

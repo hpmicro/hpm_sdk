@@ -92,6 +92,7 @@ hpm_stat_t gt9xx_init(gt9xx_context_t *context, uint16_t width, uint16_t height)
     /* < 90: fixed config; >=90 custom config */
     if (config[GT9XX_CONFIG_DATA_CONFIG_VERSION] < 90) {
         printf("ERR: GTXXX custom config can't be supported\n");
+        printf("ERR: GTXXX CONFIG_VERSION: %08x\n", config[GT9XX_CONFIG_DATA_CONFIG_VERSION]);
         return status_fail;
     } else {
         context->abs_x_max = config[GT9XX_CONFIG_DATA_RESOLUTION_XH];

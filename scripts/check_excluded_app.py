@@ -6,7 +6,7 @@ import yaml
 
 def check_excluded_app(input_yml, board, app):
     excluded = False
-    with open(input_yml, "r") as stream:
+    with open(input_yml, 'r', encoding='utf-8', errors='ignore') as stream:
         try:
             info = yaml.safe_load(stream)
             if not info is None and board in info.keys():

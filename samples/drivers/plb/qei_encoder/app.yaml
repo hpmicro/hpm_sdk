@@ -1,0 +1,3 @@
+dependency:
+  - plb
+  - ip_feature_plb_counter_read_real_time

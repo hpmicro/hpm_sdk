@@ -24,7 +24,7 @@ DEBUG_INFO_SES_GDB_SERVER_RST_CMD="gdb_server_reset_command"
 
 def parse_app_yml(app_yml):
     app_info = None
-    with open(app_yml, "r") as stream:
+    with open(app_yml, "r", encoding="utf-8", errors="ignore") as stream:
         try:
             app_info = yaml.safe_load(stream)
         except yaml.YAMLError as e:

@@ -138,7 +138,7 @@ void config_gptmr_to_detect_uart_rx_idle(gptmr_info_t *gptmr_info, trgm_info_t *
     gptmr_freq = clock_get_frequency(gptmr_info->clock_name);
     gptmr_channel_get_default_config(gptmr_info->ptr, &config);
     config.cmp[0] = gptmr_freq / uart_baudrate * bits; /* Time to transmit a byte */
-    config.cmp[1] = 0xffffffff;
+    config.cmp[1] = 0xFFFFFFFEUL;
     config.synci_edge = gptmr_synci_edge_both;
     gptmr_channel_config(gptmr_info->ptr, gptmr_info->cmp_ch, &config, false);
     gptmr_channel_reset_count(gptmr_info->ptr, gptmr_info->cmp_ch);

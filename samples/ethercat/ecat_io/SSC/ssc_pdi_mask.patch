@@ -1,0 +1,19 @@
+diff -uN Src/ecatslv.c Src_modify/ecatslv.c
+--- Src/ecatslv.c	2024-09-01 19:50:18.861284100 +0800
++++ Src_modify/ecatslv.c	2024-09-01 19:52:14.321202700 +0800
+@@ -269,6 +269,7 @@
+     UINT32 u32Mask = 0;
+     HW_EscReadDWord(u32Mask, ESC_AL_EVENTMASK_OFFSET);
+     u32Mask &= (UINT32)intMask;
++    u32Mask &= ~(SYNC0_EVENT | SYNC1_EVENT); /* mask Sync0\Sync1 for PDI IRQ, because there are independent Sync0\Sync1 IRQ */
+ 
+ 
+ 
+@@ -289,6 +290,7 @@
+     UINT32 u32Mask = 0;
+     HW_EscReadDWord(u32Mask, ESC_AL_EVENTMASK_OFFSET);
+     u32Mask |= (UINT32)intMask;
++    u32Mask &= ~(SYNC0_EVENT | SYNC1_EVENT); /* mask Sync0\Sync1 for PDI IRQ, because there are independent Sync0\Sync1 IRQ */
+ 
+ 
+     DISABLE_ESC_INT();

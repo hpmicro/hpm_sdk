@@ -260,18 +260,18 @@ const struct usb_descriptor audio_v1_descriptor = {
 /* static variable definition */
 #define SPEAKER_DMA_CHANNEL 1U
 #define MIC_DMA_CHANNEL     2U
-#define SPEAKER_DMAMUX_CHANNEL    DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_HDMA, SPEAKER_DMA_CHANNEL)
-#define MIC_DMAMUX_CHANNEL        DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_HDMA, MIC_DMA_CHANNEL)
+#define SPEAKER_DMAMUX_CHANNEL    DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_XDMA, SPEAKER_DMA_CHANNEL)
+#define MIC_DMAMUX_CHANNEL        DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_XDMA, MIC_DMA_CHANNEL)
 
-#define MIC_I2S               HPM_I2S0
-#define MIC_I2S_CLK_NAME      clock_i2s0
-#define MIC_I2S_DATA_LINE     I2S_DATA_LINE_0
-#define MIC_I2S_RX_DMAMUX_SRC HPM_DMA_SRC_I2S0_RX
+#define MIC_I2S               BOARD_MIC_I2S
+#define MIC_I2S_CLK_NAME      BOARD_MIC_I2S_CLK_NAME
+#define MIC_I2S_DATA_LINE     BOARD_MIC_I2S_DATA_LINE
+#define MIC_I2S_RX_DMAMUX_SRC BOARD_MIC_I2S_RX_DMAMUX_SRC
 
-#define SPEAKER_I2S               HPM_I2S1
-#define SPEAKER_I2S_CLK_NAME      clock_i2s1
-#define SPEAKER_I2S_DATA_LINE     I2S_DATA_LINE_0
-#define SPEAKER_I2S_TX_DMAMUX_SRC HPM_DMA_SRC_I2S1_TX
+#define SPEAKER_I2S               BOARD_SPEAKER_I2S
+#define SPEAKER_I2S_CLK_NAME      BOARD_SPEAKER_I2S_CLK_NAME
+#define SPEAKER_I2S_DATA_LINE     BOARD_SPEAKER_I2S_DATA_LINE
+#define SPEAKER_I2S_TX_DMAMUX_SRC BOARD_SPEAKER_I2S_TX_DMAMUX_SRC
 
 #define AUDIO_BUFFER_COUNT 32
 static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t s_speaker_out_buffer[AUDIO_BUFFER_COUNT][AUDIO_OUT_PACKET];
@@ -485,7 +485,11 @@ void usbd_audio_open(uint8_t busid, uint8_t intf)
         s_speaker_dma_transfer_req = true;
         /* setup first out ep read transfer */
         usbd_ep_start_read(busid, AUDIO_OUT_EP, (uint8_t *)&s_speaker_out_buffer[s_speaker_out_buffer_rear][0], AUDIO_OUT_PACKET);
-        dao_start(HPM_DAO);
+        if (s_speaker_mute) {
+            dao_stop(HPM_DAO);
+        } else {
+            dao_start(HPM_DAO);
+        }
         printf("OPEN SPEAKER\r\n");
     } else {
         s_mic_tx_flag = 1;
@@ -493,7 +497,11 @@ void usbd_audio_open(uint8_t busid, uint8_t intf)
         s_mic_in_buffer_front = 0;
         s_mic_in_buffer_rear = 0;
         s_mic_dma_transfer_done = false;
-        pdm_start(HPM_PDM);
+        if (s_mic_mute) {
+            pdm_stop(HPM_PDM);
+        } else {
+            pdm_start(HPM_PDM);
+        }
         mic_i2s_dma_start_transfer((uint32_t)&s_mic_in_buffer[s_mic_in_buffer_rear][0], AUDIO_IN_PACKET);
         printf("OPEN MIC\r\n");
     }
@@ -645,7 +653,7 @@ void i2s_enable_dma_irq_with_priority(int32_t priority)
     dmamux_config(BOARD_APP_DMAMUX, SPEAKER_DMAMUX_CHANNEL, SPEAKER_I2S_TX_DMAMUX_SRC, true);
     dmamux_config(BOARD_APP_DMAMUX, MIC_DMAMUX_CHANNEL, MIC_I2S_RX_DMAMUX_SRC, true);
 
-    intc_m_enable_irq_with_priority(BOARD_APP_HDMA_IRQ, priority);
+    intc_m_enable_irq_with_priority(BOARD_APP_XDMA_IRQ, priority);
 }
 
 void mic_init_i2s_pdm(void)
@@ -718,8 +726,8 @@ void isr_dma(void)
     volatile uint32_t speaker_status;
     volatile uint32_t mic_status;
 
-    speaker_status = dma_check_transfer_status(BOARD_APP_HDMA, SPEAKER_DMA_CHANNEL);
-    mic_status = dma_check_transfer_status(BOARD_APP_HDMA, MIC_DMA_CHANNEL);
+    speaker_status = dma_check_transfer_status(BOARD_APP_XDMA, SPEAKER_DMA_CHANNEL);
+    mic_status = dma_check_transfer_status(BOARD_APP_XDMA, MIC_DMA_CHANNEL);
 
     if (0 != (speaker_status & DMA_CHANNEL_STATUS_TC)) {
         s_speaker_dma_transfer_done = true;
@@ -729,7 +737,7 @@ void isr_dma(void)
         s_mic_dma_transfer_done = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_HDMA_IRQ, isr_dma)
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 
 /* static function definition */
 static void usbd_audio_out_callback(uint8_t busid, uint8_t ep, uint32_t nbytes)
@@ -773,7 +781,7 @@ static void speaker_i2s_dma_start_transfer(uint32_t addr, uint32_t size)
 {
     dma_channel_config_t ch_config = { 0 };
 
-    dma_default_channel_config(BOARD_APP_HDMA, &ch_config);
+    dma_default_channel_config(BOARD_APP_XDMA, &ch_config);
     ch_config.src_addr = core_local_mem_to_sys_address(HPM_CORE0, addr);
     ch_config.dst_addr = (uint32_t)(&SPEAKER_I2S->TXD[SPEAKER_I2S_DATA_LINE]) + 2u;
     ch_config.src_width = DMA_TRANSFER_WIDTH_HALF_WORD;
@@ -785,7 +793,7 @@ static void speaker_i2s_dma_start_transfer(uint32_t addr, uint32_t size)
     ch_config.dst_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
     ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
 
-    if (status_success != dma_setup_channel(BOARD_APP_HDMA, SPEAKER_DMA_CHANNEL, &ch_config, true)) {
+    if (status_success != dma_setup_channel(BOARD_APP_XDMA, SPEAKER_DMA_CHANNEL, &ch_config, true)) {
         printf(" dma setup channel failed\n");
     }
 }
@@ -794,7 +802,7 @@ static void mic_i2s_dma_start_transfer(uint32_t addr, uint32_t size)
 {
     dma_channel_config_t ch_config = { 0 };
 
-    dma_default_channel_config(BOARD_APP_HDMA, &ch_config);
+    dma_default_channel_config(BOARD_APP_XDMA, &ch_config);
     ch_config.src_addr = (uint32_t)(&MIC_I2S->RXD[MIC_I2S_DATA_LINE]) + 2u;
     ch_config.dst_addr = core_local_mem_to_sys_address(HPM_CORE0, addr);
     ch_config.src_width = DMA_TRANSFER_WIDTH_HALF_WORD;
@@ -806,7 +814,7 @@ static void mic_i2s_dma_start_transfer(uint32_t addr, uint32_t size)
     ch_config.dst_mode = DMA_HANDSHAKE_MODE_NORMAL;
     ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
 
-    if (status_success != dma_setup_channel(BOARD_APP_HDMA, MIC_DMA_CHANNEL, &ch_config, true)) {
+    if (status_success != dma_setup_channel(BOARD_APP_XDMA, MIC_DMA_CHANNEL, &ch_config, true)) {
         printf(" pdm dma setup channel failed\n");
     }
 }

@@ -141,8 +141,13 @@ hpm_mcl_stat_t hpm_mcl_drivers_block_update(mcl_drivers_t *drivers, mcl_motor_di
             hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_ch);
             hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_cl);
             break;
-
         default:
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_ah);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_al);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_bh);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_bl);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_ch);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_cl);
             break;
         }
     } else if (dir == motor_dir_forward) {
@@ -195,8 +200,13 @@ hpm_mcl_stat_t hpm_mcl_drivers_block_update(mcl_drivers_t *drivers, mcl_motor_di
             hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_cl);
             hpm_mcl_enable_drivers(drivers, mcl_drivers_chn_ch);
             break;
-
         default:
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_ah);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_al);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_bh);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_bl);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_ch);
+            hpm_mcl_disable_drivers(drivers, mcl_drivers_chn_cl);
             break;
         }
     } else {

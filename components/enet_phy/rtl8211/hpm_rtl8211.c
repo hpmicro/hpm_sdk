@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -79,12 +79,12 @@ bool rtl8211_basic_mode_init(ENET_Type *ptr, rtl8211_config_t *config)
         data |= RTL8211_BMCR_DUPLEX_SET(config->duplex);                                                /* Set duplex mode */
     }
 
-    enet_write_phy(ptr, RTL8211_ADDR, RTL8211_BMCR, data);
-
     /* check the id of rtl8211 */
     if (rtl8211_check_id(ptr) == false) {
         return false;
     }
+
+    enet_write_phy(ptr, RTL8211_ADDR, RTL8211_BMCR, data);
 
     return true;
 }

@@ -76,17 +76,6 @@ hpm_mcl_stat_t hpm_mcl_encoder_start_sample(mcl_encoder_t *encoder)
     return mcl_success;
 }
 
-/**
- * @brief Sets the initial value of the angle. Normally,
- * the programme does the initial value setting automatically,
- * but if you are not satisfied with the result, you can set the initial value.
- * The initial value determines the zero point of the electrical angle.
- * This means that the angle read by the sensor is calibrated to zero by the initial value
- *
- * @param encoder @ref mcl_encoder_t
- * @param theta Used to calibrate electrical angle to zero
- * @return hpm_mcl_stat_t @ref hpm_mcl_stat_t
- */
 hpm_mcl_stat_t hpm_mcl_encoder_set_initial_theta(mcl_encoder_t *encoder, float theta)
 {
     MCL_ASSERT(encoder != NULL, mcl_invalid_pointer);

@@ -11,7 +11,6 @@
 
 #include "usbh_core.h"
 #include "usbh_hid.h"
-#include "usb_ehci_priv.h"
 
 #define task_PRIORITY (configMAX_PRIORITIES - 5U)
 

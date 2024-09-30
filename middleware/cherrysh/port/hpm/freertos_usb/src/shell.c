@@ -14,7 +14,7 @@
 #include "chry_ringbuffer.h"
 #include "csh.h"
 #include "usbd_core.h"
-#include "usbd_cdc.h"
+#include "usbd_cdc_acm.h"
 
 #ifndef task_repl_PRIORITY
 #define task_repl_PRIORITY (configMAX_PRIORITIES - 4U)

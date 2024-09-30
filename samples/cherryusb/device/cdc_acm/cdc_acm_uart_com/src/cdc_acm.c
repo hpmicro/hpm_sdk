@@ -6,7 +6,7 @@
  */
 
 #include "usbd_core.h"
-#include "usbd_cdc.h"
+#include "usbd_cdc_acm.h"
 #include "cdc_acm.h"
 #include "uart_dma.h"
 

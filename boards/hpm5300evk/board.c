@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
@@ -71,11 +71,11 @@ static board_timer_cb timer_cb;
  *      0 - 4MB / 1 - 8MB / 2 - 16MB
  */
 #if defined(FLASH_XIP) && FLASH_XIP
-__attribute__ ((section(".nor_cfg_option"))) const uint32_t option[4] = {0xfcf90002, 0x00000006, 0x1000, 0x0};
+__attribute__ ((section(".nor_cfg_option"), used)) const uint32_t option[4] = {0xfcf90002, 0x00000006, 0x1000, 0x0};
 #endif
 
 #if defined(FLASH_UF2) && FLASH_UF2
-ATTR_PLACE_AT(".uf2_signature") const uint32_t uf2_signature = BOARD_UF2_SIGNATURE;
+ATTR_PLACE_AT(".uf2_signature") __attribute__((used)) const uint32_t uf2_signature = BOARD_UF2_SIGNATURE;
 #endif
 
 void board_init_console(void)
@@ -389,12 +389,12 @@ void board_usb_vbus_ctrl(uint8_t usb_index, uint8_t level)
     (void) level;
 }
 
-uint32_t board_init_adc_clock(void *ptr, bool clk_src_ahb)
+uint32_t board_init_adc_clock(void *ptr, bool clk_src_bus)
 {
     uint32_t freq = 0;
 
     if (ptr == (void *)HPM_ADC0) {
-        if (clk_src_ahb) {
+        if (clk_src_bus) {
             /* Configure the ADC clock from AHB (@200MHz by default)*/
             clock_set_adc_source(clock_adc0, clk_adc_src_ahb0);
         } else {
@@ -405,7 +405,7 @@ uint32_t board_init_adc_clock(void *ptr, bool clk_src_ahb)
 
         freq = clock_get_frequency(clock_adc0);
     } else if (ptr == (void *)HPM_ADC1) {
-        if (clk_src_ahb) {
+        if (clk_src_bus) {
             /* Configure the ADC clock from AHB (@200MHz by default)*/
             clock_set_adc_source(clock_adc1, clk_adc_src_ahb0);
         } else {
@@ -425,6 +425,10 @@ void board_init_adc16_pins(void)
     init_adc_pins();
 }
 
+void board_init_acmp_pins(void)
+{
+    init_acmp_pins();
+}
 uint32_t board_init_dac_clock(DAC_Type *ptr, bool clk_src_ahb)
 {
     uint32_t freq = 0;
@@ -563,7 +567,7 @@ void board_i2c_bus_clear(I2C_Type *ptr)
         printf("I2C bus is ready\n");
         return;
     }
-    i2s_gen_reset_signal(ptr, 9);
+    i2c_gen_reset_signal(ptr, 9);
     board_delay_ms(100);
     printf("I2C bus is cleared\n");
 }
@@ -576,13 +580,15 @@ void board_init_i2c(I2C_Type *ptr)
     if (ptr == NULL) {
         return;
     }
-    init_i2c_pins(ptr);
-    board_i2c_bus_clear(ptr);
 
     clock_add_to_group(clock_i2c0, 0);
     clock_add_to_group(clock_i2c1, 0);
     clock_add_to_group(clock_i2c2, 0);
     clock_add_to_group(clock_i2c3, 0);
+
+    init_i2c_pins(ptr);
+    board_i2c_bus_clear(ptr);
+
     /* Configure the I2C clock to 24MHz */
     clock_set_source_divider(BOARD_APP_I2C_CLK_NAME, clk_src_osc24m, 1U);
 
@@ -614,3 +620,9 @@ void board_lin_transceiver_control(bool enable)
         gpio_set_pin_output_with_initial(BOARD_LIN_TRANSCEIVER_GPIO_CTRL, BOARD_LIN_TRANSCEIVER_GPIO_INDEX, BOARD_LIN_TRANSCEIVER_GPIO_PIN, 0); /* enable transceiver sleep */
     }
 }
+
+void board_init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp)
+{
+    init_gptmr_channel_pin(ptr, channel, as_comp);
+}
+

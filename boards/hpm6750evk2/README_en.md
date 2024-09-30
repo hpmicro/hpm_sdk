@@ -171,9 +171,10 @@ The UART0 pin leads to three positions:
 
 - Ethernet PPS Pin
 
-| Function    | Position |
-| ----------- | -------- |
-| ENET0.EVTO0 | U11[3]   |
+| Function    | Pin  | Position |
+| ----------- | ---- | -------- |
+| ENET0.EVTO0 | PF05 | U11[3]   |
+| ENET0.EVTI1 | PE25 | J10[6]   |
 
 - Motor Pin:
 

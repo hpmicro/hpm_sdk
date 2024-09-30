@@ -23,7 +23,7 @@ void hpm_mcl_nullcallback_func(void)
  * #include <math.h>
  * #define NUM 501
  * #define PRECISION 0.18
- * #define PI 3.14159265
+ * #define PI HPM_PI
  * int main()
  * {
  *     short i;

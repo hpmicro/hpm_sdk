@@ -50,6 +50,9 @@
 /* RDC related feature */
 #define HPM_IP_FEATURE_RDC_IIR 1
 
+/* PLB related feature */
+#define HPM_IP_FEATURE_PLB_COUNTER_READ_REAL_TIME 1
+
 /* SEI related feature */
 #define HPM_IP_FEATURE_SEI_RX_LATCH_FEATURE 1
 #define HPM_IP_FEATURE_SEI_ASYNCHRONOUS_MODE_V2 1
@@ -59,8 +62,14 @@
 #define HPM_IP_FEATURE_SEI_HAVE_CTRL2_12 1
 #define HPM_IP_FEATURE_SEI_HAVE_PTCD 1
 
+/* TRGM related feature */
+#define HPM_IP_FEATURE_TRGM_HRPWM_CALIBRATION_1 1
+
 /* ENET related feature */
 #define HPM_IP_FEATURE_ENET_HAS_MII_MODE 1
+
+/* FEMC related feature */
+#define HPM_IP_FEATURE_FEMC_SRAM_CS1_CS2 1
 
 /* FFA related feature */
 #define HPM_IP_FEATURE_FFA_FP32 1

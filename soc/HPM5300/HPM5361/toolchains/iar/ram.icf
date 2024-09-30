@@ -22,7 +22,7 @@ if (isdefinedsymbol(HEAP_SIZE)) {
 
 /* Regions */
 define region ILM = mem:[from 0x00000000 size 128k];        /* ILM */
-define region DLM = mem:[from 0x00080000 size 128k];        /* DLM */
+define region DLM = mem:[from 0x00080300 size (128k - 768)];        /* DLM */
 define region AHB_SRAM = mem:[from 0xF0400000 size 32k];
 
 /* Blocks */
@@ -54,7 +54,6 @@ initialize by copy with packing=none        { section .vector_table };
 initialize by copy with packing=none        { section .isr_vector };
 initialize by copy with packing=none        { section .vector_s_table };
 initialize by copy with packing=none        { section .isr_s_vector };
-initialize by copy with packing=auto        { section .usbh_class_info };
 initialize by copy                          { readwrite };
 
 /* Placement */
@@ -66,9 +65,9 @@ place in ILM                                {
                                               block rtthread_VSymTab,
                                               block rtthread_rti_fn,
                                               block rtthread_RTMSymTab,
+                                              block cherryusb_usbh_class_info,
                                               readonly
                                             };
-place in DLM                                { block cherryusb_usbh_class_info };
 place in DLM                                {
                                               block RW_DATA
                                             };

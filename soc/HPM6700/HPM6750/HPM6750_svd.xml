@@ -674,9 +674,9 @@ Note: combinational interrupt is sensitive to environment noise</description>
           </fields>
         </register>
         <register>
-          <dim>127</dim>
+          <dim>163</dim>
           <dimIncrement>0x4</dimIncrement>
-          <dimIndex>PRIORITY1,PRIORITY2,PRIORITY3,PRIORITY4,PRIORITY5,PRIORITY6,PRIORITY7,PRIORITY8,PRIORITY9,PRIORITY10,PRIORITY11,PRIORITY12,PRIORITY13,PRIORITY14,PRIORITY15,PRIORITY16,PRIORITY17,PRIORITY18,PRIORITY19,PRIORITY20,PRIORITY21,PRIORITY22,PRIORITY23,PRIORITY24,PRIORITY25,PRIORITY26,PRIORITY27,PRIORITY28,PRIORITY29,PRIORITY30,PRIORITY31,PRIORITY32,PRIORITY33,PRIORITY34,PRIORITY35,PRIORITY36,PRIORITY37,PRIORITY38,PRIORITY39,PRIORITY40,PRIORITY41,PRIORITY42,PRIORITY43,PRIORITY44,PRIORITY45,PRIORITY46,PRIORITY47,PRIORITY48,PRIORITY49,PRIORITY50,PRIORITY51,PRIORITY52,PRIORITY53,PRIORITY54,PRIORITY55,PRIORITY56,PRIORITY57,PRIORITY58,PRIORITY59,PRIORITY60,PRIORITY61,PRIORITY62,PRIORITY63,PRIORITY64,PRIORITY65,PRIORITY66,PRIORITY67,PRIORITY68,PRIORITY69,PRIORITY70,PRIORITY71,PRIORITY72,PRIORITY73,PRIORITY74,PRIORITY75,PRIORITY76,PRIORITY77,PRIORITY78,PRIORITY79,PRIORITY80,PRIORITY81,PRIORITY82,PRIORITY83,PRIORITY84,PRIORITY85,PRIORITY86,PRIORITY87,PRIORITY88,PRIORITY89,PRIORITY90,PRIORITY91,PRIORITY92,PRIORITY93,PRIORITY94,PRIORITY95,PRIORITY96,PRIORITY97,PRIORITY98,PRIORITY99,PRIORITY100,PRIORITY101,PRIORITY102,PRIORITY103,PRIORITY104,PRIORITY105,PRIORITY106,PRIORITY107,PRIORITY108,PRIORITY109,PRIORITY110,PRIORITY111,PRIORITY112,PRIORITY113,PRIORITY114,PRIORITY115,PRIORITY116,PRIORITY117,PRIORITY118,PRIORITY119,PRIORITY120,PRIORITY121,PRIORITY122,PRIORITY123,PRIORITY124,PRIORITY125,PRIORITY126,PRIORITY127</dimIndex>
+          <dimIndex>PRIORITY1,PRIORITY2,PRIORITY3,PRIORITY4,PRIORITY5,PRIORITY6,PRIORITY7,PRIORITY8,PRIORITY9,PRIORITY10,PRIORITY11,PRIORITY12,PRIORITY13,PRIORITY14,PRIORITY15,PRIORITY16,PRIORITY17,PRIORITY18,PRIORITY19,PRIORITY20,PRIORITY21,PRIORITY22,PRIORITY23,PRIORITY24,PRIORITY25,PRIORITY26,PRIORITY27,PRIORITY28,PRIORITY29,PRIORITY30,PRIORITY31,PRIORITY32,PRIORITY33,PRIORITY34,PRIORITY35,PRIORITY36,PRIORITY37,PRIORITY38,PRIORITY39,PRIORITY40,PRIORITY41,PRIORITY42,PRIORITY43,PRIORITY44,PRIORITY45,PRIORITY46,PRIORITY47,PRIORITY48,PRIORITY49,PRIORITY50,PRIORITY51,PRIORITY52,PRIORITY53,PRIORITY54,PRIORITY55,PRIORITY56,PRIORITY57,PRIORITY58,PRIORITY59,PRIORITY60,PRIORITY61,PRIORITY62,PRIORITY63,PRIORITY64,PRIORITY65,PRIORITY66,PRIORITY67,PRIORITY68,PRIORITY69,PRIORITY70,PRIORITY71,PRIORITY72,PRIORITY73,PRIORITY74,PRIORITY75,PRIORITY76,PRIORITY77,PRIORITY78,PRIORITY79,PRIORITY80,PRIORITY81,PRIORITY82,PRIORITY83,PRIORITY84,PRIORITY85,PRIORITY86,PRIORITY87,PRIORITY88,PRIORITY89,PRIORITY90,PRIORITY91,PRIORITY92,PRIORITY93,PRIORITY94,PRIORITY95,PRIORITY96,PRIORITY97,PRIORITY98,PRIORITY99,PRIORITY100,PRIORITY101,PRIORITY102,PRIORITY103,PRIORITY104,PRIORITY105,PRIORITY106,PRIORITY107,PRIORITY108,PRIORITY109,PRIORITY110,PRIORITY111,PRIORITY112,PRIORITY113,PRIORITY114,PRIORITY115,PRIORITY116,PRIORITY117,PRIORITY118,PRIORITY119,PRIORITY120,PRIORITY121,PRIORITY122,PRIORITY123,PRIORITY124,PRIORITY125,PRIORITY126,PRIORITY127,PRIORITY128,PRIORITY129,PRIORITY130,PRIORITY131,PRIORITY132,PRIORITY133,PRIORITY134,PRIORITY135,PRIORITY136,PRIORITY137,PRIORITY138,PRIORITY139,PRIORITY140,PRIORITY141,PRIORITY142,PRIORITY143,PRIORITY144,PRIORITY145,PRIORITY146,PRIORITY147,PRIORITY148,PRIORITY149,PRIORITY150,PRIORITY151,PRIORITY152,PRIORITY153,PRIORITY154,PRIORITY155,PRIORITY156,PRIORITY157,PRIORITY158,PRIORITY159,PRIORITY160,PRIORITY161,PRIORITY162,PRIORITY163</dimIndex>
           <name>PRIORITY[%s]</name>
           <description>no description available</description>
           <addressOffset>0x4</addressOffset>
@@ -791,9 +791,9 @@ Note: combinational interrupt is sensitive to environment noise</description>
           <description>no description available</description>
           <addressOffset>0x2000</addressOffset>
           <register>
-            <dim>4</dim>
+            <dim>6</dim>
             <dimIncrement>0x4</dimIncrement>
-            <dimIndex>INTEN0,INTEN1,INTEN2,INTEN3</dimIndex>
+            <dimIndex>INTEN0,INTEN1,INTEN2,INTEN3,INTEN4,INTEN5</dimIndex>
             <name>INTEN[%s]</name>
             <description>no description available</description>
             <addressOffset>0x0</addressOffset>
@@ -3867,14 +3867,14 @@ Register (FIFOE) is set to 1.</description>
           <fields>
             <field>
               <name>RFIFOT</name>
-              <description>Receiver FIFO trigger level</description>
+              <description>Receiver FIFO trigger level(0 for 1byte, 0x3 for 4bytes). Uart will send rx_dma_req if data in fifo reachs the threshold</description>
               <bitOffset>6</bitOffset>
               <bitWidth>2</bitWidth>
               <access>write-only</access>
             </field>
             <field>
               <name>TFIFOT</name>
-              <description>Transmitter FIFO trigger level</description>
+              <description>Transmitter FIFO trigger level(0 for 1byte, 0x3 for 4bytes), uart will send tx_dma_req when data in fifo is less than threshold.</description>
               <bitOffset>4</bitOffset>
               <bitWidth>2</bitWidth>
               <access>write-only</access>
@@ -7666,7 +7666,7 @@ bit2: software key 0: not selected, 1:selected</description>
           <addressOffset>0x0</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
+          <resetMask>0xFFF7FFFF</resetMask>
           <fields>
             <field>
               <name>SFTRST_RX</name>
@@ -22250,7 +22250,7 @@ Bit.</description>
           <addressOffset>0x210</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0x02007007</resetMask>
+          <resetMask>0x02007807</resetMask>
           <fields>
             <field>
               <name>GPIO_ID_SEL_N</name>
@@ -22277,6 +22277,13 @@ Bit.</description>
               <name>VBUS_VALID_OVERRIDE</name>
               <description>No description available</description>
               <bitOffset>12</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>OP_MODE_SUSPENDM_ENJ</name>
+              <description>set op_mode to 2'b01 in suspend, for naneng usbphy</description>
+              <bitOffset>11</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
@@ -22320,7 +22327,9 @@ Bit.</description>
             </field>
             <field>
               <name>UTMI_OTG_SUSPENDM</name>
-              <description>OTG suspend, not utmi_suspendm</description>
+              <description>OTG suspend, not utmi_suspendm.
+setting this bit also enable host high-speed disconnect detection logic(check DP/DM voltage at end of SOF, to determine whether 50Ohm are still there on DP/DM)
+should clear this bit before entering into suspend state(setting portsc.phcd), avoide unwanted glitch on vbus/sess_vld/sess_end</description>
               <bitOffset>1</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -25136,7 +25145,7 @@ ADMA3: This register is set by ADMA3. ADMA2 increments the address of this regis
           </fields>
         </register>
         <register>
-          <dim>9</dim>
+          <dim>11</dim>
           <dimIncrement>0x2</dimIncrement>
           <dimIndex>INIT,DS,HS,SDR12,SDR25,SDR50,SDR104,DDR50,rsv8,rsv9,UHS2</dimIndex>
           <name>PRESET[%s]</name>
@@ -27800,7 +27809,7 @@ Reset all internal logic in SEMC except configuration register</description>
               <name>IO_CSX</name>
               <description>IO_CSX output selection
 0001b - SDRAM CS1
-0110b - SRAM CE#</description>
+0110b - SRAM CE0#</description>
               <bitOffset>4</bitOffset>
               <bitWidth>4</bitWidth>
               <access>read-write</access>
@@ -27902,7 +27911,7 @@ is multiplied by WQOS to get weight score.</description>
           </fields>
         </register>
         <register>
-          <dim>3</dim>
+          <dim>7</dim>
           <dimIncrement>0x4</dimIncrement>
           <dimIndex>BASE0,BASE1,rsv2,rsv3,rsv4,rsv5,BASE6</dimIndex>
           <name>BR[%s]</name>
@@ -28314,7 +28323,7 @@ number of Auto-Refresh command cycle sent to all SDRAM device in one refresh per
         </register>
         <register>
           <name>SRCTRL0</name>
-          <description>SRAM control register 0</description>
+          <description>SRAM0 control register 0</description>
           <addressOffset>0x70</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
@@ -28360,7 +28369,7 @@ number of Auto-Refresh command cycle sent to all SDRAM device in one refresh per
         </register>
         <register>
           <name>SRCTRL1</name>
-          <description>SRAM control register 1</description>
+          <description>SRAM0 control register 1</description>
           <addressOffset>0x74</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
@@ -28646,7 +28655,7 @@ pending device access.</description>
       </addressBlock>
       <registers>
         <register>
-          <dim>195</dim>
+          <dim>350</dim>
           <dimIncrement>0x4</dimIncrement>
           <dimIndex>cpu0_core,cpu0_subsys,rsv2,rsv3,rsv4,rsv5,rsv6,rsv7,cpu1_core,cpx1_subsys,rsv10,rsv11,rsv12,rsv13,rsv14,rsv15,rsv16,rsv17,rsv18,rsv19,rsv20,pow_con,pow_vis,pow_cpu0,pow_cpu1,rst_soc,rst_con,rst_vis,rst_cpu0,rst_cpu1,rsv30,rsv31,clk_src_xtal,clk_src_pll0,clk_src_pll0clk0,clk_src_pll1,clk_src_pll1clk0,clk_src_pll1clk1,clk_src_pll2,clk_src_pll2clk0,clk_src_pll2clk1,clk_src_pll3,clk_src_pll3clk0,clk_src_pll4,clk_src_pll4clk0,rsv45,rsv46,rsv47,rsv48,rsv49,rsv50,rsv51,rsv52,rsv53,rsv54,rsv55,rsv56,rsv57,rsv58,rsv59,rsv60,rsv61,rsv62,rsv63,clk_top_cpu0,clk_top_mchtmr0,clk_top_cpu1,clk_top_mchtmr1,clk_top_axi,clk_top_conn,clk_top_vis,clk_top_ahb,clk_top_femc,clk_top_xpi0,clk_top_xpi1,clk_top_gptmr0,clk_top_gptmr1,clk_top_gptmr2,clk_top_gptmr3,clk_top_gptmr4,clk_top_gptmr5,clk_top_gptmr6,clk_top_gptmr7,clk_top_uart0,clk_top_uart1,clk_top_uart2,clk_top_uart3,clk_top_uart4,clk_top_uart5,clk_top_uart6,clk_top_uart7,clk_top_uart8,clk_top_uart9,clk_top_uart10,clk_top_uart11,clk_top_uart12,clk_top_uart13,clk_top_uart14,clk_top_uart15,clk_top_i2c0,clk_top_i2c1,clk_top_i2c2,clk_top_i2c3,clk_top_spi0,clk_top_spi1,clk_top_spi2,clk_top_spi3,clk_top_can0,clk_top_can1,clk_top_can2,clk_top_can3,clk_top_ptpc,clk_top_ana0,clk_top_ana1,clk_top_ana2,clk_top_aud0,clk_top_aud1,clk_top_aud2,clk_top_lcdc,clk_top_cam0,clk_top_cam1,clk_top_enet0,clk_top_enet1,clk_top_ptp0,clk_top_ptp1,clk_top_ref0,clk_top_ref1,clk_top_ntmr0,clk_top_ntmr1,clk_top_sdxc0,clk_top_sdxc1,rsv131,rsv132,rsv133,rsv134,rsv135,rsv136,rsv137,rsv138,rsv139,rsv140,rsv141,rsv142,rsv143,rsv144,rsv145,rsv146,rsv147,rsv148,rsv149,rsv150,rsv151,rsv152,rsv153,rsv154,rsv155,rsv156,rsv157,rsv158,rsv159,rsv160,rsv161,rsv162,rsv163,rsv164,rsv165,rsv166,rsv167,rsv168,rsv169,rsv170,rsv171,rsv172,rsv173,rsv174,rsv175,rsv176,rsv177,rsv178,rsv179,rsv180,rsv181,rsv182,rsv183,rsv184,rsv185,rsv186,rsv187,rsv188,rsv189,rsv190,rsv191,clk_top_adc0,clk_top_adc1,clk_top_adc2,clk_top_adc3,clk_top_i2s0,clk_top_i2s1,clk_top_i2s2,clk_top_i2s3,rsv200,rsv201,rsv202,rsv203,rsv204,rsv205,rsv206,rsv207,rsv208,rsv209,rsv210,rsv211,rsv212,rsv213,rsv214,rsv215,rsv216,rsv217,rsv218,rsv219,rsv220,rsv221,rsv222,rsv223,rsv224,rsv225,rsv226,rsv227,rsv228,rsv229,rsv230,rsv231,rsv232,rsv233,rsv234,rsv235,rsv236,rsv237,rsv238,rsv239,rsv240,rsv241,rsv242,rsv243,rsv244,rsv245,rsv246,rsv247,rsv248,rsv249,rsv250,rsv251,rsv252,rsv253,rsv254,rsv255,ahbapb_bus,axi_bus,conn_bus,vis_bus,femc,rom,lmm0,lmm1,mchtmr0,mchtmr1,axi_sram0,axi_sram1,xpi0,xpi1,sdp,rng,keym,hdma,xdma,gpio,mbx0,mbx1,wdg0,wdg1,wdg2,wdg3,gptmr0,gptmr1,gptmr2,gptmr3,gptmr4,gptmr5,gptmr6,gptmr7,uart0,uart1,uart2,uart3,uart4,uart5,uart6,uart7,uart8,uart9,uart10,uart11,uart12,uart13,uart14,uart15,i2c0,i2c1,i2c2,i2c3,spi0,spi1,spi2,spi3,can0,can1,can2,can3,ptpc,adc0,adc1,adc2,adc3,acmp,i2s0,i2s1,i2s2,i2s3,pdm,dao,synt,mot0,mot1,mot2,mot3,lcdc,cam0,cam1,jpeg,pdma,enet0,enet1,ntmr0,ntmr1,sdxc0,sdxc1,usb0,usb1,ref0,ref1</dimIndex>
           <name>RESOURCE[%s]</name>
@@ -30924,14 +30933,14 @@ XX0: turn off
             </field>
             <field>
               <name>OL_THRE</name>
-              <description>overload for threshold for lod power mode</description>
+              <description>overload threshold in low power mode</description>
               <bitOffset>8</bitOffset>
               <bitWidth>2</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>OL_HYST</name>
-              <description>current hysteres range
+              <description>voltage ripple threshold in low power mode
 0: 12.5mV
 1: 25mV</description>
               <bitOffset>4</bitOffset>

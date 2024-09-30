@@ -29,6 +29,8 @@ typedef struct {
     hpm_stat_t (*write_cmd_data)    (uint8_t cmd, uint8_t *buffer, uint32_t size);
     hpm_stat_t (*write)             (uint8_t *buffer, uint32_t size);
     hpm_stat_t (*read)              (uint8_t *buffer, uint32_t size);
+    void       (*delay_us)          (uint32_t us);
+    void       (*delay_ms)          (uint32_t ms);
 } sdcard_spi_interface_t;
 
 #ifdef __cplusplus

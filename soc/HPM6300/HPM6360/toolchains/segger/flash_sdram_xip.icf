@@ -78,7 +78,6 @@ initialize by copy with packing=auto        { section .fast, section .fast.*, se
 initialize by calling __SEGGER_init_heap    { block heap  };                                        // Init the heap if there is one
 initialize by calling __SEGGER_init_ctors   { block ctors };                                        // Call constructors for global objects which need to be constructed before reaching main (if any). Make sure this is done after setting up heap.
 initialize by copy                          { block vectors, block vectors_s };
-initialize by copy                          { block cherryusb_usbh_class_info };
 
 /* Placement */
 place in NOR_CFG_OPTION                     { section .nor_cfg_option };
@@ -94,6 +93,7 @@ place in XPI0 with minimum size order       {
                                               block rtthread_VSymTab,
                                               block rtthread_rti_fn,
                                               block rtthread_RTMSymTab,
+                                              block cherryusb_usbh_class_info,
                                               readonly,                                // Catch-all for readonly data (e.g. .rodata, .srodata)
                                               readexec                                 // Catch-all for (readonly) executable code (e.g. .text)
                                             };
@@ -108,7 +108,6 @@ define access readonly { section .eh_frame, section .eh_frame.* };
 define access readonly { section .sdata.DW.* };
 
 place in ILM                                { section .fast, section .fast.* };                       // "ramfunc" section
-place in SDRAM                              { block cherryusb_usbh_class_info };
 place in SDRAM                              { block framebuffer };
 place in AXI_SRAM then SDRAM                {
                                               block tls,                                            // Thread-local-storage block

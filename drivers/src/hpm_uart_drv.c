@@ -167,6 +167,9 @@ hpm_stat_t uart_init(UART_Type *ptr, uart_config_t *config)
         | UART_FCRR_FIFOE_SET(config->fifo_enable)
         | UART_FCRR_TFIFOT4_SET(config->tx_fifo_level)
         | UART_FCRR_RFIFOT4_SET(config->rx_fifo_level)
+#if defined(HPM_IP_FEATURE_UART_DISABLE_DMA_TIMEOUT) && (HPM_IP_FEATURE_UART_DISABLE_DMA_TIMEOUT == 1)
+        | UART_FCRR_TMOUT_RXDMA_DIS_MASK /**< disable RX timeout trigger dma */
+#endif
         | UART_FCRR_DMAE_SET(config->dma_enable);
 
 #else
@@ -372,6 +375,9 @@ void uart_config_fifo_ctrl(UART_Type *ptr, uart_fifo_ctrl_t *ctrl)
                 | UART_FCRR_TFIFOT4_SET(ctrl->tx_fifo_level)
                 | UART_FCRR_RFIFOT4_SET(ctrl->rx_fifo_level)
                 | UART_FCRR_DMAE_SET(ctrl->dma_enable)
+#if defined(HPM_IP_FEATURE_UART_DISABLE_DMA_TIMEOUT) && (HPM_IP_FEATURE_UART_DISABLE_DMA_TIMEOUT == 1)
+                | UART_FCRR_TMOUT_RXDMA_DIS_MASK /**< disable RX timeout trigger dma */
+#endif
                 | UART_FCRR_TFIFORST_SET(ctrl->reset_tx_fifo)
                 | UART_FCRR_RFIFORST_SET(ctrl->reset_rx_fifo)
                 | UART_FCRR_FIFOE_SET(ctrl->fifo_enable);

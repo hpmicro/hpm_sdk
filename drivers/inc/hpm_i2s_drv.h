@@ -662,6 +662,8 @@ void i2s_get_default_transfer_config(i2s_transfer_config_t *transfer);
  * @brief I2S fill dummy data into TX fifo
  *
  * @note workaround: fill dummy data into TX fifo to avoid TX underflow during tx start
+ * The first two data in FIFO will be pre read， which will cause the API to actually fill in 2 more
+ * dummy data than expected
  *
  * @param [in] ptr I2S base address
  * @param [in] data_line data line
@@ -670,6 +672,33 @@ void i2s_get_default_transfer_config(i2s_transfer_config_t *transfer);
  * @retval status_success if no error occurred
  */
 hpm_stat_t i2s_fill_tx_dummy_data(I2S_Type *ptr, uint8_t data_line, uint8_t data_count);
+
+
+#if defined(HPM_IP_FEATURE_I2S_BUFF_ALIGN_FRAME) && (HPM_IP_FEATURE_I2S_BUFF_ALIGN_FRAME)
+/**
+ * @brief I2S enable buff data align frame
+ *
+ * make the buffer data always frame aligned even in case of buffer underflow or overflow
+ *
+ * @param [in] ptr I2S base address
+ */
+static inline void i2s_enable_buff_align_frame(I2S_Type *ptr)
+{
+    ptr->CTRL |= I2S_CTRL_FRC_ALIGN_FBUF_MASK;
+}
+
+/**
+ * @brief I2S disable buff data align frame
+ *
+ * @param [in] ptr I2S base address
+ */
+static inline void i2s_disable_buff_align_frame(I2S_Type *ptr)
+{
+    ptr->CTRL &= ~I2S_CTRL_FRC_ALIGN_FBUF_MASK;
+}
+#endif
+
+
 
 /**
  * @}

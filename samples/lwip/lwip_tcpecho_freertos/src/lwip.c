@@ -126,7 +126,9 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     enet_get_default_interrupt_config(ENET, &int_config);
 
     /* Initialize enet controller */
-    enet_controller_init(ptr, ENET_INF_TYPE, &desc, &enet_config, &int_config);
+    if (enet_controller_init(ptr, ENET_INF_TYPE, &desc, &enet_config, &int_config) != status_success) {
+        return status_fail;
+    }
 
     /* Disable LPI interrupt */
     enet_disable_lpi_interrupt(ENET);

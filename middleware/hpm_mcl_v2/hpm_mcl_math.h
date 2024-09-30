@@ -8,11 +8,19 @@
 #define HPM_MCL_MATH_H
 #include "hpm_mcl_cfg.h"
 
+#ifndef HPM_MCL_MATH_HARDWARE_ACC
+#include <math.h>
+#endif
 /**
  * @brief Determine if a floating point number is 0
  *
  */
 #define MCL_FLOAT_IS_ZERO(val)  ((val < 0.000001f) && (val > -0.000001f))
+#define MCL_FLOAT_IS_INFINITY(val) ((val == INFINITY) || (val == -INFINITY))
+
+#define SQRT3      (1.7320508075688773f)    /**< sqrt(3) */
+#define SQRT3_DIV3 (0.5773502691896258f)    /**< sqrt(3)/3 */
+#define MCL_SUM_OF_SQUARE_MODE(a, b) sqrtf((float)((a * a) + (b * b)))
 
 /**
  * @brief Enable Q format

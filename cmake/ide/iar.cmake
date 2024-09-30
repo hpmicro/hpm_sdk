@@ -137,7 +137,7 @@ endfunction()
 #
 function(sdk_iar_src_glob)
     foreach(g ${ARGN})
-        file(GLOB src ${g})
+        file(GLOB_RECURSE src ${g})
         list(APPEND globbed_src ${src})
     endforeach()
     sdk_iar_src(${globbed_src})

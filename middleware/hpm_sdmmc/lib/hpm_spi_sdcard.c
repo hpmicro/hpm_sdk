@@ -31,11 +31,17 @@
 #define SPI_SD_SPEED_MAX_HZ           (20000000U)
 #endif
 #endif
-#define SPI_AUTO_PROBE_COUNT          (5)
+#ifndef SPI_SD_AUTO_PROBE_COUNT
+#define SPI_SD_AUTO_PROBE_COUNT       (5U)
+#endif
 #define SPI_SPEED_PROBE_FREQ          (12000000U)
 
 #define CRC16_CCITT_SEED              0
 #define CRC16_CCITT_POLY16            0x1021
+
+#ifndef SPI_SD_RETRY_COUNT
+#define SPI_SD_RETRY_COUNT            (5U)
+#endif
 
 static hpm_stat_t send_sdcard_command(uint8_t cmd, uint32_t arg, uint8_t crc);
 static hpm_stat_t read_sdcard_buffer(uint8_t *buf, uint32_t len);
@@ -67,6 +73,7 @@ hpm_stat_t sdcard_spi_init(sdcard_spi_interface_t *spi_io)
     bool probe_cid_check = false;
     uint8_t buffer[4];
     uint8_t response = 0;
+    uint8_t count = 0;
     sdcard_init_status = false;
     g_spi_dev = spi_io;
 
@@ -88,20 +95,29 @@ hpm_stat_t sdcard_spi_init(sdcard_spi_interface_t *spi_io)
 
     g_spi_dev->cs_select();
     /* Step 2. Send CMD0 (GO_IDLE_STATE): Reset the SD card. */
-    if (sdcard_wait_not_busy() != status_success) {
-        g_spi_dev->cs_relese();
-        return status_fail;
+    /* It is possible that the card has been abnormal before initialization. You can reset the SD card multiple times to ensure that it enters the Idle state. */
+    for (count = 0; count < SPI_SD_RETRY_COUNT; count++) {
+        sta = sdcard_wait_not_busy();
+        if (sta != status_success) {
+            sta = status_fail;
+            continue;
+        }
+        sta = send_sdcard_command((uint8_t)sdmmc_cmd_go_idle_state, 0, 0x95) ;
+        if (sta != status_success) {
+            SPI_SD_LOG("[spi_sdcard] reset SDcard fail\n");
+            sta = status_fail;
+            continue;
+        }
+        if ((sdcard_read_r1_status() & SPISD_R1_IDLE_FLAG) != SPISD_R1_IDLE_FLAG) {
+            SPI_SD_LOG("[spi_sdcard] not go idle status\n");
+            sta = status_fail;
+            continue;
+        }
     }
-
-    if (send_sdcard_command((uint8_t)sdmmc_cmd_go_idle_state, 0, 0x95) != status_success) {
-        SPI_SD_LOG("[spi_sdcard] reset SDcard fail\n");
-        g_spi_dev->cs_relese();
-        return status_fail;
-    }
-    if (sdcard_read_r1_status() != SPISD_R1_IDLE_FLAG) {
+    if (sta != status_success) {
         g_spi_dev->cs_relese();
         SPI_SD_LOG("[spi_sdcard] not go idle status\n");
-        return status_fail;
+        return sta;
     }
 
     /* Step 3. read CMD8 */
@@ -196,7 +212,7 @@ hpm_stat_t sdcard_spi_init(sdcard_spi_interface_t *spi_io)
     }
     /* using the module with multiple buffers, maybe cause abnormal communication in spi clk high frequency */
     g_spi_max_speed = SPI_SD_SPEED_MAX_HZ;
-    for (uint8_t i = 0; i < SPI_AUTO_PROBE_COUNT; i++) {
+    for (uint8_t i = 0; i < SPI_SD_AUTO_PROBE_COUNT; i++) {
         g_spi_dev->set_spi_speed(g_spi_max_speed);
         probe_cid_check = check_cid_data(false);
         if (probe_cid_check == false) {
@@ -267,6 +283,10 @@ hpm_stat_t sdcard_spi_write_block(uint32_t sector, uint8_t *buffer)
     if (sdcard_wait_not_busy() != status_success) {
         g_spi_dev->cs_relese();
         return status_fail;
+    }
+    /* Considering SD card compatibility, add busy waiting time */
+    if (g_spi_dev->delay_us != NULL) {
+        g_spi_dev->delay_us(100);
     }
     if (send_sdcard_command((uint8_t)sdmmc_cmd_write_single_block, sector, (0x7F << 1) | 1) != status_success) {
         g_spi_dev->cs_relese();
@@ -369,6 +389,10 @@ hpm_stat_t sdcard_spi_write_multi_block(uint8_t *buffer, uint32_t sector, uint32
     if (sdcard_wait_not_busy() != status_success) {
         g_spi_dev->cs_relese();
         return status_fail;
+    }
+    /* Considering SD card compatibility, add busy waiting time */
+    if (g_spi_dev->delay_us != NULL) {
+        g_spi_dev->delay_us(100);
     }
     if (send_sdcard_command((uint8_t)sdmmc_cmd_write_multiple_block, sector, (0x7F << 1) | 1) != status_success) {
         g_spi_dev->cs_relese();

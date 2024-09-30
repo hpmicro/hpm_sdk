@@ -189,15 +189,10 @@ tinyengine_status patchpadding_convolve_s8_kernel3_inputch3_stride2(const q7_t *
 						runtime_buf, output_ch, output_shift, output_mult,
 						output_offset, output_activation_min, output_activation_max,
 						input_ch * kernel_y * kernel_x, bias, out, kbuf);
-//				out = mat_mult_s16(kernel,
-//						runtime_buf, output_ch, output_shift, output_mult,
-//						output_offset, output_activation_min, output_activation_max,
-//						input_ch * kernel_y * kernel_x, bias, out, kbuf);
-#else
-				out = hpm_nn_mat_mult_kernel_s8_s16(kernel,
-						runtime_buf, output_ch, output_shift, output_mult,
-						output_offset, output_activation_min, output_activation_max,
-						27, bias, out);
+// 				out = mat_mult_s16(kernel,
+// 						runtime_buf, output_ch, output_shift, output_mult,
+// 						output_offset, output_activation_min, output_activation_max,
+// 						input_ch * kernel_y * kernel_x, bias, out, kbuf);
 #endif
 
 				/* counter reset */

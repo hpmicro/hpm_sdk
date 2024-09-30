@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -42,6 +42,9 @@
 #include "hpm_trgm_soc_drv.h"
 #include "hpm_qeov2_drv.h"
 #include "hpm_synt_drv.h"
+#endif
+#if defined(CONFIG_HPM_MONITOR)
+#include "monitor.h"
 #endif
 
 #define MOTOR0_SPD                  (20.0)  /*r/s   delta:0.1r/s    1-40r/s */
@@ -329,6 +332,41 @@ void motor0_speed_loop_para_init(void)
                                                 motor0.cfg.mcl.physical.time.current_loop_ts * 1.5f;
     motor0.cfg.control.currentq_pid_cfg.cfg.ki = motor0.cfg.mcl.physical.motor.res *
                                                 (powf(MOTOR0_CURRENT_LOOP_BANDWIDTH / 100 * 2 * MCL_PI, 2)) *
+                                                motor0.cfg.mcl.physical.time.current_loop_ts * 1.5f;
+#endif
+}
+
+void motor0_position_loop_para_init(void)
+{
+
+#if defined(HW_CURRENT_FOC_ENABLE)
+    motor0.cfg.control.speed_pid_cfg.cfg.integral_max = 20;
+    motor0.cfg.control.speed_pid_cfg.cfg.integral_min = -20;
+    motor0.cfg.control.speed_pid_cfg.cfg.output_max = 10;
+    motor0.cfg.control.speed_pid_cfg.cfg.output_min = -10;
+    motor0.cfg.control.speed_pid_cfg.cfg.kp = 0.01;
+    motor0.cfg.control.speed_pid_cfg.cfg.ki = 0.001;
+#else
+    motor0.cfg.control.speed_pid_cfg.cfg.integral_max = 100;
+    motor0.cfg.control.speed_pid_cfg.cfg.integral_min = -100;
+    motor0.cfg.control.speed_pid_cfg.cfg.output_max = 5;
+    motor0.cfg.control.speed_pid_cfg.cfg.output_min = -5;
+    motor0.cfg.control.speed_pid_cfg.cfg.kp = 0.05;
+    motor0.cfg.control.speed_pid_cfg.cfg.ki = 0.001;
+
+    hpm_mcl_enable_dead_area_compensation(&motor0.loop);
+
+    motor0.cfg.control.currentd_pid_cfg.cfg.kp = motor0.cfg.mcl.physical.motor.ls *
+                                                (powf(MOTOR0_CURRENT_LOOP_BANDWIDTH * 2 * MCL_PI, 2)) *
+                                                motor0.cfg.mcl.physical.time.current_loop_ts * 1.5f;
+    motor0.cfg.control.currentd_pid_cfg.cfg.ki = motor0.cfg.mcl.physical.motor.res *
+                                                (powf(MOTOR0_CURRENT_LOOP_BANDWIDTH * 2 * MCL_PI, 2)) *
+                                                motor0.cfg.mcl.physical.time.current_loop_ts * 1.5f;
+    motor0.cfg.control.currentq_pid_cfg.cfg.kp = motor0.cfg.mcl.physical.motor.ls *
+                                                (powf(MOTOR0_CURRENT_LOOP_BANDWIDTH * 2 * MCL_PI, 2)) *
+                                                motor0.cfg.mcl.physical.time.current_loop_ts * 1.5f;
+    motor0.cfg.control.currentq_pid_cfg.cfg.ki = motor0.cfg.mcl.physical.motor.res *
+                                                (powf(MOTOR0_CURRENT_LOOP_BANDWIDTH * 2 * MCL_PI, 2)) *
                                                 motor0.cfg.mcl.physical.time.current_loop_ts * 1.5f;
 #endif
 }
@@ -809,13 +847,13 @@ static void timer_init(void)
     gptmr_channel_config_t config;
 
     gptmr_channel_get_default_config(BOARD_BLDC_TMR_1MS, &config);
-    config.cmp[0] = BOARD_BLDC_TMR_RELOAD;
     config.debug_mode = 0;
     config.reload = BOARD_BLDC_TMR_RELOAD + 1;
+    config.cmp[0] = BOARD_BLDC_TMR_RELOAD;
+    config.cmp[1] = config.reload;
     gptmr_enable_irq(BOARD_BLDC_TMR_1MS, GPTMR_CH_CMP_IRQ_MASK(BOARD_BLDC_TMR_CH, BOARD_BLDC_TMR_CMP));
     gptmr_channel_config(BOARD_BLDC_TMR_1MS, BOARD_BLDC_TMR_CH, &config, true);
     intc_m_enable_irq_with_priority(BOARD_BLDC_TMR_IRQ, 1);
-
 }
 
 void init_trigger_mux(TRGM_Type * ptr)
@@ -885,6 +923,7 @@ hpm_mcl_stat_t adc_init(void)
     board_init_adc_clock(BOARD_BLDC_ADC_W_BASE, true);
     cfg.config.adc12.res            = adc12_res_12_bits;
     cfg.config.adc12.conv_mode      = adc12_conv_mode_preemption;
+    cfg.config.adc12.diff_sel       = adc12_sample_signal_single_ended;
     cfg.config.adc12.adc_clk_div    = adc12_clock_divider_3;
     cfg.config.adc12.sel_sync_ahb   = false;
     cfg.config.adc12.adc_ahb_en = true;
@@ -942,8 +981,8 @@ hpm_mcl_stat_t adc_init(void)
     init_trigger_cfg(BOARD_BLDC_ADC_TRG, true);
 
 #if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC16
-    adc16_set_pmt_queue_enable(BOARD_BLDC_ADC_U_BASE, BOARD_BLDC_ADC_TRG, true);
-    adc16_set_pmt_queue_enable(BOARD_BLDC_ADC_V_BASE, BOARD_BLDC_ADC_TRG, true);
+    adc16_enable_pmt_queue(BOARD_BLDC_ADC_U_BASE, BOARD_BLDC_ADC_TRG);
+    adc16_enable_pmt_queue(BOARD_BLDC_ADC_V_BASE, BOARD_BLDC_ADC_TRG);
 #endif
 
     hpm_adc_init_pmt_dma(&hpm_adc_u, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[ADCU_INDEX]));
@@ -1277,6 +1316,7 @@ int main(void)
             }
         }
     } else if (user_mode == 0) {
+        motor0_position_loop_para_init();
         user_speed.enable = false;
         hpm_mcl_encoder_get_absolute_theta(&motor0.encoder, &abs_position_theta);
         hpm_mcl_loop_set_speed(&motor0.loop, user_speed);

@@ -6,7 +6,6 @@
  */
 
 #include "hpm_clc_drv.h"
-#include "math.h"
 
 void clc_config_param(CLC_Type *clc, clc_chn_t chn, clc_param_config_t *param)
 {
@@ -32,16 +31,16 @@ hpm_stat_t clc_config_coeff(CLC_Type *clc, clc_chn_t chn, clc_coeff_zone_t zone,
     uint32_t coeff_ks;
     uint32_t shift;
 
-    coeff_abs[0] = fabsf(coeff->b0);
-    coeff_abs[1] = fabsf(coeff->b1);
-    coeff_abs[2] = fabsf(coeff->b2);
-    coeff_abs[3] = fabsf(coeff->b3);
-    coeff_abs[4] = fabsf(coeff->a0);
-    coeff_abs[5] = fabsf(coeff->a1);
-    coeff_abs[6] = fabsf(coeff->a2);
+    coeff_abs[0] = (coeff->b0 < 0) ? -coeff->b0 : coeff->b0;
+    coeff_abs[1] = (coeff->b1 < 0) ? -coeff->b1 : coeff->b1;
+    coeff_abs[2] = (coeff->b2 < 0) ? -coeff->b2 : coeff->b2;
+    coeff_abs[3] = (coeff->b3 < 0) ? -coeff->b3 : coeff->b3;
+    coeff_abs[4] = (coeff->a0 < 0) ? -coeff->a0 : coeff->a0;
+    coeff_abs[5] = (coeff->a1 < 0) ? -coeff->a1 : coeff->a1;
+    coeff_abs[6] = (coeff->a2 < 0) ? -coeff->a2 : coeff->a2;
 
-    if ((coeff_abs[0] > 0x7FFFFFFFFu) || (coeff_abs[1] > 0x7FFFFFFFFu) || (coeff_abs[2] > 0x7FFFFFFFFu) || (coeff_abs[3] >= 1.0f)
-     || (coeff_abs[4] > 0x7FFFFFFFFu) || (coeff_abs[5] > 0x7FFFFFFFFu) || (coeff_abs[6] >= 1.0f)) {
+    if ((coeff_abs[0] > (float)0x7FFFFFFFFu) || (coeff_abs[1] > (float)0x7FFFFFFFFu) || (coeff_abs[2] > (float)0x7FFFFFFFFu) || (coeff_abs[3] >= 1.0f)
+     || (coeff_abs[4] > (float)0x7FFFFFFFFu) || (coeff_abs[5] > (float)0x7FFFFFFFFu) || (coeff_abs[6] >= 1.0f)) {
         return status_invalid_argument;
     }
 
@@ -75,6 +74,25 @@ hpm_stat_t clc_config_coeff(CLC_Type *clc, clc_chn_t chn, clc_coeff_zone_t zone,
 
     return status_success;
 }
+
+#if defined(HPM_IP_FEATURE_CLC_DECOUPLING) && HPM_IP_FEATURE_CLC_DECOUPLING
+hpm_stat_t clc_set_decoupling_ind_ke(CLC_Type *clc, clc_chn_t chn, float ind, float ke)
+{
+    if ((ind >= 1.0f) || (ind <= -1.0f) || (ke >= 1.0f) || (ke <= -1.0f)) {
+        return status_invalid_argument;
+    }
+
+    if (chn == clc_vq_chn) {
+        clc->VDVQ_CHAN[clc_vd_chn].LIND = (uint32_t)(int32_t)((-ind) * (float)(0x80000000u));
+        clc->VDVQ_CHAN[clc_vd_chn].KE = 0u;
+    } else {
+        clc->VDVQ_CHAN[clc_vq_chn].LIND = (uint32_t)(int32_t)(ind * (float)(0x80000000u));
+        clc->VDVQ_CHAN[clc_vq_chn].KE = (uint32_t)(int32_t)(ke * (float)(0x80000000u));
+    }
+
+    return status_success;
+}
+#endif
 
 void clc_sw_inject_dq_adc_value(CLC_Type *clc, uint32_t d_value, uint32_t q_value)
 {

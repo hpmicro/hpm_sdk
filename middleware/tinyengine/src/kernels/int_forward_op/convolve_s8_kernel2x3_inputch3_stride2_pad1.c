@@ -35,7 +35,7 @@ tinyengine_status convolve_s8_kernel2x3_inputch3_stride2_pad1(const q7_t *input,
 		const int32_t output_activation_min,
 		const int32_t output_activation_max, q7_t *output,
 		const uint16_t output_x, const uint16_t output_y,
-		const uint16_t output_ch, q15_t *runtime_buf, q7_t pad_value) {
+		const uint16_t output_ch, q15_t *runtime_buf, q15_t *kbuf, q7_t pad_value) {
 	const int kernel_y = 2;
 	const int kernel_x = 3;
 
@@ -56,7 +56,6 @@ tinyengine_status convolve_s8_kernel2x3_inputch3_stride2_pad1(const q7_t *input,
 	q31_t pad_out_q15x2 = __PKHBT(pad_out, pad_out, 16);
 	q31_t offset_q15x2 = __PKHBT(inoff16, inoff16, 16);
 
-	q15_t *kbuf = (q15_t*) get_kernel_buffer();
 	const q7_t *ip_a0 = kernel;
 
 	for (int i = 0; i < output_ch; i += 2) {

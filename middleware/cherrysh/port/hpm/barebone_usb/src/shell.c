@@ -4,7 +4,7 @@
 #include "chry_ringbuffer.h"
 #include "csh.h"
 #include "usbd_core.h"
-#include "usbd_cdc.h"
+#include "usbd_cdc_acm.h"
 
 static chry_shell_t csh;
 static bool login = false;

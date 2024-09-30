@@ -83,6 +83,7 @@ place in ILM with minimum size order        {
                                               block rtthread_VSymTab,
                                               block rtthread_rti_fn,
                                               block rtthread_RTMSymTab,
+                                              block cherryusb_usbh_class_info,
                                               readonly,                                             // Catch-all for readonly data (e.g. .rodata, .srodata) // It is intended placing RO here
                                               readexec                                              // Catch-all for (readonly) executable code (e.g. .text)
                                             };
@@ -96,7 +97,6 @@ define access readonly { section .gcc_except_table, section .gcc_except_table.* 
 define access readonly { section .eh_frame, section .eh_frame.* };
 define access readonly { section .sdata.DW.* };
 
-place in AXI_SRAM                           { block cherryusb_usbh_class_info };
 place in AXI_SRAM                           { block framebuffer };
 place in AXI_SRAM                           {
                                               block tls,                                            // Thread-local-storage block

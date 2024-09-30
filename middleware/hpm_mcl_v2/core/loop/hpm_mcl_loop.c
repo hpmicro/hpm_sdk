@@ -51,6 +51,7 @@ hpm_mcl_stat_t hpm_mcl_loop_init(mcl_loop_t *loop, mcl_loop_cfg_t *cfg, mcl_cfg_
     loop->const_time.position_ts = &mcl_cfg->physical.time.speed_loop_ts;
     loop->const_time.speed_ts = &mcl_cfg->physical.time.speed_loop_ts;
     loop->const_time.dead_area_ts = (float)mcl_cfg->physical.board.pwm_dead_time_tick / mcl_cfg->physical.time.pwm_clock_tick;
+    loop->const_time.offline_detection_wait_ts = control->cfg->offline_param_detection_cfg.cfg.delay_times;
     loop->encoder = encoder;
     loop->analog = analog;
     loop->control = control;
@@ -106,6 +107,165 @@ hpm_mcl_stat_t hpm_mcl_loop_disable_all_user_set_value(mcl_loop_t *loop)
     return mcl_success;
 }
 
+hpm_mcl_stat_t hpm_mcl_detect_offline_para(mcl_loop_t *loop)
+{
+    float ia, ib, ic;
+    float theta;
+    float alpha, beta;
+    float sinx, cosx;
+    float sens_d, sens_q;
+    float ref_d = 0, ref_q = 0;
+    float ud, uq;
+    hpm_mcl_stat_t status;
+    mcl_control_svpwm_duty_t duty;
+    mcl_control_dead_area_pwm_offset_t duty_offset;
+#if !defined(MCL_CFG_EN_DEAD_AREA_COMPENSATION) || (MCL_CFG_EN_DEAD_AREA_COMPENSATION == 0)
+/**
+ * @brief para deteced need deta area compensation
+ *
+ */
+    return mcl_fail;
+#endif
+
+    MCL_ASSERT_OPT(loop != NULL, mcl_invalid_pointer);
+    if (loop->cfg->enable_offline_param_detection) {
+        MCL_STATUS_SET_IF_TRUE(mcl_success != hpm_mcl_analog_get_value(loop->analog, analog_a_current, &ia), loop->status, loop_status_fail);
+        MCL_STATUS_SET_IF_TRUE(mcl_success != hpm_mcl_analog_get_value(loop->analog, analog_b_current, &ib), loop->status, loop_status_fail);
+        if (loop->rundata.offline_detection.mode == offline_param_detection_mode_flux) {
+            theta = hpm_mcl_encoder_get_theta(loop->encoder);
+        } else {
+            theta = 0;
+        }
+        ic = -(ia + ib);
+        sinx = loop->control->method.sin_x(theta);
+        cosx = loop->control->method.cos_x(theta);
+        loop->control->method.clarke(ia, ib, ic, &alpha, &beta);
+        loop->control->method.park(alpha, beta, sinx, cosx, &sens_d, &sens_q);
+        uq = 0;
+        ud = 0;
+        switch (loop->rundata.offline_detection.mode) {
+        case offline_param_detection_mode_init:
+            loop->rundata.offline_detection.tick_count = 0;
+            loop->rundata.offline_detection.last_mode = 0;
+            loop->rundata.offline_detection.last_ualpha = 0;
+            loop->rundata.offline_detection.last_ubeta = 0;
+            loop->control->method.offline_param_detection_init(&loop->control->cfg->offline_param_detection_cfg);
+            loop->rundata.offline_detection.mode = offline_param_detection_mode_wait;
+            loop->rundata.offline_detection.last_mode = offline_param_detection_mode_init;
+            break;
+        case offline_param_detection_mode_wait:
+            loop->rundata.offline_detection.tick_count++;
+            if (loop->rundata.offline_detection.tick_count > loop->const_time.offline_detection_wait_ts) {
+                loop->rundata.offline_detection.tick_count = 0;
+                switch (loop->rundata.offline_detection.last_mode) {
+                case offline_param_detection_mode_init:
+                    loop->rundata.offline_detection.mode = offline_param_detection_mode_rs;
+                    loop->rundata.offline_detection.last_mode = offline_param_detection_mode_wait;
+                    break;
+                case offline_param_detection_mode_rs:
+                    loop->rundata.offline_detection.mode = offline_param_detection_mode_ld;
+                    loop->rundata.offline_detection.last_mode = offline_param_detection_mode_wait;
+                    break;
+                case offline_param_detection_mode_ld:
+                    loop->rundata.offline_detection.mode = offline_param_detection_mode_lq;
+                    loop->rundata.offline_detection.last_mode = offline_param_detection_mode_wait;
+                    break;
+                case offline_param_detection_mode_lq:
+                    loop->rundata.offline_detection.mode = offline_param_detection_mode_ls;
+                    loop->rundata.offline_detection.last_mode = offline_param_detection_mode_wait;
+                    break;
+                case offline_param_detection_mode_ls:
+                    loop->rundata.offline_detection.mode = offline_param_detection_mode_flux;
+                    loop->rundata.offline_detection.last_mode = offline_param_detection_mode_wait;
+                    break;
+                case offline_param_detection_mode_flux:
+                    loop->rundata.offline_detection.result = loop->control->cfg->offline_param_detection_cfg.result;
+                    if (MCL_MATH_IS_ZERO(loop->rundata.offline_detection.result.rs) ||
+                        MCL_MATH_IS_ZERO(loop->rundata.offline_detection.result.ls) ||
+                        MCL_MATH_IS_ZERO(loop->rundata.offline_detection.result.flux) ||
+                        MCL_MATH_IS_ZERO(loop->rundata.offline_detection.result.lq) ||
+                        MCL_MATH_IS_ZERO(loop->rundata.offline_detection.result.ld) ||
+                        MCL_FLOAT_IS_INFINITY(loop->rundata.offline_detection.result.ld) ||
+                        MCL_FLOAT_IS_INFINITY(loop->rundata.offline_detection.result.flux) ||
+                        MCL_FLOAT_IS_INFINITY(loop->rundata.offline_detection.result.lq) ||
+                        MCL_FLOAT_IS_INFINITY(loop->rundata.offline_detection.result.rs) ||
+                        MCL_FLOAT_IS_INFINITY(loop->rundata.offline_detection.result.ls)) {
+                            loop->rundata.offline_detection.mode = offline_param_detection_mode_error;
+                    } else {
+                        loop->rundata.offline_detection.mode = offline_param_detection_mode_end;
+                    }
+                    loop->rundata.offline_detection.last_mode = offline_param_detection_mode_wait;
+                    break;
+                default:
+                    loop->rundata.offline_detection.mode = offline_param_detection_mode_init;
+                    loop->rundata.offline_detection.last_mode = offline_param_detection_mode_wait;
+                break;
+                }
+            }
+            break;
+        case offline_param_detection_mode_rs:
+            status = loop->control->method.offline_param_detection_rs(&loop->control->cfg->offline_param_detection_cfg, alpha, beta, &ud, &uq);
+            if (status == mcl_success) {
+                loop->rundata.offline_detection.mode = offline_param_detection_mode_wait;
+                loop->rundata.offline_detection.last_mode = offline_param_detection_mode_rs;
+            } else if (status == status_fail) {
+                loop->rundata.offline_detection.mode = offline_param_detection_mode_error;
+            }
+            break;
+        case offline_param_detection_mode_ld:
+            if (loop->control->method.offline_param_detection_ld(&loop->control->cfg->offline_param_detection_cfg, alpha, beta, &ud, &uq) == mcl_success) {
+                loop->rundata.offline_detection.mode = offline_param_detection_mode_wait;
+                loop->rundata.offline_detection.last_mode = offline_param_detection_mode_ld;
+            }
+            break;
+        case offline_param_detection_mode_lq:
+            if (loop->control->method.offline_param_detection_lq(&loop->control->cfg->offline_param_detection_cfg, alpha, beta, &ud, &uq) == mcl_success) {
+                loop->rundata.offline_detection.mode = offline_param_detection_mode_wait;
+                loop->rundata.offline_detection.last_mode = offline_param_detection_mode_lq;
+            }
+            break;
+        case offline_param_detection_mode_ls:
+            if (loop->control->method.offline_param_detection_ls(&loop->control->cfg->offline_param_detection_cfg) == mcl_success) {
+                loop->rundata.offline_detection.mode = offline_param_detection_mode_wait;
+                loop->rundata.offline_detection.last_mode = offline_param_detection_mode_ls;
+            }
+            break;
+        case offline_param_detection_mode_flux:
+            status = loop->control->method.offline_param_detection_flux(&loop->control->cfg->offline_param_detection_cfg, alpha, beta,
+                loop->rundata.offline_detection.last_ualpha, loop->rundata.offline_detection.last_ubeta, &ref_d, &ref_q);
+            if (status == mcl_success) {
+                loop->rundata.offline_detection.mode = offline_param_detection_mode_wait;
+                loop->rundata.offline_detection.last_mode = offline_param_detection_mode_flux;
+            } else if (status == status_fail) {
+                loop->rundata.offline_detection.mode = offline_param_detection_mode_error;
+            }
+            loop->control->method.currentd_pid(ref_d, sens_d, &loop->control->cfg->currentd_pid_cfg, &ud);
+            loop->control->method.currentq_pid(ref_q, sens_q, &loop->control->cfg->currentq_pid_cfg, &uq);
+            break;
+        case offline_param_detection_mode_end:
+        case offline_param_detection_mode_error:
+            break;
+        default:
+            loop->rundata.offline_detection.mode = offline_param_detection_mode_init;
+            break;
+        }
+        loop->control->method.invpark(ud, uq, sinx, cosx, &alpha, &beta);
+        loop->control->method.svpwm(alpha, beta, *loop->const_vbus, &duty);
+        loop->rundata.offline_detection.last_ualpha = alpha;
+        loop->rundata.offline_detection.last_ualpha = beta;
+        loop->control->method.dead_area_polarity_detection(&loop->control->cfg->dead_area_compensation_cfg, sens_d, sens_q, theta,
+                                                loop->const_time.dead_area_ts, *loop->const_time.current_ts, &duty_offset);
+        duty.a += duty_offset.a_offset;
+        duty.b += duty_offset.b_offset;
+        duty.c += duty_offset.c_offset;
+    } else {
+        duty.a = 0;
+        duty.b = 0;
+        duty.c = 0;
+    }
+    hpm_mcl_drivers_update_bldc_duty(loop->drivers, duty.a, duty.b, duty.c);
+    return  mcl_success;
+}
 
 hpm_mcl_stat_t hpm_mcl_current_foc_loop(mcl_loop_t *loop)
 {
@@ -361,6 +521,8 @@ hpm_mcl_stat_t hpm_mcl_loop(mcl_loop_t *loop)
     case mcl_mode_step_foc:
         return hpm_mcl_step_foc_loop(loop);
         break;
+    case mcl_mode_offline_param_detection:
+        return hpm_mcl_detect_offline_para(loop);
     default:
         MCL_ASSERT_EXEC_CODE_AND_RETURN(false, loop->status = loop_status_fail, mcl_fail);
         break;

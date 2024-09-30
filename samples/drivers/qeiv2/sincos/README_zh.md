@@ -7,7 +7,7 @@
 ## 配置
 
 - 使用信号发生器生成一组Sin和Cos正余弦波，二者的频率为1kHz、峰峰值为3V、中心偏移为1.65V，二者的相位相差90°。
-- 将Cos信号输入至ADC0的CH4，将Sin信号输入至ADC1的CH5。
+- 将Cos信号输入至QEIV2 Cos引脚，将Sin信号输入至QEIV2 Sin引脚，详见开发板文档[QEIV2 Sin/Cos引脚](QEIV2_Sin/Cos引脚)相关内容。
 
 ## 运行现象
 

@@ -36,13 +36,13 @@ void isr_dma(void)
         dma_transfer_error = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_HDMA_IRQ, isr_dma)
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 
 void dma_transfer_config(uint32_t size, uint32_t *ptr)
 {
     dma_channel_config_t ch_config = {0};
 
-    intc_m_enable_irq_with_priority(BOARD_APP_HDMA_IRQ, ISR_PRIORITY_LEVEL);
+    intc_m_enable_irq_with_priority(BOARD_APP_XDMA_IRQ, ISR_PRIORITY_LEVEL);
 
     dma_default_channel_config(APP_DMA, &ch_config);
     ch_config.src_addr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)ptr);

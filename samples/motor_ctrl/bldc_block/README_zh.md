@@ -27,7 +27,6 @@
 
 Speed mode, motor run, speed is: 20.000000.
 Input speed:
-10.5
 
 Speed mode, motor run, speed is: 10.500000.
 Input speed:

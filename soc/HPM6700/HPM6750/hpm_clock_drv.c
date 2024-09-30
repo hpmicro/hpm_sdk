@@ -411,7 +411,7 @@ hpm_stat_t clock_set_i2s_source(clock_name_t clock_name, clk_src_t src)
         return status_clk_invalid;
     }
 
-    if ((src <= clk_i2s_src_ahb0) || (src >= clk_i2s_src_aud2)) {
+    if ((src < clk_i2s_src_ahb0) || (src > clk_i2s_src_aud2)) {
         return status_clk_src_invalid;
     }
 

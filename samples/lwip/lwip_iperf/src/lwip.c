@@ -108,7 +108,9 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     enet_config.sarc = enet_sarc_replace_mac0;
 
     /* Initialize enet controller */
-    enet_controller_init(ptr, ENET_INF_TYPE, &desc, &enet_config, &int_config);
+    if (enet_controller_init(ptr, ENET_INF_TYPE, &desc, &enet_config, &int_config) != status_success) {
+        return status_fail;
+    }
 
     /* Initialize phy */
     #if defined(RGMII) && RGMII

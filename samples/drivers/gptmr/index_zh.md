@@ -12,5 +12,8 @@
    t_shape_accel_decel/README_zh
    timer_basic/README_zh
    sent_signal_decode/README_zh
+   cntmode/README_zh
+   monitor/README_zh
+   opmode/README_zh
 
 ```

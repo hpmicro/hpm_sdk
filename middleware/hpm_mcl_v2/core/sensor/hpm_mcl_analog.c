@@ -80,6 +80,7 @@ hpm_mcl_stat_t hpm_mcl_analog_get_value(mcl_analog_t *analog, mcl_analog_chn_t c
             val0 = hpm_mcl_filter_iir_df1(analog->iir[chn], val0);
         }
     }
+    analog->current[chn] = val0;
     *value = val0;
 
     return mcl_success;

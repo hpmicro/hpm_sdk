@@ -6,9 +6,7 @@
  */
 
 
-#include "hpm_common.h"
 #include "hpm_soc.h"
-#include "hpm_l1c_drv.h"
 
 #ifndef CONFIG_DISABLE_GLOBAL_IRQ_ON_STARTUP
 #define CONFIG_DISABLE_GLOBAL_IRQ_ON_STARTUP 0

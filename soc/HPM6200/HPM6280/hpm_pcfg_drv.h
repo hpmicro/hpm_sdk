@@ -63,6 +63,15 @@ typedef enum {
     pcfg_pmc_periph_debug = 16,
 } pcfg_pmc_periph_t;
 
+/* @brief PCFG wakeup source */
+typedef enum {
+    pcfg_wakeup_src_otp = (1 << 4),
+    pcfg_wakeup_src_puart = (1 << 7),
+    pcfg_wakeup_src_ptimer = (1 << 8),
+    pcfg_wakeup_src_pwdg = (1 << 9),
+    pcfg_wakeup_src_pgpio = (1 << 10),
+} pcfg_wakeup_src_t;
+
 /* @brief PCFG status */
 enum {
     status_pcfg_ldo_out_of_range = MAKE_STATUS(status_group_pcfg, 1),
@@ -483,6 +492,22 @@ static inline void pcfg_disable_wakeup_source(PCFG_Type *ptr, uint32_t mask)
 static inline void pcfg_set_periph_clock_mode(PCFG_Type *ptr, uint32_t mode)
 {
     ptr->SCG_CTRL = mode;
+}
+
+/**
+ * @brief update clock gate mode in vpmc domain
+ *
+ * @param[in] ptr base address
+ * @param[in] periph peripherals to be updated
+ * @param[in] on true - always on, false - always off
+ */
+static inline void pcfg_update_periph_clock_mode(PCFG_Type *ptr, pcfg_pmc_periph_t periph, bool on)
+{
+    if (on) {
+        ptr->SCG_CTRL = (ptr->SCG_CTRL & ~(0x03 << periph)) | PCFG_PERIPH_KEEP_CLOCK_ON(periph);
+    } else {
+        ptr->SCG_CTRL = (ptr->SCG_CTRL & ~(0x03 << periph)) | PCFG_PERIPH_KEEP_CLOCK_OFF(periph);
+    }
 }
 
 /**

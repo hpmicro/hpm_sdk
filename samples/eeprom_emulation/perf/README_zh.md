@@ -27,6 +27,7 @@ EEPROM PERF示例以100笔数据，500条记录对模拟eeprom进行性能测试
 ## 说明
 - 一次写入的数据不要超过一个erase_size
 - 需在user_config.h文件中设定EEPROM_MAX_VAR_CNT限制写入数据笔数的最大数量，默认为100笔
+- 相关写入情况，可修改debug等级查看
 
 ## 运行示例
 
@@ -42,40 +43,65 @@ EEPROM PERF示例以100笔数据，500条记录对模拟eeprom进行性能测试
  4 - show area base info
  Others - Show index menu
 
-收←◆1
-
-check version failed, begin earse all sector, it will take some time
+◆1
 
 ------------ flash->eeprom init ok -----------
-
-start address: 0x80080000
-sector count: 128
+start address: 0x80fe0000
+sector count: 16
 flash earse granularity: 4096
 version: 0x4553
-end address: 0x80100000
-data write addr = 0x80080000, info write addr = 0x800fffe0, remain flash size = 0x7ffe0
-
+end address: 0x80ff0000
+data write addr = 0x80fe0000, info write addr = 0x80feffe4, remain flash size = 0xffe4
 valid count percent info count( 0 / 0 )
-
 ----------------------------------------------
 
-收←◆2
------------- flash->eeprom init ok -----------
 
-start address: 0x80080000
-sector count: 128
+------------ flash->eeprom init ok -----------
+start address: 0x80fe0000
+sector count: 16
 flash earse granularity: 4096
 version: 0x4553
-end address: 0x80100000
-data write addr = 0x80080fa0, info write addr = 0x800fe0a0, remain flash size = 0x7d100
-
+end address: 0x80ff0000
+data write addr = 0x80fe0fa0, info write addr = 0x80fee0a4, remain flash size = 0xd104
 valid count percent info count( 100 / 500 )
-
 ----------------------------------------------
 
-eeprom flush run time=(6103720)us
+eeprom config run time=(32451)us
 
-收←◆3
+◆2
+------------ flash->eeprom init ok -----------
+start address: 0x80fe0000
+sector count: 16
+flash earse granularity: 4096
+version: 0x4553
+end address: 0x80ff0000
+data write addr = 0x80fe0fa0, info write addr = 0x80fee0a4, remain flash size = 0xd104
+valid count percent info count( 100 / 500 )
+----------------------------------------------
 
-eeprom read run time=(54)us
+eeprom flush run time=(346190)us
+
+◆3
+------------ flash->eeprom init ok -----------
+start address: 0x80ff0000
+sector count: 16
+flash earse granularity: 4096
+version: 0x4553
+end address: 0x81000000
+data write addr = 0x80ff0320, info write addr = 0x80fff9a4, remain flash size = 0xf684
+valid count percent info count( 100 / 100 )
+----------------------------------------------
+
+eeprom read run time=(29)us
+
+◆4
+------------ flash->eeprom init ok -----------
+start address: 0x80ff0000
+sector count: 16
+flash earse granularity: 4096
+version: 0x4553
+end address: 0x81000000
+data write addr = 0x80ff12c0, info write addr = 0x80ffda64, remain flash size = 0xc7a4
+valid count percent info count( 100 / 600 )
+----------------------------------------------
 ```

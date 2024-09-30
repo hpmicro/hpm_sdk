@@ -133,11 +133,14 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 
 - Ethernet PPS Pin
 
-| Function    | Position |
-| ----------- | -------- |
-| ENET0.EVTO0 | P1[38]   |
-| ENET0.EVTO1 | P1[12]   |
-| ENET0.EVTO2 | P1[35]   |
+| Function    | Pin  | Position |
+| ----------- | ---- | -------- |
+| ENET0.EVTO0 | PF05 | P1[38]   |
+| ENET0.EVTO1 | PF06 | P1[12]   |
+| ENET0.EVTO2 | PF09 | P1[35]   |
+| ENET0.EVTI0 | PF00 | P1[26]   |
+| ENET0.EVTI1 | PF01 | P1[27]   |
+| ENET0.EVTI2 | PF02 | P1[28]   |
 
 - UART13 pin
 
@@ -178,4 +181,3 @@ The HPM6750 is a dual-core flashless MCU running 816Mhz. It has a 2MB continuous
 - Some samples may enter the trap handler during runtime, with a MCAUSE == 2 (instruction error). This is due to a flaw in ILM, as detailed in the Errata Manual E00001.
 
   - Solution: Change the ILM interface address in the link script to ILM_ SLV address.
-

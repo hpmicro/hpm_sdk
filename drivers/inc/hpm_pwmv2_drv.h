@@ -491,7 +491,6 @@ static inline void pwmv2_enable_invert_by_shadow(PWMV2_Type *pwm_x, pwm_channel_
  *
  * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
  * @param chn @ref pwm_channel_t
- * @param update_select @ref pwm_shadow_register_output_polarity_t
  */
 static inline void pwmv2_disable_invert_by_shadow(PWMV2_Type *pwm_x, pwm_channel_t chn)
 {
@@ -1102,7 +1101,7 @@ static inline uint32_t pwmv2_get_fault_irq_status(PWMV2_Type *pwm_x)
  * @brief Clear fault irq status
  *
  * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
- * @return uint32_t irq status
+ * @param mask pwm irq mask
  */
 static inline void pwmv2_clear_fault_irq_status(PWMV2_Type *pwm_x, uint32_t mask)
 {
@@ -1621,7 +1620,7 @@ static inline void pwmv2_counter_start_trigger_disable(PWMV2_Type *pwm_x, pwm_co
  */
 static inline void pwmv2_set_counter_burst(PWMV2_Type *pwm_x, pwm_counter_t counter, uint16_t burst)
 {
-    pwm_x->CNT[counter].CFG3 |= PWMV2_CNT_CFG3_CNT_BURST_SET(burst);
+    pwm_x->CNT[counter].CFG3 = (pwm_x->CNT[counter].CFG3 & ~PWMV2_CNT_CFG3_CNT_BURST_MASK) | PWMV2_CNT_CFG3_CNT_BURST_SET(burst);
 }
 
 /**

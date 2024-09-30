@@ -315,4 +315,14 @@ sys_thread_t sys_thread_new(const char *name, lwip_thread_fn thread, void *arg, 
     return t;
 }
 
+sys_prot_t sys_arch_protect(void)
+{
+    rt_base_t level;
+    level = rt_hw_interrupt_disable();
+    return level;
+}
 
+void sys_arch_unprotect(sys_prot_t pval)
+{
+    rt_hw_interrupt_enable(pval);
+}

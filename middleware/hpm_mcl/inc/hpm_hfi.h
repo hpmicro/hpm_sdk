@@ -25,7 +25,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 #ifndef PI
-#define PI (3.1415926f)
+#define PI HPM_PI
 #endif
 
 /**

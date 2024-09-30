@@ -116,6 +116,10 @@
 #define BIT30_MASK (0x40000000UL)
 #define BIT31_MASK (0x80000000UL)
 
+#define HPM_PI      (3.14159265358979323846)
+#define HPM_2_PI    (6.28318530717958647692)
+#define HPM_HALF_PI (1.57079632679489661923)
+
 typedef uint32_t hpm_stat_t;
 
 /* @brief Enum definition for the Status group
@@ -164,6 +168,8 @@ enum {
     status_group_dma_manager,
     status_group_spi_nor_flash,
     status_group_touch,
+    status_group_plb_qei_encoder,
+    status_group_pmbus,
 };
 
 /* @brief Common status code definitions */

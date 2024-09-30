@@ -1,6 +1,8 @@
 # Copyright (c) 2021-2022,2024 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
+set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON CACHE INTERNAL "" FORCE)
+
 if(NOT DEFINED ENV{GNURISCV_TOOLCHAIN_PATH})
     message(FATAL_ERROR "GNURISCV_TOOLCHAIN_PATH is not set yet")
 endif()
@@ -280,6 +282,11 @@ set(CMAKE_C_COMPILER_FORCED 1)
 set(CMAKE_CXX_COMPILER_FORCED 1)
 
 enable_language(C CXX ASM)
+
+# deal with applicaiton specific configurations
+if(CONFIG_HPM_MATH_DSP)
+    set(CONFIG_HPM_ENABLE_DSP TRUE)
+endif()
 add_subdirectory(${HPM_SDK_BASE} ${__build_dir})
 
 if (DEFINED GEN_SEC_CORE_IMG_C_ARRAY)

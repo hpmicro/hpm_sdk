@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -10,7 +10,7 @@
 #include "hpm_ppi.h"
 
 #define SRAM_BASE_ADDR 0xF8000000U    /* Base address should be aligned by 1MB */
-#define SRAM_SIZE 0x20000             /* 128KB */
+#define SRAM_SIZE      BOARD_PPI_ASYNC_SRAM_SIZE
 
 static void rw_comparison(uint32_t start, uint32_t size_in_byte)
 {
@@ -71,20 +71,20 @@ static void init_sram_config(void)
     config.base_address = SRAM_BASE_ADDR;
     config.size_in_byte = SRAM_SIZE;
     config.port_size = ppi_port_size_16bits;
-    config.ad_mux_mode = false;
+    config.ad_mux_mode = BOARD_PPI_ASYNC_SRAM_AD_MUX_MODE;
     config.cs_valid_polarity = false;
     config.dm_valid_polarity = false;
-    config.addr_valid_polarity = false;
-    config.adv_ctrl_pin = 7;
-    config.rel_ctrl_pin = 1;
-    config.wel_ctrl_pin = 0;
+    config.addr_valid_polarity = true;
+    config.adv_ctrl_pin = BOARD_PPI_ASYNC_SRAM_ADV_CTRL_PIN;
+    config.rel_ctrl_pin = BOARD_PPI_ASYNC_SRAM_OE_CTRL_PIN;
+    config.wel_ctrl_pin = BOARD_PPI_ASYNC_SRAM_WE_CTRL_PIN;
     config.as_in_ns = 0;
     config.ah_in_ns = 48;
     config.rel_in_ns = 48;
     config.reh_in_ns = 0;
     config.wel_in_ns = 48;
     config.weh_in_ns = 0;
-    ppi_config_async_sram(HPM_PPI, 0, 0, &config);
+    ppi_config_async_sram(HPM_PPI, BOARD_PPI_ASYNC_SRAM_CS_INDEX, 0, &config);
 }
 
 int main(void)

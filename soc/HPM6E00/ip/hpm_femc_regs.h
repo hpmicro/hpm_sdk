@@ -23,8 +23,8 @@ typedef struct {
     __RW uint32_t SDRCTRL2;                    /* 0x48: SDRAM Control Register 2 */
     __RW uint32_t SDRCTRL3;                    /* 0x4C: SDRAM Control Register 3 */
     __R  uint8_t  RESERVED1[32];               /* 0x50 - 0x6F: Reserved */
-    __RW uint32_t SRCTRL0;                     /* 0x70: SRAM control register 0 */
-    __RW uint32_t SRCTRL1;                     /* 0x74: SRAM control register 1 */
+    __RW uint32_t SRCTRL0;                     /* 0x70: SRAM0 control register 0 */
+    __RW uint32_t SRCTRL1;                     /* 0x74: SRAM0 control register 1 */
     __R  uint8_t  RESERVED2[24];               /* 0x78 - 0x8F: Reserved */
     __RW uint32_t SADDR;                       /* 0x90: IP Command Control Register 0 */
     __RW uint32_t DATSZ;                       /* 0x94: IP Command Control Register 1 */
@@ -35,7 +35,12 @@ typedef struct {
     __RW uint32_t IPRX;                        /* 0xB0: RX DATA Register */
     __R  uint8_t  RESERVED4[12];               /* 0xB4 - 0xBF: Reserved */
     __R  uint32_t STAT0;                       /* 0xC0: Status Register 0 */
-    __R  uint8_t  RESERVED5[140];              /* 0xC4 - 0x14F: Reserved */
+    __R  uint8_t  RESERVED5[60];               /* 0xC4 - 0xFF: Reserved */
+    __RW uint32_t BR2[2];                      /* 0x100 - 0x104: Base Register (for SRAM CS1/2 device) */
+    __R  uint8_t  RESERVED6[24];               /* 0x108 - 0x11F: Reserved */
+    __RW uint32_t SRCTRL2;                     /* 0x120: SRAM1/2 control register 0 */
+    __RW uint32_t SRCTRL3;                     /* 0x124: SRAM1/2 control register 1 */
+    __R  uint8_t  RESERVED7[40];               /* 0x128 - 0x14F: Reserved */
     __RW uint32_t DLYCFG;                      /* 0x150: Delay Line Config Register */
 } FEMC_Type;
 
@@ -105,11 +110,33 @@ typedef struct {
 
 /* Bitfield definition for register: IOCTRL */
 /*
+ * IO_SCS_1 (RW)
+ *
+ * IO_SCS_1 output selection
+ * 1001b -SRAM CE2#
+ */
+#define FEMC_IOCTRL_IO_SCS_1_MASK (0xF000U)
+#define FEMC_IOCTRL_IO_SCS_1_SHIFT (12U)
+#define FEMC_IOCTRL_IO_SCS_1_SET(x) (((uint32_t)(x) << FEMC_IOCTRL_IO_SCS_1_SHIFT) & FEMC_IOCTRL_IO_SCS_1_MASK)
+#define FEMC_IOCTRL_IO_SCS_1_GET(x) (((uint32_t)(x) & FEMC_IOCTRL_IO_SCS_1_MASK) >> FEMC_IOCTRL_IO_SCS_1_SHIFT)
+
+/*
+ * IO_SCS_0 (RW)
+ *
+ * IO_SCS_0 output selection
+ * 1000b -SRAM CE1#
+ */
+#define FEMC_IOCTRL_IO_SCS_0_MASK (0xF00U)
+#define FEMC_IOCTRL_IO_SCS_0_SHIFT (8U)
+#define FEMC_IOCTRL_IO_SCS_0_SET(x) (((uint32_t)(x) << FEMC_IOCTRL_IO_SCS_0_SHIFT) & FEMC_IOCTRL_IO_SCS_0_MASK)
+#define FEMC_IOCTRL_IO_SCS_0_GET(x) (((uint32_t)(x) & FEMC_IOCTRL_IO_SCS_0_MASK) >> FEMC_IOCTRL_IO_SCS_0_SHIFT)
+
+/*
  * IO_CSX (RW)
  *
  * IO_CSX output selection
  * 0001b - SDRAM CS1
- * 0110b - SRAM CE#
+ * 0110b - SRAM CE0#
  */
 #define FEMC_IOCTRL_IO_CSX_MASK (0xF0U)
 #define FEMC_IOCTRL_IO_CSX_SHIFT (4U)
@@ -939,6 +966,190 @@ typedef struct {
 #define FEMC_STAT0_IDLE_SHIFT (0U)
 #define FEMC_STAT0_IDLE_GET(x) (((uint32_t)(x) & FEMC_STAT0_IDLE_MASK) >> FEMC_STAT0_IDLE_SHIFT)
 
+/* Bitfield definition for register array: BR2 */
+/*
+ * BASE (RW)
+ *
+ * Base Address
+ * This field determines high position 20 bits of SoC level Base Address. SoC level Base Address low
+ * position 12 bits are all zero.
+ */
+#define FEMC_BR2_BASE_MASK (0xFFFFF000UL)
+#define FEMC_BR2_BASE_SHIFT (12U)
+#define FEMC_BR2_BASE_SET(x) (((uint32_t)(x) << FEMC_BR2_BASE_SHIFT) & FEMC_BR2_BASE_MASK)
+#define FEMC_BR2_BASE_GET(x) (((uint32_t)(x) & FEMC_BR2_BASE_MASK) >> FEMC_BR2_BASE_SHIFT)
+
+/*
+ * SIZE (RW)
+ *
+ * Memory size
+ * 00000b - 4KB
+ * 00001b - 8KB
+ * 00010b - 16KB
+ * 00011b - 32KB
+ * 00100b - 64KB
+ * 00101b - 128KB
+ * 00110b - 256KB
+ * 00111b - 512KB
+ * 01000b - 1MB
+ * 01001b - 2MB
+ * 01010b - 4MB
+ * 01011b - 8MB
+ * 01100b - 16MB
+ * 01101b - 32MB
+ * 01110b - 64MB
+ * 01111b - 128MB
+ * 10000b - 256MB
+ * 10001b - 512MB
+ * 10010b - 1GB
+ * 10011b - 2GB
+ * 10100-11111b - 4GB
+ */
+#define FEMC_BR2_SIZE_MASK (0x3EU)
+#define FEMC_BR2_SIZE_SHIFT (1U)
+#define FEMC_BR2_SIZE_SET(x) (((uint32_t)(x) << FEMC_BR2_SIZE_SHIFT) & FEMC_BR2_SIZE_MASK)
+#define FEMC_BR2_SIZE_GET(x) (((uint32_t)(x) & FEMC_BR2_SIZE_MASK) >> FEMC_BR2_SIZE_SHIFT)
+
+/*
+ * VLD (RW)
+ *
+ * Valid
+ */
+#define FEMC_BR2_VLD_MASK (0x1U)
+#define FEMC_BR2_VLD_SHIFT (0U)
+#define FEMC_BR2_VLD_SET(x) (((uint32_t)(x) << FEMC_BR2_VLD_SHIFT) & FEMC_BR2_VLD_MASK)
+#define FEMC_BR2_VLD_GET(x) (((uint32_t)(x) & FEMC_BR2_VLD_MASK) >> FEMC_BR2_VLD_SHIFT)
+
+/* Bitfield definition for register: SRCTRL2 */
+/*
+ * ADVH (RW)
+ *
+ * ADV hold state
+ * 0b - ADV is high during address hold state
+ * 1b - ADV is low during address hold state
+ */
+#define FEMC_SRCTRL2_ADVH_MASK (0x800U)
+#define FEMC_SRCTRL2_ADVH_SHIFT (11U)
+#define FEMC_SRCTRL2_ADVH_SET(x) (((uint32_t)(x) << FEMC_SRCTRL2_ADVH_SHIFT) & FEMC_SRCTRL2_ADVH_MASK)
+#define FEMC_SRCTRL2_ADVH_GET(x) (((uint32_t)(x) & FEMC_SRCTRL2_ADVH_MASK) >> FEMC_SRCTRL2_ADVH_SHIFT)
+
+/*
+ * ADVP (RW)
+ *
+ * ADV polarity
+ * 0b - ADV is active low
+ * 1b - ADV is active high
+ */
+#define FEMC_SRCTRL2_ADVP_MASK (0x400U)
+#define FEMC_SRCTRL2_ADVP_SHIFT (10U)
+#define FEMC_SRCTRL2_ADVP_SET(x) (((uint32_t)(x) << FEMC_SRCTRL2_ADVP_SHIFT) & FEMC_SRCTRL2_ADVP_MASK)
+#define FEMC_SRCTRL2_ADVP_GET(x) (((uint32_t)(x) & FEMC_SRCTRL2_ADVP_MASK) >> FEMC_SRCTRL2_ADVP_SHIFT)
+
+/*
+ * ADM (RW)
+ *
+ * address data mode
+ * 00b - address and data MUX mode
+ * 11b - address and data non-MUX mode
+ */
+#define FEMC_SRCTRL2_ADM_MASK (0x300U)
+#define FEMC_SRCTRL2_ADM_SHIFT (8U)
+#define FEMC_SRCTRL2_ADM_SET(x) (((uint32_t)(x) << FEMC_SRCTRL2_ADM_SHIFT) & FEMC_SRCTRL2_ADM_MASK)
+#define FEMC_SRCTRL2_ADM_GET(x) (((uint32_t)(x) & FEMC_SRCTRL2_ADM_MASK) >> FEMC_SRCTRL2_ADM_SHIFT)
+
+/*
+ * PORTSZ (RW)
+ *
+ * port size
+ * 0b - 8bit
+ * 1b - 16bit
+ */
+#define FEMC_SRCTRL2_PORTSZ_MASK (0x1U)
+#define FEMC_SRCTRL2_PORTSZ_SHIFT (0U)
+#define FEMC_SRCTRL2_PORTSZ_SET(x) (((uint32_t)(x) << FEMC_SRCTRL2_PORTSZ_SHIFT) & FEMC_SRCTRL2_PORTSZ_MASK)
+#define FEMC_SRCTRL2_PORTSZ_GET(x) (((uint32_t)(x) & FEMC_SRCTRL2_PORTSZ_MASK) >> FEMC_SRCTRL2_PORTSZ_SHIFT)
+
+/* Bitfield definition for register: SRCTRL3 */
+/*
+ * OEH (RW)
+ *
+ * OE high time, is OEH+1 clock cycles
+ */
+#define FEMC_SRCTRL3_OEH_MASK (0xF0000000UL)
+#define FEMC_SRCTRL3_OEH_SHIFT (28U)
+#define FEMC_SRCTRL3_OEH_SET(x) (((uint32_t)(x) << FEMC_SRCTRL3_OEH_SHIFT) & FEMC_SRCTRL3_OEH_MASK)
+#define FEMC_SRCTRL3_OEH_GET(x) (((uint32_t)(x) & FEMC_SRCTRL3_OEH_MASK) >> FEMC_SRCTRL3_OEH_SHIFT)
+
+/*
+ * OEL (RW)
+ *
+ * OE low time, is OEL+1 clock cycles
+ */
+#define FEMC_SRCTRL3_OEL_MASK (0xF000000UL)
+#define FEMC_SRCTRL3_OEL_SHIFT (24U)
+#define FEMC_SRCTRL3_OEL_SET(x) (((uint32_t)(x) << FEMC_SRCTRL3_OEL_SHIFT) & FEMC_SRCTRL3_OEL_MASK)
+#define FEMC_SRCTRL3_OEL_GET(x) (((uint32_t)(x) & FEMC_SRCTRL3_OEL_MASK) >> FEMC_SRCTRL3_OEL_SHIFT)
+
+/*
+ * WEH (RW)
+ *
+ * WE high time, is WEH+1 clock cycles
+ */
+#define FEMC_SRCTRL3_WEH_MASK (0xF00000UL)
+#define FEMC_SRCTRL3_WEH_SHIFT (20U)
+#define FEMC_SRCTRL3_WEH_SET(x) (((uint32_t)(x) << FEMC_SRCTRL3_WEH_SHIFT) & FEMC_SRCTRL3_WEH_MASK)
+#define FEMC_SRCTRL3_WEH_GET(x) (((uint32_t)(x) & FEMC_SRCTRL3_WEH_MASK) >> FEMC_SRCTRL3_WEH_SHIFT)
+
+/*
+ * WEL (RW)
+ *
+ * WE low time, is WEL+1 clock cycles
+ */
+#define FEMC_SRCTRL3_WEL_MASK (0xF0000UL)
+#define FEMC_SRCTRL3_WEL_SHIFT (16U)
+#define FEMC_SRCTRL3_WEL_SET(x) (((uint32_t)(x) << FEMC_SRCTRL3_WEL_SHIFT) & FEMC_SRCTRL3_WEL_MASK)
+#define FEMC_SRCTRL3_WEL_GET(x) (((uint32_t)(x) & FEMC_SRCTRL3_WEL_MASK) >> FEMC_SRCTRL3_WEL_SHIFT)
+
+/*
+ * AH (RW)
+ *
+ * Address hold time, is AH+1 clock cycles
+ */
+#define FEMC_SRCTRL3_AH_MASK (0xF000U)
+#define FEMC_SRCTRL3_AH_SHIFT (12U)
+#define FEMC_SRCTRL3_AH_SET(x) (((uint32_t)(x) << FEMC_SRCTRL3_AH_SHIFT) & FEMC_SRCTRL3_AH_MASK)
+#define FEMC_SRCTRL3_AH_GET(x) (((uint32_t)(x) & FEMC_SRCTRL3_AH_MASK) >> FEMC_SRCTRL3_AH_SHIFT)
+
+/*
+ * AS (RW)
+ *
+ * Address setup time, is AS+1 clock cycles
+ */
+#define FEMC_SRCTRL3_AS_MASK (0xF00U)
+#define FEMC_SRCTRL3_AS_SHIFT (8U)
+#define FEMC_SRCTRL3_AS_SET(x) (((uint32_t)(x) << FEMC_SRCTRL3_AS_SHIFT) & FEMC_SRCTRL3_AS_MASK)
+#define FEMC_SRCTRL3_AS_GET(x) (((uint32_t)(x) & FEMC_SRCTRL3_AS_MASK) >> FEMC_SRCTRL3_AS_SHIFT)
+
+/*
+ * CEH (RW)
+ *
+ * Chip enable hold time, is CEH+1 clock cycles
+ */
+#define FEMC_SRCTRL3_CEH_MASK (0xF0U)
+#define FEMC_SRCTRL3_CEH_SHIFT (4U)
+#define FEMC_SRCTRL3_CEH_SET(x) (((uint32_t)(x) << FEMC_SRCTRL3_CEH_SHIFT) & FEMC_SRCTRL3_CEH_MASK)
+#define FEMC_SRCTRL3_CEH_GET(x) (((uint32_t)(x) & FEMC_SRCTRL3_CEH_MASK) >> FEMC_SRCTRL3_CEH_SHIFT)
+
+/*
+ * CES (RW)
+ *
+ * Chip enable setup time, is CES+1 clock cycles
+ */
+#define FEMC_SRCTRL3_CES_MASK (0xFU)
+#define FEMC_SRCTRL3_CES_SHIFT (0U)
+#define FEMC_SRCTRL3_CES_SET(x) (((uint32_t)(x) << FEMC_SRCTRL3_CES_SHIFT) & FEMC_SRCTRL3_CES_MASK)
+#define FEMC_SRCTRL3_CES_GET(x) (((uint32_t)(x) & FEMC_SRCTRL3_CES_MASK) >> FEMC_SRCTRL3_CES_SHIFT)
+
 /* Bitfield definition for register: DLYCFG */
 /*
  * OE (RW)
@@ -976,6 +1187,10 @@ typedef struct {
 #define FEMC_BR_BASE0 (0UL)
 #define FEMC_BR_BASE1 (1UL)
 #define FEMC_BR_BASE6 (6UL)
+
+/* BR2 register group index macro definition */
+#define FEMC_BR2_BASE0 (0UL)
+#define FEMC_BR2_BASE1 (1UL)
 
 
 #endif /* HPM_FEMC_H */

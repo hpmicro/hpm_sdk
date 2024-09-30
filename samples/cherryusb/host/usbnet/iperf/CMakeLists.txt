@@ -26,6 +26,7 @@ sdk_compile_definitions(-DUSE_NONVECTOR_MODE=1)
 sdk_compile_definitions(-DDISABLE_IRQ_PREEMPTIVE=1)
 sdk_compile_definitions(-DCONFIG_IPERF_TCP_SERVER_PORT=5001)
 sdk_compile_definitions(-DconfigTOTAL_HEAP_SIZE=36864)
+sdk_compile_definitions(-DLWIP_TIMEVAL_PRIVATE=0)
 
 sdk_iar_cc_preinclude(../../../../../drivers/inc/hpm_common.h)
 
@@ -36,5 +37,4 @@ sdk_inc(../common)
 sdk_app_src(../common/arch/sys_arch.c)
 sdk_app_src(src/main.c)
 sdk_app_src(src/iperf.c)
-sdk_app_src(../common/feature/usbnet_host.c)
 generate_ide_projects()

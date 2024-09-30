@@ -132,6 +132,38 @@ typedef enum {
 } sei_irq_event_t;      /**< irq event type */
 
 /**
+ * @brief sei dma enable bit
+ */
+typedef enum {
+    sei_dma_en_stall_event = SEI_CTRL_DMA_EN_STALL_MASK,
+    sei_dma_en_execpt_event = SEI_CTRL_DMA_EN_EXCEPT_MASK,
+    sei_dma_en_wdog_event = SEI_CTRL_DMA_EN_WDOG_MASK,
+    sei_dma_en_instr_ptr0_start_event = SEI_CTRL_DMA_EN_PTR0_ST_MASK,
+    sei_dma_en_instr_ptr1_start_event = SEI_CTRL_DMA_EN_PTR1_ST_MASK,
+    sei_dma_en_instr_value0_start_event = SEI_CTRL_DMA_EN_INSTR0_ST_MASK,
+    sei_dma_en_instr_value1_start_event = SEI_CTRL_DMA_EN_INSTR1_ST_MASK,
+    sei_dma_en_instr_ptr0_end_event = SEI_CTRL_DMA_EN_PTR0_END_MASK,
+    sei_dma_en_instr_ptr1_end_event = SEI_CTRL_DMA_EN_PTR1_END_MASK,
+    sei_dma_en_instr_value0_end_event = SEI_CTRL_DMA_EN_INSTR0_END_MASK,
+    sei_dma_en_instr_value1_end_event = SEI_CTRL_DMA_EN_INSTR1_END_MASK,
+    sei_dma_en_trx_err_event = SEI_CTRL_DMA_EN_TRX_ERR_MASK,
+    sei_dma_en_timeout_event = SEI_CTRL_DMA_EN_TIMEOUT_MASK,
+    sei_dma_en_latch0_event = SEI_CTRL_DMA_EN_LATCH0_MASK,
+    sei_dma_en_latch1_event = SEI_CTRL_DMA_EN_LATCH1_MASK,
+    sei_dma_en_latch2_event = SEI_CTRL_DMA_EN_LATCH2_MASK,
+    sei_dma_en_latch3_event = SEI_CTRL_DMA_EN_LATCH3_MASK,
+    sei_dma_en_sample_err_event = SEI_CTRL_DMA_EN_SMP_ERR_MASK,
+    sei_dma_en_trig0_event = SEI_CTRL_DMA_EN_TRIGER0_MASK,
+    sei_dma_en_trig1_event = SEI_CTRL_DMA_EN_TRIGER1_MASK,
+    sei_dma_en_trig2_event = SEI_CTRL_DMA_EN_TRIGER2_MASK,
+    sei_dma_en_trig3_event = SEI_CTRL_DMA_EN_TRIGER3_MASK,
+    sei_dma_en_trig0_err_event = SEI_CTRL_DMA_EN_TRG_ERR0_MASK,
+    sei_dma_en_trig1_err_event = SEI_CTRL_DMA_EN_TRG_ERR1_MASK,
+    sei_dma_en_trig2_err_event = SEI_CTRL_DMA_EN_TRG_ERR2_MASK,
+    sei_dma_en_trig3_err_event = SEI_CTRL_DMA_EN_TRG_ERR3_MASK,
+} sei_dma_en_t;      /**< dma enable bit */
+
+/**
  * @brief sei select command or data
  */
 #define SEI_SELECT_CMD true      /**< select cmd */
@@ -849,6 +881,24 @@ static inline bool sei_get_irq_status(SEI_Type *ptr, uint8_t idx, uint32_t irq_m
 static inline void sei_clear_irq_flag(SEI_Type *ptr, uint8_t idx, uint32_t irq_mask)
 {
     ptr->CTRL[idx].IRQ.INT_FLAG = irq_mask;
+}
+
+/**
+ * @brief Set the SEI DMA request enable or disable
+ * @param [in] ptr SEI base address
+ * @param [in] idx SEI ctrl index, such as SEI_CTRL_0, SEI_CTRL_1, etc.
+ * @param [in] dma_en_mask dma enable bit mask, @ref sei_dma_en_t
+ * @param [in] enable enable or disable
+ *  @arg true enable
+ *  @arg false disable
+ */
+static inline void sei_set_dma_req_enable(SEI_Type *ptr, uint8_t idx, uint32_t dma_en_mask, bool enable)
+{
+    if (enable) {
+        ptr->CTRL[idx].DMA_EN |= dma_en_mask;
+    } else {
+        ptr->CTRL[idx].DMA_EN &= ~dma_en_mask;
+    }
 }
 
 /**

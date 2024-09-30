@@ -42,5 +42,8 @@
     spi_sdcard/index_zh
     cherrysh/index_zh
     ethercat/index_zh
+    smbus/index_zh
+    pmbus/index_zh
+    tsn/index_zh
 
 :::

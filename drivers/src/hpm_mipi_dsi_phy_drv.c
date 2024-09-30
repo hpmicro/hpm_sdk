@@ -93,16 +93,16 @@ void mipi_dsi_phy_init(MIPI_DSI_PHY_Type *ptr, mipi_dsi_phy_config_t *cfg)
 
 
     uint32_t dlane0_para2;
-    uint32_t ths_prepare_ps = (40 + 85) / 2 * 1000 + (4 + 6) / 2 * ui_ps; /* min: 40ns + 4 * UI, max: 85ns + 6 * UI */
+    uint32_t ths_prepare_ps = 40 * 1000 + 4 * ui_ps; /* min: 40ns + 4 * UI, max: 85ns + 6 * UI */
     uint32_t ths_zero_ps = 145 * 1000 + 10 * ui_ps - ths_prepare_ps; /* min: 145ns + 10 * UI */
     uint32_t ths_trail_ps0 = 8 * ui_ps;
-    uint32_t ths_trail_ps1 = 60 * 1000 * 4 * ui_ps;
+    uint32_t ths_trail_ps1 = 60 * 1000 + 4 * ui_ps;
     uint32_t ths_trail_ps = ths_trail_ps0 > ths_trail_ps1 ? ths_trail_ps0 : ths_trail_ps1;
 
     dlane0_para2 = MIPI_DSI_PHY_DLANE0_PARA2_T_HSPREPARE_D0_SET(HPM_DIV_ROUND_UP(ths_prepare_ps, byteclk_period_ps) - 1) |
-                    MIPI_DSI_PHY_DLANE0_PARA2_T_HSZERO_D0_SET(HPM_DIV_ROUND_UP(ths_zero_ps, byteclk_period_ps) - 1) |
-                    MIPI_DSI_PHY_DLANE0_PARA2_T_HSTRAIL_D0_SET(HPM_DIV_ROUND_UP(ths_trail_ps, byteclk_period_ps) - 1) |
-                    MIPI_DSI_PHY_DLANE0_PARA2_T_HSEXIT_D0_SET(HPM_DIV_ROUND_UP(t_hs_exit_ps, byteclk_period_ps) - 1);
+                    MIPI_DSI_PHY_DLANE0_PARA2_T_HSZERO_D0_SET(HPM_DIV_ROUND_UP(ths_zero_ps, byteclk_period_ps)) |
+                    MIPI_DSI_PHY_DLANE0_PARA2_T_HSTRAIL_D0_SET(HPM_DIV_ROUND_UP(ths_trail_ps, byteclk_period_ps)) |
+                    MIPI_DSI_PHY_DLANE0_PARA2_T_HSEXIT_D0_SET(HPM_DIV_ROUND_UP(t_hs_exit_ps, byteclk_period_ps));
 
     ptr->DLANE0_PARA2 = dlane0_para2;
     ptr->DLANE1_PARA2 = dlane0_para2;

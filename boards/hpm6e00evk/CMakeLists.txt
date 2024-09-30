@@ -11,3 +11,8 @@ if(APP_USE_ENET_PORT_COUNT EQUAL 1)
     set(ENV{CONFIG_ENET_PHY_RTL8211} 1)
     sdk_compile_definitions(-DRGMII=1)
 endif()
+
+if(APP_USE_TSW_PORT_COUNT EQUAL 1)
+    set(ENV{CONFIG_TSW_PHY_RTL8211} 1)
+    sdk_compile_definitions(-DRGMII=1)
+endif()

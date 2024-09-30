@@ -101,7 +101,6 @@
 /*
 * ENET Section
 */
-#define ENET_SOC_RGMII_EN                          (0U)
 #define ENET_SOC_DESC_ADDR_ALIGNMENT               (32U)
 #define ENET_SOC_BUFF_ADDR_ALIGNMENT               (4U)
 #define ENET_SOC_ADDR_MAX_COUNT                    (5U)
@@ -109,7 +108,7 @@
 #define ENET_SOC_ALT_EHD_DES_MAX_LEN               (8U)
 #define ENET_SOC_ALT_EHD_DES_LEN                   (8U)
 #define ENET_SOC_PPS_MAX_COUNT                     (2L)
-#define ENET_SOC_PPS1_EN                           (0U)
+#define ENET_SOC_DMA_BUS_WIDTH_IN_BYTES            (4U)
 
 /*
 * ADC Section

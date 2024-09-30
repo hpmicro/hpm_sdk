@@ -26,7 +26,7 @@
 			<Setting CodeDefine="SAMPLE_APPLICATION" Value="0"/>
 			<Setting CodeDefine="SAMPLE_APPLICATION_INTERFACE" Value="0"/>
 			<Setting CodeDefine="ESC_16BIT_ACCESS" Value="0"/>
-			<Setting CodeDefine="ESC_32BIT_ACCESS" Value="0"/>
+			<Setting CodeDefine="ESC_32BIT_ACCESS" Value="1"/>
 			<Setting CodeDefine="MBX_16BIT_ACCESS" Value="0"/>
 			<Setting CodeDefine="BIG_ENDIAN_16BIT" Value="0">
 				<Flags Visible="False"/>
@@ -34,8 +34,8 @@
 			<Setting CodeDefine="BIG_ENDIAN_FORMAT" Value="0">
 				<Flags Visible="False"/>
 			</Setting>
-			<Setting CodeDefine="CONTROLLER_32BIT" Value="0">
-				<Flags Visible="False"/>
+			<Setting CodeDefine="CONTROLLER_32BIT" Value="1">
+				<Flags Visible="True"/>
 			</Setting>
 			<Setting CodeDefine="CONTROLLER_16BIT" Value="0">
 				<Flags Visible="False"/>
@@ -65,14 +65,14 @@
 			<Setting CodeDefine="EXT_DEBUGER_INTERFACE" Value="0">
 				<Flags Visible="False"/>
 			</Setting>
-			<Setting CodeDefine="CiA402_DEVICE" Value="0"/>
+			<Setting CodeDefine="CiA402_SAMPLE_APPLICATION" Value="0"/>
 			<Setting CodeDefine="SYSTEM_HEADER_FILE" Value="#include &quot;hpm_common.h&quot;"/>
 			<Setting CodeDefine="STATIC_OBJECT_DIC" Value="0"/>
 			<Setting CodeDefine="ESC_EEPROM_ACCESS_SUPPORT" Value="0"/>
 			<Setting CodeDefine="ESC_EEPROM_EMULATION" Value="1"/>
 			<Setting CodeDefine="CREATE_EEPROM_CONTENT" Value="1"/>
 			<Setting CodeDefine="ESC_EEPROM_SIZE" Value="0x800"/>
-			<Setting CodeDefine="ESC_CONFIG_DATA" Value="807E8166000000001234"/>
+			<Setting CodeDefine="ESC_CONFIG_DATA" Value="800C8166000000001234"/>
 			<Setting CodeDefine="HW_ACCESS_FILE" Value="#include &quot;hpm_ecat_hw.h&quot;"/>
 			<Setting CodeDefine="APPLICATION_FILE" Value="#include &quot;digital_io.h&quot;"/>
 			<Setting CodeDefine="USE_DEFAULT_MAIN" Value="0"/>
@@ -105,7 +105,6 @@
 			<Setting CodeDefine="DC_SUPPORTED" Value="1"/>
 			<Setting CodeDefine="MAX_PD_INPUT_SIZE" Value="0x40"/>
 			<Setting CodeDefine="MAX_PD_OUTPUT_SIZE" Value="0x40"/>
-			<Setting CodeDefine="DEVICE_PROFILE_TYPE" Value="0x00005001"/>
 			<Setting CodeDefine="MAKE_HUGE_PTR" Value=""/>
 			<ESI Path="/EtherCATInfo/Descriptions/Devices/Device/Info">
 				<Value>

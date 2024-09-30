@@ -60,7 +60,7 @@ hpm_stat_t hpm_serial_nor_erase_chip(hpm_serial_nor_t *flash);
 hpm_stat_t hpm_serial_nor_erase_block_blocking(hpm_serial_nor_t *flash, uint32_t block_addr);
 
 /**
- * @brief erase the serial nor flash block using noblocking transfer
+ * @brief erase the serial nor flash block using nonblocking transfer
  *
  * @note the erase block address must be block alignment, it'not wait flash busy status.
  *
@@ -68,7 +68,7 @@ hpm_stat_t hpm_serial_nor_erase_block_blocking(hpm_serial_nor_t *flash, uint32_t
  * @param [in] block_addr the serial nor flash block address
  * @return hpm_stat_t: status_success if erase block success
  */
-hpm_stat_t hpm_serial_nor_erase_block_noblocking(hpm_serial_nor_t *flash, uint32_t block_addr);
+hpm_stat_t hpm_serial_nor_erase_block_nonblocking(hpm_serial_nor_t *flash, uint32_t block_addr);
 
 /**
  * @brief erase the serial nor flash sector using blocking transfer
@@ -82,7 +82,7 @@ hpm_stat_t hpm_serial_nor_erase_block_noblocking(hpm_serial_nor_t *flash, uint32
 hpm_stat_t hpm_serial_nor_erase_sector_blocking(hpm_serial_nor_t *flash, uint32_t sector_addr);
 
 /**
- * @brief erase the serial nor flash sector using noblocking transfer
+ * @brief erase the serial nor flash sector using nonblocking transfer
  *
  * @note the erase sector address must be sector alignment, it'not wait flash busy status.
  *
@@ -90,7 +90,7 @@ hpm_stat_t hpm_serial_nor_erase_sector_blocking(hpm_serial_nor_t *flash, uint32_
  * @param [in] sector_addr the serial nor flash sector address
  * @return hpm_stat_t: status_success if erase sector success
  */
-hpm_stat_t hpm_serial_nor_erase_sector_noblocking(hpm_serial_nor_t *flash, uint32_t sector_addr);
+hpm_stat_t hpm_serial_nor_erase_sector_nonblocking(hpm_serial_nor_t *flash, uint32_t sector_addr);
 
 /**
  * @brief erase the serial nor flash specified start address and length using blocking transfer
@@ -115,14 +115,14 @@ hpm_stat_t hpm_serial_nor_program_blocking(hpm_serial_nor_t *flash, uint8_t *buf
                                uint32_t address);
 
 /**
- * @brief program data to the page nor flash address using noblocking transfer
+ * @brief program data to the page nor flash address using nonblocking transfer
  * @param [in] host  the serial nor context
  * @param [in] buf  the data source pointer
  * @param [in] data_len the data length
  * @param [in] address  the serial nor flash programming address
  * @return hpm_stat_t: status_success if program success
  */
-hpm_stat_t hpm_serial_nor_page_program_noblocking(hpm_serial_nor_t *flash, uint8_t *buf,
+hpm_stat_t hpm_serial_nor_page_program_nonblocking(hpm_serial_nor_t *flash, uint8_t *buf,
                                                   uint32_t data_len,
                                                   uint32_t address);
 

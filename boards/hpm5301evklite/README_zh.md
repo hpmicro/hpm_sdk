@@ -65,8 +65,8 @@ HPM5301EVKLite是基于先楫的入门级高性能MCU HPM5301的开发板。HPM5
 
 | 功能     | 位置   |
 | -------- | ------|
-| I2C2.SCL | J3[5] |
-| I2C2.SDA | J3[3] |
+| I2C3.SCL | J3[28] |
+| I2C3.SDA | J3[27] |
 
 - ACMP引脚
 
@@ -96,11 +96,11 @@ HPM5301EVKLite是基于先楫的入门级高性能MCU HPM5301的开发板。HPM5
 
 | 功能          | 位置    |  备注 |
 | ------------- | -----  | ------
-| GPTMR0.CAPT_1 | J3[32]  |
-| GPTMR0.COMP_1 | J5[3]  | 此引脚缺省为JTAG TRST，建议用做GPTMR功能时断开调试器|
+| GPTMR0.CAPT_1 | J3[3]  |
+| GPTMR0.COMP_1 | J3[5]  |
 | GPTMR0.COMP_3 | J3[8]  | SPI模拟I2S的BLCK |
 | GPTMR0.COMP_2 | J3[26] | SPI模拟I2S的LRCK |
-| GPTMR1.COMP_3 | J3[28]  | SPI模拟I2S的MCLK |
+| GPTMR1.COMP_1 | J3[7]  | SPI模拟I2S的MCLK |
 
 - SPI模拟I2S CS引脚
 

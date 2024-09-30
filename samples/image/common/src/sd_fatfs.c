@@ -19,7 +19,7 @@
  */
 static FATFS sd_disk;
 static bool disk_mounted;
-static const TCHAR driver_num_buf[3] = {DEV_SD + '0', ':', '/'};
+static const TCHAR driver_num_buf[4] = {DEV_SD + '0', ':', '/', '\0'};
 /*
  * Define function
  *

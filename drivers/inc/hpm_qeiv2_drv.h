@@ -152,6 +152,13 @@ typedef enum qeiv2_uvw_pos_idx {
     qeiv2_uvw_pos5,
 } qeiv2_uvw_pos_idx_t;       /**< qeiv2_uvw_pos_idx_t */
 
+#if defined(HPM_IP_FEATURE_QEIV2_ADC_SW_INJECT) && HPM_IP_FEATURE_QEIV2_ADC_SW_INJECT
+typedef enum qeiv2_adc_sw_inject_en {
+    qeiv2_sw_inject_adcx = QEIV2_ADC_INJECT_CTRL_ADCX_INJ_VALID_MASK,
+    qeiv2_sw_inject_adcx_adcy = QEIV2_ADC_INJECT_CTRL_ADCX_INJ_VALID_MASK | QEIV2_ADC_INJECT_CTRL_ADCY_INJ_VALID_MASK,
+} qeiv2_adc_sw_inject_en_t;       /**< qeiv2_adc_sw_inject_en_t */
+#endif
+
 /**
  * @brief phase counter compare match config structure
  *
@@ -215,7 +222,7 @@ static inline void qeiv2_load_counter_to_read_registers(QEIV2_Type *qeiv2_x)
  *
  * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
  * @param[in] mode
- *  @arg 1 zcnt will increment when phcnt upcount to phmax, decrement when phcnt downcount to 0
+ *  @arg 1 zcnt will increment when phcnt upcount to PHCFG.phmax, decrement when phcnt downcount to 0
  *  @arg 0 zcnt will increment or decrement when Z input assert
  */
 static inline void qeiv2_config_z_phase_counter_mode(QEIV2_Type *qeiv2_x, qeiv2_z_count_work_mode_t mode)
@@ -227,7 +234,7 @@ static inline void qeiv2_config_z_phase_counter_mode(QEIV2_Type *qeiv2_x, qeiv2_
  * @brief config phase max value and phase param
  *
  * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
- * @param[in] phmax maximum phcnt number, phcnt will rollover to 0 when it upcount to phmax
+ * @param[in] phmax maximum phcnt number, phcnt will rollover to 0 when it upcount to (phmax-1)
  */
 static inline void qeiv2_config_phmax_phparam(QEIV2_Type *qeiv2_x, uint32_t phmax)
 {
@@ -1326,6 +1333,19 @@ static inline void qeiv2_config_adcy(QEIV2_Type *qeiv2_x, qeiv2_adc_config_t *co
 }
 
 /**
+ * @brief Configures the orthogonal delta and magnification for ADCX and ADCY
+ *
+ * Configures the orthogonal delta and magnification parameters for ADCX and ADCY of the QEIV2 device.
+ *
+ * @param[in] qeiv2_x Pointer to the QEIV2 device
+ * @param[in] tan_delta TAN value of orthogonal delta angle in radians
+ * @param[in] cos_delta COS value of orthogonal delta angle in radians
+ * @param[in] x_magnification ADCX magnification factor. If no magnify, please set it to 1.0.
+ * @param[in] y_magnification ADCY magnification factor. If no magnify, please set it to 1.0.
+ */
+void qeiv2_config_adcx_adcy_param(QEIV2_Type *qeiv2_x, float tan_delta, float cos_delta, float x_magnification, float y_magnification);
+
+/**
  * @brief set adcx and adcy delay
  *
  * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
@@ -1422,6 +1442,17 @@ static inline void qeiv2_set_uvw_position(QEIV2_Type *qeiv2_x, qeiv2_uvw_pos_idx
 static inline void qeiv2_set_z_phase(QEIV2_Type *qeiv2_x, uint32_t cnt)
 {
     qeiv2_x->COUNT[QEIV2_COUNT_CURRENT].Z = cnt;
+}
+
+/**
+ * @brief get z phase counter value
+ *
+ * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
+ * @retval z phase counter value
+ */
+static inline uint32_t qeiv2_get_z_phase(QEIV2_Type *qeiv2_x)
+{
+    return qeiv2_x->COUNT[QEIV2_COUNT_CURRENT].Z;
 }
 
 /**
@@ -1523,6 +1554,95 @@ static inline void qeiv2_config_position_timeout(QEIV2_Type *qeiv2_x, uint32_t t
     }
     qeiv2_x->POS_TIMEOUT = tmp;
 }
+
+#if defined (HPM_IP_FEATURE_QEIV2_SIN_TOGI) && HPM_IP_FEATURE_QEIV2_SIN_TOGI
+/**
+ * @brief set togi enable or disable, only used for qeiv2_work_mode_sin
+ *
+ * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
+ * @param[in] enable Enable state. if true, the TOGI feature is enabled; if false, the TOGI feature is disabled.
+ */
+static inline void qeiv2_set_togi_enable(QEIV2_Type *qeiv2_x, bool enable)
+{
+    qeiv2_x->TOGI_CFG0 = (qeiv2_x->TOGI_CFG0 & ~QEIV2_TOGI_CFG0_SIN_TOGI_MASK) | QEIV2_TOGI_CFG0_SIN_TOGI_SET(enable);
+}
+
+/**
+ * @brief configures the TOGI w parameter
+ *
+ * This function calculates and sets the TOGI w parameter for the QEIV2 module based on the input signal frequency and ADC sample rate.
+ * The parameter here primarily refers to the frequency control parameter used for waveform generation.
+ *
+ * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
+ * @param[in] signal_hz Frequency of the input signal
+ * @param[in] adc_sample_rate Sample rate of the ADC
+ */
+void qeiv2_config_togi_w_param(QEIV2_Type *qeiv2_x, uint32_t signal_hz, uint32_t adc_sample_rate);
+#endif
+
+#if defined(HPM_IP_FEATURE_QEIV2_POS_ADJ) && HPM_IP_FEATURE_QEIV2_POS_ADJ
+/**
+ * @brief set position adjust value
+ *
+ * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
+ * @param[in] pos_adj position adjust value
+ */
+static inline void qeiv2_set_position_adjust_value(QEIV2_Type *qeiv2_x, int32_t pos_adj)
+{
+    qeiv2_x->POS_ADJ = QEIV2_POS_ADJ_POS_ADJ_SET(pos_adj);
+}
+#endif
+
+#if defined(HPM_IP_FEATURE_QEIV2_ADC_SW_INJECT) && HPM_IP_FEATURE_QEIV2_ADC_SW_INJECT
+/**
+ * @brief enable adc software inject
+ *
+ * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
+ */
+static inline void qeiv2_enable_adc_sw_inject(QEIV2_Type *qeiv2_x)
+{
+    qeiv2_x->ADC_INJECT_CTRL |= QEIV2_ADC_INJECT_CTRL_ADC_INJECT_EN_MASK;
+}
+
+/**
+ * @brief disable adc software inject
+ *
+ * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
+ */
+static inline void qeiv2_disable_adc_sw_inject(QEIV2_Type *qeiv2_x)
+{
+    qeiv2_x->ADC_INJECT_CTRL &= ~QEIV2_ADC_INJECT_CTRL_ADC_INJECT_EN_MASK;
+}
+
+/**
+ * @brief Inject software ADC values
+ *
+ * Injects the given ADCX and ADCY values into the QEIV2 device.
+ *
+ * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
+ * @param[in] adcx ADCX value
+ * @param[in] adcy ADCY value
+ * @param[in] en Enable option for software ADC injection
+ */
+static inline void qeiv2_inject_sw_adc(QEIV2_Type *qeiv2_x, uint32_t adcx, uint32_t adcy, qeiv2_adc_sw_inject_en_t en)
+{
+    qeiv2_x->ADCX_VAL_SW = adcx;
+    qeiv2_x->ADCY_VAL_SW = adcy;
+    qeiv2_x->ADC_INJECT_CTRL |= en;
+}
+
+/**
+ * @brief Checks if the position calculation is finished
+ *
+ * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
+ *
+ * @return Returns true if the position calculation is finished, false otherwise
+ */
+static inline bool qeiv2_is_pos_calc_finished(QEIV2_Type *qeiv2_x)
+{
+    return (QEIV2_CALC_STATE_STATE_GET(qeiv2_x->CALC_STATE) == 0) ? true : false;
+}
+#endif
 
 /**
  * @brief config phcnt compare match condition

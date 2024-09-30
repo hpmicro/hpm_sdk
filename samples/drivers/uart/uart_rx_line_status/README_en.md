@@ -107,6 +107,10 @@ framing error status: true
 ##############################################################
 ```
 
+#### Known Issues
+- When the stop bit settings of the sender and receiver are inconsistent, the frame error detection function cannot be guaranteed.
+
+
 ### line break test
 - connect uart rx pin to break signal pin(Please refer to  [Pin Description](lab_board_resource))
 - Manually input the '4' character through the serial port

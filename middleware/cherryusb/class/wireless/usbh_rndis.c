@@ -26,6 +26,7 @@ static struct usbh_rndis g_rndis_class;
 
 static int usbh_rndis_get_notification(struct usbh_rndis *rndis_class)
 {
+    (void)rndis_class;
     // int ret;
     // struct usbh_urb *urb = &rndis_class->intin_urb;
 
@@ -40,10 +41,15 @@ static int usbh_rndis_get_notification(struct usbh_rndis *rndis_class)
 
 static int usbh_rndis_init_msg_transfer(struct usbh_rndis *rndis_class)
 {
-    struct usb_setup_packet *setup = rndis_class->hport->setup;
+    struct usb_setup_packet *setup;
     int ret = 0;
     rndis_initialize_msg_t *cmd;
     rndis_initialize_cmplt_t *resp;
+
+    if (!rndis_class || !rndis_class->hport) {
+        return -USB_ERR_INVAL;
+    }
+    setup = rndis_class->hport->setup;
 
     cmd = (rndis_initialize_msg_t *)g_rndis_buf;
 
@@ -82,15 +88,25 @@ static int usbh_rndis_init_msg_transfer(struct usbh_rndis *rndis_class)
         return ret;
     }
 
+    rndis_class->max_transfer_pkts = resp->MaxPacketsPerTransfer;
+    rndis_class->max_transfer_size = resp->MaxTransferSize;
+    USB_LOG_INFO("MaxPacketsPerTransfer:%d\r\n", resp->MaxPacketsPerTransfer);
+    USB_LOG_INFO("MaxTransferSize:%d\r\n", resp->MaxTransferSize);
+
     return ret;
 }
 
 int usbh_rndis_query_msg_transfer(struct usbh_rndis *rndis_class, uint32_t oid, uint32_t query_len, uint8_t *info, uint32_t *info_len)
 {
-    struct usb_setup_packet *setup = rndis_class->hport->setup;
+    struct usb_setup_packet *setup;
     int ret = 0;
     rndis_query_msg_t *cmd;
     rndis_query_cmplt_t *resp;
+
+    if (!rndis_class || !rndis_class->hport) {
+        return -USB_ERR_INVAL;
+    }
+    setup = rndis_class->hport->setup;
 
     cmd = (rndis_query_msg_t *)g_rndis_buf;
 
@@ -138,10 +154,15 @@ int usbh_rndis_query_msg_transfer(struct usbh_rndis *rndis_class, uint32_t oid, 
 
 static int usbh_rndis_set_msg_transfer(struct usbh_rndis *rndis_class, uint32_t oid, uint8_t *info, uint32_t info_len)
 {
-    struct usb_setup_packet *setup = rndis_class->hport->setup;
+    struct usb_setup_packet *setup;
     int ret = 0;
     rndis_set_msg_t *cmd;
     rndis_set_cmplt_t *resp;
+
+    if (!rndis_class || !rndis_class->hport) {
+        return -USB_ERR_INVAL;
+    }
+    setup = rndis_class->hport->setup;
 
     cmd = (rndis_set_msg_t *)g_rndis_buf;
 
@@ -205,10 +226,15 @@ int usbh_rndis_get_connect_status(struct usbh_rndis *rndis_class)
 
 int usbh_rndis_keepalive(struct usbh_rndis *rndis_class)
 {
-    struct usb_setup_packet *setup = rndis_class->hport->setup;
+    struct usb_setup_packet *setup;
     int ret = 0;
     rndis_keepalive_msg_t *cmd;
     rndis_keepalive_cmplt_t *resp;
+
+    if (!rndis_class || !rndis_class->hport) {
+        return -USB_ERR_INVAL;
+    }
+    setup = rndis_class->hport->setup;
 
     cmd = (rndis_keepalive_msg_t *)g_rndis_buf;
 
@@ -382,7 +408,7 @@ static int usbh_rndis_connect(struct usbh_hubport *hport, uint8_t intf)
                  rndis_class->mac[4],
                  rndis_class->mac[5]);
 
-    memcpy(hport->config.intf[intf].devname, DEV_FORMAT, CONFIG_USBHOST_DEV_NAMELEN);
+    strncpy(hport->config.intf[intf].devname, DEV_FORMAT, CONFIG_USBHOST_DEV_NAMELEN);
 
     USB_LOG_INFO("Register RNDIS Class:%s\r\n", hport->config.intf[intf].devname);
     usbh_rndis_run(rndis_class);
@@ -425,18 +451,17 @@ static int usbh_rndis_disconnect(struct usbh_hubport *hport, uint8_t intf)
 void usbh_rndis_rx_thread(void *argument)
 {
     uint32_t g_rndis_rx_length;
-    uint32_t pmg_offset;
     int ret;
-    err_t err;
-    struct pbuf *p;
+    uint32_t pmg_offset;
     rndis_data_packet_t *pmsg;
     rndis_data_packet_t temp;
-#if LWIP_TCPIP_CORE_LOCKING_INPUT
-    pbuf_type type = PBUF_ROM;
+#if CONFIG_USBHOST_RNDIS_ETH_MAX_RX_SIZE <= (16 * 1024)
+    uint32_t transfer_size = CONFIG_USBHOST_RNDIS_ETH_MAX_RX_SIZE;
 #else
-    pbuf_type type = PBUF_POOL;
+    uint32_t transfer_size = (16 * 1024);
 #endif
-    struct netif *netif = (struct netif *)argument;
+
+    (void)argument;
 
     USB_LOG_INFO("Create rndis rx thread\r\n");
     // clang-format off
@@ -453,17 +478,23 @@ find_class:
             usb_osal_msleep(100);
             goto find_class;
         }
+        usb_osal_msleep(128);
     }
 
     g_rndis_rx_length = 0;
     while (1) {
-        usbh_bulk_urb_fill(&g_rndis_class.bulkin_urb, g_rndis_class.hport, g_rndis_class.bulkin, g_rndis_rx_buffer, (CONFIG_USBHOST_RNDIS_ETH_MAX_RX_SIZE > (16 * 1024)) ? (16 * 1024) : CONFIG_USBHOST_RNDIS_ETH_MAX_RX_SIZE, USB_OSAL_WAITING_FOREVER, NULL, NULL);
+        usbh_bulk_urb_fill(&g_rndis_class.bulkin_urb, g_rndis_class.hport, g_rndis_class.bulkin, &g_rndis_rx_buffer[g_rndis_rx_length], transfer_size, USB_OSAL_WAITING_FOREVER, NULL, NULL);
         ret = usbh_submit_urb(&g_rndis_class.bulkin_urb);
         if (ret < 0) {
             goto find_class;
         }
 
         g_rndis_rx_length += g_rndis_class.bulkin_urb.actual_length;
+
+        /* A transfer is complete because last packet is a short packet.
+         * Short packet is not zero, match g_rndis_rx_length % USB_GET_MAXPACKETSIZE(g_rndis_class.bulkin->wMaxPacketSize).
+         * Short packet cannot be zero.
+        */
         if (g_rndis_rx_length % USB_GET_MAXPACKETSIZE(g_rndis_class.bulkin->wMaxPacketSize)) {
             pmg_offset = 0;
 
@@ -476,33 +507,20 @@ find_class:
 
                 /* Not word-aligned case */
                 if (pmg_offset & 0x3) {
-                    memcpy(&temp, pmsg, sizeof(rndis_data_packet_t));
+                    usb_memcpy(&temp, pmsg, sizeof(rndis_data_packet_t));
                     pmsg = &temp;
                 }
 
                 if (pmsg->MessageType == REMOTE_NDIS_PACKET_MSG) {
-                    p = pbuf_alloc(PBUF_RAW, pmsg->DataLength, type);
-                    if (p != NULL) {
-                        void *src = (void *)(g_rndis_rx_buffer + pmg_offset + sizeof(rndis_generic_msg_t) + pmsg->DataOffset);
-#if LWIP_TCPIP_CORE_LOCKING_INPUT
-                        p->payload = src;
-#else
-                        memcpy(p->payload, src, pmsg->DataLength);
-#endif
-                        err = netif->input(p, netif);
-                        if (err != ERR_OK) {
-                            pbuf_free(p);
-                        }
-                        pmg_offset += pmsg->MessageLength;
-                        g_rndis_rx_length -= pmsg->MessageLength;
+                    uint8_t *buf = (uint8_t *)(g_rndis_rx_buffer + pmg_offset + sizeof(rndis_generic_msg_t) + pmsg->DataOffset);
 
-                        /* drop the last dummy byte, it is a short packet to tell us we have received a multiple of wMaxPacketSize */
-                        if (g_rndis_rx_length < 4) {
-                            g_rndis_rx_length = 0;
-                        }
-                    } else {
+                    usbh_rndis_eth_input(buf, pmsg->DataLength);
+                    pmg_offset += pmsg->MessageLength;
+                    g_rndis_rx_length -= pmsg->MessageLength;
+
+                    /* drop the last dummy byte, it is a short packet to tell us we have received a multiple of wMaxPacketSize */
+                    if (g_rndis_rx_length < 4) {
                         g_rndis_rx_length = 0;
-                        USB_LOG_ERR("No memory to alloc pbuf for rndis rx\r\n");
                     }
                 } else {
                     USB_LOG_ERR("offset:%d,remain:%d,total:%d\r\n", pmg_offset, g_rndis_rx_length, total_len);
@@ -511,9 +529,14 @@ find_class:
                 }
             }
         } else {
-            if (g_rndis_rx_length > CONFIG_USBHOST_RNDIS_ETH_MAX_RX_SIZE) {
-                USB_LOG_ERR("Rx packet is overflow\r\n");
-                g_rndis_rx_length = 0;
+#if CONFIG_USBHOST_RNDIS_ETH_MAX_RX_SIZE <= (16 * 1024)
+            if (g_rndis_rx_length == CONFIG_USBHOST_RNDIS_ETH_MAX_RX_SIZE) {
+#else
+            if ((g_rndis_rx_length + (16 * 1024)) > CONFIG_USBHOST_RNDIS_ETH_MAX_RX_SIZE) {
+#endif
+                USB_LOG_ERR("Rx packet is overflow, please reduce tcp window size or increase CONFIG_USBHOST_RNDIS_ETH_MAX_RX_SIZE\r\n");
+                while (1) {
+                }
             }
         }
     }
@@ -525,55 +548,48 @@ delete:
     // clang-format on
 }
 
-err_t usbh_rndis_linkoutput(struct netif *netif, struct pbuf *p)
+uint8_t *usbh_rndis_get_eth_txbuf(void)
 {
-    int ret;
-    struct pbuf *q;
-    uint8_t *buffer;
+    return (g_rndis_tx_buffer + sizeof(rndis_data_packet_t));
+}
+
+int usbh_rndis_eth_output(uint32_t buflen)
+{
     rndis_data_packet_t *hdr;
     uint32_t len;
 
     if (g_rndis_class.connect_status == false) {
-        return ERR_BUF;
+        return -USB_ERR_NOTCONN;
     }
 
     hdr = (rndis_data_packet_t *)g_rndis_tx_buffer;
     memset(hdr, 0, sizeof(rndis_data_packet_t));
 
     hdr->MessageType = REMOTE_NDIS_PACKET_MSG;
-    hdr->MessageLength = sizeof(rndis_data_packet_t) + p->tot_len;
+    hdr->MessageLength = sizeof(rndis_data_packet_t) + buflen;
     hdr->DataOffset = sizeof(rndis_data_packet_t) - sizeof(rndis_generic_msg_t);
-    hdr->DataLength = p->tot_len;
-
-    buffer = (uint8_t *)(g_rndis_tx_buffer + sizeof(rndis_data_packet_t));
-    for (q = p; q != NULL; q = q->next) {
-        memcpy(buffer, q->payload, q->len);
-        buffer += q->len;
-    }
+    hdr->DataLength = buflen;
 
     len = hdr->MessageLength;
     /* if message length is the multiple of wMaxPacketSize, we should add a short packet to tell device transfer is over. */
-    if (!(hdr->MessageLength % g_rndis_class.bulkout->wMaxPacketSize)) {
+    if (!(len % g_rndis_class.bulkout->wMaxPacketSize)) {
         len += 1;
     }
 
     USB_LOG_DBG("txlen:%d\r\n", len);
 
     usbh_bulk_urb_fill(&g_rndis_class.bulkout_urb, g_rndis_class.hport, g_rndis_class.bulkout, g_rndis_tx_buffer, len, USB_OSAL_WAITING_FOREVER, NULL, NULL);
-    ret = usbh_submit_urb(&g_rndis_class.bulkout_urb);
-    if (ret < 0) {
-        return ERR_BUF;
-    }
-
-    return ERR_OK;
+    return usbh_submit_urb(&g_rndis_class.bulkout_urb);
 }
 
 __WEAK void usbh_rndis_run(struct usbh_rndis *rndis_class)
 {
+    (void)rndis_class;
 }
 
 __WEAK void usbh_rndis_stop(struct usbh_rndis *rndis_class)
 {
+    (void)rndis_class;
 }
 
 static const struct usbh_class_driver rndis_class_driver = {

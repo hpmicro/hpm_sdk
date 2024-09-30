@@ -378,6 +378,17 @@ static inline void tsns_clear_with_mask(TSNS_Type *ptr, tsns_clear_type_mask_t m
     ptr->FLAG |= mask;
 }
 
+/**
+ * @brief Get the flag value from a TSNS
+ *
+ * @param ptr Pointer to a TSNS_Type structure
+ * @return The value of the FLAG member
+ */
+static inline uint32_t tsns_get_flag_value(TSNS_Type *ptr)
+{
+    return ptr->FLAG;
+}
+
 
 /**
  * @brief   configure low temperature limite to trigger event

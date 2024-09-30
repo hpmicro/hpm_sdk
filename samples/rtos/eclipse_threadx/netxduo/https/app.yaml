@@ -1,6 +1,8 @@
 excluded_targets:
   - debug
   - release
+  - flash_xip
+  - flash_uf2
   - flash_xip_release
   - flash_uf2_release
   - sec_core_img

@@ -22,6 +22,9 @@
 #ifndef APP_MOTOR_CLK
 #define APP_MOTOR_CLK BOARD_BLDC_QEI_CLOCK_SOURCE
 #endif
+#ifndef APP_ENCODER_PHASE_COUNT_PER_REV
+#define APP_ENCODER_PHASE_COUNT_PER_REV BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV
+#endif
 
 static volatile bool s_pos_cmp_matched;
 static volatile bool s_pulse0_matched;
@@ -42,7 +45,7 @@ int main(void)
     uint32_t speed;
 
     board_init();
-    init_qeiv2_ab_pins(APP_QEI_BASE);
+    init_qeiv2_ab_pins(APP_QEI_BASE);    /* Attention : If there is no z-phase signal, please do not configure the z-phase pin !!! */
     qeiv2_init();
 
     printf("qeiv2 abz encoder example\n");
@@ -69,9 +72,9 @@ int main(void)
             cycle_snap0 = qeiv2_get_pulse0_cycle_snap0(APP_QEI_BASE);
             cycle_snap1 = qeiv2_get_pulse0_cycle_snap1(APP_QEI_BASE);
             if ((cycle_snap0 != 0) && (cycle_snap1 != 0)) {
-                speed = (clock_get_frequency(APP_MOTOR_CLK) / cycle_snap0) * PULSE0_NUM * 360 / 4096;
+                speed = (clock_get_frequency(APP_MOTOR_CLK) / cycle_snap0) * PULSE0_NUM * 360 / APP_ENCODER_PHASE_COUNT_PER_REV;
                 printf("pulse0 --- cycle_snap0: %#10x, spd: %d deg/s,\n", cycle_snap0, speed);
-                speed = (clock_get_frequency(APP_MOTOR_CLK) / cycle_snap1) * PULSE0_NUM * 360 / 4096;
+                speed = (clock_get_frequency(APP_MOTOR_CLK) / cycle_snap1) * PULSE0_NUM * 360 / APP_ENCODER_PHASE_COUNT_PER_REV;
                 printf("pulse0 --- cycle_snap1: %#10x, spd: %d deg/s,\n", cycle_snap1, speed);
             }
         }
@@ -81,9 +84,9 @@ int main(void)
             cycle_snap0 = qeiv2_get_pulse1_cycle_snap0(APP_QEI_BASE);
             cycle_snap1 = qeiv2_get_pulse1_cycle_snap1(APP_QEI_BASE);
             if ((cycle_snap0 != 0) && (cycle_snap1 != 0)) {
-                speed = (clock_get_frequency(APP_MOTOR_CLK) / cycle_snap0) * PULSE1_NUM * 360 / 4096;
+                speed = (clock_get_frequency(APP_MOTOR_CLK) / cycle_snap0) * PULSE1_NUM * 360 / APP_ENCODER_PHASE_COUNT_PER_REV;
                 printf("pulse1 --- cycle_snap0: %#10x, spd: %d deg/s,\n", cycle_snap0, speed);
-                speed = (clock_get_frequency(APP_MOTOR_CLK) / cycle_snap1) * PULSE1_NUM * 360 / 4096;
+                speed = (clock_get_frequency(APP_MOTOR_CLK) / cycle_snap1) * PULSE1_NUM * 360 / APP_ENCODER_PHASE_COUNT_PER_REV;
                 printf("pulse1 --- cycle_snap1: %#10x, spd: %d deg/s,\n", cycle_snap1, speed);
             }
         }
@@ -95,11 +98,11 @@ int main(void)
             cycle_snap0 = qeiv2_get_cycle0_pulse0cycle_snap0(APP_QEI_BASE);
             cycle_snap1 = qeiv2_get_cycle0_pulse0cycle_snap1(APP_QEI_BASE);
             if ((pulse_snap0 != 0xFFFFFFFF) && (cycle_snap0 != 0)) {
-                speed = (clock_get_frequency(APP_MOTOR_CLK) / cycle_snap0) * pulse_snap0 * 360 / 4096;
+                speed = (clock_get_frequency(APP_MOTOR_CLK) / cycle_snap0) * pulse_snap0 * 360 / APP_ENCODER_PHASE_COUNT_PER_REV;
                 printf("cycle0 --- pulse_snap0: %#10x, cylce_snap0: %#10x, spd : %d deg/s\n", pulse_snap0, cycle_snap0, speed);
             }
             if ((pulse_snap1 != 0xFFFFFFFF) && (cycle_snap1 != 0)) {
-                speed = (clock_get_frequency(APP_MOTOR_CLK) / cycle_snap1) * pulse_snap1 * 360 / 4096;
+                speed = (clock_get_frequency(APP_MOTOR_CLK) / cycle_snap1) * pulse_snap1 * 360 / APP_ENCODER_PHASE_COUNT_PER_REV;
                 printf("cycle0 --- pulse_snap1: %#10x, cylce_snap1: %#10x, spd : %d deg/s\n", pulse_snap1, cycle_snap1, speed);
             }
         }
@@ -111,11 +114,11 @@ int main(void)
             cycle_snap0 = qeiv2_get_cycle1_pulse1cycle_snap0(APP_QEI_BASE);
             cycle_snap1 = qeiv2_get_cycle1_pulse1cycle_snap1(APP_QEI_BASE);
             if ((pulse_snap0 != 0xFFFFFFFF) && (cycle_snap0 != 0)) {
-                speed = (clock_get_frequency(APP_MOTOR_CLK) / cycle_snap0) * pulse_snap0 * 360 / 4096;
+                speed = (clock_get_frequency(APP_MOTOR_CLK) / cycle_snap0) * pulse_snap0 * 360 / APP_ENCODER_PHASE_COUNT_PER_REV;
                 printf("cycle0 --- pulse_snap0: %#10x, cylce_snap0: %#10x, spd : %d deg/s\n", pulse_snap0, cycle_snap0, speed);
             }
             if ((pulse_snap1 != 0xFFFFFFFF) && (cycle_snap1 != 0)) {
-                speed = (clock_get_frequency(APP_MOTOR_CLK) / cycle_snap1) * pulse_snap1 * 360 / 4096;
+                speed = (clock_get_frequency(APP_MOTOR_CLK) / cycle_snap1) * pulse_snap1 * 360 / APP_ENCODER_PHASE_COUNT_PER_REV;
                 printf("cycle0 --- pulse_snap1: %#10x, cylce_snap1: %#10x, spd : %d deg/s\n", pulse_snap1, cycle_snap1, speed);
             }
         }
@@ -161,13 +164,13 @@ static void qeiv2_init(void)
     qeiv2_set_work_mode(APP_QEI_BASE, qeiv2_work_mode_abz);
     qeiv2_select_spd_tmr_register_content(APP_QEI_BASE, qeiv2_spd_tmr_as_spd_tm);
     qeiv2_config_z_phase_counter_mode(APP_QEI_BASE, qeiv2_z_count_inc_on_phase_count_max);
-    qeiv2_config_phmax_phparam(APP_QEI_BASE, 4096);
+    qeiv2_config_phmax_phparam(APP_QEI_BASE, APP_ENCODER_PHASE_COUNT_PER_REV);
     qeiv2_pause_pos_counter_on_fault(APP_QEI_BASE, true);
     qeiv2_config_abz_uvw_signal_edge(APP_QEI_BASE, true, true, false, true, true);
 
     intc_m_enable_irq_with_priority(APP_QEI_IRQ, 1);
 
-    phcnt_cmp_config.phcnt_cmp_value = 4000;
+    phcnt_cmp_config.phcnt_cmp_value = APP_ENCODER_PHASE_COUNT_PER_REV / 2;
     phcnt_cmp_config.ignore_rotate_dir = true;
     phcnt_cmp_config.ignore_zcmp = true;
     qeiv2_config_phcnt_cmp_match_condition(APP_QEI_BASE, &phcnt_cmp_config);

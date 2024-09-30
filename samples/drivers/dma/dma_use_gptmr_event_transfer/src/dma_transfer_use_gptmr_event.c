@@ -120,8 +120,10 @@ static void gptmr_config(gptmr_dma_request_event_t event)
     if (event == gptmr_dma_request_on_cmp0) {
         config.enable_cmp_output = true;
         config.cmp[0] = gptmr_freq / 1000 * APP_BOARD_CMP_MS;
+        config.cmp[1] = config.reload;
     } else if (event == gptmr_dma_request_on_cmp1) {
         config.enable_cmp_output = true;
+        config.cmp[0] = config.reload;
         config.cmp[1] = gptmr_freq / 1000 * APP_BOARD_CMP_MS;
     } else if (event == gptmr_dma_request_on_input_signal_toggle) {
         init_gptmr_pins(APP_BOARD_GPTMR);

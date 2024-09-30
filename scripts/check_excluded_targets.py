@@ -17,7 +17,7 @@ def unify_target_name(name):
 
 def get_excluded_targets(input_yml):
     excluded = []
-    with open(input_yml, "r") as stream:
+    with open(input_yml, "r", encoding="utf-8", errors="ignore") as stream:
         try:
             info = yaml.safe_load(stream)
             if not info is None and EXCLUDED_TARGETS in info.keys():

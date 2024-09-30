@@ -7,7 +7,7 @@
 
 #include "usbd_core.h"
 #include "usbd_msc.h"
-#include "usbd_cdc.h"
+#include "usbd_cdc_acm.h"
 #include "usbd_hid.h"
 #include "board.h"
 #include "hpm_gpio_drv.h"

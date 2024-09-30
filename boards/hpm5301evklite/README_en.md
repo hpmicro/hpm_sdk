@@ -65,8 +65,8 @@ By default, UART0 is used for console printing. Connect UART0.TXD (J3.36) and UA
 
 | Function | Position |
 | -------- | -------- |
-| I2C2.SCL | J3[5]    |
-| I2C2.SDA | J3[3]    |
+| I2C3.SCL | J3[28]    |
+| I2C3.SDA | J3[27]    |
 
 - ACMP Pin:
 
@@ -96,11 +96,11 @@ By default, UART0 is used for console printing. Connect UART0.TXD (J3.36) and UA
 
 | Function      | Position | Remark   |
 | ------------- | -----    | ------  |
-| GPTMR0.CAPT_1 | J3[32]    |
-| GPTMR0.COMP_1 | J5[3]    | Please disconnect debug probe when this pin is used as GPTMR, since its default function is JTAG TRST.|
+| GPTMR0.CAPT_1 | J3[3]  |
+| GPTMR0.COMP_1 | J3[5]  |
 | GPTMR0.COMP_3 | J3[8]    | BCLK of i2s emulation |
 | GPTMR0.COMP_2 | J3[26]   | LRCK of i2s emulation |
-| GPTMR1.COMP_3 | J3[28]    | MLCK of i2s emulation |
+| GPTMR1.COMP_1 | J3[7]    | MLCK of i2s emulation |
 
 - CS Pin of i2s emulation
 

@@ -123,6 +123,7 @@ typedef enum {
 typedef struct {
     uint8_t res;
     uint8_t conv_mode;
+    uint8_t diff_sel;
     uint32_t adc_clk_div;
     bool wait_dis;
     bool sel_sync_ahb;

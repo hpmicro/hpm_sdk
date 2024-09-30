@@ -228,7 +228,7 @@
 #define mix_nn_mat_mult_kernel_s8_s16_reordered_8mul b28_nn_mat_mult_kernel_s8_s16_reordered_8mul
 	#endif//OUTPUT
 #else
-	#define mix_nn_mat_mult_kernel_s8_s16_reordered hpm_nn_mat_mult_kernel_s8_s16_reordered
+	#define mix_nn_mat_mult_kernel_s8_s16_reordered hpm_nn_mat_mult_kernel_s8_s16_reordered_8mul
 	#define mix_nn_mat_mult_kernel_s8_s16_reordered_8mul hpm_nn_mat_mult_kernel_s8_s16_reordered_8mul
 #endif
 

@@ -41,7 +41,9 @@ typedef struct {
     __R  uint8_t  RESERVED7[352];              /* 0x6A0 - 0x7FF: Reserved */
     __RW uint32_t PWM_DELAY_CFG;               /* 0x800: pwm delay chain config register */
     __RW uint32_t PWM_CALIB_CFG;               /* 0x804: pwm delay chain calibration control register */
-    __R  uint8_t  RESERVED8[2040];             /* 0x808 - 0xFFF: Reserved */
+    __R  uint8_t  RESERVED8[8];                /* 0x808 - 0x80F: Reserved */
+    __R  uint32_t PWM_CALIB_STATUS0;           /* 0x810:  */
+    __R  uint8_t  RESERVED9[2028];             /* 0x814 - 0xFFF: Reserved */
     __RW uint32_t TRGOCFG[242];                /* 0x1000 - 0x13C4: Trigger manager output configure register */
 } TRGM_Type;
 
@@ -755,6 +757,7 @@ typedef struct {
 /*
  * CALIB_SW_START (RW)
  *
+ * set to trigger calibration once by software, need to be cleared first before setting it
  */
 #define TRGM_PWM_CALIB_CFG_CALIB_SW_START_MASK (0x8000U)
 #define TRGM_PWM_CALIB_CFG_CALIB_SW_START_SHIFT (15U)
@@ -762,13 +765,30 @@ typedef struct {
 #define TRGM_PWM_CALIB_CFG_CALIB_SW_START_GET(x) (((uint32_t)(x) & TRGM_PWM_CALIB_CFG_CALIB_SW_START_MASK) >> TRGM_PWM_CALIB_CFG_CALIB_SW_START_SHIFT)
 
 /*
- * CALIB_PERIOD (RW)
+ * CALIB_HW_ENABLE (RW)
  *
  */
-#define TRGM_PWM_CALIB_CFG_CALIB_PERIOD_MASK (0x1FU)
-#define TRGM_PWM_CALIB_CFG_CALIB_PERIOD_SHIFT (0U)
-#define TRGM_PWM_CALIB_CFG_CALIB_PERIOD_SET(x) (((uint32_t)(x) << TRGM_PWM_CALIB_CFG_CALIB_PERIOD_SHIFT) & TRGM_PWM_CALIB_CFG_CALIB_PERIOD_MASK)
-#define TRGM_PWM_CALIB_CFG_CALIB_PERIOD_GET(x) (((uint32_t)(x) & TRGM_PWM_CALIB_CFG_CALIB_PERIOD_MASK) >> TRGM_PWM_CALIB_CFG_CALIB_PERIOD_SHIFT)
+#define TRGM_PWM_CALIB_CFG_CALIB_HW_ENABLE_MASK (0x80U)
+#define TRGM_PWM_CALIB_CFG_CALIB_HW_ENABLE_SHIFT (7U)
+#define TRGM_PWM_CALIB_CFG_CALIB_HW_ENABLE_SET(x) (((uint32_t)(x) << TRGM_PWM_CALIB_CFG_CALIB_HW_ENABLE_SHIFT) & TRGM_PWM_CALIB_CFG_CALIB_HW_ENABLE_MASK)
+#define TRGM_PWM_CALIB_CFG_CALIB_HW_ENABLE_GET(x) (((uint32_t)(x) & TRGM_PWM_CALIB_CFG_CALIB_HW_ENABLE_MASK) >> TRGM_PWM_CALIB_CFG_CALIB_HW_ENABLE_SHIFT)
+
+/* Bitfield definition for register: PWM_CALIB_STATUS0 */
+/*
+ * CALIB_ON (RO)
+ *
+ */
+#define TRGM_PWM_CALIB_STATUS0_CALIB_ON_MASK (0x80000000UL)
+#define TRGM_PWM_CALIB_STATUS0_CALIB_ON_SHIFT (31U)
+#define TRGM_PWM_CALIB_STATUS0_CALIB_ON_GET(x) (((uint32_t)(x) & TRGM_PWM_CALIB_STATUS0_CALIB_ON_MASK) >> TRGM_PWM_CALIB_STATUS0_CALIB_ON_SHIFT)
+
+/*
+ * CALIB_RESULT (RO)
+ *
+ */
+#define TRGM_PWM_CALIB_STATUS0_CALIB_RESULT_MASK (0x3FU)
+#define TRGM_PWM_CALIB_STATUS0_CALIB_RESULT_SHIFT (0U)
+#define TRGM_PWM_CALIB_STATUS0_CALIB_RESULT_GET(x) (((uint32_t)(x) & TRGM_PWM_CALIB_STATUS0_CALIB_RESULT_MASK) >> TRGM_PWM_CALIB_STATUS0_CALIB_RESULT_SHIFT)
 
 /* Bitfield definition for register array: TRGOCFG */
 /*

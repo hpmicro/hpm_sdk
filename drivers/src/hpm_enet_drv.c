@@ -41,11 +41,16 @@ static void enet_mode_init(ENET_Type *ptr, uint32_t intr)
 
 static int enet_dma_init(ENET_Type *ptr, enet_desc_t *desc, uint32_t intr, uint8_t pbl)
 {
+    uint32_t retry_cnt = 0;
+
     /* generate software reset */
     ptr->DMA_BUS_MODE |= ENET_DMA_BUS_MODE_SWR_MASK;
 
     /* wait for the completion of reset process */
     while (ENET_DMA_BUS_MODE_SWR_GET(ptr->DMA_BUS_MODE)) {
+        if (retry_cnt++ > ENET_RETRY_DMA_INIT_CNT) {
+            return false;
+        }
     }
 
     /* initialize bus mode register */
@@ -126,7 +131,7 @@ static int enet_mac_init(ENET_Type *ptr, enet_mac_config_t *config, enet_inf_typ
     }
 #endif
     else {
-        return status_invalid_argument;
+        return false;
     }
 
     ptr->MACCFG |= ENET_MACCFG_DM_MASK;
@@ -144,12 +149,6 @@ static int enet_mac_init(ENET_Type *ptr, enet_mac_config_t *config, enet_inf_typ
     return true;
 }
 
-static void enet_mask_interrupt_event(ENET_Type *ptr, uint32_t mask)
-{
-    /* mask the specified interrupts */
-    ptr->INTR_MASK |= mask;
-}
-
 /*---------------------------------------------------------------------
  * Driver API
  *---------------------------------------------------------------------
@@ -157,6 +156,16 @@ static void enet_mask_interrupt_event(ENET_Type *ptr, uint32_t mask)
 uint32_t enet_get_interrupt_status(ENET_Type *ptr)
 {
     return ptr->INTR_STATUS;
+}
+
+void enet_mask_interrupt_event(ENET_Type *ptr, uint32_t mask)
+{
+    ptr->INTR_MASK |= mask;
+}
+
+void enet_unmask_interrupt_event(ENET_Type *ptr, uint32_t mask)
+{
+    ptr->INTR_MASK &= ~mask;
 }
 
 void enet_mask_mmc_rx_interrupt_event(ENET_Type *ptr, uint32_t mask)
@@ -240,10 +249,14 @@ hpm_stat_t enet_controller_init(ENET_Type *ptr, enet_inf_type_t inf_type, enet_d
     enet_intf_selection(ptr, inf_type);
 
     /* initialize DMA */
-    enet_dma_init(ptr, desc, int_config->int_enable, config->dma_pbl);
+    if (enet_dma_init(ptr, desc, int_config->int_enable, config->dma_pbl) == false) {
+        return status_fail;
+    }
 
     /* initialize MAC */
-    enet_mac_init(ptr, config, inf_type);
+    if (enet_mac_init(ptr, config, inf_type) == false) {
+        return status_fail;
+    }
 
     /* mask the specified interrupts */
     enet_mask_interrupt_event(ptr, int_config->int_mask);
@@ -427,7 +440,7 @@ uint32_t enet_prepare_tx_desc_with_ts_record(ENET_Type *ptr,
 {
     uint32_t buf_count = 0, size = 0, i = 0;
     uint32_t retry_cnt = ENET_RETRY_CNT;
-    enet_tx_desc_t *dma_tx_desc;
+    volatile enet_tx_desc_t *dma_tx_desc;
     enet_tx_desc_t *tx_desc_list_cur = *parent_tx_desc_list_cur;
 
     if (tx_buff_size == 0) {
@@ -532,7 +545,7 @@ uint32_t enet_prepare_tx_desc_with_ts_record(ENET_Type *ptr,
         }
     }
 
-    tx_desc_list_cur = dma_tx_desc;
+    tx_desc_list_cur = (enet_tx_desc_t *)dma_tx_desc;
     *parent_tx_desc_list_cur = tx_desc_list_cur;
 
     return ENET_SUCCESS;
@@ -541,7 +554,7 @@ uint32_t enet_prepare_tx_desc_with_ts_record(ENET_Type *ptr,
 uint32_t enet_prepare_tx_desc(ENET_Type *ptr, enet_tx_desc_t **parent_tx_desc_list_cur, enet_tx_control_config_t *config, uint16_t frame_length, uint16_t tx_buff_size)
 {
     uint32_t buf_count = 0, size = 0, i = 0;
-    enet_tx_desc_t *dma_tx_desc;
+    volatile enet_tx_desc_t *dma_tx_desc;
     enet_tx_desc_t *tx_desc_list_cur = *parent_tx_desc_list_cur;
 
     if (tx_buff_size == 0) {
@@ -615,7 +628,7 @@ uint32_t enet_prepare_tx_desc(ENET_Type *ptr, enet_tx_desc_t **parent_tx_desc_li
         }
     }
 
-    tx_desc_list_cur = dma_tx_desc;
+    tx_desc_list_cur = (enet_tx_desc_t *)dma_tx_desc;
     *parent_tx_desc_list_cur = tx_desc_list_cur;
 
     return ENET_SUCCESS;
@@ -624,7 +637,7 @@ uint32_t enet_prepare_tx_desc(ENET_Type *ptr, enet_tx_desc_t **parent_tx_desc_li
 uint32_t enet_prepare_transmission_descriptors(ENET_Type *ptr, enet_tx_desc_t **parent_tx_desc_list_cur, uint16_t frame_length, uint16_t tx_buff_size)
 {
     uint32_t buf_count = 0, size = 0, i = 0;
-    enet_tx_desc_t *dma_tx_desc;
+    volatile enet_tx_desc_t *dma_tx_desc;
     enet_tx_desc_t  *tx_desc_list_cur = *parent_tx_desc_list_cur;
 
     if (tx_buff_size == 0) {
@@ -691,7 +704,7 @@ uint32_t enet_prepare_transmission_descriptors(ENET_Type *ptr, enet_tx_desc_t **
         }
     }
 
-    tx_desc_list_cur = dma_tx_desc;
+    tx_desc_list_cur = (enet_tx_desc_t *)dma_tx_desc;
     *parent_tx_desc_list_cur = tx_desc_list_cur;
 
     return ENET_SUCCESS;
@@ -858,8 +871,6 @@ void enet_set_snapshot_ptp_message_type(ENET_Type *ptr, enet_ts_ss_ptp_msg_t ts_
 
 void enet_init_ptp(ENET_Type *ptr, enet_ptp_config_t *config)
 {
-    enet_mask_interrupt_event(ptr, ENET_INTR_STATUS_TSIS_MASK);
-
     /* select the resolution of nanosecond */
     ptr->TS_CTRL &= ~ENET_TS_CTRL_TSCTRLSSR_MASK;
     ptr->TS_CTRL |= ENET_TS_CTRL_TSCTRLSSR_SET(config->timestamp_rollover_mode);
@@ -943,7 +954,7 @@ hpm_stat_t enet_set_ppsx_config(ENET_Type *ptr, enet_pps_cmd_config_t *cmd_cfg, 
         ptr->PPS_CTRL |= ENET_PPS_CTRL_PPSEN0_MASK;
     }
 
-#if ENET_SOC_PPS1_EN
+#if defined(HPM_IP_FEATURE_ENET_HAS_PPSEN1) && HPM_IP_FEATURE_ENET_HAS_PPSEN1
     if (idx == enet_pps_1) {
         ptr->PPS_CTRL |= ENET_PPS_CTRL_PPSEN1_MASK;
     }
@@ -958,4 +969,34 @@ hpm_stat_t enet_set_ppsx_config(ENET_Type *ptr, enet_pps_cmd_config_t *cmd_cfg, 
     ptr->PPS_CTRL &= ~(ENET_PPS_CMD_MASK << ((idx + 1) << ENET_PPS_CMD_OFS_FAC));
 
     return status_success;
+}
+
+void enet_enable_ptp_auxiliary_snapshot(ENET_Type *ptr, enet_ptp_auxi_snapshot_trigger_idx_t idx)
+{
+    ptr->TS_CTRL |= idx;
+    ptr->TS_CTRL |= ENET_TS_CTRL_ATSFC_MASK;
+
+    while (ENET_TS_CTRL_ATSFC_GET(ptr->TS_CTRL)) {
+
+    }
+}
+
+void enet_disable_ptp_auxiliary_snapshot(ENET_Type *ptr, enet_ptp_auxi_snapshot_trigger_idx_t idx)
+{
+    ptr->TS_CTRL &= ~idx;
+}
+
+void enet_get_ptp_auxi_snapshot_status(ENET_Type *ptr, enet_ptp_auxi_snapshot_status_t *status)
+{
+    uint32_t ts_status = ptr->TS_STATUS;
+
+    status->auxi_snapshot_miss  = ENET_TS_STATUS_ATSSTM_GET(ts_status);
+    status->auxi_snapshot_count = ENET_TS_STATUS_ATSNS_GET(ts_status);
+    status->auxi_snapshot_id    = ENET_TS_STATUS_ATSSTN_GET(ts_status);
+}
+
+void enet_get_ptp_auxi_timestamp(ENET_Type *ptr, enet_ptp_ts_auxi_snapshot_t *timestamp)
+{
+    timestamp->nsec = ptr->AUX_TS_NSEC;
+    timestamp->sec  = ptr->AUX_TS_SEC;
 }

@@ -167,9 +167,12 @@ hpm_stat_t spi_read_data(SPI_Type *ptr, uint8_t data_len_in_bytes, uint8_t *buff
                 for (uint8_t i = 0; i < data_len_in_bytes; i++) {
                     *(buff++) = (uint8_t)(temp >> (i * 8));
                 }
+                /* transfer count increment */
+                transferred++;
+                if (transferred >= count) {
+                    break;
+                }
             }
-            /* transfer count increment */
-            transferred += rx_valid_size;
             retry = 0;
         } else {
             if (retry > HPM_SPI_DRV_DEFAULT_RETRY_COUNT) {
@@ -289,7 +292,7 @@ void spi_slave_get_default_format_config(spi_format_config_t *config)
     config->common_config.data_merge = false;
     config->common_config.mosi_bidir = false;
     config->common_config.lsb = false;
-    config->common_config.mode = spi_master_mode;
+    config->common_config.mode = spi_slave_mode;
     config->common_config.cpol = spi_sclk_high_idle;
     config->common_config.cpha = spi_sclk_sampling_even_clk_edges;
 }
@@ -327,8 +330,8 @@ void spi_slave_get_default_control_config(spi_control_config_t *config)
 hpm_stat_t spi_master_timing_init(SPI_Type *ptr, spi_timing_config_t *config)
 {
     uint8_t sclk_div;
-    uint8_t div_remainder;
-    uint8_t div_integer;
+    uint32_t div_remainder;
+    uint32_t div_integer;
     if (config->master_config.sclk_freq_in_hz == 0) {
         return status_invalid_argument;
     }
@@ -336,7 +339,8 @@ hpm_stat_t spi_master_timing_init(SPI_Type *ptr, spi_timing_config_t *config)
     if (config->master_config.clk_src_freq_in_hz > config->master_config.sclk_freq_in_hz) {
         div_remainder = (config->master_config.clk_src_freq_in_hz % config->master_config.sclk_freq_in_hz);
         div_integer  = (config->master_config.clk_src_freq_in_hz / config->master_config.sclk_freq_in_hz);
-        if ((div_remainder != 0) || ((div_integer % 2) != 0)) {
+        if ((div_remainder != 0) || ((div_integer % 2) != 0) ||
+            (div_integer > 510)) {  /* div_integer must be less than or equal to ((SCLK_DIV + 1) * 2), SCLK_DIV max value is 0xFE */
             return status_invalid_argument;
         }
         sclk_div = (div_integer / 2) - 1;
@@ -365,13 +369,20 @@ void spi_format_init(SPI_Type *ptr, spi_format_config_t *config)
 
 hpm_stat_t spi_control_init(SPI_Type *ptr, spi_control_config_t *config, uint32_t wcount, uint32_t rcount)
 {
-#if defined (SPI_SOC_TRANSFER_COUNT_MAX) && (SPI_SOC_TRANSFER_COUNT_MAX == 512)
+    uint8_t mode;
+#if defined(SPI_SOC_TRANSFER_COUNT_MAX) && (SPI_SOC_TRANSFER_COUNT_MAX == 512)
     if ((wcount > SPI_SOC_TRANSFER_COUNT_MAX) || (rcount > SPI_SOC_TRANSFER_COUNT_MAX)) {
         return status_invalid_argument;
     }
 #endif
+
+    /* read spi control mode */
+    mode = (ptr->TRANSFMT & SPI_TRANSFMT_SLVMODE_MASK) >> SPI_TRANSFMT_SLVMODE_SHIFT;
+
     /* slave data only mode only works on write read together transfer mode */
-    if (config->slave_config.slave_data_only == true && config->common_config.trans_mode != spi_trans_write_read_together) {
+    if ((config->slave_config.slave_data_only == true) &&
+        (config->common_config.trans_mode != spi_trans_write_read_together) &&
+        (mode == spi_slave_mode)) {
         return status_invalid_argument;
     }
 
@@ -410,6 +421,14 @@ hpm_stat_t spi_transfer(SPI_Type *ptr,
     hpm_stat_t stat = status_fail;
     uint8_t mode, data_len_in_bytes, trans_mode;
 
+    /* read spi control mode */
+    mode = (ptr->TRANSFMT & SPI_TRANSFMT_SLVMODE_MASK) >> SPI_TRANSFMT_SLVMODE_SHIFT;
+
+    /* When acting as a host, it is necessary to determine whether the SPI bus is active to ensure that only one device accesses the bus. */
+    if ((mode == spi_master_mode) && (spi_is_active(ptr) == true)) {
+        return status_spi_master_busy;
+    }
+
     stat = spi_control_init(ptr, config, wcount, rcount);
     if (stat != status_success) {
         return stat;
@@ -417,9 +436,6 @@ hpm_stat_t spi_transfer(SPI_Type *ptr,
 
     /* read data length */
     data_len_in_bytes = spi_get_data_length_in_bytes(ptr);
-
-    /* read spi control mode */
-    mode = (ptr->TRANSFMT & SPI_TRANSFMT_SLVMODE_MASK) >> SPI_TRANSFMT_SLVMODE_SHIFT;
 
     /* read spi transfer mode */
     trans_mode = config->common_config.trans_mode;
@@ -475,6 +491,14 @@ hpm_stat_t spi_setup_dma_transfer(SPI_Type *ptr,
     hpm_stat_t stat = status_fail;
     uint8_t mode;
 
+    /* read spi control mode */
+    mode = (ptr->TRANSFMT & SPI_TRANSFMT_SLVMODE_MASK) >> SPI_TRANSFMT_SLVMODE_SHIFT;
+
+    /* When acting as a host, it is necessary to determine whether the SPI bus is active to ensure that only one device accesses the bus. */
+    if ((mode == spi_master_mode) && (spi_is_active(ptr) == true)) {
+        return status_spi_master_busy;
+    }
+
     stat = spi_control_init(ptr, config, wcount, rcount);
     if (stat != status_success) {
         return stat;
@@ -486,9 +510,6 @@ hpm_stat_t spi_setup_dma_transfer(SPI_Type *ptr,
     if (config->common_config.rx_dma_enable) {
         ptr->CTRL |= SPI_CTRL_RXDMAEN_MASK;
     }
-
-    /* read spi control mode */
-    mode = (ptr->TRANSFMT & SPI_TRANSFMT_SLVMODE_MASK) >> SPI_TRANSFMT_SLVMODE_SHIFT;
 
     /* address phase */
     stat = spi_write_address(ptr, mode, config, addr);

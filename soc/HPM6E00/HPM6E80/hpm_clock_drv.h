@@ -76,6 +76,7 @@ typedef enum _clock_sources {
 
     clk_i2s_src_aud0 = MAKE_CLK_SRC(CLK_SRC_GROUP_I2S, 0),
     clk_i2s_src_aud1 = MAKE_CLK_SRC(CLK_SRC_GROUP_I2S, 0),
+    clk_i2s_src_audn = MAKE_CLK_SRC(CLK_SRC_GROUP_I2S, 0),    /* clk_i2s_src_audn is equal to clk_i2s_src_aud0 and clk_i2s_src_aud1, n is the num */
     clk_i2s_src_audx = MAKE_CLK_SRC(CLK_SRC_GROUP_I2S, 1),
 
     clk_wdg_src_ahb0 = MAKE_CLK_SRC(CLK_SRC_GROUP_EWDG, 0),

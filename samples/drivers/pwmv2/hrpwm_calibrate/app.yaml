@@ -1,0 +1,3 @@
+dependency:
+  - pwmv2
+  - ip_feature_trgm_hrpwm_calibration_2

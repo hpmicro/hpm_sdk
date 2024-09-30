@@ -34,10 +34,6 @@ sdk_nds_compile_options(-mcpu=d45)
 sdk_zcc_compile_options(-mtune=andes-kavalan)
 sdk_zcc_ld_options(-mtune=andes-kavalan)
 
-if(${TOOLCHAIN_VARIANT} EQUAL "zcc")
-    set(RV_ARCH "${RV_ARCH}xandes" PARENT_SCOPE)
-endif()
-
 set(SOC_LINKER_SCRIPT "" PARENT_SCOPE)
 if(NOT DEFINED USE_CUSTOM_LINKER)
     if(${LINK_TO_FLASH})

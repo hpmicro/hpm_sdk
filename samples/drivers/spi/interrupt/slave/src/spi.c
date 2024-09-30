@@ -23,7 +23,7 @@ uint32_t receive_count;
 void spi_isr(void)
 {
     volatile uint32_t irq_status;
-    uint8_t data_len_in_bytes;
+    volatile uint8_t data_len_in_bytes;
     hpm_stat_t stat;
 
     data_len_in_bytes = spi_get_data_length_in_bytes(TEST_SPI);

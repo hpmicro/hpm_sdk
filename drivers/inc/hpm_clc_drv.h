@@ -10,6 +10,7 @@
 
 #include "hpm_common.h"
 #include "hpm_clc_regs.h"
+#include "hpm_soc_feature.h"
 
 /**
  * @brief CLC driver APIs
@@ -416,6 +417,41 @@ void clc_config_param(CLC_Type *clc, clc_chn_t chn, clc_param_config_t *param);
  * @retval status_success operation is successful
  */
 hpm_stat_t clc_config_coeff(CLC_Type *clc, clc_chn_t chn, clc_coeff_zone_t zone, clc_coeff_config_t *coeff);
+
+#if defined(HPM_IP_FEATURE_CLC_DECOUPLING) && HPM_IP_FEATURE_CLC_DECOUPLING
+/**
+ * @brief CLC software inject speed value
+ * @param[in] ptr CLC base address
+ * @param[in] value CLC speed value
+ */
+static inline void clc_sw_inject_speed_value(CLC_Type *clc, int32_t value)
+{
+    clc->VDVQ_CHAN[clc_vd_chn].SPEED_SW = value;
+}
+
+/**
+ * @brief CLC set decoupling scaling
+ * @param[in] ptr CLC base address
+ * @param[in] chn CLC channel, @ref clc_chn_t
+ * @param[in] left_shift_value CLC decoupling scaling value, decoupling calcuation result will be left shifted by this value.
+ */
+static inline void clc_set_decoupling_scaling(CLC_Type *clc, clc_chn_t chn, uint32_t left_shift_value)
+{
+    clc->VDVQ_CHAN[chn].DECOUPLE_SCALING = left_shift_value;
+}
+
+/**
+ * @brief CLC set decoupling inductance and ke value
+ * @param[in] ptr CLC base address
+ * @param[in] chn CLC channel, @ref clc_chn_t
+ * @param[in] ind CLC decoupling inductance value, value must be between -1 ~ 1.
+ * @param[in] ke CLC decoupling Ke value, value must be between -1 ~ 1.
+ *
+ * @retval status_invalid_argument some parameters are invalid
+ * @retval status_success operation is successful
+ */
+hpm_stat_t clc_set_decoupling_ind_ke(CLC_Type *clc, clc_chn_t chn, float ind, float ke);
+#endif
 
 /**
  * @brief CLC software inject dq adc value

@@ -117,7 +117,8 @@ typedef struct {
             __RW uint32_t INSTR0;              /* 0x318: Match instruction 0 */
             __RW uint32_t INSTR1;              /* 0x31C: Match instruction 1 */
         } IRQ;
-        __R  uint8_t  RESERVED0[224];          /* 0x320 - 0x3FF: Reserved */
+        __RW uint32_t DMA_EN;                  /* 0x320: DMA Enable */
+        __R  uint8_t  RESERVED0[220];          /* 0x324 - 0x3FF: Reserved */
     } CTRL[13];
     __RW uint32_t INSTR[256];                  /* 0x3400 - 0x37FC: Instructions */
     struct {
@@ -1767,7 +1768,8 @@ typedef struct {
 /*
  * DAT_SEL (RW)
  *
- * Data register sampled, each bit represent a data register
+ * Data register sampled, each bit represent a data register, select the DATA registers need to be updated when SAMPLE happens.
+ * Note: CRC register will be cleared automatically by SAMPLE if select the DATA register used for CRC.
  */
 #define SEI_CTRL_POS_SMP_DAT_DAT_SEL_MASK (0xFFFFFFFFUL)
 #define SEI_CTRL_POS_SMP_DAT_DAT_SEL_SHIFT (0U)
@@ -1950,7 +1952,8 @@ typedef struct {
 /*
  * DAT_SEL (RW)
  *
- * Data register sampled, each bit represent a data register
+ * Data register sampled, each bit represent a data register, select the DATA registers need to be updated when UPDATE happen.
+ * Note: CRC register will be cleared automatically by UPDATE if select the DATA register used for CRC.
  */
 #define SEI_CTRL_POS_UPD_DAT_DAT_SEL_MASK (0xFFFFFFFFUL)
 #define SEI_CTRL_POS_UPD_DAT_DAT_SEL_SHIFT (0U)
@@ -2932,6 +2935,267 @@ typedef struct {
 #define SEI_CTRL_IRQ_INSTR1_INSTR_SHIFT (0U)
 #define SEI_CTRL_IRQ_INSTR1_INSTR_SET(x) (((uint32_t)(x) << SEI_CTRL_IRQ_INSTR1_INSTR_SHIFT) & SEI_CTRL_IRQ_INSTR1_INSTR_MASK)
 #define SEI_CTRL_IRQ_INSTR1_INSTR_GET(x) (((uint32_t)(x) & SEI_CTRL_IRQ_INSTR1_INSTR_MASK) >> SEI_CTRL_IRQ_INSTR1_INSTR_SHIFT)
+
+/* Bitfield definition for register of struct array CTRL: DMA_EN */
+/*
+ * TRG_ERR3 (RW)
+ *
+ * Trigger3 failed
+ */
+#define SEI_CTRL_DMA_EN_TRG_ERR3_MASK (0x80000000UL)
+#define SEI_CTRL_DMA_EN_TRG_ERR3_SHIFT (31U)
+#define SEI_CTRL_DMA_EN_TRG_ERR3_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_TRG_ERR3_SHIFT) & SEI_CTRL_DMA_EN_TRG_ERR3_MASK)
+#define SEI_CTRL_DMA_EN_TRG_ERR3_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_TRG_ERR3_MASK) >> SEI_CTRL_DMA_EN_TRG_ERR3_SHIFT)
+
+/*
+ * TRG_ERR2 (RW)
+ *
+ * Trigger2 failed
+ */
+#define SEI_CTRL_DMA_EN_TRG_ERR2_MASK (0x40000000UL)
+#define SEI_CTRL_DMA_EN_TRG_ERR2_SHIFT (30U)
+#define SEI_CTRL_DMA_EN_TRG_ERR2_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_TRG_ERR2_SHIFT) & SEI_CTRL_DMA_EN_TRG_ERR2_MASK)
+#define SEI_CTRL_DMA_EN_TRG_ERR2_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_TRG_ERR2_MASK) >> SEI_CTRL_DMA_EN_TRG_ERR2_SHIFT)
+
+/*
+ * TRG_ERR1 (RW)
+ *
+ * Trigger1 failed
+ */
+#define SEI_CTRL_DMA_EN_TRG_ERR1_MASK (0x20000000UL)
+#define SEI_CTRL_DMA_EN_TRG_ERR1_SHIFT (29U)
+#define SEI_CTRL_DMA_EN_TRG_ERR1_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_TRG_ERR1_SHIFT) & SEI_CTRL_DMA_EN_TRG_ERR1_MASK)
+#define SEI_CTRL_DMA_EN_TRG_ERR1_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_TRG_ERR1_MASK) >> SEI_CTRL_DMA_EN_TRG_ERR1_SHIFT)
+
+/*
+ * TRG_ERR0 (RW)
+ *
+ * Trigger0 failed
+ */
+#define SEI_CTRL_DMA_EN_TRG_ERR0_MASK (0x10000000UL)
+#define SEI_CTRL_DMA_EN_TRG_ERR0_SHIFT (28U)
+#define SEI_CTRL_DMA_EN_TRG_ERR0_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_TRG_ERR0_SHIFT) & SEI_CTRL_DMA_EN_TRG_ERR0_MASK)
+#define SEI_CTRL_DMA_EN_TRG_ERR0_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_TRG_ERR0_MASK) >> SEI_CTRL_DMA_EN_TRG_ERR0_SHIFT)
+
+/*
+ * TRIGER3 (RW)
+ *
+ * Trigger3
+ */
+#define SEI_CTRL_DMA_EN_TRIGER3_MASK (0x8000000UL)
+#define SEI_CTRL_DMA_EN_TRIGER3_SHIFT (27U)
+#define SEI_CTRL_DMA_EN_TRIGER3_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_TRIGER3_SHIFT) & SEI_CTRL_DMA_EN_TRIGER3_MASK)
+#define SEI_CTRL_DMA_EN_TRIGER3_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_TRIGER3_MASK) >> SEI_CTRL_DMA_EN_TRIGER3_SHIFT)
+
+/*
+ * TRIGER2 (RW)
+ *
+ * Trigger2
+ */
+#define SEI_CTRL_DMA_EN_TRIGER2_MASK (0x4000000UL)
+#define SEI_CTRL_DMA_EN_TRIGER2_SHIFT (26U)
+#define SEI_CTRL_DMA_EN_TRIGER2_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_TRIGER2_SHIFT) & SEI_CTRL_DMA_EN_TRIGER2_MASK)
+#define SEI_CTRL_DMA_EN_TRIGER2_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_TRIGER2_MASK) >> SEI_CTRL_DMA_EN_TRIGER2_SHIFT)
+
+/*
+ * TRIGER1 (RW)
+ *
+ * Trigger1
+ */
+#define SEI_CTRL_DMA_EN_TRIGER1_MASK (0x2000000UL)
+#define SEI_CTRL_DMA_EN_TRIGER1_SHIFT (25U)
+#define SEI_CTRL_DMA_EN_TRIGER1_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_TRIGER1_SHIFT) & SEI_CTRL_DMA_EN_TRIGER1_MASK)
+#define SEI_CTRL_DMA_EN_TRIGER1_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_TRIGER1_MASK) >> SEI_CTRL_DMA_EN_TRIGER1_SHIFT)
+
+/*
+ * TRIGER0 (RW)
+ *
+ * Trigger0
+ */
+#define SEI_CTRL_DMA_EN_TRIGER0_MASK (0x1000000UL)
+#define SEI_CTRL_DMA_EN_TRIGER0_SHIFT (24U)
+#define SEI_CTRL_DMA_EN_TRIGER0_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_TRIGER0_SHIFT) & SEI_CTRL_DMA_EN_TRIGER0_MASK)
+#define SEI_CTRL_DMA_EN_TRIGER0_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_TRIGER0_MASK) >> SEI_CTRL_DMA_EN_TRIGER0_SHIFT)
+
+/*
+ * SMP_ERR (RW)
+ *
+ * Sample error
+ */
+#define SEI_CTRL_DMA_EN_SMP_ERR_MASK (0x100000UL)
+#define SEI_CTRL_DMA_EN_SMP_ERR_SHIFT (20U)
+#define SEI_CTRL_DMA_EN_SMP_ERR_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_SMP_ERR_SHIFT) & SEI_CTRL_DMA_EN_SMP_ERR_MASK)
+#define SEI_CTRL_DMA_EN_SMP_ERR_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_SMP_ERR_MASK) >> SEI_CTRL_DMA_EN_SMP_ERR_SHIFT)
+
+/*
+ * LATCH3 (RW)
+ *
+ * Latch3
+ */
+#define SEI_CTRL_DMA_EN_LATCH3_MASK (0x80000UL)
+#define SEI_CTRL_DMA_EN_LATCH3_SHIFT (19U)
+#define SEI_CTRL_DMA_EN_LATCH3_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_LATCH3_SHIFT) & SEI_CTRL_DMA_EN_LATCH3_MASK)
+#define SEI_CTRL_DMA_EN_LATCH3_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_LATCH3_MASK) >> SEI_CTRL_DMA_EN_LATCH3_SHIFT)
+
+/*
+ * LATCH2 (RW)
+ *
+ * Latch2
+ */
+#define SEI_CTRL_DMA_EN_LATCH2_MASK (0x40000UL)
+#define SEI_CTRL_DMA_EN_LATCH2_SHIFT (18U)
+#define SEI_CTRL_DMA_EN_LATCH2_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_LATCH2_SHIFT) & SEI_CTRL_DMA_EN_LATCH2_MASK)
+#define SEI_CTRL_DMA_EN_LATCH2_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_LATCH2_MASK) >> SEI_CTRL_DMA_EN_LATCH2_SHIFT)
+
+/*
+ * LATCH1 (RW)
+ *
+ * Latch1
+ */
+#define SEI_CTRL_DMA_EN_LATCH1_MASK (0x20000UL)
+#define SEI_CTRL_DMA_EN_LATCH1_SHIFT (17U)
+#define SEI_CTRL_DMA_EN_LATCH1_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_LATCH1_SHIFT) & SEI_CTRL_DMA_EN_LATCH1_MASK)
+#define SEI_CTRL_DMA_EN_LATCH1_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_LATCH1_MASK) >> SEI_CTRL_DMA_EN_LATCH1_SHIFT)
+
+/*
+ * LATCH0 (RW)
+ *
+ * Latch0
+ */
+#define SEI_CTRL_DMA_EN_LATCH0_MASK (0x10000UL)
+#define SEI_CTRL_DMA_EN_LATCH0_SHIFT (16U)
+#define SEI_CTRL_DMA_EN_LATCH0_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_LATCH0_SHIFT) & SEI_CTRL_DMA_EN_LATCH0_MASK)
+#define SEI_CTRL_DMA_EN_LATCH0_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_LATCH0_MASK) >> SEI_CTRL_DMA_EN_LATCH0_SHIFT)
+
+/*
+ * TIMEOUT (RW)
+ *
+ * Timeout
+ */
+#define SEI_CTRL_DMA_EN_TIMEOUT_MASK (0x2000U)
+#define SEI_CTRL_DMA_EN_TIMEOUT_SHIFT (13U)
+#define SEI_CTRL_DMA_EN_TIMEOUT_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_TIMEOUT_SHIFT) & SEI_CTRL_DMA_EN_TIMEOUT_MASK)
+#define SEI_CTRL_DMA_EN_TIMEOUT_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_TIMEOUT_MASK) >> SEI_CTRL_DMA_EN_TIMEOUT_SHIFT)
+
+/*
+ * TRX_ERR (RW)
+ *
+ * Transfer error
+ */
+#define SEI_CTRL_DMA_EN_TRX_ERR_MASK (0x1000U)
+#define SEI_CTRL_DMA_EN_TRX_ERR_SHIFT (12U)
+#define SEI_CTRL_DMA_EN_TRX_ERR_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_TRX_ERR_SHIFT) & SEI_CTRL_DMA_EN_TRX_ERR_MASK)
+#define SEI_CTRL_DMA_EN_TRX_ERR_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_TRX_ERR_MASK) >> SEI_CTRL_DMA_EN_TRX_ERR_SHIFT)
+
+/*
+ * INSTR1_END (RW)
+ *
+ * Instruction 1 end
+ */
+#define SEI_CTRL_DMA_EN_INSTR1_END_MASK (0x800U)
+#define SEI_CTRL_DMA_EN_INSTR1_END_SHIFT (11U)
+#define SEI_CTRL_DMA_EN_INSTR1_END_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_INSTR1_END_SHIFT) & SEI_CTRL_DMA_EN_INSTR1_END_MASK)
+#define SEI_CTRL_DMA_EN_INSTR1_END_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_INSTR1_END_MASK) >> SEI_CTRL_DMA_EN_INSTR1_END_SHIFT)
+
+/*
+ * INSTR0_END (RW)
+ *
+ * Instruction 0 end
+ */
+#define SEI_CTRL_DMA_EN_INSTR0_END_MASK (0x400U)
+#define SEI_CTRL_DMA_EN_INSTR0_END_SHIFT (10U)
+#define SEI_CTRL_DMA_EN_INSTR0_END_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_INSTR0_END_SHIFT) & SEI_CTRL_DMA_EN_INSTR0_END_MASK)
+#define SEI_CTRL_DMA_EN_INSTR0_END_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_INSTR0_END_MASK) >> SEI_CTRL_DMA_EN_INSTR0_END_SHIFT)
+
+/*
+ * PTR1_END (RW)
+ *
+ * Pointer 1 end
+ */
+#define SEI_CTRL_DMA_EN_PTR1_END_MASK (0x200U)
+#define SEI_CTRL_DMA_EN_PTR1_END_SHIFT (9U)
+#define SEI_CTRL_DMA_EN_PTR1_END_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_PTR1_END_SHIFT) & SEI_CTRL_DMA_EN_PTR1_END_MASK)
+#define SEI_CTRL_DMA_EN_PTR1_END_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_PTR1_END_MASK) >> SEI_CTRL_DMA_EN_PTR1_END_SHIFT)
+
+/*
+ * PTR0_END (RW)
+ *
+ * Pointer 0 end
+ */
+#define SEI_CTRL_DMA_EN_PTR0_END_MASK (0x100U)
+#define SEI_CTRL_DMA_EN_PTR0_END_SHIFT (8U)
+#define SEI_CTRL_DMA_EN_PTR0_END_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_PTR0_END_SHIFT) & SEI_CTRL_DMA_EN_PTR0_END_MASK)
+#define SEI_CTRL_DMA_EN_PTR0_END_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_PTR0_END_MASK) >> SEI_CTRL_DMA_EN_PTR0_END_SHIFT)
+
+/*
+ * INSTR1_ST (RW)
+ *
+ * Instruction 1 start
+ */
+#define SEI_CTRL_DMA_EN_INSTR1_ST_MASK (0x80U)
+#define SEI_CTRL_DMA_EN_INSTR1_ST_SHIFT (7U)
+#define SEI_CTRL_DMA_EN_INSTR1_ST_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_INSTR1_ST_SHIFT) & SEI_CTRL_DMA_EN_INSTR1_ST_MASK)
+#define SEI_CTRL_DMA_EN_INSTR1_ST_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_INSTR1_ST_MASK) >> SEI_CTRL_DMA_EN_INSTR1_ST_SHIFT)
+
+/*
+ * INSTR0_ST (RW)
+ *
+ * Instruction 0 start
+ */
+#define SEI_CTRL_DMA_EN_INSTR0_ST_MASK (0x40U)
+#define SEI_CTRL_DMA_EN_INSTR0_ST_SHIFT (6U)
+#define SEI_CTRL_DMA_EN_INSTR0_ST_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_INSTR0_ST_SHIFT) & SEI_CTRL_DMA_EN_INSTR0_ST_MASK)
+#define SEI_CTRL_DMA_EN_INSTR0_ST_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_INSTR0_ST_MASK) >> SEI_CTRL_DMA_EN_INSTR0_ST_SHIFT)
+
+/*
+ * PTR1_ST (RW)
+ *
+ * Pointer 1 start
+ */
+#define SEI_CTRL_DMA_EN_PTR1_ST_MASK (0x20U)
+#define SEI_CTRL_DMA_EN_PTR1_ST_SHIFT (5U)
+#define SEI_CTRL_DMA_EN_PTR1_ST_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_PTR1_ST_SHIFT) & SEI_CTRL_DMA_EN_PTR1_ST_MASK)
+#define SEI_CTRL_DMA_EN_PTR1_ST_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_PTR1_ST_MASK) >> SEI_CTRL_DMA_EN_PTR1_ST_SHIFT)
+
+/*
+ * PTR0_ST (RW)
+ *
+ * Pointer 0 start
+ */
+#define SEI_CTRL_DMA_EN_PTR0_ST_MASK (0x10U)
+#define SEI_CTRL_DMA_EN_PTR0_ST_SHIFT (4U)
+#define SEI_CTRL_DMA_EN_PTR0_ST_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_PTR0_ST_SHIFT) & SEI_CTRL_DMA_EN_PTR0_ST_MASK)
+#define SEI_CTRL_DMA_EN_PTR0_ST_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_PTR0_ST_MASK) >> SEI_CTRL_DMA_EN_PTR0_ST_SHIFT)
+
+/*
+ * WDOG (RW)
+ *
+ * Watch dog
+ */
+#define SEI_CTRL_DMA_EN_WDOG_MASK (0x4U)
+#define SEI_CTRL_DMA_EN_WDOG_SHIFT (2U)
+#define SEI_CTRL_DMA_EN_WDOG_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_WDOG_SHIFT) & SEI_CTRL_DMA_EN_WDOG_MASK)
+#define SEI_CTRL_DMA_EN_WDOG_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_WDOG_MASK) >> SEI_CTRL_DMA_EN_WDOG_SHIFT)
+
+/*
+ * EXCEPT (RW)
+ *
+ * Exception
+ */
+#define SEI_CTRL_DMA_EN_EXCEPT_MASK (0x2U)
+#define SEI_CTRL_DMA_EN_EXCEPT_SHIFT (1U)
+#define SEI_CTRL_DMA_EN_EXCEPT_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_EXCEPT_SHIFT) & SEI_CTRL_DMA_EN_EXCEPT_MASK)
+#define SEI_CTRL_DMA_EN_EXCEPT_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_EXCEPT_MASK) >> SEI_CTRL_DMA_EN_EXCEPT_SHIFT)
+
+/*
+ * STALL (RW)
+ *
+ * Stall
+ */
+#define SEI_CTRL_DMA_EN_STALL_MASK (0x1U)
+#define SEI_CTRL_DMA_EN_STALL_SHIFT (0U)
+#define SEI_CTRL_DMA_EN_STALL_SET(x) (((uint32_t)(x) << SEI_CTRL_DMA_EN_STALL_SHIFT) & SEI_CTRL_DMA_EN_STALL_MASK)
+#define SEI_CTRL_DMA_EN_STALL_GET(x) (((uint32_t)(x) & SEI_CTRL_DMA_EN_STALL_MASK) >> SEI_CTRL_DMA_EN_STALL_SHIFT)
 
 /* Bitfield definition for register array: INSTR */
 /*

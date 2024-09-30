@@ -27,7 +27,6 @@ int main(void)
 
     uart_enable_irq(HPM_PUART, uart_intr_rx_data_avail_or_timeout);
     intc_m_enable_irq_with_priority(IRQn_PUART, 1);
-    sysctl_enable_cpu0_wakeup_source_with_irq(HPM_SYSCTL, IRQn_PUART);
 
     prepare_soc_low_power();
     show_menu();

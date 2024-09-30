@@ -591,6 +591,21 @@ static inline void pwm_cmp_update_cmp_value(PWM_Type *pwm_x, uint8_t index,
         | PWM_CMP_CMP_SET(cmp) | PWM_CMP_XCMP_SET(ex_cmp);
 }
 
+/**
+ * @brief update pwm cmp value in order to recovery pwm fault
+ * The configured values need to be staggered to coincide with the moment when the pwm output changes,
+ * otherwise the recovery will be abnormal
+ *
+ * @param[in] pwm_x PWM base address, HPM_PWMx(x=0..n)
+ * @param[in] index cmp index (0..(PWM_SOC_CMP_MAX_COUNT-1))
+ * @param[in] cmp clock counter compare value
+ */
+static inline void pwm_fault_recovery_update_cmp_value(PWM_Type *pwm_x, uint8_t index,
+                                            uint32_t cmp)
+{
+    pwm_cmp_update_cmp_value(pwm_x, index, cmp, 0);
+}
+
 #if defined(PWM_SOC_HRPWM_SUPPORT) && PWM_SOC_HRPWM_SUPPORT
 /**
  * @brief update high-precision cmp value

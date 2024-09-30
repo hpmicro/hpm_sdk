@@ -881,8 +881,11 @@ INPUT                  = $(HPM_SDK_BASE)/docs/doxygen/mainpage.md \
                          $(HPM_SDK_BASE)/drivers/ \
                          $(HPM_SDK_BASE)/soc/ \
                          $(HPM_SDK_BASE)/arch/ \
+                         $(HPM_SDK_BASE)/components/ \
                          $(HPM_SDK_BASE)/utils/ \
                          $(HPM_SDK_BASE)/middleware/hpm_mcl/ \
+                         $(HPM_SDK_BASE)/middleware/hpm_mcl_v2/ \
+                         $(HPM_SDK_BASE)/middleware/hpm_sdmmc/ \
                          $(HPM_SDK_BASE)/middleware/hpm_math/hpm_math.h
 
 # This tag can be used to specify the character encoding of the source files

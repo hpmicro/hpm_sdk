@@ -118,10 +118,12 @@ Plug-in
 
 - Ethernet PPS Pin
 
-| Function    | Position |
-| ----------- | -------- |
-| ENET0.EVTO0 | J28[19]  |
-| ENET0.EVTO1 | J28[23]  |
+| Function    | Pin  | Position |
+| ----------- | ---- | -------- |
+| ENET0.EVTO0 | PC21 | J28[19]  |
+| ENET0.EVTO1 | PC20 | J28[23]  |
+| ENET0.EVTI0 | PC27 | J28[22]  |
+| ENET0.EVTI1 | PC26 | J28[18]  |
 
 - UART pin
 

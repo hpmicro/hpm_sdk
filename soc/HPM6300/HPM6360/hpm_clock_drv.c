@@ -89,11 +89,6 @@ static const clock_node_t s_dac_clk_mux_node[] = {
         clock_node_ahb
 };
 
-static const clock_node_t s_i2s_clk_mux_node[] = {
-        clock_node_aud0,
-        clock_node_aud1,
-};
-
 static WDG_Type *const s_wdgs[] = { HPM_WDG0, HPM_WDG1};
 
 uint32_t hpm_core_clock;
@@ -202,37 +197,40 @@ static uint32_t get_frequency_for_ip_in_common_group(clock_node_t node)
 static uint32_t get_frequency_for_i2s_or_adc(uint32_t clk_src_type, uint32_t instance)
 {
     uint32_t clk_freq = 0UL;
-    bool is_mux_valid = false;
     clock_node_t node = clock_node_end;
+    uint32_t mux_in_reg;
+
     if (clk_src_type == CLK_SRC_GROUP_ADC) {
         uint32_t adc_index = instance;
         if (adc_index < ADC_INSTANCE_NUM) {
-            is_mux_valid = true;
-            uint32_t mux_in_reg = SYSCTL_ADCCLK_MUX_GET(HPM_SYSCTL->ADCCLK[adc_index]);
+            mux_in_reg = SYSCTL_ADCCLK_MUX_GET(HPM_SYSCTL->ADCCLK[adc_index]);
             if (mux_in_reg == 1) {
                 node = s_adc_clk_mux_node[1];
             } else {
                 node = s_adc_clk_mux_node[0] + adc_index;
             }
+
+            if (node == clock_node_ahb) {
+                clk_freq = get_frequency_for_ahb();
+            } else {
+                clk_freq = get_frequency_for_ip_in_common_group(node);
+            }
         }
     } else {
         uint32_t i2s_index = instance;
         if (i2s_index < I2S_INSTANCE_NUM) {
-            uint32_t mux_in_reg = SYSCTL_I2SCLK_MUX_GET(HPM_SYSCTL->I2SCLK[i2s_index]);
-            if (mux_in_reg < ARRAY_SIZE(s_i2s_clk_mux_node)) {
-                node = s_i2s_clk_mux_node[mux_in_reg];
-                is_mux_valid = true;
+            mux_in_reg = SYSCTL_I2SCLK_MUX_GET(HPM_SYSCTL->I2SCLK[i2s_index]);
+            if (mux_in_reg == 0) {
+                node = clock_node_aud0 + i2s_index;
+            } else if (i2s_index == 0) {
+                node = clock_node_aud1;
+            } else {
+                node = clock_node_aud0;
             }
-        }
-    }
-
-    if (is_mux_valid) {
-        if (node == clock_node_ahb) {
-            clk_freq = get_frequency_for_ahb();
-        } else {
             clk_freq = get_frequency_for_ip_in_common_group(node);
         }
     }
+
     return clk_freq;
 }
 
@@ -456,7 +454,7 @@ hpm_stat_t clock_set_i2s_source(clock_name_t clock_name, clk_src_t src)
         return status_clk_invalid;
     }
 
-    if (!((src == clk_i2s_src_aud0) || (src == clk_i2s_src_aud1))) {
+    if (!((src < clk_i2s_src_audn) || (src > clk_i2s_src_audx))) {
         return status_clk_src_invalid;
     }
 

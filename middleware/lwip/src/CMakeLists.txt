@@ -37,6 +37,7 @@ sdk_src(core/ipv4/ip4_frag.c)
 
 sdk_src(netif/ethernet.c)
 
+sdk_src_ifdef(CONFIG_LWIP_STRERR api/err.c)
 sdk_src_ifdef(CONFIG_LWIP_NETDB api/netdb.c)
 
 sdk_src_ifdef(CONFIG_LWIP_NETCONN_API api/tcpip.c)
@@ -52,11 +53,7 @@ sdk_src_ifdef(CONFIG_LWIP_SOCKET_API api/api_msg.c)
 sdk_src_ifdef(CONFIG_LWIP_SOCKET_API api/netifapi.c)
 sdk_src_ifdef(CONFIG_LWIP_SOCKET_API api/sockets.c)
 
-sdk_src(apps/http/altcp_proxyconnect.c)
-sdk_src(apps/http/http_client.c)
-
-sdk_src_ifdef(CONFIG_LWIP_STRERR api/err.c)
-
+sdk_src_ifdef(CONFIG_LWIP_HTTPCLIENT apps/http/http_client.c)
 sdk_src_ifdef(CONFIG_LWIP_HTTPSSRV apps/http/httpd.c)
 sdk_src_ifdef(CONFIG_LWIP_HTTPSSRV apps/http/fs.c)
 sdk_src_ifdef(CONFIG_LWIP_HTTPSRV apps/http/httpd.c)

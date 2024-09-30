@@ -9,6 +9,7 @@
 #define HPM_TRGM_DRV_H
 
 #include "hpm_common.h"
+#include "hpm_soc_ip_feature.h"
 #include "hpm_trgm_regs.h"
 #include "hpm_trgmmux_src.h"
 
@@ -40,6 +41,12 @@ typedef enum trgm_output_type {
     trgm_output_pulse_at_input_both_edge = trgm_output_pulse_at_input_falling_edge
                                     | trgm_output_pulse_at_input_rising_edge,
 } trgm_output_type_t;
+
+typedef enum {
+    trgm_pwmv2_calibration_mode_begin = 0,
+    trgm_pwmv2_calibration_mode_wait = 1,
+    trgm_pwmv2_calibration_mode_end = 2,
+} trgm_pwmv2_calibration_mode_t;
 
 /**
  * @brief Input filter configuration
@@ -243,6 +250,77 @@ static inline void trgm_dma_request_config(TRGM_Type *ptr, uint8_t dma_out, uint
     ptr->DMACFG[dma_out] = TRGM_DMACFG_DMASRCSEL_SET(dma_src);
 #endif
 }
+
+#if defined(HPM_IP_FEATURE_TRGM_HRPWM_CALIBRATION_2) || defined(HPM_IP_FEATURE_TRGM_HRPWM_CALIBRATION_1)
+/**
+ * @brief Software calibration of high precision pwm
+ *
+ * @param trgm @ref TRGM_Type
+ * @param status @ref trgm_pwmv2_calibration_mode_t
+ *
+ */
+static inline void trgm_pwmv2_calibrate_delay_chain(TRGM_Type *trgm, trgm_pwmv2_calibration_mode_t *status)
+{
+#if defined(HPM_IP_FEATURE_TRGM_HRPWM_CALIBRATION_2)
+    uint16_t val_n, val_p;
+#endif
+    uint32_t delay_val;
+#if defined(HPM_IP_FEATURE_TRGM_HRPWM_CALIBRATION_1)
+    static uint16_t last_val = 0;
+    int16_t diff_val;
+#endif
+
+    switch (*status) {
+    case trgm_pwmv2_calibration_mode_begin:
+        trgm->PWM_CALIB_CFG &= ~TRGM_PWM_CALIB_CFG_CALIB_HW_ENABLE_MASK;
+        trgm->PWM_CALIB_CFG &= ~TRGM_PWM_CALIB_CFG_CALIB_SW_START_MASK;
+        trgm->PWM_CALIB_CFG |= TRGM_PWM_CALIB_CFG_CALIB_SW_START_MASK;
+        *status = trgm_pwmv2_calibration_mode_wait;
+        break;
+    case trgm_pwmv2_calibration_mode_wait:
+        if (TRGM_PWM_CALIB_STATUS0_CALIB_ON_GET(trgm->PWM_CALIB_STATUS0) == 0U) {
+#if defined(HPM_IP_FEATURE_TRGM_HRPWM_CALIBRATION_2)
+            val_n = TRGM_PWM_CALIB_STATUS1_CALIB_RESULT_N_GET(trgm->PWM_CALIB_STATUS1);
+            val_p = TRGM_PWM_CALIB_STATUS1_CALIB_RESULT_P_GET(trgm->PWM_CALIB_STATUS1);
+            if ((val_n > 3) && (val_p > 3)) {
+                delay_val = TRGM_PWM_DELAY_CFG_DELAY_CHAN_CALIB_N_SW_SET(val_n) |
+                            TRGM_PWM_DELAY_CFG_DELAY_CHAN_CALIB_P_SW_SET(val_p);
+                trgm->PWM_DELAY_CFG = delay_val;
+                *status = trgm_pwmv2_calibration_mode_end;
+            } else {
+                *status = trgm_pwmv2_calibration_mode_begin;
+            }
+#endif
+#if defined(HPM_IP_FEATURE_TRGM_HRPWM_CALIBRATION_1)
+            delay_val = TRGM_PWM_CALIB_STATUS0_CALIB_RESULT_GET(trgm->PWM_CALIB_STATUS0);
+            if (last_val == 0U) {
+                if (delay_val > 10) {
+                    last_val = delay_val;
+                    trgm->PWM_DELAY_CFG = delay_val;
+                    *status = trgm_pwmv2_calibration_mode_end;
+                } else {
+                    *status = trgm_pwmv2_calibration_mode_begin;
+                }
+            } else {
+                diff_val = ((delay_val - last_val) > 0) ? (delay_val - last_val) : (last_val - delay_val);
+
+                if (((float)diff_val / last_val) > 0.25f) {
+                    trgm->PWM_DELAY_CFG = delay_val;
+                    last_val = delay_val;
+                    *status = trgm_pwmv2_calibration_mode_end;
+                } else {
+                    *status = trgm_pwmv2_calibration_mode_begin;
+                }
+            }
+#endif
+        }
+        break;
+    case trgm_pwmv2_calibration_mode_end:
+    default:
+        break;
+    }
+}
+#endif
 
 #ifdef __cplusplus
 }

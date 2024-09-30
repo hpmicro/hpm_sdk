@@ -16,7 +16,7 @@ DIR s_dir;
 FRESULT fatfs_result;
 BYTE work[FF_MAX_SS];
 
-const TCHAR driver_num_buf[3] = { DEV_SD + '0', ':', '/' };
+const TCHAR driver_num_buf[4] = { DEV_SD + '0', ':', '/', '\0' };
 
 #define TEST_DIR_NAME "hpmicro_sd_test_dir0"
 

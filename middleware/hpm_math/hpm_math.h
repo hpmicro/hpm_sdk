@@ -49,7 +49,7 @@
 
 #define HPM_DSP_CORE HPM_DSP_HW_NDS32 /* DSP core selection */
 
-#define HPM_MATH_PI (3.1415926535898)
+#define HPM_MATH_PI (3.14159265358979323846)
 
 /**
  * @brief HPM_MATH_SW_FFT_CHECKLIST Enabled to use table lookup to speed up the software fft,
@@ -5421,11 +5421,7 @@ static inline int32_t hpm_dsp_rfft_f32(float32_t *src, uint32_t m)
 static inline int32_t hpm_dsp_rfft_f64(float64_t *src, uint32_t m)
 {
 #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
-#ifdef __zcc__
-    return tpt_rfft_f64(src, src, m, false);
-#else
     return riscv_dsp_rfft_f64(src, m);
-#endif
 #endif
 }
 
@@ -6607,10 +6603,8 @@ static inline void hpm_dsp_sort_merge_f32(const riscv_dsp_sort_merge_f32_t * ins
 
 #define LEFT_SHIFT(_shift)  (_shift > 0 ? _shift : 0)
 #define RIGHT_SHIFT(_shift) (_shift > 0 ? 0 : -_shift)
-#ifndef __zcc__
-#define Q31_MAX   ((q31_t)(0x7FFFFFFFL))
-#define Q31_MIN   ((q31_t)(0x80000000L))
-#endif
+#define Q31_MAX ((q31_t)(0x7FFFFFFFL))
+#define Q31_MIN ((q31_t)(0x80000000L))
 
 static inline void write_q15x2_ia(
     q15_t **pQ15,
@@ -6900,7 +6894,7 @@ static inline void hpm_nn_leaky_relu_s8(q7_t *in_out,
                         uint32_t size,
                         q15_t slope)
 #if defined(__zcc__)
-    tpt_nn_leaky_relu_s8(in_out, size, slope);
+    tpt_nn_leaky_relu_q7(in_out, in_out, size, slope);
 #else
     riscv_nn_leaky_relu_s8(in_out, size, slope);
 #endif
@@ -6916,7 +6910,7 @@ static inline void hpm_nn_leaky_relu_s8(q7_t *in_out,
 static inline void hpm_nn_relu_any_s8(q7_t *data, uint16_t size, q7_t max_val)
 {
 #if defined(__zcc__)
-    tpt_nn_relu_any_s8(data, size, max_val);
+    tpt_nn_relu_any_q7(data, size, max_val);
 #else
     riscv_nn_relu_any_s8(data, size, max_val);
 #endif
@@ -6941,7 +6935,7 @@ static inline void hpm_nn_relu_any_s8(q7_t *data, uint16_t size, q7_t max_val)
 static inline void hpm_nn_relu_s8(q7_t *in_out, uint32_t size)
 {
 #if defined(__zcc__)
-    tpt_nn_relu_s8(in_out, size);
+    tpt_nn_relu_q7(in_out, size);
 #else
     riscv_nn_relu_s8(in_out, size);
 #endif
@@ -6956,7 +6950,7 @@ static inline void hpm_nn_relu_s8(q7_t *in_out, uint32_t size)
 static inline void hpm_nn_relu_s16(q15_t *in_out, uint32_t size)
 {
 #if defined(__zcc__)
-    tpt_nn_relu_s16(in_out, size);
+    tpt_nn_relu_q15(in_out, size);
 #else
     riscv_nn_relu_s16(in_out, size);
 #endif
@@ -7344,10 +7338,10 @@ static inline int hpm_nn_ew_add_s8_asym(const int8_t *in_tensor1,
                             const uint32_t size)
 {
 #if defined(__zcc__)
-    return tpt_nn_ew_add_s8_asym(in_tensor1, in_tensor2, in_offset1, in_scale1,
+    return tpt_elementwise_add_s8(out, out_offset, out_scale, -out_rshift, act_min,
+                               act_max, in_tensor1, in_tensor2, in_offset1, in_scale1,
                                in_rshift1, in_offset2, in_scale2, in_rshift2,
-                               lshift, out, out_offset, out_scale, out_rshift,
-                               act_min, act_max, size);
+                               lshift, size);
 #else
     return riscv_nn_ew_add_s8_asym(in_tensor1, in_tensor2, in_offset1, in_scale1,
                                  in_rshift1, in_offset2, in_scale2, in_rshift2,
@@ -7402,8 +7396,8 @@ static inline void hpm_nn_concate_s8_w(const int8_t *in_tensor,
                         const uint32_t out_offset_w)
 {
 #if defined(__zcc__)
-    tpt_nn_concate_s8_w(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z,
-                      in_tensor_w, out_tensor, out_offset_w);
+    tpt_concatenation_s8_w(out_tensor, in_tensor, in_tensor_x, in_tensor_y, in_tensor_z,
+                      in_tensor_w, out_offset_w);
 #else
     riscv_nn_concate_s8_w(in_tensor, in_tensor_x, in_tensor_y, in_tensor_z,
                         in_tensor_w, out_tensor, out_offset_w);
@@ -8680,11 +8674,13 @@ static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_sym_bias_fast_any(const q7_t 
                                                 q15_t *in_tmp_buf)
 {
 #if defined(__zcc__)
+
+tpt_nn_conv_1x1_sym_params S1 = {stride_x, stride_y, pad_x, pad_y, pre_rshift, out_scale, post_rshift};
+tpt_nn_1x1_sym_dims S2 = {in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_dim_x, ker_dim_y,
+                          out_tensor_dim_x, out_tensor_dim_y, out_tensor_ch};
     return tpt_nn_conv_1x1_HWC_s8_s8_s8_sym_bias_fast_any(
-      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
-      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
-      bias, pre_rshift, out_scale, post_rshift, out_tensor, out_tensor_dim_x,
-      out_tensor_dim_y, in_tmp_buf);
+      out_tensor_ch, in_tensor,  ker_weight, bias, &S1, &S2, in_tmp_buf);
+
 #else
     return riscv_nn_conv_1x1_HWC_s8_s8_s8_sym_bias_fast_any(
       in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
@@ -12671,11 +12667,18 @@ static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(const q7_t
                                     q15_t *tmp_buf)
 {
 #if defined(__zcc__)
-    return tpt_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(
-      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
-      in_tensor_group, ker_weight, out_tensor_ch, pad_x, pad_y, stride_x,
-      stride_y, bias, out_tensor, out_shift, out_scale, out_offset, in_offset,
-      act_min, act_max, out_tensor_dim_x, out_tensor_dim_y, tmp_buf);
+
+    tpt_nn_conv_1x1_asym_params aConv_params = {in_offset, out_offset, stride_x,
+      stride_y, pad_x, pad_y, act_min, act_max};
+
+    tpt_nn_per_channel_quant_params aQuant_params = {out_scale, out_shift};
+
+    tpt_nn_1x1_asym_dims aConv_dims = {in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+      in_tensor_group, out_tensor_ch};
+
+    return tpt_convolve_1x1_s8_s8_s8_asym_bias_any(out_tensor, in_tensor, ker_weight,
+      bias, &aConv_params, &aQuant_params, &aConv_dims, tmp_buf);
+
 #else
     return riscv_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(
       in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
@@ -12691,10 +12694,11 @@ static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(const q7_t
  * @param[in]       in_tensor_ch        number of input tensor channels
  * @return          This function returns the needed size by the temporary buffer.
  */
-static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(const uint16_t in_tensor_ch)
-{
-#if defined(__zcc__)
-    return tpt_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
+static inline int32_t
+hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
+    const uint16_t in_tensor_ch) {
+#if defined(__zcc__)convol
+    return tpt_convolve_1x1_s8_s8_s8_asym_bias_any_get_buf_size(
       in_tensor_ch);
 #else
     return riscv_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
@@ -12761,11 +12765,18 @@ static inline int hpm_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_tens
                                                 q15_t *in_tmp_buf)
 {
 #if defined(__zcc__)
-    return tpt_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(
-      in_tensor, in_tensor_dim_x, in_tensor_ch, in_tensor_group, ker_weight,
-      out_tensor_ch, ker_dim_x, pad_x, stride_x, bias, out_tensor, out_shift,
-      out_scale, out_offset, in_offset, act_min, act_max, out_tensor_dim_x,
-      in_tmp_buf);
+
+    tpt_nn_conv_1xn_asym_params aConv_params = {in_offset, out_offset, stride_x, pad_x,
+      act_min, act_max};
+
+    tpt_nn_per_channel_quant_params aQuant_params = {out_scale, out_shift};
+
+    tpt_nn_1xn_asym_dims aConv_dims = {in_tensor_dim_x, in_tensor_ch, in_tensor_group,
+      ker_dim_x, out_tensor_dim_x, out_tensor_ch};
+
+    return tpt_convolve_1xn_s8_s8_s8_asym_bias_any(out_tensor, in_tensor, ker_weight,
+      bias, &aConv_params, &aQuant_params, &aConv_dims, in_tmp_buf);
+
 #else
     return riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(
       in_tensor, in_tensor_dim_x, in_tensor_ch, in_tensor_group, ker_weight,
@@ -12789,7 +12800,7 @@ static inline int32_t hpm_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size
                                                 const uint16_t ker_dim_y)
 {
 #if defined(__zcc__)
-    return tpt_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(
+    return tpt_convolve_1xn_s8_s8_s8_asym_bias_any_get_buffer_size(
       in_tensor_ch, ker_dim_x, ker_dim_y);
 #else
     return riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(
@@ -12864,12 +12875,19 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_tens
                                                 q15_t *in_tmp_buf)
 {
 #if defined(__zcc__)
-    return tpt_nn_conv_HWC_s8_s8_s8_asym_bias_any(
-      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
-      in_tensor_group, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x,
-      pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale,
-      out_offset, in_offset, act_min, act_max, out_tensor_dim_x,
-      out_tensor_dim_y, in_tmp_buf);
+
+    tpt_nn_conv_asym_params aConv_params = {stride_x, stride_y, pad_x, pad_y,
+      in_offset, out_offset,  act_min, act_max};
+
+    tpt_nn_per_channel_quant_params aQuant_params = {out_scale, out_shift};
+
+    tpt_nn_asym_dims aConv_dims = {in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+      in_tensor_group, ker_dim_x, ker_dim_y, out_tensor_dim_x, out_tensor_dim_y,
+      out_tensor_ch};
+
+    return tpt_convolve_s8_s8_s8_asym_bias_any(out_tensor, in_tensor, ker_weight,
+      bias, &aConv_params, &aQuant_params, &aConv_dims, in_tmp_buf);
+
 #else
     return riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any(
       in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
@@ -13054,12 +13072,19 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_t
                                 q15_t *tmp_buf)
 {
 #if defined(__zcc__)
-    return tpt_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(
-      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
-      out_tensor_ch, ch_mult, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x,
-      stride_y, bias, out_tensor, out_shift, out_scale, out_tensor_dim_x,
-      out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x,
-      dilation_y, tmp_buf);
+
+    tpt_nn_dw_conv_asym_params aConv_params = {in_offset, out_offset, ch_mult,
+      stride_x, stride_y, pad_x, pad_y, dilation_x, dilation_y, act_min, act_max};
+
+    tpt_nn_per_channel_quant_params aQuant_params = {out_scale, out_shift};
+
+    tpt_nn_dw_conv_asym_dims aConv_dims = {in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+      ker_dim_x, ker_dim_y, out_tensor_dim_x, out_tensor_dim_y, out_tensor_ch};
+
+    return tpt_depthwise_conv_s8_s8_s8_asym_bias_any(out_tensor, in_tensor, ker_weight,
+      bias, &aConv_params, &aQuant_params, &aConv_dims, tmp_buf);
+
+
 #else
     return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(
       in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
@@ -13141,12 +13166,18 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(const q7_t 
                                      q15_t *in_tmp_buf)
 {
 #if defined(__zcc__)
-    return tpt_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(
-      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
-      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
-      bias, out_tensor, out_shift, out_scale, out_tensor_dim_x,
-      out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x,
-      dilation_y, in_tmp_buf);
+
+    tpt_nn_dw_conv_asym_fast_params aConv_params = {in_offset, out_offset,
+      stride_x, stride_y, pad_x, pad_y, dilation_x, dilation_y, act_min, act_max};
+
+    tpt_nn_per_channel_quant_params aQuant_params = {out_scale, out_shift};
+
+    tpt_nn_dw_conv_asym_dims aConv_dims = {in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+      ker_dim_x, ker_dim_y, out_tensor_dim_x, out_tensor_dim_y, out_tensor_ch};
+
+    return tpt_depthwise_conv_s8_s8_s8_asym_bias_fast_any(out_tensor, in_tensor, ker_weight,
+      bias, &aConv_params, &aQuant_params, &aConv_dims, in_tmp_buf);
+
 #else
     return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(
       in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
@@ -13170,7 +13201,7 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_
                                                   const uint16_t ker_dim_y)
 {
 #if defined(__zcc__)
-    return tpt_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
+    return tpt_depthwise_conv_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
       in_tensor_ch, ker_dim_x, ker_dim_y);
 #else
     return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
@@ -13508,12 +13539,19 @@ static inline int32_t hpm_nn_conv_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_tens
                                                 q15_t *in_tmp_buf)
 {
 #if defined(__zcc__)
-    return tpt_nn_conv_HWC_s8_s8_s8_asym_bias_any(
-      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
-      in_tensor_group, ker_weight, out_tensor_ch, ker_dim_x, ker_dim_y, pad_x,
-      pad_y, stride_x, stride_y, bias, out_tensor, out_shift, out_scale,
-      out_offset, in_offset, act_min, act_max, out_tensor_dim_x,
-      out_tensor_dim_y, in_tmp_buf);
+
+    tpt_nn_conv_asym_params aConv_params = {stride_x, stride_y, pad_x, pad_y,
+      in_offset, out_offset,  act_min, act_max};
+
+    tpt_nn_per_channel_quant_params aQuant_params = {out_scale, out_shift};
+
+    tpt_nn_asym_dims aConv_dims = {in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+      in_tensor_group, ker_dim_x, ker_dim_y, out_tensor_dim_x, out_tensor_dim_y,
+      out_tensor_ch};
+
+    return tpt_convolve_s8_s8_s8_asym_bias_any(out_tensor, in_tensor, ker_weight,
+      bias, &aConv_params, &aQuant_params, &aConv_dims, in_tmp_buf);
+
 #else
     return riscv_nn_conv_HWC_s8_s8_s8_asym_bias_any(
       in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
@@ -13594,11 +13632,18 @@ static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(const q7_t
                                     q15_t *tmp_buf)
 {
 #if defined(__zcc__)
-    return tpt_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(
-      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
-      in_tensor_group, ker_weight, out_tensor_ch, pad_x, pad_y, stride_x,
-      stride_y, bias, out_tensor, out_shift, out_scale, out_offset, in_offset,
-      act_min, act_max, out_tensor_dim_x, out_tensor_dim_y, tmp_buf);
+
+    tpt_nn_conv_1x1_asym_params aConv_params = {in_offset, out_offset, stride_x,
+      stride_y, pad_x, pad_y, act_min, act_max};
+
+    tpt_nn_per_channel_quant_params aQuant_params = {out_scale, out_shift};
+
+    tpt_nn_1x1_asym_dims aConv_dims = {in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+      in_tensor_group, out_tensor_ch};
+
+    return tpt_convolve_1x1_s8_s8_s8_asym_bias_any(out_tensor, in_tensor, ker_weight,
+      bias, &aConv_params, &aQuant_params, &aConv_dims, tmp_buf);
+
 #else
     return riscv_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(
       in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
@@ -13683,12 +13728,18 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_t
                                 q15_t *tmp_buf)
 {
 #if defined(__zcc__)
-    return tpt_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(
-      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
-      out_tensor_ch, ch_mult, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x,
-      stride_y, bias, out_tensor, out_shift, out_scale, out_tensor_dim_x,
-      out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x,
-      dilation_y, tmp_buf);
+
+    tpt_nn_dw_conv_asym_params aConv_params = {in_offset, out_offset, ch_mult,
+      stride_x, stride_y, pad_x, pad_y, dilation_x, dilation_y, act_min, act_max};
+
+    tpt_nn_per_channel_quant_params aQuant_params = {out_scale, out_shift};
+
+    tpt_nn_dw_conv_asym_dims aConv_dims = {in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+      ker_dim_x, ker_dim_y, out_tensor_dim_x, out_tensor_dim_y, out_tensor_ch};
+
+    return tpt_depthwise_conv_s8_s8_s8_asym_bias_any(out_tensor, in_tensor, ker_weight,
+      bias, &aConv_params, &aQuant_params, &aConv_dims, tmp_buf);
+
 #else
     return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_any(
       in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
@@ -13759,11 +13810,18 @@ static inline int hpm_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(const q7_t *in_tens
                                                 q15_t *in_tmp_buf)
 {
 #if defined(__zcc__)
-    return tpt_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(
-      in_tensor, in_tensor_dim_x, in_tensor_ch, in_tensor_group, ker_weight,
-      out_tensor_ch, ker_dim_x, pad_x, stride_x, bias, out_tensor, out_shift,
-      out_scale, out_offset, in_offset, act_min, act_max, out_tensor_dim_x,
-      in_tmp_buf);
+
+    tpt_nn_conv_1xn_asym_params aConv_params = {in_offset, out_offset, stride_x, pad_x,
+      act_min, act_max};
+
+    tpt_nn_per_channel_quant_params aQuant_params = {out_scale, out_shift};
+
+    tpt_nn_1xn_asym_dims aConv_dims = {in_tensor_dim_x, in_tensor_ch, in_tensor_group,
+      ker_dim_x, out_tensor_dim_x, out_tensor_ch};
+
+    return tpt_convolve_1xn_s8_s8_s8_asym_bias_any(out_tensor, in_tensor, ker_weight,
+      bias, &aConv_params, &aQuant_params, &aConv_dims, in_tmp_buf);
+
 #else
     return riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(
       in_tensor, in_tensor_dim_x, in_tensor_ch, in_tensor_group, ker_weight,
@@ -13844,12 +13902,18 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(const q7_t 
                                      q15_t *in_tmp_buf)
 {
 #if defined(__zcc__)
-    return tpt_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(
-      in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
-      out_tensor_ch, ker_dim_x, ker_dim_y, pad_x, pad_y, stride_x, stride_y,
-      bias, out_tensor, out_shift, out_scale, out_tensor_dim_x,
-      out_tensor_dim_y, out_offset, in_offset, act_min, act_max, dilation_x,
-      dilation_y, in_tmp_buf);
+
+    tpt_nn_dw_conv_asym_fast_params aConv_params = {in_offset, out_offset,
+      stride_x, stride_y, pad_x, pad_y, dilation_x, dilation_y, act_min, act_max};
+
+    tpt_nn_per_channel_quant_params aQuant_params = {out_scale, out_shift};
+
+    tpt_nn_dw_conv_asym_dims aConv_dims = {in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+      ker_dim_x, ker_dim_y, out_tensor_dim_x, out_tensor_dim_y, out_tensor_ch};
+
+    return tpt_depthwise_conv_s8_s8_s8_asym_bias_fast_any(out_tensor, in_tensor, ker_weight,
+      bias, &aConv_params, &aQuant_params, &aConv_dims, in_tmp_buf);
+
 #else
     return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(
       in_tensor, in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch, ker_weight,
@@ -13869,7 +13933,7 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any(const q7_t 
 static inline int32_t hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(const uint16_t in_tensor_ch)
 {
 #if defined(__zcc__)
-    return tpt_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
+    return tpt_convolve_1x1_s8_s8_s8_asym_bias_any_get_buf_size(
       in_tensor_ch);
 #else
     return riscv_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
@@ -13890,7 +13954,7 @@ static inline int32_t hpm_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_
                                                   const uint16_t ker_dim_y)
 {
 #if defined(__zcc__)
-    return tpt_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
+    return tpt_depthwise_conv_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
       in_tensor_ch, ker_dim_x, ker_dim_y);
 #else
     return riscv_nn_conv_dw_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(
@@ -13912,7 +13976,7 @@ static inline int32_t hpm_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size
                                                 const uint16_t ker_dim_y)
 {
 #if defined(__zcc__)
-    return tpt_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(
+    return tpt_convolve_1xn_s8_s8_s8_asym_bias_any_get_buffer_size(
       in_tensor_ch, ker_dim_x, ker_dim_y);
 #else
     return riscv_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(
@@ -15223,10 +15287,13 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_asym_bias(const int8_t *in_vec,
                                     q15_t *tmp_buf)
 {
 #if defined(__zcc__)
-    return tpt_nn_fc_s8_s8_s8_asym_bias(in_vec, wt_mat, in_vec_col, wt_mat_row,
-                                      in_vec_group, in_offset, wt_offset,
-                                      out_scale, out_shift, out_offset, bias,
-                                      out_vec, act_min, act_max, tmp_buf);
+
+    tpt_nn_fc_params_asym_s8 aFc_params = {in_offset, wt_offset, out_offset, out_scale,
+                                         out_shift, act_min, act_max};
+    tpt_nn_fc_dims_asym_s8 aFC_dims = {in_vec_col, in_vec_group, wt_mat_row};
+
+    return tpt_fully_connected_s8(out_vec, in_vec, wt_mat, bias, &aFc_params,
+                                &aFC_dims, tmp_buf);
 #else
     return riscv_nn_fc_s8_s8_s8_asym_bias(in_vec, wt_mat, in_vec_col, wt_mat_row,
                                         in_vec_group, in_offset, wt_offset,
@@ -15311,10 +15378,13 @@ static inline int32_t hpm_nn_fc_s8_s8_s8_asym_bias(const int8_t *in_vec,
                                     q15_t *tmp_buf)
 {
 #if defined(__zcc__)
-    return tpt_nn_fc_s8_s8_s8_asym_bias(in_vec, wt_mat, in_vec_col, wt_mat_row,
-                                      in_vec_group, in_offset, wt_offset,
-                                      out_scale, out_shift, out_offset, bias,
-                                      out_vec, act_min, act_max, tmp_buf);
+
+    tpt_nn_fc_params_asym_s8 aFc_params = {in_offset, wt_offset, out_offset, out_scale,
+                                         out_shift, act_min, act_max};
+    tpt_nn_fc_dims_asym_s8 aFC_dims = {in_vec_col, in_vec_group, wt_mat_row};
+
+    return tpt_fully_connected_s8(out_vec, in_vec, wt_mat, bias, &aFc_params,
+                                &aFC_dims, tmp_buf);
 #else
     return riscv_nn_fc_s8_s8_s8_asym_bias(in_vec, wt_mat, in_vec_col, wt_mat_row,
                                         in_vec_group, in_offset, wt_offset,
@@ -15533,10 +15603,14 @@ static inline int32_t hpm_nn_avepool_HWC_s8_any_act(const int in_tensor_dim_y,
                                 int8_t *out_tensor)
 {
 #if defined(__zcc__)
-    return tpt_nn_avepool_HWC_s8_any_act(
-      in_tensor_dim_y, in_tensor_dim_x, out_tensor_dim_y, out_tensor_dim_x,
-      stride_y, stride_x, ker_dim_y, ker_dim_x, pad_y, pad_x, act_min, act_max,
-      in_tensor_ch, in_tensor, in_tmp_buf, out_tensor);
+
+    tpt_nn_avgpool_params_act_s8 aPool_params = {stride_x, stride_y, pad_x, pad_y,
+                                            act_min, act_max};
+    tpt_nn_avgpool_dims_act_s8 aPool_dims = {in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+                                        ker_dim_x, ker_dim_y, out_tensor_dim_x, out_tensor_dim_y};
+
+    return tpt_avgpool_s8_any_act(out_tensor, in_tensor, &aPool_params, &aPool_dims, in_tmp_buf);
+
 #else
     return riscv_nn_avepool_HWC_s8_any_act(
       in_tensor_dim_y, in_tensor_dim_x, out_tensor_dim_y, out_tensor_dim_x,
@@ -15727,10 +15801,14 @@ static inline int32_t hpm_nn_avepool_HWC_s8_any_act(const int in_tensor_dim_y,
                                 int8_t *out_tensor)
 {
 #if defined(__zcc__)
-    return tpt_nn_avepool_HWC_s8_any_act(
-      in_tensor_dim_y, in_tensor_dim_x, out_tensor_dim_y, out_tensor_dim_x,
-      stride_y, stride_x, ker_dim_y, ker_dim_x, pad_y, pad_x, act_min, act_max,
-      in_tensor_ch, in_tensor, in_tmp_buf, out_tensor);
+
+    tpt_nn_avgpool_params_act_s8 aPool_params = {stride_x, stride_y, pad_x, pad_y,
+                                            act_min, act_max};
+    tpt_nn_avgpool_dims_act_s8 aPool_dims = {in_tensor_dim_x, in_tensor_dim_y, in_tensor_ch,
+                                        ker_dim_x, ker_dim_y, out_tensor_dim_x, out_tensor_dim_y};
+
+    return tpt_avgpool_s8_any_act(out_tensor, in_tensor, &aPool_params, &aPool_dims, in_tmp_buf);
+
 #else
     return riscv_nn_avepool_HWC_s8_any_act(
       in_tensor_dim_y, in_tensor_dim_x, out_tensor_dim_y, out_tensor_dim_x,
@@ -15845,8 +15923,8 @@ static inline void hpm_nn_softmax_s8_hp(const int8_t *in_tensor,
                             int8_t *out_tensor)
 {
 #if defined(__zcc__)
-    tpt_nn_softmax_s8_hp(in_tensor, in_tensor_row, in_tensor_col, scale, lshift,
-                       diff_min, out_tensor);
+    tpt_softmax_s8_hp(out_tensor, in_tensor, in_tensor_row, in_tensor_col, scale, lshift,
+                       diff_min);
 #else
     riscv_nn_softmax_s8_hp(in_tensor, in_tensor_row, in_tensor_col, scale, lshift,
                          diff_min, out_tensor);
@@ -15920,8 +15998,8 @@ static inline void hpm_nn_softmax_s8_hp(const int8_t *in_tensor,
                             int8_t *out_tensor)
 {
 #if defined(__zcc__)
-    tpt_nn_softmax_s8_hp(in_tensor, in_tensor_row, in_tensor_col, scale, lshift,
-                       diff_min, out_tensor);
+    tpt_softmax_s8_hp(out_tensor, in_tensor, in_tensor_row, in_tensor_col, scale, lshift,
+                       diff_min);
 #else
     riscv_nn_softmax_s8_hp(in_tensor, in_tensor_row, in_tensor_col, scale, lshift,
                          diff_min, out_tensor);
@@ -15989,7 +16067,7 @@ static inline void hpm_nn_reshape_s8(const int8_t *in_tensor,
                         const uint32_t size)
 {
 #if defined(__zcc__)
-    tpt_nn_reshape_s8(in_tensor, out_tensor, size);
+    tpt_reshape_s8(out_tensor, in_tensor, size);
 #else
     riscv_nn_reshape_s8(in_tensor, out_tensor, size);
 #endif
@@ -16095,7 +16173,7 @@ static inline void hpm_nn_reshape_s8(const int8_t *in_tensor,
                         const uint32_t size)
 {
 #if defined(__zcc__)
-    tpt_nn_reshape_s8(in_tensor, out_tensor, size);
+    tpt_reshape_s8(out_tensor, in_tensor, size);
 #else
     riscv_nn_reshape_s8(in_tensor, out_tensor, size);
 #endif

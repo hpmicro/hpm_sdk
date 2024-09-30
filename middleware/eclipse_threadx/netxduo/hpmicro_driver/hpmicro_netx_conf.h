@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -7,10 +7,15 @@
 #ifndef _HPMICRO_NETX_CONF_H_
 #define _HPMICRO_NETX_CONF_H_
 
-#define ENET_TX_BUFF_COUNT (60U)
-#define ENET_RX_BUFF_COUNT (50U)
-#define ENET_RX_BUFF_SIZE ENET_MAX_FRAME_SIZE
-#define ENET_TX_BUFF_SIZE ENET_MAX_FRAME_SIZE
+#ifndef ENET_TX_BUFF_COUNT
+#define ENET_TX_BUFF_COUNT (30U)
+#endif
+
+#ifndef ENET_RX_BUFF_COUNT
+#define ENET_RX_BUFF_COUNT (30U)
+#endif
+#define ENET_TX_BUFF_SIZE ENET_MAX_BUFF_SIZE
+#define ENET_RX_BUFF_SIZE ENET_MAX_BUFF_SIZE
 
 #define NETX_DATA_COPY_CPU 0
 #define NETX_DATA_DIRECT 1
@@ -33,10 +38,10 @@
 #define NX_DRIVER_ENABLE_RX_INTERRUPT_DEFERRED_PROCESS   1
 #endif
 
-/* NX_DRIVER_ENABLE_TX_COMPLETE_DEFERRED_PROCESS 
+/* NX_DRIVER_ENABLE_TX_COMPLETE_DEFERRED_PROCESS
    - 0: Net packets which already transmited will be mark
         as TX_DONE immediately
-   - Not zero: Net packets will be delayed release until 
+   - Not zero: Net packets will be delayed release until
         the ip thread deal with the event
 */
 #ifndef NX_DRIVER_ENABLE_TX_COMPLETE_DEFERRED_PROCESS

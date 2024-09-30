@@ -189,7 +189,12 @@ const struct usb_descriptor audio_v2_descriptor = {
 
 /* Static Variables */
 #define MIC_DMA_CHANNEL 1U
-#define MIC_DMAMUX_CHANNEL        DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_HDMA, MIC_DMA_CHANNEL)
+#define MIC_DMAMUX_CHANNEL        DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_XDMA, MIC_DMA_CHANNEL)
+
+#define MIC_I2S               BOARD_MIC_I2S
+#define MIC_I2S_CLK_NAME      BOARD_MIC_I2S_CLK_NAME
+#define MIC_I2S_DATA_LINE     BOARD_MIC_I2S_DATA_LINE
+#define MIC_I2S_RX_DMAMUX_SRC BOARD_MIC_I2S_RX_DMAMUX_SRC
 
 #define AUDIO_BUFFER_COUNT  32
 static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t s_in_buffer[AUDIO_BUFFER_COUNT][AUDIO_IN_PACKET];
@@ -358,7 +363,11 @@ void usbd_audio_open(uint8_t busid, uint8_t intf)
         s_in_buffer_front = 0;
         s_in_buffer_rear = 0;
         s_dma_transfer_done = false;
-        pdm_start(HPM_PDM);
+        if (s_mic_mute) {
+            pdm_stop(HPM_PDM);
+        } else {
+            pdm_start(HPM_PDM);
+        }
         i2s_pdm_dma_start_transfer((uint32_t)&s_in_buffer[s_in_buffer_rear][0], AUDIO_IN_PACKET);
 
         USB_LOG_RAW("OPEN\r\n");
@@ -413,9 +422,9 @@ void audio_v2_task(uint8_t busid)
 
 void i2s_enable_dma_irq_with_priority(int32_t priority)
 {
-    i2s_enable_rx_dma_request(PDM_I2S);
-    dmamux_config(BOARD_APP_DMAMUX, MIC_DMAMUX_CHANNEL, HPM_DMA_SRC_I2S0_RX, true);
-    intc_m_enable_irq_with_priority(BOARD_APP_HDMA_IRQ, priority);
+    i2s_enable_rx_dma_request(MIC_I2S);
+    dmamux_config(BOARD_APP_DMAMUX, MIC_DMAMUX_CHANNEL, MIC_I2S_RX_DMAMUX_SRC, true);
+    intc_m_enable_irq_with_priority(BOARD_APP_XDMA_IRQ, priority);
 }
 
 void init_mic_i2s_pdm(void)
@@ -425,25 +434,25 @@ void init_mic_i2s_pdm(void)
     pdm_config_t pdm_config;
     uint32_t i2s0_mclk_hz;
 
-    i2s0_mclk_hz = clock_get_frequency(clock_i2s0);
+    i2s0_mclk_hz = clock_get_frequency(MIC_I2S_CLK_NAME);
 
-    i2s_get_default_config(PDM_I2S, &i2s_config);
-    i2s_init(PDM_I2S, &i2s_config);
+    i2s_get_default_config(MIC_I2S, &i2s_config);
+    i2s_init(MIC_I2S, &i2s_config);
 
     i2s_get_default_transfer_config_for_pdm(&transfer);
     transfer.sample_rate = AUDIO_FREQ;
-    transfer.data_line = I2S_DATA_LINE_0;
+    transfer.data_line = MIC_I2S_DATA_LINE;
     transfer.channel_slot_mask = BOARD_PDM_DUAL_CHANNEL_MASK;
 
     s_mic_sample_rate = transfer.sample_rate;
 
-    if (status_success != i2s_config_rx(PDM_I2S, i2s0_mclk_hz, &transfer)) {
+    if (status_success != i2s_config_rx(MIC_I2S, i2s0_mclk_hz, &transfer)) {
         printf("I2S0 config failed for PDM\n");
         while (1) {
             ;
         }
     }
-    i2s_start(PDM_I2S);
+    i2s_start(MIC_I2S);
 
     pdm_get_default_config(HPM_PDM, &pdm_config);
     pdm_init(HPM_PDM, &pdm_config);
@@ -453,13 +462,13 @@ void isr_dma(void)
 {
     volatile uint32_t stat;
 
-    stat = dma_check_transfer_status(BOARD_APP_HDMA, MIC_DMA_CHANNEL);
+    stat = dma_check_transfer_status(BOARD_APP_XDMA, MIC_DMA_CHANNEL);
 
     if (0 != (stat & DMA_CHANNEL_STATUS_TC)) {
         s_dma_transfer_done = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_HDMA_IRQ, isr_dma)
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 
 /* Static Function Definition */
 static void usbd_audio_iso_in_callback(uint8_t busid, uint8_t ep, uint32_t nbytes)
@@ -475,8 +484,8 @@ static void i2s_pdm_dma_start_transfer(uint32_t addr, uint32_t size)
 {
     dma_channel_config_t ch_config = { 0 };
 
-    dma_default_channel_config(BOARD_APP_HDMA, &ch_config);
-    ch_config.src_addr = (uint32_t)(&PDM_I2S->RXD[I2S_DATA_LINE_0]) + 2u;
+    dma_default_channel_config(BOARD_APP_XDMA, &ch_config);
+    ch_config.src_addr = (uint32_t)(&MIC_I2S->RXD[MIC_I2S_DATA_LINE]) + 2u;
     ch_config.dst_addr = core_local_mem_to_sys_address(HPM_CORE0, addr);
     ch_config.src_width = DMA_TRANSFER_WIDTH_HALF_WORD;
     ch_config.dst_width = DMA_TRANSFER_WIDTH_HALF_WORD;
@@ -486,7 +495,7 @@ static void i2s_pdm_dma_start_transfer(uint32_t addr, uint32_t size)
     ch_config.src_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
     ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
 
-    if (status_success != dma_setup_channel(BOARD_APP_HDMA, MIC_DMA_CHANNEL, &ch_config, true)) {
+    if (status_success != dma_setup_channel(BOARD_APP_XDMA, MIC_DMA_CHANNEL, &ch_config, true)) {
         printf(" pdm dma setup channel failed\n");
     }
 }

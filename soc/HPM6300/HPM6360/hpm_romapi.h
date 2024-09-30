@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -401,11 +401,14 @@ static inline hpm_stat_t rom_enter_bootloader(void *ctx)
  * @param [in] cfg_option XPI NOR configuration option
  * @return API execution status
  */
-static inline hpm_stat_t rom_xpi_nor_get_config(XPI_Type *base,
-                                                xpi_nor_config_t *nor_cfg,
+ATTR_RAMFUNC
+static inline hpm_stat_t rom_xpi_nor_get_config(XPI_Type *base, xpi_nor_config_t *nor_cfg,
                                                 xpi_nor_config_option_t *cfg_option)
 {
-    return ROM_API_TABLE_ROOT->xpi_nor_driver_if->get_config(base, nor_cfg, cfg_option);
+    hpm_stat_t status;
+    status = ROM_API_TABLE_ROOT->xpi_nor_driver_if->get_config(base, nor_cfg, cfg_option);
+    fencei();
+    return status;
 }
 
 /**
@@ -414,9 +417,13 @@ static inline hpm_stat_t rom_xpi_nor_get_config(XPI_Type *base,
  * @param[in] nor_config XPI NOR configuration
  * @return API execution status
  */
+ATTR_RAMFUNC
 static inline hpm_stat_t rom_xpi_nor_init(XPI_Type *base, xpi_nor_config_t *nor_config)
 {
-    return ROM_API_TABLE_ROOT->xpi_nor_driver_if->init(base, nor_config);
+    hpm_stat_t status;
+    status = ROM_API_TABLE_ROOT->xpi_nor_driver_if->init(base, nor_config);
+    fencei();
+    return status;
 }
 
 /**
@@ -428,6 +435,7 @@ static inline hpm_stat_t rom_xpi_nor_init(XPI_Type *base, xpi_nor_config_t *nor_
  * @param[in] length Region size to be erased
  * @return API execution status
  */
+ATTR_RAMFUNC
 static inline hpm_stat_t rom_xpi_nor_erase(XPI_Type *base,
                                            xpi_xfer_channel_t channel,
                                            const xpi_nor_config_t *nor_config,
@@ -447,6 +455,7 @@ static inline hpm_stat_t rom_xpi_nor_erase(XPI_Type *base,
  * @param[in] start Sector address
  * @return API execution status
  */
+ATTR_RAMFUNC
 static inline hpm_stat_t rom_xpi_nor_erase_sector(XPI_Type *base,
                                                   xpi_xfer_channel_t channel,
                                                   const xpi_nor_config_t *nor_config,
@@ -465,6 +474,7 @@ static inline hpm_stat_t rom_xpi_nor_erase_sector(XPI_Type *base,
  * @param[in] start Sector address
  * @return API execution status
  */
+ATTR_RAMFUNC
 static inline hpm_stat_t rom_xpi_nor_erase_sector_nonblocking(XPI_Type *base,
                                                               xpi_xfer_channel_t channel,
                                                               const xpi_nor_config_t *nor_config,
@@ -481,6 +491,7 @@ static inline hpm_stat_t rom_xpi_nor_erase_sector_nonblocking(XPI_Type *base,
  * @param[in] start Block address
  * @return API execution status
  */
+ATTR_RAMFUNC
 static inline hpm_stat_t rom_xpi_nor_erase_block(XPI_Type *base,
                                                  xpi_xfer_channel_t channel,
                                                  const xpi_nor_config_t *nor_config,
@@ -499,6 +510,7 @@ static inline hpm_stat_t rom_xpi_nor_erase_block(XPI_Type *base,
  * @param[in] start Block address
  * @return API execution status
  */
+ATTR_RAMFUNC
 static inline hpm_stat_t rom_xpi_nor_erase_block_nonblocking(XPI_Type *base,
                                                              xpi_xfer_channel_t channel,
                                                              const xpi_nor_config_t *nor_config,
@@ -514,6 +526,7 @@ static inline hpm_stat_t rom_xpi_nor_erase_block_nonblocking(XPI_Type *base,
  * @param[in] nor_config XPI NOR configuration
  * @return API execution status
  */
+ATTR_RAMFUNC
 static inline hpm_stat_t rom_xpi_nor_erase_chip(XPI_Type *base,
                                                 xpi_xfer_channel_t channel,
                                                 const xpi_nor_config_t *nor_config)
@@ -528,6 +541,7 @@ static inline hpm_stat_t rom_xpi_nor_erase_chip(XPI_Type *base,
  * @param[in] nor_config XPI NOR configuration
  * @return API execution status
  */
+ATTR_RAMFUNC
 static inline hpm_stat_t rom_xpi_nor_erase_chip_nonblocking(XPI_Type *base,
                                                             xpi_xfer_channel_t channel,
                                                             const xpi_nor_config_t *nor_config)
@@ -547,6 +561,7 @@ static inline hpm_stat_t rom_xpi_nor_erase_chip_nonblocking(XPI_Type *base,
  * @param[in] length length of data to be programmed
  * @return API execution status
  */
+ATTR_RAMFUNC
 static inline hpm_stat_t rom_xpi_nor_program(XPI_Type *base,
                                              xpi_xfer_channel_t channel,
                                              const xpi_nor_config_t *nor_config,
@@ -569,6 +584,7 @@ static inline hpm_stat_t rom_xpi_nor_program(XPI_Type *base,
  * @param[in] length length of data to be programmed
  * @return API execution status
  */
+ATTR_RAMFUNC
 static inline hpm_stat_t rom_xpi_nor_page_program_nonblocking(XPI_Type *base,
                                                               xpi_xfer_channel_t channel,
                                                               const xpi_nor_config_t *nor_config,
@@ -607,11 +623,14 @@ static inline hpm_stat_t rom_xpi_nor_read(XPI_Type *base,
  * @param [in] cfg_option XPI NOR configuration option
  * @return API execution status
  */
-static inline hpm_stat_t rom_xpi_nor_auto_config(XPI_Type *base,
-                                                 xpi_nor_config_t *config,
+ATTR_RAMFUNC
+static inline hpm_stat_t rom_xpi_nor_auto_config(XPI_Type *base, xpi_nor_config_t *config,
                                                  xpi_nor_config_option_t *cfg_option)
 {
-    return ROM_API_TABLE_ROOT->xpi_nor_driver_if->auto_config(base, config, cfg_option);
+    hpm_stat_t status;
+    status = ROM_API_TABLE_ROOT->xpi_nor_driver_if->auto_config(base, config, cfg_option);
+    fencei();
+    return status;
 }
 
 /**

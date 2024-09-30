@@ -23,7 +23,7 @@ This example project shows MIDI demo
 
     - Download the program and run. The computer can automatically recognize and enumerate a MIDI device.
 
-    - Open MIDI-OX Software, click menu **"options-MIDI devices..."**, MIDI Inputs select "CherryUSB MIDI DEMO"，MIDI Outputs select "Microsoft GS Wavetable Synth".
+    - Open MIDI-OX Software, click menu **"options-MIDI devices..."**, MIDI Inputs select "HPMicro MIDI DEMO"，MIDI Outputs select "Microsoft GS Wavetable Synth".
 
     ![MIDI-OX_select_device.png](doc/MIDI-OX_select_device.png)
 

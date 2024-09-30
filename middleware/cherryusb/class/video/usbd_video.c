@@ -24,6 +24,8 @@ static int usbd_video_control_request_handler(uint8_t busid, struct usb_setup_pa
 {
     uint8_t control_selector = (uint8_t)(setup->wValue >> 8);
 
+    (void)busid;
+
     switch (control_selector) {
         case VIDEO_VC_VIDEO_POWER_MODE_CONTROL:
             switch (setup->bRequest) {
@@ -295,8 +297,7 @@ static int usbd_video_control_unit_terminal_request_handler(uint8_t busid, struc
                         case VIDEO_PU_BRIGHTNESS_CONTROL:
                             switch (setup->bRequest) {
                                 case VIDEO_REQUEST_SET_CUR: {
-                                    uint16_t wBrightness = (uint16_t)(*data)[1] << 8 | (uint16_t)(*data)[0];
-                                    USB_LOG_INFO("Video set brightness:%d\r\n", wBrightness);
+                                    //uint16_t wBrightness = (uint16_t)(*data)[1] << 8 | (uint16_t)(*data)[0];
                                 } break;
                                 case VIDEO_REQUEST_GET_CUR: {
                                     uint16_t wBrightness = 0x0080;
@@ -762,7 +763,7 @@ struct usbd_interface *usbd_video_init_intf(uint8_t busid, struct usbd_interface
     return intf;
 }
 
-uint32_t usbd_video_mjpeg_payload_fill(uint8_t busid, uint8_t *input, uint32_t input_len, uint8_t *output, uint32_t *out_len)
+uint32_t usbd_video_payload_fill(uint8_t busid, uint8_t *input, uint32_t input_len, uint8_t *output, uint32_t *out_len)
 {
     uint32_t packets;
     uint32_t last_packet_size;

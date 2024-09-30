@@ -16,8 +16,8 @@ typedef ENET_Type enet_base_t;
 /* Exported Macros------------------------------------------------------------*/
 #define ENET_TX_BUFF_COUNT  (32U)
 #define ENET_RX_BUFF_COUNT  (50U)
-#define ENET_RX_BUFF_SIZE   ENET_MAX_FRAME_SIZE
-#define ENET_TX_BUFF_SIZE   ENET_MAX_FRAME_SIZE
+#define ENET_TX_BUFF_SIZE   ENET_MAX_BUFF_SIZE
+#define ENET_RX_BUFF_SIZE   ENET_MAX_BUFF_SIZE
 
 /* Exported Variables ------------------------------------------------------*/
 extern enet_desc_t desc[];

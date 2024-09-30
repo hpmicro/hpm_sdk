@@ -13,10 +13,6 @@
 
 static void usb_host_mode_init(USB_Type *ptr)
 {
-    /* Set mode to host, must be set immediately after reset */
-    ptr->USBMODE &= ~USB_USBMODE_CM_MASK;
-    ptr->USBMODE |= USB_USBMODE_CM_SET(3);
-
     /* Set the endian */
     ptr->USBMODE &= ~USB_USBMODE_ES_MASK;
 
@@ -32,7 +28,7 @@ static void usb_host_mode_init(USB_Type *ptr)
 
 void usb_hc_low_level_init(void)
 {
-    usb_phy_init((USB_Type *)HPM_USB0_BASE);
+    usb_phy_init((USB_Type *)HPM_USB0_BASE, true);
     intc_m_enable_irq(IRQn_USB0);
 }
 

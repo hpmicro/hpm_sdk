@@ -96,6 +96,19 @@ typedef enum gptmr_counter_mode {
 } gptmr_counter_mode_t;
 #endif
 
+#if defined(HPM_IP_FEATURE_GPTMR_MONITOR) && (HPM_IP_FEATURE_GPTMR_MONITOR  == 1)
+typedef enum gptmr_channel_monitor_type {
+    monitor_signal_period = 0,
+    monitor_signal_high_level_time,
+} gptmr_channel_monitor_type_t;
+
+typedef struct gptmr_channel_monitor_config {
+    gptmr_channel_monitor_type_t monitor_type;
+    uint32_t max_value;   /**< The unit is the gptmr clock source period */
+    uint32_t min_value;   /**< The unit is the gptmr clock source period */
+} gptmr_channel_monitor_config_t;
+#endif
+
 /**
  * @brief GPTMR channel config
  */
@@ -110,20 +123,19 @@ typedef struct gptmr_channel_config {
     bool enable_sync_follow_previous_channel;
     bool enable_software_sync;
     bool debug_mode;
+#if defined(HPM_IP_FEATURE_GPTMR_MONITOR) && (HPM_IP_FEATURE_GPTMR_MONITOR == 1)
+    bool enable_monitor;
+    gptmr_channel_monitor_config_t monitor_config;
+#endif
+#if defined(HPM_IP_FEATURE_GPTMR_CNT_MODE) && (HPM_IP_FEATURE_GPTMR_CNT_MODE == 1)
+    gptmr_counter_mode_t counter_mode;
+#endif
+#if defined(HPM_IP_FEATURE_GPTMR_OP_MODE) && (HPM_IP_FEATURE_GPTMR_OP_MODE == 1)
+    bool enable_opmode;
+#endif
+
 } gptmr_channel_config_t;
 
-#if defined(HPM_IP_FEATURE_GPTMR_MONITOR) && (HPM_IP_FEATURE_GPTMR_MONITOR  == 1)
-typedef enum gptmr_channel_monitor_type {
-    monitor_signal_period = 0,
-    monitor_signal_high_level_time,
-} gptmr_channel_monitor_type_t;
-
-typedef struct gptmr_channel_monitor_config {
-    gptmr_channel_monitor_type_t monitor_type;
-    uint32_t max_value;   /**< The unit is the gptmr clock source period */
-    uint32_t min_value;   /**< The unit is the gptmr clock source period */
-} gptmr_channel_monitor_config_t;
-#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -168,7 +180,7 @@ static inline void gptmr_channel_update_count(GPTMR_Type *ptr,
                                              uint8_t ch_index,
                                              uint32_t value)
 {
-    if (value > 0) {
+    if ((value > 0) && (value != 0xFFFFFFFFu)) {
         value--;
     }
     ptr->CHANNEL[ch_index].CNTUPTVAL = GPTMR_CHANNEL_CNTUPTVAL_CNTUPTVAL_SET(value);
@@ -306,16 +318,6 @@ static inline uint32_t gptmr_get_status(GPTMR_Type *ptr)
     return ptr->SR;
 }
 
-/**
- * @brief gptmr channel start counter
- *
- * @param [in] ptr GPTMR base address
- * @param [in] ch_index channel index
- */
-static inline void gptmr_start_counter(GPTMR_Type *ptr, uint8_t ch_index)
-{
-    ptr->CHANNEL[ch_index].CR |= GPTMR_CHANNEL_CR_CEN_MASK;
-}
 
 /**
  * @brief gptmr channel stop counter
@@ -384,7 +386,7 @@ static inline gptmr_work_mode_t gptmr_channel_get_capmode(GPTMR_Type *ptr, uint8
  */
 static inline void gptmr_update_cmp(GPTMR_Type *ptr, uint8_t ch_index, uint8_t cmp_index, uint32_t cmp)
 {
-    if (cmp > 0) {
+    if ((cmp > 0) && (cmp != 0xFFFFFFFFu)) {
         cmp--;
     }
     ptr->CHANNEL[ch_index].CMP[cmp_index] = GPTMR_CHANNEL_CMP_CMP_SET(cmp);
@@ -411,7 +413,7 @@ static inline uint32_t gptmr_channel_get_reload(GPTMR_Type *ptr, uint8_t ch_inde
  */
 static inline void gptmr_channel_config_update_reload(GPTMR_Type *ptr, uint8_t ch_index, uint32_t reload)
 {
-    if (reload > 0) {
+    if ((reload > 0) && (reload != 0xFFFFFFFFu)) {
         reload--;
     }
     ptr->CHANNEL[ch_index].RLD = GPTMR_CHANNEL_RLD_RLD_SET(reload);
@@ -595,6 +597,22 @@ hpm_stat_t gptmr_channel_monitor_config(GPTMR_Type *ptr, uint8_t ch_index,
 
 #endif
 
+/**
+ * @brief gptmr channel start counter
+ *
+ * @param [in] ptr GPTMR base address
+ * @param [in] ch_index channel index
+ */
+static inline void gptmr_start_counter(GPTMR_Type *ptr, uint8_t ch_index)
+{
+#if defined(HPM_IP_FEATURE_GPTMR_OP_MODE) && (HPM_IP_FEATURE_GPTMR_OP_MODE  == 1)
+    /* if support opmode, should clear CEN and set CEN */
+     if (gptmr_channel_is_opmode(ptr, ch_index) == true) {
+        ptr->CHANNEL[ch_index].CR &= ~GPTMR_CHANNEL_CR_CEN_MASK;
+     }
+#endif
+    ptr->CHANNEL[ch_index].CR |= GPTMR_CHANNEL_CR_CEN_MASK;
+}
 
 /**
  * @}

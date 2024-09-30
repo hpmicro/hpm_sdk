@@ -2,7 +2,7 @@
 
 ## Overview
 
-The MTG trajectory generation example project demonstrates the function of using MTG to generate the number of turns, position, velocity, and acceleration of the target trajectory. In this routine, the initial position and velocity are configured as 0, and the acceleration is configured as 10r/s2; When the speed increases to 50r/s, MTG will automatically configure the acceleration to 0 and keep the speed unchanged; After a period of time, MTG will automatically configure the acceleration to -10r/s2; When the speed reaches -50r/s, configure the acceleration to -10r/s2. The above operation can be automatically triggered by configuring the MTG register, and there is no need for software to participate during the operation.
+The MTG trajectory generation example project demonstrates the function of using MTG to generate the number of turns, position, velocity, and acceleration of the target trajectory. In this routine, the initial position and velocity are configured as 0, and the acceleration is configured as 10r/s2; When the speed increases to 50r/s, MTG will automatically configure the acceleration to 0 and keep the speed unchanged; After a period of time, MTG will automatically configure the acceleration to -10r/s2; When the speed reaches -50r/s, configure the acceleration to 10r/s2. The above operation can be automatically triggered by configuring the MTG register, and there is no need for software to participate during the operation.
  ![acc](doc/acc.png "acc")
  ![vel](doc/vel.png "vel")
  ![turns+pos](doc/pos.png "turns+pos")

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  *
  *
@@ -83,11 +83,11 @@ static board_timer_cb timer_cb;
  *      0 - 4MB / 1 - 8MB / 2 - 16MB
  */
 #if defined(FLASH_XIP) && FLASH_XIP
-__attribute__((section(".nor_cfg_option"))) const uint32_t option[4] = { 0xfcf90001, 0x00000007, 0x0, 0x0 };
+__attribute__((section(".nor_cfg_option"), used)) const uint32_t option[4] = { 0xfcf90001, 0x00000007, 0x0, 0x0 };
 #endif
 
 #if defined(FLASH_UF2) && FLASH_UF2
-ATTR_PLACE_AT(".uf2_signature") const uint32_t uf2_signature = BOARD_UF2_SIGNATURE;
+ATTR_PLACE_AT(".uf2_signature") __attribute__((used)) const uint32_t uf2_signature = BOARD_UF2_SIGNATURE;
 #endif
 
 void board_init_console(void)
@@ -244,7 +244,7 @@ void board_i2c_bus_clear(I2C_Type *ptr)
         printf("I2C bus is ready\n");
         return;
     }
-    i2s_gen_reset_signal(ptr, 9);
+    i2c_gen_reset_signal(ptr, 9);
     board_delay_ms(100);
     printf("I2C bus is cleared\n");
 }
@@ -254,9 +254,6 @@ void board_init_i2c(I2C_Type *ptr)
     hpm_stat_t stat;
     uint32_t freq;
     i2c_config_t config;
-
-    init_i2c_pins(ptr);
-    board_i2c_bus_clear(ptr);
 
     if (ptr == HPM_I2C0) {
         clock_add_to_group(clock_i2c0, 0);
@@ -279,6 +276,9 @@ void board_init_i2c(I2C_Type *ptr)
         while (1) {
         }
     }
+
+    init_i2c_pins(ptr);
+    board_i2c_bus_clear(ptr);
 
     config.i2c_mode = i2c_mode_normal;
     config.is_10bit_addressing = false;
@@ -855,8 +855,8 @@ void board_init_cap_touch(void)
     gpio_write_pin(BOARD_CAP_INTR_GPIO, BOARD_CAP_INTR_GPIO_INDEX, BOARD_CAP_INTR_GPIO_PIN, 0);
     board_delay_ms(1);
     gpio_write_pin(BOARD_CAP_RST_GPIO, BOARD_CAP_RST_GPIO_INDEX, BOARD_CAP_RST_GPIO_PIN, 1);
-    board_delay_ms(6);
-    gpio_write_pin(BOARD_CAP_RST_GPIO, BOARD_CAP_INTR_GPIO_INDEX, BOARD_CAP_INTR_GPIO_PIN, 0);
+    board_delay_ms(55);
+    gpio_set_pin_input(BOARD_CAP_RST_GPIO, BOARD_CAP_INTR_GPIO_INDEX, BOARD_CAP_INTR_GPIO_PIN);
 
     board_init_i2c(BOARD_CAP_I2C_BASE);
 }
@@ -923,6 +923,11 @@ static void _cpu_wait_ms(uint32_t cpu_freq, uint32_t ms)
 
 void init_ddr2_800(void)
 {
+    /* Reduce the leakage by changing the DDR IO to high-z mode */
+    HPM_DDRPHY->ACIOCR = 0x30c00813;
+    HPM_DDRPHY->DXCCR = 0x4418189c;
+    HPM_DDRPHY->DSGCR = 0xe004641f;
+
     /* Enable On-chip DCDC 1.8V output */
     HPM_PCFG->DCDCM_MODE = PCFG_DCDCM_MODE_VOLT_SET(1800) | PCFG_DCDCM_MODE_MODE_SET(1);
 
@@ -1050,6 +1055,11 @@ void init_ddr2_800(void)
 
 void init_ddr3l_1333(void)
 {
+    /* Reduce the leakage by changing the DDR IO to high-z mode */
+    HPM_DDRPHY->ACIOCR = 0x30c00813;
+    HPM_DDRPHY->DXCCR = 0x4418189c;
+    HPM_DDRPHY->DSGCR = 0xe004641f;
+
     /* Enable On-chip DCDC 1.4V output */
     HPM_PCFG->DCDCM_MODE = PCFG_DCDCM_MODE_VOLT_SET(1400) | PCFG_DCDCM_MODE_MODE_SET(5);
 
@@ -1068,8 +1078,6 @@ void init_ddr3l_1333(void)
 
     /* Clear DFI_INIT_COMPLETE_EN bit */
     HPM_DDRCTL->DFIMISC &= ~DDRCTL_DFIMISC_DFI_INIT_COMPLETE_EN_MASK;
-
-    HPM_DDRPHY->DSGCR = 0xf004641f;
 
     *(volatile uint32_t *) (HPM_DDRPHY_BASE + 0x3000UL) |= (1UL << 0);
 
@@ -1260,7 +1268,7 @@ uint32_t board_config_i2s_clock(I2S_Type *ptr, uint32_t sample_rate)
         } else {
             clock_set_source_divider(clock_aud0, clk_src_pll3_clk0, 21); /* default 24576000Hz */
         }
-        clock_set_i2s_source(clock_i2s0, clk_i2s_src_aud0);
+        clock_set_i2s_source(clock_i2s0, clk_i2s_src_audn);  /* clk_i2s_src_audn is equal to clk_i2s_src_aud0 */
         freq = clock_get_frequency(clock_i2s0);
     } else if (ptr == HPM_I2S1) {
         clock_add_to_group(clock_i2s1, 0);
@@ -1269,7 +1277,7 @@ uint32_t board_config_i2s_clock(I2S_Type *ptr, uint32_t sample_rate)
         } else {
             clock_set_source_divider(clock_aud1, clk_src_pll3_clk0, 21); /* default 24576000Hz */
         }
-        clock_set_i2s_source(clock_i2s1, clk_i2s_src_aud1);
+        clock_set_i2s_source(clock_i2s1, clk_i2s_src_audn);  /* clk_i2s_src_audn is equal to clk_i2s_src_aud1 */
         freq = clock_get_frequency(clock_i2s1);
     } else if (ptr == HPM_I2S3) {
         clock_add_to_group(clock_i2s3, 0);
@@ -1278,7 +1286,7 @@ uint32_t board_config_i2s_clock(I2S_Type *ptr, uint32_t sample_rate)
         } else {
             clock_set_source_divider(clock_aud3, clk_src_pll3_clk0, 21); /* default 24576000Hz */
         }
-        clock_set_i2s_source(clock_i2s3, clk_i2s_src_aud3);
+        clock_set_i2s_source(clock_i2s3, clk_i2s_src_audn);  /* clk_i2s_src_audn is equal to clk_i2s_src_aud3 */
         freq = clock_get_frequency(clock_i2s3);
     }
 
@@ -1346,6 +1354,12 @@ void board_init_enet_pps_pins(ENET_Type *ptr)
     init_enet_pps_pins();
 }
 
+void board_init_enet_pps_capture_pins(ENET_Type *ptr)
+{
+    (void) ptr;
+    init_enet_pps_capture_pins();
+}
+
 hpm_stat_t board_init_enet_ptp_clock(ENET_Type *ptr)
 {
     /* set clock source */
@@ -1380,14 +1394,14 @@ void board_init_adc16_pins(void)
     init_adc_pins();
 }
 
-uint32_t board_init_adc_clock(void *ptr, bool clk_src_ahb)
+uint32_t board_init_adc_clock(void *ptr, bool clk_src_bus)
 {
     uint32_t freq = 0;
 
     if (ptr == (void *)HPM_ADC0) {
-        if (clk_src_ahb) {
+        if (clk_src_bus) {
             /* Configure the ADC clock from AXI (@200MHz by default)*/
-            clock_set_adc_source(clock_adc0, clk_adc_src_ahb0);
+            clock_set_adc_source(clock_adc0, clk_adc_src_axi0);
         } else {
             /* Configure the ADC clock from pll0_clk1 divided by 4 (@200MHz by default) */
             clock_set_adc_source(clock_adc0, clk_adc_src_ana0);
@@ -1399,3 +1413,9 @@ uint32_t board_init_adc_clock(void *ptr, bool clk_src_ahb)
 
     return freq;
 }
+
+void board_init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp)
+{
+    init_gptmr_channel_pin(ptr, channel, as_comp);
+}
+

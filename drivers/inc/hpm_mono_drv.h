@@ -33,8 +33,8 @@ extern "C" {
  */
 static inline uint64_t mono_get_counter(MONO_Type *ptr)
 {
-    return (uint64_t)((uint64_t)((ptr->MONOH) << 32))
-        | (uint64_t)((ptr->MONOL));
+    return (uint64_t)(((uint64_t)(ptr->MONOH) << 32)
+        | (uint64_t)(ptr->MONOL));
 }
 
 /**

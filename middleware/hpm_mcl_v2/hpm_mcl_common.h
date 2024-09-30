@@ -32,12 +32,13 @@ typedef struct {
 } mcl_user_value_t;
 
 enum {
-    mcl_success = MAKE_STATUS(status_group_common, 0),
-    mcl_fail = MAKE_STATUS(status_group_common, 1),
-    mcl_invalid_argument = MAKE_STATUS(status_group_common, 2),
-    mcl_invalid_pointer = MAKE_STATUS(status_group_common, 3),
-    mcl_timeout = MAKE_STATUS(status_group_common, 4),
-    mcl_in_development = MAKE_STATUS(status_group_common, 5),   /**< Functions under development */
+    mcl_success = MAKE_STATUS(mcl_group_common, 0),
+    mcl_fail = MAKE_STATUS(mcl_group_common, 1),
+    mcl_invalid_argument = MAKE_STATUS(mcl_group_common, 2),
+    mcl_invalid_pointer = MAKE_STATUS(mcl_group_common, 3),
+    mcl_timeout = MAKE_STATUS(mcl_group_common, 4),
+    mcl_in_development = MAKE_STATUS(mcl_group_common, 5),   /**< Functions under development */
+    mcl_running = MAKE_STATUS(mcl_group_common, 6),
 };
 
 
@@ -48,8 +49,8 @@ enum {
 void mcl_user_delay_us(uint64_t tick);
 
 #define MCL_DEBUG printf
-#define MCL_PI (3.1415926535f)
-#define MCL_2PI (2.0f * MCL_PI)
+#define MCL_PI HPM_PI
+#define MCL_2PI HPM_2_PI
 #define MCL_PI_DIV3 (MCL_PI / 3.0f)
 
 #define MCL_DELAY_US(x) mcl_user_delay_us(x)
@@ -152,6 +153,8 @@ void mcl_user_delay_us(uint64_t tick);
 ({    \
     float val_; \
     float temp; \
+    val_ = 0;   \
+    temp = 0;   \
     if ((val) > 0) { \
         temp = (val) - offset;    \
     } else if ((val) < 0) {    \

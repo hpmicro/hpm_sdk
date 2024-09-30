@@ -16,7 +16,7 @@
 #include "hpm_dmamux_drv.h"
 #include "hpm_uart_drv.h"
 #include "usbd_core.h"
-#include "usbd_cdc.h"
+#include "usbd_cdc_acm.h"
 #include "cdc_acm.h"
 #include "uart_dma.h"
 

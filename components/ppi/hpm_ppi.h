@@ -47,7 +47,7 @@ extern "C" {
  *
  * @param[in] ppi PPI base address
  * @param[in] cs_index cs index, value: 0 - 3
- * @param[in] cmd_index cmd start index
+ * @param[in] cmd_index cmd start index, should be a multiple of 8, such as 0, 8, 16, 24 ...
  * @param[in] config async sram config structure pointer, @ref ppi_async_sram_config_t
  */
 void ppi_config_async_sram(PPI_Type *ppi, uint8_t cs_index, uint8_t cmd_start_index, ppi_async_sram_config_t *config);

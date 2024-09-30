@@ -1,0 +1,3 @@
+dependency:
+  - tsw
+  - board_tsw_phy

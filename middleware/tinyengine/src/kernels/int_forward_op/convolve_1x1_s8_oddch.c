@@ -74,7 +74,7 @@ tinyengine_status convolve_1x1_s8_oddch(const q7_t *input, const uint16_t input_
 			cnt--;
 		}
 
-		out = hpm_nn_mat_mult_kernel_s8_s16_reordered(kernel,
+		out = hpm_nn_mat_mult_kernel_s8_s16_reordered_8mul(kernel,
 				two_column_buffer, output_ch, output_shift, output_mult,
 				(q7_t) out_offset, out_activation_min,
 				out_activation_max, input_ch * DIM_KER_Y * DIM_KER_X,

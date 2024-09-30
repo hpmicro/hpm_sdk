@@ -35,10 +35,6 @@ sdk_nds_compile_options(-mcpu=d45)
 sdk_zcc_compile_options(-mtune=andes-kavalan)
 sdk_zcc_ld_options(-mtune=andes-kavalan)
 
-if(${TOOLCHAIN_VARIANT} EQUAL "zcc")
-    set(RV_ARCH "${RV_ARCH}xandes" PARENT_SCOPE)
-endif()
-
 if(NOT HPM_SOC_DISABLE_B_EXT)
     get_toolchain_gcc_spec(spec)
     if(spec GREATER_EQUAL 20191213)

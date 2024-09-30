@@ -8,17 +8,45 @@
 #include "usbh_msc.h"
 #include "hpm_fatfs_usb.h"
 
-static USB_NOCACHE_RAM_SECTION struct usbh_msc *active_msc_class;
+static USB_NOCACHE_RAM_SECTION struct usbh_msc *active_msc_class[CONFIG_USBHOST_MAX_MSC_CLASS];
+static BYTE s_pdrv[CONFIG_USBHOST_MAX_MSC_CLASS];
 
-void usb_disk_set_active_msc_class(void *ptr)
+void usb_disk_set_active_msc_class(BYTE pdrv, void *ptr)
 {
-    active_msc_class = (struct usbh_msc *)ptr;
+    if (pdrv >= DEV_USB_MSC_0) {
+        active_msc_class[pdrv - DEV_USB_MSC_0] = (struct usbh_msc *)ptr;
+        s_pdrv[pdrv - DEV_USB_MSC_0] = pdrv;
+    } else {
+        active_msc_class[pdrv - DEV_USB] = (struct usbh_msc *)ptr;
+        s_pdrv[pdrv - DEV_USB] = pdrv;
+    }
+}
+
+uint8_t usb_disk_free_active_msc_class(void *ptr)
+{
+    uint8_t i;
+
+    for (i = 0; i < CONFIG_USBHOST_MAX_MSC_CLASS; i++) {
+        if (active_msc_class[i] == ptr) {
+            active_msc_class[i] = NULL;
+            break;
+        }
+    }
+
+    return s_pdrv[i];
 }
 
 DSTATUS usb_disk_status(BYTE pdrv)
 {
-    (void)pdrv;
-    if (active_msc_class == NULL) {
+    struct usbh_msc *ptr;
+
+    if (pdrv >= DEV_USB_MSC_0) {
+        ptr = active_msc_class[pdrv - DEV_USB_MSC_0];
+    } else {
+        ptr = active_msc_class[pdrv - DEV_USB];
+    }
+
+    if (ptr == NULL) {
         return STA_NOINIT;
     }
     return RES_OK;
@@ -26,8 +54,15 @@ DSTATUS usb_disk_status(BYTE pdrv)
 
 DSTATUS usb_disk_initialize(BYTE pdrv)
 {
-    (void)pdrv;
-    if (active_msc_class == NULL) {
+    struct usbh_msc *ptr;
+
+    if (pdrv >= DEV_USB_MSC_0) {
+        ptr = active_msc_class[pdrv - DEV_USB_MSC_0];
+    } else {
+        ptr = active_msc_class[pdrv - DEV_USB];
+    }
+
+    if (ptr == NULL) {
         return STA_NOINIT;
     }
     return RES_OK;
@@ -35,20 +70,40 @@ DSTATUS usb_disk_initialize(BYTE pdrv)
 
 DRESULT usb_disk_read(BYTE pdrv, BYTE *buff, DWORD sector, BYTE count)
 {
-    (void)pdrv;
-    return usbh_msc_scsi_read10(active_msc_class, sector, buff, count);
+    struct usbh_msc *ptr;
+
+    if (pdrv >= DEV_USB_MSC_0) {
+        ptr = active_msc_class[pdrv - DEV_USB_MSC_0];
+    } else {
+        ptr = active_msc_class[pdrv - DEV_USB];
+    }
+
+    return usbh_msc_scsi_read10(ptr, sector, buff, count);
 }
 
 DRESULT usb_disk_write(BYTE pdrv, const BYTE *buff, DWORD sector, BYTE count)
 {
-    (void)pdrv;
-    return usbh_msc_scsi_write10(active_msc_class, sector, buff, count);
+    struct usbh_msc *ptr;
+
+    if (pdrv >= DEV_USB_MSC_0) {
+        ptr = active_msc_class[pdrv - DEV_USB_MSC_0];
+    } else {
+        ptr = active_msc_class[pdrv - DEV_USB];
+    }
+
+    return usbh_msc_scsi_write10(ptr, sector, buff, count);
 }
 
 DRESULT usb_disk_ioctl(BYTE pdrv, BYTE cmd, void *buff)
 {
-    (void)pdrv;
     int result = 0;
+    struct usbh_msc *ptr;
+
+    if (pdrv >= DEV_USB_MSC_0) {
+        ptr = active_msc_class[pdrv - DEV_USB_MSC_0];
+    } else {
+        ptr = active_msc_class[pdrv - DEV_USB];
+    }
 
     switch (cmd) {
     case CTRL_SYNC:
@@ -56,7 +111,7 @@ DRESULT usb_disk_ioctl(BYTE pdrv, BYTE cmd, void *buff)
         break;
 
     case GET_SECTOR_SIZE:
-        *(WORD *)buff = active_msc_class->blocksize;
+        *(WORD *)buff = ptr->blocksize;
         result = RES_OK;
         break;
 
@@ -66,7 +121,7 @@ DRESULT usb_disk_ioctl(BYTE pdrv, BYTE cmd, void *buff)
         break;
 
     case GET_SECTOR_COUNT:
-        *(DWORD *)buff = active_msc_class->blocknum;
+        *(DWORD *)buff = ptr->blocknum;
         result = RES_OK;
         break;
 

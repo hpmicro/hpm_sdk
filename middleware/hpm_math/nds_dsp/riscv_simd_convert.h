@@ -31,6 +31,11 @@ extern "C" {
 #define __SADD16(_a, _b) __nds__kadd16(_a, _b)
 #define __SMLAD(_a, _b, _c)    __nds__kmada(_c, _a, _b)
 
+__STATIC_FORCEINLINE uint32_t __UXTB16(uint32_t x)
+{
+    return (x >> 8) | (x << 8);
+}
+
 __STATIC_FORCEINLINE uint32_t __SXTAB16(uint32_t x, uint32_t y)
 {
     return ((uint32_t)((((((int32_t)y << 24) >> 24) + (((int32_t)x << 16) >> 16)) & (int32_t)0x0000FFFF) |

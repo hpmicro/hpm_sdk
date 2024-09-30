@@ -146,12 +146,20 @@ endfunction()
 #
 function(sdk_ses_src_glob)
     foreach(g ${ARGN})
-        file(GLOB src ${g})
+        file(GLOB_RECURSE src ${g})
         list(APPEND globbed_src ${src})
     endforeach()
     sdk_ses_src(${globbed_src})
 endfunction()
 
+# Add options for SES project
+#
+# Example:
+#   sdk_ses_options(option_key_value_list)
+# :param option_key_value_list: list of option key-value pair, split with space
+#    like "option_a_name=option_a_value" to add option_a_name with value of option_a_value in the project file
+# @public
+#
 function(sdk_ses_options)
     foreach(opt ${ARGN})
         set_property(GLOBAL APPEND PROPERTY ${HPM_SDK_SES_OPTS} ${opt})

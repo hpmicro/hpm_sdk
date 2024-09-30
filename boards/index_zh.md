@@ -5,7 +5,6 @@
    :maxdepth: 3
    :numbered:
 
-   hpm6750evk/README_zh
    hpm6750evk2/README_zh
    hpm6750evkmini/README_zh
    hpm6300evk/README_zh
@@ -20,9 +19,6 @@
 
 **开发板引脚对照表**
 
-:::{tab} HPM6750EVK
-点击{ref}`此处 <lab_hpm6750_evk_board>`查看HPM6750EVK开发板
-:::
 :::{tab} HPM6750EVK2
 点击{ref}`此处 <lab_hpm6750_evk2_board>`查看HPM6750EVK2开发板
 :::
@@ -47,7 +43,6 @@
 :::{tab} HPM6E00EVK
 点击{ref}`此处 <lab_hpm6e00_evk_board>`查看HPM6E00EVK开发板
 :::
-
 (lab_board_resource)=
 (lab_board_lcd_pin)=
 (lab_board_app_i2c_pin)=

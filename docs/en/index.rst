@@ -16,6 +16,7 @@ Sections
 
    get_started
    boards/index_en
+   components/index_en
    samples/index_en
    samples/drivers/index_en
    docs/cmake_intro
