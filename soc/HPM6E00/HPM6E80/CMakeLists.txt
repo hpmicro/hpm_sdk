@@ -32,8 +32,8 @@ if(${INCLUDE_BOOTHEADER})
 endif()
 
 sdk_nds_compile_options(-mcpu=d45)
-sdk_zcc_compile_options(-mtune=andes-kavalan)
-sdk_zcc_ld_options(-mtune=andes-kavalan)
+sdk_zcc_compile_options(-mtune=andes-d45-series)
+sdk_zcc_ld_options(-mtune=andes-d45-series)
 
 if(NOT HPM_SOC_DISABLE_B_EXT)
     get_toolchain_gcc_spec(spec)

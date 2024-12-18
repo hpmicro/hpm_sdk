@@ -31,8 +31,8 @@ if(${INCLUDE_BOOTHEADER})
 endif()
 
 sdk_nds_compile_options(-mcpu=d45)
-sdk_zcc_compile_options(-mtune=andes-kavalan)
-sdk_zcc_ld_options(-mtune=andes-kavalan)
+sdk_zcc_compile_options(-mtune=andes-d45-series)
+sdk_zcc_ld_options(-mtune=andes-d45-series)
 
 set(SOC_LINKER_SCRIPT "" PARENT_SCOPE)
 if(NOT DEFINED USE_CUSTOM_LINKER)
