@@ -126,6 +126,11 @@ def generate_file_structure(files, sdk_base, out_dir, project_dir, board_dir, bo
                 t = os.path.join(HPM_SDK_BASE, "samples")
                 t = re.sub(r'\\', r'/', t)  # convert windows path separator
                 ses_file = re.sub(re.escape(t), 'sdk_sample', ses_file)
+            elif HELPER.is_sdk_unittest_file(f, sdk_base):
+                ses_file = re.sub(r'\\', r'/', HELPER.get_file_path(f, sdk_base, out_dir, False))
+                t = os.path.join(HPM_SDK_BASE, "unit_test")
+                t = re.sub(r'\\', r'/', t)  # convert windows path separator
+                ses_file = re.sub(re.escape(t), 'sdk_unittest', ses_file)
             else:
                 ses_file = re.sub(r'\\', r'/', HELPER.get_file_path(f, sdk_base, out_dir, use_outdir_relpath))
         elif HELPER.is_custom_board_file(f, board_dir):
@@ -294,7 +299,10 @@ def process_extra_options(config):
     popluate_printf_scanf_opts(printf, scanf, opts)
 
     config["target"]["extra_ses_options"] = opts
-    config["target"]["segger_rtl_linker_symbols"] = get_segger_rtl_linker_symbols(printf, scanf)
+    m = re.match(r'segger', config["target"]["linker_variant"], re.IGNORECASE)
+    if m is None:
+        # Generate Segger RTL linker symbols, only when linker is not SEGGER
+        config["target"]["segger_rtl_linker_symbols"] = get_segger_rtl_linker_symbols(printf, scanf)
 
 def get_openocd_cmdline(config, sdk_base, out_dir, use_outdir_relpath = True):
     if not os.path.exists(config["target"]["openocd"]):
@@ -371,8 +379,20 @@ def generate_ses_project(config, out_dir=".", project_dir = None):
     config["target"]["register_definition"] = HELPER.get_file_path(config["target"]["register_definition"], sdk_base, out_dir, use_outdir_relpath)
     config["target"]["cpu_register_definition"] = HELPER.get_file_path(config["target"]["cpu_register_definition"], sdk_base, out_dir, use_outdir_relpath)
     config["target"]["gcc_opt_level"] = get_gcc_opt_level(config["target"]["gcc_opt_level"].strip())
+
+    config["target"]["toolchain_variant"] = config["target"]["toolchain_variant"].title()
+
     if config["target"]["ses_link_input"].strip():
         config["target"]["ses_link_input"] = HELPER.get_file_path(config["target"]["ses_link_input"], sdk_base, out_dir, use_outdir_relpath)
+
+    if not "compiler_variant" in config["target"].keys() or (len(config["target"]["compiler_variant"].strip()) == 0):
+        config["target"]["compiler_variant"] = "SEGGER"
+
+    if not "assembler_variant" in config["target"].keys() or (len(config["target"]["assembler_variant"].strip()) == 0):
+        config["target"]["assembler_variant"] = "SEGGER"
+
+    if "linker_variant" in config["target"].keys() and (len(config["target"]["linker_variant"].strip())):
+        config["target"]["linker_variant"] = config["target"]["linker_variant"].upper()
 
     if "openocd" in config["target"].keys():
         config["target"]["openocd_cmdline"] = get_openocd_cmdline(config, sdk_base, out_dir, use_outdir_relpath)
@@ -413,6 +433,9 @@ def main():
 
     config = HELPER.load_config(input_file)
     ses_project = generate_ses_project(config, out_dir, project_dir)
+    if ses_project is None:
+        print("!! Segger: Failed to generate project file")
+        sys.exit(1)
 
     out_dir += "/"
     output_filename = out_dir + config["target"]["name"].replace(".", "_")

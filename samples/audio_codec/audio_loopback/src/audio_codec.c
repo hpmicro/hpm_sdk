@@ -17,7 +17,8 @@
 #endif
 #define CODEC_I2S            BOARD_APP_I2S_BASE
 #define CODEC_I2S_CLK_NAME   BOARD_APP_I2S_CLK_NAME
-#define CODEC_I2S_DATA_LINE  BOARD_APP_I2S_DATA_LINE
+#define CODEC_I2S_TX_DATA_LINE  BOARD_APP_I2S_TX_DATA_LINE
+#define CODEC_I2S_RX_DATA_LINE  BOARD_APP_I2S_RX_DATA_LINE
 
 #define CODEC_SAMPLE_RATE_HZ 48000U
 #define CODEC_BIT_WIDTH      32U
@@ -61,7 +62,7 @@ void test_codec_playback_record(void)
 {
     uint32_t data;
     i2s_config_t i2s_config;
-    i2s_transfer_config_t transfer;
+    i2s_multiline_transfer_config_t transfer;
     uint32_t i2s_mclk_hz;
 
     /* Config I2S interface to CODEC */ 
@@ -69,13 +70,16 @@ void test_codec_playback_record(void)
     i2s_config.enable_mclk_out = true;
     i2s_init(CODEC_I2S, &i2s_config);
 
-    i2s_get_default_transfer_config(&transfer);
-    transfer.data_line = CODEC_I2S_DATA_LINE;
+    i2s_get_default_multiline_transfer_config(&transfer);
     transfer.sample_rate = CODEC_SAMPLE_RATE_HZ;
     transfer.master_mode = true;
+    transfer.rx_data_line_en[CODEC_I2S_RX_DATA_LINE] = true;
+    transfer.tx_data_line_en[CODEC_I2S_TX_DATA_LINE] = true;
+    transfer.rx_channel_slot_mask[CODEC_I2S_RX_DATA_LINE] = 0x03;
+    transfer.tx_channel_slot_mask[CODEC_I2S_TX_DATA_LINE] = 0x03;
     i2s_mclk_hz = clock_get_frequency(CODEC_I2S_CLK_NAME);
     /* configure I2S RX and TX */
-    if (status_success != i2s_config_transfer(CODEC_I2S, i2s_mclk_hz, &transfer))
+    if (status_success != i2s_config_multiline_transfer(CODEC_I2S, i2s_mclk_hz, &transfer))
     {
         printf("I2S config failed for CODEC\n");
         while(1);
@@ -97,10 +101,10 @@ void test_codec_playback_record(void)
     i2s_start(CODEC_I2S);
     while(1) {
         /* record from codec and play by codec */
-        while (i2s_get_rx_line_fifo_level(CODEC_I2S, CODEC_I2S_DATA_LINE) == 0) {
+        while (i2s_get_rx_line_fifo_level(CODEC_I2S, CODEC_I2S_RX_DATA_LINE) == 0) {
         }
-        i2s_receive_data(CODEC_I2S, CODEC_I2S_DATA_LINE, &data);
-        i2s_send_data(CODEC_I2S, CODEC_I2S_DATA_LINE, data);
+        i2s_receive_data(CODEC_I2S, CODEC_I2S_RX_DATA_LINE, &data);
+        i2s_send_data(CODEC_I2S, CODEC_I2S_TX_DATA_LINE, data);
     }
 }
 

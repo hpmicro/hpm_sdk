@@ -65,14 +65,6 @@ message(STATUS "${BOARD_MESSAGE}")
 
 find_path(APP_YAML_PATH NAMES app.yaml PATHS ${APP_SRC_DIR} NO_DEFAULT_PATH)
 
-if(NOT RV_ABI)
-    set(RV_ABI "ilp32")
-endif()
-
-if(NOT RV_ARCH)
-    set(RV_ARCH "rv32imac")
-endif()
-
 # add basic extentions
 include(${HPM_SDK_BASE}/cmake/python.cmake)
 include(${HPM_SDK_BASE}/cmake/cmake-ext.cmake)

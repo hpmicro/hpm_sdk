@@ -236,7 +236,7 @@ int main(void)
 {
     /* Initialize the board. */
     board_init();
-    board_init_usb_pins();
+    board_init_usb(HPM_USB0);
     board_init_gpio_pins();
 
     usb_device_hw_setup();
@@ -284,6 +284,9 @@ void tx_application_define(void *first_unused_memory)
     /* Initialize the device CDC class. This class owns both interfaces
      * starting with 0. */
     status = ux_device_stack_class_register((UCHAR *)"ACM1", ux_device_class_cdc_acm_entry, 1, 0, &parameter1);
+
+    if (status != UX_SUCCESS)
+        goto err;
 
     /* Set the parameters for callback when insertion/extraction of a CDC
      * device.  */

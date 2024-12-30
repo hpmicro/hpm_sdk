@@ -27,16 +27,15 @@ typedef struct {
     uint32_t length;
 } audio_data_t;
 
-
+SDK_DECLARE_EXT_ISR_M(SMIX_DMA_IRQ, smix_dma_isr)
 void smix_dma_isr(void)
 {
     if (smix_dma_check_transfer_complete(SMIX, SMIX_DMA_CH_FOR_DST)) {
         dma_transfer_done = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(SMIX_DMA_IRQ, smix_dma_isr)
 
-
+SDK_DECLARE_EXT_ISR_M(APP_BOARD_GPTMR_IRQ, tick_ms_isr)
 void tick_ms_isr(void)
 {
     if (gptmr_check_status(APP_BOARD_GPTMR, GPTMR_CH_RLD_STAT_MASK(APP_BOARD_GPTMR_CH))) {
@@ -46,8 +45,6 @@ void tick_ms_isr(void)
         smix_set_dst_gain(HPM_SMIX, SMIX_DST_CH, gain_array[timer_isr_count]);
     }
 }
-SDK_DECLARE_EXT_ISR_M(APP_BOARD_GPTMR_IRQ, tick_ms_isr);
-
 
 static hpm_stat_t smix_get_sample_rate_ratio(uint32_t src_sample_rate, uint32_t dst_sample_rate, smix_mixer_rate_convert_t *ratio)
 {
@@ -79,8 +76,8 @@ static void timer_config(void)
     uint32_t gptmr_freq;
     gptmr_channel_config_t config;
 
+    clock_add_to_group(APP_BOARD_GPTMR_CLOCK, 0);
     gptmr_channel_get_default_config(APP_BOARD_GPTMR, &config);
-
     gptmr_freq = clock_get_frequency(APP_BOARD_GPTMR_CLOCK);
     config.reload = gptmr_freq * 2; /* 2s */
     gptmr_channel_config(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH, &config, false);
@@ -237,6 +234,7 @@ int main(void)
     hpm_stat_t stat;
 
     board_init();
+    clock_add_to_group(clock_smix, 0);
     printf("Sound mixer change DAO volume example\n");
 
     audio_data_t source_data;
@@ -251,6 +249,7 @@ int main(void)
     target_data.audio_depth = source_data.audio_depth;
     target_data.channel_num = source_data.channel_num;
 
+    board_init_dao_clock();
     init_dao_pins();
     i2s_mclk_freq = board_config_i2s_clock(TEST_I2S, SMIX_OUTPUT_SAMPLE_RATE);
 

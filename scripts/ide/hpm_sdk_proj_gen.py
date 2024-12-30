@@ -79,9 +79,15 @@ class ProjGenHelper:
     def is_sdk_file(self, f, sdk_base):
         return self.file_in_directory(os.path.realpath(f), os.path.realpath(sdk_base))
 
-    def is_sdk_sample_file(self, f, sdk_base = ""):
+    def is_sdk_target_file(self, f, sdk_base = "", target = ""):
         tmp = re.sub(re.escape(sdk_base) + r'[\\/]', '', f)
-        return re.search(r'^samples', tmp)
+        return re.search(re.escape(target), tmp)
+
+    def is_sdk_sample_file(self, f, sdk_base = ""):
+        return self.is_sdk_target_file(f, sdk_base, "samples")
+
+    def is_sdk_unittest_file(self, f, sdk_base = ""):
+        return self.is_sdk_target_file(f, sdk_base, "unit_test")
 
     def get_file_path(self, file, sdk_base, out_dir, use_outdir_relpath = True, relpath_prefix = None):
         if use_outdir_relpath:

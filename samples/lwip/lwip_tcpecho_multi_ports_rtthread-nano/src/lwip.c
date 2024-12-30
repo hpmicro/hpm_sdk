@@ -148,7 +148,7 @@ void rt_hw_board_init(void)
 
 int rtthread_init(void)
 {
-    rt_thread_t main_thread = rt_thread_create("main", thread_entry, NULL, 1024, MAIN_TASK_PRIO, 10);
+    rt_thread_t main_thread = rt_thread_create("main", thread_entry, NULL, 2048, MAIN_TASK_PRIO, 10);
     rt_thread_startup(main_thread);
 
     return 0;

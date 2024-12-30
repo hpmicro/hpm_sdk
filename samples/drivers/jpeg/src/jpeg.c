@@ -225,6 +225,8 @@ void decode_jpeg(void)
 int main(void)
 {
     board_init();
+
+    clock_add_to_group(clock_jpeg, 0);
     board_init_lcd();
 
     printf("jpeg example\r\n");

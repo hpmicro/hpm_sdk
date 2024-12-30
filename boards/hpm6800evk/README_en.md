@@ -127,7 +127,7 @@ The UART0 use for debugger console:
 | GPTMR2.CAPT_0 | PE22  | J19[9]  |
 | GPTMR2.COMP_0 | PE23  | J19[12] | MCLK of i2s emulation  |
 | GPTMR2.COMP_1 | PE24  | J19[10] | LRCK of i2s emulation |
-| GPTMR2.COMP_2 | PE26  | J19[6]  | BLCK of i2s emulation |
+| GPTMR2.COMP_2 | PE26  | J19[8]  | BLCK of i2s emulation |
 
 - headphone interface
 

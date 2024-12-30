@@ -13,9 +13,9 @@
 
 /* Define */
 
-#define TEST_BUFFER_SIZE           64
-#define TEST_BURST_SIZE            32
-#define TEST_DMA_CONFIG_BURST_SIZE DMA_NUM_TRANSFER_PER_BURST_32T
+#define TEST_BUFFER_SIZE           64   /* Fixed burst max size: XDMA 128 bytes, HDMA 64 bytes */
+#define TEST_DMA_CONFIG_BURST_SIZE DMA_NUM_TRANSFER_PER_BURST_16T
+#define TEST_BURST_SIZE            (1 << TEST_DMA_CONFIG_BURST_SIZE)
 #define TEST_DMA_CH                31
 
 /* dma buffer should be 4-byte aligned */
@@ -48,6 +48,7 @@ int main(void)
     return 0;
 }
 
+SDK_DECLARE_EXT_ISR_M(TEST_DMA_IRQ, dma_isr)
 void dma_isr(void)
 {
     uint32_t stat;
@@ -61,7 +62,6 @@ void dma_isr(void)
         dma_transfer_done = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(TEST_DMA_IRQ, dma_isr)
 
 /*
  * Static Function Definition
@@ -93,7 +93,7 @@ static void test_dma_src_addr_fix_burst_non_swap(void)
     ch_config.src_addr = core_local_mem_to_sys_address(0, (uint32_t)&s_burst_buf[0]);
     ch_config.dst_addr = core_local_mem_to_sys_address(0, (uint32_t)&s_normal_buf[0]);
     ch_config.burst_opt = DMA_SRC_BURST_OPT_STANDAND_SIZE;
-    ch_config.src_burst_size = TEST_DMA_CONFIG_BURST_SIZE; /* SrcBurstSize x SrcWidth */
+    ch_config.src_burst_size = TEST_DMA_CONFIG_BURST_SIZE; /* SrcBurstSize x SrcWidth = 16 * 4 = 64 bytes*/
     ch_config.size_in_byte = TEST_BUFFER_SIZE * TEST_BURST_SIZE;
     ch_config.en_src_burst_in_fixed_trans = true;
     ch_config.en_dst_burst_in_fixed_trans = false;
@@ -137,7 +137,7 @@ static void test_dma_src_addr_fix_burst_swap_by_byte(void)
     ch_config.src_addr = core_local_mem_to_sys_address(0, (uint32_t)&s_burst_buf[0]);
     ch_config.dst_addr = core_local_mem_to_sys_address(0, (uint32_t)&s_normal_buf[0]);
     ch_config.burst_opt = DMA_SRC_BURST_OPT_STANDAND_SIZE;
-    ch_config.src_burst_size = TEST_DMA_CONFIG_BURST_SIZE; /* SrcBurstSize x SrcWidth */
+    ch_config.src_burst_size = TEST_DMA_CONFIG_BURST_SIZE; /* SrcBurstSize x SrcWidth = 16 * 4 = 64 bytes*/
     ch_config.size_in_byte = TEST_BUFFER_SIZE * TEST_BURST_SIZE;
     ch_config.en_src_burst_in_fixed_trans = true;
     ch_config.en_dst_burst_in_fixed_trans = false;
@@ -183,7 +183,7 @@ static void test_dma_src_addr_fix_burst_swap_by_half_word(void)
     ch_config.src_addr = core_local_mem_to_sys_address(0, (uint32_t)&s_burst_buf[0]);
     ch_config.dst_addr = core_local_mem_to_sys_address(0, (uint32_t)&s_normal_buf[0]);
     ch_config.burst_opt = DMA_SRC_BURST_OPT_STANDAND_SIZE;
-    ch_config.src_burst_size = TEST_DMA_CONFIG_BURST_SIZE; /* SrcBurstSize x SrcWidth */
+    ch_config.src_burst_size = TEST_DMA_CONFIG_BURST_SIZE; /* SrcBurstSize x SrcWidth = 16 * 4 = 64 bytes*/
     ch_config.size_in_byte = TEST_BUFFER_SIZE * TEST_BURST_SIZE;
     ch_config.en_src_burst_in_fixed_trans = true;
     ch_config.en_dst_burst_in_fixed_trans = false;
@@ -229,7 +229,7 @@ static void test_dma_src_addr_fix_burst_swap_by_swap_table(void)
     ch_config.src_addr = core_local_mem_to_sys_address(0, (uint32_t)&s_burst_buf[0]);
     ch_config.dst_addr = core_local_mem_to_sys_address(0, (uint32_t)&s_normal_buf[0]);
     ch_config.burst_opt = DMA_SRC_BURST_OPT_STANDAND_SIZE;
-    ch_config.src_burst_size = TEST_DMA_CONFIG_BURST_SIZE; /* SrcBurstSize x SrcWidth */
+    ch_config.src_burst_size = TEST_DMA_CONFIG_BURST_SIZE; /* SrcBurstSize x SrcWidth = 16 * 4 = 64 bytes*/
     ch_config.size_in_byte = TEST_BUFFER_SIZE * TEST_BURST_SIZE;
     ch_config.en_src_burst_in_fixed_trans = true;
     ch_config.en_dst_burst_in_fixed_trans = false;

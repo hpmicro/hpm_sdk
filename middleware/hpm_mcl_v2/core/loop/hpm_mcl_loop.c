@@ -5,6 +5,7 @@
  *
  */
 #include "hpm_mcl_loop.h"
+#include "hpm_csr_drv.h"
 
 hpm_mcl_stat_t hpm_mcl_loop_init(mcl_loop_t *loop, mcl_loop_cfg_t *cfg, mcl_cfg_t *mcl_cfg,
                                 mcl_encoder_t *encoder, mcl_analog_t *analog,
@@ -63,6 +64,7 @@ hpm_mcl_stat_t hpm_mcl_loop_init(mcl_loop_t *loop, mcl_loop_cfg_t *cfg, mcl_cfg_
     loop->exec_ref.position = 0;
     loop->exec_ref.speed = 0;
     loop->rundata.block.dir = motor_dir_forward;
+    loop->rundata.current_loop_tick = 0;
 
     hpm_mcl_loop_disable_all_user_set_value(loop);
 
@@ -280,6 +282,9 @@ hpm_mcl_stat_t hpm_mcl_current_foc_loop(mcl_loop_t *loop)
     float ref_d = 0, ref_q = 0;
     float ud, uq;
     float theta_abs;
+#if defined(MCL_EN_LOOP_TIME_COUNT) && MCL_EN_LOOP_TIME_COUNT
+    uint64_t delta_time;
+#endif
     mcl_hardware_clc_cfg_t *clc_cfg;
     mcl_control_svpwm_duty_t duty;
 #if defined(MCL_CFG_EN_DEAD_AREA_COMPENSATION) && MCL_CFG_EN_DEAD_AREA_COMPENSATION
@@ -333,6 +338,9 @@ hpm_mcl_stat_t hpm_mcl_current_foc_loop(mcl_loop_t *loop)
              */
             MCL_STATUS_SET_IF_TRUE(mcl_success != hpm_mcl_analog_get_value(loop->analog, analog_a_current, &ia), loop->status, loop_status_fail);
             MCL_STATUS_SET_IF_TRUE(mcl_success != hpm_mcl_analog_get_value(loop->analog, analog_b_current, &ib), loop->status, loop_status_fail);
+#if defined(MCL_EN_LOOP_TIME_COUNT) && MCL_EN_LOOP_TIME_COUNT
+            delta_time = hpm_csr_get_core_mcycle();
+#endif
             ic = -(ia + ib);
             loop->control->method.clarke(ia, ib, ic, &alpha, &beta);
 #if defined(MCL_CFG_EN_SENSORLESS_SMC) && MCL_CFG_EN_SENSORLESS_SMC
@@ -347,6 +355,7 @@ hpm_mcl_stat_t hpm_mcl_current_foc_loop(mcl_loop_t *loop)
 #if defined(MCL_CFG_EN_DQ_AXIS_DECOUPLING) && MCL_CFG_EN_DQ_AXIS_DECOUPLING
             if (loop->cfg->enable_dq_axis_decoupling) {
                 if (loop->cfg->enable_speed_loop) {
+                    sens_speed = hpm_mcl_encoder_get_speed(loop->encoder);
                     ud -= sens_q * sens_speed * (*loop->encoder->pole_num) * (*loop->lq);
                     uq += sens_speed * (*loop->encoder->pole_num) * (*loop->ld * sens_q + *loop->flux);
                 }
@@ -372,10 +381,15 @@ hpm_mcl_stat_t hpm_mcl_current_foc_loop(mcl_loop_t *loop)
                 duty.a += duty_offset.a_offset;
                 duty.b += duty_offset.b_offset;
                 duty.c += duty_offset.c_offset;
+                MCL_VALUE_LIMIT(duty.a, 0, 1);
+                MCL_VALUE_LIMIT(duty.b, 0, 1);
+                MCL_VALUE_LIMIT(duty.c, 0, 1);
             }
 #endif
+#if defined(MCL_EN_LOOP_TIME_COUNT) && MCL_EN_LOOP_TIME_COUNT
+            loop->rundata.current_loop_tick = hpm_csr_get_core_mcycle() - delta_time;
+#endif
             hpm_mcl_drivers_update_bldc_duty(loop->drivers, duty.a, duty.b, duty.c);
-
             break;
         case mcl_mode_hardware_foc:
             clc_cfg = (mcl_hardware_clc_cfg_t *)loop->hardware;
@@ -443,7 +457,7 @@ hpm_mcl_stat_t hpm_mcl_step_foc_loop(mcl_loop_t *loop)
 
 hpm_mcl_stat_t hpm_mcl_block_loop(mcl_loop_t *loop)
 {
-    hpm_mcl_type_t speed_pi_out;
+    hpm_mcl_type_t speed_pi_out = {0};
     float speed_pi_out_fp;
     float ref_speed = 0;
     mcl_control_svpwm_duty_t duty;
@@ -503,7 +517,7 @@ hpm_mcl_stat_t hpm_mcl_loop_start_block(mcl_loop_t *loop)
 
     hpm_mcl_encoder_get_uvw_status(loop->encoder, &level);
     loop->control->method.get_block_sector(*loop->encoder->phase, level.u, level.v, level.w, &sector);
-    hpm_mcl_drivers_block_update(loop->drivers, loop->rundata.block.dir, ((sector + 1) % 7) + 1);
+    hpm_mcl_drivers_block_update(loop->drivers, loop->rundata.block.dir, ((sector + 1) % 6) + 1);
 
     return mcl_success;
 }

@@ -9,5 +9,5 @@ excluded_targets:
 dependency:
   - sdxc
   - i2s
-  - board_audio_out
+  - board_audio_out || board_audio_codec
   - board_sdram

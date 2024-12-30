@@ -474,18 +474,32 @@ void clock_disconnect_group_from_cpu(uint32_t group, uint32_t cpu)
     }
 }
 
+uint32_t clock_get_core_clock_ticks_per_us(void)
+{
+    if (hpm_core_clock == 0U) {
+        clock_update_core_clock();
+    }
+    return (hpm_core_clock + FREQ_1MHz - 1U) / FREQ_1MHz;
+}
+
+uint32_t clock_get_core_clock_ticks_per_ms(void)
+{
+    if (hpm_core_clock == 0U) {
+        clock_update_core_clock();
+    }
+    return (hpm_core_clock + FREQ_1MHz - 1U) / 1000;
+}
+
 void clock_cpu_delay_us(uint32_t us)
 {
-    uint32_t ticks_per_us = (hpm_core_clock + FREQ_1MHz - 1U) / FREQ_1MHz;
-    uint64_t expected_ticks = hpm_csr_get_core_cycle() + ticks_per_us * us;
+    uint64_t expected_ticks = hpm_csr_get_core_cycle() + (uint64_t)clock_get_core_clock_ticks_per_us() * (uint64_t)us;
     while (hpm_csr_get_core_cycle() < expected_ticks) {
     }
 }
 
 void clock_cpu_delay_ms(uint32_t ms)
 {
-    uint32_t ticks_per_us = (hpm_core_clock + FREQ_1MHz - 1U) / FREQ_1MHz;
-    uint64_t expected_ticks = hpm_csr_get_core_cycle() + (uint64_t)ticks_per_us * 1000UL * ms;
+    uint64_t expected_ticks = hpm_csr_get_core_cycle() + (uint64_t)clock_get_core_clock_ticks_per_ms() * (uint64_t)ms;
     while (hpm_csr_get_core_cycle() < expected_ticks) {
     }
 }

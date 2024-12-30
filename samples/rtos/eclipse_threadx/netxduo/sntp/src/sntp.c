@@ -233,10 +233,12 @@ VOID demo_client_thread_entry(ULONG info)
     UINT server_status;
     ULONG base_seconds;
     ULONG base_fraction;
-    ULONG seconds, microseconds, fraction;
+    ULONG seconds = 0;
+    ULONG microseconds = 0;
+    ULONG fraction = 0;
     ULONG milliseconds = 0;
     UINT wait = 0;
-    UINT error_counter = 0;
+    UINT error_counter = 0; /* NOLINT */
     ULONG events = 0;
 #ifdef USE_IPV6
     NXD_ADDRESS sntp_server_address;
@@ -485,6 +487,10 @@ VOID demo_client_thread_entry(ULONG info)
     /* When done with the SNTP Client, we delete it */
     status = nx_sntp_client_delete(&demo_sntp_client);
 
+    if (status != NX_SUCCESS) {
+        error_counter++;
+    }
+
     return;
 }
 
@@ -612,8 +618,8 @@ static VOID print_beijing_time(ULONG seconds_1900)
             seconds_1970--;
         } else {
             if (seconds_1970 == 60) {
-                day = 29;
-                month = 1;
+                day = 29; /* NOLINT */
+                month = 1; /* NOLINT */
                 return;
             }
         }

@@ -32,6 +32,9 @@
 #define ESC_EEPROM_EMULATION_ACK_ERROR      (1)
 #define ESC_EEPROM_EMULATION_CHECKSUM_ERROR (2)
 
+#define ESC_EEPROM_PRODUCT_CODE_WORD_INDEX (0xA)
+#define ESC_EEPROM_REVISION_NUM_WORD_INDEX (0xC)
+
 
 #define ECAT_TIMER_INC_P_MS    1
 extern MEM_ADDR ESCMEM * pEsc;         /* pointer to the ESC */
@@ -79,6 +82,9 @@ void ecat_eeprom_emulation_store(void);
 
 void ecat_eeprom_emulation_reload_response(void);
 #endif /* ESC_EEPROM_EMULATION */
+
+/* calculate ECAT EEPROM  Configuration Area checksum value */
+uint8_t ecat_calculate_eeprom_config_data_checksum(const uint8_t *data, size_t size);
 
 #ifdef __cplusplus
 }

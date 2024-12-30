@@ -32,6 +32,7 @@
 #define TOGGLE_THREAD_SIZE 4096
 
 #define PDMA BOARD_PDMA_BASE
+#define PDMA_CLOCK clock_pdma
 #define LCD_CONTROLLER BOARD_LCD_BASE
 #define LCD_LAYER_INDEX (0)
 #define LCD_LAYER_DONE_MASK (LCD_LAYER_INDEX + 1)
@@ -83,7 +84,8 @@ struct guix_32argb_single_ctx {
 
 static struct guix_32argb_single_ctx single_ctx;
 
-static void hpm_lcdc_isr(void)
+SDK_DECLARE_EXT_ISR_M(LCD_IRQ_NUM, hpm_lcdc_isr)
+void hpm_lcdc_isr(void)
 {
     volatile uint32_t s = lcdc_get_dma_status(LCD_CONTROLLER);
     lcdc_clear_dma_status(LCD_CONTROLLER, s);
@@ -93,7 +95,6 @@ static void hpm_lcdc_isr(void)
         single_ctx.is_display_finished = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(LCD_IRQ_NUM, hpm_lcdc_isr)
 
 static void guix_buffer_toggle(GX_CANVAS *canvas, GX_RECTANGLE *dirty)
 {   
@@ -182,6 +183,9 @@ static GX_DISPLAY_LAYER_SERVICES gx_hpm_layer_services = {
 
 UINT guix_display_driver_hpm6750_32argb_setup(GX_DISPLAY *display)
 {
+#ifdef GUIX_PDMA_ENABLE
+    clock_add_to_group(PDMA_CLOCK, GUIX_RUNNING_CORE_INDEX);
+#endif
     hpm_lcdc_init();
     _gx_display_driver_32argb_setup(display, GX_NULL, guix_buffer_toggle);
     display->gx_display_layer_services = &gx_hpm_layer_services;

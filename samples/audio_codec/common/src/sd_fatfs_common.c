@@ -61,7 +61,7 @@ FRESULT sd_choose_music(char *target_filetype, char *filename)
     FILINFO fil;
     FRESULT rsl;
     char *ret;
-    char option;
+    char option = '0';
 
     rsl = f_opendir(&dir, c_driver_num_buf);
     if (rsl != FR_OK) {

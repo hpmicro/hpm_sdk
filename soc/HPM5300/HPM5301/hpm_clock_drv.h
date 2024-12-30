@@ -123,7 +123,7 @@ typedef enum _clock_name {
 
     clock_mbx0 = MAKE_CLOCK_NAME(sysctl_resource_mbx0, CLK_SRC_GROUP_AHB, 0),
     clock_crc0 = MAKE_CLOCK_NAME(sysctl_resource_crc0, CLK_SRC_GROUP_AHB, 1),
-    clock_acmp = MAKE_CLOCK_NAME(sysctl_resource_acmp, CLK_SRC_GROUP_AHB, 2),
+    clock_acmp0 = MAKE_CLOCK_NAME(sysctl_resource_acmp, CLK_SRC_GROUP_AHB, 2),
     clock_kman = MAKE_CLOCK_NAME(sysctl_resource_kman, CLK_SRC_GROUP_AHB, 8),
     clock_gpio = MAKE_CLOCK_NAME(sysctl_resource_gpio, CLK_SRC_GROUP_AHB, 9),
     clock_hdma = MAKE_CLOCK_NAME(sysctl_resource_hdma, CLK_SRC_GROUP_AHB, 10),
@@ -153,6 +153,9 @@ typedef enum _clock_name {
     clk_pll1clk1 = MAKE_CLOCK_NAME(sysctl_resource_clk1_pll1, CLK_SRC_GROUP_SRC, 5),
     clk_pll1clk2 = MAKE_CLOCK_NAME(sysctl_resource_clk2_pll1, CLK_SRC_GROUP_SRC, 6),
     clk_pll1clk3 = MAKE_CLOCK_NAME(sysctl_resource_clk3_pll1, CLK_SRC_GROUP_SRC, 7),
+
+    /* Legacy name, kept for backwards compatibility */
+    clock_acmp = clock_acmp0,
 } clock_name_t;
 
 extern uint32_t hpm_core_clock;
@@ -289,6 +292,20 @@ void clock_connect_group_to_cpu(uint32_t group, uint32_t cpu);
  * @param[in] cpu CPU index, valid value is 0/1
  */
 void clock_disconnect_group_from_cpu(uint32_t group, uint32_t cpu);
+
+/**
+ * @brief Get core clock ticks per microsecond
+ *
+ * @return core clock ticks per microsecond
+ */
+uint32_t clock_get_core_clock_ticks_per_us(void);
+
+/**
+ * @brief Get core clock ticks per millisecond
+ *
+ * @return core clock ticks per millisecond
+ */
+uint32_t clock_get_core_clock_ticks_per_ms(void);
 
 /**
  * @brief Delay specified microseconds

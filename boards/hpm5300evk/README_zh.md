@@ -106,11 +106,19 @@ HPM5300EVK提供了一系列HPM5300系列微控制器特色外设的接口，包
 | CAN_L | J9[1] |
 | CAN_H | J9[3] |
 
-- PLB输出引脚
+- PLB Pusle输出引脚
 
 | 功能    | 位置   |
 | ------- | ------ |
-| PLB.OUT | P1[24] |
+| PLB.PULSE_OUT | P1[24] |
+
+
+- PLB Filter输出引脚
+
+| 功能    | 位置   |
+| ------- | ------ |
+| PLB.FILTER_IN | J7[9] |
+| PLB.FILTER_OUT | J7[11] |
 
 - OPAMP引脚
 

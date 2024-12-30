@@ -21,6 +21,11 @@ uint8_t mac[] = {MAC_ADDR0, MAC_ADDR1, MAC_ADDR2, MAC_ADDR3, MAC_ADDR4, MAC_ADDR
 ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(TSW_SOC_DATA_BUS_WIDTH) uint8_t send_buff[TSW_SEND_DESC_COUNT][TSW_SEND_BUFF_LEN];
 ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(TSW_SOC_DATA_BUS_WIDTH) uint8_t recv_buff[TSW_RECV_DESC_COUNT][TSW_RECV_BUFF_LEN];
 
+#if defined(ENABLE_TSW_RECEIVE_INTERRUPT) && ENABLE_TSW_RECEIVE_INTERRUPT
+volatile bool rx_flag;
+tsw_frame_t frame[TSW_FRAME_BUFF_COUNT];
+#endif
+
 /*---------------------------------------------------------------------*
  * Initialization
  *---------------------------------------------------------------------*/
@@ -64,11 +69,18 @@ hpm_stat_t tsw_init(TSW_Type *ptr)
     }
 
     /* Initialize DMA for receiving */
+#if defined(ENABLE_TSW_RECEIVE_INTERRUPT) && ENABLE_TSW_RECEIVE_INTERRUPT
+    config.irq = true;
+#endif
     tsw_init_recv(ptr, &config);
 
     for (uint8_t i = 0; i < TSW_RECV_DESC_COUNT; i++) {
         tsw_commit_recv_desc(ptr, recv_buff[i], TSW_RECV_BUFF_LEN, i);
     }
+
+#if defined(ENABLE_TSW_RECEIVE_INTERRUPT) && ENABLE_TSW_RECEIVE_INTERRUPT
+    intc_m_enable_irq(IRQn_TSW_0);  /* Enable TSW CPU Port IRQ */
+#endif
 
     /* Set MDC clock frequency to 2.5MHz */
     tsw_ep_set_mdio_config(BOARD_TSW, BOARD_TSW_PORT, 19);
@@ -77,8 +89,8 @@ hpm_stat_t tsw_init(TSW_Type *ptr)
     rtl8211_reset(ptr, BOARD_TSW_PORT);
     rtl8211_basic_mode_default_config(ptr, &phy_config);
     if (rtl8211_basic_mode_init(ptr, BOARD_TSW_PORT, &phy_config) == true) {
-      printf("TSW phy init passed !\n");
-      return status_success;
+        printf("TSW phy init passed !\n");
+        return status_success;
     } else {
         printf("TSW phy init failed !\n");
         return status_fail;
@@ -101,7 +113,11 @@ int main(void)
     /* Reset an TSW PHY */
     board_reset_tsw_phy(BOARD_TSW, BOARD_TSW_PORT);
 
+#if defined(ENABLE_TSW_RECEIVE_INTERRUPT) && ENABLE_TSW_RECEIVE_INTERRUPT
+    printf("This is a TSW demo: TCP Echo (Interrupt Usage)\n");
+#else
     printf("This is a TSW demo: TCP Echo (Polling Usage)\n");
+#endif
 
     printf("LwIP Version: %s\n", LWIP_VERSION_STRING);
 

@@ -39,7 +39,7 @@ define block SAFESTACK with size = __size_safestack__, alignment = 8 { };
 define block RW_DATA with static base GPREL { rw data };
 
 define block cherryusb_usbh_class_info                       { section .usbh_class_info };
-define block framebuffer                                     { section .framebuffer };
+define block framebuffer                                     { section .framebuffer, section .framebuffer.* };
 
 define block rtthread_FSymTab                                { section FSymTab };
 define block rtthread_VSymTab                                { section VSymTab };
@@ -53,12 +53,12 @@ define exported symbol __share_mem_start__ = start(SHARE_RAM);
 define exported symbol __share_mem_end__ = end(SHARE_RAM) + 1;
 
 /* Initialization */
-do not initialize                           { section .noncacheable, section .fast_ram };
+do not initialize                           { section .noncacheable, section .fast_ram };    // Legacy sections, kept for backwards compatibility
 do not initialize                           { section .non_init, section .non_init.*, section .*.non_init, section .*.non_init.* };
 do not initialize                           { section .no_init, section .no_init.*, section .*.no_init, section .*.no_init.* };   // Legacy sections, kept for backwards compatibility
 do not initialize                           { section .noinit, section .noinit.*, section .*.noinit, section .*.noinit.* };       // Legacy sections, used by some SDKs/HALs
 
-initialize by copy with packing=auto        { section .noncacheable.init, section .fast_ram.init };
+initialize by copy with packing=auto        { section .noncacheable.init, section .noncacheable.init.*, section .fast_ram.init, section .fast_ram.init.* };
 initialize by copy with packing=auto        { section .fast, section .fast.*, section .*.fast, section .*.fast.* };               // "RAM Code" sections
 initialize by copy with packing=none        { section .vector_table };
 initialize by copy with packing=none        { section .isr_vector };
@@ -82,10 +82,10 @@ place in AXI_SRAM                           { block framebuffer };
 place in AXI_SRAM                           {
                                               block RW_DATA
                                             };
-place in NONCACHEABLE_RAM                   { section .noncacheable, section .noncacheable.init, section .noncacheable.bss };  // Noncacheable
-place in SHARE_RAM                          { section .sh_mem};                                     // Share memory
-place in AHB_SRAM                           { section .ahb_sram};                                   // AHB SRAM memory
-place in DLM                                { section .fast_ram.init, section .fast_ram, section .fast_ram.bss};   // Fast access memory
+place in NONCACHEABLE_RAM                   { section .noncacheable.non_init, section .noncacheable.non_init.*, section .noncacheable.init, section .noncacheable.init.*, section .noncacheable.bss, section .noncacheable.bss.*, section .noncacheable };  // Noncacheable
+place in SHARE_RAM                          { section .sh_mem, section .sh_mem.*};                                     // Share memory
+place in AHB_SRAM                           { section .ahb_sram, section .ahb_sram.*};                                   // AHB SRAM memory
+place in DLM                                { section .fast_ram.init, section .fast_ram.init.*, section .fast_ram.non_init,  section .fast_ram.non_init.*, section .fast_ram.bss, section .fast_ram.bss.*, section .fast_ram };   // Fast access memory
 place in DLM                                { block HEAP };                                         // Heap reserved block
 place at end of DLM                         { block SAFESTACK, block CSTACK };                      // Stack reserved block
 

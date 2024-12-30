@@ -16,7 +16,7 @@
 #define TRACE_CNT 1024
 #define TRIG_POINT 64
 
-ATTR_PLACE_AT(".ahb_sram") uint32_t lobs_buffer[TRACE_CNT * 4];
+ATTR_PLACE_AT(".ahb_sram") lobs_trace_data_t lobs_buffer[TRACE_CNT];
 
 #if defined(LOBS_USE_TWO_GROUP) && LOBS_USE_TWO_GROUP
 static void init_lobs_two_group_config(void)
@@ -140,6 +140,8 @@ int main(void)
 {
     board_init();
 
+    clock_add_to_group(clock_lobs, 0);
+
     printf("lobs example\n\n");
 
 #if defined(LOBS_USE_TWO_GROUP) && LOBS_USE_TWO_GROUP
@@ -162,6 +164,7 @@ int main(void)
     return 0;
 }
 
+SDK_DECLARE_EXT_ISR_M(IRQn_LOBS, lobs_isr)
 void lobs_isr(void)
 {
     lobs_unlock(HPM_LOBS);
@@ -169,4 +172,3 @@ void lobs_isr(void)
     lobs_lock(HPM_LOBS);
     printf("lobs fifo full!\n");
 }
-SDK_DECLARE_EXT_ISR_M(IRQn_LOBS, lobs_isr)

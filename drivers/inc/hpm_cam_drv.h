@@ -69,7 +69,7 @@ typedef enum {
 #define CAM_COLOR_FORMAT_RGB888 (CAM_CR1_COLOR_FORMATS_SET(2))
 #define CAM_COLOR_FORMAT_RGB565 (CAM_CR1_COLOR_FORMATS_SET(4))
 #define CAM_COLOR_FORMAT_RGB555 (CAM_CR1_COLOR_FORMATS_SET(6))
-#define CAM_COLOR_FORMAT_YCBCR422 (CAM_CR1_COLOR_FORMATS_SET(7))
+#define CAM_COLOR_FORMAT_YCBCR422_YUV422 (CAM_CR1_COLOR_FORMATS_SET(7))
 #define CAM_COLOR_FORMAT_YUV444 (CAM_CR1_COLOR_FORMATS_SET(8))
 #define CAM_COLOR_FORMAT_RAW8 (CAM_CR1_COLOR_FORMATS_SET(0xf))
 #define CAM_COLOR_FORMAT_UNSUPPORTED (1)
@@ -135,8 +135,9 @@ static inline uint32_t cam_get_pixel_format(display_pixel_format_t format)
     switch (format) {
     case display_pixel_format_rgb565:
         return CAM_COLOR_FORMAT_RGB565;
+    case display_pixel_format_yuv422:
     case display_pixel_format_ycbcr422:
-        return CAM_COLOR_FORMAT_YCBCR422;
+        return CAM_COLOR_FORMAT_YCBCR422_YUV422;
     case display_pixel_format_raw8:
         return CAM_COLOR_FORMAT_RAW8;
     default:

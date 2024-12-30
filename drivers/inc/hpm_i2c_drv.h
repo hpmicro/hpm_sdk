@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -26,6 +26,7 @@ enum {
     status_i2c_invalid_data = MAKE_STATUS(status_group_i2c, 2),
     status_i2c_no_addr_hit = MAKE_STATUS(status_group_i2c, 3),
     status_i2c_transmit_not_completed = MAKE_STATUS(status_group_i2c, 4),
+    status_i2c_bus_busy = MAKE_STATUS(status_group_i2c, 5),
     status_i2c_not_supported = MAKE_STATUS(status_group_i2c, 9),
 };
 
@@ -88,9 +89,10 @@ enum {
 #define I2C_WR                0x0000    /* not operable with read flags*/
 #define I2C_RD               (1u << 0)  /* not operable with write flags*/
 #define I2C_ADDR_10BIT       (1u << 2)  /* this is a ten bit chip address */
-#define I2C_NO_START         (1u << 4)  /* no start */
+#define I2C_NO_START         (1u << 4)  /* no start phase */
+#define I2C_NO_ADDRESS       (1u << 5)  /* no address phase */
 #define I2C_NO_READ_ACK      (1u << 6)  /* when I2C reading, we do not ACK */
-#define I2C_NO_STOP          (1u << 7)  /* no stop */
+#define I2C_NO_STOP          (1u << 7)  /* no stop phase */
 #define I2C_WRITE_CHECK_ACK  (1u << 8)  /* when I2C writing, need check the slave returns ack */
 
 /**
@@ -674,6 +676,147 @@ static inline void i2c_gen_reset_signal(I2C_Type *ptr, uint8_t clk_len)
  */
 hpm_stat_t i2c_master_transfer(I2C_Type *ptr, const uint16_t device_address,
                                     uint8_t *buf, const uint32_t size,  uint16_t flags);
+
+/**
+ * @brief Set the I2C data transfer count
+ *
+ * This function configures the I2C controller to specify the amount of data to be transferred.
+ * It ensures that the data size does not exceed the system's maximum transfer limit.
+ *
+ * @param [in] ptr I2C base address
+ * @param [in] size The amount of data to be transferred, in bytes
+ * @retval hpm_stat_t status_success if set without any error
+ */
+static inline hpm_stat_t i2c_set_data_count(I2C_Type *ptr, uint32_t size)
+{
+    if (size > I2C_SOC_TRANSFER_COUNT_MAX) {
+        return status_invalid_argument;
+    }
+#ifdef I2C_CTRL_DATACNT_HIGH_MASK
+    ptr->CTRL &= ~(I2C_CTRL_DATACNT_HIGH_MASK | I2C_CTRL_DATACNT_MASK);
+    ptr->CTRL |= I2C_CTRL_DATACNT_HIGH_SET(I2C_DATACNT_MAP(size) >> 8U) | I2C_CTRL_DATACNT_SET(I2C_DATACNT_MAP(size));
+#else
+    ptr->CTRL &= ~I2C_CTRL_DATACNT_MASK;
+    ptr->CTRL |= I2C_CTRL_DATACNT_SET(I2C_DATACNT_MAP(size));
+#endif
+    return status_success;
+}
+
+/**
+ * @brief Trigger the I2C controller to issue a data transmission command
+ *
+ * Its purpose is to send a command to the I2C controller, instructing it to initiate a data transmission transaction as the master device.
+ *
+ * @param [in] ptr I2C base address
+ */
+static inline void i2c_master_issue_data_transmission(I2C_Type *ptr)
+{
+    ptr->CMD = I2C_CMD_ISSUE_DATA_TRANSMISSION;
+}
+
+/**
+ * @brief Set the slave address for I2C master mode
+ *
+ * This function configures the slave address in I2C master mode by writing the processed slave address to the ADDR register of the I2C module.
+ *
+ * @param [in] ptr I2C base address
+ * @param [in] address The slave address to be set, which is a 7-bit or 10-bit address depending on the I2C protocol
+ */
+static inline void i2c_master_set_slave_address(I2C_Type *ptr, uint16_t address)
+{
+    ptr->ADDR = I2C_ADDR_ADDR_SET(address);
+}
+
+/**
+ * @brief Enable start phase at the transaction
+ *
+ * @param [in] ptr ptr I2C base address
+ */
+static inline void i2c_master_enable_start_phase(I2C_Type *ptr)
+{
+    ptr->CTRL |= I2C_CTRL_PHASE_START_MASK;
+}
+
+/**
+ * @brief Disable start phase at the transaction
+ *
+ * @param [in] ptr ptr I2C base address
+ */
+static inline void i2c_master_disable_start_phase(I2C_Type *ptr)
+{
+    ptr->CTRL &= ~I2C_CTRL_PHASE_START_MASK;
+}
+
+/**
+ * @brief Enable address phase at the transaction
+ *
+ * @param [in] ptr ptr I2C base address
+ */
+static inline void i2c_master_enable_addr_phase(I2C_Type *ptr)
+{
+    ptr->CTRL |= I2C_CTRL_PHASE_ADDR_MASK;
+}
+
+/**
+ * @brief Disable address phase at the transaction
+ *
+ * @param [in] ptr ptr I2C base address
+ */
+static inline void i2c_master_disable_addr_phase(I2C_Type *ptr)
+{
+    ptr->CTRL &= ~I2C_CTRL_PHASE_ADDR_MASK;
+}
+
+/**
+ * @brief Enable data phase at the transaction
+ *
+ * @param [in] ptr ptr I2C base address
+ */
+static inline void i2c_master_enable_data_phase(I2C_Type *ptr)
+{
+    ptr->CTRL |= I2C_CTRL_PHASE_DATA_MASK;
+}
+
+/**
+ * @brief Disable data phase at the transaction
+ *
+ * @param [in] ptr ptr I2C base address
+ */
+static inline void i2c_master_disable_data_phase(I2C_Type *ptr)
+{
+    ptr->CTRL &= ~I2C_CTRL_PHASE_DATA_MASK;
+}
+
+/**
+ * @brief Enable stop phase at the transaction
+ *
+ * @param [in] ptr ptr I2C base address
+ */
+static inline void i2c_master_enable_stop_phase(I2C_Type *ptr)
+{
+    ptr->CTRL |= I2C_CTRL_PHASE_STOP_MASK;
+}
+
+/**
+ * @brief Disable stop phase at the transaction
+ *
+ * @param [in] ptr ptr I2C base address
+ */
+static inline void i2c_master_disable_stop_phase(I2C_Type *ptr)
+{
+    ptr->CTRL &= ~I2C_CTRL_PHASE_STOP_MASK;
+}
+
+/**
+ * @brief set i2c transaction direction
+ *
+ * @param [in] ptr ptr I2C base address
+ */
+static inline void i2c_set_direction(I2C_Type *ptr, bool direction)
+{
+    ptr->CTRL = (ptr->CTRL & ~I2C_CTRL_DIR_MASK) | I2C_CTRL_DIR_SET(direction);
+}
+
 /**
  * @}
  */

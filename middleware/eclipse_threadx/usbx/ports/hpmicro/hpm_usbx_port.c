@@ -150,8 +150,8 @@ static void USBD_IRQHandler(usb_device_handle_t *handle)
     }
 }
 
+SDK_DECLARE_EXT_ISR_M(IRQn_USB0, isr_usb0)
 void isr_usb0(void)
 {
     USBD_IRQHandler(deviceHandle);
 }
-SDK_DECLARE_EXT_ISR_M(IRQn_USB0, isr_usb0)

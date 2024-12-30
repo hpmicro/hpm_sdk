@@ -6036,14 +6036,11 @@
       <BitField name="CH0ERR" start="0" size="1"/>
     </Register>
     <Register name="CH_0_SDFIFOCTRL" start="+0x10" size="0x4">
-      <BitField name="GATE_SAMPLES" start="16" size="8"/>
       <BitField name="THRSH" start="4" size="5"/>
-      <BitField name="D_RDY_INT_EN" start="2" size="1"/>
     </Register>
     <Register name="CH_0_SDCTRLP" start="+0x14" size="0x4">
       <BitField name="MANCH_THR" start="25" size="7"/>
       <BitField name="WDOG_THR" start="17" size="8"/>
-      <BitField name="AF_IE" start="16" size="1"/>
       <BitField name="DFFOVIE" start="15" size="1"/>
       <BitField name="DSATIE" start="14" size="1"/>
       <BitField name="DRIE" start="13" size="1"/>
@@ -6057,13 +6054,6 @@
       <BitField name="EN" start="0" size="1"/>
     </Register>
     <Register name="CH_0_SDCTRLE" start="+0x18" size="0x4">
-      <BitField name="CIC_GATE_TYPE" start="31" size="1"/>
-      <BitField name="CIC_GATE_POL" start="30" size="1"/>
-      <BitField name="CIC_GATE_SEL" start="26" size="4"/>
-      <BitField name="CIC_GATE_EN" start="25" size="1"/>
-      <BitField name="TIMESTAMP_TYPE" start="22" size="1"/>
-      <BitField name="DFIFO_S_T" start="21" size="1"/>
-      <BitField name="DATA_S_T" start="20" size="1"/>
       <BitField name="SGD_ORDR" start="17" size="2"/>
       <BitField name="PWMSYNC" start="16" size="1"/>
       <BitField name="CIC_SCL" start="11" size="4"/>
@@ -6072,10 +6062,7 @@
     </Register>
     <Register name="CH_0_SDST" start="+0x1c" size="0x4">
       <BitField name="PERIOD_MCLK" start="23" size="8"/>
-      <BitField name="SDATA_D0_T1" start="13" size="1"/>
-      <BitField name="SDFIFO_D0_T1" start="12" size="1"/>
       <BitField name="FIFO_DR" start="9" size="1"/>
-      <BitField name="AF" start="8" size="1"/>
       <BitField name="DOV_ERR" start="7" size="1"/>
       <BitField name="DSAT_ERR" start="6" size="1"/>
       <BitField name="WTSYNFLG" start="5" size="1"/>
@@ -6116,14 +6103,11 @@
       <BitField name="CMPL" start="0" size="1"/>
     </Register>
     <Register name="CH_1_SDFIFOCTRL" start="+0x50" size="0x4">
-      <BitField name="GATE_SAMPLES" start="16" size="8"/>
       <BitField name="THRSH" start="4" size="5"/>
-      <BitField name="D_RDY_INT_EN" start="2" size="1"/>
     </Register>
     <Register name="CH_1_SDCTRLP" start="+0x54" size="0x4">
       <BitField name="MANCH_THR" start="25" size="7"/>
       <BitField name="WDOG_THR" start="17" size="8"/>
-      <BitField name="AF_IE" start="16" size="1"/>
       <BitField name="DFFOVIE" start="15" size="1"/>
       <BitField name="DSATIE" start="14" size="1"/>
       <BitField name="DRIE" start="13" size="1"/>
@@ -6137,13 +6121,6 @@
       <BitField name="EN" start="0" size="1"/>
     </Register>
     <Register name="CH_1_SDCTRLE" start="+0x58" size="0x4">
-      <BitField name="CIC_GATE_TYPE" start="31" size="1"/>
-      <BitField name="CIC_GATE_POL" start="30" size="1"/>
-      <BitField name="CIC_GATE_SEL" start="26" size="4"/>
-      <BitField name="CIC_GATE_EN" start="25" size="1"/>
-      <BitField name="TIMESTAMP_TYPE" start="22" size="1"/>
-      <BitField name="DFIFO_S_T" start="21" size="1"/>
-      <BitField name="DATA_S_T" start="20" size="1"/>
       <BitField name="SGD_ORDR" start="17" size="2"/>
       <BitField name="PWMSYNC" start="16" size="1"/>
       <BitField name="CIC_SCL" start="11" size="4"/>
@@ -6152,10 +6129,7 @@
     </Register>
     <Register name="CH_1_SDST" start="+0x5c" size="0x4">
       <BitField name="PERIOD_MCLK" start="23" size="8"/>
-      <BitField name="SDATA_D0_T1" start="13" size="1"/>
-      <BitField name="SDFIFO_D0_T1" start="12" size="1"/>
       <BitField name="FIFO_DR" start="9" size="1"/>
-      <BitField name="AF" start="8" size="1"/>
       <BitField name="DOV_ERR" start="7" size="1"/>
       <BitField name="DSAT_ERR" start="6" size="1"/>
       <BitField name="WTSYNFLG" start="5" size="1"/>
@@ -6196,14 +6170,11 @@
       <BitField name="CMPL" start="0" size="1"/>
     </Register>
     <Register name="CH_2_SDFIFOCTRL" start="+0x90" size="0x4">
-      <BitField name="GATE_SAMPLES" start="16" size="8"/>
       <BitField name="THRSH" start="4" size="5"/>
-      <BitField name="D_RDY_INT_EN" start="2" size="1"/>
     </Register>
     <Register name="CH_2_SDCTRLP" start="+0x94" size="0x4">
       <BitField name="MANCH_THR" start="25" size="7"/>
       <BitField name="WDOG_THR" start="17" size="8"/>
-      <BitField name="AF_IE" start="16" size="1"/>
       <BitField name="DFFOVIE" start="15" size="1"/>
       <BitField name="DSATIE" start="14" size="1"/>
       <BitField name="DRIE" start="13" size="1"/>
@@ -6217,13 +6188,6 @@
       <BitField name="EN" start="0" size="1"/>
     </Register>
     <Register name="CH_2_SDCTRLE" start="+0x98" size="0x4">
-      <BitField name="CIC_GATE_TYPE" start="31" size="1"/>
-      <BitField name="CIC_GATE_POL" start="30" size="1"/>
-      <BitField name="CIC_GATE_SEL" start="26" size="4"/>
-      <BitField name="CIC_GATE_EN" start="25" size="1"/>
-      <BitField name="TIMESTAMP_TYPE" start="22" size="1"/>
-      <BitField name="DFIFO_S_T" start="21" size="1"/>
-      <BitField name="DATA_S_T" start="20" size="1"/>
       <BitField name="SGD_ORDR" start="17" size="2"/>
       <BitField name="PWMSYNC" start="16" size="1"/>
       <BitField name="CIC_SCL" start="11" size="4"/>
@@ -6232,10 +6196,7 @@
     </Register>
     <Register name="CH_2_SDST" start="+0x9c" size="0x4">
       <BitField name="PERIOD_MCLK" start="23" size="8"/>
-      <BitField name="SDATA_D0_T1" start="13" size="1"/>
-      <BitField name="SDFIFO_D0_T1" start="12" size="1"/>
       <BitField name="FIFO_DR" start="9" size="1"/>
-      <BitField name="AF" start="8" size="1"/>
       <BitField name="DOV_ERR" start="7" size="1"/>
       <BitField name="DSAT_ERR" start="6" size="1"/>
       <BitField name="WTSYNFLG" start="5" size="1"/>
@@ -6276,14 +6237,11 @@
       <BitField name="CMPL" start="0" size="1"/>
     </Register>
     <Register name="CH_3_SDFIFOCTRL" start="+0xd0" size="0x4">
-      <BitField name="GATE_SAMPLES" start="16" size="8"/>
       <BitField name="THRSH" start="4" size="5"/>
-      <BitField name="D_RDY_INT_EN" start="2" size="1"/>
     </Register>
     <Register name="CH_3_SDCTRLP" start="+0xd4" size="0x4">
       <BitField name="MANCH_THR" start="25" size="7"/>
       <BitField name="WDOG_THR" start="17" size="8"/>
-      <BitField name="AF_IE" start="16" size="1"/>
       <BitField name="DFFOVIE" start="15" size="1"/>
       <BitField name="DSATIE" start="14" size="1"/>
       <BitField name="DRIE" start="13" size="1"/>
@@ -6297,13 +6255,6 @@
       <BitField name="EN" start="0" size="1"/>
     </Register>
     <Register name="CH_3_SDCTRLE" start="+0xd8" size="0x4">
-      <BitField name="CIC_GATE_TYPE" start="31" size="1"/>
-      <BitField name="CIC_GATE_POL" start="30" size="1"/>
-      <BitField name="CIC_GATE_SEL" start="26" size="4"/>
-      <BitField name="CIC_GATE_EN" start="25" size="1"/>
-      <BitField name="TIMESTAMP_TYPE" start="22" size="1"/>
-      <BitField name="DFIFO_S_T" start="21" size="1"/>
-      <BitField name="DATA_S_T" start="20" size="1"/>
       <BitField name="SGD_ORDR" start="17" size="2"/>
       <BitField name="PWMSYNC" start="16" size="1"/>
       <BitField name="CIC_SCL" start="11" size="4"/>
@@ -6312,10 +6263,7 @@
     </Register>
     <Register name="CH_3_SDST" start="+0xdc" size="0x4">
       <BitField name="PERIOD_MCLK" start="23" size="8"/>
-      <BitField name="SDATA_D0_T1" start="13" size="1"/>
-      <BitField name="SDFIFO_D0_T1" start="12" size="1"/>
       <BitField name="FIFO_DR" start="9" size="1"/>
-      <BitField name="AF" start="8" size="1"/>
       <BitField name="DOV_ERR" start="7" size="1"/>
       <BitField name="DSAT_ERR" start="6" size="1"/>
       <BitField name="WTSYNFLG" start="5" size="1"/>

@@ -78,7 +78,6 @@ bool extract_jpeg_tables(uint8_t *buf, int32_t len, jpeg_image_info_t *info)
     memcpy(info->huffsymb, huffsymb, sizeof(huffsymb));
     memcpy(info->qdtable, qdtable, sizeof(qdtable));
 
-    ht = 0;
     for (i = 162; i < 174; i++) {
         heb[i] = 0;
     }
@@ -300,10 +299,8 @@ marker:
             eoi_reached = true;
             break;
         case 0xda:
-            /*Start of Scan*/
-            v = buf[fp++];
             /*Ls (scan header length)*/
-            fp++;
+            fp += 2;
             /*Ns (# of image components)*/
             n = buf[fp++];
             fp += 2 * n + 3; /* 2 * components + 3 dummy bytes*/
@@ -317,7 +314,7 @@ marker:
                     }
                     info->ecs_length += 2;
                 }
-                info->ecs_length += 2;
+                info->ecs_length += 1;
             }
             break;
         case 0xdb:

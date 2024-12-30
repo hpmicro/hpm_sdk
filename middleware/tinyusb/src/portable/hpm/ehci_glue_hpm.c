@@ -49,6 +49,11 @@ static void usb_host_mode_init(USB_Type *ptr)
     /* Set parallel transceiver width */
     ptr->PORTSC1 &= ~USB_PORTSC1_PTW_MASK;
 
+#ifdef CONFIG_USB_HOST_FORCE_FULL_SPEED
+    /* Set usb forced to full speed mode */
+    ptr->PORTSC1 |= USB_PORTSC1_PFSC_MASK;
+#endif
+
     /* Not use interrupt threshold. */
     ptr->USBCMD &= ~USB_USBCMD_ITC_MASK;
 }
@@ -81,16 +86,16 @@ USB_Type *usb_get_hcd_controller_instance(uint8_t rhport)
     return _hcd_controller[rhport].regs;
 }
 
+SDK_DECLARE_EXT_ISR_M(IRQn_USB0, isr_usb0)
 void isr_usb0(void)
 {
     hcd_int_handler(0, true);
 }
-SDK_DECLARE_EXT_ISR_M(IRQn_USB0, isr_usb0)
 
 #ifdef HPM_USB1_BASE
+SDK_DECLARE_EXT_ISR_M(IRQn_USB1, isr_usb1)
 void isr_usb1(void)
 {
     hcd_int_handler(1, true);
 }
-SDK_DECLARE_EXT_ISR_M(IRQn_USB1, isr_usb1)
 #endif

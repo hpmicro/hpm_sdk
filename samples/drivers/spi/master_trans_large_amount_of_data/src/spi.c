@@ -121,6 +121,7 @@ void spi_check_transfer_data(void)
     }
 }
 
+SDK_DECLARE_EXT_ISR_M(TEST_SPI_DMA_IRQ, isr_dma)
 void isr_dma(void)
 {
     volatile hpm_stat_t rx_stat, tx_stat;
@@ -133,7 +134,6 @@ void isr_dma(void)
         spi_tx_dma_trans_done = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(TEST_SPI_DMA_IRQ, isr_dma)
 
 int main(void)
 {

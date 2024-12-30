@@ -76,6 +76,7 @@ hpm_stat_t uart_rx_trigger_dma(DMA_Type *dma_ptr,
     return dma_setup_handshake(dma_ptr, &config, true);
 }
 
+SDK_DECLARE_EXT_ISR_M(TEST_UART_DMA_IRQ, dma_isr)
 void dma_isr(void)
 {
     volatile hpm_stat_t stat_rx_chn, stat_tx_chn;
@@ -88,7 +89,6 @@ void dma_isr(void)
         uart_tx_dma_done = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(TEST_UART_DMA_IRQ, dma_isr)
 
 int main(void)
 {

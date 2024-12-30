@@ -21,8 +21,6 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(erpc_two_way_rpc_rtos_core0)
 
 sdk_compile_definitions(-DHPM_FEATURE_MBX_SIDE_A)
-sdk_compile_definitions(-D__freertos_irq_stack_top=_stack)
-sdk_compile_definitions(-DCONFIG_FREERTOS=1)
 sdk_compile_definitions(-DUSE_NONVECTOR_MODE=1)
 sdk_compile_definitions(-DDISABLE_IRQ_PREEMPTIVE=1)
 sdk_compile_options(-fno-exceptions)

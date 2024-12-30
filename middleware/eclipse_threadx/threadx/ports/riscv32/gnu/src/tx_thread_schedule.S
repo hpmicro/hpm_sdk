@@ -45,7 +45,7 @@
 .global _tx_thread_schedule
 
 .section .isr_vector, "ax"
-.align 8
+.balign 4
 .type _tx_thread_schedule, function
 /**************************************************************************/
 /*                                                                        */

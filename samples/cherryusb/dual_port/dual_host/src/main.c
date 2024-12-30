@@ -21,7 +21,8 @@ extern void usbh_msc_class_test(void);
 int main(void)
 {
     board_init();
-    board_init_usb_pins();
+    board_init_usb(HPM_USB0);
+    board_init_usb(HPM_USB1);
 
     /* set irq priority */
     intc_set_irq_priority(IRQn_USB0, 1);

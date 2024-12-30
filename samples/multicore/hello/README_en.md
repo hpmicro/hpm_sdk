@@ -2,7 +2,7 @@
 
 ## Overview
 
-Multi-core example project runs the "hello world" example on core0 and runs the "rgb_led" example on core1.
+The multi-core example project runs a serial port echo example on Core0 and a GPIO toggles RGB LEDs in GPTMR interrupt example on Core1.
 
 In this project:
  - The serial port outputs "hello world"; Manually input the stirng information through the keyboard and print it through the serial port

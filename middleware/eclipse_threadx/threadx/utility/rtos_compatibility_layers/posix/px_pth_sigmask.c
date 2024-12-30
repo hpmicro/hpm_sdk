@@ -142,7 +142,7 @@ ULONG       reissue_flag;
         /* Now calculate the set of currently pending signals there are waiting based on the current mask.  */
         blocked_signals = base_thread -> signals.signal_mask.signal_set & base_thread -> signals.signal_pending.signal_set;
 
-        /* Now modify the singal mask correspondingly.  */
+        /* Now modify the signal mask correspondingly.  */
         if (how == SIG_UNBLOCK)
         {
         

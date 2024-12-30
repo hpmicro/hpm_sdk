@@ -10,8 +10,6 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(freertos_hello_gptmr)
 
 sdk_inc(src)
-sdk_compile_definitions(-D__freertos_irq_stack_top=_stack)
-sdk_compile_definitions(-DCONFIG_FREERTOS=1)
 sdk_compile_definitions(-DUSE_NONVECTOR_MODE=1)
 sdk_compile_definitions(-DDISABLE_IRQ_PREEMPTIVE=0)
 sdk_app_src(src/freertos_hello.c)

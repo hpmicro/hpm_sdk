@@ -241,4 +241,19 @@
  */
 #define SYNT_SOC_HAS_TIMESTAMP             (1U)
 
+/**
+ * @brief FFA Section
+ *
+ */
+#define FFA_SOC_BUFFER_MAX (4096U)
+
+/**
+ * @brief PLB Section
+ *
+ */
+#define PLB_SOC_TYPEA_TRGM_INPUT0         (TRGM_TRGOCFG_PLB_IN_00)
+#define PLB_SOC_TYPEA_TRGM_OUTPUT0        (HPM_TRGM0_INPUT_SRC_PLB_OUT00)
+#define PLB_SOC_TYPEB_TRGM_INPUT0         (TRGM_TRGOCFG_PLB_IN_32)
+#define PLB_SOC_TYPEB_TRGM_OUTPUT0        (HPM_TRGM0_INPUT_SRC_PLB_OUT32)
+
 #endif /* HPM_SOC_FEATURE_H */

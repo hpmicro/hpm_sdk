@@ -83,6 +83,7 @@ int main(void)
     return 0;
 }
 
+SDK_DECLARE_EXT_ISR_M(APP_QEI_IRQ, isr_qei)
 void isr_qei(void)
 {
     uint32_t status = qeiv2_get_status(APP_QEI_BASE);
@@ -98,7 +99,6 @@ void isr_qei(void)
         }
     }
 }
-SDK_DECLARE_EXT_ISR_M(APP_QEI_IRQ, isr_qei)
 
 #ifdef HPMSOC_HAS_HPMSDK_PWMV2
 static void pwm_init(void)

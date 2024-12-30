@@ -156,14 +156,14 @@
 
   4. Generate build files for Ninja:
     ```shell
-      cmake -GNinja -DBOARD=hpm6750evk ..
+      cmake -GNinja -DBOARD=hpm6750evkmini ..
     ```
     > **_Note_**: if it complains about "CMAKE_MAKE_PROGRAM is not set", please
         append -DCMAKE_MAKE_PROGRAM=YOUR_MAKE_EXECUTABLE_PATH to the previous
         command (NINJA_PATH is the folder in which ninja can be found):
 
     ```shell
-      cmake -GNinja -DBOARD=hpm6750evk -DCMAKE_MAKE_PROGRAM=NINJA_PATH/ninja ..
+      cmake -GNinja -DBOARD=hpm6750evkmini -DCMAKE_MAKE_PROGRAM=NINJA_PATH/ninja ..
     ```
 
   5. Building:
@@ -201,10 +201,10 @@
         set OPENOCD_SCRIPTS=%HPM_SDK_BASE%\boards\openocd
       ```
 
-    6. Start openocd with several configuration files in order of type of probe, type of core, type of board. For example, the following command will setup an openocd gdb server with ft2232 to single core on hpm6750evk
+    6. Start openocd with several configuration files in order of type of probe, type of core, type of board. For example, the following command will setup an openocd gdb server with ft2232 to single core on hpm6750evkmini
 
     ```shell
-      openocd -f probes/ft2232.cfg -f soc/hpm6750-single-core.cfg -f boards/hpm6750evk.cfg
+      openocd -f probes/ft2232.cfg -f soc/hpm6750-single-core.cfg -f boards/hpm6750evkmini.cfg
     ```
     > **_Note_:** If using FTDI debugger and meet  `Error: libusb_open() failed with LIBUSB_ERROR_NOT_FOUND` , please check the FTDI usb driver. If it is not installed correctly, use [zadig](https://github.com/pbatard/libwdi/releases/download/b730/zadig-2.5.exe) to update:
 

@@ -387,6 +387,7 @@ int main(void)
     }
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_SEI_IRQn, isr_sei)
 void isr_sei(void)
 {
     uint32_t delta;
@@ -398,6 +399,7 @@ void isr_sei(void)
         printf("TRX Error!\n");
     }
     if (sei_get_irq_status(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch2_event)) {
+        sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch2_event);
         flag_trx_error = false;
     }
     if (sei_get_irq_status(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event)) {
@@ -467,4 +469,3 @@ void isr_sei(void)
         sei_set_command_rewind(BOARD_SEI, BOARD_SEI_CTRL);
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_SEI_IRQn, isr_sei)

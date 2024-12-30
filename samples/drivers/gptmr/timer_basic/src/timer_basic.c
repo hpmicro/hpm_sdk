@@ -20,8 +20,9 @@
 
 static void timer_config(void);
 
-static bool timer_flag;
+static volatile bool timer_flag;
 
+SDK_DECLARE_EXT_ISR_M(APP_BOARD_GPTMR_IRQ, tick_ms_isr)
 void tick_ms_isr(void)
 {
     if (gptmr_check_status(APP_BOARD_GPTMR, GPTMR_CH_RLD_STAT_MASK(APP_BOARD_GPTMR_CH))) {
@@ -30,7 +31,6 @@ void tick_ms_isr(void)
         timer_flag = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(APP_BOARD_GPTMR_IRQ, tick_ms_isr);
 
 int main(void)
 {
@@ -53,8 +53,8 @@ static void timer_config(void)
     uint32_t gptmr_freq;
     gptmr_channel_config_t config;
 
+    clock_add_to_group(APP_BOARD_GPTMR_CLOCK, 0);
     gptmr_channel_get_default_config(APP_BOARD_GPTMR, &config);
-
     gptmr_freq = clock_get_frequency(APP_BOARD_GPTMR_CLOCK);
     config.reload = gptmr_freq / 1000 * APP_TICK_MS;
     gptmr_channel_config(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH, &config, false);

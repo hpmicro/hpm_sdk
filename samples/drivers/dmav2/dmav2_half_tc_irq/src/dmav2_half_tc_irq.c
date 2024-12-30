@@ -92,6 +92,7 @@ void init_board_app_dma(void)
     intc_m_enable_irq_with_priority(TEST_UART_DMA_IRQ, 1);
 }
 
+SDK_DECLARE_EXT_ISR_M(TEST_UART_DMA_IRQ, dma_isr)
 void dma_isr(void)
 {
     uint32_t status;
@@ -128,7 +129,6 @@ void dma_isr(void)
         }
     }
 }
-SDK_DECLARE_EXT_ISR_M(TEST_UART_DMA_IRQ, dma_isr)
 
 int main(void)
 {

@@ -8,7 +8,11 @@
 #include <stdio.h>
 #include "board.h"
 #include "hpm_clock_drv.h"
+#ifdef HPMSOC_HAS_HPMSDK_PWMV2
+#include "hpm_pwmv2_drv.h"
+#else
 #include "hpm_pwm_drv.h"
+#endif
 
 #ifdef BOARD_RED_PWM
 #define RED_PWM_IRQ BOARD_RED_PWM_IRQ
@@ -48,7 +52,12 @@
 #define PWM_DUTY_STEP_COUNT (1000U)
 
 typedef struct {
+#ifdef HPMSOC_HAS_HPMSDK_PWMV2
+    PWMV2_Type *pwm;
+    uint8_t pwm_shadow;
+#else
     PWM_Type *pwm;
+#endif
     uint32_t reload;
     uint32_t step;
     bool pwm_cmp_initial_zero;
@@ -64,15 +73,8 @@ typedef enum {
 } led_index_t;
 
 led_pwm_t leds[3];
-uint32_t reload;
 volatile bool do_update;
 volatile led_index_t current;
-
-void pwm_isr(void)
-{
-    pwm_clear_status(leds[current].pwm, PWM_IRQ_HALF_RELOAD);
-    do_update = true;
-}
 
 SDK_DECLARE_EXT_ISR_M(RED_PWM_IRQ, pwm_isr)
 #if (GREEN_PWM_IRQ != RED_PWM_IRQ)
@@ -81,6 +83,120 @@ SDK_DECLARE_EXT_ISR_M(GREEN_PWM_IRQ, pwm_isr)
 #if (BLUE_PWM_IRQ != RED_PWM_IRQ) && (GREEN_PWM_IRQ != BLUE_PWM_IRQ)
 SDK_DECLARE_EXT_ISR_M(BLUE_PWM_IRQ, pwm_isr)
 #endif
+void pwm_isr(void)
+{
+#ifdef HPMSOC_HAS_HPMSDK_PWMV2
+    pwm_counter_t pwm_counter = leds[current].pwm_ch / 2;
+    uint32_t reload_status = pwmv2_get_reload_irq_status(leds[current].pwm);
+    /* the used counter is reload  */
+    if (reload_status & (1 << pwm_counter)) {
+        do_update = true;
+        pwmv2_clear_reload_irq_status(leds[current].pwm, (1 << pwm_counter)); /* clear counter reload status */
+    }
+#else
+    pwm_clear_status(leds[current].pwm, PWM_IRQ_HALF_RELOAD);
+    do_update = true;
+#endif
+}
+
+#ifdef HPMSOC_HAS_HPMSDK_PWMV2
+void config_pwm(PWMV2_Type *ptr, pwm_channel_t pwm_channel, uint32_t reload, uint8_t shadow, bool cmp_initial_zero, bool off_level_high)
+{
+    /* according to pwm_channel to use pwm_counter and pwm_cmp, use two cmp to generate pwm signal */
+    pwm_counter_t pwm_counter = pwm_channel / 2;
+    uint8_t pwm_cmp_1 = pwm_channel * 2;
+    uint8_t pwm_cmp_2 = pwm_channel * 2 + 1;
+
+    /* pwm shadow for reload/cmp1/cpm2 value */
+    uint8_t reload_shdow = shadow;     /* shadow register index for reload function */
+    uint8_t cmp1_shadow = shadow + 1;  /* shadow register index for cmp 1 function */
+    uint8_t cmp2_shadow = shadow + 2;  /* shadow register index for cmp 2 function */
+
+    uint32_t cmp1_initial_val = cmp_initial_zero ? 0 : reload;
+
+    /* disable shadow lock function, shadow will always access */
+    pwmv2_disable_shadow_lock_feature(ptr);
+
+    /* disable and reset pwm counter */
+    pwmv2_disable_counter(ptr, pwm_counter);
+    pwmv2_reset_counter(ptr, pwm_counter);
+
+    /* set shdow register value */
+    pwmv2_set_shadow_val(ptr, reload_shdow, reload, 0, false); /* for reload */
+    pwmv2_set_shadow_val(ptr, cmp1_shadow, cmp1_initial_val, 0, false); /* for cmp_1 */
+    pwmv2_set_shadow_val(ptr, cmp2_shadow, reload, 0, false); /* for cmp_2 */
+
+    /* config reload value from shadow, update valid when issue shadow lock */
+    pwmv2_counter_select_data_offset_from_shadow_value(ptr, pwm_counter, shadow);
+    pwmv2_set_reload_update_time(ptr, pwm_counter, pwm_reload_update_on_shlk);
+
+    /* config two cmp value from shadow, update valid when issue shadow lock */
+    pwmv2_select_cmp_source(ptr, pwm_cmp_1, cmp_value_from_shadow_val, cmp1_shadow);
+    pwmv2_cmp_update_trig_time(ptr, pwm_cmp_1, pwm_shadow_register_update_on_shlk);
+    pwmv2_select_cmp_source(ptr, pwm_cmp_2, cmp_value_from_shadow_val, cmp2_shadow);
+    pwmv2_cmp_update_trig_time(ptr, pwm_cmp_2, pwm_shadow_register_update_on_shlk);
+
+    /* trigger reload value and cmp value update from sahdow */
+    pwmv2_issue_shadow_register_lock_event(ptr);
+
+    /* disable burst mode */
+    pwmv2_counter_burst_disable(ptr, pwm_counter);
+
+    /* config use two cmp to generate pwm signal */
+    pwmv2_disable_four_cmp(ptr, HPM_NUM_TO_EVEN_FLOOR(pwm_channel));
+
+    /* when cmp_1 is 0, cmp_2 is reload value, the pwm generate high, if off_level_hig is false, need invert pwm out */
+    if (cmp_initial_zero && (!off_level_high)) {
+        pwmv2_enable_output_invert(ptr, pwm_channel);
+    }
+
+    /* config cmp_1 update when reload event, change cmp_1 to change duty in update_rgb_led() */
+    pwmv2_cmp_update_trig_time(ptr, pwm_cmp_1, pwm_shadow_register_update_on_reload);
+}
+
+
+void update_rgb_led(void)
+{
+    bool increase_step = true;
+    uint32_t step = leds[current].step;
+    uint32_t reload = leds[current].reload;
+    PWMV2_Type *pwm = leds[current].pwm;
+    pwm_channel_t pwm_channel = leds[current].pwm_ch;
+    uint32_t duty = step;
+
+    /* according to pwm_channel to use pwm_counter and pwm_cmp */
+    pwm_counter_t pwm_counter = pwm_channel / 2; /* the relationship of pwm_channel and pwm_counter is fixed in hardware */
+    uint8_t pwm_cmp_1_shadow = leds[current].pwm_shadow + 1; /* this relationship of cmp and shadow is configurated in config_pwm() */
+
+    pwmv2_enable_reload_irq(pwm, pwm_counter);     /* enable reload irq, */
+    pwmv2_channel_enable_output(pwm, pwm_channel); /* enable channel output */
+    pwmv2_enable_counter(pwm, pwm_counter);        /* enable counter */
+    pwmv2_start_pwm_output(pwm, pwm_counter);
+
+    /* The duty increases first and then decreases, exits the loop when it decreases to 0 */
+    while (!(!increase_step && (duty == 0))) {
+        if (increase_step && (duty + step > reload)) {
+            increase_step = false;
+        }
+
+        if (increase_step) {
+            duty += step;
+        } else {
+            duty -= step;
+        }
+
+        while (!do_update) {
+        }
+        pwmv2_set_shadow_val(pwm, pwm_cmp_1_shadow, duty, 0, false); /* set cmp_1 shadow value */
+        do_update = false;
+    }
+    pwmv2_channel_disable_output(pwm, pwm_channel); /* disable channel output */
+    pwmv2_disable_counter(pwm, pwm_counter);        /* disable counter */
+    pwmv2_reset_counter(pwm, pwm_counter);          /* reset counter */
+    pwmv2_disable_reload_irq(pwm, pwm_counter);     /* disable reload irq */
+}
+
+#else
 
 void config_pwm(PWM_Type * ptr, uint8_t pin, uint8_t cmp_index, uint32_t reload, bool cmp_initial_zero, uint8_t hw_event_cmp, bool off_level_high)
 {
@@ -162,10 +278,11 @@ void update_rgb_led(void)
 
     pwm_enable_irq(pwm, PWM_IRQ_HALF_RELOAD);
     turn_on_rgb_led(current);
-    while(!(!increase_step && (duty < 2 * step))) {
+    /* The duty increases first and then decreases, exits the loop when it decreases to 0 */
+    while (!(!increase_step && (duty == 0))) {
         if (increase_step && (duty + step > reload)) {
             increase_step = false;
-        } 
+        }
 
         if (increase_step) {
             duty += step;
@@ -182,11 +299,10 @@ void update_rgb_led(void)
     turn_off_rgb_led(current);
     pwm_disable_irq(pwm, PWM_IRQ_HALF_RELOAD);
 }
+#endif
 
 int main(void){
     uint32_t freq;
-    uint32_t hw_event_cmp;
-
     board_init();
     board_init_rgb_pwm_pins();
     printf("rgb led example\n");
@@ -215,6 +331,9 @@ int main(void){
     leds[blue].pwm_cmp_initial_zero = BLUE_PWM_CMP_INITIAL_ZERO;
     leds[blue].pwm_irq = BLUE_PWM_IRQ;
 
+#ifndef HPMSOC_HAS_HPMSDK_PWMV2
+    /* chose one cmp to generate event to trigger pwm to update shadow register to cmp register */
+    uint32_t hw_event_cmp;
     hw_event_cmp = PWM_SOC_CMP_MAX_COUNT;
     for (uint8_t i = 0; i < PWM_SOC_CMP_MAX_COUNT; i++) {
         if ((i == RED_PWM_CMP) || (i == GREEN_PWM_CMP) || (i == BLUE_PWM_CMP)) {
@@ -228,11 +347,17 @@ int main(void){
         while (1) {
         };
     }
+#endif
 
     for (uint8_t i = 0; i < ARRAY_SIZE(leds); i++) {
         leds[i].step = leds[i].reload / PWM_DUTY_STEP_COUNT;
+#ifdef HPMSOC_HAS_HPMSDK_PWMV2
+        leds[i].pwm_shadow = i * 3; /* per pwm use 3 shadow */
+        config_pwm(leds[i].pwm, leds[i].pwm_ch, leds[i].reload, leds[i].pwm_shadow, leds[i].pwm_cmp_initial_zero, board_get_led_pwm_off_level());
+#else
         config_pwm(leds[i].pwm, leds[i].pwm_ch, leds[i].pwm_cmp, leds[i].reload, leds[i].pwm_cmp_initial_zero, hw_event_cmp, board_get_led_pwm_off_level());
         pwm_start_counter(leds[i].pwm);
+#endif
         intc_m_enable_irq_with_priority(leds[i].pwm_irq, 1);
     }
 

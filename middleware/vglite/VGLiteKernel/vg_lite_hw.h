@@ -76,7 +76,8 @@ typedef struct clock_control {
     uint32_t clock_gate : 1;
     uint32_t scale : 7;
     uint32_t scale_load : 1;
-    uint32_t reserved10 : 2;
+    uint32_t ram_clock_gating : 1;
+    uint32_t debug_registers : 1;
     uint32_t soft_reset : 1;
     uint32_t reserved13 : 6;
     uint32_t isolate : 1;

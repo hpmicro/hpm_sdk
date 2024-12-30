@@ -9,8 +9,6 @@ set(CONFIG_CHERRYSH_INTERFACE "uart")
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(cherrysh_freertos_uart_demo)
 
-sdk_compile_definitions(-D__freertos_irq_stack_top=_stack)
-sdk_compile_definitions(-DCONFIG_FREERTOS=1)
 sdk_compile_definitions(-DUSE_NONVECTOR_MODE=1)
 sdk_compile_definitions(-DDISABLE_IRQ_PREEMPTIVE=1)
 

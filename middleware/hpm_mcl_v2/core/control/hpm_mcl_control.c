@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -85,8 +85,16 @@ hpm_mcl_stat_t hpm_mcl_control_svpwm(float alpha, float beta, float vbus, mcl_co
     vbus = 1 / (vbus * 2 / 3);
     alpha = alpha * vbus;
     beta = beta * vbus;
-    val0 = beta / alpha;
-    val1 = alpha / beta;
+    if (alpha != 0) {
+        val0 = beta / alpha;
+    } else {
+        val0 = beta / 0.0000001f;
+    }
+    if (beta != 0) {
+        val1 = alpha / beta;
+    } else {
+        val1 = alpha / 0.0000001f;
+    }
 
     if (beta > 0) {
         if (alpha > 0) {
@@ -224,7 +232,7 @@ hpm_mcl_stat_t hpm_mcl_control_step_svpwm(float alpha, float beta, float vbus, m
 hpm_mcl_stat_t hpm_mcl_control_get_block_sector(hall_phase_t hall, uint8_t u, uint8_t v, uint8_t w, uint8_t *sector)
 {
     const uint8_t hall_tbl_120[8] = {0, 4, 2, 3, 6, 5, 1, 0};
-    const uint8_t hall_tbl_60[8] = {5, 4, 0, 3, 6, 0, 1, 2};
+    const uint8_t hall_tbl_60[8] = {0, 5, 4, 3, 6, 1, 2, 0};
 
     if (hall == phase_120) {
         *sector = hall_tbl_120[(u<<2) | (v<<1) | w];
@@ -467,6 +475,91 @@ hpm_mcl_stat_t hpm_mcl_control_detection_init(mcl_control_offline_param_detectio
     return mcl_success;
 }
 
+hpm_mcl_stat_t hpm_mcl_pid_to_3p3z(mcl_control_pid_cfg_t *cfg_pid, mcl_clc_coeff_cfg_t *cfg_3p3z)
+{
+/**
+ * @brief The relationship between the 3p3z coefficients and
+ * the P, I, and D gains of the basic PID is obtained by the standard discrete transform method,
+ * and the final result given here. Principle View Knowledge Base.
+ *
+ */
+    cfg_3p3z->a0 = 0;
+    cfg_3p3z->a1 = 0;
+    cfg_3p3z->b0 = cfg_pid->kp + cfg_pid->ki + cfg_pid->kd;
+    cfg_3p3z->b1 = -(cfg_pid->kp + 2 * cfg_pid->kd);
+    cfg_3p3z->b2 = cfg_pid->kd;
+    cfg_3p3z->b3 = 0;
+    cfg_3p3z->a2 = 0.999999f;
+
+    return mcl_success;
+}
+
+hpm_mcl_stat_t hpm_mcl_delta_pid(float setpoint, float feedback, mcl_control_pid_t *pid_x, float *output)
+{
+    float err;
+    float val;
+
+    /* Check if the output pointer is NULL, which is required for the function to operate. */
+    MCL_ASSERT_OPT(output != NULL, mcl_invalid_pointer);
+
+    /* Calculate the error between the setpoint and feedback values. */
+    err = setpoint - feedback;
+
+    /* Calculate the PID controller output value including the P, I, and D terms. */
+    val = pid_x->cfg.kp * (err - pid_x->error_n1) + pid_x->cfg.ki * err +
+        pid_x->cfg.kd * (err - 2.0f * pid_x->error_n1 + pid_x->error_n2);
+    /* Accumulate the integral term to eliminate steady-state error. */
+    val += pid_x->integral;
+    pid_x->integral = val;
+    /* Limit the output value to ensure it does not exceed the configured output range. */
+    MCL_VALUE_LIMIT(val, pid_x->cfg.output_min, pid_x->cfg.output_max);
+
+    /* Update the error values for the next computation. */
+    pid_x->error_n1 = err;
+    pid_x->error_n2 = pid_x->error_n1;
+    /* Store the calculated output value in the output variable. */
+    *output = val;
+
+    return mcl_success;
+}
+
+hpm_mcl_stat_t hpm_mcl_position_pid(float setpoint, float feedback, mcl_control_pid_t *pid_x, float *output)
+{
+    float err;
+    float val;
+
+    /* Check if the output pointer is NULL, which is required for the function to operate. */
+    MCL_ASSERT_OPT(output != NULL, mcl_invalid_pointer);
+    /* Calculate the error between the setpoint and feedback values. */
+    err = setpoint - feedback;
+    /* Integral term, accumulates the error to reduce steady-state error */
+    pid_x->integral += err;
+    /* Limit the integral term within a reasonable range to avoid integral windup */
+    MCL_VALUE_LIMIT(pid_x->integral, pid_x->cfg.integral_min, pid_x->cfg.integral_max);
+    /* Calculate the PID output value, including proportional, integral, and derivative terms */
+    val = pid_x->cfg.kp * err + pid_x->cfg.ki * pid_x->integral + pid_x->cfg.kd * (err - pid_x->error_n1);
+    /* Limit the output value within the configured minimum and maximum output range to ensure safety and effectiveness */
+    MCL_VALUE_LIMIT(val, pid_x->cfg.output_min, pid_x->cfg.output_max);
+    /* Update the previous error for the next derivative calculation */
+    pid_x->error_n1 = err;
+    /* Assign the calculated output value to the output parameter */
+    *output = val;
+
+    return mcl_success;
+}
+
+hpm_mcl_stat_t hpm_mcl_pid_init(mcl_control_pid_t *pid_x)
+{
+    MCL_ASSERT(pid_x != NULL, mcl_invalid_pointer);
+    /* Initialize the previous and pre-previous errors to zero. */
+    pid_x->error_n1 = 0;
+    pid_x->error_n2 = 0;
+    /* Initialize the integral term to zero to eliminate any existing integral error. */
+    pid_x->integral = 0;
+
+    return mcl_success;
+}
+
 hpm_mcl_stat_t hpm_mcl_control_init(mcl_control_t *control, mcl_control_cfg_t *cfg)
 {
     MCL_ASSERT(control != NULL, mcl_invalid_pointer);
@@ -477,10 +570,11 @@ hpm_mcl_stat_t hpm_mcl_control_init(mcl_control_t *control, mcl_control_cfg_t *c
      *
      */
     control->cfg = cfg;
-    control->cfg->currentd_pid_cfg.integral = 0;
-    control->cfg->currentq_pid_cfg.integral = 0;
-    control->cfg->position_pid_cfg.integral = 0;
-    control->cfg->speed_pid_cfg.integral = 0;
+    MCL_ASSERT(hpm_mcl_pid_init(&control->cfg->currentd_pid_cfg) == mcl_success, mcl_fail);
+    MCL_ASSERT(hpm_mcl_pid_init(&control->cfg->currentq_pid_cfg) == mcl_success, mcl_fail);
+    MCL_ASSERT(hpm_mcl_pid_init(&control->cfg->position_pid_cfg) == mcl_success, mcl_fail);
+    MCL_ASSERT(hpm_mcl_pid_init(&control->cfg->speed_pid_cfg) == mcl_success, mcl_fail);
+
     control->cfg->dead_area_compensation_cfg.d_mem = 0;
     control->cfg->dead_area_compensation_cfg.q_mem = 0;
     control->cfg->smc_cfg.ialpha_mem = 0;

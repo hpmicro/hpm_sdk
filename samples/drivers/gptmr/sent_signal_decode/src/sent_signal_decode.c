@@ -7,9 +7,8 @@
 
 #include <stdio.h>
 #include "board.h"
-#include "hpm_sysctl_drv.h"
 #include "hpm_gptmr_drv.h"
-#include "hpm_debug_console.h"
+#include "hpm_clock_drv.h"
 #include "hpm_dmamux_drv.h"
 #ifdef HPMSOC_HAS_HPMSDK_DMAV2
 #include "hpm_dmav2_drv.h"
@@ -116,6 +115,7 @@ volatile uint32_t count;
 volatile bool     dma_is_done;
 volatile uint32_t dma_actual_len;
 static volatile uint32_t record_dma_count = 0;
+SDK_DECLARE_EXT_ISR_M(APP_GPTMR_DMA_IRQ, isr_dma)
 void isr_dma(void)
 {
     volatile hpm_stat_t stat;
@@ -128,6 +128,7 @@ void isr_dma(void)
     }
 }
 
+SDK_DECLARE_EXT_ISR_M(APP_BOARD_GPTMR_IRQ, tick_ms_isr)
 void tick_ms_isr(void)
 {
     uint32_t current_dma_count = 0;
@@ -143,8 +144,6 @@ void tick_ms_isr(void)
         record_dma_count = current_dma_count;
     }
 }
-SDK_DECLARE_EXT_ISR_M(APP_BOARD_GPTMR_IRQ, tick_ms_isr);
-SDK_DECLARE_EXT_ISR_M(APP_GPTMR_DMA_IRQ, isr_dma)
 
 
 static void pwm_measure_config(void);
@@ -158,7 +157,6 @@ uint16_t sent_format_count = 0;
 
 int main(void)
 {
-    static uint32_t dummy_count = 0;
     char buffer[100];
     uint16_t buf_len = 0;
     uint16_t len = 0;
@@ -188,7 +186,6 @@ int main(void)
                 buf_len += len;
                 printf("%s pause:%s \n\n", buffer, (sent_format_data.code[j].pause) ? "true" : "false");
             }
-            dummy_count++;
             buf_len = 0;
         }
     }
@@ -220,6 +217,8 @@ static void dma_transfer_config(void)
 static void pwm_measure_config(void)
 {
     gptmr_channel_config_t config;
+
+    clock_add_to_group(APP_BOARD_GPTMR_CLOCK, 0);
     gptmr_channel_get_default_config(APP_BOARD_GPTMR, &config);
     gptmr_freq = clock_get_frequency(APP_BOARD_GPTMR_CLOCK);
     gptmr_stop_counter(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH);
@@ -239,8 +238,8 @@ static void timer_config(void)
     uint32_t gptmr_freq;
     gptmr_channel_config_t config;
 
+    clock_add_to_group(APP_BOARD_GPTMR_CLOCK, 0);
     gptmr_channel_get_default_config(APP_BOARD_GPTMR, &config);
-
     gptmr_freq = clock_get_frequency(APP_BOARD_GPTMR_CLOCK);
     config.reload = gptmr_freq / 1000000 * CONFIG_SENT_IDLE_INTERVAL_US;
     gptmr_channel_config(APP_BOARD_GPTMR, APP_BOARD_TIMER_CH, &config, false);
@@ -255,6 +254,9 @@ static uint8_t crc4_calculate(uint8_t *data, uint8_t len)
     uint8_t result  = 0x03;
     uint8_t tableNo = 0;
     int i = 0;
+    if (data == NULL || len == 0) {
+        return 0;
+    }
     for(i = 0; i < len; i++) {
         tableNo = result ^ data[i];
         result  = crc4_table_byte[tableNo];
@@ -267,9 +269,9 @@ static hpm_stat_t pwm_process_sent(float *pwm_priiod_table, uint16_t pwm_count, 
     bool find_sync = false;
     bool find_next_sync = false;
     bool find_pause = false;
-    bool find_crc = false;
+    volatile bool find_crc = false;
     uint8_t data_len = 0;
-    uint8_t data[SENT_MAX_NIBBLE_COUNT + 3]; /* include status and crc4 pause*/
+    uint8_t data[SENT_MAX_NIBBLE_COUNT + 3] = {0}; /* include status and crc4 pause*/
     uint8_t crc_index, data_index;
     uint16_t i, k;
     uint8_t j;

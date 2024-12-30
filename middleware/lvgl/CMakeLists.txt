@@ -7,7 +7,6 @@ sdk_src(${LVGL_SRC})
 
 sdk_inc(porting)
 sdk_src(porting/hpm_lvgl.c)
-sdk_src(porting/non_alloc.c)
 
 if(DEFINED CONFIG_LV_DEMO)
     file(GLOB_RECURSE LVGL_DEMO_SRC lvgl/demos/*.c)

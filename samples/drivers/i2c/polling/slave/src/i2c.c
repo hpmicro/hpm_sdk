@@ -37,11 +37,11 @@ int main(void)
     uint32_t freq;
 
     board_init();
+    freq = board_init_i2c_clock(TEST_I2C);
     init_i2c_pins(TEST_I2C);
 
     config.i2c_mode = i2c_mode_normal;
     config.is_10bit_addressing = false;
-    freq = clock_get_frequency(TEST_I2C_CLOCK_NAME);
     stat = i2c_init_slave(TEST_I2C, freq, &config, TEST_I2C_SLAVE_ADDRESS);
     if (stat != status_success) {
         return stat;

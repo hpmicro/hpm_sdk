@@ -10,12 +10,6 @@
 #include "board.h"
 #include "hpm_gpio_drv.h"
 
-#if defined(BOARD_BUTTON_PRESSED_VALUE)
-#define APP_BUTTON_PRESSED_VALUE BOARD_BUTTON_PRESSED_VALUE
-#else
-#define APP_BUTTON_PRESSED_VALUE 0
-#endif
-
 /*!< endpoint address */
 #define HID_INT_EP          0x81
 #define HID_INT_EP_SIZE     4
@@ -311,7 +305,10 @@ void hid_mouse_test(uint8_t busid)
 {
     int ret;
 
-    if (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) == APP_BUTTON_PRESSED_VALUE) {
+    if (usb_device_is_configured(busid) == false) {
+        return;
+    }
+    if (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) == BOARD_BUTTON_PRESSED_VALUE) {
         if (usb_device_is_suspend(busid)) {
             /*!< send cmd to wakeup host */
             ret = usbd_send_remote_wakeup(busid);
@@ -321,11 +318,11 @@ void hid_mouse_test(uint8_t busid)
         } else {
             /*!< move mouse pointer */
             mouse_cfg.x = 5;
+            hid_state = HID_STATE_BUSY;
             ret = usbd_ep_start_write(busid, HID_INT_EP, (uint8_t *)&mouse_cfg, 4);
             if (ret < 0) {
                 return;
             }
-            hid_state = HID_STATE_BUSY;
         }
     }
 

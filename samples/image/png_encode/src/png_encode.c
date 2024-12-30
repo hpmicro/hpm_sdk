@@ -107,7 +107,7 @@ void init_cam(uint8_t *buffer)
     if (PIXEL_FORMAT == display_pixel_format_rgb565) {
         cam_config.color_format = CAM_COLOR_FORMAT_RGB565;
     } else if (PIXEL_FORMAT == display_pixel_format_y8) {
-        cam_config.color_format = CAM_COLOR_FORMAT_YCBCR422;
+        cam_config.color_format = CAM_COLOR_FORMAT_YCBCR422_YUV422;
         cam_config.data_store_mode = CAM_DATA_STORE_MODE_Y_ONLY;
     }
     cam_init(TEST_CAM, &cam_config);
@@ -158,6 +158,7 @@ bool gpio_button_is_pressed(void)
 /*
  * LCD configuration
  */
+SDK_DECLARE_EXT_ISR_M(BOARD_LCD_IRQ, isr_lcd_d0)
 void isr_lcd_d0(void)
 {
     volatile uint32_t s = lcdc_get_dma_status(LCD);
@@ -166,7 +167,6 @@ void isr_lcd_d0(void)
         vsync = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_LCD_IRQ, isr_lcd_d0)
 
 void init_lcd(uint32_t buffer)
 {
@@ -205,7 +205,7 @@ void init_lcd(uint32_t buffer)
 
 static uint64_t clock_cpu_get_us(void)
 {
-    uint32_t ticks_per_us = (hpm_core_clock + 1000000U - 1U) / 1000000U;
+    uint32_t ticks_per_us = clock_get_core_clock_ticks_per_us();
     uint64_t result;
     uint32_t resultl_first = read_csr(CSR_MCYCLE);
     uint32_t resulth = read_csr(CSR_MCYCLEH);
@@ -299,6 +299,9 @@ int main(void)
     init_lcd((uint32_t)front_buffer);
     board_lcd_backlight(true);
     init_disk();
+    while (!check_disk()) {
+        ;
+    }
 
     while (1) {
         wait_for_button_press();

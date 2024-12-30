@@ -15,8 +15,6 @@ sdk_inc(../../../config)
 sdk_app_src(src/main.c)
 sdk_app_src(src/hid_keyboard.c)
 
-sdk_compile_definitions(-D__freertos_irq_stack_top=_stack)
-sdk_compile_definitions(-DCONFIG_FREERTOS=1)
 sdk_compile_definitions(-DUSE_NONVECTOR_MODE=1)
 sdk_compile_definitions(-DDISABLE_IRQ_PREEMPTIVE=1)
 generate_ide_projects()

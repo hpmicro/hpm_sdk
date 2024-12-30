@@ -53,6 +53,7 @@ void vPortSetupTimerInterrupt( void )
 }
 #else
 volatile uint32_t uxGptimerIncrementsForOneTick;
+SDK_DECLARE_EXT_ISR_M(FREERTOS_TIMER_IRQ, vPortSysTimerIsr)
 void vPortSysTimerIsr(void)
 {
     BaseType_t need_switch;
@@ -63,15 +64,14 @@ void vPortSysTimerIsr(void)
             vTaskSwitchContext();
     }
 }
-SDK_DECLARE_EXT_ISR_M(FREERTOS_TIMER_IRQ, vPortSysTimerIsr);
 
 void vPortSetupTimerInterrupt( void )
 {
     uint32_t gptmr_freq;
     gptmr_channel_config_t config;
 
+    clock_add_to_group(FREERTOS_TIMER_CLOCK, 0);
     gptmr_channel_get_default_config(FREERTOS_TIMER_RESOURCE, &config);
-
     gptmr_freq = clock_get_frequency(FREERTOS_TIMER_CLOCK);
     config.reload = gptmr_freq / configTICK_RATE_HZ;
     uxGptimerIncrementsForOneTick = gptmr_freq / configTICK_RATE_HZ;
@@ -112,13 +112,21 @@ void vPortSetupTimerInterrupt( void )
 
         /* Enter a critical section but don't use the taskENTER_CRITICAL()
          * method as that will mask interrupts that should exit sleep mode. */
+#if defined(USE_SYSCALL_INTERRUPT_PRIORITY) && USE_SYSCALL_INTERRUPT_PRIORITY
+        portDISABLE_GLOBAL_INTERRUPTS();
+#else
         portDISABLE_INTERRUPTS();
+#endif
 
         /* If a context switch is pending or a task is waiting for the scheduler
          * to be unsuspended then abandon the low power entry. */
         if( eTaskConfirmSleepModeStatus() == eAbortSleep )
         {
+#if defined(USE_SYSCALL_INTERRUPT_PRIORITY) && USE_SYSCALL_INTERRUPT_PRIORITY
+            portENABLE_GLOBAL_INTERRUPTS();
+#else
             portENABLE_INTERRUPTS();
+#endif
         }
         else
         {
@@ -144,14 +152,21 @@ void vPortSetupTimerInterrupt( void )
             /* Re-enable interrupts to allow the interrupt that brought the MCU
              * out of sleep mode to execute immediately. */
             disable_mchtmr_irq();
+#if defined(USE_SYSCALL_INTERRUPT_PRIORITY) && USE_SYSCALL_INTERRUPT_PRIORITY
+            portENABLE_GLOBAL_INTERRUPTS();
+#else
             portENABLE_INTERRUPTS();
+#endif
 
             /* Disable interrupts again because the clock is about to be stopped
              * and interrupts that execute while the clock is stopped will increase
              * any slippage between the time maintained by the RTOS and calendar
              * time. */
+#if defined(USE_SYSCALL_INTERRUPT_PRIORITY) && USE_SYSCALL_INTERRUPT_PRIORITY
+            portDISABLE_GLOBAL_INTERRUPTS();
+#else
             portDISABLE_INTERRUPTS();
-
+#endif
             /* Determine if the mchtmr has already reach compare value.
              * Or if the mchtmr is yet reach the compare value (in which 
              * case an interrupt other than the mchtmr) must have brought 
@@ -185,10 +200,15 @@ void vPortSetupTimerInterrupt( void )
 
             /* Restart mchtmr. */
             vTaskStepTick( ulCompleteTickPeriods );
-
             enable_mchtmr_irq();
+
             /* Exit with interrupts enabled. */
+#if defined(USE_SYSCALL_INTERRUPT_PRIORITY) && USE_SYSCALL_INTERRUPT_PRIORITY
+            portENABLE_GLOBAL_INTERRUPTS();
+#else
             portENABLE_INTERRUPTS();
+#endif
+        
         }
     }
 #else
@@ -222,7 +242,11 @@ void vPortSetupTimerInterrupt( void )
 
         /* Enter a critical section but don't use the taskENTER_CRITICAL()
          * method as that will mask interrupts that should exit sleep mode. */
+#if defined(USE_SYSCALL_INTERRUPT_PRIORITY) && USE_SYSCALL_INTERRUPT_PRIORITY
+        portDISABLE_GLOBAL_INTERRUPTS();
+#else
         portDISABLE_INTERRUPTS();
+#endif
 
         /* If a context switch is pending or a task is waiting for the scheduler
          * to be unsuspended then abandon the low power entry. */
@@ -231,7 +255,11 @@ void vPortSetupTimerInterrupt( void )
             gptmr_start_counter(FREERTOS_TIMER_RESOURCE, FREERTOS_TIMER_CH);
 
             /* Re-enable interrupts */
+#if defined(USE_SYSCALL_INTERRUPT_PRIORITY) && USE_SYSCALL_INTERRUPT_PRIORITY
+            portENABLE_GLOBAL_INTERRUPTS();
+#else
             portENABLE_INTERRUPTS();
+#endif
         }
         else
         {
@@ -267,13 +295,22 @@ void vPortSetupTimerInterrupt( void )
              * out of sleep mode to execute immediately.  see comments above
              * __disable_interrupt() call above. */
             intc_m_disable_irq(FREERTOS_TIMER_IRQ);
+            /* Turn on MSTATUS.MIE so we will enter plic isr function */
+#if defined(USE_SYSCALL_INTERRUPT_PRIORITY) && USE_SYSCALL_INTERRUPT_PRIORITY
+            portENABLE_GLOBAL_INTERRUPTS();
+#else
             portENABLE_INTERRUPTS();
+#endif
 
             /* Disable interrupts again because the clock is about to be stopped
              * and interrupts that execute while the clock is stopped will increase
              * any slippage between the time maintained by the RTOS and calendar
              * time. */
+#if defined(USE_SYSCALL_INTERRUPT_PRIORITY) && USE_SYSCALL_INTERRUPT_PRIORITY
+            portDISABLE_GLOBAL_INTERRUPTS();
+#else
             portDISABLE_INTERRUPTS();
+#endif
 
             /* Stop the Gptmr. using the tickless mode will inevitably result in some tiny
              * drift of the time maintained by the kernel with respect to calendar
@@ -315,7 +352,11 @@ void vPortSetupTimerInterrupt( void )
             vTaskStepTick( ulCompleteTickPeriods );
             intc_m_enable_irq(FREERTOS_TIMER_IRQ);
             /* Exit with interrupts enabled. */
+#if defined(USE_SYSCALL_INTERRUPT_PRIORITY) && USE_SYSCALL_INTERRUPT_PRIORITY
+            portENABLE_GLOBAL_INTERRUPTS();
+#else
             portENABLE_INTERRUPTS();
+#endif
         }
     }
 #endif

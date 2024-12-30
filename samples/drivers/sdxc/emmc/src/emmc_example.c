@@ -29,6 +29,14 @@ static emmc_card_t g_emmc = {.host = &g_sdmmc_host};
 ATTR_PLACE_AT_NONCACHEABLE_BSS uint32_t s_write_buf[MAX_BUF_SIZE_DEFAULT / sizeof(uint32_t)];
 ATTR_PLACE_AT_NONCACHEABLE_BSS uint32_t s_read_buf[MAX_BUF_SIZE_DEFAULT / sizeof(uint32_t)];
 
+#if defined(HPM_SDMMC_HOST_ENABLE_IRQ) && (HPM_SDMMC_HOST_ENABLE_IRQ == 1)
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_EMMC_SDXC_IRQ, sdxc_isr)
+void sdxc_isr(void)
+{
+    sdmmchost_irq_handler(&g_sdmmc_host);
+}
+#endif
+
 void show_help(void);
 
 void show_emmc_info(emmc_card_t *card);
@@ -51,6 +59,10 @@ int main(void)
         if (status != status_success) {
             break;
         }
+#if defined(HPM_SDMMC_HOST_ENABLE_IRQ) && (HPM_SDMMC_HOST_ENABLE_IRQ == 1)
+        intc_m_enable_irq_with_priority(BOARD_APP_EMMC_SDXC_IRQ, 1);
+#endif
+
         status = emmc_init(&g_emmc);
     } while (false);
 

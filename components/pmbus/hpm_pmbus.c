@@ -278,6 +278,9 @@ void hpm_pmbus_isr_handler(I2C_Type *ptr)
             }
             if (pmbus_cmd_param_table[obj->command_code].write_transaction_type == write_block) {
                 /* need read length for write_block */
+                if (obj->slave_conf[obj->command_code].rdata == NULL) {
+                    return;
+                }
                 size = obj->slave_conf[obj->command_code].rdata[0];
                 if (obj->data_length == (uint32_t)(size + 2)) {
                     pec = hpm_smbus_pec_crc8_in_command(obj->slave_addr, obj->command_code, &obj->slave_conf[obj->command_code].rdata[0], size + 1, false, true);
@@ -302,6 +305,9 @@ void hpm_pmbus_isr_handler(I2C_Type *ptr)
                     break;
                 }
                 pec = hpm_smbus_pec_crc8_in_command(obj->slave_addr, obj->command_code, &obj->slave_conf[obj->command_code].rdata[0], cfg.len, false, false);
+                if (obj->slave_conf[obj->command_code].rdata == NULL) {
+                    return;
+                }
                 if (pec != obj->slave_conf[obj->command_code].rdata[obj->data_length - 1]) {
                     cfg.pec_check = false;
                 } else {

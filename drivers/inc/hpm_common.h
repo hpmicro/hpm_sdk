@@ -221,7 +221,7 @@ struct timeval {
 #define ATTR_PLACE_AT_WITH_ALIGNMENT(section_name, alignment) \
 ATTR_PLACE_AT(section_name) ATTR_ALIGN(alignment)
 
-#define ATTR_PLACE_AT_NONCACHEABLE ATTR_PLACE_AT(".noncacheable")
+#define ATTR_PLACE_AT_NONCACHEABLE ATTR_PLACE_AT(".noncacheable.non_init")
 #define ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(alignment) \
     ATTR_PLACE_AT_NONCACHEABLE ATTR_ALIGN(alignment)
 
@@ -235,7 +235,7 @@ ATTR_PLACE_AT(section_name) ATTR_ALIGN(alignment)
     ATTR_PLACE_AT_NONCACHEABLE_INIT ATTR_ALIGN(alignment)
 
 /* .fast_ram section */
-#define ATTR_PLACE_AT_FAST_RAM ATTR_PLACE_AT(".fast_ram")
+#define ATTR_PLACE_AT_FAST_RAM ATTR_PLACE_AT(".fast_ram.non_init")
 #define ATTR_PLACE_AT_FAST_RAM_WITH_ALIGNMENT(alignment) \
     ATTR_PLACE_AT_FAST_RAM ATTR_ALIGN(alignment)
 

@@ -30,15 +30,11 @@
  *
  **********************************************************************************/
 void show_menu(void);
-void wdg_isr(void);
 void wdg_interrupt_test(void);
 void wdg_reset_test(void);
 
 void show_valid_interrupt_intervals(void);
 void show_valid_reset_intervals(void);
-
-SDK_DECLARE_EXT_ISR_M(IRQn_WDG0, wdg_isr
-);
 
 /***********************************************************************************
  *
@@ -55,6 +51,7 @@ static volatile bool has_interrupt;
 int main(void)
 {
     board_init();
+    clock_add_to_group(clock_watchdog0, 0);
     printf("wdg test\n");
 
     if ((HPM_PPOR->RESET_FLAG & RESET_SOURCE_WDG0) != 0U) {
@@ -138,6 +135,7 @@ void show_valid_reset_intervals(void)
     }
 }
 
+SDK_DECLARE_EXT_ISR_M(IRQn_WDG0, wdg_isr)
 void wdg_isr(void)
 {
     has_interrupt = true;

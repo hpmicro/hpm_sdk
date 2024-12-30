@@ -6,6 +6,7 @@
  */
 
 #include "board.h"
+#include "hpm_clock_drv.h"
 #include "hpm_mbx_drv.h"
 #include "hpm_sysctl_drv.h"
 
@@ -19,6 +20,7 @@ static volatile bool mbxb_can_send;
 #define MBXB     HPM_MBX0B
 #define MBXB_IRQ IRQn_MBX0B
 
+SDK_DECLARE_EXT_ISR_M(MBXA_IRQ, isr_mbxa)
 void isr_mbxa(void)
 {
     volatile uint32_t sr = MBXA->SR;
@@ -40,8 +42,8 @@ void isr_mbxa(void)
         mbxa_can_read = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(MBXA_IRQ, isr_mbxa)
 
+SDK_DECLARE_EXT_ISR_M(MBXB_IRQ, isr_mbxb)
 void isr_mbxb(void)
 {
     volatile uint32_t sr = MBXB->SR;
@@ -63,7 +65,6 @@ void isr_mbxb(void)
         mbxb_can_send = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(MBXB_IRQ, isr_mbxb)
 
 
 static void test_singleword_communication(void)
@@ -209,6 +210,7 @@ static void test_multiword_communication(uint32_t msg_count)
 int main(void)
 {
     board_init();
+    clock_add_to_group(clock_mbx0, 0);
     printf("mbx single core example\n");
     intc_m_enable_irq_with_priority(MBXA_IRQ, 1);
     intc_m_enable_irq_with_priority(MBXB_IRQ, 1);

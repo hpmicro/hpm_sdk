@@ -69,6 +69,7 @@ void store_device_init(void)
 /*
  * LCD configuration
  */
+SDK_DECLARE_EXT_ISR_M(BOARD_LCD_IRQ, isr_lcd_d0)
 void isr_lcd_d0(void)
 {
     volatile uint32_t s = lcdc_get_dma_status(LCD);
@@ -77,7 +78,6 @@ void isr_lcd_d0(void)
         vsync = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_LCD_IRQ, isr_lcd_d0)
 
 void init_lcd(void)
 {
@@ -219,6 +219,7 @@ int main(void)
     FRESULT stat;
 
     board_init();
+    clock_add_to_group(clock_pdma, 0);
     store_device_init();
 
     board_init_lcd();

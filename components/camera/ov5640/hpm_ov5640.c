@@ -709,7 +709,7 @@ hpm_stat_t ov5640_stop(camera_context_t *context)
 hpm_stat_t ov5640_flip(camera_context_t *context, bool enable)
 {
     hpm_stat_t stat = status_success;
-    uint8_t val;
+    uint8_t val = 0;
 
     ov5640_read_register(context, 0x3820, &val);
     val &= 0xf9;
@@ -850,7 +850,7 @@ hpm_stat_t ov5640_set_special_effect(camera_context_t *context, int32_t effect)
 hpm_stat_t ov5640_mirror(camera_context_t *context, bool enable)
 {
     hpm_stat_t stat = status_success;
-    uint8_t val;
+    uint8_t val = 0;
 
     ov5640_read_register(context, 0x3821, &val);
     val &= 0xf9;
@@ -863,7 +863,7 @@ hpm_stat_t ov5640_mirror(camera_context_t *context, bool enable)
 
 hpm_stat_t ov5640_init(camera_context_t *context, camera_config_t *ov_config)
 {
-    hpm_stat_t stat = status_success;
+    hpm_stat_t stat;
 
     /* check the chip id */
     HPM_CHECK_RET(ov5640_check_chip_id(context));

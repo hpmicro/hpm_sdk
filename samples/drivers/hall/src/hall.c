@@ -33,13 +33,12 @@
 volatile uint32_t u, v, w, tmr;
 volatile bool data_ready = false;
 
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_HALL_IRQ, isr_hall)
 void isr_hall(void)
 {
     hall_clear_status(BOARD_APP_HALL_BASE, hall_get_status(BOARD_APP_HALL_BASE));
     data_ready = true;
 }
-
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_HALL_IRQ, isr_hall)
 
 int main(void)
 {
@@ -71,7 +70,7 @@ int main(void)
     while(1) {
         while(!data_ready);
         data_ready = false;
-        /* the following u,v,w count value read out on read event at u singal toggle */
+        /* the following u,v,w count value read out on read event at u signal toggle */
         u = hall_get_count_on_read_event(BOARD_APP_HALL_BASE, hall_counter_type_u);
         v = hall_get_count_on_read_event(BOARD_APP_HALL_BASE, hall_counter_type_v);
         w = hall_get_count_on_read_event(BOARD_APP_HALL_BASE, hall_counter_type_w);

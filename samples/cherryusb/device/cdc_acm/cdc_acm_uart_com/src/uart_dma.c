@@ -155,6 +155,7 @@ void init_board_app_dma(void)
     intc_m_enable_irq_with_priority(TEST_UART_DMA_IRQ, 2);
 }
 
+SDK_DECLARE_EXT_ISR_M(TEST_UART_DMA_IRQ, dma_isr)
 void dma_isr(void)
 {
     uint32_t status;
@@ -165,7 +166,6 @@ void dma_isr(void)
         usbd_ep_start_read(USB_BUS_ID, CDC_OUT_EP, usbd_get_read_buffer_ptr(), usbd_get_ep_mps(USB_BUS_ID, CDC_OUT_EP));
     }
 }
-SDK_DECLARE_EXT_ISR_M(TEST_UART_DMA_IRQ, dma_isr)
 
 void uart_task_entry_5ms(void)
 {

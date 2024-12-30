@@ -61,7 +61,7 @@ static struct flashstress_context flashstress_ctxs[CONFIG_CONTEXT_NUM];
 
 static struct flashstress_context *flashstress_context_alloc(void)
 {
-    struct flashstress_context *ctx;
+    struct flashstress_context *ctx = NULL;
 
     for (int i = 0; i < CONFIG_CONTEXT_NUM; i++) {
         if (!flashstress_ctxs[i].is_used) {

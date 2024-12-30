@@ -61,6 +61,7 @@ void process_cap_data(uint32_t fall, uint32_t rising)
     }
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_PWM_IRQ, isr_pwm_cap)
 void isr_pwm_cap(void)
 {
     pwm_clear_status(PWM, PWM_IRQ_CMP(PWM_INPUT_CAP_PIN));
@@ -68,7 +69,6 @@ void isr_pwm_cap(void)
     pwm_get_captured_count(PWM, &cap_buf_rising, !PWM_CAP_TRIG_TYPE, PWM_INPUT_CAP_PIN, 1);
     process_cap_data(cap_buf_falling, cap_buf_rising);
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_PWM_IRQ, isr_pwm_cap)
 
 void config_pwm_input_capture(void)
 {

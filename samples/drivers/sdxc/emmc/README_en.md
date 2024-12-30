@@ -7,6 +7,8 @@ The demo provides the following features:
 - Write the last 1024 sectors and verify the data
 - eMMC sleep & awake
 
+This demo can work under `polling` or `interrupt` mode, and the default mode is `polling` mode. Please refer to the comments in  `CMakeLists.txt` for switching to `interrupt` mode.
+
 ## Board Setting
 
 For the board which doesn't have On-board eMMC devices, An eMMC to TF device is required

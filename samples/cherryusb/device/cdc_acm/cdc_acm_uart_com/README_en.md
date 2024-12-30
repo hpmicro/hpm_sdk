@@ -8,7 +8,7 @@ This example project shows USB CDC Serial
 - The USB CDC ACM is used to the UART serial port of the MCU, and the pins description in the readme of the board folder, which name is USB_CDC_ACM_UART.
 - The UART receives data using DMA cyclic reception method. Start the timer to periodically query data, and if there is any data, it will be sent out through a USB IN transaction.
 - UART sends data in DMA normal mode. When the USB OUT transaction receives data, UART DMA sends data.
-- The designed maximum baudrate is 115200.
+- The UART rx buffer of the application is read every 5ms, with a buffer size of 512, so the maximum baudrate is 921600. If users wish to increase the maximum baudrate, they can shorten the timer period or increase the UART rx buffer.
 
 ## Board Setting
 

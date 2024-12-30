@@ -23,16 +23,15 @@ typedef struct {
     __RW uint32_t IDEAL_WN_SIZE;               /* 0x3C: Ideal Image Size Register */
     __R  uint8_t  RESERVED3[12];               /* 0x40 - 0x4B: Reserved */
     __RW uint32_t CR18;                        /* 0x4C: Control CR18 Register */
-    __RW uint32_t DMASA_UV1;                   /* 0x50: Pixel UV DMA Frame Buffer 1 Address */
-    __RW uint32_t DMASA_UV2;                   /* 0x54: Pixel UV DMA Frame Buffer 2 Address */
+    __R  uint8_t  RESERVED4[8];                /* 0x50 - 0x57: Reserved */
     __RW uint32_t CR20;                        /* 0x58: Control CR20 Register */
-    __R  uint8_t  RESERVED4[20];               /* 0x5C - 0x6F: Reserved */
+    __R  uint8_t  RESERVED5[20];               /* 0x5C - 0x6F: Reserved */
     __RW uint32_t CSC_COEF0;                   /* 0x70: Color Space Conversion Config Register 0 */
     __RW uint32_t CSC_COEF1;                   /* 0x74: Color Space Conversion Config Register 1 */
     __RW uint32_t CSC_COEF2;                   /* 0x78: Color Space Conversion Config Register 2 */
     __RW uint32_t CLRKEY_LOW;                  /* 0x7C: Low Color Key Register */
     __RW uint32_t CLRKEY_HIGH;                 /* 0x80: High Color Key Register */
-    __R  uint8_t  RESERVED5[12];               /* 0x84 - 0x8F: Reserved */
+    __R  uint8_t  RESERVED6[12];               /* 0x84 - 0x8F: Reserved */
     __R  uint32_t HISTOGRAM_FIFO[256];         /* 0x90 - 0x48C: Histogram Registers */
 } CAM_Type;
 
@@ -96,18 +95,6 @@ typedef struct {
 #define CAM_CR1_SWAP16_EN_SHIFT (25U)
 #define CAM_CR1_SWAP16_EN_SET(x) (((uint32_t)(x) << CAM_CR1_SWAP16_EN_SHIFT) & CAM_CR1_SWAP16_EN_MASK)
 #define CAM_CR1_SWAP16_EN_GET(x) (((uint32_t)(x) & CAM_CR1_SWAP16_EN_MASK) >> CAM_CR1_SWAP16_EN_SHIFT)
-
-/*
- * PACK_DIR (RW)
- *
- * Data Packing Direction. This bit Controls how 8-bit/10-bit image data is packed into 32-bit RX FIFO.
- * 0 Pack from LSB first. For image data, 0x11, 0x22, 0x33, 0x44, it will appear as 0x44332211 in RX FIFO.
- * 1 Pack from MSB first. For image data, 0x11, 0x22, 0x33, 0x44, it will appear as 0x11223344 in RX FIFO.
- */
-#define CAM_CR1_PACK_DIR_MASK (0x1000000UL)
-#define CAM_CR1_PACK_DIR_SHIFT (24U)
-#define CAM_CR1_PACK_DIR_SET(x) (((uint32_t)(x) << CAM_CR1_PACK_DIR_SHIFT) & CAM_CR1_PACK_DIR_MASK)
-#define CAM_CR1_PACK_DIR_GET(x) (((uint32_t)(x) & CAM_CR1_PACK_DIR_MASK) >> CAM_CR1_PACK_DIR_SHIFT)
 
 /*
  * RESTART_BUSPTR (RW)
@@ -203,7 +190,6 @@ typedef struct {
  * SENSOR_BIT_WIDTH (RW)
  *
  * the bit width of the sensor
- * 0: 8 bits
  * 1: 10 bits
  * 3:24bits
  * Others: Undefined
@@ -545,28 +531,6 @@ typedef struct {
 #define CAM_CR18_AWQOS_SHIFT (7U)
 #define CAM_CR18_AWQOS_SET(x) (((uint32_t)(x) << CAM_CR18_AWQOS_SHIFT) & CAM_CR18_AWQOS_MASK)
 #define CAM_CR18_AWQOS_GET(x) (((uint32_t)(x) & CAM_CR18_AWQOS_MASK) >> CAM_CR18_AWQOS_SHIFT)
-
-/* Bitfield definition for register: DMASA_UV1 */
-/*
- * PTR (RW)
- *
- * Two Plane UV Buffer Start Address 1
- */
-#define CAM_DMASA_UV1_PTR_MASK (0xFFFFFFFCUL)
-#define CAM_DMASA_UV1_PTR_SHIFT (2U)
-#define CAM_DMASA_UV1_PTR_SET(x) (((uint32_t)(x) << CAM_DMASA_UV1_PTR_SHIFT) & CAM_DMASA_UV1_PTR_MASK)
-#define CAM_DMASA_UV1_PTR_GET(x) (((uint32_t)(x) & CAM_DMASA_UV1_PTR_MASK) >> CAM_DMASA_UV1_PTR_SHIFT)
-
-/* Bitfield definition for register: DMASA_UV2 */
-/*
- * PTR (RW)
- *
- * Two Plane UV Buffer Start Address 2
- */
-#define CAM_DMASA_UV2_PTR_MASK (0xFFFFFFFCUL)
-#define CAM_DMASA_UV2_PTR_SHIFT (2U)
-#define CAM_DMASA_UV2_PTR_SET(x) (((uint32_t)(x) << CAM_DMASA_UV2_PTR_SHIFT) & CAM_DMASA_UV2_PTR_MASK)
-#define CAM_DMASA_UV2_PTR_GET(x) (((uint32_t)(x) & CAM_DMASA_UV2_PTR_MASK) >> CAM_DMASA_UV2_PTR_SHIFT)
 
 /* Bitfield definition for register: CR20 */
 /*

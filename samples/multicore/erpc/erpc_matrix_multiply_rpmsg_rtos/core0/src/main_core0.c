@@ -121,19 +121,19 @@ static void client_task(void *param)
     /* eRPC client side initialization */
     erpc_client_init(transport, message_buffer_factory);
 
-    /* Fill both matrices by random values */
-    fill_matrices(matrix1, matrix2);
-
-    /* Print both matrices on the console */
-    (void)printf("\r\nMatrix #1");
-    (void)printf("\r\n=========\r\n");
-    print_matrix(matrix1);
-
-    (void)printf("\r\nMatrix #2");
-    (void)printf("\r\n=========\r\n");
-    print_matrix(matrix2);
-
     for (;;) {
+        /* Fill both matrices by random values */
+        fill_matrices(matrix1, matrix2);
+
+        /* Print both matrices on the console */
+        (void)printf("\r\nMatrix #1");
+        (void)printf("\r\n=========\r\n");
+        print_matrix(matrix1);
+
+        (void)printf("\r\nMatrix #2");
+        (void)printf("\r\n=========\r\n");
+        print_matrix(matrix2);
+
         (void)printf("\r\neRPC request is sent to the server\r\n");
 
         erpcMatrixMultiply(matrix1, matrix2, result_matrix);
@@ -147,24 +147,14 @@ static void client_task(void *param)
 
         (void)printf("\r\nPress the PBUTN button to initiate the next matrix "
                      "multiplication\r\n");
-        /* Check for SWx button push. Pin is grounded when button is pushed. */
-        while (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) != 0u) {
+
+        /* Wait Button Pressed */
+        while (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) != BOARD_BUTTON_PRESSED_VALUE) {
         }
 
-        /* Wait for 200ms to eliminate the button glitch */
-        env_sleep_msec(200);
-
-        /* Fill both matrices by random values */
-        fill_matrices(matrix1, matrix2);
-
-        /* Print both matrices on the console */
-        (void)printf("\r\nMatrix #1");
-        (void)printf("\r\n=========\r\n");
-        print_matrix(matrix1);
-
-        (void)printf("\r\nMatrix #2");
-        (void)printf("\r\n=========\r\n");
-        print_matrix(matrix2);
+        /* Wait Button Released */
+        while (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) == BOARD_BUTTON_PRESSED_VALUE) {
+        }
     }
 }
 

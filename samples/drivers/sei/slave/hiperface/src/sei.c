@@ -246,6 +246,7 @@ int main(void)
     }
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_SEI_IRQn, isr_sei)
 void isr_sei(void)
 {
     uint32_t delta;
@@ -286,4 +287,3 @@ void isr_sei(void)
         sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, true);
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_SEI_IRQn, isr_sei)

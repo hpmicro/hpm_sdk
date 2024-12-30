@@ -42,6 +42,8 @@ int main(void)
 {
     board_init();
 
+    clock_add_to_group(clock_sdp, 0);
+
     sdp_api_init();
 
     hpm_stat_t status;

@@ -29,3 +29,6 @@ SPI slave sent data:
 SPI slave transfer done.
 ```
 
+## 注意
+- 为保证正常传输，SPI的CS引脚建议加上4.7K的上拉电阻。
+

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -11,6 +11,7 @@
 #include "hpm_clock_drv.h"
 #include "hpm_pllctl_drv.h"
 #include "hpm_sysctl_drv.h"
+#include "hpm_romapi.h"
 
 #define TEST_PLLCTL HPM_PLLCTL
 #define TEST_PLL 0
@@ -24,10 +25,45 @@
 
 #define TEST_HELPER_CLK_NAME clock_display
 
+
+/**
+ * @brief Switches the system to operate using the preset clock configuration 0.
+ *
+ * This function adjusts the system clock to use the predefined preset configuration,
+ * which can be useful for changing clock settings based on different operating modes.
+ * It also handles specific actions required when Flash XIP (eXecute In Place) is enabled,
+ * ensuring clock stability and resetting the XPI prefetch buffer to prevent any issues
+ * with instruction fetching during the clock transition.
+ */
+ATTR_RAMFUNC void app_switch_to_preset0(void)
+{
+#if defined(FLASH_XIP)
+    uint32_t clock_node = SYSCTL_CLOCK_CLK_TOP_XPI0;
+    XPI_Type *base = BOARD_APP_XPI_NOR_XPI_BASE;
+#if defined(HPM_XPI1)
+    if (base == HPM_XPI1) {
+        clock_node = SYSCTL_CLOCK_CLK_TOP_XPI1;
+    }
+#endif
+    uint32_t clk_info = HPM_SYSCTL->CLOCK[clock_node];
+#endif
+    clock_enable(clk_osc0clk0);
+    sysctl_clock_set_preset(HPM_SYSCTL, sysctl_preset_0);
+#if defined(FLASH_XIP)
+    HPM_SYSCTL->CLOCK[clock_node] = clk_info;
+    /* Wait a while until the FLASH clock is stable */
+    for (volatile uint32_t delay_cnt = 100000; delay_cnt > 0; delay_cnt--) {
+        NOP();
+    }
+    ROM_API_TABLE_ROOT->xpi_driver_if->software_reset(base); /* Reset the XPI prefetch buffer */
+    fencei(); /* Invalid I-cache in case the instruction prefetch happened in the period that XPI clock is unstable */
+#endif
+}
+
 int main(void)
 {
     board_init();
-    sysctl_clock_set_preset(HPM_SYSCTL, sysctl_preset_0);
+    app_switch_to_preset0();
     board_init_console();
 
     printf("PLLCTL example\n");

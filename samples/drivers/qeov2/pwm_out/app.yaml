@@ -1,4 +1,4 @@
 dependency:
   - qeov2
   - pwmv2
-  - mtg
+  - mtg || mtgv2

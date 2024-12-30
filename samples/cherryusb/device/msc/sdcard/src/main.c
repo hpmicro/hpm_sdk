@@ -14,7 +14,7 @@ extern void msc_device_init(uint8_t busid, uint32_t reg_base);
 int main(void)
 {
     board_init();
-    board_init_usb_pins();
+    board_init_usb((USB_Type *)CONFIG_HPM_USBD_BASE);
 
     printf("cherry usb msc device host sample.\n");
 

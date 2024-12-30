@@ -548,6 +548,7 @@ void mcan_get_default_ram_config(MCAN_Type *ptr, mcan_ram_config_t *simple_confi
     start_addr += MCAN_TXEVT_ELEM_SIZE * tx_fifo_elem_count;
 
     assert((start_addr - mcan_get_ram_offset(ptr)) <= mcan_get_ram_size(ptr));
+    (void) start_addr; /* Suppress warnings in release build  */
 }
 
 void mcan_get_default_ram_flexible_config(MCAN_Type *ptr, mcan_ram_flexible_config_t *ram_config, bool enable_canfd)

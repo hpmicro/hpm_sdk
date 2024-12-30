@@ -54,6 +54,7 @@ volatile bool rxline_status_detection;
 volatile uint32_t rxline_status;
 dma_resource_t rxdma_resource;
 
+SDK_DECLARE_EXT_ISR_M(TEST_UART_IRQ, uart_isr)
 void uart_isr(void)
 {
     uint8_t irq_id = uart_get_irq_id(TEST_UART);
@@ -62,8 +63,6 @@ void uart_isr(void)
         rxline_status_detection = true;
     }
 }
-
-SDK_DECLARE_EXT_ISR_M(TEST_UART_IRQ, uart_isr)
 
 int main(void)
 {

@@ -55,7 +55,20 @@ static bool check_dfu_mode(void);
 int main(void)
 {
     uf2_board_init();
-    board_init_usb_pins();
+
+    if (BOARD_DEVICE_RHPORT_NUM == 0) {
+        board_init_usb(HPM_USB0);
+#ifdef HPM_USB1
+    } else if (BOARD_DEVICE_RHPORT_NUM == 1) {
+        board_init_usb(HPM_USB1);
+#endif
+    } else {
+        printf("Don't support HPM_USB%d!\n", BOARD_DEVICE_RHPORT_NUM);
+        while (1) {
+            ;
+        }
+    }
+
     TU_LOG1("TinyUF2\r\n");
 
     /* if not DFU mode, jump to App */

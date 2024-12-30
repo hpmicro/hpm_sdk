@@ -8,6 +8,9 @@ add_library(${HPM_SDK_SES_LIB_ITF} INTERFACE)
 set(HPM_SDK_SES_LIB hpm_sdk_ses_lib)
 define_property(GLOBAL PROPERTY ${HPM_SDK_SES_LIB} BRIEF_DOCS "ses library" FULL_DOCS "ses library")
 
+set(HPM_SDK_SES_STARTUP_LIB hpm_sdk_ses_startup_lib)
+define_property(GLOBAL PROPERTY ${HPM_SDK_SES_STARTUP_LIB} BRIEF_DOCS "ses startup library" FULL_DOCS "ses startup library")
+
 set(SES_OPT_LIB_IO_TYPE LIBRARY_IO_TYPE)
 set(SES_OPT_DBG_TGT_CONN debug_target_connection)
 set(SES_OPT_LINKER_PRINTF_FP_ENABLED linker_printf_fp_enabled)
@@ -136,6 +139,28 @@ function(sdk_ses_src)
     endforeach()
 endfunction()
 
+
+# Add source file for SES startup
+#
+# Example:
+#   sdk_ses_startup_src(STARTUP_SOURCE_FILE)
+# :param STARTUP_SOURCE_FILE: source file added for SES startup
+# @public
+#
+function(sdk_ses_startup_src)
+    foreach(file ${ARGN})
+        if(IS_DIRECTORY ${file})
+            message(FATAL_ERROR "Segger: directory ${file} can't be added to sdk_ses_startup_src")
+        endif()
+        if(IS_ABSOLUTE ${file})
+            set(path ${file})
+        else()
+            set(path ${CMAKE_CURRENT_SOURCE_DIR}/${file})
+        endif()
+        set_property(GLOBAL APPEND PROPERTY ${HPM_SDK_SES_STARTUP_LIB} ${path})
+    endforeach()
+endfunction()
+
 # Add source file (glob pattern) for SES
 #
 # Example:
@@ -190,8 +215,10 @@ function (generate_ses_project)
     get_property(target_ses_ld_lib TARGET ${HPM_SDK_SES_LIB_ITF} PROPERTY INTERFACE_SES_LD_INPUTS)
     get_property(target_ld_lib TARGET ${HPM_SDK_LIB_ITF} PROPERTY INTERFACE_LINK_LIBRARIES)
     get_property(target_ses_source_files GLOBAL PROPERTY ${HPM_SDK_SES_LIB})
+    get_property(target_ses_startup_source_files GLOBAL PROPERTY ${HPM_SDK_SES_STARTUP_LIB})
     get_property(target_ses_options GLOBAL PROPERTY ${HPM_SDK_SES_OPTS})
     get_property(target_gcc_source_files TARGET ${HPM_SDK_GCC_LIB} PROPERTY SOURCES)
+    get_property(target_gcc_startup_source_files TARGET ${HPM_SDK_GCC_STARTUP_LIB} PROPERTY SOURCES)
     get_property(target_ses_include_dirs TARGET ${HPM_SDK_SES_LIB_ITF} PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
 
     if(NOT SES_TOOLCHAIN_VARIANT)
@@ -199,9 +226,30 @@ function (generate_ses_project)
     endif()
 
     string(FIND ${SES_TOOLCHAIN_VARIANT} "Andes" exist)
-    if (NOT ${exist} EQUAL -1)
+    if(NOT ${exist} EQUAL -1)
         set(SES_USE_TOOLCHAIN_ANDES 1)
-        get_property(target_nds_cflags TARGET ${HPM_SDK_NDSGCC_LIB_ITF} PROPERTY INTERFACE_COMPILE_OPTIONS)
+        if(NOT SES_COMPILER_VARIANT)
+            set(SES_COMPILER_VARIANT "gcc")
+            get_property(target_nds_cflags TARGET ${HPM_SDK_NDSGCC_LIB_ITF} PROPERTY INTERFACE_COMPILE_OPTIONS)
+        endif()
+        if(NOT SES_ASSEMBLER_VARIANT)
+            set(SES_ASSEMBLER_VARIANT "gcc")
+        endif()
+        if(NOT SES_LINKER_VARIANT)
+            set(SES_LINKER_VARIANT "gnu")
+        endif()
+    endif()
+
+    if(NOT SES_COMPILER_VARIANT)
+        set(SES_COMPILER_VARIANT "gcc")
+    endif()
+
+    if(NOT SES_ASSEMBLER_VARIANT)
+        set(SES_ASSEMBLER_VARIANT "SEGGER")
+    endif()
+
+    if(NOT SES_LINKER_VARIANT)
+        set(SES_LINKER_VARIANT "SEGGER")
     endif()
 
     # process linked libraries
@@ -260,29 +308,60 @@ function (generate_ses_project)
             list(REMOVE_ITEM target_gcc_cflags ${f})
             continue()
         endif()
-    endforeach()
-
-    if (SES_USE_TOOLCHAIN_ANDES)
-        # if Andes toolchain has not been specified, cflags needs to be preserved
-        foreach(f IN ITEMS ${target_gcc_cflags})
-            if("${target_cflags}" STREQUAL "")
+        # all warnings are passed to ses
+        STRING(REGEX MATCH "-W.*" exist ${f})
+        if(NOT ${exist} EQUAL -1)
+            if(NOT target_cflags)
                 set(target_cflags ${f})
             else()
                 set(target_cflags "${target_cflags};${f}")
             endif()
-        endforeach()
-        if(target_nds_cflags)
-            foreach(f IN ITEMS ${target_nds_cflags})
-                if(NOT target_cflags)
-                    set(target_cflags ${f})
-                else()
-                    set(target_cflags "${target_cflags};${f}")
-                endif()
-            endforeach()
+            list(REMOVE_ITEM target_gcc_cflags ${f})
+            continue()
         endif()
-        set(target_source_files "${target_source_files};${target_gcc_source_files}")
+        # convert lto to ses specific settings
+        STRING(REGEX MATCH "-flto" exist ${f})
+        if(NOT ${exist} EQUAL -1)
+            if("${ses_extra_options}" STREQUAL "")
+                set(ses_extra_options "link_time_optimization=Yes")
+            else()
+                set(ses_extra_options "${ses_extra_options},link_time_optimization=Yes")
+            endif()
+            list(REMOVE_ITEM target_gcc_cflags ${f})
+            continue()
+        endif()
+    endforeach()
+
+    if (${SES_COMPILER_VARIANT} STREQUAL "gcc")
+        if(target_gcc_cflags)
+            if(NOT target_cflags)
+                set(target_cflags ${target_gcc_cflags})
+            else()
+                set(target_cflags "${target_cflags};${target_gcc_cflags}")
+            endif()
+        endif()
+        if(SES_USE_TOOLCHAIN_ANDES)
+            if(target_nds_cflags)
+                foreach(f IN ITEMS ${target_nds_cflags})
+                    if(NOT target_cflags)
+                        set(target_cflags ${f})
+                    else()
+                        set(target_cflags "${target_cflags};${f}")
+                    endif()
+                endforeach()
+            endif()
+            set(target_source_files "${target_source_files};${target_gcc_source_files}")
+        else()
+            set(target_source_files "${target_source_files};${target_ses_source_files}")
+        endif()
     else()
         set(target_source_files "${target_source_files};${target_ses_source_files}")
+    endif()
+
+    if(${SES_LINKER_VARIANT} STREQUAL "gnu")
+        set(target_source_files "${target_source_files};${target_gcc_startup_source_files}")
+    else()
+        set(target_source_files "${target_source_files};${target_ses_startup_source_files}")
     endif()
 
     foreach(f IN ITEMS ${target_ses_cflags})
@@ -357,7 +436,7 @@ function (generate_ses_project)
 
     set(target_link_symbols "")
     foreach(sym IN ITEMS ${target_link_sym})
-        if(NOT SES_USE_TOOLCHAIN_ANDES)
+        if(${SES_LINKER_VARIANT} STREQUAL "segger")
             string(FIND ${sym} "_heap_size" exist)
             if(NOT ${exist} EQUAL -1)
                 continue()
@@ -384,8 +463,7 @@ function (generate_ses_project)
     endforeach()
 
     get_property(target_linker_script TARGET ${APP_ELF_NAME} PROPERTY LINK_DEPENDS)
-    if(SES_USE_TOOLCHAIN_ANDES)
-        # if Andes toolchain has not been specified, gcc linker script should be used
+    if(${SES_LINKER_VARIANT} STREQUAL "gnu")
         set(target_linker ${target_linker_script})
     else()
         if(CUSTOM_SES_LINKER_FILE)
@@ -397,7 +475,6 @@ function (generate_ses_project)
         endif()
     endif()
 
-    set(ses_extra_options "")
     foreach(opt IN ITEMS ${target_ses_options})
         string(REPLACE "\"" "" opt ${opt}) # remove any quotes
         string(REGEX MATCH "${SES_OPT_DBG_TGT_CONN}=" out ${opt})
@@ -485,6 +562,18 @@ function (generate_ses_project)
     endif()
 
     if(EXISTS ${target_linker})
+        if(SES_LINKER_VARIANT)
+            string(TOLOWER ${SES_LINKER_VARIANT} linker_variant_lower)
+            if(${linker_variant_lower} STREQUAL "segger")
+                string(REGEX MATCH "\.ld\$" is_valid_linker_script ${target_linker})
+            endif()
+            if(${linker_variant_lower} STREQUAL "gnu")
+                string(REGEX MATCH "\.icf\$" is_valid_linker_script ${target_linker})
+            endif()
+            if(is_valid_linker_script)
+                message(WARNING "\nSegger: ${SES_LINKER_VARIANT} linker is used, but linker file is \"${target_linker}\". It might fail on linking.\n")
+            endif()
+        endif()
         message(STATUS "Segger linker script: " ${target_linker})
     else()
         message(WARNING "Segger: can not generate project, due to missing linker script: ${target_linker}")
@@ -637,6 +726,9 @@ function (generate_ses_project)
         \"gcc_opt_level\":\"${gcc_opt_level}\",
         \"target_device_name\":\"${SES_DEVICE_NAME}\",
         \"toolchain_variant\":\"${SES_TOOLCHAIN_VARIANT}\",
+        \"compiler_variant\":\"${SES_COMPILER_VARIANT}\",
+        \"assembler_variant\":\"${SES_ASSEMBLER_VARIANT}\",
+        \"linker_variant\":\"${SES_LINKER_VARIANT}\",
         \"cflags\":\"${target_cflags}\",
         \"compiler_abi\":\"${SES_COMPILER_ABI}\",
         \"compiler_isa\":\"${target_compiler_isa}\",

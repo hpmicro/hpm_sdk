@@ -23,4 +23,4 @@ Please reference[Multicore General Description.md](../README_en.md)
   - "Start"
   - "Frequency Switch"
 - Users can clock the "Start" button to start the dual-core coremark benchmarking
-- User can click the Frequence Switch button to switch different frequencies
+- User can click the Frequency Switch button to switch different frequencies

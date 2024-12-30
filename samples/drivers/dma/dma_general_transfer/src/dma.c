@@ -20,7 +20,7 @@
 #define LINKED_DESCRIPTOR_NUM 2
 
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(4) uint8_t s_dst_buffer[LINKED_DESCRIPTOR_NUM + 1][SIZE_PER_TEST];
-ATTR_PLACE_AT_WITH_ALIGNMENT(".fast_ram", 4) uint8_t s_src_buffer[SIZE_PER_TEST];
+ATTR_PLACE_AT_WITH_ALIGNMENT(".fast_ram.non_init", 4) uint8_t s_src_buffer[SIZE_PER_TEST];
 /* descriptor should be 8-byte aligned */
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(8) dma_linked_descriptor_t descriptors[LINKED_DESCRIPTOR_NUM];
 
@@ -105,6 +105,7 @@ static uint32_t compare_buffers(uint8_t *expected, uint8_t *actual, uint32_t siz
     return errors;
 }
 
+SDK_DECLARE_EXT_ISR_M(TEST_DMA_IRQ, isr_dma)
 void isr_dma(void)
 {
     uint32_t stat;
@@ -129,7 +130,6 @@ void isr_dma(void)
         }
     }
 }
-SDK_DECLARE_EXT_ISR_M(TEST_DMA_IRQ, isr_dma)
 
 void test_chained_transfer(bool verbose)
 {

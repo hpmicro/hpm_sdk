@@ -5,8 +5,9 @@
  *
  */
 
-#include "hpm_sysctl_drv.h"
 #include "hpm_soc_feature.h"
+#include "hpm_sysctl_drv.h"
+#include "hpm_clock_drv.h"
 
 #define SYSCTL_RESOURCE_GROUP0 0
 #define SYSCTL_RESOURCE_GROUP1 1
@@ -294,6 +295,9 @@ hpm_stat_t sysctl_config_clock(SYSCTL_Type *ptr, clock_node_t node_index, clock_
     ptr->CLOCK[node] = (ptr->CLOCK[node] & ~(SYSCTL_CLOCK_MUX_MASK | SYSCTL_CLOCK_DIV_MASK)) |
         (SYSCTL_CLOCK_MUX_SET(source) | SYSCTL_CLOCK_DIV_SET(divide_by - 1));
     while (sysctl_clock_target_is_busy(ptr, node)) {
+    }
+    if ((node == clock_node_cpu0) || (node == clock_node_cpu1)) {
+        clock_update_core_clock();
     }
     return status_success;
 }

@@ -62,14 +62,6 @@ static dma_chn_context_t *dma_mgr_search_chn_context(const dma_resource_t *resou
 static uint32_t dma_mgr_enter_critical(void);
 static void dma_mgr_exit_critical(uint32_t level);
 
-static void dma0_isr(void);
-SDK_DECLARE_EXT_ISR_M(IRQn_HDMA, dma0_isr);
-
-#if defined(DMA_SOC_MAX_COUNT) && (DMA_SOC_MAX_COUNT > 1)
-static void dma1_isr(void);
-SDK_DECLARE_EXT_ISR_M(IRQn_XDMA, dma1_isr);
-#endif
-
 /*****************************************************************************************************************
  *
  *  Variables
@@ -117,12 +109,14 @@ void dma_mgr_isr_handler(DMA_Type *ptr, uint32_t instance)
     }
 }
 
+SDK_DECLARE_EXT_ISR_M(IRQn_HDMA, dma0_isr)
 void dma0_isr(void)
 {
     dma_mgr_isr_handler(HPM_HDMA, 0);
 }
 
 #if defined(DMA_SOC_MAX_COUNT) && (DMA_SOC_MAX_COUNT > 1)
+SDK_DECLARE_EXT_ISR_M(IRQn_XDMA, dma1_isr)
 void dma1_isr(void)
 {
     dma_mgr_isr_handler(HPM_XDMA, 1);

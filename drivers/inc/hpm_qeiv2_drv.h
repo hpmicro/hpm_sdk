@@ -231,7 +231,8 @@ static inline void qeiv2_config_z_phase_counter_mode(QEIV2_Type *qeiv2_x, qeiv2_
 }
 
 /**
- * @brief config phase max value and phase param
+ * @brief config phase max value and phase param(for position calculation).
+ * It is recommended used without z-phase. If it has z-phase, you can only config phase param by used qeiv2_config_phparam() API.
  *
  * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
  * @param[in] phmax maximum phcnt number, phcnt will rollover to 0 when it upcount to (phmax-1)
@@ -244,6 +245,42 @@ static inline void qeiv2_config_phmax_phparam(QEIV2_Type *qeiv2_x, uint32_t phma
         phmax--;
     }
     qeiv2_x->PHCFG = QEIV2_PHCFG_PHMAX_SET(phmax);
+    if (phmax == 0u) {
+        qeiv2_x->PHASE_PARAM = 0xFFFFFFFFu;
+    } else {
+        tmp = (0x80000000u / (phmax + 1u));
+        tmp <<= 1u;
+        qeiv2_x->PHASE_PARAM = QEIV2_PHASE_PARAM_PHASE_PARAM_SET(tmp);
+    }
+}
+
+/**
+ * @brief config phase max value
+ *
+ * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
+ * @param[in] phmax maximum phcnt number, phcnt will rollover to 0 when it upcount to (phmax-1)
+ */
+static inline void qeiv2_config_phmax(QEIV2_Type *qeiv2_x, uint32_t phmax)
+{
+    if (phmax > 0u) {
+        phmax--;
+    }
+    qeiv2_x->PHCFG = QEIV2_PHCFG_PHMAX_SET(phmax);
+}
+
+/**
+ * @brief config phase param for position calculation.
+ *
+ * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
+ * @param[in] phmax maximum phcnt number, phase param will be calculated by phmax.
+ */
+static inline void qeiv2_config_phparam(QEIV2_Type *qeiv2_x, uint32_t phmax)
+{
+    uint32_t tmp;
+
+    if (phmax > 0u) {
+        phmax--;
+    }
     if (phmax == 0u) {
         qeiv2_x->PHASE_PARAM = 0xFFFFFFFFu;
     } else {

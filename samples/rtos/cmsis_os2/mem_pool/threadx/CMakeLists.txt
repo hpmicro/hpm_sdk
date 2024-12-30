@@ -9,8 +9,6 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(cmsis_os2_mem_pool_threadx)
 
-sdk_compile_definitions(-D__threadx_irq_stack_top=_stack)
-sdk_compile_definitions(-DCONFIG_THREADX=1)
 
 sdk_inc(.)
 sdk_app_src(../src/main.c)

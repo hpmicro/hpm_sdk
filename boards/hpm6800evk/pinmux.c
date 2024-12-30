@@ -313,16 +313,16 @@ void init_sdxc_clk_data_pins(SDXC_Type *ptr, uint32_t width, bool is_1v8)
     }
 }
 
-
-
-void init_usb_pins(void)
+void init_usb_pins(USB_Type *ptr)
 {
-    /* USB0_ID */
-    HPM_IOC->PAD[IOC_PAD_PF04].FUNC_CTL = IOC_PF04_FUNC_CTL_USB0_ID;
-    /* USB0_OC */
-    HPM_IOC->PAD[IOC_PAD_PF03].FUNC_CTL = IOC_PF03_FUNC_CTL_USB0_OC;
-    /* USB0_PWR */
-    HPM_IOC->PAD[IOC_PAD_PF00].FUNC_CTL = IOC_PF00_FUNC_CTL_USB0_PWR;
+    if (ptr == HPM_USB0) {
+        /* USB0_ID */
+        HPM_IOC->PAD[IOC_PAD_PF04].FUNC_CTL = IOC_PF04_FUNC_CTL_USB0_ID;
+        /* USB0_OC */
+        HPM_IOC->PAD[IOC_PAD_PF03].FUNC_CTL = IOC_PF03_FUNC_CTL_USB0_OC;
+        /* USB0_PWR */
+        HPM_IOC->PAD[IOC_PAD_PF00].FUNC_CTL = IOC_PF00_FUNC_CTL_USB0_PWR;
+    }
 }
 
 void init_can_pins(MCAN_Type *ptr)

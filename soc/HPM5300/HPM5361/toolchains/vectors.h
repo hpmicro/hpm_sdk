@@ -179,7 +179,6 @@ __vector_table
 
 #else
 
-.global default_irq_handler
 .weak default_irq_handler
 .align 2
 default_irq_handler:

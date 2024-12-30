@@ -16,7 +16,7 @@ void led0_task(void *p_arg)
     uint32_t temp = 0;
     uint8_t i = 0;
     CPU_SR_ALLOC();
-    p_arg = p_arg;
+    (void)p_arg;
     while (1) {
         CPU_CRITICAL_ENTER();
         printf("led0 task run %d times\r\n", temp++);

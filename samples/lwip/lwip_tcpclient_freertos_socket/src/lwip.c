@@ -18,6 +18,7 @@
 /*--------------- Tasks Priority -------------*/
 #define MAIN_TASK_PRIO   (tskIDLE_PRIORITY + 1)
 #define DHCP_TASK_PRIO   (tskIDLE_PRIORITY + 4)
+#define NETIF_STA_TASK_PRIO (tskIDLE_PRIORITY + 4)
 
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ENET_SOC_DESC_ADDR_ALIGNMENT)
 __RW enet_rx_desc_t dma_rx_desc_tab[ENET_RX_BUFF_COUNT]; /* Ethernet Rx DMA Descriptor */
@@ -194,14 +195,15 @@ void Main_task(void *pvParameters)
     tcpip_init(NULL, NULL);
     netif_config(&gnetif);
 
-    tcp_client_init();
+    /* Initialize tcp client */
+    tcp_client_init(&gnetif);
 
 #if defined(LWIP_DHCP) && LWIP_DHCP
     /* Start DHCP Client */
     xTaskCreate(LwIP_DHCP_task, "DHCP", configMINIMAL_STACK_SIZE * 2, &gnetif, DHCP_TASK_PRIO, NULL);
 #endif
 
-    xTaskCreate(netif_update_link_status, "netif update status", configMINIMAL_STACK_SIZE * 2, &gnetif, DHCP_TASK_PRIO, NULL);
+    xTaskCreate(netif_update_link_status, "netif update status", configMINIMAL_STACK_SIZE * 2, &gnetif, NETIF_STA_TASK_PRIO, NULL);
 
     timer_handle = xTimerCreate((const char *)NULL,
                                 (TickType_t)1000,

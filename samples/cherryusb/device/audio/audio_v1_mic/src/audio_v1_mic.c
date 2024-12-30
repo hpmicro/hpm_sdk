@@ -432,6 +432,7 @@ void init_mic_i2s_pdm(void)
     pdm_init(HPM_PDM, &pdm_config);
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 void isr_dma(void)
 {
     volatile hpm_stat_t stat;
@@ -442,7 +443,6 @@ void isr_dma(void)
         s_dma_transfer_done = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 
 /* static function definition */
 static void usbd_audio_iso_callback(uint8_t busid, uint8_t ep, uint32_t nbytes)

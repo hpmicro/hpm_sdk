@@ -18,7 +18,7 @@ void led0_task(void *p_arg)
     uint8_t times = 0;
     CPU_SR_ALLOC();
     uint8_t temp;
-    p_arg = p_arg;
+    (void)p_arg;
     while (1) {
         CPU_CRITICAL_ENTER();
         temp = FloatTaskTCB.MsgQ.NbrEntriesSize - FloatTaskTCB.MsgQ.NbrEntries;

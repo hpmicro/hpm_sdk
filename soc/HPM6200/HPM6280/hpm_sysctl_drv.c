@@ -5,8 +5,9 @@
  *
  */
 
-#include "hpm_sysctl_drv.h"
 #include "hpm_soc_feature.h"
+#include "hpm_sysctl_drv.h"
+#include "hpm_clock_drv.h"
 
 #define SYSCTL_RESOURCE_GROUP0 0
 #define SYSCTL_RESOURCE_GROUP1 1
@@ -318,6 +319,8 @@ hpm_stat_t sysctl_config_cpu0_domain_clock(SYSCTL_Type *ptr,
 
     while (sysctl_cpu_clock_any_is_busy(ptr)) {
     }
+
+    clock_update_core_clock();
 
     return status_success;
 }

@@ -12,50 +12,44 @@ float encoder_position_to_deg(uint32_t pos)
 {
     double tmp;
 
-    tmp = ((double)pos / (double)0xFFFFFFFF) * (double)360.0;
+    tmp = ((double)pos / (double)0xFFFFFFFF) * 360.0;
 
     return (float)tmp;
 }
 
 uint32_t encoder_deg_to_position(float deg)
 {
-    double tmp;
+    double tmp = (double)deg;
 
-    while (deg < 0) {
-        deg += 360;
+    while (tmp < 0) {
+        tmp += 360.0;
     }
-    while (deg > 360) {
-        deg -= 360;
+    while (tmp > 360.0) {
+        tmp -= 360.0;
     }
 
-    tmp = ((double)deg / (double)360.0) * (double)0xFFFFFFFF;
-
-    return (uint32_t)tmp;
+    return (uint32_t)((tmp / 360.0) * (double)0xFFFFFFFF);
 }
 
 float encoder_position_to_rad(uint32_t pos)
 {
     double tmp;
-    const double _2pi = 6.283185307179586;
 
-    tmp = ((double)pos / (double)0xFFFFFFFF) * _2pi;
+    tmp = ((double)pos / (double)0xFFFFFFFF) * HPM_2_PI;
 
     return (float)tmp;
 }
 
 uint32_t encoder_rad_to_position(float rad)
 {
-    double tmp;
-    const double _2pi = 6.283185307179586;
+    double tmp = (double)rad;
 
-    while (rad < 0) {
-        rad += _2pi;
+    while (tmp < 0) {
+        tmp += HPM_2_PI;
     }
-    while (rad > _2pi) {
-        rad -= _2pi;
+    while (tmp > HPM_2_PI) {
+        tmp -= HPM_2_PI;
     }
 
-    tmp = ((double)rad / _2pi) * (double)0xFFFFFFFF;
-
-    return (uint32_t)tmp;
+    return (uint32_t)((tmp / HPM_2_PI) * (double)0xFFFFFFFF);
 }

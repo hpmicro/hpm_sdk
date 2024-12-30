@@ -25,6 +25,7 @@ typedef struct {
 
 static volatile timer_cfg_t timer_table[TIMER_REGISTER_COUNT];
 
+SDK_DECLARE_EXT_ISR_M(TIMER_GPTMR_IRQ, tick_ms_isr)
 void tick_ms_isr(void)
 {
     if (gptmr_check_status(TIMER_GPTMR, GPTMR_CH_RLD_STAT_MASK(TIMER_GPTMR_CH))) {
@@ -40,14 +41,13 @@ void tick_ms_isr(void)
         }
     }
 }
-SDK_DECLARE_EXT_ISR_M(TIMER_GPTMR_IRQ, tick_ms_isr);
-
 
 void timer_init(void)
 {
     uint32_t gptmr_freq;
     gptmr_channel_config_t config;
 
+    clock_add_to_group(TIMER_GPTMR_CLOCK, 0);
     gptmr_channel_get_default_config(TIMER_GPTMR, &config);
 
     gptmr_freq = clock_get_frequency(TIMER_GPTMR_CLOCK);

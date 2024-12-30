@@ -86,7 +86,7 @@ void pla_get_aoi_8to7_one_channel(PLA_Type *pla,
     case pla_aoi_8to7_chn_1:
         for (i = 0; i < PLA_AOI_8TO7_SIGNAL_NUM; i++) {
             cfg->input[i].signal = i;
-            cfg->input[i].op = (pla->CHN[cfg->chn].AOI_8TO7_00_01 >> (i << 17)) & 0x03;
+            cfg->input[i].op = (pla->CHN[cfg->chn].AOI_8TO7_00_01 >> ((i << 1) + 16)) & 0x03;
         }
         break;
     case pla_aoi_8to7_chn_2:
@@ -98,7 +98,7 @@ void pla_get_aoi_8to7_one_channel(PLA_Type *pla,
     case pla_aoi_8to7_chn_3:
         for (i = 0; i < PLA_AOI_8TO7_SIGNAL_NUM; i++) {
             cfg->input[i].signal = i;
-            cfg->input[i].op = (pla->CHN[cfg->chn].AOI_8TO7_02_03 >> (i << 17)) & 0x03;
+            cfg->input[i].op = (pla->CHN[cfg->chn].AOI_8TO7_02_03 >> ((i << 1) + 16)) & 0x03;
         }
         break;
     case pla_aoi_8to7_chn_4:
@@ -110,7 +110,7 @@ void pla_get_aoi_8to7_one_channel(PLA_Type *pla,
     case pla_aoi_8to7_chn_5:
         for (i = 0; i < PLA_AOI_8TO7_SIGNAL_NUM; i++) {
             cfg->input[i].signal = i;
-            cfg->input[i].op = (pla->CHN[cfg->chn].AOI_8TO7_04_05 >> (i << 17)) & 0x03;
+            cfg->input[i].op = (pla->CHN[cfg->chn].AOI_8TO7_04_05 >> ((i << 1) + 16)) & 0x03;
         }
         break;
     case pla_aoi_8to7_chn_6:
@@ -173,7 +173,7 @@ void pla_get_aoi_8to7_input_signal(PLA_Type *pla,
         break;
     case pla_aoi_8to7_chn_1:
         cfg->signal = signal;
-        cfg->op = (pla->CHN[chn].AOI_8TO7_00_01 >> (signal << 17)) & 0x03;
+        cfg->op = (pla->CHN[chn].AOI_8TO7_00_01 >> ((signal << 1) + 16)) & 0x03;
         break;
     case pla_aoi_8to7_chn_2:
         cfg->signal = signal;
@@ -181,7 +181,7 @@ void pla_get_aoi_8to7_input_signal(PLA_Type *pla,
         break;
     case pla_aoi_8to7_chn_3:
         cfg->signal = signal;
-        cfg->op = (pla->CHN[chn].AOI_8TO7_02_03 >> (signal << 17)) & 0x03;
+        cfg->op = (pla->CHN[chn].AOI_8TO7_02_03 >> ((signal << 1) + 16)) & 0x03;
         break;
     case pla_aoi_8to7_chn_4:
         cfg->signal = signal;
@@ -189,7 +189,7 @@ void pla_get_aoi_8to7_input_signal(PLA_Type *pla,
         break;
     case pla_aoi_8to7_chn_5:
         cfg->signal = signal;
-        cfg->op = (pla->CHN[chn].AOI_8TO7_04_05 >> (signal << 17)) & 0x03;
+        cfg->op = (pla->CHN[chn].AOI_8TO7_04_05 >> ((signal << 1) + 16)) & 0x03;
         break;
     case pla_aoi_8to7_chn_6:
         cfg->signal = signal;

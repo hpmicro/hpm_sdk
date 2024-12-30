@@ -223,6 +223,7 @@ int main(void)
     }
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_SEI_IRQn, isr_sei)
 void isr_sei(void)
 {
     uint32_t sample_latch_tm;
@@ -247,4 +248,3 @@ void isr_sei(void)
         printf("TRX Error!\n");
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_SEI_IRQn, isr_sei)

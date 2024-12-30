@@ -27,7 +27,7 @@ void init_pwm_pins(PWM_Type *ptr);
 void init_hrpwm_pins(PWM_Type *ptr);
 void init_adc_pins(void);
 void init_dac_pins(DAC_Type *ptr);
-void init_usb_pins(void);
+void init_usb_pins(USB_Type *ptr);
 void init_can_pins(MCAN_Type *ptr);
 void init_adc_bldc_pins(void);
 void init_rgb_pwm_pins(void);

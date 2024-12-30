@@ -42,7 +42,7 @@ extern void _tsn_irq_handler(struct tsn_ctrl_dev_s *tsn_dev);
 
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(4) uint8_t mempool[APP_TSW_SZ_MEMPOOL];
 
-static tsw_phy_status_t last_status;
+static tsw_phy_status_t last_status = {.tsw_phy_link = tsw_phy_link_unknown};
 
 static void preset_system_rtc(struct rtc_s *rtc, uint32_t presetvalue)
 {
@@ -101,11 +101,11 @@ hpm_stat_t tsw_init(TSW_Type *ptr)
     return status_success;
 }
 
+SDK_DECLARE_EXT_ISR_M(APP_TSW_IRQ, isr_tsw)
 void isr_tsw(void)
 {
     _tsn_irq_handler(p);
 }
-SDK_DECLARE_EXT_ISR_M(APP_TSW_IRQ, isr_tsw)
 
 void tsw_self_adaptive_port_speed(void)
 {
@@ -117,21 +117,23 @@ void tsw_self_adaptive_port_speed(void)
 
     rtl8211_get_phy_status(BOARD_TSW, BOARD_TSW_PORT, &status);
 
-    if (memcmp(&last_status, &status, sizeof(tsw_phy_status_t)) != 0) {
-        memcpy(&last_status, &status, sizeof(tsw_phy_status_t));
-        if (status.tsw_phy_link) {
-            printf("Link Status: Up\n");
-            printf("Link Speed:  %s\n", speed_str[status.tsw_phy_speed]);
-            printf("Link Duplex: %s\n", duplex_str[status.tsw_phy_duplex]);
+    if (status.tsw_phy_link || (status.tsw_phy_link != last_status.tsw_phy_link)) {
+        if (memcmp(&last_status, &status, sizeof(tsw_phy_status_t)) != 0) {
+            memcpy(&last_status, &status, sizeof(tsw_phy_status_t));
+            if (status.tsw_phy_link) {
+                printf("Link Status: Up\n");
+                printf("Link Speed:  %s\n", speed_str[status.tsw_phy_speed]);
+                printf("Link Duplex: %s\n", duplex_str[status.tsw_phy_duplex]);
 
-            tsw_set_port_speed(BOARD_TSW, BOARD_TSW_PORT, port_speed[status.tsw_phy_speed]);
+                tsw_set_port_speed(BOARD_TSW, BOARD_TSW_PORT, port_speed[status.tsw_phy_speed]);
 
-            if (!status.tsw_phy_duplex) {
-                printf("Error: PHY is in half duplex now, but TSW MAC supports only full duplex mode!\n");
-                return;
+                if (!status.tsw_phy_duplex) {
+                    printf("Error: PHY is in half duplex now, but TSW MAC supports only full duplex mode!\n");
+                    return;
+                }
+            } else {
+                printf("Link Status: Down\n");
             }
-        } else {
-            printf("Link Status: Down\n");
         }
     }
 }

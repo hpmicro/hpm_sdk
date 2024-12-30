@@ -33,7 +33,7 @@
 #endif
 #define CODEC_I2S            BOARD_APP_I2S_BASE
 #define CODEC_I2S_CLK_NAME   BOARD_APP_I2S_CLK_NAME
-#define CODEC_I2S_DATA_LINE  BOARD_APP_I2S_DATA_LINE
+#define CODEC_I2S_TX_DATA_LINE  BOARD_APP_I2S_TX_DATA_LINE
 #define CODEC_I2S_IRQ        BOARD_APP_I2S_IRQ
 
 #define TEST_I2S_TX_FIFO_THRESHOLD (2U)
@@ -50,16 +50,17 @@ volatile uint32_t t_count;
 volatile uint32_t audio_play_count;
 volatile bool audio_play_finished;
 
+SDK_DECLARE_EXT_ISR_M(CODEC_I2S_IRQ, isr_i2s)
 void isr_i2s(void)
 {
     int32_t data;
-    volatile uint32_t stat = i2s_check_data_line_status(CODEC_I2S, CODEC_I2S_DATA_LINE);
+    volatile uint32_t stat = i2s_check_data_line_status(CODEC_I2S, CODEC_I2S_TX_DATA_LINE);
 
     if ((stat & i2s_data_line_tx_fifo_avail) != 0) {
         for (uint8_t i = 0; i < I2S_SOC_MAX_TX_FIFO_DEPTH - TEST_I2S_TX_FIFO_THRESHOLD; i++) {
             /* move valid 16bit audio data to high postion in 32bit value */
             data = *((uint16_t *)&sound_array[t_count]) << (32 - audio_depth);
-            i2s_send_data(CODEC_I2S, CODEC_I2S_DATA_LINE, data);
+            i2s_send_data(CODEC_I2S, CODEC_I2S_TX_DATA_LINE, data);
             t_count += audio_depth / 8;
             if (t_count >= sizeof(sound_array)) {
                 audio_play_count++;
@@ -73,7 +74,6 @@ void isr_i2s(void)
         }
     }
 }
-SDK_DECLARE_EXT_ISR_M(CODEC_I2S_IRQ, isr_i2s)
 
 
 hpm_stat_t board_i2s_init(audio_data_t *audio_data, uint32_t mclk_freq)
@@ -96,7 +96,7 @@ hpm_stat_t board_i2s_init(audio_data_t *audio_data, uint32_t mclk_freq)
     transfer.audio_depth = audio_data->audio_depth;
     /* 1 chanel - channel slot mask 0x1; 2 channel - channel solt mask 0x3 */
     transfer.channel_slot_mask = (1 << audio_data->channel_num) - 1;
-    transfer.data_line = CODEC_I2S_DATA_LINE;
+    transfer.data_line = CODEC_I2S_TX_DATA_LINE;
     transfer.master_mode = true;
 
     stat = i2s_config_tx(CODEC_I2S, mclk_freq, &transfer);

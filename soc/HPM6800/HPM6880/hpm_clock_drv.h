@@ -38,13 +38,14 @@ enum {
 #define CLK_SRC_GROUP_COMMON            (0U)
 #define CLK_SRC_GROUP_ADC               (1U)
 #define CLK_SRC_GROUP_I2S               (2U)
-#define CLK_SRC_GROUP_EWDG               (3U)
-#define CLK_SRC_GROUP_PEWDG              (4U)
+#define CLK_SRC_GROUP_EWDG              (3U)
+#define CLK_SRC_GROUP_PEWDG             (4U)
 #define CLK_SRC_GROUP_PMIC              (5U)
 #define CLK_SRC_GROUP_AXI_SOC           (6U)
 #define CLK_SRC_GROUP_AXI_FAST          (7U)
 #define CLK_SRC_GROUP_AXI_VIDEO         (8U)
 #define CLK_SRC_GROUP_SRC               (9U)
+#define CLK_SRC_GROUP_CPU0              (10U)
 #define CLK_SRC_GROUP_INVALID           (15U)
 
 #define MAKE_CLK_SRC(src_grp, index) (((uint8_t)(src_grp)<<4) | (index))
@@ -163,12 +164,14 @@ typedef enum _clock_name {
 
     clock_xpi0 = MAKE_CLOCK_NAME(sysctl_resource_xpi0, CLK_SRC_GROUP_COMMON, clock_node_xpi0),
 
+    clock_lmm0 = MAKE_CLOCK_NAME(sysctl_resource_lmm0, CLK_SRC_GROUP_CPU0, 0),
+
     clock_xram = MAKE_CLOCK_NAME(sysctl_resource_xram, CLK_SRC_GROUP_COMMON, clock_node_xram),
     clock_ddr0 = MAKE_CLOCK_NAME(sysctl_resource_ddr0, CLK_SRC_GROUP_AXI_FAST, clock_node_axif),
 
     clock_eth0 = MAKE_CLOCK_NAME(sysctl_resource_eth0, CLK_SRC_GROUP_COMMON, clock_node_eth0),
 
-    clock_ptp0 = MAKE_CLOCK_NAME(RESOURCE_INVALID, CLK_SRC_GROUP_COMMON, clock_node_ptp0),
+    clock_ptp0 = MAKE_CLOCK_NAME(sysctl_resource_eth0, CLK_SRC_GROUP_COMMON, clock_node_ptp0),
 
     clock_sdxc0 = MAKE_CLOCK_NAME(sysctl_resource_sdc0, CLK_SRC_GROUP_COMMON, clock_node_sdc0),
     clock_sdxc1 = MAKE_CLOCK_NAME(sysctl_resource_sdc1, CLK_SRC_GROUP_COMMON, clock_node_sdc1),
@@ -178,8 +181,8 @@ typedef enum _clock_name {
     clock_ref0 = MAKE_CLOCK_NAME(sysctl_resource_ref0, CLK_SRC_GROUP_COMMON, clock_node_ref0),
     clock_ref1 = MAKE_CLOCK_NAME(sysctl_resource_ref1, CLK_SRC_GROUP_COMMON, clock_node_ref1),
 
-    clock_cam0 = MAKE_CLOCK_NAME(sysctl_resource_cam0, CLK_SRC_GROUP_COMMON, clock_node_cam0),
-    clock_cam1 = MAKE_CLOCK_NAME(sysctl_resource_cam1, CLK_SRC_GROUP_COMMON, clock_node_cam1),
+    clock_camera0 = MAKE_CLOCK_NAME(sysctl_resource_cam0, CLK_SRC_GROUP_COMMON, clock_node_cam0),
+    clock_camera1 = MAKE_CLOCK_NAME(sysctl_resource_cam1, CLK_SRC_GROUP_COMMON, clock_node_cam1),
 
     clock_lcd0 = MAKE_CLOCK_NAME(sysctl_resource_lcd0, CLK_SRC_GROUP_COMMON, clock_node_lcd0),
     clock_lcd1 = MAKE_CLOCK_NAME(sysctl_resource_lcd1, CLK_SRC_GROUP_COMMON, clock_node_lcd1),
@@ -195,7 +198,7 @@ typedef enum _clock_name {
     clock_lvb = MAKE_CLOCK_NAME(sysctl_resource_lvb0, CLK_SRC_GROUP_AXI_VIDEO, clock_node_invalid),
     clock_lcb = MAKE_CLOCK_NAME(sysctl_resource_lcb0, CLK_SRC_GROUP_AXI_VIDEO, clock_node_invalid),
 
-    clock_ffa = MAKE_CLOCK_NAME(sysctl_resource_ffa0, CLK_SRC_GROUP_AXI_SOC, clock_node_invalid),
+    clock_ffa0 = MAKE_CLOCK_NAME(sysctl_resource_ffa0, CLK_SRC_GROUP_AXI_SOC, clock_node_invalid),
     clock_tsns = MAKE_CLOCK_NAME(sysctl_resource_tsns, CLK_SRC_GROUP_PMIC, clock_node_invalid),
 
     clock_ptpc = MAKE_CLOCK_NAME(sysctl_resource_ptpc, CLK_SRC_GROUP_AXI_SOC, clock_node_invalid),
@@ -248,6 +251,10 @@ typedef enum _clock_name {
     clk_pll3clk0 = MAKE_CLOCK_NAME(sysctl_resource_clk0_pll3, CLK_SRC_GROUP_SRC, 6),
     clk_pll4clk0 = MAKE_CLOCK_NAME(sysctl_resource_clk0_pll4, CLK_SRC_GROUP_SRC, 7),
 
+    /* Legacy name, kept for backwards compatibility */
+    clock_cam0 = clock_camera0,
+    clock_cam1 = clock_camera1,
+    clock_ffa = clock_ffa0,
 } clock_name_t;
 
 extern uint32_t hpm_core_clock;
@@ -339,6 +346,19 @@ hpm_stat_t clock_set_wdg_source(clock_name_t clock_name, clk_src_t src);
 hpm_stat_t clock_set_source_divider(clock_name_t clock_name, clk_src_t src, uint32_t div);
 
 /**
+ * @brief Wait until the clock source for specified IP clock is stable
+ *
+ * @note This function must be used after clock_add_to_group(clock_name, group_idx)
+ *
+ * @param [in] clock_name Clock name for specified IP module
+ *
+ * @retval status_success The clock source is stable
+ * @retval status_invalid_argument Invalid clock name is provided
+ * @retval status_timeout Timeout occurred
+ */
+hpm_stat_t clock_wait_source_stable(clock_name_t clock_name);
+
+/**
  * @brief Enable IP clock
  * @param[in] clock_name IP clock name
  */
@@ -384,6 +404,20 @@ void clock_connect_group_to_cpu(uint32_t group, uint32_t cpu);
  * @param[in] cpu CPU index, valid value is 0/1
  */
 void clock_disconnect_group_from_cpu(uint32_t group, uint32_t cpu);
+
+/**
+ * @brief Get core clock ticks per microsecond
+ *
+ * @return core clock ticks per microsecond
+ */
+uint32_t clock_get_core_clock_ticks_per_us(void);
+
+/**
+ * @brief Get core clock ticks per millisecond
+ *
+ * @return core clock ticks per millisecond
+ */
+uint32_t clock_get_core_clock_ticks_per_ms(void);
 
 /**
  * @brief Delay specified microseconds

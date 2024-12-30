@@ -31,11 +31,8 @@ static void tcp_echo_thread(void *arg)
     netconn_listen(conn);
 
     while (1) {
-        err = netconn_accept(conn, &newconn);
-
-        if (err == ERR_OK) {
-            while ((err = netconn_recv(newconn, &buf)) == ERR_OK) {
-
+        if (netconn_accept(conn, &newconn) == ERR_OK) {
+            while (netconn_recv(newconn, &buf) == ERR_OK) {
                 do {
                     netbuf_data(buf, &data, &len);
                     err = netconn_write(newconn, data, len, NETCONN_COPY);

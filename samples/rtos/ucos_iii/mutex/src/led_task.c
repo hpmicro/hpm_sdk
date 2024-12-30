@@ -14,7 +14,7 @@ CPU_STK LED0_TASK_STK[LED0_STK_SIZE];
 void led0_task(void *p_arg)
 {
     OS_ERR err;
-    p_arg = p_arg;
+    (void)p_arg;
 
     printf("This thread will print 3 without mutex protection, and will print 4 within mutex protection.\n");
 

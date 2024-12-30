@@ -46,3 +46,54 @@ float hpm_mcl_filter_iir_df1(mcl_filter_iir_df1_t *iir, float input)
     return y;
 }
 
+void hpm_mcl_filter_pll_type_i(mcl_filter_pll_type_i_t *pll, float sin_val, float cos_val, mcl_filter_pll_output_t *output)
+{
+    /* Define intermediate variables a0 to a4 for temporary storage during calculations. */
+    float a0, a1;
+
+    /* Calculate a0 based on the current phase estimate and the sine and cosine components of the input signal. */
+    a0 = cosf(pll->x2) * pll->cfg.k1 * sin_val - sinf(pll->x2) * pll->cfg.k1 * cos_val;
+
+    /* Pi controller */
+    pll->x0 += pll->cfg.ki * a0;
+    a1 = pll->x0 + a0 * pll->cfg.kp;
+
+    /* Low pass filter */
+    pll->x1 += pll->cfg.lowpass_k * (a1 - pll->x1);
+
+    /* Integrator */
+    pll->x2 += a1 * pll->cfg.c;
+    pll->x2 = MCL_ANGLE_MOD_X(0, MCL_2PI, pll->x2);
+
+    output->theta = pll->x2;
+    output->speed = pll->x1;
+}
+
+void hpm_mcl_filter_pll_type_ii(mcl_filter_pll_type_ii_t *pll, float sin_val, float cos_val, mcl_filter_pll_output_t *output)
+{
+    /* Define intermediate variables a0 to a4 for temporary storage during calculations. */
+    float a0, a1, a2, a3, a4;
+
+    /* Calculate a0 based on the current phase estimate and the sine and cosine components of the input signal. */
+    a0 = cosf(pll->x3) * pll->cfg.k1 * sin_val - sinf(pll->x3) * pll->cfg.k1 * cos_val;
+
+    /* Update the state variable x0 by integrating the phase error. */
+    pll->x0 += a0;
+    a1 = pll->x0 * pll->cfg.c;
+
+    /* Calculate a2 as the weighted difference between the current a1 and the previous state variable x1. */
+    a2 = a1 - pll->x1 * pll->cfg.a;
+    a3 = a2 * pll->cfg.b + a2;
+
+    /* Update the state variable x2 by integrating a3. */
+    pll->x2 += a3;
+    a4 = pll->x2 * pll->cfg.c;
+
+    /*  Update the state variables x1 and x3 for the next iteration. */
+    pll->x1 = a2;
+    pll->x3 = MCL_ANGLE_MOD_X(0, MCL_2PI, a4);
+
+    /* Store the computed phase and speed in the output structure. */
+    output->theta = pll->x3;
+    output->speed = a3;
+}

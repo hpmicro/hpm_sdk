@@ -78,11 +78,11 @@ static void init_sram_config(void)
     config.adv_ctrl_pin = BOARD_PPI_ASYNC_SRAM_ADV_CTRL_PIN;
     config.rel_ctrl_pin = BOARD_PPI_ASYNC_SRAM_OE_CTRL_PIN;
     config.wel_ctrl_pin = BOARD_PPI_ASYNC_SRAM_WE_CTRL_PIN;
-    config.as_in_ns = 0;
-    config.ah_in_ns = 48;
-    config.rel_in_ns = 48;
+    config.as_in_ns = 25;
+    config.ah_in_ns = 25;
+    config.rel_in_ns = 50;
     config.reh_in_ns = 0;
-    config.wel_in_ns = 48;
+    config.wel_in_ns = 50;
     config.weh_in_ns = 0;
     ppi_config_async_sram(HPM_PPI, BOARD_PPI_ASYNC_SRAM_CS_INDEX, 0, &config);
 }
@@ -90,6 +90,7 @@ static void init_sram_config(void)
 int main(void)
 {
     board_init();
+    clock_add_to_group(clock_ppi0, 0);
     init_ppi_pins();
     init_sram_config();
 

@@ -37,7 +37,7 @@
 #endif
     .global _tx_thread_context_save
 .section .isr_vector, "ax"
-.align 8
+.balign 4
 .type _tx_thread_context_save, function
 /**************************************************************************/
 /*                                                                        */

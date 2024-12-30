@@ -37,13 +37,15 @@ void init_uart_pins(UART_Type *ptr)
 
 void init_uart_pin_as_gpio(UART_Type *ptr)
 {
-    if (ptr == HPM_UART0) {
+    if (ptr == BOARD_UART_LIN) {
         /* pull-up */
-        HPM_IOC->PAD[IOC_PAD_PA00].PAD_CTL = IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(1);
-        HPM_IOC->PAD[IOC_PAD_PA01].PAD_CTL = IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(1);
+        HPM_IOC->PAD[IOC_PAD_PY07].PAD_CTL = IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(1);
+        HPM_IOC->PAD[IOC_PAD_PY06].PAD_CTL = IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(1);
 
-        HPM_IOC->PAD[IOC_PAD_PA00].FUNC_CTL = IOC_PA00_FUNC_CTL_GPIO_A_00;
-        HPM_IOC->PAD[IOC_PAD_PA01].FUNC_CTL = IOC_PA01_FUNC_CTL_GPIO_A_01;
+        HPM_IOC->PAD[IOC_PAD_PY07].FUNC_CTL = IOC_PY07_FUNC_CTL_GPIO_Y_07;
+        HPM_PIOC->PAD[IOC_PAD_PY07].FUNC_CTL = PIOC_PY07_FUNC_CTL_SOC_PY_07;
+        HPM_IOC->PAD[IOC_PAD_PY06].FUNC_CTL = IOC_PY06_FUNC_CTL_GPIO_Y_06;
+        HPM_PIOC->PAD[IOC_PAD_PY06].FUNC_CTL = PIOC_PY06_FUNC_CTL_SOC_PY_06;
     }
 }
 
@@ -356,14 +358,16 @@ void init_pwm_pins(PWMV2_Type *ptr)
     }
 }
 
-void init_usb_pins(void)
+void init_usb_pins(USB_Type *ptr)
 {
-    /* USB0_ID */
-    HPM_IOC->PAD[IOC_PAD_PF22].FUNC_CTL = IOC_PF22_FUNC_CTL_USB0_ID;
-    /* USB0_OC */
-    HPM_IOC->PAD[IOC_PAD_PF23].FUNC_CTL = IOC_PF23_FUNC_CTL_USB0_OC;
-    /* USB0_PWR */
-    HPM_IOC->PAD[IOC_PAD_PF19].FUNC_CTL = IOC_PF19_FUNC_CTL_USB0_PWR;
+    if (ptr == HPM_USB0) {
+        /* USB0_ID */
+        HPM_IOC->PAD[IOC_PAD_PF22].FUNC_CTL = IOC_PF22_FUNC_CTL_USB0_ID;
+        /* USB0_OC */
+        HPM_IOC->PAD[IOC_PAD_PF23].FUNC_CTL = IOC_PF23_FUNC_CTL_USB0_OC;
+        /* USB0_PWR */
+        HPM_IOC->PAD[IOC_PAD_PF19].FUNC_CTL = IOC_PF19_FUNC_CTL_USB0_PWR;
+    }
 }
 
 void init_clk_obs_pins(void)
@@ -546,7 +550,7 @@ void init_led_pins_as_pwm(void)
     HPM_IOC->PAD[IOC_PAD_PE04].FUNC_CTL = IOC_PE04_FUNC_CTL_PWM0_P_4;
 }
 
-void init_plb_pins(void)
+void init_plb_pulse_pins(void)
 {
     HPM_IOC->PAD[IOC_PAD_PB05].FUNC_CTL = IOC_PB05_FUNC_CTL_TRGM_P_05;
 }
@@ -558,14 +562,40 @@ void init_plb_ab_pins(void)
     HPM_IOC->PAD[IOC_PAD_PB05].FUNC_CTL = IOC_PB05_FUNC_CTL_TRGM_P_05;
 }
 
+void init_plb_lin_pins(void)
+{
+    HPM_IOC->PAD[IOC_PAD_PB05].FUNC_CTL = IOC_PB05_FUNC_CTL_TRGM_P_05;
+}
+
+void init_plb_filter_pins(void)
+{
+    HPM_IOC->PAD[IOC_PAD_PE10].PAD_CTL = IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(0);
+    HPM_IOC->PAD[IOC_PAD_PE10].FUNC_CTL = IOC_PE10_FUNC_CTL_TRGM_P_10;
+    HPM_IOC->PAD[IOC_PAD_PE12].FUNC_CTL = IOC_PE12_FUNC_CTL_TRGM_P_12;
+}
+
+/* Pin configuration is required when ESC use actual eeprom devices */
+void init_esc_eeprom_pin(void)
+{
+    HPM_IOC->PAD[IOC_PAD_PA12].FUNC_CTL = IOC_PA12_FUNC_CTL_ESC0_SDA;
+    HPM_IOC->PAD[IOC_PAD_PA13].FUNC_CTL = IOC_PA13_FUNC_CTL_ESC0_SCL;
+}
+
+/* Pin configuration is required when ESC use actual eeprom devices, use i2c peripheral init eeprom content */
+void init_esc_eeprom_as_i2c_pin(void)
+{
+    HPM_IOC->PAD[IOC_PAD_PA12].FUNC_CTL = IOC_PA12_FUNC_CTL_I2C1_SDA | IOC_PAD_FUNC_CTL_LOOP_BACK_MASK;
+    HPM_IOC->PAD[IOC_PAD_PA13].FUNC_CTL = IOC_PA13_FUNC_CTL_I2C1_SCL | IOC_PAD_FUNC_CTL_LOOP_BACK_MASK;
+    HPM_IOC->PAD[IOC_PAD_PA12].PAD_CTL = IOC_PAD_PAD_CTL_OD_SET(1) | IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(1);
+    HPM_IOC->PAD[IOC_PAD_PA13].PAD_CTL = IOC_PAD_PAD_CTL_OD_SET(1) | IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(1);
+}
+
 void init_esc_pins(void)
 {
     /* ESC */
     HPM_IOC->PAD[IOC_PAD_PA09].FUNC_CTL = IOC_PA09_FUNC_CTL_ESC0_REFCK;
     HPM_IOC->PAD[IOC_PAD_PA30].FUNC_CTL = IOC_PA30_FUNC_CTL_ESC0_MDIO;
     HPM_IOC->PAD[IOC_PAD_PA31].FUNC_CTL = IOC_PA31_FUNC_CTL_ESC0_MDC;
-    HPM_IOC->PAD[IOC_PAD_PA12].FUNC_CTL = IOC_PA12_FUNC_CTL_ESC0_SDA;
-    HPM_IOC->PAD[IOC_PAD_PA13].FUNC_CTL = IOC_PA13_FUNC_CTL_ESC0_SCL;
 
     /* ESC needs to configure these pins for specific functions, see ESC IOCFG registers */
     HPM_IOC->PAD[IOC_PAD_PA10].FUNC_CTL = IOC_PA10_FUNC_CTL_GPIO_A_10;  /* GPIO to reset PHY */

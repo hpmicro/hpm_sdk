@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -46,6 +46,20 @@ typedef struct {
 } mcl_offline_param_detection_result_t;
 
 /**
+ * @brief 3p-3z Coefficients for 3p-3z controllers
+ *
+ */
+typedef struct {
+    float b0;
+    float b1;
+    float b2;
+    float b3;
+    float a0;
+    float a1;
+    float a2;
+} mcl_clc_coeff_cfg_t;
+
+/**
  * @brief Configuration data for pid
  *
  */
@@ -64,8 +78,10 @@ typedef struct {
  *
  */
 typedef struct {
-    mcl_control_pid_cfg_t cfg;
-    hpm_mcl_type_t integral;
+    mcl_control_pid_cfg_t cfg;  /**< pid config value */
+    hpm_mcl_type_t integral;    /**< Internal data, used for integral */
+    hpm_mcl_type_t error_n1;    /**< Error at moment n-1 */
+    hpm_mcl_type_t error_n2;    /**< Error at moment n-2 */
 } mcl_control_pid_t;
 
 /**
@@ -271,6 +287,47 @@ extern "C" {
  * @return hpm_mcl_stat_t
  */
 hpm_mcl_stat_t hpm_mcl_control_init(mcl_control_t *control, mcl_control_cfg_t *cfg);
+
+/**
+ * @brief Convert a 3p3z controller to a pid controller
+ *
+ * @param pid @ref mcl_control_pid_cfg_t
+ * @param p3z3 @ref mcl_clc_coeff_cfg_t
+ * @return hpm_mcl_stat_t
+ */
+hpm_mcl_stat_t hpm_mcl_pid_to_3p3z(mcl_control_pid_cfg_t *cfg_pid, mcl_clc_coeff_cfg_t *cfg_3p3z);
+
+/**
+ * Calculates the output of a Delta PID controller.
+ *
+ * This function implements a Delta PID (Proportional-Integral-Derivative) controller calculation to determine the controller's output value based on the setpoint and feedback values. The PID controller adjusts the output value using proportional (P), integral (I), and derivative (D) terms to minimize the error between the setpoint and feedback values.
+ *
+ * @param setpoint The desired output value of the system.
+ * @param feedback The actual output value of the system.
+ * @param pid_x Pointer to the PID controller structure containing the configuration and state.
+ * @param output Pointer to store the calculated controller output value.
+ * @return Returns a status code indicating whether the function executed successfully.
+ *
+ * Note:
+ * - This function assumes that the PID controller structure `mcl_control_pid_t` is properly initialized.
+ * - The function internally limits the output value to ensure it does not exceed the configured minimum and maximum output values.
+ */
+hpm_mcl_stat_t hpm_mcl_delta_pid(float setpoint, float feedback, mcl_control_pid_t *pid_x, float *output);
+
+/**
+ * @brief Calculate the output of a Positional PID controller
+ *
+ * This function implements a typical PID (Proportional-Integral-Derivative) controller to compute the control signal based on the setpoint and feedback.
+ * The PID controller optimizes the control process by adjusting three parameters: proportional gain (KP), integral gain (KI), and derivative gain (KD).
+ * The proportional term responds quickly to the error, the integral term eliminates steady-state error, and the derivative term predicts and reduces overshoot.
+ *
+ * @param setpoint The setpoint, i.e., the desired output value
+ * @param feedback The feedback signal, representing the actual output value
+ * @param pid_x Pointer to the PID controller structure, containing the configuration and state
+ * @param output Pointer to the output control signal
+ * @return hpm_mcl_stat_t The execution status, indicating whether the PID calculation was successful
+ */
+hpm_mcl_stat_t hpm_mcl_position_pid(float setpoint, float feedback, mcl_control_pid_t *pid_x, float *output);
 
 #ifdef __cplusplus
 }

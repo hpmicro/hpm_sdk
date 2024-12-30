@@ -154,6 +154,9 @@ static hpm_stat_t write(uint8_t *buffer, uint32_t size)
     while (txdma_complete == false) {
     };
     txdma_complete = false;
+    /* When SPI sends, DMA completion does not mean the transfer is complete. need to wait for the SPI status to complete.*/
+    while (spi_is_active(SD_SPI_BASE) == true) {
+    };
 #else
     stat = hpm_spi_transmit_blocking(SD_SPI_BASE, buffer, size, 0xFFFFFFFF);
 #endif

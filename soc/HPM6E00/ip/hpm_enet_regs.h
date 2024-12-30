@@ -4491,7 +4491,13 @@ ICMP payload */
  * - When PPSCTRL = 0011, the PPS (4 Hz) is a sequence of:
  *   - Three clocks of 50 percent duty cycle and 268 ms period
  *   - Fourth clock of 195 ms period (134 ms low and 61 ms high)
+ * --------------------------------------------------------------------------------------------------------------------------------------
  * PPSCMD0: Flexible PPS0 Output Control
+ * Programming these bits with a non-zero value instructs the MAC to
+ * initiate an event. When the command is transferred or synchronized to
+ * the PTP clock domain, these bits get cleared automatically. The
+ * Software should ensure that these bits are programmed only when they
+ * are “all-zero”.
  * 0000: No Command
  * 0001: START Single Pulse
  * This command generates single pulse rising at the start point defined in

@@ -16,7 +16,7 @@
 #include "lwip/prot/dhcp.h"
 #include "osal.h"
 
-static tsw_phy_status_t last_status;
+static tsw_phy_status_t last_status = {.tsw_phy_link = tsw_phy_link_unknown};
 
 #if defined(NO_SYS) && !NO_SYS
 uint32_t msg;
@@ -164,34 +164,36 @@ void tsw_self_adaptive_port_speed(void)
 
     rtl8211_get_phy_status(BOARD_TSW, BOARD_TSW_PORT, &status);
 
-    if (memcmp(&last_status, &status, sizeof(tsw_phy_status_t)) != 0) {
-        memcpy(&last_status, &status, sizeof(tsw_phy_status_t));
-        if (status.tsw_phy_link) {
-            printf("Link Status: Up\n");
-            printf("Link Speed:  %s\n", speed_str[status.tsw_phy_speed]);
-            printf("Link Duplex: %s\n", duplex_str[status.tsw_phy_duplex]);
+    if (status.tsw_phy_link || (status.tsw_phy_link != last_status.tsw_phy_link)) {
+        if (memcmp(&last_status, &status, sizeof(tsw_phy_status_t)) != 0) {
+            memcpy(&last_status, &status, sizeof(tsw_phy_status_t));
+            if (status.tsw_phy_link) {
+                printf("Link Status: Up\n");
+                printf("Link Speed:  %s\n", speed_str[status.tsw_phy_speed]);
+                printf("Link Duplex: %s\n", duplex_str[status.tsw_phy_duplex]);
 
-            tsw_set_port_speed(BOARD_TSW, BOARD_TSW_PORT, port_speed[status.tsw_phy_speed]);
+                tsw_set_port_speed(BOARD_TSW, BOARD_TSW_PORT, port_speed[status.tsw_phy_speed]);
 
-            if (!status.tsw_phy_duplex) {
-                printf("Error: PHY is in half duplex now, but TSW MAC supports only full duplex mode!\n");
-                return;
+                if (!status.tsw_phy_duplex) {
+                    printf("Error: PHY is in half duplex now, but TSW MAC supports only full duplex mode!\n");
+                    return;
+                }
+
+                #if defined(NO_SYS) && !NO_SYS
+                msg = tsw_phy_link_up;
+                sys_mbox_trypost_fromisr(&netif_status_mbox, &msg);
+                #else
+                netif_set_link_up(netif_get_by_index(LWIP_NETIF_IDX));
+                #endif
+            } else {
+                printf("Link Status: Down\n");
+                #if defined(NO_SYS) && !NO_SYS
+                msg = tsw_phy_link_down;
+                sys_mbox_trypost_fromisr(&netif_status_mbox, &msg);
+                #else
+                netif_set_link_down(netif_get_by_index(LWIP_NETIF_IDX));
+                #endif
             }
-
-            #if defined(NO_SYS) && !NO_SYS
-            msg = tsw_phy_link_up;
-            sys_mbox_trypost_fromisr(&netif_status_mbox, &msg);
-            #else
-            netif_set_link_up(netif_get_by_index(LWIP_NETIF_IDX));
-            #endif
-        } else {
-            printf("Link Status: Down\n");
-            #if defined(NO_SYS) && !NO_SYS
-            msg = tsw_phy_link_down;
-            sys_mbox_trypost_fromisr(&netif_status_mbox, &msg);
-            #else
-            netif_set_link_down(netif_get_by_index(LWIP_NETIF_IDX));
-            #endif
         }
     }
 }
@@ -220,4 +222,16 @@ void tsw_common_handler(struct netif *netif)
     #endif
 }
 
+#if defined(ENABLE_TSW_RECEIVE_INTERRUPT) && ENABLE_TSW_RECEIVE_INTERRUPT
+SDK_DECLARE_EXT_ISR_M(IRQn_TSW_0, isr_tsw_port_cpu)  /* Declare TSW CPU Port IRQ */
+void isr_tsw_port_cpu(void)
+{
+    static int idx = 0;
 
+    tsw_recv_frame(BOARD_TSW, &frame[idx]);
+    tsw_commit_recv_desc(BOARD_TSW, recv_buff[idx], TSW_RECV_BUFF_LEN, idx);
+    idx++;
+    idx %= TSW_FRAME_BUFF_COUNT;
+    rx_flag = true;
+}
+#endif

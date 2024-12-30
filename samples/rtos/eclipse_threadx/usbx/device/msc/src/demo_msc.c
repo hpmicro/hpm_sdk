@@ -432,7 +432,7 @@ int main(void)
 {
     /* Initialize the board. */
     board_init();
-    board_init_usb_pins();
+    board_init_usb(HPM_USB0);
     board_init_gpio_pins();
 
     usb_device_hw_setup();

@@ -59,6 +59,7 @@ uart_fifo_ctrl_t fifo_ctrl_2 = {
 
 void uart_lin_check_head_and_respond(UART_Type *ptr, uint8_t *head_buff);
 
+SDK_DECLARE_EXT_ISR_M(TEST_UART_IRQ, uart_isr)
 void uart_isr(void)
 {
     volatile uint8_t irq_id = uart_get_irq_id(TEST_UART);
@@ -103,7 +104,6 @@ void uart_isr(void)
     }
 
 }
-SDK_DECLARE_EXT_ISR_M(TEST_UART_IRQ, uart_isr)
 
 void uart_lin_check_head_and_respond(UART_Type *ptr, uint8_t *head_buff)
 {
@@ -154,6 +154,9 @@ int main(void)
 {
     board_init();
     board_init_uart(TEST_UART);
+#if defined(BOARD_SUPPORT_LIN_TRANSCEIVER_CONTROL) && (BOARD_SUPPORT_LIN_TRANSCEIVER_CONTROL == 1)
+    board_lin_transceiver_control(true);
+#endif
 
     uart_config_t config = {0};
     uart_default_config(TEST_UART, &config);

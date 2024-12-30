@@ -92,6 +92,8 @@ static UINT demo_class_hid_get(MOUSE_THREAD_DATA *data)
     do {
         hid = NULL;
         status = ux_host_stack_class_instance_get(class, class_index, (void **)&hid);
+        if (status != UX_SUCCESS)
+            return status;
         if (hid != NULL) {
             if (strcmp((const char*)hid->ux_host_class_hid_client->ux_host_class_hid_client_name, \
                        (const char*)_ux_system_host_class_hid_client_mouse_name) == 0) {
@@ -189,7 +191,7 @@ static void demo_thread_entry(ULONG arg)
     }
     printf("[mouse %x] disconneted, thread (0x%x)%d exit\n", mouse, &thread_data->thread, thread_data->thread_id);
     reset_thread_data(thread_data, thread_data->thread_id);
-    status = tx_thread_terminate(&thread_data->thread);
+    tx_thread_terminate(&thread_data->thread);
     return;
 err:
     PRINTF("ERROR: 0x%x\r\n", status);
@@ -314,7 +316,7 @@ int main(void)
 {
     /* Initialize the board. */
     board_init();
-    board_init_usb_pins();
+    board_init_usb(HPM_USB0);
     board_init_gpio_pins();
 
     usb_host_hw_setup();

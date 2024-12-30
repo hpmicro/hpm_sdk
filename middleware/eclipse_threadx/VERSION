@@ -1,0 +1,5 @@
+filex:6.4.1    (filex/common/inc/fx_api.h)
+guix:6.4.0     (guix/guix/common/inc/gx_api.h)
+netxduo:6.4.0  (netxduo/common/inc/nx_api.h)
+threadx:6.4.0  (threadx/common/inc/tx_api.h)
+usbx:6.4.0     (usbx/common/core/inc/ux_api.h)

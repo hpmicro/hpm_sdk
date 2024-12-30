@@ -2,7 +2,7 @@
 
 ## 概述
 
-多核示例工程在Core0上运行"hello word"示例，在core1上运行"rgb_led"示例。
+多核示例工程在Core0上运行串口回显示例，在core1上运行GPTMR中断中GPIO翻转RGB LED示例。
 
 在本工程中:
  - 串口输出 "hello world"; 键盘手动输入字符串信息，通过串口打印出来

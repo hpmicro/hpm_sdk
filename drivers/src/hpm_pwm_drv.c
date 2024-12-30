@@ -137,6 +137,33 @@ hpm_stat_t pwm_setup_waveform(PWM_Type *pwm_x,
     return status_success;
 }
 
+hpm_stat_t pwm_update_duty_edge_aligned(PWM_Type *pwm_x, uint8_t cmp_index, float duty)
+{
+    uint32_t target_cmp;
+    uint32_t reload;
+
+    reload = pwm_get_reload_val(pwm_x);
+    target_cmp = (float)reload / 100 * (100.0f - duty);
+    if (target_cmp == reload) {
+        target_cmp += 1;
+    }
+    pwm_shadow_register_unlock(pwm_x);
+    pwm_cmp_update_cmp_value(pwm_x, cmp_index, target_cmp, 0);
+    return status_success;
+}
+
+hpm_stat_t pwm_update_duty_central_aligned(PWM_Type *pwm_x, uint8_t cmp1_index,
+                                       uint8_t cmp2_index, float duty)
+{
+    uint32_t target_cmp;
+    uint32_t reload;
+
+    reload = pwm_get_reload_val(pwm_x);
+    target_cmp = (float)reload / 100 * duty;
+    pwm_update_raw_cmp_central_aligned(pwm_x, cmp1_index, cmp2_index, (reload - target_cmp) >> 1, (reload + target_cmp) >> 1);
+    return status_success;
+}
+
 hpm_stat_t pwm_update_raw_cmp_edge_aligned(PWM_Type *pwm_x, uint8_t cmp_index, uint32_t target_cmp)
 {
     pwm_shadow_register_unlock(pwm_x);
@@ -148,11 +175,17 @@ hpm_stat_t pwm_update_raw_cmp_central_aligned(PWM_Type *pwm_x, uint8_t cmp1_inde
                                        uint8_t cmp2_index, uint32_t target_cmp1, uint32_t target_cmp2)
 {
     uint32_t reload = PWM_RLD_RLD_GET(pwm_x->RLD);
+    uint32_t cmp = 0;
     if (!target_cmp1) {
         target_cmp1 = reload + 1;
     }
     if (!target_cmp2) {
         target_cmp2 = reload + 1;
+    }
+    if (target_cmp1 > target_cmp2) {
+        cmp = target_cmp1;
+        target_cmp1 = target_cmp2;
+        target_cmp2 = cmp;
     }
     pwm_shadow_register_unlock(pwm_x);
     pwm_cmp_update_cmp_value(pwm_x, cmp1_index, target_cmp1, 0);

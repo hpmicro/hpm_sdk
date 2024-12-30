@@ -39,3 +39,5 @@ The received data are:
 SPI transfer all data matched!
 ```
 
+## 注意
+- 为保证正常传输，SPI的CS引脚建议加上4.7K的上拉电阻。

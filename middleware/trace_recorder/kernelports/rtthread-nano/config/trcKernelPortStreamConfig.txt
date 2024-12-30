@@ -1,0 +1,58 @@
+/*
+ * Trace Recorder for Tracealyzer v4.9.2
+ * Copyright 2023 Percepio AB
+ * www.percepio.com
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Configuration parameters for the kernel port.
+ * More settings can be found in trcKernelPortStreamingConfig.h.
+ */
+
+#ifndef TRC_KERNEL_PORT_CONFIG_H
+#define TRC_KERNEL_PORT_CONFIG_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * @brief Setting this to 0 will completely disable the recorder
+ */
+#define TRC_CFG_USE_TRACEALYZER_RECORDER 1
+
+/**
+ * @brief Board CPU clock frequency in Hz. Must be changed from 0.
+ */
+#define TRC_CFG_CPU_CLOCK_HZ 400000000
+#define TRC_CFG_CORE_COUNT 1
+#define TRC_CFG_NTASK			15
+#define TRC_CFG_NISR			5
+#define TRC_CFG_NQUEUE			10
+#define TRC_CFG_NSEMAPHORE		10
+#define TRC_CFG_NMUTEX			10
+#define TRC_CFG_NTIMER			5
+#define TRC_CFG_NEVENTGROUP		5
+#define TRC_CFG_NSTREAMBUFFER	5
+#define TRC_CFG_NMESSAGEBUFFER	5
+
+/**
+ * @def TRC_CFG_NAME_LEN_TASK, TRC_CFG_NAME_LEN_QUEUE, ...
+ * @brief Macros that specify the maximum lengths (number of characters) for names of
+ * kernel objects, such as tasks and queues. If longer names are used, they will
+ * be truncated when stored in the recorder.
+ */
+#define TRC_CFG_NAME_LEN_TASK			15
+#define TRC_CFG_NAME_LEN_ISR			15
+#define TRC_CFG_NAME_LEN_QUEUE			15
+#define TRC_CFG_NAME_LEN_SEMAPHORE		15
+#define TRC_CFG_NAME_LEN_MUTEX			15
+#define TRC_CFG_NAME_LEN_TIMER			15
+#define TRC_CFG_NAME_LEN_EVENTGROUP 	15
+#define TRC_CFG_NAME_LEN_STREAMBUFFER 	15
+#define TRC_CFG_NAME_LEN_MESSAGEBUFFER 	15
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* TRC_KERNEL_PORT_CONFIG_H */

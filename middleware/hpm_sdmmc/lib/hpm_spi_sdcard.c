@@ -10,7 +10,7 @@
 #include "board.h"
 
 #ifndef SPI_SD_LOG
-#define SPI_SD_LOG(....)
+#define SPI_SD_LOG(...)
 #endif
 
 #define  CSD_VERSION_V1_0             (0U)
@@ -299,8 +299,8 @@ hpm_stat_t sdcard_spi_write_block(uint32_t sector, uint8_t *buffer)
     }
    /* Start data write token: 0xFE */
     data = SPISD_START_TOKEN;
-    ret = g_spi_dev->write_read_byte(&data, &dummy_read_byte);
-    ret = g_spi_dev->write(buffer, SPI_SD_BLOCK_SIZE);
+    g_spi_dev->write_read_byte(&data, &dummy_read_byte);
+    g_spi_dev->write(buffer, SPI_SD_BLOCK_SIZE);
     /* 2Bytes dummy CRC */
     g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
     g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
@@ -551,8 +551,8 @@ static bool check_cid_data(bool check_crc)
             return false;
         }
     }
-    sta = g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
-    sta = g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
+    g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
+    g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
     if (check_crc == true) {
         crc = crc7_calc(temp, sizeof(temp) - 1);
         if (crc == (temp[15] >> 1)) {
@@ -574,11 +574,11 @@ static hpm_stat_t send_sdcard_command(uint8_t cmd, uint32_t arg, uint8_t crc)
 static hpm_stat_t read_sdcard_buffer(uint8_t *buf, uint32_t len)
 {
     hpm_stat_t stat = status_success;
-    stat = g_spi_dev->read(buf, len);
+    HPM_CHECK_RET(g_spi_dev->read(buf, len));
 
     /* 2bytes dummy CRC */
-    stat = g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
-    stat = g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
+    g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
+    g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
     return stat;
 }
 
@@ -616,8 +616,8 @@ static hpm_stat_t read_sdcard_info(spi_sdcard_info_t *cardinfo)
             return sta;
         }
     }
-    sta = g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
-    sta = g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
+    g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
+    g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
 
     crc7 = crc7_calc(temp, sizeof(temp) - 1);
     if (crc7 != (temp[15] >> 1)) {

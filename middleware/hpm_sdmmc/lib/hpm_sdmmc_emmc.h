@@ -7,9 +7,22 @@
 #ifndef HPM_SDMMC_EMMC_H
 #define HPM_SDMMC_EMMC_H
 
+/**
+ *
+ * @brief HPM SDMMC eMMC driver APIs
+ * @defgroup hpm_sdmmc HPM SDMMC stack
+ *  @ingroup hpm_sdmmc_interfaces
+ * @{
+ *
+ */
+
 #include "hpm_sdmmc_common.h"
 #include "hpm_sdmmc_card.h"
 #include "hpm_sdmmc_port.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef enum {
     emmc_switch_cmd_access_mode_command_set = 0,
@@ -662,136 +675,174 @@ typedef struct {
     emmc_partition_access_t partition_access_option;
 } emmc_config_partition_option_t;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 
 /**
- * @brief Intialize eMMC device, include both host and the device
- * @param card
- * @return
+ * @brief Initialize eMMC device, include both host and the device
+ *
+ * @param [in,out] card eMMC card context
+ *
+ * @return Command execution status
  */
 hpm_stat_t emmc_init(emmc_card_t *card);
 
+/**
+ * @brief De-Initialize eMMC device
+ *
+ * @param [in,out] card eMMC card context
+ *
+ * @return Command execution status
+ */
 void emmc_deinit(emmc_card_t *card);
 
 /**
  * @brief Initialize eMMC device
- * @param card
- * @return
+ *
+ * @param [in,out] card eMMC card context
+ *
+ * @return Command execution status
  */
 hpm_stat_t emmc_card_init(emmc_card_t *card);
 
 /**
  * @brief Request eMMC device to send CID to Host
- * @param card
- * @return
+ *
+ * @param [in,out] card eMMC card context
+ *
+ * @return Command execution status
  */
 hpm_stat_t emmc_send_cid(emmc_card_t *card);
 
 /**
  * @brief Probe eMMC device
- * @param card
- * @return
+ *
+ * @param [in,out] card eMMC card context
+ *
+ * @return Command execution status
  */
 hpm_stat_t emmc_probe_device(emmc_card_t *card);
 
 /**
  * @brief Select eMMC device
- * @param card
- * @param is_selected
- * @return
+ *
+ * @param [in,out] card eMMC card context
+ * @param [in] is_selected Select/De-select the eMMC device
+ *
+ * @return Command execution status
  */
-hpm_stat_t emmc_select_card(emmc_card_t *card, bool is_selected);
+hpm_stat_t emmc_select_card(const emmc_card_t *card, bool is_selected);
 
 /**
  * @brief Go to Idle mode
- * @param card
- * @param option
- * @return
+ *
+ * @param [in,out] card eMMC card context
+ * @param [in] option eMMC idle options
+ *
+ * @return Command execution status
  */
 hpm_stat_t emmc_go_idle(emmc_card_t *card, emmc_idle_option_t option);
 
 /**
  * @brief Switch eMMC function
- * @param card
- * @param arg
- * @param timeout_us
- * @return
+ *
+ * @param [in,out] card eMMC card context
+ * @param [in] arg Switch command argument
+ * @param [in] timeout_us Timeout in microseconds
+ *
+ * @return Command Execution status
  */
-hpm_stat_t emmc_switch_function(emmc_card_t *card, emmc_switch_cmd_arg_t arg, uint32_t timeout_us);
+hpm_stat_t emmc_switch_function(const emmc_card_t *card, emmc_switch_cmd_arg_t arg, uint32_t timeout_us);
 
 /**
  * @brief Configure eMMC Partition
- * @param card
- * @param option
- * @return
+ *
+ * @param [in,out] card eMMC card context
+ * @param [in] option Partition configuration option
+ *
+ * @return Command Execution status
  */
-hpm_stat_t emmc_configure_partition(emmc_card_t *card, emmc_config_partition_option_t option);
+hpm_stat_t emmc_configure_partition(const emmc_card_t *card, emmc_config_partition_option_t option);
 
 /**
  * @brief Enable High Density Erase group
- * @param card
- * @param enable
- * @return
+ * @param [in,out] card eMMC card context
+ * @param [in] enable Flag for enabling the high density erase group
+ *
+ * @return Command Execution status
  */
 hpm_stat_t emmc_enable_high_density_erase_group(emmc_card_t *card, bool enable);
 
 /**
  * @brief Program CSD register
- * @param card
- * @param raw_csd
- * @return
+ *
+ * @param [in,out] card eMMC card context
+ * @param [in] raw_csd raw CSD buffer
+ *
+ * @return Command Execution status
  */
 hpm_stat_t emmc_program_csd(emmc_card_t *card, const uint32_t *raw_csd);
 
 /**
  * @brief Read eMMC blocks
- * @param card
- * @param buffer
- * @param start_block
- * @param block_count
- * @return
+ *
+ * @param [in,out] card eMMC card context
+ * @param [out] buffer Data buffer
+ * @param [in] start_block Start Block index
+ * @param [in] block_count Number of blocks to be read
+ *
+ * @return Command Execution status
  */
 hpm_stat_t emmc_read_blocks(emmc_card_t *card, uint8_t *buffer, uint32_t start_block, uint32_t block_count);
 
 /**
  * @brief Write eMMC blocks
- * @param card
- * @param buffer
- * @param start_block
- * @param block_count
- * @return
+ *
+ * @param [in,out] card eMMC card context
+ * @param [in] buffer Buffer to be written
+ * @param [in] start_block Start block index
+ * @param [in] block_count Number of blocks to be written
+ *
+ * @return Command Execution status
  */
 hpm_stat_t emmc_write_blocks(emmc_card_t *card, const uint8_t *buffer, uint32_t start_block, uint32_t block_count);
 
 /**
  * @brief Erase eMMC Blocks
- * @param [in] card
- * @param [in] start_block
- * @param [in] block_count
- * @param [in] erase_option
- * @return
+ *
+ * @param [in,out] card eMMC card context
+ * @param [in] start_block The start block =
+ * @param [in] block_count Number of blocks to be erased
+ * @param [in] option Erase option
+ *
+ * @return Command Execution status
  */
 hpm_stat_t emmc_erase_blocks(emmc_card_t *card, uint32_t start_block, uint32_t block_count, emmc_erase_option_t option);
 
 /**
  * @brief Switch eMMC device into sleep mode
- * @param [in] card
- * @return
+ *
+ * @param [in,out] card eMMC card context
+ *
+ * @return Command Execution status
  */
-hpm_stat_t emmc_enter_sleep_mode(emmc_card_t *card);
+hpm_stat_t emmc_enter_sleep_mode(const emmc_card_t *card);
 
 /**
  * @brief Switch eMMC device into standby mode
- * @param [in] card
- * @return
+ *
+ * @param [in,out] card eMMC card context
+ *
+ * @return Command Execution status
  */
-hpm_stat_t emmc_exit_sleep_mode(emmc_card_t *card);
+hpm_stat_t emmc_exit_sleep_mode(const emmc_card_t *card);
 
 
 #ifdef __cplusplus
 }
 #endif
+
+/**
+ * @}
+ */
 
 #endif /* HPM_SDMMC_EMMC_H */

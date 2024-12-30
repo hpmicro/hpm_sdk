@@ -6,6 +6,7 @@
  */
 
 #include "board.h"
+#include "hpm_clock_drv.h"
 #include "hpm_debug_console.h"
 #include "hpm_ptpc_drv.h"
 
@@ -20,12 +21,12 @@
 uint32_t freq;
 volatile uint32_t data_ready;
 
+SDK_DECLARE_EXT_ISR_M(PTPC_IRQ, isr_ptpc)
 void isr_ptpc(void)
 {
     data_ready = ptpc_get_irq_status(PTPC);
     ptpc_clear_irq_status(PTPC, PTPC_EVENT_COMPARE_MASK | PTPC_EVENT_PPS_MASK);
 }
-SDK_DECLARE_EXT_ISR_M(PTPC_IRQ, isr_ptpc)
 
 void timer_compare(void)
 {
@@ -104,6 +105,7 @@ void pps_interrupt(void)
 int main(void)
 {
     board_init();
+    clock_add_to_group(clock_ptpc, 0);
     freq = clock_get_frequency(clock_ptpc);
     printf("ptpc example\n");
 

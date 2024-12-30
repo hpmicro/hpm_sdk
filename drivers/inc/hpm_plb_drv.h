@@ -60,29 +60,17 @@ typedef enum plb_chn {
  *
  */
 typedef enum plb_type_a_lut_num {
-#ifdef PLB_TYPE_A_0
-    plb_type_a_table0 = PLB_TYPE_A_0,
+#ifdef PLB_TYPE_A_LOOKUP_TABLE_0
+    plb_type_a_table0 = PLB_TYPE_A_LOOKUP_TABLE_0,
 #endif
-#ifdef PLB_TYPE_A_1
-    plb_type_a_table1 = PLB_TYPE_A_1,
+#ifdef PLB_TYPE_A_LOOKUP_TABLE_1
+    plb_type_a_table1 = PLB_TYPE_A_LOOKUP_TABLE_1,
 #endif
-#ifdef PLB_TYPE_A_2
-    plb_type_a_table2 = PLB_TYPE_A_2,
+#ifdef PLB_TYPE_A_LOOKUP_TABLE_2
+    plb_type_a_table2 = PLB_TYPE_A_LOOKUP_TABLE_2,
 #endif
-#ifdef PLB_TYPE_A_3
-    plb_type_a_table3 = PLB_TYPE_A_3,
-#endif
-#ifdef PLB_TYPE_A_4
-    plb_type_a_table4 = PLB_TYPE_A_4,
-#endif
-#ifdef PLB_TYPE_A_5
-    plb_type_a_table5 = PLB_TYPE_A_5,
-#endif
-#ifdef PLB_TYPE_A_6
-    plb_type_a_table6 = PLB_TYPE_A_6,
-#endif
-#ifdef PLB_TYPE_A_7
-    plb_type_a_table7 = PLB_TYPE_A_7,
+#ifdef PLB_TYPE_A_LOOKUP_TABLE_3
+    plb_type_a_table3 = PLB_TYPE_A_LOOKUP_TABLE_3,
 #endif
 } plb_type_a_lut_num_t;
 

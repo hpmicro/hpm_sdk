@@ -194,7 +194,7 @@ extern   "C" {
 #define NX_BSD_CONNECT_EVENT                ((ULONG) 0x00000002)
 #define NX_BSD_LINGER_EVENT                 ((ULONG) 0x00000004)    /* Event flag to signal a timed linger state has expired on a socket    */
 #define NX_BSD_TIMED_WAIT_EVENT             ((ULONG) 0x00000008)    /* Event flag to signal a timed wait state has expired on a socket      */
-#define NX_BSD_TIMER_EVENT                  ((ULONG) 0x00000010)    /* Event flag to singal a BSD 1 sec timer */
+#define NX_BSD_TIMER_EVENT                  ((ULONG) 0x00000010)    /* Event flag to signal a BSD 1 sec timer */
 
 
 /* For BSD APIs overriding.  */

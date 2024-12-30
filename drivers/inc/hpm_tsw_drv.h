@@ -54,6 +54,9 @@
 #ifndef TSW_BUS_FREQ
 #define TSW_BUS_FREQ        (100000000UL)
 #endif
+
+#define TSW_FPE_MMS_MIN_VTIME_MIN (1U)   /* 1ms */
+#define TSW_FPE_MMS_MAX_VTIME_MAX (128U) /* 128ms */
 /*---------------------------------------------------------------------
  *  Typedef Struct Declarations
  *-------------------------------------------------------------------*/
@@ -124,6 +127,144 @@ typedef struct {
     uint8_t     tqueue;
     uint8_t     tuser;
 } tsw_tsf_t;
+
+typedef struct {
+    bool vfail;
+    bool vok;
+    bool hld;
+} tsw_fpe_mms_status_t;
+
+typedef struct {
+    uint8_t tqueue;
+    uint32_t vtime;
+    uint32_t frag_size;
+    bool dis_verificaiton;
+    bool link_error;
+} tsw_fpe_config_t;
+
+typedef struct {
+    uint32_t mach;
+    uint32_t macl;
+    uint32_t vid;
+} tsw_cb_stmid_lookup_mac_t;
+
+typedef struct {
+    uint32_t mach;
+    uint32_t macl;
+    uint8_t pcp;
+    uint8_t vid;
+} tsw_cb_stmid_active_mac_t;
+
+typedef struct {
+    uint8_t idx;
+    bool enable;
+    bool seqgen;
+    uint8_t smac;
+    uint8_t mode;
+    uint8_t actctl;
+    uint8_t sid;
+    int32_t seqnum;
+    uint32_t match;
+    tsw_cb_stmid_lookup_mac_t lookup_mac;
+    tsw_cb_stmid_active_mac_t active_mac;
+} tsw_cb_stmid_entry_t;
+
+typedef struct {
+    bool fen;
+    uint8_t fidx;
+} tsw_cb_frer_xrfunc_config_t;
+
+typedef struct {
+    uint8_t sid;
+    tsw_cb_frer_xrfunc_config_t irfunc;
+    tsw_cb_frer_xrfunc_config_t srfunc;
+} tsw_cb_frer_sid_func_config_t;
+
+typedef struct {
+    bool  enable_detection;
+    uint32_t reset_period;
+    uint32_t test_period;
+    uint32_t threshold;
+    uint32_t err_count;
+} tsw_cb_frer_latent_error_dectecton_config_t;
+
+typedef struct {
+    uint8_t fidx;
+    bool freset;
+    bool taske_no_sequence;
+    uint8_t paths;
+    uint8_t history_len;
+    uint8_t algo;
+    uint8_t xrfunc;
+    uint32_t timeout_in_ms;
+    tsw_cb_frer_latent_error_dectecton_config_t latent_error_dectection_config;
+} tsw_cb_frer_recovery_func_config_t;
+
+typedef struct {
+    uint8_t state;
+    uint8_t ipv;
+    uint32_t max_octets;
+    uint32_t interval;
+} tsw_psfer_gate_control_list_entry_t;
+
+typedef struct {
+    tsw_psfer_gate_control_list_entry_t *entry;
+    uint8_t list_len;
+    uint32_t cycle_time;
+    uint32_t base_time_ns;
+    uint32_t base_time_sec;
+} tsw_psfer_gate_control_list_config_t;
+
+typedef struct {
+    uint32_t egess_frame_count[8];
+} tsw_cb_frer_frame_count_egress_t;
+
+typedef struct {
+    uint8_t idx;
+    bool closed_due_to_octets_exceeded;
+    bool closed_due_to_invalid_rx;
+    uint8_t state;
+    uint8_t ipv;
+} tsw_psfp_gate_static_mode_config_t;
+
+typedef struct {
+    uint8_t idx;
+    bool closed_due_to_octets_exceeded;
+    bool closed_due_to_invalid_rx;
+    tsw_psfer_gate_control_list_config_t gate_control_list_config;
+} tsw_psfp_gate_dynamic_mode_config_t;
+
+typedef struct {
+    uint8_t integer;
+    uint16_t fract;
+} tsw_psfp_flow_meter_xir_config_t;
+
+typedef struct {
+    uint8_t idx;
+    bool reset;
+    bool mark_all_frames_red;
+    bool drop_on_yellow;
+    bool color_mode;
+    bool coupling_flag;
+    tsw_psfp_flow_meter_xir_config_t cir;
+    tsw_psfp_flow_meter_xir_config_t eir;
+    uint32_t cbs_in_bits;
+    uint32_t ebs_in_bits;
+} tsw_psfp_flow_meter_config_t;
+
+typedef struct {
+    uint8_t idx;
+    bool enable_blocking;
+    bool enable_size_checking;
+    bool enable_flow_meter;
+    bool filter_match_sid;
+    bool filter_match_pcp;
+    uint8_t pcp;
+    uint8_t flow_meter_id;
+    uint8_t gate_id;
+    uint8_t stream_id;
+    uint32_t max_frame_size_in_octects;
+} tsw_psfp_filter_config_t;
 
 /*---------------------------------------------------------------------
  *  Typedef Enum Declarations
@@ -208,6 +349,71 @@ typedef enum {
   tsw_traffic_queue_6,
   tsw_traffic_queue_7
 } tsw_traffic_queue_t;
+
+typedef enum {
+    tsw_fpe_mms_frame_reassembly_error_counter = 0,
+    tsw_fpe_mms_frame_rejected_due_to_wrong_smd,
+    tsw_fpe_mms_frame_assembly_ok_counter,
+    tsw_fpe_mms_fragment_rx_counter,
+    tsw_fpe_mms_fragment_tx_counter,
+    tsw_fpe_mms_hold_request_counter,
+} tsw_fpe_mms_statistics_counter_t;
+
+typedef enum {
+    tsw_fpe_mms_fragment_size_60_octets = 0,
+    tsw_fpe_mms_fragment_size_124_octets,
+    tsw_fpe_mms_fragment_size_188_octets,
+    tsw_fpe_mms_fragment_size_252_octets
+} tsw_fpe_mms_fragment_size_t;
+
+typedef enum {
+    tsw_stmid_lookup_mode_priority = 1,
+    tsw_stmid_lookup_mode_tagged = 2,
+    tsw_stmid_lookup_mode_all
+} tsw_stmid_lookup_mode_t;
+
+typedef enum {
+    tsw_stmid_actctl_disabled = 0,
+    tsw_stmid_actctl_use_amac_with_removed_vlan_tag = 1,
+    tsw_stmid_actctl_use_amac_with_replaced_or_inserted_vlan_tag = 3
+} tsw_stmid_active_dest_mac_control_t;
+
+typedef enum {
+    tsw_stmid_control_lookup_by_dest_mac = 0,
+    tsw_stmid_control_lookup_by_src_mac
+} tsw_stmid_control_lookup_mode_t;
+
+typedef enum {
+    tsw_cb_frer_algo_vector_recovery = 0,
+    tsw_cb_frer_algo_match_recovery
+} tsw_cb_frer_algo_t;
+
+typedef enum {
+    tsw_cb_frer_xfunc_recovery_sequence = 0,
+    tsw_cb_frer_xfunc_recovery_individual
+} tsw_cb_frer_xfunc_recovery_t;
+
+typedef enum {
+    presented_frames = 0,
+    discarded_frames,
+    tagless_frames,
+    rougue_frames,
+    out_of_oder_frames,
+    lost_frames,
+    recover_func_resets,
+    latent_err_dectection_resets
+} tsw_cb_frer_frame_ount_egress_t;
+
+typedef enum {
+    tsw_psfp_gate_mode_static = 0,
+    tsw_psfp_gate_mode_dynamic,
+    tsw_psfp_gate_mode_unknown
+} tsw_psfp_gate_mode_t;
+
+typedef enum {
+    tsw_psfp_gate_closed = 0,
+    tsw_psfp_gate_open
+} tsw_psfp_gate_t;
 
 #if defined __cplusplus
 extern "C" {
@@ -832,7 +1038,7 @@ hpm_stat_t tsw_shap_get_tas_crsr(TSW_Type *ptr, uint8_t port, uint32_t *crsr);
  * @param ptr[in]         TSW peripheral base address
  * @param port[in]        TSW port
  * @param config[in]      Pointer to TAS config @ref tsw_tas_config_t
- * @return hpm_stat_t     Result of setting tas config @ref hpm_stat_t
+ * @return hpm_stat_t     Result of setting TAS config @ref hpm_stat_t
  */
 hpm_stat_t tsw_shap_set_tas(TSW_Type *ptr, uint8_t port, tsw_tas_config_t *config);
 
@@ -843,7 +1049,7 @@ hpm_stat_t tsw_shap_set_tas(TSW_Type *ptr, uint8_t port, tsw_tas_config_t *confi
  * @param port[in]        TSW port
  * @param index[in]       Traffic queue index
  * @param config[in]      Pointer to CBS config @ref tsw_cbs_config_t
- * @return hpm_stat_t
+ * @return hpm_stat_t     Result of setting CBS config @ref hpm_stat_t
  */
 hpm_stat_t tsw_shap_set_cbs(TSW_Type *ptr, uint8_t port, uint8_t index, tsw_cbs_config_t *config);
 
@@ -866,6 +1072,172 @@ hpm_stat_t tsw_get_txtimestampfifo_used(TSW_Type *ptr, uint8_t port, uint32_t *c
  * @return hpm_stat_t     Result of getting TX-Timestamp FIFO entry @ref hpm_stat_t
  */
 hpm_stat_t tsw_get_txtimestampfifo_entry(TSW_Type *ptr, uint8_t port, tsw_tsf_t *entry);
+
+/**
+ * @brief   Get default MMS config
+ *
+ * @param ptr[in]              TSW peripheral base address
+ * @param port[in]             TSW port
+ * @param config[out]           Pointer to MMS config @ref tsw_fpe_config_t
+ * @return * hpm_stat_t        Result of getting default MMS config @ref hpm_stat_t
+ */
+hpm_stat_t tsw_fpe_get_default_mms_ctrl_config(TSW_Type *ptr, uint8_t port, tsw_fpe_config_t *config);
+
+/**
+ * @brief  Enable MMS
+ *
+ * @param ptr[in]         TSW peripheral base address
+ * @param port[in]        TSW port
+ * @return hpm_stat_t     Result of enabling MMS @ref hpm_stat_t
+ */
+hpm_stat_t tsw_fpe_enable_mms(TSW_Type *ptr, uint8_t port);
+
+/**
+ * @brief  Disable MMS
+ *
+ * @param ptr[in]         TSW peripheral base address
+ * @param port[in]        TSW port
+ * @return hpm_stat_t     Result of disabling MMS @ref hpm_stat_t
+ */
+hpm_stat_t tsw_fpe_disable_mms(TSW_Type *ptr, uint8_t port);
+
+/**
+ * @brief   Set MMS config
+ *
+ * @param ptr[in]              TSW peripheral base address
+ * @param port[in]             TSW port
+ * @param config[in]           Pointer to MMS config @ref tsw_fpe_config_t
+ * @return hpm_stat_t          Result of setting MMS config @ref hpm_stat_t
+ */
+hpm_stat_t tsw_fpe_set_mms_ctrl(TSW_Type *ptr, uint8_t port, tsw_fpe_config_t *config);
+
+/**
+ * @brief   Reset MMS statistics counter
+ *
+ * @param ptr[in]         TSW peripheral base address
+ * @param port[in]        TSW port
+ * @param counter[in]     MMS statistics counter
+ * @return hpm_stat_t     Result of resetting MMS statistics counter @ref hpm_stat_t
+ */
+hpm_stat_t tsw_fpe_reset_mms_statistics_counter(TSW_Type *ptr, uint8_t port, tsw_fpe_mms_statistics_counter_t counter);
+
+/**
+ * @brief   Get MMS statistics counter
+ *
+ * @param ptr[in]         TSW peripheral base address
+ * @param port[in]        TSW port
+ * @param counter[in]     MMS statistics counter
+ * @param value[out]      Pointer to MMS statistics counter value
+ * @return hpm_stat_t     Result of getting MMS statistics counter @ref hpm_stat_t
+ */
+hpm_stat_t tsw_fpe_get_mms_statistics_counter(TSW_Type *ptr, uint8_t port, tsw_fpe_mms_statistics_counter_t counter, uint32_t *value);
+
+/**
+ * @brief   Set STMID entry for ingress
+ *
+ * @param ptr[in]       TSW peripheral base address
+ * @param entry[in]     Pointer to STMID entry @ref tsw_cb_stmid_entry_t
+ * @return hpm_stat_t   Result of setting STMID entry for ingress @ref hpm_stat_t
+ */
+hpm_stat_t tsw_cb_stmid_ingress_set_entry(TSW_Type *ptr, tsw_cb_stmid_entry_t *entry);
+
+/**
+ * @brief   Get STMID entry for ingress
+ *
+ * @param ptr[in]       TSW peripheral base address
+ * @param entry[out]     Pointer to STMID entry @ref tsw_cb_stmid_entry_t
+ * @return hpm_stat_t   Result of getting STMID entry for ingress @ref hpm_stat_t
+ */
+hpm_stat_t tsw_cb_stmid_ingress_get_entry(TSW_Type *ptr, tsw_cb_stmid_entry_t *entry);
+
+/**
+ * @brief   Set STMID entry for egress
+ *
+ * @param ptr[in]       TSW peripheral base address
+ * @param entry[in]     Pointer to STMID entry @ref tsw_cb_stmid_entry_t
+ * @return hpm_stat_t   Result of setting STMID entry for egress @ref hpm_stat_t
+ */
+hpm_stat_t tsw_cb_stmid_egress_set_entry(TSW_Type *ptr, tsw_cb_stmid_entry_t *entry);
+
+/**
+ * @brief    Enable RTAG with CB frer for ingress
+ *
+ * @param ptr[in]       TSW peripheral base address
+ * @return hpm_stat_t   Result of enabling RTAG with frer for ingress @ref hpm_stat_t
+ */
+hpm_stat_t tsw_cb_frer_ingress_enable_rtag(TSW_Type *ptr);
+
+/**
+ * @brief    specify recovery functions for stream for egress
+ *
+ * @param ptr[in]       TSW peripheral base address
+ * @param config[in]    Pointer to recovery functions config @ref tsw_cb_frer_sid_func_config_t
+ * @return hpm_stat_t   Result of setting up recovery functions for stream with CB frer for egress @ref hpm_stat_t
+ */
+hpm_stat_t tsw_cb_frer_egress_set_sid_func(TSW_Type *ptr, tsw_cb_frer_sid_func_config_t *config);
+
+/**
+ * @brief    Set up recovery functions for stream with CB frer for egress
+ *
+ * @param ptr[in]       TSW peripheral base address
+ * @param config[in]    Pointer to recovery functions config @ref tsw_cb_frer_recovery_func_config_t
+ * @return hpm_stat_t   Result of setting up recovery functions for stream with CB frer for egress @ref hpm_stat_t
+ */
+hpm_stat_t tsw_cb_frer_egress_set_recovery_func(TSW_Type *ptr, tsw_cb_frer_recovery_func_config_t *config);
+
+/**
+ * @brief    Clear latten error flag
+ *
+ * @param ptr[in]       TSW peripheral base address
+ * @return hpm_stat_t   Result of clearing latten error flag @ref hpm_stat_t
+ */
+hpm_stat_t tsw_cb_frer_egress_clear_latten_error_flag(TSW_Type *ptr);
+
+/**
+ * @brief    Get count of latten error
+ *
+ * @param ptr[in]       TSW peripheral base address
+ * @param count[out]    Pointer to value of frer egress counters
+ * @return hpm_stat_t   Result of getting count of latten error @ref hpm_stat_t
+ */
+hpm_stat_t tsw_cb_frer_egress_get_count(TSW_Type *ptr, tsw_cb_frer_frame_count_egress_t *count);
+
+/**
+ * @brief   Set PSFP filter
+ *
+ * @param ptr[in]       TSW peripheral base address
+ * @param config[in]    Pointer to PSFP filter config @ref tsw_psfp_filter_config_t
+ * @return hpm_stat_t   Result of setting PSFP filter @ref hpm_stat_t
+ */
+hpm_stat_t tsw_psfp_set_filter(TSW_Type *ptr, tsw_psfp_filter_config_t *config);
+
+/**
+ * @brief   Set PSFP gate with static mode
+ *
+ * @param ptr[in]       TSW peripheral base address
+ * @param config[in]    Pointer to PSFP gate config @ref tsw_psfp_gate_static_mode_config_t
+ * @return hpm_stat_t   Result of setting PSFP gate with static mode @ref hpm_stat_t
+ */
+hpm_stat_t tsw_psfp_set_gate_static_mode(TSW_Type *ptr, tsw_psfp_gate_static_mode_config_t *config);
+
+/**
+ * @brief   Set PSFP gate with dynamic mode
+ *
+ * @param ptr[in]       TSW peripheral base address
+ * @param config[in]    Pointer to PSFP gate config @ref tsw_psfp_gate_dynamic_mode_config_t
+ * @return hpm_stat_t   Result of setting PSFP gate with dynamic mode @ref hpm_stat_t
+ */
+hpm_stat_t tsw_psfp_set_gate_dynamic_mode(TSW_Type *ptr, tsw_psfp_gate_dynamic_mode_config_t *config);
+
+/**
+ * @brief   Set PSFP flow meter
+ *
+ * @param ptr[in]       TSW peripheral base address
+ * @param config[in]    Pointer to PSFP flow meter config @ref tsw_psfp_flow_meter_config_t
+ * @return hpm_stat_t   Result of setting PSFP flow meter @ref hpm_stat_t
+ */
+hpm_stat_t tsw_psfp_set_flow_meter(TSW_Type *ptr, tsw_psfp_flow_meter_config_t *config);
+
 
 #if defined __cplusplus
 }

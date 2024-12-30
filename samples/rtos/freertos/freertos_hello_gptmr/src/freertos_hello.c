@@ -56,7 +56,7 @@ int main(void)
     board_init_gpio_pins();
 #ifdef BOARD_LED_GPIO_CTRL
     gpio_set_pin_output(BOARD_LED_GPIO_CTRL, BOARD_LED_GPIO_INDEX, BOARD_LED_GPIO_PIN);
-    gpio_write_pin(BOARD_LED_GPIO_CTRL, BOARD_LED_GPIO_INDEX, BOARD_LED_GPIO_PIN, BOARD_LED_ON_LEVEL);
+    gpio_write_pin(BOARD_LED_GPIO_CTRL, BOARD_LED_GPIO_INDEX, BOARD_LED_GPIO_PIN, !board_get_led_gpio_off_level());
 #endif
     led_on = true;
 

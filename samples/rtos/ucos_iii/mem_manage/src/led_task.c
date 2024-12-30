@@ -15,7 +15,7 @@ void led0_task(void *p_arg)
 {
     OS_ERR err;
     CPU_INT08U *buf;
-    p_arg = p_arg;
+    (void)p_arg;
     while (1) {
         buf = OSMemGet((OS_MEM *)&my_mem,
             (OS_ERR *)&err);

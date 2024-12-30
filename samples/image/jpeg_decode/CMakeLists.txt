@@ -62,7 +62,6 @@ else()
   sdk_app_src(src/jpeg_turbo.c)
 endif()
 
-sdk_compile_options(-Os)
 
 sdk_inc(../common/inc)
 sdk_inc(inc)

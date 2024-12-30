@@ -93,13 +93,13 @@ static const struct usbh_class_driver *usbh_find_class_driver(uint8_t class, uin
     struct usbh_class_info *index = NULL;
 
     for (index = usbh_class_info_table_begin; index < usbh_class_info_table_end; index++) {
-        if ((index->match_flags & USB_CLASS_MATCH_INTF_CLASS) && !(index->class == class)) {
+        if ((index->match_flags & USB_CLASS_MATCH_INTF_CLASS) && !(index->bInterfaceClass == class)) {
             continue;
         }
-        if ((index->match_flags & USB_CLASS_MATCH_INTF_SUBCLASS) && !(index->subclass == subclass)) {
+        if ((index->match_flags & USB_CLASS_MATCH_INTF_SUBCLASS) && !(index->bInterfaceSubClass == subclass)) {
             continue;
         }
-        if ((index->match_flags & USB_CLASS_MATCH_INTF_PROTOCOL) && !(index->protocol == protocol)) {
+        if ((index->match_flags & USB_CLASS_MATCH_INTF_PROTOCOL) && !(index->bInterfaceProtocol == protocol)) {
             continue;
         }
         if (index->match_flags & USB_CLASS_MATCH_VID_PID && index->id_table) {
@@ -486,7 +486,7 @@ int usbh_enumerate(struct usbh_hubport *hport)
         goto errout;
     }
     USB_LOG_INFO("The device has %d interfaces\r\n", ((struct usb_configuration_descriptor *)ep0_request_buffer[hport->bus->busid])->bNumInterfaces);
-    hport->raw_config_desc = usb_osal_malloc(wTotalLength);
+    hport->raw_config_desc = usb_osal_malloc(wTotalLength + 1);
     if (hport->raw_config_desc == NULL) {
         ret = -USB_ERR_NOMEM;
         USB_LOG_ERR("No memory to alloc for raw_config_desc\r\n");
@@ -495,6 +495,8 @@ int usbh_enumerate(struct usbh_hubport *hport)
 
     config_value = ((struct usb_configuration_descriptor *)ep0_request_buffer[hport->bus->busid])->bConfigurationValue;
     memcpy(hport->raw_config_desc, ep0_request_buffer[hport->bus->busid], wTotalLength);
+    hport->raw_config_desc[wTotalLength] = '\0';
+
 #ifdef CONFIG_USBHOST_GET_STRING_DESC
     uint8_t string_buffer[128];
 
@@ -648,6 +650,12 @@ int usbh_initialize(uint8_t busid, uintptr_t reg_base)
 int usbh_deinitialize(uint8_t busid)
 {
     struct usbh_bus *bus;
+
+    if (busid >= CONFIG_USBHOST_MAX_BUS) {
+        USB_LOG_ERR("bus overflow\r\n");
+        while (1) {
+        }
+    }
 
     bus = &g_usbhost_bus[busid];
 
@@ -823,6 +831,37 @@ static void usbh_list_all_interface_desc(struct usbh_bus *bus, struct usbh_hub *
     }
 }
 
+static struct usbh_hubport *usbh_list_all_hubport(struct usbh_hub *hub, uint8_t hub_index, uint8_t hub_port)
+{
+    struct usbh_hubport *hport;
+    struct usbh_hub *hub_next;
+
+    if (hub->index == hub_index) {
+        hport = &hub->child[hub_port - 1];
+        return hport;
+    } else {
+        for (uint8_t port = 0; port < hub->nports; port++) {
+            hport = &hub->child[port];
+            if (hport->connected) {
+                for (uint8_t itf = 0; itf < hport->config.config_desc.bNumInterfaces; itf++) {
+                    if (hport->config.intf[itf].class_driver && hport->config.intf[itf].class_driver->driver_name) {
+                        if (strcmp(hport->config.intf[itf].class_driver->driver_name, "hub") == 0) {
+                            hub_next = hport->config.intf[itf].priv;
+
+                            if (hub_next && hub_next->connected) {
+                                hport = usbh_list_all_hubport(hub_next, hub_index, hub_port);
+                                if (hport) {
+                                    return hport;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return NULL;
+}
 void *usbh_find_class_instance(const char *devname)
 {
     usb_slist_t *bus_list;
@@ -845,6 +884,24 @@ void *usbh_find_class_instance(const char *devname)
     }
     usb_osal_leave_critical_section(flags);
     return NULL;
+}
+
+struct usbh_hubport *usbh_find_hubport(uint8_t busid, uint8_t hub_index, uint8_t hub_port)
+{
+    struct usbh_hub *hub;
+    struct usbh_hub *hub_next;
+    struct usbh_bus *bus;
+    struct usbh_hubport *hport;
+    size_t flags;
+
+    flags = usb_osal_enter_critical_section();
+
+    bus = &g_usbhost_bus[busid];
+    hub = &bus->hcd.roothub;
+
+    hport = usbh_list_all_hubport(hub, hub_index, hub_port);
+    usb_osal_leave_critical_section(flags);
+    return hport;
 }
 
 int lsusb(int argc, char **argv)

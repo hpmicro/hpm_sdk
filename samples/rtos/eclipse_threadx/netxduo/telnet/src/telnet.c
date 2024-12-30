@@ -146,7 +146,7 @@ VOID tx_application_define(VOID *first_unused_memory)
     /* Enable ARP and supply ARP cache memory for IP Instance 0.  */
     nx_arp_enable(&ip_server, (VOID *)arp_area, sizeof(arp_area));
     /* Enable ICMP */
-    status = nx_icmp_enable(&ip_server);
+    nx_icmp_enable(&ip_server);
 
 #endif /* NX_DISABLE_IPV4  */
 

@@ -50,6 +50,10 @@
 /* RDC related feature */
 #define HPM_IP_FEATURE_RDC_IIR 1
 
+/* SDM related feature */
+#define HPM_IP_FEATURE_SDM_GATE_FUNC 1
+#define HPM_IP_FEATURE_SDM_TIMESTAMP_FUNC 1
+
 /* PLB related feature */
 #define HPM_IP_FEATURE_PLB_COUNTER_READ_REAL_TIME 1
 

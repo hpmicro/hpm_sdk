@@ -198,6 +198,12 @@ int main(void)
     hpm_stat_t stat;
     /* Initialize BSP */
     board_init();
+
+#if defined(CONFIG_MBEDTLS_USE_HPM_SDP) && CONFIG_MBEDTLS_USE_HPM_SDP
+    clock_add_to_group(clock_sdp, BOARD_RUNNING_CORE & 0x1);
+#endif
+
+    clock_add_to_group(clock_rng, BOARD_RUNNING_CORE & 0x1);
     stat = rng_init(HPM_RNG);
     if (stat) {
         printf("failed to rng_init: 0x%x\n", stat);

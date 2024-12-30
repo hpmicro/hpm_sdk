@@ -11,7 +11,7 @@
 
 ## 工程设置
 
-修改`board/xxx/CMakeLists.txt`,选择对应的屏幕(lvds或者mipi)
+- 该例子由于板载RGB和mipi csi引脚硬件设计冲突，不支持RGB LCD屏，需要修改`board/xxx/CMakeLists.txt`,选择对应的屏幕(lvds或者mipi)
 
 ## 注意事项
 

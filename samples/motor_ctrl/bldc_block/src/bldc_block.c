@@ -109,6 +109,7 @@ void motor_init(void)
     motor0.cfg.mcl.physical.motor.res = 0.0011;
     motor0.cfg.mcl.physical.motor.rpm_max = 3500;
     motor0.cfg.mcl.physical.motor.vbus = 24;
+    motor0.cfg.mcl.physical.motor.hall = phase_120;
     motor0.cfg.mcl.physical.time.encoder_process_ts = 0.0001f;
     motor0.cfg.mcl.physical.time.speed_loop_ts = 0.0001f * 2;
     motor0.cfg.mcl.physical.time.mcu_clock_tick = clock_get_frequency(clock_cpu0);
@@ -440,17 +441,18 @@ hpm_mcl_stat_t encoder_get_uvw_level(mcl_encoder_uvw_level_t *level)
 }
 
 #ifdef HPMSOC_HAS_HPMSDK_HALL
+SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_HALL_IRQ, isr_hall)
 void isr_hall(void)
 {
     hall_clear_status(BOARD_BLDC_HALL_BASE, hall_get_status(BOARD_BLDC_HALL_BASE));
     hpm_mcl_uvw_get_theta(BOARD_BLDC_HALL_BASE, NULL, MOTOR_ANGLE_DETA, &encoder_theta);
     hpm_mcl_loop_refresh_block(&motor0.loop);
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_HALL_IRQ, isr_hall)
 #endif
 
 #ifdef HPMSOC_HAS_HPMSDK_QEIV2
 uint8_t last_position;
+SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_QEIV2_IRQ, isr_qei)
 void isr_qei(void)
 {
     uint32_t status = qeiv2_get_status(BOARD_BLDC_QEIV2_BASE);
@@ -459,7 +461,6 @@ void isr_qei(void)
     hpm_mcl_uvw_get_theta(BOARD_BLDC_QEIV2_BASE, &last_position, MOTOR_ANGLE_DETA, &encoder_theta);
     hpm_mcl_loop_refresh_block(&motor0.loop);
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_QEIV2_IRQ, isr_qei)
 #endif
 
 hpm_mcl_stat_t encoder_init(void)
@@ -693,6 +694,8 @@ void pwm_init(void)
     pwmv2_shadow_register_lock(MOTOR0_BLDCPWM);
 }
 #endif
+
+SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_TMR_IRQ, isr_gptmr)
 void isr_gptmr(void)
 {
     if (gptmr_check_status(BOARD_BLDC_TMR_1MS, GPTMR_CH_CMP_IRQ_MASK(BOARD_BLDC_TMR_CH, BOARD_BLDC_TMR_CMP))) {
@@ -702,12 +705,12 @@ void isr_gptmr(void)
         hpm_mcl_loop(&motor0.loop);
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_TMR_IRQ, isr_gptmr)
 
 static void timer_init(void)
 {
     gptmr_channel_config_t config;
 
+    clock_add_to_group(BOARD_BLDC_TMR_CLOCK, 0);
     gptmr_channel_get_default_config(BOARD_BLDC_TMR_1MS, &config);
     config.debug_mode = 0;
     config.reload = BLOCK_TMR_RLD + 1;

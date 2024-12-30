@@ -39,7 +39,20 @@ static void cdc_task(void);
 int main(void)
 {
   board_init();
-  board_init_usb_pins();
+
+  if (BOARD_DEVICE_RHPORT_NUM == 0) {
+    board_init_usb(HPM_USB0);
+#ifdef HPM_USB1
+  } else if (BOARD_DEVICE_RHPORT_NUM == 1) {
+    board_init_usb(HPM_USB1);
+#endif
+  } else {
+    printf("Don't support HPM_USB%d!\n", BOARD_DEVICE_RHPORT_NUM);
+    while (1) {
+        ;
+    }
+  }
+
   printf("USB%d Device - CDC Dual Ports Demo\r\n", BOARD_DEVICE_RHPORT_NUM);
 
   tusb_init();

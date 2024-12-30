@@ -1862,9 +1862,9 @@ typedef struct {
  * 1:Second word
  * …
  * Actually used EEPROM Address bits:
- * [9-0] : EEPROM size up to 16 Kbit
- * [17-0] : EEPROM size 32 Kbit – 4 Mbit
- * [31-0] : EEPROM Emulation
+ * 9-0: EEPROM size up to 16 Kbit
+ * 17-0: EEPROM size 32 Kbit – 4 Mbit
+ * 31-0: EEPROM Emulation
  */
 #define ESC_EEPROM_ADDR_ADDR_MASK (0xFFFFFFFFUL)
 #define ESC_EEPROM_ADDR_ADDR_SHIFT (0U)
@@ -2771,7 +2771,7 @@ typedef struct {
  * 1:PDI-controlled
  * NOTE:Latch interrupt is routed to ECAT/PDI
  * depending on this setting.
- * Always 1 (PDI-controlled) if System Time is PDIcontrolled.
+ * Always 1 (PDI-controlled) if System Time is PDIcontrolled.
  */
 #define ESC_CYC_UNIT_CTRL_LATCHI0_MASK (0x10U)
 #define ESC_CYC_UNIT_CTRL_LATCHI0_SHIFT (4U)
@@ -3254,11 +3254,11 @@ typedef struct {
  * VID (RO)
  *
  * Vendor ID:
- * [23-0] Company
- * [31-24] Department
+ * 23-0: Company
+ * 31-24: Department
  * NOTE:Test Vendor IDs have [31:28]=0xE
  */
-#define ESC_VID_VID_MASK (0xFFFFFFFFUL)
+#define ESC_VID_VID_MASK (0xFFFFFFFFFFFFFFFFULL)
 #define ESC_VID_VID_SHIFT (0U)
 #define ESC_VID_VID_GET(x) (((uint64_t)(x) & ESC_VID_VID_MASK) >> ESC_VID_VID_SHIFT)
 

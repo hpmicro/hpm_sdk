@@ -107,10 +107,6 @@ const struct usb_descriptor cdc_descriptor = {
 
 static uint8_t rndis_mac[6] = { 0x20, 0x89, 0x84, 0x6A, 0x96, 0xAA };
 
-void usbd_rndis_data_recv_done(void)
-{
-}
-
 static void usbd_event_handler(uint8_t busid, uint8_t event)
 {
     (void)busid;

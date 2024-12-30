@@ -48,6 +48,10 @@ static void e2p_print_info(e2p_t *e2p)
             e2p->p_data, e2p->p_info, e2p->remain_size);
     e2p_info("valid count percent info count( %u / %u )", valid_count, info_count);
     e2p_info("----------------------------------------------\n");
+
+/* E2P_DEBUG_LEVEL higher than E2P_DEBUG_LEVEL_INFO, avoid warning */
+    (void)info_count;
+    (void)valid_count;
 }
 
 E2P_ATTR
@@ -255,7 +259,7 @@ static e2p_t *e2p_get_valid_context(e2p_t *e2p, uint8_t *flush)
     e2p_t *invalid = &e2p_dummy;
     e2p_config_t *cfg = &e2p->config;
     e2p_header header, dummy_header;
-    uint32_t other_state;
+    uint32_t other_state = e2p_state_invalid;
     uint32_t raw_addr_header = cfg->start_addr + cfg->sector_cnt * cfg->erase_size - sizeof(e2p_header);
     uint32_t dummy_addr_header = invalid->config.start_addr + invalid->config.sector_cnt * invalid->config.erase_size - sizeof(e2p_header);
 
@@ -269,8 +273,6 @@ static e2p_t *e2p_get_valid_context(e2p_t *e2p, uint8_t *flush)
             valid = invalid;
         } else if (((header.state & 0x0f) == e2p_state_invalid) && ((dummy_header.state & 0x0f) == e2p_state_invalid)) {
             valid = e2p;
-        } else {
-            valid = NULL;
         }
 
         header.state = e2p_state_valid;
@@ -427,7 +429,6 @@ hpm_stat_t e2p_flush(uint8_t flag)
         }
         e2p_trace("-----write data back: len=%u\n", pdata - read_buf);
         read_len = 0;
-        pdata = read_buf;
     }
     /* indicate write finish, begin erase old */
     state = e2p_state_finish;

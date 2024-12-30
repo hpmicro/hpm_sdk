@@ -61,8 +61,8 @@
 .extern portasmHANDLE_INTERRUPT
 
 /*-----------------------------------------------------------*/
-.section .isr_vector, "ax"
-.align 8
+.section .isr_vector.ucos_risc_v_trap_handler, "ax"
+.balign 4
 .type ucos_risc_v_trap_handler, function
 
 ucos_risc_v_trap_handler:

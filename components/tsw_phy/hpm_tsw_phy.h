@@ -10,7 +10,8 @@
 
 typedef enum {
   tsw_phy_link_down = 0,
-  tsw_phy_link_up
+  tsw_phy_link_up,
+  tsw_phy_link_unknown
 } tsw_phy_link_status_t;
 
 typedef enum {

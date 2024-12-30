@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,6 +9,7 @@
 #include "hpm_sdmmc_disk.h"
 #include "hpm_l1c_drv.h"
 #include "board.h"
+#include "hpm_interrupt.h"
 
 #include "hpm_sdmmc_sd.h"
 #include "hpm_sdmmc_emmc.h"
@@ -22,12 +23,40 @@ typedef hpm_stat_t (*sdmmc_read_op_t)(void *card, uint8_t *buffer, uint32_t star
 ATTR_PLACE_AT_NONCACHEABLE_BSS static sdmmc_host_t s_sd_host;
 static sd_card_t s_sd = {.host = &s_sd_host };
 ATTR_ALIGN(HPM_L1C_CACHELINE_SIZE) static uint32_t s_sd_aligned_buf[MAX_ALIGNED_BUF_SIZE / sizeof(uint32_t)];
+
+#if defined(BOARD_APP_SDCARD_HOST_USING_IRQ) && (BOARD_APP_SDCARD_HOST_USING_IRQ == 1)
+#if defined(BOARD_APP_SDCARD_SDXC_IRQ_PRIORITY)
+#define SDCARD_SDXC_IRQ_PRIORITY BOARD_APP_SDCARD_SDXC_IRQ_PRIORITY
+#else
+#define SDCARD_SDXC_IRQ_PRIORITY 1
+#endif
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_SDCARD_SDXC_IRQ, sdcard_isr)
+void sdcard_isr(void)
+{
+    sdmmchost_irq_handler(&s_sd_host);
+}
+#endif
+
 #endif
 
 #if defined(MMC_FATFS_ENABLE) && MMC_FATFS_ENABLE
 ATTR_PLACE_AT_NONCACHEABLE_BSS static sdmmc_host_t s_emmc_host;
 static emmc_card_t s_emmc = {.host = &s_emmc_host};
 ATTR_ALIGN(HPM_L1C_CACHELINE_SIZE) static uint32_t s_emmc_aligned_buf[MAX_ALIGNED_BUF_SIZE / sizeof(uint32_t)];
+
+#if defined(BOARD_APP_EMMC_SDXC_IRQ) && (BOARD_APP_EMMC_SDXC_IRQ == 1)
+#if defined(BOARD_APP_EMMC_SDXC_IRQ_PRIORITY)
+#define MMC_SDXC_IRQ_PRIORITY BOARD_APP_EMMC_SDXC_IRQ_PRIORITY
+#else
+#define MMC_SDXC_IRQ_PRIORITY 1
+#endif
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_EMMC_SDXC_IRQ, mmc_isr)
+void mmc_isr(void)
+{
+    sdmmchost_irq_handler(&s_emmc_host);
+}
+#endif
+
 #endif
 
 
@@ -155,6 +184,9 @@ DSTATUS sd_disk_initialize(BYTE pdrv)
     if (status != status_success) {
         return STA_NOINIT;
     }
+#if defined(BOARD_APP_SDCARD_HOST_USING_IRQ) && (BOARD_APP_SDCARD_HOST_USING_IRQ == 1)
+    intc_m_enable_irq_with_priority(BOARD_APP_SDCARD_SDXC_IRQ, SDCARD_SDXC_IRQ_PRIORITY);
+#endif
     status = sd_init(&s_sd);
     if (status != status_success) {
         sd_deinit(&s_sd);
@@ -252,6 +284,9 @@ DSTATUS emmc_disk_initialize(BYTE pdrv)
     if (status != status_success) {
         return STA_NOINIT;
     }
+#if defined(BOARD_APP_EMMC_HOST_USING_IRQ) && (BOARD_APP_EMMC_HOST_USING_IRQ == 1)
+    intc_m_enable_irq_with_priority(BOARD_APP_EMMC_SDXC_IRQ, MMC_SDXC_IRQ_PRIORITY);
+#endif
     status = emmc_init(&s_emmc);
     if (status != status_success) {
         emmc_deinit(&s_emmc);

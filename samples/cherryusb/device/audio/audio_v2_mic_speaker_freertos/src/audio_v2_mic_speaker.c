@@ -573,6 +573,7 @@ bool check_and_restart_speaker_dma_from_isr(EventBits_t event)
     return false;
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 void isr_dma(void)
 {
     volatile uint32_t speaker_status;
@@ -598,7 +599,6 @@ void isr_dma(void)
         }
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 
 void request_handler_speaker_set_sampling_freq(void)
 {
@@ -912,7 +912,6 @@ void usbd_audio_get_sampling_freq_table(uint8_t busid, uint8_t ep, uint8_t **sam
 static void usbd_audio_iso_out_callback(uint8_t busid, uint8_t ep, uint32_t nbytes)
 {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    int ret;
     s_speaker_out_buffer_size[s_speaker_out_buffer_wr] = nbytes;
     increase_buffer_write_pointer(&s_speaker_out_buffer_wr, &s_speaker_out_buffer_rd, AUDIO_BUFFER_COUNT);
     /* Prepare buffer to receive speaker data only when audio is open */
@@ -920,12 +919,12 @@ static void usbd_audio_iso_out_callback(uint8_t busid, uint8_t ep, uint32_t nbyt
         usbd_ep_start_read(busid, ep, &s_speaker_out_buffer[s_speaker_out_buffer_wr][0], s_audio_out_packet_size);
     }
     if (xPortIsInsideInterrupt()) {
-        ret = xSemaphoreGiveFromISR(countsema_speaker_data, &xHigherPriorityTaskWoken);
+        int ret = xSemaphoreGiveFromISR(countsema_speaker_data, &xHigherPriorityTaskWoken);
         if (ret == pdPASS) {
             portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
         }
     } else {
-        ret = xSemaphoreGive(countsema_speaker_data);
+        (void)xSemaphoreGive(countsema_speaker_data);
     }
 }
 

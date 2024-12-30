@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,8 +9,21 @@
 #define HPM_SDMMC_HOST_H
 
 #include "hpm_common.h"
+#include "hpm_sdmmc_osal.h"
 #include "hpm_sdxc_drv.h"
-#include "hpm_gpio_drv.h"
+
+/**
+ *
+ * @brief HPM SDMMC Host APIs
+ * @defgroup hpm_sdmmc HPM SDMMC stack
+ *  @ingroup hpm_sdmmc_interfaces
+ * @{
+ *
+ */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define HPM_SDMMC_HOST_SUPPORT_4BIT               (1UL << 0)
 #define HPM_SDMMC_HOST_SUPPORT_8BIT               (1UL << 1)
@@ -35,6 +48,8 @@
 #define HPM_SDMMC_HOST_PWR_IN_IP                  (HPM_SDMMC_HOST_SUPPORT_POWER_SWITCH << 8)
 #define HPM_SDMMC_HOST_WP_IN_IP                   (HPM_SDMMC_HOST_SUPPORT_WRITE_PROTECTION << 8)
 #define HPM_SDMMC_HOST_RST_IN_IP                  (HPM_SDMMC_HOST_SUPPORT_RESET_PIN << 8)
+
+#define HPM_SDMMC_HOST_ADMA3_ALIGN_SIZE           (8U)
 
 
 /**
@@ -61,7 +76,7 @@ typedef enum {
 typedef enum {
     sdmmc_host_card_detection_none = 0,     /* Card detection is not enabled */
     sdmmc_host_card_detection_via_gpio = 1, /* Card detection is via GPIO */
-    sdmmc_host_card_detection_via_sdxc = 2, /* Card deteciton is via SDXC CDN pin */
+    sdmmc_host_card_detection_via_sdxc = 2, /* Card detection is via SDXC CDN pin */
 } sdmmc_card_detection_mode_t;
 
 /**
@@ -73,7 +88,7 @@ typedef enum {
 } hpm_sdmmc_io_volt_t;
 
 /**
- * @brief SDMMC Operattion mode
+ * @brief SDMMC Operation mode
  */
 typedef enum {
     hpm_sdmmc_operation_mode_inactive = 0,
@@ -129,6 +144,14 @@ typedef struct {
     hpm_sdmmc_pin_info_t wp_pin;
 } hpm_sdmmc_extra_io_data_t;
 
+#ifndef HPM_SDMMC_HOST_ADMA_TBL_SIZE
+#if defined(HPM_SDMMC_USE_ADMA2) && (HPM_SDMMC_USE_ADMA2 == 1)
+#define HPM_SDMMC_HOST_ADMA_TBL_SIZE (SDXC_ADMA2_DESC_WORDS * 2UL)
+#else
+#define HPM_SDMMC_HOST_ADMA_TBL_SIZE (SDXC_AMDA3_DESC_MIN_WORDS * 2UL)
+#endif
+#endif
+
 typedef sdxc_xfer_t sdmmchost_xfer_t;
 typedef sdxc_command_t sdmmchost_cmd_t;
 typedef sdxc_data_t sdmmchost_data_t;
@@ -178,72 +201,242 @@ typedef struct {
 
 
 typedef struct {
-    sdmmc_host_param_t host_param;
-
-    sdmmc_dev_type_t dev_type;
-    hpm_sdmmc_operation_mode_t operation_mode;
-    sdmmc_buswidth_t bus_width;
-    hpm_sdmmc_io_volt_t io_voltage;
-    uint32_t clock_freq;
+    sdmmc_host_param_t host_param;                      /* Host Parameters */
+    sdmmc_dev_type_t dev_type;                          /* Device Type */
+    hpm_sdmmc_operation_mode_t operation_mode;          /* Operation mode */
+    sdmmc_buswidth_t bus_width;                         /* Bus width */
+    hpm_sdmmc_io_volt_t io_voltage;                     /* IO voltage */
+    uint32_t clock_freq;                                /* Clock Frequency */
     /* Host Transfer Fields */
-    sdmmchost_xfer_t xfer;
-    sdmmchost_cmd_t cmd;
-    sdmmchost_data_t data;
-    sdmmc_adma2_desc_t adma2_desc;
-    uint32_t buffer[128];
+    sdmmchost_xfer_t xfer;                              /* xfer context */
+    sdmmchost_cmd_t cmd;                                /* Command Context */
+    sdmmchost_data_t data;                              /* Data Context */
+    uint32_t adma_table[HPM_SDMMC_HOST_ADMA_TBL_SIZE + 1]; /* ADMA table buffer, allocate one extra word in case that the adma_table is not 8-byte aligned  */
+    uint32_t buffer[128];                               /* Host buffer */
 
     /* Host run-time fields */
     bool card_inserted;
     bool card_init_done;
-    bool cmd_done_or_error;
-    bool transfer_complete_or_error;
-    uint32_t int_stat;
-    uint32_t auto_cmd_stat;
-    uint32_t adma_error_stat;
+    void (*sdio_irq_handler)(void *param);
+    void *sdio_irq_param;
+#if defined(HPM_SDMMC_HOST_ENABLE_IRQ) && (HPM_SDMMC_HOST_ENABLE_IRQ == 1)
+    hpm_sdmmc_osal_event_t xfer_done_or_error_event;
+#endif
+
 } sdmmc_host_t;
 
-
+/**
+ * @brief SDMMC Host Initialization
+ * @param [in] host Host context
+ *
+ * @return Host initialization status
+ */
 hpm_stat_t sdmmchost_init(sdmmc_host_t *host);
 
+/**
+ * @brief Set the card bus width
+ * @param [in,out] host Host context
+ * @param [in] bus_width Bus width
+ */
 void sdmmchost_set_card_bus_width(sdmmc_host_t *host, sdmmc_buswidth_t bus_width);
 
+/**
+ * @brief Set the Card clock
+ * @param [in,out] host Host context
+ * @param [in] freq Frequency in Hz
+ * @param [in] clock_inverse Clock Inverse flag
+ *
+ * @return Actual clock frequency in Hz
+ */
 uint32_t sdmmchost_set_card_clock(sdmmc_host_t *host, uint32_t freq, bool clock_inverse);
 
+/**
+ * @brief Deinitialize the host
+ * @param [in] host Host context
+ */
 void sdmmchost_deinit(sdmmc_host_t *host);
 
-void sdmmchost_reset(sdmmc_host_t *host);
+/**
+ * @brief Reset the host
+ * @param [in] host Host context
+ */
+void sdmmchost_reset(const sdmmc_host_t *host);
 
-void sdmmchost_wait_card_active(sdmmc_host_t *host);
+/**
+ * @brief Wait until the card is active
+ * @param [in] host Host context
+ */
+void sdmmchost_wait_card_active(const sdmmc_host_t *host);
 
-hpm_stat_t sdmmchost_send_command(sdmmc_host_t *host, sdmmchost_cmd_t *cmd);
+/**
+ * @brief Send command via the host
+ * @param [in] host Host context
+ * @param [in] cmd Command context
+ *
+ * @return Command execution status
+ */
+hpm_stat_t sdmmchost_send_command(sdmmc_host_t *host, const sdmmchost_cmd_t *cmd);
 
-hpm_stat_t sdmmchost_transfer(sdmmc_host_t *host, sdmmchost_xfer_t *content);
+/**
+ * @brief Transfer data via the host
+ * @param [in] host Host context
+ * @param [in] content Transfer context
+ *
+ * @return Transfer execution status
+ */
+hpm_stat_t sdmmchost_transfer(sdmmc_host_t *host, const sdmmchost_xfer_t *content);
 
-bool sdmmchost_is_card_detected(sdmmc_host_t *host);
+/**
+ * @brief Check whether the card is detected or not
+ * @param [in] host Host context
+ *
+ * @return The card detection state
+ */
+bool sdmmchost_is_card_detected(const sdmmc_host_t *host);
 
+/**
+ * @brief Initialize the Host IO according to the operation mode
+ * @param [in] host Host context
+ * @param [in] operation_mode Operation mode
+ */
 void sdmmchost_init_io(sdmmc_host_t *host, hpm_sdmmc_operation_mode_t operation_mode);
 
-void sdmmchost_delay_ms(sdmmc_host_t *host, uint32_t ms);
+/**
+ * @brief Host delay
+ * @param [in] host Host context
+ * @param [in] ms Delay in milliseconds
+ */
+void sdmmchost_delay_ms(const sdmmc_host_t *host, uint32_t ms);
 
+/**
+ * @brief  Switch the Host to 1.8V IO voltage
+ * @param [in,out] host Host context
+ *
+ * @return Host switch voltage status
+ */
 hpm_stat_t sdmmchost_switch_to_1v8(sdmmc_host_t *host);
 
-void sdmmchost_enable_emmc_support(sdmmc_host_t *host, bool enable);
+/**
+ * @brief Control the Voltage selection pin
+ * @param [in] host Host context
+ * @param [in] io_volt IO voltage
+ */
+void sdmmchost_vsel_pin_control(const sdmmc_host_t *host, hpm_sdmmc_io_volt_t io_volt);
 
-hpm_stat_t sdmmchost_set_speed_mode(sdmmc_host_t *host, sdmmc_speed_mode_t speed_mode);
+/**
+ * @brief Enable the eMMC support on the host
+ * @param [in] host Host context
+ * @param [in] enable Enable or disable the eMMC support
+ * @note This function should be called after the host is initialized
+ */
+void sdmmchost_enable_emmc_support(const sdmmc_host_t *host, bool enable);
 
-hpm_stat_t sdmmchost_error_recovery(sdmmc_host_t *host, sdmmchost_cmd_t *abort_cmd);
+/**
+ * @brief Set the speed mode via the Host
+ * @param [in] host Host context
+ * @param [in] speed_mode Speed mode
+ *
+ * @return Operation status
+ */
+hpm_stat_t sdmmchost_set_speed_mode(const sdmmc_host_t *host, sdmmc_speed_mode_t speed_mode);
 
-bool sdmmchost_is_voltage_switch_supported(sdmmc_host_t *host);
+/**
+ * @brief Trigger the Error recovery via the Host
+ * @param [in] host Host context
+ * @param [in] cmd abort command context
+ *
+ * @return Operation status
+ */
+hpm_stat_t sdmmchost_error_recovery(sdmmc_host_t *host, sdmmchost_cmd_t *cmd);
 
-void sdmmchost_enable_enhanced_data_strobe(sdmmc_host_t *host, bool enable);
+/**
+ * @brief Check whether the host support voltage switch
+ * @param [in] host Host context
+ *
+ * @return Voltage switch support state
+ */
+bool sdmmchost_is_voltage_switch_supported(const sdmmc_host_t *host);
 
-void sdmmchost_set_data_strobe_delay(sdmmc_host_t *host);
+/**
+ * @brief Enable the enhanced data strboe
+ * @param [in] host Host context
+ * @param [in] enable Enable or disable the enhanced data strobe
+ */
+void sdmmchost_enable_enhanced_data_strobe(const sdmmc_host_t *host, bool enable);
 
+/**
+ * @brief  Set the Data strobe delay for Host
+ * @param [in] host Host context
+ */
+void sdmmchost_set_data_strobe_delay(const sdmmc_host_t *host);
+
+/**
+ * @brief Select the IO voltage
+ * @param [in] host Host context
+ * @param [in] io_volt IO voltage
+ */
 void sdmmchost_select_voltage(sdmmc_host_t *host, hpm_sdmmc_io_volt_t io_volt);
 
-void sdmmchost_set_cardclk_delay_chain(sdmmc_host_t *host);
+/**
+ * @brief Set the Card clock delay chain for the host
+ * @param [in] host Host context
+ */
+void sdmmchost_set_cardclk_delay_chain(const sdmmc_host_t *host);
 
+/**
+ * @brief Set the Card Rx Clock delay chain for the host
+ * @param [in] host Host context
+ */
 void sdmmchost_set_rxclk_delay_chain(sdmmc_host_t *host);
 
+/**
+ * @brief THe Host IRQ Handler
+ *
+ * @param [in,out] host Host context
+ */
+void sdmmchost_irq_handler(sdmmc_host_t *host);
+
+/**
+ * @brief Registers an SDIO interrupt callback function for the SDMMC host controller.
+ *
+ * This function allows the user to register a callback that will be invoked upon
+ * SDIO interrupts. It is useful for handling SDIO-specific events in addition to
+ * standard SDMMC transactions.
+ *
+ * @param [in,out] host Pointer to the SDMMC host controller structure.
+ * @param [in] sdio_irq_callback Pointer to the callback function that will be called when an SDIO interrupt occurs.
+ *                          The function should accept a single parameter of type `void*`.
+ * @param [in] param A pointer to a user-defined data that will be passed to the callback function each time it is invoked.
+ */
+void sdmmchost_register_sdio_callback(sdmmc_host_t *host, void (*sdio_irq_callback)(void *param), void *param);
+
+/**
+ * @brief Enable or disable SDIO interrupt on the SDMMC host controller.
+ *
+ * This function allows controlling the SDIO interrupt signal and status based on the provided flag.
+ * When enabled, it sets the interrupt signal and status masks to detect card interrupts.
+ * When disabled, it clears the interrupt status mask to stop interrupt generation from card interrupts.
+ *
+ * @param [in] host Pointer to the SDMMC host controller structure.
+ * @param [in] enable Flag to enable (true) or disable (false) the SDIO interrupt.
+ */
+void sdmmchost_enable_sdio_interrupt(sdmmc_host_t *host, bool enable);
+
+/**
+ * @brief Return the data pin level
+ * @param [in] host Pointer to the SDMMC host controller structure.
+ *
+ * @return value for data pin level
+ */
+uint32_t sdmmchost_get_data_pin_level(sdmmc_host_t *host);
+
+
+#ifdef __cplusplus
+}
+#endif
+
+/**
+ * @}
+ */
 
 #endif /* HPM_SDMMC_HOST_H */

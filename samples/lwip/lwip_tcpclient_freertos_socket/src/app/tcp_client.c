@@ -12,7 +12,6 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-extern struct netif gnetif;
 uint8_t send_buf[] = "This is a TCP Client test...\n";
 
 #ifndef TCP_CLIENT_DEBUG
@@ -21,15 +20,14 @@ uint8_t send_buf[] = "This is a TCP Client test...\n";
 
 static void tcp_client_thread(void *arg)
 {
-    (void)arg;
-
     int sock = -1;
     ip4_addr_t ipaddr;
     struct sockaddr_in client_addr;
+    struct netif *netif = (struct netif *)arg;
 
     IP4_ADDR(&ipaddr, REMOTE_IP_ADDR0, REMOTE_IP_ADDR1, REMOTE_IP_ADDR2, REMOTE_IP_ADDR3);
 
-    while (!netif_is_link_up(&gnetif)) {
+    while (!netif_is_link_up(netif)) {
         vTaskDelay(100);
     }
 
@@ -67,7 +65,7 @@ static void tcp_client_thread(void *arg)
     }
 }
 
-void tcp_client_init(void)
+void tcp_client_init(void *arg)
 {
-    sys_thread_new("tcp_client_thread", tcp_client_thread, NULL, 3*DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
+    sys_thread_new("tcp_client_thread", tcp_client_thread, arg, 3*DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
 }

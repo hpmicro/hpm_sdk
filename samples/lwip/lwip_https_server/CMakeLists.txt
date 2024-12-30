@@ -44,7 +44,6 @@ sdk_compile_definitions(-D__USE_ENET_RECEIVE_INTERRUPT=0)
 sdk_compile_definitions(-DLWIP_DHCP=0)
 sdk_compile_definitions(-DLWIP_HTTPD_MAX_REQ_LENGTH=1460)
 sdk_compile_definitions(-DMBEDTLS_CONFIG_FILE="hpm_sdk_mbedtls_config.h")
-sdk_compile_definitions(-DCONFIG_MBEDTLS_USE_HPM_SDP=1)
 
 project(lwip_https_server_example)
 sdk_inc(../ports/baremetal/single)

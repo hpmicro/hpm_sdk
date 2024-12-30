@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -85,7 +85,7 @@
 #define SDXC_STS_CMD_ERR (SDXC_INT_STAT_CMD_TOUT_ERR_MASK | SDXC_INT_STAT_CMD_CRC_ERR_MASK |\
             SDXC_INT_STAT_CMD_END_BIT_ERR_MASK | SDXC_INT_STAT_CMD_IDX_ERR_MASK | SDXC_INT_STAT_AUTO_CMD_ERR_MASK)
 #define SDXC_STS_DATA_ERR (SDXC_INT_STAT_DATA_TOUT_ERR_MASK | SDXC_INT_STAT_DATA_CRC_ERR_MASK | \
-            SDXC_INT_STAT_DATA_END_BIT_ERR_MASK)
+            SDXC_INT_STAT_DATA_END_BIT_ERR_MASK | SDXC_INT_STAT_ADMA_ERR_MASK)
 #define SDXC_STS_CARD_ERR (SDXC_INT_STAT_CARD_REMOVAL_MASK)
 #define SDXC_STS_ERROR (SDXC_INT_STAT_ERR_INTERRUPT_MASK | SDXC_STS_CMD_ERR | SDXC_STS_DATA_ERR | SDXC_STS_CARD_ERR)
 #define SDXC_STS_CMD_FLAGS (SDXC_STS_CMD_ERR | SDXC_INT_STAT_CMD_COMPLETE_MASK)
@@ -135,7 +135,7 @@ typedef enum _sdxc_wakeup_event {
 typedef enum _sdxc_dma_type {
     sdxc_dmasel_sdma = 0U,          /**< SDXC DMA type: SDMA */
     sdxc_dmasel_adma2 = 2U,         /**< SDXC DMA type: ADMA2 */
-    sdxc_dmasel_adma2_or_3 = 3U,    /**< SDXC DMA type: ADMA2 or ADMA3 */
+    sdxc_dmasel_adma3 = 3U,         /**< SDXC DMA type: ADMA3 */
     sdxc_dmasel_nodma = 0xFU,
 } sdxc_dma_type_t;
 
@@ -282,11 +282,13 @@ enum {
     status_sdxc_send_cmd_successful = MAKE_STATUS(status_group_sdxc, 25),           /**< SDXC send command succeeded */
     status_sdxc_transfer_dma_completed = MAKE_STATUS(status_group_sdxc, 26),        /**< SDXC transfer DMA completed */
     status_sdxc_transfer_data_failed = MAKE_STATUS(status_group_sdxc, 27),          /**< SDXC transfer data failed */
-    status_sdxc_dma_addr_unaligned = MAKE_STATUS(status_group_sdxc, 28),            /**< SDXC DMA address unaligned */
+    status_sdxc_dma_addr_or_len_unaligned = MAKE_STATUS(status_group_sdxc, 28),     /**< SDXC DMA address/length unaligned */
     status_sdxc_tuning_failed = MAKE_STATUS(status_group_sdxc, 29),                 /**< SDXC tuning failed */
     status_sdxc_card_removed = MAKE_STATUS(status_group_sdxc, 30),                  /**< SDXC Card removed */
-    status_sdxc_non_recoverable_error = MAKE_STATUS(status_group_sdxc, 30),         /**< SDXC non-recoverable error */
-    status_sdxc_recoverable_error = MAKE_STATUS(status_group_sdxc, 31),             /**< SDXC recoverable error */
+    status_sdxc_non_recoverable_error = MAKE_STATUS(status_group_sdxc, 31),         /**< SDXC non-recoverable error */
+    status_sdxc_recoverable_error = MAKE_STATUS(status_group_sdxc, 32),             /**< SDXC recoverable error */
+    status_sdxc_adma_table_not_enough = MAKE_STATUS(status_group_sdxc, 33),        /**< ADMA table size not enough */
+    status_sdxc_xfer_size_exceeds_max_limit = MAKE_STATUS(status_group_sdxc, 34),  /**< SDXC Transfer size too large */
 };
 
 /**
@@ -397,7 +399,7 @@ typedef struct _sdxc_command {
 typedef struct _sdxc_data_list {
     uint32_t *data_addr;
     uint32_t data_size;
-    struct _sdxc_data_list *data_list;
+    struct _sdxc_data_list *next;
 } sdxc_data_list_t;
 
 /**
@@ -407,11 +409,19 @@ typedef struct _sdxc_data {
     bool enable_auto_cmd12;
     bool enable_auto_cmd23;
     bool enable_ignore_error;
-    uint8_t data_type;
+    bool use_data_list;
     uint32_t block_size;
     uint32_t block_cnt;
-    uint32_t *rx_data;
-    const uint32_t *tx_data;
+    union {
+        struct {
+            uint32_t *rx_data;
+            const uint32_t *tx_data;
+        };
+        struct {
+            sdxc_data_list_t *tx_data_list;
+            sdxc_data_list_t *rx_data_list;
+        };
+    };
 } sdxc_data_t;
 
 /**
@@ -438,6 +448,7 @@ typedef struct _sdxc_adma_config {
     sdxc_dma_type_t dma_type;
     uint32_t *adma_table;
     uint32_t adma_table_words;
+    const uint32_t *adma_desc_ptr;
 } sdxc_adma_config_t;
 
 enum {
@@ -470,6 +481,9 @@ typedef struct _sdxc_adma2_descriptor {
     const uint32_t *addr;              /**< Data Address */
 } sdxc_adma2_descriptor_t;
 
+/****************************************************************
+ *  ADMA related definitions
+ *****************************************************************/
 #define SDXC_ADMA2_DESC_VALID_FLAG (1UL << 0)
 #define SDXC_ADMA2_DESC_END_FLAG (1UL << 1)
 #define SDXC_ADMA2_DESC_INTERRUPT_FLAG (1UL << 2)
@@ -485,15 +499,24 @@ typedef struct _sdxc_adma2_descriptor {
 #define SDXC_ADMA2_DESC_TYPE_LINK (6U)
 #define SDXC_ADMA3_DESC_TYPE_FOR_SD_MODE (0x1U)
 #define SDXC_AMDA3_DESC_TYPE_INTEGRATED_LINKER (7U)
-
+#define SDXC_ADMA3_INTEGRATED_ATTR_VALID (1UL << 0)
+#define SDXC_ADMA3_INTEGRATED_ATTR_END (1UL << 1)
+#define SDXC_ADMA3_INTEGRATED_ATTR_INT (1UL << 2)
 #define SDXC_ADMA3_CMD_FOR_SD_DESC_ATTR (0x09U)
 #define SDXC_ADMA3_INTEGRATED_DESC_ATTR (0x39U)
+
+#define SDXC_ADMA3_CMD_DESC_ATTR_END (1UL << 1)
 
 #define SDXC_ADMA3_CMD_DESC_IDX_32BIT_BLK_CNT (0U)
 #define SDXC_ADMA3_CMD_DESC_IDX_BLK_SIZE (1U)
 #define SDXC_ADMA3_CMD_DESC_IDX_ARG (2U)
 #define SDXC_ADMA3_CMD_DESC_IDX_CMD_XFER (3U)
 
+#define SDXC_ADMA3_INTEGRATED_DESC_WORDS (sizeof(sdxc_adma3_integrated_desc_t) / sizeof(uint32_t))
+#define SDXC_ADMA3_CMD_DESC_WORDS  (sizeof(sdxc_adma3_cmd_sd_desc_t) / sizeof(uint32_t))
+#define SDXC_ADMA2_DESC_WORDS (sizeof(sdxc_adma2_descriptor_t) / sizeof(uint32_t))
+
+#define SDXC_IS_DMA_ALIGNED(value) (((uint32_t)(value) % 4UL) == 0U)
 /**
  * @brief ADMA3 command descriptor
  */
@@ -512,8 +535,18 @@ typedef struct _sdxc_adma3_integrated_desc {
     sdxc_adma3_cmd_sd_desc_t *cmd_desc_ptr;
 } sdxc_adma3_integrated_desc_t;
 
+#define SDXC_AMDA3_DESC_MIN_WORDS ((sizeof(sdxc_adma3_integrated_desc_t) + \
+                                    sizeof(sdxc_adma3_cmd_sd_desc_t) + \
+                                    sizeof(sdxc_adma2_descriptor_t)) / sizeof(uint32_t))
+
+
+typedef struct _sdxc_adma3_xfer_list {
+    sdxc_xfer_t *sdxc_xfer;
+    struct _sdxc_adma3_xfer_list *next;
+} sdxc_adma3_xfer_list;
+
 /**
- * @brief SDXC Boot confituration
+ * @brief SDXC Boot configuration
  */
 typedef struct _sdxc_boot_config {
     uint32_t ack_timeout_cnt;
@@ -558,7 +591,7 @@ extern "C" {
 /**
  * @brief Get the SDXC interrupt status
  * @param [in] base SDXC base address
- * @retval SDXC inaterrupt status
+ * @retval SDXC interrupt status
  */
 static inline uint32_t sdxc_get_interrupt_status(SDXC_Type *base)
 {
@@ -571,7 +604,7 @@ static inline uint32_t sdxc_get_interrupt_status(SDXC_Type *base)
  *  @arg true SD Card is inserted
  *  @arg false SD card is not inserted
  */
-static inline bool sdxc_is_card_inserted(SDXC_Type *base)
+static inline bool sdxc_is_card_inserted(const SDXC_Type *base)
 {
     return IS_HPM_BITMASK_SET(base->PSTATE, SDXC_PSTATE_CARD_INSERTED_MASK);
 }
@@ -582,7 +615,7 @@ static inline bool sdxc_is_card_inserted(SDXC_Type *base)
  *  @arg true SD Card is Write protected
  *  @arg false SD card is not Write Protected
  */
-static inline bool sdxc_is_write_protected(SDXC_Type *base)
+static inline bool sdxc_is_write_protected(const SDXC_Type *base)
 {
     return IS_HPM_BITMASK_CLR(base->PSTATE, SDXC_PSTATE_WR_PROTECT_SW_LVL_MASK);
 }
@@ -628,11 +661,20 @@ static inline void sdxc_enable_interrupt_signal(SDXC_Type *base, uint32_t mask, 
 }
 
 /**
+ * @brief  Get the SDXC interrupt Signal Enable Register
+ * @return the value of INT_SIGNAL_EN register
+ */
+static inline uint32_t sdxc_get_interrupt_signal(SDXC_Type *base)
+{
+    return base->INT_SIGNAL_EN;
+}
+
+/**
  * @brief Get SDXC capabilities
  * @param [in] base SDXC base address
  * @param [out] capabilities buffer
  */
-hpm_stat_t sdxc_get_capabilities(SDXC_Type *base, sdxc_capabilities_t *capabilities);
+hpm_stat_t sdxc_get_capabilities(const SDXC_Type *base, sdxc_capabilities_t *capabilities);
 
 
 /**
@@ -640,7 +682,7 @@ hpm_stat_t sdxc_get_capabilities(SDXC_Type *base, sdxc_capabilities_t *capabilit
  * @param [in] base SDXC base address
  * @retval AMDA error status register value
  */
-static inline uint8_t sdxc_get_adma_error_status(SDXC_Type *base)
+static inline uint8_t sdxc_get_adma_error_status(const SDXC_Type *base)
 {
     return base->ADMA_ERR_STAT;
 }
@@ -847,7 +889,7 @@ static inline void sdxc_enable_internal_clock(SDXC_Type *base, bool enable)
  * @param [in] base SDXC base address
  * @retval SDXC PRESENT register value
  */
-static inline uint32_t sdxc_get_present_status(SDXC_Type *base)
+static inline uint32_t sdxc_get_present_status(const SDXC_Type *base)
 {
     return base->PSTATE;
 }
@@ -858,7 +900,7 @@ static inline uint32_t sdxc_get_present_status(SDXC_Type *base)
  * @retval true Data buffer is writeable
  * @retval false Data buffer write is disabled
  */
-static inline bool sdxc_is_data_buf_writable(SDXC_Type *base)
+static inline bool sdxc_is_data_buf_writable(const SDXC_Type *base)
 {
     return ((base->PSTATE & SDXC_PSTATE_BUF_WR_ENABLE_MASK) != 0U);
 }
@@ -869,7 +911,7 @@ static inline bool sdxc_is_data_buf_writable(SDXC_Type *base)
  * @retval true There are data available in data buffer
  * @retval false there is no data available in data buffer, read is disabled
  */
-static inline bool sdxc_is_data_buf_readable(SDXC_Type *base)
+static inline bool sdxc_is_data_buf_readable(const SDXC_Type *base)
 {
     return ((base->PSTATE & SDXC_PSTATE_BUF_RD_ENABLE_MASK) != 0U);
 }
@@ -899,9 +941,19 @@ static inline void sdxc_write_data(SDXC_Type *base, uint32_t data)
  * @param [in] base SDXC base address
  * @retval SDXC data3-data0 IO level
  */
-static inline uint32_t sdxc_get_data3_0_level(SDXC_Type *base)
+static inline uint32_t sdxc_get_data3_0_level(const SDXC_Type *base)
 {
     return SDXC_PSTATE_DAT_3_0_GET(base->PSTATE);
+}
+
+/**
+ * @brief Get SDXC DATA7-DATA4 IO level
+ * @param [in] base SDXC base address
+ * @retval SDXC data7-data4 IO level
+ */
+static inline uint32_t sdxc_get_data7_4_level(const SDXC_Type *base)
+{
+    return SDXC_PSTATE_DAT_7_4_GET(base->PSTATE);
 }
 
 /**
@@ -1027,6 +1079,25 @@ static inline void sdxc_enable_enhanced_strobe(SDXC_Type *base, bool enable)
 }
 
 /**
+* @brief Select DMA type
+* @param [in] base SDXC base address
+* @param [in] dma_type SDXC DMA type
+*/
+static inline void sdxc_select_dma_type(SDXC_Type *base, sdxc_dma_type_t dma_type)
+{
+    if (dma_type != sdxc_dmasel_nodma) {
+        base->PROT_CTRL = (base->PROT_CTRL & ~SDXC_PROT_CTRL_DMA_SEL_MASK) | SDXC_PROT_CTRL_DMA_SEL_SET(dma_type);
+    }
+}
+
+/**
+* @brief Check whether SDXC Bus is idle
+* @param [in] base SDXC base address
+* @return SDXC bus state
+*/
+bool sdxc_is_bus_idle(const SDXC_Type *base);
+
+/**
  * @brief Set MMC boot configuration
  * @param [in] base SDXC base address
  * @param [in] config MMC boot configuration
@@ -1040,7 +1111,7 @@ void sdxc_set_mmc_boot_config(SDXC_Type *base, const sdxc_boot_config_t *config)
  * @retval status_timeout Sending command timed out
  * @retval status_success Command was sent out successfully
  */
-hpm_stat_t sdxc_send_command(SDXC_Type *base, sdxc_command_t *cmd);
+hpm_stat_t sdxc_send_command(SDXC_Type *base, const sdxc_command_t *cmd);
 
 /**
  * @brief Receive command response
@@ -1048,7 +1119,7 @@ hpm_stat_t sdxc_send_command(SDXC_Type *base, sdxc_command_t *cmd);
  * @param [in,out] cmd Command
  * @return status_success if no error happened
  */
-hpm_stat_t sdxc_receive_cmd_response(SDXC_Type *base, sdxc_command_t *cmd);
+hpm_stat_t sdxc_receive_cmd_response(const SDXC_Type *base, sdxc_command_t *cmd);
 
 /**
  * @brief Parse the SDXC interrupt status to HPM encoded status
@@ -1080,41 +1151,47 @@ void sdxc_set_data_config(SDXC_Type *base, sdxc_xfer_direction_t data_dir, uint3
  * @param [in] base SDXC base address
  * @param [in] dma_cfg DMA configuration
  * @param [in] data_cfg Data configuration
- * @param [in] flags Flags for AMDA transfer
+ * @param [in] cmd SDXC command context
  * @retval API execution status
  */
 hpm_stat_t sdxc_set_adma_table_config(SDXC_Type *base,
                                       sdxc_adma_config_t *dma_cfg,
                                       sdxc_data_t *data_cfg,
-                                      uint32_t flags);
+                                      sdxc_command_t *cmd);
 
 /**
  * @brief Set ADMA2 descriptor
- * @param [in] adma_tbl ADMA2 table
- * @param [in] adma_table_words ADMA2 table size in words
- * @param [in] data_buf pointer to the Data to be transferred
+ * @param [in] dma_config DMA configuration context
+ * @param [in] xfer_data pointer to the Data to be transferred
  * @param [in] data_bytes Data size for transfer
- * @param [in] flags Flags for ADMA2 descriptor
+ * @param [out] num_entries Number of ADMA2 Table entries
+ * @return API execution status
+ */
+hpm_stat_t sdxc_set_adma2_desc(sdxc_adma_config_t *dma_config,
+                               const sdxc_data_t *xfer_data,
+                               uint32_t *num_entries);
+
+/**
+ * @brief Set ADMA3 descriptor
+ * @param [in] dma_config DMA configuration context
+ * @param [in] xfer_data pointer to the Data to be transferred
+ * @param [in] cmd Command context
+ * @Note adma_tbl layout is:
+ *          Command descriptor
+ *          ADMA2 descriptor
+ *          ADMA3 integrated descriptor (address pointer to command descriptor)
  * @retval API execution status
  */
-hpm_stat_t sdxc_set_adma2_desc(uint32_t *adma_tbl,
-                               uint32_t adma_table_words,
-                               const uint32_t *data_buf,
-                               uint32_t data_bytes,
-                               uint32_t flags);
+hpm_stat_t sdxc_set_adma3_desc(sdxc_adma_config_t *dma_config, sdxc_adma3_xfer_list *adma3_xfer_list);
 
 /**
  * @brief Set DMA configuration
  * @param [in] base SDXC base address
  * @param [in] dma_cfg DMA configuration data structure
  * @param [in] data_addr Buffer holds incoming/outgoing data
- * @param [in] enable_auto_cmd23 Flag to determine whether to enable auto CMD23 or not
  * @retval API execution status
  */
-hpm_stat_t sdxc_set_dma_config(SDXC_Type *base,
-                               sdxc_adma_config_t *dma_cfg,
-                               const uint32_t *data_addr,
-                               bool enable_auto_cmd23);
+hpm_stat_t sdxc_set_dma_config(SDXC_Type *base, const sdxc_adma_config_t *dma_cfg, const uint32_t *data_addr);
 
 /**
  * @brief Initialize SDXC controller
@@ -1151,12 +1228,12 @@ void sdxc_set_data_bus_width(SDXC_Type *base, sdxc_bus_width_t width);
  * @param [in] base SDXC base address
  * @return Actual bus width, valid value: 1 / 4 / 8
  */
-uint32_t sdxc_get_data_bus_width(SDXC_Type *base);
+uint32_t sdxc_get_data_bus_width(const SDXC_Type *base);
 
 /**
  * @brief Set SDXC IO voltage
  * @param [in] base SDXC base address
- * @param [option] SDXC voltage option
+ * @param [in] option SDXC voltage option
  */
 void sdxc_select_voltage(SDXC_Type *base, sdxc_bus_voltage_option_t option);
 
@@ -1165,7 +1242,7 @@ void sdxc_select_voltage(SDXC_Type *base, sdxc_bus_voltage_option_t option);
  * @param [in] base SDXC base address
  * @param [in] reset_type SDXC reset type
  * @param [in] timeout timeout ticks
- * @retval SDXC reset result
+ * @return SDXC reset result
  */
 bool sdxc_reset(SDXC_Type *base, sdxc_sw_reset_type_t reset_type, uint32_t timeout);
 
@@ -1180,27 +1257,39 @@ void sdxc_enable_wakeup_event(SDXC_Type *base, sdxc_wakeup_event_t evt, bool ena
 /**
  * @brief Start SDXC transfer in blocking way
  * @param [in] base SDXC base address
- * @param [in] dma_config SDXC DMA configuration
+ * @param [in,out] dma_config SDXC DMA configuration
  * @param [in] xfer SDXC transfer context
- * @retval SDXC transfer status
+ * @return SDXC transfer status
  */
-hpm_stat_t sdxc_transfer_blocking(SDXC_Type *base, sdxc_adma_config_t *dma_config, sdxc_xfer_t *xfer);
+hpm_stat_t sdxc_transfer_blocking(SDXC_Type *base, sdxc_adma_config_t *dma_config, const sdxc_xfer_t *xfer);
+
+/**
+* @brief SDXC ADMA3 nonblocking transfer
+* @param [in] base SDXC base address
+* @param [in,out] dma_config SDXC DMA configuration
+* @param [in] adma3_xfer_list ADMA3 transfer list
+* @return SDXC transfer status
+*/
+hpm_stat_t sdxc_adma3_transfer_nonblocking(SDXC_Type *base,
+                                           sdxc_adma_config_t *dma_config,
+                                           sdxc_adma3_xfer_list *adma3_xfer_list);
 
 /**
  * @brief Start SDXC transfer in nonblocking way
  * @param [in] base SDXC base address
- * @param [in] dma_config SDXC DMA configuration
+ * @param [in,out] dma_config SDXC DMA configuration
  * @param [in] xfer SDXC transfer context
- * @retval SDXC transfer status
+ * @return SDXC transfer status
  */
-hpm_stat_t sdxc_transfer_nonblocking(SDXC_Type *base, sdxc_adma_config_t *dma_config, sdxc_xfer_t *xfer);
+hpm_stat_t sdxc_transfer_nonblocking(SDXC_Type *base, sdxc_adma_config_t *dma_config, const sdxc_xfer_t *xfer);
 
 /**
  * @brief SDXC Error recovery
  * @param [in] base SDXC base address
- * @retval SDXC error recovery status
+ * @param [in] cmd SDXC command context
+ * @return SDXC error recovering status
  */
-hpm_stat_t sdxc_error_recovery(SDXC_Type *base);
+hpm_stat_t sdxc_error_recovery(SDXC_Type *base, sdxc_command_t *cmd);
 
 /**
  * @brief Perform SDXC tuning flow sequence
@@ -1219,7 +1308,7 @@ hpm_stat_t sdxc_perform_tuning_flow_sequence(SDXC_Type *base, uint8_t tuning_cmd
 hpm_stat_t sdxc_perform_software_tuning(SDXC_Type *base, uint8_t tuning_cmd);
 
 /**
- * @brief Perform SDXC auto tuning
+ * @brief Perform SDXC auto-tuning
  * @param [in] base SDXC base address
  * @param [in] tuning_cmd tuning command
  * @retval Tuning status

@@ -61,6 +61,7 @@ static void lin_slave_respond_id(LIN_Type *ptr, uint8_t id)
     lin_slave_transfer(ptr, &config);
 }
 
+SDK_DECLARE_EXT_ISR_M(TEST_LIN_IRQ, lin_isr)
 void lin_isr(void)
 {
     volatile uint32_t status;
@@ -89,9 +90,6 @@ void lin_isr(void)
 
     lin_reset_interrupt(TEST_LIN);
 }
-
-SDK_DECLARE_EXT_ISR_M(TEST_LIN_IRQ, lin_isr)
-
 
 int main(void)
 {

@@ -30,16 +30,26 @@ static void hpm_lvgl_add_logo(void)
     LV_IMAGE_DECLARE(hpmlogo);
     lv_obj_t *screen;
     int screen_h;
-    uint32_t zoom;
+    int screen_w;
+    int logo_size;
     lv_obj_t *obj_logo;
 
     screen = lv_screen_active();
     screen_h = lv_obj_get_height(screen);
-    zoom = screen_h * 30 / 100 * 256 / hpmlogo.header.h;
+    screen_w = lv_obj_get_width(screen);
+
+    if (screen_h < screen_w)
+        logo_size = screen_h * 30 / 100;
+    else
+        logo_size = screen_w * 30 / 100;
+
     obj_logo = lv_image_create(lv_screen_active());
 
+    lv_obj_set_size(obj_logo, logo_size, logo_size);
     lv_image_set_src(obj_logo, &hpmlogo);
-    lv_image_set_scale(obj_logo, zoom);
+    lv_obj_set_align(obj_logo, LV_ALIGN_TOP_LEFT);
+    lv_image_set_inner_align(obj_logo, LV_IMAGE_ALIGN_STRETCH);
+
     def_color = lv_obj_get_style_bg_color(screen, LV_PART_MAIN);
     lv_obj_set_style_bg_color(screen, lv_color_black(), LV_PART_MAIN);
 }

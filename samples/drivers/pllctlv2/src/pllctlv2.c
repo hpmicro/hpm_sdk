@@ -29,6 +29,8 @@ int main(void)
 {
     board_init();
     sysctl_clock_set_preset(HPM_SYSCTL, sysctl_preset_0);
+    /* Re-Initialize the Console due to clock transition happened during preset switching process */
+    board_init_console();
 
     clock_enable(TEST_PLL_NAME); /* Force On  TESTPLL clock */
     printf("PLLCTLV2 example\n");

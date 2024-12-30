@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -122,7 +122,9 @@ hpm_stat_t ewdg_init_ctrl_func(EWDG_Type *ptr, ewdg_func_ctrl_config_t *config, 
                 /* Cannot get the expected EWDG setting via the specified timeout input */
                 break;
             }
+#if !defined(EWDG_SOC_SUPPORT_TIMEOUT_INTERRUPT) || (EWDG_SOC_SUPPORT_TIMEOUT_INTERRUPT == 1)
             ot_int_ticks = (uint32_t) (timeout_interrupt_ticks & 0xFFFFFFFFUL);
+#endif
             ot_reset_ticks = (uint32_t) (timeout_reset_ticks & 0xFFFFFFFFUL);
 
         } else {

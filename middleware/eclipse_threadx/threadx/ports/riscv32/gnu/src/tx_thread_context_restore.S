@@ -41,7 +41,7 @@
     .global _tx_thread_context_restore
 
 .section .isr_vector, "ax"
-.align 8
+.balign 4
 .type _tx_thread_context_restore, function
 /**************************************************************************/
 /*                                                                        */

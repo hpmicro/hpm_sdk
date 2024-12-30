@@ -14,7 +14,7 @@ CPU_STK LED0_TASK_STK[LED0_STK_SIZE];
 void led0_task(void *p_arg)
 {
     OS_ERR err;
-    p_arg = p_arg;
+    (void)p_arg;
     while (1) {
         OSTimeDlyHMSM(0, 0, 1, 0, OS_OPT_TIME_HMSM_STRICT, &err);
         printf("led0 task task sem.\r\n");

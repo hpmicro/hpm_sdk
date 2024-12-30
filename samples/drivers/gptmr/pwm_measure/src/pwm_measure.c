@@ -7,9 +7,8 @@
 
 #include <stdio.h>
 #include "board.h"
-#include "hpm_sysctl_drv.h"
 #include "hpm_gptmr_drv.h"
-#include "hpm_debug_console.h"
+#include "hpm_clock_drv.h"
 #if (defined (DMA_SOC_MAX_COUNT) && (DMA_SOC_MAX_COUNT == 2)) && (defined (CONFIG_USE_DMA) && (CONFIG_USE_DMA == 1))
 #include "hpm_dmamux_drv.h"
 #ifdef HPMSOC_HAS_HPMSDK_DMAV2
@@ -45,6 +44,7 @@ ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(4) pwm_measure_cfg_t pwm_meas_table[AP
 volatile uint32_t count;
 volatile bool     dma_is_done;
 
+SDK_DECLARE_EXT_ISR_M(APP_GPTMR_DMA_IRQ, isr_dma)
 void isr_dma(void)
 {
     volatile hpm_stat_t stat;
@@ -55,7 +55,6 @@ void isr_dma(void)
         dma_is_done = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(APP_GPTMR_DMA_IRQ, isr_dma)
 #endif
 
 static void pwm_measure_config(void);
@@ -126,6 +125,8 @@ static void dma_transfer_config(void)
 static void pwm_measure_config(void)
 {
     gptmr_channel_config_t config;
+
+    clock_add_to_group(APP_BOARD_GPTMR_CLOCK, 0);
     gptmr_channel_get_default_config(APP_BOARD_GPTMR, &config);
     gptmr_freq = clock_get_frequency(APP_BOARD_GPTMR_CLOCK);
 #if (defined (DMA_SOC_MAX_COUNT) && (DMA_SOC_MAX_COUNT == 2)) && (defined (CONFIG_USE_DMA) && (CONFIG_USE_DMA == 1))

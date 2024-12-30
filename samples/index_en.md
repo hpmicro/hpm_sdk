@@ -6,6 +6,7 @@
     :numbered:
 
     audio_codec/index_en
+    canopen/README_en
     cherryrb/README_en
     cherryusb/index_en
     coremark/README_en
@@ -29,6 +30,7 @@
     rgb_led/README_en
     rom_api/index_en
     rtos/index_en
+    rvbacktrace/index_en
     segger_rtt/README_en
     tflm/index_en
     tinycrypt/index_en
@@ -45,5 +47,7 @@
     smbus/index_en
     pmbus/index_en
     tsn/index_en
+    opener/index_en
+    trace_recorder/index_en
 
 :::

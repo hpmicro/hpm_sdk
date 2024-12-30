@@ -31,7 +31,7 @@
  */
 
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -51,7 +51,7 @@
 #define SZT_F "uz"
 
 /* define compiler specific symbols */
-#if defined(__ICCARM__)
+#if defined (__ICCARM__)
 
 #define PACK_STRUCT_BEGIN
 #define PACK_STRUCT_STRUCT
@@ -59,21 +59,28 @@
 #define PACK_STRUCT_FIELD(x) x
 #define PACK_STRUCT_USE_INCLUDES
 
-#elif defined(__CC_ARM)
+#elif defined (__CC_ARM)
 
 #define PACK_STRUCT_BEGIN __packed
 #define PACK_STRUCT_STRUCT
 #define PACK_STRUCT_END
 #define PACK_STRUCT_FIELD(x) x
 
-#elif defined(__GNUC__)
+#elif defined (__GNUC__)
 
 #define PACK_STRUCT_BEGIN
 #define PACK_STRUCT_STRUCT __attribute__ ((__packed__))
 #define PACK_STRUCT_END
 #define PACK_STRUCT_FIELD(x) x
 
-#elif defined(__TASKING__)
+#elif defined (__ICCRISCV__)
+
+#define PACK_STRUCT_BEGIN
+#define PACK_STRUCT_STRUCT __attribute__ ((__packed__))
+#define PACK_STRUCT_END
+#define PACK_STRUCT_FIELD(x) x
+
+#elif defined (__TASKING__)
 
 #define PACK_STRUCT_BEGIN
 #define PACK_STRUCT_STRUCT
@@ -85,7 +92,7 @@
 #define LWIP_PLATFORM_ASSERT(x) printf(x)
 
 #ifndef LWIP_MEM_SECTION
-#define LWIP_MEM_SECTION ".fast_ram"
+#define LWIP_MEM_SECTION ".fast_ram.non_init"
 #endif
 
 #endif /* __CC_H__ */

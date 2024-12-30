@@ -279,8 +279,6 @@ void motor_init(void)
     motor0.cfg.loop.mode = mcl_mode_foc;
 #endif
     motor0.cfg.loop.enable_speed_loop = true;
-    hpm_mcl_enable_dq_axis_decoupling(&motor0.loop);
-    hpm_mcl_enable_dead_area_compensation(&motor0.loop);
 
     motor0.cfg.detect.enable_detect = true;
     motor0.cfg.detect.en_submodule_detect.analog = true;
@@ -297,6 +295,8 @@ void motor_init(void)
     hpm_mcl_loop_init(&motor0.loop, &motor0.cfg.loop, &motor0.cfg.mcl,
                     &motor0.encoder, &motor0.analog, &motor0.control, &motor0.drivers, NULL);
     hpm_mcl_detect_init(&motor0.detect, &motor0.cfg.detect, &motor0.loop, &motor0.encoder, &motor0.analog, &motor0.drivers);
+    hpm_mcl_enable_dq_axis_decoupling(&motor0.loop);
+    hpm_mcl_enable_dead_area_compensation(&motor0.loop);
 }
 
 void motor0_speed_loop_para_init(void)
@@ -839,6 +839,7 @@ hpm_mcl_stat_t qei_init(void)
     return mcl_success;
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_TMR_IRQ, isr_gptmr)
 void isr_gptmr(void)
 {
     if (gptmr_check_status(BOARD_BLDC_TMR_1MS, GPTMR_CH_CMP_IRQ_MASK(BOARD_BLDC_TMR_CH, BOARD_BLDC_TMR_CMP))) {
@@ -846,12 +847,12 @@ void isr_gptmr(void)
         hpm_mcl_detect_loop(&motor0.detect);
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_TMR_IRQ, isr_gptmr)
 
 static void timer_init(void)
 {
     gptmr_channel_config_t config;
 
+    clock_add_to_group(BOARD_BLDC_TMR_CLOCK, 0);
     gptmr_channel_get_default_config(BOARD_BLDC_TMR_1MS, &config);
     config.cmp[0] = BOARD_BLDC_TMR_RELOAD;
     config.debug_mode = 0;
@@ -859,7 +860,6 @@ static void timer_init(void)
     gptmr_enable_irq(BOARD_BLDC_TMR_1MS, GPTMR_CH_CMP_IRQ_MASK(BOARD_BLDC_TMR_CH, BOARD_BLDC_TMR_CMP));
     gptmr_channel_config(BOARD_BLDC_TMR_1MS, BOARD_BLDC_TMR_CH, &config, true);
     intc_m_enable_irq_with_priority(BOARD_BLDC_TMR_IRQ, 6);
-
 }
 
 void init_trigger_mux(TRGM_Type *ptr)
@@ -872,6 +872,7 @@ void init_trigger_mux(TRGM_Type *ptr)
     trgm_output_config(ptr, BOARD_BLDC_TRG_NUM, &trgm_output_cfg);
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_ADC_IRQn, isr_adc)
 void isr_adc(void)
 {
     uint32_t status;
@@ -883,7 +884,6 @@ void isr_adc(void)
         hpm_mcl_loop(&motor0.loop);
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_ADC_IRQn, isr_adc)
 
 void init_trigger_cfg(uint8_t trig_ch, bool inten)
 {

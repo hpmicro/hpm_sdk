@@ -65,6 +65,7 @@ void hrpwm_init_calibration(TRGM_Type *trgm)
     }
 }
 
+SDK_DECLARE_EXT_ISR_M(GPTMR_IRQ, tick_ms_isr)
 void tick_ms_isr(void)
 {
     if (gptmr_check_status(GPTMR, GPTMR_CH_RLD_STAT_MASK(GPTMR_CH))) {
@@ -81,15 +82,14 @@ void tick_ms_isr(void)
         }
     }
 }
-SDK_DECLARE_EXT_ISR_M(GPTMR_IRQ, tick_ms_isr);
 
 void timer_config(void)
 {
     uint32_t gptmr_freq;
     gptmr_channel_config_t config;
 
+    clock_add_to_group(GPTMR_CLOCK, 0);
     gptmr_channel_get_default_config(GPTMR, &config);
-
     gptmr_freq = clock_get_frequency(GPTMR_CLOCK);
     config.reload = gptmr_freq / 1000 * TICK_MS;
     gptmr_channel_config(GPTMR, GPTMR_CH, &config, false);
@@ -99,9 +99,7 @@ void timer_config(void)
 }
 void generate_hrpwm_waveform(void)
 {
-
-    pwmv2_disable_counter(PWM, pwm_counter_0);
-    pwmv2_reset_counter(PWM, pwm_counter_0);
+    pwmv2_deinit(PWM);
     pwmv2_shadow_register_unlock(PWM);
 
     pwmv2_set_shadow_val(PWM, PWMV2_SHADOW_INDEX(0), reload, 0, false);
@@ -137,6 +135,7 @@ void generate_hrpwm_waveform(void)
     }
 }
 
+SDK_DECLARE_EXT_ISR_M(TSNS_IRQ, tsns_isr)
 void tsns_isr(void)
 {
     uint32_t flag;
@@ -151,11 +150,11 @@ void tsns_isr(void)
     gptmr_enable_irq(GPTMR, GPTMR_CH_RLD_IRQ_MASK(GPTMR_CH));
 }
 
-SDK_DECLARE_EXT_ISR_M(TSNS_IRQ, tsns_isr)
 void tsns_init(TSNS_Type *tsns)
 {
     float tsns_temp;
 
+    clock_add_to_group(clock_tsns, 0);
     tsns_enable_continuous_mode(tsns);
     tsns_enable(tsns);
     tsns_temp = tsns_get_current_temp(tsns);

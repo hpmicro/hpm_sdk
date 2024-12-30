@@ -10,7 +10,7 @@
  *---------------------------------------------------------------------*/
 #include "tas.h"
 
-static tsw_phy_status_t last_status;
+static tsw_phy_status_t last_status = {.tsw_phy_link = tsw_phy_link_unknown};
 static uint32_t last_op_gs = 0xff;
 static uint32_t cur_op_gs = 0;
 uint8_t mac[] = {0x98, 0x2c, 0xbc, 0xb1, 0x9f, 0x17};
@@ -111,21 +111,23 @@ void tsw_self_adaptive_port_speed(void)
 
     rtl8211_get_phy_status(BOARD_TSW, BOARD_TSW_PORT, &status);
 
-    if (memcmp(&last_status, &status, sizeof(tsw_phy_status_t)) != 0) {
-        memcpy(&last_status, &status, sizeof(tsw_phy_status_t));
-        if (status.tsw_phy_link) {
-            printf("Link Status: Up\n");
-            printf("Link Speed:  %s\n", speed_str[status.tsw_phy_speed]);
-            printf("Link Duplex: %s\n", duplex_str[status.tsw_phy_duplex]);
+    if (status.tsw_phy_link || (status.tsw_phy_link != last_status.tsw_phy_link)) {
+        if (memcmp(&last_status, &status, sizeof(tsw_phy_status_t)) != 0) {
+            memcpy(&last_status, &status, sizeof(tsw_phy_status_t));
+            if (status.tsw_phy_link) {
+                printf("Link Status: Up\n");
+                printf("Link Speed:  %s\n", speed_str[status.tsw_phy_speed]);
+                printf("Link Duplex: %s\n", duplex_str[status.tsw_phy_duplex]);
 
-            tsw_set_port_speed(BOARD_TSW, BOARD_TSW_PORT, port_speed[status.tsw_phy_speed]);
+                tsw_set_port_speed(BOARD_TSW, BOARD_TSW_PORT, port_speed[status.tsw_phy_speed]);
 
-            if (!status.tsw_phy_duplex) {
-                printf("Error: PHY is in half duplex now, but TSW MAC supports only full duplex mode!\n");
-                return;
+                if (!status.tsw_phy_duplex) {
+                    printf("Error: PHY is in half duplex now, but TSW MAC supports only full duplex mode!\n");
+                    return;
+                }
+            } else {
+                printf("Link Status: Down\n");
             }
-        } else {
-            printf("Link Status: Down\n");
         }
     }
 }

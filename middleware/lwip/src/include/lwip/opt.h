@@ -187,7 +187,7 @@
  * Your system should provide mutexes supporting priority inversion to use this.
  */
 #if !defined LWIP_TCPIP_CORE_LOCKING || defined __DOXYGEN__
-#define LWIP_TCPIP_CORE_LOCKING         0
+#define LWIP_TCPIP_CORE_LOCKING         1
 #endif
 
 /**

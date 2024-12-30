@@ -31,8 +31,6 @@ void rtc_isr(void);
 
 static volatile bool rtc_interrupt_occurred;
 
-SDK_DECLARE_EXT_ISR_M(IRQn_RTC, rtc_isr);
-
 int main(void)
 {
     board_init();
@@ -278,6 +276,7 @@ void rtc_set_interrupt(void)
     rtc_interrupt_occurred = false;
 }
 
+SDK_DECLARE_EXT_ISR_M(IRQn_RTC, rtc_isr)
 void rtc_isr(void)
 {
     uint32_t rtc_alarm_flag = rtc_get_alarm_flags(TEST_RTC);

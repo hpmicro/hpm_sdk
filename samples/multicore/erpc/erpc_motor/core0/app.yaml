@@ -1,0 +1,24 @@
+excluded_targets:
+  - debug
+  - release
+  - flash_xip_release
+  - flash_xip
+  - flash_sdram_uf2
+  - flash_sdram_uf2_release
+  - flash_uf2
+  - flash_uf2_release
+
+linked_project:
+  project_name: multicore/erpc/erpc_motor/core1
+  project_path: ../core1
+  build_type: sec_core_img
+
+debug:
+    ses:
+      auto_start_gdb_server: true
+      gdb_server_port: 3333
+
+dependency:
+  - multicore
+  - board_enet_phy
+  - board_sdram

@@ -57,6 +57,7 @@ struct {
     bool up_to_down;
 } layer_info[TEST_LAYER_COUNT];
 
+SDK_DECLARE_EXT_ISR_M(BOARD_LCD_IRQ, isr_lcd_d0)
 void isr_lcd_d0(void)
 {
     volatile uint32_t s = lcdc_get_dma_status(LCD);
@@ -67,7 +68,6 @@ void isr_lcd_d0(void)
         }
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_LCD_IRQ, isr_lcd_d0)
 
 uint32_t get_rgb_color(color *c)
 {

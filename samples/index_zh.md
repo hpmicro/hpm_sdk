@@ -6,6 +6,7 @@
     :numbered:
 
     audio_codec/index_zh
+    canopen/README_zh
     cherryrb/README_zh
     cherryusb/index_zh
     coremark/README_zh
@@ -29,6 +30,7 @@
     rgb_led/README_zh
     rom_api/index_zh
     rtos/index_zh
+    rvbacktrace/index_zh
     segger_rtt/README_zh
     tflm/index_zh
     tinycrypt/index_zh
@@ -45,5 +47,7 @@
     smbus/index_zh
     pmbus/index_zh
     tsn/index_zh
+    opener/index_zh
+    trace_recorder/index_zh
 
 :::

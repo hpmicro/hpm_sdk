@@ -24,6 +24,7 @@ void delay_ms(uint32_t ms)
     mchtmr_delay(HPM_MCHTMR, (uint64_t) ms * freq / 1000);
 }
 
+SDK_DECLARE_MCHTMR_ISR(isr_mchtmr)
 void isr_mchtmr(void)
 {
 #ifdef BOARD_LED_GPIO_CTRL
@@ -34,7 +35,6 @@ void isr_mchtmr(void)
     delay_ms(PERIOD_IN_MS);
 }
 
-SDK_DECLARE_MCHTMR_ISR(isr_mchtmr)
 
 int main(void)
 {

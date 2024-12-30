@@ -81,9 +81,9 @@ hpm_stat_t hpm_smbus_master_read_byte_in_command(I2C_Type *ptr, uint8_t slave_ad
         /* read */
         buf[2] = (slave_address << 1) | 0x01;
         /* now change dir,restart, read the byte */
-        stat = i2c_master_seq_receive(ptr, (const uint16_t)slave_address, &buf[3], 1, i2c_frist_frame);
+        HPM_CHECK_RET(i2c_master_seq_receive(ptr, (const uint16_t)slave_address, &buf[3], 1, i2c_frist_frame));
         /* read the pec */
-        stat = i2c_master_seq_receive(ptr, (const uint16_t)slave_address, &buf[4], 1, i2c_last_frame);
+        HPM_CHECK_RET(i2c_master_seq_receive(ptr, (const uint16_t)slave_address, &buf[4], 1, i2c_last_frame));
         if (stat == status_success) {
             pec = hpm_smbus_pec_crc8(buf, sizeof(buf) - 1);
             if (pec == buf[4]) {
@@ -110,16 +110,14 @@ hpm_stat_t hpm_smbus_master_read_word_in_command(I2C_Type *ptr, uint8_t slave_ad
         /* read */
         buf[2] = (slave_address << 1) | 0x01;
         /* now change dir,restart, read the word (16 bits)*/
-        stat = i2c_master_seq_receive(ptr, (const uint16_t)slave_address, &buf[3], 2, i2c_frist_frame);
+        HPM_CHECK_RET(i2c_master_seq_receive(ptr, (const uint16_t)slave_address, &buf[3], 2, i2c_frist_frame));
         /* read the pec */
-        stat = i2c_master_seq_receive(ptr, (const uint16_t)slave_address, &buf[5], 1, i2c_last_frame);
-        if (stat == status_success) {
-            pec = hpm_smbus_pec_crc8(buf, sizeof(buf) - 1);
-            if (pec == buf[5]) {
-                *data = *(uint16_t *)(&buf[3]);
-            } else {
-                stat = status_fail;
-            }
+        HPM_CHECK_RET(i2c_master_seq_receive(ptr, (const uint16_t)slave_address, &buf[5], 1, i2c_last_frame));
+        pec = hpm_smbus_pec_crc8(buf, sizeof(buf) - 1);
+        if (pec == buf[5]) {
+            *data = *(uint16_t *)(&buf[3]);
+        } else {
+            stat = status_fail;
         }
     }
     return stat;
@@ -161,20 +159,18 @@ hpm_stat_t hpm_smbus_master_read_block_in_command(I2C_Type *ptr, uint8_t slave_a
     buf[2] = (slave_address << 1) | 0x01;
     if (stat == status_success) {
         /* now change dir,restart, read the block count*/
-        stat = i2c_master_seq_receive(ptr, (const uint16_t)slave_address, &buf[3], 1, i2c_frist_frame);
+        HPM_CHECK_RET(i2c_master_seq_receive(ptr, (const uint16_t)slave_address, &buf[3], 1, i2c_frist_frame));
         _size = buf[3];
         /* read data*/
-        stat = i2c_master_seq_receive(ptr, (const uint16_t)slave_address, &buf[4], _size, i2c_next_frame);
+        HPM_CHECK_RET(i2c_master_seq_receive(ptr, (const uint16_t)slave_address, &buf[4], _size, i2c_next_frame));
         /* read pec */
-        stat = i2c_master_seq_receive(ptr, (const uint16_t)slave_address, &buf[_size + 4], 1, i2c_last_frame);
-        if (stat == status_success) {
-            buf_size = _size + 4;
-            pec = hpm_smbus_pec_crc8(buf, buf_size);
-            if (pec == buf[size + 4]) {
-                memcpy(data, &buf[4], size);
-            } else {
-                stat = status_fail;
-            }
+        HPM_CHECK_RET(i2c_master_seq_receive(ptr, (const uint16_t)slave_address, &buf[_size + 4], 1, i2c_last_frame));
+        buf_size = _size + 4;
+        pec = hpm_smbus_pec_crc8(buf, buf_size);
+        if (pec == buf[size + 4]) {
+            memcpy(data, &buf[4], size);
+        } else {
+            stat = status_fail;
         }
     }
     return stat;

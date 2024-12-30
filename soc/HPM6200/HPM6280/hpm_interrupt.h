@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -265,6 +265,9 @@ ATTR_ALWAYS_INLINE static inline void intc_m_complete_swi(void)
 #define intc_m_set_threshold(threshold) \
     intc_set_threshold(HPM_PLIC_TARGET_M_MODE, threshold)
 
+#define intc_m_get_threshold() \
+    intc_get_threshold(HPM_PLIC_TARGET_M_MODE)
+
 /*
  * @brief Complete IRQ for machine mode
  *
@@ -422,6 +425,16 @@ ATTR_ALWAYS_INLINE static inline void intc_disable_irq(uint32_t target, uint32_t
 ATTR_ALWAYS_INLINE static inline void intc_set_threshold(uint32_t target, uint32_t threshold)
 {
     __plic_set_threshold(HPM_PLIC_BASE, target, threshold);
+}
+
+/**
+ * @brief   Get interrupt threshold
+ *
+ * @param[in] target Target to handle specific interrupt
+ */
+ATTR_ALWAYS_INLINE static inline uint32_t intc_get_threshold(uint32_t target)
+{
+    return __plic_get_threshold(HPM_PLIC_BASE, target);
 }
 
 /**
@@ -792,18 +805,18 @@ ATTR_ALWAYS_INLINE static inline void uninstall_s_isr(uint32_t irq)
             c.swsp t0,  1*4 \n\
             c.swsp t1,  2*4 \n\
             c.swsp t2,  3*4 \n\
-            c.swsp s0,  4*4 \n\
-            c.swsp s1,  5*4 \n\
-            c.swsp a0,  6*4 \n\
-            c.swsp a1,  7*4 \n\
-            c.swsp a2,  8*4 \n\
-            c.swsp a3,  9*4 \n\
-            c.swsp a4, 10*4 \n\
-            c.swsp a5, 11*4 \n\
-            c.swsp a6, 12*4 \n\
-            c.swsp a7, 13*4 \n\
-            c.swsp s2, 14*4 \n\
-            c.swsp s3, 15*4 \n\
+            c.swsp s1,  4*4 \n\
+            c.swsp a0,  5*4 \n\
+            c.swsp a1,  6*4 \n\
+            c.swsp a2,  7*4 \n\
+            c.swsp a3,  8*4 \n\
+            c.swsp a4,  9*4 \n\
+            c.swsp a5, 10*4 \n\
+            c.swsp a6, 11*4 \n\
+            c.swsp a7, 12*4 \n\
+            c.swsp s2, 13*4 \n\
+            c.swsp s3, 14*4 \n\
+            c.swsp s4, 15*4 \n\
             c.swsp t3, 16*4 \n\
             c.swsp t4, 17*4 \n\
             c.swsp t5, 18*4 \n\
@@ -820,18 +833,18 @@ ATTR_ALWAYS_INLINE static inline void uninstall_s_isr(uint32_t irq)
             c.lwsp t0,  1*4 \n\
             c.lwsp t1,  2*4 \n\
             c.lwsp t2,  3*4 \n\
-            c.lwsp s0,  4*4 \n\
-            c.lwsp s1,  5*4 \n\
-            c.lwsp a0,  6*4 \n\
-            c.lwsp a1,  7*4 \n\
-            c.lwsp a2,  8*4 \n\
-            c.lwsp a3,  9*4 \n\
-            c.lwsp a4, 10*4 \n\
-            c.lwsp a5, 11*4 \n\
-            c.lwsp a6, 12*4 \n\
-            c.lwsp a7, 13*4 \n\
-            c.lwsp s2, 14*4 \n\
-            c.lwsp s3, 15*4 \n\
+            c.lwsp s1,  4*4 \n\
+            c.lwsp a0,  5*4 \n\
+            c.lwsp a1,  6*4 \n\
+            c.lwsp a2,  7*4 \n\
+            c.lwsp a3,  8*4 \n\
+            c.lwsp a4,  9*4 \n\
+            c.lwsp a5, 10*4 \n\
+            c.lwsp a6, 11*4 \n\
+            c.lwsp a7, 12*4 \n\
+            c.lwsp s2, 13*4 \n\
+            c.lwsp s3, 14*4 \n\
+            c.lwsp s4, 15*4 \n\
             c.lwsp t3, 16*4 \n\
             c.lwsp t4, 17*4 \n\
             c.lwsp t5, 18*4 \n\
@@ -850,18 +863,18 @@ ATTR_ALWAYS_INLINE static inline void uninstall_s_isr(uint32_t irq)
             c.swsp t0,  1*4(sp) \n\
             c.swsp t1,  2*4(sp) \n\
             c.swsp t2,  3*4(sp) \n\
-            c.swsp s0,  4*4(sp) \n\
-            c.swsp s1,  5*4(sp) \n\
-            c.swsp a0,  6*4(sp) \n\
-            c.swsp a1,  7*4(sp) \n\
-            c.swsp a2,  8*4(sp) \n\
-            c.swsp a3,  9*4(sp) \n\
-            c.swsp a4, 10*4(sp) \n\
-            c.swsp a5, 11*4(sp) \n\
-            c.swsp a6, 12*4(sp) \n\
-            c.swsp a7, 13*4(sp) \n\
-            c.swsp s2, 14*4(sp) \n\
-            c.swsp s3, 15*4(sp) \n\
+            c.swsp s1,  4*4(sp) \n\
+            c.swsp a0,  5*4(sp) \n\
+            c.swsp a1,  6*4(sp) \n\
+            c.swsp a2,  7*4(sp) \n\
+            c.swsp a3,  8*4(sp) \n\
+            c.swsp a4,  9*4(sp) \n\
+            c.swsp a5, 10*4(sp) \n\
+            c.swsp a6, 11*4(sp) \n\
+            c.swsp a7, 12*4(sp) \n\
+            c.swsp s2, 13*4(sp) \n\
+            c.swsp s3, 14*4(sp) \n\
+            c.swsp s4, 15*4(sp) \n\
             c.swsp t3, 16*4(sp) \n\
             c.swsp t4, 17*4(sp) \n\
             c.swsp t5, 18*4(sp) \n\
@@ -878,18 +891,18 @@ ATTR_ALWAYS_INLINE static inline void uninstall_s_isr(uint32_t irq)
             c.lwsp t0,  1*4(sp) \n\
             c.lwsp t1,  2*4(sp) \n\
             c.lwsp t2,  3*4(sp) \n\
-            c.lwsp s0,  4*4(sp) \n\
-            c.lwsp s1,  5*4(sp) \n\
-            c.lwsp a0,  6*4(sp) \n\
-            c.lwsp a1,  7*4(sp) \n\
-            c.lwsp a2,  8*4(sp) \n\
-            c.lwsp a3,  9*4(sp) \n\
-            c.lwsp a4, 10*4(sp) \n\
-            c.lwsp a5, 11*4(sp) \n\
-            c.lwsp a6, 12*4(sp) \n\
-            c.lwsp a7, 13*4(sp) \n\
-            c.lwsp s2, 14*4(sp) \n\
-            c.lwsp s3, 15*4(sp) \n\
+            c.lwsp s1,  4*4(sp) \n\
+            c.lwsp a0,  5*4(sp) \n\
+            c.lwsp a1,  6*4(sp) \n\
+            c.lwsp a2,  7*4(sp) \n\
+            c.lwsp a3,  8*4(sp) \n\
+            c.lwsp a4,  9*4(sp) \n\
+            c.lwsp a5, 10*4(sp) \n\
+            c.lwsp a6, 11*4(sp) \n\
+            c.lwsp a7, 12*4(sp) \n\
+            c.lwsp s2, 13*4(sp) \n\
+            c.lwsp s3, 14*4(sp) \n\
+            c.lwsp s4, 15*4(sp) \n\
             c.lwsp t3, 16*4(sp) \n\
             c.lwsp t4, 17*4(sp) \n\
             c.lwsp t5, 18*4(sp) \n\
@@ -918,14 +931,14 @@ ATTR_ALWAYS_INLINE static inline void uninstall_s_isr(uint32_t irq)
  * NOTE: DSP context registers are stored at word offset 41 in the stack
  */
 #define SAVE_DSP_CONTEXT() { \
-        __asm volatile("csrrs s0, %0, x0\n" ::"i"(CSR_UCODE):);  \
+        __asm volatile("csrrs s4, %0, x0\n" ::"i"(CSR_UCODE):);  \
 }
 /*
  * @brief Restore DSP context
  * @note DSP context registers are stored at word offset 41 in the stack
  */
 #define RESTORE_DSP_CONTEXT() {\
-       __asm volatile("csrw %0, s0\n" ::"i"(CSR_UCODE):); \
+       __asm volatile("csrw %0, s4\n" ::"i"(CSR_UCODE):); \
 }
 
 #else
@@ -1025,9 +1038,9 @@ ATTR_ALWAYS_INLINE static inline void uninstall_s_isr(uint32_t irq)
         RESTORE_UCODE()
 
 #ifdef __cplusplus
-#define EXTERN_C extern "C"
+#define HPM_EXTERN_C extern "C"
 #else
-#define EXTERN_C
+#define HPM_EXTERN_C
 #endif
 
 #define ISR_NAME_M(irq_num) default_isr_##irq_num
@@ -1043,7 +1056,7 @@ ATTR_ALWAYS_INLINE static inline void uninstall_s_isr(uint32_t irq)
 #define FREERTOS_VECTOR_ISR_WRAPPER_NAME(irq_num)   irq_handler_wrapper_##irq_num
 #define SDK_DECLARE_EXT_ISR_M(irq_num, isr) \
 void isr(void) __attribute__((section(".isr_vector"))); \
-EXTERN_C void FREERTOS_VECTOR_ISR_WRAPPER_NAME(irq_num)(void) __attribute__((section(".isr_vector"))); \
+HPM_EXTERN_C void FREERTOS_VECTOR_ISR_WRAPPER_NAME(irq_num)(void) __attribute__((section(".isr_vector"))); \
 void FREERTOS_VECTOR_ISR_WRAPPER_NAME(irq_num)(void) \
 { \
     isr();\
@@ -1057,7 +1070,7 @@ void FREERTOS_VECTOR_ISR_WRAPPER_NAME(irq_num)(void) \
  */
 #define SDK_DECLARE_EXT_ISR_S(irq_num, isr) \
 void isr(void) __attribute__((section(".isr_s_vector")));\
-EXTERN_C void FREERTOS_VECTOR_ISR_WRAPPER_NAME(irq_num)(void) __attribute__((section(".isr_s_vector")));\
+HPM_EXTERN_C void FREERTOS_VECTOR_ISR_WRAPPER_NAME(irq_num)(void) __attribute__((section(".isr_s_vector")));\
 void FREERTOS_VECTOR_ISR_WRAPPER_NAME(irq_num)(void) \
 { \
     isr();\
@@ -1066,8 +1079,8 @@ void FREERTOS_VECTOR_ISR_WRAPPER_NAME(irq_num)(void) \
 
 #define SDK_DECLARE_EXT_ISR_M(irq_num, isr) \
 void isr(void) __attribute__((section(".isr_vector")));\
-EXTERN_C void ISR_NAME_M(irq_num)(void) __attribute__((section(".isr_vector")));\
-void ISR_NAME_M(irq_num)(void) \
+HPM_EXTERN_C HPM_ATTR_MACHINE_INTERRUPT void ISR_NAME_M(irq_num)(void);\
+HPM_ATTR_MACHINE_INTERRUPT void ISR_NAME_M(irq_num)(void) \
 { \
     SAVE_CALLER_CONTEXT(); \
     ENTER_NESTED_IRQ_HANDLING_M();\
@@ -1077,7 +1090,6 @@ void ISR_NAME_M(irq_num)(void) \
     EXIT_NESTED_IRQ_HANDLING_M();\
     RESTORE_CALLER_CONTEXT();\
     __asm volatile("fence io, io");\
-    __asm volatile("mret\n");\
 }
 
 /**
@@ -1088,8 +1100,8 @@ void ISR_NAME_M(irq_num)(void) \
  */
 #define SDK_DECLARE_EXT_ISR_S(irq_num, isr) \
 void isr(void) __attribute__((section(".isr_s_vector")));\
-EXTERN_C void ISR_NAME_S(irq_num)(void) __attribute__((section(".isr_s_vector")));\
-void ISR_NAME_S(irq_num)(void) {\
+HPM_EXTERN_C HPM_ATTR_SUPERVISOR_INTERRUPT void ISR_NAME_S(irq_num)(void);\
+HPM_ATTR_SUPERVISOR_INTERRUPT void ISR_NAME_S(irq_num)(void) {\
     SAVE_CALLER_CONTEXT(); \
     ENTER_NESTED_IRQ_HANDLING_S();\
     __asm volatile("la t1, %0\n\t" : : "i" (isr) : );\
@@ -1098,7 +1110,6 @@ void ISR_NAME_S(irq_num)(void) {\
     EXIT_NESTED_IRQ_HANDLING_S();\
     RESTORE_CALLER_CONTEXT();\
     __asm volatile("fence io, io");\
-    __asm volatile("sret\n");\
 }
 
 #endif
@@ -1106,14 +1117,14 @@ void ISR_NAME_S(irq_num)(void) {\
 
 #define SDK_DECLARE_EXT_ISR_M(irq_num, isr) \
 void isr(void) __attribute__((section(".isr_vector")));\
-EXTERN_C void ISR_NAME_M(irq_num)(void) __attribute__((section(".isr_vector")));\
+HPM_EXTERN_C void ISR_NAME_M(irq_num)(void) __attribute__((section(".isr_vector")));\
 void ISR_NAME_M(irq_num)(void) {           \
     isr();                                            \
 }
 
 #define SDK_DECLARE_EXT_ISR_S(irq_num, isr) \
 void isr(void) __attribute__((section(".isr_vector")));\
-EXTERN_C void ISR_NAME_S(irq_num)(void) __attribute__((section(".isr_vector")));\
+HPM_EXTERN_C void ISR_NAME_S(irq_num)(void) __attribute__((section(".isr_vector")));\
 void ISR_NAME_S(irq_num)(void) {           \
     isr();                                            \
 }
@@ -1128,7 +1139,7 @@ void ISR_NAME_S(irq_num)(void) {           \
  */
 #define SDK_DECLARE_MCHTMR_ISR(isr) \
 void isr(void) __attribute__((section(".isr_vector")));\
-EXTERN_C void mchtmr_isr(void) __attribute__((section(".isr_vector"))); \
+HPM_EXTERN_C void mchtmr_isr(void) __attribute__((section(".isr_vector"))); \
 void mchtmr_isr(void) {\
     isr();\
 }
@@ -1140,7 +1151,7 @@ void mchtmr_isr(void) {\
  */
 #define SDK_DECLARE_SWI_ISR(isr)\
 void isr(void) __attribute__((section(".isr_vector")));\
-EXTERN_C void swi_isr(void) __attribute__((section(".isr_vector"))); \
+HPM_EXTERN_C void swi_isr(void) __attribute__((section(".isr_vector"))); \
 void swi_isr(void) {\
     isr();\
 }
@@ -1154,7 +1165,7 @@ void swi_isr(void) {\
  */
 #define SDK_DECLARE_MCHTMR_ISR_S(isr) \
 void isr(void) __attribute__((section(".isr_vector")));\
-EXTERN_C void mchtmr_s_isr(void) __attribute__((section(".isr_vector"))); \
+HPM_EXTERN_C void mchtmr_s_isr(void) __attribute__((section(".isr_vector"))); \
 void mchtmr_s_isr(void) {\
     isr();\
 }
@@ -1166,7 +1177,7 @@ void mchtmr_s_isr(void) {\
  */
 #define SDK_DECLARE_SWI_ISR_S(isr)\
 void isr(void) __attribute__((section(".isr_vector")));\
-EXTERN_C void swi_s_isr(void) __attribute__((section(".isr_vector"))); \
+HPM_EXTERN_C void swi_s_isr(void) __attribute__((section(".isr_vector"))); \
 void swi_s_isr(void) {\
     isr();\
 }

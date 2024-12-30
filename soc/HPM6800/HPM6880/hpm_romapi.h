@@ -511,7 +511,9 @@ static inline hpm_stat_t rom_xpi_nor_erase_chip(XPI_Type *base,
                                                 xpi_xfer_channel_t channel,
                                                 const xpi_nor_config_t *nor_config)
 {
-    return ROM_API_TABLE_ROOT->xpi_nor_driver_if->erase_chip(base, channel, nor_config);
+    hpm_stat_t status = ROM_API_TABLE_ROOT->xpi_nor_driver_if->erase_chip(base, channel, nor_config);
+    fencei();
+    return status;
 }
 
 /**

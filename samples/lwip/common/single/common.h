@@ -64,6 +64,7 @@ void enet_common_handler(struct netif *netif);
 
 #if defined(LWIP_DHCP) && LWIP_DHCP
 void enet_update_dhcp_state(struct netif *netif);
+bool enet_get_dhcp_ready_status(void);
 #endif
 
 #if defined(NO_SYS) && !NO_SYS

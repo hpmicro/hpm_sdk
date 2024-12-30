@@ -14,7 +14,7 @@ CPU_STK LED0_TASK_STK[LED0_STK_SIZE];
 void led0_task(void *p_arg)
 {
     OS_ERR err;
-    p_arg = p_arg;
+    (void)p_arg;
     while (1) {
         printf("led0 task send mutex sem.\r\n");
         OSSemPost(&SYNC_SEM, OS_OPT_POST_1, &err);

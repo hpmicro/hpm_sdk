@@ -1,4 +1,4 @@
 dependency:
   - sdxc
   - i2s
-  - board_audio_out
+  - board_audio_out || board_audio_codec

@@ -16,11 +16,11 @@ typedef enum {
     JL1111_PHYID2                       = 3,   /* 0x3: PHY Identifier Register 2 */
     JL1111_ANAR                         = 4,   /* 0x4: Auto-Negotiation Advertisement Register */
     JL1111_ANLPAR                       = 5,   /* 0x5: Auto-Negotiation Link Partner Ability Register */
-    JL1111_MMDAC                        = 19,  /* 0x13: MMD Access Control Register */
-    JL1111_MMDAAD                       = 20,  /* 0x14: MMD Access Address Data Register */
-    JL1111_RMSR_P7                      = 22,  /* 0x16: RMII Mode Setting Register */
-    JL1111_INTSQI                       = 48,  /* 0x30: Interrupt Indicators and Signal Quality Indicator Register */
-    JL1111_PAGESEL                      = 49,  /* 0x31: Page Select Register */
+    JL1111_MMDAC                        = 13,  /* 0xD: MMD Access Control Register */
+    JL1111_MMDAAD                       = 14,  /* 0xE: MMD Access Address Data Register */
+    JL1111_RMSR_P7                      = 16,  /* 0x10: RMII Mode Setting Register */
+    JL1111_INTSQI                       = 30,  /* 0x1E: Interrupt Indicators and Signal Quality Indicator Register */
+    JL1111_PAGESEL                      = 31,  /* 0x1F: Page Select Register */
 } JL1111_REG_Type;
 
 

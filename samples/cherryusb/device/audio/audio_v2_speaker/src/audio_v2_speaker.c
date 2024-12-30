@@ -360,6 +360,7 @@ void i2s_enable_dma_irq_with_priority(int32_t priority)
     intc_m_enable_irq_with_priority(BOARD_APP_XDMA_IRQ, priority);
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 void isr_dma(void)
 {
     volatile uint32_t speaker_status;
@@ -369,7 +370,6 @@ void isr_dma(void)
         s_speaker_dma_transfer_done = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 
 void audio_v2_task(uint8_t busid)
 {
@@ -597,7 +597,7 @@ static hpm_stat_t speaker_init_i2s_playback(uint32_t sample_rate, uint8_t audio_
     i2s_init(TARGET_I2S, &i2s_config);
 
     i2s_get_default_transfer_config_for_dao(&transfer);
-    transfer.data_line = TARGET_I2S_DATA_LINE;
+    transfer.data_line = TARGET_I2S_TX_DATA_LINE;
     transfer.sample_rate = sample_rate;
     transfer.audio_depth = audio_depth;
     transfer.channel_num_per_frame = 2; /* non TDM mode, channel num fix to 2. */
@@ -619,7 +619,7 @@ static void speaker_i2s_dma_start_transfer(uint32_t addr, uint32_t size)
 
     dma_default_channel_config(BOARD_APP_XDMA, &ch_config);
     ch_config.src_addr = core_local_mem_to_sys_address(HPM_CORE0, addr);
-    ch_config.dst_addr = (uint32_t)&TARGET_I2S->TXD[TARGET_I2S_DATA_LINE];
+    ch_config.dst_addr = (uint32_t)&TARGET_I2S->TXD[TARGET_I2S_TX_DATA_LINE];
     ch_config.src_width = DMA_TRANSFER_WIDTH_WORD;
     ch_config.dst_width = DMA_TRANSFER_WIDTH_WORD;
     ch_config.src_addr_ctrl = DMA_ADDRESS_CONTROL_INCREMENT;

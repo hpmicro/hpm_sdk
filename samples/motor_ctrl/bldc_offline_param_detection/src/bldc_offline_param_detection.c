@@ -258,8 +258,6 @@ void motor_init(void)
     motor0.cfg.encoder.callback.get_absolute_theta = encoder_get_abs_theta;
     motor0.cfg.loop.mode = mcl_mode_foc;
 
-    hpm_mcl_enable_dead_area_compensation(&motor0.loop);
-
     motor0.cfg.detect.enable_detect = true;
     motor0.cfg.detect.en_submodule_detect.analog = true;
     motor0.cfg.detect.en_submodule_detect.drivers = true;
@@ -275,6 +273,7 @@ void motor_init(void)
     hpm_mcl_loop_init(&motor0.loop, &motor0.cfg.loop, &motor0.cfg.mcl,
                     &motor0.encoder, &motor0.analog, &motor0.control, &motor0.drivers, NULL);
     hpm_mcl_detect_init(&motor0.detect, &motor0.cfg.detect, &motor0.loop, &motor0.encoder, &motor0.analog, &motor0.drivers);
+    hpm_mcl_enable_dead_area_compensation(&motor0.loop);
 }
 
 void motor0_speed_loop_para_init(void)
@@ -662,7 +661,7 @@ void pwm_init(void)
     pwmv2_select_cmp_source(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_TRIG_CMP, cmp_value_from_shadow_val, PWMV2_SHADOW_INDEX(9));
     pwmv2_set_trigout_cmp_index(MOTOR0_BLDCPWM, BOARD_BLDC_PWM_TRIG_OUT_CHN, BOARD_BLDCPWM_CMP_TRIG_CMP);
     pwmv2_cmp_select_counter(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_TRIG_CMP, pwm_counter_0);
-    pwmv2_shadow_register_lock(MOTOR0_BLDCPWM);
+    pwmv2_issue_shadow_register_lock_event(MOTOR0_BLDCPWM);
 
     /* start counter0,counter1,counter2 */
     pwmv2_enable_multi_counter_sync(MOTOR0_BLDCPWM, 0x07);
@@ -723,6 +722,7 @@ hpm_mcl_stat_t qei_init(void)
     return mcl_success;
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_TMR_IRQ, isr_gptmr)
 void isr_gptmr(void)
 {
     if (gptmr_check_status(BOARD_BLDC_TMR_1MS, GPTMR_CH_CMP_IRQ_MASK(BOARD_BLDC_TMR_CH, BOARD_BLDC_TMR_CMP))) {
@@ -730,12 +730,12 @@ void isr_gptmr(void)
         hpm_mcl_detect_loop(&motor0.detect);
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_TMR_IRQ, isr_gptmr)
 
 static void timer_init(void)
 {
     gptmr_channel_config_t config;
 
+    clock_add_to_group(BOARD_BLDC_TMR_CLOCK, 0);
     gptmr_channel_get_default_config(BOARD_BLDC_TMR_1MS, &config);
     config.cmp[0] = BOARD_BLDC_TMR_RELOAD;
     config.debug_mode = 0;
@@ -756,6 +756,7 @@ void init_trigger_mux(TRGM_Type *ptr)
     trgm_output_config(ptr, BOARD_BLDC_TRG_NUM, &trgm_output_cfg);
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_ADC_IRQn, isr_adc)
 void isr_adc(void)
 {
     uint32_t status;
@@ -767,7 +768,6 @@ void isr_adc(void)
         hpm_mcl_loop(&motor0.loop);
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_ADC_IRQn, isr_adc)
 
 void init_trigger_cfg(uint8_t trig_ch, bool inten)
 {

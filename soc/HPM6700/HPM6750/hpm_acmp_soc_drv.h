@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -8,10 +8,15 @@
 #define HPM_ACMP_SOC_DRV_H
 
 #include "hpm_soc.h"
+#include "hpm_clock_drv.h"
 
 static inline void acmp_enable_bandgap(void)
 {
     uint32_t clk_div_temp;
+
+    clock_set_adc_source(clock_adc3, clk_adc_src_ahb0);
+
+    clock_add_to_group(clock_adc3, 0);
 
     clk_div_temp = ADC16_CONV_CFG1_CLOCK_DIVIDER_GET(HPM_ADC3->CONV_CFG1);
 

@@ -89,7 +89,6 @@ int main(void)
     board_delay_ms(10);
 
     remain_size = sizeof(receive_buff);
-    transfer_size = 0;
     index = 0;
     /* half duplex receive */
     printf("half_duplex receive.....\n");

@@ -7,8 +7,8 @@
 
 #include <stdio.h>
 #include "board.h"
-#include "hpm_debug_console.h"
-#include <hpm_crc_drv.h>
+#include "hpm_clock_drv.h"
+#include "hpm_crc_drv.h"
 
 
 uint8_t crc_buf[16] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F};
@@ -399,6 +399,8 @@ uint32_t ch_list[] = {
 int main(void)
 {
     board_init();
+
+    clock_add_to_group(clock_crc0, 0);
 
     struct crc_test *pcrc_test;
     crc_channel_config_t *pcfg;

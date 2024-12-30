@@ -147,13 +147,13 @@ hpm_stat_t wm8978_cfg_audio_interface(wm8978_context_t *control,
  * @brief Configure wm8978 audio channel
  *
  * @param [in] control WM8979 control structure.
- * @param [in] in_flags input_channel_flags_t structure
- * @param [in] out_flags output_channel_flag_t structure
+ * @param [in] in_flags Flags for the input channel
+ * @param [in] out_flags Flags for the output channel
  * @retval hpm_stat_t status_success if set without any error
  */
 hpm_stat_t wm8978_cfg_audio_channel(wm8978_context_t *control,
-                                    input_channel_flags_t in_flags,
-                                    output_channel_flag_t out_flags);
+                                    uint8_t in_flags,
+                                    uint8_t out_flags);
 
 /**
  * @brief setting the Notch Filter for WM8978

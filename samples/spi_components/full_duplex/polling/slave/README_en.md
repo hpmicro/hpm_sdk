@@ -15,6 +15,7 @@ the two boards must be connected to the GND of both sides for a common ground to
 
 - Only supports SPI single io mode, not Dual SPI and Quad SPI.
 - In polling mode, as a slave, if the SCLK frequency of the SPI bus is too high, the FIFO may not be able to write or read in time, resulting in overflow. It is recommended to use DMA mode at high sclk frequency.
+- To ensure normal transmission, it is recommended to add a 4.7K pull-up resistor to the SPI CS pin.
 
 ## Running the example
 

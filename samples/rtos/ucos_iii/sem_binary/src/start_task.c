@@ -17,7 +17,7 @@ void start_task(void *p_arg)
 {
     OS_ERR err;
     CPU_SR_ALLOC();
-    p_arg = p_arg;
+    (void)p_arg;
 
     CPU_Init();
 

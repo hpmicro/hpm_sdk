@@ -136,8 +136,7 @@ static volatile  bool has_error;
 static volatile  can_receive_buf_t s_can_rx_buf;
 static volatile  uint8_t error_flags;
 
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_CAN_IRQn, board_can_isr);
-
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_CAN_IRQn, board_can_isr)
 void board_can_isr(void)
 {
     uint8_t flags = can_get_tx_rx_flags(BOARD_APP_CAN_BASE);
@@ -670,7 +669,7 @@ void board_can_error_test_with_no_retransmission(void)
 
 static const char *get_can_error_kind_str(uint8_t error_kind)
 {
-    const char *error_info_str = "";
+    const char *error_info_str = NULL;
     switch (error_kind) {
     case CAN_KIND_OF_ERROR_NO_ERROR:
         error_info_str = "No error";

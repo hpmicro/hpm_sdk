@@ -129,9 +129,15 @@ void mcl_user_delay_us(uint64_t tick);
 ({    \
     float val_; \
     if ((val) > up) { \
-        val_ = (val) - (up - down);    \
+        val_ = (val); \
+        do {  \
+            val_ = (val_) - (up - down);    \
+        } while ((val_) > up); \
     } else if ((val) < down) {    \
-        val_ = (val) + (up - down);   \
+        val_ = (val); \
+        do {  \
+            val_ = (val_) + (up - down);   \
+        } while ((val_) < down); \
     } else {    \
         val_ = (val); \
     }   \

@@ -55,6 +55,9 @@
 #ifndef _vg_lite_kernel_h_
 #define _vg_lite_kernel_h_
 
+#include "../VGLite/vg_lite_options.h"
+#include "vg_lite_option.h"
+
 /* Interrupt IDs from GPU. */
 #define EVENT_UNEXPECTED_MESH  0x80000000
 #define EVENT_CMD_BAD_WRITE    0x40000000
@@ -62,11 +65,17 @@
 #define EVENT_CMD_SWITCH       0x10000000
 #define EVENT_MCU_BAD_WRITE    0x08000000
 #define EVENT_END              0
+#define EVENT_FRAME_END        1
 
-#define MAX_CONTIGUOUS_SIZE 0x02000000
+#define MAX_CONTIGUOUS_SIZE 0x04000000
 
 #define VG_LITE_INFINITE    0xFFFFFFFF
+
+#if gcFEATURE_VG_SINGLE_COMMAND_BUFFER
+#define CMDBUF_COUNT        1
+#else
 #define CMDBUF_COUNT        2
+#endif
 
 #define VG_LITE_ALIGN(number, alignment)    \
         (((number) + ((alignment) - 1)) & ~((alignment) - 1))
@@ -111,7 +120,7 @@ typedef enum vg_lite_error
 {
     VG_LITE_SUCCESS = 0,          /*! Success.                                         */
     VG_LITE_INVALID_ARGUMENT,     /*! An invalid argument was specified.               */
-    VG_LITE_OUT_OF_MEMORY,        /*! Out of memory.                                   */
+    VG_LITE_OUT_OF_MEMORY,        /*! Out of GPU memory                                */
     VG_LITE_NO_CONTEXT,           /*! No context or an unintialized context specified. */
     VG_LITE_TIMEOUT,              /*! A timeout has occurred during a wait.            */
     VG_LITE_OUT_OF_RESOURCES,     /*! Out of system resources.                         */
@@ -206,6 +215,19 @@ typedef enum vg_lite_kernel_command
 
     /* Export memory */
     VG_LITE_EXPORT_MEMORY,
+
+    /* Record GPU hardware running time */
+    VG_LITE_RECORD_RUNNING_TIME,
+
+    /* Set delay resume state */
+    VG_LITE_SET_DELAY_RESUME,
+
+    /* Query delay resume state */
+    VG_LITE_QUERY_DELAY_RESUME,
+
+    /* Set GPU clock state */
+    VG_LITE_SET_GPU_CLOCK_STATE,
+
 }
 vg_lite_kernel_command_t;
 
@@ -269,6 +291,8 @@ vg_lite_capabilities_t;
 
 typedef struct vg_lite_kernel_initialize
 {
+    /* INPUT */
+
     /* Command buffer size. */
     uint32_t command_buffer_size;
 
@@ -277,6 +301,12 @@ typedef struct vg_lite_kernel_initialize
 
     /* Tessellation buffer height. */
     int32_t tess_height;
+
+    /* Memory pool for command buffer. */
+    vg_lite_vidmem_pool_t command_buffer_pool;
+
+    /* Memory pool for tessellation buffer. */
+    vg_lite_vidmem_pool_t tess_buffer_pool;
 
     /* OUTPUT */
 
@@ -288,7 +318,7 @@ typedef struct vg_lite_kernel_initialize
 
     /* Allocated command buffer. */
     void * command_buffer[CMDBUF_COUNT];
-    
+
     /* GPU address for command buffer. */
     uint32_t command_buffer_gpu[CMDBUF_COUNT];
     
@@ -548,7 +578,33 @@ typedef struct vg_lite_kernel_export_memory
 }
 vg_lite_kernel_export_memory_t;
 
+typedef struct vg_lite_kernel_hardware_running_time
+{
+    unsigned long run_time;
+    int32_t hertz;
+}
+vg_lite_kernel_hardware_running_time_t;
+
+typedef struct vg_lite_kernel_delay_resume
+{
+    uint32_t set_delay_resume;
+    uint32_t query_delay_resume;
+}
+vg_lite_kernel_delay_resume_t;
+
+typedef struct vg_lite_kernel_gpu_clock_state
+{
+    uint32_t state;
+}
+vg_lite_kernel_gpu_clock_state_t;
+
 vg_lite_error_t vg_lite_kernel(vg_lite_kernel_command_t command, void * data);
+
+vg_lite_error_t record_running_time(void);
+
+extern uint32_t init_buffer[12];
+extern uint32_t is_init;
+extern size_t physical_address;
 
 #ifdef __cplusplus
 }

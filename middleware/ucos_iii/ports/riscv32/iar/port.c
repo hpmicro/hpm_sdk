@@ -48,11 +48,8 @@ void CPU_TS_Setup(void)
     /* 8-byte typer so high 32-bit word is 4 bytes up. */
     volatile uint32_t *const p_mchtmr_counter_h = (volatile uint32_t *)((OS_MTIME_BASE_ADDRESS) + 4UL);
     volatile uint32_t *const p_mchtmr_counter_l = (volatile uint32_t *)(OS_MTIME_BASE_ADDRESS);
-    volatile uint32_t hart_id;
 
-    __asm volatile("csrr %0, mhartid"
-                   : "=r"(hart_id));
-    p_mchtmr_cmp_reg = (volatile uint64_t *)(p_mchtmr_cmp_reg_base + (hart_id * sizeof(uint64_t)));
+    p_mchtmr_cmp_reg = (volatile uint64_t *)p_mchtmr_cmp_reg_base;
 
     do {
         current_time_h = *p_mchtmr_counter_h;

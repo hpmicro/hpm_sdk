@@ -143,7 +143,7 @@ def check_ip_dependency(sdk_base, soc_name, app_dependency):
 
 if __name__ == "__main__":
     board_cap = get_board_info.get_info(sys.argv[1], get_board_info.BOARD_INFO_FEATURE_KEY)
-    board_name = get_board_info.get_info(sys.argv[1], get_board_info.BOARD_INFO_NAME_KEY)
+    board_name = os.path.splitext(os.path.basename(sys.argv[1]))[0]
     board_excluded_samples = get_board_info.get_info(sys.argv[1], get_board_info.BOARD_INFO_EXCLUDED_SAMPLES_KEY)
     soc_name = get_board_info.get_info(sys.argv[1], get_board_info.BOARD_INFO_SOC_KEY)
     board_dir = os.path.dirname(sys.argv[1])

@@ -10148,12 +10148,12 @@
       <BitField name="SPD" start="4" size="2"/>
       <BitField name="DS" start="0" size="3"/>
     </Register>
-    <Register name="PAD_PX01_FUNC_CTL" start="+0xd04" size="0x4">
+    <Register name="PAD_PX01_FUNC_CTL" start="+0xd08" size="0x4">
       <BitField name="LOOP_BACK" start="16" size="1"/>
       <BitField name="ANALOG" start="8" size="1"/>
       <BitField name="ALT_SELECT" start="0" size="5"/>
     </Register>
-    <Register name="PAD_PX01_PAD_CTL" start="+0xd08" size="0x4">
+    <Register name="PAD_PX01_PAD_CTL" start="+0xd0c" size="0x4">
       <BitField name="HYS" start="24" size="1"/>
       <BitField name="PRS" start="20" size="2"/>
       <BitField name="PS" start="18" size="1"/>
@@ -10164,12 +10164,12 @@
       <BitField name="SPD" start="4" size="2"/>
       <BitField name="DS" start="0" size="3"/>
     </Register>
-    <Register name="PAD_PX02_FUNC_CTL" start="+0xd08" size="0x4">
+    <Register name="PAD_PX02_FUNC_CTL" start="+0xd10" size="0x4">
       <BitField name="LOOP_BACK" start="16" size="1"/>
       <BitField name="ANALOG" start="8" size="1"/>
       <BitField name="ALT_SELECT" start="0" size="5"/>
     </Register>
-    <Register name="PAD_PX02_PAD_CTL" start="+0xd0c" size="0x4">
+    <Register name="PAD_PX02_PAD_CTL" start="+0xd14" size="0x4">
       <BitField name="HYS" start="24" size="1"/>
       <BitField name="PRS" start="20" size="2"/>
       <BitField name="PS" start="18" size="1"/>
@@ -10180,12 +10180,12 @@
       <BitField name="SPD" start="4" size="2"/>
       <BitField name="DS" start="0" size="3"/>
     </Register>
-    <Register name="PAD_PX03_FUNC_CTL" start="+0xd0c" size="0x4">
+    <Register name="PAD_PX03_FUNC_CTL" start="+0xd18" size="0x4">
       <BitField name="LOOP_BACK" start="16" size="1"/>
       <BitField name="ANALOG" start="8" size="1"/>
       <BitField name="ALT_SELECT" start="0" size="5"/>
     </Register>
-    <Register name="PAD_PX03_PAD_CTL" start="+0xd10" size="0x4">
+    <Register name="PAD_PX03_PAD_CTL" start="+0xd1c" size="0x4">
       <BitField name="HYS" start="24" size="1"/>
       <BitField name="PRS" start="20" size="2"/>
       <BitField name="PS" start="18" size="1"/>
@@ -10196,12 +10196,12 @@
       <BitField name="SPD" start="4" size="2"/>
       <BitField name="DS" start="0" size="3"/>
     </Register>
-    <Register name="PAD_PX04_FUNC_CTL" start="+0xd10" size="0x4">
+    <Register name="PAD_PX04_FUNC_CTL" start="+0xd20" size="0x4">
       <BitField name="LOOP_BACK" start="16" size="1"/>
       <BitField name="ANALOG" start="8" size="1"/>
       <BitField name="ALT_SELECT" start="0" size="5"/>
     </Register>
-    <Register name="PAD_PX04_PAD_CTL" start="+0xd14" size="0x4">
+    <Register name="PAD_PX04_PAD_CTL" start="+0xd24" size="0x4">
       <BitField name="HYS" start="24" size="1"/>
       <BitField name="PRS" start="20" size="2"/>
       <BitField name="PS" start="18" size="1"/>
@@ -10212,12 +10212,12 @@
       <BitField name="SPD" start="4" size="2"/>
       <BitField name="DS" start="0" size="3"/>
     </Register>
-    <Register name="PAD_PX05_FUNC_CTL" start="+0xd14" size="0x4">
+    <Register name="PAD_PX05_FUNC_CTL" start="+0xd28" size="0x4">
       <BitField name="LOOP_BACK" start="16" size="1"/>
       <BitField name="ANALOG" start="8" size="1"/>
       <BitField name="ALT_SELECT" start="0" size="5"/>
     </Register>
-    <Register name="PAD_PX05_PAD_CTL" start="+0xd18" size="0x4">
+    <Register name="PAD_PX05_PAD_CTL" start="+0xd2c" size="0x4">
       <BitField name="HYS" start="24" size="1"/>
       <BitField name="PRS" start="20" size="2"/>
       <BitField name="PS" start="18" size="1"/>
@@ -10228,12 +10228,12 @@
       <BitField name="SPD" start="4" size="2"/>
       <BitField name="DS" start="0" size="3"/>
     </Register>
-    <Register name="PAD_PX06_FUNC_CTL" start="+0xd18" size="0x4">
+    <Register name="PAD_PX06_FUNC_CTL" start="+0xd30" size="0x4">
       <BitField name="LOOP_BACK" start="16" size="1"/>
       <BitField name="ANALOG" start="8" size="1"/>
       <BitField name="ALT_SELECT" start="0" size="5"/>
     </Register>
-    <Register name="PAD_PX06_PAD_CTL" start="+0xd1c" size="0x4">
+    <Register name="PAD_PX06_PAD_CTL" start="+0xd34" size="0x4">
       <BitField name="HYS" start="24" size="1"/>
       <BitField name="PRS" start="20" size="2"/>
       <BitField name="PS" start="18" size="1"/>
@@ -10244,12 +10244,12 @@
       <BitField name="SPD" start="4" size="2"/>
       <BitField name="DS" start="0" size="3"/>
     </Register>
-    <Register name="PAD_PX07_FUNC_CTL" start="+0xd1c" size="0x4">
+    <Register name="PAD_PX07_FUNC_CTL" start="+0xd38" size="0x4">
       <BitField name="LOOP_BACK" start="16" size="1"/>
       <BitField name="ANALOG" start="8" size="1"/>
       <BitField name="ALT_SELECT" start="0" size="5"/>
     </Register>
-    <Register name="PAD_PX07_PAD_CTL" start="+0xd20" size="0x4">
+    <Register name="PAD_PX07_PAD_CTL" start="+0xd3c" size="0x4">
       <BitField name="HYS" start="24" size="1"/>
       <BitField name="PRS" start="20" size="2"/>
       <BitField name="PS" start="18" size="1"/>
@@ -11174,12 +11174,12 @@
       <BitField name="SPD" start="4" size="2"/>
       <BitField name="DS" start="0" size="3"/>
     </Register>
-    <Register name="PAD_PX01_FUNC_CTL" start="+0xd04" size="0x4">
+    <Register name="PAD_PX01_FUNC_CTL" start="+0xd08" size="0x4">
       <BitField name="LOOP_BACK" start="16" size="1"/>
       <BitField name="ANALOG" start="8" size="1"/>
       <BitField name="ALT_SELECT" start="0" size="5"/>
     </Register>
-    <Register name="PAD_PX01_PAD_CTL" start="+0xd08" size="0x4">
+    <Register name="PAD_PX01_PAD_CTL" start="+0xd0c" size="0x4">
       <BitField name="HYS" start="24" size="1"/>
       <BitField name="PRS" start="20" size="2"/>
       <BitField name="PS" start="18" size="1"/>
@@ -11190,12 +11190,12 @@
       <BitField name="SPD" start="4" size="2"/>
       <BitField name="DS" start="0" size="3"/>
     </Register>
-    <Register name="PAD_PX02_FUNC_CTL" start="+0xd08" size="0x4">
+    <Register name="PAD_PX02_FUNC_CTL" start="+0xd10" size="0x4">
       <BitField name="LOOP_BACK" start="16" size="1"/>
       <BitField name="ANALOG" start="8" size="1"/>
       <BitField name="ALT_SELECT" start="0" size="5"/>
     </Register>
-    <Register name="PAD_PX02_PAD_CTL" start="+0xd0c" size="0x4">
+    <Register name="PAD_PX02_PAD_CTL" start="+0xd14" size="0x4">
       <BitField name="HYS" start="24" size="1"/>
       <BitField name="PRS" start="20" size="2"/>
       <BitField name="PS" start="18" size="1"/>
@@ -11206,12 +11206,12 @@
       <BitField name="SPD" start="4" size="2"/>
       <BitField name="DS" start="0" size="3"/>
     </Register>
-    <Register name="PAD_PX03_FUNC_CTL" start="+0xd0c" size="0x4">
+    <Register name="PAD_PX03_FUNC_CTL" start="+0xd18" size="0x4">
       <BitField name="LOOP_BACK" start="16" size="1"/>
       <BitField name="ANALOG" start="8" size="1"/>
       <BitField name="ALT_SELECT" start="0" size="5"/>
     </Register>
-    <Register name="PAD_PX03_PAD_CTL" start="+0xd10" size="0x4">
+    <Register name="PAD_PX03_PAD_CTL" start="+0xd1c" size="0x4">
       <BitField name="HYS" start="24" size="1"/>
       <BitField name="PRS" start="20" size="2"/>
       <BitField name="PS" start="18" size="1"/>
@@ -11222,12 +11222,12 @@
       <BitField name="SPD" start="4" size="2"/>
       <BitField name="DS" start="0" size="3"/>
     </Register>
-    <Register name="PAD_PX04_FUNC_CTL" start="+0xd10" size="0x4">
+    <Register name="PAD_PX04_FUNC_CTL" start="+0xd20" size="0x4">
       <BitField name="LOOP_BACK" start="16" size="1"/>
       <BitField name="ANALOG" start="8" size="1"/>
       <BitField name="ALT_SELECT" start="0" size="5"/>
     </Register>
-    <Register name="PAD_PX04_PAD_CTL" start="+0xd14" size="0x4">
+    <Register name="PAD_PX04_PAD_CTL" start="+0xd24" size="0x4">
       <BitField name="HYS" start="24" size="1"/>
       <BitField name="PRS" start="20" size="2"/>
       <BitField name="PS" start="18" size="1"/>
@@ -11238,12 +11238,12 @@
       <BitField name="SPD" start="4" size="2"/>
       <BitField name="DS" start="0" size="3"/>
     </Register>
-    <Register name="PAD_PX05_FUNC_CTL" start="+0xd14" size="0x4">
+    <Register name="PAD_PX05_FUNC_CTL" start="+0xd28" size="0x4">
       <BitField name="LOOP_BACK" start="16" size="1"/>
       <BitField name="ANALOG" start="8" size="1"/>
       <BitField name="ALT_SELECT" start="0" size="5"/>
     </Register>
-    <Register name="PAD_PX05_PAD_CTL" start="+0xd18" size="0x4">
+    <Register name="PAD_PX05_PAD_CTL" start="+0xd2c" size="0x4">
       <BitField name="HYS" start="24" size="1"/>
       <BitField name="PRS" start="20" size="2"/>
       <BitField name="PS" start="18" size="1"/>
@@ -11254,12 +11254,12 @@
       <BitField name="SPD" start="4" size="2"/>
       <BitField name="DS" start="0" size="3"/>
     </Register>
-    <Register name="PAD_PX06_FUNC_CTL" start="+0xd18" size="0x4">
+    <Register name="PAD_PX06_FUNC_CTL" start="+0xd30" size="0x4">
       <BitField name="LOOP_BACK" start="16" size="1"/>
       <BitField name="ANALOG" start="8" size="1"/>
       <BitField name="ALT_SELECT" start="0" size="5"/>
     </Register>
-    <Register name="PAD_PX06_PAD_CTL" start="+0xd1c" size="0x4">
+    <Register name="PAD_PX06_PAD_CTL" start="+0xd34" size="0x4">
       <BitField name="HYS" start="24" size="1"/>
       <BitField name="PRS" start="20" size="2"/>
       <BitField name="PS" start="18" size="1"/>
@@ -11270,12 +11270,12 @@
       <BitField name="SPD" start="4" size="2"/>
       <BitField name="DS" start="0" size="3"/>
     </Register>
-    <Register name="PAD_PX07_FUNC_CTL" start="+0xd1c" size="0x4">
+    <Register name="PAD_PX07_FUNC_CTL" start="+0xd38" size="0x4">
       <BitField name="LOOP_BACK" start="16" size="1"/>
       <BitField name="ANALOG" start="8" size="1"/>
       <BitField name="ALT_SELECT" start="0" size="5"/>
     </Register>
-    <Register name="PAD_PX07_PAD_CTL" start="+0xd20" size="0x4">
+    <Register name="PAD_PX07_PAD_CTL" start="+0xd3c" size="0x4">
       <BitField name="HYS" start="24" size="1"/>
       <BitField name="PRS" start="20" size="2"/>
       <BitField name="PS" start="18" size="1"/>

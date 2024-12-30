@@ -15,12 +15,6 @@
 #include "board.h"
 #include "hpm_gpio_drv.h"
 
-#if defined(BOARD_BUTTON_PRESSED_VALUE)
-#define APP_BUTTON_PRESSED_VALUE BOARD_BUTTON_PRESSED_VALUE
-#else
-#define APP_BUTTON_PRESSED_VALUE 0
-#endif
-
 /*!< endpoint address */
 #define CDC_IN_EP  0x81
 #define CDC_OUT_EP 0x02
@@ -571,7 +565,10 @@ void cdc_acm_hid_msc_descriptor_init(uint8_t busid, uint32_t reg_base)
  */
 void hid_mouse_test(uint8_t busid)
 {
-    if (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) == APP_BUTTON_PRESSED_VALUE) {
+    if (usb_device_is_configured(busid) == false) {
+        return;
+    }
+    if (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) == BOARD_BUTTON_PRESSED_VALUE) {
         /*!< move mouse pointer */
         mouse_cfg.x = 5;
         int ret = usbd_ep_start_write(busid, HID_INT_EP, (uint8_t *)&mouse_cfg, 4);

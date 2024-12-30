@@ -31,6 +31,14 @@
 #define configMTIMECMP_BASE_ADDRESS             (HPM_MCHTMR_BASE + 8UL)
 #endif
 
+/* When USE_SYSCALL_INTERRUPT_PRIORITY is set, interrupts whose priority is higher than configMAX_SYSCALL_INTERRUPT_PRIORITY
+   will not be delayed by anything FreeRTOS do. */
+#if defined (USE_SYSCALL_INTERRUPT_PRIORITY) && USE_SYSCALL_INTERRUPT_PRIORITY
+#ifndef configMAX_SYSCALL_INTERRUPT_PRIORITY
+#define configMAX_SYSCALL_INTERRUPT_PRIORITY  4
+#endif
+#endif
+
 #define configUSE_PREEMPTION                    1
 #define configCPU_CLOCK_HZ                      ((uint32_t) 24000000)
 #define configTICK_RATE_HZ                      ((TickType_t) 1000)

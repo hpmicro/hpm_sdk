@@ -69,7 +69,9 @@
 #define BOARD_MICROROS_UART_CLK_NAME BOARD_APP_UART_CLK_NAME
 
 /* rtthread-nano finsh section */
-#define BOARD_RT_CONSOLE_BASE BOARD_CONSOLE_UART_BASE
+#define BOARD_RT_CONSOLE_BASE        BOARD_CONSOLE_UART_BASE
+#define BOARD_RT_CONSOLE_CLK_NAME    BOARD_CONSOLE_UART_CLK_NAME
+#define BOARD_RT_CONSOLE_IRQ         BOARD_CONSOLE_UART_IRQ
 
 /* usb cdc acm uart section */
 #define BOARD_USB_CDC_ACM_UART            BOARD_APP_UART_BASE
@@ -132,7 +134,8 @@
 
 /* i2s section */
 #define BOARD_APP_I2S_BASE           HPM_I2S3
-#define BOARD_APP_I2S_DATA_LINE      I2S_DATA_LINE_2
+#define BOARD_APP_I2S_TX_DATA_LINE   I2S_DATA_LINE_2
+#define BOARD_APP_I2S_RX_DATA_LINE   I2S_DATA_LINE_2
 #define BOARD_APP_I2S_CLK_NAME       clock_i2s3
 #define BOARD_APP_I2S_TX_DMA_REQ     HPM_DMA_SRC_I2S3_TX
 #define BOARD_APP_I2S_IRQ            IRQn_I2S3
@@ -148,15 +151,6 @@
 #define BOARD_SPEAKER_I2S_CLK_NAME      clock_i2s1
 #define BOARD_SPEAKER_I2S_DATA_LINE     I2S_DATA_LINE_0
 #define BOARD_SPEAKER_I2S_TX_DMAMUX_SRC HPM_DMA_SRC_I2S1_TX
-
-#define BOARD_MASTER_I2S               HPM_I2S0
-#define BOARD_MASTER_I2S_CLK_NAME      clock_i2s0
-#define BOARD_MASTER_I2S_RX_LINE       I2S_DATA_LINE_1
-#define BOARD_MASTER_I2S_RX_DMAMUX_SRC HPM_DMA_SRC_I2S0_RX
-
-#define BOARD_SLAVE_I2S               HPM_I2S0
-#define BOARD_SLAVE_I2S_DATA_LINE     I2S_DATA_LINE_1
-#define BOARD_SLAVE_I2S_TX_DMAMUX_SRC HPM_DMA_SRC_I2S0_TX
 
 /* pdm selection */
 #define BOARD_PDM_SINGLE_CHANNEL_MASK (0x02U)
@@ -189,6 +183,9 @@
 #define BOARD_GPTMR_PWM_SYNC          HPM_GPTMR2
 #define BOARD_GPTMR_PWM_SYNC_CHANNEL  1
 #define BOARD_GPTMR_PWM_SYNC_CLK_NAME clock_gptmr2
+
+/* gpio software filter*/
+#define DEBOUNCE_THRESHOLD_IN_MS 150
 
 /* pinmux section */
 #define USING_GPIO0_FOR_GPIOZ
@@ -282,6 +279,7 @@
 /* Key */
 #define BOARD_APP_GPIO_INDEX GPIO_DI_GPIOF
 #define BOARD_APP_GPIO_PIN   6
+#define BOARD_BUTTON_PRESSED_VALUE 0
 
 /* ACMP desction */
 #define BOARD_ACMP             0
@@ -321,9 +319,6 @@
 #define BOARD_SHOW_BANNER 1
 #endif
 
-/* USB */
-#define BOARD_USB HPM_USB0
-
 /* FreeRTOS Definitions */
 #define BOARD_FREERTOS_TIMER          HPM_GPTMR2
 #define BOARD_FREERTOS_TIMER_CHANNEL  1
@@ -345,8 +340,16 @@
 #define BOARD_THREADX_LOWPOWER_TIMER_CHANNEL  1
 #define BOARD_THREADX_LOWPOWER_TIMER_IRQ      IRQn_PTMR
 #define BOARD_THREADX_LOWPOWER_TIMER_CLK_NAME clock_ptmr
+
+/* uC/OS-III Definitions */
+#define BOARD_UCOS_TIMER          HPM_GPTMR2
+#define BOARD_UCOS_TIMER_CHANNEL  1
+#define BOARD_UCOS_TIMER_IRQ      IRQn_GPTMR2
+#define BOARD_UCOS_TIMER_CLK_NAME clock_gptmr2
+
 /* SDXC section */
 #define BOARD_APP_SDCARD_SDXC_BASE              (HPM_SDXC1)
+#define BOARD_APP_SDCARD_SDXC_IRQ               IRQn_SDXC1
 #define BOARD_APP_SDCARD_SUPPORT_3V3            (1)
 #define BOARD_APP_SDCARD_SUPPORT_1V8            (1)
 #define BOARD_APP_SDCARD_SUPPORT_4BIT           (1)
@@ -367,14 +370,43 @@
 #ifdef BOARD_APP_SDCARD_VOLTAGE_SWITCH_USING_GPIO
 #define BOARD_APP_SDCARD_VSEL_PIN IOC_PAD_PD12
 #endif
+#define BOARD_APP_SDCARD_HOST_USING_IRQ (1)
 
 #define BOARD_APP_EMMC_SDXC_BASE      (HPM_SDXC0)
+#define BOARD_APP_EMMC_SDXC_IRQ       IRQn_SDXC0
 #define BOARD_APP_EMMC_SUPPORT_3V3    (0)
 #define BOARD_APP_EMMC_SUPPORT_1V8    (1)
-#define BOARD_APP_EMMC_SUPPORT_4BIT   (1)
+#define BOARD_APP_EMMC_SUPPORT_4BIT   (0)
 #define BOARD_APP_EMMC_SUPPORT_8BIT   (1)
 #define BOARD_APP_EMMC_SUPPORT_DS     (1)
 #define BOARD_APP_EMMC_HOST_USING_IRQ (0)
+
+
+#define BOARD_APP_SDIO_SDXC_BASE                 (HPM_SDXC1)
+#define BOARD_APP_SDIO_SDXC_IRQ                  IRQn_SDXC1
+#define BOARD_APP_SDIO_SUPPORT_3V3               (1)
+#define BOARD_APP_SDIO_SUPPORT_1V8               (0)
+#define BOARD_APP_SDIO_SUPPORT_4BIT              (1)
+#define BOARD_APP_SDIO_SUPPORT_POWER_SWITCH      (1)
+#define BOARD_APP_SDIO_SUPPORT_VOLTAGE_SWITCH    (0)
+#define BOARD_APP_SDIO_SUPPORT_CARD_DETECTION    (0)
+#define BOARD_APP_SDIO_POWER_SWITCH_USING_GPIO   (1)
+#define BOARD_APP_SDIO_VOLTAGE_SWITCH_USING_GPIO (0)
+#define BOARD_APP_SDIO_POWER_SWITCH_USING_GPIO   (1)
+#ifdef BOARD_APP_SDIO_POWER_SWITCH_USING_GPIO
+#define BOARD_APP_SDIO_POWER_SWITCH_PIN IOC_PAD_PD07
+#endif
+#ifdef BOARD_APP_SDIO_VOLTAGE_SWITCH_USING_GPIO
+#define BOARD_APP_SDIO_VSEL_PIN IOC_PAD_PD12
+#endif
+
+
+#define BOARD_APP_SDIO_WIFI_OOB_PORT       (HPM_GPIO0)
+#define BOARD_APP_SDIO_WIFI_OOB_PIN        (IOC_PAD_PE16)
+#define BOARD_APP_SDIO_WIFI_OOB_IRQ        IRQn_GPIO0_E
+#define BOARD_APP_SDIO_WIFI_WL_REG_ON_PORT (HPM_GPIO0)
+#define BOARD_APP_SDIO_WIFI_WL_REG_ON_PIN  (IOC_PAD_PE17)
+#define BOARD_APP_SDIO_WIFI_SDXC_PORT      HPM_SDXC1
 
 /* enet section */
 #define BOARD_ENET_COUNT         (1U)
@@ -445,6 +477,7 @@ void board_init(void);
 void board_init_console(void);
 
 void board_init_uart(UART_Type *ptr);
+uint32_t board_init_i2c_clock(I2C_Type *ptr);
 void board_init_i2c(I2C_Type *ptr);
 void board_init_can(MCAN_Type *ptr);
 
@@ -497,8 +530,7 @@ void board_init_lcd(void);
 void board_panel_para_to_lcdc(lcdc_config_t *config);
 void board_init_gwc(void);
 void board_init_cap_touch(void);
-void board_init_usb_pins(void);
-void board_usb_vbus_ctrl(uint8_t usb_index, uint8_t level);
+void board_init_usb(USB_Type *ptr);
 
 void board_init_sd_pins(SDXC_Type *ptr);
 uint32_t board_sd_configure_clock(SDXC_Type *ptr, uint32_t freq, bool need_inverse);

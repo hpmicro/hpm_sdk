@@ -14,6 +14,7 @@ hpm_stat_t sei_tranceiver_config_init(SEI_Type *ptr, uint8_t idx, sei_tranceiver
     uint32_t baud_div;
     uint32_t sync_point;
     uint8_t data_len;
+    uint8_t wait_len;
     uint32_t ck0_point;
     uint32_t ck1_point;
     uint32_t txd_point;
@@ -77,7 +78,13 @@ hpm_stat_t sei_tranceiver_config_init(SEI_Type *ptr, uint8_t idx, sei_tranceiver
         if (data_len > 0u) {
             data_len--;
         }
-        tmp = SEI_CTRL_XCVR_TYPE_CFG_WAIT_LEN_SET(config->asynchronous_config.wait_len)
+        wait_len = config->asynchronous_config.wait_len;
+#if !defined(HPM_IP_FEATURE_SEI_ASYNCHRONOUS_MODE_V2) || !HPM_IP_FEATURE_SEI_ASYNCHRONOUS_MODE_V2
+        if (wait_len == 0) {
+            wait_len = 1;
+        }
+#endif
+        tmp = SEI_CTRL_XCVR_TYPE_CFG_WAIT_LEN_SET(wait_len)
             | SEI_CTRL_XCVR_TYPE_CFG_DATA_LEN_SET(data_len)
             | SEI_CTRL_XCVR_TYPE_CFG_PAR_POL_SET(config->asynchronous_config.parity)
             | SEI_CTRL_XCVR_TYPE_CFG_PAR_EN_SET(config->asynchronous_config.parity_enable)
@@ -89,17 +96,19 @@ hpm_stat_t sei_tranceiver_config_init(SEI_Type *ptr, uint8_t idx, sei_tranceiver
         baudrate = config->asynchronous_config.baudrate;
         baud_div = (config->src_clk_freq + (baudrate >> 1u)) / baudrate;
         sync_point = baud_div >> 1u;
+        txd_point = 0;
+        rxd_point = baud_div >> 1u;
 #else
-        baudrate = (config->asynchronous_config.baudrate / 100) * 102;
+        baudrate = (config->asynchronous_config.baudrate / 100) * 103;
         baud_div = (config->src_clk_freq + (baudrate >> 1u)) / baudrate;
         sync_point = (baud_div + 2u);
+        txd_point = 0;
+        rxd_point = (baud_div * 3) >> 2u;
 #endif
         tmp = SEI_CTRL_XCVR_BAUD_CFG_SYNC_POINT_SET(sync_point)
             | SEI_CTRL_XCVR_BAUD_CFG_BAUD_DIV_SET(baud_div - 1u);
         ptr->CTRL[idx].XCVR.BAUD_CFG = tmp;
 
-        txd_point = 0;
-        rxd_point = baud_div >> 1u;
         tmp = SEI_CTRL_XCVR_DATA_CFG_TXD_POINT_SET(txd_point)
             | SEI_CTRL_XCVR_DATA_CFG_RXD_POINT_SET(rxd_point);
         ptr->CTRL[idx].XCVR.DATA_CFG = tmp;

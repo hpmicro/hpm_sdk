@@ -35,8 +35,8 @@ typedef struct {
     __RW uint32_t POS_MATRIX_SEL1;             /* 0x5C4: position matrix select register0 */
     __RW uint32_t POS_MATRIX_SEL2;             /* 0x5C8: position matrix select register2 */
     __R  uint8_t  RESERVED5[52];               /* 0x5CC - 0x5FF: Reserved */
-    __R  uint32_t TRGM_IN[4];                  /* 0x600 - 0x60C: trigmux input read register0 */
-    __R  uint8_t  RESERVED6[112];              /* 0x610 - 0x67F: Reserved */
+    __R  uint32_t TRGM_IN[8];                  /* 0x600 - 0x61C: trigmux input read register0 */
+    __R  uint8_t  RESERVED6[96];               /* 0x620 - 0x67F: Reserved */
     __R  uint32_t TRGM_OUT[8];                 /* 0x680 - 0x69C: trigmux output read register0 */
     __R  uint8_t  RESERVED7[352];              /* 0x6A0 - 0x7FF: Reserved */
     __RW uint32_t PWM_DELAY_CFG;               /* 0x800: pwm delay chain config register */
@@ -911,13 +911,13 @@ typedef struct {
 
 /* TRGM_IN register group index macro definition */
 #define TRGM_TRGM_IN_0 (0UL)
-#define TRGM_TRGM_IN_4 (0UL)
 #define TRGM_TRGM_IN_1 (1UL)
-#define TRGM_TRGM_IN_5 (1UL)
 #define TRGM_TRGM_IN_2 (2UL)
-#define TRGM_TRGM_IN_6 (2UL)
 #define TRGM_TRGM_IN_3 (3UL)
-#define TRGM_TRGM_IN_7 (3UL)
+#define TRGM_TRGM_IN_4 (4UL)
+#define TRGM_TRGM_IN_5 (5UL)
+#define TRGM_TRGM_IN_6 (6UL)
+#define TRGM_TRGM_IN_7 (7UL)
 
 /* TRGM_OUT register group index macro definition */
 #define TRGM_TRGM_OUT_0 (0UL)

@@ -1,9 +1,3 @@
-/*
- * Copyright (c) 2023 HPMicro
- *
- * SPDX-License-Identifier: BSD-3-Clause
- *
- */
 /**
   ******************************************************************************
   * @file    cmsis_os2.c
@@ -13,6 +7,7 @@
   * @attention
   *
   * Copyright (c) 2020 STMicroelectronics.
+  * Copyright (c) 2023 HPMicro
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file

@@ -206,7 +206,7 @@ void irq_handler_trap(void)
 }
 
 
-#if !defined(CONFIG_FREERTOS) && !defined(CONFIG_UCOS_III) && !defined(CONFIG_THREADX)
+#if !defined(CONFIG_FREERTOS) && !defined(CONFIG_UCOS_III) && !defined(CONFIG_THREADX) && !defined(CONFIG_RTTHREAD)
 HPM_ATTR_SUPERVISOR_INTERRUPT void irq_handler_s_trap(void);
 #define IRQ_HANDLER_TRAP_AS_ISR 1
 #else

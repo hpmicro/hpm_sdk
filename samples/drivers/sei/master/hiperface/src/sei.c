@@ -334,6 +334,7 @@ int main(void)
     }
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_SEI_IRQn, isr_sei)
 void isr_sei(void)
 {
     uint32_t sample_latch_tm;
@@ -351,8 +352,9 @@ void isr_sei(void)
                 sei_get_data_value(BOARD_SEI, SEI_DAT_10),
                 sei_get_data_value(BOARD_SEI, SEI_DAT_5),
 #else
-        printf("POS:%#x, addr:%#x, CRC:%#x, sample_tm:%u, update_tm:%u, TimeDelay:%d us\n",
-                sei_get_data_value(BOARD_SEI, SEI_DAT_7),
+        printf("rev:%#x, pos:%#x, addr:%#x, CRC:%#x, sample_tm:%u, update_tm:%u, TimeDelay:%d us\n",
+                sei_get_data_value(BOARD_SEI, SEI_DAT_7) >> 12,
+                (sei_get_data_value(BOARD_SEI, SEI_DAT_7) & 0xFFF) << 20,
                 sei_get_data_value(BOARD_SEI, SEI_DAT_5),
 #endif
                 sei_get_data_value(BOARD_SEI, SEI_DAT_8) & 0xFF,
@@ -366,4 +368,3 @@ void isr_sei(void)
         printf("TRX Error!\n");
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_SEI_IRQn, isr_sei)

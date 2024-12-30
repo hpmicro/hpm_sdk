@@ -19,10 +19,16 @@ typedef struct {
 
 /* Exported Macros------------------------------------------------------------*/
 #define TSW_MAC_LEN (6U)
+#define TSW_FRAME_BUFF_COUNT (16U)
 
 /* Exported Variables ------------------------------------------------------*/
 extern uint8_t mac[];
 extern uint8_t send_buff[][TSW_SEND_BUFF_LEN];
 extern uint8_t recv_buff[][TSW_RECV_BUFF_LEN];
+
+#if defined(ENABLE_TSW_RECEIVE_INTERRUPT) && ENABLE_TSW_RECEIVE_INTERRUPT
+extern volatile bool rx_flag;
+extern tsw_frame_t frame[];
+#endif
 
 #endif /* LWIP_H */

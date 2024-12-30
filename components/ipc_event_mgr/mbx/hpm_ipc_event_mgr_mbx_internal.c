@@ -7,6 +7,7 @@
 
 #include "hpm_soc.h"
 #include "hpm_mbx_drv.h"
+#include "hpm_clock_drv.h"
 #include "hpm_ipc_event_mgr.h"
 #include "hpm_ipc_event_mgr_mbx_config.h"
 #include "hpm_ipc_event_mgr_mbx_internal.h"
@@ -22,8 +23,6 @@
  *  Prototypes
  *
  *****************************************************************************************************************/
-static void mbx_isr(void);
-SDK_DECLARE_EXT_ISR_M(IRQn_MBX, mbx_isr)
 
 /*****************************************************************************************************************
  *
@@ -38,6 +37,7 @@ SDK_DECLARE_EXT_ISR_M(IRQn_MBX, mbx_isr)
  *****************************************************************************************************************/
 void ipc_init_internal(void)
 {
+    clock_add_to_group(HPM_MBX_CLOCK, 0);
     mbx_init(HPM_MBX);
 }
 
@@ -63,7 +63,8 @@ hpm_stat_t ipc_tigger_event_internal(uint32_t remote_data)
  *
  * This function is called when data from MBX is received
  */
-static void mbx_isr(void)
+SDK_DECLARE_EXT_ISR_M(IRQn_MBX, mbx_isr)
+void mbx_isr(void)
 {
     uint32_t data;
     hpm_stat_t state;

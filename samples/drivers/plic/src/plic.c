@@ -9,7 +9,9 @@
 #include "hpm_clock_drv.h"
 #include "hpm_gpio_drv.h"
 #include "hpm_ptpc_drv.h"
+#if defined(DEBOUNCE_THRESHOLD_IN_MS)
 #include "hpm_mchtmr_drv.h"
+#endif
 #if defined(HPMSOC_HAS_HPMSDK_PTPC)
 #include "hpm_ptpc_drv.h"
 #elif defined(HPMSOC_HAS_HPMSDK_GPTMR)
@@ -49,27 +51,37 @@
 #endif
 
 #define MAX_TOGGLE_IN_NESTED_IRQ 5
-#define DEBOUNCE_THRESHOLD_IN_MS 150
-#define MCHTMR_CLK_NAME (clock_mchtmr0)
 
 void test_plicsw_interrupt(void);
 static volatile uint32_t toggled;
+
+#if defined(DEBOUNCE_THRESHOLD_IN_MS)
+#define MCHTMR_CLK_NAME (clock_mchtmr0)
 static volatile uint64_t gpio_isr_rel_time; /* mark the real time from mchtimer */
 static volatile uint64_t gpio_isr_pre_time; /* mark the last time marked on gpio_isr */
 static volatile uint32_t level_value; /* mark the level */
 static volatile uint32_t pre_level_value; /* mark the level before enter the isr */
 static uint32_t debounce_threshold; /* debounce threshold */
+#endif
 
+#ifdef TEST_S_MODE
+SDK_DECLARE_EXT_ISR_S(BOARD_APP_GPIO_IRQ, isr_gpio)
+#else
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_GPIO_IRQ, isr_gpio)
+#endif
 void isr_gpio(void)
 {
-   /*  To eliminate debounce,here do 3 doftware judgments:
+#if defined(DEBOUNCE_THRESHOLD_IN_MS)
+    /*  To eliminate debounce,here do 3 doftware judgments:
     *  1.mark the time and pre_time, if difference less than 150ms(experimental value), judge as jitter;
     *  2.read the level, if is 1, then judge as jitter;
     *  3.mark the pre_level,if pre_level is 0, then judge as jitter.
     */
     gpio_isr_rel_time = mchtmr_get_count(HPM_MCHTMR);
     level_value = gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN);
-    if ((gpio_isr_rel_time - gpio_isr_pre_time > debounce_threshold) && (level_value == 0) && (pre_level_value == 1)) {
+    if ((gpio_isr_rel_time - gpio_isr_pre_time > debounce_threshold) && (level_value != pre_level_value)) {
+        gpio_isr_pre_time = gpio_isr_rel_time;
+#endif
         if (toggled < MAX_TOGGLE_IN_NESTED_IRQ) {
             printf("gpio interrupt occurred in nested irq context\n");
         }
@@ -79,16 +91,12 @@ void isr_gpio(void)
         gpio_toggle_pin(BOARD_LED_GPIO_CTRL, BOARD_LED_GPIO_INDEX, BOARD_LED_GPIO_PIN);
     #endif
         test_plicsw_interrupt();
-        gpio_isr_pre_time = gpio_isr_rel_time;
         printf("gpio interrupt end\n");
+#if defined(DEBOUNCE_THRESHOLD_IN_MS)
     }
+#endif
     gpio_clear_pin_interrupt_flag(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN);
 }
-#ifdef TEST_S_MODE
-SDK_DECLARE_EXT_ISR_S(BOARD_APP_GPIO_IRQ, isr_gpio)
-#else
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_GPIO_IRQ, isr_gpio)
-#endif
 
 void test_gpio_input_interrupt(void)
 {
@@ -110,29 +118,32 @@ void test_gpio_input_interrupt(void)
 }
 
 #if defined(HPMSOC_HAS_HPMSDK_PTPC)
+#ifdef TEST_S_MODE
+SDK_DECLARE_EXT_ISR_S(IRQn_PTPC, isr_ptpc)
+#else
+SDK_DECLARE_EXT_ISR_M(IRQn_PTPC, isr_ptpc)
+#endif
 void isr_ptpc(void)
 {
     printf("ptpc interrupt start\n");
     printf("+ now next %d gpio interrupts will occur in nested irq context\n", MAX_TOGGLE_IN_NESTED_IRQ);
     toggled = 0;
     while (toggled < MAX_TOGGLE_IN_NESTED_IRQ) {
+#if defined(DEBOUNCE_THRESHOLD_IN_MS)
         pre_level_value = gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN);
+#endif
     }
     ptpc_clear_irq_status(HPM_PTPC, PTPC_EVENT_COMPARE0_MASK);
     printf("ptpc interrupt end\n");
     printf("- now the following gpio interrupts will occur normal irq context\n");
 }
-#ifdef TEST_S_MODE
-SDK_DECLARE_EXT_ISR_S(IRQn_PTPC, isr_ptpc)
-#else
-SDK_DECLARE_EXT_ISR_M(IRQn_PTPC, isr_ptpc)
-#endif
 
 void test_interrupt_nesting(void)
 {
     uint32_t freq = clock_get_frequency(clock_ptpc);
     ptpc_config_t config = {0};
 
+    clock_add_to_group(clock_ptpc, 0);
     ptpc_get_default_config(HPM_PTPC, &config);
     config.coarse_increment = false;
     config.src_frequency = freq;
@@ -154,28 +165,30 @@ void test_interrupt_nesting(void)
 #endif
 }
 #elif defined(HPMSOC_HAS_HPMSDK_GPTMR)
+SDK_DECLARE_EXT_ISR_M(APP_BOARD_GPTMR_IRQ, tick_ms_isr)
 void tick_ms_isr(void)
 {
     printf("gptmr interrupt start\n");
     printf("+ now next %d gpio interrupts will occur in nested irq context\n", MAX_TOGGLE_IN_NESTED_IRQ);
     toggled = 0;
     while (toggled < MAX_TOGGLE_IN_NESTED_IRQ) {
+#if defined(DEBOUNCE_THRESHOLD_IN_MS)
         pre_level_value = gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN);
+#endif
     }
     gptmr_clear_status(APP_BOARD_GPTMR, GPTMR_CH_RLD_STAT_MASK(APP_BOARD_GPTMR_CH));
     gptmr_disable_irq(APP_BOARD_GPTMR, GPTMR_CH_RLD_IRQ_MASK(APP_BOARD_GPTMR_CH));
     printf("gptmr interrupt end\n");
     printf("- now the following gpio interrupts will occur normal irq context\n");
 }
-SDK_DECLARE_EXT_ISR_M(APP_BOARD_GPTMR_IRQ, tick_ms_isr);
 
 void test_interrupt_nesting(void)
 {
     uint32_t gptmr_freq;
     gptmr_channel_config_t config;
 
+    clock_add_to_group(APP_BOARD_GPTMR_CLOCK, 0);
     gptmr_channel_get_default_config(APP_BOARD_GPTMR, &config);
-
     gptmr_freq = clock_get_frequency(APP_BOARD_GPTMR_CLOCK);
     config.reload = gptmr_freq / 1000 * APP_TICK_MS;
     gptmr_channel_config(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH, &config, false);
@@ -195,13 +208,13 @@ void test_interrupt_nesting(void)
 #endif
 
 #ifdef TEST_S_MODE
+SDK_DECLARE_SWI_ISR_S(isr_plicsw_s)
 void isr_plicsw_s(void)
 {
     printf("plicsw start\n");
     printf("plicsw end\n");
     intc_s_disable_swi();
 }
-SDK_DECLARE_SWI_ISR_S(isr_plicsw_s)
 
 void test_plicsw_interrupt(void)
 {
@@ -210,13 +223,13 @@ void test_plicsw_interrupt(void)
 }
 
 #else
+SDK_DECLARE_SWI_ISR(isr_plicsw)
 void isr_plicsw(void)
 {
     printf("plicsw start\n");
     printf("plicsw end\n");
     intc_m_disable_swi();
 }
-SDK_DECLARE_SWI_ISR(isr_plicsw)
 
 void test_plicsw_interrupt(void)
 {
@@ -229,13 +242,14 @@ void test_plicsw_interrupt(void)
 
 int main(void)
 {
-    uint32_t mchtmr_freq;
-
     board_init();
     board_init_gpio_pins();
 
+#if defined(DEBOUNCE_THRESHOLD_IN_MS)
+    uint32_t mchtmr_freq;
     mchtmr_freq = clock_get_frequency(MCHTMR_CLK_NAME);
     debounce_threshold = DEBOUNCE_THRESHOLD_IN_MS * mchtmr_freq / 1000;
+#endif
 
     printf("%s (%s %s) interrupt test\n", PLIC_TEST_MODE, VECTOR_MODE, PREEMPTIVE_MODE);
     printf("Press button will trigger GPIO interrupt, in which software interrupt will be triggered as well.\n");
@@ -247,7 +261,9 @@ int main(void)
 #endif
 
     while (1) {
+#if defined(DEBOUNCE_THRESHOLD_IN_MS)
         pre_level_value = gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN);
+#endif
     }
     return 0;
 }

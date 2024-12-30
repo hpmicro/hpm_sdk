@@ -23,11 +23,11 @@ static struct usbh_msc_modeswitch_config *g_msc_modeswitch_config = NULL;
 
 static struct usbh_msc *usbh_msc_class_alloc(void)
 {
-    int devno;
+    uint8_t devno;
 
     for (devno = 0; devno < CONFIG_USBHOST_MAX_MSC_CLASS; devno++) {
-        if ((g_devinuse & (1 << devno)) == 0) {
-            g_devinuse |= (1 << devno);
+        if ((g_devinuse & (1U << devno)) == 0) {
+            g_devinuse |= (1U << devno);
             memset(&g_msc_class[devno], 0, sizeof(struct usbh_msc));
             g_msc_class[devno].sdchar = 'a' + devno;
             return &g_msc_class[devno];
@@ -38,10 +38,10 @@ static struct usbh_msc *usbh_msc_class_alloc(void)
 
 static void usbh_msc_class_free(struct usbh_msc *msc_class)
 {
-    int devno = msc_class->sdchar - 'a';
+    uint8_t devno = msc_class->sdchar - 'a';
 
-    if (devno >= 0 && devno < 32) {
-        g_devinuse &= ~(1 << devno);
+    if (devno < 32) {
+        g_devinuse &= ~(1U << devno);
     }
     memset(msc_class, 0, sizeof(struct usbh_msc));
 }
@@ -278,7 +278,12 @@ static int usbh_msc_connect(struct usbh_hubport *hport, uint8_t intf)
 
     ret = usbh_msc_get_maxlun(msc_class, g_msc_buf[msc_class->sdchar - 'a']);
     if (ret < 0) {
-        return ret;
+        if (ret == -USB_ERR_STALL) {
+            USB_LOG_WRN("Device does not support multiple LUNs\r\n");
+            g_msc_buf[msc_class->sdchar - 'a'][0] = 0;
+        } else {
+            return ret;
+        }
     }
 
     USB_LOG_INFO("Get max LUN:%u\r\n", g_msc_buf[msc_class->sdchar - 'a'][0] + 1);
@@ -372,7 +377,6 @@ static int usbh_msc_disconnect(struct usbh_hubport *hport, uint8_t intf)
     return ret;
 }
 
-
 int usbh_msc_scsi_write10(struct usbh_msc *msc_class, uint32_t start_sector, const uint8_t *buffer, uint32_t nsectors)
 {
     struct CBW *cbw;
@@ -439,9 +443,9 @@ const struct usbh_class_driver msc_class_driver = {
 
 CLASS_INFO_DEFINE const struct usbh_class_info msc_class_info = {
     .match_flags = USB_CLASS_MATCH_INTF_CLASS | USB_CLASS_MATCH_INTF_SUBCLASS | USB_CLASS_MATCH_INTF_PROTOCOL,
-    .class = USB_DEVICE_CLASS_MASS_STORAGE,
-    .subclass = MSC_SUBCLASS_SCSI,
-    .protocol = MSC_PROTOCOL_BULK_ONLY,
+    .bInterfaceClass = USB_DEVICE_CLASS_MASS_STORAGE,
+    .bInterfaceSubClass = MSC_SUBCLASS_SCSI,
+    .bInterfaceProtocol = MSC_PROTOCOL_BULK_ONLY,
     .id_table = NULL,
     .class_driver = &msc_class_driver
 };

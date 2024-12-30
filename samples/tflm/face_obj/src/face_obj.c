@@ -12,7 +12,6 @@
 #include "hpm_cam_drv.h"
 #include "hpm_camera.h"
 #include "main_functions.h"
-#include "hpm_gptmr_drv.h"
 #include "hpm_pdma_drv.h"
 
 #ifndef TEST_CAM
@@ -49,13 +48,6 @@
 typedef CONCAT3(uint, COLOR_SIZE, _t) color_t;
 
 #define IMAGE_HIGH_OFFSET 100
-
-
-#define BOARD_TFLM_TMR_1MS                       BOARD_TMR_1MS
-#define BOARD_TFLM_TMR_CH                        BOARD_TMR_1MS_CH
-#define BOARD_TFLM_TMR_CMP                       BOARD_TMR_1MS_CMP
-#define BOARD_TFLM_TMR_IRQ                       BOARD_TMR_1MS_IRQ
-#define BOARD_TFLM_TMR_RELOAD                    BOARD_TMR_1MS_RELOAD
 
 color_t dispbuffer[IMAGE_WIDTH*(IMAGE_HEIGHT+IMAGE_HIGH_OFFSET)] __attribute__((section(".framebuffer")));
 color_t buffer[2][IMAGE_WIDTH*IMAGE_HEIGHT] __attribute__((section(".framebuffer")));

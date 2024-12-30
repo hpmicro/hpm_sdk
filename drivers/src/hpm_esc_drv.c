@@ -48,13 +48,13 @@ hpm_stat_t esc_mdio_read(ESC_Type *ptr, uint8_t phy_addr, uint8_t reg_addr, uint
         return status_timeout;
     }
 
-    /* check error status */
+    /* check command status */
     if ((ptr->MII_MNG_CS & ESC_MII_MNG_CS_CMD_ERR_MASK) != 0) {
         return status_fail;
     }
 
-    /* check error status */
-    if ((ptr->MII_MNG_CS & ESC_MII_MNG_CS_CMD_ERR_MASK) != 0) {
+    /* check read status */
+    if ((ptr->MII_MNG_CS & ESC_MII_MNG_CS_RD_ERR_MASK) != 0) {
         return status_fail;
     }
 
@@ -102,12 +102,7 @@ hpm_stat_t esc_mdio_write(ESC_Type *ptr, uint8_t phy_addr, uint8_t reg_addr, uin
         return status_timeout;
     }
 
-    /* check error status */
-    if ((ptr->MII_MNG_CS & ESC_MII_MNG_CS_CMD_ERR_MASK) != 0) {
-        return status_fail;
-    }
-
-    /* check error status */
+    /* check command status */
     if ((ptr->MII_MNG_CS & ESC_MII_MNG_CS_CMD_ERR_MASK) != 0) {
         return status_fail;
     }

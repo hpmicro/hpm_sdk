@@ -3,8 +3,8 @@
 ```{eval-rst}
 .. toctree::
    :maxdepth: 3
+   :glob:
 
-   pulseoutput/README_zh
-   qei_encoder/README_zh
+   **/*_zh
 
 ```

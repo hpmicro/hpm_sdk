@@ -165,8 +165,8 @@ typedef struct pla_aoi_8to7_cfg_unit {
  */
 typedef struct pla_aoi_8to7_chn_cfg {
     pla_channel_type_t chn;     /**< pla channel */
-    pla_aoi_8to7_channel_type_t aoi_8to7_chn;     /**< aoi_16to8 channel */
-    pla_aoi_8to7_cfg_unit_t input[PLA_AOI_8TO7_SIGNAL_NUM]; /**< Configuration of each aoi_16to8 input signal */
+    pla_aoi_8to7_channel_type_t aoi_8to7_chn;     /**< aoi_8to7 channel */
+    pla_aoi_8to7_cfg_unit_t input[PLA_AOI_8TO7_SIGNAL_NUM]; /**< Configuration of each aoi_8to7 input signal */
 } pla_aoi_8to7_chn_cfg_t;
 
 /**

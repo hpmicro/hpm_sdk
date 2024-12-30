@@ -19,6 +19,7 @@
 struct lcdc_context lcdc_ctx;
 static void layer_dma_done(void);
 
+SDK_DECLARE_EXT_ISR_M(BOARD_LCD_IRQ, isr_lcd)
 void isr_lcd(void)
 {
     volatile uint32_t s = lcdc_get_dma_status(BOARD_LCD_BASE);
@@ -26,8 +27,6 @@ void isr_lcd(void)
     lcdc_ctx.status = s;
     layer_dma_done();
 }
-
-SDK_DECLARE_EXT_ISR_M(BOARD_LCD_IRQ, isr_lcd);
 
 void layer_vg_buffer_init(struct lcdc_layer_info *info)
 {

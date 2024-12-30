@@ -11,7 +11,8 @@ The example project demonstrates capturing video data from a camera using the `M
 
 ## Project Configuration
 
-Modify `board/xxx/CMakeLists.txt` to select the corresponding panel type (LVDS or MIPI).
+- the sample does not support RGB LCD screen due to the hardware design conflict between onboard RGB and mipi csi pins.
+modify `board/xxx/CMakeLists.txt` to select the corresponding panel type (LVDS or MIPI).
 
 ## Notes
 

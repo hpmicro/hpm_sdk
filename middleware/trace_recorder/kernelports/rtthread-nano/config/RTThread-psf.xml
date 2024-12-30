@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<TargetPlatform>
+  <TaskPriorityDirection>HigherNumberIsMoreImportant</TaskPriorityDirection>
+  <KernelServiceGroups>
+    <KernelServiceGroup name="Queue">      
+      <KernelService name="rt_mq_create"            operation="Initialize" parameters="ObjectAndNumericParameter"/>
+      <KernelService name="rt_mq_send"              operation="Enqueue" />
+      <KernelService name="rt_mq_recv"           operation="Dequeue" />
+      <KernelService name="rt_mq_delete"            operation="Deinitialize"/>
+    </KernelServiceGroup>
+    
+    <KernelServiceGroup name="Semaphore">
+      <KernelService name="rt_sem_create" operation="Initialize" parameters="ObjectAndNumericParameter"/>
+      <KernelService name="rt_sem_release"          operation="IncreaseSemaphore"/>
+      <KernelService name="rt_sem_take"          operation="DecreaseSemaphore" parameters="ObjectAndNumericParameter"/>
+      <KernelService name="rt_sem_detach"            operation="Deinitialize"/>      
+    </KernelServiceGroup>
+    
+    <KernelServiceGroup name="Mutex">
+      <KernelService name="rt_mutex_create"   operation="Initialize"/>
+      <KernelService name="rt_mutex_release" operation="ReleaseMutex"/>
+      <KernelService name="rt_mutex_take" operation="LockMutex">
+      <KernelService name="rt_mutex_detach"            operation="Deinitialize"/>
+    </KernelServiceGroup>
+
+    <KernelServiceGroup name="Task">
+      <KernelService name="rt_thread_create"             operation="StartInstance" parameters="ObjectAndNumericParameter"/>
+      <KernelService name="rt_thread_suspend"            operation=""/>
+      <KernelService name="rt_thread_resume"             operation="StartInstance"/>
+      <KernelService name="rt_thread_delete"             operation="Deinitialize"/>
+    </KernelServiceGroup>
+
+    <KernelServiceGroup name="Timer">
+      <KernelService name="rt_timer_create"            operation="Initialize" parameters="ObjectAndNumericParameter"/>
+      <KernelService name="rt_timer_delete"            operation="Deinitialize"/>
+      <KernelService name="rt_timer_start"             operation="StartInstance"/>
+      <KernelService name="rt_timer_stop"              operation=""/>
+      <KernelService name="timer func" parameters="ObjectAndNumericParameter" operation="">
+        <Parameter name="ptr" format="{0}"/>
+        <Parameter name="callback" format="0x{0:X8}"/>
+      </KernelService>
+    </KernelServiceGroup>
+  
+    <KernelServiceGroup name="EventGroup">
+      <KernelService name="rt_event_create" operation="Initialize"/>
+      <KernelService name="rt_event_recv" operation="OtherRead" parameters="ObjectAndNumericParameter"/>
+      <KernelService name="rt_event_send" operation="OtherWrite" parameters="ObjectAndNumericParameter"/>
+      <KernelService name="rt_event_delete" operation="Deinitialize"/>
+    </KernelServiceGroup>
+
+    <KernelServiceGroup name="MailBox">
+      <KernelService name="rt_mb_create"            operation="Initialize" parameters="ObjectAndNumericParameter"/>
+      <KernelService name="rt_mb_delete"            operation="Deinitialize"/>
+      <KernelService name="rt_mb_send"              operation="OtherWrite"/>
+      <KernelService name="rt_mb_recv"           operation="OtherRead"/>
+    </KernelServiceGroup>
+
+    <KernelServiceGroup name="Heap">
+      <KernelService name="malloc" operation="AllocateMemory" parameters="NumericParameterOnly">
+        <Parameter name="size" format="{0}"/>
+        <ReturnValue name="ptr" format=" returned 0x{0:X8}"/>
+       </KernelService>
+       <KernelService name="free" operation="FreeMemory" parameters="NumericParameterOnly">
+         <Parameter name="ptr" format="0x{0:X8}"/>
+         <ReturnValue name="size" format=" released {0} bytes"/>
+       </KernelService>
+    </KernelServiceGroup>
+    
+  </KernelServiceGroups>
+
+  <ObjectClasses>
+    <ObjectClass name="SystemGroup" type="ActorGroup" options="Hidden" />
+    <ObjectClass name="Queue" type="Queue"/>
+    <ObjectClass name="Semaphore" type="Semaphore"/>
+    <ObjectClass name="Mutex" type="Mutex"/>
+    <ObjectClass name="Task" type="Actor"/>
+    <ObjectClass name="ISR" type="Actor"/>
+    <ObjectClass name="Timer" type="Other"/>
+    <ObjectClass name="EventGroup" type="Other"/>
+    <ObjectClass name="Heap" type="Heap" options="NoIpcGraph"/>
+    <ObjectClass name="MailBox" type="Other"/>
+  </ObjectClasses>
+</TargetPlatform>

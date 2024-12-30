@@ -60,6 +60,16 @@ typedef struct {
 #define VSC_ABC_MODE_PHASE_ABSENT_MODE_GET(x) (((uint32_t)(x) & VSC_ABC_MODE_PHASE_ABSENT_MODE_MASK) >> VSC_ABC_MODE_PHASE_ABSENT_MODE_SHIFT)
 
 /*
+ * POSTION_USE_LAST_LOCKED (RW)
+ *
+ * position will not blockage vsc convert. always use last locked position, it should be cfg to 1 when position_capture_mode=2'b00 and adc valure are injected by software;
+ */
+#define VSC_ABC_MODE_POSTION_USE_LAST_LOCKED_MASK (0x40000000UL)
+#define VSC_ABC_MODE_POSTION_USE_LAST_LOCKED_SHIFT (30U)
+#define VSC_ABC_MODE_POSTION_USE_LAST_LOCKED_SET(x) (((uint32_t)(x) << VSC_ABC_MODE_POSTION_USE_LAST_LOCKED_SHIFT) & VSC_ABC_MODE_POSTION_USE_LAST_LOCKED_MASK)
+#define VSC_ABC_MODE_POSTION_USE_LAST_LOCKED_GET(x) (((uint32_t)(x) & VSC_ABC_MODE_POSTION_USE_LAST_LOCKED_MASK) >> VSC_ABC_MODE_POSTION_USE_LAST_LOCKED_SHIFT)
+
+/*
  * VALUE_C_WIDTH (RW)
  *
  * numbers of value_c for each convert

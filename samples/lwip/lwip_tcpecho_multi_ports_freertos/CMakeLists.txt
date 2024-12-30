@@ -25,14 +25,10 @@ if(NOT APP_USE_ENET_PORT_COUNT EQUAL 2)
 endif()
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
-sdk_compile_definitions(-D__ENABLE_FREERTOS=1)
 sdk_compile_definitions(-D__DISABLE_AUTO_NEGO=0)
-sdk_compile_definitions(-D__ENABLE_ENET_RECEIVE_INTERRUPT=1)
 sdk_compile_definitions(-DENET_MULTIPLE_PORT=1)
 sdk_compile_definitions(-DLWIP_DHCP=0)
 
-sdk_compile_definitions(-D__freertos_irq_stack_top=_stack)
-sdk_compile_definitions(-DCONFIG_FREERTOS=1)
 sdk_compile_definitions(-DUSE_NONVECTOR_MODE=1)
 sdk_compile_definitions(-DDISABLE_IRQ_PREEMPTIVE=1)
 

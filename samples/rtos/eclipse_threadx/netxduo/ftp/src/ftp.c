@@ -173,7 +173,7 @@ VOID tx_application_define(VOID *first_unused_memory)
     nx_arp_enable(&server_ip, (VOID *)arp_area, sizeof(arp_area));
 
     /* Enable ICMP */
-    status = nx_icmp_enable(&server_ip);
+    nx_icmp_enable(&server_ip);
 #endif /* NX_DISABLE_IPV4  */
 
     /* Enable TCP.  */

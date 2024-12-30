@@ -7,7 +7,7 @@
 
 #include "hpm_common.h"
 
-#if !defined(__riscv_xandes) || defined(__zcc__)
+#if !defined(__SEGGER_RTL_VERSION)
 uint32_t __bswapsi2 (uint32_t u)
 {
     return ((((u) & 0xff000000) >> 24)

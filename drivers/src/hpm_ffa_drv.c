@@ -138,18 +138,69 @@ hpm_stat_t ffa_calculate_fft_blocking(FFA_Type *ptr, fft_xfer_t *fft_xfer)
 hpm_stat_t ffa_calculate_fir_blocking(FFA_Type *ptr, fir_xfer_t *fir_xfer)
 {
     hpm_stat_t status = status_invalid_argument;
+    uint32_t i, data_size, buffer_size, input_size, num;
+    fir_xfer_t xfer = { 0 };
+
     do {
         HPM_BREAK_IF((ptr == NULL) || (fir_xfer == NULL));
-
-        fir_xfer->interrupt_mask = 0;
-
-        ffa_start_fir(ptr, fir_xfer);
-
-        while (!IS_HPM_BITMASK_SET(ptr->STATUS, FFA_STATUS_OP_CMD_DONE_MASK)) {
+        switch (fir_xfer->data_type) {
+#if defined(HPM_IP_FEATURE_FFA_FP32) && HPM_IP_FEATURE_FFA_FP32
+        case FFA_DATA_TYPE_COMPLEX_FP32:
+        case FFA_DATA_TYPE_REAL_FP32:
+#endif
+        case FFA_DATA_TYPE_REAL_Q31:
+        case FFA_DATA_TYPE_COMPLEX_Q31:
+            data_size = 4U;
+            break;
+        case FFA_DATA_TYPE_COMPLEX_Q15:
+        case FFA_DATA_TYPE_REAL_Q15:
+            data_size = 2U;
+            break;
+        default:
+            return status;
         }
+        buffer_size = FFA_SOC_BUFFER_MAX / data_size;
+        if (fir_xfer->input_taps > buffer_size) {
+            input_size = buffer_size - fir_xfer->coef_taps + 1;
+            num = fir_xfer->input_taps / input_size;
+            for (i = 0; i <= num; i++) {
+                if (i == num) {
+                    xfer.input_taps = fir_xfer->input_taps - i * input_size;
+                    if (xfer.input_taps == 0) {
+                        break;
+                    }
+                } else {
+                    xfer.input_taps = buffer_size;
+                }
+                xfer.data_type = fir_xfer->data_type;
+                xfer.dst = (uint8_t *)fir_xfer->dst + i * input_size * data_size;
+                xfer.src = (uint8_t *)fir_xfer->src + i * input_size * data_size;
+                xfer.coeff = fir_xfer->coeff;
+                xfer.interrupt_mask = 0;
+                xfer.coef_taps = fir_xfer->coef_taps;
 
-        uint32_t ffa_status = ptr->STATUS;
-        status = get_fft_error_kind(ffa_status);
+                ffa_start_fir(ptr, &xfer);
+
+                while (!IS_HPM_BITMASK_SET(ptr->STATUS, FFA_STATUS_OP_CMD_DONE_MASK)) {
+                }
+                uint32_t ffa_status = ptr->STATUS;
+                status = get_fft_error_kind(ffa_status);
+                if (status != status_success) {
+                    return status;
+                }
+            }
+        } else {
+
+            fir_xfer->interrupt_mask = 0;
+
+            ffa_start_fir(ptr, fir_xfer);
+
+            while (!IS_HPM_BITMASK_SET(ptr->STATUS, FFA_STATUS_OP_CMD_DONE_MASK)) {
+            }
+
+            uint32_t ffa_status = ptr->STATUS;
+            status = get_fft_error_kind(ffa_status);
+        }
     } while (false);
 
     return status;

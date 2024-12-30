@@ -55,7 +55,7 @@
 #define RT_CONSOLE_DEVICE_NAME "uart0"
 #define RT_PRINTF_LONGLONG
 #define RT_VER_NUM 0x40004
-
+#define RT_CONSOLE_BAUDRATE 115200
 /* RT-Thread Components */
 
 #define RT_USING_COMPONENTS_INIT
@@ -79,6 +79,7 @@
 #define FINSH_HISTORY_LINES 5
 #define FINSH_CMD_SIZE 80
 #define FINSH_ARG_MAX 10
+#define FINSH_RX_BUF_SIZE 64
 
 /* Device Drivers */
 

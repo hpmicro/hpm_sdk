@@ -4,6 +4,18 @@
 
 ECAT_IO示例用于演示使用ESC外设和从站协议栈代码(SSC)实现ECAT数字IO从站的功能。
 
+该例程程序支持对ESC的EEPROM数据进行初始化，能够简化更新ESC的EEPROM的步骤。
+
+如果程序代码中包含由SSC Tool生成的EEPROM数据(eeprom.h), 会检查ESC的EEPROM中存储的数据并根据条件进行更新。
+
+如果EEPROM中的EtherCAT Slave Controller Configuration Area(前8个Word)的数据checksum校验失败，则会使用eeprom.h中的数据初始化EEPROM。
+
+如果EEPROM中的EtherCAT Slave Controller Configuration Area(前8个Word)的数据checksum校验成功，则会进一步校验EEPROM数据中的Product Code和Revision Code。
+
+当Product Code不同或eeprom.h中的Revision Number大于当前已经存储的EEPROM数据的Revision Number时，则会使用eeprom.h中的数据初始化EEPROM。
+
+该方法能够解决初次使用时EEPROM为空情况下checksum校验失败的问题，能够对EEPROM进行初始化。在程序升级阶段，新的程序代码包含的eeprom.h中的Revision Number大于当前已经存储的EEPROM数据的Revision Number时，会使用新程序中的eeprom.h初始化EEPROM，而无需通过主站工具如TwinCAT等去更新EEPROM。
+
 ## 2. 准备
 
 ### 2.1 硬件
@@ -108,7 +120,7 @@ ECAT_IO示例用于演示使用ESC外设和从站协议栈代码(SSC)实现ECAT�
 
       ***在EEPROM内容为空的情况下, ESC上电加载EEPROM数据时会出现checksum错误, 该错误会造成PDI不工作, 此时EtherCAT通信是可能的, 可以通过主站更新EEPROM内容。***
 
-      ![](doc/Twincat_eeprom_update.png)
+      ![](doc/Twincat_eeprom_update_io.png)
   2. 选择对应的ESI文件, 点击**OK**, 等待更新完成
       ![](doc/Twincat_eeprom_update_3.png)
 
@@ -134,15 +146,18 @@ ECAT_IO示例用于演示使用ESC外设和从站协议栈代码(SSC)实现ECAT�
 
 ## 6. 运行现象
 
-当工程正确运行后, 串口终端会输出如下信息, 输入输出IO状态与TwinCAT工程配置相对应：
+当工程正确运行后, 串口终端会输出如下信息：
+
+当需要初始化EEPROM数据时，log如下：
 ```console
 EtherCAT IO sample
-EEPROM loading with checksum error.
-EtherCAT communication is possible even if the EEPROM is blank(checksum error),
-but PDI not operational, please update eeprom  context.
+Init EEPROM content.
+Init EEPROM content successful.
+EEPROM loading successful, no checksum error.
 ```
-或是
+当不需初始化EEPROM数据时，log如下：
 ```console
 EtherCAT IO sample
+No need to init EEPROM content.
 EEPROM loading successful, no checksum error.
 ```

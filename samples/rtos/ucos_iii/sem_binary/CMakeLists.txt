@@ -8,14 +8,12 @@ set(CONFIG_UCOS_III 1)
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(ucos_iii_sem_binary)
 
-sdk_compile_definitions(-D__ucos_iii_irq_stack_top=_stack)
 sdk_compile_definitions(-DUSE_NONVECTOR_MODE=1)
 sdk_compile_definitions(-DDISABLE_IRQ_PREEMPTIVE=1)
 
 sdk_inc(inc)
 sdk_inc(../ucos_cfg)
 
-sdk_compile_definitions(-DCONFIG_UCOS_III=1)
 sdk_app_src(src/main.c)
 sdk_app_src(src/led_task.c)
 sdk_app_src(src/start_task.c)

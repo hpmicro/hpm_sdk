@@ -112,8 +112,20 @@ void tuh_msc_unmount_cb(uint8_t dev_addr)
 
 void init_disk(void)
 {
-    /* tinyusb Device initialization */
-    board_init_usb_pins();
+    /* tinyusb Host initialization */
+    if (BOARD_TUH_RHPORT == 0) {
+        board_init_usb(HPM_USB0);
+#ifdef HPM_USB1
+    } else if (BOARD_TUH_RHPORT == 1) {
+        board_init_usb(HPM_USB1);
+#endif
+    } else {
+        printf("Don't support HPM_USB%d!\n", BOARD_TUH_RHPORT);
+        while (1) {
+            ;
+        }
+    }
+
     tusb_init();
 }
 

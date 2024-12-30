@@ -12,12 +12,16 @@ target_link_libraries(${HPM_SDK_LIB} PUBLIC ${HPM_SDK_LIB_ITF})
 add_library(${HPM_SDK_GCC_LIB} STATIC "")
 target_link_libraries(${HPM_SDK_GCC_LIB} PUBLIC ${HPM_SDK_GCC_LIB_ITF} ${HPM_SDK_LIB_ITF})
 
+add_library(${HPM_SDK_GCC_STARTUP_LIB} STATIC "")
+target_link_libraries(${HPM_SDK_GCC_STARTUP_LIB} PUBLIC ${HPM_SDK_GCC_LIB_ITF} ${HPM_SDK_LIB_ITF})
+
 target_link_libraries(${HPM_SDK_LIB} PUBLIC ${HPM_SDK_GCC_LIB_ITF})
 if("${TOOLCHAIN_VARIANT}" STREQUAL "nds-gcc")
     target_link_libraries(${HPM_SDK_LIB} PUBLIC ${HPM_SDK_NDSGCC_LIB_ITF})
 elseif("${TOOLCHAIN_VARIANT}" STREQUAL "zcc")
     target_link_libraries(${HPM_SDK_LIB} PUBLIC ${HPM_SDK_ZCC_LIB_ITF})
     target_link_libraries(${HPM_SDK_GCC_LIB} PUBLIC ${HPM_SDK_ZCC_LIB_ITF})
+    target_link_libraries(${HPM_SDK_GCC_STARTUP_LIB} PUBLIC ${HPM_SDK_ZCC_LIB_ITF})
 endif()
 
 if(flash_size)
@@ -116,7 +120,7 @@ endif()
 
 if(DEFINED CUSTOM_GCC_STARTUP_FILE)
     set(USE_CUSTOM_STARTUP 1)
-    sdk_gcc_src(${CUSTOM_GCC_STARTUP_FILE})
+    sdk_gcc_startup_src(${CUSTOM_GCC_STARTUP_FILE})
 endif()
 
 if(DEFINED CUSTOM_SES_STARTUP_FILE)
@@ -128,8 +132,6 @@ if(DEFINED CUSTOM_IAR_STARTUP_FILE)
     set(USE_CUSTOM_STARTUP 1)
     sdk_iar_src(${CUSTOM_IAR_STARTUP_FILE})
 endif()
-
-sdk_sys_inc(${SYSROOT_DIR}/include)
 
 # parse module list file provided in soc folder, it will decide which modules to be enabled under drivers folder
 import_soc_modules(soc/${HPM_SOC_SERIES}/${HPM_SOC}/soc_modules.list)
@@ -208,6 +210,7 @@ if("${TOOLCHAIN_VARIANT}" STREQUAL "nds-gcc")
         "-Wl,-Map=${EXECUTABLE_OUTPUT_PATH}/${APP_MAP_NAME}"
         ${HPM_SDK_WHOLE_ARCHIVE_OPT}
         ${HPM_SDK_NDSGCC_LIB_ITF}
+        ${HPM_SDK_GCC_STARTUP_LIB}
         ${HPM_SDK_GCC_LIB} ${HPM_SDK_GCC_LIB_ITF}
         ${HPM_SDK_LIB} ${HPM_SDK_LIB_ITF} app
         "-Wl,--no-whole-archive")
@@ -217,6 +220,7 @@ elseif("${TOOLCHAIN_VARIANT}" STREQUAL "zcc")
         "-Wl,-Map=${EXECUTABLE_OUTPUT_PATH}/${APP_MAP_NAME}"
         ${HPM_SDK_WHOLE_ARCHIVE_OPT}
         ${HPM_SDK_ZCC_LIB_ITF}
+        ${HPM_SDK_GCC_STARTUP_LIB}
         ${HPM_SDK_GCC_LIB} ${HPM_SDK_GCC_LIB_ITF}
         ${HPM_SDK_LIB} ${HPM_SDK_LIB_ITF} app
         "-Wl,--no-whole-archive")
@@ -224,6 +228,7 @@ else()
     target_link_libraries(${APP_ELF_NAME}
         "-Wl,-Map=${EXECUTABLE_OUTPUT_PATH}/${APP_MAP_NAME}"
         ${HPM_SDK_WHOLE_ARCHIVE_OPT}
+        ${HPM_SDK_GCC_STARTUP_LIB}
         ${HPM_SDK_GCC_LIB} ${HPM_SDK_GCC_LIB_ITF}
         ${HPM_SDK_LIB} ${HPM_SDK_LIB_ITF} app
         "-Wl,--no-whole-archive")

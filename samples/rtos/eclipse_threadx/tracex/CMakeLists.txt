@@ -8,8 +8,6 @@ set(CONFIG_AZURE_RTOS_TRACE 1)
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
-sdk_compile_definitions(-D__threadx_irq_stack_top=_stack)
-sdk_compile_definitions(-DCONFIG_THREADX=1)
 project(tracex_hello)
 
 sdk_inc(src)

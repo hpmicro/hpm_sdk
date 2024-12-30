@@ -4,18 +4,28 @@
 sdk_inc(toolchains)
 
 if(NOT DEFINED USE_CUSTOM_STARTUP)
-    sdk_gcc_src(toolchains/gcc/start.S)
-    sdk_ses_src(toolchains/segger/startup.s)
-    sdk_iar_src(toolchains/iar/startup.s)
+    sdk_gcc_startup_src(toolchains/gcc/start.S)
+    sdk_ses_startup_src(toolchains/segger/startup.s)
+    sdk_iar_startup_src(toolchains/iar/startup.s)
 endif()
 
-sdk_src(
+sdk_gcc_startup_src(toolchains/gcc/initfini.c)
+sdk_gcc_src(
     toolchains/reset.c
     toolchains/trap.c
-    system.c
 )
 
-sdk_gcc_src(toolchains/gcc/initfini.c)
+sdk_ses_src(
+    toolchains/reset.c
+    toolchains/trap.c
+)
+
+sdk_iar_src(
+    toolchains/reset.c
+    toolchains/trap.c
+)
+
+sdk_src(system.c)
 
 # soc drivers
 sdk_src (

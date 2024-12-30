@@ -6,7 +6,6 @@ import re
 import sys
 import yaml
 
-BOARD_INFO_NAME_KEY = 'name'
 BOARD_INFO_SOC_KEY="soc"
 BOARD_INFO_DEVICE_NAME_KEY="device"
 BOARD_INFO_OPENOCD_SOC_KEY="openocd-soc"
@@ -70,9 +69,6 @@ def get_info(board_yml, info_type = "soc"):
             elif(info_type == "extram_size"):
                 if BOARD_INFO_EXTRAM_KEY in board_info["board"].keys():
                     result = board_info["board"][BOARD_INFO_EXTRAM_KEY][BOARD_INFO_SIZE_KEY]
-            elif (info_type == "name"):
-                if BOARD_INFO_NAME_KEY in board_info["board"].keys():
-                    result = ("%s" % board_info["board"][BOARD_INFO_NAME_KEY])
             elif(info_type == "device"):
                 if BOARD_INFO_DEVICE_NAME_KEY in board_info["board"].keys():
                     result = ("%s" % board_info["board"][BOARD_INFO_DEVICE_NAME_KEY])

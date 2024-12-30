@@ -28,3 +28,6 @@ SPI slave sent data:
 0xB0 0xB1 0xB2 0xB3 0xB4 0xB5 0xB6 0xB7 0xB8 0xB9
 SPI slave transfer done.
 ```
+
+## Notice
+- To ensure normal transmission, it is recommended to add a 4.7K pull-up resistor to the SPI CS pin.

@@ -27,8 +27,6 @@ sdk_app_src(src/cdc_rndis_device.c)
 sdk_app_src(../common/dhcp-server/dhserver.c)
 sdk_app_src(../common/dns-server/dnserver.c)
 
-sdk_compile_definitions(-D__freertos_irq_stack_top=_stack)
-sdk_compile_definitions(-DCONFIG_FREERTOS=1)
 sdk_compile_definitions(-DUSE_NONVECTOR_MODE=1)
 sdk_compile_definitions(-DDISABLE_IRQ_PREEMPTIVE=1)
 generate_ide_projects()

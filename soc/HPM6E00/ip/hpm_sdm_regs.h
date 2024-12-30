@@ -282,16 +282,6 @@ typedef struct {
 #define SDM_CH_SDFIFOCTRL_THRSH_SET(x) (((uint32_t)(x) << SDM_CH_SDFIFOCTRL_THRSH_SHIFT) & SDM_CH_SDFIFOCTRL_THRSH_MASK)
 #define SDM_CH_SDFIFOCTRL_THRSH_GET(x) (((uint32_t)(x) & SDM_CH_SDFIFOCTRL_THRSH_MASK) >> SDM_CH_SDFIFOCTRL_THRSH_SHIFT)
 
-/*
- * D_RDY_INT_EN (RW)
- *
- * FIFO data ready interrupt enable
- */
-#define SDM_CH_SDFIFOCTRL_D_RDY_INT_EN_MASK (0x4U)
-#define SDM_CH_SDFIFOCTRL_D_RDY_INT_EN_SHIFT (2U)
-#define SDM_CH_SDFIFOCTRL_D_RDY_INT_EN_SET(x) (((uint32_t)(x) << SDM_CH_SDFIFOCTRL_D_RDY_INT_EN_SHIFT) & SDM_CH_SDFIFOCTRL_D_RDY_INT_EN_MASK)
-#define SDM_CH_SDFIFOCTRL_D_RDY_INT_EN_GET(x) (((uint32_t)(x) & SDM_CH_SDFIFOCTRL_D_RDY_INT_EN_MASK) >> SDM_CH_SDFIFOCTRL_D_RDY_INT_EN_SHIFT)
-
 /* Bitfield definition for register of struct array CH: SDCTRLP */
 /*
  * MANCH_THR (RW)
@@ -312,16 +302,6 @@ typedef struct {
 #define SDM_CH_SDCTRLP_WDOG_THR_SHIFT (17U)
 #define SDM_CH_SDCTRLP_WDOG_THR_SET(x) (((uint32_t)(x) << SDM_CH_SDCTRLP_WDOG_THR_SHIFT) & SDM_CH_SDCTRLP_WDOG_THR_MASK)
 #define SDM_CH_SDCTRLP_WDOG_THR_GET(x) (((uint32_t)(x) & SDM_CH_SDCTRLP_WDOG_THR_MASK) >> SDM_CH_SDCTRLP_WDOG_THR_SHIFT)
-
-/*
- * AF_IE (RW)
- *
- * Acknowledge feedback interrupt enable
- */
-#define SDM_CH_SDCTRLP_AF_IE_MASK (0x10000UL)
-#define SDM_CH_SDCTRLP_AF_IE_SHIFT (16U)
-#define SDM_CH_SDCTRLP_AF_IE_SET(x) (((uint32_t)(x) << SDM_CH_SDCTRLP_AF_IE_SHIFT) & SDM_CH_SDCTRLP_AF_IE_MASK)
-#define SDM_CH_SDCTRLP_AF_IE_GET(x) (((uint32_t)(x) & SDM_CH_SDCTRLP_AF_IE_MASK) >> SDM_CH_SDCTRLP_AF_IE_SHIFT)
 
 /*
  * DFFOVIE (RW)
@@ -582,8 +562,8 @@ typedef struct {
 /*
  * SDATA_D0_T1 (RO)
  *
- * 1: next readout is timestamp
- * 0: next readout is data
+ * 1: current value in SDATA is data
+ * 0: current value in SDATA is timestamp
  */
 #define SDM_CH_SDST_SDATA_D0_T1_MASK (0x2000U)
 #define SDM_CH_SDST_SDATA_D0_T1_SHIFT (13U)
@@ -592,8 +572,8 @@ typedef struct {
 /*
  * SDFIFO_D0_T1 (RO)
  *
- * 1: next readout is timestamp
- * 0: next readout is data
+ * 1: first value readout from FIFO is data
+ * 0: first value readout from FIFO is timestamp
  */
 #define SDM_CH_SDST_SDFIFO_D0_T1_MASK (0x1000U)
 #define SDM_CH_SDST_SDFIFO_D0_T1_SHIFT (12U)
@@ -608,16 +588,6 @@ typedef struct {
 #define SDM_CH_SDST_FIFO_DR_SHIFT (9U)
 #define SDM_CH_SDST_FIFO_DR_SET(x) (((uint32_t)(x) << SDM_CH_SDST_FIFO_DR_SHIFT) & SDM_CH_SDST_FIFO_DR_MASK)
 #define SDM_CH_SDST_FIFO_DR_GET(x) (((uint32_t)(x) & SDM_CH_SDST_FIFO_DR_MASK) >> SDM_CH_SDST_FIFO_DR_SHIFT)
-
-/*
- * AF (W1C)
- *
- * Achnowledge flag
- */
-#define SDM_CH_SDST_AF_MASK (0x100U)
-#define SDM_CH_SDST_AF_SHIFT (8U)
-#define SDM_CH_SDST_AF_SET(x) (((uint32_t)(x) << SDM_CH_SDST_AF_SHIFT) & SDM_CH_SDST_AF_MASK)
-#define SDM_CH_SDST_AF_GET(x) (((uint32_t)(x) & SDM_CH_SDST_AF_MASK) >> SDM_CH_SDST_AF_SHIFT)
 
 /*
  * DOV_ERR (W1C)

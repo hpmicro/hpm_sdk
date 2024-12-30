@@ -90,8 +90,6 @@ void board_init_console(void)
      */
     init_uart_pins((UART_Type *) BOARD_CONSOLE_UART_BASE);
 
-    /* Configure the UART clock to 24MHz */
-    clock_set_source_divider(BOARD_CONSOLE_UART_CLK_NAME, clk_src_osc24m, 1U);
     clock_add_to_group(BOARD_CONSOLE_UART_CLK_NAME, 0);
 
     cfg.type = BOARD_CONSOLE_TYPE;
@@ -176,7 +174,7 @@ void board_init_usb_dp_dm_pins(void)
     } else {
         uint8_t tmp;
         tmp = sysctl_resource_target_get_mode(HPM_SYSCTL, sysctl_resource_xtal);
-        sysctl_resource_target_set_mode(HPM_SYSCTL, sysctl_resource_xtal, 0x03);
+        sysctl_resource_target_set_mode(HPM_SYSCTL, sysctl_resource_xtal, 0x03);    /* NOLINT */
         clock_add_to_group(clock_usb0, 0);
         usb_phy_disable_dp_dm_pulldown(HPM_USB0);
         clock_remove_from_group(clock_usb0, 0);
@@ -205,52 +203,11 @@ void board_init_clock(void)
     clock_add_to_group(clock_lmm0, 0);
     clock_add_to_group(clock_mchtmr0, 0);
     clock_add_to_group(clock_rom, 0);
-    clock_add_to_group(clock_can0, 0);
-    clock_add_to_group(clock_can1, 0);
-    clock_add_to_group(clock_can2, 0);
-    clock_add_to_group(clock_can3, 0);
-    clock_add_to_group(clock_ptpc, 0);
-    clock_add_to_group(clock_gptmr0, 0);
-    clock_add_to_group(clock_gptmr1, 0);
-    clock_add_to_group(clock_gptmr2, 0);
-    clock_add_to_group(clock_gptmr3, 0);
-    clock_add_to_group(clock_i2c0, 0);
-    clock_add_to_group(clock_i2c1, 0);
-    clock_add_to_group(clock_i2c2, 0);
-    clock_add_to_group(clock_i2c3, 0);
-    clock_add_to_group(clock_spi0, 0);
-    clock_add_to_group(clock_spi1, 0);
-    clock_add_to_group(clock_spi2, 0);
-    clock_add_to_group(clock_spi3, 0);
-    clock_add_to_group(clock_uart0, 0);
-    clock_add_to_group(clock_uart1, 0);
-    clock_add_to_group(clock_uart2, 0);
-    clock_add_to_group(clock_uart3, 0);
-    clock_add_to_group(clock_uart4, 0);
-    clock_add_to_group(clock_uart5, 0);
-    clock_add_to_group(clock_uart6, 0);
-    /* group0[1] */
-    clock_add_to_group(clock_uart7, 0);
-    clock_add_to_group(clock_watchdog0, 0);
-    clock_add_to_group(clock_watchdog1, 0);
-    clock_add_to_group(clock_mbx0, 0);
-    clock_add_to_group(clock_tsns, 0);
-    clock_add_to_group(clock_crc0, 0);
-    clock_add_to_group(clock_adc0, 0);
-    clock_add_to_group(clock_adc1, 0);
-    clock_add_to_group(clock_dac0, 0);
-    clock_add_to_group(clock_dac1, 0);
-    clock_add_to_group(clock_acmp, 0);
-    clock_add_to_group(clock_opa0, 0);
-    clock_add_to_group(clock_opa1, 0);
     clock_add_to_group(clock_mot0, 0);
-    clock_add_to_group(clock_rng, 0);
-    clock_add_to_group(clock_sdp, 0);
-    clock_add_to_group(clock_kman, 0);
     clock_add_to_group(clock_gpio, 0);
     clock_add_to_group(clock_hdma, 0);
     clock_add_to_group(clock_xpi0, 0);
-    clock_add_to_group(clock_usb0, 0);
+    clock_add_to_group(clock_ptpc, 0);
 
     /* Connect Group0 to CPU0 */
     clock_connect_group_to_cpu(0, 0);
@@ -283,6 +240,7 @@ void board_delay_ms(uint32_t ms)
     clock_cpu_delay_ms(ms);
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_CALLBACK_TIMER_IRQ, board_timer_isr)
 void board_timer_isr(void)
 {
     if (gptmr_check_status(BOARD_CALLBACK_TIMER, GPTMR_CH_RLD_STAT_MASK(BOARD_CALLBACK_TIMER_CH))) {
@@ -290,7 +248,6 @@ void board_timer_isr(void)
         timer_cb();
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_CALLBACK_TIMER_IRQ, board_timer_isr);
 
 void board_timer_create(uint32_t ms, board_timer_cb cb)
 {
@@ -323,15 +280,19 @@ void board_init_led_pins(void)
     gpio_set_pin_output_with_initial(BOARD_LED_GPIO_CTRL, BOARD_LED_GPIO_INDEX, BOARD_LED_GPIO_PIN, board_get_led_gpio_off_level());
 }
 
-void board_init_usb_pins(void)
+void board_init_usb(USB_Type *ptr)
 {
-    init_usb_pins();
-    usb_hcd_set_power_ctrl_polarity(BOARD_USB, true);
-    /* Wait USB_PWR pin control vbus power stable. Time depend on decoupling capacitor, you can decrease or increase this time */
-    board_delay_ms(100);
+    if (ptr == HPM_USB0) {
+        init_usb_pins(ptr);
+        clock_add_to_group(clock_usb0, 0);
 
-    /* As QFN48 and LQFP64 has no vbus pin, so should be call usb_phy_using_internal_vbus() API to use internal vbus. */
-    /* usb_phy_using_internal_vbus(BOARD_USB); */
+        usb_hcd_set_power_ctrl_polarity(ptr, true);
+        /* Wait USB_PWR pin control vbus power stable. Time depend on decoupling capacitor, you can decrease or increase this time */
+        board_delay_ms(100);
+
+        /* As QFN48 and LQFP64 has no vbus pin, so should be call usb_phy_using_internal_vbus() API to use internal vbus. */
+        /* usb_phy_using_internal_vbus(ptr); */
+    }
 }
 
 void board_led_write(uint8_t state)
@@ -383,12 +344,6 @@ void board_init_spi_pins_with_gpio_as_cs(SPI_Type *ptr)
                                      GPIO_GET_PIN_INDEX(BOARD_SPI_CS_PIN), !BOARD_SPI_CS_ACTIVE_LEVEL);
 }
 
-void board_usb_vbus_ctrl(uint8_t usb_index, uint8_t level)
-{
-    (void) usb_index;
-    (void) level;
-}
-
 uint32_t board_init_adc_clock(void *ptr, bool clk_src_bus)
 {
     uint32_t freq = 0;
@@ -402,7 +357,7 @@ uint32_t board_init_adc_clock(void *ptr, bool clk_src_bus)
             clock_set_adc_source(clock_adc0, clk_adc_src_ana0);
             clock_set_source_divider(clock_ana0, clk_src_pll0_clk2, 2U);
         }
-
+        clock_add_to_group(clock_adc0, 0);
         freq = clock_get_frequency(clock_adc0);
     } else if (ptr == (void *)HPM_ADC1) {
         if (clk_src_bus) {
@@ -413,7 +368,7 @@ uint32_t board_init_adc_clock(void *ptr, bool clk_src_bus)
             clock_set_adc_source(clock_adc1, clk_adc_src_ana1);
             clock_set_source_divider(clock_ana1, clk_src_pll0_clk2, 2U);
         }
-
+        clock_add_to_group(clock_adc1, 0);
         freq = clock_get_frequency(clock_adc1);
     }
 
@@ -429,6 +384,13 @@ void board_init_acmp_pins(void)
 {
     init_acmp_pins();
 }
+
+void board_init_acmp_clock(ACMP_Type *ptr)
+{
+    (void)ptr;
+    clock_add_to_group(BOARD_ACMP_CLK, BOARD_RUNNING_CORE & 0x1);
+}
+
 uint32_t board_init_dac_clock(DAC_Type *ptr, bool clk_src_ahb)
 {
     uint32_t freq = 0;
@@ -442,7 +404,7 @@ uint32_t board_init_dac_clock(DAC_Type *ptr, bool clk_src_ahb)
             clock_set_dac_source(clock_dac0, clk_dac_src_ana2);
             clock_set_source_divider(clock_ana2, clk_src_pll0_clk1, 2);
         }
-
+        clock_add_to_group(clock_dac0, 0);
         freq = clock_get_frequency(clock_dac0);
     } else if (ptr == HPM_DAC1) {
         if (clk_src_ahb == true) {
@@ -453,7 +415,7 @@ uint32_t board_init_dac_clock(DAC_Type *ptr, bool clk_src_ahb)
             clock_set_dac_source(clock_dac1, clk_dac_src_ana3);
             clock_set_source_divider(clock_ana3, clk_src_pll0_clk1, 2);
         }
-
+        clock_add_to_group(clock_dac1, 0);
         freq = clock_get_frequency(clock_dac1);
     }
 
@@ -529,19 +491,15 @@ uint32_t board_init_uart_clock(UART_Type *ptr)
 {
     uint32_t freq = 0U;
     if (ptr == HPM_UART0) {
-        clock_set_source_divider(clock_uart0, clk_src_osc24m, 1);
         clock_add_to_group(clock_uart0, 0);
         freq = clock_get_frequency(clock_uart0);
     } else if (ptr == HPM_UART1) {
-        clock_set_source_divider(clock_uart1, clk_src_osc24m, 1);
         clock_add_to_group(clock_uart1, 0);
         freq = clock_get_frequency(clock_uart1);
     } else if (ptr == HPM_UART2) {
-        clock_set_source_divider(clock_uart2, clk_src_pll0_clk2, 8);
         clock_add_to_group(clock_uart2, 0);
         freq = clock_get_frequency(clock_uart2);
     } else if (ptr == HPM_UART3) {
-        clock_set_source_divider(clock_uart3, clk_src_pll0_clk2, 8);
         clock_add_to_group(clock_uart3, 0);
         freq = clock_get_frequency(clock_uart3);
     }
@@ -572,36 +530,46 @@ void board_i2c_bus_clear(I2C_Type *ptr)
     printf("I2C bus is cleared\n");
 }
 
+uint32_t board_init_i2c_clock(I2C_Type *ptr)
+{
+    uint32_t freq = 0;
+
+    if (ptr == HPM_I2C0) {
+        clock_add_to_group(clock_i2c0, 0);
+        freq = clock_get_frequency(clock_i2c0);
+    } else if (ptr == HPM_I2C1) {
+        clock_add_to_group(clock_i2c1, 0);
+        freq = clock_get_frequency(clock_i2c1);
+    } else if (ptr == HPM_I2C2) {
+        clock_add_to_group(clock_i2c2, 0);
+        freq = clock_get_frequency(clock_i2c2);
+    } else if (ptr == HPM_I2C3) {
+        clock_add_to_group(clock_i2c3, 0);
+        freq = clock_get_frequency(clock_i2c3);
+    } else {
+        ;
+    }
+
+    return freq;
+}
+
 void board_init_i2c(I2C_Type *ptr)
 {
     i2c_config_t config;
     hpm_stat_t stat;
     uint32_t freq;
-    if (ptr == NULL) {
-        return;
-    }
 
-    clock_add_to_group(clock_i2c0, 0);
-    clock_add_to_group(clock_i2c1, 0);
-    clock_add_to_group(clock_i2c2, 0);
-    clock_add_to_group(clock_i2c3, 0);
-
+    freq = board_init_i2c_clock(ptr);
     init_i2c_pins(ptr);
     board_i2c_bus_clear(ptr);
-
-    /* Configure the I2C clock to 24MHz */
-    clock_set_source_divider(BOARD_APP_I2C_CLK_NAME, clk_src_osc24m, 1U);
-
     config.i2c_mode = i2c_mode_normal;
     config.is_10bit_addressing = false;
-    freq = clock_get_frequency(BOARD_APP_I2C_CLK_NAME);
     stat = i2c_init_master(ptr, freq, &config);
     if (stat != status_success) {
         printf("failed to initialize i2c 0x%lx\n", (uint32_t) ptr);
         while (1) {
         }
     }
-
 }
 
 void board_init_adc_qeiv2_pins(void)

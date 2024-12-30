@@ -165,7 +165,7 @@ hpm_stat_t wm8978_cfg_audio_interface(wm8978_context_t *control, wm8978_audio_in
     return stat;
 }
 
-hpm_stat_t wm8978_cfg_audio_channel(wm8978_context_t *control, input_channel_flags_t in_flags, output_channel_flag_t out_flags)
+hpm_stat_t wm8978_cfg_audio_channel(wm8978_context_t *control, uint8_t in_flags, uint8_t out_flags)
 {
     uint16_t reg_val = 0;
     hpm_stat_t stat = status_success;

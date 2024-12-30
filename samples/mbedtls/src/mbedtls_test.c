@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -229,6 +229,11 @@ int main(void)
 {
     int u;
     board_init();
+
+#if defined(CONFIG_MBEDTLS_USE_HPM_SDP) && CONFIG_MBEDTLS_USE_HPM_SDP
+    clock_add_to_group(clock_sdp, BOARD_RUNNING_CORE & 0x1);
+#endif
+
     board_init_led_pins();
     board_timer_create(LED_FLASH_PERIOD_IN_MS, board_led_toggle);
 

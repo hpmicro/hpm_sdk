@@ -26,8 +26,8 @@
 #define OTP_TABLE_CHIP_ID_OFFSET                           (64U)
 #define OTP_TABLE_MAC0_OFFSET                              (65U)
 #define OTP_TABLE_MAC1_OFFSET                              (66U)
-#define OTP_TABLE_USB_VID_OFFSET                           (68U)
 #define OTP_TABLE_USB_PID_OFFSET                           (68U)
+#define OTP_TABLE_USB_VID_OFFSET                           (68U)
 #define OTP_TABLE_PUBLIC_KEY_HASH_OFFSET                   (80U)
 #define OTP_TABLE_UUID_OFFSET                              (88U)
 #define OTP_TABLE_EXIP0_KEY_OFFSET                         (96U)
@@ -122,17 +122,17 @@
 #define OTP_TABLE_MAC1_SHIFT         (0x10U)
 #define OTP_TABLE_MAC1_BIT_LENGTH    (0x30U)
 
-/* USB_VID */
-#define OTP_TABLE_USB_VID_MASK     (0xFFFFU)
-#define OTP_TABLE_USB_VID_SHIFT    (0x0U)
-#define OTP_TABLE_USB_VID_SET(x)   (((uint32_t)(x) << OTP_TABLE_USB_VID_SHIFT) & OTP_TABLE_USB_VID_MASK)
-#define OTP_TABLE_USB_VID_GET(x)   (((uint32_t)(x) & OTP_TABLE_USB_VID_MASK) >> OTP_TABLE_USB_VID_SHIFT)
-
 /* USB_PID */
-#define OTP_TABLE_USB_PID_MASK     (0xFFFF0000U)
-#define OTP_TABLE_USB_PID_SHIFT    (0x10U)
+#define OTP_TABLE_USB_PID_MASK     (0xFFFFU)
+#define OTP_TABLE_USB_PID_SHIFT    (0x0U)
 #define OTP_TABLE_USB_PID_SET(x)   (((uint32_t)(x) << OTP_TABLE_USB_PID_SHIFT) & OTP_TABLE_USB_PID_MASK)
 #define OTP_TABLE_USB_PID_GET(x)   (((uint32_t)(x) & OTP_TABLE_USB_PID_MASK) >> OTP_TABLE_USB_PID_SHIFT)
+
+/* USB_VID */
+#define OTP_TABLE_USB_VID_MASK     (0xFFFF0000U)
+#define OTP_TABLE_USB_VID_SHIFT    (0x10U)
+#define OTP_TABLE_USB_VID_SET(x)   (((uint32_t)(x) << OTP_TABLE_USB_VID_SHIFT) & OTP_TABLE_USB_VID_MASK)
+#define OTP_TABLE_USB_VID_GET(x)   (((uint32_t)(x) & OTP_TABLE_USB_VID_MASK) >> OTP_TABLE_USB_VID_SHIFT)
 
 /* PUBLIC_KEY_HASH */
 #define OTP_TABLE_PUBLIC_KEY_HASH_SHIFT         (0x0U)
@@ -144,11 +144,11 @@
 
 /* EXIP0_KEY */
 #define OTP_TABLE_EXIP0_KEY_SHIFT         (0x0U)
-#define OTP_TABLE_EXIP0_KEY_BIT_LENGTH    (0x80U)
+#define OTP_TABLE_EXIP0_KEY_BIT_LENGTH    (0x100U)
 
 /* EXIP1_KEY */
 #define OTP_TABLE_EXIP1_KEY_SHIFT         (0x0U)
-#define OTP_TABLE_EXIP1_KEY_BIT_LENGTH    (0x80U)
+#define OTP_TABLE_EXIP1_KEY_BIT_LENGTH    (0x100U)
 
 /* MASTER_KEY */
 #define OTP_TABLE_MASTER_KEY_SHIFT         (0x0U)

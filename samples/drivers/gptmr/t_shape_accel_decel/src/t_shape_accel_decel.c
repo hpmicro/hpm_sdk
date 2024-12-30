@@ -42,6 +42,7 @@ volatile uint32_t gptmr_freq;
 volatile uint32_t count;
 volatile bool     dma_is_done;
 
+SDK_DECLARE_EXT_ISR_M(APP_GPTMR_DMA_IRQ, isr_dma)
 void isr_dma(void)
 {
     volatile hpm_stat_t stat;
@@ -52,8 +53,8 @@ void isr_dma(void)
         dma_is_done = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(APP_GPTMR_DMA_IRQ, isr_dma)
 
+SDK_DECLARE_EXT_ISR_M(APP_BOARD_GPTMR_IRQ, timer_isr)
 void timer_isr(void)
 {
     /* an reload update interrupt is to update the cmp0 value, output pulses with a fixed pulse width*/
@@ -64,7 +65,6 @@ void timer_isr(void)
         gptmr_channel_reset_count(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH);
     }
 }
-SDK_DECLARE_EXT_ISR_M(APP_BOARD_GPTMR_IRQ, timer_isr);
 
 int main(void)
 {
@@ -74,7 +74,10 @@ int main(void)
     printf("generate T_shape_accel_decel test\n");
     init_gptmr_pins(APP_BOARD_GPTMR);
     board_init_led_pins();
+
+    clock_add_to_group(APP_BOARD_GPTMR_CLOCK, 0);
     gptmr_freq = clock_get_frequency(APP_BOARD_GPTMR_CLOCK);
+
     generate_T_shape_data();
     dma_transfer_config();
     gptmr_config();
@@ -117,6 +120,7 @@ static void dma_transfer_config(void)
 static void gptmr_config(void)
 {
     gptmr_channel_config_t config;
+
     gptmr_channel_get_default_config(APP_BOARD_GPTMR, &config);
     gptmr_stop_counter(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH);
     config.cmp_initial_polarity_high = false;

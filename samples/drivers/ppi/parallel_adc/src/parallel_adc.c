@@ -53,6 +53,7 @@ static void read_adc_data(void)
 int main(void)
 {
     board_init();
+    clock_add_to_group(clock_ppi0, 0);
     init_ppi_pins();
     init_parallel_adc_config();
 

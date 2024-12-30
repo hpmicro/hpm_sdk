@@ -82,7 +82,7 @@
  * - CFG_TUSB_MEM_ALIGN   : __attribute__ ((aligned(4)))
  */
 #ifndef CFG_TUSB_MEM_SECTION
-	#define CFG_TUSB_MEM_SECTION    __attribute__ ((section(".noncacheable")))
+	#define CFG_TUSB_MEM_SECTION    __attribute__ ((section(".noncacheable.non_init")))
 #endif
 
 #ifndef CFG_TUSB_MEM_ALIGN
@@ -103,6 +103,8 @@
 #define CFG_TUH_HUB                 0
 #define CFG_TUH_CDC                 0
 #define CFG_TUH_HID                 0
+#define CFG_TUH_HID_KEYBOARD        0
+#define CFG_TUH_HID_MOUSE           0
 #define CFG_TUH_MSC                 1
 #define CFG_TUH_VENDOR              0
 

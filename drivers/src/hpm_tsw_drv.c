@@ -7,6 +7,7 @@
 
 #include "hpm_tsw_drv.h"
 #include "hpm_swap.h"
+#include <stdint.h>
 
 static uint32_t tsw_ns_to_systicks(uint32_t nanoseconds, uint32_t busfreq)
 {
@@ -416,6 +417,8 @@ hpm_stat_t tsw_get_rtc_offset(TSW_Type *ptr, int64_t *sec, uint32_t *nsec)
         return status_invalid_argument;
     }
 
+    /* Write RTC_CT_CURTIME_NS to read out the current RTC offset */
+    ptr->TSNPORT[TSW_TSNPORT_PORT1].RTC_CT_CURTIME_NS = 0;
     *nsec = TSW_TSNPORT_RTC_OFS_NS_OFS_NS_GET(ptr->TSNPORT[TSW_TSNPORT_PORT1].RTC_OFS_NS);
     *sec  = TSW_TSNPORT_RTC_OFS_SL_OFS_SL_GET(ptr->TSNPORT[TSW_TSNPORT_PORT1].RTC_OFS_SL)
          | ((int64_t)TSW_TSNPORT_RTC_OFS_SH_OFS_SH_GET(ptr->TSNPORT[TSW_TSNPORT_PORT1].RTC_OFS_SH) << 32LL);
@@ -427,6 +430,7 @@ hpm_stat_t tsw_set_rtc_offset(TSW_Type *ptr, int64_t sec, uint32_t nsec)
 {
     ptr->TSNPORT[TSW_TSNPORT_PORT1].RTC_OFS_NS = TSW_TSNPORT_RTC_OFS_NS_OFS_NS_SET(nsec);
     ptr->TSNPORT[TSW_TSNPORT_PORT1].RTC_OFS_SL = TSW_TSNPORT_RTC_OFS_SL_OFS_SL_SET((uint32_t)sec);
+    ptr->TSNPORT[TSW_TSNPORT_PORT1].RTC_OFS_SH = TSW_TSNPORT_RTC_OFS_SH_OFS_SH_SET((uint32_t)(sec >> 32));
 
     return status_success;
 }
@@ -519,8 +523,8 @@ hpm_stat_t tsw_tsync_update_len(TSW_Type *ptr, uint8_t port, uint32_t bin, uint8
         return status_invalid_argument;
     }
 
-    ptr->TSNPORT[port].BIN[bin].TSYN_TXBUF_BIN0_TQUE_AND_TX_LEN = TSW_TSNPORT_BIN_TSYN_TXBUF_BIN0_TQUE_AND_TX_LEN_TXBUF_BIN0_TQUE_SET(tqueue)
-                                                                | TSW_TSNPORT_BIN_TSYN_TXBUF_BIN0_TQUE_AND_TX_LEN_TXBUF_BIN0_TX_LEN_SET(lenbytes);
+    ptr->TSNPORT[port].BIN[bin].TSYN_TXBUF_TQUE_AND_TX_LEN = TSW_TSNPORT_BIN_TSYN_TXBUF_TQUE_AND_TX_LEN_TXBUF_TQUE_SET(tqueue)
+                                                           | TSW_TSNPORT_BIN_TSYN_TXBUF_TQUE_AND_TX_LEN_TXBUF_TX_LEN_SET(lenbytes);
 
     return status_success;
 }
@@ -548,8 +552,8 @@ hpm_stat_t tsw_tsync_get_txtimestamp(TSW_Type *ptr, uint8_t port, uint32_t bin, 
         return status_invalid_argument;
     }
 
-    *timestamplo = ptr->TSNPORT[port].BIN[bin].TSYN_TXBUF_BIN0_TX_TIMESTAMP_L;
-    *timestamphi = ptr->TSNPORT[port].BIN[bin].TSYN_TXBUF_BIN0_TX_TIMESTAMP_H;
+    *timestamplo = ptr->TSNPORT[port].BIN[bin].TSYN_TXBUF_TX_TIMESTAMP_L;
+    *timestamphi = ptr->TSNPORT[port].BIN[bin].TSYN_TXBUF_TX_TIMESTAMP_H;
 
     return status_success;
 }
@@ -696,9 +700,9 @@ hpm_stat_t tsw_shap_set_tas_controllist(TSW_Type *ptr, uint8_t port, uint32_t in
         return status_invalid_argument;
     }
 
-    ptr->TSNPORT[port].SHACL[index].TSN_SHAPER_ACLIST_ENTRY0_L = TSW_TSNPORT_SHACL_TSN_SHAPER_ACLIST_ENTRY0_L_OP_SET(entry->op)
-                                                               | TSW_TSNPORT_SHACL_TSN_SHAPER_ACLIST_ENTRY0_L_STATE_SET(entry->state);
-    ptr->TSNPORT[port].SHACL[index].TSN_SHAPER_ACLIST_ENTRY0_H = TSW_TSNPORT_SHACL_TSN_SHAPER_ACLIST_ENTRY0_H_TIME_SET(entry->interval);
+    ptr->TSNPORT[port].SHACL[index].TSN_SHAPER_ACLIST_ENTRY_L = TSW_TSNPORT_SHACL_TSN_SHAPER_ACLIST_ENTRY_L_OP_SET(entry->op)
+                                                               | TSW_TSNPORT_SHACL_TSN_SHAPER_ACLIST_ENTRY_L_STATE_SET(entry->state);
+    ptr->TSNPORT[port].SHACL[index].TSN_SHAPER_ACLIST_ENTRY_H = TSW_TSNPORT_SHACL_TSN_SHAPER_ACLIST_ENTRY_H_TIME_SET(entry->interval);
 
     return status_success;
 }
@@ -709,9 +713,9 @@ hpm_stat_t tsw_shap_get_tas_controllist(TSW_Type *ptr, uint8_t port, uint32_t in
         return status_invalid_argument;
     }
 
-    entry->op       = TSW_TSNPORT_SHACL_TSN_SHAPER_ACLIST_ENTRY0_L_OP_GET(ptr->TSNPORT[port].SHACL[index].TSN_SHAPER_ACLIST_ENTRY0_L);
-    entry->state    = TSW_TSNPORT_SHACL_TSN_SHAPER_ACLIST_ENTRY0_L_STATE_GET(ptr->TSNPORT[port].SHACL[index].TSN_SHAPER_ACLIST_ENTRY0_L);
-    entry->interval = TSW_TSNPORT_SHACL_TSN_SHAPER_ACLIST_ENTRY0_H_TIME_GET(ptr->TSNPORT[port].SHACL[index].TSN_SHAPER_ACLIST_ENTRY0_H);
+    entry->op       = TSW_TSNPORT_SHACL_TSN_SHAPER_ACLIST_ENTRY_L_OP_GET(ptr->TSNPORT[port].SHACL[index].TSN_SHAPER_ACLIST_ENTRY_L);
+    entry->state    = TSW_TSNPORT_SHACL_TSN_SHAPER_ACLIST_ENTRY_L_STATE_GET(ptr->TSNPORT[port].SHACL[index].TSN_SHAPER_ACLIST_ENTRY_L);
+    entry->interval = TSW_TSNPORT_SHACL_TSN_SHAPER_ACLIST_ENTRY_H_TIME_GET(ptr->TSNPORT[port].SHACL[index].TSN_SHAPER_ACLIST_ENTRY_H);
 
     return status_success;
 }
@@ -863,6 +867,424 @@ hpm_stat_t tsw_get_txtimestampfifo_entry(TSW_Type *ptr, uint8_t port, tsw_tsf_t 
     temp = ptr->TSNPORT[port].TSN_EP_TSF_D2;
     entry->tuser = TSW_TSNPORT_TSN_EP_TSF_D2_TSF_USR_GET(temp);
     entry->tqueue = TSW_TSNPORT_TSN_EP_TSF_D2_TSF_TQ_GET(temp);
+
+    return status_success;
+}
+
+hpm_stat_t tsw_fpe_get_mms_status(TSW_Type *ptr, uint8_t port, tsw_fpe_mms_status_t *status)
+{
+    uint32_t temp;
+
+    if (status == NULL) {
+        return status_invalid_argument;
+    }
+
+    temp = ptr->TSNPORT[port].TSN_EP_MMS_STS;
+
+    status->vfail = TSW_TSNPORT_TSN_EP_MMS_STS_VFAIL_GET(temp);
+    status->vok = TSW_TSNPORT_TSN_EP_MMS_STS_VOK_GET(temp);
+    status->hld = TSW_TSNPORT_TSN_EP_MMS_STS_HLD_GET(temp);
+
+    return status_success;
+}
+
+hpm_stat_t tsw_fpe_enable_mms(TSW_Type *ptr, uint8_t port)
+{
+    ptr->TSNPORT[port].TSN_EP_MMS_CTRL |= TSW_TSNPORT_TSN_EP_MMS_CTRL_EN_MASK;
+
+    return status_success;
+}
+
+hpm_stat_t tsw_fpe_disable_mms(TSW_Type *ptr, uint8_t port)
+{
+    ptr->TSNPORT[port].TSN_EP_MMS_CTRL &= ~TSW_TSNPORT_TSN_EP_MMS_CTRL_EN_MASK;
+
+    return status_success;
+}
+
+hpm_stat_t tsw_fpe_get_default_mms_ctrl_config(TSW_Type *ptr, uint8_t port, tsw_fpe_config_t *config)
+{
+    (void) ptr;
+    (void) port;
+
+    config->tqueue =  (1 << tsw_traffic_queue_1);
+    config->frag_size = tsw_fpe_mms_fragment_size_60_octets;
+    config->vtime = 1000000U; /* 10ms */
+    config->link_error = false;
+    config->dis_verificaiton = true;
+
+    return status_success;
+}
+
+hpm_stat_t tsw_fpe_set_mms_ctrl(TSW_Type *ptr, uint8_t port, tsw_fpe_config_t *config)
+{
+    /* set the specified as preemptile traffic */
+    ptr->TSNPORT[port].TSN_SHAPER_FPST = (ptr->TSNPORT[port].TSN_EP_MMS_CTRL & ~TSW_TSNPORT_TSN_SHAPER_FPST_TABLE_MASK) \
+                                       | TSW_TSNPORT_TSN_SHAPER_FPST_TABLE_SET(config->tqueue);
+
+    /* set the verification time */
+    ptr->TSNPORT[port].TSN_EP_MMS_VTIME = config->vtime;
+
+    /* set the minimum non-final fragment size */
+    ptr->TSNPORT[port].TSN_EP_MMS_CTRL = (ptr->TSNPORT[port].TSN_EP_MMS_CTRL & ~TSW_TSNPORT_TSN_EP_MMS_CTRL_FRAGSZ_MASK) \
+                                         | TSW_TSNPORT_TSN_EP_MMS_CTRL_FRAGSZ_SET(config->frag_size);
+
+    /* set the disable verification */
+    if (config->dis_verificaiton) {
+        ptr->TSNPORT[port].TSN_EP_MMS_CTRL |= TSW_TSNPORT_TSN_EP_MMS_CTRL_DISV_MASK;
+    } else {
+        ptr->TSNPORT[port].TSN_EP_MMS_CTRL &= ~TSW_TSNPORT_TSN_EP_MMS_CTRL_DISV_MASK;
+    }
+
+    /* set the link error */
+    if (config->link_error) {
+        ptr->TSNPORT[port].TSN_EP_MMS_CTRL |= TSW_TSNPORT_TSN_EP_MMS_CTRL_LINK_MASK;
+    } else {
+        ptr->TSNPORT[port].TSN_EP_MMS_CTRL &= ~TSW_TSNPORT_TSN_EP_MMS_CTRL_LINK_MASK;
+    }
+
+    return status_success;
+}
+
+hpm_stat_t tsw_fpe_reset_mms_statistics_counter(TSW_Type *ptr, uint8_t port, tsw_fpe_mms_statistics_counter_t counter)
+{
+    if (counter > tsw_fpe_mms_hold_request_counter) {
+        return status_invalid_argument;
+    }
+
+    /* select a counter */
+    ptr->TSNPORT[port].TSN_EP_MMS_CTRL = (ptr->TSNPORT[port].TSN_EP_MMS_CTRL & ~TSW_TSNPORT_TSN_EP_MMS_CTRL_STATSEL_MASK) | TSW_TSNPORT_TSN_EP_MMS_CTRL_STATSEL_SET(counter);
+
+    /* reset the selected counter */
+    ptr->TSNPORT[port].TSN_EP_MMS_STAT = 0;
+
+    return status_success;
+}
+
+hpm_stat_t tsw_fpe_get_mms_statistics_counter(TSW_Type *ptr, uint8_t port, tsw_fpe_mms_statistics_counter_t counter, uint32_t *value)
+{
+    if (counter > tsw_fpe_mms_hold_request_counter) {
+        return status_invalid_argument;
+    }
+
+    /* select a counter */
+    ptr->TSNPORT[port].TSN_EP_MMS_CTRL = (ptr->TSNPORT[port].TSN_EP_MMS_CTRL & ~TSW_TSNPORT_TSN_EP_MMS_CTRL_STATSEL_MASK) | TSW_TSNPORT_TSN_EP_MMS_CTRL_STATSEL_SET(counter);
+
+    /* read the selected counter */
+    *value = ptr->TSNPORT[port].TSN_EP_MMS_STAT;
+
+    return status_success;
+}
+
+hpm_stat_t tsw_cb_stmid_ingress_get_entry(TSW_Type *ptr, tsw_cb_stmid_entry_t *entry)
+{
+    uint32_t temp, mach, macl;
+
+    if (entry == NULL) {
+        return status_invalid_argument;
+    }
+
+    /* select a entry */
+    ptr->CPU_PORT_IGRESS_STMID_ESELECT = entry->idx & 0x7; /* to use macro */
+
+    /* get the entry info. */
+    temp = ptr->CPU_PORT_IGRESS_STMID_CONTROL;
+    entry->enable = TSW_CPU_PORT_IGRESS_STMID_CONTROL_EN_GET(temp);
+    entry->mode = TSW_CPU_PORT_IGRESS_STMID_CONTROL_MODE_GET(temp);
+    entry->smac = TSW_CPU_PORT_IGRESS_STMID_CONTROL_SMAC_GET(temp);
+    entry->actctl = TSW_CPU_PORT_IGRESS_STMID_CONTROL_ACTCTL_GET(temp);
+    entry->seqgen = TSW_CPU_PORT_IGRESS_STMID_CONTROL_SEQGEN_GET(temp);
+    entry->sid = TSW_CPU_PORT_IGRESS_STMID_CONTROL_SID_GET(temp);
+    entry->seqnum = TSW_CPU_PORT_IGRESS_STMID_SEQNO_SEQNO_GET(ptr->CPU_PORT_IGRESS_STMID_SEQNO);
+    entry->match = TSW_CPU_PORT_IGRESS_STMID_MATCHCNT_MATCH_GET(ptr->CPU_PORT_IGRESS_STMID_MATCHCNT);
+
+    mach = ptr->CPU_PORT_IGRESS_STMID_MACHI;
+    macl = ptr->CPU_PORT_IGRESS_STMID_MACLO;
+    entry->lookup_mac.mach = TSW_CPU_PORT_IGRESS_STMID_MACHI_MATCH_GET(mach);
+    entry->lookup_mac.macl = TSW_CPU_PORT_IGRESS_STMID_MACLO_MACL_GET(macl);
+    entry->lookup_mac.vid = TSW_CPU_PORT_IGRESS_STMID_MACHI_VID_GET(mach);
+
+    mach = ptr->CPU_PORT_IGRESS_STMID_AMACHI;
+    macl = ptr->CPU_PORT_IGRESS_STMID_AMACLO;
+    entry->active_mac.mach = TSW_CPU_PORT_IGRESS_STMID_AMACHI_AMACH_GET(mach);
+    entry->active_mac.macl = TSW_CPU_PORT_IGRESS_STMID_MACLO_MACL_GET(macl);
+    entry->active_mac.vid = TSW_CPU_PORT_IGRESS_STMID_AMACHI_AVID_GET(mach);
+    entry->active_mac.pcp = TSW_CPU_PORT_IGRESS_STMID_AMACHI_APCP_GET(mach);
+
+    return status_success;
+}
+
+hpm_stat_t tsw_cb_stmid_ingress_set_entry(TSW_Type *ptr, tsw_cb_stmid_entry_t *entry)
+{
+    if (entry == NULL) {
+        return status_invalid_argument;
+    }
+
+    /* select a entry*/
+    ptr->CPU_PORT_IGRESS_STMID_ESELECT = TSW_CPU_PORT_IGRESS_STMID_ESELECT_ESEL_SET(entry->idx);
+
+    /* set the entry info. */
+    ptr->CPU_PORT_IGRESS_STMID_AMACHI = TSW_CPU_PORT_IGRESS_STMID_AMACHI_APCP_SET(entry->active_mac.pcp) |
+                                        TSW_CPU_PORT_IGRESS_STMID_AMACHI_AVID_SET(entry->active_mac.vid) |
+                                        TSW_CPU_PORT_IGRESS_STMID_AMACHI_AMACH_SET(entry->active_mac.mach);
+    ptr->CPU_PORT_IGRESS_STMID_AMACLO = TSW_CPU_PORT_IGRESS_STMID_AMACLO_AMACL_SET(entry->active_mac.macl);
+
+    ptr->CPU_PORT_IGRESS_STMID_MACHI = TSW_CPU_PORT_IGRESS_STMID_MACHI_VID_SET(entry->lookup_mac.vid) |
+                                       TSW_CPU_PORT_IGRESS_STMID_MACHI_MATCH_SET(entry->lookup_mac.mach);
+    ptr->CPU_PORT_IGRESS_STMID_MACLO = TSW_CPU_PORT_IGRESS_STMID_MACLO_MACL_SET(entry->lookup_mac.macl);
+
+    ptr->CPU_PORT_IGRESS_STMID_SEQNO = 0;
+    ptr->CPU_PORT_IGRESS_STMID_MATCHCNT = 0;
+    ptr->CPU_PORT_IGRESS_STMID_CONTROL = TSW_CPU_PORT_IGRESS_STMID_CONTROL_SID_SET(entry->sid) |
+                                         TSW_CPU_PORT_IGRESS_STMID_CONTROL_SEQGEN_SET(entry->seqgen) |
+                                         TSW_CPU_PORT_IGRESS_STMID_CONTROL_ACTCTL_SET(entry->actctl) |
+                                         TSW_CPU_PORT_IGRESS_STMID_CONTROL_SMAC_SET(entry->smac) |
+                                         TSW_CPU_PORT_IGRESS_STMID_CONTROL_MODE_SET(entry->mode) |
+                                         TSW_CPU_PORT_IGRESS_STMID_CONTROL_EN_SET(entry->enable);
+
+    return status_success;
+}
+
+
+hpm_stat_t tsw_cb_stmid_egress_set_entry(TSW_Type *ptr, tsw_cb_stmid_entry_t *entry)
+{
+    if (entry == NULL) {
+        return status_invalid_argument;
+    }
+
+    /* select a entry*/
+    ptr->CPU_PORT_EGRESS_STMID_ESELECT = TSW_CPU_PORT_EGRESS_STMID_ESELECT_ESEL_SET(entry->idx);
+
+    /* set the entry info. */
+    ptr->CPU_PORT_EGRESS_STMID_AMACHI = TSW_CPU_PORT_EGRESS_STMID_AMACHI_APCP_SET(entry->active_mac.pcp) |
+                                        TSW_CPU_PORT_EGRESS_STMID_AMACHI_AVID_SET(entry->active_mac.vid) |
+                                        TSW_CPU_PORT_EGRESS_STMID_AMACHI_AMACH_SET(entry->active_mac.mach);
+    ptr->CPU_PORT_EGRESS_STMID_AMACLO = TSW_CPU_PORT_EGRESS_STMID_AMACLO_AMACL_SET(entry->active_mac.macl);
+
+    ptr->CPU_PORT_EGRESS_STMID_MACHI = TSW_CPU_PORT_EGRESS_STMID_MACHI_VID_SET(entry->lookup_mac.vid) |
+                                       TSW_CPU_PORT_EGRESS_STMID_MACHI_MATCH_SET(entry->lookup_mac.mach);
+    ptr->CPU_PORT_EGRESS_STMID_MACLO = TSW_CPU_PORT_EGRESS_STMID_MACLO_MACL_SET(entry->lookup_mac.macl);
+
+    ptr->CPU_PORT_EGRESS_STMID_SEQNO = 0;
+    ptr->CPU_PORT_EGRESS_STMID_MATCHCNT = 0;
+    ptr->CPU_PORT_EGRESS_STMID_CONTROL = TSW_CPU_PORT_EGRESS_STMID_CONTROL_SID_SET(entry->sid) |
+                                         TSW_CPU_PORT_EGRESS_STMID_CONTROL_SEQGEN_SET(entry->seqgen) |
+                                         TSW_CPU_PORT_EGRESS_STMID_CONTROL_ACTCTL_SET(entry->actctl) |
+                                         TSW_CPU_PORT_EGRESS_STMID_CONTROL_SMAC_SET(entry->smac) |
+                                         TSW_CPU_PORT_EGRESS_STMID_CONTROL_MODE_SET(entry->mode) |
+                                         TSW_CPU_PORT_EGRESS_STMID_CONTROL_EN_SET(entry->enable);
+
+    return status_success;
+}
+
+hpm_stat_t tsw_cb_frer_ingress_enable_rtag(TSW_Type *ptr)
+{
+    ptr->CPU_PORT_IGRESS_FRER_CONTROL |= TSW_CPU_PORT_IGRESS_FRER_CONTROL_RTENC_MASK;
+
+    return status_success;
+}
+
+hpm_stat_t tsw_cb_frer_egress_set_sid_func(TSW_Type *ptr, tsw_cb_frer_sid_func_config_t *config)
+{
+    if (config == NULL) {
+        return status_invalid_argument;
+    }
+
+    ptr->CPU_PORT_EGRESS_FRER_SIDSEL = TSW_CPU_PORT_EGRESS_FRER_SIDSEL_SID_SET(config->sid);
+    ptr->CPU_PORT_EGRESS_FRER_IRFUNC = TSW_CPU_PORT_EGRESS_FRER_IRFUNC_FEN_SET(config->irfunc.fen) | TSW_CPU_PORT_EGRESS_FRER_IRFUNC_FIDX_SET(config->irfunc.fidx);
+    ptr->CPU_PORT_EGRESS_FRER_SRFUNC = TSW_CPU_PORT_EGRESS_FRER_SRFUNC_FEN_SET(config->srfunc.fen) | TSW_CPU_PORT_EGRESS_FRER_SRFUNC_FIDX_SET(config->srfunc.fidx);
+
+    return status_success;
+}
+
+hpm_stat_t tsw_cb_frer_egress_set_recovery_func(TSW_Type *ptr, tsw_cb_frer_recovery_func_config_t *config)
+{
+    if (config == NULL) {
+        return status_invalid_argument;
+    }
+
+    ptr->CPU_PORT_EGRESS_FRER_FSELECT = TSW_CPU_PORT_EGRESS_FRER_FSELECT_FIDX_SET(config->fidx);
+
+    ptr->CPU_PORT_EGRESS_FRER_FCTRL |= TSW_CPU_PORT_EGRESS_FRER_FCTRL_FRSET_SET(config->freset);
+    ptr->CPU_PORT_EGRESS_FRER_FCTRL |= TSW_CPU_PORT_EGRESS_FRER_FCTRL_ALGO_SET(config->algo);
+
+    if (config->algo == tsw_cb_frer_algo_vector_recovery) {
+        ptr->CPU_PORT_EGRESS_FRER_FCTRL |= TSW_CPU_PORT_EGRESS_FRER_FCTRL_HLEN_SET(config->history_len);
+    }
+
+    ptr->CPU_PORT_EGRESS_FRER_FCTRL |= TSW_CPU_PORT_EGRESS_FRER_FCTRL_IND_SET(config->xrfunc);
+    ptr->CPU_PORT_EGRESS_FRER_FCTRL |= TSW_CPU_PORT_EGRESS_FRER_FCTRL_TNS_SET(config->taske_no_sequence);
+    ptr->CPU_PORT_EGRESS_FRER_RESETMSEC = TSW_CPU_PORT_EGRESS_FRER_RESETMSEC_FSRMS_SET(config->timeout_in_ms);
+
+    if ((config->xrfunc == tsw_cb_frer_xfunc_recovery_sequence) && (config->latent_error_dectection_config.enable_detection)) {
+        ptr->CPU_PORT_EGRESS_FRER_FCTRL |= TSW_CPU_PORT_EGRESS_FRER_FCTRL_LATEN_MASK;
+        ptr->CPU_PORT_EGRESS_FRER_FCTRL |= TSW_CPU_PORT_EGRESS_FRER_FCTRL_PATHS_SET(config->paths);
+
+        ptr->CPU_PORT_EGRESS_FRER_LATRSPERIOD = TSW_CPU_PORT_EGRESS_FRER_LATRSPERIOD_FLATR_SET(config->latent_error_dectection_config.reset_period);
+        ptr->CPU_PORT_EGRESS_FRER_LATTESTPERIOD = TSW_CPU_PORT_EGRESS_FRER_LATTESTPERIOD_FLATT_SET(config->latent_error_dectection_config.test_period);
+        ptr->CPU_PORT_EGRESS_FRER_LATERRDIFFALW = TSW_CPU_PORT_EGRESS_FRER_LATERRDIFFALW_FDIFF_SET(config->latent_error_dectection_config.threshold);
+        ptr->CPU_PORT_EGRESS_FRER_LATERRCNT = 0;
+    }
+
+    return status_success;
+}
+
+hpm_stat_t tsw_cb_frer_egress_clear_latten_error_flag(TSW_Type *ptr)
+{
+    ptr->CPU_PORT_EGRESS_FRER_CONTROL |= TSW_CPU_PORT_EGRESS_FRER_CONTROL_LATER_MASK;
+
+    return status_success;
+}
+
+hpm_stat_t tsw_cb_frer_egress_get_count(TSW_Type *ptr, tsw_cb_frer_frame_count_egress_t *count)
+{
+    if (count == NULL) {
+        return status_invalid_argument;
+    }
+
+    for (uint16_t i = 0; i <= TSW_EGFRCNT_CPU_PORT_EGRESS_FRER_CNT7; i++) {
+        count->egess_frame_count[i] = ptr->EGFRCNT[i];
+    }
+
+    return status_success;
+}
+
+hpm_stat_t tsw_psfp_set_filter(TSW_Type *ptr, tsw_psfp_filter_config_t *config)
+{
+      if (config == NULL) {
+          return status_invalid_argument;
+      }
+
+      ptr->CENTRAL_QCI_FILTERSEL = TSW_CENTRAL_QCI_FILTERSEL_INDEX_SET(config->idx);
+
+      if (config->enable_size_checking) {
+          ptr->CENTRAL_QCI_FCTRL |= TSW_CENTRAL_QCI_FCTRL_ENFSZ_MASK;
+          ptr->CENTRAL_QCI_FCTRL &= ~TSW_CENTRAL_QCI_FCTRL_ENBLK_MASK;
+          ptr->CENTRAL_QCI_FCTRL |= TSW_CENTRAL_QCI_FCTRL_ENBLK_SET(config->enable_blocking);
+          ptr->CENTRAL_QCI_FSIZE &= ~TSW_CENTRAL_QCI_FSIZE_MXSZ_MASK;
+          ptr->CENTRAL_QCI_FSIZE |= TSW_CENTRAL_QCI_FSIZE_MXSZ_SET(config->max_frame_size_in_octects);
+      } else {
+          ptr->CENTRAL_QCI_FCTRL &= ~TSW_CENTRAL_QCI_FCTRL_ENFSZ_MASK;
+      }
+
+      if (config->filter_match_sid) {
+          ptr->CENTRAL_QCI_FCTRL |= TSW_CENTRAL_QCI_FCTRL_ENSID_MASK;
+          ptr->CENTRAL_QCI_FCTRL &= ~TSW_CENTRAL_QCI_FCTRL_SID_MASK;
+          ptr->CENTRAL_QCI_FCTRL |= TSW_CENTRAL_QCI_FCTRL_SID_SET(config->stream_id);
+      } else {
+          ptr->CENTRAL_QCI_FCTRL &= ~TSW_CENTRAL_QCI_FCTRL_ENSID_MASK;
+      }
+
+      if (config->filter_match_pcp) {
+          ptr->CENTRAL_QCI_FCTRL |= TSW_CENTRAL_QCI_FCTRL_ENPCP_MASK;
+          ptr->CENTRAL_QCI_FCTRL &= ~TSW_CENTRAL_QCI_FCTRL_PCP_MASK;
+          ptr->CENTRAL_QCI_FCTRL |= TSW_CENTRAL_QCI_FCTRL_PCP_SET(config->pcp);
+      } else {
+          ptr->CENTRAL_QCI_FCTRL &= ~TSW_CENTRAL_QCI_FCTRL_ENPCP_MASK;
+      }
+
+      ptr->CENTRAL_QCI_FCTRL &= ~TSW_CENTRAL_QCI_FCTRL_GID_MASK;
+      ptr->CENTRAL_QCI_FCTRL |= TSW_CENTRAL_QCI_FCTRL_GID_SET(config->gate_id);
+
+      if (config->enable_flow_meter) {
+          ptr->CENTRAL_QCI_FCTRL |= TSW_CENTRAL_QCI_FCTRL_ENFID_MASK;
+          ptr->CENTRAL_QCI_FCTRL &= ~TSW_CENTRAL_QCI_FCTRL_FMD_MASK;
+          ptr->CENTRAL_QCI_FCTRL |= TSW_CENTRAL_QCI_FCTRL_FMD_SET(config->flow_meter_id);
+      } else {
+          ptr->CENTRAL_QCI_FCTRL &= ~TSW_CENTRAL_QCI_FCTRL_ENFID_MASK;
+      }
+
+      return status_success;
+}
+
+hpm_stat_t tsw_psfp_set_gate_static_mode(TSW_Type *ptr, tsw_psfp_gate_static_mode_config_t *config)
+{
+    if (config == NULL) {
+        return status_invalid_argument;
+    }
+
+    ptr->CENTRAL_QCI_GATESEL = TSW_CENTRAL_QCI_GATESEL_INDEX_SET(config->idx);
+
+    ptr->CENTRAL_QCI_GCTRL &= ~TSW_CENTRAL_QCI_GCTRL_EN_MASK;
+    ptr->CENTRAL_QCI_GCTRL |= TSW_CENTRAL_QCI_GCTRL_CDOEE_SET(config->closed_due_to_octets_exceeded)
+                           |  TSW_CENTRAL_QCI_GCTRL_CDIRE_SET(config->closed_due_to_invalid_rx);
+
+    ptr->CENTRAL_QCI_GCTRL = (ptr->CENTRAL_QCI_GCTRL & ~(TSW_CENTRAL_QCI_GCTRL_IPV_MASK | TSW_CENTRAL_QCI_GCTRL_STATE_MASK))
+                           | TSW_CENTRAL_QCI_GCTRL_IPV_SET(config->ipv)
+                           | TSW_CENTRAL_QCI_GCTRL_STATE_SET(config->state);
+
+    return status_success;
+}
+
+hpm_stat_t tsw_psfp_set_gate_dynamic_mode(TSW_Type *ptr, tsw_psfp_gate_dynamic_mode_config_t *config)
+{
+    if (config == NULL) {
+        return status_invalid_argument;
+    }
+
+    if ((config->gate_control_list_config.list_len == 0) || ((uint32_t)(config->gate_control_list_config.list_len - 1) > TSW_CENTRAL_QCI_GLISTINDEX_IDX_MASK)) {
+        return status_invalid_argument;
+    }
+
+    if (config->gate_control_list_config.entry == NULL) {
+        return status_invalid_argument;
+    }
+
+    ptr->CENTRAL_QCI_GATESEL = TSW_CENTRAL_QCI_GATESEL_INDEX_SET(config->idx);
+
+
+
+    for (int idx = 0; idx < config->gate_control_list_config.list_len; idx++, config->gate_control_list_config.entry++) {
+        ptr->CENTRAL_QCI_GLISTINDEX = TSW_CENTRAL_QCI_GLISTINDEX_IDX_SET(idx);
+        ptr->CENTRAL_QCI_AENTRY_CTRL = TSW_CENTRAL_QCI_AENTRY_CTRL_STATE_SET(config->gate_control_list_config.entry->state)
+                                     | TSW_CENTRAL_QCI_AENTRY_CTRL_IPV_SET(config->gate_control_list_config.entry->ipv)
+                                     | TSW_CENTRAL_QCI_AENTRY_CTRL_OCT_SET(config->gate_control_list_config.entry->max_octets);
+        ptr->CENTRAL_QCI_AENTRY_AENTRY_IVAL = tsw_ns_to_systicks(config->gate_control_list_config.entry->interval, TSW_BUS_FREQ);
+    }
+
+    ptr->CENTRAL_QCI_LISTLEN &= ~TSW_CENTRAL_QCI_LISTLEN_ALEN_MASK;
+    ptr->CENTRAL_QCI_LISTLEN |= TSW_CENTRAL_QCI_LISTLEN_ALEN_SET(config->gate_control_list_config.list_len);
+
+    ptr->CENTRAL_QCI_ACYCLETM = config->gate_control_list_config.cycle_time;
+
+    ptr->CENTRAL_QCI_ABASETM_L = config->gate_control_list_config.base_time_ns;
+    ptr->CENTRAL_QCI_ABASETM_H = config->gate_control_list_config.base_time_sec;
+
+    ptr->CENTRAL_QCI_GCTRL |= TSW_CENTRAL_QCI_GCTRL_EN_MASK
+                           |  TSW_CENTRAL_QCI_GCTRL_CDOEE_SET(config->closed_due_to_octets_exceeded)
+                           |  TSW_CENTRAL_QCI_GCTRL_CDIRE_SET(config->closed_due_to_invalid_rx)
+                           |  TSW_CENTRAL_QCI_GCTRL_CFGCH_MASK;
+
+    return status_success;
+}
+
+hpm_stat_t tsw_psfp_set_flow_meter(TSW_Type *ptr, tsw_psfp_flow_meter_config_t *config)
+{
+    ptr->CENTRAL_QCI_METERSEL = TSW_CENTRAL_QCI_METERSEL_INDEX_SET(config->idx);
+
+    if (config == NULL) {
+        return status_invalid_argument;
+    }
+
+    if (config->reset) {
+        ptr->CENTRAL_QCI_MCTRL |= TSW_CENTRAL_QCI_MCTRL_RESET_MASK;
+    }
+
+    if (config->coupling_flag) {
+        ptr->CENTRAL_QCI_MCTRL |= TSW_CENTRAL_QCI_MCTRL_CF_MASK;
+        ptr->CENTRAL_QCI_MCTRL &= ~(TSW_CENTRAL_QCI_MCTRL_MAFREN_MASK | TSW_CENTRAL_QCI_MCTRL_DOY_MASK | TSW_CENTRAL_QCI_MCTRL_CM_MASK);
+        ptr->CENTRAL_QCI_MCTRL |= TSW_CENTRAL_QCI_MCTRL_MAFREN_SET(config->mark_all_frames_red)
+                               |  TSW_CENTRAL_QCI_MCTRL_DOY_SET(config->drop_on_yellow)
+                               |  TSW_CENTRAL_QCI_MCTRL_CM_SET(config->color_mode);
+    } else {
+        ptr->CENTRAL_QCI_MCTRL &= ~TSW_CENTRAL_QCI_MCTRL_CF_MASK;
+    }
+
+    ptr->CENTRAL_QCI_CIR = (config->cir.integer << 16) | config->cir.fract;
+    ptr->CENTRAL_QCI_CBS = config->cbs_in_bits;
+
+    ptr->CENTRAL_QCI_EIR = (config->eir.integer << 16) | config->eir.fract;
+    ptr->CENTRAL_QCI_EBS = config->ebs_in_bits;
 
     return status_success;
 }

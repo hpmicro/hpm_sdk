@@ -8,8 +8,13 @@
 #define TCPECHO_H
 #include "lwip/netif.h"
 
+#ifndef TCP_LOCAL_PORT0
 #define TCP_LOCAL_PORT0 (5001U)
+#endif
+
+#ifndef TCP_LOCAL_PORT1
 #define TCP_LOCAL_PORT1 (5002U)
+#endif
 
 #if defined(__cplusplus)
 extern "C" {

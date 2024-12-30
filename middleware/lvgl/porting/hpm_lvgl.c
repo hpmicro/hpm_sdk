@@ -44,6 +44,7 @@
 #define HPM_LVGL_PDMA_IRQ_NUM IRQn_PDMA_D0
 #define HPM_LVGL_PDMA_IRQ_PRIORITY 6
 #define HPM_LVGL_PDMA_BASE HPM_PDMA
+#define LVGL_PDMA_CLOCK clock_pdma
 
 typedef void (*hpm_lvgl_pdma_finish_cb_t)(void *cb_data);
 
@@ -81,11 +82,7 @@ typedef struct hpm_lvgl_context {
 
 hpm_lvgl_context_t hpm_lvgl_context;
 
-#if defined(LV_USE_DRAW_VG_LITE) && LV_USE_DRAW_VG_LITE
-#define FB_SECTION ".noncacheable"
-#else
 #define FB_SECTION ".framebuffer"
-#endif
 
 static uint8_t __attribute__((section(FB_SECTION), aligned(HPM_L1C_CACHELINE_SIZE))) hpm_lvgl_fb0[HPM_LVGL_FB_SIZE];
 static uint8_t __attribute__((section(FB_SECTION), aligned(HPM_L1C_CACHELINE_SIZE))) hpm_lvgl_fb1[HPM_LVGL_FB_SIZE];
@@ -189,7 +186,7 @@ static void hpm_lvgl_pdma_init(hpm_lvgl_pdma_flush_context_t *ctx, void *pdma_ba
     PDMA_Type *pdma_ptr = (PDMA_Type *)pdma_base;
     ctx->pdma_base = pdma_base;
     ctx->cfg.pixel_size = pixel_size;
-
+    clock_add_to_group(LVGL_PDMA_CLOCK, HPM_LVGL_RUNNING_CORE);
     pixel_format = (pixel_size == 4) ? display_pixel_format_argb8888 : display_pixel_format_rgb565;
     pdma_get_default_config(pdma_ptr, &config, pixel_format);
 
@@ -310,7 +307,8 @@ ATTR_RAMFUNC static int hpm_lvgl_pdma_add_area(hpm_lvgl_pdma_flush_context_t *ct
     return 0;
 }
 
-static void hpm_lvgl_pdma_isr(void)
+SDK_DECLARE_EXT_ISR_M(HPM_LVGL_PDMA_IRQ_NUM, hpm_lvgl_pdma_isr)
+void hpm_lvgl_pdma_isr(void)
 {
     PDMA_Type *pdma_ptr;
     hpm_lvgl_pdma_flush_context_t *ctx;
@@ -324,7 +322,6 @@ static void hpm_lvgl_pdma_isr(void)
     hpm_lvgl_pdma_copy_done(ctx);
 }
 
-SDK_DECLARE_EXT_ISR_M(HPM_LVGL_PDMA_IRQ_NUM, hpm_lvgl_pdma_isr);
 #endif /* defined(LV_USE_HPM_PDMA_FLUSH) && LV_USE_HPM_PDMA_FLUSH */
 
 ATTR_RAMFUNC void hpm_lvgl_lcdc_vsync_flag_set(hpm_lvgl_context_t *ctx, int val)
@@ -348,7 +345,8 @@ void hpm_lvgl_wait_lcdc_vsync(hpm_lvgl_context_t *ctx)
         hpm_lvgl_lcdc_vsync_wait(ctx);
 }
 
-static void hpm_lvgl_lcdc_vsync_isr(void)
+SDK_DECLARE_EXT_ISR_M(HPM_LVGL_LCDC_IRQ_NUM, hpm_lvgl_lcdc_vsync_isr)
+void hpm_lvgl_lcdc_vsync_isr(void)
 {
     hpm_lvgl_context_t *ctx = &hpm_lvgl_context;
 
@@ -356,8 +354,6 @@ static void hpm_lvgl_lcdc_vsync_isr(void)
     hpm_lvgl_lcdc_vsync_flag_set(ctx, 1);
     hpm_lvgl_lcdc_vsync_signal(ctx);
 }
-
-SDK_DECLARE_EXT_ISR_M(HPM_LVGL_LCDC_IRQ_NUM, hpm_lvgl_lcdc_vsync_isr)
 
 static void hpm_lvgl_lcdc_enable(uint32_t fb_buffer)
 {
@@ -409,11 +405,10 @@ void hpm_lvgl_display_flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_
         lv_display_flush_ready(disp);
         return;
     }
-#if !(defined(LV_USE_DRAW_VG_LITE) && LV_USE_DRAW_VG_LITE)
+
     if (l1c_dc_is_enabled()) {
         l1c_dc_writeback((uint32_t)px_map, HPM_LVGL_FB_SIZE);
     }
-#endif
 
 #if defined(LV_USE_HPM_PDMA_FLUSH) && LV_USE_HPM_PDMA_FLUSH
 #if defined(LV_USE_HPM_PDMA_WAIT_VSYNC) && LV_USE_HPM_PDMA_WAIT_VSYNC
@@ -530,41 +525,9 @@ void hpm_lvgl_indev_init(void)
     }
 }
 
-#if defined(LV_USE_DRAW_VG_LITE) && LV_USE_DRAW_VG_LITE
-#include <vg_lite.h>
-#include "non_alloc.h"
-
-static non_alloc_context_t vg_draw_buf_na_ctx;
-static uint8_t __attribute__((section(".noncacheable"), aligned(HPM_L1C_CACHELINE_SIZE))) draw_buf_mem[LV_MEM_SIZE];
-static uint8_t draw_buf_mem_info[NA_INFO_CELL_SIZE * 128];
-
-static void *draw_buf_malloc(size_t size_bytes, lv_color_format_t color_format)
-{
-    LV_UNUSED(color_format);
-
-    return na_malloc(&vg_draw_buf_na_ctx, size_bytes);
-}
-
-static void draw_buf_free(void *buf)
-{
-    na_free(&vg_draw_buf_na_ctx, buf);
-}
-
-static void draw_buf_handlers_init(void)
-{
-    lv_draw_buf_handlers_t *handlers = lv_draw_buf_get_handlers();
-    handlers->buf_malloc_cb = draw_buf_malloc;
-    handlers->buf_free_cb = draw_buf_free;
-    na_init(&vg_draw_buf_na_ctx, LV_DRAW_BUF_ALIGN, draw_buf_mem, sizeof(draw_buf_mem), draw_buf_mem_info, sizeof(draw_buf_mem_info));
-}
-#endif
-
 void hpm_lvgl_init(void)
 {
     lv_init();
-#if defined(LV_USE_DRAW_VG_LITE) && LV_USE_DRAW_VG_LITE
-    draw_buf_handlers_init();
-#endif
     hpm_lvgl_tick_init();
     hpm_lvgl_display_init();
     hpm_lvgl_indev_init();

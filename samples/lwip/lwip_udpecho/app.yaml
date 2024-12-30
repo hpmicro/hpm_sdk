@@ -1,0 +1,3 @@
+dependency:
+  - enet
+  - board_enet_phy

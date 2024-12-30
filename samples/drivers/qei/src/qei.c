@@ -22,13 +22,12 @@
 volatile uint32_t z, ph, spd, tmr;
 volatile bool data_ready = false;
 
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_QEI_IRQ, isr_qei)
 void isr_qei(void)
 {
     qei_clear_status(BOARD_APP_QEI_BASE, qei_get_status(BOARD_APP_QEI_BASE));
     data_ready = true;
 }
-
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_QEI_IRQ, isr_qei)
 
 int main(void)
 {

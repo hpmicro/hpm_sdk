@@ -19,6 +19,7 @@ static volatile bool can_send = false;
 #define MBX HPM_MBX0A
 #define MBX_IRQ IRQn_MBX0A
 
+SDK_DECLARE_EXT_ISR_M(MBX_IRQ, isr_mbx)
 void isr_mbx(void)
 {
     volatile uint32_t sr = MBX->SR;
@@ -45,6 +46,7 @@ void isr_mbx(void)
 #define MBX HPM_MBX0B
 #define MBX_IRQ IRQn_MBX0B
 
+SDK_DECLARE_EXT_ISR_M(MBX_IRQ, isr_mbx)
 void isr_mbx(void)
 {
     volatile uint32_t sr = MBX->SR;
@@ -68,7 +70,6 @@ void isr_mbx(void)
 }
 #endif
 
-SDK_DECLARE_EXT_ISR_M(MBX_IRQ, isr_mbx)
 
 static void test_multiword_communication(uint32_t msg_count)
 {
@@ -223,6 +224,7 @@ int main(void)
 {
 #if BOARD_RUNNING_CORE == HPM_CORE0
     board_init();
+    clock_add_to_group(clock_mbx0, 0);
 #else
     board_init_core1();
 #endif

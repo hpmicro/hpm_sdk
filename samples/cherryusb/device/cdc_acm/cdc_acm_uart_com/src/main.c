@@ -22,7 +22,7 @@ int main(void)
     init_board_app_uart();
     init_board_app_dma();
 
-    board_init_usb_pins();
+    board_init_usb((USB_Type *)CONFIG_HPM_USBD_BASE);
 
     intc_set_irq_priority(CONFIG_HPM_USBD_IRQn, 3);
     cdc_acm_init(USB_BUS_ID, CONFIG_HPM_USBD_BASE);

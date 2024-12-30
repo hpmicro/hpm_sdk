@@ -1180,6 +1180,229 @@ always read 0.</description>
       </registers>
     </peripheral>
     <peripheral>
+      <name>SDADC</name>
+      <description>SDADC</description>
+      <groupName>SDADC</groupName>
+      <baseAddress>0xf0018000</baseAddress>
+      <addressBlock>
+        <offset>0x0</offset>
+        <size>0x18</size>
+        <usage>registers</usage>
+      </addressBlock>
+      <registers>
+        <register>
+          <name>CTRL</name>
+          <description>SDADC control register</description>
+          <addressOffset>0x0</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0x0FFFEFFF</resetMask>
+          <fields>
+            <field>
+              <name>SDM_CFG</name>
+              <description>SDM analog part Configuration</description>
+              <bitOffset>20</bitOffset>
+              <bitWidth>8</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SDM_PGA_CE_SEL</name>
+              <description>SDM_PGA_CE_SEL</description>
+              <bitOffset>18</bitOffset>
+              <bitWidth>2</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SDM_PGA_CH_SEL</name>
+              <description>SDM_PGA_CH_SEL</description>
+              <bitOffset>14</bitOffset>
+              <bitWidth>4</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>CFG_CDS_CMD</name>
+              <description>config the common mode voltage of CDS CAP</description>
+              <bitOffset>13</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>LP_MODE_SDM</name>
+              <description>lowpower mode of SDM</description>
+              <bitOffset>9</bitOffset>
+              <bitWidth>3</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>LP_MODE_PGA</name>
+              <description>lowpower mode of PGA</description>
+              <bitOffset>6</bitOffset>
+              <bitWidth>3</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>ANA_PWUP</name>
+              <description>1. Asserted to power up the analog part
+0: Shut off the power for the analog part</description>
+              <bitOffset>5</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>BYPASS_PGA</name>
+              <description>1: PGA is bypassed
+0: PGA is enabled</description>
+              <bitOffset>4</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>CONT_MODE</name>
+              <description>1: continuous mode of ADC conversion
+0: burst mode of ADC conversion.</description>
+              <bitOffset>3</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>RST_SDM</name>
+              <description>1: reset  SDM. Should be de-asserted by software
+0: no reset SDM</description>
+              <bitOffset>2</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>RST_PGA</name>
+              <description>1: reset  PGA. Should be de-asserted by software
+0: no reset PGA</description>
+              <bitOffset>1</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>EN</name>
+              <description>Module enable, to enable clok divder. Etc</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>CLK_DIV</name>
+          <description>clock divider</description>
+          <addressOffset>0x4</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0x000000FF</resetMask>
+          <fields>
+            <field>
+              <name>FACTOR</name>
+              <description>0: disable clock output
+1: bypass the clock divider
+2: divide the clock by 2
+…
+n: divide the clock by n</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>8</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>TTB</name>
+          <description>Total Transfer Bits</description>
+          <addressOffset>0x8</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0xFFFFFFFF</resetMask>
+          <fields>
+            <field>
+              <name>VAL</name>
+              <description>the maximal number of output bits when ADC is in burst mode</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>20</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>START_OP</name>
+          <description>Start_Of_Operation</description>
+          <addressOffset>0xc</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0xFFFFFFE1</resetMask>
+          <fields>
+            <field>
+              <name>SDM_EN</name>
+              <description>1. Enable sigma-delta ADC.  Auto clear in burst mode when TTB bits are received. In cont mode, must be cleared manually.
+0: disable sigma-delta ADC</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>MISC</name>
+          <description>Misc Control</description>
+          <addressOffset>0x10</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0xFFFFFFFF</resetMask>
+          <fields>
+            <field>
+              <name>BURST_DONE_IE</name>
+              <description>Asserted to enable BURST_DONE event interrupt. Should not be asserted for continuous mode.</description>
+              <bitOffset>1</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>PDM_CLK_SEL</name>
+              <description>Asserted to use PDM clk input. Default to use MCLK which is directly from PLL.</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>ST</name>
+          <description>Status Register</description>
+          <addressOffset>0x14</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0xFFF80007</resetMask>
+          <fields>
+            <field>
+              <name>ANA_RST</name>
+              <description>Asserted when analog module is in reset mode.</description>
+              <bitOffset>2</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-only</access>
+            </field>
+            <field>
+              <name>DIV_STABLE</name>
+              <description>Asserted when CLK_DIV reaches stable status. Cleared automatically when CLK_DIV[FACTOR] is assigned a different value.</description>
+              <bitOffset>1</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-only</access>
+            </field>
+            <field>
+              <name>BURST_DONE</name>
+              <description>Asserted when burst transfer is done. Auto cleared after the ST register is read while this bit is asserted.</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-only</access>
+            </field>
+          </fields>
+        </register>
+      </registers>
+    </peripheral>
+    <peripheral>
       <name>UART0</name>
       <description>UART0</description>
       <groupName>UART</groupName>
@@ -12931,7 +13154,7 @@ Hardware will automatically clear this bit when selected CLUT is updated accordi
       <baseAddress>0xf1008000</baseAddress>
       <addressBlock>
         <offset>0x0</offset>
-        <size>0x4b0</size>
+        <size>0x4a0</size>
         <usage>registers</usage>
       </addressBlock>
       <registers>
@@ -12941,7 +13164,7 @@ Hardware will automatically clear this bit when selected CLUT is updated accordi
           <addressOffset>0x0</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0xFF9AAFFF</resetMask>
+          <resetMask>0xFE9AAFFF</resetMask>
           <fields>
             <field>
               <name>INV_DEN</name>
@@ -12991,15 +13214,6 @@ Data in RX FIFO = 0x11223344
 0 Disable swapping
 1 Enable swapping</description>
               <bitOffset>25</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>PACK_DIR</name>
-              <description>Data Packing Direction. This bit Controls how 8-bit/10-bit image data is packed into 32-bit RX FIFO.
-0 Pack from LSB first. For image data, 0x11, 0x22, 0x33, 0x44, it will appear as 0x44332211 in RX FIFO.
-1 Pack from MSB first. For image data, 0x11, 0x22, 0x33, 0x44, it will appear as 0x11223344 in RX FIFO.</description>
-              <bitOffset>24</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
@@ -13075,7 +13289,6 @@ Note: YUV420 is not supported.
             <field>
               <name>SENSOR_BIT_WIDTH</name>
               <description>the bit width of the sensor
-0: 8 bits
 1: 10 bits
 3:24bits
 Others: Undefined</description>
@@ -13408,40 +13621,6 @@ As the input data from the sensor is 8-bit/pixel format, the IMAGE_WIDTH should 
           </fields>
         </register>
         <register>
-          <name>DMASA_UV1</name>
-          <description>Pixel UV DMA Frame Buffer 1 Address</description>
-          <addressOffset>0x50</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>PTR</name>
-              <description>Two Plane UV Buffer Start Address 1</description>
-              <bitOffset>2</bitOffset>
-              <bitWidth>30</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>DMASA_UV2</name>
-          <description>Pixel UV DMA Frame Buffer 2 Address</description>
-          <addressOffset>0x54</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>PTR</name>
-              <description>Two Plane UV Buffer Start Address 2</description>
-              <bitOffset>2</bitOffset>
-              <bitWidth>30</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
           <name>CR20</name>
           <description>Control CR20 Register</description>
           <addressOffset>0x58</addressOffset>
@@ -13758,105 +13937,6 @@ typically -16 (0x1F0).</description>
             <field>
               <name>ACT_WIDTH</name>
               <description>actual width after scale and/or roi</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>16</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>VSYNC_VALID_CNT</name>
-          <description>vsync valid counter</description>
-          <addressOffset>0x4a0</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>VSYNC_VALID_CNT</name>
-              <description>vsync valid counter</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>32</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>HSYNC_VALID_CNT</name>
-          <description>hsync valid counter</description>
-          <addressOffset>0x4a4</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>HSYNC_VALID_CNT</name>
-              <description>hsync valid counter</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>32</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>VALID_MARGIN</name>
-          <description>valid margin</description>
-          <addressOffset>0x4a8</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>HSYNC_VALID_MARGIN</name>
-              <description>hsync valid margin</description>
-              <bitOffset>16</bitOffset>
-              <bitWidth>16</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>VSYNC_VALID_MARGIN</name>
-              <description>vsync valid margin</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>16</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>ALARM_SET</name>
-          <description>alarm set</description>
-          <addressOffset>0x4ac</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>SIG_NORMAL</name>
-              <description>define signal duty cycles(base clock)
-0x0: disable signal
-0x1:  high 1, low 15
-0x2:  high 2, low 14
-…...
-0xF:   high 15, low 1</description>
-              <bitOffset>20</bitOffset>
-              <bitWidth>4</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>FATAL_NORMAL</name>
-              <description>define signal duty cycles(base clock)
-0x0: disable signal
-0x1:  high 1, low 15
-0x2:  high 2, low 14
-…...
-0xF:   high 15, low 1</description>
-              <bitOffset>16</bitOffset>
-              <bitWidth>4</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>PRE_DIV</name>
-              <description>frequency division</description>
               <bitOffset>0</bitOffset>
               <bitWidth>16</bitWidth>
               <access>read-write</access>
@@ -28566,7 +28646,13 @@ The actual clock is of different frequency that gets synchronized every second. 
 - When PPSCTRL = 0011, the PPS (4 Hz) is a sequence of:
   - Three clocks of 50 percent duty cycle and 268 ms period
   - Fourth clock of 195 ms period (134 ms low and 61 ms high)
+--------------------------------------------------------------------------------------------------------------------------------------
 PPSCMD0: Flexible PPS0 Output Control
+Programming these bits with a non-zero value instructs the MAC to
+initiate an event. When the command is transferred or synchronized to
+the PTP clock domain, these bits get cleared automatically. The
+Software should ensure that these bits are programmed only when they
+are “all-zero”.
 0000: No Command
 0001: START Single Pulse
 This command generates single pulse rising at the start point defined in
@@ -39961,8 +40047,7 @@ Others: Reserved</description>
             <field>
               <name>OUTD_TYPE</name>
               <description>Output data type:
-0:Real Q31, 1:Real Q15, 2:Complex Q31, 3:Complex Q15
-4:complex sp float 5: real sp float</description>
+0:Real Q31, 1:Real Q15, 2:Complex Q31, 3:Complex Q15</description>
               <bitOffset>15</bitOffset>
               <bitWidth>3</bitWidth>
               <access>read-write</access>
@@ -39970,8 +40055,7 @@ Others: Reserved</description>
             <field>
               <name>COEF_TYPE</name>
               <description>Coef data type (used for FIR):
-0:Real Q31, 1:Real Q15, 2:Complex Q31, 3:Complex Q15
-4:complex sp float 5: real sp float</description>
+0:Real Q31, 1:Real Q15, 2:Complex Q31, 3:Complex Q15</description>
               <bitOffset>12</bitOffset>
               <bitWidth>3</bitWidth>
               <access>read-write</access>
@@ -39979,8 +40063,7 @@ Others: Reserved</description>
             <field>
               <name>IND_TYPE</name>
               <description>Input data type:
-0:Real Q31, 1:Real Q15, 2:Complex Q31, 3:Complex Q15
-4:complex sp float 5: real sp float</description>
+0:Real Q31, 1:Real Q15, 2:Complex Q31, 3:Complex Q15</description>
               <bitOffset>9</bitOffset>
               <bitWidth>3</bitWidth>
               <access>read-write</access>

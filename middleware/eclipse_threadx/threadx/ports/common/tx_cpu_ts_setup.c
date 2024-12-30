@@ -108,6 +108,7 @@ ULONG low_power_timer_adjust(VOID)
 #endif
 #else
 #include "hpm_gptmr_drv.h"
+#include "hpm_clock_drv.h"
 #ifndef THREADX_TIMER_RESOURCE
     #define THREADX_TIMER_RESOURCE      BOARD_THREADX_TIMER
 #endif
@@ -158,6 +159,7 @@ volatile uint32_t expect_ticks;
 /* SOC may enter wfi state without configure the lowpower timer, so we alloc a flag to
  * indicate wether we have configured the lowpower timer. */
 volatile bool flag_lowpower_timer_configed = false;
+SDK_DECLARE_EXT_ISR_M(BOARD_THREADX_LOWPOWER_TIMER_IRQ, lowpower_tick_isr)
 void lowpower_tick_isr(void)
 {
     if (gptmr_check_status(THREADX_LOWPOWER_TIMER_RESOURCE, GPTMR_CH_RLD_STAT_MASK(THREADX_LOWPOWER_TIMER_CH))) {
@@ -165,8 +167,8 @@ void lowpower_tick_isr(void)
         lowpower_reloaded = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_THREADX_LOWPOWER_TIMER_IRQ, lowpower_tick_isr);
 #endif /* TX_LOW_POWER */
+SDK_DECLARE_EXT_ISR_M(THREADX_TIMER_IRQ, system_tick_isr)
 void system_tick_isr(void)
 {
     if (gptmr_check_status(THREADX_TIMER_RESOURCE, GPTMR_CH_RLD_STAT_MASK(THREADX_TIMER_CH))) {
@@ -174,14 +176,13 @@ void system_tick_isr(void)
         _tx_timer_interrupt();
     }
 }
-SDK_DECLARE_EXT_ISR_M(THREADX_TIMER_IRQ, system_tick_isr);
 void tx_cpu_ts_setup(void)
 {
     uint32_t gptmr_freq;
     gptmr_channel_config_t config;
 
+    clock_add_to_group(THREADX_TIMER_CLOCK, 0);
     gptmr_channel_get_default_config(THREADX_TIMER_RESOURCE, &config);
-
     gptmr_freq = clock_get_frequency(THREADX_TIMER_CLOCK);
     config.reload = gptmr_freq / TX_TIMER_TICKS_PER_SECOND;
     gptmr_channel_config(THREADX_TIMER_RESOURCE, THREADX_TIMER_CH, &config, false);
@@ -191,9 +192,9 @@ void tx_cpu_ts_setup(void)
     intc_m_enable_irq_with_priority(THREADX_TIMER_IRQ, 2);
 #ifdef TX_LOW_POWER
     /* Configure the lowpower timer at start */
+    clock_add_to_group(THREADX_LOWPOWER_TIMER_CLOCK, 0);
     gptmr_channel_get_default_config(THREADX_LOWPOWER_TIMER_RESOURCE, &config);
     config.debug_mode = false;
-
     gptmr_freq = clock_get_frequency(THREADX_LOWPOWER_TIMER_CLOCK);
     config.reload = gptmr_freq / TX_TIMER_TICKS_PER_SECOND;
     gptmr_channel_config(THREADX_LOWPOWER_TIMER_RESOURCE, THREADX_LOWPOWER_TIMER_CH, &config, false);

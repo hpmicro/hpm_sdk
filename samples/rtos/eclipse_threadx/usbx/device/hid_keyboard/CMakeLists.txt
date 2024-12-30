@@ -14,8 +14,6 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(threadx_usbx_hid_keyboard)
 
-sdk_compile_definitions(-D__threadx_irq_stack_top=_stack)
-sdk_compile_definitions(-DCONFIG_THREADX=1)
 sdk_compile_definitions(-DUX_DEVICE_SIDE_ONLY=1)
 sdk_compile_definitions(-DCONFIG_USB_DBG_LEVEL=1)
 

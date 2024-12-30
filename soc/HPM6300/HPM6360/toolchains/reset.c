@@ -133,7 +133,7 @@ __attribute__((weak)) void __cxa_atexit(void (*arg1)(void *), void *arg2, void *
 }
 
 #if (!defined(__SEGGER_RTL_VERSION) || defined(__riscv_xandes)) && !defined(__ICCRISCV__)
-void *__dso_handle = (void *) &__dso_handle;
+__attribute__((weak)) void *__dso_handle = (void *) &__dso_handle;
 #endif
 
 __attribute__((weak)) void _init(void)

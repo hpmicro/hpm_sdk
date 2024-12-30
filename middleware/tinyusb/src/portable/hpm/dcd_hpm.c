@@ -314,18 +314,18 @@ void dcd_int_handler(uint8_t rhport)
     if (int_status & intr_error) TU_ASSERT(false, );
 }
 
+SDK_DECLARE_EXT_ISR_M(IRQn_USB0, isr_usb0)
 void isr_usb0(void)
 {
     dcd_int_handler(0);
 }
-SDK_DECLARE_EXT_ISR_M(IRQn_USB0, isr_usb0)
 
 #ifdef HPM_USB1_BASE
+SDK_DECLARE_EXT_ISR_M(IRQn_USB1, isr_usb1)
 void isr_usb1(void)
 {
     dcd_int_handler(1);
 }
-SDK_DECLARE_EXT_ISR_M(IRQn_USB1, isr_usb1)
 #endif
 
 #endif

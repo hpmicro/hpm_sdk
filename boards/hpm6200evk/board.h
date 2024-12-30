@@ -77,7 +77,9 @@
 #define BOARD_MICROROS_UART_CLK_NAME BOARD_APP_UART_CLK_NAME
 
 /* rtthread-nano finsh section */
-#define BOARD_RT_CONSOLE_BASE BOARD_CONSOLE_UART_BASE
+#define BOARD_RT_CONSOLE_BASE        BOARD_CONSOLE_UART_BASE
+#define BOARD_RT_CONSOLE_CLK_NAME    BOARD_CONSOLE_UART_CLK_NAME
+#define BOARD_RT_CONSOLE_IRQ         BOARD_CONSOLE_UART_IRQ
 
 /* usb cdc acm uart section */
 #define BOARD_USB_CDC_ACM_UART            BOARD_APP_UART_BASE
@@ -129,6 +131,7 @@
 
 /* ACMP desction */
 #define BOARD_ACMP             HPM_ACMP
+#define BOARD_ACMP_CLK         clock_acmp0
 #define BOARD_ACMP_CHANNEL     ACMP_CHANNEL_CHN1
 #define BOARD_ACMP_IRQ         IRQn_ACMP_1
 #define BOARD_ACMP_PLUS_INPUT  ACMP_INPUT_DAC_OUT  /* use internal DAC */
@@ -228,11 +231,6 @@
 #define BOARD_CALLBACK_TIMER_IRQ      IRQn_GPTMR3
 #define BOARD_CALLBACK_TIMER_CLK_NAME (clock_gptmr3)
 
-/* USB section */
-#define BOARD_USB0_ID_PORT       (HPM_GPIO0)
-#define BOARD_USB0_ID_GPIO_INDEX (GPIO_DO_GPIOC)
-#define BOARD_USB0_ID_GPIO_PIN   (23)
-
 /*BLDC pwm*/
 
 /*PWM define*/
@@ -284,6 +282,7 @@
 #define BOARD_BLDC_TMR_CH     0
 #define BOARD_BLDC_TMR_CMP    0
 #define BOARD_BLDC_TMR_IRQ    IRQn_GPTMR2
+#define BOARD_BLDC_TMR_CLOCK  clock_gptmr2
 #define BOARD_BLDC_TMR_RELOAD (100000U)
 
 /*adc*/
@@ -336,7 +335,7 @@
 #define BOARD_APP_HRPWM_FAULT_TRGM_SRC      HPM_TRGM0_INPUT_SRC_DEBUG_FLAG
 #define BOARD_APP_HRPWM_FAULT_TRGM_OUT      TRGM_TRGOCFG_PWM_IN15
 
-#define BOARD_CPU_FREQ (480000000UL)
+#define BOARD_CPU_FREQ (600000000UL)
 
 /* LED */
 #define BOARD_R_GPIO_CTRL  HPM_GPIO0
@@ -360,6 +359,7 @@
 /* Key Section */
 #define BOARD_APP_GPIO_INDEX GPIO_DI_GPIOZ
 #define BOARD_APP_GPIO_PIN   2
+#define BOARD_BUTTON_PRESSED_VALUE 0
 
 /* RGB LED Section */
 #define BOARD_RED_PWM_IRQ              IRQn_PWM3
@@ -518,6 +518,12 @@
 #define BOARD_THREADX_LOWPOWER_TIMER_CHANNEL  1
 #define BOARD_THREADX_LOWPOWER_TIMER_IRQ      IRQn_PTMR
 #define BOARD_THREADX_LOWPOWER_TIMER_CLK_NAME clock_ptmr
+
+/* uC/OS-III Definitions */
+#define BOARD_UCOS_TIMER          HPM_GPTMR1
+#define BOARD_UCOS_TIMER_CHANNEL  1
+#define BOARD_UCOS_TIMER_IRQ      IRQn_GPTMR1
+#define BOARD_UCOS_TIMER_CLK_NAME clock_gptmr1
 /* Tamper Section */
 #define BOARD_TAMP_ACTIVE_CH    4
 #define BOARD_TAMP_LOW_LEVEL_CH 6
@@ -557,6 +563,7 @@ void board_init_console(void);
 void board_init_core1(void);
 
 void board_init_uart(UART_Type *ptr);
+uint32_t board_init_i2c_clock(I2C_Type *ptr);
 void board_init_i2c(I2C_Type *ptr);
 
 void board_init_can(MCAN_Type *ptr);
@@ -585,6 +592,8 @@ uint32_t board_init_lin_clock(LIN_Type *ptr);
 
 uint32_t board_init_adc_clock(void *ptr, bool clk_src_bus);
 
+void board_init_acmp_clock(ACMP_Type *ptr);
+
 uint32_t board_init_dac_clock(DAC_Type *ptr, bool clk_src_ahb);
 
 void board_init_adc16_pins(void);
@@ -593,9 +602,7 @@ void board_init_dac_pins(DAC_Type *ptr);
 
 uint32_t board_init_can_clock(MCAN_Type *ptr);
 
-void board_init_usb_pins(void);
-void board_usb_vbus_ctrl(uint8_t usb_index, uint8_t level);
-uint8_t board_get_usb_id_status(void);
+void board_init_usb(USB_Type *ptr);
 
 /*
  * @brief Initialize PMP and PMA for but not limited to the following purposes:

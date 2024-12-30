@@ -112,6 +112,9 @@ int main(void)
         while (txdma_complete == false) {
         };
         txdma_complete = false;
+        /* When SPI sends, DMA completion does not mean the transfer is complete. need to wait for the SPI status to complete.*/
+        while (spi_is_active(TEST_SPI) == true) {
+        };
         remain_size -= transfer_size;
         index += transfer_size;
     }
@@ -119,7 +122,6 @@ int main(void)
     /* half duplex receive */
     board_delay_ms(100);
     remain_size = sizeof(receive_buff);
-    transfer_size = 0;
     index = 0;
     printf("half_duplex receive.....\n");
     board_write_spi_cs(BOARD_SPI_CS_PIN, BOARD_SPI_CS_ACTIVE_LEVEL);

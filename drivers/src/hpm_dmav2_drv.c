@@ -187,7 +187,7 @@ hpm_stat_t dma_start_memcpy(DMAV2_Type *ptr, uint8_t ch_num,
 
     burst_size -= config.src_width;
     do {
-        if (!(src & (((1 << config.src_width) << burst_size) - 1))) {
+        if (!(src & (((1 << config.src_width) << burst_size) - 1))) {  /* NOLINT */
             break;
         }
         burst_size--;

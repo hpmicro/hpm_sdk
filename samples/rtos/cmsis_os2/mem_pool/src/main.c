@@ -100,7 +100,7 @@ void app_msg(void *argument)
     (void)argument;
 
     osStatus_t status;
-    uint32_t cnt;
+    uint32_t cnt = 0;
     msg_t *msg;
 
     while (1) {
@@ -110,17 +110,17 @@ void app_msg(void *argument)
         /* Wait forever until a message could be received */
         status = osMessageQueueGet(msgQueue, &msg, NULL, osWaitForever);
         if (status != osOK) {
-            printf("app_msg: osMessageQueueGet failed.\n");
+            printf("%s: osMessageQueueGet failed.\n", __func__);
         } else {
             if (msg->len == 4U) {
                 cnt = *((uint32_t *)msg->data);
+                printf("%s: received [cmd = %d, data = 0x%0X]\n", __func__, msg->cmd, cnt);
             }
-            printf("app_msg: received [cmd = %d, data = 0x%0X]\n", msg->cmd, cnt);
 
             /* Free memory of the message */
             status = osMemoryPoolFree(memPool, msg);
             if (status != osOK) {
-                printf("app_msg: osMemoryPoolFree failed.\n");
+                printf("%s: osMemoryPoolFree failed.\n", __func__);
             }
         }
     }

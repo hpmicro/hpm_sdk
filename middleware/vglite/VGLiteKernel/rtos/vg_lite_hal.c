@@ -255,14 +255,12 @@ void vg_lite_hal_barrier(void)
 }
 
 #include <hpm_soc.h>
-void vg_lite_IRQHandler(void);
-SDK_DECLARE_EXT_ISR_M(IRQn_GPU, vg_lite_IRQHandler);
 
 #ifndef GPU_MEM_SIZE_BYTES
 #define GPU_MEM_SIZE_BYTES  16 * 1024 * 1024
 #endif
 
-static uint8_t gpu_mem[GPU_MEM_SIZE_BYTES] __attribute__((aligned(64), section(".noncacheable")));
+static uint8_t gpu_mem[GPU_MEM_SIZE_BYTES] __attribute__((aligned(64), section(".noncacheable.non_init")));
 
 static int vg_lite_init(void);
 void vg_lite_hal_initialize(void)
@@ -555,6 +553,7 @@ void __attribute__((weak)) vg_lite_bus_error_handler()
      return;
 }
 
+SDK_DECLARE_EXT_ISR_M(IRQn_GPU, vg_lite_IRQHandler)
 void vg_lite_IRQHandler(void)
 {
     uint32_t flags = vg_lite_hal_peek(VG_LITE_INTR_STATUS);
@@ -572,7 +571,16 @@ void vg_lite_IRQHandler(void)
                 portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
             }
         }
+#if gcdVG_RECORD_HARDWARE_RUNNING_TIME
+        record_running_time();
+#endif
     }
+#if 0
+    if(flags = VGLITE_EVENT_FRAME_END){
+    /* A callback function can be added here to inform that gpu is idle. */
+        (*callback)();
+    }
+#endif
 }
 
 int32_t vg_lite_hal_wait_interrupt(uint32_t timeout, uint32_t mask, uint32_t *value)

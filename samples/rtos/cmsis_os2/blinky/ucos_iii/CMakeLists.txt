@@ -12,10 +12,8 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(cmsis_os2_blinky_ucos_iii)
 
-sdk_compile_definitions(-D__ucos_iii_irq_stack_top=_stack)
 sdk_compile_definitions(-DUSE_NONVECTOR_MODE=1)
 sdk_compile_definitions(-DDISABLE_IRQ_PREEMPTIVE=1)
-sdk_compile_definitions(-DCONFIG_UCOS_III=1)
 
 sdk_inc(./ucos_cfg)
 sdk_app_src(./ucos_cfg/os_app_hooks.c)

@@ -22,13 +22,6 @@
 #include "hpm_gpio_drv.h"
 #include "board.h"
 
-#if defined(BOARD_BUTTON_PRESSED_VALUE)
-#define APP_BUTTON_PRESSED_VALUE BOARD_BUTTON_PRESSED_VALUE
-#else
-#define APP_BUTTON_PRESSED_VALUE 0
-#endif
-
-
 #define EP_INTERVAL_HS 0x04
 #define EP_INTERVAL_FS 0x01
 
@@ -600,10 +593,14 @@ void midi_v1_task(uint8_t busid)
     const uint8_t channel = 0;   /* 0 for channel 1 */
     int ret;
 
+    if (usb_device_is_configured(busid) == false) {
+        return;
+    }
+
     switch (s_midi_state) {
     case 1:
         if (s_midi_in_busy == false) {
-            if (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) != APP_BUTTON_PRESSED_VALUE) {
+            if (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) != BOARD_BUTTON_PRESSED_VALUE) {
                 s_midi_in_buffer[0] = (cable_num << 4) | MIDI_CIN_NOTE_OFF;
                 s_midi_in_buffer[1] = NoteOff | channel;
                 s_midi_in_buffer[2] = s_note_sequence[s_note_pos];
@@ -627,7 +624,7 @@ void midi_v1_task(uint8_t busid)
     case 0:
     default:
         if (s_midi_in_busy == false) {
-            if (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) == APP_BUTTON_PRESSED_VALUE) {
+            if (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) == BOARD_BUTTON_PRESSED_VALUE) {
                 s_midi_in_buffer[0] = (cable_num << 4) | MIDI_CIN_NOTE_ON;
                 s_midi_in_buffer[1] = NoteOn | channel;
                 s_midi_in_buffer[2] = s_note_sequence[s_note_pos];
@@ -721,6 +718,7 @@ void speaker_init_i2s_dao(void)
     dao_init(HPM_DAO, &dao_config);
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 void isr_dma(void)
 {
     volatile uint32_t speaker_status;
@@ -737,7 +735,6 @@ void isr_dma(void)
         s_mic_dma_transfer_done = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 
 /* static function definition */
 static void usbd_audio_out_callback(uint8_t busid, uint8_t ep, uint32_t nbytes)

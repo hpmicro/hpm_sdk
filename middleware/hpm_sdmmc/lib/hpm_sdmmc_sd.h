@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -7,6 +7,15 @@
 
 #ifndef HPM_SDMMC_SD_H
 #define HPM_SDMMC_SD_H
+
+/**
+ *
+ * @brief HPM SDMMC SD driver APIs
+ * @defgroup hpm_sdmmc HPM SDMMC stack
+ *  @ingroup hpm_sdmmc_interfaces
+ * @{
+ *
+ */
 
 #include "hpm_sdmmc_common.h"
 #include "hpm_sdmmc_card.h"
@@ -21,10 +30,10 @@ typedef enum {
 } sd_timing_mode_t;
 
 typedef enum {
-    sd_drive_strength_typeb = 0,
-    sd_drive_strength_typea = 1,
-    sd_drive_strength_typec = 2,
-    sd_drive_strength_typed = 3
+    sd_drive_strength_type_b = 0,
+    sd_drive_strength_type_a = 1,
+    sd_drive_strength_type_c = 2,
+    sd_drive_strength_type_d = 3
 } sd_drive_strength_t;
 
 typedef enum {
@@ -118,38 +127,148 @@ typedef struct _sdmmc_sdcard {
 extern "C" {
 #endif
 
+/**
+ * @brief Initialize SD device
+ *
+ * @param [in,out] card SD card context
+ *
+ * @return Operation status
+ */
 hpm_stat_t sd_init(sd_card_t *card);
 
-void sd_deinit(sd_card_t *card);
+/**
+ * @brief De-Initialize SD device
+ *
+ * @param [in,out] card SD card context
+ *
+ * @return Operation status
+ */
+void sd_deinit(const sd_card_t *card);
 
+/**
+ * @brief Initialize SD card
+ *
+ * @param [in,out] card SD card context
+ *
+ * @return Operation status
+ */
 hpm_stat_t sd_card_init(sd_card_t *card);
 
+/**
+ * @brief De-Initialize SD card
+ *
+ * @param [in,out] card SD card context
+ *
+ * @return Operation status
+ */
 void sd_card_deinit(sd_card_t *card);
 
+/**
+ * @brief Initialize SD Host
+ *
+ * @param [in,out] card SD card context
+ *
+ * @return Operation status
+ */
 hpm_stat_t sd_host_init(sd_card_t *card);
 
+/**
+ * @brief De-Initialize SD Host
+ *
+ * @param [in,out] card SD card context
+ *
+ * @return Operation status
+ */
 hpm_stat_t sd_host_deinit(sd_card_t *card);
 
-void sd_set_card_power(sd_card_t *card, bool enable);
+/**
+ * @brief Check whether the SD card is present
+ *
+ * @param [in] card SD card context
+ *
+ * @return Operation status
+ */
+bool sd_is_card_present(const sd_card_t *card);
 
-bool sd_is_card_present(sd_card_t *card);
+/**
+ * @brief Select/Deselect SD card
+ * @param [in] card SD card context
+ * @param [in] is_selected true: select, false: deselect
+ *
+ * @return Command execution status
+ */
+hpm_stat_t sd_select_card(const sd_card_t *card, bool is_selected);
 
-bool sd_check_readonly(sd_card_t *card);
-
-hpm_stat_t sd_select_card(sd_card_t *card, bool is_selected);
-
+/**
+ * @brief Read SD card status
+ *
+ * @param [in] card SD card context
+ *
+ * @return Command execution status
+ */
 hpm_stat_t sd_read_status(sd_card_t *card);
 
+/**
+ * @brief Read data from specified SD block
+ *
+ * @param [in] card SD card context
+ * @param [out] buffer buffer to store data
+ * @param [in] start_block start block index
+ * @param [in] block_count Number of blocks to be read
+ *
+ * @return Command execution status
+ */
 hpm_stat_t sd_read_blocks(sd_card_t *card, uint8_t *buffer, uint32_t start_block, uint32_t block_count);
 
+/**
+ * @brief Write data to specified SD block
+ *
+ * @param [in] card SD card context
+ * @param [in] buffer Data buffer
+ * @param [in] start_block start block index
+ * @param [in] block_count Number of blocks to be written
+ *
+ * @return Command execution status
+ */
 hpm_stat_t sd_write_blocks(sd_card_t *card, const uint8_t *buffer, uint32_t start_block, uint32_t block_count);
 
+/**
+ * @brief Erase specified SD ranges
+ *
+ * @param [in] card SD card context
+ * @param [in] start_block start block index
+ * @param [in] block_count Number of blocks to be erased
+ *
+ * @return Command execution status
+ */
 hpm_stat_t sd_erase_blocks(sd_card_t *card, uint32_t start_block, uint32_t block_count);
 
+/**
+ * @brief Set the driver strength for SD card
+ *
+ * @param [in] card SD card context
+ * @param [in] driver_strength Driver strength
+ *
+ * @return Command execution status
+ */
 hpm_stat_t sd_set_driver_strength(sd_card_t *card, sd_drive_strength_t driver_strength);
 
+/**
+ * @brief Set the maximum current for SD card
+ * @param [in] card SD card context
+ * @param [in] max_current Maximum current
+ *
+ * @return Command execution status
+ */
 hpm_stat_t sd_set_max_current(sd_card_t *card, sd_max_current_t max_current);
 
+/**
+ * @brief Polling SD card status busy
+ * @param [in] card SD card context
+ * @param [in] timeout_ms Timeout in milliseconds
+ *
+ * @return Command execution status
+ */
 hpm_stat_t sd_polling_card_status_busy(sd_card_t *card, uint32_t timeout_ms);
 
 
@@ -157,4 +276,7 @@ hpm_stat_t sd_polling_card_status_busy(sd_card_t *card, uint32_t timeout_ms);
 }
 #endif
 
+/**
+ * @}
+ */
 #endif /* HPM_SDMMC_SD_H */

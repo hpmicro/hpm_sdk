@@ -253,10 +253,7 @@ void setup_sei(void)
     sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch1_event | sei_irq_trx_err_event);
     sei_set_irq_enable(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch1_event | sei_irq_trx_err_event, true);
 
-    /* [8] enbale sync timer timestamp */
-    synt_enable_timestamp(HPM_SYNT, true);
-
-    /* [9] engine config */
+    /* [8] engine config */
     printf("Started sei engine!\n");
     engine_config.arming_mode = sei_arming_wait_trigger;
     engine_config.data_cdm_idx = 0;
@@ -268,7 +265,7 @@ void setup_sei(void)
     engine_config.wdg_time = 1000;    /* 1000 bits time */
     sei_engine_config_init(BOARD_SEI, BOARD_SEI_CTRL, &engine_config);
 
-    /* [10] start engine and latch modules */
+    /* [9] start engine and latch modules */
 
     state_transition_latch_config.enable = true;
     state_transition_latch_config.output_select = SEI_CTRL_LATCH_TRAN_0_1;
@@ -281,7 +278,7 @@ void setup_sei(void)
 
     sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, true);
 
-    /* [11] trigger config */
+    /* [10] trigger config */
     trigger_input_conifg.trig_period_enable = true;
     trigger_input_conifg.trig_period_arming_mode = sei_arming_direct_exec;
     trigger_input_conifg.trig_period_sync_enable = false;
@@ -290,18 +287,19 @@ void setup_sei(void)
 
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_SEI_IRQn, isr_sei)
 void isr_sei(void)
 {
     uint32_t sample_latch_tm;
     uint32_t update_latch_tm;
-    uint32_t delta;
 
     if (sei_get_irq_status(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch1_event)) {
         sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch1_event);
         sei_pos_update_count++;
         sample_latch_tm = sei_get_latch_time(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0);
         update_latch_tm = sei_get_latch_time(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_1);
-        delta = (update_latch_tm > sample_latch_tm) ? (update_latch_tm - sample_latch_tm) : (update_latch_tm - sample_latch_tm + 0xFFFFFFFFu);
+        (void)sample_latch_tm;
+        (void)update_latch_tm;
         sei_mt = sei_get_data_value(BOARD_SEI, SEI_DAT_7);
         sei_st = sei_get_data_value(BOARD_SEI, SEI_DAT_5);
     }
@@ -311,7 +309,6 @@ void isr_sei(void)
         printf("TRX Error!\n");
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_SEI_IRQn, isr_sei)
 
 void mtg_init(MTGV2_Type *base)
 {
@@ -367,12 +364,12 @@ static void mtg_test_loop(void)
 
             mtg_get_tra_lock_result(APP_MTGV2_BASE, MTGV2_TRA_0, &result);
 
-            float delta = 1.0f * result.pos / 0xFFFFFFFF - sei_st * 1.0f / 0xFFFFFFFF;
+            float delta = 1.0f * (float)result.pos / (float)0xFFFFFFFF - (float)sei_st * 1.0f / (float)0xFFFFFFFF;
 
             printf("%d,%f,%f,%f,%d,%f\n", sei_pos_update_count, \
                                           result.time_stamp * 1.0f / mot_clock, \
-                                          sei_st * 1.0f / 0xFFFFFFFF, \
-                                          result.pos * 1.0f / 0xFFFFFFFF, \
+                                          (float)sei_st * 1.0f / (float)0xFFFFFFFF, \
+                                          (float)result.pos * 1.0f / (float)0xFFFFFFFF, \
                                           result.vel, \
                                           delta);
         }

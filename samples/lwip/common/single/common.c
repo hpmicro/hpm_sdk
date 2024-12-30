@@ -16,7 +16,8 @@
 #include "lwip/prot/dhcp.h"
 #include "osal.h"
 
-static enet_phy_status_t last_status;
+static enet_phy_status_t last_status = {.enet_phy_link = enet_phy_link_unknown};
+static uint8_t dhcp_last_state = DHCP_STATE_OFF;
 
 #if defined(NO_SYS) && !NO_SYS
 uint32_t msg;
@@ -42,7 +43,6 @@ void timer_callback(void *parameter)
 #if defined(LWIP_DHCP) && LWIP_DHCP
 void enet_update_dhcp_state(struct netif *netif)
 {
-    static uint8_t dhcp_last_state = DHCP_STATE_OFF;
     struct dhcp *dhcp = netif_dhcp_data(netif);
 
     if (netif_is_link_up(netif) == false) {
@@ -154,6 +154,11 @@ bool enet_get_link_status(void)
     return last_status.enet_phy_link;
 }
 
+bool enet_get_dhcp_ready_status(void)
+{
+    return (dhcp_last_state == DHCP_STATE_BOUND) ? true : false;
+}
+
 void enet_self_adaptive_port_speed(void)
 {
     enet_phy_status_t status = {0};
@@ -176,28 +181,30 @@ void enet_self_adaptive_port_speed(void)
     #endif
 #endif
 
-    if (memcmp(&last_status, &status, sizeof(enet_phy_status_t)) != 0) {
-        memcpy(&last_status, &status, sizeof(enet_phy_status_t));
-        if (status.enet_phy_link) {
-            printf("Link Status: Up\n");
-            printf("Link Speed:  %s\n", speed_str[status.enet_phy_speed]);
-            printf("Link Duplex: %s\n", duplex_str[status.enet_phy_duplex]);
-            enet_set_line_speed(ENET, line_speed[status.enet_phy_speed]);
-            enet_set_duplex_mode(ENET, status.enet_phy_duplex);
-            #if defined(NO_SYS) && !NO_SYS
-            msg = enet_phy_link_up;
-            sys_mbox_trypost_fromisr(&netif_status_mbox, &msg);
-            #else
-            netif_set_link_up(netif_get_by_index(LWIP_NETIF_IDX));
-            #endif
-        } else {
-            printf("Link Status: Down\n");
-            #if defined(NO_SYS) && !NO_SYS
-            msg = enet_phy_link_down;
-            sys_mbox_trypost_fromisr(&netif_status_mbox, &msg);
-            #else
-            netif_set_link_down(netif_get_by_index(LWIP_NETIF_IDX));
-            #endif
+    if (status.enet_phy_link || (status.enet_phy_link != last_status.enet_phy_link)) {
+        if (memcmp(&last_status, &status, sizeof(enet_phy_status_t)) != 0) {
+            memcpy(&last_status, &status, sizeof(enet_phy_status_t));
+            if (status.enet_phy_link) {
+                printf("Link Status: Up\n");
+                printf("Link Speed:  %s\n", speed_str[status.enet_phy_speed]);
+                printf("Link Duplex: %s\n", duplex_str[status.enet_phy_duplex]);
+                enet_set_line_speed(ENET, line_speed[status.enet_phy_speed]);
+                enet_set_duplex_mode(ENET, status.enet_phy_duplex);
+                #if defined(NO_SYS) && !NO_SYS
+                msg = enet_phy_link_up;
+                sys_mbox_trypost_fromisr(&netif_status_mbox, &msg);
+                #else
+                netif_set_link_up(netif_get_by_index(LWIP_NETIF_IDX));
+                #endif
+            } else {
+                printf("Link Status: Down\n");
+                #if defined(NO_SYS) && !NO_SYS
+                msg = enet_phy_link_down;
+                sys_mbox_trypost_fromisr(&netif_status_mbox, &msg);
+                #else
+                netif_set_link_down(netif_get_by_index(LWIP_NETIF_IDX));
+                #endif
+            }
         }
     }
 }
@@ -279,19 +286,19 @@ void isr_enet(ENET_Type *ptr)
 }
 
 #ifdef HPM_ENET0_BASE
+SDK_DECLARE_EXT_ISR_M(IRQn_ENET0, isr_enet0)
 void isr_enet0(void)
 {
     isr_enet(ENET);
 }
-SDK_DECLARE_EXT_ISR_M(IRQn_ENET0, isr_enet0)
 #endif
 
 #ifdef HPM_ENET1_BASE
+SDK_DECLARE_EXT_ISR_M(IRQn_ENET1, isr_enet1)
 void isr_enet1(void)
 {
     isr_enet(ENET);
 }
-SDK_DECLARE_EXT_ISR_M(IRQn_ENET1, isr_enet1)
 #endif
 
 #endif

@@ -680,17 +680,22 @@ rt_err_t rt_thread_control(rt_thread_t thread, int cmd, void *arg)
         return rt_thread_startup(thread);
 
     case RT_THREAD_CTRL_CLOSE:
+    {
+        rt_err_t rt_err;
 
         if (rt_object_is_systemobject((rt_object_t)thread) == RT_TRUE)
         {
-            return rt_thread_detach(thread);
+            rt_err = rt_thread_detach(thread);
         }
 #ifdef RT_USING_HEAP
         else
         {
-            return rt_thread_delete(thread);
+            rt_err = rt_thread_delete(thread);
         }
-#endif
+#endif /* RT_USING_HEAP */
+        rt_schedule();
+        return rt_err;
+    }
 
     default:
         break;

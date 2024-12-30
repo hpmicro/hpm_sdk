@@ -57,20 +57,8 @@ static void check_transfer_data(void)
 
 int main(void)
 {
-    hpm_stat_t stat;
-    i2c_config_t config;
-    uint32_t freq;
-
     board_init();
-    init_i2c_pins(TEST_I2C);
-
-    config.i2c_mode = i2c_mode_normal;
-    config.is_10bit_addressing = false;
-    freq = clock_get_frequency(TEST_I2C_CLOCK_NAME);
-    stat = i2c_init_master(TEST_I2C, freq, &config);
-    if (stat != status_success) {
-        return stat;
-    }
+    board_init_i2c(TEST_I2C);
 
     printf("I2C polling master example\n");
     prepare_tx_data();

@@ -1,7 +1,13 @@
 # Copyright (c) 2024 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 cmake_minimum_required(VERSION 3.0.0 FATAL_ERROR)
-
+# Define CONFIG_CUSTOM_RTOS_IRQ_STACK if there is need to change rtos's irq stack
+if(DEFINED CONFIG_CUSTOM_RTOS_IRQ_STACK)
+    sdk_compile_definitions(-D__threadx_irq_stack_top=${CONFIG_CUSTOM_RTOS_IRQ_STACK})
+else()
+    sdk_compile_definitions(-D__threadx_irq_stack_top=_stack)
+endif()
+sdk_compile_definitions(-DCONFIG_THREADX=1)
 sdk_compile_definitions(-DCONFIG_DISABLE_GLOBAL_IRQ_ON_STARTUP=1)
 sdk_compile_definitions(-DUSE_NONVECTOR_MODE=1)
 sdk_compile_definitions(-DTX_INCLUDE_USER_DEFINE_FILE=1)

@@ -2096,27 +2096,13 @@ De-assert this bit by write-1-clear the corresponding error status bits in the c
             <addressOffset>0x0</addressOffset>
             <size>32</size>
             <resetValue>0x00000000</resetValue>
-            <resetMask>0xFFFF01F4</resetMask>
+            <resetMask>0xFF0001F0</resetMask>
             <fields>
-              <field>
-                <name>GATE_SAMPLES</name>
-                <description>The number-1-3 of input PDM bit samples to be gated when CIC_GATE_EN=1. Max 255. So the minimum gated samples is 4 samples when GATE_SAMPLES=0.</description>
-                <bitOffset>16</bitOffset>
-                <bitWidth>8</bitWidth>
-                <access>read-write</access>
-              </field>
               <field>
                 <name>THRSH</name>
                 <description>FIFO threshold (0,..,16) (fillings &gt; threshold, then gen int)</description>
                 <bitOffset>4</bitOffset>
                 <bitWidth>5</bitWidth>
-                <access>read-write</access>
-              </field>
-              <field>
-                <name>D_RDY_INT_EN</name>
-                <description>FIFO data ready interrupt enable</description>
-                <bitOffset>2</bitOffset>
-                <bitWidth>1</bitWidth>
                 <access>read-write</access>
               </field>
             </fields>
@@ -2127,7 +2113,7 @@ De-assert this bit by write-1-clear the corresponding error status bits in the c
             <addressOffset>0x4</addressOffset>
             <size>32</size>
             <resetValue>0x00000000</resetValue>
-            <resetMask>0xFFFFFFFF</resetMask>
+            <resetMask>0xFFFEFFFF</resetMask>
             <fields>
               <field>
                 <name>MANCH_THR</name>
@@ -2141,13 +2127,6 @@ De-assert this bit by write-1-clear the corresponding error status bits in the c
                 <description>Watch dog threshold for channel failure of CLK halting</description>
                 <bitOffset>17</bitOffset>
                 <bitWidth>8</bitWidth>
-                <access>read-write</access>
-              </field>
-              <field>
-                <name>AF_IE</name>
-                <description>Acknowledge feedback interrupt enable</description>
-                <bitOffset>16</bitOffset>
-                <bitWidth>1</bitWidth>
                 <access>read-write</access>
               </field>
               <field>
@@ -2239,63 +2218,8 @@ De-assert this bit by write-1-clear the corresponding error status bits in the c
             <addressOffset>0x8</addressOffset>
             <size>32</size>
             <resetValue>0x00000000</resetValue>
-            <resetMask>0xFE77FFFF</resetMask>
+            <resetMask>0x0007FFFF</resetMask>
             <fields>
-              <field>
-                <name>CIC_GATE_TYPE</name>
-                <description>1: the gate cycle is determined by SDFIFOCTRLn[GATE_SAMPLES].
-0: the gate cycle is determined by the CIC decimation counter, and the minimal gated off PDM bits are determined by SDFIFOCTRLn[GATE_SAMPLES], and at the same time, to keep alignment with normal PCM sampling time.</description>
-                <bitOffset>31</bitOffset>
-                <bitWidth>1</bitWidth>
-                <access>read-write</access>
-              </field>
-              <field>
-                <name>CIC_GATE_POL</name>
-                <description>1: When mask signal is 1, pause the CIC stage at he rising edge of mask signal.
-0: When mask signal is 0, pause the CIC stage at he falling edge of mask signal.</description>
-                <bitOffset>30</bitOffset>
-                <bitWidth>1</bitWidth>
-                <access>read-write</access>
-              </field>
-              <field>
-                <name>CIC_GATE_SEL</name>
-                <description>Select the mask signal for CIC gate signal.</description>
-                <bitOffset>26</bitOffset>
-                <bitWidth>4</bitWidth>
-                <access>read-write</access>
-              </field>
-              <field>
-                <name>CIC_GATE_EN</name>
-                <description>1: the CIC stage can be paused by the mask input.
-0: the CIC stage won't be paused by the mask input.</description>
-                <bitOffset>25</bitOffset>
-                <bitWidth>1</bitWidth>
-                <access>read-write</access>
-              </field>
-              <field>
-                <name>TIMESTAMP_TYPE</name>
-                <description>1. Use the time (when the data is calculated out) - delta_time_of_filter_span as the timestamp.
-0: Use the time when the data is calculated out.</description>
-                <bitOffset>22</bitOffset>
-                <bitWidth>1</bitWidth>
-                <access>read-write</access>
-              </field>
-              <field>
-                <name>DFIFO_S_T</name>
-                <description>1: the output of SDFIFO is data and timestamp interleaved. First is data.
-0: the output of SDFIFO is data only</description>
-                <bitOffset>21</bitOffset>
-                <bitWidth>1</bitWidth>
-                <access>read-write</access>
-              </field>
-              <field>
-                <name>DATA_S_T</name>
-                <description>"1: the read output of SData is data and timestamp interleaved. First is data.
-0: the read output of SData is data only"</description>
-                <bitOffset>20</bitOffset>
-                <bitWidth>1</bitWidth>
-                <access>read-write</access>
-              </field>
               <field>
                 <name>SGD_ORDR</name>
                 <description>CIC order
@@ -2344,7 +2268,7 @@ Zero: Store all samples</description>
             <addressOffset>0xc</addressOffset>
             <size>32</size>
             <resetValue>0x00000000</resetValue>
-            <resetMask>0xFF8033FF</resetMask>
+            <resetMask>0xFF8002FF</resetMask>
             <fields>
               <field>
                 <name>PERIOD_MCLK</name>
@@ -2354,32 +2278,9 @@ Zero: Store all samples</description>
                 <access>read-only</access>
               </field>
               <field>
-                <name>SDATA_D0_T1</name>
-                <description>1: next readout is timestamp
-0: next readout is data</description>
-                <bitOffset>13</bitOffset>
-                <bitWidth>1</bitWidth>
-                <access>read-only</access>
-              </field>
-              <field>
-                <name>SDFIFO_D0_T1</name>
-                <description>1: next readout is timestamp
-0: next readout is data</description>
-                <bitOffset>12</bitOffset>
-                <bitWidth>1</bitWidth>
-                <access>read-only</access>
-              </field>
-              <field>
                 <name>FIFO_DR</name>
                 <description>FIFO data ready</description>
                 <bitOffset>9</bitOffset>
-                <bitWidth>1</bitWidth>
-                <access>write-only</access>
-              </field>
-              <field>
-                <name>AF</name>
-                <description>Achnowledge flag</description>
-                <bitOffset>8</bitOffset>
                 <bitWidth>1</bitWidth>
                 <access>write-only</access>
               </field>

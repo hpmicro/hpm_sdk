@@ -10,8 +10,13 @@
 #include <stdint.h>
 #include "lwip/netif.h"
 
+#ifndef TCP_DEST_PORT
 #define TCP_DEST_PORT   (5001U)
+#endif
+
+#ifndef TCP_POLL_INTERVAL
 #define TCP_POLL_INTERVAL (2)       /* 1s */
+#endif
 
 #if defined(__cplusplus)
 extern "C" {

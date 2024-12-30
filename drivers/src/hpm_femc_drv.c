@@ -6,6 +6,7 @@
  */
 
 #include "hpm_common.h"
+#include "hpm_soc_ip_feature.h"
 #include "hpm_femc_drv.h"
 
 #ifndef HPM_FEMC_DRV_DEFAULT_PRESCALER
@@ -20,8 +21,11 @@
 
 static void femc_config_delay_cell(FEMC_Type *ptr, bool delay_cell_en, uint32_t delay_cell_value)
 {
+    uint32_t delay_config;
+
+    delay_config = (FEMC_DLYCFG_DLYSEL_SET(delay_cell_value) | FEMC_DLYCFG_DLYEN_SET(delay_cell_en));
     ptr->DLYCFG &= ~FEMC_DLYCFG_OE_MASK;
-    ptr->DLYCFG = FEMC_DLYCFG_DLYSEL_SET(delay_cell_value) | FEMC_DLYCFG_DLYEN_SET(delay_cell_en);
+    ptr->DLYCFG = delay_config | (delay_config << 8u) | (delay_config << 16u) | (delay_config << 24u);
     ptr->DLYCFG |= FEMC_DLYCFG_OE_MASK;
 }
 
@@ -121,19 +125,21 @@ void femc_get_typical_sdram_config(FEMC_Type *ptr, femc_sdram_config_t *config)
     config->refresh_to_refresh_in_ns = 60;
     config->act_to_act_in_ns = 12;
     config->idle_timeout_in_ns = 6;
-    config->cs_mux_pin = FEMC_IO_MUX_NOT_USED;
 
     config->cmd_data_width = 4;
 }
 
 void femc_init(FEMC_Type *ptr, femc_config_t *config)
 {
-    uint32_t i;
     femc_axi_q_weight_t *q;
-    for (i = 0; i < FEMC_BR_COUNT; i++) {
-        ptr->BR[i] = 0;
-    }
 
+    ptr->BR[FEMC_BR_BASE0] = 0;
+    ptr->BR[FEMC_BR_BASE1] = 0;
+    ptr->BR[FEMC_BR_BASE6] = 0;
+#if defined (HPM_IP_FEATURE_FEMC_SRAM_CS1_CS2) && HPM_IP_FEATURE_FEMC_SRAM_CS1_CS2
+    ptr->BR2[FEMC_BR2_BASE0] = 0;
+    ptr->BR2[FEMC_BR2_BASE1] = 0;
+#endif
     femc_sw_reset(ptr);
     femc_disable(ptr);
     ptr->CTRL |= FEMC_CTRL_BTO_SET(config->bus_timeout)
@@ -242,8 +248,9 @@ hpm_stat_t femc_config_sdram(FEMC_Type *ptr, uint32_t clk_in_hz, femc_sdram_conf
         refresh_cycle = 0;
     }
 
-    ptr->BR[config->cs] = FEMC_BR_BASE_SET(config->base_address >> FEMC_BR_BASE_SHIFT)
-                        | FEMC_BR_SIZE_SET(size) | FEMC_BR_VLD_MASK;
+    if (config->cs == 1) {
+        ptr->IOCTRL = (ptr->IOCTRL & ~FEMC_IOCTRL_IO_CSX_MASK) | FEMC_IOCTRL_IO_CSX_SET(FEMC_IO_CSX_SDRAM_CS1);
+    }
 
     ptr->SDRCTRL0 = FEMC_SDRCTRL0_PORTSZ_SET(config->port_size)
                   | FEMC_SDRCTRL0_BURSTLEN_SET(burst_len)
@@ -268,6 +275,8 @@ hpm_stat_t femc_config_sdram(FEMC_Type *ptr, uint32_t clk_in_hz, femc_sdram_conf
                   | FEMC_SDRCTRL3_RT_SET(refresh_cycle)
                   | FEMC_SDRCTRL3_UT_SET(refresh_cycle)
                   | FEMC_SDRCTRL3_REBL_SET(config->auto_refresh_count_in_one_burst - 1);
+
+    ptr->BR[config->cs] = FEMC_BR_BASE_SET(config->base_address >> FEMC_BR_BASE_SHIFT) | FEMC_BR_SIZE_SET(size) | FEMC_BR_VLD_MASK;
 
     /*
      * config delay cell
@@ -319,6 +328,7 @@ void femc_get_typical_sram_config(FEMC_Type *ptr, femc_sram_config_t *config)
     (void) ptr;
     config->base_address = 0x48000000;
     config->size_in_byte = 4096;
+    config->cs_index = 0;
     config->address_mode = FEMC_SRAM_AD_NONMUX_MODE;
     config->port_size = FEMC_SRAM_PORT_SIZE_8_BITS;
     config->adv_hold_state = FEMC_SRAM_ADV_HOLD_LOW;
@@ -327,8 +337,8 @@ void femc_get_typical_sram_config(FEMC_Type *ptr, femc_sram_config_t *config)
     config->oel_in_ns = 50;
     config->weh_in_ns = 0;
     config->wel_in_ns = 50;
-    config->ah_in_ns = 50;
-    config->as_in_ns = 0;
+    config->ah_in_ns = 25;
+    config->as_in_ns = 25;
     config->ceh_in_ns = 0;
     config->ces_in_ns = 0;
 }
@@ -336,26 +346,47 @@ void femc_get_typical_sram_config(FEMC_Type *ptr, femc_sram_config_t *config)
 hpm_stat_t femc_config_sram(FEMC_Type *ptr, uint32_t clk_in_hz, femc_sram_config_t *config)
 {
     uint8_t size = femc_convert_actual_size_to_memory_size(config->size_in_byte >> 10);
+    uint32_t srctrl0, srctrl1, br;
 
-    ptr->IOCTRL = FEMC_IOCTRL_IO_CSX_SET(FEMC_IO_CSX_SRAM_CE);
+    srctrl0 = FEMC_SRCTRL0_ADVH_SET(config->adv_hold_state)
+            | FEMC_SRCTRL0_ADVP_SET(config->adv_polarity)
+            | FEMC_SRCTRL0_ADM_SET(config->address_mode)
+            | FEMC_SRCTRL0_PORTSZ_SET(config->port_size);
 
-    ptr->BR[FEMC_BR_BASE6] = FEMC_BR_BASE_SET(config->base_address >> FEMC_BR_BASE_SHIFT)
-                           | FEMC_BR_SIZE_SET(size)
-                           | FEMC_BR_VLD_MASK;
+    srctrl1 = FEMC_SRCTRL1_OEH_SET(ns2cycle(clk_in_hz, config->oeh_in_ns, FEMC_SRCTRL1_OEH_MASK >> FEMC_SRCTRL1_OEH_SHIFT))
+            | FEMC_SRCTRL1_OEL_SET(ns2cycle(clk_in_hz, config->oel_in_ns, FEMC_SRCTRL1_OEL_MASK >> FEMC_SRCTRL1_OEL_SHIFT))
+            | FEMC_SRCTRL1_WEH_SET(ns2cycle(clk_in_hz, config->weh_in_ns, FEMC_SRCTRL1_WEH_MASK >> FEMC_SRCTRL1_WEH_SHIFT))
+            | FEMC_SRCTRL1_WEL_SET(ns2cycle(clk_in_hz, config->wel_in_ns, FEMC_SRCTRL1_WEL_MASK >> FEMC_SRCTRL1_WEL_SHIFT))
+            | FEMC_SRCTRL1_AH_SET(ns2cycle(clk_in_hz, config->ah_in_ns, FEMC_SRCTRL1_AH_MASK >> FEMC_SRCTRL1_AH_SHIFT))
+            | FEMC_SRCTRL1_AS_SET(ns2cycle(clk_in_hz, config->as_in_ns, FEMC_SRCTRL1_AS_MASK >> FEMC_SRCTRL1_AS_SHIFT))
+            | FEMC_SRCTRL1_CEH_SET(ns2cycle(clk_in_hz, config->ceh_in_ns, FEMC_SRCTRL1_CEH_MASK >> FEMC_SRCTRL1_CEH_SHIFT))
+            | FEMC_SRCTRL1_CES_SET(ns2cycle(clk_in_hz, config->ces_in_ns, FEMC_SRCTRL1_CES_MASK >> FEMC_SRCTRL1_CES_SHIFT));
 
-    ptr->SRCTRL0 = FEMC_SRCTRL0_ADVH_SET(config->adv_hold_state)
-                 | FEMC_SRCTRL0_ADVP_SET(config->adv_polarity)
-                 | FEMC_SRCTRL0_ADM_SET(config->address_mode)
-                 | FEMC_SRCTRL0_PORTSZ_SET(config->port_size);
+    br = FEMC_BR_BASE_SET(config->base_address >> FEMC_BR_BASE_SHIFT) | FEMC_BR_SIZE_SET(size) | FEMC_BR_VLD_MASK;
 
-    ptr->SRCTRL1 = FEMC_SRCTRL1_OEH_SET(ns2cycle(clk_in_hz, config->oeh_in_ns, FEMC_SRCTRL1_OEH_MASK >> FEMC_SRCTRL1_OEH_SHIFT))
-                 | FEMC_SRCTRL1_OEL_SET(ns2cycle(clk_in_hz, config->oel_in_ns, FEMC_SRCTRL1_OEL_MASK >> FEMC_SRCTRL1_OEL_SHIFT))
-                 | FEMC_SRCTRL1_WEH_SET(ns2cycle(clk_in_hz, config->weh_in_ns, FEMC_SRCTRL1_WEH_MASK >> FEMC_SRCTRL1_WEH_SHIFT))
-                 | FEMC_SRCTRL1_WEL_SET(ns2cycle(clk_in_hz, config->wel_in_ns, FEMC_SRCTRL1_WEL_MASK >> FEMC_SRCTRL1_WEL_SHIFT))
-                 | FEMC_SRCTRL1_AH_SET(ns2cycle(clk_in_hz, config->ah_in_ns, FEMC_SRCTRL1_AH_MASK >> FEMC_SRCTRL1_AH_SHIFT))
-                 | FEMC_SRCTRL1_AS_SET(ns2cycle(clk_in_hz, config->as_in_ns, FEMC_SRCTRL1_AS_MASK >> FEMC_SRCTRL1_AS_SHIFT))
-                 | FEMC_SRCTRL1_CEH_SET(ns2cycle(clk_in_hz, config->ceh_in_ns, FEMC_SRCTRL1_CEH_MASK >> FEMC_SRCTRL1_CEH_SHIFT))
-                 | FEMC_SRCTRL1_CES_SET(ns2cycle(clk_in_hz, config->ces_in_ns, FEMC_SRCTRL1_CES_MASK >> FEMC_SRCTRL1_CES_SHIFT));
+#if defined (HPM_IP_FEATURE_FEMC_SRAM_CS1_CS2) && HPM_IP_FEATURE_FEMC_SRAM_CS1_CS2
+    if (config->cs_index == 1) {
+        ptr->IOCTRL = (ptr->IOCTRL & ~FEMC_IOCTRL_IO_SCS_0_MASK) | FEMC_IOCTRL_IO_SCS_0_SET(8u);
+        ptr->SRCTRL2 = srctrl0;
+        ptr->SRCTRL3 = srctrl1;
+        ptr->BR2[FEMC_BR2_BASE0] = br;
+    } else if (config->cs_index == 2) {
+        ptr->IOCTRL = (ptr->IOCTRL & ~FEMC_IOCTRL_IO_SCS_1_MASK) | FEMC_IOCTRL_IO_SCS_1_SET(9u);
+        ptr->SRCTRL2 = srctrl0;
+        ptr->SRCTRL3 = srctrl1;
+        ptr->BR2[FEMC_BR2_BASE1] = br;
+    } else {
+        ptr->IOCTRL = (ptr->IOCTRL & ~FEMC_IOCTRL_IO_CSX_MASK) | FEMC_IOCTRL_IO_CSX_SET(FEMC_IO_CSX_SRAM_CE);
+        ptr->SRCTRL0 = srctrl0;
+        ptr->SRCTRL1 = srctrl1;
+        ptr->BR[FEMC_BR_BASE6] = br;
+    }
+#else
+    ptr->IOCTRL = (ptr->IOCTRL & ~FEMC_IOCTRL_IO_CSX_MASK) | FEMC_IOCTRL_IO_CSX_SET(FEMC_IO_CSX_SRAM_CE);
+    ptr->SRCTRL0 = srctrl0;
+    ptr->SRCTRL1 = srctrl1;
+    ptr->BR[FEMC_BR_BASE6] = br;
+#endif
 
     return status_success;
 }

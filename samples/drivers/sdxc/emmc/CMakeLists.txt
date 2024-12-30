@@ -1,4 +1,4 @@
-# Copyright (c) 2023 HPMicro
+# Copyright (c) 2023-2024 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -10,6 +10,9 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(emmc_example)
 
 sdk_compile_definitions(-DHPM_SDMMC_ENABLE_CACHE_MAINTENANCE=0)
+
+# Note: enable the following definition to enable interrupt-based transfer
+# sdk_compile_definitions(-DHPM_SDMMC_HOST_ENABLE_IRQ=1)
 
 sdk_inc(src)
 

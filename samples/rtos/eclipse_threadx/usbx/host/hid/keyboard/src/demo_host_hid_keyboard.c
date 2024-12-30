@@ -73,6 +73,8 @@ static UINT demo_class_hid_get(KEYBOARD_THREAD_DATA *data)
     do {
         hid = NULL;
         status = ux_host_stack_class_instance_get(class, class_index, (void **)&hid);
+        if (status != UX_SUCCESS)
+            return status;
         if (hid != NULL) {
             if (strcmp((const char*)hid->ux_host_class_hid_client->ux_host_class_hid_client_name, \
                        (const char*)_ux_system_host_class_hid_client_keyboard_name) == 0) {
@@ -304,7 +306,7 @@ int main(void)
 {
     /* Initialize the board. */
     board_init();
-    board_init_usb_pins();
+    board_init_usb(HPM_USB0);
     board_init_gpio_pins();
 
     usb_host_hw_setup();

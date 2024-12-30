@@ -389,7 +389,7 @@ void pwm_init(void)
     pwmv2_select_cmp_source(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_TRIG_CMP, cmp_value_from_shadow_val, PWMV2_SHADOW_INDEX(9));
     pwmv2_set_trigout_cmp_index(MOTOR0_BLDCPWM, BOARD_BLDC_PWM_TRIG_OUT_CHN, BOARD_BLDCPWM_CMP_TRIG_CMP);
     pwmv2_cmp_select_counter(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_TRIG_CMP, pwm_counter_0);
-    pwmv2_shadow_register_lock(MOTOR0_BLDCPWM);
+    pwmv2_issue_shadow_register_lock_event(MOTOR0_BLDCPWM);
 
     pwmv2_enable_counter(MOTOR0_BLDCPWM, pwm_counter_0);
     pwmv2_enable_counter(MOTOR0_BLDCPWM, pwm_counter_1);
@@ -400,10 +400,10 @@ void pwm_init(void)
 }
 #endif
 
+SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_TMR_IRQ, isr_gptmr)
 void isr_gptmr(void)
 {
     static int32_t start_times = 0;
-    static uint8_t timer_times = 0;
     static uint32_t timer_1ms = 0;
     static float last_set_speed = 0;
 
@@ -411,7 +411,6 @@ void isr_gptmr(void)
         gptmr_clear_status(BOARD_BLDC_TMR_1MS, GPTMR_CH_CMP_IRQ_MASK(BOARD_BLDC_TMR_CH, BOARD_BLDC_TMR_CMP));
         timer_1ms++;
         if (timer_1ms >= 10) {
-            timer_times++;
             start_times++;
             timer_1ms = 0;
             timer_flag = !timer_flag;
@@ -461,7 +460,6 @@ void isr_gptmr(void)
                 start_times++;
             }
         }
-        timer_times = 0;
 #if SEGGER_RTT_ENABLE
         rtt_disp_val.pwm_output = motor0.speedloop_para.outval;
         rtt_disp_val.speed_smc = pll_speed_control.o_speedout_filter;
@@ -473,12 +471,12 @@ void isr_gptmr(void)
 #endif
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_TMR_IRQ, isr_gptmr)
 
 static void timer_init(void)
 {
     gptmr_channel_config_t config;
 
+    clock_add_to_group(BOARD_BLDC_TMR_CLOCK, 0);
     gptmr_channel_get_default_config(BOARD_BLDC_TMR_1MS, &config);
     config.debug_mode = 0;
     config.reload = SENSORLESS_TMR_RELOAD + 1;
@@ -517,6 +515,7 @@ void motor0_highspeed_loop(void)
     pll_speed_control.func_getspd(&pll_speed_control);
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_ADC_IRQn, isr_adc)
 void isr_adc(void)
 {
     uint32_t status;
@@ -527,7 +526,6 @@ void isr_adc(void)
         motor0.adc_trig_event_callback();
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_ADC_IRQn, isr_adc)
 
 void init_trigger_cfg(uint8_t trig_ch, bool inten)
 {

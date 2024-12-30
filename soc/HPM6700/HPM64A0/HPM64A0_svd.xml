@@ -11836,7 +11836,7 @@ Hardware will automatically clear this bit when selected CLUT is updated accordi
           <addressOffset>0x0</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0xBF9AAFFF</resetMask>
+          <resetMask>0xBE9AAFFF</resetMask>
           <fields>
             <field>
               <name>COLOR_EXT</name>
@@ -11879,15 +11879,6 @@ Data in RX FIFO = 0x11223344
 0 Disable swapping
 1 Enable swapping</description>
               <bitOffset>25</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>PACK_DIR</name>
-              <description>Data Packing Direction. This bit Controls how 8-bit/10-bit image data is packed into 32-bit RX FIFO.
-0 Pack from LSB first. For image data, 0x11, 0x22, 0x33, 0x44, it will appear as 0x44332211 in RX FIFO.
-1 Pack from MSB first. For image data, 0x11, 0x22, 0x33, 0x44, it will appear as 0x11223344 in RX FIFO.</description>
-              <bitOffset>24</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
@@ -11963,7 +11954,6 @@ Note: YUV420 is not supported.
             <field>
               <name>SENSOR_BIT_WIDTH</name>
               <description>the bit width of the sensor
-0: 8 bits
 1: 10 bits
 3:24bits
 Others: Undefined</description>
@@ -12291,40 +12281,6 @@ As the input data from the sensor is 8-bit/pixel format, the IMAGE_WIDTH should 
               <description>AWQOS for bus fabric arbitration</description>
               <bitOffset>7</bitOffset>
               <bitWidth>4</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>DMASA_UV1</name>
-          <description>Pixel UV DMA Frame Buffer 1 Address</description>
-          <addressOffset>0x50</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>PTR</name>
-              <description>Two Plane UV Buffer Start Address 1</description>
-              <bitOffset>2</bitOffset>
-              <bitWidth>30</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>DMASA_UV2</name>
-          <description>Pixel UV DMA Frame Buffer 2 Address</description>
-          <addressOffset>0x54</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>PTR</name>
-              <description>Two Plane UV Buffer Start Address 2</description>
-              <bitOffset>2</bitOffset>
-              <bitWidth>30</bitWidth>
               <access>read-write</access>
             </field>
           </fields>
@@ -18276,7 +18232,13 @@ The actual clock is of different frequency that gets synchronized every second. 
 - When PPSCTRL = 0011, the PPS (4 Hz) is a sequence of:
   - Three clocks of 50 percent duty cycle and 268 ms period
   - Fourth clock of 195 ms period (134 ms low and 61 ms high)
+--------------------------------------------------------------------------------------------------------------------------------------
 PPSCMD0: Flexible PPS0 Output Control
+Programming these bits with a non-zero value instructs the MAC to
+initiate an event. When the command is transferred or synchronized to
+the PTP clock domain, these bits get cleared automatically. The
+Software should ensure that these bits are programmed only when they
+are “all-zero”.
 0000: No Command
 0001: START Single Pulse
 This command generates single pulse rising at the start point defined in

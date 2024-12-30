@@ -55,6 +55,7 @@
 static void mtg_init(MTG_Type *base);
 static void mtg_result_output(MTG_Type *base);
 
+SDK_DECLARE_EXT_ISR_M(APP_MTG_IRQ, isr_mtg)
 void isr_mtg(void)
 {
     if (mtg_get_irq_status(APP_MTG_BASE, 0)) {
@@ -70,7 +71,6 @@ void isr_mtg(void)
         mtg_clear_irq_status(APP_MTG_BASE, 2);
     }
 }
-SDK_DECLARE_EXT_ISR_M(APP_MTG_IRQ, isr_mtg)
 
 /* Function definition */
 int main(void)
@@ -183,7 +183,7 @@ void mtg_result_output(MTG_Type *base)
     while (1) {
         mtg_get_tra_lock_result(base, APP_MTG_TRA_INDEX, &mtg_lock_val);
         printf("/*LOCK_REV_POS=%f,LOCK_VEL=%f,LOCK_ACC=%f,LOCK_TIME=0x%x*/\n",
-               mtg_lock_val.rev + mtg_lock_val.pos * 1.0f / 0xFFFFFFFF,\
+               mtg_lock_val.rev + (float)mtg_lock_val.pos * 1.0f / (float)0xFFFFFFFF,\
                1.0f * (int32_t)mtg_lock_val.vel / mtg_calc_vel_preset(base, APP_MTG_CLK_SRC, MTG_TRA_CMD_INDEX0, 1),\
                1.0f * (int32_t)mtg_lock_val.acc / mtg_calc_acc_preset(base, APP_MTG_CLK_SRC, MTG_TRA_CMD_INDEX0, 1),\
                mtg_lock_val.time_stamp);

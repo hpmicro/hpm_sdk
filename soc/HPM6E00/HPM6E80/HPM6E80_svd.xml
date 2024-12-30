@@ -1688,12 +1688,6 @@ User should set this bit before set CMPEN to 1.</description>
       <baseAddress>0xf1410000</baseAddress>
     </peripheral>
     <peripheral derivedFrom="GPTMR0">
-      <name>NTMR1</name>
-      <description>NTMR1</description>
-      <groupName>GPTMR</groupName>
-      <baseAddress>0xf1414000</baseAddress>
-    </peripheral>
-    <peripheral derivedFrom="GPTMR0">
       <name>PTMR</name>
       <description>PTMR</description>
       <groupName>GPTMR</groupName>
@@ -19804,7 +19798,7 @@ De-assert this bit by write-1-clear the corresponding error status bits in the c
             <addressOffset>0x0</addressOffset>
             <size>32</size>
             <resetValue>0x00000000</resetValue>
-            <resetMask>0xFFFF01F4</resetMask>
+            <resetMask>0xFFFF01F0</resetMask>
             <fields>
               <field>
                 <name>GATE_SAMPLES</name>
@@ -19820,13 +19814,6 @@ De-assert this bit by write-1-clear the corresponding error status bits in the c
                 <bitWidth>5</bitWidth>
                 <access>read-write</access>
               </field>
-              <field>
-                <name>D_RDY_INT_EN</name>
-                <description>FIFO data ready interrupt enable</description>
-                <bitOffset>2</bitOffset>
-                <bitWidth>1</bitWidth>
-                <access>read-write</access>
-              </field>
             </fields>
           </register>
           <register>
@@ -19835,7 +19822,7 @@ De-assert this bit by write-1-clear the corresponding error status bits in the c
             <addressOffset>0x4</addressOffset>
             <size>32</size>
             <resetValue>0x00000000</resetValue>
-            <resetMask>0xFFFFFFFF</resetMask>
+            <resetMask>0xFFFEFFFF</resetMask>
             <fields>
               <field>
                 <name>MANCH_THR</name>
@@ -19849,13 +19836,6 @@ De-assert this bit by write-1-clear the corresponding error status bits in the c
                 <description>Watch dog threshold for channel failure of CLK halting</description>
                 <bitOffset>17</bitOffset>
                 <bitWidth>8</bitWidth>
-                <access>read-write</access>
-              </field>
-              <field>
-                <name>AF_IE</name>
-                <description>Acknowledge feedback interrupt enable</description>
-                <bitOffset>16</bitOffset>
-                <bitWidth>1</bitWidth>
                 <access>read-write</access>
               </field>
               <field>
@@ -20052,7 +20032,7 @@ Zero: Store all samples</description>
             <addressOffset>0xc</addressOffset>
             <size>32</size>
             <resetValue>0x00000000</resetValue>
-            <resetMask>0xFF8033FF</resetMask>
+            <resetMask>0xFF8032FF</resetMask>
             <fields>
               <field>
                 <name>PERIOD_MCLK</name>
@@ -20063,16 +20043,16 @@ Zero: Store all samples</description>
               </field>
               <field>
                 <name>SDATA_D0_T1</name>
-                <description>1: next readout is timestamp
-0: next readout is data</description>
+                <description>1: current value in SDATA is data
+0: current value in SDATA is timestamp</description>
                 <bitOffset>13</bitOffset>
                 <bitWidth>1</bitWidth>
                 <access>read-only</access>
               </field>
               <field>
                 <name>SDFIFO_D0_T1</name>
-                <description>1: next readout is timestamp
-0: next readout is data</description>
+                <description>1: first value readout from FIFO is data
+0: first value readout from FIFO is timestamp</description>
                 <bitOffset>12</bitOffset>
                 <bitWidth>1</bitWidth>
                 <access>read-only</access>
@@ -20081,13 +20061,6 @@ Zero: Store all samples</description>
                 <name>FIFO_DR</name>
                 <description>FIFO data ready</description>
                 <bitOffset>9</bitOffset>
-                <bitWidth>1</bitWidth>
-                <access>write-only</access>
-              </field>
-              <field>
-                <name>AF</name>
-                <description>Achnowledge flag</description>
-                <bitOffset>8</bitOffset>
                 <bitWidth>1</bitWidth>
                 <access>write-only</access>
               </field>
@@ -20988,16 +20961,16 @@ Software need reset timer first to start another one shot</description>
               </field>
               <field>
                 <name>RESTART</name>
-                <description>Restart tranceiver, this is a self clear bit
+                <description>Restart transceiver, this is a self clear bit
 0: no effect
-1: reset tranceiver</description>
+1: reset transceiver</description>
                 <bitOffset>4</bitOffset>
                 <bitWidth>1</bitWidth>
                 <access>write-only</access>
               </field>
               <field>
                 <name>MODE</name>
-                <description>Tranceiver mode
+                <description>Transceiver mode
 0: synchronous maaster
 1: synchronous slave
 2: asynchronous mode
@@ -23765,12 +23738,12 @@ Note: CRC register will be cleared automatically by UPDATE if select the DATA re
             </field>
             <field>
               <name>OPR</name>
-              <description>[1] When OP is 0, this area is the halt time in baudrate, 0 represents infinite time.
-[2] When OP is 1, this area is the the pointer to the command table.
+              <description>a. When OP is 0, this area is the halt time in baudrate, 0 represents infinite time.
+b. When OP is 1, this area is the the pointer to the command table.
 OPR[4]=1, OPR[3:0] value is CMD_TABLE instruct pointer;
 OPR[4]=0, OPR[3:0]=0 is INIT_POINTER;
 OPR[4]=0, OPR[3:0]=1 is WDG_POINTER.
-[3] When OP is 2-7, this area is the data length as fellow:
+c. When OP is 2-7, this area is the data length as fellow:
 0: 1 bit
 1: 2 bit
  ...
@@ -24834,7 +24807,7 @@ OPR[4]=0, OPR[3:0]=1 is WDG_POINTER.
         <register>
           <dim>8</dim>
           <dimIncrement>0x4</dimIncrement>
-          <dimIndex>0,4,1,5,2,6,3,7</dimIndex>
+          <dimIndex>0,1,2,3,4,5,6,7</dimIndex>
           <name>TRGM_IN[%s]</name>
           <description>no description available</description>
           <addressOffset>0x600</addressOffset>
@@ -26628,12 +26601,19 @@ OPR[4]=0, OPR[3:0]=1 is WDG_POINTER.
           <addressOffset>0x0</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0x8FFF3338</resetMask>
+          <resetMask>0xCFFF3338</resetMask>
           <fields>
             <field>
               <name>PHASE_ABSENT_MODE</name>
               <description>whether using value_a and value_b instead of three phase</description>
               <bitOffset>31</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>POSTION_USE_LAST_LOCKED</name>
+              <description>position will not blockage vsc convert. always use last locked position, it should be cfg to 1 when position_capture_mode=2'b00 and adc valure are injected by software;</description>
+              <bitOffset>30</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
@@ -31979,7 +31959,13 @@ The actual clock is of different frequency that gets synchronized every second. 
 - When PPSCTRL = 0011, the PPS (4 Hz) is a sequence of:
   - Three clocks of 50 percent duty cycle and 268 ms period
   - Fourth clock of 195 ms period (134 ms low and 61 ms high)
+--------------------------------------------------------------------------------------------------------------------------------------
 PPSCMD0: Flexible PPS0 Output Control
+Programming these bits with a non-zero value instructs the MAC to
+initiate an event. When the command is transferred or synchronized to
+the PTP clock domain, these bits get cleared automatically. The
+Software should ensure that these bits are programmed only when they
+are “all-zero”.
 0000: No Command
 0001: START Single Pulse
 This command generates single pulse rising at the start point defined in
@@ -33510,12 +33496,6 @@ refclk is always from pad, can use external clock from pad, or use internal cloc
           </fields>
         </register>
       </registers>
-    </peripheral>
-    <peripheral derivedFrom="ENET0">
-      <name>ENET1</name>
-      <description>ENET1</description>
-      <groupName>ENET</groupName>
-      <baseAddress>0xf1404000</baseAddress>
     </peripheral>
     <peripheral>
       <name>USB0</name>
@@ -39052,7 +39032,7 @@ be non-normalized.</description>
               <description>Select entry. Selected entry mapped to 0x40 – 0x5C.</description>
               <bitOffset>0</bitOffset>
               <bitWidth>8</bitWidth>
-              <access>read-only</access>
+              <access>read-write</access>
             </field>
           </fields>
         </register>
@@ -39184,6 +39164,23 @@ be non-normalized.</description>
           </fields>
         </register>
         <register>
+          <name>CPU_PORT_EGRESS_STMID_AMACLO</name>
+          <description>No description available</description>
+          <addressOffset>0x12858</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0xFFFFFFFF</resetMask>
+          <fields>
+            <field>
+              <name>AMACL</name>
+              <description>Active Destination MAC, MAC-Address [31:0]</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>32</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
           <name>CPU_PORT_EGRESS_STMID_AMACHI</name>
           <description>No description available</description>
           <addressOffset>0x1285c</addressOffset>
@@ -39217,7 +39214,7 @@ be non-normalized.</description>
         <register>
           <name>CPU_PORT_EGRESS_FRER_CONTROL</name>
           <description>Frame Replication and Elimination</description>
-          <addressOffset>0x12a00</addressOffset>
+          <addressOffset>0x12900</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
           <resetMask>0x00000003</resetMask>
@@ -39241,7 +39238,7 @@ be non-normalized.</description>
         <register>
           <name>CPU_PORT_EGRESS_FRER_SIDSEL</name>
           <description>No description available</description>
-          <addressOffset>0x12a04</addressOffset>
+          <addressOffset>0x12904</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
           <resetMask>0x000000FF</resetMask>
@@ -39258,7 +39255,7 @@ be non-normalized.</description>
         <register>
           <name>CPU_PORT_EGRESS_FRER_IRFUNC</name>
           <description>No description available</description>
-          <addressOffset>0x12a08</addressOffset>
+          <addressOffset>0x12908</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
           <resetMask>0x800000FF</resetMask>
@@ -39282,7 +39279,7 @@ be non-normalized.</description>
         <register>
           <name>CPU_PORT_EGRESS_FRER_SRFUNC</name>
           <description>No description available</description>
-          <addressOffset>0x12a0c</addressOffset>
+          <addressOffset>0x1290c</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
           <resetMask>0x800000FF</resetMask>
@@ -39306,7 +39303,7 @@ be non-normalized.</description>
         <register>
           <name>CPU_PORT_EGRESS_FRER_FSELECT</name>
           <description>No description available</description>
-          <addressOffset>0x12a10</addressOffset>
+          <addressOffset>0x12910</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
           <resetMask>0x000000FF</resetMask>
@@ -39323,7 +39320,7 @@ be non-normalized.</description>
         <register>
           <name>CPU_PORT_EGRESS_FRER_FCTRL</name>
           <description>No description available</description>
-          <addressOffset>0x12a40</addressOffset>
+          <addressOffset>0x12940</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
           <resetMask>0x80FFFFFF</resetMask>
@@ -39382,7 +39379,7 @@ be non-normalized.</description>
         <register>
           <name>CPU_PORT_EGRESS_FRER_RESETMSEC</name>
           <description>No description available</description>
-          <addressOffset>0x12a44</addressOffset>
+          <addressOffset>0x12944</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
           <resetMask>0x00FFFFFF</resetMask>
@@ -39399,7 +39396,7 @@ be non-normalized.</description>
         <register>
           <name>CPU_PORT_EGRESS_FRER_LatRsPeriod</name>
           <description>No description available</description>
-          <addressOffset>0x12a48</addressOffset>
+          <addressOffset>0x12948</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
           <resetMask>0x00FFFFFF</resetMask>
@@ -39416,7 +39413,7 @@ be non-normalized.</description>
         <register>
           <name>CPU_PORT_EGRESS_FRER_LatTestPeriod</name>
           <description>No description available</description>
-          <addressOffset>0x12a4c</addressOffset>
+          <addressOffset>0x1294c</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
           <resetMask>0x00FFFFFF</resetMask>
@@ -39433,7 +39430,7 @@ be non-normalized.</description>
         <register>
           <name>CPU_PORT_EGRESS_FRER_LatErrDiffAlw</name>
           <description>No description available</description>
-          <addressOffset>0x12a50</addressOffset>
+          <addressOffset>0x12950</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
           <resetMask>0xFFFFFFFF</resetMask>
@@ -39450,7 +39447,7 @@ be non-normalized.</description>
         <register>
           <name>CPU_PORT_EGRESS_FRER_LatErrCnt</name>
           <description>No description available</description>
-          <addressOffset>0x12a54</addressOffset>
+          <addressOffset>0x12954</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
           <resetMask>0xFFFFFFFF</resetMask>
@@ -39470,7 +39467,7 @@ be non-normalized.</description>
           <dimIndex>CPU_PORT_EGRESS_FRER_CNT0,CPU_PORT_EGRESS_FRER_CNT1,CPU_PORT_EGRESS_FRER_CNT2,CPU_PORT_EGRESS_FRER_CNT3,CPU_PORT_EGRESS_FRER_CNT4,CPU_PORT_EGRESS_FRER_CNT5,CPU_PORT_EGRESS_FRER_CNT6,CPU_PORT_EGRESS_FRER_CNT7</dimIndex>
           <name>EGFRCNT[%s]</name>
           <description>no description available</description>
-          <addressOffset>0x12a60</addressOffset>
+          <addressOffset>0x12960</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
           <resetMask>0xFFFFFFFF</resetMask>
@@ -39876,7 +39873,7 @@ bit 1 - Port 1, …</description>
               <description>Select entry. Selected entry mapped to 0x40 – 0x5C.</description>
               <bitOffset>0</bitOffset>
               <bitWidth>8</bitWidth>
-              <access>read-only</access>
+              <access>read-write</access>
             </field>
           </fields>
         </register>
@@ -40008,6 +40005,23 @@ bit 1 - Port 1, …</description>
           </fields>
         </register>
         <register>
+          <name>CPU_PORT_IGRESS_STMID_AMACLO</name>
+          <description>No description available</description>
+          <addressOffset>0x14858</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0xFFFFFFFF</resetMask>
+          <fields>
+            <field>
+              <name>AMACL</name>
+              <description>Active Destination MAC, MAC-Address [31:0]</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>32</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
           <name>CPU_PORT_IGRESS_STMID_AMACHI</name>
           <description>No description available</description>
           <addressOffset>0x1485c</addressOffset>
@@ -40041,7 +40055,7 @@ bit 1 - Port 1, …</description>
         <register>
           <name>CPU_PORT_IGRESS_FRER_CONTROL</name>
           <description>Frame Replication and Elimination</description>
-          <addressOffset>0x14a00</addressOffset>
+          <addressOffset>0x14900</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
           <resetMask>0x00000003</resetMask>
@@ -40065,7 +40079,7 @@ bit 1 - Port 1, …</description>
         <register>
           <name>CPU_PORT_IGRESS_FRER_SIDSEL</name>
           <description>No description available</description>
-          <addressOffset>0x14a04</addressOffset>
+          <addressOffset>0x14904</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
           <resetMask>0x000000FF</resetMask>
@@ -40082,7 +40096,7 @@ bit 1 - Port 1, …</description>
         <register>
           <name>CPU_PORT_IGRESS_FRER_IRFUNC</name>
           <description>No description available</description>
-          <addressOffset>0x14a08</addressOffset>
+          <addressOffset>0x14908</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
           <resetMask>0x800000FF</resetMask>
@@ -40106,7 +40120,7 @@ bit 1 - Port 1, …</description>
         <register>
           <name>CPU_PORT_IGRESS_FRER_SRFUNC</name>
           <description>No description available</description>
-          <addressOffset>0x14a0c</addressOffset>
+          <addressOffset>0x1490c</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
           <resetMask>0x800000FF</resetMask>
@@ -40130,7 +40144,7 @@ bit 1 - Port 1, …</description>
         <register>
           <name>CPU_PORT_IGRESS_FRER_FSELECT</name>
           <description>No description available</description>
-          <addressOffset>0x14a10</addressOffset>
+          <addressOffset>0x14910</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
           <resetMask>0x000000FF</resetMask>
@@ -40147,7 +40161,7 @@ bit 1 - Port 1, …</description>
         <register>
           <name>CPU_PORT_IGRESS_FRER_FCTRL</name>
           <description>No description available</description>
-          <addressOffset>0x14a40</addressOffset>
+          <addressOffset>0x14940</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
           <resetMask>0x80FFFFFF</resetMask>
@@ -40206,7 +40220,7 @@ bit 1 - Port 1, …</description>
         <register>
           <name>CPU_PORT_IGRESS_FRER_RESETMSEC</name>
           <description>No description available</description>
-          <addressOffset>0x14a44</addressOffset>
+          <addressOffset>0x14944</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
           <resetMask>0x00FFFFFF</resetMask>
@@ -40223,7 +40237,7 @@ bit 1 - Port 1, …</description>
         <register>
           <name>CPU_PORT_IGRESS_FRER_LatRsPeriod</name>
           <description>No description available</description>
-          <addressOffset>0x14a48</addressOffset>
+          <addressOffset>0x14948</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
           <resetMask>0x00FFFFFF</resetMask>
@@ -40240,7 +40254,7 @@ bit 1 - Port 1, …</description>
         <register>
           <name>CPU_PORT_IGRESS_FRER_LatTestPeriod</name>
           <description>No description available</description>
-          <addressOffset>0x14a4c</addressOffset>
+          <addressOffset>0x1494c</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
           <resetMask>0x00FFFFFF</resetMask>
@@ -40257,7 +40271,7 @@ bit 1 - Port 1, …</description>
         <register>
           <name>CPU_PORT_IGRESS_FRER_LatErrDiffAlw</name>
           <description>No description available</description>
-          <addressOffset>0x14a50</addressOffset>
+          <addressOffset>0x14950</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
           <resetMask>0xFFFFFFFF</resetMask>
@@ -40274,7 +40288,7 @@ bit 1 - Port 1, …</description>
         <register>
           <name>CPU_PORT_IGRESS_FRER_LatErrCnt</name>
           <description>No description available</description>
-          <addressOffset>0x14a54</addressOffset>
+          <addressOffset>0x14954</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
           <resetMask>0xFFFFFFFF</resetMask>
@@ -40294,7 +40308,7 @@ bit 1 - Port 1, …</description>
           <dimIndex>CPU_PORT_IGRESS_FRER_CNT0,CPU_PORT_IGRESS_FRER_CNT1,CPU_PORT_IGRESS_FRER_CNT2,CPU_PORT_IGRESS_FRER_CNT3,CPU_PORT_IGRESS_FRER_CNT4,CPU_PORT_IGRESS_FRER_CNT5,CPU_PORT_IGRESS_FRER_CNT6,CPU_PORT_IGRESS_FRER_CNT7</dimIndex>
           <name>IGFRCNT[%s]</name>
           <description>no description available</description>
-          <addressOffset>0x14a60</addressOffset>
+          <addressOffset>0x14960</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
           <resetMask>0xFFFFFFFF</resetMask>
@@ -41768,16 +41782,16 @@ Write access: switch to next RX buffer – shall only be done when buffer not em
               <resetMask>0xFFFFFFFF</resetMask>
               <fields>
                 <field>
-                  <name>TXBUF_BIN0_DATA_WORD0</name>
-                  <description>TXBUF_BIN0_DATA_WORD0</description>
+                  <name>TXBUF_DATA</name>
+                  <description>TXBUF_DATA</description>
                   <bitOffset>0</bitOffset>
                   <bitWidth>32</bitWidth>
-                  <access>read-write</access>
+                  <access>write-only</access>
                 </field>
               </fields>
             </register>
             <register>
-              <name>TSYN_TXBUF_BIN0_TQUE_AND_TX_LEN</name>
+              <name>TSYN_TXBUF_TQUE_AND_TX_LEN</name>
               <description>No description available</description>
               <addressOffset>0xf0</addressOffset>
               <size>32</size>
@@ -41785,23 +41799,23 @@ Write access: switch to next RX buffer – shall only be done when buffer not em
               <resetMask>0x070000FF</resetMask>
               <fields>
                 <field>
-                  <name>TXBUF_BIN0_TQUE</name>
-                  <description>TXBUF_BIN0_TQUE</description>
+                  <name>TXBUF_TQUE</name>
+                  <description>TXBUF_TQUE</description>
                   <bitOffset>24</bitOffset>
                   <bitWidth>3</bitWidth>
-                  <access>read-write</access>
+                  <access>write-only</access>
                 </field>
                 <field>
-                  <name>TXBUF_BIN0_TX_LEN</name>
-                  <description>TXBUF_BIN0_TX_LEN</description>
+                  <name>TXBUF_TX_LEN</name>
+                  <description>TXBUF_TX_LEN</description>
                   <bitOffset>0</bitOffset>
                   <bitWidth>8</bitWidth>
-                  <access>read-write</access>
+                  <access>write-only</access>
                 </field>
               </fields>
             </register>
             <register>
-              <name>TSYN_TXBUF_BIN0_TX_TIMESTAMP_L</name>
+              <name>TSYN_TXBUF_TX_TIMESTAMP_L</name>
               <description>No description available</description>
               <addressOffset>0xf8</addressOffset>
               <size>32</size>
@@ -41809,16 +41823,16 @@ Write access: switch to next RX buffer – shall only be done when buffer not em
               <resetMask>0xFFFFFFFF</resetMask>
               <fields>
                 <field>
-                  <name>TXBUF_BIN0_TX_TIMESTAMP_L</name>
-                  <description>TXBUF_BIN0_TX_TIMESTAMP_L</description>
+                  <name>TXBUF_TX_TIMESTAMP_L</name>
+                  <description>TXBUF_TX_TIMESTAMP_L</description>
                   <bitOffset>0</bitOffset>
                   <bitWidth>32</bitWidth>
-                  <access>read-write</access>
+                  <access>read-only</access>
                 </field>
               </fields>
             </register>
             <register>
-              <name>TSYN_TXBUF_BIN0_TX_TIMESTAMP_H</name>
+              <name>TSYN_TXBUF_TX_TIMESTAMP_H</name>
               <description>No description available</description>
               <addressOffset>0xfc</addressOffset>
               <size>32</size>
@@ -41826,11 +41840,11 @@ Write access: switch to next RX buffer – shall only be done when buffer not em
               <resetMask>0xFFFFFFFF</resetMask>
               <fields>
                 <field>
-                  <name>TXBUF_BIN0_TX_TIMESTAMP_H</name>
-                  <description>TXBUF_BIN0TX_TIMESTAMP_H</description>
+                  <name>TXBUF_TX_TIMESTAMP_H</name>
+                  <description>TXBUF_TX_TIMESTAMP_H</description>
                   <bitOffset>0</bitOffset>
                   <bitWidth>32</bitWidth>
-                  <access>read-write</access>
+                  <access>read-only</access>
                 </field>
               </fields>
             </register>
@@ -42010,13 +42024,13 @@ Express traffic (default)</description>
             <addressOffset>0x2120</addressOffset>
             <size>32</size>
             <resetValue>0x00000000</resetValue>
-            <resetMask>0x0000FFFF</resetMask>
+            <resetMask>0x00000001</resetMask>
             <fields>
               <field>
                 <name>CBS_EN</name>
                 <description>CBS enable traffic queue n (n = 0 – 7). Returns 0 when n &gt; TQC. Must be 0 when changing register IDSLPi.</description>
                 <bitOffset>0</bitOffset>
-                <bitWidth>16</bitWidth>
+                <bitWidth>1</bitWidth>
                 <access>read-write</access>
               </field>
             </fields>
@@ -42507,7 +42521,7 @@ Setting Bit=1 triggers configuration change event.</description>
             <description>no description available</description>
             <addressOffset>0x3800</addressOffset>
             <register>
-              <name>TSN_SHAPER_ACLIST_ENTRY0_L</name>
+              <name>TSN_SHAPER_ACLIST_ENTRY_L</name>
               <description>No description available</description>
               <addressOffset>0x0</addressOffset>
               <size>32</size>
@@ -42543,7 +42557,7 @@ Setting Bit=1 triggers configuration change event.</description>
               </fields>
             </register>
             <register>
-              <name>TSN_SHAPER_ACLIST_ENTRY0_H</name>
+              <name>TSN_SHAPER_ACLIST_ENTRY_H</name>
               <description>No description available</description>
               <addressOffset>0x4</addressOffset>
               <size>32</size>
@@ -43829,28 +43843,38 @@ are available.</description>
             <fields>
               <field>
                 <name>MAC_SPEED</name>
-                <description>mac speed</description>
+                <description>mac speed
+00: 1000Mbps
+10: 10Mbps
+11: 100Mbps</description>
                 <bitOffset>20</bitOffset>
                 <bitWidth>2</bitWidth>
                 <access>read-write</access>
               </field>
               <field>
                 <name>PAD_OE_ETH_REFCLK</name>
-                <description>refclock output enable when rmii</description>
+                <description>RMII REFCLK output enable
+0: Disable REFCLK output
+1: Enable EFCLK output</description>
                 <bitOffset>19</bitOffset>
                 <bitWidth>1</bitWidth>
                 <access>read-write</access>
               </field>
               <field>
                 <name>PHY_INTF_SEL</name>
-                <description>phy interface select</description>
+                <description>phy interface select
+000: MII
+001: RGMII
+100: RMII</description>
                 <bitOffset>13</bitOffset>
                 <bitWidth>3</bitWidth>
                 <access>read-write</access>
               </field>
               <field>
                 <name>RMII_TXCLK_SEL</name>
-                <description>txclk select control for RMII</description>
+                <description>refclk select for RMII
+0: Use RXCLK PAD
+1: Use TXCLK PAD</description>
                 <bitOffset>10</bitOffset>
                 <bitWidth>1</bitWidth>
                 <access>read-write</access>
@@ -45706,9 +45730,9 @@ This bit is always 1 if PDI has EEPROM control.</description>
 1:Second word
 …
 Actually used EEPROM Address bits:
-[9-0] : EEPROM size up to 16 Kbit
-[17-0] : EEPROM size 32 Kbit – 4 Mbit
-[31-0] : EEPROM Emulation</description>
+9-0: EEPROM size up to 16 Kbit
+17-0: EEPROM size 32 Kbit – 4 Mbit
+31-0: EEPROM Emulation</description>
               <bitOffset>0</bitOffset>
               <bitWidth>32</bitWidth>
               <access>read-write</access>
@@ -46792,7 +46816,7 @@ depending on this setting</description>
 1:PDI-controlled
 NOTE:Latch interrupt is routed to ECAT/PDI
 depending on this setting.
-Always 1 (PDI-controlled) if System Time is PDIcontrolled.</description>
+Always 1 (PDI-controlled) if System Time is PDIcontrolled.</description>
               <bitOffset>4</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-only</access>
@@ -47371,16 +47395,16 @@ asserts a PDI buffer change event</description>
           <addressOffset>0xe08</addressOffset>
           <size>64</size>
           <resetValue>0x0000000000000000</resetValue>
-          <resetMask>0x00000000FFFFFFFF</resetMask>
+          <resetMask>0xFFFFFFFFFFFFFFFF</resetMask>
           <fields>
             <field>
               <name>VID</name>
               <description>Vendor ID:
-[23-0] Company
-[31-24] Department
+23-0: Company
+31-24: Department
 NOTE:Test Vendor IDs have [31:28]=0xE</description>
               <bitOffset>0</bitOffset>
-              <bitWidth>32</bitWidth>
+              <bitWidth>64</bitWidth>
               <access>read-only</access>
             </field>
           </fields>

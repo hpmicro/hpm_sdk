@@ -192,14 +192,13 @@ static volatile mcan_rx_message_t s_can_rx_buf;
 
 static volatile mcan_tx_event_fifo_elem_t s_can_tx_evt;
 
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_CAN_IRQn, board_can_isr);
-
 /***********************************************************************************************************************
  *
  *  Codes
  *
  **********************************************************************************************************************/
 
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_CAN_IRQn, board_can_isr)
 void board_can_isr(void)
 {
     MCAN_Type *base = BOARD_APP_CAN_BASE;
@@ -1410,7 +1409,7 @@ void handle_can_error(MCAN_Type *ptr)
     mcan_error_count_t error_count;
     mcan_parse_protocol_status(ptr->PSR, &protocol_status);
     mcan_get_error_counter(ptr, &error_count);
-    const char *error_msg = "Unknown Error";
+    const char *error_msg = NULL;
     switch (protocol_status.last_error_code) {
     case mcan_last_error_code_no_error:
         error_msg = "No Error";

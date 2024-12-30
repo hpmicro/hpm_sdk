@@ -226,10 +226,13 @@ void init_adc_bldc_pins(void)
    HPM_IOC->PAD[IOC_PAD_PC17].FUNC_CTL = IOC_PAD_FUNC_CTL_ANALOG_MASK;
 }
 
-void init_usb_pins(void)
+void init_usb_pins(USB_Type *ptr)
 {
-    HPM_IOC->PAD[IOC_PAD_PC23].FUNC_CTL = IOC_PC23_FUNC_CTL_GPIO_C_23;
-    HPM_IOC->PAD[IOC_PAD_PC23].PAD_CTL = IOC_PAD_PAD_CTL_PS_SET(1) | IOC_PAD_PAD_CTL_PE_SET(1);
+    if (ptr == HPM_USB0) {
+        HPM_IOC->PAD[IOC_PAD_PC00].FUNC_CTL = IOC_PC00_FUNC_CTL_USB0_ID;
+        HPM_IOC->PAD[IOC_PAD_PC01].FUNC_CTL = IOC_PC01_FUNC_CTL_USB0_PWR;
+        HPM_IOC->PAD[IOC_PAD_PC02].FUNC_CTL = IOC_PC02_FUNC_CTL_USB0_OC;
+    }
 }
 
 void  init_can_pins(MCAN_Type *ptr)

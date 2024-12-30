@@ -7,32 +7,38 @@
 
 #include "board.h"
 #include "hpm_gpio_drv.h"
+#if defined(DEBOUNCE_THRESHOLD_IN_MS)
 #include "hpm_mchtmr_drv.h"
+#endif
 
 #define GPIO_TOGGLE_COUNT 5
-#define DEBOUNCE_THRESHOLD_IN_MS 150
-#define MCHTMR_CLK_NAME (clock_mchtmr0)
 
+#if defined(DEBOUNCE_THRESHOLD_IN_MS)
+#define MCHTMR_CLK_NAME (clock_mchtmr0)
 static volatile uint64_t gpio_isr_rel_time; /* mark the real time from mchtimer */
 static volatile uint64_t gpio_isr_pre_time; /* mark the last time marked on gpio_isr */
 static volatile uint32_t level_value; /* mark the level */
 static volatile uint32_t pre_level_value; /* mark the level before enter the isr */
 static uint32_t debounce_threshold; /* debounce threshold */
+#endif
 
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_GPIO_IRQ, isr_gpio)
 void isr_gpio(void)
 {
-   /*  To eliminate debounce,here do 3 doftware judgments:
+#if defined(DEBOUNCE_THRESHOLD_IN_MS)
+    /*  To eliminate debounce,here do 3 doftware judgments:
     *  1.mark the time and pre_time, if difference less than 150ms(experimental value), judge as jitter;
     *  2.read the level, if is 1, then judge as jitter;
     *  3.mark the pre_level,if pre_level is 0, then judge as jitter.
     */
     gpio_isr_rel_time = mchtmr_get_count(HPM_MCHTMR);
     level_value = gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN);
-    if ((gpio_isr_rel_time - gpio_isr_pre_time > debounce_threshold) && (level_value == 0) && (pre_level_value == 1)) {
+    if ((gpio_isr_rel_time - gpio_isr_pre_time > debounce_threshold) && (level_value != pre_level_value)) {
+        gpio_isr_pre_time = gpio_isr_rel_time;
+#endif
 #ifdef BOARD_LED_GPIO_CTRL
         gpio_toggle_pin(BOARD_LED_GPIO_CTRL, BOARD_LED_GPIO_INDEX,
                             BOARD_LED_GPIO_PIN);
-        gpio_isr_pre_time = gpio_isr_rel_time;
         printf("toggle led pin output\n");
 #else
 #if defined(GPIO_SOC_HAS_EDGE_BOTH_INTERRUPT) && (GPIO_SOC_HAS_EDGE_BOTH_INTERRUPT == 1)
@@ -45,11 +51,12 @@ void isr_gpio(void)
         printf("user key pressed\n");
 #endif
 #endif
+#if defined(DEBOUNCE_THRESHOLD_IN_MS)
     }
+#endif
     gpio_clear_pin_interrupt_flag(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX,
                         BOARD_APP_GPIO_PIN);
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_GPIO_IRQ, isr_gpio)
 
 void test_gpio_input_interrupt(void)
 {
@@ -74,7 +81,11 @@ void test_gpio_input_interrupt(void)
                            BOARD_APP_GPIO_PIN);
     intc_m_enable_irq_with_priority(BOARD_APP_GPIO_IRQ, 1);
     while (1) {
+#if defined(DEBOUNCE_THRESHOLD_IN_MS)
         pre_level_value = gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN);
+#else
+        __asm("wfi");
+#endif
     }
 }
 
@@ -101,14 +112,15 @@ void test_gpio_toggle_output(void)
 
 int main(void)
 {
-    uint32_t mchtmr_freq;
-
     board_init();
     board_init_gpio_pins();
     printf("gpio example\n");
 
+#if defined(DEBOUNCE_THRESHOLD_IN_MS)
+    uint32_t mchtmr_freq;
     mchtmr_freq = clock_get_frequency(MCHTMR_CLK_NAME);
     debounce_threshold = DEBOUNCE_THRESHOLD_IN_MS * mchtmr_freq / 1000;
+#endif
 
 #ifdef BOARD_LED_GPIO_CTRL
     test_gpio_toggle_output();

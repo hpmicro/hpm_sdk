@@ -13,6 +13,13 @@
 
 - 完成上述过程后，给驱动板上电观察电流无异常后，给核心板上电，再次确认电流无异常后，就可以烧录程序，观察运行现象。
 
+## 电流环时间
+
+硬件电流环会显示时间零，软件电流环计算时间在1us左右，这个时间会根据角度不同而波动，波动范围在25%，通过进行如下操作复现：
+
+- 关闭`mcl_app_config.h`除`MCL_EN_LOOP_TIME_COUNT`的宏
+- 编译选项`flash_xip_release`
+
 ## 运行现象
 
 当工程正确运行后，电机以20r/s的速度运行。
@@ -34,6 +41,8 @@
 
 
 ```console
+
+loop current tick: 399
 Mode selection:
 0. Location mode.
 1. Speed mode.
@@ -43,6 +52,7 @@ Speed mode, motor run, speed is: 20.000000.
 Input speed:
 10.5
 
+loop current tick: 535
 Speed mode, motor run, speed is: 10.500000.
 Input speed:
 

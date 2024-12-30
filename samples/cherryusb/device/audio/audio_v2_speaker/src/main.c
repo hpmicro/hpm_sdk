@@ -15,7 +15,7 @@
 int main(void)
 {
     board_init();
-    board_init_usb_pins();
+    board_init_usb((USB_Type *)CONFIG_HPM_USBD_BASE);
 
 #if defined(USING_CODEC) && USING_CODEC
     board_init_i2c(CODEC_I2C);

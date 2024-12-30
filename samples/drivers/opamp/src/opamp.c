@@ -25,6 +25,7 @@ void init_opamp(void)
 int main(void)
 {
     board_init();
+    clock_add_to_group(BOARD_APP_OPAMP_CLOCK, 0);
     init_opamp_pins();
     init_opamp();
     while (1) {

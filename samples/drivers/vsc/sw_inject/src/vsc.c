@@ -151,6 +151,7 @@ int main(void)
     }
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_VSC_IRQn, isr_vsc)
 void isr_vsc(void)
 {
     uint32_t i;
@@ -223,4 +224,3 @@ void isr_vsc(void)
         printf("vsc convert conflict!\n");
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_VSC_IRQn, isr_vsc)

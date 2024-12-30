@@ -52,42 +52,42 @@ static hpm_stat_t sd_send_csd(sd_card_t *card);
 
 static hpm_stat_t sd_switch_function(sd_card_t *card, uint32_t mode, uint32_t group, uint32_t number);
 
-static void sd_decode_scr(sd_card_t *card, uint32_t *raw_scr);
+static void sd_decode_scr(sd_card_t *card, const uint32_t *raw_scr);
 
 static hpm_stat_t sd_send_scr(sd_card_t *card);
 
-static hpm_stat_t sd_app_cmd_send_cond_op(sd_card_t *card, sd_ocr_t ocr);
+static hpm_stat_t sd_app_cmd_send_cond_op(const sd_card_t *card, sd_ocr_t ocr);
 
-static hpm_stat_t sd_send_if_cond(sd_card_t *card);
+static hpm_stat_t sd_send_if_cond(const sd_card_t *card);
 
 static hpm_stat_t sd_probe_bus_voltage(sd_card_t *card);
 
-static hpm_stat_t sd_switch_voltage(sd_card_t *card);
+static hpm_stat_t sd_switch_voltage(const sd_card_t *card);
 
-static void sd_decode_csd(sd_card_t *card, uint32_t *raw_csd);
+static void sd_decode_csd(sd_card_t *card, const uint32_t *raw_csd);
 
 static void sd_decode_status(sd_card_t *card, uint32_t *raw_status);
 
-static hpm_stat_t sd_set_bus_width(sd_card_t *card, sdmmc_buswidth_t buswidth);
+static hpm_stat_t sd_set_bus_width(const sd_card_t *card, sdmmc_buswidth_t buswidth);
 
 static hpm_stat_t sd_set_bus_timing(sd_card_t *card, sdmmc_speed_mode_t timing_mode);
 
-static hpm_stat_t sd_check_card_parameters(sd_card_t *card);
+static hpm_stat_t sd_check_card_parameters(const sd_card_t *card);
 
-static hpm_stat_t sd_app_cmd_set_write_block_erase_count(sd_card_t *card, uint32_t block_count);
+static hpm_stat_t sd_app_cmd_set_write_block_erase_count(const sd_card_t *card, uint32_t block_count);
 
-static hpm_stat_t sd_error_recovery(sd_card_t *card);
+static hpm_stat_t sd_error_recovery(const sd_card_t *card, hpm_stat_t last_error);
 
-static hpm_stat_t sd_send_cmd(sd_card_t *card, sdmmchost_cmd_t *cmd);
+static hpm_stat_t sd_send_cmd(const sd_card_t *card, const sdmmchost_cmd_t *cmd);
 
-static hpm_stat_t sd_transfer(sd_card_t *card, sdmmchost_xfer_t *content);
+static hpm_stat_t sd_transfer(const sd_card_t *card, const sdmmchost_xfer_t *content);
 
-static hpm_stat_t sd_send_cmd(sd_card_t *card, sdmmchost_cmd_t *cmd)
+static hpm_stat_t sd_send_cmd(const sd_card_t *card, const sdmmchost_cmd_t *cmd)
 {
     hpm_stat_t status = sdmmchost_send_command(card->host, cmd);
 
     if ((status >= status_sdxc_busy) && (status <= status_sdxc_tuning_failed)) {
-        hpm_stat_t error_recovery_status = sd_error_recovery(card);
+        hpm_stat_t error_recovery_status = sd_error_recovery(card, status);
         if (error_recovery_status != status_success) {
             status = error_recovery_status;
         }
@@ -95,13 +95,20 @@ static hpm_stat_t sd_send_cmd(sd_card_t *card, sdmmchost_cmd_t *cmd)
     return status;
 }
 
-static hpm_stat_t sd_transfer(sd_card_t *card, sdmmchost_xfer_t *content)
+static hpm_stat_t sd_transfer(const sd_card_t *card, const sdmmchost_xfer_t *content)
 {
     hpm_stat_t status = sdmmchost_transfer(card->host, content);
 
     if ((status >= status_sdxc_busy) && (status <= status_sdxc_tuning_failed)) {
-        hpm_stat_t error_recovery_status = sd_error_recovery(card);
-        if (error_recovery_status != status_success) {
+        /* According to IP block this condition can be ignored */
+        bool ignore_error = content->data->enable_auto_cmd12 &&
+                            (status == status_sdxc_autocmd_cmd_response_error) &&
+                            (sdmmchost_get_data_pin_level(card->host) != 0);
+
+        hpm_stat_t error_recovery_status = sd_error_recovery(card, status);
+        if (ignore_error && (error_recovery_status == status_sdxc_recoverable_error)) {
+            status = status_success;
+        } else if (error_recovery_status != status_success) {
             status = error_recovery_status;
         }
     }
@@ -123,14 +130,12 @@ static void sd_convert_data_endian(uint32_t *word, uint32_t word_count)
 
 static hpm_stat_t sd_send_card_status(sd_card_t *card)
 {
-    hpm_stat_t status;
-
     sdmmchost_cmd_t *cmd = &card->host->cmd;
     memset(cmd, 0, sizeof(*cmd));
     cmd->cmd_index = sdmmc_cmd_send_status;
     cmd->resp_type = (sdxc_dev_resp_type_t) sdmmc_resp_r1;
     cmd->cmd_argument = (uint32_t) card->relative_addr << 16;
-    status = sd_send_cmd(card, cmd);
+    hpm_stat_t status = sd_send_cmd(card, cmd);
     if (status != status_success) {
         return status;
     }
@@ -140,21 +145,19 @@ static hpm_stat_t sd_send_card_status(sd_card_t *card)
     return status;
 }
 
-static hpm_stat_t sd_switch_voltage(sd_card_t *card)
+static hpm_stat_t sd_switch_voltage(const sd_card_t *card)
 {
-    hpm_stat_t status;
-
     sdmmchost_cmd_t *cmd = &card->host->cmd;
     memset(cmd, 0, sizeof(*cmd));
     cmd->cmd_index = sd_voltage_switch;
     cmd->resp_type = (sdxc_dev_resp_type_t) sdmmc_resp_r1;
     cmd->cmd_argument = 0;
-    status = sd_send_cmd(card, cmd);
+    hpm_stat_t status = sd_send_cmd(card, cmd);
 
     return status;
 }
 
-static hpm_stat_t sd_send_if_cond(sd_card_t *card)
+static hpm_stat_t sd_send_if_cond(const sd_card_t *card)
 {
     sdmmchost_cmd_t *cmd = &card->host->cmd;
     (void) memset(cmd, 0, sizeof(sdmmchost_cmd_t));
@@ -175,7 +178,7 @@ static hpm_stat_t sd_send_if_cond(sd_card_t *card)
     return status_success;
 }
 
-static void sd_decode_csd(sd_card_t *card, uint32_t *raw_csd)
+static void sd_decode_csd(sd_card_t *card, const uint32_t *raw_csd)
 {
     sd_csd_t *csd = &card->csd;
 
@@ -325,17 +328,22 @@ static hpm_stat_t sd_send_rca(sd_card_t *card)
     return status;
 }
 
-static hpm_stat_t sd_error_recovery(sd_card_t *card)
+static hpm_stat_t sd_error_recovery(const sd_card_t *card, hpm_stat_t last_error)
 {
-    sdmmchost_cmd_t *cmd = &card->host->cmd;
-    cmd->cmd_index = sdmmc_cmd_stop_transmission;
-    cmd->cmd_type = sdxc_cmd_type_abort_cmd;
-    cmd->resp_type = (sdxc_dev_resp_type_t) sdmmc_resp_r1b;
-
+    sdmmchost_cmd_t *cmd;
+    if (((last_error >= status_sdxc_cmd_timeout_error) && (last_error <= status_sdxc_cmd_index_error)) ||
+        ((last_error >= status_sdxc_autocmd_cmd_timeout_error) && (last_error <= status_sdxc_autocmd_cmd_response_error))) {
+        cmd = NULL;
+    } else {
+        cmd = &card->host->cmd;
+        cmd->cmd_index = sdmmc_cmd_stop_transmission;
+        cmd->cmd_type = sdxc_cmd_type_abort_cmd;
+        cmd->resp_type = (sdxc_dev_resp_type_t)sdmmc_resp_none;
+    }
     return sdmmchost_error_recovery(card->host, cmd);
 }
 
-static hpm_stat_t sd_app_cmd_send_cond_op(sd_card_t *card, sd_ocr_t ocr)
+static hpm_stat_t sd_app_cmd_send_cond_op(const sd_card_t *card, sd_ocr_t ocr)
 {
     hpm_stat_t status = sdmmc_send_application_command(card->host, card->relative_addr);
     sdmmchost_cmd_t *cmd = &card->host->cmd;
@@ -350,7 +358,7 @@ static hpm_stat_t sd_app_cmd_send_cond_op(sd_card_t *card, sd_ocr_t ocr)
     return status;
 }
 
-static hpm_stat_t sd_app_cmd_set_write_block_erase_count(sd_card_t *card, uint32_t block_count)
+static hpm_stat_t sd_app_cmd_set_write_block_erase_count(const sd_card_t *card, uint32_t block_count)
 {
     hpm_stat_t status = sdmmc_send_application_command(card->host, card->relative_addr);
     sdmmchost_cmd_t *cmd = &card->host->cmd;
@@ -389,9 +397,7 @@ static hpm_stat_t sd_probe_bus_voltage(sd_card_t *card)
         ocr.ocr_word = cmd->response[0];
         ocr.ocr_word &= sdxc_ocr.ocr_word;
         ocr.card_capacity_status = 1;
-        if (sdmmchost_is_voltage_switch_supported(card->host)) {
-            ocr.switching_to_1v8_accepted = 1;
-        }
+        ocr.switching_to_1v8_accepted = sdmmchost_is_voltage_switch_supported(card->host) ? 1 : 0;
 
         /* Switch Operation condition */
         sd_ocr_t recv_ocr = {.ocr_word = 0};
@@ -401,9 +407,7 @@ static hpm_stat_t sd_probe_bus_voltage(sd_card_t *card)
             recv_ocr.ocr_word = cmd->response[0];
         } while (recv_ocr.card_power_up_status == 0);
 
-        if (recv_ocr.card_capacity_status == 0) {
-            card->sd_flags.is_byte_addressing_mode = 1;
-        }
+        card->sd_flags.is_byte_addressing_mode = (recv_ocr.card_capacity_status == 0) ? 1U : 0;
 
         card->ocr.ocr_word = recv_ocr.ocr_word;
 
@@ -476,29 +480,24 @@ static hpm_stat_t sd_send_scr(sd_card_t *card)
     return status;
 }
 
-void sd_decode_scr(sd_card_t *card, uint32_t *raw_scr)
+void sd_decode_scr(sd_card_t *card, const uint32_t *raw_scr)
 {
     sd_scr_t *scr = &card->scr;
 
     scr->scr_word[0] = raw_scr[0];
     scr->scr_word[1] = raw_scr[1];
 
-    if ((scr->sd_bus_widths & 0x04) != 0) {
-        card->sd_flags.support_4bit_width = 1;
-    }
+    card->sd_flags.support_4bit_width = ((scr->sd_bus_widths & 0x04) != 0) ? 1 : 0;
 
     /* The following fields are supported by SD spec 3.0 or above */
+    card->sd_flags.support_set_block_count_cmd = 0;
     if (scr->sd_spec3 == 1) {
-        if (scr->support_cmd20 == 1) {
-            card->sd_flags.support_speed_class_control_cmd = 1;
-        }
-        if (scr->support_cmd23) {
-            card->sd_flags.support_set_block_count_cmd = 1;
-        }
+        card->sd_flags.support_speed_class_control_cmd = (scr->support_cmd20 != 0) ? 1 : 0;
+        card->sd_flags.support_set_block_count_cmd = (scr->support_cmd23 != 0) ? 1 : 0;
     }
 }
 
-static hpm_stat_t sd_check_card_parameters(sd_card_t *card)
+static hpm_stat_t sd_check_card_parameters(const sd_card_t *card)
 {
     hpm_stat_t status;
     if ((card == NULL) || (card->host == NULL) || (card->host->host_param.base == NULL)) {
@@ -513,7 +512,7 @@ static hpm_stat_t sd_check_card_parameters(sd_card_t *card)
 }
 
 
-static hpm_stat_t sd_set_bus_width(sd_card_t *card, sdmmc_buswidth_t buswidth)
+static hpm_stat_t sd_set_bus_width(const sd_card_t *card, sdmmc_buswidth_t buswidth)
 {
     hpm_stat_t status = sdmmc_send_application_command(card->host, card->relative_addr);
     if (status != status_success) {
@@ -539,7 +538,6 @@ static hpm_stat_t sd_set_bus_width(sd_card_t *card, sdmmc_buswidth_t buswidth)
 
 static hpm_stat_t sd_set_bus_timing(sd_card_t *card, sdmmc_speed_mode_t timing_mode)
 {
-    hpm_stat_t status;
     uint32_t timing_mode_option = (uint32_t) sd_timing_sdr25_highspeed;
     uint32_t clock_option = SD_CLOCK_50MHZ;
     bool need_reverse = true;
@@ -575,8 +573,10 @@ static hpm_stat_t sd_set_bus_timing(sd_card_t *card, sdmmc_speed_mode_t timing_m
 
     card->current_timing = speed;
 
-    status = sd_switch_function(card, (uint32_t) sd_switch_function_mode_set,
-                                (uint32_t) sd_switch_function_group_access_mode, timing_mode_option);
+    hpm_stat_t status = sd_switch_function(card,
+                                           (uint32_t) sd_switch_function_mode_set,
+                                           (uint32_t) sd_switch_function_group_access_mode,
+                                           timing_mode_option);
     if (status != status_success) {
         return status;
     }
@@ -645,7 +645,10 @@ static void sd_decode_status(sd_card_t *card, uint32_t *raw_status)
 
 void sd_card_deinit(sd_card_t *card)
 {
-    (void) card;
+    if (card->is_host_ready) {
+        card->is_host_ready = false;
+        sdmmchost_deinit(card->host);
+    }
 }
 
 hpm_stat_t sd_host_init(sd_card_t *card)
@@ -679,7 +682,7 @@ hpm_stat_t sd_init(sd_card_t *card)
         /* Check whether card is present */
         int32_t delay_cnt = 10;
         while (!sd_is_card_present(card)) {
-            card->host->host_param.delay_ms(100);
+            sdmmchost_delay_ms(card->host, 100);
             delay_cnt--;
             if (delay_cnt < 0) {
                 break;
@@ -699,7 +702,7 @@ hpm_stat_t sd_init(sd_card_t *card)
     return status;
 }
 
-void sd_deinit(sd_card_t *card)
+void sd_deinit(const sd_card_t *card)
 {
     (void) card;
 }
@@ -838,12 +841,12 @@ hpm_stat_t sd_card_init(sd_card_t *card)
 }
 
 
-bool sd_is_card_present(sd_card_t *card)
+bool sd_is_card_present(const sd_card_t *card)
 {
     return sdmmchost_is_card_detected(card->host);
 }
 
-hpm_stat_t sd_select_card(sd_card_t *card, bool is_selected)
+hpm_stat_t sd_select_card(const sd_card_t *card, bool is_selected)
 {
     uint16_t rca = (is_selected) ? card->relative_addr : 0;
     return sdmmc_select_card(card->host, rca, is_selected);
@@ -922,11 +925,19 @@ hpm_stat_t sd_read_blocks(sd_card_t *card, uint8_t *buffer, uint32_t start_block
             content->data = data;
             content->command = cmd;
 #if !defined(HPM_SDMMC_ENABLE_CACHE_MAINTENANCE) || (HPM_SDMMC_ENABLE_CACHE_MAINTENANCE == 1)
-            uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) data->rx_data);
-            uint32_t end_addr = (uint32_t) data->rx_data + card->block_size * block_count;
+            uint32_t buf_start = (uint32_t) data->rx_data;
+            uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN(buf_start);
+            uint32_t end_addr = buf_start + card->block_size * block_count;
             uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP(end_addr);
             uint32_t aligned_size = aligned_end - aligned_start;
-            l1c_dc_flush(aligned_start, aligned_size);
+            /* FLUSH un-cacheline aligned memory region */
+            if ((buf_start % HPM_L1C_CACHELINE_SIZE) != 0) {
+                l1c_dc_writeback(aligned_start, HPM_L1C_CACHELINE_SIZE);
+            }
+            if ((end_addr % HPM_L1C_CACHELINE_SIZE) != 0) {
+                uint32_t aligned_tail = HPM_L1C_CACHELINE_ALIGN_DOWN(end_addr);
+                l1c_dc_writeback(aligned_tail, HPM_L1C_CACHELINE_SIZE);
+            }
 #endif
             status = sd_transfer(card, content);
 #if !defined(HPM_SDMMC_ENABLE_CACHE_MAINTENANCE) || (HPM_SDMMC_ENABLE_CACHE_MAINTENANCE == 1)
@@ -1021,7 +1032,7 @@ hpm_stat_t sd_write_blocks(sd_card_t *card, const uint8_t *buffer, uint32_t star
  * @brief Calculate SD erase timeout value
  * Refer to SD_Specification_Part1_Physical_Layer_Specification_Version4.20.pdf, section 4.14 for more details.
  */
-static uint32_t sd_calculate_erase_timeout(sd_card_t *card, uint32_t start_block, uint32_t block_count)
+static uint32_t sd_calculate_erase_timeout(const sd_card_t *card, uint32_t start_block, uint32_t block_count)
 {
     uint32_t erase_timeout;
     if (card->status.erase_timeout == 0) {

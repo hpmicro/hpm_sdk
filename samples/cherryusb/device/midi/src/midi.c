@@ -4,12 +4,6 @@
 #include "board.h"
 #include "hpm_gpio_drv.h"
 
-#if defined(BOARD_BUTTON_PRESSED_VALUE)
-#define APP_BUTTON_PRESSED_VALUE BOARD_BUTTON_PRESSED_VALUE
-#else
-#define APP_BUTTON_PRESSED_VALUE 0
-#endif
-
 #define MIDI_OUT_EP 0x02
 #define MIDI_IN_EP  0x81
 
@@ -240,6 +234,10 @@ void midi_task_286ms(uint8_t busid)
     const uint8_t channel = 0;   /* 0 for channel 1 */
     int ret;
 
+    if (usb_device_is_configured(busid) == false) {
+        return;
+    }
+
     if (s_auto_play) {
         s_sendbuffer[0] = (cable_num << 4) | MIDI_CIN_NOTE_ON;
         s_sendbuffer[1] = NoteOn | channel;
@@ -286,8 +284,12 @@ void midi_task_main(uint8_t busid)
     bool key_pushed = false;
     int ret;
 
+    if (usb_device_is_configured(busid) == false) {
+        return;
+    }
+
     if (!s_auto_play) {
-        if (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) == APP_BUTTON_PRESSED_VALUE) {
+        if (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) == BOARD_BUTTON_PRESSED_VALUE) {
             key_pushed = true;
             s_sendbuffer[0] = (cable_num << 4) | MIDI_CIN_NOTE_ON;
             s_sendbuffer[1] = NoteOn | channel;
@@ -304,8 +306,7 @@ void midi_task_main(uint8_t busid)
         }
 
         if (key_pushed) {
-            key_pushed = false;
-            while (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) == APP_BUTTON_PRESSED_VALUE) {
+            while (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) == BOARD_BUTTON_PRESSED_VALUE) {
             }
             s_sendbuffer[0] = (cable_num << 4) | MIDI_CIN_NOTE_OFF;
             s_sendbuffer[1] = NoteOff | channel;

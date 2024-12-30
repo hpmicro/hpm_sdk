@@ -87,6 +87,7 @@ static uint8_t get_adc_conv_mode(void)
     }
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_ADC16_IRQn, isr_adc16)
 void isr_adc16(void)
 {
     uint32_t status;
@@ -111,7 +112,6 @@ void isr_adc16(void)
         res_out_of_thr_flag = ADC16_INT_STS_WDOG_GET(status) & APP_ADC16_CH_WDOG_EVENT;
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_ADC16_IRQn, isr_adc16)
 
 hpm_stat_t process_seq_data(uint32_t *buff, int32_t start_pos, uint32_t len)
 {

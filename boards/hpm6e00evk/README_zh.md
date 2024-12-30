@@ -189,9 +189,25 @@ PUART用于低功耗测试，例如唤醒等。
 | RDC.ADC1  | J4[14] | J2[14]  |
 | GND       | J4[32] | J2[17]  |
 
-- PLB引脚
+- PLB Pulse输出引脚
+
 | 功能 | 位置   |
+| ---- | ------ |
 | PLB.PULSE_OUT  | J4[5] |
+
+- PLB LIN Clock引脚
+
+用于UART LIN Slave波特率自适应例程检测RX信号的时钟
+| 功能 | 位置   |
+| ---- | ------ |
+| PLB.TRGM_IN  | J4[5] |
+
+- PLB Filter输出引脚
+
+| 功能 | 位置   |
+| ---- | ------ |
+| PLB.Filter_IN  | J4[9] |
+| PLB.Filter_OUT | J4[11] |
 
 - Tamper 接口
 

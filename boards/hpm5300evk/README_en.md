@@ -99,11 +99,18 @@ The HPM5300EVK provides a series of interfaces for the characteristic peripheral
 | PWM0.P2  | J7[11]   |
 | PWM0.P3  | J7[12]   |
 
-- PLB Output Pin:
+- PLB Pulse Output Pin:
 
 | Function | Position |
 | -------- | -------- |
-| PLB.OUT  | P1[24]   |
+| PLB.PLUSE_OUT  | P1[24]   |
+
+- PLB Filter Output Pin
+
+| Function    | Position   |
+| ------- | ------ |
+| PLB.FILTER_IN | J7[9] |
+| PLB.FILTER_OUT | J7[11] |
 
 - CAN Pin:
 

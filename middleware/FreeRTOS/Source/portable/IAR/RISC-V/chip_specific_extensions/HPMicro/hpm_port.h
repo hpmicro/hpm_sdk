@@ -9,12 +9,14 @@
 /* Scheduler includes. */
 #include "FreeRTOS.h"
 #include "task.h"
+#include "board.h"
 #if ( configUSE_TICKLESS_IDLE != 0 )
 #include "low_power_inf.h"
 #endif
 
 #if( configMTIME_BASE_ADDRESS == 0 ) || ( configMTIMECMP_BASE_ADDRESS == 0 )
     #include "hpm_gptmr_drv.h"
+    #include "hpm_clock_drv.h"
 
     #if defined(CONFIG_FREERTOS_TICKLESS_USE_STOP_MODE) && CONFIG_FREERTOS_TICKLESS_USE_STOP_MODE
         #ifndef FREERTOS_TIMER_RESOURCE

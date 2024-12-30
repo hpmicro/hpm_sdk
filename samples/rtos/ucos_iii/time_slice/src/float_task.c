@@ -18,9 +18,7 @@ void float_task(void *p_arg)
     uint8_t i = 0;
     (void)p_arg;
     CPU_SR_ALLOC();
-    static float float_num = 0.01;
     while (1) {
-        float_num += 0.01f;
         CPU_CRITICAL_ENTER();
         printf("float run %d times\r\n", temp++);
         CPU_CRITICAL_EXIT();

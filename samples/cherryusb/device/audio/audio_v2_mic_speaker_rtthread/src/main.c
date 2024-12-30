@@ -29,7 +29,7 @@ void rt_hw_board_init(void)
     board_init();
     rtt_base_init();
 
-    board_init_usb_pins();
+    board_init_usb((USB_Type *)CONFIG_HPM_USBD_BASE);
 
     board_init_dao_clock();
     init_dao_pins();

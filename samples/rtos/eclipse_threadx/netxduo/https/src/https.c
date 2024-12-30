@@ -452,6 +452,8 @@ VOID tx_application_define(VOID *first_unused_memory)
     if (status)
         error_counter++;
     status = nx_icmp_enable(&server_ip);
+    if (status)
+        error_counter++;
 
     /* Enable TCP traffic.  */
     status = nx_tcp_enable(&server_ip);

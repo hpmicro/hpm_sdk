@@ -135,8 +135,9 @@ void config_gptmr_to_detect_uart_rx_idle(gptmr_info_t *gptmr_info, trgm_info_t *
     gptmr_channel_config_t config;
 
     bits = 12; /* use max value: 1 start bit, 8 data bits, 2 stop bits, 1 parity bit */
-    gptmr_freq = clock_get_frequency(gptmr_info->clock_name);
+    clock_add_to_group(gptmr_info->clock_name, 0);
     gptmr_channel_get_default_config(gptmr_info->ptr, &config);
+    gptmr_freq = clock_get_frequency(gptmr_info->clock_name);
     config.cmp[0] = gptmr_freq / uart_baudrate * bits; /* Time to transmit a byte */
     config.cmp[1] = 0xFFFFFFFEUL;
     config.synci_edge = gptmr_synci_edge_both;
@@ -153,9 +154,10 @@ void config_gptmr_to_detect_uart_rx_idle(gptmr_info_t *gptmr_info, trgm_info_t *
 void config_gptmr_to_detect_uart_rx_start(gptmr_info_t *gptmr_info, trgm_info_t *trgm_info)
 {
     gptmr_channel_config_t config;
+
+    clock_add_to_group(gptmr_info->clock_name, 0);
     gptmr_channel_get_default_config(gptmr_info->ptr, &config);
     config.mode = gptmr_work_mode_capture_at_falling_edge;
-
     gptmr_channel_config(gptmr_info->ptr, gptmr_info->cap_ch, &config, false);
     gptmr_channel_reset_count(gptmr_info->ptr, gptmr_info->cap_ch);
 
@@ -218,11 +220,11 @@ void gptmr_detect_uart_rx_idle_handler(uart_rx_flexiable_data_context_t *demo_co
     }
 }
 
+SDK_DECLARE_EXT_ISR_M(TEST_GPTMR_IRQ, gptmr_isr)
 void gptmr_isr(void)
 {
     gptmr_detect_uart_rx_idle_handler(&demo_config);
 }
-SDK_DECLARE_EXT_ISR_M(TEST_GPTMR_IRQ, gptmr_isr)
 
 void setup_uart_flexible_data_reception(uart_rx_flexiable_data_context_t *config)
 {

@@ -26,7 +26,7 @@ extern usb_osal_thread_t task_handle_mic_play;
 int main(void)
 {
     board_init();
-    board_init_usb_pins();
+    board_init_usb((USB_Type *)CONFIG_HPM_USBD_BASE);
 
     board_init_dao_clock();
     init_dao_pins();

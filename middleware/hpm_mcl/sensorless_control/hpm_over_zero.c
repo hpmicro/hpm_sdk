@@ -79,7 +79,7 @@ int8_t hpm_mcl_over_zero_step_get(hpm_mcl_over_zero_cfg_t *cfg)
      */
     switch (cfg->fsm) {
     case hpm_mcl_over_zero_fsm_init:
-        cfg->last_interval = 0;
+        cfg->last_interval = hpm_mcl_interval_init;
         cfg->delay_degree_30 = 0;
         cfg->number_consecutive_zeros_w = 0;
         cfg->adc_zero_ph = 0;
@@ -87,7 +87,7 @@ int8_t hpm_mcl_over_zero_step_get(hpm_mcl_over_zero_cfg_t *cfg)
         cfg->number_consecutive_zeros = 0;
         cfg->interval_tick = 0;
         cfg->speed_tick = 0;
-        cfg->interval = 0;
+        cfg->interval = hpm_mcl_interval_init;
         cfg->fsm = hpm_mcl_over_zero_fsm_location;
         break;
     case hpm_mcl_over_zero_fsm_location:

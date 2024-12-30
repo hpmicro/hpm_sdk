@@ -23,6 +23,7 @@ endif()
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 sdk_compile_definitions(-D__DISABLE_AUTO_NEGO=0)
 sdk_compile_definitions(-DLWIP_DHCP=0)
+#sdk_compile_definitions(-DENABLE_TSW_RECEIVE_INTERRUPT=1)
 
 project(lwip_tcpecho_example)
 sdk_inc(../ports/baremetal/single)

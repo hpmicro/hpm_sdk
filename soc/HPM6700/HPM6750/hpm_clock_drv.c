@@ -33,6 +33,10 @@
 #define CLOCK_ON (true)
 #define CLOCK_OFF (false)
 
+typedef struct _pllclk_div_map {
+    uint8_t pll_idx;
+    uint8_t pll_div;
+} clk_pll_div_map_t;
 
 /***********************************************************************************************************************
  * Prototypes
@@ -82,6 +86,17 @@ static const clock_node_t s_i2s_clk_mux_node[] = {
 };
 
 static WDG_Type *const s_wdgs[] = { HPM_WDG0, HPM_WDG1, HPM_WDG2, HPM_WDG3 };
+
+static const clk_pll_div_map_t s_clk_pll_div_map[] = {
+    {0xFF, 1}, /* OSC, Div 1 */
+    {0, 0}, /* PLL0, clock 0 */
+    {1, 0}, /* PLL1, clock 0 */
+    {1, 1}, /* PLL1, clock 1 */
+    {2, 0}, /* PLL2, clock 0 */
+    {2, 1}, /* PLL2, clock 1 */
+    {3, 0}, /* PLL3, clock 0 */
+    {4, 0}, /* PLL4, clock 0 */
+};
 
 uint32_t hpm_core_clock;
 
@@ -337,6 +352,27 @@ clk_src_t clock_get_source(clock_name_t clock_name)
     return clk_src;
 }
 
+hpm_stat_t clock_wait_source_stable(clock_name_t clock_name)
+{
+    clk_src_t clk_src = clock_get_source(clock_name);
+    if (clk_src == clk_src_invalid) {
+        return status_invalid_argument;
+    }
+    uint64_t ticks_per_ms = clock_get_core_clock_ticks_per_ms();
+    uint64_t timeout_ticks = hpm_csr_get_core_cycle() + 100UL * ticks_per_ms;
+    const clk_pll_div_map_t *map_entry = &s_clk_pll_div_map[clk_src];
+    bool is_stable;
+    do {
+        is_stable = (map_entry->pll_idx == 0xFF) ? pllctl_xtal_is_stable(HPM_PLLCTL)
+                                                 : pllctl_div_is_stable(HPM_PLLCTL, map_entry->pll_idx, map_entry->pll_div);
+        if (hpm_csr_get_core_cycle() > timeout_ticks) {
+            return status_timeout;
+        }
+    } while (!is_stable);
+
+    return status_success;
+}
+
 uint32_t clock_get_divider(clock_name_t clock_name)
 {
     uint32_t clk_divider = CLOCK_DIV_INVALID;
@@ -558,18 +594,32 @@ void clock_disconnect_group_from_cpu(uint32_t group, uint32_t cpu)
     }
 }
 
+uint32_t clock_get_core_clock_ticks_per_us(void)
+{
+    if (hpm_core_clock == 0U) {
+        clock_update_core_clock();
+    }
+    return (hpm_core_clock + FREQ_1MHz - 1U) / FREQ_1MHz;
+}
+
+uint32_t clock_get_core_clock_ticks_per_ms(void)
+{
+    if (hpm_core_clock == 0U) {
+        clock_update_core_clock();
+    }
+    return (hpm_core_clock + FREQ_1MHz - 1U) / 1000;
+}
+
 void clock_cpu_delay_us(uint32_t us)
 {
-    uint32_t ticks_per_us = (hpm_core_clock + FREQ_1MHz - 1U) / FREQ_1MHz;
-    uint64_t expected_ticks = hpm_csr_get_core_cycle() + ticks_per_us * us;
+    uint64_t expected_ticks = hpm_csr_get_core_cycle() + (uint64_t)clock_get_core_clock_ticks_per_us() * (uint64_t)us;
     while (hpm_csr_get_core_cycle() < expected_ticks) {
     }
 }
 
 void clock_cpu_delay_ms(uint32_t ms)
 {
-    uint32_t ticks_per_us = (hpm_core_clock + FREQ_1MHz - 1U) / FREQ_1MHz;
-    uint64_t expected_ticks = hpm_csr_get_core_cycle() + (uint64_t)ticks_per_us * 1000UL * ms;
+    uint64_t expected_ticks = hpm_csr_get_core_cycle() + (uint64_t)clock_get_core_clock_ticks_per_ms() * (uint64_t)ms;
     while (hpm_csr_get_core_cycle() < expected_ticks) {
     }
 }

@@ -1161,7 +1161,7 @@ void rt_kputs(const char *str)
  *
  * @param fmt the format
  */
-void rt_kprintf(const char *fmt, ...)
+RT_WEAK int rt_kprintf(const char *fmt, ...)
 {
     va_list args;
     rt_size_t length;
@@ -1193,6 +1193,8 @@ void rt_kprintf(const char *fmt, ...)
     rt_hw_console_output(rt_log_buf);
 #endif
     va_end(args);
+
+    return length;
 }
 #endif
 

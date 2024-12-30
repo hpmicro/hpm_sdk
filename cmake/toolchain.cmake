@@ -49,6 +49,7 @@ add_library(${HPM_SDK_ZCC_LIB_ITF} INTERFACE)
 
 set(HPM_SDK_GCC_LIB_ITF hpm_sdk_gcc_lib_itf)
 set(HPM_SDK_GCC_LIB hpm_sdk_gcc_lib)
+set(HPM_SDK_GCC_STARTUP_LIB hpm_sdk_gcc_startup_lib)
 add_library(${HPM_SDK_GCC_LIB_ITF} INTERFACE)
 
 string(REGEX REPLACE "{\"\'}" "" GNURISCV_TOOLCHAIN_PATH $ENV{GNURISCV_TOOLCHAIN_PATH})
@@ -62,6 +63,12 @@ set(TOOLCHAIN_HOME ${GNURISCV_TOOLCHAIN_PATH})
 set(TOOLCHAIN_VARIANT gcc)
 if(NOT "$ENV{HPM_SDK_TOOLCHAIN_VARIANT}" STREQUAL "")
   set(TOOLCHAIN_VARIANT $ENV{HPM_SDK_TOOLCHAIN_VARIANT})
+endif()
+
+if(CUSTOM_TARGET_TRIPLET)
+    set(TARGET_TRIPLET ${CUSTOM_TARGET_TRIPLET})
+else()
+    set(TARGET_TRIPLET riscv32-unknown-elf)
 endif()
 
 # determine which toolchain will be used
@@ -85,8 +92,8 @@ elseif("${TOOLCHAIN_VARIANT}" STREQUAL "gcc")
   set(LINKER ld)
   set(BINTOOLS gnu)
   set(C++ g++)
-  set(CROSS_COMPILE_TARGET riscv32-unknown-elf)
-  set(SYSROOT_TARGET       riscv32-unknown-elf)
+  set(CROSS_COMPILE_TARGET ${TARGET_TRIPLET})
+  set(SYSROOT_TARGET       ${TARGET_TRIPLET})
   set(TOOLCHAIN_CMAKE gcc.cmake)
 elseif("${TOOLCHAIN_VARIANT}" STREQUAL "nds-llvm")
   set(COMPILER clang)
@@ -104,9 +111,6 @@ if("${TOOLCHAIN_VARIANT}" STREQUAL "zcc")
   set(CROSS_COMPILE ${TOOLCHAIN_HOME}/bin/)
 else()
   set(CROSS_COMPILE ${TOOLCHAIN_HOME}/bin/${CROSS_COMPILE_TARGET}-)
-endif()
-if(SYSROOT_TARGET)
-  set(SYSROOT_DIR ${TOOLCHAIN_HOME}/${SYSROOT_TARGET}/include/c++/${COMPILER_VERSION})
 endif()
 
 message(STATUS "Found toolchain: gnu (${GNURISCV_TOOLCHAIN_PATH})")
@@ -139,6 +143,41 @@ if(ret)
 '${CMAKE_C_COMPILER} --version'
 "
     )
+endif()
+
+# @private
+function(get_nds_gcc_abi nds_gcc_abi)
+    execute_process(
+        COMMAND ${CMAKE_C_COMPILER} --verbose
+        RESULT_VARIABLE ret
+        ERROR_VARIABLE verbose_text
+        OUTPUT_QUIET
+    )
+    STRING(REGEX REPLACE ".*--with-abi=([A-Za-z0-9]+).*" "\\1" out ${verbose_text})
+    set(${nds_gcc_abi} ${out} PARENT_SCOPE)
+endfunction()
+
+# Detect the ABI for andes toolchain explicitly
+if(${TOOLCHAIN_VARIANT} STREQUAL "nds-gcc")
+    get_nds_gcc_abi(nds_gcc_abi)
+endif()
+
+if(NOT RV_ABI)
+    if(nds_gcc_abi)
+        set(RV_ABI ${nds_gcc_abi})
+    else()
+        set(RV_ABI "ilp32")
+    endif()
+endif()
+
+if(nds_gcc_abi)
+    if(NOT ${RV_ABI} STREQUAL ${nds_gcc_abi})
+        message(FATAL_ERROR "Specified RV_ABI: ${RV_ABI} does not match abi provided by nds_gcc ${nds_gcc_abi}")
+    endif()
+endif()
+
+if(NOT RV_ARCH)
+    set(RV_ARCH "rv32imac")
 endif()
 
 # @private

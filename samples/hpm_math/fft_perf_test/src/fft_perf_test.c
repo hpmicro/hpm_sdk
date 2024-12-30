@@ -214,6 +214,8 @@ int main(void)
     }
     printf("**************************************\r\n\r\n\r\n\r\n");
 #ifdef HPMSOC_HAS_HPMSDK_FFA
+    clock_add_to_group(clock_ffa0, 0);
+
     /**
      * @brief Q31 FFA  2^j complex samples
      *

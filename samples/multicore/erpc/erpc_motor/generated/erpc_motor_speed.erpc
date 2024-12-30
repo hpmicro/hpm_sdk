@@ -1,0 +1,17 @@
+//Copyright below will be added into all generated files.
+/*!
+ * Copyright (c) 2014-2016, Freescale Semiconductor, Inc.
+ * Copyright 2016 NXP
+ * Copyright (c) 2022 HPMicro
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+program erpc_motor
+
+interface MotorSpeedControlService {
+    erpcSetMotorSpeed(in float target_speed) -> void
+    erpcGetMotorSpeed() -> float
+    oneway erpcSwitchLightLed()
+}

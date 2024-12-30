@@ -7,9 +7,8 @@
 
 #include <stdio.h>
 #include "board.h"
-#include "hpm_sysctl_drv.h"
 #include "hpm_gptmr_drv.h"
-#include "hpm_debug_console.h"
+#include "hpm_clock_drv.h"
 
 #define APP_BOARD_GPTMR               BOARD_GPTMR
 #define APP_BOARD_GPTMR_CH            BOARD_GPTMR_CHANNEL
@@ -25,6 +24,7 @@ static void monitor_config(void);
 volatile bool monitor_is_done;
 volatile uint32_t gptmr_freq;
 
+SDK_DECLARE_EXT_ISR_M(APP_BOARD_GPTMR_IRQ, isr_gptmr)
 void isr_gptmr(void)
 {
     if (gptmr_check_status(APP_BOARD_GPTMR, GPTMR_CH_CAP_STAT_MASK(APP_BOARD_GPTMR_CH))) {
@@ -34,7 +34,6 @@ void isr_gptmr(void)
             gptmr_disable_irq(APP_BOARD_GPTMR, GPTMR_CH_CAP_IRQ_MASK(APP_BOARD_GPTMR_CH));
     }
 }
-SDK_DECLARE_EXT_ISR_M(APP_BOARD_GPTMR_IRQ, isr_gptmr)
 
 int main(void)
 {
@@ -60,6 +59,8 @@ static void monitor_config(void)
 {
     gptmr_channel_config_t config;
     uint32_t gptmr_freq, gptmr_tick_ns;
+
+    clock_add_to_group(APP_BOARD_GPTMR_CLOCK, 0);
     gptmr_channel_get_default_config(APP_BOARD_GPTMR, &config);
     gptmr_freq = clock_get_frequency(APP_BOARD_GPTMR_CLOCK);
     printf("gptmr freq: %lu\n", gptmr_freq);

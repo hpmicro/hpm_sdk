@@ -10,6 +10,7 @@
 
 #include "hpm_common.h"
 #include "hpm_sdm_regs.h"
+#include "hpm_soc_ip_feature.h"
 
 /**
  * @brief SDM APIs
@@ -57,45 +58,65 @@ typedef struct {
     bool enable_data_ready_interrupt;
 } sdm_channel_common_config_t;
 
+/* amplitude detect config */
 typedef struct {
-    uint16_t high_threshold;
-    uint16_t zero_cross_threshold;
-    uint16_t low_threshold;
+    uint16_t high_threshold;             /**< high threshold */
+    uint16_t zero_cross_threshold;       /**< zero threshold */
+    uint16_t low_threshold;              /**< low threshold */
 
-    bool en_zero_cross_threshold_int;
-    bool en_clock_invalid_int;
-    bool en_high_threshold_int;
-    bool en_low_threshold_int;
+    bool en_zero_cross_threshold_int;    /**< zero cross enable, not generate interrupt!! */
+    bool en_clock_invalid_int;           /** MCLK stop detect interrupt enable */
+    bool en_high_threshold_int;          /**< high threshold interrupt enable */
+    bool en_low_threshold_int;           /**< low threshold interrupt enable */
     uint8_t filter_type;                 /**< sdm_filter_type_t */
     uint8_t oversampling_rate;           /**< 1 - 32 */
-    uint8_t ignore_invalid_samples;
-    bool enable;
+    uint8_t ignore_invalid_samples;      /**< invalid data according to filter type */
+    bool enable;                         /**< comparator function enable */
 } sdm_comparator_config_t;
 
+/* sample data config */
 typedef struct {
-    uint8_t fifo_threshold;
-    bool en_fifo_threshold_int;
-    uint8_t manchester_threshold  :8;
-    uint8_t wdg_threshold         :8;
-    uint8_t en_af_int             :1;
-    uint8_t en_data_overflow_int  :1;
-    uint8_t en_cic_data_saturation_int  :1;
-    uint8_t en_data_ready_int           :1;
-    uint8_t sync_source                 :6;
+    uint8_t fifo_threshold;           /**< fifo threshold to generate data ready interrupt */
+    bool en_fifo_threshold_int;       /**< dropped parameter, use en_data_ready_int */
+    uint8_t manchester_threshold  :8; /**< Manchester decode threshold */
+    uint8_t wdg_threshold         :8; /**< wdog to detect MCLK stop error */
+    uint8_t en_af_int             :1; /**< dropped parameter */
+    uint8_t en_data_overflow_int  :1; /**< data overflow interrupt */
+    uint8_t en_cic_data_saturation_int  :1; /**< data cic Calculate saturation interrupt */
+    uint8_t en_data_ready_int           :1; /**< data ready interrupt enable */
+    uint8_t sync_source                 :6; /**< sync signal source */
     uint8_t fifo_clean_on_sync          :1; /**< fifo clean by hardware when fifo interrupt occurred */
-    uint8_t wtsynaclr                   :1;
-    uint8_t wtsynmclr                   :1;
-    uint8_t wtsyncen                    :1;
-    uint8_t output_32bit                :1;
-    uint8_t data_ready_flag_by_fifo     :1;
-    uint8_t enable                      :1;
+    uint8_t wtsynaclr                   :1; /**< after sync event and data ready interrupt occurred, hardware clear sync event flag and stop receive data */
+    uint8_t wtsynmclr                   :1; /**< software clear sync event flag and stop receive data */
+    uint8_t wtsyncen                    :1; /**< after sync enevt, fill data into register/fifo */
+    uint8_t output_32bit                :1; /**< output 32bit */
+    uint8_t data_ready_flag_by_fifo     :1; /**< enable fifo */
+    uint8_t enable                      :1; /**< data function enable */
 
     uint8_t filter_type;                 /**< sdm_filter_type_t */
-    bool pwm_signal_sync;
-    uint8_t output_offset;               /**< 16bit mode need configure this */
+    bool pwm_signal_sync;                /**< synchronize the sync signal before use */
+    uint8_t output_offset;               /**< 16bit output mode need configure this */
     uint16_t oversampling_rate;          /**< 1-256 */
-    uint8_t ignore_invalid_samples;
+    uint8_t ignore_invalid_samples;      /**< invalid data according to filter type */
 } sdm_filter_config_t;
+
+#if defined(HPM_IP_FEATURE_SDM_GATE_FUNC) && (HPM_IP_FEATURE_SDM_GATE_FUNC)
+typedef struct {
+    bool enable;                    /* enable gate function */
+    bool start_on_rising_edge;      /* start from gate signal rising edge */
+    bool stop_sample_by_gate_count; /* true: gate_count decide stop sample time; false: stop sample time related to gate signal timing */
+    uint16_t gate_count;            /* gate sample count */
+    uint16_t gate_source;           /* gate signal source from trgmmux */
+} sdm_filter_gate_config_t;
+#endif
+
+#if defined(HPM_IP_FEATURE_SDM_TIMESTAMP_FUNC) && (HPM_IP_FEATURE_SDM_TIMESTAMP_FUNC)
+typedef struct {
+    bool enable_fifo_output_timestamp;     /* enable SDATA register output timestamp */
+    bool enable_register_output_timestamp; /*  enable SDFIFO output timestamp */
+    bool timestamp_output_subtract_delay;  /* false: calculation results output time; true: calculation results output time - the delay of filter time */
+} sdm_filter_timestamp_config_t;
+#endif
 
 typedef struct {
     uint32_t count;
@@ -162,6 +183,38 @@ static inline void sdm_enable_channel(SDM_Type *ptr, uint8_t ch_index, bool enab
         ptr->CTRL |= CHN_EN_MASK(ch_index);
     } else {
         ptr->CTRL &= ~CHN_EN_MASK(ch_index);
+    }
+}
+
+/**
+ * @brief sdm enable channel sample data function
+ *
+ * @param ptr SDM base address
+ * @param ch_index channel index
+ * @param enable true for enable, false for disable
+ */
+static inline void sdm_enable_channel_filter(SDM_Type *ptr, uint8_t ch_index, bool enable)
+{
+    if (enable) {
+        ptr->CH[ch_index].SDCTRLP |= SDM_CH_SDCTRLP_EN_MASK;
+    } else {
+        ptr->CH[ch_index].SDCTRLP &= ~SDM_CH_SDCTRLP_EN_MASK;
+    }
+}
+
+/**
+ * @brief sdm enable channel amplitude detect function
+ *
+ * @param ptr SDM base address
+ * @param ch_index channel index
+ * @param enable true for enable, false for disable
+ */
+static inline void sdm_enable_channel_comparator(SDM_Type *ptr, uint8_t ch_index, bool enable)
+{
+    if (enable) {
+        ptr->CH[ch_index].SCCTRL |= SDM_CH_SCCTRL_EN_MASK;
+    } else {
+        ptr->CH[ch_index].SCCTRL &= ~SDM_CH_SCCTRL_EN_MASK;
     }
 }
 
@@ -275,6 +328,48 @@ static inline uint32_t sdm_get_channel_filter_status(SDM_Type *ptr, uint8_t ch)
     return ptr->CH[ch].SDST;
 }
 
+#if defined(HPM_IP_FEATURE_SDM_TIMESTAMP_FUNC) && (HPM_IP_FEATURE_SDM_TIMESTAMP_FUNC)
+/**
+ * @brief sdm channel check the first value in fifo is sample data
+ *
+ * @note this function is used when the channel filter output timestamp is enabled
+ *
+ * @param ptr SDM base address
+ * @param ch channel index
+ * @return bool true: the first value in FIFO is sample data; false: the first value in FIFO is timestamp
+ */
+static inline bool sdm_channel_filter_fifo_is_data(SDM_Type *ptr, uint8_t ch)
+{
+    return (bool)(SDM_CH_SDST_SDFIFO_D0_T1_GET(ptr->CH[ch].SDST));
+}
+
+/**
+ * @brief sdm channel check the value in SDATA register is sample data
+ *
+ * @note this function is used when the channel filter output timestamp is enabled
+ *
+ * @param ptr SDM base address
+ * @param ch channel index
+ * @return bool true: the value in SDATA register is sample data; false: the value in SDATA register is timestamp
+ */
+static inline bool sdm_channel_filter_register_is_data(SDM_Type *ptr, uint8_t ch)
+{
+    return (bool)(SDM_CH_SDST_SDATA_D0_T1_GET(ptr->CH[ch].SDST));
+}
+#endif
+
+/**
+ * @brief sdm clean channel sample data status
+ *
+ * @param ptr SDM base address
+ * @param ch channel index
+ * @param uint32_t mask status mask value
+ */
+static inline void sdm_clean_channel_filter_status(SDM_Type *ptr, uint8_t ch, uint32_t mask)
+{
+    ptr->CH[ch].SDST = mask;
+}
+
 /**
  * @brief sdm get channel data count in fifo
  *
@@ -372,6 +467,18 @@ static inline uint32_t sdm_get_channel_comparator_status(SDM_Type *ptr, uint8_t 
 }
 
 /**
+ * @brief sdm clean channel amplitude detect status
+ *
+ * @param ptr SDM base address
+ * @param ch channel index
+ * @param uint32_t mask status mask value
+ */
+static inline void sdm_clean_channel_comparator_status(SDM_Type *ptr, uint8_t ch, uint32_t mask)
+{
+    ptr->CH[ch].SCST = mask;
+}
+
+/**
  * @brief sdm get default module control
  *
  * @param ptr SDM base address
@@ -462,6 +569,29 @@ hpm_stat_t sdm_receive_one_filter_data(SDM_Type *ptr, uint8_t ch_index, bool usi
  * @retval hpm_stat_t status_success only if it succeeds
  */
 hpm_stat_t sdm_receive_filter_data(SDM_Type *ptr, uint8_t ch_index, bool using_fifo, int8_t *data, uint32_t count, uint8_t data_len_in_bytes);
+
+#if defined(HPM_IP_FEATURE_SDM_GATE_FUNC) && (HPM_IP_FEATURE_SDM_GATE_FUNC)
+/**
+ * @brief sdm config channel sample gate function
+ *
+ * @param ptr SDM base address
+ * @param ch_index channel index
+ * @param gate_config sdm_filter_gate_config_t
+ * @retval hpm_stat_t status_success only if it succeeds
+ */
+hpm_stat_t sdm_config_channel_filter_gate(SDM_Type *ptr, uint8_t ch_index, sdm_filter_gate_config_t *gate_config);
+#endif
+
+#if defined(HPM_IP_FEATURE_SDM_TIMESTAMP_FUNC) && (HPM_IP_FEATURE_SDM_TIMESTAMP_FUNC)
+/**
+ * @brief sdm config channel sample timestamp function
+ *
+ * @param ptr SDM base address
+ * @param ch_index channel index
+ * @param timestamp_config sdm_filter_timestamp_config_t
+ */
+void sdm_config_channel_filter_timestamp(SDM_Type *ptr, uint8_t ch_index, sdm_filter_timestamp_config_t *timestamp_config);
+#endif
 
 /**
  * @}

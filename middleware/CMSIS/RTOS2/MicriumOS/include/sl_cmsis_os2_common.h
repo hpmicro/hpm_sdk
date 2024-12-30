@@ -1,9 +1,3 @@
-/*
- * Copyright (c) 2023 HPMicro
- *
- * SPDX-License-Identifier: BSD-3-Clause
- *
- */
 /***************************************************************************//**
  * @file sl_cmsis_os2_common.h
  * @brief OS-agnostic header to provide CMSIS OS-Specific APIs like typedefs.
@@ -11,6 +5,7 @@
  *******************************************************************************
  * # License
  * <b>Copyright 2020 Silicon Laboratories Inc. www.silabs.com</b>
+ * Copyright (c) 2023 HPMicro
  *******************************************************************************
  *
  * SPDX-License-Identifier: Zlib

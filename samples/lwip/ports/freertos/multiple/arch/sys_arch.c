@@ -258,7 +258,7 @@ void
 sys_mutex_free(sys_mutex_t *mutex)
 {
   LWIP_ASSERT("mutex != NULL", mutex != NULL);
-  LWIP_ASSERT("mutex->mut != NULL", mutex->mut != NULL);
+  LWIP_ASSERT("mutex->mut != NULL", mutex->mut != NULL); /* NOLINT */
 
   SYS_STATS_DEC(mutex.used);
   vSemaphoreDelete(mutex->mut);
@@ -293,7 +293,7 @@ sys_sem_signal(sys_sem_t *sem)
 {
   BaseType_t ret;
   LWIP_ASSERT("sem != NULL", sem != NULL);
-  LWIP_ASSERT("sem->sem != NULL", sem->sem != NULL);
+  LWIP_ASSERT("sem->sem != NULL", sem->sem != NULL); /* NOLINT */
 
   ret = xSemaphoreGive(sem->sem);
   /* queue full is OK, this is a signal only... */
@@ -306,7 +306,7 @@ sys_arch_sem_wait(sys_sem_t *sem, u32_t timeout_ms)
 {
   BaseType_t ret;
   LWIP_ASSERT("sem != NULL", sem != NULL);
-  LWIP_ASSERT("sem->sem != NULL", sem->sem != NULL);
+  LWIP_ASSERT("sem->sem != NULL", sem->sem != NULL); /* NOLINT */
 
   if (!timeout_ms) {
     /* wait infinite */
@@ -332,7 +332,7 @@ void
 sys_sem_free(sys_sem_t *sem)
 {
   LWIP_ASSERT("sem != NULL", sem != NULL);
-  LWIP_ASSERT("sem->sem != NULL", sem->sem != NULL);
+  LWIP_ASSERT("sem->sem != NULL", sem->sem != NULL); /* NOLINT */
 
   SYS_STATS_DEC(sem.used);
   vSemaphoreDelete(sem->sem);
@@ -359,7 +359,7 @@ sys_mbox_post(sys_mbox_t *mbox, void *msg)
 {
   BaseType_t ret;
   LWIP_ASSERT("mbox != NULL", mbox != NULL);
-  LWIP_ASSERT("mbox->mbx != NULL", mbox->mbx != NULL);
+  LWIP_ASSERT("mbox->mbx != NULL", mbox->mbx != NULL); /* NOLINT */
 
   ret = xQueueSendToBack(mbox->mbx, &msg, portMAX_DELAY);
   LWIP_ASSERT("mbox post failed", ret == pdTRUE);
@@ -370,7 +370,7 @@ sys_mbox_trypost(sys_mbox_t *mbox, void *msg)
 {
   BaseType_t ret;
   LWIP_ASSERT("mbox != NULL", mbox != NULL);
-  LWIP_ASSERT("mbox->mbx != NULL", mbox->mbx != NULL);
+  LWIP_ASSERT("mbox->mbx != NULL", mbox->mbx != NULL); /* NOLINT */
 
   ret = xQueueSendToBack(mbox->mbx, &msg, 0);
   if (ret == pdTRUE) {
@@ -388,7 +388,7 @@ sys_mbox_trypost_fromisr(sys_mbox_t *mbox, void *msg)
   BaseType_t ret;
   BaseType_t xHigherPriorityTaskWoken = pdFALSE;
   LWIP_ASSERT("mbox != NULL", mbox != NULL);
-  LWIP_ASSERT("mbox->mbx != NULL", mbox->mbx != NULL);
+  LWIP_ASSERT("mbox->mbx != NULL", mbox->mbx != NULL);  /* NOLINT */
 
   ret = xQueueSendToBackFromISR(mbox->mbx, &msg, &xHigherPriorityTaskWoken);
   if (ret == pdTRUE) {
@@ -409,7 +409,7 @@ sys_arch_mbox_fetch(sys_mbox_t *mbox, void **msg, u32_t timeout_ms)
   BaseType_t ret;
   void *msg_dummy;
   LWIP_ASSERT("mbox != NULL", mbox != NULL);
-  LWIP_ASSERT("mbox->mbx != NULL", mbox->mbx != NULL);
+  LWIP_ASSERT("mbox->mbx != NULL", mbox->mbx != NULL); /* NOLINT */
 
   if (!msg) {
     msg = &msg_dummy;
@@ -442,7 +442,7 @@ sys_arch_mbox_tryfetch(sys_mbox_t *mbox, void **msg)
   BaseType_t ret;
   void *msg_dummy;
   LWIP_ASSERT("mbox != NULL", mbox != NULL);
-  LWIP_ASSERT("mbox->mbx != NULL", mbox->mbx != NULL);
+  LWIP_ASSERT("mbox->mbx != NULL", mbox->mbx != NULL); /* NOLINT */
 
   if (!msg) {
     msg = &msg_dummy;
@@ -465,7 +465,7 @@ void
 sys_mbox_free(sys_mbox_t *mbox)
 {
   LWIP_ASSERT("mbox != NULL", mbox != NULL);
-  LWIP_ASSERT("mbox->mbx != NULL", mbox->mbx != NULL);
+  LWIP_ASSERT("mbox->mbx != NULL", mbox->mbx != NULL); /* NOLINT */
 
 #if LWIP_FREERTOS_CHECK_QUEUE_EMPTY_ON_FREE
   {

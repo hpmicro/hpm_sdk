@@ -1,0 +1,12 @@
+excluded_targets:
+  - debug
+  - release
+  - sec_core_img
+  - sec_core_img_release
+
+dependency:
+  - board_sdram
+  - board_ap6255_evb
+
+excluded_ides:
+  - iar

@@ -86,6 +86,7 @@ void init_board_app_dma(void)
     dma_setup_handshake(TEST_UART_DMA_CONTROLLER, &ch_config, false);
 }
 
+SDK_DECLARE_MCHTMR_ISR(task_entry_5ms)
 void task_entry_5ms(void)
 {
     uint32_t rx_data_size;
@@ -119,7 +120,6 @@ void task_entry_5ms(void)
         }
     }
 }
-SDK_DECLARE_MCHTMR_ISR(task_entry_5ms)
 
 int main(void)
 {

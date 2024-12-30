@@ -19675,12 +19675,12 @@ Note: CRC register will be cleared automatically by UPDATE if select the DATA re
             </field>
             <field>
               <name>OPR</name>
-              <description>[1] When OP is 0, this area is the halt time in baudrate, 0 represents infinite time.
-[2] When OP is 1, this area is the the pointer to the command table.
+              <description>a. When OP is 0, this area is the halt time in baudrate, 0 represents infinite time.
+b. When OP is 1, this area is the the pointer to the command table.
 OPR[4]=1, OPR[3:0] value is CMD_TABLE instruct pointer;
 OPR[4]=0, OPR[3:0]=0 is INIT_POINTER;
 OPR[4]=0, OPR[3:0]=1 is WDG_POINTER.
-[3] When OP is 2-7, this area is the data length as fellow:
+c. When OP is 2-7, this area is the data length as fellow:
 0: 1 bit
 1: 2 bit
  ...

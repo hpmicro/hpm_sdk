@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 board:
-    name: hpm6200evk
     soc: HPM6280
     device: HPM6280xPAx
     openocd-soc: hpm6280-dual-core

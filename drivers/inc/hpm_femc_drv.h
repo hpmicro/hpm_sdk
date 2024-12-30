@@ -28,13 +28,6 @@
 #define FEMC_SDRAM_CAS_LATENCY_1 (1U)
 #define FEMC_SDRAM_CAS_LATENCY_2 (2U)
 #define FEMC_SDRAM_CAS_LATENCY_3 (3U)
-/* @brief iomux options */
-#define FEMC_IO_MUX_NOT_USED (0U)
-#define FEMC_IO_MUX_CSX0 (1U)
-#define FEMC_IO_MUX_CSX1 (2U)
-#define FEMC_IO_MUX_CSX2 (3U)
-#define FEMC_IO_MUX_CSX3 (4U)
-#define FEMC_IO_MUX_RDY (5U)
 /* @brief sdram bank number */
 #define FEMC_SDRAM_BANK_NUM_4 (0U)
 #define FEMC_SDRAM_BANK_NUM_2 (1U)
@@ -52,8 +45,6 @@
 /* @brief DQS option */
 #define FEMC_DQS_INTERNAL (0U)
 #define FEMC_DQS_FROM_PAD (1U)
-
-#define FEMC_BR_COUNT (2U)
 
 #define FEMC_CMD_KEY                   FEMC_IPCMD_KEY_SET(0xA55A)
 #define FEMC_CMD_WRITE_FLAG            (1UL << 31)
@@ -109,7 +100,6 @@ typedef struct {
     uint8_t col_addr_bits;              /**< column address bit count */
     uint8_t cas_latency;                /**< CAS latency */
     uint8_t cs;                         /**< chip select */
-    uint8_t cs_mux_pin;                 /**< chip select mux */
     uint8_t bank_num;                   /**< bank number */
     uint8_t prescaler;                  /**< presecaler */
     uint8_t port_size;                  /**< SDRAM port size */
@@ -137,6 +127,7 @@ typedef struct {
 typedef struct {
     uint32_t base_address;              /**< external SRAM base address */
     uint32_t size_in_byte;              /**< external SRAM size in byte */
+    uint8_t cs_index;                   /**< chip select */
     uint8_t address_mode;               /**< address mode */
     uint8_t port_size;                  /**< port size */
     uint8_t adv_hold_state;             /**< adv hold level */

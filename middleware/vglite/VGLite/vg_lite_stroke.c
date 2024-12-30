@@ -101,14 +101,6 @@ typedef struct vg_lite_control_coord
     ((1+CoordinateCount) * SIZEOF(CoordinateType))
 
 extern int32_t get_data_size(vg_lite_format_t format);
-#if gcFEATURE_VG_SIMPLYFIED_BEZIER
-extern void quad_bezier(float* x, float* y, const float curve[6], float t);
-extern void cubic_bezier(float* x, float* y, const float curve[8], float t);
-extern void get_aligned_quad(float out[6], float curve[6]);
-extern void get_aligned_cubic(float out[8], float curve[8]);
-extern void split_quad(float out1[6], float out2[6], float curve[6], float split);
-extern void split_cubic(float out1[8], float out2[8], float curve[8], float split);
-#endif
 
 static uint32_t _commandSize_float[] =
 {
@@ -476,8 +468,370 @@ ErrorHandler:
     return status;
 }
 
+#define gcFEATURE_VG_SIMPLYFIED_BEZIER  1
+
 #if gcFEATURE_VG_SIMPLYFIED_BEZIER
+void quad_bezier(float* x, float* y, const float curve[6], float t) {
+    const float* v0, * v1, * v2;
+    float mt, t2, mt2, res[2];
+
+    v0 = &curve[0];
+    v1 = &curve[2];
+    v2 = &curve[4];
+
+    mt = 1 - t;
+    t2 = t * t;
+    mt2 = mt * mt;
+
+    for (uint8_t i = 0; i < 2; ++i) {
+        res[i] = v0[i] * mt2 + 2 * v1[i] * mt * t + v2[i] * t2;
+    }
+
+    *x = res[0];
+    *y = res[1];
+}
+
+void cubic_bezier(float* x, float* y, const float curve[8], float t) {
+    const float* v0, * v1, * v2, * v3;
+    float mt, t2, mt2, t3, mt3, res[2];
+
+    v0 = &curve[0];
+    v1 = &curve[2];
+    v2 = &curve[4];
+    v3 = &curve[6];
+
+    mt = 1 - t;
+    t2 = t * t;
+    t3 = t2 * t;
+    mt2 = mt * mt;
+    mt3 = mt2 * mt;
+
+    for (uint8_t i = 0; i < 2; ++i) {
+        res[i] = v0[i] * mt3 + 3 * v1[i] * mt2 * t + 3 * v2[i] * mt * t2 + v3[i] * t3;
+    }
+
+    *x = res[0];
+    *y = res[1];
+}
+
+void pointer_warp_affine(float out[2], float pt[2], vg_lite_matrix_t* matrix) {
+    float x, y;
+
+    x = pt[0];
+    y = pt[1];
+
+    out[0] = matrix->m[0][0] * x + matrix->m[1][0] * y + matrix->m[2][0];
+    out[1] = matrix->m[0][1] * x + matrix->m[1][1] * y + matrix->m[2][1];
+}
+
+void get_aligned_quad(float out[6], float curve[6]) {
+    float* v0, * v1, * v2;
+    float angle, dx, dy;
+    vg_lite_matrix_t matrix;
+
+    v0 = &curve[0];
+    v1 = &curve[2];
+    v2 = &curve[4];
+
+    dx = v2[0] - v0[0];
+    dy = v2[1] - v0[1];
+    angle = (dy >= 0) ? acosf(dx / sqrtf(dx * dx + dy * dy)) : (2 * 3.1415926535f - acosf(dx / sqrtf(dx * dx + dy * dy)));
+
+    vg_lite_identity(&matrix);
+    vg_lite_translate(-v0[0], -v0[1], &matrix);
+    vg_lite_rotate(-angle, &matrix);
+
+    pointer_warp_affine(&out[0], v0, &matrix);
+    pointer_warp_affine(&out[2], v1, &matrix);
+    pointer_warp_affine(&out[4], v2, &matrix);
+}
+
+void get_aligned_cubic(float out[8], float curve[8]) {
+    float* v0, * v1, * v2, * v3;
+    float angle, dx, dy;
+    vg_lite_matrix_t matrix;
+
+    v0 = &curve[0];
+    v1 = &curve[2];
+    v2 = &curve[4];
+    v3 = &curve[6];
+
+    dx = v3[0] - v0[0];
+    dy = v3[1] - v0[1];
+    angle = (dy >= 0) ? acosf(dx / sqrtf(dx * dx + dy * dy)) : (2 * 3.1415926535f - acosf(dx / sqrtf(dx * dx + dy * dy)));
+
+    vg_lite_identity(&matrix);
+    vg_lite_translate(-v0[0], -v0[1], &matrix);
+    vg_lite_rotate(-angle, &matrix);
+
+    pointer_warp_affine(&out[0], v0, &matrix);
+    pointer_warp_affine(&out[2], v1, &matrix);
+    pointer_warp_affine(&out[4], v2, &matrix);
+    pointer_warp_affine(&out[6], v3, &matrix);
+}
+
+void split_quad(float out1[6], float out2[6], float curve[6], float split) {
+    float* v0, * v1, * v2;
+    float s, s2, ms, ms2;
+
+    v0 = &curve[0];
+    v1 = &curve[2];
+    v2 = &curve[4];
+
+    s = split;
+    ms = 1 - split;
+    s2 = s * s;
+    ms2 = ms * ms;
+
+    float B[2][3] = {
+        {v0[0], v1[0], v2[0]},
+        {v0[1], v1[1], v2[1]}
+    };
+
+    /* First curve */
+    {
+        float C[2][3] = { {0} };
+        float A[9] = {
+            1, 0, 0,
+            ms, s, 0,
+            ms2, 2 * ms * s, s2
+        };
+        /* C = A ¡Á B */
+        for (uint8_t i = 0; i < 2; ++i) {
+            for (size_t y = 0; y < 3; ++y)
+                for (size_t x = 0; x < 1; ++x)
+                    for (size_t z = 0; z < 3; ++z) {
+                        C[i][x + y * 1] += A[z + y * 3] * B[i][x + z * 1];
+                    }
+        }
+
+        out1[0] = C[0][0]; out1[1] = C[1][0];
+        out1[2] = C[0][1]; out1[3] = C[1][1];
+        out1[4] = C[0][2]; out1[5] = C[1][2];
+    }
+
+    /* Second curve */
+    {
+        float C[2][3] = { {0} };
+        float A[9] = {
+            ms2, 2 * s * ms, s2,
+            0, ms, s,
+            0, 0, 1
+        };
+        /* C = A ¡Á B */
+        for (uint8_t i = 0; i < 2; ++i) {
+            for (size_t y = 0; y < 3; ++y)
+                for (size_t x = 0; x < 1; ++x)
+                    for (size_t z = 0; z < 3; ++z) {
+                        C[i][x + y * 1] += A[z + y * 3] * B[i][x + z * 1];
+                    }
+        }
+
+        out2[0] = C[0][0]; out2[1] = C[1][0];
+        out2[2] = C[0][1]; out2[3] = C[1][1];
+        out2[4] = C[0][2]; out2[5] = C[1][2];
+    }
+}
+
+void split_cubic(float out1[8], float out2[8], float curve[8], float split) {
+    float* v0, * v1, * v2, * v3;
+    float s, s2, s3, ms, ms2, ms3;
+
+    v0 = &curve[0];
+    v1 = &curve[2];
+    v2 = &curve[4];
+    v3 = &curve[6];
+
+    s = split;
+    ms = 1 - split;
+    s2 = s * s;
+    ms2 = ms * ms;
+    s3 = s2 * s;
+    ms3 = ms2 * ms;
+
+    float B[2][4] = {
+        {v0[0], v1[0], v2[0], v3[0]},
+        {v0[1], v1[1], v2[1], v3[1]}
+    };
+
+    /* First curve */
+    {
+        float C[2][4] = { {0} };
+        float A[16] = {
+            1, 0, 0, 0,
+            ms, s, 0, 0,
+            ms2, 2 * ms * s, s2, 0,
+            ms3, 3 * s * ms2, 3 * s2 * ms, s3
+        };
+        /* C = A ¡Á B */
+        for (uint8_t i = 0; i < 2; ++i) {
+            for (size_t y = 0; y < 4; ++y)
+                for (size_t x = 0; x < 1; ++x)
+                    for (size_t z = 0; z < 4; ++z) {
+                        C[i][x + y * 1] += A[z + y * 4] * B[i][x + z * 1];
+                    }
+        }
+
+        out1[0] = C[0][0]; out1[1] = C[1][0];
+        out1[2] = C[0][1]; out1[3] = C[1][1];
+        out1[4] = C[0][2]; out1[5] = C[1][2];
+        out1[6] = C[0][3]; out1[7] = C[1][3];
+    }
+
+    /* Second curve */
+    {
+        float C[2][4] = { {0} };
+        float A[16] = {
+            ms3, 3 * s * ms2, 3 * s2 * ms, s3,
+            0, ms2, 2 * ms * s, s2,
+            0, 0, ms, s,
+            0, 0, 0, 1
+        };
+        /* C = A ¡Á B */
+        for (uint8_t i = 0; i < 2; ++i) {
+            for (size_t y = 0; y < 4; ++y)
+                for (size_t x = 0; x < 1; ++x)
+                    for (size_t z = 0; z < 4; ++z) {
+                        C[i][x + y * 1] += A[z + y * 4] * B[i][x + z * 1];
+                    }
+        }
+
+        out2[0] = C[0][0]; out2[1] = C[1][0];
+        out2[2] = C[0][1]; out2[3] = C[1][1];
+        out2[4] = C[0][2]; out2[5] = C[1][2];
+        out2[6] = C[0][3]; out2[7] = C[1][3];
+    }
+}
+
 static vg_lite_error_t _flatten_quad_bezier(
+    vg_lite_stroke_t* stroke_conversion,
+    vg_lite_float_t rootCurve[6],
+    vg_lite_float_t subCurve[6],
+    vg_lite_uint8_t level)
+{
+    vg_lite_error_t error = VG_LITE_SUCCESS;
+    float* v0, * v1, * v2;
+    float dx2, dy2, d1;
+    float subCurve1[6], subCurve2[6];
+    vg_lite_path_point_ptr point0, point1;
+    vg_lite_float_t* curve;
+    curve = (level == 0) ? rootCurve : subCurve;
+
+    if (!stroke_conversion)
+        return VG_LITE_INVALID_ARGUMENT;
+    if (level > 10) return error;
+
+    v0 = &curve[0];
+    v1 = &curve[2];
+    v2 = &curve[4];
+
+    if (level == 0) {
+        /* Add extra P0 for incoming tangent. */
+        point0 = stroke_conversion->path_end;
+        /* First add P1 to calculate incoming tangent, which is saved in P0. */
+        VG_LITE_ERROR_HANDLER(_add_point_to_point_list(stroke_conversion, v1[0], v1[1], vgcFLATTEN_START));
+
+        point1 = stroke_conversion->path_end;
+        /* Change the point1's coordinates back to P0. */
+        point1->x = v0[0];
+        point1->y = v0[1];
+        point0->length = 0.0f;
+    }
+
+    dx2 = v2[0] - v0[0];
+    dy2 = v2[1] - v0[1];
+    d1 = fabsf((v1[0] - v2[0]) * dy2 - (v1[1] - v2[1]) * dx2);
+
+    if (d1 * d1 < 0.25 * (dx2 * dx2 + dy2 * dy2)) {
+        float bound[4];
+
+        bound[0] = MIN(v0[0], v2[0]);
+        bound[1] = MIN(v0[1], v2[1]);
+        bound[2] = MAX(v0[0], v2[0]);
+        bound[3] = MAX(v0[1], v2[1]);
+
+        if (!(v1[0] >= bound[0] && v1[0] <= bound[2] && v1[1] >= bound[1] && v1[1] <= bound[3])) {
+            /* Compute root. */
+            float alignedCurve[6];
+            float d, n, t, pt[2];
+
+            get_aligned_quad(alignedCurve, curve);
+
+            n = alignedCurve[0] - alignedCurve[2];
+            d = alignedCurve[0] - 2.f * alignedCurve[2] + alignedCurve[4];
+            if (fabsf(d) > 1e-12f) {
+                t = n / d;
+                if (t > 1e-12f && t < 1.f - 1e-12f) {
+                    quad_bezier(&pt[0], &pt[1], curve, t);
+                    VG_LITE_ERROR_HANDLER(_add_point_to_point_list(stroke_conversion, pt[0], pt[1], vgcFLATTEN_MIDDLE));
+                }
+            }
+        }
+        else if(level == 0) {
+            float pt[2];
+            uint8_t n = 16;
+            for (uint8_t i = 1; i < n; i++) {
+                vg_lite_float_t t = (vg_lite_float_t)i / (vg_lite_float_t)n;
+                quad_bezier(&pt[0], &pt[1], curve, t);
+                VG_LITE_ERROR_HANDLER(_add_point_to_point_list(stroke_conversion, pt[0], pt[1], vgcFLATTEN_MIDDLE));
+            }
+        }
+        if (level == 0)
+        {
+            VG_LITE_ERROR_HANDLER(_add_point_to_point_list(stroke_conversion, v2[0], v2[1], vgcFLATTEN_END));
+        }
+        else if((v2[0] != rootCurve[4]) || (v2[1] != rootCurve[5]))
+        {
+            VG_LITE_ERROR_HANDLER(_add_point_to_point_list(stroke_conversion, v2[0], v2[1], vgcFLATTEN_MIDDLE));
+        }
+        if (level == 0) {
+            /* Add extra P2 for outgoing tangent. */
+            /* First change P2(point0)'s coordinates to P1. */
+            point0 = stroke_conversion->path_end;
+            point0->x = v1[0];
+            point0->y = v1[1];
+
+            /* Add P2 to calculate outgoing tangent. */
+            VG_LITE_ERROR_HANDLER(_add_point_to_point_list(stroke_conversion, v2[0], v2[1], vgcFLATTEN_NO));
+
+            point1 = stroke_conversion->path_end;
+
+            /* Change point0's coordinates back to P2. */
+            point0->x = v2[0];
+            point0->y = v2[1];
+            point0->length = 0.0f;
+        }
+        return error;
+    }
+
+    split_quad(subCurve1, subCurve2, curve, 0.5);
+    VG_LITE_ERROR_HANDLER(_flatten_quad_bezier(stroke_conversion, rootCurve, subCurve1, level + 1));
+    VG_LITE_ERROR_HANDLER(_flatten_quad_bezier(stroke_conversion, rootCurve, subCurve2, level + 1));
+    if (level == 0) {
+        /* Add point 2 separately to avoid cumulative errors. */
+        VG_LITE_ERROR_HANDLER(_add_point_to_point_list(stroke_conversion, v2[0], v2[1], vgcFLATTEN_END));
+
+        /* Add extra P2 for outgoing tangent. */
+        /* First change P2(point0)'s coordinates to P1. */
+        point0 = stroke_conversion->path_end;
+        point0->x = v1[0];
+        point0->y = v1[1];
+
+        /* Add P2 to calculate outgoing tangent. */
+        VG_LITE_ERROR_HANDLER(_add_point_to_point_list(stroke_conversion, v2[0], v2[1], vgcFLATTEN_NO));
+
+        point1 = stroke_conversion->path_end;
+
+        /* Change point0's coordinates back to P2. */
+        point0->x = v2[0];
+        point0->y = v2[1];
+        point0->length = 0.0f;
+    }
+ErrorHandler:
+    return error;
+}
+
+static vg_lite_error_t _flatten_quad_bezier_original(
     vg_lite_stroke_t* stroke_conversion,
     vg_lite_float_t curve[6],
     vg_lite_uint8_t level)
@@ -543,8 +897,8 @@ static vg_lite_error_t _flatten_quad_bezier(
     }
 
     split_quad(subCurve1, subCurve2, curve, 0.5);
-    VG_LITE_ERROR_HANDLER(_flatten_quad_bezier(stroke_conversion, subCurve1, level + 1));
-    VG_LITE_ERROR_HANDLER(_flatten_quad_bezier(stroke_conversion, subCurve2, level + 1));
+    VG_LITE_ERROR_HANDLER(_flatten_quad_bezier_original(stroke_conversion, subCurve1, level + 1));
+    VG_LITE_ERROR_HANDLER(_flatten_quad_bezier_original(stroke_conversion, subCurve2, level + 1));
     if (level == 0) {
         /* Add point 2 separately to avoid cumulative errors. */
         VG_LITE_ERROR_HANDLER(_add_point_to_point_list(stroke_conversion, v2[0], v2[1], vgcFLATTEN_NO));
@@ -571,7 +925,259 @@ ErrorHandler:
 
 static vg_lite_error_t _flatten_cubic_bezier(
     vg_lite_stroke_t* stroke_conversion, 
-    vg_lite_float_t curve[8], 
+    vg_lite_float_t rootCurve[8],
+    vg_lite_float_t subCurve[8],
+    vg_lite_uint8_t level)
+{
+    vg_lite_error_t error = VG_LITE_SUCCESS;
+    float* v0, * v1, * v2, * v3;
+    float dx3, dy3, d1, d2;
+    float subCurve1[8], subCurve2[8];
+    vg_lite_path_point_ptr point0, point1;
+    vg_lite_float_t* curve;
+
+    if (!stroke_conversion)
+        return VG_LITE_INVALID_ARGUMENT;
+    if (level > 10) return error;
+
+    curve = (level == 0) ? rootCurve : subCurve;
+    v0 = &curve[0];
+    v1 = &curve[2];
+    v2 = &curve[4];
+    v3 = &curve[6];
+
+    if (level == 0) {
+        /* Add extra P0 for incoming tangent. */
+        point0 = stroke_conversion->path_end;
+        /* First add P1/P2/P3 to calculate incoming tangent, which is saved in P0. */
+        if (v0[0] != v1[0] || v0[1] != v1[1])
+        {
+            VG_LITE_ERROR_HANDLER(_add_point_to_point_list(stroke_conversion, v1[0], v1[1], vgcFLATTEN_START));
+        }
+        else if (v0[0] != v2[0] || v0[1] != v2[1])
+        {
+            VG_LITE_ERROR_HANDLER(_add_point_to_point_list(stroke_conversion, v2[0], v2[1], vgcFLATTEN_START));
+        }
+        else
+        {
+            VG_LITE_ERROR_HANDLER(_add_point_to_point_list(stroke_conversion, v3[0], v3[1], vgcFLATTEN_START));
+        }
+        point1 = stroke_conversion->path_end;
+        /* Change the point1's coordinates back to P0. */
+        point1->x = v0[0];
+        point1->y = v0[1];
+        point0->length = 0.0f;
+    }
+
+    dx3 = v3[0] - v0[0];
+    dy3 = v3[1] - v0[1];
+    d1 = fabsf((v1[0] - v3[0]) * dy3 - (v1[1] - v3[1]) * dx3);
+    d2 = fabsf((v2[0] - v3[0]) * dy3 - (v2[1] - v3[1]) * dx3);
+
+    if ((d1 + d2) * (d1 + d2) < 0.25f * (dx3 * dx3 + dy3 * dy3)) {
+        float bound[4];
+
+        bound[0] = MIN(v0[0], v3[0]);
+        bound[1] = MIN(v0[1], v3[1]);
+        bound[2] = MAX(v0[0], v3[0]);
+        bound[3] = MAX(v0[1], v3[1]);
+        if (!(v1[0] >= bound[0] && v1[0] <= bound[2] && v1[1] >= bound[1] && v1[1] <= bound[3]) ||
+            !(v2[0] >= bound[0] && v2[0] <= bound[2] && v2[1] >= bound[1] && v2[1] <= bound[3])) {
+            /* Compute root. */
+            float alignedCurve[8];
+            float a, b, c, b2ac, root[2], t, pt[2];
+            uint8_t rootNum;
+
+            get_aligned_cubic(alignedCurve, curve);
+
+            a = -3.f * alignedCurve[0] + 9.f * alignedCurve[2] - 9.f * alignedCurve[4] + 3.f * alignedCurve[6];
+            b = 6.f * alignedCurve[0] - 12.f * alignedCurve[2] + 6.f * alignedCurve[4];
+            c = -3.f * alignedCurve[0] + 3.f * alignedCurve[2];
+            rootNum = 0;
+            if (fabs(a) < 1e-12f) {  // linear solution
+                t = -c / b;
+                if (t > 1e-12f && t < 1.f - 1e-12f)
+                    root[rootNum++] = t;
+            }
+            else {   // quadtratic solution
+                b2ac = b * b - 4.f * a * c;
+                if (b2ac > 1e-12f) {
+                    t = (-b + (float)sqrt(b2ac)) / (2.f * a);
+                    if (t > 1e-12f && t < 1.f - 1e-12f)
+                        root[rootNum++] = t;
+                    t = (-b - (float)sqrt(b2ac)) / (2.f * a);
+                    if (t > 1e-12f && t < 1.f - 1e-12f)
+                        root[rootNum++] = t;
+                }
+            }
+            if (rootNum == 2 && root[0] > root[1]) {
+                /* Exchange root. */
+                float tmp;
+                tmp = root[0];
+                root[0] = root[1];
+                root[1] = tmp;
+            }
+            if ((rootNum <= 2) && (level == 0)) {
+                float  pt[2];
+                uint8_t n = 8;
+                if (rootNum == 2)
+                {
+                    float step = (root[1] - root[0]) / 8;
+                    float t = root[0];
+                    while (t < root[1])
+                    {
+                        cubic_bezier(&pt[0], &pt[1], curve, t);
+                        VG_LITE_ERROR_HANDLER(_add_point_to_point_list(stroke_conversion, pt[0], pt[1], vgcFLATTEN_MIDDLE));
+                        t += step;
+                    }
+                }
+                else
+                {
+                    for (uint8_t i = 1; i < n; i++) {
+                        vg_lite_float_t t = (vg_lite_float_t)i / (vg_lite_float_t)n;
+                        cubic_bezier(&pt[0], &pt[1], curve, t);
+                        VG_LITE_ERROR_HANDLER(_add_point_to_point_list(stroke_conversion, pt[0], pt[1], vgcFLATTEN_MIDDLE));
+                    }
+                }
+            }
+            else {
+                for (uint8_t i = 0; i < rootNum; i++) {
+                    cubic_bezier(&pt[0], &pt[1], curve, root[i]);
+                    VG_LITE_ERROR_HANDLER(_add_point_to_point_list(stroke_conversion, pt[0], pt[1], vgcFLATTEN_MIDDLE));
+                }
+            }
+        }
+        else if (level == 0) {
+            vg_lite_float_t a1x, a1y, a2x, a2y, a3x, a3y;
+            vg_lite_float_t ddf0, ddf1, t1, t2, upper_bound;
+            vg_lite_uint32_t n;
+            vg_lite_float_t pt[2];
+            a1x = 3 * (v1[0] - v0[0]);
+            a1y = 3 * (v1[1] - v0[1]);
+            a2x = 3 * (v0[0] - v1[0] - v1[0] + v2[0]);
+            a2y = 3 * (v0[1] - v1[1] - v1[1] + v2[1]);
+            a3x = 3 * (v1[0] - v2[0]) + v3[0] - v0[0];
+            a3y = 3 * (v1[1] - v2[1]) + v3[1] - v0[1];
+
+            ddf0 = a2x * a2x + a2y * a2y;
+            t1 = a2x + a3x + a3x + a3x;
+            t2 = a2y + a3y + a3y + a3y;
+            ddf1 = t1 * t1 + t2 * t2;
+            upper_bound = ddf0 > ddf1 ? ddf0 : ddf1;
+            upper_bound = SQRTF(upper_bound);
+            upper_bound += upper_bound;
+            upper_bound = SQRTF(upper_bound);
+            if (stroke_conversion->fattened)
+            {
+                upper_bound *= stroke_conversion->line_width;
+            }
+            n = (vg_lite_uint32_t)ceil(upper_bound);
+
+            if (n == 0 || n > 64)
+            {
+                n = (vg_lite_uint8_t)(64 / (level + 1));
+            }
+            for (vg_lite_uint32_t i = 1; i < n; i++) {
+                vg_lite_float_t t = (vg_lite_float_t)i / (vg_lite_float_t)n;
+                cubic_bezier(&pt[0], &pt[1], curve, t);
+                VG_LITE_ERROR_HANDLER(_add_point_to_point_list(stroke_conversion, pt[0], pt[1], vgcFLATTEN_MIDDLE));
+            }
+        }
+
+        if (level == 0) {
+            VG_LITE_ERROR_HANDLER(_add_point_to_point_list(stroke_conversion, v3[0], v3[1], vgcFLATTEN_END));
+        }
+        else
+        {
+            vg_lite_float_t pt[2], t;
+            for (int i = 1; i < 4; i++)
+            {
+                t = (vg_lite_float_t)i / 4;
+                cubic_bezier(&pt[0], &pt[1], curve, t);
+                VG_LITE_ERROR_HANDLER(_add_point_to_point_list(stroke_conversion, pt[0], pt[1], vgcFLATTEN_MIDDLE));
+            }
+            if ((v3[0] != rootCurve[6]) || (v3[1] != rootCurve[7]))
+            {
+                VG_LITE_ERROR_HANDLER(_add_point_to_point_list(stroke_conversion, v3[0], v3[1], vgcFLATTEN_MIDDLE));
+            }
+        }
+
+        /* Add extra P3 for outgoing tangent. */
+        /* First change P3(point0)'s coordinates to P0/P1/P2. */
+        if (level == 0) {
+            point0 = stroke_conversion->path_end;
+            if (v3[0] != v2[0] || v3[1] != v2[1])
+            {
+                point0->x = v2[0];
+                point0->y = v2[1];
+            }
+            else if (v3[0] != v1[0] || v3[1] != v1[1])
+            {
+                point0->x = v1[0];
+                point0->y = v1[1];
+            }
+            else
+            {
+                point0->x = v0[0];
+                point0->y = v0[1];
+            }
+
+            /* Add P3 to calculate outgoing tangent. */
+            VG_LITE_ERROR_HANDLER(_add_point_to_point_list(stroke_conversion, v3[0], v3[1], vgcFLATTEN_NO));
+
+            point1 = stroke_conversion->path_end;
+
+            /* Change point0's coordinates back to P3. */
+            point0->x = v3[0];
+            point0->y = v3[1];
+            point0->length = 0.0f;
+        }
+        return error;
+    }
+
+    split_cubic(subCurve1, subCurve2, curve, 0.5);
+    VG_LITE_ERROR_HANDLER(_flatten_cubic_bezier(stroke_conversion, rootCurve, subCurve1, level + 1));
+    VG_LITE_ERROR_HANDLER(_flatten_cubic_bezier(stroke_conversion, rootCurve, subCurve2, level + 1));
+    if (level == 0) {
+        /* Add point 3 separately to avoid cumulative errors. */
+        VG_LITE_ERROR_HANDLER(_add_point_to_point_list(stroke_conversion, v3[0], v3[1], vgcFLATTEN_END));
+
+        /* Add extra P3 for outgoing tangent. */
+        /* First change P3(point0)'s coordinates to P0/P1/P2. */
+        point0 = stroke_conversion->path_end;
+        if (v3[0] != v2[0] || v3[1] != v2[1])
+        {
+            point0->x = v2[0];
+            point0->y = v2[1];
+        }
+        else if (v3[0] != v1[0] || v3[1] != v1[1])
+        {
+            point0->x = v1[0];
+            point0->y = v1[1];
+        }
+        else
+        {
+            point0->x = v0[0];
+            point0->y = v0[1];
+        }
+
+        /* Add P3 to calculate outgoing tangent. */
+        VG_LITE_ERROR_HANDLER(_add_point_to_point_list(stroke_conversion, v3[0], v3[1], vgcFLATTEN_NO));
+
+        point1 = stroke_conversion->path_end;
+
+        /* Change point0's coordinates back to P3. */
+        point0->x = v3[0];
+        point0->y = v3[1];
+        point0->length = 0.0f;
+    }
+ErrorHandler:
+    return error;
+}
+
+static vg_lite_error_t _flatten_cubic_bezier_original(
+    vg_lite_stroke_t* stroke_conversion,
+    vg_lite_float_t curve[8],
     vg_lite_uint8_t level)
 {
     vg_lite_error_t error = VG_LITE_SUCCESS;
@@ -672,8 +1278,8 @@ static vg_lite_error_t _flatten_cubic_bezier(
     }
 
     split_cubic(subCurve1, subCurve2, curve, 0.5);
-    VG_LITE_ERROR_HANDLER(_flatten_cubic_bezier(stroke_conversion, subCurve1, level + 1));
-    VG_LITE_ERROR_HANDLER(_flatten_cubic_bezier(stroke_conversion, subCurve2, level + 1));
+    VG_LITE_ERROR_HANDLER(_flatten_cubic_bezier_original(stroke_conversion, subCurve1, level + 1));
+    VG_LITE_ERROR_HANDLER(_flatten_cubic_bezier_original(stroke_conversion, subCurve2, level + 1));
     if (level == 0) {
         /* Add point 3 separately to avoid cumulative errors. */
         VG_LITE_ERROR_HANDLER(_add_point_to_point_list(stroke_conversion, v3[0], v3[1], vgcFLATTEN_NO));
@@ -1392,7 +1998,12 @@ static vg_lite_error_t _flatten_path(
             {
 #if gcFEATURE_VG_SIMPLYFIED_BEZIER
                 vg_lite_float_t curve[6] = { ox, oy, x0, y0, x1, y1 };
-                VG_LITE_ERROR_HANDLER(_flatten_quad_bezier(stroke_conversion, curve, 0));
+#if (CHIPID != 0x265)
+                vg_lite_float_t subCurve[6] = { 0, 0, 0, 0, 0, 0};
+                VG_LITE_ERROR_HANDLER(_flatten_quad_bezier(stroke_conversion, curve, subCurve, 0));
+#else
+                VG_LITE_ERROR_HANDLER(_flatten_quad_bezier_original(stroke_conversion, curve, 0));
+#endif
 #else
                 VG_LITE_ERROR_HANDLER(_flatten_quad_bezier(stroke_conversion, ox, oy, x0, y0, x1, y1));
 #endif
@@ -1423,7 +2034,12 @@ static vg_lite_error_t _flatten_path(
             {
 #if gcFEATURE_VG_SIMPLYFIED_BEZIER
                 vg_lite_float_t curve[8] = { ox, oy, x0, y0, x1, y1, x2, y2 };
-                VG_LITE_ERROR_HANDLER(_flatten_cubic_bezier(stroke_conversion, curve, 0));
+#if (CHIPID != 0x265)
+                vg_lite_float_t subCurve[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+                VG_LITE_ERROR_HANDLER(_flatten_cubic_bezier(stroke_conversion, curve, subCurve, 0));
+#else
+                VG_LITE_ERROR_HANDLER(_flatten_cubic_bezier_original(stroke_conversion, curve, 0));
+#endif
 #else
                 VG_LITE_ERROR_HANDLER(_flatten_cubic_bezier(stroke_conversion, ox, oy, x0, y0, x1, y1, x2, y2));
 #endif
@@ -1434,7 +2050,6 @@ static vg_lite_error_t _flatten_path(
             ox = x2;
             oy = y2;
             break;
-
         default:
             error = VG_LITE_INVALID_ARGUMENT;
             goto ErrorHandler;
@@ -2316,25 +2931,14 @@ _process_line_joint(
                 stroke_conversion->swing_stroke = stroke_conversion->left_point;
             }
 
-#if USE_MIN_ARC_FILTER
-            if (cosTheta > FLOAT_MIN_ARC_ANGLE_COS)
-            {
-                /* Add a point. */
-                gcmERR_GOTO(_add_point_to_left_point_list_head(Context, stroke_conversion, X2, Y2));
+            /* Add curve. */
+            /* Note that the curve will be reversed, so the direction is CW. */
+            /* Then, left side is in reversed order, so the direction is CCW. */
+            VG_LITE_ERROR_HANDLER(_add_point_to_left_point_list_head(stroke_conversion, X2, Y2));
+            stroke_conversion->left_point->curve_type = CURVE_ARC_SCCW;
+            stroke_conversion->left_point->tangentX = Point->x;
+            stroke_conversion->left_point->tangentY = Point->y;
 
-                VGSL_STAT_COUNTER_INCREASE(vgStrokeFilteredByMinArcAngleCount);
-            }
-            else
-#endif
-            {
-                /* Add curve. */
-                /* Note that the curve will be reversed, so the direction is CW. */
-                /* Then, left side is in reversed order, so the direction is CCW. */
-                VG_LITE_ERROR_HANDLER(_add_point_to_left_point_list_head(stroke_conversion, X2, Y2));
-                stroke_conversion->left_point->curve_type = CURVE_ARC_SCCW;
-                stroke_conversion->left_point->tangentX = Point->x;
-                stroke_conversion->left_point->tangentY = Point->y;
-            }
             stroke_conversion->swing_count++;
         }
 
@@ -2508,14 +3112,8 @@ endCheck:
             stroke_conversion->swing_centlen += Point->length;
             if (stroke_conversion->swing_centlen > FLOAT_SWING_CENTER_RANGE)
             {
-#if USE_NEW_SWING_HANDLE_FOR_END
-                if (stroke_conversion->currentSubPath->length < half_width ||
-                    Point->next->flatten_flag == vgcFLATTEN_END)
-#endif
-                {
-                    /* Draw the swing area (pie area). */
-                    VG_LITE_ERROR_HANDLER(_draw_swing_pie_area(stroke_conversion, Point, 0));
-                }
+                /* Draw the swing area (pie area). */
+                VG_LITE_ERROR_HANDLER(_draw_swing_pie_area(stroke_conversion, Point, 0));
             }
         }
     }
@@ -3046,23 +3644,23 @@ _create_stroke_path(
             {
                 vg_lite_sub_path_ptr last_stroke = stroke_conversion->last_stroke;
                 vg_lite_path_point_ptr start_point = last_stroke->point_list;
-                vg_lite_path_point_ptr point;
+                vg_lite_path_point_ptr extra_point;
 
                 /* Add curve. */
                 /* Add extra point to the beginning with end point's coordinates. */
-                point = (vg_lite_path_point_ptr)vg_lite_os_malloc(sizeof(*point));
-                if (!point)
+                extra_point = (vg_lite_path_point_ptr)vg_lite_os_malloc(sizeof(*extra_point));
+                if (!extra_point)
                     return VG_LITE_OUT_OF_RESOURCES;
-                memset(point, 0, sizeof(*point));
+                memset(extra_point, 0, sizeof(*extra_point));
 
-                point->x = last_stroke->end_point->x;
-                point->y = last_stroke->end_point->y;
-                point->next = start_point;
-                start_point->prev = point;
+                extra_point->x = last_stroke->end_point->x;
+                extra_point->y = last_stroke->end_point->y;
+                extra_point->next = start_point;
+                start_point->prev = extra_point;
                 start_point->curve_type = CURVE_ARC_SCCW;
                 start_point->tangentX = stroke_conversion->path_points->x;
                 start_point->tangentY = stroke_conversion->path_points->y;
-                last_stroke->point_list = point;
+                last_stroke->point_list = extra_point;
             }
         }
     }
@@ -3116,6 +3714,11 @@ static vg_lite_error_t _copy_stroke_path(
     vg_lite_sub_path_ptr sub_path;
     vg_lite_float_t half_width;
 
+#if (CHIPID==0x355)
+    vg_lite_buffer_t buffer = { 0 };
+    uint32_t bytes;
+#endif
+
     if (!stroke_conversion || !path)
         return VG_LITE_INVALID_ARGUMENT;
 
@@ -3140,21 +3743,47 @@ static vg_lite_error_t _copy_stroke_path(
         temp_stroke_size = path->stroke_size;
 
         path->stroke_size += (int32_t)totalsize;
-        path->stroke_path = (void *)vg_lite_os_malloc(path->stroke_size);
-        if (!path->stroke_path) {
-            error = VG_LITE_OUT_OF_RESOURCES;
-            goto ErrorHandler;
+
+#if (CHIPID==0x355)
+        if (sub_path->next == NULL) {
+            bytes = (8 + path->stroke_size + 7 + 8) & ~7;
+            buffer.width = bytes;
+            buffer.height = 1;
+            buffer.stride = 0;
+            buffer.format = VG_LITE_A8;
+            VG_LITE_RETURN_ERROR(vg_lite_allocate(&buffer));
+
+            memset(buffer.memory, 0, buffer.stride);
+            ((uint32_t*)buffer.memory)[0] = VG_LITE_DATA((path->stroke_size + 7) / 8);
+            ((uint32_t*)buffer.memory)[1] = 0;
+            if (temp_stroke_data) {
+                memcpy((char *)buffer.memory + 8, temp_stroke_data, temp_stroke_size);
+                vg_lite_os_free(temp_stroke_data);
+                temp_stroke_data = NULL;
+            }
+
+            path->stroke_path = 0;
+            pfloat = (vg_lite_float_t*)((char*)buffer.memory + 8 + temp_stroke_size);
         }
+        else 
+#endif
+        {
+            path->stroke_path = (void*)vg_lite_os_malloc(path->stroke_size);
+            if (!path->stroke_path) {
+                error = VG_LITE_OUT_OF_RESOURCES;
+                goto ErrorHandler;
+            }
 
-        memset(path->stroke_path, 0, path->stroke_size);
+            memset(path->stroke_path, 0, path->stroke_size);
 
-        if (temp_stroke_data) {
-            memcpy(path->stroke_path,temp_stroke_data,temp_stroke_size);
-            vg_lite_os_free(temp_stroke_data);
-            temp_stroke_data = NULL;
+            if (temp_stroke_data) {
+                memcpy(path->stroke_path, temp_stroke_data, temp_stroke_size);
+                vg_lite_os_free(temp_stroke_data);
+                temp_stroke_data = NULL;
+            }
+
+            pfloat = (vg_lite_float_t*)((char*)path->stroke_path + temp_stroke_size);
         }
-
-        pfloat = (vg_lite_float_t *)((char *)path->stroke_path + temp_stroke_size);
 #if (CHIPID==0x355 || CHIPID==0x255)
         if (last_opcode == VLC_OP_CLOSE) {
             cpath = (char*)(pfloat - 1) + 1;
@@ -3293,6 +3922,19 @@ static vg_lite_error_t _copy_stroke_path(
 #endif
     }
 
+#if (CHIPID==0x355)
+    /* Initialize command buffer postfix. */
+    ((uint32_t*)buffer.memory)[(bytes >> 2) - 2] = VG_LITE_RETURN();
+    ((uint32_t*)buffer.memory)[(bytes >> 2) - 1] = 0;
+
+    /* Mark stroke as uploaded. */
+    path->stroke->uploaded.handle = buffer.handle;
+    path->stroke->uploaded.address = buffer.address;
+    path->stroke->uploaded.memory = buffer.memory;
+    path->stroke->uploaded.bytes = bytes;
+    VLM_PATH_STROKE_ENABLE_UPLOAD(*path);
+#endif
+
 ErrorHandler:
     if (temp_stroke_data) {
         vg_lite_os_free(temp_stroke_data);
@@ -3407,6 +4049,21 @@ vg_lite_error_t vg_lite_update_stroke(
     stroke_conversion = path->stroke;
     cur_list = stroke_conversion->cur_list;
 
+#if (CHIPID==0x355)
+    if (path->stroke && path->stroke->uploaded.handle != NULL) {
+        vg_lite_kernel_free_t free_cmd;
+        free_cmd.memory_handle = path->stroke->uploaded.handle;
+        error = vg_lite_kernel(VG_LITE_FREE, &free_cmd);
+        if (error != VG_LITE_SUCCESS)
+            return error;
+
+        path->stroke->uploaded.address = 0;
+        path->stroke->uploaded.bytes = 0;
+        path->stroke->uploaded.handle = NULL;
+        path->stroke->uploaded.memory = NULL;
+    }
+#endif
+
     /* Free the existing stroke path. */
     if (path->stroke_path)
     {
@@ -3449,7 +4106,7 @@ vg_lite_error_t vg_lite_update_stroke(
     if (path->stroke_size == 0) {
         path->stroke_path = vg_lite_os_malloc(_commandSize_float[VLC_OP_END]);
         if (!path->stroke_path)
-            return VG_LITE_OUT_OF_MEMORY;
+            return VG_LITE_OUT_OF_RESOURCES;
         *(uint8_t*)path->stroke_path = VLC_OP_END;
         path->stroke_size = _commandSize_float[VLC_OP_END];
     }
@@ -3486,7 +4143,6 @@ vg_lite_error_t vg_lite_set_stroke(
         memset(path->stroke, 0, sizeof(vg_lite_stroke_t));
     }
     else {
-#if gcFEATURE_VG_STROKE_PATH
         if (path->stroke) {
             if (path->stroke->path_list_divide) {
                 vg_lite_path_list_ptr cur_list;
@@ -3504,7 +4160,7 @@ vg_lite_error_t vg_lite_set_stroke(
                     vg_lite_os_free(path->stroke->path_list_divide);
                     path->stroke->path_list_divide = cur_list;
                 }
-                cur_list = 0;
+                cur_list = NULL;
             }
 
             if (path->stroke->stroke_paths) {
@@ -3528,8 +4184,10 @@ vg_lite_error_t vg_lite_set_stroke(
 
             if (path->stroke->dash_pattern)
                 vg_lite_os_free(path->stroke->dash_pattern);
+
+            path->stroke_valid = 0;
         }
-#endif
+
         memset(path->stroke, 0, sizeof(vg_lite_stroke_t));
         path->stroke_size = 0;
     }
@@ -3537,12 +4195,11 @@ vg_lite_error_t vg_lite_set_stroke(
     /* Clamp dash pattern and phase. */
     pattern_count &= 0xFFFFFFFE;
     float* dash_pattern_copy = NULL;
-    if (pattern_count > 0)
-    {
+    if (pattern_count > 0) {
         dash_pattern_copy = vg_lite_os_malloc(pattern_count * sizeof(float));
+        if (!dash_pattern_copy)
+            return VG_LITE_OUT_OF_RESOURCES;
     }
-    if (!path->stroke)
-        return VG_LITE_OUT_OF_RESOURCES;
     for (uint32_t i = 0; i < pattern_count; ++i)
         dash_pattern_copy[i] = (dash_pattern[i] > 0.f) ? dash_pattern[i] : 0.f;
     if (dash_phase < 0.f) {
@@ -3683,7 +4340,10 @@ vg_lite_error_t _convert_hline(
 
     linePath = (char*)vg_lite_os_malloc(*offset + bufferSize + last_size);
     if (linePath == NULL)
-        return VG_LITE_OUT_OF_MEMORY;
+        return VG_LITE_OUT_OF_RESOURCES;
+#if(CHIPID == 0x355)
+    memset(linePath, 0, *offset + bufferSize + last_size);
+#endif
     memcpy(linePath, (char*)*path_data, *offset);
     vg_lite_os_free(*path_data);
 
@@ -3759,7 +4419,10 @@ vg_lite_error_t _convert_vline(
 
     linePath = (char*)vg_lite_os_malloc(*offset + bufferSize + last_size);
     if (linePath == NULL)
-        return VG_LITE_OUT_OF_MEMORY;
+        return VG_LITE_OUT_OF_RESOURCES;
+#if(CHIPID == 0x355)
+    memset(linePath, 0, *offset + bufferSize + last_size);
+#endif
     memcpy(linePath, (char*)*path_data, *offset);
     vg_lite_os_free(*path_data);
 
@@ -3842,7 +4505,10 @@ vg_lite_error_t _convert_scubic(
 
     cubicPath = (char*)vg_lite_os_malloc(*offset + bufferSize + last_size);
     if (cubicPath == NULL)
-        return VG_LITE_OUT_OF_MEMORY;
+        return VG_LITE_OUT_OF_RESOURCES;
+#if(CHIPID == 0x355)
+    memset(cubicPath, 0, *offset + bufferSize + last_size);
+#endif
     memcpy(cubicPath, (char*)*path_data, *offset);
     vg_lite_os_free(*path_data);
 
@@ -3932,7 +4598,10 @@ vg_lite_error_t _convert_squad(
 
     quadPath = (char*)vg_lite_os_malloc(*offset + bufferSize + last_size);
     if (quadPath == NULL)
-        return VG_LITE_OUT_OF_MEMORY;
+        return VG_LITE_OUT_OF_RESOURCES;
+#if(CHIPID == 0x355)
+    memset(quadPath, 0, *offset + bufferSize + last_size);
+#endif
     memcpy(quadPath, (char*)*path_data, *offset);
     vg_lite_os_free(*path_data);
 
@@ -4144,7 +4813,10 @@ vg_lite_error_t _convert_arc(
 
         arcPath = (char*)vg_lite_os_malloc(*offset + bufferSize + last_size);
         if (arcPath == NULL)
-            return VG_LITE_OUT_OF_MEMORY;
+            return VG_LITE_OUT_OF_RESOURCES;
+#if(CHIPID == 0x355)
+        memset(arcPath, 0, *offset + bufferSize + last_size);
+#endif
         memcpy(arcPath, (char*)*path_data, *offset);
         vg_lite_os_free(*path_data);
 
@@ -4223,7 +4895,7 @@ vg_lite_error_t _convert_arc(
 
         arcPath = (char*)vg_lite_os_malloc(*offset + bufferSize + last_size);
         if (arcPath == NULL)
-            return VG_LITE_OUT_OF_MEMORY;
+            return VG_LITE_OUT_OF_RESOURCES;
         memcpy(arcPath, (char*)*path_data, *offset);
         vg_lite_os_free(*path_data);
 
@@ -4283,7 +4955,7 @@ vg_lite_error_t vg_lite_init_arc_path(vg_lite_path_t* path,
     if (path == NULL || path_data == NULL)
         return VG_LITE_INVALID_ARGUMENT;
 
-    /* replace close to end for path_data */
+    /* Path data cannot end with a CLOSE op. Replace CLOSE with END for path_data */
     data_size = get_data_size(data_format);
     num = path_length / data_size;
 
@@ -4320,7 +4992,7 @@ vg_lite_error_t vg_lite_init_arc_path(vg_lite_path_t* path,
     default:
         break;
     }
-    
+
     /* Convert path format into float. */
     switch (data_format)
     {
@@ -4329,16 +5001,20 @@ vg_lite_error_t vg_lite_init_arc_path(vg_lite_path_t* path,
         bytes = path_length * 4;
         path_data_fp32 = vg_lite_os_malloc(bytes);
         if (path_data_fp32 == NULL)
-            return VG_LITE_OUT_OF_MEMORY;
+            return VG_LITE_OUT_OF_RESOURCES;
         memset(path_data_fp32, 0, bytes);
         path_data_fp32_ptr = path_data_fp32;
         path_data_s8_ptr = (int8_t*)path_data;
         i = 0;
         while (i < path_length){
-            cmd = *(uint8_t*)path_data_s8_ptr++;
-            *(uint8_t*)path_data_fp32_ptr++ = cmd;
-            for (j = 0; j < _commandSize_float[cmd] / 4 - 1; ++j) {
-                *path_data_fp32_ptr++ = (float)*path_data_s8_ptr++;
+            cmd = *(uint8_t*)path_data_s8_ptr;
+            *(uint8_t*)path_data_fp32_ptr = cmd;
+            path_data_s8_ptr++;
+            path_data_fp32_ptr++;
+            for (j = 0; j < _commandSize_float[cmd] / 4 - 1; j++) {
+                *path_data_fp32_ptr = (float)(*path_data_s8_ptr);
+                path_data_fp32_ptr++;
+                path_data_s8_ptr++;
             }
             i += _commandSize_float[cmd] / 4;
         }
@@ -4350,16 +5026,20 @@ vg_lite_error_t vg_lite_init_arc_path(vg_lite_path_t* path,
         bytes = path_length * 2;
         path_data_fp32 = vg_lite_os_malloc(bytes);
         if (path_data_fp32 == NULL)
-            return VG_LITE_OUT_OF_MEMORY;
+            return VG_LITE_OUT_OF_RESOURCES;
         memset(path_data_fp32, 0, bytes);
         path_data_fp32_ptr = path_data_fp32;
         path_data_s16_ptr = (int16_t*)path_data;
         i = 0;
         while (i < path_length) {
-            cmd = *(uint8_t*)path_data_s16_ptr++;
-            *(uint8_t*)path_data_fp32_ptr++ = cmd;
-            for (j = 0; j < _commandSize_float[cmd] / 4 - 1; ++j) {
-                *path_data_fp32_ptr++ = (float)*path_data_s16_ptr++;
+            cmd = *(uint8_t*)path_data_s16_ptr;
+            *(uint8_t*)path_data_fp32_ptr = cmd;
+            path_data_s16_ptr++;
+            path_data_fp32_ptr++;
+            for (j = 0; j < _commandSize_float[cmd] / 4 - 1; j++) {
+                *path_data_fp32_ptr = (float)(*path_data_s16_ptr);
+                path_data_fp32_ptr++;
+                path_data_s16_ptr++;
             }
             i += _commandSize_float[cmd] / 2;
         }
@@ -4371,16 +5051,20 @@ vg_lite_error_t vg_lite_init_arc_path(vg_lite_path_t* path,
         bytes = path_length;
         path_data_fp32 = vg_lite_os_malloc(bytes);
         if (path_data_fp32 == NULL)
-            return VG_LITE_OUT_OF_MEMORY;
+            return VG_LITE_OUT_OF_RESOURCES;
         memset(path_data_fp32, 0, bytes);
         path_data_fp32_ptr = path_data_fp32;
         path_data_s32_ptr = (int32_t*)path_data;
         i = 0;
         while (i < path_length) {
-            cmd = *(uint8_t*)path_data_s32_ptr++;
-            *(uint8_t*)path_data_fp32_ptr++ = cmd;
-            for (j = 0; j < _commandSize_float[cmd] / 4 - 1; ++j) {
-                *path_data_fp32_ptr++ = (float)*path_data_s32_ptr++;
+            cmd = *(uint8_t*)path_data_s32_ptr;
+            *(uint8_t*)path_data_fp32_ptr = cmd;
+            path_data_s32_ptr++;
+            path_data_fp32_ptr++;
+            for (j = 0; j < _commandSize_float[cmd] / 4 - 1; j++) {
+                *path_data_fp32_ptr = (float)(*path_data_s32_ptr);
+                path_data_fp32_ptr++;
+                path_data_s32_ptr++;
             }
             i += _commandSize_float[cmd];
         }
@@ -4390,6 +5074,11 @@ vg_lite_error_t vg_lite_init_arc_path(vg_lite_path_t* path,
         /* src_fp32, dst_fp32 */
         bytes = path_length;
         path_data_fp32 = vg_lite_os_malloc(bytes);
+        if (path_data_fp32 == NULL)
+            return VG_LITE_OUT_OF_RESOURCES;
+#if(CHIPID == 0x355)
+        memset(path_data_fp32, 0, bytes);
+#endif
         memcpy(path_data_fp32, path_data, bytes);
         break;
     }
@@ -4397,9 +5086,10 @@ vg_lite_error_t vg_lite_init_arc_path(vg_lite_path_t* path,
     default:
         break;
     }
-    data_format = VG_LITE_FP32;
 
     vg_lite_clear_path(path);
+
+    data_format = VG_LITE_FP32;
     if (!path_length)
     {
         path->format = data_format;
@@ -4425,7 +5115,10 @@ vg_lite_error_t vg_lite_init_arc_path(vg_lite_path_t* path,
     path->bounding_box[3] = max_y;
     pathdata = (char*)vg_lite_os_malloc(path_length);
     if (pathdata == NULL)
-        return VG_LITE_OUT_OF_MEMORY;
+        return VG_LITE_OUT_OF_RESOURCES;
+#if(CHIPID == 0x355)
+    memset(pathdata, 0, path_length);
+#endif
     pfloat = (vg_lite_float_t*)path_data_fp32;
     i = 0;
     while (i < path_length)
@@ -4456,8 +5149,10 @@ vg_lite_error_t vg_lite_init_arc_path(vg_lite_path_t* path,
             i += _commandSize_float[VLC_OP_CLOSE];
             break;
         case VLC_OP_MOVE:
-            moveToX = *pfloat++;
-            moveToY = *pfloat++;
+            moveToX = *pfloat;
+            pfloat++;
+            moveToY = *pfloat;
+            pfloat++;
 
             /* Update the control coordinates. */
             coords.startX = moveToX;
@@ -4471,21 +5166,27 @@ vg_lite_error_t vg_lite_init_arc_path(vg_lite_path_t* path,
             fpath = (vg_lite_float_t*)cpath;
             *cpath = VLC_OP_MOVE;
             fpath++;
-            *fpath++ = moveToX;
-            *fpath++ = moveToY;
+            *fpath = moveToX;
+            fpath++;
+            *fpath = moveToY;
+            fpath++;
             offset += _commandSize_float[VLC_OP_MOVE];
             i += _commandSize_float[VLC_OP_MOVE];
             break;
         case VLC_OP_MOVE_REL:
-            moveToX = *pfloat++;
-            moveToY = *pfloat++;
+            moveToX = *pfloat;
+            pfloat++;
+            moveToY = *pfloat;
+            pfloat++;
 
             cpath = (char*)pathdata + offset;
             fpath = (vg_lite_float_t*)cpath;
             *cpath = VLC_OP_MOVE_REL;
             fpath++;
-            *fpath++ = moveToX;
-            *fpath++ = moveToY;
+            *fpath = moveToX;
+            fpath++;
+            *fpath = moveToY;
+            fpath++;
             offset += _commandSize_float[VLC_OP_MOVE_REL];
             i += _commandSize_float[VLC_OP_MOVE_REL];
 
@@ -4502,8 +5203,10 @@ vg_lite_error_t vg_lite_init_arc_path(vg_lite_path_t* path,
             coords.controlY = moveToY;
             break;
         case VLC_OP_LINE:
-            lineToX = *pfloat++;
-            lineToY = *pfloat++;
+            lineToX = *pfloat;
+            pfloat++;
+            lineToY = *pfloat;
+            pfloat++;
 
             /* Update the control coordinates. */
             coords.lastX = lineToX;
@@ -4515,21 +5218,27 @@ vg_lite_error_t vg_lite_init_arc_path(vg_lite_path_t* path,
             fpath = (vg_lite_float_t*)cpath;
             *cpath = VLC_OP_LINE;
             fpath++;
-            *fpath++ = lineToX;
-            *fpath++ = lineToY;
+            *fpath = lineToX;
+            fpath++;
+            *fpath = lineToY;
+            fpath++;
             offset += _commandSize_float[VLC_OP_LINE];
             i += _commandSize_float[VLC_OP_LINE];
             break;
         case VLC_OP_LINE_REL:
-            lineToX = *pfloat++;
-            lineToY = *pfloat++;
+            lineToX = *pfloat;
+            pfloat++;
+            lineToY = *pfloat;
+            pfloat++;
 
             cpath = (char*)pathdata + offset;
             fpath = (vg_lite_float_t*)cpath;
             *cpath = VLC_OP_LINE_REL;
             fpath++;
-            *fpath++ = lineToX;
-            *fpath++ = lineToY;
+            *fpath = lineToX;
+            fpath++;
+            *fpath = lineToY;
+            fpath++;
             offset += _commandSize_float[VLC_OP_LINE_REL];
             i += _commandSize_float[VLC_OP_LINE_REL];
 
@@ -4544,10 +5253,14 @@ vg_lite_error_t vg_lite_init_arc_path(vg_lite_path_t* path,
             coords.controlY = lineToY;
             break;
         case VLC_OP_QUAD:
-            controlX = *pfloat++;
-            controlY = *pfloat++;
-            quadToX = *pfloat++;
-            quadToY = *pfloat++;
+            controlX = *pfloat;
+            pfloat++;
+            controlY = *pfloat;
+            pfloat++;
+            quadToX = *pfloat;
+            pfloat++;
+            quadToY = *pfloat;
+            pfloat++;
             compute_quadpathbounds(path, coords.lastX, coords.lastY, controlX, controlY, quadToX, quadToY);
             /* Update the control coordinates. */
             coords.lastX = quadToX;
@@ -4559,42 +5272,58 @@ vg_lite_error_t vg_lite_init_arc_path(vg_lite_path_t* path,
             fpath = (vg_lite_float_t*)cpath;
             *cpath = VLC_OP_QUAD;
             fpath++;
-            *fpath++ = controlX;
-            *fpath++ = controlY;
-            *fpath++ = quadToX;
-            *fpath++ = quadToY;
+            *fpath = controlX;
+            fpath++;
+            *fpath = controlY;
+            fpath++;
+            *fpath = quadToX;
+            fpath++;
+            *fpath = quadToY;
+            fpath++;
             offset += _commandSize_float[VLC_OP_QUAD];
             i += _commandSize_float[VLC_OP_QUAD];
             break;
         case VLC_OP_SQUAD:
-            quadToX = *pfloat++;
-            quadToY = *pfloat++;
+            quadToX = *pfloat;
+            pfloat++;
+            quadToY = *pfloat;
+            pfloat++;
             i += _commandSize_float[VLC_OP_SQUAD];
             /* Update the control coordinates. */
             VG_LITE_ERROR_HANDLER(_convert_squad(quadToX, quadToY, VGL_FALSE, &coords, (void*)&pathdata, &offset, path_length - i));
             compute_quadpathbounds(path, coords.startX, coords.startY, coords.controlX, coords.controlY, quadToX, quadToY);
             break;
         case VLC_OP_SQUAD_REL:
-            quadToX = *pfloat++;
-            quadToY = *pfloat++;
+            quadToX = *pfloat;
+            pfloat++;
+            quadToY = *pfloat;
+            pfloat++;
             i += _commandSize_float[VLC_OP_SQUAD_REL];
             /* Update the control coordinates. */
             VG_LITE_ERROR_HANDLER(_convert_squad(quadToX, quadToY, VGL_TRUE, &coords, (void*)&pathdata, &offset, path_length - i));
             break;
         case VLC_OP_QUAD_REL:
-            controlX = *pfloat++;
-            controlY = *pfloat++;
-            quadToX = *pfloat++;
-            quadToY = *pfloat++;
+            controlX = *pfloat;
+            pfloat++;
+            controlY = *pfloat;
+            pfloat++;
+            quadToX = *pfloat;
+            pfloat++;
+            quadToY = *pfloat;
+            pfloat++;
 
             cpath = (char*)pathdata + offset;
             fpath = (vg_lite_float_t*)cpath;
             *cpath = VLC_OP_QUAD_REL;
             fpath++;
-            *fpath++ = controlX;
-            *fpath++ = controlY;
-            *fpath++ = quadToX;
-            *fpath++ = quadToY;
+            *fpath = controlX;
+            fpath++;
+            *fpath = controlY;
+            fpath++;
+            *fpath = quadToX;
+            fpath++;
+            *fpath = quadToY;
+            fpath++;
             offset += _commandSize_float[VLC_OP_QUAD_REL];
             i += _commandSize_float[VLC_OP_QUAD_REL];
 
@@ -4611,12 +5340,18 @@ vg_lite_error_t vg_lite_init_arc_path(vg_lite_path_t* path,
             coords.controlY = controlY;
             break;
         case VLC_OP_CUBIC:
-            controlX1 = *pfloat++;
-            controlY1 = *pfloat++;
-            controlX2 = *pfloat++;
-            controlY2 = *pfloat++;
-            cubicToX = *pfloat++;
-            cubicToY = *pfloat++;
+            controlX1 = *pfloat;
+            pfloat++;
+            controlY1 = *pfloat;
+            pfloat++;
+            controlX2 = *pfloat;
+            pfloat++;
+            controlY2 = *pfloat;
+            pfloat++;
+            cubicToX = *pfloat;
+            pfloat++;
+            cubicToY = *pfloat;
+            pfloat++;
 
             /* Update the control coordinates. */
             coords.lastX = cubicToX;
@@ -4628,33 +5363,51 @@ vg_lite_error_t vg_lite_init_arc_path(vg_lite_path_t* path,
             fpath = (vg_lite_float_t*)cpath;
             *cpath = VLC_OP_CUBIC;
             fpath++;
-            *fpath++ = controlX1;
-            *fpath++ = controlY1;
-            *fpath++ = controlX2;
-            *fpath++ = controlY2;
-            *fpath++ = cubicToX;
-            *fpath++ = cubicToY;
+            *fpath = controlX1;
+            fpath++;
+            *fpath = controlY1;
+            fpath++;
+            *fpath = controlX2;
+            fpath++;
+            *fpath = controlY2;
+            fpath++;
+            *fpath = cubicToX;
+            fpath++;
+            *fpath = cubicToY;
+            fpath++;
             offset += _commandSize_float[VLC_OP_CUBIC];
             i += _commandSize_float[VLC_OP_CUBIC];
             break;
         case VLC_OP_CUBIC_REL:
-            controlX1 = *pfloat++;
-            controlY1 = *pfloat++;
-            controlX2 = *pfloat++;
-            controlY2 = *pfloat++;
-            cubicToX = *pfloat++;
-            cubicToY = *pfloat++;
+            controlX1 = *pfloat;
+            pfloat++;
+            controlY1 = *pfloat;
+            pfloat++;
+            controlX2 = *pfloat;
+            pfloat++;
+            controlY2 = *pfloat;
+            pfloat++;
+            cubicToX = *pfloat;
+            pfloat++;
+            cubicToY = *pfloat;
+            pfloat++;
 
             cpath = (char*)pathdata + offset;
             fpath = (vg_lite_float_t*)cpath;
             *cpath = VLC_OP_CUBIC_REL;
             fpath++;
-            *fpath++ = controlX1;
-            *fpath++ = controlY1;
-            *fpath++ = controlX2;
-            *fpath++ = controlY2;
-            *fpath++ = cubicToX;
-            *fpath++ = cubicToY;
+            *fpath = controlX1;
+            fpath++;
+            *fpath = controlY1;
+            fpath++;
+            *fpath = controlX2;
+            fpath++;
+            *fpath = controlY2;
+            fpath++;
+            *fpath = cubicToX;
+            fpath++;
+            *fpath = cubicToY;
+            fpath++;
             offset += _commandSize_float[VLC_OP_CUBIC_REL];
             i += _commandSize_float[VLC_OP_CUBIC_REL];
 
@@ -4671,32 +5424,42 @@ vg_lite_error_t vg_lite_init_arc_path(vg_lite_path_t* path,
             coords.controlY = controlY2;
             break;
         case VLC_OP_SCUBIC:
-            controlX1 = *pfloat++;
-            controlY1 = *pfloat++;
-            cubicToX = *pfloat++;
-            cubicToY = *pfloat++;
+            controlX1 = *pfloat;
+            pfloat++;
+            controlY1 = *pfloat;
+            pfloat++;
+            cubicToX = *pfloat;
+            pfloat++;
+            cubicToY = *pfloat;
+            pfloat++;
             i += _commandSize_float[VLC_OP_SCUBIC];
             /* Update the control coordinates. */
             VG_LITE_ERROR_HANDLER(_convert_scubic(cubicToX, cubicToY, controlX1, controlY1, VGL_FALSE, &coords, (void*)&pathdata, &offset, path_length - i));
             break;
         case VLC_OP_SCUBIC_REL:
-            controlX1 = *pfloat++;
-            controlY1 = *pfloat++;
-            cubicToX = *pfloat++;
-            cubicToY = *pfloat++;
+            controlX1 = *pfloat;
+            pfloat++;
+            controlY1 = *pfloat;
+            pfloat++;
+            cubicToX = *pfloat;
+            pfloat++;
+            cubicToY = *pfloat;
+            pfloat++;
             i += _commandSize_float[VLC_OP_SCUBIC_REL];
             /* Update the control coordinates. */
             VG_LITE_ERROR_HANDLER(_convert_scubic(cubicToX, cubicToY, controlX1, controlY1, VGL_TRUE, &coords, (void*)&pathdata, &offset, path_length - i));
             break;
         case VLC_OP_HLINE:
-            lineToX = *pfloat++;
+            lineToX = *pfloat;
+            pfloat++;
             lineToY = coords.lastY;
             i += _commandSize_float[VLC_OP_HLINE];
             /* Update the control coordinates. */
             VG_LITE_ERROR_HANDLER(_convert_hline(lineToX, lineToY, VGL_FALSE, &coords, (void*)&pathdata, &offset, path_length - i));
             break;
         case VLC_OP_HLINE_REL:
-            lineToX = *pfloat++;
+            lineToX = *pfloat;
+            pfloat++;
             lineToY = coords.lastY;
             i += _commandSize_float[VLC_OP_HLINE_REL];
             /* Update the control coordinates. */
@@ -4704,87 +5467,129 @@ vg_lite_error_t vg_lite_init_arc_path(vg_lite_path_t* path,
             break;
         case VLC_OP_VLINE:
             lineToX = coords.lastX;
-            lineToY = *pfloat++;
+            lineToY = *pfloat;
+            pfloat++;
             i += _commandSize_float[VLC_OP_VLINE];
             /* Update the control coordinates. */
             VG_LITE_ERROR_HANDLER(_convert_vline(lineToX, lineToY, VGL_FALSE, &coords, (void*)&pathdata, &offset, path_length - i));
             break;
         case VLC_OP_VLINE_REL:
             lineToX = coords.lastX;
-            lineToY = *pfloat++;
+            lineToY = *pfloat;
+            pfloat++;
             i += _commandSize_float[VLC_OP_VLINE_REL];
             /* Update the control coordinates. */
             VG_LITE_ERROR_HANDLER(_convert_vline(lineToX, lineToY, VGL_TRUE, &coords, (void*)&pathdata, &offset, path_length - i));
             break;
         case VLC_OP_SCCWARC:
-            horRadius = *pfloat++;
-            verRadius = *pfloat++;
-            rotAngle = *pfloat++;
-            endX = *pfloat++;
-            endY = *pfloat++;
+            horRadius = *pfloat;
+            pfloat++;
+            verRadius = *pfloat;
+            pfloat++;
+            rotAngle = *pfloat;
+            pfloat++;
+            endX = *pfloat;
+            pfloat++;
+            endY = *pfloat;
+            pfloat++;
             i += _commandSize_float[VLC_OP_SCCWARC];
             VG_LITE_ERROR_HANDLER(_convert_arc(horRadius, verRadius, rotAngle, endX, endY, VGL_FALSE, VGL_FALSE, VGL_FALSE, &coords, (void*)&pathdata, &offset, path_length - i));
             break;
         case VLC_OP_SCCWARC_REL:
-            horRadius = *pfloat++;
-            verRadius = *pfloat++;
-            rotAngle = *pfloat++;
-            endX = *pfloat++;
-            endY = *pfloat++;
+            horRadius = *pfloat;
+            pfloat++;
+            verRadius = *pfloat;
+            pfloat++;
+            rotAngle = *pfloat;
+            pfloat++;
+            endX = *pfloat;
+            pfloat++;
+            endY = *pfloat;
+            pfloat++;
             i += _commandSize_float[VLC_OP_SCCWARC_REL];
             VG_LITE_ERROR_HANDLER(_convert_arc(horRadius, verRadius, rotAngle, endX, endY, VGL_FALSE, VGL_FALSE, VGL_TRUE, &coords, (void*)&pathdata, &offset, path_length - i));
             break;
         case VLC_OP_SCWARC:
-            horRadius = *pfloat++;
-            verRadius = *pfloat++;
-            rotAngle = *pfloat++;
-            endX = *pfloat++;
-            endY = *pfloat++;
+            horRadius = *pfloat;
+            pfloat++;
+            verRadius = *pfloat;
+            pfloat++;
+            rotAngle = *pfloat;
+            pfloat++;
+            endX = *pfloat;
+            pfloat++;
+            endY = *pfloat;
+            pfloat++;
             i += _commandSize_float[VLC_OP_SCCWARC_REL];
             VG_LITE_ERROR_HANDLER(_convert_arc(horRadius, verRadius, rotAngle, endX, endY, VGL_TRUE, VGL_FALSE, VGL_FALSE, &coords, (void*)&pathdata, &offset, path_length - i));
             break;
         case VLC_OP_SCWARC_REL:
-            horRadius = *pfloat++;
-            verRadius = *pfloat++;
-            rotAngle = *pfloat++;
-            endX = *pfloat++;
-            endY = *pfloat++;
+            horRadius = *pfloat;
+            pfloat++;
+            verRadius = *pfloat;
+            pfloat++;
+            rotAngle = *pfloat;
+            pfloat++;
+            endX = *pfloat;
+            pfloat++;
+            endY = *pfloat;
+            pfloat++;
             i += _commandSize_float[VLC_OP_SCCWARC_REL];
             VG_LITE_ERROR_HANDLER(_convert_arc(horRadius, verRadius, rotAngle, endX, endY, VGL_TRUE, VGL_FALSE, VGL_TRUE, &coords, (void*)&pathdata, &offset, path_length - i));
             break;
         case VLC_OP_LCCWARC:
-            horRadius = *pfloat++;
-            verRadius = *pfloat++;
-            rotAngle = *pfloat++;
-            endX = *pfloat++;
-            endY = *pfloat++;
+            horRadius = *pfloat;
+            pfloat++;
+            verRadius = *pfloat;
+            pfloat++;
+            rotAngle = *pfloat;
+            pfloat++;
+            endX = *pfloat;
+            pfloat++;
+            endY = *pfloat;
+            pfloat++;
             i += _commandSize_float[VLC_OP_SCCWARC_REL];
             VG_LITE_ERROR_HANDLER(_convert_arc(horRadius, verRadius, rotAngle, endX, endY, VGL_FALSE, VGL_TRUE, VGL_FALSE, &coords, (void*)&pathdata, &offset, path_length - i));
             break;
         case VLC_OP_LCCWARC_REL:
-            horRadius = *pfloat++;
-            verRadius = *pfloat++;
-            rotAngle = *pfloat++;
-            endX = *pfloat++;
-            endY = *pfloat++;
+            horRadius = *pfloat;
+            pfloat++;
+            verRadius = *pfloat;
+            pfloat++;
+            rotAngle = *pfloat;
+            pfloat++;
+            endX = *pfloat;
+            pfloat++;
+            endY = *pfloat;
+            pfloat++;
             i += _commandSize_float[VLC_OP_SCCWARC_REL];
             VG_LITE_ERROR_HANDLER(_convert_arc(horRadius, verRadius, rotAngle, endX, endY, VGL_FALSE, VGL_TRUE, VGL_TRUE, &coords, (void*)&pathdata, &offset, path_length - i));
             break;
         case VLC_OP_LCWARC:
-            horRadius = *pfloat++;
-            verRadius = *pfloat++;
-            rotAngle = *pfloat++;
-            endX = *pfloat++;
-            endY = *pfloat++;
+            horRadius = *pfloat;
+            pfloat++;
+            verRadius = *pfloat;
+            pfloat++;
+            rotAngle = *pfloat;
+            pfloat++;
+            endX = *pfloat;
+            pfloat++;
+            endY = *pfloat;
+            pfloat++;
             i += _commandSize_float[VLC_OP_SCCWARC_REL];
             VG_LITE_ERROR_HANDLER(_convert_arc(horRadius, verRadius, rotAngle, endX, endY, VGL_TRUE, VGL_TRUE, VGL_FALSE, &coords, (void*)&pathdata, &offset, path_length - i));
             break;
         case VLC_OP_LCWARC_REL:
-            horRadius = *pfloat++;
-            verRadius = *pfloat++;
-            rotAngle = *pfloat++;
-            endX = *pfloat++;
-            endY = *pfloat++;
+            horRadius = *pfloat;
+            pfloat++;
+            verRadius = *pfloat;
+            pfloat++;
+            rotAngle = *pfloat;
+            pfloat++;
+            endX = *pfloat;
+            pfloat++;
+            endY = *pfloat;
+            pfloat++;
             i += _commandSize_float[VLC_OP_SCCWARC_REL];
             VG_LITE_ERROR_HANDLER(_convert_arc(horRadius, verRadius, rotAngle, endX, endY, VGL_TRUE, VGL_TRUE, VGL_TRUE, &coords, (void*)&pathdata, &offset, path_length - i));
             break;

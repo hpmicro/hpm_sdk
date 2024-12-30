@@ -37,7 +37,6 @@ endif()
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 sdk_compile_definitions(-D__ENABLE_RTTHREAD_NANO=1)
 sdk_compile_definitions(-D__DISABLE_AUTO_NEGO=0)
-sdk_compile_definitions(-D__ENABLE_ENET_RECEIVE_INTERRUPT=1)
 sdk_compile_definitions(-DLWIP_DHCP=0)
 
 project(lwip_tcpecho_rtthread-nano)

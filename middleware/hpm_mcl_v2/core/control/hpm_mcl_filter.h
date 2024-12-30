@@ -53,6 +53,61 @@ typedef struct {
     mcl_filter_iir_df1_memory_t *mem;   /**< The iir order is equal to the array size */
 } mcl_filter_iir_df1_t;
 
+/**
+ * @brief configuration of pll type ii filter
+ *
+ */
+typedef struct {
+    float k1; /**< adc gain */
+    float a;  /**< Filter Zero Coefficient */
+    float b;  /**< Filter pole coefficient */
+    float c;  /**< Integrator gain factor */
+} mcl_filter_pll_type_ii_cfg_t;
+
+/**
+ * @brief Running data of pll type ii filter
+ *
+ */
+typedef struct {
+    mcl_filter_pll_type_ii_cfg_t cfg;
+    float x0;   /**< x stands for the intermediate variable, which the user does not need to care about */
+    float x1;
+    float x2;
+    float x3;
+} mcl_filter_pll_type_ii_t;
+
+/**
+ * @brief configuration of pll type i filter
+ *
+ */
+typedef struct {
+    float k1; /**< adc gain */
+    float kp;  /**< Filter Zero Coefficient */
+    float ki;  /**< Filter pole coefficient */
+    float c;  /**< Integrator gain factor */
+    float lowpass_k; /**< lowpass filter gain */
+} mcl_filter_pll_type_i_cfg_t;
+
+/**
+ * @brief Running data of pll type i filter
+ *
+ */
+typedef struct {
+    mcl_filter_pll_type_i_cfg_t cfg;
+    float x0;   /**< x stands for the intermediate variable, which the user does not need to care about */
+    float x1;
+    float x2;
+} mcl_filter_pll_type_i_t;
+
+/**
+ * @brief Phase Locked Loop Filter Output Data
+ *
+ */
+typedef struct {
+    float theta;
+    float speed;
+} mcl_filter_pll_output_t;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -76,6 +131,27 @@ hpm_mcl_stat_t hpm_mcl_filter_iir_df1_init(mcl_filter_iir_df1_t *iir, mcl_filter
  */
 float hpm_mcl_filter_iir_df1(mcl_filter_iir_df1_t *iir, float input);
 
+/**
+ * Type II Phase-Locked Loop (PLL) Filter.
+ * This function updates the PLL state based on the input sine and cosine values and calculates the output theta and speed.
+ *
+ * @param pll Pointer to the PLL structure containing the state and configuration parameters.
+ * @param sin_val The sine value of the input signal, representing the sine component.
+ * @param cos_val The cosine value of the input signal, representing the cosine component.
+ * @param output Pointer to the output structure to store the computed theta and speed.
+ */
+void hpm_mcl_filter_pll_type_ii(mcl_filter_pll_type_ii_t *pll, float sin_val, float cos_val, mcl_filter_pll_output_t *output);
+
+/**
+ * Type I Phase-Locked Loop (PLL) Filter.
+ * This function processes the input signal to estimate the phase and speed of the signal.
+ *
+ * @param pll Pointer to the mcl_filter_pll_type_i_t structure, containing the internal state and configuration of the PLL.
+ * @param sin_val The sine component of the input signal, used for phase difference calculation.
+ * @param cos_val The cosine component of the input signal, used for phase difference calculation.
+ * @param output Pointer to the mcl_filter_pll_output_t structure, for storing the output results including theta and speed.
+ */
+void hpm_mcl_filter_pll_type_i(mcl_filter_pll_type_i_t *pll, float sin_val, float cos_val, mcl_filter_pll_output_t *output);
 #ifdef __cplusplus
 }
 #endif

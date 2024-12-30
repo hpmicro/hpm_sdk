@@ -87,7 +87,7 @@ void init_pwm_plb_trgm(TRGM_Type *ptr)
     trgm_output_cfg.invert = true;
     trgm_output_cfg.type   = trgm_output_same_as_input;
     trgm_output_cfg.input  = HPM_TRGM0_INPUT_SRC_PLB_OUT01;
-    trgm_output_config(ptr, BOARD_PLB_TYPEB_INPUT0, &trgm_output_cfg);
+    trgm_output_config(ptr, PLB_SOC_TYPEB_TRGM_INPUT0, &trgm_output_cfg);
 
     trgm_output_cfg.invert = false;
     trgm_output_cfg.type   = trgm_output_same_as_input;
@@ -170,7 +170,7 @@ int main(void)
     uint32_t freq;
 
     board_init();
-    init_plb_pins();
+    init_plb_pulse_pins();
     freq = clock_get_frequency(BOARD_PLB_PWM_CLOCK_NAME);
     reload = freq / 1000 * PWM_PERIOD_IN_MS - 1;
     init_pwm_plb_trgm(BOARD_PLB_TRGM);

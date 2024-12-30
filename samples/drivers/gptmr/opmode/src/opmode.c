@@ -7,9 +7,8 @@
 
 #include <stdio.h>
 #include "board.h"
-#include "hpm_sysctl_drv.h"
 #include "hpm_gptmr_drv.h"
-#include "hpm_debug_console.h"
+#include "hpm_clock_drv.h"
 
 #define APP_BOARD_GPTMR               BOARD_GPTMR
 #define APP_BOARD_GPTMR_CH            BOARD_GPTMR_CHANNEL
@@ -22,6 +21,7 @@ static void opmode_config(void);
 
 static volatile bool cmp_flag;
 
+SDK_DECLARE_EXT_ISR_M(APP_BOARD_GPTMR_IRQ, tick_ms_isr)
 void tick_ms_isr(void)
 {
     if (gptmr_check_status(APP_BOARD_GPTMR, GPTMR_CH_CMP_STAT_MASK(APP_BOARD_GPTMR_CH, 0))) {
@@ -29,7 +29,6 @@ void tick_ms_isr(void)
         cmp_flag = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(APP_BOARD_GPTMR_IRQ, tick_ms_isr);
 
 int main(void)
 {
@@ -48,8 +47,9 @@ int main(void)
 static void opmode_config(void)
 {
     gptmr_channel_config_t config;
-
     uint32_t gptmr_freq;
+
+    clock_add_to_group(APP_BOARD_GPTMR_CLOCK, 0);
     gptmr_channel_get_default_config(APP_BOARD_GPTMR, &config);
     gptmr_freq = clock_get_frequency(APP_BOARD_GPTMR_CLOCK);
     config.reload = gptmr_freq / 1000 * APP_TICK_MS;

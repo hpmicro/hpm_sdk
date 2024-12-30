@@ -15,6 +15,7 @@ enet_ptp_auxi_snapshot_status_t ptp_auxi_snapshot_status;
 enet_ptp_ts_auxi_snapshot_t     ptp_auxi_snapshot_timestamp;
 volatile bool tsis_interrupt_flag;
 
+SDK_DECLARE_EXT_ISR_M(IRQn_ENET0, isr_pps_capture)
 void isr_pps_capture(void)
 {
     uint32_t status      = BOARD_ENET_AUXI_SNAPSHOT->DMA_STATUS;
@@ -31,7 +32,6 @@ void isr_pps_capture(void)
         }
     }
 }
-SDK_DECLARE_EXT_ISR_M(IRQn_ENET0, isr_pps_capture)
 
 /*---------------------------------------------------------------------*
  * Initialization

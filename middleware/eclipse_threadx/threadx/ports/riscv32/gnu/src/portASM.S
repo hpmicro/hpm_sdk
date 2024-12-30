@@ -33,8 +33,8 @@
 .extern portasmHANDLE_INTERRUPT
 
 /*-----------------------------------------------------------*/
-.section .isr_vector, "ax"
-.align 8
+.section .isr_vector.tx_risc_v_trap_handler, "ax"
+.balign 4
 .type tx_risc_v_trap_handler, function
 tx_risc_v_trap_handler:
 #ifdef __riscv_flen

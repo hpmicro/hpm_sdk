@@ -266,6 +266,7 @@ void sei_sample_position(void)
     sei_trigger_input_config_init(BOARD_SEI, BOARD_SEI_CTRL, &trigger_input_conifg);
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_SEI_IRQn, isr_sei)
 void isr_sei(void)
 {
     uint32_t delata_pos;
@@ -278,7 +279,7 @@ void isr_sei(void)
         /* Although the sampling time is triggered by the sei cycle, */
         /* the cycle may not be reliable and can be changed to interrupt the calculation of the time difference */
         current_pos = sei_get_data_value(HPM_SEI, SEI_DAT_5);
-        delata_pos = abs(current_pos - previous_pos);
+        delata_pos = abs((int32_t)current_pos - (int32_t)previous_pos);
 
         line_step_counter = (uint32_t)(((uint64_t)delata_pos * qeo_lines) >> 30); /* Shift left by 30 bits to retain 1/4 line accuracy */
         line_step_counter += 1;  /* round up */
@@ -291,8 +292,6 @@ void isr_sei(void)
         previous_pos = current_pos;
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_SEI_IRQn, isr_sei)
-
 
 bool sei_data_valid(void)
 {

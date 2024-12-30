@@ -263,16 +263,6 @@ typedef struct {
 
 /* Bitfield definition for register of struct array CH: SDFIFOCTRL */
 /*
- * GATE_SAMPLES (RW)
- *
- * The number-1-3 of input PDM bit samples to be gated when CIC_GATE_EN=1. Max 255. So the minimum gated samples is 4 samples when GATE_SAMPLES=0.
- */
-#define SDM_CH_SDFIFOCTRL_GATE_SAMPLES_MASK (0xFF0000UL)
-#define SDM_CH_SDFIFOCTRL_GATE_SAMPLES_SHIFT (16U)
-#define SDM_CH_SDFIFOCTRL_GATE_SAMPLES_SET(x) (((uint32_t)(x) << SDM_CH_SDFIFOCTRL_GATE_SAMPLES_SHIFT) & SDM_CH_SDFIFOCTRL_GATE_SAMPLES_MASK)
-#define SDM_CH_SDFIFOCTRL_GATE_SAMPLES_GET(x) (((uint32_t)(x) & SDM_CH_SDFIFOCTRL_GATE_SAMPLES_MASK) >> SDM_CH_SDFIFOCTRL_GATE_SAMPLES_SHIFT)
-
-/*
  * THRSH (RW)
  *
  * FIFO threshold (0,..,16) (fillings > threshold, then gen int)
@@ -281,16 +271,6 @@ typedef struct {
 #define SDM_CH_SDFIFOCTRL_THRSH_SHIFT (4U)
 #define SDM_CH_SDFIFOCTRL_THRSH_SET(x) (((uint32_t)(x) << SDM_CH_SDFIFOCTRL_THRSH_SHIFT) & SDM_CH_SDFIFOCTRL_THRSH_MASK)
 #define SDM_CH_SDFIFOCTRL_THRSH_GET(x) (((uint32_t)(x) & SDM_CH_SDFIFOCTRL_THRSH_MASK) >> SDM_CH_SDFIFOCTRL_THRSH_SHIFT)
-
-/*
- * D_RDY_INT_EN (RW)
- *
- * FIFO data ready interrupt enable
- */
-#define SDM_CH_SDFIFOCTRL_D_RDY_INT_EN_MASK (0x4U)
-#define SDM_CH_SDFIFOCTRL_D_RDY_INT_EN_SHIFT (2U)
-#define SDM_CH_SDFIFOCTRL_D_RDY_INT_EN_SET(x) (((uint32_t)(x) << SDM_CH_SDFIFOCTRL_D_RDY_INT_EN_SHIFT) & SDM_CH_SDFIFOCTRL_D_RDY_INT_EN_MASK)
-#define SDM_CH_SDFIFOCTRL_D_RDY_INT_EN_GET(x) (((uint32_t)(x) & SDM_CH_SDFIFOCTRL_D_RDY_INT_EN_MASK) >> SDM_CH_SDFIFOCTRL_D_RDY_INT_EN_SHIFT)
 
 /* Bitfield definition for register of struct array CH: SDCTRLP */
 /*
@@ -312,16 +292,6 @@ typedef struct {
 #define SDM_CH_SDCTRLP_WDOG_THR_SHIFT (17U)
 #define SDM_CH_SDCTRLP_WDOG_THR_SET(x) (((uint32_t)(x) << SDM_CH_SDCTRLP_WDOG_THR_SHIFT) & SDM_CH_SDCTRLP_WDOG_THR_MASK)
 #define SDM_CH_SDCTRLP_WDOG_THR_GET(x) (((uint32_t)(x) & SDM_CH_SDCTRLP_WDOG_THR_MASK) >> SDM_CH_SDCTRLP_WDOG_THR_SHIFT)
-
-/*
- * AF_IE (RW)
- *
- * Acknowledge feedback interrupt enable
- */
-#define SDM_CH_SDCTRLP_AF_IE_MASK (0x10000UL)
-#define SDM_CH_SDCTRLP_AF_IE_SHIFT (16U)
-#define SDM_CH_SDCTRLP_AF_IE_SET(x) (((uint32_t)(x) << SDM_CH_SDCTRLP_AF_IE_SHIFT) & SDM_CH_SDCTRLP_AF_IE_MASK)
-#define SDM_CH_SDCTRLP_AF_IE_GET(x) (((uint32_t)(x) & SDM_CH_SDCTRLP_AF_IE_MASK) >> SDM_CH_SDCTRLP_AF_IE_SHIFT)
 
 /*
  * DFFOVIE (RW)
@@ -439,82 +409,6 @@ typedef struct {
 
 /* Bitfield definition for register of struct array CH: SDCTRLE */
 /*
- * CIC_GATE_TYPE (RW)
- *
- * 1: the gate cycle is determined by SDFIFOCTRLn[GATE_SAMPLES].
- * 0: the gate cycle is determined by the CIC decimation counter, and the minimal gated off PDM bits are determined by SDFIFOCTRLn[GATE_SAMPLES], and at the same time, to keep alignment with normal PCM sampling time.
- */
-#define SDM_CH_SDCTRLE_CIC_GATE_TYPE_MASK (0x80000000UL)
-#define SDM_CH_SDCTRLE_CIC_GATE_TYPE_SHIFT (31U)
-#define SDM_CH_SDCTRLE_CIC_GATE_TYPE_SET(x) (((uint32_t)(x) << SDM_CH_SDCTRLE_CIC_GATE_TYPE_SHIFT) & SDM_CH_SDCTRLE_CIC_GATE_TYPE_MASK)
-#define SDM_CH_SDCTRLE_CIC_GATE_TYPE_GET(x) (((uint32_t)(x) & SDM_CH_SDCTRLE_CIC_GATE_TYPE_MASK) >> SDM_CH_SDCTRLE_CIC_GATE_TYPE_SHIFT)
-
-/*
- * CIC_GATE_POL (RW)
- *
- * 1: When mask signal is 1, pause the CIC stage at he rising edge of mask signal.
- * 0: When mask signal is 0, pause the CIC stage at he falling edge of mask signal.
- */
-#define SDM_CH_SDCTRLE_CIC_GATE_POL_MASK (0x40000000UL)
-#define SDM_CH_SDCTRLE_CIC_GATE_POL_SHIFT (30U)
-#define SDM_CH_SDCTRLE_CIC_GATE_POL_SET(x) (((uint32_t)(x) << SDM_CH_SDCTRLE_CIC_GATE_POL_SHIFT) & SDM_CH_SDCTRLE_CIC_GATE_POL_MASK)
-#define SDM_CH_SDCTRLE_CIC_GATE_POL_GET(x) (((uint32_t)(x) & SDM_CH_SDCTRLE_CIC_GATE_POL_MASK) >> SDM_CH_SDCTRLE_CIC_GATE_POL_SHIFT)
-
-/*
- * CIC_GATE_SEL (RW)
- *
- * Select the mask signal for CIC gate signal.
- */
-#define SDM_CH_SDCTRLE_CIC_GATE_SEL_MASK (0x3C000000UL)
-#define SDM_CH_SDCTRLE_CIC_GATE_SEL_SHIFT (26U)
-#define SDM_CH_SDCTRLE_CIC_GATE_SEL_SET(x) (((uint32_t)(x) << SDM_CH_SDCTRLE_CIC_GATE_SEL_SHIFT) & SDM_CH_SDCTRLE_CIC_GATE_SEL_MASK)
-#define SDM_CH_SDCTRLE_CIC_GATE_SEL_GET(x) (((uint32_t)(x) & SDM_CH_SDCTRLE_CIC_GATE_SEL_MASK) >> SDM_CH_SDCTRLE_CIC_GATE_SEL_SHIFT)
-
-/*
- * CIC_GATE_EN (RW)
- *
- * 1: the CIC stage can be paused by the mask input.
- * 0: the CIC stage won't be paused by the mask input.
- */
-#define SDM_CH_SDCTRLE_CIC_GATE_EN_MASK (0x2000000UL)
-#define SDM_CH_SDCTRLE_CIC_GATE_EN_SHIFT (25U)
-#define SDM_CH_SDCTRLE_CIC_GATE_EN_SET(x) (((uint32_t)(x) << SDM_CH_SDCTRLE_CIC_GATE_EN_SHIFT) & SDM_CH_SDCTRLE_CIC_GATE_EN_MASK)
-#define SDM_CH_SDCTRLE_CIC_GATE_EN_GET(x) (((uint32_t)(x) & SDM_CH_SDCTRLE_CIC_GATE_EN_MASK) >> SDM_CH_SDCTRLE_CIC_GATE_EN_SHIFT)
-
-/*
- * TIMESTAMP_TYPE (RW)
- *
- * 1. Use the time (when the data is calculated out) - delta_time_of_filter_span as the timestamp.
- * 0: Use the time when the data is calculated out.
- */
-#define SDM_CH_SDCTRLE_TIMESTAMP_TYPE_MASK (0x400000UL)
-#define SDM_CH_SDCTRLE_TIMESTAMP_TYPE_SHIFT (22U)
-#define SDM_CH_SDCTRLE_TIMESTAMP_TYPE_SET(x) (((uint32_t)(x) << SDM_CH_SDCTRLE_TIMESTAMP_TYPE_SHIFT) & SDM_CH_SDCTRLE_TIMESTAMP_TYPE_MASK)
-#define SDM_CH_SDCTRLE_TIMESTAMP_TYPE_GET(x) (((uint32_t)(x) & SDM_CH_SDCTRLE_TIMESTAMP_TYPE_MASK) >> SDM_CH_SDCTRLE_TIMESTAMP_TYPE_SHIFT)
-
-/*
- * DFIFO_S_T (RW)
- *
- * 1: the output of SDFIFO is data and timestamp interleaved. First is data.
- * 0: the output of SDFIFO is data only
- */
-#define SDM_CH_SDCTRLE_DFIFO_S_T_MASK (0x200000UL)
-#define SDM_CH_SDCTRLE_DFIFO_S_T_SHIFT (21U)
-#define SDM_CH_SDCTRLE_DFIFO_S_T_SET(x) (((uint32_t)(x) << SDM_CH_SDCTRLE_DFIFO_S_T_SHIFT) & SDM_CH_SDCTRLE_DFIFO_S_T_MASK)
-#define SDM_CH_SDCTRLE_DFIFO_S_T_GET(x) (((uint32_t)(x) & SDM_CH_SDCTRLE_DFIFO_S_T_MASK) >> SDM_CH_SDCTRLE_DFIFO_S_T_SHIFT)
-
-/*
- * DATA_S_T (RW)
- *
- * "1: the read output of SData is data and timestamp interleaved. First is data.
- * 0: the read output of SData is data only"
- */
-#define SDM_CH_SDCTRLE_DATA_S_T_MASK (0x100000UL)
-#define SDM_CH_SDCTRLE_DATA_S_T_SHIFT (20U)
-#define SDM_CH_SDCTRLE_DATA_S_T_SET(x) (((uint32_t)(x) << SDM_CH_SDCTRLE_DATA_S_T_SHIFT) & SDM_CH_SDCTRLE_DATA_S_T_MASK)
-#define SDM_CH_SDCTRLE_DATA_S_T_GET(x) (((uint32_t)(x) & SDM_CH_SDCTRLE_DATA_S_T_MASK) >> SDM_CH_SDCTRLE_DATA_S_T_SHIFT)
-
-/*
  * SGD_ORDR (RW)
  *
  * CIC order
@@ -580,26 +474,6 @@ typedef struct {
 #define SDM_CH_SDST_PERIOD_MCLK_GET(x) (((uint32_t)(x) & SDM_CH_SDST_PERIOD_MCLK_MASK) >> SDM_CH_SDST_PERIOD_MCLK_SHIFT)
 
 /*
- * SDATA_D0_T1 (RO)
- *
- * 1: next readout is timestamp
- * 0: next readout is data
- */
-#define SDM_CH_SDST_SDATA_D0_T1_MASK (0x2000U)
-#define SDM_CH_SDST_SDATA_D0_T1_SHIFT (13U)
-#define SDM_CH_SDST_SDATA_D0_T1_GET(x) (((uint32_t)(x) & SDM_CH_SDST_SDATA_D0_T1_MASK) >> SDM_CH_SDST_SDATA_D0_T1_SHIFT)
-
-/*
- * SDFIFO_D0_T1 (RO)
- *
- * 1: next readout is timestamp
- * 0: next readout is data
- */
-#define SDM_CH_SDST_SDFIFO_D0_T1_MASK (0x1000U)
-#define SDM_CH_SDST_SDFIFO_D0_T1_SHIFT (12U)
-#define SDM_CH_SDST_SDFIFO_D0_T1_GET(x) (((uint32_t)(x) & SDM_CH_SDST_SDFIFO_D0_T1_MASK) >> SDM_CH_SDST_SDFIFO_D0_T1_SHIFT)
-
-/*
  * FIFO_DR (W1C)
  *
  * FIFO data ready
@@ -608,16 +482,6 @@ typedef struct {
 #define SDM_CH_SDST_FIFO_DR_SHIFT (9U)
 #define SDM_CH_SDST_FIFO_DR_SET(x) (((uint32_t)(x) << SDM_CH_SDST_FIFO_DR_SHIFT) & SDM_CH_SDST_FIFO_DR_MASK)
 #define SDM_CH_SDST_FIFO_DR_GET(x) (((uint32_t)(x) & SDM_CH_SDST_FIFO_DR_MASK) >> SDM_CH_SDST_FIFO_DR_SHIFT)
-
-/*
- * AF (W1C)
- *
- * Achnowledge flag
- */
-#define SDM_CH_SDST_AF_MASK (0x100U)
-#define SDM_CH_SDST_AF_SHIFT (8U)
-#define SDM_CH_SDST_AF_SET(x) (((uint32_t)(x) << SDM_CH_SDST_AF_SHIFT) & SDM_CH_SDST_AF_MASK)
-#define SDM_CH_SDST_AF_GET(x) (((uint32_t)(x) & SDM_CH_SDST_AF_MASK) >> SDM_CH_SDST_AF_SHIFT)
 
 /*
  * DOV_ERR (W1C)

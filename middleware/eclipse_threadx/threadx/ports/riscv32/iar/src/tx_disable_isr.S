@@ -8,7 +8,7 @@
 CPU_MSTATUS_MIE  DEFINE    0x08
 
     PUBLIC __disable_interrupt
-    SECTION `.text`:CODE:REORDER:NOROOT(2)
+    SECTION `.isr_vector`:CODE:REORDER:NOROOT(2)
     CODE
 __disable_interrupt:
 ; DisablePUBLIC interupt
@@ -18,7 +18,7 @@ __disable_interrupt:
     
 
     PUBLIC __get_interrupt_state
-    SECTION `.text`:CODE:REORDER:NOROOT(2)
+    SECTION `.isr_vector`:CODE:REORDER:NOROOT(2)
     CODE
 __get_interrupt_state:
 ; Save the Machine status register
@@ -27,7 +27,7 @@ __get_interrupt_state:
     
 
     PUBLIC __set_interrupt_state
-    SECTION `.text`:CODE:REORDER:NOROOT(2)
+    SECTION `.isr_vector`:CODE:REORDER:NOROOT(2)
     CODE
 __set_interrupt_state:
 ; restore the Machine status register previous state

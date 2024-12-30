@@ -71,6 +71,7 @@ void reset_pwm_counter(void)
     trgm_output_update_source(TRGM, TRGM_TRGOCFG_PWM_SYNCI, 0);
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_HRPWM_IRQ, isr_pwm)
 void isr_pwm(void)
 {
     uint32_t status;
@@ -80,8 +81,6 @@ void isr_pwm(void)
         pwm_recovery_hrpwm_output(HRPWM);
     }
 }
-
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_HRPWM_IRQ, isr_pwm)
 
 void config_pwm_fault_capture(void)
 {

@@ -226,19 +226,19 @@ void isr_enet(ENET_Type *ptr)
 }
 
 #ifdef HPM_ENET0_BASE
+SDK_DECLARE_EXT_ISR_M(IRQn_ENET0, isr_enet0)
 void isr_enet0(void)
 {
     isr_enet(ENET);
 }
-SDK_DECLARE_EXT_ISR_M(IRQn_ENET0, isr_enet0)
 #endif
 
 #ifdef HPM_ENET1_BASE
+SDK_DECLARE_EXT_ISR_M(IRQn_ENET1, isr_enet1)
 void isr_enet1(void)
 {
     isr_enet(ENET);
 }
-SDK_DECLARE_EXT_ISR_M(IRQn_ENET1, isr_enet1)
 #endif
 
 #endif

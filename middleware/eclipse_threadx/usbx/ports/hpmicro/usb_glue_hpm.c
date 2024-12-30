@@ -9,7 +9,6 @@
 #include "hpm_usb_drv.h"
 #include "usb_util.h"
 #include "usb_def.h"
-#define USB_PHY_INIT_DELAY_COUNT (16U) /**< a delay count for USB phy initialization */
 
 static void usb_host_mode_init(USB_Type *ptr)
 {
@@ -21,6 +20,11 @@ static void usb_host_mode_init(USB_Type *ptr)
 
     /* Set parallel transceiver width */
     ptr->PORTSC1 &= ~USB_PORTSC1_PTW_MASK;
+
+#ifdef CONFIG_USB_HOST_FORCE_FULL_SPEED
+    /* Set usb forced to full speed mode */
+    ptr->PORTSC1 |= USB_PORTSC1_PFSC_MASK;
+#endif
 
     /* Not use interrupt threshold. */
     ptr->USBCMD &= ~USB_USBCMD_ITC_MASK;
@@ -58,15 +62,15 @@ uint8_t usbh_get_port_speed(const uint8_t port)
 
 extern void _ux_hcd_ehci_interrupt_handler(void);
 
+SDK_DECLARE_EXT_ISR_M(IRQn_USB0, isr_usb0)
 void isr_usb0(void)
 {
     _ux_hcd_ehci_interrupt_handler();
 }
-SDK_DECLARE_EXT_ISR_M(IRQn_USB0, isr_usb0)
 
 #ifdef HPM_USB1_BASE
+SDK_DECLARE_EXT_ISR_M(IRQn_USB1, isr_usb1)
 void isr_usb1(void)
 {
 }
-SDK_DECLARE_EXT_ISR_M(IRQn_USB1, isr_usb1)
 #endif

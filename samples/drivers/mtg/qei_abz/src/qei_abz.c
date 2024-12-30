@@ -61,13 +61,13 @@ static void mtg_test_loop(void)
         mtg_get_tra_lock_result(APP_MTG_BASE, APP_MTG_TRA_INDEX, &mtg_lock_val);
         qei_rev = qeiv2_get_current_count(APP_QEIV2_BASE, qeiv2_counter_type_z);
         qei_pos = qeiv2_get_current_count(APP_QEIV2_BASE, qeiv2_counter_type_speed);
-        delta = mtg_lock_val.rev + 1.0f * mtg_lock_val.pos / 0xFFFFFFFF - qei_rev - qei_pos * 1.0f / 0xFFFFFFFF;
+        delta = mtg_lock_val.rev + 1.0f * (float)mtg_lock_val.pos / (float)0xFFFFFFFF - qei_rev - qei_pos * 1.0f / (float)0xFFFFFFFF;
 
         printf("%f,%d,%f,%d,%f,%d,%d,%f\n", mtg_lock_val.time_stamp * 1.0f / mot_clock, \
                                                qei_rev, \
-                                               qei_pos * 1.0f / 0xFFFFFFFF, \
+                                               (float)qei_pos * 1.0f / (float)0xFFFFFFFF, \
                                                mtg_lock_val.rev, \
-                                               mtg_lock_val.pos * 1.0f / 0xFFFFFFFF, \
+                                               (float)mtg_lock_val.pos * 1.0f / (float)0xFFFFFFFF, \
                                                mtg_lock_val.vel, \
                                                mtg_lock_val.acc, \
                                                delta);

@@ -168,11 +168,11 @@
     4. 为Ninja-build产生构建文件:
 
     ```shell
-      cmake -GNinja -DBOARD=hpm6750evk ..
+      cmake -GNinja -DBOARD=hpm6750evkmini ..
     ```
 
    > **_注意_：**如果提示"CMAKE_MAKE_PROGRAM is not set", 可以通过在以上命令中追加"-DCMAKE_MAKE_PROGRAM=YOUR_MAKE_EXECUTABLE_PATH" (NINJA_PATH为ninja-build的目录,在其下可以找到ninja):
-        # cmake -GNinja -DBOARD=hpm6750evk -DCMAKE_MAKE_PROGRAM=NINJA_PATH/ninja ..
+        # cmake -GNinja -DBOARD=hpm6750evkmini -DCMAKE_MAKE_PROGRAM=NINJA_PATH/ninja ..
 
     5. 编译:
 
@@ -209,10 +209,10 @@
         set OPENOCD_SCRIPTS=%HPM_SDK_BASE%\boards\openocd
       ```
 
-    6. 运行openocd, 需要按顺序指定配置文件: 调试器配置, 内核配置, 目标板配置。例如，通过ft2232在hpm6750evk上进行单核调试，可以运行如下命令:
+    6. 运行openocd, 需要按顺序指定配置文件: 调试器配置, 内核配置, 目标板配置。例如，通过ft2232在hpm6750evkmini上进行单核调试，可以运行如下命令:
 
     ```shell
-      openocd -f probes/ft2232.cfg -f soc/hpm6750-single-core.cfg -f boards/hpm6750evk.cfg
+      openocd -f probes/ft2232.cfg -f soc/hpm6750-single-core.cfg -f boards/hpm6750evkmini.cfg
     ```
 
    > **_注意_：** 如果使用FTDI调试器并遇到提示`Error: libusb_open() failed with LIBUSB_ERROR_NOT_FOUND` , 请检查FTDI usb驱动。如果驱动未正确安装，使用 [zadig](https://github.com/pbatard/libwdi/releases/download/b730/zadig-2.5.exe) 更新驱动：

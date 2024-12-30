@@ -100,7 +100,7 @@ static int addr_check(agile_modbus_t *ctx, struct agile_modbus_slave_info *slave
 static int modbus_slave_process(uint8_t *status)
 {
     static int recv_len = 0;
-    int sta = 0, rc = 0;
+    volatile int sta = 0, rc = 0;
     static uint8_t count = 0;
     switch (*status) {
     case recv_wait:

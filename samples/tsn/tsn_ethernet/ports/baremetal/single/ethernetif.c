@@ -197,9 +197,28 @@ static struct pbuf *low_level_input(struct netif *netif)
 {
     (void) netif;
 
-    hpm_stat_t stat;
     struct pbuf *p = NULL, *q;
-    tsw_frame_t frame = {0, 0, 0};
+
+#if defined(ENABLE_TSW_RECEIVE_INTERRUPT) && ENABLE_TSW_RECEIVE_INTERRUPT
+    static uint8_t idx = 0;
+
+    if (frame[idx].length > TSW_SOC_SWITCH_HEADER_LEN) {
+        /* Allocate a pbuf chain of pbufs from the Lwip buffer pool */
+        p = pbuf_alloc(PBUF_RAW, frame[idx].length - TSW_SOC_SWITCH_HEADER_LEN, PBUF_POOL);
+
+        if (p != NULL) {
+            for (q = p; q != NULL; q = q->next) {
+                /* pass the buffer to pbuf */
+                frame[idx].buffer = recv_buff[frame[idx].id];
+                memcpy(q->payload, &frame[idx].buffer[TSW_SOC_SWITCH_HEADER_LEN], q->len);
+                idx++;
+                idx %= TSW_FRAME_BUFF_COUNT;
+            }
+        }
+    }
+#else
+    hpm_stat_t stat;
+    tsw_frame_t frame;
 
     stat = tsw_recv_frame(BOARD_TSW, &frame);
 
@@ -217,11 +236,12 @@ static struct pbuf *low_level_input(struct netif *netif)
                 }
             }
         }
-    } else if (stat != status_fail) {
+    } else if (stat == status_fail) {
         tsw_commit_recv_desc(BOARD_TSW, recv_buff[frame.id], TSW_RECV_BUFF_LEN, frame.id);
     } else {
 
     }
+#endif
 
     return p;
 }
@@ -266,7 +286,7 @@ err_t ethernetif_input(struct netif *netif)
     err_t err = ERR_OK;
     struct pbuf *p = NULL;
 
-#if defined(__ENABLE_ENET_RECEIVE_INTERRUPT) && __ENABLE_ENET_RECEIVE_INTERRUPT
+#if defined(ENABLE_TSW_RECEIVE_INTERRUPT) && ENABLE_TSW_RECEIVE_INTERRUPT
     if (rx_flag) {
 #endif
         GET_NEXT_FRAME:
@@ -287,7 +307,7 @@ err_t ethernetif_input(struct netif *netif)
                 goto GET_NEXT_FRAME;
             }
         }
-#if defined(__ENABLE_ENET_RECEIVE_INTERRUPT) && __ENABLE_ENET_RECEIVE_INTERRUPT
+#if defined(ENABLE_TSW_RECEIVE_INTERRUPT) && ENABLE_TSW_RECEIVE_INTERRUPT
         rx_flag = false;
     }
 #endif

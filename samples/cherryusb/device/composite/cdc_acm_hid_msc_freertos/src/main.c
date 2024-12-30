@@ -48,7 +48,7 @@ int main(void)
 {
     board_init();
     board_init_led_pins();
-    board_init_usb_pins();
+    board_init_usb((USB_Type *)CONFIG_HPM_USBD_BASE);
     board_init_gpio_pins();
     gpio_set_pin_input(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN);
 

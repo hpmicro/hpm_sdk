@@ -15,15 +15,13 @@
 .macro DEFINE_IRQ_HANDLER irq
   .weak irq_handler_wrapper_\irq
   .type irq_handler_wrapper_\irq, function
-  .func
   irq_handler_wrapper_\irq:
     j .
-    .endfunc
 
   .global default_isr_\irq
   .type default_isr_\irq, function
   .long default_isr_\irq
-  .func
+  .section .isr_vector, "ax"
   default_isr_\irq:
       portcontextSAVE_INTERRUPT_CONTEXT
       NESTED_IRQ_HANDLING
@@ -33,7 +31,6 @@
       li a3, \irq
       store_x a3, 4(a4)
       portcontextRESTORE_CONTEXT
-      .endfunc
 .endm
 
 /* Define the weak user isr handler wrapper function for all interrupts and isr handler entry function placed in __vector_table

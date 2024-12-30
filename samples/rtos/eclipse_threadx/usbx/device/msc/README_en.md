@@ -10,8 +10,9 @@ The example implements a msc device.
 - Connect a USB port on PC to one of USB port on the development board with a USB Type-C cable
 
 ## Running the example
-There should be a disk on computer. The disk capacity should be 26 KB, and files can be copy to or from the disk.
+There should be a disk on computer. You can be copy files to or from the disk.
 When the example runs successfully, following message is displayed in the terminal:
+
 ```console
 USBX device mass storage example
 USB MSD device activate

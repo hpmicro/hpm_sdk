@@ -4,7 +4,7 @@
  */
 #include "cpuport.h"
 
-    SECTION CSTACK:DATA:NOROOT(3)
+    SECTION CSTACK:DATA:NOROOT(4)
 
     EXTERN rt_thread_switch_interrupt_flag
     EXTERN rt_interrupt_from_thread
@@ -13,10 +13,8 @@
     EXTERN irq_handler_trap
     EXTERN rt_interrupt_leave
 
-
-
-    SECTION `.isr_vector`:CODE:ROOT(3)
     PUBLIC rtt_risc_v_trap_handler
+    SECTION `.isr_vector`:CODE(2)
 rtt_risc_v_trap_handler:
 #ifdef ARCH_RISCV_FPU
     addi    sp, sp, -32 * FREGBYTES

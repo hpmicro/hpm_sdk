@@ -18,6 +18,7 @@
 
 volatile bool uart_rx_idle;
 
+SDK_DECLARE_EXT_ISR_M(TEST_UART_IRQ, uart_isr)
 void uart_isr(void)
 {
     if (uart_is_rxline_idle(TEST_UART)) {
@@ -25,7 +26,6 @@ void uart_isr(void)
         uart_clear_rxline_idle_flag(TEST_UART);
     }
 }
-SDK_DECLARE_EXT_ISR_M(TEST_UART_IRQ, uart_isr)
 
 void uart_sent_and_receive_data(uint8_t address, uint8_t *data, uint8_t length)
 {

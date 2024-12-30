@@ -262,6 +262,17 @@ static inline void uart_clear_rx_fifo(UART_Type *ptr)
     }
 }
 
+#if defined(HPM_IP_FEATURE_UART_RX_EN) && (HPM_IP_FEATURE_UART_RX_EN == 1)
+static inline void uart_enable_rx_function(UART_Type *ptr, bool enable)
+{
+    if (enable) {
+        ptr->IDLE_CFG |= UART_IDLE_CFG_RXEN_MASK;
+    } else {
+        ptr->IDLE_CFG &= ~UART_IDLE_CFG_RXEN_MASK;
+    }
+}
+#endif
+
 /**
  * @brief Reset TX Fifo
  *

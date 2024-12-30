@@ -98,6 +98,11 @@ def generate_file_structure(files, sdk_base, out_dir, project_dir, board_dir, bo
                 t = os.path.join(HPM_SDK_BASE, "samples")
                 t = re.sub(r'\\', r'/', t)  # convert windows path separator
                 iar_file = re.sub(re.escape(t), 'sdk_sample', iar_file)
+            elif HELPER.is_sdk_unittest_file(f, sdk_base):
+                iar_file = re.sub(r'\\', r'/', HELPER.get_file_path(f, sdk_base, out_dir, False))
+                t = os.path.join(HPM_SDK_BASE, "unit_test")
+                t = re.sub(r'\\', r'/', t)  # convert windows path separator
+                iar_file = re.sub(re.escape(t), 'sdk_unittest', iar_file)
             else:
                 iar_file = re.sub(r'\\', r'/', HELPER.get_file_path(f, sdk_base, out_dir, use_outdir_relpath, "$PROJ_DIR$"))
         elif HELPER.is_custom_board_file(f, board_dir):

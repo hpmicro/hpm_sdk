@@ -13,7 +13,8 @@ the two boards must be connected to the GND of both sides for a common ground to
 
 ## Notice
 
-Only supports SPI single io mode, not Dual SPI and Quad SPI.
+- Only supports SPI single io mode, not Dual SPI and Quad SPI.
+- To ensure normal transmission, it is recommended to add a 4.7K pull-up resistor to the SPI CS pin.
 
 ## Running the example
 

@@ -28,14 +28,23 @@
 #define TEST_SDM_TRGM_OUTPUT_DST          BOARD_SDM_TRGM_OUTPUT_DST
 #define TEST_SDM_SYNC_SRC                 BOARD_SDM_TRGM_SYNC_SRC
 
-#define  TEST_DATA_COUNT  (1024U)
-int32_t filter_result[TEST_DATA_COUNT];
+#define SDM_AMPLITUDE_HIGH_THRESHOLD (240) /* 240mV */
 
+#define  TEST_DATA_COUNT  (16U)
+int32_t filter_result[TEST_DATA_COUNT];
 uint32_t count;
+
 volatile bool receive_finish;
 volatile bool receive_failed;
 volatile bool comparator_out_high_threshold;
+volatile bool data_ready_in_sync_mode;
 
+double sdm_data_value_to_voltage(sdm_filter_type_t filter, uint16_t oversample, uint32_t sdm_data);
+uint32_t voltage_to_sdm_data_value(sdm_filter_type_t filter, uint16_t oversample, double voltage);
+double sdm_amplitude_value_to_voltage(sdm_filter_type_t filter, uint16_t oversample, uint16_t amplitude);
+uint16_t voltage_to_sdm_amplitude_value(sdm_filter_type_t filter, uint16_t oversample, double voltage);
+
+SDK_DECLARE_EXT_ISR_M(TEST_SDM_IRQ, sdm_isr)
 void sdm_isr(void)
 {
     /* data error */
@@ -43,28 +52,38 @@ void sdm_isr(void)
         /* comparator out threshold event */
         if (sdm_get_channel_comparator_status(TEST_SDM, BOARD_SDM_CHANNEL) & sdm_comparator_event_out_high_threshold) {
             comparator_out_high_threshold = true;
+            /* stop sdm channel */
+            sdm_enable_channel(TEST_SDM, TEST_SDM_CHANNEL, false);
+            /* stop sdm channel amplitude function */
+            sdm_enable_channel_comparator(TEST_SDM, BOARD_SDM_CHANNEL, false);
+            /* Only when the actual over the limit disappears, the corresponding flag can be cleared */
+            sdm_clean_channel_comparator_status(TEST_SDM, BOARD_SDM_CHANNEL, sdm_comparator_event_out_high_threshold);
         }
-        /* stop sdm channel */
-        sdm_enable_channel(TEST_SDM, TEST_SDM_CHANNEL, false);
-        receive_failed = true;
+
+        if (sdm_get_channel_filter_status(TEST_SDM, BOARD_SDM_CHANNEL) & (SDM_CH_SDST_DOV_ERR_MASK | SDM_CH_SDST_DSAT_ERR_MASK)) {
+            /* stop sdm channel data function */
+            sdm_enable_channel_filter(TEST_SDM, TEST_SDM_CHANNEL, false);
+            receive_failed = true;
+            sdm_clean_channel_filter_status(TEST_SDM, TEST_SDM_CHANNEL, (SDM_CH_SDST_DOV_ERR_MASK | SDM_CH_SDST_DSAT_ERR_MASK));
+        }
     }
 
     /* data ready */
     if (sdm_get_channel_data_ready_status(TEST_SDM, TEST_SDM_CHANNEL)) {
+        data_ready_in_sync_mode = true; /* for sync mode use */
         uint8_t fifo_threshold = sdm_get_ch_fifo_threshold(TEST_SDM, TEST_SDM_CHANNEL);
         for (uint8_t i = 0; i < fifo_threshold; i++) {
             filter_result[count++] = sdm_get_channel_fifo_data(TEST_SDM, TEST_SDM_CHANNEL);
         }
         if (count >= TEST_DATA_COUNT) {
-            /* stop sdm channel */
-            sdm_enable_channel(TEST_SDM, TEST_SDM_CHANNEL, false);
+            /* stop sdm channel data function */
+            sdm_enable_channel_filter(TEST_SDM, TEST_SDM_CHANNEL, false);
             receive_finish = true;
         }
     }
 }
 
-SDK_DECLARE_EXT_ISR_M(TEST_SDM_IRQ, sdm_isr)
-
+/* SDM sample data by polling mode */
 void test_sdm_filter_receive(void)
 {
     hpm_stat_t stat;
@@ -100,12 +119,16 @@ void test_sdm_filter_receive(void)
     /* stop sdm channel */
     sdm_enable_channel(TEST_SDM, TEST_SDM_CHANNEL, false);
 
-    printf("printf sdm received data.\n");
+    printf("sdm sample data in polling mode.\n");
     for (uint32_t i = 0; i < TEST_DATA_COUNT; i++) {
-        printf("%d\n", filter_result[i]);
+        double voltage = sdm_data_value_to_voltage(filter_config.filter_type, filter_config.oversampling_rate, filter_result[i]);
+        printf("%.2lfmV\n", voltage);
     }
 }
 
+/* sdm detecte amplitude over high limit */
+/* set high limit to SDM_AMPLITUDE_HIGH_THRESHOLD */
+/* when input voltage high than SDM_AMPLITUDE_HIGH_THRESHOLD, generate channel error interrupt */
 void test_sdm_comparator_interrupt(void)
 {
     sdm_control_t control;
@@ -129,24 +152,35 @@ void test_sdm_comparator_interrupt(void)
 
     /* config comparator: threshold value, filter type, oversampling rate, etc. */
     sdm_get_channel_default_comparator_config(TEST_SDM, &cmp_config);
-    cmp_config.high_threshold = 0x7700U; /* uint16_t */
     cmp_config.en_high_threshold_int = true;
     cmp_config.filter_type = sdm_filter_sinc3;
     cmp_config.ignore_invalid_samples = 2;
+    uint16_t threshold = voltage_to_sdm_amplitude_value(cmp_config.filter_type, cmp_config.oversampling_rate, SDM_AMPLITUDE_HIGH_THRESHOLD);
+    cmp_config.high_threshold = threshold; /* uint16_t */
     sdm_config_channel_comparator(TEST_SDM, TEST_SDM_CHANNEL, &cmp_config);
+
+    printf("Set amplitude high threshold %dmV\n", SDM_AMPLITUDE_HIGH_THRESHOLD);
 
     /* start sdm channel */
     sdm_enable_channel(TEST_SDM, TEST_SDM_CHANNEL, true);
 
     while (1) {
         if (comparator_out_high_threshold) {
-            printf("sdm channel comparator out high threshold\n");
-            printf("comparator value: 0x%x\n", sdm_get_channel_comparator_data(TEST_SDM, TEST_SDM_CHANNEL));
+            printf("sdm channel comparator detected amplitude over the high threshold\n");
+            uint16_t amplitude = sdm_get_channel_comparator_data(TEST_SDM, TEST_SDM_CHANNEL);
+            double voltage = sdm_amplitude_value_to_voltage(cmp_config.filter_type, cmp_config.oversampling_rate, amplitude);
+            printf("voltage: %.2lfmV\n", voltage);
             break;
         }
     }
+
+    /* stop sdm channel */
+    sdm_enable_channel(TEST_SDM, TEST_SDM_CHANNEL, false);
 }
 
+/* sdm sample data by interrupt mode */
+/* generate channel data ready interrupt when the data in FIFO reaches the threshold */
+/* when sample data count = TEST_DATA_COUNT, stop sdm receive data function */
 void test_sdm_filter_receive_interrupt(void)
 {
     sdm_control_t control;
@@ -177,6 +211,7 @@ void test_sdm_filter_receive_interrupt(void)
     sdm_config_channel_filter(TEST_SDM, TEST_SDM_CHANNEL, &filter_config);
 
     /* start sdm channel */
+    count = 0; /* received data count clean */
     sdm_enable_channel(TEST_SDM, TEST_SDM_CHANNEL, true);
 
     /* waiting for received data */
@@ -184,15 +219,23 @@ void test_sdm_filter_receive_interrupt(void)
     }
 
     if (receive_failed) {
-        printf("printf sdm received data failed.\n");
+        printf("sdm sample data failed in interrupt mode.\n");
     } else {
-        printf("printf sdm received data.\n");
+        printf("sdm sample data in interrupt mode.\n");
         for (uint32_t i = 0; i < TEST_DATA_COUNT; i++) {
-            printf("%d\n", filter_result[i]);
+            double voltage = sdm_data_value_to_voltage(filter_config.filter_type, filter_config.oversampling_rate, filter_result[i]);
+            printf("%.2lfmV\n", voltage);
         }
     }
+
+    /* stop sdm channel */
+    sdm_enable_channel(TEST_SDM, TEST_SDM_CHANNEL, false);
 }
 
+/* sdm sample data by interrupt mode and sync signal */
+/* when sync event occur, start to sample data into FIFO*/
+/* whene data in FIFO reaches the threshold generate data ready interrupt and hardware will automatically clear sync flag */
+/* when sync flag is cleared, stop to sample data into FIFO until sync enver occur again */
 void test_sdm_sync_filter_receive(void)
 {
     sdm_control_t control;
@@ -217,44 +260,56 @@ void test_sdm_sync_filter_receive(void)
 
     /* config filter: filter type, oversampling rate, output data length, etc. */
     sdm_get_channel_default_filter_config(TEST_SDM, &filter_config);
+    filter_config.fifo_threshold = 8;
     filter_config.filter_type = sdm_filter_sinc3;
     filter_config.oversampling_rate = 256; /** 1- 256 */
     filter_config.ignore_invalid_samples = 2;
     filter_config.sync_source = TEST_SDM_SYNC_SRC;
-    filter_config.fifo_clean_on_sync = 0; /** new sync event will clear fifo */
-    filter_config.wtsynaclr = 0; /** sync flag clean by software */
-    filter_config.wtsynmclr = 0;
+    filter_config.fifo_clean_on_sync = 1; /** new sync event will clear fifo */
+    filter_config.wtsynaclr = 1; /** when data ready, hardware will automatically clear sync event flag and stop receiving data until sync event flag is set again */
     filter_config.wtsyncen = 1; /** after sync occurred, push data into fifo */
     sdm_config_channel_filter(TEST_SDM, TEST_SDM_CHANNEL, &filter_config);
 
     /* start sdm channel */
+    count = 0; /* received data count clean */
+    data_ready_in_sync_mode = false;
     sdm_enable_channel(TEST_SDM, TEST_SDM_CHANNEL, true);
 
-    /* config gptmr to trim sdm */
+    /* config gptmr output to sdm sync */
     trgm_output_update_source(TEST_SDM_TRGM, TEST_SDM_TRGM_OUTPUT_DST, TEST_SDM_TRGM_INPUT_SRC);
 
-    /* config gptmr */
+    /* config gptmr to generate sync signal, period 4s */
     gptmr_channel_config_t config;
+    clock_add_to_group(TEST_SDM_TRGM_GPTMR_CLK, 0);
     gptmr_channel_get_default_config(TEST_SDM_TRGM_GPTMR, &config);
-    config.reload = 0xFFFFFFFEUL;
-    config.cmp[0] = clock_get_frequency(TEST_SDM_TRGM_GPTMR_CLK); /* 1s */
+    uint32_t freq = clock_get_frequency(TEST_SDM_TRGM_GPTMR_CLK);
+    config.reload = 4 * freq; /* 4s*/
+    config.cmp[0] = 2 * freq; /* 2s */
     config.cmp[1] = config.reload;
     config.cmp_initial_polarity_high = false;
     gptmr_channel_config(TEST_SDM_TRGM_GPTMR, TEST_SDM_TRGM_GPTMR_CH, &config, false);
     gptmr_start_counter(TEST_SDM_TRGM_GPTMR, TEST_SDM_TRGM_GPTMR_CH);
 
     /* waiting for received data */
-    while ((!receive_finish) && (!receive_failed)) {
+    for (uint8_t i = 0; i < 4; i++) {
+        while ((!data_ready_in_sync_mode) && (!receive_failed)) {
+        }
+
+        if (receive_failed) {
+            printf("sdm sample data failed with sync signal.\n");
+        } else {
+            printf("sdm sample data with sync signal. %d time\n", i + 1);
+            for (uint32_t i = 0; i < count; i++) {
+                double voltage = sdm_data_value_to_voltage(filter_config.filter_type, filter_config.oversampling_rate, filter_result[i]);
+                printf("%.2lfmV\n", voltage);
+            }
+            count = 0;
+        }
+        data_ready_in_sync_mode = false;
     }
 
-    if (receive_failed) {
-        printf("printf sdm received data failed.\n");
-    } else {
-        printf("printf sdm received data.\n");
-        for (uint32_t i = 0; i < TEST_DATA_COUNT; i++) {
-            printf("%d\n", filter_result[i]);
-        }
-    }
+    /* stop sdm channel */
+    sdm_enable_channel(TEST_SDM, TEST_SDM_CHANNEL, false);
 }
 
 #if defined(BOARD_SDM_SENSOR_REQUIRE_CLK) && BOARD_SDM_SENSOR_REQUIRE_CLK
@@ -292,9 +347,26 @@ void gen_pwm_as_sdm_clock(void)
 }
 #endif
 
+void show_help(void)
+{
+    static const char help_info[] = ""
+                                    "*********************************************************************\n"
+                                    "*                                                                   *\n"
+                                    "*                         SDM Example Menu                          *\n"
+                                    "* Please enter one of following SDM function test(e.g. 1 or 2 ...): *\n"
+                                    "* 1 - SDM sample data in polling mode                               *\n"
+                                    "* 2 - SDM amplitude threshold check                                 *\n"
+                                    "* 3 - SDM sample data in interrupt mode                             *\n"
+                                    "* 4 - SDM sample data with sync signal                              *\n"
+                                    "*                                                                   *\n"
+                                    "*********************************************************************\n";
+    printf("%s\n", help_info);
+}
+
 int main(void)
 {
     board_init();
+    clock_add_to_group(clock_sdm0, 0);
     init_sdm_pins();
     printf("sdm example\n");
 
@@ -302,20 +374,88 @@ int main(void)
     gen_pwm_as_sdm_clock();
 #endif
 
-    /* sdm receive filter data by polling mode */
-    test_sdm_filter_receive();
+    char option;
+    show_help();
+    while (true) {
+        option = getchar();
+        printf("Selected option: %c\n\n", option);
 
-    /* sdm comparator */
-    /* test_sdm_comparator_interrupt(); */
-
-    /* sdm receive filter data by interrupt mode */
-    /* test_sdm_filter_receive_interrupt(); */
-
-    /* sdm receive filter data with sync signal */
-    /* test_sdm_sync_filter_receive(); */
+        switch (option) {
+        case '1':
+            test_sdm_filter_receive();
+            break;
+        case '2':
+            test_sdm_comparator_interrupt();
+            break;
+        case '3':
+            test_sdm_filter_receive_interrupt();
+            break;
+        case '4':
+            test_sdm_sync_filter_receive();
+            break;
+        default:
+            show_help();
+            break;
+        }
+    }
 
     while (1) {
     };
 
     return 0;
 }
+
+
+uint32_t sdm_filter_max_output_value(sdm_filter_type_t filter, uint16_t oversample)
+{
+    switch (filter) {
+    case sdm_filter_sinc1:
+        return oversample;
+    case sdm_filter_sinc2:
+        return oversample * oversample;
+    case sdm_filter_sinc3:
+        return oversample * oversample * oversample;
+    case sdm_filter_fast_sinc2:
+        return 2 * oversample * oversample;
+    default:
+        return 0;
+    }
+}
+
+/* The following conversions are applicable to AD7400/NSI1306 */
+/* if sigma-delta modulator different, please check these conversions */
+#define MODULATOR_INPUT_MAX_VOLTAGE (320) /* input full-scale ±320 mV */
+double sdm_data_value_to_voltage(sdm_filter_type_t filter, uint16_t oversample, uint32_t sdm_data)
+{
+    /* (vin + MODULATOR_INPUT_MAX_VOLTAGE) / (2 * MODULATOR_INPUT_MAX_VOLTAGE) = (sdm_data + max_val) / (2 * max_val) */
+    uint32_t max_val = sdm_filter_max_output_value(filter, oversample);
+    double voltage = (((double)sdm_data  + max_val) / (2 * max_val)) * (2 * MODULATOR_INPUT_MAX_VOLTAGE) - MODULATOR_INPUT_MAX_VOLTAGE;
+    return voltage;
+}
+
+uint32_t voltage_to_sdm_data_value(sdm_filter_type_t filter, uint16_t oversample, double voltage)
+{
+    /* (vin + MODULATOR_INPUT_MAX_VOLTAGE) / (2 * MODULATOR_INPUT_MAX_VOLTAGE) = (sdm_data + max_val) / (2 * max_val) */
+    uint32_t max_val = sdm_filter_max_output_value(filter, oversample);
+    uint32_t sdm_data = (uint32_t)(((voltage + MODULATOR_INPUT_MAX_VOLTAGE) / (2 * MODULATOR_INPUT_MAX_VOLTAGE)) * (2 * max_val) - max_val);
+    return sdm_data;
+}
+
+
+double sdm_amplitude_value_to_voltage(sdm_filter_type_t filter, uint16_t oversample, uint16_t amplitude)
+{
+    /* (vin + MODULATOR_INPUT_MAX_VOLTAGE) / (2 * MODULATOR_INPUT_MAX_VOLTAGE) = (sdm_data / * max_val) */
+    uint32_t max_val = sdm_filter_max_output_value(filter, oversample);
+    double voltage = ((double)amplitude / max_val) * (2 * MODULATOR_INPUT_MAX_VOLTAGE) - MODULATOR_INPUT_MAX_VOLTAGE;
+    return voltage;
+}
+
+uint16_t voltage_to_sdm_amplitude_value(sdm_filter_type_t filter, uint16_t oversample, double voltage)
+{
+    /* (vin + MODULATOR_INPUT_MAX_VOLTAGE) / (2 * MODULATOR_INPUT_MAX_VOLTAGE) = (sdm_data / * max_val) */
+    uint32_t max_val = sdm_filter_max_output_value(filter, oversample);
+    uint16_t sdm_amplitude_value = (uint16_t)(((voltage + MODULATOR_INPUT_MAX_VOLTAGE) / (2 * MODULATOR_INPUT_MAX_VOLTAGE)) * max_val);
+    return sdm_amplitude_value;
+}
+
+

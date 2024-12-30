@@ -7,7 +7,7 @@
 
 #include <stdio.h>
 #include "board.h"
-#include "hpm_debug_console.h"
+#include "hpm_clock_drv.h"
 #include "hpm_acmp_drv.h"
 
 #if defined(ACMP_SOC_BANDGAP) && ACMP_SOC_BANDGAP
@@ -23,18 +23,19 @@
 
 volatile bool acmp_output_toggle;
 
+SDK_DECLARE_EXT_ISR_M(TEST_ACMP_IRQ, isr_acmp)
 void isr_acmp(void)
 {
     acmp_output_toggle = true;
     acmp_channel_enable_irq(TEST_ACMP, TEST_ACMP_CHANNEL, ACMP_EVENT_RISING_EDGE, false);
 }
-SDK_DECLARE_EXT_ISR_M(TEST_ACMP_IRQ, isr_acmp)
 
 int main(void)
 {
     acmp_channel_config_t acmp_channel_configure;
 
     board_init();
+    board_init_acmp_clock(TEST_ACMP);
 #if defined(ACMP_SOC_BANDGAP) && ACMP_SOC_BANDGAP
     acmp_enable_bandgap();
 #endif

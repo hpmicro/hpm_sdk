@@ -37,6 +37,7 @@ int main(void)
     uint32_t freq;
 
     board_init();
+    board_init_i2c_clock(TEST_SMBUS);
     init_i2c_pins(TEST_SMBUS);
 
     config.i2c_mode = i2c_mode_normal;

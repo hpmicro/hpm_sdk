@@ -7,7 +7,7 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(dhrystone)
 
-set(opt_string "-O3 -fno-inline -flto -c -fmessage-length=0 -Wno-implicit-int -Wno-implicit-function-declaration -Wno-return-type -Wno-deprecated-non-prototype -fbuiltin -fno-builtin-printf")
+set(opt_string "-O3 -fno-inline -flto -fmessage-length=0 -Wno-implicit-int -Wno-implicit-function-declaration -Wno-return-type -Wno-deprecated-non-prototype -fbuiltin -fno-builtin-printf -Wno-strict-prototypes")
 if("${TOOLCHAIN_VARIANT}" STREQUAL "zcc")
     set(opt_string "${opt_string} -falign-functions=16 -falign-loops=4 -flate-loop-unroll -malign-branch -Wno-error=deprecated-non-prototype -Wno-error=implicit-int -Wno-error=implicit-function-declaration")
     sdk_zcc_ld_options(-O3)

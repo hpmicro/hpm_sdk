@@ -10,7 +10,7 @@
  *---------------------------------------------------------------------*/
 #include "cbs.h"
 
-static volatile tsw_phy_status_t last_status;
+static volatile tsw_phy_status_t last_status = {.tsw_phy_link = tsw_phy_link_unknown};
 uint8_t mac[] = {0x98, 0x2c, 0xbc, 0xb1, 0x9f, 0x17};
 ATTR_PLACE_AT_NONCACHEABLE_INIT_WITH_ALIGNMENT(4) tsw_tsf_t entry[TSW_CBS_ENTRY_COUNT];
 ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(TSW_SOC_DATA_BUS_WIDTH) uint8_t send_buff[TSW_SEND_DESC_COUNT][TSW_SEND_BUFF_LEN];
@@ -102,7 +102,7 @@ hpm_stat_t tsw_init(TSW_Type *ptr)
 
 bool tsw_get_link_status(void)
 {
-    return last_status.tsw_phy_link;
+    return (last_status.tsw_phy_link == tsw_phy_link_up) ? true : false;
 }
 
 void tsw_self_adaptive_port_speed(void)
@@ -114,21 +114,23 @@ void tsw_self_adaptive_port_speed(void)
 
     rtl8211_get_phy_status(BOARD_TSW, BOARD_TSW_PORT, &status);
 
-    if (memcmp((uint8_t *)&last_status, &status, sizeof(tsw_phy_status_t)) != 0) {
-        memcpy((uint8_t *)&last_status, &status, sizeof(tsw_phy_status_t));
-        if (status.tsw_phy_link) {
-            printf("Link Status: Up\n");
-            printf("Link Speed:  %s\n", speed_str[status.tsw_phy_speed]);
-            printf("Link Duplex: %s\n", duplex_str[status.tsw_phy_duplex]);
+    if (status.tsw_phy_link || (status.tsw_phy_link != last_status.tsw_phy_link)) {
+        if (memcmp((uint8_t *)&last_status, &status, sizeof(tsw_phy_status_t)) != 0) {
+            memcpy((uint8_t *)&last_status, &status, sizeof(tsw_phy_status_t));
+            if (status.tsw_phy_link) {
+                printf("Link Status: Up\n");
+                printf("Link Speed:  %s\n", speed_str[status.tsw_phy_speed]);
+                printf("Link Duplex: %s\n", duplex_str[status.tsw_phy_duplex]);
 
-            tsw_set_port_speed(BOARD_TSW, BOARD_TSW_PORT, port_speed[status.tsw_phy_speed]);
+                tsw_set_port_speed(BOARD_TSW, BOARD_TSW_PORT, port_speed[status.tsw_phy_speed]);
 
-            if (!status.tsw_phy_duplex) {
-                printf("Error: PHY is in half duplex now, but TSW MAC supports only full duplex mode!\n");
-                return;
+                if (!status.tsw_phy_duplex) {
+                    printf("Error: PHY is in half duplex now, but TSW MAC supports only full duplex mode!\n");
+                    return;
+                }
+            } else {
+                printf("Link Status: Down\n");
             }
-        } else {
-            printf("Link Status: Down\n");
         }
     }
 }

@@ -88,6 +88,7 @@ int main(void)
     setbuf(stdout, NULL);
 #endif
 
+    clock_add_to_group(clock_tsns, 0);
     tsns_enable_continuous_mode(TEST_TSNS);
     tsns_enable(TEST_TSNS);
 

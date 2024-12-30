@@ -240,7 +240,7 @@ hpm_stat_t i2c_master_address_read(I2C_Type *ptr, const uint16_t device_address,
         | I2C_CTRL_PHASE_DATA_MASK
         | I2C_CTRL_DIR_SET(I2C_DIR_MASTER_READ)
 #ifdef I2C_CTRL_DATACNT_HIGH_MASK
-        | I2C_CTRL_DATACNT_HIGH_SET(I2C_DATACNT_MAP(addr_size_in_byte) >> 8U)
+        | I2C_CTRL_DATACNT_HIGH_SET(I2C_DATACNT_MAP(size_in_byte) >> 8U)
 #endif
         | I2C_CTRL_DATACNT_SET(I2C_DATACNT_MAP(size_in_byte));
     ptr->CMD = I2C_CMD_ISSUE_DATA_TRANSMISSION;

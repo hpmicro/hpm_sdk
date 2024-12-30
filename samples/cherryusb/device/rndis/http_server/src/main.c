@@ -78,7 +78,7 @@ int main(void)
 {
     board_init();
     board_init_led_pins();
-    board_init_usb_pins();
+    board_init_usb((USB_Type *)CONFIG_HPM_USBD_BASE);
 
     board_timer_create(LWIP_SYS_TIME_MS, sys_timer_callback);
 

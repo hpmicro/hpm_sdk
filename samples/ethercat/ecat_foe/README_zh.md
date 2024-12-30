@@ -6,6 +6,18 @@ ECAT_FOE示例演示使用ECAT外设和从站协议栈代码(SSC)实现ECAT FOE�
 
 关于使用ECAT FOE更新firmware的功能演示， 请参考hpm_apps中OTA相关例程。
 
+该例程程序支持对ESC的EEPROM数据进行初始化，能够简化更新ESC的EEPROM的步骤。
+
+如果程序代码中包含由SSC Tool生成的EEPROM数据(eeprom.h), 会检查ESC的EEPROM中存储的数据并根据条件进行更新。
+
+如果EEPROM中的EtherCAT Slave Controller Configuration Area(前8个Word)的数据checksum校验失败，则会使用eeprom.h中的数据初始化EEPROM。
+
+如果EEPROM中的EtherCAT Slave Controller Configuration Area(前8个Word)的数据checksum校验成功，则会进一步校验EEPROM数据中的Product Code和Revision Code。
+
+当Product Code不同或eeprom.h中的Revision Number大于当前已经存储的EEPROM数据的Revision Number时，则会使用eeprom.h中的数据初始化EEPROM。
+
+该方法能够解决初次使用时EEPROM为空情况下checksum校验失败的问题，能够对EEPROM进行初始化。在程序升级阶段，新的程序代码包含的eeprom.h中的Revision Number大于当前已经存储的EEPROM数据的Revision Number时，会使用新程序中的eeprom.h初始化EEPROM，而无需通过主站工具如TwinCAT等去更新EEPROM。
+
 hpm_apps仓库：
   github: https://github.com/hpmicro/hpm_apps
   gitee: https://gitee.com/hpmicro/hpm_apps
@@ -55,7 +67,7 @@ hpm_apps仓库：
 
 ### 5.5 更新EEPROM
   请选择**foe**设备描述文件
-  ![](doc/twincat_eeprom_update.png)
+  ![](doc/twincat_eeprom_update_foe.png)
 
 
 ### 5.6 FOE操作
@@ -84,45 +96,23 @@ hpm_apps仓库：
 ## 6. 运行现象
 
 当工程正确运行后, 串口终端会输出如下信息：
-当EEPROM未被初始化时，输出如下信息提示需要初始化EEPROM内容。
+
+当需要初始化EEPROM数据时，log如下：
 ```console
 EtherCAT FOE sample
 Write or Read file from flash by FOE
-EEPROM loading with checksum error.
-EtherCAT communication is possible even if the EEPROM is blank(checksum error),
-but PDI not operational, please update eeprom  context.
+Init EEPROM content.
+Init EEPROM content successful.
+EEPROM loading successful, no checksum error.
 ```
-当EEPROM被正确初始化后， 输出如下信息， 在Twincat中可以进行文件写读操作，对比写下去与读回来的文件保持一致。
+当不需初始化EEPROM数据时，在Twincat中可以进行文件写读操作，对比写下去与读回来的文件保持一致，log如下：
 ```console
-EtherCAT IO sample
+EtherCAT FOE sample
 Write or Read file from flash by FOE
+No need to init EEPROM content.
 EEPROM loading successful, no checksum error.
 Write file start
 Write file finish
 Read file start
 Read file finish
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

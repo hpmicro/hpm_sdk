@@ -8,13 +8,9 @@
 
 #include "hpm_ecat_e2p_emulation.h"
 #include "hpm_romapi.h"
+#include "hpm_ecat_hw.h"
 
-#if defined(ECAT_INIT_EEPROM_CONTEXT_IN_PROGRAM) && ECAT_INIT_EEPROM_CONTEXT_IN_PROGRAM
-extern unsigned char aEepromData[];
-
-/* if eeprom_init_flag[0] == EEPROM_INIT_CODE, init eeprom context from aEepromData, then erase eeprom_init_flag sector */
-extern const uint32_t option[4]; /* ref to nor_cfg_option in board.c */
-#endif
+extern unsigned char aEepromData[]; /* EEPROM data is created in eeprom.h by SSC Tool */
 
 e2p_t ecat_e2p_emulation;
 
@@ -42,9 +38,33 @@ hpm_stat_t flash_erase_sector(uint32_t start_addr)
     return status;
 }
 
+/* check EtherCAT Slave Controller Configuration Area is first 8 words(1 word = 2 bytes) */
+static hpm_stat_t ecat_flash_eeprom_check_configuration_area(void)
+{
+    hpm_stat_t stat;
+    uint16_t config_data[8];
+    uint8_t checksum;
+    for (uint8_t i = 0; i < 8; i++) {
+        /* read Configuration Area data from e2p */
+        stat = e2p_read(i, EEPROM_WRITE_SIZE, (uint8_t *)&config_data[i]);
+        if (stat != E2P_STATUS_OK) {
+            return status_fail;
+        }
+    }
+
+    checksum = ecat_calculate_eeprom_config_data_checksum((uint8_t *)config_data, 14); /* calculate checksum value for word0 - word6 */
+
+    /* Low byte contains remainder of division of word 0 to word 6 as unsigned number divided by the polynomial x8+x2+x+1(initial value 0xFF). */
+    if (checksum != config_data[7]) {
+        return status_invalid_argument; /* checksum error */
+    }
+
+    return status_success;
+}
+
 hpm_stat_t ecat_flash_eeprom_init(void)
 {
-    /* initial EEPROM context */
+    /* initial EEPROM content */
     hpm_stat_t stat;
     uint16_t data, dummy_data = 0xFFFF;
     ecat_e2p_emulation.nor_config.xpi_base = BOARD_APP_XPI_NOR_XPI_BASE;
@@ -74,34 +94,70 @@ hpm_stat_t ecat_flash_eeprom_init(void)
         return status_fail;
     }
 
-#if defined(ECAT_INIT_EEPROM_CONTEXT_IN_PROGRAM) && ECAT_INIT_EEPROM_CONTEXT_IN_PROGRAM
-    disable_global_irq(CSR_MSTATUS_MIE_MASK);
-    uint32_t eeprom_init_flag_addr = (uint32_t)&option[0] + sizeof(option);
-    uint32_t flag = 0x5a5a5a5a;
-    /* printf("addr %x\n", eeprom_init_flag_addr); */
-    /* printf("value %x\n", *(uint32_t *)eeprom_init_flag_addr); */ /* cache */
 
-    if (*(uint32_t *)eeprom_init_flag_addr == 0xFFFFFFFF) {
-        for (uint32_t i = 0; i < ESC_EEPROM_SIZE / EEPROM_WRITE_SIZE; i++) {
-            stat = e2p_write(i, EEPROM_WRITE_SIZE, &aEepromData[2*i]);
-            if (stat != E2P_STATUS_OK) {
-                break;
-            }
-        }
-
-        stat = flash_write((uint8_t *)&flag, eeprom_init_flag_addr, 4);
-        if (stat == status_success) {
-            printf("Init EEPROM context successful.\n");
-        }
-
+    /* If the value of aEepromData is the initial value in weak declaration, it means there is no valid data in aEepromData */
+    if ((aEepromData[0] == 0xa5) && (aEepromData[1] == 0xa5) && (aEepromData[2] == 0xa5) && (aEepromData[3] == 0xa5)) {
+        printf("No EEPROM content in PROGRAM.\n");
     } else {
-        printf("No need to init EEPROM context.\n");
-    }
-    enable_global_irq(CSR_MSTATUS_MIE_MASK);
-    if (E2P_STATUS_OK != stat) {
-        return status_fail;
-    }
+        bool require_init_eeprom = false;
+        stat = ecat_flash_eeprom_check_configuration_area();
+        if (status_success == stat) {
+            /* if eeprom configuration data checksum pass, then check Product Code and Revision Number */
+#if defined(ECAT_EEPROM_CHECK_PRODUCT_CODE_AND_REVISION) && ECAT_EEPROM_CHECK_PRODUCT_CODE_AND_REVISION
+            uint32_t product_code, revision_num;
+            uint16_t product_code_low, product_code_high, revision_num_low, revision_num_high;
+            stat = e2p_read(ESC_EEPROM_PRODUCT_CODE_WORD_INDEX, EEPROM_WRITE_SIZE, (uint8_t *)&product_code_low);
+            if (stat != E2P_STATUS_OK) {
+                printf("Read Product Code in EEPROM failed.\n");
+                return status_fail;
+            }
+
+            stat = e2p_read(ESC_EEPROM_PRODUCT_CODE_WORD_INDEX + 1, EEPROM_WRITE_SIZE, (uint8_t *)&product_code_high);
+            if (stat != E2P_STATUS_OK) {
+                printf("Read Product Code in EEPROM failed.\n");
+                return status_fail;
+            }
+            product_code = (uint32_t)product_code_high << 16 | product_code_low;
+
+            stat = e2p_read(ESC_EEPROM_REVISION_NUM_WORD_INDEX, EEPROM_WRITE_SIZE, (uint8_t *)&revision_num_low);
+            if (stat != E2P_STATUS_OK) {
+                printf("Read Revision Number in EEPROM failed.\n");
+                return status_fail;
+            }
+
+            stat = e2p_read(ESC_EEPROM_REVISION_NUM_WORD_INDEX + 1, EEPROM_WRITE_SIZE, (uint8_t *)&revision_num_high);
+            if (stat != E2P_STATUS_OK) {
+                printf("Read Revision Number in EEPROM failed.\n");
+                return status_fail;
+            }
+            revision_num = (uint32_t)revision_num_high << 16 | revision_num_low;
+
+            /* if Procde Code not match or aEepromData[ESC_EEPROM_REVISION_NUM_WORD_INDEX] > stored revesion, require to update eeprom by aEepromData */
+            if ((product_code != ((uint32_t *)aEepromData)[ESC_EEPROM_PRODUCT_CODE_WORD_INDEX / 2]) || (revision_num < ((uint32_t *)aEepromData)[ESC_EEPROM_REVISION_NUM_WORD_INDEX / 2])) {
+                require_init_eeprom = true;
+            }
 #endif
+        } else {
+            require_init_eeprom = true;
+        }
+
+        if (require_init_eeprom) {
+            printf("Init EEPROM content.\n");
+            disable_global_irq(CSR_MSTATUS_MIE_MASK);
+            /* init eeprom content */
+            for (uint32_t i = 0; i < ESC_EEPROM_SIZE / EEPROM_WRITE_SIZE; i++) {
+                stat = e2p_write(i, EEPROM_WRITE_SIZE, &aEepromData[2*i]);
+                if (stat != E2P_STATUS_OK) {
+                    printf("Init EEPROM content failed.\n");
+                    return status_fail;
+                }
+            }
+            enable_global_irq(CSR_MSTATUS_MIE_MASK);
+            printf("Init EEPROM content successful.\n");
+        } else {
+            printf("No need to init EEPROM content.\n");
+        }
+    }
 
     disable_global_irq(CSR_MSTATUS_MIE_MASK);
     for (uint32_t i = 0; i < ESC_EEPROM_SIZE / EEPROM_WRITE_SIZE; i++) {

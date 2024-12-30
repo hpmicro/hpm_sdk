@@ -1,5 +1,4 @@
 dependency:
-  - board_pwm_rgb_led
   - multicore
 
 linked_project:

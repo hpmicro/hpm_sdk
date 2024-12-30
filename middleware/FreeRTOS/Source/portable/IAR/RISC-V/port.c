@@ -293,3 +293,73 @@ void vApplicationGetTimerTaskMemory( StaticTask_t **ppxTimerTaskTCBBuffer,
     configTIMER_TASK_STACK_DEPTH is specified in words, not bytes. */
     *pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
 }
+
+/* Interrupts which priority higher than configMAX_SYSCALL_INTERRUPT_PRIORITY will never be delayed by anything the kernel is doing,
+   can nest, but cannot use any FreeRTOS API functions.
+   Refs FreeRTOS book: Mastering-the-FreeRTOS-Real-Time-Kernel.v1.1.0 7.8 Interrupt Nesting */
+#if defined(USE_SYSCALL_INTERRUPT_PRIORITY) && USE_SYSCALL_INTERRUPT_PRIORITY
+#include "hpm_interrupt.h"
+
+volatile uint32_t interruptMaskNestCntIsr;
+volatile uint32_t mieSavedValueIsr;
+uint32_t ulPortEnterCriticalFromIsr( void )
+{
+    uint32_t ulReturn, ulNewThreshold = configMAX_SYSCALL_INTERRUPT_PRIORITY;
+    if (interruptMaskNestCntIsr == 0)
+    {
+        /* Disable machine timer interrupt and software interrupt */
+        mieSavedValueIsr = read_clear_csr(CSR_MIE, CSR_MIE_MTIE_MASK | CSR_MIE_MSIE_MASK);
+    }
+    interruptMaskNestCntIsr++;
+
+    ulReturn = intc_m_get_threshold();
+    intc_m_set_threshold(ulNewThreshold);
+    return ulReturn;
+}
+
+void portExitCriticalFromIsr( uint32_t uxSavedStatusValue )
+{
+    interruptMaskNestCntIsr--;
+    if (interruptMaskNestCntIsr == 0)
+    {
+        write_csr(CSR_MIE, mieSavedValueIsr);
+    }
+    intc_m_set_threshold(uxSavedStatusValue);
+}
+
+void portDisableInterrupt( void )
+{
+    /* Disable machine timer interrupt and software interrupt */
+    clear_csr(CSR_MIE, CSR_MIE_MTIE_MASK | CSR_MIE_MSIE_MASK);
+
+    intc_m_set_threshold(configMAX_SYSCALL_INTERRUPT_PRIORITY);
+}
+
+void portEnableInterrupt(void)
+{
+    set_csr(CSR_MIE, CSR_MIE_MTIE_MASK | CSR_MIE_MSIE_MASK);
+
+    intc_m_set_threshold(0);
+}
+
+void portDisableGlobalISR( void )
+{
+    clear_csr(CSR_MSTATUS, CSR_MSTATUS_MIE_MASK);
+}
+
+void portEnableGlobalISR(void)
+{
+    set_csr(CSR_MSTATUS, CSR_MSTATUS_MIE_MASK);
+}
+
+#else
+uint32_t ulPortEnterCriticalFromIsr(void)
+{
+    return read_clear_csr(CSR_MSTATUS, CSR_MSTATUS_MIE_MASK);
+}
+
+void portExitCriticalFromIsr(uint32_t uxSavedStatusValue)
+{
+    write_csr(CSR_MSTATUS, uxSavedStatusValue);
+}
+#endif

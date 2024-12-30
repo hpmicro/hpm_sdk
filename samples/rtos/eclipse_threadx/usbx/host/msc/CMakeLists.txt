@@ -18,8 +18,6 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(usbx_host_msc)
 
-sdk_compile_definitions(-D__threadx_irq_stack_top=_stack)
-sdk_compile_definitions(-DCONFIG_THREADX=1)
 sdk_compile_definitions(-DUX_HOST_SIDE_ONLY=1)
 sdk_compile_definitions(-DUSB_HOST_MCU_CORE=HPM_CORE0)
 sdk_compile_definitions(-DUX_HCD_EHCI_SPLIT_TRANSFER_ENABLE=1)

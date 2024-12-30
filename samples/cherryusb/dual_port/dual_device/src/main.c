@@ -23,7 +23,8 @@ int main(void)
 
     board_init();
     board_init_led_pins();
-    board_init_usb_pins();
+    board_init_usb(HPM_USB0);
+    board_init_usb(HPM_USB1);
 
     intc_set_irq_priority(IRQn_USB0, 2);
     intc_set_irq_priority(IRQn_USB1, 3);

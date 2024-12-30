@@ -14,7 +14,7 @@ CPU_STK FLOAT_TASK_STK[FLOAT_STK_SIZE];
 void float_task(void *p_arg)
 {
     OS_ERR err;
-    p_arg = p_arg;
+    (void)p_arg;
 
     OSTimeDlyHMSM(0, 0, 2, 0, OS_OPT_TIME_HMSM_STRICT, &err);
 

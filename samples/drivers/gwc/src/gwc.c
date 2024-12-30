@@ -93,7 +93,8 @@ static struct gwc_test_ctx gwc_ctx = {
     }
 };
 
-static void isr_lcd(void)
+SDK_DECLARE_EXT_ISR_M(BOARD_LCD_IRQ, isr_lcd)
+void isr_lcd(void)
 {
     volatile uint32_t s = lcdc_get_dma_status(BOARD_LCD_BASE);
     lcdc_clear_dma_status(BOARD_LCD_BASE, s);
@@ -101,24 +102,20 @@ static void isr_lcd(void)
         gwc_ctx.lcdc_sync = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_LCD_IRQ, isr_lcd);
 
-static void isr_gwc_func(void)
+SDK_DECLARE_EXT_ISR_M(BOARD_GWC_FUNC_IRQ, isr_gwc_func)
+void isr_gwc_func(void)
 {
     gwc_clear_status(BOARD_GWC_BASE, GWC_IRQ_STS_FUNC_STS_MASK);
     gwc_ctx.gwc_func = true;
 }
 
-SDK_DECLARE_EXT_ISR_M(BOARD_GWC_FUNC_IRQ, isr_gwc_func);
-
-static void isr_gwc_err(void)
+SDK_DECLARE_EXT_ISR_M(BOARD_GWC_ERR_IRQ, isr_gwc_err)
+void isr_gwc_err(void)
 {
     gwc_ctx.status = gwc_get_status(BOARD_GWC_BASE);
     gwc_clear_status(BOARD_GWC_BASE, GWC_IRQ_STS_GWC_FAIL_STS_MASK);
 }
-
-SDK_DECLARE_EXT_ISR_M(BOARD_GWC_ERR_IRQ, isr_gwc_err);
-
 
 static uint32_t interface_random32(void)
 {

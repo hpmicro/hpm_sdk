@@ -163,14 +163,13 @@ typedef enum _clock_name {
     clock_mot2 = MAKE_CLOCK_NAME(sysctl_resource_mot2, CLK_SRC_GROUP_AHB, 7),
     clock_mot3 = MAKE_CLOCK_NAME(sysctl_resource_mot3, CLK_SRC_GROUP_AHB, 8),
     clock_crc0 = MAKE_CLOCK_NAME(sysctl_resource_crc0, CLK_SRC_GROUP_AHB, 9),
-    clock_acmp = MAKE_CLOCK_NAME(sysctl_resource_acmp, CLK_SRC_GROUP_AHB, 10),
+    clock_acmp0 = MAKE_CLOCK_NAME(sysctl_resource_acmp, CLK_SRC_GROUP_AHB, 10),
     clock_synt = MAKE_CLOCK_NAME(sysctl_resource_synt, CLK_SRC_GROUP_AHB, 11),
     clock_sdm0 = MAKE_CLOCK_NAME(sysctl_resource_sdm0, CLK_SRC_GROUP_AHB, 13),
     clock_mbx1 = MAKE_CLOCK_NAME(sysctl_resource_mbx1, CLK_SRC_GROUP_AHB, 14),
     clock_lmm0 = MAKE_CLOCK_NAME(sysctl_resource_lmm0, CLK_SRC_GROUP_CPU0, 0),
     clock_lmm1 = MAKE_CLOCK_NAME(sysctl_resource_lmm1, CLK_SRC_GROUP_CPU0, 1),
     clock_tsns = MAKE_CLOCK_NAME(sysctl_resource_tsns, CLK_SRC_GROUP_CPU0, 2),
-
 
     /* For ADC, there are 2-stage clock source and divider configurations */
     clock_ana0 = MAKE_CLOCK_NAME(RESOURCE_INVALID, CLK_SRC_GROUP_COMMON, clock_node_ana0),
@@ -195,6 +194,9 @@ typedef enum _clock_name {
     clk_pll1clk1 = MAKE_CLOCK_NAME(sysctl_resource_clk1_pll1, CLK_SRC_GROUP_SRC, 5),
     clk_pll2clk0 = MAKE_CLOCK_NAME(sysctl_resource_clk0_pll2, CLK_SRC_GROUP_SRC, 6),
     clk_pll2clk1 = MAKE_CLOCK_NAME(sysctl_resource_clk1_pll2, CLK_SRC_GROUP_SRC, 7),
+
+    /* Legacy name, kept for backwards compatibility */
+    clock_acmp = clock_acmp0,
 } clock_name_t;
 
 extern uint32_t hpm_core_clock;
@@ -285,6 +287,19 @@ hpm_stat_t clock_set_wdg_source(clock_name_t clock_name, clk_src_t src);
 hpm_stat_t clock_set_source_divider(clock_name_t clock_name, clk_src_t src, uint32_t div);
 
 /**
+ * @brief Wait until the clock source for specified IP clock is stable
+ *
+ * @note This function must be used after clock_add_to_group(clock_name, group_idx)
+ *
+ * @param [in] clock_name Clock name for specified IP module
+ *
+ * @retval status_success The clock source is stable
+ * @retval status_invalid_argument Invalid clock name is provided
+ * @retval status_timeout Timeout occurred
+ */
+hpm_stat_t clock_wait_source_stable(clock_name_t clock_name);
+
+/**
  * @brief Enable IP clock
  * @param[in] clock_name IP clock name
  */
@@ -331,6 +346,20 @@ void clock_connect_group_to_cpu(uint32_t group, uint32_t cpu);
  * @param[in] cpu CPU index, valid value is 0/1
  */
 void clock_disconnect_group_from_cpu(uint32_t group, uint32_t cpu);
+
+/**
+ * @brief Get core clock ticks per microsecond
+ *
+ * @return core clock ticks per microsecond
+ */
+uint32_t clock_get_core_clock_ticks_per_us(void);
+
+/**
+ * @brief Get core clock ticks per millisecond
+ *
+ * @return core clock ticks per millisecond
+ */
+uint32_t clock_get_core_clock_ticks_per_ms(void);
 
 /**
  * @brief Delay specified microseconds

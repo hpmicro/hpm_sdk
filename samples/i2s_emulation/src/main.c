@@ -71,13 +71,13 @@ uint8_t protocol;
 uint8_t audio_depth;
 uint32_t sample_rate;
 
+SDK_DECLARE_EXT_ISR_M(BOARD_GPTMR_I2S_FINSH_IRQ, i2s_gptmr_isr)
 void i2s_gptmr_isr(void)
 {
     if (i2s_device.transfer_complete) {
         i2s_device.transfer_complete(&i2s_device);
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_GPTMR_I2S_FINSH_IRQ, i2s_gptmr_isr);
 
 void rx_callback(uint32_t addr)
 {
@@ -99,6 +99,7 @@ int main(void)
     ready_play = false;
     rx_flag = false;
     board_init();
+    board_init_i2c_clock(WM8978_I2C);
     board_init_spi_clock(BOARD_APP_SPI_BASE);
     init_i2c_pins(WM8978_I2C);
     i2s_emulation_pins_init();
@@ -229,6 +230,7 @@ static void play_start(void)
             }
         }
         if (ready_play == false) {
+            printf("there is no recorded content. Please record first...\n");
             break;
         }
         size = TX_SIZE_MAX;
@@ -254,6 +256,10 @@ static void play_start(void)
 
 static void play_stop(void)
 {
+    if (ready_play == false) {
+        printf("there is no recorded content. Please record first...\n");
+        return;
+    }
     hpm_i2s_master_over_spi_tx_stop(&i2s_device);
     printf("play stop finish....\n");
 }

@@ -1,7 +1,9 @@
 #include "cpuport.h"    
 
-    .global rtt_risc_v_trap_handler
-    .align 2
+.global rtt_risc_v_trap_handler
+.section .isr_vector.rtt_risc_v_trap_handler, "ax"
+.align 2
+.type rtt_risc_v_trap_handler, function
 rtt_risc_v_trap_handler:
 #ifdef ARCH_RISCV_FPU
     addi    sp, sp, -32 * FREGBYTES

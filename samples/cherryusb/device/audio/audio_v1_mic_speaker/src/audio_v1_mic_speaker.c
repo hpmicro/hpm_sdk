@@ -582,6 +582,7 @@ void speaker_init_i2s_dao(void)
     dao_init(HPM_DAO, &dao_config);
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 void isr_dma(void)
 {
     volatile uint32_t speaker_status;
@@ -598,7 +599,6 @@ void isr_dma(void)
         s_mic_dma_transfer_done = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 
 /* static function definition */
 static void usbd_audio_out_callback(uint8_t busid, uint8_t ep, uint32_t nbytes)

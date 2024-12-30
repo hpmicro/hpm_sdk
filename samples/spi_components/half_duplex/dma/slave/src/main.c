@@ -34,8 +34,8 @@ ATTR_PLACE_AT_NONCACHEABLE  buffer_type receive_buff[TEST_TRANSFER_DATA_COUNT];
 static void prepare_transfer_data(void);
 static void spi_check_transfer_data(void);
 
-volatile static bool rxdma_complete;
-volatile static bool txdma_complete;
+static volatile bool rxdma_complete;
+static volatile bool txdma_complete;
 
 void spi_rxdma_complete_callback(uint32_t channel)
 {

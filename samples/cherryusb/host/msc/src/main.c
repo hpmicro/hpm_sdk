@@ -20,7 +20,7 @@ extern void usbh_class_test(void);
 int main(void)
 {
     board_init();
-    board_init_usb_pins();
+    board_init_usb((USB_Type *)CONFIG_HPM_USBH_BASE);
 
     /* set irq priority */
     intc_set_irq_priority(CONFIG_HPM_USBH_IRQn, 1);

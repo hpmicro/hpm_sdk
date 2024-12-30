@@ -14,7 +14,7 @@ CPU_STK LED0_TASK_STK[LED0_STK_SIZE];
 void led0_task(void *p_arg)
 {
     OS_ERR err;
-    p_arg = p_arg;
+    (void)p_arg;
     while (1) {
         OSSemPend(&sem_share_data, 0, OS_OPT_PEND_BLOCKING, 0, &err);
         printf("led0 task use share_data, prio : %d\r\n", LED0_TASK_PRIO);

@@ -26,6 +26,24 @@
 #define LOBS_PIN_DI(x) (x * 3 + 2)
 
 /**
+ * @brief signal group number
+ *
+ */
+typedef enum {
+    lobs_signal_group_PA = 0,
+    lobs_signal_group_PB,
+    lobs_signal_group_PC,
+    lobs_signal_group_PD,
+    lobs_signal_group_PE,
+    lobs_signal_group_PF,
+    lobs_signal_group_PV,
+    lobs_signal_group_PW,
+    lobs_signal_group_PX,
+    lobs_signal_group_PY,
+    lobs_signal_group_PZ,
+} lobs_signal_group_t;    /**< lobs_signal_group_t */
+
+/**
  * @brief group mode selection
  *
  */
@@ -128,7 +146,7 @@ typedef struct {
  */
 typedef struct {
     bool group_enable;
-    uint8_t sig_group_num;
+    lobs_signal_group_t sig_group_num;
     uint8_t sample_sig_bit[4];
     bool sample_sig_en[4];
 } lobs_two_group_mode_config_t;    /**< lobs_two_group_mode_config_t */
@@ -138,7 +156,7 @@ typedef struct {
  *
  */
 typedef struct {
-    uint8_t sig_group_num;
+    lobs_signal_group_t sig_group_num;
     lobs_cmp_mode_t cmp_mode;
     lobs_state_chg_condition_t state_chg_condition;
     lobs_next_state_t next_state;
@@ -147,6 +165,120 @@ typedef struct {
     bool cmp_sig_en[4];
     bool cmp_golden_value[4];
 } lobs_state_config_t;    /**< lobs_state_config_t */
+
+/**
+ * @brief trace data structure
+ *
+ */
+typedef struct {
+    uint8_t header;
+    uint8_t cnt_L;
+    uint8_t cnt_M;
+    uint8_t cnt_H;
+    union {
+        uint32_t u32_data[3];
+        struct {
+            uint32_t pin00_do : 1;
+            uint32_t pin00_oe : 1;
+            uint32_t pin00_di : 1;
+            uint32_t pin01_do : 1;
+            uint32_t pin01_oe : 1;
+            uint32_t pin01_di : 1;
+            uint32_t pin02_do : 1;
+            uint32_t pin02_oe : 1;
+            uint32_t pin02_di : 1;
+            uint32_t pin03_do : 1;
+            uint32_t pin03_oe : 1;
+            uint32_t pin03_di : 1;
+            uint32_t pin04_do : 1;
+            uint32_t pin04_oe : 1;
+            uint32_t pin04_di : 1;
+            uint32_t pin05_do : 1;
+            uint32_t pin05_oe : 1;
+            uint32_t pin05_di : 1;
+            uint32_t pin06_do : 1;
+            uint32_t pin06_oe : 1;
+            uint32_t pin06_di : 1;
+            uint32_t pin07_do : 1;
+            uint32_t pin07_oe : 1;
+            uint32_t pin07_di : 1;
+            uint32_t pin08_do : 1;
+            uint32_t pin08_oe : 1;
+            uint32_t pin08_di : 1;
+            uint32_t pin09_do : 1;
+            uint32_t pin09_oe : 1;
+            uint32_t pin09_di : 1;
+            uint32_t pin10_do : 1;
+            uint32_t pin10_oe : 1;
+
+            uint32_t pin10_di : 1;
+            uint32_t pin11_do : 1;
+            uint32_t pin11_oe : 1;
+            uint32_t pin11_di : 1;
+            uint32_t pin12_do : 1;
+            uint32_t pin12_oe : 1;
+            uint32_t pin12_di : 1;
+            uint32_t pin13_do : 1;
+            uint32_t pin13_oe : 1;
+            uint32_t pin13_di : 1;
+            uint32_t pin14_do : 1;
+            uint32_t pin14_oe : 1;
+            uint32_t pin14_di : 1;
+            uint32_t pin15_do : 1;
+            uint32_t pin15_oe : 1;
+            uint32_t pin15_di : 1;
+            uint32_t pin16_do : 1;
+            uint32_t pin16_oe : 1;
+            uint32_t pin16_di : 1;
+            uint32_t pin17_do : 1;
+            uint32_t pin17_oe : 1;
+            uint32_t pin17_di : 1;
+            uint32_t pin18_do : 1;
+            uint32_t pin18_oe : 1;
+            uint32_t pin18_di : 1;
+            uint32_t pin19_do : 1;
+            uint32_t pin19_oe : 1;
+            uint32_t pin19_di : 1;
+            uint32_t pin20_do : 1;
+            uint32_t pin20_oe : 1;
+            uint32_t pin20_di : 1;
+            uint32_t pin21_do : 1;
+
+            uint32_t pin21_oe : 1;
+            uint32_t pin21_di : 1;
+            uint32_t pin22_do : 1;
+            uint32_t pin22_oe : 1;
+            uint32_t pin22_di : 1;
+            uint32_t pin23_do : 1;
+            uint32_t pin23_oe : 1;
+            uint32_t pin23_di : 1;
+            uint32_t pin24_do : 1;
+            uint32_t pin24_oe : 1;
+            uint32_t pin24_di : 1;
+            uint32_t pin25_do : 1;
+            uint32_t pin25_oe : 1;
+            uint32_t pin25_di : 1;
+            uint32_t pin26_do : 1;
+            uint32_t pin26_oe : 1;
+            uint32_t pin26_di : 1;
+            uint32_t pin27_do : 1;
+            uint32_t pin27_oe : 1;
+            uint32_t pin27_di : 1;
+            uint32_t pin28_do : 1;
+            uint32_t pin28_oe : 1;
+            uint32_t pin28_di : 1;
+            uint32_t pin29_do : 1;
+            uint32_t pin29_oe : 1;
+            uint32_t pin29_di : 1;
+            uint32_t pin30_do : 1;
+            uint32_t pin30_oe : 1;
+            uint32_t pin30_di : 1;
+            uint32_t pin31_do : 1;
+            uint32_t pin31_oe : 1;
+            uint32_t pin31_di : 1;
+        } str_data;
+    } trace_data;
+} lobs_trace_data_t;    /**< lobs_trace_data_t */
 
 #ifdef __cplusplus
 extern "C" {

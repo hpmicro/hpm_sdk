@@ -40,6 +40,7 @@ static bool is_i2s_buff_full(void);
 static bool is_i2s_buff_empty(void);
 
 /* Function Definition */
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 void isr_dma(void)
 {
     volatile hpm_stat_t stat;
@@ -56,7 +57,6 @@ void isr_dma(void)
         }
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 
 int main(void)
 {

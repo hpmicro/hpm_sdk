@@ -161,6 +161,11 @@ static inline void vsc_config_pos_capture_mode(VSC_Type *vsc, vsc_pos_cap_mode_t
 {
     vsc->TIMELOCK = (vsc->TIMELOCK & ~(VSC_TIMELOCK_POSITION_CAPTURE_MODE_MASK))
                     | VSC_TIMELOCK_POSITION_CAPTURE_MODE_SET(mode);
+    if (mode == vsc_pos_use_last_data_when_adc_sample_finish) {
+        vsc->ABC_MODE |= VSC_ABC_MODE_POSTION_USE_LAST_LOCKED_MASK;
+    } else {
+        vsc->ABC_MODE &= ~VSC_ABC_MODE_POSTION_USE_LAST_LOCKED_MASK;
+    }
 }
 
 /**

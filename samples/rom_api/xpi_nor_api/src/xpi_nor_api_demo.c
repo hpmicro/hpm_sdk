@@ -25,8 +25,8 @@ static uint32_t s_read_buf[1024];
  * @brief Instruction Sequence context
  */
 typedef struct {
-    uint32_t phase_idx;     /*!< Phase index  */
-    xpi_instr_seq_t seq;    /*!< Instruction sequence entry */
+    uint32_t phase_idx; /*!< Phase index  */
+    xpi_instr_seq_t seq; /*!< Instruction sequence entry */
 } xpi_instr_seq_ctx_t;
 
 /**
@@ -128,11 +128,11 @@ ATTR_RAMFUNC hpm_stat_t xpi_read_data(XPI_Type *base,
 
 void show_menu(void);
 
-static hpm_stat_t xpi_nor_test_last_sector(void);
+hpm_stat_t xpi_nor_test_last_sector(void);
 
-static hpm_stat_t xpi_nor_stress_test(void);
+hpm_stat_t xpi_nor_stress_test(void);
 
-static hpm_stat_t xpi_nor_user_defined_cmds(void);
+hpm_stat_t xpi_nor_user_defined_cmds(void);
 
 int main(void)
 {
@@ -172,7 +172,7 @@ int main(void)
     return 0;
 }
 
-static hpm_stat_t xpi_nor_test_last_sector(void)
+hpm_stat_t xpi_nor_test_last_sector(void)
 {
     xpi_nor_config_option_t option;
     option.header.U = BOARD_APP_XPI_NOR_CFG_OPT_HDR;
@@ -272,7 +272,7 @@ static hpm_stat_t xpi_nor_test_last_sector(void)
     return status_success;
 }
 
-static hpm_stat_t xpi_nor_stress_test(void)
+hpm_stat_t xpi_nor_stress_test(void)
 {
     uint32_t flash_size;
     uint32_t sector_size;
@@ -295,7 +295,7 @@ static hpm_stat_t xpi_nor_stress_test(void)
     }
 
     const char *freq_str_list[] = {
-    "Reserved", "30MHz", "50MHz", "66MHz", "80MHz", "100MHz", "120MHz", "133MHz", "166MHz"
+        "Reserved", "30MHz", "50MHz", "66MHz", "80MHz", "100MHz", "120MHz", "133MHz", "166MHz"
     };
 
     hpm_stat_t status;
@@ -308,8 +308,6 @@ static hpm_stat_t xpi_nor_stress_test(void)
         if (option.option0.freq_opt >= ARRAY_SIZE(freq_str_list)) {
             ++err_cnt;
             break;
-
-
         }
         printf("Frequency:%s\n", freq_str_list[option.option0.freq_opt]);
 
@@ -382,7 +380,7 @@ static hpm_stat_t xpi_nor_stress_test(void)
     return status;
 }
 
-ATTR_RAMFUNC static hpm_stat_t xpi_nor_user_defined_cmds(void)
+ATTR_RAMFUNC hpm_stat_t xpi_nor_user_defined_cmds(void)
 {
     xpi_nor_config_option_t option;
     option.header.U = BOARD_APP_XPI_NOR_CFG_OPT_HDR;
@@ -568,12 +566,15 @@ void xpi_instr_seq_add_write_phase(xpi_instr_seq_ctx_t *ctx, uint8_t pads, bool 
 void xpi_instr_seq_add_read_phase(xpi_instr_seq_ctx_t *ctx, uint8_t pads, bool is_ddr)
 {
     uint16_t *sub_instr = (uint16_t *) &ctx->seq.entry[0];
-    uint16_t read_phase = is_ddr ? XPI_PHASE_WRITE_DDR : XPI_PHASE_WRITE_SDR;
+    uint16_t read_phase = is_ddr ? XPI_PHASE_READ_DDR : XPI_PHASE_READ_SDR;
     uint16_t read_pads = (pads == 8) ? XPI_8PADS : ((pads == 4) ? XPI_4PADS : ((pads == 2) ? XPI_2PADS : XPI_1PAD));
     sub_instr[ctx->phase_idx++] = SUB_INSTR(read_phase, read_pads, 4);
 }
 
-hpm_stat_t xpi_send_cmd(XPI_Type *base, xpi_xfer_channel_t chn, const xpi_instr_seq_ctx_t *cmd_ctx, uint32_t addr)
+ATTR_RAMFUNC hpm_stat_t xpi_send_cmd(XPI_Type *base,
+                                     xpi_xfer_channel_t chn,
+                                     const xpi_instr_seq_ctx_t *cmd_ctx,
+                                     uint32_t addr)
 {
     xpi_xfer_ctx_t xfer_ctx = { 0 };
     xfer_ctx.cmd_type = xpi_apb_xfer_type_cmd;
@@ -585,12 +586,12 @@ hpm_stat_t xpi_send_cmd(XPI_Type *base, xpi_xfer_channel_t chn, const xpi_instr_
     return ROM_API_TABLE_ROOT->xpi_driver_if->transfer_blocking(base, &xfer_ctx);
 }
 
-hpm_stat_t xpi_write_data(XPI_Type *base,
-                          xpi_xfer_channel_t chn,
-                          const xpi_instr_seq_ctx_t *cmd_ctx,
-                          uint32_t offset,
-                          const void *buf,
-                          uint16_t bytes_to_write)
+ATTR_RAMFUNC hpm_stat_t xpi_write_data(XPI_Type *base,
+                                       xpi_xfer_channel_t chn,
+                                       const xpi_instr_seq_ctx_t *cmd_ctx,
+                                       uint32_t offset,
+                                       const void *buf,
+                                       uint16_t bytes_to_write)
 {
     xpi_xfer_ctx_t xfer_ctx = { 0 };
     xfer_ctx.cmd_type = xpi_apb_xfer_type_write;
@@ -604,12 +605,12 @@ hpm_stat_t xpi_write_data(XPI_Type *base,
     return ROM_API_TABLE_ROOT->xpi_driver_if->transfer_blocking(base, &xfer_ctx);
 }
 
-hpm_stat_t xpi_read_data(XPI_Type *base,
-                         xpi_xfer_channel_t chn,
-                         const xpi_instr_seq_ctx_t *cmd_ctx,
-                         uint32_t offset,
-                         void *buf,
-                         uint16_t bytes_to_read)
+ATTR_RAMFUNC hpm_stat_t xpi_read_data(XPI_Type *base,
+                                      xpi_xfer_channel_t chn,
+                                      const xpi_instr_seq_ctx_t *cmd_ctx,
+                                      uint32_t offset,
+                                      void *buf,
+                                      uint16_t bytes_to_read)
 {
     xpi_xfer_ctx_t xfer_ctx = { 0 };
     xfer_ctx.cmd_type = xpi_apb_xfer_type_read;
@@ -627,10 +628,8 @@ hpm_stat_t xpi_read_data(XPI_Type *base,
 void show_menu(void)
 {
     static const char help_str[] = "XPI NOR demo\r\n----------------------------------------\r\n"
-                                   " 1 - Test FLASH at the last Sector\r\n"
-                                   " 2 - Stress test on the FLASH\r\n     NOTE: This case cannot be tested on flash_xip build\r\n"
-                                   " 3 - Create FLASH commands\r\n"
-                                   " Others - Show menu\r\n";
+    " 1 - Test FLASH at the last Sector\r\n"
+    " 2 - Stress test on the FLASH\r\n     NOTE: This case cannot be tested on flash_xip build\r\n"
+    " 3 - Create FLASH commands\r\n" " Others - Show menu\r\n";
     printf("%s", help_str);
-
 }

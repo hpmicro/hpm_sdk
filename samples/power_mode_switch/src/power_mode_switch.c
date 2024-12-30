@@ -72,6 +72,7 @@ void show_menu(void)
     printf(menu_str);
 }
 
+SDK_DECLARE_EXT_ISR_M(IRQn_PUART, puart_isr)
 void puart_isr(void)
 {
     if (uart_check_status(HPM_PUART, uart_stat_data_ready)) {
@@ -88,5 +89,4 @@ char uart_get_char(void)
     return byte_read;
 }
 
-SDK_DECLARE_EXT_ISR_M(IRQn_PUART, puart_isr)
 

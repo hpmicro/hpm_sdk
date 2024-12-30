@@ -108,6 +108,7 @@ static void uart_tx_avail_it(uart_context_t *p)
     }
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_MICROROS_UART_IRQ, uart_isr)
 void uart_isr(void)
 {
     uart_context_t *p = &uart_microros_context;
@@ -119,8 +120,6 @@ void uart_isr(void)
         uart_tx_avail_it(p);
     }
 }
-
-SDK_DECLARE_EXT_ISR_M(BOARD_MICROROS_UART_IRQ, uart_isr)
 
 unsigned char uart_idle_send(unsigned char *buf, unsigned char len)
 {

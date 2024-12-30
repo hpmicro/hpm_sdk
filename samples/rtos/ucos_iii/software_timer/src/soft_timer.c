@@ -16,7 +16,7 @@ void tmr1_callback(void *p_tmr, void *p_arg)
     static uint8_t flag = 0;
     (void)p_tmr;
     CPU_SR_ALLOC();
-    p_arg = p_arg;
+    (void)p_arg;
     flag++;
 
     if ((flag % 2) == 0) {

@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 board:
-    name: hpm5301evklite
     soc: HPM5301
     device: HPM5301xEGx
     openocd-soc: hpm5300

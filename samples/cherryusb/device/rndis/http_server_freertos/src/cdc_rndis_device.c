@@ -113,8 +113,10 @@ const struct usb_descriptor cdc_descriptor = {
 static uint8_t rndis_mac[6] = { 0x20, 0x89, 0x84, 0x6A, 0x96, 0xAA };
 
 usb_osal_sem_t sema_rndis_data;
-void usbd_rndis_data_recv_done(void)
+void usbd_rndis_data_recv_done(uint32_t len)
 {
+    (void) len;
+
     usb_osal_sem_give(sema_rndis_data);
 }
 

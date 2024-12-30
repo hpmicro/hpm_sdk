@@ -98,13 +98,28 @@ extern void vTaskSwitchContext( void );
 /* Critical section management. */
 #define portCRITICAL_NESTING_IN_TCB                             0
 
-extern uint32_t ulPortSetInterruptMaskFromIsr( void );
-extern void portClearInterruptMaskFromIsr( uint32_t uxSavedStatusValue );
-#define portSET_INTERRUPT_MASK_FROM_ISR()       ulPortSetInterruptMaskFromIsr()
-#define portCLEAR_INTERRUPT_MASK_FROM_ISR( uxSavedStatusValue )    portClearInterruptMaskFromIsr( uxSavedStatusValue )
+extern uint32_t ulPortEnterCriticalFromIsr( void );
+extern void portExitCriticalFromIsr( uint32_t uxSavedStatusValue );
+#define portSET_INTERRUPT_MASK_FROM_ISR()       ulPortEnterCriticalFromIsr()
+#define portCLEAR_INTERRUPT_MASK_FROM_ISR( uxSavedStatusValue )    portExitCriticalFromIsr( uxSavedStatusValue )
 
-#define portDISABLE_INTERRUPTS()    __asm volatile( "csrc mstatus, 8" )
-#define portENABLE_INTERRUPTS()     __asm volatile( "csrs mstatus, 8" )
+/* Interrupts which priority higher than configMAX_SYSCALL_INTERRUPT_PRIORITY will never be delayed by anything the kernel is doing,
+   can nest, but cannot use any FreeRTOS API functions.
+   Refs FreeRTOS book: Mastering-the-FreeRTOS-Real-Time-Kernel.v1.1.0 7.8 Interrupt Nesting */
+#if defined(USE_SYSCALL_INTERRUPT_PRIORITY) && USE_SYSCALL_INTERRUPT_PRIORITY
+extern volatile uint32_t interruptMaskNestCnt;
+extern void portDisableInterrupt( void );
+extern void portEnableInterrupt(void);
+#define portDISABLE_INTERRUPTS()    portDisableInterrupt()
+#define portENABLE_INTERRUPTS()     portEnableInterrupt()
+#define portMASK_LOWPRI_INTERRUPTS()    portDISABLE_INTERRUPTS()
+#define portUNMASK_LOWPRI_INTERRUPTS()  portENABLE_INTERRUPTS()
+#define portENABLE_GLOBAL_INTERRUPTS()  portEnableGlobalISR()
+#define portDISABLE_GLOBAL_INTERRUPTS() portDisableGlobalISR()
+#else
+#define portDISABLE_INTERRUPTS()    clear_csr(CSR_MSTATUS, CSR_MSTATUS_MIE_MASK)
+#define portENABLE_INTERRUPTS()     set_csr(CSR_MSTATUS, CSR_MSTATUS_MIE_MASK)
+#endif
 
 extern size_t xCriticalNesting;
 #define portENTER_CRITICAL()            \

@@ -28,6 +28,14 @@ static sd_card_t g_sd = { .host = &g_sdmmc_host };
 ATTR_PLACE_AT_NONCACHEABLE uint32_t s_write_buf[MAX_BUF_SIZE_DEFAULT / sizeof(uint32_t)];
 ATTR_PLACE_AT_NONCACHEABLE uint32_t s_read_buf[MAX_BUF_SIZE_DEFAULT / sizeof(uint32_t)];
 
+#if defined(HPM_SDMMC_HOST_ENABLE_IRQ) && (HPM_SDMMC_HOST_ENABLE_IRQ == 1)
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_SDCARD_SDXC_IRQ, sdxc_isr)
+void sdxc_isr(void)
+{
+    sdmmchost_irq_handler(&g_sdmmc_host);
+}
+#endif
+
 static void show_card_info(const sd_card_t *card);
 
 void show_help(void);
@@ -86,6 +94,11 @@ int main(void)
         if (status != status_success) {
             break;
         }
+
+#if defined(HPM_SDMMC_HOST_ENABLE_IRQ) && (HPM_SDMMC_HOST_ENABLE_IRQ == 1)
+        intc_m_enable_irq_with_priority(BOARD_APP_SDCARD_SDXC_IRQ, 1);
+#endif
+
         status = sd_init(card);
         if (status != status_success) {
             board_delay_ms(1000);

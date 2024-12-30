@@ -42,8 +42,6 @@ void lobs_ctrl_config(LOBS_Type *lobs, lobs_ctrl_config_t *config)
 
 void lobs_two_group_mode_config(LOBS_Type *lobs, lobs_two_group_sel_t group, lobs_two_group_mode_config_t *config)
 {
-    assert(config->sig_group_num < 12);
-
     if (group == lobs_two_group_1) {
         lobs->GRPSELA = (lobs->GRPSELA & ~LOBS_GRPSELA_NUM1_MASK) | LOBS_GRPSELA_NUM1_SET(config->sig_group_num);
         lobs->SIGSELA1 = LOBS_SIGSELA1_NUM1_SET(config->sample_sig_bit[0]) | LOBS_SIGSELA1_NUM2_SET(config->sample_sig_bit[1])
@@ -71,11 +69,10 @@ void lobs_state_config(LOBS_Type *lobs, lobs_state_sel_t state, lobs_state_confi
     uint8_t cmp_bit_index;
     uint8_t sample_rate;
 
-    assert(config->sig_group_num < 12);
-    assert((config->cmp_sig_en[0] && (config->cmp_sig_bit[0] < 128)) || (!config->cmp_sig_en[0]));
-    assert((config->cmp_sig_en[1] && (config->cmp_sig_bit[1] < 128)) || (!config->cmp_sig_en[1]));
-    assert((config->cmp_sig_en[2] && (config->cmp_sig_bit[2] < 128)) || (!config->cmp_sig_en[2]));
-    assert((config->cmp_sig_en[3] && (config->cmp_sig_bit[3] < 128)) || (!config->cmp_sig_en[3]));
+    assert((config->cmp_sig_en[0] && (config->cmp_sig_bit[0] < 96)) || (!config->cmp_sig_en[0]));
+    assert((config->cmp_sig_en[1] && (config->cmp_sig_bit[1] < 96)) || (!config->cmp_sig_en[1]));
+    assert((config->cmp_sig_en[2] && (config->cmp_sig_bit[2] < 96)) || (!config->cmp_sig_en[2]));
+    assert((config->cmp_sig_en[3] && (config->cmp_sig_bit[3] < 96)) || (!config->cmp_sig_en[3]));
     assert(((config->cmp_mode == lobs_cnt_cmp_mode) && (config->state_chg_condition == lobs_cnt_matched)) || (config->cmp_mode != lobs_cnt_cmp_mode));
 
     lobs->STATE[state].SIGSEL = LOBS_STATE_SIGSEL_EN_SET(1u << (config->sig_group_num));

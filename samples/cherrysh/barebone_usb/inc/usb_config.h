@@ -17,7 +17,7 @@
 #define CONFIG_USB_DBG_LEVEL USB_DBG_INFO
 #endif
 
-#ifdef CONFIG_USB_DEVICE_FS
+#if defined(CONFIG_USB_DEVICE_FS) || defined(CONFIG_USB_DEVICE_FORCE_FULL_SPEED)
 #undef CONFIG_USB_HS
 #else
 #define CONFIG_USB_HS
@@ -38,7 +38,7 @@
 #define USBD_LANGID_STRING 1033
 
 /* attribute data into no cache ram */
-#define USB_NOCACHE_RAM_SECTION __attribute__((section(".noncacheable")))
+#define USB_NOCACHE_RAM_SECTION __attribute__((section(".noncacheable.non_init")))
 
 /* ================= USB Device Stack Configuration ================ */
 

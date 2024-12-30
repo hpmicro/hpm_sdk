@@ -189,7 +189,18 @@ int main(void)
     init_pdm_pins();
 
     board_init_led_pins();
-    board_init_usb_pins();
+    if (BOARD_DEVICE_RHPORT_NUM == 0) {
+        board_init_usb(HPM_USB0);
+#ifdef HPM_USB1
+    } else if (BOARD_DEVICE_RHPORT_NUM == 1) {
+        board_init_usb(HPM_USB1);
+#endif
+    } else {
+        printf("Don't support HPM_USB%d!\n", BOARD_DEVICE_RHPORT_NUM);
+        while (1) {
+            ;
+        }
+    }
 
     pdm_config();
     dao_config();
@@ -538,6 +549,7 @@ bool tud_audio_tx_done_pre_load_cb(uint8_t rhport, uint8_t itf, uint8_t ep_in, u
 /*---------------------------------------------------------------------*/
 /*                  audio playback and DMA isr handling                */
 /*---------------------------------------------------------------------*/
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 void isr_dma(void)
 {
     volatile uint32_t speaker_status;
@@ -554,7 +566,6 @@ void isr_dma(void)
         ;
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 
 void i2s_speaker_dma_cfg(uint32_t size, volatile uint32_t *ptr)
 {

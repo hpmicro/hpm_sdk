@@ -7,6 +7,7 @@
 
 #include "hpm_i2s_over_spi.h"
 #include "hpm_spi.h"
+#include "hpm_clock_drv.h"
 
 static hpm_stat_t i2s_clocks_init(hpm_i2s_over_spi_t *i2s, uint32_t lrck_hz, uint32_t audio_depth, uint32_t size);
 static hpm_stat_t hpm_i2s_master_over_spi_tx_config(hpm_i2s_over_spi_t *i2s, uint8_t protocol, uint32_t lrck_hz, uint32_t audio_depth, uint32_t size);
@@ -335,6 +336,7 @@ static hpm_stat_t i2s_clocks_init(hpm_i2s_over_spi_t *i2s, uint32_t lrck_hz, uin
     if (i2s->bclk.ptr == NULL) {
         return status_invalid_argument;
     }
+    clock_add_to_group(i2s->bclk.clock_name, 0);
     gptmr_channel_get_default_config(i2s->bclk.ptr, &config);
     pwm_freq_hz = clock_get_frequency(i2s->bclk.clock_name);
     actual_reload = pwm_freq_hz / bclk_hz;
@@ -348,6 +350,7 @@ static hpm_stat_t i2s_clocks_init(hpm_i2s_over_spi_t *i2s, uint32_t lrck_hz, uin
     gptmr_channel_reset_count(i2s->bclk.ptr, i2s->bclk.channel);
 
     /* set lrck */
+    clock_add_to_group(i2s->lrck.clock_name, 0);
     actual_reload *= (audio_depth * 2);
     actual_fclk_rld = actual_reload;
     config.enable_cmp_output = true;
@@ -358,6 +361,7 @@ static hpm_stat_t i2s_clocks_init(hpm_i2s_over_spi_t *i2s, uint32_t lrck_hz, uin
     gptmr_channel_reset_count(i2s->lrck.ptr, i2s->lrck.channel);
 
     /* set transfer is completed time */
+    clock_add_to_group(i2s->transfer_time.clock_name, 0);
     gptmr_channel_get_default_config(i2s->transfer_time.ptr, &config);
     /* left and right so /2*/
     actual_fclk_half_rld = (actual_reload / 2);
@@ -370,6 +374,7 @@ static hpm_stat_t i2s_clocks_init(hpm_i2s_over_spi_t *i2s, uint32_t lrck_hz, uin
 
     /* set mclk*/
     if (i2s->mclk.ptr != NULL) {
+        clock_add_to_group(i2s->mclk.clock_name, 0);
         gptmr_channel_get_default_config(i2s->mclk.ptr, &config);
         actual_reload = actual_fclk_rld / 256;
         config.reload = actual_reload;

@@ -3634,6 +3634,40 @@
       <BitField name="RESULT" start="0" size="32"/>
     </Register>
   </RegisterGroup>
+  <RegisterGroup start="0xf0018000" name="SDADC">
+    <Register name="CTRL" start="+0x0" size="0x4">
+      <BitField name="SDM_CFG" start="20" size="8"/>
+      <BitField name="SDM_PGA_CE_SEL" start="18" size="2"/>
+      <BitField name="SDM_PGA_CH_SEL" start="14" size="4"/>
+      <BitField name="CFG_CDS_CMD" start="13" size="1"/>
+      <BitField name="LP_MODE_SDM" start="9" size="3"/>
+      <BitField name="LP_MODE_PGA" start="6" size="3"/>
+      <BitField name="ANA_PWUP" start="5" size="1"/>
+      <BitField name="BYPASS_PGA" start="4" size="1"/>
+      <BitField name="CONT_MODE" start="3" size="1"/>
+      <BitField name="RST_SDM" start="2" size="1"/>
+      <BitField name="RST_PGA" start="1" size="1"/>
+      <BitField name="EN" start="0" size="1"/>
+    </Register>
+    <Register name="CLK_DIV" start="+0x4" size="0x4">
+      <BitField name="FACTOR" start="0" size="8"/>
+    </Register>
+    <Register name="TTB" start="+0x8" size="0x4">
+      <BitField name="VAL" start="0" size="20"/>
+    </Register>
+    <Register name="START_OP" start="+0xc" size="0x4">
+      <BitField name="SDM_EN" start="0" size="1"/>
+    </Register>
+    <Register name="MISC" start="+0x10" size="0x4">
+      <BitField name="BURST_DONE_IE" start="1" size="1"/>
+      <BitField name="PDM_CLK_SEL" start="0" size="1"/>
+    </Register>
+    <Register name="ST" start="+0x14" size="0x4">
+      <BitField name="ANA_RST" start="2" size="1"/>
+      <BitField name="DIV_STABLE" start="1" size="1"/>
+      <BitField name="BURST_DONE" start="0" size="1"/>
+    </Register>
+  </RegisterGroup>
   <RegisterGroup start="0xf0040000" name="UART0">
     <Register name="IDLE_CFG" start="+0x4" size="0x4">
       <BitField name="RXEN" start="11" size="1"/>
@@ -33985,7 +34019,6 @@
       <BitField name="INV_HSYNC" start="27" size="1"/>
       <BitField name="INV_VSYNC" start="26" size="1"/>
       <BitField name="SWAP16_EN" start="25" size="1"/>
-      <BitField name="PACK_DIR" start="24" size="1"/>
       <BitField name="RESTART_BUSPTR" start="23" size="1"/>
       <BitField name="ASYNC_RXFIFO_CLR" start="20" size="1"/>
       <BitField name="SYNC_RXFIFO_CLR" start="19" size="1"/>
@@ -34038,12 +34071,6 @@
     <Register name="CR18" start="+0x4c" size="0x4">
       <BitField name="CAM_ENABLE" start="31" size="1"/>
       <BitField name="AWQOS" start="7" size="4"/>
-    </Register>
-    <Register name="DMASA_UV1" start="+0x50" size="0x4">
-      <BitField name="PTR" start="2" size="30"/>
-    </Register>
-    <Register name="DMASA_UV2" start="+0x54" size="0x4">
-      <BitField name="PTR" start="2" size="30"/>
     </Register>
     <Register name="CR20" start="+0x58" size="0x4">
       <BitField name="BINARY_EN" start="31" size="1"/>
@@ -34858,21 +34885,6 @@
     <Register name="ACT_SIZE" start="+0x49c" size="0x4">
       <BitField name="ACT_HEIGHT" start="16" size="16"/>
       <BitField name="ACT_WIDTH" start="0" size="16"/>
-    </Register>
-    <Register name="VSYNC_VALID_CNT" start="+0x4a0" size="0x4">
-      <BitField name="VSYNC_VALID_CNT" start="0" size="32"/>
-    </Register>
-    <Register name="HSYNC_VALID_CNT" start="+0x4a4" size="0x4">
-      <BitField name="HSYNC_VALID_CNT" start="0" size="32"/>
-    </Register>
-    <Register name="VALID_MARGIN" start="+0x4a8" size="0x4">
-      <BitField name="HSYNC_VALID_MARGIN" start="16" size="16"/>
-      <BitField name="VSYNC_VALID_MARGIN" start="0" size="16"/>
-    </Register>
-    <Register name="ALARM_SET" start="+0x4ac" size="0x4">
-      <BitField name="SIG_NORMAL" start="20" size="4"/>
-      <BitField name="FATAL_NORMAL" start="16" size="4"/>
-      <BitField name="PRE_DIV" start="0" size="16"/>
     </Register>
   </RegisterGroup>
   <RegisterGroup start="0xf100c000" name="CAM1">
@@ -34883,7 +34895,6 @@
       <BitField name="INV_HSYNC" start="27" size="1"/>
       <BitField name="INV_VSYNC" start="26" size="1"/>
       <BitField name="SWAP16_EN" start="25" size="1"/>
-      <BitField name="PACK_DIR" start="24" size="1"/>
       <BitField name="RESTART_BUSPTR" start="23" size="1"/>
       <BitField name="ASYNC_RXFIFO_CLR" start="20" size="1"/>
       <BitField name="SYNC_RXFIFO_CLR" start="19" size="1"/>
@@ -34936,12 +34947,6 @@
     <Register name="CR18" start="+0x4c" size="0x4">
       <BitField name="CAM_ENABLE" start="31" size="1"/>
       <BitField name="AWQOS" start="7" size="4"/>
-    </Register>
-    <Register name="DMASA_UV1" start="+0x50" size="0x4">
-      <BitField name="PTR" start="2" size="30"/>
-    </Register>
-    <Register name="DMASA_UV2" start="+0x54" size="0x4">
-      <BitField name="PTR" start="2" size="30"/>
     </Register>
     <Register name="CR20" start="+0x58" size="0x4">
       <BitField name="BINARY_EN" start="31" size="1"/>
@@ -35756,21 +35761,6 @@
     <Register name="ACT_SIZE" start="+0x49c" size="0x4">
       <BitField name="ACT_HEIGHT" start="16" size="16"/>
       <BitField name="ACT_WIDTH" start="0" size="16"/>
-    </Register>
-    <Register name="VSYNC_VALID_CNT" start="+0x4a0" size="0x4">
-      <BitField name="VSYNC_VALID_CNT" start="0" size="32"/>
-    </Register>
-    <Register name="HSYNC_VALID_CNT" start="+0x4a4" size="0x4">
-      <BitField name="HSYNC_VALID_CNT" start="0" size="32"/>
-    </Register>
-    <Register name="VALID_MARGIN" start="+0x4a8" size="0x4">
-      <BitField name="HSYNC_VALID_MARGIN" start="16" size="16"/>
-      <BitField name="VSYNC_VALID_MARGIN" start="0" size="16"/>
-    </Register>
-    <Register name="ALARM_SET" start="+0x4ac" size="0x4">
-      <BitField name="SIG_NORMAL" start="20" size="4"/>
-      <BitField name="FATAL_NORMAL" start="16" size="4"/>
-      <BitField name="PRE_DIV" start="0" size="16"/>
     </Register>
   </RegisterGroup>
   <RegisterGroup start="0xf1010000" name="PDMA">

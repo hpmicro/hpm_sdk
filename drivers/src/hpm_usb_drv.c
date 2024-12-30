@@ -148,7 +148,7 @@ void usb_dcd_init(USB_Type *ptr)
     /* Set parallel transceiver width */
     ptr->PORTSC1 &= ~USB_PORTSC1_PTW_MASK;
 
-#ifdef CONFIG_USB_DEVICE_FS
+#if defined(CONFIG_USB_DEVICE_FS) || defined(CONFIG_USB_DEVICE_FORCE_FULL_SPEED)
     /* Set usb forced to full speed mode */
     ptr->PORTSC1 |= USB_PORTSC1_PFSC_MASK;
 #endif

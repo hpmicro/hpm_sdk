@@ -24,6 +24,7 @@ uint32_t received_data_count;
 volatile bool i2c_receive_complete;
 volatile bool i2c_transmit_complete;
 
+SDK_DECLARE_EXT_ISR_M(TEST_I2C_IRQ, i2c_isr)
 void i2c_isr(void)
 {
     volatile uint32_t status, irq;
@@ -81,7 +82,6 @@ void i2c_isr(void)
         i2c_clear_status(TEST_I2C, I2C_EVENT_TRANSACTION_COMPLETE);
     }
 }
-SDK_DECLARE_EXT_ISR_M(TEST_I2C_IRQ, i2c_isr)
 
 
 static void print_received_data(void)
@@ -103,11 +103,11 @@ int main(void)
     uint32_t freq;
 
     board_init();
+    freq = board_init_i2c_clock(TEST_I2C);
     init_i2c_pins(TEST_I2C);
 
     config.i2c_mode = i2c_mode_normal;
     config.is_10bit_addressing = false;
-    freq = clock_get_frequency(TEST_I2C_CLOCK_NAME);
     stat = i2c_init_slave(TEST_I2C, freq, &config, TEST_I2C_SLAVE_ADDRESS);
     if (stat != status_success) {
         return stat;

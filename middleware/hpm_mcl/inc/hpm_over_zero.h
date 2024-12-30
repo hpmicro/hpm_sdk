@@ -32,6 +32,7 @@ typedef enum {
 } hpm_mcl_dir_t;
 
 typedef enum {
+    hpm_mcl_interval_init = 0,       /**< Initialization */
     hpm_mcl_interval_w_down = 1,    /**< w down */
     hpm_mcl_interval_v_up = 2,      /**< v up */
     hpm_mcl_interval_u_down = 3,    /**< u down */

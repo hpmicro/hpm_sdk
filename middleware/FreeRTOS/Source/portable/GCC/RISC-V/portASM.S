@@ -83,14 +83,19 @@ definitions. */
     #define portasmHAS_SIFIVE_CLINT 0
 #endif
 
+.macro MAKE_FUNCTION Name
+    .section .isr_vector.\Name, "ax"
+    .balign 4
+    .type \Name, function
+\Name:
+.endm
+
 .global xPortStartFirstTask
 .global pxPortInitialiseStack
 .global freertos_risc_v_trap_handler
 .global freertos_risc_v_exception_handler
 .global freertos_risc_v_interrupt_handler
 .global freertos_risc_v_mtimer_interrupt_handler
-.global ulPortSetInterruptMaskFromIsr
-.global portClearInterruptMaskFromIsr
 
 .extern vTaskSwitchContext
 .extern xTaskIncrementTick
@@ -201,10 +206,7 @@ definitions. */
  * [chip specific registers go here]
  * pxCode
  */
-.section .isr_vector, "ax"
-.align 8
-.type pxPortInitialiseStack, function
-pxPortInitialiseStack:
+MAKE_FUNCTION pxPortInitialiseStack
     csrr t0, mstatus                    /* Obtain current mstatus value. */
     andi t0, t0, ~0x8                   /* Ensure interrupts are disabled when the stack is restored within an ISR.  Required when a task is created after the schedulre has been started, otherwise interrupts would be disabled anyway. */
 #ifdef __riscv_flen
@@ -237,6 +239,10 @@ chip_specific_stack_frame:              /* First add any chip specific registers
     addi t0, t0, -1                     /* Decrement the count of chip specific registers remaining. */
     j chip_specific_stack_frame         /* Until no more chip specific registers. */
 1:
+#ifdef USE_SYSCALL_INTERRUPT_PRIORITY
+    li   t0, 0x888
+    store_x t0, 4(a0)                   /* MIE */
+#endif
 #ifdef __riscv_flen
     add a0, a0, -portFPU_CONTEXT_SIZE
     mv t2, a0
@@ -254,10 +260,7 @@ fpu_specific_stack_frame:
     ret
 /*-----------------------------------------------------------*/
 
-.section .isr_vector, "ax"
-.align 8
-.type xPortStartFirstTask, function
-xPortStartFirstTask:
+MAKE_FUNCTION xPortStartFirstTask
     load_x  sp, pxCurrentTCB            /* Load pxCurrentTCB. */
     load_x  sp, 0( sp )                 /* Read sp from first TCB member. */
 
@@ -311,20 +314,14 @@ xPortStartFirstTask:
     ret
 /*-----------------------------------------------------------*/
 
-.section .isr_vector, "ax"
-.align 8
-.type freertos_risc_v_application_exception_handler, function
-freertos_risc_v_application_exception_handler:
+MAKE_FUNCTION freertos_risc_v_application_exception_handler
     csrr t0, mcause     /* For viewing in the debugger only. */
     csrr t1, mepc       /* For viewing in the debugger only */
     csrr t2, mstatus    /* For viewing in the debugger only */
     j .
 /*-----------------------------------------------------------*/
 
-.align 8
-.type freertos_risc_v_exception_handler, function
-.section .isr_vector, "ax"
-freertos_risc_v_exception_handler:
+MAKE_FUNCTION freertos_risc_v_exception_handler
     portcontextSAVE_EXCEPTION_CONTEXT
     /* a0 now contains mcause. */
     li t0, 11                           /* 11 == environment call. */
@@ -337,19 +334,13 @@ other_exception:
     portcontextRESTORE_CONTEXT
 /*-----------------------------------------------------------*/
 
-.align 8
-.type freertos_risc_v_interrupt_handler, function
-.section .isr_vector, "ax"
-freertos_risc_v_interrupt_handler:
+MAKE_FUNCTION freertos_risc_v_interrupt_handler
     portcontextSAVE_INTERRUPT_CONTEXT
     call freertos_risc_v_application_interrupt_handler
     portcontextRESTORE_CONTEXT
 /*-----------------------------------------------------------*/
 
-.align 8
-.type freertos_risc_v_mtimer_interrupt_handler, function
-.section .isr_vector, "ax"
-freertos_risc_v_mtimer_interrupt_handler:
+MAKE_FUNCTION freertos_risc_v_mtimer_interrupt_handler
     portcontextSAVE_INTERRUPT_CONTEXT
     portUPDATE_MTIMER_COMPARE_REGISTER
     call xTaskIncrementTick
@@ -359,11 +350,7 @@ exit_without_context_switch:
     portcontextRESTORE_CONTEXT
 /*-----------------------------------------------------------*/
 
-.section .isr_vector, "ax"
-.align 8
-.type freertos_risc_v_trap_handler, function
-.align 8
-freertos_risc_v_trap_handler:
+MAKE_FUNCTION freertos_risc_v_trap_handler
     portcontextSAVE_CONTEXT_INTERNAL
 
     csrr a0, mcause
@@ -438,14 +425,3 @@ application_exception_handler:
 
 processed_source:
     portcontextRESTORE_CONTEXT
-/*-----------------------------------------------------------*/
-.type ulPortSetInterruptMaskFromIsr, function
-ulPortSetInterruptMaskFromIsr:
-    csrrci a0, mstatus, 8
-    ret
-/*-----------------------------------------------------------*/
-
-.type portClearInterruptMaskFromIsr, function
-portClearInterruptMaskFromIsr:
-    csrs	mstatus, a0
-    ret

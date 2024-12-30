@@ -26,6 +26,7 @@ uint8_t buff_index;
 uint8_t data_count;
 ATTR_PLACE_AT_NONCACHEABLE uint8_t data_buff[TEST_UART_MAX_BUFFER_SIZE];
 
+SDK_DECLARE_EXT_ISR_M(TEST_UART_IRQ, uart_isr)
 void uart_isr(void)
 {
     uint8_t irq_id = uart_get_irq_id(TEST_UART);
@@ -45,8 +46,6 @@ void uart_isr(void)
         uart_enable_irq(TEST_UART, uart_intr_rx_data_avail_or_timeout);
     }
 }
-
-SDK_DECLARE_EXT_ISR_M(TEST_UART_IRQ, uart_isr)
 
 int main(void)
 {

@@ -8,6 +8,7 @@
 #include "board.h"
 #include "hpm_l1c_drv.h"
 #include "hpm_ffa_drv.h"
+#include "hpm_clock_drv.h"
 #include "ffa_test_data.h"
 #include <stdarg.h>
 
@@ -119,6 +120,7 @@ ffa_fft_test_context_t ifft_test_ctx[] = {
 int main(void)
 {
     board_init();
+    clock_add_to_group(clock_ffa0, 0);
     show_menu();
 
     while (1) {

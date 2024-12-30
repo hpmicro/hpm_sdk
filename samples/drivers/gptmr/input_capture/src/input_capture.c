@@ -7,9 +7,8 @@
 
 #include <stdio.h>
 #include "board.h"
-#include "hpm_sysctl_drv.h"
 #include "hpm_gptmr_drv.h"
-#include "hpm_debug_console.h"
+#include "hpm_clock_drv.h"
 
 #define APP_BOARD_GPTMR               BOARD_GPTMR
 #define APP_BOARD_GPTMR_CH            BOARD_GPTMR_CHANNEL
@@ -24,6 +23,7 @@ volatile int next_rising_count;
 volatile bool frist_rised;
 volatile uint32_t gptmr_freq;
 
+SDK_DECLARE_EXT_ISR_M(APP_BOARD_GPTMR_IRQ, isr_gptmr)
 void isr_gptmr(void)
 {
     if (gptmr_check_status(APP_BOARD_GPTMR, GPTMR_CH_CAP_STAT_MASK(APP_BOARD_GPTMR_CH))) {
@@ -38,7 +38,6 @@ void isr_gptmr(void)
         }
     }
 }
-SDK_DECLARE_EXT_ISR_M(APP_BOARD_GPTMR_IRQ, isr_gptmr)
 
 int main(void)
 {
@@ -64,10 +63,11 @@ int main(void)
 static void input_capture_config(void)
 {
     gptmr_channel_config_t config;
+
+    clock_add_to_group(APP_BOARD_GPTMR_CLOCK, 0);
     gptmr_channel_get_default_config(APP_BOARD_GPTMR, &config);
     gptmr_freq = clock_get_frequency(APP_BOARD_GPTMR_CLOCK);
     config.mode = gptmr_work_mode_capture_at_rising_edge;
-
     gptmr_enable_irq(APP_BOARD_GPTMR, GPTMR_CH_CAP_IRQ_MASK(APP_BOARD_GPTMR_CH));
     gptmr_channel_config(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH, &config, false);
     gptmr_channel_reset_count(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH);

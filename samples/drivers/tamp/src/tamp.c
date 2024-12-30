@@ -27,6 +27,7 @@ int main(void)
     return 0;
 }
 
+SDK_DECLARE_EXT_ISR_M(IRQn_BVIO, tamper_isr)
 void tamper_isr(void)
 {
     if (tamp_check_ch_flag(HPM_TAMP, BOARD_TAMP_ACTIVE_CH) || tamp_check_ch_flag(HPM_TAMP, BOARD_TAMP_ACTIVE_CH + 1)) {
@@ -42,7 +43,6 @@ void tamper_isr(void)
     }
 #endif
 }
-SDK_DECLARE_EXT_ISR_M(IRQn_BVIO, tamper_isr)
 
 /* static function definition */
 static void init_tamper_config(void)

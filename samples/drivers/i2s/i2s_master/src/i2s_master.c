@@ -20,6 +20,7 @@
 volatile bool dma_transfer_done = false;
 volatile bool dma_transfer_error;
 
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 void isr_dma(void)
 {
     uint32_t stat;
@@ -33,7 +34,6 @@ void isr_dma(void)
         dma_transfer_error = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 
 void dma_transfer_config(uint32_t size)
 {
@@ -43,7 +43,7 @@ void dma_transfer_config(uint32_t size)
 
     dma_default_channel_config(APP_DMA, &ch_config);
 
-    ch_config.src_addr = (uint32_t)((uint8_t *)&I2S_MASTER->RXD[I2S_MASTER_RX_LINE] + sizeof(uint16_t));
+    ch_config.src_addr = (uint32_t)((uint8_t *)&I2S_MASTER->RXD[I2S_MASTER_RX_DATA_LINE] + sizeof(uint16_t));
     ch_config.dst_addr = (uint32_t)((uint8_t *)&I2S_DAO->TXD[I2S_DAO_DATA_LINE] + sizeof(uint16_t));
     ch_config.src_width = DMA_TRANSFER_WIDTH_HALF_WORD;
     ch_config.dst_width = DMA_TRANSFER_WIDTH_HALF_WORD;
@@ -74,14 +74,13 @@ void i2s_master_config(void)
     i2s_init(I2S_MASTER, &i2s_config);
 
     i2s_get_default_transfer_config(&transfer);
-    transfer.data_line = I2S_MASTER_RX_LINE;
+    transfer.data_line = I2S_MASTER_RX_DATA_LINE;
     transfer.sample_rate = I2S_SAMPLE_RATE_HZ;
     transfer.audio_depth = I2S_SAMPLE_BITDEPTH;
     transfer.channel_length = I2S_CHANNEL_LENGTH;
-
     transfer.master_mode = true;
-    i2s_mclk_hz = clock_get_frequency(BOARD_APP_I2S_CLK_NAME);
-    if (status_success != i2s_config_transfer(I2S_MASTER, i2s_mclk_hz, &transfer)) {
+    i2s_mclk_hz = clock_get_frequency(I2S_MASTER_CLOCK_NAME);
+    if (status_success != i2s_config_rx(I2S_MASTER, i2s_mclk_hz, &transfer)) {
         printf("I2S config failed!\n");
         while (1) {
 

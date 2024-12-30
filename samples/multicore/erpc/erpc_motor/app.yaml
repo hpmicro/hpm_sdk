@@ -1,0 +1,14 @@
+dependency:
+  - board_motor_control
+  - board_enet_phy
+  - board_sdram
+
+excluded_targets:
+  - debug
+  - release
+  - flash_xip_release
+  - flash_xip
+  - flash_sdram_uf2
+  - flash_sdram_uf2_release
+  - flash_uf2
+  - flash_uf2_release

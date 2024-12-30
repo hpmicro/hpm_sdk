@@ -129,7 +129,7 @@ HPM6800是一款主频达600MHz的单核微控制器。该芯片拥有最大1M�
 | GPTMR2.CAPT_0 | PE22  | J19[9]  |
 | GPTMR2.COMP_0 | PE23  | J19[12] | SPI模拟I2S的MCLK |
 | GPTMR2.COMP_1 | PE24  | J19[10] | SPI模拟I2S的LRCK |
-| GPTMR2.COMP_2 | PE26  | J19[6]  | SPI模拟I2S的BLCK |
+| GPTMR2.COMP_2 | PE26  | J19[8]  | SPI模拟I2S的BLCK |
 
 - 耳机接口
 

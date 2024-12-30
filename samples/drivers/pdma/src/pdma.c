@@ -52,6 +52,7 @@ struct {
     bool up_to_down;
 } layer_info[TEST_LAYER_COUNT];
 
+SDK_DECLARE_EXT_ISR_M(LCD_IRQ, isr_lcd_d0)
 void isr_lcd_d0(void)
 {
     if (!vsync) {
@@ -59,7 +60,6 @@ void isr_lcd_d0(void)
     }
     LCD->ST |= LCDC_ST_VSYNC_MASK;
 }
-SDK_DECLARE_EXT_ISR_M(LCD_IRQ, isr_lcd_d0)
 
 uint32_t get_rgb_color(color *c)
 {
@@ -367,6 +367,7 @@ int main(void)
 {
     board_init();
     board_init_lcd();
+    clock_add_to_group(clock_pdma, 0);
 
     printf("pdma example\r\n");
 

@@ -26,8 +26,11 @@
     #warning "It's recommended to have at least 128kB RAM for the benchmark"
 #endif
 
-#include "../../src/display/lv_display_private.h"
 #include "../../src/core/lv_global.h"
+
+#if LV_USE_PERF_MONITOR
+    #include "../../src/display/lv_display_private.h"
+#endif
 
 /**********************
  *      TYPEDEFS
@@ -77,9 +80,9 @@ static void empty_screen_cb(void)
 static void moving_wallpaper_cb(void)
 {
     lv_obj_set_style_pad_all(lv_screen_active(), 0, 0);
-    LV_IMG_DECLARE(img_benchmark_cogwheel_rgb);
+    LV_IMAGE_DECLARE(img_benchmark_cogwheel_rgb);
 
-    lv_obj_t * img = lv_img_create(lv_screen_active());
+    lv_obj_t * img = lv_image_create(lv_screen_active());
     lv_obj_set_size(img, lv_pct(150), lv_pct(150));
     lv_image_set_src(img, &img_benchmark_cogwheel_rgb);
     lv_image_set_inner_align(img, LV_IMAGE_ALIGN_TILE);
@@ -120,7 +123,7 @@ static void multiple_rgb_images_cb(void)
     lv_obj_set_flex_align(lv_screen_active(), LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
     lv_obj_set_style_pad_row(lv_screen_active(), 20, 0);
 
-    LV_IMG_DECLARE(img_benchmark_cogwheel_rgb);
+    LV_IMAGE_DECLARE(img_benchmark_cogwheel_rgb);
     int32_t hor_cnt = ((int32_t)lv_display_get_horizontal_resolution(NULL) - 16) / 116;
     int32_t ver_cnt = ((int32_t)lv_display_get_vertical_resolution(NULL) - 116) / 116;
 
@@ -131,7 +134,7 @@ static void multiple_rgb_images_cb(void)
     for(y = 0; y < ver_cnt; y++) {
         int32_t x;
         for(x = 0; x < hor_cnt; x++) {
-            lv_obj_t * obj = lv_img_create(lv_screen_active());
+            lv_obj_t * obj = lv_image_create(lv_screen_active());
             lv_image_set_src(obj, &img_benchmark_cogwheel_rgb);
             if(x == 0) lv_obj_add_flag(obj, LV_OBJ_FLAG_FLEX_IN_NEW_TRACK);
 
@@ -146,7 +149,7 @@ static void multiple_argb_images_cb(void)
     lv_obj_set_flex_align(lv_screen_active(), LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
     lv_obj_set_style_pad_row(lv_screen_active(), 20, 0);
 
-    LV_IMG_DECLARE(img_benchmark_cogwheel_argb);
+    LV_IMAGE_DECLARE(img_benchmark_cogwheel_argb);
     int32_t hor_cnt = ((int32_t)lv_display_get_horizontal_resolution(NULL) - 16) / 116;
     int32_t ver_cnt = ((int32_t)lv_display_get_vertical_resolution(NULL) - 116) / 116;
 
@@ -157,7 +160,7 @@ static void multiple_argb_images_cb(void)
     for(y = 0; y < ver_cnt; y++) {
         int32_t x;
         for(x = 0; x < hor_cnt; x++) {
-            lv_obj_t * obj = lv_img_create(lv_screen_active());
+            lv_obj_t * obj = lv_image_create(lv_screen_active());
             lv_image_set_src(obj, &img_benchmark_cogwheel_argb);
             if(x == 0) lv_obj_add_flag(obj, LV_OBJ_FLAG_FLEX_IN_NEW_TRACK);
 
@@ -172,7 +175,7 @@ static void rotated_argb_image_cb(void)
     lv_obj_set_flex_align(lv_screen_active(), LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
     lv_obj_set_style_pad_row(lv_screen_active(), 20, 0);
 
-    LV_IMG_DECLARE(img_benchmark_cogwheel_argb);
+    LV_IMAGE_DECLARE(img_benchmark_cogwheel_argb);
     int32_t hor_cnt = ((int32_t)lv_display_get_horizontal_resolution(NULL) - 16) / 116;
     int32_t ver_cnt = ((int32_t)lv_display_get_vertical_resolution(NULL) - 116) / 116;
 
@@ -183,7 +186,7 @@ static void rotated_argb_image_cb(void)
     for(y = 0; y < ver_cnt; y++) {
         int32_t x;
         for(x = 0; x < hor_cnt; x++) {
-            lv_obj_t * obj = lv_img_create(lv_screen_active());
+            lv_obj_t * obj = lv_image_create(lv_screen_active());
             lv_image_set_src(obj, &img_benchmark_cogwheel_argb);
             if(x == 0) lv_obj_add_flag(obj, LV_OBJ_FLAG_FLEX_IN_NEW_TRACK);
 
@@ -241,7 +244,7 @@ static void multiple_arcs_cb(void)
     lv_obj_set_flex_flow(lv_screen_active(), LV_FLEX_FLOW_ROW_WRAP);
     lv_obj_set_flex_align(lv_screen_active(), LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
 
-    LV_IMG_DECLARE(img_benchmark_cogwheel_argb);
+    LV_IMAGE_DECLARE(img_benchmark_cogwheel_argb);
     int32_t hor_cnt = (lv_display_get_horizontal_resolution(NULL) - 16) / lv_dpx(160);
     int32_t ver_cnt = (lv_display_get_vertical_resolution(NULL) - 16) / lv_dpx(160);
 
@@ -418,8 +421,6 @@ static scene_dsc_t scenes[] = {
     {.name = "", .create_cb = NULL}
 };
 
-#define sysmon_perf LV_GLOBAL_DEFAULT()->sysmon_perf
-
 static uint32_t scene_act;
 static uint32_t rnd_act;
 
@@ -455,7 +456,8 @@ void lv_demo_benchmark(void)
     lv_timer_create(next_scene_timer_cb, scenes[0].scene_time, NULL);
 
 #if LV_USE_PERF_MONITOR
-    lv_subject_add_observer_obj(&sysmon_perf.subject, sysmon_perf_observer_cb, title, NULL);
+    lv_display_t * disp = lv_display_get_default();
+    lv_subject_add_observer_obj(&disp->perf_sysmon_backend.subject, sysmon_perf_observer_cb, title, NULL);
 #else
     lv_label_set_text(title, "LV_USE_PERF_MONITOR is not enabled");
 #endif
@@ -589,7 +591,7 @@ static void summary_create(void)
     lv_table_set_cell_value(table, 0, 3, "Avg. time (render + flush)");
 
     /* csv log */
-    LV_LOG("Benchmark Summary (%"LV_PRIu32".%"LV_PRIu32".%"LV_PRIu32" %s)\r\n",
+    LV_LOG("Benchmark Summary (%d.%d.%d %s)\r\n",
            LVGL_VERSION_MAJOR,
            LVGL_VERSION_MINOR,
            LVGL_VERSION_PATCH,
@@ -761,10 +763,10 @@ static lv_obj_t * card_create(void)
     lv_obj_set_size(panel, 270, 120);
     lv_obj_set_style_pad_all(panel, 8, 0);
 
-    LV_IMG_DECLARE(img_transform_avatar_15);
+    LV_IMAGE_DECLARE(img_benchmark_avatar);
     lv_obj_t * child = lv_image_create(panel);
     lv_obj_align(child, LV_ALIGN_LEFT_MID, 0, 0);
-    lv_image_set_src(child, &img_transform_avatar_15);
+    lv_image_set_src(child, &img_benchmark_avatar);
 
     child = lv_label_create(panel);
     lv_label_set_text(child, "John Smith");

@@ -29,6 +29,7 @@
 
 __IO uint32_t res_out_of_thr_flag;
 
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_ADC16_IRQn, isr_temp)
 void isr_temp(void)
 {
     uint32_t status;
@@ -43,7 +44,6 @@ void isr_temp(void)
         res_out_of_thr_flag = status & APP_ADC16_CH_WDOG_EVENT;
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_ADC16_IRQn, isr_temp)
 
 hpm_stat_t init_common_config(adc16_conversion_mode_t conv_mode)
 {

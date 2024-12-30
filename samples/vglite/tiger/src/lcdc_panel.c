@@ -23,14 +23,13 @@
 static uint32_t __attribute__((section(".framebuffer"), aligned(HPM_L1C_CACHELINE_SIZE))) fb_buffer[LAYER_NUM][LCDC_FB_SIZE_ALIGNED];
 struct lcdc_context lcdc_ctx;
 
-static void isr_lcd(void)
+SDK_DECLARE_EXT_ISR_M(BOARD_LCD_IRQ, isr_lcd)
+void isr_lcd(void)
 {
     volatile uint32_t s = lcdc_get_dma_status(BOARD_LCD_BASE);
     lcdc_clear_dma_status(BOARD_LCD_BASE, s);
     lcdc_ctx.status = s;
 }
-
-SDK_DECLARE_EXT_ISR_M(BOARD_LCD_IRQ, isr_lcd);
 
 static void fill_layer_argb888(void *fb, uint16_t x0, uint16_t y0, uint16_t width, uint16_t height, uint16_t stride, uint32_t color)
 {

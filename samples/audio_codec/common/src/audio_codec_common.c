@@ -102,7 +102,7 @@ hpm_stat_t init_i2s_playback(uint32_t sample_rate, uint8_t audio_depth, uint8_t 
     intc_m_enable_irq_with_priority(BOARD_APP_XDMA_IRQ, TARGET_I2S_TX_DMA_IRQ_PRIORITY);
 
     i2s_get_default_transfer_config_for_dao(&transfer);
-    transfer.data_line = TARGET_I2S_DATA_LINE;
+    transfer.data_line = TARGET_I2S_TX_DATA_LINE;
     transfer.sample_rate = sample_rate;
     transfer.audio_depth = audio_depth;
     transfer.channel_num_per_frame = 2; /* non TDM mode, channel num fix to 2. */
@@ -151,7 +151,7 @@ void i2s_dma_start_transfer(uint32_t addr, uint32_t size)
 
     dma_default_channel_config(BOARD_APP_XDMA, &ch_config);
     ch_config.src_addr = core_local_mem_to_sys_address(HPM_CORE0, addr);
-    ch_config.dst_addr = (uint32_t)&TARGET_I2S->TXD[TARGET_I2S_DATA_LINE];
+    ch_config.dst_addr = (uint32_t)&TARGET_I2S->TXD[TARGET_I2S_TX_DATA_LINE];
     ch_config.src_width = DMA_TRANSFER_WIDTH_WORD;
     ch_config.dst_width = DMA_TRANSFER_WIDTH_WORD;
     ch_config.src_addr_ctrl = DMA_ADDRESS_CONTROL_INCREMENT;

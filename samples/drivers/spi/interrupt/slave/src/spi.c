@@ -20,6 +20,7 @@ uint8_t *receive_buff;
 uint32_t sent_count;
 uint32_t receive_count;
 
+SDK_DECLARE_EXT_ISR_M(TEST_SPI_IRQ, spi_isr)
 void spi_isr(void)
 {
     volatile uint32_t irq_status;
@@ -65,7 +66,6 @@ void spi_isr(void)
         }
     }
 }
-SDK_DECLARE_EXT_ISR_M(TEST_SPI_IRQ, spi_isr)
 
 int main(void)
 {

@@ -11,6 +11,13 @@ The **bldc_foc** project contains the speed control and position control of DC b
 
 - Board settings refer to the development board documentation [Motor Pin](lab_board_motor_ctrl_pin) related content
 
+## Current Loop Time
+
+Hardware current loop will show time zero. The current loop calculation time is around 1us, this time fluctuates depending on the angle and fluctuates in the range of 25%, which is reproduced by performing the following operation:
+
+- Turning off the `mcl_app_config.h` macros except for `MCL_EN_LOOP_TIME_COUNT`
+- Compile option `flash_xip_release`
+
 ## Running the demo
 
 The motor runs at a speed of 20r/s.
@@ -31,6 +38,8 @@ The following data can be configured by serial console:
 	Set the position of the motor's shaft, then the motor's shaft will be locked at the specified position
 
 ```console
+
+loop current tick: 399
 Mode selection:
 0. Location mode.
 1. Speed mode.
@@ -40,6 +49,7 @@ Speed mode, motor run, speed is: 20.000000.
 Input speed:
 10.5
 
+loop current tick: 535
 Speed mode, motor run, speed is: 10.500000.
 Input speed:
 

@@ -6,4 +6,5 @@
     :numbered:
 
     ppi/README_zh
+    plb/filter/README_zh
 :::

@@ -26,8 +26,10 @@ SECTIONS
     .vectors : {
         . = ALIGN(8);
         KEEP(*(.isr_vector))
+        KEEP(*(.isr_vector.*))
         KEEP(*(.vector_table))
         KEEP(*(.isr_s_vector))
+        KEEP(*(.isr_s_vector.*))
         KEEP(*(.vector_s_table))
         . = ALIGN(8);
     } > ILM
@@ -197,6 +199,7 @@ SECTIONS
         . = ALIGN(8);
         __noncacheable_init_start__ = .;
         KEEP(*(.noncacheable.init))
+        KEEP(*(.noncacheable.init.*))
         __noncacheable_init_end__ = .;
         . = ALIGN(8);
     } > NONCACHEABLE_RAM
@@ -206,21 +209,26 @@ SECTIONS
         . = ALIGN(8);
         __fast_ram_init_start__ = .;
         KEEP(*(.fast_ram.init))
+        KEEP(*(.fast_ram.init.*))
         __fast_ram_init_end__ = .;
         . = ALIGN(8);
     } > DLM
 
-    .noncacheable.bss (NOLOAD) : {
+    .noncacheable (NOLOAD) : {
         . = ALIGN(8);
-        KEEP(*(.noncacheable))
+        KEEP(*(.noncacheable))  /* Legacy sections, kept for backwards compatibility */
+        KEEP(*(.noncacheable.non_init))
+        KEEP(*(.noncacheable.non_init.*))
         __noncacheable_bss_start__ = .;
         KEEP(*(.noncacheable.bss))
+        KEEP(*(.noncacheable.bss.*))
         __noncacheable_bss_end__ = .;
         . = ALIGN(8);
     } > NONCACHEABLE_RAM
 
     .sh_mem (NOLOAD) : {
         KEEP(*(.sh_mem))
+        KEEP(*(.sh_mem.*))
     } > SHARE_RAM
 
     .bss (NOLOAD) : {
@@ -241,14 +249,18 @@ SECTIONS
     .framebuffer (NOLOAD) : {
         . = ALIGN(8);
         KEEP(*(.framebuffer))
+        KEEP(*(.framebuffer.*))
         . = ALIGN(8);
     } > DLM
 
-    .fast_ram.bss (NOLOAD) : {
+    .fast_ram (NOLOAD) : {
         . = ALIGN(8);
-        KEEP(*(.fast_ram))
+        KEEP(*(.fast_ram))  /* Legacy sections, kept for backwards compatibility */
+        KEEP(*(.fast_ram.non_init))
+        KEEP(*(.fast_ram.non_init.*))
         __fast_ram_bss_start__ = .;
         KEEP(*(.fast_ram.bss))
+        KEEP(*(.fast_ram.bss.*))
         __fast_ram_bss_end__ = .;
         . = ALIGN(8);
     } > DLM

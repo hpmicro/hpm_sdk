@@ -67,10 +67,9 @@
 #define PACK_STRUCT_FIELD(x) x
 
 #elif defined (__GNUC__)
-
 #if defined(__SEGGER_RTL_VERSION) && (__SEGGER_RTL_VERSION <= 42404)   /* 8.10d */
 #include <sys/time.h>
-#elif defined(__zcc__) || defined(__SEGGER_RTL_VERSION) && (__SEGGER_RTL_VERSION >= 42601) /* 8.14a */
+#else
 #include <time.h>
 #endif
 
@@ -100,7 +99,7 @@ typedef unsigned long clockid_t;
 #define LWIP_PLATFORM_ASSERT(x) printf(x)
 
 #ifndef LWIP_MEM_SECTION
-#define LWIP_MEM_SECTION ".fast_ram"
+#define LWIP_MEM_SECTION ".fast_ram.non_init"
 #endif
 
 #endif /* __CC_H__ */

@@ -7,9 +7,8 @@
 
 #include <stdio.h>
 #include "board.h"
-#include "hpm_sysctl_drv.h"
 #include "hpm_gptmr_drv.h"
-#include "hpm_debug_console.h"
+#include "hpm_clock_drv.h"
 
 #define APP_BOARD_PWM                 BOARD_GPTMR_PWM
 #define APP_BOARD_PWM_CH              BOARD_GPTMR_PWM_CHANNEL
@@ -61,6 +60,7 @@ static void set_pwm_waveform_edge_aligned_frequency(uint32_t freq)
     gptmr_channel_config_t config;
     uint32_t gptmr_freq;
 
+    clock_add_to_group(APP_BOARD_GPTMR_CLOCK, 0);
     gptmr_channel_get_default_config(APP_BOARD_PWM, &config);
     gptmr_freq = clock_get_frequency(APP_BOARD_GPTMR_CLOCK);
     current_reload = gptmr_freq / freq;

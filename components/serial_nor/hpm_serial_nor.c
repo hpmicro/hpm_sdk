@@ -100,6 +100,7 @@ static hpm_stat_t hpm_spi_get_read_para(hpm_serial_nor_t *flash, jedec_info_tabl
         if (address_bits == 24U) {
             if (param_tbl->misc.supports_1_4_4_fast_read != 0U) {
                 flash->nor_read_para.read_cmd = param_tbl->read_1_4_info.inst_1_4_4_read;
+                flash->nor_read_para.addr_phase_format = quad_io_mode;
             } else if (param_tbl->misc.support_1_1_4_fast_read != 0U) {
                 flash->nor_read_para.read_cmd = param_tbl->read_1_4_info.inst_1_1_4_read;
             } else {
@@ -134,10 +135,13 @@ static hpm_stat_t hpm_spi_get_read_para(hpm_serial_nor_t *flash, jedec_info_tabl
             if (param_tbl->misc.support_1_2_2_fast_read != 0U) {
                 flash->nor_read_para.read_cmd = param_tbl->read_1_2_info.inst_1_2_2_read;
                 flash->nor_read_para.data_phase_format = dual_io_mode;
+                flash->nor_read_para.addr_phase_format = dual_io_mode;
             } else if (param_tbl->misc.support_1_1_2_fast_read != 0U) {
                 flash->nor_read_para.read_cmd = param_tbl->read_1_2_info.inst_1_1_2_read;
+                flash->nor_read_para.data_phase_format = dual_io_mode;
             } else {
                 flash->nor_read_para.read_cmd = SERIALNOR_CMD_BASICREAD_3B;
+                flash->nor_read_para.data_phase_format = single_io_mode;
                 dummy_cycles = 0;
                 mode_cycles = 0;
             }

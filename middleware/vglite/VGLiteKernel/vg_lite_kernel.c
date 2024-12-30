@@ -56,7 +56,6 @@
 #include "vg_lite_kernel.h"
 #include "vg_lite_hal.h"
 #include "vg_lite_hw.h"
-#include "../VGLite/vg_lite_options.h"
 #if defined(__linux__) && !defined(EMULATOR)
 #include <linux/sched.h>
 /*#include <asm/uaccess.h>*/
@@ -65,6 +64,21 @@
 #include <linux/kernel.h>
 #include <linux/pm.h>
 #include <linux/suspend.h>
+#endif
+
+#if gcdVG_RECORD_HARDWARE_RUNNING_TIME
+
+#ifdef __linux__
+#include <linux/jiffies.h>
+unsigned long start_time, end_time;
+unsigned long period_time, total_time = 0;
+
+#else
+#include <sys/time.h>
+struct timeval start_time, end_time;
+unsigned long period_time, total_time = 0;
+#endif
+
 #endif
 
 #define FLEXA_TIMEOUT_STATE                 BIT(21)
@@ -79,15 +93,21 @@
 
 static vg_lite_kernel_context_t global_power_context = {0};
 static uint32_t *power_context_klogical = NULL;
-static uint32_t state_map_table[4096] = {
-    [0 ... 4095] = -1
-};
+static uint32_t state_map_table[4096];
 static uint32_t backup_command_buffer_physical;
 static void *backup_command_buffer_klogical;
 static uint32_t backup_command_buffer_size;
+uint32_t init_buffer[12];
+uint32_t is_init;
+size_t physical_address;
 #endif
 
 static int s_reference = 0;
+
+#if gcdVG_ENABLE_DELAY_RESUME
+static int delay_resume = 0;
+#endif
+
 #if gcdVG_ENABLE_GPU_RESET
 static uint32_t gpu_reset_count = 0;
 #endif
@@ -126,7 +146,7 @@ static vg_lite_error_t restore_init_command(uint32_t physical, uint32_t size)
 
     return error;
 }
-
+#if gcdVG_ENABLE_GPU_RESET && gcdVG_ENABLE_BACKUP_COMMAND
 static vg_lite_error_t execute_command(uint32_t physical, uint32_t size, vg_lite_gpu_reset_type_t reset_type)
 {
     vg_lite_kernel_wait_t wait;
@@ -146,6 +166,7 @@ static vg_lite_error_t execute_command(uint32_t physical, uint32_t size, vg_lite
 
     return error;
 }
+#endif
 
 static uint32_t push_command(uint32_t command, uint32_t data, uint32_t index)
 {
@@ -180,10 +201,15 @@ static vg_lite_error_t backup_power_context_buffer(uint32_t *command_buffer_klog
     for (index = 0; index < size; index++) {
         command = command_buffer_klogical[index];
 
-        if ((command & 0xFFFF0000) == 0x30010000) {
+        if (((command & 0xFFFF0000) == 0x30010000) && ((index % 2) == 0)) {
             data = command_buffer_klogical[index+1];
             address = command & 0x0000FFFF;
             context_index = state_map_table[address];
+            if((address < 0) || (address > 4095))
+            {
+                vg_lite_kernel_print("Index out of bounds, wrong address and data 0x%08X 0x%08X\n", command , data);
+                return VG_LITE_INVALID_ARGUMENT;
+            }
             if (-1 != context_index) {
                 power_context_klogical[context_index + 1] = data;
             } else {
@@ -224,6 +250,11 @@ static void gpu(int enable)
         vg_lite_hal_poke(VG_LITE_HW_CLOCK_CONTROL, value.data);
         vg_lite_hal_delay(5);
 
+#if gcdVG_DUMP_DEBUG_REGISTER
+        value.control.debug_registers = 0;
+        vg_lite_hal_poke(VG_LITE_HW_CLOCK_CONTROL, value.data);
+#endif
+
         /* Perform a soft reset. */
         soft_reset();
         do {
@@ -238,7 +269,7 @@ static void gpu(int enable)
         vg_lite_hal_poke(VG_LITE_POWER_CONTROL, data);
         vg_lite_hal_delay(1);
 
-#if gcFEATURE_VG_CLOCK_GATING
+#if !gcFEATURE_VG_CLOCK_GATING
         data = vg_lite_hal_peek(VG_LITE_POWER_MODULE_CONTROL);
         data |= 0x800;
         vg_lite_hal_poke(VG_LITE_POWER_MODULE_CONTROL, data);
@@ -296,7 +327,12 @@ static vg_lite_error_t init_vglite(vg_lite_kernel_initialize_t * data)
 
 #if defined(__linux__) && !defined(EMULATOR)
     vg_lite_kernel_context_t __user * context_usr;
-    vg_lite_kernel_context_t mycontext = { 0 };
+    vg_lite_kernel_context_t mycontext = {
+        .command_buffer = { 0 },
+        .command_buffer_logical = { 0 },
+        .command_buffer_klogical = { 0 },
+        .command_buffer_physical = { 0 },
+    };
 
     // Construct the context.
     context_usr = (vg_lite_kernel_context_t  __user *) data->context;
@@ -352,12 +388,12 @@ static vg_lite_error_t init_vglite(vg_lite_kernel_initialize_t * data)
 
     /* Allocate the command buffer. */
     if (data->command_buffer_size) {
-        for (i = 0; i < 2; i ++)
+        for (i = 0; i < CMDBUF_COUNT; i ++)
         {
             /* Allocate the memory. */
             error = vg_lite_kernel_vidmem_allocate(&data->command_buffer_size,
                                                    flags,
-                                                   VG_LITE_POOL_RESERVED_MEMORY1,
+                                                   data->command_buffer_pool,
                                                    &context->command_buffer_logical[i],
                                                    &context->command_buffer_klogical[i],
                                                    &context->command_buffer_physical[i],
@@ -484,9 +520,9 @@ static vg_lite_error_t init_vglite(vg_lite_kernel_initialize_t * data)
                 data->capabilities.cap.tiled = 0x2;
             }
 
-            vg_countbuffer_size = height * 3;
-            vg_countbuffer_size = VG_LITE_ALIGN(vg_countbuffer_size, 64);
-            total_size = height * 128;
+            vg_countbuffer_size = (height + 13) / 14;
+            vg_countbuffer_size = vg_countbuffer_size * 64;
+            total_size = height * 128 + vg_countbuffer_size;
             if (total_size < MIN_TS_SIZE)
                 total_size = MIN_TS_SIZE;
             ts_buffer_size = total_size - vg_countbuffer_size;
@@ -496,7 +532,7 @@ static vg_lite_error_t init_vglite(vg_lite_kernel_initialize_t * data)
         /* Allocate the memory. */
         error = vg_lite_kernel_vidmem_allocate((uint32_t*)&total_size,
                                                flags,
-                                               VG_LITE_POOL_RESERVED_MEMORY1,
+                                               data->tess_buffer_pool,
                                                &context->tessbuf_logical,
                                                &context->tessbuf_klogical,
                                                &context->tessbuf_physical,
@@ -560,7 +596,12 @@ static vg_lite_error_t terminate_vglite(vg_lite_kernel_terminate_t * data)
 {
     vg_lite_kernel_context_t *context = NULL;
 #if defined(__linux__) && !defined(EMULATOR)
-    vg_lite_kernel_context_t mycontext = {0};
+    vg_lite_kernel_context_t mycontext = {
+    .command_buffer = { 0 },
+    .command_buffer_logical = { 0 },
+    .command_buffer_klogical = { 0 },
+    .command_buffer_physical = { 0 },
+    };
     if (copy_from_user(&mycontext, data->context, sizeof(vg_lite_kernel_context_t)) != 0) {
       return VG_LITE_NO_CONTEXT;
     }
@@ -576,11 +617,13 @@ static vg_lite_error_t terminate_vglite(vg_lite_kernel_terminate_t * data)
         context->command_buffer[0] = NULL;
     }
 
+#if !gcFEATURE_VG_SINGLE_COMMAND_BUFFER
     if (context->command_buffer[1]) {
         /* Free the command buffer. */
         vg_lite_kernel_vidmem_free(context->command_buffer[1]);
         context->command_buffer[1] = NULL;
     }
+#endif
 
 #if gcdVG_ENABLE_BACKUP_COMMAND
     if (global_power_context.power_context) {
@@ -655,7 +698,6 @@ static vg_lite_error_t do_allocate(vg_lite_kernel_allocate_t * data)
 {
     vg_lite_error_t error = VG_LITE_SUCCESS;
 
-    data->pool = VG_LITE_POOL_RESERVED_MEMORY1;
     error = vg_lite_kernel_vidmem_allocate(&data->bytes, data->flags, data->pool, &data->memory, &data->kmemory, &data->memory_gpu, &data->memory_handle);
 
     return error;
@@ -677,7 +719,12 @@ static vg_lite_error_t do_submit(vg_lite_kernel_submit_t * data)
     uint32_t physical = data->context->command_buffer_physical[data->command_id];
 
 #if defined(__linux__) && !defined(EMULATOR)
-    vg_lite_kernel_context_t mycontext = { 0 };
+    vg_lite_kernel_context_t mycontext = {
+    .command_buffer = { 0 },
+    .command_buffer_logical = { 0 },
+    .command_buffer_klogical = { 0 },
+    .command_buffer_physical = { 0 },
+    };
 
     if (copy_from_user(&mycontext, data->context, sizeof(vg_lite_kernel_context_t)) != 0) {
       return VG_LITE_NO_CONTEXT;
@@ -703,6 +750,14 @@ static vg_lite_error_t do_submit(vg_lite_kernel_submit_t * data)
     backup_command_buffer_size = data->command_size;
 #endif
 
+#if gcdVG_RECORD_HARDWARE_RUNNING_TIME
+#ifdef __linux__
+    start_time = jiffies;
+#else
+    gettimeofday(&start_time, NULL);
+#endif
+#endif
+
     /* set gpu to busy state  */
     vg_lite_set_gpu_execute_state(VG_LITE_GPU_RUN);
 
@@ -721,19 +776,53 @@ static void dump_last_frame(void)
     uint32_t i = 0;
     uint32_t data = 0;
 
-    vg_lite_kernel_print("the last submit command before hang:\n");
-    for (i = 0; i < size / 4; i+=4) {
-        vg_lite_kernel_print("0x%08X 0x%08X", ptr[i], ptr[i+1]);
-        if ((i + 2) <= (size / 4 - 1))
-#if defined(__linux__)
-            vg_lite_kernel_print(KERN_CONT " 0x%08X 0x%08X\n", ptr[i+2], ptr[i+3]);
-#else
-            vg_lite_kernel_print(" 0x%08X 0x%08X\n", ptr[i+2], ptr[i+3]);
-#endif
+    vg_lite_kernel_print("This is init command buffer:\n");
+    vg_lite_kernel_print("@[%s 0x%08X 0x00000088\n", "command", physical_address);
+    vg_lite_kernel_print("  0x30010A35 0x%08X 0x30010AC8 0x%08X\n", init_buffer[0], init_buffer[1]);
+    vg_lite_kernel_print("  0x30010ACB 0x%08X 0x30010ACC 0x%08X\n", init_buffer[2], init_buffer[3]);
+    vg_lite_kernel_print("  0x30010A90 0x%08X 0x30010A91 0x%08X\n", init_buffer[4], init_buffer[5]);
+    vg_lite_kernel_print("  0x30010A92 0x%08X 0x30010A93 0x%08X\n", init_buffer[6], init_buffer[7]);
+    vg_lite_kernel_print("  0x30010A94 0x%08X 0x30010A95 0x%08X\n", init_buffer[8], init_buffer[9]);
+    vg_lite_kernel_print("  0x30010A96 0x%08X 0x30010A97 0x%08X\n", init_buffer[10], init_buffer[11]);
+    vg_lite_kernel_print("  0x30010A00 0x00000001 0x30010A1B 0x00000011\n");
+    vg_lite_kernel_print("  0x10000007 0x00000000 0x20000007 0x00000000\n");
+    vg_lite_kernel_print("  0x00000000 0x00000000\n");
+    vg_lite_kernel_print("] -- %s\n", "command");
+
+    if (is_init == 1)
+    {
+        vg_lite_kernel_print("the last submit command is init command.\n");
     }
+    else
+    {
+        vg_lite_kernel_print("the last submit command before hang:\n");
+        vg_lite_kernel_print( "@[%s 0x%08X 0x%08X\n", "command", backup_command_buffer_klogical, size);
+        for (i = 0; i < size; i += 4) {
+            vg_lite_kernel_print("  0x%08X 0x%08X 0x%08X 0x%08X\n", ptr[i], ptr[i + 1], ptr[i + 2], ptr[i + 3]);
+        }
+        if (size % 16)
+        {
+            int j = size % 16 / 4;
+            switch (j)
+            {
+            case 1:
+                vg_lite_kernel_print("  0x%08X\n", ptr[(size - size % 16) / 4]);
+                break;
+            case 2:
+                vg_lite_kernel_print("  0x%08X 0x%08X\n", ptr[(size - size % 16) / 4], ptr[(size - size % 16) / 4 + 1]);
+                break;
+            case 3:
+                vg_lite_kernel_print("  0x%08X 0x%08X 0x%08X\n", ptr[(size - size % 16) / 4], ptr[(size - size % 16) / 4 + 1], ptr[(size - size % 16) / 4 + 2]);
+                break;
+            default:
+                break;
+            }
+        }
+    }
+    vg_lite_kernel_print("] -- %s\n", "command");
 
     data = vg_lite_hal_peek(VG_LITE_HW_IDLE);
-    vg_lite_kernel_print("vg idle reg = 0x%08X\n", data);
+    vg_lite_kernel_print("vgidle reg = 0x%08X\n", data);
 }
 #endif
 
@@ -743,6 +832,109 @@ static vg_lite_error_t do_wait(vg_lite_kernel_wait_t * data)
     vg_lite_error_t error = VG_LITE_SUCCESS;
 #endif
     /* Wait for interrupt. */
+#if gcdVG_DUMP_DEBUG_REGISTER
+    if (!vg_lite_hal_wait_interrupt(5000, data->event_mask, &data->event_got)) {
+         /* Timeout. */
+        unsigned int debug;
+        unsigned int iter;
+
+        debug = vg_lite_hal_peek(VG_LITE_HW_IDLE);
+        vg_lite_kernel_print("idle = 0x%x\n",debug);
+
+        debug = vg_lite_hal_peek(VG_LITE_HW_CLOCK_CONTROL);
+        vg_lite_kernel_print("QAHiClockControl = 0x%x\n", debug);
+        
+        for(iter =0; iter < 16 ; iter ++) 
+        {   
+             vg_lite_hal_poke(0x470, iter);
+             debug = vg_lite_hal_peek(0x448);
+             vg_lite_kernel_print("0x448[%d] = 0x%x\n", iter, debug);
+        }     
+        for(iter =0; iter < 16 ; iter ++) 
+        {   
+             vg_lite_hal_poke(0x470, iter<<8);
+             debug = vg_lite_hal_peek(0x44C);
+             vg_lite_kernel_print("0x44c[%d] = 0x%x\n", iter, debug);
+        }
+        for(iter =0; iter < 28 ; iter ++) 
+        {   
+             vg_lite_hal_poke(0x470, iter<<16);
+             debug = vg_lite_hal_peek(0x450);
+             vg_lite_kernel_print("0x450[%d] = 0x%x\n", iter, debug);
+        }   
+        for (iter = 0; iter < 31; iter++)
+        {
+            vg_lite_hal_poke(0x470, iter<<24);
+            debug = vg_lite_hal_peek(0x454);
+            vg_lite_kernel_print("0x454[%d] = 0x%x\n", iter, debug);
+        }
+        for (iter = 128; iter < 133; iter++)
+        {
+            vg_lite_hal_poke(0x470, iter<<24);
+            debug = vg_lite_hal_peek(0x454);
+            vg_lite_kernel_print("0x454[%d] = 0x%x\n", iter, debug);
+        }
+        for (iter = 0; iter < 21; iter++)
+        {
+            vg_lite_hal_poke(0x474, iter);
+            debug = vg_lite_hal_peek(0x458);
+            vg_lite_kernel_print("0x458[%d] = 0x%x\n", iter, debug);
+        }
+        for (iter = 0; iter < 62; iter++)
+        {
+            vg_lite_hal_poke(0x474, iter<<8);
+            debug = vg_lite_hal_peek(0x45C);
+            vg_lite_kernel_print("0x45C[%d] = 0x%x\n", iter, debug);
+        }
+        for (iter = 0; iter < 16; iter++)
+        {
+            vg_lite_hal_poke(0x474, iter<<16);
+            debug = vg_lite_hal_peek(0x460);
+            vg_lite_kernel_print("0x460[%d] = 0x%x\n", iter, debug);
+        }
+        for (iter = 0x40; iter <= 0x60; iter+=4)
+        {
+            debug = vg_lite_hal_peek(iter);
+            vg_lite_kernel_print("0x%x = 0x%x\n", iter, debug);
+        }
+
+        debug = vg_lite_hal_peek(0x438);
+        vg_lite_kernel_print("0x%x = 0x%x\n", 0x438, debug);
+        debug = vg_lite_hal_peek(0x43C);
+        vg_lite_kernel_print("0x%x = 0x%x\n", 0x43C, debug);
+        debug = vg_lite_hal_peek(0x440);
+        vg_lite_kernel_print("0x%x = 0x%x\n", 0x440, debug);
+        debug = vg_lite_hal_peek(0x444);
+        vg_lite_kernel_print("0x%x = 0x%x\n", 0x444, debug);
+        debug = vg_lite_hal_peek(0x500);
+        vg_lite_kernel_print("0x%x = 0x%x\n", 0x500, debug);
+        debug = vg_lite_hal_peek(0x504);
+        vg_lite_kernel_print("0x%x = 0x%x\n", 0x504, debug);
+        debug = vg_lite_hal_peek(0x508);
+        vg_lite_kernel_print("0x%x = 0x%x\n", 0x508, debug);
+        debug = vg_lite_hal_peek(0x10);
+        vg_lite_kernel_print("0x%x = 0x%x\n", 0x10, debug);
+
+        for (iter = 0x14; iter <= 0x34; iter += 4)
+        {
+            debug = vg_lite_hal_peek(iter);
+            vg_lite_kernel_print("0x%x = 0x%08x\n", iter, debug);
+        }
+
+        debug = vg_lite_hal_peek(0x98);
+        vg_lite_kernel_print("0x%x = 0x%08x\n", 0x98, debug);
+        debug = vg_lite_hal_peek(0xA4);
+        vg_lite_kernel_print("0x%x = 0x%08x\n", 0xA4, debug);
+        debug = vg_lite_hal_peek(0xA8);
+        vg_lite_kernel_print("0x%x = 0x%08x\n", 0xA8, debug);
+        debug = vg_lite_hal_peek(0xE8);
+        vg_lite_kernel_print("0x%x = 0x%08x\n", 0xE8, debug); 
+#if gcdVG_ENABLE_DUMP_COMMAND && gcdVG_ENABLE_BACKUP_COMMAND
+        dump_last_frame();
+#endif
+        return VG_LITE_TIMEOUT;
+    }
+#else
     if (!vg_lite_hal_wait_interrupt(data->timeout_ms, data->event_mask, &data->event_got)) {
         /* Timeout. */
 #if gcdVG_ENABLE_DUMP_COMMAND && gcdVG_ENABLE_BACKUP_COMMAND
@@ -774,6 +966,7 @@ static vg_lite_error_t do_wait(vg_lite_kernel_wait_t * data)
 #endif
         return VG_LITE_TIMEOUT;
     }
+#endif
 
 #if gcFEATURE_VG_FLEXA
     if (data->event_got & FLEXA_TIMEOUT_STATE)
@@ -949,6 +1142,36 @@ static vg_lite_error_t do_query_mem(vg_lite_kernel_mem_t * data)
     return error;
 }
 
+#if gcdVG_ENABLE_DELAY_RESUME
+static vg_lite_error_t set_delay_resume(vg_lite_kernel_delay_resume_t* data)
+{
+    delay_resume = data->set_delay_resume;
+
+    return VG_LITE_SUCCESS;
+}
+
+static int do_query_delay_resume(void)
+{
+    if (delay_resume == 1) 
+    {
+        /* Reset delay resume to 0 after query*/
+        delay_resume = 0; 
+        return 1;
+    }
+    else
+        return 0;
+}
+
+static int set_gpu_clock_state(vg_lite_kernel_gpu_clock_state_t* gpu_state)
+{
+#ifdef __ZEPHYR__
+    vg_lite_gpu_execute_state_t state = gpu_state->state;
+    vg_lite_set_gpu_clock_state(state);
+#endif
+    return VG_LITE_SUCCESS;
+}
+#endif
+
 static vg_lite_error_t do_map_memory(vg_lite_kernel_map_memory_t * data)
 {
     vg_lite_error_t error = VG_LITE_SUCCESS;
@@ -978,6 +1201,45 @@ static vg_lite_error_t do_export_memory(vg_lite_kernel_export_memory_t * data)
     vg_lite_error_t error = VG_LITE_SUCCESS;
 
     error = vg_lite_hal_memory_export(&data->fd); 
+
+    return error;
+}
+
+static vg_lite_error_t do_get_running_time(vg_lite_kernel_hardware_running_time_t * data)
+{
+    vg_lite_error_t error = VG_LITE_SUCCESS;
+#if gcdVG_RECORD_HARDWARE_RUNNING_TIME
+#ifdef __linux__
+    data->run_time = total_time;
+    data->hertz = HZ;
+#else
+    data->run_time = total_time;
+    data->hertz = 1e6;
+#endif
+#endif
+    return error;
+}
+
+vg_lite_error_t record_running_time(void)
+{
+    vg_lite_error_t error = VG_LITE_SUCCESS;
+
+#if gcdVG_RECORD_HARDWARE_RUNNING_TIME
+
+#ifdef __linux__
+    end_time = jiffies;
+    period_time = end_time - start_time;
+    total_time += period_time;
+
+#else
+    gettimeofday(&end_time, NULL);
+    period_time = (end_time.tv_sec - start_time.tv_sec)*1e6 + end_time.tv_usec - start_time.tv_usec;
+    total_time += period_time;
+    //printk("GPU hardware running period time: %f s\n", (float)period_time/1e-6);
+    //printk("GPU hardware running total time: %f s\n", (float)total_time/1e-6);
+#endif
+
+#endif
 
     return error;
 }
@@ -1086,6 +1348,19 @@ vg_lite_error_t vg_lite_kernel(vg_lite_kernel_command_t command, void * data)
         case VG_LITE_EXPORT_MEMORY:
             return do_export_memory(data);
 
+        case VG_LITE_RECORD_RUNNING_TIME:
+            return do_get_running_time(data);
+
+#if gcdVG_ENABLE_DELAY_RESUME
+        case VG_LITE_SET_DELAY_RESUME:
+            return set_delay_resume(data);
+
+        case VG_LITE_QUERY_DELAY_RESUME:
+            return do_query_delay_resume();
+        
+        case VG_LITE_SET_GPU_CLOCK_STATE:
+            return set_gpu_clock_state(data);
+#endif
         default:
             break;
     }

@@ -73,7 +73,7 @@ static inline void pdgo_enable_oneshot_wakeup(PDGO_Type *ptr)
  */
 static inline void pdgo_enable_retention_mode(PDGO_Type *ptr)
 {
-    ptr->DGO_CTR1 |= PDGO_DGO_CTR0_RETENTION_MASK;
+    ptr->DGO_CTR0 |= PDGO_DGO_CTR0_RETENTION_MASK;
 }
 
 /**
@@ -85,7 +85,7 @@ static inline void pdgo_enable_retention_mode(PDGO_Type *ptr)
  */
 static inline bool pdgo_is_retention_mode_enabled(PDGO_Type *ptr)
 {
-    return ((ptr->DGO_CTR1 & PDGO_DGO_CTR0_RETENTION_MASK) != 0U);
+    return ((ptr->DGO_CTR0 & PDGO_DGO_CTR0_RETENTION_MASK) != 0U);
 }
 
 /**
@@ -94,7 +94,7 @@ static inline bool pdgo_is_retention_mode_enabled(PDGO_Type *ptr)
  */
 static inline void pdgo_disable_retention_mode(PDGO_Type *ptr)
 {
-    ptr->DGO_CTR1 &= ~PDGO_DGO_CTR0_RETENTION_MASK;
+    ptr->DGO_CTR0 &= ~PDGO_DGO_CTR0_RETENTION_MASK;
 }
 
 /**

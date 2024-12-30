@@ -4,6 +4,18 @@
 
 ECAT_CIA402示例演示使用ESC外设, 基于ETG从站协议栈代码(SSC)实现CANOPEN CiA402协议控制电机的功能。
 
+该例程程序支持对ESC的EEPROM数据进行初始化，能够简化更新ESC的EEPROM的步骤。
+
+如果程序代码中包含由SSC Tool生成的EEPROM数据(eeprom.h), 会检查ESC的EEPROM中存储的数据并根据条件进行更新。
+
+如果EEPROM中的EtherCAT Slave Controller Configuration Area(前8个Word)的数据checksum校验失败，则会使用eeprom.h中的数据初始化EEPROM。
+
+如果EEPROM中的EtherCAT Slave Controller Configuration Area(前8个Word)的数据checksum校验成功，则会进一步校验EEPROM数据中的Product Code和Revision Code。
+
+当Product Code不同或eeprom.h中的Revision Number大于当前已经存储的EEPROM数据的Revision Number时，则会使用eeprom.h中的数据初始化EEPROM。
+
+该方法能够解决初次使用时EEPROM为空情况下checksum校验失败的问题，能够对EEPROM进行初始化。在程序升级阶段，新的程序代码包含的eeprom.h中的Revision Number大于当前已经存储的EEPROM数据的Revision Number时，会使用新程序中的eeprom.h初始化EEPROM，而无需通过主站工具如TwinCAT等去更新EEPROM。
+
 ## 2. 准备
   请参照ECAT_IO的README
 
@@ -63,7 +75,7 @@ ECAT_CIA402示例演示使用ESC外设, 基于ETG从站协议栈代码(SSC)实�
 
 ### 5.5 更新EEPROM
   请参照ECAT_IO的README, 选择正确的ESI文件更新EEPROM内容
-  ![](doc/twincat_eeprom_update.png)
+  ![](doc/twincat_eeprom_update_cia402.png)
 
 ### 5.6 NC轴控制操作
   1. 扫描设备,建立NC轴, 从站默认工作在csv模式：
@@ -112,15 +124,18 @@ ECAT_CIA402示例演示使用ESC外设, 基于ETG从站协议栈代码(SSC)实�
 ## 6. 运行现象
 
 当工程正确运行后, 串口终端会输出如下信息, 通过TwinCAT NC Axis控制页面可以控制电机运动：
+
+当需要初始化EEPROM数据时，log如下：
 ```console
 EtherCAT CiA402 motor sample
-EEPROM loading with checksum error.
-EtherCAT communication is possible even if the EEPROM is blank(checksum error),
-but PDI not operational, please update eeprom  context.
+Init EEPROM content.
+Init EEPROM content successful.
+EEPROM loading successful, no checksum error.
 ```
-或是
+当不需初始化EEPROM数据时，log如下：
 ```console
 EtherCAT CiA402 motor sample
+No need to init EEPROM content.
 EEPROM loading successful, no checksum error.
 ```
 

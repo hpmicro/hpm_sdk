@@ -7,6 +7,7 @@
  *      INCLUDES
  *********************/
 
+#include "../../misc/lv_area_private.h"
 #include "lv_draw_vg_lite.h"
 
 #if LV_USE_DRAW_VG_LITE
@@ -44,11 +45,6 @@
 
 void lv_draw_vg_lite_line(lv_draw_unit_t * draw_unit, const lv_draw_line_dsc_t * dsc)
 {
-    if(dsc->opa <= LV_OPA_MIN)
-        return;
-    if(dsc->width == 0)
-        return;
-
     float p1_x = dsc->p1.x;
     float p1_y = dsc->p1.y;
     float p2_x = dsc->p2.x;
@@ -65,7 +61,7 @@ void lv_draw_vg_lite_line(lv_draw_unit_t * draw_unit, const lv_draw_line_dsc_t *
     rel_clip_area.y1 = (int32_t)(LV_MIN(p1_y, p2_y) - half_w);
     rel_clip_area.y2 = (int32_t)(LV_MAX(p1_y, p2_y) + half_w);
 
-    if(!_lv_area_intersect(&rel_clip_area, &rel_clip_area, draw_unit->clip_area)) {
+    if(!lv_area_intersect(&rel_clip_area, &rel_clip_area, draw_unit->clip_area)) {
         return; /*Fully clipped, nothing to do*/
     }
 
@@ -93,7 +89,7 @@ void lv_draw_vg_lite_line(lv_draw_unit_t * draw_unit, const lv_draw_line_dsc_t *
     lv_vg_lite_path_t * path = lv_vg_lite_path_get(u, VG_LITE_FP32);
     lv_vg_lite_path_set_quality(path, VG_LITE_MEDIUM);
     lv_vg_lite_path_set_bonding_box_area(path, &rel_clip_area);
-    lv_vg_lite_set_scissor_area(&rel_clip_area);
+
     /* head point */
     float head_start_x = p1_x + w2_dx;
     float head_start_y = p1_y - w2_dy;
@@ -184,9 +180,7 @@ void lv_draw_vg_lite_line(lv_draw_unit_t * draw_unit, const lv_draw_line_dsc_t *
 
     lv_vg_lite_path_end(path);
 
-    vg_lite_matrix_t matrix;
-    vg_lite_identity(&matrix);
-    lv_vg_lite_matrix_multiply(&matrix, &u->global_matrix);
+    vg_lite_matrix_t matrix = u->global_matrix;
 
     vg_lite_color_t color = lv_vg_lite_color(dsc->color, dsc->opa, true);
 
@@ -197,6 +191,7 @@ void lv_draw_vg_lite_line(lv_draw_unit_t * draw_unit, const lv_draw_line_dsc_t *
     LV_VG_LITE_ASSERT_MATRIX(&matrix);
 
     LV_PROFILER_BEGIN_TAG("vg_lite_draw");
+    l1c_dc_flush_all();
     LV_VG_LITE_CHECK_ERROR(vg_lite_draw(
                                &u->target_buffer,
                                vg_lite_path,
@@ -206,7 +201,6 @@ void lv_draw_vg_lite_line(lv_draw_unit_t * draw_unit, const lv_draw_line_dsc_t *
                                color));
     LV_PROFILER_END_TAG("vg_lite_draw");
 
-    lv_vg_lite_disable_scissor();
     lv_vg_lite_path_drop(u, path);
 
     LV_PROFILER_END;

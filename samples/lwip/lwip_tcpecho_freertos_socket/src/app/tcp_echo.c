@@ -79,8 +79,6 @@ static void tcp_echo_thread(void *arg)
         if (connected >= 0) {
             closesocket(connected);
         }
-
-        connected = -1;
     }
 
 __exit:

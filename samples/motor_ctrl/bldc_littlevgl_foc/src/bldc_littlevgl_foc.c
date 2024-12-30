@@ -314,14 +314,13 @@ void lvgl_pos_set(int32_t pos)
     lvgl_fre_is_update = 1;
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_TMR_IRQ, isr_gptmr)
 void isr_gptmr(void)
 {
     volatile uint32_t s = BOARD_BLDC_TMR_1MS->SR;
     int32_t pos_ctrl = 0;
     int32_t pos_err = 0;
     int32_t fre_get_pos = 0 ;
-    static int16_t start_times = 0;
-    static uint8_t timer_times = 0;
 
     BOARD_BLDC_TMR_1MS->SR = s;
     if (s & GPTMR_CH_CMP_STAT_MASK(BOARD_BLDC_TMR_CH, BOARD_BLDC_TMR_CMP)) {
@@ -334,8 +333,6 @@ void isr_gptmr(void)
                 lv_disp_current_speed(-fre_setspeed*60);
             }
         }
-        timer_times++;
-        start_times++;
         timer_flag = !timer_flag;
 
         /*速度控制*/
@@ -381,17 +378,16 @@ void isr_gptmr(void)
         } else if (fre_user_mode == 1) {
             fre_record_now_pos = -bldc_foc_get_pos();
         }
-        timer_times = 0;
     }
 
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_TMR_IRQ, isr_gptmr)
 
 /*Timer init 1ms_isr*/
 static void timer_init(void)
 {
     gptmr_channel_config_t config;
 
+    clock_add_to_group(BOARD_BLDC_TMR_CLOCK, 0);
     gptmr_channel_get_default_config(BOARD_BLDC_TMR_1MS, &config);
     config.debug_mode = 0;
     config.reload = BOARD_BLDC_TMR_RELOAD+1;
@@ -445,6 +441,7 @@ void motor0_highspeed_loop(void)
     motor0.foc_para.speedcalpar.func_getspd(&motor0.foc_para.speedcalpar);
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_ADC_IRQn, isr_adc)
 void isr_adc(void)
 {
     uint32_t status;
@@ -455,7 +452,6 @@ void isr_adc(void)
         motor0.adc_trig_event_callback();
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_ADC_IRQn, isr_adc)
 
 void init_trigger_cfg(uint8_t trig_ch, bool inten)
 {

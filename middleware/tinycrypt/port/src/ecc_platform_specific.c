@@ -10,6 +10,7 @@
 
 #ifdef HPM_RNG
 #include "hpm_rng_drv.h"
+#include "hpm_clock_drv.h"
 #else
 #include <stdlib.h>
 
@@ -21,6 +22,7 @@ static void tinycrypt_trng_init(void);
 
 static void tinycrypt_trng_init(void)
 {
+    clock_add_to_group(clock_rng, 0);
     rng_init(HPM_RNG);
 }
 

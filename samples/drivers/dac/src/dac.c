@@ -25,6 +25,7 @@ static __RW uint8_t buf0_cmpt_flag;
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(DAC_SOC_BUFF_ALIGNED_SIZE) static uint32_t buffer0[DAC_BUFF0_COUNT];
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(DAC_SOC_BUFF_ALIGNED_SIZE) static uint32_t buffer1[DAC_BUFF1_COUNT];
 
+SDK_DECLARE_EXT_ISR_M(BOARD_DAC_IRQn, isr_dac)
 void isr_dac(void)
 {
     uint32_t status;
@@ -40,7 +41,6 @@ void isr_dac(void)
         buf0_cmpt_flag = 1;
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_DAC_IRQn, isr_dac)
 
 static void init_common_config(dac_mode_t mode)
 {
@@ -60,12 +60,12 @@ static void set_direct_mode_config(void)
 
     /* triangle waveform */
     for (int32_t j = 0; j < 5000; j++) {
-        for (float i = 0; i <= 10000; i += 2.5) {
+        for (float i = 0; i <= 10000; i += 2.5) { /* NOLINT */
             dac_set_direct_config(BOARD_DAC_BASE, (uint16_t)DAC_OUTPUT(i));
             board_delay_us(1);
         }
 
-        for (float i = 10000; i >= 0; i -= 2.5) {
+        for (float i = 10000; i >= 0; i -= 2.5) { /* NOLINT */
             dac_set_direct_config(BOARD_DAC_BASE, (uint16_t)DAC_OUTPUT(i));
             board_delay_us(1);
         }

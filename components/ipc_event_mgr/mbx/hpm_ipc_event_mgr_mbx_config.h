@@ -8,7 +8,7 @@
 #ifndef HPM_IPC_EVENT_MGR_MBX_CONFIG_H
 #define HPM_IPC_EVENT_MGR_MBX_CONFIG_H
 
-
+#define HPM_MBX_CLOCK clock_mbx0
 #if defined(HPM_FEATURE_MBX_SIDE_A)
 #define HPM_MBX HPM_MBX0A
 #define IRQn_MBX IRQn_MBX0A

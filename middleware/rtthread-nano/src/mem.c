@@ -540,6 +540,26 @@ void *rt_calloc(rt_size_t count, rt_size_t size)
     return p;
 }
 
+rt_size_t rt_get_free_size(void * rmem)
+{
+    struct heap_mem *mem;
+
+    if (rmem == RT_NULL)
+        return -1;
+
+    if ((rt_uint8_t *)rmem < (rt_uint8_t *)heap_ptr ||
+        (rt_uint8_t *)rmem >= (rt_uint8_t *)heap_end)
+    {
+        RT_DEBUG_LOG(RT_DEBUG_MEM, ("illegal memory\n"));
+
+        return -1;
+    }
+    /* Get the corresponding struct heap_mem ... */
+    mem = (struct heap_mem *)((rt_uint8_t *)rmem - SIZEOF_STRUCT_MEM);
+
+    return (rt_ubase_t)(mem->next - ((rt_uint8_t *)mem - heap_ptr));
+}
+
 /**
  * This function will release the previously allocated memory block by
  * rt_malloc. The released memory block is taken back to system heap.

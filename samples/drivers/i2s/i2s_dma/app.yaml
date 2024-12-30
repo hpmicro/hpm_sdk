@@ -5,5 +5,3 @@ excluded_targets:
 dependency:
   - i2s
   - board_audio_codec
-  - board_audio_in
-  - board_audio_out

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -133,7 +133,7 @@ hpm_stat_t sdmmc_set_block_size(sdmmc_host_t *host, uint32_t block_size)
     return status;
 }
 
-hpm_stat_t sdmmc_enable_auto_tuning(sdmmc_host_t *host)
+hpm_stat_t sdmmc_enable_auto_tuning(const sdmmc_host_t *host)
 {
     hpm_stat_t status = status_invalid_argument;
 

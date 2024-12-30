@@ -248,21 +248,18 @@ static hpm_stat_t ov7725_set_framesize(camera_context_t *context, uint16_t width
     uint32_t vstart = 0x7U << 1;
     uint32_t hsize = width + 16;
 
-    stat |= ov7725_write_register(context, HSTART, hstart >> 2);
-    stat |= ov7725_write_register(context, HSIZE, hsize >> 2);
-    stat |= ov7725_write_register(context, VSTART, vstart >> 1);
-    stat |= ov7725_write_register(context, VSIZE, height >> 1);
+    HPM_CHECK_RET(ov7725_write_register(context, HSTART, hstart >> 2));
+    HPM_CHECK_RET(ov7725_write_register(context, HSIZE, hsize >> 2));
+    HPM_CHECK_RET(ov7725_write_register(context, VSTART, vstart >> 1));
+    HPM_CHECK_RET(ov7725_write_register(context, VSIZE, height >> 1));
 
-    stat |= ov7725_write_register(context, HOUTSIZE, width >> 2);
-    stat |= ov7725_write_register(context, VOUTSIZE, height >> 1);
+    HPM_CHECK_RET(ov7725_write_register(context, HOUTSIZE, width >> 2));
+    HPM_CHECK_RET(ov7725_write_register(context, VOUTSIZE, height >> 1));
 
-    stat |= ov7725_write_register(context, HREF,
-            ((vstart & 1) << 6) | ((hstart & 3) << 4) | ((height & 1) << 2) | ((hsize & 3) << 0));
+    HPM_CHECK_RET(ov7725_write_register(context, HREF,
+            ((vstart & 1) << 6) | ((hstart & 3) << 4) | ((height & 1) << 2) | ((hsize & 3) << 0)));
 
-    stat = ov7725_write_register(context, EXHCH, ((height & 0x1) << 2) | (width & 0x3));
-    if (stat != status_success) {
-        return stat;
-    }
+    HPM_CHECK_RET(ov7725_write_register(context, EXHCH, ((height & 0x1) << 2) | (width & 0x3)));
     return stat;
 }
 

@@ -126,6 +126,7 @@ typedef struct {
             mcl_motor_dir_t dir;
         } block;
         mcl_offline_param_detection_rundata_t offline_detection;
+        uint32_t current_loop_tick;
     } rundata;
     mcl_user_value_t ref_id;
     mcl_user_value_t ref_iq;
@@ -365,6 +366,7 @@ static inline void hpm_mcl_disable_speed_loop(mcl_loop_t *loop)
 static inline hpm_mcl_stat_t hpm_mcl_disable_dead_area_compensation(mcl_loop_t *loop)
 {
 #if defined(MCL_CFG_EN_DEAD_AREA_COMPENSATION) && MCL_CFG_EN_DEAD_AREA_COMPENSATION
+    MCL_ASSERT_OPT(loop->cfg != NULL, mcl_invalid_pointer);
     loop->cfg->enable_dead_area_compensation = false;
     return mcl_success;
 #else
@@ -381,6 +383,7 @@ static inline hpm_mcl_stat_t hpm_mcl_disable_dead_area_compensation(mcl_loop_t *
 static inline hpm_mcl_stat_t hpm_mcl_enable_dead_area_compensation(mcl_loop_t *loop)
 {
 #if defined(MCL_CFG_EN_DEAD_AREA_COMPENSATION) && MCL_CFG_EN_DEAD_AREA_COMPENSATION
+    MCL_ASSERT_OPT(loop->cfg != NULL, mcl_invalid_pointer);
     loop->cfg->enable_dead_area_compensation = true;
     return mcl_success;
 #else
@@ -397,6 +400,7 @@ static inline hpm_mcl_stat_t hpm_mcl_enable_dead_area_compensation(mcl_loop_t *l
 static inline hpm_mcl_stat_t hpm_mcl_disable_dq_axis_decoupling(mcl_loop_t *loop)
 {
 #if defined(MCL_CFG_EN_DQ_AXIS_DECOUPLING) && MCL_CFG_EN_DQ_AXIS_DECOUPLING
+    MCL_ASSERT_OPT(loop->cfg != NULL, mcl_invalid_pointer);
     loop->cfg->enable_dq_axis_decoupling = false;
     return mcl_success;
 #else
@@ -413,11 +417,28 @@ static inline hpm_mcl_stat_t hpm_mcl_disable_dq_axis_decoupling(mcl_loop_t *loop
 static inline hpm_mcl_stat_t hpm_mcl_enable_dq_axis_decoupling(mcl_loop_t *loop)
 {
 #if defined(MCL_CFG_EN_DQ_AXIS_DECOUPLING) && MCL_CFG_EN_DQ_AXIS_DECOUPLING
+    MCL_ASSERT_OPT(loop->cfg != NULL, mcl_invalid_pointer);
     loop->cfg->enable_dq_axis_decoupling = true;
     return mcl_success;
 #else
     (void)loop;
     return mcl_fail;
+#endif
+}
+
+/**
+ * @brief Get current loop run tick
+ *
+ * @param loop @ref mcl_loop_t
+ * @return uint32_t tick
+ */
+static inline uint32_t hpm_mcl_get_current_loop_run_tick(mcl_loop_t *loop)
+{
+#if defined(MCL_EN_LOOP_TIME_COUNT) && MCL_EN_LOOP_TIME_COUNT
+    return loop->rundata.current_loop_tick;
+#else
+    (void)loop;
+    return 0;
 #endif
 }
 

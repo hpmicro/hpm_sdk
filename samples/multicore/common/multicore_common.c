@@ -10,6 +10,7 @@
 #include "hpm_misc.h"
 #include "hpm_sysctl_drv.h"
 #include "hpm_romapi.h"
+#include "hpm_clock_drv.h"
 #include "multicore_common.h"
 
 ATTR_PLACE_AT_NONCACHEABLE static sdp_dma_ctx_t s_dma_ctx;
@@ -25,7 +26,7 @@ void multicore_release_cpu(uint8_t cpu_id, uint32_t start_addr)
 
     if (!sysctl_is_cpu_released(HPM_SYSCTL, cpu_id)) {
         printf("\nCopying secondary core image to destination memory: %#x\n", sec_core_img_sys_addr);
-
+        clock_add_to_group(clock_sdp, 0);
         rom_sdp_memcpy(p_sdp_ctx, (void *)sec_core_app_sys_addr, (void *)sec_core_img_sys_addr, sec_core_img_size);
         if (l1c_ic_is_enabled() || l1c_dc_is_enabled()) {
             aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN(sec_core_img_sys_addr);

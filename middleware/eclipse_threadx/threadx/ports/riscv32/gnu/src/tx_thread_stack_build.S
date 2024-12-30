@@ -31,7 +31,7 @@
 .global _tx_thread_stack_build
 
 .section .isr_vector, "ax"
-.align 8
+.balign 4
 .type _tx_thread_stack_build, function
 /**************************************************************************/
 /*                                                                        */

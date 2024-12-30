@@ -160,8 +160,10 @@ endfunction()
 # link libraries if feature is true
 #
 # Example:
-#   sdk_ld_options(opts)
-# :param opts: linker options
+#   sdk_link_libraries_ifdef(FEATUREA libs)
+# :param FEATUREA: if FEATUREA is true, opts will be added for linker
+# :param libs: libraries to be linked, support both file path
+#   (like USER_LIB.a) and standard libraries provided by toolchain (like m)
 # @public
 #
 function(sdk_link_libraries_ifdef feature)
@@ -666,6 +668,28 @@ function(sdk_gcc_src)
         target_sources(${HPM_SDK_GCC_LIB} PRIVATE ${path})
     endforeach()
 endfunction()
+
+# Add source specifically for gcc startup
+#
+# Example:
+#   sdk_gcc_startup_src(SOURCE_FILE)
+# :param SOURCE_FILE: source files to be added to HPM_SDK_GCC_STARTUP_LIB
+# @public
+#
+function(sdk_gcc_startup_src)
+    foreach(file ${ARGN})
+        if(IS_DIRECTORY ${file})
+            message(FATAL_ERROR "directory ${file} can't be added to sdk_lib_src")
+        endif()
+        if(IS_ABSOLUTE ${file})
+            set(path ${file})
+        else()
+            set(path ${CMAKE_CURRENT_SOURCE_DIR}/${file})
+        endif()
+        target_sources(${HPM_SDK_GCC_STARTUP_LIB} PRIVATE ${path})
+    endforeach()
+endfunction()
+
 
 # get minimal SDK version needed by application
 # @private

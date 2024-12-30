@@ -234,6 +234,7 @@ void rt_memory_info(rt_uint32_t *total,
                     rt_uint32_t *used,
                     rt_uint32_t *max_used);
 
+rt_size_t rt_get_free_size(void * rmem);
 #ifdef RT_USING_SLAB
 void *rt_page_alloc(rt_size_t npages);
 void rt_page_free(void *addr, rt_size_t npages);
@@ -454,7 +455,7 @@ void rt_components_board_init(void);
 #define rt_kprintf(...)
 #define rt_kputs(str)
 #else
-void rt_kprintf(const char *fmt, ...);
+int rt_kprintf(const char *fmt, ...);
 void rt_kputs(const char *str);
 #endif
 rt_int32_t rt_vsprintf(char *dest, const char *format, va_list arg_ptr);

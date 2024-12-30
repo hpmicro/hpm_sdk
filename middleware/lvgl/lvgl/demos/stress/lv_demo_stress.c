@@ -32,7 +32,7 @@ static void obj_test_task_cb(lv_timer_t * tmr);
  **********************/
 static lv_obj_t * main_page;
 static lv_obj_t * ta;
-static uint32_t mem_free_start = 0;
+static size_t mem_free_start = 0;
 static int16_t g_state = -1;
 
 /**********************
@@ -146,7 +146,7 @@ static void obj_test_task_cb(lv_timer_t * tmr)
             obj = lv_button_create(main_page);
             lv_obj_set_size(obj, 100, 70);
             lv_obj_set_style_bg_image_src(obj, LV_SYMBOL_DUMMY"Text from\nstyle", 0);
-            lv_obj_delete_async(obj);  /*Delete on next call of `lv_task_handler` (so not now)*/
+            lv_obj_delete_async(obj);  /*Delete on next call of `lv_timer_handler` (so not now)*/
             break;
 
         case 5:
@@ -299,7 +299,7 @@ static void obj_test_task_cb(lv_timer_t * tmr)
             obj = lv_table_create(main_page);
             lv_table_set_cell_value(obj, 0, 0, "0,0");
             lv_table_set_cell_value_fmt(obj, 3, 0, "%d,%d", 5, 0);
-            lv_table_set_row_cnt(obj, 5);
+            lv_table_set_row_count(obj, 5);
             lv_table_set_cell_value_fmt(obj, 1, 0, "%s", "1,0");
             lv_table_set_cell_value(obj, 1, 3, "1,3");
             break;
@@ -438,7 +438,7 @@ static void auto_delete(lv_obj_t * obj, uint32_t delay)
 
 static void msgbox_delete(lv_timer_t * tmr)
 {
-    lv_msgbox_close(tmr->user_data);
+    lv_msgbox_close(lv_timer_get_user_data(tmr));
 }
 
 static void set_y_anim(void * obj, int32_t v)

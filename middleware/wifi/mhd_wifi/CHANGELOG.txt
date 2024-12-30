@@ -1,0 +1,7 @@
+#
+# Ampak wmhd driver library - CHANGELOG
+#
+
+## [Version 1.0.11 B003]
+  - For Support Wi-Fi Module AP6256 (bcm43456c5) only.
+  - Update Wi-Fi Firmware for support high throughput.

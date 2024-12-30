@@ -127,6 +127,7 @@ int main(void)
     return 0;
 }
 
+SDK_DECLARE_EXT_ISR_M(APP_QEI_IRQ, isr_qei)
 void isr_qei(void)
 {
     uint32_t status = qeiv2_get_status(APP_QEI_BASE);
@@ -153,7 +154,6 @@ void isr_qei(void)
         s_cycle1_matched = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(APP_QEI_IRQ, isr_qei)
 
 
 static void qeiv2_init(void)

@@ -31,6 +31,12 @@
 #include "hpm_mcl_loop.h"
 #include "hpm_mcl_abz.h"
 #include "hpm_mcl_detect.h"
+#ifdef HPMSOC_HAS_HPMSDK_DMAV2
+#include "hpm_dmav2_drv.h"
+#else
+#include "hpm_dma_drv.h"
+#endif
+#include "hpm_dmamux_drv.h"
 
 #if defined(HPMSOC_HAS_HPMSDK_VSC) && defined(HPMSOC_HAS_HPMSDK_CLC) && defined(HPMSOC_HAS_HPMSDK_QEOV2)
 #define HW_CURRENT_FOC_ENABLE   1
@@ -58,7 +64,8 @@
 #define ADCU_INDEX 0
 #define ADCV_INDEX 1
 
-volatile ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t adc_buff[3][BOARD_BLDC_ADC_PMT_DMA_SIZE_IN_4BYTES];
+volatile ATTR_PLACE_AT_FAST_RAM_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t adc_buff[3][BOARD_BLDC_ADC_PMT_DMA_SIZE_IN_4BYTES];
+volatile ATTR_PLACE_AT_FAST_RAM_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t pwm_buff[6];
 int32_t motor_clock_hz;
 float abs_position_theta;
 adc_type hpm_adc_u = {
@@ -101,9 +108,9 @@ typedef struct {
     } cfg;
 } motor0_t;
 
-motor0_t motor0;
-uint32_t adc_u_midpoint, adc_v_midpoint;
-mcl_user_value_t user_set_theta;
+ATTR_PLACE_AT_FAST_RAM_INIT motor0_t motor0;
+ATTR_PLACE_AT_FAST_RAM_INIT uint32_t adc_u_midpoint, adc_v_midpoint;
+ATTR_PLACE_AT_FAST_RAM_INIT mcl_user_value_t user_set_theta;
 
 hpm_mcl_stat_t enable_all_pwm_output(void);
 hpm_mcl_stat_t disable_all_pwm_output(void);
@@ -281,8 +288,6 @@ void motor_init(void)
     motor0.cfg.loop.mode = mcl_mode_foc;
 #endif
     motor0.cfg.loop.enable_speed_loop = true;
-    hpm_mcl_enable_dq_axis_decoupling(&motor0.loop);
-    hpm_mcl_enable_dead_area_compensation(&motor0.loop);
 
     motor0.cfg.detect.enable_detect = true;
     motor0.cfg.detect.en_submodule_detect.analog = true;
@@ -299,6 +304,8 @@ void motor_init(void)
     hpm_mcl_loop_init(&motor0.loop, &motor0.cfg.loop, &motor0.cfg.mcl,
                     &motor0.encoder, &motor0.analog, &motor0.control, &motor0.drivers, NULL);
     hpm_mcl_detect_init(&motor0.detect, &motor0.cfg.detect, &motor0.loop, &motor0.encoder, &motor0.analog, &motor0.drivers);
+    hpm_mcl_enable_dq_axis_decoupling(&motor0.loop);
+    hpm_mcl_enable_dead_area_compensation(&motor0.loop);
 }
 
 void motor0_speed_loop_para_init(void)
@@ -312,26 +319,26 @@ void motor0_speed_loop_para_init(void)
     motor0.cfg.control.speed_pid_cfg.cfg.kp = 0.01;
     motor0.cfg.control.speed_pid_cfg.cfg.ki = 0.001;
 #else
-    motor0.cfg.control.speed_pid_cfg.cfg.integral_max = 10;
-    motor0.cfg.control.speed_pid_cfg.cfg.integral_min = -10;
+    motor0.cfg.control.speed_pid_cfg.cfg.integral_max = 100;
+    motor0.cfg.control.speed_pid_cfg.cfg.integral_min = -100;
     motor0.cfg.control.speed_pid_cfg.cfg.output_max = 5;
     motor0.cfg.control.speed_pid_cfg.cfg.output_min = -5;
-    motor0.cfg.control.speed_pid_cfg.cfg.kp = 0.5;
-    motor0.cfg.control.speed_pid_cfg.cfg.ki = 0.01;
+    motor0.cfg.control.speed_pid_cfg.cfg.kp = 0.0074;
+    motor0.cfg.control.speed_pid_cfg.cfg.ki = 0.0001;
 
     hpm_mcl_disable_dead_area_compensation(&motor0.loop);
 
     motor0.cfg.control.currentd_pid_cfg.cfg.kp = motor0.cfg.mcl.physical.motor.ls *
-                                                (powf(MOTOR0_CURRENT_LOOP_BANDWIDTH / 100 * 2 * MCL_PI, 2)) *
+                                                (powf(MOTOR0_CURRENT_LOOP_BANDWIDTH * 2 * MCL_PI, 2)) *
                                                 motor0.cfg.mcl.physical.time.current_loop_ts * 1.5f;
     motor0.cfg.control.currentd_pid_cfg.cfg.ki = motor0.cfg.mcl.physical.motor.res *
-                                                (powf(MOTOR0_CURRENT_LOOP_BANDWIDTH / 100 * 2 * MCL_PI, 2)) *
+                                                (powf(MOTOR0_CURRENT_LOOP_BANDWIDTH * 2 * MCL_PI, 2)) *
                                                 motor0.cfg.mcl.physical.time.current_loop_ts * 1.5f;
     motor0.cfg.control.currentq_pid_cfg.cfg.kp = motor0.cfg.mcl.physical.motor.ls *
-                                                (powf(MOTOR0_CURRENT_LOOP_BANDWIDTH / 100 * 2 * MCL_PI, 2)) *
+                                                (powf(MOTOR0_CURRENT_LOOP_BANDWIDTH * 2 * MCL_PI, 2)) *
                                                 motor0.cfg.mcl.physical.time.current_loop_ts * 1.5f;
     motor0.cfg.control.currentq_pid_cfg.cfg.ki = motor0.cfg.mcl.physical.motor.res *
-                                                (powf(MOTOR0_CURRENT_LOOP_BANDWIDTH / 100 * 2 * MCL_PI, 2)) *
+                                                (powf(MOTOR0_CURRENT_LOOP_BANDWIDTH * 2 * MCL_PI, 2)) *
                                                 motor0.cfg.mcl.physical.time.current_loop_ts * 1.5f;
 #endif
 }
@@ -398,8 +405,13 @@ hpm_mcl_stat_t pwm_duty_set(mcl_drivers_channel_t chn, float duty)
         return mcl_fail;
     }
 #if defined(HPMSOC_HAS_HPMSDK_PWM)
+#ifdef HPMSOC_HAS_HPMSDK_DMAV2
+    pwm_buff[index0] = PWM_CMP_CMP_SET((pwm_reload_half - pwm_cmp_half));
+    pwm_buff[index1] = PWM_CMP_CMP_SET((pwm_reload_half + pwm_cmp_half));
+#else
     pwm_cmp_force_value(MOTOR0_BLDCPWM, index0, PWM_CMP_CMP_SET((pwm_reload_half - pwm_cmp_half)));
     pwm_cmp_force_value(MOTOR0_BLDCPWM, index1, PWM_CMP_CMP_SET((pwm_reload_half + pwm_cmp_half)));
+#endif
 #endif
 #if defined(HPMSOC_HAS_HPMSDK_PWMV2)
     pwmv2_shadow_register_unlock(MOTOR0_BLDCPWM);
@@ -545,8 +557,11 @@ void pwm_init(void)
     uint8_t cmp_index = BOARD_BLDCPWM_CMP_INDEX_0;
     pwm_cmp_config_t cmp_config[4] = {0};
     pwm_pair_config_t pwm_pair_config = {0};
-    pwm_output_channel_t pwm_output_ch_cfg;
-
+    pwm_output_channel_t pwm_output_ch_cfg = {0};
+#ifdef HPMSOC_HAS_HPMSDK_DMAV2
+    dma_channel_config_t config = {0};
+    trgm_output_t trgm_output_cfg;
+#endif
     pwm_deinit(MOTOR0_BLDCPWM);
     pwm_stop_counter(MOTOR0_BLDCPWM);
     reset_pwm_counter();
@@ -599,9 +614,42 @@ void pwm_init(void)
     pwm_load_cmp_shadow_on_match(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_TRIG_CMP,  &cmp_config[3]);
 
     pwm_config_cmp(MOTOR0_BLDCPWM, BOARD_BLDC_PWM_TRIG_CMP_INDEX, &cmp_config[2]);
-
+#ifdef HPMSOC_HAS_HPMSDK_DMAV2
+    /* Set comparator channel for trigger a */
+    pwm_output_ch_cfg.cmp_start_index = BOARD_BLDC_DMA_TRGMUX_CMP_INDEX;
+    pwm_output_ch_cfg.cmp_end_index   = BOARD_BLDC_DMA_TRGMUX_CMP_INDEX;
+    pwm_output_ch_cfg.invert_output   = false;
+    pwm_config_output_channel(MOTOR0_BLDCPWM, BOARD_BLDC_DMA_TRGMUX_CMP_INDEX, &pwm_output_ch_cfg);
+    cmp_config[2].cmp = PWM_RELOAD * 0.75;
+    pwm_config_cmp(MOTOR0_BLDCPWM, BOARD_BLDC_DMA_TRGMUX_CMP_INDEX, &cmp_config[2]);
+#endif
     pwm_start_counter(MOTOR0_BLDCPWM);
     pwm_issue_shadow_register_lock_event(MOTOR0_BLDCPWM);
+#ifdef HPMSOC_HAS_HPMSDK_DMAV2
+    trgm_output_cfg.invert = false;
+    trgm_output_cfg.type   = trgm_output_pulse_at_input_both_edge;
+    trgm_output_cfg.input  = BOARD_BLDC_DMA_TRGMUX_IN_NUM;
+    trgm_output_config(BOARD_BLDCPWM_TRGM, BOARD_BLDC_DMA_TRGMUX_DST, &trgm_output_cfg);
+
+    dmamux_config(BOARD_APP_DMAMUX, DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_HDMA, BOARD_BLDC_DMA_CHN),
+                BOARD_BLDC_DMA_MUX_SRC, true);
+    trgm_dma_request_config(BOARD_BLDCPWM_TRGM, BOARD_BLDC_DMA_TRGMUX_INDEX, BOARD_BLDC_DMA_TRGMUX_SRC);
+
+    dma_default_channel_config(BOARD_APP_HDMA, &config);
+
+    config.src_addr = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)&pwm_buff);
+    config.dst_addr = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)&MOTOR0_BLDCPWM->CMP[BOARD_BLDCPWM_CMP_INDEX_0]);
+    config.src_width = DMA_TRANSFER_WIDTH_WORD;
+    config.dst_width = DMA_TRANSFER_WIDTH_WORD;
+    config.src_addr_ctrl = DMA_ADDRESS_CONTROL_INCREMENT;
+    config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_INCREMENT;
+    config.size_in_byte = 24;
+    config.dst_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
+
+    dma_setup_channel(BOARD_APP_HDMA, BOARD_BLDC_DMA_CHN, &config, true);
+    dma_set_infinite_loop_mode(BOARD_APP_HDMA, BOARD_BLDC_DMA_CHN, true);
+    dma_set_handshake_option(BOARD_APP_HDMA, BOARD_BLDC_DMA_CHN, DMA_HANDSHAKE_OPT_ALL_TRANSIZE);
+#endif
 }
 #endif
 
@@ -674,7 +722,7 @@ void pwm_init(void)
     pwmv2_select_cmp_source(MOTOR0_BLDCPWM, 16, cmp_value_from_shadow_val, PWMV2_SHADOW_INDEX(1));
     pwmv2_set_trigout_cmp_index(MOTOR0_BLDCPWM, BOARD_BLDC_PWM_TRIG_OUT_CHN, 16);
 
-    pwmv2_shadow_register_lock(MOTOR0_BLDCPWM);
+    pwmv2_issue_shadow_register_lock_event(MOTOR0_BLDCPWM);
 
     cal.t_param = 4;
     cal.d_param = -4;
@@ -771,7 +819,7 @@ void pwm_init(void)
     pwmv2_select_cmp_source(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_TRIG_CMP, cmp_value_from_shadow_val, PWMV2_SHADOW_INDEX(9));
     pwmv2_set_trigout_cmp_index(MOTOR0_BLDCPWM, BOARD_BLDC_PWM_TRIG_OUT_CHN, BOARD_BLDCPWM_CMP_TRIG_CMP);
     pwmv2_cmp_select_counter(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_TRIG_CMP, pwm_counter_0);
-    pwmv2_shadow_register_lock(MOTOR0_BLDCPWM);
+    pwmv2_issue_shadow_register_lock_event(MOTOR0_BLDCPWM);
 
     /* start counter0,counter1,counter2 */
     pwmv2_enable_multi_counter_sync(MOTOR0_BLDCPWM, 0x07);
@@ -833,6 +881,7 @@ hpm_mcl_stat_t qei_init(void)
     return mcl_success;
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_TMR_IRQ, isr_gptmr)
 void isr_gptmr(void)
 {
     if (gptmr_check_status(BOARD_BLDC_TMR_1MS, GPTMR_CH_CMP_IRQ_MASK(BOARD_BLDC_TMR_CH, BOARD_BLDC_TMR_CMP))) {
@@ -840,12 +889,12 @@ void isr_gptmr(void)
         hpm_mcl_detect_loop(&motor0.detect);
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_TMR_IRQ, isr_gptmr)
 
 static void timer_init(void)
 {
     gptmr_channel_config_t config;
 
+    clock_add_to_group(BOARD_BLDC_TMR_CLOCK, 0);
     gptmr_channel_get_default_config(BOARD_BLDC_TMR_1MS, &config);
     config.debug_mode = 0;
     config.reload = BOARD_BLDC_TMR_RELOAD + 1;
@@ -866,6 +915,7 @@ void init_trigger_mux(TRGM_Type * ptr)
     trgm_output_config(ptr, BOARD_BLDC_TRG_NUM, &trgm_output_cfg);
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_ADC_IRQn, isr_adc)
 void isr_adc(void)
 {
     uint32_t status;
@@ -877,7 +927,6 @@ void isr_adc(void)
         hpm_mcl_loop(&motor0.loop);
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_ADC_IRQn, isr_adc)
 
 void init_trigger_cfg(uint8_t trig_ch, bool inten)
 {
@@ -1065,8 +1114,7 @@ void clc_init(void)
 {
     clc_param_config_t clc_param;
     clc_coeff_config_t clc_coeff0;
-    clc_coeff_config_t clc_coeff1;
-    clc_coeff_config_t clc_coeff2;
+    mcl_control_pid_cfg_t pid;
 
     clc_param.eadc_lowth = 0xA0000000;
     clc_param.eadc_mid_lowth = 0xD0000000;
@@ -1082,33 +1130,23 @@ void clc_init(void)
     clc_config_param(BOARD_CLC, clc_vd_chn, &clc_param);
     clc_config_param(BOARD_CLC, clc_vq_chn, &clc_param);
 
-    clc_coeff0.b0 = 1.2;
-    clc_coeff0.b1 = 0.1;
-    clc_coeff0.b2 = 0.12;
-    clc_coeff0.b3 = 0; /* b3 value must be between -1 ~ 1. */
-    clc_coeff0.a0 = 0.1;
-    clc_coeff0.a1 = 0.1;
-    clc_coeff0.a2 = 0; /* a2 value must be between -1 ~ 1. */
+    /**
+     * @brief Value of incremental pid, this value is different from the positional pid
+     *
+     */
+    pid.kp = 1.94678;
+    pid.ki = 0.000081414;
+    pid.kd = 0;
+
+    hpm_mcl_pid_to_3p3z(&pid, (mcl_clc_coeff_cfg_t *)&clc_coeff0);
     clc_config_coeff(BOARD_CLC, clc_vd_chn, clc_coeff_zone_0, &clc_coeff0);
     clc_config_coeff(BOARD_CLC, clc_vq_chn, clc_coeff_zone_0, &clc_coeff0);
-    clc_coeff1.b0 = 1.2;
-    clc_coeff1.b1 = 0.1;
-    clc_coeff1.b2 = 0.12;
-    clc_coeff1.b3 = 0; /* b3 value must be between -1 ~ 1. */
-    clc_coeff1.a0 = 0.1;
-    clc_coeff1.a1 = 0.1;
-    clc_coeff1.a2 = 0; /* a2 value must be between -1 ~ 1. */
-    clc_config_coeff(BOARD_CLC, clc_vd_chn, clc_coeff_zone_1, &clc_coeff1);
-    clc_config_coeff(BOARD_CLC, clc_vq_chn, clc_coeff_zone_1, &clc_coeff1);
-    clc_coeff2.b0 = 1.2;
-    clc_coeff2.b1 = 0.1;
-    clc_coeff2.b2 = 0.12;
-    clc_coeff2.b3 = 0; /* b3 value must be between -1 ~ 1. */
-    clc_coeff2.a0 = 0.1;
-    clc_coeff2.a1 = 0.1;
-    clc_coeff2.a2 = 0; /* a2 value must be between -1 ~ 1. */
-    clc_config_coeff(BOARD_CLC, clc_vd_chn, clc_coeff_zone_2, &clc_coeff2);
-    clc_config_coeff(BOARD_CLC, clc_vq_chn, clc_coeff_zone_2, &clc_coeff2);
+
+    clc_config_coeff(BOARD_CLC, clc_vd_chn, clc_coeff_zone_1, &clc_coeff0);
+    clc_config_coeff(BOARD_CLC, clc_vq_chn, clc_coeff_zone_1, &clc_coeff0);
+
+    clc_config_coeff(BOARD_CLC, clc_vd_chn, clc_coeff_zone_2, &clc_coeff0);
+    clc_config_coeff(BOARD_CLC, clc_vq_chn, clc_coeff_zone_2, &clc_coeff0);
 
     clc_set_adc_chn_offset(BOARD_CLC, clc_vd_chn, 0, 0);
     clc_set_adc_chn_offset(BOARD_CLC, clc_vq_chn, 0, 0);
@@ -1264,8 +1302,8 @@ int main(void)
     user_speed.enable = true;
     user_speed.value = speed * MCL_PI * 2;
     hpm_mcl_loop_set_speed(&motor0.loop, user_speed);
-    user_mode = 0;
     while (1) {
+        printf("loop current tick: %d\r\n", hpm_mcl_get_current_loop_run_tick(&motor0.loop));
         printf("Mode selection:\r\n");
         printf("0. Location mode.\r\n");
         printf("1. Speed mode.\r\n");
@@ -1312,6 +1350,7 @@ int main(void)
                 }
                 user_speed.value = speed * MCL_PI * 2;
                 hpm_mcl_loop_set_speed(&motor0.loop, user_speed);
+                printf("loop current tick: %d\r\n", hpm_mcl_get_current_loop_run_tick(&motor0.loop));
                 printf("\r\nSpeed mode, motor run, speed is: %f.\r\nInput speed:\r\n", (double)speed);
             }
         }
@@ -1352,6 +1391,7 @@ int main(void)
                 position = atoi(input_data);
                 user_position.value = (float)position * 0.00157079632f;
                 hpm_mcl_loop_set_position(&motor0.loop, user_position);
+                printf("loop current tick: %d\r\n", hpm_mcl_get_current_loop_run_tick(&motor0.loop));
                 printf("\r\nLocation mode, motor run, The location is: %d.\r\nInput Location:\r\n", position);
             }
         }

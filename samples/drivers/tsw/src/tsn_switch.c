@@ -36,6 +36,10 @@ int main(void)
 
     board_init_tsw_pins(APP_TSW);
 
+    board_reset_tsw_phy(APP_TSW, TSW_TSNPORT_PORT1);
+    board_reset_tsw_phy(APP_TSW, TSW_TSNPORT_PORT2);
+    board_reset_tsw_phy(APP_TSW, TSW_TSNPORT_PORT3);
+
     printf("This is a TSN switch demo\n");
 
     /* Disable All MACs(TX/RX) */

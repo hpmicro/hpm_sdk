@@ -225,19 +225,19 @@ VOID isr_enet(ENET_Type *ptr)
 }
 
 #ifdef HPM_ENET0_BASE
+SDK_DECLARE_EXT_ISR_M(IRQn_ENET0, isr_enet0)
 VOID isr_enet0(VOID)
 {
     isr_enet(ENET);
 }
-SDK_DECLARE_EXT_ISR_M(IRQn_ENET0, isr_enet0)
 #endif
 
 #ifdef HPM_ENET1_BASE
+SDK_DECLARE_EXT_ISR_M(IRQn_ENET1, isr_enet1)
 VOID isr_enet1(VOID)
 {
     isr_enet(ENET);
 }
-SDK_DECLARE_EXT_ISR_M(IRQn_ENET1, isr_enet1)
 #endif
 
 #ifndef NX_ENABLE_VLAN

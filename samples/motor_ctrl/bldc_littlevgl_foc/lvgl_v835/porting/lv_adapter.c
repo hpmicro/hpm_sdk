@@ -31,6 +31,7 @@
 #define LVGL_PDMA_IRQ_NUM IRQn_PDMA_D0
 #define LVGL_PDMA_IRQ_PRIORITY 6
 #define LVGL_PDMA_BASE HPM_PDMA
+#define LVGL_PDMA_CLOCK clock_pdma
 
 #define LV_LCD_WIDTH (BOARD_LCD_WIDTH)
 #define LV_LCD_HEIGHT (BOARD_LCD_HEIGHT)
@@ -44,9 +45,9 @@ static lv_color_t __attribute__((section(".framebuffer"), aligned(HPM_L1C_CACHEL
 static lv_color_t __attribute__((section(".framebuffer"), aligned(HPM_L1C_CACHELINE_SIZE))) lv_framebuffer1[LV_FB_SIZE_ALIGNED];
 static lv_color_t __attribute__((section(".framebuffer"), aligned(HPM_L1C_CACHELINE_SIZE))) lcdc_framebuffer[LV_FB_SIZE_ALIGNED];
 #else
-static lv_color_t __attribute__((section(".noncacheable"), aligned(HPM_L1C_CACHELINE_SIZE))) lv_framebuffer0[LV_FB_SIZE_ALIGNED];
-static lv_color_t __attribute__((section(".noncacheable"), aligned(HPM_L1C_CACHELINE_SIZE))) lv_framebuffer1[LV_FB_SIZE_ALIGNED];
-static lv_color_t __attribute__((section(".noncacheable"), aligned(HPM_L1C_CACHELINE_SIZE))) lcdc_framebuffer[LV_FB_SIZE_ALIGNED];
+static lv_color_t __attribute__((section(".noncacheable.non_init"), aligned(HPM_L1C_CACHELINE_SIZE))) lv_framebuffer0[LV_FB_SIZE_ALIGNED];
+static lv_color_t __attribute__((section(".noncacheable.non_init"), aligned(HPM_L1C_CACHELINE_SIZE))) lv_framebuffer1[LV_FB_SIZE_ALIGNED];
+static lv_color_t __attribute__((section(".noncacheable.non_init"), aligned(HPM_L1C_CACHELINE_SIZE))) lcdc_framebuffer[LV_FB_SIZE_ALIGNED];
 #endif
 
 #else
@@ -55,8 +56,8 @@ static lv_color_t __attribute__((section(".noncacheable"), aligned(HPM_L1C_CACHE
 static lv_color_t __attribute__((section(".framebuffer"), aligned(HPM_L1C_CACHELINE_SIZE))) lv_framebuffer0[LV_FB_SIZE_ALIGNED];
 static lv_color_t __attribute__((section(".framebuffer"), aligned(HPM_L1C_CACHELINE_SIZE))) lv_framebuffer1[LV_FB_SIZE_ALIGNED];
 #else
-static lv_color_t __attribute__((section(".noncacheable"), aligned(HPM_L1C_CACHELINE_SIZE))) lv_framebuffer0[LV_FB_SIZE_ALIGNED];
-static lv_color_t __attribute__((section(".noncacheable"), aligned(HPM_L1C_CACHELINE_SIZE))) lv_framebuffer1[LV_FB_SIZE_ALIGNED];
+static lv_color_t __attribute__((section(".noncacheable.non_init"), aligned(HPM_L1C_CACHELINE_SIZE))) lv_framebuffer0[LV_FB_SIZE_ALIGNED];
+static lv_color_t __attribute__((section(".noncacheable.non_init"), aligned(HPM_L1C_CACHELINE_SIZE))) lv_framebuffer1[LV_FB_SIZE_ALIGNED];
 #endif
 static lv_color_t *lcdc_framebuffer = lv_framebuffer1;
 
@@ -102,6 +103,7 @@ static void lvgl_pdma_init(struct lv_adapter *ctx)
 #else
     display_pixel_format_t pixel_format = display_pixel_format_rgb565;
 #endif
+    clock_add_to_group(LVGL_PDMA_CLOCK, RUNNING_CORE_INDEX);
     pdma_get_default_config(LVGL_PDMA_BASE, &config, pixel_format);
 
     config.enable_plane = pdma_plane_src;
@@ -244,16 +246,16 @@ static void lv_flush_display_direct(lv_disp_drv_t *disp_drv, const lv_area_t *ar
     lvgl_pdma_start(ctx);
 }
 
-static void lvgl_pdma_isr(void)
+SDK_DECLARE_EXT_ISR_M(LVGL_PDMA_IRQ_NUM, lvgl_pdma_isr)
+void lvgl_pdma_isr(void)
 {
     pdma_enable_irq(LVGL_PDMA_BASE, PDMA_CTRL_PDMA_DONE_IRQ_EN_MASK, false);
     pdma_stop(LVGL_PDMA_BASE);
     lvgl_pdma_done(&lv_adapter_ctx);
 }
 
-SDK_DECLARE_EXT_ISR_M(LVGL_PDMA_IRQ_NUM, lvgl_pdma_isr);
-
-static void hpm_lcdc_isr(void)
+SDK_DECLARE_EXT_ISR_M(LCD_IRQ_NUM, hpm_lcdc_isr)
+void hpm_lcdc_isr(void)
 {
     volatile uint32_t s = lcdc_get_dma_status(LCD_CONTROLLER);
     lcdc_clear_dma_status(LCD_CONTROLLER, s);
@@ -262,7 +264,6 @@ static void hpm_lcdc_isr(void)
         lv_adapter_ctx.direct_vsync = 1;
     }
 }
-SDK_DECLARE_EXT_ISR_M(LCD_IRQ_NUM, hpm_lcdc_isr)
 
 #else
 
@@ -289,7 +290,8 @@ static void lv_flush_display_full(lv_disp_drv_t *disp_drv, const lv_area_t *area
     ctx->wait_flush_buffer = wait_flush_buffer;
 }
 
-static void hpm_lcdc_isr(void)
+SDK_DECLARE_EXT_ISR_M(LCD_IRQ_NUM, hpm_lcdc_isr)
+void hpm_lcdc_isr(void)
 {
     volatile uint32_t s = lcdc_get_dma_status(LCD_CONTROLLER);
     lcdc_clear_dma_status(LCD_CONTROLLER, s);
@@ -302,7 +304,6 @@ static void hpm_lcdc_isr(void)
         lv_disp_flush_ready(&lv_adapter_ctx.disp_drv);
     }
 }
-SDK_DECLARE_EXT_ISR_M(LCD_IRQ_NUM, hpm_lcdc_isr)
 
 #endif/*LVGL_CONFIG_FLUSH_DIRECT_MODE_ENABLE*/
 

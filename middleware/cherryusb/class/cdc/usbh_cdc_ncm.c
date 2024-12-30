@@ -48,7 +48,7 @@ static int usbh_cdc_ncm_get_ntb_parameters(struct usbh_cdc_ncm *cdc_ncm_class, s
     setup->wLength = 28;
 
     ret = usbh_control_transfer(cdc_ncm_class->hport, setup, g_cdc_ncm_buf);
-    if (ret < 0) {
+    if (ret < 8) {
         return ret;
     }
 
@@ -403,9 +403,9 @@ const struct usbh_class_driver cdc_ncm_class_driver = {
 
 CLASS_INFO_DEFINE const struct usbh_class_info cdc_ncm_class_info = {
     .match_flags = USB_CLASS_MATCH_INTF_CLASS | USB_CLASS_MATCH_INTF_SUBCLASS | USB_CLASS_MATCH_INTF_PROTOCOL,
-    .class = USB_DEVICE_CLASS_CDC,
-    .subclass = CDC_NETWORK_CONTROL_MODEL,
-    .protocol = CDC_COMMON_PROTOCOL_NONE,
+    .bInterfaceClass = USB_DEVICE_CLASS_CDC,
+    .bInterfaceSubClass = CDC_NETWORK_CONTROL_MODEL,
+    .bInterfaceProtocol = CDC_COMMON_PROTOCOL_NONE,
     .id_table = NULL,
     .class_driver = &cdc_ncm_class_driver
 };

@@ -8,11 +8,10 @@
 #include "board.h"
 #include <stdio.h>
 #include "hpm_l1c_drv.h"
-#include "hpm_clock_drv.h"
 #include "hpm_femc_drv.h"
 
 #define SRAM_BASE_ADDR 0x48000000U
-#define SRAM_SIZE 4096
+#define SRAM_SIZE      BOARD_FEMC_ASYNC_SRAM_SIZE
 
 static void rw_comparison(uint32_t start, uint32_t size_in_byte)
 {
@@ -68,9 +67,9 @@ static void rw_comparison(uint32_t start, uint32_t size_in_byte)
 
 static void init_sram_config(void)
 {
-    uint32_t femc_clk_in_hz = board_init_femc_clock();
     femc_config_t config = {0};
     femc_sram_config_t sram_config = {0};
+    uint32_t femc_clk_in_hz = board_init_femc_clock();
 
     femc_default_config(HPM_FEMC, &config);
     femc_init(HPM_FEMC, &config);
@@ -78,7 +77,33 @@ static void init_sram_config(void)
     femc_get_typical_sram_config(HPM_FEMC, &sram_config);
     sram_config.base_address = SRAM_BASE_ADDR;
     sram_config.size_in_byte = SRAM_SIZE;
+    sram_config.cs_index = BOARD_FEMC_ASYNC_SRAM_CS_INDEX;
     sram_config.port_size = FEMC_SRAM_PORT_SIZE_16_BITS;
+
+    if (BOARD_FEMC_ASYNC_SRAM_AD_MUX_MODE) {
+        sram_config.address_mode = FEMC_SRAM_AD_MUX_MODE;
+        sram_config.adv_hold_state = FEMC_SRAM_ADV_HOLD_LOW;
+        sram_config.adv_polarity = FEMC_SRAM_ADV_ACTIVE_HIGH;
+        sram_config.oeh_in_ns = 0;
+        sram_config.oel_in_ns = 50;
+        sram_config.weh_in_ns = 0;
+        sram_config.wel_in_ns = 50;
+        sram_config.ah_in_ns = 25;
+        sram_config.as_in_ns = 25;
+        sram_config.ceh_in_ns = 0;
+        sram_config.ces_in_ns = 0;
+    } else {
+        sram_config.address_mode = FEMC_SRAM_AD_NONMUX_MODE;
+        sram_config.oeh_in_ns = 0;
+        sram_config.oel_in_ns = 50;
+        sram_config.weh_in_ns = 0;
+        sram_config.wel_in_ns = 50;
+        sram_config.ah_in_ns = 25;
+        sram_config.as_in_ns = 25;
+        sram_config.ceh_in_ns = 0;
+        sram_config.ces_in_ns = 0;
+    }
+
     femc_config_sram(HPM_FEMC, femc_clk_in_hz, &sram_config);
 }
 
@@ -87,7 +112,7 @@ int main(void)
     l1c_dc_disable();
 
     board_init();
-    init_sram_pins();
+    init_femc_pins();
     init_sram_config();
 
     printf("sram example\n");

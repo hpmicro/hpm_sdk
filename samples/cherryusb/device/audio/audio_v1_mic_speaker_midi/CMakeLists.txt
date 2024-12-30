@@ -12,7 +12,7 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(cherryusb_device_audio_v1_mic_midi_speaker)
 
-sdk_compile_definitions(-DCONFIG_USB_DEVICE_FS)
+sdk_compile_definitions(-DCONFIG_USB_DEVICE_FORCE_FULL_SPEED)
 sdk_inc(../../../config)
 sdk_inc(src)
 sdk_app_src(src/main.c)

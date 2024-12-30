@@ -15,7 +15,7 @@
 int main(void)
 {
     board_init();
-    board_init_usb_pins();
+    board_init_usb((USB_Type *)CONFIG_HPM_USBD_BASE);
 
     board_init_pdm_clock();
     init_pdm_pins();

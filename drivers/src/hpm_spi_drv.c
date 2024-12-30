@@ -419,10 +419,11 @@ hpm_stat_t spi_transfer(SPI_Type *ptr,
                         uint8_t *wbuff, uint32_t wcount, uint8_t *rbuff, uint32_t rcount)
 {
     hpm_stat_t stat = status_fail;
-    uint8_t mode, data_len_in_bytes, trans_mode;
+    spi_mode_selection_t mode;
+    uint8_t data_len_in_bytes, trans_mode;
 
     /* read spi control mode */
-    mode = (ptr->TRANSFMT & SPI_TRANSFMT_SLVMODE_MASK) >> SPI_TRANSFMT_SLVMODE_SHIFT;
+    mode = (spi_mode_selection_t)((ptr->TRANSFMT & SPI_TRANSFMT_SLVMODE_MASK) >> SPI_TRANSFMT_SLVMODE_SHIFT);
 
     /* When acting as a host, it is necessary to determine whether the SPI bus is active to ensure that only one device accesses the bus. */
     if ((mode == spi_master_mode) && (spi_is_active(ptr) == true)) {
@@ -489,10 +490,10 @@ hpm_stat_t spi_setup_dma_transfer(SPI_Type *ptr,
                         uint32_t wcount, uint32_t rcount)
 {
     hpm_stat_t stat = status_fail;
-    uint8_t mode;
+    spi_mode_selection_t mode;
 
     /* read spi control mode */
-    mode = (ptr->TRANSFMT & SPI_TRANSFMT_SLVMODE_MASK) >> SPI_TRANSFMT_SLVMODE_SHIFT;
+    mode = (spi_mode_selection_t)((ptr->TRANSFMT & SPI_TRANSFMT_SLVMODE_MASK) >> SPI_TRANSFMT_SLVMODE_SHIFT);
 
     /* When acting as a host, it is necessary to determine whether the SPI bus is active to ensure that only one device accesses the bus. */
     if ((mode == spi_master_mode) && (spi_is_active(ptr) == true)) {

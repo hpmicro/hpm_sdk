@@ -284,7 +284,6 @@ typedef struct {
  *
  * Output data type:
  * 0:Real Q31, 1:Real Q15, 2:Complex Q31, 3:Complex Q15
- * 4:complex sp float 5: real sp float
  */
 #define FFA_OP_CMD_OUTD_TYPE_MASK (0x38000UL)
 #define FFA_OP_CMD_OUTD_TYPE_SHIFT (15U)
@@ -296,7 +295,6 @@ typedef struct {
  *
  * Coef data type (used for FIR):
  * 0:Real Q31, 1:Real Q15, 2:Complex Q31, 3:Complex Q15
- * 4:complex sp float 5: real sp float
  */
 #define FFA_OP_CMD_COEF_TYPE_MASK (0x7000U)
 #define FFA_OP_CMD_COEF_TYPE_SHIFT (12U)
@@ -308,7 +306,6 @@ typedef struct {
  *
  * Input data type:
  * 0:Real Q31, 1:Real Q15, 2:Complex Q31, 3:Complex Q15
- * 4:complex sp float 5: real sp float
  */
 #define FFA_OP_CMD_IND_TYPE_MASK (0xE00U)
 #define FFA_OP_CMD_IND_TYPE_SHIFT (9U)

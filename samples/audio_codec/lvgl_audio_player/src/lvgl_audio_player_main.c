@@ -87,11 +87,9 @@ static void init_gptmr1(uint32_t ms)
     uint32_t gptmr_freq;
     gptmr_channel_config_t config;
 
-    gptmr_channel_get_default_config(HPM_GPTMR1, &config);
-
     clock_add_to_group(clock_gptmr1, 0);
+    gptmr_channel_get_default_config(HPM_GPTMR1, &config);
     gptmr_freq = clock_get_frequency(clock_gptmr1);
-
     config.reload = gptmr_freq / 1000 * ms;
     gptmr_channel_config(HPM_GPTMR1, 0, &config, false);
     gptmr_enable_irq(HPM_GPTMR1, GPTMR_CH_RLD_IRQ_MASK(0));
@@ -100,15 +98,16 @@ static void init_gptmr1(uint32_t ms)
     gptmr_start_counter(HPM_GPTMR1, 0);
 }
 
-static void lv_audio_codec_task_isr(void)
+SDK_DECLARE_EXT_ISR_M(IRQn_GPTMR1, lv_audio_codec_task_isr)
+void lv_audio_codec_task_isr(void)
 {
     if (gptmr_check_status(HPM_GPTMR1, GPTMR_CH_RLD_STAT_MASK(0))) {
         gptmr_clear_status(HPM_GPTMR1, GPTMR_CH_RLD_STAT_MASK(0));
         lv_audio_codec_task();
     }
 }
-SDK_DECLARE_EXT_ISR_M(IRQn_GPTMR1, lv_audio_codec_task_isr);
 
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 void isr_dma(void)
 {
     volatile hpm_stat_t stat;
@@ -126,7 +125,6 @@ void isr_dma(void)
         }
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 
 int main(void)
 {
@@ -220,7 +218,7 @@ static void lv_audio_codec_task(void)
     case 1:
         if (!is_music_playing()) {
             dma_disable_channel(BOARD_APP_XDMA, TARGET_I2S_TX_DMA_CH);
-            if ((I2S_STA_TX_DN_GET(i2s_get_irq_status(TARGET_I2S)) & (0x01 << TARGET_I2S_DATA_LINE)) != 0u) {
+            if ((I2S_STA_TX_DN_GET(i2s_get_irq_status(TARGET_I2S)) & (0x01 << TARGET_I2S_TX_DATA_LINE)) != 0u) {
 #if defined(USING_DAO) && USING_DAO
                 dao_stop(HPM_DAO);
 #endif
@@ -241,7 +239,7 @@ static void lv_audio_codec_task(void)
         break;
     }
 
-    if (s_playing_finished && is_i2s_buff_empty() && ((I2S_STA_TX_DN_GET(i2s_get_irq_status(TARGET_I2S)) & (0x01 << TARGET_I2S_DATA_LINE)) != 0u)) {
+    if (s_playing_finished && is_i2s_buff_empty() && ((I2S_STA_TX_DN_GET(i2s_get_irq_status(TARGET_I2S)) & (0x01 << TARGET_I2S_TX_DATA_LINE)) != 0u)) {
         s_switch_songs_req = true;
     }
 }

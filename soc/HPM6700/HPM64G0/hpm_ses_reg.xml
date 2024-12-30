@@ -19062,7 +19062,6 @@
       <BitField name="INV_HSYNC" start="27" size="1"/>
       <BitField name="INV_VSYNC" start="26" size="1"/>
       <BitField name="SWAP16_EN" start="25" size="1"/>
-      <BitField name="PACK_DIR" start="24" size="1"/>
       <BitField name="RESTART_BUSPTR" start="23" size="1"/>
       <BitField name="ASYNC_RXFIFO_CLR" start="20" size="1"/>
       <BitField name="SYNC_RXFIFO_CLR" start="19" size="1"/>
@@ -19115,12 +19114,6 @@
     <Register name="CR18" start="+0x4c" size="0x4">
       <BitField name="CAM_ENABLE" start="31" size="1"/>
       <BitField name="AWQOS" start="7" size="4"/>
-    </Register>
-    <Register name="DMASA_UV1" start="+0x50" size="0x4">
-      <BitField name="PTR" start="2" size="30"/>
-    </Register>
-    <Register name="DMASA_UV2" start="+0x54" size="0x4">
-      <BitField name="PTR" start="2" size="30"/>
     </Register>
     <Register name="CR20" start="+0x58" size="0x4">
       <BitField name="BINARY_EN" start="31" size="1"/>
@@ -19925,7 +19918,6 @@
       <BitField name="INV_HSYNC" start="27" size="1"/>
       <BitField name="INV_VSYNC" start="26" size="1"/>
       <BitField name="SWAP16_EN" start="25" size="1"/>
-      <BitField name="PACK_DIR" start="24" size="1"/>
       <BitField name="RESTART_BUSPTR" start="23" size="1"/>
       <BitField name="ASYNC_RXFIFO_CLR" start="20" size="1"/>
       <BitField name="SYNC_RXFIFO_CLR" start="19" size="1"/>
@@ -19978,12 +19970,6 @@
     <Register name="CR18" start="+0x4c" size="0x4">
       <BitField name="CAM_ENABLE" start="31" size="1"/>
       <BitField name="AWQOS" start="7" size="4"/>
-    </Register>
-    <Register name="DMASA_UV1" start="+0x50" size="0x4">
-      <BitField name="PTR" start="2" size="30"/>
-    </Register>
-    <Register name="DMASA_UV2" start="+0x54" size="0x4">
-      <BitField name="PTR" start="2" size="30"/>
     </Register>
     <Register name="CR20" start="+0x58" size="0x4">
       <BitField name="BINARY_EN" start="31" size="1"/>

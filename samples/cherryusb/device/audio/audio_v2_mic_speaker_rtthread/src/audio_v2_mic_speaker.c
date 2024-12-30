@@ -498,6 +498,7 @@ void i2s_enable_dma_irq_with_priority(int32_t priority)
     intc_m_enable_irq_with_priority(BOARD_APP_XDMA_IRQ, priority);
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 void isr_dma(void)
 {
     volatile uint32_t speaker_status;
@@ -521,7 +522,6 @@ void isr_dma(void)
         }
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 
 void request_handler_speaker_set_sampling_freq(void)
 {

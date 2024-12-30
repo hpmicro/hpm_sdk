@@ -1,5 +1,345 @@
 # Change Log
 
+## [1.8.0] - 2024-12-31:
+
+Main changes since 1.7.0
+Tested Segger Embedded Studio Version: 8.20
+Tested Zcc toolchain 3.2.4
+
+### Changed:
+  - soc: TRGMMUX: add description in hpm_trgmmux_src.h
+  - soc: update hpm_core_clock when setting cpu clock
+  - soc: update header files.
+  - soc: unified clock name
+  - soc: update header file from hpm_soc_info
+  - soc: romapi add fencei to xpi nor apis.
+  - drivers:sdxc add new API and optimize the transfer handling logic.
+  - drivers: cam: remove the pack_dir assignments for CR register
+  - drivers: lobs: update lobs driver
+  - drivers: i2c: add status_i2c_bus_busy enumeration member
+  - drivers: femc: update delay cell config
+  - drivers: sei: update wait len for hpm5300 sei async communication
+  - drivers: sei: update hpm5300 asynchronous mode
+  - drivers: i2s: support different tx/rx channel in duplex mode
+  - drivers: camera: pix format support yuv422
+  - drivers: uart: add new API uart_enable_rx_function.
+  - drivers: pwm: Increased output 100 percent duty cycle with centre symmetry.
+  - drivers: tsw: add APIs to support Qbu, CB, and Qci
+  - components: spi: Optimize SPI clock division for hpm_spi_set_sclk_frequency API
+  - components: debug_console: keep symbols used by ses library
+  - boards: remove unused macro BOARD_USB
+  - boards: enable only common clock in board_init_clock()
+  - boards: add board_init_i2c_clock() API
+  - boards: uart and spi use default clock frequency 80MHz
+  - boards: change BOARD_APP_I2S_DATA_LINE to BOARD_APP_I2S_TX_DATA_LINE and BOARD_APP_I2S_RX_DATA_LINE
+  - boards: hpm6800evk reduce ddr io leakage.
+  - boards: HPM6E00evk: add pin setting for uart lin slave
+  - boards: enet: replace with macro for clock setting APIs
+  - middleware: hpm_mcl_v2: add pll filter
+  - middleware: rtt: iar: rtt_risc_v_trap_handler align to 4 byte
+  - middleware: freertos: new critical protection method
+  - middleware: vglite: update to 4.0.87.
+  - middleware: hpm_sdmmc switch to adma3 descriptor by default.
+  - middleware: cherryusb: update video stack to use pingpang buffer
+  - middleware: cherryusb: update to v1.4.2
+  - middleware: lvgl: change vglite mode to cacheable
+  - middleware: lvgl: update lvgl library source.
+  - middleware: wifi: mhd_wifi format the source code.
+  - middleware: rtthread-nano rt_kprintf update to v4.1.1 .
+  - middleware: wifi: mhd_wifi optimize lib including path.
+  - middleware: wifi: mhd_wifi update wifi stack with BSD license.
+  - middleware: add version or changelog
+  - middleware: wifi: mhd_wifi add license and changelog.
+  - middleware: hpm_sdmmc: mmc,sdio optimize cache-maintenance efficiency.
+  - middleware: hpm_sdmmc: hpm_sdmmc_host add new API and optimize transfer logic.
+  - samples: uart_tamagawa: update uart trigger.
+  - samples: SDM: add console to test different function.
+  - samples: dmav2: update dmav2 fixed burst transfer size
+  - samples/components/middleware: use clock_get_core_clock_ticks_per_us() and clock_get_core_clock_ticks_per_ms() instead of hpm_core_clock
+  - samples: lobs: use lobs_signal_group_t and lobs_trace_data_t
+  - samples/middleware/components: add clock to group by applications
+  - samples: i2c: use add board_init_i2c_clock() API
+  - samples: audio sample dependency change
+  - samples: dhrysone: update compile options
+  - samples: i2s: use BOARD_APP_I2S_TX_DATA_LINE instead of BOARD_APP_I2S_DATA_LINE
+  - samples: mcl: bldc_foc: modify clc to use the pid parameter
+  - samples: audio: update codec I2S channel.
+  - samples: lwip: common: single & multiple: eliminate two "Down" status at the first linkup
+  - samples: tsn: all: samples: tsn: all: eliminate two Down status at the first linkup
+  - samples: erpc: update button pressed
+  - samples: cherryusb: use BOARD_BUTTON_PRESSED_VALUE instead of APP_BUTTON_PRESSED_VALUE
+  - samples: spi_components: half duplex: add notice content for all readme
+  - samples: spi_components: fixed compile waring on SES for half duplex slave dma sample
+  - samples: drivers: tsw: add phy reset logic
+  - samples: lwip: lwip_iperf_multi_ports: app.yaml: update excluded target list
+  - samples: ecat_io: update DC setting in README
+  - samples: tflm: optimized speed.
+  - samples: i2s: change HDMA to XDMA
+  - samples: plb: pulseoutput: rename init_plb_pins() to init_plb_pulse_pins()
+  - samples: ecat: support initializing eeprom data.
+  - samples: lwip: mhd_wifi_demo optimize TCP RX and UDP RX performance.
+  - samples: lwip_tcpclient_freertos_socket: eliminate the use of the global variable gnetif
+  - samples: ppi: sram: update as/ah stage time
+  - samples: cherryusb: adapter to cherryusb v1.4.2
+  - samples: pwm: add pwm duty 0-100 output
+  - samples: lwip: mhd_wifi_demo update limitation.
+  - samples: lwip: mhd_wifi_demo add limitation for andes&zcc toolchain.
+  - samples: tsn: tsn_psfp_egress: adjust some settings.
+  - utils: hpm_swap: exclude bswapxx for segger_rtl
+  - docs: add plb filter doc to index
+  - docs: samples: drivers: mipi_csi: update the project setting configuration
+  - cmake: toolchain: update RV_ABI for nds-gcc, when it's not set
+
+### Fixed:
+  - isr: adjust SDK_DECLARE_EXT_ISR_x position to fix clang warning
+  - soc: irq s mode: fix CONFIG_RTTHREAD lost
+  - soc: hpm6e00: ip:  tsw: fix the access attributes of TXDATA/TSYN_TXBUF_TQUE_AND_TX_LEN in BIN
+  - soc: linker: add "*" to some sections
+  - soc: modify register used by DSP in IRQ nesting, from s0 to s4 .
+  - soc: modify interrupt handler under vector mode
+  - soc: add section .isr_vector.*
+  - soc: fix freertos vectormode build error
+  - soc: hpm6e00: fix the register offset in cb frer module
+  - soc: reset.c: weak __dso_handle
+  - soc: HPM6700: HPM6750: acmp: fix missing a dependent clock setting.
+  - soc: HPM6E00: fix TRGM register header file
+  - drivers: pdgo: fix incorrect register accessing
+  - drivers: sdm: remove useless function and add new API.
+  - drivers: hpm_enc_pos_drv: fix build warning when -Werror=double-promotion
+  - drivers: i2c: fixed data length assignment error for i2c_master_address_read API
+  - drivers: sdxc enable adma3 support.
+  - drivers: tsw: add the missing doxygen description for the return value from tsw_shap_set_cbs
+  - drivers: tsw: fix no update trigger in tsw_get_rtc_offset
+  - drivers: tsw: fix missing the higher part of second in tsw_set_rtc_offset
+  - drivers: femc: update sram default config
+  - drivers: femc: support sdram1 and sram1/2 config
+  - drivers: vsc: fix sw only inject adc value don't trigger vd/vq calculation
+  - drivers: plb: fix enum plb_type_a_lut_num
+  - drivers: trgm: fix trgm_filter_mode_stable_high and trgm_filter_mode_stable_low
+  - drivers: fix error status checking in esc_phy API
+  - drivers: tsw: fix compile warning with andes toolchain
+  - drivers: pla: fix pla comment.
+  - drivers: pwmv2: fix pwmv2 driver code error.
+  - drivers: pwmv2: disable pwm forced output by default.
+  - drivers: sdm: fix API to avoid configuring wrong register value if multiple calls.
+  - drivers: set ewdg window mode timeout to 101ms.
+  - drivers: sdxc correct typo in sdxc status code.
+  - drivers: canopen fix can related boards iar build error.
+  - drivers: tsw: fix failing to control gate to close in static mode.
+  - drivers: tsw: fix size filtering for psfp setting.
+  - drivers: acmp: fix using a fixed acmp clock source name.
+  - drivers: mcan fix typo in mcan driver.
+  - components: serial_nor: fixed the issue of address and data phase assignment error when parsing the read instruction parameters of SFDP
+  - components: plb_lin_clock: change variable types to avoid overflow.
+  - components: enet_phy: jl1111: fix register address info.
+  - components: spi: due to divide by 2, the SPI frequency division is allowed to be 0 for hpm_spi_set_sclk_frequency API
+  - boards: fix core1 don't init hpm_core_clock
+  - boards: hpm6800evk:: fixed the GPTMR COMP position error for readme
+  - boards: hpm6750evkmini: fix touch reset timing.
+  - boards: sdram: add and use macro BOARD_SDRAM_COLUMN_ADDR_BITS
+  - boards: hpm6750evk2/hpm6300evk: change init_sdram_pins() to init_femc_pins()
+  - boards: hpm6750evkmini: remove ETH0_EVTO_2/ETH0_EVTI_2 pin setting
+  - boards: enet: fix missing clock source setting for RGMII port
+  - boards: fix RGB pin pad setting.
+  - boards: hpm6e00evk: correct uart_lin pin setting
+  - boards: hpm5301evklite: pinmux: change the same of init_gptmr_pins API pin for  init_gptmr_channel_pin API
+  - boards: hpm6200evk: set cpu clock using pll1clk1, avoid impact pll1clk0
+  - boards: hpm6800evk: set dcdcm work mode to 1
+  - boards: board_sd_configure_clock fix clock unstable issue during transition.
+  - boards: hpm6300/hpm6700/hpm6800: fix BOARD_BUTTON_PRESSED_VALUE error
+  - boards: fix missing board-level acmp clock setting API.
+  - boards：openocd: hpm6300evk.cfg: correct delay cell setting
+  - boards: openocd: fix openocd access non-standard csr problem
+  - boards: hpm6200evk: fix BOARD_CPU_FREQ value
+  - middleware: add canopen v2.0 support.
+  - middleware: improve freeRTOS vector mode isr efficiency
+  - middleware: fix segger compile error
+  - middleware: vglite: fix build error
+  - middleware: optimize threadx related CMakeLists
+  - middleware: optimize uC/OS-III related CMakeLists
+  - middleware: optimize FreeRTOS related CMakeLists
+  - middleware: fix ucos_iii core1 error
+  - middleware: fix .align error in s files
+  - middleware: hpm_mclv2: preventing divide-by-zero errors in alpha beta.
+  - middleware: hpm_mclv2: Fixing the motor with many pole pairs at the wrong angle.
+  - middleware: lwip: opt.h: recover LWIP_TCPIP_CORE_LOCKING setting to 1
+  - middleware: hpm_sdmmc: spi sdcard: fix spi sdcard log redirection definition error issue
+  - middleware: rtthread-nano finsh rx add receiving buffer .
+  - middleware: lvgl: fix large screen logo incorrect
+  - middleware: put function into section isr_vector
+  - middleware: hpm_mcl_v2: fix calls can lead to illegal pointer accesses.
+  - middleware: rtthread-nano,delete print wrapper.
+  - middleware: mbedtls: port: fix the logic of sourcing sdp files when there's no sdp on the specified soc
+  - middleware: fix trace_recorder rtt error
+  - middleware: rtthread-nano,fix thread detach not schedule.
+  - middleware: rtthread-nano,modify console marco dependency.
+  - middleware: rtthread-nano add declaration in interrupt.S.
+  - middleware: fix trace recorder IAR build error
+  - middleware: hpm_sdmmc fix errors reported by clang-tidy.
+  - middleware: hpm_sdmmc: hpm_sdmmc_sd Fix logic issue for getting card flag and read last sector.
+  - middleware: hpm_mcl_v2: Fix wrong sector number.
+  - middleware: hpm_sdmmc ensure the ADMA3 table is 8-byte aligned.
+  - samples: multicore_hello: change core1 demo from pwm to gptmr.
+  - samples: rgb_led: use pwmv2 to support led control.
+  - samples: rom_api: xpi_nor_api correct the read_status instruction seq.
+  - samples: usb: fix segger compile error
+  - samples: i2c_components: add initialize the i2c clock
+  - samples: i2c_components: rename the cmakelists file to CMakeLists
+  - samples: uart_lin_salve: add board lin transceiver control.
+  - samples: drivers: gpio: Fixed the problem of not working properly on both edge trigger mode
+  - samples: tinyusb/usbx: host: fix build warning
+  - samples: tsn: tsn_time_aware_scheduling: fix comment error
+  - samples: lwip: common: multiple: fix compiling error with zcc toolchain
+  - samples: femc: sram: use macro BOARD_FEMC_ASYNC_SRAM_AD_MUX_MODE and BOARD_FEMC_ASYNC_SRAM_SIZE
+  - samples: femc: sram: use macro BOARD_FEMC_ASYNC_SRAM_CS_INDEX
+  - samples: update section .fast_ram to .fast_ram.non_init and .noncacheable to .noncacheable.non_init
+  - samples: lwip: fix the comment for ICMP checksum
+  - samples: lvgl_audio_player: fix build error for update lvgl v9.2
+  - samples: lvgl: rtos: fix compilation error for using RECURSIVE_MUTEXES in lvgl.
+  - samples: spi_components: half_duplex: dma: for master,  Need to determine SPI transmission completion when send
+  - samples: pmbus: change SMBUS related macro definitions to PMBUS
+  - samples: drivers: gptmr: timer_basic: fixed the issue the time information was not printed
+  - samples: drivers: pllctlv2 Correct UART buadrate after preset switching.
+  - samples: drivers: pllctl Avoid access to FLASH during clock transition.
+  - samples: motor_ctrl: bldc_lvgl: fix compiler error
+  - samples: lwip: ports: rtthread-nano: multiple: arch: sys_arch.c: fix that value stored to 'ret' is never read
+  - samples: lwip_tcpecho_multi_ports_rtthread-nano: tcp_echo.c: fix that valued stored is never read
+  - samples: motor_ctrl: use pwmv2_issue_shadow_register_lock_event.
+  - samples: rdc: fix rdc desynchronization causing accuracy errors.
+  - samples: lwip: mhd_wifi_demo fix zcc compiling error.
+  - samples: drivers: pllctl force XTAL on in case RC24M is not trimmed.
+  - samples: rtthread rvbacktrace tshell thread stack overflow under zcc.
+  - samples: rvbacktrace, add volatile keyword to prevent optimization.
+  - samples: opener/motor: set motor speed to zero at start
+  - samples: fix multicore/erpc/motor project link error
+  - samples: enable gptmr clock in OpENer/motor sample
+  - samples: disable dhcp in sntp sample by default
+  - samples: mbedtls: fix program exception blocking
+  - samples: lwip_https_server: fix function error
+  - samples: separate rev and pos data in 53xx soc
+  - samples: rom_api: xpi_nor_api place flash API into RAM.
+  - samples: modbus: tcp: fix lwip init warning for IAR build type
+  - samples: add some info to trace recorder samples
+  - samples: pwmv2: fix one clock cycle of pulses at startup.
+  - samples: spi_sdcard: add SPI transfer completion judgment for DMA transmission
+  - samples: enet: pps: fix no output
+  - samples: jpeg_decode: fix extract jpeg head failed
+  - samples: lwip_tcpecho_multi_ports_rtthread-nano: fix DHCP failure
+  - samples: bldc_foc: fix speed loop parameters.
+  - samples: image: fix udisk build failure
+  - samples: tsn: tsn_credit_based_shaper: fix getting phy link status logic
+  - samples: qeo_dac: add dac clock enable in sample.
+  - samples: uart lin slave buadrate adaptive fix readme.
+  - samples: drivers: dma: dma_use_gptmr_event_transfer: adjust the clock_add_to_group API call order for gptmr
+  - samples: plb doc: index change to glob
+  - samples: ecat_foe/ecat_cia402 add missing macro.
+  - samples: ecat: rename eeprom_update image file
+  - samples: fix canopen release type PDO block.
+  - samples: canopen add to sample list.
+  - samples: exclude OpENer motor sample from hpm6750evk2 and hpm6300evk
+  - samples: motor_ctrl: motor running noise.
+  - samples: i2s_emulation: fixed the abnormal playback issue if there is no recorded content
+  - samples: rom_api: xpi_nor_api Fix crashing when using zcc toolchain.
+  - samples: usbx: msc: fix doc description error
+  - samples: cdc_acm_uart_com: fix readme max baudrate description
+  - samples: tsn: fix log format for RX-Time.
+  - samples: tsn: tsn_frame_preemption_egress: fix FPE indication value error.
+  - samples: tsn: frame_preemption_ingress: fix that eth smac doesn't match with arp smac.
+  - samples: tsn: tsn_frame_preemption_ingress: fix that the preemption logic is not expected with flash_sdram_xip in release configuration.
+  - samples: lwip_tcpecho_multi_ports_rtthread-nano: fix the main thread stack overflow with the zcc toolchain
+  - samples: plic button sometimes does not work.
+  - samples: fix trace recorder doc
+  - samples: exclude unsupported sample
+  - samples: image: encoder: fix encoder flow
+  - samples: uart_tamagawa: change hardware trig way
+  - samples: fix compilation error related to struct timeval with andesight toolchain
+  - samples: motor_ctrl: bldc_offline_param: Fixing Printing Information Errors.
+  - samples: motor_ctrl: Fixing speed switching causing motor stalling
+  - samples: SEI: add missing clear interrupt flag code
+  - docs: readme: fix plb pin descriptor
+  - docs: get_started: replace hpm6750evk with hpm6750evkmini
+  - docs: rvbacktrace, add rvbacktrace docstree to the sample docstree.
+  - docs: add motor related information in readme
+  - docs: rdc: Add description of initial position.
+  - docs: hpm6e00evk: fix plb filter pins descriptor
+
+### Added:
+  - soc: add clock_get_core_clock_ticks_per_us() and clock_get_core_clock_ticks_per_ms() APIs
+  - soc: clock driver add clock_wait_source_stable API.
+  - drivers: i2c: add i2c_set_direction API
+  - drivers: i2c: add enable and disable stop phase APIs for master
+  - drivers: i2c: add enable and disable data phase APIs for master
+  - drivers: i2c: add enable and disable address phase APIs for master
+  - drivers: i2c: add enable and disable start phase APIs for master
+  - drivers: i2c: add i2c_master_set_slave_address API
+  - drivers: i2c: add i2c_master_issue_data_transmission API
+  - drivers: i2c: add i2c_set_data_count API
+  - drivers: i2s: add i2s_config_multiline_transfer() API
+  - drivers: sdxc add api for interrupt_signal retrieval.
+  - drivers: adc12: fix using a wrong calibration value
+  - drivers: ffa: add long data support.
+  - drivers: qeiv2: add qeiv2_config_phmax() and qeiv2_config_phparam() APIs
+  - drivers: sdm: add new feature GATE/Timestamp API.
+  - components: add i2c component
+  - components: enet_phy: add enum enet_phy_link_unknown in enet_phy_link_status_t
+  - components: spi: add the spi slave is not support QSPI and DSPI judgment
+  - components: add plb filter component
+  - components: add plb lin clock detection.
+  - boards: add macro BOARD_BUTTON_PRESSED_VALUE
+  - boards: hpm6750evk2: pinmux: fix build warning in init_sdxc_clk_data_pins() with zcc toolchain
+  - middleware: hpm_sdmmc add sdio support.
+  - middleware: modify rvbacktrace resources file.
+  - middleware: add RvBacktrace resources.
+  - middleware: add trace recorder rtthread support
+  - middleware: add trace recorder support
+  - middleware: add uC/OS-III gptmr support
+  - middleware: usb: add macro CONFIG_USB_DEVICE_FORCE_FULL_SPEED instead of CONFIG_USB_DEVICE_FS
+  - middleware: usb: add macro CONFIG_USB_HOST_FORCE_FULL_SPEED to force usb host working in full speed
+  - middleware: add OpENer support
+  - middleware: fatfs: sdxc add support for interrupt-driven mode.
+  - middleware: hpm_sdmmc add support for interrupt-driven mode and osal.
+  - middleware: hpm_mcl: add 3p3z convert pid function.
+  - middleware: wifi add the MHD wifi stack.
+  - samples: add rtthread rvbacktrace under using fp register.
+  - samples: add baremetal rvbacktrace under no using fp.
+  - samples: add baremetal rvbacktrace using fp.
+  - samples: add info to OpENer samples's doc
+  - samples: add rtthread trace recorder sample
+  - samples: add trace recorder freertos sample
+  - samples: add uC/OS-III hello world using gptmr as systick source
+  - samples: add master and slave samples for i2c dma components
+  - samples: add master and slave samples for i2c polling components
+  - samples: add OpEner multicore motor control
+  - samples: add OpEner motor control
+  - samples: add OpENer blinky
+  - samples: spi_components: slave: add notice content for all slave samples readme doc
+  - samples: drivers: spi: add notice content for all spi slave readme doc
+  - samples: sdxc add support for interrupt-driven mode.
+  - samples: lwip: add conditional compilation for application macros
+  - samples: lwip: add a lwip_udpecho_freertos_socket sample
+  - samples: lwip: add a lwip_udpecho_rtthread-nano
+  - samples: lwip: add a lwip_udpecho_freertos sample
+  - samples: lwip: add a lwip_udpecho
+  - samples: lwip: lwip_tcpclient_freertos_socket: add a macro name of task priority for netif_update_link_status
+  - samples: lwip: lwip_tcpecho_freertos_socket: add a macro name of task priority for netif_update_link_status
+  - samples: cherryusb: add cdc acm host sample
+  - samples: motor_ctrl: bldc_xxx & step_motor_foc: add missing diff_sel passed into adc12_init
+  - samples: ethercat: ecat_cia402: motor: bldc_foc: add missing diff_sel passed into adc12_init
+  - samples: drivers: adc: adc12: add missing diff_sel passed into adc12_int
+  - samples: tsn: tsn_ethernet: lwip_tcpecho: add interrupt usage
+  - samples: plb: add plb filter sample
+  - samples: optimize demo current loop time.
+  - samples: lwip: mhd_wifi_demo add wifi demo for ap6256.
+  - samples: add uart lin slave buadrate adaptive samples.
+  - samples: cherryusb: add uvc demo
+  - samples: lwip: common: single: add an API for getting the DHCP ready staus when enabling DHCP
+  - samples: lwip: add a lwip_ping_freertos_socket sample
+  - samples: tsn: add tsn_psfp_egress
+  - samples: tsn: add tsn_stmid_frer_ingress
+  - samples: tsn: add tsn_stmid_frer_egress
+  - samples: tsn: add tsn_frame_preeemption_ingress
+  - samples: tsn: add tsn_frame_preemption_egress
+
 ## [1.7.0] - 2024-09-30:
 
 Main changes since 1.6.0
@@ -732,7 +1072,7 @@ Tested IAR Embedded Workbench for RISC-V Version: 3.20.1
   - middleware: ptpd: fix netShutdown error in ptpd initialization
   - middleware: cmsis_os2: task should call exit interface before exit
   - middleware: threadx: fix threadx profile RA register save and restore bug.
-  - middleware: hpm_mcl: fix divide-by-zero error. refs: hpm_sdk-#1091
+  - middleware: hpm_mcl: fix divide-by-zero error.
   - middleware: cherryusb/tinyusb/usbx: device: fix transfer_len not reset
   - middleware: cherryusb/usbx: fix dtd return problem
   - middleware: cherryusb/tinyusb/usbx: fix usb device interrupt should be check active status
@@ -752,7 +1092,7 @@ Tested IAR Embedded Workbench for RISC-V Version: 3.20.1
   - samples: sdxc: add boundary protection for last 1024 blocks test
   - samples: lwip: common: multiple: fix typo of enet_update_dhcp_state()
   - samples: lwip: common: single/multiple: fix timeout passed into sys_arch_mbox_fetch()
-  - samples: e2prom: bugfix: base read fail if run perf firstly .refs:hpm_sdk-#1499
+  - samples: e2prom: bugfix: base read fail if run perf firstly .
   - samples: modbus: tcp:  use volatile to prevent the compiler from optimizing out key variables
   - samples: modbus: rtu: fixed failed to run after turning on optimization issue.
   - samples: power_mode_switch: hpm68xx: fix ddr access issue for wait/stop mode
@@ -1756,3 +2096,4 @@ All changes since 0.6.2
   - samples: drivers: gpiom: Add example to demonstrate gpiom's function
   - drivers: common: add macro to put data into noncacheable sections
   - middleware: integrate lwip
+

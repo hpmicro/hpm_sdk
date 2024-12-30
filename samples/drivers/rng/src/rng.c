@@ -18,6 +18,7 @@ int main(void)
     board_init();
     printf("rng example\n");
     printf("rng init\n");
+    clock_add_to_group(clock_rng, 0);
     stat = rng_init(HPM_RNG);
     if (stat) {
         printf("failed to rng_init: 0x%x\n", stat);

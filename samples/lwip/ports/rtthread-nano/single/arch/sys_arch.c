@@ -145,9 +145,6 @@ u32_t sys_arch_sem_wait(sys_sem_t *sem, u32_t timeout)
 
     if (ret == -RT_ETIMEOUT) {
         return SYS_ARCH_TIMEOUT;
-    } else {
-        if (ret == RT_EOK)
-            ret = 1;
     }
 
     /* get elapse msecond */

@@ -9,9 +9,10 @@
 #define _HPM_BOARD_H
 #include <stdio.h>
 #include "hpm_common.h"
-#include "hpm_clock_drv.h"
 #include "hpm_soc.h"
 #include "hpm_soc_feature.h"
+#include "hpm_clock_drv.h"
+#include "hpm_lobs_drv.h"
 #include "pinmux.h"
 #if !defined(CONFIG_NDEBUG_CONSOLE) || !CONFIG_NDEBUG_CONSOLE
 #include "hpm_debug_console.h"
@@ -29,6 +30,7 @@
 
 /* ACMP desction */
 #define BOARD_ACMP             HPM_ACMP0
+#define BOARD_ACMP_CLK         clock_acmp0
 #define BOARD_ACMP_CHANNEL     ACMP_CHANNEL_CHN1
 #define BOARD_ACMP_IRQ         IRQn_ACMP0_1
 #define BOARD_ACMP_PLUS_INPUT  ACMP_INPUT_DAC_OUT  /* use internal DAC */
@@ -45,6 +47,14 @@
 #endif
 
 #define BOARD_APP_UART_BREAK_SIGNAL_PIN IOC_PAD_PF27
+
+/* Trigger UART: UART0~3 use HPM_TRGM0_OUTPUT_SRC_UART_TRIG0, UART4~7 use HPM_TRGM0_OUTPUT_SRC_UART_TRIG1 */
+#define BOARD_APP_UART_TRIG HPM_TRGM0_OUTPUT_SRC_UART_TRIG0
+#define BOARD_UART_TRGM                     HPM_TRGM0
+#define BOARD_UART_TRGM_GPTMR               HPM_GPTMR3
+#define BOARD_UART_TRGM_GPTMR_CLK           clock_gptmr3
+#define BOARD_UART_TRGM_GPTMR_CH            2
+#define BOARD_UART_TRGM_GPTMR_INPUT         HPM_TRGM0_INPUT_SRC_GPTMR3_OUT2
 
 /* uart rx idle demo section */
 #define BOARD_UART_IDLE            BOARD_APP_UART_BASE
@@ -83,11 +93,11 @@
 #define BOARD_ENET_RMII_PPS0_PINOUT (1)
 
 /* tsw section */
-#define BOARD_TSW           HPM_TSW
-#define BOARD_TSW_PORT      TSW_TSNPORT_PORT3
-#define BOARD_TSW_IRQ       IRQn_TSW_3
-#define BOARD_TSW_PORT_NUM  TSW_TSNPORT_PORT3 + 1
-#define BOARD_TSW_PORT_ITF  tsw_port_phy_itf_rgmii
+#define BOARD_TSW          HPM_TSW
+#define BOARD_TSW_PORT     TSW_TSNPORT_PORT3
+#define BOARD_TSW_IRQ      IRQn_TSW_3
+#define BOARD_TSW_PORT_NUM TSW_TSNPORT_PORT3 + 1
+#define BOARD_TSW_PORT_ITF tsw_port_phy_itf_rgmii
 
 #define BOARD_TSW_PORT1_PORT2_PHY_RST_GPIO       HPM_GPIO0
 #define BOARD_TSW_PORT1_PORT2_PHY_RST_GPIO_INDEX GPIO_DO_GPIOA
@@ -110,8 +120,9 @@
 #define BOARD_UART_LIN          BOARD_APP_UART_BASE
 #define BOARD_UART_LIN_IRQ      BOARD_APP_UART_IRQ
 #define BOARD_UART_LIN_CLK_NAME BOARD_APP_UART_CLK_NAME
-#define BOARD_UART_LIN_TX_PORT  GPIO_DI_GPIOC
-#define BOARD_UART_LIN_TX_PIN   (23U) /* PC23 should align with used pin in pinmux configuration */
+#define BOARD_UART_LIN_TX_PORT  GPIO_DI_GPIOY
+#define BOARD_UART_LIN_TX_PIN   (7U) /* PY07 is used UART_LIN tx function, align with used pin in pinmux configuration */
+#define BOARD_UART_LIN_PLB_TRGM_IN_SRC HPM_TRGM0_INPUT_SRC_TRGM0_P05 /* align with used pin in pinmux configuration */
 
 #if !defined(CONFIG_NDEBUG_CONSOLE) || !CONFIG_NDEBUG_CONSOLE
 #ifndef BOARD_CONSOLE_TYPE
@@ -139,7 +150,9 @@
 #endif
 
 /* rtthread-nano finsh section */
-#define BOARD_RT_CONSOLE_BASE BOARD_CONSOLE_UART_BASE
+#define BOARD_RT_CONSOLE_BASE        BOARD_CONSOLE_UART_BASE
+#define BOARD_RT_CONSOLE_CLK_NAME    BOARD_CONSOLE_UART_CLK_NAME
+#define BOARD_RT_CONSOLE_IRQ         BOARD_CONSOLE_UART_IRQ
 
 /* modbus sample section */
 #define BOARD_MODBUS_UART_BASE       BOARD_APP_UART_BASE
@@ -148,12 +161,13 @@
 #define BOARD_MODBUS_UART_TX_DMA_REQ BOARD_APP_UART_TX_DMA_REQ
 
 /* sdram section */
-#define BOARD_SDRAM_ADDRESS       (0x40000000UL)
-#define BOARD_SDRAM_SIZE          (32 * SIZE_1MB)
-#define BOARD_SDRAM_CS            FEMC_SDRAM_CS0
-#define BOARD_SDRAM_PORT_SIZE     FEMC_SDRAM_PORT_SIZE_16_BITS
-#define BOARD_SDRAM_REFRESH_COUNT (8192UL)
-#define BOARD_SDRAM_REFRESH_IN_MS (64UL)
+#define BOARD_SDRAM_ADDRESS          (0x40000000UL)
+#define BOARD_SDRAM_SIZE             (32 * SIZE_1MB)
+#define BOARD_SDRAM_CS               FEMC_SDRAM_CS0
+#define BOARD_SDRAM_PORT_SIZE        FEMC_SDRAM_PORT_SIZE_16_BITS
+#define BOARD_SDRAM_COLUMN_ADDR_BITS FEMC_SDRAM_COLUMN_ADDR_9_BITS
+#define BOARD_SDRAM_REFRESH_COUNT    (8192UL)
+#define BOARD_SDRAM_REFRESH_IN_MS    (64UL)
 
 /* nor flash section */
 #define BOARD_FLASH_BASE_ADDRESS (0x80000000UL)
@@ -173,7 +187,8 @@
 
 /* i2s section */
 #define BOARD_APP_I2S_BASE           HPM_I2S0
-#define BOARD_APP_I2S_DATA_LINE      I2S_DATA_LINE_0
+#define BOARD_APP_I2S_TX_DATA_LINE   I2S_DATA_LINE_0
+#define BOARD_APP_I2S_RX_DATA_LINE   I2S_DATA_LINE_0
 #define BOARD_APP_I2S_CLK_NAME       clock_i2s0
 #define BOARD_APP_AUDIO_CLK_SRC      clock_source_pll2_clk0
 #define BOARD_APP_AUDIO_CLK_SRC_NAME clk_pll2clk0
@@ -189,15 +204,6 @@
 #define BOARD_SPEAKER_I2S_CLK_NAME      clock_i2s1
 #define BOARD_SPEAKER_I2S_DATA_LINE     I2S_DATA_LINE_0
 #define BOARD_SPEAKER_I2S_TX_DMAMUX_SRC HPM_DMA_SRC_I2S1_TX
-
-#define BOARD_MASTER_I2S               HPM_I2S0
-#define BOARD_MASTER_I2S_CLK_NAME      clock_i2s0
-#define BOARD_MASTER_I2S_RX_LINE       I2S_DATA_LINE_1
-#define BOARD_MASTER_I2S_RX_DMAMUX_SRC HPM_DMA_SRC_I2S0_RX
-
-#define BOARD_SLAVE_I2S               HPM_I2S0
-#define BOARD_SLAVE_I2S_DATA_LINE     I2S_DATA_LINE_1
-#define BOARD_SLAVE_I2S_TX_DMAMUX_SRC HPM_DMA_SRC_I2S0_TX
 
 /* pdm selection */
 #define BOARD_PDM_SINGLE_CHANNEL_MASK (1U)
@@ -245,6 +251,7 @@
 #define BOARD_APP_GPIO_INDEX GPIO_DI_GPIOB
 #define BOARD_APP_GPIO_PIN   24
 #define BOARD_APP_GPIO_IRQ   IRQn_GPIO0_B
+#define BOARD_BUTTON_PRESSED_VALUE 0
 
 #define BOARD_APP_GPIO_CTRL2  HPM_GPIO0
 #define BOARD_APP_GPIO_INDEX2 GPIO_DI_GPIOB
@@ -307,9 +314,6 @@
 #define BOARD_CALLBACK_TIMER_IRQ      IRQn_GPTMR3
 #define BOARD_CALLBACK_TIMER_CLK_NAME (clock_gptmr3)
 
-/* USB section */
-#define BOARD_USB HPM_USB0
-
 /* LED */
 #define BOARD_R_GPIO_CTRL  HPM_GPIO0
 #define BOARD_R_GPIO_INDEX GPIO_DI_GPIOE
@@ -330,32 +334,26 @@
 #define BOARD_LED_TOGGLE_RGB 1
 
 /* RGB LED Section */
-#define BOARD_RED_PWM_IRQ              IRQn_PWM1
-#define BOARD_RED_PWM                  HPM_PWM1
-#define BOARD_RED_PWM_OUT_CH           6
-#define BOARD_RED_PWM_SHADOW_ID        1
-#define BOARD_RED_PWM_CMP_ID           6
-#define BOARD_RED_PWM_COUNTER_INDEX    2
-#define BOARD_RED_PWM_CMP_INITIAL_ZERO true
-#define BOARD_RED_PWM_CLOCK_NAME       clock_mot1
+#define BOARD_RED_PWM_IRQ                IRQn_PWM1
+#define BOARD_RED_PWM                    HPM_PWM1
+#define BOARD_RED_PWM_OUT                pwm_channel_6
+#define BOARD_RED_PWM_CMP                12
+#define BOARD_RED_PWM_CMP_INITIAL_ZERO   true
+#define BOARD_RED_PWM_CLOCK_NAME         clock_pwm1
 
 #define BOARD_GREEN_PWM_IRQ              IRQn_PWM1
 #define BOARD_GREEN_PWM                  HPM_PWM1
-#define BOARD_GREEN_PWM_OUT_CH           7
-#define BOARD_GREEN_PWM_SHADOW_ID        2
-#define BOARD_GREEN_PWM_CMP_ID           7
-#define BOARD_GREEN_PWM_COUNTER_INDEX    2
+#define BOARD_GREEN_PWM_OUT              pwm_channel_7
+#define BOARD_GREEN_PWM_CMP              14
 #define BOARD_GREEN_PWM_CMP_INITIAL_ZERO true
-#define BOARD_GREEN_PWM_CLOCK_NAME       clock_mot1
+#define BOARD_GREEN_PWM_CLOCK_NAME       clock_pwm1
 
-#define BOARD_BLUE_PWM_IRQ              IRQn_PWM0
-#define BOARD_BLUE_PWM                  HPM_PWM0
-#define BOARD_BLUE_PWM_OUT_CH           4
-#define BOARD_BLUE_PWM_SHADOW_ID        3
-#define BOARD_BLUE_PWM_CMP_ID           4
-#define BOARD_BLUE_PWM_COUNTER_INDEX    1
-#define BOARD_BLUE_PWM_CMP_INITIAL_ZERO true
-#define BOARD_BLUE_PWM_CLOCK_NAME       clock_mot0
+#define BOARD_BLUE_PWM_IRQ               IRQn_PWM0
+#define BOARD_BLUE_PWM                   HPM_PWM0
+#define BOARD_BLUE_PWM_OUT               pwm_channel_4
+#define BOARD_BLUE_PWM_CMP               8
+#define BOARD_BLUE_PWM_CMP_INITIAL_ZERO  true
+#define BOARD_BLUE_PWM_CLOCK_NAME        clock_pwm0
 
 #define BOARD_RGB_RED   0
 #define BOARD_RGB_GREEN (BOARD_RGB_RED + 1)
@@ -366,11 +364,11 @@
 #define BOARD_ENET_RGMII_RST_GPIO_INDEX GPIO_DO_GPIOA
 #define BOARD_ENET_RGMII_RST_GPIO_PIN   (14U)
 
-#define BOARD_ENET_RGMII        HPM_ENET0
-#define BOARD_ENET_RGMII_TX_DLY (0U)
-#define BOARD_ENET_RGMII_RX_DLY (0U)
-
-#define BOARD_ENET_RGMII_PTP_CLOCK (clock_ptp0)
+#define BOARD_ENET_RGMII             HPM_ENET0
+#define BOARD_ENET_RGMII_TX_DLY      (0U)
+#define BOARD_ENET_RGMII_RX_DLY      (0U)
+#define BOARD_ENET_RGMII_PTP_CLOCK   (clock_ptp0)
+#define BOARD_ENET_RGMII_PPS0_PINOUT (1)
 
 /* MOTOR */
 #define BOARD_MOTOR_CLK_NAME clock_mot0
@@ -411,6 +409,13 @@
 #define BOARD_BLDC_ADC_PREEMPT_TRIG_LEN       (1U)
 #define BOARD_BLDC_TRG_NUM                    TRGM_TRGOCFG_ADCX_PTRGI0A
 #define BOARD_BLDC_PWM_TRIG_OUT_CHN           (0U)
+#define BOARD_BLDC_DMA_MUX_SRC                HPM_DMA_SRC_MOT_0
+#define BOARD_BLDC_DMA_CHN                    (0U)
+#define BOARD_BLDC_DMA_TRGMUX_DST             TRGM_TRGOCFG_TRGM_DMA0
+#define BOARD_BLDC_DMA_TRGMUX_SRC             HPM_TRGM0_DMA_SRC_TRGM0
+#define BOARD_BLDC_DMA_TRGMUX_INDEX           TRGM_DMACFG_0
+#define BOARD_BLDC_DMA_TRGMUX_CMP_INDEX       (9U)
+#define BOARD_BLDC_DMA_TRGMUX_IN_NUM          HPM_TRGM0_INPUT_SRC_PWM0_CH9REF
 
 /* BLDC TRGM */
 #define BOARD_BLDC_TRIGMUX_IN_NUM      HPM_TRGM0_INPUT_SRC_PWM1_TRGO_0
@@ -452,7 +457,6 @@
 #define BOARD_BLDC_TMR_CMP       0
 #define BOARD_BLDC_TMR_IRQ       IRQn_GPTMR2
 #define BOARD_BLDC_TMR_CLOCK     clock_gptmr2
-#define BOARD_BLDC_TMR_PERIOD_MS (1u)
 #define BOARD_BLDC_TMR_RELOAD    (100000U)
 
 /* HALL */
@@ -467,7 +471,7 @@
 #define BOARD_RDC_ADC_Q_BASE                HPM_ADC1
 #define BOARD_RDC_ADC_I_CHN                 (14U)
 #define BOARD_RDC_ADC_Q_CHN                 (10U)
-#define BOARD_RDC_ADC_IRQn                  IRQn_ADC0
+#define BOARD_RDC_IRQ                  IRQn_RDC0
 #define BOARD_RDC_ADC_TRIG_FLAG             adc16_event_trig_complete
 #define BOARD_RDC_ADC_TRG                   ADC16_CONFIG_TRG0A
 #define BOARD_APP_RDC_ADC_MATRIX_TO_ADC0    trgm_adc_matrix_output_to_rdc0_adc0
@@ -496,6 +500,8 @@
 #define BOARD_APP_QEI_ADC_MATRIX_FROM_ADC_SIN trgm_adc_matrix_in_from_adc0
 
 /* PLB */
+#define BOARD_PLB_CLOCK_NAME           clock_plb0
+
 #define BOARD_PLB_COUNTER              HPM_PLB
 #define BOARD_PLB_PWM_BASE             HPM_PWM0
 #define BOARD_PLB_PWM_CLOCK_NAME       clock_mot0
@@ -504,7 +510,6 @@
 #define BOARD_PLB_IN_PWM_TRG_NUM       (TRGM_TRGOCFG_PLB_IN_00)
 #define BOARD_PLB_IN_PWM_PULSE_TRG_NUM (TRGM_TRGOCFG_PLB_IN_02)
 #define BOARD_PLB_CLR_SIGNAL_INPUT     (HPM_TRGM0_INPUT_SRC_PLB_OUT32)
-#define BOARD_PLB_TYPEB_INPUT0         (TRGM_TRGOCFG_PLB_IN_32)
 #define BOARD_PLB_OUT_TRG              (HPM_TRGM0_INPUT_SRC_PLB_OUT00)
 #define BOARD_PLB_IO_TRG_NUM           (TRGM_TRGOCFG_MOT_GPIO5)
 #define BOARD_PLB_IO_TRG_SHIFT         (5)
@@ -517,6 +522,10 @@
 #define BOARD_PLB_QEI_A_PIN_SOURCE      HPM_TRGM0_INPUT_SRC_TRGM0_P06
 #define BOARD_PLB_QEI_B_PIN_SOURCE      HPM_TRGM0_INPUT_SRC_TRGM0_P07
 #define BOARD_PLB_QEI_Z_PIN_SOURCE      HPM_TRGM0_INPUT_SRC_TRGM0_P05
+
+#define BOARD_PLB_FILTER_SIG_INPUT_SOURCE  HPM_TRGM0_INPUT_SRC_TRGM0_P10
+#define BOARD_PLB_FILTER_SIG_OUTUPT_SOURCE HPM_TRGM0_OUTPUT_SRC_MOT_GPIO12
+#define BOARD_PLB_FILTER_IO_TRG_SHIFT      (12)
 
 /* QEO */
 #define BOARD_QEO          HPM_QEO0
@@ -602,6 +611,10 @@
 
 #define BOARD_ECAT_PHY_ADDR_OFFSET (0U)
 
+/* I2C is required when ESC use actual eeprom devices, I2C use to init EEPROM content */
+#define BOARD_ECAT_INIT_EEPROM_I2C HPM_I2C1
+#define BOARD_ECAT_INIT_EEPROM_I2C_CLK clock_i2c1
+
 #ifndef BOARD_SHOW_CLOCK
 #define BOARD_SHOW_CLOCK 1
 #endif
@@ -631,8 +644,14 @@
 #define BOARD_THREADX_LOWPOWER_TIMER_IRQ      IRQn_PTMR
 #define BOARD_THREADX_LOWPOWER_TIMER_CLK_NAME clock_ptmr
 
+/* uC/OS-III Definitions */
+#define BOARD_UCOS_TIMER          HPM_GPTMR6
+#define BOARD_UCOS_TIMER_CHANNEL  1
+#define BOARD_UCOS_TIMER_IRQ      IRQn_GPTMR6
+#define BOARD_UCOS_TIMER_CLK_NAME clock_gptmr6
+
 /* LOBS */
-#define BOARD_LOBS_TRIG_GROUP 5 /* group5 <--> PF */
+#define BOARD_LOBS_TRIG_GROUP lobs_signal_group_PF
 #define BOARD_LOBS_TRIG_PIN   26
 
 /* i2s over spi Section*/
@@ -678,6 +697,7 @@ void board_init(void);
 void board_init_console(void);
 void board_init_core1(void);
 void board_init_uart(UART_Type *ptr);
+uint32_t board_init_i2c_clock(I2C_Type *ptr);
 void board_init_i2c(I2C_Type *ptr);
 void board_init_can(MCAN_Type *ptr);
 void board_init_sdram_pins(void);
@@ -697,6 +717,7 @@ uint32_t board_init_uart_clock(UART_Type *ptr);
 uint32_t board_init_spi_clock(SPI_Type *ptr);
 uint32_t board_init_can_clock(MCAN_Type *ptr);
 uint32_t board_init_adc_clock(void *ptr, bool clk_src_bus);
+void board_init_acmp_clock(ACMP_Type *ptr);
 void board_init_i2s_pins(I2S_Type *ptr);
 uint32_t board_config_i2s_clock(I2S_Type *ptr, uint32_t sample_rate);
 uint32_t board_init_pdm_clock(void);
@@ -704,8 +725,7 @@ uint32_t board_init_dao_clock(void);
 void board_init_dao_pins(void);
 void board_init_adc16_pins(void);
 void board_init_acmp_pins(void);
-void board_init_usb_pins(void);
-void board_usb_vbus_ctrl(uint8_t usb_index, uint8_t level);
+void board_init_usb(USB_Type *ptr);
 void board_init_enet_pps_pins(ENET_Type *ptr);
 void board_init_enet_pps_capture_pins(ENET_Type *ptr);
 uint8_t board_get_enet_dma_pbl(ENET_Type *ptr);
@@ -740,6 +760,11 @@ void board_init_sei_pins(SEI_Type *ptr, uint8_t sei_ctrl_idx);
 void board_init_adc_qeiv2_pins(void);
 
 void board_init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp);
+
+uint8_t board_get_led_pwm_off_level(void);
+void board_disable_output_rgb_led(uint8_t color);
+void board_enable_output_rgb_led(uint8_t color);
+void board_init_rgb_pwm_pins(void);
 
 #if defined(__cplusplus)
 }

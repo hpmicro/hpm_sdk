@@ -159,6 +159,10 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
     uint32_t payload_offset = 0;
     enet_tx_desc_t  *tx_desc_list_cur = desc.tx_desc_list_cur;
 
+    if (p == NULL) {
+        return ERR_VAL;
+    }
+
 #if defined(LWIP_PTP) && LWIP_PTP
     enet_ptp_ts_system_t timestamp;
 #endif

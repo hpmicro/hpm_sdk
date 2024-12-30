@@ -32,7 +32,7 @@
 #endif
 #define CODEC_I2S            BOARD_APP_I2S_BASE
 #define CODEC_I2S_CLK_NAME   BOARD_APP_I2S_CLK_NAME
-#define CODEC_I2S_DATA_LINE  BOARD_APP_I2S_DATA_LINE
+#define CODEC_I2S_TX_DATA_LINE  BOARD_APP_I2S_TX_DATA_LINE
 
 #define TEST_DMA             BOARD_APP_XDMA
 #define TEST_DMA_CHANNEL     (2U)
@@ -51,6 +51,7 @@ typedef struct {
 volatile bool dma_transfer_done;
 volatile bool dma_transfer_error;
 
+SDK_DECLARE_EXT_ISR_M(TEST_I2S_DMA_IRQ, isr_dma)
 void isr_dma(void)
 {
     hpm_stat_t stat;
@@ -63,7 +64,6 @@ void isr_dma(void)
         dma_transfer_done = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(TEST_I2S_DMA_IRQ, isr_dma)
 
 hpm_stat_t config_dma_transfer_i2s_data(audio_data_t *audio_data)
 {
@@ -84,7 +84,7 @@ hpm_stat_t config_dma_transfer_i2s_data(audio_data_t *audio_data)
 
     dma_default_channel_config(TEST_DMA, &ch_config);
     ch_config.src_addr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)audio_data->data);
-    ch_config.dst_addr = (uint32_t)&CODEC_I2S->TXD[CODEC_I2S_DATA_LINE] + data_shift_byte;
+    ch_config.dst_addr = (uint32_t)&CODEC_I2S->TXD[CODEC_I2S_TX_DATA_LINE] + data_shift_byte;
     ch_config.src_width = data_width;
     ch_config.dst_width = data_width;
     ch_config.src_addr_ctrl = DMA_ADDRESS_CONTROL_INCREMENT;
@@ -170,7 +170,7 @@ hpm_stat_t board_i2s_init(audio_data_t *audio_data, uint32_t mclk_freq)
     transfer.audio_depth = audio_data->audio_depth;
     /* 1 chanel - channel slot mask 0x1; 2 channel - channel solt mask 0x3 */
     transfer.channel_slot_mask = (1 << audio_data->channel_num) - 1;
-    transfer.data_line = CODEC_I2S_DATA_LINE;
+    transfer.data_line = CODEC_I2S_TX_DATA_LINE;
     transfer.master_mode = true;
 
     stat = i2s_config_tx(CODEC_I2S, mclk_freq, &transfer);
@@ -194,7 +194,7 @@ hpm_stat_t test_i2s_dma_play(audio_data_t *audio_data)
         dma_transfer_error = false;
         stat = config_dma_transfer_i2s_data(audio_data);
         i2s_reset_tx(CODEC_I2S);
-        if (i2s_fill_tx_dummy_data(CODEC_I2S, CODEC_I2S_DATA_LINE, audio_data->channel_num) != status_success) {
+        if (i2s_fill_tx_dummy_data(CODEC_I2S, CODEC_I2S_TX_DATA_LINE, audio_data->channel_num) != status_success) {
             return status_fail;
         }
         i2s_enable(CODEC_I2S);

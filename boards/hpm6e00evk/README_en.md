@@ -188,9 +188,25 @@ The UART0 use for core0 debugger console:
 | RDC.ADC1  | J4[14] | J2[14]  |
 | GND       | J4[32] | J2[17]  |
 
-- PLB Pin
+- PLB Pulse Output Pin
+
 | Function      | Postion   |
+| --------- | ------ |
 | PLB.PULSE_OUT  | J4[5] |
+
+- PLB LIN Clock Pin
+
+This pin is used for UART LIN Slave baudrate adaptive demo to detect the clock of RX signal
+| Function | Postion   |
+| ---- | ------ |
+| PLB.TRGM_IN  | J4[5] |
+
+- PLB Filter Output Pin
+
+| Function | Postion   |
+| ---- | ------ |
+| PLB.Filter_IN  | J4[9] |
+| PLB.Filter_OUT | J4[11] |
 
 - Tamper Pin
 

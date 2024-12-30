@@ -7,9 +7,8 @@
 
 #include <stdio.h>
 #include "board.h"
-#include "hpm_sysctl_drv.h"
 #include "hpm_gptmr_drv.h"
-#include "hpm_debug_console.h"
+#include "hpm_clock_drv.h"
 
 #define APP_BOARD_PWM                 BOARD_GPTMR_PWM
 #define APP_BOARD_PWM_CH              BOARD_GPTMR_PWM_CHANNEL
@@ -41,6 +40,7 @@ int main(void)
     init_gptmr_pins(APP_BOARD_PWM);
     init_gptmr_pins(APP_BOARD_SYNC_PWM);
 
+    clock_add_to_group(APP_BOARD_GPTMR_CLOCK, 0);
     cfg.pwm_frequency   = APP_PWM_FREQ;
     cfg.pwm_duty        = APP_PWM_DUTY;
     cfg.cmp_init_high   = false;
@@ -48,6 +48,7 @@ int main(void)
     cfg.cn_index        = APP_BOARD_PWM_CH;
     pwm_config(APP_BOARD_PWM, &cfg);
 
+    clock_add_to_group(APP_BOARD_SYNC_GPTMR_CLOCK, 0);
     cfg.gptmr_frequency = clock_get_frequency(APP_BOARD_SYNC_GPTMR_CLOCK);
     cfg.cn_index        = APP_BOARD_SYNC_PWM_CH;
     pwm_config(APP_BOARD_SYNC_PWM, &cfg);
@@ -73,6 +74,7 @@ static void pwm_config(GPTMR_Type *ptr, gptmr_cfg_t *cfg)
 {
     gptmr_channel_config_t config;
     uint32_t reload;
+
     gptmr_channel_get_default_config(ptr, &config);
     reload = cfg->gptmr_frequency / cfg->pwm_frequency;
     config.reload = reload;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2024 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -72,6 +72,22 @@ ATTR_ALWAYS_INLINE static inline void __plic_set_threshold(uint32_t base,
             HPM_PLIC_THRESHOLD_OFFSET +
             (target << HPM_PLIC_THRESHOLD_SHIFT_PER_TARGET));
     *threshold_ptr = threshold;
+}
+
+/**
+ * @brief   Get plic threshold
+ *
+ * @param[in] base PLIC base address
+ * @param[in] target Target to handle specific interrupt
+ *
+ */
+ATTR_ALWAYS_INLINE static inline uint32_t __plic_get_threshold(uint32_t base,
+                                                           uint32_t target)
+{
+    volatile uint32_t *threshold_ptr = (volatile uint32_t *)(base +
+            HPM_PLIC_THRESHOLD_OFFSET +
+            (target << HPM_PLIC_THRESHOLD_SHIFT_PER_TARGET));
+    return *threshold_ptr;
 }
 
 /**

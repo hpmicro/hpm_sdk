@@ -16,7 +16,7 @@
 #include "lwip/prot/dhcp.h"
 #include "osal.h"
 
-static enet_phy_status_t last_status[BOARD_ENET_COUNT];
+static enet_phy_status_t last_status[BOARD_ENET_COUNT] = {{.enet_phy_link = enet_phy_link_unknown}, {.enet_phy_link = enet_phy_link_unknown}};
 
 #if defined(NO_SYS) && !NO_SYS
 uint32_t msg[BOARD_ENET_COUNT];
@@ -170,31 +170,33 @@ void enet_self_adaptive_port_speed(void)
     for (uint8_t i = 0; i < BOARD_ENET_COUNT; i++) {
         base = board_get_enet_base(netif_get_by_index(i+1)->num);
         board_get_enet_phy_status(i, &status);
-        if (memcmp(&last_status[i], &status, sizeof(enet_phy_status_t)) != 0) {
-            memcpy(&last_status[i], &status, sizeof(enet_phy_status_t));
-            printf("================ Network Interface %d ================\n", netif_get_by_index(i+1)->num);
-            if (status.enet_phy_link) {
-                printf("Link Status: Up\n");
-                printf("Link Speed:  %s\n", speed_str[status.enet_phy_speed]);
-                printf("Link Duplex: %s\n", duplex_str[status.enet_phy_duplex]);
+        if (status.enet_phy_link || (status.enet_phy_link != last_status[i].enet_phy_link)) {
+            if (memcmp(&last_status[i], &status, sizeof(enet_phy_status_t)) != 0) {
+                memcpy(&last_status[i], &status, sizeof(enet_phy_status_t));
+                printf("================ Network Interface %d ================\n", netif_get_by_index(i+1)->num);
+                if (status.enet_phy_link) {
+                    printf("Link Status: Up\n");
+                    printf("Link Speed:  %s\n", speed_str[status.enet_phy_speed]);
+                    printf("Link Duplex: %s\n", duplex_str[status.enet_phy_duplex]);
 
-                enet_set_line_speed(base, line_speed[status.enet_phy_speed]);
-                enet_set_duplex_mode(base, status.enet_phy_duplex);
+                    enet_set_line_speed(base, line_speed[status.enet_phy_speed]);
+                    enet_set_duplex_mode(base, status.enet_phy_duplex);
 
-                #if defined(NO_SYS) && !NO_SYS
-                msg[i] = enet_phy_link_up;
-                sys_mbox_trypost_fromisr(&netif_status_mbox[i], &msg[i]);
-                #else
-                netif_set_link_up(netif_get_by_index(i+1));
-                #endif
-            } else {
-                printf("Link Status: Down\n");
-                #if defined(NO_SYS) && !NO_SYS
-                msg[i] = enet_phy_link_down;
-                sys_mbox_trypost_fromisr(&netif_status_mbox[i], &msg[i]);
-                #else
-                netif_set_link_down(netif_get_by_index(i+1));
-                #endif
+                    #if defined(NO_SYS) && !NO_SYS
+                    msg[i] = enet_phy_link_up;
+                    sys_mbox_trypost_fromisr(&netif_status_mbox[i], &msg[i]);
+                    #else
+                    netif_set_link_up(netif_get_by_index(i+1));
+                    #endif
+                } else {
+                    printf("Link Status: Down\n");
+                    #if defined(NO_SYS) && !NO_SYS
+                    msg[i] = enet_phy_link_down;
+                    sys_mbox_trypost_fromisr(&netif_status_mbox[i], &msg[i]);
+                    #else
+                    netif_set_link_down(netif_get_by_index(i+1));
+                    #endif
+                }
             }
         }
     }
@@ -278,19 +280,19 @@ static void isr_enet(uint8_t idx)
 }
 
 #ifdef HPM_ENET0_BASE
+SDK_DECLARE_EXT_ISR_M(IRQn_ENET0, isr_enet0)
 void isr_enet0(void)
 {
     isr_enet(0);
 }
-SDK_DECLARE_EXT_ISR_M(IRQn_ENET0, isr_enet0)
 #endif
 
 #ifdef HPM_ENET1_BASE
+SDK_DECLARE_EXT_ISR_M(IRQn_ENET1, isr_enet1)
 void isr_enet1(void)
 {
     isr_enet(1);
 }
-SDK_DECLARE_EXT_ISR_M(IRQn_ENET1, isr_enet1)
 #endif
 
 #endif

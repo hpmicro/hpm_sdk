@@ -11,6 +11,7 @@
       build_generic_options_file_name=""
       c_user_include_directories="{% for inc in target["includes"] %}{{ inc }};{% endfor %}"
       link_linker_script_file="{{ target["linker"]}}"
+      link_use_linker_script_file="Yes"
       linker_output_format="hex"
       {%- if not target["use_outdir_relpath"] %}
       macros="HPM_SDK_BASE={{ target["sdk_base"] }}"
@@ -51,18 +52,18 @@
       c_additional_options="{{ target["cflags"] }}"
       {%- if target["toolchain_variant"] == "Andes" %}
       link_symbol_definitions="{{ target["segger_rtl_linker_symbols"]}}"
-      arm_linker_variant="GNU"
       build_generic_options_file_name="$(StudioDir)/targets/Andes_build_options.xml"
-      link_use_linker_script_file="Yes"
       rv_arch_zicsr="No"
       rv_arch_zifencei="No"
       rv_debug_extensions="Andes"
       rv_toolchain_prefix="andes-"
+      {%- if target["compiler_variant"] == "gcc" %}
       {%- if target["enable_nds_dsp"] %}
       rv32andes_compiler_ext_dsp="Yes"
       rv_arch_ext="_p_xv5"
       {%- else %}
       rv_arch_ext="_xv5"
+      {%- endif %}
       {%- endif %}
       {%- if target["cplusplus"] %}
       gcc_cplusplus_language_standard="c++11"
@@ -94,7 +95,6 @@
       {%- endif %}
       rv_debug_extensions="None"
       rv_toolchain_prefix=""
-      arm_linker_variant="SEGGER"
       {%- if target["cplusplus"] %}
       gcc_cplusplus_language_standard="c++11"
       libcxx="Yes"
@@ -112,6 +112,11 @@
       {%- endfor %}
       gcc_enable_all_warnings="Yes"
       gcc_all_warnings_command_line_options="-Wall;-Wextra;-Wno-format"
+      arm_compiler_variant="{{ target["compiler_variant"] }}"
+      arm_assembler_variant="{{ target["assembler_variant"] }}"
+      {%- if target["linker_variant"] %}
+      arm_linker_variant="{{ target["linker_variant"] }}"
+      {%- endif %}
       />
 
 {{ target["file_structure"] }}

@@ -30,7 +30,8 @@ extern void msc_ram_init(uint8_t busid, uint32_t reg_base);
 int main(void)
 {
     board_init();
-    board_init_usb_pins();
+    board_init_usb(HPM_USB0);
+    board_init_usb(HPM_USB1);
 
     printf("Cherryusb one host one device sample.\n");
     printf("USB0 as host, support HID class. USB1 as a MSC device.\r\n");
@@ -52,16 +53,16 @@ int main(void)
 }
 
 extern void USBH_IRQHandler(uint8_t busid);
+SDK_DECLARE_EXT_ISR_M(IRQn_USB0, isr_usbh0)
 void isr_usbh0(void)
 {
     USBH_IRQHandler(usbh_busid);
 }
-SDK_DECLARE_EXT_ISR_M(IRQn_USB0, isr_usbh0)
 
 
 extern void USBD_IRQHandler(uint8_t busid);
+SDK_DECLARE_EXT_ISR_M(IRQn_USB1, isr_usbd1)
 void isr_usbd1(void)
 {
     USBD_IRQHandler(usbd_busid);
 }
-SDK_DECLARE_EXT_ISR_M(IRQn_USB1, isr_usbd1)

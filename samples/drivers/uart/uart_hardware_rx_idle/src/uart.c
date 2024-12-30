@@ -33,6 +33,7 @@ ATTR_PLACE_AT_NONCACHEABLE uint8_t dma_buff[BUFF_SIZE];
 
 volatile bool uart_rx_idle;
 
+SDK_DECLARE_EXT_ISR_M(TEST_UART_IRQ, uart_isr)
 void uart_isr(void)
 {
     if (uart_is_rxline_idle(TEST_UART)) {
@@ -41,7 +42,6 @@ void uart_isr(void)
         uart_flush(TEST_UART);
     }
 }
-SDK_DECLARE_EXT_ISR_M(TEST_UART_IRQ, uart_isr)
 
 hpm_stat_t uart_rx_trigger_dma(DMA_Type *dma_ptr,
                                 uint8_t ch_num,

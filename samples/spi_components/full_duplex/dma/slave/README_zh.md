@@ -13,7 +13,8 @@ full_duplex_slave_dma示例工程展示了SPI作为master使用dma方法进行�
 
 ## 注意
 
-仅支持SPI单线模式，不支持两线、四线模式。
+- 仅支持SPI单线模式，不支持两线、四线模式。
+- 为保证正常传输，SPI的CS引脚建议加上4.7K的上拉电阻。
 
 ## 运行现象
 - 先运行slave，再运行master

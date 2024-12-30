@@ -24,6 +24,7 @@ void mmc_pred_position_trig_update_pred_para(int32_t trig_revolution, uint32_t t
 
 #define TEST_PRINTF_PRED_SPEED 1
 
+SDK_DECLARE_EXT_ISR_M(TEST_MMC_IRQ, mmc_isr)
 void mmc_isr(void)
 {
     uint32_t pred_stat = mmc_pred_get_status(TEST_MMC, TEST_PRED_CH0);
@@ -48,7 +49,6 @@ void mmc_isr(void)
 
     mmc_pred_clear_status(TEST_MMC, TEST_PRED_CH0, pred_stat);
 }
-SDK_DECLARE_EXT_ISR_M(TEST_MMC_IRQ, mmc_isr)
 
 /**
  * @brief mmc pred moudle config speed event trig update pred parameter

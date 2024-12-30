@@ -1,15 +1,10 @@
-/*
- * Copyright (c) 2023 HPMicro
- *
- * SPDX-License-Identifier: BSD-3-Clause
- *
- */
 /***************************************************************************//**
  * @file
  * @brief Common - Rtos Utilities
  *******************************************************************************
  * # License
  * <b>Copyright 2018 Silicon Laboratories Inc. www.silabs.com</b>
+ * Copyright (c) 2023 HPMicro
  *******************************************************************************
  *
  * The licensor of this software is Silicon Laboratories Inc.  Your use of this

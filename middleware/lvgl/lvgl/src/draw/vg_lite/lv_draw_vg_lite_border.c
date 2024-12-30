@@ -7,6 +7,8 @@
  *      INCLUDES
  *********************/
 
+#include "../../misc/lv_area_private.h"
+#include "../lv_draw_private.h"
 #include "lv_draw_vg_lite.h"
 
 #if LV_USE_DRAW_VG_LITE
@@ -42,17 +44,10 @@
 void lv_draw_vg_lite_border(lv_draw_unit_t * draw_unit, const lv_draw_border_dsc_t * dsc,
                             const lv_area_t * coords)
 {
-    if(dsc->opa <= LV_OPA_MIN)
-        return;
-    if(dsc->width == 0)
-        return;
-    if(dsc->side == LV_BORDER_SIDE_NONE)
-        return;
-
     lv_draw_vg_lite_unit_t * u = (lv_draw_vg_lite_unit_t *)draw_unit;
 
     lv_area_t clip_area;
-    if(!_lv_area_intersect(&clip_area, coords, draw_unit->clip_area)) {
+    if(!lv_area_intersect(&clip_area, coords, draw_unit->clip_area)) {
         /*Fully clipped, nothing to do*/
         return;
     }
@@ -73,25 +68,22 @@ void lv_draw_vg_lite_border(lv_draw_unit_t * draw_unit, const lv_draw_border_dsc
     lv_vg_lite_path_t * path = lv_vg_lite_path_get(u, VG_LITE_FP32);
     lv_vg_lite_path_set_quality(path, dsc->radius == 0 ? VG_LITE_LOW : VG_LITE_HIGH);
     lv_vg_lite_path_set_bonding_box_area(path, &clip_area);
-    lv_vg_lite_set_scissor_area(&clip_area);
 
     /* outer rect */
     lv_vg_lite_path_append_rect(path,
                                 coords->x1, coords->y1,
                                 w, h,
-                                r_out, r_out);
+                                r_out);
 
     /* inner rect */
     lv_vg_lite_path_append_rect(path,
                                 coords->x1 + border_w, coords->y1 + border_w,
                                 w - border_w * 2, h - border_w * 2,
-                                r_in, r_in);
+                                r_in);
 
     lv_vg_lite_path_end(path);
 
-    vg_lite_matrix_t matrix;
-    vg_lite_identity(&matrix);
-    lv_vg_lite_matrix_multiply(&matrix, &u->global_matrix);
+    vg_lite_matrix_t matrix = u->global_matrix;
 
     vg_lite_color_t color = lv_vg_lite_color(dsc->color, dsc->opa, true);
 
@@ -102,6 +94,7 @@ void lv_draw_vg_lite_border(lv_draw_unit_t * draw_unit, const lv_draw_border_dsc
     LV_VG_LITE_ASSERT_MATRIX(&matrix);
 
     LV_PROFILER_BEGIN_TAG("vg_lite_draw");
+    l1c_dc_flush_all();
     LV_VG_LITE_CHECK_ERROR(vg_lite_draw(
                                &u->target_buffer,
                                vg_lite_path,
@@ -112,7 +105,6 @@ void lv_draw_vg_lite_border(lv_draw_unit_t * draw_unit, const lv_draw_border_dsc
     LV_PROFILER_END_TAG("vg_lite_draw");
 
     lv_vg_lite_path_drop(u, path);
-    lv_vg_lite_disable_scissor();
     LV_PROFILER_END;
 }
 

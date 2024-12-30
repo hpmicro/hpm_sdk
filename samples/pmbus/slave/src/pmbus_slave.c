@@ -11,20 +11,20 @@
 #include "hpm_pmbus.h"
 
 
-#define TEST_SMBUS                BOARD_APP_I2C_BASE
-#define TEST_SMBUS_CLOCK_NAME     BOARD_APP_I2C_CLK_NAME
+#define TEST_PMBUS                BOARD_APP_I2C_BASE
+#define TEST_PMBUS_CLOCK_NAME     BOARD_APP_I2C_CLK_NAME
 #define TEST_I2C_IRQ            BOARD_APP_I2C_IRQ
-#define TEST_SMBUS_SLAVE_ADDRESS  (0x16U)
+#define TEST_PMBUS_SLAVE_ADDRESS  (0x16U)
 
 #define TEST_TRANSFER_DATA_IN_BYTE  (128U)
 uint8_t tx_data_buff[TEST_TRANSFER_DATA_IN_BYTE];
 uint8_t rx_data_buff[TEST_TRANSFER_DATA_IN_BYTE];
 
+SDK_DECLARE_EXT_ISR_M(TEST_I2C_IRQ, i2c_isr)
 void i2c_isr(void)
 {
-    hpm_pmbus_isr_handler(TEST_SMBUS);
+    hpm_pmbus_isr_handler(TEST_PMBUS);
 }
-SDK_DECLARE_EXT_ISR_M(TEST_I2C_IRQ, i2c_isr)
 
 void pmbus_callback(I2C_Type *base, hpm_pmbus_complete_cb_cfg_t *cfg)
 {
@@ -39,21 +39,22 @@ int main(void)
     uint32_t freq;
 
     board_init();
-    init_i2c_pins(TEST_SMBUS);
+    board_init_i2c_clock(TEST_PMBUS);
+    init_i2c_pins(TEST_PMBUS);
 
     config.i2c_mode = i2c_mode_normal;
     config.is_10bit_addressing = false;
-    freq = clock_get_frequency(TEST_SMBUS_CLOCK_NAME);
-    stat = i2c_init_slave(TEST_SMBUS, freq, &config, TEST_SMBUS_SLAVE_ADDRESS);
+    freq = clock_get_frequency(TEST_PMBUS_CLOCK_NAME);
+    stat = i2c_init_slave(TEST_PMBUS, freq, &config, TEST_PMBUS_SLAVE_ADDRESS);
     if (stat != status_success) {
         printf("i2c init failed\n");
         while (1) {
         };
     }
     intc_m_enable_irq_with_priority(TEST_I2C_IRQ, 1);
-    hpm_pmbus_slave_init(TEST_SMBUS, TEST_SMBUS_SLAVE_ADDRESS);
+    hpm_pmbus_slave_init(TEST_PMBUS, TEST_PMBUS_SLAVE_ADDRESS);
     printf("PMbus slave test\n");
-    if (hpm_pmbus_slave_command_transaction_install(TEST_SMBUS, PMBUS_CODE_PAGE_PLUS_WRITE, NULL, rx_data_buff, 128, pmbus_callback) == status_success) {
+    if (hpm_pmbus_slave_command_transaction_install(TEST_PMBUS, PMBUS_CODE_PAGE_PLUS_WRITE, NULL, rx_data_buff, 128, pmbus_callback) == status_success) {
         printf("pmbus(cmd:0x%02x) slave command transaction install success\n", PMBUS_CODE_PAGE_PLUS_WRITE);
     } else {
         printf("pmbus(cmd:0x%02x) slave command transaction install fail\n", PMBUS_CODE_PAGE_PLUS_WRITE);
@@ -61,7 +62,7 @@ int main(void)
         };
     }
 
-    if (hpm_pmbus_slave_command_transaction_install(TEST_SMBUS, PMBUS_CODE_PAGE_PLUS_READ, tx_data_buff, NULL, 128, pmbus_callback) == status_success) {
+    if (hpm_pmbus_slave_command_transaction_install(TEST_PMBUS, PMBUS_CODE_PAGE_PLUS_READ, tx_data_buff, NULL, 128, pmbus_callback) == status_success) {
         printf("pmbus(cmd:0x%02x) slave command transaction install success\n", PMBUS_CODE_PAGE_PLUS_READ);
     } else {
         printf("pmbus(cmd:0x%02x) slave command transaction install fail\n", PMBUS_CODE_PAGE_PLUS_READ);
@@ -69,7 +70,7 @@ int main(void)
         };
     }
 
-    if (hpm_pmbus_slave_command_transaction_install(TEST_SMBUS, PMBUS_CODE_PAGE, tx_data_buff, rx_data_buff, 128, pmbus_callback) == status_success) {
+    if (hpm_pmbus_slave_command_transaction_install(TEST_PMBUS, PMBUS_CODE_PAGE, tx_data_buff, rx_data_buff, 128, pmbus_callback) == status_success) {
         printf("pmbus(cmd:0x%02x) slave command transaction install success\n", PMBUS_CODE_PAGE);
     } else {
         printf("pmbus(cmd:0x%02x) slave command transaction install fail\n", PMBUS_CODE_PAGE);
@@ -77,7 +78,7 @@ int main(void)
         };
     }
 
-    if (hpm_pmbus_slave_command_transaction_install(TEST_SMBUS, PMBUS_CODE_CLEAR_FAULTS, NULL, rx_data_buff, 128, pmbus_callback) == status_success) {
+    if (hpm_pmbus_slave_command_transaction_install(TEST_PMBUS, PMBUS_CODE_CLEAR_FAULTS, NULL, rx_data_buff, 128, pmbus_callback) == status_success) {
         printf("pmbus(cmd:0x%02x) slave command transaction install success\n", PMBUS_CODE_CLEAR_FAULTS);
     } else {
         printf("pmbus(cmd:0x%02x) slave command transaction install fail\n", PMBUS_CODE_CLEAR_FAULTS);
@@ -85,7 +86,7 @@ int main(void)
         };
     }
 
-    if (hpm_pmbus_slave_command_transaction_install(TEST_SMBUS, PMBUS_CODE_VOUT_TRIM, tx_data_buff, rx_data_buff, 128, pmbus_callback) == status_success) {
+    if (hpm_pmbus_slave_command_transaction_install(TEST_PMBUS, PMBUS_CODE_VOUT_TRIM, tx_data_buff, rx_data_buff, 128, pmbus_callback) == status_success) {
         printf("pmbus(cmd:0x%02x) slave command transaction install success\n", PMBUS_CODE_VOUT_TRIM);
     } else {
         printf("pmbus(cmd:0x%02x) slave command transaction install fail\n", PMBUS_CODE_VOUT_TRIM);

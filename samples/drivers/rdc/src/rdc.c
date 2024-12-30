@@ -14,7 +14,11 @@
 #include "math.h"
 #include "hpm_adc16_drv.h"
 
-/* #define DAC_MODE 1 */
+#define DAC_MODE 0
+#if defined(DAC_MODE) && DAC_MODE
+#include "hpm_dac_drv.h"
+#include "hpm_synt_drv.h"
+#endif
 
 void init_trigger_cfg(uint8_t trig_ch, bool inten)
 {
@@ -82,10 +86,10 @@ void rdc_cfg(RDC_Type *rdc)
     rdc_output_cfg_t cfg = {0};
     rdc_input_cfg_t inputcfg = {0};
 
-#ifndef DAC_MODE
-    cfg.mode = rdc_output_pwm;
-#else
+#if defined(DAC_MODE) && DAC_MODE
     cfg.mode = rdc_output_dac;
+#else
+    cfg.mode = rdc_output_pwm;
 #endif
     cfg.excitation_period_cycle = 35840;
     cfg.excitation_precision = rdc_output_precision_64_point;
@@ -124,35 +128,57 @@ void rdc_cfg(RDC_Type *rdc)
     rdc_set_acc_config(rdc, &acc_cfg);
 
     rdc_acc_enable(rdc);
+    rdc_interrupt_config(BOARD_RDC_BASE, acc_vld_i_stat | acc_vld_q_stat);
+    intc_m_enable_irq_with_priority(BOARD_RDC_IRQ, 1);
 }
 
-#ifdef DAC_MODE
-#define TEST_DAC HPM_DAC0
+#if defined(DAC_MODE) && DAC_MODE
 void init_dac(void)
 {
-    init_dac_pins(TEST_DAC);
-    HPM_SYNT->GCR = (1 << 4);
-
-    dac_config_t config;
+    dac_config_t config = {0};
+    init_dac_pins(BOARD_DAC_BASE);
+    synt_enable_timestamp(HPM_SYNT, true);
     dac_get_default_config(&config);
-    config.dac_mode = 0; /* dac_mode_direct */
-    dac_init(TEST_DAC, &config);
+    config.dac_mode = dac_mode_trig; /* dac_mode_direct */
+    dac_init(BOARD_DAC_BASE, &config);
 
-    dac_enable_conversion(TEST_DAC, true);
-
-    TEST_DAC->CFG0_BAK &= ~DAC_CFG0_DAC_MODE_MASK;
-    TEST_DAC->CFG0_BAK |= DAC_CFG0_DAC_MODE_SET(3); /* trig mode */
-
-    TEST_DAC->CFG0 = TEST_DAC->CFG0_BAK;
+    dac_enable_conversion(BOARD_DAC_BASE, true);
 }
 #endif
+
+uint32_t val_acc_i, val_acc_q;
+volatile bool value_status;
+
+SDK_DECLARE_EXT_ISR_M(BOARD_RDC_IRQ, isr_acc_i_q_sample)
+void isr_acc_i_q_sample(void)
+{
+    uint32_t status = get_interrupt_status(BOARD_RDC_BASE);
+    static bool acc_i_status = false;
+    static bool acc_q_status = false;
+    if (RDC_INT_EN_ACC_VLD_I_EN_GET(status)) {
+        rdc_interrupt_clear_flag_bits(BOARD_RDC_BASE, RDC_INT_EN_ACC_VLD_I_EN_MASK);
+        acc_i_status = true;
+
+    }
+    if (RDC_INT_EN_ACC_VLD_Q_EN_GET(status)) {
+        rdc_interrupt_clear_flag_bits(BOARD_RDC_BASE, RDC_INT_EN_ACC_VLD_Q_EN_MASK);
+        acc_q_status = true;
+    }
+    if ((acc_i_status) && (acc_q_status)) {
+        acc_i_status = false;
+        acc_q_status = false;
+        value_status = true;
+        val_acc_i = rdc_get_acc_avl(BOARD_RDC_BASE, rdc_acc_chn_i);
+        val_acc_q = rdc_get_acc_avl(BOARD_RDC_BASE, rdc_acc_chn_q);
+    }
+}
 
 int main(void)
 {
     uint32_t freq;
-    int32_t val_acc_i, val_max_i, val_min_i;
+    int32_t val_max_i, val_min_i;
     uint32_t val_delay_i;
-    int32_t val_acc_q, val_max_q, val_min_q;
+    int32_t val_max_q, val_min_q;
     uint32_t val_delay_q;
     int32_t val_middle_i, val_middle_q;
     uint8_t num;
@@ -162,7 +188,7 @@ int main(void)
     board_init();
     board_init_adc_clock(BOARD_RDC_ADC_I_BASE, true);
     board_init_adc_clock(BOARD_RDC_ADC_Q_BASE, true);
-#ifdef DAC_MODE
+#if defined(DAC_MODE) && DAC_MODE
     init_dac();
     trgm_dac_matrix_config(HPM_TRGM0, trgm_dac_matrix_output_to_dac0, trgm_dac_matrix_in_from_rdc_dac0, false);
 #endif
@@ -214,17 +240,20 @@ int main(void)
     val_delay_q /= num;
     rdc_set_acc_sync_delay(BOARD_RDC_BASE, rdc_acc_chn_q, val_delay_q >> 1);
     board_delay_ms(100);
+    value_status = false;
+    rdc_interrupt_enable(BOARD_RDC_BASE);
     while (1) {
-        val_acc_i = rdc_get_acc_avl(BOARD_RDC_BASE, rdc_acc_chn_i);
-        val_acc_q = rdc_get_acc_avl(BOARD_RDC_BASE, rdc_acc_chn_q);
-        theta = (atanf(((float)val_acc_i)/val_acc_q) * 180 / HPM_PI) + 90;
-        if (init_theta < 0) {
-          init_theta = theta;
+        if (value_status) {
+            value_status = false;
+            theta = (atanf(((float)val_acc_i)/val_acc_q) * 180 / HPM_PI) + 90;
+            if (init_theta < 0) {
+                init_theta = theta;
+            }
+            theta -= init_theta;
+            if (theta < 0) {
+                theta += 180;
+            }
+            printf("theta:%f.\r\n", theta);
         }
-        theta -= init_theta;
-        if (theta < 0) {
-          theta += 180;
-        }
-        printf("theta:%f.\r\n", theta);
     };
 }

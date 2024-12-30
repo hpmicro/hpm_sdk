@@ -11,7 +11,7 @@
 #include "hpm_dma_drv.h"
 #endif
 #include "hpm_gptmr_drv.h"
-#include "hpm_gpio_drv.h"
+#include "hpm_clock_drv.h"
 #include "hpm_dmamux_drv.h"
 #include "board.h"
 
@@ -47,6 +47,7 @@ static void gptmr_config(gptmr_dma_request_event_t event);
 static void show_help(void);
 static void handle_gptmr_event_test(void);
 
+SDK_DECLARE_EXT_ISR_M(APP_GPTMR_DMA_IRQ, isr_dma)
 void isr_dma(void)
 {
     volatile hpm_stat_t stat;
@@ -65,7 +66,6 @@ void isr_dma(void)
         dma_enable_channel(APP_GPTMR_DMA, APP_BOARD_GPTMR_DMA_CH);
     }
 }
-SDK_DECLARE_EXT_ISR_M(APP_GPTMR_DMA_IRQ, isr_dma)
 
 int main(void)
 {
@@ -105,17 +105,17 @@ static void gptmr_config(gptmr_dma_request_event_t event)
     uint32_t gptmr_freq;
     gptmr_channel_config_t config;
     uint32_t cmp;
+    clock_add_to_group(APP_BOARD_GPTMR_CLOCK, BOARD_RUNNING_CORE & 0x01);
     gptmr_stop_counter(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH);
     dma_transfer_config();
     gptmr_channel_get_default_config(APP_BOARD_GPTMR, &config);
-    clock_add_to_group(APP_BOARD_GPTMR_CLOCK, 0);
     gptmr_freq = clock_get_frequency(APP_BOARD_GPTMR_CLOCK);
     config.cmp_initial_polarity_high = false;
     config.dma_request_event = event;
     config.reload = gptmr_freq / 1000 * APP_BOARD_RELOAD_MS;
     cmp = APP_BOARD_CMP_MS;
     if (cmp > APP_BOARD_RELOAD_MS) {
-        cmp = APP_BOARD_RELOAD_MS;
+        cmp = APP_BOARD_RELOAD_MS;    /* NOLINT */
     }
     if (event == gptmr_dma_request_on_cmp0) {
         config.enable_cmp_output = true;

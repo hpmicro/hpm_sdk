@@ -221,7 +221,6 @@ __vector_table
 
 #else
 
-.global default_irq_handler
 .weak default_irq_handler
 .align 2
 default_irq_handler:
@@ -559,7 +558,6 @@ __vector_s_table
 
 #else
 
-.global default_irq_s_handler
 .weak default_irq_s_handler
 .align 2
 default_irq_s_handler:

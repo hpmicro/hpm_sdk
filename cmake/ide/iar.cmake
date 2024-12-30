@@ -8,6 +8,9 @@ add_library(${HPM_SDK_IAR_LIB_ITF} INTERFACE)
 set(HPM_SDK_IAR_LIB hpm_sdk_iar_lib)
 define_property(GLOBAL PROPERTY ${HPM_SDK_IAR_LIB} BRIEF_DOCS "iar library" FULL_DOCS "iar library")
 
+set(HPM_SDK_IAR_STARTUP_LIB hpm_sdk_iar_startup_lib)
+define_property(GLOBAL PROPERTY ${HPM_SDK_IAR_STARTUP_LIB} BRIEF_DOCS "iar library" FULL_DOCS "iar library")
+
 set(IAR_OPT_LIB_IO_TYPE LIBRARY_IO_TYPE)
 set(IAR_OPT_DBG_TGT_CONN debug_target_connection)
 set(IAR_OPT_LINKER_PRINTF_FP_ENABLED linker_printf_fp_enabled)
@@ -116,7 +119,7 @@ endfunction()
 function(sdk_iar_src)
     foreach(file ${ARGN})
         if(IS_DIRECTORY ${file})
-            message(FATAL_ERROR "directory ${file} can't be added to sdk_lib_src")
+            message(FATAL_ERROR "directory ${file} can't be added to sdk_iar_src")
         endif()
         if(IS_ABSOLUTE ${file})
             set(path ${file})
@@ -126,6 +129,28 @@ function(sdk_iar_src)
         set_property(GLOBAL APPEND PROPERTY ${HPM_SDK_IAR_LIB} ${path})
     endforeach()
 endfunction()
+
+# Add source file for IAR startup
+#
+# Example:
+#   sdk_iar_startup_src(STARTUP_SOURCE_FILE)
+# :param STARTUP_SOURCE_FILE: startup source file added for IAR
+# @public
+#
+function(sdk_iar_startup_src)
+    foreach(file ${ARGN})
+        if(IS_DIRECTORY ${file})
+            message(FATAL_ERROR "directory ${file} can't be added to sdk_iar_startup_src")
+        endif()
+        if(IS_ABSOLUTE ${file})
+            set(path ${file})
+        else()
+            set(path ${CMAKE_CURRENT_SOURCE_DIR}/${file})
+        endif()
+        set_property(GLOBAL APPEND PROPERTY ${HPM_SDK_IAR_STARTUP_LIB} ${path})
+    endforeach()
+endfunction()
+
 
 # Add source file (glob pattern) for IAR
 #
@@ -218,6 +243,7 @@ function (generate_iar_project)
     get_property(target_iar_cflags TARGET ${HPM_SDK_IAR_LIB_ITF} PROPERTY INTERFACE_COMPILE_OPTIONS)
     get_property(target_iar_ld_lib TARGET ${HPM_SDK_IAR_LIB_ITF} PROPERTY INTERFACE_IAR_LD_INPUTS)
     get_property(target_iar_source_files GLOBAL PROPERTY ${HPM_SDK_IAR_LIB})
+    get_property(target_iar_startup_source_files GLOBAL PROPERTY ${HPM_SDK_IAR_STARTUP_LIB})
     get_property(target_iar_options GLOBAL PROPERTY ${HPM_SDK_IAR_OPTS})
     get_property(target_gcc_source_files TARGET ${HPM_SDK_GCC_LIB} PROPERTY SOURCES)
     get_property(target_iar_include_dirs TARGET ${HPM_SDK_IAR_LIB_ITF} PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
@@ -395,6 +421,14 @@ function (generate_iar_project)
     endif()
 
     foreach (lib_src IN ITEMS ${target_lib_sources})
+        set(target_sources "${target_sources},${lib_src}")
+    endforeach ()
+
+    foreach (lib_src IN ITEMS ${target_iar_source_files})
+        set(target_sources "${target_sources},${lib_src}")
+    endforeach ()
+
+    foreach (lib_src IN ITEMS ${target_iar_startup_source_files})
         set(target_sources "${target_sources},${lib_src}")
     endforeach ()
 

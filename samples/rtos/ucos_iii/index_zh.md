@@ -16,5 +16,6 @@
    task_message_queue/README_zh
    task_suspend_resume/README_zh
    time_slice/README_zh
+   hello_world_gptmr/README_zh
 
 :::

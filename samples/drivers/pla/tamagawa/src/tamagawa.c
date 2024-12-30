@@ -936,6 +936,7 @@ void tmgw_dma_refresh_by_sw(void)
         CS_ENABLE();
 }
 
+SDK_DECLARE_EXT_ISR_M(TEST_MOTOR_PWM_IRQ, pwm_isr)
 void pwm_isr(void)
 {
     volatile uint32_t irq_status;
@@ -954,7 +955,6 @@ void pwm_isr(void)
     }
 
 }
-SDK_DECLARE_EXT_ISR_M(TEST_MOTOR_PWM_IRQ, pwm_isr)
 
 /**
  * @brief Test motor

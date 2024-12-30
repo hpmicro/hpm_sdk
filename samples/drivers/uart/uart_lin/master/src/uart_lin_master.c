@@ -39,6 +39,7 @@ uart_lin_master_config_t uart_lin_config = {
     },
 };
 
+SDK_DECLARE_EXT_ISR_M(TEST_UART_IRQ, uart_isr)
 void uart_isr(void)
 {
     volatile uint8_t irq_id = uart_get_irq_id(TEST_UART);
@@ -52,8 +53,6 @@ void uart_isr(void)
         uart_disable_irq(TEST_UART, uart_intr_rx_data_avail_or_timeout);
     }
 }
-SDK_DECLARE_EXT_ISR_M(TEST_UART_IRQ, uart_isr)
-
 
 void test_uart_lin_master_interrupt_transfer(void)
 {

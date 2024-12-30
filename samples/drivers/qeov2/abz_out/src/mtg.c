@@ -7,8 +7,14 @@
 
 #include "board.h"
 #include <stdio.h>
-#include "hpm_mtg_drv.h"
 #include "motor.h"
+
+#if defined(HPMSOC_HAS_HPMSDK_MTG)
+#include "hpm_mtg_drv.h"
+#endif
+#if defined(HPMSOC_HAS_HPMSDK_MTGV2)
+#include "hpm_mtgv2_drv.h"
+#endif
 
 #ifndef APP_MTG_BASE
 #define APP_MTG_BASE HPM_MTG0

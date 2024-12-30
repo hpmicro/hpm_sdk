@@ -14,7 +14,7 @@ void led0_task(void *p_arg)
 {
     unsigned int task_loop = 0;
     OS_ERR err;
-    p_arg = p_arg;
+    (void)p_arg;
     while (1) {
         task_loop++;
         printf("%s loop for %d times\n", __func__, task_loop);

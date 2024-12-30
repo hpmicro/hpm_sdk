@@ -28,7 +28,7 @@
 #endif
 #define CODEC_I2S            BOARD_APP_I2S_BASE
 #define CODEC_I2S_CLK_NAME   BOARD_APP_I2S_CLK_NAME
-#define CODEC_I2S_DATA_LINE  BOARD_APP_I2S_DATA_LINE
+#define CODEC_I2S_TX_DATA_LINE  BOARD_APP_I2S_TX_DATA_LINE
 
 /* smix */
 #define SMIX HPM_SMIX
@@ -48,13 +48,13 @@ typedef struct {
     uint32_t length;
 } audio_data_t;
 
+SDK_DECLARE_EXT_ISR_M(SMIX_DMA_IRQ, smix_dma_isr)
 void smix_dma_isr(void)
 {
     if (smix_dma_check_transfer_complete(SMIX, SMIX_DMA_CH_FOR_DST)) {
         dma_transfer_done = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(SMIX_DMA_IRQ, smix_dma_isr)
 
 hpm_stat_t board_codec_init(audio_data_t *audio_data, uint32_t mclk_freq)
 {
@@ -128,7 +128,7 @@ hpm_stat_t board_i2s_init(audio_data_t *audio_data, uint32_t mclk_freq)
     transfer.audio_depth = audio_data->audio_depth;
     /* 1 chanel - channel slot mask 0x1; 2 channel - channel solt mask 0x3 */
     transfer.channel_slot_mask = (1 << audio_data->channel_num) - 1;
-    transfer.data_line = CODEC_I2S_DATA_LINE;
+    transfer.data_line = CODEC_I2S_TX_DATA_LINE;
     transfer.master_mode = true;
 
     stat = i2s_config_tx(CODEC_I2S, mclk_freq, &transfer);
@@ -176,7 +176,7 @@ hpm_stat_t mixer_play_one_sound(audio_data_t *sound)
     dst_dma.src_addr = (uint32_t)&SMIX->DST_CH[0].DATA + addr_shift;
     dst_dma.src_width = dma_width;
     dst_dma.src_addr_ctrl = smix_dma_address_fixed;
-    dst_dma.dst_addr = (uint32_t)&CODEC_I2S->TXD[CODEC_I2S_DATA_LINE] + addr_shift;
+    dst_dma.dst_addr = (uint32_t)&CODEC_I2S->TXD[CODEC_I2S_TX_DATA_LINE] + addr_shift;
     dst_dma.dst_width = dma_width;
     dst_dma.dst_addr_ctrl = smix_dma_address_fixed;
     dst_dma.dst_req_sel = smix_dma_req_i2s3_tx; /* align with I2s which use to play sound */
@@ -198,7 +198,7 @@ hpm_stat_t mixer_play_one_sound(audio_data_t *sound)
     smix_mixer_config_dst_ch(SMIX, 0, &mixer_dst);
 
     i2s_reset_tx(CODEC_I2S);
-    if (i2s_fill_tx_dummy_data(CODEC_I2S, CODEC_I2S_DATA_LINE, sound->channel_num) != status_success) {
+    if (i2s_fill_tx_dummy_data(CODEC_I2S, CODEC_I2S_TX_DATA_LINE, sound->channel_num) != status_success) {
         printf("I2S error occurred during playing\n");
         return status_fail;
     }
@@ -282,7 +282,7 @@ hpm_stat_t mixer_play_two_sound(audio_data_t *sound0, audio_data_t *sound1)
     dst_dma.src_addr = (uint32_t)&SMIX->DST_CH[0].DATA + dst_addr_shift;
     dst_dma.src_width = dst_dma_width;
     dst_dma.src_addr_ctrl = smix_dma_address_fixed;
-    dst_dma.dst_addr = (uint32_t)&CODEC_I2S->TXD[CODEC_I2S_DATA_LINE] + dst_addr_shift;
+    dst_dma.dst_addr = (uint32_t)&CODEC_I2S->TXD[CODEC_I2S_TX_DATA_LINE] + dst_addr_shift;
     dst_dma.dst_width = dst_dma_width;
     dst_dma.dst_addr_ctrl = smix_dma_address_fixed;
     dst_dma.dst_req_sel = smix_dma_req_i2s3_tx;
@@ -308,7 +308,7 @@ hpm_stat_t mixer_play_two_sound(audio_data_t *sound0, audio_data_t *sound1)
     smix_mixer_config_dst_ch(SMIX, 0, &mixer_dst);
 
     i2s_reset_tx(CODEC_I2S);
-    if (i2s_fill_tx_dummy_data(CODEC_I2S, CODEC_I2S_DATA_LINE, sound0->channel_num) != status_success) {
+    if (i2s_fill_tx_dummy_data(CODEC_I2S, CODEC_I2S_TX_DATA_LINE, sound0->channel_num) != status_success) {
         printf("I2S error occurred during playing\n");
         return status_fail;
     }
@@ -339,6 +339,7 @@ int main(void)
     hpm_stat_t stat;
 
     board_init();
+    clock_add_to_group(clock_smix, 0);
     printf("Sound mixer example\n");
 
     audio_data_t source0_data;

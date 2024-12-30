@@ -442,7 +442,9 @@ static inline hpm_stat_t rom_xpi_nor_erase(XPI_Type *base,
                                            uint32_t start,
                                            uint32_t length)
 {
-    return ROM_API_TABLE_ROOT->xpi_nor_driver_if->erase(base, channel, nor_config, start, length);
+    hpm_stat_t status = ROM_API_TABLE_ROOT->xpi_nor_driver_if->erase(base, channel, nor_config, start, length);
+    fencei();
+    return status;
 }
 
 /**
@@ -459,7 +461,9 @@ static inline hpm_stat_t rom_xpi_nor_erase_sector(XPI_Type *base,
                                                   const xpi_nor_config_t *nor_config,
                                                   uint32_t start)
 {
-    return ROM_API_TABLE_ROOT->xpi_nor_driver_if->erase_sector(base, channel, nor_config, start);
+    hpm_stat_t status = ROM_API_TABLE_ROOT->xpi_nor_driver_if->erase_sector(base, channel, nor_config, start);
+    fencei();
+    return status;
 }
 
 /**
@@ -492,7 +496,9 @@ static inline hpm_stat_t rom_xpi_nor_erase_block(XPI_Type *base,
                                                  const xpi_nor_config_t *nor_config,
                                                  uint32_t start)
 {
-    return ROM_API_TABLE_ROOT->xpi_nor_driver_if->erase_block(base, channel, nor_config, start);
+    hpm_stat_t status = ROM_API_TABLE_ROOT->xpi_nor_driver_if->erase_block(base, channel, nor_config, start);
+    fencei();
+    return status;
 }
 
 /**
@@ -524,7 +530,9 @@ static inline hpm_stat_t rom_xpi_nor_erase_chip(XPI_Type *base,
                                                 xpi_xfer_channel_t channel,
                                                 const xpi_nor_config_t *nor_config)
 {
-    return ROM_API_TABLE_ROOT->xpi_nor_driver_if->erase_chip(base, channel, nor_config);
+    hpm_stat_t status = ROM_API_TABLE_ROOT->xpi_nor_driver_if->erase_chip(base, channel, nor_config);
+    fencei();
+    return status;
 }
 
 /**
@@ -560,7 +568,9 @@ static inline hpm_stat_t rom_xpi_nor_program(XPI_Type *base,
                                              uint32_t dst_addr,
                                              uint32_t length)
 {
-    return ROM_API_TABLE_ROOT->xpi_nor_driver_if->program(base, channel, nor_config, src, dst_addr, length);
+    hpm_stat_t status = ROM_API_TABLE_ROOT->xpi_nor_driver_if->program(base, channel, nor_config, src, dst_addr, length);
+    fencei();
+    return status;
 }
 
 /**

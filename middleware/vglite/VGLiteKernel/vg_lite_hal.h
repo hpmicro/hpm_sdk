@@ -55,7 +55,9 @@
 #ifndef _vg_lite_hal_h_
 #define _vg_lite_hal_h_
 
-#define VGLITE_MEM_ALIGNMENT    128
+#define VGLITE_MEM_ALIGNMENT      128
+
+#define VGLITE_EVENT_FRAME_END    2  
 
 #ifdef __cplusplus
 extern "C" {

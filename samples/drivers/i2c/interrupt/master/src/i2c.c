@@ -24,6 +24,7 @@ uint32_t received_data_count;
 volatile bool i2c_receive_complete;
 volatile bool i2c_transmit_complete;
 
+SDK_DECLARE_EXT_ISR_M(TEST_I2C_IRQ, i2c_isr)
 void i2c_isr(void)
 {
     volatile uint32_t status, irq;
@@ -70,7 +71,6 @@ void i2c_isr(void)
         i2c_clear_status(TEST_I2C, I2C_EVENT_TRANSACTION_COMPLETE);
     }
 }
-SDK_DECLARE_EXT_ISR_M(TEST_I2C_IRQ, i2c_isr)
 
 static void prepare_tx_data(void)
 {
@@ -111,20 +111,8 @@ static void check_transfer_data(void)
 
 int main(void)
 {
-    hpm_stat_t stat;
-    i2c_config_t config;
-    uint32_t freq;
-
     board_init();
-    init_i2c_pins(TEST_I2C);
-
-    config.i2c_mode = i2c_mode_normal;
-    config.is_10bit_addressing = false;
-    freq = clock_get_frequency(TEST_I2C_CLOCK_NAME);
-    stat = i2c_init_master(TEST_I2C, freq, &config);
-    if (stat != status_success) {
-        return stat;
-    }
+    board_init_i2c(TEST_I2C);
 
     printf("I2C interrupt master example\n");
     prepare_tx_data();

@@ -37,10 +37,8 @@ endif()
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
-sdk_compile_definitions(-D__threadx_irq_stack_top=_stack)
 
 # This must be defined to select the right irq handler
-sdk_compile_definitions(-DCONFIG_THREADX=1)
 
 project(netx_dhcp)
 

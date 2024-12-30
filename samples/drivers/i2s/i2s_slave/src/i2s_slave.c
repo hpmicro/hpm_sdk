@@ -23,6 +23,7 @@ ATTR_PLACE_AT_NONCACHEABLE_BSS int16_t buf[DMA_TRANSFER_SIZE / sizeof(int16_t)];
 volatile bool dma_transfer_done = true;
 volatile bool dma_transfer_error;
 
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 void isr_dma(void)
 {
     uint32_t stat;
@@ -36,7 +37,6 @@ void isr_dma(void)
         dma_transfer_error = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 
 void dma_transfer_config(uint32_t size, uint32_t *ptr)
 {
@@ -46,7 +46,7 @@ void dma_transfer_config(uint32_t size, uint32_t *ptr)
 
     dma_default_channel_config(APP_DMA, &ch_config);
     ch_config.src_addr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)ptr);
-    ch_config.dst_addr = (uint32_t)((uint8_t *)&I2S_SLAVE->TXD[I2S_SLAVE_DATA_LINE] + sizeof(uint16_t));
+    ch_config.dst_addr = (uint32_t)((uint8_t *)&I2S_SLAVE->TXD[I2S_SLAVE_TX_DATA_LINE] + sizeof(uint16_t));
     ch_config.src_width = DMA_TRANSFER_WIDTH_HALF_WORD;
     ch_config.dst_width = DMA_TRANSFER_WIDTH_HALF_WORD;
     ch_config.src_addr_ctrl = DMA_ADDRESS_CONTROL_INCREMENT;
@@ -76,7 +76,7 @@ void i2s_slave_config(uint32_t sample_rate, uint8_t audio_depth, uint8_t channel
     i2s_init(I2S_SLAVE, &i2s_config);
 
     i2s_get_default_transfer_config(&transfer);
-    transfer.data_line = I2S_SLAVE_DATA_LINE;
+    transfer.data_line = I2S_SLAVE_TX_DATA_LINE;
     transfer.sample_rate = sample_rate;
     transfer.audio_depth = audio_depth;
     transfer.master_mode = false;
@@ -114,7 +114,8 @@ void i2s_slave_transfer(void)
 int main(void)
 {
     board_init();
-    board_init_i2s_pins(I2S_SLAVE);
+    board_init_i2s_pins(I2S_SLAVE); /* config I2S pin */
+    clock_add_to_group(I2S_SLAVE_CLOCK_NAME, (BOARD_RUNNING_CORE & 0x1)); /* enable I2S clock */
     i2s_slave_config(I2S_SAMPLE_RATE_HZ, I2S_SAMPLE_BITDEPTH, I2S_SAMPLE_CHANNEL);
     printf("I2S Slave Demo\n");
 

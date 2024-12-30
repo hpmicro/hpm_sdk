@@ -23,8 +23,6 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(guix_shapes)
 
-sdk_compile_definitions(-D__threadx_irq_stack_top=_stack)
-sdk_compile_definitions(-DCONFIG_THREADX=1)
 sdk_compile_options("-O3")
 
 sdk_inc(src)

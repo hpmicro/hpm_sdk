@@ -44,7 +44,7 @@ static void task_start(void *param)
 {
     (void)param;
 
-    board_init_usb_pins();
+    board_init_usb((USB_Type *)CONFIG_HPM_USBD_BASE);
     intc_set_irq_priority(CONFIG_HPM_USBD_IRQn, 2);
 
     /* default password is : 12345678 */

@@ -42,9 +42,6 @@ void ewdg_reset_test(void);
 /* Test EWDG interrupt */
 void ewdg_interrupt_test(void);
 
-void ewdg_isr(void);
-
-SDK_DECLARE_EXT_ISR_M(IRQn_EWDG0, ewdg_isr);
 
 /***********************************************************************************
  *
@@ -61,6 +58,7 @@ static volatile bool has_interrupt;
 int main(void)
 {
     board_init();
+    clock_add_to_group(clock_watchdog0, 0);
     printf("ewdg test\n");
 
     if ((HPM_PPOR->RESET_FLAG & RESET_SOURCE_WDG0) != 0U) {
@@ -323,7 +321,7 @@ void ewdg_window_test(void)
 
     config.cnt_src_freq = ewdg_src_clk_freq;
     /* EWDG reset timeout interval = 100us */
-    config.ctrl_config.timeout_reset_us = 100UL * 1000UL;
+    config.ctrl_config.timeout_reset_us = 101UL * 1000UL;
 
     /* Initialize the WDG */
     hpm_stat_t status = ewdg_init(HPM_EWDG0, &config);
@@ -390,6 +388,7 @@ void ewdg_interrupt_test(void)
     printf("EWDG timeout interrupt test passed\n");
 }
 
+SDK_DECLARE_EXT_ISR_M(IRQn_EWDG0, ewdg_isr)
 void ewdg_isr(void)
 {
     uint32_t ewdg_stat = ewdg_get_status_flags(HPM_EWDG0);

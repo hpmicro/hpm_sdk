@@ -208,4 +208,10 @@
 #define PWM_SOC_SHADOW_TRIG_SUPPORT (0U)
 #define PWM_SOC_TIMER_RESET_SUPPORT (1U)
 
+/**
+ * @brief FFA Section
+ *
+ */
+#define FFA_SOC_BUFFER_MAX (4096U)
+
 #endif /* HPM_SOC_FEATURE_H */

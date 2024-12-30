@@ -19,7 +19,7 @@ irq_handler_wrapper_\1
     j $
     ENDM
 
-    SECTION `.text`:CODE:NOROOT(2)
+    SECTION `.isr_vector`:CODE:NOROOT(2)
     DEFINE_IRQ_HANDLER_WRAPPER  1
     DEFINE_IRQ_HANDLER_WRAPPER	2
     DEFINE_IRQ_HANDLER_WRAPPER	3

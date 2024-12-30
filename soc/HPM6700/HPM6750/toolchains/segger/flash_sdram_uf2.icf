@@ -19,7 +19,7 @@ define region SDRAM  = [from 0x40000000 size _extram_size - 4M];
 define region NONCACHEABLE_RAM = [from 0x40000000 + _extram_size - 4M size 4M];
 
 /* Blocks */
-define block vectors with fixed order       { section .vector_table, section .isr_vector };
+define block vectors with fixed order       { section .vector_table, section .isr_vector, section .isr_vector.* };
 define block ctors                          { section .ctors,     section .ctors.*, block with         alphabetical order { init_array } };
 define block dtors                          { section .dtors,     section .dtors.*, block with reverse alphabetical order { fini_array } };
 define block eh_frame                       { section .eh_frame,  section .eh_frame.* };
@@ -30,7 +30,7 @@ define block tdata_load                     { copy of block tdata };
 define block heap  with size = __HEAPSIZE__,  alignment = 8, /* fill =0x00, */ readwrite access { };
 define block stack with size = __STACKSIZE__, alignment = 16, /* fill =0xCD, */ readwrite access { };
 define block cherryusb_usbh_class_info with alignment = 8     { section .usbh_class_info };
-define block framebuffer with alignment = 8                   { section .framebuffer };
+define block framebuffer with alignment = 8                   { section .framebuffer, section .framebuffer.* };
 define block rtthread_FSymTab                                 { section FSymTab };
 define block rtthread_VSymTab                                 { section VSymTab };
 define block rtthread_rti_fn with alphabetical order          { section .rti_fn* };
@@ -55,13 +55,13 @@ define exported symbol __rtmsymtab_start = start of block rtthread_RTMSymTab;
 define exported symbol __rtmsymtab_end = end of block rtthread_RTMSymTab + 1;
 
 /* Initialization */
-do not initialize                           { section .noncacheable, section .fast_ram };
+do not initialize                           { section .noncacheable, section .fast_ram };    // Legacy sections, kept for backwards compatibility
 do not initialize                           { section .non_init, section .non_init.*, section .*.non_init, section .*.non_init.* };
 do not initialize                           { section .no_init, section .no_init.*, section .*.no_init, section .*.no_init.* };   // Legacy sections, kept for backwards compatibility
 do not initialize                           { section .noinit, section .noinit.*, section .*.noinit, section .*.noinit.* };       // Legacy sections, used by some SDKs/HALs
-do not initialize                           { section .backup_sram};
+do not initialize                           { section .backup_sram, section .backup_sram.*};
 
-initialize by copy with packing=auto        { section .noncacheable.init, section .fast_ram.init };
+initialize by copy with packing=auto        { section .noncacheable.init, section .noncacheable.init.*, section .fast_ram.init, section .fast_ram.init.* };
 initialize by copy with packing=none        { section .data, section .data.*, section .*.data, section .*.data.* };               // Static data sections
 initialize by copy with packing=auto        { section .sdata, section .sdata.* };
 initialize by copy with packing=auto        { section .fast, section .fast.*, section .*.fast, section .*.fast.* };               // "RAM Code" sections
@@ -112,11 +112,11 @@ place in AXI_SRAM then SDRAM              {
                                           };
 
 
-place in NONCACHEABLE_RAM                 { section .noncacheable, section .noncacheable.init, section .noncacheable.bss };  // Noncacheable
-place in SHARE_RAM                        { section .sh_mem};                                     // Share memory
-place in AHB_SRAM                         { section .ahb_sram};                                   // AHB SRAM memory
-place in APB_SRAM                         { section .backup_sram};                                // Backup SRAM memory
-place in DLM                              { section .fast_ram.init, section .fast_ram, section .fast_ram.bss};   // Fast access memory
+place in NONCACHEABLE_RAM                 { section .noncacheable.non_init, section .noncacheable.non_init.*, section .noncacheable.init, section .noncacheable.init.*, section .noncacheable.bss, section .noncacheable.bss.*, section .noncacheable };  // Noncacheable
+place in SHARE_RAM                        { section .sh_mem, section .sh_mem.*};                                     // Share memory
+place in AHB_SRAM                         { section .ahb_sram, section .ahb_sram.*};                                   // AHB SRAM memory
+place in APB_SRAM                         { section .backup_sram, section .backup_sram.*};                                // Backup SRAM memory
+place in DLM                              { section .fast_ram.init, section .fast_ram.init.*, section .fast_ram.non_init,  section .fast_ram.non_init.*, section .fast_ram.bss, section .fast_ram.bss.*, section .fast_ram };   // Fast access memory
 place in SDRAM                            { block heap };                                         // Heap reserved block
 place at end of DLM                       { block stack };                                        // Stack reserved block
 

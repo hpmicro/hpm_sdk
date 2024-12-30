@@ -33,13 +33,12 @@ void generate_edge_aligned_waveform(void)
     uint32_t duty, duty_step;
     bool increase_duty_cycle = true;
 
-    pwmv2_disable_counter(PWM, pwm_counter_0);
-    pwmv2_reset_counter(PWM, pwm_counter_0);
+    pwmv2_deinit(PWM);
     pwmv2_shadow_register_unlock(PWM);
 
     pwmv2_set_shadow_val(PWM, PWMV2_SHADOW_INDEX(0), reload, 0, false);
     pwmv2_set_shadow_val(PWM, PWMV2_SHADOW_INDEX(1), reload + 1, 0, false);
-    pwmv2_set_shadow_val(PWM, PWMV2_SHADOW_INDEX(2), reload, 0, false);
+    pwmv2_set_shadow_val(PWM, PWMV2_SHADOW_INDEX(2), reload + 1, 0, false);
     pwmv2_set_shadow_val(PWM, PWMV2_SHADOW_INDEX(3), reload >> 1, 0, false);
     pwmv2_set_shadow_val(PWM, PWMV2_SHADOW_INDEX(4), reload, 0, false);
 
@@ -142,8 +141,7 @@ void generate_central_aligned_waveform(void)
     uint32_t duty, duty_step;
     bool increase_duty_cycle = true;
 
-    pwmv2_disable_counter(PWM, pwm_counter_0);
-    pwmv2_reset_counter(PWM, pwm_counter_0);
+    pwmv2_deinit(PWM);
     pwmv2_shadow_register_unlock(PWM);
 
     pwmv2_set_shadow_val(PWM, PWMV2_SHADOW_INDEX(0), reload, 0, false);
@@ -199,8 +197,7 @@ void generate_central_aligned_waveform_in_pair(void)
     uint32_t duty, duty_step;
     bool increase_duty_cycle = true;
 
-    pwmv2_disable_counter(PWM, pwm_counter_0);
-    pwmv2_reset_counter(PWM, pwm_counter_0);
+    pwmv2_deinit(PWM);
     pwmv2_shadow_register_unlock(PWM);
 
     pwmv2_set_shadow_val(PWM, PWMV2_SHADOW_INDEX(0), reload, 0, false);
@@ -256,10 +253,7 @@ void generate_pwm_cmpjit_edge_aligned_waveform(void)
     uint32_t duty, duty_step;
     bool increase_duty_cycle = true;
 
-    pwmv2_disable_counter(PWM, pwm_counter_0);
-    pwmv2_reset_counter(PWM, pwm_counter_0);
-    pwmv2_disable_counter(PWM, pwm_counter_1);
-    pwmv2_reset_counter(PWM, pwm_counter_1);
+    pwmv2_deinit(PWM);
     pwmv2_shadow_register_unlock(PWM);
 
     pwmv2_set_shadow_val(PWM, PWMV2_SHADOW_INDEX(0), reload, 0, false);
@@ -377,8 +371,7 @@ void pwm_force_output(void)
 
 void generate_four_cmp_waveform_in_pair(void)
 {
-    pwmv2_disable_counter(PWM, pwm_counter_0);
-    pwmv2_reset_counter(PWM, pwm_counter_0);
+    pwmv2_deinit(PWM);
     pwmv2_shadow_register_unlock(PWM);
 
     pwmv2_set_shadow_val(PWM, PWMV2_SHADOW_INDEX(0), reload, 0, false);
@@ -438,9 +431,7 @@ void generate_pwm_dac_output(void)
     uint32_t duty, duty_step;
     bool increase_duty_cycle = true;
 
-    pwmv2_disable_counter(PWM, pwm_counter_0);
-    pwmv2_reset_counter(PWM, pwm_counter_0);
-
+    pwmv2_deinit(PWM);
     pwmv2_shadow_register_unlock(PWM);
 
     pwmv2_set_shadow_val(PWM, PWMV2_SHADOW_INDEX(0), 0, 0, false);

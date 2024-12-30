@@ -11,6 +11,7 @@ Connect the rotary encoder driver board to the motor interface (Please refer to 
 - Driver board 14V power supply
 - RDC model **SG52-4-G12.7**
 - RDC encoder have 4 pole, so one turn of the electrical angle corresponds to 1/4 turns of the actual position.
+- The start position of the RDC encoder needs to ensure that there is enough voltage in both phases to acquire the over-zero position, otherwise there will be an error in the position during the movement.
 
 ## Running the example
 

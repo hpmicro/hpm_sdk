@@ -104,11 +104,11 @@ int main(void)
     volatile uint32_t status;
 
     board_init();
+    freq = board_init_i2c_clock(TEST_I2C);
     init_i2c_pins(TEST_I2C);
 
     config.i2c_mode = i2c_mode_normal;
     config.is_10bit_addressing = false;
-    freq = clock_get_frequency(TEST_I2C_CLOCK_NAME);
     stat = i2c_init_slave(TEST_I2C, freq, &config, TEST_I2C_SLAVE_ADDRESS);
     if (stat != status_success) {
         return stat;
@@ -128,6 +128,11 @@ int main(void)
                             TEST_I2C,
                             core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)data_buff),
                             TEST_TRANSFER_DATA_IN_BYTE);
+    if (stat != status_success) {
+        printf("i2c rx trigger dma failed\n");
+        while (1) {
+        }
+    }
     i2c_slave_dma_transfer(TEST_I2C, TEST_TRANSFER_DATA_IN_BYTE);
     i2c_handle_dma_transfer_complete(TEST_I2C);
 #if PLACE_BUFF_AT_CACHEABLE

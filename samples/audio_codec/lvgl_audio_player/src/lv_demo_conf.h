@@ -50,4 +50,6 @@
 #define LV_DEMO_MUSIC_AUTO_PLAY 0
 #endif
 
+#define LV_USE_PERF_MONITOR 0
+
 #endif /*LV_DEMO_CONF_H*/

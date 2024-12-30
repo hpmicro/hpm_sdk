@@ -26,6 +26,7 @@ volatile bool lin_error;
 volatile bool lin_complete;
 volatile bool lin_wake_up;
 
+SDK_DECLARE_EXT_ISR_M(TEST_LIN_IRQ, lin_isr)
 void lin_isr(void)
 {
     volatile uint32_t status;
@@ -44,8 +45,6 @@ void lin_isr(void)
 
     lin_reset_interrupt(TEST_LIN);
 }
-
-SDK_DECLARE_EXT_ISR_M(TEST_LIN_IRQ, lin_isr)
 
 static void printf_lin_data(uint8_t count, uint8_t *buff)
 {

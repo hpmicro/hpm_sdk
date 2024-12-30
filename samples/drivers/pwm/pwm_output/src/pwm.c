@@ -48,7 +48,7 @@ void reset_pwm_counter(void)
 void generate_edge_aligned_waveform(void)
 {
     uint8_t cmp_index = 0;
-    uint32_t duty, duty_step;
+    float duty = 0;
     bool increase_duty_cycle = true;
     pwm_cmp_config_t cmp_config[2] = {0};
     pwm_config_t pwm_config = {0};
@@ -96,24 +96,22 @@ void generate_edge_aligned_waveform(void)
    
     pwm_start_counter(PWM);
     pwm_issue_shadow_register_lock_event(PWM);
-    duty_step = reload / 100;
-    duty = reload / 100;
     increase_duty_cycle = true;
     for (uint32_t i = 0; i < TEST_LOOP; i++) {
+        pwm_update_duty_edge_aligned(PWM, cmp_index, duty);
         if (increase_duty_cycle) {
-            if ((duty + duty_step) >= reload) {
+            if (duty == 100) {
                 increase_duty_cycle = false;
                 continue;
             }
-            duty += duty_step;
+            duty++;
         } else {
-            if (duty <= duty_step) {
+            if (duty == 0) {
                 increase_duty_cycle = true;
                 continue;
             }
-            duty -= duty_step;
+            duty--;
         }
-        pwm_update_raw_cmp_edge_aligned(PWM, cmp_index, reload - duty);
         board_delay_ms(100);
     }
 }
@@ -121,7 +119,7 @@ void generate_edge_aligned_waveform(void)
 void generate_edge_aligned_waveform_fault_mode(void)
 {
     uint8_t cmp_index = 0;
-    uint32_t duty, duty_step;
+    float duty = 0;
     bool increase_duty_cycle = true;
     pwm_cmp_config_t cmp_config[2] = {0};
     pwm_config_t pwm_config = {0};
@@ -177,24 +175,22 @@ void generate_edge_aligned_waveform_fault_mode(void)
 
     pwm_start_counter(PWM);
     pwm_issue_shadow_register_lock_event(PWM);
-    duty_step = reload / 100;
-    duty = reload / 100;
     increase_duty_cycle = true;
     for (uint32_t i = 0; i < TEST_LOOP; i++) {
+        pwm_update_duty_edge_aligned(PWM, cmp_index, duty);
         if (increase_duty_cycle) {
-            if ((duty + duty_step) >= reload) {
+            if (duty == 100) {
                 increase_duty_cycle = false;
                 continue;
             }
-            duty += duty_step;
+            duty++;
         } else {
-            if (duty <= duty_step) {
+            if (duty == 0) {
                 increase_duty_cycle = true;
                 continue;
             }
-            duty -= duty_step;
+            duty--;
         }
-        pwm_update_raw_cmp_edge_aligned(PWM, cmp_index, reload - duty);
         board_delay_ms(100);
     }
 }
@@ -202,7 +198,7 @@ void generate_edge_aligned_waveform_fault_mode(void)
 void generate_central_aligned_waveform(void)
 {
     uint8_t cmp_index = 0;
-    uint32_t duty, duty_step;
+    float duty = 0;
     bool increase_duty_cycle = true;
     pwm_cmp_config_t cmp_config[4] = {0};
     pwm_config_t pwm_config = {0};
@@ -256,24 +252,22 @@ void generate_central_aligned_waveform(void)
     pwm_load_cmp_shadow_on_match(PWM, cmp_index + 3,  &cmp_config[3]);
     pwm_start_counter(PWM);
     pwm_issue_shadow_register_lock_event(PWM);
-    duty_step = reload / 100;
-    duty = reload / 100;
     increase_duty_cycle = true;
-    for (uint32_t i = 0; i < TEST_LOOP; i++) {
+    for (uint32_t i = 0; i <= TEST_LOOP; i++) {
+        pwm_update_duty_central_aligned(PWM, cmp_index, cmp_index + 1, duty);
         if (increase_duty_cycle) {
-            if ((duty + duty_step) >= reload) {
+            if (duty == 100) {
                 increase_duty_cycle = false;
                 continue;
             }
-            duty += duty_step;
+            duty++;
         } else {
-            if (duty <= duty_step) {
+            if (duty == 0) {
                 increase_duty_cycle = true;
                 continue;
             }
-            duty -= duty_step;
+            duty--;
         }
-        pwm_update_raw_cmp_central_aligned(PWM, cmp_index, cmp_index + 1, (reload - duty) >> 1, (reload + duty) >> 1);
         board_delay_ms(100);
     }
 }
@@ -281,7 +275,7 @@ void generate_central_aligned_waveform(void)
 void generate_central_aligned_waveform_in_pair(void)
 {
     uint8_t cmp_index = 0;
-    uint32_t duty, duty_step;
+    float duty = 0;
     bool increase_duty_cycle = true;
     pwm_cmp_config_t cmp_config[3] = {0};
     pwm_pair_config_t pwm_pair_config = {0};
@@ -330,24 +324,22 @@ void generate_central_aligned_waveform_in_pair(void)
     pwm_start_counter(PWM);
     pwm_issue_shadow_register_lock_event(PWM);
 
-    duty_step = reload / 100;
-    duty = reload / 100;
     increase_duty_cycle = true;
-    for (uint32_t i = 0; i < TEST_LOOP; i++) {
+    for (uint32_t i = 0; i <= TEST_LOOP; i++) {
+        pwm_update_duty_central_aligned(PWM, cmp_index, cmp_index + 1, duty);
         if (increase_duty_cycle) {
-            if ((duty + duty_step) >= reload) {
+            if (duty == 100) {
                 increase_duty_cycle = false;
                 continue;
             }
-            duty += duty_step;
+            duty++;
         } else {
-            if (duty <= duty_step) {
+            if (duty == 0) {
                 increase_duty_cycle = true;
                 continue;
             }
-            duty -= duty_step;
+            duty--;
         }
-        pwm_update_raw_cmp_central_aligned(PWM, cmp_index, cmp_index + 1, (reload - duty) >> 1, (reload + duty) >> 1);
         board_delay_ms(100);
     }
 }
@@ -355,7 +347,7 @@ void generate_central_aligned_waveform_in_pair(void)
 void generate_pwm_cmpjit_edge_aligned_waveform(void)
 {
     uint8_t cmp_index = 0;
-    uint32_t duty, duty_step;
+    float duty = 0;
     bool increase_duty_cycle = true;
     pwm_cmp_config_t cmp_config[2] = {0};
     pwm_config_t pwm_config = {0};
@@ -408,24 +400,22 @@ void generate_pwm_cmpjit_edge_aligned_waveform(void)
 
     pwm_start_counter(PWM);
     pwm_issue_shadow_register_lock_event(PWM);
-    duty_step = reload / 100;
-    duty = reload / 100;
     increase_duty_cycle = true;
     for (uint32_t i = 0; i < TEST_LOOP; i++) {
+        pwm_update_duty_edge_aligned(PWM, cmp_index, duty);
         if (increase_duty_cycle) {
-            if ((duty + duty_step) >= reload) {
+            if (duty == 100) {
                 increase_duty_cycle = false;
                 continue;
             }
-            duty += duty_step;
+            duty++;
         } else {
-            if (duty <= duty_step) {
+            if (duty == 0) {
                 increase_duty_cycle = true;
                 continue;
             }
-            duty -= duty_step;
+            duty--;
         }
-        pwm_update_raw_cmp_edge_aligned(PWM, cmp_index, reload - duty);
         board_delay_ms(100);
     }
 }

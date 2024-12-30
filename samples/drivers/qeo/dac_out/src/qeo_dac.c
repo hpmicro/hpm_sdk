@@ -91,6 +91,8 @@ int main(void)
     board_init();
     printf("QEO DAC wave example\n");
 
+    clock_add_to_group(clock_dac0, 0);
+    clock_add_to_group(clock_dac1, 0);
     init_dac(HPM_DAC0);
     init_dac(HPM_DAC1);
     trgm_dac_matrix_config(HPM_TRGM0, trgm_dac_matrix_output_to_dac0, trgm_dac_matrix_in_from_qeo0_dac0, false);

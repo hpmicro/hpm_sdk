@@ -6,6 +6,8 @@ The demo provides the following features:
 - Write the last sector and verify the data
 - Write the last 1024 sectors and verify the data
 
+This demo can work under `polling` or `interrupt` mode, and the default mode is `polling` mode. Please refer to the comments in  `CMakeLists.txt` for switching to `interrupt` mode.
+
 ## Board Setting
 
 No special settings are required

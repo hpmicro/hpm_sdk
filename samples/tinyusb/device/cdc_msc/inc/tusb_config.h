@@ -76,7 +76,7 @@
  * - CFG_TUSB_MEM_ALIGN   : __attribute__ ((aligned(4)))
  */
 #ifndef CFG_TUSB_MEM_SECTION
-    #define CFG_TUSB_MEM_SECTION      __attribute__ ((section(".noncacheable")))
+    #define CFG_TUSB_MEM_SECTION      __attribute__ ((section(".noncacheable.non_init")))
 #endif
 
 #ifndef CFG_TUSB_MEM_ALIGN

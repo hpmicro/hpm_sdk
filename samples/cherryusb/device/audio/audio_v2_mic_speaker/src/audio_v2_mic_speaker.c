@@ -479,6 +479,7 @@ void i2s_enable_dma_irq_with_priority(int32_t priority)
     intc_m_enable_irq_with_priority(BOARD_APP_XDMA_IRQ, priority);
 }
 
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 void isr_dma(void)
 {
     volatile uint32_t speaker_status;
@@ -495,7 +496,6 @@ void isr_dma(void)
         s_mic_dma_transfer_done = true;
     }
 }
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
 
 void audio_v2_task(uint8_t busid)
 {

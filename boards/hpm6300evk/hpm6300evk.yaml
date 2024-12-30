@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 board:
-    name: hpm6300evk
     soc: HPM6360
     device: HPM6360xPAx
     openocd-soc: hpm6360
@@ -25,3 +24,6 @@ board:
       - board_sdram
       - board_sdcard
       - board_power_button
+    excluded_samples:
+      - samples/multicore/erpc/erpc_motor
+      - samples/opener/motor
