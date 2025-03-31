@@ -77,13 +77,13 @@ int main(void)
     printf("uart driver example\n");
     if (!config.fifo_enable) {
         data_count = 1;
-        printf("non-fifo mode\n");
+        printf("use non-fifo mode\n");
         printf("uart will send back received characters, echo one by one\n");
     } else {
         config.rx_fifo_level = uart_rx_fifo_trg_gt_half;
-        data_count = (UART_SOC_FIFO_SIZE / 2);
-        printf("fifo mode\n");
-        printf("uart will send back received characters, echo every %d bytes, depends on the fifo threshold\n", data_count);
+        data_count = (uart_get_fifo_size(TEST_UART) / 2);
+        printf("use fifo mode, the uart RX/TX FIFO depth:%d bytes \n",  uart_get_fifo_size(TEST_UART));
+        printf("set fifo threshold to %d bytes; uart will send back received characters on every %d bytes\n", data_count, data_count);
     }
 
     stat = uart_init(TEST_UART, &config);

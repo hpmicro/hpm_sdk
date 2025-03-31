@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -5154,16 +5154,8 @@ typedef struct {
 /*
  * PHYSEL (R/W)
  *
- * Selection of the PHY (See Chapter 4.6.)
- * 00 – MII
- * 01 – GMII
- * 10 – RGMII
- * 11 – reserved
- * PHYSEL can only be changed if RX_EN=0 and TX_EN=0. Deactivation delays of
- * RX_EN and TX_EN have to be considered. PHYSEL can only be changed, if these
- * register bits can be read as 0. It is possible to change PHYSEL together with the
- * activation of RX_EN and TX_EN.
- * PHYSEL drives the output <rx_physel>.
+ * Selection of the PHY
+ * 01 – GMII, fixed to 1
  */
 #define TSW_TSNPORT_MAC_MAC_MAC_CTRL_PHYSEL_MASK (0x60U)
 #define TSW_TSNPORT_MAC_MAC_MAC_CTRL_PHYSEL_SHIFT (5U)

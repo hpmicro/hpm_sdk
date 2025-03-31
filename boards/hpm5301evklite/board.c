@@ -15,8 +15,6 @@
 #include "hpm_i2c_drv.h"
 #include "hpm_pcfg_drv.h"
 
-static board_timer_cb timer_cb;
-
 /**
  * @brief FLASH configuration option definitions:
  * option[0]:
@@ -50,7 +48,7 @@ static board_timer_cb timer_cb;
  *      2 - Internal loopback
  *      3 - External DQS
  *    [3:0] Frequency option
- *      1 - 30MHz / 2 - 50MHz / 3 - 66MHz / 4 - 80MHz / 5 - 100MHz / 6 - 120MHz / 7 - 133MHz / 8 - 166MHz
+ *      1 - 30MHz / 2 - 50MHz / 3 - 66MHz / 4 - 80MHz / 5 - 100MHz / 6 - 114MHz / 7 - 133MHz / 8 - 166MHz
  *
  * option[2] (Effective only if the bit[3:0] in option[0] > 1)
  *    [31:20]  Reserved
@@ -71,7 +69,7 @@ static board_timer_cb timer_cb;
  *      0 - 4MB / 1 - 8MB / 2 - 16MB
  */
 #if defined(FLASH_XIP) && FLASH_XIP
-__attribute__ ((section(".nor_cfg_option"), used)) const uint32_t option[4] = {0xfcf90002, 0x00000006, 0x1000, 0x0};
+__attribute__ ((section(".nor_cfg_option"), used)) const uint32_t option[4] = {0xfcf90002, 0x00000005, 0x1000, 0x0};
 #endif
 
 #if defined(FLASH_UF2) && FLASH_UF2
@@ -203,6 +201,7 @@ void board_init_clock(void)
     clock_add_to_group(clock_lmm0, 0);
     clock_add_to_group(clock_mchtmr0, 0);
     clock_add_to_group(clock_rom, 0);
+    clock_add_to_group(clock_mot0, 0); /* for trgm and synt peripheral */
     clock_add_to_group(clock_gpio, 0);
     clock_add_to_group(clock_hdma, 0);
     clock_add_to_group(clock_xpi0, 0);
@@ -216,11 +215,11 @@ void board_init_clock(void)
     /* Configure CPU to 360MHz, AXI/AHB to 120MHz */
     sysctl_config_cpu0_domain_clock(HPM_SYSCTL, clock_source_pll0_clk0, 2, 3);
     /* Configure PLL0 Post Divider */
-    pllctlv2_set_postdiv(HPM_PLLCTLV2, 0, 0, 0);    /* PLL0CLK0: 720MHz */
-    pllctlv2_set_postdiv(HPM_PLLCTLV2, 0, 1, 3);    /* PLL0CLK1: 450MHz */
-    pllctlv2_set_postdiv(HPM_PLLCTLV2, 0, 2, 7);    /* PLL0CLK2: 300MHz */
+    pllctlv2_set_postdiv(HPM_PLLCTLV2, pllctlv2_pll0, pllctlv2_clk0, pllctlv2_div_1p0);    /* PLL0CLK0: 720MHz */
+    pllctlv2_set_postdiv(HPM_PLLCTLV2, pllctlv2_pll0, pllctlv2_clk1, pllctlv2_div_1p2);    /* PLL0CLK1: 600MHz */
+    pllctlv2_set_postdiv(HPM_PLLCTLV2, pllctlv2_pll0, pllctlv2_clk2, pllctlv2_div_1p8);    /* PLL0CLK2: 400MHz */
     /* Configure PLL0 Frequency to 720MHz */
-    pllctlv2_init_pll_with_freq(HPM_PLLCTLV2, 0, 720000000);
+    pllctlv2_init_pll_with_freq(HPM_PLLCTLV2, pllctlv2_pll0, 720000000);
 
     clock_update_core_clock();
 
@@ -238,6 +237,8 @@ void board_delay_ms(uint32_t ms)
     clock_cpu_delay_ms(ms);
 }
 
+#if !defined(NO_BOARD_TIMER_SUPPORT) || !NO_BOARD_TIMER_SUPPORT
+static board_timer_cb timer_cb;
 SDK_DECLARE_EXT_ISR_M(BOARD_CALLBACK_TIMER_IRQ, board_timer_isr)
 void board_timer_isr(void)
 {
@@ -265,6 +266,7 @@ void board_timer_create(uint32_t ms, board_timer_cb cb)
 
     gptmr_start_counter(BOARD_CALLBACK_TIMER, BOARD_CALLBACK_TIMER_CH);
 }
+#endif
 
 void board_init_gpio_pins(void)
 {

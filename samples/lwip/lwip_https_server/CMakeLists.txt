@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2024 HPMicro
+# Copyright (c) 2021-2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -44,6 +44,7 @@ sdk_compile_definitions(-D__USE_ENET_RECEIVE_INTERRUPT=0)
 sdk_compile_definitions(-DLWIP_DHCP=0)
 sdk_compile_definitions(-DLWIP_HTTPD_MAX_REQ_LENGTH=1460)
 sdk_compile_definitions(-DMBEDTLS_CONFIG_FILE="hpm_sdk_mbedtls_config.h")
+sdk_compile_definitions(-DUSE_LWIPOPTS_APP_H=1)
 
 project(lwip_https_server_example)
 sdk_inc(../ports/baremetal/single)

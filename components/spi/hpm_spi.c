@@ -13,9 +13,6 @@
 #define SPI_COMP_FREQUENCY_THRESHOLD  (20000000U)
 #endif
 
-#if USE_DMA_MGR
-#include "hpm_dma_mgr.h"
-#endif
 typedef struct {
     SPI_Type *spi_ptr;
     clock_name_t spi_clock_name;
@@ -802,7 +799,7 @@ void hpm_spi_get_default_init_config(spi_initialize_config_t *config)
     config->clk_phase = spi_sclk_sampling_odd_clk_edges;
     config->data_len = 8;
     config->data_merge = false;
-    config->direction = msb_first;
+    config->direction = spi_msb_first;
 }
 
 hpm_stat_t hpm_spi_initialize(SPI_Type *ptr, spi_initialize_config_t *config)
@@ -1077,6 +1074,9 @@ hpm_stat_t hpm_spi_transmit_receive_setup_dma(SPI_Type *ptr, uint32_t size)
     }
 #endif
     HPM_CHECK_RET(hpm_spi_transfer_init(ptr, spi_trans_write_read_together, size));
+#if defined(HPM_IP_FEATURE_SPI_DMA_TX_REQ_AFTER_CMD_FO_MASTER) && (HPM_IP_FEATURE_SPI_DMA_TX_REQ_AFTER_CMD_FO_MASTER == 1)
+    spi_master_enable_tx_dma_request_after_cmd_write(ptr);
+#endif
     spi_enable_tx_dma(ptr);
     spi_enable_rx_dma(ptr);
     /* for master mode, This CMD register must be written with a dummy value
@@ -1127,6 +1127,9 @@ hpm_stat_t hpm_spi_transmit_setup_dma(SPI_Type *ptr, uint32_t size)
     }
 #endif
     HPM_CHECK_RET(hpm_spi_transfer_init(ptr, spi_trans_write_only, size));
+#if defined(HPM_IP_FEATURE_SPI_DMA_TX_REQ_AFTER_CMD_FO_MASTER) && (HPM_IP_FEATURE_SPI_DMA_TX_REQ_AFTER_CMD_FO_MASTER == 1)
+    spi_master_enable_tx_dma_request_after_cmd_write(ptr);
+#endif
     spi_enable_tx_dma(ptr);
     spi_disable_rx_dma(ptr);
     /* for master mode, This CMD register must be written with a dummy value
@@ -1154,7 +1157,7 @@ void dma_channel_tc_callback(DMA_Type *ptr, uint32_t channel, void *user_data)
     }
 }
 
-hpm_stat_t hpm_spi_dma_install_callback(SPI_Type *ptr, spi_dma_complete_cb tx_complete, spi_dma_complete_cb rx_complete)
+hpm_stat_t hpm_spi_dma_mgr_install_callback(SPI_Type *ptr, spi_dma_complete_cb tx_complete, spi_dma_complete_cb rx_complete)
 {
     dma_mgr_chn_conf_t chg_config;
     dma_resource_t *resource = NULL;
@@ -1312,4 +1315,23 @@ hpm_stat_t hpm_spi_transmit_nonblocking(SPI_Type *ptr, uint8_t *buff, uint32_t s
     stat = hpm_spi_transmit_setup_dma(ptr, size);
     return stat;
 }
+
+dma_resource_t *hpm_spi_get_tx_dma_resource(SPI_Type *ptr)
+{
+    hpm_spi_cfg_t *obj = hpm_spi_get_cfg_obj(ptr);
+    if (obj != NULL) {
+        return &obj->txdma_resource;
+    }
+    return NULL;
+}
+
+dma_resource_t *hpm_spi_get_rx_dma_resource(SPI_Type *ptr)
+{
+    hpm_spi_cfg_t *obj = hpm_spi_get_cfg_obj(ptr);
+    if (obj != NULL) {
+        return &obj->rxdma_resource;
+    }
+    return NULL;
+}
+
 #endif

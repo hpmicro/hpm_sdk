@@ -127,6 +127,7 @@ void femc_get_typical_sdram_config(FEMC_Type *ptr, femc_sdram_config_t *config)
     config->idle_timeout_in_ns = 6;
 
     config->cmd_data_width = 4;
+    config->auto_refresh_cmd_count = 8;
 }
 
 void femc_init(FEMC_Type *ptr, femc_config_t *config)
@@ -302,13 +303,11 @@ hpm_stat_t femc_config_sdram(FEMC_Type *ptr, uint32_t clk_in_hz, femc_sdram_conf
     }
 
     cmd.opcode = FEMC_CMD_SDRAM_AUTO_REFRESH;
-    err = femc_issue_ip_cmd(ptr, config->base_address, &cmd);
-    if (status_success != err) {
-        return err;
-    }
-    err = femc_issue_ip_cmd(ptr, config->base_address, &cmd);
-    if (status_success != err) {
-        return err;
+    for (uint8_t i = 0; i < config->auto_refresh_cmd_count; i++) {
+        err = femc_issue_ip_cmd(ptr, config->base_address, &cmd);
+        if (status_success != err) {
+            return err;
+        }
     }
 
     cmd.opcode = FEMC_CMD_SDRAM_MODE_SET;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -79,6 +79,9 @@
             return stat;               \
         }                              \
     } while (false)
+
+#define _HPM_STRINGIFY(x) #x
+#define HPM_STRINGIFY(x)  _HPM_STRINGIFY(x)
 
 #define SIZE_1KB (1024UL)
 #define SIZE_1MB (1048576UL)
@@ -221,7 +224,8 @@ struct timeval {
 #define ATTR_PLACE_AT_WITH_ALIGNMENT(section_name, alignment) \
 ATTR_PLACE_AT(section_name) ATTR_ALIGN(alignment)
 
-#define ATTR_PLACE_AT_NONCACHEABLE ATTR_PLACE_AT(".noncacheable.non_init")
+/* ATTR_PLACE_AT_NONCACHEABLE is legacy attribute, ATTR_PLACE_AT_NONCACHEABLE_NON_INIT instead of this */
+#define ATTR_PLACE_AT_NONCACHEABLE ATTR_PLACE_AT(".noncacheable")
 #define ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(alignment) \
     ATTR_PLACE_AT_NONCACHEABLE ATTR_ALIGN(alignment)
 
@@ -234,8 +238,13 @@ ATTR_PLACE_AT(section_name) ATTR_ALIGN(alignment)
 #define ATTR_PLACE_AT_NONCACHEABLE_INIT_WITH_ALIGNMENT(alignment) \
     ATTR_PLACE_AT_NONCACHEABLE_INIT ATTR_ALIGN(alignment)
 
+#define ATTR_PLACE_AT_NONCACHEABLE_NON_INIT ATTR_PLACE_AT(".noncacheable.non_init")
+#define ATTR_PLACE_AT_NONCACHEABLE_NON_INIT_WITH_ALIGNMENT(alignment) \
+    ATTR_PLACE_AT_NONCACHEABLE_NON_INIT ATTR_ALIGN(alignment)
+
 /* .fast_ram section */
-#define ATTR_PLACE_AT_FAST_RAM ATTR_PLACE_AT(".fast_ram.non_init")
+/* ATTR_PLACE_AT_FAST_RAM is legacy attribute, ATTR_PLACE_AT_FAST_RAM_NON_INIT instead of this */
+#define ATTR_PLACE_AT_FAST_RAM ATTR_PLACE_AT(".fast_ram")
 #define ATTR_PLACE_AT_FAST_RAM_WITH_ALIGNMENT(alignment) \
     ATTR_PLACE_AT_FAST_RAM ATTR_ALIGN(alignment)
 
@@ -246,6 +255,10 @@ ATTR_PLACE_AT(section_name) ATTR_ALIGN(alignment)
 #define ATTR_PLACE_AT_FAST_RAM_INIT ATTR_PLACE_AT(".fast_ram.init")
 #define ATTR_PLACE_AT_FAST_RAM_INIT_WITH_ALIGNMENT(alignment) \
     ATTR_PLACE_AT_FAST_RAM_INIT ATTR_ALIGN(alignment)
+
+#define ATTR_PLACE_AT_FAST_RAM_NON_INIT ATTR_PLACE_AT(".fast_ram.non_init")
+#define ATTR_PLACE_AT_FAST_RAM_NON_INIT_WITH_ALIGNMENT(alignment) \
+    ATTR_PLACE_AT_FAST_RAM_NON_INIT ATTR_ALIGN(alignment)
 
 #define ATTR_RAMFUNC ATTR_PLACE_AT(".fast")
 #define ATTR_RAMFUNC_WITH_ALIGNMENT(alignment) \

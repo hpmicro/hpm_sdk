@@ -67,7 +67,7 @@ DSTATUS usb_disk_initialize(BYTE pdrv)
     return usb_disk_stat[pdrv];
 }
 
-DRESULT usb_disk_read(BYTE pdrv, BYTE *buff, DWORD sector, BYTE count)
+DRESULT usb_disk_read(BYTE pdrv, BYTE *buff, LBA_t sector, UINT count)
 {
     uint8_t usb_addr = pdrv + 1;
     bool result;
@@ -82,7 +82,7 @@ DRESULT usb_disk_read(BYTE pdrv, BYTE *buff, DWORD sector, BYTE count)
     return result ? RES_OK : RES_ERROR;
 }
 
-DRESULT usb_disk_write(BYTE pdrv, const BYTE *buff, DWORD sector, BYTE count)
+DRESULT usb_disk_write(BYTE pdrv, const BYTE *buff, LBA_t sector, UINT count)
 {
     uint8_t usb_addr = pdrv + 1;
     bool result;

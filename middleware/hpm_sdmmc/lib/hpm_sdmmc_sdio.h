@@ -12,7 +12,7 @@
  *
  * @brief HPM SDIO driver APIs
  * @defgroup hpm_sdmmc HPM SDMMC stack
- *  @ingroup hpm_sdmmc_interfaces
+ * @ingroup hpm_sdmmc_interfaces
  * @{
  *
  */
@@ -507,40 +507,40 @@ static inline uint32_t sdio_cis_csr_addr(const uint8_t *reg_ptr)
 
 /**
  * @brief Initialize SDIO device
- * @param [in,out] SDIO card context
+ * @param [in,out] card SDIO card context
  * @return SDIO device initialization status
  */
 hpm_stat_t sdio_init(sdio_card_t *card);
 
 /**
  * @brief De-initialize SDIO device
- * @param [in,out] SDIO card context
+ * @param [in,out] card SDIO card context
  */
 void sdio_deinit(sdio_card_t *card);
 
 /**
  * @brief Initialize SDIO card
- * @param [in,out] SDIO card context
+ * @param [in,out] card SDIO card context
  * @return SDIO card initialization status
  */
 hpm_stat_t sdio_card_init(sdio_card_t *card);
 
 /**
  * @brief De-Initialize SDIO card
- * @param [in,out] SDIO card context
+ * @param [in,out] card SDIO card context
  * @return SDIO card initialization status
  */
 hpm_stat_t sdio_card_deinit(sdio_card_t *card);
 
 /**
  * @brief Initialize SDIO host
- * @param [in,out] SDIO card context
+ * @param [in,out] card SDIO card context
  */
 hpm_stat_t sdio_host_init(sdio_card_t *card);
 
 /**
  * @brief De-initialize SDIO host
- * @param [in,out] SDIO card context
+ * @param [in,out] card SDIO card context
  *
  * @return De-initialization status
  */
@@ -552,7 +552,7 @@ hpm_stat_t sdio_host_deinit(sdio_card_t *card);
  * @param [in] write  true: write, false: read
  * @param [in] func_idx  SDIO function index
  * @param [in] reg_addr Register address
- * @param [in/out] pdata pass in data if write is true or read_after_write is true, output data if write is false
+ * @param [in,out] pdata pass in data if write is true or read_after_write is true, output data if write is false
  * @param [in] read_after_write  true: read data after write
  *
  * @return SDIO_IO_RW_DIRECT command status
@@ -617,7 +617,7 @@ hpm_stat_t sdio_io_write_multi_bytes_to_fifo(sdio_card_t *card,
  * @param [in,out] card SDIO card context
  * @param [in] func_idx SDIO function index
  * @param [in] reg_addr Register address
- * @param [in,out] pbuf Pointer to data buffer
+ * @param [out] pbuf Pointer to data buffer
  * @param [in] length bytes to be read
  *
  * @return Command execution status
@@ -630,10 +630,10 @@ hpm_stat_t sdio_io_read_multi_bytes_from_fifo(sdio_card_t *card,
 
 /**
  * @brief Write multiple bytes to the address for specified SDIO Function
- * @param [in,out] SDIO card context
+ * @param [in,out] card SDIO card context
  * @param [in] func_idx SDIO function index
  * @param [in] reg_addr Register address
- * @param [in,out] pbuf Pointer to data buffer
+ * @param [in] pbuf Pointer to data buffer
  * @param [in] length   bytes to be written
  *
  * @return Command execution status
@@ -780,12 +780,12 @@ hpm_stat_t sdio_disable_interrupt(sdio_card_t *card);
  *         - status_success: Callback successfully registered.
  *         - status_invalid_argument: If the card pointer is NULL or the card host is not initialized.
  *
- * @Note Ensure the SDIO card and host controller are properly initialized before calling this function.
+ * @note Ensure the SDIO card and host controller are properly initialized before calling this function.
  */
 hpm_stat_t sdio_register_irq_callback(sdio_card_t *card,
                                       void (*sdio_irq_callback)(void *param),
                                       void *sdio_irq_param);
-/*
+/**
  * @}
  */
 

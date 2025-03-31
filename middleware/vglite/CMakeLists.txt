@@ -4,3 +4,4 @@
 sdk_inc(inc)
 add_subdirectory(VGLite)
 add_subdirectory(VGLiteKernel)
+sdk_compile_definitions(-DCONFIG_VGLITE=1)

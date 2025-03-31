@@ -316,34 +316,52 @@ void test_sdm_sync_filter_receive(void)
 void gen_pwm_as_sdm_clock(void)
 {
     uint32_t freq, reload;
+    pwm_counter_t pwm_counter = BOARD_SDM_CLK_PWM_OUT / 2;
+    uint8_t pwm_cmp_1 = BOARD_SDM_CLK_PWM_OUT * 2;
+    uint8_t pwm_cmp_2 = BOARD_SDM_CLK_PWM_OUT * 2 + 1;
+
     freq = clock_get_frequency(BOARD_SDM_CLK_PWM_CLK_NAME);
     reload = freq / 10000000; /* 10MHz */
 
     init_pwm_pin_as_sdm_clock();
 
-    pwmv2_disable_counter(BOARD_SDM_CLK_PWM, pwm_counter_1);
-    pwmv2_reset_counter(BOARD_SDM_CLK_PWM, pwm_counter_1);
+    /* deinit PWM peripheral */
+    pwmv2_deinit(BOARD_SDM_CLK_PWM);
+    /* disable shadow lock function, shadow will always access */
     pwmv2_shadow_register_unlock(BOARD_SDM_CLK_PWM);
 
+    /* set shdow register value */
     pwmv2_set_shadow_val(BOARD_SDM_CLK_PWM, PWMV2_SHADOW_INDEX(0), reload, 0, false);
     pwmv2_set_shadow_val(BOARD_SDM_CLK_PWM, PWMV2_SHADOW_INDEX(1), ((reload >> 1) - (reload >> 2)), 0, false);
     pwmv2_set_shadow_val(BOARD_SDM_CLK_PWM, PWMV2_SHADOW_INDEX(2), ((reload >> 1) + (reload >> 2)), 0, false);
 
-    pwmv2_counter_select_data_offset_from_shadow_value(BOARD_SDM_CLK_PWM, pwm_counter_1, PWMV2_SHADOW_INDEX(0));
-    pwmv2_counter_burst_disable(BOARD_SDM_CLK_PWM, pwm_counter_1);
-    pwmv2_set_reload_update_time(BOARD_SDM_CLK_PWM, pwm_counter_1, pwm_reload_update_on_reload);
+    /* config reload value from shadow, update valid when issue shadow lock */
+    pwmv2_counter_select_data_offset_from_shadow_value(BOARD_SDM_CLK_PWM, pwm_counter, PWMV2_SHADOW_INDEX(0));
+    pwmv2_set_reload_update_time(BOARD_SDM_CLK_PWM, pwm_counter, pwm_reload_update_on_shlk);
 
-    pwmv2_select_cmp_source(BOARD_SDM_CLK_PWM, PWMV2_CMP_INDEX(4), cmp_value_from_shadow_val, PWMV2_SHADOW_INDEX(1));
-    pwmv2_select_cmp_source(BOARD_SDM_CLK_PWM, PWMV2_CMP_INDEX(5), cmp_value_from_shadow_val, PWMV2_SHADOW_INDEX(2));
+    /* config two cmp value from shadow, update valid when issue shadow lock */
+    pwmv2_select_cmp_source(BOARD_SDM_CLK_PWM, pwm_cmp_1, cmp_value_from_shadow_val, PWMV2_SHADOW_INDEX(1));
+    pwmv2_cmp_update_trig_time(BOARD_SDM_CLK_PWM, pwm_cmp_1, pwm_shadow_register_update_on_shlk);
+    pwmv2_select_cmp_source(BOARD_SDM_CLK_PWM, pwm_cmp_2, cmp_value_from_shadow_val, PWMV2_SHADOW_INDEX(2));
+    pwmv2_cmp_update_trig_time(BOARD_SDM_CLK_PWM, pwm_cmp_2, pwm_shadow_register_update_on_shlk);
 
-    pwmv2_select_cmp_source(BOARD_SDM_CLK_PWM, PWMV2_CMP_INDEX(6), cmp_value_from_shadow_val, PWMV2_SHADOW_INDEX(1));
-    pwmv2_select_cmp_source(BOARD_SDM_CLK_PWM, PWMV2_CMP_INDEX(7), cmp_value_from_shadow_val, PWMV2_SHADOW_INDEX(2));
-
+    /* lock shadow register, the reload and cmp value will be updated by shadow */
     pwmv2_shadow_register_lock(BOARD_SDM_CLK_PWM);
-    pwmv2_disable_four_cmp(BOARD_SDM_CLK_PWM, BOARD_SDM_CLK_PWM_OUT);
+
+    /* disable burst mode */
+    pwmv2_counter_burst_disable(BOARD_SDM_CLK_PWM, pwm_counter);
+
+    /* generate pwm with two cmp rather than 4 cmp */
+    pwmv2_disable_four_cmp(BOARD_SDM_CLK_PWM, BOARD_SDM_CLK_PWM_OUT & 0xFFFE); /* Need to configure even channels */
+
+    /* enable output channel */
     pwmv2_channel_enable_output(BOARD_SDM_CLK_PWM, BOARD_SDM_CLK_PWM_OUT);
-    pwmv2_enable_counter(BOARD_SDM_CLK_PWM, pwm_counter_1);
-    pwmv2_start_pwm_output(BOARD_SDM_CLK_PWM, pwm_counter_1);
+
+    /* enable counter */
+    pwmv2_enable_counter(BOARD_SDM_CLK_PWM, pwm_counter);
+
+    /* start pwm counter */
+    pwmv2_start_pwm_output(BOARD_SDM_CLK_PWM, pwm_counter);
 }
 #endif
 

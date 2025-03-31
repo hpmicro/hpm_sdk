@@ -19,8 +19,6 @@
 #include "hpm_pllctlv2_drv.h"
 #include "hpm_pcfg_drv.h"
 
-static board_timer_cb timer_cb;
-
 /**
  * @brief FLASH configuration option definitions:
  * option[0]:
@@ -199,6 +197,8 @@ void board_delay_ms(uint32_t ms)
     clock_cpu_delay_ms(ms);
 }
 
+#if !defined(NO_BOARD_TIMER_SUPPORT) || !NO_BOARD_TIMER_SUPPORT
+static board_timer_cb timer_cb;
 SDK_DECLARE_EXT_ISR_M(BOARD_CALLBACK_TIMER_IRQ, board_timer_isr)
 void board_timer_isr(void)
 {
@@ -226,6 +226,7 @@ void board_timer_create(uint32_t ms, board_timer_cb cb)
 
     gptmr_start_counter(BOARD_CALLBACK_TIMER, BOARD_CALLBACK_TIMER_CH);
 }
+#endif
 
 void board_i2c_bus_clear(I2C_Type *ptr)
 {
@@ -495,10 +496,10 @@ void board_init_clock(void)
     /* Configure CPU to 600MHz, AXI/AHB to 200MHz. CPU1 clock freqency same as CPU0 */
     sysctl_config_cpu0_domain_clock(HPM_SYSCTL, clock_source_pll1_clk1, 1, 3, 3);
     /* Configure PLL1 Post Divider */
-    pllctlv2_set_postdiv(HPM_PLLCTLV2, 1, 0, 5);    /* PLL1CLK0: 480MHz */
-    pllctlv2_set_postdiv(HPM_PLLCTLV2, 1, 1, 3);    /* PLL1CLK1: 600MHz */
+    pllctlv2_set_postdiv(HPM_PLLCTLV2, pllctlv2_pll1, pllctlv2_clk0, pllctlv2_div_2p0);    /* PLL1CLK0: 480MHz */
+    pllctlv2_set_postdiv(HPM_PLLCTLV2, pllctlv2_pll1, pllctlv2_clk1, pllctlv2_div_1p6);    /* PLL1CLK1: 600MHz */
     /* Configure PLL1 Frequency to 960MHz */
-    pllctlv2_init_pll_with_freq(HPM_PLLCTLV2, 1, 960000000);
+    pllctlv2_init_pll_with_freq(HPM_PLLCTLV2, pllctlv2_pll1, 960000000);
     clock_update_core_clock();
 
     /* Configure mchtmr to 24MHz */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -18,10 +18,12 @@ hpm_stat_t acmp_channel_config(ACMP_Type *ptr, uint8_t ch, acmp_channel_config_t
                     | ACMP_CHANNEL_CFG_CMPOEN_SET(config->enable_cmp_output)
                     | ACMP_CHANNEL_CFG_WINEN_SET(config->enable_window_mode)
                     | ACMP_CHANNEL_CFG_OPOL_SET(config->invert_output)
-                    | ACMP_CHANNEL_CFG_SYNCEN_SET(config->enable_clock_sync)
                     | ACMP_CHANNEL_CFG_FLTBYPS_SET(config->bypass_filter)
                     | ACMP_CHANNEL_CFG_DACEN_SET(config->enable_dac)
                     | ACMP_CHANNEL_CFG_HPMODE_SET(config->enable_hpmode)
+#if defined(HPM_IP_FEATURE_ACMP_FILT_LEN_EXTEND) && HPM_IP_FEATURE_ACMP_FILT_LEN_EXTEND
+                    | ACMP_CHANNEL_CFG_FLTLEN_SHIFT_SET(config->filter_length_shift)
+#endif
                     | ACMP_CHANNEL_CFG_FLTLEN_SET(config->filter_length);
     if (enable) {
         acmp_channel_enable_cmp(ptr, ch, true);
@@ -39,7 +41,6 @@ void acmp_channel_get_default_config(ACMP_Type *ptr, acmp_channel_config_t *conf
     config->enable_cmp_output = false;
     config->enable_window_mode = false;
     config->invert_output = false;
-    config->enable_clock_sync = false;
     config->bypass_filter = true;
     config->enable_dac = false;
     config->enable_hpmode = false;

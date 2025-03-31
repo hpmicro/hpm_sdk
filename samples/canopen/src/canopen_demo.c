@@ -155,7 +155,7 @@ void enter_master_mode(void)
     printf("slave enter to optional mode\n");
 
     /* receive PDO message */
-    PDO_test(CO->CANmodule[0], activeSlaveNodeId);
+    PDO_test(activeSlaveNodeId);
 
     /* read SDO message and print it */
     SDO_test(CO->CANmodule[0], activeSlaveNodeId);

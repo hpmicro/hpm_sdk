@@ -61,10 +61,15 @@ typedef enum {
 
 /* @brief PCFG wakeup source */
 typedef enum {
+    pcfg_wakeup_src_soc = (1 << 0),
     pcfg_wakeup_src_puart = (1 << 7),
     pcfg_wakeup_src_ptimer = (1 << 8),
     pcfg_wakeup_src_pwdg = (1 << 9),
     pcfg_wakeup_src_pgpio = (1 << 10),
+    pcfg_wakeup_src_bsecurity = (1 << 16),
+    pcfg_wakeup_src_bgpio = (1 << 17),
+    pcfg_wakeup_src_rtc = (1 << 19),
+    pcfg_wakeup_src_wkup = (1 << 31),
 } pcfg_wakeup_src_t;
 
 /* @brief PCFG status */
@@ -376,7 +381,7 @@ static inline void pcfg_enable_dcdc_retention(PCFG_Type *ptr)
  */
 static inline void pcfg_clear_wakeup_cause(PCFG_Type *ptr, uint32_t mask)
 {
-    ptr->WAKE_CAUSE |= mask;
+    ptr->WAKE_CAUSE = mask;
 }
 
 /**

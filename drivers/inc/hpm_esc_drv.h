@@ -366,7 +366,43 @@ static inline void esc_config_latch1_source(ESC_Type *ptr, bool latch0_from_trig
     }
 }
 
+#if defined(HPM_IP_FEATURE_ESC_SYNC_IRQ_MASK) && HPM_IP_FEATURE_ESC_SYNC_IRQ_MASK
+/*!
+ * @brief ESC map sync irq to pdi irq
+ *
+ * Note: this API will change bit3 and bit7 value of 0x151 register
+ *
+ * @param[in] ptr ESC base address
+ * @param[in] sync0_irq true: map sync0 irq to pdi irq in 0x151 register
+ * @param[in] sync1_irq true: map sync1 irq to pdi irq in 0x151 register
+ */
+static inline void esc_enable_sync_irq_to_pdi_irq(ESC_Type *ptr, bool sync0_irq, bool sync1_irq)
+{
+    ptr->GPR_CFG0 = (ptr->GPR_CFG0 & ~(ESC_GPR_CFG0_SYNC0_PDI_IRQEN_MASK | ESC_GPR_CFG0_SYNC1_PDI_IRQEN_MASK))
+                     | (ESC_GPR_CFG0_SYNC0_PDI_IRQEN_SET(sync0_irq))
+                     | (ESC_GPR_CFG0_SYNC1_PDI_IRQEN_SET(sync1_irq));
+}
+#endif
 
+#if defined(HPM_IP_FEATURE_ESC_PORT_DIS) && HPM_IP_FEATURE_ESC_PORT_DIS
+/*!
+ * @brief ESC change port implementation description
+ *
+ * Note: this API will change the value of 0x7 register to change port implementation description
+ *
+ * @param[in] ptr ESC base address
+ * @param[in] port0 true: change port0 to not implemented in port description register
+ * @param[in] port1 true: change port1 to not implemented in port description register
+ * @param[in] port2 true: change port2 to not implemented in port description register
+ */
+static inline void esc_change_port_description(ESC_Type *ptr, bool port0, bool port1, bool port2)
+{
+    ptr->GPR_CFG0 = (ptr->GPR_CFG0 & ~(ESC_GPR_CFG0_PORT0_DIS_MASK | ESC_GPR_CFG0_PORT1_DIS_MASK | ESC_GPR_CFG0_PORT2_DIS_MASK))
+                     | (ESC_GPR_CFG0_PORT0_DIS_SET(port0))
+                     | (ESC_GPR_CFG0_PORT1_DIS_SET(port1))
+                     | (ESC_GPR_CFG0_PORT2_DIS_SET(port2));
+}
+#endif
 
 #ifdef __cplusplus
 }

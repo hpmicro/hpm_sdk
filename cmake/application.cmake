@@ -116,7 +116,7 @@ add_custom_command(
 )
 
 if(APP_YAML_PATH)
-    check_board_capability(${BOARD_YAML} "${APP_YAML_PATH}/app.yaml" result)
+    check_board_capability(${BOARD_YAML} "${APP_YAML_PATH}/app.yaml" ${APP_BIN_DIR} ${CMAKE_GENERATOR} result)
     if(${result} STREQUAL "1")
         message(FATAL_ERROR "${BOARD} can not support this sample")
     endif()
@@ -180,7 +180,7 @@ if(NOT HPM_BUILD_TYPE)
 endif()
 
 string(TOLOWER ${HPM_BUILD_TYPE} HPM_BUILD_TYPE)
-set(supported_hpm_build_types "ram|flash_xip|flash_sdram_xip|flash_uf2|sec_core_img")
+set(supported_hpm_build_types "ram|flash_xip|flash_sdram_xip|flash_uf2|sec_core_img|flash_xip_hybrid")
 string(REGEX MATCH "${supported_hpm_build_types}" is_valid_hpm_build_type ${HPM_BUILD_TYPE})
 if(NOT is_valid_hpm_build_type)
     message(FATAL_ERROR "\n!!! invalid HPM_BUILD_TYPE: ${HPM_BUILD_TYPE}, supported types:\n    ${supported_hpm_build_types}\n")

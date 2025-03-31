@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -49,6 +49,7 @@ static int enet_dma_init(ENET_Type *ptr, enet_desc_t *desc, uint32_t intr, uint8
     /* wait for the completion of reset process */
     while (ENET_DMA_BUS_MODE_SWR_GET(ptr->DMA_BUS_MODE)) {
         if (retry_cnt++ > ENET_RETRY_DMA_INIT_CNT) {
+            /* If DMA initialization fails, check RX clock. */
             return false;
         }
     }

@@ -17,7 +17,7 @@ void pixelmux_rgb_data_source_enable(pixelmux_rgb_select_t src)
 
 void pixelmux_rgb_data_source_disable(void)
 {
-    HPM_PIXEL_MUX->PIXMUX &= ~PIXELMUX_PIXMUX_RGB_SEL_MASK;
+    HPM_PIXEL_MUX->PIXMUX &= ~PIXELMUX_PIXMUX_RGB_EN_MASK;
 }
 
 void pixelmux_gwc1_data_source_enable(pixelmux_gwc1_select_t src)

@@ -6,6 +6,7 @@
  * Change Logs:
  * Date           Author       Notes
  * 2018/10/28     Bernard      The unify RISC-V porting code.
+ * 2020/11/20     BalanceTWK   Add FPU support
  */
 
 #include <rthw.h>
@@ -62,6 +63,10 @@ struct rt_hw_stack_frame
     rt_ubase_t t5;         /* x30 - t5     - temporary register 5                */
     rt_ubase_t t6;         /* x31 - t6     - temporary register 6                */
 #endif
+    rt_ubase_t mcctlbeginaddr;         /* mcctlbeginaddr */
+    rt_ubase_t mcctldata;              /* mcctldata      */
+    rt_ubase_t resv0;                  /* resv0, used for 16 bytes align */
+    rt_ubase_t resv1;                  /* resv1, used for 16 bytes align */
 #ifdef ARCH_RISCV_FPU
     rv_floatreg_t f0;      /* f0  */
     rv_floatreg_t f1;      /* f1  */
@@ -115,7 +120,7 @@ rt_uint8_t *rt_hw_stack_init(void       *tentry,
 {
     struct rt_hw_stack_frame *frame;
     rt_uint8_t         *stk;
-    rt_uint32_t        i;
+    int                i;
 
     stk  = stack_addr + sizeof(rt_ubase_t);
     stk  = (rt_uint8_t *)RT_ALIGN_DOWN((rt_ubase_t)stk, REGBYTES);
@@ -133,14 +138,12 @@ rt_uint8_t *rt_hw_stack_init(void       *tentry,
     frame->epc     = (rt_ubase_t)tentry;
 
     frame->tp      = (rt_ubase_t)RTT_THREAD_POINTER;
-
     /* force to machine mode(MPP=11) and set MPIE to 1 */
 #ifdef ARCH_RISCV_FPU
     frame->mstatus = 0x00007880;
 #else
     frame->mstatus = 0x00001880;
 #endif
-
 
     return stk;
 }
@@ -153,7 +156,7 @@ rt_uint8_t *rt_hw_stack_init(void       *tentry,
  * #endif
  */
 #ifndef RT_USING_SMP
-void rt_hw_context_switch_interrupt(rt_ubase_t from, rt_ubase_t to)
+RT_WEAK void rt_hw_context_switch_interrupt(rt_ubase_t from, rt_ubase_t to)
 {
     if (rt_thread_switch_interrupt_flag == 0)
         rt_interrupt_from_thread = from;
@@ -166,9 +169,9 @@ void rt_hw_context_switch_interrupt(rt_ubase_t from, rt_ubase_t to)
 #endif /* end of RT_USING_SMP */
 
 /** shutdown CPU */
-void rt_hw_cpu_shutdown()
+RT_WEAK void rt_hw_cpu_shutdown()
 {
-    rt_uint32_t level;
+    rt_base_t level;
     rt_kprintf("shutdown...\n");
 
     level = rt_hw_interrupt_disable();

@@ -62,7 +62,7 @@ static void canopen_rx_callback(const struct device *dev, struct can_frame *fram
 	for (i = 0; i < CANmodule->rxSize; i++) {
 		buffer = &CANmodule->rxArray[i];
 
-		if (buffer->ident == -ENOSPC || buffer->CANrx_callback == NULL) {
+		if (buffer->ident == (uint16_t)-ENOSPC || buffer->CANrx_callback == NULL) {
 			continue;
 		}
 
@@ -328,8 +328,9 @@ CO_ReturnError_t CO_CANmodule_init(CO_CANmodule_t *CANmodule,
 {
 	struct canopen_context *ctx = (struct canopen_context *)CANdriverState;
 	uint16_t i;
-	int err;
 	int max_filters;
+
+	ARG_UNUSED(CANbitRate);
 
 	printf("rxSize = %d, txSize = %d\n", rxSize, txSize);
 
@@ -608,7 +609,7 @@ void CO_CANverifyErrors(CO_CANmodule_t *CANmodule)
 		 ((uint32_t)err_cnt.rx_err_cnt << 8) |
 		 rx_overflows;
 
-	if (errors != CANmodule->errinfo) {
+	if (errors != (uint32_t)(CANmodule->errinfo)) {
 		CANmodule->errinfo = errors;
 
 		if (state == CAN_STATE_BUS_OFF) {

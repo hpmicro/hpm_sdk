@@ -149,9 +149,13 @@ static struct usbd_interface intf0;
 static struct usbd_interface intf1;
 static USB_NOCACHE_RAM_SECTION uint8_t s_sendbuffer[4];
 static volatile bool s_midi_usb_busy;
-static bool s_auto_play;
-static uint32_t s_note_pos;
-static uint32_t s_note_pos_prev;
+static volatile bool s_auto_play;
+static uint32_t s_auto_note_pos;
+static uint32_t s_auto_note_pos_prev;
+static uint32_t s_manual_note_pos;
+static uint32_t s_manual_note_pos_prev;
+static int8_t manual_state;
+
 /* Store example melody as an array of note values */
 static const uint8_t s_note_sequence[] = {
     74, 78, 81, 86, 90, 93, 98, 102, 57, 61, 66, 69, 73, 78, 81, 85, 88, 92, 97, 100, 97, 92, 88, 85, 81, 78,
@@ -241,7 +245,7 @@ void midi_task_286ms(uint8_t busid)
     if (s_auto_play) {
         s_sendbuffer[0] = (cable_num << 4) | MIDI_CIN_NOTE_ON;
         s_sendbuffer[1] = NoteOn | channel;
-        s_sendbuffer[2] = s_note_sequence[s_note_pos];
+        s_sendbuffer[2] = s_note_sequence[s_auto_note_pos];
         s_sendbuffer[3] = 127;  /* velocity */
         s_midi_usb_busy = true;
         ret = usbd_ep_start_write(busid, MIDI_IN_EP, s_sendbuffer, 4);
@@ -252,14 +256,20 @@ void midi_task_286ms(uint8_t busid)
         while (s_midi_usb_busy) {
         }
 
-        if (s_note_pos > 0) {
-            s_note_pos_prev = s_note_pos - 1;
+        if (s_auto_note_pos > 0) {
+            s_auto_note_pos_prev = s_auto_note_pos - 1;
         } else {
-            s_note_pos_prev = sizeof(s_note_sequence) - 1;
+            s_auto_note_pos_prev = sizeof(s_note_sequence) - 1;
         }
+
+        s_auto_note_pos++;
+        if (s_auto_note_pos >= sizeof(s_note_sequence)) {
+            s_auto_note_pos = 0;
+        }
+
         s_sendbuffer[0] = (cable_num << 4) | MIDI_CIN_NOTE_OFF;
         s_sendbuffer[1] = NoteOff | channel;
-        s_sendbuffer[2] = s_note_sequence[s_note_pos_prev];
+        s_sendbuffer[2] = s_note_sequence[s_auto_note_pos_prev];
         s_sendbuffer[3] = 0;  /* velocity */
         s_midi_usb_busy = true;
         ret = usbd_ep_start_write(busid, MIDI_IN_EP, s_sendbuffer, 4);
@@ -270,61 +280,62 @@ void midi_task_286ms(uint8_t busid)
         while (s_midi_usb_busy) {
         }
 
-        s_note_pos++;
-        if (s_note_pos >= sizeof(s_note_sequence)) {
-            s_note_pos = 0;
+        manual_state = 0;
+        s_manual_note_pos = 0;
+        s_manual_note_pos_prev = 0;
+    } else {
+        switch (manual_state) {
+        case 1:
+            if (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) != BOARD_BUTTON_PRESSED_VALUE) {
+                s_sendbuffer[0] = (cable_num << 4) | MIDI_CIN_NOTE_OFF;
+                s_sendbuffer[1] = NoteOff | channel;
+                s_sendbuffer[2] = s_note_sequence[s_manual_note_pos_prev];
+                s_sendbuffer[3] = 0;  /* velocity */
+                s_midi_usb_busy = true;
+                ret = usbd_ep_start_write(busid, MIDI_IN_EP, s_sendbuffer, 4);
+                if (ret < 0) {
+                    printf("error\n");
+                    return;
+                }
+                while (s_midi_usb_busy) {
+                }
+                manual_state = 0;
+            }
+            break;
+
+        case 0:
+        default:
+            if (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) == BOARD_BUTTON_PRESSED_VALUE) {
+                s_sendbuffer[0] = (cable_num << 4) | MIDI_CIN_NOTE_ON;
+                s_sendbuffer[1] = NoteOn | channel;
+                s_sendbuffer[2] = s_note_sequence[s_manual_note_pos];
+                s_sendbuffer[3] = 100;  /* velocity */
+                s_midi_usb_busy = true;
+                ret = usbd_ep_start_write(busid, MIDI_IN_EP, s_sendbuffer, 4);
+                if (ret < 0) {
+                    printf("error\n");
+                    return;
+                }
+                while (s_midi_usb_busy) {
+                }
+
+                if (s_manual_note_pos > 0) {
+                    s_manual_note_pos_prev = s_manual_note_pos - 1;
+                } else {
+                    s_manual_note_pos_prev = sizeof(s_note_sequence) - 1;
+                }
+
+                s_manual_note_pos++;
+                if (s_manual_note_pos >= sizeof(s_note_sequence)) {
+                    s_manual_note_pos = 0;
+                }
+
+                manual_state = 1;
+            }
+            break;
         }
-    }
-}
 
-void midi_task_main(uint8_t busid)
-{
-    const uint8_t cable_num = 0; /* MIDI jack associated with USB endpoint */
-    const uint8_t channel = 0;   /* 0 for channel 1 */
-    bool key_pushed = false;
-    int ret;
-
-    if (usb_device_is_configured(busid) == false) {
-        return;
-    }
-
-    if (!s_auto_play) {
-        if (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) == BOARD_BUTTON_PRESSED_VALUE) {
-            key_pushed = true;
-            s_sendbuffer[0] = (cable_num << 4) | MIDI_CIN_NOTE_ON;
-            s_sendbuffer[1] = NoteOn | channel;
-            s_sendbuffer[2] = s_note_sequence[s_note_pos];
-            s_sendbuffer[3] = 100;  /* velocity */
-            s_midi_usb_busy = true;
-            ret = usbd_ep_start_write(busid, MIDI_IN_EP, s_sendbuffer, 4);
-            if (ret < 0) {
-                printf("error\n");
-                return;
-            }
-            while (s_midi_usb_busy) {
-            }
-        }
-
-        if (key_pushed) {
-            while (gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN) == BOARD_BUTTON_PRESSED_VALUE) {
-            }
-            s_sendbuffer[0] = (cable_num << 4) | MIDI_CIN_NOTE_OFF;
-            s_sendbuffer[1] = NoteOff | channel;
-            s_sendbuffer[2] = s_note_sequence[s_note_pos];
-            s_sendbuffer[3] = 0;  /* velocity */
-            s_midi_usb_busy = true;
-            ret = usbd_ep_start_write(busid, MIDI_IN_EP, s_sendbuffer, 4);
-            if (ret < 0) {
-                printf("error\n");
-                return;
-            }
-            while (s_midi_usb_busy) {
-            }
-        }
-
-        s_note_pos++;
-        if (s_note_pos >= sizeof(s_note_sequence)) {
-            s_note_pos = 0;
-        }
+        s_auto_note_pos = 0;
+        s_auto_note_pos_prev = 0;
     }
 }

@@ -179,6 +179,7 @@ extern int wmhd_host_get_mac_address(wmhd_mac_t *mac);
 extern void wmhd_host_set_mac_address(wmhd_mac_t mac);
 
 extern void wmhd_sta_tput_patch(uint8_t enable);
+extern void wmhd_ap_tput_patch(uint8_t enable);
 
 // ssid:  less than 32 bytes
 // password: less than 32 bytes

@@ -54,7 +54,7 @@ sdk_compile_definitions(-DDISABLE_IRQ_PREEMPTIVE=1)
 # SDMMC stack definitions
 sdk_compile_definitions(-DHPM_SDMMC_ENABLE_CACHE_MAINTENANCE=1)
 sdk_compile_definitions(-DHPM_SDMMC_USE_CMSIS_OS2=1)
-sdk_compile_definitions(-DHPM_SDMMC_HOST_ENABLE_IRQ=0)
+sdk_compile_definitions(-DHPM_SDMMC_HOST_ENABLE_IRQ=1)
 sdk_compile_definitions(-DHPM_SDMMC_USE_ADMA2=0)
 
 # LWIP options
@@ -78,12 +78,11 @@ sdk_compile_options(-O2)
 
 
 project(mhd_wifi_demo)
-sdk_inc(../ports/freertos/single)
-sdk_inc(../ports/freertos/single/arch)
-sdk_inc(common/single)
+sdk_inc(lwip_port)
+sdk_inc(lwip_port/arch)
 sdk_inc(inc)
 
-sdk_app_src(../ports/freertos/single/arch/sys_arch.c)
+sdk_app_src(lwip_port/arch/sys_arch.c)
 sdk_app_src(src/main.c)
 sdk_app_src(src/app/ping_cmd.c)
 sdk_app_src(src/app/iperf_cmd.c)

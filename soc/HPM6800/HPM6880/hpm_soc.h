@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -63,13 +63,6 @@
 #define HPM_CRC_BASE (0xF000C000UL)
 /* CRC base pointer */
 #define HPM_CRC ((CRC_Type *) HPM_CRC_BASE)
-
-#include "hpm_sdadc_regs.h"
-/* Address of SDADC instances */
-/* SDADC base address */
-#define HPM_SDADC_BASE (0xF0018000UL)
-/* SDADC base pointer */
-#define HPM_SDADC ((SDADC_Type *) HPM_SDADC_BASE)
 
 #include "hpm_uart_regs.h"
 /* Address of UART instances */
@@ -468,10 +461,6 @@
 /* DDRCTL base pointer */
 #define HPM_DDRCTL ((DDRCTL_Type *) HPM_DDRCTL_BASE)
 
-/* Address of ROMC instances */
-/* ROMC base address */
-#define HPM_ROMC_BASE (0xF3014000UL)
-
 #include "hpm_ffa_regs.h"
 /* Address of FFA instances */
 /* FFA base address */
@@ -638,13 +627,6 @@
 #define HPM_BCFG_BASE (0xF4208000UL)
 /* BCFG base pointer */
 #define HPM_BCFG ((BCFG_Type *) HPM_BCFG_BASE)
-
-#include "hpm_butn_regs.h"
-/* Address of BUTN instances */
-/* BUTN base address */
-#define HPM_BUTN_BASE (0xF420C000UL)
-/* BUTN base pointer */
-#define HPM_BUTN ((BUTN_Type *) HPM_BUTN_BASE)
 
 #include "hpm_bgpr_regs.h"
 /* Address of BGPR instances */

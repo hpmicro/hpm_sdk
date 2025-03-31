@@ -7,7 +7,7 @@
   <description>HPM5300 device</description>
   <licenseText>
     /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -1613,7 +1613,7 @@ User should set this bit before set CMPEN to 1.</description>
               <description>set this bitfield to trigger software counter sync event</description>
               <bitOffset>0</bitOffset>
               <bitWidth>4</bitWidth>
-              <access>read-write</access>
+              <access>write-only</access>
             </field>
           </fields>
         </register>
@@ -5049,7 +5049,7 @@ Note: Parity check is required once writing to this register. The result should 
           <addressOffset>0x0</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0x2FE2F03F</resetMask>
+          <resetMask>0x2FE0F03F</resetMask>
           <fields>
             <field>
               <name>CLK_SEL</name>
@@ -5091,13 +5091,6 @@ Note: Parity check is required once writing to this register. The result should 
 Once the lock mechanism takes effect, the CTRL0, CTRL1, timeout int register, timeout rst register, needs unlock before re-config them.
 The register update needs to be finished in the required period defined by UPD_OT_TIME register</description>
               <bitOffset>21</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>OT_SELF_CLEAR</name>
-              <description>overtime reset can be self released after 32 function cycles</description>
-              <bitOffset>17</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
@@ -6141,6 +6134,554 @@ bit2: 1, invisible to cpu0 fast gpio; 0: visible to cpu0 fast gpio</description>
             </fields>
           </register>
         </cluster>
+      </registers>
+    </peripheral>
+    <peripheral>
+      <name>SYNT</name>
+      <description>SYNT</description>
+      <groupName>SYNT</groupName>
+      <baseAddress>0xf0328000</baseAddress>
+      <addressBlock>
+        <offset>0x0</offset>
+        <size>0x30</size>
+        <usage>registers</usage>
+      </addressBlock>
+      <registers>
+        <register>
+          <name>gcr</name>
+          <description>Global control register</description>
+          <addressOffset>0x0</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0xF0000037</resetMask>
+          <fields>
+            <field>
+              <name>TIMESTAMP_INC_NEW</name>
+              <description>set to increase the timesamp with new value, auto clr</description>
+              <bitOffset>31</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>write-only</access>
+            </field>
+            <field>
+              <name>TIMESTAMP_DEC_NEW</name>
+              <description>set to decrease the timesamp with new value, auto clr</description>
+              <bitOffset>30</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>write-only</access>
+            </field>
+            <field>
+              <name>TIMESTAMP_SET_NEW</name>
+              <description>set  the timesamp to new value, auto clr</description>
+              <bitOffset>29</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>write-only</access>
+            </field>
+            <field>
+              <name>TIMESTAMP_RESET</name>
+              <description>reset timesamp  to 0, auto clr</description>
+              <bitOffset>28</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>write-only</access>
+            </field>
+            <field>
+              <name>TIMESTAMP_DEBUG_EN</name>
+              <description>set to enable cpu_debug_mode to stop the timesamp</description>
+              <bitOffset>5</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>TIMESTAMP_ENABLE</name>
+              <description>set to enable the timesamp , clr to stop</description>
+              <bitOffset>4</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>COUNTER_DEBUG_EN</name>
+              <description>set to enable cpu_debug_mode to stop the counter</description>
+              <bitOffset>2</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>CRST</name>
+              <description>1- Reset counter</description>
+              <bitOffset>1</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>CEN</name>
+              <description>1- Enable counter</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>rld</name>
+          <description>Counter reload register</description>
+          <addressOffset>0x4</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0xFFFFFFFF</resetMask>
+          <fields>
+            <field>
+              <name>RLD</name>
+              <description>counter reload value</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>32</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>timestamp_new</name>
+          <description>timestamp new value register</description>
+          <addressOffset>0x8</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0xFFFFFFFF</resetMask>
+          <fields>
+            <field>
+              <name>VALUE</name>
+              <description>new value for timesamp , can be used as set/inc/dec</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>32</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>cnt</name>
+          <description>Counter</description>
+          <addressOffset>0xc</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0xFFFFFFFF</resetMask>
+          <fields>
+            <field>
+              <name>CNT</name>
+              <description>counter</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>32</bitWidth>
+              <access>read-only</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>timestamp_sav</name>
+          <description>timestamp trig save value</description>
+          <addressOffset>0x10</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0xFFFFFFFF</resetMask>
+          <fields>
+            <field>
+              <name>VALUE</name>
+              <description>use the trigger to save timesamp  here</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>32</bitWidth>
+              <access>read-only</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>timestamp_cur</name>
+          <description>timestamp read value</description>
+          <addressOffset>0x14</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0xFFFFFFFF</resetMask>
+          <fields>
+            <field>
+              <name>VALUE</name>
+              <description>current timesamp  value</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>32</bitWidth>
+              <access>read-only</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <dim>4</dim>
+          <dimIncrement>0x4</dimIncrement>
+          <dimIndex>0,1,2,3</dimIndex>
+          <name>CMP[%s]</name>
+          <description>no description available</description>
+          <addressOffset>0x20</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0xFFFFFFFF</resetMask>
+          <fields>
+            <field>
+              <name>CMP</name>
+              <description>comparator value, the output will assert when counter count to this value</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>32</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+      </registers>
+    </peripheral>
+    <peripheral>
+      <name>TRGM0</name>
+      <description>TRGM0</description>
+      <groupName>TRGM</groupName>
+      <baseAddress>0xf033c000</baseAddress>
+      <addressBlock>
+        <offset>0x0</offset>
+        <size>0x634</size>
+        <usage>registers</usage>
+      </addressBlock>
+      <registers>
+        <register>
+          <dim>28</dim>
+          <dimIncrement>0x4</dimIncrement>
+          <dimIndex>PWM0_IN0,PWM0_IN1,PWM0_IN2,PWM0_IN3,PWM0_IN4,PWM0_IN5,PWM0_IN6,PWM0_IN7,PWM1_IN0,PWM1_IN1,PWM1_IN2,PWM1_IN3,PWM1_IN4,PWM1_IN5,PWM1_IN6,PWM1_IN7,TRGM_P_00,TRGM_P_01,TRGM_P_02,TRGM_P_03,TRGM_P_04,TRGM_P_05,TRGM_P_06,TRGM_P_07,PWM0_FAULT0,PWM0_FAULT1,PWM1_FAULT0,PWM1_FAULT1</dimIndex>
+          <name>FILTCFG[%s]</name>
+          <description>no description available</description>
+          <addressOffset>0x0</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0x0001FFFF</resetMask>
+          <fields>
+            <field>
+              <name>OUTINV</name>
+              <description>1- Filter will invert the output
+0- Filter will not invert the output</description>
+              <bitOffset>16</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>MODE</name>
+              <description>This bitfields defines the filter mode
+000-bypass;
+100-rapid change mode;
+101-delay filter mode;
+110-stalbe low mode;
+111-stable high mode</description>
+              <bitOffset>13</bitOffset>
+              <bitWidth>3</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SYNCEN</name>
+              <description>set to enable sychronization input signal with TRGM clock</description>
+              <bitOffset>12</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>FILTLEN_SHIFT</name>
+              <description>No description available</description>
+              <bitOffset>9</bitOffset>
+              <bitWidth>3</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>FILTLEN_BASE</name>
+              <description>This bitfields defines the filter counter length.</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>9</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <dim>137</dim>
+          <dimIncrement>0x4</dimIncrement>
+          <dimIndex>MOT2OPAMP0_0,MOT2OPAMP0_1,MOT2OPAMP0_2,MOT2OPAMP0_3,MOT2OPAMP0_4,MOT2OPAMP0_5,MOT2OPAMP0_6,MOT2OPAMP0_7,MOT2OPAMP1_0,MOT2OPAMP1_1,MOT2OPAMP1_2,MOT2OPAMP1_3,MOT2OPAMP1_4,MOT2OPAMP1_5,MOT2OPAMP1_6,MOT2OPAMP1_7,GPTMR0_IN2,GPTMR0_IN3,GPTMR0_SYNCI,GPTMR1_IN2,GPTMR1_IN3,GPTMR1_SYNCI,GPTMR2_IN2,GPTMR2_IN3,GPTMR2_SYNCI,GPTMR3_IN2,GPTMR3_IN3,GPTMR3_SYNCI,ACMP_CH0_WIN,ACMP_CH1_WIN,DAC0_BUFTRG,DAC1_BUFTRG,ADC0_STRGI,ADC1_STRGI,ADCx_PTRGI0A,ADCx_PTRGI0B,ADCx_PTRGI0C,ADCx_PTRGI1A,ADCx_PTRGI1B,ADCx_PTRGI1C,ADCx_PTRGI2A,ADCx_PTRGI2B,ADCx_PTRGI2C,ADCx_PTRGI3A,ADCx_PTRGI3B,ADCx_PTRGI3C,CAN_PTPC0_CAP,CAN_PTPC1_CAP,QEO0_TRIG_IN0,QEO0_TRIG_IN1,QEO1_TRIG_IN0,QEO1_TRIG_IN1,SEI_TRIG_IN0,SEI_TRIG_IN1,SEI_TRIG_IN2,SEI_TRIG_IN3,SEI_TRIG_IN4,SEI_TRIG_IN5,SEI_TRIG_IN6,SEI_TRIG_IN7,MMC0_TRIG_IN0,MMC0_TRIG_IN1,MMC1_TRIG_IN0,MMC1_TRIG_IN1,PLB_IN_00,PLB_IN_01,PLB_IN_02,PLB_IN_03,PLB_IN_04,PLB_IN_05,PLB_IN_06,PLB_IN_07,PLB_IN_08,PLB_IN_09,PLB_IN_10,PLB_IN_11,PLB_IN_12,PLB_IN_13,PLB_IN_14,PLB_IN_15,PLB_IN_16,PLB_IN_17,PLB_IN_18,PLB_IN_19,PLB_IN_20,PLB_IN_21,PLB_IN_22,PLB_IN_23,PLB_IN_24,PLB_IN_25,PLB_IN_26,PLB_IN_27,PLB_IN_28,PLB_IN_29,PLB_IN_30,PLB_IN_31,TRGM_P_00,TRGM_P_01,TRGM_P_02,TRGM_P_03,TRGM_P_04,TRGM_P_05,TRGM_P_06,TRGM_P_07,PWM_IN8,PWM_IN9,PWM_IN10,PWM_IN11,PWM_IN12,PWM_IN13,PWM_IN14,PWM_IN15,PWM0_FRCI,PWM0_FRCSYNCI,PWM0_SYNCI,PWM0_SHRLDSYNCI,PWM0_FAULTI0,PWM0_FAULTI1,PWM1_FRCI,PWM1_FRCSYNCI,PWM1_SYNCI,PWM1_SHRLDSYNCI,PWM1_FAULTI0,PWM1_FAULTI1,RDC_TRIG_IN0,RDC_TRIG_IN1,SYNCTIMER_TRIG,QEI0_TRIG_IN,QEI1_TRIG_IN,QEI0_PAUSE,QEI1_PAUSE,UART_TRIG0,UART_TRIG1,TRGM_IRQ0,TRGM_IRQ1,TRGM_DMA0,TRGM_DMA1</dimIndex>
+          <name>TRGOCFG[%s]</name>
+          <description>no description available</description>
+          <addressOffset>0x100</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0x00000E7F</resetMask>
+          <fields>
+            <field>
+              <name>OUTINV</name>
+              <description>1- Invert the output</description>
+              <bitOffset>11</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>FEDG2PEN</name>
+              <description>1- The selected input signal falling edge will be convert to an pulse on output. The output pulse can be stably used within the motor control system. When connecting the signal outside the motor system, due to the asynchronization of the clock systems, the clock frequency and signal active length need to be considered.</description>
+              <bitOffset>10</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>REDG2PEN</name>
+              <description>1- The selected input signal rising edge will be convert to an pulse on output. The output pulse can be stably used within the motor control system. When connecting the signal outside the motor system, due to the asynchronization of the clock systems, the clock frequency and signal active length need to be considered.</description>
+              <bitOffset>9</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>TRIGOSEL</name>
+              <description>This bitfield selects one of the TRGM inputs as output.</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>7</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <dim>8</dim>
+          <dimIncrement>0x4</dimIncrement>
+          <dimIndex>0,1,2,3,4,5,6,7</dimIndex>
+          <name>DMACFG[%s]</name>
+          <description>no description available</description>
+          <addressOffset>0x400</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0x8000003F</resetMask>
+          <fields>
+            <field>
+              <name>DMAMUX_EN</name>
+              <description>No description available</description>
+              <bitOffset>31</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>DMASRCSEL</name>
+              <description>This field selects one of the DMA requests as the DMA request output.</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>6</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>GCR</name>
+          <description>General Control Register</description>
+          <addressOffset>0x500</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0x000000FF</resetMask>
+          <fields>
+            <field>
+              <name>TRGOPEN</name>
+              <description>The bitfield enable the TRGM outputs.</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>8</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>ADC_MATRIX_SEL</name>
+          <description>adc matrix select register</description>
+          <addressOffset>0x510</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0xFFFFFFFF</resetMask>
+          <fields>
+            <field>
+              <name>QEI1_ADC1_SEL</name>
+              <description>0-adc0;  1-adc1;  2-rdc_adc0; 3-rdc_adc1;
+bit7 is used to invert adc_value;
+others reserved</description>
+              <bitOffset>24</bitOffset>
+              <bitWidth>8</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>QEI1_ADC0_SEL</name>
+              <description>No description available</description>
+              <bitOffset>16</bitOffset>
+              <bitWidth>8</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>QEI0_ADC1_SEL</name>
+              <description>No description available</description>
+              <bitOffset>8</bitOffset>
+              <bitWidth>8</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>QEI0_ADC0_SEL</name>
+              <description>No description available</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>8</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>DAC_MATRIX_SEL</name>
+          <description>dac matrix select register</description>
+          <addressOffset>0x514</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0xFFFFFFFF</resetMask>
+          <fields>
+            <field>
+              <name>DAC1_DAC_SEL</name>
+              <description>0-qeo0_dac0;   1-qeo0_dac1;  2-qeo0_dac2;
+3-qeo1_dac0;   4-qeo1_dac1;  5-qeo1_dac2;
+6-rdc_dac0;      7-rdc_dac1;
+bit7 is used to invert dac_value;
+others reserved</description>
+              <bitOffset>24</bitOffset>
+              <bitWidth>8</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>DAC0_DAC_SEL</name>
+              <description>No description available</description>
+              <bitOffset>16</bitOffset>
+              <bitWidth>8</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>ACMP1_DAC_SEL</name>
+              <description>No description available</description>
+              <bitOffset>8</bitOffset>
+              <bitWidth>8</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>ACMP0_DAC_SEL</name>
+              <description>No description available</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>8</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>POS_MATRIX_SEL0</name>
+          <description>position matrix select register0</description>
+          <addressOffset>0x518</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0xFFFFFFFF</resetMask>
+          <fields>
+            <field>
+              <name>MMC1_POSIN_SEL</name>
+              <description>0-sei_pos_out0;       1-sei_pos_out1;
+2-qei0_pos;             3-qei1_pos;
+4-mmc0_pos_out0;  5-mmc0_pos_out1;
+6-mmc1_pos_out0;  7-mmc1_pos_out1;
+bit7 is used to invert position value;
+ others reserved</description>
+              <bitOffset>24</bitOffset>
+              <bitWidth>8</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>MMC0_POSIN_SEL</name>
+              <description>No description available</description>
+              <bitOffset>16</bitOffset>
+              <bitWidth>8</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEI_POSIN1_SEL</name>
+              <description>No description available</description>
+              <bitOffset>8</bitOffset>
+              <bitWidth>8</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEI_POSIN0_SEL</name>
+              <description>No description available</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>8</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>POS_MATRIX_SEL1</name>
+          <description>position matrix select register1</description>
+          <addressOffset>0x51c</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0x0000FFFF</resetMask>
+          <fields>
+            <field>
+              <name>QEO1_POS_SEL</name>
+              <description>No description available</description>
+              <bitOffset>8</bitOffset>
+              <bitWidth>8</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>QEO0_POS_SEL</name>
+              <description>No description available</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>8</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <dim>4</dim>
+          <dimIncrement>0x4</dimIncrement>
+          <dimIndex>0,1,2,3</dimIndex>
+          <name>TRGM_IN[%s]</name>
+          <description>no description available</description>
+          <addressOffset>0x600</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0xFFFFFFFF</resetMask>
+          <fields>
+            <field>
+              <name>TRGM_IN</name>
+              <description>mmc1_trig_out[1:0], mmc0_trig_out[1:0],sync_pulse[3:0],moto_gpio_in_sync[7:0],//31:16
+ gtmr3_to_motor_sync[1:0],gtmr2_to_motor_sync[1:0],gtmr1_to_motor_sync[1:0],gtmr0_to_motor_sync[1:0],  //15:8
+ acmp_out_sync[1:0],can2mot_event_sync[1:0],usb0_sof_tog_sync,pwm_debug,1'b1,1'b0       //7:0</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>32</bitWidth>
+              <access>read-only</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <dim>5</dim>
+          <dimIncrement>0x4</dimIncrement>
+          <dimIndex>0,1,2,3,4</dimIndex>
+          <name>TRGM_OUT[%s]</name>
+          <description>no description available</description>
+          <addressOffset>0x620</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0xFFFFFFFF</resetMask>
+          <fields>
+            <field>
+              <name>TRGM_OUT</name>
+              <description>motor_to_opamp0[7:0]     = trig_mux_out[7:0];
+motor_to_opamp1[7:0]     = trig_mux_out[15:8];
+motor_to_gtmr0_capt[1:0] = trig_mux_out[17:16];
+motor_to_gtmr0_sync      = trig_mux_out[18];
+motor_to_gtmr1_capt[1:0] = trig_mux_out[20:19];
+motor_to_gtmr1_sync      = trig_mux_out[21];
+motor_to_gtmr2_capt[1:0] = trig_mux_out[23:22];
+motor_to_gtmr2_sync      = trig_mux_out[24];
+motor_to_gtmr3_capt[1:0] = trig_mux_out[26:25];
+motor_to_gtmr3_sync      = trig_mux_out[27];
+acmp_window[1:0]         = trig_mux_out[29:28];
+dac0_buf_trigger         = trig_mux_out[30];
+dac1_buf_trigger         = trig_mux_out[31];
+dac0_step_trigger[3:0]   = {trig_mux_out[24:22],trig_mux_out[30]};//use same buf_trig, and gtmr2
+dac1_step_trigger[3:0]   = {trig_mux_out[27:25],trig_mux_out[31]}; //use same buf_trig, and gtmr3</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>32</bitWidth>
+              <access>read-only</access>
+            </field>
+          </fields>
+        </register>
       </registers>
     </peripheral>
     <peripheral>
@@ -9288,38 +9829,6 @@ bit2: software key 0: not selected, 1:selected</description>
           </fields>
         </register>
         <register>
-          <dim>16</dim>
-          <dimIncrement>0x4</dimIncrement>
-          <dimIndex>chn0,chn1,chn2,chn3,chn4,chn5,chn6,chn7,chn8,chn9,chn10,chn11,chn12,chn13,chn14,chn15</dimIndex>
-          <name>BUS_RESULT[%s]</name>
-          <description>no description available</description>
-          <addressOffset>0x400</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0x0001FFFF</resetMask>
-          <fields>
-            <field>
-              <name>VALID</name>
-              <description>set after conversion finished if wait_dis is set, cleared after software read.
-The first time read with 0 will trigger one new conversion.
-If SW read other channel when one channel conversion is in progress, it will not trigger new conversion at other channel, and will get old result with valid 0, also with read_cflct interrupt status bit set.
-the result may not realtime if software read once and wait  long time to read again</description>
-              <bitOffset>16</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-only</access>
-            </field>
-            <field>
-              <name>CHAN_RESULT</name>
-              <description>read this register will trigger one adc conversion.
-If wait_dis bit is set, SW will get the latest conversion result(not current one) with valid bit is 0, SW need polling valid bit till it's set to get current result
-If wait_dis bit is 0, SW can get the current conversion result with holding the bus, valid bit is always set at this mode. this is not recommended if channel sample time is too long</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>16</bitWidth>
-              <access>read-only</access>
-            </field>
-          </fields>
-        </register>
-        <register>
           <name>buf_cfg0</name>
           <description>No description available</description>
           <addressOffset>0x500</addressOffset>
@@ -9644,7 +10153,7 @@ it may be updated period according to config, also may be updated due to other q
               <name>CONVERT_CLOCK_NUMBER</name>
               <description>convert clock numbers, set to 21 (0x15) for 16bit mode, which means convert need 21 adc clock cycles(based on clock after divider);
 user can use small value to get faster conversion, but less accuracy, need to config cov_end_cnt at adc16_config1 also.
-Ex: use 200MHz bus clock for adc, set sample_clock_number to 4, sample_clock_number_shift to 0, covert_clk_number to 21 for 16bit mode, clock_divder to 3, then each ADC conversion(plus sample) need 25 cycles(50MHz).</description>
+Ex: use 200MHz bus clock for adc, set sample_clock_number to 4, sample_clock_number_shift to 0, covert_clk_number to 21 for 16bit mode, clock_divider to 3, then each ADC conversion(plus sample) need 25 cycles(50MHz).</description>
               <bitOffset>4</bitOffset>
               <bitWidth>5</bitWidth>
               <access>read-write</access>
@@ -10044,16 +10553,16 @@ should set to (21-convert_clock_number+1).</description>
             <description>Configure Register</description>
             <addressOffset>0x0</addressOffset>
             <size>32</size>
-            <resetValue>0x00000000</resetValue>
-            <resetMask>0xFFFFFFFF</resetMask>
+            <resetValue>0x00000020</resetValue>
+            <resetMask>0xFFFFEFFF</resetMask>
             <fields>
               <field>
                 <name>HYST</name>
                 <description>This bitfield configure the comparator hysteresis.
-00: Hysteresis level 0
-01: Hysteresis level 1
-10: Hysteresis level 2
-11: Hysteresis level 3</description>
+0: Hysteresis about 30mV
+1: Hysteresis about 20mV
+2: Hysteresis about 10mV
+3: Disable hysteresis</description>
                 <bitOffset>30</bitOffset>
                 <bitWidth>2</bitWidth>
                 <access>read-write</access>
@@ -10156,19 +10665,22 @@ if clr, use dac_cfg value</description>
                 <access>read-write</access>
               </field>
               <field>
-                <name>SYNCEN</name>
-                <description>This bit enable the comparator output synchronization.
-0: ACMP output not synchronized with ACMP clock.
-1: ACMP output synchronized with ACMP clock.</description>
-                <bitOffset>12</bitOffset>
-                <bitWidth>1</bitWidth>
+                <name>FLTLEN_SHIFT</name>
+                <description>this field is to extend filter length.
+0: filter length = fltlen
+1: filter length = fltlen * 2
+2: filter length = fltlen * 4
+7: filter length = fltlen * 128
+When the clock frequency is 200MHz, the maximum filter length is about 300uS.</description>
+                <bitOffset>9</bitOffset>
+                <bitWidth>3</bitWidth>
                 <access>read-write</access>
               </field>
               <field>
                 <name>FLTLEN</name>
                 <description>This bitfield define the ACMP output digital filter length. The unit is ACMP clock cycle.</description>
                 <bitOffset>0</bitOffset>
-                <bitWidth>12</bitWidth>
+                <bitWidth>9</bitWidth>
                 <access>read-write</access>
               </field>
             </fields>
@@ -10183,7 +10695,7 @@ if clr, use dac_cfg value</description>
             <fields>
               <field>
                 <name>DACCFG</name>
-                <description>8bit DAC digital value output to analog block</description>
+                <description>8bit DAC digital value</description>
                 <bitOffset>0</bitOffset>
                 <bitWidth>8</bitWidth>
                 <access>read-write</access>

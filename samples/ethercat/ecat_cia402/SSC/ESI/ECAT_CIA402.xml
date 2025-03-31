@@ -14,7 +14,7 @@
 			</Group>
 		</Groups>
 		<Devices>
-			<Device Physics="YY">
+			<Device Physics="YYY">
 				<Type ProductCode="#x00000003" RevisionNo="#x00000001">ECAT_CIA402</Type>
 				<Name>ECAT_CIA402</Name>
 				<Info>

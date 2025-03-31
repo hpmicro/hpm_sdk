@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -30,13 +30,13 @@ sys_mbox_t netif_status_mbox[BOARD_ENET_COUNT];
 #endif
 
 ip_init_t ip_init[BOARD_ENET_COUNT] = {
-    {IP0_ADDR0, IP0_ADDR1, IP0_ADDR2, IP0_ADDR3, NETMASK0_ADDR0, NETMASK0_ADDR1, NETMASK0_ADDR2, NETMASK0_ADDR3, GW0_ADDR0, GW0_ADDR1, GW0_ADDR2, GW0_ADDR3},
-    {IP1_ADDR0, IP1_ADDR1, IP1_ADDR2, IP1_ADDR3, NETMASK1_ADDR0, NETMASK1_ADDR1, NETMASK1_ADDR2, NETMASK1_ADDR3, GW1_ADDR0, GW1_ADDR1, GW1_ADDR2, GW1_ADDR3}
+    {HPM_STRINGIFY(IP0_CONFIG), HPM_STRINGIFY(NETMASK0_CONFIG), HPM_STRINGIFY(GW0_CONFIG)},
+    {HPM_STRINGIFY(IP1_CONFIG), HPM_STRINGIFY(NETMASK1_CONFIG), HPM_STRINGIFY(GW1_CONFIG)}
 };
 
 mac_init_t mac_init[BOARD_ENET_COUNT] = {
-    {MAC0_ADDR0, MAC0_ADDR1, MAC0_ADDR2, MAC0_ADDR3, MAC0_ADDR4, MAC0_ADDR5},
-    {MAC1_ADDR0, MAC1_ADDR1, MAC1_ADDR2, MAC1_ADDR3, MAC1_ADDR4, MAC1_ADDR5}
+    {HPM_STRINGIFY(MAC0_CONFIG)},
+    {HPM_STRINGIFY(MAC1_CONFIG)}
 };
 
 
@@ -78,18 +78,18 @@ static void netif_update_status(struct netif *netif)
 
 void netif_config(struct netif *netif, uint8_t i)
 {
-    ip_addr_t ip_addr, netmask, gw;
+    ip_addr_t ipaddr, netmask, gw;
 
-    IP_ADDR4(&ip_addr, ip_init[i].ip_addr0, ip_init[i].ip_addr1, ip_init[i].ip_addr2, ip_init[i].ip_addr3);
-    IP_ADDR4(&netmask, ip_init[i].netmask0, ip_init[i].netmask1, ip_init[i].netmask2, ip_init[i].netmask3);
-    IP_ADDR4(&gw,      ip_init[i].gw0,      ip_init[i].gw1,      ip_init[i].gw2,      ip_init[i].gw3);
+    ip4addr_aton(ip_init[i].ip_addr, &ipaddr);
+    ip4addr_aton(ip_init[i].netmask, &netmask);
+    ip4addr_aton(ip_init[i].gw, &gw);
 
 #if defined(NO_SYS) && NO_SYS
-    netif_add(netif, &ip_addr, &netmask, &gw, NULL, &ethernetif_init, &ethernet_input);
+    netif_add(netif, &ipaddr, &netmask, &gw, NULL, &ethernetif_init, &ethernet_input);
     netif_set_up(netif);
     netif_set_default(netif);
 #else
-    netifapi_netif_add(netif, &ip_addr, &netmask, &gw, NULL, &ethernetif_init, &tcpip_input);
+    netifapi_netif_add(netif, &ipaddr, &netmask, &gw, NULL, &ethernetif_init, &tcpip_input);
     netifapi_netif_set_up(netif);
     netifapi_netif_set_default(netif);
 #endif

@@ -53,11 +53,11 @@
  * specific version of freertos_risc_v_chip_specific_extensions.h.  See the
  * notes at the top of portASM.S file. */
 #ifdef __riscv_32e
-    #define portCONTEXT_SIZE ( 15 * portWORD_SIZE )
+    #define portCONTEXT_SIZE ( 16 * portWORD_SIZE )
     #define portCRITICAL_NESTING_OFFSET 13
     #define portMSTATUS_OFFSET  14
 #else
-    #define portCONTEXT_SIZE ( 31 * portWORD_SIZE )
+    #define portCONTEXT_SIZE ( 32 * portWORD_SIZE )
     #define portCRITICAL_NESTING_OFFSET 29
     #define portMSTATUS_OFFSET  30
 #endif
@@ -84,7 +84,7 @@
  * offset 1 * FREGBYTES - mstatus
  * offset (2 - 32) * FREGBYTES - float registers
  */
-#define portFPU_CONTEXT_WORDS   34
+#define portFPU_CONTEXT_WORDS   36
 #define portFPU_CONTEXT_SIZE (portFPU_CONTEXT_WORDS * FREGBYTES)
 
 .macro portasmSAVE_FPU_REGISTERS

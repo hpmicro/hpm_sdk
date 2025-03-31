@@ -80,91 +80,96 @@ associated thread control block TX_THREAD.
      0x30                   s0  (x8)                    s0  (x8)
      0x34                   t6  (x31)                   ra  (x1)
      0x38                   t5  (x30)                   mstatus
-     0x3C                   t4  (x29)                   fs0
-     0x40                   t3  (x28)                   fs1
-     0x44                   t2  (x7)                    fs2
-     0x48                   t1  (x6)                    fs3
-     0x4C                   t0  (x5)                    fs4
-     0x50                   a7  (x17)                   fs5
-     0x54                   a6  (x16)                   fs6
-     0x58                   a5  (x15)                   fs7
-     0x5C                   a4  (x14)                   fs8
-     0x60                   a3  (x13)                   fs9
-     0x64                   a2  (x12)                   fs10
-     0x68                   a1  (x11)                   fs11
-     0x6C                   a0  (x10)                   fcsr
-     0x70                   ra  (x1)
-     0x74                   reserved
-     0x78                   mepc
+     0x3C                   t4  (x29)                   reserved
+     0x40                   t3  (x28)                   reserved
+     0x44                   t2  (x7)                    reserved
+     0x48                   t1  (x6)                    mcctlbeginaddr
+     0x4C                   t0  (x5)                    mcctldata
+     0x50                   a7  (x17)                   fs0
+     0x54                   a6  (x16)                   fs1
+     0x58                   a5  (x15)                   fs2
+     0x5C                   a4  (x14)                   fs3
+     0x60                   a3  (x13)                   fs4
+     0x64                   a2  (x12)                   fs5
+     0x68                   a1  (x11)                   fs6
+     0x6C                   a0  (x10)                   fs7
+     0x70                   ra  (x1)                    fs8
+     0x74                   reserved                    fs9
+     0x78                   mepc                        fs10
+     0x7C                   reserved                    fs11
+     0x80                   reserved                    fcsr
+     0x84                   reserved
+     0x88                   mcctlbeginaddr
+     0x8C                   mcctldata
 #ifdef __riscv_flen
 #if __riscv_flen == 32
-     0x7C                   ft0
-     0x80                   ft1
-     0x84                   ft2
-     0x88                   ft3
-     0x8C                   ft4
-     0x90                   ft5
-     0x94                   ft6
-     0x98                   ft7
-     0x9C                   fs0
-     0xA0                   fs1
-     0xA4                   fa0
-     0xA8                   fa1
-     0xAC                   fa2
-     0xB0                   fa3
-     0xB4                   fa4
-     0xB8                   fa5
-     0xBC                   fa6
-     0xC0                   fa7
-     0xC4                   fs2
-     0xC8                   fs3
-     0xCC                   fs4
-     0xD0                   fs5
-     0xD4                   fs6
-     0xD8                   fs7
-     0xDC                   fs8
-     0xE0                   fs9
-     0xE4                   fs10
-     0xE8                   fs11
-     0xEC                   ft8
-     0xF0                   ft9
-     0xF4                   ft10
-     0xF8                   ft11
-     0xFC                   fcsr
-#elif __riscv_flen == 64
-	 0x80                   ft0
-     0x88                   ft1
-     0x90                   ft2
-     0x98                   ft3
+     0x90                   ft0
+     0x94                   ft1
+     0x98                   ft2
+     0x9C                   ft3
      0xA0                   ft4
-     0xA8                   ft5
-     0xB0                   ft6
-     0xB8                   ft7
-     0xC0                   fs0
-     0xC8                   fs1
-     0xD0                   fa0
-     0xD8                   fa1
-     0xE0                   fa2
-     0xE8                   fa3
-     0xF0                   fa4
-     0xF8                   fa5
-     0x100                  fa6
-     0x108                  fa7
-     0x110                  fs2
-     0x118                  fs3
-     0x120                  fs4
-     0x128                  fs5
-     0x130                  fs6
-     0x138                  fs7
-     0x140                  fs8
-     0x148                  fs9
-     0x150                  fs10
-     0x158                  fs11
-     0x160                  ft8
-     0x168                  ft9
-     0x170                  ft10
-     0x178                  ft11
-     0x180                  fcsr 
+     0xA4                   ft5
+     0xA8                   ft6
+     0xAC                   ft7
+     0xB0                   fs0
+     0xB4                   fs1
+     0xB8                   fa0
+     0xBC                   fa1
+     0xC0                   fa2
+     0xC4                   fa3
+     0xC8                   fa4
+     0xCC                   fa5
+     0xD0                   fa6
+     0xD4                   fa7
+     0xD8                   fs2
+     0xDC                   fs3
+     0xE0                   fs4
+     0xE4                   fs5
+     0xE8                   fs6
+     0xEC                   fs7
+     0xF0                   fs8
+     0xF4                   fs9
+     0xF8                   fs10
+     0xFC                   fs11
+     0x100                  ft8
+     0x104                  ft9
+     0x108                  ft10
+     0x10C                  ft11
+     0x110                  fcsr
+#elif __riscv_flen == 64
+     0x90                   ft0
+     0x98                   ft1
+     0xA0                   ft2
+     0xA8                   ft3
+     0xB0                   ft4
+     0xB8                   ft5
+     0xC0                   ft6
+     0xC8                   ft7
+     0xD0                   fs0
+     0xD8                   fs1
+     0xE0                   fa0
+     0xE8                   fa1
+     0xF0                   fa2
+     0xF8                   fa3
+     0x100                  fa4
+     0x108                  fa5
+     0x110                  fa6
+     0x118                  fa7
+     0x120                  fs2
+     0x128                  fs3
+     0x130                  fs4
+     0x138                  fs5
+     0x140                  fs6
+     0x148                  fs7
+     0x150                  fs8
+     0x158                  fs9
+     0x160                  fs10
+     0x168                  fs11
+     0x170                  ft8
+     0x178                  ft9
+     0x180                  ft10
+     0x188                  ft11
+     0x190                  fcsr
 #endif
 
 
@@ -200,9 +205,9 @@ __minterrupt_00000*:
        stack frame and save the current value of x1 (ra). */
 #ifdef __riscv_flen
 #if __riscv_flen == 32
-    addi    sp, sp, -260                            ; Allocate space for all registers - with floating point enabled
+    addi    sp, sp, -288                            ; Allocate space for all registers - with floating point enabled
 #else
-    addi    sp, sp, -128                            ; Allocate space for all registers - without floating point enabled
+    addi    sp, sp, -160                            ; Allocate space for all registers - without floating point enabled
 #endif
     sw      x1, 0x70(sp)                            ; Store RA
     call    _tx_thread_context_save                 ; Call ThreadX context save
@@ -250,9 +255,9 @@ __minterrupt_000007:
        stack frame and save the current value of x1 (ra). */
 #ifdef __riscv_flen
 #if __riscv_flen == 32
-    addi    sp, sp, -260                            ; Allocate space for all registers - with floating point enabled
+    addi    sp, sp, -288                            ; Allocate space for all registers - with floating point enabled
 #else
-    addi    sp, sp, -128                            ; Allocate space for all registers - without floating point enabled
+    addi    sp, sp, -160                            ; Allocate space for all registers - without floating point enabled
 #endif
     sw      x1, 0x70(sp)                            ; Store RA
     call    _tx_thread_context_save                 ; Call ThreadX context save

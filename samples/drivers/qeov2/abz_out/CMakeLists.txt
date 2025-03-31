@@ -8,6 +8,6 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(qeov2_abz_example)
 
 sdk_inc(src)
-sdk_app_src(src/mtg.c)
+sdk_app_src(src/hardware_pos.c)
 sdk_app_src(src/qeo_abz.c)
 generate_ide_projects()

@@ -6,7 +6,6 @@
  */
 
 #include <stdio.h>
-#include <string.h>
 #include "board.h"
 #include "hpm_uart_drv.h"
 #include "low_power.h"
@@ -25,8 +24,8 @@ int main(void)
 
     board_init();
 
-    uart_enable_irq(HPM_PUART, uart_intr_rx_data_avail_or_timeout);
-    intc_m_enable_irq_with_priority(IRQn_PUART, 1);
+    uart_enable_irq(BOARD_CONSOLE_UART_BASE, uart_intr_rx_data_avail_or_timeout);
+    intc_m_enable_irq_with_priority(BOARD_CONSOLE_UART_IRQ, 1);
 
     prepare_soc_low_power();
     show_menu();
@@ -72,12 +71,12 @@ void show_menu(void)
     printf(menu_str);
 }
 
-SDK_DECLARE_EXT_ISR_M(IRQn_PUART, puart_isr)
-void puart_isr(void)
+SDK_DECLARE_EXT_ISR_M(BOARD_CONSOLE_UART_IRQ, console_uart_isr)
+void console_uart_isr(void)
 {
-    if (uart_check_status(HPM_PUART, uart_stat_data_ready)) {
+    if (uart_check_status(BOARD_CONSOLE_UART_BASE, uart_stat_data_ready)) {
         has_data = true;
-        byte_read = uart_read_byte(HPM_PUART);
+        byte_read = uart_read_byte(BOARD_CONSOLE_UART_BASE);
     }
 }
 

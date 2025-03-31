@@ -69,16 +69,16 @@ void init_pwm_pla_trgm(TRGM_Type *ptr)
     /* trig0 p0 */
     trgm_output_cfg.invert = false;
     trgm_output_cfg.type   = trgm_output_pulse_at_input_falling_edge;
-    trgm_output_cfg.input  = BOARD_RDC_TRGIGMUX_IN_NUM;
-    trgm_output_config(ptr, BOARD_RDC_TRG_NUM, &trgm_output_cfg);
+    trgm_output_cfg.input  = BOARD_RDC_TRG_IN;
+    trgm_output_config(ptr, BOARD_RDC_TRG_OUT, &trgm_output_cfg);
     trgm_enable_io_output(ptr, 1);
 #endif
 
     /* trig0 adc */
     trgm_output_cfg.invert = false;
     trgm_output_cfg.type   = trgm_output_pulse_at_input_falling_edge;
-    trgm_output_cfg.input  = BOARD_RDC_TRGIGMUX_IN_NUM;
-    trgm_output_config(ptr, BOARD_RDC_TRG_ADC_NUM, &trgm_output_cfg);
+    trgm_output_cfg.input  = BOARD_RDC_TRG_IN;
+    trgm_output_config(ptr, BOARD_RDC_TRG_ADC, &trgm_output_cfg);
 }
 
 void rdc_cfg(RDC_Type *rdc)

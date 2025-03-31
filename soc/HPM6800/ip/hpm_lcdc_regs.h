@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -43,7 +43,6 @@ typedef struct {
         __RW uint32_t CSC_COEF2;               /* 0x228: Layer Color Space Conversion Config Register 2 */
         __R  uint8_t  RESERVED1[20];           /* 0x22C - 0x23F: Reserved */
     } LAYER[8];
-    __RW uint32_t CLUT_LOAD;                   /* 0x400: Clut Load Control Register */
 } LCDC_Type;
 
 
@@ -1174,49 +1173,6 @@ typedef struct {
 #define LCDC_LAYER_CSC_COEF2_C3_SHIFT (0U)
 #define LCDC_LAYER_CSC_COEF2_C3_SET(x) (((uint32_t)(x) << LCDC_LAYER_CSC_COEF2_C3_SHIFT) & LCDC_LAYER_CSC_COEF2_C3_MASK)
 #define LCDC_LAYER_CSC_COEF2_C3_GET(x) (((uint32_t)(x) & LCDC_LAYER_CSC_COEF2_C3_MASK) >> LCDC_LAYER_CSC_COEF2_C3_SHIFT)
-
-/* Bitfield definition for register: CLUT_LOAD */
-/*
- * STR_HIGH (RW)
- *
- * 1'b1: Store 8+ CLUT tables through APB
- * 1'b0: Store 0-7 CLUT tables through APB
- */
-#define LCDC_CLUT_LOAD_STR_HIGH_MASK (0x80000000UL)
-#define LCDC_CLUT_LOAD_STR_HIGH_SHIFT (31U)
-#define LCDC_CLUT_LOAD_STR_HIGH_SET(x) (((uint32_t)(x) << LCDC_CLUT_LOAD_STR_HIGH_SHIFT) & LCDC_CLUT_LOAD_STR_HIGH_MASK)
-#define LCDC_CLUT_LOAD_STR_HIGH_GET(x) (((uint32_t)(x) & LCDC_CLUT_LOAD_STR_HIGH_MASK) >> LCDC_CLUT_LOAD_STR_HIGH_SHIFT)
-
-/*
- * SEL_NUM (RW)
- *
- * Selected CLUT Number
- * The SEL_CLUT_NUM is used to select which plane's CLUT need to be updated. The hardware can only backup one CLUT setting and load, so the SEL_CLUT_NUM can't be changed when CLUT_LOAD[UPDATE_EN] is 1.
- * . 3'h0 - PLANE 0
- * . 3'h1 - PLANE 1
- * . ------
- * . 3'h7 - PLANE 7
- * CLUT 8 can be modified via APB even when display is on.
- * Currently CLUT for plane 0..7 cannot be modified via APB when display is on.  Can only be updated via CLUT_LOAD[UPDATE_EN] bit.
- */
-#define LCDC_CLUT_LOAD_SEL_NUM_MASK (0x70U)
-#define LCDC_CLUT_LOAD_SEL_NUM_SHIFT (4U)
-#define LCDC_CLUT_LOAD_SEL_NUM_SET(x) (((uint32_t)(x) << LCDC_CLUT_LOAD_SEL_NUM_SHIFT) & LCDC_CLUT_LOAD_SEL_NUM_MASK)
-#define LCDC_CLUT_LOAD_SEL_NUM_GET(x) (((uint32_t)(x) & LCDC_CLUT_LOAD_SEL_NUM_MASK) >> LCDC_CLUT_LOAD_SEL_NUM_SHIFT)
-
-/*
- * UPDATE_EN (RW)
- *
- * CLUT Update Enable
- * The bit is written to 1 when software want to update the Color Look Up Tables during display.
- * If set to 1, software update selected CLUT due to SEL_CLUT_NUM setting, the table will be copied from CLUT8 during vertical blanking period after SHADOW_LOAD_EN is set to 1.
- * If set to 0, software can update CLUT8 directly according to the CLUT memory map.
- * Hardware will automatically clear this bit when selected CLUT is updated according to SEL_CLUT_NUM.
- */
-#define LCDC_CLUT_LOAD_UPDATE_EN_MASK (0x1U)
-#define LCDC_CLUT_LOAD_UPDATE_EN_SHIFT (0U)
-#define LCDC_CLUT_LOAD_UPDATE_EN_SET(x) (((uint32_t)(x) << LCDC_CLUT_LOAD_UPDATE_EN_SHIFT) & LCDC_CLUT_LOAD_UPDATE_EN_MASK)
-#define LCDC_CLUT_LOAD_UPDATE_EN_GET(x) (((uint32_t)(x) & LCDC_CLUT_LOAD_UPDATE_EN_MASK) >> LCDC_CLUT_LOAD_UPDATE_EN_SHIFT)
 
 
 

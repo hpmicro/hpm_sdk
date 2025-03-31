@@ -7,7 +7,7 @@
 
 #include "hpm_sei_drv.h"
 
-hpm_stat_t sei_tranceiver_config_init(SEI_Type *ptr, uint8_t idx, sei_tranceiver_config_t *config)
+hpm_stat_t sei_transceiver_config_init(SEI_Type *ptr, uint8_t idx, sei_transceiver_config_t *config)
 {
     uint32_t tmp;
     uint32_t baudrate;

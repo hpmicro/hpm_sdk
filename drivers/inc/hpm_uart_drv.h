@@ -69,16 +69,32 @@ typedef enum uart_fifo_trg_lvl {
     uart_fifo_14_bytes = 13,
     uart_fifo_15_bytes = 14,
     uart_fifo_16_bytes = 15,
+    uart_fifo_17_bytes = 16,
+    uart_fifo_18_bytes = 17,
+    uart_fifo_19_bytes = 18,
+    uart_fifo_20_bytes = 19,
+    uart_fifo_21_bytes = 20,
+    uart_fifo_22_bytes = 21,
+    uart_fifo_23_bytes = 22,
+    uart_fifo_24_bytes = 23,
+    uart_fifo_25_bytes = 24,
+    uart_fifo_26_bytes = 25,
+    uart_fifo_27_bytes = 26,
+    uart_fifo_28_bytes = 27,
+    uart_fifo_29_bytes = 28,
+    uart_fifo_30_bytes = 29,
+    uart_fifo_31_bytes = 30,
+    uart_fifo_32_bytes = 31,
 
     uart_rx_fifo_trg_not_empty = uart_fifo_1_byte,
-    uart_rx_fifo_trg_gt_one_quarter = uart_fifo_4_bytes,
-    uart_rx_fifo_trg_gt_half = uart_fifo_8_bytes,
-    uart_rx_fifo_trg_gt_three_quarters = uart_fifo_12_bytes,
+    uart_rx_fifo_trg_gt_one_quarter = (UART_SOC_FIFO_SIZE / 4) - 1,
+    uart_rx_fifo_trg_gt_half = (UART_SOC_FIFO_SIZE / 2) - 1,
+    uart_rx_fifo_trg_gt_three_quarters = ((UART_SOC_FIFO_SIZE * 3) / 4) - 1,
 
-    uart_tx_fifo_trg_not_full = uart_fifo_16_bytes,
-    uart_tx_fifo_trg_lt_three_quarters = uart_fifo_12_bytes,
-    uart_tx_fifo_trg_lt_half = uart_fifo_8_bytes,
-    uart_tx_fifo_trg_lt_one_quarter = uart_fifo_4_bytes,
+    uart_tx_fifo_trg_not_full = UART_SOC_FIFO_SIZE - 1,
+    uart_tx_fifo_trg_lt_three_quarters = ((UART_SOC_FIFO_SIZE * 3) / 4) - 1,
+    uart_tx_fifo_trg_lt_half = (UART_SOC_FIFO_SIZE / 2) - 1,
+    uart_tx_fifo_trg_lt_one_quarter = (UART_SOC_FIFO_SIZE / 4) - 1,
 #else
     uart_rx_fifo_trg_not_empty = 0,
     uart_rx_fifo_trg_gt_one_quarter = 1,
@@ -125,6 +141,13 @@ typedef enum uart_intr_enable {
     uart_intr_addr_match = UART_IER_EADDRM_MASK,
     uart_intr_addr_match_and_rxidle = UART_IER_EADDRM_IDLE_MASK,
     uart_intr_addr_datalost = UART_IER_EDATLOST_MASK,
+#endif
+#if defined(HPM_IP_FEATURE_UART_RX_LINE_ERROR_DETECT) && (HPM_IP_FEATURE_UART_RX_LINE_ERROR_DETECT == 1)
+    uart_intr_errf = UART_IER_LSR_ERRF_IRQ_EN_MASK,
+    uart_intr_break_err = UART_IER_LSR_BREAK_IRQ_EN_MASK,
+    uart_intr_framing_err = UART_IER_LSR_FRAMING_IRQ_EN_MASK,
+    uart_intr_parity_err = UART_IER_LSR_PARITY_IRQ_EN_MASK,
+    uart_intr_overrun = UART_IER_LSR_OVERRUN_IRQ_EN_MASK,
 #endif
 } uart_intr_enable_t;
 
@@ -422,7 +445,7 @@ static inline bool uart_check_modem_status(UART_Type *ptr, uart_modem_stat_t mas
  * @param [in] ptr UART base address
  * @param irq_mask IRQ mask value to be disabled
  */
-static inline void uart_disable_irq(UART_Type *ptr, uart_intr_enable_t irq_mask)
+static inline void uart_disable_irq(UART_Type *ptr, uint32_t irq_mask)
 {
     ptr->IER &= ~irq_mask;
 }
@@ -433,7 +456,7 @@ static inline void uart_disable_irq(UART_Type *ptr, uart_intr_enable_t irq_mask)
  * @param [in] ptr UART base address
  * @param irq_mask IRQ mask value to be enabled
  */
-static inline void uart_enable_irq(UART_Type *ptr, uart_intr_enable_t irq_mask)
+static inline void uart_enable_irq(UART_Type *ptr, uint32_t irq_mask)
 {
     ptr->IER |= irq_mask;
 }
@@ -940,6 +963,148 @@ static inline void uart_enable_rx_timeout_trig_dma(UART_Type *ptr)
 {
     ptr->FCRR &= ~UART_FCRR_TMOUT_RXDMA_DIS_MASK;
 }
+#endif
+
+#if defined(HPM_IP_FEATURE_UART_RX_LINE_ERROR_DETECT) && (HPM_IP_FEATURE_UART_RX_LINE_ERROR_DETECT == 1)
+/**
+ * @brief Determine receiving FIFO error status
+ * @param [in] ptr UART base address
+ * @retval false if uart data is not lost
+ */
+static inline bool uart_rx_is_fifo_error(UART_Type *ptr)
+{
+    return ((ptr->IIR2 & UART_IIR2_LSR_ERRF_STS_MASK) != 0U) ? true : false;
+}
+
+/**
+ * @brief Clear UART receiving FIFO error status
+ * @param [in] ptr UART base address
+ */
+static inline void uart_clear_rx_fifo_error_flag(UART_Type *ptr)
+{
+    ptr->IIR2 = UART_IIR2_LSR_ERRF_STS_MASK; /* Write-1-Clear Logic */
+}
+
+/**
+ * @brief Determine transmission break status
+ * @param [in] ptr UART base address
+ * @retval false if uart data is not lost
+ */
+static inline bool uart_rx_is_break(UART_Type *ptr)
+{
+    return ((ptr->IIR2 & UART_IIR2_LSR_BREAK_STS_MASK) != 0U) ? true : false;
+}
+
+/**
+ * @brief Clear UART transmission break status
+ * @param [in] ptr UART base address
+ */
+static inline void uart_clear_rx_break_flag(UART_Type *ptr)
+{
+    ptr->IIR2 = UART_IIR2_LSR_BREAK_STS_MASK; /* Write-1-Clear Logic */
+}
+
+/**
+ * @brief Determine framing error status
+ * @param [in] ptr UART base address
+ * @retval false if uart data is not lost
+ */
+static inline bool uart_rx_is_framing_error(UART_Type *ptr)
+{
+    return ((ptr->IIR2 & UART_IIR2_LSR_FRAMING_STS_MASK) != 0U) ? true : false;
+}
+
+/**
+ * @brief Clear UART framing error status
+ * @param [in] ptr UART base address
+ */
+static inline void uart_clear_rx_framing_error_flag(UART_Type *ptr)
+{
+    ptr->IIR2 = UART_IIR2_LSR_FRAMING_STS_MASK; /* Write-1-Clear Logic */
+}
+
+/**
+ * @brief Determine parity error status
+ * @param [in] ptr UART base address
+ * @retval false if uart data is not lost
+ */
+static inline bool uart_rx_is_parity_error(UART_Type *ptr)
+{
+    return ((ptr->IIR2 & UART_IIR2_LSR_PARITY_STS_MASK) != 0U) ? true : false;
+}
+
+/**
+ * @brief Clear UART parity error status
+ * @param [in] ptr UART base address
+ */
+static inline void uart_clear_rx_parity_error_flag(UART_Type *ptr)
+{
+    ptr->IIR2 = UART_IIR2_LSR_PARITY_STS_MASK; /* Write-1-Clear Logic */
+}
+
+/**
+ * @brief Determine receive data overload status
+ * @param [in] ptr UART base address
+ * @retval false if uart data is not lost
+ */
+static inline bool uart_rx_is_overrun(UART_Type *ptr)
+{
+    return ((ptr->IIR2 & UART_IIR2_LSR_OVERRUN_STS_MASK) != 0U) ? true : false;
+}
+
+/**
+ * @brief Clear UART receive data overload status
+ * @param [in] ptr UART base address
+ */
+static inline void uart_clear_rx_overrun_flag(UART_Type *ptr)
+{
+    ptr->IIR2 = UART_IIR2_LSR_OVERRUN_STS_MASK; /* Write-1-Clear Logic */
+}
+
+#endif
+
+#if defined(HPM_IP_FEATURE_UART_DMA_STOP) && (HPM_IP_FEATURE_UART_DMA_STOP == 1)
+/**
+ * @brief When a reception error occurs, DMA transfer is automatically stopped
+ * @param [in] ptr UART base address
+ */
+static inline void uart_rx_enable_dma_auto_stop(UART_Type *ptr)
+{
+    ptr->FCRR |= UART_FCRR_DMA_STOP_EN_MASK;
+}
+
+/**
+ * @brief After DMA automatically stops, the flag needs to be cleared so that the next DMA transfer can proceed normally.
+ * @param [in] ptr UART base address
+ */
+static inline void uart_clear_rx_dma_auto_stop_flag(UART_Type *ptr)
+{
+    ptr->FCRR = UART_FCRR_DMA_STOPPED_WRITE_CLEAR_MASK;
+}
+#endif
+
+#if defined(HPM_IP_FEATURE_UART_DE_DELAY) && (HPM_IP_FEATURE_UART_DE_DELAY == 1)
+/**
+ * @brief Set the delay between DE and START bit
+ * @param [in] ptr UART base address
+ * @param [in] delay the unit of clock dividered after dll/dlm
+ */
+static inline void uart_set_de_delay_before_start_bit(UART_Type *ptr, uint8_t delay)
+{
+    ptr->MOTO_CFG = (ptr->MOTO_CFG & ~UART_MOTO_CFG_TXPRE_DLY_MASK) | UART_MOTO_CFG_TXPRE_DLY_SET(delay);
+}
+
+/**
+ * @brief Set the delay between DE and stop bit
+ * @param [in] ptr UART base address
+ * @param [in] delay the unit of clock dividered after dll/dlm
+ */
+static inline void uart_set_de_delay_after_stop_bit(UART_Type *ptr, uint8_t delay)
+{
+    ptr->MOTO_CFG |= UART_MOTO_CFG_TXSTOP_OPT_MASK | UART_MOTO_CFG_TXSTOP_INSERT_MASK;
+    ptr->MOTO_CFG = (ptr->MOTO_CFG & ~UART_MOTO_CFG_TXSTP_BITS_MASK) | UART_MOTO_CFG_TXSTP_BITS_SET(delay);
+}
+
 #endif
 
 #ifdef __cplusplus

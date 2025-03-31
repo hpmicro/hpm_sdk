@@ -28,6 +28,7 @@
 /*  #include "tx_api.h"
     #include "tx_thread.h"
     #include "tx_timer.h"  */
+#include "hpm_csr_regs.h"
 
     EXTERN      _tx_thread_current_ptr
     EXTERN      _tx_thread_system_state
@@ -122,55 +123,60 @@ _tx_thread_context_save:
     csrr    t0, mepc                                    ; Load exception program counter
     sw      t0, 0x78(sp)                                ; Save it on the stack
 
+    csrr    t0, CSR_MCCTLBEGINADDR                      ; Load mcctlbeginaddr
+    sw      t0, 0x88(sp)                                ; Save it on the stack
+    csrr    t0, CSR_MCCTLDATA                           ; Load mcctldata
+    sw      t0, 0x8C(sp)                                ; Save it on the stack
+
 #ifdef __riscv_flen
 #if __riscv_flen == 32
     /* Save floating point scratch registers.  */
 
-    fsw     f0, 0x7C(sp)                                ; Store ft0
-    fsw     f1, 0x80(sp)                                ; Store ft1
-    fsw     f2, 0x84(sp)                                ; Store ft2
-    fsw     f3, 0x88(sp)                                ; Store ft3
-    fsw     f4, 0x8C(sp)                                ; Store ft4
-    fsw     f5, 0x90(sp)                                ; Store ft5
-    fsw     f6, 0x94(sp)                                ; Store ft6
-    fsw     f7, 0x98(sp)                                ; Store ft7
-    fsw     f10,0xA4(sp)                                ; Store fa0
-    fsw     f11,0xA8(sp)                                ; Store fa1
-    fsw     f12,0xAC(sp)                                ; Store fa2
-    fsw     f13,0xB0(sp)                                ; Store fa3
-    fsw     f14,0xB4(sp)                                ; Store fa4
-    fsw     f15,0xB8(sp)                                ; Store fa5
-    fsw     f16,0xBC(sp)                                ; Store fa6
-    fsw     f17,0xC0(sp)                                ; Store fa7
-    fsw     f28,0xEC(sp)                                ; Store ft8
-    fsw     f29,0xF0(sp)                                ; Store ft9
-    fsw     f30,0xF4(sp)                                ; Store ft10
-    fsw     f31,0xF8(sp)                                ; Store ft11
+    fsw     f0, 0x90(sp)                                ; Store ft0
+    fsw     f1, 0x94(sp)                                ; Store ft1
+    fsw     f2, 0x98(sp)                                ; Store ft2
+    fsw     f3, 0x9C(sp)                                ; Store ft3
+    fsw     f4, 0xA0(sp)                                ; Store ft4
+    fsw     f5, 0xA4(sp)                                ; Store ft5
+    fsw     f6, 0xA8(sp)                                ; Store ft6
+    fsw     f7, 0xAC(sp)                                ; Store ft7
+    fsw     f10,0xB8(sp)                                ; Store fa0
+    fsw     f11,0xBC(sp)                                ; Store fa1
+    fsw     f12,0xC0(sp)                                ; Store fa2
+    fsw     f13,0xC4(sp)                                ; Store fa3
+    fsw     f14,0xC8(sp)                                ; Store fa4
+    fsw     f15,0xCC(sp)                                ; Store fa5
+    fsw     f16,0xD0(sp)                                ; Store fa6
+    fsw     f17,0xD4(sp)                                ; Store fa7
+    fsw     f28,0x100(sp)                               ; Store ft8
+    fsw     f29,0x104(sp)                               ; Store ft9
+    fsw     f30,0x108(sp)                               ; Store ft10
+    fsw     f31,0x10C(sp)                               ; Store ft11
     csrr    t0, fcsr
-    sw      t0, 0xFC(sp)                                ; Store fcsr
+    sw      t0, 0x110(sp)                               ; Store fcsr
 #elif __riscv_flen == 64
-    fsd     f0, 0x80(sp)                                ; Store ft0
-    fsd     f1, 0x88(sp)                                ; Store ft1
-    fsd     f2, 0x90(sp)                                ; Store ft2
-    fsd     f3, 0x98(sp)                                ; Store ft3
-    fsd     f4, 0xA0(sp)                                ; Store ft4
-    fsd     f5, 0xA8(sp)                                ; Store ft5
-    fsd     f6, 0xB0(sp)                                ; Store ft6
-    fsd     f7, 0xB8(sp)                                ; Store ft7
-    fsd     f10,0xD0(sp)                                ; Store fa0
-    fsd     f11,0xD8(sp)                                ; Store fa1
-    fsd     f12,0xE0(sp)                                ; Store fa2
-    fsd     f13,0xE8(sp)                                ; Store fa3
-    fsd     f14,0xF0(sp)                                ; Store fa4
-    fsd     f15,0xF8(sp)                                ; Store fa5
-    fsd     f16,0x100(sp)                               ; Store fa6
-    fsd     f17,0x108(sp)                               ; Store fa7
-    fsd     f28,0x160(sp)                               ; Store ft8
-    fsd     f29,0x168(sp)                               ; Store ft9
-    fsd     f30,0x170(sp)                               ; Store ft10
-    fsd     f31,0x178(sp)                               ; Store ft11
+    fsd     f0, 0x90(sp)                                ; Store ft0
+    fsd     f1, 0x98(sp)                                ; Store ft1
+    fsd     f2, 0xA0(sp)                                ; Store ft2
+    fsd     f3, 0xA8(sp)                                ; Store ft3
+    fsd     f4, 0xB0(sp)                                ; Store ft4
+    fsd     f5, 0xB8(sp)                                ; Store ft5
+    fsd     f6, 0xC0(sp)                                ; Store ft6
+    fsd     f7, 0xC8(sp)                                ; Store ft7
+    fsd     f10,0xE0(sp)                                ; Store fa0
+    fsd     f11,0xE8(sp)                                ; Store fa1
+    fsd     f12,0xF0(sp)                                ; Store fa2
+    fsd     f13,0xF8(sp)                                ; Store fa3
+    fsd     f14,0x100(sp)                               ; Store fa4
+    fsd     f15,0x108(sp)                               ; Store fa5
+    fsd     f16,0x110(sp)                               ; Store fa6
+    fsd     f17,0x118(sp)                               ; Store fa7
+    fsd     f28,0x170(sp)                               ; Store ft8
+    fsd     f29,0x178(sp)                               ; Store ft9
+    fsd     f30,0x180(sp)                               ; Store ft10
+    fsd     f31,0x188(sp)                               ; Store ft11
     csrr    t0, fcsr
-    sw      t0, 0x180(sp)                               ; Store fcsr
+    sw      t0, 0x190(sp)                               ; Store fcsr
 #endif
 #endif
 
@@ -215,55 +221,60 @@ _tx_thread_not_nested_save:
     csrr    t0, mepc                                    ; Load exception program counter
     sw      t0, 0x78(sp)                                ; Save it on the stack
 
+    csrr    t0, CSR_MCCTLBEGINADDR                      ; Load mcctlbeginaddr
+    sw      t0, 0x88(sp)                                ; Save it on the stack
+    csrr    t0, CSR_MCCTLDATA                           ; Load mcctldata
+    sw      t0, 0x8C(sp)                                ; Save it on the stack
+
 #ifdef __riscv_flen
 #if __riscv_flen == 32
     /* Save floating point scratch registers.  */
 
-    fsw     f0, 0x7C(sp)                                ; Store ft0
-    fsw     f1, 0x80(sp)                                ; Store ft1
-    fsw     f2, 0x84(sp)                                ; Store ft2
-    fsw     f3, 0x88(sp)                                ; Store ft3
-    fsw     f4, 0x8C(sp)                                ; Store ft4
-    fsw     f5, 0x90(sp)                                ; Store ft5
-    fsw     f6, 0x94(sp)                                ; Store ft6
-    fsw     f7, 0x98(sp)                                ; Store ft7
-    fsw     f10,0xA4(sp)                                ; Store fa0
-    fsw     f11,0xA8(sp)                                ; Store fa1
-    fsw     f12,0xAC(sp)                                ; Store fa2
-    fsw     f13,0xB0(sp)                                ; Store fa3
-    fsw     f14,0xB4(sp)                                ; Store fa4
-    fsw     f15,0xB8(sp)                                ; Store fa5
-    fsw     f16,0xBC(sp)                                ; Store fa6
-    fsw     f17,0xC0(sp)                                ; Store fa7
-    fsw     f28,0xEC(sp)                                ; Store ft8
-    fsw     f29,0xF0(sp)                                ; Store ft9
-    fsw     f30,0xF4(sp)                                ; Store ft10
-    fsw     f31,0xF8(sp)                                ; Store ft11
+    fsw     f0, 0x90(sp)                                ; Store ft0
+    fsw     f1, 0x94(sp)                                ; Store ft1
+    fsw     f2, 0x98(sp)                                ; Store ft2
+    fsw     f3, 0x9C(sp)                                ; Store ft3
+    fsw     f4, 0xA0(sp)                                ; Store ft4
+    fsw     f5, 0xA4(sp)                                ; Store ft5
+    fsw     f6, 0xA8(sp)                                ; Store ft6
+    fsw     f7, 0xAC(sp)                                ; Store ft7
+    fsw     f10,0xB8(sp)                                ; Store fa0
+    fsw     f11,0xBC(sp)                                ; Store fa1
+    fsw     f12,0xC0(sp)                                ; Store fa2
+    fsw     f13,0xC4(sp)                                ; Store fa3
+    fsw     f14,0xC8(sp)                                ; Store fa4
+    fsw     f15,0xCC(sp)                                ; Store fa5
+    fsw     f16,0xD0(sp)                                ; Store fa6
+    fsw     f17,0xD4(sp)                                ; Store fa7
+    fsw     f28,0x100(sp)                               ; Store ft8
+    fsw     f29,0x104(sp)                               ; Store ft9
+    fsw     f30,0x108(sp)                               ; Store ft10
+    fsw     f31,0x10C(sp)                               ; Store ft11
     csrr    t0, fcsr
-    sw      t0, 0xFC(sp)                                ; Store fcsr
+    sw      t0, 0x110(sp)                               ; Store fcsr
 #elif __riscv_flen == 64
-    fsd     f0, 0x80(sp)                                ; Store ft0
-    fsd     f1, 0x88(sp)                                ; Store ft1
-    fsd     f2, 0x90(sp)                                ; Store ft2
-    fsd     f3, 0x98(sp)                                ; Store ft3
-    fsd     f4, 0xA0(sp)                                ; Store ft4
-    fsd     f5, 0xA8(sp)                                ; Store ft5
-    fsd     f6, 0xB0(sp)                                ; Store ft6
-    fsd     f7, 0xB8(sp)                                ; Store ft7
-    fsd     f10,0xD0(sp)                                ; Store fa0
-    fsd     f11,0xD8(sp)                                ; Store fa1
-    fsd     f12,0xE0(sp)                                ; Store fa2
-    fsd     f13,0xE8(sp)                                ; Store fa3
-    fsd     f14,0xF0(sp)                                ; Store fa4
-    fsd     f15,0xF8(sp)                                ; Store fa5
-    fsd     f16,0x100(sp)                               ; Store fa6
-    fsd     f17,0x108(sp)                               ; Store fa7
-    fsd     f28,0x160(sp)                               ; Store ft8
-    fsd     f29,0x168(sp)                               ; Store ft9
-    fsd     f30,0x170(sp)                               ; Store ft10
-    fsd     f31,0x178(sp)                               ; Store ft11
+    fsd     f0, 0x90(sp)                                ; Store ft0
+    fsd     f1, 0x98(sp)                                ; Store ft1
+    fsd     f2, 0xA0(sp)                                ; Store ft2
+    fsd     f3, 0xA8(sp)                                ; Store ft3
+    fsd     f4, 0xB0(sp)                                ; Store ft4
+    fsd     f5, 0xB8(sp)                                ; Store ft5
+    fsd     f6, 0xC0(sp)                                ; Store ft6
+    fsd     f7, 0xC8(sp)                                ; Store ft7
+    fsd     f10,0xE0(sp)                                ; Store fa0
+    fsd     f11,0xE8(sp)                                ; Store fa1
+    fsd     f12,0xF0(sp)                                ; Store fa2
+    fsd     f13,0xF8(sp)                                ; Store fa3
+    fsd     f14,0x100(sp)                               ; Store fa4
+    fsd     f15,0x108(sp)                               ; Store fa5
+    fsd     f16,0x110(sp)                               ; Store fa6
+    fsd     f17,0x118(sp)                               ; Store fa7
+    fsd     f28,0x170(sp)                               ; Store ft8
+    fsd     f29,0x178(sp)                               ; Store ft9
+    fsd     f30,0x180(sp)                               ; Store ft10
+    fsd     f31,0x188(sp)                               ; Store ft11
     csrr    t0, fcsr
-    sw      t0, 0x180(sp)                               ; Store fcsr
+    sw      t0, 0x190(sp)                               ; Store fcsr
 #endif
 #endif
 
@@ -306,12 +317,12 @@ _tx_thread_idle_system_save:
 }  */
 #ifdef __riscv_flen
 #if __riscv_flen == 32
-    addi    sp, sp, 260                                 ; Recover stack frame - with single floating point enabled
+    addi    sp, sp, 288                                 ; Recover stack frame - with single floating point enabled
 #elif __riscv_flen == 64
-    addi    sp, sp, 396                                 ; Recover stack frame - with double floating point enabled
+    addi    sp, sp, 416                                 ; Recover stack frame - with double floating point enabled
 #endif
 #else
-    addi    sp, sp, 128                                 ; Recover the reserved stack space
+    addi    sp, sp, 160                                 ; Recover the reserved stack space
 #endif
     ret                                                 ; Return to calling ISR
 

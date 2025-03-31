@@ -300,9 +300,7 @@ void init_gptmr_pins(GPTMR_Type *ptr)
     if (ptr == HPM_GPTMR4) {
         HPM_IOC->PAD[IOC_PAD_PB06].FUNC_CTL = IOC_PB06_FUNC_CTL_GPTMR4_CAPT_0;
         HPM_IOC->PAD[IOC_PAD_PB07].FUNC_CTL = IOC_PB07_FUNC_CTL_GPTMR4_COMP_0;
-    }
-    if (ptr == HPM_GPTMR0) {
-        HPM_IOC->PAD[IOC_PAD_PE07].FUNC_CTL = IOC_PE07_FUNC_CTL_GPTMR0_COMP_0;
+        HPM_IOC->PAD[IOC_PAD_PF15].FUNC_CTL = IOC_PF15_FUNC_CTL_GPTMR4_COMP_3;
     }
     if (ptr == HPM_GPTMR5) {
         HPM_IOC->PAD[IOC_PAD_PB05].FUNC_CTL = IOC_PB05_FUNC_CTL_GPTMR5_COMP_2;
@@ -736,14 +734,14 @@ void init_uart_break_signal_pin(void)
 void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp)
 {
     if (ptr == HPM_GPTMR4) {
-        if ((as_comp == true) && (channel == 0)) {
-            HPM_IOC->PAD[IOC_PAD_PB07].FUNC_CTL = IOC_PB07_FUNC_CTL_GPTMR4_COMP_0;
+        if (as_comp == true) {
+            if (channel == 0) {
+                HPM_IOC->PAD[IOC_PAD_PB07].FUNC_CTL = IOC_PB07_FUNC_CTL_GPTMR4_COMP_0;
+            } else if (channel == 3) {
+                HPM_IOC->PAD[IOC_PAD_PF15].FUNC_CTL = IOC_PF15_FUNC_CTL_GPTMR4_COMP_3;
+            }
         } else if ((as_comp == false) && (channel == 0)) {
             HPM_IOC->PAD[IOC_PAD_PB06].FUNC_CTL = IOC_PB06_FUNC_CTL_GPTMR4_CAPT_0;
-        }
-    } else if (ptr == HPM_GPTMR0) {
-        if ((as_comp == true) && (channel == 0)) {
-            HPM_IOC->PAD[IOC_PAD_PE07].FUNC_CTL = IOC_PE07_FUNC_CTL_GPTMR0_COMP_0;
         }
     } else if (ptr == HPM_GPTMR5) {
         if ((as_comp == true) && (channel == 2)) {

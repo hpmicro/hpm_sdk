@@ -36,11 +36,11 @@ extensions = [
     "sphinx.ext.todo",
     "sphinx.ext.extlinks",
     'sphinx.ext.duration',
-    'sphinx_inline_tabs',
     "sphinx.ext.viewcode",
     'sphinxcontrib.moderncmakedomain',
     "external_content",
     "doxyrunner",
+    "sphinx_tabs.tabs"
 ]
 
 templates_path = ['_templates']
@@ -68,11 +68,11 @@ external_content_contents = [
     (HPM_SDK_BASE, "CHANGELOG.md"),
     (HPM_SDK_BASE, "docs/*.rst"),
     (HPM_SDK_BASE / "docs/zh", "[!_]*"),
-    (HPM_SDK_BASE, "boards/**/*_zh.md",),
+    (HPM_SDK_BASE, "boards/**/*_zh.rst",),
     (HPM_SDK_BASE, "boards/**/doc"),
-    (HPM_SDK_BASE, "components/**/*_zh.md"),
+    (HPM_SDK_BASE, "components/**/*_zh.rst"),
     (HPM_SDK_BASE, "components/**/doc"),
-    (HPM_SDK_BASE, "samples/**/*_zh.md",),
+    (HPM_SDK_BASE, "samples/**/*_zh.rst",),
     (HPM_SDK_BASE, "samples/**/doc"),
 ]
 

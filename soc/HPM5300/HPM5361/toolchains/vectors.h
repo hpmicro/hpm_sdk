@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -61,12 +61,12 @@ default_irq_handler
     IRQ_DEFAULT_HANDLER 39 /* PTPC IRQ handler */
     IRQ_DEFAULT_HANDLER 40 /* PWM0 IRQ handler */
     IRQ_DEFAULT_HANDLER 41 /* QEI0 IRQ handler */
-    IRQ_DEFAULT_HANDLER 42 /* SEI0 IRQ handler */
+    IRQ_DEFAULT_HANDLER 42 /* SEI0[0] IRQ handler */
     IRQ_DEFAULT_HANDLER 43 /* MMC0 IRQ handler */
     IRQ_DEFAULT_HANDLER 44 /* TRGMUX0 IRQ handler */
     IRQ_DEFAULT_HANDLER 45 /* PWM1 IRQ handler */
     IRQ_DEFAULT_HANDLER 46 /* QEI1 IRQ handler */
-    IRQ_DEFAULT_HANDLER 47 /* SEI1 IRQ handler */
+    IRQ_DEFAULT_HANDLER 47 /* SEI0[1] IRQ handler */
     IRQ_DEFAULT_HANDLER 48 /* MMC1 IRQ handler */
     IRQ_DEFAULT_HANDLER 49 /* TRGMUX1 IRQ handler */
     IRQ_DEFAULT_HANDLER 50 /* RDC IRQ handler */
@@ -145,12 +145,12 @@ __vector_table
     IRQ_HANDLER 39 /* PTPC IRQ handler */
     IRQ_HANDLER 40 /* PWM0 IRQ handler */
     IRQ_HANDLER 41 /* QEI0 IRQ handler */
-    IRQ_HANDLER 42 /* SEI0 IRQ handler */
+    IRQ_HANDLER 42 /* SEI0[0] IRQ handler */
     IRQ_HANDLER 43 /* MMC0 IRQ handler */
     IRQ_HANDLER 44 /* TRGMUX0 IRQ handler */
     IRQ_HANDLER 45 /* PWM1 IRQ handler */
     IRQ_HANDLER 46 /* QEI1 IRQ handler */
-    IRQ_HANDLER 47 /* SEI1 IRQ handler */
+    IRQ_HANDLER 47 /* SEI0[1] IRQ handler */
     IRQ_HANDLER 48 /* MMC1 IRQ handler */
     IRQ_HANDLER 49 /* TRGMUX1 IRQ handler */
     IRQ_HANDLER 50 /* RDC IRQ handler */
@@ -244,12 +244,12 @@ __vector_table:
     IRQ_HANDLER 39 /* PTPC IRQ handler */
     IRQ_HANDLER 40 /* PWM0 IRQ handler */
     IRQ_HANDLER 41 /* QEI0 IRQ handler */
-    IRQ_HANDLER 42 /* SEI0 IRQ handler */
+    IRQ_HANDLER 42 /* SEI0[0] IRQ handler */
     IRQ_HANDLER 43 /* MMC0 IRQ handler */
     IRQ_HANDLER 44 /* TRGMUX0 IRQ handler */
     IRQ_HANDLER 45 /* PWM1 IRQ handler */
     IRQ_HANDLER 46 /* QEI1 IRQ handler */
-    IRQ_HANDLER 47 /* SEI1 IRQ handler */
+    IRQ_HANDLER 47 /* SEI0[1] IRQ handler */
     IRQ_HANDLER 48 /* MMC1 IRQ handler */
     IRQ_HANDLER 49 /* TRGMUX1 IRQ handler */
     IRQ_HANDLER 50 /* RDC IRQ handler */

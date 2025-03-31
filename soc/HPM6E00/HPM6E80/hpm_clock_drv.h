@@ -10,6 +10,7 @@
 #include "hpm_common.h"
 #include "hpm_sysctl_drv.h"
 
+#define CLOCK_DIV_INVALID (~0UL)
 
 /**
  * @brief Error codes for clock driver
@@ -300,6 +301,14 @@ uint32_t get_frequency_for_source(clock_source_t source);
  * @return IP clock source
  */
 clk_src_t clock_get_source(clock_name_t clock_name);
+
+/**
+ * @brief Get the IP clock divider
+ *        Note:This API return the direct clock divider
+ * @param [in] clock_name clock name
+ * @return IP clock divider
+ */
+uint32_t clock_get_divider(clock_name_t clock_name);
 
 /**
  * @brief Set ADC clock source

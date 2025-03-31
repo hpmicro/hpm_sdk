@@ -14,6 +14,10 @@
 #define TEST_SPI_IRQ       BOARD_APP_SPI_IRQ
 
 volatile bool spi_transfer_done;
+#if defined(HPM_IP_FEATURE_SPI_CS_EDGE_DETECT_FOR_SLAVE) && (HPM_IP_FEATURE_SPI_CS_EDGE_DETECT_FOR_SLAVE == 1)
+volatile bool cs_falling_edge_flag;
+volatile bool cs_rising_edge_flag;
+#endif
 
 uint8_t *sent_buff;
 uint8_t *receive_buff;
@@ -65,6 +69,18 @@ void spi_isr(void)
             spi_disable_interrupt(TEST_SPI, spi_tx_fifo_threshold_int);
         }
     }
+#if defined(HPM_IP_FEATURE_SPI_CS_EDGE_DETECT_FOR_SLAVE) && (HPM_IP_FEATURE_SPI_CS_EDGE_DETECT_FOR_SLAVE == 1)
+    if (irq_status & spi_slave_cs_edge_falling_int) {
+        spi_clear_interrupt_status(TEST_SPI, spi_slave_cs_edge_falling_int);
+        spi_disable_interrupt(TEST_SPI, spi_slave_cs_edge_falling_int);
+        cs_falling_edge_flag = true;
+    }
+    if (irq_status & spi_slave_cs_edge_rising_int) {
+        spi_clear_interrupt_status(TEST_SPI, spi_slave_cs_edge_rising_int);
+        spi_disable_interrupt(TEST_SPI, spi_slave_cs_edge_rising_int);
+        cs_rising_edge_flag = true;
+    }
+#endif
 }
 
 int main(void)
@@ -75,7 +91,11 @@ int main(void)
     spi_format_config_t format_config = {0};
     spi_control_config_t control_config = {0};
     hpm_stat_t stat;
-
+    uint32_t interrupy_mask = 0;
+#if defined(HPM_IP_FEATURE_SPI_CS_EDGE_DETECT_FOR_SLAVE) && (HPM_IP_FEATURE_SPI_CS_EDGE_DETECT_FOR_SLAVE == 1)
+    cs_falling_edge_flag = false;
+    cs_rising_edge_flag = false;
+#endif
     /* bsp initialization */
     board_init();
     board_init_spi_clock(TEST_SPI);
@@ -111,7 +131,12 @@ int main(void)
     /* setup fifo threshold interrupt and transfer complete interrupt */
     spi_set_tx_fifo_threshold(TEST_SPI, SPI_SOC_FIFO_DEPTH - 1U);
     spi_set_rx_fifo_threshold(TEST_SPI, 1U);
-    spi_enable_interrupt(TEST_SPI, spi_slave_cmd_int);
+#if defined(HPM_IP_FEATURE_SPI_CS_EDGE_DETECT_FOR_SLAVE) && (HPM_IP_FEATURE_SPI_CS_EDGE_DETECT_FOR_SLAVE == 1)
+    interrupy_mask = spi_slave_cmd_int | spi_slave_cs_edge_falling_int | spi_slave_cs_edge_rising_int;
+#else
+    interrupy_mask = spi_slave_cmd_int;
+#endif
+    spi_enable_interrupt(TEST_SPI, interrupy_mask);
 
     printf("SPI-Slave transfer waits.\n");
     while (!spi_transfer_done) {
@@ -144,6 +169,16 @@ int main(void)
     printf("SPI slave transfer done.\n");
 
     while (1) {
+#if defined(HPM_IP_FEATURE_SPI_CS_EDGE_DETECT_FOR_SLAVE) && (HPM_IP_FEATURE_SPI_CS_EDGE_DETECT_FOR_SLAVE == 1)
+        if (cs_falling_edge_flag == true) {
+            printf("SPI slave cs falling edge detected.\n");
+            cs_falling_edge_flag = false;
+        }
+        if (cs_rising_edge_flag == true) {
+            printf("SPI slave cs rising edge detected.\n");
+            cs_rising_edge_flag = false;
+        }
+#endif
     }
 
     return 0;

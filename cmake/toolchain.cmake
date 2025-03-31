@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2022 HPMicro
+# Copyright (c) 2021-2022,2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 function(get_compiler_version compiler version_text compiler_version)
@@ -223,7 +223,10 @@ set(CMAKE_ASM_CREATE_STATIC_LIBRARY "<CMAKE_AR> crD <TARGET> <LINK_FLAGS> <OBJEC
 set(CMAKE_C_CREATE_STATIC_LIBRARY "<CMAKE_AR> crD <TARGET> <LINK_FLAGS> <OBJECTS>")
 set(CMAKE_CXX_CREATE_STATIC_LIBRARY "<CMAKE_AR> crD <TARGET> <LINK_FLAGS> <OBJECTS>")
 
+if(NOT CMAKE_CXX_STANDARD)
 set(CMAKE_CXX_STANDARD 11)
+endif()
+
 set(CXX ${C++})
 find_program(CMAKE_CXX_COMPILER ${CROSS_COMPILE}${CXX}   PATHS ${TOOLCHAIN_HOME} NO_DEFAULT_PATH)
 # include toolchain specific settings

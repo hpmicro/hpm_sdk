@@ -15,7 +15,7 @@ hpm_stat_t plb_qei_encoder_init(PLB_Type *plb, TRGM_Type *trgm, plb_qei_encoder_
     uint8_t chn;
     plb_type_a_truth_t plb_type_a_lut = {0};
     trgm_output_t trgm_output_cfg = {0};
-    trgm_input_filter_t trgm_input_cfg = {0};
+    trgm_filter_t trgm_filter_cfg = {0};
 
     chn = qei_chn;
     if (cfg->mode == plb_abz_mode) {
@@ -24,12 +24,12 @@ hpm_stat_t plb_qei_encoder_init(PLB_Type *plb, TRGM_Type *trgm, plb_qei_encoder_
         }
     }
 
-    trgm_input_cfg.sync = true;
-    trgm_input_cfg.invert = false;
-    trgm_input_cfg.mode = trgm_filter_mode_rapid_change;
-    trgm_input_cfg.filter_length = cfg->filter_length;
-    trgm_input_filter_config(trgm, TRGM_FILTCFG_MOTO_GPIO_IN0 + (cfg->trgm_input.qei_a - HPM_TRGM0_INPUT_SRC_TRGM0_P00), &trgm_input_cfg);
-    trgm_input_filter_config(trgm, TRGM_FILTCFG_MOTO_GPIO_IN0 + (cfg->trgm_input.qei_b - HPM_TRGM0_INPUT_SRC_TRGM0_P00), &trgm_input_cfg);
+    trgm_filter_cfg.sync = true;
+    trgm_filter_cfg.invert = false;
+    trgm_filter_cfg.mode = trgm_filter_mode_rapid_change;
+    trgm_filter_cfg.filter_length = cfg->filter_length;
+    trgm_filter_config(trgm, HPM_TRGM0_FILTER_SRC_TRGM0_P00 + (cfg->trgm_input.qei_a - HPM_TRGM0_INPUT_SRC_TRGM0_P00), &trgm_filter_cfg);
+    trgm_filter_config(trgm, HPM_TRGM0_FILTER_SRC_TRGM0_P00 + (cfg->trgm_input.qei_b - HPM_TRGM0_INPUT_SRC_TRGM0_P00), &trgm_filter_cfg);
 
     trgm_output_cfg.invert = false;
     trgm_output_cfg.type   = trgm_output_pulse_at_input_both_edge;

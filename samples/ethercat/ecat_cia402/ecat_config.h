@@ -14,7 +14,7 @@
 #define FLASH_SECTOR_SIZE        (0x1000U) /* 4096 */
 
 /* Please allocate appropriate flash space for FLASH EEPROM to avoid conflicts with other flash content */
-#define FLASH_EEPROM_ADDR        (0x200000) /* offset 2M */
+#define FLASH_EEPROM_ADDR        (BOARD_ECAT_FLASH_EMULATE_EEPROM_ADDR)
 #define FLASH_EEPROM_SIZE        (0x10000)
 
 /* ecat timer */

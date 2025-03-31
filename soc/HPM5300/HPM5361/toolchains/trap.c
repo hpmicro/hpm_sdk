@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -120,6 +120,8 @@ void irq_handler_trap(void)
 #ifdef __riscv_flen
     int fcsr = read_fcsr();
 #endif
+    int mcctlbeginaddr = read_csr(CSR_MCCTLBEGINADDR);
+    int mcctldata = read_csr(CSR_MCCTLDATA);
 
     /* clobbers list for ecall */
 #ifdef __riscv_32e
@@ -188,4 +190,6 @@ void irq_handler_trap(void)
 #ifdef __riscv_flen
     write_fcsr(fcsr);
 #endif
+    write_csr(CSR_MCCTLDATA, mcctldata);
+    write_csr(CSR_MCCTLBEGINADDR, mcctlbeginaddr);
 }

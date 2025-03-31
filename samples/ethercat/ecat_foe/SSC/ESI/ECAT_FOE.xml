@@ -14,7 +14,7 @@
 			</Group>
 		</Groups>
 		<Devices>
-			<Device Physics="YY">
+			<Device Physics="YYY">
 				<Type ProductCode="#x00000002" RevisionNo="#x00000001">foe</Type>
 				<Name>foe</Name>
 				<Info>

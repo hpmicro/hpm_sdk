@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -8,13 +8,6 @@
 #define NETCONF_H
 
 #include "stdint.h"
-
-/* Exported macro ------------------------------------------------------------*/
-#define DHCP_START              1
-#define DHCP_WAIT_ADDRESS       2
-#define DHCP_ADDRESS_ASSIGNED   3
-#define DHCP_TIMEOUT            4
-#define DHCP_LINK_DOWN          5
 
 /* MAC ADDRESS */
 #define MAC_ADDR0   0x98

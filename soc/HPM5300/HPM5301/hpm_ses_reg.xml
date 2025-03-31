@@ -4097,7 +4097,6 @@
       <BitField name="WIN_EN" start="24" size="1"/>
       <BitField name="WIN_LOWER" start="22" size="2"/>
       <BitField name="CFG_LOCK" start="21" size="1"/>
-      <BitField name="OT_SELF_CLEAR" start="17" size="1"/>
       <BitField name="REF_OT_REQ" start="15" size="1"/>
       <BitField name="WIN_UPPER" start="12" size="3"/>
       <BitField name="REF_LOCK" start="5" size="1"/>
@@ -4158,7 +4157,6 @@
       <BitField name="WIN_EN" start="24" size="1"/>
       <BitField name="WIN_LOWER" start="22" size="2"/>
       <BitField name="CFG_LOCK" start="21" size="1"/>
-      <BitField name="OT_SELF_CLEAR" start="17" size="1"/>
       <BitField name="REF_OT_REQ" start="15" size="1"/>
       <BitField name="WIN_UPPER" start="12" size="3"/>
       <BitField name="REF_LOCK" start="5" size="1"/>
@@ -4219,7 +4217,6 @@
       <BitField name="WIN_EN" start="24" size="1"/>
       <BitField name="WIN_LOWER" start="22" size="2"/>
       <BitField name="CFG_LOCK" start="21" size="1"/>
-      <BitField name="OT_SELF_CLEAR" start="17" size="1"/>
       <BitField name="REF_OT_REQ" start="15" size="1"/>
       <BitField name="WIN_UPPER" start="12" size="3"/>
       <BitField name="REF_LOCK" start="5" size="1"/>
@@ -6171,6 +6168,1150 @@
       <BitField name="SELECT" start="0" size="2"/>
     </Register>
   </RegisterGroup>
+  <RegisterGroup start="0xf0328000" name="SYNT">
+    <Register name="GCR" start="+0x0" size="0x4">
+      <BitField name="TIMESTAMP_INC_NEW" start="31" size="1"/>
+      <BitField name="TIMESTAMP_DEC_NEW" start="30" size="1"/>
+      <BitField name="TIMESTAMP_SET_NEW" start="29" size="1"/>
+      <BitField name="TIMESTAMP_RESET" start="28" size="1"/>
+      <BitField name="TIMESTAMP_DEBUG_EN" start="5" size="1"/>
+      <BitField name="TIMESTAMP_ENABLE" start="4" size="1"/>
+      <BitField name="COUNTER_DEBUG_EN" start="2" size="1"/>
+      <BitField name="CRST" start="1" size="1"/>
+      <BitField name="CEN" start="0" size="1"/>
+    </Register>
+    <Register name="RLD" start="+0x4" size="0x4">
+      <BitField name="RLD" start="0" size="32"/>
+    </Register>
+    <Register name="TIMESTAMP_NEW" start="+0x8" size="0x4">
+      <BitField name="VALUE" start="0" size="32"/>
+    </Register>
+    <Register name="CNT" start="+0xc" size="0x4">
+      <BitField name="CNT" start="0" size="32"/>
+    </Register>
+    <Register name="TIMESTAMP_SAV" start="+0x10" size="0x4">
+      <BitField name="VALUE" start="0" size="32"/>
+    </Register>
+    <Register name="TIMESTAMP_CUR" start="+0x14" size="0x4">
+      <BitField name="VALUE" start="0" size="32"/>
+    </Register>
+    <Register name="CMP_0" start="+0x20" size="0x4">
+      <BitField name="CMP" start="0" size="32"/>
+    </Register>
+    <Register name="CMP_1" start="+0x24" size="0x4">
+      <BitField name="CMP" start="0" size="32"/>
+    </Register>
+    <Register name="CMP_2" start="+0x28" size="0x4">
+      <BitField name="CMP" start="0" size="32"/>
+    </Register>
+    <Register name="CMP_3" start="+0x2c" size="0x4">
+      <BitField name="CMP" start="0" size="32"/>
+    </Register>
+  </RegisterGroup>
+  <RegisterGroup start="0xf033c000" name="TRGM0">
+    <Register name="FILTCFG_PWM0_IN0" start="+0x0" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_PWM0_IN1" start="+0x4" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_PWM0_IN2" start="+0x8" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_PWM0_IN3" start="+0xc" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_PWM0_IN4" start="+0x10" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_PWM0_IN5" start="+0x14" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_PWM0_IN6" start="+0x18" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_PWM0_IN7" start="+0x1c" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_PWM1_IN0" start="+0x20" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_PWM1_IN1" start="+0x24" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_PWM1_IN2" start="+0x28" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_PWM1_IN3" start="+0x2c" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_PWM1_IN4" start="+0x30" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_PWM1_IN5" start="+0x34" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_PWM1_IN6" start="+0x38" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_PWM1_IN7" start="+0x3c" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_TRGM_P_00" start="+0x40" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_TRGM_P_01" start="+0x44" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_TRGM_P_02" start="+0x48" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_TRGM_P_03" start="+0x4c" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_TRGM_P_04" start="+0x50" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_TRGM_P_05" start="+0x54" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_TRGM_P_06" start="+0x58" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_TRGM_P_07" start="+0x5c" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_PWM0_FAULT0" start="+0x60" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_PWM0_FAULT1" start="+0x64" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_PWM1_FAULT0" start="+0x68" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="FILTCFG_PWM1_FAULT1" start="+0x6c" size="0x4">
+      <BitField name="OUTINV" start="16" size="1"/>
+      <BitField name="MODE" start="13" size="3"/>
+      <BitField name="SYNCEN" start="12" size="1"/>
+      <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FILTLEN_BASE" start="0" size="9"/>
+    </Register>
+    <Register name="TRGOCFG_MOT2OPAMP0_0" start="+0x100" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_MOT2OPAMP0_1" start="+0x104" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_MOT2OPAMP0_2" start="+0x108" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_MOT2OPAMP0_3" start="+0x10c" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_MOT2OPAMP0_4" start="+0x110" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_MOT2OPAMP0_5" start="+0x114" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_MOT2OPAMP0_6" start="+0x118" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_MOT2OPAMP0_7" start="+0x11c" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_MOT2OPAMP1_0" start="+0x120" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_MOT2OPAMP1_1" start="+0x124" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_MOT2OPAMP1_2" start="+0x128" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_MOT2OPAMP1_3" start="+0x12c" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_MOT2OPAMP1_4" start="+0x130" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_MOT2OPAMP1_5" start="+0x134" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_MOT2OPAMP1_6" start="+0x138" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_MOT2OPAMP1_7" start="+0x13c" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_GPTMR0_IN2" start="+0x140" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_GPTMR0_IN3" start="+0x144" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_GPTMR0_SYNCI" start="+0x148" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_GPTMR1_IN2" start="+0x14c" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_GPTMR1_IN3" start="+0x150" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_GPTMR1_SYNCI" start="+0x154" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_GPTMR2_IN2" start="+0x158" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_GPTMR2_IN3" start="+0x15c" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_GPTMR2_SYNCI" start="+0x160" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_GPTMR3_IN2" start="+0x164" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_GPTMR3_IN3" start="+0x168" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_GPTMR3_SYNCI" start="+0x16c" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_ACMP_CH0_WIN" start="+0x170" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_ACMP_CH1_WIN" start="+0x174" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_DAC0_BUFTRG" start="+0x178" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_DAC1_BUFTRG" start="+0x17c" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_ADC0_STRGI" start="+0x180" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_ADC1_STRGI" start="+0x184" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_ADCX_PTRGI0A" start="+0x188" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_ADCX_PTRGI0B" start="+0x18c" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_ADCX_PTRGI0C" start="+0x190" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_ADCX_PTRGI1A" start="+0x194" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_ADCX_PTRGI1B" start="+0x198" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_ADCX_PTRGI1C" start="+0x19c" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_ADCX_PTRGI2A" start="+0x1a0" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_ADCX_PTRGI2B" start="+0x1a4" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_ADCX_PTRGI2C" start="+0x1a8" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_ADCX_PTRGI3A" start="+0x1ac" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_ADCX_PTRGI3B" start="+0x1b0" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_ADCX_PTRGI3C" start="+0x1b4" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_CAN_PTPC0_CAP" start="+0x1b8" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_CAN_PTPC1_CAP" start="+0x1bc" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_QEO0_TRIG_IN0" start="+0x1c0" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_QEO0_TRIG_IN1" start="+0x1c4" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_QEO1_TRIG_IN0" start="+0x1c8" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_QEO1_TRIG_IN1" start="+0x1cc" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_SEI_TRIG_IN0" start="+0x1d0" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_SEI_TRIG_IN1" start="+0x1d4" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_SEI_TRIG_IN2" start="+0x1d8" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_SEI_TRIG_IN3" start="+0x1dc" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_SEI_TRIG_IN4" start="+0x1e0" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_SEI_TRIG_IN5" start="+0x1e4" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_SEI_TRIG_IN6" start="+0x1e8" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_SEI_TRIG_IN7" start="+0x1ec" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_MMC0_TRIG_IN0" start="+0x1f0" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_MMC0_TRIG_IN1" start="+0x1f4" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_MMC1_TRIG_IN0" start="+0x1f8" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_MMC1_TRIG_IN1" start="+0x1fc" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_00" start="+0x200" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_01" start="+0x204" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_02" start="+0x208" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_03" start="+0x20c" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_04" start="+0x210" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_05" start="+0x214" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_06" start="+0x218" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_07" start="+0x21c" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_08" start="+0x220" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_09" start="+0x224" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_10" start="+0x228" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_11" start="+0x22c" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_12" start="+0x230" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_13" start="+0x234" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_14" start="+0x238" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_15" start="+0x23c" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_16" start="+0x240" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_17" start="+0x244" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_18" start="+0x248" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_19" start="+0x24c" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_20" start="+0x250" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_21" start="+0x254" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_22" start="+0x258" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_23" start="+0x25c" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_24" start="+0x260" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_25" start="+0x264" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_26" start="+0x268" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_27" start="+0x26c" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_28" start="+0x270" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_29" start="+0x274" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_30" start="+0x278" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PLB_IN_31" start="+0x27c" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_TRGM_P_00" start="+0x280" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_TRGM_P_01" start="+0x284" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_TRGM_P_02" start="+0x288" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_TRGM_P_03" start="+0x28c" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_TRGM_P_04" start="+0x290" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_TRGM_P_05" start="+0x294" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_TRGM_P_06" start="+0x298" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_TRGM_P_07" start="+0x29c" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PWM_IN8" start="+0x2a0" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PWM_IN9" start="+0x2a4" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PWM_IN10" start="+0x2a8" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PWM_IN11" start="+0x2ac" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PWM_IN12" start="+0x2b0" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PWM_IN13" start="+0x2b4" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PWM_IN14" start="+0x2b8" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PWM_IN15" start="+0x2bc" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PWM0_FRCI" start="+0x2c0" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PWM0_FRCSYNCI" start="+0x2c4" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PWM0_SYNCI" start="+0x2c8" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PWM0_SHRLDSYNCI" start="+0x2cc" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PWM0_FAULTI0" start="+0x2d0" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PWM0_FAULTI1" start="+0x2d4" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PWM1_FRCI" start="+0x2d8" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PWM1_FRCSYNCI" start="+0x2dc" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PWM1_SYNCI" start="+0x2e0" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PWM1_SHRLDSYNCI" start="+0x2e4" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PWM1_FAULTI0" start="+0x2e8" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_PWM1_FAULTI1" start="+0x2ec" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_RDC_TRIG_IN0" start="+0x2f0" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_RDC_TRIG_IN1" start="+0x2f4" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_SYNCTIMER_TRIG" start="+0x2f8" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_QEI0_TRIG_IN" start="+0x2fc" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_QEI1_TRIG_IN" start="+0x300" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_QEI0_PAUSE" start="+0x304" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_QEI1_PAUSE" start="+0x308" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_UART_TRIG0" start="+0x30c" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_UART_TRIG1" start="+0x310" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_TRGM_IRQ0" start="+0x314" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_TRGM_IRQ1" start="+0x318" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_TRGM_DMA0" start="+0x31c" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="TRGOCFG_TRGM_DMA1" start="+0x320" size="0x4">
+      <BitField name="OUTINV" start="11" size="1"/>
+      <BitField name="FEDG2PEN" start="10" size="1"/>
+      <BitField name="REDG2PEN" start="9" size="1"/>
+      <BitField name="TRIGOSEL" start="0" size="7"/>
+    </Register>
+    <Register name="DMACFG_0" start="+0x400" size="0x4">
+      <BitField name="DMAMUX_EN" start="31" size="1"/>
+      <BitField name="DMASRCSEL" start="0" size="6"/>
+    </Register>
+    <Register name="DMACFG_1" start="+0x404" size="0x4">
+      <BitField name="DMAMUX_EN" start="31" size="1"/>
+      <BitField name="DMASRCSEL" start="0" size="6"/>
+    </Register>
+    <Register name="DMACFG_2" start="+0x408" size="0x4">
+      <BitField name="DMAMUX_EN" start="31" size="1"/>
+      <BitField name="DMASRCSEL" start="0" size="6"/>
+    </Register>
+    <Register name="DMACFG_3" start="+0x40c" size="0x4">
+      <BitField name="DMAMUX_EN" start="31" size="1"/>
+      <BitField name="DMASRCSEL" start="0" size="6"/>
+    </Register>
+    <Register name="DMACFG_4" start="+0x410" size="0x4">
+      <BitField name="DMAMUX_EN" start="31" size="1"/>
+      <BitField name="DMASRCSEL" start="0" size="6"/>
+    </Register>
+    <Register name="DMACFG_5" start="+0x414" size="0x4">
+      <BitField name="DMAMUX_EN" start="31" size="1"/>
+      <BitField name="DMASRCSEL" start="0" size="6"/>
+    </Register>
+    <Register name="DMACFG_6" start="+0x418" size="0x4">
+      <BitField name="DMAMUX_EN" start="31" size="1"/>
+      <BitField name="DMASRCSEL" start="0" size="6"/>
+    </Register>
+    <Register name="DMACFG_7" start="+0x41c" size="0x4">
+      <BitField name="DMAMUX_EN" start="31" size="1"/>
+      <BitField name="DMASRCSEL" start="0" size="6"/>
+    </Register>
+    <Register name="GCR" start="+0x500" size="0x4">
+      <BitField name="TRGOPEN" start="0" size="8"/>
+    </Register>
+    <Register name="ADC_MATRIX_SEL" start="+0x510" size="0x4">
+      <BitField name="QEI1_ADC1_SEL" start="24" size="8"/>
+      <BitField name="QEI1_ADC0_SEL" start="16" size="8"/>
+      <BitField name="QEI0_ADC1_SEL" start="8" size="8"/>
+      <BitField name="QEI0_ADC0_SEL" start="0" size="8"/>
+    </Register>
+    <Register name="DAC_MATRIX_SEL" start="+0x514" size="0x4">
+      <BitField name="DAC1_DAC_SEL" start="24" size="8"/>
+      <BitField name="DAC0_DAC_SEL" start="16" size="8"/>
+      <BitField name="ACMP1_DAC_SEL" start="8" size="8"/>
+      <BitField name="ACMP0_DAC_SEL" start="0" size="8"/>
+    </Register>
+    <Register name="POS_MATRIX_SEL0" start="+0x518" size="0x4">
+      <BitField name="MMC1_POSIN_SEL" start="24" size="8"/>
+      <BitField name="MMC0_POSIN_SEL" start="16" size="8"/>
+      <BitField name="SEI_POSIN1_SEL" start="8" size="8"/>
+      <BitField name="SEI_POSIN0_SEL" start="0" size="8"/>
+    </Register>
+    <Register name="POS_MATRIX_SEL1" start="+0x51c" size="0x4">
+      <BitField name="QEO1_POS_SEL" start="8" size="8"/>
+      <BitField name="QEO0_POS_SEL" start="0" size="8"/>
+    </Register>
+    <Register name="TRGM_IN_0" start="+0x600" size="0x4">
+      <BitField name="TRGM_IN" start="0" size="32"/>
+    </Register>
+    <Register name="TRGM_IN_1" start="+0x604" size="0x4">
+      <BitField name="TRGM_IN" start="0" size="32"/>
+    </Register>
+    <Register name="TRGM_IN_2" start="+0x608" size="0x4">
+      <BitField name="TRGM_IN" start="0" size="32"/>
+    </Register>
+    <Register name="TRGM_IN_3" start="+0x60c" size="0x4">
+      <BitField name="TRGM_IN" start="0" size="32"/>
+    </Register>
+    <Register name="TRGM_OUT_0" start="+0x620" size="0x4">
+      <BitField name="TRGM_OUT" start="0" size="32"/>
+    </Register>
+    <Register name="TRGM_OUT_1" start="+0x624" size="0x4">
+      <BitField name="TRGM_OUT" start="0" size="32"/>
+    </Register>
+    <Register name="TRGM_OUT_2" start="+0x628" size="0x4">
+      <BitField name="TRGM_OUT" start="0" size="32"/>
+    </Register>
+    <Register name="TRGM_OUT_3" start="+0x62c" size="0x4">
+      <BitField name="TRGM_OUT" start="0" size="32"/>
+    </Register>
+    <Register name="TRGM_OUT_4" start="+0x630" size="0x4">
+      <BitField name="TRGM_OUT" start="0" size="32"/>
+    </Register>
+  </RegisterGroup>
   <RegisterGroup start="0xf300c000" name="USB0">
     <Register name="GPTIMER0LD" start="+0x80" size="0x4">
       <BitField name="GPTLD" start="0" size="24"/>
@@ -7697,70 +8838,6 @@
       <BitField name="TRG_SW_STA" start="4" size="1"/>
       <BitField name="TRIG_SW_INDEX" start="0" size="4"/>
     </Register>
-    <Register name="BUS_RESULT_CHN0" start="+0x400" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN1" start="+0x404" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN2" start="+0x408" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN3" start="+0x40c" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN4" start="+0x410" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN5" start="+0x414" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN6" start="+0x418" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN7" start="+0x41c" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN8" start="+0x420" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN9" start="+0x424" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN10" start="+0x428" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN11" start="+0x42c" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN12" start="+0x430" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN13" start="+0x434" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN14" start="+0x438" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN15" start="+0x43c" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
     <Register name="BUF_CFG0" start="+0x500" size="0x4">
       <BitField name="BUS_MODE_EN" start="1" size="1"/>
       <BitField name="WAIT_DIS" start="0" size="1"/>
@@ -8266,8 +9343,8 @@
       <BitField name="WINEN" start="17" size="1"/>
       <BitField name="OPOL" start="16" size="1"/>
       <BitField name="FLTMODE" start="13" size="3"/>
-      <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FLTLEN" start="0" size="12"/>
+      <BitField name="FLTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FLTLEN" start="0" size="9"/>
     </Register>
     <Register name="CHANNEL_CHN0_DACCFG" start="+0x4" size="0x4">
       <BitField name="DACCFG" start="0" size="8"/>
@@ -8297,8 +9374,8 @@
       <BitField name="WINEN" start="17" size="1"/>
       <BitField name="OPOL" start="16" size="1"/>
       <BitField name="FLTMODE" start="13" size="3"/>
-      <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FLTLEN" start="0" size="12"/>
+      <BitField name="FLTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FLTLEN" start="0" size="9"/>
     </Register>
     <Register name="CHANNEL_CHN1_DACCFG" start="+0x24" size="0x4">
       <BitField name="DACCFG" start="0" size="8"/>

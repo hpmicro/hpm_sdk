@@ -195,6 +195,46 @@ void mcl_user_delay_us(uint64_t tick);
  */
 #define MCL_GET_ADC_12BIT_VALID_DATA(x)             ((x & 0xffff) >> 4)
 
+
+/**
+ * @brief Macro to convert microseconds period to frequency in Hertz. The macro takes an unsigned integer representing a time period in microseconds,
+ * and returns the corresponding frequency as a floating-point number.
+ *
+ */
+#define MCL_USEC_TO_HZ(usec) (1000000.0f / (usec))
+
+/**
+ * @brief Macro to convert a time period in seconds to frequency in Hertz (Hz). The macro takes a floating-point number representing a time period in seconds,
+ * and returns the corresponding frequency as a floating-point number.
+ */
+#define MCL_PERIOD_TO_FREQUENCY(period) (1.0f / (period))
+
+
+/**
+ * @brief Macro to convert a frequency in Hertz (Hz) to a time period in seconds. The macro takes a floating-point number representing a frequency in Hertz
+ *
+ */
+#define MCL_FREQUENCY_TO_PERIOD(frequency) (1.0f / (frequency))
+
+/**
+ * @brief Converts microseconds (us) to seconds (s).
+ *
+ * This macro takes an unsigned integer or floating-point number representing
+ * a time period in microseconds and returns the corresponding time period as
+ * a floating-point number in seconds.
+ *
+ */
+#define MCL_USEC_TO_SEC(usec) ((usec) / 1000000.0f)
+
+/**
+ * @brief Converts microseconds (us) to milliseconds (ms).
+ *
+ * This macro takes an unsigned integer or floating-point number representing
+ * a time period in microseconds and returns the corresponding time period as
+ * a floating-point number in milliseconds.
+ */
+#define MCL_USEC_TO_MSEC(usec) ((usec) / 1000.0f)
+
 typedef struct {
     mcl_physical_para_t physical;
     mcl_physical_para_q_t physical_q;

@@ -24,11 +24,21 @@
 #define PWM_CMP_UNABLE_OUTPUT_INDEX (16)
 
 /* IRQ enable bit mask */
-#define PWM_IRQ_FAULT PWM_IRQEN_FAULTIRQE_MASK
-#define PWM_IRQ_EX_RELOAD PWM_IRQEN_XRLDIRQE_MASK
-#define PWM_IRQ_HALF_RELOAD PWM_IRQEN_HALFRLDIRQE_MASK
-#define PWM_IRQ_RELOAD PWM_IRQEN_RLDIRQE_MASK
-#define PWM_IRQ_CMP(x) PWM_IRQEN_CMPIRQEX_SET((1 << x))
+#define PWM_IRQ_FAULT(chn) PWMV2_IRQ_EN_FAULT_IRQ_EN_FAULT_SET((1 << chn))
+#define PWM_IRQ_BURSTEND(counter) PWMV2_IRQ_EN_BURSTEND_IRQ_EN_BURSTEND_SET((1 << counter))
+#define PWM_IRQ_CAP_POS(chn) PWMV2_IRQ_EN_CAP_POS_IRQ_EN_CAP_POS_SET((1 << chn))
+#define PWM_IRQ_CAP_NEG(chn) PWMV2_IRQ_EN_CAP_NEG_IRQ_EN_CAP_NEG_SET((1 << chn))
+#define PWM_IRQ_RELOAD(counter) PWMV2_IRQ_EN_RELOAD_IRQ_EN_RELOAD_SET((1 << counter))
+#define PWM_IRQ_CMP(cmp) PWMV2_IRQ_EN_CMP_IRQ_EN_CMP_SET((1 << cmp))
+
+/* IRQ status bit mask */
+#define PWM_IRQ_STS_FAULT(chn) PWMV2_IRQ_STS_FAULT_IRQ_STS_FAULT_SET((1 << chn))
+#define PWM_IRQ_STS_BURSTEND(counter) PWMV2_IRQ_STS_BURSTEND_IRQ_STS_BURSTEND_SET((1 << counter))
+#define PWM_IRQ_STS_CAP_NEG(chn) PWMV2_IRQ_STS_CAP_NEG_IRQ_STS_CAP_NEG_SET((1 << chn))
+#define PWM_IRQ_STS_CAP_POS(chn) PWMV2_IRQ_STS_CAP_POS_IRQ_STS_CAP_POS_SET((1 << chn))
+#define PWM_IRQ_STS_RELOAD(counter) PWMV2_IRQ_STS_RELOAD_IRQ_STS_RELOAD_SET((1 << counter))
+#define PWM_IRQ_STS_CMP(cmp) PWMV2_IRQ_STS_CMP_IRQ_STS_CMP_SET((1 << cmp))
+
 
 /* PWM force output mask */
 #define PWM_FORCE_OUTPUT(pwm_index, force_output) \
@@ -301,6 +311,30 @@ static inline void pwmv2_enable_multi_counter_sync(PWMV2_Type *pwm_x, uint8_t ma
 }
 
 /**
+ * @brief Multiple counters are disabled at the same time
+ *
+ * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
+ * @param mask bit0 - cnt0, bit1 - cnt1, bitn - cntn, n==3
+ */
+
+static inline void pwmv2_disable_multi_counter_sync(PWMV2_Type *pwm_x, uint8_t mask)
+{
+    pwm_x->CNT_GLBCFG &= ~(PWMV2_CNT_GLBCFG_TIMER_ENABLE_SET(mask));
+}
+
+/**
+ * @brief Multiple counters are reset at the same time
+ *
+ * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
+ * @param mask bit0 - cnt0, bit1 - cnt1, bitn - cntn, n==3
+ */
+static inline void pwmv2_reset_multi_counter_sync(PWMV2_Type *pwm_x, uint8_t mask)
+{
+    pwm_x->CNT_GLBCFG |= PWMV2_CNT_GLBCFG_TIMER_RESET_SET(mask);
+}
+
+
+/**
  * @brief Multiple pwm out at the same time
  *
  * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
@@ -390,7 +424,7 @@ static inline void pwmv2_disable_four_cmp(PWMV2_Type *pwm_x, pwm_channel_t chn)
  * @param chn @ref pwm_channel_t
  * @param pad_index motor pad
  */
-static inline void pwmv2_fault_signal_select_from_pad(PWMV2_Type *pwm_x, pwm_channel_t chn, uint8_t pad_index)
+static inline void pwmv2_async_fault_signal_select(PWMV2_Type *pwm_x, pwm_channel_t chn, uint8_t pad_index)
 {
     pwm_x->PWM[chn].CFG0 = (pwm_x->PWM[chn].CFG0 & ~PWMV2_PWM_CFG0_FAULT_SEL_ASYNC_MASK) | PWMV2_PWM_CFG0_FAULT_SEL_ASYNC_SET(pad_index);
 }
@@ -402,7 +436,7 @@ static inline void pwmv2_fault_signal_select_from_pad(PWMV2_Type *pwm_x, pwm_cha
  * @param chn @ref pwm_channel_t
  * @param polarity @ref pwm_fault_pad_polarity_t
  */
-static inline void pwmv2_fault_signal_polarity(PWMV2_Type *pwm_x, pwm_channel_t chn, pwm_fault_pad_polarity_t polarity)
+static inline void pwmv2_async_fault_polarity(PWMV2_Type *pwm_x, pwm_channel_t chn, pwm_fault_pad_polarity_t polarity)
 {
     pwm_x->PWM[chn].CFG0 = (pwm_x->PWM[chn].CFG0 & ~PWMV2_PWM_CFG0_FAULT_POL_ASYNC_MASK) | PWMV2_PWM_CFG0_FAULT_POL_ASYNC_SET(polarity);
 }
@@ -413,10 +447,36 @@ static inline void pwmv2_fault_signal_polarity(PWMV2_Type *pwm_x, pwm_channel_t 
  * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
  * @param chn @ref pwm_channel_t
  */
-static inline void pwmv2_enable_fault_from_pad(PWMV2_Type *pwm_x, pwm_channel_t chn)
+static inline void pwmv2_enable_async_fault(PWMV2_Type *pwm_x, pwm_channel_t chn)
 {
     pwm_x->PWM[chn].CFG0 |= PWMV2_PWM_CFG0_FAULT_EN_ASYNC_MASK;
 }
+
+#if defined(HPM_IP_FEATURE_PWMV2_ASYNC_FAULT_CFG) && HPM_IP_FEATURE_PWMV2_ASYNC_FAULT_CFG
+
+/**
+ * @brief Configure the polarity of the multi fault signal
+ *
+ * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
+ * @param polarity_mask @ref pwm_fault_pad_polarity_t
+ */
+static inline void pwmv2_async_fault_polarity_multi(PWMV2_Type *pwm_x, uint16_t polarity_mask)
+{
+    pwm_x->GLB_CTRL3 = PWMV2_GLB_CTRL3_ASYNC_FAULT_POL_SET(polarity_mask);
+}
+
+/**
+ * @brief Enable the fault signal from the pin multi
+ *
+ * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
+ * @param chn pwm_channel_t
+ * @param pad_index motor pad 16bit mask
+ */
+static inline void pwmv2_enable_async_fault_multi(PWMV2_Type *pwm_x, pwm_channel_t chn, uint16_t pad_mask)
+{
+    pwm_x->PWM[chn].CFG3 |= PWMV2_PWM_CFG3_ASYNC_FAULT_SEL_SET(pad_mask);
+}
+#endif
 
 /**
  * @brief Disable the fault signal from the pin
@@ -424,18 +484,34 @@ static inline void pwmv2_enable_fault_from_pad(PWMV2_Type *pwm_x, pwm_channel_t 
  * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
  * @param chn @ref pwm_channel_t
  */
-static inline void pwmv2_disable_fault_from_pad(PWMV2_Type *pwm_x, pwm_channel_t chn)
+static inline void pwmv2_disable_async_fault(PWMV2_Type *pwm_x, pwm_channel_t chn)
 {
     pwm_x->PWM[chn].CFG0 &= ~PWMV2_PWM_CFG0_FAULT_EN_ASYNC_MASK;
+#if defined(HPM_IP_FEATURE_PWMV2_ASYNC_FAULT_CFG) && HPM_IP_FEATURE_PWMV2_ASYNC_FAULT_CFG
+    pwm_x->PWM[chn].CFG3 &= ~(1 << PWMV2_PWM_CFG0_FAULT_SEL_ASYNC_GET(pwm_x->PWM[chn].CFG0));
+#endif
 }
 
+#if defined(HPM_IP_FEATURE_PWMV2_ASYNC_FAULT_CFG) && HPM_IP_FEATURE_PWMV2_ASYNC_FAULT_CFG
+/**
+ * @brief Disable the fault signal from the pin
+ *
+ * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
+ * @param chn @ref pwm_channel_t
+ * @param pad_index motor pad 16bit mask
+ */
+static inline void pwmv2_disable_async_fault_multi(PWMV2_Type *pwm_x, pwm_channel_t chn, uint16_t pad_mask)
+{
+    pwm_x->PWM[chn].CFG3 &= ~PWMV2_PWM_CFG3_ASYNC_FAULT_SEL_SET(pad_mask);
+}
+#endif
 /**
  * @brief Enable the fault signal from the trigmux
  *
  * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
  * @param chn @ref pwm_channel_t
  */
-static inline void pwmv2_enable_fault_from_trigmux(PWMV2_Type *pwm_x, pwm_channel_t chn)
+static inline void pwmv2_enable_sync_fault(PWMV2_Type *pwm_x, pwm_channel_t chn)
 {
     pwm_x->PWM[chn].CFG0 |= PWMV2_PWM_CFG0_FAULT_EN_SYNC_MASK;
 }
@@ -446,7 +522,7 @@ static inline void pwmv2_enable_fault_from_trigmux(PWMV2_Type *pwm_x, pwm_channe
  * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
  * @param chn @ref pwm_channel_t
  */
-static inline void pwmv2_disable_fault_from_trigmux(PWMV2_Type *pwm_x, pwm_channel_t chn)
+static inline void pwmv2_disable_sync_fault(PWMV2_Type *pwm_x, pwm_channel_t chn)
 {
     pwm_x->PWM[chn].CFG0 &= ~PWMV2_PWM_CFG0_FAULT_EN_SYNC_MASK;
 }
@@ -1150,6 +1226,17 @@ static inline void pwmv2_enable_cmp_irq(PWMV2_Type *pwm_x, uint8_t cmp_index)
 static inline void pwmv2_disable_cmp_irq(PWMV2_Type *pwm_x, uint8_t cmp_index)
 {
     pwm_x->IRQ_EN_CMP &= ~PWMV2_IRQ_EN_CMP_IRQ_EN_CMP_SET(1 << cmp_index);
+}
+
+/**
+ * @brief get enabled compare irq
+ *
+ * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
+ * @return uint32_t enabled compare irq bits
+ */
+static inline uint32_t pwmv2_get_enabled_cmp_irq(PWMV2_Type *pwm_x)
+{
+    return PWMV2_IRQ_EN_CMP_IRQ_EN_CMP_GET(pwm_x->IRQ_EN_CMP);
 }
 
 /**

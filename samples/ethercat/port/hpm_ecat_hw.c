@@ -101,17 +101,19 @@ hpm_stat_t ecat_hardware_init(ESC_Type *esc_ptr)
     }
 
     /* assign ESC_CTRLx to specific function, check with hardware connection */
-    esc_config_ctrl_signal_function(esc_ptr, BOARD_ECAT_NMII_LINK0_CTRL_INDEX, esc_ctrl_signal_func_alt_nmii_link0, true); /* NMII_LINK0 */
+    esc_config_ctrl_signal_function(esc_ptr, BOARD_ECAT_NMII_LINK0_CTRL_INDEX, esc_ctrl_signal_func_alt_nmii_link0, BOARD_ECAT_PORT0_LINK_INVERT); /* NMII_LINK0 */
 #if defined(BOARD_ECAT_SUPPORT_PORT1) && BOARD_ECAT_SUPPORT_PORT1
-    esc_config_ctrl_signal_function(esc_ptr, BOARD_ECAT_NMII_LINK1_CTRL_INDEX, esc_ctrl_signal_func_alt_nmii_link1, true); /* NMII_LINK1 */
+    esc_config_ctrl_signal_function(esc_ptr, BOARD_ECAT_NMII_LINK1_CTRL_INDEX, esc_ctrl_signal_func_alt_nmii_link1, BOARD_ECAT_PORT1_LINK_INVERT); /* NMII_LINK1 */
 #endif
 #if defined(BOARD_ECAT_SUPPORT_PORT2) && BOARD_ECAT_SUPPORT_PORT2
-    esc_config_ctrl_signal_function(esc_ptr, BOARD_ECAT_NMII_LINK2_CTRL_INDEX, esc_ctrl_signal_func_alt_nmii_link2, false); /* NMII_LINK2 */
+    esc_config_ctrl_signal_function(esc_ptr, BOARD_ECAT_NMII_LINK2_CTRL_INDEX, esc_ctrl_signal_func_alt_nmii_link2, BOARD_ECAT_PORT2_LINK_INVERT); /* NMII_LINK2 */
 #endif
     esc_config_nmii_link_source(esc_ptr, true, BOARD_ECAT_SUPPORT_PORT1, BOARD_ECAT_SUPPORT_PORT2); /* configure nmii_link source */
 
+#if defined(BOARD_ECAT_SUPPORT_RUN_ERROR_LED) && BOARD_ECAT_SUPPORT_RUN_ERROR_LED
     esc_config_ctrl_signal_function(esc_ptr, BOARD_ECAT_LED_RUN_CTRL_INDEX, esc_ctrl_signal_func_alt_led_run, false);   /* LED_RUN */
     esc_config_ctrl_signal_function(esc_ptr, BOARD_ECAT_LED_ERROR_CTRL_INDEX, esc_ctrl_signal_func_alt_led_err, false); /* LED_ERROR */
+#endif
 
     if (status_success == stat) {
         /* Open Timer driver */

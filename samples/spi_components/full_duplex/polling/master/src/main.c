@@ -54,7 +54,7 @@ int main(void)
     /* pins init*/
     board_init_spi_pins_with_gpio_as_cs(TEST_SPI);
     hpm_spi_get_default_init_config(&init_config);
-    init_config.direction = msb_first;
+    init_config.direction = spi_msb_first;
     init_config.mode = spi_master_mode;
     init_config.clk_phase = spi_sclk_sampling_odd_clk_edges;
     init_config.clk_polarity = spi_sclk_low_idle;

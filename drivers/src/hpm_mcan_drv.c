@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -109,7 +109,7 @@ typedef struct mcan_bit_timing_table_struct {
  **********************************************************************************************************************/
 
 #if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
-ATTR_PLACE_AT(".ahb_sram") uint32_t mcan_soc_msg_buf[MCAN_MSG_BUF_SIZE_IN_WORDS * MCAN_SOC_MAX_COUNT];
+mcan_msg_buf_attr_t mcan_soc_msg_buf_attr[MCAN_SOC_MAX_COUNT];
 #endif
 
 static const mcan_bit_timing_table_t k_mcan_bit_timing_tbl[3] = {
@@ -1223,6 +1223,10 @@ hpm_stat_t mcan_init(MCAN_Type *ptr, mcan_config_t *config, uint32_t src_clk_fre
 
         /* Initialize CAN RAM */
         uint32_t can_ram_size = mcan_get_ram_size(ptr);
+        if (can_ram_size < 1U) {
+            status = status_invalid_argument;
+            break;
+        }
         uint32_t *ram_base = (uint32_t *) (mcan_get_ram_base(ptr) + mcan_get_ram_offset(ptr));
         for (uint32_t i = 0U; i < can_ram_size / sizeof(uint32_t); i++) {
             ram_base[i] = 0UL;

@@ -92,7 +92,7 @@ extern "C" {
 
 /**
  * @brief Switch device to Idle state
- * @param [in/out] host SD/MMC Host Context
+ * @param [in,out] host SD/MMC Host Context
  * @param [in] argument Argument for CMD0
  * @return status_success if operation is successful
  */
@@ -100,7 +100,7 @@ hpm_stat_t sdmmc_go_idle_state(sdmmc_host_t *host, uint32_t argument);
 
 /**
  * @brief Switch device to Inactive state
- * @param [in/out] host SD/MMC Host Context
+ * @param [in,out] host SD/MMC Host Context
  * @param [in] relative_addr device relative address
  * @return status_success if operation is successful
  */
@@ -108,7 +108,7 @@ hpm_stat_t sdmmc_go_inactive_state(sdmmc_host_t *host, uint16_t relative_addr);
 
 /**
  * @brief Select/De-select the device
- * @param [in/out] host SD/MMC Host Context
+ * @param [in,out] host SD/MMC Host Context
  * @param [in] relative_addr device relative address
  * @param [in] is_selected true: select, false: de-select
  * @return status_success if operation is successful
@@ -117,7 +117,7 @@ hpm_stat_t sdmmc_select_card(sdmmc_host_t *host, uint16_t relative_addr, bool is
 
 /**
  * @brief Send Application Command
- * @param [in/out] host SD/MMC Host Context
+ * @param [in,out] host SD/MMC Host Context
  * @param [in] relative_addr device related address
  * @return status_success if operation is successful
  */
@@ -125,7 +125,7 @@ hpm_stat_t sdmmc_send_application_command(sdmmc_host_t *host, uint16_t relative_
 
 /**
  * @brief Set block count
- * @param [in/out] host SD/MMC Host Context
+ * @param [in,out] host SD/MMC Host Context
  * @param [in] block_count  SD/MMC Block count
  * @return status_success if operation is successful
  */
@@ -133,7 +133,7 @@ hpm_stat_t sdmmc_set_block_count(sdmmc_host_t *host, uint32_t block_count);
 
 /**
  * @brief Set Block size
- * @param [in/out] host SD/MMC Host Context
+ * @param [in,out] host SD/MMC Host Context
  * @param [in] block_size SD/MMC Block size
  * @return status_success if operation is successful
  */
@@ -141,7 +141,7 @@ hpm_stat_t sdmmc_set_block_size(sdmmc_host_t *host, uint32_t block_size);
 
 /**
  * @brief Enable Auto Tuning mode
- * @param [in/out] host SD/MMC Host Context
+ * @param [in,out] host SD/MMC Host Context
  * @return status_success if operation is successful
  */
 hpm_stat_t sdmmc_enable_auto_tuning(const sdmmc_host_t *host);

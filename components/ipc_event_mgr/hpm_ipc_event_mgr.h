@@ -16,8 +16,8 @@ extern "C" {
 /**
  * @brief Type definition of event callback function pointer.
  *
- * @param [in] event data
- * @param [in] callback context data
+ * @param [in] event_data event data
+ * @param [in] context callback context data
  */
 typedef void (*ipc_event_callback_t)(uint16_t event_data, void *context);
 
@@ -46,7 +46,7 @@ void ipc_init(void);
 /**
  * @brief Enbale IPC event interrupt.
  *
- * @param [in] interrupt priority
+ * @param [in] priority interrupt priority
  */
 void ipc_enable_event_interrupt(uint32_t priority);
 
@@ -58,9 +58,9 @@ void ipc_disable_event_interrupt(void);
 /**
  * @brief Register IPC event
  *
- * @param [in] event type
- * @param [in] event callback function
- * @param [in] event callback data
+ * @param [in] type event type
+ * @param [in] callback event callback function
+ * @param [in] callback_data event callback data
  *
  * @retval status_success if no error occurred
  * @retval status_invalid_argument if the parameter is invalid
@@ -70,8 +70,8 @@ hpm_stat_t ipc_register_event(ipc_event_type_t type, ipc_event_callback_t callba
 /**
  * @brief Trigger IPC event
  *
- * @param [in] event type
- * @param [in] event data
+ * @param [in] type event type
+ * @param [in] event_data event data
  *
  * @retval status_success if no error occurred
  * @retval status_invalid_argument if any parameters are invalid
@@ -83,7 +83,7 @@ hpm_stat_t ipc_tigger_event(ipc_event_type_t type, uint16_t event_data);
  *
  * This function is called when event received
  *
- * @param [in] event type and data.
+ * @param [in] data event data.
  */
 void ipc_event_handler(uint32_t data);
 

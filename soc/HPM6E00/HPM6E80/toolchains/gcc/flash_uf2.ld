@@ -143,10 +143,10 @@ SECTIONS
         PROVIDE(__init_array_end = .);
 
         . = ALIGN(8);
-        PROVIDE(__finit_array_start = .);
-        KEEP(*(SORT_BY_INIT_PRIORITY(.finit_array.*)))
-        KEEP(*(.finit_array))
-        PROVIDE(__finit_array_end = .);
+        PROVIDE(__fini_array_start = .);
+        KEEP(*(SORT_BY_INIT_PRIORITY(.fini_array.*)))
+        KEEP(*(.fini_array))
+        PROVIDE(__fini_array_end = .);
 
         . = ALIGN(8);
         KEEP(*crtbegin*.o(.ctors))

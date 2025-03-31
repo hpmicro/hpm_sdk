@@ -21,7 +21,6 @@ void canopen_irq_handler(struct device *canopendevice)
     struct hpm_can_config *cfg = canopendevice->config;
     struct hpm_can_data *data = canopendevice->data;
     CAN_Type *can = cfg->base;
-    uint8_t flags;
 
     uint8_t tx_rx_flags = can_get_tx_rx_flags(can);
     uint8_t error_flags = can_get_error_interrupt_flags(can);
@@ -35,7 +34,7 @@ void canopen_irq_handler(struct device *canopendevice)
         can_clear_tx_rx_flags(can, CAN_EVENT_RECEIVE);
     }
 
-    if ((tx_rx_flags & CAN_EVENT_TX_PRIMARY_BUF | CAN_EVENT_TX_SECONDARY_BUF) != 0) {
+    if ((tx_rx_flags & (CAN_EVENT_TX_PRIMARY_BUF | CAN_EVENT_TX_SECONDARY_BUF )) != 0) {
         data->has_sent_out = true;
         can_clear_tx_rx_flags(can, CAN_EVENT_TX_PRIMARY_BUF);
     }
@@ -53,7 +52,7 @@ void canopen_irq_handler(struct device *canopendevice)
 uint32_t hpm_can_get_first_filter_index(const can_receive_buf_t *buf,
                                         const struct hpm_can_data *data)
 {
-    uint32_t filter_index = -EINVAL;
+    int32_t filter_index = -EINVAL;
     for (uint32_t i = 0; i < data->can_filter_count; i++) {
         const can_filter_config_t *filter = &data->filter_list[i];
 
@@ -109,7 +108,7 @@ void hpm_can_get_message(const struct device *dev)
     }
 
     /* Handle RX filter callback */
-    if (filter_index != -EINVAL) {
+    if (filter_index != (uint32_t)-EINVAL) {
         /* If RTR bit does not match filter RTR mask and bit, drop current frame */
         bool rtr_filter_mask = (data->filter_rtr_mask & BIT(filter_index)) != 0;
         bool rtr_filter = (data->filter_rtr & BIT(filter_index)) != 0;
@@ -364,12 +363,8 @@ void convert_can_frame_to_can_frame(const struct can_frame *frame,
 }
 
 int hpm_can_send(const struct device *dev,
-                        const struct can_frame *frame,
-                        k_timeout_t timeout,
-                        can_tx_callback_t callback,
-                        void *user_data)
+                        const struct can_frame *frame)
 {
-    int ret;
     const struct hpm_can_config *cfg = dev->config;
     struct hpm_can_data *data = dev->data;
     CAN_Type *can = cfg->base;

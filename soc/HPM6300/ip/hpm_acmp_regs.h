@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -27,10 +27,10 @@ typedef struct {
  * HYST (RW)
  *
  * This bitfield configure the comparator hysteresis.
- * 00: Hysteresis level 0
- * 01: Hysteresis level 1
- * 10: Hysteresis level 2
- * 11: Hysteresis level 3
+ * 0: Hysteresis about 30mV
+ * 1: Hysteresis about 20mV
+ * 2: Hysteresis about 10mV
+ * 3: Disable hysteresis
  */
 #define ACMP_CHANNEL_CFG_HYST_MASK (0xC0000000UL)
 #define ACMP_CHANNEL_CFG_HYST_SHIFT (30U)
@@ -157,18 +157,6 @@ typedef struct {
 #define ACMP_CHANNEL_CFG_FLTMODE_GET(x) (((uint32_t)(x) & ACMP_CHANNEL_CFG_FLTMODE_MASK) >> ACMP_CHANNEL_CFG_FLTMODE_SHIFT)
 
 /*
- * SYNCEN (RW)
- *
- * This bit enable the comparator output synchronization.
- * 0: ACMP output not synchronized with ACMP clock.
- * 1: ACMP output synchronized with ACMP clock.
- */
-#define ACMP_CHANNEL_CFG_SYNCEN_MASK (0x1000U)
-#define ACMP_CHANNEL_CFG_SYNCEN_SHIFT (12U)
-#define ACMP_CHANNEL_CFG_SYNCEN_SET(x) (((uint32_t)(x) << ACMP_CHANNEL_CFG_SYNCEN_SHIFT) & ACMP_CHANNEL_CFG_SYNCEN_MASK)
-#define ACMP_CHANNEL_CFG_SYNCEN_GET(x) (((uint32_t)(x) & ACMP_CHANNEL_CFG_SYNCEN_MASK) >> ACMP_CHANNEL_CFG_SYNCEN_SHIFT)
-
-/*
  * FLTLEN (RW)
  *
  * This bitfield define the ACMP output digital filter length. The unit is ACMP clock cycle.
@@ -182,7 +170,7 @@ typedef struct {
 /*
  * DACCFG (RW)
  *
- * 8bit DAC digital value output to analog block
+ * 8bit DAC digital value
  */
 #define ACMP_CHANNEL_DACCFG_DACCFG_MASK (0xFFU)
 #define ACMP_CHANNEL_DACCFG_DACCFG_SHIFT (0U)

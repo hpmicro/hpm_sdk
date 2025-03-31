@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -46,7 +46,6 @@ int main(void)
     acmp_channel_configure.minus_input = TEST_ACMP_MINUS_INPUT;
     acmp_channel_configure.enable_dac = true;
     acmp_channel_configure.enable_cmp_output = true;
-    acmp_channel_configure.enable_clock_sync = true;
     acmp_channel_configure.hyst_level = ACMP_HYST_LEVEL_3;
     acmp_channel_config(TEST_ACMP, TEST_ACMP_CHANNEL, &acmp_channel_configure, true);
 

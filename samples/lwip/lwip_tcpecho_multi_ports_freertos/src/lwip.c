@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -15,7 +15,7 @@
 
 
 /*--------------- Tasks Priority -------------*/
-#define MAIN_TASK_PRIO      (tskIDLE_PRIORITY + 1)
+#define MAIN_TASK_PRIO      (tskIDLE_PRIORITY + 5)
 #define DHCP_TASK_PRIO      (tskIDLE_PRIORITY + 4)
 #define NETIF_STA_TASK_PRIO (tskIDLE_PRIORITY + 4)
 

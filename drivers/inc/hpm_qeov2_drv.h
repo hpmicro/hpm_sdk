@@ -667,6 +667,39 @@ static inline bool qeo_check_calculate_finish(QEOV2_Type *base)
     return (QEOV2_DEBUG1_QEO_FINISH_GET(base->DEBUG1) != 0) ? true : false;
 }
 
+#if defined(HPM_IP_FEATURE_QEOV2_POSITION_FILTER) && HPM_IP_FEATURE_QEOV2_POSITION_FILTER
+/**
+ * @brief QEO WAVE set position filter threshold
+ * @param [in] base QEO base address
+ * @param [in] threshold threshold value
+ */
+static inline void qeo_wave_set_position_filter_threshold(QEOV2_Type *base, uint32_t threshold)
+{
+    base->WAVE.FILTER = QEOV2_WAVE_FILTER_VAL_SET(threshold);
+}
+
+/**
+ * @brief QEO ABZ set position filter threshold
+ * @param [in] base QEO base address
+ * @param [in] threshold threshold value
+ */
+static inline void qeo_abz_set_position_filter_threshold(QEOV2_Type *base, uint32_t threshold)
+{
+    base->ABZ.FILTER = QEOV2_ABZ_FILTER_VAL_SET(threshold);
+}
+
+/**
+ * @brief QEO PWM set position filter threshold
+ * @param [in] base QEO base address
+ * @param [in] threshold threshold value
+ */
+static inline void qeo_pwm_set_position_filter_threshold(QEOV2_Type *base, uint32_t threshold)
+{
+    base->PWM.FILTER = QEOV2_PWM_FILTER_VAL_SET(threshold);
+}
+#endif
+
+
 #ifdef __cplusplus
 }
 #endif

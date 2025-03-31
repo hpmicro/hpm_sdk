@@ -44,6 +44,8 @@ void init_coremark_result(lv_coremark_ctx_t *cm_ctx);
 
 void load_coremark_bin_for_cpu(void);
 
+void init_coremark_cpu_freq(void);
+
 void init_coremark_context(void);
 
 void refresh_coremark_info(void);

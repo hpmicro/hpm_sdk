@@ -7,6 +7,8 @@ import sys
 import yaml
 import subprocess
 import shutil
+import hashlib
+import ctypes
 
 sys.path.append(os.path.dirname(sys.argv[0]))
 import get_board_info
@@ -47,7 +49,17 @@ def is_sdk_sample(sdk_base, app_path):
 def is_sdk_board(sdk_base, board_dir):
     return re.match(r'^' + re.escape(sdk_base) + r'/boards/', re.sub(r'\\', '/', board_dir))
 
-def build_linked_project(sdk_base, app_info, board_name, board_dir, app_yml_base):
+def get_compile_cmd_by_cmake_generator(cmake_generator):
+    cmd = "ninja"
+    if cmake_generator == "Ninja":
+        cmd = "ninja"
+    elif cmake_generator == "NMake Makefiles":
+        cmd = "nmake"
+    elif cmake_generator == "Unix Makefiles":
+        cmd = "make"
+    return cmd
+
+def build_linked_project(sdk_base, app_info, board_name, board_dir, app_bin_dir, cmake_generator, app_yml_base):
     project_name=""
     project_path=""
     build_type=""
@@ -77,17 +89,21 @@ def build_linked_project(sdk_base, app_info, board_name, board_dir, app_yml_base
         if (project_name != "" and build_type != ""):
             if linked_proj_root_dir == "":
                 linked_proj_root_dir = os.path.join(sdk_base, "samples", project_name)
-            linked_proj_build_dir = os.path.join(linked_proj_root_dir, "build")
+            linked_proj_build_dir = os.path.join(linked_proj_root_dir, os.path.basename(app_bin_dir))
             if os.path.exists(linked_proj_build_dir):
-                shutil.rmtree(linked_proj_build_dir)
-            os.mkdir(linked_proj_build_dir)
+                if sys.platform == 'win32':
+                    # add suffix '\\?\' before the long path to avoid removing failed in windows.
+                    shutil.rmtree(r"\\?\\" + linked_proj_build_dir)
+                else:
+                    shutil.rmtree(linked_proj_build_dir)
+            os.makedirs(linked_proj_build_dir, exist_ok=True)
             os.chdir(linked_proj_build_dir)
             extra_option = ""
             if not is_sdk_board(sdk_base, board_dir):
                 extra_option = "-DBOARD_SEARCH_PATH=" + os.path.dirname(board_dir)
             print('-- Started to build core1 project...')
-            build_linked_proj_cmd = "cmake -GNinja -DBOARD=" + board_name + " -DHPM_BUILD_TYPE=" + build_type + " " + extra_option + " -B " + linked_proj_build_dir + " -S " + linked_proj_root_dir
-            build_linked_proj_cmd += " && ninja"
+            build_linked_proj_cmd = "cmake -G" + cmake_generator + " -DBOARD=" + board_name + " -DHPM_BUILD_TYPE=" + build_type + " " + extra_option + " -B " + linked_proj_build_dir + " -S " + linked_proj_root_dir
+            build_linked_proj_cmd += " && " + get_compile_cmd_by_cmake_generator(cmake_generator)
             p = subprocess.Popen(build_linked_proj_cmd, shell=True,  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             retval = p.wait()
             if retval != 0:
@@ -95,6 +111,7 @@ def build_linked_project(sdk_base, app_info, board_name, board_dir, app_yml_base
             else:
                 print('-- Finished building core1 project successfully!')
             return retval
+
 
 def get_soc_ip_feature_list(sdk_base, soc_series, soc_name):
     soc_ip_feature_file = os.path.join(sdk_base, "soc", soc_series, soc_name, SOC_IP_FEATURE_FILE_NAME)
@@ -148,6 +165,12 @@ if __name__ == "__main__":
     soc_name = get_board_info.get_info(sys.argv[1], get_board_info.BOARD_INFO_SOC_KEY)
     board_dir = os.path.dirname(sys.argv[1])
     app_yml = os.path.realpath(sys.argv[2])
+    app_bin_dir = os.path.realpath("build")
+    if len(sys.argv) > 3:
+        app_bin_dir = os.path.realpath(sys.argv[3])
+    cmake_generator = "Ninja"
+    if len(sys.argv) > 4:
+        cmake_generator = sys.argv[4]
 
     if not os.path.exists(app_yml) or board_cap is None:
         sys.exit(0)
@@ -175,7 +198,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # Build linked project if all dependencies are met
-    retval = build_linked_project(sdk_base, app_info, board_name, board_dir, os.path.dirname(app_yml))
+    retval = build_linked_project(sdk_base, app_info, board_name, board_dir, app_bin_dir, cmake_generator, os.path.dirname(app_yml))
     if (retval != 0):
         sys.exit(2)
 

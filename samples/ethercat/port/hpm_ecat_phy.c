@@ -94,34 +94,34 @@ static hpm_stat_t ecat_jl1111_phy_disable_broadcast_response(ESC_Type *ptr, uint
 hpm_stat_t ecat_phy_config(ESC_Type *ptr)
 {
     hpm_stat_t stat;
-    stat = ecat_jl1111_phy_config_led_mode(ptr, 0); /* config LED mode  */
+    stat = ecat_jl1111_phy_config_led_mode(ptr, BOARD_ECAT_PORT0_PHY_ADDR); /* config Port0 PHY LED mode  */
     if (stat != status_success) {
         return stat;
     }
 
-    stat = ecat_jl1111_phy_disable_broadcast_response(ptr, 0, BOARD_ECAT_PHY_ADDR_OFFSET); /* disable broadcast if phyid is not broadcast */
+    stat = ecat_jl1111_phy_disable_broadcast_response(ptr, BOARD_ECAT_PORT0_PHY_ADDR, BOARD_ECAT_PHY_ADDR_OFFSET); /* disable broadcast if phyid is not broadcast */
     if (stat != status_success) {
         return stat;
     }
 
 #if defined(BOARD_ECAT_SUPPORT_PORT1) && BOARD_ECAT_SUPPORT_PORT1
-    stat = ecat_jl1111_phy_config_led_mode(ptr, 1); /* config LED mode */
+    stat = ecat_jl1111_phy_config_led_mode(ptr, BOARD_ECAT_PORT1_PHY_ADDR); /* config Port1 PHY LED mode */
     if (stat != status_success) {
         return stat;
     }
 
-    stat = ecat_jl1111_phy_disable_broadcast_response(ptr, 1, BOARD_ECAT_PHY_ADDR_OFFSET); /* disable broadcast if phyid is not broadcast */
+    stat = ecat_jl1111_phy_disable_broadcast_response(ptr, BOARD_ECAT_PORT1_PHY_ADDR, BOARD_ECAT_PHY_ADDR_OFFSET); /* disable broadcast if phyid is not broadcast */
     if (stat != status_success) {
         return stat;
     }
 #endif
 #if defined(BOARD_ECAT_SUPPORT_PORT2) && BOARD_ECAT_SUPPORT_PORT2
-    stat = ecat_jl1111_phy_config_led_mode(ptr, 2);  /* config LED mode */
+    stat = ecat_jl1111_phy_config_led_mode(ptr, BOARD_ECAT_PORT2_PHY_ADDR);  /* config Port2 PHY LED mode */
     if (stat != status_success) {
         return stat;
     }
 
-    stat = ecat_jl1111_phy_disable_broadcast_response(ptr, 2, BOARD_ECAT_PHY_ADDR_OFFSET); /* disable broadcast if phyid is not broadcast */
+    stat = ecat_jl1111_phy_disable_broadcast_response(ptr, BOARD_ECAT_PORT2_PHY_ADDR, BOARD_ECAT_PHY_ADDR_OFFSET); /* disable broadcast if phyid is not broadcast */
     if (stat != status_success) {
         return stat;
     }

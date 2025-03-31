@@ -12,23 +12,8 @@
 #include "hpm_pwm_drv.h"
 #include "hpm_trgm_drv.h"
 
-#ifndef BOARD_PLA_COUNTER
-#define BOARD_PLA_COUNTER   HPM_PLA0
-#define BOARD_PLA_PWM_BASE  HPM_PWM0
-#define BOARD_PLA_PWM_CLOCK_NAME clock_mot0
-#define BOARD_PLA_TRGM                HPM_TRGM0
-#define BOARD_PLA_PWM_TRG                       (HPM_TRGM0_INPUT_SRC_PWM0_CH8REF)
-#define BOARD_PLA_IN_TRG_NUM                    (TRGM_TRGOCFG_PLA_IN0)
-#define BOARD_PLA_OUT_TRG                       (HPM_TRGM0_INPUT_SRC_PLA0_OUT0)
-#define BOARD_PLA_IO_TRG_NUM                    (TRGM_TRGOCFG_TRGM_OUT5)
-#define BOARD_PLA_PWM_CMP                       (8U)
-#define BOARD_PLA_PWM_CHN                       (8U)
-#endif
-
-#define BOARD_PLA_PWM_IN_CHN    pla_filter1_inchn0
-#define BOARD_PLA_LEVEL1_FILTER_IN_END    pla_filter1_inchn7
-#define BOARD_PLA_LEVEL1_FILTER_OUT_END    pla_filter1_outchn7
 #define PWM_PERIOD_IN_MS (1)
+
 uint32_t reload;
 
 void pla_7bit_counter_init(void)

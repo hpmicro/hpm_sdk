@@ -850,6 +850,7 @@ hpm_stat_t mt9m114_enable_mono(camera_context_t *context, bool enable);
  * @brief MT9M114 initialization.
  *
  * @param[in] context camera_operate_context.
+ * @param[in] camera_config camera config structure
  *
  * @retval status_success if success.
  * @retval status_fail if fail.

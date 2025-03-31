@@ -5,6 +5,10 @@ cmake_minimum_required(VERSION 3.13)
 
 set(CONFIG_EEPROM_EMULATION 1) # using eeprom emulation compenent
 
+if("${HPM_BUILD_TYPE}" STREQUAL "")
+    SET(HPM_BUILD_TYPE flash_xip)
+endif()
+
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(ecat_foe)

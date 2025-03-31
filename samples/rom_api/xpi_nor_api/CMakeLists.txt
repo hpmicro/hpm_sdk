@@ -7,5 +7,8 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(xpi_nor_api_demo)
 
+sdk_app_inc(src)
+sdk_app_src(src/xpi_util.c)
+
 sdk_app_src(src/xpi_nor_api_demo.c)
 generate_ide_projects()

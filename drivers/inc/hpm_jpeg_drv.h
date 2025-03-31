@@ -84,8 +84,6 @@ typedef enum jpeg_pixel_format {
     jpeg_pixel_format_argb8888 = 0,
     jpeg_pixel_format_rgb565,
     jpeg_pixel_format_yuv422h1p,
-    jpeg_pixel_format_yuv422h2p,
-    jpeg_pixel_format_yuv420,
     jpeg_pixel_format_y8,
 } jpeg_pixel_format_t;
 
@@ -97,10 +95,11 @@ typedef struct {
     jpeg_pixel_format_t in_pixel_format;
     jpeg_pixel_format_t out_pixel_format;
     uint8_t in_byte_order;          /**< byte order */
-    uint8_t out_byte_order;          /**< byte order */
+    uint8_t out_byte_order;         /**< byte order */
     bool enable_ycbcr;              /**< enable YCbCr or YUV */
     uint16_t width_in_pixel;        /**< Image width register*/
     uint16_t height_in_pixel;       /**< Image height register*/
+    uint16_t stride;                /**< stride of lines in bytes. stride is calculated by driver if stride == 0 */
     uint32_t in_buffer;             /**< input buffer */
     uint32_t out_buffer;            /**< output buffer */
 } jpeg_job_config_t;

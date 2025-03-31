@@ -15,6 +15,7 @@
 #include "hpm_l1c_drv.h"
 #include "hpm_pllctl_drv.h"
 #include "hpm_clock_drv.h"
+#include "hpm_pcfg_drv.h"
 #include "coremark.h"
 #include "demos/lv_demos.h"
 #include "dualcore_widgets.h"
@@ -25,6 +26,15 @@ coremark_context_t *g_cm_ctx[2] = { (coremark_context_t *)&g_coremark_ctx[0], (c
 bool start_coremark;
 
 uint32_t countdown;
+
+static uint32_t freq_idx;
+
+typedef struct {
+    uint32_t freq;
+    uint32_t voltage;
+} clock_setting_t;
+
+static const clock_setting_t k_clock_setting_list[] = {{ 816000000UL, 1275U }, { 720000000UL, 1200U }, { 648000000UL, 1150U }};
 
 #if LV_USE_DEMO_WIDGETS
 
@@ -269,7 +279,7 @@ static void profile_create(lv_obj_t *parent, ui_component_t *ui)
     lv_obj_add_style(ui->core_freq_tips_label[0], &style_text_muted, 0);
 
     ui->core_freq_result_label[0] = lv_label_create(panel2);
-    lv_label_set_text(ui->core_freq_result_label[0], "816MHz(1.15V)");
+    lv_label_set_text(ui->core_freq_result_label[0], "816MHz");
     lv_obj_add_style(ui->core_freq_result_label[0], &style_text_muted, 0);
 
     ui->bus_freq_tips_label[0] = lv_label_create(panel2);
@@ -550,7 +560,7 @@ void update_coremark_result(lv_coremark_ctx_t *cm_ctx)
         clock_name_t cpu_clk_name = (i == 0) ? clock_cpu0 : clock_cpu1;
         uint32_t cpu_freq_in_hz = clock_get_frequency(cpu_clk_name);
         float core_voltage = (HPM_PCFG->DCDC_MODE & PCFG_DCDC_MODE_VOLT_MASK) / 1000.0;
-        sprintf(str_buf, "%dMHz (@%.2fV)", cpu_freq_in_hz / 1000000U, core_voltage);
+        sprintf(str_buf, "%dMHz (@%.3fV)", cpu_freq_in_hz / 1000000U, core_voltage);
         lv_label_set_text(s_ui.core_freq_result_label[i], str_buf);
         sprintf(str_buf, "%dMHz", cm_ctx->bus_freq[i] / 1000000U);
         lv_label_set_text(s_ui.bus_freq_result_label[i], str_buf);
@@ -581,6 +591,13 @@ void run_button_click_cb(lv_event_t *e)
 }
 
 #endif
+
+void init_coremark_cpu_freq(void)
+{
+    pcfg_dcdc_set_voltage(HPM_PCFG, k_clock_setting_list[0].voltage);
+    pllctl_init_int_pll_with_freq(HPM_PLLCTL, 0, k_clock_setting_list[0].freq);
+    clock_update_core_clock();
+}
 
 void init_coremark_context(void)
 {
@@ -680,44 +697,20 @@ void freqswitch_button_click_cb(lv_event_t *e)
 {
     (void)e;
 
-    typedef struct {
-        uint32_t freq;
-        bool need_overdrive;
-    } clock_setting_t;
-
-    const clock_setting_t
-        k_clock_setting_list[] = {{ 648000100UL, false }, { 700000100UL, false }, { 816000000UL, false }, };
-
-    static uint32_t freq_idx;
-
     freq_idx++;
-    freq_idx = freq_idx % ARRAY_SIZE(k_clock_setting_list);
-
+    if (freq_idx >= ARRAY_SIZE(k_clock_setting_list)) {
+        freq_idx = 0;
+    }
 
     disable_global_irq(CSR_MSTATUS_MIE_MASK);
-    clock_set_source_divider(clock_cpu0, clk_src_pll1_clk1, 1);
-    clock_set_source_divider(clock_cpu1, clk_src_pll1_clk1, 1);
-    /* Set DCDC output to 1.25V */
-    uint32_t temp = HPM_PCFG->DCDC_MODE & (0xFFFFF000);
-    if (k_clock_setting_list[freq_idx].need_overdrive) {
-        temp |= 1250;
-    } else {
-        temp |= 1200;
-    }
-    HPM_PCFG->DCDC_MODE = temp;
-    pllctl_init_frac_pll_with_freq(HPM_PLLCTL, 0, k_clock_setting_list[freq_idx].freq);
+    pcfg_dcdc_set_voltage(HPM_PCFG, k_clock_setting_list[freq_idx].voltage);
+    pllctl_init_int_pll_with_freq(HPM_PLLCTL, 0, k_clock_setting_list[freq_idx].freq);
+    clock_update_core_clock();
+    enable_global_irq(CSR_MSTATUS_MIE_MASK);
 
     char label_str[100];
-    if (k_clock_setting_list[freq_idx].need_overdrive) {
-        sprintf(label_str, "%dMHz", k_clock_setting_list[freq_idx].freq / 1000000U);
-    } else {
-        sprintf(label_str, "%dMHz", k_clock_setting_list[freq_idx].freq / 1000000U);
-    }
+    sprintf(label_str, "%dMHz", k_clock_setting_list[freq_idx].freq / 1000000U);
     lv_label_set_text(s_ui.freqswitch_btn_label, label_str);
-
-    clock_set_source_divider(clock_cpu0, clk_src_pll0_clk0, 1);
-    clock_set_source_divider(clock_cpu1, clk_src_pll0_clk0, 1);
-    enable_global_irq(CSR_MSTATUS_MIE_MASK);
 
     g_lv_cm_ctx.core_freq[0] = clock_get_frequency(clock_cpu0);
     g_lv_cm_ctx.core_freq[1] = clock_get_frequency(clock_cpu1);

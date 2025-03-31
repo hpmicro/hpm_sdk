@@ -38,7 +38,7 @@
     #define FREGBYTES           8
 #endif
 
-#define portFPU_CONTEXT_WORDS   34
+#define portFPU_CONTEXT_WORDS   36
 #define portFPU_CONTEXT_SIZE (portFPU_CONTEXT_WORDS * FREGBYTES)
 
 portasmSAVE_FPU_REGISTERS MACRO

@@ -27,6 +27,7 @@
 
 #define PWM_PERIOD_IN_MS (1)
 uint32_t reload;
+void pwm_fault_async(void);
 
 void generate_edge_aligned_waveform(void)
 {
@@ -61,6 +62,7 @@ void generate_edge_aligned_waveform(void)
     pwmv2_shadow_register_unlock(PWM);
     pwmv2_set_shadow_val(PWM, PWMV2_SHADOW_INDEX(1), 0, 0, false);
     pwmv2_shadow_register_lock(PWM);
+    pwm_fault_async();
 
     board_delay_ms(100);
 
@@ -165,6 +167,7 @@ void generate_central_aligned_waveform(void)
     pwmv2_channel_enable_output(PWM, BOARD_APP_PWM_OUT2);
     pwmv2_enable_counter(PWM, pwm_counter_0);
     pwmv2_start_pwm_output(PWM, pwm_counter_0);
+    pwm_fault_async();
 
     duty_step = reload / 100;
     duty = reload / 100;
@@ -222,6 +225,7 @@ void generate_central_aligned_waveform_in_pair(void)
     pwmv2_enable_pair_mode(PWM, BOARD_APP_PWM_OUT2);
     pwmv2_enable_counter(PWM, pwm_counter_0);
     pwmv2_start_pwm_output(PWM, pwm_counter_0);
+    pwm_fault_async();
 
     duty_step = reload / 100;
     duty = reload / 100;
@@ -309,6 +313,7 @@ void generate_pwm_cmpjit_edge_aligned_waveform(void)
     pwmv2_set_shadow_val(PWM, PWMV2_SHADOW_INDEX(5), reload, 0, false);
     pwmv2_add_delay_tick_after_dead_area(PWM, 100);
     pwmv2_shadow_register_lock(PWM);
+    pwm_fault_async();
 
     duty_step = reload / 100;
     duty = reload / 100;
@@ -402,6 +407,7 @@ void generate_four_cmp_waveform_in_pair(void)
     pwmv2_shadow_register_unlock(PWM);
     pwmv2_set_shadow_val(PWM, PWMV2_SHADOW_INDEX(1), 0, 0, false);
     pwmv2_shadow_register_lock(PWM);
+    pwm_fault_async();
 
     board_delay_ms(100);
 
@@ -496,6 +502,7 @@ void generate_pwm_dac_output(void)
 
     pwmv2_set_dac_value(PWM, pwm_dac_channel_0, reload);
     pwmv2_set_dac_value(PWM, pwm_dac_channel_1, reload);
+    pwm_fault_async();
     duty_step = reload / 100;
     duty = reload / 100;
     increase_duty_cycle = true;
@@ -590,8 +597,8 @@ void pwm_fault_async(void)
     pwmv2_config_async_fault_source(PWM, BOARD_APP_PWM_OUT2, &fault_cfg);
     pwmv2_set_fault_mode(PWM, BOARD_APP_PWM_OUT1, pwm_fault_output_0);
     pwmv2_set_fault_mode(PWM, BOARD_APP_PWM_OUT2, pwm_fault_output_0);
-    pwmv2_enable_fault_from_pad(PWM, BOARD_APP_PWM_OUT1);
-    pwmv2_enable_fault_from_pad(PWM, BOARD_APP_PWM_OUT2);
+    pwmv2_enable_async_fault(PWM, BOARD_APP_PWM_OUT1);
+    pwmv2_enable_async_fault(PWM, BOARD_APP_PWM_OUT2);
 }
 
 int main(void)
@@ -605,7 +612,6 @@ int main(void)
     freq = clock_get_frequency(PWM_CLOCK_NAME);
     reload = freq / 1000 * PWM_PERIOD_IN_MS - 1;
 
-    pwm_fault_async();
     printf("\n\n>> Test force PWM output on P%d and P%d\n", PWM_OUTPUT_PIN1, PWM_OUTPUT_PIN2);
     pwm_force_output();
     printf("\n\n>> Generate edge aligned waveform\n");

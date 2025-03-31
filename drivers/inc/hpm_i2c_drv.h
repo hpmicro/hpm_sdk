@@ -811,6 +811,7 @@ static inline void i2c_master_disable_stop_phase(I2C_Type *ptr)
  * @brief set i2c transaction direction
  *
  * @param [in] ptr ptr I2C base address
+ * @param [in] direction Data transfer direction. for master mode, True for receiving data, False for transmitting data; for slave mode, it's the opposite.
  */
 static inline void i2c_set_direction(I2C_Type *ptr, bool direction)
 {

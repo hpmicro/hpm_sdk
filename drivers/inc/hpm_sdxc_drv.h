@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -83,7 +83,8 @@
 
 
 #define SDXC_STS_CMD_ERR (SDXC_INT_STAT_CMD_TOUT_ERR_MASK | SDXC_INT_STAT_CMD_CRC_ERR_MASK |\
-            SDXC_INT_STAT_CMD_END_BIT_ERR_MASK | SDXC_INT_STAT_CMD_IDX_ERR_MASK | SDXC_INT_STAT_AUTO_CMD_ERR_MASK)
+            SDXC_INT_STAT_CMD_END_BIT_ERR_MASK | SDXC_INT_STAT_CMD_IDX_ERR_MASK | SDXC_INT_STAT_AUTO_CMD_ERR_MASK |\
+            SDXC_INT_STAT_RESP_ERR_MASK)
 #define SDXC_STS_DATA_ERR (SDXC_INT_STAT_DATA_TOUT_ERR_MASK | SDXC_INT_STAT_DATA_CRC_ERR_MASK | \
             SDXC_INT_STAT_DATA_END_BIT_ERR_MASK | SDXC_INT_STAT_ADMA_ERR_MASK)
 #define SDXC_STS_CARD_ERR (SDXC_INT_STAT_CARD_REMOVAL_MASK)
@@ -1163,7 +1164,6 @@ hpm_stat_t sdxc_set_adma_table_config(SDXC_Type *base,
  * @brief Set ADMA2 descriptor
  * @param [in] dma_config DMA configuration context
  * @param [in] xfer_data pointer to the Data to be transferred
- * @param [in] data_bytes Data size for transfer
  * @param [out] num_entries Number of ADMA2 Table entries
  * @return API execution status
  */
@@ -1171,16 +1171,18 @@ hpm_stat_t sdxc_set_adma2_desc(sdxc_adma_config_t *dma_config,
                                const sdxc_data_t *xfer_data,
                                uint32_t *num_entries);
 
+
 /**
- * @brief Set ADMA3 descriptor
- * @param [in] dma_config DMA configuration context
- * @param [in] xfer_data pointer to the Data to be transferred
- * @param [in] cmd Command context
- * @Note adma_tbl layout is:
- *          Command descriptor
- *          ADMA2 descriptor
- *          ADMA3 integrated descriptor (address pointer to command descriptor)
- * @retval API execution status
+ * @brief Configures and sets up the ADMA3 descriptor for a transfer.
+ *
+ * This function initializes and sets up the ADMA3 (Advanced DMA 3) descriptor
+ * based on the provided configuration and transfer list. It ensures that the
+ * ADMA table has enough space to accommodate the descriptors and integrates
+ * them into the ADMA table.
+ *
+ * @param [in] dma_config Pointer to the ADMA configuration structure.
+ * @param [in] adma3_xfer_list Pointer to the ADMA3 transfer list.
+ * @return Status of the operation, indicating success or failure.
  */
 hpm_stat_t sdxc_set_adma3_desc(sdxc_adma_config_t *dma_config, sdxc_adma3_xfer_list *adma3_xfer_list);
 

@@ -84,7 +84,7 @@ int main(void)
         case '3':
             ewdg_window_test();
             break;
-#if !defined(EWDG_SOC_SUPPORT_TIMEOUT_INTERRUPT) || (EWDG_SOC_SUPPORT_TIMEOUT_INTERRUPT == 1)
+#if defined(HPM_IP_FEATURE_EWDG_SOC_SUPPORT_TIMEOUT_INTERRUPT) && (HPM_IP_FEATURE_EWDG_SOC_SUPPORT_TIMEOUT_INTERRUPT == 1)
         case '4':
             ewdg_interrupt_test();
             break;
@@ -100,7 +100,7 @@ int main(void)
 
 void show_menu(void)
 {
-#if !defined(EWDG_SOC_SUPPORT_TIMEOUT_INTERRUPT) || (EWDG_SOC_SUPPORT_TIMEOUT_INTERRUPT == 1)
+#if defined(HPM_IP_FEATURE_EWDG_SOC_SUPPORT_TIMEOUT_INTERRUPT) && (HPM_IP_FEATURE_EWDG_SOC_SUPPORT_TIMEOUT_INTERRUPT == 1)
     static const char menu_info[] = "\n"
                                     "****************************************************************\n"
                                     "*                                                              *\n"

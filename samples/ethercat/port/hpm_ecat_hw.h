@@ -43,12 +43,21 @@ extern MEM_ADDR ESCMEM * pEsc;         /* pointer to the ESC */
 #define     HW_GetALEventRegister()                     ((((volatile UINT16 ESCMEM *) pEsc)[((ESC_AL_EVENT_OFFSET) >> 1)]))
 #define     HW_GetALEventRegister_Isr                   HW_GetALEventRegister
 
+#if defined(HPM_IP_FEATURE_ESC_BYTE_READ) && HPM_IP_FEATURE_ESC_BYTE_READ
+/* Read operation requires 4-byte alignment and reads 4 bytes at a time */
+#define     HW_EscRead(pData, Address, Len)             ESCMEMCPY((UINT32 *) (pData), &((UINT32 ESCMEM *) pEsc)[((Address) >> 2)], (Len))
+#define     HW_EscReadIsr                               HW_EscRead
+#define     HW_EscReadDWord(DWordValue, Address)        ((DWordValue) = (((volatile UINT32 *) pEsc)[(Address >> 2)]))
+#define     HW_EscReadDWordIsr(DWordValue, Address)     HW_EscReadDWord(DWordValue, Address)
+#define     HW_EscReadMbxMem(pData, Address, Len)       ESCMEMCPY((UINT32 *) (pData), &((UINT32 ESCMEM *) pEsc)[((Address) >> 2)], (Len))
+#else
 /* Read operation requires 4-byte alignment and reads 4 bytes at a time */
 #define     HW_EscRead(pData, Address, Len)             hw_esc_read_4bytes((UINT32 *) (pData), &((UINT32 ESCMEM *) pEsc)[((Address) >> 2)], (Len))
 #define     HW_EscReadIsr                               HW_EscRead
 #define     HW_EscReadDWord(DWordValue, Address)        ((DWordValue) = (((volatile UINT32 *) pEsc)[(Address >> 2)]))
 #define     HW_EscReadDWordIsr(DWordValue, Address)     HW_EscReadDWord(DWordValue, Address)
 #define     HW_EscReadMbxMem(pData, Address, Len)       hw_esc_read_4bytes((UINT32 *) (pData), &((UINT32 ESCMEM *) pEsc)[((Address) >> 2)], (Len))
+#endif
 
 /* Write Function */
 #define     HW_EscWrite(pData, Address, Len)            ESCMEMCPY(&((UINT32 ESCMEM *) pEsc)[((Address) >> 2)], (UINT32 *) (pData), (Len))

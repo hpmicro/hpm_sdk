@@ -8,7 +8,7 @@
 #include "board.h"
 #include <stdio.h>
 #include "hpm_pwmv2_drv.h"
-#include "motor.h"
+#include "pwm.h"
 #include "board.h"
 
 #define TEST_PWM BOARD_APP_PWM
@@ -36,7 +36,6 @@ void pwm_generate_central_aligned_waveform(void)
     reload = freq / 20000 - 1; /* 20KHz */
 
     init_pwm_pins(TEST_PWM);
-
 
     pwmv2_disable_counter(TEST_PWM, pwm_counter_0);
     pwmv2_reset_counter(TEST_PWM, pwm_counter_0);

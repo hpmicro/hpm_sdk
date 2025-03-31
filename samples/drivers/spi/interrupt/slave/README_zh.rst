@@ -1,0 +1,52 @@
+.. _spi_interrupt_slaveinterrupt:
+
+SPI_INTERRUPT_SLAVE
+======================================
+
+概述
+------
+
+spi_interrupt_slave示例工程展示了SPI作为slave使用中断方式进行板与板之间通信。
+在这个示例工程中， 一个板子作为SPI master， 另一个板子作为SPI slave。 Master发送一定量数据到Slave并从Slave接收一定量的数据。
+
+硬件设置
+------------
+
+将两个板子的 :ref:`SPI引脚 <board_resource>` 相连。
+
+两个板子必须相连双方GND进行共地，保证信号传输。
+
+运行现象
+------------
+
+- 先运行slave，再运行master
+
+- 当工程正确运行后，串口终端会输出如下信息：
+
+
+.. code-block:: console
+
+   SPI-Slave Interrupt Transfer Example
+   SPI-Slave transfer format is configured.
+   SPI-Slave transfer waits.
+   SPI slave receive command: 0x1A
+   SPI slave receive data:
+   0xA0 0xA1 0xA2 0xA3 0xA4 0xA5 0xA6 0xA7 0xA8 0xA9
+   SPI slave sent data:
+   0xB0 0xB1 0xB2 0xB3 0xB4 0xB5 0xB6 0xB7 0xB8 0xB9
+   SPI slave transfer done.
+
+
+- 对于支持检测片选CS信号的上升沿/下降沿中断触发的SOC，当片选信号上升沿/下降沿被检测到时，串口终端会输出如下信息：
+
+
+.. code-block:: console
+
+   SPI slave cs falling edge detected.
+   SPI slave cs rising edge detected.
+
+
+注意
+------
+
+- 为保证正常传输，SPI的CS引脚建议加上4.7K的上拉电阻。

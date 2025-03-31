@@ -9,6 +9,8 @@
 #ifndef __FREERTOS_RISC_V_EXTENSIONS_H__
 #define __FREERTOS_RISC_V_EXTENSIONS_H__
 
+#include "hpm_csr_regs.h"
+
 #define portasmHAS_SIFIVE_CLINT         0
 #define portasmHANDLE_INTERRUPT         irq_handler_trap
 #ifndef portasmHAS_MTIME
@@ -20,20 +22,27 @@
 .extern irq_handler_trap
 
 #ifdef __riscv_dsp
-#define portasmADDITIONAL_CONTEXT_DSP_SIZE 1
+#define portasmADDITIONAL_CONTEXT_DSP_SIZE 4
 #else
 #define portasmADDITIONAL_CONTEXT_DSP_SIZE 0
 #endif
 
 #if (defined (USE_SYSCALL_INTERRUPT_PRIORITY)) && USE_SYSCALL_INTERRUPT_PRIORITY
-#define portasmADDITIONAL_CONTEXT_SYSCALL_SIZE 2
+#define portasmADDITIONAL_CONTEXT_SYSCALL_SIZE 4
 #else
 #define portasmADDITIONAL_CONTEXT_SYSCALL_SIZE 0
 #endif
 
-#define portasmADDITIONAL_CONTEXT_SIZE  (portasmADDITIONAL_CONTEXT_DSP_SIZE + portasmADDITIONAL_CONTEXT_SYSCALL_SIZE)
+#define portasmADDITIONAL_CONTEXT_MCCTL_SIZE 4
+
+#define portasmADDITIONAL_CONTEXT_SIZE  (portasmADDITIONAL_CONTEXT_DSP_SIZE + portasmADDITIONAL_CONTEXT_SYSCALL_SIZE + portasmADDITIONAL_CONTEXT_MCCTL_SIZE)
 
 .macro portasmSAVE_ADDITIONAL_REGISTERS
+    addi sp, sp, -(4 * portasmADDITIONAL_CONTEXT_MCCTL_SIZE)
+    csrr t0, CSR_MCCTLBEGINADDR
+    sw   t0, 2 * 4( sp )
+    csrr t0, CSR_MCCTLDATA
+    sw   t0, 1 * 4( sp )
 #ifdef __riscv_dsp
     addi sp, sp, -(4 * portasmADDITIONAL_CONTEXT_DSP_SIZE)
     rdov t0
@@ -63,6 +72,11 @@
     csrw ucode, t0
     addi sp, sp, (4 * portasmADDITIONAL_CONTEXT_DSP_SIZE)
 #endif
+    lw   t0, 1 * 4( sp )
+    csrw CSR_MCCTLDATA, t0
+    lw   t0, 2 * 4( sp )
+    csrw CSR_MCCTLBEGINADDR, t0
+    addi sp, sp, (4 * portasmADDITIONAL_CONTEXT_MCCTL_SIZE)
     .endm
 
 #endif /* __FREERTOS_RISC_V_EXTENSIONS_H__ */

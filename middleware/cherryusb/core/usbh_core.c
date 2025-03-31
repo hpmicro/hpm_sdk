@@ -105,7 +105,10 @@ static const struct usbh_class_driver *usbh_find_class_driver(uint8_t class, uin
         if (index->match_flags & USB_CLASS_MATCH_VID_PID && index->id_table) {
             /* scan id table */
             uint32_t i;
-            for (i = 0; index->id_table[i][0] && index->id_table[i][0] != vid && index->id_table[i][1] != pid; i++) {
+            for (i = 0; index->id_table[i][0]; i++) {
+                if (index->id_table[i][0] == vid && index->id_table[i][1] == pid) {
+                    break;
+                }
             }
             /* do not match, continue next */
             if (!index->id_table[i][0]) {
@@ -319,6 +322,17 @@ static void usbh_print_hubport_info(struct usbh_hubport *hport)
             }
         }
     }
+}
+
+static void usbh_print_setup(struct usb_setup_packet *setup)
+{
+    USB_LOG_DBG("Setup: "
+                "bmRequestType 0x%02x, bRequest 0x%02x, wValue 0x%04x, wIndex 0x%04x, wLength 0x%04x\r\n",
+                setup->bmRequestType,
+                setup->bRequest,
+                setup->wValue,
+                setup->wIndex,
+                setup->wLength);
 }
 
 static int usbh_get_default_mps(int speed)
@@ -671,9 +685,15 @@ int usbh_control_transfer(struct usbh_hubport *hport, struct usb_setup_packet *s
     struct usbh_urb *urb;
     int ret;
 
+    if (!hport || !setup) {
+        return -USB_ERR_INVAL;
+    }
+
     urb = &hport->ep0_urb;
 
     usb_osal_mutex_take(hport->mutex);
+
+    usbh_print_setup(setup);
 
     usbh_control_urb_fill(urb, hport, setup, buffer, setup->wLength, CONFIG_USBHOST_CONTROL_TRANSFER_TIMEOUT, NULL, NULL);
     ret = usbh_submit_urb(urb);
@@ -838,7 +858,11 @@ static struct usbh_hubport *usbh_list_all_hubport(struct usbh_hub *hub, uint8_t 
 
     if (hub->index == hub_index) {
         hport = &hub->child[hub_port - 1];
-        return hport;
+        if (hport->connected) {
+            return hport;
+        } else {
+            return NULL;
+        }
     } else {
         for (uint8_t port = 0; port < hub->nports; port++) {
             hport = &hub->child[port];
@@ -862,6 +886,7 @@ static struct usbh_hubport *usbh_list_all_hubport(struct usbh_hub *hub, uint8_t 
     }
     return NULL;
 }
+
 void *usbh_find_class_instance(const char *devname)
 {
     usb_slist_t *bus_list;
@@ -889,7 +914,6 @@ void *usbh_find_class_instance(const char *devname)
 struct usbh_hubport *usbh_find_hubport(uint8_t busid, uint8_t hub_index, uint8_t hub_port)
 {
     struct usbh_hub *hub;
-    struct usbh_hub *hub_next;
     struct usbh_bus *bus;
     struct usbh_hubport *hport;
     size_t flags;

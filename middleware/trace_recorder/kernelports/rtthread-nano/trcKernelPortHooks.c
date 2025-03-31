@@ -27,7 +27,7 @@ void xTraceBlockPoolCreateHook(uint32_t uiTxEventCode, rt_mp_t pxBlockPool,
                    unsigned long uiBlockSize, void *pvPoolStart,
                    unsigned long uiTotalBlocks)
 {
-    if (pxBlockPool->parent.name != 0) {
+    if (pxBlockPool->parent.name[0] != '\0') {
         (void)xTraceObjectSetNameWithoutHandle(
             (void *)pxBlockPool, pxBlockPool->parent.name);
     }

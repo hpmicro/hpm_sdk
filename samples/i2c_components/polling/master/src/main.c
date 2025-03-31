@@ -33,15 +33,16 @@ static void i2c_check_transfer_data(void);
 
 int main(void)
 {
-    i2c_initialize_config_t config;
+    hpm_i2c_context_t i2c_context;
     buffer_type reg0_addr = 0x1111;
     board_init();
     board_init_i2c_clock(TEST_I2C);
     init_i2c_pins(TEST_I2C);
     printf("i2c components master use polling\n");
-    hpm_i2c_get_default_init_config(&config);
-    config.speed = i2c_speed_400khz;
-    if (hpm_i2c_initialize(TEST_I2C, &config) != status_success) {
+    hpm_i2c_get_default_init_context(&i2c_context);
+    i2c_context.init_config.speed = i2c_speed_400khz;
+    i2c_context.base = TEST_I2C;
+    if (hpm_i2c_initialize(&i2c_context) != status_success) {
         printf("i2c master initialize failed\n");
         while (1) {
         };
@@ -49,13 +50,13 @@ int main(void)
 
     printf("i2c master write and read data of 16bit register address.....\n");
     prepare_transfer_data();
-    if (hpm_i2c_master_addr_write_blocking(TEST_I2C, TEST_I2C_SLAVE_ADDRESS, reg0_addr, sizeof(buffer_type), (uint8_t *)tx_buff,
+    if (hpm_i2c_master_addr_write_blocking(&i2c_context, TEST_I2C_SLAVE_ADDRESS, reg0_addr, sizeof(buffer_type), (uint8_t *)tx_buff,
                                             sizeof(tx_buff), 0xFFFFFFFF) != status_success) {
         printf("i2c master dma mem write failed.....\n");
         while (1) {
         };
     }
-    if (hpm_i2c_master_addr_read_blocking(TEST_I2C, TEST_I2C_SLAVE_ADDRESS, reg0_addr, sizeof(buffer_type), (uint8_t *)rx_buff,
+    if (hpm_i2c_master_addr_read_blocking(&i2c_context, TEST_I2C_SLAVE_ADDRESS, reg0_addr, sizeof(buffer_type), (uint8_t *)rx_buff,
                                             sizeof(rx_buff), 0xFFFFFFFF) != status_success) {
         printf("i2c master dma mem read failed.....\n");
         while (1) {
@@ -68,12 +69,12 @@ int main(void)
 
     printf("\ni2c master write and read data .....\n");
     prepare_transfer_data();
-    if (hpm_i2c_master_write_blocking(TEST_I2C, TEST_I2C_SLAVE_ADDRESS, (uint8_t *)tx_buff, sizeof(tx_buff), 0xFFFFFFFF) != status_success) {
+    if (hpm_i2c_master_write_blocking(&i2c_context, TEST_I2C_SLAVE_ADDRESS, (uint8_t *)tx_buff, sizeof(tx_buff), 0xFFFFFFFF) != status_success) {
         printf("i2c master dma write failed.....\n");
         while (1) {
         };
     }
-    if (hpm_i2c_master_read_blocking(TEST_I2C, TEST_I2C_SLAVE_ADDRESS, (uint8_t *)rx_buff, sizeof(rx_buff), 0xFFFFFFFF) != status_success) {
+    if (hpm_i2c_master_read_blocking(&i2c_context, TEST_I2C_SLAVE_ADDRESS, (uint8_t *)rx_buff, sizeof(rx_buff), 0xFFFFFFFF) != status_success) {
         printf("i2c master dma read failed.....\n");
         while (1) {
         };

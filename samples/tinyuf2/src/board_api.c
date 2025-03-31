@@ -78,13 +78,13 @@ void uf2_board_flash_flush(void)
         status = rom_xpi_nor_erase(BOARD_APP_XPI_NOR_XPI_BASE, xpi_xfer_channel_auto, &s_xpi_nor_config,
                 sector_addr, SECTOR_SIZE);
         enable_global_irq(CSR_MSTATUS_MIE_MASK);
-        l1c_dc_invalidate(sector_addr, SECTOR_SIZE);
+        l1c_dc_invalidate(_flash_page_addr, SECTOR_SIZE);
         if (status != status_success) {
             printf("Erase failed: status = %ld!\r\n", status);
             return;
         }
 
-        l1c_dc_writeback(sector_addr, SECTOR_SIZE);
+        l1c_dc_writeback(_flash_page_addr, SECTOR_SIZE);
         disable_global_irq(CSR_MSTATUS_MIE_MASK);
         status = rom_xpi_nor_program(BOARD_APP_XPI_NOR_XPI_BASE, xpi_xfer_channel_auto, &s_xpi_nor_config,
                 (uint32_t *)_flash_cache, sector_addr, SECTOR_SIZE);
@@ -95,7 +95,7 @@ void uf2_board_flash_flush(void)
         }
 
 
-        l1c_dc_invalidate(sector_addr, SECTOR_SIZE);
+        l1c_dc_invalidate(_flash_page_addr, SECTOR_SIZE);
     }
 
     _flash_page_addr = NO_CACHE;

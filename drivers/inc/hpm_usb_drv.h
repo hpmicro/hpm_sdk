@@ -482,6 +482,7 @@ static inline bool usb_otgsc_get_session_valid_flag(USB_Type *ptr)
  * @brief Initialize USB phy
  *
  * @param[in] ptr A USB peripheral base address
+ * @param[in] host true is host, false is device
  */
 void usb_phy_init(USB_Type *ptr, bool host);
 

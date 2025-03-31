@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -286,7 +286,6 @@ ATTR_ALWAYS_INLINE static inline void intc_complete_irq(uint32_t target, uint32_
  */
 /* Machine mode */
 extern int __vector_table[];
-
 extern void default_irq_entry(void);
 
 /**
@@ -354,233 +353,233 @@ ATTR_ALWAYS_INLINE static inline void uninstall_isr(uint32_t irq)
 
 #ifdef __riscv_flen
 #if __riscv_flen == 32
-/* RV32I caller registers + MCAUSE + MEPC + MSTATUS + 20 FPU caller registers  */
-#define CONTEXT_REG_NUM (4 * (16 + 4 + 20))
+/* RV32I caller registers + MCAUSE + MEPC + MSTATUS + FCSR + UCODE (DSP) + MCCTL + 20 FPU caller registers  */
+#define CONTEXT_REG_NUM HPM_ALIGN_UP((4 * (22 + 20)), 16)
 #else   /* __riscv_flen = 64 */
-/* RV32I caller registers + MCAUSE + MEPC + MSTATUS + 20 DFPU caller */
-#define CONTEXT_REG_NUM (4*(16 + 4 + 20*2))
+/* RV32I caller registers + MCAUSE + MEPC + MSTATUS + FCSR + UCODE (DSP) + MCCTL + 20 DFPU caller */
+#define CONTEXT_REG_NUM HPM_ALIGN_UP((4 * (22 + 20 * 2)), 16)
 #endif
 
 #else
-/* RV32I caller registers + MCAUSE + MEPC + MSTATUS */
-#define CONTEXT_REG_NUM (4 * (16 + 4))
+/* RV32I caller registers + MCAUSE + MEPC + MSTATUS + FCSR + UCODE (DSP) + MCCTL */
+#define CONTEXT_REG_NUM HPM_ALIGN_UP((4 * 22), 16)
 #endif
 
 #ifdef __riscv_flen
 /*
  * Save FPU caller registers:
- * NOTE: To simplify the logic, the FPU caller registers are always stored at word offset 20 in the stack
+ * NOTE: To simplify the logic, the FPU caller registers are always stored at word offset 22 in the stack
  */
 #if __riscv_flen == 32
 #ifdef __ICCRISCV__
 #define SAVE_FPU_CONTEXT()  { \
     __asm volatile("\n\
-             c.fswsp ft0,  20*4\n\
-             c.fswsp ft1,  21*4 \n\
-             c.fswsp ft2,  22*4 \n\
-             c.fswsp ft3,  23*4 \n\
-             c.fswsp ft4,  24*4 \n\
-             c.fswsp ft5,  25*4 \n\
-             c.fswsp ft6,  26*4 \n\
-             c.fswsp ft7,  27*4 \n\
-             c.fswsp fa0,  28*4 \n\
-             c.fswsp fa1,  29*4 \n\
-             c.fswsp fa2,  30*4 \n\
-             c.fswsp fa3,  31*4 \n\
-             c.fswsp fa4,  32*4 \n\
-             c.fswsp fa5,  33*4 \n\
-             c.fswsp fa6,  34*4 \n\
-             c.fswsp fa7,  35*4 \n\
-             c.fswsp ft8,  36*4 \n\
-             c.fswsp ft9,  37*4 \n\
-             c.fswsp ft10, 38*4 \n\
-             c.fswsp ft11, 39*4 \n");\
+             c.fswsp ft0,  22*4\n\
+             c.fswsp ft1,  23*4 \n\
+             c.fswsp ft2,  24*4 \n\
+             c.fswsp ft3,  25*4 \n\
+             c.fswsp ft4,  26*4 \n\
+             c.fswsp ft5,  27*4 \n\
+             c.fswsp ft6,  28*4 \n\
+             c.fswsp ft7,  29*4 \n\
+             c.fswsp fa0,  30*4 \n\
+             c.fswsp fa1,  31*4 \n\
+             c.fswsp fa2,  32*4 \n\
+             c.fswsp fa3,  33*4 \n\
+             c.fswsp fa4,  34*4 \n\
+             c.fswsp fa5,  35*4 \n\
+             c.fswsp fa6,  36*4 \n\
+             c.fswsp fa7,  37*4 \n\
+             c.fswsp ft8,  38*4 \n\
+             c.fswsp ft9,  39*4 \n\
+             c.fswsp ft10, 40*4 \n\
+             c.fswsp ft11, 41*4 \n");\
 }
 
 /*
  * Restore FPU caller registers:
- * NOTE: To simplify the logic, the FPU caller registers are always stored at word offset 20 in the stack
+ * NOTE: To simplify the logic, the FPU caller registers are always stored at word offset 22 in the stack
  */
 #define RESTORE_FPU_CONTEXT() { \
     __asm volatile("\n\
-             c.flwsp ft0,  20*4\n\
-             c.flwsp ft1,  21*4 \n\
-             c.flwsp ft2,  22*4 \n\
-             c.flwsp ft3,  23*4 \n\
-             c.flwsp ft4,  24*4 \n\
-             c.flwsp ft5,  25*4 \n\
-             c.flwsp ft6,  26*4 \n\
-             c.flwsp ft7,  27*4 \n\
-             c.flwsp fa0,  28*4 \n\
-             c.flwsp fa1,  29*4 \n\
-             c.flwsp fa2,  30*4 \n\
-             c.flwsp fa3,  31*4 \n\
-             c.flwsp fa4,  32*4 \n\
-             c.flwsp fa5,  33*4 \n\
-             c.flwsp fa6,  34*4 \n\
-             c.flwsp fa7,  35*4 \n\
-             c.flwsp ft8,  36*4 \n\
-             c.flwsp ft9,  37*4 \n\
-             c.flwsp ft10, 38*4 \n\
-             c.flwsp ft11, 39*4 \n");\
+             c.flwsp ft0,  22*4\n\
+             c.flwsp ft1,  23*4 \n\
+             c.flwsp ft2,  24*4 \n\
+             c.flwsp ft3,  25*4 \n\
+             c.flwsp ft4,  26*4 \n\
+             c.flwsp ft5,  27*4 \n\
+             c.flwsp ft6,  28*4 \n\
+             c.flwsp ft7,  29*4 \n\
+             c.flwsp fa0,  30*4 \n\
+             c.flwsp fa1,  31*4 \n\
+             c.flwsp fa2,  32*4 \n\
+             c.flwsp fa3,  33*4 \n\
+             c.flwsp fa4,  34*4 \n\
+             c.flwsp fa5,  35*4 \n\
+             c.flwsp fa6,  36*4 \n\
+             c.flwsp fa7,  37*4 \n\
+             c.flwsp ft8,  38*4 \n\
+             c.flwsp ft9,  39*4 \n\
+             c.flwsp ft10, 40*4 \n\
+             c.flwsp ft11, 41*4 \n");\
 }
 #else /* __ICCRISCV__ not defined */
 #define SAVE_FPU_CONTEXT()  { \
     __asm volatile("\n\
-             c.fswsp ft0,  20*4(sp)\n\
-             c.fswsp ft1,  21*4(sp) \n\
-             c.fswsp ft2,  22*4(sp) \n\
-             c.fswsp ft3,  23*4(sp) \n\
-             c.fswsp ft4,  24*4(sp) \n\
-             c.fswsp ft5,  25*4(sp) \n\
-             c.fswsp ft6,  26*4(sp) \n\
-             c.fswsp ft7,  27*4(sp) \n\
-             c.fswsp fa0,  28*4(sp) \n\
-             c.fswsp fa1,  29*4(sp) \n\
-             c.fswsp fa2,  30*4(sp) \n\
-             c.fswsp fa3,  31*4(sp) \n\
-             c.fswsp fa4,  32*4(sp) \n\
-             c.fswsp fa5,  33*4(sp) \n\
-             c.fswsp fa6,  34*4(sp) \n\
-             c.fswsp fa7,  35*4(sp) \n\
-             c.fswsp ft8,  36*4(sp) \n\
-             c.fswsp ft9,  37*4(sp) \n\
-             c.fswsp ft10, 38*4(sp) \n\
-             c.fswsp ft11, 39*4(sp) \n");\
+             c.fswsp ft0,  22*4(sp)\n\
+             c.fswsp ft1,  23*4(sp) \n\
+             c.fswsp ft2,  24*4(sp) \n\
+             c.fswsp ft3,  25*4(sp) \n\
+             c.fswsp ft4,  26*4(sp) \n\
+             c.fswsp ft5,  27*4(sp) \n\
+             c.fswsp ft6,  28*4(sp) \n\
+             c.fswsp ft7,  29*4(sp) \n\
+             c.fswsp fa0,  30*4(sp) \n\
+             c.fswsp fa1,  31*4(sp) \n\
+             c.fswsp fa2,  32*4(sp) \n\
+             c.fswsp fa3,  33*4(sp) \n\
+             c.fswsp fa4,  34*4(sp) \n\
+             c.fswsp fa5,  35*4(sp) \n\
+             c.fswsp fa6,  36*4(sp) \n\
+             c.fswsp fa7,  37*4(sp) \n\
+             c.fswsp ft8,  38*4(sp) \n\
+             c.fswsp ft9,  39*4(sp) \n\
+             c.fswsp ft10, 40*4(sp) \n\
+             c.fswsp ft11, 41*4(sp) \n");\
 }
 
 /*
  * Restore FPU caller registers:
- * NOTE: To simplify the logic, the FPU caller registers are always stored at word offset 20 in the stack
+ * NOTE: To simplify the logic, the FPU caller registers are always stored at word offset 22 in the stack
  */
 #define RESTORE_FPU_CONTEXT() { \
     __asm volatile("\n\
-             c.flwsp ft0,  20*4(sp)\n\
-             c.flwsp ft1,  21*4(sp) \n\
-             c.flwsp ft2,  22*4(sp) \n\
-             c.flwsp ft3,  23*4(sp) \n\
-             c.flwsp ft4,  24*4(sp) \n\
-             c.flwsp ft5,  25*4(sp) \n\
-             c.flwsp ft6,  26*4(sp) \n\
-             c.flwsp ft7,  27*4(sp) \n\
-             c.flwsp fa0,  28*4(sp) \n\
-             c.flwsp fa1,  29*4(sp) \n\
-             c.flwsp fa2,  30*4(sp) \n\
-             c.flwsp fa3,  31*4(sp) \n\
-             c.flwsp fa4,  32*4(sp) \n\
-             c.flwsp fa5,  33*4(sp) \n\
-             c.flwsp fa6,  34*4(sp) \n\
-             c.flwsp fa7,  35*4(sp) \n\
-             c.flwsp ft8,  36*4(sp) \n\
-             c.flwsp ft9,  37*4(sp) \n\
-             c.flwsp ft10, 38*4(sp) \n\
-             c.flwsp ft11, 39*4(sp) \n");\
+             c.flwsp ft0,  22*4(sp)\n\
+             c.flwsp ft1,  23*4(sp) \n\
+             c.flwsp ft2,  24*4(sp) \n\
+             c.flwsp ft3,  25*4(sp) \n\
+             c.flwsp ft4,  26*4(sp) \n\
+             c.flwsp ft5,  27*4(sp) \n\
+             c.flwsp ft6,  28*4(sp) \n\
+             c.flwsp ft7,  29*4(sp) \n\
+             c.flwsp fa0,  30*4(sp) \n\
+             c.flwsp fa1,  31*4(sp) \n\
+             c.flwsp fa2,  32*4(sp) \n\
+             c.flwsp fa3,  33*4(sp) \n\
+             c.flwsp fa4,  34*4(sp) \n\
+             c.flwsp fa5,  35*4(sp) \n\
+             c.flwsp fa6,  36*4(sp) \n\
+             c.flwsp fa7,  37*4(sp) \n\
+             c.flwsp ft8,  38*4(sp) \n\
+             c.flwsp ft9,  39*4(sp) \n\
+             c.flwsp ft10, 40*4(sp) \n\
+             c.flwsp ft11, 41*4(sp) \n");\
 }
 #endif
 #else /*__riscv_flen == 64*/
 #ifdef __ICCRISCV__
 #define SAVE_FPU_CONTEXT()  { \
     __asm volatile("\n\
-             c.fsdsp ft0,  20*4\n\
-             c.fsdsp ft1,  22*4 \n\
-             c.fsdsp ft2,  24*4 \n\
-             c.fsdsp ft3,  26*4 \n\
-             c.fsdsp ft4,  28*4 \n\
-             c.fsdsp ft5,  30*4 \n\
-             c.fsdsp ft6,  32*4 \n\
-             c.fsdsp ft7,  34*4 \n\
-             c.fsdsp fa0,  36*4 \n\
-             c.fsdsp fa1,  38*4 \n\
-             c.fsdsp fa2,  40*4 \n\
-             c.fsdsp fa3,  42*4 \n\
-             c.fsdsp fa4,  44*4 \n\
-             c.fsdsp fa5,  46*4 \n\
-             c.fsdsp fa6,  48*4 \n\
-             c.fsdsp fa7,  50*4 \n\
-             c.fsdsp ft8,  52*4 \n\
-             c.fsdsp ft9,  54*4 \n\
-             c.fsdsp ft10, 56*4 \n\
-             c.fsdsp ft11, 58*4 \n");\
+             c.fsdsp ft0,  22*4\n\
+             c.fsdsp ft1,  24*4 \n\
+             c.fsdsp ft2,  26*4 \n\
+             c.fsdsp ft3,  28*4 \n\
+             c.fsdsp ft4,  30*4 \n\
+             c.fsdsp ft5,  32*4 \n\
+             c.fsdsp ft6,  34*4 \n\
+             c.fsdsp ft7,  36*4 \n\
+             c.fsdsp fa0,  38*4 \n\
+             c.fsdsp fa1,  40*4 \n\
+             c.fsdsp fa2,  42*4 \n\
+             c.fsdsp fa3,  44*4 \n\
+             c.fsdsp fa4,  46*4 \n\
+             c.fsdsp fa5,  48*4 \n\
+             c.fsdsp fa6,  50*4 \n\
+             c.fsdsp fa7,  52*4 \n\
+             c.fsdsp ft8,  54*4 \n\
+             c.fsdsp ft9,  56*4 \n\
+             c.fsdsp ft10, 58*4 \n\
+             c.fsdsp ft11, 60*4 \n");\
 }
 
 /*
  * Restore FPU caller registers:
- * NOTE: To simplify the logic, the FPU caller registers are always stored at word offset 20 in the stack
+ * NOTE: To simplify the logic, the FPU caller registers are always stored at word offset 22 in the stack
  */
 #define RESTORE_FPU_CONTEXT() { \
     __asm volatile("\n\
-             c.fldsp ft0,  20*4\n\
-             c.fldsp ft1,  22*4 \n\
-             c.fldsp ft2,  24*4 \n\
-             c.fldsp ft3,  26*4 \n\
-             c.fldsp ft4,  28*4 \n\
-             c.fldsp ft5,  30*4 \n\
-             c.fldsp ft6,  32*4 \n\
-             c.fldsp ft7,  34*4 \n\
-             c.fldsp fa0,  36*4 \n\
-             c.fldsp fa1,  38*4 \n\
-             c.fldsp fa2,  40*4 \n\
-             c.fldsp fa3,  42*4 \n\
-             c.fldsp fa4,  44*4 \n\
-             c.fldsp fa5,  46*4 \n\
-             c.fldsp fa6,  48*4 \n\
-             c.fldsp fa7,  50*4 \n\
-             c.fldsp ft8,  52*4 \n\
-             c.fldsp ft9,  54*4 \n\
-             c.fldsp ft10, 56*4 \n\
-             c.fldsp ft11, 58*4 \n");\
+             c.fldsp ft0,  22*4\n\
+             c.fldsp ft1,  24*4 \n\
+             c.fldsp ft2,  26*4 \n\
+             c.fldsp ft3,  28*4 \n\
+             c.fldsp ft4,  30*4 \n\
+             c.fldsp ft5,  32*4 \n\
+             c.fldsp ft6,  34*4 \n\
+             c.fldsp ft7,  36*4 \n\
+             c.fldsp fa0,  38*4 \n\
+             c.fldsp fa1,  40*4 \n\
+             c.fldsp fa2,  42*4 \n\
+             c.fldsp fa3,  44*4 \n\
+             c.fldsp fa4,  46*4 \n\
+             c.fldsp fa5,  48*4 \n\
+             c.fldsp fa6,  50*4 \n\
+             c.fldsp fa7,  52*4 \n\
+             c.fldsp ft8,  54*4 \n\
+             c.fldsp ft9,  56*4 \n\
+             c.fldsp ft10, 58*4 \n\
+             c.fldsp ft11, 60*4 \n");\
 }
-#else
+#else /*__riscv_flen == 64*/
 #define SAVE_FPU_CONTEXT()  { \
     __asm volatile("\n\
-             c.fsdsp ft0,  20*4(sp)\n\
-             c.fsdsp ft1,  22*4(sp) \n\
-             c.fsdsp ft2,  24*4(sp) \n\
-             c.fsdsp ft3,  26*4(sp) \n\
-             c.fsdsp ft4,  28*4(sp) \n\
-             c.fsdsp ft5,  30*4(sp) \n\
-             c.fsdsp ft6,  32*4(sp) \n\
-             c.fsdsp ft7,  34*4(sp) \n\
-             c.fsdsp fa0,  36*4(sp) \n\
-             c.fsdsp fa1,  38*4(sp) \n\
-             c.fsdsp fa2,  40*4(sp) \n\
-             c.fsdsp fa3,  42*4(sp) \n\
-             c.fsdsp fa4,  44*4(sp) \n\
-             c.fsdsp fa5,  46*4(sp) \n\
-             c.fsdsp fa6,  48*4(sp) \n\
-             c.fsdsp fa7,  50*4(sp) \n\
-             c.fsdsp ft8,  52*4(sp) \n\
-             c.fsdsp ft9,  54*4(sp) \n\
-             c.fsdsp ft10, 56*4(sp) \n\
-             c.fsdsp ft11, 58*4(sp) \n");\
+             c.fsdsp ft0,  22*4(sp)\n\
+             c.fsdsp ft1,  24*4(sp) \n\
+             c.fsdsp ft2,  26*4(sp) \n\
+             c.fsdsp ft3,  28*4(sp) \n\
+             c.fsdsp ft4,  30*4(sp) \n\
+             c.fsdsp ft5,  32*4(sp) \n\
+             c.fsdsp ft6,  34*4(sp) \n\
+             c.fsdsp ft7,  36*4(sp) \n\
+             c.fsdsp fa0,  38*4(sp) \n\
+             c.fsdsp fa1,  40*4(sp) \n\
+             c.fsdsp fa2,  42*4(sp) \n\
+             c.fsdsp fa3,  44*4(sp) \n\
+             c.fsdsp fa4,  46*4(sp) \n\
+             c.fsdsp fa5,  48*4(sp) \n\
+             c.fsdsp fa6,  50*4(sp) \n\
+             c.fsdsp fa7,  52*4(sp) \n\
+             c.fsdsp ft8,  54*4(sp) \n\
+             c.fsdsp ft9,  56*4(sp) \n\
+             c.fsdsp ft10, 58*4(sp) \n\
+             c.fsdsp ft11, 60*4(sp) \n");\
 }
 
 /*
  * Restore FPU caller registers:
- * NOTE: To simplify the logic, the FPU caller registers are always stored at word offset 20 in the stack
+ * NOTE: To simplify the logic, the FPU caller registers are always stored at word offset 22 in the stack
  */
 #define RESTORE_FPU_CONTEXT() { \
     __asm volatile("\n\
-             c.fldsp ft0,  20*4(sp)\n\
-             c.fldsp ft1,  22*4(sp) \n\
-             c.fldsp ft2,  24*4(sp) \n\
-             c.fldsp ft3,  26*4(sp) \n\
-             c.fldsp ft4,  28*4(sp) \n\
-             c.fldsp ft5,  30*4(sp) \n\
-             c.fldsp ft6,  32*4(sp) \n\
-             c.fldsp ft7,  34*4(sp) \n\
-             c.fldsp fa0,  36*4(sp) \n\
-             c.fldsp fa1,  38*4(sp) \n\
-             c.fldsp fa2,  40*4(sp) \n\
-             c.fldsp fa3,  42*4(sp) \n\
-             c.fldsp fa4,  44*4(sp) \n\
-             c.fldsp fa5,  46*4(sp) \n\
-             c.fldsp fa6,  48*4(sp) \n\
-             c.fldsp fa7,  50*4(sp) \n\
-             c.fldsp ft8,  52*4(sp) \n\
-             c.fldsp ft9,  54*4(sp) \n\
-             c.fldsp ft10, 56*4(sp) \n\
-             c.fldsp ft11, 58*4(sp) \n");\
+             c.fldsp ft0,  22*4(sp)\n\
+             c.fldsp ft1,  24*4(sp) \n\
+             c.fldsp ft2,  26*4(sp) \n\
+             c.fldsp ft3,  28*4(sp) \n\
+             c.fldsp ft4,  30*4(sp) \n\
+             c.fldsp ft5,  32*4(sp) \n\
+             c.fldsp ft6,  34*4(sp) \n\
+             c.fldsp ft7,  36*4(sp) \n\
+             c.fldsp fa0,  38*4(sp) \n\
+             c.fldsp fa1,  40*4(sp) \n\
+             c.fldsp fa2,  42*4(sp) \n\
+             c.fldsp fa3,  44*4(sp) \n\
+             c.fldsp fa4,  46*4(sp) \n\
+             c.fldsp fa5,  48*4(sp) \n\
+             c.fldsp fa6,  50*4(sp) \n\
+             c.fldsp fa7,  52*4(sp) \n\
+             c.fldsp ft8,  54*4(sp) \n\
+             c.fldsp ft9,  56*4(sp) \n\
+             c.fldsp ft10, 58*4(sp) \n\
+             c.fldsp ft11, 60*4(sp) \n");\
 }
 #endif
 #endif
@@ -612,10 +611,12 @@ ATTR_ALWAYS_INLINE static inline void uninstall_isr(uint32_t irq)
             c.swsp s2, 13*4 \n\
             c.swsp s3, 14*4 \n\
             c.swsp s4, 15*4 \n\
-            c.swsp t3, 16*4 \n\
-            c.swsp t4, 17*4 \n\
-            c.swsp t5, 18*4 \n\
-            c.swsp t6, 19*4"); \
+            c.swsp s5, 16*4 \n\
+            c.swsp s6, 17*4 \n\
+            c.swsp t3, 18*4 \n\
+            c.swsp t4, 19*4 \n\
+            c.swsp t5, 20*4 \n\
+            c.swsp t6, 21*4"); \
     SAVE_FPU_CONTEXT(); \
 }
 
@@ -640,10 +641,12 @@ ATTR_ALWAYS_INLINE static inline void uninstall_isr(uint32_t irq)
             c.lwsp s2, 13*4 \n\
             c.lwsp s3, 14*4 \n\
             c.lwsp s4, 15*4 \n\
-            c.lwsp t3, 16*4 \n\
-            c.lwsp t4, 17*4 \n\
-            c.lwsp t5, 18*4 \n\
-            c.lwsp t6, 19*4 \n");\
+            c.lwsp s5, 16*4 \n\
+            c.lwsp s6, 17*4 \n\
+            c.lwsp t3, 18*4 \n\
+            c.lwsp t4, 19*4 \n\
+            c.lwsp t5, 20*4 \n\
+            c.lwsp t6, 21*4 \n");\
         RESTORE_FPU_CONTEXT(); \
         __asm volatile("addi sp, sp, %0" : : "i"(CONTEXT_REG_NUM) :);\
 }
@@ -670,10 +673,12 @@ ATTR_ALWAYS_INLINE static inline void uninstall_isr(uint32_t irq)
             c.swsp s2, 13*4(sp) \n\
             c.swsp s3, 14*4(sp) \n\
             c.swsp s4, 15*4(sp) \n\
-            c.swsp t3, 16*4(sp) \n\
-            c.swsp t4, 17*4(sp) \n\
-            c.swsp t5, 18*4(sp) \n\
-            c.swsp t6, 19*4(sp)"); \
+            c.swsp s5, 16*4(sp) \n\
+            c.swsp s6, 17*4(sp) \n\
+            c.swsp t3, 18*4(sp) \n\
+            c.swsp t4, 19*4(sp) \n\
+            c.swsp t5, 20*4(sp) \n\
+            c.swsp t6, 21*4(sp)"); \
     SAVE_FPU_CONTEXT(); \
 }
 
@@ -698,10 +703,12 @@ ATTR_ALWAYS_INLINE static inline void uninstall_isr(uint32_t irq)
             c.lwsp s2, 13*4(sp) \n\
             c.lwsp s3, 14*4(sp) \n\
             c.lwsp s4, 15*4(sp) \n\
-            c.lwsp t3, 16*4(sp) \n\
-            c.lwsp t4, 17*4(sp) \n\
-            c.lwsp t5, 18*4(sp) \n\
-            c.lwsp t6, 19*4(sp) \n");\
+            c.lwsp s5, 16*4(sp) \n\
+            c.lwsp s6, 17*4(sp) \n\
+            c.lwsp t3, 18*4(sp) \n\
+            c.lwsp t4, 19*4(sp) \n\
+            c.lwsp t5, 20*4(sp) \n\
+            c.lwsp t6, 21*4(sp) \n");\
         RESTORE_FPU_CONTEXT(); \
         __asm volatile("addi sp, sp, %0" : : "i"(CONTEXT_REG_NUM) :);\
 }
@@ -722,15 +729,13 @@ ATTR_ALWAYS_INLINE static inline void uninstall_isr(uint32_t irq)
 
 #ifdef __riscv_dsp
 /*
- * Save DSP context
- * NOTE: DSP context registers are stored at word offset 41 in the stack
+ * @brief Save DSP context
  */
 #define SAVE_DSP_CONTEXT() { \
         __asm volatile("csrrs s4, %0, x0\n" ::"i"(CSR_UCODE):);  \
 }
 /*
  * @brief Restore DSP context
- * @note DSP context registers are stored at word offset 41 in the stack
  */
 #define RESTORE_DSP_CONTEXT() {\
        __asm volatile("csrw %0, s4\n" ::"i"(CSR_UCODE):); \
@@ -740,6 +745,21 @@ ATTR_ALWAYS_INLINE static inline void uninstall_isr(uint32_t irq)
 #define SAVE_DSP_CONTEXT()
 #define RESTORE_DSP_CONTEXT()
 #endif
+
+/*
+ * @brief Save MCCTL context
+ */
+#define SAVE_MCCTL_CONTEXT() { \
+        __asm volatile("csrrs s5, %0, x0\n" ::"i"(CSR_MCCTLBEGINADDR):);  \
+        __asm volatile("csrrs s6, %0, x0\n" ::"i"(CSR_MCCTLDATA):);  \
+}
+/*
+ * @brief Restore MCCTL context
+ */
+#define RESTORE_MCCTL_CONTEXT() {\
+        __asm volatile("csrw %0, s6\n" ::"i"(CSR_MCCTLDATA):); \
+        __asm volatile("csrw %0, s5\n" ::"i"(CSR_MCCTLBEGINADDR):); \
+}
 
 /*
  * @brief Enter Nested IRQ Handling
@@ -755,6 +775,7 @@ ATTR_ALWAYS_INLINE static inline void uninstall_isr(uint32_t irq)
             csrr s3, mstatus \n");\
     SAVE_FPU_STATE(); \
     SAVE_DSP_CONTEXT(); \
+    SAVE_MCCTL_CONTEXT(); \
     __asm volatile("csrsi mstatus, 8"); \
 }
 
@@ -782,6 +803,7 @@ ATTR_ALWAYS_INLINE static inline void uninstall_isr(uint32_t irq)
             csrw mepc, s2 \n");\
             RESTORE_FPU_STATE(); \
             RESTORE_DSP_CONTEXT(); \
+            RESTORE_MCCTL_CONTEXT(); \
 }
 
 /* @brief Nested IRQ entry macro : Save CSRs and enable global irq. */

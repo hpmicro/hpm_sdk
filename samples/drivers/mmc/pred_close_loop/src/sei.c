@@ -11,7 +11,7 @@
 
 void sei_record_data(void)
 {
-    sei_tranceiver_config_t tranceiver_config = {0};
+    sei_transceiver_config_t transceiver_config = {0};
     sei_data_format_config_t data_format_config = {0};
     sei_engine_config_t engine_config = {0};
     sei_trigger_input_config_t trigger_input_conifg = {0};
@@ -24,16 +24,16 @@ void sei_record_data(void)
     board_init_sei_pins(BOARD_SEI, BOARD_SEI_CTRL);
     sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, false);
 
-    /* [1] tranceiver config */
-    tranceiver_config.mode = sei_synchronous_master_mode;
-    tranceiver_config.tri_sample = false;
-    tranceiver_config.src_clk_freq = clock_get_frequency(clock_mot0);
-    tranceiver_config.synchronous_master_config.data_idle_high_z = false;
-    tranceiver_config.synchronous_master_config.data_idle_state = sei_idle_high_state;
-    tranceiver_config.synchronous_master_config.clock_idle_high_z = false;
-    tranceiver_config.synchronous_master_config.clock_idle_state = sei_idle_high_state;
-    tranceiver_config.synchronous_master_config.baudrate = 1000000;
-    sei_tranceiver_config_init(BOARD_SEI, BOARD_SEI_CTRL, &tranceiver_config);
+    /* [1] transceiver config */
+    transceiver_config.mode = sei_synchronous_master_mode;
+    transceiver_config.tri_sample = false;
+    transceiver_config.src_clk_freq = clock_get_frequency(BOARD_SEI_CLOCK_NAME);
+    transceiver_config.synchronous_master_config.data_idle_high_z = false;
+    transceiver_config.synchronous_master_config.data_idle_state = sei_idle_high_state;
+    transceiver_config.synchronous_master_config.clock_idle_high_z = false;
+    transceiver_config.synchronous_master_config.clock_idle_state = sei_idle_high_state;
+    transceiver_config.synchronous_master_config.baudrate = 1000000;
+    sei_transceiver_config_init(BOARD_SEI, BOARD_SEI_CTRL, &transceiver_config);
     sei_set_xcvr_rx_point(BOARD_SEI, BOARD_SEI_CTRL, sei_get_xcvr_ck0_point(BOARD_SEI, BOARD_SEI_CTRL));
     sei_set_xcvr_tx_point(BOARD_SEI, BOARD_SEI_CTRL, sei_get_xcvr_ck1_point(BOARD_SEI, BOARD_SEI_CTRL));
 
@@ -198,6 +198,6 @@ void sei_record_data(void)
     trigger_input_conifg.trig_period_enable = true;
     trigger_input_conifg.trig_period_arming_mode = sei_arming_direct_exec;
     trigger_input_conifg.trig_period_sync_enable = false;
-    trigger_input_conifg.trig_period_time = ((clock_get_frequency(clock_mot0) / 10000));    /* 100us */
+    trigger_input_conifg.trig_period_time = ((clock_get_frequency(BOARD_SEI_CLOCK_NAME) / 10000));    /* 100us */
     sei_trigger_input_config_init(BOARD_SEI, BOARD_SEI_CTRL, &trigger_input_conifg);
 }

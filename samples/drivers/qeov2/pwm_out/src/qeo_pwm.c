@@ -11,7 +11,8 @@
 #include "hpm_trgm_soc_drv.h"
 #include "hpm_trgm_drv.h"
 #include "hpm_synt_drv.h"
-#include "motor.h"
+#include "pwm.h"
+#include "hardware_pos.h"
 
 #define TEST_QEO BOARD_QEO_PWM
 #define QEO_POSITION_MAX_VAL  (0x100000000UL)
@@ -21,8 +22,8 @@
 
 void qeo_hardware_trig_into_pwm_safety(void)
 {
-    trgm_output_update_source(HPM_TRGM0, HPM_TRGM0_OUTPUT_SRC_QEO1_TRIG_IN1, HPM_TRGM0_INPUT_SRC_VDD);
-    trgm_output_update_source(HPM_TRGM0, HPM_TRGM0_OUTPUT_SRC_QEO1_TRIG_IN1, HPM_TRGM0_INPUT_SRC_VSS);
+    trgm_output_update_source(HPM_TRGM0, BOARD_QEO_PWM_SAFETY_TRGM, HPM_TRGM0_INPUT_SRC_VDD);
+    trgm_output_update_source(HPM_TRGM0, BOARD_QEO_PWM_SAFETY_TRGM, HPM_TRGM0_INPUT_SRC_VSS);
 }
 
 void qeo_gen_pwm_signal_software(void)
@@ -80,7 +81,7 @@ void qeo_gen_pwm_signal_software(void)
 
 void qeo_gen_pwm_signal_hardware(void)
 {
-    printf("QEO generate PWM signal with hardware(MTG) provide postion\n");
+    printf("QEO generate PWM signal with hardware provide postion\n");
     pwm_generate_central_aligned_waveform();
 
     qeo_pwm_mode_t config;
@@ -130,9 +131,8 @@ void qeo_gen_pwm_signal_hardware(void)
     /* enable output */
     qeo_pwm_enable_output(TEST_QEO);
 
-    /* mtg generate postion to qeo */
-    trgm_pos_matrix_config(HPM_TRGM0, QEO_TRGM_POS, trgm_pos_matrix_in_from_mtg0_pos0, false);
-    mtg_generate_trajectory();
+    /* hardware peripheral generate postion to qeo */
+    hardware_gen_postion_to_qeo();
 
     /* First enable MOTOR peripheral devices, such as MMC, and then enable timestamp for MOTOR */
     synt_enable_timestamp(HPM_SYNT, true);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 HPMicro
+ * Copyright (c) 2022-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -107,6 +107,9 @@ ATTR_WEAK uint8_t enet_get_mac_address(uint8_t *mac)
 {
     uint32_t macl, mach;
     uint32_t uuid[OTP_SOC_UUID_LEN / sizeof(uint32_t)];
+    uint8_t idx = 0;
+    char *p = NULL;
+    char *token;
 
     if (mac == NULL) {
         return ENET_MAC_ADDR_PARA_ERROR;
@@ -139,12 +142,17 @@ ATTR_WEAK uint8_t enet_get_mac_address(uint8_t *mac)
     }
 
     /* load MAC address from MACRO definitions */
-    mac[0] = MAC_ADDR0;
-    mac[1] = MAC_ADDR1;
-    mac[2] = MAC_ADDR2;
-    mac[3] = MAC_ADDR3;
-    mac[4] = MAC_ADDR4;
-    mac[5] = MAC_ADDR5;
+    p = HPM_STRINGIFY(MAC_CONFIG);
+    token = strtok(p, ":");
+    mac[idx] = strtol(token, NULL, 16);
+    while (token != NULL && ++idx < ENET_MAC) {
+        token = strtok(NULL, ":");
+        mac[idx] = strtol(token, NULL, 16);
+    }
+
+    if (idx < ENET_MAC) {
+        return ENET_MAC_ADDR_PARA_ERROR;
+    }
 
     return ENET_MAC_ADDR_FROM_MACRO;
 }

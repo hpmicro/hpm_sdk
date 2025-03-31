@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -23,10 +23,6 @@ TX_THREAD thread_0;
 ULONG demo_stack[DEMO_STACK_SIZE >> 2];
 
 VOID thread_0_entry(ULONG thread_input);
-
-/* Define sample IP address.  */
-#define SAMPLE_IPV4_ADDRESS IP_ADDRESS(192, 168, 1, 223)
-#define SAMPLE_IPV4_MASK 0xFFFFFF00UL
 
 /* Define packet pool.  */
 #define PACKET_SIZE 1536

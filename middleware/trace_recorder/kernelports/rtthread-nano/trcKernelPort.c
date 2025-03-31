@@ -43,7 +43,7 @@ static void trc_thread_resume_hook(rt_thread_t thread)
 static void trc_thread_inited_hook(rt_thread_t thread)
 {
     xTraceObjectRegisterWithoutHandle(PSF_EVENT_TASK_CREATE, (void *)thread,
-                      thread->name, thread->init_priority);
+                      thread->name, thread->current_priority);
 }
 
 traceResult xTraceKernelPortInitialize(TraceKernelPortDataBuffer_t *const pxBuffer)
@@ -227,16 +227,6 @@ static void trc_irq_leave_hook(void)
     xTraceISREnd(0);
 }
 
-static void trc_malloc_hook(void *ptr, rt_size_t size)
-{
-    xTraceHeapAlloc(ptrc_heap, ptr, size);
-}
-
-static void trc_free_hook(void *ptr)
-{
-    xTraceHeapFree(ptrc_heap, ptr, rt_get_free_size(ptr));
-}
-
 static void trc_mp_alloc_hook(struct rt_mempool *mp, void *block)
 {
     (void)block;
@@ -287,10 +277,6 @@ traceResult xTraceKernelPortEnable(void)
     rt_interrupt_enter_sethook(trc_irq_enter_hook);
 
     rt_interrupt_leave_sethook(trc_irq_leave_hook);
-
-    rt_malloc_sethook(trc_malloc_hook);
-
-    rt_free_sethook(trc_free_hook);
 
     rt_mp_alloc_sethook(trc_mp_alloc_hook);
 

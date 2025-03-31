@@ -11,10 +11,11 @@
 #include "hpm_synt_drv.h"
 #include "hpm_sei_drv.h"
 
+#define CDF(n) (n)
 
 int main(void)
 {
-    sei_tranceiver_config_t tranceiver_config = {0};
+    sei_transceiver_config_t transceiver_config = {0};
     sei_data_format_config_t data_format_config = {0};
     sei_engine_config_t engine_config = {0};
     sei_trigger_input_config_t trigger_input_conifg = {0};
@@ -31,17 +32,17 @@ int main(void)
 
     sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, false);
 
-    /* [1] tranceiver config */
-    tranceiver_config.mode = sei_asynchronous_mode;
-    tranceiver_config.tri_sample = false;
-    tranceiver_config.src_clk_freq = clock_get_frequency(BOARD_MOTOR_CLK_NAME);
-    tranceiver_config.asynchronous_config.wait_len = 0;
-    tranceiver_config.asynchronous_config.data_len = 16;
-    tranceiver_config.asynchronous_config.parity_enable = false;
-    tranceiver_config.asynchronous_config.data_idle_high_z = false;
-    tranceiver_config.asynchronous_config.data_idle_state = sei_idle_high_state;
-    tranceiver_config.asynchronous_config.baudrate = 2500000;
-    sei_tranceiver_config_init(BOARD_SEI, BOARD_SEI_CTRL, &tranceiver_config);
+    /* [1] transceiver config */
+    transceiver_config.mode = sei_asynchronous_mode;
+    transceiver_config.tri_sample = false;
+    transceiver_config.src_clk_freq = clock_get_frequency(BOARD_MOTOR_CLK_NAME);
+    transceiver_config.asynchronous_config.wait_len = 0;
+    transceiver_config.asynchronous_config.data_len = 16;
+    transceiver_config.asynchronous_config.parity_enable = false;
+    transceiver_config.asynchronous_config.data_idle_high_z = false;
+    transceiver_config.asynchronous_config.data_idle_state = sei_idle_high_state;
+    transceiver_config.asynchronous_config.baudrate = 2500000;
+    sei_transceiver_config_init(BOARD_SEI, BOARD_SEI_CTRL, &transceiver_config);
 
     /* [2] data register config */
     /* data register 2: send Sink Code */
@@ -56,7 +57,7 @@ int main(void)
     data_format_config.min_bit = 0;
     sei_cmd_data_format_config_init(BOARD_SEI, SEI_SELECT_DATA, SEI_DAT_2, &data_format_config);
     sei_set_data_value(BOARD_SEI, SEI_DAT_2, 0x0002);
-    /* data register 3: send CDF0 */
+    /* CMD register: send CDF0 */
     data_format_config.mode = sei_data_mode;
     data_format_config.signed_flag = false;
     data_format_config.bit_order = sei_bit_lsb_first;
@@ -66,8 +67,23 @@ int main(void)
     data_format_config.first_bit = 0;
     data_format_config.max_bit = 9;
     data_format_config.min_bit = 0;
+    sei_cmd_data_format_config_init(BOARD_SEI, SEI_SELECT_CMD, BOARD_SEI_CTRL, &data_format_config);
+    /* data register 3: CDF check crc */
+    data_format_config.mode = sei_crc_mode;
+    data_format_config.signed_flag = false;
+    data_format_config.bit_order = sei_bit_lsb_first;
+    data_format_config.word_order = sei_word_nonreverse;
+    data_format_config.word_len = 3;
+    data_format_config.crc_invert = false;
+    data_format_config.crc_shift_mode = false;
+    data_format_config.crc_len = 3;
+    data_format_config.last_bit = 2;
+    data_format_config.first_bit = 0;
+    data_format_config.max_bit = 2;
+    data_format_config.min_bit = 0;
+    data_format_config.crc_init_value = 0;
+    data_format_config.crc_poly = (BIT0_MASK | BIT1_MASK);
     sei_cmd_data_format_config_init(BOARD_SEI, SEI_SELECT_DATA, SEI_DAT_3, &data_format_config);
-    sei_set_data_value(BOARD_SEI, SEI_DAT_3, 0);
     /* data register 4: recv IF.EAX */
     data_format_config.mode = sei_check_mode;
     data_format_config.signed_flag = false;
@@ -90,7 +106,7 @@ int main(void)
     data_format_config.first_bit = 0;
     data_format_config.max_bit = 5;
     data_format_config.min_bit = 0;
-    data_format_config.gold_value = 0x00;    /* checked value */
+    data_format_config.gold_value = CDF(0);    /* checked value */
     sei_cmd_data_format_config_init(BOARD_SEI, SEI_SELECT_DATA, SEI_DAT_5, &data_format_config);
     /* data register 6: recv IF.ES */
     data_format_config.mode = sei_data_mode;
@@ -125,7 +141,7 @@ int main(void)
     data_format_config.max_bit = 19;
     data_format_config.min_bit = 0;
     sei_cmd_data_format_config_init(BOARD_SEI, SEI_SELECT_DATA, SEI_DAT_8, &data_format_config);
-    /* data register 9: check crc */
+    /* data register 9: DF check crc */
     data_format_config.mode = sei_crc_mode;
     data_format_config.signed_flag = false;
     data_format_config.bit_order = sei_bit_lsb_first;
@@ -144,16 +160,16 @@ int main(void)
 
     /* [3] instructions */
     instr_idx = 0;
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, 0, SEI_DAT_0, SEI_DAT_2, 3);     /* Send Sink Code */
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, 0, SEI_DAT_9, SEI_DAT_3, 10);     /* Send CDF0 */
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, 0, SEI_DAT_0, SEI_DAT_9, 3);      /* Send CRC */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, 0, SEI_DAT_0, SEI_DAT_2, 3);      /* Send Sink Code */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, 0, SEI_DAT_3, SEI_DAT_1, 10);     /* Send CDF0 */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, 0, SEI_DAT_0, SEI_DAT_3, 3);      /* Send CRC */
 
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_9, SEI_DAT_4, 6);  /* Recv IF.EAX*/
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_9, SEI_DAT_5, 6);     /* Recv IF.CC*/
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_9, SEI_DAT_6, 4);     /* Recv IF.ES*/
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_9, SEI_DAT_7, 20);    /* Recv ST */
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_9, SEI_DAT_8, 20);    /* Recv MT */
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_0, SEI_DAT_9, 8);     /* Recv CRC */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_9, SEI_DAT_5, 6);  /* Recv IF.CC*/
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_9, SEI_DAT_6, 4);  /* Recv IF.ES*/
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_9, SEI_DAT_7, 20); /* Recv ST */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_9, SEI_DAT_8, 20); /* Recv MT */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_0, SEI_DAT_9, 8);  /* Recv CRC */
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_HALT, 0, SEI_DAT_0, SEI_DAT_0, 0);
 
     /* [4] state transition config */
@@ -261,6 +277,9 @@ int main(void)
     sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, true);
 
     /* [11] trigger config */
+    /* When a trigger is generated, the hardware will automatically fill the command register from trigger table command register */
+    sei_set_trig_input_command_value(BOARD_SEI, BOARD_SEI_CTRL, sei_trig_in_period, CDF(0) << 5);
+
     trigger_input_conifg.trig_period_enable = true;
     trigger_input_conifg.trig_period_arming_mode = sei_arming_direct_exec;
     trigger_input_conifg.trig_period_sync_enable = false;

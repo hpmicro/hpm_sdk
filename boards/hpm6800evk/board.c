@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  *
  *
@@ -27,7 +27,6 @@
 #include "hpm_mipi_dsi_drv.h"
 #include "hpm_mipi_dsi_phy_drv.h"
 
-static board_timer_cb timer_cb;
 
 /**
  * @brief FLASH configuration option definitions:
@@ -200,6 +199,8 @@ void board_delay_ms(uint32_t ms)
     clock_cpu_delay_ms(ms);
 }
 
+#if !defined(NO_BOARD_TIMER_SUPPORT) || !NO_BOARD_TIMER_SUPPORT
+static board_timer_cb timer_cb;
 SDK_DECLARE_EXT_ISR_M(BOARD_CALLBACK_TIMER_IRQ, board_timer_isr)
 void board_timer_isr(void)
 {
@@ -227,6 +228,7 @@ void board_timer_create(uint32_t ms, board_timer_cb cb)
 
     gptmr_start_counter(BOARD_CALLBACK_TIMER, BOARD_CALLBACK_TIMER_CH);
 }
+#endif
 
 void board_i2c_bus_clear(I2C_Type *ptr)
 {
@@ -390,10 +392,9 @@ void board_init_pmp(void)
     assert((length & (length - 1U)) == 0U);
     assert((start_addr & (length - 1U)) == 0U);
 
-    pmp_entry_t pmp_entry[3] = { 0 };
+    pmp_entry_t pmp_entry[4] = { 0 };
     pmp_entry[0].pmp_addr = PMP_NAPOT_ADDR(0x0000000, 0x80000000);
     pmp_entry[0].pmp_cfg.val = PMP_CFG(READ_EN, WRITE_EN, EXECUTE_EN, ADDR_MATCH_NAPOT, REG_UNLOCK);
-
 
     pmp_entry[1].pmp_addr = PMP_NAPOT_ADDR(0x80000000, 0x80000000);
     pmp_entry[1].pmp_cfg.val = PMP_CFG(READ_EN, WRITE_EN, EXECUTE_EN, ADDR_MATCH_NAPOT, REG_UNLOCK);
@@ -402,6 +403,23 @@ void board_init_pmp(void)
     pmp_entry[2].pmp_cfg.val = PMP_CFG(READ_EN, WRITE_EN, EXECUTE_EN, ADDR_MATCH_NAPOT, REG_UNLOCK);
     pmp_entry[2].pma_addr = PMA_NAPOT_ADDR(start_addr, length);
     pmp_entry[2].pma_cfg.val = PMA_CFG(ADDR_MATCH_NAPOT, MEM_TYPE_MEM_NON_CACHE_BUF, AMO_EN);
+
+#ifdef CONFIG_VGLITE
+    extern uint32_t __gpu_start__[];
+    extern uint32_t __gpu_end__[];
+    uint32_t gpu_start_addr = (uint32_t) __gpu_start__;
+    uint32_t gpu_end_addr = (uint32_t) __gpu_end__;
+    uint32_t gpu_length = gpu_end_addr - gpu_start_addr;
+
+    if (gpu_length) {
+        assert((gpu_length & (gpu_length - 1U)) == 0U);
+        assert((gpu_start_addr & (gpu_length - 1U)) == 0U);
+        pmp_entry[3].pmp_addr = PMP_NAPOT_ADDR(gpu_start_addr, gpu_length);
+        pmp_entry[3].pmp_cfg.val = PMP_CFG(READ_EN, WRITE_EN, EXECUTE_EN, ADDR_MATCH_NAPOT, REG_UNLOCK);
+        pmp_entry[3].pma_addr = PMA_NAPOT_ADDR(gpu_start_addr, gpu_length);
+        pmp_entry[3].pma_cfg.val = PMA_CFG(ADDR_MATCH_NAPOT, MEM_TYPE_MEM_WB_NO_ALLOC, AMO_EN);
+    }
+#endif
     pmp_config(&pmp_entry[0], ARRAY_SIZE(pmp_entry));
 }
 
@@ -451,12 +469,12 @@ void board_init_clock(void)
     /* Connect Group0 to CPU0 */
     clock_connect_group_to_cpu(0, 0);
 
-    /* Bump up DCDC voltage to 1150mv */
-    pcfg_dcdc_set_voltage(HPM_PCFG, 1150);
+    /* Bump up DCDC voltage to 1275mv */
+    pcfg_dcdc_set_voltage(HPM_PCFG, 1275);
 
     /* Configure PLL1_CLK0 Post Divider to 1 */
-    pllctlv2_set_postdiv(HPM_PLLCTLV2, 0, 0, 0);
-    pllctlv2_init_pll_with_freq(HPM_PLLCTLV2, 0, BOARD_CPU_FREQ);
+    pllctlv2_set_postdiv(HPM_PLLCTLV2, pllctlv2_pll0, pllctlv2_clk0, pllctlv2_div_1p0);
+    pllctlv2_init_pll_with_freq(HPM_PLLCTLV2, pllctlv2_pll0, BOARD_CPU_FREQ);
 
     /* Configure axis to 200MHz */
     clock_set_source_divider(clock_axis, clk_src_pll1_clk0, 4);
@@ -605,7 +623,11 @@ static void set_backlight_cc10128007(uint16_t percent)
 static void set_video_router_cc10128007(void)
 {
     pixelmux_config_tx_phy1_mode(pixelmux_tx_phy_mode_lvds);
+#if defined(CONFIG_HPM_PANEL_MULTI_ENABLE) && CONFIG_HPM_PANEL_MULTI_ENABLE
+    pixelmux_lvb_di0_data_source_enable(pixelmux_lvb_di0_sel_lcdc1);
+#else
     pixelmux_lvb_di0_data_source_enable(pixelmux_lvb_di0_sel_lcdc0);
+#endif
 }
 
 void board_init_lcd_lvds_cc10128007(void)
@@ -617,10 +639,15 @@ void board_init_lcd_lvds_cc10128007(void)
     init_mipi_lvds_tx_phy1_pin();
 
     hpm_panel_hw_interface_t hw_if = {0};
+#if defined(CONFIG_HPM_PANEL_MULTI_ENABLE) && CONFIG_HPM_PANEL_MULTI_ENABLE
+    hpm_panel_t *panel = hpm_panel_find_device(BOARD_MULTI_PANEL_LVDS_NAME);
+    const hpm_panel_timing_t *timing = hpm_panel_get_timing(panel);
+    uint32_t lcdc_pixel_clk_khz = board_lcdc_clock_init(BOARD_MULTI_PANEL_LVDS_LCDC_CLK, timing->pixel_clock_khz);
+#else
     hpm_panel_t *panel = hpm_panel_find_device_default();
     const hpm_panel_timing_t *timing = hpm_panel_get_timing(panel);
-
     uint32_t lcdc_pixel_clk_khz = board_lcdc_clock_init(clock_lcd0, timing->pixel_clock_khz);
+#endif
     hw_if.set_video_router = set_video_router_cc10128007;
     hw_if.set_backlight = set_backlight_cc10128007;
     hw_if.lcdc_pixel_clk_khz = lcdc_pixel_clk_khz;
@@ -661,9 +688,14 @@ void board_init_lcd_mipi_mc10128007_31b(void)
     init_mipi_lvds_tx_phy0_pin();
 
     hpm_panel_hw_interface_t hw_if = {0};
+#if defined(CONFIG_HPM_PANEL_MULTI_ENABLE) && CONFIG_HPM_PANEL_MULTI_ENABLE
+    hpm_panel_t *panel = hpm_panel_find_device(BOARD_MULTI_PANEL_MIPI_NAME);
+#else
     hpm_panel_t *panel = hpm_panel_find_device_default();
+#endif
     const hpm_panel_timing_t *timing = hpm_panel_get_timing(panel);
     uint32_t lcdc_pixel_clk_khz = board_lcdc_clock_init(clock_lcd0, timing->pixel_clock_khz);
+
     hw_if.set_reset_pin_level = set_reset_pin_level_mc10128007_31b;
     hw_if.set_video_router = set_video_router_mc10128007_31b;
     hw_if.lcdc_pixel_clk_khz = lcdc_pixel_clk_khz;
@@ -749,6 +781,10 @@ uint32_t board_lcdc_clock_init(clock_name_t clock_name, uint32_t pixel_clk_khz)
 
 void board_init_lcd(void)
 {
+#if defined(CONFIG_HPM_PANEL_MULTI_ENABLE) && CONFIG_HPM_PANEL_MULTI_ENABLE
+    board_init_lcd_lvds_cc10128007();
+    board_init_lcd_mipi_mc10128007_31b();
+#else
 #if defined(CONFIG_PANEL_RGB_TM070RDH13) && CONFIG_PANEL_RGB_TM070RDH13
     board_init_lcd_rgb_tm070rdh13();
 #endif
@@ -764,12 +800,18 @@ void board_init_lcd(void)
 #if defined(CONFIG_PANEL_LVDS_TM103XDGP01) && CONFIG_PANEL_LVDS_TM103XDGP01
     board_init_lcd_lvds_tm103xdgp01();
 #endif
+#endif
 }
 
-void board_panel_para_to_lcdc(lcdc_config_t *config)
+void board_panel_para_to_lcdc_by_name(char *name, lcdc_config_t *config)
 {
     const hpm_panel_timing_t *timing;
-    hpm_panel_t *panel = hpm_panel_find_device_default();
+    hpm_panel_t *panel;
+
+    if (name)
+        panel = hpm_panel_find_device(name);
+    else
+        panel = hpm_panel_find_device_default();
 
     timing = hpm_panel_get_timing(panel);
     config->resolution_x = timing->hactive;
@@ -788,6 +830,11 @@ void board_panel_para_to_lcdc(lcdc_config_t *config)
     config->control.invert_href = timing->de_pol;
     config->control.invert_pixel_data = timing->pixel_data_pol;
     config->control.invert_pixel_clock = timing->pixel_clk_pol;
+}
+
+void board_panel_para_to_lcdc(lcdc_config_t *config)
+{
+    board_panel_para_to_lcdc_by_name(NULL, config);
 }
 #endif
 

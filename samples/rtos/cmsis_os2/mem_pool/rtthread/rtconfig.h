@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 hpmicro
+ * Copyright (c) 2023-2025 hpmicro
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
@@ -9,7 +9,6 @@
 
 /* RT-Thread Configuration */
 
-#include "finsh_config.h"
 /* RT-Thread Kernel */
 
 #define RT_NAME_MAX 16
@@ -20,7 +19,7 @@
 #define RT_USING_HOOK
 #define RT_USING_IDLE_HOOK
 #define RT_IDLE_HOOK_LIST_SIZE 4
-#define IDLE_THREAD_STACK_SIZE 256
+#define IDLE_THREAD_STACK_SIZE 512
 #define RT_USING_TIMER_SOFT
 #define RT_TIMER_THREAD_PRIO 4
 #define RT_TIMER_THREAD_STACK_SIZE 512
@@ -44,6 +43,7 @@
 
 #define RT_USING_MEMPOOL
 #define RT_USING_SMALL_MEM
+#define RT_USING_SMALL_MEM_AS_HEAP
 #define RT_USING_HEAP
 #define RT_HEAP_SIZE (32 * 1024)
 
@@ -83,30 +83,12 @@
 
 /* Device Drivers */
 
-#define RT_USING_DEVICE_IPC
-#define RT_PIPE_BUFSZ 512
-#define RT_USING_SERIAL
-#define RT_SERIAL_USING_DMA
-#define RT_SERIAL_RB_BUFSZ 64
-#define RT_USING_PIN
-#define RT_USING_RTC
-/* #define RT_USING_SDIO */
-#define RT_SDIO_STACK_SIZE 512
-#define RT_SDIO_THREAD_PRIORITY 15
-#define RT_MMCSD_STACK_SIZE 2048
-#define RT_MMCSD_THREAD_PREORITY 22
-#define RT_MMCSD_MAX_PARTITION 16
-#define RT_SDIO_DEBUG
-#define RT_USING_WDT
-
 /* Using USB */
 
 
 /* POSIX layer and C standard library */
 
 #define RT_USING_LIBC
-#define RT_USING_POSIX
-#define RT_LIBC_DEFAULT_TIMEZONE 8
 
 /* Network */
 
@@ -184,12 +166,5 @@
 /* Onboard Peripheral Drivers */
 
 /* On-chip Peripheral Drivers */
-
-#define BSP_USING_UART
-#define BSP_USING_UART0
-/* #define BSP_USING_UART2 */
-#define BSP_USING_RTC
-/* #define BSP_USING_SDIO */
-#define BSP_USING_SDIO1
 
 #endif

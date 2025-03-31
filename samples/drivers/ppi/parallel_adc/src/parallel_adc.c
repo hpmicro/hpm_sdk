@@ -17,6 +17,7 @@ static void init_parallel_adc_config(void)
     ppi_async_sram_config_t config;
     ppi_clk_pin_config_t clk_config;
 
+    ppi_get_async_sram_defconfig(HPM_PPI, &config);
     config.base_address = ADC_DATA_BASE_ADDR;
     config.size_in_byte = ADC_DATA_SIZE;
     config.port_size = ppi_port_size_16bits;
@@ -33,6 +34,10 @@ static void init_parallel_adc_config(void)
     config.reh_in_ns = 0;
     config.wel_in_ns = 20;
     config.weh_in_ns = 0;
+    config.dq_sig_sel[0] = BOARD_PPI_ASYNC_SRAM_SIG_DQ0_7;
+    config.dq_sig_sel[1] = BOARD_PPI_ASYNC_SRAM_SIG_DQ8_15;
+    config.dq_sig_sel[2] = BOARD_PPI_ASYNC_SRAM_SIG_DQ16_23;
+    config.dq_sig_sel[3] = BOARD_PPI_ASYNC_SRAM_SIG_DQ24_31;
     ppi_config_async_sram(HPM_PPI, BOARD_PPI_ADC_CS_INDEX, 8, &config);
 
     clk_config.cycle_num = 6;

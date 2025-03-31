@@ -2,6 +2,15 @@
 # Ampak wmhd driver library - CHANGELOG
 #
 
+## [Version 1.0.11 B006]
+  - Update Wi-Fi Firmware for fixing sdio ioctl timeout issue 
+    when long time testing with iperf.
+  - Update high througput feature without using patch function.
+
+## [Version 1.0.11 B005]
+  - Modify Wi-Fi 5GHz default bandwith of SoftAP from 20MHz to 80MHz. 
+  - Adding patch to support high througput on SoftAP mode.
+
 ## [Version 1.0.11 B003]
   - For Support Wi-Fi Module AP6256 (bcm43456c5) only.
-  - Update Wi-Fi Firmware for support high throughput.
+  - Update Wi-Fi Firmware for support high througput.

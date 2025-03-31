@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -35,7 +35,7 @@ hpm_stat_t tsw_init(TSW_Type *ptr)
     tsw_dma_config_t config;
 
     /* Disable all MACs(TX/RX) */
-    tsw_ep_disable_all_mac_ctrl(ptr, TSW_RXFIFO_E1);
+    tsw_ep_disable_all_mac_ctrl(ptr, tsw_mac_type_emac);
 
     /* Set Mac Address */
     tsw_ep_set_mac_addr(ptr, BOARD_TSW_PORT, mac, true);
@@ -47,7 +47,7 @@ hpm_stat_t tsw_init(TSW_Type *ptr)
     tsw_set_port_interface(ptr, BOARD_TSW_PORT, BOARD_TSW_PORT_ITF);
 
     /* Enable all MACs(TX/RX) */
-    tsw_ep_enable_all_mac_ctrl(ptr, TSW_RXFIFO_E1);
+    tsw_ep_enable_all_mac_ctrl(ptr, tsw_mac_type_emac);
 
     /* Clear CAM */
     tsw_clear_cam(ptr);
@@ -61,10 +61,10 @@ hpm_stat_t tsw_init(TSW_Type *ptr)
     /* Get the default DMA config */
     tsw_get_default_dma_config(&config);
 
-    /* Initilaize DMA for sending */
+    /* Initialize DMA for sending */
     tsw_init_send(ptr, &config);
 
-    for (uint8_t i = 0; i < TSW_RECV_DESC_COUNT; i++) {
+    for (uint8_t i = 0; i < TSW_SEND_DESC_COUNT; i++) {
         *send_buff[i] = BOARD_TSW_PORT + 1;
     }
 

@@ -16,7 +16,7 @@ extern struct hpm_master_receive_buf canopen_rx_buf;
 static uint32_t hpm_mcan_get_first_filter_index(const mcan_rx_message_t *buf,
                                         const struct hpm_can_data *data)
 {
-    uint32_t filter_index = -EINVAL;
+    int32_t filter_index = -EINVAL;
     uint32_t ext_filter_count = data->ext_filter_count;
     uint32_t std_filter_count = data->std_filter_count;
 
@@ -84,7 +84,7 @@ void hpm_mcan_get_message_from_rxbuf(const struct device *dev, uint32_t buf_inde
     }
 
     /* Handle RX filter callback */
-    if (filter_index != -EINVAL) {
+    if (filter_index != (uint32_t)-EINVAL) {
         /* If RTR bit does not match filter RTR mask and bit, drop current frame */
         bool rtr_filter_mask = (data->filter_rtr_mask & BIT(filter_index)) != 0;
         bool rtr_filter = (data->filter_rtr & BIT(filter_index)) != 0;
@@ -152,7 +152,7 @@ void hpm_mcan_get_message_from_rxfifo(const struct device *dev, uint32_t fifo_in
     }
 
     /* Handle RX filter callback */
-    if (filter_index != -EINVAL) {
+    if (filter_index != (uint32_t)-EINVAL) {
         /* If RTR bit does not match filter RTR mask and bit, drop current frame */
         bool rtr_filter_mask = (data->filter_rtr_mask & BIT(filter_index)) != 0;
         bool rtr_filter = (data->filter_rtr & BIT(filter_index)) != 0;
@@ -553,12 +553,8 @@ void convert_can_frame_to_mcan_frame(const struct can_frame *frame,
 }
 
 int hpm_mcan_send(const struct device *dev,
-                        const struct can_frame *frame,
-                        k_timeout_t timeout,
-                        can_tx_callback_t callback,
-                        void *user_data)
+                        const struct can_frame *frame)
 {
-    int ret;
     const struct hpm_can_config *cfg = dev->config;
     struct hpm_can_data *data = dev->data;
     MCAN_Type *can = cfg->base;

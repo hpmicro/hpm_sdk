@@ -16,6 +16,8 @@
 #define XPI_USE_PORT_A_MASK (0)
 #define XPI_USE_PORT_SHIFT (0x8)
 
+#define ROMAPI_SUPPORTS_HYBRIDXPI() (ROM_API_TABLE_ROOT->xpi_nor_driver_if->version >= 0x56010300)
+
 typedef struct {
     uint32_t total_sz_in_bytes;
     uint32_t sector_sz_in_bytes;
@@ -25,7 +27,6 @@ __attribute__ ((section(".flash_algo.data"))) xpi_nor_config_t nor_config;
 __attribute__ ((section(".flash_algo.data"))) bool xpi_inited = false;
 __attribute__ ((section(".flash_algo.data"))) uint32_t channel = xpi_channel_a1;
 __attribute__ ((section(".flash_algo.data"))) XPI_Type *xpi_base;
-
 
 __attribute__ ((section(".flash_algo.text"))) void refresh_device_size(XPI_Type *base, xpi_nor_config_option_t *option)
 {
@@ -73,6 +74,10 @@ __attribute__ ((section(".flash_algo.text"))) uint32_t flash_init(uint32_t flash
         return stat;
     }
 
+    if (ROMAPI_SUPPORTS_HYBRIDXPI()) {
+        ROM_API_TABLE_ROOT->xpi_nor_driver_if->enable_hybrid_xpi(xpi_base);
+    }
+
     refresh_device_size(xpi_base, &cfg_option);
 
     nor_config.device_info.clk_freq_for_non_read_cmd = 0;
@@ -89,6 +94,9 @@ __attribute__ ((section(".flash_algo.text"))) uint32_t flash_erase(uint32_t flas
 
     left = size;
     start = address;
+    if (ROMAPI_SUPPORTS_HYBRIDXPI()) {
+        start += flash_base;
+    }
     block_size = nor_config.device_info.block_size_kbytes * 1024;
     if (left >= block_size) {
         align = block_size - (start % block_size);
@@ -119,6 +127,9 @@ __attribute__ ((section(".flash_algo.text"))) uint32_t flash_program(uint32_t fl
 {
     hpm_stat_t stat;
 
+    if (ROMAPI_SUPPORTS_HYBRIDXPI()) {
+        address += flash_base;
+    }
     stat = ROM_API_TABLE_ROOT->xpi_nor_driver_if->program(xpi_base, channel, &nor_config, buf, address, size);
     return stat;
 }
@@ -127,6 +138,9 @@ __attribute__ ((section(".flash_algo.text"))) uint32_t flash_read(uint32_t flash
 {
     hpm_stat_t stat;
 
+    if (ROMAPI_SUPPORTS_HYBRIDXPI()) {
+        address += flash_base;
+    }
     stat = rom_xpi_nor_read(xpi_base, channel, &nor_config, buf, address, size);
     return stat;
 }

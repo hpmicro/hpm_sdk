@@ -7,7 +7,7 @@
   <description>HPM6800 device</description>
   <licenseText>
     /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -1177,229 +1177,6 @@ always read 0.</description>
             </fields>
           </register>
         </cluster>
-      </registers>
-    </peripheral>
-    <peripheral>
-      <name>SDADC</name>
-      <description>SDADC</description>
-      <groupName>SDADC</groupName>
-      <baseAddress>0xf0018000</baseAddress>
-      <addressBlock>
-        <offset>0x0</offset>
-        <size>0x18</size>
-        <usage>registers</usage>
-      </addressBlock>
-      <registers>
-        <register>
-          <name>CTRL</name>
-          <description>SDADC control register</description>
-          <addressOffset>0x0</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0x0FFFEFFF</resetMask>
-          <fields>
-            <field>
-              <name>SDM_CFG</name>
-              <description>SDM analog part Configuration</description>
-              <bitOffset>20</bitOffset>
-              <bitWidth>8</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>SDM_PGA_CE_SEL</name>
-              <description>SDM_PGA_CE_SEL</description>
-              <bitOffset>18</bitOffset>
-              <bitWidth>2</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>SDM_PGA_CH_SEL</name>
-              <description>SDM_PGA_CH_SEL</description>
-              <bitOffset>14</bitOffset>
-              <bitWidth>4</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>CFG_CDS_CMD</name>
-              <description>config the common mode voltage of CDS CAP</description>
-              <bitOffset>13</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>LP_MODE_SDM</name>
-              <description>lowpower mode of SDM</description>
-              <bitOffset>9</bitOffset>
-              <bitWidth>3</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>LP_MODE_PGA</name>
-              <description>lowpower mode of PGA</description>
-              <bitOffset>6</bitOffset>
-              <bitWidth>3</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>ANA_PWUP</name>
-              <description>1. Asserted to power up the analog part
-0: Shut off the power for the analog part</description>
-              <bitOffset>5</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>BYPASS_PGA</name>
-              <description>1: PGA is bypassed
-0: PGA is enabled</description>
-              <bitOffset>4</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>CONT_MODE</name>
-              <description>1: continuous mode of ADC conversion
-0: burst mode of ADC conversion.</description>
-              <bitOffset>3</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>RST_SDM</name>
-              <description>1: reset  SDM. Should be de-asserted by software
-0: no reset SDM</description>
-              <bitOffset>2</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>RST_PGA</name>
-              <description>1: reset  PGA. Should be de-asserted by software
-0: no reset PGA</description>
-              <bitOffset>1</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>EN</name>
-              <description>Module enable, to enable clok divder. Etc</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>CLK_DIV</name>
-          <description>clock divider</description>
-          <addressOffset>0x4</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0x000000FF</resetMask>
-          <fields>
-            <field>
-              <name>FACTOR</name>
-              <description>0: disable clock output
-1: bypass the clock divider
-2: divide the clock by 2
-…
-n: divide the clock by n</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>8</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>TTB</name>
-          <description>Total Transfer Bits</description>
-          <addressOffset>0x8</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>VAL</name>
-              <description>the maximal number of output bits when ADC is in burst mode</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>20</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>START_OP</name>
-          <description>Start_Of_Operation</description>
-          <addressOffset>0xc</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFE1</resetMask>
-          <fields>
-            <field>
-              <name>SDM_EN</name>
-              <description>1. Enable sigma-delta ADC.  Auto clear in burst mode when TTB bits are received. In cont mode, must be cleared manually.
-0: disable sigma-delta ADC</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>MISC</name>
-          <description>Misc Control</description>
-          <addressOffset>0x10</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
-          <fields>
-            <field>
-              <name>BURST_DONE_IE</name>
-              <description>Asserted to enable BURST_DONE event interrupt. Should not be asserted for continuous mode.</description>
-              <bitOffset>1</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>PDM_CLK_SEL</name>
-              <description>Asserted to use PDM clk input. Default to use MCLK which is directly from PLL.</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>ST</name>
-          <description>Status Register</description>
-          <addressOffset>0x14</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFF80007</resetMask>
-          <fields>
-            <field>
-              <name>ANA_RST</name>
-              <description>Asserted when analog module is in reset mode.</description>
-              <bitOffset>2</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-only</access>
-            </field>
-            <field>
-              <name>DIV_STABLE</name>
-              <description>Asserted when CLK_DIV reaches stable status. Cleared automatically when CLK_DIV[FACTOR] is assigned a different value.</description>
-              <bitOffset>1</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-only</access>
-            </field>
-            <field>
-              <name>BURST_DONE</name>
-              <description>Asserted when burst transfer is done. Auto cleared after the ST register is read while this bit is asserted.</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-only</access>
-            </field>
-          </fields>
-        </register>
       </registers>
     </peripheral>
     <peripheral>
@@ -4160,7 +3937,7 @@ User should set this bit before set CMPEN to 1.</description>
               <description>set this bitfield to trigger software counter sync event</description>
               <bitOffset>0</bitOffset>
               <bitWidth>4</bitWidth>
-              <access>read-write</access>
+              <access>write-only</access>
             </field>
           </fields>
         </register>
@@ -4570,7 +4347,7 @@ Note: Parity check is required once writing to this register. The result should 
           <addressOffset>0x0</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0x2FE2F03F</resetMask>
+          <resetMask>0x2FE0F03F</resetMask>
           <fields>
             <field>
               <name>CLK_SEL</name>
@@ -4612,13 +4389,6 @@ Note: Parity check is required once writing to this register. The result should 
 Once the lock mechanism takes effect, the CTRL0, CTRL1, timeout int register, timeout rst register, needs unlock before re-config them.
 The register update needs to be finished in the required period defined by UPD_OT_TIME register</description>
               <bitOffset>21</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>OT_SELF_CLEAR</name>
-              <description>overtime reset can be self released after 32 function cycles</description>
-              <bitOffset>17</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
@@ -5776,38 +5546,6 @@ bit1: 1, invisible to cpu0 fast gpio; 0: visible to cpu0 fast gpio</description>
           </fields>
         </register>
         <register>
-          <dim>16</dim>
-          <dimIncrement>0x4</dimIncrement>
-          <dimIndex>chn0,chn1,chn2,chn3,chn4,chn5,chn6,chn7,chn8,chn9,chn10,chn11,chn12,chn13,chn14,chn15</dimIndex>
-          <name>BUS_RESULT[%s]</name>
-          <description>no description available</description>
-          <addressOffset>0x400</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0x0001FFFF</resetMask>
-          <fields>
-            <field>
-              <name>VALID</name>
-              <description>set after conversion finished if wait_dis is set, cleared after software read.
-The first time read with 0 will trigger one new conversion.
-If SW read other channel when one channel conversion is in progress, it will not trigger new conversion at other channel, and will get old result with valid 0, also with read_cflct interrupt status bit set.
-the result may not realtime if software read once and wait  long time to read again</description>
-              <bitOffset>16</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-only</access>
-            </field>
-            <field>
-              <name>CHAN_RESULT</name>
-              <description>read this register will trigger one adc conversion.
-If wait_dis bit is set, SW will get the latest conversion result(not current one) with valid bit is 0, SW need polling valid bit till it's set to get current result
-If wait_dis bit is 0, SW can get the current conversion result with holding the bus, valid bit is always set at this mode. this is not recommended if channel sample time is too long</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>16</bitWidth>
-              <access>read-only</access>
-            </field>
-          </fields>
-        </register>
-        <register>
           <name>buf_cfg0</name>
           <description>No description available</description>
           <addressOffset>0x500</addressOffset>
@@ -6125,7 +5863,7 @@ it may be updated period according to config, also may be updated due to other q
               <name>CONVERT_CLOCK_NUMBER</name>
               <description>convert clock numbers, set to 21 (0x15) for 16bit mode, which means convert need 21 adc clock cycles(based on clock after divider);
 user can use small value to get faster conversion, but less accuracy, need to config cov_end_cnt at adc16_config1 also.
-Ex: use 200MHz bus clock for adc, set sample_clock_number to 4, sample_clock_number_shift to 0, covert_clk_number to 21 for 16bit mode, clock_divder to 3, then each ADC conversion(plus sample) need 25 cycles(50MHz).</description>
+Ex: use 200MHz bus clock for adc, set sample_clock_number to 4, sample_clock_number_shift to 0, covert_clk_number to 21 for 16bit mode, clock_divider to 3, then each ADC conversion(plus sample) need 25 cycles(50MHz).</description>
               <bitOffset>4</bitOffset>
               <bitWidth>5</bitWidth>
               <access>read-write</access>
@@ -12002,7 +11740,7 @@ clr to use ptpc0 for canx</description>
       <baseAddress>0xf1000000</baseAddress>
       <addressBlock>
         <offset>0x0</offset>
-        <size>0x404</size>
+        <size>0x400</size>
         <usage>registers</usage>
       </addressBlock>
       <registers>
@@ -13096,49 +12834,6 @@ typically -16 (0x1F0).</description>
             </fields>
           </register>
         </cluster>
-        <register>
-          <name>CLUT_LOAD</name>
-          <description>Clut Load Control Register</description>
-          <addressOffset>0x400</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0x8000007F</resetMask>
-          <fields>
-            <field>
-              <name>STR_HIGH</name>
-              <description>1'b1: Store 8+ CLUT tables through APB
-1'b0: Store 0-7 CLUT tables through APB</description>
-              <bitOffset>31</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>SEL_NUM</name>
-              <description>Selected CLUT Number
-The SEL_CLUT_NUM is used to select which plane's CLUT need to be updated. The hardware can only backup one CLUT setting and load, so the SEL_CLUT_NUM can't be changed when CLUT_LOAD[UPDATE_EN] is 1.
-. 3'h0 - PLANE 0
-. 3'h1 - PLANE 1
-. ------
-. 3'h7 - PLANE 7
-CLUT 8 can be modified via APB even when display is on.
-Currently CLUT for plane 0..7 cannot be modified via APB when display is on.  Can only be updated via CLUT_LOAD[UPDATE_EN] bit.</description>
-              <bitOffset>4</bitOffset>
-              <bitWidth>3</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>UPDATE_EN</name>
-              <description>CLUT Update Enable
-The bit is written to 1 when software want to update the Color Look Up Tables during display.
-If set to 1, software update selected CLUT due to SEL_CLUT_NUM setting, the table will be copied from CLUT8 during vertical blanking period after SHADOW_LOAD_EN is set to 1.
-If set to 0, software can update CLUT8 directly according to the CLUT memory map.
-Hardware will automatically clear this bit when selected CLUT is updated according to SEL_CLUT_NUM.</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
       </registers>
     </peripheral>
     <peripheral derivedFrom="LCDC">
@@ -53812,209 +53507,6 @@ this value will be added to ratio number</description>
               <description>force switch to crystal</description>
               <bitOffset>4</bitOffset>
               <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-      </registers>
-    </peripheral>
-    <peripheral>
-      <name>BUTN</name>
-      <description>BUTN</description>
-      <groupName>BUTN</groupName>
-      <baseAddress>0xf420c000</baseAddress>
-      <addressBlock>
-        <offset>0x0</offset>
-        <size>0xc</size>
-        <usage>registers</usage>
-      </addressBlock>
-      <registers>
-        <register>
-          <name>BTN_STATUS</name>
-          <description>Button status</description>
-          <addressOffset>0x0</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0x77770FFF</resetMask>
-          <fields>
-            <field>
-              <name>XWCLICK</name>
-              <description>wake button click status when power button held, write 1 to clear flag
-bit0: clicked
-bit1: double clicked
-bit2: tripple clicked</description>
-              <bitOffset>28</bitOffset>
-              <bitWidth>3</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>WCLICK</name>
-              <description>wake button click status, write 1 to clear flag
-bit0: clicked
-bit1: double clicked
-bit2: tripple clicked</description>
-              <bitOffset>24</bitOffset>
-              <bitWidth>3</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>XPCLICK</name>
-              <description>power button click status when wake button held, write 1 to clear flag
-bit0: clicked
-bit1: double clicked
-bit2: tripple clicked</description>
-              <bitOffset>20</bitOffset>
-              <bitWidth>3</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>PCLICK</name>
-              <description>power button click status, write 1 to clear flag
-bit0: clicked
-bit1: double clicked
-bit2: tripple clicked</description>
-              <bitOffset>16</bitOffset>
-              <bitWidth>3</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>DBTN</name>
-              <description>Dual button press status, write 1 to clear flag
-bit0: button pressed
-bit1: button confirmd
-bit2: button long pressed
-bit3: button long long pressed</description>
-              <bitOffset>8</bitOffset>
-              <bitWidth>4</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>WBTN</name>
-              <description>Wake button press status, write 1 to clear flag
-bit0: button pressed
-bit1: button confirmd
-bit2: button long pressed
-bit3: button long long pressed</description>
-              <bitOffset>4</bitOffset>
-              <bitWidth>4</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>PBTN</name>
-              <description>Power button press status, write 1 to clear flag
-bit0: button pressed
-bit1: button confirmd
-bit2: button long pressed
-bit3: button long long pressed</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>4</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>BTN_IRQ_MASK</name>
-          <description>Button interrupt mask</description>
-          <addressOffset>0x4</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0x77770FFF</resetMask>
-          <fields>
-            <field>
-              <name>XWCLICK</name>
-              <description>wake button click status when power button held interrupt enable
-bit0: clicked
-bit1: double clicked
-bit2: tripple clicked</description>
-              <bitOffset>28</bitOffset>
-              <bitWidth>3</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>WCLICK</name>
-              <description>wake button click interrupt enable
-bit0: clicked
-bit1: double clicked
-bit2: tripple clicked</description>
-              <bitOffset>24</bitOffset>
-              <bitWidth>3</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>XPCLICK</name>
-              <description>power button click status when wake button held interrupt enable
-bit0: clicked
-bit1: double clicked
-bit2: tripple clicked</description>
-              <bitOffset>20</bitOffset>
-              <bitWidth>3</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>PCLICK</name>
-              <description>power button click interrupt enable
-bit0: clicked
-bit1: double clicked
-bit2: tripple clicked</description>
-              <bitOffset>16</bitOffset>
-              <bitWidth>3</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>DBTN</name>
-              <description>Dual button press interrupt enable
-bit0: button pressed
-bit1: button confirmd
-bit2: button long pressed
-bit3: button long long pressed</description>
-              <bitOffset>8</bitOffset>
-              <bitWidth>4</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>WBTN</name>
-              <description>Wake button press interrupt enable
-bit0: button pressed
-bit1: button confirmd
-bit2: button long pressed
-bit3: button long long pressed</description>
-              <bitOffset>4</bitOffset>
-              <bitWidth>4</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>PBTN</name>
-              <description>Power button press interrupt enable
-bit0: button pressed
-bit1: button confirmd
-bit2: button long pressed
-bit3: button long long pressed</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>4</bitWidth>
-              <access>read-write</access>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>LED_INTENSE</name>
-          <description>Debounce setting</description>
-          <addressOffset>0x8</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0x000F000F</resetMask>
-          <fields>
-            <field>
-              <name>RLED</name>
-              <description>Rbutton brightness 0</description>
-              <bitOffset>16</bitOffset>
-              <bitWidth>4</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>PLED</name>
-              <description>Pbutton brightness 0</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>4</bitWidth>
               <access>read-write</access>
             </field>
           </fields>

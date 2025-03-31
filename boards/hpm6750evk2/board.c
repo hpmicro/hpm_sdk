@@ -27,8 +27,6 @@
 #include "hpm_enet_phy_common.h"
 #endif
 
-static board_timer_cb timer_cb;
-
 /**
  * @brief FLASH configuration option definitions:
  * option[0]:
@@ -320,6 +318,8 @@ void board_delay_us(uint32_t us)
     clock_cpu_delay_us(us);
 }
 
+#if !defined(NO_BOARD_TIMER_SUPPORT) || !NO_BOARD_TIMER_SUPPORT
+static board_timer_cb timer_cb;
 SDK_DECLARE_EXT_ISR_M(BOARD_CALLBACK_TIMER_IRQ, board_timer_isr)
 void board_timer_isr(void)
 {
@@ -347,6 +347,7 @@ void board_timer_create(uint32_t ms, board_timer_cb cb)
 
     gptmr_start_counter(BOARD_CALLBACK_TIMER, BOARD_CALLBACK_TIMER_CH);
 }
+#endif
 
 void board_i2c_bus_clear(I2C_Type *ptr)
 {
@@ -633,8 +634,8 @@ void board_init_clock(void)
     /* Connect Group1 to CPU1 */
     clock_connect_group_to_cpu(1, 1);
 
-    /* Bump up DCDC voltage to 1200mv */
-    pcfg_dcdc_set_voltage(HPM_PCFG, 1200);
+    /* Bump up DCDC voltage to 1275mv */
+    pcfg_dcdc_set_voltage(HPM_PCFG, 1275);
     pcfg_dcdc_switch_to_dcm_mode(HPM_PCFG);
 
     if (status_success != pllctl_init_int_pll_with_freq(HPM_PLLCTL, 0, BOARD_CPU_FREQ)) {

@@ -345,9 +345,18 @@ CPU_STK  *OSTaskStkInit (OS_TASK_PTR    p_task,
     *(--p_stk) = (CPU_STK) 0x02020202uL;       /* sp: Stack  pointer                                   */
     *(--p_stk) = (CPU_STK) OS_TaskReturn;      /* ra: return address                                   */
 
+    *(--p_stk) = (CPU_STK) 0x0uL;              /* resv                                                 */
+    *(--p_stk) = (CPU_STK) 0x0uL;              /* resv                                                 */
+    *(--p_stk) = (CPU_STK) 0x0uL;              /* mcctlbeginaddr                                       */
+    *(--p_stk) = (CPU_STK) 0x0uL;              /* mcctldata                                            */
+
 /* added by Hpmicro */
 #ifdef __riscv_flen
 #if __riscv_flen == 64
+    *(--p_stk) = (CPU_STK) 0x0uL;              /* resv                                                 */
+    *(--p_stk) = (CPU_STK) 0x0uL;              /* resv                                                 */
+    *(--p_stk) = (CPU_STK) 0x0uL;              /* resv                                                 */
+    *(--p_stk) = (CPU_STK) 0x0uL;              /* resv                                                 */
     *(--p_stk) = (CPU_STK) 0x00003880uL;       /* mstatus                                              */
     *(--p_stk) = (CPU_STK) 0x00003880uL;       /* mstatus                                              */
     *(--p_stk) = (CPU_STK) 0xb1b1b1b1uL;       /* ft31                                                 */
@@ -417,6 +426,8 @@ CPU_STK  *OSTaskStkInit (OS_TASK_PTR    p_task,
     *(--p_stk) = (CPU_STK) OS_TaskReturn;      /* ra: return address                                   */
     *(--p_stk) = (CPU_STK) OS_TaskReturn;      /* ra: return address                                   */
 #elif __riscv_flen == 32
+    *(--p_stk) = (CPU_STK) 0x0uL;              /* resv                                                 */
+    *(--p_stk) = (CPU_STK) 0x0uL;              /* resv                                                 */
     *(--p_stk) = (CPU_STK) 0x00003880uL;       /* mstatus                                              */
     *(--p_stk) = (CPU_STK) 0xb1b1b1b1uL;       /* ft31                                                 */
     *(--p_stk) = (CPU_STK) 0xb0b0b0b0uL;       /* ft30                                                 */

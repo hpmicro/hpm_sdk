@@ -44,7 +44,7 @@
 */
 
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -146,6 +146,8 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 {
     (void)netif;
 
+    hpm_stat_t stat;
+
 #if defined(NO_SYS) && !NO_SYS
     static xSemaphoreHandle xTxSemaphore = NULL;
 #endif
@@ -174,7 +176,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
         length += q->len;
     }
 
-    tsw_send_frame(BOARD_TSW, send_buff[id], length, id);
+    stat = tsw_send_frame(BOARD_TSW, send_buff[id], length, id);
 
 #if defined(NO_SYS) && !NO_SYS
         /* Give semaphore and exit */
@@ -182,7 +184,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
     }
 #endif
 
-    return ERR_OK;
+    return (stat == status_success) ? 0 : -1;
 }
 
 /**

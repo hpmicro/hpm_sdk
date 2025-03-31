@@ -48,7 +48,7 @@ typedef enum {
  *
  */
 typedef enum {
-    lobs_one_group_128_bits = 0,
+    lobs_one_group_96_bits = 0,
     lobs_two_group_8_bits
 } lobs_group_mode_t;    /**< lobs_group_mode_t */
 
@@ -60,6 +60,13 @@ typedef enum {
     lobs_sample_1_per_5 = 4,
     lobs_sample_1_per_6 = 5,
     lobs_sample_1_per_7 = 6,
+#if defined(HPM_IP_FEATURE_LOBS_SAMPLE_RATE_EXT) && HPM_IP_FEATURE_LOBS_SAMPLE_RATE_EXT
+    lobs_sample_1_per_10 = 9,
+    lobs_sample_1_per_50 = 49,
+    lobs_sample_1_per_100 = 99,
+    lobs_sample_1_per_500 = 499,
+    lobs_sample_1_per_1000 = 999,
+#endif
 } lobs_sample_rate_t;    /**< lobs_sample_rate_t */
 
 /**
@@ -129,6 +136,41 @@ typedef enum {
     lobs_next_state_4 = 0x10,
 } lobs_next_state_t;    /**< lobs_next_state_t */
 
+#if defined(HPM_IP_FEATURE_LOBS_IRQ_CTRL) && (HPM_IP_FEATURE_LOBS_IRQ_CTRL)
+/**
+ * @brief irq mask
+ *
+ */
+typedef enum {
+    lobs_irq_final_mask = LOBS_IRQ_EN_FINAL_EN_MASK,
+    lobs_irq_full_mask = LOBS_IRQ_EN_FULL_EN_MASK,
+} lobs_irq_mask_t;    /**< lobs_irq_mask_t */
+#endif
+
+#if defined(HPM_IP_FEATURE_LOBS_COMP_LOGIC) && (HPM_IP_FEATURE_LOBS_COMP_LOGIC)
+/**
+ * @brief compare logic
+ *
+ */
+typedef enum {
+    lobs_cmp_logic_and = 0,
+    lobs_cmp_logic_or,
+} lobs_cmp_logic_t;    /**< lobs_cmp_logic_t */
+#endif
+
+#if defined(HPM_IP_FEATURE_LOBS_TRIG_ADDR) && (HPM_IP_FEATURE_LOBS_TRIG_ADDR)
+/**
+ * @brief trig address index
+ *
+ */
+typedef enum {
+    lobs_trig_addr_idx_1 = 0,
+    lobs_trig_addr_idx_2,
+    lobs_trig_addr_idx_3,
+    lobs_trig_addr_idx_4,
+} lobs_trig_addr_idx_t;    /**< lobs_trig_addr_idx_t */
+#endif
+
 /**
  * @brief ctrl config structure
  *
@@ -164,6 +206,9 @@ typedef struct {
     uint8_t cmp_sig_bit[4];
     bool cmp_sig_en[4];
     bool cmp_golden_value[4];
+#if defined(HPM_IP_FEATURE_LOBS_COMP_LOGIC) && (HPM_IP_FEATURE_LOBS_COMP_LOGIC)
+    lobs_cmp_logic_t cmp_logic;
+#endif
 } lobs_state_config_t;    /**< lobs_state_config_t */
 
 /**
@@ -362,6 +407,62 @@ static inline bool lobs_is_trace_finish(LOBS_Type *lobs)
     return (LOBS_CTSR_FINALSTATE_GET(lobs->CTSR) != 0) ? true : false;
 }
 
+#if defined(HPM_IP_FEATURE_LOBS_IRQ_CTRL) && (HPM_IP_FEATURE_LOBS_IRQ_CTRL)
+/**
+ * @brief set lobs irq enable
+ *
+ * @param[in] lobs LOBS base address
+ * @param[in] mask irq mask, @ref lobs_irq_mask_t
+ */
+static inline void lobs_set_irq_enable(LOBS_Type *lobs, uint32_t mask)
+{
+    lobs->IRQ_EN |= mask;
+}
+
+/**
+ * @brief set lobs irq disable
+ *
+ * @param[in] lobs LOBS base address
+ * @param[in] mask irq mask, @ref lobs_irq_mask_t
+ */
+static inline void lobs_set_irq_disable(LOBS_Type *lobs, uint32_t mask)
+{
+    lobs->IRQ_EN &= ~mask;
+}
+
+/**
+ * @brief get lobs irq enable status
+ *
+ * @param[in] lobs LOBS base address
+ * @retval irq enable status, @ref lobs_irq_mask_t
+ */
+static inline uint32_t lobs_get_irq_enable_status(LOBS_Type *lobs)
+{
+    return lobs->IRQ_EN;
+}
+
+/**
+ * @brief get lobs irq status
+ *
+ * @param[in] lobs LOBS base address
+ * @retval irq status, @ref lobs_irq_mask_t
+ */
+static inline uint32_t lobs_get_irq_status(LOBS_Type *lobs)
+{
+    return lobs->IRQ_STS;
+}
+
+/**
+ * @brief clear lobs irq flag
+ *
+ * @param[in] lobs LOBS base address
+ * @param[in] mask irq mask, @ref lobs_irq_mask_t
+ */
+static inline void lobs_clear_irq_flag(LOBS_Type *lobs, uint32_t mask)
+{
+    lobs->IRQ_STS = mask;
+}
+#else
 /**
  * @brief clear lobs fifo overflow flag
  *
@@ -372,6 +473,7 @@ static inline void lobs_clear_fifo_overflow_flag(LOBS_Type *lobs)
 {
     lobs->STREAMCTRL |= LOBS_STREAMCTRL_FULL_CLEAR_MASK;
 }
+#endif
 
 /**
  * @brief lobs deinit
@@ -405,6 +507,17 @@ void lobs_two_group_mode_config(LOBS_Type *lobs, lobs_two_group_sel_t group, lob
  * @param[in] config state config structure pointer
  */
 void lobs_state_config(LOBS_Type *lobs, lobs_state_sel_t state, lobs_state_config_t *config);
+
+#if defined(HPM_IP_FEATURE_LOBS_TRIG_ADDR) && (HPM_IP_FEATURE_LOBS_TRIG_ADDR)
+/**
+ * @brief get lobs trig address
+ *
+ * @param[in] lobs LOBS base address
+ *
+ * @return uint32_t trace trig address
+ */
+uint32_t lobs_get_trig_address(LOBS_Type *lobs, lobs_trig_addr_idx_t idx);
+#endif
 
 #ifdef __cplusplus
 }

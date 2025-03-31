@@ -133,7 +133,7 @@ static void trigger_mux_init(void)
     trgm_config.invert = false;
     trgm_config.type = trgm_output_pulse_at_input_rising_edge;
     trgm_config.input = BOARD_APP_TRGM_PWM_INPUT;
-    trgm_output_config(HPM_TRGM0, HPM_TRGM0_OUTPUT_SRC_ADCX_PTRGI0A, &trgm_config);
+    trgm_output_config(HPM_TRGM0, BOARD_APP_QEI_TRG_ADC, &trgm_config);
 }
 #else
 static void pwm_init(void)

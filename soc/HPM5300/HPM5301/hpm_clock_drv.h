@@ -124,6 +124,7 @@ typedef enum _clock_name {
     clock_mbx0 = MAKE_CLOCK_NAME(sysctl_resource_mbx0, CLK_SRC_GROUP_AHB, 0),
     clock_crc0 = MAKE_CLOCK_NAME(sysctl_resource_crc0, CLK_SRC_GROUP_AHB, 1),
     clock_acmp0 = MAKE_CLOCK_NAME(sysctl_resource_acmp, CLK_SRC_GROUP_AHB, 2),
+    clock_mot0 = MAKE_CLOCK_NAME(sysctl_resource_mot0, CLK_SRC_GROUP_AHB, 5), /* for trgm and synt peripheral */
     clock_kman = MAKE_CLOCK_NAME(sysctl_resource_kman, CLK_SRC_GROUP_AHB, 8),
     clock_gpio = MAKE_CLOCK_NAME(sysctl_resource_gpio, CLK_SRC_GROUP_AHB, 9),
     clock_hdma = MAKE_CLOCK_NAME(sysctl_resource_hdma, CLK_SRC_GROUP_AHB, 10),

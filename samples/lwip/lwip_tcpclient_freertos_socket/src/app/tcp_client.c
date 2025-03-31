@@ -25,7 +25,7 @@ static void tcp_client_thread(void *arg)
     struct sockaddr_in client_addr;
     struct netif *netif = (struct netif *)arg;
 
-    IP4_ADDR(&ipaddr, REMOTE_IP_ADDR0, REMOTE_IP_ADDR1, REMOTE_IP_ADDR2, REMOTE_IP_ADDR3);
+    ip4addr_aton(HPM_STRINGIFY(REMOTE_IP_CONFIG), &ipaddr);
 
     while (!netif_is_link_up(netif)) {
         vTaskDelay(100);

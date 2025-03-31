@@ -21,7 +21,7 @@ volatile bool flag_trx_error;
 
 int main(void)
 {
-    sei_tranceiver_config_t tranceiver_config = { 0 };
+    sei_transceiver_config_t transceiver_config = { 0 };
     sei_data_format_config_t data_format_config = { 0 };
     sei_engine_config_t engine_config = { 0 };
     sei_state_transition_config_t state_transition_config = { 0 };
@@ -37,17 +37,17 @@ int main(void)
 
     sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, false);
     flag_trx_error = false;
-    /* [1] tranceiver config */
-    tranceiver_config.mode = sei_asynchronous_mode;
-    tranceiver_config.tri_sample = false;
-    tranceiver_config.src_clk_freq = clock_get_frequency(BOARD_MOTOR_CLK_NAME);
-    tranceiver_config.asynchronous_config.wait_len = 0;
-    tranceiver_config.asynchronous_config.data_len = 8;
-    tranceiver_config.asynchronous_config.parity_enable = false;
-    tranceiver_config.asynchronous_config.data_idle_high_z = false;
-    tranceiver_config.asynchronous_config.data_idle_state = sei_idle_high_state;
-    tranceiver_config.asynchronous_config.baudrate = 2500000;
-    sei_tranceiver_config_init(BOARD_SEI, BOARD_SEI_CTRL, &tranceiver_config);
+    /* [1] transceiver config */
+    transceiver_config.mode = sei_asynchronous_mode;
+    transceiver_config.tri_sample = false;
+    transceiver_config.src_clk_freq = clock_get_frequency(BOARD_MOTOR_CLK_NAME);
+    transceiver_config.asynchronous_config.wait_len = 0;
+    transceiver_config.asynchronous_config.data_len = 8;
+    transceiver_config.asynchronous_config.parity_enable = false;
+    transceiver_config.asynchronous_config.data_idle_high_z = false;
+    transceiver_config.asynchronous_config.data_idle_state = sei_idle_high_state;
+    transceiver_config.asynchronous_config.baudrate = 2500000;
+    sei_transceiver_config_init(BOARD_SEI, BOARD_SEI_CTRL, &transceiver_config);
 
     /* [2] data register config */
     /* cmd register : recv CF */

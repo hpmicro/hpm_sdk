@@ -20,9 +20,7 @@ const jpeg_sampling_t jpeg_supported_sampling[5] = {
 const jpeg_pixel_t jpeg_supported_pixel_format[6] = {
     {4, 1, 1, true}, /* JPEG_PIXEL_FORMAT_ARGB8888 */
     {2, 2, 2, true}, /* JPEG_PIXEL_FORMAT_RGB565 */
-    {2, 3, 0, false}, /* JPEG_PIXEL_FORMAT_YUV422H1P */
-    {1, 0, 0, false}, /* JPEG_PIXEL_FORMAT_YUV422H2P */
-    {1, 0, 0, false}, /* JPEG_PIXEL_FORMAT_YUV420 */
+    {2, 3, 3, false}, /* JPEG_PIXEL_FORMAT_YUV422H1P */
     {1, 0, 0, false}, /* JPEG_PIXEL_FORMAT_Y8 */
 };
 
@@ -70,9 +68,9 @@ void jpeg_init(JPEG_Type *ptr)
     jpeg_clear_cfg(ptr);
 }
 
-static bool jpeg_need_csc(jpeg_pixel_format_t in, jpeg_pixel_format_t out)
+static bool jpeg_need_csc(jpeg_pixel_format_t format)
 {
-    return (jpeg_supported_pixel_format[in].is_rgb != jpeg_supported_pixel_format[out].is_rgb);
+    return jpeg_supported_pixel_format[format].is_rgb;
 }
 
 static bool jpeg_is_valid_size(uint8_t format, uint32_t width, uint32_t height)
@@ -143,6 +141,7 @@ hpm_stat_t jpeg_start_encode(JPEG_Type *ptr, jpeg_job_config_t *config)
     uint32_t macro_block_count;
     uint32_t macro_block_bytes;
     uint32_t total_bytes;
+    uint16_t pitch;
     jpeg_sampling_t *sampling;
 
     if (!jpeg_is_valid_size(config->jpeg_format, config->width_in_pixel, config->height_in_pixel)) {
@@ -158,6 +157,11 @@ hpm_stat_t jpeg_start_encode(JPEG_Type *ptr, jpeg_job_config_t *config)
             + 2 * JPEG_HC(sampling) * JPEG_VC(sampling)) << 6;
     total_bytes = macro_block_count * macro_block_bytes;
 
+    if (config->stride)
+        pitch = config->stride;
+    else
+        pitch = config->width_in_pixel * jpeg_supported_pixel_format[config->in_pixel_format].pixel_width;
+
     /* input DMA setting */
     ptr->INDMA_MISC = JPEG_INDMA_MISC_IN_DMA_ID_SET(0)
         | JPEG_INDMA_MISC_MAX_OT_SET(HPM_JPEG_DEFAULT_MAX_OT)
@@ -166,7 +170,7 @@ hpm_stat_t jpeg_start_encode(JPEG_Type *ptr, jpeg_job_config_t *config)
         | JPEG_INDMA_MISC_PACK_DIR_SET(config->in_byte_order);
     ptr->INDMABASE = JPEG_INDMABASE_ADDR_SET(config->in_buffer);
     ptr->INDMA_CTRL0 = JPEG_INDMA_CTRL0_TTLEN_SET(total_bytes)
-        | JPEG_INDMA_CTRL0_PITCH_SET(config->width_in_pixel * jpeg_supported_pixel_format[config->in_pixel_format].pixel_width);
+        | JPEG_INDMA_CTRL0_PITCH_SET(pitch);
     ptr->INDMA_CTRL1 = JPEG_INDMA_CTRL1_ROWLEN_SET(total_bytes >> 16);
 
     ptr->INXT_CMD = JPEG_INXT_CMD_ADDR_SET(5) | JPEG_INXT_CMD_OP_VALID_MASK;
@@ -189,7 +193,7 @@ hpm_stat_t jpeg_start_encode(JPEG_Type *ptr, jpeg_job_config_t *config)
     ptr->WIDTH = config->width_in_pixel - 1;
     ptr->HEIGHT = config->height_in_pixel - 1;
 
-    if (jpeg_need_csc(config->in_pixel_format, config->out_pixel_format)) {
+    if (jpeg_need_csc(config->in_pixel_format)) {
         if (config->enable_ycbcr) {
             ptr->RGB2YUV_COEF0 = JPEG_RGB2YUV_COEF0_C0_SET(0x42)
                 | JPEG_RGB2YUV_COEF0_UV_OFFSET_SET(0x80)
@@ -240,6 +244,7 @@ hpm_stat_t jpeg_start_decode(JPEG_Type *ptr,
     uint32_t macro_block_count;
     uint32_t macro_block_bytes;
     uint32_t total_bytes;
+    uint16_t pitch;
     jpeg_sampling_t *sampling;
 
     if (!jpeg_is_valid_size(config->jpeg_format, config->width_in_pixel, config->height_in_pixel)) {
@@ -254,6 +259,11 @@ hpm_stat_t jpeg_start_decode(JPEG_Type *ptr,
     macro_block_bytes = (JPEG_HY(sampling) * JPEG_VY(sampling)
             + 2 * JPEG_HC(sampling) * JPEG_VC(sampling)) << 6;
     total_bytes = macro_block_count * macro_block_bytes;
+
+    if (config->stride)
+        pitch = config->stride;
+    else
+        pitch = config->width_in_pixel * jpeg_supported_pixel_format[config->out_pixel_format].pixel_width;
 
     /* input DMA setting */
     ptr->INDMA_MISC = JPEG_INDMA_MISC_IN_DMA_ID_SET(1)
@@ -275,7 +285,7 @@ hpm_stat_t jpeg_start_decode(JPEG_Type *ptr,
         | JPEG_OUTDMA_MISC_PACK_DIR_SET(config->out_byte_order);
     ptr->OUTDMABASE = JPEG_OUTDMABASE_ADDR_SET(config->out_buffer);
     ptr->OUTDMA_CTRL0 = JPEG_OUTDMA_CTRL0_TTLEN_SET(total_bytes)
-        | JPEG_OUTDMA_CTRL0_PITCH_SET(config->width_in_pixel * jpeg_supported_pixel_format[config->out_pixel_format].pixel_width);
+        | JPEG_OUTDMA_CTRL0_PITCH_SET(pitch);
     ptr->OUTDMA_CTRL1 = JPEG_OUTDMA_CTRL1_ROWLEN_SET(total_bytes >> 16);
     ptr->ONXT_CMD = JPEG_ONXT_CMD_ADDR_SET(5) | JPEG_ONXT_CMD_OP_VALID_MASK;
 
@@ -286,7 +296,7 @@ hpm_stat_t jpeg_start_decode(JPEG_Type *ptr,
 
     ptr->CSC_COEF0 = 0x4ab01f0
         | JPEG_CSC_COEF0_YCBCR_MODE_SET(config->enable_ycbcr)
-        | JPEG_CSC_COEF0_ENABLE_SET(jpeg_need_csc(config->in_pixel_format, config->out_pixel_format));
+        | JPEG_CSC_COEF0_ENABLE_SET(jpeg_need_csc(config->out_pixel_format));
     ptr->CSC_COEF1 = 0x01980204;
     ptr->CSC_COEF2 = 0x0730079C;
 

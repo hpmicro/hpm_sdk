@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -610,6 +610,8 @@ hpm_stat_t emmc_probe_device(emmc_card_t *card)
 
         card->ocr.ocr_word = recv_ocr.ocr_word;
 
+        /* Get the addressing mode */
+        card->is_byte_addressing_mode = (card->ocr.access_mode == 0);
     } while (false);
 
     return status;
@@ -845,7 +847,10 @@ hpm_stat_t emmc_read_blocks(emmc_card_t *card, uint8_t *buffer, uint32_t start_b
                 cmd->cmd_index = sdmmc_cmd_read_single_block;
             }
             cmd->resp_type = (sdxc_dev_resp_type_t) sdmmc_resp_r1;
-            cmd->cmd_argument = start_block;
+            uint32_t current_addr = card->is_byte_addressing_mode ?
+                                    start_block * card->device_attribute.sector_size :
+                                    start_block;
+            cmd->cmd_argument = current_addr;
             data->block_size = SDMMC_BLOCK_SIZE_DEFAULT;
             data->block_cnt = read_block_count;
             data->rx_data = (uint32_t *) sdmmc_get_sys_addr(card->host, (uint32_t) buffer);
@@ -912,7 +917,10 @@ hpm_stat_t emmc_write_blocks(emmc_card_t *card, const uint8_t *buffer, uint32_t 
                 data->enable_auto_cmd12 = false;
             }
             cmd->resp_type = (sdxc_dev_resp_type_t) sdmmc_resp_r1;
-            cmd->cmd_argument = start_block;
+            uint32_t current_addr = card->is_byte_addressing_mode ?
+                                    start_block * card->device_attribute.sector_size :
+                                    start_block;
+            cmd->cmd_argument = current_addr;
             data->block_size = SDMMC_BLOCK_SIZE_DEFAULT;
             data->block_cnt = write_block_count;
             data->tx_data = (const uint32_t *) sdmmc_get_sys_addr(card->host, (uint32_t) buffer);
@@ -976,7 +984,10 @@ hpm_stat_t emmc_erase_blocks(emmc_card_t *card,
         uint32_t erase_timeout = emmc_calculate_erase_timeout(card, start_block, block_count);
         /* Send erase start */
         cmd->cmd_index = emmc_cmd_erase_group_start;
-        cmd->cmd_argument = start_block;
+        uint32_t current_addr = card->is_byte_addressing_mode ?
+                                    start_block * card->device_attribute.sector_size :
+                                    start_block;
+        cmd->cmd_argument = current_addr;
         cmd->resp_type = (sdxc_dev_resp_type_t) sdmmc_resp_r1;
         status = emmc_send_cmd(card, cmd);
         HPM_BREAK_IF(status != status_success);

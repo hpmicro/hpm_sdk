@@ -66,7 +66,7 @@
       {%- endif %}
       {%- endif %}
       {%- if target["cplusplus"] %}
-      gcc_cplusplus_language_standard="c++11"
+      gcc_cplusplus_language_standard="c++{{target["cplusplus"]}}"
       libcxx="Yes (No Exceptions)"
       {%- endif %}
       {%- else %}

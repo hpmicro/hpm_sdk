@@ -36,7 +36,7 @@ HPM SDK项目是基于HPMicro 公司的MCU编写的软件开发包，支持多�
   SDK文档可以进行本地编译，成功编译之后可以通过以下入口访问本地文档:
   - <HPM_SDK_BASE>>/docs/index.html
   - <HPM_SDK_BASE>>/docs/index_zh.html
-  > 文档编译方式请参考[hpm_sdk Getting Started](docs/zh/get_started.md)
+  > 文档编译方式请参考[hpm_sdk Getting Started](docs/zh/get_started.rst)
 - 在线文档：
   - http://hpm-sdk.readthedocs.io/
   - http://hpm-sdk-zh.readthedocs.io/

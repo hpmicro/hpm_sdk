@@ -20,8 +20,6 @@
 
 lv_coremark_ctx_t g_lv_cm_ctx;
 
-void update_coremark_result(lv_coremark_ctx_t *cm_ctx);
-
 int app_main(void)
 {
     board_init();
@@ -31,6 +29,7 @@ int app_main(void)
     hpm_lvgl_init();
 
     printf("lvgl dualcore coremark example\n");
+    init_coremark_cpu_freq();
     init_coremark_context();
     init_coremark_result(&g_lv_cm_ctx);
     lv_dualcore_coremark_demo();

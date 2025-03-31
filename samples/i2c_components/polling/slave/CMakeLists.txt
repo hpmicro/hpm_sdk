@@ -7,7 +7,7 @@ set(CONFIG_HPM_I2C 1)
 set(CONFIG_DMA_MGR 1)
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
-project(i2c_components_dma_slave_demo)
+project(i2c_components_polling_slave_demo)
 
 sdk_app_src(src/main.c)
 generate_ide_projects()

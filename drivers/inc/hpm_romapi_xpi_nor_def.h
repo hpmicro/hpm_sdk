@@ -303,6 +303,114 @@ enum {
 };
 
 /**
+ * @brief XPI NOR driver interface
+ */
+typedef struct {
+    /**< XPI NOR driver interface: API version */
+    uint32_t version;
+    /**< XPI NOR driver interface: Get FLASH configuration */
+    hpm_stat_t (*get_config)(XPI_Type *base, xpi_nor_config_t *nor_cfg, xpi_nor_config_option_t *cfg_option);
+    /**< XPI NOR driver interface: initialize FLASH */
+    hpm_stat_t (*init)(XPI_Type *base, xpi_nor_config_t *nor_config);
+    /**< XPI NOR driver interface: Enable write access to FLASH */
+    hpm_stat_t
+    (*enable_write)(XPI_Type *base, xpi_xfer_channel_t channel, const xpi_nor_config_t *nor_config, uint32_t addr);
+    /**< XPI NOR driver interface: Get FLASH status register */
+    hpm_stat_t (*get_status)(XPI_Type *base,
+                             xpi_xfer_channel_t channel,
+                             const xpi_nor_config_t *nor_config,
+                             uint32_t addr,
+                             uint16_t *out_status);
+    /**< XPI NOR driver interface: Wait when FLASH is still busy */
+    hpm_stat_t
+    (*wait_busy)(XPI_Type *base, xpi_xfer_channel_t channel, const xpi_nor_config_t *nor_config, uint32_t addr);
+    /**< XPI NOR driver interface: erase a specified FLASH region */
+    hpm_stat_t (*erase)(XPI_Type *base,
+                        xpi_xfer_channel_t channel,
+                        const xpi_nor_config_t *nor_config,
+                        uint32_t start,
+                        uint32_t length);
+    /**< XPI NOR driver interface: Erase the whole FLASH */
+    hpm_stat_t (*erase_chip)(XPI_Type *base, xpi_xfer_channel_t channel, const xpi_nor_config_t *nor_config);
+    /**< XPI NOR driver interface: Erase specified FLASH sector */
+    hpm_stat_t
+    (*erase_sector)(XPI_Type *base, xpi_xfer_channel_t channel, const xpi_nor_config_t *nor_config, uint32_t addr);
+    /**< XPI NOR driver interface: Erase specified FLASH block */
+    hpm_stat_t
+    (*erase_block)(XPI_Type *base, xpi_xfer_channel_t channel, const xpi_nor_config_t *nor_config, uint32_t addr);
+    /**< XPI NOR driver interface: Program data to specified FLASH address */
+    hpm_stat_t (*program)(XPI_Type *base,
+                          xpi_xfer_channel_t channel,
+                          const xpi_nor_config_t *nor_config,
+                          const uint32_t *src,
+                          uint32_t dst_addr,
+                          uint32_t length);
+    /**< XPI NOR driver interface: read data from specified FLASH address */
+    hpm_stat_t (*read)(XPI_Type *base,
+                       xpi_xfer_channel_t channel,
+                       const xpi_nor_config_t *nor_config,
+                       uint32_t *dst,
+                       uint32_t start,
+                       uint32_t length);
+    /**< XPI NOR driver interface: program FLASH page using nonblocking interface */
+    hpm_stat_t (*page_program_nonblocking)(XPI_Type *base,
+                                           xpi_xfer_channel_t channel,
+                                           const xpi_nor_config_t *nor_config,
+                                           const uint32_t *src,
+                                           uint32_t dst_addr,
+                                           uint32_t length);
+    /**< XPI NOR driver interface: erase FLASH sector using nonblocking interface */
+    hpm_stat_t (*erase_sector_nonblocking)(XPI_Type *base,
+                                           xpi_xfer_channel_t channel,
+                                           const xpi_nor_config_t *nor_config,
+                                           uint32_t addr);
+    /**< XPI NOR driver interface: erase FLASH block using nonblocking interface */
+    hpm_stat_t (*erase_block_nonblocking)(XPI_Type *base,
+                                          xpi_xfer_channel_t channel,
+                                          const xpi_nor_config_t *nor_config,
+                                          uint32_t addr);
+    /**< XPI NOR driver interface: erase the whole FLASh using nonblocking interface */
+    hpm_stat_t (*erase_chip_nonblocking)(XPI_Type *base,
+                                         xpi_xfer_channel_t channel,
+                                         const xpi_nor_config_t *nor_config);
+
+    uint32_t reserved0[3];
+
+    /**< XPI NOR driver interface: automatically configuration flash based on the cfg_option setting */
+    hpm_stat_t (*auto_config)(XPI_Type *base, xpi_nor_config_t *nor_cfg, xpi_nor_config_option_t *cfg_option);
+
+    /**< XPI NOR driver interface: Get FLASH properties */
+    hpm_stat_t (*get_property)(XPI_Type *base, xpi_nor_config_t *nor_cfg, uint32_t property_id, uint32_t *value);
+
+    uint32_t reserved1;
+
+    /**< Post Erase Sector Nonblocking operation: For Hybrid mode only */
+    hpm_stat_t (*post_erase_sector_nonblocking)(XPI_Type *base, xpi_xfer_channel_t chn, xpi_nor_config_t *nor_cfg, uint32_t addr);
+
+     /**< Post Erase Block Nonblocking operation: For Hybrid mode only */
+    hpm_stat_t (*post_erase_block_nonblocking)(XPI_Type *base, xpi_xfer_channel_t chn, xpi_nor_config_t *nor_cfg, uint32_t addr);
+
+    /**< Post Erase Chip Nonblocking operation: For Hybrid mode only */
+    hpm_stat_t (*post_erase_chip_nonblocking)(XPI_Type *base, xpi_xfer_channel_t chn, xpi_nor_config_t *nor_cfg);
+
+     /**< Post Page Program Nonblocking operation: For Hybrid mode only */
+    hpm_stat_t (*post_page_program_nonblocking)(XPI_Type *base, xpi_xfer_channel_t chn, xpi_nor_config_t *nor_config,
+                                           const uint32_t *src, uint32_t dst_addr, uint32_t length);
+    /**< Turn on the power for Internal FLASH */
+    void (*sip_flash_power_on)(XPI_Type *base);
+
+    /**< Turn off the power for Internal FLASH */
+    void (*sip_flash_power_off)(XPI_Type *base);
+
+    /**< Enable Hybrid mode */
+    void (*enable_hybrid_xpi)(XPI_Type *base);
+
+    /**< Disable Hybrid mode */
+    void (*disable_hybrid_xpi)(XPI_Type *base);
+
+} xpi_nor_driver_interface_t;
+
+/**
  * @}
  */
 

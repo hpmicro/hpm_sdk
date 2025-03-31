@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -13,115 +13,58 @@
 
 /* Exported typedef ------------------------------------------------------------*/
 typedef struct {
-    uint32_t ip_addr0;
-    uint32_t ip_addr1;
-    uint32_t ip_addr2;
-    uint32_t ip_addr3;
-    uint32_t netmask0;
-    uint32_t netmask1;
-    uint32_t netmask2;
-    uint32_t netmask3;
-    uint32_t gw0;
-    uint32_t gw1;
-    uint32_t gw2;
-    uint32_t gw3;
+    char *ip_addr;
+    char *netmask;
+    char *gw;
 } ip_init_t;
 
 typedef struct {
-    uint8_t mac_addr0;
-    uint8_t mac_addr1;
-    uint8_t mac_addr2;
-    uint8_t mac_addr3;
-    uint8_t mac_addr4;
-    uint8_t mac_addr5;
+    char *mac_addr;
 } mac_init_t;
 
-/* Exported macro ------------------------------------------------------------*/
-#define DHCP_START              1
-#define DHCP_WAIT_ADDRESS       2
-#define DHCP_ADDRESS_ASSIGNED   3
-#define DHCP_TIMEOUT            4
-#define DHCP_LINK_DOWN          5
-
 /* MAC ADDRESS */
-#define MAC0_ADDR0   0x98
-#define MAC0_ADDR1   0x2C
-#define MAC0_ADDR2   0xBC
-#define MAC0_ADDR3   0xB1
-#define MAC0_ADDR4   0x9F
-#define MAC0_ADDR5   0x17
+#ifndef MAC0_CONFIG
+#define MAC0_CONFIG 98:2c:bc:b1:9f:27
+#endif
 
-#define MAC1_ADDR0   0x98
-#define MAC1_ADDR1   0x2C
-#define MAC1_ADDR2   0xBC
-#define MAC1_ADDR3   0xB1
-#define MAC1_ADDR4   0x9F
-#define MAC1_ADDR5   0x27
+#ifndef MAC1_CONFIG
+#define MAC1_CONFIG 98:2c:bc:b1:9f:37
+#endif
 
 /* Static IP ADDRESS */
-#define IP0_ADDR0    192
-#define IP0_ADDR1    168
-#define IP0_ADDR2    100
-#define IP0_ADDR3    10
+#ifndef IP0_CONFIG
+#define IP0_CONFIG 192.168.100.10
+#endif
 
-#define IP1_ADDR0    192
-#define IP1_ADDR1    168
-#define IP1_ADDR2    200
-#define IP1_ADDR3    10
+#ifndef IP1_CONFIG
+#define IP1_CONFIG 192.168.200.10
+#endif
 
-/* NETMASK */
-#define NETMASK0_ADDR0   255
-#define NETMASK0_ADDR1   255
-#define NETMASK0_ADDR2   255
-#define NETMASK0_ADDR3   0
+/* Netmask */
+#ifndef NETMASK0_CONFIG
+#define NETMASK0_CONFIG 255.255.255.0
+#endif
 
-#define NETMASK1_ADDR0   255
-#define NETMASK1_ADDR1   255
-#define NETMASK1_ADDR2   255
-#define NETMASK1_ADDR3   0
+#ifndef NETMASK1_CONFIG
+#define NETMASK1_CONFIG 255.255.255.0
+#endif
 
 /* Gateway Address */
-#define GW0_ADDR0   192
-#define GW0_ADDR1   168
-#define GW0_ADDR2   100
-#define GW0_ADDR3   1
+#ifndef GW0_CONFIG
+#define GW0_CONFIG 192.168.100.1
+#endif
 
-#define GW1_ADDR0   192
-#define GW1_ADDR1   168
-#define GW1_ADDR2   200
-#define GW1_ADDR3   1
+#ifndef GW1_CONFIG
+#define GW1_CONFIG 192.168.200.1
+#endif
 
 /* Remote IP Address */
-#ifndef REMOTE_IP0_ADDR0
-#define REMOTE_IP0_ADDR0 192
+#ifndef REMOTE_IP0_CONFIG
+#define REMOTE_IP0_CONFIG 192.168.100.5
 #endif
 
-#ifndef REMOTE_IP0_ADDR1
-#define REMOTE_IP0_ADDR1 168
-#endif
-
-#ifndef REMOTE_IP0_ADDR2
-#define REMOTE_IP0_ADDR2 100
-#endif
-
-#ifndef REMOTE_IP0_ADDR3
-#define REMOTE_IP0_ADDR3 5
-#endif
-
-#ifndef REMOTE_IP1_ADDR0
-#define REMOTE_IP1_ADDR0 192
-#endif
-
-#ifndef REMOTE_IP1_ADDR1
-#define REMOTE_IP1_ADDR1 168
-#endif
-
-#ifndef REMOTE_IP1_ADDR2
-#define REMOTE_IP1_ADDR2 200
-#endif
-
-#ifndef REMOTE_IP1_ADDR3
-#define REMOTE_IP1_ADDR3 5
+#ifndef REMOTE_IP1_CONFIG
+#define REMOTE_IP1_CONFIG 192.168.200.5
 #endif
 
 #ifdef __cplusplus

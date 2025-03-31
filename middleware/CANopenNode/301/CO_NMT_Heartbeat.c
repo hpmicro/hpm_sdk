@@ -104,6 +104,11 @@ CO_ReturnError_t CO_NMT_init(
 {
     CO_ReturnError_t ret = CO_ERROR_NO;
 
+    /* fix build warnings, if enable CO_CONFIG_NMT & CO_CONFIG_NMT_MASTER, need delete these lines */
+    (void)(NMT_CANdevTx);
+    (void)(NMT_txIdx);
+    (void)(CANidTxNMT);
+
     /* verify arguments */
     if (NMT == NULL || emPr == NULL || NMT_CANdevRx == NULL || HB_CANdevTx == NULL
 #if (CO_CONFIG_NMT) & CO_CONFIG_NMT_MASTER

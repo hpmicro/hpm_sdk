@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -122,7 +122,7 @@ typedef struct {
  * POLARITY (RW)
  *
  * one bit for one pwm channel, it's used as shadow register when pwm_cfg0.polarity_opt0 is set.
- * output polarity, set to 1 will invert the output(after pwm selection, pair mode, dead area insertion, before force/fault)
+ * output polarity, set to 1 will invert the output
  */
 #define PWMV2_FORCE_MODE_POLARITY_MASK (0xFF0000UL)
 #define PWMV2_FORCE_MODE_POLARITY_SHIFT (16U)
@@ -228,7 +228,7 @@ typedef struct {
 /*
  * OUT_POLARITY (RW)
  *
- * output polarity, set to 1 will invert the output(after pwm selection, pair mode, dead area insertion, before force/fault)
+ * output polarity, set to 1 will invert the output.
  * when polarity_opt0 is set, this bit is controlled by shadow register, can't be writable; read as working register
  * use compare channel settings(in cmp_cfg) as shadow register update
  */

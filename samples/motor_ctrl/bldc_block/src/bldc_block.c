@@ -25,7 +25,8 @@
 #define MOTOR0_SPD                  (20.0)  /* r/s   delta:0.1r/s    -40 - -5 r/s 40 - 5 r/s */
 #define SPEED_MAX                   (40)
 #define SPEED_MIN                   (5)
-#define BLOCK_TMR_RLD (BOARD_BLDC_TMR_RELOAD / 10) /** 100us */
+#define TIMER_TS                    (1000)   /**<  1000us */
+#define BLOCK_TMR_RLD               (BOARD_BLDC_TMR_RELOAD * MCL_USEC_TO_MSEC(TIMER_TS))
 #define MOTOR_POLE_NUM              (2)
 #define PWM_FREQUENCY               (20000)
 #define PWM_RELOAD                  ((motor_clock_hz/PWM_FREQUENCY) - 1) /*20K hz  = 200 000 000/PWM_RELOAD */
@@ -38,6 +39,11 @@
 
 #ifdef HPMSOC_HAS_HPMSDK_QEIV2
 #define BOARD_QEI_BASE              BOARD_BLDC_QEIV2_BASE
+#endif
+
+#ifndef BOARD_BLDC_BLOCK_SPEED_KP
+#define BOARD_BLDC_BLOCK_SPEED_KP (0.0005f)
+#define BOARD_BLDC_BLOCK_SPEED_KI (0.000009f)
 #endif
 
 int32_t motor_clock_hz;
@@ -110,14 +116,14 @@ void motor_init(void)
     motor0.cfg.mcl.physical.motor.rpm_max = 3500;
     motor0.cfg.mcl.physical.motor.vbus = 24;
     motor0.cfg.mcl.physical.motor.hall = phase_120;
-    motor0.cfg.mcl.physical.time.encoder_process_ts = 0.0001f;
-    motor0.cfg.mcl.physical.time.speed_loop_ts = 0.0001f * 2;
+    motor0.cfg.mcl.physical.time.encoder_process_ts = MCL_USEC_TO_SEC(TIMER_TS);
+    motor0.cfg.mcl.physical.time.speed_loop_ts = MCL_USEC_TO_SEC(TIMER_TS) * 2;
     motor0.cfg.mcl.physical.time.mcu_clock_tick = clock_get_frequency(clock_cpu0);
     motor0.cfg.mcl.physical.time.pwm_clock_tick = clock_get_frequency(BOARD_BLDC_QEI_CLOCK_SOURCE);
 
     motor0.cfg.encoder.communication_interval_us = 0;
     motor0.cfg.encoder.disable_start_sample_interrupt = true;
-    motor0.cfg.encoder.period_call_time_s = 0.0001f;
+    motor0.cfg.encoder.period_call_time_s = MCL_USEC_TO_SEC(TIMER_TS);
     motor0.cfg.encoder.precision = 6;
     motor0.cfg.encoder.speed_abs_switch_m_t = 5;
     motor0.cfg.encoder.speed_cal_method = encoder_method_m;
@@ -149,8 +155,8 @@ void motor_init(void)
     motor0.cfg.control.speed_pid_cfg.cfg.integral_min = -0.95;
     motor0.cfg.control.speed_pid_cfg.cfg.output_max = 1;
     motor0.cfg.control.speed_pid_cfg.cfg.output_min = -1;
-    motor0.cfg.control.speed_pid_cfg.cfg.kp = 0.00005;
-    motor0.cfg.control.speed_pid_cfg.cfg.ki = 0.000004;
+    motor0.cfg.control.speed_pid_cfg.cfg.kp = BOARD_BLDC_BLOCK_SPEED_KP;
+    motor0.cfg.control.speed_pid_cfg.cfg.ki = BOARD_BLDC_BLOCK_SPEED_KI;
 
     motor0.cfg.drivers.callback.init = pwm_init;
     motor0.cfg.drivers.callback.enable_all_drivers = enable_all_pwm_output;
@@ -701,7 +707,7 @@ void isr_gptmr(void)
     if (gptmr_check_status(BOARD_BLDC_TMR_1MS, GPTMR_CH_CMP_IRQ_MASK(BOARD_BLDC_TMR_CH, BOARD_BLDC_TMR_CMP))) {
         gptmr_clear_status(BOARD_BLDC_TMR_1MS, GPTMR_CH_CMP_IRQ_MASK(BOARD_BLDC_TMR_CH, BOARD_BLDC_TMR_CMP));
         hpm_mcl_detect_loop(&motor0.detect);
-        hpm_mcl_encoder_process(&motor0.encoder, motor0.cfg.mcl.physical.time.mcu_clock_tick / 10000);
+        hpm_mcl_encoder_process(&motor0.encoder, motor0.cfg.mcl.physical.time.mcu_clock_tick / MCL_USEC_TO_HZ(TIMER_TS));
         hpm_mcl_loop(&motor0.loop);
     }
 }

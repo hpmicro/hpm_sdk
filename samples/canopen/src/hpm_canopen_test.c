@@ -11,7 +11,7 @@ volatile struct hpm_master_receive_buf canopen_rx_buf = {0};
 void hpm_sys_reboot(void)
 {
     /*Enable software reset*/
-    ppor_reset_mask_set_source_enable(HPM_PPOR, ppor_reset_software);
+    ppor_reset_mask_set_source_enable(HPM_PPOR, (uint32_t)ppor_reset_software);
     ppor_sw_reset(HPM_PPOR, 1000);
     while (1) {
     }
@@ -88,7 +88,7 @@ CO_ReturnError_t set_slave_device_mode(CO_CANmodule_t *CANmodule)
     return ret;
 }
 
-void PDO_test(CO_CANmodule_t *CANmodule, uint32_t node_id)
+void PDO_test(uint32_t node_id)
 {
     struct can_frame frame;
     uint8_t PDO_received_msg = 0;

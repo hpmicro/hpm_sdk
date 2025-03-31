@@ -1,4 +1,4 @@
-# Copyright (c) 2023-2024 HPMicro
+# Copyright (c) 2023-2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -6,8 +6,6 @@ cmake_minimum_required(VERSION 3.13)
 set(CONFIG_ECLIPSE_THREADX 1)
 set(CONFIG_ECLIPSE_THREADX_NETXDUO 1)
 set(CONFIG_ECLIPSE_THREADX_NETXDUO_ADDONS_TELNET 1)
-# This should be defined to include DHCP source code
-set(CONFIG_ECLIPSE_THREADX_NETXDUO_ADDONS_DHCP 1)
 
 # Select the phy on the board
 set(CONFIG_ENET_PHY 1)
@@ -36,10 +34,6 @@ if("${HPM_BUILD_TYPE}" STREQUAL "")
 endif()
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
-
-sdk_compile_definitions(-DNX_DRIVER_ENABLE_DEFERRED=1)
-# Comment this if there is no need to enable DHCP
-sdk_compile_definitions(-DCONFIG_NETX_ENABLE_DHCP=1)
 
 project(netx_duo_telnet)
 

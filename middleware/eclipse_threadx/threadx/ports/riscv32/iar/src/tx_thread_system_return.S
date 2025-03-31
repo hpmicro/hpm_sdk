@@ -27,6 +27,7 @@
 /*  #include "tx_api.h"
     #include "tx_thread.h"
     #include "tx_timer.h"  */
+#include "hpm_csr_regs.h"
 
     EXTERN      _tx_thread_execute_ptr
     EXTERN      _tx_thread_current_ptr
@@ -91,12 +92,12 @@ _tx_thread_system_return:
 
 #ifdef __riscv_flen
 #if __riscv_flen == 32
-    addi    sp, sp, -116                                ; Allocate space on the stack - with floating point enabled
+    addi    sp, sp, -136                                ; Allocate space on the stack - with floating point enabled
 #elif __riscv_flen == 64
-    addi    sp, sp, -168
+    addi    sp, sp, -188
 #endif
 #else
-    addi    sp, sp, -64                                 ; Allocate space on the stack - without floating point enabled
+    addi    sp, sp, -84                                 ; Allocate space on the stack - without floating point enabled
 #endif
 
 #ifdef __riscv_flen
@@ -104,41 +105,45 @@ _tx_thread_system_return:
 
     /* Store floating point preserved registers.  */
 
-    fsw     f8,  0x3C(sp)                               ; Store fs0
-    fsw     f9,  0x40(sp)                               ; Store fs1
-    fsw     f18, 0x44(sp)                               ; Store fs2
-    fsw     f19, 0x48(sp)                               ; Store fs3
-    fsw     f20, 0x4C(sp)                               ; Store fs4
-    fsw     f21, 0x50(sp)                               ; Store fs5
-    fsw     f22, 0x54(sp)                               ; Store fs6
-    fsw     f23, 0x58(sp)                               ; Store fs7
-    fsw     f24, 0x5C(sp)                               ; Store fs8
-    fsw     f25, 0x60(sp)                               ; Store fs9
-    fsw     f26, 0x64(sp)                               ; Store fs10
-    fsw     f27, 0x68(sp)                               ; Store fs11
+    fsw     f8,  0x50(sp)                               ; Store fs0
+    fsw     f9,  0x54(sp)                               ; Store fs1
+    fsw     f18, 0x58(sp)                               ; Store fs2
+    fsw     f19, 0x5C(sp)                               ; Store fs3
+    fsw     f20, 0x60(sp)                               ; Store fs4
+    fsw     f21, 0x64(sp)                               ; Store fs5
+    fsw     f22, 0x68(sp)                               ; Store fs6
+    fsw     f23, 0x6C(sp)                               ; Store fs7
+    fsw     f24, 0x70(sp)                               ; Store fs8
+    fsw     f25, 0x74(sp)                               ; Store fs9
+    fsw     f26, 0x78(sp)                               ; Store fs10
+    fsw     f27, 0x7C(sp)                               ; Store fs11
     csrr    t0, fcsr
-    sw      t0, 0x6C(sp)                                ; Store fcsr
+    sw      t0, 0x80(sp)                                ; Store fcsr
 #elif __riscv_flen == 64
 
     /* Store floating point preserved registers.  */
 
-    fsd     f8,  0x40(sp)                               ; Store fs0
-    fsd     f9,  0x48(sp)                               ; Store fs1
-    fsd     f18, 0x50(sp)                               ; Store fs2
-    fsd     f19, 0x58(sp)                               ; Store fs3
-    fsd     f20, 0x60(sp)                               ; Store fs4
-    fsd     f21, 0x68(sp)                               ; Store fs5
-    fsd     f22, 0x70(sp)                               ; Store fs6
-    fsd     f23, 0x78(sp)                               ; Store fs7
-    fsd     f24, 0x80(sp)                               ; Store fs8
-    fsd     f25, 0x88(sp)                               ; Store fs9
-    fsd     f26, 0x90(sp)                               ; Store fs10
-    fsd     f27, 0x98(sp)                               ; Store fs11
+    fsd     f8,  0x50(sp)                               ; Store fs0
+    fsd     f9,  0x58(sp)                               ; Store fs1
+    fsd     f18, 0x60(sp)                               ; Store fs2
+    fsd     f19, 0x68(sp)                               ; Store fs3
+    fsd     f20, 0x70(sp)                               ; Store fs4
+    fsd     f21, 0x78(sp)                               ; Store fs5
+    fsd     f22, 0x80(sp)                               ; Store fs6
+    fsd     f23, 0x88(sp)                               ; Store fs7
+    fsd     f24, 0x90(sp)                               ; Store fs8
+    fsd     f25, 0x98(sp)                               ; Store fs9
+    fsd     f26, 0xA0(sp)                               ; Store fs10
+    fsd     f27, 0xA8(sp)                               ; Store fs11
     csrr    t0, fcsr
-    sw      t0, 0xA0(sp)                                ; Store fcsr
+    sw      t0, 0xB0(sp)                                ; Store fcsr
 #endif
 #endif
 
+    csrr    t0, CSR_MCCTLBEGINADDR
+    sw      t0, 0x48(sp)                                ; Store mcctlbeginaddr
+    csrr    t0, CSR_MCCTLDATA
+    sw      t0, 0x4C(sp)                                ; Store mcctldata
 
     sw      x0, 0(sp)                                   ; Solicited stack type
     sw      x1, 0x34(sp)                                ; Save RA

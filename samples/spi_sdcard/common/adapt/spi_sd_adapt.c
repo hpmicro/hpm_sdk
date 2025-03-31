@@ -28,7 +28,7 @@ static hpm_stat_t write(uint8_t *buffer, uint32_t size);
 static hpm_stat_t read(uint8_t *buffer, uint32_t size);
 
 static sdcard_spi_interface_t g_spi_io;
-static ATTR_PLACE_AT(".ahb_sram") uint8_t tx_dummy[SPI_SD_BLOCK_SIZE] = {0xFF};
+ATTR_PLACE_AT_NONCACHEABLE uint8_t tx_dummy[SPI_SD_BLOCK_SIZE] = {0xFF};
 
 #if defined(USE_DMA_TRANSFER) && (USE_DMA_TRANSFER == 1)
 static volatile bool rxdma_complete;
@@ -55,7 +55,7 @@ hpm_stat_t spi_sd_init(void)
     board_init_spi_pins_with_gpio_as_cs(SD_SPI_BASE);
 
     hpm_spi_get_default_init_config(&init_config);
-    init_config.direction = msb_first;
+    init_config.direction = spi_msb_first;
     init_config.mode = spi_master_mode;
     init_config.clk_phase = spi_sclk_sampling_even_clk_edges;
     init_config.clk_polarity = spi_sclk_high_idle;
@@ -73,8 +73,8 @@ hpm_stat_t spi_sd_init(void)
     }
 
 #if defined(USE_DMA_TRANSFER) && (USE_DMA_TRANSFER == 1)
-    if (hpm_spi_dma_install_callback(SD_SPI_BASE, spi_txdma_complete_callback, spi_rxdma_complete_callback) != status_success) {
-        printf("hpm_spi_dma_install_callback fail\n");
+    if (hpm_spi_dma_mgr_install_callback(SD_SPI_BASE, spi_txdma_complete_callback, spi_rxdma_complete_callback) != status_success) {
+        printf("hpm_spi_dma_mgr_install_callback fail\n");
         while (1) {
         }
     }

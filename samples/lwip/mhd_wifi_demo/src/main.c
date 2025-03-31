@@ -27,14 +27,15 @@ SDK_DECLARE_EXT_ISR_M(BOARD_APP_SDIO_SDXC_IRQ, wmhd_host_sdio_isr)
 
 void task_init(void *param);
 
-#ifdef __SEGGER_RTL_VERSION
-__attribute__((used)) int _impure_ptr; /* Workaround for fixing compiling error with SES */
-#endif
 
 int main(void)
 {
     board_init();
     board_init_led_pins();
+
+#if defined(HPM_SDMMC_HOST_ENABLE_IRQ) && (HPM_SDMMC_HOST_ENABLE_IRQ == 1)
+    intc_m_enable_irq_with_priority(BOARD_APP_SDIO_SDXC_IRQ, 1);
+#endif
 
     if (pdPASS != xTaskCreate(task_init, "task_init", 1024U, NULL, task_init_PRIORITY, NULL)) {
         while (1) {
@@ -91,7 +92,6 @@ void task_init(void *param)
 
         wmhd_config_hpm_sdio_instances();
         wmhd_sdio_set_slot_and_maxclk(1, 0);
-        wmhd_sta_tput_patch(1);
         wmhd_thread_config(0, mhd_task_PRIORITY, MHD_THREAD_STACK_SIZE);
         wmhd_module_init();
     } else {

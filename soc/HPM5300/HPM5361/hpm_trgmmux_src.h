@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -236,14 +236,22 @@
 #define HPM_TRGM0_OUTPUT_SRC_PLB_IN_29                     (0x5DUL)  /* PLB module input 29 */
 #define HPM_TRGM0_OUTPUT_SRC_PLB_IN_30                     (0x5EUL)  /* PLB module input 30 */
 #define HPM_TRGM0_OUTPUT_SRC_PLB_IN_31                     (0x5FUL)  /* PLB module input 31 */
-#define HPM_TRGM0_OUTPUT_SRC_MOT_GPIO0                     (0x60UL)  /* TRGM Output 0 (output to IO) */
-#define HPM_TRGM0_OUTPUT_SRC_MOT_GPIO1                     (0x61UL)  /* TRGM Output 1 (output to IO) */
-#define HPM_TRGM0_OUTPUT_SRC_MOT_GPIO2                     (0x62UL)  /* TRGM Output 2 (output to IO) */
-#define HPM_TRGM0_OUTPUT_SRC_MOT_GPIO3                     (0x63UL)  /* TRGM Output 3 (output to IO) */
-#define HPM_TRGM0_OUTPUT_SRC_MOT_GPIO4                     (0x64UL)  /* TRGM Output 4 (output to IO) */
-#define HPM_TRGM0_OUTPUT_SRC_MOT_GPIO5                     (0x65UL)  /* TRGM Output 5 (output to IO) */
-#define HPM_TRGM0_OUTPUT_SRC_MOT_GPIO6                     (0x66UL)  /* TRGM Output 6 (output to IO) */
-#define HPM_TRGM0_OUTPUT_SRC_MOT_GPIO7                     (0x67UL)  /* TRGM Output 7 (output to IO) */
+#define HPM_TRGM0_OUTPUT_SRC_MOT_GPIO0                     (0x60UL)  /* TRGM Output 0 (output to IO) (dropped macro  please use macro TRGM0_P0) */
+#define HPM_TRGM0_OUTPUT_SRC_TRGM0_P0                      (0x60UL)  /* TRGM Output 0 (output to IO) */
+#define HPM_TRGM0_OUTPUT_SRC_MOT_GPIO1                     (0x61UL)  /* TRGM Output 1 (output to IO) (dropped macro  please use macro TRGM0_P1) */
+#define HPM_TRGM0_OUTPUT_SRC_TRGM0_P1                      (0x61UL)  /* TRGM Output 1 (output to IO) */
+#define HPM_TRGM0_OUTPUT_SRC_MOT_GPIO2                     (0x62UL)  /* TRGM Output 2 (output to IO) (dropped macro  please use macro TRGM0_P2) */
+#define HPM_TRGM0_OUTPUT_SRC_TRGM0_P2                      (0x62UL)  /* TRGM Output 2 (output to IO) */
+#define HPM_TRGM0_OUTPUT_SRC_MOT_GPIO3                     (0x63UL)  /* TRGM Output 3 (output to IO) (dropped macro  please use macro TRGM0_P3) */
+#define HPM_TRGM0_OUTPUT_SRC_TRGM0_P3                      (0x63UL)  /* TRGM Output 3 (output to IO) */
+#define HPM_TRGM0_OUTPUT_SRC_MOT_GPIO4                     (0x64UL)  /* TRGM Output 4 (output to IO) (dropped macro  please use macro TRGM0_P4) */
+#define HPM_TRGM0_OUTPUT_SRC_TRGM0_P4                      (0x64UL)  /* TRGM Output 4 (output to IO) */
+#define HPM_TRGM0_OUTPUT_SRC_MOT_GPIO5                     (0x65UL)  /* TRGM Output 5 (output to IO) (dropped macro  please use macro TRGM0_P5) */
+#define HPM_TRGM0_OUTPUT_SRC_TRGM0_P5                      (0x65UL)  /* TRGM Output 5 (output to IO) */
+#define HPM_TRGM0_OUTPUT_SRC_MOT_GPIO6                     (0x66UL)  /* TRGM Output 6 (output to IO) (dropped macro  please use macro TRGM0_P6) */
+#define HPM_TRGM0_OUTPUT_SRC_TRGM0_P6                      (0x66UL)  /* TRGM Output 6 (output to IO) */
+#define HPM_TRGM0_OUTPUT_SRC_MOT_GPIO7                     (0x67UL)  /* TRGM Output 7 (output to IO) (dropped macro  please use macro TRGM0_P7) */
+#define HPM_TRGM0_OUTPUT_SRC_TRGM0_P7                      (0x67UL)  /* TRGM Output 7 (output to IO) */
 #define HPM_TRGM0_OUTPUT_SRC_PWM_IN8                       (0x68UL)  /* PWM timer x capture input 8 */
 #define HPM_TRGM0_OUTPUT_SRC_PWM_IN9                       (0x69UL)  /* PWM timer x capture input 9 */
 #define HPM_TRGM0_OUTPUT_SRC_PWM_IN10                      (0x6AUL)  /* PWM timer x capture input 10 */
@@ -295,14 +303,22 @@
 #define HPM_TRGM0_FILTER_SRC_PWM1_IN5                      (0xDUL)   /* PWM timer 1 capture Input 5 */
 #define HPM_TRGM0_FILTER_SRC_PWM1_IN6                      (0xEUL)   /* PWM timer 1 capture Input 6 */
 #define HPM_TRGM0_FILTER_SRC_PWM1_IN7                      (0xFUL)   /* PWM timer 1 capture Input 7 */
-#define HPM_TRGM0_FILTER_SRC_TRGM_IN0                      (0x10UL)  /* TRGM input 0 */
-#define HPM_TRGM0_FILTER_SRC_TRGM_IN1                      (0x11UL)  /* TRGM input 1 */
-#define HPM_TRGM0_FILTER_SRC_TRGM_IN2                      (0x12UL)  /* TRGM input 2 */
-#define HPM_TRGM0_FILTER_SRC_TRGM_IN3                      (0x13UL)  /* TRGM input 3 */
-#define HPM_TRGM0_FILTER_SRC_TRGM_IN4                      (0x14UL)  /* TRGM input 4 */
-#define HPM_TRGM0_FILTER_SRC_TRGM_IN5                      (0x15UL)  /* TRGM input 5 */
-#define HPM_TRGM0_FILTER_SRC_TRGM_IN6                      (0x16UL)  /* TRGM input 6 */
-#define HPM_TRGM0_FILTER_SRC_TRGM_IN7                      (0x17UL)  /* TRGM input 7 */
+#define HPM_TRGM0_FILTER_SRC_TRGM_IN0                      (0x10UL)  /* TRGM input 0 (dropped macro  please use macro TRGM0_P00) */
+#define HPM_TRGM0_FILTER_SRC_TRGM_P00                      (0x10UL)  /* TRGM input 0 from IO */
+#define HPM_TRGM0_FILTER_SRC_TRGM_IN1                      (0x11UL)  /* TRGM input 1 (dropped macro  please use macro TRGM0_P00) */
+#define HPM_TRGM0_FILTER_SRC_TRGM_P01                      (0x11UL)  /* TRGM input 1 from IO */
+#define HPM_TRGM0_FILTER_SRC_TRGM_IN2                      (0x12UL)  /* TRGM input 2 (dropped macro  please use macro TRGM0_P00) */
+#define HPM_TRGM0_FILTER_SRC_TRGM_P02                      (0x12UL)  /* TRGM input 2 from IO */
+#define HPM_TRGM0_FILTER_SRC_TRGM_IN3                      (0x13UL)  /* TRGM input 3 (dropped macro  please use macro TRGM0_P00) */
+#define HPM_TRGM0_FILTER_SRC_TRGM_P03                      (0x13UL)  /* TRGM input 3 from IO */
+#define HPM_TRGM0_FILTER_SRC_TRGM_IN4                      (0x14UL)  /* TRGM input 4 (dropped macro  please use macro TRGM0_P00) */
+#define HPM_TRGM0_FILTER_SRC_TRGM_P04                      (0x14UL)  /* TRGM input 4 from IO */
+#define HPM_TRGM0_FILTER_SRC_TRGM_IN5                      (0x15UL)  /* TRGM input 5 (dropped macro  please use macro TRGM0_P00) */
+#define HPM_TRGM0_FILTER_SRC_TRGM_P05                      (0x15UL)  /* TRGM input 5 from IO */
+#define HPM_TRGM0_FILTER_SRC_TRGM_IN6                      (0x16UL)  /* TRGM input 6 (dropped macro  please use macro TRGM0_P00) */
+#define HPM_TRGM0_FILTER_SRC_TRGM_P06                      (0x16UL)  /* TRGM input 6 from IO */
+#define HPM_TRGM0_FILTER_SRC_TRGM_IN7                      (0x17UL)  /* TRGM input 7 (dropped macro  please use macro TRGM0_P00) */
+#define HPM_TRGM0_FILTER_SRC_TRGM_P07                      (0x17UL)  /* TRGM input 7 from IO */
 #define HPM_TRGM0_FILTER_SRC_PWM0_FAULT0                   (0x18UL)  /* PWM timer 0 Input fault0 */
 #define HPM_TRGM0_FILTER_SRC_PWM0_FAULT1                   (0x19UL)  /* PWM timer 0 Input fault1 */
 #define HPM_TRGM0_FILTER_SRC_PWM1_FAULT0                   (0x1AUL)  /* PWM timer 1 Input fault0 */

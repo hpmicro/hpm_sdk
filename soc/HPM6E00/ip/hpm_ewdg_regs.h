@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -83,16 +83,6 @@ Note: Parity check is required once writing to this register. The result should 
 #define EWDG_CTRL0_CFG_LOCK_SHIFT (21U)
 #define EWDG_CTRL0_CFG_LOCK_SET(x) (((uint32_t)(x) << EWDG_CTRL0_CFG_LOCK_SHIFT) & EWDG_CTRL0_CFG_LOCK_MASK)
 #define EWDG_CTRL0_CFG_LOCK_GET(x) (((uint32_t)(x) & EWDG_CTRL0_CFG_LOCK_MASK) >> EWDG_CTRL0_CFG_LOCK_SHIFT)
-
-/*
- * OT_SELF_CLEAR (RW)
- *
- * overtime reset can be self released after 32 function cycles
- */
-#define EWDG_CTRL0_OT_SELF_CLEAR_MASK (0x20000UL)
-#define EWDG_CTRL0_OT_SELF_CLEAR_SHIFT (17U)
-#define EWDG_CTRL0_OT_SELF_CLEAR_SET(x) (((uint32_t)(x) << EWDG_CTRL0_OT_SELF_CLEAR_SHIFT) & EWDG_CTRL0_OT_SELF_CLEAR_MASK)
-#define EWDG_CTRL0_OT_SELF_CLEAR_GET(x) (((uint32_t)(x) & EWDG_CTRL0_OT_SELF_CLEAR_MASK) >> EWDG_CTRL0_OT_SELF_CLEAR_SHIFT)
 
 /*
  * REF_OT_REQ (RW)

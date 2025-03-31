@@ -402,7 +402,7 @@ hpm_stat_t ov7725_check_chip_id(camera_context_t *context);
  *
  * @param [in] context camera_context_t
  * @param [in] reg_values register-value pair in 2-d array form, ex. reg_values[][2] = {{COM3, 0x1}};
- * @parma [in] count register-value pair count in 2-d array
+ * @param [in] count register-value pair count in 2-d array
  * @retval status_success if everything is okay
  */
 hpm_stat_t ov7725_load_settings(camera_context_t *context, uint8_t *reg_values, uint32_t count);

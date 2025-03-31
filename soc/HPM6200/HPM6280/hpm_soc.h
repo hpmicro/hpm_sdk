@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -433,10 +433,6 @@
 #define HPM_SDP_BASE (0xF304C000UL)
 /* SDP base pointer */
 #define HPM_SDP ((SDP_Type *) HPM_SDP_BASE)
-
-/* Address of ROMC instances */
-/* ROMC base address */
-#define HPM_ROMC_BASE (0xF3054000UL)
 
 #include "hpm_sysctl_regs.h"
 /* Address of SYSCTL instances */

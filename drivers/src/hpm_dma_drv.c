@@ -36,9 +36,7 @@ hpm_stat_t dma_setup_channel(DMA_Type *ptr, uint8_t ch_num, dma_channel_config_t
 #endif
 
     ptr->INTSTATUS = (DMA_INTSTATUS_TC_SET(1) | DMA_INTSTATUS_ABORT_SET(1) | DMA_INTSTATUS_ERROR_SET(1)) << ch_num;
-    tmp = DMA_CHCTRL_CTRL_SRCBUSINFIDX_SET(0)
-        | DMA_CHCTRL_CTRL_DSTBUSINFIDX_SET(0)
-        | DMA_CHCTRL_CTRL_PRIORITY_SET(ch->priority)
+    tmp =  DMA_CHCTRL_CTRL_PRIORITY_SET(ch->priority)
         | DMA_CHCTRL_CTRL_SRCBURSTSIZE_SET(ch->src_burst_size)
         | DMA_CHCTRL_CTRL_SRCWIDTH_SET(ch->src_width)
         | DMA_CHCTRL_CTRL_DSTWIDTH_SET(ch->dst_width)
@@ -105,9 +103,7 @@ hpm_stat_t dma_config_linked_descriptor(DMA_Type *ptr, dma_linked_descriptor_t *
     descriptor->linked_ptr_high = DMA_CHCTRL_LLPOINTERH_LLPOINTERH_SET(config->linked_ptr_high);
 #endif
 
-    tmp = DMA_CHCTRL_CTRL_SRCBUSINFIDX_SET(0)
-        | DMA_CHCTRL_CTRL_DSTBUSINFIDX_SET(0)
-        | DMA_CHCTRL_CTRL_PRIORITY_SET(config->priority)
+    tmp = DMA_CHCTRL_CTRL_PRIORITY_SET(config->priority)
         | DMA_CHCTRL_CTRL_SRCBURSTSIZE_SET(config->src_burst_size)
         | DMA_CHCTRL_CTRL_SRCWIDTH_SET(config->src_width)
         | DMA_CHCTRL_CTRL_DSTWIDTH_SET(config->dst_width)

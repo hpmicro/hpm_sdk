@@ -55,6 +55,15 @@ int32_t motor_clock_hz;
 #error "BLDC_CURRENT_SET_TIME_MS must be smaller than 250"
 #endif
 
+#ifndef BOARD_BLDC_HFI_SPEED_LOOP_KI
+
+#define BOARD_BLDC_HFI_SPEED_LOOP_KP MOTOR0_HFI_KP
+#define BOARD_BLDC_HFI_SPEED_LOOP_KI (0.015f)
+#define BOARD_BLDC_HFI_PLL_KP (10.0f)
+#define BOARD_BLDC_HFI_PLL_KI (1.0f)
+
+#endif
+
 volatile ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t adc_buff[3][BOARD_BLDC_ADC_PMT_DMA_SIZE_IN_4BYTES];
 
 void motor0_highspeed_loop(void);
@@ -143,8 +152,8 @@ void bldc_init_par(void)
     par->func_dqsvpwm = (void (*)(void *, void *, void *, void *))&hpm_mcl_hfi_loop;
 
     motor0.speedloop_para.func_pid  = (void(*)(void *))&hpm_mcl_bldc_foc_pi_contrl;
-    motor0.speedloop_para.i_kp      = HPM_MOTOR_MATH_FL_MDF(MOTOR0_HFI_KP);
-    motor0.speedloop_para.i_ki      = HPM_MOTOR_MATH_FL_MDF(0.015);
+    motor0.speedloop_para.i_kp      = HPM_MOTOR_MATH_FL_MDF(BOARD_BLDC_HFI_SPEED_LOOP_KP);
+    motor0.speedloop_para.i_ki      = HPM_MOTOR_MATH_FL_MDF(BOARD_BLDC_HFI_SPEED_LOOP_KI);
     motor0.speedloop_para.i_max     = HPM_MOTOR_MATH_FL_MDF(300);
 
     motor0.adc_trig_event_callback = &motor0_highspeed_loop;
@@ -154,8 +163,8 @@ void bldc_init_par(void)
     motor0.inject_para.last_beta = 0;
 
     motor0.inject_pll.filter = 0.1;
-    motor0.inject_pll.kp = 10;
-    motor0.inject_pll.ki = 1;
+    motor0.inject_pll.kp = BOARD_BLDC_HFI_PLL_KP;
+    motor0.inject_pll.ki = BOARD_BLDC_HFI_PLL_KI;
     motor0.inject_pll.mem = 0;
     motor0.inject_pll.deta = 0;
     motor0.inject_pll.mem_max = 3800;
@@ -449,8 +458,8 @@ void init_trigger_mux(TRGM_Type *ptr)
 
     trgm_output_cfg.invert = false;
     trgm_output_cfg.type   = trgm_output_same_as_input;
-    trgm_output_cfg.input  = BOARD_BLDC_TRIGMUX_IN_NUM;
-    trgm_output_config(ptr, BOARD_BLDC_TRG_NUM, &trgm_output_cfg);
+    trgm_output_cfg.input  = BOARD_BLDC_PWM_TRG_ADC;
+    trgm_output_config(ptr, BOARD_BLDC_TRG_ADC, &trgm_output_cfg);
 }
 
 void motor0_current_loop(void)

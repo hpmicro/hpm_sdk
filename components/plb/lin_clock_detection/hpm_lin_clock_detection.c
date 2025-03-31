@@ -13,7 +13,7 @@
 hpm_stat_t plb_lin_clock_detection_init(plb_lin_clock_t *cfg)
 {
     trgm_output_t trgm_output_cfg;
-    trgm_input_filter_t trgm_input_cfg = {0};
+    trgm_filter_t trgm_filter_cfg = {0};
     dma_handshake_config_t config;
     hpm_stat_t stat;
 
@@ -37,11 +37,11 @@ hpm_stat_t plb_lin_clock_detection_init(plb_lin_clock_t *cfg)
     plb_type_b_set_lut(cfg->device.plb, cfg->device.plb_type_b_chn, plb_type_b_slice_3, plb_slice_opt_add_one);
     plb_type_b_inject_by_sw(cfg->device.plb, cfg->device.plb_type_b_chn, 0);
 
-    trgm_input_cfg.sync = true;
-    trgm_input_cfg.invert = false;
-    trgm_input_cfg.mode = trgm_filter_mode_rapid_change;
-    trgm_input_cfg.filter_length = cfg->filter_length;
-    trgm_input_filter_config(cfg->device.trgm, HPM_TRGM0_FILTER_SRC_MOTO_GPIO_IN0 + (cfg->device.trgmux_pin - HPM_TRGM0_INPUT_SRC_TRGM0_P00), &trgm_input_cfg);
+    trgm_filter_cfg.sync = true;
+    trgm_filter_cfg.invert = false;
+    trgm_filter_cfg.mode = trgm_filter_mode_rapid_change;
+    trgm_filter_cfg.filter_length = cfg->filter_length;
+    trgm_filter_config(cfg->device.trgm, BOARD_PLB_TRGM_FILTER_GPIO_INPUT0 + (cfg->device.trgmux_pin - HPM_TRGM0_INPUT_SRC_TRGM0_P00), &trgm_filter_cfg);
 
     trgm_output_cfg.invert = false;
     trgm_output_cfg.type   = trgm_output_pulse_at_input_both_edge;
@@ -56,7 +56,7 @@ hpm_stat_t plb_lin_clock_detection_init(plb_lin_clock_t *cfg)
 
     dmamux_config(cfg->device.dma_mux, DMA_SOC_CHN_TO_DMAMUX_CHN(cfg->device.dma, cfg->device.dma_chn),
                 HPM_DMA_SRC_MOT_0 + cfg->device.trgm_dma_dst_index, true);
-    trgm_dma_request_config(cfg->device.trgm, TRGM_DMACFG_0 + cfg->device.trgm_dma_dst_index, HPM_TRGM0_DMA_SRC_TRGM0 + cfg->device.trgm_dma_src_index);
+    trgm_dma_request_config(cfg->device.trgm, TRGM_DMACFG_0 + cfg->device.trgm_dma_dst_index, BOARD_PLB_TRGM_DMA_REQ0 + cfg->device.trgm_dma_src_index);
 
 
     dma_default_handshake_config(cfg->device.dma, &config);

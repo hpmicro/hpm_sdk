@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -637,6 +637,7 @@ typedef struct _sdmmc_emmc {
     emmc_power_class_t current_power_class;
     emmc_boot_setting_t boot_setting;
     bool is_host_ready;
+    bool is_byte_addressing_mode;
 } emmc_card_t;
 
 typedef enum {

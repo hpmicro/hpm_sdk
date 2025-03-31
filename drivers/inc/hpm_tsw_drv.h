@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -55,6 +55,14 @@
 #define TSW_BUS_FREQ        (100000000UL)
 #endif
 
+#ifndef TSW_MM2S_DMA_WAIT_CBUFF_TIMEOUT
+#define TSW_MM2S_DMA_WAIT_CBUFF_TIMEOUT (1000U)
+#endif
+
+#ifndef TSW_MM2S_DMA_CHECK_RBUFE_TIMEOUT
+#define TSW_MM2S_DMA_CHECK_RBUFE_TIMEOUT (1000U)
+#endif
+
 #define TSW_FPE_MMS_MIN_VTIME_MIN (1U)   /* 1ms */
 #define TSW_FPE_MMS_MAX_VTIME_MAX (128U) /* 128ms */
 /*---------------------------------------------------------------------
@@ -100,7 +108,6 @@ typedef struct {
     uint16_t admin_list_length;
     uint16_t oper_list_length;
 } tsw_shap_tas_listlen_t;
-
 
 typedef struct  {
     uint8_t     state;      /**< gate state vector */
@@ -303,6 +310,11 @@ typedef enum {
 } tsw_mac_mode_t;
 
 typedef enum {
+    tsw_mac_type_emac = 0,
+    tsw_mac_type_pmac
+} tsw_mac_type_t;
+
+typedef enum {
     tsw_pps_ctrl_pps = 0,
     tsw_pps_ctrl_bin_2hz_digital_1hz,
     tsw_pps_ctrl_bin_4hz_digital_2hz,
@@ -447,11 +459,23 @@ void tsw_init_recv(TSW_Type *ptr, tsw_dma_config_t *config);
  * @brief Send a frame to CPU port
  *
  * @param[in] ptr    TSW peripheral base address
+ * @param[in] buffer Frame buffer pointer
  * @param[in] length Frame length
  * @param[in] id     Frame index
  * @return           Result of the transmission
  */
 hpm_stat_t tsw_send_frame(TSW_Type *ptr, uint8_t *buffer, uint16_t length, uint8_t id);
+
+/**
+ * @brief   Send a frame to CPU port and check response
+ *
+ * @param[in] ptr    TSW peripheral base address
+ * @param[in] buffer Frame buffer pointer
+ * @param[in] length Frame length
+ * @param[in] id     Frame index
+ * @return           Result of the transmission and checking response
+ */
+hpm_stat_t tsw_send_frame_check_response(TSW_Type *ptr, uint8_t *buffer, uint16_t length, uint8_t id);
 
 /**
  * @brief Commit a receive DMA descriptor
@@ -528,38 +552,38 @@ hpm_stat_t tsw_ep_mdio_write(TSW_Type *ptr, uint8_t port, uint32_t phy_addr, uin
  *
  * @param[in] ptr      TSW peripheral base address
  * @param[in] port     TSW port number
- * @param[in] mac_type MAC type 0:EMAC/1:PMAC
+ * @param[in] mac_type MAC type @ref tsw_mac_type_t
  * @return             Result of enabling MAC controller
  */
-hpm_stat_t tsw_ep_enable_mac_ctrl(TSW_Type *ptr, uint8_t port, uint8_t mac_type);
+hpm_stat_t tsw_ep_enable_mac_ctrl(TSW_Type *ptr, uint8_t port, tsw_mac_type_t mac_type);
 
 /**
  * @brief Disable MAC Controller
  *
  * @param[in] ptr      TSW peripheral base address
  * @param[in] port     TSW port number
- * @param[in] mac_type MAC type 0:EMAC/1:PMAC
+ * @param[in] mac_type MAC type @ref tsw_mac_type_t
  * @return             Result of disabling MAC controller
  */
-hpm_stat_t tsw_ep_disable_mac_ctrl(TSW_Type *ptr, uint8_t port, uint8_t mac_type);
+hpm_stat_t tsw_ep_disable_mac_ctrl(TSW_Type *ptr, uint8_t port, tsw_mac_type_t mac_type);
 
 /**
  * @brief Enable All MAC Controllers
  *
  * @param[in] ptr      TSW peripheral base address
- * @param[in] mac_type MAC type 0:EMAC/1:PMAC
+ * @param[in] mac_type MAC type @ref tsw_mac_type_t
  * @return             Result of enabling all MAC controllers
  */
-hpm_stat_t tsw_ep_enable_all_mac_ctrl(TSW_Type *ptr, uint8_t mac_type);
+hpm_stat_t tsw_ep_enable_all_mac_ctrl(TSW_Type *ptr, tsw_mac_type_t mac_type);
 
 /**
  * @brief Disable All MAC Controllers
  *
  * @param[in] ptr      TSW peripheral base address
- * @param[in] mac_type MAC type 0:EMAC/1:PMAC
+ * @param[in] mac_type MAC type @ref tsw_mac_type_t
  * @return             Result of disabling all MAC controllers
  */
-hpm_stat_t tsw_ep_disable_all_mac_ctrl(TSW_Type *ptr, uint8_t mac_type);
+hpm_stat_t tsw_ep_disable_all_mac_ctrl(TSW_Type *ptr, tsw_mac_type_t mac_type);
 
 /**
  * @brief Set MAC Address
@@ -574,14 +598,26 @@ hpm_stat_t tsw_ep_set_mac_addr(TSW_Type *ptr, uint8_t port, uint8_t *mac_addr, b
 
 /**
  * @brief Set MAC Mode
+ * @Note This API will be deprecated from V2.0.0
  *
  * @param[in] ptr      TSW peripheral base address
  * @param[in] port     TSW port number
  * @param[in] mac_addr Pointer to MAC address
- * @param[in] promisc  Promiscuous Mode: Set true to enable; set false to disable
+ * @param[in] gmii     GMII Mode: Set 1 for 1000Mbps or 0 for 10Mbps/100Mbps
  * @return             Result of setting MAC address
  */
 hpm_stat_t tsw_ep_set_mac_mode(TSW_Type *ptr, uint8_t port, uint8_t gmii);
+
+/**
+ * @brief   Set MAC Mode For Specified MAC
+ *
+ * @param[in] ptr   TSW peripheral base address
+ * @param[in] port  TSW port number
+ * @param[in] gmii  GMII Mode:  Set 1 for 1000Mbps or 0 for 10Mbps/100Mbps
+ * @param[in] mac_type MAC type @ref tsw_mac_type_t
+ * @return hpm_stat_t
+ */
+hpm_stat_t tsw_ep_set_xmac_mode(TSW_Type *ptr, uint8_t port, uint8_t gmii, tsw_mac_type_t mac_type);
 
 /**
  * @brief Set Port GPR

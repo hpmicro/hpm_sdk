@@ -11,7 +11,7 @@
 #include "hpm_trgm_soc_drv.h"
 #include "hpm_trgm_drv.h"
 #include "hpm_synt_drv.h"
-#include "motor.h"
+#include "hardware_pos.h"
 
 #define TEST_QEO BOARD_QEO
 #define QEO_TRGM_POS BOARD_QEO_TRGM_POS
@@ -63,7 +63,7 @@ void qeo_gen_abz_signal_hardware(void)
 {
     qeo_abz_mode_t config;
 
-    printf("QEO generate ABZ signal with hardware(MTG) provide postion\n");
+    printf("QEO generate ABZ signal with hardware provide postion\n");
 
     qeo_abz_get_default_mode_config(TEST_QEO, &config);
     qeo_abz_config_mode(TEST_QEO, &config);
@@ -77,8 +77,7 @@ void qeo_gen_abz_signal_hardware(void)
 
     qeo_abz_enable_output(TEST_QEO);
 
-    trgm_pos_matrix_config(HPM_TRGM0, QEO_TRGM_POS, trgm_pos_matrix_in_from_mtg0_pos0, false);
-    mtg_generate_trajectory();
+    hardware_gen_postion_to_qeo();
 
     /* First enable MOTOR peripheral devices, such as MMC, and then enable timestamp for MOTOR */
     synt_enable_timestamp(HPM_SYNT, true);

@@ -12,6 +12,17 @@
 #include "hpm_soc_ip_feature.h"
 
 /*
+ * Cache section
+ */
+#define HPM_L1C_CACHE_SIZE (uint32_t)(32 * SIZE_1KB)
+#define HPM_L1C_ICACHE_SIZE (HPM_L1C_CACHE_SIZE)
+#define HPM_L1C_DCACHE_SIZE (HPM_L1C_CACHE_SIZE)
+#define HPM_L1C_CACHELINE_SIZE (64)
+#define HPM_L1C_CACHELINES_PER_WAY (128)
+#define HPM_L1C_CACHELINE_ALIGN_DOWN(n) ((uint32_t)(n) & ~(HPM_L1C_CACHELINE_SIZE - 1U))
+#define HPM_L1C_CACHELINE_ALIGN_UP(n)   HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t)(n) + HPM_L1C_CACHELINE_SIZE - 1U)
+
+/*
  * UART section
  */
 #define UART_SOC_FIFO_SIZE (16U)

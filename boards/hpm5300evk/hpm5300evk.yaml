@@ -12,6 +12,6 @@ board:
     feature:
       - board_gpt_pin
       - board_motor_control
-      - board_power_button
+      - board_wkup_pin
     excluded_samples:
       - samples/motor_ctrl/bldc_block

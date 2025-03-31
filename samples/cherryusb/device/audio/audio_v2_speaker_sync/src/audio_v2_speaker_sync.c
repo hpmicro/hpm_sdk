@@ -61,20 +61,9 @@ dao_config_t dao_config;
 
 #define EP_INTERVAL_HS 0x04
 #define FEEDBACK_ENDP_PACKET_SIZE_HS 0x04
-#define FEEDBACK_DATA_LEFT_SHIFT_HS 13
-#define AUDIO_UPDATE_FEEDBACK_DATA_HS(m, n)                  \
-    m[0] = (((n & 0x00001FFFu) << 3) & 0xFFu);            \
-    m[1] = ((((n & 0x00001FFFu) << 3) >> 8) & 0xFFu);     \
-    m[2] = (((n & 0x01FFE000u) >> 13) & 0xFFu);           \
-    m[3] = (((n & 0x01FFE000u) >> 21) & 0xFFu);
 
 #define EP_INTERVAL_FS 0x01
 #define FEEDBACK_ENDP_PACKET_SIZE_FS 0x03
-#define FEEDBACK_DATA_LEFT_SHIFT_FS 10
-#define AUDIO_UPDATE_FEEDBACK_DATA_FS(m, n)                  \
-    m[0] = ((n << 4) & 0xFFU);                            \
-    m[1] = (((n << 4) >> 8U) & 0xFFU);                    \
-    m[2] = (((n << 4) >> 16U) & 0xFFU);
 
 #define AUDIO_OUT_EP 0x01
 #define AUDIO_OUT_FEEDBACK_EP 0x81
@@ -580,12 +569,12 @@ void usbd_audio_set_sampling_freq(uint8_t busid, uint8_t ep, uint32_t sampling_f
             USB_LOG_RAW("Init I2S Clock Fail!\r\n");
         }
         if (s_usb_speed == USB_SPEED_HIGH) {
-            s_speaker_feedback_value = (sampling_freq << FEEDBACK_DATA_LEFT_SHIFT_HS) / 1000;
-            AUDIO_UPDATE_FEEDBACK_DATA_HS(s_speaker_feedback_buffer, s_speaker_feedback_value);
+            s_speaker_feedback_value = AUDIO_FREQ_TO_FEEDBACK_HS(sampling_freq);
+            AUDIO_FEEDBACK_TO_BUF_HS(s_speaker_feedback_buffer, s_speaker_feedback_value);
             usbd_ep_start_write(busid, AUDIO_OUT_FEEDBACK_EP, s_speaker_feedback_buffer, FEEDBACK_ENDP_PACKET_SIZE_HS);
         } else {
-            s_speaker_feedback_value = (sampling_freq << FEEDBACK_DATA_LEFT_SHIFT_FS) / 1000;
-            AUDIO_UPDATE_FEEDBACK_DATA_FS(s_speaker_feedback_buffer, s_speaker_feedback_value);
+            s_speaker_feedback_value = AUDIO_FREQ_TO_FEEDBACK_FS(sampling_freq);
+            AUDIO_FEEDBACK_TO_BUF_FS(s_speaker_feedback_buffer, s_speaker_feedback_value);
             usbd_ep_start_write(busid, AUDIO_OUT_FEEDBACK_EP, s_speaker_feedback_buffer, FEEDBACK_ENDP_PACKET_SIZE_FS);
         }
         s_speaker_play_flag = false;
@@ -742,9 +731,9 @@ static void speaker_calculate_feedback(void)
         }
 
         if (s_usb_speed == USB_SPEED_HIGH) {
-            AUDIO_UPDATE_FEEDBACK_DATA_HS(s_speaker_feedback_buffer, s_speaker_feedback_value);
+            AUDIO_FEEDBACK_TO_BUF_HS(s_speaker_feedback_buffer, s_speaker_feedback_value);
         } else {
-            AUDIO_UPDATE_FEEDBACK_DATA_FS(s_speaker_feedback_buffer, s_speaker_feedback_value);
+            AUDIO_FEEDBACK_TO_BUF_FS(s_speaker_feedback_buffer, s_speaker_feedback_value);
         }
     }
 }

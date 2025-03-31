@@ -27,6 +27,9 @@
 #define USE_DMA_MGR      (0U)
 #endif
 
+#if USE_DMA_MGR
+#include "hpm_dma_mgr.h"
+#endif
 /* Every transaction can be delineated by 3 dma descriptions: SPI control, SPI cmd, SPI data */
 #define SPI_DMA_DESC_COUNT_PER_TRANS    (3U)
 
@@ -89,8 +92,8 @@ extern "C" {
  * @note if the transferred data count more than SPI_SOC_TRANSFER_COUNT_MAX, this API will using
  * DMA chain descriptors to link SPI transmission.
  *
- * @param[in] spi_context A pointer to the struct of "spi_context_t"
- * @param[in] spi_config A pointer to the struct of "spi_control_config_t"
+ * @param[in] context A pointer to the struct of "spi_context_t"
+ * @param[in] config A pointer to the struct of "spi_control_config_t"
  * @retval status_success if SPI transfers data successfully.
  */
 hpm_stat_t hpm_spi_setup_dma_transfer(spi_context_t *context, spi_control_config_t *config);
@@ -101,7 +104,7 @@ hpm_stat_t hpm_spi_setup_dma_transfer(spi_context_t *context, spi_control_config
 /**
  * @brief hpm_spi releases gpio cs pin after SPI transfer completed
  *
- * @param[in] spi_context A pointer to the struct of "spi_context_t"
+ * @param[in] context A pointer to the struct of "spi_context_t"
  * @retval status_success if SPI releases gpio cs pin successfully.
  */
 hpm_stat_t hpm_spi_release_gpio_cs(spi_context_t *context);
@@ -223,7 +226,7 @@ hpm_stat_t hpm_spi_transmit_setup_dma(SPI_Type *ptr, uint32_t size);
  * @param [in] rx_complete callback for SPI RX DMA
  * @retval hpm_stat_t status_success if spi in busy status
  */
-hpm_stat_t hpm_spi_dma_install_callback(SPI_Type *ptr,
+hpm_stat_t hpm_spi_dma_mgr_install_callback(SPI_Type *ptr,
                                         spi_dma_complete_cb tx_complete,
                                         spi_dma_complete_cb rx_complete);
 
@@ -263,6 +266,29 @@ hpm_stat_t hpm_spi_receive_nonblocking(SPI_Type *ptr, uint8_t *buff, uint32_t si
  * @retval hpm_stat_t status_success if spi in busy status
  */
 hpm_stat_t hpm_spi_transmit_nonblocking(SPI_Type *ptr, uint8_t *buff, uint32_t size);
+
+/**
+ * Get the DMA resource for SPI transmission
+ *
+ * This function provides a reference to the DMA resource used for SPI transmission operations
+ * through the SPI configuration object.
+ *
+ * @param ptr Pointer to SPI_Type, representing the base address of the SPI.
+ * @return Pointer to dma_resource_t, representing the DMA resource object for SPI transmission.
+ *         Returns NULL if the configuration object does not exist.
+ */
+dma_resource_t *hpm_spi_get_tx_dma_resource(SPI_Type *ptr);
+
+/**
+ * Get the DMA resource for SPI receive
+ *
+ * This function provides a reference to the DMA resource used for SPI receive operations
+ * through the SPI configuration object.
+ *
+ * @param ptr Pointer to the base address of the SPI module, used to identify and access the SPI module
+ * @return dma_resource_t* Pointer to the DMA resource; returns NULL if the SPI configuration object does not exist
+ */
+dma_resource_t *hpm_spi_get_rx_dma_resource(SPI_Type *ptr);
 
 #endif
 

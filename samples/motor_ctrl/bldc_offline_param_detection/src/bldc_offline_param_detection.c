@@ -142,11 +142,11 @@ void motor_init(void)
     motor0.cfg.mcl.physical.motor.flux = 0.0015;
     motor0.cfg.mcl.physical.motor.ld = 0.0026;
     motor0.cfg.mcl.physical.motor.lq = 0.0026;
-    motor0.cfg.mcl.physical.time.adc_sample_ts = 1.0f / (PWM_FREQUENCY);
-    motor0.cfg.mcl.physical.time.current_loop_ts = (1.0f / (PWM_FREQUENCY));
-    motor0.cfg.mcl.physical.time.encoder_process_ts = (1.0f / (PWM_FREQUENCY));
-    motor0.cfg.mcl.physical.time.speed_loop_ts = (1.0f / (PWM_FREQUENCY)) * 5;
-    motor0.cfg.mcl.physical.time.position_loop_ts = (1.0f / (PWM_FREQUENCY)) * 20;
+    motor0.cfg.mcl.physical.time.adc_sample_ts = MCL_FREQUENCY_TO_PERIOD(PWM_FREQUENCY);
+    motor0.cfg.mcl.physical.time.current_loop_ts = MCL_FREQUENCY_TO_PERIOD(PWM_FREQUENCY);
+    motor0.cfg.mcl.physical.time.encoder_process_ts = MCL_FREQUENCY_TO_PERIOD(PWM_FREQUENCY);
+    motor0.cfg.mcl.physical.time.speed_loop_ts = (MCL_FREQUENCY_TO_PERIOD(PWM_FREQUENCY)) * 5;
+    motor0.cfg.mcl.physical.time.position_loop_ts = (MCL_FREQUENCY_TO_PERIOD(PWM_FREQUENCY)) * 20;
     motor0.cfg.mcl.physical.time.mcu_clock_tick = clock_get_frequency(clock_cpu0);
     motor0.cfg.mcl.physical.time.pwm_clock_tick = clock_get_frequency(BOARD_BLDC_QEI_CLOCK_SOURCE);
 
@@ -752,8 +752,8 @@ void init_trigger_mux(TRGM_Type *ptr)
 
     trgm_output_cfg.invert = false;
     trgm_output_cfg.type   = trgm_output_same_as_input;
-    trgm_output_cfg.input  = BOARD_BLDC_TRIGMUX_IN_NUM;
-    trgm_output_config(ptr, BOARD_BLDC_TRG_NUM, &trgm_output_cfg);
+    trgm_output_cfg.input  = BOARD_BLDC_PWM_TRG_ADC;
+    trgm_output_config(ptr, BOARD_BLDC_TRG_ADC, &trgm_output_cfg);
 }
 
 SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_ADC_IRQn, isr_adc)

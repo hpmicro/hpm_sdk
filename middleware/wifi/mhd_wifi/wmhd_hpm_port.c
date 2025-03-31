@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -7,6 +7,21 @@
 #include "wmhd_api.h"
 #include "hpm_soc.h"
 
+#ifdef __SEGGER_RTL_VERSION
+#include <ctype.h>
+__attribute__((used)) int _impure_ptr; /* Workaround for fixing compiling error with SES */
+/* Workaround for fixing compiling error that the _ctype_ array is missing in SES toolchain */
+const char _ctype_[] = { 00,
+                         20, 20, 20, 20, 20, 20, 20, 20, 20, 28, 28, 28, 28, 28, 20, 20,
+                         20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+                         88, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+                         04, 04, 04, 04, 04, 04, 04, 04, 04, 04, 10, 10, 10, 10, 10, 10,
+                         10, 41, 41, 41, 41, 41, 41, 01, 01, 01, 01, 01, 01, 01, 01, 01,
+                         01, 01, 01, 01, 01, 01, 01, 01, 01, 01, 01, 10, 10, 10, 10, 10,
+                         10, 42, 42, 42, 42, 42, 42, 02, 02, 02, 02, 02, 02, 02, 02, 02,
+                         02, 02, 02, 02, 02, 02, 02, 02, 02, 02, 02, 10, 10, 10, 10, 20
+};
+#endif
 
 /* Prepare the SDIO base table */
 static const SDXC_Type *hpm_sdio_base_table[] = {

@@ -815,6 +815,29 @@ static inline void sysctl_set_cpu0_lp_retention(SYSCTL_Type *ptr, uint32_t value
     sysctl_set_cpu_lp_retention(ptr, 0, value);
 }
 
+/**
+ * @brief Get CPU resource retention
+ *
+ * @param[in] ptr SYSCTL_Type base address
+ * @param[in] cpu_index cpu index
+ * @return retention value
+ */
+static inline uint32_t sysctl_get_cpu_lp_retention(SYSCTL_Type *ptr,
+                                                   uint8_t cpu_index)
+{
+    return ptr->RETENTION[cpu_index].VALUE;
+}
+
+/**
+ * @brief Get CPU0 resource retention
+ *
+ * @param[in] ptr SYSCTL_Type base address
+ * @return retention value
+ */
+static inline uint32_t sysctl_get_cpu0_lp_retention(SYSCTL_Type *ptr)
+{
+    return sysctl_get_cpu_lp_retention(ptr, 0);
+}
 
 /**
  * @brief Check if any clock is busy

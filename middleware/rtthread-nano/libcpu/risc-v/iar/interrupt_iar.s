@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include "cpuport.h"
+#include "hpm_csr_regs.h"
 
     SECTION CSTACK:DATA:NOROOT(4)
 
@@ -53,9 +54,9 @@ rtt_risc_v_trap_handler:
 #endif
     /* save all from thread context */
 #ifndef __riscv_32e
-    addi sp, sp, -32 * REGBYTES
+    addi sp, sp, -36 * REGBYTES
 #else
-    addi sp, sp, -16 * REGBYTES
+    addi sp, sp, -20 * REGBYTES
 #endif
 
     STORE x1,   1 * REGBYTES(sp)
@@ -88,6 +89,17 @@ rtt_risc_v_trap_handler:
     STORE x29, 29 * REGBYTES(sp)
     STORE x30, 30 * REGBYTES(sp)
     STORE x31, 31 * REGBYTES(sp)
+#endif
+
+    /* save mcctl data */
+    csrr t0, CSR_MCCTLBEGINADDR
+    csrr t1, CSR_MCCTLDATA
+#ifndef __riscv_32e
+    STORE t0,   32 * REGBYTES(sp)
+    STORE t1,   33 * REGBYTES(sp)
+#else
+    STORE t0,   16 * REGBYTES(sp)
+    STORE t1,   17 * REGBYTES(sp)
 #endif
 
     li    t0,   0x80
@@ -129,6 +141,17 @@ rtt_risc_v_trap_handler:
     csrw  mepc, a0
 
 spurious_interrupt:
+    /* restore mcctl data */
+#ifndef __riscv_32e
+    LOAD  t0,   32 * REGBYTES(sp)
+    LOAD  t1,   33 * REGBYTES(sp)
+#else
+    LOAD  t0,   16 * REGBYTES(sp)
+    LOAD  t1,   17 * REGBYTES(sp)
+#endif
+    csrw CSR_MCCTLBEGINADDR, t0
+    csrw CSR_MCCTLDATA, t1
+
     LOAD  x1,   1 * REGBYTES(sp)
 
     /* Remain in M-mode after mret */
@@ -167,9 +190,9 @@ spurious_interrupt:
     LOAD  x30, 30 * REGBYTES(sp)
     LOAD  x31, 31 * REGBYTES(sp)
 
-    addi  sp, sp, 32 * REGBYTES
+    addi  sp, sp, 36 * REGBYTES
 #else
-    addi  sp, sp, 16 * REGBYTES
+    addi  sp, sp, 20 * REGBYTES
 #endif
 
 #ifdef ARCH_RISCV_FPU

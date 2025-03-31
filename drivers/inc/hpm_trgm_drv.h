@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -49,14 +49,16 @@ typedef enum {
 } trgm_pwmv2_calibration_mode_t;
 
 /**
- * @brief Input filter configuration
+ * @brief Filter configuration
  */
 typedef struct trgm_input_filter {
     bool invert;                /**< Invert output */
     bool sync;                  /**< Sync with TRGM clock */
     uint32_t filter_length;     /**< Filter length in TRGM clock cycle */
     trgm_filter_mode_t mode;    /**< Filter working mode */
-} trgm_input_filter_t;
+} trgm_filter_t;
+
+typedef trgm_filter_t trgm_input_filter_t;
 
 /**
  * @brief Output configuration
@@ -100,7 +102,7 @@ static inline void trgm_disable_io_output(TRGM_Type *ptr, uint32_t mask)
  * @param[in] input Input selection
  * @param[in] length Filter length in TRGM clock cycles
  */
-static inline void trgm_input_filter_set_filter_length(TRGM_Type *ptr, uint8_t input, uint32_t length)
+static inline void trgm_filter_set_filter_length(TRGM_Type *ptr, uint8_t input, uint32_t length)
 {
 #if defined(TRGM_SOC_HAS_FILTER_SHIFT) && TRGM_SOC_HAS_FILTER_SHIFT
     uint32_t len = length;
@@ -126,13 +128,13 @@ static inline void trgm_input_filter_set_filter_length(TRGM_Type *ptr, uint8_t i
 }
 
 /**
- * @brief   Set filter length
+ * @brief   Set filter length shift.
  *
  * @param[in] ptr TRGM base address
  * @param[in] input Input selection
  * @param[in] shift Filter length shift
  */
-static inline void trgm_input_filter_set_filter_shift(TRGM_Type *ptr, uint8_t input, uint8_t shift)
+static inline void trgm_filter_set_filter_shift(TRGM_Type *ptr, uint8_t input, uint8_t shift)
 {
 #if defined(TRGM_SOC_HAS_FILTER_SHIFT) && TRGM_SOC_HAS_FILTER_SHIFT
     ptr->FILTCFG[input] = (ptr->FILTCFG[input] & ~TRGM_FILTCFG_FILTLEN_SHIFT_MASK)
@@ -150,7 +152,7 @@ static inline void trgm_input_filter_set_filter_shift(TRGM_Type *ptr, uint8_t in
  * @param[in] ptr TRGM base address
  * @param[in] input Input selection
  */
-static inline void trgm_input_filter_enable_sync(TRGM_Type *ptr, uint8_t input)
+static inline void trgm_filter_enable_sync(TRGM_Type *ptr, uint8_t input)
 {
     ptr->FILTCFG[input] |= TRGM_FILTCFG_SYNCEN_MASK;
 }
@@ -161,7 +163,7 @@ static inline void trgm_input_filter_enable_sync(TRGM_Type *ptr, uint8_t input)
  * @param[in] ptr TRGM base address
  * @param[in] input Input selection
  */
-static inline void trgm_input_filter_disable_sync(TRGM_Type *ptr, uint8_t input)
+static inline void trgm_filter_disable_sync(TRGM_Type *ptr, uint8_t input)
 {
     ptr->FILTCFG[input] &= ~TRGM_FILTCFG_SYNCEN_MASK;
 }
@@ -173,7 +175,7 @@ static inline void trgm_input_filter_disable_sync(TRGM_Type *ptr, uint8_t input)
  * @param[in] input Input selection
  * @param[in] mode Working mode
  */
-static inline void trgm_input_filter_set_mode(TRGM_Type *ptr, uint8_t input, trgm_filter_mode_t mode)
+static inline void trgm_filter_set_mode(TRGM_Type *ptr, uint8_t input, trgm_filter_mode_t mode)
 {
     ptr->FILTCFG[input] = (ptr->FILTCFG[input] & ~TRGM_FILTCFG_MODE_MASK)
                         | TRGM_FILTCFG_MODE_SET(mode);
@@ -186,7 +188,7 @@ static inline void trgm_input_filter_set_mode(TRGM_Type *ptr, uint8_t input, trg
  * @param[in] input Input selection
  * @param[in] invert Set true to invert output
  */
-static inline void trgm_input_filter_invert(TRGM_Type *ptr, uint8_t input, bool invert)
+static inline void trgm_filter_invert(TRGM_Type *ptr, uint8_t input, bool invert)
 {
     ptr->FILTCFG[input] = (ptr->FILTCFG[input] & ~TRGM_FILTCFG_OUTINV_MASK)
                         | TRGM_FILTCFG_OUTINV_SET(invert);
@@ -199,12 +201,94 @@ static inline void trgm_input_filter_invert(TRGM_Type *ptr, uint8_t input, bool 
  * @param[in] input Input selection
  * @param[in] filter Pointer to filter configuration
  */
-static inline void trgm_input_filter_config(TRGM_Type *ptr, uint8_t input, trgm_input_filter_t *filter)
+static inline void trgm_filter_config(TRGM_Type *ptr, uint8_t input, trgm_filter_t *filter)
 {
     ptr->FILTCFG[input] = TRGM_FILTCFG_OUTINV_SET(filter->invert)
                         | TRGM_FILTCFG_MODE_SET(filter->mode)
                         | TRGM_FILTCFG_SYNCEN_SET(filter->sync);
-    trgm_input_filter_set_filter_length(ptr, input, filter->filter_length);
+    trgm_filter_set_filter_length(ptr, input, filter->filter_length);
+}
+
+/**
+ * @brief   Set filter length, legacy API for compatibility.
+ *
+ * @param[in] ptr TRGM base address
+ * @param[in] input Input selection
+ * @param[in] length Filter length in TRGM clock cycles
+ */
+static inline void trgm_input_filter_set_filter_length(TRGM_Type *ptr, uint8_t input, uint32_t length)
+{
+    trgm_filter_set_filter_length(ptr, input, length);
+}
+
+/**
+ * @brief   Set filter length shift, legacy API for compatibility.
+ *
+ * @param[in] ptr TRGM base address
+ * @param[in] input Input selection
+ * @param[in] shift Filter length shift
+ */
+static inline void trgm_input_filter_set_filter_shift(TRGM_Type *ptr, uint8_t input, uint8_t shift)
+{
+    trgm_filter_set_filter_shift(ptr, input, shift);
+}
+
+/**
+ * @brief   Enable sync input with TRGM clock, legacy API for compatibility.
+ *
+ * @param[in] ptr TRGM base address
+ * @param[in] input Input selection
+ */
+static inline void trgm_input_filter_enable_sync(TRGM_Type *ptr, uint8_t input)
+{
+    trgm_filter_enable_sync(ptr, input);
+}
+
+/**
+ * @brief   Disable sync input with TRGM clock, legacy API for compatibility.
+ *
+ * @param[in] ptr TRGM base address
+ * @param[in] input Input selection
+ */
+static inline void trgm_input_filter_disable_sync(TRGM_Type *ptr, uint8_t input)
+{
+    trgm_filter_disable_sync(ptr, input);
+}
+
+/**
+ * @brief   Set filter working mode, legacy API for compatibility.
+ *
+ * @param[in] ptr TRGM base address
+ * @param[in] input Input selection
+ * @param[in] mode Working mode
+ */
+static inline void trgm_input_filter_set_mode(TRGM_Type *ptr, uint8_t input, trgm_filter_mode_t mode)
+{
+    trgm_filter_set_mode(ptr, input, mode);
+}
+
+/**
+ * @brief   Invert filter output, legacy API for compatibility.
+ *
+ * @param[in] ptr TRGM base address
+ * @param[in] input Input selection
+ * @param[in] invert Set true to invert output
+ */
+static inline void trgm_input_filter_invert(TRGM_Type *ptr, uint8_t input, bool invert)
+{
+    trgm_filter_invert(ptr, input, invert);
+}
+
+/**
+ * @brief   Configure filter, legacy API for compatibility.
+ *
+ * @param[in] ptr TRGM base address
+ * @param[in] input Input selection
+ * @param[in] filter Pointer to filter configuration
+ */
+static inline void trgm_input_filter_config(TRGM_Type *ptr, uint8_t input, trgm_input_filter_t *filter)
+{
+    trgm_filter_config(ptr, input, filter);
 }
 
 /**
@@ -250,6 +334,41 @@ static inline void trgm_dma_request_config(TRGM_Type *ptr, uint8_t dma_out, uint
     ptr->DMACFG[dma_out] = TRGM_DMACFG_DMASRCSEL_SET(dma_src);
 #endif
 }
+
+#if defined(HPM_IP_FEATURE_TRGM_HAS_TRGM_IN_OUT_STATUS) && HPM_IP_FEATURE_TRGM_HAS_TRGM_IN_OUT_STATUS
+/**
+ * @brief Get input signal group status
+ *
+ * @param ptr TRGM base address
+ * @param trgm_in_group input signal group, TRGM_TRGM_IN_X (X = 0, 1 ...)
+ * @return uint32_t group bits, trgm_in_group not exist return 0
+ */
+static inline uint32_t trgm_input_get_group_status(TRGM_Type *ptr, uint8_t trgm_in_group)
+{
+    if (trgm_in_group > TRGM_SOC_TRIM_IN_GROUP_MAX)
+        return 0;
+
+    return ptr->TRGM_IN[trgm_in_group];
+}
+
+/**
+ * @brief Get input signal status
+ *
+ * @param ptr TRGM base address
+ * @param trgm_in_index input signal index, HPM_TRGM0_INPUT_SRC_X
+ * @return int input signal status, trgm_in_index not in group return -1
+ */
+static inline int trgm_input_get_signal_status(TRGM_Type *ptr, uint8_t trgm_in_index)
+{
+    uint8_t group = trgm_in_index / 32;
+    uint8_t index = trgm_in_index % 32;
+
+    if (group > TRGM_SOC_TRIM_IN_GROUP_MAX)
+        return -1;
+
+    return ((ptr->TRGM_IN[group] >> index) & 0x01);
+}
+#endif
 
 #if defined(HPM_IP_FEATURE_TRGM_HRPWM_CALIBRATION_2) || defined(HPM_IP_FEATURE_TRGM_HRPWM_CALIBRATION_1)
 /**

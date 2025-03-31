@@ -210,6 +210,49 @@ typedef struct {
  */
 #define XPI_INSTR_SEQ(phase0, pad0, op0, phase1, pad1, op1) (SUB_INSTR(phase0, pad0, op0) | (SUB_INSTR(phase1, pad1, op1)<<16))
 
+typedef struct {
+    struct {
+        uint8_t priority;                   /* Offset: 0x00 */
+        uint8_t master_idx;                 /* Offset: 0x01 */
+        uint8_t buf_size_in_dword;          /* Offset: 0x02 */
+        bool enable_prefetch;               /* Offset: 0x03 */
+    } entry[8];
+} xpi_ahb_buffer_cfg_t;
+
+/**
+ * @brief XPI driver interface
+ */
+typedef struct {
+    /**< XPI driver interface: version */
+    uint32_t version;
+    /**< XPI driver interface: get default configuration */
+    hpm_stat_t (*get_default_config)(xpi_config_t *xpi_config);
+    /**< XPI driver interface: get default device configuration */
+    hpm_stat_t (*get_default_device_config)(xpi_device_config_t *dev_config);
+    /**< XPI driver interface: initialize the XPI using xpi_config */
+    hpm_stat_t (*init)(XPI_Type *base, xpi_config_t *xpi_config);
+    /**< XPI driver interface: configure the AHB buffer */
+    hpm_stat_t (*config_ahb_buffer)(XPI_Type *base, xpi_ahb_buffer_cfg_t *ahb_buf_cfg);
+    /**< XPI driver interface: configure the device */
+    hpm_stat_t (*config_device)(XPI_Type *base, xpi_device_config_t *dev_cfg, xpi_channel_t channel);
+    /**< XPI driver interface: update instruction talbe */
+    hpm_stat_t (*update_instr_table)(XPI_Type *base, const uint32_t *inst_base, uint32_t seq_idx, uint32_t num);
+    /**< XPI driver interface: transfer command/data using block interface */
+    hpm_stat_t (*transfer_blocking)(XPI_Type *base, xpi_xfer_ctx_t *xfer);
+    /**< Software reset the XPI controller */
+    void (*software_reset)(XPI_Type *base);
+    /**< XPI driver interface: Check whether IP is idle */
+    bool (*is_idle)(XPI_Type *base);
+    /**< XPI driver interface: update delay line setting */
+    void (*update_dllcr)(XPI_Type *base,
+                         uint32_t serial_root_clk_freq,
+                         uint32_t data_valid_time,
+                         xpi_channel_t channel,
+                         uint32_t dly_target);
+    /**< XPI driver interface: Get absolute address for APB transfer */
+    hpm_stat_t
+    (*get_abs_apb_xfer_addr)(XPI_Type *base, xpi_xfer_channel_t channel, uint32_t in_addr, uint32_t *out_addr);
+} xpi_driver_interface_t;
 
 /**
  * @}

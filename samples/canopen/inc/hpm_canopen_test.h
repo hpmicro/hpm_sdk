@@ -22,5 +22,5 @@ struct hpm_master_receive_buf {
 void hpm_sys_reboot(void);
 uint32_t find_slave_device(void);
 CO_ReturnError_t set_slave_device_mode(CO_CANmodule_t *CANmodule);
-void PDO_test(CO_CANmodule_t *CANmodule, uint32_t node_id);
+void PDO_test(uint32_t node_id);
 void SDO_test(CO_CANmodule_t *CANmodule, uint32_t node_id);

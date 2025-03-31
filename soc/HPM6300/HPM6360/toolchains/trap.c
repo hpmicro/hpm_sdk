@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -134,12 +134,14 @@ void irq_handler_trap(void)
 #ifdef __riscv_flen
     int fcsr = read_fcsr();
 #endif
+    int mcctlbeginaddr = read_csr(CSR_MCCTLBEGINADDR);
+    int mcctldata = read_csr(CSR_MCCTLDATA);
 
     /* clobbers list for ecall */
 #ifdef __riscv_32e
-    __asm volatile("" : : :"t0", "a0", "a1", "a2", "a3");
+    __asm volatile("" : : : "t0", "a0", "a1", "a2", "a3");
 #else
-    __asm volatile("" : : :"a7", "a0", "a1", "a2", "a3");
+    __asm volatile("" : : : "a7", "a0", "a1", "a2", "a3");
 #endif
 
     /* Do your trap handling */
@@ -184,7 +186,7 @@ void irq_handler_trap(void)
         "mv a0, a7\n"
         #endif
         "jalr %0\n"
-        : :"r"(syscall_handler) : "a4"
+        : : "r"(syscall_handler) : "a4"
         );
         mepc += 4;
     } else {
@@ -203,6 +205,8 @@ void irq_handler_trap(void)
 #ifdef __riscv_flen
     write_fcsr(fcsr);
 #endif
+    write_csr(CSR_MCCTLDATA, mcctldata);
+    write_csr(CSR_MCCTLBEGINADDR, mcctlbeginaddr);
 }
 
 
@@ -225,9 +229,9 @@ void irq_handler_s_trap(void)
 
     /* clobbers list for ecall */
 #ifdef __riscv_32e
-    __asm volatile("" : : :"t0", "a0", "a1", "a2", "a3");
+    __asm volatile("" : : : "t0", "a0", "a1", "a2", "a3");
 #else
-    __asm volatile("" : : :"a7", "a0", "a1", "a2", "a3");
+    __asm volatile("" : : : "a7", "a0", "a1", "a2", "a3");
 #endif
 
     /* Do your trap handling */
@@ -269,7 +273,7 @@ void irq_handler_s_trap(void)
         "mv a0, a7\n"
         #endif
         "jalr %0\n"
-        : :"r"(syscall_handler) : "a4"
+        : : "r"(syscall_handler) : "a4"
         );
         sepc += 4;
     } else {

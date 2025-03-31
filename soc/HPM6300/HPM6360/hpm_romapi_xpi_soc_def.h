@@ -26,15 +26,6 @@
 #define XPI_CLK_OUT_FREQ_OPTION_200MHz (9U)
 
 typedef struct {
-    struct {
-        uint8_t priority;                   /* Offset: 0x00 */
-        uint8_t master_idx;                 /* Offset: 0x01 */
-        uint8_t buf_size_in_dword;          /* Offset: 0x02 */
-        bool enable_prefetch;               /* Offset: 0x03 */
-    } entry[8];
-} xpi_ahb_buffer_cfg_t;
-
-typedef struct {
     uint8_t data_pads;
     xpi_channel_t channel;
     xpi_io_group_t io_group;

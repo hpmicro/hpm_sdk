@@ -1,11 +1,15 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
 #ifndef LWIPOPTS_H
 #define LWIPOPTS_H
+
+#if defined(__GNUC__) && (__GNUC__ >= 14)
+#include "sys/select.h"
+#endif
 
 #define LWIP_DNS						1
 #define LWIP_NETIF_HOSTNAME				1

@@ -6,6 +6,7 @@
  * Change Logs:
  * Date           Author       Notes
  * 2018-10-03     Bernard      The first version
+ * 2020/11/20     BalanceTWK   Add FPU support
  */
 
 #ifndef CPUPORT_H__
@@ -35,7 +36,6 @@
 #define REGBYTES                4
 #endif
 
-/* Preprocessor Definition */
 #ifdef ARCH_RISCV_FPU
 #ifdef ARCH_RISCV_FPU_D
 #define FSTORE                  fsd

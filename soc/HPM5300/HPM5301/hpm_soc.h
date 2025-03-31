@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -190,16 +190,26 @@
 /* GPIOM base pointer */
 #define HPM_GPIOM ((GPIOM_Type *) HPM_GPIOM_BASE)
 
+#include "hpm_synt_regs.h"
+/* Address of SYNT instances */
+/* SYNT base address */
+#define HPM_SYNT_BASE (0xF0328000UL)
+/* SYNT base pointer */
+#define HPM_SYNT ((SYNT_Type *) HPM_SYNT_BASE)
+
+#include "hpm_trgm_regs.h"
+/* Address of TRGM instances */
+/* TRGM0 base address */
+#define HPM_TRGM0_BASE (0xF033C000UL)
+/* TRGM0 base pointer */
+#define HPM_TRGM0 ((TRGM_Type *) HPM_TRGM0_BASE)
+
 #include "hpm_usb_regs.h"
 /* Address of USB instances */
 /* USB0 base address */
 #define HPM_USB0_BASE (0xF300C000UL)
 /* USB0 base pointer */
 #define HPM_USB0 ((USB_Type *) HPM_USB0_BASE)
-
-/* Address of ROMC instances */
-/* ROMC base address */
-#define HPM_ROMC_BASE (0xF3014000UL)
 
 #include "hpm_sec_regs.h"
 /* Address of SEC instances */
@@ -307,6 +317,7 @@
 #include "hpm_misc.h"
 #include "hpm_otp_table.h"
 #include "hpm_dmamux_src.h"
+#include "hpm_trgmmux_src.h"
 #include "hpm_iomux.h"
 #include "hpm_pmic_iomux.h"
 #endif /* HPM_SOC_H */

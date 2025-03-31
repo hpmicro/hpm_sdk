@@ -90,8 +90,8 @@ int main(void)
     }
 
     /* step.3 install dma callback if want use dma */
-    if (hpm_spi_dma_install_callback(TEST_SPI, spi_txdma_complete_callback, spi_rxdma_complete_callback) != status_success) {
-        printf("hpm_spi_dma_install_callback fail\n");
+    if (hpm_spi_dma_mgr_install_callback(TEST_SPI, spi_txdma_complete_callback, spi_rxdma_complete_callback) != status_success) {
+        printf("hpm_spi_dma_mgr_install_callback fail\n");
         while (1) {
         }
     }

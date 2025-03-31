@@ -1,5 +1,9 @@
-/* This is a small demo of the NetX HTTP Client Server API running on a
-   high-performance NetX TCP/IP stack.  */
+/*
+ * Copyright (c) 2023-2025 HPMicro
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ */
 
 #include "board.h"
 #include "nx_api.h"
@@ -65,15 +69,20 @@ ULONG server_stack_area[2048 >> 2];
 VOID thread_server_entry(ULONG thread_input);
 /* Define sample IP address.  */
 #if defined(CONFIG_NETX_ENABLE_DHCP) && CONFIG_NETX_ENABLE_DHCP
-#define SAMPLE_IPV4_ADDRESS IP_ADDRESS(0, 0, 0, 0)
-#define SAMPLE_IPV4_MASK IP_ADDRESS(0, 0, 0, 0)
+#define SAMPLE_IPV4_ADDRESS 0.0.0.0
+#define SAMPLE_IPV4_MASK 0.0.0.0
 
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(64) NX_DHCP dhcp_client;
 UCHAR ip_address[4];
 UCHAR network_mask[4];
 #else
-#define SAMPLE_IPV4_ADDRESS IP_ADDRESS(192, 168, 1, 223)
-#define SAMPLE_IPV4_MASK 0xFFFFFF00UL
+
+#ifndef SAMPLE_IPV4_ADDRESS
+#define SAMPLE_IPV4_ADDRESS 192.168.1.223
+#endif
+#ifndef SAMPLE_IPV4_MASK
+#define SAMPLE_IPV4_MASK 255.255.255.0
+#endif
 #endif
 
 /* Define the application's authentication check.  This is called by
@@ -126,8 +135,20 @@ INT main(VOID)
 /* Define what the initial system looks like.  */
 VOID tx_application_define(VOID *first_unused_memory)
 {
+    UINT ip, mask;
     UINT status;
+
     TX_PARAMETER_NOT_USED(first_unused_memory);
+    if (!nx_ipv4addr_aton(HPM_STRINGIFY(SAMPLE_IPV4_ADDRESS), &ip)) {
+        printf("SAMPLE_IPV4_ADDRESS(%s) is not correct\n", HPM_STRINGIFY(SAMPLE_IPV4_ADDRESS));
+        while (1) {
+        }
+    }
+    if (!nx_ipv4addr_aton(HPM_STRINGIFY(SAMPLE_IPV4_MASK), &mask)) {
+        printf("SAMPLE_IPV4_MASK(%s) is not correct\n", HPM_STRINGIFY(SAMPLE_IPV4_MASK));
+        while (1) {
+        }
+    }
     /* Create a helper thread for the server. */
     tx_thread_create(&server_thread, "HTTP Server thread", thread_server_entry, 0, server_thread_stack, DEMO_STACK_SIZE, 4, 4, TX_NO_TIME_SLICE, TX_AUTO_START);
 
@@ -144,7 +165,7 @@ VOID tx_application_define(VOID *first_unused_memory)
     }
 
     /* Create an IP instance.  */
-    status = nx_ip_create(&server_ip, "HTTP Server IP", SAMPLE_IPV4_ADDRESS, SAMPLE_IPV4_MASK, &server_pool, _nx_driver_hpm, server_ip_stack, 4096, 1);
+    status = nx_ip_create(&server_ip, "HTTP Server IP", ip, mask, &server_pool, _nx_driver_hpm, server_ip_stack, 4096, 1);
 
     /* Check for IP create errors.  */
     if (status) {
@@ -196,7 +217,7 @@ VOID tx_application_define(VOID *first_unused_memory)
 #else
 
     /* Set up the server's IPv4 address here. */
-    server_ip_address.nxd_ip_address.v4 = SAMPLE_IPV4_ADDRESS;
+    server_ip_address.nxd_ip_address.v4 = ip;
     server_ip_address.nxd_ip_version = NX_IP_VERSION_V4;
 
 #endif /* (IP_TYPE==6) */
@@ -257,8 +278,8 @@ VOID thread_server_entry(ULONG thread_input)
 #else
     /* Output IP address and network mask.  */
     printf("NetXDuo is running\r\n");
-    printf("IP address: %lu.%lu.%lu.%lu\r\n", (SAMPLE_IPV4_ADDRESS >> 24), (SAMPLE_IPV4_ADDRESS >> 16 & 0xFF), (SAMPLE_IPV4_ADDRESS >> 8 & 0xFF), (SAMPLE_IPV4_ADDRESS >> 0 & 0xFF));
-    printf("Mask: %lu.%lu.%lu.%lu\r\n", (SAMPLE_IPV4_MASK >> 24), (SAMPLE_IPV4_MASK >> 16 & 0xFF), (SAMPLE_IPV4_MASK >> 8 & 0xFF), (SAMPLE_IPV4_MASK & 0xFF));
+    printf("IP address: %s\r\n", HPM_STRINGIFY(SAMPLE_IPV4_ADDRESS));
+    printf("Mask: %s\r\n", HPM_STRINGIFY(SAMPLE_IPV4_MASK));
 
 #endif
     NX_PARAMETER_NOT_USED(thread_input);

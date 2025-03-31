@@ -584,7 +584,7 @@ int main(void)
     uint32_t i = 0, jpg_size;
     uint8_t *tmp;
     int retry;
-    uint8_t fname[FILE_NAME_MAX];
+    char fname[FILE_NAME_MAX];
 
     uint8_t *front_buffer, *back_buffer;
     front_buffer = buffers[0];

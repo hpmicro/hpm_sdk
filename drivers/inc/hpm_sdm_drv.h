@@ -363,7 +363,7 @@ static inline bool sdm_channel_filter_register_is_data(SDM_Type *ptr, uint8_t ch
  *
  * @param ptr SDM base address
  * @param ch channel index
- * @param uint32_t mask status mask value
+ * @param mask status mask value
  */
 static inline void sdm_clean_channel_filter_status(SDM_Type *ptr, uint8_t ch, uint32_t mask)
 {
@@ -471,7 +471,7 @@ static inline uint32_t sdm_get_channel_comparator_status(SDM_Type *ptr, uint8_t 
  *
  * @param ptr SDM base address
  * @param ch channel index
- * @param uint32_t mask status mask value
+ * @param mask status mask value
  */
 static inline void sdm_clean_channel_comparator_status(SDM_Type *ptr, uint8_t ch, uint32_t mask)
 {

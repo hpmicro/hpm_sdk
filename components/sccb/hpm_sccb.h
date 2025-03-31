@@ -185,7 +185,7 @@ hpm_stat_t sccb_master_writew2(sccb_type sccb, uint8_t slv_addr, uint16_t reg_ad
  * @param [in]  slv_addr sccb slave address
  * @param [out] buf  point of the buffer to store 8bit data from device
  * @param [out] len  size of data to be read in bytes
- * @param [in] len  size of data to be read in bytes
+ * @param [in] flags  sccb_xfer_flags_t enmu flags
  * @retval hpm_stat_t: status_success if reading is completed without any error
  */
 hpm_stat_t sccb_master_read_bytes(sccb_type sccb, uint8_t slv_addr, uint8_t *buf, const uint32_t len, uint8_t flags);
@@ -199,7 +199,7 @@ hpm_stat_t sccb_master_read_bytes(sccb_type sccb, uint8_t slv_addr, uint8_t *buf
  * @param [in]  slv_addr sccb slave address
  * @param [out] buf  point of the buffer to store 8bit data from device
  * @param [out] len  size of data to be write in bytes
- * @param [in] len  size of data to be write in bytes
+ * @param [in] flags  sccb_xfer_flags_t enmu flags
  * @retval hpm_stat_t: status_success if writing is completed without any error
  */
 hpm_stat_t cambus_write_bytes(sccb_type sccb, uint8_t slv_addr, uint8_t *buf, const uint32_t len, uint8_t flags);

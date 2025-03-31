@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -242,9 +242,9 @@ void *start_iperf(struct netif *netif)
         }
     } else {
         if (netif->num == 0) {
-           IP_ADDR4(&remote_addr, REMOTE_IP0_ADDR0, REMOTE_IP0_ADDR1, REMOTE_IP0_ADDR2, REMOTE_IP0_ADDR3);
+            ip4addr_aton(HPM_STRINGIFY(REMOTE_IP0_CONFIG), &remote_addr);
         } else {
-           IP_ADDR4(&remote_addr, REMOTE_IP1_ADDR0, REMOTE_IP1_ADDR1, REMOTE_IP1_ADDR2, REMOTE_IP1_ADDR3);
+            ip4addr_aton(HPM_STRINGIFY(REMOTE_IP1_CONFIG), &remote_addr);
         }
 
         if (tcp) {

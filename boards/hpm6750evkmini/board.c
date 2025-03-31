@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
@@ -23,7 +23,6 @@
 #include "hpm_enet_drv.h"
 #include "hpm_sdk_version.h"
 
-static board_timer_cb timer_cb;
 static bool invert_led_level;
 
 /**
@@ -316,6 +315,29 @@ void board_init_lcd(void)
 #endif
 }
 
+/*
+ * Fix Errata E00039
+ *
+ * The vpw in hpm67 soc is invalid, but actual timing of vpw is equal to hpw.
+ * So we need to fix the vpw to make it equal to hpw.
+ * The vpw is fixed by compensating the back porch, we need keep to total time of xsync and back porch unchanged.
+ */
+void board_lcdc_vpw_fix(lcdc_config_t *config)
+{
+    uint32_t hpw = config->hsync.pulse_width;
+    uint32_t vpw = config->vsync.pulse_width;
+    uint32_t diff;
+
+    if (vpw < hpw) {
+        diff = hpw - vpw;
+        config->hsync.pulse_width = vpw;
+        config->hsync.back_porch_pulse += diff;
+    } else if (hpw < vpw) {
+        diff = vpw - hpw;
+        config->vsync.back_porch_pulse += diff;
+    }
+}
+
 void board_panel_para_to_lcdc(lcdc_config_t *config)
 {
     const hpm_panel_timing_t *timing;
@@ -338,6 +360,8 @@ void board_panel_para_to_lcdc(lcdc_config_t *config)
     config->control.invert_href = timing->de_pol;
     config->control.invert_pixel_data = timing->pixel_data_pol;
     config->control.invert_pixel_clock = timing->pixel_clk_pol;
+
+    board_lcdc_vpw_fix(config);
 }
 #endif
 
@@ -351,6 +375,8 @@ void board_delay_us(uint32_t us)
     clock_cpu_delay_us(us);
 }
 
+#if !defined(NO_BOARD_TIMER_SUPPORT) || !NO_BOARD_TIMER_SUPPORT
+static board_timer_cb timer_cb;
 SDK_DECLARE_EXT_ISR_M(BOARD_CALLBACK_TIMER_IRQ, board_timer_isr)
 void board_timer_isr(void)
 {
@@ -378,6 +404,7 @@ void board_timer_create(uint32_t ms, board_timer_cb cb)
 
     gptmr_start_counter(BOARD_CALLBACK_TIMER, BOARD_CALLBACK_TIMER_CH);
 }
+#endif
 
 void board_i2c_bus_clear(I2C_Type *ptr)
 {
@@ -653,8 +680,8 @@ void board_init_clock(void)
     /* Connect Group1 to CPU1 */
     clock_connect_group_to_cpu(1, 1);
 
-    /* Bump up DCDC voltage to 1200mv */
-    pcfg_dcdc_set_voltage(HPM_PCFG, 1200);
+    /* Bump up DCDC voltage to 1275mv */
+    pcfg_dcdc_set_voltage(HPM_PCFG, 1275);
     pcfg_dcdc_switch_to_dcm_mode(HPM_PCFG);
 
     if (status_success != pllctl_init_int_pll_with_freq(HPM_PLLCTL, 0, BOARD_CPU_FREQ)) {

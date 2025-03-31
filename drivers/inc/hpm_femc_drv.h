@@ -115,10 +115,11 @@ typedef struct {
     uint8_t refresh_recover_in_ns;      /**< Trc */
     uint8_t refresh_in_ms;              /**< Tref */
     uint8_t idle_timeout_in_ns;
-    uint8_t cmd_data_width;
-    uint8_t auto_refresh_count_in_one_burst;
+    uint8_t cmd_data_width;             /**< Issue command data width */
+    uint8_t auto_refresh_count_in_one_burst;     /**< Issue auto-refresh command count in one burst */
     bool delay_cell_disable;            /**< Delay cell disable */
     uint8_t delay_cell_value;           /**< Delay cell value */
+    uint8_t auto_refresh_cmd_count;     /**< Issue auto-refresh command count after precharge all when initialize */
 } femc_sdram_config_t;
 
 /**

@@ -114,5 +114,73 @@ hpm_stat_t gptmr_channel_monitor_config(GPTMR_Type *ptr, uint8_t ch_index, gptmr
     }
     return status_success;
 }
+#endif
 
+#if defined(HPM_IP_FEATURE_GPTMR_QEI_MODE) && (HPM_IP_FEATURE_GPTMR_QEI_MODE == 1)
+void gptmr_config_qei(GPTMR_Type *ptr, gptmr_qei_config_t *qei_config)
+{
+    gptmr_channel_config_t config;
+
+    gptmr_set_qei_type(ptr, qei_config->ch_group, qei_config->type);
+
+    gptmr_stop_counter(ptr, qei_config->ch_group);
+    gptmr_stop_counter(ptr, qei_config->ch_group + 1);
+
+    gptmr_channel_get_default_config(ptr, &config);
+    config.counter_mode = gptmr_counter_mode_external;
+    config.reload = qei_config->phmax;
+    gptmr_channel_reset_count(ptr, qei_config->ch_group);
+    gptmr_channel_config(ptr, qei_config->ch_group, &config, false);
+    gptmr_channel_reset_count(ptr, qei_config->ch_group + 1);
+    gptmr_channel_config(ptr, qei_config->ch_group + 1, &config, false);
+
+    gptmr_start_counter(ptr, qei_config->ch_group);
+    gptmr_start_counter(ptr, qei_config->ch_group + 1);
+}
+
+void gptmr_set_qei_type(GPTMR_Type *ptr, gptmr_qei_ch_group_t ch_group, gptmr_qei_type_t type)
+{
+    if (ch_group == gptmr_qei_ch_group_23) {
+        ptr->GCR = (ptr->GCR & ~GPTMR_GCR_QEI_TYPE23_MASK) | GPTMR_GCR_QEI_TYPE23_SET(type);
+    } else {
+        ptr->GCR = (ptr->GCR & ~GPTMR_GCR_QEI_TYPE01_MASK) | GPTMR_GCR_QEI_TYPE01_SET(type);
+    }
+}
+
+gptmr_qei_type_t gptmr_get_qei_type(GPTMR_Type *ptr, gptmr_qei_ch_group_t ch_group)
+{
+    gptmr_qei_type_t type;
+
+    if (ch_group == gptmr_qei_ch_group_23) {
+        type = (gptmr_qei_type_t)GPTMR_GCR_QEI_TYPE23_GET(ptr->GCR);
+    } else {
+        type = (gptmr_qei_type_t)GPTMR_GCR_QEI_TYPE01_GET(ptr->GCR);
+    }
+
+    return type;
+}
+
+uint32_t gptmr_get_qei_phcnt(GPTMR_Type *ptr, gptmr_qei_ch_group_t ch_group)
+{
+    uint32_t count0, count1, phmax, qei_count;
+
+    count0 = gptmr_channel_get_counter(ptr, ch_group, gptmr_counter_type_normal);
+    count1 = gptmr_channel_get_counter(ptr, ch_group + 1, gptmr_counter_type_normal);
+    phmax = gptmr_channel_get_reload(ptr, ch_group) + 1;
+    if (gptmr_get_qei_type(ptr, ch_group) == gptmr_qei_ab_mode) {
+        if (count1 >= count0) {
+            qei_count = count1 - count0;
+        } else {
+            qei_count = phmax + (count1 - count0);
+        }
+    } else {
+        if (count0 >= count1) {
+            qei_count = count0 - count1;
+        } else {
+            qei_count = phmax + (count0 - count1);
+        }
+    }
+
+    return qei_count;
+}
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -48,12 +48,12 @@
 #define IRQn_PTPC                      39      /* PTPC IRQ */
 #define IRQn_PWM0                      40      /* PWM0 IRQ */
 #define IRQn_QEI0                      41      /* QEI0 IRQ */
-#define IRQn_SEI0                      42      /* SEI0 IRQ */
+#define IRQn_SEI0_0                    42      /* SEI0[0] IRQ */
 #define IRQn_MMC0                      43      /* MMC0 IRQ */
 #define IRQn_TRGMUX0                   44      /* TRGMUX0 IRQ */
 #define IRQn_PWM1                      45      /* PWM1 IRQ */
 #define IRQn_QEI1                      46      /* QEI1 IRQ */
-#define IRQn_SEI1                      47      /* SEI1 IRQ */
+#define IRQn_SEI0_1                    47      /* SEI0[1] IRQ */
 #define IRQn_MMC1                      48      /* MMC1 IRQ */
 #define IRQn_TRGMUX1                   49      /* TRGMUX1 IRQ */
 #define IRQn_RDC                       50      /* RDC IRQ */

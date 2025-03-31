@@ -6,25 +6,12 @@
  */
 
 #include <stdio.h>
-#include <string.h>
 #include "board.h"
-#include "hpm_uart_drv.h"
 #include "hpm_sysctl_drv.h"
-#include "hpm_clock_drv.h"
-#include "hpm_l1c_drv.h"
 #include "hpm_pcfg_drv.h"
 #include "hpm_pdgo_drv.h"
 
-#define CLOCK_ON (1)
-#define CLOCK_OFF (2)
-#define POWER_OFF (3)
 #define POWER_DOWN_COUNT (0x100)
-
-void prepare_soc_low_power(void)
-{
-    pcfg_dcdc_set_lp_current_limit(HPM_PCFG, pcfg_dcdc_lp_current_limit_250ma);
-    pcfg_dcdc_set_current_hys_range(HPM_PCFG, pcfg_dcdc_current_hys_25mv);
-}
 
 static void show_power_status(uint32_t retention_mask)
 {
@@ -34,7 +21,7 @@ static void show_power_status(uint32_t retention_mask)
         "XTAL", "PLL0", "PLL1",
     };
     printf("---------------------------------------------\n");
-    for (uint32_t i = 0; i < 7; i++) {
+    for (uint32_t i = 0; i < ARRAY_SIZE(domain_name); i++) {
         if (retention_mask & (1 << i)) {
             printf("%s: ON\n", domain_name[i]);
         } else {
@@ -44,42 +31,46 @@ static void show_power_status(uint32_t retention_mask)
     printf("---------------------------------------------\n");
 }
 
+static void enable_wkup_pin_irq(void)
+{
+    pdgo_enable_wkup_software_wakeup(HPM_PDGO);
+    intc_m_enable_irq_with_priority(IRQn_PAD_WAKEUP, 2);
+}
+
+SDK_DECLARE_EXT_ISR_M(IRQn_PAD_WAKEUP, wakeup_isr)
+void wakeup_isr(void)
+{
+    ;
+}
+
+void prepare_soc_low_power(void)
+{
+    pcfg_dcdc_set_lp_current_limit(HPM_PCFG, pcfg_dcdc_lp_current_limit_250ma);
+    pcfg_dcdc_set_current_hys_range(HPM_PCFG, pcfg_dcdc_current_hys_25mv);
+    enable_wkup_pin_irq();
+}
+
 
 void enter_wait_mode(void)
 {
-    uint32_t retention = 0x7FUL;
-    clk_src_t cpu_clk_src;
     printf("Entering wait mode\n");
-    show_power_status(retention);
-    printf("Send 'w' to wakeup from the wait mode\n");
+    printf("Press WKUP pin to wakeup from the wait mode\n");
 
-    sysctl_clock_preserve_settings(HPM_SYSCTL, clock_node_xpi0);
-    sysctl_clock_set_preset(HPM_SYSCTL, sysctl_preset_0);
-
-    /*
-     * Keep PUART clock
-     */
-    sysctl_set_cpu0_lp_retention(HPM_SYSCTL, retention);
-    pcfg_disable_power_trap(HPM_PCFG);
     sysctl_set_cpu0_lp_mode(HPM_SYSCTL, cpu_lp_mode_gate_cpu_clock);
     WFI();
-    sysctl_clock_set_preset(HPM_SYSCTL, sysctl_preset_1);
 }
 
 void enter_stop_mode(void)
 {
-    uint32_t retention = 0x1FUL;
+    uint32_t retention = 0x0FUL;
 
     printf("Entering stop mode\n");
     show_power_status(retention);
-    printf("Send 'w' to wakeup from the stop mode\n");
+    printf("Press WKUP pin to wakeup from the stop mode\n");
 
-    sysctl_enable_cpu0_wakeup_source_with_irq(HPM_SYSCTL, IRQn_PUART);
-    /*
-     * Keep PUART clock
-     */
+    sysctl_enable_cpu0_wakeup_source_with_irq(HPM_SYSCTL, IRQn_PAD_WAKEUP);
+
     sysctl_set_cpu0_lp_retention(HPM_SYSCTL, retention);
-    sysctl_clear_cpu0_flags(HPM_SYSCTL, cpu_event_flag_mask_all);
     sysctl_set_cpu0_lp_mode(HPM_SYSCTL, cpu_lp_mode_trigger_system_lp);
     WFI();
 }
@@ -88,16 +79,14 @@ void enter_stop_mode(void)
 void enter_standby_mode(void)
 {
     uint32_t retention = 0;
+
+    printf("Entering standby mode\n");
     show_power_status(retention);
-    printf("Send 'w' to wakeup from the standby mode\n");
+    printf("Press WKUP pin to wakeup from the standby mode\n");
 
     pcfg_enable_power_trap(HPM_PCFG);
     pcfg_disable_dcdc_retention(HPM_PCFG);
-    /*
-     * Keep PUART clock
-     */
-    pcfg_enable_wakeup_source(HPM_PCFG, pcfg_wakeup_src_puart);
-    pcfg_update_periph_clock_mode(HPM_PCFG, pcfg_pmc_periph_uart, true);
+
     sysctl_set_cpu0_lp_retention(HPM_SYSCTL, retention);
     sysctl_set_cpu0_lp_mode(HPM_SYSCTL, cpu_lp_mode_trigger_system_lp);
     WFI();
@@ -108,7 +97,7 @@ void enter_shutdown_mode(void)
     printf("Entering shutdown mode\n");
     printf("Press WAKEUP or RESETN to wake up from the shutdown mode\n");
 
-    pdgo_set_turnoff_counter(HPM_PDGO, 0x100000);
+    pdgo_set_turnoff_counter(HPM_PDGO, POWER_DOWN_COUNT);
 
     while (1) {
         ;

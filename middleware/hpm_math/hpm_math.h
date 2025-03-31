@@ -2005,6 +2005,26 @@ static inline void hpm_dsp_and_u32(u32_t *src1, u32_t *src2, u32_t *dst, uint32_
 #endif
 #endif
 }
+
+/**
+ * @brief Compute the logical bitwise AND of two u16 vectors.
+ * @param[in]       *src1 pointer of the first input vector
+ * @param[in]       *src2 pointer of the second input vector
+ * @param[out]      *dst pointer of the output vector
+ * @param[in]       size number of elements in a vector
+ *
+ */
+static inline void hpm_dsp_and_u16(u16_t *src1, u16_t *src2, u16_t *dst, uint32_t size)
+{
+#if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+#ifdef __zcc__
+    tpt_and_16bit(dst, src1, src2, size);
+#else
+    riscv_dsp_and_u16(src1, src2, dst, size);
+#endif
+#endif
+}
+
 /**
  * @brief Compute the logical bitwise AND of two u8 vectors.
  * @param[in]       *src1 pointer of the first input vector
@@ -4085,6 +4105,25 @@ static inline void hpm_dsp_mat_add_f32(const float32_t *src1, const float32_t *s
 #endif
 #endif
 }
+
+/**
+ * @brief Addition of two floating-potint matrices.
+ * @param[in]       *src1 points to the first input matrix.
+ * @param[in]       *src2 points to the second input matrix.
+ * @param[out]      *dst  points to the output matrix.
+ * @param[in]       row   number of the matrix rows.
+ * @param[in]       col   number of the matrix columns.
+ */
+ static inline void hpm_dsp_mat_add_f64(const float64_t *src1, const float64_t *src2, float64_t *dst, uint32_t row, uint32_t col)
+ {
+ #if HPM_DSP_CORE == HPM_DSP_HW_NDS32
+ #ifdef __zcc__
+     tpt_mat_add_f64(dst, src1, src2, row, col);
+ #else
+     riscv_dsp_mat_add_f64(src1, src2, dst, row, col);
+ #endif
+ #endif
+ }
 
 /**
  * @brief Addition of two q15 matrices.

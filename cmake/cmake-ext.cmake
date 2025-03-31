@@ -347,13 +347,15 @@ endfunction()
 # check board capability based on board yaml and app.yaml
 # @private
 #
-function(check_board_capability board_yaml app_yaml result)
+function(check_board_capability board_yaml app_yaml app_bin_dir cmake_generator result)
     execute_process(
         COMMAND
         ${PYTHON_EXECUTABLE}
         ${HPM_SDK_BASE}/scripts/check_board_cap.py
         ${board_yaml}
         ${app_yaml}
+        ${app_bin_dir}
+        ${cmake_generator}
         RESULT_VARIABLE r
         OUTPUT_STRIP_TRAILING_WHITESPACE
         )

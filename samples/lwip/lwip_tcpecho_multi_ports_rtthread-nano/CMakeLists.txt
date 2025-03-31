@@ -1,4 +1,4 @@
-# Copyright (c) 2024 HPMicro
+# Copyright (c) 2024-2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -30,6 +30,7 @@ sdk_compile_definitions(-D__DISABLE_AUTO_NEGO=0)
 sdk_compile_definitions(-D__ENABLE_ENET_RECEIVE_INTERRUPT=1)
 sdk_compile_definitions(-DENET_MULTIPLE_PORT=1)
 sdk_compile_definitions(-DLWIP_DHCP=0)
+sdk_compile_definitions(-DUSE_LWIPOPTS_APP_H=1)
 
 project(lwip_tcpecho_multi_ports_rtthread-nano_example)
 sdk_inc(../ports/rtthread-nano/multiple)

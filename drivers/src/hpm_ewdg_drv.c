@@ -67,7 +67,6 @@ void ewdg_get_default_config(EWDG_Type *ptr, ewdg_config_t *config)
         config->ctrl_config.use_lowlevel_timeout = true;
 
         config->ctrl_config.refresh_unlock_method = ewdg_refresh_unlock_method_password;
-        config->ctrl_config.enable_overtime_self_clear = false;
 
         config->ctrl_config.timeout_interrupt_val = EWDG_INTERRUPT_TIMEOUT_TICKS_DEFAULT;
         config->ctrl_config.timeout_reset_val = EWDG_RESET_TIMEOUT_TICKS_DEFAULT;
@@ -122,7 +121,7 @@ hpm_stat_t ewdg_init_ctrl_func(EWDG_Type *ptr, ewdg_func_ctrl_config_t *config, 
                 /* Cannot get the expected EWDG setting via the specified timeout input */
                 break;
             }
-#if !defined(EWDG_SOC_SUPPORT_TIMEOUT_INTERRUPT) || (EWDG_SOC_SUPPORT_TIMEOUT_INTERRUPT == 1)
+#if defined(HPM_IP_FEATURE_EWDG_SOC_SUPPORT_TIMEOUT_INTERRUPT) && (HPM_IP_FEATURE_EWDG_SOC_SUPPORT_TIMEOUT_INTERRUPT == 1)
             ot_int_ticks = (uint32_t) (timeout_interrupt_ticks & 0xFFFFFFFFUL);
 #endif
             ot_reset_ticks = (uint32_t) (timeout_reset_ticks & 0xFFFFFFFFUL);
@@ -166,9 +165,6 @@ hpm_stat_t ewdg_init_ctrl_func(EWDG_Type *ptr, ewdg_func_ctrl_config_t *config, 
         }
         ctrl0 |= EWDG_CTRL0_REF_UNLOCK_MEC_SET(config->refresh_unlock_method);
 
-        if (config->enable_overtime_self_clear) {
-            ctrl0 |= EWDG_CTRL0_OT_SELF_CLEAR_MASK;
-        }
         if (config->keep_running_in_debug_mode) {
             ctrl0 |= EWDG_CTRL0_EN_DBG_MASK;
         }
@@ -191,7 +187,7 @@ hpm_stat_t ewdg_init_ctrl_func(EWDG_Type *ptr, ewdg_func_ctrl_config_t *config, 
         ptr->REF_PROT = EWDG_REF_PROT_REF_UNL_PSD_SET(config->refresh_unlock_password);
 
 
-#if !defined(EWDG_SOC_SUPPORT_TIMEOUT_INTERRUPT) || (EWDG_SOC_SUPPORT_TIMEOUT_INTERRUPT == 1)
+#if defined(HPM_IP_FEATURE_EWDG_SOC_SUPPORT_TIMEOUT_INTERRUPT) && (HPM_IP_FEATURE_EWDG_SOC_SUPPORT_TIMEOUT_INTERRUPT == 1)
         ptr->OT_INT_VAL = ot_int_ticks;
 #endif
         ptr->OT_RST_VAL = ot_reset_ticks;

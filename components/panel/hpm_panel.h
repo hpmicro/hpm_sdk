@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -72,6 +72,13 @@ typedef enum hpm_panel_if_type {
     HPM_PANEL_IF_TYPE_LVDS_SPLIT,
     HPM_PANEL_IF_TYPE_MIPI,
 } hpm_panel_if_type_t;
+
+typedef enum hpm_panel_mem_type {
+    HPM_PANEL_MEM_TYPE_NONCACHEABLE = 0,
+    HPM_PANEL_MEM_TYPE_CACHEABLE,
+    HPM_PANEL_MEM_TYPE_MAX,
+    HPM_PANEL_MEM_TYPE_UNKNOWN,
+} hpm_panel_mem_type_t;
 
 typedef enum hpm_panel_state_power {
     HPM_PANEL_STATE_POWER_OFF,
@@ -205,6 +212,45 @@ void hpm_panel_delay_ms(uint32_t ms);
  * @param [in] us expected delay interval in microseconds
  */
 void hpm_panel_delay_us(uint32_t us);
+
+/**
+ *
+ * @brief Allocate panel memory of a specified type
+ *
+ * @param [in] type memory type
+ * @param [in] size memory size
+ */
+void *hpm_panel_memory_alloc(hpm_panel_mem_type_t type, uint32_t size);
+
+/**
+ *
+ * @brief Free panel memory
+ *
+ * @param [in] addr memory address
+ */
+void hpm_panel_memory_free(void *addr);
+
+/**
+ *
+ * @brief Get panel memory type
+ *
+ * @param [in] addr memory address
+ *
+ * @return memory type
+ */
+hpm_panel_mem_type_t hpm_panel_memory_get_type(void *addr);
+
+/**
+ *
+ * @brief Register panel memory block to panel subsystem
+ *
+ * @param [in] type memory block type
+ * @param [in] addr memory block address
+ * @param [in] size memory block size
+ *
+ * @return 0: success, other: failed
+ */
+int hpm_panel_memory_register(hpm_panel_mem_type_t type, void *addr, uint32_t size);
 
 #ifdef __cplusplus
 }

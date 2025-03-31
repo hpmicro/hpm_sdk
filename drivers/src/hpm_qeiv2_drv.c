@@ -148,7 +148,11 @@ static int32_t qeiv2_convert_param(float param)
     } else if (param < -2) {
         ret = 0x8000;
     } else {
-        ret = param * 0x4000;
+        if (param >= 0) {
+            ret = (param * 0x4000) + 0.5;
+        } else {
+            ret = (param * 0x4000) - 0.5;
+        }
     }
 
     return ret;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
@@ -30,10 +30,10 @@ __RW enet_rx_desc_t dma_rx_desc_tab[ENET_RX_BUFF_COUNT]; /* Ethernet Rx DMA Desc
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ENET_SOC_DESC_ADDR_ALIGNMENT)
 __RW enet_tx_desc_t dma_tx_desc_tab[ENET_TX_BUFF_COUNT]; /* Ethernet Tx DMA Descriptor */
 
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ENET_SOC_BUFF_ADDR_ALIGNMENT)
+ATTR_ALIGN(HPM_L1C_CACHELINE_SIZE)
 __RW uint8_t rx_buff[ENET_RX_BUFF_COUNT][ENET_RX_BUFF_SIZE]; /* Ethernet Receive Buffer */
 
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ENET_SOC_BUFF_ADDR_ALIGNMENT)
+ATTR_ALIGN(HPM_L1C_CACHELINE_SIZE)
 __RW uint8_t tx_buff[ENET_TX_BUFF_COUNT][ENET_TX_BUFF_SIZE]; /* Ethernet Transmit Buffer */
 
 enet_desc_t desc;
@@ -182,7 +182,7 @@ void rt_hw_board_init(void)
 
 int rtthread_init(void)
 {
-    rt_thread_t main_thread = rt_thread_create("main", thread_entry, NULL, 1024, MAIN_TASK_PRIO, 10);
+    rt_thread_t main_thread = rt_thread_create("main", thread_entry, NULL, 2048, MAIN_TASK_PRIO, 10);
     rt_thread_startup(main_thread);
 
     return 0;

@@ -23,7 +23,7 @@ extern "C"
  * @details write data at slave mode
  *
  * @param [in] ptr I2C base address
- * @param [in] device_address SMbus slave address
+ * @param [in] slave_address SMbus slave address
  * @param [in] data byte to be writed
  * @retval hpm_stat_t: status_success if writing is completed without any error
  */
@@ -36,7 +36,7 @@ hpm_stat_t hpm_smbus_master_write_byte(I2C_Type *ptr, uint8_t slave_address,
  * @details Read byte from SMbus device
  *
  * @param [in] ptr I2C base address
- * @param [in] device_address SMbus slave address
+ * @param [in] slave_address SMbus slave address
  * @param [out] data pointer of the byte read from device
  * @retval hpm_stat_t: status_success if reading is completed without any error
  */
@@ -49,7 +49,7 @@ hpm_stat_t hpm_smbus_master_read_byte(I2C_Type *ptr, uint8_t slave_address,
  * @details write byte from SMbus device in command code
  *
  * @param [in] ptr I2C base address
- * @param [in] device_address SMbus slave address
+ * @param [in] slave_address SMbus slave address
  * @param [in] command command code
  * @param [in] data byte to be writed
  * @retval hpm_stat_t: status_success if writing is completed without any error
@@ -63,7 +63,7 @@ hpm_stat_t hpm_smbus_master_write_byte_in_command(I2C_Type *ptr, uint8_t slave_a
  * @details write word(16bits) from SMbus device in command code
  *
  * @param [in] ptr I2C base address
- * @param [in] device_address SMbus slave address
+ * @param [in] slave_address SMbus slave address
  * @param [in] command command code
  * @param [in] data word to be writed
  * @retval hpm_stat_t: status_success if writing is completed without any error
@@ -77,7 +77,7 @@ hpm_stat_t hpm_smbus_master_write_word_in_command(I2C_Type *ptr, uint8_t slave_a
  * @details read byte from SMbus device in command code
  *
  * @param [in] ptr I2C base address
- * @param [in] device_address SMbus slave address
+ * @param [in] slave_address SMbus slave address
  * @param [in] command command code
  * @param [in] data byte to be read
  * @retval hpm_stat_t: status_success if reading is completed without any error
@@ -91,7 +91,7 @@ hpm_stat_t hpm_smbus_master_read_byte_in_command(I2C_Type *ptr, uint8_t slave_ad
  * @details read word from SMbus device in command code
  *
  * @param [in] ptr I2C base address
- * @param [in] device_address SMbus slave address
+ * @param [in] slave_address SMbus slave address
  * @param [in] command command code
  * @param [in] data word to be read
  * @retval hpm_stat_t: status_success if reading is completed without any error
@@ -106,7 +106,7 @@ hpm_stat_t hpm_smbus_master_read_word_in_command(I2C_Type *ptr, uint8_t slave_ad
  * @note size should not not greater than I2C_SOC_TRANSFER_COUNT_MAX
  *
  * @param [in] ptr I2C base address
- * @param [in] device_address SMbus slave address
+ * @param [in] slave_address SMbus slave address
  * @param [in] command command code
  * @param [in] data pointer of the buffer to store data read from device
  * @param [in] size size of data to be read in bytes
@@ -122,7 +122,7 @@ hpm_stat_t hpm_smbus_master_write_block_in_command(I2C_Type *ptr, uint8_t slave_
  * @note size should not not greater than I2C_SOC_TRANSFER_COUNT_MAX
  *
  * @param [in] ptr I2C base address
- * @param [in] device_address SMbus slave address
+ * @param [in] slave_address SMbus slave address
  * @param [in] command command code
  * @param [out] data pointer of the buffer to store data read from device
  * @param [in] size size of data to be read in bytes
@@ -138,7 +138,7 @@ hpm_stat_t hpm_smbus_master_read_block_in_command(I2C_Type *ptr, uint8_t slave_a
  * @note size should not not greater than I2C_SOC_TRANSFER_COUNT_MAX
  *
  * @param [in] ptr I2C base address
- * @param [in] device_address SMbus slave address
+ * @param [in] slave_address SMbus slave address
  * @param [in] data pointer of the data to be sent
  * @param [in] size size of data to be sent in bytes
  * @retval hpm_stat_t: status_success if writing is completed without any error
@@ -153,7 +153,7 @@ hpm_stat_t hpm_smbus_master_write(I2C_Type *ptr, uint8_t slave_address,
  * @note size should not not greater than I2C_SOC_TRANSFER_COUNT_MAX
  *
  * @param [in] ptr I2C base address
- * @param [in] device_address SMbus slave address
+ * @param [in] slave_address SMbus slave address
  * @param [out] data pointer of the buffer to store data read from device
  * @param [in] size size of data to be read in bytes
  * @retval hpm_stat_t: status_success if reading is completed without any error

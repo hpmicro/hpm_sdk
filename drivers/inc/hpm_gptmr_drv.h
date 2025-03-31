@@ -109,6 +109,26 @@ typedef struct gptmr_channel_monitor_config {
 } gptmr_channel_monitor_config_t;
 #endif
 
+#if defined(HPM_IP_FEATURE_GPTMR_QEI_MODE) && (HPM_IP_FEATURE_GPTMR_QEI_MODE == 1)
+typedef enum gptmr_qei_ch_group {
+    gptmr_qei_ch_group_01 = 0,
+    gptmr_qei_ch_group_23 = 2,
+} gptmr_qei_ch_group_t;
+
+typedef enum gptmr_qei_type {
+    gptmr_qei_ud_mode = 0,
+    gptmr_qei_ab_mode,
+    gptmr_qei_pd_mode,
+} gptmr_qei_type_t;
+
+typedef struct gptmr_qei_config {
+    gptmr_qei_type_t type;
+    gptmr_qei_ch_group_t ch_group;
+    uint32_t phmax;
+} gptmr_qei_config_t;
+
+#endif
+
 /**
  * @brief GPTMR channel config
  */
@@ -133,7 +153,6 @@ typedef struct gptmr_channel_config {
 #if defined(HPM_IP_FEATURE_GPTMR_OP_MODE) && (HPM_IP_FEATURE_GPTMR_OP_MODE == 1)
     bool enable_opmode;
 #endif
-
 } gptmr_channel_config_t;
 
 
@@ -260,7 +279,11 @@ static inline uint32_t gptmr_channel_get_counter(GPTMR_Type *ptr,
  */
 static inline void gptmr_trigger_channel_software_sync(GPTMR_Type *ptr, uint32_t ch_index_mask)
 {
+#if defined(HPM_IP_FEATURE_GPTMR_QEI_MODE) && (HPM_IP_FEATURE_GPTMR_QEI_MODE == 1)
+    ptr->GCR = (ptr->GCR & ~GPTMR_GCR_SWSYNCT_MASK) | GPTMR_GCR_SWSYNCT_SET(ch_index_mask);
+#else
     ptr->GCR = ch_index_mask;
+#endif
 }
 
 /**
@@ -613,6 +636,45 @@ static inline void gptmr_start_counter(GPTMR_Type *ptr, uint8_t ch_index)
 #endif
     ptr->CHANNEL[ch_index].CR |= GPTMR_CHANNEL_CR_CEN_MASK;
 }
+
+#if defined(HPM_IP_FEATURE_GPTMR_QEI_MODE) && (HPM_IP_FEATURE_GPTMR_QEI_MODE == 1)
+
+/**
+ * @brief gptmr config qei.
+ *
+ * @param [in] ptr GPTMR base address
+ * @param [in] qei_config gptmr_qei_config_t
+ */
+void gptmr_config_qei(GPTMR_Type *ptr, gptmr_qei_config_t *qei_config);
+
+/**
+ * @brief gptmr set qei type.
+ *
+ * @param [in] ptr GPTMR base address
+ * @param [in] ch_group gptmr_qei_ch_group_t
+ * @param [in] type gptmr_qei_type_t
+ */
+void gptmr_set_qei_type(GPTMR_Type *ptr, gptmr_qei_ch_group_t ch_group, gptmr_qei_type_t type);
+
+/**
+ * @brief gptmr get qei type.
+ *
+ * @param [in] ptr GPTMR base address
+ * @param [in] ch_group gptmr_qei_ch_group_t
+ * @retval gptmr_qei_type_t ud_mode or ab_mode or pd_mode
+ */
+gptmr_qei_type_t gptmr_get_qei_type(GPTMR_Type *ptr, gptmr_qei_ch_group_t ch_group);
+
+/**
+ * @brief gptmr get qei phase count.
+ *
+ * @param [in] ptr GPTMR base address
+ * @param [in] ch_group gptmr_qei_ch_group_t
+ * @retval uint32_t qei phase count
+ */
+uint32_t gptmr_get_qei_phcnt(GPTMR_Type *ptr, gptmr_qei_ch_group_t ch_group);
+
+#endif
 
 /**
  * @}

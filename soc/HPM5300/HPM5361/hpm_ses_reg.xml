@@ -5039,7 +5039,6 @@
       <BitField name="WIN_EN" start="24" size="1"/>
       <BitField name="WIN_LOWER" start="22" size="2"/>
       <BitField name="CFG_LOCK" start="21" size="1"/>
-      <BitField name="OT_SELF_CLEAR" start="17" size="1"/>
       <BitField name="REF_OT_REQ" start="15" size="1"/>
       <BitField name="WIN_UPPER" start="12" size="3"/>
       <BitField name="REF_LOCK" start="5" size="1"/>
@@ -5100,7 +5099,6 @@
       <BitField name="WIN_EN" start="24" size="1"/>
       <BitField name="WIN_LOWER" start="22" size="2"/>
       <BitField name="CFG_LOCK" start="21" size="1"/>
-      <BitField name="OT_SELF_CLEAR" start="17" size="1"/>
       <BitField name="REF_OT_REQ" start="15" size="1"/>
       <BitField name="WIN_UPPER" start="12" size="3"/>
       <BitField name="REF_LOCK" start="5" size="1"/>
@@ -5161,7 +5159,6 @@
       <BitField name="WIN_EN" start="24" size="1"/>
       <BitField name="WIN_LOWER" start="22" size="2"/>
       <BitField name="CFG_LOCK" start="21" size="1"/>
-      <BitField name="OT_SELF_CLEAR" start="17" size="1"/>
       <BitField name="REF_OT_REQ" start="15" size="1"/>
       <BitField name="WIN_UPPER" start="12" size="3"/>
       <BitField name="REF_LOCK" start="5" size="1"/>
@@ -15791,56 +15788,56 @@
       <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
       <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
-    <Register name="FILTCFG_MOTO_GPIO_IN0" start="+0x40" size="0x4">
+    <Register name="FILTCFG_TRGM_P_00" start="+0x40" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
       <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
       <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
-    <Register name="FILTCFG_MOTO_GPIO_IN1" start="+0x44" size="0x4">
+    <Register name="FILTCFG_TRGM_P_01" start="+0x44" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
       <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
       <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
-    <Register name="FILTCFG_MOTO_GPIO_IN2" start="+0x48" size="0x4">
+    <Register name="FILTCFG_TRGM_P_02" start="+0x48" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
       <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
       <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
-    <Register name="FILTCFG_MOTO_GPIO_IN3" start="+0x4c" size="0x4">
+    <Register name="FILTCFG_TRGM_P_03" start="+0x4c" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
       <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
       <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
-    <Register name="FILTCFG_MOTO_GPIO_IN4" start="+0x50" size="0x4">
+    <Register name="FILTCFG_TRGM_P_04" start="+0x50" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
       <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
       <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
-    <Register name="FILTCFG_MOTO_GPIO_IN5" start="+0x54" size="0x4">
+    <Register name="FILTCFG_TRGM_P_05" start="+0x54" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
       <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
       <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
-    <Register name="FILTCFG_MOTO_GPIO_IN6" start="+0x58" size="0x4">
+    <Register name="FILTCFG_TRGM_P_06" start="+0x58" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
       <BitField name="FILTLEN_SHIFT" start="9" size="3"/>
       <BitField name="FILTLEN_BASE" start="0" size="9"/>
     </Register>
-    <Register name="FILTCFG_MOTO_GPIO_IN7" start="+0x5c" size="0x4">
+    <Register name="FILTCFG_TRGM_P_07" start="+0x5c" size="0x4">
       <BitField name="OUTINV" start="16" size="1"/>
       <BitField name="MODE" start="13" size="3"/>
       <BitField name="SYNCEN" start="12" size="1"/>
@@ -16043,13 +16040,13 @@
       <BitField name="REDG2PEN" start="9" size="1"/>
       <BitField name="TRIGOSEL" start="0" size="7"/>
     </Register>
-    <Register name="TRGOCFG_CMP0_WIN" start="+0x170" size="0x4">
+    <Register name="TRGOCFG_ACMP_CH0_WIN" start="+0x170" size="0x4">
       <BitField name="OUTINV" start="11" size="1"/>
       <BitField name="FEDG2PEN" start="10" size="1"/>
       <BitField name="REDG2PEN" start="9" size="1"/>
       <BitField name="TRIGOSEL" start="0" size="7"/>
     </Register>
-    <Register name="TRGOCFG_CMP1_WIN" start="+0x174" size="0x4">
+    <Register name="TRGOCFG_ACMP_CH1_WIN" start="+0x174" size="0x4">
       <BitField name="OUTINV" start="11" size="1"/>
       <BitField name="FEDG2PEN" start="10" size="1"/>
       <BitField name="REDG2PEN" start="9" size="1"/>
@@ -16451,49 +16448,49 @@
       <BitField name="REDG2PEN" start="9" size="1"/>
       <BitField name="TRIGOSEL" start="0" size="7"/>
     </Register>
-    <Register name="TRGOCFG_MOT_GPIO0" start="+0x280" size="0x4">
+    <Register name="TRGOCFG_TRGM_P_00" start="+0x280" size="0x4">
       <BitField name="OUTINV" start="11" size="1"/>
       <BitField name="FEDG2PEN" start="10" size="1"/>
       <BitField name="REDG2PEN" start="9" size="1"/>
       <BitField name="TRIGOSEL" start="0" size="7"/>
     </Register>
-    <Register name="TRGOCFG_MOT_GPIO1" start="+0x284" size="0x4">
+    <Register name="TRGOCFG_TRGM_P_01" start="+0x284" size="0x4">
       <BitField name="OUTINV" start="11" size="1"/>
       <BitField name="FEDG2PEN" start="10" size="1"/>
       <BitField name="REDG2PEN" start="9" size="1"/>
       <BitField name="TRIGOSEL" start="0" size="7"/>
     </Register>
-    <Register name="TRGOCFG_MOT_GPIO2" start="+0x288" size="0x4">
+    <Register name="TRGOCFG_TRGM_P_02" start="+0x288" size="0x4">
       <BitField name="OUTINV" start="11" size="1"/>
       <BitField name="FEDG2PEN" start="10" size="1"/>
       <BitField name="REDG2PEN" start="9" size="1"/>
       <BitField name="TRIGOSEL" start="0" size="7"/>
     </Register>
-    <Register name="TRGOCFG_MOT_GPIO3" start="+0x28c" size="0x4">
+    <Register name="TRGOCFG_TRGM_P_03" start="+0x28c" size="0x4">
       <BitField name="OUTINV" start="11" size="1"/>
       <BitField name="FEDG2PEN" start="10" size="1"/>
       <BitField name="REDG2PEN" start="9" size="1"/>
       <BitField name="TRIGOSEL" start="0" size="7"/>
     </Register>
-    <Register name="TRGOCFG_MOT_GPIO4" start="+0x290" size="0x4">
+    <Register name="TRGOCFG_TRGM_P_04" start="+0x290" size="0x4">
       <BitField name="OUTINV" start="11" size="1"/>
       <BitField name="FEDG2PEN" start="10" size="1"/>
       <BitField name="REDG2PEN" start="9" size="1"/>
       <BitField name="TRIGOSEL" start="0" size="7"/>
     </Register>
-    <Register name="TRGOCFG_MOT_GPIO5" start="+0x294" size="0x4">
+    <Register name="TRGOCFG_TRGM_P_05" start="+0x294" size="0x4">
       <BitField name="OUTINV" start="11" size="1"/>
       <BitField name="FEDG2PEN" start="10" size="1"/>
       <BitField name="REDG2PEN" start="9" size="1"/>
       <BitField name="TRIGOSEL" start="0" size="7"/>
     </Register>
-    <Register name="TRGOCFG_MOT_GPIO6" start="+0x298" size="0x4">
+    <Register name="TRGOCFG_TRGM_P_06" start="+0x298" size="0x4">
       <BitField name="OUTINV" start="11" size="1"/>
       <BitField name="FEDG2PEN" start="10" size="1"/>
       <BitField name="REDG2PEN" start="9" size="1"/>
       <BitField name="TRIGOSEL" start="0" size="7"/>
     </Register>
-    <Register name="TRGOCFG_MOT_GPIO7" start="+0x29c" size="0x4">
+    <Register name="TRGOCFG_TRGM_P_07" start="+0x29c" size="0x4">
       <BitField name="OUTINV" start="11" size="1"/>
       <BitField name="FEDG2PEN" start="10" size="1"/>
       <BitField name="REDG2PEN" start="9" size="1"/>
@@ -18480,70 +18477,6 @@
       <BitField name="TRG_SW_STA" start="4" size="1"/>
       <BitField name="TRIG_SW_INDEX" start="0" size="4"/>
     </Register>
-    <Register name="BUS_RESULT_CHN0" start="+0x400" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN1" start="+0x404" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN2" start="+0x408" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN3" start="+0x40c" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN4" start="+0x410" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN5" start="+0x414" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN6" start="+0x418" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN7" start="+0x41c" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN8" start="+0x420" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN9" start="+0x424" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN10" start="+0x428" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN11" start="+0x42c" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN12" start="+0x430" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN13" start="+0x434" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN14" start="+0x438" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN15" start="+0x43c" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
     <Register name="BUF_CFG0" start="+0x500" size="0x4">
       <BitField name="BUS_MODE_EN" start="1" size="1"/>
       <BitField name="WAIT_DIS" start="0" size="1"/>
@@ -19186,70 +19119,6 @@
     <Register name="TRG_SW_STA" start="+0x34" size="0x4">
       <BitField name="TRG_SW_STA" start="4" size="1"/>
       <BitField name="TRIG_SW_INDEX" start="0" size="4"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN0" start="+0x400" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN1" start="+0x404" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN2" start="+0x408" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN3" start="+0x40c" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN4" start="+0x410" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN5" start="+0x414" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN6" start="+0x418" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN7" start="+0x41c" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN8" start="+0x420" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN9" start="+0x424" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN10" start="+0x428" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN11" start="+0x42c" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN12" start="+0x430" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN13" start="+0x434" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN14" start="+0x438" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN15" start="+0x43c" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
     </Register>
     <Register name="BUF_CFG0" start="+0x500" size="0x4">
       <BitField name="BUS_MODE_EN" start="1" size="1"/>
@@ -20268,8 +20137,8 @@
       <BitField name="WINEN" start="17" size="1"/>
       <BitField name="OPOL" start="16" size="1"/>
       <BitField name="FLTMODE" start="13" size="3"/>
-      <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FLTLEN" start="0" size="12"/>
+      <BitField name="FLTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FLTLEN" start="0" size="9"/>
     </Register>
     <Register name="CHANNEL_CHN0_DACCFG" start="+0x4" size="0x4">
       <BitField name="DACCFG" start="0" size="8"/>
@@ -20299,8 +20168,8 @@
       <BitField name="WINEN" start="17" size="1"/>
       <BitField name="OPOL" start="16" size="1"/>
       <BitField name="FLTMODE" start="13" size="3"/>
-      <BitField name="SYNCEN" start="12" size="1"/>
-      <BitField name="FLTLEN" start="0" size="12"/>
+      <BitField name="FLTLEN_SHIFT" start="9" size="3"/>
+      <BitField name="FLTLEN" start="0" size="9"/>
     </Register>
     <Register name="CHANNEL_CHN1_DACCFG" start="+0x24" size="0x4">
       <BitField name="DACCFG" start="0" size="8"/>

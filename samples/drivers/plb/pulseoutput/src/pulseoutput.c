@@ -71,7 +71,7 @@ void init_pwm_plb_trgm(TRGM_Type *ptr)
     trgm_output_cfg.invert = false;
     trgm_output_cfg.type   = trgm_output_same_as_input;
     trgm_output_cfg.input  = BOARD_PLB_PWM_TRG;
-    trgm_output_config(ptr, BOARD_PLB_IN_PWM_TRG_NUM, &trgm_output_cfg);
+    trgm_output_config(ptr, BOARD_PLB_IN_PWM_TRG, &trgm_output_cfg);
 
     trgm_output_cfg.invert = false;
     trgm_output_cfg.type   = trgm_output_same_as_input;
@@ -82,7 +82,7 @@ void init_pwm_plb_trgm(TRGM_Type *ptr)
     trgm_output_cfg.invert = false;
     trgm_output_cfg.type   = trgm_output_pulse_at_input_rising_edge;
     trgm_output_cfg.input  = BOARD_PLB_PWM_TRG;
-    trgm_output_config(ptr, BOARD_PLB_IN_PWM_PULSE_TRG_NUM, &trgm_output_cfg);
+    trgm_output_config(ptr, BOARD_PLB_IN_PWM_PULSE_TRG, &trgm_output_cfg);
 
     trgm_output_cfg.invert = true;
     trgm_output_cfg.type   = trgm_output_same_as_input;
@@ -91,8 +91,8 @@ void init_pwm_plb_trgm(TRGM_Type *ptr)
 
     trgm_output_cfg.invert = false;
     trgm_output_cfg.type   = trgm_output_same_as_input;
-    trgm_output_cfg.input  = BOARD_PLB_OUT_TRG;
-    trgm_output_config(ptr, BOARD_PLB_IO_TRG_NUM, &trgm_output_cfg);
+    trgm_output_cfg.input  = BOARD_PLB_TO_TRG_IN;
+    trgm_output_config(ptr, BOARD_PLB_TRG_OUT, &trgm_output_cfg);
     trgm_enable_io_output(ptr, 1 << BOARD_PLB_IO_TRG_SHIFT);
 }
 

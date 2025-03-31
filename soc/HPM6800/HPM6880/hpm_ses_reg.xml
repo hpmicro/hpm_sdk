@@ -3634,40 +3634,6 @@
       <BitField name="RESULT" start="0" size="32"/>
     </Register>
   </RegisterGroup>
-  <RegisterGroup start="0xf0018000" name="SDADC">
-    <Register name="CTRL" start="+0x0" size="0x4">
-      <BitField name="SDM_CFG" start="20" size="8"/>
-      <BitField name="SDM_PGA_CE_SEL" start="18" size="2"/>
-      <BitField name="SDM_PGA_CH_SEL" start="14" size="4"/>
-      <BitField name="CFG_CDS_CMD" start="13" size="1"/>
-      <BitField name="LP_MODE_SDM" start="9" size="3"/>
-      <BitField name="LP_MODE_PGA" start="6" size="3"/>
-      <BitField name="ANA_PWUP" start="5" size="1"/>
-      <BitField name="BYPASS_PGA" start="4" size="1"/>
-      <BitField name="CONT_MODE" start="3" size="1"/>
-      <BitField name="RST_SDM" start="2" size="1"/>
-      <BitField name="RST_PGA" start="1" size="1"/>
-      <BitField name="EN" start="0" size="1"/>
-    </Register>
-    <Register name="CLK_DIV" start="+0x4" size="0x4">
-      <BitField name="FACTOR" start="0" size="8"/>
-    </Register>
-    <Register name="TTB" start="+0x8" size="0x4">
-      <BitField name="VAL" start="0" size="20"/>
-    </Register>
-    <Register name="START_OP" start="+0xc" size="0x4">
-      <BitField name="SDM_EN" start="0" size="1"/>
-    </Register>
-    <Register name="MISC" start="+0x10" size="0x4">
-      <BitField name="BURST_DONE_IE" start="1" size="1"/>
-      <BitField name="PDM_CLK_SEL" start="0" size="1"/>
-    </Register>
-    <Register name="ST" start="+0x14" size="0x4">
-      <BitField name="ANA_RST" start="2" size="1"/>
-      <BitField name="DIV_STABLE" start="1" size="1"/>
-      <BitField name="BURST_DONE" start="0" size="1"/>
-    </Register>
-  </RegisterGroup>
   <RegisterGroup start="0xf0040000" name="UART0">
     <Register name="IDLE_CFG" start="+0x4" size="0x4">
       <BitField name="RXEN" start="11" size="1"/>
@@ -7594,7 +7560,6 @@
       <BitField name="WIN_EN" start="24" size="1"/>
       <BitField name="WIN_LOWER" start="22" size="2"/>
       <BitField name="CFG_LOCK" start="21" size="1"/>
-      <BitField name="OT_SELF_CLEAR" start="17" size="1"/>
       <BitField name="REF_OT_REQ" start="15" size="1"/>
       <BitField name="WIN_UPPER" start="12" size="3"/>
       <BitField name="REF_LOCK" start="5" size="1"/>
@@ -7650,7 +7615,6 @@
       <BitField name="WIN_EN" start="24" size="1"/>
       <BitField name="WIN_LOWER" start="22" size="2"/>
       <BitField name="CFG_LOCK" start="21" size="1"/>
-      <BitField name="OT_SELF_CLEAR" start="17" size="1"/>
       <BitField name="REF_OT_REQ" start="15" size="1"/>
       <BitField name="WIN_UPPER" start="12" size="3"/>
       <BitField name="REF_LOCK" start="5" size="1"/>
@@ -7706,7 +7670,6 @@
       <BitField name="WIN_EN" start="24" size="1"/>
       <BitField name="WIN_LOWER" start="22" size="2"/>
       <BitField name="CFG_LOCK" start="21" size="1"/>
-      <BitField name="OT_SELF_CLEAR" start="17" size="1"/>
       <BitField name="REF_OT_REQ" start="15" size="1"/>
       <BitField name="WIN_UPPER" start="12" size="3"/>
       <BitField name="REF_LOCK" start="5" size="1"/>
@@ -11858,70 +11821,6 @@
     <Register name="TRG_SW_STA" start="+0x34" size="0x4">
       <BitField name="TRG_SW_STA" start="4" size="1"/>
       <BitField name="TRIG_SW_INDEX" start="0" size="4"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN0" start="+0x400" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN1" start="+0x404" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN2" start="+0x408" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN3" start="+0x40c" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN4" start="+0x410" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN5" start="+0x414" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN6" start="+0x418" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN7" start="+0x41c" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN8" start="+0x420" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN9" start="+0x424" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN10" start="+0x428" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN11" start="+0x42c" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN12" start="+0x430" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN13" start="+0x434" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN14" start="+0x438" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
-    </Register>
-    <Register name="BUS_RESULT_CHN15" start="+0x43c" size="0x4">
-      <BitField name="VALID" start="16" size="1"/>
-      <BitField name="CHAN_RESULT" start="0" size="16"/>
     </Register>
     <Register name="BUF_CFG0" start="+0x500" size="0x4">
       <BitField name="WAIT_DIS" start="0" size="1"/>
@@ -33464,11 +33363,6 @@
       <BitField name="C2" start="16" size="11"/>
       <BitField name="C3" start="0" size="11"/>
     </Register>
-    <Register name="CLUT_LOAD" start="+0x400" size="0x4">
-      <BitField name="STR_HIGH" start="31" size="1"/>
-      <BitField name="SEL_NUM" start="4" size="3"/>
-      <BitField name="UPDATE_EN" start="0" size="1"/>
-    </Register>
   </RegisterGroup>
   <RegisterGroup start="0xf1004000" name="LCDC1">
     <Register name="CTRL" start="+0x0" size="0x4">
@@ -34004,11 +33898,6 @@
     <Register name="LAYER_7_CSC_COEF2" start="+0x3e8" size="0x4">
       <BitField name="C2" start="16" size="11"/>
       <BitField name="C3" start="0" size="11"/>
-    </Register>
-    <Register name="CLUT_LOAD" start="+0x400" size="0x4">
-      <BitField name="STR_HIGH" start="31" size="1"/>
-      <BitField name="SEL_NUM" start="4" size="3"/>
-      <BitField name="UPDATE_EN" start="0" size="1"/>
     </Register>
   </RegisterGroup>
   <RegisterGroup start="0xf1008000" name="CAM0">
@@ -60022,30 +59911,6 @@
       <BitField name="XTAL_SEL" start="28" size="1"/>
       <BitField name="KEEP_IRC" start="16" size="1"/>
       <BitField name="FORCE_XTAL" start="4" size="1"/>
-    </Register>
-  </RegisterGroup>
-  <RegisterGroup start="0xf420c000" name="BUTN">
-    <Register name="BTN_STATUS" start="+0x0" size="0x4">
-      <BitField name="XWCLICK" start="28" size="3"/>
-      <BitField name="WCLICK" start="24" size="3"/>
-      <BitField name="XPCLICK" start="20" size="3"/>
-      <BitField name="PCLICK" start="16" size="3"/>
-      <BitField name="DBTN" start="8" size="4"/>
-      <BitField name="WBTN" start="4" size="4"/>
-      <BitField name="PBTN" start="0" size="4"/>
-    </Register>
-    <Register name="BTN_IRQ_MASK" start="+0x4" size="0x4">
-      <BitField name="XWCLICK" start="28" size="3"/>
-      <BitField name="WCLICK" start="24" size="3"/>
-      <BitField name="XPCLICK" start="20" size="3"/>
-      <BitField name="PCLICK" start="16" size="3"/>
-      <BitField name="DBTN" start="8" size="4"/>
-      <BitField name="WBTN" start="4" size="4"/>
-      <BitField name="PBTN" start="0" size="4"/>
-    </Register>
-    <Register name="LED_INTENSE" start="+0x8" size="0x4">
-      <BitField name="RLED" start="16" size="4"/>
-      <BitField name="PLED" start="0" size="4"/>
     </Register>
   </RegisterGroup>
   <RegisterGroup start="0xf4218000" name="BGPR">

@@ -1,4 +1,4 @@
-# Copyright (c) 2023-2024 HPMicro
+# Copyright (c) 2023-2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -6,7 +6,6 @@ cmake_minimum_required(VERSION 3.13)
 set(CONFIG_ECLIPSE_THREADX 1)
 set(CONFIG_ECLIPSE_THREADX_NETXDUO 1)
 
-# This should be defined to include DHCP source code
 set(CONFIG_ECLIPSE_THREADX_NETXDUO_ADDONS_DHCP 1)
 
 # Select the phy on the board

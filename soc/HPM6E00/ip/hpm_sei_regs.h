@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -387,9 +387,9 @@ typedef struct {
 /*
  * RESTART (WC)
  *
- * Restart tranceiver, this is a self clear bit
+ * Restart transceiver, this is a self clear bit
  * 0: no effect
- * 1: reset tranceiver
+ * 1: reset transceiver
  */
 #define SEI_CTRL_XCVR_CTRL_RESTART_MASK (0x10U)
 #define SEI_CTRL_XCVR_CTRL_RESTART_SHIFT (4U)
@@ -399,7 +399,7 @@ typedef struct {
 /*
  * MODE (RW)
  *
- * Tranceiver mode
+ * Transceiver mode
  * 0: synchronous maaster
  * 1: synchronous slave
  * 2: asynchronous mode

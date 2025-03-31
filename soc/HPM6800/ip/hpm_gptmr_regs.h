@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -26,7 +26,7 @@ typedef struct {
     __R  uint8_t  RESERVED0[256];              /* 0x100 - 0x1FF: Reserved */
     __RW uint32_t SR;                          /* 0x200: Status register */
     __RW uint32_t IRQEN;                       /* 0x204: Interrupt request enable register */
-    __RW uint32_t GCR;                         /* 0x208: Global control register */
+    __W  uint32_t GCR;                         /* 0x208: Global control register */
 } GPTMR_Type;
 
 
@@ -619,7 +619,7 @@ typedef struct {
 
 /* Bitfield definition for register: GCR */
 /*
- * SWSYNCT (RW)
+ * SWSYNCT (W1C)
  *
  * set this bitfield to trigger software counter sync event
  */

@@ -25,6 +25,7 @@
 ;********************************************************************************************************
 ; Note(s)   : Hardware FP is not supported.
 ;********************************************************************************************************
+#include "ucos_risc_v_chip_specific_extensions.h"
 #include "context.h"
 ;********************************************************************************************************
 ;                                          PUBLIC FUNCTIONS
@@ -96,8 +97,11 @@ OSStartHighRdy:
     lw     t1, 0(t0)
     lw     sp, 0(t1)
 
-; Restore Fpu registers when fpu is enabled
+; Restore Fpu registers when fpu is enabled. Added by Hpmicro
     portasmRESTORE_FPU_REGISTERS
+
+; Restore Additional registers. Added by Hpmicro
+    portasmRESTORE_ADDITIONAL_REGISTERS
 
 ; Retrieve the location where to jump
     lw     t0, 31 * 4(sp)
@@ -245,6 +249,9 @@ Software_IRQHandler:
     csrw mscratch, t0
 ; Restore Fpu registers when fpu is enabled. Added by Hpmicro
     portasmRESTORE_FPU_REGISTERS
+
+; Restore Additional registers. Added by Hpmicro
+    portasmRESTORE_ADDITIONAL_REGISTERS
 
 ; Retrieve the address at which exception happened
     lw     t0, 31 * 4(sp)

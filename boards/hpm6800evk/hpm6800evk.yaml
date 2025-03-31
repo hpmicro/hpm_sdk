@@ -24,3 +24,4 @@ board:
       - board_sdcard
       - board_sdram
       - board_ap6255_evb
+      - board_puart_pin

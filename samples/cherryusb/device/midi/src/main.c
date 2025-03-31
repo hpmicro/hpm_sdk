@@ -15,7 +15,6 @@
 extern void midi_set_auto_play(bool set);
 extern void midi_init(uint8_t busid, uint32_t reg_base);
 extern void midi_task_286ms(uint8_t busid);
-extern void midi_task_main(uint8_t busid);
 
 void timer_cb(void)
 {
@@ -39,22 +38,20 @@ int main(void)
     midi_init(0, CONFIG_HPM_USBD_BASE);
     board_timer_create(LED_FLASH_PERIOD_IN_MS, timer_cb);
 
-    printf("\r\n***********Select Work Mode**********\r\n");
-    printf("1 - Auto Play\r\n");
-    printf("2 - Manual Play\r\n");
-    printf("\r\nPlease Enter Play Number:\r\n");
-
-    selection = getchar();
-    printf("%c\r\n\r\n", selection);
-
-    if (selection == '1') {
-        midi_set_auto_play(true);
-    } else {
-        midi_set_auto_play(false);
-    }
-
     while (1) {
-        midi_task_main(0);
+        printf("\r\n***********Select Work Mode**********\r\n");
+        printf("1 - Auto Play\r\n");
+        printf("2 - Manual Play\r\n");
+        printf("\r\nPlease Enter Play Number:\r\n");
+
+        selection = getchar();
+        printf("%c\r\n\r\n", selection);
+
+        if (selection == '1') {
+            midi_set_auto_play(true);
+        } else {
+            midi_set_auto_play(false);
+        }
     }
     return 0;
 }

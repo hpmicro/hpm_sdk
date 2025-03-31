@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -455,7 +455,7 @@ typedef struct {
  *
  * convert clock numbers, set to 13 (0xD) for 12bit mode, which means convert need 14 adc clock cycles(based on clock after divider);
  * set to 11 for 10bit mode; set to 9 for 8bit mode; set to 7 or 6bit mode;
- * Ex: use 200MHz bus clock for adc, set sample_clock_number to 4, sample_clock_number_shift to 0, covert_clk_number to 13 for 12bit mode, clock_divder to 2, then each ADC conversion(plus sample) need 18(14 convert, 4 sample) cycles(66MHz).
+ * Ex: use 200MHz bus clock for adc, set sample_clock_number to 4, sample_clock_number_shift to 0, covert_clk_number to 13 for 12bit mode, clock_divider to 2, then each ADC conversion(plus sample) need 18(14 convert, 4 sample) cycles(66MHz).
  */
 #define ADC12_CONV_CFG1_CONVERT_CLOCK_NUMBER_MASK (0x1F0U)
 #define ADC12_CONV_CFG1_CONVERT_CLOCK_NUMBER_SHIFT (4U)

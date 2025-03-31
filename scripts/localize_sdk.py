@@ -1,4 +1,4 @@
-# Copyright (c) 2024 HPMicro
+# Copyright (c) 2024,2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
@@ -44,6 +44,7 @@ class Sdk_File_list:
         self.file_list["src"] = []
         self.file_list["inc"] = []
         self.file_list["cmakelists"] = []
+        self.file_list["middleware"] = []
 
     def remove_duplicates(self):
         self.file_list["soc"] = list(set(self.file_list["soc"]))
@@ -51,6 +52,45 @@ class Sdk_File_list:
         self.file_list["src"] = list(set(self.file_list["src"]))
         self.file_list["inc"] = list(set(self.file_list["inc"]))
         self.file_list["cmakelists"] = list(set(self.file_list["cmakelists"]))
+
+    def remove_all_elements_from_list(self, list_name, e):
+        updated_list = list(filter(lambda x: x != e, list_name))
+        return updated_list
+
+    def organize(self, sdk_base):
+        """
+        Organizes the file lists by removing duplicates and categorizing middleware files.
+
+        Parameters:
+        - sdk_base: The base directory of the SDK, used to determine middleware subdirectories.
+
+        This function processes the file lists for source files, include files, and CMakeLists files.
+        It removes duplicates and organizes middleware files into a separate list.
+        """
+        self.remove_duplicates()
+
+        # Process source files
+        # Check if the file (src, inc, cmakelist) is part of a middleware subdirectory
+        # Remove all occurrences of the file from the source list
+        # Add the middleware subdirectory name to the middleware list
+        for f in self.file_list["src"]:
+            if is_sdk_middleware_subdir_file(sdk_base, f):
+                self.file_list["src"] = self.remove_all_elements_from_list(self.file_list["src"], f)
+                self.add_sdk_middleware(get_sdk_middleware_subdir_name(sdk_base, f))
+
+        for f in self.file_list["inc"]:
+            if is_sdk_middleware_subdir(sdk_base, f):
+                self.file_list["inc"] = self.remove_all_elements_from_list(self.file_list["inc"], f)
+                self.add_sdk_middleware(get_sdk_middleware_subdir_name(sdk_base, f))
+
+        for f in self.file_list["cmakelists"]:
+            if is_sdk_middleware_subdir_file(sdk_base, f):
+                self.file_list["cmakelists"] = self.remove_all_elements_from_list(self.file_list["cmakelists"], f)
+                self.add_sdk_middleware(get_sdk_middleware_subdir_name(sdk_base, f))
+
+        # Ensure the middleware list contains unique entries
+        if self.file_list["middleware"] is not None:
+            self.file_list["middleware"] = list(set(self.file_list["middleware"]))
 
     def add_soc_file(self, f):
         self.file_list["soc"].append(f)
@@ -67,6 +107,10 @@ class Sdk_File_list:
     def add_inc_path(self, d):
         self.file_list["inc"].append(d)
 
+    def add_sdk_middleware(self, d):
+        if d is not None:
+            self.file_list["middleware"].append(d)
+
     def get_soc_files(self):
         return self.file_list["soc"]
 
@@ -75,6 +119,9 @@ class Sdk_File_list:
 
     def get_src_files(self):
         return self.file_list["src"]
+
+    def get_sdk_middleware(self):
+        return self.file_list["middleware"]
 
     def get_cmakelists(self):
         return self.file_list["cmakelists"]
@@ -94,6 +141,7 @@ class Sdk_File_list:
         self.file_list["board"] = self.file_list["board"] + sdk_file_list.get_board_files()
         self.file_list["inc"] = self.file_list["inc"] + sdk_file_list.get_inc_paths()
         self.file_list["cmakelists"] = self.file_list["cmakelists"] + sdk_file_list.get_cmakelists()
+        self.file_list["middleware"] = self.file_list["middleware"] + sdk_file_list.get_sdk_middleware()
         self.remove_duplicates()
 
 def is_c_or_cpp_source_file(file_name):
@@ -128,6 +176,59 @@ def is_sdk_board_file(sdk_base, file_name):
     if re.search(re.escape(t) + r'\w+', file_name):
         return True
     return False
+def is_sdk_middleware_subdir(sdk_base, dir_name):
+    """
+    Check if the given directory is a middleware subdirectory of the SDK.
+
+    Args:
+        sdk_base (str): The base directory of the SDK.
+        dir_name (str): The name of the directory to check.
+
+    Returns:
+        bool: True if the directory is a middleware subdirectory, False otherwise.
+    """
+    normalized_name = dir_name.replace('\\', '/')
+    t = os.path.join(sdk_base, 'middleware').replace('\\', '/')
+    if re.search(re.escape(t) + r'/[^/]+', normalized_name):
+        return True
+    return False
+
+def is_sdk_middleware_subdir_file(sdk_base, file_name):
+    """
+    Check if the given file is located in a middleware subdirectory of the SDK.
+
+    Args:
+        sdk_base (str): The base directory of the SDK.
+        file_name (str): The name of the file to check.
+
+    Returns:
+        bool: True if the file is in a middleware subdirectory, False otherwise.
+    """
+    normalized_name = file_name.replace('\\', '/')
+    t = os.path.join(sdk_base, 'middleware').replace('\\', '/')
+    if re.search(re.escape(t) + r'/[^/]+/', normalized_name):
+        return True
+    return False
+
+def get_sdk_middleware_subdir_name(sdk_base, file_name):
+    """
+    Get the name of the middleware subdirectory containing the given file.
+
+    Args:
+        sdk_base (str): The base directory of the SDK.
+        file_name (str): The name of the file to check.
+
+    Returns:
+        str: The name of the middleware subdirectory, or None if not found.
+    """
+    normalized_name = file_name.replace('\\', '/')
+    pattern = re.escape(os.path.join(sdk_base, 'middleware').replace('\\', '/'))
+    pattern = f'{pattern}/([^/]+)/'
+    m = re.search(pattern, normalized_name)
+    if m:
+        return m.group(1)
+    else:
+        return None
 
 def get_file_realpath(src_dir, file_path):
     if os.path.isabs(file_path):
@@ -198,8 +299,6 @@ def locate_cmake_file_api_files(sdk_base, src_dir, build_dir, cmake_cmd = None, 
         sys.stderr.write("\nError: can not locate codemodel-v2 reply file\n")
         return None
 
-    file_list.remove_duplicates()
-
     for tar in target_jsons:
         fp = open(tar, "r")
         j = json.load(fp)
@@ -241,8 +340,8 @@ def locate_cmake_file_api_files(sdk_base, src_dir, build_dir, cmake_cmd = None, 
 
         fp.close()
 
-    # remove dups
-    file_list.remove_duplicates()
+    # organize added files
+    file_list.organize(sdk_base)
 
     return file_list
 
@@ -308,10 +407,14 @@ def copy_sdk_soc_board_files(sdk_base, dst_dir, file_list):
         shutil.copytree(board_src, dst_board_path)
 
     return True
-
 def copy_additional_sdk_files(sdk_base, dst_dir):
+    def ignore_directories(directory, contents):
+        ignore_list = ['clang_tidy']
+        return [name for name in contents if os.path.isdir(os.path.join(directory, name)) and name in ignore_list]
+
     dst_script_path = os.path.join(dst_dir, "scripts")
-    shutil.copytree(os.path.join(sdk_base, "scripts"), dst_script_path)
+    shutil.copytree(os.path.join(sdk_base, "scripts"), dst_script_path, ignore=ignore_directories)
+
     dst_script_path = os.path.join(dst_dir, "cmake")
     shutil.copytree(os.path.join(sdk_base, "cmake"), dst_script_path)
 
@@ -348,25 +451,40 @@ def create_cmakelist_hierarchy(sdk_base, dst_dir, cmakelist):
             shutil.copy2(src, dst)
             create_cmakelist_hierarchy(sdk_base, dst_dir, src)
         else:
-            m = re.search(r'sdk_inc\((.*)\)', line)
+            # Deal with libraries files, since library might not be linked gcc,
+            # so localize all libraries, if any library link function is presented
+            # in current CMakeList.txt.
+            m = re.search(r'(sdk_\w+_ld_lib|sdk_link_libraries)', line)
             if m:
-                inc = m.group(1)
-                if re.match(r'\${.*}', inc):
-                    continue
-                inc_src_path = os.path.join(os.path.dirname(cmakelist), inc)
-                inc_dst_path = os.path.join(dst_dir, re.sub(re.escape(sdk_base) + r'[/\\]?', '', os.path.dirname(cmakelist)))
-                for hdr in os.listdir(inc_src_path):
-                    src = os.path.join(inc_src_path, hdr)
-                    if fnmatch.fnmatch(hdr, "*.h"):
-                        dst = os.path.join(inc_dst_path, inc)
-                        shutil.copy2(src, dst)
+                has_libraries = True
             else:
-                #  Deal with libraries files, since library might not be linked gcc,
-                # so localize all libraries, if any library link function is presented
-                # in current CMakeList.txt.
-                m = re.search(r'(sdk_\w+_ld_lib|sdk_link_libraries)', line)
+                # any file with expected extension name will be considered as valid
+                # header file, which will be copied to localized sdk
+                hdr_file_name_patterns = ["*.c*", "*.h*"]
+                incs = None
+                m = re.search(r'sdk_inc\((.*)\)', line)
                 if m:
-                    has_libraries = True
+                    incs = m.group(1)
+                else:
+                    m = re.search(r'sdk_inc_if.*\(\w* (.*)\)', line)
+                    if m:
+                        incs = m.group(1)
+
+                if incs is None:
+                    # no include path is found
+                    continue
+
+                for inc in incs.split():
+                    if re.match(r'\${.*}', inc):
+                        continue
+                    inc_src_path = os.path.join(os.path.dirname(cmakelist), inc)
+                    inc_dst_path = os.path.join(dst_dir, re.sub(re.escape(sdk_base) + r'[/\\]?', '', os.path.dirname(cmakelist)))
+                    for hdr in os.listdir(inc_src_path):
+                        src = os.path.join(inc_src_path, hdr)
+                        for p in hdr_file_name_patterns:
+                            if fnmatch.fnmatch(hdr, p):
+                                dst = os.path.join(inc_dst_path, inc)
+                                shutil.copy2(src, dst)
     fp.close()
 
     # process headers locating at the same path of current CMakeLists.txt
@@ -382,13 +500,15 @@ def create_cmakelist_hierarchy(sdk_base, dst_dir, cmakelist):
         for f in glob.glob(os.path.join(cwd, "**", "*.a"), recursive = True):
             copy_sdk_files(sdk_base, f, dst_dir)
 
+
 def copy_sdk_cmakelists(sdk_base, dst_dir, cmakelists):
     for cl in cmakelists:
+        if is_sdk_middleware_subdir_file(sdk_base, cl):
+            continue
         # copy file first
         copy_sdk_files(sdk_base, cl, dst_dir)
         # check if any "add_subdirectory" is presented, or these sub dirs need to be taken care of
         create_cmakelist_hierarchy(sdk_base, dst_dir, cl)
-
 
 def update_cmakelists(src_dir, dst_dir, dst_sdk_dir_name, board_name, generator, build_dir, dst_sdk_base_use_relpath = False):
     cmake_list = os.path.join(src_dir, "CMakeLists.txt")
@@ -455,6 +575,17 @@ def update_cmakelists(src_dir, dst_dir, dst_sdk_dir_name, board_name, generator,
         return False
     return True
 
+def copy_sdk_middleware_files(sdk_base, dst_sdk_dir, file_list):
+    for m in file_list.get_sdk_middleware():
+        m_src = os.path.join(sdk_base, "middleware", m)
+        m_dst = os.path.join(dst_sdk_dir, "middleware", m)
+        if not os.path.exists(m_dst):
+            try:
+                shutil.copytree(m_src, m_dst)
+            except shutil.Error:
+                return False
+    return True
+
 def copy_project_files(sdk_base, src_dir, dst_dir, dst_sdk_dir_name, file_list, force = False):
     if not os.path.exists(src_dir):
         sys.stderr.write("\nError: failed to locate src dir: %s\n" % src_dir)
@@ -478,6 +609,9 @@ def copy_project_files(sdk_base, src_dir, dst_dir, dst_sdk_dir_name, file_list, 
         else:
             shutil.rmtree(dst_sdk_dir)
     os.makedirs(dst_sdk_dir)
+
+    if not copy_sdk_middleware_files(sdk_base, dst_sdk_dir, file_list):
+        return False
 
     if not copy_sdk_soc_board_files(sdk_base, dst_sdk_dir, file_list):
         return False
@@ -582,6 +716,19 @@ def localize_sdk(sdk_base, src_dir, dst_dir, dst_sdk_prefix, board_name, generat
 
     return result
 
+# Usage example:
+#
+# To localize the SDK for a specific board:
+# python localize_sdk.py --src <source_directory> --bld <build_directory> --dst <destination_directory> --sdk <sdk_base_directory> --brd <board_name> --gnt <generator>
+#
+# Example:
+# python localize_sdk.py --src ./my_project --bld ./build --dst ./localized_sdk --sdk /path/to/hpm_sdk --brd hpm_board --gnt "Unix Makefiles"
+#
+# To unlocalize the SDK:
+# python localize_sdk.py --src <source_directory> --unlocalize
+#
+# Example:
+# python localize_sdk.py --src ./my_project --unlocalize
 if __name__ == "__main__":
     args = parser.parse_args()
     src_dir = args.src

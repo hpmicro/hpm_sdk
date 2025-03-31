@@ -89,13 +89,13 @@ __attribute__((weak)) void c_startup(void)
         *(__tdata_start__ + i) = *(__tdata_load_addr__ + i);
     }
 
-    /* noncacheable init section LMA: etext + data length + ramfunc legnth + tdata length*/
+    /* noncacheable init section LMA: etext + data length + ramfunc length + tdata length*/
     size = __noncacheable_init_end__ - __noncacheable_init_start__;
     for (i = 0; i < size; i++) {
         *(__noncacheable_init_start__ + i) = *(__noncacheable_init_load_addr__ + i);
     }
 
-    /* fast_ram init section LMA: etext + data length + ramfunc legnth + tdata length*/
+    /* fast_ram init section LMA: etext + data length + ramfunc length + tdata length*/
     size = __fast_ram_init_end__ - __fast_ram_init_start__;
     for (i = 0; i < size; i++) {
         *(__fast_ram_init_start__ + i) = *(__fast_ram_init_load_addr__ + i);

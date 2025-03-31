@@ -18,7 +18,7 @@
 #define PLLCTLV2_PLL_FREQ_MIN (PLLCTLV2_PLL_MFI_MIN * PLLCTLV2_PLL_XTAL_FREQ)
 #define PLLCTLV2_PLL_FREQ_MAX ((PLLCTLV2_PLL_MFI_MAX + 1U) * PLLCTLV2_PLL_XTAL_FREQ)
 
-hpm_stat_t pllctlv2_set_pll_with_mfi_mfn(PLLCTLV2_Type *ptr, uint8_t pll, uint32_t mfi, uint32_t mfn)
+hpm_stat_t pllctlv2_set_pll_with_mfi_mfn(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll, uint32_t mfi, uint32_t mfn)
 {
     hpm_stat_t status;
     if ((ptr == NULL) || (mfi < PLLCTLV2_PLL_MFI_MIN) || (mfi > PLLCTLV2_PLL_MFI_MAX) ||
@@ -36,7 +36,7 @@ hpm_stat_t pllctlv2_set_pll_with_mfi_mfn(PLLCTLV2_Type *ptr, uint8_t pll, uint32
     return status;
 }
 
-hpm_stat_t pllctlv2_init_pll_with_freq(PLLCTLV2_Type *ptr, uint8_t pll, uint32_t freq_in_hz)
+hpm_stat_t pllctlv2_init_pll_with_freq(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll, uint32_t freq_in_hz)
 {
     hpm_stat_t status;
     if ((ptr == NULL) || (freq_in_hz < PLLCTLV2_PLL_FREQ_MIN) || (freq_in_hz > PLLCTLV2_PLL_FREQ_MAX) ||
@@ -61,7 +61,7 @@ hpm_stat_t pllctlv2_init_pll_with_freq(PLLCTLV2_Type *ptr, uint8_t pll, uint32_t
     return status;
 }
 
-void pllctlv2_enable_spread_spectrum(PLLCTLV2_Type *ptr, uint8_t pll, uint32_t step, uint32_t stop)
+void pllctlv2_enable_spread_spectrum(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll, uint32_t step, uint32_t stop)
 {
     /*
      * NOTE: The spread spectrum related registers cannot be configured under below conditions:
@@ -79,16 +79,16 @@ void pllctlv2_enable_spread_spectrum(PLLCTLV2_Type *ptr, uint8_t pll, uint32_t s
     }
 }
 
-void pllctlv2_set_postdiv(PLLCTLV2_Type *ptr, uint8_t pll, uint8_t div_index, uint8_t div_value)
+void pllctlv2_set_postdiv(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll, pllctlv2_clk_t clk, pllctlv2_div_t div_value)
 {
     if ((ptr != NULL) && (pll < PLLCTL_SOC_PLL_MAX_COUNT)) {
-        ptr->PLL[pll].DIV[div_index] =
-            (ptr->PLL[pll].DIV[div_index] & ~PLLCTLV2_PLL_DIV_DIV_MASK) | PLLCTLV2_PLL_DIV_DIV_SET(div_value) |
+        ptr->PLL[pll].DIV[clk] =
+            (ptr->PLL[pll].DIV[clk] & ~PLLCTLV2_PLL_DIV_DIV_MASK) | PLLCTLV2_PLL_DIV_DIV_SET(div_value) |
                 PLLCTLV2_PLL_DIV_ENABLE_MASK;
     }
 }
 
-uint32_t pllctlv2_get_pll_freq_in_hz(PLLCTLV2_Type *ptr, uint8_t pll)
+uint32_t pllctlv2_get_pll_freq_in_hz(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll)
 {
     uint32_t freq = 0;
     if ((ptr != NULL) && (pll < PLLCTL_SOC_PLL_MAX_COUNT)) {
@@ -100,11 +100,11 @@ uint32_t pllctlv2_get_pll_freq_in_hz(PLLCTLV2_Type *ptr, uint8_t pll)
     return freq;
 }
 
-uint32_t pllctlv2_get_pll_postdiv_freq_in_hz(PLLCTLV2_Type *ptr, uint8_t pll, uint8_t div_index)
+uint32_t pllctlv2_get_pll_postdiv_freq_in_hz(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll, pllctlv2_clk_t clk)
 {
     uint32_t postdiv_freq = 0;
     if ((ptr != NULL) && (pll < PLLCTL_SOC_PLL_MAX_COUNT)) {
-        uint32_t postdiv = PLLCTLV2_PLL_DIV_DIV_GET(ptr->PLL[pll].DIV[div_index]);
+        uint32_t postdiv = PLLCTLV2_PLL_DIV_DIV_GET(ptr->PLL[pll].DIV[clk]);
         uint32_t pll_freq = pllctlv2_get_pll_freq_in_hz(ptr, pll);
         postdiv_freq = (uint32_t) (pll_freq / (1U + postdiv * 1.0 / 5U));
     }

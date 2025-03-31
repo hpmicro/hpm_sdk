@@ -1,4 +1,4 @@
-# Copyright (c) 2023-2024 HPMicro
+# Copyright (c) 2023-2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -38,6 +38,7 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 sdk_compile_definitions(-D__ENABLE_RTTHREAD_NANO=1)
 sdk_compile_definitions(-D__DISABLE_AUTO_NEGO=0)
 sdk_compile_definitions(-DLWIP_DHCP=0)
+sdk_compile_definitions(-DUSE_LWIPOPTS_APP_H=1)
 
 project(lwip_tcpecho_rtthread-nano)
 sdk_inc(../ports/rtthread-nano/single)

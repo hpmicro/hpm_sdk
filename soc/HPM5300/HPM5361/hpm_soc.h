@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -325,10 +325,6 @@
 #define HPM_USB0_BASE (0xF300C000UL)
 /* USB0 base pointer */
 #define HPM_USB0 ((USB_Type *) HPM_USB0_BASE)
-
-/* Address of ROMC instances */
-/* ROMC base address */
-#define HPM_ROMC_BASE (0xF3014000UL)
 
 #include "hpm_sdp_regs.h"
 /* Address of SDP instances */

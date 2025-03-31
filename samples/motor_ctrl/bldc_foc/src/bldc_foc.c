@@ -64,6 +64,19 @@
 #define ADCU_INDEX 0
 #define ADCV_INDEX 1
 
+#ifndef BOARD_BLDC_SW_FOC_SPEED_LOOP_SPEED_KP
+#define BOARD_BLDC_HW_FOC_SPEED_KP (0.01f)
+#define BOARD_BLDC_HW_FOC_SPEED_KI (0.001f)
+#define BOARD_BLDC_SW_FOC_SPEED_LOOP_SPEED_KP (0.0074f)
+#define BOARD_BLDC_SW_FOC_SPEED_LOOP_SPEED_KI (0.0001f)
+#define BOARD_BLDC_SW_FOC_POSITION_LOOP_SPEED_KP (0.05f)
+#define BOARD_BLDC_SW_FOC_POSITION_LOOP_SPEED_KI (0.001f)
+#define BOARD_BLDC_HW_FOC_POSITION_KP (34.7f)
+#define BOARD_BLDC_HW_FOC_POSITION_KI (0.113f)
+#define BOARD_BLDC_SW_FOC_POSITION_KP (154.7f)
+#define BOARD_BLDC_SW_FOC_POSITION_KI (0.113f)
+#endif
+
 volatile ATTR_PLACE_AT_FAST_RAM_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t adc_buff[3][BOARD_BLDC_ADC_PMT_DMA_SIZE_IN_4BYTES];
 volatile ATTR_PLACE_AT_FAST_RAM_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t pwm_buff[6];
 int32_t motor_clock_hz;
@@ -168,11 +181,11 @@ void motor_init(void)
     motor0.cfg.mcl.physical.motor.flux = 0.0015;
     motor0.cfg.mcl.physical.motor.ld = 0.0026;
     motor0.cfg.mcl.physical.motor.lq = 0.0026;
-    motor0.cfg.mcl.physical.time.adc_sample_ts = 1.0f / (PWM_FREQUENCY);
-    motor0.cfg.mcl.physical.time.current_loop_ts = (1.0f / (PWM_FREQUENCY));
-    motor0.cfg.mcl.physical.time.encoder_process_ts = (1.0f / (PWM_FREQUENCY));
-    motor0.cfg.mcl.physical.time.speed_loop_ts = (1.0f / (PWM_FREQUENCY)) * 5;
-    motor0.cfg.mcl.physical.time.position_loop_ts = (1.0f / (PWM_FREQUENCY)) * 20;
+    motor0.cfg.mcl.physical.time.adc_sample_ts = MCL_FREQUENCY_TO_PERIOD(PWM_FREQUENCY);
+    motor0.cfg.mcl.physical.time.current_loop_ts = MCL_FREQUENCY_TO_PERIOD(PWM_FREQUENCY);
+    motor0.cfg.mcl.physical.time.encoder_process_ts = MCL_FREQUENCY_TO_PERIOD(PWM_FREQUENCY);
+    motor0.cfg.mcl.physical.time.speed_loop_ts = (MCL_FREQUENCY_TO_PERIOD(PWM_FREQUENCY)) * 5;
+    motor0.cfg.mcl.physical.time.position_loop_ts = (MCL_FREQUENCY_TO_PERIOD(PWM_FREQUENCY)) * 20;
     motor0.cfg.mcl.physical.time.mcu_clock_tick = clock_get_frequency(clock_cpu0);
     motor0.cfg.mcl.physical.time.pwm_clock_tick = clock_get_frequency(BOARD_BLDC_QEI_CLOCK_SOURCE);
 
@@ -183,7 +196,7 @@ void motor_init(void)
 
     motor0.cfg.encoder.communication_interval_us = 0;
     motor0.cfg.encoder.disable_start_sample_interrupt = true;
-    motor0.cfg.encoder.period_call_time_s = 1.0f / (PWM_FREQUENCY);
+    motor0.cfg.encoder.period_call_time_s = MCL_FREQUENCY_TO_PERIOD(PWM_FREQUENCY);
     motor0.cfg.encoder.precision = BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV;
     motor0.cfg.encoder.speed_abs_switch_m_t = 5;
     motor0.cfg.encoder.speed_cal_method = encoder_method_m;
@@ -238,15 +251,15 @@ void motor_init(void)
     motor0.cfg.control.speed_pid_cfg.cfg.integral_min = -20;
     motor0.cfg.control.speed_pid_cfg.cfg.output_max = 10;
     motor0.cfg.control.speed_pid_cfg.cfg.output_min = -10;
-    motor0.cfg.control.speed_pid_cfg.cfg.kp = 0.01;
-    motor0.cfg.control.speed_pid_cfg.cfg.ki = 0.001;
+    motor0.cfg.control.speed_pid_cfg.cfg.kp = BOARD_BLDC_HW_FOC_SPEED_KP;
+    motor0.cfg.control.speed_pid_cfg.cfg.ki = BOARD_BLDC_HW_FOC_SPEED_KI;
 #else
     motor0.cfg.control.speed_pid_cfg.cfg.integral_max = 100;
     motor0.cfg.control.speed_pid_cfg.cfg.integral_min = -100;
     motor0.cfg.control.speed_pid_cfg.cfg.output_max = 5;
     motor0.cfg.control.speed_pid_cfg.cfg.output_min = -5;
-    motor0.cfg.control.speed_pid_cfg.cfg.kp = 0.0074;
-    motor0.cfg.control.speed_pid_cfg.cfg.ki = 0.0001;
+    motor0.cfg.control.speed_pid_cfg.cfg.kp = BOARD_BLDC_SW_FOC_SPEED_LOOP_SPEED_KP;
+    motor0.cfg.control.speed_pid_cfg.cfg.ki = BOARD_BLDC_SW_FOC_SPEED_LOOP_SPEED_KI;
 #endif
 
     motor0.cfg.control.position_pid_cfg.cfg.integral_max = 10;
@@ -254,11 +267,11 @@ void motor_init(void)
     motor0.cfg.control.position_pid_cfg.cfg.output_max = 50;
     motor0.cfg.control.position_pid_cfg.cfg.output_min = -50;
 #if defined(HW_CURRENT_FOC_ENABLE)
-    motor0.cfg.control.position_pid_cfg.cfg.kp = 34.7;
+    motor0.cfg.control.position_pid_cfg.cfg.kp = BOARD_BLDC_HW_FOC_POSITION_KP;
 #else
-    motor0.cfg.control.position_pid_cfg.cfg.kp = 154.7;
+    motor0.cfg.control.position_pid_cfg.cfg.kp = BOARD_BLDC_SW_FOC_POSITION_KP;
 #endif
-    motor0.cfg.control.position_pid_cfg.cfg.ki = 0.113;
+    motor0.cfg.control.position_pid_cfg.cfg.ki = BOARD_BLDC_SW_FOC_POSITION_KI;
 
     motor0.cfg.drivers.callback.init = pwm_init;
     motor0.cfg.drivers.callback.enable_all_drivers = enable_all_pwm_output;
@@ -316,15 +329,15 @@ void motor0_speed_loop_para_init(void)
     motor0.cfg.control.speed_pid_cfg.cfg.integral_min = -20;
     motor0.cfg.control.speed_pid_cfg.cfg.output_max = 10;
     motor0.cfg.control.speed_pid_cfg.cfg.output_min = -10;
-    motor0.cfg.control.speed_pid_cfg.cfg.kp = 0.01;
-    motor0.cfg.control.speed_pid_cfg.cfg.ki = 0.001;
+    motor0.cfg.control.speed_pid_cfg.cfg.kp = BOARD_BLDC_HW_FOC_SPEED_KP;
+    motor0.cfg.control.speed_pid_cfg.cfg.ki = BOARD_BLDC_HW_FOC_SPEED_KI;
 #else
     motor0.cfg.control.speed_pid_cfg.cfg.integral_max = 100;
     motor0.cfg.control.speed_pid_cfg.cfg.integral_min = -100;
     motor0.cfg.control.speed_pid_cfg.cfg.output_max = 5;
     motor0.cfg.control.speed_pid_cfg.cfg.output_min = -5;
-    motor0.cfg.control.speed_pid_cfg.cfg.kp = 0.0074;
-    motor0.cfg.control.speed_pid_cfg.cfg.ki = 0.0001;
+    motor0.cfg.control.speed_pid_cfg.cfg.kp = BOARD_BLDC_SW_FOC_SPEED_LOOP_SPEED_KP;
+    motor0.cfg.control.speed_pid_cfg.cfg.ki = BOARD_BLDC_SW_FOC_SPEED_LOOP_SPEED_KI;
 
     hpm_mcl_disable_dead_area_compensation(&motor0.loop);
 
@@ -351,15 +364,15 @@ void motor0_position_loop_para_init(void)
     motor0.cfg.control.speed_pid_cfg.cfg.integral_min = -20;
     motor0.cfg.control.speed_pid_cfg.cfg.output_max = 10;
     motor0.cfg.control.speed_pid_cfg.cfg.output_min = -10;
-    motor0.cfg.control.speed_pid_cfg.cfg.kp = 0.01;
-    motor0.cfg.control.speed_pid_cfg.cfg.ki = 0.001;
+    motor0.cfg.control.speed_pid_cfg.cfg.kp = BOARD_BLDC_HW_FOC_SPEED_KP;
+    motor0.cfg.control.speed_pid_cfg.cfg.ki = BOARD_BLDC_HW_FOC_SPEED_KI;
 #else
     motor0.cfg.control.speed_pid_cfg.cfg.integral_max = 100;
     motor0.cfg.control.speed_pid_cfg.cfg.integral_min = -100;
     motor0.cfg.control.speed_pid_cfg.cfg.output_max = 5;
     motor0.cfg.control.speed_pid_cfg.cfg.output_min = -5;
-    motor0.cfg.control.speed_pid_cfg.cfg.kp = 0.05;
-    motor0.cfg.control.speed_pid_cfg.cfg.ki = 0.001;
+    motor0.cfg.control.speed_pid_cfg.cfg.kp = BOARD_BLDC_SW_FOC_POSITION_LOOP_SPEED_KP;
+    motor0.cfg.control.speed_pid_cfg.cfg.ki = BOARD_BLDC_SW_FOC_POSITION_LOOP_SPEED_KI;
 
     hpm_mcl_enable_dead_area_compensation(&motor0.loop);
 
@@ -616,24 +629,24 @@ void pwm_init(void)
     pwm_config_cmp(MOTOR0_BLDCPWM, BOARD_BLDC_PWM_TRIG_CMP_INDEX, &cmp_config[2]);
 #ifdef HPMSOC_HAS_HPMSDK_DMAV2
     /* Set comparator channel for trigger a */
-    pwm_output_ch_cfg.cmp_start_index = BOARD_BLDC_DMA_TRGMUX_CMP_INDEX;
-    pwm_output_ch_cfg.cmp_end_index   = BOARD_BLDC_DMA_TRGMUX_CMP_INDEX;
+    pwm_output_ch_cfg.cmp_start_index = BOARD_BLDC_DMA_TRG_CMP_INDEX;
+    pwm_output_ch_cfg.cmp_end_index   = BOARD_BLDC_DMA_TRG_CMP_INDEX;
     pwm_output_ch_cfg.invert_output   = false;
-    pwm_config_output_channel(MOTOR0_BLDCPWM, BOARD_BLDC_DMA_TRGMUX_CMP_INDEX, &pwm_output_ch_cfg);
+    pwm_config_output_channel(MOTOR0_BLDCPWM, BOARD_BLDC_DMA_TRG_CMP_INDEX, &pwm_output_ch_cfg);
     cmp_config[2].cmp = PWM_RELOAD * 0.75;
-    pwm_config_cmp(MOTOR0_BLDCPWM, BOARD_BLDC_DMA_TRGMUX_CMP_INDEX, &cmp_config[2]);
+    pwm_config_cmp(MOTOR0_BLDCPWM, BOARD_BLDC_DMA_TRG_CMP_INDEX, &cmp_config[2]);
 #endif
     pwm_start_counter(MOTOR0_BLDCPWM);
     pwm_issue_shadow_register_lock_event(MOTOR0_BLDCPWM);
 #ifdef HPMSOC_HAS_HPMSDK_DMAV2
     trgm_output_cfg.invert = false;
     trgm_output_cfg.type   = trgm_output_pulse_at_input_both_edge;
-    trgm_output_cfg.input  = BOARD_BLDC_DMA_TRGMUX_IN_NUM;
-    trgm_output_config(BOARD_BLDCPWM_TRGM, BOARD_BLDC_DMA_TRGMUX_DST, &trgm_output_cfg);
+    trgm_output_cfg.input  = BOARD_BLDC_DMA_TRG_IN;
+    trgm_output_config(BOARD_BLDCPWM_TRGM, BOARD_BLDC_DMA_TRG_DST, &trgm_output_cfg);
 
     dmamux_config(BOARD_APP_DMAMUX, DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_HDMA, BOARD_BLDC_DMA_CHN),
                 BOARD_BLDC_DMA_MUX_SRC, true);
-    trgm_dma_request_config(BOARD_BLDCPWM_TRGM, BOARD_BLDC_DMA_TRGMUX_INDEX, BOARD_BLDC_DMA_TRGMUX_SRC);
+    trgm_dma_request_config(BOARD_BLDCPWM_TRGM, BOARD_BLDC_DMA_TRG_INDEX, BOARD_BLDC_DMA_TRG_SRC);
 
     dma_default_channel_config(BOARD_APP_HDMA, &config);
 
@@ -911,8 +924,8 @@ void init_trigger_mux(TRGM_Type * ptr)
 
     trgm_output_cfg.invert = false;
     trgm_output_cfg.type   = trgm_output_same_as_input;
-    trgm_output_cfg.input  = BOARD_BLDC_TRIGMUX_IN_NUM;
-    trgm_output_config(ptr, BOARD_BLDC_TRG_NUM, &trgm_output_cfg);
+    trgm_output_cfg.input  = BOARD_BLDC_PWM_TRG_ADC;
+    trgm_output_config(ptr, BOARD_BLDC_TRG_ADC, &trgm_output_cfg);
 }
 
 SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_ADC_IRQn, isr_adc)
@@ -1052,9 +1065,9 @@ void trigmux_init_1(void)
     /* pwm trigout0 trig adc and vsc */
     trgm_config.invert = false;
     trgm_config.type = trgm_output_same_as_input;
-    trgm_config.input = BOARD_BLDC_TRIGMUX_IN_NUM;
-    trgm_output_config(HPM_TRGM0, BOARD_BLDC_TRIGMUX_OUT_NUM_ADC, &trgm_config);
-    trgm_output_config(HPM_TRGM0, BOARD_BLDC_TRIGMUX_OUT_NUM_VSC, &trgm_config);
+    trgm_config.input = BOARD_BLDC_PWM_TRG_ADC;
+    trgm_output_config(HPM_TRGM0, BOARD_BLDC_TRG_ADC, &trgm_config);
+    trgm_output_config(HPM_TRGM0, BOARD_BLDC_TRG_VSC, &trgm_config);
 }
 
 void trigmux_init_2(void)
@@ -1163,7 +1176,7 @@ void clc_init(void)
 void qeov2_init(void)
 {
     qeo_wave_mode_t config;
-    qeo_wave_get_default_mode_config(BOARD_QEO, &config);
+    qeo_wave_get_default_mode_config(BOARD_BLDC_QEO, &config);
     config.dq_valid_trig_enable = true;
     config.pos_valid_trig_enable = true;
     config.vd_vq_inject_enable = true;
@@ -1172,14 +1185,14 @@ void qeov2_init(void)
     config.wave_type = qeo_wave_saddle;
     config.saddle_type = qeo_saddle_standard;
     /* config.saddle_type = qeo_saddle_triple; */
-    qeo_wave_config_mode(BOARD_QEO, &config);
-    qeo_wave_set_resolution_lines(BOARD_QEO, motor0.cfg.mcl.physical.motor.pole_num);
+    qeo_wave_config_mode(BOARD_BLDC_QEO, &config);
+    qeo_wave_set_resolution_lines(BOARD_BLDC_QEO, motor0.cfg.mcl.physical.motor.pole_num);
 
-    qeo_wave_set_phase_shift(BOARD_QEO, 0, 180.0);
-    qeo_wave_set_phase_shift(BOARD_QEO, 1, 60.0);
-    qeo_wave_set_phase_shift(BOARD_QEO, 2, 300.0);
+    qeo_wave_set_phase_shift(BOARD_BLDC_QEO, 0, 180.0);
+    qeo_wave_set_phase_shift(BOARD_BLDC_QEO, 1, 60.0);
+    qeo_wave_set_phase_shift(BOARD_BLDC_QEO, 2, 300.0);
 
-    qeo_wave_set_pwm_cycle(BOARD_QEO, (PWM_RELOAD << 8));
+    qeo_wave_set_pwm_cycle(BOARD_BLDC_QEO, (PWM_RELOAD << 8));
 }
 
 void motor0_clc_set_currentloop_value(mcl_loop_chn_t chn, int32_t val)
@@ -1210,9 +1223,9 @@ void bldc_foc_angle_align(void)
     mcl_user_value_t id, iq;
 
 #if defined(HW_CURRENT_FOC_ENABLE)
-    qeo_enable_software_position_inject(BOARD_QEO);
-    qeo_software_position_inject(BOARD_QEO, 0);
-    qeo_disable_software_position_inject(BOARD_QEO);
+    qeo_enable_software_position_inject(BOARD_BLDC_QEO);
+    qeo_software_position_inject(BOARD_BLDC_QEO, 0);
+    qeo_disable_software_position_inject(BOARD_BLDC_QEO);
     vsc_sw_inject_pos_value(BOARD_VSC, 0);
 #endif
 

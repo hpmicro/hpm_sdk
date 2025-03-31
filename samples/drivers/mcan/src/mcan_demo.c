@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include "board.h"
-#include "hpm_sysctl_drv.h"
 #include "hpm_mcan_drv.h"
 
 
@@ -21,6 +20,10 @@ typedef struct {
     MCAN_Type *can_base;
     uint32_t clock_freq;
     uint32_t irq_num;
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+    uint32_t ram_base;
+    uint32_t ram_size;
+#endif
 } can_info_t;
 
 /***********************************************************************************************************************
@@ -141,36 +144,128 @@ void show_help(void);
 
 char *get_timestamp_hex_string(const mcan_timestamp_value_t *ts_val);
 
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+static can_info_t *find_board_can_info(void);
+#endif
+
 /***********************************************************************************************************************
  *
  *  Variables
  *
+ *  NOTE:
+ *  1. The MCAN Message Buffer Must be placed at AHB RAM, otherwise, it won't work
+ *  2. The `MCAN_MSG_BUF_SIZE_IN_WORDS` is the default Message Buffer Size, the size can be smaller or larger depends on
+ *     the users' application model, once changing the default buffer size, the software must take care of the
+ *     ram_config and adjust the default allocation of the filter, etc.
+ *
  **********************************************************************************************************************/
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+#if defined(HPM_MCAN0)
+ATTR_PLACE_AT(".ahb_sram") uint32_t mcan0_msg_buf[MCAN_MSG_BUF_SIZE_IN_WORDS];
+#endif
+#if defined(HPM_MCAN1)
+ATTR_PLACE_AT(".ahb_sram") uint32_t mcan1_msg_buf[MCAN_MSG_BUF_SIZE_IN_WORDS];
+#endif
+#if defined(HPM_MCAN2)
+ATTR_PLACE_AT(".ahb_sram") uint32_t mcan2_msg_buf[MCAN_MSG_BUF_SIZE_IN_WORDS];
+#endif
+#if defined(HPM_MCAN3)
+ATTR_PLACE_AT(".ahb_sram") uint32_t mcan3_msg_buf[MCAN_MSG_BUF_SIZE_IN_WORDS];
+#endif
+#if defined(HPM_MCAN4)
+ATTR_PLACE_AT(".ahb_sram") uint32_t mcan4_msg_buf[MCAN_MSG_BUF_SIZE_IN_WORDS];
+#endif
+#if defined(HPM_MCAN5)
+ATTR_PLACE_AT(".ahb_sram") uint32_t mcan5_msg_buf[MCAN_MSG_BUF_SIZE_IN_WORDS];
+#endif
+#if defined(HPM_MCAN6)
+ATTR_PLACE_AT(".ahb_sram") uint32_t mcan6_msg_buf[MCAN_MSG_BUF_SIZE_IN_WORDS];
+#endif
+#if defined(HPM_MCAN7)
+ATTR_PLACE_AT(".ahb_sram") uint32_t mcan7_msg_buf[MCAN_MSG_BUF_SIZE_IN_WORDS];
+#endif
+#endif
 
 static can_info_t s_can_info[] = {
 #if defined(HPM_MCAN0)
-    { .can_base = HPM_MCAN0, .irq_num = IRQn_MCAN0 },
+    {
+        .can_base = HPM_MCAN0,
+        .irq_num = IRQn_MCAN0,
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+        .ram_base = (uint32_t) &mcan0_msg_buf,
+        .ram_size = sizeof(mcan0_msg_buf),
+#endif
+    },
 #endif
 #if defined(HPM_MCAN1)
-    { .can_base = HPM_MCAN1, .irq_num = IRQn_MCAN1 },
+    {
+        .can_base = HPM_MCAN1,
+        .irq_num = IRQn_MCAN1,
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+        .ram_base = (uint32_t) &mcan1_msg_buf,
+        .ram_size = sizeof(mcan1_msg_buf),
+#endif
+    },
 #endif
 #if defined(HPM_MCAN2)
-    { .can_base = HPM_MCAN2, .irq_num = IRQn_MCAN2 },
+    {
+        .can_base = HPM_MCAN2,
+        .irq_num = IRQn_MCAN2,
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+        .ram_base = (uint32_t) &mcan2_msg_buf,
+        .ram_size = sizeof(mcan2_msg_buf),
+#endif
+        },
 #endif
 #if defined (HPM_MCAN3)
-    { .can_base = HPM_MCAN3, .irq_num = IRQn_MCAN3 },
+    {
+        .can_base = HPM_MCAN3,
+        .irq_num = IRQn_MCAN3,
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+        .ram_base = (uint32_t) &mcan3_msg_buf,
+        .ram_size = sizeof(mcan3_msg_buf),
+#endif
+        },
 #endif
 #if defined (HPM_MCAN4)
-    { .can_base = HPM_MCAN4, .irq_num = IRQn_MCAN4 },
+    {
+        .can_base = HPM_MCAN4,
+        .irq_num = IRQn_MCAN4,
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+        .ram_base = (uint32_t) &mcan4_msg_buf,
+        .ram_size = sizeof(mcan4_msg_buf),
+#endif
+        },
 #endif
 #if defined (HPM_MCAN5)
-    { .can_base = HPM_MCAN5, .irq_num = IRQn_MCAN5 },
+    {
+        .can_base = HPM_MCAN5,
+        .irq_num = IRQn_MCAN5,
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+        .ram_base = (uint32_t) &mcan5_msg_buf,
+        .ram_size = sizeof(mcan5_msg_buf),
+#endif
+        },
 #endif
 #if defined (HPM_MCAN6)
-    { .can_base = HPM_MCAN6, .irq_num = IRQn_MCAN6 },
+    {
+        .can_base = HPM_MCAN6,
+        .irq_num = IRQn_MCAN6,
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+        .ram_base = (uint32_t) &mcan6_msg_buf,
+        .ram_size = sizeof(mcan6_msg_buf),
+#endif
+        },
 #endif
 #if defined (HPM_MCAN7)
-    { .can_base = HPM_MCAN7, .irq_num = IRQn_MCAN7 },
+    {
+        .can_base = HPM_MCAN7,
+        .irq_num = IRQn_MCAN7,
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+        .ram_base = (uint32_t) &mcan7_msg_buf,
+        .ram_size = sizeof(mcan7_msg_buf),
+#endif
+        },
 #endif
 };
 
@@ -269,6 +364,20 @@ void show_received_can_message(const mcan_rx_message_t *rx_msg)
     }
 }
 
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+static can_info_t *find_board_can_info(void)
+{
+    MCAN_Type *base = BOARD_APP_CAN_BASE;
+
+    for (uint32_t i = 0; i < ARRAY_SIZE(s_can_info); i++) {
+        if (s_can_info[i].can_base == base) {
+            return &s_can_info[i];
+        }
+    }
+    return NULL;
+}
+#endif
+
 int main(void)
 {
     board_init();
@@ -279,6 +388,21 @@ int main(void)
         board_init_can(info->can_base);
         info->clock_freq = board_init_can_clock(info->can_base);
     }
+
+    /* For the device with the MCAN message buffer located in the AHB RAM, the software must:
+     *      1. place the message buffer at the AHB RAM
+     *      2. set the message buffer attribute before initializing the MCAN peripheral
+     */
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+    MCAN_Type *base = BOARD_APP_CAN_BASE;
+    can_info_t *can_info = find_board_can_info();
+    mcan_msg_buf_attr_t attr = { can_info->ram_base, can_info->ram_size };
+    hpm_stat_t status = mcan_set_msg_buf_attr(base, &attr);
+    if (status != status_success) {
+        printf("Error was detected during setting message buffer attribute, please check the arguments\n");
+        return status;
+    }
+#endif
 
     handle_can_test();
 
@@ -369,6 +493,14 @@ void can_loopback_test_for_all_cans(void)
     mcan_config_t can_config;
     hpm_stat_t status;
     for (uint32_t i = 0; i < ARRAY_SIZE(s_can_info); i++) {
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+        mcan_msg_buf_attr_t attr = { s_can_info[i].ram_base, s_can_info[i].ram_size };
+        status = mcan_set_msg_buf_attr(s_can_info[i].can_base, &attr);
+        if (status != status_success) {
+            printf("Error was detected during setting message buffer attribute, please check the arguments\n");
+            return;
+        }
+#endif
         mcan_get_default_config(s_can_info[i].can_base, &can_config);
         can_config.mode = mcan_mode_loopback_internal;
         board_init_can(s_can_info[i].can_base);
@@ -396,13 +528,24 @@ void board_can_loopback_test_in_interrupt_mode(void)
 {
     MCAN_Type *base = BOARD_APP_CAN_BASE;
     mcan_config_t can_config;
+    hpm_stat_t status;
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+    can_info_t *can_info = find_board_can_info();
+    assert(can_info != NULL);
+    mcan_msg_buf_attr_t attr = { can_info->ram_base, can_info->ram_size };
+    status = mcan_set_msg_buf_attr(can_info->can_base, &attr);
+    if (status != status_success) {
+        printf("Error was detected during setting message buffer attribute, please check the arguments\n");
+        return;
+    }
+#endif
     mcan_get_default_config(base, &can_config);
     can_config.baudrate = 500000; /* 500kbps */
     can_config.mode = mcan_mode_loopback_internal;
     board_init_can(base);
     uint32_t can_src_clk_freq = board_init_can_clock(base);
     uint32_t interrupt_mask = MCAN_EVENT_RECEIVE | MCAN_EVENT_TRANSMIT;
-    hpm_stat_t status = mcan_init(base, &can_config, can_src_clk_freq);
+    status = mcan_init(base, &can_config, can_src_clk_freq);
     if (status != status_success) {
         printf("CAN initialization failed, error code: %d\n", status);
         return;
@@ -444,7 +587,18 @@ void board_can_rxbuf_test(void)
 {
     MCAN_Type *base = BOARD_APP_CAN_BASE;
     mcan_config_t can_config;
+    hpm_stat_t status;
     mcan_filter_elem_t can_filters[16];
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+    can_info_t *can_info = find_board_can_info();
+    assert(can_info != NULL);
+    mcan_msg_buf_attr_t attr = { can_info->ram_base, can_info->ram_size };
+    status = mcan_set_msg_buf_attr(can_info->can_base, &attr);
+    if (status != status_success) {
+        printf("Error was detected during setting message buffer attribute, please check the arguments\n");
+        return;
+    }
+#endif
     mcan_get_default_config(base, &can_config);
     can_config.baudrate = 500000; /* 500kbps */
     can_config.mode = mcan_mode_loopback_internal;
@@ -479,7 +633,7 @@ void board_can_rxbuf_test(void)
 
     can_config.txbuf_trans_interrupt_mask = ~0UL;
     can_config.interrupt_mask = interrupt_mask;
-    hpm_stat_t status = mcan_init(base, &can_config, can_src_clk_freq);
+    status = mcan_init(base, &can_config, can_src_clk_freq);
     if (status != status_success) {
         printf("CAN initialization failed, error code: %d\n", status);
         return;
@@ -523,13 +677,24 @@ void board_can_tx_event_test(void)
 {
     MCAN_Type *base = BOARD_APP_CAN_BASE;
     mcan_config_t can_config;
+    hpm_stat_t status;
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+    can_info_t *can_info = find_board_can_info();
+    assert(can_info != NULL);
+    mcan_msg_buf_attr_t attr = { can_info->ram_base, can_info->ram_size };
+    status = mcan_set_msg_buf_attr(can_info->can_base, &attr);
+    if (status != status_success) {
+        printf("Error was detected during setting message buffer attribute, please check the arguments\n");
+        return;
+    }
+#endif
     mcan_get_default_config(base, &can_config);
     can_config.baudrate = 500000; /* 500kbps */
     can_config.mode = mcan_mode_loopback_internal;
     board_init_can(base);
     uint32_t can_src_clk_freq = board_init_can_clock(base);
     uint32_t interrupt_mask = MCAN_INT_TX_EVT_FIFO_NEW_ENTRY | MCAN_EVENT_RECEIVE;
-    hpm_stat_t status = mcan_init(base, &can_config, can_src_clk_freq);
+    status = mcan_init(base, &can_config, can_src_clk_freq);
     if (status != status_success) {
         printf("CAN initialization failed, error code: %d\n", status);
         return;
@@ -573,12 +738,23 @@ void board_can_echo_test_initiator(void)
 {
     MCAN_Type *ptr = BOARD_APP_CAN_BASE;
     mcan_config_t can_config;
+    hpm_stat_t status;
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+    can_info_t *can_info = find_board_can_info();
+    assert(can_info != NULL);
+    mcan_msg_buf_attr_t attr = { can_info->ram_base, can_info->ram_size };
+    status = mcan_set_msg_buf_attr(can_info->can_base, &attr);
+    if (status != status_success) {
+        printf("Error was detected during setting message buffer attribute, please check the arguments\n");
+        return;
+    }
+#endif
     mcan_get_default_config(ptr, &can_config);
     can_config.baudrate = 500000; /* 500kbps */
     can_config.mode = mcan_mode_normal;
     board_init_can(ptr);
     uint32_t can_src_clk_freq = board_init_can_clock(ptr);
-    hpm_stat_t status = mcan_init(ptr, &can_config, can_src_clk_freq);
+    status = mcan_init(ptr, &can_config, can_src_clk_freq);
     if (status != status_success) {
         printf("CAN initialization failed, error code: %d\n", status);
         return;
@@ -612,12 +788,23 @@ void board_can_echo_test_responder(void)
 {
     MCAN_Type *base = BOARD_APP_CAN_BASE;
     mcan_config_t can_config;
+    hpm_stat_t status;
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+    can_info_t *can_info = find_board_can_info();
+    assert(can_info != NULL);
+    mcan_msg_buf_attr_t attr = { can_info->ram_base, can_info->ram_size };
+    status = mcan_set_msg_buf_attr(can_info->can_base, &attr);
+    if (status != status_success) {
+        printf("Error was detected during setting message buffer attribute, please check the arguments\n");
+        return;
+    }
+#endif
     mcan_get_default_config(base, &can_config);
     can_config.baudrate = 500000; /* 500kbps */
     can_config.mode = mcan_mode_normal;
     board_init_can(base);
     uint32_t can_src_clk_freq = board_init_can_clock(base);
-    hpm_stat_t status = mcan_init(base, &can_config, can_src_clk_freq);
+    status = mcan_init(base, &can_config, can_src_clk_freq);
     if (status != status_success) {
         printf("CAN initialization failed, error code: %d\n", status);
         return;
@@ -649,12 +836,23 @@ void board_can_send_multiple_classic_can_messages(void)
 {
     MCAN_Type *ptr = BOARD_APP_CAN_BASE;
     mcan_config_t can_config;
+    hpm_stat_t status;
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+    can_info_t *can_info = find_board_can_info();
+    assert(can_info != NULL);
+    mcan_msg_buf_attr_t attr = { can_info->ram_base, can_info->ram_size };
+    status = mcan_set_msg_buf_attr(can_info->can_base, &attr);
+    if (status != status_success) {
+        printf("Error was detected during setting message buffer attribute, please check the arguments\n");
+        return;
+    }
+#endif
     mcan_get_default_config(ptr, &can_config);
     can_config.baudrate = 1000000; /* 1Mbps */
     can_config.mode = mcan_mode_normal;
     board_init_can(ptr);
     uint32_t can_src_clk_freq = board_init_can_clock(ptr);
-    hpm_stat_t status = mcan_init(ptr, &can_config, can_src_clk_freq);
+    status = mcan_init(ptr, &can_config, can_src_clk_freq);
     if (status != status_success) {
         printf("CAN initialization failed, error code: %d\n", status);
         return;
@@ -686,6 +884,17 @@ void board_can_send_multiple_canfd_messages(void)
     uint32_t can_src_clk_freq = board_init_can_clock(ptr);
 
     mcan_config_t can_config;
+    hpm_stat_t status;
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+    can_info_t *can_info = find_board_can_info();
+    assert(can_info != NULL);
+    mcan_msg_buf_attr_t attr = { can_info->ram_base, can_info->ram_size };
+    status = mcan_set_msg_buf_attr(can_info->can_base, &attr);
+    if (status != status_success) {
+        printf("Error was detected during setting message buffer attribute, please check the arguments\n");
+        return;
+    }
+#endif
     mcan_get_default_config(ptr, &can_config);
     can_config.use_lowlevel_timing_setting = true;
     uint16_t prescaler;
@@ -756,7 +965,7 @@ void board_can_send_multiple_canfd_messages(void)
     can_config.enable_tdc = can_config.canfd_timing.enable_tdc;
     can_config.mode = mcan_mode_normal;
     mcan_get_default_ram_config(ptr, &can_config.ram_config, true);
-    hpm_stat_t status = mcan_init(ptr, &can_config, can_src_clk_freq);
+    status = mcan_init(ptr, &can_config, can_src_clk_freq);
     if (status != status_success) {
         printf("CAN initialization failed, error code: %d\n", status);
         return;
@@ -789,6 +998,17 @@ void board_can_error_test(void)
      */
     MCAN_Type *base = BOARD_APP_CAN_BASE;
     mcan_config_t can_config;
+    hpm_stat_t status;
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+    can_info_t *can_info = find_board_can_info();
+    assert(can_info != NULL);
+    mcan_msg_buf_attr_t attr = { can_info->ram_base, can_info->ram_size };
+    status = mcan_set_msg_buf_attr(can_info->can_base, &attr);
+    if (status != status_success) {
+        printf("Error was detected during setting message buffer attribute, please check the arguments\n");
+        return;
+    }
+#endif
     mcan_get_default_config(base, &can_config);
     can_config.baudrate = 500000; /* 500kbps */
     can_config.mode = mcan_mode_normal;
@@ -797,7 +1017,7 @@ void board_can_error_test(void)
     uint32_t can_src_clk_freq = board_init_can_clock(base);
     can_config.interrupt_mask = interrupt_mask;
     can_config.txbuf_trans_interrupt_mask = ~0UL;
-    hpm_stat_t status = mcan_init(base, &can_config, can_src_clk_freq);
+    status = mcan_init(base, &can_config, can_src_clk_freq);
     if (status != status_success) {
         printf("CAN initialization failed, error code: %d\n", status);
         return;
@@ -879,8 +1099,18 @@ void board_can_filter_test(void)
     MCAN_Type *ptr = BOARD_APP_CAN_BASE;
     mcan_filter_elem_t can_filters[16];
     mcan_config_t can_config;
+    hpm_stat_t status;
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+    can_info_t *can_info = find_board_can_info();
+    assert(can_info != NULL);
+    mcan_msg_buf_attr_t attr = { can_info->ram_base, can_info->ram_size };
+    status = mcan_set_msg_buf_attr(can_info->can_base, &attr);
+    if (status != status_success) {
+        printf("Error was detected during setting message buffer attribute, please check the arguments\n");
+        return;
+    }
+#endif
     mcan_get_default_config(ptr, &can_config);
-
     board_init_can(ptr);
     uint32_t can_src_clk_freq = board_init_can_clock(ptr);
 
@@ -905,7 +1135,7 @@ void board_can_filter_test(void)
     uint32_t txbuf_int_mask = ~0UL;
     can_config.interrupt_mask = int_mask;
     can_config.txbuf_trans_interrupt_mask = txbuf_int_mask;
-    hpm_stat_t status = mcan_init(ptr, &can_config, can_src_clk_freq);
+    status = mcan_init(ptr, &can_config, can_src_clk_freq);
     if (status != status_success) {
         printf("CAN initialization failed, error code: %d\n", status);
         return;
@@ -1187,6 +1417,17 @@ void board_can_timestamp_test(void)
     MCAN_Type *ptr = BOARD_APP_CAN_BASE;
     mcan_filter_elem_t can_filters[16];
     mcan_config_t can_config;
+    hpm_stat_t status;
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+    can_info_t *can_info = find_board_can_info();
+    assert(can_info != NULL);
+    mcan_msg_buf_attr_t attr = { can_info->ram_base, can_info->ram_size };
+    status = mcan_set_msg_buf_attr(can_info->can_base, &attr);
+    if (status != status_success) {
+        printf("Error was detected during setting message buffer attribute, please check the arguments\n");
+        return;
+    }
+#endif
     mcan_get_default_config(ptr, &can_config);
 
     board_init_can(ptr);
@@ -1220,8 +1461,7 @@ void board_can_timestamp_test(void)
         MCAN_ACCEPT_NON_MATCHING_FRAME_OPTION_REJECT;
     can_config.all_filters_config.global_filter_config.reject_remote_std_frame = true;
     can_config.all_filters_config.global_filter_config.reject_remote_ext_frame = true;
-
-    hpm_stat_t status = mcan_init(ptr, &can_config, can_src_clk_freq);
+    status = mcan_init(ptr, &can_config, can_src_clk_freq);
     if (status != status_success) {
         printf("CAN initialization failed, error code: %d\n", status);
         return;
@@ -1462,8 +1702,18 @@ void board_can_timeout_counter_test(void)
     MCAN_Type *ptr = BOARD_APP_CAN_BASE;
     mcan_filter_elem_t can_filters[16];
     mcan_config_t can_config;
+    hpm_stat_t status;
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+    can_info_t *can_info = find_board_can_info();
+    assert(can_info != NULL);
+    mcan_msg_buf_attr_t attr = { can_info->ram_base, can_info->ram_size };
+    status = mcan_set_msg_buf_attr(can_info->can_base, &attr);
+    if (status != status_success) {
+        printf("Error was detected during setting message buffer attribute, please check the arguments\n");
+        return;
+    }
+#endif
     mcan_get_default_config(ptr, &can_config);
-
     board_init_can(ptr);
     uint32_t can_src_clk_freq = board_init_can_clock(ptr);
 
@@ -1476,7 +1726,7 @@ void board_can_timeout_counter_test(void)
     can_config.timeout_cfg.enable_timeout_counter = true;
     can_config.timeout_cfg.timeout_sel = mcan_timeout_continuous_operation;
     can_config.timeout_cfg.timeout_period = 1000;
-    hpm_stat_t status = mcan_init(ptr, &can_config, can_src_clk_freq);
+    status = mcan_init(ptr, &can_config, can_src_clk_freq);
     if (status != status_success) {
         printf("CAN initialization failed, error code: %d\n", status);
         return;

@@ -14,12 +14,12 @@
 
 #define TEST_PLLCTL HPM_PLLCTLV2
 #if defined(PLLCTL_SOC_PLL_MAX_COUNT) && (PLLCTL_SOC_PLL_MAX_COUNT > 2)
-#define TEST_PLL 2
-#define TEST_PLL_CLK 0
+#define TEST_PLL      pllctlv2_pll2
+#define TEST_PLL_CLK  pllctlv2_clk0
 #define TEST_PLL_NAME clk_pll2clk0
 #else
-#define TEST_PLL 1
-#define TEST_PLL_CLK 0
+#define TEST_PLL      pllctlv2_pll1
+#define TEST_PLL_CLK  pllctlv2_clk0
 #define TEST_PLL_NAME clk_pll1clk0
 #endif
 
@@ -39,7 +39,7 @@ int main(void)
     /*
      * Set TESTPLL CLK Post divider to 1, so that the TEST PLL CLK frequency is equal to TEST PLL frequency
      */
-    pllctlv2_set_postdiv(TEST_PLLCTL, TEST_PLL, TEST_PLL_CLK, 0);
+    pllctlv2_set_postdiv(TEST_PLLCTL, TEST_PLL, TEST_PLL_CLK, pllctlv2_div_1p0);
     for (uint32_t i = 400 * FREQ_1MHz; i <= 1000 * FREQ_1MHz; i += FREQ_1MHz) {
         printf("Update PLL%d to %dHz\n", TEST_PLL, i);
         if (status_success != pllctlv2_init_pll_with_freq(TEST_PLLCTL, TEST_PLL, i)) {

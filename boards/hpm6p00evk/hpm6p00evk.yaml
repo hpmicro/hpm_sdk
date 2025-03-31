@@ -1,0 +1,29 @@
+# Copyright (c) 2021-2024 HPMicro
+# SPDX-License-Identifier: BSD-3-Clause
+
+board:
+    soc: HPM6P81
+    device: HPM6P81xRTx
+    openocd-soc: hpm6p80-dual-core
+    openocd-probe: ft2232
+    on-board-ram:
+      type: sdram
+      size: 32M
+      width: 16bit
+    on-board-flash:
+      type: qspi-nor-flash
+      size: 1M
+    feature:
+      - board_sdram
+      - board_mtgv2
+      - board_sei
+      - board_qei
+      - board_audio_in # PDM
+      - board_audio_out # DAO
+      - board_audio_codec # I2S codec
+      - board_enet_phy
+      - board_motor_control
+      - board_puart_pin
+      - board_femc_sram
+      - board_gpt_pin
+      - board_wkup_pin

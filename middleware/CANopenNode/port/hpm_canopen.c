@@ -15,6 +15,18 @@ struct hpm_can_config hpm_canopen_config = {0};
 struct hpm_can_data hpm_canopen_data = {0};
 uint32_t press_counter =0;
 
+#ifdef HPMSOC_HAS_HPMSDK_MCAN
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+ATTR_PLACE_AT(".ahb_sram") uint32_t board_app_mcan_msg_buf[MCAN_MSG_BUF_SIZE_IN_WORDS];
+static mcan_msg_buf_attr_t s_can_info[] = {
+    {
+        .ram_base = (uint32_t) &board_app_mcan_msg_buf,
+        .ram_size = sizeof(board_app_mcan_msg_buf),
+    },
+};
+#endif
+#endif
+
 static void hpmicro_can_remove_rx_filter(const struct device *dev, int filter_id)
 {
 #ifdef HPMSOC_HAS_HPMSDK_MCAN
@@ -129,10 +141,13 @@ static int hpmicro_can_send(const struct device *dev,
                         can_tx_callback_t callback,
                         void *user_data)
 {
+    ARG_UNUSED(timeout);
+    ARG_UNUSED(callback);
+    ARG_UNUSED(user_data);
 #ifdef HPMSOC_HAS_HPMSDK_MCAN
-    hpm_mcan_send(dev, frame, timeout, callback, user_data);
+    hpm_mcan_send(dev, frame);
 #else
-    hpm_can_send(dev, frame, timeout, callback, user_data);
+    hpm_can_send(dev, frame);
 #endif
     return 0;
 }
@@ -176,6 +191,13 @@ void canopen_init(struct canopen_context *CANdriverState, CAN_Type *canptr, uint
 #ifdef HPMSOC_HAS_HPMSDK_MCAN
     mcan_deinit(canptr);
     mcan_config_t can_config;
+    hpm_stat_t  status;
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+    status = mcan_set_msg_buf_attr(canptr, &s_can_info[0]);
+    if (status != status_success) {
+        printf("Error was detected during setting message buffer attribute, please check the arguments\n");
+    }
+#endif
     mcan_get_default_config(canptr, &can_config);
     can_config.mode = mcan_mode_normal;
 #else
@@ -191,7 +213,7 @@ void canopen_init(struct canopen_context *CANdriverState, CAN_Type *canptr, uint
     board_init_can(canptr);
 
 #ifdef HPMSOC_HAS_HPMSDK_MCAN
-    hpm_stat_t status = mcan_init(canptr, &can_config, can_src_clk_freq);
+    status = mcan_init(canptr, &can_config, can_src_clk_freq);
 #else
     hpm_stat_t status = can_init(canptr, &can_config, can_src_clk_freq);
 #endif

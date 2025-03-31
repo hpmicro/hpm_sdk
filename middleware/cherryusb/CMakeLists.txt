@@ -33,7 +33,8 @@ if(CONFIG_CHERRYUSB_DEVICE)
 endif()
 
 if(CONFIG_USB_HOST_CDC_ACM OR CONFIG_USB_HOST_CDC_ECM OR CONFIG_USB_HOST_HID
-    OR CONFIG_USB_HOST_MSC OR CONFIG_USB_HOST_RNDIS)
+    OR CONFIG_USB_HOST_MSC OR CONFIG_USB_HOST_AUDIO OR CONFIG_USB_HOST_VIDEO
+    OR CONFIG_USB_HOST_RNDIS)
   set(CONFIG_CHERRYUSB_HOST 1)
 endif()
 
@@ -46,6 +47,8 @@ if(CONFIG_CHERRYUSB_HOST)
   sdk_src_ifdef(CONFIG_USB_HOST_CDC_ECM class/cdc/usbh_cdc_ecm.c)
   sdk_src_ifdef(CONFIG_USB_HOST_HID class/hid/usbh_hid.c)
   sdk_src_ifdef(CONFIG_USB_HOST_MSC class/msc/usbh_msc.c)
+  sdk_src_ifdef(CONFIG_USB_HOST_AUDIO class/audio/usbh_audio.c)
+  sdk_src_ifdef(CONFIG_USB_HOST_VIDEO class/video/usbh_video.c)
   sdk_src_ifdef(CONFIG_USB_HOST_RNDIS class/wireless/usbh_rndis.c)
   if(CONFIG_USB_HOST_CDC_ECM OR CONFIG_USB_HOST_RNDIS)
     sdk_src(platform/none/usbh_lwip.c)

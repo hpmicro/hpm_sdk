@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -28,19 +28,17 @@
 #define MCAUSE_LOAD_PAGE_FAULT (13)             //!< Load page fault
 #define MCAUSE_STORE_AMO_PAGE_FAULT (15U)       //!< Store/AMO page fault
 
-#define IRQ_S_SOFT          	1
-#define IRQ_H_SOFT          	2
-#define IRQ_M_SOFT          	3
-#define IRQ_S_TIMER         	5
-#define IRQ_H_TIMER         	6
-#define IRQ_M_TIMER         	7
-#define IRQ_S_EXT           	9
-#define IRQ_H_EXT           	10
-#define IRQ_M_EXT           	11
-#define IRQ_COP             	12
-#define IRQ_HOST            	13
-
-
+#define IRQ_S_SOFT          1
+#define IRQ_H_SOFT          2
+#define IRQ_M_SOFT          3
+#define IRQ_S_TIMER         5
+#define IRQ_H_TIMER         6
+#define IRQ_M_TIMER         7
+#define IRQ_S_EXT           9
+#define IRQ_H_EXT           10
+#define IRQ_M_EXT           11
+#define IRQ_COP             12
+#define IRQ_HOST            13
 
 __attribute__((weak)) void mchtmr_isr(void)
 {
@@ -62,36 +60,36 @@ __attribute__((weak)) void syscall_handler(long n, long a0, long a1, long a2, lo
 __attribute__((weak)) long exception_handler(long cause, long epc)
 {
     switch (cause) {
-        case MCAUSE_INSTR_ADDR_MISALIGNED:
-            break;
-        case MCAUSE_INSTR_ACCESS_FAULT:
-            break;
-        case MCAUSE_ILLEGAL_INSTR:
-            break;
-        case MCAUSE_BREAKPOINT:
-            break;
-        case MCAUSE_LOAD_ADDR_MISALIGNED:
-            break;
-        case MCAUSE_LOAD_ACCESS_FAULT:
-            break;
-        case MCAUSE_STORE_AMO_ADDR_MISALIGNED:
-            break;
-        case MCAUSE_STORE_AMO_ACCESS_FAULT:
-            break;
-        case MCAUSE_ECALL_FROM_USER_MODE:
-            break;
-        case MCAUSE_ECALL_FROM_SUPERVISOR_MODE:
-            break;
-        case MCAUSE_ECALL_FROM_MACHINE_MODE:
-            break;
-        case MCAUSE_INSTR_PAGE_FAULT:
-            break;
-        case MCAUSE_LOAD_PAGE_FAULT:
-            break;
-        case MCAUSE_STORE_AMO_PAGE_FAULT:
-            break;
-        default:
-            break;
+    case MCAUSE_INSTR_ADDR_MISALIGNED:
+        break;
+    case MCAUSE_INSTR_ACCESS_FAULT:
+        break;
+    case MCAUSE_ILLEGAL_INSTR:
+        break;
+    case MCAUSE_BREAKPOINT:
+        break;
+    case MCAUSE_LOAD_ADDR_MISALIGNED:
+        break;
+    case MCAUSE_LOAD_ACCESS_FAULT:
+        break;
+    case MCAUSE_STORE_AMO_ADDR_MISALIGNED:
+        break;
+    case MCAUSE_STORE_AMO_ACCESS_FAULT:
+        break;
+    case MCAUSE_ECALL_FROM_USER_MODE:
+        break;
+    case MCAUSE_ECALL_FROM_SUPERVISOR_MODE:
+        break;
+    case MCAUSE_ECALL_FROM_MACHINE_MODE:
+        break;
+    case MCAUSE_INSTR_PAGE_FAULT:
+        break;
+    case MCAUSE_LOAD_PAGE_FAULT:
+        break;
+    case MCAUSE_STORE_AMO_PAGE_FAULT:
+        break;
+    default:
+        break;
     }
     /* Unhandled Trap */
     return epc;
@@ -122,12 +120,14 @@ void irq_handler_trap(void)
 #ifdef __riscv_flen
     int fcsr = read_fcsr();
 #endif
+    int mcctlbeginaddr = read_csr(CSR_MCCTLBEGINADDR);
+    int mcctldata = read_csr(CSR_MCCTLDATA);
 
     /* clobbers list for ecall */
 #ifdef __riscv_32e
-    __asm volatile("" : : :"t0", "a0", "a1", "a2", "a3");
+    __asm volatile("" : : : "t0", "a0", "a1", "a2", "a3");
 #else
-    __asm volatile("" : : :"a7", "a0", "a1", "a2", "a3");
+    __asm volatile("" : : : "a7", "a0", "a1", "a2", "a3");
 #endif
 
     /* Do your trap handling */
@@ -150,7 +150,6 @@ void irq_handler_trap(void)
             ((isr_func_t)__vector_table[irq_index])();
             __plic_complete_irq(HPM_PLIC_BASE, HPM_PLIC_TARGET_M_MODE, irq_index);
         }
-
     }
 #endif
 
@@ -172,7 +171,7 @@ void irq_handler_trap(void)
         "mv a0, a7\n"
         #endif
         "jalr %0\n"
-        : :"r"(syscall_handler) : "a4"
+        : : "r"(syscall_handler) : "a4"
         );
         mepc += 4;
     } else {
@@ -191,4 +190,6 @@ void irq_handler_trap(void)
 #ifdef __riscv_flen
     write_fcsr(fcsr);
 #endif
+    write_csr(CSR_MCCTLDATA, mcctldata);
+    write_csr(CSR_MCCTLBEGINADDR, mcctlbeginaddr);
 }

@@ -250,7 +250,7 @@ void vg_lite_hal_barrier(void)
 #if _BAREMETAL
      Xil_DCacheFlush();
 #else
-    __asm volatile("fence io, io");
+    __asm volatile("fence w, o");
 #endif
 }
 
@@ -260,7 +260,7 @@ void vg_lite_hal_barrier(void)
 #define GPU_MEM_SIZE_BYTES  16 * 1024 * 1024
 #endif
 
-static uint8_t gpu_mem[GPU_MEM_SIZE_BYTES] __attribute__((aligned(64), section(".noncacheable.non_init")));
+static uint8_t gpu_mem[GPU_MEM_SIZE_BYTES] __attribute__((aligned(64), section(".gpu")));
 
 static int vg_lite_init(void);
 void vg_lite_hal_initialize(void)

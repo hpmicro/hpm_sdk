@@ -217,7 +217,7 @@ MAKE_FUNCTION pxPortInitialiseStack
     slli t1, t1, 4
     or t0, t0, t1                       /* Set MPIE and MPP bits in mstatus value. */
 
-    addi a0, a0, -portWORD_SIZE
+    addi a0, a0, -(2 * portWORD_SIZE)   /* Move double portWORD_SIZE to align 16 bytes */
     store_x t0, 0(a0)                   /* mstatus onto the stack. */
     addi a0, a0, -portWORD_SIZE         /* Space for critical nesting count. */
     store_x x0, 0(a0)                   /* Critical nesting count starts at 0 for every task. */

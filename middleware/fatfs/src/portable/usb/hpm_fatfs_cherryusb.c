@@ -65,10 +65,15 @@ DSTATUS usb_disk_initialize(BYTE pdrv)
     if (ptr == NULL) {
         return STA_NOINIT;
     }
+
+    if (usbh_msc_scsi_init(ptr) < 0) {
+        return RES_NOTRDY;
+    }
+
     return RES_OK;
 }
 
-DRESULT usb_disk_read(BYTE pdrv, BYTE *buff, DWORD sector, BYTE count)
+DRESULT usb_disk_read(BYTE pdrv, BYTE *buff, LBA_t sector, UINT count)
 {
     struct usbh_msc *ptr;
 
@@ -81,7 +86,7 @@ DRESULT usb_disk_read(BYTE pdrv, BYTE *buff, DWORD sector, BYTE count)
     return usbh_msc_scsi_read10(ptr, sector, buff, count);
 }
 
-DRESULT usb_disk_write(BYTE pdrv, const BYTE *buff, DWORD sector, BYTE count)
+DRESULT usb_disk_write(BYTE pdrv, const BYTE *buff, LBA_t sector, UINT count)
 {
     struct usbh_msc *ptr;
 

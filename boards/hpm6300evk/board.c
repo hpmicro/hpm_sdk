@@ -22,8 +22,6 @@
 #include "hpm_pcfg_drv.h"
 #include "hpm_sdk_version.h"
 
-static board_timer_cb timer_cb;
-
 /**
  * @brief FLASH configuration option definitions:
  * option[0]:
@@ -200,6 +198,8 @@ void board_delay_ms(uint32_t ms)
     clock_cpu_delay_ms(ms);
 }
 
+#if !defined(NO_BOARD_TIMER_SUPPORT) || !NO_BOARD_TIMER_SUPPORT
+static board_timer_cb timer_cb;
 SDK_DECLARE_EXT_ISR_M(BOARD_CALLBACK_TIMER_IRQ, board_timer_isr)
 void board_timer_isr(void)
 {
@@ -227,6 +227,7 @@ void board_timer_create(uint32_t ms, board_timer_cb cb)
 
     gptmr_start_counter(BOARD_CALLBACK_TIMER, BOARD_CALLBACK_TIMER_CH);
 }
+#endif
 
 void board_i2c_bus_clear(I2C_Type *ptr)
 {
@@ -425,15 +426,17 @@ void board_init_clock(void)
     /* Connect Group0 to CPU0 */
     clock_connect_group_to_cpu(0, 0);
 
-    /* Bump up DCDC voltage to 1100mv */
-    pcfg_dcdc_set_voltage(HPM_PCFG, 1100);
+    /* Bump up DCDC voltage to 1275mv */
+    pcfg_dcdc_set_voltage(HPM_PCFG, 1275);
 
-    /* Configure CPU to 480MHz, AXI/AHB to 160MHz */
-    sysctl_config_cpu0_domain_clock(HPM_SYSCTL, clock_source_pll1_clk0, 1, 3, 3);
-    /* Configure PLL1_CLK0 Post Divider to 1.2 */
-    pllctlv2_set_postdiv(HPM_PLLCTLV2, 1, 0, 1);
-    /* Configure PLL1 clock frequency to 576MHz, the PLL1_CLK0 frequency = 576MHz / 1.2 = 480MHz */
-    pllctlv2_init_pll_with_freq(HPM_PLLCTLV2, 1, 576000000);
+    /* Configure CPU to 648MHz, AXI/AHB to 162MHz */
+    sysctl_config_cpu0_domain_clock(HPM_SYSCTL, clock_source_pll1_clk0, 1, 4, 4);
+    /* Configure PLL1_CLK0 Post Divider to 1 */
+    pllctlv2_set_postdiv(HPM_PLLCTLV2, pllctlv2_pll1, pllctlv2_clk0, pllctlv2_div_1p0);    /* PLL1CLK0: 648MHz */
+    /* Configure PLL1_CLK1 Post Divider to 2 */
+    pllctlv2_set_postdiv(HPM_PLLCTLV2, pllctlv2_pll1, pllctlv2_clk1, pllctlv2_div_2p0);    /* PLL1CLK1: 324MHz */
+    /* Configure PLL1 clock frequency to 648MHz */
+    pllctlv2_init_pll_with_freq(HPM_PLLCTLV2, pllctlv2_pll1, BOARD_CPU_FREQ);
     clock_update_core_clock();
 
     /* Configure mchtmr to 24MHz */
@@ -692,9 +695,9 @@ hpm_stat_t board_init_enet_rmii_reference_clock(ENET_Type *ptr, bool internal)
         clock_add_to_group(clock_eth0, BOARD_RUNNING_CORE & 0x1);
         if (internal) {
             /* set pll output frequency at 1GHz */
-            if (pllctlv2_init_pll_with_freq(HPM_PLLCTLV2, PLLCTLV2_PLL_PLL2, 1000000000UL) == status_success) {
+            if (pllctlv2_init_pll_with_freq(HPM_PLLCTLV2, pllctlv2_pll2, 1000000000UL) == status_success) {
                 /* set pll2_clk1 output frequency at 250MHz from PLL2 divided by 4 (1 + 15 / 5) */
-                pllctlv2_set_postdiv(HPM_PLLCTLV2, PLLCTLV2_PLL_PLL2, 1, 15);
+                pllctlv2_set_postdiv(HPM_PLLCTLV2, pllctlv2_pll2, pllctlv2_clk1, pllctlv2_div_4p0);
                 /* set eth clock frequency at 50MHz for enet0 */
                 clock_set_source_divider(clock_eth0, clk_src_pll2_clk1, 5);
             } else {

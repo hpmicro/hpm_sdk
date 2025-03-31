@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -166,8 +166,8 @@
 #define BOARD_APP_XDMA_IRQ  IRQn_XDMA
 #define BOARD_APP_HDMA_IRQ  IRQn_HDMA
 #define BOARD_APP_DMAMUX    HPM_DMAMUX
-#define TEST_DMA_CONTROLLER HPM_HDMA
-#define TEST_DMA_IRQ        IRQn_HDMA
+#define TEST_DMA_CONTROLLER HPM_XDMA
+#define TEST_DMA_IRQ        IRQn_XDMA
 
 /* gptmr section */
 #define BOARD_GPTMR                   HPM_GPTMR2
@@ -251,7 +251,7 @@
 #define BOARD_CALLBACK_TIMER_IRQ      IRQn_GPTMR3
 #define BOARD_CALLBACK_TIMER_CLK_NAME (clock_gptmr3)
 
-#define BOARD_CPU_FREQ (500000000UL)
+#define BOARD_CPU_FREQ (600000000UL)
 
 /* LED */
 #define BOARD_R_GPIO_CTRL  HPM_GPIO0
@@ -305,6 +305,15 @@
 #ifndef BOARD_LCD_HEIGHT
 #define BOARD_LCD_HEIGHT PANEL_SIZE_HEIGHT
 #endif
+
+#define BOARD_MULTI_PANEL_LVDS_LCDC_BASE HPM_LCDC1
+#define BOARD_MULTI_PANEL_LVDS_LCDC_CLK clock_lcd1
+#define BOARD_MULTI_PANEL_LVDS_NAME "cc10128007"
+
+#define BOARD_MULTI_PANEL_MIPI_LCDC_BASE HPM_LCDC
+#define BOARD_MULTI_PANEL_MIPI_LCDC_CLK clock_lcd0
+#define BOARD_MULTI_PANEL_MIPI_NAME "mc10128007_31b"
+
 
 /* pdma section */
 #define BOARD_PDMA_BASE HPM_PDMA
@@ -467,6 +476,9 @@
 #define BOARD_GPTMR_I2S_FINSH_CHANNEL  3
 #define BOARD_GPTMR_I2S_FINSH_CLK_NAME clock_gptmr2
 
+/* BGPR */
+#define BOARD_BGPR HPM_BGPR
+
 #if defined(__cplusplus)
 extern "C" {
 #endif /* __cplusplus */
@@ -527,6 +539,7 @@ uint32_t board_init_uart_clock(UART_Type *ptr);
 
 void board_lcd_backlight(bool is_on);
 void board_init_lcd(void);
+void board_panel_para_to_lcdc_by_name(char *name, lcdc_config_t *config);
 void board_panel_para_to_lcdc(lcdc_config_t *config);
 void board_init_gwc(void);
 void board_init_cap_touch(void);

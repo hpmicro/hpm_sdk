@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -35,7 +35,7 @@ ATTR_PLACE_AT_NONCACHEABLE_INIT_WITH_ALIGNMENT(4)  uint8_t data_buff[] = {
 };
 
 
-ATTR_PLACE_AT_NONCACHEABLE_INIT_WITH_ALIGNMENT(4)  uint8_t data_buff1[16+512] = {
+ATTR_PLACE_AT_NONCACHEABLE_INIT_WITH_ALIGNMENT(4)  uint8_t data_buff1[16+1024] = {
 0x00, 0x00, 0x01, 0x00,
 0x00, 0x00, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00,
@@ -62,21 +62,23 @@ hpm_stat_t tsw_init(TSW_Type *ptr)
     tsw_dma_config_t config;
 
     /* Disable all MACs(TX/RX) */
-    tsw_ep_disable_all_mac_ctrl(ptr, TSW_RXFIFO_E1);
+    tsw_ep_disable_all_mac_ctrl(ptr, tsw_mac_type_emac);
+
+    tsw_ep_disable_all_mac_ctrl(ptr, tsw_mac_type_pmac);
 
     /* Set Mac Address */
     tsw_ep_set_mac_addr(ptr, BOARD_TSW_PORT, mac, true);
 
     /* Set MAC Mode: GMII, CLKSEL: refclk */
-    tsw_ep_set_mac_mode(ptr, BOARD_TSW_PORT, BOARD_TSW_PORT_ITF ==  tsw_port_phy_itf_rgmii ? tsw_mac_mode_gmii : tsw_mac_mode_mii);
+    tsw_ep_set_mac_mode(ptr, BOARD_TSW_PORT, BOARD_TSW_PORT_ITF == tsw_port_phy_itf_rgmii ? tsw_mac_mode_gmii : tsw_mac_mode_mii);
 
     /* Set port PHY interface */
     tsw_set_port_interface(ptr, BOARD_TSW_PORT, BOARD_TSW_PORT_ITF);
 
     /* Enable all MACs(TX/RX) */
-    tsw_ep_enable_all_mac_ctrl(ptr, TSW_RXFIFO_E1);
+    tsw_ep_enable_all_mac_ctrl(ptr, tsw_mac_type_emac);
 
-    tsw_ep_enable_all_mac_ctrl(ptr, TSW_RXFIFO_P1);
+    tsw_ep_enable_all_mac_ctrl(ptr, tsw_mac_type_pmac);
 
     /* Clear CAM */
     tsw_clear_cam(ptr);
@@ -90,10 +92,10 @@ hpm_stat_t tsw_init(TSW_Type *ptr)
     /* Get the default DMA config */
     tsw_get_default_dma_config(&config);
 
-    /* Initilaize DMA for sending */
+    /* Initialize DMA for sending */
     tsw_init_send(ptr, &config);
 
-    for (uint8_t i = 0; i < TSW_RECV_DESC_COUNT; i++) {
+    for (uint8_t i = 0; i < TSW_SEND_DESC_COUNT; i++) {
         *send_buff[i] = BOARD_TSW_PORT + 1;
     }
 
@@ -162,9 +164,6 @@ void tsw_self_adaptive_port_speed(void)
 int main(void)
 {
     tsw_fpe_config_t config;
-    uint32_t count = 0;
-    uint64_t current;
-    uint64_t last;
     uint32_t value = 0;
 
     /* Initialize BSP */
@@ -212,26 +211,6 @@ int main(void)
                 send_buff[0][2] |= 1 << 3;
                 tsw_send_frame(BOARD_TSW, send_buff[0], sizeof(data_buff), 0);
                 board_delay_ms(500);
-
-                while (1) {
-                  tsw_get_txtimestampfifo_used(BOARD_TSW, BOARD_TSW_PORT, &count);
-                  if (count == 2) {
-                      break;
-                  }
-                }
-
-                for (int i = 0; i < 2; i++) {
-                    tsw_get_txtimestampfifo_entry(BOARD_TSW, BOARD_TSW_PORT, &entry[i]);
-
-                    current = (uint64_t)entry[i].tstamphi << 32UL | entry[i].tstamplo;
-                    last = (uint64_t)entry[i - 1].tstamphi << 32UL | entry[i - 1].tstamplo;
-                    if (i > 0) {
-                        printf("tc: %d - utag: %d - tts(s): %d.%09d - frame interval(ns): %u\n", entry[i].tqueue,  entry[i].tuser, entry[i].tstamphi, entry[i].tstamplo, (uint32_t)(current - last));
-                    } else {
-                        printf("tc: %d - utag: %d - tts(s): %d.%09d - frame interval(ns): 0\n", entry[i].tqueue,  entry[i].tuser, entry[i].tstamphi, entry[i].tstamplo, 0);
-                    }
-
-                }
 
                 tsw_fpe_get_mms_statistics_counter(BOARD_TSW, BOARD_TSW_PORT, tsw_fpe_mms_fragment_tx_counter, &value);
                 printf("FPE MMS Fragment Tx Counter: %d\n", value);

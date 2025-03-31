@@ -7,7 +7,7 @@
   <description>HPM6E00 device</description>
   <licenseText>
     /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -1633,7 +1633,7 @@ User should set this bit before set CMPEN to 1.</description>
               <description>set this bitfield to trigger software counter sync event</description>
               <bitOffset>0</bitOffset>
               <bitWidth>4</bitWidth>
-              <access>read-write</access>
+              <access>write-only</access>
             </field>
           </fields>
         </register>
@@ -5243,7 +5243,7 @@ Note: Parity check is required once writing to this register. The result should 
           <addressOffset>0x0</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0x2FE2F03F</resetMask>
+          <resetMask>0x2FE0F03F</resetMask>
           <fields>
             <field>
               <name>CLK_SEL</name>
@@ -5285,13 +5285,6 @@ Note: Parity check is required once writing to this register. The result should 
 Once the lock mechanism takes effect, the CTRL0, CTRL1, timeout int register, timeout rst register, needs unlock before re-config them.
 The register update needs to be finished in the required period defined by UPD_OT_TIME register</description>
               <bitOffset>21</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>OT_SELF_CLEAR</name>
-              <description>overtime reset can be self released after 32 function cycles</description>
-              <bitOffset>17</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
@@ -7823,38 +7816,6 @@ others Reserved.</description>
           </fields>
         </register>
         <register>
-          <dim>16</dim>
-          <dimIncrement>0x4</dimIncrement>
-          <dimIndex>chn0,chn1,chn2,chn3,chn4,chn5,chn6,chn7,chn8,chn9,chn10,chn11,chn12,chn13,chn14,chn15</dimIndex>
-          <name>BUS_RESULT[%s]</name>
-          <description>no description available</description>
-          <addressOffset>0x400</addressOffset>
-          <size>32</size>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0x0001FFFF</resetMask>
-          <fields>
-            <field>
-              <name>VALID</name>
-              <description>set after conversion finished if wait_dis is set, cleared after software read.
-The first time read with 0 will trigger one new conversion.
-If SW read other channel when one channel conversion is in progress, it will not trigger new conversion at other channel, and will get old result with valid 0, also with read_cflct interrupt status bit set.
-the result may not realtime if software read once and wait  long time to read again</description>
-              <bitOffset>16</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-only</access>
-            </field>
-            <field>
-              <name>CHAN_RESULT</name>
-              <description>read this register will trigger one adc conversion.
-If wait_dis bit is set, SW will get the latest conversion result(not current one) with valid bit is 0, SW need polling valid bit till it's set to get current result
-If wait_dis bit is 0, SW can get the current conversion result with holding the bus, valid bit is always set at this mode. this is not recommended if channel sample time is too long</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>16</bitWidth>
-              <access>read-only</access>
-            </field>
-          </fields>
-        </register>
-        <register>
           <name>buf_cfg0</name>
           <description>No description available</description>
           <addressOffset>0x500</addressOffset>
@@ -8179,7 +8140,7 @@ it may be updated period according to config, also may be updated due to other q
               <name>CONVERT_CLOCK_NUMBER</name>
               <description>convert clock numbers, set to 21 (0x15) for 16bit mode, which means convert need 21 adc clock cycles(based on clock after divider);
 user can use small value to get faster conversion, but less accuracy, need to config cov_end_cnt at adc16_config1 also.
-Ex: use 200MHz bus clock for adc, set sample_clock_number to 4, sample_clock_number_shift to 0, covert_clk_number to 21 for 16bit mode, clock_divder to 3, then each ADC conversion(plus sample) need 25 cycles(50MHz).</description>
+Ex: use 200MHz bus clock for adc, set sample_clock_number to 4, sample_clock_number_shift to 0, covert_clk_number to 21 for 16bit mode, clock_divider to 3, then each ADC conversion(plus sample) need 25 cycles(50MHz).</description>
               <bitOffset>4</bitOffset>
               <bitWidth>5</bitWidth>
               <access>read-write</access>
@@ -8666,16 +8627,16 @@ should set to (21-convert_clock_number+1).</description>
             <description>Configure Register</description>
             <addressOffset>0x0</addressOffset>
             <size>32</size>
-            <resetValue>0x00000000</resetValue>
-            <resetMask>0xFFFFFFFF</resetMask>
+            <resetValue>0x00000020</resetValue>
+            <resetMask>0xFFFFEFFF</resetMask>
             <fields>
               <field>
                 <name>HYST</name>
                 <description>This bitfield configure the comparator hysteresis.
-00: Hysteresis level 0
-01: Hysteresis level 1
-10: Hysteresis level 2
-11: Hysteresis level 3</description>
+0: Hysteresis about 30mV
+1: Hysteresis about 20mV
+2: Hysteresis about 10mV
+3: Disable hysteresis</description>
                 <bitOffset>30</bitOffset>
                 <bitWidth>2</bitWidth>
                 <access>read-write</access>
@@ -8778,19 +8739,22 @@ if clr, use dac_cfg value</description>
                 <access>read-write</access>
               </field>
               <field>
-                <name>SYNCEN</name>
-                <description>This bit enable the comparator output synchronization.
-0: ACMP output not synchronized with ACMP clock.
-1: ACMP output synchronized with ACMP clock.</description>
-                <bitOffset>12</bitOffset>
-                <bitWidth>1</bitWidth>
+                <name>FLTLEN_SHIFT</name>
+                <description>this field is to extend filter length.
+0: filter length = fltlen
+1: filter length = fltlen * 2
+2: filter length = fltlen * 4
+7: filter length = fltlen * 128
+When the clock frequency is 200MHz, the maximum filter length is about 300uS.</description>
+                <bitOffset>9</bitOffset>
+                <bitWidth>3</bitWidth>
                 <access>read-write</access>
               </field>
               <field>
                 <name>FLTLEN</name>
                 <description>This bitfield define the ACMP output digital filter length. The unit is ACMP clock cycle.</description>
                 <bitOffset>0</bitOffset>
-                <bitWidth>12</bitWidth>
+                <bitWidth>9</bitWidth>
                 <access>read-write</access>
               </field>
             </fields>
@@ -8805,7 +8769,7 @@ if clr, use dac_cfg value</description>
             <fields>
               <field>
                 <name>DACCFG</name>
-                <description>8bit DAC digital value output to analog block</description>
+                <description>8bit DAC digital value</description>
                 <bitOffset>0</bitOffset>
                 <bitWidth>8</bitWidth>
                 <access>read-write</access>
@@ -16778,7 +16742,7 @@ This bit can be cleared by set shadow_lock bit in work_ctrl1</description>
           <description>No description available</description>
           <addressOffset>0x4</addressOffset>
           <size>32</size>
-          <resetValue>0x00000000</resetValue>
+          <resetValue>0xFFFFFFFF</resetValue>
           <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>
@@ -16823,7 +16787,7 @@ this register can only be updated after unlock</description>
             <field>
               <name>POLARITY</name>
               <description>one bit for one pwm channel, it's used as shadow register when pwm_cfg0.polarity_opt0 is set.
-output polarity, set to 1 will invert the output(after pwm selection, pair mode, dead area insertion, before force/fault)</description>
+output polarity, set to 1 will invert the output</description>
               <bitOffset>16</bitOffset>
               <bitWidth>8</bitWidth>
               <access>read-write</access>
@@ -16927,7 +16891,7 @@ if b&lt;=a then output all 0; if b&gt;=(T+a), then output all 1;</description>
               </field>
               <field>
                 <name>OUT_POLARITY</name>
-                <description>output polarity, set to 1 will invert the output(after pwm selection, pair mode, dead area insertion, before force/fault)
+                <description>output polarity, set to 1 will invert the output.
 when polarity_opt0 is set, this bit is controlled by shadow register, can't be writable; read as working register
 use compare channel settings(in cmp_cfg) as shadow register update</description>
                 <bitOffset>1</bitOffset>
@@ -24101,7 +24065,7 @@ c. When OP is 2-7, this area is the data length as fellow:
         <register>
           <dim>64</dim>
           <dimIncrement>0x4</dimIncrement>
-          <dimIndex>PWM0_IN0,PWM0_IN1,PWM0_IN2,PWM0_IN3,PWM0_IN4,PWM0_IN5,PWM0_IN6,PWM0_IN7,PWM1_IN0,PWM1_IN1,PWM1_IN2,PWM1_IN3,PWM1_IN4,PWM1_IN5,PWM1_IN6,PWM1_IN7,PWM2_IN0,PWM2_IN1,PWM2_IN2,PWM2_IN3,PWM2_IN4,PWM2_IN5,PWM2_IN6,PWM2_IN7,PWM3_IN0,PWM3_IN1,PWM3_IN2,PWM3_IN3,PWM3_IN4,PWM3_IN5,PWM3_IN6,PWM3_IN7,MOTO_GPIO_IN0,MOTO_GPIO_IN1,MOTO_GPIO_IN2,MOTO_GPIO_IN3,MOTO_GPIO_IN4,MOTO_GPIO_IN5,MOTO_GPIO_IN6,MOTO_GPIO_IN7,MOTO_GPIO_IN8,MOTO_GPIO_IN9,MOTO_GPIO_IN10,MOTO_GPIO_IN11,MOTO_GPIO_IN12,MOTO_GPIO_IN13,MOTO_GPIO_IN14,MOTO_GPIO_IN15,MOTO_GPIO_IN16,MOTO_GPIO_IN17,MOTO_GPIO_IN18,MOTO_GPIO_IN19,MOTO_GPIO_IN20,MOTO_GPIO_IN21,MOTO_GPIO_IN22,MOTO_GPIO_IN23,MOTO_GPIO_IN24,MOTO_GPIO_IN25,MOTO_GPIO_IN26,MOTO_GPIO_IN27,MOTO_GPIO_IN28,MOTO_GPIO_IN29,MOTO_GPIO_IN30,MOTO_GPIO_IN31</dimIndex>
+          <dimIndex>PWM0_IN0,PWM0_IN1,PWM0_IN2,PWM0_IN3,PWM0_IN4,PWM0_IN5,PWM0_IN6,PWM0_IN7,PWM1_IN0,PWM1_IN1,PWM1_IN2,PWM1_IN3,PWM1_IN4,PWM1_IN5,PWM1_IN6,PWM1_IN7,PWM2_IN0,PWM2_IN1,PWM2_IN2,PWM2_IN3,PWM2_IN4,PWM2_IN5,PWM2_IN6,PWM2_IN7,PWM3_IN0,PWM3_IN1,PWM3_IN2,PWM3_IN3,PWM3_IN4,PWM3_IN5,PWM3_IN6,PWM3_IN7,TRGM_P_00,TRGM_P_01,TRGM_P_02,TRGM_P_03,TRGM_P_04,TRGM_P_05,TRGM_P_06,TRGM_P_07,TRGM_P_08,TRGM_P_09,TRGM_P_10,TRGM_P_11,TRGM_P_12,TRGM_P_13,TRGM_P_14,TRGM_P_15,TRGM_P_16,TRGM_P_17,TRGM_P_18,TRGM_P_19,TRGM_P_20,TRGM_P_21,TRGM_P_22,TRGM_P_23,TRGM_P_24,TRGM_P_25,TRGM_P_26,TRGM_P_27,TRGM_P_28,TRGM_P_29,TRGM_P_30,TRGM_P_31</dimIndex>
           <name>FILTCFG[%s]</name>
           <description>no description available</description>
           <addressOffset>0x0</addressOffset>
@@ -24912,7 +24876,7 @@ c. When OP is 2-7, this area is the data length as fellow:
         <register>
           <dim>242</dim>
           <dimIncrement>0x4</dimIncrement>
-          <dimIndex>MOT_GPIO0,MOT_GPIO1,MOT_GPIO2,MOT_GPIO3,MOT_GPIO4,MOT_GPIO5,MOT_GPIO6,MOT_GPIO7,MOT_GPIO8,MOT_GPIO9,MOT_GPIO10,MOT_GPIO11,MOT_GPIO12,MOT_GPIO13,MOT_GPIO14,MOT_GPIO15,MOT_GPIO16,MOT_GPIO17,MOT_GPIO18,MOT_GPIO19,MOT_GPIO20,MOT_GPIO21,MOT_GPIO22,MOT_GPIO23,MOT_GPIO24,MOT_GPIO25,MOT_GPIO26,MOT_GPIO27,MOT_GPIO28,MOT_GPIO29,MOT_GPIO30,MOT_GPIO31,SDM_PWM_SOC0,SDM_PWM_SOC1,SDM_PWM_SOC2,SDM_PWM_SOC3,SDM_PWM_SOC4,SDM_PWM_SOC5,SDM_PWM_SOC6,SDM_PWM_SOC7,SDM_PWM_SOC8,SDM_PWM_SOC9,SDM_PWM_SOC10,SDM_PWM_SOC11,SDM_PWM_SOC12,SDM_PWM_SOC13,SDM_PWM_SOC14,SDM_PWM_SOC15,ADC0_STRGI,ADC1_STRGI,ADC2_STRGI,ADC3_STRGI,ADCx_PTRGI0A,ADCx_PTRGI0B,ADCx_PTRGI0C,ADCx_PTRGI1A,ADCx_PTRGI1B,ADCx_PTRGI1C,ADCx_PTRGI2A,ADCx_PTRGI2B,ADCx_PTRGI2C,ADCx_PTRGI3A,ADCx_PTRGI3B,ADCx_PTRGI3C,VSC0_TRIG_IN0,VSC0_TRIG_IN1,VSC1_TRIG_IN0,VSC1_TRIG_IN1,RDC0_TRIG_IN0,RDC0_TRIG_IN1,RDC1_TRIG_IN0,RDC1_TRIG_IN1,QEI0_TRIG_IN,QEI1_TRIG_IN,QEI2_TRIG_IN,QEI3_TRIG_IN,QEI0_PAUSE,QEI1_PAUSE,QEI2_PAUSE,QEI3_PAUSE,QEO0_TRIG_IN0,QEO0_TRIG_IN1,QEO1_TRIG_IN0,QEO1_TRIG_IN1,QEO2_TRIG_IN0,QEO2_TRIG_IN1,QEO3_TRIG_IN0,QEO3_TRIG_IN1,SEI_TRIG_IN0,SEI_TRIG_IN1,SEI_TRIG_IN2,SEI_TRIG_IN3,SEI_TRIG_IN4,SEI_TRIG_IN5,SEI_TRIG_IN6,SEI_TRIG_IN7,CMP0_WIN,CMP1_WIN,CMP2_WIN,CMP3_WIN,CMP4_WIN,CMP5_WIN,CMP6_WIN,CMP7_WIN,GPTMR0_IN2,GPTMR0_IN3,GPTMR0_SYNCI,GPTMR1_IN2,GPTMR1_IN3,GPTMR1_SYNCI,GPTMR2_IN2,GPTMR2_IN3,GPTMR2_SYNCI,GPTMR3_IN2,GPTMR3_IN3,GPTMR3_SYNCI,GPTMR4_IN2,GPTMR4_IN3,GPTMR4_SYNCI,GPTMR5_IN2,GPTMR5_IN3,GPTMR5_SYNCI,GPTMR6_IN2,GPTMR6_IN3,GPTMR6_SYNCI,GPTMR7_IN2,GPTMR7_IN3,GPTMR7_SYNCI,PLB_IN_00,PLB_IN_01,PLB_IN_02,PLB_IN_03,PLB_IN_04,PLB_IN_05,PLB_IN_06,PLB_IN_07,PLB_IN_08,PLB_IN_09,PLB_IN_10,PLB_IN_11,PLB_IN_12,PLB_IN_13,PLB_IN_14,PLB_IN_15,PLB_IN_16,PLB_IN_17,PLB_IN_18,PLB_IN_19,PLB_IN_20,PLB_IN_21,PLB_IN_22,PLB_IN_23,PLB_IN_24,PLB_IN_25,PLB_IN_26,PLB_IN_27,PLB_IN_28,PLB_IN_29,PLB_IN_30,PLB_IN_31,PLB_IN_32,PLB_IN_33,PLB_IN_34,PLB_IN_35,PLB_IN_36,PLB_IN_37,PLB_IN_38,PLB_IN_39,PLB_IN_40,PLB_IN_41,PLB_IN_42,PLB_IN_43,PLB_IN_44,PLB_IN_45,PLB_IN_46,PLB_IN_47,PLB_IN_48,PLB_IN_49,PLB_IN_50,PLB_IN_51,PLB_IN_52,PLB_IN_53,PLB_IN_54,PLB_IN_55,PLB_IN_56,PLB_IN_57,PLB_IN_58,PLB_IN_59,PLB_IN_60,PLB_IN_61,PLB_IN_62,PLB_IN_63,PWM0_TRIG_IN0,PWM0_TRIG_IN1,PWM0_TRIG_IN2,PWM0_TRIG_IN3,PWM0_TRIG_IN4,PWM0_TRIG_IN5,PWM0_TRIG_IN6,PWM0_TRIG_IN7,PWM1_TRIG_IN0,PWM1_TRIG_IN1,PWM1_TRIG_IN2,PWM1_TRIG_IN3,PWM1_TRIG_IN4,PWM1_TRIG_IN5,PWM1_TRIG_IN6,PWM1_TRIG_IN7,PWM2_TRIG_IN0,PWM2_TRIG_IN1,PWM2_TRIG_IN2,PWM2_TRIG_IN3,PWM2_TRIG_IN4,PWM2_TRIG_IN5,PWM2_TRIG_IN6,PWM2_TRIG_IN7,PWM3_TRIG_IN0,PWM3_TRIG_IN1,PWM3_TRIG_IN2,PWM3_TRIG_IN3,PWM3_TRIG_IN4,PWM3_TRIG_IN5,PWM3_TRIG_IN6,PWM3_TRIG_IN7,CAN_PTPC0_CAP,CAN_PTPC1_CAP,UART_TRIG0,UART_TRIG1,SYNCTIMER_TRIG,TRGM_IRQ0,TRGM_IRQ1,TRGM_DMA0,TRGM_DMA1,MTG0_TRIG_IN0,MTG0_TRIG_IN1,MTG0_TRIG_IN2,MTG0_TRIG_IN3,MTG1_TRIG_IN0,MTG1_TRIG_IN1,MTG1_TRIG_IN2,MTG1_TRIG_IN3,ESC_TRIG_IN</dimIndex>
+          <dimIndex>TRGM_P_00,TRGM_P_01,TRGM_P_02,TRGM_P_03,TRGM_P_04,TRGM_P_05,TRGM_P_06,TRGM_P_07,TRGM_P_08,TRGM_P_09,TRGM_P_10,TRGM_P_11,TRGM_P_12,TRGM_P_13,TRGM_P_14,TRGM_P_15,TRGM_P_16,TRGM_P_17,TRGM_P_18,TRGM_P_19,TRGM_P_20,TRGM_P_21,TRGM_P_22,TRGM_P_23,TRGM_P_24,TRGM_P_25,TRGM_P_26,TRGM_P_27,TRGM_P_28,TRGM_P_29,TRGM_P_30,TRGM_P_31,SDM_PWM_SOC0,SDM_PWM_SOC1,SDM_PWM_SOC2,SDM_PWM_SOC3,SDM_PWM_SOC4,SDM_PWM_SOC5,SDM_PWM_SOC6,SDM_PWM_SOC7,SDM_PWM_SOC8,SDM_PWM_SOC9,SDM_PWM_SOC10,SDM_PWM_SOC11,SDM_PWM_SOC12,SDM_PWM_SOC13,SDM_PWM_SOC14,SDM_PWM_SOC15,ADC0_STRGI,ADC1_STRGI,ADC2_STRGI,ADC3_STRGI,ADCx_PTRGI0A,ADCx_PTRGI0B,ADCx_PTRGI0C,ADCx_PTRGI1A,ADCx_PTRGI1B,ADCx_PTRGI1C,ADCx_PTRGI2A,ADCx_PTRGI2B,ADCx_PTRGI2C,ADCx_PTRGI3A,ADCx_PTRGI3B,ADCx_PTRGI3C,VSC0_TRIG_IN0,VSC0_TRIG_IN1,VSC1_TRIG_IN0,VSC1_TRIG_IN1,RDC0_TRIG_IN0,RDC0_TRIG_IN1,RDC1_TRIG_IN0,RDC1_TRIG_IN1,QEI0_TRIG_IN,QEI1_TRIG_IN,QEI2_TRIG_IN,QEI3_TRIG_IN,QEI0_PAUSE,QEI1_PAUSE,QEI2_PAUSE,QEI3_PAUSE,QEO0_TRIG_IN0,QEO0_TRIG_IN1,QEO1_TRIG_IN0,QEO1_TRIG_IN1,QEO2_TRIG_IN0,QEO2_TRIG_IN1,QEO3_TRIG_IN0,QEO3_TRIG_IN1,SEI_TRIG_IN0,SEI_TRIG_IN1,SEI_TRIG_IN2,SEI_TRIG_IN3,SEI_TRIG_IN4,SEI_TRIG_IN5,SEI_TRIG_IN6,SEI_TRIG_IN7,ACMP0_CH0_WIN,ACMP0_CH1_WIN,ACMP1_CH0_WIN,ACMP1_CH1_WIN,ACMP2_CH0_WIN,ACMP2_CH1_WIN,ACMP3_CH0_WIN,ACMP3_CH1_WIN,GPTMR0_IN2,GPTMR0_IN3,GPTMR0_SYNCI,GPTMR1_IN2,GPTMR1_IN3,GPTMR1_SYNCI,GPTMR2_IN2,GPTMR2_IN3,GPTMR2_SYNCI,GPTMR3_IN2,GPTMR3_IN3,GPTMR3_SYNCI,GPTMR4_IN2,GPTMR4_IN3,GPTMR4_SYNCI,GPTMR5_IN2,GPTMR5_IN3,GPTMR5_SYNCI,GPTMR6_IN2,GPTMR6_IN3,GPTMR6_SYNCI,GPTMR7_IN2,GPTMR7_IN3,GPTMR7_SYNCI,PLB_IN_00,PLB_IN_01,PLB_IN_02,PLB_IN_03,PLB_IN_04,PLB_IN_05,PLB_IN_06,PLB_IN_07,PLB_IN_08,PLB_IN_09,PLB_IN_10,PLB_IN_11,PLB_IN_12,PLB_IN_13,PLB_IN_14,PLB_IN_15,PLB_IN_16,PLB_IN_17,PLB_IN_18,PLB_IN_19,PLB_IN_20,PLB_IN_21,PLB_IN_22,PLB_IN_23,PLB_IN_24,PLB_IN_25,PLB_IN_26,PLB_IN_27,PLB_IN_28,PLB_IN_29,PLB_IN_30,PLB_IN_31,PLB_IN_32,PLB_IN_33,PLB_IN_34,PLB_IN_35,PLB_IN_36,PLB_IN_37,PLB_IN_38,PLB_IN_39,PLB_IN_40,PLB_IN_41,PLB_IN_42,PLB_IN_43,PLB_IN_44,PLB_IN_45,PLB_IN_46,PLB_IN_47,PLB_IN_48,PLB_IN_49,PLB_IN_50,PLB_IN_51,PLB_IN_52,PLB_IN_53,PLB_IN_54,PLB_IN_55,PLB_IN_56,PLB_IN_57,PLB_IN_58,PLB_IN_59,PLB_IN_60,PLB_IN_61,PLB_IN_62,PLB_IN_63,PWM0_TRIG_IN0,PWM0_TRIG_IN1,PWM0_TRIG_IN2,PWM0_TRIG_IN3,PWM0_TRIG_IN4,PWM0_TRIG_IN5,PWM0_TRIG_IN6,PWM0_TRIG_IN7,PWM1_TRIG_IN0,PWM1_TRIG_IN1,PWM1_TRIG_IN2,PWM1_TRIG_IN3,PWM1_TRIG_IN4,PWM1_TRIG_IN5,PWM1_TRIG_IN6,PWM1_TRIG_IN7,PWM2_TRIG_IN0,PWM2_TRIG_IN1,PWM2_TRIG_IN2,PWM2_TRIG_IN3,PWM2_TRIG_IN4,PWM2_TRIG_IN5,PWM2_TRIG_IN6,PWM2_TRIG_IN7,PWM3_TRIG_IN0,PWM3_TRIG_IN1,PWM3_TRIG_IN2,PWM3_TRIG_IN3,PWM3_TRIG_IN4,PWM3_TRIG_IN5,PWM3_TRIG_IN6,PWM3_TRIG_IN7,CAN_PTPC0_CAP,CAN_PTPC1_CAP,UART_TRIG0,UART_TRIG1,SYNCTIMER_TRIG,TRGM_IRQ0,TRGM_IRQ1,TRGM_DMA0,TRGM_DMA1,MTG0_TRIG_IN0,MTG0_TRIG_IN1,MTG0_TRIG_IN2,MTG0_TRIG_IN3,MTG1_TRIG_IN0,MTG1_TRIG_IN1,MTG1_TRIG_IN2,MTG1_TRIG_IN3,ESC_TRIG_IN</dimIndex>
           <name>TRGOCFG[%s]</name>
           <description>no description available</description>
           <addressOffset>0x1000</addressOffset>
@@ -24929,14 +24893,14 @@ c. When OP is 2-7, this area is the data length as fellow:
             </field>
             <field>
               <name>FEDG2PEN</name>
-              <description>1- The selected input signal falling edge will be convert to an pulse on output.</description>
+              <description>1- The selected input signal falling edge will be convert to an pulse on output. The output pulse can be stably used within the motor control system. When connecting the signal outside the motor system, due to the asynchronization of the clock systems, the clock frequency and signal active length need to be considered.</description>
               <bitOffset>17</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>REDG2PEN</name>
-              <description>1- The selected input signal rising edge will be convert to an pulse on output.</description>
+              <description>1- The selected input signal rising edge will be convert to an pulse on output. The output pulse can be stably used within the motor control system. When connecting the signal outside the motor system, due to the asynchronization of the clock systems, the clock frequency and signal active length need to be considered.</description>
               <bitOffset>16</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -40879,16 +40843,8 @@ CLKSEL is write-locked if CSA=1.</description>
                 </field>
                 <field>
                   <name>PHYSEL</name>
-                  <description>Selection of the PHY (See Chapter 4.6.)
-00 – MII
-01 – GMII
-10 – RGMII
-11 – reserved
-PHYSEL can only be changed if RX_EN=0 and TX_EN=0. Deactivation delays of
-RX_EN and TX_EN have to be considered. PHYSEL can only be changed, if these
-register bits can be read as 0. It is possible to change PHYSEL together with the
-activation of RX_EN and TX_EN.
-PHYSEL drives the output &lt;rx_physel&gt;.</description>
+                  <description>Selection of the PHY
+01 – GMII, fixed to 1</description>
                   <bitOffset>5</bitOffset>
                   <bitWidth>2</bitWidth>
                   <access>read-write</access>

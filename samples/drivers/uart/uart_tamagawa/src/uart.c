@@ -9,7 +9,6 @@
 #include "hpm_clock_drv.h"
 #include "hpm_uart_drv.h"
 #ifdef HPMSOC_HAS_HPMSDK_TRGM
-#include "hpm_trgm_soc_drv.h"
 #include "hpm_trgm_drv.h"
 #include "hpm_gptmr_drv.h"
 #endif

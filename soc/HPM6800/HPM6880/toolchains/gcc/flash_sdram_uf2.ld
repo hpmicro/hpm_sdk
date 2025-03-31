@@ -16,7 +16,8 @@ MEMORY
     DLM (w) : ORIGIN = 0x00080000, LENGTH = 256K
     AXI_SRAM (wx) : ORIGIN = 0x1200000, LENGTH = 512K
     SDRAM (wx) : ORIGIN = 0x40000000, LENGTH = (_extram_size - 32M)
-    SDRAM_NONCACHEABLE (wx) : ORIGIN = 0x40000000 + (_extram_size - 32M), LENGTH = 32M
+    SDRAM_NONCACHEABLE (wx) : ORIGIN = 0x40000000 + (_extram_size - 64M), LENGTH = 32M
+    SDRAM_GPU (wx) : ORIGIN = 0x40000000 + (_extram_size - 32M), LENGTH = 32M
     AHB_SRAM (w) : ORIGIN = 0xF0400000, LENGTH = 32k
     APB_SRAM (w): ORIGIN = 0xF4130000, LENGTH = 16k
 }
@@ -141,10 +142,10 @@ SECTIONS
         PROVIDE(__init_array_end = .);
 
         . = ALIGN(8);
-        PROVIDE(__finit_array_start = .);
-        KEEP(*(SORT_BY_INIT_PRIORITY(.finit_array.*)))
-        KEEP(*(.finit_array))
-        PROVIDE(__finit_array_end = .);
+        PROVIDE(__fini_array_start = .);
+        KEEP(*(SORT_BY_INIT_PRIORITY(.fini_array.*)))
+        KEEP(*(.fini_array))
+        PROVIDE(__fini_array_end = .);
 
         . = ALIGN(8);
         KEEP(*crtbegin*.o(.ctors))
@@ -258,6 +259,13 @@ SECTIONS
         . = ALIGN(8);
     } > SDRAM_NONCACHEABLE
 
+    .gpu (NOLOAD) : {
+        . = ALIGN(8);
+        KEEP(*(.gpu))
+        KEEP(*(.gpu.*))
+        . = ALIGN(8);
+    } > SDRAM_GPU
+
     .ahb_sram (NOLOAD) : {
         KEEP(*(.ahb_sram))
         KEEP(*(.ahb_sram.*))
@@ -291,6 +299,8 @@ SECTIONS
 
     __noncacheable_start__ = ORIGIN(SDRAM_NONCACHEABLE);
     __noncacheable_end__ = ORIGIN(SDRAM_NONCACHEABLE) + LENGTH(SDRAM_NONCACHEABLE);
+    __gpu_start__ = ORIGIN(SDRAM_GPU);
+    __gpu_end__ = ORIGIN(SDRAM_GPU) + LENGTH(SDRAM_GPU);
 
     __fw_size__ = SIZEOF(.start) + SIZEOF(.vectors) + SIZEOF(.rel) + SIZEOF(.text) + SIZEOF(.data) + SIZEOF(.fast) + SIZEOF(.tdata) + SIZEOF(.noncacheable.init) + SIZEOF(.fast_ram.init);
     __last_addr__ = __fast_ram_init_load_addr__ + SIZEOF(.fast_ram.init);

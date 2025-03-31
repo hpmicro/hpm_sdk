@@ -29,3 +29,4 @@ board:
       - board_enet_pps_output_pin
       - board_enet_pps_input_pin
       - board_pwm_rgb_led
+      - board_wkup_pin

@@ -1,13 +1,13 @@
 /*
  * Copyright (c) 2022, sakumisu
- * Copyright (c) 2022-2024, HPMicro
+ * Copyright (c) 2022-2025, HPMicro
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 #ifndef CHERRYUSB_CONFIG_H
 #define CHERRYUSB_CONFIG_H
 
-#include "hpm_soc_feature.h"
+#include "board.h"
 
 /* ================ USB common Configuration ================ */
 
@@ -32,7 +32,7 @@
 #endif
 
 /* descriptor common define */
-#define USBD_VID           0x34B7 /* Hpmicro vid */
+#define USBD_VID           0x34B7 /* HPMicro VID */
 #define USBD_PID           0xFFFF
 #define USBD_MAX_POWER     200
 #define USBD_LANGID_STRING 1033
@@ -60,6 +60,20 @@
 
 /* Enable test mode */
 #define CONFIG_USBDEV_TEST_MODE
+
+/* enable advance desc register api */
+/* #define CONFIG_USBDEV_ADVANCE_DESC */
+
+/* move ep0 setup handler from isr to thread */
+/* #define CONFIG_USBDEV_EP0_THREAD */
+
+#ifndef CONFIG_USBDEV_EP0_PRIO
+#define CONFIG_USBDEV_EP0_PRIO 4
+#endif
+
+#ifndef CONFIG_USBDEV_EP0_STACKSIZE
+#define CONFIG_USBDEV_EP0_STACKSIZE 2048
+#endif
 
 #ifndef CONFIG_USBDEV_MSC_MAX_LUN
 #define CONFIG_USBDEV_MSC_MAX_LUN 1
@@ -245,5 +259,14 @@
 #define CONFIG_USB_EHCI_HCCR_OFFSET     (0x100u)
 #define CONFIG_USB_EHCI_FRAME_LIST_SIZE 1024
 #define CONFIG_USB_EHCI_QTD_NUM         8
+
+/* ================ Addr Convert Configuration ==================*/
+#ifndef usb_phyaddr2ramaddr
+#define usb_phyaddr2ramaddr(addr) core_local_mem_to_sys_address(BOARD_RUNNING_CORE, addr)
+#endif
+
+#ifndef usb_ramaddr2phyaddr
+#define usb_ramaddr2phyaddr(addr) sys_address_to_core_local_mem(BOARD_RUNNING_CORE, addr)
+#endif
 
 #endif

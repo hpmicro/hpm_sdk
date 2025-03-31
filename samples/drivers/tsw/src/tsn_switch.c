@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -43,7 +43,7 @@ int main(void)
     printf("This is a TSN switch demo\n");
 
     /* Disable All MACs(TX/RX) */
-    tsw_ep_disable_all_mac_ctrl(APP_TSW, TSW_RXFIFO_E1);
+    tsw_ep_disable_all_mac_ctrl(APP_TSW, tsw_mac_type_emac);
 
     /* Set Mac Address */
     tsw_ep_set_mac_addr(APP_TSW, TSW_TSNPORT_PORT1, mac1, true);
@@ -61,7 +61,7 @@ int main(void)
     tsw_port_gpr(APP_TSW, TSW_TSNPORT_PORT3, tsw_port_speed_1000mbps, tsw_port_phy_itf_rgmii, 0, 0);
 
     /* Enable All MACs(TX/RX) */
-    tsw_ep_enable_all_mac_ctrl(APP_TSW, TSW_RXFIFO_E1);
+    tsw_ep_enable_all_mac_ctrl(APP_TSW, tsw_mac_type_emac);
 
     /* Clear CAM */
     tsw_clear_cam(APP_TSW);

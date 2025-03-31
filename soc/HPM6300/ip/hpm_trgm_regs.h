@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -80,7 +80,7 @@ typedef struct {
 /*
  * FEDG2PEN (RW)
  *
- * 1- The selected input signal falling edge will be convert to an pulse on output.
+ * 1- The selected input signal falling edge will be convert to an pulse on output. The output pulse can be stably used within the motor control system. When connecting the signal outside the motor system, due to the asynchronization of the clock systems, the clock frequency and signal active length need to be considered.
  */
 #define TRGM_TRGOCFG_FEDG2PEN_MASK (0x80U)
 #define TRGM_TRGOCFG_FEDG2PEN_SHIFT (7U)
@@ -90,7 +90,7 @@ typedef struct {
 /*
  * REDG2PEN (RW)
  *
- * 1- The selected input signal rising edge will be convert to an pulse on output.
+ * 1- The selected input signal rising edge will be convert to an pulse on output. The output pulse can be stably used within the motor control system. When connecting the signal outside the motor system, due to the asynchronization of the clock systems, the clock frequency and signal active length need to be considered.
  */
 #define TRGM_TRGOCFG_REDG2PEN_MASK (0x40U)
 #define TRGM_TRGOCFG_REDG2PEN_SHIFT (6U)

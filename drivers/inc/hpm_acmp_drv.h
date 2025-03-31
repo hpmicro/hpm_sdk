@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -10,6 +10,7 @@
 
 #include "hpm_common.h"
 #include "hpm_acmp_regs.h"
+#include "hpm_soc_ip_feature.h"
 
 /**
  * @brief ACMP driver APIs
@@ -80,11 +81,13 @@ typedef struct acmp_channel_config {
     bool enable_cmp_output;
     bool enable_window_mode;
     bool invert_output;
-    bool enable_clock_sync;
     bool bypass_filter;
     bool enable_dac;
     bool enable_hpmode;
     uint16_t filter_length; /* ACMP output digital filter length in ACMP clock cycle */
+#if defined(HPM_IP_FEATURE_ACMP_FILT_LEN_EXTEND) && HPM_IP_FEATURE_ACMP_FILT_LEN_EXTEND
+    uint8_t filter_length_shift;
+#endif
 } acmp_channel_config_t;
 
 #ifdef __cplusplus
@@ -102,22 +105,6 @@ static inline void acmp_channel_config_dac(ACMP_Type *ptr, uint8_t ch, uint32_t 
 {
     ptr->CHANNEL[ch].DACCFG = (ptr->CHANNEL[ch].DACCFG & ~ACMP_CHANNEL_DACCFG_DACCFG_MASK) | ACMP_CHANNEL_DACCFG_DACCFG_SET(value);
 }
-
-#if defined(HPM_IP_FEATURE_ACMP_HAS_CAP_SEL) && HPM_IP_FEATURE_ACMP_HAS_CAP_SEL
-/**
- * @brief Configure the capacitor selection for an ACMP channel
- *
- * Configures the capacitor selection for a given ACMP channel based on the channel number and capacitor level.
- *
- * @param ptr ACMP base address
- * @param ch Channel number
- * @param level Capacitor level
- */
-static inline void acmp_channel_config_cap_selection(ACMP_Type *ptr, uint8_t ch, uint32_t level)
-{
-    ptr->CHANNEL[ch].DACCFG = (ptr->CHANNEL[ch].DACCFG & ~ACMP_CHANNEL_DACCFG_CAP_SEL_MASK) | ACMP_CHANNEL_DACCFG_CAP_SEL_SET(level);
-}
-#endif
 
 /**
  * @brief ACMP channel clear status
@@ -315,21 +302,6 @@ static inline void acmp_channel_set_filter_mode(ACMP_Type *ptr, uint8_t ch, uint
 }
 
 /**
- * @brief ACMP channel enable comparator output sync with clock
- *
- * @param [in] ptr ACMP base address
- * @param [in] ch ACMP channel number
- * @param [in] enable:
- *  @arg true: enable
- *  @arg false: disable
- */
-static inline void acmp_channel_enable_sync(ACMP_Type *ptr, uint8_t ch, bool enable)
-{
-    ptr->CHANNEL[ch].CFG = (ptr->CHANNEL[ch].CFG & ~ACMP_CHANNEL_CFG_SYNCEN_MASK)
-                        | ACMP_CHANNEL_CFG_SYNCEN_SET(enable);
-}
-
-/**
  * @brief ACMP channel set comparator output filter length
  *
  * @param [in] ptr ACMP base address
@@ -341,6 +313,21 @@ static inline void acmp_channel_set_filter_length(ACMP_Type *ptr, uint8_t ch, ui
     ptr->CHANNEL[ch].CFG = (ptr->CHANNEL[ch].CFG & ~ACMP_CHANNEL_CFG_FLTLEN_MASK)
                         | ACMP_CHANNEL_CFG_FLTLEN_SET(filter_length);
 }
+
+/**
+ * @brief ACMP channel set comparator output filter extended length
+ *
+ * @param [in] ptr ACMP base address
+ * @param [in] ch ACMP channel number
+ * @param [in] filter_length shift: extended filter length
+ */
+#if defined(HPM_IP_FEATURE_ACMP_FILT_LEN_EXTEND) && HPM_IP_FEATURE_ACMP_FILT_LEN_EXTEND
+static inline void acmp_channel_set_filter_length_extend(ACMP_Type *ptr, uint8_t ch, uint16_t filter_length_shift)
+{
+    ptr->CHANNEL[ch].CFG = (ptr->CHANNEL[ch].CFG & ~ACMP_CHANNEL_CFG_FLTLEN_SHIFT_MASK)
+                        | ACMP_CHANNEL_CFG_FLTLEN_SHIFT_SET(filter_length_shift);
+}
+#endif
 
 /**
  * @brief ADC channel config

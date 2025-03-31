@@ -844,8 +844,8 @@ void init_trigger_mux(TRGM_Type *ptr)
 
     trgm_output_cfg.invert = false;
     trgm_output_cfg.type = trgm_output_same_as_input;
-    trgm_output_cfg.input = BOARD_BLDC_TRIGMUX_IN_NUM;
-    trgm_output_config(ptr, BOARD_BLDC_TRG_NUM, &trgm_output_cfg);
+    trgm_output_cfg.input = BOARD_BLDC_PWM_TRG_ADC;
+    trgm_output_config(ptr, BOARD_BLDC_TRG_ADC, &trgm_output_cfg);
 }
 
 SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_ADC_IRQn, isr_adc)
@@ -984,9 +984,9 @@ void trigmux_init_1(void)
     /* pwm trigout0 trig adc and vsc */
     trgm_config.invert = false;
     trgm_config.type = trgm_output_same_as_input;
-    trgm_config.input = BOARD_BLDC_TRIGMUX_IN_NUM;
-    trgm_output_config(HPM_TRGM0, BOARD_BLDC_TRIGMUX_OUT_NUM_ADC, &trgm_config);
-    trgm_output_config(HPM_TRGM0, BOARD_BLDC_TRIGMUX_OUT_NUM_VSC, &trgm_config);
+    trgm_config.input = BOARD_BLDC_PWM_TRG_ADC;
+    trgm_output_config(HPM_TRGM0, BOARD_BLDC_TRG_ADC, &trgm_config);
+    trgm_output_config(HPM_TRGM0, BOARD_BLDC_TRG_VSC, &trgm_config);
 }
 
 void trigmux_init_2(void)
@@ -1107,7 +1107,7 @@ void clc_init(void)
 void qeov2_init(void)
 {
     qeo_wave_mode_t config;
-    qeo_wave_get_default_mode_config(BOARD_QEO, &config);
+    qeo_wave_get_default_mode_config(BOARD_BLDC_QEO, &config);
     config.dq_valid_trig_enable = true;
     config.pos_valid_trig_enable = true;
     config.vd_vq_inject_enable = true;
@@ -1116,14 +1116,14 @@ void qeov2_init(void)
     config.wave_type = qeo_wave_saddle;
     config.saddle_type = qeo_saddle_standard;
     /* config.saddle_type = qeo_saddle_triple; */
-    qeo_wave_config_mode(BOARD_QEO, &config);
-    qeo_wave_set_resolution_lines(BOARD_QEO, motor0.cfg.mcl.physical.motor.pole_num);
+    qeo_wave_config_mode(BOARD_BLDC_QEO, &config);
+    qeo_wave_set_resolution_lines(BOARD_BLDC_QEO, motor0.cfg.mcl.physical.motor.pole_num);
 
-    qeo_wave_set_phase_shift(BOARD_QEO, 0, 180.0);
-    qeo_wave_set_phase_shift(BOARD_QEO, 1, 60.0);
-    qeo_wave_set_phase_shift(BOARD_QEO, 2, 300.0);
+    qeo_wave_set_phase_shift(BOARD_BLDC_QEO, 0, 180.0);
+    qeo_wave_set_phase_shift(BOARD_BLDC_QEO, 1, 60.0);
+    qeo_wave_set_phase_shift(BOARD_BLDC_QEO, 2, 300.0);
 
-    qeo_wave_set_pwm_cycle(BOARD_QEO, (PWM_RELOAD << 8));
+    qeo_wave_set_pwm_cycle(BOARD_BLDC_QEO, (PWM_RELOAD << 8));
 }
 
 void motor0_clc_set_currentloop_value(mcl_loop_chn_t chn, int32_t val)
@@ -1154,9 +1154,9 @@ void bldc_foc_angle_align(void)
     mcl_user_value_t id, iq;
 
 #if defined(HW_CURRENT_FOC_ENABLE)
-    qeo_enable_software_position_inject(BOARD_QEO);
-    qeo_software_position_inject(BOARD_QEO, 0);
-    qeo_disable_software_position_inject(BOARD_QEO);
+    qeo_enable_software_position_inject(BOARD_BLDC_QEO);
+    qeo_software_position_inject(BOARD_BLDC_QEO, 0);
+    qeo_disable_software_position_inject(BOARD_BLDC_QEO);
     vsc_sw_inject_pos_value(BOARD_VSC, 0);
 #endif
 

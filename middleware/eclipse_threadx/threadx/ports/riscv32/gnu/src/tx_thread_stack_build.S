@@ -112,40 +112,42 @@ _tx_thread_stack_build:
                        x10     (108)   Initial a0
                        x1      (112)   Initial ra
                        mepc    (120)   Initial mepc
+                       mcctlbeginaddr    (136)   Initial mcctlbeginaddr
+                       mcctldata         (140)   Initial mcctldata
 If floating point support:
-                       f0      (124)   Inital ft0
-                       f1      (128)   Inital ft1
-                       f2      (132)   Inital ft2
-                       f3      (136)   Inital ft3
-                       f4      (140)   Inital ft4
-                       f5      (144)   Inital ft5
-                       f6      (148)   Inital ft6
-                       f7      (152)   Inital ft7
-                       f8      (156)   Inital fs0
-                       f9      (160)   Inital fs1
-                       f10     (164)   Inital fa0
-                       f11     (168)   Inital fa1
-                       f12     (172)   Inital fa2
-                       f13     (176)   Inital fa3
-                       f14     (180)   Inital fa4
-                       f15     (184)   Inital fa5
-                       f16     (188)   Inital fa6
-                       f17     (192)   Inital fa7
-                       f18     (196)   Inital fs2
-                       f19     (200)   Inital fs3
-                       f20     (204)   Inital fs4
-                       f21     (208)   Inital fs5
-                       f22     (212)   Inital fs6
-                       f23     (216)   Inital fs7
-                       f24     (220)   Inital fs8
-                       f25     (224)   Inital fs9
-                       f26     (228)   Inital fs10
-                       f27     (232)   Inital fs11
-                       f28     (236)   Inital ft8
-                       f29     (240)   Inital ft9
-                       f30     (244)   Inital ft10
-                       f31     (248)   Inital ft11
-                       fscr    (252)   Inital fscr
+                       f0      (144)   Inital ft0
+                       f1      (xxx)   Inital ft1
+                       f2      (xxx)   Inital ft2
+                       f3      (xxx)   Inital ft3
+                       f4      (xxx)   Inital ft4
+                       f5      (xxx)   Inital ft5
+                       f6      (xxx)   Inital ft6
+                       f7      (xxx)   Inital ft7
+                       f8      (xxx)   Inital fs0
+                       f9      (xxx)   Inital fs1
+                       f10     (xxx)   Inital fa0
+                       f11     (xxx)   Inital fa1
+                       f12     (xxx)   Inital fa2
+                       f13     (xxx)   Inital fa3
+                       f14     (xxx)   Inital fa4
+                       f15     (xxx)   Inital fa5
+                       f16     (xxx)   Inital fa6
+                       f17     (xxx)   Inital fa7
+                       f18     (xxx)   Inital fs2
+                       f19     (xxx)   Inital fs3
+                       f20     (xxx)   Inital fs4
+                       f21     (xxx)   Inital fs5
+                       f22     (xxx)   Inital fs6
+                       f23     (xxx)   Inital fs7
+                       f24     (xxx)   Inital fs8
+                       f25     (xxx)   Inital fs9
+                       f26     (xxx)   Inital fs10
+                       f27     (xxx)   Inital fs11
+                       f28     (xxx)   Inital ft8
+                       f29     (xxx)   Inital ft9
+                       f30     (xxx)   Inital ft10
+                       f31     (xxx)   Inital ft11
+                       fscr    (xxx)   Inital fscr
 
     Stack Bottom: (higher memory address)  */
 
@@ -157,12 +159,12 @@ If floating point support:
 
 #ifdef __riscv_flen
 #if __riscv_flen == 32
-    addi    t0, t0, -260
+    addi    t0, t0, -288
 #elif __riscv_flen == 64
-    addi    t0, t0, -396
+    addi    t0, t0, -416
 #endif
 #else
-    addi    t0, t0, -128                                # Allocate space for the stack frame
+    addi    t0, t0, -160                                # Allocate space for the stack frame
 #endif
     li      t1, 1                                       # Build stack type
     sw      t1, 0(t0)                                   # Place stack type on the top
@@ -195,114 +197,116 @@ If floating point support:
     sw      x0, 108(t0)                                 # Initial a0
     sw      x0, 112(t0)                                 # Initial ra
     sw      a1, 120(t0)                                 # Initial mepc
+    sw      x0, 136(t0)                                 # Initial mcctlbeginaddr
+    sw      x0, 140(t0)                                 # Initial mcctldata
 #ifdef __riscv_flen
 #if __riscv_flen == 32
-    sw      x0, 124(t0)                                 # Inital ft0
-    sw      x0, 128(t0)                                 # Inital ft1
-    sw      x0, 132(t0)                                 # Inital ft2
-    sw      x0, 136(t0)                                 # Inital ft3
-    sw      x0, 140(t0)                                 # Inital ft4
-    sw      x0, 144(t0)                                 # Inital ft5
-    sw      x0, 148(t0)                                 # Inital ft6
-    sw      x0, 152(t0)                                 # Inital ft7
-    sw      x0, 156(t0)                                 # Inital fs0
-    sw      x0, 160(t0)                                 # Inital fs1
-    sw      x0, 164(t0)                                 # Inital fa0
-    sw      x0, 168(t0)                                 # Inital fa1
-    sw      x0, 172(t0)                                 # Inital fa2
-    sw      x0, 176(t0)                                 # Inital fa3
-    sw      x0, 180(t0)                                 # Inital fa4
-    sw      x0, 184(t0)                                 # Inital fa5
-    sw      x0, 188(t0)                                 # Inital fa6
-    sw      x0, 192(t0)                                 # Inital fa7
-    sw      x0, 196(t0)                                 # Inital fs2
-    sw      x0, 200(t0)                                 # Inital fs3
-    sw      x0, 204(t0)                                 # Inital fs4
-    sw      x0, 208(t0)                                 # Inital fs5
-    sw      x0, 212(t0)                                 # Inital fs6
-    sw      x0, 216(t0)                                 # Inital fs7
-    sw      x0, 220(t0)                                 # Inital fs8
-    sw      x0, 224(t0)                                 # Inital fs9
-    sw      x0, 228(t0)                                 # Inital fs10
-    sw      x0, 232(t0)                                 # Inital fs11
-    sw      x0, 236(t0)                                 # Inital ft8
-    sw      x0, 240(t0)                                 # Inital ft9
-    sw      x0, 244(t0)                                 # Inital ft10
-    sw      x0, 248(t0)                                 # Inital ft11
+    sw      x0, (124+20)(t0)                            # Inital ft0
+    sw      x0, (128+20)(t0)                            # Inital ft1
+    sw      x0, (132+20)(t0)                            # Inital ft2
+    sw      x0, (136+20)(t0)                            # Inital ft3
+    sw      x0, (140+20)(t0)                            # Inital ft4
+    sw      x0, (144+20)(t0)                            # Inital ft5
+    sw      x0, (148+20)(t0)                            # Inital ft6
+    sw      x0, (152+20)(t0)                            # Inital ft7
+    sw      x0, (156+20)(t0)                            # Inital fs0
+    sw      x0, (160+20)(t0)                            # Inital fs1
+    sw      x0, (164+20)(t0)                            # Inital fa0
+    sw      x0, (168+20)(t0)                            # Inital fa1
+    sw      x0, (172+20)(t0)                            # Inital fa2
+    sw      x0, (176+20)(t0)                            # Inital fa3
+    sw      x0, (180+20)(t0)                            # Inital fa4
+    sw      x0, (184+20)(t0)                            # Inital fa5
+    sw      x0, (188+20)(t0)                            # Inital fa6
+    sw      x0, (192+20)(t0)                            # Inital fa7
+    sw      x0, (196+20)(t0)                            # Inital fs2
+    sw      x0, (200+20)(t0)                            # Inital fs3
+    sw      x0, (204+20)(t0)                            # Inital fs4
+    sw      x0, (208+20)(t0)                            # Inital fs5
+    sw      x0, (212+20)(t0)                            # Inital fs6
+    sw      x0, (216+20)(t0)                            # Inital fs7
+    sw      x0, (220+20)(t0)                            # Inital fs8
+    sw      x0, (224+20)(t0)                            # Inital fs9
+    sw      x0, (228+20)(t0)                            # Inital fs10
+    sw      x0, (232+20)(t0)                            # Inital fs11
+    sw      x0, (236+20)(t0)                            # Inital ft8
+    sw      x0, (240+20)(t0)                            # Inital ft9
+    sw      x0, (244+20)(t0)                            # Inital ft10
+    sw      x0, (248+20)(t0)                            # Inital ft11
     csrr    a1, fcsr                                    # Read fcsr and use it for initial value for each thread
-    sw      a1, 252(t0)                                 # Initial fscr
-    sw      x0, 256(t0)                                 # Reserved word (0)
+    sw      a1, (252+20)(t0)                            # Initial fscr
+    sw      x0, (256+20)(t0)                            # Reserved word (0)
 #elif __riscv_flen == 64
-    sw      x0, 124(t0)                                 # Inital ft0
-    sw      x0, 128(t0)                                 # Inital ft0
-    sw      x0, 132(t0)                                 # Inital ft1
-    sw      x0, 136(t0)                                 # Inital ft1
-    sw      x0, 140(t0)                                 # Inital ft2
-    sw      x0, 144(t0)                                 # Inital ft2
-    sw      x0, 148(t0)                                 # Inital ft3
-    sw      x0, 152(t0)                                 # Inital ft3
-    sw      x0, 156(t0)                                 # Inital ft4
-    sw      x0, 160(t0)                                 # Inital ft4
-    sw      x0, 164(t0)                                 # Inital ft5
-    sw      x0, 168(t0)                                 # Inital ft5
-    sw      x0, 172(t0)                                 # Inital ft6
-    sw      x0, 176(t0)                                 # Inital ft6
-    sw      x0, 180(t0)                                 # Inital ft7
-    sw      x0, 184(t0)                                 # Inital ft7
-    sw      x0, 188(t0)                                 # Inital fs0
-    sw      x0, 192(t0)                                 # Inital fs0
-    sw      x0, 196(t0)                                 # Inital fs1
-    sw      x0, 200(t0)                                 # Inital fs1
-    sw      x0, 204(t0)                                 # Inital fa0
-    sw      x0, 208(t0)                                 # Inital fa0
-    sw      x0, 212(t0)                                 # Inital fa1
-    sw      x0, 216(t0)                                 # Inital fa1
-    sw      x0, 220(t0)                                 # Inital fa2
-    sw      x0, 224(t0)                                 # Inital fa2
-    sw      x0, 228(t0)                                 # Inital fa3
-    sw      x0, 232(t0)                                 # Inital fa3
-    sw      x0, 236(t0)                                 # Inital fa4
-    sw      x0, 240(t0)                                 # Inital fa4
-    sw      x0, 244(t0)                                 # Inital fa5
-    sw      x0, 248(t0)                                 # Inital fa5
-    sw      x0, 252(t0)                                 # Inital fa6
-    sw      x0, 256(t0)                                 # Inital fa6
-    sw      x0, 260(t0)                                 # Inital fa7
-    sw      x0, 264(t0)                                 # Inital fa7
-    sw      x0, 268(t0)                                 # Inital fs2
-    sw      x0, 272(t0)                                 # Inital fs2
-    sw      x0, 276(t0)                                 # Inital fs3
-    sw      x0, 280(t0)                                 # Inital fs3
-    sw      x0, 284(t0)                                 # Inital fs4
-    sw      x0, 288(t0)                                 # Inital fs4
-    sw      x0, 292(t0)                                 # Inital fs5
-    sw      x0, 296(t0)                                 # Inital fs5
-    sw      x0, 300(t0)                                 # Inital fs6
-    sw      x0, 304(t0)                                 # Inital fs6
-    sw      x0, 308(t0)                                 # Inital fs7
-    sw      x0, 312(t0)                                 # Inital fs7
-    sw      x0, 316(t0)                                 # Inital fs8
-    sw      x0, 320(t0)                                 # Inital fs8
-    sw      x0, 324(t0)                                 # Inital fs9
-    sw      x0, 328(t0)                                 # Inital fs9
-    sw      x0, 332(t0)                                 # Inital fs10
-    sw      x0, 336(t0)                                 # Inital fs10
-    sw      x0, 340(t0)                                 # Inital fs11
-    sw      x0, 344(t0)                                 # Inital fs11
-    sw      x0, 348(t0)                                 # Inital ft8
-    sw      x0, 352(t0)                                 # Inital ft8
-    sw      x0, 356(t0)                                 # Inital ft9
-    sw      x0, 360(t0)                                 # Inital ft9
-    sw      x0, 364(t0)                                 # Inital ft10
-    sw      x0, 368(t0)                                 # Inital ft10
-    sw      x0, 372(t0)                                 # Inital ft11
-    sw      x0, 376(t0)                                 # Inital ft11
+    sw      x0, (124+20)(t0)                            # Inital ft0
+    sw      x0, (128+20)(t0)                            # Inital ft0
+    sw      x0, (132+20)(t0)                            # Inital ft1
+    sw      x0, (136+20)(t0)                            # Inital ft1
+    sw      x0, (140+20)(t0)                            # Inital ft2
+    sw      x0, (144+20)(t0)                            # Inital ft2
+    sw      x0, (148+20)(t0)                            # Inital ft3
+    sw      x0, (152+20)(t0)                            # Inital ft3
+    sw      x0, (156+20)(t0)                            # Inital ft4
+    sw      x0, (160+20)(t0)                            # Inital ft4
+    sw      x0, (164+20)(t0)                            # Inital ft5
+    sw      x0, (168+20)(t0)                            # Inital ft5
+    sw      x0, (172+20)(t0)                            # Inital ft6
+    sw      x0, (176+20)(t0)                            # Inital ft6
+    sw      x0, (180+20)(t0)                            # Inital ft7
+    sw      x0, (184+20)(t0)                            # Inital ft7
+    sw      x0, (188+20)(t0)                            # Inital fs0
+    sw      x0, (192+20)(t0)                            # Inital fs0
+    sw      x0, (196+20)(t0)                            # Inital fs1
+    sw      x0, (200+20)(t0)                            # Inital fs1
+    sw      x0, (204+20)(t0)                            # Inital fa0
+    sw      x0, (208+20)(t0)                            # Inital fa0
+    sw      x0, (212+20)(t0)                            # Inital fa1
+    sw      x0, (216+20)(t0)                            # Inital fa1
+    sw      x0, (220+20)(t0)                            # Inital fa2
+    sw      x0, (224+20)(t0)                            # Inital fa2
+    sw      x0, (228+20)(t0)                            # Inital fa3
+    sw      x0, (232+20)(t0)                            # Inital fa3
+    sw      x0, (236+20)(t0)                            # Inital fa4
+    sw      x0, (240+20)(t0)                            # Inital fa4
+    sw      x0, (244+20)(t0)                            # Inital fa5
+    sw      x0, (248+20)(t0)                            # Inital fa5
+    sw      x0, (252+20)(t0)                            # Inital fa6
+    sw      x0, (256+20)(t0)                            # Inital fa6
+    sw      x0, (260+20)(t0)                            # Inital fa7
+    sw      x0, (264+20)(t0)                            # Inital fa7
+    sw      x0, (268+20)(t0)                            # Inital fs2
+    sw      x0, (272+20)(t0)                            # Inital fs2
+    sw      x0, (276+20)(t0)                            # Inital fs3
+    sw      x0, (280+20)(t0)                            # Inital fs3
+    sw      x0, (284+20)(t0)                            # Inital fs4
+    sw      x0, (288+20)(t0)                            # Inital fs4
+    sw      x0, (292+20)(t0)                            # Inital fs5
+    sw      x0, (296+20)(t0)                            # Inital fs5
+    sw      x0, (300+20)(t0)                            # Inital fs6
+    sw      x0, (304+20)(t0)                            # Inital fs6
+    sw      x0, (308+20)(t0)                            # Inital fs7
+    sw      x0, (312+20)(t0)                            # Inital fs7
+    sw      x0, (316+20)(t0)                            # Inital fs8
+    sw      x0, (320+20)(t0)                            # Inital fs8
+    sw      x0, (324+20)(t0)                            # Inital fs9
+    sw      x0, (328+20)(t0)                            # Inital fs9
+    sw      x0, (332+20)(t0)                            # Inital fs10
+    sw      x0, (336+20)(t0)                            # Inital fs10
+    sw      x0, (340+20)(t0)                            # Inital fs11
+    sw      x0, (344+20)(t0)                            # Inital fs11
+    sw      x0, (348+20)(t0)                            # Inital ft8
+    sw      x0, (352+20)(t0)                            # Inital ft8
+    sw      x0, (356+20)(t0)                            # Inital ft9
+    sw      x0, (360+20)(t0)                            # Inital ft9
+    sw      x0, (364+20)(t0)                            # Inital ft10
+    sw      x0, (368+20)(t0)                            # Inital ft10
+    sw      x0, (372+20)(t0)                            # Inital ft11
+    sw      x0, (376+20)(t0)                            # Inital ft11
     csrr    a1, fcsr                                    # Read fcsr and use it for initial value for each thread
-    sw      a1, 384(t0)                                 # Initial fscr
-    sw      x0, 388(t0)                                 # Reserved word (0)
+    sw      a1, (384+20)(t0)                            # Initial fscr
+    sw      x0, (388+20)(t0)                            # Reserved word (0)
 #endif
 #else
-    sw      x0, 124(t0)                                 # Reserved word (0)
+    sw      x0, (124+20)(t0)                            # Reserved word (0)
 #endif
 
     /* Setup stack pointer.  */

@@ -183,8 +183,6 @@ typedef struct {
     bool enable_refresh_lock;                           /*!< Enable Refresh lock */
     ewdg_refresh_unlock_method_t refresh_unlock_method; /*!< Method to unlock REFRESH_REG */
 
-    bool enable_overtime_self_clear;                    /*!< Enable Over time self clear */
-
     bool keep_running_in_debug_mode;                    /*!< Keep running even in debug mode */
     ewdg_low_power_mode_t low_power_mode;               /*!< Watchdog behavior in low power mode */
     /*!
@@ -311,7 +309,7 @@ static inline uint32_t ewdg_get_timeout_reset_ticks(EWDG_Type *ptr)
     return ptr->OT_RST_VAL;
 }
 
-#if !defined(EWDG_SOC_SUPPORT_TIMEOUT_INTERRUPT) || (EWDG_SOC_SUPPORT_TIMEOUT_INTERRUPT == 1)
+#if defined(HPM_IP_FEATURE_EWDG_SOC_SUPPORT_TIMEOUT_INTERRUPT) && (HPM_IP_FEATURE_EWDG_SOC_SUPPORT_TIMEOUT_INTERRUPT == 1)
 /**
  * @brief Get the Timeout Interrupt ticks
  * @param [in] ptr EWDG base

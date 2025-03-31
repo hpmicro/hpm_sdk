@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -36,24 +36,6 @@ static err_t client_send(void *arg, struct tcp_pcb *tpcb)
     return ERR_OK;
 }
 
-static err_t client_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
-{
-    tcp_client_t *tcp_pcb_arg = (tcp_client_t *)arg;
-
-    if (p != NULL) {
-        tcp_recved(tpcb, p->tot_len);
-        tcp_write(tpcb, p->payload, p->tot_len, TCP_WRITE_FLAG_COPY);
-        memset(p->payload, 0, p->tot_len);
-        pbuf_free(p);
-    } else if (err == ERR_OK) {
-        printf("Server has been disconnected!\n");
-        tcp_close(tpcb);
-        tcp_pcb_arg->state = false;
-    }
-
-    return ERR_OK;
-}
-
 static err_t client_connected(void *arg, struct tcp_pcb *pcb, err_t err)
 {
     (void)err;
@@ -71,7 +53,6 @@ static err_t client_connected(void *arg, struct tcp_pcb *pcb, err_t err)
     tcp_pcb_arg->p = NULL;
 
     tcp_poll(pcb, client_send, TCP_POLL_INTERVAL);
-    tcp_recv(pcb, client_recv);
 
     return ERR_OK;
 }
@@ -93,7 +74,7 @@ void tcp_client_connect(void)
     struct tcp_pcb *pcb = NULL;
 
     pcb = tcp_new();
-    IP4_ADDR(&server_ip, REMOTE_IP_ADDR0, REMOTE_IP_ADDR1, REMOTE_IP_ADDR2, REMOTE_IP_ADDR3);
+    ip4addr_aton(HPM_STRINGIFY(REMOTE_IP_CONFIG), &server_ip);
     tcp_err(pcb, client_err);
     tcp_pcb_cb_arg.pcb = pcb;
     tcp_arg(pcb, &tcp_pcb_cb_arg);

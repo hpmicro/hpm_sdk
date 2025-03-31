@@ -25,6 +25,18 @@ extern "C" {
 #endif
 
 /**
+ * @brief Check register value retention enable status when power down occurs
+ *
+ * @param[in] ptr BPOR base address
+ *
+ * @return true if register value retention is enabled, false otherwise.
+ */
+static inline bool bpor_is_reg_value_retention_enable(BPOR_Type *ptr)
+{
+    return (ptr->POR_CONFIG & BPOR_POR_CONFIG_RETENTION_MASK) ? true : false;
+}
+
+/**
  * @brief Enable register value retention when power down occurs
  *
  * @param[in] ptr BPOR base address

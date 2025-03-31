@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -14,6 +14,34 @@ static uint32_t tsw_ns_to_systicks(uint32_t nanoseconds, uint32_t busfreq)
     return (uint32_t)((uint64_t)nanoseconds * busfreq / TSW_NS_IN_ONE_SEC);
 }
 
+static hpm_stat_t tsw_send_frame_setup(TSW_Type *ptr, uint8_t *buffer, uint16_t length, uint8_t id)
+{
+    uint32_t timeout;
+
+    /* set timeout */
+    timeout = TSW_MM2S_DMA_WAIT_CBUFF_TIMEOUT;
+
+    /* make sure that CBUFF is not full */
+    do {
+
+    } while (TSW_MM2S_DMA_SR_CBUFF_GET(ptr->MM2S_DMA_SR) && timeout--);
+
+    if (timeout == 0) {
+        return status_timeout;
+    }
+
+    /* Set ADDRL */
+    ptr->MM2S_ADDRLO = (uint32_t)buffer;
+
+    /* Set Length */
+    ptr->MM2S_LENGTH = length;
+
+    /* Set Ctrl */
+    ptr->MM2S_CTRL = TSW_MM2S_CTRL_GO_MASK | TSW_MM2S_CTRL_ID_SET(id);
+
+    return status_success;
+}
+
 void tsw_get_default_dma_config(tsw_dma_config_t *config)
 {
     config->soe = false;
@@ -23,7 +51,7 @@ void tsw_get_default_dma_config(tsw_dma_config_t *config)
 
 hpm_stat_t tsw_ep_set_mdio_config(TSW_Type *ptr, uint8_t port, uint8_t clk_div)
 {
-    ptr->TSNPORT[port].MAC[TSW_RXFIFO_E1].MAC_MDIO_CFG = TSW_TSNPORT_MAC_MAC_MDIO_CFG_ENABLE_MASK | TSW_TSNPORT_MAC_MAC_MDIO_CFG_MDC_CLKDIV_SET(clk_div);
+    ptr->TSNPORT[port].MAC[tsw_mac_type_emac].MAC_MDIO_CFG = TSW_TSNPORT_MAC_MAC_MDIO_CFG_ENABLE_MASK | TSW_TSNPORT_MAC_MAC_MDIO_CFG_MDC_CLKDIV_SET(clk_div);
 
     return status_success;
 }
@@ -34,36 +62,36 @@ hpm_stat_t tsw_ep_mdio_read(TSW_Type *ptr, uint8_t port, uint32_t phy_addr, uint
         return status_invalid_argument;
     }
 
-    ptr->TSNPORT[port].MAC[TSW_RXFIFO_E1].MAC_MDIO_CTRL = TSW_TSNPORT_MAC_MAC_MDIO_CTRL_OP_SET(MAC_MDIO_CTRL_OP_RD)
+    ptr->TSNPORT[port].MAC[tsw_mac_type_emac].MAC_MDIO_CTRL = TSW_TSNPORT_MAC_MAC_MDIO_CTRL_OP_SET(MAC_MDIO_CTRL_OP_RD)
                                                         | TSW_TSNPORT_MAC_MAC_MDIO_CTRL_PHYAD_SET(phy_addr)
                                                         | TSW_TSNPORT_MAC_MAC_MDIO_CTRL_REGAD_SET(reg_addr)
                                                         | TSW_TSNPORT_MAC_MAC_MDIO_CTRL_INIT_SET(1);
 
     do {
 
-    } while (TSW_TSNPORT_MAC_MAC_MDIO_CTRL_READY_GET(ptr->TSNPORT[port].MAC[TSW_RXFIFO_E1].MAC_MDIO_CTRL) == 0);
+    } while (TSW_TSNPORT_MAC_MAC_MDIO_CTRL_READY_GET(ptr->TSNPORT[port].MAC[tsw_mac_type_emac].MAC_MDIO_CTRL) == 0);
 
-     *data = TSW_TSNPORT_MAC_MAC_MDIO_RD_DATA_RD_DATA_GET(ptr->TSNPORT[port].MAC[TSW_RXFIFO_E1].MAC_MDIO_RD_DATA);
+     *data = TSW_TSNPORT_MAC_MAC_MDIO_RD_DATA_RD_DATA_GET(ptr->TSNPORT[port].MAC[tsw_mac_type_emac].MAC_MDIO_RD_DATA);
 
     return status_success;
 }
 
 hpm_stat_t tsw_ep_mdio_write(TSW_Type *ptr, uint8_t port, uint32_t phy_addr, uint32_t reg_addr, uint16_t data)
 {
-    ptr->TSNPORT[port].MAC[TSW_RXFIFO_E1].MAC_MDIO_WR_DATA = data;
-    ptr->TSNPORT[port].MAC[TSW_RXFIFO_E1].MAC_MDIO_CTRL = TSW_TSNPORT_MAC_MAC_MDIO_CTRL_OP_SET(MAC_MDIO_CTRL_OP_WR)
+    ptr->TSNPORT[port].MAC[tsw_mac_type_emac].MAC_MDIO_WR_DATA = data;
+    ptr->TSNPORT[port].MAC[tsw_mac_type_emac].MAC_MDIO_CTRL = TSW_TSNPORT_MAC_MAC_MDIO_CTRL_OP_SET(MAC_MDIO_CTRL_OP_WR)
                                                         | TSW_TSNPORT_MAC_MAC_MDIO_CTRL_PHYAD_SET(phy_addr)
                                                         | TSW_TSNPORT_MAC_MAC_MDIO_CTRL_REGAD_SET(reg_addr)
                                                         | TSW_TSNPORT_MAC_MAC_MDIO_CTRL_INIT_SET(1);
 
     do {
 
-    } while (TSW_TSNPORT_MAC_MAC_MDIO_CTRL_READY_GET(ptr->TSNPORT[port].MAC[TSW_RXFIFO_E1].MAC_MDIO_CTRL) == 0);
+    } while (TSW_TSNPORT_MAC_MAC_MDIO_CTRL_READY_GET(ptr->TSNPORT[port].MAC[tsw_mac_type_emac].MAC_MDIO_CTRL) == 0);
 
     return status_success;
 }
 
-hpm_stat_t tsw_ep_enable_mac_ctrl(TSW_Type *ptr, uint8_t port, uint8_t mac_type)
+hpm_stat_t tsw_ep_enable_mac_ctrl(TSW_Type *ptr, uint8_t port, tsw_mac_type_t mac_type)
 {
     uint32_t temp;
 
@@ -74,7 +102,7 @@ hpm_stat_t tsw_ep_enable_mac_ctrl(TSW_Type *ptr, uint8_t port, uint8_t mac_type)
     return status_success;
 }
 
-hpm_stat_t tsw_ep_disable_mac_ctrl(TSW_Type *ptr, uint8_t port, uint8_t mac_type)
+hpm_stat_t tsw_ep_disable_mac_ctrl(TSW_Type *ptr, uint8_t port, tsw_mac_type_t mac_type)
 {
     uint32_t temp;
 
@@ -89,7 +117,7 @@ hpm_stat_t tsw_ep_disable_mac_ctrl(TSW_Type *ptr, uint8_t port, uint8_t mac_type
     return status_success;
 }
 
-hpm_stat_t tsw_ep_enable_all_mac_ctrl(TSW_Type *ptr, uint8_t mac_type)
+hpm_stat_t tsw_ep_enable_all_mac_ctrl(TSW_Type *ptr, tsw_mac_type_t mac_type)
 {
     for (uint8_t i = 0; i <= TSW_TSNPORT_PORT3; i++) {
         tsw_ep_enable_mac_ctrl(ptr, i, mac_type);
@@ -98,7 +126,7 @@ hpm_stat_t tsw_ep_enable_all_mac_ctrl(TSW_Type *ptr, uint8_t mac_type)
     return status_success;
 }
 
-hpm_stat_t tsw_ep_disable_all_mac_ctrl(TSW_Type *ptr, uint8_t mac_type)
+hpm_stat_t tsw_ep_disable_all_mac_ctrl(TSW_Type *ptr, tsw_mac_type_t mac_type)
 {
     for (uint8_t i = 0; i <= TSW_TSNPORT_PORT3; i++) {
         tsw_ep_disable_mac_ctrl(ptr, i, mac_type);
@@ -116,13 +144,13 @@ hpm_stat_t tsw_ep_set_mac_addr(TSW_Type *ptr, uint8_t port, uint8_t *mac_addr, b
     }
 
     /* MAC must be disabled when changing mode */
-    temp = ptr->TSNPORT[port].MAC[TSW_RXFIFO_E1].MAC_MAC_CTRL;
+    temp = ptr->TSNPORT[port].MAC[tsw_mac_type_emac].MAC_MAC_CTRL;
     if (TSW_TSNPORT_MAC_MAC_MAC_CTRL_RX_EN_GET(temp) || TSW_TSNPORT_MAC_MAC_MAC_CTRL_TX_EN_GET(temp)) {
         return status_fail;
     }
 
-    ptr->TSNPORT[port].MAC[TSW_RXFIFO_E1].MAC_MACADDR_L = MAC_LO(mac_addr);
-    ptr->TSNPORT[port].MAC[TSW_RXFIFO_E1].MAC_MACADDR_H = MAC_HI(mac_addr) | TSW_TSNPORT_MAC_MAC_MACADDR_H_PROMISC_SET(promisc);
+    ptr->TSNPORT[port].MAC[tsw_mac_type_emac].MAC_MACADDR_L = MAC_LO(mac_addr);
+    ptr->TSNPORT[port].MAC[tsw_mac_type_emac].MAC_MACADDR_H = MAC_HI(mac_addr) | TSW_TSNPORT_MAC_MAC_MACADDR_H_PROMISC_SET(promisc);
 
     return status_success;
 }
@@ -132,7 +160,7 @@ hpm_stat_t tsw_ep_set_mac_mode(TSW_Type *ptr, uint8_t port, uint8_t gmii)
     uint32_t temp;
 
     /* MAC must be disabled when changing mode */
-    temp = ptr->TSNPORT[port].MAC[TSW_RXFIFO_E1].MAC_MAC_CTRL;
+    temp = ptr->TSNPORT[port].MAC[tsw_mac_type_emac].MAC_MAC_CTRL;
     if (TSW_TSNPORT_MAC_MAC_MAC_CTRL_RX_EN_GET(temp) || TSW_TSNPORT_MAC_MAC_MAC_CTRL_TX_EN_GET(temp)) {
         return status_fail;
     }
@@ -144,7 +172,29 @@ hpm_stat_t tsw_ep_set_mac_mode(TSW_Type *ptr, uint8_t port, uint8_t gmii)
          | TSW_TSNPORT_MAC_MAC_MAC_CTRL_PHYSEL_SET(1)
          | TSW_TSNPORT_MAC_MAC_MAC_CTRL_GMIIMODE_SET(gmii);
 
-    ptr->TSNPORT[port].MAC[TSW_RXFIFO_E1].MAC_MAC_CTRL = temp;
+    ptr->TSNPORT[port].MAC[tsw_mac_type_emac].MAC_MAC_CTRL = temp;
+
+    return status_success;
+}
+
+hpm_stat_t tsw_ep_set_xmac_mode(TSW_Type *ptr, uint8_t port, uint8_t gmii, tsw_mac_type_t mac_type)
+{
+    uint32_t temp;
+
+    /* MAC must be disabled when changing mode */
+    temp = ptr->TSNPORT[port].MAC[mac_type].MAC_MAC_CTRL;
+    if (TSW_TSNPORT_MAC_MAC_MAC_CTRL_RX_EN_GET(temp) || TSW_TSNPORT_MAC_MAC_MAC_CTRL_TX_EN_GET(temp)) {
+        return status_fail;
+    }
+
+    temp &= ~(TSW_TSNPORT_MAC_MAC_MAC_CTRL_CLKSEL_MASK | TSW_TSNPORT_MAC_MAC_MAC_CTRL_PHYSEL_MASK | TSW_TSNPORT_MAC_MAC_MAC_CTRL_GMIIMODE_MASK);
+    temp &= ~TSW_TSNPORT_MAC_MAC_MAC_CTRL_RESSTAT_MASK;
+
+    temp |= TSW_TSNPORT_MAC_MAC_MAC_CTRL_CLKSEL_SET(1)
+         | TSW_TSNPORT_MAC_MAC_MAC_CTRL_PHYSEL_SET(1)
+         | TSW_TSNPORT_MAC_MAC_MAC_CTRL_GMIIMODE_SET(gmii);
+
+    ptr->TSNPORT[port].MAC[mac_type].MAC_MAC_CTRL = temp;
 
     return status_success;
 }
@@ -171,27 +221,39 @@ void tsw_init_send(TSW_Type *ptr, tsw_dma_config_t *config)
 
 hpm_stat_t tsw_send_frame(TSW_Type *ptr, uint8_t *buffer, uint16_t length, uint8_t id)
 {
+    /* TX descriptor setup */
+    tsw_send_frame_setup(ptr, buffer, length, id);
+
+    /* Get response */
+    ptr->MM2S_RESP;
+
+    return status_success;
+}
+
+hpm_stat_t tsw_send_frame_check_response(TSW_Type *ptr, uint8_t *buffer, uint16_t length, uint8_t id)
+{
+    uint32_t timeout;
     uint32_t resp;
 
-    /* Set ADDRL */
-    ptr->MM2S_ADDRLO = (uint32_t)buffer;
+    /* TX descriptor setup */
+    tsw_send_frame_setup(ptr, buffer, length, id);
 
-    /* Set Length */
-    ptr->MM2S_LENGTH = length;
+    /* Set timeout */
+    timeout = TSW_MM2S_DMA_CHECK_RBUFE_TIMEOUT;
 
-    /* Set Ctrl */
-    ptr->MM2S_CTRL |= TSW_MM2S_CTRL_GO_MASK | TSW_MM2S_CTRL_ID_SET(id);
-
-    /* Wait for DMA to finish transmission */
+    /* Wait for getting a respose */
     do {
-        /* TODO: add retry cnt */
-    } while (TSW_MM2S_DMA_SR_CBUFF_GET(ptr->MM2S_DMA_SR));
+
+    } while (TSW_MM2S_DMA_SR_RBUFE_GET(ptr->MM2S_DMA_SR) && timeout--);
+
+    if (timeout == 0) {
+        return status_timeout;
+    }
 
     /* Get response */
     resp = ptr->MM2S_RESP;
 
     if (TSW_MM2S_RESP_ID_GET(resp) == id) {
-
         /* Check decode error */
         if (TSW_MM2S_RESP_DECERR_GET(resp)) {
             return status_fail;
@@ -199,7 +261,7 @@ hpm_stat_t tsw_send_frame(TSW_Type *ptr, uint8_t *buffer, uint16_t length, uint8
 
         /* Check slave error */
         if (TSW_MM2S_RESP_SLVERR_GET(resp)) {
-           return status_fail;
+            return status_fail;
         }
     } else {
         return status_fail;
@@ -309,6 +371,20 @@ void tsw_set_port_speed(TSW_Type *ptr, uint8_t port, uint8_t speed)
 {
     ptr->TSNPORT[port].GPR_CTRL2 &= ~TSW_TSNPORT_GPR_CTRL2_MAC_SPEED_MASK;
     ptr->TSNPORT[port].GPR_CTRL2 |= TSW_TSNPORT_GPR_CTRL2_MAC_SPEED_SET(speed);
+
+    if (TSW_TSNPORT_MAC_MAC_MAC_CTRL_TX_EN_GET(ptr->TSNPORT[port].MAC[tsw_mac_type_emac].MAC_MAC_CTRL) ||
+        TSW_TSNPORT_MAC_MAC_MAC_CTRL_RX_EN_GET(ptr->TSNPORT[port].MAC[tsw_mac_type_emac].MAC_MAC_CTRL)) {
+        tsw_ep_disable_mac_ctrl(ptr, port, tsw_mac_type_emac);
+        tsw_ep_set_xmac_mode(ptr, port, speed == tsw_port_speed_1000mbps ? tsw_mac_mode_gmii : tsw_mac_mode_mii, tsw_mac_type_emac);
+        tsw_ep_enable_mac_ctrl(ptr, port, tsw_mac_type_emac);
+    }
+
+    if (TSW_TSNPORT_MAC_MAC_MAC_CTRL_TX_EN_GET(ptr->TSNPORT[port].MAC[tsw_mac_type_pmac].MAC_MAC_CTRL) ||
+        TSW_TSNPORT_MAC_MAC_MAC_CTRL_RX_EN_GET(ptr->TSNPORT[port].MAC[tsw_mac_type_pmac].MAC_MAC_CTRL)) {
+        tsw_ep_disable_mac_ctrl(ptr, port, tsw_mac_type_pmac);
+        tsw_ep_set_xmac_mode(ptr, port, speed == tsw_port_speed_1000mbps ? tsw_mac_mode_gmii : tsw_mac_mode_mii, tsw_mac_type_pmac);
+        tsw_ep_enable_mac_ctrl(ptr, port, tsw_mac_type_pmac);
+    }
 }
 
 void tsw_set_lookup_table(TSW_Type *ptr, uint16_t entry_num, uint8_t dest_port, uint64_t dest_mac)
@@ -372,12 +448,12 @@ void tsw_clear_cam(TSW_Type *ptr)
 
 void tsw_enable_store_forward_mode(TSW_Type *ptr, uint8_t port)
 {
-    ptr->TSNPORT[port].RXFIFO[TSW_RXFIFO_E1].SW_CTRL_IGRESS_RX_FDFIFO_E_OUT_CONFIG |= TSW_TSNPORT_RXFIFO_SW_CTRL_IGRESS_RX_FDFIFO_E_OUT_CONFIG_MODE_STORE_FW_MASK;
+    ptr->TSNPORT[port].RXFIFO[tsw_mac_type_emac].SW_CTRL_IGRESS_RX_FDFIFO_E_OUT_CONFIG |= TSW_TSNPORT_RXFIFO_SW_CTRL_IGRESS_RX_FDFIFO_E_OUT_CONFIG_MODE_STORE_FW_MASK;
 }
 
 void tsw_disable_store_forward_mode(TSW_Type *ptr, uint8_t port)
 {
-    ptr->TSNPORT[port].RXFIFO[TSW_RXFIFO_E1].SW_CTRL_IGRESS_RX_FDFIFO_E_OUT_CONFIG &= ~TSW_TSNPORT_RXFIFO_SW_CTRL_IGRESS_RX_FDFIFO_E_OUT_CONFIG_MODE_STORE_FW_MASK;
+    ptr->TSNPORT[port].RXFIFO[tsw_mac_type_emac].SW_CTRL_IGRESS_RX_FDFIFO_E_OUT_CONFIG &= ~TSW_TSNPORT_RXFIFO_SW_CTRL_IGRESS_RX_FDFIFO_E_OUT_CONFIG_MODE_STORE_FW_MASK;
 }
 
 hpm_stat_t tsw_get_rtc_time_increment(TSW_Type *ptr, uint32_t *increment)
@@ -503,7 +579,7 @@ hpm_stat_t tsw_tsync_update_data(TSW_Type *ptr, uint8_t port, uint32_t bin, uint
     }
 
     /* calc destination pointer, set source pointer */
-    dst = (uint32_t *)(ptr->TSNPORT[port].BIN[bin].TXDATA[binofs / TSW_SOC_DATA_BUS_WIDTH]);
+    dst = (uint32_t *)&(ptr->TSNPORT[port].BIN[bin].TXDATA[binofs / TSW_SOC_DATA_BUS_WIDTH]);
     src = (uint32_t *)srcaddr;
 
     /* copy data */

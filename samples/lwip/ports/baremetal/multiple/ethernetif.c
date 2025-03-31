@@ -44,7 +44,7 @@
 */
 
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -156,6 +156,10 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
     enet_tx_desc_t  *tx_desc_list_cur;
     enet_base_t *base = (enet_base_t *)board_get_enet_base(netif->num);
 
+    if (netif == NULL || p == NULL) {
+        return ERR_VAL;
+    }
+
     tx_desc_list_cur = desc[netif->num].tx_desc_list_cur;
 
 #if defined(LWIP_PTP) && LWIP_PTP
@@ -214,6 +218,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
         }
         /* Prepare transmit descriptors to give to DMA*/
         frame_length += 4;
+        l1c_dc_writeback(((uint32_t)p->payload + (MEM_ALIGNMENT - 1)) & ~(MEM_ALIGNMENT - 1), ENET_TX_BUFF_SIZE);
 
         #if defined(LWIP_PTP) && LWIP_PTP
             enet_prepare_tx_desc_with_ts_record(base, &desc[netif->num].tx_desc_list_cur, &desc[netif->num].tx_control_config, frame_length, desc.tx_buff_cfg.size, &timestamp);
@@ -295,6 +300,7 @@ static struct pbuf *low_level_input(struct netif *netif)
 
             /* pass the buffer to pbuf */
             q->payload = (void *)buffer;
+            l1c_dc_invalidate((uint32_t)buffer, ENET_RX_BUFF_SIZE);
             buffer_offset = buffer_offset + bytes_left_to_copy;
 
             #if defined(LWIP_PTP) && LWIP_PTP

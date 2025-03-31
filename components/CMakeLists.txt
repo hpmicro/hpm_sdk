@@ -25,3 +25,6 @@ add_subdirectory_ifdef(CONFIG_HPM_PLB_LIN_CLOCK_DETECTION plb/lin_clock_detectio
 add_subdirectory_ifdef(CONFIG_HPM_PLB_FILTER plb/filter)
 add_subdirectory_ifdef(CONFIG_HPM_PMBUS pmbus smbus)
 add_subdirectory_ifdef(CONFIG_HPM_I2C i2c)
+add_subdirectory_ifdef(CONFIG_HPM_JPEG jpeg)
+add_subdirectory_ifdef(CONFIG_HPM_SEGMENT_LED segment_led)
+

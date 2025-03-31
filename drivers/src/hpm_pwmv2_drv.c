@@ -38,7 +38,7 @@ void pwmv2_deinit(PWMV2_Type *pwm_x)
          * @brief Disables pwm force by default to prevent unintended force if the user has not configured pwm force.
          *
          */
-        pwm_x->PWM[i].CFG1 = PWMV2_PWM_CFG1_PWM_FORCE_SEL_SET(pwm_force_none);
+        pwm_x->PWM[i].CFG1 = PWMV2_PWM_CFG1_FORCE_TIME_SET(pwm_force_none);
         pwm_x->PWM[i].DEAD_AREA = 0;
     }
     for (uint8_t i = 0; i < PWMV2_SOC_CAL_COUNT_MAX; i++) {

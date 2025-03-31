@@ -156,6 +156,10 @@ CO_ReturnError_t CO_EM_init(
     uint8_t i;
     CO_ReturnError_t ret = CO_ERROR_NO;
 
+    /* for warnings, if enable CO_CONFIG_EM && CO_CONFIG_EM_CONSUMER, need delete this line */
+    (void)(CANdevRx);
+    (void)(CANdevRxIdx);
+
     /* verify arguments */
     if (em==NULL || emPr==NULL || SDO==NULL || errorStatusBits==NULL || errorStatusBitsSize<6U ||
        errorRegister==NULL || preDefErr==NULL || CANdevTx==NULL

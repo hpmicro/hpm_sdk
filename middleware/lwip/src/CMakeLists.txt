@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2024 HPMicro
+# Copyright (c) 2021-2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 sdk_inc(.)
@@ -40,17 +40,14 @@ sdk_src(netif/ethernet.c)
 sdk_src_ifdef(CONFIG_LWIP_STRERR api/err.c)
 sdk_src_ifdef(CONFIG_LWIP_NETDB api/netdb.c)
 
-sdk_src_ifdef(CONFIG_LWIP_NETCONN_API api/tcpip.c)
-sdk_src_ifdef(CONFIG_LWIP_NETCONN_API api/netbuf.c)
-sdk_src_ifdef(CONFIG_LWIP_NETCONN_API api/api_lib.c)
-sdk_src_ifdef(CONFIG_LWIP_NETCONN_API api/api_msg.c)
-sdk_src_ifdef(CONFIG_LWIP_NETCONN_API api/netifapi.c)
+if (CONFIG_LWIP_NETCONN_API OR CONFIG_LWIP_SOCKET_API)
+sdk_src(api/tcpip.c)
+sdk_src(api/netbuf.c)
+sdk_src(api/api_lib.c)
+sdk_src(api/api_msg.c)
+sdk_src(api/netifapi.c)
+endif()
 
-sdk_src_ifdef(CONFIG_LWIP_SOCKET_API api/tcpip.c)
-sdk_src_ifdef(CONFIG_LWIP_SOCKET_API api/netbuf.c)
-sdk_src_ifdef(CONFIG_LWIP_SOCKET_API api/api_lib.c)
-sdk_src_ifdef(CONFIG_LWIP_SOCKET_API api/api_msg.c)
-sdk_src_ifdef(CONFIG_LWIP_SOCKET_API api/netifapi.c)
 sdk_src_ifdef(CONFIG_LWIP_SOCKET_API api/sockets.c)
 
 sdk_src_ifdef(CONFIG_LWIP_HTTPCLIENT apps/http/http_client.c)

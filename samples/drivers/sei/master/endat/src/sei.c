@@ -15,7 +15,7 @@
 
 int main(void)
 {
-    sei_tranceiver_config_t tranceiver_config = {0};
+    sei_transceiver_config_t transceiver_config = {0};
     sei_data_format_config_t data_format_config = {0};
     sei_engine_config_t engine_config = {0};
     sei_trigger_input_config_t trigger_input_conifg = {0};
@@ -32,16 +32,16 @@ int main(void)
 
     sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, false);
 
-    /* [1] tranceiver config */
-    tranceiver_config.mode = sei_synchronous_master_mode;
-    tranceiver_config.tri_sample = false;
-    tranceiver_config.src_clk_freq = clock_get_frequency(BOARD_MOTOR_CLK_NAME);
-    tranceiver_config.synchronous_master_config.data_idle_high_z = false;
-    tranceiver_config.synchronous_master_config.data_idle_state = sei_idle_low_state;
-    tranceiver_config.synchronous_master_config.clock_idle_high_z = false;
-    tranceiver_config.synchronous_master_config.clock_idle_state = sei_idle_high_state;
-    tranceiver_config.synchronous_master_config.baudrate = 1000000;
-    sei_tranceiver_config_init(BOARD_SEI, BOARD_SEI_CTRL, &tranceiver_config);
+    /* [1] transceiver config */
+    transceiver_config.mode = sei_synchronous_master_mode;
+    transceiver_config.tri_sample = false;
+    transceiver_config.src_clk_freq = clock_get_frequency(BOARD_MOTOR_CLK_NAME);
+    transceiver_config.synchronous_master_config.data_idle_high_z = false;
+    transceiver_config.synchronous_master_config.data_idle_state = sei_idle_low_state;
+    transceiver_config.synchronous_master_config.clock_idle_high_z = false;
+    transceiver_config.synchronous_master_config.clock_idle_state = sei_idle_high_state;
+    transceiver_config.synchronous_master_config.baudrate = 1000000;
+    sei_transceiver_config_init(BOARD_SEI, BOARD_SEI_CTRL, &transceiver_config);
     sei_set_xcvr_rx_point(BOARD_SEI, BOARD_SEI_CTRL, sei_get_xcvr_ck0_point(BOARD_SEI, BOARD_SEI_CTRL));
     sei_set_xcvr_tx_point(BOARD_SEI, BOARD_SEI_CTRL, sei_get_xcvr_ck0_point(BOARD_SEI, BOARD_SEI_CTRL));
 
@@ -57,7 +57,6 @@ int main(void)
     data_format_config.max_bit = 5;
     data_format_config.min_bit = 0;
     sei_cmd_data_format_config_init(BOARD_SEI, SEI_SELECT_CMD, BOARD_SEI_CTRL, &data_format_config);
-    sei_set_command_value(BOARD_SEI, BOARD_SEI_CTRL, 0x07);
     /* data register 2: recv Error Bit */
     data_format_config.mode = sei_data_mode;
     data_format_config.signed_flag = false;
@@ -204,7 +203,6 @@ int main(void)
     sei_engine_config_init(BOARD_SEI, BOARD_SEI_CTRL, &engine_config);
 
     /* [10] start engine and latch modules */
-    sei_set_trig_input_command_value(BOARD_SEI, BOARD_SEI_CTRL, sei_trig_in_period, 0x07);
 
     state_transition_latch_config.enable = true;
     state_transition_latch_config.output_select = SEI_CTRL_LATCH_TRAN_0_1;
@@ -217,7 +215,11 @@ int main(void)
     sei_state_transition_latch_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_1, &state_transition_latch_config);
 
     sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, true);
+
     /* [11] trigger config */
+    /* When a trigger is generated, the hardware will automatically fill the command register from trigger table command register */
+    sei_set_trig_input_command_value(BOARD_SEI, BOARD_SEI_CTRL, sei_trig_in_period, 0x07);
+
     trigger_input_conifg.trig_period_enable = true;
     trigger_input_conifg.trig_period_arming_mode = sei_arming_direct_exec;
     trigger_input_conifg.trig_period_sync_enable = false;

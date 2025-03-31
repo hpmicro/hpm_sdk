@@ -1,4 +1,4 @@
-# Copyright 2023 hpmicro
+# Copyright 2023,2025 hpmicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 #!/usr/bin/env python3
@@ -159,6 +159,13 @@ def process_cc_lang(config):
     else:
         config["target"]["iar_runtime_lib"] = 1
 
+def convert_iar_cc_defines(config):
+    l = []
+    for i in HELPER.get_definitions(config["target"]["defines"]):
+        # remove leading "-D"
+        l.append(re.sub(r'-D([^ ]+)', lambda m: m.group(1), i))
+    return l
+
 def generate_iar_project(config, out_dir=".", project_dir = None):
     files = config["target"]["sources"].split(",")
     sdk_base = HELPER.fix_path(config["target"]["sdk_base"])
@@ -176,7 +183,6 @@ def generate_iar_project(config, out_dir=".", project_dir = None):
     board_name = config["target"]["board"]
 
     config["target"]["includes"] = HELPER.get_include_path(config, sdk_base, out_dir, [], use_outdir_relpath, "$PROJ_DIR$")
-    config["target"]["defines"] = HELPER.get_definitions(config["target"]["defines"])
     config["target"]["file_structure"] = generate_file_structure(files, sdk_base, out_dir, project_dir, board_dir, board_name, use_outdir_relpath)
     config["target"]["iar_link_symbols"] = HELPER.get_link_symbols(config["target"]["link_symbols"])
     config["target"]["linker"] = HELPER.get_file_path(config["target"]["linker"], sdk_base, out_dir, use_outdir_relpath, "$PROJ_DIR$")
@@ -187,6 +193,8 @@ def generate_iar_project(config, out_dir=".", project_dir = None):
         for lib in config["target"]["iar_link_input"].split(";"):
             libs.append(HELPER.get_file_path(lib.strip().replace('\\', '/'), sdk_base, out_dir, use_outdir_relpath, "$PROJ_DIR$"))
         config["target"]["iar_link_input"] = libs
+
+    config["target"]["defines"] = convert_iar_cc_defines(config)
 
     process_opt_level(config)
     process_extra_options(config)

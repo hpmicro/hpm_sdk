@@ -67,12 +67,14 @@ static void rw_comparison(uint32_t start, uint32_t size_in_byte)
 
 static void init_sram_config(void)
 {
-    femc_config_t config = {0};
     femc_sram_config_t sram_config = {0};
     uint32_t femc_clk_in_hz = board_init_femc_clock();
 
+#ifndef INIT_EXT_RAM_FOR_DATA
+    femc_config_t config = {0};
     femc_default_config(HPM_FEMC, &config);
     femc_init(HPM_FEMC, &config);
+#endif
 
     femc_get_typical_sram_config(HPM_FEMC, &sram_config);
     sram_config.base_address = SRAM_BASE_ADDR;

@@ -43,6 +43,10 @@
 #define SPI_SD_RETRY_COUNT            (5U)
 #endif
 
+#ifndef SPI_SD_DELAY_DEFAULT_US
+#define SPI_SD_DELAY_DEFAULT_US      (100U)
+#endif
+
 static hpm_stat_t send_sdcard_command(uint8_t cmd, uint32_t arg, uint8_t crc);
 static hpm_stat_t read_sdcard_buffer(uint8_t *buf, uint32_t len);
 static hpm_stat_t read_sdcard_info(spi_sdcard_info_t *cardinfo);
@@ -285,9 +289,11 @@ hpm_stat_t sdcard_spi_write_block(uint32_t sector, uint8_t *buffer)
         return status_fail;
     }
     /* Considering SD card compatibility, add busy waiting time */
+#if (SPI_SD_DELAY_DEFAULT_US > 0)
     if (g_spi_dev->delay_us != NULL) {
-        g_spi_dev->delay_us(100);
+        g_spi_dev->delay_us(SPI_SD_DELAY_DEFAULT_US);
     }
+#endif
     if (send_sdcard_command((uint8_t)sdmmc_cmd_write_single_block, sector, (0x7F << 1) | 1) != status_success) {
         g_spi_dev->cs_relese();
         return status_fail;
@@ -391,9 +397,11 @@ hpm_stat_t sdcard_spi_write_multi_block(uint8_t *buffer, uint32_t sector, uint32
         return status_fail;
     }
     /* Considering SD card compatibility, add busy waiting time */
+#if (SPI_SD_DELAY_DEFAULT_US > 0)
     if (g_spi_dev->delay_us != NULL) {
-        g_spi_dev->delay_us(100);
+        g_spi_dev->delay_us(SPI_SD_DELAY_DEFAULT_US);
     }
+#endif
     if (send_sdcard_command((uint8_t)sdmmc_cmd_write_multiple_block, sector, (0x7F << 1) | 1) != status_success) {
         g_spi_dev->cs_relese();
         return status_fail;
@@ -661,7 +669,14 @@ static hpm_stat_t read_sdcard_info(spi_sdcard_info_t *cardinfo)
         cardinfo->csd.write_current_vdd_min     = (temp[9] & 0xE0) >> 5;
         cardinfo->csd.write_current_vdd_max     = (temp[9] & 0x1C) >> 2;
         cardinfo->csd.device_size_multiplier    = (temp[9] & 0x03) << 1;
-         /* Get card total block count and block size. */
+        /* Byte 10 */
+        cardinfo->csd.device_size_multiplier   |= (temp[10] & 0x80) >> 7;
+
+        /* memory capacity= BLOCKNR * BLOCK_LEN
+         * MULT = 2 ^ (c_size_mult + 2)
+         * BLOCKNR = (device_size + 1) * MULT = (device_size + 1) * (2 ^ (c_size_mult + 2))
+         * BLOCK_LEN = 2 ^ (read_block_len)
+         */
         uint32_t c_size_mult = 1UL << (cardinfo->csd.device_size_multiplier + 2);
         cardinfo->block_count = (cardinfo->csd.device_size + 1U) * c_size_mult;
         cardinfo->block_size = (1UL << (cardinfo->csd.read_block_len));
@@ -691,12 +706,15 @@ static hpm_stat_t read_sdcard_info(spi_sdcard_info_t *cardinfo)
     }
 
     /* Byte 10 */
-    if ((uint8_t) ((temp[10] & 0x80) >> 7) != 0U) {
+    if ((uint8_t) ((temp[10] & 0x40) >> 6) != 0U) {
         cardinfo->csd.is_erase_block_enabled = true;
     }
-    cardinfo->csd.erase_sector_size = (temp[10] & 0x7f);
+    cardinfo->csd.erase_sector_size         = (temp[10] & 0x3F) << 1;
+
     /* Byte 11 */
-    cardinfo->csd.write_protect_group_size   = (temp[11] & 0x1F);
+    cardinfo->csd.erase_sector_size        |= (temp[11] & 0x80) >> 7;
+    cardinfo->csd.write_protect_group_size  = (temp[11] & 0x7F);
+
     /* Byte 12 */
     if ((uint8_t) ((temp[12] & 0x80) >> 7) != 0U) {
         cardinfo->csd.is_write_protection_group_enabled = true;

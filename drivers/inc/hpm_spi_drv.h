@@ -35,6 +35,10 @@ typedef enum {
     spi_tx_fifo_threshold_int = SPI_INTREN_TXFIFOINTEN_MASK,
     spi_end_int               = SPI_INTREN_ENDINTEN_MASK,
     spi_slave_cmd_int         = SPI_INTREN_SLVCMDEN_MASK,
+#if defined(HPM_IP_FEATURE_SPI_CS_EDGE_DETECT_FOR_SLAVE) && (HPM_IP_FEATURE_SPI_CS_EDGE_DETECT_FOR_SLAVE == 1)
+    spi_slave_cs_edge_falling_int = SPI_INTREN_CS_NEGEN_MASK,
+    spi_slave_cs_edge_rising_int = SPI_INTREN_CS_POSEN_MASK,
+#endif
 } spi_interrupt_t;
 
 /**
@@ -145,8 +149,8 @@ typedef enum {
 } spi_dummy_count_t;
 
 typedef enum {
-    msb_first = 0,
-    lsb_first,
+    spi_msb_first = 0,
+    spi_lsb_first,
 } spi_shift_direction_t;
 
 /**
@@ -1200,12 +1204,34 @@ static inline void spi_set_shift_direction(SPI_Type *ptr, spi_shift_direction_t 
  * @brief get spi shift direction
  *
  * @param [in] ptr SPI base address
- * @retval spi_shift_direction_t msb_first if frist MSB
+ * @retval spi_shift_direction_t spi_msb_first if frist MSB
  */
 static inline spi_shift_direction_t spi_get_shift_direction(SPI_Type *ptr)
 {
     return (spi_shift_direction_t)SPI_TRANSFMT_LSB_GET(ptr->TRANSFMT);
 }
+
+#if defined(HPM_IP_FEATURE_SPI_DMA_TX_REQ_AFTER_CMD_FO_MASTER) && (HPM_IP_FEATURE_SPI_DMA_TX_REQ_AFTER_CMD_FO_MASTER == 1)
+/**
+ * @brief Enable DMA tx req and TXFIFOINT work after to write CMD
+ *
+ * @param ptr SPI base address
+ */
+static inline void spi_master_enable_tx_dma_request_after_cmd_write(SPI_Type *ptr)
+{
+    ptr->CTRL |= SPI_CTRL_CMD_OP_MASK;
+}
+
+/**
+ * @brief Disable DMA tx req and TXFIFOINT work after to write CMD
+ *
+ * @param ptr SPI base address
+ */
+static inline void spi_master_disable_tx_dma_request_after_cmd_write(SPI_Type *ptr)
+{
+    ptr->CTRL &= ~SPI_CTRL_CMD_OP_MASK;
+}
+#endif
 
 /**
  * @}

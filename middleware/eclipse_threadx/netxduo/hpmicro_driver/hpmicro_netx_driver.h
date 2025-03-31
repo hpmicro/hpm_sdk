@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -113,5 +113,5 @@ typedef struct NX_DRIVER_INFORMATION_STRUCT {
 
 VOID sys_timer_callback(VOID);
 VOID _nx_driver_hpm(NX_IP_DRIVER *driver_req_ptr);
-
+UINT nx_ipv4addr_aton(const CHAR *cp, UINT *addr);
 #endif /* _HPMICRO_NETX_DRIVER_H_ */

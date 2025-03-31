@@ -383,8 +383,8 @@ void init_trigger_mux(TRGM_Type *ptr)
 
     trgm_output_cfg.invert = false;
     trgm_output_cfg.type   = trgm_output_same_as_input;
-    trgm_output_cfg.input  = BOARD_BLDC_TRIGMUX_IN_NUM;
-    trgm_output_config(ptr, BOARD_BLDC_TRG_NUM, &trgm_output_cfg);
+    trgm_output_cfg.input  = BOARD_BLDC_PWM_TRG_ADC;
+    trgm_output_config(ptr, BOARD_BLDC_TRG_ADC, &trgm_output_cfg);
 }
 
 SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_ADC_PHASE_IRQn, isr_adc)

@@ -59,7 +59,7 @@ int main(void)
     board_init_spi_pins(TEST_SPI);
     dma_mgr_init();
     hpm_spi_get_default_init_config(&init_config);
-    init_config.direction = msb_first;
+    init_config.direction = spi_msb_first;
     init_config.mode = spi_slave_mode;
     init_config.clk_phase = spi_sclk_sampling_odd_clk_edges;
     init_config.clk_polarity = spi_sclk_low_idle;
@@ -72,8 +72,8 @@ int main(void)
     }
 
     /* step.2 install dma callback if want use dma */
-    if (hpm_spi_dma_install_callback(TEST_SPI, spi_txdma_complete_callback, spi_rxdma_complete_callback) != status_success) {
-        printf("hpm_spi_dma_install_callback fail\n");
+    if (hpm_spi_dma_mgr_install_callback(TEST_SPI, spi_txdma_complete_callback, spi_rxdma_complete_callback) != status_success) {
+        printf("hpm_spi_dma_mgr_install_callback fail\n");
         while (1) {
         }
     }

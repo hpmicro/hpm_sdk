@@ -63,6 +63,7 @@ typedef struct hpm_lvgl_pdma_flush_context {
     volatile uint16_t area_num_cnt;
     hpm_lvgl_pdma_finish_cb_t finish_cb;
     void *finish_cb_data;
+    void *user_data;
 } hpm_lvgl_pdma_flush_context_t;
 #endif
 
@@ -205,6 +206,7 @@ ATTR_RAMFUNC static int hpm_lvgl_pdma_copy_start(hpm_lvgl_pdma_flush_context_t *
     lv_area_t *area;
     pdma_plane_config_t *plane_src_cfg;
     pdma_output_config_t *output_cfg;
+    hpm_lvgl_context_t *lvgl_ctx = ctx->user_data;
 
     if (ctx->area_num < 1)
         return -1;
@@ -218,24 +220,54 @@ ATTR_RAMFUNC static int hpm_lvgl_pdma_copy_start(hpm_lvgl_pdma_flush_context_t *
     output_cfg = &ctx->cfg.output;
     pdma_stop(pdma_ptr);
 
-    plane_src_cfg->buffer = (uint32_t)src + (area->y1 * ctx->cfg.stride + area->x1 * ctx->cfg.pixel_size);
+    lv_display_t *disp = lvgl_ctx->disp;
+    lv_display_rotation_t lvgl_rotation = lv_display_get_rotation(disp);
+    lv_color_format_t cf = lv_display_get_color_format(disp);
+    uint32_t src_stride;
+    uint32_t dst_stride;
+    lv_area_t dst_area;
+
+    if (lvgl_rotation == LV_DISPLAY_ROTATION_90) {
+        plane_src_cfg->rotate = pdma_rotate_270_degree;
+        src_stride = lv_draw_buf_width_to_stride(lv_display_get_horizontal_resolution(disp), cf);
+        dst_stride = lv_draw_buf_width_to_stride(lv_display_get_vertical_resolution(disp), cf);
+    } else if (lvgl_rotation == LV_DISPLAY_ROTATION_270) {
+        plane_src_cfg->rotate = pdma_rotate_90_degree;
+        src_stride = lv_draw_buf_width_to_stride(lv_display_get_horizontal_resolution(disp), cf);
+        dst_stride = lv_draw_buf_width_to_stride(lv_display_get_vertical_resolution(disp), cf);
+    } else if (lvgl_rotation == LV_DISPLAY_ROTATION_180) {
+        plane_src_cfg->rotate = pdma_rotate_180_degree;
+        src_stride = lv_draw_buf_width_to_stride(lv_display_get_horizontal_resolution(disp), cf);
+        dst_stride = src_stride;
+    } else {
+        plane_src_cfg->rotate = pdma_rotate_0_degree;
+        src_stride = lv_draw_buf_width_to_stride(lv_display_get_horizontal_resolution(disp), cf);
+        dst_stride = src_stride;
+    }
+
+    lv_area_copy(&dst_area, area);
+    lv_display_rotate_area(disp, &dst_area);
+
+    plane_src_cfg->buffer = (uint32_t)src + (area->y1 * src_stride + area->x1 * ctx->cfg.pixel_size);
     plane_src_cfg->width = lv_area_get_width(area);
     plane_src_cfg->height = lv_area_get_height(area);
-    plane_src_cfg->pitch = ctx->cfg.stride;
+    plane_src_cfg->pitch = src_stride;
     plane_src_cfg->background = 0x0;
     pdma_config_planes(pdma_ptr, plane_src_cfg, NULL, NULL);
 
     output_cfg->plane[pdma_plane_src].x = 0;
     output_cfg->plane[pdma_plane_src].y = 0;
-    output_cfg->plane[pdma_plane_src].width = plane_src_cfg->width;
-    output_cfg->plane[pdma_plane_src].height = plane_src_cfg->height;
+    output_cfg->plane[pdma_plane_src].width = lv_area_get_width(&dst_area);
+    output_cfg->plane[pdma_plane_src].height = lv_area_get_height(&dst_area);
+
     output_cfg->alphablend.src_alpha = 0xFF;
     output_cfg->alphablend.src_alpha_op = display_alpha_op_override;
     output_cfg->alphablend.mode = display_alphablend_mode_clear;
-    output_cfg->width = plane_src_cfg->width;
-    output_cfg->height = plane_src_cfg->height;
-    output_cfg->buffer = (uint32_t)dst + (area->y1 * ctx->cfg.stride + area->x1 * ctx->cfg.pixel_size);
-    output_cfg->pitch = ctx->cfg.stride;
+
+    output_cfg->buffer = (uint32_t)dst + (dst_area.y1 * dst_stride + dst_area.x1 * ctx->cfg.pixel_size);
+    output_cfg->width = lv_area_get_width(&dst_area);
+    output_cfg->height = lv_area_get_height(&dst_area);
+    output_cfg->pitch = dst_stride;
     pdma_config_output(pdma_ptr, output_cfg);
 
     pdma_start(pdma_ptr);
@@ -250,6 +282,7 @@ ATTR_RAMFUNC static void hpm_lvgl_pdma_copy_done(hpm_lvgl_pdma_flush_context_t *
     lv_area_t *area;;
     pdma_plane_config_t *plane_src_cfg;
     pdma_output_config_t *output_cfg;
+    hpm_lvgl_context_t *lvgl_ctx = ctx->user_data;
     uint32_t dst, src;
 
     if (ctx->area_num < 1)
@@ -270,24 +303,54 @@ ATTR_RAMFUNC static void hpm_lvgl_pdma_copy_done(hpm_lvgl_pdma_flush_context_t *
     plane_src_cfg = &ctx->cfg.plane_src;
     output_cfg = &ctx->cfg.output;
 
-    plane_src_cfg->buffer = (uint32_t)src + (area->y1 * ctx->cfg.stride + area->x1 * ctx->cfg.pixel_size);
+    lv_display_t *disp = lvgl_ctx->disp;
+    lv_display_rotation_t lvgl_rotation = lv_display_get_rotation(disp);
+    lv_color_format_t cf = lv_display_get_color_format(disp);
+    uint32_t src_stride;
+    uint32_t dst_stride;
+    lv_area_t dst_area;
+
+    if (lvgl_rotation == LV_DISPLAY_ROTATION_90) {
+        plane_src_cfg->rotate = pdma_rotate_270_degree;
+        src_stride = lv_draw_buf_width_to_stride(lv_display_get_horizontal_resolution(disp), cf);
+        dst_stride = lv_draw_buf_width_to_stride(lv_display_get_vertical_resolution(disp), cf);
+    } else if (lvgl_rotation == LV_DISPLAY_ROTATION_270) {
+        plane_src_cfg->rotate = pdma_rotate_90_degree;
+        src_stride = lv_draw_buf_width_to_stride(lv_display_get_horizontal_resolution(disp), cf);
+        dst_stride = lv_draw_buf_width_to_stride(lv_display_get_vertical_resolution(disp), cf);
+    } else if (lvgl_rotation == LV_DISPLAY_ROTATION_180) {
+        plane_src_cfg->rotate = pdma_rotate_180_degree;
+        src_stride = lv_draw_buf_width_to_stride(lv_display_get_horizontal_resolution(disp), cf);
+        dst_stride = src_stride;
+    } else {
+        plane_src_cfg->rotate = pdma_rotate_0_degree;
+        src_stride = lv_draw_buf_width_to_stride(lv_display_get_horizontal_resolution(disp), cf);
+        dst_stride = src_stride;
+    }
+
+    lv_area_copy(&dst_area, area);
+    lv_display_rotate_area(disp, &dst_area);
+
+    plane_src_cfg->buffer = (uint32_t)src + (area->y1 * src_stride + area->x1 * ctx->cfg.pixel_size);
     plane_src_cfg->width = lv_area_get_width(area);
     plane_src_cfg->height = lv_area_get_height(area);
-    plane_src_cfg->pitch = ctx->cfg.stride;
-    plane_src_cfg->background = 0xFFFFFFFF;
+    plane_src_cfg->pitch = src_stride;
+    plane_src_cfg->background = 0x0;
     pdma_config_planes(pdma_ptr, plane_src_cfg, NULL, NULL);
 
     output_cfg->plane[pdma_plane_src].x = 0;
     output_cfg->plane[pdma_plane_src].y = 0;
-    output_cfg->plane[pdma_plane_src].width = plane_src_cfg->width;
-    output_cfg->plane[pdma_plane_src].height = plane_src_cfg->height;
+    output_cfg->plane[pdma_plane_src].width = lv_area_get_width(&dst_area);
+    output_cfg->plane[pdma_plane_src].height = lv_area_get_height(&dst_area);
+
     output_cfg->alphablend.src_alpha = 0xFF;
     output_cfg->alphablend.src_alpha_op = display_alpha_op_override;
     output_cfg->alphablend.mode = display_alphablend_mode_clear;
-    output_cfg->width = plane_src_cfg->width;
-    output_cfg->height = plane_src_cfg->height;
-    output_cfg->buffer = (uint32_t)dst + (area->y1 * ctx->cfg.stride + area->x1 * ctx->cfg.pixel_size);
-    output_cfg->pitch = ctx->cfg.stride;
+
+    output_cfg->buffer = (uint32_t)dst + (dst_area.y1 * dst_stride + dst_area.x1 * ctx->cfg.pixel_size);
+    output_cfg->width = lv_area_get_width(&dst_area);
+    output_cfg->height = lv_area_get_height(&dst_area);
+    output_cfg->pitch = dst_stride;
     pdma_config_output(pdma_ptr, output_cfg);
 
     pdma_start(pdma_ptr);
@@ -434,6 +497,7 @@ ATTR_RAMFUNC void hpm_lvgl_pdma_finish_callback(void *cb_data)
 }
 #endif
 
+
 void hpm_lvgl_display_init(void)
 {
     lv_display_render_mode_t render_mode;
@@ -449,9 +513,23 @@ void hpm_lvgl_display_init(void)
 
     lcdc_fb_buffer = (uint32_t)hpm_lvgl_fb1;
     disp = lv_display_create(HPM_LVGL_LCD_WIDTH, HPM_LVGL_LCD_HEIGHT);
+
+    /*
+     * lvgl support rotation when LV_USE_HPM_PDMA_FLUSH is enabled.
+     *
+     * You can set rotation to:
+     * - LV_DISPLAY_ROTATION_0 (default)
+     * - LV_DISPLAY_ROTATION_90
+     * - LV_DISPLAY_ROTATION_180
+     * - LV_DISPLAY_ROTATION_270
+     */
+#if defined(LV_USE_HPM_PDMA_FLUSH) && LV_USE_HPM_PDMA_FLUSH
+    lv_display_set_rotation(disp, LV_DISPLAY_ROTATION_0);
+#endif
     lv_display_set_buffers(disp, hpm_lvgl_fb0, hpm_lvgl_fb1, HPM_LVGL_FB_SIZE, render_mode);
     lv_display_set_flush_cb(disp, hpm_lvgl_display_flush_cb);
     lv_display_set_user_data(disp, ctx);
+
     ctx->render_mode = render_mode;
     ctx->disp = disp;
 
@@ -463,6 +541,7 @@ void hpm_lvgl_display_init(void)
 
     hpm_lvgl_pdma_init(&ctx->pdma_ctx, HPM_LVGL_PDMA_BASE, LV_COLOR_DEPTH / 8);
     hpm_lvgl_pdma_copy_register_finish_cb(&ctx->pdma_ctx, hpm_lvgl_pdma_finish_callback, ctx);
+    ctx->pdma_ctx.user_data = ctx;
 #endif
 
     memset((void *)lcdc_fb_buffer, 0x00, HPM_LVGL_FB_SIZE);

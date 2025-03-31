@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -47,7 +47,9 @@ typedef struct {
 /*
  * REQSYNC (RO)
  *
- * DMA request synchronization. The DMA request synchronization should be configured to avoid signal integrity problems when the request signal is not clocked by the system bus clock, which the DMA control logic operates in. If the request synchronization is not configured, the request signal is sampled directly without synchronization.
+ * DMA request synchronization. The DMA request synchronization should be configured to avoid signal integrity problems
+ * when the request signal is not clocked by the system bus clock, which the DMA control logic operates in.
+ * If the request synchronization is not configured, the request signal is sampled directly without synchronization.
  * 0x0: Request synchronization is not configured
  * 0x1: Request synchronization is configured
  */
@@ -162,7 +164,8 @@ typedef struct {
 /*
  * CHABORT (WO)
  *
- * Write 1 to bit n to abort channel n. The bits should only be set when the corresponding channels are enabled. Otherwise, the writes will be ignored for channels that are not enabled. (N: Number of channels)
+ * Write 1 to bit n to abort channel n. The bits should only be set when the corresponding channels are enabled.
+ *  Otherwise, the writes will be ignored for channels that are not enabled. (N: Number of channels)
  */
 #define DMA_CHABORT_CHABORT_MASK (0xFFFFFFFFUL)
 #define DMA_CHABORT_CHABORT_SHIFT (0U)
@@ -222,30 +225,6 @@ typedef struct {
 
 /* Bitfield definition for register of struct array CHCTRL: CTRL */
 /*
- * SRCBUSINFIDX (RW)
- *
- * Bus interface index that source data is read from
- * 0x0: Data is read from bus interface 0
- * 0x1: Data is read from bus interface
- */
-#define DMA_CHCTRL_CTRL_SRCBUSINFIDX_MASK (0x80000000UL)
-#define DMA_CHCTRL_CTRL_SRCBUSINFIDX_SHIFT (31U)
-#define DMA_CHCTRL_CTRL_SRCBUSINFIDX_SET(x) (((uint32_t)(x) << DMA_CHCTRL_CTRL_SRCBUSINFIDX_SHIFT) & DMA_CHCTRL_CTRL_SRCBUSINFIDX_MASK)
-#define DMA_CHCTRL_CTRL_SRCBUSINFIDX_GET(x) (((uint32_t)(x) & DMA_CHCTRL_CTRL_SRCBUSINFIDX_MASK) >> DMA_CHCTRL_CTRL_SRCBUSINFIDX_SHIFT)
-
-/*
- * DSTBUSINFIDX (RW)
- *
- * Bus interface index that destination data is written to
- * 0x0: Data is written to bus interface 0
- * 0x1: Data is written to bus interface 1
- */
-#define DMA_CHCTRL_CTRL_DSTBUSINFIDX_MASK (0x40000000UL)
-#define DMA_CHCTRL_CTRL_DSTBUSINFIDX_SHIFT (30U)
-#define DMA_CHCTRL_CTRL_DSTBUSINFIDX_SET(x) (((uint32_t)(x) << DMA_CHCTRL_CTRL_DSTBUSINFIDX_SHIFT) & DMA_CHCTRL_CTRL_DSTBUSINFIDX_MASK)
-#define DMA_CHCTRL_CTRL_DSTBUSINFIDX_GET(x) (((uint32_t)(x) & DMA_CHCTRL_CTRL_DSTBUSINFIDX_MASK) >> DMA_CHCTRL_CTRL_DSTBUSINFIDX_SHIFT)
-
-/*
  * PRIORITY (RW)
  *
  * Channel priority level
@@ -303,7 +282,8 @@ typedef struct {
  * DSTWIDTH (RW)
  *
  * Destination transfer width.
- * Both the total transfer byte number and the burst transfer byte number should be aligned to the destination transfer width; otherwise the error event will be triggered. For example, destination transfer width should be set as byte transfer if total transfer byte is not aligned to half-word.
+ * Both the total transfer byte number and the burst transfer byte number should be aligned to the destination transfer width;
+ * otherwise the error event will be triggered. For example, destination transfer width should be set as byte transfer if total transfer byte is not aligned to half-word.
  * See field SrcBurstSize above for the definition of burst transfer byte number and section 3.2.8 for the definition of the total transfer byte number.
  * 0x0: Byte transfer
  * 0x1: Half-word transfer

@@ -39,14 +39,14 @@
 tx_risc_v_trap_handler:
 #ifdef __riscv_flen
 #if __riscv_flen == 32
-    addi    sp, sp, -260                            ; Allocate space for all registers - with floating point enabled
+    addi    sp, sp, -288                            ; Allocate space for all registers - with floating point enabled
 #elif __riscv_flen == 64
-    addi    sp, sp, -396                            ; Allocate space for all registers - with floating point enabled
+    addi    sp, sp, -416                            ; Allocate space for all registers - with floating point enabled
 #else
 #error "__riscv_flen is wrong! Please check it!"
 #endif
 #else
-    addi    sp, sp, -128                            ; Allocate space for all registers - without floating point enabled
+    addi    sp, sp, -160                            ; Allocate space for all registers - without floating point enabled
 #endif
     sw      x1, 0x70(sp)                            ; Store RA
     call    _tx_thread_context_save                 ; Call ThreadX context save

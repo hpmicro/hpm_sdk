@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -73,9 +73,9 @@ void netif_config(struct netif *netif)
     ip4_addr_set_zero(&ipaddr);
     ip4_addr_set_zero(&netmask);
 #else
-    IP_ADDR4(&ipaddr, IP_ADDR0, IP_ADDR1, IP_ADDR2, IP_ADDR3);
-    IP_ADDR4(&netmask, NETMASK_ADDR0, NETMASK_ADDR1, NETMASK_ADDR2, NETMASK_ADDR3);
-    IP_ADDR4(&gw, GW_ADDR0, GW_ADDR1, GW_ADDR2, GW_ADDR3);
+    ip4addr_aton(HPM_STRINGIFY(IP_CONFIG), &ipaddr);
+    ip4addr_aton(HPM_STRINGIFY(NETMASK_CONFIG), &netmask);
+    ip4addr_aton(HPM_STRINGIFY(GW_CONFIG), &gw);
 #endif
 
 #if defined(NO_SYS) && NO_SYS

@@ -11,6 +11,7 @@
  */
 
 #include "cpuport.h"
+#include "hpm_csr_regs.h"
 
 #ifdef RT_USING_SMP
 #define rt_hw_interrupt_disable rt_hw_local_irq_disable
@@ -112,9 +113,9 @@ rt_hw_context_switch:
 
 #endif
 #ifndef __riscv_32e
-    addi  sp,  sp, -32 * REGBYTES
+    addi  sp,  sp, -36 * REGBYTES
 #else
-    addi  sp,  sp, -16 * REGBYTES
+    addi  sp,  sp, -20 * REGBYTES
 #endif
 
     STORE sp,  0(a0)
@@ -158,6 +159,17 @@ save_mpie:
     STORE x29, 29 * REGBYTES(sp)
     STORE x30, 30 * REGBYTES(sp)
     STORE x31, 31 * REGBYTES(sp)
+#endif
+
+    /* save mcctl data */
+    csrr t0, CSR_MCCTLBEGINADDR
+    csrr t1, CSR_MCCTLDATA
+#ifndef __riscv_32e
+    STORE t0,   32 * REGBYTES(sp)
+    STORE t1,   33 * REGBYTES(sp)
+#else
+    STORE t0,   16 * REGBYTES(sp)
+    STORE t1,   17 * REGBYTES(sp)
 #endif
 
     /* restore to thread context
@@ -214,6 +226,17 @@ rt_hw_context_switch_exit:
     mv sp, a0
 #endif
 #endif
+    /* restore mcctl data */
+#ifndef __riscv_32e
+    LOAD  t0,   32 * REGBYTES(sp)
+    LOAD  t1,   33 * REGBYTES(sp)
+#else
+    LOAD  t0,   16 * REGBYTES(sp)
+    LOAD  t1,   17 * REGBYTES(sp)
+#endif
+    csrw CSR_MCCTLBEGINADDR, t0
+    csrw CSR_MCCTLDATA, t1
+
     /* resw ra to mepc */
     LOAD a0,   0 * REGBYTES(sp)
     csrw mepc, a0
@@ -259,9 +282,9 @@ rt_hw_context_switch_exit:
     LOAD x30, 30 * REGBYTES(sp)
     LOAD x31, 31 * REGBYTES(sp)
 
-    addi sp,  sp, 32 * REGBYTES
+    addi sp,  sp, 36 * REGBYTES
 #else
-    addi sp,  sp, 16 * REGBYTES
+    addi sp,  sp, 20 * REGBYTES
 #endif
 
 #ifdef ARCH_RISCV_FPU

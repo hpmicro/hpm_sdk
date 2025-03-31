@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -63,12 +63,12 @@ default_irq_handler
     IRQ_DEFAULT_HANDLER 41 /* Reserved */
     IRQ_DEFAULT_HANDLER 42 /* Reserved */
     IRQ_DEFAULT_HANDLER 43 /* Reserved */
-    IRQ_DEFAULT_HANDLER 44 /* Reserved */
+    IRQ_DEFAULT_HANDLER 44 /* TRGMUX0 IRQ handler */
     IRQ_DEFAULT_HANDLER 45 /* Reserved */
     IRQ_DEFAULT_HANDLER 46 /* Reserved */
     IRQ_DEFAULT_HANDLER 47 /* Reserved */
     IRQ_DEFAULT_HANDLER 48 /* Reserved */
-    IRQ_DEFAULT_HANDLER 49 /* Reserved */
+    IRQ_DEFAULT_HANDLER 49 /* TRGMUX1 IRQ handler */
     IRQ_DEFAULT_HANDLER 50 /* Reserved */
     IRQ_DEFAULT_HANDLER 51 /* USB0 IRQ handler */
     IRQ_DEFAULT_HANDLER 52 /* XPI0 IRQ handler */
@@ -147,12 +147,12 @@ __vector_table
     IRQ_HANDLER 41 /* Reserved */
     IRQ_HANDLER 42 /* Reserved */
     IRQ_HANDLER 43 /* Reserved */
-    IRQ_HANDLER 44 /* Reserved */
+    IRQ_HANDLER 44 /* TRGMUX0 IRQ handler */
     IRQ_HANDLER 45 /* Reserved */
     IRQ_HANDLER 46 /* Reserved */
     IRQ_HANDLER 47 /* Reserved */
     IRQ_HANDLER 48 /* Reserved */
-    IRQ_HANDLER 49 /* Reserved */
+    IRQ_HANDLER 49 /* TRGMUX1 IRQ handler */
     IRQ_HANDLER 50 /* Reserved */
     IRQ_HANDLER 51 /* USB0 IRQ handler */
     IRQ_HANDLER 52 /* XPI0 IRQ handler */
@@ -246,12 +246,12 @@ __vector_table:
     IRQ_HANDLER 41 /* Reserved */
     IRQ_HANDLER 42 /* Reserved */
     IRQ_HANDLER 43 /* Reserved */
-    IRQ_HANDLER 44 /* Reserved */
+    IRQ_HANDLER 44 /* TRGMUX0 IRQ handler */
     IRQ_HANDLER 45 /* Reserved */
     IRQ_HANDLER 46 /* Reserved */
     IRQ_HANDLER 47 /* Reserved */
     IRQ_HANDLER 48 /* Reserved */
-    IRQ_HANDLER 49 /* Reserved */
+    IRQ_HANDLER 49 /* TRGMUX1 IRQ handler */
     IRQ_HANDLER 50 /* Reserved */
     IRQ_HANDLER 51 /* USB0 IRQ handler */
     IRQ_HANDLER 52 /* XPI0 IRQ handler */

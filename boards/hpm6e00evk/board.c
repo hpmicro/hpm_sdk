@@ -23,8 +23,6 @@
 #include "hpm_esc_drv.h"
 #include "hpm_tsw_drv.h"
 
-static board_timer_cb timer_cb;
-
 /**
  * @brief FLASH configuration option definitions:
  * option[0]:
@@ -228,6 +226,8 @@ void board_delay_ms(uint32_t ms)
     clock_cpu_delay_ms(ms);
 }
 
+#if !defined(NO_BOARD_TIMER_SUPPORT) || !NO_BOARD_TIMER_SUPPORT
+static board_timer_cb timer_cb;
 SDK_DECLARE_EXT_ISR_M(BOARD_CALLBACK_TIMER_IRQ, board_timer_isr)
 void board_timer_isr(void)
 {
@@ -236,7 +236,6 @@ void board_timer_isr(void)
         timer_cb();
     }
 }
-
 
 void board_timer_create(uint32_t ms, board_timer_cb cb)
 {
@@ -256,6 +255,7 @@ void board_timer_create(uint32_t ms, board_timer_cb cb)
 
     gptmr_start_counter(BOARD_CALLBACK_TIMER, BOARD_CALLBACK_TIMER_CH);
 }
+#endif
 
 void board_i2c_bus_clear(I2C_Type *ptr)
 {
@@ -585,8 +585,8 @@ void board_init_clock(void)
     /* Connect Group1 to CPU1 */
     clock_connect_group_to_cpu(1, 1);
 
-    /* Bump up DCDC voltage to 1250mv */
-    pcfg_dcdc_set_voltage(HPM_PCFG, 1250);
+    /* Bump up DCDC voltage to 1275mv */
+    pcfg_dcdc_set_voltage(HPM_PCFG, 1275);
 
     /* Set CPU clock to 600MHz */
     clock_set_source_divider(clock_cpu0, clk_src_pll0_clk0, 1);
@@ -944,9 +944,9 @@ hpm_stat_t board_init_enet_rmii_reference_clock(ENET_Type *ptr, bool internal)
         clock_add_to_group(clock_eth0, BOARD_RUNNING_CORE & 0x1);
         if (internal) {
             /* set pll output frequency at 1GHz */
-            if (pllctlv2_init_pll_with_freq(HPM_PLLCTLV2, PLLCTLV2_PLL_PLL2, 1000000000UL) == status_success) {
+            if (pllctlv2_init_pll_with_freq(HPM_PLLCTLV2, pllctlv2_pll2, 1000000000UL) == status_success) {
                 /* set pll2_clk1 output frequency at 250MHz from PLL2 divided by 4 (1 + 15 / 5) */
-                pllctlv2_set_postdiv(HPM_PLLCTLV2, PLLCTLV2_PLL_PLL2, 1, 15);
+                pllctlv2_set_postdiv(HPM_PLLCTLV2, pllctlv2_pll2, pllctlv2_clk1, pllctlv2_div_4p0);
                 /* set eth clock frequency at 50MHz for enet0 */
                 /* clock_set_source_divider(clock_eth0, clk_src_pll2_clk1, 5); */
             } else {

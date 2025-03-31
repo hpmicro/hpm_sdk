@@ -14,6 +14,10 @@ set(RV_ABI "ilp32f")
 set(RV_ARCH "rv32imafc")
 endif()
 
+if("${HPM_BUILD_TYPE}" STREQUAL "")
+    SET(HPM_BUILD_TYPE flash_xip)
+endif()
+
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(ecat_cia402)

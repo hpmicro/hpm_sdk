@@ -76,9 +76,7 @@ extern  int32_t qei_clock_hz;
 #define BOARD_BLDC_ADC_TRG                    ADC12_CONFIG_TRG2A
 #define BOARD_BLDC_ADC_PREEMPT_TRIG_LEN        (1U)
 #define BOARD_BLDC_PWM_TRIG_CMP_INDEX          (8U)
-#define BOARD_BLDC_TRIGMUX_IN_NUM              HPM_TRGM2_INPUT_SRC_PWM2_CH8REF
-#define BOARD_BLDC_TRG_NUM                     TRGM_TRGOCFG_ADCX_PTRGI0A
-
+#define BOARD_BLDC_PWM_TRG_ADC             HPM_TRGM2_INPUT_SRC_PWM2_CH8REF
 #endif
 
 #define MOTOR0_POLE_PAIR            (2)

@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
+#include <ctype.h>
 #include "hpmicro_netx_driver.h"
 #include "hpm_common.h"
 #include "hpm_enet_drv.h"
@@ -1194,4 +1195,71 @@ VOID _nx_driver_hpm(NX_IP_DRIVER *driver_req_ptr)
             driver_req_ptr->nx_ip_driver_status = NX_UNHANDLED_COMMAND;
         }
     }
+}
+
+UINT nx_ipv4addr_aton(const CHAR *cp, UINT *addr)
+{
+    UINT val;
+    CHAR c;
+    UINT parts[4];
+    UINT *pp = parts;
+
+    c = *cp;
+    for (;;) {
+        /*
+     * Collect number up to ``.''.
+     * Values are specified as for C:
+     * 0x=hex, 0=octal, 1-9=decimal.
+     */
+        if (!((UCHAR)(c) >= '0' && (UCHAR)(c) <= '9')) {
+            return 0;
+        }
+        val = 0;
+        for (;;) {
+            if ((UCHAR)(c) >= '0' && (UCHAR)(c) <= '9') {
+                val = (val * 10) + (UINT)(c - '0');
+                c = *++cp;
+            } else {
+                break;
+            }
+        }
+        if (c == '.') {
+            /*
+       * Internet format:
+       *  a.b.c.d
+       *  a.b.c   (with c treated as 16 bits)
+       *  a.b (with b treated as 24 bits)
+       */
+            if (pp >= parts + 3) {
+                return 0;
+            }
+            *pp++ = val;
+            c = *++cp;
+        } else {
+            break;
+        }
+    }
+    /*
+   * Check for trailing characters.
+   */
+    if (c != '\0' && !isspace(c)) {
+        return 0;
+    }
+    /*
+   * Concoct the address according to
+   * the number of parts specified.
+   */
+    if ((pp - parts + 1) == 4) {
+        if (val > 0xff) {
+            return 0;
+        }
+        if ((parts[0] > 0xff) || (parts[1] > 0xff) || (parts[2] > 0xff)) {
+            return 0;
+        }
+        val |= (parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8);
+    } else {
+        return 0;
+    }
+    *addr = val;
+    return 1;
 }

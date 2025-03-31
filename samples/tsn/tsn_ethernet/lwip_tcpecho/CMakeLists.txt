@@ -1,4 +1,4 @@
-# Copyright (c) 2024 HPMicro
+# Copyright (c) 2024-2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -25,7 +25,7 @@ sdk_compile_definitions(-D__DISABLE_AUTO_NEGO=0)
 sdk_compile_definitions(-DLWIP_DHCP=0)
 #sdk_compile_definitions(-DENABLE_TSW_RECEIVE_INTERRUPT=1)
 
-project(lwip_tcpecho_example)
+project(tsn_lwip_tcpecho_example)
 sdk_inc(../ports/baremetal/single)
 sdk_inc(../ports/baremetal/single/arch)
 sdk_inc(../common/single)

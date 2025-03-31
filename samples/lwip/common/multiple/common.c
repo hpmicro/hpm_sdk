@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -107,6 +107,9 @@ void enet_update_dhcp_state(struct netif *netif)
 ATTR_WEAK uint8_t enet_get_mac_address(uint8_t i, uint8_t *mac)
 {
     uint32_t macl, mach;
+    uint8_t idx = 0;
+    char *p = NULL;
+    char *token;
 
     if (mac == NULL) {
         return ENET_MAC_ADDR_PARA_ERROR;
@@ -140,7 +143,18 @@ ATTR_WEAK uint8_t enet_get_mac_address(uint8_t i, uint8_t *mac)
     }
 
     /* load MAC address from MACRO definitions */
-    memcpy(mac, &mac_init[i], ENET_MAC);
+    p = mac_init[i].mac_addr;
+    token = strtok(p, ":");
+    mac[idx] = strtol(token, NULL, 16);
+    while (token != NULL && ++idx < ENET_MAC) {
+        token = strtok(NULL, ":");
+        mac[idx] = strtol(token, NULL, 16);
+    }
+
+    if (idx < ENET_MAC) {
+        return ENET_MAC_ADDR_PARA_ERROR;
+    }
+
     return ENET_MAC_ADDR_FROM_MACRO;
 }
 

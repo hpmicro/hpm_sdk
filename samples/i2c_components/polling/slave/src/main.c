@@ -35,17 +35,18 @@ static void i2c_check_transfer_data(uint8_t *tx_buff, uint8_t *rx_buff, uint32_t
 
 int main(void)
 {
-    i2c_initialize_config_t config;
+    hpm_i2c_context_t i2c_context;
     buffer_type reg0_addr, reg1_addr;
     board_init();
     board_init_i2c_clock(TEST_I2C);
     init_i2c_pins(TEST_I2C);
     printf("i2c components slave use polling\n");
-    hpm_i2c_get_default_init_config(&config);
-    config.communication_mode = i2c_slave;
-    config.slave_address = TEST_I2C_SLAVE_ADDRESS;
-    config.speed = i2c_speed_400khz;
-    if (hpm_i2c_initialize(TEST_I2C, &config) != status_success) {
+    hpm_i2c_get_default_init_context(&i2c_context);
+    i2c_context.init_config.communication_mode = i2c_slave;
+    i2c_context.init_config.slave_address = TEST_I2C_SLAVE_ADDRESS;
+    i2c_context.init_config.speed = i2c_speed_400khz;
+    i2c_context.base = TEST_I2C;
+    if (hpm_i2c_initialize(&i2c_context) != status_success) {
         printf("i2c slave initialize failed\n");
         while (1) {
         };
@@ -53,20 +54,20 @@ int main(void)
 
     printf("i2c slave read and write data of 16bit register address.....\n");
     prepare_transfer_data();
-    if (hpm_i2c_slave_read_blocking(TEST_I2C, (uint8_t *)rx_buff, TEST_TRANSFER_DATA_IN_BYTE + sizeof(buffer_type), 0xFFFFFFFF) != status_success) {
+    if (hpm_i2c_slave_read_blocking(&i2c_context, (uint8_t *)rx_buff, TEST_TRANSFER_DATA_IN_BYTE + sizeof(buffer_type), 0xFFFFFFFF) != status_success) {
         printf("i2c slave read failed.....\n");
         while (1) {
         };
     }
     reg0_addr = *(buffer_type *)&rx_buff[0];
 
-    if (hpm_i2c_slave_read_blocking(TEST_I2C, (uint8_t *)rx_buff, sizeof(buffer_type), 0xFFFFFFFF) != status_success) {
+    if (hpm_i2c_slave_read_blocking(&i2c_context, (uint8_t *)rx_buff, sizeof(buffer_type), 0xFFFFFFFF) != status_success) {
         printf("i2c slave read failed.....\n");
         while (1) {
         };
     }
     reg1_addr = *(buffer_type *)&rx_buff[0];
-    if (hpm_i2c_slave_write_blocking(TEST_I2C, (uint8_t *)tx_buff, TEST_TRANSFER_DATA_IN_BYTE, 0xFFFFFFFF) != status_success) {
+    if (hpm_i2c_slave_write_blocking(&i2c_context, (uint8_t *)tx_buff, TEST_TRANSFER_DATA_IN_BYTE, 0xFFFFFFFF) != status_success) {
         printf("i2c slave write failed.....\n");
         while (1) {
         };
@@ -77,12 +78,12 @@ int main(void)
 
     printf("\ni2c slave read and write data .....\n");
     prepare_transfer_data();
-    if (hpm_i2c_slave_read_blocking(TEST_I2C, (uint8_t *)rx_buff, TEST_TRANSFER_DATA_IN_BYTE, 0xFFFFFFFF) != status_success) {
+    if (hpm_i2c_slave_read_blocking(&i2c_context, (uint8_t *)rx_buff, TEST_TRANSFER_DATA_IN_BYTE, 0xFFFFFFFF) != status_success) {
         printf("i2c slave dma mem read failed.....\n");
         while (1) {
         };
     }
-    if (hpm_i2c_slave_write_blocking(TEST_I2C, (uint8_t *)tx_buff, TEST_TRANSFER_DATA_IN_BYTE, 0xFFFFFFFF) != status_success) {
+    if (hpm_i2c_slave_write_blocking(&i2c_context, (uint8_t *)tx_buff, TEST_TRANSFER_DATA_IN_BYTE, 0xFFFFFFFF) != status_success) {
         printf("i2c slave dma mem write failed.....\n");
         while (1) {
         };

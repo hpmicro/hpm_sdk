@@ -5,9 +5,7 @@ gantt
     section Mainline Release
     v1.8.0           :a1, 2024-10-01, 2024-12-31
     v1.9.0           :a2, 2025-01-01, 2025-03-31
-    v1.10.0          :a3, 2025-04-01, 2025-06-30
-    v1.11.0          :a4, 2025-07-01, 2025-09-30
-    v1.12.0          :a5, 2025-10-01, 2025-12-31
+    v1.10.0 LTS      :a3, 2025-04-01, 2025-06-30
 ```
 
 [中文](README_zh.md)
@@ -36,7 +34,7 @@ The HPM SDK Project is a software development kit based on HPMicro's MCUs, which
   SDK documentation can be built locally, once it's done, it can be accessed with the following entries:
   - <HPM_SDK_BASE>>/docs/index.html
   - <HPM_SDK_BASE>>/docs/index_zh.html
-  > Please refer to for [hpm_sdk Getting Started](docs/en/get_started.md) more details about documentation building.
+  > Please refer to for [hpm_sdk Getting Started](docs/en/get_started.rst) more details about documentation building.
 - Online:
   - http://hpm-sdk.readthedocs.io/
   - http://hpm-sdk-zh.readthedocs.io/

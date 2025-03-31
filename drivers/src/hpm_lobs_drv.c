@@ -35,6 +35,9 @@ void lobs_ctrl_config(LOBS_Type *lobs, lobs_ctrl_config_t *config)
     }
     lobs->STREAMCTRL = LOBS_STREAMCTRL_SEL_SET(config->group_mode)
                      | LOBS_STREAMCTRL_SAMPLE_SET(config->sample_rate)
+#if defined(HPM_IP_FEATURE_LOBS_SAMPLE_RATE_EXT) && HPM_IP_FEATURE_LOBS_SAMPLE_RATE_EXT
+                     | LOBS_STREAMCTRL_SAMPLE_INCR_SET(config->sample_rate >> 4)
+#endif
                      | LOBS_STREAMCTRL_BURST_SET(burst_len);
     lobs->STARTADDR = config->start_addr;
     lobs->ENDADDR = config->end_addr - 4u;
@@ -67,7 +70,6 @@ void lobs_state_config(LOBS_Type *lobs, lobs_state_sel_t state, lobs_state_confi
 {
     uint8_t cmp_reg_index;
     uint8_t cmp_bit_index;
-    uint8_t sample_rate;
 
     assert((config->cmp_sig_en[0] && (config->cmp_sig_bit[0] < 96)) || (!config->cmp_sig_en[0]));
     assert((config->cmp_sig_en[1] && (config->cmp_sig_bit[1] < 96)) || (!config->cmp_sig_en[1]));
@@ -81,7 +83,10 @@ void lobs_state_config(LOBS_Type *lobs, lobs_state_sel_t state, lobs_state_confi
                                 | LOBS_STATE_TRIGCTRL_COMP_SET(config->state_chg_condition);
     lobs->STATE[state].NEXTSTATE = LOBS_STATE_NEXTSTATE_NEXTSTATE_SET(config->next_state);
 
-    sample_rate = LOBS_STREAMCTRL_SAMPLE_GET(lobs->STREAMCTRL);
+#if defined(HPM_IP_FEATURE_LOBS_CNT_DATA_NUM) && HPM_IP_FEATURE_LOBS_CNT_DATA_NUM
+    lobs->STATE[state].COUNTCOMP = LOBS_STATE_COUNTCOMP_VALUE_SET(config->cmp_counter);
+#else
+    uint8_t sample_rate = LOBS_STREAMCTRL_SAMPLE_GET(lobs->STREAMCTRL);
     if (sample_rate == lobs_sample_1_per_7) {
         lobs->STATE[state].COUNTCOMP = LOBS_STATE_COUNTCOMP_VALUE_SET(config->cmp_counter * 7u);
     } else if (sample_rate == lobs_sample_1_per_6) {
@@ -91,11 +96,17 @@ void lobs_state_config(LOBS_Type *lobs, lobs_state_sel_t state, lobs_state_confi
     } else {
         assert(0);
     }
+#endif
 
     lobs->STATE[state].SIGMASK = LOBS_STATE_SIGMASK_NUM0_SET(config->cmp_sig_bit[0]) | LOBS_STATE_SIGMASK_NUM1_SET(config->cmp_sig_bit[1])
                                | LOBS_STATE_SIGMASK_NUM2_SET(config->cmp_sig_bit[2]) | LOBS_STATE_SIGMASK_NUM3_SET(config->cmp_sig_bit[3]);
-    lobs->STATE[state].COMPEN = LOBS_STATE_COMPEN_EN_SET((config->cmp_sig_en[0]) | (config->cmp_sig_en[1] << 1)
-                                                       | (config->cmp_sig_en[2] << 2) | (config->cmp_sig_en[3] << 3));
+
+#if defined(HPM_IP_FEATURE_LOBS_COMP_LOGIC) && HPM_IP_FEATURE_LOBS_COMP_LOGIC
+    lobs->STATE[state].COMPEN = LOBS_STATE_COMPEN_EN_SET((config->cmp_sig_en[0]) | (config->cmp_sig_en[1] << 1) | (config->cmp_sig_en[2] << 2) | (config->cmp_sig_en[3] << 3))
+                              | LOBS_STATE_COMPEN_COMPLOGIC_SET(config->cmp_logic);
+#else
+    lobs->STATE[state].COMPEN = LOBS_STATE_COMPEN_EN_SET((config->cmp_sig_en[0]) | (config->cmp_sig_en[1] << 1) | (config->cmp_sig_en[2] << 2) | (config->cmp_sig_en[3] << 3));
+#endif
     lobs->STATE[state].EXTMASK = 0;
     lobs->STATE[state].EXTCOMP = 0;
 
@@ -117,3 +128,29 @@ void lobs_state_config(LOBS_Type *lobs, lobs_state_sel_t state, lobs_state_confi
         }
     }
 }
+
+#if defined(HPM_IP_FEATURE_LOBS_TRIG_ADDR) && (HPM_IP_FEATURE_LOBS_TRIG_ADDR)
+uint32_t lobs_get_trig_address(LOBS_Type *lobs, lobs_trig_addr_idx_t idx)
+{
+    uint32_t addr = 0;
+
+    switch (idx) {
+    case lobs_trig_addr_idx_1:
+        addr = lobs->TRIGADDR1;
+        break;
+    case lobs_trig_addr_idx_2:
+        addr = lobs->TRIGADDR2;
+        break;
+    case lobs_trig_addr_idx_3:
+        addr = lobs->TRIGADDR3;
+        break;
+    case lobs_trig_addr_idx_4:
+        addr = lobs->TRIGADDR4;
+        break;
+    default:
+        break;
+    }
+
+    return addr;
+}
+#endif

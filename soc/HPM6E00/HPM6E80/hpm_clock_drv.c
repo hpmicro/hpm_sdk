@@ -89,13 +89,13 @@ static EWDG_Type *const s_wdgs[] = {
 
 static const clk_pll_div_map_t s_clk_pll_div_map[] = {
     {0xFF, 1}, /* OSC, Div 1 */
-    {0, 0}, /* PLL0, clock 0 */
-    {0, 1}, /* PLL0, clock 1 */
-    {1, 0}, /* PLL1, clock 0 */
-    {1, 1}, /* PLL2, clock 1 */
-    {1, 2}, /* PLL1, clock 2 */
-    {2, 0}, /* PLL2, clock 0 */
-    {2, 1}, /* PLL2, clock 1 */
+    {pllctlv2_pll0, pllctlv2_clk0}, /* PLL0, clock 0 */
+    {pllctlv2_pll0, pllctlv2_clk1}, /* PLL0, clock 1 */
+    {pllctlv2_pll1, pllctlv2_clk0}, /* PLL1, clock 0 */
+    {pllctlv2_pll1, pllctlv2_clk1}, /* PLL2, clock 1 */
+    {pllctlv2_pll1, pllctlv2_clk2}, /* PLL1, clock 2 */
+    {pllctlv2_pll2, pllctlv2_clk0}, /* PLL2, clock 0 */
+    {pllctlv2_pll2, pllctlv2_clk1}, /* PLL2, clock 1 */
 };
 
 
@@ -168,25 +168,25 @@ uint32_t get_frequency_for_source(clock_source_t source)
         clk_freq = FREQ_PRESET1_OSC0_CLK0;
         break;
     case clock_source_pll0_clk0:
-        clk_freq = pllctlv2_get_pll_postdiv_freq_in_hz(HPM_PLLCTLV2, 0U, 0U);
+        clk_freq = pllctlv2_get_pll_postdiv_freq_in_hz(HPM_PLLCTLV2, pllctlv2_pll0, pllctlv2_clk0);
         break;
     case clock_source_pll0_clk1:
-        clk_freq = pllctlv2_get_pll_postdiv_freq_in_hz(HPM_PLLCTLV2, 0U, 1U);
+        clk_freq = pllctlv2_get_pll_postdiv_freq_in_hz(HPM_PLLCTLV2, pllctlv2_pll0, pllctlv2_clk1);
         break;
     case clock_source_pll1_clk0:
-        clk_freq = pllctlv2_get_pll_postdiv_freq_in_hz(HPM_PLLCTLV2, 1U, 0U);
+        clk_freq = pllctlv2_get_pll_postdiv_freq_in_hz(HPM_PLLCTLV2, pllctlv2_pll1, pllctlv2_clk0);
         break;
     case clock_source_pll1_clk1:
-        clk_freq = pllctlv2_get_pll_postdiv_freq_in_hz(HPM_PLLCTLV2, 1U, 1U);
+        clk_freq = pllctlv2_get_pll_postdiv_freq_in_hz(HPM_PLLCTLV2, pllctlv2_pll1, pllctlv2_clk1);
         break;
     case clock_source_pll1_clk2:
-        clk_freq = pllctlv2_get_pll_postdiv_freq_in_hz(HPM_PLLCTLV2, 1U, 2U);
+        clk_freq = pllctlv2_get_pll_postdiv_freq_in_hz(HPM_PLLCTLV2, pllctlv2_pll1, pllctlv2_clk2);
         break;
     case clock_source_pll2_clk0:
-        clk_freq = pllctlv2_get_pll_postdiv_freq_in_hz(HPM_PLLCTLV2, 2U, 0U);
+        clk_freq = pllctlv2_get_pll_postdiv_freq_in_hz(HPM_PLLCTLV2, pllctlv2_pll2, pllctlv2_clk0);
         break;
     case clock_source_pll2_clk1:
-        clk_freq = pllctlv2_get_pll_postdiv_freq_in_hz(HPM_PLLCTLV2, 2U, 1U);
+        clk_freq = pllctlv2_get_pll_postdiv_freq_in_hz(HPM_PLLCTLV2, pllctlv2_pll2, pllctlv2_clk1);
         break;
     default:
         clk_freq = 0UL;
@@ -353,6 +353,36 @@ hpm_stat_t clock_wait_source_stable(clock_name_t clock_name)
     } while (!is_stable);
 
     return status_success;
+}
+
+uint32_t clock_get_divider(clock_name_t clock_name)
+{
+    uint32_t clk_divider = CLOCK_DIV_INVALID;
+    uint32_t clk_src_type = GET_CLK_SRC_GROUP_FROM_NAME(clock_name);
+    uint32_t node_or_instance = GET_CLK_NODE_FROM_NAME(clock_name);
+    switch (clk_src_type) {
+    case CLK_SRC_GROUP_COMMON:
+        clk_divider = 1UL + SYSCTL_CLOCK_DIV_GET(HPM_SYSCTL->CLOCK[node_or_instance]);
+        break;
+    case CLK_SRC_GROUP_EWDG:
+    case CLK_SRC_GROUP_PEWDG:
+    case CLK_SRC_GROUP_PMIC:
+    case CLK_SRC_GROUP_CPU0:
+    case CLK_SRC_GROUP_CPU1:
+    case CLK_SRC_GROUP_AXIS:
+    case CLK_SRC_GROUP_AXIF:
+    case CLK_SRC_GROUP_AXIC:
+    case CLK_SRC_GROUP_AXIN:
+    case CLK_SRC_GROUP_AHB:
+    case CLK_SRC_GROUP_ADC:
+    case CLK_SRC_GROUP_I2S:
+        clk_divider = 1;
+        break;
+    default:
+        clk_divider = CLOCK_DIV_INVALID;
+        break;
+    }
+    return clk_divider;
 }
 
 hpm_stat_t clock_set_adc_source(clock_name_t clock_name, clk_src_t src)

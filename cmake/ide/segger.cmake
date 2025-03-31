@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2024 HPMicro
+# Copyright (c) 2021-2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 # add ses library interface to store ses specific configurations
@@ -689,6 +689,11 @@ function (generate_ses_project)
             endif()
             if(${i} STREQUAL "zbs")
                 set(target_compiler_arch_exts_zbs 1)
+            endif()
+            # process zcc arch string
+            if(${i} STREQUAL "xandes")
+                set(target_compiler_arch_exts_csr 1)
+                set(target_compiler_arch_exts_fencei 1)
             endif()
         ENDFOREACH()
     endif()

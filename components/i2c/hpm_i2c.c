@@ -9,10 +9,6 @@
 #include "hpm_clock_drv.h"
 #include <stdlib.h>
 
-#if USE_I2C_DMA_MGR
-#include "hpm_dma_mgr.h"
-#endif
-
 typedef struct {
     I2C_Type *i2c_ptr;
     clock_name_t i2c_clock_name;
@@ -205,18 +201,26 @@ static void hpm_i2c_release_bus(I2C_Type *ptr)
     i2c_master_issue_data_transmission(ptr);
 }
 
-void hpm_i2c_get_default_init_config(i2c_initialize_config_t *config)
+static void hpm_i2c_get_default_init_config(hpm_i2c_initialize_config_t *config)
 {
     config->is_10bit_addressing = false;
     config->communication_mode = i2c_master;
     config->speed = i2c_speed_100khz;
 }
 
-hpm_stat_t hpm_i2c_initialize(I2C_Type *ptr, i2c_initialize_config_t *config)
+void hpm_i2c_get_default_init_context(hpm_i2c_context_t *context)
+{
+    context->addr_endianness = i2c_master_addr_little_endian;
+    hpm_i2c_get_default_init_config(&context->init_config);
+}
+
+hpm_stat_t hpm_i2c_initialize(hpm_i2c_context_t *context)
 {
     hpm_stat_t stat = status_success;
     i2c_config_t cfg;
     uint32_t freq;
+    hpm_i2c_initialize_config_t *config = &context->init_config;
+    I2C_Type *ptr = context->base;
     hpm_i2c_cfg_t *obj = hpm_i2c_get_cfg_obj(ptr);
     if (obj == NULL) {
         return status_invalid_argument;
@@ -248,8 +252,9 @@ hpm_stat_t hpm_i2c_initialize(I2C_Type *ptr, i2c_initialize_config_t *config)
     return stat;
 }
 
-hpm_stat_t hpm_i2c_master_probe_slave_address(I2C_Type *ptr, uint16_t device_address)
+hpm_stat_t hpm_i2c_master_probe_slave_address(hpm_i2c_context_t *context, uint16_t device_address)
 {
+    I2C_Type *ptr = context->base;
     uint32_t ticks_per_us = clock_get_core_clock_ticks_per_us();
     /* i2c speed min is 100Kbps, and mem address max is 4 byte, 10us * (4 * 8) = 320us,  so 500us is enough */
     uint64_t expected_ticks = hpm_csr_get_core_cycle() + (uint64_t)ticks_per_us * 500UL;
@@ -268,11 +273,12 @@ hpm_stat_t hpm_i2c_master_probe_slave_address(I2C_Type *ptr, uint16_t device_add
 }
 
 
-hpm_stat_t hpm_i2c_master_addr_write_blocking(I2C_Type *ptr, const uint16_t device_address, uint32_t addr, uint8_t addr_size,
+hpm_stat_t hpm_i2c_master_addr_write_blocking(hpm_i2c_context_t *context, const uint16_t device_address, uint32_t addr, uint8_t addr_size,
                                    uint8_t *buf, uint32_t buf_size, uint32_t timeout)
 {
     uint32_t left;
     uint8_t *p = (uint8_t *)&addr;
+    I2C_Type *ptr = context->base;
 
     uint32_t ticks_per_us = clock_get_core_clock_ticks_per_us();
     uint64_t expected_ticks = hpm_csr_get_core_cycle() + (uint64_t)ticks_per_us * 1000UL * timeout;
@@ -296,7 +302,11 @@ hpm_stat_t hpm_i2c_master_addr_write_blocking(I2C_Type *ptr, const uint16_t devi
 
     left = addr_size;
     while (left) {
-        i2c_write_byte(ptr, *(p++));
+        if (context->addr_endianness == i2c_master_addr_big_endian) {
+            i2c_write_byte(ptr, p[left - 1]);
+        } else {
+            i2c_write_byte(ptr, *(p++));
+        }
         left--;
     }
     i2c_master_issue_data_transmission(ptr);
@@ -336,11 +346,12 @@ hpm_stat_t hpm_i2c_master_addr_write_blocking(I2C_Type *ptr, const uint16_t devi
     return status_success;
 }
 
-hpm_stat_t hpm_i2c_master_addr_read_blocking(I2C_Type *ptr, const uint16_t device_address, uint32_t addr, uint8_t addr_size,
+hpm_stat_t hpm_i2c_master_addr_read_blocking(hpm_i2c_context_t *context, const uint16_t device_address, uint32_t addr, uint8_t addr_size,
                                    uint8_t *buf, uint32_t buf_size, uint32_t timeout)
 {
     uint32_t left;
     uint8_t *p = (uint8_t *)&addr;
+    I2C_Type *ptr = context->base;
 
     uint32_t ticks_per_us = clock_get_core_clock_ticks_per_us();
     uint64_t expected_ticks = hpm_csr_get_core_cycle() + (uint64_t)ticks_per_us * 1000UL * timeout;
@@ -364,7 +375,11 @@ hpm_stat_t hpm_i2c_master_addr_read_blocking(I2C_Type *ptr, const uint16_t devic
 
     left = addr_size;
     while (left) {
-        i2c_write_byte(ptr, *(p++));
+        if (context->addr_endianness == i2c_master_addr_big_endian) {
+            i2c_write_byte(ptr, p[left - 1]);
+        } else {
+            i2c_write_byte(ptr, *(p++));
+        }
         left--;
     }
     i2c_master_issue_data_transmission(ptr);
@@ -416,12 +431,13 @@ hpm_stat_t hpm_i2c_master_addr_read_blocking(I2C_Type *ptr, const uint16_t devic
     return status_success;
 }
 
-hpm_stat_t hpm_i2c_master_write_blocking(I2C_Type *ptr, uint16_t device_address,
+hpm_stat_t hpm_i2c_master_write_blocking(hpm_i2c_context_t *context, uint16_t device_address,
                             uint8_t *buf, uint32_t size, uint32_t timeout)
 {
     hpm_stat_t stat = status_success;
     uint32_t left;
 
+    I2C_Type *ptr = context->base;
     uint32_t ticks_per_us = clock_get_core_clock_ticks_per_us();
     uint64_t expected_ticks = hpm_csr_get_core_cycle() + (uint64_t)ticks_per_us * 1000UL * timeout;
 
@@ -486,12 +502,13 @@ hpm_stat_t hpm_i2c_master_write_blocking(I2C_Type *ptr, uint16_t device_address,
     return stat;
 }
 
-hpm_stat_t hpm_i2c_master_read_blocking(I2C_Type *ptr, const uint16_t device_address,
+hpm_stat_t hpm_i2c_master_read_blocking(hpm_i2c_context_t *context, const uint16_t device_address,
                            uint8_t *buf, const uint32_t size, uint32_t timeout)
 {
     hpm_stat_t stat = status_success;
     uint32_t left;
 
+    I2C_Type *ptr = context->base;
     uint32_t ticks_per_us = clock_get_core_clock_ticks_per_us();
     uint64_t expected_ticks = hpm_csr_get_core_cycle() + (uint64_t)ticks_per_us * 1000UL * timeout;
 
@@ -555,9 +572,10 @@ hpm_stat_t hpm_i2c_master_read_blocking(I2C_Type *ptr, const uint16_t device_add
     return stat;
 }
 
-hpm_stat_t hpm_i2c_slave_write_blocking(I2C_Type *ptr, uint8_t *buf, uint32_t size, uint32_t timeout)
+hpm_stat_t hpm_i2c_slave_write_blocking(hpm_i2c_context_t *context, uint8_t *buf, uint32_t size, uint32_t timeout)
 {
     uint32_t left;
+    I2C_Type *ptr = context->base;
     uint32_t ticks_per_us = clock_get_core_clock_ticks_per_us();
     uint64_t expected_ticks = hpm_csr_get_core_cycle() + (uint64_t)ticks_per_us * 1000UL * timeout;
     if (((size == 0) || (size > I2C_SOC_TRANSFER_COUNT_MAX))) {
@@ -602,9 +620,10 @@ hpm_stat_t hpm_i2c_slave_write_blocking(I2C_Type *ptr, uint8_t *buf, uint32_t si
     return status_success;
 }
 
-hpm_stat_t hpm_i2c_slave_read_blocking(I2C_Type *ptr, uint8_t *buf, uint32_t size, uint32_t timeout)
+hpm_stat_t hpm_i2c_slave_read_blocking(hpm_i2c_context_t *context, uint8_t *buf, uint32_t size, uint32_t timeout)
 {
     uint32_t left;
+    I2C_Type *ptr = context->base;
     uint32_t ticks_per_us = clock_get_core_clock_ticks_per_us();
     uint64_t expected_ticks = hpm_csr_get_core_cycle() + (uint64_t)ticks_per_us * 1000UL * timeout;
     if (((size == 0) || (size > I2C_SOC_TRANSFER_COUNT_MAX))) {
@@ -684,9 +703,10 @@ static void hpm_i2c_write_trigger_dma(hpm_i2c_cfg_t *obj, uint32_t addr, uint32_
     dma_mgr_enable_channel(&obj->dma_resource);
 }
 
-hpm_stat_t hpm_i2c_dma_install_callback(I2C_Type *ptr, hpm_i2c_dma_complete_cb complete)
+hpm_stat_t hpm_i2c_dma_mgr_install_callback(hpm_i2c_context_t *context, hpm_i2c_dma_complete_cb complete)
 {
     dma_mgr_chn_conf_t chg_config;
+    I2C_Type *ptr = context->base;
     dma_resource_t *resource = NULL;
     hpm_i2c_cfg_t *obj = hpm_i2c_get_cfg_obj(ptr);
     if (obj == NULL) {
@@ -714,10 +734,11 @@ hpm_stat_t hpm_i2c_dma_install_callback(I2C_Type *ptr, hpm_i2c_dma_complete_cb c
     return status_success;
 }
 
-hpm_stat_t hpm_i2c_slave_read_nonblocking(I2C_Type *ptr, uint8_t *buf, uint32_t size)
+hpm_stat_t hpm_i2c_slave_read_nonblocking(hpm_i2c_context_t *context, uint8_t *buf, uint32_t size)
 {
     hpm_stat_t stat = status_success;
     uint32_t buf_addr;
+    I2C_Type *ptr = context->base;
     hpm_i2c_cfg_t *obj = hpm_i2c_get_cfg_obj(ptr);
     if ((obj == NULL) || (size > I2C_SOC_TRANSFER_COUNT_MAX)) {
         return status_invalid_argument;
@@ -731,10 +752,11 @@ hpm_stat_t hpm_i2c_slave_read_nonblocking(I2C_Type *ptr, uint8_t *buf, uint32_t 
     return stat;
 }
 
-hpm_stat_t hpm_i2c_slave_write_nonblocking(I2C_Type *ptr, uint8_t *buf, uint32_t size)
+hpm_stat_t hpm_i2c_slave_write_nonblocking(hpm_i2c_context_t *context, uint8_t *buf, uint32_t size)
 {
     hpm_stat_t stat = status_success;
     uint32_t buf_addr;
+    I2C_Type *ptr = context->base;
     hpm_i2c_cfg_t *obj = hpm_i2c_get_cfg_obj(ptr);
     if ((obj == NULL) || (size > I2C_SOC_TRANSFER_COUNT_MAX)) {
         return status_invalid_argument;
@@ -748,11 +770,12 @@ hpm_stat_t hpm_i2c_slave_write_nonblocking(I2C_Type *ptr, uint8_t *buf, uint32_t
     return stat;
 }
 
-hpm_stat_t hpm_i2c_master_addr_write_nonblocking(I2C_Type *ptr, const uint16_t device_address, uint32_t addr, uint8_t addr_size,
+hpm_stat_t hpm_i2c_master_addr_write_nonblocking(hpm_i2c_context_t *context, const uint16_t device_address, uint32_t addr, uint8_t addr_size,
                                    uint8_t *buf, uint32_t buf_size)
 {
     hpm_stat_t stat = status_success;
     uint32_t left;
+    I2C_Type *ptr = context->base;
     uint8_t *p = (uint8_t *)&addr;
     uint32_t ticks_per_us = clock_get_core_clock_ticks_per_us();
     uint64_t expected_ticks = 0;
@@ -772,7 +795,11 @@ hpm_stat_t hpm_i2c_master_addr_write_nonblocking(I2C_Type *ptr, const uint16_t d
 
     left = addr_size;
     while (left) {
-        i2c_write_byte(ptr, *(p++));
+        if (context->addr_endianness == i2c_master_addr_big_endian) {
+            i2c_write_byte(ptr, p[left - 1]);
+        } else {
+            i2c_write_byte(ptr, *(p++));
+        }
         left--;
     }
     i2c_master_issue_data_transmission(ptr);
@@ -793,11 +820,12 @@ hpm_stat_t hpm_i2c_master_addr_write_nonblocking(I2C_Type *ptr, const uint16_t d
     return stat;
 }
 
-hpm_stat_t hpm_i2c_master_addr_read_nonblocking(I2C_Type *ptr, const uint16_t device_address, uint32_t addr, uint8_t addr_size,
+hpm_stat_t hpm_i2c_master_addr_read_nonblocking(hpm_i2c_context_t *context, const uint16_t device_address, uint32_t addr, uint8_t addr_size,
                                    uint8_t *buf, uint32_t buf_size)
 {
     hpm_stat_t stat = status_success;
     uint32_t left;
+    I2C_Type *ptr = context->base;
     uint8_t *p = (uint8_t *)&addr;
     uint32_t ticks_per_us = clock_get_core_clock_ticks_per_us();
     uint64_t expected_ticks = 0;
@@ -816,7 +844,11 @@ hpm_stat_t hpm_i2c_master_addr_read_nonblocking(I2C_Type *ptr, const uint16_t de
     hpm_i2c_master_phase_config(ptr, device_address, I2C_WR | I2C_NO_STOP, (addr_size), false);
     left = addr_size;
     while (left) {
-        i2c_write_byte(ptr, *(p++));
+        if (context->addr_endianness == i2c_master_addr_big_endian) {
+            i2c_write_byte(ptr, p[left - 1]);
+        } else {
+            i2c_write_byte(ptr, *(p++));
+        }
         left--;
     }
     i2c_master_issue_data_transmission(ptr);
@@ -851,11 +883,12 @@ hpm_stat_t hpm_i2c_master_addr_read_nonblocking(I2C_Type *ptr, const uint16_t de
 }
 
 
-hpm_stat_t hpm_i2c_master_write_nonblocking(I2C_Type *ptr, uint16_t device_address,
+hpm_stat_t hpm_i2c_master_write_nonblocking(hpm_i2c_context_t *context, uint16_t device_address,
                             uint8_t *buf, uint32_t size)
 {
     hpm_stat_t stat = status_success;
     uint32_t buf_addr;
+    I2C_Type *ptr = context->base;
     uint32_t ticks_per_us = clock_get_core_clock_ticks_per_us();
     uint64_t expected_ticks = 0;
     hpm_i2c_cfg_t *obj = hpm_i2c_get_cfg_obj(ptr);
@@ -886,11 +919,12 @@ hpm_stat_t hpm_i2c_master_write_nonblocking(I2C_Type *ptr, uint16_t device_addre
     return stat;
 }
 
-hpm_stat_t hpm_i2c_master_read_nonblocking(I2C_Type *ptr, const uint16_t device_address,
+hpm_stat_t hpm_i2c_master_read_nonblocking(hpm_i2c_context_t *context, const uint16_t device_address,
                            uint8_t *buf, const uint32_t size)
 {
     hpm_stat_t stat = status_success;
     uint32_t buf_addr;
+    I2C_Type *ptr = context->base;
     uint32_t ticks_per_us = clock_get_core_clock_ticks_per_us();
     uint64_t expected_ticks = 0;
     hpm_i2c_cfg_t *obj = hpm_i2c_get_cfg_obj(ptr);
@@ -919,5 +953,14 @@ hpm_stat_t hpm_i2c_master_read_nonblocking(I2C_Type *ptr, const uint16_t device_
     hpm_i2c_read_trigger_dma(obj, buf_addr, size);
     return stat;
 }
+dma_resource_t *hpm_i2c_get_dma_mgr_resource(hpm_i2c_context_t *context)
+{
+    hpm_i2c_cfg_t *obj = hpm_i2c_get_cfg_obj(context->base);
+    if (obj != NULL) {
+        return &obj->dma_resource;
+    }
+    return NULL;
+}
+
 #endif
 

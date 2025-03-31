@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2024 HPMicro
+# Copyright (c) 2021-2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 sdk_inc(inc)
@@ -69,9 +69,12 @@ sdk_src_ifdef(HPMSOC_HAS_HPMSDK_MIPI_CSI src/hpm_mipi_csi_drv.c)
 sdk_src_ifdef(HPMSOC_HAS_HPMSDK_MIPI_CSI_PHY src/hpm_mipi_csi_phy_drv.c)
 sdk_src_ifdef(HPMSOC_HAS_HPMSDK_OPAMP src/hpm_opamp_drv.c)
 sdk_src_ifdef(HPMSOC_HAS_HPMSDK_TAMP src/hpm_tamp_drv.c)
+sdk_src_ifdef(HPMSOC_HAS_HPMSDK_TFA src/hpm_tfa_drv.S)
 sdk_src_ifdef(HPMSOC_HAS_HPMSDK_VSC src/hpm_vsc_drv.c)
 sdk_src_ifdef(HPMSOC_HAS_HPMSDK_CLC src/hpm_clc_drv.c)
 sdk_src_ifdef(HPMSOC_HAS_HPMSDK_ESC src/hpm_esc_drv.c)
 sdk_src_ifdef(HPMSOC_HAS_HPMSDK_PPI src/hpm_ppi_drv.c)
 sdk_src_ifdef(HPMSOC_HAS_HPMSDK_LOBS src/hpm_lobs_drv.c)
+sdk_src_ifdef(HPMSOC_HAS_HPMSDK_EUI src/hpm_eui_drv.c)
 sdk_src_ifdef(HPMSOC_HAS_HPMSDK_TSW src/hpm_tsw_drv.c)
+sdk_src_ifdef(HPMSOC_HAS_HPMSDK_OWR src/hpm_owr_drv.c)

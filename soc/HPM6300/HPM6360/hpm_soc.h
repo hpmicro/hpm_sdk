@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -383,10 +383,6 @@
 #define HPM_FEMC_BASE (0xF3050000UL)
 /* FEMC base pointer */
 #define HPM_FEMC ((FEMC_Type *) HPM_FEMC_BASE)
-
-/* Address of ROMC instances */
-/* ROMC base address */
-#define HPM_ROMC_BASE (0xF3054000UL)
 
 #include "hpm_ffa_regs.h"
 /* Address of FFA instances */

@@ -28,6 +28,7 @@
 /*  #include "tx_api.h"
     #include "tx_thread.h"
     #include "tx_timer.h"  */
+#include "hpm_csr_regs.h"
 
     .extern      _tx_thread_execute_ptr
     .extern      _tx_thread_current_ptr
@@ -117,53 +118,58 @@ _tx_thread_context_restore:
 #if __riscv_flen == 32
 
     /* Recover floating point registers.  */
-    flw     f0, 0x7C(sp)                                # Recover ft0
-    flw     f1, 0x80(sp)                                # Recover ft1
-    flw     f2, 0x84(sp)                                # Recover ft2
-    flw     f3, 0x88(sp)                                # Recover ft3
-    flw     f4, 0x8C(sp)                                # Recover ft4
-    flw     f5, 0x90(sp)                                # Recover ft5
-    flw     f6, 0x94(sp)                                # Recover ft6
-    flw     f7, 0x98(sp)                                # Recover ft7
-    flw     f10,0xA4(sp)                                # Recover fa0
-    flw     f11,0xA8(sp)                                # Recover fa1
-    flw     f12,0xAC(sp)                                # Recover fa2
-    flw     f13,0xB0(sp)                                # Recover fa3
-    flw     f14,0xB4(sp)                                # Recover fa4
-    flw     f15,0xB8(sp)                                # Recover fa5
-    flw     f16,0xBC(sp)                                # Recover fa6
-    flw     f17,0xC0(sp)                                # Recover fa7
-    flw     f28,0xEC(sp)                                # Recover ft8
-    flw     f29,0xF0(sp)                                # Recover ft9
-    flw     f30,0xF4(sp)                                # Recover ft10
-    flw     f31,0xF8(sp)                                # Recover ft11
-    lw      t0, 0xFC(sp)                                # Recover fcsr
+    flw     f0, 0x90(sp)                                # Recover ft0
+    flw     f1, 0x94(sp)                                # Recover ft1
+    flw     f2, 0x98(sp)                                # Recover ft2
+    flw     f3, 0x9C(sp)                                # Recover ft3
+    flw     f4, 0xA0(sp)                                # Recover ft4
+    flw     f5, 0xA4(sp)                                # Recover ft5
+    flw     f6, 0xA8(sp)                                # Recover ft6
+    flw     f7, 0xAC(sp)                                # Recover ft7
+    flw     f10,0xB8(sp)                                # Recover fa0
+    flw     f11,0xBC(sp)                                # Recover fa1
+    flw     f12,0xC0(sp)                                # Recover fa2
+    flw     f13,0xC4(sp)                                # Recover fa3
+    flw     f14,0xC8(sp)                                # Recover fa4
+    flw     f15,0xCC(sp)                                # Recover fa5
+    flw     f16,0xD0(sp)                                # Recover fa6
+    flw     f17,0xD4(sp)                                # Recover fa7
+    flw     f28,0x100(sp)                               # Recover ft8
+    flw     f29,0x104(sp)                               # Recover ft9
+    flw     f30,0x108(sp)                               # Recover ft10
+    flw     f31,0x10C(sp)                               # Recover ft11
+    lw      t0, 0x110(sp)                               # Recover fcsr
     csrw    fcsr, t0                                    #
 #elif __riscv_flen == 64
-    fld     f0, 0x80(sp)                                # Recover ft0
-    fld     f1, 0x88(sp)                                # Recover ft1
-    fld     f2, 0x90(sp)                                # Recover ft2
-    fld     f3, 0x98(sp)                                # Recover ft3
-    fld     f4, 0xA0(sp)                                # Recover ft4
-    fld     f5, 0xA8(sp)                                # Recover ft5
-    fld     f6, 0xB0(sp)                                # Recover ft6
-    fld     f7, 0xB8(sp)                                # Recover ft7
-    fld     f10,0xD0(sp)                                # Recover fa0
-    fld     f11,0xD8(sp)                                # Recover fa1
-    fld     f12,0xE0(sp)                                # Recover fa2
-    fld     f13,0xE8(sp)                                # Recover fa3
-    fld     f14,0xF0(sp)                                # Recover fa4
-    fld     f15,0xF8(sp)                                # Recover fa5
-    fld     f16,0x100(sp)                               # Recover fa6
-    fld     f17,0x108(sp)                               # Recover fa7
-    fld     f28,0x160(sp)                               # Recover ft8
-    fld     f29,0x168(sp)                               # Recover ft9
-    fld     f30,0x170(sp)                               # Recover ft10
-    fld     f31,0x178(sp)                               # Recover ft11
-    lw      t0, 0x180(sp)                               # Recover fcsr
+    fld     f0, 0x90(sp)                                # Recover ft0
+    fld     f1, 0x98(sp)                                # Recover ft1
+    fld     f2, 0xA0(sp)                                # Recover ft2
+    fld     f3, 0xA8(sp)                                # Recover ft3
+    fld     f4, 0xB0(sp)                                # Recover ft4
+    fld     f5, 0xB8(sp)                                # Recover ft5
+    fld     f6, 0xC0(sp)                                # Recover ft6
+    fld     f7, 0xC8(sp)                                # Recover ft7
+    fld     f10,0xE0(sp)                                # Recover fa0
+    fld     f11,0xE8(sp)                                # Recover fa1
+    fld     f12,0xF0(sp)                                # Recover fa2
+    fld     f13,0xF8(sp)                                # Recover fa3
+    fld     f14,0x100(sp)                               # Recover fa4
+    fld     f15,0x108(sp)                               # Recover fa5
+    fld     f16,0x110(sp)                               # Recover fa6
+    fld     f17,0x118(sp)                               # Recover fa7
+    fld     f28,0x170(sp)                               # Recover ft8
+    fld     f29,0x178(sp)                               # Recover ft9
+    fld     f30,0x180(sp)                               # Recover ft10
+    fld     f31,0x188(sp)                               # Recover ft11
+    lw      t0, 0x190(sp)                               # Recover fcsr
     csrw    fcsr, t0                                    #
 #endif
 #endif
+
+    lw      t0, 0x88(sp)                                # Recover mcctlbeginaddr
+    csrw    CSR_MCCTLBEGINADDR, t0                      # Setup mcctlbeginaddr
+    lw      t0, 0x8C(sp)                                # Recover mcctldata
+    csrw    CSR_MCCTLDATA, t0                           # Setup mcctldata
 
     /* Recover standard registers.  */
 
@@ -201,14 +207,14 @@ _tx_thread_context_restore:
 
 #ifdef __riscv_flen
 #if __riscv_flen == 32
-    addi    sp, sp, 260                                 # Recover stack frame - with floating point enabled
+    addi    sp, sp, 288                                 # Recover stack frame - with floating point enabled
 #elif __riscv_flen == 64
-    addi    sp, sp, 396                                 # Recover stack frame - with double floating point enabled
+    addi    sp, sp, 416                                 # Recover stack frame - with double floating point enabled
 #else
 #error "__riscv_flen is wrong! Please check it!"
 #endif
 #else
-    addi    sp, sp, 128                                 # Recover stack frame - without floating point enabled
+    addi    sp, sp, 160                                 # Recover stack frame - without floating point enabled
 #endif
     mret                                                # Return to point of interrupt
 
@@ -242,53 +248,58 @@ _tx_thread_no_preempt_restore:
 
     /* Recover floating point registers.  */
 
-    flw     f0, 0x7C(sp)                                # Recover ft0
-    flw     f1, 0x80(sp)                                # Recover ft1
-    flw     f2, 0x84(sp)                                # Recover ft2
-    flw     f3, 0x88(sp)                                # Recover ft3
-    flw     f4, 0x8C(sp)                                # Recover ft4
-    flw     f5, 0x90(sp)                                # Recover ft5
-    flw     f6, 0x94(sp)                                # Recover ft6
-    flw     f7, 0x98(sp)                                # Recover ft7
-    flw     f10,0xA4(sp)                                # Recover fa0
-    flw     f11,0xA8(sp)                                # Recover fa1
-    flw     f12,0xAC(sp)                                # Recover fa2
-    flw     f13,0xB0(sp)                                # Recover fa3
-    flw     f14,0xB4(sp)                                # Recover fa4
-    flw     f15,0xB8(sp)                                # Recover fa5
-    flw     f16,0xBC(sp)                                # Recover fa6
-    flw     f17,0xC0(sp)                                # Recover fa7
-    flw     f28,0xEC(sp)                                # Recover ft8
-    flw     f29,0xF0(sp)                                # Recover ft9
-    flw     f30,0xF4(sp)                                # Recover ft10
-    flw     f31,0xF8(sp)                                # Recover ft11
-    lw      t0, 0xFC(sp)                                # Recover fcsr
+    flw     f0, 0x90(sp)                                # Recover ft0
+    flw     f1, 0x94(sp)                                # Recover ft1
+    flw     f2, 0x98(sp)                                # Recover ft2
+    flw     f3, 0x9C(sp)                                # Recover ft3
+    flw     f4, 0xA0(sp)                                # Recover ft4
+    flw     f5, 0xA4(sp)                                # Recover ft5
+    flw     f6, 0xA8(sp)                                # Recover ft6
+    flw     f7, 0xAC(sp)                                # Recover ft7
+    flw     f10,0xB8(sp)                                # Recover fa0
+    flw     f11,0xBC(sp)                                # Recover fa1
+    flw     f12,0xC0(sp)                                # Recover fa2
+    flw     f13,0xC4(sp)                                # Recover fa3
+    flw     f14,0xC8(sp)                                # Recover fa4
+    flw     f15,0xCC(sp)                                # Recover fa5
+    flw     f16,0xD0(sp)                                # Recover fa6
+    flw     f17,0xD4(sp)                                # Recover fa7
+    flw     f28,0x100(sp)                               # Recover ft8
+    flw     f29,0x104(sp)                               # Recover ft9
+    flw     f30,0x108(sp)                               # Recover ft10
+    flw     f31,0x10C(sp)                               # Recover ft11
+    lw      t0, 0x110(sp)                               # Recover fcsr
     csrw    fcsr, t0                                    #
 #elif __riscv_flen == 64
-    fld     f0, 0x80(sp)                                # Recover ft0
-    fld     f1, 0x88(sp)                                # Recover ft1
-    fld     f2, 0x90(sp)                                # Recover ft2
-    fld     f3, 0x98(sp)                                # Recover ft3
-    fld     f4, 0xA0(sp)                                # Recover ft4
-    fld     f5, 0xA8(sp)                                # Recover ft5
-    fld     f6, 0xB0(sp)                                # Recover ft6
-    fld     f7, 0xB8(sp)                                # Recover ft7
-    fld     f10,0xD0(sp)                                # Recover fa0
-    fld     f11,0xD8(sp)                                # Recover fa1
-    fld     f12,0xE0(sp)                                # Recover fa2
-    fld     f13,0xE8(sp)                                # Recover fa3
-    fld     f14,0xF0(sp)                                # Recover fa4
-    fld     f15,0xF8(sp)                                # Recover fa5
-    fld     f16,0x100(sp)                               # Recover fa6
-    fld     f17,0x108(sp)                               # Recover fa7
-    fld     f28,0x160(sp)                               # Recover ft8
-    fld     f29,0x168(sp)                               # Recover ft9
-    fld     f30,0x170(sp)                               # Recover ft10
-    fld     f31,0x178(sp)                               # Recover ft11
-    lw      t0, 0x180(sp)                               # Recover fcsr
+    fld     f0, 0x90(sp)                                # Recover ft0
+    fld     f1, 0x98(sp)                                # Recover ft1
+    fld     f2, 0xA0(sp)                                # Recover ft2
+    fld     f3, 0xA8(sp)                                # Recover ft3
+    fld     f4, 0xB0(sp)                                # Recover ft4
+    fld     f5, 0xB8(sp)                                # Recover ft5
+    fld     f6, 0xC0(sp)                                # Recover ft6
+    fld     f7, 0xC8(sp)                                # Recover ft7
+    fld     f10,0xE0(sp)                                # Recover fa0
+    fld     f11,0xE8(sp)                                # Recover fa1
+    fld     f12,0xF0(sp)                                # Recover fa2
+    fld     f13,0xF8(sp)                                # Recover fa3
+    fld     f14,0x100(sp)                               # Recover fa4
+    fld     f15,0x108(sp)                               # Recover fa5
+    fld     f16,0x110(sp)                               # Recover fa6
+    fld     f17,0x118(sp)                               # Recover fa7
+    fld     f28,0x170(sp)                               # Recover ft8
+    fld     f29,0x178(sp)                               # Recover ft9
+    fld     f30,0x180(sp)                               # Recover ft10
+    fld     f31,0x188(sp)                               # Recover ft11
+    lw      t0, 0x190(sp)                               # Recover fcsr
     csrw    fcsr, t0                                    #
 #endif
 #endif
+
+    lw      t0, 0x88(sp)                                # Recover mcctlbeginaddr
+    csrw    CSR_MCCTLBEGINADDR, t0                      # Setup mcctlbeginaddr
+    lw      t0, 0x8C(sp)                                # Recover mcctldata
+    csrw    CSR_MCCTLDATA, t0                           # Setup mcctldata
 
     /* Recover the saved context and return to the point of interrupt.  */
 
@@ -325,12 +336,12 @@ _tx_thread_no_preempt_restore:
 
 #ifdef __riscv_flen
 #if __riscv_flen == 32
-    addi    sp, sp, 260                                 # Recover stack frame - with floating point enabled
+    addi    sp, sp, 288                                 # Recover stack frame - with floating point enabled
 #elif __riscv_flen == 64
-    addi    sp, sp, 396                                 # Recover stack frame - with double floating point enabled
+    addi    sp, sp, 416                                 # Recover stack frame - with double floating point enabled
 #endif
 #else
-    addi    sp, sp, 128                                 # Recover stack frame - without floating point enabled
+    addi    sp, sp, 160                                 # Recover stack frame - without floating point enabled
 #endif
     mret                                                # Return to point of interrupt
 
@@ -350,33 +361,33 @@ _tx_thread_preempt_restore:
 
     /* Store floating point preserved registers.  */
 
-    fsw     f8,  0x9C(t0)                               # Store fs0
-    fsw     f9,  0xA0(t0)                               # Store fs1
-    fsw     f18, 0xC4(t0)                               # Store fs2
-    fsw     f19, 0xC8(t0)                               # Store fs3
-    fsw     f20, 0xCC(t0)                               # Store fs4
-    fsw     f21, 0xD0(t0)                               # Store fs5
-    fsw     f22, 0xD4(t0)                               # Store fs6
-    fsw     f23, 0xD8(t0)                               # Store fs7
-    fsw     f24, 0xDC(t0)                               # Store fs8
-    fsw     f25, 0xE0(t0)                               # Store fs9
-    fsw     f26, 0xE4(t0)                               # Store fs10
-    fsw     f27, 0xE8(t0)                               # Store fs11
+    fsw     f8,  0xB0(t0)                               # Store fs0
+    fsw     f9,  0xB4(t0)                               # Store fs1
+    fsw     f18, 0xD8(t0)                               # Store fs2
+    fsw     f19, 0xDC(t0)                               # Store fs3
+    fsw     f20, 0xE0(t0)                               # Store fs4
+    fsw     f21, 0xE4(t0)                               # Store fs5
+    fsw     f22, 0xE8(t0)                               # Store fs6
+    fsw     f23, 0xEC(t0)                               # Store fs7
+    fsw     f24, 0xF0(t0)                               # Store fs8
+    fsw     f25, 0xF4(t0)                               # Store fs9
+    fsw     f26, 0xF8(t0)                               # Store fs10
+    fsw     f27, 0xFC(t0)                               # Store fs11
 #elif __riscv_flen == 64
     /* Store floating point preserved registers.  */
 
-    fsd     f8,  0xC0(t0)                               # Store fs0
-    fsd     f9,  0xC8(t0)                               # Store fs1
-    fsd     f18, 0x110(t0)                              # Store fs2
-    fsd     f19, 0x118(t0)                              # Store fs3
-    fsd     f20, 0x120(t0)                              # Store fs4
-    fsd     f21, 0x128(t0)                              # Store fs5
-    fsd     f22, 0x130(t0)                              # Store fs6
-    fsd     f23, 0x138(t0)                              # Store fs7
-    fsd     f24, 0x140(t0)                              # Store fs8
-    fsd     f25, 0x148(t0)                              # Store fs9
-    fsd     f26, 0x150(t0)                              # Store fs10
-    fsd     f27, 0x158(t0)                              # Store fs11
+    fsd     f8,  0xD0(t0)                               # Store fs0
+    fsd     f9,  0xD8(t0)                               # Store fs1
+    fsd     f18, 0x120(t0)                              # Store fs2
+    fsd     f19, 0x128(t0)                              # Store fs3
+    fsd     f20, 0x130(t0)                              # Store fs4
+    fsd     f21, 0x138(t0)                              # Store fs5
+    fsd     f22, 0x140(t0)                              # Store fs6
+    fsd     f23, 0x148(t0)                              # Store fs7
+    fsd     f24, 0x150(t0)                              # Store fs8
+    fsd     f25, 0x158(t0)                              # Store fs9
+    fsd     f26, 0x160(t0)                              # Store fs10
+    fsd     f27, 0x168(t0)                              # Store fs11
 #endif
 #endif
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -12,9 +12,20 @@
 #include "hpm_soc_ip_feature.h"
 
 /*
+ * Cache section
+ */
+#define HPM_L1C_CACHE_SIZE (uint32_t)(32 * SIZE_1KB)
+#define HPM_L1C_ICACHE_SIZE (HPM_L1C_CACHE_SIZE)
+#define HPM_L1C_DCACHE_SIZE (HPM_L1C_CACHE_SIZE)
+#define HPM_L1C_CACHELINE_SIZE (64)
+#define HPM_L1C_CACHELINES_PER_WAY (128)
+#define HPM_L1C_CACHELINE_ALIGN_DOWN(n) ((uint32_t)(n) & ~(HPM_L1C_CACHELINE_SIZE - 1U))
+#define HPM_L1C_CACHELINE_ALIGN_UP(n)   HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t)(n) + HPM_L1C_CACHELINE_SIZE - 1U)
+
+/*
  * UART section
  */
-#define UART_SOC_FIFO_SIZE (16U)
+#define UART_SOC_FIFO_SIZE (32U)
 
 /*
  * I2C Section
@@ -186,7 +197,7 @@
  * SPI Section
  */
 #define SPI_SOC_TRANSFER_COUNT_MAX  (0xFFFFFFFFU)
-#define SPI_SOC_FIFO_DEPTH          (4U)
+#define SPI_SOC_FIFO_DEPTH          (8U)
 
 /*
  * ROM API section
@@ -219,6 +230,8 @@
 #define TRGM_SOC_HAS_ADC_MATRIX_SEL (1U)
 #define TRGM_SOC_HAS_DAC_MATRIX_SEL (1U)
 #define TRGM_SOC_HAS_POS_MATRIX_SEL (1U)
+#define TRGM_SOC_TRIM_IN_GROUP_MAX  (7U)
+#define TRGM_SOC_TRIM_OUT_GROUP_MAX (7U)
 
 /*
  * MCAN Section
@@ -233,7 +246,6 @@
  */
 #define EWDG_SOC_CLK_DIV_VAL_MAX        (32U)
 #define EWDG_SOC_OVERTIME_REG_WIDTH     (32U)
-#define EWDG_SOC_SUPPORT_TIMEOUT_INTERRUPT  (1)
 #define EWDG_TIMEOUT_INTERRUPT_REQUIRE_EDGE_TRIGGER (0)
 
 /*
@@ -255,5 +267,10 @@
 #define PLB_SOC_TYPEA_TRGM_OUTPUT0        (HPM_TRGM0_INPUT_SRC_PLB_OUT00)
 #define PLB_SOC_TYPEB_TRGM_INPUT0         (TRGM_TRGOCFG_PLB_IN_32)
 #define PLB_SOC_TYPEB_TRGM_OUTPUT0        (HPM_TRGM0_INPUT_SRC_PLB_OUT32)
+
+/*
+ * GPIO
+ */
+#define GPIO_SOC_HAS_EDGE_BOTH_INTERRUPT   (1U)
 
 #endif /* HPM_SOC_FEATURE_H */

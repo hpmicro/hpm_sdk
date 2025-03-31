@@ -51,7 +51,7 @@ hpm_stat_t hpm_i2s_master_over_spi_init(hpm_i2s_over_spi_t *i2s)
     spi_config.clk_phase = spi_sclk_sampling_odd_clk_edges;
     spi_config.clk_polarity = spi_sclk_low_idle;
     spi_config.data_len = 32;
-    spi_config.direction = msb_first;
+    spi_config.direction = spi_msb_first;
     spi_config.mode = spi_slave_mode;
     stat = hpm_spi_initialize(i2s->spi_slave.ptr, &spi_config);
     return stat;

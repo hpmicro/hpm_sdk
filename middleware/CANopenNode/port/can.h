@@ -892,22 +892,6 @@ static inline int can_get_capabilities(const struct device *dev, can_mode_t *cap
 }
 
 /**
- * @brief Get the CAN transceiver associated with the CAN controller
- *
- * Get a pointer to the device structure for the CAN transceiver associated with the CAN controller.
- *
- * @param dev Pointer to the device structure for the driver instance.
- * @return Pointer to the device structure for the associated CAN transceiver driver instance, or
- *         NULL if no transceiver is associated.
- */
-static const struct device *can_get_transceiver(const struct device *dev)
-{
-	const struct can_driver_config *common = (const struct can_driver_config *)dev->config;
-
-	return common->phy;
-}
-
-/**
  * @brief Start the CAN controller
  *
  * Bring the CAN controller out of `CAN_STATE_STOPPED`. This will reset the RX/TX error counters,
@@ -1100,35 +1084,6 @@ static inline can_mode_t can_get_mode(const struct device *dev)
  */
 int can_add_rx_filter(const struct device *dev, can_rx_callback_t callback,
 		      void *user_data, const struct can_filter *filter);
-
-/**
- * @brief Simple wrapper function for adding a message queue for a given filter
- *
- * Wrapper function for @a can_add_rx_filter() which puts received CAN frames
- * matching the filter in a message queue instead of calling a callback.
- *
- * If a received frame matches more than one filter (i.e., the filter IDs/masks or
- * flags overlap), the priority of the match is hardware dependent.
- *
- * The same message queue can be used for multiple filters.
- *
- * @note The message queue must be initialized before calling this function and
- * the caller must have appropriate permissions on it.
- *
- * @warning Message queue overruns are silently ignored and overrun frames
- * discarded. Custom error handling can be implemented by using
- * @a can_add_rx_filter() and @a k_msgq_put() directly.
- *
- * @param dev    Pointer to the device structure for the driver instance.
- * @param msgq   Pointer to the already initialized @a k_msgq struct.
- * @param filter Pointer to a @a can_filter structure defining the filter.
- *
- * @retval filter_id on success.
- * @retval -ENOSPC if there are no free filters.
- * @retval -ENOTSUP if the requested filter type is not supported.
- */
- int can_add_rx_filter_msgq(const struct device *dev, struct k_msgq *msgq,
-				     const struct can_filter *filter);
 
 /**
  * @brief Remove a CAN RX filter

@@ -24,6 +24,7 @@ Public CMake functions / macros
  * :cmake:command:`sdk_gcc_inc`
  * :cmake:command:`sdk_gcc_src`
  * :cmake:command:`sdk_gcc_src_glob`
+ * :cmake:command:`sdk_gcc_startup_src`
  * :cmake:command:`sdk_get_compile_options`
  * :cmake:command:`sdk_iar_asm_preinclude`
  * :cmake:command:`sdk_iar_cc_preinclude`
@@ -36,6 +37,7 @@ Public CMake functions / macros
  * :cmake:command:`sdk_iar_link_libraries`
  * :cmake:command:`sdk_iar_src`
  * :cmake:command:`sdk_iar_src_glob`
+ * :cmake:command:`sdk_iar_startup_src`
  * :cmake:command:`sdk_inc`
  * :cmake:command:`sdk_inc_ifdef`
  * :cmake:command:`sdk_inc_ifndef`
@@ -58,6 +60,7 @@ Public CMake functions / macros
  * :cmake:command:`sdk_ses_options`
  * :cmake:command:`sdk_ses_src`
  * :cmake:command:`sdk_ses_src_glob`
+ * :cmake:command:`sdk_ses_startup_src`
  * :cmake:command:`sdk_src`
  * :cmake:command:`sdk_src_glob`
  * :cmake:command:`sdk_src_glob_ifdef`
@@ -245,6 +248,22 @@ Public CMake functions / macros
     like ./**/*.c to add all .c files under current directory recursively
 
 
+.. _`sdk_gcc_startup_src_ref`:
+
+`sdk_gcc_startup_src`
+~~~~~~~~~~~~~~~~~~~~~
+
+.. cmake:command:: sdk_gcc_startup_src()
+
+ *[function defined in cmake-ext.cmake]*
+
+ Add source specifically for gcc startup
+
+ Example:
+   sdk_gcc_startup_src(SOURCE_FILE)
+ :param SOURCE_FILE: source files to be added to HPM_SDK_GCC_STARTUP_LIB
+
+
 .. _`sdk_get_compile_options_ref`:
 
 `sdk_get_compile_options`
@@ -268,7 +287,7 @@ Public CMake functions / macros
 
 .. cmake:command:: sdk_iar_asm_preinclude(file)
 
- *[function defined in ide/iar.cmake]*
+ *[function defined in ide\iar.cmake]*
 
  Set asm preinclude for IAR
 
@@ -280,7 +299,7 @@ Public CMake functions / macros
 
 .. cmake:command:: sdk_iar_cc_preinclude(file)
 
- *[function defined in ide/iar.cmake]*
+ *[function defined in ide\iar.cmake]*
 
  Set cc preinclude for IAR
 
@@ -292,7 +311,7 @@ Public CMake functions / macros
 
 .. cmake:command:: sdk_iar_compile_definitions()
 
- *[function defined in ide/iar.cmake]*
+ *[function defined in ide\iar.cmake]*
 
  Set compile definitions for IAR
 
@@ -308,7 +327,7 @@ Public CMake functions / macros
 
 .. cmake:command:: sdk_iar_compile_options()
 
- *[function defined in ide/iar.cmake]*
+ *[function defined in ide\iar.cmake]*
 
  Set compile options for IAR
 
@@ -324,7 +343,7 @@ Public CMake functions / macros
 
 .. cmake:command:: sdk_iar_enable_andesperf()
 
- *[function defined in ide/iar.cmake]*
+ *[function defined in ide\iar.cmake]*
 
  Enable iar andes performance ext
 
@@ -336,7 +355,7 @@ Public CMake functions / macros
 
 .. cmake:command:: sdk_iar_enable_dsp()
 
- *[function defined in ide/iar.cmake]*
+ *[function defined in ide\iar.cmake]*
 
  Enable DSP in IAR
 
@@ -348,7 +367,7 @@ Public CMake functions / macros
 
 .. cmake:command:: sdk_iar_enable_no_size_constraints()
 
- *[function defined in ide/iar.cmake]*
+ *[function defined in ide\iar.cmake]*
 
  Enable no size constraints
 
@@ -360,7 +379,7 @@ Public CMake functions / macros
 
 .. cmake:command:: sdk_iar_inc()
 
- *[function defined in ide/iar.cmake]*
+ *[function defined in ide\iar.cmake]*
 
  Add include path for IAR
 
@@ -376,7 +395,7 @@ Public CMake functions / macros
 
 .. cmake:command:: sdk_iar_link_libraries()
 
- *[function defined in ide/iar.cmake]*
+ *[function defined in ide\iar.cmake]*
 
  link libraries for IAR
 
@@ -392,7 +411,7 @@ Public CMake functions / macros
 
 .. cmake:command:: sdk_iar_src()
 
- *[function defined in ide/iar.cmake]*
+ *[function defined in ide\iar.cmake]*
 
  Add source file for IAR
 
@@ -408,7 +427,7 @@ Public CMake functions / macros
 
 .. cmake:command:: sdk_iar_src_glob()
 
- *[function defined in ide/iar.cmake]*
+ *[function defined in ide\iar.cmake]*
 
  Add source file (glob pattern) for IAR
 
@@ -416,6 +435,22 @@ Public CMake functions / macros
    sdk_gcc_src_glob(SOURCE_FILE_GLOB)
  :param SOURCE_FILE_GLOB: source files to be added to IAR,
     like ./**/*.c to add all .c files under current directory recursively
+
+
+.. _`sdk_iar_startup_src_ref`:
+
+`sdk_iar_startup_src`
+~~~~~~~~~~~~~~~~~~~~~
+
+.. cmake:command:: sdk_iar_startup_src()
+
+ *[function defined in ide\iar.cmake]*
+
+ Add source file for IAR startup
+
+ Example:
+   sdk_iar_startup_src(STARTUP_SOURCE_FILE)
+ :param STARTUP_SOURCE_FILE: startup source file added for IAR
 
 
 .. _`sdk_inc_ref`:
@@ -520,8 +555,10 @@ Public CMake functions / macros
  link libraries if feature is true
 
  Example:
-   sdk_ld_options(opts)
- :param opts: linker options
+   sdk_link_libraries_ifdef(FEATUREA libs)
+ :param FEATUREA: if FEATUREA is true, opts will be added for linker
+ :param libs: libraries to be linked, support both file path
+   (like USER_LIB.a) and standard libraries provided by toolchain (like m)
 
 
 .. _`sdk_linker_global_symbols_ref`:
@@ -659,7 +696,7 @@ Public CMake functions / macros
 
 .. cmake:command:: sdk_ses_compile_definitions()
 
- *[function defined in ide/segger.cmake]*
+ *[function defined in ide\segger.cmake]*
 
  Set compile definitions for SES
 
@@ -675,7 +712,7 @@ Public CMake functions / macros
 
 .. cmake:command:: sdk_ses_compile_options()
 
- *[function defined in ide/segger.cmake]*
+ *[function defined in ide\segger.cmake]*
 
  Set compile options for SES
 
@@ -691,7 +728,7 @@ Public CMake functions / macros
 
 .. cmake:command:: sdk_ses_inc()
 
- *[function defined in ide/segger.cmake]*
+ *[function defined in ide\segger.cmake]*
 
  Add include path for SES
 
@@ -707,7 +744,7 @@ Public CMake functions / macros
 
 .. cmake:command:: sdk_ses_link_libraries()
 
- *[function defined in ide/segger.cmake]*
+ *[function defined in ide\segger.cmake]*
 
  link libraries for SES
 
@@ -723,7 +760,7 @@ Public CMake functions / macros
 
 .. cmake:command:: sdk_ses_options()
 
- *[function defined in ide/segger.cmake]*
+ *[function defined in ide\segger.cmake]*
 
  Add options for SES project
 
@@ -740,7 +777,7 @@ Public CMake functions / macros
 
 .. cmake:command:: sdk_ses_src()
 
- *[function defined in ide/segger.cmake]*
+ *[function defined in ide\segger.cmake]*
 
  Add source file for SES
 
@@ -756,7 +793,7 @@ Public CMake functions / macros
 
 .. cmake:command:: sdk_ses_src_glob()
 
- *[function defined in ide/segger.cmake]*
+ *[function defined in ide\segger.cmake]*
 
  Add source file (glob pattern) for SES
 
@@ -764,6 +801,22 @@ Public CMake functions / macros
    sdk_gcc_src_glob(SOURCE_FILE_GLOB)
  :param SOURCE_FILE_GLOB: source files to be added to SES,
     like ./**/*.c to add all .c files under current directory recursively
+
+
+.. _`sdk_ses_startup_src_ref`:
+
+`sdk_ses_startup_src`
+~~~~~~~~~~~~~~~~~~~~~
+
+.. cmake:command:: sdk_ses_startup_src()
+
+ *[function defined in ide\segger.cmake]*
+
+ Add source file for SES startup
+
+ Example:
+   sdk_ses_startup_src(STARTUP_SOURCE_FILE)
+ :param STARTUP_SOURCE_FILE: source file added for SES startup
 
 
 .. _`sdk_src_ref`:
