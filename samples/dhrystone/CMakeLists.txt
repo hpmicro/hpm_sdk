@@ -11,6 +11,7 @@ set(opt_string "-O3 -fno-inline -flto -fmessage-length=0 -Wno-implicit-int -Wno-
 if("${TOOLCHAIN_VARIANT}" STREQUAL "zcc")
     set(opt_string "${opt_string} -mllvm --binop-rhs-first=true -falign-functions=16 -falign-loops=4 -flate-loop-unroll -malign-branch -Wno-error=deprecated-non-prototype -Wno-error=implicit-int -Wno-error=implicit-function-declaration")
     sdk_zcc_ld_options(-O3)
+    sdk_zcc_ld_options("-fuse-size-lib")
     sdk_zcc_ld_options(-Wl,-mllvm,--riscv-default-unroll=true)
     sdk_zcc_ld_options(-Wl,-mllvm,--misfetch-cost=8)
     sdk_zcc_ld_options(-Wl,-mllvm,--ldstmemcpy-glue-max=4)
