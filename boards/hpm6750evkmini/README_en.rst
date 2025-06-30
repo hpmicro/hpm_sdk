@@ -319,6 +319,16 @@ Pin Description
      - P2[40]
      - the pin that controls the SPI slave CS
 
+- CLOCK REF Pin
+
+  .. list-table::
+     :header-rows: 1
+
+     * - Function
+       - Position
+     * - PE24
+       - P2[16]
+
 Known Issues
 ------------
 

@@ -20,7 +20,7 @@
 #define SAMPLE_IPV4_ADDRESS 0.0.0.0
 #define SAMPLE_IPV4_MASK 0.0.0.0
 
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(64) NX_DHCP dhcp_client;
+ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(64) NX_DHCP dhcp_client;
 UCHAR ip_address[4];
 UCHAR network_mask[4];
 #else
@@ -37,8 +37,9 @@ UCHAR network_mask[4];
 #define SERVER_IPV4_ADDRESS 192.168.1.2
 #endif
 #define SAMPLE_PRIMARY_INTERFACE 0
-
+#ifndef ECHO_SERVER_PORT
 #define ECHO_SERVER_PORT 7777
+#endif
 #define ECHO_DATA "ABCDEFGHIJKLMNOPQRSTUVWXYZ "
 #define ECHO_RECEIVE_TIMEOUT NX_IP_PERIODIC_RATE
 /* Define packet pool.  */
@@ -249,17 +250,20 @@ VOID client_thread_entry(ULONG thread_input)
         return;
     }
     tx_thread_sleep(NX_IP_PERIODIC_RATE * 2);
-    /* Connect to server.  */
-    printf("Connecting to server: ");
-    status = nxd_tcp_client_socket_connect(&tcp_client, &echo_server_address,
-        ECHO_SERVER_PORT,
-        NX_WAIT_FOREVER);
-    /* Check status.  */
-    if (status) {
-        printf("Not connected\r\n");
-        error_counter++;
-        return;
+    while (1) {
+        /* Connect to server.  */
+        printf("Connecting to server: ");
+        status = nxd_tcp_client_socket_connect(&tcp_client, &echo_server_address,
+            ECHO_SERVER_PORT,
+            NX_WAIT_FOREVER);
+        /* Check status.  */
+        if (status) {
+            printf("Not connected\r\n");
+        } else {
+          break;
+        }
     }
+
     printf("Connected\r\n");
     /* Loop to send data to echo server.  */
     for (;;) {

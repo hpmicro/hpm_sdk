@@ -59,7 +59,7 @@ void init_tamper_pins(void);
 void init_pwm_fault_pins(void);
 void init_uart_break_signal_pin(void);
 void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp);
-
+void init_sdram_card_detect_pin(void);
 #ifdef __cplusplus
 }
 #endif

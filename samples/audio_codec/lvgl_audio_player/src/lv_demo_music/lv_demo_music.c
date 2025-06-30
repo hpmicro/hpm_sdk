@@ -16,6 +16,7 @@
 #include "lv_demo_music_list.h"
 #include "./src/core/lv_global.h"
 #include "sd_fatfs_common.h"
+#include <stdio.h>
 
 /*********************
  *      DEFINES
@@ -38,10 +39,11 @@
 static lv_obj_t * ctrl;
 static lv_obj_t * list;
 
-static char * title_list[20];
-static char * artist_list[20];
-static char * genre_list[20];
-static uint32_t time_list[20];
+static char * title_list[FIL_SEARCH_NUM];
+static char * artist_list[FIL_SEARCH_NUM];
+static char * genre_list[FIL_SEARCH_NUM];
+static uint32_t time_list[FIL_SEARCH_NUM];
+static uint32_t total_music;
 static const char artist_default[] = "unknown artist";
 static const char genre_default[] = "unknown genre";
 
@@ -56,36 +58,48 @@ static const char genre_default[] = "unknown genre";
 /**********************
  *   GLOBAL FUNCTIONS
  **********************/
-extern void caculate_music_time(uint32_t *data);
+extern hpm_stat_t calculate_music_time(char *file_name, uint32_t *tm_value);
 
 void lv_disp_no_sd_card_info(void)
 {
     lv_obj_t *label = lv_label_create(lv_scr_act());
     lv_label_set_text(label, "mount sd card error ");
-    lv_obj_set_style_text_align(label, LV_ALIGN_CENTER, 0);
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
 }
 
 int8_t lv_generate_music_info_table(void)
 {
     FRESULT rsl;
+    hpm_stat_t res;
 
     rsl = sd_search_music_name(".wav", ".mp3");
     if (rsl == FR_OK) {
-        caculate_music_time(time_list);
         for (uint8_t i = 0; i < sd_get_search_file_cnt(); i++) {
-            title_list[i] = sd_get_search_file_buff_ptr(i);
-            artist_list[i] = (char *)artist_default;
-            genre_list[i] = (char *)genre_default;
+            res = calculate_music_time(sd_get_search_file_buff_ptr(i), &time_list[total_music]);
+            if (res == status_success) {
+                printf("%d: %s\r\n", total_music, sd_get_search_file_buff_ptr(i));
+                title_list[total_music] = sd_get_search_file_buff_ptr(i);
+                artist_list[total_music] = (char *)artist_default;
+                genre_list[total_music] = (char *)genre_default;
+                total_music++;
+            }
         }
-    } else {
+    } 
+    
+    if (total_music == 0) {
         lv_obj_t *label = lv_label_create(lv_scr_act());
         lv_label_set_text(label, "no \".wav\" and \".mp3\" music file");
-        lv_obj_set_style_text_align(label, LV_ALIGN_CENTER, 0);
+        lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
         lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
     }
 
     return (int8_t)rsl;
+}
+
+uint32_t lv_get_total_music(void)
+{
+    return total_music;
 }
 
 void lv_demo_music(void)
@@ -102,28 +116,28 @@ void lv_demo_music(void)
 
 char * _lv_demo_music_get_title(uint32_t track_id)
 {
-    if (track_id >= sd_get_search_file_cnt())
+    if (track_id >= total_music)
         return NULL;
     return title_list[track_id];
 }
 
 char * _lv_demo_music_get_artist(uint32_t track_id)
 {
-    if (track_id >= sd_get_search_file_cnt())
+    if (track_id >= total_music)
         return NULL;
     return artist_list[track_id];
 }
 
 char * _lv_demo_music_get_genre(uint32_t track_id)
 {
-    if (track_id >= sd_get_search_file_cnt())
+    if (track_id >= total_music)
         return NULL;
     return genre_list[track_id];
 }
 
 uint32_t _lv_demo_music_get_track_length(uint32_t track_id)
 {
-    if (track_id >= sd_get_search_file_cnt())
+    if (track_id >= total_music)
         return 0;
     return time_list[track_id];
 }

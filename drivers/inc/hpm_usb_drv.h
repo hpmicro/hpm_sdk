@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -26,8 +26,9 @@
  *  Macro Constant Declarations
  *---------------------------------------------------------------------
  */
-#define USB_PHY_INIT_DELAY_COUNT  (100U) /**< a delay count for USB phy initialization */
-#define USB_HOST_FRAMELIST_SIZE   (8U)  /**< a frame list size in USB host mode */
+#define USB_PHY_INIT_DELAY_COUNT   (25U) /**< a delay count for USB phy initialization, about 2us in 600MHz */
+#define USB_PHY_DEINIT_DELAY_COUNT (5000U) /**< a delay count for USB phy de-initialization, about 400us in 600MHz */
+#define USB_HOST_FRAMELIST_SIZE    (8U)  /**< a frame list size in USB host mode */
 
 /*---------------------------------------------------------------------
  *  Macro Enum Declarations
@@ -477,6 +478,13 @@ static inline bool usb_otgsc_get_session_valid_flag(USB_Type *ptr)
 {
     return (USB_OTGSC_ASV_GET(ptr->OTGSC) != 0) ? true : false;
 }
+
+/**
+ * @brief De-Initialize USB phy
+ *
+ * @param[in] ptr A USB peripheral base address
+ */
+void usb_phy_deinit(USB_Type *ptr);
 
 /**
  * @brief Initialize USB phy

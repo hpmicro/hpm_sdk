@@ -1555,8 +1555,7 @@ typedef struct {
 /*
  * ACIOM (R/W)
  *
- * Address/Command I/O Mode: Selects SSTL mode (when set to 0) or CMOS mode (when set to 1) of the I/O for all address and command pins. This bit connects to bit
- * [0] of the IOM pin on the D3F I/Os, and for other I/O libraries, it connects to the IOM pin of the I/O.
+ * Address/Command I/O Mode: Selects SSTL mode (when set to 0) or CMOS mode (when set to 1) of the I/O for all address and command pins. This bit connects to bit[0] of the IOM pin on the D3F I/Os, and for other I/O libraries, it connects to the IOM pin of the I/O.
  */
 #define DDRPHY_ACIOCR_ACIOM_MASK (0x1U)
 #define DDRPHY_ACIOCR_ACIOM_SHIFT (0U)

@@ -396,12 +396,12 @@
 /* DAO base pointer */
 #define HPM_DAO ((DAO_Type *) HPM_DAO_BASE)
 
-#include "hpm_pdm_regs.h"
-/* Address of PDM instances */
+#include "hpm_pdmlite_regs.h"
+/* Address of PDMLITE instances */
 /* PDM base address */
 #define HPM_PDM_BASE (0xF0154000UL)
 /* PDM base pointer */
-#define HPM_PDM ((PDM_Type *) HPM_PDM_BASE)
+#define HPM_PDM ((PDMLITE_Type *) HPM_PDM_BASE)
 
 #include "hpm_mcan_regs.h"
 /* Address of MCAN instances */

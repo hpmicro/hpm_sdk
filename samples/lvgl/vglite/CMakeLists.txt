@@ -37,14 +37,8 @@ sdk_compile_definitions(-DLV_USE_DEMO_FLEX_LAYOUT=1)
 
 # LVGL CONF
 sdk_compile_definitions(-DLV_USE_OS=LV_OS_FREERTOS)
-sdk_compile_definitions(-DLV_USE_SYSMON=1)
 sdk_compile_definitions(-DLV_USE_DRAW_VG_LITE=1)
-sdk_compile_definitions(-DLV_LOG_LEVEL=LV_LOG_LEVEL_WARN)
-sdk_compile_definitions(-DLV_DRAW_BUF_ALIGN=64)
-sdk_compile_definitions(-DLV_MEM_SIZE=4*1024*1024)
-sdk_compile_definitions(-DLV_USE_HPM_MODE_DIRECT=1)
-sdk_compile_definitions(-DLV_USE_HPM_PDMA_FLUSH=0)
-sdk_compile_definitions(-DLV_USE_HPM_PDMA_WAIT_VSYNC=0)
+sdk_compile_definitions(-DCONFIG_LV_HAS_EXTRA_CONFIG="lv_app_conf.h")
 
 sdk_inc(src)
 sdk_app_src(src/main.c)

@@ -1,4 +1,4 @@
-# Copyright (c) 2021 HPMicro
+# Copyright (c) 2021-2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -17,7 +17,8 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 sdk_compile_definitions(-DCFG_TUSB_MCU=OPT_MCU_HPM)
 sdk_compile_definitions(-DUSB_HOST_MCU_CORE=HPM_CORE0)
 sdk_compile_definitions(-DUSB_FATFS_ENABLE)
-#sdk_compile_options("-Os")
+# sdk_compile_definitions(-DFATFS_ONLY_NONCACHEABLE_BUF=1)
+# sdk_compile_options("-Os")
 
 project(usb_host_msc_udisk_example)
 sdk_inc(inc)

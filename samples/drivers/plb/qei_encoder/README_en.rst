@@ -1,24 +1,32 @@
 .. _plb_qei_encoder_example:
 
 PLB QEI Encoder Example
-==============================================
+=======================
 
 Overview
 --------
 
- Configured as an ABZ encoder interface and output position and number of turns information.
+This example demonstrates how to use the PLB peripheral to implement a Quadrature Encoder Interface (QEI). PLB can be configured as AB phase or ABZ phase encoder interface to measure motor position and revolution count.
 
- - Use plb encoder component
+Key features:
+ - Supports both AB phase and ABZ phase encoder modes
+ - Configurable pulses per revolution
+ - Digital filtering for input signals
+ - Position count and revolution count monitoring
+ - Z phase triggered revolution counting
 
 Board Setting
 -------------
 
-- Connect the motor board and motor to the development board.
+- Connect the motor board and motor to the development board
+- Connect encoder signals based on encoder type:
+   - AB mode: Connect encoder A and B signals to corresponding board pins
+   - ABZ mode: Connect encoder A, B and Z signals to corresponding board pins
 
 Running the example
 -------------------
 
-When the project runs correctly, the serial port terminal will output the following information:
+When the project runs correctly, the serial port terminal will output encoder position and revolution information every 100ms:
 
 .. code-block:: console
 
@@ -27,22 +35,11 @@ When the project runs correctly, the serial port terminal will output the follow
    phase:1792. z:2
    phase:2596. z:2
    phase:2593. z:2
-   phase:2415. z:2
-   phase:1199. z:2
-   phase:3886. z:1
-   phase:2652. z:1
-   phase:2208. z:1
-   phase:2208. z:1
-   phase:2208. z:1
-   phase:2208. z:1
-   phase:2208. z:1
-   phase:2208. z:1
-   phase:2208. z:1
-   phase:2208. z:1
-   phase:2208. z:1
-   phase:2208. z:1
-   phase:2208. z:1
-   phase:2208. z:1
-   phase:2208. z:1
-   phase:2208. z:1
+   /* ... */
+
+Notes
+-----
+
+- When phase counting is enabled, pulses per revolution must be greater than 4
+- Z phase function is only valid in ABZ mode
 

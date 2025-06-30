@@ -25,7 +25,7 @@
  */
 
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -258,24 +258,18 @@ void dcd_int_handler(uint8_t rhport)
 
     if (int_status & intr_usb) {
         uint32_t const edpt_complete = usb_device_get_edpt_complete_status(handle);
-        usb_device_clear_edpt_complete_status(handle, edpt_complete);
-
-        uint32_t edpt_setup_status = usb_device_get_setup_status(handle);
-        if (edpt_setup_status) {
-            /*------------- Set up Received -------------*/
-            usb_device_clear_setup_status(handle, edpt_setup_status);
-            dcd_qhd_t *qhd0 = usb_device_qhd_get(&usb_device_handle[rhport], 0);
-            dcd_event_setup_received(rhport, (uint8_t*) &qhd0->setup_request, true);
-        }
+        uint32_t const edpt_setup_status = usb_device_get_setup_status(handle);
 
         if (edpt_complete) {
+            usb_device_clear_edpt_complete_status(handle, edpt_complete);
             for(uint8_t ep_idx = 0; ep_idx < USB_SOS_DCD_MAX_QHD_COUNT; ep_idx++) {
                 if (tu_bit_test(edpt_complete, ep_idx2bit(ep_idx))) {
                     transfer_len = 0;
                     qtd_active = false;
 
                     /* Failed QTD also get ENDPTCOMPLETE set */
-                    dcd_qtd_t *p_qtd = usb_device_qtd_get(&usb_device_handle[rhport], ep_idx);
+                    dcd_qhd_t *p_qhd = usb_device_qhd_get(&usb_device_handle[rhport], ep_idx);
+                    dcd_qtd_t *p_qtd = p_qhd->attached_qtd;
                     while (1) {
                         if (p_qtd->halted) {
                             result = XFER_RESULT_STALLED;
@@ -288,6 +282,7 @@ void dcd_int_handler(uint8_t rhport)
                             break;
                         } else {
                             transfer_len += p_qtd->expected_bytes - p_qtd->total_bytes;
+                            p_qtd->in_use = false;
                         }
 
                         if (p_qtd->next == USB_SOC_DCD_QTD_NEXT_INVALID){
@@ -304,6 +299,14 @@ void dcd_int_handler(uint8_t rhport)
                 }
             }
         }
+
+        if (edpt_setup_status) {
+            /*------------- Set up Received -------------*/
+            usb_device_clear_setup_status(handle, edpt_setup_status);
+            dcd_qhd_t *qhd0 = usb_device_qhd_get(&usb_device_handle[rhport], 0);
+            dcd_event_setup_received(rhport, (uint8_t*) &qhd0->setup_request, true);
+        }
+
     }
 
     if (int_status & intr_sof) {

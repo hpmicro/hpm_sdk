@@ -135,16 +135,6 @@ int32_t pival_to_pwmoutput(float pi)
     return pwm_out;
 }
 
-void reset_pwm_counter(void)
-{
-#if defined(HPMSOC_HAS_HPMSDK_PWM)
-    pwm_enable_reload_at_synci(MOTOR0_BLDCPWM);
-#endif
-#if defined(HPMSOC_HAS_HPMSDK_PWMV2)
-
-#endif
-}
-
 #if defined(HPMSOC_HAS_HPMSDK_PWM)
 void pwm_init(void)
 {
@@ -154,12 +144,8 @@ void pwm_init(void)
     pwm_output_channel_t pwm_output_ch_cfg;
 
     pwm_stop_counter(MOTOR0_BLDCPWM);
-    reset_pwm_counter();
+    pwm_enable_reload_at_synci(MOTOR0_BLDCPWM);
     pwm_get_default_pwm_config(MOTOR0_BLDCPWM, &pwm_config);
-
-    /*
-     * reload and start counter
-     */
     pwm_set_reload(MOTOR0_BLDCPWM, 0, PWM_RELOAD);
     pwm_set_start_count(MOTOR0_BLDCPWM, 0, 0);
 

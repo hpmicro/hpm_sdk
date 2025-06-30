@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -526,6 +526,10 @@
 #define BOARD_FREERTOS_TIMER_IRQ      IRQn_GPTMR1
 #define BOARD_FREERTOS_TIMER_CLK_NAME clock_gptmr1
 
+#define BOARD_FREERTOS_TICK_SRC_PWM          HPM_PWM0
+#define BOARD_FREERTOS_TICK_SRC_PWM_IRQ      IRQn_PWM0
+#define BOARD_FREERTOS_TICK_SRC_PWM_CLK_NAME clock_mot0
+
 #define BOARD_FREERTOS_LOWPOWER_TIMER          HPM_PTMR
 #define BOARD_FREERTOS_LOWPOWER_TIMER_CHANNEL  1
 #define BOARD_FREERTOS_LOWPOWER_TIMER_IRQ      IRQn_PTMR
@@ -576,6 +580,10 @@
 
 /* BGPR */
 #define BOARD_BGPR HPM_BGPR
+
+#define BOARD_APP_CLK_REF_PIN_NAME "J1[4] (PA14)"
+#define BOARD_APP_CLK_REF_CLK_NAME clock_ref0
+
 
 #if defined(__cplusplus)
 extern "C" {
@@ -646,6 +654,10 @@ void board_ungate_mchtmr_at_lp_mode(void);
 uint32_t board_init_uart_clock(UART_Type *ptr);
 
 void board_init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp);
+
+void board_init_clk_ref_pin(void);
+
+uint32_t board_init_gptmr_clock(GPTMR_Type *ptr);
 
 #if defined(__cplusplus)
 }

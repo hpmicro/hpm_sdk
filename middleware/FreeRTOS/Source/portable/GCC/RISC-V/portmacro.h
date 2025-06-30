@@ -91,7 +91,18 @@ typedef portUBASE_TYPE TickType_t;
 /* Scheduler utilities. */
 extern void vTaskSwitchContext( void );
 #define portYIELD() __asm volatile( "ecall" );
+#if !defined(DISABLE_IRQ_PREEMPTIVE) || (DISABLE_IRQ_PREEMPTIVE == 0)
+#define portEND_SWITCHING_ISR( xSwitchRequired )    do {\
+                                                        if( xSwitchRequired ) {\
+                                                            UBaseType_t uxSavedInterruptStatus = portSET_INTERRUPT_MASK_FROM_ISR();\
+                                                            vTaskSwitchContext();\
+                                                            portCLEAR_INTERRUPT_MASK_FROM_ISR(uxSavedInterruptStatus);\
+                                                        }\
+                                                    } while( 0 )
+#else
+/* Preemptive is disabled, no need to mask interrupts */
 #define portEND_SWITCHING_ISR( xSwitchRequired ) do { if( xSwitchRequired ) vTaskSwitchContext(); } while( 0 )
+#endif
 #define portYIELD_FROM_ISR( x ) portEND_SWITCHING_ISR( x )
 /*-----------------------------------------------------------*/
 

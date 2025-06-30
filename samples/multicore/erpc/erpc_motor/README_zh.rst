@@ -30,6 +30,8 @@ Erpc的使用参考`middleware/samples/multicore/erpc/erpc_matrix_multiply_rpmsg
 
   - 完成上述过程后，给驱动板上电观察电流无异常后，给核心板上电，再次确认电流无异常后，就可以烧录程序，观察运行现象。
 
+  - 对于无板载SDRAM的开发板，需要注意build type为flash_sdram_xip时，需要先插入SDRAM卡
+
 2.2 软件
 ~~~~~~~~~~
 
@@ -92,6 +94,8 @@ Erpc的使用参考`middleware/samples/multicore/erpc/erpc_matrix_multiply_rpmsg
        :alt:
 
   4. 配置ip地址
+
+     注意此处的ip地址需要与开发板的ip地址在同一网段，且不能和PC本身的网卡地址一样。即pc,开发板和twincat软件中的三个ip地址需要都不一样。
 
     .. image:: doc/set_ip_address.png
        :alt:

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -20,11 +20,13 @@
 #define HPM_SERIAL_NOR_SPI_RETRY_COUNT         (0xFFFFFF)
 #endif
 
-static hpm_stat_t spi_nor_rx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_ptr,
-                                        uint32_t dst, uint8_t data_width, uint32_t size, uint8_t burst_size);
+#if (SERIAL_NOR_USE_DMA_MGR == 0)
+static hpm_stat_t spi_nor_tx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_ptr,
+                                            uint32_t src, uint8_t data_width, uint32_t size, uint8_t burst_size);
 
 static hpm_stat_t spi_nor_rx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_ptr, uint32_t dst,
                                             uint8_t data_width, uint32_t size, uint8_t burst_size);
+#endif
 
 static void hpm_config_cmd_addr_format(void *ops, hpm_serial_nor_transfer_seq_t *cmd_seq, spi_control_config_t *control_config);
 
@@ -63,6 +65,7 @@ static hpm_stat_t transfer(void *host, hpm_serial_nor_transfer_seq_t *command_se
     return stat;
 }
 
+#if (SERIAL_NOR_USE_DMA_MGR == 0)
 static hpm_stat_t spi_nor_tx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_ptr,
                                             uint32_t src, uint8_t data_width, uint32_t size, uint8_t burst_size)
 {
@@ -114,6 +117,7 @@ static hpm_stat_t spi_nor_rx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_
     }
     return stat;
 }
+#endif
 
 static void hpm_config_cmd_addr_format(void *ops, hpm_serial_nor_transfer_seq_t *cmd_seq, spi_control_config_t *control_config)
 {
@@ -163,6 +167,12 @@ static void hpm_config_cmd_addr_format(void *ops, hpm_serial_nor_transfer_seq_t 
 
 static hpm_stat_t init(void *ops)
 {
+#if (SERIAL_NOR_USE_DMA_MGR == 1)
+    dma_mgr_chn_conf_t chg_config;
+    dma_resource_t *resource = NULL;
+    SPI_Type *spi_base = NULL;
+#endif
+    hpm_stat_t stat = status_success;
     spi_format_config_t format_config = {0};
     hpm_serial_nor_host_t *host = (hpm_serial_nor_host_t *)ops;
     if ((host == NULL) || (host->host_param.param.host_base == NULL)) {
@@ -176,6 +186,7 @@ static hpm_stat_t init(void *ops)
     format_config.common_config.data_merge = false;
     spi_format_init(host->host_param.param.host_base, &format_config);
     if (host->host_param.flags & SERIAL_NOR_HOST_SUPPORT_DMA) {
+#if (SERIAL_NOR_USE_DMA_MGR == 0)
         if ((host->host_param.param.dma_control.dma_base == NULL) || (host->host_param.param.dma_control.dmamux_base == NULL)) {
             return status_invalid_argument;
         }
@@ -188,8 +199,45 @@ static hpm_stat_t init(void *ops)
                         DMA_SOC_CHN_TO_DMAMUX_CHN(host->host_param.param.dma_control.dma_base,
                         host->host_param.param.dma_control.tx_dma_ch),
                         host->host_param.param.dma_control.tx_dma_req, true);
+#else
+        dma_mgr_get_default_chn_config(&chg_config);
+        chg_config.src_width = DMA_MGR_TRANSFER_WIDTH_BYTE;
+        chg_config.dst_width = DMA_MGR_TRANSFER_WIDTH_BYTE;
+        /* spi rx dma config */
+        resource = &host->host_param.param.dma_control.rxdma_resource;
+        if (dma_mgr_request_resource(resource) == status_success) {
+            spi_base = (SPI_Type *)host->host_param.param.host_base;
+            chg_config.src_mode = DMA_MGR_HANDSHAKE_MODE_HANDSHAKE;
+            chg_config.src_addr_ctrl = DMA_MGR_ADDRESS_CONTROL_FIXED;
+            chg_config.src_addr = (uint32_t)&spi_base->DATA;
+            chg_config.dst_mode = DMA_MGR_HANDSHAKE_MODE_NORMAL;
+            chg_config.dst_addr_ctrl = DMA_MGR_ADDRESS_CONTROL_INCREMENT;
+            chg_config.en_dmamux = true;
+            chg_config.dmamux_src = host->host_param.param.dma_control.rx_dma_req;
+            HPM_CHECK_RET(dma_mgr_setup_channel(resource, &chg_config));
+            HPM_CHECK_RET(dma_mgr_disable_chn_irq(resource, DMA_MGR_INTERRUPT_MASK_TC));
+        } else {
+            stat = status_fail;
+        }
+        /* spi tx dma config */
+        resource = &host->host_param.param.dma_control.txdma_resource;
+        if (dma_mgr_request_resource(resource) == status_success) {
+            spi_base = (SPI_Type *)host->host_param.param.host_base;
+            chg_config.src_mode = DMA_MGR_HANDSHAKE_MODE_NORMAL;
+            chg_config.src_addr_ctrl = DMA_MGR_ADDRESS_CONTROL_INCREMENT;
+            chg_config.dst_mode = DMA_MGR_HANDSHAKE_MODE_HANDSHAKE;
+            chg_config.dst_addr_ctrl = DMA_MGR_ADDRESS_CONTROL_FIXED;
+            chg_config.dst_addr = (uint32_t)&spi_base->DATA;
+            chg_config.en_dmamux = true;
+            chg_config.dmamux_src = host->host_param.param.dma_control.tx_dma_req;
+            HPM_CHECK_RET(dma_mgr_setup_channel(resource, &chg_config));
+            HPM_CHECK_RET(dma_mgr_disable_chn_irq(resource, DMA_MGR_INTERRUPT_MASK_TC));
+        } else {
+            stat = status_fail;
+        }
+#endif
     }
-    return status_success;
+    return stat;
 }
 
 static hpm_stat_t hpm_spi_transfer_via_dma(hpm_serial_nor_host_t *host, spi_control_config_t *control_config,
@@ -197,8 +245,14 @@ static hpm_stat_t hpm_spi_transfer_via_dma(hpm_serial_nor_host_t *host, spi_cont
                                             uint8_t *buf, uint32_t len, bool is_read)
 {
     hpm_stat_t stat = status_success;
-    uint32_t data_width = 0;
+#if (SERIAL_NOR_USE_DMA_MGR == 1)
+    dma_resource_t *resource = NULL;
+    uint32_t buf_addr;
+    uint32_t dma_transfer_statue = DMA_CHANNEL_STATUS_ONGOING;
+#else
     uint8_t burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
+#endif
+    uint32_t data_width = 0;
     uint32_t timeout_count = 0;
     uint16_t dma_send_size;
     if (is_read) {
@@ -210,12 +264,22 @@ static hpm_stat_t hpm_spi_transfer_via_dma(hpm_serial_nor_host_t *host, spi_cont
             dma_send_size = ((len >> 2) + 1) << 2;
         }
         HPM_CHECK_RET(spi_setup_dma_transfer((SPI_Type *)host->host_param.param.host_base, control_config, &cmd, &addr, 0, len));
+#if (SERIAL_NOR_USE_DMA_MGR == 1)
+        resource = &host->host_param.param.dma_control.rxdma_resource;
+        buf_addr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)buf);
+        HPM_CHECK_RET(dma_mgr_set_chn_dst_width(resource, data_width));
+        HPM_CHECK_RET(dma_mgr_set_chn_src_width(resource, data_width));
+        HPM_CHECK_RET(dma_mgr_set_chn_dst_addr(resource, buf_addr));
+        HPM_CHECK_RET(dma_mgr_set_chn_transize(resource, dma_send_size >> data_width));
+        HPM_CHECK_RET(dma_mgr_enable_channel(resource));
+#else
         stat = spi_nor_rx_trigger_dma((DMA_Type *)host->host_param.param.dma_control.dma_base,
                                 host->host_param.param.dma_control.rx_dma_ch,
                                 (SPI_Type *)host->host_param.param.host_base,
                                 core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)buf),
                                 data_width,
                                 dma_send_size, burst_size);
+#endif
         while (spi_is_active((SPI_Type *)host->host_param.param.host_base)) {
             timeout_count++;
             if (timeout_count >= HPM_SERIAL_NOR_SPI_RETRY_COUNT) {
@@ -224,7 +288,12 @@ static hpm_stat_t hpm_spi_transfer_via_dma(hpm_serial_nor_host_t *host, spi_cont
             }
         }
         timeout_count = 0;
+#if (SERIAL_NOR_USE_DMA_MGR == 0)
         while ((dma_check_transfer_status((DMA_Type *)host->host_param.param.dma_control.dma_base, host->host_param.param.dma_control.rx_dma_ch) & DMA_CHANNEL_STATUS_TC) == 0) {
+#else
+        while ((dma_transfer_statue & DMA_CHANNEL_STATUS_TC) == 0) {
+            HPM_CHECK_RET(dma_mgr_check_chn_transfer_status(resource, &dma_transfer_statue));
+#endif
             timeout_count++;
             if (timeout_count >= HPM_SERIAL_NOR_SPI_RETRY_COUNT) {
                 stat = status_timeout;
@@ -239,15 +308,23 @@ static hpm_stat_t hpm_spi_transfer_via_dma(hpm_serial_nor_host_t *host, spi_cont
             data_width = DMA_TRANSFER_WIDTH_BYTE;
         }
         spi_set_tx_fifo_threshold((SPI_Type *)host->host_param.param.host_base, 3);
-        burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
         HPM_CHECK_RET(spi_setup_dma_transfer((SPI_Type *)host->host_param.param.host_base, control_config, &cmd, &addr, len, 0));
-
+#if (SERIAL_NOR_USE_DMA_MGR == 1)
+        resource = &host->host_param.param.dma_control.txdma_resource;
+        buf_addr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)buf);
+        HPM_CHECK_RET(dma_mgr_set_chn_src_addr(resource, buf_addr));
+        HPM_CHECK_RET(dma_mgr_set_chn_dst_width(resource, data_width));
+        HPM_CHECK_RET(dma_mgr_set_chn_src_width(resource, data_width));
+        HPM_CHECK_RET(dma_mgr_set_chn_transize(resource, len >> data_width));
+        HPM_CHECK_RET(dma_mgr_enable_channel(resource));
+#else
+        burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
         stat = spi_nor_tx_trigger_dma((DMA_Type *)host->host_param.param.dma_control.dma_base,
                                         host->host_param.param.dma_control.tx_dma_ch,
                                        (SPI_Type *)host->host_param.param.host_base,
                                         core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)buf),
                                         data_width, len, burst_size);
-
+#endif
         while (spi_is_active((SPI_Type *)host->host_param.param.host_base)) {
             timeout_count++;
             if (timeout_count >= HPM_SERIAL_NOR_SPI_RETRY_COUNT) {
@@ -260,6 +337,7 @@ static hpm_stat_t hpm_spi_transfer_via_dma(hpm_serial_nor_host_t *host, spi_cont
     }
     return stat;
 }
+
 static hpm_stat_t write(void *ops, hpm_serial_nor_transfer_seq_t *cmd_seq)
 {
     hpm_stat_t stat = status_success;
@@ -332,7 +410,12 @@ static hpm_stat_t read(void *ops, hpm_serial_nor_transfer_seq_t *cmd_seq)
     hpm_config_cmd_addr_format(ops, cmd_seq, &control_config);
 
     if ((host->host_param.flags & SERIAL_NOR_HOST_SUPPORT_DMA) && (cmd_seq->use_dma == 1)) {
-        if (host->host_param.param.dma_control.dma_base == NULL) {
+#if (SERIAL_NOR_USE_DMA_MGR == 0)
+        if (host->host_param.param.dma_control.dma_base == NULL)
+#else
+        if (host->host_param.param.dma_control.txdma_resource.base == NULL)
+#endif
+        {
             return status_fail;
         }
         if (((uint32_t)dst_8 % HPM_L1C_CACHELINE_SIZE) != 0) {

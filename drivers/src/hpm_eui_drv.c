@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -32,7 +32,7 @@ void eui_config_ctrl(EUI_Type *eui, uint32_t eui_clk_freq, eui_ctrl_config_t *co
     uint32_t freq_khz = eui_clk_freq / 1000u;
     uint32_t disp_time;
     uint16_t div;
-    uint16_t filter_len = 0;
+    uint16_t filter_len;
     uint8_t hold_tm = config->hold_tm_cnt;
 
     assert(config->clko_freq_khz > 0);
@@ -40,7 +40,7 @@ void eui_config_ctrl(EUI_Type *eui, uint32_t eui_clk_freq, eui_ctrl_config_t *co
     eui->CTRL = EUI_CTRL_DISP_MODE_SET(config->work_mode)
               | EUI_CTRL_COL_LOOP_MODE_SET(config->colum_loop_mode);
 
-    div = (freq_khz / (config->clko_freq_khz * 2)) - 1;
+    div = (uint16_t)((freq_khz / ((uint32_t)config->clko_freq_khz * 2u)) - 1u);
     if (hold_tm > (EUI_DIV_CFG_HOLD_TIME_MASK >> EUI_DIV_CFG_HOLD_TIME_SHIFT)) {
         hold_tm = (EUI_DIV_CFG_HOLD_TIME_MASK >> EUI_DIV_CFG_HOLD_TIME_SHIFT);
     }
@@ -55,9 +55,10 @@ void eui_config_ctrl(EUI_Type *eui, uint32_t eui_clk_freq, eui_ctrl_config_t *co
     eui->OUT_CFG = EUI_OUT_CFG_DO_CFG_SET(config->dedicate_out_cfg);
     eui->IN_CFG = EUI_IN_CFG_DI_CFG_SET(config->dedicate_in_cfg);
 
-    disp_time = eui_get_time(eui, eui_clk_freq, eui_disp_time);
-    if (config->key_filter_ms > 0) {
-        filter_len = (config->key_filter_ms * 1000) / disp_time + 1;
+    disp_time = eui_get_time_us(eui, eui_clk_freq, eui_disp_time);
+    filter_len = (uint16_t)(((uint32_t)config->key_filter_ms * 1000u) / disp_time + 1u);
+    if (filter_len > (EUI_PAD_CFG_FILT_LEN_MASK >> EUI_PAD_CFG_FILT_LEN_SHIFT)) {
+        filter_len = (EUI_PAD_CFG_FILT_LEN_MASK >> EUI_PAD_CFG_FILT_LEN_SHIFT);
     }
     eui->PAD_CFG = EUI_PAD_CFG_FILT_LEN_SET(filter_len);
 }
@@ -67,7 +68,7 @@ void eui_config_disp(EUI_Type *eui, uint32_t eui_clk_freq, eui_disp_ctrl_idx_t i
     uint32_t disp_time_us;
     uint32_t time_a = 0, time_b = 0;
 
-    disp_time_us = eui_get_time(eui, eui_clk_freq, eui_disp_time) * 16u;
+    disp_time_us = eui_get_time_us(eui, eui_clk_freq, eui_disp_time) * 16u;
     if (config->disp_a_time_ms > 0) {
         time_a = (config->disp_a_time_ms * 1000) / disp_time_us + 1u;
         if (time_a > (EUI_DAB_CTRL_PRDA_MASK >> EUI_DAB_CTRL_PRDA_SHIFT)) {
@@ -238,7 +239,7 @@ bool eui_get_scan_key_by_row_col(EUI_Type *eui, uint8_t row, uint8_t col)
     return ((row_data & (1u << col)) != 0) ? true : false;
 }
 
-uint32_t eui_get_time(EUI_Type *eui, uint32_t eui_clk_freq, eui_time_id_t id)
+uint32_t eui_get_time_us(EUI_Type *eui, uint32_t eui_clk_freq, eui_time_id_t id)
 {
     uint32_t ret = 0;
     uint32_t freq = eui_clk_freq;

@@ -80,7 +80,6 @@ hpm_mcl_stat_t hpm_mcl_analog_get_value(mcl_analog_t *analog, mcl_analog_chn_t c
             val0 = hpm_mcl_filter_iir_df1(analog->iir[chn], val0);
         }
     }
-    analog->current[chn] = val0;
     *value = val0;
 
     return mcl_success;
@@ -106,27 +105,48 @@ hpm_mcl_stat_t hpm_mcl_analog_disable_iir_filter(mcl_analog_t *analog, mcl_analo
     return mcl_success;
 }
 
-hpm_mcl_stat_t hpm_mcl_analog_step_convert(mcl_analog_t *analog, float value, mcl_analog_chn_t chn, float angle, float *output)
+hpm_mcl_stat_t hpm_mcl_analog_step_convert(mcl_analog_t *analog, float value, mcl_analog_chn_t chn, float angle, float *output, bool is_closed_loop)
 {
     (void)analog;
     MCL_ASSERT_OPT(output != NULL, mcl_invalid_pointer);
-    switch (chn) {
-    case analog_a_current:
-        if ((angle >= (0.75f * MCL_PI)) && (angle <= (1.75f * MCL_PI))) {
-            *output = -value;
-        } else {
-            *output = value;
+    if (analog->cfg->enable_step_convert_by_user) {
+        MCL_ASSERT(analog->cfg->callback.step_convert != NULL, mcl_invalid_pointer);
+        MCL_ASSERT(analog->cfg->callback.step_convert(chn, value, angle, output, is_closed_loop) == mcl_success, mcl_fail);
+    } else {
+        switch (chn) {
+        case analog_a_current:
+            if (is_closed_loop) {
+                if ((angle >= (0.0f * MCL_PI)) && (angle <= (1.0f * MCL_PI))) {
+                    *output = -value;
+                } else {
+                    *output = value;
+                }
+            } else {
+                if ((angle >= (0.75f * MCL_PI)) && (angle <= (1.25f * MCL_PI))) {
+                    *output = -value;
+                } else {
+                    *output = value;
+                }
+            }
+            break;
+        case analog_b_current:
+            if (is_closed_loop) {
+                if ((angle <= (0.5f * MCL_PI)) || (angle >= (1.5f * MCL_PI))) {
+                    *output = value;
+                } else {
+                    *output = -value;
+                }
+            } else {
+                if ((angle <= (0.25f * MCL_PI)) || (angle >= (1.25f * MCL_PI))) {
+                    *output = -value;
+                } else {
+                    *output = value;
+                }
+            }
+            break;
+        default:
+            return mcl_invalid_argument;
         }
-        break;
-    case analog_b_current:
-        if ((angle <= (0.25f * MCL_PI)) || (angle >= (1.25f * MCL_PI))) {
-            *output = -value;
-        } else {
-            *output = value;
-        }
-        break;
-    default:
-        return mcl_invalid_argument;
     }
     return mcl_success;
 }

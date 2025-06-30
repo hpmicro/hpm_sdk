@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -7,25 +7,25 @@
 
 #include "hpm_uart_lin.h"
 
+/* Default retry count for UART operations */
 #ifndef HPM_UART_LIN_RETRY_COUNT
 #define HPM_UART_LIN_RETRY_COUNT (50000U)
 #endif
 
+/* LIN break field length in bits */
 #ifndef HPM_UART_LIN_BREAK_LENGTH
 #define HPM_UART_LIN_BREAK_LENGTH (13U)  /* bits */
 #endif
 
+/* LIN wakeup signal length in microseconds */
 #ifndef HPM_UART_LIN_WAKEUP_LENGTH
 #define HPM_UART_LIN_WAKEUP_LENGTH (400U) /* us */
 #endif
-
 
 uint8_t hpm_uart_lin_calculate_protected_id(uint8_t id)
 {
     uint8_t id0, id1, id2, id3, id4, id5, p0, p1, pid;
 
-    /* P0 = ID0 @ ID1 @ ID2 @ ID3 @ ID4 */
-    /* P1 = !(ID1 @ ID2 @ ID3 @ ID4 @ ID5) */
     id0 = (id >> 0U) & 0x1U;
     id1 = (id >> 1U) & 0x1U;
     id2 = (id >> 2U) & 0x1U;
@@ -35,10 +35,19 @@ uint8_t hpm_uart_lin_calculate_protected_id(uint8_t id)
 
     p0 = id0 ^ id1 ^ id2 ^ id4;
     p1 = !(id1 ^ id3 ^ id4 ^ id5);
-    pid  = (p1 << 7) | (p0 << 6) | id;
+    pid = (p1 << 7) | (p0 << 6) | id;
     return pid;
 }
 
+/**
+ * @brief Calculate checksum for LIN frame data
+ *
+ * @param[in] id Protected identifier
+ * @param[in] data Pointer to data buffer
+ * @param[in] length Length of data (1-8 bytes)
+ * @param[in] enhanced_checksum Use enhanced checksum if true
+ * @return Calculated checksum value
+ */
 static uint8_t hpm_uart_lin_calculate_checksum(uint8_t id, uint8_t *data, uint8_t length, bool enhanced_checksum)
 {
     assert(length <= 8U);
@@ -58,6 +67,16 @@ static uint8_t hpm_uart_lin_calculate_checksum(uint8_t id, uint8_t *data, uint8_
     return checksum;
 }
 
+/**
+ * @brief Verify checksum of received LIN frame
+ *
+ * @param[in] id Protected identifier
+ * @param[in] data Pointer to data buffer
+ * @param[in] length Length of data
+ * @param[in] enhanced_checksum Use enhanced checksum if true
+ * @param[in] checksum Received checksum to verify
+ * @return true if checksum matches, false otherwise
+ */
 static bool hpm_uart_lin_check_checksum(uint8_t id, uint8_t *data, uint8_t length, bool enhanced_checksum, uint8_t checksum)
 {
     uint8_t cal_checksum;
@@ -69,7 +88,12 @@ static bool hpm_uart_lin_check_checksum(uint8_t id, uint8_t *data, uint8_t lengt
     return true;
 }
 
-
+/**
+ * @brief Send LIN break field using GPIO control
+ *
+ * @param[in] ptr UART peripheral base address
+ * @param[in] pin_ctrl Pin control configuration
+ */
 static void hpm_uart_lin_send_break(UART_Type *ptr, uart_lin_master_pin_ctrl_t *pin_ctrl)
 {
     assert(pin_ctrl->baudrate <= 20000);
@@ -85,6 +109,11 @@ static void hpm_uart_lin_send_break(UART_Type *ptr, uart_lin_master_pin_ctrl_t *
     pin_ctrl->config_uart_pin(ptr);
 }
 
+/**
+ * @brief Send LIN sync field (0x55)
+ *
+ * @param[in] ptr UART peripheral base address
+ */
 static void hpm_uart_lin_send_sync(UART_Type *ptr)
 {
     uart_write_byte(ptr, 0x55); /* sync phase */
@@ -138,7 +167,6 @@ uart_lin_stat_t hpm_uart_lin_master_send_frame(uart_lin_master_config_t *config)
 
     return uart_lin_success;
 }
-
 
 uart_lin_stat_t hpm_uart_lin_master_receive_frame(uart_lin_master_config_t *config)
 {
@@ -202,7 +230,6 @@ uart_lin_stat_t hpm_uart_lin_master_receive_frame(uart_lin_master_config_t *conf
     return uart_lin_success;
 }
 
-/* generate break with gpio then write 0x55 and pid into uart tx fifo */
 void hpm_uart_lin_master_send_head(uart_lin_master_config_t *config)
 {
     UART_Type *ptr = config->ptr;
@@ -218,7 +245,6 @@ void hpm_uart_lin_master_send_head(uart_lin_master_config_t *config)
     uart_write_byte(ptr, pid);
 }
 
-/* write data into uart tx fifo including data and checksum */
 void hpm_uart_lin_master_send_data(uart_lin_master_config_t *config)
 {
     UART_Type *ptr = config->ptr;
@@ -236,8 +262,6 @@ void hpm_uart_lin_master_send_data(uart_lin_master_config_t *config)
     uart_write_byte(ptr, checksum);
 }
 
-/* call this function in rx timeout isr */
-/* read data from uart rx fifo */
 uart_lin_stat_t hpm_uart_lin_master_receive_data(uart_lin_master_config_t *config)
 {
     UART_Type *ptr = config->ptr;
@@ -274,7 +298,6 @@ uart_lin_stat_t hpm_uart_lin_master_receive_data(uart_lin_master_config_t *confi
     return uart_lin_success;
 }
 
-/* write data into uart tx fifo including data and checksum */
 void hpm_uart_lin_slave_send_data(uart_lin_slave_config_t *config)
 {
     UART_Type *ptr = config->ptr;
@@ -291,7 +314,6 @@ void hpm_uart_lin_slave_send_data(uart_lin_slave_config_t *config)
     uart_write_byte(ptr, checksum);
 }
 
-/* read data and checksum */
 uart_lin_stat_t hpm_uart_lin_slave_receive_data(uart_lin_slave_config_t *config)
 {
     UART_Type *ptr = config->ptr;

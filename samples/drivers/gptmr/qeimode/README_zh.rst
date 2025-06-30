@@ -13,7 +13,7 @@
 
 - 使用GPTMR的2个capture通道，ch0和ch1为一组，ch2和ch3为另外一组。
 
-- 将编码信号连接到GPTMR的capture引脚，2个通道。
+- 将编码信号连接到GPTMR的capture引脚，2个通道，请参考 :ref:`引脚描述 <board_resource>` 。
 
 运行现象
 ------------

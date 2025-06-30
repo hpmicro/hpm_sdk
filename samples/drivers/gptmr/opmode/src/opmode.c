@@ -13,7 +13,6 @@
 #define APP_BOARD_GPTMR               BOARD_GPTMR
 #define APP_BOARD_GPTMR_CH            BOARD_GPTMR_CHANNEL
 #define APP_BOARD_GPTMR_IRQ           BOARD_GPTMR_IRQ
-#define APP_BOARD_GPTMR_CLOCK         BOARD_GPTMR_CLK_NAME
 
 #define APP_TICK_MS                   (1000)
 
@@ -49,9 +48,8 @@ static void opmode_config(void)
     gptmr_channel_config_t config;
     uint32_t gptmr_freq;
 
-    clock_add_to_group(APP_BOARD_GPTMR_CLOCK, 0);
+    gptmr_freq = board_init_gptmr_clock(APP_BOARD_GPTMR);
     gptmr_channel_get_default_config(APP_BOARD_GPTMR, &config);
-    gptmr_freq = clock_get_frequency(APP_BOARD_GPTMR_CLOCK);
     config.reload = gptmr_freq / 1000 * APP_TICK_MS;
     config.cmp[0] = config.reload - 1;
     config.enable_opmode = true;

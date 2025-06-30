@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -25,6 +25,7 @@
 #include "lwip/inet.h"
 #include "lwip/dns.h"
 #include "lwip/tcp.h"
+#include "lwip/tcpip.h"
 #include "httpd.h"
 #include "usbd_core.h"
 #include "usbd_rndis.h"
@@ -57,7 +58,6 @@ static dhcp_config_t dhcp_config = {
     entries             /* entries */
 };
 
-static uint32_t     sys_tick;
 static struct netif netif_data;
 
 /* Static Function Declaration */
@@ -66,17 +66,6 @@ static err_t netif_init_cb(struct netif *netif);
 static err_t linkoutput_fn(struct netif *netif, struct pbuf *p);
 static void  lwip_service_traffic(void);
 static bool  dns_query_proc(const char *name, ip_addr_t *addr);
-
-/* Function Definition */
-void sys_timer_callback(void)
-{
-    sys_tick++;
-}
-
-uint32_t sys_now(void)
-{
-    return sys_tick;
-}
 
 #define task1_PRIORITY    (configMAX_PRIORITIES - 5U)
 
@@ -99,10 +88,7 @@ int main(void)
     board_init_led_pins();
     board_init_usb((USB_Type *)CONFIG_HPM_USBD_BASE);
 
-    board_timer_create(LWIP_SYS_TIME_MS, sys_timer_callback);
-
     /* set irq priority */
-    intc_set_irq_priority(BOARD_CALLBACK_TIMER_IRQ, 2);
     intc_set_irq_priority(CONFIG_HPM_USBD_IRQn, 1);
 
     printf("cherry usb rndis device sample.\n");
@@ -138,7 +124,8 @@ static void user_init_lwip(void)
 {
     struct netif *netif = &netif_data;
 
-    lwip_init();
+    /* Initialize the LwIP stack */
+    tcpip_init(NULL, NULL);
     netif->hwaddr_len = 6;
     memcpy(netif->hwaddr, hwaddr, 6);
 
@@ -161,6 +148,7 @@ static err_t netif_init_cb(struct netif *netif)
 
 static err_t linkoutput_fn(struct netif *netif, struct pbuf *p)
 {
+    extern usb_osal_sem_t sema_rndis_send_done;
     (void)netif;
     int ret;
 
@@ -168,8 +156,11 @@ static err_t linkoutput_fn(struct netif *netif, struct pbuf *p)
 
     if (0 != ret) {
         ret = ERR_BUF;
+    } else {
+        if (usb_osal_sem_take(sema_rndis_send_done, portMAX_DELAY) != 0) {
+            ret = ERR_BUF;
+        }
     }
-
     return ret;
 }
 

@@ -310,13 +310,13 @@
 
  .. tabs::
 
-    .. tab:: Linux
+    .. group-tab:: Linux
 
        .. code-block:: shell
 
           source env.sh
 
-    .. tab:: Windows
+    .. group-tab:: Windows
 
        .. code-block:: batch
 
@@ -339,9 +339,9 @@
  .. note::
 
     如果使用 FTDI 调试器并遇到错误 ``Error: libusb_open() failed with LIBUSB_ERROR_NOT_FOUND``，请检查 FTDI USB 驱动程序。如果未正确安装，请使用 `zadig <https://github.com/pbatard/libwdi/releases/download/b730/zadig-2.5.exe>`_ 更新：
-    - 打开 zadig，点击 ``Options -> List All Devices``。
-    - 选择 ``Dual RS232-HS (Interface 0)``。
-    - 点击 ``Install Driver`` 或 ``Replace Driver``。
+      - 打开 zadig，点击 ``Options -> List All Devices``。
+      - 选择 ``Dual RS232-HS (Interface 0)``。
+      - 点击 ``Install Driver`` 或 ``Replace Driver``。
 
 7. **导航到 hello_world 目录**
 

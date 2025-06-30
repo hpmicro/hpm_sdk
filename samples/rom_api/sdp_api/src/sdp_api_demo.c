@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -171,7 +171,7 @@ static hpm_stat_t sdp_api_aes_ecb_demo(void)
         }
     }
 
-    status = sdp_aes_crypt_ecb(HPM_SDP, p_sys_sdp_ctx, sdp_aes_op_decrypt, 16, p_sys_output, p_sys_output);
+    status = rom_sdp_aes_crypt_ecb(p_sys_sdp_ctx, sdp_aes_op_decrypt, 16, p_sys_output, p_sys_output);
     if (status != status_success) {
         ++error_cnt;
         printf("rom_sdp_aes_crypt_ecb(), decryption failed, status=%d\n", status);

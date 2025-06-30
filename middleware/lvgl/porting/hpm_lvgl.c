@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
@@ -34,7 +34,8 @@
 #define HPM_LVGL_PIXEL_SIZE (LV_COLOR_DEPTH / 8)
 #define HPM_LVGL_LCD_WIDTH (BOARD_LCD_WIDTH)
 #define HPM_LVGL_LCD_HEIGHT (BOARD_LCD_HEIGHT)
-#define HPM_LVGL_FB_SIZE HPM_L1C_CACHELINE_ALIGN_UP(HPM_LVGL_LCD_WIDTH * HPM_LVGL_LCD_HEIGHT * HPM_LVGL_PIXEL_SIZE)
+#define HPM_LVGL_LCD_STRIDE ((HPM_LVGL_LCD_WIDTH * HPM_LVGL_PIXEL_SIZE + LV_DRAW_BUF_STRIDE_ALIGN - 1) & ~(LV_DRAW_BUF_STRIDE_ALIGN - 1))
+#define HPM_LVGL_FB_SIZE HPM_L1C_CACHELINE_ALIGN_UP(HPM_LVGL_LCD_STRIDE * HPM_LVGL_LCD_HEIGHT)
 
 #define HPM_LVGL_MCHTMR HPM_MCHTMR
 #define HPM_LVGL_MCHTMR_CLK clock_mchtmr0
@@ -442,6 +443,7 @@ static void hpm_lvgl_lcdc_enable(uint32_t fb_buffer)
     layer.width = HPM_LVGL_LCD_WIDTH;
     layer.height = HPM_LVGL_LCD_HEIGHT;
     layer.buffer = fb_buffer;
+    layer.stride = HPM_LVGL_LCD_STRIDE;
     layer.background.u = 0;
     layer.max_bytes = lcdc_layer_max_bytes_512;
 

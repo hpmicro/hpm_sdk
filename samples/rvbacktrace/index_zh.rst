@@ -1,6 +1,6 @@
 .. _samples_rvbacktrace:
 
-Rvbacktrace
+RvBacktrace
 ===========
 
 .. toctree::

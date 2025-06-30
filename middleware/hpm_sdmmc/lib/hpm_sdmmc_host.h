@@ -221,7 +221,13 @@ typedef struct {
     void *sdio_irq_param;
 #if defined(HPM_SDMMC_HOST_ENABLE_IRQ) && (HPM_SDMMC_HOST_ENABLE_IRQ == 1)
     hpm_sdmmc_osal_event_t xfer_done_or_error_event;
-#endif
+#if !defined(HPM_SDMMC_XFER_CALLBACK_ENABLE) || (HPM_SDMMC_XFER_CALLBACK_ENABLE == 1)
+    void (*xfer_complete_callback)(void *param);      /* Transfer complete interrupt handler */
+    void (*cmd_complete_callback)(void *param);           /* Command complete interrupt handler */
+    void *xfer_complete_param;                       /* Parameters passed to transfer complete interrupt handler */
+    void *cmd_complete_param;                            /* Parameters passed to command complete interrupt handler */
+#endif /* HPM_SDMMC_XFER_CALLBACK_ENABLE */
+#endif /* HPM_SDMMC_HOST_ENABLE_IRQ */
 
 } sdmmc_host_t;
 
@@ -285,6 +291,15 @@ hpm_stat_t sdmmchost_send_command(sdmmc_host_t *host, const sdmmchost_cmd_t *cmd
  * @return Transfer execution status
  */
 hpm_stat_t sdmmchost_transfer(sdmmc_host_t *host, const sdmmchost_xfer_t *content);
+
+/**
+ * @brief Start transferring data via the host
+ * @param [in] host Host context
+ * @param [in] content Transfer context
+ *
+ * @return Transfer execution status
+ */
+hpm_stat_t sdmmchost_start_transfer(sdmmc_host_t *host, const sdmmchost_xfer_t *content);
 
 /**
  * @brief Check whether the card is detected or not
@@ -409,6 +424,32 @@ void sdmmchost_irq_handler(sdmmc_host_t *host);
  * @param [in] param A pointer to a user-defined data that will be passed to the callback function each time it is invoked.
  */
 void sdmmchost_register_sdio_callback(sdmmc_host_t *host, void (*sdio_irq_callback)(void *param), void *param);
+
+/**
+ * @brief Registers an transfer complete interrupt callback function for the SDMMC host controller.
+ *
+ * This function allows the user to register a callback that will be invoked upon
+ * transfer complete interrupts.
+ *
+ * @param [in,out] host Pointer to the SDMMC host controller structure.
+ * @param [in] irq_callback Pointer to the callback function that will be called when an transfer complete interrupt occurs.
+ *                          The function should accept a single parameter of type `void*`.
+ * @param [in] param A pointer to a user-defined data that will be passed to the callback function each time it is invoked.
+ */
+void sdmmchost_register_xfer_complete_callback(sdmmc_host_t *host, void (*irq_callback)(void *param), void *param);
+
+/**
+ * @brief Registers an command complete interrupt callback function for the SDMMC host controller.
+ *
+ * This function allows the user to register a callback that will be invoked upon
+ * command complete interrupts.
+ *
+ * @param [in,out] host Pointer to the SDMMC host controller structure.
+ * @param [in] irq_callback Pointer to the callback function that will be called when an command complete interrupt occurs.
+ *                          The function should accept a single parameter of type `void*`.
+ * @param [in] param A pointer to a user-defined data that will be passed to the callback function each time it is invoked.
+ */
+void sdmmchost_register_cmd_complete_callback(sdmmc_host_t *host, void (*irq_callback)(void *param), void *param);
 
 /**
  * @brief Enable or disable SDIO interrupt on the SDMMC host controller.

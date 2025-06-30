@@ -13,6 +13,15 @@ FreeRTOS Hello
 
 无特殊设置
 
+工程配置
+-------------------
+
+set(CONFIG_FREERTOS_TIMER_RESOURCE_GPTMR 1)可以选择使用GPTMR作为FreeRTOS的系统时钟来源。
+set(CONFIG_FREERTOS_TIMER_RESOURCE_PWM 1)可以选择使用PWM作为FreeRTOS的系统时钟来源。
+
+sdk_compile_definitions(-DDISABLE_IRQ_PREEMPTIVE=1)禁止中断抢占功能
+sdk_compile_definitions(-DDISABLE_IRQ_PREEMPTIVE=0)启用中断抢占功能
+
 运行现象
 ------------
 

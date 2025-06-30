@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -162,6 +162,9 @@ hpm_stat_t sdm_receive_one_filter_data(SDM_Type *ptr, uint8_t ch_index, bool usi
     uint32_t retry = 0;
     int32_t output;
 
+    /* support output 16bit or 32bit data */
+    assert(data_len_in_bytes == 2 || data_len_in_bytes == 4);
+
     while (!sdm_get_channel_data_ready_status(ptr, ch_index)) {
         if (retry > HPM_LIN_DRV_RETRY_COUNT) {
             break;
@@ -179,8 +182,11 @@ hpm_stat_t sdm_receive_one_filter_data(SDM_Type *ptr, uint8_t ch_index, bool usi
         output = ptr->CH[ch_index].SDATA;
     }
 
-    for (uint8_t i = 0; i < data_len_in_bytes; i++) {
-        *(data++) = (int8_t)(output >> (i * 8));
+    if  (data_len_in_bytes == 4) {
+        *((int32_t *)data) = output;
+    } else if (data_len_in_bytes == 2) {
+        /* When outputting 16 bit data, the data is located at the high bit of the register */
+        *((int16_t *)data) = (int16_t)(output >> 16); /* get valid data bits */
     }
 
     return status_success;

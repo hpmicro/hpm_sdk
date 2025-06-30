@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -365,7 +365,7 @@ bool eui_get_scan_key_by_row_col(EUI_Type *eui, uint8_t row, uint8_t col);
  * @param[in] eui_clk_freq EUI clock frequency
  * @param[in] id time id, @ref eui_time_id_t
  */
-uint32_t eui_get_time(EUI_Type *eui, uint32_t eui_clk_freq, eui_time_id_t id);
+uint32_t eui_get_time_us(EUI_Type *eui, uint32_t eui_clk_freq, eui_time_id_t id);
 
 
 #ifdef __cplusplus

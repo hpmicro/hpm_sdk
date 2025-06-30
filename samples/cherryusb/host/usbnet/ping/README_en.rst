@@ -6,22 +6,18 @@ RNDIS Host - PING
 Overview
 --------
 
-- the sample shows the USB RNDIS Host is connected to luat 4G module (air780e module) or ec20 module to network and ping communication
+- This sample demonstrates USB RNDIS Host network connectivity with Luat 4G modules (air780e), EC20 modules, or ML307R modules, and performs ping network testing.
 
 Board Setting
 -------------
 
-- development board interconnected to air780e or ec20 module through port USB0.
-
-- development board(RNDIS Host) DEBUG port or console port connect to PC.
+- Development board connected to air780e/EC20 via USB0 port using USB cable
+- Debug port or console port of RNDIS Host connected to PC
 
 Example of output log
 ---------------------
 
-- download the programs to the development board, and connect air780e, the board will show logs as follows
-
-- if not, check whether the upper module is powered on
-
+- When programming the development board and connecting air780e, the board will display the following logs on the serial console (if not, check if the module is powered on):
 
 .. code-block:: console
 
@@ -84,7 +80,7 @@ Example of output log
     IPv4 Gateway     : 192.168.10.1
 
 
-- when the EC20 module is connected, the following information is printed, indicating that the EC20 initialization is successful and the IP is assigned.
+- When connecting EC20 module, the following output indicates successful initialization:
 
 
 .. code-block:: console
@@ -124,8 +120,12 @@ Example of output log
     IPv4 Gateway     : 192.168.225.1
 
 
-- after that, need to enter the IP addrees or domain name to be ping, and press enter key when done
+Test Procedure
+-------------------
 
+- Enter target IP/URL and press Enter to start
+- Press ESC key to abort
+- Example ping result:
 - for example: www.baidu.com
 
 

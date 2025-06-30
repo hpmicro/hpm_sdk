@@ -1,25 +1,68 @@
 .. _fft_performance_test:
 
-FFT Performance test
-========================================
+FFT Performance Test Example
+============================
 
 Overview
 --------
 
-The fft performance tests focus on the performance of DSP, ffa , software , fft and ifft transformations, and include the following computational units:
-- DSP FFT-RADIX-2
+This example demonstrates the performance comparison of different FFT implementations in HPM SDK. The example tests the execution time and accuracy of various FFT algorithms, including DSP radix-4, DSP radix-2, Q31 DSP radix-2, and Q31 FFA FFT (if supported).
 
-- DSP FFT-RADIX-4
+Features
+--------
 
-- DSP IFFT-RADIX-4
+- Generate composite signal with three sine waves
+- Test performance of different FFT implementations:
+  - DSP radix-4 complex FFT
+  - DSP radix-2 complex FFT
+  - Q31 DSP radix-2 complex FFT
+  - Q31 FFA FFT (if supported)
+- Verify FFT and IFFT accuracy
+- Test performance with different points (64-1024 points)
 
-- DSP IFFT-RADIX-2
+Hardware Requirements
+---------------------
 
-- DSP FFT-RADIX-2 Q31
+- Test FFA performance on SOC that support FFA (e.g. HPM63xx, HPM6Exx, HPM68xx, HPM6Pxx)
 
-- CPU Cooley-Tukey
+Software Requirements
+---------------------
 
-- Q format and float32 interconversion
+- HPM SDK
+- CMake 3.20.0 or higher
+- Cross-compilation toolchain
+
+Build Instructions
+------------------
+
+1. Enter the example directory
+2. Create and enter build directory
+3. Run CMake configuration
+4. Build the project
+
+Run Instructions
+----------------
+
+1. Flash the compiled binary to the development board
+2. View output through serial port
+3. Observe performance data of different FFT implementations
+
+Output Description
+------------------
+
+The program will output the following information:
+- CPU frequency
+- Execution time of different FFT implementations
+- Amplitude of frequency components
+- Accuracy verification results
+
+Notes
+-----
+
+- Ensure proper power supply to the development board
+- Ensure correct serial port connection
+- Observe LED status to confirm program running state
+- Different development boards may support different FFT implementations
 
 Programming
 -----------
@@ -38,6 +81,12 @@ Performance Optimization
 - segger turns on O3 optimization by default
 
 - hpm_math is by default optimized for CPU Cooley-Tukey algorithm calculations, which increases space usage
+
+- To reproduce the test results shown in this documentation, compile with -DHPM_BUILD_TYPE=ram. This ensures DSP computational routines are placed in tightly coupled memory for optimal performance. Example build command:
+
+  .. code-block:: shell
+
+     cmake -GNinja -DBOARD=hpm6750evkmini -DHPM_BUILD_TYPE=ram ..
 
 Running the example
 -------------------

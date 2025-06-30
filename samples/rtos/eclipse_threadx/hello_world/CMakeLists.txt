@@ -5,6 +5,9 @@ cmake_minimum_required(VERSION 3.13)
 
 set(CONFIG_ECLIPSE_THREADX 1)
 
+#set(CONFIG_ECLIPSE_THREADX_TIMER_RESOURCE_MTIMER 1) to use mchtmr as system's tick source
+#set(CONFIG_ECLIPSE_THREADX_TIMER_RESOURCE_MTIMER 1)
+
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(threadx_hello)

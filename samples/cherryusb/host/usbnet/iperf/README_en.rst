@@ -6,21 +6,18 @@ RNDIS Host - IPERF
 Overview
 --------
 
-- the sample shows the USB RNDIS Host is connected to luat 4G module (air780e module) or ec20 module to network and iperf for speed measurement
+- This sample demonstrates USB RNDIS Host network connectivity with Luat 4G modules (air780e), EC20 modules, or ML307R modules, and performs iperf network speed testing
 
 Board Setting
 -------------
 
-- development board interconnected to air780e or ec20 module through port USB0.
-
-- development board(RNDIS Host) DEBUG port or console port connect to PC.
+- Development board connected to air780e/EC20/ML307R via USB0 port using USB cable
+- Debug port or console port of RNDIS Host connected to PC
 
 Example of output log
 ---------------------
 
-- download the programs to the development board, and connect air780e, the board will show logs as follows
-
-- if not, check whether the upper module is powered on
+- When programming the development board and connecting air780e, the board will display the following logs on the serial console (if not, check if the module is powered on):
 
 
 .. code-block:: console
@@ -84,7 +81,7 @@ Example of output log
     IPv4 Gateway     : 192.168.10.1
 
 
-- when the EC20 module is connected, the following information is printed, indicating that the EC20 initialization is successful and the IP is assigned.
+- When connecting EC20 module, the following output indicates successful initialization:
 
 
 .. code-block:: console
@@ -123,8 +120,11 @@ Example of output log
     IPv4 Subnet mask : 255.255.255.0
     IPv4 Gateway     : 192.168.225.1
 
-
-- After that, you need to enter the IP address or domain name of the iperf server in the terminal, such as 11.23.63.183, then press enter key
+Test Procedure
+-------------------
+- Input the iperf TCP server IP/URL and press Enter to confirm
+- Press ESC key to abort the test
+- Example test output:
 
 
 .. code-block:: console

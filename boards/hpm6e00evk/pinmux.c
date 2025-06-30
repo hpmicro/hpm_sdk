@@ -750,3 +750,7 @@ void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp)
     }
 }
 
+void init_sdram_card_detect_pin(void)
+{
+    HPM_IOC->PAD[IOC_PAD_PF14].FUNC_CTL = IOC_PF14_FUNC_CTL_GPIO_F_14;
+}

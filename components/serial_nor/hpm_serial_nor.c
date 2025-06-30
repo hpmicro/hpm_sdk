@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -1172,3 +1172,21 @@ hpm_stat_t hpm_serial_nor_get_info(hpm_serial_nor_t *flash, hpm_serial_nor_info_
     memcpy(info, &flash->flash_info, sizeof(hpm_serial_nor_info_t));
     return status_success;
 }
+
+#if (SERIAL_NOR_USE_DMA_MGR == 1)
+dma_resource_t *hpm_serial_nor_get_tx_dma_mgr_resource(hpm_serial_nor_t *flash)
+{
+    if (flash == NULL) {
+        return NULL;
+    }
+    return &flash->host.host_param.param.dma_control.txdma_resource;
+}
+
+dma_resource_t *hpm_serial_nor_get_rx_dma_mgr_resource(hpm_serial_nor_t *flash)
+{
+    if (flash == NULL) {
+        return NULL;
+    }
+    return &flash->host.host_param.param.dma_control.rxdma_resource;
+}
+#endif

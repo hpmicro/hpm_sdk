@@ -6,7 +6,7 @@ RNDIS Host - DHCP Client
 概述
 ------
 
-- 本示例工程展示USB RNDIS或者ECM Host 实现DHCP，自动分配IP 连接合宙4G模块-air780e模块或者EC20模块实现DHCP自动分配IP。
+- 本示例工程展示USB RNDIS或者ECM Host 实现DHCP，自动分配IP 连接合宙4G模块-air780e模块或者EC20模块或者ML307R模块实现DHCP自动分配IP。
 
 硬件设置
 ------------

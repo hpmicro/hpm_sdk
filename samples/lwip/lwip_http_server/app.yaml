@@ -1,6 +1,11 @@
+# Copyright (c) 2023-2025 HPMicro
+# SPDX-License-Identifier: BSD-3-Clause
+
 excluded_targets:
   - debug
   - release
+  - flash_xip_hybrid
+  - flash_xip_hybrid_release
 dependency:
   - enet
   - board_enet_phy

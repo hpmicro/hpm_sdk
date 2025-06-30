@@ -3,10 +3,10 @@
 
 cmake_minimum_required(VERSION 3.13)
 
-find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
-
 set(RV_ABI "ilp32f")
 set(RV_ARCH "rv32imafc")
+
+find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(rdc_example)
 

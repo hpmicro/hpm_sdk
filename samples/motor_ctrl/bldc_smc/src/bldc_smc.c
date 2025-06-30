@@ -176,23 +176,18 @@ void bldc_init_par(void)
     par->pos_estimator_par.par = &motor0.smc_para;
 }
 
-void reset_pwm_counter(void)
-{
-#if defined(HPMSOC_HAS_HPMSDK_PWM)
-    pwm_enable_reload_at_synci(MOTOR0_BLDCPWM);
-#endif
-#if defined(HPMSOC_HAS_HPMSDK_PWMV2)
-
-#endif
-}
-
 void enable_all_pwm_output(void)
 {
 #if defined(HPMSOC_HAS_HPMSDK_PWM)
     pwm_disable_sw_force(MOTOR0_BLDCPWM);
 #endif
 #if defined(HPMSOC_HAS_HPMSDK_PWMV2)
-
+    pwmv2_disable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_UH_PWM_OUTPIN);
+    pwmv2_disable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_UL_PWM_OUTPIN);
+    pwmv2_disable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_VH_PWM_OUTPIN);
+    pwmv2_disable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_VL_PWM_OUTPIN);
+    pwmv2_disable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_WH_PWM_OUTPIN);
+    pwmv2_disable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_WL_PWM_OUTPIN);
 #endif
 }
 
@@ -262,13 +257,10 @@ void pwm_init(void)
     uint8_t cmp_index = BOARD_BLDCPWM_CMP_INDEX_0;
     pwm_cmp_config_t cmp_config[4] = {0};
     pwm_pair_config_t pwm_pair_config = {0};
-    pwm_output_channel_t pwm_output_ch_cfg;
+    pwm_output_channel_t pwm_output_ch_cfg = {0};
 
     pwm_stop_counter(MOTOR0_BLDCPWM);
-    reset_pwm_counter();
-    /*
-     * reload and start counter
-     */
+    pwm_enable_reload_at_synci(MOTOR0_BLDCPWM);
     pwm_set_reload(MOTOR0_BLDCPWM, 0, PWM_RELOAD);
     pwm_set_start_count(MOTOR0_BLDCPWM, 0, 0);
     /*

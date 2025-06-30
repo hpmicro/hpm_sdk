@@ -49,7 +49,7 @@ Purpose : Low-level functions for using printf() via RTT in GCC.
 Revision: $Rev: 24316 $
 ----------------------------------------------------------------------
 */
-#if (defined __GNUC__) && !(defined __SES_ARM) && !(defined __CROSSWORKS_ARM) && !(defined __ARMCC_VERSION) && !(defined __CC_ARM)
+#if (defined __GNUC__) && !defined(__SES_RISCV) && !(defined __SES_ARM) && !(defined __CROSSWORKS_ARM) && !(defined __ARMCC_VERSION) && !(defined __CC_ARM)
 
 #include <reent.h>  // required for _write_r
 #include "SEGGER_RTT.h"

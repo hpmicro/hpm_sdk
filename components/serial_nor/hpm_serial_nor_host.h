@@ -10,6 +10,14 @@
 #include "hpm_common.h"
 #include "sfdp_def.h"
 
+#ifndef SERIAL_NOR_USE_DMA_MGR
+#define SERIAL_NOR_USE_DMA_MGR    0
+#endif
+
+#if (SERIAL_NOR_USE_DMA_MGR == 1)
+#include "hpm_dma_mgr.h"
+#endif
+
 #define SERIAL_NOR_HOST_SUPPORT_SINGLE_IO_MODE             (1UL << 0)
 #define SERIAL_NOR_HOST_SUPPORT_DUAL_IO_MODE               (1UL << 1)
 #define SERIAL_NOR_HOST_SUPPORT_QUAD_IO_MODE               (1UL << 2)
@@ -59,14 +67,21 @@ typedef struct {
 /**
  * @brief dma control param of serial nor flash host
  */
+
 typedef struct {
-    uint8_t rx_dma_ch;
-    uint8_t tx_dma_ch;
     uint8_t rx_dma_req;
     uint8_t tx_dma_req;
+#if (SERIAL_NOR_USE_DMA_MGR == 0)
+    uint8_t rx_dma_ch;
+    uint8_t tx_dma_ch;
     void *dma_base;
     void *dmamux_base;
+#else
+    dma_resource_t txdma_resource;
+    dma_resource_t rxdma_resource;
+#endif
 } hpm_nor_host_dma_control_t;
+
 
 /**
  * @brief param and operation of serial nor flash host

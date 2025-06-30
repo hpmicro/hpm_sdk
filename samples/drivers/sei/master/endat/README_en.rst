@@ -6,7 +6,7 @@ SEI Master: Connect ENDAT Encoder
 Overview
 ----------
 
-This demo shows SEI interface read Endat encoder position data and automatically calculate sampling/update delay time, then print related information by uart console.
+This demo shows SEI interface read Endat encoder position data. Bus delay detection is achieved by latch the sampling time and latch the data edge time, and automatically calculate reasonable rx points. Also, it is automatically calculate sampling/update delay time, then print related information by uart console.
 
 configuration
 --------------
@@ -43,8 +43,12 @@ Running the example
    ----------------------------------------------------------------------
    SEI master EnDat sample
    Started sei engine!
-   E:0, ST:0xa5a5, CRC:0x5, sample_tm:2465400001, update_tm:2465409502, TimeDelay:475*0.1us
-   E:0, ST:0xa5a6, CRC:0xf, sample_tm:2505400001, update_tm:2505409502, TimeDelay:475*0.1us
+   delta: 15790 ns
+   E:0x0, ST:0xa5a5, CRC:0x5, sample_tm:365657, update_tm:375158, TimeDelay:475*0.1us
+   delta: 15790 ns
+   E:0x0, ST:0xa5a6, CRC:0xf, sample_tm:40365657, update_tm:40375158, TimeDelay:475*0.1us
+   delta: 15795 ns
+   rx point changed!
    E:0, ST:0xa5a7, CRC:0x1a, sample_tm:2545400001, update_tm:2545409502, TimeDelay:475*0.1us
    E:0, ST:0xa5a8, CRC:0x7, sample_tm:2585400001, update_tm:2585409502, TimeDelay:475*0.1us
    E:0, ST:0xa5a9, CRC:0x12, sample_tm:2625400001, update_tm:2625409502, TimeDelay:475*0.1us

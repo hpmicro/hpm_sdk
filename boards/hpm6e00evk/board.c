@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  *
  *
@@ -184,6 +184,9 @@ void board_init(void)
     board_init_clock();
     board_init_console();
     board_init_pmp();
+#ifdef INIT_EXT_RAM_FOR_DATA
+    board_verify_sdram_card_inserted();
+#endif
 #if BOARD_SHOW_CLOCK
     board_print_clock_freq();
 #endif
@@ -850,7 +853,7 @@ uint32_t board_init_can_clock(MCAN_Type *ptr)
         /* Set the CAN7 peripheral clock to 80MHz */
         clock_add_to_group(clock_can7, 0);
         clock_set_source_divider(clock_can7, clk_src_pll1_clk0, 10);
-        freq = clock_get_frequency(clock_can3);
+        freq = clock_get_frequency(clock_can7);
     } else {
         /* Invalid CAN instance */
     }
@@ -1055,3 +1058,53 @@ void board_init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_com
 {
     init_gptmr_channel_pin(ptr, channel, as_comp);
 }
+
+uint32_t board_init_gptmr_clock(GPTMR_Type *ptr)
+{
+    uint32_t freq = 0U;
+    if (ptr == HPM_GPTMR0) {
+        clock_add_to_group(clock_gptmr0, BOARD_RUNNING_CORE & 0x1);
+        freq = clock_get_frequency(clock_gptmr0);
+    } else if (ptr == HPM_GPTMR1) {
+        clock_add_to_group(clock_gptmr1, BOARD_RUNNING_CORE & 0x1);
+        freq = clock_get_frequency(clock_gptmr1);
+    } else if (ptr == HPM_GPTMR2) {
+        clock_add_to_group(clock_gptmr2, BOARD_RUNNING_CORE & 0x1);
+        freq = clock_get_frequency(clock_gptmr2);
+    } else if (ptr == HPM_GPTMR3) {
+        clock_add_to_group(clock_gptmr3, BOARD_RUNNING_CORE & 0x1);
+        freq = clock_get_frequency(clock_gptmr3);
+    } else if (ptr == HPM_GPTMR4) {
+        clock_add_to_group(clock_gptmr4, BOARD_RUNNING_CORE & 0x1);
+        freq = clock_get_frequency(clock_gptmr4);
+    } else if (ptr == HPM_GPTMR5) {
+        clock_add_to_group(clock_gptmr5, BOARD_RUNNING_CORE & 0x1);
+        freq = clock_get_frequency(clock_gptmr5);
+    } else if (ptr == HPM_GPTMR6) {
+        clock_add_to_group(clock_gptmr6, BOARD_RUNNING_CORE & 0x1);
+        freq = clock_get_frequency(clock_gptmr6);
+    } else if (ptr == HPM_GPTMR7) {
+        clock_add_to_group(clock_gptmr7, BOARD_RUNNING_CORE & 0x1);
+        freq = clock_get_frequency(clock_gptmr7);
+    } else if (ptr == HPM_PTMR) {
+        clock_add_to_group(clock_ptmr, BOARD_RUNNING_CORE & 0x1);
+        freq = clock_get_frequency(clock_ptmr);
+    } else {
+        /* Not supported */
+    }
+    return freq;
+}
+
+#ifdef INIT_EXT_RAM_FOR_DATA
+void board_verify_sdram_card_inserted(void)
+{
+    init_sdram_card_detect_pin();
+    gpio_set_pin_input(HPM_GPIO0, BOARD_SDRAM_DETECT_PORT, BOARD_SDRAM_DETECT_PIN);
+    gpio_disable_pin_interrupt(HPM_GPIO0, BOARD_SDRAM_DETECT_PORT, BOARD_SDRAM_DETECT_PIN);
+    if (gpio_read_pin(HPM_GPIO0, BOARD_SDRAM_DETECT_PORT, BOARD_SDRAM_DETECT_PIN) != BOARD_SDRAM_DETECT_ACTIVE_LEVEL) {
+        printf("sdram card is not inserted\n");
+        while (1) {
+        }
+    }
+}
+#endif

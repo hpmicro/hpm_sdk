@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -28,12 +28,12 @@ enum {
 };
 
 /*---------------------------------------------------------------------
- * Internal API
+ * Driver API
  *---------------------------------------------------------------------
  */
 
 /* De-initialize USB phy */
-static void usb_phy_deinit(USB_Type *ptr)
+void usb_phy_deinit(USB_Type *ptr)
 {
     uint32_t status;
 
@@ -52,12 +52,12 @@ static void usb_phy_deinit(USB_Type *ptr)
     do {
         status = USB_OTG_CTRL0_OTG_UTMI_RESET_SW_GET(ptr->OTG_CTRL0); /* wait for reset status */
     } while (status == 0);
+
+    for (volatile uint32_t i = 0; i < USB_PHY_DEINIT_DELAY_COUNT; i++) {
+        (void)ptr->PHY_CTRL1;                                       /* used for delay */
+    }
 }
 
-/*---------------------------------------------------------------------
- * Driver API
- *---------------------------------------------------------------------
- */
 /* Initialize USB phy */
 void usb_phy_init(USB_Type *ptr, bool host)
 {
@@ -124,6 +124,9 @@ void usb_dcd_init(USB_Type *ptr)
     /* Initialize USB phy */
     usb_phy_init(ptr, false);
 
+    /* Reset interrupt enable register */
+    ptr->USBINTR = 0;
+
     /* Stop */
     ptr->USBCMD &= ~USB_USBCMD_RS_MASK;
 
@@ -158,13 +161,13 @@ void usb_dcd_init(USB_Type *ptr)
 
     /* Enable VBUS discharge */
     ptr->OTGSC |= USB_OTGSC_VD_MASK;
-
-    /* Reset interrupt enable register */
-    ptr->USBINTR = 0;
 }
 
 void usb_dcd_deinit(USB_Type *ptr)
 {
+    /* Reset interrupt enable register */
+    ptr->USBINTR = 0;
+
     /* Stop */
     ptr->USBCMD &= ~USB_USBCMD_RS_MASK;
 
@@ -173,17 +176,14 @@ void usb_dcd_deinit(USB_Type *ptr)
     while (USB_USBCMD_RST_GET(ptr->USBCMD)) {
     }
 
-    /* De-initialize USB phy */
-    usb_phy_deinit(ptr);
-
     /* Reset endpoint list address register */
     ptr->ENDPTLISTADDR = 0;
 
     /* Reset status register */
     ptr->USBSTS = ptr->USBSTS;
 
-    /* Reset interrupt enable register */
-    ptr->USBINTR = 0;
+    /* De-initialize USB phy */
+    usb_phy_deinit(ptr);
 }
 
 /* Connect by enabling internal pull-up resistor on D+/D- */

@@ -3,6 +3,7 @@
 /-----------------------------------------------------------------------------/
 /
 / Copyright (C) 2021, ChaN, all right reserved.
+/ Copyright (c) 2025 HPMicro
 /
 / FatFs module is an open source software. Redistribution and use of FatFs in
 / source and binary forms, with or without modification, are permitted provided
@@ -27,6 +28,8 @@ extern "C" {
 #endif
 
 #include "ffconf.h"		/* FatFs configuration options */
+#include "hpm_common.h"
+#include "hpm_soc_feature.h"
 
 #if FF_DEFINED != FFCONF_DEF
 #error Wrong configuration file (ffconf.h).
@@ -172,7 +175,7 @@ typedef struct {
 	LBA_t	bitbase;		/* Allocation bitmap base sector */
 #endif
 	LBA_t	winsect;		/* Current sector appearing in the win[] */
-	BYTE	win[FF_MAX_SS];	/* Disk access window for Directory, FAT (and file data at tiny cfg) */
+	ATTR_ALIGN(HPM_L1C_CACHELINE_SIZE) BYTE	win[FF_MAX_SS];	/* Disk access window for Directory, FAT (and file data at tiny cfg) */
 } FATFS;
 
 
@@ -217,7 +220,7 @@ typedef struct {
 	DWORD*	cltbl;			/* Pointer to the cluster link map table (nulled on open, set by application) */
 #endif
 #if !FF_FS_TINY
-	BYTE	buf[FF_MAX_SS];	/* File private data read/write window */
+	ATTR_ALIGN(HPM_L1C_CACHELINE_SIZE) BYTE	buf[FF_MAX_SS];	/* File private data read/write window */
 #endif
 } FIL;
 

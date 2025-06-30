@@ -401,7 +401,7 @@ typedef struct {
  * MODE (RW)
  *
  * Transceiver mode
- * 0: synchronous maaster
+ * 0: synchronous master
  * 1: synchronous slave
  * 2: asynchronous mode
  * 3: asynchronous mode
@@ -3090,11 +3090,18 @@ typedef struct {
 /*
  * CK (RW)
  *
- * clock
+ * clock state configure
+ * a. In synchronous master mode:
  * 0: low
  * 1: rise-fall
  * 2: fall-rise
  * 3: high
+ * b. In synchronous slave mode:
+ * 0：Use TX_POINT and RX_POINT as the timing for data transmission and reception. Disable the TIMEOUT function in the communication protocol( this is not WDG).
+ * 1：Switch the timing for data transmission and reception (e.g., switching edges for receive/transmit in an EnDat Encoder communication cycle). Disable the TIMEOUT function in the communication protocol.
+ * 2：Use TX_POINT and RX_POINT as the timing for data transmission and reception；Enable the TIMEOUT function in the communication protocol.
+ * 3：Switch the timing for data transmission and reception. Enable the TIMEOUT function in the communication protocol.
+ * c.  In asynchronous mode: please keep 0.
  */
 #define SEI_INSTR_CK_MASK (0x3000000UL)
 #define SEI_INSTR_CK_SHIFT (24U)
@@ -3111,8 +3118,8 @@ typedef struct {
  * 3: data register 3
  * ...
  * 29: data register 29
- * 30: value 0 when send, wait 0 in receive
- * 31: value1 when send,  wait 1 in receive
+ * 30: do not set this value
+ * 31: do not set this value
  */
 #define SEI_INSTR_CRC_MASK (0x1F0000UL)
 #define SEI_INSTR_CRC_SHIFT (16U)

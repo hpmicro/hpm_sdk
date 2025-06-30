@@ -13,6 +13,11 @@ ThreadX Hello
 
 无特殊设置
 
+工程配置
+-------------------
+
+set(CONFIG_ECLIPSE_THREADX_TIMER_RESOURCE_MTIMER 1)配置使用mchtmr作为系统的滴答源。
+
 运行现象
 ------------
 

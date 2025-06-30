@@ -11,10 +11,10 @@ This example project demonstrates a USB UVC device that uses the CAM DVP interfa
 Board Setting
 -------------
 
-1. Connect the OV7725 camera device to the CAM interface of the development board
+1. Connect the OV7725 camera device to the CAM interface of the development board. If using OV5640, set CONFIG_CAMERA to OV5640 in the CMakeLists.txt file, with the command `set(CONFIG_CAMERA "ov5640")`.
 2. Connect USB0 port to PC host
 
 Running the example
 -------------------
 
-After the project is running correctly, the PC will list a camera device, which can be tested through the `Tencent Meeting - Settings - Video` option. Select `HPMicro UVC DEMO` for the camera.
+After the project is running correctly, the PC will list a camera device, which can be tested through the `Tencent Meeting - Settings - Video` option. Select `HPMicro UVC YUYV` for the camera.

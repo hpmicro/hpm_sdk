@@ -8,7 +8,7 @@
 /*-----------------------------------------------------------------------*/
 
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -28,6 +28,14 @@
 #include "./sdxc/hpm_sdmmc_disk.h"
 #endif
 
+#endif
+
+#if !defined(FATFS_ONLY_NONCACHEABLE_BUF) || !FATFS_ONLY_NONCACHEABLE_BUF
+#include "board.h"
+#include "hpm_l1c_drv.h"
+#include "hpm_misc.h"
+
+ATTR_ALIGN(HPM_L1C_CACHELINE_SIZE) static uint8_t _aligned_buf[FF_MAX_SS];
 #endif
 
 /*-----------------------------------------------------------------------*/
@@ -156,7 +164,7 @@ DSTATUS disk_initialize(
 /*-----------------------------------------------------------------------*/
 /* Read Sector(s)                                                        */
 /*-----------------------------------------------------------------------*/
-DRESULT disk_read(
+static DRESULT disk_read_private(
         BYTE pdrv,      /* Physical drive number to identify the drive */
         BYTE *buff,     /* Data buffer to store read data */
         LBA_t sector,   /* Start sector in LBA */
@@ -200,13 +208,51 @@ DRESULT disk_read(
     return res;
 }
 
+DRESULT disk_read(
+        BYTE pdrv,      /* Physical drive number to identify the drive */
+        BYTE *buff,     /* Data buffer to store read data */
+        LBA_t sector,   /* Start sector in LBA */
+        UINT count      /* Number of sectors to read */
+)
+{
+    DRESULT res;
+#if !defined(FATFS_ONLY_NONCACHEABLE_BUF) || !FATFS_ONLY_NONCACHEABLE_BUF
+    WORD sector_size;
+    res = disk_ioctl(pdrv, GET_SECTOR_SIZE, &sector_size);
+    if (res == RES_OK) {
+        if (sector_size > FF_MAX_SS || sector_size < FF_MIN_SS || (sector_size & (sector_size - 1))) {
+            return RES_ERROR;
+        }
+        if (((UINT)buff & (HPM_L1C_CACHELINE_SIZE - 1)) != 0) {
+            for (UINT i = 0; i < count; i++) {
+                res = disk_read_private(pdrv, (BYTE *)core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (UINT)_aligned_buf), sector + i, 1);
+                if (res == RES_OK) {
+                    l1c_dc_invalidate(core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (UINT)_aligned_buf), sector_size);
+                    memcpy(buff + (i * sector_size), _aligned_buf, sector_size);
+                } else {
+                    break;
+                }
+            }
+        } else {
+            res = disk_read_private(pdrv, (BYTE *)core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (UINT)buff), sector, count);
+            if (res == RES_OK) {
+                l1c_dc_invalidate(core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (UINT)buff), sector_size * count);
+            }
+        }
+    }
+#else
+    res = disk_read_private(pdrv, buff, sector, count);
+#endif
+    return res;
+}
+
 /*-----------------------------------------------------------------------*/
 /* Write Sector(s)                                                       */
 /*-----------------------------------------------------------------------*/
 
 #if FF_FS_READONLY == 0
 
-DRESULT disk_write(
+static DRESULT disk_write_private(
         BYTE pdrv,          /* Physical drive number to identify the drive */
         const BYTE *buff,   /* Data to be written */
         LBA_t sector,       /* Start sector in LBA */
@@ -247,6 +293,41 @@ DRESULT disk_write(
         break;
     }
 
+    return res;
+}
+
+DRESULT disk_write(
+        BYTE pdrv,          /* Physical drive number to identify the drive */
+        const BYTE *buff,   /* Data to be written */
+        LBA_t sector,       /* Start sector in LBA */
+        UINT count          /* Number of sectors to write */
+)
+{
+    DRESULT res;
+#if !defined(FATFS_ONLY_NONCACHEABLE_BUF) || !FATFS_ONLY_NONCACHEABLE_BUF
+    WORD sector_size;
+    res = disk_ioctl(pdrv, GET_SECTOR_SIZE, &sector_size);
+    if (res == RES_OK) {
+        if (sector_size > FF_MAX_SS || sector_size < FF_MIN_SS || (sector_size & (sector_size - 1))) {
+            return RES_ERROR;
+        }
+        if (((UINT)buff & (HPM_L1C_CACHELINE_SIZE - 1)) != 0) {
+            for (UINT i = 0; i < count; i++) {
+                memcpy(_aligned_buf, buff + (i * sector_size), sector_size);
+                l1c_dc_writeback(core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (UINT)_aligned_buf), sector_size);
+                res = disk_write_private(pdrv, (const BYTE *)core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (UINT)_aligned_buf), sector + i, 1);
+                if (res != RES_OK) {
+                    break;
+                }
+            }
+        } else {
+            l1c_dc_writeback(core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (UINT)buff), sector_size * count);
+            res = disk_write_private(pdrv, (const BYTE *)core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (UINT)buff), sector, count);
+        }
+    }
+#else
+    res = disk_write_private(pdrv, buff, sector, count);
+#endif
     return res;
 }
 

@@ -10,6 +10,8 @@
 
 #include "ff.h"
 
+#define FIL_SEARCH_NUM 20
+
 FRESULT sd_mount_fs(void);
 FRESULT sd_choose_music(char *target_filetype, char *filename);
 FRESULT sd_search_music_name(char *target_filetype1, char *target_filetype2);

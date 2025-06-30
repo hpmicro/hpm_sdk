@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -12,7 +12,6 @@
 
 FATFS s_sd_disk;
 FIL s_file;
-DIR s_dir;
 FRESULT fatfs_result;
 BYTE work[FF_MAX_SS];
 
@@ -182,6 +181,7 @@ static FRESULT sd_read_file(void)
 
 static FRESULT sd_big_file_test(void)
 {
+    ATTR_ALIGN(HPM_L1C_CACHELINE_SIZE) static uint8_t buf[32768];
     FRESULT fresult = f_open(&s_file, "big_file.bin", FA_WRITE | FA_CREATE_ALWAYS);
     if (fresult != FR_OK) {
         printf("Create new file failed, cause: %s\n", show_error_string(fresult));
@@ -190,7 +190,6 @@ static FRESULT sd_big_file_test(void)
     }
 
     uint32_t write_size = 1024UL * 1024UL * 100UL;
-    static uint8_t buf[32768];
     for (uint32_t i = 0; i < sizeof(buf); i++) {
         buf[i] = i & 0xFF;
     }

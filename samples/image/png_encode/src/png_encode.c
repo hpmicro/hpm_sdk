@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -11,6 +11,7 @@
 #include "hpm_lcdc_drv.h"
 #include "hpm_gpio_drv.h"
 #include "hpm_clock_drv.h"
+#include "hpm_l1c_drv.h"
 #include "file_op.h"
 #include "lodepng.h"
 #include "format_convert.h"
@@ -50,13 +51,13 @@
 #define PIXEL_FORMAT display_pixel_format_rgb565
 #endif
 
-#define CAM_BUF_LEN (IMAGE_HEIGHT * IMAGE_WIDTH * 3)
+#define CAM_BUF_LEN HPM_L1C_CACHELINE_ALIGN_UP(IMAGE_HEIGHT * IMAGE_WIDTH * 3)
 
-ATTR_PLACE_AT_NONCACHEABLE uint8_t file_buffer[CAM_BUF_LEN];
-ATTR_PLACE_AT(".framebuffer") uint8_t buffers[2][CAM_BUF_LEN];
+ATTR_PLACE_AT_WITH_ALIGNMENT(".framebuffer", HPM_L1C_CACHELINE_SIZE) uint8_t buffers[2][CAM_BUF_LEN];
 ATTR_PLACE_AT(".framebuffer") uint8_t convert_buffer[CAM_BUF_LEN];
 
 static volatile bool vsync = false;
+static uint8_t *image_out_ptr;
 
 /*
  * sensor configuration
@@ -113,31 +114,31 @@ void init_cam(uint8_t *buffer)
     cam_init(TEST_CAM, &cam_config);
 }
 
-uint32_t image_encode(uint8_t *src_buf, uint32_t width, uint32_t height, uint8_t *file_buf)
+uint32_t image_encode(uint8_t *src_buf, uint32_t width, uint32_t height)
 {
     uint32_t file_size;
     uint32_t error;
-    uint8_t *image_out;
+
+    if (l1c_dc_is_enabled()) {
+        l1c_dc_invalidate((uint32_t)src_buf, CAM_BUF_LEN);
+    }
 
     /* color space coversion */
     if (PIXEL_FORMAT == display_pixel_format_rgb565) {
         convert_rgb565_to_bgr888(src_buf, width, height, convert_buffer);
-        error = lodepng_encode24(&image_out, (size_t *)&file_size, convert_buffer, width, height);
+        error = lodepng_encode24(&image_out_ptr, (size_t *)&file_size, convert_buffer, width, height);
     } else if (PIXEL_FORMAT == display_pixel_format_y8) {
-        error = lodepng_encode_memory(&image_out, (size_t *)&file_size, src_buf, width, height, LCT_GREY, 8);
+        error = lodepng_encode_memory(&image_out_ptr, (size_t *)&file_size, src_buf, width, height, LCT_GREY, 8);
     } else {
         printf("Unsupported color space\n");
         while (1) {
         }
     }
 
-    if (error == 0) {
-        memcpy(file_buf, image_out, file_size);
-    } else {
+    if (error != 0) {
         printf("sw encode failed, error = %d: %s\n", error, lodepng_error_text(error));
         file_size = 0;
     }
-    free(image_out);
 
     return file_size;
 }
@@ -317,7 +318,7 @@ int main(void)
         update_lcd_buffer((uint32_t)back_buffer);
 
         /* encoding captured image */
-        image_size = image_encode(back_buffer, IMAGE_WIDTH, IMAGE_HEIGHT, file_buffer);
+        image_size = image_encode(back_buffer, IMAGE_WIDTH, IMAGE_HEIGHT);
         if (image_size == 0) {
             return -1;
         }
@@ -325,12 +326,14 @@ int main(void)
         snprintf((char *)fname, sizeof(fname), "cam_png_encode_%02d.png", i);
         retry = 3;
         while (retry--) {
-            if (check_disk() && file_store(fname, file_buffer, image_size)) {
+            if (check_disk() && file_store(fname, image_out_ptr, image_size)) {
                 printf("captured image encoded to %s\n", fname);
                 i++;
                 break;
             }
         }
+
+        free(image_out_ptr);
 
         wait_for_button_press();
         printf("preview is resumed\n");

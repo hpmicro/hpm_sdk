@@ -179,26 +179,6 @@ void bldc_init_par(void)
     motor0.inject_pole_detect.func = (bool (*)(void *, void *, void *, void *))&hpm_mcl_hfi_pole_detect;
 }
 
-void reset_pwm_counter(void)
-{
-#if defined(HPMSOC_HAS_HPMSDK_PWM)
-    pwm_enable_reload_at_synci(MOTOR0_BLDCPWM);
-#endif
-#if defined(HPMSOC_HAS_HPMSDK_PWMV2)
-
-#endif
-}
-
-void enable_all_pwm_output(void)
-{
-#if defined(HPMSOC_HAS_HPMSDK_PWM)
-    pwm_disable_sw_force(MOTOR0_BLDCPWM);
-#endif
-#if defined(HPMSOC_HAS_HPMSDK_PWMV2)
-
-#endif
-}
-
 void disable_all_pwm_output(void)
 {
 #if defined(HPMSOC_HAS_HPMSDK_PWM)
@@ -269,7 +249,7 @@ void pwm_init(void)
 
     pwm_deinit(MOTOR0_BLDCPWM);
     pwm_stop_counter(MOTOR0_BLDCPWM);
-    reset_pwm_counter();
+    pwm_enable_reload_at_synci(MOTOR0_BLDCPWM);
     pwm_set_reload(MOTOR0_BLDCPWM, 0, PWM_RELOAD);
     pwm_set_start_count(MOTOR0_BLDCPWM, 0, 0);
     cmp_config[0].mode = pwm_cmp_mode_output_compare;

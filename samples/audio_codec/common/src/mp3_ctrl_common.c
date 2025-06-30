@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -12,8 +12,8 @@
 #define MINIMP3_IMPLEMENTATION
 #include "minimp3_ex.h"
 
-static uint8_t s_mp3_file_buf[0x800000];
-
+ATTR_ALIGN(HPM_L1C_CACHELINE_SIZE) static uint8_t s_mp3_file_buf[0x800000];
+static FIL s_mp3_fs;
 /*****************************************************************************************************************
  *
  *  Codes
@@ -22,29 +22,28 @@ static uint8_t s_mp3_file_buf[0x800000];
 
 uint8_t *mp3_preload(char *file_name, uint32_t *data_size)
 {
-    FIL mp3_fs;
     FRESULT rsl;
     uint32_t read_bytes;
 
-    rsl = f_open(&mp3_fs, file_name, FA_READ);
+    rsl = f_open(&s_mp3_fs, file_name, FA_READ);
     if (rsl != FR_OK) {
         printf("error: open file failure!\n");
         return 0;
     }
 
-    *data_size = f_size(&mp3_fs);
+    *data_size = f_size(&s_mp3_fs);
     if (*data_size > 0x800000) {
         printf("error: not enough memory!\n");
         return 0;
     }
 
-    rsl = f_read(&mp3_fs, s_mp3_file_buf, *data_size, (UINT *)&read_bytes);
+    rsl = f_read(&s_mp3_fs, s_mp3_file_buf, *data_size, (UINT *)&read_bytes);
     if ((rsl != FR_OK) || (*data_size != read_bytes)) {
         printf("error: read file failure!\n");
         return 0;
     }
 
-    f_close(&mp3_fs);
+    f_close(&s_mp3_fs);
 
     return s_mp3_file_buf;
 }
@@ -71,7 +70,7 @@ uint32_t mp3_convert_data_format(int32_t *dst, int16_t *src, int32_t samples, ui
     return data_cnt * sizeof(int32_t);
 }
 
-uint32_t mp3_calc_tolal_time_second(char *file_name)
+int32_t mp3_calc_total_time_second(char *file_name)
 {
     uint8_t *buf;
     uint32_t buf_size;

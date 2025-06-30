@@ -8,6 +8,11 @@ i2c_smbus_master
 
 i2c_smbus_master示例工程展示了I2C在master模式作为smbus进行接收和发送数据的功能。在这个示例工程中，SMbus master先发送数据，之后再接收数据，并对比发送和接收到的数据。
 
+提示
+------
+
+- 组件详情文档请参见 :ref:`smbus <smbus>`
+
 硬件设置
 ------------
 

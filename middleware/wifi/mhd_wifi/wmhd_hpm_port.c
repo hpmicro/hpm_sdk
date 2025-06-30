@@ -22,6 +22,9 @@ const char _ctype_[] = { 00,
                          02, 02, 02, 02, 02, 02, 02, 02, 02, 02, 02, 10, 10, 10, 10, 20
 };
 #endif
+#if defined(__zcc__)
+__attribute__((used)) int _impure_ptr; /* Workaround for fixing compiling error with zcc */
+#endif
 
 /* Prepare the SDIO base table */
 static const SDXC_Type *hpm_sdio_base_table[] = {
@@ -43,13 +46,13 @@ void wmhd_config_hpm_sdio_instances(void)
 int wmhd_lookup_hpm_sdio_index(void *sdio_base)
 {
     int index = 0;
-    while (index < hpm_sdio_instances) {
+    while (index < (int)hpm_sdio_instances) {
         if (sdio_base == hpm_sdio_base_table[index]) {
             break;
         }
         ++index;
     }
-    if (index >= hpm_sdio_instances) {
+    if (index >= (int)hpm_sdio_instances) {
         index = -1;
     }
     return index;

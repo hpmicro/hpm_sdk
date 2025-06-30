@@ -1,4 +1,4 @@
-# Copyright (c) 2021 HPMicro
+# Copyright (c) 2021,2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 sdk_ld_options("-static")
@@ -8,3 +8,4 @@ sdk_ld_options("-Wl,--orphan-handling=place")
 #sdk_zcc_ld_options("-Wl,--andes-relax-gp")
 sdk_zcc_ld_options("-ffunction-sections")
 sdk_zcc_ld_options("-fdata-sections")
+sdk_zcc_ld_options("-Wl,--print-memory-usage")

@@ -1,6 +1,6 @@
 .. _samples_image:
 
-IMAGE
+Image
 =====
 
 .. toctree::

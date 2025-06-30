@@ -1,6 +1,12 @@
 # Copyright (c) 2021-2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
+# Summary of file content:
+# This file defines various functions and properties for configuring the Segger Embedded Studio (SES) environment.
+# It includes functions to set compile options and compile definitions for the SES interface library.
+# Additionally, it defines properties for SES-specific libraries and options, such as debug target connection, linker options, and JLink speed.
+# The functions provided in this file allow for the customization and configuration of the SES environment for different projects and targets.
+
 # add ses library interface to store ses specific configurations
 set(HPM_SDK_SES_LIB_ITF hpm_sdk_ses_lib_itf)
 add_library(${HPM_SDK_SES_LIB_ITF} INTERFACE)
@@ -19,64 +25,461 @@ set(SES_OPT_LINKER_PRINTF_FMT_LEVEL linker_printf_fmt_level)
 set(SES_OPT_LINKER_SCANF_FMT_LEVEL linker_scanf_fmt_level)
 set(SES_OPT_DBG_JLINK_SPEED speed)
 set(SES_DBG_CONN_GDB_SRV "GDB Server")
-
 set(HPM_SDK_SES_OPTS hpm_sdk_ses_opts)
 define_property(GLOBAL PROPERTY ${HPM_SDK_SES_OPTS} BRIEF_DOCS "ses options" FULL_DOCS "ses options")
 
-# Set compile options for SES
+# Set optimization level for file or directory in Segger Embedded Studio (SES)
+set(HPM_SDK_SES_OPTIMIZATION_LEVEL hpm_sdk_ses_optimization_level)
+define_property(GLOBAL PROPERTY ${HPM_SDK_SES_OPTIMIZATION_LEVEL} BRIEF_DOCS "ses optimization level" FULL_DOCS "ses optimization level")
+
+# This is a private function to set the optimization level for a specific file or directory
+# in the Segger Embedded Studio (SES) environment. It validates the provided optimization
+# level against a list of valid levels and appends the configuration to a global property.
+#
+# :param path: The path to the source file or directory. If not absolute, it is resolved
+#              relative to the current source directory.
+# :param config_type: The configuration type (e.g., Debug, Release, Common).
+# :param level: The optimization level to set. Must be one of the predefined valid levels.
+# :raises FATAL_ERROR: If the provided optimization level is not valid.
+# @private
+function(__sdk_ses_set_optimization_level path config_type level)
+    set(VALID_OPTIMIZATION_LEVELS "None" "Level 0" "Level 1" "Level 2 for speed" "Level 2 balanced" "Level 2 for size" "Level 3 for more speed")
+    if(NOT level IN_LIST VALID_OPTIMIZATION_LEVELS)
+        message(FATAL_ERROR "Segger: invalid optimization level: ${level}")
+    endif()
+    if(NOT IS_ABSOLUTE ${path})
+        set(path ${CMAKE_CURRENT_SOURCE_DIR}/${path})
+    endif()
+    set_property(GLOBAL APPEND PROPERTY ${HPM_SDK_SES_OPTIMIZATION_LEVEL} "'${path}':'${config_type}':'${level}'")
+endfunction()
+
+# Set optimization level for file or directory in Segger Embedded Studio (SES)
+#
+# This function sets the optimization level for all configurations in the SES project.
+# It is a convenience wrapper around __sdk_ses_set_optimization_level.
 #
 # Example:
-#   sdk_ses_compile_options(opts)
-# :param opts: compile options
-# @public
+#   sdk_ses_set_optimization_level("path/to/file.c" "Level 2 for speed")
 #
+# :param path: Path to the source file or directory
+# :param level: Optimization level to set
+# @public
+function(sdk_ses_set_optimization_level path level)
+    __sdk_ses_set_optimization_level(${path} "Common" ${level})
+endfunction()
+
+# Set optimization level for Debug configuration in Segger Embedded Studio (SES)
+#
+# This function sets the optimization level specifically for the Debug configuration.
+# It is a convenience wrapper around __sdk_ses_set_optimization_level.
+#
+# Example:
+#   sdk_ses_set_optimization_level_debug("path/to/file.c" "Level 2 for speed")
+#
+# :param path: Path to the source file or directory
+# :param level: Optimization level to set
+# @public
+function(sdk_ses_set_optimization_level_debug path level)
+    __sdk_ses_set_optimization_level(${path} "Debug" ${level})
+endfunction()
+
+# Set optimization level for Release configuration in Segger Embedded Studio (SES)
+#
+# This function sets the optimization level specifically for the Release configuration.
+# It is a convenience wrapper around __sdk_ses_set_optimization_level.
+#
+# Example:
+#   sdk_ses_set_optimization_level_release("path/to/file.c" "Level 2 for speed")
+#
+# :param path: Path to the source file or directory
+# :param level: Optimization level to set
+# @public
+function(sdk_ses_set_optimization_level_release path level)
+    __sdk_ses_set_optimization_level(${path} "Release" ${level})
+endfunction()
+
+set(HPM_SDK_SES_SECTION_PLACEMENT hpm_sdk_ses_section_placement)
+define_property(GLOBAL PROPERTY ${HPM_SDK_SES_SECTION_PLACEMENT} BRIEF_DOCS "ses section placement" FULL_DOCS "ses section placement")
+
+# Set section placement for file or directory in Segger Embedded Studio (SES)
+#
+# This function sets the placement of different sections in the SES project.
+# It validates the section type and stores the placement information in a global property.
+# The section type is case-sensitive.
+#
+# Example:
+#   sdk_ses_set_section_placement("path/to/file.c" "Debug" "text" "my_section")
+#
+# :param path: Path to the source file or directory
+# :param config_type: Configuration type (e.g. Debug, Release)
+# :param section_type: Type of section (data, rodata, text, isr, bss, or vector)
+# :param section_name: Name of the section to place
+# @private
+function(__sdk_ses_set_section_placement path config_type section_type section_name)
+    set(VALID_SECTION_TYPES "data" "const" "code" "isr" "bss" "vector")
+    string(TOLOWER "${section_type}" section_type_lower)
+    if(NOT section_type_lower IN_LIST VALID_SECTION_TYPES)
+        message(FATAL_ERROR "Segger: invalid section type: ${section_type}")
+    endif()
+    if(NOT IS_ABSOLUTE ${path})
+        set(path ${CMAKE_CURRENT_SOURCE_DIR}/${path})
+    endif()
+    set_property(GLOBAL APPEND PROPERTY ${HPM_SDK_SES_SECTION_PLACEMENT} "'${path}':'${config_type}':${section_type_lower}:${section_name}")
+endfunction()
+
+# Set code section placement for Segger Embedded Studio (SES)
+#
+# This function sets the code section placement for all configurations in the SES project.
+# It is a convenience wrapper around sdk_ses_set_section_placement.
+#
+# Example:
+#   sdk_ses_set_code_placement("path/to/file.c" "my_code_section")
+#
+# :param path: Path to the source file or directory
+# :param section_name: Name of the section to place
+# @public
+function(sdk_ses_set_code_placement path section_name)
+    __sdk_ses_set_section_placement(${path} "Common" "code" ${section_name})
+endfunction()
+
+# Set code section placement for Debug configuration in Segger Embedded Studio (SES)
+#
+# This function sets the code section placement specifically for the Debug configuration.
+# It is a convenience wrapper around sdk_ses_set_section_placement.
+#
+# Example:
+#   sdk_ses_set_code_placement_debug("path/to/file.c" "my_code_section")
+#
+# :param path: Path to the source file or directory
+# :param section_name: Name of the section to place
+# @public
+function(sdk_ses_set_code_placement_debug path section_name)
+    __sdk_ses_set_section_placement(${path} "Debug" "code" ${section_name})
+endfunction()
+
+# Set code section placement for Release configuration in Segger Embedded Studio (SES)
+#
+# This function sets the code section placement specifically for the Release configuration.
+# It is a convenience wrapper around sdk_ses_set_section_placement.
+#
+# Example:
+#   sdk_ses_set_code_placement_release("path/to/file.c" "my_code_section")
+#
+# :param path: Path to the source file or directory
+# :param section_name: Name of the section to place
+# @public
+function(sdk_ses_set_code_placement_release path section_name)
+    __sdk_ses_set_section_placement(${path} "Release" "code" ${section_name})
+endfunction()
+
+# Set data section placement for Segger Embedded Studio (SES)
+#
+# This function sets the data section placement for all configurations in the SES project.
+# It is a convenience wrapper around sdk_ses_set_section_placement.
+#
+# Example:
+#   sdk_ses_set_data_placement("path/to/file.c" "my_data_section")
+#
+# :param path: Path to the source file or directory
+# :param section_name: Name of the section to place
+# @public
+function(sdk_ses_set_data_placement path section_name)
+    __sdk_ses_set_section_placement(${path} "Common" "data" ${section_name})
+endfunction()
+
+# Set data section placement for Debug configuration in Segger Embedded Studio (SES)
+#
+# This function sets the data section placement specifically for the Debug configuration.
+# It is a convenience wrapper around sdk_ses_set_section_placement.
+#
+# Example:
+#   sdk_ses_set_data_placement_debug("path/to/file.c" "my_data_section")
+#
+# :param path: Path to the source file or directory
+# :param section_name: Name of the section to place
+# @public
+function(sdk_ses_set_data_placement_debug path section_name)
+    __sdk_ses_set_section_placement(${path} "Debug" "data" ${section_name})
+endfunction()
+
+# Set data section placement for Release configuration in Segger Embedded Studio (SES)
+#
+# This function sets the data section placement specifically for the Release configuration.
+# It is a convenience wrapper around sdk_ses_set_section_placement.
+#
+# Example:
+#   sdk_ses_set_data_placement_release("path/to/file.c" "my_data_section")
+#
+# :param path: Path to the source file or directory
+# :param section_name: Name of the section to place
+# @public
+function(sdk_ses_set_data_placement_release path section_name)
+    __sdk_ses_set_section_placement(${path} "Release" "data" ${section_name})
+endfunction()
+
+# Set const section placement for Segger Embedded Studio (SES)
+#
+# This function sets the const section placement for all configurations in the SES project.
+# It is a convenience wrapper around sdk_ses_set_section_placement.
+#
+# Example:
+#   sdk_ses_set_const_placement("path/to/file.c" "my_const_section")
+#
+# :param path: Path to the source file or directory
+# :param section_name: Name of the section to place
+# @public
+function(sdk_ses_set_const_placement path section_name)
+    __sdk_ses_set_section_placement(${path} "Common" "const" ${section_name})
+endfunction()
+
+# Set const section placement for Debug configuration in Segger Embedded Studio (SES)
+#
+# This function sets the const section placement specifically for the Debug configuration.
+# It is a convenience wrapper around sdk_ses_set_section_placement.
+#
+# Example:
+#   sdk_ses_set_const_placement_debug("path/to/file.c" "my_const_section")
+#
+# :param path: Path to the source file or directory
+# :param section_name: Name of the section to place
+# @public
+function(sdk_ses_set_const_placement_debug path section_name)
+    __sdk_ses_set_section_placement(${path} "Debug" "const" ${section_name})
+endfunction()
+
+# Set const section placement for Release configuration in Segger Embedded Studio (SES)
+#
+# This function sets the const section placement specifically for the Release configuration.
+# It is a convenience wrapper around sdk_ses_set_section_placement.
+#
+# Example:
+#   sdk_ses_set_const_placement_release("path/to/file.c" "my_const_section")
+#
+# :param path: Path to the source file or directory
+# :param section_name: Name of the section to place
+# @public
+function(sdk_ses_set_const_placement_release path section_name)
+    __sdk_ses_set_section_placement(${path} "Release" "const" ${section_name})
+endfunction()
+
+# Set ISR (Interrupt Service Routine) section placement for Segger Embedded Studio (SES)
+#
+# This function sets the ISR section placement for all configurations in the SES project.
+# It is a convenience wrapper around sdk_ses_set_section_placement.
+#
+# Example:
+#   sdk_ses_set_isr_placement("path/to/file.c" "my_isr_section")
+#
+# :param path: Path to the source file or directory
+# :param section_name: Name of the section to place
+# @public
+function(sdk_ses_set_isr_placement path section_name)
+    __sdk_ses_set_section_placement(${path} "Common" "isr" ${section_name})
+endfunction()
+
+# Set ISR section placement for Debug configuration in Segger Embedded Studio (SES)
+#
+# This function sets the ISR section placement specifically for the Debug configuration.
+# It is a convenience wrapper around sdk_ses_set_section_placement.
+#
+# Example:
+#   sdk_ses_set_isr_placement_debug("path/to/file.c" "my_isr_section")
+#
+# :param path: Path to the source file or directory
+# :param section_name: Name of the section to place
+# @public
+function(sdk_ses_set_isr_placement_debug path section_name)
+    __sdk_ses_set_section_placement(${path} "Debug" "isr" ${section_name})
+endfunction()
+
+# Set ISR section placement for Release configuration in Segger Embedded Studio (SES)
+#
+# This function sets the ISR section placement specifically for the Release configuration.
+# It is a convenience wrapper around sdk_ses_set_section_placement.
+#
+# Example:
+#   sdk_ses_set_isr_placement_release("path/to/file.c" "my_isr_section")
+#
+# :param path: Path to the source file or directory
+# :param section_name: Name of the section to place
+# @public
+function(sdk_ses_set_isr_placement_release path section_name)
+    __sdk_ses_set_section_placement(${path} "Release" "isr" ${section_name})
+endfunction()
+
+# Set BSS (Block Started by Symbol) section placement for Segger Embedded Studio (SES)
+#
+# This function sets the BSS section placement for all configurations in the SES project.
+# It is a convenience wrapper around sdk_ses_set_section_placement.
+#
+# Example:
+#   sdk_ses_set_bss_placement("path/to/file.c" "my_bss_section")
+#
+# :param path: Path to the source file or directory
+# :param section_name: Name of the section to place
+# @public
+function(sdk_ses_set_bss_placement path section_name)
+    __sdk_ses_set_section_placement(${path} "Common" "bss" ${section_name})
+endfunction()
+
+# Set BSS section placement for Debug configuration in Segger Embedded Studio (SES)
+#
+# This function sets the BSS section placement specifically for the Debug configuration.
+# It is a convenience wrapper around sdk_ses_set_section_placement.
+#
+# Example:
+#   sdk_ses_set_bss_placement_debug("path/to/file.c" "my_bss_section")
+#
+# :param path: Path to the source file or directory
+# :param section_name: Name of the section to place
+# @public
+function(sdk_ses_set_bss_placement_debug path section_name)
+    __sdk_ses_set_section_placement(${path} "Debug" "bss" ${section_name})
+endfunction()
+
+# Set BSS section placement for Release configuration in Segger Embedded Studio (SES)
+#
+# This function sets the BSS section placement specifically for the Release configuration.
+# It is a convenience wrapper around sdk_ses_set_section_placement.
+#
+# Example:
+#   sdk_ses_set_bss_placement_release("path/to/file.c" "my_bss_section")
+#
+# :param path: Path to the source file or directory
+# :param section_name: Name of the section to place
+# @public
+function(sdk_ses_set_bss_placement_release path section_name)
+    __sdk_ses_set_section_placement(${path} "Release" "bss" ${section_name})
+endfunction()
+
+# Set vector section placement for Segger Embedded Studio (SES)
+#
+# This function sets the vector section placement for all configurations in the SES project.
+# It is a convenience wrapper around sdk_ses_set_section_placement.
+#
+# Example:
+#   sdk_ses_set_vector_placement("path/to/file.c" "my_vector_section")
+#
+# :param path: Path to the source file or directory
+# :param section_name: Name of the section to place
+# @public
+function(sdk_ses_set_vector_placement path section_name)
+    __sdk_ses_set_section_placement(${path} "Common" "vector" ${section_name})
+endfunction()
+
+# Set vector section placement for Debug configuration in Segger Embedded Studio (SES)
+#
+# This function sets the vector section placement specifically for the Debug configuration.
+# It is a convenience wrapper around sdk_ses_set_section_placement.
+#
+# Example:
+#   sdk_ses_set_vector_placement_debug("path/to/file.c" "my_vector_section")
+#
+# :param path: Path to the source file or directory
+# :param section_name: Name of the section to place
+# @public
+function(sdk_ses_set_vector_placement_debug path section_name)
+    __sdk_ses_set_section_placement(${path} "Debug" "vector" ${section_name})
+endfunction()
+
+# Set vector section placement for Release configuration in Segger Embedded Studio (SES)
+#
+# This function sets the vector section placement specifically for the Release configuration.
+# It is a convenience wrapper around sdk_ses_set_section_placement.
+#
+# Example:
+#   sdk_ses_set_vector_placement_release("path/to/file.c" "my_vector_section")
+#
+# :param path: Path to the source file or directory
+# :param section_name: Name of the section to place
+# @public
+function(sdk_ses_set_vector_placement_release path section_name)
+    __sdk_ses_set_section_placement(${path} "Release" "vector" ${section_name})
+endfunction()
+
+# Set compile options for Segger Embedded Studio (SES)
+#
+# This function sets compile options for the SES interface library.
+# It accepts one or more compile options as arguments. These options are added
+# with INTERFACE visibility, meaning they will be applied to any target that links
+# against the SES interface library.
+#
+# Example:
+#   sdk_ses_compile_options(-O2 -g)
+#
+# :param opts: Compile options to be added with INTERFACE visibility.
+# @public
 function(sdk_ses_compile_options)
     foreach(opt ${ARGN})
         target_compile_options(${HPM_SDK_SES_LIB_ITF} INTERFACE ${opt})
     endforeach()
 endfunction()
 
-# Set compile definitions for SES
+# Set compile definitions for Segger Embedded Studio (SES)
+#
+# This function sets compile definitions for the SES interface library.
+# It accepts one or more preprocessor definitions as arguments. These definitions
+# are added with INTERFACE visibility, meaning they will be applied to any target
+# that links against the SES interface library.
 #
 # Example:
-#   sdk_ses_compile_definitions(def)
-# :param def: compiler preprocesing definition
-# @public
+#   sdk_ses_compile_definitions(-DDEBUG -DVERSION=1)
 #
+# :param def: Compiler preprocessing definitions to be added with INTERFACE visibility.
+# @public
 function(sdk_ses_compile_definitions)
     foreach(def ${ARGN})
         target_compile_definitions(${HPM_SDK_SES_LIB_ITF} INTERFACE ${def})
     endforeach()
 endfunction()
 
-# link libraries for SES
+# Link libraries for Segger Embedded Studio (SES)
+#
+# This function links libraries to the SES interface library.
+# It accepts one or more library names or paths as arguments. The libraries can be
+# actual file paths or standard libraries provided by the toolchain.
 #
 # Example:
-#   sdk_ses_link_libraries(libs)
-# :param libs: standard libraries to be linked for SES
-# @public
+#   sdk_ses_link_libraries(libm)
 #
+# :param libs: Libraries to be linked with INTERFACE visibility.
+# @public
 function(sdk_ses_link_libraries)
     foreach(lib ${ARGN})
         target_link_libraries(${HPM_SDK_SES_LIB_ITF} INTERFACE ${lib})
     endforeach()
 endfunction()
 
-# @private
+# Set linker options for Segger Embedded Studio (SES)
 #
+# This function sets linker options for the SES interface library.
+# It accepts one or more linker options as arguments. These options are added
+# with INTERFACE visibility, meaning they will be applied to any target that links
+# against the SES interface library.
+#
+# Example:
+#   sdk_ses_ld_options(-Wl,--start-group)
+#
+# :param opts: Linker options to be added with INTERFACE visibility.
+# @private
 function(sdk_ses_ld_options)
     foreach(opt ${ARGN})
         target_link_libraries(${HPM_SDK_SES_LIB_ITF} INTERFACE ${opt})
     endforeach()
 endfunction()
 
-# link libraries for SES
+# Link libraries for Segger Embedded Studio (SES)
+#
+# This function links libraries to the SES interface library. It accepts one or more
+# library names or paths as arguments. If a library path is relative, it will be resolved
+# relative to the current source directory. If a library cannot be found, a warning message
+# will be displayed.
 #
 # Example:
-#   sdk_ses_ld_libs(libs)
-# :param libs: libraries to be linked for SES
-# @private
+#   sdk_ses_ld_lib(libm)
 #
+# :param libs: Libraries to be linked with INTERFACE visibility.
+# @private
 function(sdk_ses_ld_lib)
     foreach(l ${ARGN})
         if(IS_ABSOLUTE ${l})
@@ -92,13 +495,34 @@ function(sdk_ses_ld_lib)
     endforeach()
 endfunction()
 
-# Add include path for SES
+# Link libraries for Segger Embedded Studio (SES) with condition
+#
+# This function links libraries to the SES interface library only if a specified
+# feature is enabled. It accepts one or more library names or paths as arguments.
 #
 # Example:
-#   sdk_ses_link_libraries(libs)
-# :param libs: libraries to be linked for SES
-# @public
+#   sdk_ses_ld_lib_ifdef(FEATURE_X libm)
 #
+# :param feature: The feature flag to check.
+# :param libs: Libraries to be linked with INTERFACE visibility.
+# @private
+function(sdk_ses_ld_lib_ifdef feature)
+    if((${feature}) AND (NOT ${${feature}} EQUAL 0))
+        sdk_ses_ld_lib(${ARGN})
+    endif()
+endfunction()
+
+# Add include path for Segger Embedded Studio (SES)
+#
+# This function adds include directories to the SES interface library.
+# It accepts one or more include directory paths as arguments. If a relative path
+# is provided, it will be resolved relative to the current source directory.
+#
+# Example:
+#   sdk_ses_inc(include)
+#
+# :param inc: Include directories to be added with INTERFACE visibility.
+# @public
 function(sdk_ses_inc)
     foreach(inc ${ARGN})
         if(IS_ABSOLUTE ${inc})
@@ -110,21 +534,18 @@ function(sdk_ses_inc)
     endforeach()
 endfunction()
 
-# @private
+# Add source file for Segger Embedded Studio (SES)
 #
-function(sdk_ses_ld_lib_ifdef feature)
-    if((${feature}) AND (NOT ${${feature}} EQUAL 0))
-        sdk_ses_ld_lib(${ARGN})
-    endif()
-endfunction()
-
-# Add source file for SES
+# This function adds source files to the SES library.
+# It accepts one or more source file paths as arguments. If a relative path
+# is provided, it will be resolved relative to the current source directory.
+# Directories cannot be added as source files.
 #
 # Example:
-#   sdk_ses_src(SOURCE_FILE)
-# :param SOURCE_FILE: source file added for SES
-# @public
+#   sdk_ses_src(source_file.c)
 #
+# :param SOURCE_FILE: Source files to be added to the SES library.
+# @public
 function(sdk_ses_src)
     foreach(file ${ARGN})
         if(IS_DIRECTORY ${file})
@@ -139,14 +560,18 @@ function(sdk_ses_src)
     endforeach()
 endfunction()
 
-
-# Add source file for SES startup
+# Add source file for Segger Embedded Studio (SES) startup
+#
+# This function adds source files to the SES startup library.
+# It accepts one or more source file paths as arguments. If a relative path
+# is provided, it will be resolved relative to the current source directory.
+# Directories cannot be added as source files.
 #
 # Example:
-#   sdk_ses_startup_src(STARTUP_SOURCE_FILE)
-# :param STARTUP_SOURCE_FILE: source file added for SES startup
-# @public
+#   sdk_ses_startup_src(startup_file.c)
 #
+# :param STARTUP_SOURCE_FILE: Source files to be added to the SES startup library.
+# @public
 function(sdk_ses_startup_src)
     foreach(file ${ARGN})
         if(IS_DIRECTORY ${file})
@@ -161,14 +586,17 @@ function(sdk_ses_startup_src)
     endforeach()
 endfunction()
 
-# Add source file (glob pattern) for SES
+# Add source file (glob pattern) for Segger Embedded Studio (SES)
+#
+# This function adds source files to the SES library using a glob pattern.
+# It accepts one or more glob patterns as arguments. The files matching the patterns
+# are added to the SES library.
 #
 # Example:
-#   sdk_gcc_src_glob(SOURCE_FILE_GLOB)
-# :param SOURCE_FILE_GLOB: source files to be added to SES,
-#    like ./**/*.c to add all .c files under current directory recursively
-# @public
+#   sdk_ses_src_glob("src/**/*.c")
 #
+# :param SOURCE_FILE_GLOB: Glob patterns to specify source files to be added to SES.
+# @public
 function(sdk_ses_src_glob)
     foreach(g ${ARGN})
         file(GLOB_RECURSE src ${g})
@@ -177,33 +605,73 @@ function(sdk_ses_src_glob)
     sdk_ses_src(${globbed_src})
 endfunction()
 
-# Add options for SES project
+# Add options for Segger Embedded Studio (SES) project
+#
+# This function adds options to the SES project configuration.
+# It accepts a list of option key-value pairs, where each pair is split by a space.
 #
 # Example:
-#   sdk_ses_options(option_key_value_list)
-# :param option_key_value_list: list of option key-value pair, split with space
-#    like "option_a_name=option_a_value" to add option_a_name with value of option_a_value in the project file
-# @public
+#   sdk_ses_options("option_a_name=option_a_value")
 #
+# :param option_key_value_list: List of option key-value pairs for the SES project.
+# @public
 function(sdk_ses_options)
     foreach(opt ${ARGN})
         set_property(GLOBAL APPEND PROPERTY ${HPM_SDK_SES_OPTS} ${opt})
     endforeach()
 endfunction()
 
+# Set library I/O type for Segger Embedded Studio (SES)
+#
+# This function sets the library I/O type option for the SES project.
+#
+# Example:
+#   sdk_ses_opt_lib_io_type(STD)
+#
+# :param type: The library I/O type to set.
+# @public
 function(sdk_ses_opt_lib_io_type type)
     sdk_ses_options("${SES_OPT_LIB_IO_TYPE}=${type}")
 endfunction()
 
+# Set debug connection for Segger Embedded Studio (SES)
+#
+# This function sets the debug connection option for the SES project.
+#
+# Example:
+#   sdk_ses_opt_debug_connection("GDB Server")
+#
+# :param conn: The debug connection type to set.
+# @public
 function(sdk_ses_opt_debug_connection conn)
     sdk_ses_options("${SES_OPT_DBG_TGT_CONN}=${conn}")
 endfunction()
 
+# Set J-Link speed for Segger Embedded Studio (SES)
+#
+# This function sets the J-Link speed option for the SES project.
+#
+# Example:
+#   sdk_ses_opt_debug_jlink_speed(4000)
+#
+# :param speed: The J-Link speed to set.
+# @public
 function(sdk_ses_opt_debug_jlink_speed speed)
     sdk_ses_options("${SES_OPT_DBG_JLINK_SPEED}=${speed}")
 endfunction()
 
-function (generate_ses_project)
+# Generate Segger Embedded Studio (SES) project
+#
+# This function generates a Segger Embedded Studio (SES) project file.
+# It collects various properties and configurations from the CMake project
+# and writes them to a JSON file, which is then used to generate the SES project.
+#
+# Example:
+#   generate_ses_project()
+#
+# :param None: This function does not take any parameters.
+# @public
+function(generate_ses_project)
     get_property(target_source_files TARGET app PROPERTY SOURCES)
     get_property(target_app_include_dirs TARGET app PROPERTY INCLUDE_DIRECTORIES)
     get_property(target_lib_sources TARGET ${HPM_SDK_LIB} PROPERTY SOURCES)
@@ -322,11 +790,14 @@ function (generate_ses_project)
         # convert lto to ses specific settings
         STRING(REGEX MATCH "-flto" exist ${f})
         if(NOT ${exist} EQUAL -1)
-            if("${ses_extra_options}" STREQUAL "")
-                set(ses_extra_options "link_time_optimization=Yes")
-            else()
-                set(ses_extra_options "${ses_extra_options},link_time_optimization=Yes")
+            if(${SES_COMPILER_VARIANT} STREQUAL "SEGGER")
+                if("${ses_extra_options}" STREQUAL "")
+                    set(ses_extra_options "link_time_optimization=Yes")
+                else()
+                    set(ses_extra_options "${ses_extra_options},link_time_optimization=Yes")
+                endif()
             endif()
+            # FIXME: -flto will cause build failure on buiding asm file calling external functions
             list(REMOVE_ITEM target_gcc_cflags ${f})
             continue()
         endif()
@@ -387,6 +858,13 @@ function (generate_ses_project)
         string(FIND ${f} "-fexceptions" exist)
         if(NOT ${exist} EQUAL -1)
             set(enable_cpp_exceptions 1)
+            continue()
+        endif()
+
+        STRING(REGEX MATCH "-O[0-3s].*" exist ${f})
+        if(NOT ${exist} EQUAL -1)
+            STRING(REGEX REPLACE "(-O[0-3s])" "\\1" gcc_opt_level ${f})
+            list(REMOVE_ITEM target_ses_cflags ${f})
             continue()
         endif()
 
@@ -589,7 +1067,7 @@ function (generate_ses_project)
         if(NOT IS_ABSOLUTE ${target_source})
             set(target_source ${CMAKE_CURRENT_SOURCE_DIR}/${target_source})
         endif()
-        if("${target_source_with_macro}" STREQUAL "")
+        if("${target_sources_with_macro}" STREQUAL "")
             set(target_sources_with_macro "${target_source}")
         else()
             set(target_sources_with_macro "${target_sources_with_macro},${target_source}")
@@ -658,6 +1136,10 @@ function (generate_ses_project)
         set(target_defines_escaped ${target_defines})
     endif()
 
+    if(${SES_LINKER_VARIANT} STREQUAL "SEGGER")
+        set(target_defines_escaped "${target_defines_escaped},HPM_SES_USE_SEGGER_LD=1")
+    endif()
+
     set(target_register_definition "${HPM_SDK_BASE}/soc/${HPM_SOC_SERIES}/${HPM_SOC}/hpm_ses_reg.xml")
     set(target_cpu_register_definition "${HPM_SDK_BASE}/soc/${HPM_SOC_SERIES}/${HPM_SOC}/hpm_ses_riscv_cpu_regs.xml")
 
@@ -711,6 +1193,9 @@ function (generate_ses_project)
         set(SES_DEVICE_NAME "${HPM_DEVICE_NAME}_CPU1")
     endif()
 
+    get_property(section_placement GLOBAL PROPERTY ${HPM_SDK_SES_SECTION_PLACEMENT})
+    get_property(optimization_level GLOBAL PROPERTY ${HPM_SDK_SES_OPTIMIZATION_LEVEL})
+
     set(target_data "
         \"name\": \"${CMAKE_PROJECT_NAME}\",
         \"sources\": \"${target_sources_with_macro}\",
@@ -748,7 +1233,9 @@ function (generate_ses_project)
         \"enable_cpp_exceptions\":\"${enable_cpp_exceptions}\",
         \"library_io_type\":\"${lib_io_type}\",
         \"extra_ses_options\":\"${ses_extra_options}\",
-        \"app_name\":\"${APP_NAME}\"
+        \"app_name\":\"${APP_NAME}\",
+        \"section_placement\":\"${section_placement}\",
+        \"optimization_level\":\"${optimization_level}\"
         ")
 
     string(REGEX MATCH "GDB Server" is_gdb ${debug_target_conn})

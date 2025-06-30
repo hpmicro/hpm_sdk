@@ -63,7 +63,7 @@ int main(void)
     FRESULT rsl;
     int32_t frame_bytes;
     int32_t samples;
-    uint32_t total_time;
+    int32_t total_time;
 
     board_init();
 #if defined(USING_CODEC) && USING_CODEC
@@ -80,7 +80,13 @@ int main(void)
         while (1) {
             rsl = sd_choose_music(".mp3", file_name);
             if (rsl == FR_OK) {
-                total_time = mp3_calc_tolal_time_second(file_name);
+                total_time = mp3_calc_total_time_second(file_name);
+                if (total_time < 0) {
+                    printf("calcate total time failure.\r\n");
+                    while (1) {
+                        ;
+                    }
+                }
                 file_data_ptr = mp3_preload(file_name, &file_size);
 
                 if (file_data_ptr != 0) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -44,7 +44,7 @@ typedef enum {
 void ipc_init(void);
 
 /**
- * @brief Enbale IPC event interrupt.
+ * @brief Enable IPC event interrupt.
  *
  * @param [in] priority interrupt priority
  */

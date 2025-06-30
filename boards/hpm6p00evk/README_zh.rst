@@ -8,7 +8,7 @@ HPM6P00EVK开发板
 
 HPM6P00是一款600MHz的双核RISC-V MCU，具有很高的算力和丰富的外设资源。
 
-HPM6P00EVK为HPM6P00系列MCU的评估板，提供了一系列接口，包括ADC输入SMA接口、SDM输入SMA接口，电机控制接口(QEO/QEI/SEI/PWM/ADC)、CAN接口、LIN接口、Ethernet接口、USB接口、音频接口、PPI/FEMC接口和树莓派接口，并集成板载调试器FT2232，方便用户进行调试。
+HPM6P00EVK为HPM6P00系列MCU的评估板，提供了一系列接口，包括ADC输入SMA接口、SDM输入SMA接口，电机控制接口(QEO/QEI/SEI/PWM/ADC)、CAN接口、Ethernet接口、USB接口、音频接口、PPI/FEMC接口和树莓派接口，并集成板载调试器FT2232，方便用户进行调试。
 
 .. image:: doc/hpm6p00evk.png
    :alt: hpm6p00evk
@@ -36,7 +36,6 @@ HPM6P00EVK为HPM6P00系列MCU的评估板，提供了一系列接口，包括ADC
 - 其他
   - LED
   - CAN
-  - LIN
 
 .. note::
 
@@ -113,18 +112,6 @@ HPM6P00EVK为HPM6P00系列MCU的评估板，提供了一系列接口，包括ADC
    * - PWM/RDC 功能选择
      - J20
      - 跳帽在PWM侧，则J4.PWM_UH引脚为PWM_UH功能；跳帽在RDC侧，则J4.PWM_UH引脚为RDC0功能
-
-- CAN/LIN 功能选择
-
-.. list-table::
-   :header-rows: 1
-
-   * - 功能
-     - 位置
-     - 说明
-   * - CAN/LIN 功能选择
-     - J6、J15、J18
-     - 跳帽在CAN侧，则PD29/PD30/PD31连接CAN收发器；跳帽在LIN侧，则PD29/PD30/PD31连接LIN收发器
 
 - USB/RGMII 功能选择
 
@@ -247,11 +234,11 @@ HPM6P00EVK为HPM6P00系列MCU的评估板，提供了一系列接口，包括ADC
      - 说明
    * - UART4.TX
      - PY00
-     - P5[8]
+     - P5[10]
      -
    * - UART4.RX
      - PY01
-     - P5[10]
+     - P5[8]
      -
    * - UART4.break
      - PY05

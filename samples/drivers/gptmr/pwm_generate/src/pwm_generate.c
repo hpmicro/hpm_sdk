@@ -12,7 +12,6 @@
 
 #define APP_BOARD_PWM                 BOARD_GPTMR_PWM
 #define APP_BOARD_PWM_CH              BOARD_GPTMR_PWM_CHANNEL
-#define APP_BOARD_GPTMR_CLOCK         BOARD_GPTMR_PWM_CLK_NAME
 
 #define APP_PWM_MAX_FREQ                  (100000U)
 #define APP_PWM_MIN_FREQ                  (10000U)
@@ -60,9 +59,8 @@ static void set_pwm_waveform_edge_aligned_frequency(uint32_t freq)
     gptmr_channel_config_t config;
     uint32_t gptmr_freq;
 
-    clock_add_to_group(APP_BOARD_GPTMR_CLOCK, 0);
+    gptmr_freq = board_init_gptmr_clock(APP_BOARD_PWM);
     gptmr_channel_get_default_config(APP_BOARD_PWM, &config);
-    gptmr_freq = clock_get_frequency(APP_BOARD_GPTMR_CLOCK);
     current_reload = gptmr_freq / freq;
     config.reload = current_reload;
     config.cmp_initial_polarity_high = false;

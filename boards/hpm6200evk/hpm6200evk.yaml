@@ -15,3 +15,4 @@ board:
       - board_motor_control
       - board_motor_control_phase_voltage_sampling
       - board_puart_pin
+      - board_clk_ref_pin

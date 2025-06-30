@@ -17,6 +17,8 @@ I2C_COMPONENT_SLAVE_DMA
 
 - I2C component使用的DMA管理器组件，需要调用dma_mgr_init API初始化DMA管理器。
 
+- 组件详情文档请参见 :ref:`i2c_components <i2c_component>`
+
 硬件设置
 ------------
 

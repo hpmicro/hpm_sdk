@@ -6,30 +6,33 @@ I2C_COMPONENT_MASTER_DMA
 Overview
 --------
 
-- This example demonstrates the functionality of I2C as a master using DMA to transfer data. It includes accessing memory data and pure data of specific slave device registers.
+- The **i2c_components_master_dma** example demonstrates the I2C interface operating in master mode with DMA-based data transfer. It includes accessing memory at register addresses of a specific slave device and performing pure data transmission and reception.
 
-- Memory access: The I2C master first writes data to the slave device's register memory,then reads the data back from the same register memory, and compares the read and written data.
+- For register memory access in the slave device, the I2C master first writes data to a register address on the slave, then reads back from the same address, and compares the read data with the written data to verify correctness.
 
-- Pure data access: The I2C master first writes data to the slave device, then reads the data back, and compares the read and written data.
+- For pure data transfers (without register addressing), the I2C master sends a block of data and subsequently reads back a block of data, again comparing both to ensure integrity.
 
 Tips
 ----
 
-- When using hpm_i2c_master_addr_write_nonblocking and hpm_i2c_master_addr_read_nonblocking APIs, the endianness of the addr parameter depends on the addr_endianness member of the context parameter. When it is i2c_master_addr_big_endian, the addr transmission is in big-endian mode, otherwise it is in little-endian mode.
+- When using APIs such as ``hpm_i2c_master_addr_write_nonblocking`` and ``hpm_i2c_master_addr_read_nonblocking``, the endianness of the `addr` parameter depends on the `addr_endianness` field in the context structure. If set to ``i2c_master_addr_big_endian``, the address is transmitted in big-endian format; otherwise, it is little-endian.
 
-- The I2C component utilizes a DMA manager component, which requires calling the `dma_mgr_init` API to initialize the DMA manager.
+- This I2C component uses the DMA manager component, which must be initialized by calling ``dma_mgr_init()`` before use.
+
+- For detailed documentation about I2C components, please refer to :ref:`i2c_components <i2c_component>`
+
 
 Board Setting
 -------------
 
-connect  :ref:`I2C Pins <board_resource>`  on the two boards。
+- Connect the :ref:`I2C pins <board_resource>`  between two boards.
 
 Running the example
 -------------------
 
-- Run slave first, and then run master.
+- Run the slave firmware first, followed by the master.
 
-- When the example runs successfully, the log would be seen on the terminal like:
+- Once running correctly, the serial terminal will display output similar to the following:
 
 
 .. code-block:: console

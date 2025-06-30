@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -15,8 +15,8 @@
 #define _CONCAT3(x, y, z) x##y##z
 #define CONCAT3(x, y, z)  _CONCAT3(x, y, z)
 
-#if (CAMERA_MAX_IMAGE_OUTPUT_WIDTH > 800)
-#define IMAGE_WIDTH 800
+#if (CAMERA_MAX_IMAGE_OUTPUT_WIDTH > 640)
+#define IMAGE_WIDTH 640
 #else
 #define IMAGE_WIDTH CAMERA_MAX_IMAGE_OUTPUT_WIDTH
 #endif
@@ -33,19 +33,23 @@
 #define COLOR_SIZE 16
 typedef CONCAT3(uint, COLOR_SIZE, _t) color_t;
 
-#define MAX_PACKETS_IN_ONE_TRANSFER 1
-
 #define VIDEO_IN_EP  0x81
 #define VIDEO_INT_EP 0x83
 
 #define CAM_FPS        (30)
-#define INTERVAL       (unsigned long)(10000000 / CAM_FPS)
-#define MIN_BIT_RATE   (unsigned long)(IMAGE_WIDTH * IMAGE_HEIGHT * COLOR_SIZE * CAM_FPS)
-#define MAX_BIT_RATE   (unsigned long)(IMAGE_WIDTH * IMAGE_HEIGHT * COLOR_SIZE * CAM_FPS)
-#define MAX_FRAME_SIZE (unsigned long)(IMAGE_WIDTH * IMAGE_HEIGHT * sizeof(color_t))
+#define INTERVAL       (10000000 / CAM_FPS)
+#define MIN_BIT_RATE   (IMAGE_WIDTH * IMAGE_HEIGHT * COLOR_SIZE * CAM_FPS)
+#define MAX_BIT_RATE   (IMAGE_WIDTH * IMAGE_HEIGHT * COLOR_SIZE * CAM_FPS)
+#define MAX_FRAME_SIZE (IMAGE_WIDTH * IMAGE_HEIGHT * 2)
 
-#define MAX_PAYLOAD_SIZE  (1728 + 2) /* for high speed with two transcations every one micro frame, (MAX_FRAME_SIZE * CAM_FPS) / 8000 = 1728 */
+#define MAX_PAYLOAD_SIZE  (((MAX_FRAME_SIZE * CAM_FPS) / 8000) + 12) /* for high speed with two transcations every one micro frame, (MAX_FRAME_SIZE * CAM_FPS) / 8000 + sizeof(struct video_payload_header) */
+#if (MAX_PAYLOAD_SIZE > 1024)
 #define VIDEO_PACKET_SIZE (unsigned int)(((MAX_PAYLOAD_SIZE / 2)) | (0x01 << 11))
+#elif (MAX_PAYLOAD_SIZE > 2048)
+#define VIDEO_PACKET_SIZE (unsigned int)(((MAX_PAYLOAD_SIZE / 3)) | (0x02 << 11))
+#else
+#define VIDEO_PACKET_SIZE (MAX_PAYLOAD_SIZE)
+#endif
 
 #define VS_HEADER_SIZ \
     (unsigned int)(VIDEO_SIZEOF_VS_INPUT_HEADER_DESC(1, 1) + VIDEO_SIZEOF_VS_FORMAT_UNCOMPRESSED_DESC + VIDEO_SIZEOF_VS_FRAME_UNCOMPRESSED_DESC(1))
@@ -77,8 +81,8 @@ static const uint8_t device_quality_descriptor[] = {
 static const char * const string_descriptors[] = {
     (const char[]){ 0x09, 0x04 }, /* Langid */
     "HPMicro",                    /* Manufacturer */
-    "HPMicro UVC DEMO",           /* Product */
-    "2024112501",                 /* Serial Number */
+    "HPMicro UVC YUYV",           /* Product */
+    "2025052705",                 /* Serial Number */
 };
 
 static const uint8_t *device_descriptor_callback(uint8_t speed)
@@ -130,11 +134,10 @@ const struct usb_descriptor video_descriptor = {
 static struct usbd_interface intf0;
 static struct usbd_interface intf1;
 static volatile bool tx_flag;
-static volatile bool tx_first_req;
+static volatile bool iso_ilde;
 
-ATTR_PLACE_AT_FAST_RAM USB_MEM_ALIGNX uint8_t packet_buffer[2][MAX_PACKETS_IN_ONE_TRANSFER * MAX_PAYLOAD_SIZE];
+ATTR_PLACE_AT_FAST_RAM USB_MEM_ALIGNX uint8_t packet_buffer[MAX_PAYLOAD_SIZE];
 ATTR_PLACE_AT_NONCACHEABLE color_t cam_buffer[2][IMAGE_WIDTH * IMAGE_HEIGHT];
-static volatile uint8_t cam_buffer_idx;
 static camera_config_t camera_config;
 
 static void usbd_event_handler(uint8_t busid, uint8_t event)
@@ -170,7 +173,7 @@ void usbd_video_open(uint8_t busid, uint8_t intf)
 
     USB_LOG_RAW("OPEN\r\n");
     tx_flag = 1;
-    tx_first_req = true;
+    iso_ilde = true;
 }
 
 void usbd_video_close(uint8_t busid, uint8_t intf)
@@ -180,7 +183,7 @@ void usbd_video_close(uint8_t busid, uint8_t intf)
 
     USB_LOG_RAW("CLOSE\r\n");
     tx_flag = 0;
-    tx_first_req = false;
+    iso_ilde = true;
 }
 
 void usbd_video_iso_callback(uint8_t busid, uint8_t ep, uint32_t nbytes)
@@ -188,11 +191,7 @@ void usbd_video_iso_callback(uint8_t busid, uint8_t ep, uint32_t nbytes)
     (void)nbytes;
 
     if (usbd_video_stream_split_transfer(busid, ep)) {
-        /* one frame has done */
-        if (tx_flag) {
-            usbd_video_stream_start_write(0, VIDEO_IN_EP, &packet_buffer[0][0], &packet_buffer[1][0], MAX_PACKETS_IN_ONE_TRANSFER * MAX_PAYLOAD_SIZE,
-                                          (uint8_t *)&cam_buffer[cam_buffer_idx][0], MAX_FRAME_SIZE);
-        }
+        iso_ilde = true;
     }
 }
 
@@ -275,19 +274,21 @@ void cam_isr(void)
 {
     if (cam_check_status(TEST_CAM, cam_status_fb1_dma_transfer_done)) {
         cam_clear_status(TEST_CAM, cam_status_fb1_dma_transfer_done);
-        cam_buffer_idx = 0;
-        if (tx_first_req) {
-            tx_first_req = false;
-            usbd_video_stream_start_write(0, VIDEO_IN_EP, &packet_buffer[0][0], &packet_buffer[1][0], MAX_PACKETS_IN_ONE_TRANSFER * MAX_PAYLOAD_SIZE,
-                                          (uint8_t *)&cam_buffer[0][0], MAX_FRAME_SIZE);
+        if (tx_flag) {
+            if (iso_ilde) {
+                iso_ilde = false;
+                usbd_video_stream_start_write(0, VIDEO_IN_EP, &packet_buffer[0], (uint8_t *)&cam_buffer[0][0], MAX_FRAME_SIZE, false);
+            }
         }
     } else if (cam_check_status(TEST_CAM, cam_status_fb2_dma_transfer_done)) {
         cam_clear_status(TEST_CAM, cam_status_fb2_dma_transfer_done);
-        cam_buffer_idx = 1;
-        if (tx_first_req) {
-            tx_first_req = false;
-            usbd_video_stream_start_write(0, VIDEO_IN_EP, &packet_buffer[0][0], &packet_buffer[1][0], MAX_PACKETS_IN_ONE_TRANSFER * MAX_PAYLOAD_SIZE,
-                                          (uint8_t *)&cam_buffer[1][0], MAX_FRAME_SIZE);
+        if (tx_flag) {
+            if (iso_ilde) {
+                iso_ilde = false;
+                usbd_video_stream_start_write(0, VIDEO_IN_EP, &packet_buffer[0], (uint8_t *)&cam_buffer[1][0], MAX_FRAME_SIZE, false);
+            }
         }
+    } else {
+        ;   /* Do Nothing */
     }
 }

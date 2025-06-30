@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 HPMicro
+ * Copyright (c) 2022-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -15,7 +15,11 @@
 #include "hpm_dma_drv.h"
 #endif
 #include "hpm_dmamux_drv.h"
+#ifdef HPMSOC_HAS_HPMSDK_PDMLITE
+#include "hpm_pdmlite_drv.h"
+#else
 #include "hpm_pdm_drv.h"
+#endif
 #include "board.h"
 
 

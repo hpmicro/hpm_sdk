@@ -332,7 +332,7 @@ HPM5300EVK提供了一系列HPM5300系列微控制器特色外设的接口，包
 
 - 电机引脚
 
-  参考 `DRV-LV50A-MP1907 电机驱动板章节 <lab_drv_lv50a_mp1907>`_ 进行连接
+  参考 :ref:`drv_lv50a_mp1907` 进行连接
 
 - SPI模拟I2S CS引脚
 
@@ -345,6 +345,16 @@ HPM5300EVK提供了一系列HPM5300系列微控制器特色外设的接口，包
    * - PA11
      - P1[16]
      - 控制SPI从机CS的引脚
+
+- CLOCK REF引脚
+
+.. list-table::
+   :header-rows: 1
+
+   * - 功能
+     - 位置
+   * - PA30
+     - P1[15]
 
 .. _hpm5300evk_known_issues:
 

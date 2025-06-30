@@ -6,21 +6,16 @@
  * @author      Janez Paternoster
  * @copyright   2016 - 2020 Janez Paternoster
  *
- * This file is part of CANopenNode, an opensource CANopen Stack.
- * Project home page is <https://github.com/CANopenNode/CANopenNode>.
- * For more information on CANopen see <http://www.can-cia.org/>.
+ * This file is part of <https://github.com/CANopenNode/CANopenNode>, a CANopen Stack.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is
+ * distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and limitations under the License.
  */
 
 #ifndef CO_TRACE_H
@@ -42,11 +37,10 @@ extern "C" {
 
 /**
  * @defgroup CO_trace Trace
- * @ingroup CO_CANopen_extra
- * @{
- *
  * CANopen trace object for recording variables over time.
  *
+ * @ingroup CO_CANopen_extra
+ * @{
  * In embedded systems there is often a need to monitor some variables over time.
  * Results are then displayed on graph, similar as in oscilloscope.
  *
@@ -134,8 +128,6 @@ typedef struct {
  * @param triggerTime Pointer to variable, which will show last trigger time of the variable.
  * @param idx_OD_traceConfig Index in Object Dictionary.
  * @param idx_OD_trace Index in Object Dictionary.
- *
- * @return 0 on success, -1 on error.
  */
 void CO_trace_init(
         CO_trace_t             *trace,
@@ -163,8 +155,6 @@ void CO_trace_init(
  *
  * @param trace This object.
  * @param timestamp Timestamp (usually in millisecond resolution).
- *
- * @return 0 on success, -1 on error.
  */
 void CO_trace_process(CO_trace_t *trace, uint32_t timestamp);
 
@@ -172,7 +162,7 @@ void CO_trace_process(CO_trace_t *trace, uint32_t timestamp);
 
 #ifdef __cplusplus
 }
-#endif /*__cplusplus*/
+#endif /* __cplusplus */
 
 #endif /* (CO_CONFIG_TRACE) & CO_CONFIG_TRACE_ENABLE */
 

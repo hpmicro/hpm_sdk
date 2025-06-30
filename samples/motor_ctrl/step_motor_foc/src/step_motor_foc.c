@@ -158,6 +158,7 @@ void motor_init(void)
     motor0.cfg.analog.callback.get_value = adc_value_get;
 
     motor0.cfg.loop.mode = mcl_mode_step_foc;
+    motor0.cfg.loop.enable_step_motor_closed_loop = false;
     motor0.cfg.loop.enable_speed_loop = true;
 
     motor0.cfg.detect.enable_detect = true;
@@ -238,25 +239,19 @@ hpm_mcl_stat_t adc_value_get(mcl_analog_chn_t chn, int32_t *value)
     return mcl_success;
 }
 
-void reset_pwm_counter(void)
-{
-#if defined(HPMSOC_HAS_HPMSDK_PWM)
-    pwm_enable_reload_at_synci(MOTOR0_BLDCPWM);
-#endif
-#if defined(HPMSOC_HAS_HPMSDK_PWMV2)
-
-#endif
-}
-
 hpm_mcl_stat_t enable_all_pwm_output(void)
 {
 #if defined(HPMSOC_HAS_HPMSDK_PWM)
     pwm_disable_sw_force(MOTOR0_BLDCPWM);
 #endif
 #if defined(HPMSOC_HAS_HPMSDK_PWMV2)
-
+    pwmv2_disable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_UH_PWM_OUTPIN);
+    pwmv2_disable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_UL_PWM_OUTPIN);
+    pwmv2_disable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_VH_PWM_OUTPIN);
+    pwmv2_disable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_VL_PWM_OUTPIN);
+    pwmv2_disable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_WH_PWM_OUTPIN);
+    pwmv2_disable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_WL_PWM_OUTPIN);
 #endif
-
     return mcl_success;
 }
 
@@ -317,7 +312,7 @@ void pwm_init(void)
 
     pwm_deinit(MOTOR0_BLDCPWM);
     pwm_stop_counter(MOTOR0_BLDCPWM);
-    reset_pwm_counter();
+    pwm_enable_reload_at_synci(MOTOR0_BLDCPWM);
     pwm_set_reload(MOTOR0_BLDCPWM, 0, PWM_RELOAD);
     pwm_set_start_count(MOTOR0_BLDCPWM, 0, 0);
     cmp_config[0].mode = pwm_cmp_mode_output_compare;

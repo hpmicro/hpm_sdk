@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -20,8 +20,6 @@ extern "C" {
 
 #define FILENAMENUM 10
 #define FILENAMELENGTH 255
-#define FILE_BUF_SIZE 4 * 1024
-#define FILE_SECTOR_SZIE 512
 
 bool file_store(char *fname, uint8_t *buffer, uint32_t size);
 bool file_restore(char *fname, uint8_t *buf, uint32_t size);

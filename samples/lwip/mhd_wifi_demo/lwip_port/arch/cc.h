@@ -71,6 +71,7 @@
 #if defined(__SEGGER_RTL_VERSION) && (__SEGGER_RTL_VERSION <= 42404) /* 8.10d */
 #include <sys/time.h>
 #elif defined(__zcc__) || defined(__SEGGER_RTL_VERSION) && (__SEGGER_RTL_VERSION >= 42601) /* 8.14a */
+#include <sys/time.h>
 #include <time.h>
 #endif
 

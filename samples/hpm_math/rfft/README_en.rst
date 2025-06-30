@@ -1,22 +1,66 @@
-.. _rfft_performance_test:
-
-RFFT Performance test
-==========================================
+RFFT Example
+============
 
 Overview
 --------
 
-The rfft performance tests focus on the performance of DSP rfft.
+This example demonstrates how to use the Real Fast Fourier Transform (RFFT) functionality in HPM SDK. The example generates a composite signal containing three sine waves with different frequencies and amplitudes, performs RFFT transformation, and verifies the results.
+
+Features
+--------
+
+- Generate composite signal with three sine waves
+- Perform real fast Fourier transform
+- Calculate magnitude spectrum of transformed results
+- Verify frequency and amplitude accuracy
+- Test RFFT performance with different points (64-1024 points)
+
+Hardware Requirements
+---------------------
+
+- HPM6750EVKMINI development board
+- HPM6200EVK development board
+- HPM5300-FPGA development board
+- HPM6800-VALIDATION development board
+
+Software Requirements
+---------------------
+
+- HPM SDK
+- CMake 3.20.0 or higher
+- Cross-compilation toolchain
+
+Build Instructions
+------------------
+
+1. Enter the example directory
+2. Create and enter build directory
+3. Run CMake configuration
+4. Build the project
+
+Run Instructions
+----------------
+
+1. Flash the compiled binary to the development board
+2. View output through serial port
+3. Observe RFFT transformation results and performance data
+
+Output Description
+------------------
+
+The program will output the following information:
+- CPU frequency
+- Execution time for different point RFFT
+- Amplitude of frequency components
+- Test results (PASS/FAIL)
 
 Programming
 -----------
 
-The software generates several sine waves with different amplitudes and phases for superposition, and then performs the rfft transform to find the amplitude and frequency data, and the sine wave is shown below:
+The software generates several sine waves with different amplitudes and phases and superimposes them to generate a waveform. The RFFT transform is then used to find the amplitude and frequency characteristics. The sine waves are shown below:
 
 - Amplitude 11, frequency 8
-
 - Amplitude 19, frequency 17
-
 - Amplitude 13, frequency 24
 
 Performance Optimization
@@ -27,10 +71,9 @@ Performance Optimization
 Running the example
 -------------------
 
-The serial terminal outputs the number of samples, the amplitude frequency data and the run time, and outputs PASS or ERROR NUM at the end.
+When the project runs correctly, the serial terminal outputs the number of samples, the amplitude and frequency characteristics data, and the running time of each unit, and outputs PASS or ERROR NUM at the end.
 
 The serial port output is shown below:
-
 
 .. code-block:: console
 
@@ -77,8 +120,10 @@ The serial port output is shown below:
    PASS.
    ----------------END--------------------
 
+Performance Data
+----------------
 
-The performance is shown in the following table:
+The RFFT performance for different sample points is shown in the following table:
 
 .. list-table::
    :header-rows: 1
@@ -95,4 +140,3 @@ The performance is shown in the following table:
      - 25266
      - 37868
      - 122305
-

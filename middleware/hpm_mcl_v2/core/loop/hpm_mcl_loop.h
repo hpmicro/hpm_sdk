@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -14,6 +14,7 @@
 #include "hpm_mcl_drivers.h"
 #include "hpm_mcl_path_plan.h"
 #include "hpm_mcl_debug.h"
+#include "hpm_mcl_hw_loop.h"
 
 typedef enum {
     loop_status_null = 0,
@@ -32,6 +33,7 @@ typedef enum {
     mcl_mode_hardware_foc = 3,
     mcl_mode_step_foc = 4,
     mcl_mode_offline_param_detection = 5,
+    mcl_mode_hybrid_foc = 6,
 } mcl_loop_mode_t;
 
 /**
@@ -43,6 +45,7 @@ typedef struct {
     bool enable_speed_loop;
     bool enable_position_loop;
     bool enable_offline_param_detection;
+    bool enable_step_motor_closed_loop;
 #if defined(MCL_CFG_EN_SENSORLESS_SMC) && MCL_CFG_EN_SENSORLESS_SMC
     bool enable_smc;
 #endif
@@ -114,6 +117,7 @@ typedef struct {
     hpm_mcl_type_t *lq;
     hpm_mcl_type_t *ld;
     hpm_mcl_type_t *flux;
+    mcl_hw_loop_t *hybrid_hw_loop;
     struct {
         float *current_ts;
         float *speed_ts;
@@ -146,12 +150,89 @@ typedef struct {
     bool enable;
 } mcl_loop_t;
 
+/**
+ * @brief Motor alignment algorithm types
+ */
+typedef enum {
+    mcl_alignment_algorithm_basic = 0,          /**< Basic single-stage alignment */
+    mcl_alignment_algorithm_three_stage = 1,    /**< Enhanced three-stage alignment */
+    mcl_alignment_algorithm_adaptive = 2,       /**< Future: Adaptive alignment algorithm */
+} mcl_motor_alignment_algorithm_t;
+
+/**
+ * @brief Basic alignment configuration (single-stage)
+ */
+typedef struct {
+    float d_current;                    /**< D-axis current */
+    float q_current;                    /**< Q-axis current */
+    uint32_t delay_ms;                  /**< Alignment time (ms) */
+} mcl_motor_alignment_basic_cfg_t;
+
+/**
+ * @brief Three-stage alignment configuration
+ */
+typedef struct {
+    struct {
+        float d_current;                /**< D-axis current */
+        float q_current;                /**< Q-axis current */
+        uint32_t delay_ms;              /**< Delay time (ms) */
+    } stage1;                           /**< Stage 1: High current coarse alignment */
+
+    struct {
+        float d_current;                /**< D-axis current */
+        uint32_t delay_ms;              /**< Delay time (ms) */
+    } stage2;                           /**< Stage 2: Moderate current fine alignment */
+
+    struct {
+        float d_current;                /**< D-axis current */
+        uint32_t delay_ms;              /**< Delay time (ms) */
+    } stage3;                           /**< Stage 3: Low current stabilization */
+
+    uint32_t final_delay_ms;            /**< Final delay after alignment (ms) */
+} mcl_motor_alignment_three_stage_cfg_t;
+
+/**
+ * @brief Motor alignment configuration union for different algorithms
+ */
+typedef union {
+    mcl_motor_alignment_basic_cfg_t basic;           /**< Basic alignment configuration */
+    mcl_motor_alignment_three_stage_cfg_t three_stage; /**< Three-stage alignment configuration */
+} mcl_motor_alignment_algorithm_cfg_t;
+
+/**
+ * @brief Motor angle alignment configuration parameters
+ */
+typedef struct {
+    mcl_motor_alignment_algorithm_t algorithm;      /**< Selected alignment algorithm */
+    mcl_motor_alignment_algorithm_cfg_t config;     /**< Algorithm-specific configuration */
+} mcl_motor_alignment_cfg_t;
+
+/**
+ * @brief Enhanced motor angle alignment algorithm with multiple algorithm support
+ *
+ * This function provides a flexible framework for motor alignment that supports
+ * various alignment algorithms. Users can choose from built-in algorithms or
+ * implement custom alignment strategies.
+ *
+ * Supported algorithms:
+ * - Basic: Single-stage alignment with configurable parameters
+ * - Three-stage: Enhanced three-stage alignment for robust positioning
+ *    - Stage 1: High current coarse alignment
+ *    - Stage 2: Moderate current fine alignment
+ *    - Stage 3: Low current stabilization
+ *
+ * @param loop Motor control loop structure @ref mcl_loop_t
+ * @param cfg Alignment configuration parameters @ref mcl_motor_alignment_cfg_t
+ * @return hpm_mcl_stat_t Success or error status
+ */
+hpm_mcl_stat_t hpm_mcl_motor_angle_alignment(mcl_loop_t *loop, mcl_motor_alignment_cfg_t *cfg);
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /**
- * @brief Initialisation loop data
+ * @brief Initialisation loop data (API introduced in v1.10.0 with hw_loop parameter)
  *
  * @param loop @ref mcl_loop_t
  * @param cfg @ref mcl_loop_cfg_t
@@ -161,11 +242,35 @@ extern "C" {
  * @param control @ref mcl_control_t
  * @param drivers @ref mcl_drivers_t
  * @param path @ref mcl_path_plan_t
+ * @param hw_loop @ref mcl_hw_loop_t (can be NULL for backward compatibility)
  * @return hpm_mcl_stat_t
  */
-hpm_mcl_stat_t hpm_mcl_loop_init(mcl_loop_t *loop, mcl_loop_cfg_t *cfg, mcl_cfg_t *mcl_cfg,
-                                mcl_encoder_t *encoder, mcl_analog_t *analog,
-                                mcl_control_t *control, mcl_drivers_t *drivers, mcl_path_plan_t *path);
+hpm_mcl_stat_t hpm_mcl_loop_init_v2(mcl_loop_t *loop, mcl_loop_cfg_t *cfg, mcl_cfg_t *mcl_cfg,
+                                    mcl_encoder_t *encoder, mcl_analog_t *analog,
+                                    mcl_control_t *control, mcl_drivers_t *drivers, mcl_path_plan_t *path, mcl_hw_loop_t *hw_loop);
+
+/**
+ * @brief Backward compatibility function for API used in v1.9.0 and earlier (without hw_loop parameter)
+ * @deprecated This function is provided for backward compatibility. Use hpm_mcl_loop_init_v2 instead.
+ */
+static inline hpm_mcl_stat_t hpm_mcl_loop_init_v1(mcl_loop_t *loop, mcl_loop_cfg_t *cfg, mcl_cfg_t *mcl_cfg,
+                                                  mcl_encoder_t *encoder, mcl_analog_t *analog,
+                                                  mcl_control_t *control, mcl_drivers_t *drivers, mcl_path_plan_t *path)
+{
+    return hpm_mcl_loop_init_v2(loop, cfg, mcl_cfg, encoder, analog, control, drivers, path, NULL);
+}
+
+/* Macro magic for function overloading based on argument count */
+#define GET_MACRO(_1, _2, _3, _4, _5, _6, _7, _8, _9, NAME, ...) NAME
+
+/**
+ * @brief Overloaded hpm_mcl_loop_init macro that supports both v1.9.0 and v1.10.0+ API
+ *
+ * Usage:
+ * - v1.9.0 API (8 parameters): hpm_mcl_loop_init(loop, cfg, mcl_cfg, encoder, analog, control, drivers, path)
+ * - v1.10.0+ API (9 parameters): hpm_mcl_loop_init(loop, cfg, mcl_cfg, encoder, analog, control, drivers, path, hw_loop)
+ */
+#define hpm_mcl_loop_init(...) GET_MACRO(__VA_ARGS__, hpm_mcl_loop_init_v2, hpm_mcl_loop_init_v1, dummy, dummy, dummy, dummy, dummy, dummy)(__VA_ARGS__)
 
 /**
  * @brief Setting the d-axis current

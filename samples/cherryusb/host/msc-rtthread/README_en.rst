@@ -13,10 +13,16 @@ Board Setting
 
 - Connect a USB port on PC to the PWR DEBUG port on the development board with a USB Type-C cable
 
-- Connect a USB port on the development board USB0 to a USB flash disk (Attention: The `Cluster Size` of the USB disk can't exceed 128KB, it is recommended that the format parameter is exFAT/128KB) with a USB Type-C convert Type-A cable
+- Connect a USB port on the development board USB0 to a USB flash disk (Attention: The `Format Type` support FAT, FAT32 or exFAT) with a USB Type-C convert Type-A cable
 
   .. image:: ../../doc/UDisk_Format.png
      :alt: UDisk_Format
+
+Software Setting
+-----------------------
+
+- In the CMakeLists.txt file, if sdk_compile_definitions(-DFATFS_ONLY_NONCACHEABLE_BUF=1) is commented, FATFS supports data transfer by using cacheable buffer. If sdk_compile_definitions(-DFATFS_ONLY_NONCACHEABLE_BUF=1) is uncommented, FATFS only supports data transfer by using noncacheable buffer.
+- When sdk_compile_definitions(-DFATFS_ONLY_NONCACHEABLE_BUF=1) is commented, it is recommended to align cache line size for the buffer address, otherwise it will affect transmission performance.
 
 Running the example
 -------------------

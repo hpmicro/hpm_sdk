@@ -16,11 +16,13 @@ OpENer Blinky示例用于演示使用OpENer通过Ethernet/IP(EIP)协议实现远
 
   - 带Ethernet的开发板，请参考具体开发板  :ref:`引脚描述 <board_resource>`  查看Ethernet硬件
 
-    - ==根据开发板的硬件配置，在CMakeLists.txt中选择相应的RMII/RGMII，和phy芯片。==
+    - **根据开发板的硬件配置，在CMakeLists.txt中选择相应的RMII/RGMII，和phy芯片。**
 
   - 带网口的PC
 
       - TwinCAT3软件对PC网卡有适配问题, `部分支持的Intel网卡 <https://infosys.beckhoff.com/english.php?content=../content/1033/tc3_overview/9309844363.html&id=1489698440745036069>`_
+
+  - 对于无板载SDRAM的开发板，需要注意build type为flash_sdram_xip时，需要先插入SDRAM卡
 
 软件
 ~~~~~~~~~~
@@ -84,6 +86,8 @@ TwinCAT工程设置
        :alt:
 
   4. 配置ip地址
+
+     注意此处的ip地址需要与开发板的ip地址在同一网段，且不能和PC本身的网卡地址一样。即pc,开发板和twincat软件中的三个ip地址需要都不一样。
 
     .. image:: doc/set_ip_address.png
        :alt:

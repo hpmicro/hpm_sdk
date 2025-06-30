@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2024 HPMicro
+# Copyright (c) 2021-2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 sdk_gcc_inc(GCC/RISC-V)
@@ -24,14 +24,18 @@ sdk_iar_src(
 
 # Use PTMR to generate system tic if tickless stop mode is set
 if(DEFINED CONFIG_FREERTOS_TICKLESS_USE_STOP_MODE)
-    set(CONFIG_FREERTOS_TIMER_RESOURCE_NOT_MTIMER 1)
+    set(CONFIG_FREERTOS_TIMER_RESOURCE_GPTMR 1)
 endif()
-# If CONFIG_FREERTOS_TIMER_RESOURCE_NOT_MTIMER is not defined, the mtimer is used to generate systic
+# If CONFIG_FREERTOS_TIMER_RESOURCE_GPTMR and DportTIMER_SOURCE_PWM is not defined, the mtimer is used to generate systic
 # Otherwise use the gptimer to generate systic
-if(NOT DEFINED CONFIG_FREERTOS_TIMER_RESOURCE_NOT_MTIMER)
-    sdk_compile_definitions("-DportasmHAS_MTIME=1")
-else()
+if(DEFINED CONFIG_FREERTOS_TIMER_RESOURCE_GPTMR)
     sdk_compile_definitions("-DportasmHAS_MTIME=0")
+    sdk_compile_definitions("-DportTIMER_SOURCE_GPTMR=1")
+elseif(DEFINED CONFIG_FREERTOS_TIMER_RESOURCE_PWM)
+    sdk_compile_definitions("-DportasmHAS_MTIME=0")
+    sdk_compile_definitions("-DportTIMER_SOURCE_PWM=1")
+else()
+    sdk_compile_definitions("-DportasmHAS_MTIME=1")
 endif()
 
 if(DEFINED CONFIG_FREERTOS_TICKLESS)

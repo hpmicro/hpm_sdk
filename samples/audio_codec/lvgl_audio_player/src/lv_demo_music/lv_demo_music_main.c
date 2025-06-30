@@ -111,6 +111,7 @@ static bool first_startted;
  *   GLOBAL FUNCTIONS
  **********************/
 extern void set_init_audio_player_req(uint32_t id);
+extern uint32_t lv_get_total_music(void);
 
 /*
  * Callback adapter function to convert parameter types to avoid compile-time
@@ -306,11 +307,11 @@ void _lv_demo_music_album_next(bool next)
     uint32_t id = track_id;
     if (next) {
         id++;
-        if (id >= sd_get_search_file_cnt())
+        if (id >= lv_get_total_music())
             id = 0;
     } else {
         if (id == 0) {
-            id = sd_get_search_file_cnt() - 1;
+            id = lv_get_total_music() - 1;
         } else {
             id--;
         }
@@ -694,7 +695,7 @@ static void track_load(uint32_t id)
     if (id == track_id)
         return;
     bool next = false;
-    if (((track_id + 1) % sd_get_search_file_cnt()) == id)
+    if (((track_id + 1) % lv_get_total_music()) == id)
         next = true;
 
     _lv_demo_music_list_button_check(track_id, false);

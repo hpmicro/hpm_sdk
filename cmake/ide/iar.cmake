@@ -1,5 +1,11 @@
-# Copyright 2023-2024 hpmicro
+# Copyright 2023-2025 hpmicro
 # SPDX-License-Identifier: BSD-3-Clause
+
+# Summary of file content:
+# This file defines various functions and properties for configuring the IAR Embedded Workbench environment.
+# It includes functions to set compile options and compile definitions for the IAR interface library.
+# Additionally, it defines properties for IAR-specific libraries and options, such as debug target connection, linker options, and JLink speed.
+# The functions provided in this file allow for the customization and configuration of the IAR environment for different projects and targets.
 
 # add iar library interface to store iar specific configurations
 set(HPM_SDK_IAR_LIB_ITF hpm_sdk_iar_lib_itf)
@@ -25,11 +31,16 @@ define_property(GLOBAL PROPERTY ${HPM_SDK_IAR_OPTS} BRIEF_DOCS "iar options" FUL
 
 # Set compile options for IAR
 #
-# Example:
-#   sdk_iar_compile_options(opts)
-# :param opts: compile options
-# @public
+# This function sets compile options for the IAR interface library.
+# It accepts one or more compile options as arguments. These options are added
+# with INTERFACE visibility, meaning they will be applied to any target that links
+# against the IAR interface library.
 #
+# Example:
+#   sdk_iar_compile_options(-O2 -g)
+#
+# :param opts: Compile options to be added with INTERFACE visibility.
+# @public
 function(sdk_iar_compile_options)
     foreach(opt ${ARGN})
         target_compile_options(${HPM_SDK_IAR_LIB_ITF} INTERFACE ${opt})
@@ -38,58 +49,102 @@ endfunction()
 
 # Set compile definitions for IAR
 #
-# Example:
-#   sdk_iar_compile_definitions(def)
-# :param def: compiler preprocesing definition
-# @public
+# This function sets compile definitions for the IAR interface library.
+# It accepts one or more preprocessor definitions as arguments. These definitions
+# are added with INTERFACE visibility, meaning they will be applied to any target
+# that links against the IAR interface library.
 #
+# Example:
+#   sdk_iar_compile_definitions(-DDEBUG -DVERSION=1)
+#
+# :param def: Compiler preprocessing definitions to be added with INTERFACE visibility.
+# @public
 function(sdk_iar_compile_definitions)
     foreach(def ${ARGN})
         target_compile_definitions(${HPM_SDK_IAR_LIB_ITF} INTERFACE ${def})
     endforeach()
 endfunction()
 
-# link libraries for IAR
+# Link libraries for IAR
+#
+# This function links libraries to the IAR interface library.
+# It accepts one or more library names or paths as arguments. The libraries can be
+# actual file paths or standard libraries provided by the toolchain.
 #
 # Example:
-#   sdk_iar_link_libraries(libs)
-# :param libs: standard libraries to be linked for IAR
-# @public
+#   sdk_iar_link_libraries(libm)
 #
+# :param libs: Libraries to be linked with INTERFACE visibility.
+# @public
 function(sdk_iar_link_libraries)
     foreach(lib ${ARGN})
-        target_link_libraries(${HPM_SDK_IAR_LIB_ITF} INTERFACE ${lib})
+        set_property(TARGET ${HPM_SDK_IAR_LIB_ITF} APPEND PROPERTY INTERFACE_IAR_LD_INPUTS ${opt})
     endforeach()
 endfunction()
 
-# @private
+# Set linker options for IAR
 #
-function(sdk_iar_ld_options)
-    foreach(opt ${ARGN})
-        target_link_libraries(${HPM_SDK_IAR_LIB_ITF} INTERFACE ${opt})
-    endforeach()
-endfunction()
-
-# link libraries for IAR
+# This function sets linker options for the IAR interface library.
+# It accepts one or more linker options as arguments. These options are added
+# with INTERFACE visibility, meaning they will be applied to any target that links
+# against the IAR interface library.
 #
 # Example:
-#   sdk_iar_ld_libs(libs)
-# :param libs: libraries to be linked for IAR
-# @private
+#   sdk_iar_ld_options(--start-group)
 #
+# :param opts: Linker options to be added with INTERFACE visibility.
+# @private
+function(sdk_iar_ld_options)
+    foreach(opt ${ARGN})
+        set_property(TARGET ${HPM_SDK_IAR_LIB_ITF} APPEND PROPERTY INTERFACE_IAR_LD_OPTIONS ${opt})
+    endforeach()
+endfunction()
+
+# Link libraries for IAR
+#
+# This function links libraries to the IAR interface library.
+# It accepts one or more library names or paths as arguments. The libraries can be
+# actual file paths or standard libraries provided by the toolchain.
+#
+# Example:
+#   sdk_iar_ld_lib(libm)
+#
+# :param libm: Libraries to be linked with INTERFACE visibility.
+# @private
 function(sdk_iar_ld_lib)
     foreach(opt ${ARGN})
         set_property(TARGET ${HPM_SDK_IAR_LIB_ITF} APPEND PROPERTY INTERFACE_IAR_LD_INPUTS ${opt})
     endforeach()
 endfunction()
 
-# Add include path for IAR
+# Link libraries for IAR with condition
+#
+# This function links libraries to the IAR interface library only if a specified
+# feature is enabled. It accepts one or more library names or paths as arguments.
 #
 # Example:
-#   sdk_iar_link_libraries(libs)
-# :param libs: libraries to be linked for IAR
-# @public
+#   sdk_iar_ld_lib_ifdef(FEATURE_X libm)
 #
+# :param feature: The feature flag to check.
+# :param libs: Libraries to be linked with INTERFACE visibility.
+# @private
+function(sdk_iar_ld_lib_ifdef feature)
+    if((${feature}) AND (NOT ${${feature}} EQUAL 0))
+        sdk_iar_ld_lib(${ARGN})
+    endif()
+endfunction()
+
+# Add include path for IAR
+#
+# This function adds include directories to the IAR interface library.
+# It accepts one or more include directory paths as arguments. If a relative path
+# is provided, it will be resolved relative to the current source directory.
+#
+# Example:
+#   sdk_iar_inc(include)
+#
+# :param inc: Include directories to be added with INTERFACE visibility.
+# @public
 function(sdk_iar_inc)
     foreach(inc ${ARGN})
         if(IS_ABSOLUTE ${inc})
@@ -101,21 +156,18 @@ function(sdk_iar_inc)
     endforeach()
 endfunction()
 
-# @private
-#
-function(sdk_iar_ld_lib_ifdef feature)
-    if((${feature}) AND (NOT ${${feature}} EQUAL 0))
-        sdk_iar_ld_lib(${ARGN})
-    endif()
-endfunction()
-
 # Add source file for IAR
 #
-# Example:
-#   sdk_iar_src(SOURCE_FILE)
-# :param SOURCE_FILE: source file added for IAR
-# @public
+# This function adds source files to the IAR library.
+# It accepts one or more source file paths as arguments. If a relative path
+# is provided, it will be resolved relative to the current source directory.
+# Directories cannot be added as source files.
 #
+# Example:
+#   sdk_iar_src(source_file.c)
+#
+# :param SOURCE_FILE: Source files to be added to the IAR library.
+# @public
 function(sdk_iar_src)
     foreach(file ${ARGN})
         if(IS_DIRECTORY ${file})
@@ -132,11 +184,16 @@ endfunction()
 
 # Add source file for IAR startup
 #
-# Example:
-#   sdk_iar_startup_src(STARTUP_SOURCE_FILE)
-# :param STARTUP_SOURCE_FILE: startup source file added for IAR
-# @public
+# This function adds source files to the IAR startup library.
+# It accepts one or more source file paths as arguments. If a relative path
+# is provided, it will be resolved relative to the current source directory.
+# Directories cannot be added as source files.
 #
+# Example:
+#   sdk_iar_startup_src(startup_file.c)
+#
+# :param STARTUP_SOURCE_FILE: Source files to be added to the IAR startup library.
+# @public
 function(sdk_iar_startup_src)
     foreach(file ${ARGN})
         if(IS_DIRECTORY ${file})
@@ -151,15 +208,17 @@ function(sdk_iar_startup_src)
     endforeach()
 endfunction()
 
-
 # Add source file (glob pattern) for IAR
 #
-# Example:
-#   sdk_gcc_src_glob(SOURCE_FILE_GLOB)
-# :param SOURCE_FILE_GLOB: source files to be added to IAR,
-#    like ./**/*.c to add all .c files under current directory recursively
-# @public
+# This function adds source files to the IAR library using a glob pattern.
+# It accepts one or more glob patterns as arguments. The files matching the patterns
+# are added to the IAR library.
 #
+# Example:
+#   sdk_iar_src_glob("src/**/*.c")
+#
+# :param SOURCE_FILE_GLOB: Glob patterns to specify source files to be added to IAR.
+# @public
 function(sdk_iar_src_glob)
     foreach(g ${ARGN})
         file(GLOB_RECURSE src ${g})
@@ -169,20 +228,30 @@ function(sdk_iar_src_glob)
 endfunction()
 
 # Enable DSP in IAR
-# @public
 #
+# This function enables DSP support in the IAR project.
+#
+# Example:
+#   sdk_iar_enable_dsp()
+#
+# :param None: This function does not take any parameters.
+# @public
 function(sdk_iar_enable_dsp)
     set_property(GLOBAL APPEND PROPERTY ${HPM_SDK_IAR_OPTS} "enable_dsp=1")
 endfunction()
 
 # Set preinclude for IAR
 #
-# Example:
-#   sdk_iar_preinclude(TYPE FILE)
-# :param TYPE: different preinclude type, cc or asm
-# :param FILE: different preinclude type, cc or asm
-# @private
+# This function sets a preinclude file for the IAR project.
+# It accepts a type (cc or asm) and a file path. If a relative path
+# is provided, it will be resolved relative to the current source directory.
 #
+# Example:
+#   sdk_iar_preinclude("cc" "preinclude_file.h")
+#
+# :param type: The preinclude type, either "cc" or "asm".
+# :param file: The preinclude file path.
+# @private
 function(sdk_iar_preinclude type file)
     if(IS_DIRECTORY ${file})
         message(FATAL_ERROR "directory ${file} can't be added as preinclude")
@@ -196,43 +265,85 @@ function(sdk_iar_preinclude type file)
 endfunction()
 
 # Set cc preinclude for IAR
-# @public
 #
+# This function sets a C/C++ preinclude file for the IAR project.
+#
+# Example:
+#   sdk_iar_cc_preinclude("preinclude_file.h")
+#
+# :param file: The C/C++ preinclude file path.
+# @public
 function(sdk_iar_cc_preinclude file)
     sdk_iar_preinclude("cc" ${file})
 endfunction()
 
 # Set asm preinclude for IAR
-# @public
 #
+# This function sets an assembly preinclude file for the IAR project.
+#
+# Example:
+#   sdk_iar_asm_preinclude("preinclude_file.s")
+#
+# :param file: The assembly preinclude file path.
+# @public
 function(sdk_iar_asm_preinclude file)
     sdk_iar_preinclude("asm" ${file})
 endfunction()
 
-# Enable no size constraints
-# @public
+# Enable no size constraints in IAR
 #
+# This function enables the no size constraints option in the IAR project.
+#
+# Example:
+#   sdk_iar_enable_no_size_constraints()
+#
+# :param None: This function does not take any parameters.
+# @public
 function(sdk_iar_enable_no_size_constraints)
     set_property(GLOBAL APPEND PROPERTY ${HPM_SDK_IAR_OPTS} "iar_opt_no_size_const=1")
 endfunction()
 
-# Enable iar andes performance ext
-# @public
+# Enable IAR Andes performance extension
 #
+# This function enables the Andes performance extension in the IAR project.
+#
+# Example:
+#   sdk_iar_enable_andesperf()
+#
+# :param None: This function does not take any parameters.
+# @public
 function(sdk_iar_enable_andesperf)
     set_property(GLOBAL APPEND PROPERTY ${HPM_SDK_IAR_OPTS} "enable_andesperf=1")
 endfunction()
 
-# Set IAR optioins
-# @private
+# Set IAR options
 #
+# This function sets various options for the IAR project.
+# It accepts one or more option strings as arguments.
+#
+# Example:
+#   sdk_iar_options("option_a=1" "option_b=2")
+#
+# :param opts: Options to be set for the IAR project.
+# @private
 function(sdk_iar_options)
     foreach(opt ${ARGN})
         set_property(GLOBAL APPEND PROPERTY ${HPM_SDK_IAR_OPTS} ${opt})
     endforeach()
 endfunction()
 
-function (generate_iar_project)
+# Generate IAR project
+#
+# This function generates an IAR Embedded Workbench project file.
+# It collects various properties and configurations from the CMake project
+# and writes them to a JSON file, which is then used to generate the IAR project.
+#
+# Example:
+#   generate_iar_project()
+#
+# :param None: This function does not take any parameters.
+# @public
+function(generate_iar_project)
     get_property(target_source_files TARGET app PROPERTY SOURCES)
     get_property(target_app_include_dirs TARGET app PROPERTY INCLUDE_DIRECTORIES)
     get_property(target_lib_sources TARGET ${HPM_SDK_LIB} PROPERTY SOURCES)
@@ -242,6 +353,7 @@ function (generate_iar_project)
     get_property(target_gcc_cflags TARGET ${HPM_SDK_LIB_ITF} PROPERTY INTERFACE_COMPILE_OPTIONS)
     get_property(target_iar_cflags TARGET ${HPM_SDK_IAR_LIB_ITF} PROPERTY INTERFACE_COMPILE_OPTIONS)
     get_property(target_iar_ld_lib TARGET ${HPM_SDK_IAR_LIB_ITF} PROPERTY INTERFACE_IAR_LD_INPUTS)
+    get_property(target_iar_ld_options TARGET ${HPM_SDK_IAR_LIB_ITF} PROPERTY INTERFACE_IAR_LD_OPTIONS)
     get_property(target_iar_source_files GLOBAL PROPERTY ${HPM_SDK_IAR_LIB})
     get_property(target_iar_startup_source_files GLOBAL PROPERTY ${HPM_SDK_IAR_STARTUP_LIB})
     get_property(target_iar_options GLOBAL PROPERTY ${HPM_SDK_IAR_OPTS})
@@ -453,7 +565,7 @@ function (generate_iar_project)
         if(NOT IS_ABSOLUTE ${target_source})
             set(target_source ${CMAKE_CURRENT_SOURCE_DIR}/${target_source})
         endif()
-        if("${target_source_with_macro}" STREQUAL "")
+        if("${target_sources_with_macro}" STREQUAL "")
             set(target_sources_with_macro "${target_source}")
         else()
             set(target_sources_with_macro "${target_sources_with_macro},${target_source}")
@@ -605,6 +717,7 @@ function (generate_iar_project)
         \"compiler_arch_exts_csr\":\"${target_compiler_arch_exts_csr}\",
         \"compiler_arch_exts_fencei\":\"${target_compiler_arch_exts_fencei}\",
         \"iar_link_input\":\"${target_iar_ld_input}\",
+        \"iar_link_options\":\"${target_iar_ld_options}\",
         \"enable_dsp\":\"${enable_dsp}\",
         \"enable_andesperf\":\"${enable_andesperf}\",
         \"enable_cpp_exceptions\":\"${enable_cpp_exceptions}\",

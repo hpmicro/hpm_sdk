@@ -1,0 +1,18 @@
+# Copyright (c) 2025 HPMicro
+# SPDX-License-Identifier: BSD-3-Clause
+
+excluded_targets:
+  - debug
+  - release
+  - flash_sdram_xip
+  - flash_sdram_xip_release
+  - flash_uf2
+  - flash_uf2_release
+  - flash_sdram_uf2
+  - flash_sdram_uf2_release
+  - sec_core_img
+  - sec_core_img_release
+
+dependency:
+  - tsw
+  - board_tsw_phy

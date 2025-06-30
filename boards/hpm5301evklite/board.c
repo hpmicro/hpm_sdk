@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
@@ -194,6 +194,10 @@ void board_init_clock(void)
         /* Select clock setting preset1 */
         sysctl_clock_set_preset(HPM_SYSCTL, 2);
     }
+
+    /* select XTAL as pll ref clock */
+    pllctlv2_select_reference_clock(HPM_PLLCTLV2, pllctlv2_pll0, 0);
+    pllctlv2_select_reference_clock(HPM_PLLCTLV2, pllctlv2_pll1, 0);
 
     /* group0[0] */
     clock_add_to_group(clock_cpu0, 0);
@@ -476,5 +480,28 @@ void board_init_i2c(I2C_Type *ptr)
 void board_init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp)
 {
     init_gptmr_channel_pin(ptr, channel, as_comp);
+}
+
+void board_init_clk_ref_pin(void)
+{
+    init_clk_ref_pin();
+}
+
+uint32_t board_init_gptmr_clock(GPTMR_Type *ptr)
+{
+    uint32_t freq = 0U;
+    if (ptr == HPM_GPTMR0) {
+        clock_add_to_group(clock_gptmr0, BOARD_RUNNING_CORE & 0x1);
+        freq = clock_get_frequency(clock_gptmr0);
+    } else if (ptr == HPM_GPTMR1) {
+        clock_add_to_group(clock_gptmr1, BOARD_RUNNING_CORE & 0x1);
+        freq = clock_get_frequency(clock_gptmr1);
+    } else if (ptr == HPM_PTMR) {
+        clock_add_to_group(clock_ptmr, BOARD_RUNNING_CORE & 0x1);
+        freq = clock_get_frequency(clock_ptmr);
+    } else {
+        /* Not supported */
+    }
+    return freq;
 }
 

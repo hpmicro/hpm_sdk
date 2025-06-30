@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -30,25 +30,31 @@ typedef struct {
     volatile uint32_t next; /* Next link pointer This field contains the physical memory address of the next dTD to be processed */
 
     /* Word 1: qTQ Token */
-    volatile uint32_t                      : 3;
-    volatile uint32_t xact_err             : 1;
-    volatile uint32_t                      : 1;
-    volatile uint32_t buffer_err           : 1;
-    volatile uint32_t halted               : 1;
-    volatile uint32_t active               : 1;
-    volatile uint32_t                      : 2;
-    volatile uint32_t iso_mult_override    : 2  ; /* This field can be used for transmit ISOs to override the MULT field in the dQH. This field must be zero for all packet types that are not transmit-ISO. */
-    volatile uint32_t                      : 3;
-    volatile uint32_t int_on_complete      : 1;
-    volatile uint32_t total_bytes          : 15;
-    volatile uint32_t                      : 0;
+    union {
+        volatile uint32_t token;
+        struct {
+            volatile uint32_t                      : 3;
+            volatile uint32_t xact_err             : 1;
+            volatile uint32_t                      : 1;
+            volatile uint32_t buffer_err           : 1;
+            volatile uint32_t halted               : 1;
+            volatile uint32_t active               : 1;
+            volatile uint32_t                      : 2;
+            volatile uint32_t iso_mult_override    : 2; /* This field can be used for transmit ISOs to override the MULT field in the dQH. This field must be zero for all packet types that are not transmit-ISO. */
+            volatile uint32_t                      : 3;
+            volatile uint32_t int_on_complete      : 1;
+            volatile uint32_t total_bytes          : 15;
+            volatile uint32_t                      : 1;
+        };
+    };
 
     /* Word 2-6: Buffer Page Pointer List, Each element in the list is a 4K page aligned, physical memory address. The lower 12 bits in each pointer are reserved (except for the first one) as each memory pointer must reference the start of a 4K page */
     volatile uint32_t buffer[USB_SOC_DCD_QHD_BUFFER_COUNT];
 
     /*------------- DCD Area -------------*/
     volatile uint16_t expected_bytes;
-    volatile uint8_t reserved[2];
+    volatile bool     in_use;
+    volatile uint8_t  reserved;
 } dcd_qtd_t;
 
 /* Queue Head */
@@ -77,7 +83,9 @@ typedef struct {
      * thus there are 16 bytes padding free that we can make use of.
      *--------------------------------------------------------------------
      */
-    volatile uint8_t reserved[16];
+    volatile uint32_t attached_buffer;
+    dcd_qtd_t * volatile attached_qtd;
+    volatile uint8_t reserved[8];
 } dcd_qhd_t;
 
 typedef struct {

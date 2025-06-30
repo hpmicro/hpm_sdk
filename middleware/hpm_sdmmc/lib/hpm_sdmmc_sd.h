@@ -120,6 +120,7 @@ typedef struct _sdmmc_sdcard {
     sdmmc_operation_voltage_t operation_voltage;
 
     bool is_host_ready;
+    bool capacity_v2_0_or_high;
 } sd_card_t;
 
 
@@ -221,6 +222,20 @@ hpm_stat_t sd_read_status(sd_card_t *card);
 hpm_stat_t sd_read_blocks(sd_card_t *card, uint8_t *buffer, uint32_t start_block, uint32_t block_count);
 
 /**
+ * @brief Start reading data from specified SD block
+ *
+ * @param [in] card SD card context
+ * @param [out] buffer buffer to store data
+ * @param [in] start_block start block index
+ * @param [in] block_count Number of blocks to be read
+ * @param [in] irq_callback callback function to be called when transfer is done
+ * @param [in] param parameter to be passed to the callback function
+ *
+ * @return Command execution status
+ */
+hpm_stat_t sd_start_read_blocks(sd_card_t *card, uint8_t *buffer, uint32_t start_block, uint32_t block_count, void (*irq_callback)(void *param), void *param);
+
+/**
  * @brief Write data to specified SD block
  *
  * @param [in] card SD card context
@@ -231,6 +246,20 @@ hpm_stat_t sd_read_blocks(sd_card_t *card, uint8_t *buffer, uint32_t start_block
  * @return Command execution status
  */
 hpm_stat_t sd_write_blocks(sd_card_t *card, const uint8_t *buffer, uint32_t start_block, uint32_t block_count);
+
+/**
+ * @brief Starting writing data to specified SD block
+ *
+ * @param [in] card SD card context
+ * @param [in] buffer Data buffer
+ * @param [in] start_block start block index
+ * @param [in] block_count Number of blocks to be written
+ * @param [in] irq_callback callback function to be called when transfer is done
+ * @param [in] param parameter to be passed to the callback function
+ *
+ * @return Command execution status
+ */
+hpm_stat_t sd_start_write_blocks(sd_card_t *card, const uint8_t *buffer, uint32_t start_block, uint32_t block_count, void (*irq_callback)(void *param), void *param);
 
 /**
  * @brief Erase specified SD ranges

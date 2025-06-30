@@ -4,6 +4,7 @@
 sdk_inc_ifdef(CONFIG_MICROROS_FOXY microros_foxy/include)
 include(CheckCSourceCompiles)
 if("${TOOLCHAIN_VARIANT}" STREQUAL "gcc" OR "${TOOLCHAIN_VARIANT}" STREQUAL "zcc")
+sdk_zcc_compile_definitions(-D__STDC_WANT_LIB_EXT1__=1)
 sdk_link_libraries_ifdef(CONFIG_MICROROS_FOXY "${CMAKE_CURRENT_SOURCE_DIR}/microros_foxy/libmicroros/libmicroros.a")
 elseif("${TOOLCHAIN_VARIANT}" STREQUAL "nds-gcc")
   

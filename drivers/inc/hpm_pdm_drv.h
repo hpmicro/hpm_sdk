@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -37,16 +37,16 @@
  * @brief PDM config
  */
 typedef struct pdm_config {
-    bool sof_at_ref_clk_falling_edge;
-    bool bypass_pdm_clk_div;
-    bool enable_pdm_clk_out;
-    bool enable_hpf;
-    uint8_t pdm_clk_div;
-    uint8_t capture_delay;
-    uint8_t dec_after_cic;
-    uint8_t post_scale;
-    uint8_t sigma_delta_order;
-    uint8_t cic_dec_ratio;
+    bool sof_at_ref_clk_falling_edge; /* sof at ref clk falling edge */
+    bool bypass_pdm_clk_div; /* bypass PDM clock divider */
+    bool enable_pdm_clk_out; /* enable PDM clock output */
+    bool enable_hpf;         /* enable high pass filter */
+    uint8_t pdm_clk_div;     /* PDM clock divider */
+    uint8_t capture_delay;   /* adjust capture timing */
+    uint8_t dec_after_cic;   /* Deprecated: This parameter is no longer used */
+    uint8_t post_scale;      /* cic post scale */
+    uint8_t sigma_delta_order; /* cic sigma_delta filter order */
+    uint8_t cic_dec_ratio;     /* cic decimation ratio */
 } pdm_config_t;
 
 #ifdef __cplusplus
@@ -229,10 +229,39 @@ hpm_stat_t pdm_init(PDM_Type *ptr, pdm_config_t *config);
 /**
  * @brief pdm get default config
  *
+ * @note if the PDM source clock is 24.576MHz, the sample rate by default configuration is 16000Hz.
+ *
  * @param [in] ptr PDM base address
  * @param [out] config pdm_config_t
  */
 void pdm_get_default_config(PDM_Type *ptr, pdm_config_t *config);
+
+/**
+ * @brief pdm config sample rate
+ *
+ * @note This function will calculate and configure PDM clock divider to get target sample rate.
+ * if sample rate is not supported, should adjust mclk_in_hz or change cic_dec_ratio in pdm_init() function.
+ *
+ * @param [in] ptr PDM base address
+ * @param [in] mclk_in_hz PDM source clock
+ * @param [in] sample_rate_hz target sample rate
+ * @retval hpm_stat_t status_invalid_argument or status_success
+ */
+hpm_stat_t pdm_config_sample_rate(PDM_Type *ptr, uint32_t mclk_in_hz, uint32_t sample_rate_hz);
+
+/**
+ * @brief pdm config clock divider
+ *
+ * @param [in] ptr PDM base address
+ * @param [in] div divider value
+ * @param [in] bypass true: bypass divider
+ */
+static inline void pdm_config_divider(PDM_Type *ptr, uint8_t div, bool bypass)
+{
+    assert((div >= 1U) && (div <= 15U));
+    ptr->CTRL = (ptr->CTRL & ~(PDM_CTRL_PDM_CLK_HFDIV_MASK | PDM_CTRL_PDM_CLK_DIV_BYPASS_MASK))
+                | (PDM_CTRL_PDM_CLK_HFDIV_SET(div) | PDM_CTRL_PDM_CLK_DIV_BYPASS_SET(bypass));
+}
 
 /**
  * @}

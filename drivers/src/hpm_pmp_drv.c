@@ -1,11 +1,14 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
 #include "hpm_pmp_drv.h"
 #include "hpm_csr_drv.h"
+
+#define PMP_ENTRY_MAX 16
+#define PMA_ENTRY_MAX 16
 
 uint32_t read_pmp_cfg(uint32_t idx)
 {
@@ -167,6 +170,58 @@ uint32_t read_pmp_addr(uint32_t idx)
     return ret_val;
 }
 
+hpm_stat_t pmp_config_attributes(const pmp_attr_t *attrs, uint32_t num_of_entries)
+{
+    hpm_stat_t status = status_invalid_argument;
+    do {
+        HPM_BREAK_IF((attrs == NULL) || (num_of_entries < 1) || (num_of_entries > PMP_ENTRY_MAX));
+
+        status = status_success;
+        for (uint32_t i = 0; i < num_of_entries; i++) {
+            const pmp_attr_t *attr = &attrs[i];
+            uint32_t idx = i / 4;
+            uint32_t offset = (i << 3) & 0x1F;
+
+            uint32_t pmp_cfg = read_pmp_cfg(idx);
+
+            /* Report error if the PMP register is locked already */
+            uint32_t pmpi_cfg = (pmp_cfg & (0xFFUL << offset)) >> offset; /* Get the PMPiCFG value */
+            if ((pmpi_cfg & PMP_REG_LOCK_MASK) != 0) {
+                status = status_fail;
+                break;
+            }
+
+            pmp_cfg &= ~(0xFFUL << offset);
+            pmp_cfg |= ((uint32_t)attr->pmp_cfg.val) << offset;
+            write_pmp_addr(attr->pmp_addr, i);
+            write_pmp_cfg(pmp_cfg, idx);
+        }
+    } while (false);
+    return status;
+}
+
+hpm_stat_t pmp_lock_pmp_entry(uint32_t pmp_index)
+{
+    if (pmp_index >= PMP_ENTRY_MAX) {
+        return status_invalid_argument;
+    }
+
+    uint32_t idx = pmp_index / 4;
+    uint32_t pmp_cfg = read_pmp_cfg(idx);
+    uint32_t offset = (pmp_index << 3) & 0x1F;
+
+    uint32_t pmpi_cfg = (pmp_cfg & (0xFFUL << offset)) >> offset; /* Get the PMPiCFG value */
+
+    if ((pmpi_cfg & PMP_REG_LOCK_MASK) != 0) {
+        return status_fail;
+    }
+
+    pmp_cfg |= (PMP_REG_LOCK_MASK << offset);
+    write_pmp_cfg(idx, pmp_cfg);
+
+    return status_success;
+}
+
 #if (!defined(PMP_SUPPORT_PMA)) || (defined(PMP_SUPPORT_PMA) && (PMP_SUPPORT_PMA == 1))
 uint32_t read_pma_cfg(uint32_t idx)
 {
@@ -326,6 +381,28 @@ uint32_t read_pma_addr(uint32_t idx)
     }
     return ret_val;
 }
+
+hpm_stat_t pma_config_attributes(const pma_attr_t *attrs, uint32_t num_of_entries)
+{
+    hpm_stat_t status = status_invalid_argument;
+    do {
+        HPM_BREAK_IF((attrs == NULL) || (num_of_entries < 1) || (num_of_entries > 16U));
+
+        status = status_success;
+        for (uint32_t i = 0; i < num_of_entries; i++) {
+            const pma_attr_t *attr = &attrs[i];
+            uint32_t idx = i / 4;
+            uint32_t offset = (i << 3) & 0x1F;
+
+            uint32_t pma_cfg = read_pma_cfg(idx);
+            pma_cfg &= ~(0xFFUL << offset);
+            pma_cfg |= ((uint32_t)attr->pma_cfg.val) << offset;
+            write_pma_cfg(pma_cfg, idx);
+            write_pma_addr(attr->pma_addr, i);
+        }
+    } while (false);
+    return status;
+}
 #endif /* #if (!defined(PMP_SUPPORT_PMA)) || (defined(PMP_SUPPORT_PMA) && (PMP_SUPPORT_PMA == 1)) */
 
 hpm_stat_t pmp_config_entry(const pmp_entry_t *entry, uint32_t entry_index)
@@ -339,13 +416,13 @@ hpm_stat_t pmp_config_entry(const pmp_entry_t *entry, uint32_t entry_index)
 
         uint32_t pmp_cfg = read_pmp_cfg(idx);
         pmp_cfg &= ~(0xFFUL << offset);
-        pmp_cfg |= ((uint32_t) entry->pmp_cfg.val) << offset;
+        pmp_cfg |= ((uint32_t)entry->pmp_cfg.val) << offset;
         write_pmp_addr(entry->pmp_addr, entry_index);
         write_pmp_cfg(pmp_cfg, idx);
 #if (!defined(PMP_SUPPORT_PMA)) || (defined(PMP_SUPPORT_PMA) && (PMP_SUPPORT_PMA == 1))
         uint32_t pma_cfg = read_pma_cfg(idx);
         pma_cfg &= ~(0xFFUL << offset);
-        pma_cfg |= ((uint32_t) entry->pma_cfg.val) << offset;
+        pma_cfg |= ((uint32_t)entry->pma_cfg.val) << offset;
         write_pma_cfg(pma_cfg, idx);
         write_pma_addr(entry->pma_addr, entry_index);
 #endif
@@ -369,13 +446,13 @@ hpm_stat_t pmp_config(const pmp_entry_t *entry, uint32_t num_of_entries)
             uint32_t offset = (i * 8) & 0x1F;
             uint32_t pmp_cfg = read_pmp_cfg(idx);
             pmp_cfg &= ~(0xFFUL << offset);
-            pmp_cfg |= ((uint32_t) entry->pmp_cfg.val) << offset;
+            pmp_cfg |= ((uint32_t)entry->pmp_cfg.val) << offset;
             write_pmp_addr(entry->pmp_addr, i);
             write_pmp_cfg(pmp_cfg, idx);
 #if (!defined(PMP_SUPPORT_PMA)) || (defined(PMP_SUPPORT_PMA) && (PMP_SUPPORT_PMA == 1))
             uint32_t pma_cfg = read_pma_cfg(idx);
             pma_cfg &= ~(0xFFUL << offset);
-            pma_cfg |= ((uint32_t) entry->pma_cfg.val) << offset;
+            pma_cfg |= ((uint32_t)entry->pma_cfg.val) << offset;
             write_pma_cfg(pma_cfg, idx);
             write_pma_addr(entry->pma_addr, i);
 #endif

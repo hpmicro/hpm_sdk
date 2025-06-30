@@ -239,29 +239,3 @@ void canopen_init(struct canopen_context *CANdriverState, CAN_Type *canptr, uint
 
     CANdriverState->dev = &hpm_canopen_dev;
 }
-
-CO_SDO_abortCode_t odf_2102(CO_ODF_arg_t *odf_arg)
-{
-    uint32_t value;
-
-    value = CO_getUint32(odf_arg->data);
-
-    if (odf_arg->reading) {
-        return CO_SDO_AB_NONE;
-    }
-
-    if (odf_arg->subIndex != 0U) {
-        return CO_SDO_AB_NONE;
-    }
-
-    if (value != 0) {
-        /* Preserve old value */
-        memcpy(odf_arg->data, odf_arg->ODdataStorage, sizeof(uint32_t));
-        return CO_SDO_AB_DATA_TRANSF;
-    }
-
-    printf("Resetting button press counter");
-    press_counter = 0;
-
-    return CO_SDO_AB_NONE;
-}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -99,11 +99,33 @@ DRESULT usb_disk_write(BYTE pdrv, const BYTE *buff, LBA_t sector, UINT count)
 
 DRESULT usb_disk_ioctl(BYTE pdrv, BYTE cmd, void *buff)
 {
-    (void)pdrv;
-    (void)buff;
-    if (cmd != CTRL_SYNC) {
-        return RES_ERROR;
-    } else {
-        return RES_OK;
+    uint8_t usb_addr = pdrv + 1;
+    int result = 0;
+
+    switch (cmd) {
+    case CTRL_SYNC:
+        result = RES_OK;
+        break;
+
+    case GET_SECTOR_SIZE:
+        *(WORD *)buff = tuh_msc_get_block_size(usb_addr, LUN_USB);
+        result = RES_OK;
+        break;
+
+    case GET_BLOCK_SIZE:
+        *(DWORD *)buff = 1;
+        result = RES_OK;
+        break;
+
+    case GET_SECTOR_COUNT:
+        *(LBA_t *)buff = tuh_msc_get_block_count(usb_addr, LUN_USB);
+        result = RES_OK;
+        break;
+
+    default:
+        result = RES_PARERR;
+        break;
     }
+
+    return result;
 }

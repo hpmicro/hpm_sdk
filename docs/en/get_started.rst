@@ -310,13 +310,13 @@ Quick Guide to Run/Debug an Application (hello_world)
 
  .. tabs::
 
-    .. tab:: Linux
+    .. group-tab:: Linux
 
        .. code-block:: shell
 
           source env.sh
 
-    .. tab:: Windows
+    .. group-tab:: Windows
 
        .. code-block:: batch
 
@@ -339,9 +339,9 @@ Quick Guide to Run/Debug an Application (hello_world)
  .. note::
 
     If using an FTDI debugger and encountering the error ``Error: libusb_open() failed with LIBUSB_ERROR_NOT_FOUND``, check the FTDI USB driver. If it is not installed correctly, use `zadig <https://github.com/pbatard/libwdi/releases/download/b730/zadig-2.5.exe>`_ to update:
-    - Open zadig, click ``Options -> List All Devices``.
-    - Select ``Dual RS232-HS (Interface 0)``.
-    - Click ``Install Driver`` or ``Replace Driver``.
+      - Open zadig, click ``Options -> List All Devices``.
+      - Select ``Dual RS232-HS (Interface 0)``.
+      - Click ``Install Driver`` or ``Replace Driver``.
 
 7. **Navigate to the hello_world Directory**
 

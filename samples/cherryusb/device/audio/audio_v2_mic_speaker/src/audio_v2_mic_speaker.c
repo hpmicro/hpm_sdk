@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 HPMicro
+ * Copyright (c) 2022-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -15,7 +15,11 @@
 #include "hpm_dma_drv.h"
 #endif
 #include "hpm_dmamux_drv.h"
+#ifdef HPMSOC_HAS_HPMSDK_PDMLITE
+#include "hpm_pdmlite_drv.h"
+#else
 #include "hpm_pdm_drv.h"
+#endif
 #include "hpm_dao_drv.h"
 #include "audio_v2_mic_speaker.h"
 
@@ -764,7 +768,7 @@ static hpm_stat_t speaker_init_i2s_playback(uint32_t sample_rate, uint8_t audio_
     transfer.sample_rate = sample_rate;
     transfer.audio_depth = audio_depth;
     transfer.channel_num_per_frame = 2; /* non TDM mode, channel num fix to 2. */
-    transfer.channel_slot_mask = 0x3;   /* data from hpm_wav_decode API is 2 channels */
+    transfer.channel_slot_mask = 0x3;   /* 2 channels */
 
     s_speaker_i2s_mclk_hz = clock_get_frequency(SPEAKER_I2S_CLK_NAME);
 

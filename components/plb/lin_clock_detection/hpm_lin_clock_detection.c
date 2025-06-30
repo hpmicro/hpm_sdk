@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -118,7 +118,7 @@ int32_t plb_lin_buffer_check_clock(uint32_t *buffer, plb_lin_clock_t *cfg)
         delta = data[i] - data[i-1];
         delta_delta = delta - delta_last;
         delta_last = delta;
-        if ((abs(delta_delta) < cfg->run_data.threshold) && (delta != 0)) {
+        if (((uint32_t)abs(delta_delta) < cfg->run_data.threshold) && (delta != 0)) {
             count++;
             if (count == 1) {
                 start = i - 1;

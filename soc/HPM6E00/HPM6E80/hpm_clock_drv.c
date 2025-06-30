@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -337,22 +337,25 @@ clk_src_t clock_get_source(clock_name_t clock_name)
 hpm_stat_t clock_wait_source_stable(clock_name_t clock_name)
 {
     clk_src_t clk_src = clock_get_source(clock_name);
-    if (clk_src == clk_src_invalid) {
-        return status_invalid_argument;
-    }
-    uint64_t ticks_per_ms = clock_get_core_clock_ticks_per_ms();
-    uint64_t timeout_ticks = hpm_csr_get_core_cycle() + 100UL * ticks_per_ms;
-    const clk_pll_div_map_t *map_entry = &s_clk_pll_div_map[clk_src];
-    bool is_stable;
-    do {
-        is_stable = (map_entry->pll_idx == 0xFF) ? pllctlv2_xtal_is_stable(HPM_PLLCTLV2)
-                                                 : pllctlv2_pll_is_stable(HPM_PLLCTLV2, map_entry->pll_idx);
-        if (hpm_csr_get_core_cycle() > timeout_ticks) {
-            return status_timeout;
-        }
-    } while (!is_stable);
+    if (clk_src < clk_src_osc32k) {
+        uint64_t ticks_per_ms = clock_get_core_clock_ticks_per_ms();
+        uint64_t timeout_ticks = hpm_csr_get_core_cycle() + 100UL * ticks_per_ms;
+        const clk_pll_div_map_t *map_entry = &s_clk_pll_div_map[clk_src];
+        bool is_stable;
+        do {
+            is_stable = (map_entry->pll_idx == 0xFF) ? pllctlv2_xtal_is_stable(HPM_PLLCTLV2)
+                                                     : pllctlv2_pll_is_stable(HPM_PLLCTLV2, map_entry->pll_idx);
+            if (hpm_csr_get_core_cycle() > timeout_ticks) {
+                return status_timeout;
+            }
+        } while (!is_stable);
 
-    return status_success;
+        return status_success;
+    } else if (clk_src == clk_src_osc32k) {
+        return status_success;
+    } else {
+        return status_clk_operation_unsupported;
+    }
 }
 
 uint32_t clock_get_divider(clock_name_t clock_name)

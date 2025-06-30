@@ -12,10 +12,8 @@
 
 #define APP_BOARD_PWM                 BOARD_GPTMR_PWM
 #define APP_BOARD_PWM_CH              BOARD_GPTMR_PWM_CHANNEL
-#define APP_BOARD_GPTMR_CLOCK         BOARD_GPTMR_PWM_CLK_NAME
 #define APP_BOARD_SYNC_PWM            BOARD_GPTMR_PWM_SYNC
 #define APP_BOARD_SYNC_PWM_CH         BOARD_GPTMR_PWM_SYNC_CHANNEL
-#define APP_BOARD_SYNC_GPTMR_CLOCK    BOARD_GPTMR_PWM_SYNC_CLK_NAME
 
 #define APP_PWM_FREQ                  (100000U)
 #define APP_PWM_DUTY                  (50U)
@@ -40,16 +38,14 @@ int main(void)
     init_gptmr_pins(APP_BOARD_PWM);
     init_gptmr_pins(APP_BOARD_SYNC_PWM);
 
-    clock_add_to_group(APP_BOARD_GPTMR_CLOCK, 0);
+    cfg.gptmr_frequency = board_init_gptmr_clock(APP_BOARD_PWM);
     cfg.pwm_frequency   = APP_PWM_FREQ;
     cfg.pwm_duty        = APP_PWM_DUTY;
     cfg.cmp_init_high   = false;
-    cfg.gptmr_frequency = clock_get_frequency(APP_BOARD_GPTMR_CLOCK);
     cfg.cn_index        = APP_BOARD_PWM_CH;
     pwm_config(APP_BOARD_PWM, &cfg);
 
-    clock_add_to_group(APP_BOARD_SYNC_GPTMR_CLOCK, 0);
-    cfg.gptmr_frequency = clock_get_frequency(APP_BOARD_SYNC_GPTMR_CLOCK);
+    cfg.gptmr_frequency = board_init_gptmr_clock(APP_BOARD_SYNC_PWM);
     cfg.cn_index        = APP_BOARD_SYNC_PWM_CH;
     pwm_config(APP_BOARD_SYNC_PWM, &cfg);
 

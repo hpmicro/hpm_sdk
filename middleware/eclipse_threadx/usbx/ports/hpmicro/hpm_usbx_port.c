@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -92,25 +92,18 @@ static void USBD_IRQHandler(usb_device_handle_t *handle)
     if (int_status & INTR_UI) {
         usb_message_t msg = {0};
         uint32_t const edpt_complete = usb_device_get_edpt_complete_status(handle);
-        usb_device_clear_edpt_complete_status(handle, edpt_complete);
-        uint32_t edpt_setup_status = usb_device_get_setup_status(handle);
-
-        if (edpt_setup_status) {
-            /*------------- Set up Received -------------*/
-            usb_device_clear_setup_status(handle, edpt_setup_status);
-            msg.is_setup_packet = 1;
-            msg.buffer = (uint8_t *)&usb_device_qhd_get(handle, 0)->setup_request;
-            _hpm_usbd_ctl_control_callback(&msg, 0); /* When setup is set, ep_addr is not used */
-        }
+        uint32_t const edpt_setup_status = usb_device_get_setup_status(handle);
 
         if (edpt_complete) {
+            usb_device_clear_edpt_complete_status(handle, edpt_complete);
             for (uint8_t ep_idx = 0; ep_idx < USB_SOS_DCD_MAX_QHD_COUNT; ep_idx++) {
                 if (edpt_complete & (1 << ep_idx2bit(ep_idx))) {
                     transfer_len = 0;
                     ep_cb_req = true;
 
                     /* Failed QTD also get ENDPTCOMPLETE set */
-                    dcd_qtd_t *p_qtd = usb_device_qtd_get(handle, ep_idx);
+                    dcd_qhd_t *p_qhd = usb_device_qhd_get(handle, ep_idx);
+                    dcd_qtd_t *p_qtd = p_qhd->attached_qtd;
                     while (1) {
                         if (p_qtd->halted || p_qtd->xact_err || p_qtd->buffer_err) {
                             USB_LOG_ERR("usbd transfer error!\r\n");
@@ -121,6 +114,7 @@ static void USBD_IRQHandler(usb_device_handle_t *handle)
                             break;
                         } else {
                             transfer_len += p_qtd->expected_bytes - p_qtd->total_bytes;
+                            p_qtd->in_use = false;
                         }
 
                         if (p_qtd->next == USB_SOC_DCD_QTD_NEXT_INVALID) {
@@ -135,17 +129,26 @@ static void USBD_IRQHandler(usb_device_handle_t *handle)
                         dcd_qhd_t *qhd0 = usb_device_qhd_get(handle, 0);
                         if ((ep_addr & 0x0F) == 0) {
                             msg.is_setup_packet = 0;
-                            msg.buffer = (uint8_t *)&qhd0->setup_request;
+                            msg.buffer = (uint8_t *)p_qhd->attached_buffer;
                             msg.length = transfer_len;
                             _hpm_usbd_ctl_control_callback(&msg, ep_addr);
                         } else {
                             msg.is_setup_packet = 0;
+                            msg.buffer = (uint8_t *)p_qhd->attached_buffer;
                             msg.length = transfer_len;
                             _hpm_usbd_transfer_complete_callback(&msg, ep_addr);
                         }
                     }
                 }
             }
+        }
+
+        if (edpt_setup_status) {
+            /*------------- Set up Received -------------*/
+            usb_device_clear_setup_status(handle, edpt_setup_status);
+            msg.is_setup_packet = 1;
+            msg.buffer = (uint8_t *)&usb_device_qhd_get(handle, 0)->setup_request;
+            _hpm_usbd_ctl_control_callback(&msg, 0); /* When setup is set, ep_addr is not used */
         }
     }
 }

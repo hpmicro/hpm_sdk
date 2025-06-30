@@ -9,7 +9,7 @@ Samples
 
 
     audio_codec/index_en
-    canopen/README_en
+    canopen/index_en
     cherryrb/README_en
     cherrysh/index_en
     cherryusb/index_en
@@ -23,6 +23,7 @@ Samples
     freemaster/README_en
     hello_world/README_en
     hpm_math/index_en
+    hpm_log/README_en
     i2c_components/index_en
     i2s_emulation/README_en
     image/index_en
@@ -57,4 +58,3 @@ Samples
     vglite/index_en
     sent/index_en
 
-:::

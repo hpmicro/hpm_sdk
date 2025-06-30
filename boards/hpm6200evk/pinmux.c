@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -376,4 +376,9 @@ void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp)
             }
         }
     }
+}
+
+void init_clk_ref_pins(void)
+{
+    HPM_IOC->PAD[IOC_PAD_PA14].FUNC_CTL = IOC_PA14_FUNC_CTL_SOC_REF0;
 }

@@ -3,7 +3,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#include <canopennode.h>
 #include "hpm_canopen.h"
 #ifdef HPMSOC_HAS_HPMSDK_MCAN
 #include "hpm_canopen_mcan.h"
@@ -15,6 +14,8 @@
 
 #define SAMPLE_POINT_MARGIN 50
 #define CAN_SYNC_SEG 1
+
+extern CO_t *CO;
 
 inline void canopen_emcy_lock(void)
 {
@@ -340,21 +341,10 @@ CO_ReturnError_t CO_CANmodule_init(CO_CANmodule_t *CANmodule,
 	}
 
 	max_filters = can_get_max_filters(ctx->dev, false);
-	if (max_filters != -1) {
-		if (max_filters < 0) {
-			printf("unable to determine number of CAN RX filters\n");
-			return CO_ERROR_SYSCALL;
-		}
-
-		if (rxSize > max_filters) {
-			printf("insufficient number of concurrent CAN RX filters"
-				" (needs %d, %d available)\n", rxSize, max_filters);
-			return CO_ERROR_OUT_OF_MEMORY;
-		} else if (rxSize < max_filters) {
-			printf("excessive number of concurrent CAN RX filters enabled"
-				" (needs %d, %d available)\n", rxSize, max_filters);
-		}
-	}
+        if (max_filters < 0) {
+                printf("unable to determine number of CAN RX filters\n");
+                return CO_ERROR_SYSCALL;
+        }
 
 	canopen_detach_all_rx_filters(CANmodule);
 

@@ -1,12 +1,12 @@
 .. _dual_panel:
 
-DUAL_PANEL
+Dual Panel
 ============
 
 概述
 --------
 
-DUAL_PANEL这个sample同在两个屏幕上显示不同的内容，达到双屏异显的效果
+Dual Panel这个sample同在两个屏幕上显示不同的内容，达到双屏异显的效果
 
 硬件设置
 ----------

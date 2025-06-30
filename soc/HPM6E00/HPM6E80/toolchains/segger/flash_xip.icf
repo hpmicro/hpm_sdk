@@ -7,9 +7,9 @@
 define memory with size = 4G;
 
 /* Regions */
-define region NOR_CFG_OPTION = [ from 0x80000400 size 0x1000 ];
+define region NOR_CFG_OPTION = [ from 0x80000400 size 0xc00 ];
 define region BOOT_HEADER = [ from 0x80001000 size 0x2000 ];
-define region XPI0 = [from 0x80003000 size _flash_size - 0x3000 ];   /* XPI0 */
+define region FLASH = [from 0x80003000 size _flash_size - 0x3000 ];   /* FLASH */
 define region ILM = [from 0x00000000 size 256k];    /* ILM */
 define region DLM = [from 0x00200000 size 256k];    /* DLM */
 define region AXI_SRAM = [from 0x01200000 size 512k];
@@ -40,10 +40,9 @@ define block rtthread_RTMSymTab                              { section RTMSymTab
 /* Symbols */
 define exported symbol __nor_cfg_option_load_addr__ = start of region NOR_CFG_OPTION;
 define exported symbol __boot_header_load_addr__ = start of region BOOT_HEADER;
-define exported symbol __app_load_addr__ = start of region XPI0;
+define exported symbol __app_load_addr__ = start of region FLASH;
 define exported symbol __app_offset__ = __app_load_addr__ - __boot_header_load_addr__;
 define exported symbol __boot_header_length__ = size of block boot_header;
-define exported symbol __fw_size__ = 0x1000;
 
 define exported symbol __noncacheable_start__ = start of region NONCACHEABLE_RAM;
 define exported symbol __noncacheable_end__ = end of region NONCACHEABLE_RAM + 1;
@@ -76,7 +75,7 @@ do not initialize                           { section .noinit, section .noinit.*
 initialize by copy with packing=auto        { section .noncacheable.init, section .noncacheable.init.*, section .fast_ram.init, section .fast_ram.init.* };
 initialize by copy with packing=none        { section .data, section .data.*, section .*.data, section .*.data.* };               // Static data sections
 initialize by copy with packing=auto        { section .sdata, section .sdata.* };
-initialize by copy with packing=auto        { section .fast, section .fast.*, section .*.fast, section .*.fast.* };               // "RAM Code" sections
+initialize by copy with packing=auto        { section .fast, section .fast.*, section .*.fast, section .*.fast.*, section .text.*nx* };               // "RAM Code" sections
 
 initialize by calling __SEGGER_init_heap    { block heap  };                                        // Init the heap if there is one
 initialize by calling __SEGGER_init_ctors   { block ctors };                                        // Call constructors for global objects which need to be constructed before reaching main (if any). Make sure this is done after setting up heap.
@@ -85,9 +84,9 @@ initialize by copy                          { block vectors, block vectors_s };
 /* Placement */
 place in NOR_CFG_OPTION                     { section .nor_cfg_option };
 place in BOOT_HEADER with fixed order       { block boot_header };
-place at start of XPI0 with fixed order     { symbol _start };
+place at start of FLASH with fixed order     { symbol _start };
 place at start of ILM with fixed order      { block vectors, block vectors_s };
-place in XPI0 with minimum size order       {
+place in FLASH with minimum size order       {
                                               block tdata_load,                        // Thread-local-storage load image
                                               block ctors,                             // Constructors block
                                               block dtors,                             // Destructors block
@@ -110,7 +109,7 @@ define access readonly { section .gcc_except_table, section .gcc_except_table.* 
 define access readonly { section .eh_frame, section .eh_frame.* };
 define access readonly { section .sdata.DW.* };
 
-place in ILM                              { section .fast, section .fast.* };                       // "ramfunc" section
+place in ILM                              { section .fast, section .fast.*, section .text.*nx* };                       // "ramfunc" section
 place in AXI_SRAM                         { block framebuffer };
 place in AXI_SRAM                         {
                                             block tls,                                            // Thread-local-storage block

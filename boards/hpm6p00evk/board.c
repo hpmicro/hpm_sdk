@@ -303,12 +303,15 @@ void board_init_i2c(I2C_Type *ptr)
 
 uint32_t board_init_spi_clock(SPI_Type *ptr)
 {
-    if (ptr == HPM_SPI1) {
+    if (ptr == HPM_SPI0) {
+        clock_add_to_group(clock_spi0, 0);
+        return clock_get_frequency(clock_spi0);
+    } else if (ptr == HPM_SPI1) {
         clock_add_to_group(clock_spi1, 0);
         return clock_get_frequency(clock_spi1);
     } else if (ptr == HPM_SPI2) {
         clock_add_to_group(clock_spi2, 0);
-        return clock_get_frequency(clock_spi3);
+        return clock_get_frequency(clock_spi2);
     } else if (ptr == HPM_SPI3) {
         clock_add_to_group(clock_spi3, 0);
         return clock_get_frequency(clock_spi3);
@@ -870,4 +873,28 @@ void board_init_dac_pins(DAC_Type *ptr)
 void board_init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp)
 {
     init_gptmr_channel_pin(ptr, channel, as_comp);
+}
+
+uint32_t board_init_gptmr_clock(GPTMR_Type *ptr)
+{
+    uint32_t freq = 0U;
+    if (ptr == HPM_GPTMR0) {
+        clock_add_to_group(clock_gptmr0, BOARD_RUNNING_CORE & 0x1);
+        freq = clock_get_frequency(clock_gptmr0);
+    } else if (ptr == HPM_GPTMR1) {
+        clock_add_to_group(clock_gptmr1, BOARD_RUNNING_CORE & 0x1);
+        freq = clock_get_frequency(clock_gptmr1);
+    } else if (ptr == HPM_GPTMR2) {
+        clock_add_to_group(clock_gptmr2, BOARD_RUNNING_CORE & 0x1);
+        freq = clock_get_frequency(clock_gptmr2);
+    } else if (ptr == HPM_GPTMR3) {
+        clock_add_to_group(clock_gptmr3, BOARD_RUNNING_CORE & 0x1);
+        freq = clock_get_frequency(clock_gptmr3);
+    } else if (ptr == HPM_PTMR) {
+        clock_add_to_group(clock_ptmr, BOARD_RUNNING_CORE & 0x1);
+        freq = clock_get_frequency(clock_ptmr);
+    } else {
+        /* Not supported */
+    }
+    return freq;
 }

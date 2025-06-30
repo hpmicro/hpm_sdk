@@ -11,8 +11,8 @@
 
 typedef struct {
     __RW uint32_t FEATURE;                     /* 0x0: Feature enable register */
-    __RW uint32_t PRIORITY[163];               /* 0x4 - 0x28C: Source priority */
-    __R  uint8_t  RESERVED0[3440];             /* 0x290 - 0xFFF: Reserved */
+    __RW uint32_t PRIORITY[161];               /* 0x4 - 0x284: Source priority */
+    __R  uint8_t  RESERVED0[3448];             /* 0x288 - 0xFFF: Reserved */
     __RW uint32_t PENDING[4];                  /* 0x1000 - 0x100C: Pending status */
     __R  uint8_t  RESERVED1[112];              /* 0x1010 - 0x107F: Reserved */
     __R  uint32_t TRIGGER[4];                  /* 0x1080 - 0x108C: Trigger type */
@@ -64,9 +64,9 @@ typedef struct {
 /*
  * PRIORITY (RW)
  *
- * Interrupt source priority. The valid range of this field is 0-7.
+ * Interrupt source priority. The valid range of this field is 0-31.
  * 0: Never interrupt
- * 1-7: Interrupt source priority. The larger the value, the higher the priority.
+ * 1-31: Interrupt source priority. The larger the value, the higher the priority.
  */
 #define PLIC_PRIORITY_PRIORITY_MASK (0xFFFFFFFFUL)
 #define PLIC_PRIORITY_PRIORITY_SHIFT (0U)
@@ -342,8 +342,6 @@ typedef struct {
 #define PLIC_PRIORITY_PRIORITY159 (158UL)
 #define PLIC_PRIORITY_PRIORITY160 (159UL)
 #define PLIC_PRIORITY_PRIORITY161 (160UL)
-#define PLIC_PRIORITY_PRIORITY162 (161UL)
-#define PLIC_PRIORITY_PRIORITY163 (162UL)
 
 /* PENDING register group index macro definition */
 #define PLIC_PENDING_PENDING0 (0UL)

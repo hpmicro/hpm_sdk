@@ -3,29 +3,40 @@
 QEI
 ======
 
-Overiew
--------
+Overview
+--------
 
-**QEI**  project demonstrates the output of Hall timer data using the serial port after triggering the **QEI**  interrupt
+The **QEI** project demonstrates how to use the Quadrature Encoder Interface to read motor encoder data and output it through the serial port.
 
-- Configuring the QEI Interrupts
-
-- Read the QEI `U\V\W\TIMER` register
+- Configuring QEI interrupts and trigger conditions
+- Reading QEI registers including Z, phase, speed and timer values
+- Using TRGM (Trigger Mux) to route encoder signals
 
 Configurations
 --------------
 
-- Install the serial terminal, view  :ref:`board information <board_resource>` , and configure the serial terminal parameters
+- Install a serial terminal, refer to :ref:`board information <board_resource>` for serial port configuration
 
-- This program uses the **BLM57050-1000**  brushless motor of "Leisai Intelligence", refer to the `Leisai Intelligence <https://leisai.com/>`_ website for the specific parameters of the motor.
+- This program uses the **BLM57050-1000** brushless motor from "Leisai Intelligence". For detailed motor specifications, please visit the `Leisai Intelligence <https://leisai.com/>`_ website.
 
-- Click   :ref:`DRV-LV50A-MP1907 Motor Driver Board <drv_lv50a_mp1907>`   section and configure
+- Refer to :ref:`DRV-LV50A-MP1907 Motor Driver Board <drv_lv50a_mp1907>` section for motor driver configuration
+
+- The QEI is configured with:
+  - Phase count per revolution from motor specifications
+  - Z count increment on phase count maximum
+  - Phase comparison trigger point set to capture data at specific motor position
+  - Positive compare flag trigger for data capture
 
 Running the Demo
 ----------------
 
-- Power on, open the serial terminal, turning the motor bearing will trigger a QEI interrupt and print the following information. The data changes with the speed and direction of rotation, please refer to the user manual for the exact meaning of the data.
-
+- Power on the board and open the serial terminal
+- The program will initialize QEI and TRGM
+- When the motor shaft is rotated, QEI interrupts will be triggered and the following data will be printed:
+  - Z count: Encoder Z signal count
+  - Phase: Current phase position
+  - Speed: Sum of 4 consecutive speed history samples (his0 to his3)
+  - Timer: Timer value at capture time
 
 .. code-block:: console
 
@@ -33,4 +44,10 @@ Running the Demo
    > phase: 0xc200014d
    > speed: 0xa0000000
    > timer: 0xa8d08799
+
+The values will change based on:
+- Motor rotation speed
+- Rotation direction
+- Encoder resolution
+- Phase count configuration
 

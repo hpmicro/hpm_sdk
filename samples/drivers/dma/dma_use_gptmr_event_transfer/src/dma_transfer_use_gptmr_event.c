@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -40,7 +40,7 @@ const test_number_t test_table[] = {
     {gptmr_dma_request_on_reload,              "*        3. use gptmr reload event                                                *\n"},
 };
 
-uint32_t pins_toggle_status;
+ATTR_PLACE_AT_NONCACHEABLE uint32_t pins_toggle_status;
 
 static void dma_transfer_config(void);
 static void gptmr_config(gptmr_dma_request_event_t event);
@@ -56,7 +56,7 @@ void isr_dma(void)
     if (stat & DMA_CHANNEL_STATUS_TC) {
 
         /* in order to show the demo need to reset count, example:in gptmr_dma_request_on_cmp0 mode,the flash time of led varies with cmp */
-        gptmr_channel_reset_count(APP_BOARD_GPTMR, APP_BOARD_GPTMR_DMA_CH);
+        gptmr_channel_reset_count(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH);
 
         src_addr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)&pins_toggle_status);
         dma_set_source_address(APP_GPTMR_DMA, APP_BOARD_GPTMR_DMA_CH, src_addr);
@@ -87,7 +87,7 @@ static void dma_transfer_config(void)
     ch_config.dst_addr = (uint32_t)&BOARD_LED_GPIO_CTRL->DO[BOARD_LED_GPIO_INDEX].TOGGLE;
     ch_config.src_mode = DMA_HANDSHAKE_MODE_NORMAL;
     ch_config.src_width = APP_DMA_SRC_WIDTH;
-    ch_config.src_addr_ctrl = DMA_ADDRESS_CONTROL_INCREMENT;
+    ch_config.src_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
     ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
     ch_config.dst_width = APP_DMA_DST_WIDTH;
     ch_config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
@@ -105,11 +105,10 @@ static void gptmr_config(gptmr_dma_request_event_t event)
     uint32_t gptmr_freq;
     gptmr_channel_config_t config;
     uint32_t cmp;
-    clock_add_to_group(APP_BOARD_GPTMR_CLOCK, BOARD_RUNNING_CORE & 0x01);
+    gptmr_freq = board_init_gptmr_clock(APP_BOARD_GPTMR);
     gptmr_stop_counter(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH);
     dma_transfer_config();
     gptmr_channel_get_default_config(APP_BOARD_GPTMR, &config);
-    gptmr_freq = clock_get_frequency(APP_BOARD_GPTMR_CLOCK);
     config.cmp_initial_polarity_high = false;
     config.dma_request_event = event;
     config.reload = gptmr_freq / 1000 * APP_BOARD_RELOAD_MS;

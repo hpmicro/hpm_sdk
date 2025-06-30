@@ -194,6 +194,12 @@ def generate_iar_project(config, out_dir=".", project_dir = None):
             libs.append(HELPER.get_file_path(lib.strip().replace('\\', '/'), sdk_base, out_dir, use_outdir_relpath, "$PROJ_DIR$"))
         config["target"]["iar_link_input"] = libs
 
+    if len(config["target"]["iar_link_options"]):
+        opts = []
+        for opt in config["target"]["iar_link_options"].split(";"):
+            opts.append(opt.strip())
+        config["target"]["link_extra"] = opts
+
     config["target"]["defines"] = convert_iar_cc_defines(config)
 
     process_opt_level(config)

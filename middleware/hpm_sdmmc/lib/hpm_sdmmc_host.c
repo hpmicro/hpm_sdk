@@ -430,6 +430,60 @@ hpm_stat_t sdmmchost_transfer(sdmmc_host_t *host, const sdmmchost_xfer_t *conten
     return status;
 }
 
+hpm_stat_t sdmmchost_start_transfer(sdmmc_host_t *host, const sdmmchost_xfer_t *content)
+{
+    hpm_stat_t status;
+
+    do {
+        status = sdmmchost_check_host_availability(host);
+        if (status != status_success) {
+            break;
+        }
+
+        status = sdmmchost_wait_idle(host);
+        if (status != status_success) {
+            break;
+        }
+
+        SDXC_Type *base = host->host_param.base;
+        sdxc_adma_config_t dma_config = { 0 };
+        uint32_t timeout_ms = HPM_SDMMC_HOST_TIMEOUT_DEFAULT;
+        if (content->data != NULL) {
+#if defined(HPM_SDMMC_USE_ADMA2) && (HPM_SDMMC_USE_ADMA2 == 1)
+            dma_config.dma_type = sdxc_dmasel_adma2;
+#else
+            dma_config.dma_type = sdxc_dmasel_adma3;
+#endif
+             /* Ensure the ADMA descriptor starts at 8-byte aligned address */
+            dma_config.adma_table = (uint32_t *)HPM_ALIGN_UP(&host->adma_table, HPM_SDMMC_HOST_ADMA3_ALIGN_SIZE);
+            dma_config.adma_table_words = HPM_SDMMC_HOST_ADMA_TBL_SIZE;
+
+            /***************************************************************************************************************
+             *  Calculate the data timeout interval in millisecond =
+             *  (block_count * block_size) / tx_rx_bytes_per_sec * 1000 + margin time
+             *  Here set the margin time to 500 milliseconds
+             **************************************************************************************************************/
+            uint32_t bus_width = sdxc_get_data_bus_width(host->host_param.base);
+            uint32_t tx_rx_bytes_per_sec = host->clock_freq * bus_width / 8;
+            uint32_t block_cnt = content->data->block_cnt;
+            uint32_t block_size = content->data->block_size;
+            uint32_t read_write_size = block_cnt * block_size;
+            timeout_ms = (uint32_t) (1.0f * read_write_size / tx_rx_bytes_per_sec) * 1000 + 500;
+            sdxc_set_data_timeout(base, timeout_ms, NULL);
+        }
+
+        if (dma_config.dma_type == sdxc_dmasel_adma3) {
+            sdxc_clear_interrupt_status(base, ~0U);
+        }
+        status = sdxc_transfer_nonblocking(base, &dma_config, content);
+        if (status != status_success) {
+            break;
+        }
+    } while (false);
+
+    return status;
+}
+
 hpm_stat_t sdmmchost_set_speed_mode(const sdmmc_host_t *host, sdmmc_speed_mode_t speed_mode)
 {
     if ((host == NULL) || (host->host_param.base == NULL)) {
@@ -656,6 +710,18 @@ ATTR_RAMFUNC void sdmmchost_irq_handler(sdmmc_host_t *host)
     if ((int_signal_en & xfer_done_or_err_int_mask) && (int_stat & xfer_done_or_err_int_mask)) {
         uint32_t event_flags = int_stat & xfer_done_or_err_int_mask;
         hpm_sdmmc_osal_event_set(host, host->xfer_done_or_error_event, event_flags);
+#if !defined(HPM_SDMMC_XFER_CALLBACK_ENABLE) || (HPM_SDMMC_XFER_CALLBACK_ENABLE == 1)
+        if (event_flags & SDXC_INT_STAT_XFER_COMPLETE_MASK) {
+            if (host->xfer_complete_callback != NULL) {
+                host->xfer_complete_callback(host->xfer_complete_param);
+            }
+        }
+        if (event_flags & SDXC_INT_STAT_CMD_COMPLETE_MASK) {
+            if (host->cmd_complete_callback != NULL) {
+                host->cmd_complete_callback(host->cmd_complete_param);
+            }
+        }
+#endif
         sdxc_clear_interrupt_status(base, event_flags);
     }
 #endif
@@ -693,3 +759,23 @@ uint32_t sdmmchost_get_data_pin_level(sdmmc_host_t *host)
     }
     return data_pin_level;
 }
+
+#if defined(HPM_SDMMC_HOST_ENABLE_IRQ) && (HPM_SDMMC_HOST_ENABLE_IRQ == 1)
+#if !defined(HPM_SDMMC_XFER_CALLBACK_ENABLE) || (HPM_SDMMC_XFER_CALLBACK_ENABLE == 1)
+void sdmmchost_register_xfer_complete_callback(sdmmc_host_t *host, void (*irq_callback)(void *param), void *param)
+{
+    if (host != NULL) {
+        host->xfer_complete_callback = irq_callback;
+        host->xfer_complete_param = param;
+    }
+}
+
+void sdmmchost_register_cmd_complete_callback(sdmmc_host_t *host, void (*irq_callback)(void *param), void *param)
+{
+    if (host != NULL) {
+        host->cmd_complete_callback = irq_callback;
+        host->cmd_complete_param = param;
+    }
+}
+#endif
+#endif

@@ -943,11 +943,21 @@
                 </option>
                 <option>
                     <name>IlinkUseExtraOptions</name>
+                    {%- if target["link_extra"] %}
+                    <state>1</state>
+                    {%- else %}
                     <state>0</state>
+                    {%- endif %}
                 </option>
                 <option>
                     <name>IlinkExtraOptions</name>
+                    {%- if target["link_extra"] %}
+                    {%- for opt in target["link_extra"] %}
+                    <state>{{ opt }}</state>
+                    {%- endfor %}
+                    {%- else %}
                     <state></state>
+                    {%- endif %}
                 </option>
                 <option>
                     <name>IlinkThreadsSlave</name>
@@ -1992,11 +2002,21 @@
                 </option>
                 <option>
                     <name>IlinkUseExtraOptions</name>
+                    {%- if target["link_extra"] %}
+                    <state>1</state>
+                    {%- else %}
                     <state>0</state>
+                    {%- endif %}
                 </option>
                 <option>
                     <name>IlinkExtraOptions</name>
+                    {%- if target["link_extra"] %}
+                    {%- for opt in target["link_extra"] %}
+                    <state>{{ opt }}</state>
+                    {%- endfor %}
+                    {%- else %}
                     <state></state>
+                    {%- endif %}
                 </option>
                 <option>
                     <name>IlinkThreadsSlave</name>

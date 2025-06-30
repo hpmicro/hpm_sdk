@@ -8,7 +8,7 @@ Overview
 
 The HPM6P00 is a dual-core MCU running 600MHz with high computing power and abundant peripheral resources.
 
-The HPM6P00EVK is an evaluation board for the HPM6P00 series MCU, providing a range of interfaces including ADC input with SMA interface, SDM input with SMA interface, motor control interface (QEO/QEI/SEI/PWM/ADC), CAN interface, LIN interface, Ethernet interface, USB interface, audio interface, PPI/FREMC interface, and Raspberry Pi interface. It also integrates an onboard debugger FT2232 for easy debugging by users.
+The HPM6P00EVK is an evaluation board for the HPM6P00 series MCU, providing a range of interfaces including ADC input with SMA interface, SDM input with SMA interface, motor control interface (QEO/QEI/SEI/PWM/ADC), CAN interface, Ethernet interface, USB interface, audio interface, PPI/FREMC interface, and Raspberry Pi interface. It also integrates an onboard debugger FT2232 for easy debugging by users.
 
 .. image:: doc/hpm6p00evk.png
    :alt: hpm6p00evk
@@ -48,7 +48,6 @@ Hardware
 
   - LED
   - CAN
-  - LIN
 
 .. note::
 
@@ -124,20 +123,6 @@ Plug-in
        - PWM side, the J4.PWM_UH pin is the PWM_UH function.
 
          RDC side, the J4.PWM_UH pin is the RDC0 function
-
-- CAN/LIN interface section
-
-  .. list-table:: CAN/LIN interface section
-     :header-rows: 1
-
-     * - Function
-       - Position
-       - Note
-     * - CAN/LIN interface
-       - J6/J15/J18
-       - CAN side, PD29/PD30/PD31 connect to CAN transceiver.
-
-         LIN side, PD29/PD30/PD31 connect to LIN transceiver
 
 - USB/RGMII interface section
 
@@ -232,10 +217,10 @@ Pin Description
        - Position
      * - PUART.TX
        - PY0
-       - P5[8]
+       - P5[10]
      * - PUART.RX
        - PY1
-       - P5[10]
+       - P5[8]
 
 - UART0 Pin:
 

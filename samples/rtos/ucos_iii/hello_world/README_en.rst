@@ -13,6 +13,11 @@ Board Setting
 
 No special settings are required
 
+Project Configuration
+---------------------
+
+set(CONFIG_UCOS_III_TIMER_RESOURCE_GPTMR 1) to use the gptmr as system's tick source.
+
 Running the example
 -------------------
 

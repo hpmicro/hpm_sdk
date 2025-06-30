@@ -375,6 +375,16 @@ Pin Description
        - J10[16]
        - the pin that controls SPI slave CS
 
+- CLOCK REF Pin
+
+  .. list-table::
+     :header-rows: 1
+
+     * - Function
+       - Position
+     * - PE24
+       - J10[7]
+
 .. _hpm6750evk2_known_issues:
 
 Board Know Issue

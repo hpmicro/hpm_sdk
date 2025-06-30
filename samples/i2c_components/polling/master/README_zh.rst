@@ -17,6 +17,8 @@ I2C_COMPONENT_MASTER_POLLING
 
 - 在使用hpm_i2c_master_addr_write_blocking和hpm_i2c_master_addr_read_blocking API时, addr传参的大小端模式取决于context传参的addr_endianness成员，当为i2c_master_addr_big_endian时addr传输为大端模式，否则为小端模式。
 
+- 组件详情文档请参见 :ref:`i2c_components <i2c_component>`
+
 硬件设置
 ------------
 

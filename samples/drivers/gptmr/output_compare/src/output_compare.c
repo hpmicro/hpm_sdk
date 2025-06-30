@@ -13,7 +13,6 @@
 #define APP_BOARD_GPTMR               BOARD_GPTMR_PWM
 #define APP_BOARD_GPTMR_CH            BOARD_GPTMR_PWM_CHANNEL
 #define APP_BOARD_GPTMR_IRQ           BOARD_GPTMR_PWM_IRQ
-#define APP_BOARD_GPTMR_CLOCK         BOARD_GPTMR_PWM_CLK_NAME
 #define APP_BOARD_GPTMR_CMPINIT       (0)         /*it's mean compare output start state, now is low*/
 #define APP_BOARD_RELOAD_MS           (1000)
 #define APP_BOARD_CMP_MS              (300)
@@ -55,9 +54,8 @@ static void output_compare_config(void)
     gptmr_channel_config_t config;
     uint32_t gptmr_freq;
 
-    clock_add_to_group(APP_BOARD_GPTMR_CLOCK, 0);
+    gptmr_freq = board_init_gptmr_clock(APP_BOARD_GPTMR);
     gptmr_channel_get_default_config(APP_BOARD_GPTMR, &config);
-    gptmr_freq = clock_get_frequency(APP_BOARD_GPTMR_CLOCK);
     config.reload = gptmr_freq / 1000 * APP_BOARD_RELOAD_MS;
     config.cmp[0] = gptmr_freq / 1000 * APP_BOARD_CMP_MS;
     config.cmp[1] = config.reload;

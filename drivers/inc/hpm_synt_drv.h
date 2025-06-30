@@ -29,7 +29,11 @@ static inline hpm_stat_t synt_set_comparator(SYNT_Type *ptr,
                                        uint8_t cmp_index,
                                        uint32_t count)
 {
+#if defined(SYNT_SOC_HAS_EXTENSION_CMP) && SYNT_SOC_HAS_EXTENSION_CMP
+    if (cmp_index > SYNT_CMP_15) {
+#else
     if (cmp_index > SYNT_CMP_3) {
+#endif
         return status_invalid_argument;
     }
     ptr->CMP[cmp_index] = SYNT_CMP_CMP_SET(count);

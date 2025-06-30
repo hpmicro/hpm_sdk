@@ -188,3 +188,15 @@ BOOT切换
    * - PA31
      - J3[11]
      - 控制SPI从机CS的引脚
+
+- CLOCK REF引脚
+
+.. list-table::
+   :header-rows: 1
+
+   * - 功能
+     - 位置
+   * - PA09
+     - J3[32]
+
+

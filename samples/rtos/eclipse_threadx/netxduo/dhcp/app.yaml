@@ -3,6 +3,8 @@ excluded_targets:
   - release
   - sec_core_img
   - sec_core_img_release
+  - flash_xip_hybrid
+  - flash_xip_hybrid_release
 
 dependency:
   - board_enet_phy

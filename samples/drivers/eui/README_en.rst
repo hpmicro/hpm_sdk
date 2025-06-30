@@ -15,7 +15,7 @@ Running the example
 
 - The button interrupt is triggered once when KEY is pressed, and then again when released.
 
-- The serial port debugging terminal will first output clock configuration information. When the button is pressed, the serial debugging terminal will print the button status. As shown below:
+- The serial port debugging console will first print clock configuration information, and then print the status information of key presses (no status information will be printed when the key is released). The printf information demo as follows:
 
 .. code-block:: console
 

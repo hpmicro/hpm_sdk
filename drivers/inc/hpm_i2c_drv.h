@@ -819,6 +819,17 @@ static inline void i2c_set_direction(I2C_Type *ptr, bool direction)
 }
 
 /**
+ * @brief get i2c fifo size
+ *
+ * @param [in] ptr ptr I2C base address
+ * @return uint8_t fifo size
+ */
+static inline uint8_t i2c_get_fifo_size(I2C_Type *ptr)
+{
+    return (1 << (I2C_CFG_FIFOSIZE_GET(ptr->CFG) + 1));
+}
+
+/**
  * @}
  */
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -196,7 +196,7 @@ void rdc_set_acc_sync_delay(RDC_Type *ptr, rdc_input_acc_chn_t chn, uint32_t del
 static float rdc_iir_log(float x)
 {
     if (x <= 0) {
-        return 0.0 / 0.0;
+        return HPM_NAN;
     }
 
     float result = 0;
@@ -214,15 +214,15 @@ hpm_stat_t rdc_config_iir_parameter(RDC_Type *ptr, rdc_iir_cfg_t *iir_cfg)
 {
     int32_t b_val, a1_val, a2_val;
 
-    b_val = (rdc_iir_log(1.0f / iir_cfg->b) / RDC_IIR_LOG2) - 5;
+    b_val = (int32_t)(rdc_iir_log(1.0f / iir_cfg->b) / RDC_IIR_LOG2) - 5;
     if ((b_val < 0) || ((uint32_t)b_val > RDC_IIR_B_IIR_B_MASK)) {
         return status_invalid_argument;
     }
-    a1_val = iir_cfg->a1 * 256;
+    a1_val = (int32_t)(iir_cfg->a1 * 256);
     if ((a1_val < 0) || ((uint32_t)a1_val > RDC_IIR_A_IIR_A1_MASK)) {
         return status_invalid_argument;
     }
-    a2_val = iir_cfg->a2 * 256;
+    a2_val = (int32_t)(iir_cfg->a2 * 256);
     if ((a2_val < 0) || ((uint32_t)a2_val > (RDC_IIR_A_IIR_A2_MASK >> RDC_IIR_A_IIR_A2_SHIFT))) {
         return status_invalid_argument;
     }

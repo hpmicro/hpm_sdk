@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -121,16 +121,12 @@ void convert_bgr888_to_rgb565(uint8_t *psrc, uint32_t width, uint32_t height, ui
     }
 }
 
-void convert_abgr8888_to_argb8888(uint32_t *data, uint32_t width, uint32_t height)
+void convert_abgr8888_to_argb8888(uint8_t *psrc, uint32_t width, uint32_t height, uint8_t *pdst)
 {
-    uint8_t *ptr;
-    uint8_t tmp;
-
     for (uint32_t i = 0; i < (width * height); i++) {
-        ptr = (uint8_t *)data;
-        tmp = ptr[0];
-        ptr[0] = ptr[2];
-        ptr[2] = tmp;
-        data++;
+        pdst[4 * i] = psrc[4 * i + 2];
+        pdst[4 * i + 1] = psrc[4 * i + 1];
+        pdst[4 * i + 2] = psrc[4 * i];
+        pdst[4 * i + 3] = psrc[4 * i + 3];
     }
 }

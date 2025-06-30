@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -245,6 +245,19 @@ hpm_stat_t clock_set_wdg_source(clock_name_t clock_name, clk_src_t src);
  *         #status_clk_shared_cpu1 Clock is shared with the CPU1 clock
  */
 hpm_stat_t clock_set_source_divider(clock_name_t clock_name, clk_src_t src, uint32_t div);
+
+/**
+ * @brief Wait until the clock source for specified IP clock is stable
+ *
+ * @note This function must be used after clock_add_to_group(clock_name, group_idx)
+ *
+ * @param [in] clock_name Clock name for specified IP module
+ *
+ * @retval status_success The clock source is stable
+ * @retval status_clk_operation_unsupported The operation is not supported for the specified clock name
+ * @retval status_timeout Timeout occurred
+ */
+hpm_stat_t clock_wait_source_stable(clock_name_t clock_name);
 
 /**
  * @brief Enable IP clock

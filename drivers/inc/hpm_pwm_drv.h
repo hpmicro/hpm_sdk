@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -370,6 +370,16 @@ static inline void pwm_timer_reset(PWM_Type *pwm_x)
 static inline uint32_t pwm_get_status(PWM_Type *pwm_x)
 {
     return pwm_x->SR;
+}
+
+/**
+ * @brief get pwm irq en status
+ *
+ * @param[in] pwm_x PWM base address, HPM_PWMx(x=0..n)
+ */
+static inline uint32_t pwm_get_irq_en(PWM_Type *pwm_x)
+{
+    return pwm_x->IRQEN;
 }
 
 /**

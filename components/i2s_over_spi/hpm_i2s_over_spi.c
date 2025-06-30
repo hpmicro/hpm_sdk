@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -81,6 +81,13 @@ hpm_stat_t hpm_i2s_master_over_spi_tx_stop(hpm_i2s_over_spi_t *i2s)
     return status_success;
 }
 
+hpm_stat_t hpm_i2s_master_over_spi_tx_buffer(hpm_i2s_over_spi_t *i2s, uint8_t protocol, uint32_t lrck_hz, uint8_t audio_depth, uint8_t *data, uint32_t size)
+{
+    hpm_stat_t stat;
+    stat = hpm_i2s_master_over_spi_tx_buffer_blocking(i2s, protocol, lrck_hz, audio_depth, data, size, 0xFFFFFFFF);
+    return stat;
+}
+
 hpm_stat_t hpm_i2s_master_over_spi_tx_buffer_nonblocking(hpm_i2s_over_spi_t *i2s, uint8_t protocol, uint32_t lrck_hz, uint8_t audio_depth, uint8_t *data, uint32_t size)
 {
     dma_mgr_chn_conf_t chg_config;
@@ -131,11 +138,15 @@ hpm_stat_t hpm_i2s_master_over_spi_tx_buffer_nonblocking(hpm_i2s_over_spi_t *i2s
     return status_success;
 }
 
-hpm_stat_t hpm_i2s_master_over_spi_tx_buffer(hpm_i2s_over_spi_t *i2s, uint8_t protocol, uint32_t lrck_hz, uint8_t audio_depth, uint8_t *data, uint32_t size)
+hpm_stat_t hpm_i2s_master_over_spi_tx_buffer_blocking(hpm_i2s_over_spi_t *i2s, uint8_t protocol, uint32_t lrck_hz, uint8_t audio_depth,
+                                                        uint8_t *data, uint32_t size, uint32_t timeout)
 {
     dma_mgr_chn_conf_t chg_config;
     uint8_t data_width;
     hpm_stat_t stat;
+    uint32_t ticks_per_us = clock_get_core_clock_ticks_per_us();
+    uint64_t expected_ticks = hpm_csr_get_core_cycle() + (uint64_t)ticks_per_us * 1000UL * timeout;
+    bool is_timeout = false;
     stat = hpm_i2s_master_over_spi_tx_config(i2s, protocol, lrck_hz, audio_depth, size);
     if (stat != status_success) {
         return stat;
@@ -180,6 +191,10 @@ hpm_stat_t hpm_i2s_master_over_spi_tx_buffer(hpm_i2s_over_spi_t *i2s, uint8_t pr
     gptmr_start_counter(i2s->transfer_time.ptr, i2s->transfer_time.channel);
 
     while (!i2s->has_done) {
+        if (hpm_csr_get_core_cycle() > expected_ticks) {
+            is_timeout = true;
+            break;
+        }
     };
     gptmr_stop_counter(i2s->bclk.ptr, i2s->bclk.channel);
     gptmr_stop_counter(i2s->lrck.ptr, i2s->lrck.channel);
@@ -192,7 +207,7 @@ hpm_stat_t hpm_i2s_master_over_spi_tx_buffer(hpm_i2s_over_spi_t *i2s, uint8_t pr
     gptmr_stop_counter(i2s->transfer_time.ptr, i2s->transfer_time.channel);
     gptmr_channel_reset_count(i2s->transfer_time.ptr, i2s->transfer_time.channel);
     i2s->spi_slave.write_cs(i2s->spi_slave.cs_pin, true);
-    return status_success;
+    return ((is_timeout == true) ? status_timeout : status_success);
 }
 
 hpm_stat_t hpm_i2s_master_over_spi_rx_config(hpm_i2s_over_spi_t *i2s, uint8_t protocol, uint32_t lrck_hz,

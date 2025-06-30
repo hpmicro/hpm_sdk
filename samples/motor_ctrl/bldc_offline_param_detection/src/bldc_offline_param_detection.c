@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -386,16 +386,6 @@ hpm_mcl_stat_t adc_value_get(mcl_analog_chn_t chn, int32_t *value)
     return mcl_success;
 }
 
-void reset_pwm_counter(void)
-{
-#if defined(HPMSOC_HAS_HPMSDK_PWM)
-    pwm_enable_reload_at_synci(MOTOR0_BLDCPWM);
-#endif
-#if defined(HPMSOC_HAS_HPMSDK_PWMV2)
-
-#endif
-}
-
 hpm_mcl_stat_t enable_all_pwm_output(void)
 {
 #if defined(HPMSOC_HAS_HPMSDK_PWM)
@@ -536,7 +526,7 @@ void pwm_init(void)
 
     pwm_deinit(MOTOR0_BLDCPWM);
     pwm_stop_counter(MOTOR0_BLDCPWM);
-    reset_pwm_counter();
+    pwm_enable_reload_at_synci(MOTOR0_BLDCPWM);
     pwm_set_reload(MOTOR0_BLDCPWM, 0, PWM_RELOAD);
     pwm_set_start_count(MOTOR0_BLDCPWM, 0, 0);
     cmp_config[0].mode = pwm_cmp_mode_output_compare;
@@ -672,52 +662,39 @@ void pwm_init(void)
 hpm_mcl_stat_t qei_init(void)
 {
 #ifdef HPMSOC_HAS_HPMSDK_QEI
-    trgm_output_t config = {0};
+    trgm_output_t trgm_config = {0};
+    qei_mode_config_t mode_config = {0};
 #endif
 #ifdef HPMSOC_HAS_HPMSDK_QEIV2
-    qeiv2_phcnt_cmp_match_config_t phcnt_cmp_config = {0};
+    qeiv2_mode_config_t mode_config = {0};
 #endif
     init_qei_trgm_pins();
 #ifdef HPMSOC_HAS_HPMSDK_QEI
-    config.invert = false;
-    config.input = BOARD_BLDC_QEI_TRGM_QEI_A_SRC;
-    trgm_output_config(BOARD_BLDC_QEI_TRGM, TRGM_TRGOCFG_QEI_A, &config);
-    config.input = BOARD_BLDC_QEI_TRGM_QEI_B_SRC;
-    trgm_output_config(BOARD_BLDC_QEI_TRGM, TRGM_TRGOCFG_QEI_B, &config);
+    trgm_config.invert = false;
+    trgm_config.input = BOARD_BLDC_QEI_TRGM_QEI_A_SRC;
+    trgm_output_config(BOARD_BLDC_QEI_TRGM, TRGM_TRGOCFG_QEI_A, &trgm_config);
+    trgm_config.input = BOARD_BLDC_QEI_TRGM_QEI_B_SRC;
+    trgm_output_config(BOARD_BLDC_QEI_TRGM, TRGM_TRGOCFG_QEI_B, &trgm_config);
 
-    qei_counter_reset_assert(BOARD_BLDC_QEI_BASE);
-    qei_phase_config(BOARD_BLDC_QEI_BASE, BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV,
-            qei_z_count_inc_on_phase_count_max, true);
-    qei_phase_cmp_set(BOARD_BLDC_QEI_BASE, 4,
-            false, qei_rotation_dir_cmp_ignore);
-    qei_load_read_trigger_event_enable(BOARD_BLDC_QEI_BASE,
-            QEI_EVENT_POSITIVE_COMPARE_FLAG_MASK);
-    qei_counter_reset_release(BOARD_BLDC_QEI_BASE);
+    mode_config.work_mode = qei_work_mode_abz;
+    mode_config.z_count_inc_mode = qei_z_count_inc_on_phase_count_max;
+    mode_config.phcnt_max = BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV;
+    mode_config.z_cali_enable = false;
+    mode_config.phcnt_idx = 0;
+    qei_config_mode(BOARD_BLDC_QEI_BASE, &mode_config);
 #endif
 #ifdef HPMSOC_HAS_HPMSDK_QEIV2
-    qeiv2_reset_counter(BOARD_BLDC_QEIV2_BASE);
-    qeiv2_set_work_mode(BOARD_BLDC_QEIV2_BASE, qeiv2_work_mode_abz);
-    qeiv2_select_spd_tmr_register_content(BOARD_BLDC_QEIV2_BASE, qeiv2_spd_tmr_as_spd_tm);
-    qeiv2_config_z_phase_counter_mode(BOARD_BLDC_QEIV2_BASE, qeiv2_z_count_inc_on_phase_count_max);
-    qeiv2_config_phmax_phparam(BOARD_BLDC_QEIV2_BASE, BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV);
-    qeiv2_pause_pos_counter_on_fault(BOARD_BLDC_QEIV2_BASE, true);
-    qeiv2_config_abz_uvw_signal_edge(BOARD_BLDC_QEIV2_BASE, true, true, false, true, true);
-    phcnt_cmp_config.phcnt_cmp_value = 4;
-    phcnt_cmp_config.ignore_rotate_dir = true;
-    phcnt_cmp_config.ignore_zcmp = true;
-    qeiv2_config_phcnt_cmp_match_condition(BOARD_BLDC_QEIV2_BASE, &phcnt_cmp_config);
-    qeiv2_enable_load_read_trigger_event(BOARD_BLDC_QEIV2_BASE, QEIV2_EVENT_POSITION_COMPARE_FLAG_MASK);
-#if defined(HPM_IP_FEATURE_QEIV2_ONESHOT_MODE) && HPM_IP_FEATURE_QEIV2_ONESHOT_MODE
-    qeiv2_disable_pulse0_oneshot_mode(BOARD_BLDC_QEIV2_BASE);
-    qeiv2_disable_pulse1_oneshot_mode(BOARD_BLDC_QEIV2_BASE);
-    qeiv2_disable_cycle0_oneshot_mode(BOARD_BLDC_QEIV2_BASE);
-    qeiv2_disable_cycle1_oneshot_mode(BOARD_BLDC_QEIV2_BASE);
-#endif
     qeiv2_config_filter(BOARD_BLDC_QEIV2_BASE, qeiv2_filter_phase_a, false, qeiv2_filter_mode_delay, true, 100);
     qeiv2_config_filter(BOARD_BLDC_QEIV2_BASE, qeiv2_filter_phase_b, false, qeiv2_filter_mode_delay, true, 100);
-    qeiv2_release_counter(BOARD_BLDC_QEIV2_BASE);
-    qeiv2_set_z_phase(BOARD_BLDC_QEIV2_BASE, 0);
-    qeiv2_set_phase_cnt(BOARD_BLDC_QEIV2_BASE, 0);
+
+    mode_config.work_mode = qeiv2_work_mode_abz;
+    mode_config.spd_tmr_content_sel = qeiv2_spd_tmr_as_spd_tm;
+    mode_config.z_count_inc_mode = qeiv2_z_count_inc_on_phase_count_max;
+    mode_config.phcnt_max = BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV;
+    mode_config.z_cali_enable = false;
+    mode_config.z_cali_ignore_ab = false;
+    mode_config.phcnt_idx = 0;
+    qeiv2_config_mode(BOARD_BLDC_QEIV2_BASE, &mode_config);
 #endif
     return mcl_success;
 }

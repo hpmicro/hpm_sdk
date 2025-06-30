@@ -25,11 +25,16 @@
 #include "usbd_rndis.h"
 #include "cdc_rndis_device.h"
 #include "udp_echo.h"
+#include "hpm_clock_drv.h"
 
 /* Macro Definition */
 #define LWIP_SYS_TIME_MS 1
 #define NUM_DHCP_ENTRY   3
 #define PADDR(ptr)       ((ip_addr_t *)ptr)
+
+#ifndef RNDIS_TX_CHECK_DONE_TIMEOUT_MS
+#define RNDIS_TX_CHECK_DONE_TIMEOUT_MS      (1000UL)
+#endif
 
 /* Static Variable Definition*/
 static uint8_t hwaddr[6]  = { 0x20, 0x89, 0x84, 0x6A, 0x96, 00 };
@@ -55,6 +60,7 @@ static dhcp_config_t dhcp_config = {
 
 static uint32_t     sys_tick;
 static struct netif netif_data;
+static volatile bool rndis_tx_done;
 
 /* Static Function Declaration */
 static void  user_init_lwip(void);
@@ -71,6 +77,12 @@ void sys_timer_callback(void)
 uint32_t sys_now(void)
 {
     return sys_tick;
+}
+
+void usbd_rndis_data_send_done(uint32_t len)
+{
+    (void)len;
+    rndis_tx_done = true;
 }
 
 int main(void)
@@ -135,10 +147,21 @@ static err_t linkoutput_fn(struct netif *netif, struct pbuf *p)
     (void)netif;
     int ret;
 
+    uint32_t ticks_per_us = clock_get_core_clock_ticks_per_us();
+    uint64_t expected_ticks = hpm_csr_get_core_cycle() + (uint64_t)ticks_per_us * 1000UL * RNDIS_TX_CHECK_DONE_TIMEOUT_MS;
+
+    rndis_tx_done = false;
     ret = usbd_rndis_eth_tx(p);
 
     if (0 != ret) {
         ret = ERR_BUF;
+    } else {
+        while (rndis_tx_done == false) {
+            if (hpm_csr_get_core_cycle() > expected_ticks) {
+                ret = ERR_TIMEOUT;
+                break;
+            }
+        }
     }
 
     return ret;

@@ -32,6 +32,7 @@ board:
       - board_dual_usb
       - board_power_button
       - board_ap6255_evb
+      - board_clk_ref_pin
     excluded_samples:
       - samples/multicore/erpc/erpc_motor
       - samples/opener/motor

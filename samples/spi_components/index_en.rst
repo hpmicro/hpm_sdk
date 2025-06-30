@@ -3,6 +3,21 @@
 SPI Components
 ==============
 
+Reference
+-----------
+
+- For component documentation, refer to :ref:`spi_component <spi_component>`
+
+Notes
+-------
+
+- CS signals in master examples are GPIO-emulated for flexible transaction control
+- To enable hardware CS control in master examples, invoke `spi_master_enable_cs_select` API during initialization or pre-transaction
+- `spi_master_enable_cs_select` availability depends on `HPM_IP_FEATURE_SPI_CS_SELECT` macro definition in SOC's `hpm_soc_ip_feature.h`
+
+Examples
+--------
+
 .. toctree::
    :maxdepth: 3
 

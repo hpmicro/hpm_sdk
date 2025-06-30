@@ -9,7 +9,7 @@ define memory with size = 4G;
 /* Regions */
 define region NOR_CFG_OPTION = [ from 0x80000400 size 0x0C00 ];
 define region BOOT_HEADER = [ from 0x80001000 size 0x2000 ];
-define region XPI0 = [from 0x80003000 size (_flash_size - 0x3000) ];   /* XPI0 */
+define region FLASH = [from 0x80003000 size (_flash_size - 0x3000) ];   /* FLASH */
 define region ILM   = [from 0x00000000 size 256k];        /* ILM */
 define region DLM   = [from 0x00080000 size 256k];        /* DLM */
 define region AXI_SRAM = [from 0x01080000 size 512k];    /* AXI SRAM0 */
@@ -40,10 +40,9 @@ define block rtthread_RTMSymTab                               { section RTMSymTa
 /* Symbols */
 define exported symbol __nor_cfg_option_load_addr__ = start of region NOR_CFG_OPTION;
 define exported symbol __boot_header_load_addr__ = start of region BOOT_HEADER;
-define exported symbol __app_load_addr__ = start of region XPI0;
+define exported symbol __app_load_addr__ = start of region FLASH;
 define exported symbol __app_offset__ = __app_load_addr__ - __boot_header_load_addr__;
 define exported symbol __boot_header_length__ = size of block boot_header;
-define exported symbol __fw_size__ = 0x1000;
 
 define exported symbol __noncacheable_start__ = start of region NONCACHEABLE_RAM;
 define exported symbol __noncacheable_end__ = end of region NONCACHEABLE_RAM + 1;
@@ -87,9 +86,9 @@ initialize by copy { block vectors };
 /* Placement */
 place in NOR_CFG_OPTION                  { section .nor_cfg_option };
 place in BOOT_HEADER with fixed order    { block boot_header };
-place at start of XPI0 with fixed order  { symbol _start};
+place at start of FLASH with fixed order  { symbol _start};
 place at start of ILM with fixed order   { block vectors };
-place in XPI0 with minimum size order    {
+place in FLASH with minimum size order    {
                                            block tdata_load,                        // Thread-local-storage load image
                                            block ctors,                             // Constructors block
                                            block dtors,                             // Destructors block

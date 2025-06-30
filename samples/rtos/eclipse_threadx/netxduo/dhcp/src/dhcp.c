@@ -13,7 +13,7 @@
 #include <stdio.h>
 
 /* Define vars that the dhcp need*/
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(64) NX_DHCP dhcp_client;
+ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(64) NX_DHCP dhcp_client;
 UCHAR ip_address[4];
 UCHAR network_mask[4];
 

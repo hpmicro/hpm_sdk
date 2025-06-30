@@ -22,6 +22,8 @@ elseif("${HPM_SOC}" STREQUAL "HPM6E80")
     sdk_app_src(src/hpm6exx/dgo_demo.c)
 elseif("${HPM_SOC}" STREQUAL "HPM6P81")
     sdk_app_src(src/hpm6pxx/dgo_demo.c)
+elseif("${HPM_SOC}" STREQUAL "HPM5E31")
+    sdk_app_src(src/hpm5exx/dgo_demo.c)
 endif()
 
 generate_ide_projects()

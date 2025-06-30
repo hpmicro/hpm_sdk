@@ -96,6 +96,8 @@ typedef struct {
 /* ASSIGN register group index macro definition */
 #define GPIOM_ASSIGN_GPIOA (0UL)
 #define GPIOM_ASSIGN_GPIOB (1UL)
+#define GPIOM_ASSIGN_GPIOC (2UL)
+#define GPIOM_ASSIGN_GPIOD (3UL)
 #define GPIOM_ASSIGN_GPIOX (13UL)
 #define GPIOM_ASSIGN_GPIOY (14UL)
 

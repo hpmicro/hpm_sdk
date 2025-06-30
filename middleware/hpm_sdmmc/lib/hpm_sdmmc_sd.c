@@ -384,8 +384,11 @@ static hpm_stat_t sd_probe_bus_voltage(sd_card_t *card)
 
         status = sd_send_if_cond(card);
         if (status == status_sdmmc_card_not_support) {
+            card->capacity_v2_0_or_high = false;
             status = sdmmc_go_idle_state(card->host, 0);
             HPM_BREAK_IF(status != status_success);
+        } else {
+            card->capacity_v2_0_or_high = true;
         }
         sd_ocr_t ocr = {.ocr_word = 0};
         const sd_ocr_t sdxc_ocr = {.ocr_word = 0x40ff8000UL};
@@ -862,6 +865,9 @@ hpm_stat_t sd_read_status(sd_card_t *card)
     sdmmchost_cmd_t *cmd = &card->host->cmd;
     sdmmchost_data_t *data = &card->host->data;
     sdmmchost_xfer_t *content = &card->host->xfer;
+    memset(cmd, 0, sizeof(*cmd));
+    memset(data, 0, sizeof(*data));
+    memset(content, 0, sizeof(*content));
     cmd->cmd_index = sd_acmd_sd_status;
     cmd->resp_type = (sdxc_dev_resp_type_t) sdmmc_resp_r1;
     data->block_size = 64;
@@ -881,6 +887,137 @@ hpm_stat_t sd_read_status(sd_card_t *card)
 
     return status;
 }
+
+#if defined(HPM_SDMMC_HOST_ENABLE_IRQ) && (HPM_SDMMC_HOST_ENABLE_IRQ == 1)
+#if !defined(HPM_SDMMC_XFER_CALLBACK_ENABLE) || (HPM_SDMMC_XFER_CALLBACK_ENABLE == 1)
+hpm_stat_t sd_start_read_blocks(sd_card_t *card, uint8_t *buffer, uint32_t start_block, uint32_t block_count, void (*irq_callback)(void *param), void *param)
+{
+    if (block_count > MAX_BLOCK_COUNT)
+        return status_invalid_argument;
+    hpm_stat_t status = sd_check_card_parameters(card);
+    do {
+        HPM_BREAK_IF(status != status_success);
+
+        if (!card->host->card_init_done) {
+            status = status_sdmmc_device_init_required;
+            break;
+        }
+
+        sdmmchost_cmd_t *cmd = &card->host->cmd;
+        sdmmchost_data_t *data = &card->host->data;
+        sdmmchost_xfer_t *content = &card->host->xfer;
+        memset(cmd, 0, sizeof(*cmd));
+        memset(data, 0, sizeof(*data));
+        memset(content, 0, sizeof(*content));
+
+        if (block_count > 1) {
+            cmd->cmd_index = sdmmc_cmd_read_multiple_block;
+            if (card->sd_flags.support_set_block_count_cmd != 0) {
+            data->enable_auto_cmd23 = true;
+            } else {
+            data->enable_auto_cmd12 = true;
+            }
+        } else {
+            cmd->cmd_index = sdmmc_cmd_read_single_block;
+        }
+
+        uint32_t start_addr = start_block;
+        if (card->sd_flags.is_byte_addressing_mode == 1U) {
+            start_addr *= card->block_size;
+        }
+        cmd->resp_type = (sdxc_dev_resp_type_t) sdmmc_resp_r1;
+        cmd->cmd_argument = start_addr;
+        data->block_size = SDMMC_BLOCK_SIZE_DEFAULT;
+        data->block_cnt = block_count;
+        data->rx_data = (uint32_t *) sdmmc_get_sys_addr(card->host, (uint32_t) buffer);
+        content->data = data;
+        content->command = cmd;
+#if !defined(HPM_SDMMC_ENABLE_CACHE_MAINTENANCE) || (HPM_SDMMC_ENABLE_CACHE_MAINTENANCE == 1)
+        uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) data->rx_data);
+        uint32_t end_addr = (uint32_t) data->rx_data + card->block_size * block_count;
+        uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP(end_addr);
+        uint32_t aligned_size = aligned_end - aligned_start;
+        l1c_dc_flush(aligned_start, aligned_size);
+#endif
+        sdmmchost_register_xfer_complete_callback(card->host, irq_callback, param);
+        status = sdmmchost_start_transfer(card->host, content);
+
+        if (status != status_success) {
+            return status_fail;
+        }
+    } while (false);
+
+    return status;
+}
+
+hpm_stat_t sd_start_write_blocks(sd_card_t *card, const uint8_t *buffer, uint32_t start_block, uint32_t block_count, void (*irq_callback)(void *param), void *param)
+{
+    if (block_count > MAX_BLOCK_COUNT)
+        return status_invalid_argument;
+    hpm_stat_t status = sd_check_card_parameters(card);
+    do {
+        HPM_BREAK_IF(status != status_success);
+
+        if (!card->host->card_init_done) {
+            status = status_sdmmc_device_init_required;
+            break;
+        }
+
+        sdmmchost_cmd_t *cmd = &card->host->cmd;
+        sdmmchost_data_t *data = &card->host->data;
+        sdmmchost_xfer_t *content = &card->host->xfer;
+        memset(cmd, 0, sizeof(*cmd));
+        memset(data, 0, sizeof(*data));
+        memset(content, 0, sizeof(*content));
+
+        status = sd_polling_card_status_busy(card, WRITE_BLOCK_TIMEOUT_IN_MS);
+        HPM_BREAK_IF(status != status_success);
+
+        /* If the card is not an SDUC card, issue ACMD23 to accelerate write performance  */
+        if (card->csd.csd_structure <= 1) {
+            status = sd_app_cmd_set_write_block_erase_count(card, block_count);
+            HPM_BREAK_IF(status != status_success);
+        }
+        if (block_count > 1) {
+            cmd->cmd_index = sdmmc_cmd_write_multiple_block;
+            if (card->sd_flags.support_set_block_count_cmd != 0) {
+                data->enable_auto_cmd23 = true;
+            } else {
+                data->enable_auto_cmd12 = true;
+            }
+        } else {
+            cmd->cmd_index = sdmmc_cmd_write_single_block;
+            data->enable_auto_cmd12 = false;
+        }
+        uint32_t start_addr = start_block;
+        if (card->sd_flags.is_byte_addressing_mode == 1U) {
+            start_addr *= card->block_size;
+        }
+        cmd->resp_type = (sdxc_dev_resp_type_t) sdmmc_resp_r1;
+        cmd->cmd_argument = start_addr;
+        data->block_size = SDMMC_BLOCK_SIZE_DEFAULT;
+        data->block_cnt = block_count;
+        data->tx_data = (const uint32_t *) sdmmc_get_sys_addr(card->host, (uint32_t) buffer);
+        content->data = data;
+        content->command = cmd;
+#if !defined(HPM_SDMMC_ENABLE_CACHE_MAINTENANCE) || (HPM_SDMMC_ENABLE_CACHE_MAINTENANCE == 1)
+        uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t) data->tx_data);
+        uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP(
+                (uint32_t) data->tx_data + card->block_size * block_count);
+        uint32_t aligned_size = aligned_end - aligned_start;
+        l1c_dc_flush(aligned_start, aligned_size);
+#endif
+        sdmmchost_register_xfer_complete_callback(card->host, irq_callback, param);
+        status = sdmmchost_start_transfer(card->host, content);
+        if (status != status_success) {
+            break;
+        }
+    } while (false);
+
+    return status;
+}
+#endif
+#endif
 
 hpm_stat_t sd_read_blocks(sd_card_t *card, uint8_t *buffer, uint32_t start_block, uint32_t block_count)
 {

@@ -7,6 +7,11 @@
 #ifndef HPM_SOC_IP_FEATURE_H
 #define HPM_SOC_IP_FEATURE_H
 
+/* PLIC related feature */
+#define HPM_IP_FEATURE_PLIC_HIGHEST_PRIORITY 31
+#define HPM_IP_FEATURE_PLIC_SUPPORT_S_MODE 1
+#define HPM_IP_FEATURE_PLIC_HAS_TRIGGER_TYPE 1
+
 /* UART related feature */
 #define HPM_IP_FEATURE_UART_RX_IDLE_DETECT 1
 #define HPM_IP_FEATURE_UART_FCRR 1
@@ -23,6 +28,9 @@
 /* GPTMR related feature */
 #define HPM_IP_FEATURE_GPTMR_MONITOR 1
 #define HPM_IP_FEATURE_GPTMR_OP_MODE 1
+
+/* ADC16 related feature */
+#define HPM_IP_FEATURE_ADC16_SEQ_HCFG_EN 1
 
 /* DAO related feature */
 #define HPM_IP_FEATURE_DAO_DATA_FORMAT_CONFIG 1

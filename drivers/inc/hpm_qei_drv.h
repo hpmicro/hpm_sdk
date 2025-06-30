@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -19,8 +19,10 @@
  */
 #define QEI_EVENT_WDOG_FLAG_MASK (1U << 31) /**< watchdog flag */
 #define QEI_EVENT_HOME_FLAG_MASK (1U << 30) /**< home flag */
-#define QEI_EVENT_POSITIVE_COMPARE_FLAG_MASK (1U << 29) /**< postion compare match flag */
+#define QEI_EVENT_POSITION_COMPARE_FLAG_MASK (1U << 29) /**< postion compare match flag */
 #define QEI_EVENT_Z_PHASE_FLAG_MASK (1U << 28) /**< z input flag */
+
+#define QEI_EVENT_POSITIVE_COMPARE_FLAG_MASK QEI_EVENT_POSITION_COMPARE_FLAG_MASK  /* Legacy macro, kept for backwards compatibility */
 
 /**
  * @brief counting mode of Z-phase counter
@@ -72,6 +74,39 @@ typedef enum qei_speed_his_type {
     qei_speed_his2 = QEI_SPDHIS_SPDHIS2, /**< Speed history2 */
     qei_speed_his3 = QEI_SPDHIS_SPDHIS3, /**< Speed history3 */
 } qei_speed_his_type_t;
+
+/**
+ * @brief qei mode config structure
+ */
+typedef struct {
+    qei_work_mode_t work_mode;
+    qei_z_count_inc_mode_t z_count_inc_mode;
+    uint32_t phcnt_max;
+    bool z_cali_enable;
+    uint32_t phcnt_idx;
+} qei_mode_config_t;      /**< qei mode config struct */
+
+/**
+ * @brief qei H phase config structure
+ */
+typedef struct {
+    bool h_fall_dir_forward;
+    bool h_fall_dir_reverse;
+    bool h_rise_dir_forward;
+    bool h_rise_dir_reverse;
+    bool h_valid_reset_spdcnt;
+    bool h_valid_reset_phcnt;
+    bool h_valid_reset_zcnt;
+} qei_h_phase_config_t;      /**< qei H phase config struct */
+
+/**
+ * @brief qei pause config structure
+ */
+typedef struct {
+    bool pause_valid_pause_spdcnt;
+    bool pause_valid_pause_phcnt;
+    bool pause_valid_pause_zcnt;
+} qei_pause_config_t;      /**< qei pause config struct */
 
 #ifdef __cplusplus
 extern "C" {
@@ -146,7 +181,7 @@ static inline void qei_phase_set_index(QEI_Type *qei_x, uint32_t phase_index)
  * @param[in] event_mask
  *  @arg @ref QEI_EVENT_WDOG_FLAG_MASK
  *  @arg @ref QEI_EVENT_HOME_FLAG_MASK
- *  @arg @ref QEI_EVENT_POSITIVE_COMPARE_FLAG_MASK
+ *  @arg @ref QEI_EVENT_POSITION_COMPARE_FLAG_MASK
  *  @arg @ref QEI_EVENT_Z_PHASE_FLAG_MASK
  */
 static inline void qei_output_trigger_event_enable(QEI_Type *qei_x, uint32_t event_mask)
@@ -161,7 +196,7 @@ static inline void qei_output_trigger_event_enable(QEI_Type *qei_x, uint32_t eve
  * @param[in] event_mask
  *  @arg @ref QEI_EVENT_WDOG_FLAG_MASK
  *  @arg @ref QEI_EVENT_HOME_FLAG_MASK
- *  @arg @ref QEI_EVENT_POSITIVE_COMPARE_FLAG_MASK
+ *  @arg @ref QEI_EVENT_POSITION_COMPARE_FLAG_MASK
  *  @arg @ref QEI_EVENT_Z_PHASE_FLAG_MASK
  */
 static inline void qei_output_trigger_event_disable(QEI_Type *qei_x, uint32_t event_mask)
@@ -176,7 +211,7 @@ static inline void qei_output_trigger_event_disable(QEI_Type *qei_x, uint32_t ev
  * @param[in] event_mask
  *  @arg @ref QEI_EVENT_WDOG_FLAG_MASK
  *  @arg @ref QEI_EVENT_HOME_FLAG_MASK
- *  @arg @ref QEI_EVENT_POSITIVE_COMPARE_FLAG_MASK
+ *  @arg @ref QEI_EVENT_POSITION_COMPARE_FLAG_MASK
  *  @arg @ref QEI_EVENT_Z_PHASE_FLAG_MASK
  */
 static inline void qei_load_read_trigger_event_enable(QEI_Type *qei_x, uint32_t event_mask)
@@ -191,7 +226,7 @@ static inline void qei_load_read_trigger_event_enable(QEI_Type *qei_x, uint32_t 
  * @param[in] event_mask
  *  @arg @ref QEI_EVENT_WDOG_FLAG_MASK
  *  @arg @ref QEI_EVENT_HOME_FLAG_MASK
- *  @arg @ref QEI_EVENT_POSITIVE_COMPARE_FLAG_MASK
+ *  @arg @ref QEI_EVENT_POSITION_COMPARE_FLAG_MASK
  *  @arg @ref QEI_EVENT_Z_PHASE_FLAG_MASK
  */
 static inline void qei_load_read_trigger_event_disable(QEI_Type *qei_x, uint32_t event_mask)
@@ -245,7 +280,7 @@ static inline void qei_phase_cmp_set(QEI_Type *qei_x, uint32_t cmp,
  * @param[in] mask
  *  @arg @ref QEI_EVENT_WDOG_FLAG_MASK
  *  @arg @ref QEI_EVENT_HOME_FLAG_MASK
- *  @arg @ref QEI_EVENT_POSITIVE_COMPARE_FLAG_MASK
+ *  @arg @ref QEI_EVENT_POSITION_COMPARE_FLAG_MASK
  *  @arg @ref QEI_EVENT_Z_PHASE_FLAG_MASK
  */
 static inline void qei_clear_status(QEI_Type *qei_x, uint32_t mask)
@@ -260,7 +295,7 @@ static inline void qei_clear_status(QEI_Type *qei_x, uint32_t mask)
  * @retval qei status:
  *  @arg @ref QEI_EVENT_WDOG_FLAG_MASK
  *  @arg @ref QEI_EVENT_HOME_FLAG_MASK
- *  @arg @ref QEI_EVENT_POSITIVE_COMPARE_FLAG_MASK
+ *  @arg @ref QEI_EVENT_POSITION_COMPARE_FLAG_MASK
  *  @arg @ref QEI_EVENT_Z_PHASE_FLAG_MASK
  */
 static inline uint32_t qei_get_status(QEI_Type *qei_x)
@@ -275,7 +310,7 @@ static inline uint32_t qei_get_status(QEI_Type *qei_x)
  * @param[in] mask
  *  @arg @ref QEI_EVENT_WDOG_FLAG_MASK
  *  @arg @ref QEI_EVENT_HOME_FLAG_MASK
- *  @arg @ref QEI_EVENT_POSITIVE_COMPARE_FLAG_MASK
+ *  @arg @ref QEI_EVENT_POSITION_COMPARE_FLAG_MASK
  *  @arg @ref QEI_EVENT_Z_PHASE_FLAG_MASK
  * @retval true or false
  */
@@ -295,7 +330,7 @@ static inline bool qei_get_bit_status(QEI_Type *qei_x, uint32_t mask)
  * @param[in] mask
  *  @arg @ref QEI_EVENT_WDOG_FLAG_MASK
  *  @arg @ref QEI_EVENT_HOME_FLAG_MASK
- *  @arg @ref QEI_EVENT_POSITIVE_COMPARE_FLAG_MASK
+ *  @arg @ref QEI_EVENT_POSITION_COMPARE_FLAG_MASK
  *  @arg @ref QEI_EVENT_Z_PHASE_FLAG_MASK
  */
 static inline void qei_irq_enable(QEI_Type *qei_x, uint32_t mask)
@@ -310,7 +345,7 @@ static inline void qei_irq_enable(QEI_Type *qei_x, uint32_t mask)
  * @param[in] mask
  *  @arg @ref QEI_EVENT_WDOG_FLAG_MASK
  *  @arg @ref QEI_EVENT_HOME_FLAG_MASK
- *  @arg @ref QEI_EVENT_POSITIVE_COMPARE_FLAG_MASK
+ *  @arg @ref QEI_EVENT_POSITION_COMPARE_FLAG_MASK
  *  @arg @ref QEI_EVENT_Z_PHASE_FLAG_MASK
  */
 static inline void qei_irq_disable(QEI_Type *qei_x, uint32_t mask)
@@ -325,7 +360,7 @@ static inline void qei_irq_disable(QEI_Type *qei_x, uint32_t mask)
  * @param[in] mask
  *  @arg @ref QEI_EVENT_WDOG_FLAG_MASK
  *  @arg @ref QEI_EVENT_HOME_FLAG_MASK
- *  @arg @ref QEI_EVENT_POSITIVE_COMPARE_FLAG_MASK
+ *  @arg @ref QEI_EVENT_POSITION_COMPARE_FLAG_MASK
  *  @arg @ref QEI_EVENT_Z_PHASE_FLAG_MASK
  */
 static inline void qei_dma_request_enable(QEI_Type *qei_x, uint32_t mask)
@@ -340,7 +375,7 @@ static inline void qei_dma_request_enable(QEI_Type *qei_x, uint32_t mask)
  * @param[in] mask
  *  @arg @ref QEI_EVENT_WDOG_FLAG_MASK
  *  @arg @ref QEI_EVENT_HOME_FLAG_MASK
- *  @arg @ref QEI_EVENT_POSITIVE_COMPARE_FLAG_MASK
+ *  @arg @ref QEI_EVENT_POSITION_COMPARE_FLAG_MASK
  *  @arg @ref QEI_EVENT_Z_PHASE_FLAG_MASK
  */
 static inline void qei_dma_request_disable(QEI_Type *qei_x, uint32_t mask)
@@ -547,6 +582,30 @@ static inline void qei_set_work_mode(QEI_Type *qei_x, qei_work_mode_t mode)
 {
     qei_x->CR = (qei_x->CR & ~QEI_CR_ENCTYP_MASK) | QEI_CR_ENCTYP_SET(mode);
 }
+
+/**
+ * @brief config qei mode
+ *
+ * @param[in] qei_x QEI base address, HPM_QEIx(x=0...n)
+ * @param[in] config @ref qei_mode_config_t
+ */
+void qei_config_mode(QEI_Type *qei_x, qei_mode_config_t *config);
+
+/**
+ * @brief config h phase signal
+ *
+ * @param[in] qei_x QEI base address, HPM_QEIx(x=0...n)
+ * @param[in] config @ref qei_h_phase_config_t
+ */
+void qei_config_h_phase(QEI_Type *qei_x, qei_h_phase_config_t *config);
+
+/**
+ * @brief config pause signal
+ *
+ * @param[in] qei_x QEI base address, HPM_QEIx(x=0...n)
+ * @param[in] config @ref qei_pause_config_t
+ */
+void qei_config_pause(QEI_Type *qei_x, qei_pause_config_t *config);
 
 #ifdef __cplusplus
 }

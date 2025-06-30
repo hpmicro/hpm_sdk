@@ -29,3 +29,8 @@ When the example runs successfully, the LED will flash 5 times, and the followin
    toggling led 4/5 times
    toggling led 5/5 times
 
+Tips
+------------
+
+- For GPIO-related operations, refer to the :ref:`gpio <gpio>` example
+- To use FGPIO control for IOs, manage allocation through GPIOM module. See the `gpiom_configure_pin_control_setting` function in the example

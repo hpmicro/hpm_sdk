@@ -6,21 +6,19 @@ RNDIS Host - DHCP Client
 Overview
 --------
 
-- This sample project shows USB RNDIS or ECM Host to implement DHCP and automatically assign IP. Connect luat 4G module-air780e module or EC20 module to implement DHCP to automatically assign IP.
+- This sample demonstrates USB RNDIS/ECM Host implementation with DHCP for automatic IP assignment. Supports Luat 4G modules (air780e), EC20 modules, and ML307R modules.
 
 Board Setting
 -------------
 
-- development board interconnected to air780e or ec20 through port USB0.
+- Development board connected to air780e/EC20/ML307R via USB0 port using USB cable
+- Debug port or console port of RNDIS/ECM Host connected to PC
 
-- development board(RNDIS Host) DEBUG port or console port connect to PC.
 
 Example of output log
 ---------------------
 
-- download the programs to the development board, and connect air780e, the board will show logs as follows
-
-- if not, check whether the upper module is powered on
+- When programming the development board and connecting air780e, the board will display the following logs on the serial console (if not, check if the module is powered on):
 
 
 .. code-block:: console
@@ -82,7 +80,7 @@ Example of output log
     IPv4 Gateway     : 192.168.10.1
 
 
-- when the EC20 module is connected, the following information is printed, indicating that the EC20 initialization is successful and the IP is assigned.
+- When connecting EC20 module, the following output indicates successful initialization and IP assignment:
 
 
 .. code-block:: console

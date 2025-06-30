@@ -9,6 +9,7 @@ This chapter describes the board-related configuration
 
    hpm5300evk/README_en
    hpm5301evklite/README_en
+   hpm5e00evk/README_en
    hpm6200evk/README_en
    hpm6300evk/README_en
    hpm6750evk2/README_en
@@ -33,6 +34,11 @@ This chapter describes the board-related configuration
         Click :ref:`hpm5301evklite_pins` to view pin details
 
         Click :ref:`hpm5301evklite_buttons` to view button details
+
+    .. tab:: HPM5E00EVK
+        Click :ref:`hpm5e00evk_pins` to view pin details
+
+        Click :ref:`hpm5e00evk_buttons` to view button details
 
     .. tab:: HPM6200EVK
         Click :ref:`hpm6200evk_pins` to view pin details

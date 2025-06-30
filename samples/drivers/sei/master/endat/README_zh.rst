@@ -6,7 +6,7 @@ SEI Master: Connect ENDAT Encoder
 概述
 ------
 
-该工程主要演示通过SEI接口获取ENDAT编码器位置数据，自动计算采样/更新延时，并通过串口将信息打印出来。
+该工程主要演示通过SEI接口获取ENDAT编码器位置数据。通过锁存采样时刻和锁存数据的边沿时刻来实现总线延时检测，并自动计算出合理的采样点。此外，也会自动计算出数据采样时刻和更新时刻延时，并通过串口将信息打印出来。
 
 配置
 ------
@@ -43,8 +43,12 @@ SEI Master: Connect ENDAT Encoder
    ----------------------------------------------------------------------
    SEI master EnDat sample
    Started sei engine!
-   E:0, ST:0xa5a5, CRC:0x5, sample_tm:2465400001, update_tm:2465409502, TimeDelay:475*0.1us
-   E:0, ST:0xa5a6, CRC:0xf, sample_tm:2505400001, update_tm:2505409502, TimeDelay:475*0.1us
+   delta: 15790 ns
+   E:0x0, ST:0xa5a5, CRC:0x5, sample_tm:365657, update_tm:375158, TimeDelay:475*0.1us
+   delta: 15790 ns
+   E:0x0, ST:0xa5a6, CRC:0xf, sample_tm:40365657, update_tm:40375158, TimeDelay:475*0.1us
+   delta: 15795 ns
+   rx point changed!
    E:0, ST:0xa5a7, CRC:0x1a, sample_tm:2545400001, update_tm:2545409502, TimeDelay:475*0.1us
    E:0, ST:0xa5a8, CRC:0x7, sample_tm:2585400001, update_tm:2585409502, TimeDelay:475*0.1us
    E:0, ST:0xa5a9, CRC:0x12, sample_tm:2625400001, update_tm:2625409502, TimeDelay:475*0.1us

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -10,6 +10,7 @@
 #include "hpm_camera.h"
 #include "hpm_jpeg_drv.h"
 #include "hpm_lcdc_drv.h"
+#include "hpm_l1c_drv.h"
 #include "hpm_gpio_drv.h"
 #include "hpm_clock_drv.h"
 #include "file_op.h"
@@ -65,11 +66,11 @@
 #define PIXEL_FORMAT display_pixel_format_rgb565
 #endif
 
-#define CAM_BUF_LEN (IMAGE_HEIGHT * IMAGE_WIDTH * 3)
+#define CAM_BUF_LEN HPM_L1C_CACHELINE_ALIGN_UP(IMAGE_HEIGHT * IMAGE_WIDTH * 3)
 
-ATTR_PLACE_AT_NONCACHEABLE uint8_t file_buffer[CAM_BUF_LEN];
+ATTR_ALIGN(HPM_L1C_CACHELINE_SIZE) uint8_t file_buffer[CAM_BUF_LEN];
 ATTR_PLACE_AT_NONCACHEABLE uint8_t decoding_buffer[CAM_BUF_LEN];
-ATTR_PLACE_AT(".framebuffer") uint8_t buffers[2][CAM_BUF_LEN];
+ATTR_PLACE_AT_WITH_ALIGNMENT(".framebuffer", HPM_L1C_CACHELINE_SIZE) uint8_t buffers[2][CAM_BUF_LEN];
 ATTR_PLACE_AT(".framebuffer") uint8_t csc_buffer[CAM_BUF_LEN];
 
 static volatile bool vsync = false;
@@ -289,6 +290,10 @@ void jpeg_sw_decode(const uint8_t *src_buf, uint32_t width, uint32_t height, uin
 
 uint32_t jpeg_sw_encode(uint8_t *src, uint32_t width, uint32_t height, uint8_t format, uint8_t *file_buf, uint32_t buffer_size)
 {
+    if (l1c_dc_is_enabled()) {
+        l1c_dc_invalidate((uint32_t)src, CAM_BUF_LEN);
+    }
+
 #ifdef JPEG_SW_LIBJPEG_TURBO
     return libjpeg_compress_image(src, width, height, format, file_buf, buffer_size);
 #endif
@@ -454,10 +459,15 @@ uint32_t jpeg_encode(uint8_t *src_buf, uint32_t width, uint32_t height, uint8_t 
     jpeg_sw_decode(file_buf, width, height, size, decoding_buffer);
 #else
     (void)buffer_size;
-    size = jpeg_hw_encode(src_buf, width, height, PIXEL_FORMAT, file_buf + sizeof(jpeg_header));
     jpeg_add_header(file_buf, width, height);
+    if (l1c_dc_is_enabled()) {
+        l1c_dc_flush((uint32_t)file_buf, HPM_L1C_CACHELINE_ALIGN_UP(buffer_size));
+    }
+
+    size = jpeg_hw_encode(src_buf, width, height, PIXEL_FORMAT, file_buf + sizeof(jpeg_header));
     jpeg_hw_decode(file_buf + sizeof(jpeg_header), width, height, size, PIXEL_FORMAT, decoding_buffer);
     size += sizeof(jpeg_header);
+
 #endif
     return size;
 }

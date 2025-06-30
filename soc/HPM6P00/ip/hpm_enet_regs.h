@@ -4548,6 +4548,7 @@ ICMP payload */
  * AUXTSHI (RO)
  *
  * Contains the lower 32 bits of the Seconds field of the auxiliary timestamp.
+ * Note: The top of the FIFO is removed only when the last byte of AUX_TS_SEC is read.
  */
 #define ENET_AUX_TS_SEC_AUXTSHI_MASK (0xFFFFFFFFUL)
 #define ENET_AUX_TS_SEC_AUXTSHI_SHIFT (0U)
@@ -5185,9 +5186,7 @@ ICMP payload */
  * RI (RW)
  *
  * Receive Interrupt
- * This bit indicates that the frame reception is complete.
- * When reception is complete, the Bit 31 of RDES1 (Disable Interrupt on Completion) is reset in the last Descriptor,
- * and the specific frame status information is updated in the descriptor.
+ * This bit indicates that the frame reception is complete and the specific frame status information is updated in the descriptor.
  * The reception remains in the Running state.
  */
 #define ENET_DMA_STATUS_RI_MASK (0x40U)

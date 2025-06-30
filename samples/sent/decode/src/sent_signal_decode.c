@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -116,8 +116,8 @@ sent_us_tick_t sent_ticks_table[] = {
     {((float)SENT_MAX_PAUSE_TICKS * SENT_CLCOK_TICK_MAX_US), ((float)SENT_MIN_PAUSE_TICKS * SENT_CLCOK_TICK_MIN_US)}
 };
 
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(4) pwm_measure_cfg_t pwm_meas_table[APP_MEASURE_COUNT];
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(4) float sent_signal_table[APP_MEASURE_COUNT];
+ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(8) pwm_measure_cfg_t pwm_meas_table[APP_MEASURE_COUNT];
+ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(8) float sent_signal_table[APP_MEASURE_COUNT];
 
 
 volatile uint32_t count;

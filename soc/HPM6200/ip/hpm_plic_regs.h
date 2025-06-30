@@ -11,20 +11,18 @@
 
 typedef struct {
     __RW uint32_t FEATURE;                     /* 0x0: Feature enable register */
-    __RW uint32_t PRIORITY[163];               /* 0x4 - 0x28C: Source priority */
-    __R  uint8_t  RESERVED0[3440];             /* 0x290 - 0xFFF: Reserved */
+    __RW uint32_t PRIORITY[93];                /* 0x4 - 0x174: Source priority */
+    __R  uint8_t  RESERVED0[3720];             /* 0x178 - 0xFFF: Reserved */
     __RW uint32_t PENDING[4];                  /* 0x1000 - 0x100C: Pending status */
-    __R  uint8_t  RESERVED1[112];              /* 0x1010 - 0x107F: Reserved */
-    __R  uint32_t TRIGGER[4];                  /* 0x1080 - 0x108C: Trigger type */
-    __R  uint8_t  RESERVED2[112];              /* 0x1090 - 0x10FF: Reserved */
+    __R  uint8_t  RESERVED1[240];              /* 0x1010 - 0x10FF: Reserved */
     __R  uint32_t NUMBER;                      /* 0x1100: Number of supported interrupt sources and targets */
     __R  uint32_t INFO;                        /* 0x1104: Version and the maximum priority */
-    __R  uint8_t  RESERVED3[3832];             /* 0x1108 - 0x1FFF: Reserved */
+    __R  uint8_t  RESERVED2[3832];             /* 0x1108 - 0x1FFF: Reserved */
     struct {
         __RW uint32_t INTEN[6];                /* 0x2000 - 0x2014: machine interrupt enable */
         __R  uint8_t  RESERVED0[104];          /* 0x2018 - 0x207F: Reserved */
     } TARGETINT[2];
-    __R  uint8_t  RESERVED4[2088704];          /* 0x2100 - 0x1FFFFF: Reserved */
+    __R  uint8_t  RESERVED3[2088704];          /* 0x2100 - 0x1FFFFF: Reserved */
     struct {
         __RW uint32_t THRESHOLD;               /* 0x200000: Target0 priority threshold */
         __RW uint32_t CLAIM;                   /* 0x200004: Target claim and complete */
@@ -83,18 +81,6 @@ typedef struct {
 #define PLIC_PENDING_INTERRUPT_SHIFT (0U)
 #define PLIC_PENDING_INTERRUPT_SET(x) (((uint32_t)(x) << PLIC_PENDING_INTERRUPT_SHIFT) & PLIC_PENDING_INTERRUPT_MASK)
 #define PLIC_PENDING_INTERRUPT_GET(x) (((uint32_t)(x) & PLIC_PENDING_INTERRUPT_MASK) >> PLIC_PENDING_INTERRUPT_SHIFT)
-
-/* Bitfield definition for register array: TRIGGER */
-/*
- * INTERRUPT (RO)
- *
- * The interrupt trigger type of interrupt sources. Every interrupt source occupies 1 bit.
- * 0: Level-triggered interrupt
- * 1: Edge-triggered interrupt
- */
-#define PLIC_TRIGGER_INTERRUPT_MASK (0xFFFFFFFFUL)
-#define PLIC_TRIGGER_INTERRUPT_SHIFT (0U)
-#define PLIC_TRIGGER_INTERRUPT_GET(x) (((uint32_t)(x) & PLIC_TRIGGER_INTERRUPT_MASK) >> PLIC_TRIGGER_INTERRUPT_SHIFT)
 
 /* Bitfield definition for register: NUMBER */
 /*
@@ -274,88 +260,12 @@ typedef struct {
 #define PLIC_PRIORITY_PRIORITY91 (90UL)
 #define PLIC_PRIORITY_PRIORITY92 (91UL)
 #define PLIC_PRIORITY_PRIORITY93 (92UL)
-#define PLIC_PRIORITY_PRIORITY94 (93UL)
-#define PLIC_PRIORITY_PRIORITY95 (94UL)
-#define PLIC_PRIORITY_PRIORITY96 (95UL)
-#define PLIC_PRIORITY_PRIORITY97 (96UL)
-#define PLIC_PRIORITY_PRIORITY98 (97UL)
-#define PLIC_PRIORITY_PRIORITY99 (98UL)
-#define PLIC_PRIORITY_PRIORITY100 (99UL)
-#define PLIC_PRIORITY_PRIORITY101 (100UL)
-#define PLIC_PRIORITY_PRIORITY102 (101UL)
-#define PLIC_PRIORITY_PRIORITY103 (102UL)
-#define PLIC_PRIORITY_PRIORITY104 (103UL)
-#define PLIC_PRIORITY_PRIORITY105 (104UL)
-#define PLIC_PRIORITY_PRIORITY106 (105UL)
-#define PLIC_PRIORITY_PRIORITY107 (106UL)
-#define PLIC_PRIORITY_PRIORITY108 (107UL)
-#define PLIC_PRIORITY_PRIORITY109 (108UL)
-#define PLIC_PRIORITY_PRIORITY110 (109UL)
-#define PLIC_PRIORITY_PRIORITY111 (110UL)
-#define PLIC_PRIORITY_PRIORITY112 (111UL)
-#define PLIC_PRIORITY_PRIORITY113 (112UL)
-#define PLIC_PRIORITY_PRIORITY114 (113UL)
-#define PLIC_PRIORITY_PRIORITY115 (114UL)
-#define PLIC_PRIORITY_PRIORITY116 (115UL)
-#define PLIC_PRIORITY_PRIORITY117 (116UL)
-#define PLIC_PRIORITY_PRIORITY118 (117UL)
-#define PLIC_PRIORITY_PRIORITY119 (118UL)
-#define PLIC_PRIORITY_PRIORITY120 (119UL)
-#define PLIC_PRIORITY_PRIORITY121 (120UL)
-#define PLIC_PRIORITY_PRIORITY122 (121UL)
-#define PLIC_PRIORITY_PRIORITY123 (122UL)
-#define PLIC_PRIORITY_PRIORITY124 (123UL)
-#define PLIC_PRIORITY_PRIORITY125 (124UL)
-#define PLIC_PRIORITY_PRIORITY126 (125UL)
-#define PLIC_PRIORITY_PRIORITY127 (126UL)
-#define PLIC_PRIORITY_PRIORITY128 (127UL)
-#define PLIC_PRIORITY_PRIORITY129 (128UL)
-#define PLIC_PRIORITY_PRIORITY130 (129UL)
-#define PLIC_PRIORITY_PRIORITY131 (130UL)
-#define PLIC_PRIORITY_PRIORITY132 (131UL)
-#define PLIC_PRIORITY_PRIORITY133 (132UL)
-#define PLIC_PRIORITY_PRIORITY134 (133UL)
-#define PLIC_PRIORITY_PRIORITY135 (134UL)
-#define PLIC_PRIORITY_PRIORITY136 (135UL)
-#define PLIC_PRIORITY_PRIORITY137 (136UL)
-#define PLIC_PRIORITY_PRIORITY138 (137UL)
-#define PLIC_PRIORITY_PRIORITY139 (138UL)
-#define PLIC_PRIORITY_PRIORITY140 (139UL)
-#define PLIC_PRIORITY_PRIORITY141 (140UL)
-#define PLIC_PRIORITY_PRIORITY142 (141UL)
-#define PLIC_PRIORITY_PRIORITY143 (142UL)
-#define PLIC_PRIORITY_PRIORITY144 (143UL)
-#define PLIC_PRIORITY_PRIORITY145 (144UL)
-#define PLIC_PRIORITY_PRIORITY146 (145UL)
-#define PLIC_PRIORITY_PRIORITY147 (146UL)
-#define PLIC_PRIORITY_PRIORITY148 (147UL)
-#define PLIC_PRIORITY_PRIORITY149 (148UL)
-#define PLIC_PRIORITY_PRIORITY150 (149UL)
-#define PLIC_PRIORITY_PRIORITY151 (150UL)
-#define PLIC_PRIORITY_PRIORITY152 (151UL)
-#define PLIC_PRIORITY_PRIORITY153 (152UL)
-#define PLIC_PRIORITY_PRIORITY154 (153UL)
-#define PLIC_PRIORITY_PRIORITY155 (154UL)
-#define PLIC_PRIORITY_PRIORITY156 (155UL)
-#define PLIC_PRIORITY_PRIORITY157 (156UL)
-#define PLIC_PRIORITY_PRIORITY158 (157UL)
-#define PLIC_PRIORITY_PRIORITY159 (158UL)
-#define PLIC_PRIORITY_PRIORITY160 (159UL)
-#define PLIC_PRIORITY_PRIORITY161 (160UL)
-#define PLIC_PRIORITY_PRIORITY162 (161UL)
-#define PLIC_PRIORITY_PRIORITY163 (162UL)
 
 /* PENDING register group index macro definition */
 #define PLIC_PENDING_PENDING0 (0UL)
 #define PLIC_PENDING_PENDING1 (1UL)
 #define PLIC_PENDING_PENDING2 (2UL)
 #define PLIC_PENDING_PENDING3 (3UL)
-
-/* TRIGGER register group index macro definition */
-#define PLIC_TRIGGER_TRIGGER0 (0UL)
-#define PLIC_TRIGGER_TRIGGER1 (1UL)
-#define PLIC_TRIGGER_TRIGGER2 (2UL)
-#define PLIC_TRIGGER_TRIGGER3 (3UL)
 
 /* INTEN register group index macro definition */
 #define PLIC_TARGETINT_INTEN_INTEN0 (0UL)

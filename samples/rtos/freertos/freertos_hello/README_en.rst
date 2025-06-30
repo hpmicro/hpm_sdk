@@ -13,6 +13,15 @@ Board Setting
 
 No special settings are required
 
+Project Configuration
+---------------------
+
+set(CONFIG_FREERTOS_TIMER_RESOURCE_GPTMR 1) select GPTMR as FreeRTOS's tick source。
+set(CONFIG_FREERTOS_TIMER_RESOURCE_PWM 1) select PWM as FreeRTOS's tick source。
+
+sdk_compile_definitions(-DDISABLE_IRQ_PREEMPTIVE=1) disable interrupt preemption
+sdk_compile_definitions(-DDISABLE_IRQ_PREEMPTIVE=0) enable interrupt preemption
+
 Running the example
 -------------------
 

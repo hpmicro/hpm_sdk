@@ -25,7 +25,7 @@ ATTR_RAMFUNC __attribute__( ( weak ) ) void vPreSleepProcessing(unsigned long ux
     (void)(uxExpectedIdleTime);
 #if defined(CONFIG_FREERTOS_TICKLESS_USE_STOP_MODE) && CONFIG_FREERTOS_TICKLESS_USE_STOP_MODE
 #if( configMTIME_BASE_ADDRESS != 0 ) && ( configMTIMECMP_BASE_ADDRESS != 0 )
-#error "Machine Timer not supported cpu stop mode yet! Please set CONFIG_FREERTOS_TIMER_RESOURCE_NOT_MTIMER in CMakeLists to select gptmr to generate system tick."
+#error "Machine Timer not supported cpu stop mode yet! Please set CONFIG_FREERTOS_TIMER_RESOURCE_GPTMR in CMakeLists to select gptmr to generate system tick."
 #else
     uint32_t retention = 0x1FUL;
     sysctl_set_cpu0_lp_retention(HPM_SYSCTL, retention);

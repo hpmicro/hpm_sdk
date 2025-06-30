@@ -65,7 +65,7 @@ SPI component
 
 
 
-  - SPI CPHA枚举类型，这个枚举用于指定SPI通信中的位顺序。 ``spi_msb_first`` 表示最高有效位优先，而 ``spi_lsb_first`` 表示最低有效位优先。。该枚举在 ``hpm_spi_drv.h`` 中定义。
+  - SPI BIT order枚举类型，这个枚举用于指定SPI通信中的位顺序。 ``spi_msb_first`` 表示最高有效位优先，而 ``spi_lsb_first`` 表示最低有效位优先。。该枚举在 ``hpm_spi_drv.h`` 中定义。
 
     .. code-block:: c
 
@@ -712,4 +712,31 @@ DMA配置
         .. code-block:: c
 
                dma_resource_t *hpm_spi_get_rx_dma_resource(SPI_Type *ptr)
+
+    - **举例** : 如何使用 hpm_spi_get_tx_dma_resource 和 hpm_spi_get_rx_dma_resource 函数获取DMA通道资源以及获取到DMA通道资源后如何使用DMA通道资源
+       .. code-block:: c
+
+            /* 初始化SPI... 不做列举 */
+            /* 获取发送DMA通道资源 */
+            dma_resource_t *tx_dma_resource = hpm_spi_get_tx_dma_resource(HPM_SPI1);
+            if (tx_dma_resource != NULL) {
+                /* 成功获取发送DMA通道资源 */
+                printf("TX DMA channel resource obtained successfully.\n");
+                /* 打印获取到的发送DMA通道资源占用的DMA实例以及DMA通道 */
+                printf("TX DMA instance: %d, TX DMA channel: %d\n", tx_dma_resource->dma_instance, tx_dma_resource->dma_channel);
+                /* 改变TX DMA资源的中断优先级为1*/
+                dma_mgr_enable_dma_irq_with_priority(tx_dma_resource, 1);
+            }
+            /* 获取接收DMA通道资源 */
+            dma_resource_t *rx_dma_resource = hpm_spi_get_rx_dma_resource(HPM_SPI1);
+            if (rx_dma_resource != NULL) {
+                /* 成功获取接收DMA通道资源 */
+                printf("RX DMA channel resource obtained successfully.\n");
+                /* 获取接收DMA通道资源占用的DMA实例以及DMA通道 */
+                printf("RX DMA instance: %d, TX DMA channel: %d\n", rx_dma_resource->dma_instance, rx_dma_resource->dma_channel);
+                /* 改变RX DMA资源的中断优先级为1*/
+                dma_mgr_enable_dma_irq_with_priority(rx_dma_resource, 1);
+            }
+
+
 

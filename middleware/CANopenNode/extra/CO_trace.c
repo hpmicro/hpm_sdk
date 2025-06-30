@@ -5,21 +5,16 @@
  * @author      Janez Paternoster
  * @copyright   2016 - 2020 Janez Paternoster
  *
- * This file is part of CANopenNode, an opensource CANopen Stack.
- * Project home page is <https://github.com/CANopenNode/CANopenNode>.
- * For more information on CANopen see <http://www.can-cia.org/>.
+ * This file is part of <https://github.com/CANopenNode/CANopenNode>, a CANopen Stack.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is
+ * distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and limitations under the License.
  */
 
 #include "extra/CO_trace.h"
@@ -49,7 +44,7 @@ static uint32_t printPointCsvUnsigned(char *s, uint32_t size, uint32_t timeStamp
     return snprintf(s, size, "%" PRIu32 ";%" PRIu32 "\n", timeStamp, (uint32_t)   value);
 }
 static uint32_t printPointBinary(char *s, uint32_t size, uint32_t timeStamp, int32_t value) {
-    if (size < 8) return 0;
+    if(size < 8) return 0;
     uint32_t timeStampSw = CO_SWAP_32(timeStamp);
     int32_t valueSw = CO_SWAP_32(value);
     memcpy(s, &timeStampSw, sizeof(timeStampSw));
@@ -108,26 +103,26 @@ static void findVariable(CO_trace_t *trace) {
     index = (uint16_t) ((*trace->map) >> 16);
     subIndex = (uint8_t) ((*trace->map) >> 8);
     dataLen = (uint8_t) (*trace->map);
-    if ((dataLen & 0x07) != 0) { /* data length must be byte aligned */
+    if((dataLen & 0x07) != 0) { /* data length must be byte aligned */
         err = true;
     }
     dataLen >>= 3;   /* in bytes now */
-    if (dataLen == 0) {
+    if(dataLen == 0) {
         dataLen = 4;
     }
 
     /* find mapped variable, if map available */
-    if (!err && (index != 0 || subIndex != 0)) {
+    if(!err && (index != 0 || subIndex != 0)) {
         uint16_t entryNo = CO_OD_find(trace->SDO, index);
 
-        if (index >= 0x1000 && entryNo != 0xFFFF && subIndex <= trace->SDO->OD[entryNo].maxSubIndex) {
+        if(index >= 0x1000 && entryNo != 0xFFFF && subIndex <= trace->SDO->OD[entryNo].maxSubIndex) {
             OdDataPtr = CO_OD_getDataPointer(trace->SDO, entryNo, subIndex);
         }
 
-        if (OdDataPtr != NULL) {
+        if(OdDataPtr != NULL) {
             uint16_t len = CO_OD_getLength(trace->SDO, entryNo, subIndex);
 
-            if (len < dataLen) {
+            if(len < dataLen) {
                 dataLen = len;
             }
         }
@@ -137,7 +132,7 @@ static void findVariable(CO_trace_t *trace) {
     }
 
     /* Get function pointers for correct data type */
-    if (!err) {
+    if(!err) {
         /* first sequence: data length */
         switch(dataLen) {
             case 1: dtIndex = 0; break;
@@ -146,20 +141,20 @@ static void findVariable(CO_trace_t *trace) {
             default: err = true; break;
         }
         /* second sequence: signed or unsigned */
-        if (((*trace->format) & 1) == 1) {
+        if(((*trace->format) & 1) == 1) {
             dtIndex += 3;
         }
         /* third sequence: Output type */
         dtIndex += ((*trace->format) >> 1) * 6;
 
-        if (dtIndex > (sizeof(dataTypes) / sizeof(CO_trace_dataType_t))) {
+        if(dtIndex > (sizeof(dataTypes) / sizeof(CO_trace_dataType_t))) {
             err = true;
         }
     }
 
     /* set output variables */
-    if (!err) {
-        if (OdDataPtr != NULL) {
+    if(!err) {
+        if(OdDataPtr != NULL) {
             trace->OD_variable = OdDataPtr;
         }
         else {
@@ -184,33 +179,33 @@ static CO_SDO_abortCode_t CO_ODF_traceConfig(CO_ODF_arg_t *ODF_arg) {
 
     switch(ODF_arg->subIndex) {
     case 1:     /* size */
-        if (ODF_arg->reading) {
+        if(ODF_arg->reading) {
             CO_setUint32(ODF_arg->data, trace->bufferSize);
         }
         break;
 
     case 2:     /* axisNo (trace enabled if nonzero) */
-        if (ODF_arg->reading) {
+        if(ODF_arg->reading) {
             uint8_t *value = (uint8_t*) ODF_arg->data;
-            if (!trace->enabled) {
+            if(!trace->enabled) {
                 *value = 0;
             }
         }
         else {
             uint8_t *value = (uint8_t*) ODF_arg->data;
 
-            if (*value == 0) {
+            if(*value == 0) {
                 trace->enabled = false;
             }
-            else if (!trace->enabled) {
-                if (trace->bufferSize == 0) {
+            else if(!trace->enabled) {
+                if(trace->bufferSize == 0) {
                     ret = CO_SDO_AB_OUT_OF_MEM;
                 }
                 else {
                     /* set trace->OD_variable and trace->dt, based on 'map' and 'format' */
                     findVariable(trace);
 
-                    if (trace->OD_variable != NULL) {
+                    if(trace->OD_variable != NULL) {
                         *trace->value = 0;
                         *trace->minValue = 0;
                         *trace->maxValue = 0;
@@ -230,11 +225,14 @@ static CO_SDO_abortCode_t CO_ODF_traceConfig(CO_ODF_arg_t *ODF_arg) {
 
     case 5:     /* map */
     case 6:     /* format */
-        if (!ODF_arg->reading) {
-            if (trace->enabled) {
+        if(!ODF_arg->reading) {
+            if(trace->enabled) {
                 ret = CO_SDO_AB_INVALID_VALUE;
             }
         }
+        break;
+    default:
+        /* MISRA C 2004 15.3 */
         break;
     }
 
@@ -252,12 +250,12 @@ static CO_SDO_abortCode_t CO_ODF_trace(CO_ODF_arg_t *ODF_arg) {
 
     switch(ODF_arg->subIndex) {
     case 1:     /* size */
-        if (ODF_arg->reading) {
+        if(ODF_arg->reading) {
             uint32_t size = trace->bufferSize;
             uint32_t wp = trace->writePtr;
             uint32_t rp = trace->readPtr;
 
-            if (wp >= rp) {
+            if(wp >= rp) {
                 CO_setUint32(ODF_arg->data,  wp - rp);
             }
             else {
@@ -265,7 +263,7 @@ static CO_SDO_abortCode_t CO_ODF_trace(CO_ODF_arg_t *ODF_arg) {
             }
         }
         else {
-            if (CO_getUint32(ODF_arg->data) == 0) {
+            if(CO_getUint32(ODF_arg->data) == 0) {
                 /* clear buffer, handle race conditions */
                 while(trace->readPtr != 0 || trace->writePtr != 0) {
                     trace->readPtr = 0;
@@ -280,7 +278,7 @@ static CO_SDO_abortCode_t CO_ODF_trace(CO_ODF_arg_t *ODF_arg) {
         break;
 
     case 5:     /* plot */
-        if (ODF_arg->reading) {
+        if(ODF_arg->reading) {
             /* This plot will be transmitted as domain data type. String data
              * will be printed directly to SDO buffer. If there is more data
              * to print, than is the size of SDO buffer, then this function
@@ -290,10 +288,10 @@ static CO_SDO_abortCode_t CO_ODF_trace(CO_ODF_arg_t *ODF_arg) {
              * is full, there is a danger for race condition. First records
              * from trace buffer may be overwritten somewhere between. If this
              * is detected, then do{}while() loop tries printing again. */
-            if (trace->bufferSize == 0 || ODF_arg->dataLength < 100) {
+            if(trace->bufferSize == 0 || ODF_arg->dataLength < 100) {
                 ret = CO_SDO_AB_OUT_OF_MEM;
             }
-            else if (trace->readPtr == trace->writePtr) {
+            else if(trace->readPtr == trace->writePtr) {
                 ret = CO_SDO_AB_NO_DATA;
             }
             else {
@@ -310,19 +308,19 @@ static CO_SDO_abortCode_t CO_ODF_trace(CO_ODF_arg_t *ODF_arg) {
                     rp = trace->readPtr;
 
                     /* start plot, increment variables, verify overflow */
-                    if (ODF_arg->firstSegment) {
+                    if(ODF_arg->firstSegment) {
                         t = trace->timeBuffer[rp];
                         v = trace->valueBuffer[rp];
                         rp ++;
-                        if (++trace->readPtr == trace->bufferSize) {
+                        if(++trace->readPtr == trace->bufferSize) {
                             trace->readPtr = 0;
-                            if (rp != trace->bufferSize) {
+                            if(rp != trace->bufferSize) {
                                 readPtrOverflowed = true;
                                 continue;
                             }
                             rp = 0;
                         }
-                        if (rp != trace->readPtr) {
+                        if(rp != trace->readPtr) {
                             readPtrOverflowed = true;
                             continue;
                         }
@@ -332,28 +330,28 @@ static CO_SDO_abortCode_t CO_ODF_trace(CO_ODF_arg_t *ODF_arg) {
                     }
 
                     /* print other points */
-                    if (rp != trace->writePtr) {
+                    if(rp != trace->writePtr) {
                     for(;;) {
                         t = trace->timeBuffer[rp];
                         v = trace->valueBuffer[rp];
                         rp ++;
-                        if (++trace->readPtr == trace->bufferSize) {
+                        if(++trace->readPtr == trace->bufferSize) {
                             trace->readPtr = 0;
-                            if (rp != trace->bufferSize && ODF_arg->firstSegment) {
+                            if(rp != trace->bufferSize && ODF_arg->firstSegment) {
                                 readPtrOverflowed = true;
                                 break;
                             }
                             rp = 0;
                         }
-                        if (rp != trace->readPtr && ODF_arg->firstSegment) {
+                        if(rp != trace->readPtr && ODF_arg->firstSegment) {
                             readPtrOverflowed = true;
                             break;
                         }
 
                         /* If internal buffer is empty, end transfer */
-                        if (rp == trace->writePtr) {
+                        if(rp == trace->writePtr) {
                             /* If there is last time stamp, point will be printed at the end */
-                            if (t != trace->lastTimeStamp) {
+                            if(t != trace->lastTimeStamp) {
                                 len = trace->dt->printPoint(s, freeLen, t, v);
                                 s += len;
                                 freeLen -= len;
@@ -366,7 +364,7 @@ static CO_SDO_abortCode_t CO_ODF_trace(CO_ODF_arg_t *ODF_arg) {
                         freeLen -= len;
 
                         /* if output buffer is full, next data will be sent later */
-                        if (freeLen < 50) {
+                        if(freeLen < 50) {
                             ODF_arg->lastSegment = false;
                             break;
                         }
@@ -374,7 +372,7 @@ static CO_SDO_abortCode_t CO_ODF_trace(CO_ODF_arg_t *ODF_arg) {
                     }
 
                     /* print last point */
-                    if (!readPtrOverflowed && ODF_arg->lastSegment) {
+                    if(!readPtrOverflowed && ODF_arg->lastSegment) {
                         v = trace->valuePrev;
                         t = trace->lastTimeStamp;
                         len = trace->dt->printPointEnd(s, freeLen, t, v);
@@ -387,13 +385,15 @@ static CO_SDO_abortCode_t CO_ODF_trace(CO_ODF_arg_t *ODF_arg) {
             }
         }
         break;
+    default:
+        /* MISRA C 2004 15.3 */
+        break;
     }
 
     return ret;
 }
 
 
-/******************************************************************************/
 void CO_trace_init(
         CO_trace_t             *trace,
         CO_SDO_t               *SDO,
@@ -437,11 +437,11 @@ void CO_trace_init(
     /* set trace->OD_variable and trace->dt, based on 'map' and 'format' */
     findVariable(trace);
 
-    if (timeBuffer == NULL || valueBuffer == NULL) {
+    if(timeBuffer == NULL || valueBuffer == NULL) {
         trace->bufferSize = 0;
     }
 
-    if ( trace->bufferSize == 0 || trace->OD_variable == NULL) {
+    if( trace->bufferSize == 0 || trace->OD_variable == NULL) {
         trace->enabled = false;
     }
 
@@ -450,52 +450,51 @@ void CO_trace_init(
 }
 
 
-/******************************************************************************/
 void CO_trace_process(CO_trace_t *trace, uint32_t timestamp) {
-    if (trace->enabled) {
+    if(trace->enabled) {
 
         int32_t val = trace->dt->pGetValue(trace->OD_variable);
 
-        if (val != trace->valuePrev) {
+        if(val != trace->valuePrev) {
             /* Verify, if value passed threshold */
-            if ((*trace->trigger & 1) != 0 && trace->valuePrev < *trace->threshold && val >= *trace->threshold) {
+            if((*trace->trigger & 1) != 0 && trace->valuePrev < *trace->threshold && val >= *trace->threshold) {
                 *trace->triggerTime = timestamp;
             }
-            if ((*trace->trigger & 2) != 0 && trace->valuePrev < *trace->threshold && val >= *trace->threshold) {
+            if((*trace->trigger & 2) != 0 && trace->valuePrev < *trace->threshold && val >= *trace->threshold) {
                 *trace->triggerTime = timestamp;
             }
 
             /* Write value and verify min/max */
-            if (trace->value != trace->OD_variable) {
+            if(trace->value != trace->OD_variable) {
                 *trace->value = val;
             }
             trace->valuePrev = val;
-            if (*trace->minValue > val) {
+            if(*trace->minValue > val) {
                 *trace->minValue = val;
             }
-            if (*trace->maxValue < val) {
+            if(*trace->maxValue < val) {
                 *trace->maxValue = val;
             }
 
             /* write buffers and update pointers */
             trace->timeBuffer[trace->writePtr] = timestamp;
             trace->valueBuffer[trace->writePtr] = val;
-            if (++trace->writePtr == trace->bufferSize) {
+            if(++trace->writePtr == trace->bufferSize) {
                 trace->writePtr = 0;
             }
-            if (trace->writePtr == trace->readPtr) {
-                if (++trace->readPtr == trace->bufferSize) {
+            if(trace->writePtr == trace->readPtr) {
+                if(++trace->readPtr == trace->bufferSize) {
                     trace->readPtr = 0;
                 }
             }
         }
         else {
             /* if buffer is empty, make first record */
-            if (trace->writePtr == trace->readPtr) {
+            if(trace->writePtr == trace->readPtr) {
                 /* write buffers and update pointers */
                 trace->timeBuffer[trace->writePtr] = timestamp;
                 trace->valueBuffer[trace->writePtr] = val;
-                if (++trace->writePtr == trace->bufferSize) {
+                if(++trace->writePtr == trace->bufferSize) {
                     trace->writePtr = 0;
                 }
             }

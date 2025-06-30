@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 HPMicro
+ * Copyright (c) 2022-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -107,19 +107,21 @@ typedef enum {
  */
 
 /**
- * @brief Check if external crystal is stable
- * @param [in] ptr PLLCTLV2 base address
- * @return true if external crystal is stable
+ * @brief Checks the stability status of the external crystal oscillator
+ * @param [in] ptr Base address of the PLLCTLV2 peripheral
+ * @return true if the external crystal oscillator is stable and ready for use
  */
 static inline bool pllctlv2_xtal_is_stable(PLLCTLV2_Type *ptr)
 {
-    return IS_HPM_BITMASK_SET(ptr->XTAL, PLLCTLV2_XTAL_RESPONSE_MASK);
+    uint32_t status = ptr->XTAL;
+    return (IS_HPM_BITMASK_CLR(status, PLLCTLV2_XTAL_ENABLE_MASK)
+         || (IS_HPM_BITMASK_CLR(status, PLLCTLV2_XTAL_BUSY_MASK) && IS_HPM_BITMASK_SET(status, PLLCTLV2_XTAL_RESPONSE_MASK)));
 }
 
 /**
- * @brief Check if external crystal is enabled
- * @param [in] ptr PLLCTLV2 base address
- * @return true if external crystal is enabled
+ * @brief Checks if the external crystal oscillator is enabled
+ * @param [in] ptr Base address of the PLLCTLV2 peripheral
+ * @return true if the external crystal oscillator is enabled, false otherwise
  */
 static inline bool pllctlv2_xtal_is_enabled(PLLCTLV2_Type *ptr)
 {
@@ -127,9 +129,10 @@ static inline bool pllctlv2_xtal_is_enabled(PLLCTLV2_Type *ptr)
 }
 
 /**
- * @brief Set external crystal ramp-up time
- * @param [in] ptr PLLCTLV2 base address
- * @param [in] rc24m_cycles Cycles of RC24M clock
+ * @brief Configures the ramp-up time for the external crystal oscillator
+ * @param [in] ptr Base address of the PLLCTLV2 peripheral
+ * @param [in] rc24m_cycles Number of RC24M clock cycles for the ramp-up period
+ * @note The ramp-up time affects how quickly the crystal oscillator reaches stable operation
  */
 static inline void pllctlv2_xtal_set_rampup_time(PLLCTLV2_Type *ptr, uint32_t rc24m_cycles)
 {
@@ -137,21 +140,23 @@ static inline void pllctlv2_xtal_set_rampup_time(PLLCTLV2_Type *ptr, uint32_t rc
 }
 
 /**
- * @brief Check is PLL is stable
- * @param [in] ptr PLLCTLv2 base address
- * @param [in] pll PLL index
- * @return true if PLL is stable
+ * @brief Checks if the specified PLL has achieved stable operation
+ * @param [in] ptr Base address of the PLLCTLV2 peripheral
+ * @param [in] pll Index of the PLL to check (pllctlv2_pll0 through pllctlv2_pll6)
+ * @return true if the PLL is stable and locked, false otherwise
  */
 static inline bool pllctlv2_pll_is_stable(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll)
 {
-    return IS_HPM_BITMASK_SET(ptr->PLL[pll].MFI, PLLCTLV2_PLL_MFI_RESPONSE_MASK);
+    uint32_t status = ptr->PLL[pll].MFI;
+    return (IS_HPM_BITMASK_CLR(status, PLLCTLV2_PLL_MFI_ENABLE_MASK)
+         || (IS_HPM_BITMASK_CLR(status, PLLCTLV2_PLL_MFI_BUSY_MASK) && IS_HPM_BITMASK_SET(status, PLLCTLV2_PLL_MFI_RESPONSE_MASK)));
 }
 
 /**
- * @brief Check if PLL is enabled
- * @param [in] ptr PLLCTLV2 base address
- * @param [in] pll PLL index
- * @return true if PLL is enabled
+ * @brief Checks if the specified PLL is enabled
+ * @param [in] ptr Base address of the PLLCTLV2 peripheral
+ * @param [in] pll Index of the PLL to check (pllctlv2_pll0 through pllctlv2_pll6)
+ * @return true if the PLL is enabled, false otherwise
  */
 static inline bool pllctlv2_pll_is_enabled(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll)
 {
@@ -159,12 +164,26 @@ static inline bool pllctlv2_pll_is_enabled(PLLCTLV2_Type *ptr, pllctlv2_pll_t pl
 }
 
 /**
- * @brief Select the PLL reference clock
- * @param [in] ptr PLLCTLV2 base address
- * @param [in] pll PLL index
- * @param [in] src PLL reference lcock source
- * @arg 0 - XTAL24M
- * @arg 1 - IRC24M
+ * @brief Checks if the specified PLL CLK has achieved stable operation
+ * @param [in] ptr Base address of the PLLCTLV2 peripheral
+ * @param [in] pll Index of the PLL to check (pllctlv2_pll0 through pllctlv2_pll6)
+ * @param [in] clk Post-divider output index (pllctlv2_clk0 through pllctlv2_clk3)
+ * @return true if the PLL CLK is stable and locked, false otherwise
+ */
+static inline bool pllctlv2_pll_clk_is_stable(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll, pllctlv2_clk_t clk)
+{
+    uint32_t status = ptr->PLL[pll].DIV[clk];
+    return (IS_HPM_BITMASK_CLR(status, PLLCTLV2_PLL_DIV_ENABLE_MASK)
+         || (IS_HPM_BITMASK_CLR(status, PLLCTLV2_PLL_DIV_BUSY_MASK) && IS_HPM_BITMASK_SET(status, PLLCTLV2_PLL_DIV_RESPONSE_MASK)));
+}
+
+/**
+ * @brief Selects the reference clock source for the specified PLL
+ * @param [in] ptr Base address of the PLLCTLV2 peripheral
+ * @param [in] pll Index of the PLL to configure (pllctlv2_pll0 through pllctlv2_pll6)
+ * @param [in] src Reference clock source selection:
+ *                 - 0: External 24MHz crystal (XTAL24M)
+ *                 - 1: Internal 24MHz RC oscillator (IRC24M)
  */
 static inline void pllctlv2_select_reference_clock(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll, uint8_t src)
 {
@@ -172,18 +191,19 @@ static inline void pllctlv2_select_reference_clock(PLLCTLV2_Type *ptr, pllctlv2_
 }
 
 /**
- * @brief Enable PLL Spread Spectrum feature
- * @param [in] ptr PLLCTLV2 base address
- * @param [in] pll PLL index
- * @param [in] step Step of spread spectrum modulator
- * @param [in] stop Stop point of spread spectrum modulator
+ * @brief Enables and configures the spread spectrum modulation for the specified PLL
+ * @param [in] ptr Base address of the PLLCTLV2 peripheral
+ * @param [in] pll Index of the PLL to configure (pllctlv2_pll0 through pllctlv2_pll6)
+ * @param [in] step Modulation step size for spread spectrum
+ * @param [in] stop Maximum modulation point for spread spectrum
+ * @note Spread spectrum modulation helps reduce electromagnetic interference (EMI)
  */
 void pllctlv2_enable_spread_spectrum(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll, uint32_t step, uint32_t stop);
 
 /**
- * @brief Disable PLL Spread spectrum
- * @param [in] ptr PLLCTLV2 base address
- * @param [in] pll PLL index
+ * @brief Disables the spread spectrum modulation for the specified PLL
+ * @param [in] ptr Base address of the PLLCTLV2 peripheral
+ * @param [in] pll Index of the PLL to configure (pllctlv2_pll0 through pllctlv2_pll6)
  */
 static inline void pllctlv2_disable_spread_spectrum(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll)
 {
@@ -191,10 +211,11 @@ static inline void pllctlv2_disable_spread_spectrum(PLLCTLV2_Type *ptr, pllctlv2
 }
 
 /**
- * @brief Set PLL lock time
- * @param [in] ptr PLLCTLV2 base address
- * @param [in] pll PLL index
- * @param [in] xtal_cycles external Crystal cycles
+ * @brief Sets the lock time for the specified PLL
+ * @param [in] ptr Base address of the PLLCTLV2 peripheral
+ * @param [in] pll Index of the PLL to configure (pllctlv2_pll0 through pllctlv2_pll6)
+ * @param [in] xtal_cycles Number of external crystal clock cycles to wait for PLL lock
+ * @note The lock time determines how long the PLL waits to achieve stable operation
  */
 static inline void pllctlv2_set_pll_lock_time(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll, uint32_t xtal_cycles)
 {
@@ -202,10 +223,11 @@ static inline void pllctlv2_set_pll_lock_time(PLLCTLV2_Type *ptr, pllctlv2_pll_t
 }
 
 /**
- * @brief Set PLL step time
- * @param [in] ptr PLLCTLV2 base address
- * @param [in] pll PLL index
- * @param [in] xtal_cycles external Crystal cycles
+ * @brief Sets the step time for frequency changes in the specified PLL
+ * @param [in] ptr Base address of the PLLCTLV2 peripheral
+ * @param [in] pll Index of the PLL to configure (pllctlv2_pll0 through pllctlv2_pll6)
+ * @param [in] xtal_cycles Number of external crystal clock cycles between frequency steps
+ * @note Step time affects how quickly the PLL can change its output frequency
  */
 static inline void pllctlv2_set_pll_step_time(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll, uint32_t xtal_cycles)
 {
@@ -213,54 +235,65 @@ static inline void pllctlv2_set_pll_step_time(PLLCTLV2_Type *ptr, pllctlv2_pll_t
 }
 
 /**
- * @brief Set PLL Post divider
- * @param [in] ptr PLLCTLV2 base
- * @param [in] pll PLL index
- * @param [in] clk Divider index
- * @param [in] div_value divider value, divider factor is 1 + div_value / 5
+ * @brief Configures the post-divider for a specific PLL output clock
+ * @param [in] ptr Base address of the PLLCTLV2 peripheral
+ * @param [in] pll Index of the PLL to configure (pllctlv2_pll0 through pllctlv2_pll6)
+ * @param [in] clk Post-divider output index (pllctlv2_clk0 through pllctlv2_clk3)
+ * @param [in] div_value Divider value selection (pllctlv2_div_1p0 through pllctlv2_div_13p6)
+ * @note The actual divider ratio is calculated as 1 + div_value/5
  */
-void pllctlv2_set_postdiv(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll,  pllctlv2_clk_t clk, pllctlv2_div_t div_value);
+void pllctlv2_set_postdiv(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll, pllctlv2_clk_t clk, pllctlv2_div_t div_value);
 
 /**
- * @brief Set the PLL via the low-level MFI, MFD and MFN
- *        PLL frequency = REF CLOCK * (mfi + 1.0 * mfn / mfd)
- * @param [in] ptr  PLLCTLV2 base
- * @param [in] pll  PLL index
- * @param [in] mfi  MFI value
- * @param [in] mfn  MFN value
- * @retval status_invalid_argument some parameters are invalid
- * @retval status_success operation is successful
+ * @brief Configures the PLL frequency using direct MFI and MFN values
+ * @param [in] ptr Base address of the PLLCTLV2 peripheral
+ * @param [in] pll Index of the PLL to configure (pllctlv2_pll0 through pllctlv2_pll6)
+ * @param [in] mfi Integer multiplication factor
+ * @param [in] mfn Fractional multiplication factor numerator
+ * @return status_success if configuration is valid and applied successfully
+ * @return status_invalid_argument if any parameter is out of valid range
+ * @note PLL frequency = REF_CLOCK * (mfi + 1.0 * mfn / mfd)
  */
-hpm_stat_t pllctlv2_set_pll_with_mfi_mfn(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll,  uint32_t mfi, uint32_t mfn);
+hpm_stat_t pllctlv2_set_pll_with_mfi_mfn(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll, uint32_t mfi, uint32_t mfn);
 
 /**
- * @brief Initialize PLL to specified frequency
- *        Note: the specified PLL clock needs to be enabled before being configured
- * @param [in] ptr PLLCTLV2 base
- * @param [in] pll PLL index
- * @param [in] freq_in_hz expected PLL frequency
- * @retval status_invalid_argument some parameters are invalid
- * @retval status_success operation is successful
+ * @brief Initializes the PLL to generate a specific output frequency
+ * @param [in] ptr Base address of the PLLCTLV2 peripheral
+ * @param [in] pll Index of the PLL to configure (pllctlv2_pll0 through pllctlv2_pll6)
+ * @param [in] freq_in_hz Desired PLL output frequency in Hertz
+ * @return status_success if PLL is configured successfully
+ * @return status_invalid_argument if requested frequency is not achievable
+ * @note The PLL must be enabled before calling this function
  */
 hpm_stat_t pllctlv2_init_pll_with_freq(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll, uint32_t freq_in_hz);
 
 /**
- * @brief Get the specified PLl clock frequency
- * @param [in] ptr PLLCTLV2 base
- * @param [in] pll PLL index
- * @return PLL frequency in Hz
+ * @brief Retrieves the current output frequency of the specified PLL
+ * @param [in] ptr Base address of the PLLCTLV2 peripheral
+ * @param [in] pll Index of the PLL to query (pllctlv2_pll0 through pllctlv2_pll6)
+ * @return Current PLL output frequency in Hertz
  */
 uint32_t pllctlv2_get_pll_freq_in_hz(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll);
 
 /**
- * @brief Get the selected PLL post divider frequency
- * @param [in] ptr PLLCTLV2 base
- * @param [in] pll PLL index
- * @param [in] clk Post divider index
- * @return PLL frequency in Hz
+ * @brief Retrieves the frequency of a specific PLL post-divider output
+ * @param [in] ptr Base address of the PLLCTLV2 peripheral
+ * @param [in] pll Index of the PLL to query (pllctlv2_pll0 through pllctlv2_pll6)
+ * @param [in] clk Post-divider output index (pllctlv2_clk0 through pllctlv2_clk3)
+ * @return Frequency of the selected post-divider output in Hertz
  */
 uint32_t pllctlv2_get_pll_postdiv_freq_in_hz(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll, pllctlv2_clk_t clk);
 
+/**
+ * @brief Configures spread spectrum modulation parameters for a PLL
+ * @param [in] ptr Base address of the PLLCTLV2 peripheral
+ * @param [in] pll Index of the PLL to configure (pllctlv2_pll0 through pllctlv2_pll6)
+ * @param [in] spread_range Spread spectrum range as a percentage (0.x%)
+ * @param [in] modulation_freq Desired modulation frequency in Hertz
+ * @note This function automatically calculates appropriate step and stop values
+ *       based on the provided spread range and modulation frequency
+ */
+void pllctlv2_setup_spread_spectrum(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll, uint8_t spread_range, uint32_t modulation_freq);
 
 /**
  * @}

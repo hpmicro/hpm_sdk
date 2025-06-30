@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -40,8 +40,16 @@
 
 #if defined(HPMSOC_HAS_HPMSDK_VSC) && defined(HPMSOC_HAS_HPMSDK_CLC) && defined(HPMSOC_HAS_HPMSDK_QEOV2)
 #define HW_CURRENT_FOC_ENABLE   1
+/**
+ * @brief Enable hardware hybrid loop functionality
+ * This macro controls the hardware hybrid loop features including CLC, VSC, and QEO hardware acceleration
+ * #define MCL_HARDWARE_HYBRID_LOOP_ENABLE   1
+ */
 #endif
-
+#if defined(MCL_HARDWARE_HYBRID_LOOP_ENABLE)
+#include "hpm_clc_drv.h"
+#include "hpm_synt_drv.h"
+#endif
 #if defined(HW_CURRENT_FOC_ENABLE)
 #include "hpm_vsc_drv.h"
 #include "hpm_clc_drv.h"
@@ -77,6 +85,13 @@
 #define BOARD_BLDC_SW_FOC_POSITION_KI (0.113f)
 #endif
 
+#if defined(HPMSOC_HAS_HPMSDK_QEI)
+#define BLDC_MOTOR_QEI_BASE              BOARD_BLDC_QEI_BASE
+#endif
+#if defined(HPMSOC_HAS_HPMSDK_QEIV2)
+#define BLDC_MOTOR_QEI_BASE            BOARD_BLDC_QEIV2_BASE
+#endif
+
 volatile ATTR_PLACE_AT_FAST_RAM_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t adc_buff[3][BOARD_BLDC_ADC_PMT_DMA_SIZE_IN_4BYTES];
 volatile ATTR_PLACE_AT_FAST_RAM_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t pwm_buff[6];
 int32_t motor_clock_hz;
@@ -107,6 +122,9 @@ typedef struct {
     mcl_control_t control;
     mcl_loop_t loop;
     mcl_detect_t detect;
+#if defined(MCL_HARDWARE_HYBRID_LOOP_ENABLE)
+    mcl_hw_loop_t hw_loop;
+#endif
     struct {
         mcl_cfg_t mcl;
         mcl_encoer_cfg_t encoder;
@@ -118,6 +136,9 @@ typedef struct {
         mcl_loop_cfg_t loop;
         mcl_detect_cfg_t detect;
         mcl_hardware_clc_cfg_t clc;
+#if defined(MCL_HARDWARE_HYBRID_LOOP_ENABLE)
+        mcl_hw_loop_cfg_t hw_loop;
+#endif
     } cfg;
 } motor0_t;
 
@@ -153,6 +174,61 @@ hpm_mcl_stat_t encoder_start_sample(void)
 {
     return mcl_success;
 }
+
+#if defined(MCL_HARDWARE_HYBRID_LOOP_ENABLE)
+/**
+ * @brief Convert floating point d/q values to hardware format for CLC module
+ *
+ * Conversion Logic:
+ * - Input range: ±15.0 (floating point)
+ * - Output range: 0x80000000 to 0x7FFFFFFF (signed 32-bit integer as uint32_t)
+ * - Zero point: 0x00000000 corresponds to 0.0
+ * - Maximum: 0x7FFFFFFF corresponds to +15.0
+ * - Minimum: 0x80000000 corresponds to -15.0
+ *
+ * Note: These values have been processed through multiple conversion stages
+ * (ADC -> Clarke/Park transforms -> PI controllers) and no longer represent
+ * direct physical quantities. Users should adjust the scaling factor (15.0)
+ * based on their specific system requirements and control loop characteristics.
+ *
+ * @param d D-axis current reference (floating point)
+ * @param q Q-axis current reference (floating point)
+ * @param d_hardware Pointer to store D-axis hardware format value
+ * @param q_hardware Pointer to store Q-axis hardware format value
+ */
+void clc_convert_input(float d, float q, uint32_t *d_hardware, uint32_t *q_hardware)
+{
+    *d_hardware = (uint32_t)(int32_t)((d / 15.0f) * 2147483647.0f);
+    *q_hardware = (uint32_t)(int32_t)((q / 15.0f) * 2147483647.0f);
+}
+
+/**
+ * @brief Convert hardware format values back to floating point d/q values
+ *
+ * Conversion Logic:
+ * - Input range: 0x80000000 to 0x7FFFFFFF (hardware format as int32_t)
+ * - Output range: ±7.0 (floating point)
+ * - Zero point: 0x00000000 corresponds to 0.0
+ * - Maximum: 0x7FFFFFFF corresponds to +7.0
+ * - Minimum: 0x80000000 corresponds to -7.0
+ *
+ * Note: The output scaling (7.0) is different from input scaling (15.0) to
+ * account for system gain and saturation limits. These are normalized values
+ * that have lost direct physical meaning through multiple processing stages.
+ * Users should calibrate these scaling factors based on actual system behavior
+ * and desired control performance.
+ *
+ * @param ud_hardware D-axis hardware format value
+ * @param uq_hardware Q-axis hardware format value
+ * @param ud Pointer to store D-axis floating point value
+ * @param uq Pointer to store Q-axis floating point value
+ */
+void clc_convert_output(uint32_t ud_hardware, uint32_t uq_hardware, float *ud, float *uq)
+{
+    *ud = ((float)(int32_t)ud_hardware / 2147483647) * 7.0f;
+    *uq = ((float)(int32_t)uq_hardware / 2147483647) * 7.0f;
+}
+#endif
 
 void motor_init(void)
 {
@@ -309,13 +385,28 @@ void motor_init(void)
     motor0.cfg.detect.en_submodule_detect.loop = true;
     motor0.cfg.detect.callback.disable_output = disable_all_pwm_output;
 
+#if defined(MCL_HARDWARE_HYBRID_LOOP_ENABLE)
+    /* Hardware hybrid loop mode configuration */
+    motor0.cfg.loop.mode = mcl_mode_hybrid_foc;
+    motor0.cfg.hw_loop.clc_cfg.base = BOARD_CLC;
+    motor0.cfg.hw_loop.callback.clc_convert_input = clc_convert_input;
+    motor0.cfg.hw_loop.callback.clc_convert_output = clc_convert_output;
+    hpm_mcl_hw_loop_init(&motor0.hw_loop, &motor0.cfg.hw_loop);
+    hpm_mcl_enable_clc_hardware_loop(&motor0.hw_loop);
+#endif
+
     hpm_mcl_analog_init(&motor0.analog, &motor0.cfg.analog, &motor0.cfg.mcl);
     hpm_mcl_filter_iir_df1_init(&motor0.encoder_iir, &motor0.cfg.encoder_iir, &motor0.encoder_iir_mem[0]);
     hpm_mcl_encoder_init(&motor0.encoder, &motor0.cfg.mcl, &motor0.cfg.encoder, &motor0.encoder_iir);
     hpm_mcl_drivers_init(&motor0.drivers, &motor0.cfg.drivers);
     hpm_mcl_control_init(&motor0.control, &motor0.cfg.control);
+#if defined(MCL_HARDWARE_HYBRID_LOOP_ENABLE)
     hpm_mcl_loop_init(&motor0.loop, &motor0.cfg.loop, &motor0.cfg.mcl,
-                    &motor0.encoder, &motor0.analog, &motor0.control, &motor0.drivers, NULL);
+                    &motor0.encoder, &motor0.analog, &motor0.control, &motor0.drivers, NULL, &motor0.hw_loop);
+#else
+    hpm_mcl_loop_init(&motor0.loop, &motor0.cfg.loop, &motor0.cfg.mcl,
+                    &motor0.encoder, &motor0.analog, &motor0.control, &motor0.drivers, NULL, NULL);
+#endif
     hpm_mcl_detect_init(&motor0.detect, &motor0.cfg.detect, &motor0.loop, &motor0.encoder, &motor0.analog, &motor0.drivers);
     hpm_mcl_enable_dq_axis_decoupling(&motor0.loop);
     hpm_mcl_enable_dead_area_compensation(&motor0.loop);
@@ -441,27 +532,14 @@ hpm_mcl_stat_t pwm_duty_set(mcl_drivers_channel_t chn, float duty)
 
 hpm_mcl_stat_t encoder_get_theta(float *theta)
 {
-#ifdef HPMSOC_HAS_HPMSDK_QEI
-    return hpm_mcl_abz_get_theta(BOARD_BLDC_QEI_BASE, BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV,\
+    return hpm_mcl_abz_get_theta(BLDC_MOTOR_QEI_BASE, BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV,\
         -((MCL_PI * 2) / BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV), theta);
-#endif
-#ifdef HPMSOC_HAS_HPMSDK_QEIV2
-    return hpm_mcl_abz_get_theta(BOARD_BLDC_QEIV2_BASE, BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV,\
-        -((MCL_PI * 2) / BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV), theta);
-#endif
-
 }
 
 hpm_mcl_stat_t encoder_get_abs_theta(float *theta)
 {
-#ifdef HPMSOC_HAS_HPMSDK_QEI
-    return hpm_mcl_abz_get_abs_theta(BOARD_BLDC_QEI_BASE, BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV,\
+    return hpm_mcl_abz_get_abs_theta(BLDC_MOTOR_QEI_BASE, BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV,\
         ((MCL_PI * 2) / BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV), -abs_position_theta, theta);
-#endif
-#ifdef HPMSOC_HAS_HPMSDK_QEIV2
-    return hpm_mcl_abz_get_abs_theta(BOARD_BLDC_QEIV2_BASE, BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV,\
-        ((MCL_PI * 2) / BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV), -abs_position_theta, theta);
-#endif
 }
 
 hpm_mcl_stat_t adc_value_get(mcl_analog_chn_t chn, int32_t *value)
@@ -484,15 +562,7 @@ hpm_mcl_stat_t adc_value_get(mcl_analog_chn_t chn, int32_t *value)
     return mcl_success;
 }
 
-void reset_pwm_counter(void)
-{
-#if defined(HPMSOC_HAS_HPMSDK_PWM)
-    pwm_enable_reload_at_synci(MOTOR0_BLDCPWM);
-#endif
-#if defined(HPMSOC_HAS_HPMSDK_PWMV2)
 
-#endif
-}
 
 hpm_mcl_stat_t enable_all_pwm_output(void)
 {
@@ -500,7 +570,12 @@ hpm_mcl_stat_t enable_all_pwm_output(void)
     pwm_disable_sw_force(MOTOR0_BLDCPWM);
 #endif
 #if defined(HPMSOC_HAS_HPMSDK_PWMV2)
-
+    pwmv2_disable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_UH_PWM_OUTPIN);
+    pwmv2_disable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_UL_PWM_OUTPIN);
+    pwmv2_disable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_VH_PWM_OUTPIN);
+    pwmv2_disable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_VL_PWM_OUTPIN);
+    pwmv2_disable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_WH_PWM_OUTPIN);
+    pwmv2_disable_software_force(MOTOR0_BLDCPWM, BOARD_BLDC_WL_PWM_OUTPIN);
 #endif
     return mcl_success;
 }
@@ -577,7 +652,7 @@ void pwm_init(void)
 #endif
     pwm_deinit(MOTOR0_BLDCPWM);
     pwm_stop_counter(MOTOR0_BLDCPWM);
-    reset_pwm_counter();
+    pwm_enable_reload_at_synci(MOTOR0_BLDCPWM);
     pwm_set_reload(MOTOR0_BLDCPWM, 0, PWM_RELOAD);
     pwm_set_start_count(MOTOR0_BLDCPWM, 0, 0);
     cmp_config[0].mode = pwm_cmp_mode_output_compare;
@@ -841,58 +916,53 @@ void pwm_init(void)
 #endif
 #endif
 
+#if defined(HPMSOC_HAS_HPMSDK_QEI)
 hpm_mcl_stat_t qei_init(void)
 {
-#ifdef HPMSOC_HAS_HPMSDK_QEI
-    trgm_output_t config = {0};
-#endif
-#ifdef HPMSOC_HAS_HPMSDK_QEIV2
-    qeiv2_phcnt_cmp_match_config_t phcnt_cmp_config = {0};
-#endif
-    init_qei_trgm_pins();
-#ifdef HPMSOC_HAS_HPMSDK_QEI
-    config.invert = false;
-    config.input = BOARD_BLDC_QEI_TRGM_QEI_A_SRC;
-    trgm_output_config(BOARD_BLDC_QEI_TRGM, TRGM_TRGOCFG_QEI_A, &config);
-    config.input = BOARD_BLDC_QEI_TRGM_QEI_B_SRC;
-    trgm_output_config(BOARD_BLDC_QEI_TRGM, TRGM_TRGOCFG_QEI_B, &config);
+    trgm_output_t trgm_config = {0};
+    qei_mode_config_t mode_config = {0};
 
-    qei_counter_reset_assert(BOARD_BLDC_QEI_BASE);
-    qei_phase_config(BOARD_BLDC_QEI_BASE, BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV,
-            qei_z_count_inc_on_phase_count_max, true);
-    qei_phase_cmp_set(BOARD_BLDC_QEI_BASE, 4,
-            false, qei_rotation_dir_cmp_ignore);
-    qei_load_read_trigger_event_enable(BOARD_BLDC_QEI_BASE,
-            QEI_EVENT_POSITIVE_COMPARE_FLAG_MASK);
-    qei_counter_reset_release(BOARD_BLDC_QEI_BASE);
-#endif
-#ifdef HPMSOC_HAS_HPMSDK_QEIV2
-    qeiv2_reset_counter(BOARD_BLDC_QEIV2_BASE);
-    qeiv2_set_work_mode(BOARD_BLDC_QEIV2_BASE, qeiv2_work_mode_abz);
-    qeiv2_select_spd_tmr_register_content(BOARD_BLDC_QEIV2_BASE, qeiv2_spd_tmr_as_spd_tm);
-    qeiv2_config_z_phase_counter_mode(BOARD_BLDC_QEIV2_BASE, qeiv2_z_count_inc_on_phase_count_max);
-    qeiv2_config_phmax_phparam(BOARD_BLDC_QEIV2_BASE, BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV);
-    qeiv2_pause_pos_counter_on_fault(BOARD_BLDC_QEIV2_BASE, true);
-    qeiv2_config_abz_uvw_signal_edge(BOARD_BLDC_QEIV2_BASE, true, true, false, true, true);
-    phcnt_cmp_config.phcnt_cmp_value = 4;
-    phcnt_cmp_config.ignore_rotate_dir = true;
-    phcnt_cmp_config.ignore_zcmp = true;
-    qeiv2_config_phcnt_cmp_match_condition(BOARD_BLDC_QEIV2_BASE, &phcnt_cmp_config);
-    qeiv2_enable_load_read_trigger_event(BOARD_BLDC_QEIV2_BASE, QEIV2_EVENT_POSITION_COMPARE_FLAG_MASK);
-#if defined(HPM_IP_FEATURE_QEIV2_ONESHOT_MODE) && HPM_IP_FEATURE_QEIV2_ONESHOT_MODE
-    qeiv2_disable_pulse0_oneshot_mode(BOARD_BLDC_QEIV2_BASE);
-    qeiv2_disable_pulse1_oneshot_mode(BOARD_BLDC_QEIV2_BASE);
-    qeiv2_disable_cycle0_oneshot_mode(BOARD_BLDC_QEIV2_BASE);
-    qeiv2_disable_cycle1_oneshot_mode(BOARD_BLDC_QEIV2_BASE);
-#endif
-    qeiv2_config_filter(BOARD_BLDC_QEIV2_BASE, qeiv2_filter_phase_a, false, qeiv2_filter_mode_delay, true, 100);
-    qeiv2_config_filter(BOARD_BLDC_QEIV2_BASE, qeiv2_filter_phase_b, false, qeiv2_filter_mode_delay, true, 100);
-    qeiv2_release_counter(BOARD_BLDC_QEIV2_BASE);
-    qeiv2_set_z_phase(BOARD_BLDC_QEIV2_BASE, 0);
-    qeiv2_set_phase_cnt(BOARD_BLDC_QEIV2_BASE, 0);
-#endif
+    init_qei_trgm_pins();
+
+    trgm_config.invert = false;
+    trgm_config.input = BOARD_BLDC_QEI_TRGM_QEI_A_SRC;
+    trgm_output_config(BOARD_BLDC_QEI_TRGM, TRGM_TRGOCFG_QEI_A, &trgm_config);
+    trgm_config.input = BOARD_BLDC_QEI_TRGM_QEI_B_SRC;
+    trgm_output_config(BOARD_BLDC_QEI_TRGM, TRGM_TRGOCFG_QEI_B, &trgm_config);
+
+    mode_config.work_mode = qei_work_mode_abz;
+    mode_config.z_count_inc_mode = qei_z_count_inc_on_phase_count_max;
+    mode_config.phcnt_max = BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV;
+    mode_config.z_cali_enable = false;
+    mode_config.phcnt_idx = 0;
+    qei_config_mode(BLDC_MOTOR_QEI_BASE, &mode_config);
+
     return mcl_success;
 }
+#endif
+
+#if defined(HPMSOC_HAS_HPMSDK_QEIV2)
+hpm_mcl_stat_t qei_init(void)
+{
+    qeiv2_mode_config_t mode_config = {0};
+
+    init_qei_trgm_pins();
+
+    qeiv2_config_filter(BLDC_MOTOR_QEI_BASE, qeiv2_filter_phase_a, false, qeiv2_filter_mode_delay, true, 100);
+    qeiv2_config_filter(BLDC_MOTOR_QEI_BASE, qeiv2_filter_phase_b, false, qeiv2_filter_mode_delay, true, 100);
+
+    mode_config.work_mode = qeiv2_work_mode_abz;
+    mode_config.spd_tmr_content_sel = qeiv2_spd_tmr_as_spd_tm;
+    mode_config.z_count_inc_mode = qeiv2_z_count_inc_on_phase_count_max;
+    mode_config.phcnt_max = BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV;
+    mode_config.z_cali_enable = false;
+    mode_config.z_cali_ignore_ab = false;
+    mode_config.phcnt_idx = 0;
+    qeiv2_config_mode(BLDC_MOTOR_QEI_BASE, &mode_config);
+
+    return mcl_success;
+}
+#endif
 
 SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_TMR_IRQ, isr_gptmr)
 void isr_gptmr(void)
@@ -1056,6 +1126,66 @@ hpm_mcl_stat_t adc_init(void)
     return mcl_success;
 }
 
+#if defined(MCL_HARDWARE_HYBRID_LOOP_ENABLE)
+void clc_init(void)
+{
+    clc_param_config_t clc_param;
+    clc_coeff_config_t clc_coeff0;
+    mcl_control_pid_cfg_t pid;
+
+    synt_enable_timestamp(HPM_SYNT, true);
+
+    clc_set_sw_inject_dq_mode_enable(BOARD_CLC, clc_vd_chn, true);
+    clc_set_sw_inject_dq_mode_enable(BOARD_CLC, clc_vq_chn, true);
+
+    clc_param.eadc_lowth = 0xA0000000;
+    clc_param.eadc_mid_lowth = 0xD0000000;
+    clc_param.eadc_mid_highth = 0x30000000;
+    clc_param.eadc_highth = 0x60000000;
+    clc_param._2p2z_clamp_lowth = 0x80000000;
+    clc_param._2p2z_clamp_highth = 0x7FFFFFFF;
+    clc_param._3p3z_clamp_lowth = 0x80000000;
+    clc_param._3p3z_clamp_highth = 0x7FFFFFFF;
+    clc_param.output_forbid_lowth = 0;
+    clc_param.output_forbid_mid = 0;
+    clc_param.output_forbid_highth = 0;
+    clc_config_param(BOARD_CLC, clc_vd_chn, &clc_param);
+    clc_config_param(BOARD_CLC, clc_vq_chn, &clc_param);
+
+    /**
+     * @brief Value of incremental pid, this value is different from the positional pid
+     *
+     */
+    pid.kp = 1.4678;
+    pid.ki = 0.000081414;
+    pid.kd = 0;
+
+    hpm_mcl_pid_to_3p3z(&pid, (mcl_clc_coeff_cfg_t *)&clc_coeff0);
+    clc_config_coeff(BOARD_CLC, clc_vd_chn, clc_coeff_zone_0, &clc_coeff0);
+    clc_config_coeff(BOARD_CLC, clc_vq_chn, clc_coeff_zone_0, &clc_coeff0);
+
+    clc_config_coeff(BOARD_CLC, clc_vd_chn, clc_coeff_zone_1, &clc_coeff0);
+    clc_config_coeff(BOARD_CLC, clc_vq_chn, clc_coeff_zone_1, &clc_coeff0);
+
+    clc_config_coeff(BOARD_CLC, clc_vd_chn, clc_coeff_zone_2, &clc_coeff0);
+    clc_config_coeff(BOARD_CLC, clc_vq_chn, clc_coeff_zone_2, &clc_coeff0);
+
+    clc_set_adc_chn_offset(BOARD_CLC, clc_vd_chn, 0, 0);
+    clc_set_adc_chn_offset(BOARD_CLC, clc_vq_chn, 0, 0);
+    clc_set_pwm_period(BOARD_CLC, clc_vd_chn, 0);
+    clc_set_pwm_period(BOARD_CLC, clc_vq_chn, 0);
+
+    clc_set_expect_adc_value(BOARD_CLC, clc_vd_chn, 1);
+    clc_set_expect_adc_value(BOARD_CLC, clc_vq_chn, 1);
+
+    clc_set_irq_enable(BOARD_CLC, clc_vd_chn, clc_irq_calc_done, true);
+    clc_set_irq_enable(BOARD_CLC, clc_vq_chn, clc_irq_calc_done, true);
+
+    clc_set_enable(BOARD_CLC, clc_vd_chn, true);
+    clc_set_enable(BOARD_CLC, clc_vq_chn, true);
+}
+#endif
+
 #if defined(HW_CURRENT_FOC_ENABLE)
 
 void trigmux_init_1(void)
@@ -1218,44 +1348,53 @@ void adc_isr_enable(void)
     intc_m_enable_irq_with_priority(BOARD_BLDC_ADC_IRQn, 1);
 }
 
-void bldc_foc_angle_align(void)
+void motor_angle_align(void)
 {
-    mcl_user_value_t id, iq;
+    mcl_motor_alignment_cfg_t alignment_cfg;
+
+    /* Select three-stage alignment algorithm */
+    alignment_cfg.algorithm = mcl_alignment_algorithm_three_stage;
 
 #if defined(HW_CURRENT_FOC_ENABLE)
+    /* Hardware FOC specific initialization */
     qeo_enable_software_position_inject(BOARD_BLDC_QEO);
     qeo_software_position_inject(BOARD_BLDC_QEO, 0);
     qeo_disable_software_position_inject(BOARD_BLDC_QEO);
     vsc_sw_inject_pos_value(BOARD_VSC, 0);
-#endif
 
-    id.enable = true;
-#if defined(HW_CURRENT_FOC_ENABLE)
-    id.value = 3;
+    /* Configure three-stage alignment parameters for hardware mode */
+    alignment_cfg.config.three_stage.stage1.d_current = 8.0f;    /* High current for stage 1 */
+    alignment_cfg.config.three_stage.stage1.q_current = 0.5f;    /* Q-axis disturbance for stage 1 */
+    alignment_cfg.config.three_stage.stage1.delay_ms = 500;      /* Stage 1 delay time */
+
+    alignment_cfg.config.three_stage.stage2.d_current = 5.0f;    /* Moderate current for stage 2 */
+    alignment_cfg.config.three_stage.stage2.delay_ms = 800;      /* Stage 2 delay time */
+
+    alignment_cfg.config.three_stage.stage3.d_current = 3.0f;    /* Low current for stage 3 */
+    alignment_cfg.config.three_stage.stage3.delay_ms = 400;      /* Stage 3 delay time */
 #else
-    id.value = 1;
-#endif
-    hpm_mcl_loop_set_current_d(&motor0.loop, id);
-    iq.enable = true;
-    iq.value = 0;
-    hpm_mcl_loop_set_current_q(&motor0.loop, iq);
+    /* Configure three-stage alignment parameters for software mode */
+    alignment_cfg.config.three_stage.stage1.d_current = 4.0f;    /* High current for stage 1 */
+    alignment_cfg.config.three_stage.stage1.q_current = 0.6f;    /* Q-axis disturbance for stage 1 */
+    alignment_cfg.config.three_stage.stage1.delay_ms = 500;      /* Stage 1 delay time */
 
-    hpm_mcl_encoder_force_theta(&motor0.encoder, 0, true);
-    board_delay_ms(1000);
+    alignment_cfg.config.three_stage.stage2.d_current = 1.5f;    /* Moderate current for stage 2 */
+    alignment_cfg.config.three_stage.stage2.delay_ms = 800;      /* Stage 2 delay time */
+
+    alignment_cfg.config.three_stage.stage3.d_current = 1.0f;    /* Low current for stage 3 */
+    alignment_cfg.config.three_stage.stage3.delay_ms = 400;      /* Stage 3 delay time */
+#endif
+
+    alignment_cfg.config.three_stage.final_delay_ms = 100;       /* Final delay */
+
+    /* Call the enhanced alignment function from middleware */
+    hpm_mcl_motor_angle_alignment(&motor0.loop, &alignment_cfg);
+
 #if defined(HW_CURRENT_FOC_ENABLE)
+    /* Hardware FOC specific post-alignment setup */
     qei_init();
     trigmux_init_3();
 #endif
-    hpm_mcl_encoder_set_initial_theta(&motor0.encoder, hpm_mcl_encoder_get_raw_theta(&motor0.encoder));
-    hpm_mcl_encoder_force_theta(&motor0.encoder, 0, false);
-    board_delay_ms(100);
-
-    id.enable = true;
-    id.value = 0;
-    hpm_mcl_loop_set_current_d(&motor0.loop, id);
-    iq.enable = false;
-    iq.value = 0;
-    hpm_mcl_loop_set_current_q(&motor0.loop, iq);
 }
 
 void motor_adc_midpoint(void)
@@ -1296,6 +1435,9 @@ int main(void)
     init_adc_bldc_pins();
     init_pwm_pins(MOTOR0_BLDCPWM);
     motor_clock_hz = clock_get_frequency(BOARD_BLDC_QEI_CLOCK_SOURCE);
+#if defined(MCL_HARDWARE_HYBRID_LOOP_ENABLE)
+    clc_init();
+#endif
     motor_init();
     adc_isr_enable();
     timer_init();
@@ -1310,7 +1452,7 @@ int main(void)
     qeov2_init();
     trigmux_init_2();
 #endif
-    bldc_foc_angle_align();
+    motor_angle_align();
     speed = MOTOR0_SPD;
     user_speed.enable = true;
     user_speed.value = speed * MCL_PI * 2;

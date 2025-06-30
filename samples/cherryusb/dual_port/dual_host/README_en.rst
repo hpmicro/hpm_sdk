@@ -6,7 +6,7 @@ Host Dual Port
 Overview
 --------
 
-This example project shows two USB ports as Host. Which support HID class(Keyboard and Mouse) and MSC class(Attention: The `Cluster Size` of the USB disk can't exceed 128KB, it is recommended that the format parameter is exFAT/128KB).
+This example project shows two USB ports as Host. Which support HID class(Keyboard and Mouse) and MSC class(Attention: The `Format Type` support FAT, FAT32 or exFAT).
 
   .. image:: ../../doc/UDisk_Format.png
      :alt: UDisk_Format
@@ -19,6 +19,12 @@ Board Setting
 - Connect a USB port on the development board USB0 with a USB Type-C convert Type-A cable
 
 - Connect a USB port on the development board USB1 with a USB Type-C convert Type-A cable
+
+Software Setting
+-----------------------
+
+- In the CMakeLists.txt file, if sdk_compile_definitions(-DFATFS_ONLY_NONCACHEABLE_BUF=1) is uncommented, FATFS supports data transfer by using cacheable buffer. If sdk_compile_definitions(-DFATFS_ONLY_NONCACHEABLE_BUF=1) is commented, FATFS only supports data transfer by using noncacheable buffer.
+- When sdk_compile_definitions(-DFATFS_ONLY_NONCACHEABLE_BUF=1) is uncommented, it is recommended to align cache line size for the buffer address, otherwise it will affect transmission performance.
 
 Running the example
 -------------------

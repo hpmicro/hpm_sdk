@@ -64,7 +64,7 @@ static void input_capture_config(void)
 {
     gptmr_channel_config_t config;
 
-    clock_add_to_group(APP_BOARD_GPTMR_CLOCK, 0);
+    board_init_gptmr_clock(APP_BOARD_GPTMR);
     gptmr_channel_get_default_config(APP_BOARD_GPTMR, &config);
     gptmr_freq = clock_get_frequency(APP_BOARD_GPTMR_CLOCK);
     config.mode = gptmr_work_mode_capture_at_rising_edge;

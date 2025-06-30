@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2023 HPMicro
+# Copyright (c) 2022-2023,2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -107,5 +107,7 @@ sdk_src(src/lv_demo_music/assets/img_lv_demo_music_slider_knob.c)
 sdk_src(src/lv_demo_music/assets/hpmicro_logo.c)
 sdk_src(src/lv_demo_music/assets/hpmicro_logo_large.c)
 sdk_src(src/lv_demo_music/assets/SourceHanSansCN_Normal_16.c)
+
+sdk_iar_ld_options(--disable_relaxation) # A workaround to fix EWRISCV3.30 linking issue
 
 generate_ide_projects()

@@ -56,6 +56,7 @@ sdk_compile_definitions(-DHPM_SDMMC_ENABLE_CACHE_MAINTENANCE=1)
 sdk_compile_definitions(-DHPM_SDMMC_USE_CMSIS_OS2=1)
 sdk_compile_definitions(-DHPM_SDMMC_HOST_ENABLE_IRQ=1)
 sdk_compile_definitions(-DHPM_SDMMC_USE_ADMA2=0)
+sdk_compile_definitions(-DHPM_SDMMC_XFER_CALLBACK_ENABLE=0)
 
 # LWIP options
 sdk_compile_definitions(-D__DISABLE_AUTO_NEGO=0)

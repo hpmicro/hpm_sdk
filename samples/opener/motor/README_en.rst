@@ -16,7 +16,7 @@ Hardware
 
   - A development board with Ethernet. Refer to the {ref}pin description <board_resource> of the specific development board to view the Ethernet hardware.
 
-    - ==According to your development board, select RMII/RGMII and ethernet phy in the CMakeLists.txt==
+    - **According to your development board, select RMII/RGMII and ethernet phy in the CMakeLists.txt**
 
   - A PC with a network port.
 
@@ -25,6 +25,8 @@ Hardware
   - This program uses the **BLM57050-1000**  brushless motor of "Leisai Intelligence", please refer to the `Leisai Intelligence <https://leisai.com/>`_ website for the specific parameters of the motor.
 
   - Board settings refer to the development board documentation  :ref:`Motor Pin <board_resource>`  related content
+
+  - For development boards without onboard SDRAM, note that when the build type is flash_sdram_xip, the SDRAM card must be inserted first.
 
 Software
 ~~~~~~~~~~~~
@@ -88,6 +90,8 @@ Add EIP Scanner
        :alt:
 
   4. Configure the IP address.
+
+    Note that the IP address must be in the same network segment as the PC. The ip address of the PC, the development board and the one in the TwinCAT software must be different.
 
     .. image:: doc/set_ip_address.png
        :alt:

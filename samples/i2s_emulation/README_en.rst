@@ -6,14 +6,19 @@ I2S EMULATION
 Overview
 --------
 
-- This sample show use SPI transmit and receive audio data to audio codec
+- This example project demonstrates the functionality of using SPI to emulate an I2S master for receiving audio decoding module recording data and playing back the recorded data.
 
-- The evaluation board needs to be connected to the audio decoding module. This example uses wm8978
+- The evaluation board must be connected to an audio decoding module. This example uses the WM8978 codec.
+
+Tips
+----
+
+- For detailed documentation about I2S over SPI, please refer to :ref:`i2s_over_spi <i2s_over_spi>`
 
 Notice
 ------
 
-- Since the SPI used in this example requires a large transmission length, it currently only supports the hpm5300 series.
+- Due to the requirement for long data transfers in this example, it is currently supported **only on the hpm5300 series**.
 
 dependent components
 --------------------
@@ -29,38 +34,41 @@ dependent components
 Board Setting
 -------------
 
-- Recording via the onboard mic of the audio module
+- Use the onboard microphone of the audio module for recording.
 
-- Connecting 3.5mm headphones to the headphone output port of the audio module
+- Connect a 3.5mm headphone to the audio module's output headphone jack.
 
-- Need to use GPTMR output and SPI pins，pins(Please refer to   :ref:`Pin Description <board_resource>` )
+- The following components are required: GPTMR output and SPI pins (Please refer to   :ref:`Pin Description <board_resource>` )
 
-- 5V          <--> 5V(WM8978)
 
-- 3.3V        <--> 3.3V(WM8978)
+- Pin connections:
 
-- GND         <--> GND(WM8978)
+    - 5V          <--> 5V(WM8978)
 
-- MCLK(GPTMR) <--> MCLK(WM8978)
+    - 3.3V        <--> 3.3V(WM8978)
 
-- LRCK(GPTMR) <--> (FSA)LRC(WM8978)
+    - GND         <--> GND(WM8978)
 
-- BLCK(GPTMR) <--> SCLK(SPI) <--> SCK(WM8978)
+    - MCLK(GPTMR) <--> MCLK(WM8978)
 
-- MISO(SPI)   <--> (DAT)DACDATA(WM8978)
+    - LRCK(GPTMR) <--> (FSA)LRC(WM8978)
 
-- MOSI(SPI)   <--> (SDB)ADCDATA(WM8978)
+    - BLCK(GPTMR) <--> SCLK(SPI) <--> SCK(WM8978)
 
-- (CS)GPIO    <--> CS(SPI)
+    - MISO(SPI)   <--> (DAT)DACDATA(WM8978)
 
-- I2C_SDA     <--> I2C_SDA(WM8978)
+    - MOSI(SPI)   <--> (SDB)ADCDATA(WM8978)
 
-- I2C_SCL     <--> I2C_SCL(WM8978)
+    - (CS)GPIO    <--> CS(SPI)
+
+    - I2C_SDA     <--> I2C_SDA(WM8978)
+
+    - I2C_SCL     <--> I2C_SCL(WM8978)
 
 Run steps
 ---------
 
-- When the project runs correctly, the serial port terminal will output the information like
+- When the project runs correctly, the serial terminal will display the following menu:
 
 
 .. code-block:: console
@@ -76,16 +84,16 @@ Run steps
    *-------------------------------------------------------------*
 
 
-- Enter the '3' character into the terminal to start recording. If the recording duration is longer than the specified duration, it will automatically exit and save.
+- Enter the character `'3'` in the terminal to start recording. The system will automatically stop and save the recording when the duration exceeds the specified limit.
 
 
 .. code-block:: console
 
    record_start enter....
-   record size overflow, now exit..
+   recording size overflow, stopping and exiting now...
 
 
-- Enter the '1' character in the terminal to start recording playback
+- Enter the character `'1'` in the terminal to start playback.
 
 
 .. code-block:: console
@@ -94,7 +102,7 @@ Run steps
    play end, now exit....
 
 
-- Enter the '4' character in the terminal to stop recording.
+- Enter the character `'4'` in the terminal to stop recording.
 
 
 .. code-block:: console
@@ -102,7 +110,7 @@ Run steps
    record stop finish....
 
 
-- Enter the '2' character in the terminal to stop playing
+- Enter the character `'2'` in the terminal to stop playback.
 
 
 .. code-block:: console

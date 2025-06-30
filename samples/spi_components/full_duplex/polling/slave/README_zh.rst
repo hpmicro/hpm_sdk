@@ -9,6 +9,11 @@ FULL_DUPLEX_SPI_SLAVE_POLLING
 full_duplex_slave_polling示例工程展示了SPI作为master使用polling方法进行板与板之间全双工通信。
 在这个示例工程中， 一个板子作为SPI master， 另一个板子作为SPI slave。 Master发送一定量数据到Slave并从Slave接收一定量的数据。
 
+提示
+------
+
+- 组件详情文档请参见 :ref:`spi_component <spi_component>`
+
 硬件设置
 ------------
 

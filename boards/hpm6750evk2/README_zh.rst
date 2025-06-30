@@ -378,6 +378,16 @@ HPM6750是一款主频达816MHz的双核微控制器。该芯片拥有最大2M�
      - J10[16]
      - 控制SPI从机CS的引脚
 
+- CLOCK REF引脚
+
+.. list-table::
+   :header-rows: 1
+
+   * - 功能
+     - 位置
+   * - PE24
+     - J10[7]
+
 .. _hpm6750evk2_known_issues:
 
 开发板已知问题

@@ -13,6 +13,11 @@ uC/OS-III Hello World
 
 无特殊设置
 
+工程配置
+-------------------
+
+set(CONFIG_UCOS_III_TIMER_RESOURCE_GPTMR 1)配置使用gptmr作为系统的滴答源。
+
 运行现象
 ------------
 

@@ -20,6 +20,8 @@ Netx Duo Udp
 
 - 可以通过`set(CONFIG_ECLIPSE_THREADX_NETXDUO_ADDONS_DHCP 1)`的语句来使能DHCP功能。
 
+- 当使能DHCP功能时，需要注意宏ECHO_SERVER_ADDRESS代表的ip地址可以通过网关进行访问
+
 运行现象
 ------------
 

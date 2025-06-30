@@ -6,19 +6,24 @@ i2c_smbus_slave
 Overview
 --------
 
-The i2c_smbus_slave sample project shows that I2C as smbus sends/receives data at slave mode. In this sample, then SMbus slave will sent out received data.
+- The **i2c_smbus_slave** example project demonstrates the I2C interface operating in slave mode as an SMBus device for receiving and transmitting data. In this example, the SMBus slave first receives data, then sends the received data back.
+
+Tips
+----
+
+- For detailed documentation about SMBus components, please refer to :ref:`smbus <smbus>`
 
 Board Setting
 -------------
 
-connect  :ref:`I2C Pins <board_resource>`  on the two boards.
+- Connect the :ref:`I2C pins <board_resource>` between two boards
 
 Running the example
 -------------------
 
-- Run slave first, and then run master.
+- Run the slave firmware first, followed by the master.
 
-- When the example runs successfully, the log would be seen on the terminal like:
+- When the project runs correctly, the serial terminal will display output similar to the following:
 
 
 .. code-block:: console

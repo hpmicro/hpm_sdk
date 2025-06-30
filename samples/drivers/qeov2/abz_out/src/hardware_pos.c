@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -75,30 +75,20 @@ static void mtg_generate_trajectory(void)
 
 static void qei_generate_position(void)
 {
+    qeiv2_mode_config_t mode_config = {0};
+
     /* config qei pins */
     init_qeiv2_ab_pins(APP_QEI_BASE);/* Attention : If there is no z-phase signal, please do not configure the z-phase pin !!! */
 
-    /* reset qei count register */
-    qeiv2_reset_counter(APP_QEI_BASE);
-
-    /* set qei decode ABZ signal */
-    qeiv2_set_work_mode(APP_QEI_BASE, qeiv2_work_mode_abz);
-
-    /* set Z phase counter mode, z from ab count or io */
-    qeiv2_config_z_phase_counter_mode(APP_QEI_BASE, qeiv2_z_count_inc_on_phase_count_max);
-
-    /* set AB max */
-    qeiv2_config_phmax_phparam(APP_QEI_BASE, APP_ENCODER_PHASE_COUNT_PER_REV);
-
-    /* enable A/B signal */
-    qeiv2_config_abz_uvw_signal_edge(APP_QEI_BASE, true, true, false, true, true);
-
-    /* set init position */
-    qeiv2_set_z_phase(APP_QEI_BASE, 0);
-    qeiv2_set_phase_cnt(APP_QEI_BASE, 0);
-
-    /* start qei */
-    qeiv2_release_counter(APP_QEI_BASE);
+    /*  mode config */
+    mode_config.work_mode = qeiv2_work_mode_abz;
+    mode_config.spd_tmr_content_sel = qeiv2_spd_tmr_as_spd_tm;
+    mode_config.z_count_inc_mode = qeiv2_z_count_inc_on_phase_count_max;
+    mode_config.phcnt_max = APP_ENCODER_PHASE_COUNT_PER_REV;
+    mode_config.z_cali_enable = false;
+    mode_config.z_cali_ignore_ab = false;
+    mode_config.phcnt_idx = 0;
+    qeiv2_config_mode(APP_QEI_BASE, &mode_config);
 }
 #endif
 

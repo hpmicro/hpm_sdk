@@ -20,6 +20,12 @@ USB MSC U Disk
 
 - 使用USB Type-C转USB-A线缆连接U 盘和开发板USB0端口或者USB1端口
 
+软件配置
+------------
+
+- 在CMakeLists.txt文件中，若未开启sdk_compile_definitions(-DFATFS_ONLY_NONCACHEABLE_BUF=1)，则FATFS支持Cacheable Buffer的数据传输；若开启sdk_compile_definitions(-DFATFS_ONLY_NONCACHEABLE_BUF=1)，则FATFS仅支持Noncacheable Buffer的数据传输。
+- 当未开启sdk_compile_definitions(-DFATFS_ONLY_NONCACHEABLE_BUF=1)时，建议传输数据的Buffer地址CacheLine对齐，否则会影响传输性能。
+
 工程配置
 ------------
 

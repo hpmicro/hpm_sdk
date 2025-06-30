@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -1359,6 +1359,17 @@ static inline void mcan_send_add_multiple_requests(MCAN_Type *ptr, uint32_t inde
 static inline void mcan_cancel_tx_buf_send_request(MCAN_Type *ptr, uint32_t index)
 {
     ptr->TXBCR = (1UL << index);
+}
+
+/**
+ * @brief Check whether TXBUF cancellation was finished
+ * @param [in] ptr MCAN Base
+ * @param [in] index TXBUF index
+ * @return true if cancellation finished
+ */
+static inline bool mcan_is_tx_buf_cancellation_finished(MCAN_Type *ptr, uint32_t index)
+{
+    return ((ptr->TXBCF & ((1UL << index))) != 0U);
 }
 
 /**

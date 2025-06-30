@@ -67,11 +67,9 @@
 #define PACK_STRUCT_FIELD(x) x
 
 #elif defined (__GNUC__)
-#if defined(__SEGGER_RTL_VERSION) && (__SEGGER_RTL_VERSION <= 42404)   /* 8.10d */
+
 #include <sys/time.h>
-#else
 #include <time.h>
-#endif
 
 #define PACK_STRUCT_BEGIN
 #define PACK_STRUCT_STRUCT __attribute__ ((__packed__))

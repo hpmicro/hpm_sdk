@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -39,6 +39,7 @@ enum {
     mcl_timeout = MAKE_STATUS(mcl_group_common, 4),
     mcl_in_development = MAKE_STATUS(mcl_group_common, 5),   /**< Functions under development */
     mcl_running = MAKE_STATUS(mcl_group_common, 6),
+    mcl_not_supported = MAKE_STATUS(mcl_group_common, 7),  /**< Not supported peripheral */
 };
 
 
@@ -49,8 +50,8 @@ enum {
 void mcl_user_delay_us(uint64_t tick);
 
 #define MCL_DEBUG printf
-#define MCL_PI HPM_PI
-#define MCL_2PI HPM_2_PI
+#define MCL_PI  HPM_PI_FLOAT
+#define MCL_2PI HPM_2_PI_FLOAT
 #define MCL_PI_DIV3 (MCL_PI / 3.0f)
 
 #define MCL_DELAY_US(x) mcl_user_delay_us(x)

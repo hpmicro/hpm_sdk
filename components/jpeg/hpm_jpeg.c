@@ -297,7 +297,7 @@ void hpm_jpeg_hexdump(void *str, const void *data, uint32_t data_len)
 {
     const uint8_t *udata = data;
     char *cstr = str;
-    for (int i = 0; i < data_len; i++) {
+    for (uint32_t i = 0; i < data_len; i++) {
         cstr += sprintf(cstr, "%02X ", udata[i]);
     }
 }
@@ -980,6 +980,9 @@ static int hpm_jpeg_fill_jpeg_info_to_file(hpm_jpeg_encode_job_t *job, void *buf
     uint8_t *pos = (uint8_t *)buf;
     int ret;
 
+    if (len < 1024) {
+        return HPM_JPEG_RET_PARA_ERR;
+    }
     /*
      * Reserve for jpeg head
      */

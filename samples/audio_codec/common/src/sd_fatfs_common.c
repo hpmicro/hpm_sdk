@@ -17,7 +17,6 @@
  * Define
  *---------------------------------------------------------------------
  */
-#define FIL_SEARCH_NUM 20
 #define FIL_SEARCH_LENGTH 128
 
 /*---------------------------------------------------------------------*
@@ -141,7 +140,6 @@ FRESULT sd_search_music_name(char *target_filetype1, char *target_filetype2)
             continue;
         } else {
             strncpy((char *)s_search_file_buff[s_search_file_cnt], fil.fname, FIL_SEARCH_LENGTH);
-            printf("%d: %s\r\n", s_search_file_cnt, s_search_file_buff[s_search_file_cnt]);
             s_search_file_cnt++;
         }
         if (s_search_file_cnt >= FIL_SEARCH_NUM) {

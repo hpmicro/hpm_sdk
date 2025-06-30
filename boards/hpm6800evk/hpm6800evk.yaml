@@ -25,3 +25,4 @@ board:
       - board_sdram
       - board_ap6255_evb
       - board_puart_pin
+      - board_clk_ref_pin

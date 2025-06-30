@@ -17,7 +17,7 @@
 #include "hpm_tsw_drv.h"
 
 struct netif gnetif;
-uint8_t mac[] = {MAC_ADDR0, MAC_ADDR1, MAC_ADDR2, MAC_ADDR3, MAC_ADDR4, MAC_ADDR5};
+uint8_t mac[TSW_ENET_MAC];
 ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(TSW_SOC_DATA_BUS_WIDTH) uint8_t send_buff[TSW_SEND_DESC_COUNT][TSW_SEND_BUFF_LEN];
 ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(TSW_SOC_DATA_BUS_WIDTH) uint8_t recv_buff[TSW_RECV_DESC_COUNT][TSW_RECV_BUFF_LEN];
 
@@ -36,6 +36,9 @@ hpm_stat_t tsw_init(TSW_Type *ptr)
 
     /* Disable all MACs(TX/RX) */
     tsw_ep_disable_all_mac_ctrl(ptr, tsw_mac_type_emac);
+
+    /* Get Mac address */
+    tsw_get_mac_address(mac);
 
     /* Set Mac Address */
     tsw_ep_set_mac_addr(ptr, BOARD_TSW_PORT, mac, true);
@@ -57,6 +60,9 @@ hpm_stat_t tsw_init(TSW_Type *ptr)
 
     /* Enable VLAN-ID 1 at all ports */
     tsw_set_cam_vlan_port(ptr);
+
+    /* Set system cycle numbers */
+    tsw_cb_frer_set_msec_cycles(ptr, 0);
 
     /* Get the default DMA config */
     tsw_get_default_dma_config(&config);
@@ -81,6 +87,10 @@ hpm_stat_t tsw_init(TSW_Type *ptr)
 #if defined(ENABLE_TSW_RECEIVE_INTERRUPT) && ENABLE_TSW_RECEIVE_INTERRUPT
     intc_m_enable_irq(IRQn_TSW_0);  /* Enable TSW CPU Port IRQ */
 #endif
+
+    /* Set broadcast frame and unknown frame actions */
+    tsw_set_broadcast_frame_action(BOARD_TSW, tsw_dst_port_cpu);
+    tsw_set_unknown_frame_action(BOARD_TSW, tsw_dst_port_cpu);
 
     /* Set MDC clock frequency to 2.5MHz */
     tsw_ep_set_mdio_config(BOARD_TSW, BOARD_TSW_PORT, 19);

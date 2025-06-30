@@ -13,5 +13,6 @@ board:
       - board_gpt_pin
       - board_motor_control
       - board_wkup_pin
+      - board_clk_ref_pin
     excluded_samples:
       - samples/motor_ctrl/bldc_block

@@ -68,8 +68,7 @@ typedef struct {
             __R  uint8_t  RESERVED0[4];        /* 0x10C - 0x10F: Reserved */
             __RW uint32_t PTA;                 /* 0x110: command pointer 0 - 3 */
             __RW uint32_t PTB;                 /* 0x114: command pointer 4 - 7 */
-            __RW uint32_t PTC;                 /* 0x118: command pointer 8 - 11 */
-            __RW uint32_t PTD;                 /* 0x11C: command pointer 12 - 15 */
+            __R  uint8_t  RESERVED1[8];        /* 0x118 - 0x11F: Reserved */
         } CMD_TABLE[8];
         struct {
             __RW uint32_t TRAN[4];             /* 0x200 - 0x20C: Latch state transition configuration */
@@ -119,8 +118,10 @@ typedef struct {
         } IRQ;
         __RW uint32_t DMA_EN;                  /* 0x320: DMA Enable */
         __R  uint8_t  RESERVED0[220];          /* 0x324 - 0x3FF: Reserved */
-    } CTRL[13];
-    __RW uint32_t INSTR[256];                  /* 0x3400 - 0x37FC: Instructions */
+    } CTRL[4];
+    __R  uint8_t  RESERVED0[9216];             /* 0x1000 - 0x33FF: Reserved */
+    __RW uint32_t INSTR[128];                  /* 0x3400 - 0x35FC: Instructions */
+    __R  uint8_t  RESERVED1[512];              /* 0x3600 - 0x37FF: Reserved */
     struct {
         __RW uint32_t MODE;                    /* 0x3800:  */
         __RW uint32_t IDX;                     /* 0x3804: Data register bit index */
@@ -136,7 +137,7 @@ typedef struct {
         __R  uint32_t OUT;                     /* 0x3834: Data output */
         __RW uint32_t STS;                     /* 0x3838: Data status */
         __R  uint8_t  RESERVED1[4];            /* 0x383C - 0x383F: Reserved */
-    } DAT[32];
+    } DAT[18];
 } SEI_Type;
 
 
@@ -400,7 +401,7 @@ typedef struct {
  * MODE (RW)
  *
  * Transceiver mode
- * 0: synchronous maaster
+ * 0: synchronous master
  * 1: synchronous slave
  * 2: asynchronous mode
  * 3: asynchronous mode
@@ -1358,88 +1359,6 @@ typedef struct {
 #define SEI_CTRL_CMD_TABLE_PTB_PTR4_SHIFT (0U)
 #define SEI_CTRL_CMD_TABLE_PTB_PTR4_SET(x) (((uint32_t)(x) << SEI_CTRL_CMD_TABLE_PTB_PTR4_SHIFT) & SEI_CTRL_CMD_TABLE_PTB_PTR4_MASK)
 #define SEI_CTRL_CMD_TABLE_PTB_PTR4_GET(x) (((uint32_t)(x) & SEI_CTRL_CMD_TABLE_PTB_PTR4_MASK) >> SEI_CTRL_CMD_TABLE_PTB_PTR4_SHIFT)
-
-/* Bitfield definition for register of struct array CTRL: PTC */
-/*
- * PTR11 (RW)
- *
- * pointer11
- */
-#define SEI_CTRL_CMD_TABLE_PTC_PTR11_MASK (0xFF000000UL)
-#define SEI_CTRL_CMD_TABLE_PTC_PTR11_SHIFT (24U)
-#define SEI_CTRL_CMD_TABLE_PTC_PTR11_SET(x) (((uint32_t)(x) << SEI_CTRL_CMD_TABLE_PTC_PTR11_SHIFT) & SEI_CTRL_CMD_TABLE_PTC_PTR11_MASK)
-#define SEI_CTRL_CMD_TABLE_PTC_PTR11_GET(x) (((uint32_t)(x) & SEI_CTRL_CMD_TABLE_PTC_PTR11_MASK) >> SEI_CTRL_CMD_TABLE_PTC_PTR11_SHIFT)
-
-/*
- * PTR10 (RW)
- *
- * pointer10
- */
-#define SEI_CTRL_CMD_TABLE_PTC_PTR10_MASK (0xFF0000UL)
-#define SEI_CTRL_CMD_TABLE_PTC_PTR10_SHIFT (16U)
-#define SEI_CTRL_CMD_TABLE_PTC_PTR10_SET(x) (((uint32_t)(x) << SEI_CTRL_CMD_TABLE_PTC_PTR10_SHIFT) & SEI_CTRL_CMD_TABLE_PTC_PTR10_MASK)
-#define SEI_CTRL_CMD_TABLE_PTC_PTR10_GET(x) (((uint32_t)(x) & SEI_CTRL_CMD_TABLE_PTC_PTR10_MASK) >> SEI_CTRL_CMD_TABLE_PTC_PTR10_SHIFT)
-
-/*
- * PTR9 (RW)
- *
- * pointer9
- */
-#define SEI_CTRL_CMD_TABLE_PTC_PTR9_MASK (0xFF00U)
-#define SEI_CTRL_CMD_TABLE_PTC_PTR9_SHIFT (8U)
-#define SEI_CTRL_CMD_TABLE_PTC_PTR9_SET(x) (((uint32_t)(x) << SEI_CTRL_CMD_TABLE_PTC_PTR9_SHIFT) & SEI_CTRL_CMD_TABLE_PTC_PTR9_MASK)
-#define SEI_CTRL_CMD_TABLE_PTC_PTR9_GET(x) (((uint32_t)(x) & SEI_CTRL_CMD_TABLE_PTC_PTR9_MASK) >> SEI_CTRL_CMD_TABLE_PTC_PTR9_SHIFT)
-
-/*
- * PTR8 (RW)
- *
- * pointer8
- */
-#define SEI_CTRL_CMD_TABLE_PTC_PTR8_MASK (0xFFU)
-#define SEI_CTRL_CMD_TABLE_PTC_PTR8_SHIFT (0U)
-#define SEI_CTRL_CMD_TABLE_PTC_PTR8_SET(x) (((uint32_t)(x) << SEI_CTRL_CMD_TABLE_PTC_PTR8_SHIFT) & SEI_CTRL_CMD_TABLE_PTC_PTR8_MASK)
-#define SEI_CTRL_CMD_TABLE_PTC_PTR8_GET(x) (((uint32_t)(x) & SEI_CTRL_CMD_TABLE_PTC_PTR8_MASK) >> SEI_CTRL_CMD_TABLE_PTC_PTR8_SHIFT)
-
-/* Bitfield definition for register of struct array CTRL: PTD */
-/*
- * PTR15 (RW)
- *
- * pointer15
- */
-#define SEI_CTRL_CMD_TABLE_PTD_PTR15_MASK (0xFF000000UL)
-#define SEI_CTRL_CMD_TABLE_PTD_PTR15_SHIFT (24U)
-#define SEI_CTRL_CMD_TABLE_PTD_PTR15_SET(x) (((uint32_t)(x) << SEI_CTRL_CMD_TABLE_PTD_PTR15_SHIFT) & SEI_CTRL_CMD_TABLE_PTD_PTR15_MASK)
-#define SEI_CTRL_CMD_TABLE_PTD_PTR15_GET(x) (((uint32_t)(x) & SEI_CTRL_CMD_TABLE_PTD_PTR15_MASK) >> SEI_CTRL_CMD_TABLE_PTD_PTR15_SHIFT)
-
-/*
- * PTR14 (RW)
- *
- * pointer14
- */
-#define SEI_CTRL_CMD_TABLE_PTD_PTR14_MASK (0xFF0000UL)
-#define SEI_CTRL_CMD_TABLE_PTD_PTR14_SHIFT (16U)
-#define SEI_CTRL_CMD_TABLE_PTD_PTR14_SET(x) (((uint32_t)(x) << SEI_CTRL_CMD_TABLE_PTD_PTR14_SHIFT) & SEI_CTRL_CMD_TABLE_PTD_PTR14_MASK)
-#define SEI_CTRL_CMD_TABLE_PTD_PTR14_GET(x) (((uint32_t)(x) & SEI_CTRL_CMD_TABLE_PTD_PTR14_MASK) >> SEI_CTRL_CMD_TABLE_PTD_PTR14_SHIFT)
-
-/*
- * PTR13 (RW)
- *
- * pointer13
- */
-#define SEI_CTRL_CMD_TABLE_PTD_PTR13_MASK (0xFF00U)
-#define SEI_CTRL_CMD_TABLE_PTD_PTR13_SHIFT (8U)
-#define SEI_CTRL_CMD_TABLE_PTD_PTR13_SET(x) (((uint32_t)(x) << SEI_CTRL_CMD_TABLE_PTD_PTR13_SHIFT) & SEI_CTRL_CMD_TABLE_PTD_PTR13_MASK)
-#define SEI_CTRL_CMD_TABLE_PTD_PTR13_GET(x) (((uint32_t)(x) & SEI_CTRL_CMD_TABLE_PTD_PTR13_MASK) >> SEI_CTRL_CMD_TABLE_PTD_PTR13_SHIFT)
-
-/*
- * PTR12 (RW)
- *
- * pointer12
- */
-#define SEI_CTRL_CMD_TABLE_PTD_PTR12_MASK (0xFFU)
-#define SEI_CTRL_CMD_TABLE_PTD_PTR12_SHIFT (0U)
-#define SEI_CTRL_CMD_TABLE_PTD_PTR12_SET(x) (((uint32_t)(x) << SEI_CTRL_CMD_TABLE_PTD_PTR12_SHIFT) & SEI_CTRL_CMD_TABLE_PTD_PTR12_MASK)
-#define SEI_CTRL_CMD_TABLE_PTD_PTR12_GET(x) (((uint32_t)(x) & SEI_CTRL_CMD_TABLE_PTD_PTR12_MASK) >> SEI_CTRL_CMD_TABLE_PTD_PTR12_SHIFT)
 
 /* Bitfield definition for register of struct array CTRL: 0_1 */
 /*
@@ -3219,11 +3138,18 @@ typedef struct {
 /*
  * CK (RW)
  *
- * clock
+ * clock state configure
+ * a. In synchronous master mode:
  * 0: low
  * 1: rise-fall
  * 2: fall-rise
  * 3: high
+ * b. In synchronous slave mode:
+ * 0：Use TX_POINT and RX_POINT as the timing for data transmission and reception. Disable the TIMEOUT function in the communication protocol( this is not WDG).
+ * 1：Switch the timing for data transmission and reception (e.g., switching edges for receive/transmit in an EnDat Encoder communication cycle). Disable the TIMEOUT function in the communication protocol.
+ * 2：Use TX_POINT and RX_POINT as the timing for data transmission and reception；Enable the TIMEOUT function in the communication protocol.
+ * 3：Switch the timing for data transmission and reception. Enable the TIMEOUT function in the communication protocol.
+ * c.  In asynchronous mode: please keep 0.
  */
 #define SEI_INSTR_CK_MASK (0x3000000UL)
 #define SEI_INSTR_CK_SHIFT (24U)
@@ -3240,8 +3166,8 @@ typedef struct {
  * 3: data register 3
  * ...
  * 29: data register 29
- * 30: value 0 when send, wait 0 in receive
- * 31: value1 when send,  wait 1 in receive
+ * 30: do not set this value
+ * 31: do not set this value
  */
 #define SEI_INSTR_CRC_MASK (0x1F0000UL)
 #define SEI_INSTR_CRC_SHIFT (16U)
@@ -3613,15 +3539,6 @@ typedef struct {
 #define SEI_CTRL_1 (1UL)
 #define SEI_CTRL_2 (2UL)
 #define SEI_CTRL_3 (3UL)
-#define SEI_CTRL_4 (4UL)
-#define SEI_CTRL_5 (5UL)
-#define SEI_CTRL_6 (6UL)
-#define SEI_CTRL_7 (7UL)
-#define SEI_CTRL_8 (8UL)
-#define SEI_CTRL_9 (9UL)
-#define SEI_CTRL_10 (10UL)
-#define SEI_CTRL_11 (11UL)
-#define SEI_CTRL_12 (12UL)
 
 /* INSTR register group index macro definition */
 #define SEI_INSTR_0 (0UL)
@@ -3752,134 +3669,6 @@ typedef struct {
 #define SEI_INSTR_125 (125UL)
 #define SEI_INSTR_126 (126UL)
 #define SEI_INSTR_127 (127UL)
-#define SEI_INSTR_128 (128UL)
-#define SEI_INSTR_129 (129UL)
-#define SEI_INSTR_130 (130UL)
-#define SEI_INSTR_131 (131UL)
-#define SEI_INSTR_132 (132UL)
-#define SEI_INSTR_133 (133UL)
-#define SEI_INSTR_134 (134UL)
-#define SEI_INSTR_135 (135UL)
-#define SEI_INSTR_136 (136UL)
-#define SEI_INSTR_137 (137UL)
-#define SEI_INSTR_138 (138UL)
-#define SEI_INSTR_139 (139UL)
-#define SEI_INSTR_140 (140UL)
-#define SEI_INSTR_141 (141UL)
-#define SEI_INSTR_142 (142UL)
-#define SEI_INSTR_143 (143UL)
-#define SEI_INSTR_144 (144UL)
-#define SEI_INSTR_145 (145UL)
-#define SEI_INSTR_146 (146UL)
-#define SEI_INSTR_147 (147UL)
-#define SEI_INSTR_148 (148UL)
-#define SEI_INSTR_149 (149UL)
-#define SEI_INSTR_150 (150UL)
-#define SEI_INSTR_151 (151UL)
-#define SEI_INSTR_152 (152UL)
-#define SEI_INSTR_153 (153UL)
-#define SEI_INSTR_154 (154UL)
-#define SEI_INSTR_155 (155UL)
-#define SEI_INSTR_156 (156UL)
-#define SEI_INSTR_157 (157UL)
-#define SEI_INSTR_158 (158UL)
-#define SEI_INSTR_159 (159UL)
-#define SEI_INSTR_160 (160UL)
-#define SEI_INSTR_161 (161UL)
-#define SEI_INSTR_162 (162UL)
-#define SEI_INSTR_163 (163UL)
-#define SEI_INSTR_164 (164UL)
-#define SEI_INSTR_165 (165UL)
-#define SEI_INSTR_166 (166UL)
-#define SEI_INSTR_167 (167UL)
-#define SEI_INSTR_168 (168UL)
-#define SEI_INSTR_169 (169UL)
-#define SEI_INSTR_170 (170UL)
-#define SEI_INSTR_171 (171UL)
-#define SEI_INSTR_172 (172UL)
-#define SEI_INSTR_173 (173UL)
-#define SEI_INSTR_174 (174UL)
-#define SEI_INSTR_175 (175UL)
-#define SEI_INSTR_176 (176UL)
-#define SEI_INSTR_177 (177UL)
-#define SEI_INSTR_178 (178UL)
-#define SEI_INSTR_179 (179UL)
-#define SEI_INSTR_180 (180UL)
-#define SEI_INSTR_181 (181UL)
-#define SEI_INSTR_182 (182UL)
-#define SEI_INSTR_183 (183UL)
-#define SEI_INSTR_184 (184UL)
-#define SEI_INSTR_185 (185UL)
-#define SEI_INSTR_186 (186UL)
-#define SEI_INSTR_187 (187UL)
-#define SEI_INSTR_188 (188UL)
-#define SEI_INSTR_189 (189UL)
-#define SEI_INSTR_190 (190UL)
-#define SEI_INSTR_191 (191UL)
-#define SEI_INSTR_192 (192UL)
-#define SEI_INSTR_193 (193UL)
-#define SEI_INSTR_194 (194UL)
-#define SEI_INSTR_195 (195UL)
-#define SEI_INSTR_196 (196UL)
-#define SEI_INSTR_197 (197UL)
-#define SEI_INSTR_198 (198UL)
-#define SEI_INSTR_199 (199UL)
-#define SEI_INSTR_200 (200UL)
-#define SEI_INSTR_201 (201UL)
-#define SEI_INSTR_202 (202UL)
-#define SEI_INSTR_203 (203UL)
-#define SEI_INSTR_204 (204UL)
-#define SEI_INSTR_205 (205UL)
-#define SEI_INSTR_206 (206UL)
-#define SEI_INSTR_207 (207UL)
-#define SEI_INSTR_208 (208UL)
-#define SEI_INSTR_209 (209UL)
-#define SEI_INSTR_210 (210UL)
-#define SEI_INSTR_211 (211UL)
-#define SEI_INSTR_212 (212UL)
-#define SEI_INSTR_213 (213UL)
-#define SEI_INSTR_214 (214UL)
-#define SEI_INSTR_215 (215UL)
-#define SEI_INSTR_216 (216UL)
-#define SEI_INSTR_217 (217UL)
-#define SEI_INSTR_218 (218UL)
-#define SEI_INSTR_219 (219UL)
-#define SEI_INSTR_220 (220UL)
-#define SEI_INSTR_221 (221UL)
-#define SEI_INSTR_222 (222UL)
-#define SEI_INSTR_223 (223UL)
-#define SEI_INSTR_224 (224UL)
-#define SEI_INSTR_225 (225UL)
-#define SEI_INSTR_226 (226UL)
-#define SEI_INSTR_227 (227UL)
-#define SEI_INSTR_228 (228UL)
-#define SEI_INSTR_229 (229UL)
-#define SEI_INSTR_230 (230UL)
-#define SEI_INSTR_231 (231UL)
-#define SEI_INSTR_232 (232UL)
-#define SEI_INSTR_233 (233UL)
-#define SEI_INSTR_234 (234UL)
-#define SEI_INSTR_235 (235UL)
-#define SEI_INSTR_236 (236UL)
-#define SEI_INSTR_237 (237UL)
-#define SEI_INSTR_238 (238UL)
-#define SEI_INSTR_239 (239UL)
-#define SEI_INSTR_240 (240UL)
-#define SEI_INSTR_241 (241UL)
-#define SEI_INSTR_242 (242UL)
-#define SEI_INSTR_243 (243UL)
-#define SEI_INSTR_244 (244UL)
-#define SEI_INSTR_245 (245UL)
-#define SEI_INSTR_246 (246UL)
-#define SEI_INSTR_247 (247UL)
-#define SEI_INSTR_248 (248UL)
-#define SEI_INSTR_249 (249UL)
-#define SEI_INSTR_250 (250UL)
-#define SEI_INSTR_251 (251UL)
-#define SEI_INSTR_252 (252UL)
-#define SEI_INSTR_253 (253UL)
-#define SEI_INSTR_254 (254UL)
-#define SEI_INSTR_255 (255UL)
 
 /* DAT register group index macro definition */
 #define SEI_DAT_0 (0UL)
@@ -3900,20 +3689,6 @@ typedef struct {
 #define SEI_DAT_15 (15UL)
 #define SEI_DAT_16 (16UL)
 #define SEI_DAT_17 (17UL)
-#define SEI_DAT_18 (18UL)
-#define SEI_DAT_19 (19UL)
-#define SEI_DAT_20 (20UL)
-#define SEI_DAT_21 (21UL)
-#define SEI_DAT_22 (22UL)
-#define SEI_DAT_23 (23UL)
-#define SEI_DAT_24 (24UL)
-#define SEI_DAT_25 (25UL)
-#define SEI_DAT_26 (26UL)
-#define SEI_DAT_27 (27UL)
-#define SEI_DAT_28 (28UL)
-#define SEI_DAT_29 (29UL)
-#define SEI_DAT_30 (30UL)
-#define SEI_DAT_31 (31UL)
 
 
 #endif /* HPM_SEI_H */

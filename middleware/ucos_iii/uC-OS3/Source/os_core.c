@@ -4,6 +4,7 @@
 *                                        The Real-Time Kernel
 *
 *                    Copyright 2009-2022 Silicon Laboratories Inc. www.silabs.com
+*                    Copyright 2025      HPMicro www.hpmicro.com
 *
 *                                 SPDX-License-Identifier: APACHE-2.0
 *
@@ -26,6 +27,10 @@
 #define  MICRIUM_SOURCE
 #include "os.h"
 
+#if !defined(DISABLE_IRQ_PREEMPTIVE) || (DISABLE_IRQ_PREEMPTIVE == 0)
+#include "hpm_soc.h"
+#include "hpm_interrupt.h"
+#endif
 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
 const  CPU_CHAR  *os_core__c = "$Id: $";
 #endif
@@ -272,6 +277,11 @@ void  OSIntEnter (void)
         return;                                                 /* Yes                                                  */
     }
 
+#if !defined(DISABLE_IRQ_PREEMPTIVE) || (DISABLE_IRQ_PREEMPTIVE == 0)
+    if (OSIntNestingCtr == 0) {
+        clear_csr(CSR_MIE, CSR_MIE_MTIE_MASK | CSR_MIE_MSIE_MASK);
+    }
+#endif
     OSIntNestingCtr++;                                          /* Increment ISR nesting level                          */
 }
 
@@ -328,7 +338,11 @@ void  OSIntExit (void)
         CPU_INT_EN();                                           /* Yes                                                  */
         return;
     }
-
+#if !defined(DISABLE_IRQ_PREEMPTIVE) || (DISABLE_IRQ_PREEMPTIVE == 0)
+    if (OSIntNestingCtr == 0) {
+        set_csr(CSR_MIE, CSR_MIE_MTIE_MASK | CSR_MIE_MSIE_MASK);
+    }
+#endif
                                                                 /* Verify ISR Stack                                     */
 #if (OS_CFG_ISR_STK_SIZE > 0u)
 #if (OS_CFG_TASK_STK_REDZONE_EN > 0u)

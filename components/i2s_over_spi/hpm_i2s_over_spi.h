@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -111,9 +111,10 @@ bool hpm_i2s_master_over_spi_tx_is_busy(hpm_i2s_over_spi_t *i2s);
 hpm_stat_t hpm_i2s_master_over_spi_tx_buffer_nonblocking(hpm_i2s_over_spi_t *i2s,
                                                         uint8_t protocol, uint32_t lrck_hz, uint8_t audio_depth,
                                                         uint8_t *data, uint32_t size);
-
 /**
  * @brief Transmit for i2s master over spi
+ *
+ * @note This API will be deprecated in future versions. It is recommended to use the hpm_i2s_master_over_spi_tx_buffer_blocking API instead.
  *
  * @param [in] i2s i2s over spi context
  * @param [in] protocol i2s protocol, only support I2S_PROTOCOL_MSB_JUSTIFIED I2S_PROTOCOL_LSB_JUSTIFIED
@@ -125,9 +126,27 @@ hpm_stat_t hpm_i2s_master_over_spi_tx_buffer_nonblocking(hpm_i2s_over_spi_t *i2s
  * @retval status_success if no error occurred
  */
 hpm_stat_t hpm_i2s_master_over_spi_tx_buffer(hpm_i2s_over_spi_t *i2s,
+                                            uint8_t protocol, uint32_t lrck_hz,
+                                            uint8_t audio_depth, uint8_t *data,
+                                            uint32_t size);
+
+/**
+ * @brief Transmit for i2s master over spi in a blocking.
+ *
+ * @param [in] i2s i2s over spi context
+ * @param [in] protocol i2s protocol, only support I2S_PROTOCOL_MSB_JUSTIFIED I2S_PROTOCOL_LSB_JUSTIFIED
+ * @param [in] lrck_hz switch left and right channels frequency, unit: hz
+ * @param [in] audio_depth audio depth only support 16bits and 32bits
+ * @param [in] data data pointer
+ * @param [in] size transmit size
+ * @param [in] timeout timeout value, unit: ms
+ *
+ * @retval status_success if no error occurred
+ */
+hpm_stat_t hpm_i2s_master_over_spi_tx_buffer_blocking(hpm_i2s_over_spi_t *i2s,
                                              uint8_t protocol, uint32_t lrck_hz,
                                              uint8_t audio_depth, uint8_t *data,
-                                             uint32_t size);
+                                             uint32_t size, uint32_t timeout);
 
 /**
  * @brief Stop Transmission for i2s master over spi

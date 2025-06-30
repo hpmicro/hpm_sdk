@@ -6,27 +6,33 @@ HALF_DUPLEX_SPI_MASTER_POLLING
 Overview
 --------
 
-The half_duplex_master_polling example shows how to use spi driver as master to do board to board half duplex transfer with polling.
-In this example, one spi instance as master and another spi instance on other board as slave. Master sends a piece of data to slave, and receives a piece of data from slave. This example checks if the data received from slave is correct.
+- The `half_duplex_master_polling` example project demonstrates the use of SPI in **master mode** with polling for half-duplex communication between two boards. In this example, one board acts as the SPI master while the other acts as the SPI slave. The master sends a set of data to the slave and receives a set of data from the slave.
+
+
+Tips
+----
+
+- For detailed documentation about SPI components, please refer to :ref:`spi_component <spi_component>`
 
 Board Setting
 -------------
 
-Connect  :ref:`SPI Pins <board_resource>`  of the two boards.
+- Connect the :ref:`SPI pins <board_resource>` between two boards.
 
-the two boards must be connected to the GND of both sides for a common ground to ensure signal transmission.
+- Both boards must be connected via a shared GND (ground) to ensure signal integrity.
 
 Notice
 ------
 
-- In polling mode, as a slave, if the SCLK frequency of the SPI bus is too high, the FIFO may not be able to write or read in time, resulting in overflow. It is recommended to use DMA mode at high sclk frequency.
+- In polling mode, if the SPI bus's **SCLK frequency is too high**, the FIFO may not have enough time to write or read data, potentially causing overflow. For high SCLK frequencies, it is recommended to use **DMA mode** instead.
+
 
 Running the example
 -------------------
 
-- Run slave first, and then run master.
+- Run the slave firmware first, followed by the master.
 
-- When the example runs successfully, the log would be seen on the terminal like:
+- When the project runs correctly, the serial terminal will display output similar to the following:
 
 
 .. code-block:: console

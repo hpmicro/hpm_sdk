@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -12,6 +12,7 @@
 #include "hpm_lcdc_drv.h"
 #include "file_op.h"
 #include "hpm_pdma_drv.h"
+#include "hpm_l1c_drv.h"
 
 #if defined PNG_USE_SDCARD
 #include "sd_fatfs.h"
@@ -39,9 +40,10 @@
  * Define variables
  *---------------------------------------------------------------------
  */
+ATTR_PLACE_AT_WITH_ALIGNMENT(".framebuffer", HPM_L1C_CACHELINE_SIZE) uint8_t out_buf[DECODE_BUFFER_LEN];
 ATTR_PLACE_AT_NONCACHEABLE uint32_t scale_buffer[BOARD_LCD_HEIGHT * BOARD_LCD_WIDTH];
-ATTR_PLACE_AT_NONCACHEABLE uint8_t file_buffer[FILE_BUFFER_LEN];
-ATTR_PLACE_AT_NONCACHEABLE_BSS FIL file;
+ATTR_ALIGN(HPM_L1C_CACHELINE_SIZE) uint8_t file_buffer[FILE_BUFFER_LEN];
+FIL file;
 
 static bool lcd_is_on;
 static volatile bool vsync;
@@ -154,9 +156,8 @@ void decode_show(uint8_t *f_buf, uint32_t size)
 {
     uint8_t *image;
     uint32_t image_width, image_height;
-    uint32_t display_width, display_height;
+    uint32_t display_buffer_address, display_width, display_height;
     uint32_t error;
-    uint32_t *u32_ptr;
 
     board_lcd_backlight(false);
 
@@ -166,7 +167,16 @@ void decode_show(uint8_t *f_buf, uint32_t size)
         free(image);
         return;
     }
-    convert_abgr8888_to_argb8888((uint32_t *)image, image_width, image_height);
+    if ((image_width * image_height * 4) > DECODE_BUFFER_LEN) {
+        printf("resolution is too large %d x %d\n", image_width, image_height);
+        return;
+    }
+    convert_abgr8888_to_argb8888(image, image_width, image_height, out_buf);
+    free(image);
+    if (l1c_dc_is_enabled()) {
+        l1c_dc_writeback((uint32_t)out_buf, HPM_L1C_CACHELINE_ALIGN_UP(image_width * image_height * 4));
+    }
+
     printf("sw decode completed\n");
 
     if ((image_width > BOARD_LCD_WIDTH) || (image_height > BOARD_LCD_HEIGHT)) {
@@ -180,7 +190,7 @@ void decode_show(uint8_t *f_buf, uint32_t size)
         stat = pdma_scale(PDMA,
                 (uint32_t)core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)scale_buffer),
                 display_width,
-                (uint32_t)core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)image),
+                (uint32_t)core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)out_buf),
                 image_width,
                 0, 0, image_width, image_height,
                 display_width, display_height,
@@ -192,17 +202,14 @@ void decode_show(uint8_t *f_buf, uint32_t size)
             }
         }
 
+        display_buffer_address = (uint32_t)scale_buffer;
     } else {
-        u32_ptr = (uint32_t *)image;
-        for (uint32_t i = 0; i < (image_width * image_height); i++) {
-            scale_buffer[i] = u32_ptr[i];
-        }
+        display_buffer_address = (uint32_t)out_buf;
         display_width = image_width;
         display_height = image_height;
     }
 
-    free(image);
-    update_lcd_layer((uint32_t)scale_buffer, display_width, display_height, PIXEL_FORMAT);
+    update_lcd_layer(display_buffer_address, display_width, display_height, PIXEL_FORMAT);
     board_delay_ms(120);
     board_lcd_backlight(true);
 }

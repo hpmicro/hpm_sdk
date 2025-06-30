@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -152,6 +152,40 @@ hpm_stat_t hpm_serial_nor_init(hpm_serial_nor_t *flash, hpm_serial_nor_info_t *i
  * @return hpm_stat_t: status_success if get information success
  */
 hpm_stat_t hpm_serial_nor_get_info(hpm_serial_nor_t *flash, hpm_serial_nor_info_t *info);
+
+#if (SERIAL_NOR_USE_DMA_MGR == 1)
+
+/**
+ * @brief Get TX DMA manager resource for serial NOR flash
+ * @param[in] flash Pointer to serial NOR flash device instance
+ * @return dma_resource_t*
+ *   - Valid pointer: TX DMA resource handle
+ *   - NULL: Invalid parameter or resource not initialized
+ *
+ * @note This should be used when DMA manager component is enabled
+ *       The obtained DMA resource can be used for:
+ *       - Querying DMA channel number
+ *       - Configuring DMA chaining
+ *       - Monitoring DMA transfer status
+ */
+dma_resource_t *hpm_serial_nor_get_tx_dma_mgr_resource(hpm_serial_nor_t *flash);
+
+/**
+ * @brief Get RX DMA manager resource for serial NOR flash
+ * @param[in] flash Pointer to serial NOR flash device instance
+ * @return dma_resource_t*
+ *   - Valid pointer: RX DMA resource handle
+ *   - NULL: Invalid parameter or resource not initialized
+ *
+ * @note Should be used when DMA manager component is enabled
+ *       The obtained DMA resource can be used for:
+ *       - Querying DMA channel allocation
+ *       - Configuring RX data transfer chain
+ *       - Monitoring RX completion status
+ */
+dma_resource_t *hpm_serial_nor_get_rx_dma_mgr_resource(hpm_serial_nor_t *flash);
+
+#endif
 
 #ifdef __cplusplus
 }

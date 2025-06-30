@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -24,6 +24,8 @@
 #define UART_SOC_OVERSAMPLE_MAX HPM_UART_OSC_MAX
 #endif
 
+#define HPM_UART_BAUDRATE_SCALE (1000U)
+
 void uart_default_config(UART_Type *ptr, uart_config_t *config)
 {
     (void) ptr;
@@ -44,8 +46,7 @@ void uart_default_config(UART_Type *ptr, uart_config_t *config)
     config->rxidle_config.idle_cond = uart_rxline_idle_cond_rxline_logic_one;
     config->rxidle_config.threshold = 10; /* 10-bit for typical UART configuration (8-N-1) */
 #endif
-    /* if have 9bit_mode function, it's has be tx_idle function */
-#if defined(HPM_IP_FEATURE_UART_9BIT_MODE) && (HPM_IP_FEATURE_UART_9BIT_MODE == 1)
+#if defined(HPM_IP_FEATURE_UART_TX_IDLE_DETECT) && (HPM_IP_FEATURE_UART_TX_IDLE_DETECT == 1)
     config->txidle_config.detect_enable = false;
     config->txidle_config.detect_irq_enable = false;
     config->txidle_config.idle_cond = uart_rxline_idle_cond_rxline_logic_one;
@@ -59,7 +60,7 @@ void uart_default_config(UART_Type *ptr, uart_config_t *config)
 static bool uart_calculate_baudrate(uint32_t freq, uint32_t baudrate, uint16_t *div_out, uint8_t *osc_out)
 {
     uint16_t div, osc, delta;
-    float tmp;
+    uint64_t tmp;
     if ((div_out == NULL) || (!freq) || (!baudrate)
             || (baudrate < HPM_UART_MINIMUM_BAUDRATE)
             || (freq / HPM_UART_BAUDRATE_DIV_MIN < baudrate * HPM_UART_OSC_MIN)
@@ -67,22 +68,23 @@ static bool uart_calculate_baudrate(uint32_t freq, uint32_t baudrate, uint16_t *
         return 0;
     }
 
-    tmp = (float) freq / baudrate;
+    tmp = ((uint64_t)freq * HPM_UART_BAUDRATE_SCALE) / baudrate;
 
     for (osc = HPM_UART_OSC_MIN; osc <= UART_SOC_OVERSAMPLE_MAX; osc += 2) {
         /* osc range: HPM_UART_OSC_MIN - UART_SOC_OVERSAMPLE_MAX, even number */
         delta = 0;
-        div = (uint16_t)(tmp / osc);
+        /* Calculate divider with rounding */
+        div = (uint16_t)((tmp + osc * (HPM_UART_BAUDRATE_SCALE / 2)) / (osc * HPM_UART_BAUDRATE_SCALE));
         if (div < HPM_UART_BAUDRATE_DIV_MIN) {
             /* invalid div */
             continue;
         }
-        if (div * osc > tmp) {
-            delta = (uint16_t)(div * osc - tmp);
+        if ((div * osc * HPM_UART_BAUDRATE_SCALE) > tmp) {
+            delta = (uint16_t)(((div * osc * HPM_UART_BAUDRATE_SCALE) - tmp) / HPM_UART_BAUDRATE_SCALE);
         } else if (div * osc < tmp) {
-            delta = (uint16_t)(tmp - div * osc);
+            delta = (uint16_t)((tmp - (div * osc * HPM_UART_BAUDRATE_SCALE)) / HPM_UART_BAUDRATE_SCALE);
         }
-        if (delta && ((delta * 100 / tmp) > HPM_UART_BAUDRATE_TOLERANCE)) {
+        if (delta && (((delta * 100 * HPM_UART_BAUDRATE_SCALE) / tmp) > HPM_UART_BAUDRATE_TOLERANCE)) {
             continue;
         } else {
             *div_out = div;
@@ -190,6 +192,11 @@ hpm_stat_t uart_init(UART_Type *ptr, uart_config_t *config)
 #if defined(HPM_IP_FEATURE_UART_RX_IDLE_DETECT) && (HPM_IP_FEATURE_UART_RX_IDLE_DETECT == 1)
     uart_init_rxline_idle_detection(ptr, config->rxidle_config);
 #endif
+
+#if defined(HPM_IP_FEATURE_UART_TX_IDLE_DETECT) && (HPM_IP_FEATURE_UART_TX_IDLE_DETECT == 1)
+    uart_init_txline_idle_detection(ptr, config->txidle_config);
+#endif
+
 #if defined(HPM_IP_FEATURE_UART_RX_EN) && (HPM_IP_FEATURE_UART_RX_EN == 1)
     if (config->rx_enable) {
         ptr->IDLE_CFG |= UART_IDLE_CFG_RXEN_MASK;
@@ -335,8 +342,7 @@ hpm_stat_t uart_init_rxline_idle_detection(UART_Type *ptr, uart_rxline_idle_conf
 }
 #endif
 
-/* if have 9bit_mode function, it's has be tx_idle function */
-#if defined(HPM_IP_FEATURE_UART_9BIT_MODE) && (HPM_IP_FEATURE_UART_9BIT_MODE == 1)
+#if defined(HPM_IP_FEATURE_UART_TX_IDLE_DETECT) && (HPM_IP_FEATURE_UART_TX_IDLE_DETECT == 1)
 hpm_stat_t uart_init_txline_idle_detection(UART_Type *ptr, uart_rxline_idle_config_t txidle_config)
 {
     ptr->IDLE_CFG &= ~(UART_IDLE_CFG_TX_IDLE_EN_MASK

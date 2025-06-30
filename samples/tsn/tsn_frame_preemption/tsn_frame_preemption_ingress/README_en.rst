@@ -42,17 +42,21 @@ Run Example
      Link Status: Up
      Link Speed:  1000Mbps
      Link Duplex: Full duplex
-     tc: 1 - utag: 2 - tts(s): 842.005733760 - frame interval(ns): 0
-     tc: 0 - utag: 1 - tts(s): 842.005735630 - frame interval(ns): 1870
      FPE MMS Fragment Tx Counter: 1
      ==================================================================
-     tc: 1 - utag: 2 - tts(s): 842.526724320 - frame interval(ns): 0
-     tc: 0 - utag: 1 - tts(s): 842.526726000 - frame interval(ns): 1680
      FPE MMS Fragment Tx Counter: 2
      ==================================================================
-     tc: 1 - utag: 2 - tts(s): 843.047703500 - frame interval(ns): 0
-     tc: 0 - utag: 1 - tts(s): 843.047705180 - frame interval(ns): 1680
      FPE MMS Fragment Tx Counter: 3
+     ==================================================================
+     FPE MMS Fragment Tx Counter: 4
+     ==================================================================
+     FPE MMS Fragment Tx Counter: 5
+     ==================================================================
+     FPE MMS Fragment Tx Counter: 6
+     ==================================================================
+     FPE MMS Fragment Tx Counter: 7
+     ==================================================================
+     FPE MMS Fragment Tx Counter: 8
      ==================================================================
 
 

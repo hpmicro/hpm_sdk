@@ -124,7 +124,7 @@ typedef struct {
 /*
  * Z_ONLY_EN (RW)
  *
- * 1- phcnt will set to phidx when Z input assert(for xy analog signal and digital z, also need set phcaliz)
+ * 1- phcnt will set to phidx when Z input assert(only using z phase, ignore ab phase signals)
  */
 #define QEIV2_CR_Z_ONLY_EN_MASK (0x100000UL)
 #define QEIV2_CR_Z_ONLY_EN_SHIFT (20U)

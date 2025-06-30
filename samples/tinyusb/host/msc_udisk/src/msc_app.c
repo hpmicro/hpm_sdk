@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -11,13 +11,20 @@
 #include "ff.h"
 #include "file_op.h"
 
-ATTR_PLACE_AT_NONCACHEABLE_INIT char wbuff[50] = {"USB Host MSC FatFs Demo!"};
-ATTR_PLACE_AT_NONCACHEABLE_INIT char rbuff[50] = {0};
-
 #if CFG_TUH_MSC
 ATTR_PLACE_AT_NONCACHEABLE static scsi_inquiry_resp_t inquiry_resp;
+
+#if !defined(FATFS_ONLY_NONCACHEABLE_BUF) || !FATFS_ONLY_NONCACHEABLE_BUF
+char wbuff[50] = {"USB Host MSC FatFs Demo!"};
+char rbuff[50];
+FATFS fatfs[CFG_TUH_DEVICE_MAX];
+FIL file;
+#else
+ATTR_PLACE_AT_NONCACHEABLE_INIT char wbuff[50] = {"USB Host MSC FatFs Demo!"};
+ATTR_PLACE_AT_NONCACHEABLE_BSS char rbuff[50];
 ATTR_PLACE_AT_NONCACHEABLE FATFS fatfs[CFG_TUH_DEVICE_MAX];
 ATTR_PLACE_AT_NONCACHEABLE FIL file;
+#endif
 
 FRESULT set_timestamp (
     char *obj,   /* Pointer to the file name */

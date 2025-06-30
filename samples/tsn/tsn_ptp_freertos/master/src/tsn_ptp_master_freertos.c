@@ -251,7 +251,6 @@ int main(void)
 
     kernel_init((addr_t)mempool, APP_TSW_SZ_MEMPOOL);
     kernel_start(task_tsw_init, 0);
-    vTaskStartScheduler();
 
     for (;;) {
     }

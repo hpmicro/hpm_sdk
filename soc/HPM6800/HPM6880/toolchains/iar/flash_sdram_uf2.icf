@@ -36,7 +36,7 @@ if (isdefinedsymbol(_extram_size)) {
 define symbol __size_safestack__        = 256;
 
 /* Regions */
-define region XPI0 = mem:[from 0x80000000 + UF2_BOOTLOADER_RESERVED_LENGTH size (__size_flash__ - UF2_BOOTLOADER_RESERVED_LENGTH) ];   /* XPI0 */
+define region FLASH = mem:[from 0x80000000 + UF2_BOOTLOADER_RESERVED_LENGTH size (__size_flash__ - UF2_BOOTLOADER_RESERVED_LENGTH) ];   /* FLASH */
 define region ILM = mem:[from 0x00000000 size 256k];         /* ILM */
 define region DLM = mem:[from 0x00080000 size 256k];         /* DLM */
 define region AXI_SRAM = mem:[from 0x01200000 size 512k];    /* AXI SRAM */
@@ -77,7 +77,7 @@ do not initialize                           { section .noinit, section .noinit.*
 do not initialize                           { section .backup_sram, section .backup_sram.*};
 
 initialize by copy with packing=auto        { section .noncacheable.init, section .noncacheable.init.*, section .fast_ram.init, section .fast_ram.init.* };
-initialize by copy with packing=auto        { section .fast, section .fast.*, section .*.fast, section .*.fast.* };               // "RAM Code" sections
+initialize by copy with packing=auto        { section .fast, section .fast.*, section .*.fast, section .*.fast.*, section .text.*nx* };               // "RAM Code" sections
 initialize by copy with packing=none        { section .vector_table };
 initialize by copy with packing=none        { section .isr_vector };
 initialize by copy with packing=none        { section .vector_s_table };
@@ -86,9 +86,9 @@ initialize by copy with packing=none        { section .isr_s_vector };
 initialize by copy                          { readwrite };
 
 /* Placement */
-place at start of XPI0                      { section .uf2_signature };
-place in XPI0                               { symbol _start};
-place in XPI0                               { block rtthread_FSymTab,
+place at start of FLASH                      { section .uf2_signature };
+place in FLASH                               { symbol _start};
+place in FLASH                               { block rtthread_FSymTab,
                                               block rtthread_VSymTab,
                                               block rtthread_rti_fn,
                                               block rtthread_RTMSymTab,
@@ -97,7 +97,7 @@ place in XPI0                               { block rtthread_FSymTab,
                                             };
 place at start of ILM                       { block vectors, block vectors_s };
 place in ILM                                {
-                                             section .fast, section .fast.*,                       // "ramfunc" section
+                                             section .fast, section .fast.*, section .text.*nx*,                       // "ramfunc" section
                                             };
 place in SDRAM                              { block framebuffer };
 place in AXI_SRAM | SDRAM                   {

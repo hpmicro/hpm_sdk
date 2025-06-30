@@ -1,12 +1,12 @@
 .. _dual_panel:
 
-DUAL_PANEL
+Dual Panel
 ============
 
 Overview
 ---------
 
-The DUAL_PANEL sample demonstrates displaying different content on two screens simultaneously, achieving a dual-screen independent display effect.
+The Dual Panel sample demonstrates displaying different content on two screens simultaneously, achieving a dual-screen independent display effect.
 
 Hardware Setup
 ---------------

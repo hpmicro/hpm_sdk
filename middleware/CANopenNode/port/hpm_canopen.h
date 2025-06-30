@@ -16,10 +16,10 @@
 #include "hpm_canopen_can.h"
 #endif
 #include "can.h"
-#include "canopennode.h"
 #include "CANopen.h"
 #include "CO_driver.h"
 #include "canopen_errno.h"
+#include "hpm_ppor_drv.h"
 
 #ifdef HPMSOC_HAS_HPMSDK_MCAN
 #define HPM_CAN_EXT_FILTER_NUM_MAX (64U)
@@ -30,6 +30,15 @@
 #define HPM_CAN_NUM_TX_BUF_ELEMENTS (2U)
 #define HPM_CAN_FILTER_NUM_MAX (16U)
 #endif
+
+struct hpm_master_receive_buf {
+    uint8_t has_received_message;
+#ifdef HPMSOC_HAS_HPMSDK_MCAN
+    mcan_rx_message_t rx_buf;
+#else
+    can_receive_buf_t rx_buf;
+#endif
+};
 
 struct hpm_can_config {
 #ifdef HPMSOC_HAS_HPMSDK_MCAN
@@ -90,4 +99,4 @@ void canopen_init(struct canopen_context *CANdriverState, CAN_Type *canptr, uint
 #endif
 void enable_can_interrupt(void);
 void config_leds(CO_NMT_t *nmt);
-CO_SDO_abortCode_t odf_2102(CO_ODF_arg_t *odf_arg);
+void hpm_sys_reboot(void);

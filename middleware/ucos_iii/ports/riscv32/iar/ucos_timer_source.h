@@ -1,11 +1,11 @@
 #ifndef _UCOS_TIMER_SOURCE_H_
 #define _UCOS_TIMER_SOURCE_H_
 
-#ifndef CONFIG_UCOS_III_TIMER_RESOURCE_NOT_MCHTMR
+#ifndef CONFIG_UCOS_III_TIMER_RESOURCE_GPTMR
 
 #include "hpm_mchtmr_drv.h"
 
-#else /* CONFIG_UCOS_III_TIMER_RESOURCE_NOT_MCHTMR */
+#else /* CONFIG_UCOS_III_TIMER_RESOURCE_GPTMR */
 
 #include "hpm_gptmr_drv.h"
 #include "hpm_clock_drv.h"
@@ -26,6 +26,6 @@
     #define UCOS_TIMER_CLOCK         BOARD_UCOS_TIMER_CLK_NAME
 #endif
 
-#endif /* End of CONFIG_UCOS_III_TIMER_RESOURCE_NOT_MCHTMR */
+#endif /* End of CONFIG_UCOS_III_TIMER_RESOURCE_GPTMR */
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,9 +9,11 @@
 #include "board.h"
 #include "hpm_sysctl_drv.h"
 #include "hpm_canopen_can.h"
-#include "hpm_canopen_test.h"
+#include "hpm_canopen.h"
 
+#if defined(CONFIG_CANOPEN_MASTER)
 extern struct hpm_master_receive_buf canopen_rx_buf;
+#endif
 
 void hpm_can_get_message(const struct device *dev);
 extern void hpm_sys_reboot(void);
@@ -81,9 +83,11 @@ void hpm_can_get_message(const struct device *dev)
     memset(&rx_buf, 0, sizeof(rx_buf));
     can_read_received_message(can, &rx_buf);
 
+#if defined(CONFIG_CANOPEN_MASTER)
     memset(&canopen_rx_buf, 0, sizeof(canopen_rx_buf));
     canopen_rx_buf.has_received_message = true;
     memcpy(&canopen_rx_buf.rx_buf, &rx_buf, sizeof(rx_buf));
+#endif
 
     uint32_t filter_index = hpm_can_get_first_filter_index(&rx_buf, data);
     frame.id = rx_buf.id;

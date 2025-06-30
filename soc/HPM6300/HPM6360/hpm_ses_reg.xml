@@ -2386,18 +2386,6 @@
     <Register name="PENDING_PENDING3" start="+0x100c" size="0x4">
       <BitField name="INTERRUPT" start="0" size="32"/>
     </Register>
-    <Register name="TRIGGER_TRIGGER0" start="+0x1080" size="0x4">
-      <BitField name="INTERRUPT" start="0" size="32"/>
-    </Register>
-    <Register name="TRIGGER_TRIGGER1" start="+0x1084" size="0x4">
-      <BitField name="INTERRUPT" start="0" size="32"/>
-    </Register>
-    <Register name="TRIGGER_TRIGGER2" start="+0x1088" size="0x4">
-      <BitField name="INTERRUPT" start="0" size="32"/>
-    </Register>
-    <Register name="TRIGGER_TRIGGER3" start="+0x108c" size="0x4">
-      <BitField name="INTERRUPT" start="0" size="32"/>
-    </Register>
     <Register name="NUMBER" start="+0x1100" size="0x4">
       <BitField name="NUM_TARGET" start="16" size="16"/>
       <BitField name="NUM_INTERRUPT" start="0" size="16"/>
@@ -4069,7 +4057,6 @@
       <BitField name="REG_EN" start="24" size="1"/>
       <BitField name="BANDGAP_EN" start="23" size="1"/>
       <BitField name="CAL_AVG_CFG" start="20" size="3"/>
-      <BitField name="PREEMPT_EN" start="14" size="1"/>
       <BitField name="CONV_PARAM" start="0" size="14"/>
     </Register>
     <Register name="ADC16_CONFIG1" start="+0x1460" size="0x4">
@@ -4703,7 +4690,6 @@
       <BitField name="REG_EN" start="24" size="1"/>
       <BitField name="BANDGAP_EN" start="23" size="1"/>
       <BitField name="CAL_AVG_CFG" start="20" size="3"/>
-      <BitField name="PREEMPT_EN" start="14" size="1"/>
       <BitField name="CONV_PARAM" start="0" size="14"/>
     </Register>
     <Register name="ADC16_CONFIG1" start="+0x1460" size="0x4">
@@ -5337,7 +5323,6 @@
       <BitField name="REG_EN" start="24" size="1"/>
       <BitField name="BANDGAP_EN" start="23" size="1"/>
       <BitField name="CAL_AVG_CFG" start="20" size="3"/>
-      <BitField name="PREEMPT_EN" start="14" size="1"/>
       <BitField name="CONV_PARAM" start="0" size="14"/>
     </Register>
     <Register name="ADC16_CONFIG1" start="+0x1460" size="0x4">

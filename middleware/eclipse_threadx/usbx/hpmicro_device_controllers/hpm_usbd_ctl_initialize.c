@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -23,8 +23,9 @@
 #include "ux_api.h"
 #include "hpm_usbd_ctl.h"
 #include "ux_device_stack.h"
-static ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(USB_SOC_DCD_DATA_RAM_ADDRESS_ALIGNMENT) dcd_data_t _dcd_data[USB_SOC_MAX_COUNT];
-static ATTR_PLACE_AT_NONCACHEABLE usb_device_handle_t usb_device_handle[USB_SOC_MAX_COUNT];
+static ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(USB_SOC_DCD_DATA_RAM_ADDRESS_ALIGNMENT)
+    uint8_t _dcd_data[USB_SOC_MAX_COUNT][HPM_ALIGN_UP(sizeof(dcd_data_t), USB_SOC_DCD_DATA_RAM_ADDRESS_ALIGNMENT)];
+static ATTR_PLACE_AT_NONCACHEABLE_BSS usb_device_handle_t usb_device_handle[USB_SOC_MAX_COUNT];
 /**************************************************************************/
 /*                                                                        */
 /*  FUNCTION                                               RELEASE        */
@@ -107,7 +108,7 @@ UINT _hpm_usbd_initialize(ULONG controller_id, usb_device_handle_t **handle)
     int_mask = (USB_USBINTR_UE_MASK | USB_USBINTR_UEE_MASK | USB_USBINTR_PCE_MASK | USB_USBINTR_URE_MASK);
 
     usb_device_handle[0].regs = (USB_Type *)HPM_USB0_BASE;
-    usb_device_handle[0].dcd_data = &_dcd_data[0];
+    usb_device_handle[0].dcd_data = (dcd_data_t *)&_dcd_data[0][0];
 
     if (!usb_device_init(&usb_device_handle[0], int_mask)) {
         assert(0);

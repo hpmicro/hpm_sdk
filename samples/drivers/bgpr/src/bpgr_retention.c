@@ -21,7 +21,7 @@ int main(void)
     board_init();
     board_init_led_pins();
 
-    printf("bpgr retention example\n");
+    printf("bgpr retention example\n");
     board_led_write(board_get_led_gpio_off_level());
 
     if (!bpor_is_reg_value_retention_enable(HPM_BPOR)) {
@@ -29,19 +29,24 @@ int main(void)
         for (uint32_t i = 0; i < sizeof(BGPR_Type) / sizeof(uint32_t); i++) {
             bgpr_write32(BOARD_BGPR, i, gpr_value_list[i]);
         }
-        printf("bpgr retention enable and data initialized, please keep vbat and power down!\n");
+        printf("bgpr retention enable and data initialized, please keep vbat and power down!\n");
     } else {
         for (uint32_t i = 0; i < sizeof(BGPR_Type) / sizeof(uint32_t); i++) {
             bgpr_read32(BOARD_BGPR, i, &bgpr_val);
             if (bgpr_val != gpr_value_list[i]) {
                 rlt_ok = false;
-                printf("bpgr data retention failure, index: %d!\n", i);
+                printf("bgpr data retention failure, index: %d!\n", i);
             }
         }
 
         if (rlt_ok) {
             board_led_write(!board_get_led_gpio_off_level());
-            printf("bpgr data retention success!\n");
+            printf("bgpr data retention success!\n");
+        } else {
+            for (uint32_t i = 0; i < sizeof(BGPR_Type) / sizeof(uint32_t); i++) {
+                bgpr_write32(BOARD_BGPR, i, gpr_value_list[i]);
+            }
+            printf("Because bgpr data compare failure, so re-initialize bgpr data, please keep vbat and power down again!\n");
         }
     }
 

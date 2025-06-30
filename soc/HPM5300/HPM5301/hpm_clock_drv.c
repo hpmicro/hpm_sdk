@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -33,6 +33,10 @@
 #define CLOCK_ON (true)
 #define CLOCK_OFF (false)
 
+typedef struct _pllclk_div_map {
+    uint8_t pll_idx;
+    uint8_t pll_div;
+} clk_pll_div_map_t;
 
 /***********************************************************************************************************************
  * Prototypes
@@ -76,6 +80,16 @@ static const clock_node_t s_adc_clk_mux_node[] = {
 };
 
 static EWDG_Type *const s_wdgs[] = { HPM_EWDG0, HPM_EWDG1};
+static const clk_pll_div_map_t s_clk_pll_div_map[] = {
+    {0xFF, 1}, /* OSC, Div 1 */
+    {pllctlv2_pll0, pllctlv2_clk0}, /* PLL0, clock 0 */
+    {pllctlv2_pll0, pllctlv2_clk1}, /* PLL0, clock 1 */
+    {pllctlv2_pll0, pllctlv2_clk2}, /* PLL0, clock 2 */
+    {pllctlv2_pll1, pllctlv2_clk0}, /* PLL1, clock 0 */
+    {pllctlv2_pll1, pllctlv2_clk1}, /* PLL1, clock 1 */
+    {pllctlv2_pll1, pllctlv2_clk2}, /* PLL1, clock 2 */
+    {pllctlv2_pll1, pllctlv2_clk3}, /* PLL1, clock 3 */
+};
 
 uint32_t hpm_core_clock;
 
@@ -288,6 +302,30 @@ clk_src_t clock_get_source(clock_name_t clock_name)
     }
 
     return clk_src;
+}
+
+hpm_stat_t clock_wait_source_stable(clock_name_t clock_name)
+{
+    clk_src_t clk_src = clock_get_source(clock_name);
+    if (clk_src < clk_src_osc32k) {
+        uint64_t ticks_per_ms = clock_get_core_clock_ticks_per_ms();
+        uint64_t timeout_ticks = hpm_csr_get_core_cycle() + 100UL * ticks_per_ms;
+        const clk_pll_div_map_t *map_entry = &s_clk_pll_div_map[clk_src];
+        bool is_stable;
+        do {
+            is_stable = (map_entry->pll_idx == 0xFF) ? pllctlv2_xtal_is_stable(HPM_PLLCTLV2)
+                                                     : pllctlv2_pll_is_stable(HPM_PLLCTLV2, map_entry->pll_idx);
+            if (hpm_csr_get_core_cycle() > timeout_ticks) {
+                return status_timeout;
+            }
+        } while (!is_stable);
+
+        return status_success;
+    } else if (clk_src == clk_src_osc32k) {
+        return status_success;
+    } else {
+        return status_clk_operation_unsupported;
+    }
 }
 
 uint32_t clock_get_divider(clock_name_t clock_name)

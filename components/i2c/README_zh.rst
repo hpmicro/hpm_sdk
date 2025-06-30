@@ -10,7 +10,7 @@ I2C component
 
   - 多实例支持
     - 支持多个I2C实例（如I2C0, I2C1等），每个实例都有独立的配置参数。
-    - 通过``hpm_i2c_context_t``结构体管理每个I2C实例的配置信息，比如地址模式、速度模式、主从机模式
+    - 通过 `hpm_i2c_context_t` 结构体管理每个I2C实例的配置信息，比如地址模式、速度模式、主从机模式
   - 阻塞与非阻塞读写操作接口
     - 支持主从机。
     - 提供了非阻塞式的读写函数。
@@ -104,13 +104,13 @@ I2C初始化
 
 - ``hpm_i2c_initialize`` API原型：
 
-    .. code-block:: c
+  .. code-block:: c
 
         void hpm_i2c_initialize(hpm_i2c_context_t *context);
 
 - **举例**: 实例化I2C0，设置I2C0为主机模式，1Mhz速度，7bit地址模式，地址寄存器传输采用大端模式。
 
-    .. code-block:: c
+  .. code-block:: c
 
         i2c_context.init_config.speed = i2c_speed_1Mhz;
         i2c_context.init_config.speed = i2c_master;
@@ -121,7 +121,7 @@ I2C初始化
 
 - **举例:** 实例化I2C0，设置I2C0为从机模式，1Mhz速度，10bit地址模式，从机设备地址为0x16。
 
-    .. code-block:: c
+  .. code-block:: c
 
         i2c_context.init_config.speed = i2c_speed_1Mhz;
         i2c_context.init_config.speed = i2c_slave;
@@ -139,13 +139,13 @@ DMA配置
 
 - ``hpm_i2c_dma_mgr_install_callback`` API原型：
 
-    .. code-block:: c
+  .. code-block:: c
 
         hpm_stat_t hpm_i2c_dma_mgr_install_callback(hpm_i2c_context_t *context, hpm_i2c_dma_complete_cb complete)
 
-    - 参数说明
+  - 参数说明
 
-        .. list-table::
+    .. list-table::
            :header-rows: 1
 
            * - 参数名
@@ -158,17 +158,17 @@ DMA配置
              - hpm_i2c_dma_complete_cb
              - DMA传输完成后的回调函数指针。当DMA传输结束时，这个回调函数会被调用。
 
-    - 返回值：
+  - 返回值：
 
-      - ``status_success``: 成功
+    - ``status_success``: 成功
 
-      - ``status_invalid_argument``: 无效参数
+    - ``status_invalid_argument``: 无效参数
 
-      - ``status_fail``: 其他错误
+    - ``status_fail``: 其他错误
 
 - **举例**: 如何使用 hpm_i2c_dma_mgr_install_callback 函数来注册回调函数
 
-    .. code-block:: c
+  .. code-block:: c
 
          /* 定义回调函数 */
         void my_dma_complete_callback(uint32_t channel) {
@@ -201,7 +201,7 @@ DMA配置
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - **直接读写操作**：用于I2C主模式下的阻塞读写操作。它会一直等待直到数据传输完成或超时
-- 分为``hpm_i2c_master_write_blocking`` 和 ``hpm_i2c_master_read_blocking`` API
+- 分为 `hpm_i2c_master_write_blocking` 和 ``hpm_i2c_master_read_blocking`` API
 
   - ``hpm_i2c_master_write_blocking`` API函数原型:
 
@@ -211,7 +211,7 @@ DMA配置
 
     - 参数说明
 
-        .. list-table::
+      .. list-table::
            :header-rows: 1
 
            * - 参数名
@@ -281,7 +281,7 @@ DMA配置
 
     - 参数说明
 
-        .. list-table::
+      .. list-table::
            :header-rows: 1
 
            * - 参数名
@@ -346,7 +346,7 @@ DMA配置
         }
 
 - **带地址寄存器读写操作**：用于I2C主模式下向从设备写入地址和数据的阻塞操作。它会等待直到地址和数据传输完成或超时
-- 分为``hpm_i2c_master_addr_write_blocking`` 和 ``hpm_i2c_master_addr_read_blocking`` API
+- 分为 ``hpm_i2c_master_addr_write_blocking`` 和 ``hpm_i2c_master_addr_read_blocking`` API
 
   - ``hpm_i2c_master_addr_write_blocking`` API函数原型:
 
@@ -357,7 +357,7 @@ DMA配置
 
     - 参数说明
 
-        .. list-table::
+      .. list-table::
            :header-rows: 1
 
            * - 参数名
@@ -433,7 +433,7 @@ DMA配置
 
     - 参数说明
 
-        .. list-table::
+      .. list-table::
            :header-rows: 1
 
            * - 参数名
@@ -515,7 +515,7 @@ DMA配置
 ^^^^^^^^
 
 - 用于I2C从模式下的阻塞读写操作。它会一直等待直到数据传输完成或超时
-- 分为``hpm_i2c_slave_write_blocking`` 和 ``hpm_i2c_slave_read_blocking`` API
+- 分为 ``hpm_i2c_slave_write_blocking`` 和 ``hpm_i2c_slave_read_blocking`` API
 
   - ``hpm_i2c_slave_write_blocking`` API函数原型:
 
@@ -525,7 +525,7 @@ DMA配置
 
     - 参数说明
 
-        .. list-table::
+      .. list-table::
            :header-rows: 1
 
            * - 参数名
@@ -577,7 +577,7 @@ DMA配置
 
     - 参数说明
 
-        .. list-table::
+      .. list-table::
            :header-rows: 1
 
            * - 参数名
@@ -630,7 +630,7 @@ DMA配置
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - **直接读写操作**：用于I2C主模式下的非阻塞读写操作
-- 分为``hpm_i2c_master_write_nonblocking`` 和 ``hpm_i2c_master_read_nonblocking`` API
+- 分为 ``hpm_i2c_master_write_nonblocking`` 和 ``hpm_i2c_master_read_nonblocking`` API
 
   - ``hpm_i2c_master_write_nonblocking`` API函数原型:
 
@@ -640,7 +640,7 @@ DMA配置
 
     - 参数说明
 
-        .. list-table::
+      .. list-table::
            :header-rows: 1
 
            * - 参数名
@@ -702,7 +702,7 @@ DMA配置
 
     - 参数说明
 
-        .. list-table::
+      .. list-table::
            :header-rows: 1
 
            * - 参数名
@@ -758,7 +758,7 @@ DMA配置
         /* TODO 由于是非阻塞操作，函数会立即返回，允许程序继续执行其他任务。比如等待此次传输完成 */
 
 - **带地址寄存器读写操作**：用于I2C主模式下向从设备写入地址和数据的非阻塞操作
-- 分为``hpm_i2c_master_addr_write_nonblocking`` 和 ``hpm_i2c_master_addr_read_nonblocking`` API
+- 分为 ``hpm_i2c_master_addr_write_nonblocking`` 和 ``hpm_i2c_master_addr_read_nonblocking`` API
 
   - ``hpm_i2c_master_addr_write_nonblocking`` API函数原型:
 
@@ -768,7 +768,7 @@ DMA配置
 
     - 参数说明
 
-        .. list-table::
+      .. list-table::
            :header-rows: 1
 
            * - 参数名
@@ -838,7 +838,7 @@ DMA配置
 
     - 参数说明
 
-        .. list-table::
+      .. list-table::
            :header-rows: 1
 
            * - 参数名
@@ -913,7 +913,7 @@ DMA配置
 ^^^^^^^^
 
 - 用于I2C从模式下的阻塞读写操作。它会一直等待直到数据传输完成或超时
-- 分为``hpm_i2c_slave_write_nonblocking`` 和 ``hpm_i2c_slave_read_nonblocking`` API
+- 分为 ``hpm_i2c_slave_write_nonblocking`` 和 ``hpm_i2c_slave_read_nonblocking`` API
 
   - ``hpm_i2c_slave_write_nonblocking`` API函数原型:
 
@@ -923,7 +923,7 @@ DMA配置
 
     - 参数说明
 
-        .. list-table::
+      .. list-table::
            :header-rows: 1
 
            * - 参数名
@@ -968,7 +968,7 @@ DMA配置
 
     - 参数说明
 
-        .. list-table::
+      .. list-table::
            :header-rows: 1
 
            * - 参数名
@@ -1016,3 +1016,20 @@ DMA配置
     .. code-block:: c
 
         dma_resource_t *hpm_i2c_get_dma_mgr_resource(hpm_i2c_context_t *context)
+
+- **举例** : 如何使用 hpm_i2c_get_dma_mgr_resource 函数获取DMA通道资源以及获取到DMA通道资源后如何使用DMA通道资源
+    .. code-block:: c
+
+            hpm_i2c_context_t context;
+            /* 初始化I2C... 不做列举 */
+            /* 获取DMA通道资源 */
+            dma_resource_t *i2c_dma_resource = hpm_i2c_get_dma_mgr_resource(&context);
+            if (i2c_dma_resource != NULL) {
+                /* 成功获取DMA通道资源 */
+                printf("I2C DMA channel resource obtained successfully.\n");
+                /* 打印获取到的DMA通道资源占用的DMA实例以及DMA通道 */
+                printf("i2c DMA instance: %d, i2c DMA channel: %d\n", i2c_dma_resource->dma_instance, i2c_dma_resource->dma_channel);
+                /* 改变DMA资源的中断优先级为1*/
+                dma_mgr_enable_dma_irq_with_priority(i2c_dma_resource, 1);
+            }
+

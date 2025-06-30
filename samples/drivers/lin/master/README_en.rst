@@ -5,34 +5,75 @@ lin_master
 
 Overview
 --------
+This example demonstrates the basic functionality of HPM LIN peripheral in master mode, including:
 
-The lin_master sample project shows that LIN sends/receives data at master mode.
+- Support for LIN 2.2A protocol specification
+- Data transmission and reception in master mode
+- Enhanced checksum mode support
+- Wakeup signal transmission
+- Frame interval control
+- Maximum 8-byte data transfer support
+
+Operation Flow
+--------------
+1. Initialization Configuration
+
+   - Initialize LIN pin configuration
+   - Configure LIN clock to 20MHz
+   - Configure interrupt priority
+   - Initialize transmit data buffer
+
+2. Main Loop Processing
+
+   - Send wakeup signal
+   - Execute data transfer operations:
+
+     * ID 0x31: Transmit 8 bytes of data
+     * ID 0x30: Receive 8 bytes of data
+
+   - Handle various events:
+
+     * Transfer completion event
+     * Wakeup signal transmission complete
+     * Error event
+
+3. Interrupt Handling
+
+   - Handle transfer errors
+   - Process wakeup signal completion
+   - Process transfer completion
 
 Board Setting
 -------------
+This example requires the following hardware:
 
-Requires a LIN transceiver and USB_LIN debugger
-Please refer to  :ref:`Pin Description <board_resource>`  for specific board.
-connect LIN transceiver mcu signal to LIN's TX and RX on board, connect LIN transceiver LIN signal to USB_LIN debugger.
+- A LIN transceiver
+- A USB_LIN debugger (as slave)
+- Connection cables
 
-Running the example
+Please refer to :ref:`Pin Description <board_resource>` for specific board.
+Connect LIN transceiver MCU signal to LIN's TX and RX on board, connect LIN transceiver LIN signal to USB_LIN debugger.
+
+Running the Example
 -------------------
+To run this program, USB_LIN debugger configuration is required:
 
-Configure usb_lin debugger:
-- Configure com and baudrate, then click `Set to Debugger` option
+1. Configure Basic Parameters
 
-  .. image:: ../doc/lin_debugger_configuration.png
-     :alt: lin_debugger_configuration
+   - Select correct COM port and baud rate
+   - Click "Set to Debugger" button
 
-- Set ID, data and checksum mode, tick `enable option`， then click `Configure to Debugger` option：
+   .. image:: ../doc/lin_debugger_configuration.png
+      :alt: lin_debugger_configuration
 
-  .. image:: doc/lin_debugger_slave_sent_config.png
-     :alt: lin_debugger_slave_sent
+2. Configure Slave Transmission Options
 
-- Running the example, check the result in debugger window
+   - Set ID, data and checksum mode
+   - Enable the configuration
+   - Click "Configure to Debugger" button
 
-  .. image:: doc/lin_debugger_slave_result.png
-     :alt: lin_debugger_slave_result
+   .. image:: doc/lin_debugger_slave_sent_config.png
+      :alt: lin_debugger_slave_sent
 
 When the example runs successfully, the log would be seen on the terminal like:
 
@@ -44,4 +85,31 @@ When the example runs successfully, the log would be seen on the terminal like:
    0 1 2 3 4 5 6 7
    ID: 30, receive 8 bytes
    7 6 5 4 3 2 1 0
+
+The debugger window will show the following result:
+
+.. image:: doc/lin_debugger_slave_result.png
+   :alt: lin_debugger_slave_result
+
+Debugging Tips
+---------------
+1. Hardware Connection Check
+
+   - Ensure proper connection between LIN transceiver and development board
+   - Check power and ground connections
+
+2. Baud Rate Configuration
+
+   - Ensure baud rate matches between master and slave devices
+   - Default baud rate is 19200bps
+
+3. Frame Format Issues
+
+   - ID mismatch: Verify configured ID matches master's transmitted ID
+   - Verify checksum mode configuration matches
+
+4. Common Error Analysis
+
+   - Check if interrupts are triggered normally, examine status register to locate specific errors
+   - Use oscilloscope to observe LIN bus signal waveform
 

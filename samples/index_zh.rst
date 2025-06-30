@@ -9,7 +9,7 @@
 
 
     audio_codec/index_zh
-    canopen/README_zh
+    canopen/index_zh
     cherryrb/README_zh
     cherrysh/index_zh
     cherryusb/index_zh
@@ -23,6 +23,7 @@
     freemaster/README_zh
     hello_world/README_zh
     hpm_math/index_zh
+    hpm_log/README_zh
     i2c_components/index_zh
     i2s_emulation/README_zh
     image/index_zh
@@ -57,4 +58,3 @@
     vglite/index_zh
     sent/index_zh
 
-:::

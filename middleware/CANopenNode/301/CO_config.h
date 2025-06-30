@@ -2,27 +2,21 @@
  * Configuration macros for CANopenNode.
  *
  * @file        CO_config.h
- * @ingroup     CO_driver
+ * @ingroup     CO_STACK_CONFIG
  * @author      Janez Paternoster
  * @copyright   2020 Janez Paternoster
  *
- * This file is part of CANopenNode, an opensource CANopen Stack.
- * Project home page is <https://github.com/CANopenNode/CANopenNode>.
- * For more information on CANopen see <http://www.can-cia.org/>.
+ * This file is part of <https://github.com/CANopenNode/CANopenNode>, a CANopen Stack.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is
+ * distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and limitations under the License.
  */
-
 
 #ifndef CO_CONFIG_FLAGS_H
 #define CO_CONFIG_FLAGS_H
@@ -33,9 +27,9 @@ extern "C" {
 
 /**
  * @defgroup CO_STACK_CONFIG Stack configuration
- * @ingroup CO_driver
+ * Stack configuration and enabling macros.
  *
- * Stack configuration macros specify, which parts of the stack will be enabled.
+ * @ingroup CO_driver
  *
  * Default values for stack configuration macros are set in corresponding
  * header files. The same default values are also provided in this file, but
@@ -54,9 +48,9 @@ extern "C" {
  * @{
  */
 
-
 /**
  * @defgroup CO_STACK_CONFIG_COMMON Common definitions
+ * Constants for common definitions.
  * @{
  */
 /**
@@ -85,7 +79,7 @@ extern "C" {
  *
  * This flag is common to multiple configuration macros.
  */
-#define CO_CONFIG_FLAG_TIMERNEXT 0x2000
+#define CO_CONFIG_FLAG_TIMERNEXT    0x2000
 
 /**
  * Enable dynamic behaviour of Object Dictionary variables
@@ -97,12 +91,34 @@ extern "C" {
  *
  * This flag is common to multiple configuration macros.
  */
-#define CO_CONFIG_FLAG_OD_DYNAMIC 0x4000
-/** @} */ /* CO_STACK_CONFIG_COMMON */
+#define CO_CONFIG_FLAG_OD_DYNAMIC   0x4000
 
+/** This flag may be set globally for mainline objects to
+ * @ref CO_CONFIG_FLAG_CALLBACK_PRE */
+#ifdef CO_DOXYGEN
+#define CO_CONFIG_GLOBAL_FLAG_CALLBACK_PRE (0)
+#endif
+
+/** This flag may be set globally for Real-Time objects (SYNC, PDO) to
+ * @ref CO_CONFIG_FLAG_CALLBACK_PRE */
+#ifdef CO_DOXYGEN
+#define CO_CONFIG_GLOBAL_RT_FLAG_CALLBACK_PRE (0)
+#endif
+
+/** This flag may be set globally to @ref CO_CONFIG_FLAG_TIMERNEXT */
+#ifdef CO_DOXYGEN
+#define CO_CONFIG_GLOBAL_FLAG_TIMERNEXT (0)
+#endif
+
+/** This flag may be set globally to (0) */
+#ifdef CO_DOXYGEN
+#define CO_CONFIG_GLOBAL_FLAG_OD_DYNAMIC CO_CONFIG_FLAG_OD_DYNAMIC
+#endif
+/** @} */ /* CO_STACK_CONFIG_COMMON */
 
 /**
  * @defgroup CO_STACK_CONFIG_NMT_HB NMT master/slave and HB producer/consumer
+ * Specified in standard CiA 301
  * @{
  */
 /**
@@ -120,20 +136,15 @@ extern "C" {
  *   inside CO_NMT_process().
  */
 #ifdef CO_DOXYGEN
-#define CO_CONFIG_NMT (0)
+#define CO_CONFIG_NMT (CO_CONFIG_GLOBAL_FLAG_CALLBACK_PRE | CO_CONFIG_GLOBAL_FLAG_TIMERNEXT)
 #endif
 #define CO_CONFIG_NMT_CALLBACK_CHANGE 0x01
-#define CO_CONFIG_NMT_MASTER 0x02
+#define CO_CONFIG_NMT_MASTER          0x02
 
 /**
  * Configuration of @ref CO_HBconsumer
  *
  * Possible flags, can be ORed:
- * - #CO_CONFIG_FLAG_CALLBACK_PRE - Enable custom callback after preprocessing
- *   received heartbeat CAN message.
- *   Callback is configured by CO_HBconsumer_initCallbackPre().
- * - #CO_CONFIG_FLAG_TIMERNEXT - Enable calculation of timerNext_us variable
- *   inside CO_HBconsumer_process().
  * - CO_CONFIG_HB_CONS_ENABLE - Enable heartbeat consumer.
  * - CO_CONFIG_HB_CONS_CALLBACK_CHANGE - Enable custom common callback after NMT
  *   state of the monitored node changes. Callback is configured by
@@ -146,31 +157,59 @@ extern "C" {
  *   CO_HBconsumer_initCallbackRemoteReset() functions.
  * - CO_CONFIG_HB_CONS_QUERY_FUNCT - Enable functions for query HB state or
  *   NMT state of the specific monitored node.
- * Note that CO_CONFIG_HB_CONS_CALLBACK_CHANGE and
+ * - #CO_CONFIG_FLAG_CALLBACK_PRE - Enable custom callback after preprocessing
+ *   received heartbeat CAN message.
+ *   Callback is configured by CO_HBconsumer_initCallbackPre().
+ * - #CO_CONFIG_FLAG_TIMERNEXT - Enable calculation of timerNext_us variable
+ *   inside CO_HBconsumer_process().
+ * - #CO_CONFIG_FLAG_OD_DYNAMIC - Enable dynamic configuration of monitored
+ *   nodes (Writing to object 0x1016 re-configures the monitored nodes).
+ *
+ * @warning CO_CONFIG_HB_CONS_CALLBACK_CHANGE and
  * CO_CONFIG_HB_CONS_CALLBACK_MULTI cannot be set simultaneously.
  */
 #ifdef CO_DOXYGEN
-#define CO_CONFIG_HB_CONS (CO_CONFIG_HB_CONS_ENABLE)
+#define CO_CONFIG_HB_CONS                                                                                              \
+    (CO_CONFIG_HB_CONS_ENABLE | CO_CONFIG_GLOBAL_FLAG_CALLBACK_PRE | CO_CONFIG_GLOBAL_FLAG_TIMERNEXT                   \
+     | CO_CONFIG_GLOBAL_FLAG_OD_DYNAMIC)
 #endif
-#define CO_CONFIG_HB_CONS_ENABLE 0x01
+#define CO_CONFIG_HB_CONS_ENABLE          0x01
 #define CO_CONFIG_HB_CONS_CALLBACK_CHANGE 0x02
-#define CO_CONFIG_HB_CONS_CALLBACK_MULTI 0x04
-#define CO_CONFIG_HB_CONS_QUERY_FUNCT 0x08
-
-/**
- * Number of heartbeat consumer objects, where each object corresponds to one
- * sub-index in OD object 0x1016, "Consumer heartbeat time".
- *
- * If heartbeat consumer is enabled, then valid values are 1 to 127.
- */
-#ifdef CO_DOXYGEN
-#define CO_CONFIG_HB_CONS_SIZE 8
-#endif
+#define CO_CONFIG_HB_CONS_CALLBACK_MULTI  0x04
+#define CO_CONFIG_HB_CONS_QUERY_FUNCT     0x08
 /** @} */ /* CO_STACK_CONFIG_NMT_HB */
 
+/**
+ * @defgroup CO_STACK_CONFIG_NODE_GUARDING CANopen Node Guarding slave and master objects.
+ * Specified in standard CiA 301
+ * @{
+ */
+/**
+ * Configuration of @ref CO_Node_Guarding
+ *
+ * Possible flags, can be ORed:
+ * - CO_CONFIG_NODE_GUARDING_SLAVE_ENABLE - Enable Node guarding slave.
+ * - CO_CONFIG_NODE_GUARDING_MASTER_ENABLE - Enable Node guarding master.
+ * - #CO_CONFIG_FLAG_TIMERNEXT - Enable calculation of timerNext_us variable
+ *   inside CO_nodeGuardingSlave_process().
+ */
+#ifdef CO_DOXYGEN
+#define CO_CONFIG_NODE_GUARDING (0)
+#endif
+#define CO_CONFIG_NODE_GUARDING_SLAVE_ENABLE  0x01
+#define CO_CONFIG_NODE_GUARDING_MASTER_ENABLE 0x02
+
+/**
+ * Maximum number of nodes monitored by master
+ */
+#ifdef CO_DOXYGEN
+#define CO_CONFIG_NODE_GUARDING_MASTER_COUNT 0x7F
+#endif
+/** @} */ /* CO_STACK_CONFIG_NODE_GUARDING */
 
 /**
  * @defgroup CO_STACK_CONFIG_EMERGENCY Emergency producer/consumer
+ * Specified in standard CiA 301
  * @{
  */
 /**
@@ -194,14 +233,16 @@ extern "C" {
  *   inside CO_EM_process().
  */
 #ifdef CO_DOXYGEN
-#define CO_CONFIG_EM (CO_CONFIG_EM_PRODUCER | CO_CONFIG_EM_HISTORY)
+#define CO_CONFIG_EM                                                                                                   \
+    (CO_CONFIG_EM_PRODUCER | CO_CONFIG_EM_HISTORY | CO_CONFIG_GLOBAL_FLAG_CALLBACK_PRE                                 \
+     | CO_CONFIG_GLOBAL_FLAG_TIMERNEXT)
 #endif
-#define CO_CONFIG_EM_PRODUCER 0x01
+#define CO_CONFIG_EM_PRODUCER          0x01
 #define CO_CONFIG_EM_PROD_CONFIGURABLE 0x02
-#define CO_CONFIG_EM_PROD_INHIBIT 0x04
-#define CO_CONFIG_EM_HISTORY 0x08
-#define CO_CONFIG_EM_STATUS_BITS 0x10
-#define CO_CONFIG_EM_CONSUMER 0x20
+#define CO_CONFIG_EM_PROD_INHIBIT      0x04
+#define CO_CONFIG_EM_HISTORY           0x08
+#define CO_CONFIG_EM_STATUS_BITS       0x10
+#define CO_CONFIG_EM_CONSUMER          0x20
 
 /**
  * Maximum number of @ref CO_EM_errorStatusBits_t
@@ -211,21 +252,7 @@ extern "C" {
  * Default is 80.
  */
 #ifdef CO_DOXYGEN
-#define CO_CONFIG_EM_ERR_STATUS_BITS_COUNT (10*8)
-#endif
-
-/**
- * Size of the internal buffer, where emergencies are stored after error
- * indication with @ref CO_error() function. Each emergency has to be post-
- * processed by the @ref CO_EM_process() function. In case of overflow, error is
- * indicated but emergency message is not sent.
- *
- * The same buffer is also used for OD object 0x1003, "Pre-defined error field".
- *
- * Each buffer element consumes 8 bytes. Valid values are 1 to 254.
- */
-#ifdef CO_DOXYGEN
-#define CO_CONFIG_EM_BUFFER_SIZE 16
+#define CO_CONFIG_EM_ERR_STATUS_BITS_COUNT (10 * 8)
 #endif
 
 /**
@@ -305,9 +332,9 @@ extern "C" {
 #endif
 /** @} */ /* CO_STACK_CONFIG_EMERGENCY */
 
-
 /**
  * @defgroup CO_STACK_CONFIG_SDO SDO server/client
+ * Specified in standard CiA 301
  * @{
  */
 /**
@@ -326,10 +353,12 @@ extern "C" {
  *   servers (Writing to object 0x1201+ re-configures the additional server).
  */
 #ifdef CO_DOXYGEN
-#define CO_CONFIG_SDO_SRV (CO_CONFIG_SDO_SRV_SEGMENTED)
+#define CO_CONFIG_SDO_SRV                                                                                              \
+    (CO_CONFIG_SDO_SRV_SEGMENTED | CO_CONFIG_GLOBAL_FLAG_CALLBACK_PRE | CO_CONFIG_GLOBAL_FLAG_TIMERNEXT                \
+     | CO_CONFIG_GLOBAL_FLAG_OD_DYNAMIC)
 #endif
 #define CO_CONFIG_SDO_SRV_SEGMENTED 0x02
-#define CO_CONFIG_SDO_SRV_BLOCK 0x04
+#define CO_CONFIG_SDO_SRV_BLOCK     0x04
 
 /**
  * Size of the internal data buffer for the SDO server.
@@ -366,10 +395,10 @@ extern "C" {
 #ifdef CO_DOXYGEN
 #define CO_CONFIG_SDO_CLI (0)
 #endif
-#define CO_CONFIG_SDO_CLI_ENABLE 0x01
+#define CO_CONFIG_SDO_CLI_ENABLE    0x01
 #define CO_CONFIG_SDO_CLI_SEGMENTED 0x02
-#define CO_CONFIG_SDO_CLI_BLOCK 0x04
-#define CO_CONFIG_SDO_CLI_LOCAL 0x08
+#define CO_CONFIG_SDO_CLI_BLOCK     0x04
+#define CO_CONFIG_SDO_CLI_LOCAL     0x08
 
 /**
  * Size of the internal data buffer for the SDO client.
@@ -387,9 +416,9 @@ extern "C" {
 #endif
 /** @} */ /* CO_STACK_CONFIG_SDO */
 
-
 /**
  * @defgroup CO_STACK_CONFIG_TIME Time producer/consumer
+ * Specified in standard CiA 301
  * @{
  */
 /**
@@ -401,17 +430,19 @@ extern "C" {
  * - #CO_CONFIG_FLAG_CALLBACK_PRE - Enable custom callback after preprocessing
  *   received TIME CAN message.
  *   Callback is configured by CO_TIME_initCallbackPre().
+ * - #CO_CONFIG_FLAG_OD_DYNAMIC - Enable dynamic configuration - writing to
+ *   object 0x1012 enables / disables time producer or consumer.
  */
 #ifdef CO_DOXYGEN
-#define CO_CONFIG_TIME (0)
+#define CO_CONFIG_TIME (CO_CONFIG_TIME_ENABLE | CO_CONFIG_GLOBAL_FLAG_CALLBACK_PRE | CO_CONFIG_GLOBAL_FLAG_OD_DYNAMIC)
 #endif
-#define CO_CONFIG_TIME_ENABLE 0x01
+#define CO_CONFIG_TIME_ENABLE   0x01
 #define CO_CONFIG_TIME_PRODUCER 0x02
 /** @} */ /* CO_STACK_CONFIG_TIME */
 
-
 /**
  * @defgroup CO_STACK_CONFIG_SYNC_PDO SYNC and PDO producer/consumer
+ * Specified in standard CiA 301
  * @{
  */
 /**
@@ -425,11 +456,14 @@ extern "C" {
  *   Callback is configured by CO_SYNC_initCallbackPre().
  * - #CO_CONFIG_FLAG_TIMERNEXT - Enable calculation of timerNext_us variable
  *   inside CO_SYNC_process().
+ * - #CO_CONFIG_FLAG_OD_DYNAMIC - Enable dynamic configuration of SYNC.
  */
 #ifdef CO_DOXYGEN
-#define CO_CONFIG_SYNC (CO_CONFIG_SYNC_ENABLE | CO_CONFIG_SYNC_PRODUCER)
+#define CO_CONFIG_SYNC                                                                                                 \
+    (CO_CONFIG_SYNC_ENABLE | CO_CONFIG_SYNC_PRODUCER | CO_CONFIG_GLOBAL_RT_FLAG_CALLBACK_PRE                           \
+     | CO_CONFIG_GLOBAL_FLAG_TIMERNEXT | CO_CONFIG_GLOBAL_FLAG_OD_DYNAMIC)
 #endif
-#define CO_CONFIG_SYNC_ENABLE 0x01
+#define CO_CONFIG_SYNC_ENABLE   0x01
 #define CO_CONFIG_SYNC_PRODUCER 0x02
 
 /**
@@ -438,27 +472,53 @@ extern "C" {
  * Possible flags, can be ORed:
  * - CO_CONFIG_RPDO_ENABLE - Enable receive PDO objects.
  * - CO_CONFIG_TPDO_ENABLE - Enable transmit PDO objects.
+ * - CO_CONFIG_RPDO_TIMERS_ENABLE - Enable RPDO timers: RPDO timeout monitoring
+ *   with event timer.
+ * - CO_CONFIG_TPDO_TIMERS_ENABLE - Enable TPDO timers: TPDO inhibit and event
+ *   timers.
  * - CO_CONFIG_PDO_SYNC_ENABLE - Enable SYNC in PDO objects.
- * - CO_CONFIG_RPDO_CALLS_EXTENSION - Enable calling configured extension
- *   callbacks when received RPDO CAN message modifies OD entries.
- * - CO_CONFIG_TPDO_CALLS_EXTENSION - Enable calling configured extension
- *   callbacks before TPDO CAN message is sent.
+ * - CO_CONFIG_PDO_OD_IO_ACCESS - For OD variables mapped to PDO use read/write
+ *   function access with @ref OD_IO_t. This option enables much more
+ *   flexibility for application program, but consumes some additional memory
+ *   and processor resources. If this option is not enabled, then data from OD
+ *   variables are fetched directly from memory allocated by Object dictionary.
  * - #CO_CONFIG_FLAG_CALLBACK_PRE - Enable custom callback after preprocessing
  *   received RPDO CAN message.
  *   Callback is configured by CO_RPDO_initCallbackPre().
  * - #CO_CONFIG_FLAG_TIMERNEXT - Enable calculation of timerNext_us variable
  *   inside CO_TPDO_process().
+ * - #CO_CONFIG_FLAG_OD_DYNAMIC - Enable dynamic configuration of PDO.
  */
 #ifdef CO_DOXYGEN
-#define CO_CONFIG_PDO (CO_CONFIG_RPDO_ENABLE | CO_CONFIG_TPDO_ENABLE | CO_CONFIG_PDO_SYNC_ENABLE)
+#define CO_CONFIG_PDO                                                                                                  \
+    (CO_CONFIG_RPDO_ENABLE | CO_CONFIG_TPDO_ENABLE | CO_CONFIG_RPDO_TIMERS_ENABLE | CO_CONFIG_TPDO_TIMERS_ENABLE       \
+     | CO_CONFIG_PDO_SYNC_ENABLE | CO_CONFIG_PDO_OD_IO_ACCESS | CO_CONFIG_GLOBAL_RT_FLAG_CALLBACK_PRE                  \
+     | CO_CONFIG_GLOBAL_FLAG_TIMERNEXT | CO_CONFIG_GLOBAL_FLAG_OD_DYNAMIC)
 #endif
-#define CO_CONFIG_RPDO_ENABLE 0x01
-#define CO_CONFIG_TPDO_ENABLE 0x02
-#define CO_CONFIG_PDO_SYNC_ENABLE 0x04
-#define CO_CONFIG_RPDO_CALLS_EXTENSION 0x08
-#define CO_CONFIG_TPDO_CALLS_EXTENSION 0x10
+#define CO_CONFIG_RPDO_ENABLE        0x01
+#define CO_CONFIG_TPDO_ENABLE        0x02
+#define CO_CONFIG_RPDO_TIMERS_ENABLE 0x04
+#define CO_CONFIG_TPDO_TIMERS_ENABLE 0x08
+#define CO_CONFIG_PDO_SYNC_ENABLE    0x10
+#define CO_CONFIG_PDO_OD_IO_ACCESS   0x20
 /** @} */ /* CO_STACK_CONFIG_SYNC_PDO */
 
+/**
+ * @defgroup CO_STACK_CONFIG_STORAGE Data storage
+ * Data storage with CANopen OD objects 1010 and 1011, CiA 301
+ * @{
+ */
+/**
+ * Configuration of @ref CO_storage
+ *
+ * Possible flags, can be ORed:
+ * - CO_CONFIG_STORAGE_ENABLE - Enable data storage
+ */
+#ifdef CO_DOXYGEN
+#define CO_CONFIG_STORAGE (CO_CONFIG_STORAGE_ENABLE)
+#endif
+#define CO_CONFIG_STORAGE_ENABLE 0x01
+/** @} */ /* CO_STACK_CONFIG_STORAGE */
 
 /**
  * @defgroup CO_STACK_CONFIG_LEDS CANopen LED diodes
@@ -474,11 +534,10 @@ extern "C" {
  *   inside CO_NMT_process().
  */
 #ifdef CO_DOXYGEN
-#define CO_CONFIG_LEDS (CO_CONFIG_LEDS_ENABLE)
+#define CO_CONFIG_LEDS (CO_CONFIG_LEDS_ENABLE | CO_CONFIG_GLOBAL_FLAG_TIMERNEXT)
 #endif
 #define CO_CONFIG_LEDS_ENABLE 0x01
 /** @} */ /* CO_STACK_CONFIG_LEDS */
-
 
 /**
  * @defgroup CO_STACK_CONFIG_SRDO Safety Related Data Objects (SRDO)
@@ -496,7 +555,7 @@ extern "C" {
 #ifdef CO_DOXYGEN
 #define CO_CONFIG_GFC (0)
 #endif
-#define CO_CONFIG_GFC_ENABLE 0x01
+#define CO_CONFIG_GFC_ENABLE   0x01
 #define CO_CONFIG_GFC_CONSUMER 0x02
 #define CO_CONFIG_GFC_PRODUCER 0x04
 
@@ -506,10 +565,6 @@ extern "C" {
  * Possible flags, can be ORed:
  * - CO_CONFIG_SRDO_ENABLE - Enable the SRDO object.
  * - CO_CONFIG_SRDO_CHECK_TX - Enable checking data before sending.
- * - CO_CONFIG_RSRDO_CALLS_EXTENSION - Enable calling configured extension
- *   callbacks when received RSRDO CAN message modifies OD entries.
- * - CO_CONFIG_TRSRDO_CALLS_EXTENSION - Enable calling configured extension
- *   callbacks before TSRDO CAN message is sent.
  * - #CO_CONFIG_FLAG_CALLBACK_PRE - Enable custom callback after preprocessing
  *   received RSRDO CAN message.
  *   Callback is configured by CO_SRDO_initCallbackPre().
@@ -519,10 +574,8 @@ extern "C" {
 #ifdef CO_DOXYGEN
 #define CO_CONFIG_SRDO (0)
 #endif
-#define CO_CONFIG_SRDO_ENABLE 0x01
+#define CO_CONFIG_SRDO_ENABLE   0x01
 #define CO_CONFIG_SRDO_CHECK_TX 0x02
-#define CO_CONFIG_RSRDO_CALLS_EXTENSION 0x04
-#define CO_CONFIG_TSRDO_CALLS_EXTENSION 0x08
 
 /**
  * SRDO Tx time delay
@@ -534,7 +587,6 @@ extern "C" {
 #define CO_CONFIG_SRDO_MINIMUM_DELAY 0
 #endif
 /** @} */ /* CO_STACK_CONFIG_SRDO */
-
 
 /**
  * @defgroup CO_STACK_CONFIG_LSS LSS master/slave
@@ -554,13 +606,12 @@ extern "C" {
  *   Callback is configured by CO_LSSmaster_initCallbackPre().
  */
 #ifdef CO_DOXYGEN
-#define CO_CONFIG_LSS (CO_CONFIG_LSS_SLAVE)
+#define CO_CONFIG_LSS (CO_CONFIG_LSS_SLAVE | CO_CONFIG_GLOBAL_FLAG_CALLBACK_PRE)
 #endif
-#define CO_CONFIG_LSS_SLAVE 0x01
+#define CO_CONFIG_LSS_SLAVE                         0x01
 #define CO_CONFIG_LSS_SLAVE_FASTSCAN_DIRECT_RESPOND 0x02
-#define CO_CONFIG_LSS_MASTER 0x10
+#define CO_CONFIG_LSS_MASTER                        0x10
 /** @} */ /* CO_STACK_CONFIG_LSS */
-
 
 /**
  * @defgroup CO_STACK_CONFIG_GATEWAY CANopen gateway
@@ -594,12 +645,12 @@ extern "C" {
 #ifdef CO_DOXYGEN
 #define CO_CONFIG_GTW (0)
 #endif
-#define CO_CONFIG_GTW_MULTI_NET 0x01
-#define CO_CONFIG_GTW_ASCII 0x02
-#define CO_CONFIG_GTW_ASCII_SDO 0x04
-#define CO_CONFIG_GTW_ASCII_NMT 0x08
-#define CO_CONFIG_GTW_ASCII_LSS 0x10
-#define CO_CONFIG_GTW_ASCII_LOG 0x20
+#define CO_CONFIG_GTW_MULTI_NET        0x01
+#define CO_CONFIG_GTW_ASCII            0x02
+#define CO_CONFIG_GTW_ASCII_SDO        0x04
+#define CO_CONFIG_GTW_ASCII_NMT        0x08
+#define CO_CONFIG_GTW_ASCII_LSS        0x10
+#define CO_CONFIG_GTW_ASCII_LOG        0x20
 #define CO_CONFIG_GTW_ASCII_ERROR_DESC 0x40
 #define CO_CONFIG_GTW_ASCII_PRINT_HELP 0x80
 #define CO_CONFIG_GTW_ASCII_PRINT_LEDS 0x100
@@ -633,10 +684,9 @@ extern "C" {
 #endif
 /** @} */ /* CO_STACK_CONFIG_GATEWAY */
 
-
 /**
  * @defgroup CO_STACK_CONFIG_CRC16 CRC 16 calculation
- * Helper object
+ * Helper object for CRC-16 checksum
  * @{
  */
 /**
@@ -649,14 +699,13 @@ extern "C" {
 #ifdef CO_DOXYGEN
 #define CO_CONFIG_CRC16 (0)
 #endif
-#define CO_CONFIG_CRC16_ENABLE 0x01
+#define CO_CONFIG_CRC16_ENABLE   0x01
 #define CO_CONFIG_CRC16_EXTERNAL 0x02
 /** @} */ /* CO_STACK_CONFIG_CRC16 */
 
-
 /**
  * @defgroup CO_STACK_CONFIG_FIFO FIFO buffer
- * Helper object
+ * Helper object for FIFO buffer
  * @{
  */
 /**
@@ -683,13 +732,12 @@ extern "C" {
 #ifdef CO_DOXYGEN
 #define CO_CONFIG_FIFO (0)
 #endif
-#define CO_CONFIG_FIFO_ENABLE 0x01
-#define CO_CONFIG_FIFO_ALT_READ 0x02
-#define CO_CONFIG_FIFO_CRC16_CCITT 0x04
-#define CO_CONFIG_FIFO_ASCII_COMMANDS 0x08
+#define CO_CONFIG_FIFO_ENABLE          0x01
+#define CO_CONFIG_FIFO_ALT_READ        0x02
+#define CO_CONFIG_FIFO_CRC16_CCITT     0x04
+#define CO_CONFIG_FIFO_ASCII_COMMANDS  0x08
 #define CO_CONFIG_FIFO_ASCII_DATATYPES 0x10
 /** @} */ /* CO_STACK_CONFIG_FIFO */
-
 
 /**
  * @defgroup CO_STACK_CONFIG_TRACE Trace recorder
@@ -707,10 +755,9 @@ extern "C" {
 #ifdef CO_DOXYGEN
 #define CO_CONFIG_TRACE (0)
 #endif
-#define CO_CONFIG_TRACE_ENABLE 0x01
+#define CO_CONFIG_TRACE_ENABLE       0x01
 #define CO_CONFIG_TRACE_OWN_INTTYPES 0x02
 /** @} */ /* CO_STACK_CONFIG_TRACE */
-
 
 /**
  * @defgroup CO_STACK_CONFIG_DEBUG Debug messages
@@ -731,7 +778,7 @@ extern "C" {
 #ifdef CO_DOXYGEN
 #define CO_CONFIG_DEBUG (0)
 #endif
-#define CO_CONFIG_DEBUG_COMMON 0x01
+#define CO_CONFIG_DEBUG_COMMON     0x01
 #define CO_CONFIG_DEBUG_SDO_CLIENT 0x02
 #define CO_CONFIG_DEBUG_SDO_SERVER 0x04
 /** @} */ /* CO_STACK_CONFIG_DEBUG */

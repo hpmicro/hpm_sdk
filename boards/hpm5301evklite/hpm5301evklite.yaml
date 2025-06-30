@@ -1,4 +1,4 @@
-# Copyright (c) 2023 HPMicro
+# Copyright (c) 2023,2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 board:
@@ -11,3 +11,4 @@ board:
       size: 1M
     feature:
       - board_gpt_pin
+      - board_clk_ref_pin

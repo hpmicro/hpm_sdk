@@ -184,3 +184,15 @@ Pin Description
    * - PA31
      - J3[11]
      - the pin that controls the SPI slave CS
+
+- CLOCK REF Pin
+
+  .. list-table::
+     :header-rows: 1
+
+     * - Function
+       - Position
+     * - PA09
+       - J3[32]
+
+

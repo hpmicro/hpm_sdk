@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HPMicro
+ * Copyright 2024-2025 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -9,7 +9,7 @@ define memory with size = 4G;
 /* Regions */
 define region NOR_CFG_OPTION = [ from 0x80000400 size 0x0C00 ];
 define region BOOT_HEADER = [ from 0x80001000 size 0x2000 ];
-define region XPI0 = [from 0x80003000 size (_flash_size - 0x3000) ];   /* XPI0 */
+define region FLASH = [from 0x80003000 size (_flash_size - 0x3000) ];   /* FLASH */
 define region ILM   = [from 0x00000000 size 256k];        /* ILM */
 define region DLM   = [from 0x00080000 size 256k];        /* DLM */
 define region AXI_SRAM = [from 0x01080000 size 1448K];    /* AXI SRAM0 */
@@ -20,7 +20,7 @@ define region APB_SRAM = [from 0xF40F0000 size 8k];
 define region SDRAM   =  [from 0x40000000 size 32M];
 
 /* Blocks */
-define block vectors with fixed order       { section .vector_table, section .isr_vector };
+define block vectors with fixed order       { section .vector_table, section .isr_vector, section .isr_vector.* };
 define block ctors                          { section .ctors,     section .ctors.*, block with         alphabetical order { init_array } };
 define block dtors                          { section .dtors,     section .dtors.*, block with reverse alphabetical order { fini_array } };
 define block eh_frame                       { section .eh_frame,  section .eh_frame.* };
@@ -32,7 +32,7 @@ define block heap  with size = __HEAPSIZE__,  alignment = 8, /* fill =0x00, */ r
 define block stack with size = __STACKSIZE__, alignment = 16, /* fill =0xCD, */ readwrite access { };
 define block boot_header with fixed order                     { section .boot_header, section .fw_info_table, section .dc_info };
 define block cherryusb_usbh_class_info with alignment = 8     { section .usbh_class_info };
-define block framebuffer with alignment = 8                   { section .framebuffer };
+define block framebuffer with alignment = 8                   { section .framebuffer, section .framebuffer.* };
 define block rtthread_FSymTab                                 { section FSymTab };
 define block rtthread_VSymTab                                 { section VSymTab };
 define block rtthread_rti_fn with alphabetical order          { section .rti_fn* };
@@ -41,10 +41,9 @@ define block rtthread_RTMSymTab                               { section RTMSymTa
 /* Symbols */
 define exported symbol __nor_cfg_option_load_addr__ = start of region NOR_CFG_OPTION;
 define exported symbol __boot_header_load_addr__ = start of region BOOT_HEADER;
-define exported symbol __app_load_addr__ = start of region XPI0;
+define exported symbol __app_load_addr__ = start of region FLASH;
 define exported symbol __app_offset__ = __app_load_addr__ - __boot_header_load_addr__;
 define exported symbol __boot_header_length__ = size of block boot_header;
-define exported symbol __fw_size__ = 0x1000;
 
 define exported symbol __noncacheable_start__ = start of region NONCACHEABLE_RAM;
 define exported symbol __noncacheable_end__ = end of region NONCACHEABLE_RAM + 1;
@@ -88,7 +87,7 @@ initialize by copy { block vectors };
 /* Placement */
 place in NOR_CFG_OPTION                  { section .nor_cfg_option };
 place in BOOT_HEADER with fixed order    { block boot_header };
-place at start of XPI0 with fixed order  { symbol _start};
+place at start of FLASH with fixed order  { symbol _start};
 place at start of ILM with fixed order   { block vectors };
 
 
@@ -100,7 +99,7 @@ place at start of ILM with fixed order   { block vectors };
 define access readonly { section .gcc_except_table, section .gcc_except_table.* };
 define access readonly { section .eh_frame, section .eh_frame.* };
 define access readonly { section .sdata.DW.* };
-place in XPI0 with minimum size order    {
+place in FLASH with minimum size order    {
                                            block tdata_load,                        // Thread-local-storage load image
                                            block ctors,                             // Constructors block
                                            block dtors,                             // Destructors block

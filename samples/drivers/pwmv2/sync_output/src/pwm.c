@@ -155,8 +155,10 @@ static void pwm_sync_three_submodules_handware_config(void)
     pwmv2_start_pwm_output(PWM, pwm_counter_2);
 }
 
+/* restore the initial state of pwmv2 */
 void pwm_sync_clean(void)
 {
+/* clear the values of reload and compare working registers */
     pwmv2_shadow_register_unlock(PWM);
     pwmv2_set_shadow_val(PWM, PWMV2_SHADOW_INDEX(0), 0, 0, 0);
     pwmv2_set_shadow_val(PWM, PWMV2_SHADOW_INDEX(1), 0, 0, 0);

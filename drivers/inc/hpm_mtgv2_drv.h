@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -435,7 +435,6 @@ static inline int32_t mtg_get_tra_acc_lock_value(MTGV2_Type *base, uint8_t tra_i
  *        When difference between input and filter's pos result is bigger than the limit,
  *        the filter output will be bypass and input will be output to the filter's port.
  * @param [in] base MTG base address
- * @param [in] limit - bypass limit
  */
 static inline void mtg_filter_enable_bypass(MTGV2_Type *base)
 {
@@ -448,7 +447,6 @@ static inline void mtg_filter_enable_bypass(MTGV2_Type *base)
  *        When difference between input and filter's pos result is bigger than the limit,
  *        the filter output will be bypass and input will be output to the filter's port.
  * @param [in] base MTG base address
- * @param [in] limit - bypass limit
  */
 static inline void mtg_filter_disable_bypass(MTGV2_Type *base)
 {
@@ -462,7 +460,6 @@ static inline void mtg_filter_disable_bypass(MTGV2_Type *base)
  *        the filter will use the filter's result inside of the input.
  *        The switch result can be defined by reading the switch status register.
  * @param [in] base MTG base address
- * @param [in] param - filter params
  */
 static inline void mtg_filter_switch_filter_result(MTGV2_Type *base)
 {
@@ -475,7 +472,6 @@ static inline void mtg_filter_switch_filter_result(MTGV2_Type *base)
  *        the filter will use the filter's result inside of the input.
  *        The switch result can be defined by reading the switch status register.
  * @param [in] base MTG base address
- * @param [in] param - filter params
  */
 static inline void mtg_filter_stop_auto_switch_filter_result(MTGV2_Type *base)
 {
@@ -560,7 +556,6 @@ void mtg_get_tra_lock_result(MTGV2_Type *base, uint8_t tra_index, mtg_lock_value
  * @param [in] base MTG base address
  * @param [in] event_index - event index
  * @param [in] param - event params
- * @param [out] setup status
  */
 hpm_stat_t mtg_setup_event(MTGV2_Type *base, uint8_t event_index, mtg_event_param_t *param);
 
@@ -569,7 +564,7 @@ hpm_stat_t mtg_setup_event(MTGV2_Type *base, uint8_t event_index, mtg_event_para
  * @param [in] base MTG base address
  * @param [in] tra_index - trajectory index
  * @param [in] param - trajectory limit params
- * @param [out] setup status
+ * @retval setup status
  */
 hpm_stat_t mtg_setup_tra_limit(MTGV2_Type *base, uint8_t tra_index, mtg_tra_limit_param_t *param);
 
@@ -578,7 +573,6 @@ hpm_stat_t mtg_setup_tra_limit(MTGV2_Type *base, uint8_t tra_index, mtg_tra_limi
  * @param [in] base MTG base address
  * @param [in] tra_index - trajectory index
  * @param [in] param - 0:force + , 1:force -
- * @param [out] setup status
  */
 void mtg_setup_tra_software_pos_one_way_mode(MTGV2_Type *base, uint8_t tra_index, mtg_software_force_one_way_mode_t param);
 
@@ -587,7 +581,6 @@ void mtg_setup_tra_software_pos_one_way_mode(MTGV2_Type *base, uint8_t tra_index
  * @param [in] base MTG base address
  * @param [in] tra_index - trajectory index
  * @param [in] param - 0:force + , 1:force -
- * @param [out] setup status
  */
 void mtg_setup_tra_hardware_pos_one_way_mode(MTGV2_Type *base, uint8_t tra_index, mtg_hardware_force_one_way_mode_t *param);
 
@@ -603,12 +596,12 @@ void mtg_disable_tra_pos_one_way_mode(MTGV2_Type *base, uint8_t tra_index);
  * @param [in] base MTG base address
  * @param [in] tra_index - trajectory index
  * @param [in] mode - 0:bigger_or_eq_zero , 1:smaller_or_eq_zero
+ * @param [in] enable - enable or disable
  */
 void mtg_setup_tra_vel_one_way(MTGV2_Type *base, uint8_t tra_index, vel_one_way_mode_t mode, bool enable);
 
 /**
  * @brief MTG setup filter
- * @param [in] base MTG base address
  * @param [in] param - filter params
  */
 void mtg_filter_get_default_filter_stage_param(mtg_filter_param_t *param);
@@ -658,7 +651,6 @@ void mtg_get_default_tra_shift(mtg_tra_shift_t *cfg);
 /**
  * @brief Get the event irq status
  * @param [in] ptr the mtg base
- * @param [in] idx the event index
  */
 static inline uint32_t mtg_get_irq_status(MTGV2_Type *ptr)
 {

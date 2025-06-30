@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -27,6 +27,11 @@ static void plb_filter_rapid_change(filter_config_t *cfg)
     trgm_config.type = trgm_output_same_as_input;
     trgm_config.input = PLB_SOC_TYPEB_TRGM_OUTPUT0 + (cfg->plb_type_b_chn * 4) + 1;
     trgm_output_config(cfg->trgm, PLB_SOC_TYPEB_TRGM_INPUT0 + (cfg->plb_type_b_chn * 4) + 2, &trgm_config);
+
+    trgm_config.invert = false;
+    trgm_config.type = trgm_output_same_as_input;
+    trgm_config.input = HPM_TRGM0_INPUT_SRC_VSS;
+    trgm_output_config(cfg->trgm, PLB_SOC_TYPEB_TRGM_INPUT0 + (cfg->plb_type_b_chn * 4) + 3, &trgm_config);
 
     /* true value table */
     plb_type_b_set_lut(cfg->plb, cfg->plb_type_b_chn, plb_type_b_slice_0, plb_slice_opt_keep);
@@ -95,6 +100,11 @@ static void plb_filter_delay(filter_config_t *cfg)
 
     trgm_config.invert = false;
     trgm_config.type = trgm_output_same_as_input;
+    trgm_config.input = HPM_TRGM0_INPUT_SRC_VSS;
+    trgm_output_config(cfg->trgm, PLB_SOC_TYPEB_TRGM_INPUT0 + (cfg->plb_type_b_chn * 4) + 3, &trgm_config);
+
+    trgm_config.invert = false;
+    trgm_config.type = trgm_output_same_as_input;
     trgm_config.input = PLB_SOC_TYPEB_TRGM_OUTPUT0 + (cfg->plb_type_b_chn * 4);
     trgm_output_config(cfg->trgm, cfg->output_trgmux_pin, &trgm_config);
 
@@ -131,6 +141,12 @@ static void plb_filter_stable_low(filter_config_t *cfg)
 
     trgm_config.invert = false;
     trgm_config.type = trgm_output_same_as_input;
+    trgm_config.input = HPM_TRGM0_INPUT_SRC_VSS;
+    trgm_output_config(cfg->trgm, PLB_SOC_TYPEB_TRGM_INPUT0 + (cfg->plb_type_b_chn * 4) + 2, &trgm_config);
+    trgm_output_config(cfg->trgm, PLB_SOC_TYPEB_TRGM_INPUT0 + (cfg->plb_type_b_chn * 4) + 3, &trgm_config);
+
+    trgm_config.invert = false;
+    trgm_config.type = trgm_output_same_as_input;
     trgm_config.input = PLB_SOC_TYPEB_TRGM_OUTPUT0 + (cfg->plb_type_b_chn * 4);
     trgm_output_config(cfg->trgm, cfg->output_trgmux_pin, &trgm_config);
 
@@ -159,6 +175,12 @@ static void plb_filter_stable_high(filter_config_t *cfg)
     trgm_config.type = trgm_output_same_as_input;
     trgm_config.input = PLB_SOC_TYPEB_TRGM_OUTPUT0 + (cfg->plb_type_b_chn * 4);
     trgm_output_config(cfg->trgm, PLB_SOC_TYPEB_TRGM_INPUT0 + (cfg->plb_type_b_chn * 4) + 1, &trgm_config);
+
+    trgm_config.invert = false;
+    trgm_config.type = trgm_output_same_as_input;
+    trgm_config.input = HPM_TRGM0_INPUT_SRC_VSS;
+    trgm_output_config(cfg->trgm, PLB_SOC_TYPEB_TRGM_INPUT0 + (cfg->plb_type_b_chn * 4) + 2, &trgm_config);
+    trgm_output_config(cfg->trgm, PLB_SOC_TYPEB_TRGM_INPUT0 + (cfg->plb_type_b_chn * 4) + 3, &trgm_config);
 
     trgm_config.invert = false;
     trgm_config.type = trgm_output_same_as_input;

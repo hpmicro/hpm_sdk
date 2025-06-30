@@ -8,6 +8,11 @@ i2c_smbus_slave
 
 i2c_smbus_slave示例工程展示了I2C在slave模式作为smbus接收和发送数据的功能。在这个示例工程中，SMbus slave先接收数据，之后将接收到的数据发送出去。
 
+提示
+------
+
+- 组件详情文档请参见 :ref:`smbus <smbus>`
+
 硬件设置
 ------------
 

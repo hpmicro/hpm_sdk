@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -12,10 +12,16 @@
 
 #define DEV_NO DEV_USB_MSC_0
 
+#if !defined(FATFS_ONLY_NONCACHEABLE_BUF) || !FATFS_ONLY_NONCACHEABLE_BUF
+ATTR_ALIGN(HPM_L1C_CACHELINE_SIZE) uint8_t read_write_buffer[25 * 100];
+FATFS fs;
+FIL fnew;
+#else
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t read_write_buffer[25 * 100];
-
 USB_NOCACHE_RAM_SECTION FATFS fs;
 USB_NOCACHE_RAM_SECTION FIL fnew;
+#endif
+
 UINT fnum;
 FRESULT res_sd;
 static volatile bool connected_flag;

@@ -1888,6 +1888,85 @@ void board_can_timeout_counter_test(void)
     rxfifo1_event_occurred = false;
 }
 
+void board_can_cancel_can_message_send(void)
+{
+    MCAN_Type *ptr = BOARD_APP_CAN_BASE;
+    mcan_config_t can_config;
+    hpm_stat_t status;
+#if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
+    can_info_t *can_info = find_board_can_info();
+    assert(can_info != NULL);
+    mcan_msg_buf_attr_t attr = { can_info->ram_base, can_info->ram_size };
+    status = mcan_set_msg_buf_attr(can_info->can_base, &attr);
+    if (status != status_success) {
+        printf("Error was detected during setting message buffer attribute, please check the arguments\n");
+        return;
+    }
+#endif
+    mcan_get_default_config(ptr, &can_config);
+    can_config.baudrate = 1000000; /* 1Mbps */
+    can_config.mode = mcan_mode_loopback_internal;
+    board_init_can(ptr);
+    uint32_t can_src_clk_freq = board_init_can_clock(ptr);
+
+    /* Test TXBUF cancellation for TXFIFO */
+    status = mcan_init(ptr, &can_config, can_src_clk_freq);
+    if (status != status_success) {
+        printf("CAN initialization failed, error code: %d\n", status);
+        return;
+    }
+
+    mcan_tx_frame_t tx_buf;
+    memset(&tx_buf, 0, sizeof(tx_buf));
+    tx_buf.dlc = 8;
+    uint32_t msg_len = mcan_get_message_size_from_dlc(tx_buf.dlc);
+    for (uint32_t i = 0; i < msg_len; i++) {
+        tx_buf.data_8[i] = i | (i << 4);
+    }
+    uint32_t fifo_idx[4];
+    for (uint32_t i = 0; i < 4; i++) {
+        tx_buf.std_id = i;
+        mcan_transmit_via_txfifo_nonblocking(ptr, &tx_buf, &fifo_idx[i]);
+    }
+    for (uint32_t i = 1; i < 4; i++) {
+        mcan_cancel_tx_buf_send_request(ptr, fifo_idx[i]);
+    }
+
+    uint32_t cancel_cnt = 0;
+    for (uint32_t i = 1; i < 4; i++) {
+        bool result = mcan_is_tx_buf_cancellation_finished(ptr, fifo_idx[i]);
+        cancel_cnt += (result ? 1 : 0);
+    }
+    printf("TXFIFO cancellation test %s\n", cancel_cnt == 3 ? "PASSED" : "FAILED");
+
+    /* Test TXBUF cancellation for TXBUF */
+    status = mcan_init(ptr, &can_config, can_src_clk_freq);
+    if (status != status_success) {
+        printf("CAN initialization failed, error code: %d\n", status);
+        return;
+    }
+
+    memset(&tx_buf, 0, sizeof(tx_buf));
+    tx_buf.dlc = 8;
+    msg_len = mcan_get_message_size_from_dlc(tx_buf.dlc);
+    for (uint32_t i = 0; i < msg_len; i++) {
+        tx_buf.data_8[i] = i | (i << 4);
+    }
+    for (uint32_t i = 0; i < 4; i++) {
+        tx_buf.std_id = i;
+        mcan_transmit_via_txbuf_nonblocking(ptr, i, &tx_buf);
+    }
+    for (uint32_t i = 1; i < 4; i++) {
+        mcan_cancel_tx_buf_send_request(ptr, i);
+    }
+    cancel_cnt = 0;
+    for (uint32_t i = 1; i < 4; i++) {
+        bool result = mcan_is_tx_buf_cancellation_finished(ptr, i);
+        cancel_cnt += (result ? 1 : 0);
+    }
+    printf("TXBUF cancellation test %s\n", cancel_cnt == 3 ? "PASSED" : "FAILED");
+}
+
 void handle_can_test(void)
 {
     show_help();
@@ -1936,6 +2015,9 @@ void handle_can_test(void)
         case 'b':
             board_can_timeout_counter_test();
             break;
+        case 'c':
+            board_can_cancel_can_message_send();
+            break;
         }
     }
 }
@@ -1959,6 +2041,7 @@ void show_help(void)
                                     "* 9 - CAN TX EVENT FIFO test                                                  *\n"
                                     "* a - CAN Timestamp Test                                                      *\n"
                                     "* b - CAN timeout counter Test                                                *\n"
+                                    "* c - CAN TXBUF cancellation Test                                             *\n"
                                     "*                                                                             *\n"
                                     "*******************************************************************************\n";
     printf("%s\n", help_info);

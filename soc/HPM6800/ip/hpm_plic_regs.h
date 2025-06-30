@@ -11,8 +11,8 @@
 
 typedef struct {
     __RW uint32_t FEATURE;                     /* 0x0: Feature enable register */
-    __RW uint32_t PRIORITY[163];               /* 0x4 - 0x28C: Source priority */
-    __R  uint8_t  RESERVED0[3440];             /* 0x290 - 0xFFF: Reserved */
+    __RW uint32_t PRIORITY[117];               /* 0x4 - 0x1D4: Source priority */
+    __R  uint8_t  RESERVED0[3624];             /* 0x1D8 - 0xFFF: Reserved */
     __RW uint32_t PENDING[4];                  /* 0x1000 - 0x100C: Pending status */
     __R  uint8_t  RESERVED1[112];              /* 0x1010 - 0x107F: Reserved */
     __R  uint32_t TRIGGER[4];                  /* 0x1080 - 0x108C: Trigger type */
@@ -64,9 +64,9 @@ typedef struct {
 /*
  * PRIORITY (RW)
  *
- * Interrupt source priority. The valid range of this field is 0-7.
+ * Interrupt source priority. The valid range of this field is 0-31.
  * 0: Never interrupt
- * 1-7: Interrupt source priority. The larger the value, the higher the priority.
+ * 1-31: Interrupt source priority. The larger the value, the higher the priority.
  */
 #define PLIC_PRIORITY_PRIORITY_MASK (0xFFFFFFFFUL)
 #define PLIC_PRIORITY_PRIORITY_SHIFT (0U)
@@ -298,52 +298,6 @@ typedef struct {
 #define PLIC_PRIORITY_PRIORITY115 (114UL)
 #define PLIC_PRIORITY_PRIORITY116 (115UL)
 #define PLIC_PRIORITY_PRIORITY117 (116UL)
-#define PLIC_PRIORITY_PRIORITY118 (117UL)
-#define PLIC_PRIORITY_PRIORITY119 (118UL)
-#define PLIC_PRIORITY_PRIORITY120 (119UL)
-#define PLIC_PRIORITY_PRIORITY121 (120UL)
-#define PLIC_PRIORITY_PRIORITY122 (121UL)
-#define PLIC_PRIORITY_PRIORITY123 (122UL)
-#define PLIC_PRIORITY_PRIORITY124 (123UL)
-#define PLIC_PRIORITY_PRIORITY125 (124UL)
-#define PLIC_PRIORITY_PRIORITY126 (125UL)
-#define PLIC_PRIORITY_PRIORITY127 (126UL)
-#define PLIC_PRIORITY_PRIORITY128 (127UL)
-#define PLIC_PRIORITY_PRIORITY129 (128UL)
-#define PLIC_PRIORITY_PRIORITY130 (129UL)
-#define PLIC_PRIORITY_PRIORITY131 (130UL)
-#define PLIC_PRIORITY_PRIORITY132 (131UL)
-#define PLIC_PRIORITY_PRIORITY133 (132UL)
-#define PLIC_PRIORITY_PRIORITY134 (133UL)
-#define PLIC_PRIORITY_PRIORITY135 (134UL)
-#define PLIC_PRIORITY_PRIORITY136 (135UL)
-#define PLIC_PRIORITY_PRIORITY137 (136UL)
-#define PLIC_PRIORITY_PRIORITY138 (137UL)
-#define PLIC_PRIORITY_PRIORITY139 (138UL)
-#define PLIC_PRIORITY_PRIORITY140 (139UL)
-#define PLIC_PRIORITY_PRIORITY141 (140UL)
-#define PLIC_PRIORITY_PRIORITY142 (141UL)
-#define PLIC_PRIORITY_PRIORITY143 (142UL)
-#define PLIC_PRIORITY_PRIORITY144 (143UL)
-#define PLIC_PRIORITY_PRIORITY145 (144UL)
-#define PLIC_PRIORITY_PRIORITY146 (145UL)
-#define PLIC_PRIORITY_PRIORITY147 (146UL)
-#define PLIC_PRIORITY_PRIORITY148 (147UL)
-#define PLIC_PRIORITY_PRIORITY149 (148UL)
-#define PLIC_PRIORITY_PRIORITY150 (149UL)
-#define PLIC_PRIORITY_PRIORITY151 (150UL)
-#define PLIC_PRIORITY_PRIORITY152 (151UL)
-#define PLIC_PRIORITY_PRIORITY153 (152UL)
-#define PLIC_PRIORITY_PRIORITY154 (153UL)
-#define PLIC_PRIORITY_PRIORITY155 (154UL)
-#define PLIC_PRIORITY_PRIORITY156 (155UL)
-#define PLIC_PRIORITY_PRIORITY157 (156UL)
-#define PLIC_PRIORITY_PRIORITY158 (157UL)
-#define PLIC_PRIORITY_PRIORITY159 (158UL)
-#define PLIC_PRIORITY_PRIORITY160 (159UL)
-#define PLIC_PRIORITY_PRIORITY161 (160UL)
-#define PLIC_PRIORITY_PRIORITY162 (161UL)
-#define PLIC_PRIORITY_PRIORITY163 (162UL)
 
 /* PENDING register group index macro definition */
 #define PLIC_PENDING_PENDING0 (0UL)

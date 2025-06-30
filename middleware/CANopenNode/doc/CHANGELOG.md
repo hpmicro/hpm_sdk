@@ -1,9 +1,34 @@
 Change Log
 ==========
 
-[v2.0] - 2020-10-27
--------------------------
-- [Full ChangeLog](https://github.com/CANopenNode/CANopenNode/compare/v1.3...master)
+v4.0 - current
+--------------
+- [Source Code](https://github.com/CANopenNode/CANopenNode/tree/master)
+- [Full ChangeLog](https://github.com/CANopenNode/CANopenNode/compare/v2.0-master...145a15d9449a701c911caa19e98b2f029286da53)
+### Latest commit
+- 145a15d9449a701c911caa19e98b2f029286da53
+### Latest changes
+- 2024-07-08: Code reforamtted according to .clang-format
+- 2024-07-05: Static analysis for Misra C:2012
+- 2024-05-31: SRDO updated to current CANopenNode
+- 2023-09-07: Node guarding added
+### Removed
+- Driver for Linux (socketCAN directory) moved to own repository https://github.com/CANopenNode/CANopenLinux.
+### Changed
+- New Object dictionary interface. It has similar principles as before. Main access to OD variables is via fast read/write functions, but direct access to OD variables is also possible. OD entries are passed with pointers to CANopen objects. All parts of CANopenNode objects, which works with OD entries, are rewritten.
+- [CANopenEditor](https://github.com/CANopenNode/CANopenEditor) (formerly [libedssharp](https://github.com/robincornelius/libedssharp)) has new OD exporter, new project file format (standard CANopen XDD v1.1), new documentation generator, and many other improvements.
+- New OD.h and OD.c files, replaces CO_OD files.
+- CANopen.c and CANopen.h files redesigned. `#include OD.h` is optional. Configuration of multiple object dictionaries is possible with one CANopen device. Interface is the same, with some changes to function arguments.
+- New CO_storage.h/c files enables easier integration to target system for storing OD variables.
+- Rewritten SDO server. Object dictionary part is moved to CO_ODinterface.h/c files.
+- Rewritten PDO. PDO mapped variables are accessed via fast read/write functions. New RPDO event timer (timeout).
+- CO_Emergency is mostly rewritten. Now is much easier customisation. All other objects has been adjusted to newOD, inspected and some parts were redesigned.
+
+
+v2.0 - 2020-02-25
+-----------------
+- [Source Code](https://github.com/CANopenNode/CANopenNode/tree/v2.0-master)
+- [Full ChangeLog](https://github.com/CANopenNode/CANopenNode/compare/v1.3-master...v2.0-master)
 ### Removed
 - All drivers removed from this project, except Neuberger-socketCAN for Linux.
 ### Changed
@@ -41,9 +66,11 @@ Change Log
 - CO_fifo.h/c for fifo data buffer, used with rewritten SDO client, etc.
 - CANopen gateway-ascii command interface according to CiA309-3 as a microcontroller independent module. It includes NMT master, LSS master and SDO client interface. Interface is non-blocking, it is added to mainline. Example for Linux stdio and socket is included.
 
-[v1.3] - 2020-04-27
--------------------
-- [Full ChangeLog](https://github.com/CANopenNode/CANopenNode/compare/v1.2...v1.3)
+
+v1.3 - 2020-04-27
+-----------------
+- [Source Code](https://github.com/CANopenNode/CANopenNode/tree/v1.3-master)
+- [Full ChangeLog](https://github.com/CANopenNode/CANopenNode/compare/v1.2...v1.3-master)
 ### Changed
 - License changed to Apache 2.0.
 - NMT self start functionality (OD object 1F80) implemented to strictly follow standard. Default value for object 1F80 have to be updated in OD editor. See README.md.
@@ -53,8 +80,10 @@ Change Log
 ### Added
 - CANopen TIME protocol added.
 
-[v1.2] - 2019-10-08
--------------------
+
+v1.2 - 2019-10-08
+-----------------
+- [Source Code](https://github.com/CANopenNode/CANopenNode/tree/v1.2)
 - [Full ChangeLog](https://github.com/CANopenNode/CANopenNode/compare/v1.1...v1.2)
 ### Fixed
 - Memory barrier implemented for setting/clearing flags for CAN received message.
@@ -65,37 +94,38 @@ Change Log
 - Emergency consumer added.
 - Callbacks added to Emergency and Heartbeat consumer.
 
-[v1.1] - 2019-10-08
--------------------
+
+v1.1 - 2019-10-08
+-----------------
+- [Source Code](https://github.com/CANopenNode/CANopenNode/tree/v1.1)
 - [Full ChangeLog](https://github.com/CANopenNode/CANopenNode/compare/v1.0...v1.1)
 - Bugfixes. Some non-critical warnings in stack, some formatting warnings in tracing stuff.
 
-[v1.0] - 2017-08-01
--------------------
+
+v1.0 - 2017-08-01
+-----------------
+- [Source Code](https://github.com/CANopenNode/CANopenNode/tree/v1.0)
 - [Full ChangeLog](https://github.com/CANopenNode/CANopenNode/compare/v0.5...v1.0)
 - Stable.
 
-[v0.5] - 2015-10-20
--------------------
+
+v0.5 - 2015-10-20
+-----------------
+- [Source Code](https://github.com/CANopenNode/CANopenNode/tree/v0.5)
 - Git repository started on GitHub.
 
-[v0.4] - 2012-02-26
--------------------
+
+v0.4 - 2012-02-26
+-----------------
+- [Source Code](https://sourceforge.net/p/canopennode/code_complete/ci/master/tree/)
 - Git repository started on Sourceforge git.
 
-[v0.1] - 2004-06-29
--------------------
+
+v0.1 - 2004-06-29
+-----------------
+- [Source Code](https://sourceforge.net/projects/canopennode/files/canopennode/CANopenNode-0.80/)
 - First edition of CANopenNode on SourceForge, files section. (V0.80 on SourceForge).
 
 ------
 
 Changelog written according to recommendations from https://keepachangelog.com/
-
-[Unreleased master]: https://github.com/CANopenNode/CANopenNode
-[v1.3]: https://github.com/CANopenNode/CANopenNode/tree/v1.3
-[v1.2]: https://github.com/CANopenNode/CANopenNode/tree/v1.2
-[v1.1]: https://github.com/CANopenNode/CANopenNode/tree/v1.1
-[v1.0]: https://github.com/CANopenNode/CANopenNode/tree/v1.0
-[v0.5]: https://github.com/CANopenNode/CANopenNode/tree/v0.5
-[v0.4]: https://sourceforge.net/p/canopennode/code_complete/ci/master/tree/
-[v0.1]: https://sourceforge.net/projects/canopennode/files/canopennode/CANopenNode-0.80/

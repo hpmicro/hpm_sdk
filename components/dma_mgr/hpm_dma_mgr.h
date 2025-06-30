@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 HPMicro
+ * Copyright (c) 2022-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -185,9 +185,20 @@ void dma_mgr_init(void);
  * @param [out] resource DMA resource
  * @retval status_success if no error occurred
  * @retval status_invalid_argument if the parameter is invalid
- * @retval status_dma_mgr_no_resource if all DMA channels are occupied;
+ * @retval status_dma_mgr_no_resource if all DMA channels are occupied
  */
 hpm_stat_t dma_mgr_request_resource(dma_resource_t *resource);
+
+/**
+ * @brief Request DMA resource from specified DMA
+ *
+ * @param [out] resource DMA resource
+ * @param [in] base specified DMA, such as HPM_HDMA, HPM_XDMA
+ * @retval status_success if no error occurred
+ * @retval status_invalid_argument if the parameter is invalid
+ * @retval status_dma_mgr_no_resource if all DMA channels are occupied
+ */
+hpm_stat_t dma_mgr_request_specified_resource(dma_resource_t *resource, DMA_Type *base);
 
 /**
  * @brief Release DMA resource

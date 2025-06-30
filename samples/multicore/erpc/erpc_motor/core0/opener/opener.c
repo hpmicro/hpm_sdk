@@ -95,5 +95,5 @@ static void opener_thread(void const *argument)
     /* close remaining sessions and connections, clean up used data */
     ShutdownCipStack();
     /* Delete the OpENer Thread */
-    osThreadTerminate(NULL);
+    osThreadTerminate(osThreadGetId());
 }

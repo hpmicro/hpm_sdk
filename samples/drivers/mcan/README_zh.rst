@@ -50,6 +50,7 @@ mcan_demo 例程提供如下功能：
    * 9 - CAN TX EVENT FIFO test                                                  *
    * a - CAN Timestamp Test                                                      *
    * b - CAN timeout counter Test                                                *
+   * c - CAN TXBUF cancellation Test                                             *
    *                                                                             *
    *******************************************************************************
 

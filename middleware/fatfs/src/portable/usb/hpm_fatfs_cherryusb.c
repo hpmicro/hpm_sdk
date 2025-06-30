@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -126,7 +126,7 @@ DRESULT usb_disk_ioctl(BYTE pdrv, BYTE cmd, void *buff)
         break;
 
     case GET_SECTOR_COUNT:
-        *(DWORD *)buff = ptr->blocknum;
+        *(LBA_t *)buff = ptr->blocknum;
         result = RES_OK;
         break;
 

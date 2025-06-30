@@ -1,0 +1,18 @@
+# Copyright (c) 2021-2025 HPMicro
+# SPDX-License-Identifier: BSD-3-Clause
+
+board:
+    soc: HPM5E31
+    device: HPM5E31xGNx
+    openocd-soc: hpm5e00
+    openocd-probe: ft2232
+    on-board-flash:
+      type: qspi-nor-flash
+      size: 1M
+    feature:
+      - board_qei
+      - board_motor_control
+      - board_gpt_pin
+      - board_enet_phy
+      - board_wkup_pin
+      - board_clk_ref_pin

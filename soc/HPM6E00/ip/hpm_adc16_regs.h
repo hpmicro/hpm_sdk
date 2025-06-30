@@ -491,7 +491,7 @@ typedef struct {
  *
  * convert clock numbers, set to 21 (0x15) for 16bit mode, which means convert need 21 adc clock cycles(based on clock after divider);
  * user can use small value to get faster conversion, but less accuracy, need to config cov_end_cnt at adc16_config1 also.
- * Ex: use 200MHz bus clock for adc, set sample_clock_number to 4, sample_clock_number_shift to 0, covert_clk_number to 21 for 16bit mode, clock_divider to 3, then each ADC conversion(plus sample) need 25 cycles(50MHz).
+ * Ex: use 200MHz bus clock for adc, set sample_clock_number to 4, sample_clock_number_shift to 0, covert_clk_number to 21 for 16bit mode, clock_divder to 3, then each ADC conversion(plus sample) need 25 cycles(50MHz).
  */
 #define ADC16_CONV_CFG1_CONVERT_CLOCK_NUMBER_MASK (0x1F0U)
 #define ADC16_CONV_CFG1_CONVERT_CLOCK_NUMBER_SHIFT (4U)
@@ -933,16 +933,6 @@ typedef struct {
 #define ADC16_ADC16_CONFIG0_CAL_AVG_CFG_SHIFT (20U)
 #define ADC16_ADC16_CONFIG0_CAL_AVG_CFG_SET(x) (((uint32_t)(x) << ADC16_ADC16_CONFIG0_CAL_AVG_CFG_SHIFT) & ADC16_ADC16_CONFIG0_CAL_AVG_CFG_MASK)
 #define ADC16_ADC16_CONFIG0_CAL_AVG_CFG_GET(x) (((uint32_t)(x) & ADC16_ADC16_CONFIG0_CAL_AVG_CFG_MASK) >> ADC16_ADC16_CONFIG0_CAL_AVG_CFG_SHIFT)
-
-/*
- * PREEMPT_EN (RW)
- *
- * set to enable preemption feature
- */
-#define ADC16_ADC16_CONFIG0_PREEMPT_EN_MASK (0x4000U)
-#define ADC16_ADC16_CONFIG0_PREEMPT_EN_SHIFT (14U)
-#define ADC16_ADC16_CONFIG0_PREEMPT_EN_SET(x) (((uint32_t)(x) << ADC16_ADC16_CONFIG0_PREEMPT_EN_SHIFT) & ADC16_ADC16_CONFIG0_PREEMPT_EN_MASK)
-#define ADC16_ADC16_CONFIG0_PREEMPT_EN_GET(x) (((uint32_t)(x) & ADC16_ADC16_CONFIG0_PREEMPT_EN_MASK) >> ADC16_ADC16_CONFIG0_PREEMPT_EN_SHIFT)
 
 /*
  * CONV_PARAM (RW)

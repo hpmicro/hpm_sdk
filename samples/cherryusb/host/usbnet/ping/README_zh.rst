@@ -6,7 +6,7 @@ RNDIS Host - PING
 概述
 ------
 
-- 本示例工程展示USB RNDIS Host实现连接合宙4G模块-air780e模块或者EC20模块联网,进行ping通信
+- 本示例工程展示USB RNDIS Host实现连接合宙4G模块-air780e模块或者EC20模块或者ML307R模块联网,进行ping通信
 
 硬件设置
 ------------

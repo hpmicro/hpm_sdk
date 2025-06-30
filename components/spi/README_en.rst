@@ -735,3 +735,29 @@ Non-blocking Read/Write Operations, Divided into Full-Duplex and Half-Duplex Ope
 
            dma_resource_t *hpm_spi_get_rx_dma_resource(SPI_Type *ptr)
 
+    - **Example:** How to Use `hpm_spi_get_tx_dma_resource` and `hpm_spi_get_rx_dma_resource` Functions to Obtain DMA Channel Resources and Utilize Them for Data Transfer
+
+        .. code-block:: c
+
+            /* Initialize SPI... details omitted */
+            /* Get transmit DMA channel resource */
+            dma_resource_t *tx_dma_resource = hpm_spi_get_tx_dma_resource(HPM_SPI1);
+            if (tx_dma_resource != NULL) {
+                /* Successfully obtained transmit DMA channel resource */
+                printf("TX DMA channel resource obtained successfully.\n");
+                /* Print the DMA instance and channel used by the transmit DMA resource */
+                printf("TX DMA instance: %d, TX DMA channel: %d\n", tx_dma_resource->dma_instance, tx_dma_resource->dma_channel);
+                /* Change the TX DMA resource's interrupt priority to 1 */
+                dma_mgr_enable_dma_irq_with_priority(tx_dma_resource, 1);
+            }
+            /* Get receive DMA channel resource */
+            dma_resource_t *rx_dma_resource = hpm_spi_get_rx_dma_resource(HPM_SPI1);
+            if (rx_dma_resource != NULL) {
+                /* Successfully obtained receive DMA channel resource */
+                printf("RX DMA channel resource obtained successfully.\n");
+                /* Get the DMA instance and channel used by the receive DMA resource */
+                printf("RX DMA instance: %d, TX DMA channel: %d\n", rx_dma_resource->dma_instance, rx_dma_resource->dma_channel);
+                /* Change the RX DMA resource's interrupt priority to 1 */
+                dma_mgr_enable_dma_irq_with_priority(rx_dma_resource, 1);
+            }
+

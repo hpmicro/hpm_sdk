@@ -20,7 +20,7 @@
 #define SAMPLE_IPV4_ADDRESS 0.0.0.0
 #define SAMPLE_IPV4_MASK 0.0.0.0
 
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(64) NX_DHCP dhcp_client;
+ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(64) NX_DHCP dhcp_client;
 UCHAR ip_address[4];
 UCHAR network_mask[4];
 #else
@@ -42,7 +42,9 @@ UCHAR network_mask[4];
 #endif
 #define ECHO_DATA "ABCDEFGHIJKLMNOPQRSTUVWXYZ "
 #define ECHO_RECEIVE_TIMEOUT NX_IP_PERIODIC_RATE
+#ifndef ECHO_SEND_PORT
 #define ECHO_SEND_PORT 7777
+#endif
 
 /* Define packet pool.  */
 #define PACKET_SIZE 1536

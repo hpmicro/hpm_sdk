@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -39,9 +39,9 @@ static void init_eui_config(void)
     eui_config_ctrl(BOARD_EUI, s_eui_clock_freq, &ctrl_config);
 
     printf("clko_tm_us:%d, slot_tm_us:%d, hold_tm_us:%d, disp_tm_us:%d, filter_tm_us:%d\n\n",
-            eui_get_time(BOARD_EUI, s_eui_clock_freq, eui_clko_time), eui_get_time(BOARD_EUI, s_eui_clock_freq, eui_slot_time),
-            eui_get_time(BOARD_EUI, s_eui_clock_freq, eui_hold_time), eui_get_time(BOARD_EUI, s_eui_clock_freq, eui_disp_time),
-            eui_get_time(BOARD_EUI, s_eui_clock_freq, eui_filter_time));
+            eui_get_time_us(BOARD_EUI, s_eui_clock_freq, eui_clko_time), eui_get_time_us(BOARD_EUI, s_eui_clock_freq, eui_slot_time),
+            eui_get_time_us(BOARD_EUI, s_eui_clock_freq, eui_hold_time), eui_get_time_us(BOARD_EUI, s_eui_clock_freq, eui_disp_time),
+            eui_get_time_us(BOARD_EUI, s_eui_clock_freq, eui_filter_time));
 
     eui_set_irq_enable(BOARD_EUI, eui_irq_area_mask);
     intc_m_enable_irq_with_priority(BOARD_EUI_IRQ, 1);

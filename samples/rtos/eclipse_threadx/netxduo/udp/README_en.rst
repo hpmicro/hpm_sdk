@@ -20,6 +20,8 @@ Project Configuration
 
 - By `set(CONFIG_ECLIPSE_THREADX_NETXDUO_ADDONS_DHCP 1)` in CMakeLists.txt, the DHCP will be enabled
 
+- When enabling DHCP, please note that the IP address represented by macro ECHO_SERVER_ADDRESS should be accessible through the gateway.
+
 Running the example
 -------------------
 

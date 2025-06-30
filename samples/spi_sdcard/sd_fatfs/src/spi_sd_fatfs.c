@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -37,9 +37,8 @@ static FRESULT sd_big_file_test(void);
 const char *show_error_string(FRESULT fresult);
 static void show_help(void);
 
-ATTR_PLACE_AT_NONCACHEABLE FATFS s_sd_disk;
-ATTR_PLACE_AT_NONCACHEABLE FIL s_file;
-ATTR_PLACE_AT_NONCACHEABLE DIR s_dir;
+FATFS s_sd_disk;
+FIL s_file;
 FRESULT fatfs_result;
 
 const TCHAR driver_num_buf[4] = {DEV_SD + '0', ':', '/', '\0'};
@@ -50,8 +49,6 @@ const test_number_t test_table[] = {
     {dire_test,                 "*        3 - Directory related test                           *\n"},
     {large_file_write,          "*        4 - Large file write test                            *\n"},
 };
-
-
 
 int main(void)
 {
@@ -173,6 +170,7 @@ static FRESULT sd_read_file(void)
 
 static FRESULT sd_big_file_test(void)
 {
+    ATTR_ALIGN(HPM_L1C_CACHELINE_SIZE) static uint8_t buf[4096];
     FRESULT fresult = f_open(&s_file, "big_file.bin", FA_WRITE | FA_CREATE_ALWAYS);
     if (fresult != FR_OK) {
         printf("Create new file failed, cause: %s\n", show_error_string(fresult));
@@ -181,7 +179,7 @@ static FRESULT sd_big_file_test(void)
     }
 
     uint32_t write_size = 1024UL * 1024UL * 5UL;
-    static uint8_t buf[4096];
+
     for (uint32_t i = 0; i < sizeof(buf); i++) {
         buf[i] = i & 0xFF;
     }

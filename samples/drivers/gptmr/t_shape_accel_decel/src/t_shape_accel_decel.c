@@ -22,7 +22,6 @@
 #define APP_BOARD_GPTMR_IRQ           BOARD_GPTMR_PWM_IRQ
 #define APP_GPTMR_DMA                 BOARD_APP_HDMA
 #define APP_GPTMR_DMA_IRQ             BOARD_APP_HDMA_IRQ
-#define APP_BOARD_GPTMR_CLOCK         BOARD_GPTMR_PWM_CLK_NAME
 #define APP_DMA_SRC_WIDTH             DMA_TRANSFER_WIDTH_WORD
 #define APP_DMA_DST_WIDTH             DMA_TRANSFER_WIDTH_WORD
 #define APP_BOARD_GPTMR_DMA_CH        (0U)
@@ -75,8 +74,7 @@ int main(void)
     init_gptmr_pins(APP_BOARD_GPTMR);
     board_init_led_pins();
 
-    clock_add_to_group(APP_BOARD_GPTMR_CLOCK, 0);
-    gptmr_freq = clock_get_frequency(APP_BOARD_GPTMR_CLOCK);
+    gptmr_freq = board_init_gptmr_clock(APP_BOARD_GPTMR);
 
     generate_T_shape_data();
     dma_transfer_config();

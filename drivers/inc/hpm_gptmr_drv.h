@@ -129,6 +129,14 @@ typedef struct gptmr_qei_config {
 
 #endif
 
+#if defined(HPM_IP_FEATURE_GPTMR_BURST_MODE) && (HPM_IP_FEATURE_GPTMR_BURST_MODE == 1)
+typedef enum gptmr_burst_counter_mode {
+    gptmr_burst_counter_restart = 0,
+    gptmr_burst_counter_continue,
+} gptmr_burst_counter_mode_t;
+
+#endif
+
 /**
  * @brief GPTMR channel config
  */
@@ -618,6 +626,110 @@ hpm_stat_t gptmr_channel_monitor_config(GPTMR_Type *ptr, uint8_t ch_index,
                                         gptmr_channel_monitor_config_t *config,
                                         bool enable);
 
+#endif
+
+#if defined(HPM_IP_FEATURE_GPTMR_BURST_MODE) && (HPM_IP_FEATURE_GPTMR_BURST_MODE == 1)
+/**
+ * @brief gptmr channel enable burst mode, it's burst mode, Timer stops after reaching reload value burst_cfg times.
+
+ *
+ * @note  reload irq will be always set at one-shot mode at end
+ *
+ * @param [in] ptr GPTMR base address
+ * @param [in] ch_index channel index
+ */
+static inline hpm_stat_t gptmr_channel_enable_burst_mode(GPTMR_Type *ptr, uint8_t ch_index)
+{
+    /* enable burst mode, should disable opmode first */
+    if (gptmr_channel_is_opmode(ptr, ch_index) == true) {
+        return status_invalid_argument;
+    }
+    ptr->CHANNEL[ch_index].CR |= GPTMR_CHANNEL_CR_BURST_MODE_MASK;
+    return status_success;
+}
+
+/**
+ * @brief gptmr channel disable opmode, it's circular mode.the timer restarts from 0 after reaching the reload value.
+ *
+ * @param [in] ptr GPTMR base address
+ * @param [in] ch_index channel index
+ */
+static inline void gptmr_channel_disable_burst_mode(GPTMR_Type *ptr, uint8_t ch_index)
+{
+    ptr->CHANNEL[ch_index].CR &= ~GPTMR_CHANNEL_CR_BURST_MODE_MASK;
+}
+
+/**
+ * @brief gptmr channel get burstmode.
+ *
+ * @param [in] ptr GPTMR base address
+ * @param [in] ch_index channel index
+ * @retval bool true for burstmode, false for circular mode
+ */
+static inline bool gptmr_channel_is_burst_mode(GPTMR_Type *ptr, uint8_t ch_index)
+{
+    return ((ptr->CHANNEL[ch_index].CR & GPTMR_CHANNEL_CR_BURST_MODE_MASK) == GPTMR_CHANNEL_CR_BURST_MODE_MASK) ? true : false;
+}
+
+/**
+ * @brief gptmr channel set target burst count.
+ *
+ * @param [in] ptr GPTMR base address
+ * @param [in] ch_index channel index
+ * @param [in] burst_count configure burst count: number of times timer reaches reload value.
+ */
+static inline void gptmr_channel_set_target_burst_count(GPTMR_Type *ptr, uint8_t ch_index, uint16_t burst_count)
+{
+    ptr->CHANNEL[ch_index].BURST_CFG = (ptr->CHANNEL[ch_index].BURST_CFG & ~GPTMR_CHANNEL_BURST_CFG_BURST_CFG_MASK) | GPTMR_CHANNEL_BURST_CFG_BURST_CFG_SET(burst_count);
+}
+
+/**
+ * @brief gptmr channel get target burst count.
+ *
+ * @param [in] ptr GPTMR base address
+ * @param [in] ch_index channel index
+ * @retval uint16_t configure burst count: number of times timer reaches reload value.
+ */
+static inline uint16_t gptmr_channel_get_target_burst_count(GPTMR_Type *ptr, uint8_t ch_index)
+{
+    return (uint16_t)GPTMR_CHANNEL_BURST_CFG_BURST_CFG_GET(ptr->CHANNEL[ch_index].BURST_CFG);
+}
+
+/**
+ * @brief gptmr channel get current burst count.
+ *
+ * @param [in] ptr GPTMR base address
+ * @param [in] ch_index channel index
+ * @retval uint32_t current burst count
+ */
+
+static inline uint32_t gptmr_channel_get_current_burst_count(GPTMR_Type *ptr, uint8_t ch_index)
+{
+    return GPTMR_CHANNEL_BURST_COUNT_BURST_COUNT_GET(ptr->CHANNEL[ch_index].BURST_COUNT);
+
+}
+
+/**
+ * @brief gptmr channel burst mode start counter
+ * @note in gptmr_burst_counter_continue mode, restart uses current counter without reset if current burst count < set burst count.
+ *
+ * @param [in] ptr GPTMR base address
+ * @param [in] ch_index channel index
+ * @param [in] mode gptmr_burst_counter_mode_t
+ * @retval hpm_stat_t status_invalid_argument or status_success
+ */
+hpm_stat_t gptmr_channel_burst_mode_start_counter(GPTMR_Type *ptr, uint8_t ch_index, gptmr_burst_counter_mode_t mode);
+
+/**
+ * @brief gptmr channel burst mode stop counter
+ *
+ * @param [in] ptr GPTMR base address
+ * @param [in] ch_index channel index
+ */
+static inline void gptmr_channel_burst_mode_stop_counter(GPTMR_Type *ptr, uint8_t ch_index)
+{
+    ptr->CHANNEL[ch_index].CR &= ~GPTMR_CHANNEL_CR_CEN_MASK;
+}
 #endif
 
 /**

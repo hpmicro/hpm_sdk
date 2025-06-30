@@ -1,0 +1,12 @@
+excluded_targets:
+  - flash_xip
+  - flash_xip_release
+  - flash_sdram_xip
+  - flash_sdram_xip_release
+  - flash_uf2
+  - flash_uf2_release
+  - flash_sdram_uf2
+  - flash_sdram_uf2_release
+
+dependency:
+  - pllctlv2

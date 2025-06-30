@@ -27,4 +27,5 @@ add_subdirectory_ifdef(CONFIG_HPM_PMBUS pmbus smbus)
 add_subdirectory_ifdef(CONFIG_HPM_I2C i2c)
 add_subdirectory_ifdef(CONFIG_HPM_JPEG jpeg)
 add_subdirectory_ifdef(CONFIG_HPM_SEGMENT_LED segment_led)
+add_subdirectory_ifdef(CONFIG_HPM_LOG log)
 

@@ -47,6 +47,7 @@ typedef struct {
     hpm_mcl_stat_t (*update_sample_location)(mcl_analog_chn_t chn, uint32_t tick);
     _FUNC_OPTIONAL_ hpm_mcl_stat_t (*process_by_user)(mcl_analog_chn_t chn, int32_t adc_value, float *output);
     hpm_mcl_stat_t (*get_value)(mcl_analog_chn_t chn, int32_t *value);
+    hpm_mcl_stat_t (*step_convert)(mcl_analog_chn_t chn, float value, float angle, float *output, bool is_closed_loop);
 } mcl_analog_callback_t;
 
 
@@ -64,6 +65,7 @@ typedef struct {
     bool enable_c_voltage;
     bool enable_vbus;
     bool enable_process_by_user;
+    bool enable_step_convert_by_user;
     bool enable_filter[MCL_ANALOG_CHN_NUM];
 } mcl_analog_cfg_t;
 
@@ -124,16 +126,17 @@ hpm_mcl_stat_t hpm_mcl_analog_iir_filter_init(mcl_analog_t *analog, mcl_analog_c
 hpm_mcl_stat_t hpm_mcl_analog_disable_iir_filter(mcl_analog_t *analog, mcl_analog_chn_t chn);
 
 /**
- * @brief Current conversion of stepper motors
+ * @brief Convert step motor current
  *
  * @param analog @ref mcl_analog_t
- * @param value Raw data acquired by the analog function
+ * @param value Current value
  * @param chn @ref mcl_analog_chn_t
- * @param angle electrical angle
- * @param output Transformed data
+ * @param angle Current angle
+ * @param output Output current value
+ * @param is_closed_loop Whether to use closed loop mode
  * @return hpm_mcl_stat_t
  */
-hpm_mcl_stat_t hpm_mcl_analog_step_convert(mcl_analog_t *analog, float value, mcl_analog_chn_t chn, float angle, float *output);
+hpm_mcl_stat_t hpm_mcl_analog_step_convert(mcl_analog_t *analog, float value, mcl_analog_chn_t chn, float angle, float *output, bool is_closed_loop);
 
 #ifdef __cplusplus
 }

@@ -1025,3 +1025,20 @@ Notes
   .. code-block:: c
 
     dma_resource_t *hpm_i2c_get_dma_mgr_resource(hpm_i2c_context_t *context)
+
+- **Example:** How to Use `hpm_i2c_get_dma_mgr_resource` Functions to Obtain DMA Channel Resources and Utilize Them for Data Transfer
+
+    .. code-block:: c
+
+        hpm_i2c_context_t context;
+        /* Initialize SPI... details omitted */
+        /* Get DMA channel resource */
+        dma_resource_t *i2c_dma_resource = hpm_spi_get_tx_dma_resource(&context);
+        if (i2c_dma_resource != NULL) {
+            /* Successfully obtained transmit DMA channel resource */
+            printf("I2C DMA channel resource obtained successfully.\n");
+            /* Print the DMA instance and channel used by the transmit DMA resource */
+            printf("i2c DMA instance: %d, i2c DMA channel: %d\n", i2c_dma_resource->dma_instance, i2c_dma_resource->dma_channel);
+            /* Change the i2c DMA resource's interrupt priority to 1 */
+            dma_mgr_enable_dma_irq_with_priority(i2c_dma_resource, 1);
+        }

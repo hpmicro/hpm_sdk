@@ -72,7 +72,7 @@ VOID thread_server_entry(ULONG thread_input);
 #define SAMPLE_IPV4_ADDRESS 0.0.0.0
 #define SAMPLE_IPV4_MASK 0.0.0.0
 
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(64) NX_DHCP dhcp_client;
+ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(64) NX_DHCP dhcp_client;
 UCHAR ip_address[4];
 UCHAR network_mask[4];
 #else

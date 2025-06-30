@@ -1665,7 +1665,7 @@ static inline void pwmv2_counter_set_trig0_calculate_cell_index(PWMV2_Type *pwm_
 }
 
 /**
- * @brief Set trigmux index to start counter
+ * @brief Set trigmux index to control channel output
  *
  * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
  * @param counter @ref pwm_counter_t
@@ -1677,7 +1677,7 @@ static inline void pwmv2_counter_start_select_trigger_index(PWMV2_Type *pwm_x, p
 }
 
 /**
- * @brief Enable trigmux to trigger counter initiation
+ * @brief Enable trigmux to trigger channel output
  *
  * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
  * @param counter @ref pwm_counter_t
@@ -1688,7 +1688,7 @@ static inline void pwmv2_counter_start_trigger_enable(PWMV2_Type *pwm_x, pwm_cou
 }
 
 /**
- * @brief Disable trigmux to trigger counter initiation
+ * @brief Disable trigmux to trigger channel output
  *
  * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
  * @param counter @ref pwm_counter_t

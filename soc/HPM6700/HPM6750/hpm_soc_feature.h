@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -112,7 +112,7 @@
  * ENET Section
  */
 #define ENET_SOC_DESC_ADDR_ALIGNMENT               (32U)
-#define ENET_SOC_BUFF_ADDR_ALIGNMENT               (4U)
+#define ENET_SOC_BUFF_ADDR_ALIGNMENT               (8U)
 #define ENET_SOC_ADDR_MAX_COUNT                    (5U)
 #define ENET_SOC_ALT_EHD_DES_MIN_LEN               (4U)
 #define ENET_SOC_ALT_EHD_DES_MAX_LEN               (8U)

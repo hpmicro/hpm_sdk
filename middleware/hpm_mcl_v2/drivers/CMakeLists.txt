@@ -3,5 +3,5 @@
 
 sdk_inc(.)
 sdk_src(
-    hpm_mcl_pwm.c
+    hpm_mcl_hw_loop.c
     )

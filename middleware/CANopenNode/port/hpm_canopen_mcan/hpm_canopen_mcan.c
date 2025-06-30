@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,9 +9,11 @@
 #include "board.h"
 #include "hpm_sysctl_drv.h"
 #include "hpm_canopen_mcan.h"
-#include "hpm_canopen_test.h"
+#include "hpm_canopen.h"
 
+#if defined(CONFIG_CANOPEN_MASTER)
 extern struct hpm_master_receive_buf canopen_rx_buf;
+#endif
 
 static uint32_t hpm_mcan_get_first_filter_index(const mcan_rx_message_t *buf,
                                         const struct hpm_can_data *data)
@@ -53,8 +55,10 @@ void hpm_mcan_get_message_from_rxbuf(const struct device *dev, uint32_t buf_inde
     memset(&s_can_rx_buf, 0, sizeof(s_can_rx_buf));
     mcan_read_rxbuf(can, buf_index, (mcan_rx_message_t *) &s_can_rx_buf);
 
+#if defined(CONFIG_CANOPEN_MASTER)
     canopen_rx_buf.has_received_message = true;
     memcpy(&canopen_rx_buf.rx_buf, &s_can_rx_buf, sizeof(s_can_rx_buf));
+#endif
 
     uint32_t filter_index = hpm_mcan_get_first_filter_index(&s_can_rx_buf, data);
     memset(&frame, 0, sizeof(frame));
@@ -122,8 +126,10 @@ void hpm_mcan_get_message_from_rxfifo(const struct device *dev, uint32_t fifo_in
     memset(&s_can_rx_buf, 0, sizeof(s_can_rx_buf));
     mcan_read_rxfifo(can, fifo_index, (mcan_rx_message_t *) &s_can_rx_buf);
 
+#if defined(CONFIG_CANOPEN_MASTER)
     canopen_rx_buf.has_received_message = true;
     memcpy(&canopen_rx_buf.rx_buf, &s_can_rx_buf, sizeof(s_can_rx_buf));
+#endif
 
     uint32_t filter_index = hpm_mcan_get_first_filter_index(&s_can_rx_buf, data);
     memset(&frame, 0, sizeof(frame));

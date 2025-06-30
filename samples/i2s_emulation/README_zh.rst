@@ -10,6 +10,11 @@ SPI模拟I2S
 
 - 评估板需要接入音频解码模块，本例程使用wm8978
 
+提示
+------
+
+- 组件详情文档请参见 :ref:`i2s_over_spi <i2s_over_spi>`
+
 注意
 ------
 
@@ -82,7 +87,7 @@ SPI模拟I2S
 .. code-block:: console
 
    record start enter....
-   record size overflow, now exit..
+   recording size overflow, stopping and exiting now...
 
 
 - 终端输入'1'字符，开启录音播放

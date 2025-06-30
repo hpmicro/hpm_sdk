@@ -56,6 +56,7 @@ void init_adc_pins(void);
 void init_tamper_pins(void);
 void init_uart_break_signal_pin(void);
 void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp);
+void init_clk_ref_pin(void);
 
 #ifdef __cplusplus
 }

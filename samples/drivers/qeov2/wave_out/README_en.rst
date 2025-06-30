@@ -6,12 +6,47 @@ QEOV2_WAVE_OUT
 Overview
 --------
 
-QEO_WAVE_OUT sample shows QEO generates waveforms according to received postion.
+The QEO_WAVE_OUT sample project demonstrates the functionality of QEOv2 (Quadrature Encoder Output Version 2) peripheral in generating three-phase waveforms based on position information. QEOv2 can receive position information through software injection, and generate three phase-adjustable cosine waves based on preset resolution lines, which can be used to modulate PWM duty cycles.
 
-Running the example
+Working Process
+----------------
+
+This example demonstrates waveform generation in software position injection mode:
+
+Configuration steps:
+
+- Initialize QEO module and configure wave output mode:
+
+  * Set wave type as cosine
+  * Set resolution lines (4 lines)
+  * Configure phase shifts for three-phase output (120°/240°)
+
+- Software position injection process:
+
+  * Calculate position increment value
+  * Enable software position injection
+  * Cyclically inject position values for wave generation
+  * Sample and record wave output values
+  * Disable position injection
+
+Features
+-----------
+
+1. Wave Generation Features:
+
+   - Supports three independent cosine wave outputs
+   - Configurable phase shift for each output
+   - Selectable wave type (cosine)
+   - Supports wave amplitude range limitation
+   - Supports VD/VQ input (can be from CLC)
+   - Supports PWM duty cycle modulation
+
+Running the Example
 -------------------
 
-When the project runs correctly, the serial port terminal will receive the following information:
+When the project runs correctly, you will observe the following:
+
+1. Serial terminal output:
 
 .. code-block:: console
 
@@ -90,8 +125,12 @@ When the project runs correctly, the serial port terminal will receive the follo
    2445195581
    ...
 
-sample printf wave value，using tool(like excel)to fit data and generate waveforms.
+2. Wave Output:
 
+Using tools like Excel to process the serial output data, you can obtain the three-phase cosine waveform:
+- Three outputs are cosine waves with 120° phase differences
+- Wave period is determined by resolution lines
+- Wave amplitude range is 0-0xFFFFFFFF (when not limited)
 
 .. image:: doc/qeo_dac_1.png
-   :alt:
+   :alt: Three-phase Cosine Waveform

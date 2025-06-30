@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -77,27 +77,16 @@ static void mtg_test_loop(void)
 
 static void qeiv2_init(void)
 {
-    qeiv2_reset_counter(APP_QEIV2_BASE);
+    qeiv2_mode_config_t mode_config = {0};
 
-    qeiv2_set_work_mode(APP_QEIV2_BASE, qeiv2_work_mode_abz);
-    qeiv2_select_spd_tmr_register_content(APP_QEIV2_BASE, qeiv2_spd_tmr_as_pos_angle);
-    qeiv2_config_z_phase_counter_mode(APP_QEIV2_BASE, qeiv2_z_count_inc_on_phase_count_max);
-    qeiv2_config_phmax_phparam(APP_QEIV2_BASE, APP_QEI_COUNT_PER_CYCLE);
-    qeiv2_pause_pos_counter_on_fault(APP_QEIV2_BASE, true);
-    qeiv2_config_abz_uvw_signal_edge(APP_QEIV2_BASE, true, true, false, true, true);
-
-    intc_m_disable_irq(APP_QEIV2_IRQ);
-
-    qeiv2_disable_trig_pulse0(APP_QEIV2_BASE);
-    qeiv2_disable_trig_pulse1(APP_QEIV2_BASE);
-    qeiv2_disable_trig_cycle0(APP_QEIV2_BASE);
-    qeiv2_disable_trig_cycle1(APP_QEIV2_BASE);
-
-    qeiv2_config_position_timeout(APP_QEIV2_BASE, QEI_TIMEOUT, false);
-    qeiv2_release_counter(APP_QEIV2_BASE);
-
-    qeiv2_set_z_phase(APP_QEIV2_BASE, 0);
-    qeiv2_set_phase_cnt(APP_QEIV2_BASE, 0);
+    mode_config.work_mode = qeiv2_work_mode_abz;
+    mode_config.spd_tmr_content_sel = qeiv2_spd_tmr_as_pos_angle;
+    mode_config.z_count_inc_mode = qeiv2_z_count_inc_on_phase_count_max;
+    mode_config.phcnt_max = APP_QEI_COUNT_PER_CYCLE;
+    mode_config.z_cali_enable = false;
+    mode_config.z_cali_ignore_ab = false;
+    mode_config.phcnt_idx = 0;
+    qeiv2_config_mode(APP_QEIV2_BASE, &mode_config);
 }
 
 void mtg_init(MTGV2_Type *base)

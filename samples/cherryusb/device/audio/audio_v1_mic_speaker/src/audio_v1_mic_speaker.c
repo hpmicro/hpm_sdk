@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 HPMicro
+ * Copyright (c) 2022-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -16,7 +16,11 @@
 #include "hpm_dma_drv.h"
 #endif
 #include "hpm_dmamux_drv.h"
+#ifdef HPMSOC_HAS_HPMSDK_PDMLITE
+#include "hpm_pdmlite_drv.h"
+#else
 #include "hpm_pdm_drv.h"
+#endif
 #include "hpm_dao_drv.h"
 #include "board.h"
 
@@ -563,7 +567,7 @@ void speaker_init_i2s_dao(void)
     transfer.sample_rate = AUDIO_SPEAKER_FREQ;
     transfer.audio_depth = AUDIO_SPEAKER_RESOLUTION_BIT;
     transfer.channel_num_per_frame = 2; /* non TDM mode, channel num fix to 2. */
-    transfer.channel_slot_mask = 0x3;   /* data from hpm_wav_decode API is 2 channels */
+    transfer.channel_slot_mask = 0x3;   /* 2 channels */
 
     s_speaker_sample_rate = transfer.sample_rate;
 

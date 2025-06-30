@@ -6,19 +6,24 @@ Pmbus master
 Overview
 --------
 
-The PMbus master example demonstrates the functionality of I2C in master mode as a PMbus for receiving and sending data. It uses loops with different PMbus commands, including byte, word, and block instructions, and prints out the length of the read or written data or error codes.
+- The PMbus Master example project demonstrates the I2C interface operating in master mode to function as a PMbus controller for transmitting and receiving data. It repeatedly sends different PMbus commands (byte, word, and block instructions) and prints the length of the read/written data or error codes.
+
+Tips
+----
+
+- For detailed documentation about PMbus components, please refer to :ref:`pmbus <pmbus>`
 
 Board Setting
 -------------
 
-connect  :ref:`I2C Pins <board_resource>`  on the two boards。
+- Connect the :ref:`I2C pins <board_resource>` between two boards.
 
 Running the example
 -------------------
 
-- Run slave first, and then run master.
+- Run the slave firmware first, followed by the master.
 
-- When the example runs successfully, the log would be seen on the terminal like:
+- When the project runs correctly, the serial terminal will display output similar to the following
 
 
 .. code-block:: console

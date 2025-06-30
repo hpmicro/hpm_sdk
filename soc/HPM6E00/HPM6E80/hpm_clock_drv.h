@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -379,7 +379,7 @@ hpm_stat_t clock_set_source_divider(clock_name_t clock_name, clk_src_t src, uint
  * @param [in] clock_name Clock name for specified IP module
  *
  * @retval status_success The clock source is stable
- * @retval status_invalid_argument Invalid clock name is provided
+ * @retval status_clk_operation_unsupported The operation is not supported for the specified clock name
  * @retval status_timeout Timeout occurred
  */
 hpm_stat_t clock_wait_source_stable(clock_name_t clock_name);

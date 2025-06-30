@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2022,2024 HPMicro
+# Copyright (c) 2021-2022,2024-2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 #!/usr/bin/env python3
@@ -29,6 +29,8 @@ import os
 import re
 from collections import namedtuple
 from shutil import copyfile
+from io import StringIO
+from contextlib import redirect_stdout
 
 sys.path.insert(0, os.path.normpath(os.path.join(os.environ.get("HPM_SDK_BASE"), "scripts", "ide")))
 from hpm_sdk_proj_gen import ProjGenHelper
@@ -64,11 +66,31 @@ def update_file_tree(sdk_base, out_dir, ses_file, f, tree, use_outdir_relpath):
 def get_separate_intermediate_dir_name(name):
     return "Output/$(Configuration)/Obj/$(ProjectName)/%s" % name
 
-def populate_file_nodes(root, sdk_base, project_dir, custom_board_dir, out_dir, level = 1, separate_intermediate_dir = True, current_folder = None, use_outdir_relpath = False):
+def get_file_extra_static_options(file_name, file_extra_static_options):
+    file_name = re.sub(r'\\', r'/', os.path.realpath(file_name))
+    extra_options = {"Common":"", "Debug":"", "Release":""}
+    section_placement = file_extra_static_options["section_placement"]
+    if section_placement is not None:
+        for path in section_placement.keys():
+            if path == file_name or file_name.startswith(path):
+                for config_type in section_placement[path].keys():
+                    for section_type in section_placement[path][config_type].keys():
+                        extra_options[config_type] += " default_%s_section=\"%s\"" % (section_type, section_placement[path][config_type][section_type])
+    optimization_level = file_extra_static_options["optimization_level"]
+    if optimization_level is not None:
+        for path in optimization_level.keys():
+            if path == file_name or file_name.startswith(path):
+                for config_type in optimization_level[path].keys():
+                    extra_options[config_type] += " gcc_optimization_level=\"%s\"" % (optimization_level[path][config_type])
+    return extra_options
+
+def populate_file_nodes(root, sdk_base, project_dir, custom_board_dir, out_dir, level = 1, separate_intermediate_dir = True, current_folder = None, use_outdir_relpath = False, file_extra_static_options = None):
     node = ""
     for n in root.keys():
         if n == "files":
             for f in root[n]:
+                # get extra options for this file before any possible path manipulation
+                extra_options = get_file_extra_static_options(f, file_extra_static_options)
                 if HELPER.is_sdk_file(f, sdk_base):
                     fpath = HELPER.get_file_path(f, sdk_base, out_dir, use_outdir_relpath)
                     node += "%s<file file_name=\"%s\">\n" % (" " * (level * 2), re.sub(r'\\', r'/', fpath))
@@ -88,7 +110,12 @@ def populate_file_nodes(root, sdk_base, project_dir, custom_board_dir, out_dir, 
                 obj = re.sub(r'\\', r'/', obj)
                 if separate_intermediate_dir:
                     obj = os.path.basename(obj)
-                node += "%s<configuration Name=\"Common\" build_object_file_name=\"%s$(OBJ)\"/>\n" % (" " * ((level + 1) * 2), "/".join(["$(IntDir)", obj]))
+                node += "%s<configuration Name=\"Common\" build_object_file_name=\"%s$(OBJ)\" %s/>\n" % (" " * ((level + 1) * 2), "/".join(["$(IntDir)", obj]), extra_options["Common"])
+                if len(extra_options["Debug"]) > 0:
+                    node += "%s<configuration Name=\"Debug\" %s/>\n" % (" " * ((level + 1) * 2), extra_options["Debug"])
+                if len(extra_options["Release"]) > 0:
+                    node += "%s<configuration Name=\"Release\" %s/>\n" % (" " * ((level + 1) * 2), extra_options["Release"])
+
                 node += "%s</file>\n" % (" " * (level * 2))
         else:
             node += "%s<folder Name=\"%s\">\n" % (" " * (level * 2), n)
@@ -101,13 +128,13 @@ def populate_file_nodes(root, sdk_base, project_dir, custom_board_dir, out_dir, 
                     # as long as "files" exists in current node, this folder needs to be taken care of
                     node += "%s<configuration Name=\"Common\" build_intermediate_directory=\"%s\"/>\n" % (" " * ((level + 1) * 2), get_separate_intermediate_dir_name(tmp_dir))
             if separate_intermediate_dir:
-                node += populate_file_nodes(root[n], sdk_base, project_dir, custom_board_dir, out_dir, level + 1, current_folder = tmp_dir, use_outdir_relpath = use_outdir_relpath)
+                node += populate_file_nodes(root[n], sdk_base, project_dir, custom_board_dir, out_dir, level + 1, current_folder = tmp_dir, use_outdir_relpath = use_outdir_relpath, file_extra_static_options = file_extra_static_options)
             else:
-                node += populate_file_nodes(root[n], sdk_base, project_dir, custom_board_dir, out_dir, level + 1, current_folder = current_folder, use_outdir_relpath = use_outdir_relpath)
+                node += populate_file_nodes(root[n], sdk_base, project_dir, custom_board_dir, out_dir, level + 1, current_folder = current_folder, use_outdir_relpath = use_outdir_relpath, file_extra_static_options = file_extra_static_options)
             node += "%s</folder>\n" % (" " * (level * 2))
     return node
 
-def generate_file_structure(files, sdk_base, out_dir, project_dir, board_dir, board_name, use_outdir_relpath = True):
+def generate_file_structure(files, sdk_base, out_dir, project_dir, board_dir, board_name, use_outdir_relpath = True, file_extra_static_options = None):
     f_tree = {}
     app_common_dir = None
     custom_board_dir = None
@@ -152,7 +179,7 @@ def generate_file_structure(files, sdk_base, out_dir, project_dir, board_dir, bo
         update_file_tree(sdk_base, out_dir, ses_file, f, f_tree, use_outdir_relpath)
 
     # generate ses project xml content
-    nodes = populate_file_nodes(f_tree, sdk_base, app_common_dir, custom_board_dir, out_dir, level = 1, use_outdir_relpath = use_outdir_relpath)
+    nodes = populate_file_nodes(f_tree, sdk_base, app_common_dir, custom_board_dir, out_dir, level = 1, use_outdir_relpath = use_outdir_relpath, file_extra_static_options = file_extra_static_options)
     return nodes
 
 def get_gcc_opt_level(gcc_level):
@@ -351,6 +378,167 @@ def get_openocd_cmdline(config, sdk_base, out_dir, use_outdir_relpath = True):
         print("-- Segger openocd board config is not found")
         return openocd_cmdline
 
+def smart_split_colon(s, expected_parts):
+    """
+    Split string by colon, but ignore colons inside matching quotes.
+    Returns a list of parts if split count matches expected_parts, else None.
+    """
+    parts = []
+    current = []
+    in_quote = None
+    i = 0
+    while i < len(s):
+        c = s[i]
+        if c in ("'", '"'):
+            if in_quote is None:
+                in_quote = c
+            elif in_quote == c:
+                in_quote = None
+            current.append(c)
+        elif c == ':' and in_quote is None:
+            parts.append(''.join(current))
+            current = []
+        else:
+            current.append(c)
+        i += 1
+    parts.append(''.join(current))
+    if len(parts) != expected_parts:
+        return None
+    # Remove leading and trailing quotes from each part
+    return [p.strip('\'"') for p in parts]
+
+def robust_split(item, expected_parts):
+    item = item.strip()
+    if len(item) == 0:
+        return None
+    # If wrapped in quotes, use smart_split_colon first
+    if (item[0] == item[-1]) and item[0] in ('"', "'"):
+        return smart_split_colon(item, expected_parts)
+    # If it's a Windows path (^[a-zA-Z]:), use rsplit
+    if re.match(r'^[a-zA-Z]:', item):
+        parts = item.rsplit(':', expected_parts - 1)
+        if len(parts) != expected_parts:
+            return None
+        # Check that non-path parts don't contain colons
+        for p in parts[1:]:
+            if ':' in p:
+                return None
+        # Only validate that the path part starts with a valid drive letter and colon
+        path_part = parts[0]
+        if not re.match(r'^[a-zA-Z]:', path_part):
+            return None
+        # Path part cannot end with :Debug, :Release, :Common
+        if path_part.endswith(':Debug') or path_part.endswith(':Release') or path_part.endswith(':Common'):
+            return None
+        return [p.strip('\'"') for p in parts]
+    # Otherwise use smart_split_colon
+    return smart_split_colon(item, expected_parts)
+
+def parse_config_item(item, expected_parts, item_type):
+    """
+    Parse a configuration item string and validate its format.
+
+    Args:
+        item: The string to parse (e.g., "C:\\path\\to\\file.c:Debug:-O2")
+        expected_parts: Expected number of parts after splitting
+        item_type: Type of item for error messages ("section placement" or "optimization level")
+
+    Returns:
+        tuple: (path_str, *other_parts) if valid, None if invalid
+    """
+    parts = robust_split(item, expected_parts)
+    if parts is None:
+        return None
+
+    # Check that non-path parts don't contain colons
+    for p in parts[1:]:
+        if ':' in p:
+            print(f"!! Segger: invalid {item_type}: {item}: colon found in part {p}")
+            return None
+
+    # Check that all parts are non-empty
+    if any(len(p) == 0 for p in parts):
+        print(f"!! Segger: invalid {item_type}: {item}: empty part found")
+        return None
+
+    return tuple(parts)
+
+def resolve_path(path_str):
+    """
+    Resolve a path string to an absolute path.
+
+    Args:
+        path_str: The path string to resolve
+
+    Returns:
+        str: The resolved absolute path
+    """
+    if re.match(r'^[a-zA-Z]:[\\/]', path_str) or re.match(r'^\\\\', path_str):
+        return path_str
+    else:
+        return os.path.realpath(path_str)
+
+def parse_section_placement(section_placement_array):
+    if len(section_placement_array) == 0:
+        return None
+    section_placement = None
+    for sp in section_placement_array:
+        for item in sp.split(';'):
+            result = parse_config_item(item, 4, "section placement")
+            if result is None:
+                return None
+            path_str, config_type, section_type, section_name = result
+
+            # Handle path resolution
+            path = resolve_path(path_str)
+
+            if section_placement is None:
+                section_placement = {}
+            if path not in section_placement.keys():
+                section_placement[path] = {}
+            if config_type not in section_placement[path].keys():
+                section_placement[path][config_type] = {}
+            if section_type in section_placement[path][config_type].keys():
+                print(f"!! Segger: already has section placement for {path} {config_type} {section_type} overwrite {section_placement[path][config_type][section_type]} to {section_name}")
+            section_placement[path][config_type][section_type] = section_name
+    return section_placement if section_placement is not None else None
+
+def parse_optimization_level(optimization_level_array):
+    if len(optimization_level_array) == 0:
+        return None
+    optimization_level = None
+    for opt in optimization_level_array:
+        for item in opt.split(';'):
+            result = parse_config_item(item, 3, "optimization level")
+            if result is None:
+                return None
+            path_str, config_type, opt_level = result
+
+            # Handle path resolution
+            path = resolve_path(path_str)
+
+            # Convert optimization level if needed
+            if len(opt_level) == 3:
+                opt_level = get_gcc_opt_level(opt_level)
+
+            if optimization_level is None:
+                optimization_level = {}
+            if path not in optimization_level.keys():
+                optimization_level[path] = {}
+            if config_type in optimization_level[path].keys():
+                print(f"!! Segger: already has optimization level for {path} {config_type} overwrite {optimization_level[path][config_type]} to {opt_level}")
+            optimization_level[path][config_type] = opt_level
+    return optimization_level if optimization_level is not None else None
+
+def parse_file_extra_static_options(sdk_base, out_dir, use_outdir_relpath, config):
+    file_extra_static_options = {"section_placement":None, "optimization_level":None}
+    if "section_placement" in config["target"].keys():
+        section_placement_array = config["target"]["section_placement"].split(";")
+        file_extra_static_options["section_placement"] = parse_section_placement(section_placement_array)
+    if "optimization_level" in config["target"].keys():
+        optimization_level_array = config["target"]["optimization_level"].split(";")
+        file_extra_static_options["optimization_level"] = parse_optimization_level(optimization_level_array)
+    return file_extra_static_options
 
 def generate_ses_project(config, out_dir=".", project_dir = None):
     files = config["target"]["sources"].split(",")
@@ -371,7 +559,8 @@ def generate_ses_project(config, out_dir=".", project_dir = None):
     config["target"]["use_outdir_relpath"] = use_outdir_relpath
     config["target"]["includes"] = HELPER.get_include_path(config, sdk_base, out_dir, [], use_outdir_relpath)
     config["target"]["defines"] = HELPER.get_definitions(config["target"]["defines"])
-    config["target"]["file_structure"] = generate_file_structure(files, sdk_base, out_dir, project_dir, board_dir, board_name, use_outdir_relpath)
+    file_extra_static_options = parse_file_extra_static_options(sdk_base, out_dir, use_outdir_relpath, config)
+    config["target"]["file_structure"] = generate_file_structure(files, sdk_base, out_dir, project_dir, board_dir, board_name, use_outdir_relpath, file_extra_static_options)
 
     config["target"]["link_symbols"] = HELPER.get_link_symbols(config["target"]["link_symbols"])
     config["target"]["linker"] = HELPER.get_file_path(config["target"]["linker"], sdk_base, out_dir, use_outdir_relpath)

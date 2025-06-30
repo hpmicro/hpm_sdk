@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -215,11 +215,12 @@ static void adc_init(void)
 
 static void qeiv2_init(void)
 {
-    qeiv2_adc_config_t adc_config;
+    qeiv2_adc_config_t adc_config = {0};
+    qeiv2_mode_config_t mode_config = {0};
     qeiv2_pos_cmp_match_config_t pos_cmp_config = { 0 };
 
+    /* adc config */
     trgm_adc_matrix_config(HPM_TRGM0, BOARD_APP_QEI_ADC_MATRIX_TO_ADC0, BOARD_APP_QEI_ADC_MATRIX_FROM_ADC_SIN, false);
-
     adc_config.adc_select = 0;
     adc_config.adc_channel = BOARD_APP_QEI_ADC_SIN_CHN;
     adc_config.offset = 0x80000000;    /* middle point */
@@ -227,24 +228,27 @@ static void qeiv2_init(void)
     adc_config.param1 = 0;
     qeiv2_config_adcx(APP_QEI_BASE, &adc_config, true);
 
-    qeiv2_reset_counter(APP_QEI_BASE);
+    /* mode config */
+    mode_config.work_mode = qeiv2_work_mode_sin;    /* togi need qeiv2_work_mode_sin */
+    mode_config.spd_tmr_content_sel = qeiv2_spd_tmr_as_pos_angle;
+    mode_config.z_count_inc_mode = qeiv2_z_count_inc_on_phase_count_max;
+    mode_config.phcnt_max = 1;
+    mode_config.z_cali_enable = false;
+    mode_config.z_cali_ignore_ab = false;
+    mode_config.phcnt_idx = 0;
+    qeiv2_config_mode(APP_QEI_BASE, &mode_config);
 
-    qeiv2_set_work_mode(APP_QEI_BASE, qeiv2_work_mode_sin);    /* togi need qeiv2_work_mode_sin */
-    qeiv2_select_spd_tmr_register_content(APP_QEI_BASE, qeiv2_spd_tmr_as_pos_angle);
-    qeiv2_config_z_phase_counter_mode(APP_QEI_BASE, qeiv2_z_count_inc_on_phase_count_max);
-    qeiv2_config_phmax_phparam(APP_QEI_BASE, 1);
-    qeiv2_pause_pos_counter_on_fault(APP_QEI_BASE, true);
-
+    /* togi config */
     qeiv2_config_togi_w_param(APP_QEI_BASE, SIGNAL_FREQ, PWM_FREQ);
     qeiv2_set_togi_enable(APP_QEI_BASE, true);
 
-    intc_m_enable_irq_with_priority(APP_QEI_IRQ, 1);
-
+    /* cmp config */
     pos_cmp_config.pos_cmp_value = 0x00000000;
     pos_cmp_config.ignore_pos_dir = true;
     qeiv2_config_position_cmp_match_condition(APP_QEI_BASE, &pos_cmp_config);
     qeiv2_enable_load_read_trigger_event(APP_QEI_BASE, QEIV2_EVENT_POSITION_COMPARE_FLAG_MASK);
-    qeiv2_enable_irq(APP_QEI_BASE, QEIV2_EVENT_POSITION_COMPARE_FLAG_MASK);
 
-    qeiv2_release_counter(APP_QEI_BASE);
+    /* irq config */
+    qeiv2_enable_irq(APP_QEI_BASE, QEIV2_EVENT_POSITION_COMPARE_FLAG_MASK);
+    intc_m_enable_irq_with_priority(APP_QEI_IRQ, 1);
 }

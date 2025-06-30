@@ -1,6 +1,6 @@
 .. _samples_sent:
 
-sent
+SENT
 =========
 
 .. toctree::

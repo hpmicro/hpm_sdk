@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 HPMicro
+ * Copyright (c) 2022-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -52,16 +52,30 @@ void vPortSetupTimerInterrupt( void )
     #endif /* configUSE_TICKLESS_IDLE */
 }
 #else
+#if defined (portTIMER_SOURCE_GPTMR)
 volatile uint32_t uxGptimerIncrementsForOneTick;
 SDK_DECLARE_EXT_ISR_M(FREERTOS_TIMER_IRQ, vPortSysTimerIsr)
 void vPortSysTimerIsr(void)
 {
+#if !defined(DISABLE_IRQ_PREEMPTIVE) || (DISABLE_IRQ_PREEMPTIVE == 0)
+    UBaseType_t uxSavedInterruptStatus;
+#endif
     BaseType_t need_switch;
     if (gptmr_check_status(FREERTOS_TIMER_RESOURCE, GPTMR_CH_RLD_STAT_MASK(FREERTOS_TIMER_CH))) {
         gptmr_clear_status(FREERTOS_TIMER_RESOURCE, GPTMR_CH_RLD_STAT_MASK(FREERTOS_TIMER_CH));
-        need_switch = xTaskIncrementTick();
-        if (pdTRUE == need_switch)
-            vTaskSwitchContext();
+#if !defined(DISABLE_IRQ_PREEMPTIVE) || (DISABLE_IRQ_PREEMPTIVE == 0)
+        uxSavedInterruptStatus = portSET_INTERRUPT_MASK_FROM_ISR();
+        {
+#endif
+            /* Critical section start */
+            need_switch = xTaskIncrementTick();
+            if (pdTRUE == need_switch)
+                vTaskSwitchContext();
+            /* Critical section end */
+#if !defined(DISABLE_IRQ_PREEMPTIVE) || (DISABLE_IRQ_PREEMPTIVE == 0)
+        }
+        portCLEAR_INTERRUPT_MASK_FROM_ISR( uxSavedInterruptStatus );
+#endif
     }
 }
 
@@ -89,7 +103,75 @@ void vPortSetupTimerInterrupt( void )
     #endif /* configUSE_TICKLESS_IDLE */
     intc_m_enable_irq_with_priority(FREERTOS_TIMER_IRQ, 1);
 }
+#elif defined (portTIMER_SOURCE_PWM)
 
+SDK_DECLARE_EXT_ISR_M(FREERTOS_TIMER_IRQ, vPortSysTimerIsr)
+void vPortSysTimerIsr(void)
+{
+#if !defined(DISABLE_IRQ_PREEMPTIVE) || (DISABLE_IRQ_PREEMPTIVE == 0)
+    UBaseType_t uxSavedInterruptStatus;
+#endif
+    BaseType_t need_switch;
+#ifdef HPMSOC_HAS_HPMSDK_PWM
+    uint32_t irq_flag = pwm_get_irq_en(FREERTOS_TIMER_RESOURCE) & pwm_get_status(FREERTOS_TIMER_RESOURCE);
+#else
+    uint32_t irq_flag = pwmv2_get_reload_irq_status(FREERTOS_TIMER_RESOURCE);
+#endif
+    if (irq_flag) {
+#ifdef HPMSOC_HAS_HPMSDK_PWM
+        pwm_clear_status(FREERTOS_TIMER_RESOURCE, irq_flag);
+        if (irq_flag & PWM_IRQ_RELOAD) {
+#else
+        pwmv2_clear_reload_irq_status(FREERTOS_TIMER_RESOURCE, irq_flag);
+        if (irq_flag & ((1 << FREERTOS_TIMER_COUNTER) << PWMV2_IRQ_EN_RELOAD_IRQ_EN_RELOAD_SHIFT)) {
+#endif
+#if !defined(DISABLE_IRQ_PREEMPTIVE) || (DISABLE_IRQ_PREEMPTIVE == 0)
+            uxSavedInterruptStatus = portSET_INTERRUPT_MASK_FROM_ISR();
+            {
+#endif
+                /* Critical section start */
+                need_switch = xTaskIncrementTick();
+                if (pdTRUE == need_switch)
+                    vTaskSwitchContext();
+                /* Critical section end */
+#if !defined(DISABLE_IRQ_PREEMPTIVE) || (DISABLE_IRQ_PREEMPTIVE == 0)
+            }
+            portCLEAR_INTERRUPT_MASK_FROM_ISR( uxSavedInterruptStatus );
+#endif                    
+        }
+    }
+}
+
+void vPortSetupTimerInterrupt( void )
+{
+    uint32_t pwm_freq;
+    uint32_t reload;
+
+    clock_add_to_group(FREERTOS_TIMER_CLOCK, 0);
+    pwm_freq = clock_get_frequency(FREERTOS_TIMER_CLOCK);
+    reload = pwm_freq / configTICK_RATE_HZ - 1;
+#ifdef HPMSOC_HAS_HPMSDK_PWM
+    pwm_stop_counter(FREERTOS_TIMER_RESOURCE);
+    pwm_enable_reload_at_synci(FREERTOS_TIMER_RESOURCE);
+    pwm_set_reload(FREERTOS_TIMER_RESOURCE, 0, reload);
+    pwm_set_start_count(FREERTOS_TIMER_RESOURCE, 0, 0);
+    pwm_issue_shadow_register_lock_event(FREERTOS_TIMER_RESOURCE);
+
+    pwm_start_counter(FREERTOS_TIMER_RESOURCE);
+    pwm_enable_irq(FREERTOS_TIMER_RESOURCE, PWM_IRQ_RELOAD);
+#else
+    pwmv2_deinit(FREERTOS_TIMER_RESOURCE);
+    pwmv2_shadow_register_unlock(FREERTOS_TIMER_RESOURCE);
+    pwmv2_set_shadow_val(FREERTOS_TIMER_RESOURCE, FREERTOS_TIMER_COUNTER_SHADOW, reload, 0, false);
+    pwmv2_counter_select_data_offset_from_shadow_value(FREERTOS_TIMER_RESOURCE, FREERTOS_TIMER_COUNTER, FREERTOS_TIMER_COUNTER_SHADOW);
+    pwmv2_enable_counter(FREERTOS_TIMER_RESOURCE, FREERTOS_TIMER_COUNTER);
+    pwmv2_shadow_register_lock(FREERTOS_TIMER_RESOURCE);
+    pwmv2_enable_reload_irq(FREERTOS_TIMER_RESOURCE, FREERTOS_TIMER_COUNTER);
+
+#endif
+    intc_m_enable_irq_with_priority(FREERTOS_TIMER_IRQ, 1);
+}
+#endif
 #endif
 
 #if ( configUSE_TICKLESS_IDLE != 0 )
@@ -211,7 +293,7 @@ void vPortSetupTimerInterrupt( void )
         
         }
     }
-#else
+#elif defined (portTIMER_SOURCE_GPTMR)
 
     ATTR_RAMFUNC __attribute__( ( weak ) ) void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
     {
@@ -359,6 +441,8 @@ void vPortSetupTimerInterrupt( void )
 #endif
         }
     }
+#else
+#error "Only Machine Timer or Gptmr is supported for tickless idle mode in HPMicro FreeRTOS port."
 #endif
 #pragma GCC pop_options
 #endif /* #if configUSE_TICKLESS_IDLE */

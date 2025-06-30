@@ -3,14 +3,32 @@
 Hall
 ========
 
-Overiew
--------
+Overview
+--------
 
-**Hall**  project demonstrates the output of Hall timer data using the serial port after triggering the **hall**  interrupt
+**Hall** project demonstrates the output of Hall timer data using the serial port after triggering the **hall** interrupt
 
-- Configuring the Hall Interrupts
+- Hall interrupt configuration and handling
+- Reading Hall `U\V\W\TIMER` register data
+- TRGM (Trigger Manager) configuration
 
-- Read the Hall `U\V\W\TIMER` register
+Implementation Details
+----------------------
+
+- Initial Configuration:
+  - Configure TRGM input sources for U, V, W hall signals
+  - Configure and enable interrupt
+  - Configure hall counter and phase count
+  - Configure data reading trigger on U phase signal change
+
+- Interrupt Handling:
+  - Clear status flags in hall interrupt
+  - Set data ready flag to trigger data reading in main loop
+
+- Data Reading:
+  - Wait for data ready flag in main loop
+  - Read U, V, W phase counter values and timer counter value
+  - Print data through serial port
 
 Configurations
 --------------
@@ -24,7 +42,13 @@ Configurations
 Running the Demo
 ----------------
 
-- Power on, open the serial terminal, turning the motor bearing will trigger a Hall interrupt and print the following information. The data changes with the speed and direction of rotation, please refer to the user manual for the exact meaning of the data.
+- After power-on, open the serial terminal, startup message will be printed
+- When rotating the motor shaft, hall interrupt will be triggered and print:
+  - u: Hall counter value for U phase
+  - v: Hall counter value for V phase
+  - w: Hall counter value for W phase
+  - timer: Timer counter value
+- The data changes with rotation speed and direction, refer to user manual for details
 
 
 .. code-block:: console

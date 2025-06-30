@@ -16,7 +16,7 @@ OpENer Motor示例用于演示使用OpENer通过Ethernet/IP(EIP)协议实现远�
 
   - 带Ethernet的开发板，请参考具体开发板  :ref:`引脚描述 <board_resource>`  查看Ethernet硬件
 
-    - ==根据开发板的硬件配置，在CMakeLists.txt中选择相应的RMII/RGMII，和phy芯片。==
+    - **根据开发板的硬件配置，在CMakeLists.txt中选择相应的RMII/RGMII，和phy芯片。**
 
   - 带网口的PC
 
@@ -27,6 +27,8 @@ OpENer Motor示例用于演示使用OpENer通过Ethernet/IP(EIP)协议实现远�
   - 板子设置参考开发板文档 :ref:`Motor Pin <board_resource>` 相关内容
 
   - 完成上述过程后，给驱动板上电观察电流无异常后，给核心板上电，再次确认电流无异常后，就可以烧录程序，观察运行现象。
+
+  - 对于无板载SDRAM的开发板，需要注意build type为flash_sdram_xip时，需要先插入SDRAM卡
 
 软件
 ~~~~~~~~~~
@@ -90,6 +92,8 @@ TwinCAT工程设置
        :alt:
 
   4. 配置ip地址
+
+     注意此处的ip地址需要与开发板的ip地址在同一网段，且不能和PC本身的网卡地址一样。即pc,开发板和twincat软件中的三个ip地址需要都不一样。
 
     .. image:: doc/set_ip_address.png
        :alt:

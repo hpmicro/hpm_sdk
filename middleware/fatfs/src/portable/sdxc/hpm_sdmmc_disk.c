@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -7,14 +7,11 @@
 
 #include "ffconf.h"
 #include "hpm_sdmmc_disk.h"
-#include "hpm_l1c_drv.h"
 #include "board.h"
 #include "hpm_interrupt.h"
 
 #include "hpm_sdmmc_sd.h"
 #include "hpm_sdmmc_emmc.h"
-
-#define SD_SECTOR_SIZE (512UL)
 
 typedef hpm_stat_t (*sdmmc_write_op_t)(void *card, const uint8_t *buffer, uint32_t start_block, uint32_t block_count);
 typedef hpm_stat_t (*sdmmc_read_op_t)(void *card, uint8_t *buffer, uint32_t start_block, uint32_t block_count);
@@ -22,7 +19,6 @@ typedef hpm_stat_t (*sdmmc_read_op_t)(void *card, uint8_t *buffer, uint32_t star
 #if defined(SD_FATFS_ENABLE) && SD_FATFS_ENABLE
 ATTR_PLACE_AT_NONCACHEABLE_BSS static sdmmc_host_t s_sd_host;
 static sd_card_t s_sd = {.host = &s_sd_host };
-ATTR_ALIGN(HPM_L1C_CACHELINE_SIZE) static uint32_t s_sd_aligned_buf[MAX_ALIGNED_BUF_SIZE / sizeof(uint32_t)];
 
 #if defined(BOARD_APP_SDCARD_HOST_USING_IRQ) && (BOARD_APP_SDCARD_HOST_USING_IRQ == 1)
 #if defined(BOARD_APP_SDCARD_SDXC_IRQ_PRIORITY)
@@ -42,7 +38,6 @@ void sdcard_isr(void)
 #if defined(MMC_FATFS_ENABLE) && MMC_FATFS_ENABLE
 ATTR_PLACE_AT_NONCACHEABLE_BSS static sdmmc_host_t s_emmc_host;
 static emmc_card_t s_emmc = {.host = &s_emmc_host};
-ATTR_ALIGN(HPM_L1C_CACHELINE_SIZE) static uint32_t s_emmc_aligned_buf[MAX_ALIGNED_BUF_SIZE / sizeof(uint32_t)];
 
 #if defined(BOARD_APP_EMMC_SDXC_IRQ) && (BOARD_APP_EMMC_SDXC_IRQ == 1)
 #if defined(BOARD_APP_EMMC_SDXC_IRQ_PRIORITY)
@@ -61,61 +56,26 @@ void mmc_isr(void)
 
 
 #if defined(SD_FATFS_ENABLE) || defined(MMC_FATFS_ENABLE)
-static void sdmmc_get_card_and_aligned_buf_info(BYTE pdrv, void **card, uint32_t **buf, uint32_t *buf_size)
-{
-#if defined(SD_FATFS_ENABLE) && SD_FATFS_ENABLE
-    if (pdrv == DEV_SD) {
-        *card = &s_sd;
-        *buf =  s_sd_aligned_buf;
-        *buf_size = sizeof(s_sd_aligned_buf);
-    }
-#endif
-#if defined(MMC_FATFS_ENABLE) && MMC_FATFS_ENABLE
-    if (pdrv == DEV_MMC) {
-        *card = &s_emmc;
-        *buf =  s_emmc_aligned_buf;
-        *buf_size = sizeof(s_emmc_aligned_buf);
-    }
-#endif
-}
 
 static DSTATUS sdmmc_card_write(BYTE pdrv, const BYTE *buff, LBA_t sector, UINT count)
 {
     sdmmc_write_op_t card_write;
     void *card;
-    uint32_t *aligned_buf;
-    uint32_t aligned_buf_size;
-    sdmmc_get_card_and_aligned_buf_info(pdrv, &card, &aligned_buf, &aligned_buf_size);
+
 #if defined(SD_FATFS_ENABLE) && SD_FATFS_ENABLE
     if (pdrv == DEV_SD) {
+        card = &s_sd;
         card_write = (sdmmc_write_op_t)sd_write_blocks;
     }
 #endif
 #if defined(MMC_FATFS_ENABLE) && MMC_FATFS_ENABLE
     if (pdrv == DEV_MMC) {
+        card = &s_emmc;
         card_write = (sdmmc_write_op_t)emmc_write_blocks;
     }
 #endif
-    if (((uint32_t) buff % 4) != 0) {
-        uint32_t sys_aligned_buf_addr = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t) aligned_buf);
-        uint32_t remaining_size = SD_SECTOR_SIZE * count;
-        while (remaining_size > 0) {
-            uint32_t write_size = MIN(aligned_buf_size, remaining_size);
-            memcpy(aligned_buf, buff, write_size);
-            l1c_dc_flush(sys_aligned_buf_addr, write_size);
-            uint32_t sector_count = (uint32_t) write_size / SD_SECTOR_SIZE;
-            if (card_write(card, (const uint8_t *) sys_aligned_buf_addr, (uint32_t) sector, sector_count) !=
-                status_success) {
-                return RES_ERROR;
-            }
-            buff += write_size;
-            sector += sector_count;
-            remaining_size -= write_size;
-        }
-    } else {
-        if (card_write(card, (const uint8_t *) buff, (uint32_t) sector, (uint32_t) count) != status_success) {
-            return RES_ERROR;
-        }
+    if (card_write(card, (const uint8_t *) buff, (uint32_t) sector, (uint32_t) count) != status_success) {
+        return RES_ERROR;
     }
 
     return RES_OK;
@@ -125,39 +85,22 @@ static DSTATUS sdmmc_card_read(BYTE pdrv, BYTE *buff, LBA_t sector, UINT count)
 {
     sdmmc_read_op_t card_read;
     void *card;
-    uint32_t *aligned_buf;
-    uint32_t aligned_buf_size;
-    sdmmc_get_card_and_aligned_buf_info(pdrv, &card, &aligned_buf, &aligned_buf_size);
 #if defined(SD_FATFS_ENABLE) && SD_FATFS_ENABLE
     if (pdrv == DEV_SD) {
+        card = &s_sd;
         card_read = (sdmmc_read_op_t)sd_read_blocks;
     }
 #endif
 #if defined(MMC_FATFS_ENABLE) && MMC_FATFS_ENABLE
     if (pdrv == DEV_MMC) {
+        card = &s_emmc;
         card_read = (sdmmc_read_op_t)emmc_read_blocks;
     }
 #endif
-    if (((uint32_t) buff % 4) != 0) {
-        uint32_t sys_aligned_buf_addr = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t) aligned_buf);
-        uint32_t remaining_size = SD_SECTOR_SIZE * count;
-        while (remaining_size > 0) {
-            uint32_t read_size = MIN(aligned_buf_size, remaining_size);
-            uint32_t sector_count = read_size / SD_SECTOR_SIZE;
-            if (card_read(card, (uint8_t *) sys_aligned_buf_addr, sector, sector_count) != status_success) {
-                return RES_ERROR;
-            }
-            l1c_dc_invalidate(sys_aligned_buf_addr, read_size);
-            memcpy(buff, aligned_buf, read_size);
-            buff += read_size;
-            sector += sector_count;
-            remaining_size -= read_size;
-        }
-    } else {
-        if (card_read(card, (uint8_t *) buff, sector, count) != status_success) {
-            return RES_ERROR;
-        }
+    if (card_read(card, (uint8_t *) buff, sector, count) != status_success) {
+        return RES_ERROR;
     }
+
     return RES_OK;
 }
 #endif
@@ -230,13 +173,13 @@ DRESULT sd_disk_ioctl(BYTE pdrv, BYTE cmd, void *buff)
         result = RES_OK;
         switch (cmd) {
         case GET_SECTOR_COUNT:
-            *(uint32_t *) buff = s_sd.block_count;
+            *(LBA_t *) buff = s_sd.block_count;
             break;
         case GET_SECTOR_SIZE:
-            *(uint32_t *) buff = s_sd.block_size;
+            *(WORD *) buff = s_sd.block_size;
             break;
         case GET_BLOCK_SIZE:
-            *(uint32_t *) buff = s_sd.csd.erase_sector_size;
+            *(DWORD *) buff = s_sd.csd.erase_sector_size;
             break;
         case CTRL_SYNC:
             result = RES_OK;
@@ -330,13 +273,13 @@ DRESULT emmc_disk_ioctl(BYTE pdrv, BYTE cmd, void *buff)
         result = RES_OK;
         switch (cmd) {
         case GET_SECTOR_COUNT:
-            *(uint32_t *) buff = s_emmc.device_attribute.sector_count;
+            *(LBA_t *) buff = s_emmc.device_attribute.sector_count;
             break;
         case GET_SECTOR_SIZE:
-            *(uint32_t *) buff = s_emmc.device_attribute.sector_size;
+            *(WORD *) buff = s_emmc.device_attribute.sector_size;
             break;
         case GET_BLOCK_SIZE:
-            *(uint32_t *) buff = s_emmc.device_attribute.sector_size;
+            *(DWORD *) buff = s_emmc.device_attribute.sector_size;
             break;
         case CTRL_SYNC:
             result = RES_OK;

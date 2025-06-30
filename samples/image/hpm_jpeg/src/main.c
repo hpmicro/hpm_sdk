@@ -126,7 +126,7 @@ int main(void)
     hpm_jpeg_encode_info_t ejob_info;
     hpm_jpeg_decode_info_t djob_info;
     hpm_jpeg_file_t hpm_jpeg_file;
-    FIL fp;
+    static FIL fp;
     FRESULT fret;
     UINT len;
     void *buf;

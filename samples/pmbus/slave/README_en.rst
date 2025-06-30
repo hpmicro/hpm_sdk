@@ -6,7 +6,12 @@ Pmbus slave
 Overview
 --------
 
-This example demonstrates I2C operating in slave mode as a PMbus device for data reception and transmission. You need to register handlers for PMbus command transactions. The PMbus slave protocol stack uses completion callback functions to print received or transmitted data and command-related messages.
+- The PMbus Slave example project demonstrates the I2C interface operating in slave mode as a PMbus device for receiving and transmitting data. It requires registering the PMbus command transaction handlers, and the PMbus slave protocol stack will print the received or transmitted data along with command-related messages via the callback function.
+
+Tips
+----
+
+- For detailed documentation about PMbus components, please refer to :ref:`pmbus <pmbus>`
 
 Board Setting
 -------------
@@ -16,9 +21,9 @@ connect  :ref:`I2C Pins <board_resource>`  on the two boards。
 Running the example
 -------------------
 
-- Run slave first, and then run master.
+- Run the slave firmware first, followed by the master.
 
-- When the example runs successfully, the log would be seen on the terminal like:
+- When the project runs correctly, the serial terminal will display output similar to the following:
 
 
 .. code-block:: console

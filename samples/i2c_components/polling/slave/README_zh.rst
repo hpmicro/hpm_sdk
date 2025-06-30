@@ -12,6 +12,11 @@ I2C_COMPONENT_SLAVE_POLLING
 
 - 示例工程中的纯数据访问，I2C master先读取数据，之后再写入数据，并对比读取和写入的数据是否一致。
 
+提示
+------
+
+- 组件详情文档请参见 :ref:`i2c_components <i2c_component>`
+
 硬件设置
 ------------
 

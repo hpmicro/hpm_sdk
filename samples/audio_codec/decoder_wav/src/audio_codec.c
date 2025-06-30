@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -25,8 +25,8 @@
 #define CODEC_BUFF_SIZE 20480
 
 static hpm_wav_ctrl *wav_ctrl_ptr;
-static uint8_t wav_header_buff[512] ATTR_ALIGN(4);
-static uint8_t i2s_buff[CODEC_BUFF_CNT][CODEC_BUFF_SIZE] ATTR_ALIGN(HPM_L1C_CACHELINE_SIZE);
+ATTR_ALIGN(HPM_L1C_CACHELINE_SIZE) static uint8_t wav_header_buff[0x400];
+ATTR_ALIGN(HPM_L1C_CACHELINE_SIZE) static uint8_t i2s_buff[CODEC_BUFF_CNT][CODEC_BUFF_SIZE];
 static volatile uint32_t i2s_buff_fill_size[CODEC_BUFF_CNT];
 static volatile uint8_t s_i2s_buff_front;
 static volatile uint8_t s_i2s_buff_rear;
@@ -134,8 +134,7 @@ static void hpm_playback_wav(void)
         }
         i2s_buff_fill_size[rear] = hpm_wav_decode(wav_ctrl_ptr, i2s_buff[rear], CODEC_BUFF_SIZE);
         if (l1c_dc_is_enabled()) {
-            l1c_dc_flush(HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t)i2s_buff[rear]),
-                HPM_L1C_CACHELINE_ALIGN_UP((CODEC_BUFF_SIZE + i2s_buff[rear])) - HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t)i2s_buff[rear]));
+            l1c_dc_writeback((uint32_t)i2s_buff[rear], HPM_L1C_CACHELINE_ALIGN_UP(i2s_buff_fill_size[rear]));
         }
 
         if (!s_i2s_buff_first_tranferred) {

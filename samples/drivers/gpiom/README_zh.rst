@@ -29,3 +29,10 @@ GPIOM示例工程演示了如何使用GPIOM模块设置引脚的控制模块，�
    toggling led 4/5 times
    toggling led 5/5 times
 
+
+提示
+------------
+
+- goio部分可参考 :ref:`gpio <gpio>` 例子
+
+- 如果IO需要使用FGPIO控制，需要使用GPIOM模块管理分配。可参考例子中 `gpiom_configure_pin_control_setting` 函数。

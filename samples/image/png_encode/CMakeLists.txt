@@ -1,4 +1,4 @@
-# Copyright (c) 2024 HPMicro
+# Copyright (c) 2024-2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -33,7 +33,7 @@ if("${HPM_BUILD_TYPE}" STREQUAL "")
     SET(HPM_BUILD_TYPE flash_sdram_xip)
 endif()
 
-set(HEAP_SIZE 0x800000)
+set(HEAP_SIZE 0x600000)
 set(STACK_SIZE 0x20000)
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})

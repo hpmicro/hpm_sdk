@@ -63,6 +63,7 @@
 #define TSW_MM2S_DMA_CHECK_RBUFE_TIMEOUT (1000U)
 #endif
 
+#define TSW_ENET_MAC              (6U)   /* MAC size */
 #define TSW_FPE_MMS_MIN_VTIME_MIN (1U)   /* 1ms */
 #define TSW_FPE_MMS_MAX_VTIME_MAX (128U) /* 128ms */
 /*---------------------------------------------------------------------
@@ -91,6 +92,32 @@ typedef struct {
     uint32_t tx_hdr2; /**< reserved */
     uint32_t tx_hdr3; /**< reserved */
 } tx_hdr_desc_t;
+
+typedef struct {
+    union {
+        uint32_t rx_hdr0;
+        struct {
+            uint32_t src_port : 8; /**< source port */
+            uint32_t          : 8; /**< reserved */
+            uint32_t queue    : 3; /**< no effect on the CPU RX port*/
+            uint32_t utag     : 3; /**< TSW-EP RX user sideband information */
+            uint32_t          : 2; /**< reserved */
+            uint32_t fpe      : 1; /**< indicates that a frame comes from preemptible stream */
+            uint32_t          : 3; /**< reserved */
+            uint32_t htype    : 4; /**< header type */
+        } rx_hdr0_bm;
+    };
+
+    union {
+        uint32_t rx_hdr1;
+        struct {
+            uint32_t cb: 32; /**< CB field. */
+        } rx_hdr1_bm;
+    };
+
+    uint32_t timestamp_lo;
+    uint32_t timestamp_hi;
+} rx_hdr_desc_t;
 
 typedef struct {
   uint8_t   id;
@@ -1237,6 +1264,15 @@ hpm_stat_t tsw_cb_frer_egress_clear_latten_error_flag(TSW_Type *ptr);
  * @return hpm_stat_t   Result of getting count of latten error @ref hpm_stat_t
  */
 hpm_stat_t tsw_cb_frer_egress_get_count(TSW_Type *ptr, tsw_cb_frer_frame_count_egress_t *count);
+
+/**
+ * @brief    Set system cycle numbers for one millisecond
+ *
+ * @param ptr[in]       TSW peripheral base address
+ * @param msec_cycles[in]     Numbers of SYS_CLK cycles during 1 ms
+ * @return hpm_stat_t   Result of getting count of latten error @ref hpm_stat_t
+ */
+hpm_stat_t tsw_cb_frer_set_msec_cycles(TSW_Type *ptr, uint32_t msec_cycles);
 
 /**
  * @brief   Set PSFP filter

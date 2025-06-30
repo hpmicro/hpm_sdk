@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -64,11 +64,13 @@ extern "C" {
 #endif
 
 /**
- * @brief calculate lin pid from id
+ * @brief Calculate protected identifier (PID) for LIN ID
  *
- * @param [in] id id value
+ * @param[in] id Raw identifier (0-63)
+ * @return Protected identifier with parity bits P0 and P1
  *
- * @return pid pid value
+ * P0 = ID0 ^ ID1 ^ ID2 ^ ID4
+ * P1 = !(ID1 ^ ID3 ^ ID4 ^ ID5)
  */
 uint8_t hpm_uart_lin_calculate_protected_id(uint8_t id);
 
@@ -115,7 +117,7 @@ void hpm_uart_lin_master_send_data(uart_lin_master_config_t *config);
 /**
  * @brief master receive and check data&checksum
  *
- * @note this function read data and checksum already in rx fifo
+ * @note this function read data and checksum already in rx fifo, call this function in RX timeout ISR
  *
  * @param [in] config uart_lin_master_config_t
  *
@@ -133,7 +135,7 @@ uart_lin_stat_t hpm_uart_lin_master_receive_data(uart_lin_master_config_t *confi
 void hpm_uart_lin_slave_send_data(uart_lin_slave_config_t *config);
 
 /**
- * @brief salve receive and check data&checksum
+ * @brief slave receive and check data&checksum
  *
  * @note this function read data and checksum already in rx fifo
  *

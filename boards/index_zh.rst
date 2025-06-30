@@ -9,6 +9,7 @@
 
    hpm5300evk/README_zh
    hpm5301evklite/README_zh
+   hpm5e00evk/README_zh
    hpm6200evk/README_zh
    hpm6300evk/README_zh
    hpm6750evk2/README_zh
@@ -33,6 +34,11 @@
         点击 :ref:`hpm5301evklite_pins` 查看引脚详情
 
         点击 :ref:`hpm5301evklite_buttons` 查看按钮详情
+
+    .. tab:: HPM5E00EVK
+        点击 :ref:`hpm5e00evk_pins` 查看引脚详情
+
+        点击 :ref:`hpm5e00evk_buttons` 查看按钮详情
 
     .. tab:: HPM6200EVK
         点击 :ref:`hpm6200evk_pins` 查看引脚详情

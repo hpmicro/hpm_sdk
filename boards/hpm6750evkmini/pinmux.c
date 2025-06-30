@@ -652,3 +652,8 @@ void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp)
         }
     }
 }
+
+void init_clk_ref_pin(void)
+{
+    HPM_IOC->PAD[IOC_PAD_PE24].FUNC_CTL = IOC_PE24_FUNC_CTL_SOC_REF1;
+}

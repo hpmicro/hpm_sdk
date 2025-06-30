@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -20,7 +20,7 @@ extern const uint32_t CSTACK$$Limit[];
 
 #define OS_TICK_RATE_HZ OS_CFG_TICK_RATE_HZ
 
-#ifndef CONFIG_UCOS_III_TIMER_RESOURCE_NOT_MCHTMR
+#ifndef CONFIG_UCOS_III_TIMER_RESOURCE_GPTMR
     #define OS_MTIME_BASE_ADDRESS (HPM_MCHTMR_BASE)
     #define OS_MTIMECMP_BASE_ADDRESS (HPM_MCHTMR_BASE + 8UL)
     #define OS_CPU_CLOCK_HZ ((uint32_t)24000000)
@@ -32,6 +32,10 @@ extern const uint32_t CSTACK$$Limit[];
 #else
     #define OS_CPU_CLOCK_HZ ((uint32_t)clock_get_frequency(UCOS_TIMER_CLOCK))
 
+#endif
+
+#if !defined(USE_NONVECTOR_MODE) || (USE_NONVECTOR_MODE == 0)
+#error "uCOS-III does not support vector mode presently!"
 #endif
 
 extern const uint32_t __ucos_iii_irq_stack_top[];
@@ -46,7 +50,7 @@ void CPU_TS_TmrInit(void)
 
 CPU_TS_TMR CPU_TS_TmrRd(void)
 {
-#ifndef CONFIG_UCOS_III_TIMER_RESOURCE_NOT_MCHTMR
+#ifndef CONFIG_UCOS_III_TIMER_RESOURCE_GPTMR
     return mchtmr_get_count(HPM_MCHTMR);
 #else
     return gptmr_channel_get_counter(UCOS_TIMER_RESOURCE, UCOS_TIMER_CH, gptmr_counter_type_normal);
@@ -55,7 +59,7 @@ CPU_TS_TMR CPU_TS_TmrRd(void)
 
 void CPU_TS_Setup(void)
 {
-#ifndef CONFIG_UCOS_III_TIMER_RESOURCE_NOT_MCHTMR
+#ifndef CONFIG_UCOS_III_TIMER_RESOURCE_GPTMR
     uint32_t current_time_h, current_time_l;
     mchtmr_init_counter(HPM_MCHTMR, 0);
     /* 8-byte typer so high 32-bit word is 4 bytes up. */
@@ -93,7 +97,7 @@ void CPU_TS_Setup(void)
 #endif
 }
 
-#ifdef CONFIG_UCOS_III_TIMER_RESOURCE_NOT_MCHTMR
+#ifdef CONFIG_UCOS_III_TIMER_RESOURCE_GPTMR
 SDK_DECLARE_EXT_ISR_M(UCOS_TIMER_IRQ, vPortSysTimerIsr)
 void vPortSysTimerIsr(void)
 {

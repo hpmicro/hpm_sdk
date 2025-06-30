@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021,2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -51,6 +51,9 @@
 #define PWM_PERIOD_IN_MS (1U)
 #define PWM_DUTY_STEP_COUNT (1000U)
 
+/**
+ * @brief Structure to hold LED PWM configuration
+ */
 typedef struct {
 #ifdef HPMSOC_HAS_HPMSDK_PWMV2
     PWMV2_Type *pwm;
@@ -66,15 +69,19 @@ typedef struct {
     uint8_t pwm_ch;
 } led_pwm_t;
 
+/**
+ * @brief Enumeration for LED color indices
+ */
 typedef enum {
     red = BOARD_RGB_RED,
     green = BOARD_RGB_GREEN,
     blue = BOARD_RGB_BLUE
 } led_index_t;
 
-led_pwm_t leds[3];
-volatile bool do_update;
-volatile led_index_t current;
+/** Global variables */
+led_pwm_t leds[3];                      /**< Array of LED PWM configurations */
+volatile bool do_update;                /**< Flag to indicate PWM update needed */
+volatile led_index_t current;           /**< Current LED being controlled */
 
 SDK_DECLARE_EXT_ISR_M(RED_PWM_IRQ, pwm_isr)
 #if (GREEN_PWM_IRQ != RED_PWM_IRQ)
@@ -100,6 +107,15 @@ void pwm_isr(void)
 }
 
 #ifdef HPMSOC_HAS_HPMSDK_PWMV2
+/**
+ * @brief Configure PWM for LED control (PWMv2 version)
+ * @param ptr PWM peripheral instance
+ * @param pwm_channel PWM channel number
+ * @param reload PWM reload value
+ * @param shadow Shadow register index
+ * @param cmp_initial_zero Initial compare value is zero
+ * @param off_level_high Output is high when PWM is off
+ */
 void config_pwm(PWMV2_Type *ptr, pwm_channel_t pwm_channel, uint32_t reload, uint8_t shadow, bool cmp_initial_zero, bool off_level_high)
 {
     /* according to pwm_channel to use pwm_counter and pwm_cmp, use two cmp to generate pwm signal */
@@ -154,7 +170,10 @@ void config_pwm(PWMV2_Type *ptr, pwm_channel_t pwm_channel, uint32_t reload, uin
     pwmv2_cmp_update_trig_time(ptr, pwm_cmp_1, pwm_shadow_register_update_on_reload);
 }
 
-
+/**
+ * @brief Update RGB LED brightness with breathing effect
+ * @details Implements smooth brightness transition using PWM duty cycle control
+ */
 void update_rgb_led(void)
 {
     bool increase_step = true;
@@ -198,6 +217,16 @@ void update_rgb_led(void)
 
 #else
 
+/**
+ * @brief Configure PWM for LED control (PWM version)
+ * @param ptr PWM peripheral instance
+ * @param pin PWM output pin
+ * @param cmp_index Compare channel index
+ * @param reload PWM reload value
+ * @param cmp_initial_zero Initial compare value is zero
+ * @param hw_event_cmp Hardware event compare channel
+ * @param off_level_high Output is high when PWM is off
+ */
 void config_pwm(PWM_Type * ptr, uint8_t pin, uint8_t cmp_index, uint32_t reload, bool cmp_initial_zero, uint8_t hw_event_cmp, bool off_level_high)
 {
     pwm_cmp_config_t cmp_config = {0};
@@ -243,6 +272,10 @@ void config_pwm(PWM_Type * ptr, uint8_t pin, uint8_t cmp_index, uint32_t reload,
     pwm_load_cmp_shadow_on_match(ptr, hw_event_cmp, &cmp_config);
 }
 
+/**
+ * @brief Turn on RGB LED
+ * @param i LED index (red, green, or blue)
+ */
 void turn_on_rgb_led(led_index_t i)
 {
     PWM_Type *pwm;
@@ -258,11 +291,31 @@ void turn_on_rgb_led(led_index_t i)
     board_enable_output_rgb_led(i);
 }
 
+/**
+ * @brief Turn off RGB LED
+ * @param i LED index (red, green, or blue)
+ */
 void turn_off_rgb_led(led_index_t i)
 {
     board_disable_output_rgb_led(i);
 }
-
+/**
+ * @brief Update the RGB LED brightness in a smooth transition.
+ *
+ * This function updates the brightness of the currently selected RGB LED by
+ * gradually increasing and then decreasing the duty cycle of the PWM signal.
+ * The duty cycle is updated in steps, and the function exits when the duty
+ * cycle decreases back to 0.
+ *
+ * The function enables the PWM interrupt for half reload, turns on the RGB LED,
+ * and then enters a loop where it updates the duty cycle. The duty cycle is
+ * increased until it reaches the maximum reload value, and then it is decreased
+ * back to 0. The function waits for the `do_update` flag to be set before
+ * updating the duty cycle.
+ *
+ * Once the duty cycle reaches 0, the function turns off the RGB LED and disables
+ * the PWM interrupt.
+ */
 void update_rgb_led(void)
 {
     uint32_t duty;
@@ -332,7 +385,11 @@ int main(void){
     leds[blue].pwm_irq = BLUE_PWM_IRQ;
 
 #ifndef HPMSOC_HAS_HPMSDK_PWMV2
-    /* chose one cmp to generate event to trigger pwm to update shadow register to cmp register */
+    /*
+     * Try to find an available comparator for hardware events that is not already used by the RED, GREEN, or BLUE PWM comparators.
+     * It iterates through all possible comparator indices and selects the first available one.
+     * If no available comparator is found, it prints an error message and enters an infinite loop.
+     */
     uint32_t hw_event_cmp;
     hw_event_cmp = PWM_SOC_CMP_MAX_COUNT;
     for (uint8_t i = 0; i < PWM_SOC_CMP_MAX_COUNT; i++) {
@@ -364,7 +421,6 @@ int main(void){
     current = red;
     while(1) {
         update_rgb_led();
-        do_update = false;
         current = (current + 1) % (blue + 1);
     }
     return 0;

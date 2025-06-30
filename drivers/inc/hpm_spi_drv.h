@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -1231,6 +1231,22 @@ static inline void spi_master_disable_tx_dma_request_after_cmd_write(SPI_Type *p
 {
     ptr->CTRL &= ~SPI_CTRL_CMD_OP_MASK;
 }
+#endif
+
+#if defined(HPM_IP_FEATURE_SPI_CS_SELECT) && (HPM_IP_FEATURE_SPI_CS_SELECT == 1)
+
+/**
+ * @brief SPI master enable CS select
+ *
+ * @param ptr SPI base address
+ * @param cs spi_cs_index_t enum
+ * @note only support master mode
+ */
+static inline void spi_master_enable_cs_select(SPI_Type *ptr, spi_cs_index_t cs)
+{
+    ptr->CTRL = (ptr->CTRL & ~SPI_CTRL_CS_EN_MASK) | SPI_CTRL_CS_EN_SET(cs);
+}
+
 #endif
 
 /**

@@ -50,6 +50,7 @@ When the example runs successfully, the board shows the following menu:
    * 9 - CAN TX EVENT FIFO test                                                  *
    * a - CAN Timestamp Test                                                      *
    * b - CAN timeout counter Test                                                *
+   * c - CAN TXBUF cancellation Test                                             *
    *                                                                             *
    *******************************************************************************
 

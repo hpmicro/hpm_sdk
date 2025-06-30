@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -172,6 +172,7 @@ typedef enum {
 /**
  * @brief sei const data register index
  */
+#define SEI_DAT_CMD           (1UL)
 #define SEI_DATA_CONST_0      (30UL)
 #define SEI_DATA_CONST_1      (31UL)
 
@@ -202,6 +203,12 @@ typedef enum {
 #define SEI_INSTR_S_CK_TRX_EXCH 1u               /**< rx tx exchange */
 #define SEI_INSTR_S_CK_TIMEOUT_EN 2u             /**< enable timeout */
 #define SEI_INSTR_S_CK_TRX_EXCH_TIMEOUT_EN 3u    /**< rx tx exchange and enable timeout */
+
+/**
+ * @brief sei synchronous slave rx tx point select
+ */
+#define SEI_SYNC_SLAVE_RX_TX_POINT_ON_RISE_EDGE 0x8002
+#define SEI_SYNC_SLAVE_RX_TX_POINT_ON_FALL_EDGE 0x0002
 
 /**
  * @brief sei instruction jump intructions index
@@ -301,9 +308,9 @@ typedef struct {
     bool trig_period_sync_enable;
     uint8_t trig_period_sync_select;
     uint32_t trig_period_time;
-#if defined(HPM_IP_FEATURE_SEI_TIMEOUT_REWIND_FEATURE) && HPM_IP_FEATURE_SEI_TIMEOUT_REWIND_FEATURE
-    uint8_t rewind_enable;
-    uint8_t rewind_select;
+#if defined(HPM_IP_FEATURE_SEI_TRIG_IN_DIV) && HPM_IP_FEATURE_SEI_TRIG_IN_DIV
+    uint8_t trig_in0_div;
+    uint8_t trig_in1_div;
 #endif
 } sei_trigger_input_config_t;      /**< trigger input config struct */
 
@@ -344,7 +351,7 @@ typedef struct {
     uint32_t cmd_min_value;
     uint32_t cmd_max_value;
     uint32_t cmd_mask_value;
-    uint8_t instr_idx[16];
+    uint8_t instr_idx[8];
 } sei_command_table_config_t;      /**< cmd table config struct */
 
 /**
@@ -409,7 +416,6 @@ typedef struct {
     uint32_t data_register_select;
 } sei_update_config_t;      /**< update config struct */
 
-
 #if defined(__cplusplus)
 extern "C" {
 #endif /* __cplusplus */
@@ -439,6 +445,42 @@ static inline void sei_set_engine_enable(SEI_Type *ptr, uint8_t idx, bool enable
 static inline void sei_set_engine_rewind(SEI_Type *ptr, uint8_t idx)
 {
     ptr->CTRL[idx].ENGINE.CTRL |= SEI_CTRL_ENGINE_CTRL_REWIND_MASK;
+}
+
+/**
+ * @brief Set the SEI instruction index which engine start execution
+ * @param [in] ptr SEI base address
+ * @param [in] idx SEI ctrl index, such as SEI_CTRL_0, SEI_CTRL_1, etc.
+ * @param [in] init_instr_idx instruction index which engine start execution
+ */
+static inline void sei_set_engine_init_instr_idx(SEI_Type *ptr, uint8_t idx, uint8_t init_instr_idx)
+{
+    ptr->CTRL[idx].ENGINE.PTR_CFG = (ptr->CTRL[idx].ENGINE.PTR_CFG & ~SEI_CTRL_ENGINE_PTR_CFG_POINTER_INIT_MASK)
+                                    | SEI_CTRL_ENGINE_PTR_CFG_POINTER_INIT_SET(init_instr_idx);
+}
+
+/**
+ * @brief Set the SEI instruction index which engine execution when watchdog active
+ * @param [in] ptr SEI base address
+ * @param [in] idx SEI ctrl index, such as SEI_CTRL_0, SEI_CTRL_1, etc.
+ * @param [in] wdg_instr_idx instruction index which engine execution when watchdog active
+ */
+static inline void sei_set_engine_wdg_instr_idx(SEI_Type *ptr, uint8_t idx, uint8_t wdg_instr_idx)
+{
+    ptr->CTRL[idx].ENGINE.PTR_CFG = (ptr->CTRL[idx].ENGINE.PTR_CFG & ~SEI_CTRL_ENGINE_PTR_CFG_POINTER_WDOG_MASK)
+                                    | SEI_CTRL_ENGINE_PTR_CFG_POINTER_WDOG_SET(wdg_instr_idx);
+}
+
+/**
+ * @brief Set the SEI bias for data register access
+ * @param [in] ptr SEI base address
+ * @param [in] idx SEI ctrl index, such as SEI_CTRL_0, SEI_CTRL_1, etc.
+ * @param [in] data_base_idx Bias for data register access
+ */
+static inline void sei_set_engine_data_base_idx(SEI_Type *ptr, uint8_t idx, uint8_t data_base_idx)
+{
+    ptr->CTRL[idx].ENGINE.PTR_CFG = (ptr->CTRL[idx].ENGINE.PTR_CFG & ~SEI_CTRL_ENGINE_PTR_CFG_DAT_BASE_MASK)
+                                    | SEI_CTRL_ENGINE_PTR_CFG_DAT_BASE_SET(data_base_idx);
 }
 
 /**
@@ -545,6 +587,17 @@ static inline uint32_t sei_get_latch_time(SEI_Type *ptr, uint8_t idx, uint8_t la
 }
 
 /**
+ * @brief Get the SEI transceiver baud div
+ * @param [in] ptr SEI base address
+ * @param [in] idx SEI ctrl index, such as SEI_CTRL_0, SEI_CTRL_1, etc.
+ * @retval baud div value
+ */
+ static inline uint16_t sei_get_xcvr_baud_div(SEI_Type *ptr, uint8_t idx)
+ {
+     return SEI_CTRL_XCVR_BAUD_CFG_BAUD_DIV_GET(ptr->CTRL[idx].XCVR.BAUD_CFG);
+ }
+
+/**
  * @brief Set the SEI transceiver rx point
  * @param [in] ptr SEI base address
  * @param [in] idx SEI ctrl index, such as SEI_CTRL_0, SEI_CTRL_1, etc.
@@ -635,17 +688,6 @@ static inline uint16_t sei_get_xcvr_ck1_point(SEI_Type *ptr, uint8_t idx)
 }
 
 /**
- * @brief Set the SEI command value
- * @param [in] ptr SEI base address
- * @param [in] idx SEI ctrl index, such as SEI_CTRL_0, SEI_CTRL_1, etc.
- * @param [in] cmd command value
- */
-static inline void sei_set_command_value(SEI_Type *ptr, uint8_t idx, uint32_t cmd)
-{
-    ptr->CTRL[idx].CMD.CMD = cmd;
-}
-
-/**
  * @brief Get the SEI command value
  * @param [in] ptr SEI base address
  * @param [in] idx SEI ctrl index, such as SEI_CTRL_0, SEI_CTRL_1, etc.
@@ -665,6 +707,21 @@ static inline void sei_set_command_rewind(SEI_Type *ptr, uint8_t idx)
 {
     ptr->CTRL[idx].CMD.MODE |= SEI_CTRL_CMD_MODE_REWIND_MASK;
 }
+
+#if defined(HPM_IP_FEATURE_SEI_LATCH_REWIND_CMD) && HPM_IP_FEATURE_SEI_LATCH_REWIND_CMD
+/**
+ * @brief Rewind the SEI command by latch event configuration
+ * @param [in] ptr SEI base address
+ * @param [in] idx SEI ctrl index, such as SEI_CTRL_0, SEI_CTRL_1, etc.
+ * @param [in] latch_select Latch index, such as SEI_LATCH_0, SEI_LATCH_1, etc.
+ * @param [in] enable Enable or disable
+ */
+static inline void sei_config_command_rewind_by_latch(SEI_Type *ptr, uint8_t idx, uint8_t latch_select, bool enable)
+{
+   ptr->CTRL[idx].TRG.IN_CFG = (ptr->CTRL[idx].TRG.IN_CFG & ~(SEI_CTRL_TRG_IN_CFG_REWIND_EN_MASK | SEI_CTRL_TRG_IN_CFG_REWIND_SEL_MASK))
+                             | (SEI_CTRL_TRG_IN_CFG_REWIND_EN_SET(enable) | SEI_CTRL_TRG_IN_CFG_REWIND_SEL_SET(latch_select));
+}
+#endif
 
 /**
  * @brief Set the SEI data value
@@ -860,6 +917,17 @@ static inline void sei_set_irq_enable(SEI_Type *ptr, uint8_t idx, uint32_t irq_m
 }
 
 /**
+ * @brief Get the SEI irq enable status
+ * @param [in] ptr SEI base address
+ * @param [in] idx SEI ctrl index, such as SEI_CTRL_0, SEI_CTRL_1, etc.
+ * @retval SEI irq enable status
+ */
+static inline uint32_t sei_get_irq_enable_status(SEI_Type *ptr, uint8_t idx)
+{
+     return ptr->CTRL[idx].IRQ.INT_EN;
+}
+
+/**
  * @brief Get the SEI irq status
  * @param [in] ptr SEI base address
  * @param [in] idx SEI ctrl index, such as SEI_CTRL_0, SEI_CTRL_1, etc.
@@ -871,6 +939,18 @@ static inline bool sei_get_irq_status(SEI_Type *ptr, uint8_t idx, uint32_t irq_m
 {
     return ((ptr->CTRL[idx].IRQ.INT_FLAG & irq_mask) == irq_mask) ? true : false;
 }
+
+/**
+ * @brief Get the SEI irq flag
+ * @param [in] ptr SEI base address
+ * @param [in] idx SEI ctrl index, such as SEI_CTRL_0, SEI_CTRL_1, etc.
+ *
+ * @retval SEI irq flag.
+ */
+ static inline uint32_t sei_get_irq_flag(SEI_Type *ptr, uint8_t idx)
+ {
+     return ptr->CTRL[idx].IRQ.INT_FLAG;
+ }
 
 /**
  * @brief Clear the SEI irq flag
@@ -1034,8 +1114,8 @@ hpm_stat_t sei_engine_config_init(SEI_Type *ptr, uint8_t idx, sei_engine_config_
  *       @arg @ref SEI_INSTR_S_CK_TRX_EXCH
  *       @arg @ref SEI_INSTR_S_CK_TIMEOUT_EN
  *       @arg @ref SEI_INSTR_S_CK_TRX_EXCH_TIMEOUT_EN
- * @param [in] crc SEI instruction crc register, such as SEI_DAT_0, SEI_DAT_1, etc.
- * @param [in] data SEI instruction data register, such as SEI_DAT_0, SEI_DAT_1, etc.
+ * @param [in] crc SEI instruction crc register, such as SEI_DAT_0, SEI_DATA_2, SEI_DATA_3, etc.
+ * @param [in] data SEI instruction data register, such as SEI_DAT_0, SEI_DAT_CMD, SEI_DATA_2, etc.
  * @param [in] opr SEI instruction operand.
  *   [1] When OP is SEI_INSTR_OP_HALT, opr is the halt time in baudrate, 0 represents infinite time.
  *   [2] When OP is SEI_INSTR_OP_JUMP, opr is command table pointer, init pointer or wdg pointer.

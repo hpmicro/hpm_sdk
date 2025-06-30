@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -160,6 +160,43 @@ typedef enum qeiv2_adc_sw_inject_en {
 #endif
 
 /**
+ * @brief qeiv2 mode config structure
+ */
+typedef struct {
+    qeiv2_work_mode_t work_mode;
+    qeiv2_spd_tmr_content_t spd_tmr_content_sel;
+    qeiv2_z_count_work_mode_t z_count_inc_mode;
+    uint32_t phcnt_max;
+    bool z_cali_enable;
+    bool z_cali_ignore_ab;
+    uint32_t phcnt_idx;
+} qeiv2_mode_config_t;      /**< qeiv2 mode config struct */
+
+/**
+ * @brief qeiv2 H phase config structure
+ */
+typedef struct {
+    bool h_fall_dir_forward;
+    bool h_fall_dir_reverse;
+    bool h_rise_dir_forward;
+    bool h_rise_dir_reverse;
+    bool h2_fall_dir_forward;
+    bool h2_fall_dir_reverse;
+    bool h2_rise_dir_forward;
+    bool h2_rise_dir_reverse;
+} qeiv2_h_phase_config_t;      /**< qeiv2 H phase config struct */
+
+/**
+ * @brief qeiv2 pause config structure
+ */
+typedef struct {
+    bool pause_valid_pause_position;
+    bool pause_valid_pause_spdcnt;
+    bool pause_valid_pause_phcnt;
+    bool pause_valid_pause_zcnt;
+} qeiv2_pause_config_t;      /**< qeiv2 pause config struct */
+
+/**
  * @brief phase counter compare match config structure
  *
  */
@@ -291,14 +328,14 @@ static inline void qeiv2_config_phparam(QEIV2_Type *qeiv2_x, uint32_t phmax)
 }
 
 /**
- * @brief config phase calibration value trigged by z phase
+ * @brief config phcnt calibration trigged by z phase
  *
  * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
- * @param[in] enable  phcnt will set to phidx when Z input assert
- * @param[in] phidx  phcnt reset value
- * @param[in] mode  qeiv2_work_mode_t
+ * @param[in] phidx phcnt reset value
+ * @param[in] enable enable or disable phcnt calibration by z phase
+ * @param[in] ignore_ab ignore a/b phase signals, only using z phase to calibrate phcnt
  */
-static inline void qeiv2_config_z_phase_calibration(QEIV2_Type *qeiv2_x, uint32_t phidx, bool enable, qeiv2_work_mode_t mode)
+static inline void qeiv2_config_z_phase_calibration(QEIV2_Type *qeiv2_x, uint32_t phidx, bool enable, bool ignore_ab)
 {
     uint32_t tmp = qeiv2_x->CR;
     qeiv2_x->PHIDX = QEIV2_PHIDX_PHIDX_SET(phidx);
@@ -307,7 +344,7 @@ static inline void qeiv2_config_z_phase_calibration(QEIV2_Type *qeiv2_x, uint32_
     } else {
         tmp &= ~QEIV2_CR_PHCALIZ_MASK;
     }
-    if (enable && ((mode == qeiv2_work_mode_sin) || (mode == qeiv2_work_mode_sincos))) {
+    if (ignore_ab) {
         tmp |= QEIV2_CR_Z_ONLY_EN_MASK;
     } else {
         tmp &= ~QEIV2_CR_Z_ONLY_EN_MASK;
@@ -935,7 +972,7 @@ static inline void qeiv2_set_cmp2_match_option(QEIV2_Type *qeiv2_x, bool ignore_
 }
 
 /**
- * @brief config signal enablement and edge
+ * @brief config signal enablement and edge for speed and position measurement
  *
  * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
  * @param[in] siga_en enable signal A/U
@@ -1237,7 +1274,7 @@ static inline void qeiv2_enable_trig_pulse1(QEIV2_Type *qeiv2_x)
  */
 static inline void qeiv2_sw_restart_cycle0(QEIV2_Type *qeiv2_x)
 {
-    qeiv2_x->QEI_CFG |= QEIV2_QEI_CFG_SW_PULSE0_RESTART_MASK;
+    qeiv2_x->QEI_CFG |= QEIV2_QEI_CFG_SW_CYCLE0_RESTART_MASK;
 }
 
 /**
@@ -1246,7 +1283,7 @@ static inline void qeiv2_sw_restart_cycle0(QEIV2_Type *qeiv2_x)
  */
 static inline void qeiv2_sw_restart_cycle1(QEIV2_Type *qeiv2_x)
 {
-    qeiv2_x->QEI_CFG |= QEIV2_QEI_CFG_SW_PULSE1_RESTART_MASK;
+    qeiv2_x->QEI_CFG |= QEIV2_QEI_CFG_SW_CYCLE1_RESTART_MASK;
 }
 
 /**
@@ -1255,7 +1292,7 @@ static inline void qeiv2_sw_restart_cycle1(QEIV2_Type *qeiv2_x)
  */
 static inline void qeiv2_sw_restart_pulse0(QEIV2_Type *qeiv2_x)
 {
-    qeiv2_x->QEI_CFG |= QEIV2_QEI_CFG_SW_CYCLE0_RESTART_MASK;
+    qeiv2_x->QEI_CFG |= QEIV2_QEI_CFG_SW_PULSE0_RESTART_MASK;
 }
 
 /**
@@ -1264,7 +1301,7 @@ static inline void qeiv2_sw_restart_pulse0(QEIV2_Type *qeiv2_x)
  */
 static inline void qeiv2_sw_restart_pulse1(QEIV2_Type *qeiv2_x)
 {
-    qeiv2_x->QEI_CFG |= QEIV2_QEI_CFG_SW_CYCLE1_RESTART_MASK;
+    qeiv2_x->QEI_CFG |= QEIV2_QEI_CFG_SW_PULSE1_RESTART_MASK;
 }
 #endif
 
@@ -1680,6 +1717,30 @@ static inline bool qeiv2_is_pos_calc_finished(QEIV2_Type *qeiv2_x)
     return (QEIV2_CALC_STATE_STATE_GET(qeiv2_x->CALC_STATE) == 0) ? true : false;
 }
 #endif
+
+/**
+ * @brief config qei mode
+ *
+ * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
+ * @param[in] config @ref qei_mode_config_t
+ */
+void qeiv2_config_mode(QEIV2_Type *qeiv2_x, qeiv2_mode_config_t *config);
+
+/**
+ * @brief config h phase signal
+ *
+ * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
+ * @param[in] config @ref qei_h_phase_config_t
+ */
+void qeiv2_config_h_phase(QEIV2_Type *qeiv2_x, qeiv2_h_phase_config_t *config);
+
+/**
+ * @brief config pause signal
+ *
+ * @param[in] qeiv2_x QEIV2 base address, HPM_QEIV2x(x=0...n)
+ * @param[in] config @ref qei_pause_config_t
+ */
+void qeiv2_config_pause(QEIV2_Type *qeiv2_x, qeiv2_pause_config_t *config);
 
 /**
  * @brief config phcnt compare match condition

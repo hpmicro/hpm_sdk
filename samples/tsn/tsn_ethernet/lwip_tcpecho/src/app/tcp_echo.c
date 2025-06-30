@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -37,7 +37,7 @@ void tcp_echo_init(void)
     struct tcp_pcb *pcb = NULL;
 
     pcb = tcp_new();
-    tcp_bind(pcb, IP_ADDR_ANY, TCP_ECHO_PORT);
+    tcp_bind(pcb, IP_ADDR_ANY, TCP_LOCAL_PORT);
     pcb = tcp_listen(pcb);
     tcp_accept(pcb, tcpecho_accept);
 }

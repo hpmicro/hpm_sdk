@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -49,9 +49,9 @@
  *---------------------------------------------------------------------
  */
 ATTR_PLACE_AT_WITH_ALIGNMENT(".framebuffer", HPM_L1C_CACHELINE_SIZE) uint8_t out_buf[DECODE_BUFFER_LEN];
-ATTR_PLACE_AT_NONCACHEABLE uint8_t file_buffer[FILE_BUFFER_LEN];
 ATTR_PLACE_AT_NONCACHEABLE uint8_t scale_buffer[BOARD_LCD_HEIGHT * BOARD_LCD_WIDTH * 2];
-ATTR_PLACE_AT_NONCACHEABLE_BSS FIL file;
+ATTR_ALIGN(HPM_L1C_CACHELINE_SIZE) uint8_t file_buffer[FILE_BUFFER_LEN];
+FIL file;
 
 static bool lcd_is_on;
 static volatile bool vsync;
@@ -172,14 +172,21 @@ void decode_show(uint8_t *f_buf, uint32_t size)
         printf("sw decode failed\n");
         return;
     }
+    if ((image_width * image_height * 2) > DECODE_BUFFER_LEN) {
+        printf("resolution is too large %d x %d\n", image_width, image_height);
+        return;
+    }
     if (l1c_dc_is_enabled()) {
-        /* cache writeback for file buff */
-        l1c_dc_writeback((uint32_t)out_buf, sizeof(out_buf));
+        l1c_dc_writeback((uint32_t)out_buf, HPM_L1C_CACHELINE_ALIGN_UP(image_width * image_height * 2));
     }
     printf("sw decode completed\n");
 #else
     jpeg_image_info_t info;
     memset(&info, 0, sizeof(info));
+    if (l1c_dc_is_enabled()) {
+        l1c_dc_writeback((uint32_t)f_buf, HPM_L1C_CACHELINE_ALIGN_UP(size));
+    }
+
     if (!jpeg_hw_decode(f_buf, size, out_buf, &info)) {
         printf("hw decode failed\n");
         return;
@@ -286,9 +293,15 @@ int main(void)
             }
         }
 
-        f_read(&file, file_buffer, FILE_BUFFER_LEN, (UINT *)&size);
-        f_close(&file);
+        stat = f_read(&file, file_buffer, FILE_BUFFER_LEN, (UINT *)&size);
+        if (stat != FR_OK || size == 0) {
+            printf("fail to read file %s, status=%d, size=%d\n", f_info.fname, stat, size);
+            f_close(&file);
+            while (1) {
+            }
+        }
 
+        f_close(&file);
         printf("%s:\n", f_info.fname);
         decode_show(file_buffer, size);
         board_delay_ms(SHOW_IMAGE_DELAY_IN_MS);

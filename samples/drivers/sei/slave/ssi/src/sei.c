@@ -1,12 +1,11 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
 
 #include "board.h"
-#include "hpm_debug_console.h"
 #include "hpm_clock_drv.h"
 #include "hpm_synt_drv.h"
 #include "hpm_sei_drv.h"
@@ -32,7 +31,9 @@ int main(void)
 
     printf("SEI slave SSI sample\n");
 
+    /* [0] disable engine and enable timestamp */
     sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, false);
+    synt_enable_timestamp(HPM_SYNT, true);
 
     /* [1] transceiver config */
     transceiver_config.mode = sei_synchronous_slave_mode;
@@ -46,8 +47,8 @@ int main(void)
     transceiver_config.synchronous_slave_config.ck0_timeout_us = 20;
     transceiver_config.synchronous_slave_config.ck1_timeout_us = 20;        /* min_baudrate: 50kHz */
     sei_transceiver_config_init(BOARD_SEI, BOARD_SEI_CTRL, &transceiver_config);
-    sei_set_xcvr_rx_point(BOARD_SEI, BOARD_SEI_CTRL, 2);
-    sei_set_xcvr_tx_point(BOARD_SEI, BOARD_SEI_CTRL, 3 + 0x8000);
+    sei_set_xcvr_rx_point(BOARD_SEI, BOARD_SEI_CTRL, SEI_SYNC_SLAVE_RX_TX_POINT_ON_FALL_EDGE);
+    sei_set_xcvr_tx_point(BOARD_SEI, BOARD_SEI_CTRL, SEI_SYNC_SLAVE_RX_TX_POINT_ON_RISE_EDGE);
 
     /* [2] data register config */
     /* data register 2: Multi Turn Value */
@@ -81,7 +82,20 @@ int main(void)
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, SEI_INSTR_S_CK_TIMEOUT_EN, SEI_DAT_0, SEI_DATA_CONST_0, 10); /* timeout */
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_JUMP, SEI_INSTR_S_CK_DEFAULT, SEI_DAT_0, SEI_DAT_0, SEI_JUMP_INIT_INSTR_IDX);
 
-    /* [4] state transition config */
+    /* [4] sample config*/
+    sample_config.pos_data_idx = SEI_DAT_3;
+    sample_config.rev_data_idx = SEI_DAT_2;
+    sample_config.pos_data_use_rx = false;
+    sample_config.rev_data_use_rx = false;
+    sample_config.sample_window = 0x2;
+    sample_config.sample_once = true;
+    sample_config.latch_select = SEI_LATCH_0;
+    sample_config.data_register_select = BIT2_MASK | BIT3_MASK;    /* SEI_DAT_2, SEI_DAT_3 */
+    sei_sample_config_init(BOARD_SEI, BOARD_SEI_CTRL, &sample_config);
+    sei_set_sample_pos_override_value(BOARD_SEI, BOARD_SEI_CTRL, mock_pos);
+    sei_set_sample_rev_override_value(BOARD_SEI, BOARD_SEI_CTRL, mock_rev);
+
+    /* [5] state transition config */
     /* latch0 */
 #if defined(HPM_IP_FEATURE_SEI_RX_LATCH_FEATURE) && HPM_IP_FEATURE_SEI_RX_LATCH_FEATURE
     state_transition_config.disable_clk_check = false;
@@ -122,28 +136,12 @@ int main(void)
     state_transition_config.disable_instr_ptr_check = true;
     sei_state_transition_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0, SEI_CTRL_LATCH_TRAN_3_0, &state_transition_config);
 
-    /* [5] sample config*/
-    sample_config.pos_data_idx = SEI_DAT_3;
-    sample_config.rev_data_idx = SEI_DAT_2;
-    sample_config.pos_data_use_rx = false;
-    sample_config.rev_data_use_rx = false;
-    sample_config.sample_window = 0x2;
-    sample_config.sample_once = true;
-    sample_config.latch_select = SEI_LATCH_0;
-    sample_config.data_register_select = BIT2_MASK | BIT3_MASK;    /* SEI_DAT_2, SEI_DAT_3 */
-    sei_sample_config_init(BOARD_SEI, BOARD_SEI_CTRL, &sample_config);
-    sei_set_sample_pos_override_value(BOARD_SEI, BOARD_SEI_CTRL, mock_pos);
-    sei_set_sample_rev_override_value(BOARD_SEI, BOARD_SEI_CTRL, mock_rev);
+    state_transition_latch_config.enable = true;
+    state_transition_latch_config.output_select = SEI_CTRL_LATCH_TRAN_0_1;
+    state_transition_latch_config.delay = 0;
+    sei_state_transition_latch_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0, &state_transition_latch_config);
 
-    /* [6] interrupt config */
-    intc_m_enable_irq_with_priority(BOARD_SEI_IRQn, 1);
-    sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event | sei_irq_trx_err_event);
-    sei_set_irq_enable(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event | sei_irq_trx_err_event, true);
-
-    /* [7] enbale sync timer timestamp */
-    synt_enable_timestamp(HPM_SYNT, true);
-
-    /* [8] engine config */
+    /* [6] engine config */
     printf("Started sei engine!\n");
     engine_config.arming_mode = sei_arming_direct_exec;
     engine_config.data_cdm_idx = SEI_DAT_0;
@@ -151,13 +149,12 @@ int main(void)
     engine_config.init_instr_idx = 0;
     engine_config.wdg_enable = false;
     sei_engine_config_init(BOARD_SEI, BOARD_SEI_CTRL, &engine_config);
-
-    /* [9] start engine and latch modules */
-    state_transition_latch_config.enable = true;
-    state_transition_latch_config.output_select = SEI_CTRL_LATCH_TRAN_0_1;
-    state_transition_latch_config.delay = 0;
-    sei_state_transition_latch_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0, &state_transition_latch_config);
     sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, true);
+
+    /* [7] interrupt config */
+    sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event | sei_irq_trx_err_event);
+    sei_set_irq_enable(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event | sei_irq_trx_err_event, true);
+    intc_m_enable_irq_with_priority(BOARD_SEI_IRQn, 1);
 
     while (1) {
         ;
@@ -167,10 +164,14 @@ int main(void)
 SDK_DECLARE_EXT_ISR_M(BOARD_SEI_IRQn, isr_sei)
 void isr_sei(void)
 {
+    uint32_t irq_flag;
     uint32_t delta;
 
-    if (sei_get_irq_status(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event)) {
-        sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event);
+    irq_flag = sei_get_irq_flag(BOARD_SEI, BOARD_SEI_CTRL);
+    sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, irq_flag);
+    irq_flag &= sei_get_irq_enable_status(BOARD_SEI, BOARD_SEI_CTRL);
+
+    if ((irq_flag & sei_irq_latch0_event) != 0) {
         sample_latch_tm1 = sei_get_latch_time(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0);
         delta = (sample_latch_tm1 > sample_latch_tm2) ? (sample_latch_tm1 - sample_latch_tm2) : (sample_latch_tm1 - sample_latch_tm2 + 0xFFFFFFFFu);
         mock_pos++;
@@ -187,8 +188,7 @@ void isr_sei(void)
         sample_latch_tm2 = sample_latch_tm1;
     }
 
-    if (sei_get_irq_status(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_trx_err_event)) {
-        sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_trx_err_event);
+    if ((irq_flag & sei_irq_trx_err_event) != 0) {
         printf("TRX Error!\n");
     }
 }

@@ -6,23 +6,29 @@ FULL_DUPLEX_SPI_SLAVE_POLLING
 Overview
 --------
 
-- This example demonstrates the functionality of I2C operating as a slave, transferring data using polling.
+- The **i2c_components_slave_polling** example demonstrates the I2C interface operating in slave mode with polling-based data transfer.
 
-- The specific memory access to the registers of the slave device is handled by first reading the register address data. Then, the data read and write operations are performed based on the address.
+- For register memory access in the slave device, the I2C slave first reads data from a register address, then performs read and write operations on the data.
 
-- For pure data access, the I2C master reads the data first, then writes data, and finally compares the read and written data for consistency.
+- For pure data transfers (without register addressing), the I2C master first reads data, then writes data, and compares the read and written data to ensure consistency.
+
+
+Tips
+----
+
+- For detailed documentation about I2C components, please refer to :ref: `i2c_components <i2c_component>`
 
 Board Setting
 -------------
 
-connect  :ref:`I2C Pins <board_resource>`  on the two boards。
+- Connect the :ref:`I2C pins <board_resource>`  between two boards.
 
 Running the example
 -------------------
 
-- Run slave first, and then run master.
+- Run the slave firmware first, followed by the master.
 
-- When the example runs successfully, the log would be seen on the terminal like:
+- Once running correctly, the serial terminal will display output similar to the following:
 
 
 .. code-block:: console

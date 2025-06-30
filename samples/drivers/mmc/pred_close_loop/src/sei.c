@@ -101,7 +101,21 @@ void sei_record_data(void)
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_WAIT, SEI_INSTR_M_CK_HIGH, SEI_DAT_0, SEI_DATA_CONST_1, 0);
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_HALT, SEI_INSTR_M_CK_LOW, SEI_DAT_0, SEI_DAT_0, 0);
 
-    /* [4] state transition config */
+    /* [4] sample config*/
+    sample_config.latch_select = SEI_LATCH_0;
+    sei_sample_config_init(BOARD_SEI, BOARD_SEI_CTRL, &sample_config);
+
+    /* [5] update config*/
+    update_config.pos_data_idx = SEI_DAT_3;
+    update_config.rev_data_idx = SEI_DAT_2;
+    update_config.pos_data_use_rx = true;
+    update_config.rev_data_use_rx = true;
+    update_config.update_on_err = false;
+    update_config.latch_select = SEI_LATCH_1;
+    update_config.data_register_select = 0x0C;    /* SEI_DAT_2, SEI_DAT_3 */
+    sei_update_config_init(BOARD_SEI, BOARD_SEI_CTRL, &update_config);
+
+    /* [6] state transition config */
     /* latch0 */
     state_transition_config.disable_clk_check = false;
     state_transition_config.clk_cfg = sei_state_tran_condition_fall_leave;
@@ -132,6 +146,11 @@ void sei_record_data(void)
     state_transition_config.instr_ptr_value = (instr_idx - 2);
     sei_state_transition_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0, SEI_CTRL_LATCH_TRAN_3_0, &state_transition_config);
 
+    state_transition_latch_config.enable = true;
+    state_transition_latch_config.output_select = SEI_CTRL_LATCH_TRAN_1_2;
+    state_transition_latch_config.delay = 0;
+    sei_state_transition_latch_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0, &state_transition_latch_config);
+
     /* latch1 */
     state_transition_config.disable_clk_check = true;
     state_transition_config.disable_txd_check = true;
@@ -160,19 +179,10 @@ void sei_record_data(void)
     state_transition_config.disable_instr_ptr_check = true;
     sei_state_transition_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_1, SEI_CTRL_LATCH_TRAN_3_0, &state_transition_config);
 
-    /* [5] sample config*/
-    sample_config.latch_select = SEI_LATCH_0;
-    sei_sample_config_init(BOARD_SEI, BOARD_SEI_CTRL, &sample_config);
-
-    /* [6] update config*/
-    update_config.pos_data_idx = SEI_DAT_3;
-    update_config.rev_data_idx = SEI_DAT_2;
-    update_config.pos_data_use_rx = true;
-    update_config.rev_data_use_rx = true;
-    update_config.update_on_err = false;
-    update_config.latch_select = SEI_LATCH_1;
-    update_config.data_register_select = 0x0C;    /* SEI_DAT_2, SEI_DAT_3 */
-    sei_update_config_init(BOARD_SEI, BOARD_SEI_CTRL, &update_config);
+    state_transition_latch_config.enable = true;
+    state_transition_latch_config.output_select = SEI_CTRL_LATCH_TRAN_0_1;
+    state_transition_latch_config.delay = 0;
+    sei_state_transition_latch_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_1, &state_transition_latch_config);
 
     /* [7] engine config */
     engine_config.arming_mode = sei_arming_wait_trigger;
@@ -181,20 +191,9 @@ void sei_record_data(void)
     engine_config.init_instr_idx = 0;
     engine_config.wdg_enable = false;
     sei_engine_config_init(BOARD_SEI, BOARD_SEI_CTRL, &engine_config);
-
-    /* [8] start engine and latch modules */
-
-    state_transition_latch_config.enable = true;
-    state_transition_latch_config.output_select = SEI_CTRL_LATCH_TRAN_1_2;
-    state_transition_latch_config.delay = 0;
-    sei_state_transition_latch_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0, &state_transition_latch_config);
-    state_transition_latch_config.enable = true;
-    state_transition_latch_config.output_select = SEI_CTRL_LATCH_TRAN_0_1;
-    state_transition_latch_config.delay = 0;
-    sei_state_transition_latch_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_1, &state_transition_latch_config);
     sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, true);
 
-    /* [9] trigger config */
+    /* [8] trigger config */
     trigger_input_conifg.trig_period_enable = true;
     trigger_input_conifg.trig_period_arming_mode = sei_arming_direct_exec;
     trigger_input_conifg.trig_period_sync_enable = false;

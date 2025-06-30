@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -134,7 +134,7 @@ typedef enum uart_intr_enable {
 #if defined(HPM_IP_FEATURE_UART_RX_IDLE_DETECT) && (HPM_IP_FEATURE_UART_RX_IDLE_DETECT == 1)
     uart_intr_rx_line_idle = UART_IER_ERXIDLE_MASK,
 #endif
-#if defined(HPM_IP_FEATURE_UART_9BIT_MODE) && (HPM_IP_FEATURE_UART_9BIT_MODE == 1)
+#if defined(HPM_IP_FEATURE_UART_TX_IDLE_DETECT) && (HPM_IP_FEATURE_UART_TX_IDLE_DETECT == 1)
     uart_intr_tx_line_idle = UART_IER_ETXIDLE_MASK,
 #endif
 #if defined(HPM_IP_FEATURE_UART_ADDR_MATCH) && (HPM_IP_FEATURE_UART_ADDR_MATCH == 1)
@@ -218,7 +218,7 @@ typedef struct hpm_uart_config {
 #if defined(HPM_IP_FEATURE_UART_RX_IDLE_DETECT) && (HPM_IP_FEATURE_UART_RX_IDLE_DETECT == 1)
     uart_rxline_idle_config_t  rxidle_config;   /**< RX Idle configuration */
 #endif
-#if defined(HPM_IP_FEATURE_UART_9BIT_MODE) && (HPM_IP_FEATURE_UART_9BIT_MODE == 1)
+#if defined(HPM_IP_FEATURE_UART_TX_IDLE_DETECT) && (HPM_IP_FEATURE_UART_TX_IDLE_DETECT == 1)
     uart_rxline_idle_config_t  txidle_config;   /**< TX Idle configuration */
 #endif
 #if defined(HPM_IP_FEATURE_UART_RX_EN) && (HPM_IP_FEATURE_UART_RX_EN == 1)
@@ -539,25 +539,6 @@ hpm_stat_t uart_init_rxline_idle_detection(UART_Type *ptr, uart_rxline_idle_conf
 
 #if defined(HPM_IP_FEATURE_UART_E00018_FIX) && (HPM_IP_FEATURE_UART_E00018_FIX == 1)
 /**
- * @brief Determine whether UART TX Line is idle
- * @param [in] ptr UART base address
- * @retval false if uart TX line is not idle
- */
-static inline bool uart_is_txline_idle(UART_Type *ptr)
-{
-    return ((ptr->IIR2 & UART_IIR2_TXIDLE_FLAG_MASK) != 0U) ? true : false;
-}
-
-/**
- * @brief Clear UART TX Line Idle Flag
- * @param [in] ptr UART base address
- */
-static inline void uart_clear_txline_idle_flag(UART_Type *ptr)
-{
-    ptr->IIR2 = UART_IIR2_TXIDLE_FLAG_MASK; /* Write-1-Clear Logic */
-}
-
-/**
  * @brief Determine whether UART RX Line is idle
  * @param [in] ptr UART base address
  * @retval false if uart RX line is not idle
@@ -577,7 +558,26 @@ static inline void uart_clear_rxline_idle_flag(UART_Type *ptr)
 }
 #endif
 
-#if defined(HPM_IP_FEATURE_UART_9BIT_MODE) && (HPM_IP_FEATURE_UART_9BIT_MODE == 1)
+#if defined(HPM_IP_FEATURE_UART_TX_IDLE_DETECT) && (HPM_IP_FEATURE_UART_TX_IDLE_DETECT == 1)
+/**
+ * @brief Determine whether UART TX Line is idle
+ * @param [in] ptr UART base address
+ * @retval false if uart TX line is not idle
+ */
+static inline bool uart_is_txline_idle(UART_Type *ptr)
+{
+    return ((ptr->IIR2 & UART_IIR2_TXIDLE_FLAG_MASK) != 0U) ? true : false;
+}
+
+/**
+ * @brief Clear UART TX Line Idle Flag
+ * @param [in] ptr UART base address
+ */
+static inline void uart_clear_txline_idle_flag(UART_Type *ptr)
+{
+    ptr->IIR2 = UART_IIR2_TXIDLE_FLAG_MASK; /* Write-1-Clear Logic */
+}
+
 /**
  * @brief Enable UART TX Idle Line detection logic
  * @param [in] ptr UART base address
@@ -796,7 +796,7 @@ static inline uint8_t uart_get_data_count_in_tx_fifo(UART_Type *ptr)
 }
 #endif
 
-#if defined(HPM_IP_FEATURE_UART_ADDR_MATCH) && (HPM_IP_FEATURE_UART_ADDR_MATCH == 1)
+#if defined(HPM_IP_FEATURE_UART_9BIT_MODE) && (HPM_IP_FEATURE_UART_9BIT_MODE == 1)
 /**
  * @brief uart enable 9bit transmit mode
  *
@@ -815,6 +815,9 @@ static inline void uart_enable_9bit_transmit_mode(UART_Type *ptr, bool enable)
                             | UART_ADDR_CFG_RXEN_9BIT_MASK);
     }
 }
+#endif
+
+#if defined(HPM_IP_FEATURE_UART_ADDR_MATCH) && (HPM_IP_FEATURE_UART_ADDR_MATCH == 1)
 
 /**
  * @brief uart enable address0 match

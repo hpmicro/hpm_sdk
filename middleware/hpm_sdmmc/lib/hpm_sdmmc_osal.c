@@ -29,6 +29,7 @@ ATTR_WEAK hpm_sdmmc_osal_event_t hpm_sdmmc_osal_event_create(void *ctx)
 
 ATTR_WEAK hpm_stat_t hpm_sdmmc_osal_event_delete(void *ctx, hpm_sdmmc_osal_event_t event)
 {
+    (void) ctx;
     uint32_t err = osEventFlagsDelete(event);
     return (err == osOK) ? status_success : status_fail;
 }
@@ -40,7 +41,7 @@ ATTR_WEAK hpm_stat_t hpm_sdmmc_osal_event_wait(void *ctx, hpm_sdmmc_osal_event_t
     uint32_t ticks_per_sec = osKernelGetTickFreq();
     uint32_t timeout_ticks = (timeout * ticks_per_sec + 999UL) / 1000UL;
     uint32_t err = osEventFlagsWait(event, flags, osFlagsWaitAny, timeout_ticks);
-    if (err == osErrorTimeout) {
+    if (err == (uint32_t)osErrorTimeout) {
         return status_timeout;
     }
     return status_success;

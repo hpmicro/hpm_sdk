@@ -601,7 +601,7 @@ static hpm_stat_t speaker_init_i2s_playback(uint32_t sample_rate, uint8_t audio_
     transfer.sample_rate = sample_rate;
     transfer.audio_depth = audio_depth;
     transfer.channel_num_per_frame = 2; /* non TDM mode, channel num fix to 2. */
-    transfer.channel_slot_mask = 0x3;   /* data from hpm_wav_decode API is 2 channels */
+    transfer.channel_slot_mask = 0x3;   /* 2 channels */
 
     s_speaker_i2s_mclk_hz = clock_get_frequency(TARGET_I2S_CLK_NAME);
 

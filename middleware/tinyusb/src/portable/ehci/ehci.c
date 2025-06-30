@@ -604,6 +604,7 @@ TU_ATTR_ALWAYS_INLINE static inline
 void port_connect_status_change_isr(uint8_t rhport) {
   // NOTE There is an sequence plug->unplug->…..-> plug if device is powering with pre-plugged device
   uint32_t debouncestable = 0;
+  uint32_t starttm;
   bool connection = false;
   bool portconnect;
   bool portchange;
@@ -630,7 +631,8 @@ void port_connect_status_change_isr(uint8_t rhport) {
       ehci_data.regs->status = EHCI_INT_MASK_PORT_CHANGE; // Acknowledge
     }
 
-    osal_task_delay(EHCI_DEBOUNCE_STEP);
+    starttm = hcd_frame_number(rhport);
+    while ( ( hcd_frame_number(rhport) - starttm ) < EHCI_DEBOUNCE_STEP ) {}
   }
 
   /** check if debounce ok */

@@ -438,6 +438,16 @@ void usbd_audio_open(uint8_t busid, uint8_t intf)
         s_speaker_feedback_tm = 0;
         /* setup first out ep read transfer */
         usbd_ep_start_read(busid, AUDIO_OUT_EP, (uint8_t *)&s_speaker_audio_buffer[0], AUDIO_OUT_PACKET);
+        /* send feedback samplerate */
+        if (s_usb_speed == USB_SPEED_HIGH) {
+            s_speaker_feedback_value = AUDIO_FREQ_TO_FEEDBACK_HS(s_speaker_sample_rate);
+            AUDIO_FEEDBACK_TO_BUF_HS(s_speaker_feedback_buffer, s_speaker_feedback_value);
+            usbd_ep_start_write(busid, AUDIO_OUT_FEEDBACK_EP, s_speaker_feedback_buffer, FEEDBACK_ENDP_PACKET_SIZE_HS);
+        } else {
+            s_speaker_feedback_value = AUDIO_FREQ_TO_FEEDBACK_FS(s_speaker_sample_rate);
+            AUDIO_FEEDBACK_TO_BUF_FS(s_speaker_feedback_buffer, s_speaker_feedback_value);
+            usbd_ep_start_write(busid, AUDIO_OUT_FEEDBACK_EP, s_speaker_feedback_buffer, FEEDBACK_ENDP_PACKET_SIZE_FS);
+        }
 #if defined(USING_DAO) && USING_DAO
         if (s_speaker_mute) {
             dao_stop(HPM_DAO);
@@ -568,15 +578,6 @@ void usbd_audio_set_sampling_freq(uint8_t busid, uint8_t ep, uint32_t sampling_f
         } else {
             USB_LOG_RAW("Init I2S Clock Fail!\r\n");
         }
-        if (s_usb_speed == USB_SPEED_HIGH) {
-            s_speaker_feedback_value = AUDIO_FREQ_TO_FEEDBACK_HS(sampling_freq);
-            AUDIO_FEEDBACK_TO_BUF_HS(s_speaker_feedback_buffer, s_speaker_feedback_value);
-            usbd_ep_start_write(busid, AUDIO_OUT_FEEDBACK_EP, s_speaker_feedback_buffer, FEEDBACK_ENDP_PACKET_SIZE_HS);
-        } else {
-            s_speaker_feedback_value = AUDIO_FREQ_TO_FEEDBACK_FS(sampling_freq);
-            AUDIO_FEEDBACK_TO_BUF_FS(s_speaker_feedback_buffer, s_speaker_feedback_value);
-            usbd_ep_start_write(busid, AUDIO_OUT_FEEDBACK_EP, s_speaker_feedback_buffer, FEEDBACK_ENDP_PACKET_SIZE_FS);
-        }
         s_speaker_play_flag = false;
         s_speaker_out_buffer_front = 0;
         s_speaker_out_buffer_rear = 0;
@@ -665,7 +666,7 @@ static hpm_stat_t speaker_init_i2s_playback(uint32_t sample_rate, uint8_t audio_
     transfer.sample_rate = sample_rate;
     transfer.audio_depth = audio_depth;
     transfer.channel_num_per_frame = 2; /* non TDM mode, channel num fix to 2. */
-    transfer.channel_slot_mask = 0x3;   /* data from hpm_wav_decode API is 2 channels */
+    transfer.channel_slot_mask = 0x3;   /* 2 channels */
 
     s_speaker_i2s_mclk_hz = clock_get_frequency(TARGET_I2S_CLK_NAME);
 

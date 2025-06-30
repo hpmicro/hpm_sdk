@@ -4,4 +4,5 @@
 sdk_ld_options("-lm")
 sdk_inc(.)
 add_subdirectory(encoder)
+add_subdirectory(drivers)
 add_subdirectory(core)

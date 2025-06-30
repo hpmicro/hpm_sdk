@@ -358,6 +358,16 @@ Pin Description
        - J19[5]
        - the pin that controls SPI slave CS
 
+- CLOCK REF Pin
+
+  .. list-table::
+     :header-rows: 1
+
+     * - Function
+       - Position
+     * - PD31
+       - J20[7]
+
 .. _hpm6800evk_known_issues:
 
 Board Know Issue

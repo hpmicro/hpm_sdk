@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -74,6 +74,10 @@ hpm_stat_t pllctl_set_refdiv(PLLCTL_Type *ptr, uint8_t pll, uint8_t div)
         ptr->PLL[pll].CFG0 = (ptr->PLL[pll].CFG0 & ~PLLCTL_PLL_CFG0_REFDIV_MASK)
             | PLLCTL_PLL_CFG0_REFDIV_SET(div);
         pllctl_pll_poweron(ptr, pll);
+
+        while (pllctl_pll_is_enabled(ptr, pll) && !pllctl_pll_is_locked(ptr, pll)) {
+            NOP();
+        }
     }
     return status_success;
 }
@@ -142,6 +146,10 @@ hpm_stat_t pllctl_init_int_pll_with_freq(PLLCTL_Type *ptr, uint8_t pll,
     ptr->PLL[pll].CFG2 = (ptr->PLL[pll].CFG2 & ~(PLLCTL_PLL_CFG2_FBDIV_INT_MASK)) | PLLCTL_PLL_CFG2_FBDIV_INT_SET(fbdiv);
 
     pllctl_pll_poweron(ptr, pll);
+
+    while (pllctl_pll_is_enabled(ptr, pll) && !pllctl_pll_is_locked(ptr, pll)) {
+        NOP();
+    }
     return status_success;
 }
 
@@ -214,6 +222,10 @@ hpm_stat_t pllctl_init_frac_pll_with_freq(PLLCTL_Type *ptr, uint8_t pll,
         | PLLCTL_PLL_FREQ_FBDIV_FRAC_SET(fbdiv) | PLLCTL_PLL_FREQ_FRAC_SET(frac);
 
     pllctl_pll_poweron(ptr, pll);
+
+    while (pllctl_pll_is_enabled(ptr, pll) && !pllctl_pll_is_locked(ptr, pll)) {
+        NOP();
+    }
     return status_success;
 }
 
@@ -245,3 +257,50 @@ uint32_t pllctl_get_pll_freq_in_hz(PLLCTL_Type *ptr, uint8_t pll)
     return freq;
 }
 
+hpm_stat_t pllctl_pll_ss_enable(PLLCTL_Type *ptr, uint8_t pll,
+                                                uint8_t spread, uint8_t div,
+                                                bool down_spread)
+{
+    if ((pll > (PLLCTL_SOC_PLL_MAX_COUNT - 1))
+            || (spread > (PLLCTL_PLL_CFG0_SS_SPREAD_MASK >> PLLCTL_PLL_CFG0_SS_SPREAD_SHIFT))
+            || (div > (PLLCTL_PLL_CFG0_SS_DIVVAL_MASK >> PLLCTL_PLL_CFG0_SS_DIVVAL_SHIFT))) {
+        return status_invalid_argument;
+    }
+
+    ptr->PLL[pll].CFG0 |= PLLCTL_PLL_CFG0_SS_DISABLE_SSCG_MASK | PLLCTL_PLL_CFG0_SS_RSTPTR_MASK | PLLCTL_PLL_CFG0_SS_RESET_MASK;
+
+    if (!(ptr->PLL[pll].CFG1 & PLLCTL_PLL_CFG1_PLLPD_SW_MASK)) {
+        pllctl_pll_powerdown(ptr, pll);
+    }
+
+    ptr->PLL[pll].CFG0 = (ptr->PLL[pll].CFG0
+        & ~(PLLCTL_PLL_CFG0_SS_SPREAD_MASK | PLLCTL_PLL_CFG0_SS_DIVVAL_MASK | PLLCTL_PLL_CFG0_SS_DOWNSPREAD_MASK))
+        | PLLCTL_PLL_CFG0_SS_SPREAD_SET(spread)
+        | PLLCTL_PLL_CFG0_SS_DIVVAL_SET(div)
+        | PLLCTL_PLL_CFG0_SS_DOWNSPREAD_SET(down_spread);
+
+    ptr->PLL[pll].CFG0 &= ~(PLLCTL_PLL_CFG0_SS_DISABLE_SSCG_MASK | PLLCTL_PLL_CFG0_SS_RESET_MASK);
+    pllctl_pll_poweron(ptr, pll);
+    while (pllctl_pll_is_enabled(ptr, pll) && !pllctl_pll_is_locked(ptr, pll)) {
+        NOP();
+    }
+    ptr->PLL[pll].CFG0 &= ~PLLCTL_PLL_CFG0_SS_RSTPTR_MASK;
+    return status_success;
+}
+
+hpm_stat_t pllctl_pll_setup_spread_spectrum(PLLCTL_Type *ptr, uint8_t pll,
+                                                uint8_t ss_range, uint32_t modulation_freq,
+                                                pllctl_ss_type ss_type)
+{
+    if ((pll > (PLLCTL_SOC_PLL_MAX_COUNT - 1))
+            || (ss_range > (PLLCTL_PLL_CFG0_SS_SPREAD_MASK >> PLLCTL_PLL_CFG0_SS_SPREAD_SHIFT))) {
+        return status_invalid_argument;
+    }
+    uint32_t ss_div = PLLCTL_SOC_PLL_REFCLK_FREQ / modulation_freq / 128 / PLLCTL_PLL_CFG0_REFDIV_GET(ptr->PLL[pll].CFG0);
+
+    if (ss_div > (PLLCTL_PLL_CFG0_SS_DIVVAL_MASK >> PLLCTL_PLL_CFG0_SS_DIVVAL_SHIFT)) {
+        return status_invalid_argument;
+    }
+
+    return pllctl_pll_ss_enable(ptr, pll, ss_range, ss_div, ss_type);
+}

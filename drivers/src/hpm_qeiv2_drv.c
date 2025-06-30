@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -8,6 +8,81 @@
 #include "hpm_qeiv2_drv.h"
 #include "hpm_enc_pos_drv.h"
 #include <assert.h>
+
+void qeiv2_config_mode(QEIV2_Type *qeiv2_x, qeiv2_mode_config_t *config)
+{
+    qeiv2_reset_counter(qeiv2_x);
+    qeiv2_set_work_mode(qeiv2_x, config->work_mode);
+    qeiv2_select_spd_tmr_register_content(qeiv2_x, config->spd_tmr_content_sel);
+    qeiv2_config_z_phase_counter_mode(qeiv2_x, config->z_count_inc_mode);
+    qeiv2_config_phmax_phparam(qeiv2_x, config->phcnt_max);
+    qeiv2_config_z_phase_calibration(qeiv2_x, config->phcnt_idx, config->z_cali_enable, config->z_cali_ignore_ab);
+    if (config->work_mode == qeiv2_work_mode_abz) {
+        qeiv2_config_abz_uvw_signal_edge(qeiv2_x, true, true, false, true, true);
+    } else if (config->work_mode == qeiv2_work_mode_pd) {
+        qeiv2_config_abz_uvw_signal_edge(qeiv2_x, true, false, false, true, true);
+    } else if (config->work_mode == qeiv2_work_mode_ud) {
+        qeiv2_config_abz_uvw_signal_edge(qeiv2_x, true, true, false, true, true);
+    } else if (config->work_mode == qeiv2_work_mode_uvw) {
+        qeiv2_config_abz_uvw_signal_edge(qeiv2_x, true, true, true, true, true);
+    } else {
+        ;
+    }
+    qeiv2_release_counter(qeiv2_x);
+}
+
+void qeiv2_config_h_phase(QEIV2_Type *qeiv2_x, qeiv2_h_phase_config_t *config)
+{
+    uint32_t tmp = (qeiv2_x->CR & ~(QEIV2_CR_H2FDIR0_MASK | QEIV2_CR_H2FDIR1_MASK | QEIV2_CR_H2RDIR0_MASK | QEIV2_CR_H2RDIR1_MASK
+                                | QEIV2_CR_HFDIR0_MASK | QEIV2_CR_HFDIR1_MASK | QEIV2_CR_HRDIR0_MASK | QEIV2_CR_HRDIR1_MASK));
+
+    if (config->h_fall_dir_forward) {
+        tmp |= QEIV2_CR_HFDIR0_MASK;
+    }
+    if (config->h_fall_dir_reverse) {
+        tmp |= QEIV2_CR_HFDIR1_MASK;
+    }
+    if (config->h_rise_dir_forward) {
+        tmp |= QEIV2_CR_HRDIR0_MASK;
+    }
+    if (config->h_rise_dir_reverse) {
+        tmp |= QEIV2_CR_HRDIR1_MASK;
+    }
+    if (config->h2_fall_dir_forward) {
+        tmp |= QEIV2_CR_H2FDIR0_MASK;
+    }
+    if (config->h2_fall_dir_reverse) {
+        tmp |= QEIV2_CR_H2FDIR1_MASK;
+    }
+    if (config->h2_rise_dir_forward) {
+        tmp |= QEIV2_CR_H2RDIR0_MASK;
+    }
+    if (config->h2_rise_dir_reverse) {
+        tmp |= QEIV2_CR_H2RDIR1_MASK;
+    }
+
+    qeiv2_x->CR = tmp;
+}
+
+void qeiv2_config_pause(QEIV2_Type *qeiv2_x, qeiv2_pause_config_t *config)
+{
+    uint32_t tmp = (qeiv2_x->CR & ~(QEIV2_CR_PAUSEPOS_MASK | QEIV2_CR_PAUSESPD_MASK | QEIV2_CR_PAUSEPH_MASK | QEIV2_CR_PAUSEZ_MASK));
+
+    if (config->pause_valid_pause_position) {
+        tmp |= QEIV2_CR_PAUSEPOS_MASK;
+    }
+    if (config->pause_valid_pause_spdcnt) {
+        tmp |= QEIV2_CR_PAUSESPD_MASK;
+    }
+    if (config->pause_valid_pause_phcnt) {
+        tmp |= QEIV2_CR_PAUSEPH_MASK;
+    }
+    if (config->pause_valid_pause_zcnt) {
+        tmp |= QEIV2_CR_PAUSEZ_MASK;
+    }
+
+    qeiv2_x->CR = tmp;
+}
 
 hpm_stat_t qeiv2_config_phcnt_cmp_match_condition(QEIV2_Type *qeiv2_x, qeiv2_phcnt_cmp_match_config_t *config)
 {
@@ -149,9 +224,9 @@ static int32_t qeiv2_convert_param(float param)
         ret = 0x8000;
     } else {
         if (param >= 0) {
-            ret = (param * 0x4000) + 0.5;
+            ret = (int32_t)((param * 0x4000) + 0.5);
         } else {
-            ret = (param * 0x4000) - 0.5;
+            ret = (int32_t)((param * 0x4000) - 0.5);
         }
     }
 

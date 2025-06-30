@@ -6,39 +6,66 @@ PWM输出
 概述
 ------
 
-**pwm** 工程主要演示了如何配置几种不同类型的pwm波形并通过MCU的引脚进行输出。
+本工程演示了如何配置几种不同类型的PWM波形并通过MCU的引脚进行输出。
 
-- 强制输出
+演示包括以下PWM输出类型：
 
-- 边沿对齐pwm
+- 强制输出（高/低电平）
+- 边沿对齐PWM
+- 带失效模式的边沿对齐PWM
+- 中心对齐PWM
+- 中心对齐互补PWM
+- 带抖动的边沿对齐PWM
 
-- 失效模式
+硬件要求
+--------
 
-- 中心对齐pwm
-
-- 中心对齐互补pwm
+- 双通道示波器
+- 用于调试输出的串口终端
+- 根据板子型号连接PWM输出引脚（参考 :ref:`板子信息 <board_resource>`）
 
 配置
 ------
 
-- 一个双通道示波器
-
-- 安装串口终端，查看 :ref:`板子信息 <board_resource>` 并配置串口终端参数
-
--  :ref:`PWM_P0和PWM_P1引脚 <board_resource>` 根据板子型号查看具体信息
+- 安装串口终端并根据 :ref:`板子信息 <board_resource>` 配置参数
+- 连接PWM输出引脚（PWM_P0和PWM_P1）到示波器
+- 连接示波器探头到PWM输出引脚
 
 运行现象
-------------
+--------
 
-- 上电后，通过示波器可依次观测到P0、P1输出高电平、低电平、边沿对齐PWM、中心对齐PWM、中心对齐互补PWM
+上电后，示波器将依次显示以下波形：
 
-- 串口打印如下信息:
+1. 强制输出：
+   - P0和P1输出高电平5秒
+   - P0和P1输出低电平5秒
 
+2. 边沿对齐PWM：
+   - P0：占空比从0%到100%再回到0%的目标波形
+   - P1：50%占空比的参考波形
+
+3. 带失效模式的边沿对齐PWM：
+   - 类似于边沿对齐PWM，但启用了失效保护
+   - 演示PWM在失效条件下的行为
+
+4. 中心对齐PWM：
+   - P0：占空比从0%到100%再回到0%的目标波形
+   - P1：50%占空比的参考波形
+
+5. 中心对齐互补PWM：
+   - P0和P1：占空比从0%到100%再回到0%的互补波形
+   - 互补信号之间包含死区时间
+
+6. 带抖动的边沿对齐PWM：
+   - P0：占空比从0%到100%再回到0%的目标波形
+   - P1：50%占空比的参考波形
+   - 包含抖动效果用于演示
+
+串口将显示每个测试的进度：
 
 .. code-block:: console
 
    pwm example
-
 
    >> Test force PWM output on P0 and P1
    Output high
@@ -59,10 +86,14 @@ PWM输出
    >> Generate central aligned waveform in pair
    Two waveforms will be generated in pair, PWM P0 and P1 are target
    waveforms whose duty cycle will be updated from 0 - 100 and back to 0
-   test done
 
+   >> Generate edge aligned jit waveform
+   Two waveforms will be generated, PWM P0 is the target waveform
+   whose duty cycle will be updated from 0 - 100 and back to 0; PWM P1 is a reference
+
+   test done
 
 .. note::
 
-   只依次输出一次PWM波形，如果需要再次观测波形，需要重新运行程序。
+   演示程序会依次运行所有PWM输出类型一次。如需再次观察波形，需要复位并重新运行程序。
 

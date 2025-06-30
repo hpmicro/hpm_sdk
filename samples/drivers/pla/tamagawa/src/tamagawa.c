@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -108,7 +108,7 @@ ATTR_RAMFUNC volatile uint16_t receive_buff[20];
 ATTR_RAMFUNC_WITH_ALIGNMENT(8) volatile uint32_t hall_buff[1];
 ATTR_PLACE_AT_AHBSRAM_WITH_ALIGNMENT(8) dma_linked_descriptor_t tmgw_dma_linked_descriptors[PLA_TMGW_DMA_LINK_NUM];
 void pla_tmgw_init(void);
-hpm_stat_t qei_positive_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, QEI_Type *qei_x, uint32_t src, uint8_t data_width, uint32_t size);
+hpm_stat_t qei_position_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, QEI_Type *qei_x, uint32_t src, uint8_t data_width, uint32_t size);
 void init_qei(void);
 hpm_stat_t tmgw_dma_chained_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, uint32_t src, uint32_t dst, uint8_t data_width, uint32_t size);
 void tamagawa_get_time(uint32_t *times);
@@ -1126,7 +1126,7 @@ void init_pwm_clk(void)
 
 }
 
-hpm_stat_t qei_positive_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, QEI_Type *qei_x, uint32_t src, uint8_t data_width, uint32_t size)
+hpm_stat_t qei_position_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, QEI_Type *qei_x, uint32_t src, uint8_t data_width, uint32_t size)
 {
     dma_handshake_config_t config;
     config.ch_index = ch_num;
@@ -1155,17 +1155,17 @@ void init_qei(void)
             qei_z_count_inc_on_z_input_assert, false);
     qei_phase_cmp_set(PLA_TMGW_QEI_BASE, pla_tmgw_qei_phcmp[tmgw_dev.run_cmd][0] - 0xc0000000,
             false, qei_rotation_dir_cmp_ignore);
-    qei_load_read_trigger_event_enable(PLA_TMGW_QEI_BASE, QEI_EVENT_POSITIVE_COMPARE_FLAG_MASK);
+    qei_load_read_trigger_event_enable(PLA_TMGW_QEI_BASE, QEI_EVENT_POSITION_COMPARE_FLAG_MASK);
     qei_set_work_mode(PLA_TMGW_QEI_BASE, qei_work_mode_ud);
-    qei_output_trigger_event_enable(PLA_TMGW_QEI_BASE, QEI_EVENT_POSITIVE_COMPARE_FLAG_MASK);
+    qei_output_trigger_event_enable(PLA_TMGW_QEI_BASE, QEI_EVENT_POSITION_COMPARE_FLAG_MASK);
     qei_counter_reset_release(PLA_TMGW_QEI_BASE);
     /**
      * @brief Construct a new qei dma request enable object
      *
      */
-    qei_dma_request_enable(PLA_TMGW_QEI_BASE, QEI_EVENT_POSITIVE_COMPARE_FLAG_MASK);
+    qei_dma_request_enable(PLA_TMGW_QEI_BASE, QEI_EVENT_POSITION_COMPARE_FLAG_MASK);
     dmamux_config(PLA_TMGW_QEI_DMAMUX, PLA_TMGW_QEI_DMAMUX_CH, PLA_TMGW_QEI_DMAREQ, true);
-    qei_positive_trigger_dma(PLA_TMGW_QEI_DMA,
+    qei_position_trigger_dma(PLA_TMGW_QEI_DMA,
                             PLA_TMGW_QEI_DMACH,
                             PLA_TMGW_QEI_BASE,
                             core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)&pla_tmgw_qei_phcmp[tmgw_dev.run_cmd][1]),

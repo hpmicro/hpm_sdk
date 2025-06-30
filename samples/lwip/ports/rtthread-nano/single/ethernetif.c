@@ -71,7 +71,7 @@
 #endif
 
 #define netifMTU                           (1500)
-#define netifINTERFACE_TASK_STACK_SIZE     (350)
+#define netifINTERFACE_TASK_STACK_SIZE     (1024)
 
 #if defined(__ENABLE_FREERTOS) && __ENABLE_FREERTOS
 #define netifINTERFACE_TASK_PRIORITY       (configMAX_PRIORITIES - 1)
@@ -153,7 +153,7 @@ static void low_level_init(struct netif *netif)
 *
 * @note Returning ERR_MEM here if a DMA queue of your MAC is full can lead to
 *       strange results. You might consider waiting for space in the DMA queue
-*       to become availale since the stack doesn't retry to send a packet
+*       to become available since the stack doesn't retry to send a packet
 *       dropped because of memory failure (except for the TCP timers).
 */
 

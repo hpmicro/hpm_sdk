@@ -185,11 +185,13 @@ int main(void)
         psfp_flow_meter_config.drop_on_yellow = false;
         psfp_flow_meter_config.mark_all_frames_red = true;
 
-        psfp_flow_meter_config.cir.integer = 2; /* 250Mbps */
+        psfp_flow_meter_config.cir.integer = 2; /* 200Mbps */
         psfp_flow_meter_config.cir.fract = 0;
+        psfp_flow_meter_config.cbs_in_bits = 2048;
 
-        psfp_flow_meter_config.eir.integer = 1; /* 125Mbps */
+        psfp_flow_meter_config.eir.integer = 1; /* 100Mbps */
         psfp_flow_meter_config.eir.fract = 0;
+        psfp_flow_meter_config.ebs_in_bits = 2048;
 
         tsw_psfp_set_flow_meter(BOARD_TSW, &psfp_flow_meter_config);
 

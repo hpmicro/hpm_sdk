@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 HPMicro
+ * Copyright (c) 2022-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -29,14 +29,13 @@
 #include "minimp3.h"
 
 #define CODEC_BUFF_CNT 3
-#define CODEC_BUFF_SIZE (1024 * 20)
+#define CODEC_BUFF_SIZE HPM_L1C_CACHELINE_ALIGN_UP(1024 * 20)
 
 #define WAV_FILE_TYPE 1
 #define MP3_FILE_TYPE 2
 
 static hpm_wav_ctrl *wav_ctrl_ptr;
-static uint8_t wav_header_buff[512] ATTR_ALIGN(4);
-
+ATTR_ALIGN(HPM_L1C_CACHELINE_SIZE) static uint8_t wav_header_buff[0x400];
 static mp3dec_t s_mp3d;
 static mp3dec_frame_info_t s_mp3dec_info;
 static uint32_t s_file_size;
@@ -47,7 +46,7 @@ static int16_t s_out_pcm[MINIMP3_MAX_SAMPLES_PER_FRAME];
 
 static uint8_t s_file_type;
 
-static uint8_t i2s_buff[CODEC_BUFF_CNT][CODEC_BUFF_SIZE] ATTR_ALIGN(HPM_L1C_CACHELINE_SIZE);
+ATTR_ALIGN(HPM_L1C_CACHELINE_SIZE) static uint8_t i2s_buff[CODEC_BUFF_CNT][CODEC_BUFF_SIZE];
 static volatile uint32_t i2s_buff_fill_size[CODEC_BUFF_CNT];
 static volatile uint8_t s_i2s_buff_front;
 static volatile uint8_t s_i2s_buff_rear;
@@ -64,7 +63,7 @@ static uint32_t s_track_id;
  *****************************************************************************************************************/
 static void lv_audio_codec_task(void);
 static void init_audio_player(char *fname);
-static void hpm_playback_wav(void);
+static void hpm_playback_wav_mp3(void);
 static bool is_i2s_buff_full(void);
 static bool is_i2s_buff_empty(void);
 
@@ -178,27 +177,28 @@ void set_init_audio_player_req(uint32_t id)
     s_track_id = id;
 }
 
-void caculate_music_time(uint32_t *data)
+hpm_stat_t calculate_music_time(char *file_name, uint32_t *tm_value)
 {
-    hpm_stat_t res;
-    uint8_t cnt;
-    char *file_name;
+    hpm_stat_t res = status_fail;
+    int32_t total_time;
 
-    cnt = sd_get_search_file_cnt();
-    for (uint8_t i = 0u; i < cnt; i++) {
-        file_name = sd_get_search_file_buff_ptr(i);
-        if (strstr(file_name, ".wav") != NULL) {
-            res = hpm_wav_decode_init(file_name, wav_ctrl_ptr, &wav_header_buff);
-            if (res == status_success) {
-                data[i] = wav_ctrl_ptr->sec_total;
-                wav_ctrl_ptr->func.close_file(wav_ctrl_ptr->func.file);
-            }
-        } else if (strstr(file_name, ".mp3") != NULL) {
-            data[i] = mp3_calc_tolal_time_second(file_name);
-        } else {
-            ;
+    if (strstr(file_name, ".wav") != NULL) {
+        res = hpm_wav_decode_init(file_name, wav_ctrl_ptr, &wav_header_buff);
+        if (res == status_success) {
+            *tm_value = wav_ctrl_ptr->sec_total;
+            wav_ctrl_ptr->func.close_file(wav_ctrl_ptr->func.file);
         }
+    } else if (strstr(file_name, ".mp3") != NULL) {
+        total_time = mp3_calc_total_time_second(file_name);
+        if (total_time > 0) {
+            *tm_value = (uint32_t)total_time;
+            res = status_success;
+        }
+    } else {
+        ;
     }
+
+    return res;
 }
 
 static void lv_audio_codec_task(void)
@@ -211,7 +211,7 @@ static void lv_audio_codec_task(void)
     }
 
     if (is_music_playing()) {
-        hpm_playback_wav();
+        hpm_playback_wav_mp3();
     }
 
     switch (s_ctrl_state) {
@@ -284,10 +284,14 @@ static void init_audio_player(char *fname)
             if (s_samples > 0) {
                 s_file_type = MP3_FILE_TYPE;
                 i2s_buff_fill_size[s_i2s_buff_rear] = mp3_convert_data_format((int32_t *)&i2s_buff[s_i2s_buff_rear][0], s_out_pcm, s_samples, s_mp3dec_info.channels);
+                if (l1c_dc_is_enabled()) {
+                    l1c_dc_writeback((uint32_t)i2s_buff[s_i2s_buff_rear], HPM_L1C_CACHELINE_ALIGN_UP(i2s_buff_fill_size[s_i2s_buff_rear]));
+                }
                 s_i2s_buff_rear++;
                 if (s_i2s_buff_rear >= CODEC_BUFF_CNT) {
                     s_i2s_buff_rear = 0u;
                 }
+
                 if (status_success != init_i2s_playback(s_mp3dec_info.hz, i2s_audio_depth_16_bits, s_mp3dec_info.channels)) {
                     printf("config i2s transfer failed.\n");
                 }
@@ -304,7 +308,7 @@ static void init_audio_player(char *fname)
     }
 }
 
-static void hpm_playback_wav(void)
+static void hpm_playback_wav_mp3(void)
 {
     uint8_t rear;
 
@@ -316,6 +320,9 @@ static void hpm_playback_wav(void)
         }
         if (s_file_type == WAV_FILE_TYPE) {
             i2s_buff_fill_size[rear] = hpm_wav_decode(wav_ctrl_ptr, i2s_buff[rear], CODEC_BUFF_SIZE);
+            if (l1c_dc_is_enabled()) {
+                l1c_dc_writeback((uint32_t)i2s_buff[rear], HPM_L1C_CACHELINE_ALIGN_UP(i2s_buff_fill_size[rear]));
+            }
             if (i2s_buff_fill_size[rear] < CODEC_BUFF_SIZE) {
                 s_playing_finished = true;
             }
@@ -324,15 +331,14 @@ static void hpm_playback_wav(void)
             s_samples = mp3dec_decode_frame(&s_mp3d, s_file_data_ptr + s_frame_bytes, s_file_size - s_frame_bytes, s_out_pcm, &s_mp3dec_info);
             if (s_samples > 0) {
                 i2s_buff_fill_size[rear] = mp3_convert_data_format((int32_t *)&i2s_buff[rear][0], s_out_pcm, s_samples, s_mp3dec_info.channels);
+                if (l1c_dc_is_enabled()) {
+                    l1c_dc_writeback((uint32_t)i2s_buff[rear], HPM_L1C_CACHELINE_ALIGN_UP(i2s_buff_fill_size[rear]));
+                }
             } else {
                 s_playing_finished = true;    /* finish */
             }
         } else {
             ;
-        }
-
-        if (l1c_dc_is_enabled()) {
-            l1c_dc_writeback((uint32_t)i2s_buff[rear], HPM_L1C_CACHELINE_ALIGN_UP(i2s_buff_fill_size[rear]));
         }
 
         if (!s_i2s_buff_first_tranferred) {

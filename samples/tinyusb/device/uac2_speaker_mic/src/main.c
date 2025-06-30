@@ -39,7 +39,11 @@
 #endif
 #include "hpm_dmamux_drv.h"
 #include "hpm_l1c_drv.h"
+#ifdef HPMSOC_HAS_HPMSDK_PDMLITE
+#include "hpm_pdmlite_drv.h"
+#else
 #include "hpm_pdm_drv.h"
+#endif
 
 /*
  * MACRO CONSTANT TYPEDEF PROTOTYPES

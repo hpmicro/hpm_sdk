@@ -8,7 +8,7 @@ define memory with size = 4G;
 define symbol UF2_BOOTLOADER_RESERVED_LENGTH = 0x20000;
 
 /* Regions */
-define region XPI0 = [from 0x80000000 + UF2_BOOTLOADER_RESERVED_LENGTH size _flash_size - UF2_BOOTLOADER_RESERVED_LENGTH];   /* XPI0 */
+define region FLASH = [from 0x80000000 + UF2_BOOTLOADER_RESERVED_LENGTH size _flash_size - UF2_BOOTLOADER_RESERVED_LENGTH];   /* FLASH */
 define region ILM   = [from 0x00000000 size 256k];        /* ILM */
 define region DLM   = [from 0x00080000 size 256k];        /* DLM */
 define region AXI_SRAM = [from 0x01080000 size 512k];    /* AXI SRAM0 */
@@ -69,7 +69,7 @@ do not initialize                           { section .backup_sram, section .bac
 initialize by copy with packing=auto        { section .noncacheable.init, section .noncacheable.init.*, section .fast_ram.init, section .fast_ram.init.* };
 initialize by copy with packing=none        { section .data, section .data.*, section .*.data, section .*.data.* };               // Static data sections
 initialize by copy with packing=auto        { section .sdata, section .sdata.* };
-initialize by copy with packing=auto        { section .fast, section .fast.*, section .*.fast, section .*.fast.* };               // "RAM Code" sections
+initialize by copy with packing=auto        { section .fast, section .fast.*, section .*.fast, section .*.fast.*, section .text.*nx* };               // "RAM Code" sections
 
 initialize by calling __SEGGER_init_heap    { block heap  };                                        // Init the heap if there is one
 initialize by calling __SEGGER_init_ctors   { block ctors };                                        // Call constructors for global objects which need to be constructed before reaching main (if any). Make sure this is done after setting up heap.
@@ -77,11 +77,11 @@ initialize by calling __SEGGER_init_ctors   { block ctors };                    
 initialize by copy { block vectors };
 
 /* Placement */
-place at start of XPI0 with fixed order   { section .uf2_signature };
-place in XPI0 with fixed order            { symbol _start };
+place at start of FLASH with fixed order   { section .uf2_signature };
+place in FLASH with fixed order            { symbol _start };
 
 place at start of ILM with fixed order    { block vectors };
-place in XPI0 with minimum size order     {
+place in FLASH with minimum size order     {
                                              block tdata_load,                        // Thread-local-storage load image
                                              block ctors,                             // Constructors block
                                              block dtors,                             // Destructors block
@@ -105,7 +105,7 @@ define access readonly { section .eh_frame, section .eh_frame.* };
 define access readonly { section .sdata.DW.* };
 
 place in ILM                              {
-                                           section .fast, section .fast.*,                       // "ramfunc" section
+                                           section .fast, section .fast.*, section .text.*nx*,                       // "ramfunc" section
                                           };
 
 place in AXI_SRAM                         { block framebuffer };

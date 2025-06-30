@@ -7,7 +7,7 @@
 define memory with size = 4G;
 
 /* Regions */
-define region XPI0 = [from 0x80000000 + 0x3000, size _flash_size - 0x3000];   /* XPI0 */
+define region FLASH = [from 0x80000000 + 0x3000, size _flash_size - 0x3000];   /* FLASH */
 define region ILM = [from 0x00000000 size 128k];    /* ILM */
 define region DLM = [from 0x00200000 size 128k];    /* DLM */
 define region NONCACHEABLE_RAM = [from 0x01200000 size 128k];
@@ -73,9 +73,9 @@ initialize by calling __SEGGER_init_ctors   { block ctors };                    
 initialize by copy                          { block vectors, block vectors_s };
 
 /* Placement */
-place at start of XPI0 with fixed order   { symbol _start };
+place at start of FLASH with fixed order   { symbol _start };
 place at start of ILM with fixed order    { block vectors, block vectors_s };
-place in XPI0 with minimum size order     {
+place in FLASH with minimum size order     {
                                              block tdata_load,                        // Thread-local-storage load image
                                              block ctors,                             // Constructors block
                                              block dtors,                             // Destructors block

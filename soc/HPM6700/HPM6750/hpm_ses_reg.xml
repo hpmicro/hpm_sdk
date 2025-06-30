@@ -3906,114 +3906,6 @@
     <Register name="PRIORITY_PRIORITY127" start="+0x1fc" size="0x4">
       <BitField name="PRIORITY" start="0" size="32"/>
     </Register>
-    <Register name="PRIORITY_PRIORITY128" start="+0x200" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY129" start="+0x204" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY130" start="+0x208" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY131" start="+0x20c" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY132" start="+0x210" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY133" start="+0x214" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY134" start="+0x218" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY135" start="+0x21c" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY136" start="+0x220" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY137" start="+0x224" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY138" start="+0x228" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY139" start="+0x22c" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY140" start="+0x230" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY141" start="+0x234" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY142" start="+0x238" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY143" start="+0x23c" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY144" start="+0x240" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY145" start="+0x244" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY146" start="+0x248" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY147" start="+0x24c" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY148" start="+0x250" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY149" start="+0x254" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY150" start="+0x258" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY151" start="+0x25c" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY152" start="+0x260" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY153" start="+0x264" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY154" start="+0x268" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY155" start="+0x26c" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY156" start="+0x270" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY157" start="+0x274" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY158" start="+0x278" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY159" start="+0x27c" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY160" start="+0x280" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY161" start="+0x284" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY162" start="+0x288" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
-    <Register name="PRIORITY_PRIORITY163" start="+0x28c" size="0x4">
-      <BitField name="PRIORITY" start="0" size="32"/>
-    </Register>
     <Register name="PENDING_PENDING0" start="+0x1000" size="0x4">
       <BitField name="INTERRUPT" start="0" size="32"/>
     </Register>
@@ -4024,18 +3916,6 @@
       <BitField name="INTERRUPT" start="0" size="32"/>
     </Register>
     <Register name="PENDING_PENDING3" start="+0x100c" size="0x4">
-      <BitField name="INTERRUPT" start="0" size="32"/>
-    </Register>
-    <Register name="TRIGGER_TRIGGER0" start="+0x1080" size="0x4">
-      <BitField name="INTERRUPT" start="0" size="32"/>
-    </Register>
-    <Register name="TRIGGER_TRIGGER1" start="+0x1084" size="0x4">
-      <BitField name="INTERRUPT" start="0" size="32"/>
-    </Register>
-    <Register name="TRIGGER_TRIGGER2" start="+0x1088" size="0x4">
-      <BitField name="INTERRUPT" start="0" size="32"/>
-    </Register>
-    <Register name="TRIGGER_TRIGGER3" start="+0x108c" size="0x4">
       <BitField name="INTERRUPT" start="0" size="32"/>
     </Register>
     <Register name="NUMBER" start="+0x1100" size="0x4">
@@ -4064,24 +3944,6 @@
     <Register name="TARGETINT_TARGET0_INTEN_INTEN5" start="+0x2014" size="0x4">
       <BitField name="INTERRUPT" start="0" size="32"/>
     </Register>
-    <Register name="TARGETINT_TARGET1_INTEN_INTEN0" start="+0x2080" size="0x4">
-      <BitField name="INTERRUPT" start="0" size="32"/>
-    </Register>
-    <Register name="TARGETINT_TARGET1_INTEN_INTEN1" start="+0x2084" size="0x4">
-      <BitField name="INTERRUPT" start="0" size="32"/>
-    </Register>
-    <Register name="TARGETINT_TARGET1_INTEN_INTEN2" start="+0x2088" size="0x4">
-      <BitField name="INTERRUPT" start="0" size="32"/>
-    </Register>
-    <Register name="TARGETINT_TARGET1_INTEN_INTEN3" start="+0x208c" size="0x4">
-      <BitField name="INTERRUPT" start="0" size="32"/>
-    </Register>
-    <Register name="TARGETINT_TARGET1_INTEN_INTEN4" start="+0x2090" size="0x4">
-      <BitField name="INTERRUPT" start="0" size="32"/>
-    </Register>
-    <Register name="TARGETINT_TARGET1_INTEN_INTEN5" start="+0x2094" size="0x4">
-      <BitField name="INTERRUPT" start="0" size="32"/>
-    </Register>
     <Register name="TARGETCONFIG_TARGET0_THRESHOLD" start="+0x200000" size="0x4">
       <BitField name="THRESHOLD" start="0" size="32"/>
     </Register>
@@ -4089,15 +3951,6 @@
       <BitField name="INTERRUPT_ID" start="0" size="10"/>
     </Register>
     <Register name="TARGETCONFIG_TARGET0_PPS" start="+0x200400" size="0x4">
-      <BitField name="PRIORITY_PREEMPTED" start="0" size="32"/>
-    </Register>
-    <Register name="TARGETCONFIG_TARGET1_THRESHOLD" start="+0x201000" size="0x4">
-      <BitField name="THRESHOLD" start="0" size="32"/>
-    </Register>
-    <Register name="TARGETCONFIG_TARGET1_CLAIM" start="+0x201004" size="0x4">
-      <BitField name="INTERRUPT_ID" start="0" size="10"/>
-    </Register>
-    <Register name="TARGETCONFIG_TARGET1_PPS" start="+0x201400" size="0x4">
       <BitField name="PRIORITY_PREEMPTED" start="0" size="32"/>
     </Register>
   </RegisterGroup>
@@ -7822,7 +7675,6 @@
       <BitField name="REG_EN" start="24" size="1"/>
       <BitField name="BANDGAP_EN" start="23" size="1"/>
       <BitField name="CAL_AVG_CFG" start="20" size="3"/>
-      <BitField name="PREEMPT_EN" start="14" size="1"/>
       <BitField name="CONV_PARAM" start="0" size="14"/>
     </Register>
     <Register name="ADC16_CONFIG1" start="+0x1460" size="0x4">

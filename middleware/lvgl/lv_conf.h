@@ -27,7 +27,9 @@
  *====================*/
 
 /*Color depth: 1 (I1), 8 (L8), 16 (RGB565), 24 (RGB888), 32 (XRGB8888)*/
+#ifndef LV_COLOR_DEPTH
 #define LV_COLOR_DEPTH 16
+#endif
 
 /*=========================
    STDLIB WRAPPER SETTINGS
@@ -115,7 +117,9 @@
  *========================*/
 
 /*Align the stride of all layers and images to this bytes*/
+#ifndef LV_DRAW_BUF_STRIDE_ALIGN
 #define LV_DRAW_BUF_STRIDE_ALIGN                64
+#endif
 
 /*Align the start address of draw_buf addresses to this bytes*/
 #ifndef LV_DRAW_BUF_ALIGN
@@ -1150,6 +1154,7 @@
 
 /*--END OF LV_CONF_H--*/
 
+
 #ifndef LV_USE_HPM_MODE_DIRECT
 #define LV_USE_HPM_MODE_DIRECT 0
 #endif
@@ -1161,6 +1166,11 @@
 #ifndef LV_USE_HPM_PDMA_WAIT_VSYNC
 #define LV_USE_HPM_PDMA_WAIT_VSYNC 0
 #endif
+
+#ifdef CONFIG_LV_HAS_EXTRA_CONFIG
+#include CONFIG_LV_HAS_EXTRA_CONFIG
+#endif
+
 #endif /*LV_CONF_H*/
 
 #endif /*End of "Content enable"*/

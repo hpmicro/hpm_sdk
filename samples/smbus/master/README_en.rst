@@ -6,19 +6,26 @@ i2c_smbus_master
 Overview
 --------
 
-The i2c_smbus_master sample project shows that I2C as smbus sends/receives data  at master mode. In this sample, the SMbus master will send data before receiving data, the check the send data ans receive data.
+
+- The **i2c_smbus_master** example project demonstrates the I2C interface operating in master mode as an SMBus controller for transmitting and receiving data. In this example, the SMBus master first sends data, then receives data, and compares the transmitted and received data for consistency.
+
+
+Tips
+----
+
+- For detailed documentation about SMBus components, please refer to :ref:`smbus <smbus>`
 
 Board Setting
 -------------
 
-connect  :ref:`I2C Pins <board_resource>`  on the two boards。
+- Connect the :ref:`I2C pins <board_resource>` between two boards.
 
 Running the example
 -------------------
 
-- Run slave first, and then run master.
+- Run the slave firmware first, followed by the master.
 
-- When the example runs successfully, the log would be seen on the terminal like:
+- When the project runs correctly, the serial terminal will display output similar to the following:
 
 
 .. code-block:: console

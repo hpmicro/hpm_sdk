@@ -1,25 +1,68 @@
 .. _fft_performance_test:
 
-FFT 性能测试
+FFT 性能测试示例
 ================
 
 概述
-------
+----
 
-fft性能测试主要测试了DSP、ffa以及软件进行fft和ifft变换的性能，包含如下计算单元
-- DSP FFT-RADIX-2
+本示例演示了 HPM SDK 中不同 FFT 实现方式的性能对比。示例测试了多种 FFT 算法的执行时间和精度，包括 DSP radix-4、DSP radix-2、Q31 DSP radix-2 以及 Q31 FFA FFT（如果支持）。
 
-- DSP FFT-RADIX-4
+功能说明
+--------
 
-- DSP IFFT-RADIX-4
+- 生成包含三个正弦波的合成信号
+- 测试不同 FFT 实现方式的性能：
+  - DSP radix-4 复数 FFT
+  - DSP radix-2 复数 FFT
+  - Q31 DSP radix-2 复数 FFT
+  - Q31 FFA FFT（如果支持）
+- 验证 FFT 和 IFFT 的精度
+- 测试不同点数（64-1024点）的性能
 
-- DSP IFFT-RADIX-2
+硬件要求
+--------
 
-- DSP FFT-RADIX-2 Q31
+- 测试FFA性能需要支持 FFA 功能的SOC（如 HPM63xx、HPM6Exx、HPM68xx、HPM6Pxx）
 
-- CPU Cooley-Tukey算法
+软件要求
+--------
 
-- Q格式和float32互转
+- HPM SDK
+- CMake 3.20.0 或更高版本
+- 交叉编译工具链
+
+构建说明
+--------
+
+1. 进入示例目录
+2. 创建构建目录并进入
+3. 运行 CMake 配置
+4. 编译项目
+
+运行说明
+--------
+
+1. 将编译生成的二进制文件烧录到开发板
+2. 通过串口查看输出结果
+3. 观察不同 FFT 实现方式的性能数据
+
+输出说明
+--------
+
+程序会输出以下信息：
+- CPU 频率
+- 不同 FFT 实现方式的执行时间
+- 频率分量的幅度
+- 精度验证结果
+
+注意事项
+--------
+
+- 确保开发板供电正常
+- 确保串口连接正确
+- 观察 LED 状态以确认程序运行状态
+- 不同开发板支持的 FFT 实现方式可能不同
 
 程序设计
 ------------
@@ -44,6 +87,12 @@ fft性能测试主要测试了DSP、ffa以及软件进行fft和ifft变换的性�
 - segger已经默认开启O3优化
 
 - hpm_math默认开启了对CPU Cooley-Tukey算法的计算优化，会增加空间占用
+
+- 复现本文档测试结果需要使用-DHPM_BUILD_TYPE=ram进行编译，这样可以确保DSP计算例程放置在紧耦合内存中以获得最佳性能。构建命令示例：
+
+  .. code-block:: shell
+
+     cmake -GNinja -DBOARD=hpm6750evkmini -DHPM_BUILD_TYPE=ram ..
 
 运行现象
 ------------

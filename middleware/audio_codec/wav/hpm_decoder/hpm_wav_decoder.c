@@ -7,15 +7,17 @@
 #include <string.h>
 #include "hpm_wav_codec.h"
 
-hpm_stat_t hpm_wav_decode_init(char *fname, hpm_wav_ctrl *wav_ctrl, uint8_t (*pbuf)[512])
+hpm_stat_t hpm_wav_decode_init(char *fname, hpm_wav_ctrl *wav_ctrl, uint8_t (*pbuf)[0x400])
 {
     hpm_stat_t res = status_success;
     uint32_t br = 0;
     uint16_t pos;
+    uint16_t datepos;
     res = wav_ctrl->func.search_file(fname, &wav_ctrl->func.file);
     if (res == status_success) {
-        wav_ctrl->func.read_file(wav_ctrl->func.file, 512, (uint8_t *)pbuf, &br);
-        for (pos = 0; pos < 512 - 4; pos++) {
+        wav_ctrl->func.read_file(wav_ctrl->func.file, 0x400, (uint8_t *)pbuf, &br);
+        memset(&wav_ctrl->wav_head, 0, sizeof(hpm_wav_head));
+        for (pos = 0; pos < 0x400 - 4; pos++) {
             switch ((*pbuf)[pos]) {
             case 'R':
                 if (((*pbuf)[pos + 1] == 'I') && ((*pbuf)[pos + 2] == 'F') && ((*pbuf)[pos + 3] == 'F')) {
@@ -30,6 +32,7 @@ hpm_stat_t hpm_wav_decode_init(char *fname, hpm_wav_ctrl *wav_ctrl, uint8_t (*pb
             case 'd':
                 if (((*pbuf)[pos + 1] == 'a') && ((*pbuf)[pos + 2] == 't') && ((*pbuf)[pos + 3] == 'a')) {
                     memcpy((uint8_t *)&wav_ctrl->wav_head.data_chunk, (uint8_t *)&((*pbuf)[pos]), sizeof(wav_data));
+                    datepos = pos + 8;
                 }
             break;
             default:
@@ -38,7 +41,7 @@ hpm_stat_t hpm_wav_decode_init(char *fname, hpm_wav_ctrl *wav_ctrl, uint8_t (*pb
         }
         if (wav_ctrl->wav_head.riff_chunk.riff_type == 0X45564157) { /** wav */
             if (wav_ctrl->wav_head.data_chunk.id == 0X61746164) { /** data */
-                wav_ctrl->data_pos = 28 + wav_ctrl->wav_head.fmt_chunk.size;
+                wav_ctrl->data_pos = datepos;
                 wav_ctrl->remaining_data = wav_ctrl->wav_head.data_chunk.size;
                 wav_ctrl->sec_total = wav_ctrl->wav_head.data_chunk.size / wav_ctrl->wav_head.fmt_chunk.byterate;
             } else {

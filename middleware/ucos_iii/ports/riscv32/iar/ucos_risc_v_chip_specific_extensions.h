@@ -11,7 +11,7 @@
 
 #include "hpm_csr_regs.h"
 
-#ifndef CONFIG_UCOS_III_TIMER_RESOURCE_NOT_MCHTMR
+#ifndef CONFIG_UCOS_III_TIMER_RESOURCE_GPTMR
 #define portasmHAS_MTIME                1
 #else
 #define portasmHAS_MTIME                0

@@ -40,6 +40,7 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 sdk_compile_definitions(-DNETX_TX_DATA_COPY_ALGORITHM=1)
 sdk_compile_definitions(-DNETX_RX_DATA_COPY_ALGORITHM=1)
+sdk_compile_definitions(-DNX_DRIVER_ENABLE_DEFERRED=1)
 
 # Increse buffer count to improve performance
 sdk_compile_definitions(-DENET_TX_BUFF_COUNT=60)

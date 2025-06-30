@@ -20,6 +20,12 @@ Board Setting
 
 * Connect a U disk to one of USB port on the development board with a USB Type-C to USB-A cable
 
+Software Setting
+-----------------------
+
+- In the CMakeLists.txt file, if sdk_compile_definitions(-DFATFS_ONLY_NONCACHEABLE_BUF=1) is commented, FATFS supports data transfer by using cacheable buffer. If sdk_compile_definitions(-DFATFS_ONLY_NONCACHEABLE_BUF=1) is uncommented, FATFS only supports data transfer by using noncacheable buffer.
+- When sdk_compile_definitions(-DFATFS_ONLY_NONCACHEABLE_BUF=1) is commented, it is recommended to align cache line size for the buffer address, otherwise it will affect transmission performance.
+
 Project Configuration
 ---------------------
 

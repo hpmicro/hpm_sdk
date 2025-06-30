@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -143,7 +143,7 @@ hpm_stat_t pwm_update_duty_edge_aligned(PWM_Type *pwm_x, uint8_t cmp_index, floa
     uint32_t reload;
 
     reload = pwm_get_reload_val(pwm_x);
-    target_cmp = (float)reload / 100 * (100.0f - duty);
+    target_cmp = (uint32_t)((float)reload / 100 * (100.0f - duty));
     if (target_cmp == reload) {
         target_cmp += 1;
     }
@@ -159,7 +159,7 @@ hpm_stat_t pwm_update_duty_central_aligned(PWM_Type *pwm_x, uint8_t cmp1_index,
     uint32_t reload;
 
     reload = pwm_get_reload_val(pwm_x);
-    target_cmp = (float)reload / 100 * duty;
+    target_cmp = (uint32_t)((float)reload / 100 * duty);
     pwm_update_raw_cmp_central_aligned(pwm_x, cmp1_index, cmp2_index, (reload - target_cmp) >> 1, (reload + target_cmp) >> 1);
     return status_success;
 }

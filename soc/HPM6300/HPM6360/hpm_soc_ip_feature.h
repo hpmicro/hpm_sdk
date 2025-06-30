@@ -7,6 +7,10 @@
 #ifndef HPM_SOC_IP_FEATURE_H
 #define HPM_SOC_IP_FEATURE_H
 
+/* PLIC related feature */
+#define HPM_IP_FEATURE_PLIC_HIGHEST_PRIORITY 7
+#define HPM_IP_FEATURE_PLIC_SUPPORT_S_MODE 1
+
 /* PWM related feature */
 #define HPM_IP_FEATURE_PWM_COUNTER_RESET 1
 

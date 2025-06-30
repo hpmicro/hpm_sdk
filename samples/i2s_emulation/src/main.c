@@ -289,7 +289,7 @@ static void record_start(void)
                 ready_play = true;
                 index_count = 0;
                 hpm_i2s_master_over_spi_rx_stop(&i2s_device);
-                printf("record size overflow, now exit..\n");
+                printf("recording size overflow, stopping and exiting now...\n");
                 break;
             }
         }
@@ -298,10 +298,13 @@ static void record_start(void)
 
 static void record_stop(void)
 {
-    hpm_i2s_master_over_spi_rx_stop(&i2s_device);
     if (index_count > 0) {
         ready_play = true;
+    } else {
+        printf("no recording process has been initiated. Please start the recording procedure to proceed...\n");
+        return;
     }
+    hpm_i2s_master_over_spi_rx_stop(&i2s_device);
     printf("record stop finish....\n");
 }
 

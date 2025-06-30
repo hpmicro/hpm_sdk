@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -18,7 +18,7 @@ void pwmv2_deinit(PWMV2_Type *pwm_x)
     pwm_x->IRQ_EN_BURSTEND = 0;
     pwm_x->IRQ_EN = 0;
     pwm_x->DMA_EN = 0;
-    pwm_x->IRQ_STS |= pwm_x->IRQ_STS;
+    pwm_x->IRQ_STS = pwm_x->IRQ_STS;
     pwm_x->IRQ_STS_CMP = 0;
     pwm_x->IRQ_STS_RELOAD = 0;
     pwm_x->IRQ_STS_CAP_POS = 0;

@@ -184,3 +184,41 @@ uint32_t gptmr_get_qei_phcnt(GPTMR_Type *ptr, gptmr_qei_ch_group_t ch_group)
     return qei_count;
 }
 #endif
+
+#if defined(HPM_IP_FEATURE_GPTMR_BURST_MODE) && (HPM_IP_FEATURE_GPTMR_BURST_MODE == 1)
+
+hpm_stat_t gptmr_channel_burst_mode_start_counter(GPTMR_Type *ptr, uint8_t ch_index, gptmr_burst_counter_mode_t mode)
+{
+    uint32_t target_burst_count, current_burst_count;
+    hpm_stat_t stat = status_success;
+    if (gptmr_channel_is_burst_mode(ptr, ch_index) == false) {
+        return status_invalid_argument;
+    }
+    switch (mode) {
+    case gptmr_burst_counter_restart:
+        /* enables next count: need disable counter first, then enable counter */
+        gptmr_stop_counter(ptr, ch_index);
+        /* reset counter to restart burst */
+        gptmr_channel_reset_count(ptr, ch_index);
+        gptmr_start_counter(ptr, ch_index);
+        break;
+
+    case gptmr_burst_counter_continue:
+        target_burst_count = gptmr_channel_get_target_burst_count(ptr, ch_index);
+        current_burst_count = gptmr_channel_get_current_burst_count(ptr, ch_index);
+        /* if current count reaches the configured limit, stop counter to reset state */
+        if (current_burst_count >= target_burst_count) {
+            gptmr_stop_counter(ptr, ch_index);
+            /* reset counter to restart burst */
+            gptmr_channel_reset_count(ptr, ch_index);
+        }
+        gptmr_start_counter(ptr, ch_index);
+        break;
+
+    default:
+        stat = status_invalid_argument;
+        break;
+    }
+    return stat;
+}
+#endif

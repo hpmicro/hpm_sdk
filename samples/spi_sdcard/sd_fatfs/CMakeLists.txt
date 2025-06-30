@@ -1,4 +1,4 @@
-# Copyright (c) 2023 HPMicro
+# Copyright (c) 2023-2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -23,4 +23,7 @@ sdk_inc(../common/adapt)
 
 sdk_app_src(../common/adapt/spi_sd_adapt.c)
 sdk_app_src(src/spi_sd_fatfs.c)
+
+sdk_iar_ld_options(--disable_relaxation) # A workaround to fix EWRISCV3.30 linking issue
+
 generate_ide_projects()

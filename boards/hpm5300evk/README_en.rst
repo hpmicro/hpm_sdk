@@ -349,6 +349,16 @@ Pin Description
      - P1[16]
      - the pin that controls SPI slave CS
 
+- CLOCK REF Pin
+
+  .. list-table::
+     :header-rows: 1
+
+     * - Function
+       - Position
+     * - PA30
+       - P1[15]
+
 .. _hpm5300evk_known_issues:
 
 Board Know Issue

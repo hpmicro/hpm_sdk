@@ -30,6 +30,7 @@ board:
       - board_sdram
       - board_i2s_pin
       - board_power_button
+      - board_clk_ref_pin
     excluded_samples:
       - samples/motor_ctrl/bldc_hfi
       - samples/trace_recorder/rtthread-nano

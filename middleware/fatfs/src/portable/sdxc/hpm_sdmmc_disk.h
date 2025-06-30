@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -11,9 +11,6 @@
 #include "ff.h"
 #include "diskio.h"
 
-
-
-#define MAX_ALIGNED_BUF_SIZE (16384U)
 
 #ifdef __cplusplus
 extern "C" {

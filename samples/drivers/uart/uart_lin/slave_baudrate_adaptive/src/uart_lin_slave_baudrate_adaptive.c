@@ -1,8 +1,18 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
+ */
+
+/**
+ * @brief UART LIN Slave with Baudrate Adaptive Example
+ *
+ * This example demonstrates LIN slave functionality with automatic baudrate detection:
+ * 1. Uses PLB to measure LIN break and sync field timing
+ * 2. Calculates actual baudrate from measured timing
+ * 3. Dynamically adjusts UART baudrate to match master's rate
+ * 4. Handles normal LIN slave operations after baudrate adaptation
  */
 
 #include "board.h"
@@ -11,55 +21,58 @@
 #include "hpm_uart_lin.h"
 #include "hpm_lin_clock_detection.h"
 
-/* PLB section */
-#define PLB_TRGM_IN_SRC BOARD_UART_LIN_PLB_TRGM_IN_SRC
-#define SIZE_LIN_CLK_LENGTH (240U)
-#define LIN_MAX_FREQ (20000U)
-ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(4) uint32_t src_buffer;
-uint32_t run_buffer[SIZE_LIN_CLK_LENGTH * 2];
-plb_lin_clock_t lin_clock_cfg;
+/* PLB Configuration Section */
+#define PLB_TRGM_IN_SRC BOARD_UART_LIN_PLB_TRGM_IN_SRC  /* PLB trigger input source */
+#define SIZE_LIN_CLK_LENGTH (240U)                       /* Buffer size for clock measurement */
+#define LIN_MAX_FREQ (20000U)                           /* Maximum supported LIN frequency */
+ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(4) uint32_t src_buffer;  /* DMA source buffer */
+uint32_t run_buffer[SIZE_LIN_CLK_LENGTH * 2];           /* Running buffer for clock detection */
+plb_lin_clock_t lin_clock_cfg;                          /* PLB configuration structure */
 
-/* uart section */
+/* UART Configuration Section */
 #define TEST_UART                           BOARD_UART_LIN
 #define TEST_UART_IRQ                       BOARD_UART_LIN_IRQ
 #define TEST_UART_CLK_NAME                  BOARD_UART_LIN_CLK_NAME
-#define TEST_SLAVE_RECEIVE_ID               (0x31) /* lin salve receive id*/
-#define TEST_SLAVE_RECEIVE_DATA_LENGTH      (8U)
-#define TEST_SLAVE_RECEIVE_ENHANCE_CHECKSUM (1)
-#define TEST_SLAVE_SEND_ID                  (0x30) /* lin salve sent id*/
-#define TEST_SLAVE_SEND_DATA_LENGTH         (8U)
-#define TEST_SLAVE_SEND_ENHANCE_CHECKSUM    (1)
-#define UART_LIN_FRANME_DATA_COUNT_MAX      (8U)
-uint8_t lin_pid;
-uint32_t uart_source_clk;
-uint32_t lin_baudrate;
-volatile bool lin_clk_detected_and_supported;
-volatile bool uart_lin_pid_parity_error;   /* pid parity error  */
-volatile bool uart_lin_receive_data_error; /* receive data: data count error or checksum error */
-volatile bool uart_lin_receive_complete;   /* receive data complete */
-volatile bool uart_lin_send_complete;      /* send data complete */
-volatile bool uart_lin_nonresponse_pid;    /* nonresponse pid */
-uint8_t receive_data[UART_LIN_FRANME_DATA_COUNT_MAX]; /* store the data to be sent */
-uint8_t send_data[UART_LIN_FRANME_DATA_COUNT_MAX];    /* store the received data */
+#define TEST_SLAVE_RECEIVE_ID               (0x31)      /* LIN slave receive ID */
+#define TEST_SLAVE_RECEIVE_DATA_LENGTH      (8U)        /* Length of received data */
+#define TEST_SLAVE_RECEIVE_ENHANCE_CHECKSUM (1)         /* Use enhanced checksum */
+#define TEST_SLAVE_SEND_ID                  (0x30)      /* LIN slave send ID */
+#define TEST_SLAVE_SEND_DATA_LENGTH         (8U)        /* Length of sent data */
+#define TEST_SLAVE_SEND_ENHANCE_CHECKSUM    (1)         /* Use enhanced checksum */
+#define UART_LIN_FRANME_DATA_COUNT_MAX      (8U)        /* Maximum data bytes in frame */
 
+/* Global Variables */
+uint8_t lin_pid;                                        /* Current LIN PID */
+uint32_t uart_source_clk;                               /* UART source clock frequency */
+uint32_t lin_baudrate;                                  /* Detected LIN baudrate */
+volatile bool lin_clk_detected_and_supported;           /* Flag for successful baudrate detection */
+volatile bool uart_lin_pid_parity_error;                /* Flag for PID parity error */
+volatile bool uart_lin_receive_data_error;              /* Flag for data reception error */
+volatile bool uart_lin_receive_complete;                /* Flag for reception completion */
+volatile bool uart_lin_send_complete;                   /* Flag for transmission completion */
+volatile bool uart_lin_nonresponse_pid;                 /* Flag for non-response PID */
+uint8_t receive_data[UART_LIN_FRANME_DATA_COUNT_MAX];  /* Buffer for received data */
+uint8_t send_data[UART_LIN_FRANME_DATA_COUNT_MAX];     /* Buffer for data to send */
+
+/* UART LIN Configuration */
 uart_lin_slave_config_t uart_lin_config = {
     .ptr = TEST_UART,
 };
 
-/* uart fifo control */
+/* UART FIFO Control for Break and Sync Detection */
 uart_fifo_ctrl_t fifo_ctrl_1 = {
     .tx_fifo_level = uart_tx_fifo_trg_not_full,
-    .rx_fifo_level = uart_rx_fifo_trg_not_empty,
+    .rx_fifo_level = uart_rx_fifo_trg_not_empty,       /* Single byte trigger for PID */
     .dma_enable = false,
     .fifo_enable = true,
     .reset_tx_fifo = false,
     .reset_rx_fifo = false,
 };
 
-/* uart fifo control */
+/* UART FIFO Control for Data Reception */
 uart_fifo_ctrl_t fifo_ctrl_2 = {
     .tx_fifo_level = uart_tx_fifo_trg_not_full,
-    .rx_fifo_level = uart_rx_fifo_trg_gt_three_quarters,
+    .rx_fifo_level = uart_rx_fifo_trg_gt_three_quarters, /* Multi-byte trigger for data */
     .dma_enable = false,
     .fifo_enable = true,
     .reset_tx_fifo = false,
@@ -68,25 +81,33 @@ uart_fifo_ctrl_t fifo_ctrl_2 = {
 
 void uart_lin_respond_pid(UART_Type *ptr, uint8_t pid);
 
+/**
+ * @brief UART Interrupt Handler
+ *
+ * Handles:
+ * 1. PID reception and response
+ * 2. Data transmission completion
+ * 3. Data reception completion
+ */
 SDK_DECLARE_EXT_ISR_M(TEST_UART_IRQ, uart_isr)
 void uart_isr(void)
 {
     volatile uint8_t irq_id = uart_get_irq_id(TEST_UART);
 
-    /* receive pid  */
+    /* Handle PID reception */
     if (irq_id == uart_intr_id_rx_data_avail) {
         uart_disable_irq(TEST_UART, uart_intr_rx_data_avail_or_timeout);
         lin_pid = uart_read_byte(TEST_UART);
         uart_lin_respond_pid(TEST_UART, lin_pid);
     }
 
-    /* sent data complete */
+    /* Handle transmission completion */
     if (irq_id == uart_intr_id_tx_slot_avail) {
         uart_lin_send_complete = true;
         uart_disable_irq(TEST_UART, uart_intr_tx_slot_avail);
     }
 
-    /* receive data complete */
+    /* Handle reception completion */
     if (irq_id == uart_intr_id_rx_timeout) {
         uart_enable_rx_function(TEST_UART, false);
         uart_disable_irq(TEST_UART, uart_intr_rx_data_avail_or_timeout);
@@ -98,13 +119,26 @@ void uart_isr(void)
     }
 }
 
+/**
+ * @brief DMA Interrupt Handler for PLB
+ *
+ * Processes DMA interrupts during baudrate detection
+ */
 SDK_DECLARE_EXT_ISR_M(BOARD_APP_HDMA_IRQ, dma_isr)
 void dma_isr(void)
 {
     plb_lin_dma_isr_function(&lin_clock_cfg);
 }
 
-/* plb callback */
+/**
+ * @brief PLB Callback Function
+ *
+ * Called when PLB completes baudrate measurement:
+ * 1. Updates UART baudrate based on measurement
+ * 2. Enables UART reception if baudrate is supported
+ *
+ * @param tick Measured clock ticks for baudrate calculation
+ */
 void callback(uint32_t tick)
 {
     lin_baudrate = tick;
@@ -115,34 +149,48 @@ void callback(uint32_t tick)
         printf("uart not supports baudrate: %d!!\n", lin_baudrate);
         return;
     }
-    uart_reset_rx_fifo(TEST_UART); /* reset rx fifo */
-    uart_enable_rx_function(TEST_UART, true); /* enable rx function */
-    uart_enable_irq(TEST_UART, uart_intr_rx_data_avail_or_timeout); /* enable rx fifo interrupt */
+    uart_reset_rx_fifo(TEST_UART);                      /* Reset RX FIFO */
+    uart_enable_rx_function(TEST_UART, true);           /* Enable RX function */
+    uart_enable_irq(TEST_UART, uart_intr_rx_data_avail_or_timeout); /* Enable RX interrupt */
 }
 
+/**
+ * @brief Process Received PID and Respond
+ *
+ * 1. Verifies PID parity
+ * 2. Configures response based on ID:
+ *    - For receive ID: Prepares for data reception
+ *    - For send ID: Prepares and sends response data
+ *
+ * @param ptr UART peripheral pointer
+ * @param pid Received PID
+ */
 void uart_lin_respond_pid(UART_Type *ptr, uint8_t pid)
 {
     uint8_t id = pid & 0x3f;
 
+    /* Verify PID parity */
     if (pid != hpm_uart_lin_calculate_protected_id(id)) {
-        uart_enable_rx_function(TEST_UART, false); /* stop receive */
+        uart_enable_rx_function(TEST_UART, false);      /* Stop reception */
         uart_lin_pid_parity_error = true;
         return;
     }
 
-    /* change rx fifo threshold, using rx time out interrupt to receive data */
+    /* Configure FIFO for data reception */
     uart_config_fifo_ctrl(ptr, &fifo_ctrl_2);
 
     switch (id) {
     case TEST_SLAVE_RECEIVE_ID:
-        uart_enable_irq(ptr, uart_intr_rx_data_avail_or_timeout); /* continue to receive data by rx timeout */
+        /* Configure for data reception */
+        uart_enable_irq(ptr, uart_intr_rx_data_avail_or_timeout);
         uart_lin_config.pid = pid;
         uart_lin_config.data.buff = receive_data;
         uart_lin_config.data.length = TEST_SLAVE_RECEIVE_DATA_LENGTH;
         uart_lin_config.data.enhance_checksum = TEST_SLAVE_RECEIVE_ENHANCE_CHECKSUM;
         break;
     case TEST_SLAVE_SEND_ID:
-        uart_enable_rx_function(TEST_UART, false); /* stop receive */
+        /* Prepare and send response data */
+        uart_enable_rx_function(TEST_UART, false);
         uint8_t data[TEST_SLAVE_SEND_DATA_LENGTH] = {0x7, 0x6, 0x5, 0x4, 0x3, 0x2, 0x1, 0x0};
         memcpy(send_data, data, TEST_SLAVE_SEND_DATA_LENGTH);
         uart_lin_config.pid = pid;
@@ -150,28 +198,38 @@ void uart_lin_respond_pid(UART_Type *ptr, uint8_t pid)
         uart_lin_config.data.length = TEST_SLAVE_SEND_DATA_LENGTH;
         uart_lin_config.data.enhance_checksum = TEST_SLAVE_SEND_ENHANCE_CHECKSUM;
         hpm_uart_lin_slave_send_data(&uart_lin_config);
-        uart_enable_irq(ptr, uart_intr_tx_slot_avail); /* enable sent fifo empty interrupt */
+        uart_enable_irq(ptr, uart_intr_tx_slot_avail);
         break;
     default:
-        uart_enable_rx_function(TEST_UART, false); /* stop receive */
+        /* Handle unknown ID */
+        uart_enable_rx_function(TEST_UART, false);
         uart_lin_nonresponse_pid = true;
         return;
     }
 }
 
+/**
+ * @brief Main Function
+ *
+ * Program flow:
+ * 1. Initializes UART and PLB for baudrate detection
+ * 2. Waits for PLB to detect LIN break and sync
+ * 3. Processes LIN frames after baudrate adaptation
+ */
 int main(void)
 {
+    /* Initialize hardware */
     board_init();
     board_init_uart(TEST_UART);
     init_plb_lin_pins();
     printf("Test uart lin slave baudrate adaptive example\n");
 
-    /* uart initialization */
+    /* Initialize UART with default baudrate */
     uart_config_t config = {0};
     uart_default_config(TEST_UART, &config);
     uart_source_clk = clock_get_frequency(TEST_UART_CLK_NAME);
     config.src_freq_in_hz = uart_source_clk;
-    config.baudrate = 19200; /* an initialization baud rate */
+    config.baudrate = 19200;                            /* Initial baudrate */
     config.rx_fifo_level = uart_rx_fifo_trg_not_empty;
     config.rx_enable = false;
     if (status_success != uart_init(TEST_UART, &config)) {
@@ -179,9 +237,9 @@ int main(void)
     }
     intc_m_enable_irq_with_priority(TEST_UART_IRQ, 3);
 
-    /* PLB detect lin baudrate uart initialization */
+    /* Initialize PLB for baudrate detection */
     lin_clock_cfg.lin_max_freq = LIN_MAX_FREQ;
-    lin_clock_cfg.clock_error = 0.1; /* baudrate tolerance */
+    lin_clock_cfg.clock_error = 0.1;                    /* Baudrate tolerance */
     lin_clock_cfg.freq = clock_get_frequency(BOARD_PLB_PWM_CLOCK_NAME);
     lin_clock_cfg.device.dma = BOARD_APP_HDMA;
     lin_clock_cfg.device.dma_chn = 4;
@@ -201,8 +259,9 @@ int main(void)
     plb_lin_clock_detection_init(&lin_clock_cfg);
     intc_m_enable_irq_with_priority(BOARD_APP_HDMA_IRQ, 2);
 
+    /* Main processing loop */
     while (1) {
-        /* waiting for plb to detect lin break and 0x55 signal */
+        /* Wait for baudrate detection */
         while (!lin_clk_detected_and_supported) {
         }
 
@@ -213,6 +272,7 @@ int main(void)
         uart_reset_rx_fifo(TEST_UART); /* reset rx fifo */
         uart_config_fifo_ctrl(TEST_UART, &fifo_ctrl_1); /* change rx fifo threshold */
 
+        /* Handle reception completion */
         if (uart_lin_receive_complete) {
             uart_lin_receive_complete = false;
             printf("uart lin receive ID: 0x%x\n", uart_lin_config.pid & 0x3f);
@@ -226,6 +286,7 @@ int main(void)
             }
         }
 
+        /* Handle transmission completion */
         if (uart_lin_send_complete) {
             uart_lin_send_complete = false;
             printf("uart lin receive ID: 0x%x\n", uart_lin_config.pid & 0x3f);
@@ -239,6 +300,7 @@ int main(void)
             }
         }
 
+        /* Handle error conditions */
         if (uart_lin_pid_parity_error) {
             uart_lin_pid_parity_error = false;
             printf("uart lin pid parity error\n");

@@ -269,6 +269,16 @@ HPM6200EVK提供了一系列HPM6200系列微控制器特色外设的接口，包
        - P1[7]
        - 控制SPI从机CS的引脚
 
+- CLOCK REF引脚
+
+.. list-table::
+   :header-rows: 1
+
+   * - 功能
+     - 位置
+   * - PA14
+     - J1[7]
+
 .. _hpm6200evk_known_issues:
 
 开发板已知问题

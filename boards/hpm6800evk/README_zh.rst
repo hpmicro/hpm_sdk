@@ -348,6 +348,16 @@ HPM6800是一款主频达600MHz的单核微控制器。该芯片拥有最大1M�
        - J19[5]
        - 控制SPI从机CS的引脚
 
+- CLOCK REF引脚
+
+.. list-table::
+   :header-rows: 1
+
+   * - 功能
+     - 位置
+   * - PD31
+     - J20[7]
+
 .. _hpm6800evk_known_issues:
 
 开发板已知问题

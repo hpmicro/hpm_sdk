@@ -113,11 +113,19 @@ const struct usb_descriptor cdc_descriptor = {
 static uint8_t rndis_mac[6] = { 0x20, 0x89, 0x84, 0x6A, 0x96, 0xAA };
 
 usb_osal_sem_t sema_rndis_data;
+usb_osal_sem_t sema_rndis_send_done;
+
 void usbd_rndis_data_recv_done(uint32_t len)
 {
     (void) len;
 
     usb_osal_sem_give(sema_rndis_data);
+}
+
+void usbd_rndis_data_send_done(uint32_t len)
+{
+    (void)len;
+    usb_osal_sem_give(sema_rndis_send_done);
 }
 
 static void usbd_event_handler(uint8_t busid, uint8_t event)
@@ -154,6 +162,8 @@ void cdc_rndis_init(uint8_t busid, uint32_t reg_base)
 {
     sema_rndis_data = usb_osal_sem_create(0);
     assert(sema_rndis_data != NULL);
+    sema_rndis_send_done = usb_osal_sem_create(0);
+    assert(sema_rndis_send_done != NULL);
     usbd_desc_register(busid, &cdc_descriptor);
     usbd_add_interface(busid, usbd_rndis_init_intf(&intf0, CDC_OUT_EP, CDC_IN_EP, CDC_INT_EP, rndis_mac));
     usbd_add_interface(busid, usbd_rndis_init_intf(&intf1, CDC_OUT_EP, CDC_IN_EP, CDC_INT_EP, rndis_mac));

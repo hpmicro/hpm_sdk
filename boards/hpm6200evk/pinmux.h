@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -43,7 +43,7 @@ void init_motor_over_zero_sensorless_adc_pins(void);
 void init_tamper_pins(void);
 void init_uart_break_signal_pin(void);
 void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp);
-
+void init_clk_ref_pins(void);
 #ifdef __cplusplus
 }
 #endif

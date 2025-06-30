@@ -52,8 +52,8 @@ int main(void)
     gptmr_qei_config_t qei_config;
 
     board_init();
-    clock_add_to_group(APP_BOARD_GPTMR_CLOCK, 0);
-    clock_add_to_group(APP_BOARD_GPTMR_QEI_CLOCK, 0);
+    board_init_gptmr_clock(APP_BOARD_GPTMR);
+    board_init_gptmr_clock(APP_BOARD_GPTMR_QEI);
     board_init_gptmr_channel_pin(APP_BOARD_GPTMR_QEI, APP_BOARD_GPTMR_QEI_CH_GROUP, false);
     board_init_gptmr_channel_pin(APP_BOARD_GPTMR_QEI, APP_BOARD_GPTMR_QEI_CH_GROUP + 1, false);
     show_help();

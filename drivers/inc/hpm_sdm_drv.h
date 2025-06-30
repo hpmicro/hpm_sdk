@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -383,7 +383,7 @@ static inline uint8_t sdm_get_channel_fifo_data_count(SDM_Type *ptr, uint8_t ch)
 }
 
 /**
- * @brief sdm get channel filter output data in fifo
+ * @brief sdm get channel filter output 32bit data in fifo
  *
  * @param ptr SDM base address
  * @param ch channel index
@@ -392,6 +392,32 @@ static inline uint8_t sdm_get_channel_fifo_data_count(SDM_Type *ptr, uint8_t ch)
 static inline int32_t sdm_get_channel_fifo_data(SDM_Type *ptr, uint8_t ch)
 {
     return ptr->CH[ch].SDFIFO;
+}
+
+/**
+ * @brief sdm get channel filter output 16bit data in fifo
+ *
+ * @note if outputting 16bit data, the data is located at the high bit of the register
+ *
+ * @param ptr SDM base address
+ * @param ch channel index
+ * @return int16_t data
+ */
+static inline int16_t sdm_get_channel_fifo_16bit_data(SDM_Type *ptr, uint8_t ch)
+{
+    return (int16_t)((ptr->CH[ch].SDFIFO) >> 16);
+}
+
+/**
+ * @brief sdm get channel filter output data type
+ *
+ * @param ptr SDM base address
+ * @param ch channel index
+ * @return bool true: 32bit data; false: 16bit data
+ */
+static inline bool sdm_output_is_32bit_data(SDM_Type *ptr, uint8_t ch)
+{
+    return SDM_CH_SDCTRLP_D32_GET(ptr->CH[ch].SDCTRLP);
 }
 
 /**
@@ -548,11 +574,14 @@ void sdm_config_channel_comparator(SDM_Type *ptr,  uint8_t ch_index, sdm_compara
 /**
  * @brief sdm receive one filter data
  *
+ * @note the data is read form 32bit register. if set data_len_in_bytes = 2;
+ * it will return higher 2 bytes data from register.
+ *
  * @param ptr SDM base address
  * @param ch_index channel index
  * @param using_fifo true for getting data from fifo, false for getting data from register
  * @param data data buff
- * @param data_len_in_bytes output data len in bytes
+ * @param data_len_in_bytes output data len in bytes, support 4 bytes or 2 bytes
  * @retval hpm_stat_t status_success only if it succeeds
  */
 hpm_stat_t sdm_receive_one_filter_data(SDM_Type *ptr, uint8_t ch_index, bool using_fifo, int8_t *data, uint8_t data_len_in_bytes);
@@ -560,12 +589,15 @@ hpm_stat_t sdm_receive_one_filter_data(SDM_Type *ptr, uint8_t ch_index, bool usi
 /**
  * @brief sdm receive filter data
  *
+ * @note the data is read form 32bit register. if set data_len_in_bytes = 2;
+ * it will return higher 2 bytes data from register.
+ *
  * @param ptr SDM base address
  * @param ch_index channel index
  * @param using_fifo true for getting data from fifo, false for getting data from register
  * @param data data buff
  * @param count data count
- * @param data_len_in_bytes output data len in bytes
+ * @param data_len_in_bytes output data len in bytes, support 4 bytes or 2 bytes
  * @retval hpm_stat_t status_success only if it succeeds
  */
 hpm_stat_t sdm_receive_filter_data(SDM_Type *ptr, uint8_t ch_index, bool using_fifo, int8_t *data, uint32_t count, uint8_t data_len_in_bytes);

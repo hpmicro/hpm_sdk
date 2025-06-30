@@ -6,7 +6,7 @@ Host Dual Port
 概述
 ------
 
-本示例工程展示USB Host 2个usb口同时工作，支持HID（Keyboard和Mouse）和MSC设备（注意：U盘格式化的 `分配单元大小` 不能超过128KB，建议格式化参数为exFAT/128KB）。
+本示例工程展示USB Host 2个usb口同时工作，支持HID（Keyboard和Mouse）和MSC设备（注意：U盘格式化的 `文件系统` 为FAT、FAT32或exFAT）。
 
   .. image:: ../../doc/UDisk_Format.png
      :alt: UDisk_Format
@@ -19,6 +19,12 @@ Host Dual Port
 - 使用USB Type-C转Type-A线缆线连接开发板USB0端口
 
 - 使用USB Type-C转Type-A线缆线连接开发板USB1端口
+
+软件配置
+------------
+
+- 在CMakeLists.txt文件中，若未开启sdk_compile_definitions(-DFATFS_ONLY_NONCACHEABLE_BUF=1)，则FATFS支持Cacheable Buffer的数据传输；若开启sdk_compile_definitions(-DFATFS_ONLY_NONCACHEABLE_BUF=1)，则FATFS仅支持Noncacheable Buffer的数据传输。
+- 当未开启sdk_compile_definitions(-DFATFS_ONLY_NONCACHEABLE_BUF=1)时，建议传输数据的Buffer地址CacheLine对齐，否则会影响传输性能。
 
 运行现象
 ------------

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -381,6 +381,10 @@
 #define BOARD_FREERTOS_TIMER_IRQ      IRQn_GPTMR2
 #define BOARD_FREERTOS_TIMER_CLK_NAME clock_gptmr2
 
+#define BOARD_FREERTOS_TICK_SRC_PWM          HPM_PWM0
+#define BOARD_FREERTOS_TICK_SRC_PWM_IRQ      IRQn_PWM0
+#define BOARD_FREERTOS_TICK_SRC_PWM_CLK_NAME clock_mot0
+
 #define BOARD_FREERTOS_LOWPOWER_TIMER          HPM_PTMR
 #define BOARD_FREERTOS_LOWPOWER_TIMER_CHANNEL  1
 #define BOARD_FREERTOS_LOWPOWER_TIMER_IRQ      IRQn_PTMR
@@ -425,6 +429,13 @@
 #define BOARD_GPTMR_I2S_FINSH_IRQ      IRQn_GPTMR0
 #define BOARD_GPTMR_I2S_FINSH_CHANNEL  2
 #define BOARD_GPTMR_I2S_FINSH_CLK_NAME clock_gptmr0
+
+#define BOARD_APP_CLK_REF_PIN_NAME "P1[15] (PA30)"
+#define BOARD_APP_CLK_REF_CLK_NAME clock_ref0
+#define BOARD_APP_CLK_REF_SRC_NAME clk_src_pll1_clk1
+#define BOARD_APP_PLLCTLV2_TEST_PLL pllctlv2_pll1
+#define BOARD_APP_PLLCTLV2_TEST_PLL_CLK pllctlv2_clk1
+#define BOARD_APP_PLLCTLV2_TEST_PLL_NAME clk_pll1clk1
 
 #if defined(__cplusplus)
 extern "C" {
@@ -479,6 +490,8 @@ void board_init_adc_qeiv2_pins(void);
 void board_lin_transceiver_control(bool enable);
 
 void board_init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp);
+void board_init_clk_ref_pin(void);
+uint32_t board_init_gptmr_clock(GPTMR_Type *ptr);
 
 #if defined(__cplusplus)
 }

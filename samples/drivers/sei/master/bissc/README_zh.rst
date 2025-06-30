@@ -6,7 +6,7 @@ SEI Master: Connect BISSC Encoder
 概述
 ------
 
-该工程主要演示通过SEI接口获取BISSC编码器位置数据，自动计算采样/更新延时，并通过串口将信息打印出来。
+该工程主要演示通过SEI接口获取BISSC编码器位置数据。通过锁存采样时刻和锁存数据的边沿时刻来实现总线延时检测，并自动计算出合理的采样点。此外，也会自动计算出数据采样时刻和更新时刻延时，并通过串口将信息打印出来。
 
 配置
 ------
@@ -43,8 +43,12 @@ SEI Master: Connect BISSC Encoder
    ----------------------------------------------------------------------
    SEI master BiSS_C sample
    Started sei engine!
-   MT:0xa5a, ST:0x5a500000, EW:0x3, CRC:0x799175e, sample_tm:330604, update_tm:337085, TimeDelay:360*0.1us
-   MT:0xa5a, ST:0x5a600000, EW:0x3, CRC:0x799174a, sample_tm:36330604, update_tm:36337085, TimeDelay:360*0.1us
+   delta: 1280 ns
+   MT:0xa5a, ST:0x5a500000, EW:0x3, CRC:0x799175e, sample_tm:365810, update_tm:373011, TimeDelay:360*0.1us
+   delta: 1280 ns
+   MT:0xa5a, ST:0x5a600000, EW:0x3, CRC:0x799174a, sample_tm:40365810, update_tm:40373011, TimeDelay:360*0.1us
+   delta: 1280 ns
+   rx point changed!
    MT:0xa5a, ST:0x5a700000, EW:0x3, CRC:0x7991746, sample_tm:72330604, update_tm:72337085, TimeDelay:360*0.1us
    MT:0xa5a, ST:0x5a800000, EW:0x3, CRC:0x7991701, sample_tm:108330604, update_tm:108337085, TimeDelay:360*0.1us
    MT:0xa5a, ST:0x5a900000, EW:0x3, CRC:0x799170d, sample_tm:144330604, update_tm:144337085, TimeDelay:360*0.1us

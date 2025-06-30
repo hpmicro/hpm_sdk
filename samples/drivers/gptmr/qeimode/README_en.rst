@@ -13,7 +13,7 @@ Board Setting
 
 - Use two capture channels of GPTMR, with ch0 and ch1 in one group and ch2 and ch3 in the other group.
 
-- Connect the encoded signal to the capture pin of GPTMR, with 2 channels.
+- Connect the encoded signal to the capture pin of GPTMR, with 2 channels, please ref to :ref:`Pin Description <board_resource>`.
 
 Running the example
 -------------------

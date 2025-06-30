@@ -112,9 +112,9 @@ const struct usb_descriptor cdc_descriptor = {
     .other_speed_descriptor_callback = other_speed_config_descriptor_callback,
     .string_descriptor_callback = string_descriptor_callback,
 };
-USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t read_buffer[512];
+USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t read_buffer[2][512];
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t write_buffer[2048];
-
+volatile uint8_t read_buffer_index;
 volatile bool dtr_enable;
 usb_osal_sem_t semaphore_tx_done;
 
@@ -133,7 +133,8 @@ static void usbd_event_handler(uint8_t busid, uint8_t event)
         break;
     case USBD_EVENT_CONFIGURED:
         /* setup first out ep read transfer */
-        usbd_ep_start_read(busid, CDC_OUT_EP, read_buffer, usbd_get_ep_mps(busid, CDC_OUT_EP));
+        read_buffer_index = 0;
+        usbd_ep_start_read(busid, CDC_OUT_EP, &read_buffer[0][0], usbd_get_ep_mps(busid, CDC_OUT_EP));
         break;
     case USBD_EVENT_SET_REMOTE_WAKEUP:
         break;
@@ -147,10 +148,12 @@ static void usbd_event_handler(uint8_t busid, uint8_t event)
 
 void usbd_cdc_acm_bulk_out(uint8_t busid, uint8_t ep, uint32_t nbytes)
 {
+    uint8_t index = read_buffer_index;
     USB_LOG_RAW("actual out len:%d\r\n", nbytes);
 
-    usbd_ep_start_read(busid, ep, read_buffer, usbd_get_ep_mps(busid, ep));
-    usbd_ep_start_write(busid, CDC_IN_EP, read_buffer, nbytes);
+    read_buffer_index = (index == 0) ? 1 : 0;
+    usbd_ep_start_write(busid, CDC_IN_EP, &read_buffer[index][0], nbytes);
+    usbd_ep_start_read(busid, ep, &read_buffer[read_buffer_index][0], usbd_get_ep_mps(busid, ep));
 }
 
 void usbd_cdc_acm_bulk_in(uint8_t busid, uint8_t ep, uint32_t nbytes)

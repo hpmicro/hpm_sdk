@@ -72,11 +72,11 @@ typedef struct {
  *
  * @param[in] fname file path and name string
  * @param[inout] wav_ctrl @ref hpm_wav_ctrl
- * @param[in] pbuf buffer, minimum 512 bytes
+ * @param[in] pbuf buffer, minimum 0x400 bytes
  *
  * @return @ref hpm_stat_t
  */
-hpm_stat_t hpm_wav_decode_init(char *fname, hpm_wav_ctrl *wav_ctrl, uint8_t (*pbuf)[512]);
+hpm_stat_t hpm_wav_decode_init(char *fname, hpm_wav_ctrl *wav_ctrl, uint8_t (*pbuf)[0x400]);
 
 /**
  * @brief hpm wav file decode

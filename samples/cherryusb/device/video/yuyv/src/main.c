@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -22,8 +22,8 @@ int main(void)
 
     board_init_usb((USB_Type *)CONFIG_HPM_USBD_BASE);
 
-    intc_m_enable_irq_with_priority(TEST_CAM_IRQ, 1);
-    intc_set_irq_priority(CONFIG_HPM_USBD_IRQn, 2);
+    intc_set_irq_priority(CONFIG_HPM_USBD_IRQn, 1);
+    intc_m_enable_irq_with_priority(TEST_CAM_IRQ, 2);
 
     board_init_cam_clock(TEST_CAM);
     board_init_i2c(CAM_I2C);

@@ -1,6 +1,5 @@
 /*
  * Copyright (c) 2001-2003 Swedish Institute of Computer Science.
- * Copyright (c) 2023 HPMicro
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -32,7 +31,7 @@
  */
 
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -41,12 +40,18 @@
 #ifndef __CC_H__
 #define __CC_H__
 
-#include "stdio.h"
+#include <stdio.h>
 
-typedef int sys_prot_t;
+#define U16_F "hu"
+#define S16_F "d"
+#define X16_F "hx"
+#define U32_F "u"
+#define S32_F "d"
+#define X32_F "x"
+#define SZT_F "uz"
 
 /* define compiler specific symbols */
-#if defined(__ICCARM__)
+#if defined (__ICCARM__)
 
 #define PACK_STRUCT_BEGIN
 #define PACK_STRUCT_STRUCT
@@ -54,28 +59,33 @@ typedef int sys_prot_t;
 #define PACK_STRUCT_FIELD(x) x
 #define PACK_STRUCT_USE_INCLUDES
 
-#elif defined(__CC_ARM)
+#elif defined (__CC_ARM)
 
 #define PACK_STRUCT_BEGIN __packed
 #define PACK_STRUCT_STRUCT
 #define PACK_STRUCT_END
 #define PACK_STRUCT_FIELD(x) x
 
-#elif defined(__GNUC__)
+#elif defined (__GNUC__)
 
-#define PACK_STRUCT_BEGIN
-#define PACK_STRUCT_STRUCT __attribute__((__packed__))
-#define PACK_STRUCT_END
-#define PACK_STRUCT_FIELD(x) x
-
-#elif defined(__ICCRISCV__)
+#include <sys/time.h>
+#include <time.h>
 
 #define PACK_STRUCT_BEGIN
 #define PACK_STRUCT_STRUCT __attribute__ ((__packed__))
 #define PACK_STRUCT_END
 #define PACK_STRUCT_FIELD(x) x
 
-#elif defined(__TASKING__)
+#elif defined(__ICCRISCV__)
+
+#include <time.h>
+#define PACK_STRUCT_BEGIN
+#define PACK_STRUCT_STRUCT __attribute__ ((__packed__))
+#define PACK_STRUCT_END
+#define PACK_STRUCT_FIELD(x) x
+typedef unsigned long clockid_t;
+
+#elif defined (__TASKING__)
 
 #define PACK_STRUCT_BEGIN
 #define PACK_STRUCT_STRUCT

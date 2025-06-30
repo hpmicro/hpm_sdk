@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -124,19 +124,6 @@ hpm_stat_t sei_cmd_data_format_config_init(SEI_Type *ptr, bool cmd_data_select, 
     uint8_t word_len;
     uint8_t crc_len;
 
-    if (cmd_data_select)
-#if defined(HPM_IP_FEATURE_SEI_HAVE_CTRL2_12) && HPM_IP_FEATURE_SEI_HAVE_CTRL2_12
-        assert(idx < 13);
-#else
-        assert(idx < 2);
-#endif
-    else
-#if defined(HPM_IP_FEATURE_SEI_HAVE_DAT10_31) && HPM_IP_FEATURE_SEI_HAVE_DAT10_31
-        assert(idx < 32);
-#else
-        assert(idx < 10);
-#endif
-
     word_len = config->word_len;
     if (word_len > 0u) {
         word_len--;
@@ -217,19 +204,6 @@ hpm_stat_t sei_cmd_table_config_init(SEI_Type *ptr, uint8_t idx, uint8_t table_i
         | SEI_CTRL_CMD_TABLE_PTB_PTR5_SET(config->instr_idx[5])
         | SEI_CTRL_CMD_TABLE_PTB_PTR4_SET(config->instr_idx[4]);
     ptr->CTRL[idx].CMD_TABLE[table_idx].PTB = tmp;
-#if defined(HPM_IP_FEATURE_SEI_HAVE_PTCD) && HPM_IP_FEATURE_SEI_HAVE_PTCD
-    tmp = SEI_CTRL_CMD_TABLE_PTC_PTR11_SET(config->instr_idx[11])
-        | SEI_CTRL_CMD_TABLE_PTC_PTR10_SET(config->instr_idx[10])
-        | SEI_CTRL_CMD_TABLE_PTC_PTR9_SET(config->instr_idx[9])
-        | SEI_CTRL_CMD_TABLE_PTC_PTR8_SET(config->instr_idx[8]);
-    ptr->CTRL[idx].CMD_TABLE[table_idx].PTC = tmp;
-
-    tmp = SEI_CTRL_CMD_TABLE_PTD_PTR15_SET(config->instr_idx[15])
-        | SEI_CTRL_CMD_TABLE_PTD_PTR14_SET(config->instr_idx[14])
-        | SEI_CTRL_CMD_TABLE_PTD_PTR13_SET(config->instr_idx[13])
-        | SEI_CTRL_CMD_TABLE_PTD_PTR12_SET(config->instr_idx[12]);
-    ptr->CTRL[idx].CMD_TABLE[table_idx].PTD = tmp;
-#endif
 
     return status_success;
 }
@@ -345,13 +319,13 @@ hpm_stat_t sei_trigger_input_config_init(SEI_Type *ptr, uint8_t idx, sei_trigger
         | SEI_CTRL_TRG_IN_CFG_IN1_EN_SET(config->trig_in1_enable)
         | SEI_CTRL_TRG_IN_CFG_IN1_SEL_SET(config->trig_in1_select)
         | SEI_CTRL_TRG_IN_CFG_IN0_EN_SET(config->trig_in0_enable)
-        | SEI_CTRL_TRG_IN_CFG_IN0_SEL_SET(config->trig_in0_select)
-#if defined(HPM_IP_FEATURE_SEI_TIMEOUT_REWIND_FEATURE) && HPM_IP_FEATURE_SEI_TIMEOUT_REWIND_FEATURE
-        | SEI_CTRL_TRG_IN_CFG_REWIND_EN_SET(config->rewind_enable)
-        | SEI_CTRL_TRG_IN_CFG_REWIND_SEL_SET(config->rewind_select)
-#endif
-        ;
+        | SEI_CTRL_TRG_IN_CFG_IN0_SEL_SET(config->trig_in0_select);
     ptr->CTRL[idx].TRG.IN_CFG = tmp;
+
+#if defined(HPM_IP_FEATURE_SEI_TRIG_IN_DIV) && HPM_IP_FEATURE_SEI_TRIG_IN_DIV
+    ptr->CTRL[idx].TRG.IN_DIV = SEI_CTRL_TRG_IN_DIV_IN0_DIV_SET(config->trig_in0_div)
+                              | SEI_CTRL_TRG_IN_DIV_IN1_DIV_SET(config->trig_in1_div);
+#endif
 
     return status_success;
 }
@@ -405,9 +379,6 @@ void sei_set_instr(SEI_Type *ptr, uint8_t idx, uint8_t op, uint8_t ck, uint8_t c
 {
     uint32_t tmp;
 
-#if !defined(HPM_IP_FEATURE_SEI_HAVE_INTR64_255) || !HPM_IP_FEATURE_SEI_HAVE_INTR64_255
-    assert(idx < 64);
-#endif
     if ((op != SEI_INSTR_OP_HALT) && (op != SEI_INSTR_OP_JUMP) && (opr > 0)) {
         opr--;
     }

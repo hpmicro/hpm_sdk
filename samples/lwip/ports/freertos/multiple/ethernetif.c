@@ -75,7 +75,7 @@
 #endif
 
 #define netifMTU                           (1500)
-#define netifINTERFACE_TASK_STACK_SIZE     (350)
+#define netifINTERFACE_TASK_STACK_SIZE     (1024)
 
 #if defined(__ENABLE_FREERTOS) && __ENABLE_FREERTOS
 #define netifINTERFACE_TASK_PRIORITY       (configMAX_PRIORITIES - 1)

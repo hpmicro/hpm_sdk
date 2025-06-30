@@ -13,6 +13,11 @@ Board Setting
 
 No special settings are required
 
+Project Configuration
+---------------------
+
+set(CONFIG_ECLIPSE_THREADX_TIMER_RESOURCE_MTIMER 1) to use mchtmr as system's tick source
+
 Running the example
 -------------------
 

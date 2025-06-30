@@ -476,6 +476,13 @@
 #define BOARD_GPTMR_I2S_FINSH_CHANNEL  3
 #define BOARD_GPTMR_I2S_FINSH_CLK_NAME clock_gptmr2
 
+#define BOARD_APP_CLK_REF_PIN_NAME "J20[7] (PD31)"
+#define BOARD_APP_CLK_REF_CLK_NAME clock_ref1
+#define BOARD_APP_CLK_REF_SRC_NAME clk_src_pll4_clk0
+#define BOARD_APP_PLLCTLV2_TEST_PLL pllctlv2_pll4
+#define BOARD_APP_PLLCTLV2_TEST_PLL_CLK pllctlv2_clk0
+#define BOARD_APP_PLLCTLV2_TEST_PLL_NAME clk_pll4clk0
+
 /* BGPR */
 #define BOARD_BGPR HPM_BGPR
 
@@ -566,6 +573,8 @@ void board_init_mipi_csi_cam_pins(void);
 void board_write_mipi_csi_cam_rst(uint8_t state);
 
 void board_init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp);
+void board_init_clk_ref_pin(void);
+uint32_t board_init_gptmr_clock(GPTMR_Type *ptr);
 
 #if defined(__cplusplus)
 }

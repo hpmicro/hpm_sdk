@@ -1,5 +1,5 @@
 dependency:
   - dao
-  - pdm
+  - pdm || pdmlite
   - board_audio_in
   - board_audio_out
