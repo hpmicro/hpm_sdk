@@ -20,9 +20,7 @@ endif()
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(mlperf_anomaly_detection)
-if("${TOOLCHAIN_VARIANT}" STREQUAL "zcc" AND "${CMAKE_BUILD_TYPE}" STREQUAL "release")
-    sdk_compile_options("-flate-loop-unroll")
-endif()
+
 sdk_app_src(src/main.cc)
 sdk_app_src(src/submitter_implemented.cpp)
 sdk_app_src(src/api/internally_implemented.cpp)

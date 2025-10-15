@@ -14,5 +14,7 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(fft_perf_test)
 sdk_app_src(src/fft_perf_test.c)
 sdk_compile_options("-O3")
+sdk_compile_options("-flto")
+sdk_ld_options("-O3")
 
 generate_ide_projects()

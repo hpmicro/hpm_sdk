@@ -26,6 +26,7 @@ elseif("${TOOLCHAIN_VARIANT}" STREQUAL "zcc")
     sdk_ld_options("-march=${RV_ARCH}_xandes")
 endif()
 
+sdk_zcc_compile_options(-flate-loop-unroll)
 sdk_zcc_ld_options(-Wl,-mllvm,--align-all-nofallthru-blocks=2)
 sdk_zcc_ld_options(-falign-functions=4)
 sdk_zcc_ld_options(-flate-loop-unroll)
