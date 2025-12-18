@@ -1,0 +1,170 @@
+# .github/workflows/release.yml
+#
+# Copyright (c) 2025 HPMicro
+#
+# SPDX-License-Identifier: BSD-3-Clause
+#
+
+name: 📦 Release hpm_sdk Package (Linux)
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  create_release:
+    name: Build & Release Package (Linux)
+    runs-on: ubuntu-latest # Linux runner
+
+    steps:
+      # 1. Checkout Code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+          
+      # 2. >>> New Step: Install Doxygen and Graphviz <<<
+      - name: Install Doxygen and Dependencies
+        run: |
+          # Update package list
+          sudo apt-get update
+          # Install doxygen. Also install graphviz, as doxygen often needs it to generate diagrams.
+          sudo apt-get install -y doxygen graphviz
+        
+      # 3. Set up Python Environment and Documentation Build
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Documentation Dependencies (pip)
+        run: pip install -r docs/requirements.txt
+        
+      - name: Build Documentation (Run 'make')
+        run: |
+          cd docs
+          make 
+        
+      # 4. Extract Release Notes from CHANGELOG.md
+      - name: Extract Release Notes from CHANGELOG
+        id: get_release_notes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const changelogPath = 'CHANGELOG.md';
+            let releaseBody = '';
+            
+            if (!fs.existsSync(changelogPath)) {
+                console.warn(`${changelogPath} not found. Using default body.`);
+                releaseBody = `## Release Notes\n\nWarning: CHANGELOG.md file was not found.`;
+            } else {
+                const content = fs.readFileSync(changelogPath, 'utf8');
+                // Match the first release version section: ## [version] - date:
+                const firstReleaseRegex = /^##\s+\[([^\]]+)\]\s*-\s*([^:]+):/m;
+                const nextReleaseRegex = /^##\s+\[[^\]]+\]\s*-/m;
+                
+                const firstReleaseMatch = content.match(firstReleaseRegex);
+
+                if (firstReleaseMatch) {
+                    const startPos = firstReleaseMatch.index;
+                    const contentAfterFirst = content.substring(startPos);
+                    
+                    // Find the next release section
+                    const nextReleaseMatch = contentAfterFirst.substring(firstReleaseMatch[0].length).match(nextReleaseRegex);
+                    
+                    if (nextReleaseMatch) {
+                        // Extract content from first release to next release
+                        releaseBody = contentAfterFirst.substring(0, firstReleaseMatch[0].length + nextReleaseMatch.index).trim();
+                    } else {
+                        // Extract all content from first release to end of file
+                        releaseBody = contentAfterFirst.trim();
+                    }
+                } else {
+                    // Fallback: try to match any ## section at the top as version content
+                    console.warn(`No release version section found with standard format. Trying fallback match.`);
+                    const fallbackRegex = /^##\s+.+$/m;
+                    const fallbackMatch = content.match(fallbackRegex);
+                    
+                    if (fallbackMatch) {
+                        const startPos = fallbackMatch.index;
+                        const contentAfterFirst = content.substring(startPos);
+                        
+                        // Find the next ## section
+                        const nextSectionMatch = contentAfterFirst.substring(fallbackMatch[0].length).match(/^##\s+/m);
+                        
+                        if (nextSectionMatch) {
+                            releaseBody = contentAfterFirst.substring(0, fallbackMatch[0].length + nextSectionMatch.index).trim();
+                        } else {
+                            releaseBody = contentAfterFirst.trim();
+                        }
+                    } else {
+                        // Last resort: use first few lines of changelog
+                        const lines = content.split('\n');
+                        const firstNonEmptyLine = lines.findIndex(line => line.trim().length > 0);
+                        if (firstNonEmptyLine >= 0) {
+                            // Get content from first non-empty line to next ## section or end
+                            const remainingContent = lines.slice(firstNonEmptyLine).join('\n');
+                            const nextSectionMatch = remainingContent.match(/^##\s+/m);
+                            if (nextSectionMatch && nextSectionMatch.index > 0) {
+                                releaseBody = remainingContent.substring(0, nextSectionMatch.index).trim();
+                            } else {
+                                releaseBody = remainingContent.trim();
+                            }
+                        } else {
+                            releaseBody = `## Release Notes\n\nCould not find a release version section in CHANGELOG.md.`;
+                        }
+                    }
+                }
+            }
+
+            core.setOutput('notes', releaseBody);
+            
+      # 5. Prepare Asset Names and Paths
+      - name: Set Asset Variables
+        id: set_vars
+        run: |
+          TAG="${{ github.ref_name }}"
+          ZIP_NAME="hpm_sdk_${TAG}.zip"
+          DOC_ZIP_NAME="hpm_sdk_doc_${TAG}.zip"
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_OUTPUT
+          echo "ZIP_PATH=$ZIP_NAME" >> $GITHUB_OUTPUT
+          echo "DOC_ZIP_NAME=$DOC_ZIP_NAME" >> $GITHUB_OUTPUT
+          echo "DOC_ZIP_PATH=$DOC_ZIP_NAME" >> $GITHUB_OUTPUT
+
+      # 6. Package Entire Environment as ZIP File (using zip command)
+      - name: Create ZIP Archive (Linux)
+        run: |
+          ZIP_NAME="${{ steps.set_vars.outputs.ZIP_NAME }}"
+          zip -r "$ZIP_NAME" . -x ".git/*" -x ".github/*" -x "$ZIP_NAME"
+          echo "Successfully created $ZIP_NAME"
+
+      # 6.5. Package Documentation as Separate ZIP File
+      - name: Create Documentation ZIP Archive
+        run: |
+          DOC_ZIP_NAME="${{ steps.set_vars.outputs.DOC_ZIP_NAME }}"
+          if [ -d "docs/output" ]; then
+            cd docs
+            zip -r "../$DOC_ZIP_NAME" output index.html index_zh.html
+            cd ..
+            echo "Successfully created $DOC_ZIP_NAME"
+          else
+            echo "Warning: docs/output directory not found. Skipping documentation ZIP creation."
+          fi
+
+      # 7. Create Release and Upload Assets
+      - name: Create & Upload Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: ${{ steps.get_release_notes.outputs.notes }}
+          draft: false
+          prerelease: false
+          files: |
+            ${{ steps.set_vars.outputs.ZIP_PATH }}
+            ${{ steps.set_vars.outputs.DOC_ZIP_PATH }}
