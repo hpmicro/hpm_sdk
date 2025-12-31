@@ -1,0 +1,8 @@
+excluded_targets:
+  - debug
+  - release
+
+dependency:
+  - i2s
+  - dao
+  - board_audio_out # DAO

@@ -51,10 +51,10 @@
 
 /* ACMP related feature */
 #define HPM_IP_FEATURE_ACMP_DAC_MATRIX 1
-#define HPM_IP_FEATURE_ACMP_FILT_LEN_EXTEND 1
 
 /* DAO related feature */
 #define HPM_IP_FEATURE_DAO_DATA_FORMAT_CONFIG 1
+#define HPM_IP_FEATURE_DAO_AUDIO_MONO_FIX 1
 
 /* QEIV2 related feature */
 #define HPM_IP_FEATURE_QEIV2_ONESHOT_MODE 1

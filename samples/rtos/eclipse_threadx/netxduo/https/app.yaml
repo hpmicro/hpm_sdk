@@ -12,3 +12,4 @@ excluded_targets:
 
 dependency:
   - board_enet_phy
+  - board_sdram

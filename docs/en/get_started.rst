@@ -88,6 +88,7 @@ Toolchain Setup
 
       1. **Download and Unzip the Toolchain**
 
+         - Download the RISC-V GNU toolchain from the `HPMicro official GitHub releases <https://github.com/hpmicro/riscv-gnu-toolchain/releases>`_.
          - Unzip the toolchain package to a specific path (e.g., ``TOOLCHAIN_PATH``). The executable ``riscv32-unknown-elf-gcc`` should be located in ``TOOLCHAIN_PATH/bin``.
 
       2. **Set Environment Variables**
@@ -230,6 +231,21 @@ Install Python Dependencies
 
          pip install --user -r "%HPM_SDK_BASE%/scripts/requirements.txt"
 
+.. _cmake_build_system:
+
+CMake Build System
+-------------------
+
+The HPM SDK provides a comprehensive CMake-based build system that offers:
+
+- **Cross-platform compatibility** across Windows, macOS, and Linux
+- **Multiple toolchain support** including GNU GCC, NDS GCC, and ZCC
+- **Flexible board configuration** with custom board support
+- **IDE integration** for various development environments
+- **SOC-agnostic application development** with automatic dependency management
+
+For detailed information about using the CMake build system, including advanced configuration options, custom board setup, and best practices, please refer to the :ref:`cmake_user_guide`.
+
 .. _build_application_gnu_gcc:
 
 Build an Application with GNU GCC Toolchain
@@ -304,7 +320,7 @@ Quick Guide to Run/Debug an Application (hello_world)
 
 4. **Install OpenOCD**
 
- - It can be installed via a package management system or downloaded from SourceForge or GitHub. Ensure its revision is > 0.11.
+ - Download OpenOCD from the `HPMicro official GitHub releases <https://github.com/hpmicro/riscv-openocd/releases>`_, or compile the `riscv-hpmicro` branch from the repository. This repository only adds flash operation algorithms compared to the upstream OpenOCD.
 
 5. **Set Environment Variables**
 

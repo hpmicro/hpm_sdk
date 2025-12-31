@@ -38,6 +38,7 @@
 #endif
 
     SECTION `.isr_vector`:CODE:REORDER:NOROOT(2)
+    ALIGN 2
     CODE
 /**************************************************************************/
 /*                                                                        */

@@ -12,8 +12,6 @@ excluded_targets:
   - flash_xip_hybrid_release
   - flash_uf2
   - flash_uf2_release
-  - flash_xip_hybrid
-  - flash_xip_hybrid_release
 dependency:
   - enet
   - board_enet_phy

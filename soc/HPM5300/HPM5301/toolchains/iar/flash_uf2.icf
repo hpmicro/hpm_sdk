@@ -35,7 +35,6 @@ define region AHB_SRAM = mem:[from 0xF0400000 size 32k];
 
 /* Blocks */
 define block vectors with fixed order                       { section .vector_table, section .isr_vector };
-define block vectors_s with fixed order                     { section .vector_s_table, section .isr_s_vector };
 
 define block HEAP  with size = __size_heap__,  alignment = 8 { };
 define block CSTACK with size = __size_cstack__, alignment = 16 { };
@@ -58,8 +57,6 @@ initialize by copy with packing=auto        { section .noncacheable.init, sectio
 initialize by copy with packing=auto        { section .fast, section .fast.*, section .*.fast, section .*.fast.* };               // "RAM Code" sections
 initialize by copy with packing=none        { section .vector_table };
 initialize by copy with packing=none        { section .isr_vector };
-initialize by copy with packing=none        { section .vector_s_table };
-initialize by copy with packing=none        { section .isr_s_vector };
 initialize by copy                          { readwrite };
 
 /* Placement */
@@ -72,7 +69,7 @@ place in FLASH                               { block rtthread_FSymTab,
                                               block cherryusb_usbh_class_info,
                                               readonly
                                             };
-place at start of ILM                       { block vectors, block vectors_s };
+place at start of ILM                       { block vectors };
 place in ILM                                {
                                               section .fast, section .fast.*,                       // "ramfunc" section
                                             };

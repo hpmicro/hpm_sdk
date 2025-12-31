@@ -31,6 +31,7 @@ RETURN_MASK     DEFINE          0x0000000F
 SET_SR_MASK     DEFINE          0xFFFFFFF0
 
     SECTION `.isr_vector`:CODE:REORDER:NOROOT(2)
+    ALIGN 2
     CODE
 /**************************************************************************/ 
 /*                                                                        */ 

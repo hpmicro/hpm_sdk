@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 hpmicro
+# Copyright (c) 2021,2025 hpmicro
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -9,7 +9,11 @@ if [ "X$MSYSTEM" "==" "X" ]; then
         echo "Please source this file, rather than executing it."
         exit
     fi
-    env_name=$0
+    if [ "X$BASH_VERSION" "==" "X" ]; then
+        env_name=$0
+    else
+        env_name=$BASH_SOURCE[0]
+    fi
 else
     env_name=$1
 fi

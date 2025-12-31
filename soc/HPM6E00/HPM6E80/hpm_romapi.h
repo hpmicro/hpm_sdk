@@ -10,7 +10,7 @@
 
 /**
  * @brief ROM APIs
- * @defgroup romapi_interface ROM APIs
+ * @defgroup romapi_hpm6e80_interface ROM APIs for HPM6E80
  * @{
  */
 

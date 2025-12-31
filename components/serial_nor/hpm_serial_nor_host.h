@@ -207,10 +207,6 @@ extern "C" {
  * @return hpm_stat_t: status_success if success
  */
 hpm_stat_t serial_nor_host_ops_use_spi(hpm_serial_nor_t *dev);
-/**
- * @}
- *
- */
 
 #ifdef __cplusplus
 }

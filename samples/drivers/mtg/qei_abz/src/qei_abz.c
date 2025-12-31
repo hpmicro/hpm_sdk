@@ -10,8 +10,6 @@
 #include "hpm_mtg_regs.h"
 #include "hpm_soc_feature.h"
 #include "hpm_trgm_drv.h"
-#include "hpm_soc.h"
-#include "hpm_soc_feature.h"
 #include "hpm_trgm_soc_drv.h"
 #include "hpm_synt_drv.h"
 #include "hpm_qeiv2_drv.h"

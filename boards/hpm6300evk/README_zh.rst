@@ -266,6 +266,34 @@ HPM6300EVK提供了HPM6300微控制器大部分外设的接口，包括1个SD卡
        - J28[11]
        - 控制SPI从机CS的引脚
 
+- ESP-HOSTED 引脚接口
+
+.. list-table::
+   :header-rows: 1
+
+   * - 功能
+     - 位置
+     - 备注
+   * - PA07
+     - J28[11]
+     - RESET引脚
+   * - PC13
+     - J28[13]
+     - HANDSHAKE引脚
+   * - PC14
+     - J28[15]
+     - DATA_READY引脚
+
+- BROWNOUT中断指示引脚
+
+.. list-table::
+   :header-rows: 1
+
+   * - 功能
+     - 位置
+   * - PA07
+     - J28[11]
+
 .. _hpm6300evk_known_issues:
 
 开发板已知问题

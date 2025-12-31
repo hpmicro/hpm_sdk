@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -10,7 +10,7 @@
 
 #define PDMA_SCALE_FRAC_BITS 12
 /* x_offset might need to be adjusted when scaling YUV format */
-#define PDMA_YUV_SCALE_DEFAULT_X_OFFSET (0x800)
+#define PDMA_YUV_SCALE_DEFAULT_X_OFFSET (0x000)
 
 void pdma_set_block_size(PDMA_Type *ptr, pdma_blocksize_t size)
 {
@@ -541,8 +541,15 @@ hpm_stat_t pdma_flip_rotate(PDMA_Type *ptr, uint32_t dst, uint32_t dst_width,
     pdma_init(ptr, &config);
 
     plane_src.buffer = src;
-    plane_src.height = height;
-    plane_src.width = width;
+
+    if ((rotate == pdma_rotate_90_degree) ||
+        (rotate == pdma_rotate_270_degree)) {
+        plane_src.height = height;
+    } else {
+        plane_src.height = width;
+    }
+
+    plane_src.width = src_width;
     plane_src.pitch = display_get_pitch_length_in_byte(format, src_width);
     plane_src.flip = flip;
     plane_src.rotate = rotate;
@@ -565,18 +572,11 @@ hpm_stat_t pdma_flip_rotate(PDMA_Type *ptr, uint32_t dst, uint32_t dst_width,
     output.plane[pdma_plane_src].y = 0;
     output.pitch = display_get_pitch_length_in_byte(format, dst_width);
 
-    if ((rotate == pdma_rotate_90_degree)
-            || (rotate == pdma_rotate_270_degree)) {
-        output.width = height;
-        output.height = width;
-        output.plane[pdma_plane_src].width = height;
-        output.plane[pdma_plane_src].height = width;
-    } else {
-        output.plane[pdma_plane_src].width = width;
-        output.plane[pdma_plane_src].height = height;
-        output.width = width;
-        output.height = height;
-    }
+
+    output.plane[pdma_plane_src].width = width;
+    output.plane[pdma_plane_src].height = height;
+    output.width = width;
+    output.height = height;
 
     pdma_config_output(ptr, &output);
     pdma_start(ptr);

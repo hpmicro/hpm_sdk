@@ -24,7 +24,7 @@ static hpm_stat_t tsw_send_frame_setup(TSW_Type *ptr, uint8_t *buffer, uint16_t 
     /* make sure that CBUFF is not full */
     do {
 
-    } while (TSW_MM2S_DMA_SR_CBUFF_GET(ptr->MM2S_DMA_SR) && timeout--);
+    } while (TSW_MM2S_DMA_SR_CBUFF_GET(ptr->MM2S_DMA_SR) && (--timeout));
 
     if (timeout == 0) {
         return status_timeout;
@@ -244,7 +244,7 @@ hpm_stat_t tsw_send_frame_check_response(TSW_Type *ptr, uint8_t *buffer, uint16_
     /* Wait for getting a respose */
     do {
 
-    } while (TSW_MM2S_DMA_SR_RBUFE_GET(ptr->MM2S_DMA_SR) && timeout--);
+    } while (TSW_MM2S_DMA_SR_RBUFE_GET(ptr->MM2S_DMA_SR) && (--timeout));
 
     if (timeout == 0) {
         return status_timeout;
@@ -308,7 +308,7 @@ hpm_stat_t tsw_recv_frame(TSW_Type *ptr, tsw_frame_t *frame)
             stat = status_success;
         }
 
-        HPM_TSW->S2MM_DMA_SR = TSW_S2MM_DMA_SR_IRQ_MASK;
+        ptr->S2MM_DMA_SR = TSW_S2MM_DMA_SR_IRQ_MASK;
     }
 
     return stat;
@@ -422,22 +422,121 @@ void tsw_set_lookup_table(TSW_Type *ptr, uint16_t entry_num, uint8_t dest_port, 
 
 }
 
+void tsw_get_default_frame_action_config(TSW_Type *ptr, tsw_frame_action_config_t *config)
+{
+    (void) ptr;
+
+    config->dest = tsw_dst_port_null;
+    config->queue = 0;
+    config->drop = 0;
+    config->qsel = 0;
+    config->utag = 0;
+}
+
+hpm_stat_t tsw_set_frame_action(TSW_Type *ptr, tsw_frame_action_config_t *config, uint8_t type)
+{
+    hpm_stat_t status = status_success;
+
+    if (config == NULL) {
+        return status_invalid_argument;
+    }
+
+    if (type > tsw_frame_action_type_unknown) {
+        return status_invalid_argument;
+    }
+
+    if (type == tsw_frame_action_type_internal) {
+        ptr->LU_MAIN_INTF_ACTION &= ~TSW_LU_MAIN_INTF_ACTION_UTAG_MASK;
+        ptr->LU_MAIN_INTF_ACTION |= TSW_LU_MAIN_INTF_ACTION_UTAG_SET(config->utag);
+
+        ptr->LU_MAIN_INTF_ACTION &= ~TSW_LU_MAIN_INTF_ACTION_QSEL_MASK;
+        ptr->LU_MAIN_INTF_ACTION |= TSW_LU_MAIN_INTF_ACTION_QSEL_SET(config->qsel);
+
+        ptr->LU_MAIN_INTF_ACTION &= ~TSW_LU_MAIN_INTF_ACTION_DROP_MASK;
+        ptr->LU_MAIN_INTF_ACTION |= TSW_LU_MAIN_INTF_ACTION_DROP_SET(config->drop);
+
+        ptr->LU_MAIN_INTF_ACTION &= ~TSW_LU_MAIN_INTF_ACTION_QUEUE_MASK;
+        ptr->LU_MAIN_INTF_ACTION |= TSW_LU_MAIN_INTF_ACTION_QUEUE_SET(config->queue);
+
+        ptr->LU_MAIN_INTF_ACTION &= ~TSW_LU_MAIN_INTF_ACTION_DEST_MASK;
+        ptr->LU_MAIN_INTF_ACTION |= TSW_LU_MAIN_INTF_ACTION_DEST_SET(config->dest);
+    } else if (type == tsw_frame_action_type_broadcast) {
+        ptr->LU_MAIN_BC_ACTION &= ~TSW_LU_MAIN_BC_ACTION_UTAG_MASK;
+        ptr->LU_MAIN_BC_ACTION |= TSW_LU_MAIN_BC_ACTION_UTAG_SET(config->utag);
+
+        ptr->LU_MAIN_BC_ACTION &= ~TSW_LU_MAIN_BC_ACTION_QSEL_MASK;
+        ptr->LU_MAIN_BC_ACTION |= TSW_LU_MAIN_BC_ACTION_QSEL_SET(config->qsel);
+
+        ptr->LU_MAIN_BC_ACTION &= ~TSW_LU_MAIN_BC_ACTION_DROP_MASK;
+        ptr->LU_MAIN_BC_ACTION |= TSW_LU_MAIN_BC_ACTION_DROP_SET(config->drop);
+
+        ptr->LU_MAIN_BC_ACTION &= ~TSW_LU_MAIN_BC_ACTION_QUEUE_MASK;
+        ptr->LU_MAIN_BC_ACTION |= TSW_LU_MAIN_BC_ACTION_QUEUE_SET(config->queue);
+
+        ptr->LU_MAIN_BC_ACTION &= ~TSW_LU_MAIN_BC_ACTION_DEST_MASK;
+        ptr->LU_MAIN_BC_ACTION |= TSW_LU_MAIN_BC_ACTION_DEST_SET(config->dest);
+    } else if (type == tsw_frame_action_type_unknown) {
+        ptr->LU_MAIN_NN_ACTION &= ~TSW_LU_MAIN_NN_ACTION_UTAG_MASK;
+        ptr->LU_MAIN_NN_ACTION |= TSW_LU_MAIN_NN_ACTION_UTAG_SET(config->utag);
+
+        ptr->LU_MAIN_NN_ACTION &= ~TSW_LU_MAIN_NN_ACTION_QSEL_MASK;
+        ptr->LU_MAIN_NN_ACTION |= TSW_LU_MAIN_NN_ACTION_QSEL_SET(config->qsel);
+
+        ptr->LU_MAIN_NN_ACTION &= ~TSW_LU_MAIN_NN_ACTION_DROP_MASK;
+        ptr->LU_MAIN_NN_ACTION |= TSW_LU_MAIN_NN_ACTION_DROP_SET(config->drop);
+
+        ptr->LU_MAIN_NN_ACTION &= ~TSW_LU_MAIN_NN_ACTION_QUEUE_MASK;
+        ptr->LU_MAIN_NN_ACTION |= TSW_LU_MAIN_NN_ACTION_QUEUE_SET(config->queue);
+
+        ptr->LU_MAIN_NN_ACTION &= ~TSW_LU_MAIN_NN_ACTION_DEST_MASK;
+        ptr->LU_MAIN_NN_ACTION |= TSW_LU_MAIN_NN_ACTION_DEST_SET(config->dest);
+    } else {
+        status = status_invalid_argument;
+    }
+
+    return status;
+}
+
 void tsw_set_internal_frame_action(TSW_Type *ptr, uint8_t dest_port)
 {
-    ptr->LU_MAIN_INTF_ACTION &= ~TSW_LU_MAIN_INTF_ACTION_DEST_MASK;
-    ptr->LU_MAIN_INTF_ACTION |= TSW_LU_MAIN_INTF_ACTION_DEST_SET(dest_port);
+    if (dest_port == tsw_dst_port_null) {
+        ptr->LU_MAIN_INTF_ACTION &= ~TSW_LU_MAIN_INTF_ACTION_DEST_MASK;
+    } else {
+        ptr->LU_MAIN_INTF_ACTION |= TSW_LU_MAIN_INTF_ACTION_DEST_SET(dest_port);
+    }
 }
 
 void tsw_set_broadcast_frame_action(TSW_Type *ptr, uint8_t dest_port)
 {
-    ptr->LU_MAIN_BC_ACTION &= ~TSW_LU_MAIN_BC_ACTION_DEST_MASK;
-    ptr->LU_MAIN_BC_ACTION |= TSW_LU_MAIN_BC_ACTION_DEST_SET(dest_port);
+    if (dest_port == tsw_dst_port_null) {
+        ptr->LU_MAIN_BC_ACTION &= ~TSW_LU_MAIN_BC_ACTION_DEST_MASK;
+    } else {
+        ptr->LU_MAIN_BC_ACTION |= TSW_LU_MAIN_BC_ACTION_DEST_SET(dest_port);
+    }
 }
 
 void tsw_set_unknown_frame_action(TSW_Type *ptr, uint8_t dest_port)
 {
-    ptr->LU_MAIN_NN_ACTION &= ~TSW_LU_MAIN_NN_ACTION_DEST_MASK;
-    ptr->LU_MAIN_NN_ACTION |= TSW_LU_MAIN_NN_ACTION_DEST_SET(dest_port);
+    if (dest_port == tsw_dst_port_null) {
+        ptr->LU_MAIN_NN_ACTION &= ~TSW_LU_MAIN_NN_ACTION_DEST_MASK;
+    } else {
+        ptr->LU_MAIN_NN_ACTION |= TSW_LU_MAIN_NN_ACTION_DEST_SET(dest_port);
+    }
+}
+
+void tsw_clear_internal_frame_action(TSW_Type *ptr, uint8_t dest_port)
+{
+    ptr->LU_MAIN_INTF_ACTION &= ~(dest_port << TSW_LU_MAIN_INTF_ACTION_DEST_SHIFT);
+}
+
+void tsw_clear_broadcast_frame_action(TSW_Type *ptr, uint8_t dest_port)
+{
+    ptr->LU_MAIN_BC_ACTION &= ~(dest_port << TSW_LU_MAIN_BC_ACTION_DEST_SHIFT);
+}
+
+void tsw_clear_unknown_frame_action(TSW_Type *ptr, uint8_t dest_port)
+{
+    ptr->LU_MAIN_NN_ACTION &= ~(dest_port << TSW_LU_MAIN_NN_ACTION_DEST_SHIFT);
 }
 
 void tsw_clear_cam(TSW_Type *ptr)
@@ -987,7 +1086,7 @@ hpm_stat_t tsw_fpe_get_default_mms_ctrl_config(TSW_Type *ptr, uint8_t port, tsw_
     config->frag_size = tsw_fpe_mms_fragment_size_60_octets;
     config->vtime = 1000000U; /* 10ms */
     config->link_error = false;
-    config->dis_verificaiton = true;
+    config->dis_verification = true;
 
     return status_success;
 }
@@ -1006,7 +1105,7 @@ hpm_stat_t tsw_fpe_set_mms_ctrl(TSW_Type *ptr, uint8_t port, tsw_fpe_config_t *c
                                          | TSW_TSNPORT_TSN_EP_MMS_CTRL_FRAGSZ_SET(config->frag_size);
 
     /* set the disable verification */
-    if (config->dis_verificaiton) {
+    if (config->dis_verification) {
         ptr->TSNPORT[port].TSN_EP_MMS_CTRL |= TSW_TSNPORT_TSN_EP_MMS_CTRL_DISV_MASK;
     } else {
         ptr->TSNPORT[port].TSN_EP_MMS_CTRL &= ~TSW_TSNPORT_TSN_EP_MMS_CTRL_DISV_MASK;
@@ -1189,7 +1288,7 @@ hpm_stat_t tsw_cb_frer_egress_set_recovery_func(TSW_Type *ptr, tsw_cb_frer_recov
     }
 
     ptr->CPU_PORT_EGRESS_FRER_FCTRL |= TSW_CPU_PORT_EGRESS_FRER_FCTRL_IND_SET(config->xrfunc);
-    ptr->CPU_PORT_EGRESS_FRER_FCTRL |= TSW_CPU_PORT_EGRESS_FRER_FCTRL_TNS_SET(config->taske_no_sequence);
+    ptr->CPU_PORT_EGRESS_FRER_FCTRL |= TSW_CPU_PORT_EGRESS_FRER_FCTRL_TNS_SET(config->take_no_sequence);
     ptr->CPU_PORT_EGRESS_FRER_RESETMSEC = TSW_CPU_PORT_EGRESS_FRER_RESETMSEC_FSRMS_SET(config->timeout_in_ms);
 
     if ((config->xrfunc == tsw_cb_frer_xfunc_recovery_sequence) && (config->latent_error_dectection_config.enable_detection)) {

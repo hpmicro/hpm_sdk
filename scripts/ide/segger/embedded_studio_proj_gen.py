@@ -1,8 +1,6 @@
 # Copyright (c) 2021-2022,2024-2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
-
 #!/usr/bin/env python3
-
 # Usage: python embedded_studio_proj_gen.py <target_configuration>.json <output_directory>
 #
 # <target_configuration>.json is a json file generated from CMake on the form:
@@ -20,7 +18,6 @@
 #         "ram_size": 65536,
 #     }
 # }
-
 import jinja2
 import sys
 import argparse
@@ -31,10 +28,8 @@ from collections import namedtuple
 from shutil import copyfile
 from io import StringIO
 from contextlib import redirect_stdout
-
 sys.path.insert(0, os.path.normpath(os.path.join(os.environ.get("HPM_SDK_BASE"), "scripts", "ide")))
 from hpm_sdk_proj_gen import ProjGenHelper
-
 HPM_SDK_BASE = "$(HPM_SDK_BASE)"
 PROJECT_TEMPLATE = "embedded_studio_proj_tmpl.xml"
 HELPER = ProjGenHelper(HPM_SDK_BASE, exclude_file_list = ["sbrk"])
@@ -50,10 +45,22 @@ def tree_insert_dirs(ses_dir, ses_file, f, tree):
         tree[d]["files"].append(f)
         return
     d = dirs[0]
+    # deal with relative path or windows path
+    if re.match(r'^\.\.', d) or re.match(r'^\w:', d):
+        for d_tmp in dirs[1:]:
+            d = "%s/%s" % (d, d_tmp)
+            if not re.match(r'^\.\.', d_tmp):
+                break
     if not d in tree.keys():
         tree[d] = {}
-    ses_dir = re.sub(re.escape(d + r'/'), '', ses_dir)
-    tree_insert_dirs(ses_dir, ses_file, f, tree[d])
+    if d == ses_dir:
+        if not "files" in tree[d].keys():
+            tree[d]["files"] = []
+        tree[d]["files"].append(f)
+    else:
+        ses_dir = re.sub(re.escape(d + r'/'), '', ses_dir)
+        tree_insert_dirs(ses_dir, ses_file, f, tree[d])
+
 def update_file_tree(sdk_base, out_dir, ses_file, f, tree, use_outdir_relpath):
     ses_dir, file = os.path.split(ses_file)
     if not use_outdir_relpath:
@@ -72,14 +79,16 @@ def get_file_extra_static_options(file_name, file_extra_static_options):
     section_placement = file_extra_static_options["section_placement"]
     if section_placement is not None:
         for path in section_placement.keys():
-            if path == file_name or file_name.startswith(path):
+            normalized_path = re.sub(r'\\', r'/', os.path.realpath(path))
+            if normalized_path == file_name or file_name.startswith(normalized_path):
                 for config_type in section_placement[path].keys():
                     for section_type in section_placement[path][config_type].keys():
                         extra_options[config_type] += " default_%s_section=\"%s\"" % (section_type, section_placement[path][config_type][section_type])
     optimization_level = file_extra_static_options["optimization_level"]
     if optimization_level is not None:
         for path in optimization_level.keys():
-            if path == file_name or file_name.startswith(path):
+            normalized_path = re.sub(r'\\', r'/', os.path.realpath(path))
+            if normalized_path == file_name or file_name.startswith(normalized_path):
                 for config_type in optimization_level[path].keys():
                     extra_options[config_type] += " gcc_optimization_level=\"%s\"" % (optimization_level[path][config_type])
     return extra_options
@@ -115,7 +124,6 @@ def populate_file_nodes(root, sdk_base, project_dir, custom_board_dir, out_dir, 
                     node += "%s<configuration Name=\"Debug\" %s/>\n" % (" " * ((level + 1) * 2), extra_options["Debug"])
                 if len(extra_options["Release"]) > 0:
                     node += "%s<configuration Name=\"Release\" %s/>\n" % (" " * ((level + 1) * 2), extra_options["Release"])
-
                 node += "%s</file>\n" % (" " * (level * 2))
         else:
             node += "%s<folder Name=\"%s\">\n" % (" " * (level * 2), n)
@@ -124,6 +132,8 @@ def populate_file_nodes(root, sdk_base, project_dir, custom_board_dir, out_dir, 
                     tmp_dir = n
                 else:
                     tmp_dir = "%s/%s" % (current_folder, n)
+                # get rid of ':' of windows path
+                tmp_dir = re.sub(r'\/(\w):\/', r'/\1/', tmp_dir)
                 if "files" in root[n].keys():
                     # as long as "files" exists in current node, this folder needs to be taken care of
                     node += "%s<configuration Name=\"Common\" build_intermediate_directory=\"%s\"/>\n" % (" " * ((level + 1) * 2), get_separate_intermediate_dir_name(tmp_dir))
@@ -172,12 +182,129 @@ def generate_file_structure(files, sdk_base, out_dir, project_dir, board_dir, bo
                     app_common_dir = d
                 else:
                     app_common_dir = project_dir
-            m = re.sub(re.escape(app_common_dir), '', f)
-            # deal with drive letter of Windows path
-            m = re.sub(r'^\w:', '', m)
+            if re.match(re.escape(app_common_dir), f):
+                m = re.sub(re.escape(app_common_dir), '', f)
+            else:
+                m = HELPER.get_relpath(f, project_dir)
+                m = re.sub(r'^', r'/', m)
+            m = re.sub(r'\\', r'/', m)
             ses_file = re.sub(r'^', r'application', m)
         update_file_tree(sdk_base, out_dir, ses_file, f, f_tree, use_outdir_relpath)
-
+    def find_longest_common_path_in_application(f_tree):
+        """
+        Traverse each first-level directory to find the longest directory path that has no "files"
+        and only one subdirectory, then rename the first-level directory to the found longest path
+        and assign its content to the updated first-level directory.
+        Example:
+            f_tree = {
+                "application": {
+                    "src": {
+                        "main": {
+                            "core": {...}
+                        }
+                    }
+                }
+            }
+            If "src" has no files and only one subdirectory "main", and "main" has only one subdirectory "core",
+            then "src" will be renamed to "src/main/core" and the content of core will be assigned to the new "src/main/core"
+        Args:
+            f_tree: File tree structure dictionary
+        Returns:
+            dict: Updated f_tree
+        """
+        if "application" not in f_tree:
+            return f_tree
+        app_tree = f_tree["application"]
+        if not isinstance(app_tree, dict):
+            return f_tree
+        # Get all first-level directories
+        first_level_dirs = list(app_tree.keys())
+        for dir_name in first_level_dirs:
+            if dir_name == "files":
+                continue
+            current_dir = app_tree[dir_name]
+            if not isinstance(current_dir, dict):
+                continue
+            # Check if current directory has no files and only one subdirectory
+            has_files = "files" in current_dir and len(current_dir.get("files", [])) > 0
+            subdirs = [k for k, v in current_dir.items() if k != "files" and isinstance(v, dict)]
+            if not has_files and len(subdirs) == 1:
+                # Recursively find the longest path
+                longest_path = find_longest_single_subdir_path(current_dir, dir_name)
+                if longest_path != dir_name:
+                    # Get the content of the longest path - need to find the final directory containing files
+                    path_parts = longest_path.split('/')
+                    current_content = current_dir
+                    # Navigate level by level to find the final directory containing files
+                    for part in path_parts[1:]:  # Skip first level directory name
+                        if part in current_content and isinstance(current_content[part], dict):
+                            current_content = current_content[part]
+                        else:
+                            # If path is incomplete, fall back to original directory
+                            current_content = current_dir
+                            break
+                    # Ensure we get the final directory content that contains files
+                    # If current content has no files, continue searching deeper
+                    while current_content and isinstance(current_content, dict):
+                        if "files" in current_content and current_content["files"]:
+                            break  # Found directory with files
+                        # Look for subdirectories
+                        subdirs = [k for k, v in current_content.items() if k != "files" and isinstance(v, dict)]
+                        if len(subdirs) == 1:
+                            current_content = current_content[subdirs[0]]
+                        else:
+                            break
+                    # Delete merged intermediate subdirectories
+                    delete_merged_subdirs(current_dir, dir_name, longest_path)
+                    # Update first level directory name and content
+                    del app_tree[dir_name]
+                    app_tree[longest_path] = current_content
+        return f_tree
+    def delete_merged_subdirs(current_dir, original_name, longest_path):
+        """
+        Delete merged intermediate subdirectories
+        Args:
+            current_dir: Current directory dictionary
+            original_name: Original directory name
+            longest_path: Longest path
+        """
+        path_parts = longest_path.split('/')
+        if len(path_parts) <= 1:
+            return
+        # Start from original directory and delete intermediate subdirectories level by level
+        current_level = current_dir
+        for i in range(1, len(path_parts) - 1):  # Skip first and last level
+            part = path_parts[i]
+            if part in current_level and isinstance(current_level[part], dict):
+                # If this subdirectory has only one subdirectory, delete it
+                subdir = current_level[part]
+                subdirs = [k for k, v in subdir.items() if k != "files" and isinstance(v, dict)]
+                if len(subdirs) == 1:
+                    del current_level[part]
+                    break
+                current_level = subdir
+            else:
+                break
+    def find_longest_single_subdir_path(current_dir, base_path):
+        """
+        Recursively find the longest path that has no files and only one subdirectory
+        Args:
+            current_dir: Current directory dictionary
+            base_path: Base path
+        Returns:
+            str: Longest path
+        """
+        # Check if current directory has no files and only one subdirectory
+        has_files = "files" in current_dir and len(current_dir.get("files", [])) > 0
+        subdirs = [k for k, v in current_dir.items() if k != "files" and isinstance(v, dict)]
+        if has_files or len(subdirs) != 1:
+            return base_path
+        # If there's only one subdirectory, continue recursively
+        subdir_name = subdirs[0]
+        new_path = f"{base_path}/{subdir_name}"
+        return find_longest_single_subdir_path(current_dir[subdir_name], new_path)
+    # Find and update longest common paths
+    f_tree = find_longest_common_path_in_application(f_tree)
     # generate ses project xml content
     nodes = populate_file_nodes(f_tree, sdk_base, app_common_dir, custom_board_dir, out_dir, level = 1, use_outdir_relpath = use_outdir_relpath, file_extra_static_options = file_extra_static_options)
     return nodes
@@ -200,7 +327,6 @@ def get_segger_rtl_linker_symbols(printf, scanf):
     prefix = ""
     print_float = False
     scan_float = False
-
     if printf["fp"]["value"] in ("Float", "Double"):
         if printf["fp"]["value"] == "Float":
             prefix = "__SEGGER_RTL_vfprintf=__SEGGER_RTL_vfprintf_short_float"
@@ -209,7 +335,6 @@ def get_segger_rtl_linker_symbols(printf, scanf):
         print_float = True
     else:
         prefix = "__SEGGER_RTL_vfprintf=__SEGGER_RTL_vfprintf"
-
     printf["fmt_level"]["value"] = re.sub(r" ", r"_", printf["fmt_level"]["value"].strip())
     if printf["fmt_level"]["value"] in ("long", "long_long"):
         prefix = "%s_%s" % (prefix, printf["fmt_level"]["value"])
@@ -217,21 +342,16 @@ def get_segger_rtl_linker_symbols(printf, scanf):
         prefix = "%s_long" % (prefix)
     elif not print_float:
         prefix = "%s_int" % (prefix)
-
     if printf["width_precision"]["value"] in ("No") and not print_float:
         prefix = "%s_nwp" % (prefix)
-
     if printf["wchar"]["value"] in ("Yes"):
         prefix = "%s_wchar" % (prefix)
-
     symbols += "%s;" % (prefix)
-
     if scanf["fp"]["value"] in ("Yes"):
         prefix = "__SEGGER_RTL_vfscanf=__SEGGER_RTL_vfscanf_float"
         scan_float = True
     else:
         prefix = "__SEGGER_RTL_vfscanf=__SEGGER_RTL_vfscanf"
-
     scanf["fmt_level"]["value"] = re.sub(r" ", r"_", scanf["fmt_level"]["value"].strip())
     if scanf["fmt_level"]["value"] in ("long", "long_long"):
         prefix = "%s_%s" % (prefix, scanf["fmt_level"]["value"])
@@ -239,12 +359,10 @@ def get_segger_rtl_linker_symbols(printf, scanf):
         prefix = "%s_long" % (prefix)
     elif not scan_float:
         prefix = "%s_int" % (prefix)
-
     if scanf["cc"]["value"] in ("Yes"):
         symbols += "%s_cc;" % (prefix)
     else:
         symbols += "%s;" % (prefix)
-
     return symbols
 
 def init_printf_scanf_properties():
@@ -262,7 +380,6 @@ def init_printf_scanf_properties():
     printf["width_precision"] = {}
     printf["width_precision"]["name"] = "linker_printf_width_precision_supported"
     printf["width_precision"]["value"] = "Yes"
-
     scanf["fp"] = {}
     scanf["fp"]["name"] = "linker_scanf_fp_enabled"
     scanf["fp"]["value"] = "No"
@@ -322,9 +439,7 @@ def process_extra_options(config):
         else:
             formatted = "%s=\"%s\"" % (opt_name, opt_val)
             opts.append(formatted)
-
     popluate_printf_scanf_opts(printf, scanf, opts)
-
     config["target"]["extra_ses_options"] = opts
     m = re.match(r'segger', config["target"]["linker_variant"], re.IGNORECASE)
     if m is None:
@@ -341,16 +456,12 @@ def get_openocd_cmdline(config, sdk_base, out_dir, use_outdir_relpath = True):
     if not "openocd_soc" in config["target"].keys():
         print("-- Segger openocd soc config is specified")
         return None
-
     openocd_cmdline = HELPER.get_file_path(config["target"]["openocd"], sdk_base, out_dir, use_outdir_relpath)
-
     probe_cfg = HELPER.get_file_path(os.path.join(sdk_base, "boards", "openocd", "probes", "%s.cfg" % config["target"]["debug_probe"]), sdk_base, out_dir, use_outdir_relpath)
     soc_cfg = HELPER.get_file_path(os.path.join(sdk_base, "boards", "openocd", "soc", "%s.cfg" % config["target"]["openocd_soc"]), sdk_base, out_dir, use_outdir_relpath)
-
     if use_outdir_relpath:
         probe_cfg = '$(ProjectDir)/' + probe_cfg
         soc_cfg = '$(ProjectDir)/' + soc_cfg
-
     board_cfg = ""
     if "board_dir" in config["target"].keys():
         if not HELPER.is_sdk_file(config["target"]["board_dir"], sdk_base):
@@ -367,7 +478,6 @@ def get_openocd_cmdline(config, sdk_base, out_dir, use_outdir_relpath = True):
                     board_cfg = '$(ProjectDir)/' + board_cfg
             else:
                 board_cfg = ""
-
     openocd_cmdline = "%s -f %s -f %s" % (config["target"]["openocd"], probe_cfg, soc_cfg)
     openocd_cmdline = re.sub(r'\\', '/', openocd_cmdline)
     if len(board_cfg):
@@ -437,39 +547,32 @@ def robust_split(item, expected_parts):
 def parse_config_item(item, expected_parts, item_type):
     """
     Parse a configuration item string and validate its format.
-
     Args:
         item: The string to parse (e.g., "C:\\path\\to\\file.c:Debug:-O2")
         expected_parts: Expected number of parts after splitting
         item_type: Type of item for error messages ("section placement" or "optimization level")
-
     Returns:
         tuple: (path_str, *other_parts) if valid, None if invalid
     """
     parts = robust_split(item, expected_parts)
     if parts is None:
         return None
-
     # Check that non-path parts don't contain colons
     for p in parts[1:]:
         if ':' in p:
             print(f"!! Segger: invalid {item_type}: {item}: colon found in part {p}")
             return None
-
     # Check that all parts are non-empty
     if any(len(p) == 0 for p in parts):
         print(f"!! Segger: invalid {item_type}: {item}: empty part found")
         return None
-
     return tuple(parts)
 
 def resolve_path(path_str):
     """
     Resolve a path string to an absolute path.
-
     Args:
         path_str: The path string to resolve
-
     Returns:
         str: The resolved absolute path
     """
@@ -488,10 +591,8 @@ def parse_section_placement(section_placement_array):
             if result is None:
                 return None
             path_str, config_type, section_type, section_name = result
-
             # Handle path resolution
             path = resolve_path(path_str)
-
             if section_placement is None:
                 section_placement = {}
             if path not in section_placement.keys():
@@ -513,14 +614,11 @@ def parse_optimization_level(optimization_level_array):
             if result is None:
                 return None
             path_str, config_type, opt_level = result
-
             # Handle path resolution
             path = resolve_path(path_str)
-
             # Convert optimization level if needed
             if len(opt_level) == 3:
                 opt_level = get_gcc_opt_level(opt_level)
-
             if optimization_level is None:
                 optimization_level = {}
             if path not in optimization_level.keys():
@@ -544,64 +642,49 @@ def generate_ses_project(config, out_dir=".", project_dir = None):
     files = config["target"]["sources"].split(",")
     sdk_base = HELPER.fix_path(config["target"]["sdk_base"])
     out_dir = HELPER.fix_path(out_dir)
-
     # use relative path which relatives to out_dir
     use_outdir_relpath = True
     try:
         _ = os.path.relpath(sdk_base, out_dir)
     except ValueError:
         use_outdir_relpath = False
-
     project_dir = HELPER.fix_path(project_dir)
     board_dir = HELPER.fix_path(config["target"]["board_dir"])
     board_name = config["target"]["board"]
-
     config["target"]["use_outdir_relpath"] = use_outdir_relpath
     config["target"]["includes"] = HELPER.get_include_path(config, sdk_base, out_dir, [], use_outdir_relpath)
     config["target"]["defines"] = HELPER.get_definitions(config["target"]["defines"])
     file_extra_static_options = parse_file_extra_static_options(sdk_base, out_dir, use_outdir_relpath, config)
     config["target"]["file_structure"] = generate_file_structure(files, sdk_base, out_dir, project_dir, board_dir, board_name, use_outdir_relpath, file_extra_static_options)
-
     config["target"]["link_symbols"] = HELPER.get_link_symbols(config["target"]["link_symbols"])
     config["target"]["linker"] = HELPER.get_file_path(config["target"]["linker"], sdk_base, out_dir, use_outdir_relpath)
-
     config["target"]["register_definition"] = HELPER.get_file_path(config["target"]["register_definition"], sdk_base, out_dir, use_outdir_relpath)
     config["target"]["cpu_register_definition"] = HELPER.get_file_path(config["target"]["cpu_register_definition"], sdk_base, out_dir, use_outdir_relpath)
     config["target"]["gcc_opt_level"] = get_gcc_opt_level(config["target"]["gcc_opt_level"].strip())
-
     config["target"]["toolchain_variant"] = config["target"]["toolchain_variant"].title()
-
     if config["target"]["ses_link_input"].strip():
         config["target"]["ses_link_input"] = HELPER.get_file_path(config["target"]["ses_link_input"], sdk_base, out_dir, use_outdir_relpath)
-
     if not "compiler_variant" in config["target"].keys() or (len(config["target"]["compiler_variant"].strip()) == 0):
         config["target"]["compiler_variant"] = "SEGGER"
-
     if not "assembler_variant" in config["target"].keys() or (len(config["target"]["assembler_variant"].strip()) == 0):
         config["target"]["assembler_variant"] = "SEGGER"
-
     if "linker_variant" in config["target"].keys() and (len(config["target"]["linker_variant"].strip())):
         config["target"]["linker_variant"] = config["target"]["linker_variant"].upper()
-
     if "openocd" in config["target"].keys():
         config["target"]["openocd_cmdline"] = get_openocd_cmdline(config, sdk_base, out_dir, use_outdir_relpath)
         if config["target"]["openocd_cmdline"] is None:
             config["target"]["openocd"] = ""
-
     if "post_build_command" in config["target"].keys() and use_outdir_relpath:
         sdk_base_relpath = HELPER.get_file_path(sdk_base, sdk_base, out_dir, use_outdir_relpath)
         sdk_base_relpath = re.sub(r'\\', r'/', sdk_base_relpath)
         cmd = re.sub(r'\$\(HPM_SDK_BASE\)', sdk_base_relpath, config["target"]["post_build_command"])
         config["target"]["post_build_command"] = re.sub(r'\\', r'/', cmd)
-
     process_extra_options(config)
     s = ""
     with open(os.path.join(sdk_base, "scripts", "ide", "segger", PROJECT_TEMPLATE), "r") as f:
         s = f.read()
-
     t = jinja2.Template(s)
     s = t.render(config)
-
     return s
 
 def generate_ses_session(out_dir):
@@ -619,25 +702,20 @@ def main():
     project_dir = sys.argv[3]
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
-
     config = HELPER.load_config(input_file)
     ses_project = generate_ses_project(config, out_dir, project_dir)
     if ses_project is None:
         print("!! Segger: Failed to generate project file")
         sys.exit(1)
-
     out_dir += "/"
     output_filename = out_dir + config["target"]["name"].replace(".", "_")
     project_file = output_filename + ".emProject"
     with open(project_file, "w") as f:
         f.write(ses_project)
-
     ses_session = generate_ses_session(out_dir)
     session_file = output_filename + ".emSession"
     with open(session_file, "w") as f:
         f.write(ses_session)
-
     print("-- Segger Embedded Studio Project: " + project_file)
-
 if __name__ == "__main__":
     main()

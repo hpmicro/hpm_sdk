@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -594,8 +594,10 @@ void pwm_init(void)
 #if defined(HPMSOC_HAS_HPMSDK_PWMV2)
 void pwm_init(void)
 {
-    pwmv2_cmp_config_t cmp_cfg[2];
-    pwmv2_config_t pwm_cfg;
+    pwmv2_cmp_config_t cmp_cfg[2] = {0};
+    pwmv2_config_t pwm_cfg = {0};
+
+    pwmv2_get_default_config(&pwm_cfg);
 
     cmp_cfg[0].cmp = PWM_RELOAD;
     cmp_cfg[0].enable_half_cmp = false;

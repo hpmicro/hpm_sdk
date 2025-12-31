@@ -21,7 +21,7 @@ static void enet_mode_init(ENET_Type *ptr, uint32_t intr)
     /* receive and transmit store and forward */
     ptr->DMA_OP_MODE |= ENET_DMA_OP_MODE_RSF_MASK | ENET_DMA_OP_MODE_TSF_MASK;
 
-    /* enalbe hardware flow control */
+    /* enable hardware flow control */
     ptr->DMA_OP_MODE |= ENET_DMA_OP_MODE_EFC_MASK;
 
     /* enable error frame and undersized good frame forwarding */
@@ -189,6 +189,16 @@ uint32_t enet_get_mmc_tx_interrupt_status(ENET_Type *ptr)
     return ptr->MMC_INTR_TX;
 }
 
+void enet_mask_mmc_ipc_rx_interrupt_event(ENET_Type *ptr, uint32_t mask)
+{
+    ptr->MMC_IPC_INTR_MASK_RX |= mask;
+}
+
+uint32_t enet_get_mmc_ipc_rx_interrupt_status(ENET_Type *ptr)
+{
+    return ptr->MMC_IPC_INTR_RX;
+}
+
 void enet_dma_flush(ENET_Type *ptr)
 {
     /* flush DMA transmit FIFO */
@@ -268,6 +278,9 @@ hpm_stat_t enet_controller_init(ENET_Type *ptr, enet_inf_type_t inf_type, enet_d
     /* mask the mmc tx interrupts */
     enet_mask_mmc_tx_interrupt_event(ptr, int_config->mmc_intr_mask_tx);
 
+    /* mask the mmc ipc rx interrupts */
+    enet_mask_mmc_ipc_rx_interrupt_event(ptr, int_config->mmc_ipc_intr_mask_rx);
+
     return status_success;
 }
 
@@ -322,7 +335,7 @@ uint32_t enet_check_received_frame(enet_rx_desc_t **parent_rx_desc_list_cur, ene
 enet_frame_t enet_get_received_frame(enet_rx_desc_t **parent_rx_desc_list_cur, enet_rx_frame_info_t *rx_frame_info)
 {
     uint32_t frame_length = 0;
-    enet_frame_t frame = {0, 0, 0};
+    enet_frame_t frame = {0};
     enet_rx_desc_t *rx_desc_list_cur = *parent_rx_desc_list_cur;
 
     /* get the frame length of the received packet: substruct 4 bytes of the CRC */
@@ -332,6 +345,7 @@ enet_frame_t enet_get_received_frame(enet_rx_desc_t **parent_rx_desc_list_cur, e
     /* get the address of the first frame descriptor and the buffer start address */
     frame.rx_desc = rx_frame_info->fs_rx_desc;
     frame.buffer = rx_frame_info->fs_rx_desc->rdes2_bm.buffer1;
+    frame.seg = rx_frame_info->seg_count;
 
     /* update the Ethernet dma global Rx descriptor with next Rx descriptor */
     /* chained mode */
@@ -344,7 +358,7 @@ enet_frame_t enet_get_received_frame(enet_rx_desc_t **parent_rx_desc_list_cur, e
 
 enet_frame_t enet_get_received_frame_interrupt(enet_rx_desc_t **parent_rx_desc_list_cur, enet_rx_frame_info_t *rx_frame_info, uint32_t rx_desc_count)
 {
-    enet_frame_t frame = {0, 0, 0};
+    enet_frame_t frame = {0};
     uint32_t desc_scan_counter = 0;
     enet_rx_desc_t *rx_desc_list_cur = *parent_rx_desc_list_cur;
 
@@ -394,6 +408,7 @@ enet_frame_t enet_get_received_frame_interrupt(enet_rx_desc_t **parent_rx_desc_l
                 frame.buffer = rx_desc_list_cur->rdes2_bm.buffer1;
             }
 
+            frame.seg = rx_frame_info->seg_count;
             frame.rx_desc = rx_frame_info->fs_rx_desc;
 
             rx_desc_list_cur = (enet_rx_desc_t *)(rx_desc_list_cur->rdes3_bm.next_desc);
@@ -431,6 +446,7 @@ void enet_get_default_interrupt_config(ENET_Type *ptr, enet_int_config_t *config
 
     config->mmc_intr_mask_rx = 0x03ffffff;         /* Disable all mmc rx interrupt events */
     config->mmc_intr_mask_tx = 0x03ffffff;         /* Disable all mmc tx interrupt events */
+    config->mmc_ipc_intr_mask_rx = 0x00000001;     /* Disable all ipc rx interrupt events */
 }
 
 uint32_t enet_prepare_tx_desc_with_ts_record(ENET_Type *ptr,
@@ -870,8 +886,30 @@ void enet_set_snapshot_ptp_message_type(ENET_Type *ptr, enet_ts_ss_ptp_msg_t ts_
     ptr->TS_CTRL |= ts_ss_ptp_msg << ENET_TS_CTRL_TSEVNTENA_SHIFT;
 }
 
+hpm_stat_t enet_get_default_ptp_config(ENET_Type *ptr, uint32_t ptp_clk_freq, enet_ptp_config_t *config)
+{
+    (void) ptr;
+
+    if (ptp_clk_freq == 0) {
+        return status_invalid_argument;
+    }
+
+    config->ssinc = ENET_ONE_SEC_IN_NANOSEC / ptp_clk_freq;
+    config->timestamp_rollover_mode = enet_ts_dig_rollover_control;
+    config->update_method = enet_ptp_time_coarse_update;
+    config->addend = 0;
+
+    return status_success;
+}
+
 void enet_init_ptp(ENET_Type *ptr, enet_ptp_config_t *config)
 {
+    bool default_setting = false;
+
+    if ((config->update_method == enet_ptp_time_fine_update) && (config->addend == 0)) {
+        default_setting = true;
+    }
+
     /* select the resolution of nanosecond */
     ptr->TS_CTRL &= ~ENET_TS_CTRL_TSCTRLSSR_MASK;
     ptr->TS_CTRL |= ENET_TS_CTRL_TSCTRLSSR_SET(config->timestamp_rollover_mode);
@@ -880,12 +918,13 @@ void enet_init_ptp(ENET_Type *ptr, enet_ptp_config_t *config)
     ptr->TS_CTRL |= ENET_TS_CTRL_TSENALL_MASK | ENET_TS_CTRL_TSENA_MASK;
 
     /* set sub-second increment */
+
     ptr->SUB_SEC_INCR &= ~ENET_SUB_SEC_INCR_SSINC_MASK;
-    ptr->SUB_SEC_INCR |= ENET_SUB_SEC_INCR_SSINC_SET(config->ssinc);
+    ptr->SUB_SEC_INCR |= default_setting ? ENET_SUB_SEC_INCR_SSINC_SET(2 * config->ssinc) : ENET_SUB_SEC_INCR_SSINC_SET(config->ssinc);
 
     if (config->update_method == enet_ptp_time_fine_update) {
         /* set the addend */
-        ptr->TS_ADDEND = config->addend;
+        ptr->TS_ADDEND = default_setting ? 0x80000000UL : config->addend;
 
         /* update the addend */
         ptr->TS_CTRL |= ENET_TS_CTRL_TSADDREG_MASK;

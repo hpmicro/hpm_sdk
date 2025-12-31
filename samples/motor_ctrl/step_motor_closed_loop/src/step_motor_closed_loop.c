@@ -536,7 +536,7 @@ void pwm_init(void)
     uint8_t cmp_index = BOARD_BLDCPWM_CMP_INDEX_0;
     pwm_cmp_config_t cmp_config[4] = {0};
     pwm_config_t pwm_config = {0};
-    pwm_output_channel_t pwm_output_ch_cfg;
+    pwm_output_channel_t pwm_output_ch_cfg = {0};
 
     /* Initialize PWM module */
     pwm_deinit(MOTOR0_BLDCPWM);
@@ -612,8 +612,10 @@ void pwm_init(void)
  */
 void pwm_init(void)
 {
-    pwmv2_cmp_config_t cmp_cfg[2];
-    pwmv2_config_t pwm_cfg;
+    pwmv2_cmp_config_t cmp_cfg[2] = {0};
+    pwmv2_config_t pwm_cfg = {0};
+
+    pwmv2_get_default_config(&pwm_cfg);
 
     /* Configure comparator settings */
     cmp_cfg[0].cmp = PWM_RELOAD;

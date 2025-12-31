@@ -2,17 +2,17 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 board:
-    soc: HPM6880
-    device: HPM6880xBDx
-    openocd-soc: hpm6880
-    openocd-probe: ft2232
+    soc: HPM6880            # the name of SOC used on this board
+    device: HPM6880xBDx     # device name used for jlink connection
+    openocd-soc: hpm6880    # used for openocd soc config file name: hpm6880.cfg
+    openocd-probe: ft2232    # used for openocd probe config file name: ft2232.cfg
     on-board-ram:
       type: sdram
-      size: 256M
+      size: 256M             # the size of on-board ram will be used in linker script as external ram size
       width: 32bit
     on-board-flash:
       type: qspi-nor-flash
-      size: 16M
+      size: 16M             # the size of on-board flash which will be used in linker script
     feature:
       - board_audio_in # PDM
       - board_audio_out # DAO
@@ -23,6 +23,8 @@ board:
       - board_enet_phy
       - board_sdcard
       - board_sdram
-      - board_ap6255_evb
+      - board_ap6256_evb
       - board_puart_pin
       - board_clk_ref_pin
+      - board_usb_otg
+      - board_eeprom_i2c

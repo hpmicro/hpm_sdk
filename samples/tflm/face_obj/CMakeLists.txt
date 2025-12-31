@@ -26,9 +26,7 @@ endif()
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(tflm_face_obj_example)
-if("${TOOLCHAIN_VARIANT}" STREQUAL "zcc" AND "${CMAKE_BUILD_TYPE}" STREQUAL "release")
-    sdk_compile_options("-flate-loop-unroll")
-endif()
+
 sdk_app_src(src/face_obj.c)
 sdk_app_src(src/fount24x48.c)
 sdk_app_src(src/image_provider.cc)

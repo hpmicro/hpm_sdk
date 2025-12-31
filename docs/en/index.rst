@@ -19,8 +19,9 @@ Sections
    components/index_en
    samples/index_en
    samples/drivers/index_en
-   docs/cmake_intro
    api_doc
+   cmake_user_guide
+   docs/cmake_intro
    CHANGELOG
 
 .. _BSD 3-Clause license:

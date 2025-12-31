@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -34,7 +34,7 @@ extern "C" {
 #define HPM_SDMMC_HOST_SUPPORT_SDR50              (1UL << 5)
 #define HPM_SDMMC_HOST_SUPPORT_SDR104             (1UL << 6)
 #define HPM_SDMMC_HOST_SUPPORT_HS200              (1UL << 7)
-#define HPM_SDMMC_HOST_SUPPORT_HS400              (1Ul << 8)
+#define HPM_SDMMC_HOST_SUPPORT_HS400              (1UL << 8)
 
 #define HPM_SDMMC_HOST_SUPPORT_CARD_DETECTION     (1UL << 16)
 #define HPM_SDMMC_HOST_SUPPORT_VOLTAGE_SWITCH     (1UL << 17)

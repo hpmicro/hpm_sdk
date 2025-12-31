@@ -46,6 +46,7 @@ can_demo 例程提供如下功能：
    * 6 - CAN filter test                                                           *
    * 7 - Send multiple CANFD messages for transmission check                       *
    * 8 - CAN error test with re-transmission disabled                              *
+   * 9 - CAN timestamp feature demo                                                *
    *                                                                               *
    *********************************************************************************
 

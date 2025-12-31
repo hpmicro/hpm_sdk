@@ -480,6 +480,78 @@ static inline bool usb_otgsc_get_session_valid_flag(USB_Type *ptr)
 }
 
 /**
+ * @brief enable otgsc id change interrupt
+ *
+ * @param[in] ptr A USB peripheral base address
+ */
+static inline void usb_otgsc_enable_id_chg_int(USB_Type *ptr)
+{
+    ptr->OTGSC |= USB_OTGSC_IDIE_MASK;
+}
+
+/**
+ * @brief disable otgsc id change interrupt
+ *
+ * @param[in] ptr A USB peripheral base address
+ */
+static inline void usb_otgsc_disable_id_chg_int(USB_Type *ptr)
+{
+    ptr->OTGSC &= ~USB_OTGSC_IDIE_MASK;
+}
+
+/**
+ * @brief enable otgsc id pull up
+ *
+ * @param[in] ptr A USB peripheral base address
+ */
+static inline void usb_otgsc_enable_id_pullup(USB_Type *ptr)
+{
+    ptr->OTGSC |= USB_OTGSC_IDPU_MASK;
+}
+
+/**
+ * @brief disable otgsc id pull up
+ *
+ * @param[in] ptr A USB peripheral base address
+ */
+static inline void usb_otgsc_disable_id_pullup(USB_Type *ptr)
+{
+    ptr->OTGSC &= ~USB_OTGSC_IDPU_MASK;
+}
+
+/**
+ * @brief Get otgsc id change flag
+ *
+ * @param[in] ptr A USB peripheral base address
+ * @retval The otgsc id change flag
+ */
+static inline bool usb_otgsc_get_id_chg_flag(USB_Type *ptr)
+{
+    return (USB_OTGSC_IDIS_GET(ptr->OTGSC) != 0) ? true : false;
+}
+
+/**
+ * @brief clear otgsc id change flag
+ *
+ * @param[in] ptr A USB peripheral base address
+ */
+static inline void usb_otgsc_clear_id_chg_flag(USB_Type *ptr)
+{
+    ptr->OTGSC |= USB_OTGSC_IDIS_MASK;
+}
+
+/**
+ * @brief Get otgsc id status
+ *
+ * @param[in] ptr A USB peripheral base address
+ * @retval The otgsc id status
+ */
+static inline bool usb_otgsc_get_id_status(USB_Type *ptr)
+{
+    return (USB_OTGSC_ID_GET(ptr->OTGSC) != 0) ? true : false;
+}
+
+/**
  * @brief De-Initialize USB phy
  *
  * @param[in] ptr A USB peripheral base address

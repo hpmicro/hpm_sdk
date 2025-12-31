@@ -61,7 +61,7 @@ static volatile uint64_t gpio_isr_rel_time; /* mark the real time from mchtimer 
 static volatile uint64_t gpio_isr_pre_time; /* mark the last time marked on gpio_isr */
 static volatile uint32_t level_value; /* mark the level */
 static volatile uint32_t pre_level_value; /* mark the level before enter the isr */
-static uint32_t debounce_threshold; /* debounce threshold */
+static volatile uint32_t debounce_threshold; /* debounce threshold */
 #endif
 
 #ifdef TEST_S_MODE
@@ -163,6 +163,11 @@ void test_interrupt_nesting(void)
 #else
     intc_m_enable_irq_with_priority(IRQn_PTPC, 2);
 #endif
+    while (1) {
+#if defined(DEBOUNCE_THRESHOLD_IN_MS)
+        pre_level_value = gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN);
+#endif
+    }
 }
 #elif defined(HPMSOC_HAS_HPMSDK_GPTMR)
 SDK_DECLARE_EXT_ISR_M(APP_BOARD_GPTMR_IRQ, tick_ms_isr)
@@ -204,6 +209,11 @@ void test_interrupt_nesting(void)
 #else
     intc_m_enable_irq_with_priority(APP_BOARD_GPTMR_IRQ, 2);
 #endif
+    while (1) {
+#if defined(DEBOUNCE_THRESHOLD_IN_MS)
+        pre_level_value = gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN);
+#endif
+    }
 }
 #endif
 
@@ -261,9 +271,6 @@ int main(void)
 #endif
 
     while (1) {
-#if defined(DEBOUNCE_THRESHOLD_IN_MS)
-        pre_level_value = gpio_read_pin(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN);
-#endif
     }
     return 0;
 }

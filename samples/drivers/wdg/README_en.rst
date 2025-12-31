@@ -33,7 +33,7 @@ When the example runs successfully, the board shows the following menu:
    *  4. Show valid Reset values                                  *
    *                                                              *
    *  NOTE:                                                       *
-   *    WDG total reset inverval =                                *
+   *    WDG total reset interval =                                *
    *    interrupt interval + reset interval                       *
    ****************************************************************
 

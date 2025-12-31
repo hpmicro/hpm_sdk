@@ -199,4 +199,30 @@ BOOT切换
    * - PA09
      - J3[32]
 
+- ESP-HOSTED 引脚接口
 
+.. list-table::
+   :header-rows: 1
+
+   * - 功能
+     - 位置
+     - 备注
+   * - PA09
+     - J3[32]
+     - RESET引脚
+   * - PB12
+     - J3[27]
+     - HANDSHAKE引脚
+   * - PB13
+     - J3[28]
+     - DATA_READY引脚
+
+- BROWNOUT中断指示引脚
+
+.. list-table::
+   :header-rows: 1
+
+   * - 功能
+     - 位置
+   * - PB13
+     - J3[28]

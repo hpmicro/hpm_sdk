@@ -1,0 +1,2 @@
+dependency:
+  - board_eeprom_i2c

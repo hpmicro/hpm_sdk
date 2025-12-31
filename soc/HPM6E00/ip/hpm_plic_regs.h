@@ -13,10 +13,10 @@ typedef struct {
     __RW uint32_t FEATURE;                     /* 0x0: Feature enable register */
     __RW uint32_t PRIORITY[161];               /* 0x4 - 0x284: Source priority */
     __R  uint8_t  RESERVED0[3448];             /* 0x288 - 0xFFF: Reserved */
-    __RW uint32_t PENDING[4];                  /* 0x1000 - 0x100C: Pending status */
-    __R  uint8_t  RESERVED1[112];              /* 0x1010 - 0x107F: Reserved */
-    __R  uint32_t TRIGGER[4];                  /* 0x1080 - 0x108C: Trigger type */
-    __R  uint8_t  RESERVED2[112];              /* 0x1090 - 0x10FF: Reserved */
+    __RW uint32_t PENDING[6];                  /* 0x1000 - 0x1014: Pending status */
+    __R  uint8_t  RESERVED1[104];              /* 0x1018 - 0x107F: Reserved */
+    __R  uint32_t TRIGGER[6];                  /* 0x1080 - 0x1094: Trigger type */
+    __R  uint8_t  RESERVED2[104];              /* 0x1098 - 0x10FF: Reserved */
     __R  uint32_t NUMBER;                      /* 0x1100: Number of supported interrupt sources and targets */
     __R  uint32_t INFO;                        /* 0x1104: Version and the maximum priority */
     __R  uint8_t  RESERVED3[3832];             /* 0x1108 - 0x1FFF: Reserved */
@@ -348,12 +348,16 @@ typedef struct {
 #define PLIC_PENDING_PENDING1 (1UL)
 #define PLIC_PENDING_PENDING2 (2UL)
 #define PLIC_PENDING_PENDING3 (3UL)
+#define PLIC_PENDING_PENDING4 (4UL)
+#define PLIC_PENDING_PENDING5 (5UL)
 
 /* TRIGGER register group index macro definition */
 #define PLIC_TRIGGER_TRIGGER0 (0UL)
 #define PLIC_TRIGGER_TRIGGER1 (1UL)
 #define PLIC_TRIGGER_TRIGGER2 (2UL)
 #define PLIC_TRIGGER_TRIGGER3 (3UL)
+#define PLIC_TRIGGER_TRIGGER4 (4UL)
+#define PLIC_TRIGGER_TRIGGER5 (5UL)
 
 /* INTEN register group index macro definition */
 #define PLIC_TARGETINT_INTEN_INTEN0 (0UL)

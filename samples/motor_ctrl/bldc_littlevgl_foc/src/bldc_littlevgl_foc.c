@@ -193,7 +193,7 @@ void pwm_init(void)
     uint8_t cmp_index = BOARD_BLDCPWM_CMP_INDEX_0;
     pwm_cmp_config_t cmp_config[4] = {0};
     pwm_pair_config_t pwm_pair_config = {0};
-    pwm_output_channel_t pwm_output_ch_cfg;
+    pwm_output_channel_t pwm_output_ch_cfg = {0};
 
     pwm_stop_counter(MOTOR0_BLDCPWM);
     reset_pwm_counter();

@@ -95,7 +95,7 @@ place at start of ILM with fixed order      { block vectors, block vectors_s };
 define access readonly { section .gcc_except_table, section .gcc_except_table.* };
 define access readonly { section .eh_frame, section .eh_frame.* };
 define access readonly { section .sdata.DW.* };
-place in FLASH with minimum size order       {
+place in FLASH with minimum size order   {
                                            block tdata_load,                        // Thread-local-storage load image
                                            block ctors,                             // Constructors block
                                            block dtors,                             // Destructors block
@@ -278,6 +278,7 @@ place in DRAM                               {
                                                 section .fast_ram
                                             };   // Fast access memory
 place in AXI_SRAM                           { block heap };                                         // Heap reserved block
+place in AXI_SRAM                           { section .freertos_heap_5 };
 place at end of DLM                         { block stack };                                        // Stack reserved block
 
 /* Keep */

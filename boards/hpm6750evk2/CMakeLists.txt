@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2024 HPMicro
+# Copyright (c) 2021-2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 set(ENV{CONFIG_PANEL_RGB_TM070RDH13} 1)
@@ -11,6 +11,8 @@ sdk_src(board.c)
 if(APP_USE_ENET_PORT_COUNT EQUAL 2)
     set(ENV{CONFIG_ENET_PHY_RTL8211} 1)
     set(ENV{CONFIG_ENET_PHY_RTL8201} 1)
+    sdk_compile_definitions(-DRGMII=1)
+    sdk_compile_definitions(-DRMII=1)
 elseif(APP_USE_ENET_PORT_COUNT EQUAL 1)
     if(APP_USE_ENET_ITF_RGMII)
         set(ENV{CONFIG_ENET_PHY_RTL8211} 1)

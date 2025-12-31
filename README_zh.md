@@ -3,9 +3,9 @@ gantt
     title HPM SDK Release Plan
     dateFormat  YYYY-MM-DD
     section Mainline Release
-    v1.9.0           :a1, 2025-01-01, 2025-03-31
-    v1.10.0          :a2, 2025-04-01, 2025-06-30
-    v1.11.0          :a3, 2025-07-01, 2025-12-31
+    v1.11.0          :a1, 2025-07-01, 2025-12-31
+    v1.12.0          :a2, 2026-01-01, 2026-06-30
+    v1.13.0          :a2, 2026-07-01, 2026-12-31
 ```
 
 [English](README.md)

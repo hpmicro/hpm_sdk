@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2001-2003 Swedish Institute of Computer Science.
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -82,7 +82,7 @@
  */
 #define MEMP_NUM_UDP_PCB        6
 
-/* MEMP_NUM_TCP_PCB: the number of simulatenously active TCP
+/* MEMP_NUM_TCP_PCB: the number of simultaneously active TCP
  *   connections.
  */
 #define MEMP_NUM_TCP_PCB        10

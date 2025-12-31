@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021,2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,13 +9,11 @@
 #define HPM_MISC_H
 
 #define ILM_LOCAL_BASE (0x0U)
-#define ILM_SIZE_IN_BYTE (0x40000U)
+#define ILM_SIZE_IN_BYTE (0x20000U)
 #define DLM_LOCAL_BASE (0x80000U)
-#define DLM_SIZE_IN_BYTE (0x40000U)
+#define DLM_SIZE_IN_BYTE (0x20000U)
 #define CORE0_ILM_SYSTEM_BASE (0x1040000U)
 #define CORE0_DLM_SYSTEM_BASE (0x1060000U)
-#define CORE1_ILM_SYSTEM_BASE (0x1180000U)
-#define CORE1_DLM_SYSTEM_BASE (0x11C0000U)
 
 #define ADDRESS_IN_ILM(address) \
     ((ILM_LOCAL_BASE) <= (address)) && \
@@ -35,7 +33,6 @@
     ((address) - CORE0_DLM_SYSTEM_BASE + (DLM_LOCAL_BASE))
 
 #define HPM_CORE0 (0U)
-#define HPM_CORE1 (1U)
 
 /* map core local memory(DLM/ILM) to system address */
 static inline uint32_t core_local_mem_to_sys_address(uint8_t core_id, uint32_t addr)

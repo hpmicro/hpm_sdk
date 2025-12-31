@@ -14,7 +14,7 @@
 /**
  *
  * @brief BPOR driver APIs
- * @defgroup bpor_interface BPOR driver APIs
+ * @defgroup bpor_hpm6360_interface BPOR driver APIs for HPM6360
  * @ingroup io_interfaces
  * @{
  *

@@ -353,6 +353,61 @@ static inline void gpio_disable_port_interrupt_with_mask(GPIO_Type *ptr, uint32_
     ptr->IE[port].CLEAR = mask;
 }
 
+/**
+ * @brief Enable asynchronous interrupt for specific pin
+ *
+ * @note Asynchronous interrupt is triggered by combinational logic, it is sensitive to environment noise.
+ *
+ * @param ptr GPIO base address
+ * @param port Port index
+ * @param pin Pin index
+ */
+static inline void gpio_enable_pin_async_interrupt(GPIO_Type *ptr, uint32_t port, uint8_t pin)
+{
+    ptr->AS[port].SET = 1 << pin;
+}
+
+/**
+ * @brief Disable asynchronous interrupt for specific pin
+ *
+ * @note Disable asynchronous interrupt mode, the pin irq will be triggered base on system clock
+ *
+ * @param ptr GPIO base address
+ * @param port Port index
+ * @param pin Pin index
+ */
+static inline void gpio_disable_pin_async_interrupt(GPIO_Type *ptr, uint32_t port, uint8_t pin)
+{
+    ptr->AS[port].CLEAR = 1 << pin;
+}
+
+/**
+ * @brief Enable asynchronous interrupt with given mask on specific port
+ *
+ * @note Asynchronous interrupt is triggered by combinational logic, it is sensitive to environment noise.
+ *
+ * @param ptr GPIO base address
+ * @param port Port index
+ * @param mask Mask of interrupts to be enabled
+ */
+static inline void gpio_enable_port_async_interrupt_with_mask(GPIO_Type *ptr, uint32_t port, uint8_t mask)
+{
+    ptr->AS[port].SET = mask;
+}
+
+/**
+ * @brief Disable asynchronous interrupts with given mask on specific port
+ *
+ * @note Disable asynchronous interrupt mode, the pin irq will be triggered base on system clock
+ *
+ * @param ptr GPIO base address
+ * @param port Port index
+ * @param mask Mask of interrupts to be disabled
+ */
+static inline void gpio_disable_port_async_interrupt_with_mask(GPIO_Type *ptr, uint32_t port, uint8_t mask)
+{
+    ptr->AS[port].CLEAR = mask;
+}
 
 /**
  * @brief   Config pin interrupt

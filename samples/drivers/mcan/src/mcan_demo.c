@@ -457,7 +457,7 @@ bool can_loopback_test(MCAN_Type *base, bool enable_canfd)
             tx_buf.data_8[i] = (uint8_t) i | (i << 4);
         }
     } else {
-        tx_buf.dlc = MCAN_DATA_FIELD_SIZE_64BYTES;
+        tx_buf.dlc = MCAN_MSG_DLC_64_BYTES;
         tx_buf.canfd_frame = 1;
         tx_buf.bitrate_switch = 1;
         for (uint32_t i = 0; i < mcan_get_message_size_from_dlc(tx_buf.dlc); i++) {

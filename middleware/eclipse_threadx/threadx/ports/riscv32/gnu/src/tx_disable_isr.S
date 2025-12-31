@@ -12,6 +12,7 @@
 .global __set_interrupt_state
 
 .section .isr_vector, "ax"
+.balign 4
 .type __disable_interrupt, function
 __disable_interrupt:
 # Disable global interupt
@@ -20,6 +21,7 @@ __disable_interrupt:
     ret
 
 .section .isr_vector, "ax"
+.balign 4
 .type __get_interrupt_state, function
 __get_interrupt_state:
 # Save the Machine status register
@@ -27,6 +29,7 @@ __get_interrupt_state:
     ret
 
 .section .isr_vector, "ax"
+.balign 4
 .type __set_interrupt_state, function
 __set_interrupt_state:
 # restore the Machine status register previous state

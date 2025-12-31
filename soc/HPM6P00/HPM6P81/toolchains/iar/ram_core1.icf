@@ -20,10 +20,16 @@ if (isdefinedsymbol(HEAP_SIZE)) {
   define symbol __size_heap__          = 0x4000;
 }
 
+if (isdefinedsymbol(_noncacheable_size)) {
+  define symbol __noncacheable_size__    = _noncacheable_size;
+} else {
+  define symbol __noncacheable_size__    = 32k;
+}
+
 /* Regions */
 define region ILM = mem:[from 0x00040000 size 128k];        /* ILM */
-define region DLM = mem:[from 0x00240000 size 96k];        /* DLM */
-define region NONCACHEABLE_RAM = mem:[from 0x00258000 size 32k];    /* AXI SRAM1 */
+define region DLM = mem:[from 0x00240000 size 128k - __noncacheable_size__];        /* DLM */
+define region NONCACHEABLE_RAM = mem:[from 0x00260000 - __noncacheable_size__ size __noncacheable_size__];    /* AXI SRAM1 */
 define region SHARE_RAM = mem:[from 0x0123C000 size 16k];
 
 /* Blocks */

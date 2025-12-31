@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -125,7 +125,7 @@ int main(void)
     timing_config.master_config.clk_src_freq_in_hz = spi_clcok;
     timing_config.master_config.sclk_freq_in_hz = BOARD_APP_SPI_SCLK_FREQ;
     if (status_success != spi_master_timing_init(BOARD_APP_SPI_BASE, &timing_config)) {
-        printf("SPI master timming init failed\n");
+        printf("SPI master timing init failed\n");
         while (1) {
         }
     }

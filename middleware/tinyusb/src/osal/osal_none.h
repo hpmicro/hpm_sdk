@@ -32,13 +32,46 @@ extern "C" {
 #endif
 
 //--------------------------------------------------------------------+
-// TASK API
+// Spinlock API
 //--------------------------------------------------------------------+
+// Note: This implementation is designed for bare-metal single-core systems without RTOS.
+// - Supports nested locking within the same execution context
+// - NOT suitable for true SMP (Symmetric Multi-Processing) systems
+// - NOT thread-safe for multi-threaded environments
+// - Primarily manages interrupt enable/disable state for critical sections
+typedef struct {
+  void (* interrupt_set)(bool enabled);
+  uint32_t nested_count;
+} osal_spinlock_t;
 
-#if CFG_TUH_ENABLED
-// currently only needed/available in host mode
-TU_ATTR_WEAK void osal_task_delay(uint32_t msec);
-#endif
+// For SMP, spinlock must be locked by hardware, cannot just use interrupt
+#define OSAL_SPINLOCK_DEF(_name, _int_set) \
+  osal_spinlock_t _name = { .interrupt_set = _int_set, .nested_count = 0 }
+
+TU_ATTR_ALWAYS_INLINE static inline void osal_spin_init(osal_spinlock_t *ctx) {
+  (void) ctx;
+}
+
+TU_ATTR_ALWAYS_INLINE static inline void osal_spin_lock(osal_spinlock_t *ctx, bool in_isr) {
+  // Disable interrupts first to make nested_count increment atomic
+  if (!in_isr && ctx->nested_count == 0) {
+    ctx->interrupt_set(false);
+  }
+  ctx->nested_count++;
+}
+
+TU_ATTR_ALWAYS_INLINE static inline void osal_spin_unlock(osal_spinlock_t *ctx, bool in_isr) {
+  if (ctx->nested_count == 0) {
+    return; // spin is not locked to begin with
+  }
+
+  ctx->nested_count--;
+
+  // Only re-enable interrupts when fully unlocked
+  if (!in_isr && ctx->nested_count == 0) {
+    ctx->interrupt_set(true);
+  }
+}
 
 //--------------------------------------------------------------------+
 // Binary Semaphore API
@@ -53,6 +86,12 @@ TU_ATTR_ALWAYS_INLINE static inline osal_semaphore_t osal_semaphore_create(osal_
   semdef->count = 0;
   return semdef;
 }
+
+TU_ATTR_ALWAYS_INLINE static inline bool osal_semaphore_delete(osal_semaphore_t semd_hdl) {
+  (void) semd_hdl;
+  return true; // nothing to do
+}
+
 
 TU_ATTR_ALWAYS_INLINE static inline bool osal_semaphore_post(osal_semaphore_t sem_hdl, bool in_isr) {
   (void) in_isr;
@@ -90,6 +129,11 @@ TU_ATTR_ALWAYS_INLINE static inline osal_mutex_t osal_mutex_create(osal_mutex_de
   return mdef;
 }
 
+TU_ATTR_ALWAYS_INLINE static inline bool osal_mutex_delete(osal_mutex_t mutex_hdl) {
+  (void) mutex_hdl;
+  return true; // nothing to do
+}
+
 TU_ATTR_ALWAYS_INLINE static inline bool osal_mutex_lock (osal_mutex_t mutex_hdl, uint32_t msec) {
   return osal_semaphore_wait(mutex_hdl, msec);
 }
@@ -112,7 +156,7 @@ TU_ATTR_ALWAYS_INLINE static inline bool osal_mutex_unlock(osal_mutex_t mutex_hd
 #include "common/tusb_fifo.h"
 
 typedef struct {
-  void (* interrupt_set)(bool);
+  void (* interrupt_set)(bool enabled);
   tu_fifo_t ff;
 } osal_queue_def_t;
 
@@ -126,45 +170,37 @@ typedef osal_queue_def_t* osal_queue_t;
     .ff = TU_FIFO_INIT(_name##_buf, _depth, _type, false) \
   }
 
-// lock queue by disable USB interrupt
-TU_ATTR_ALWAYS_INLINE static inline void _osal_q_lock(osal_queue_t qhdl) {
-  // disable dcd/hcd interrupt
-  qhdl->interrupt_set(false);
-}
-
-// unlock queue
-TU_ATTR_ALWAYS_INLINE static inline void _osal_q_unlock(osal_queue_t qhdl) {
-  // enable dcd/hcd interrupt
-  qhdl->interrupt_set(true);
-}
-
 TU_ATTR_ALWAYS_INLINE static inline osal_queue_t osal_queue_create(osal_queue_def_t* qdef) {
-  tu_fifo_clear(&qdef->ff);
+  (void) tu_fifo_clear(&qdef->ff);
   return (osal_queue_t) qdef;
+}
+
+TU_ATTR_ALWAYS_INLINE static inline bool osal_queue_delete(osal_queue_t qhdl) {
+  (void) qhdl;
+  return true; // nothing to do
 }
 
 TU_ATTR_ALWAYS_INLINE static inline bool osal_queue_receive(osal_queue_t qhdl, void* data, uint32_t msec) {
   (void) msec; // not used, always behave as msec = 0
 
-  _osal_q_lock(qhdl);
-  bool success = tu_fifo_read(&qhdl->ff, data);
-  _osal_q_unlock(qhdl);
+  qhdl->interrupt_set(false);
+  const bool success = tu_fifo_read(&qhdl->ff, data);
+  qhdl->interrupt_set(true);
 
   return success;
 }
 
 TU_ATTR_ALWAYS_INLINE static inline bool osal_queue_send(osal_queue_t qhdl, void const* data, bool in_isr) {
   if (!in_isr) {
-    _osal_q_lock(qhdl);
+    qhdl->interrupt_set(false);
   }
 
-  bool success = tu_fifo_write(&qhdl->ff, data);
+  const bool success = tu_fifo_write(&qhdl->ff, data);
 
   if (!in_isr) {
-    _osal_q_unlock(qhdl);
+    qhdl->interrupt_set(true);
   }
 
-  TU_ASSERT(success);
   return success;
 }
 

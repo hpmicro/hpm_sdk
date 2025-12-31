@@ -32,6 +32,7 @@
         .play_source = wm8960_play_source_dac,
         .bus         = wm8960_bus_left_justified,
         .format = {.mclk_hz = 0U, .sample_rate = CODEC_SAMPLE_RATE_HZ, .bit_width = CODEC_BIT_WIDTH},
+        .lrclk_polarity = wm8960_lrclk_polarity_low_for_left_channel,
     };
 
     wm8960_control_t wm8960_control = {
@@ -48,6 +49,7 @@
                 .sample_rate = CODEC_SAMPLE_RATE_HZ,
                 .bit_width = CODEC_BIT_WIDTH,
                 .sclk_edge = sgtl_sclk_valid_edge_rising}, /*!< audio format */
+        .lrclk_polarity = sgtl_lrclk_polarity_low_for_left_channel,
     };
 
     sgtl_context_t sgtl5000_context = {
@@ -87,11 +89,13 @@ void test_codec_playback_record(void)
 
 #if defined(CONFIG_CODEC_WM8960) && CONFIG_CODEC_WM8960
     wm8960_config.format.mclk_hz = i2s_mclk_hz;
+    wm8960_config.lrclk_polarity = (i2s_config.invert_fclk_out) ? wm8960_lrclk_polarity_high_for_left_channel : wm8960_lrclk_polarity_low_for_left_channel;
     if (wm8960_init(&wm8960_control, &wm8960_config) != status_success) {
         printf("Init Audio Codec failed\n");
     }
 #elif defined(CONFIG_CODEC_SGTL5000) && CONFIG_CODEC_SGTL5000
     sgtl5000_config.format.mclk_hz = i2s_mclk_hz;
+    sgtl5000_config.lrclk_polarity = (i2s_config.invert_fclk_out) ? sgtl_lrclk_polarity_high_for_left_channel : sgtl_lrclk_polarity_low_for_left_channel;
     if (sgtl_init(&sgtl5000_context, &sgtl5000_config) != status_success) {
         printf("Init Audio Codec failed\n");
     }

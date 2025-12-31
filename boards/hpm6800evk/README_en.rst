@@ -368,6 +368,35 @@ Pin Description
      * - PD31
        - J20[7]
 
+- ESP-HOSTED Pin
+
+.. list-table::
+   :header-rows: 1
+
+   * - Function
+     - Position
+     - Note
+   * - PE11
+     - P2[13]
+     - RESET Pin
+   * - PE12
+     - P2[3]
+     - HANDSHAKE Pin
+   * - PE13
+     - P2[5]
+     - DATA_READY Pin
+
+- BROWNOUT Interrupt Indicator Pin
+
+.. list-table::
+   :header-rows: 1
+
+   * - Function
+     - Position
+   * - PE27
+     - J19[5]
+
+
 .. _hpm6800evk_known_issues:
 
 Board Know Issue

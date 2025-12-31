@@ -1,0 +1,41 @@
+/*
+ * SPDX-FileCopyrightText: 2015-2022 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#ifndef _ESP_NETIF_TYPES_H_
+#define _ESP_NETIF_TYPES_H_
+
+#include <stdbool.h>
+#include <stdint.h>
+#include "esp_err.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * @brief Definition of ESP-NETIF based errors
+ */
+#define ESP_ERR_ESP_NETIF_BASE                  0x5000
+#define ESP_ERR_ESP_NETIF_INVALID_PARAMS        ESP_ERR_ESP_NETIF_BASE + 0x01
+#define ESP_ERR_ESP_NETIF_IF_NOT_READY          ESP_ERR_ESP_NETIF_BASE + 0x02
+#define ESP_ERR_ESP_NETIF_DHCPC_START_FAILED    ESP_ERR_ESP_NETIF_BASE + 0x03
+#define ESP_ERR_ESP_NETIF_DHCP_ALREADY_STARTED  ESP_ERR_ESP_NETIF_BASE + 0x04
+#define ESP_ERR_ESP_NETIF_DHCP_ALREADY_STOPPED  ESP_ERR_ESP_NETIF_BASE + 0x05
+#define ESP_ERR_ESP_NETIF_NO_MEM                ESP_ERR_ESP_NETIF_BASE + 0x06
+#define ESP_ERR_ESP_NETIF_DHCP_NOT_STOPPED      ESP_ERR_ESP_NETIF_BASE + 0x07
+#define ESP_ERR_ESP_NETIF_DRIVER_ATTACH_FAILED  ESP_ERR_ESP_NETIF_BASE + 0x08
+#define ESP_ERR_ESP_NETIF_INIT_FAILED           ESP_ERR_ESP_NETIF_BASE + 0x09
+#define ESP_ERR_ESP_NETIF_DNS_NOT_CONFIGURED    ESP_ERR_ESP_NETIF_BASE + 0x0A
+#define ESP_ERR_ESP_NETIF_MLD6_FAILED           ESP_ERR_ESP_NETIF_BASE + 0x0B
+#define ESP_ERR_ESP_NETIF_IP6_ADDR_FAILED       ESP_ERR_ESP_NETIF_BASE + 0x0C
+#define ESP_ERR_ESP_NETIF_DHCPS_START_FAILED    ESP_ERR_ESP_NETIF_BASE + 0x0D
+
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // _ESP_NETIF_TYPES_H_

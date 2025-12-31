@@ -14,3 +14,4 @@ Components
     smbus/README_en
     serial_nor/README_en
     uart_lin/README_en
+    eeprom_hal/README_en

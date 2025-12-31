@@ -36,7 +36,7 @@ hpm_stat_t hpm_serial_nor_is_busy(hpm_serial_nor_t *flash);
 
 /**
  * @brief set serial nor flash write enable
- * @param [in] channel serial nor flash channel
+ * @param [in] flash the serial nor context
  * @return hpm_stat_t: status_success if write enable success
  */
 hpm_stat_t hpm_serial_nor_write_enable(hpm_serial_nor_t *flash);
@@ -98,7 +98,8 @@ hpm_stat_t hpm_serial_nor_erase_sector_nonblocking(hpm_serial_nor_t *flash, uint
  * @note the erase sector address must be sector alignment
  *
  * @param [in] flash  the serial nor context
- * @param [in] sector_addr the serial nor flash sector address
+ * @param [in] start the serial nor flash start address
+ * @param [in] length the length to erase
  * @return hpm_stat_t: status_success if erase success
  */
 hpm_stat_t hpm_serial_nor_erase_blocking(hpm_serial_nor_t *flash, uint32_t start, uint32_t length);

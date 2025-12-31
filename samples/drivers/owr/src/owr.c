@@ -59,13 +59,14 @@ hpm_stat_t ds18b20_read_rom(void)
     /* Read result */
     for (int i = 0; i < 8; i++) {
         /* read Data */
-        owr_read_data(APP_OWR, (uint32_t *)p++);
+       owr_read_data(APP_OWR, p++);
     }
 
     printf("Family Code: %02x\n", read_rom_result.family_code);
 
     printf("Serial Num:");
-    for (int i = 0; i < 6; i++) {
+    /* Print serial number in MSB to LSB order (human-readable format) */
+    for (int i = 5; i >= 0; i--) {
         printf("%02x ", read_rom_result.serial_num[i]);
     }
     printf("\n");
@@ -75,9 +76,9 @@ hpm_stat_t ds18b20_read_rom(void)
     return status_success;
 }
 
-hpm_stat_t ds18b20_read_scratchpad(uint32_t *data)
+hpm_stat_t ds18b20_read_scratchpad(uint8_t *data)
 {
-    uint32_t *p = NULL;
+    uint8_t *p = NULL;
 
     if (data == NULL) {
         return status_invalid_argument;
@@ -97,9 +98,9 @@ hpm_stat_t ds18b20_read_scratchpad(uint32_t *data)
     return status_success;
 }
 
-hpm_stat_t ds18b20_read_config(uint32_t *data)
+hpm_stat_t ds18b20_read_config(uint8_t *data)
 {
-    uint32_t scratchpad[DS18B20_SCRATCHPAD_MAX_COUNT];
+    uint8_t scratchpad[DS18B20_SCRATCHPAD_MAX_COUNT];
     uint8_t res;
 
     if (data == NULL) {
@@ -134,7 +135,7 @@ hpm_stat_t ds18b20_calc_temp(int16_t data, uint8_t res, float *temp)
 
 hpm_stat_t ds18b20_read_temp(uint8_t *data)
 {
-    uint32_t scratchpad[DS18B20_SCRATCHPAD_MAX_COUNT];
+    uint8_t scratchpad[DS18B20_SCRATCHPAD_MAX_COUNT];
     uint8_t temp_lsb, temp_msb;
 
     ds18b20_read_scratchpad(scratchpad);
@@ -150,7 +151,7 @@ hpm_stat_t ds18b20_read_temp(uint8_t *data)
 
 hpm_stat_t ds18b20_convert_temp(void)
 {
-    uint32_t data;
+    uint8_t data;
     uint32_t timeout = 8; /* 800ms */
 
     /* convert temperature command */
@@ -175,7 +176,7 @@ int main(void)
 {
     uint32_t status;
     owr_config_t config;
-    uint32_t resolution;
+    uint8_t resolution;
     int16_t temp;
     float temp_value;
 

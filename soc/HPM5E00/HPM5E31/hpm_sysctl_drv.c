@@ -172,13 +172,13 @@ hpm_stat_t sysctl_enable_group_resource(SYSCTL_Type *ptr,
 
 bool sysctl_check_group_resource_enable(SYSCTL_Type *ptr,
                                         uint8_t group,
-                                        sysctl_resource_t linkable_resource)
+                                        sysctl_resource_t resource)
 {
     uint32_t index, offset;
     bool enable;
 
-    index = (linkable_resource - sysctl_resource_linkable_start) / 32;
-    offset = (linkable_resource - sysctl_resource_linkable_start) % 32;
+    index = (resource - sysctl_resource_linkable_start) / 32;
+    offset = (resource - sysctl_resource_linkable_start) % 32;
     switch (group) {
     case SYSCTL_RESOURCE_GROUP0:
         enable = ((ptr->GROUP0[index].VALUE & (1UL << offset)) != 0) ? true : false;

@@ -134,13 +134,31 @@ add_custom_command(
 
 # Check board capability and excluded targets from the application YAML file
 if(APP_YAML_PATH)
-    check_board_capability(${BOARD_YAML} "${APP_YAML_PATH}/app.yaml" ${APP_BIN_DIR} ${CMAKE_GENERATOR} result)
+    check_board_capability(${BOARD_YAML} "${APP_YAML_PATH}/app.yaml" result)
     if(${result} STREQUAL "1")
         message(FATAL_ERROR "${BOARD} can not support this sample")
     endif()
-    if(${result} STREQUAL "2")
-        message(FATAL_ERROR "Failed to build core1 project for this sample")
+
+    # Check if linked project exists and build if needed
+            check_linked_project("${APP_YAML_PATH}/app.yaml" has_linked_project)
+        if(${has_linked_project} STREQUAL "0")
+
+            # Set default value for DISABLE_LINKED_PROJECT_BUILD if not defined
+            if(NOT DEFINED DISABLE_LINKED_PROJECT_BUILD)
+                set(DISABLE_LINKED_PROJECT_BUILD FALSE)
+            endif()
+
+            # Build linked project (or generate placeholder if disabled)
+            build_linked_project(${BOARD_YAML} "${APP_YAML_PATH}/app.yaml" ${APP_BIN_DIR} ${CMAKE_GENERATOR} build_result ${DISABLE_LINKED_PROJECT_BUILD})
+        if(NOT ${build_result} STREQUAL "0")
+            if(DISABLE_LINKED_PROJECT_BUILD)
+                message(WARNING "Failed to generate placeholder file for linked project")
+            else()
+                message(FATAL_ERROR "Failed to build linked project")
+            endif()
+        endif()
     endif()
+
     check_excluded_targets("${APP_YAML_PATH}/app.yaml" excluded_targets)
     # Check if a specific minimum SDK version is needed
     get_app_min_sdk_version("${APP_YAML_PATH}/app.yaml" app_min_sdk_version)

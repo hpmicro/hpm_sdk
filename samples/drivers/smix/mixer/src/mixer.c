@@ -40,6 +40,8 @@
 
 volatile bool dma_transfer_done;
 
+static bool i2s_invert_fclk_out;
+
 typedef struct {
     uint32_t sample_rate;
     uint8_t channel_num;
@@ -73,6 +75,7 @@ hpm_stat_t board_codec_init(audio_data_t *audio_data, uint32_t mclk_freq)
         .play_source = wm8960_play_source_dac,
         .bus         = wm8960_bus_left_justified,
         .format = {.mclk_hz = mclk_freq, .sample_rate = sample_rate, .bit_width = audio_depth},
+        .lrclk_polarity = (i2s_invert_fclk_out) ? wm8960_lrclk_polarity_high_for_left_channel : wm8960_lrclk_polarity_low_for_left_channel,
     };
 
     wm8960_control_t wm8960_control = {
@@ -95,6 +98,7 @@ hpm_stat_t board_codec_init(audio_data_t *audio_data, uint32_t mclk_freq)
             .bit_width = audio_depth,
             .sclk_edge = sgtl_sclk_valid_edge_rising
         },
+        .lrclk_polarity = (i2s_invert_fclk_out) ? sgtl_lrclk_polarity_high_for_left_channel : sgtl_lrclk_polarity_low_for_left_channel,
     };
 
     sgtl_context_t sgtl5000_context = {
@@ -122,6 +126,7 @@ hpm_stat_t board_i2s_init(audio_data_t *audio_data, uint32_t mclk_freq)
     i2s_get_default_config(CODEC_I2S, &i2s_config);
     i2s_config.enable_mclk_out = true;
     i2s_init(CODEC_I2S, &i2s_config);
+    i2s_invert_fclk_out = i2s_config.invert_fclk_out;
 
     i2s_get_default_transfer_config(&transfer);
     transfer.sample_rate = audio_data->sample_rate;

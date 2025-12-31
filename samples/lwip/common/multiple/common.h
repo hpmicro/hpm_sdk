@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -10,8 +10,11 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include <stdbool.h>
+#include "board.h"
 #include "common_cfg.h"
 #include "lwip/netif.h"
+#include "hpm_l1c_drv.h"
+#include "hpm_enet_drv.h"
 #include "hpm_enet_phy_common.h"
 
 #if defined(NO_SYS) && !NO_SYS
@@ -21,8 +24,9 @@
 #include "semphr.h"
 #include "queue.h"
 #include "timers.h"
-#else
+#elif defined(__ENABLE_RTTHREAD_NANO) && __ENABLE_RTTHREAD_NANO
 #include "osal.h"
+#define IDLE_TASK_PRIO      (RT_THREAD_PRIORITY_MAX - 1)
 #endif
 #endif /* defined(NO_SYS) && !NO_SYS */
 
@@ -50,10 +54,38 @@ typedef enum {
 #define LWIP_APP_TIMER_INTERVAL (2 * 1000U)  /* 2 * 1000 ms */
 #endif /* LWIP_APP_TIMER_INTERVAL  */
 
+#ifndef ENET_TX_BUFF_COUNT
+#define ENET_TX_BUFF_COUNT  (10U)
+#endif
+
+#ifndef ENET_RX_BUFF_COUNT
+#define ENET_RX_BUFF_COUNT  (20U)
+#endif
+
+#ifndef ENET_TX_BUFF_SIZE
+#define ENET_TX_BUFF_SIZE   (1536U)
+#endif
+
+#ifndef ENET_RX_BUFF_SIZE
+#define ENET_RX_BUFF_SIZE   (1536U)
+#endif
+
+typedef ENET_Type enet_base_t;
+
+typedef struct {
+    int idx;
+    enet_frame_t frame[ENET_RX_BUFF_COUNT];
+} enet_frame_pointer_t;
+
 #if defined __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
+extern struct netif gnetif[];
+extern uint8_t mac[][ENET_MAC_SIZE];
+extern enet_desc_t desc[];
+
+hpm_stat_t enet_init(uint8_t idx);
 uint8_t enet_get_mac_address(uint8_t i, uint8_t *mac);
 void enet_set_mac_address(void *config, uint8_t *mac);
 bool enet_get_link_status(uint8_t i);
@@ -71,7 +103,7 @@ void timer_callback(TimerHandle_t xTimer);
 #elif defined(__ENABLE_RTTHREAD_NANO) && __ENABLE_RTTHREAD_NANO
 void timer_callback(void *parameter);
 #endif
-
+void log_send_message(const char *format, ...);
 #else
 void sys_timer_callback(void);
 #endif /* defined(NO_SYS) && !NO_SYS */

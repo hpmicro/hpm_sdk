@@ -16,16 +16,17 @@ struct hpm_panel;
 typedef struct hpm_panel hpm_panel_t;
 
 typedef struct hpm_panel_timing {
+    uint16_t fps_hz;           /*!< frame per second, UINT: Hz */
     uint32_t pixel_clock_khz;  /*!< pixel clocl,UINT: KHz */
     uint32_t hactive;          /*!< Horizontal active video */
-	uint32_t hfront_porch;     /*!< Horizontal Front Porch */
-	uint32_t hback_porch;      /*!< Horizontal Back Porch */
-	uint32_t hsync_len;        /*!< Horizontal sync len */
+    uint32_t hfront_porch;     /*!< Horizontal Front Porch */
+    uint32_t hback_porch;      /*!< Horizontal Back Porch */
+    uint32_t hsync_len;        /*!< Horizontal sync len */
 
-	uint32_t vactive;          /*!< Vertical active video */
-	uint32_t vfront_porch;     /*!< Vertical Front Porch */
-	uint32_t vback_porch;      /*!< Vertical Back Porch */
-	uint32_t vsync_len;        /*!< Vertical sync len */
+    uint32_t vactive;          /*!< Vertical active video */
+    uint32_t vfront_porch;     /*!< Vertical Front Porch */
+    uint32_t vback_porch;      /*!< Vertical Back Porch */
+    uint32_t vsync_len;        /*!< Vertical sync len */
     uint32_t hsync_pol :1;     /*!< Horizontal Synchronization Signal Polarity, 0: High Active, 1: Low Active */
     uint32_t vsync_pol :1;     /*!< Vertical Synchronization Signal Polarity, 0: High Active, 1: Low Active */
     uint32_t de_pol :1;        /*!< Data Enable Signal Polarity, 0: High Active, 1: Low Active */
@@ -61,7 +62,7 @@ typedef struct hpm_panel_hw_interface {
 
 typedef struct hpm_panel_funcs {
     void (*reset)(hpm_panel_t *panel);
-    void (*init)(hpm_panel_t *panel);
+    void (*init)(hpm_panel_t *panel, const hpm_panel_timing_t *timing);
     void (*power_on)(hpm_panel_t *panel);
     void (*power_off)(hpm_panel_t *panel);
 } hpm_panel_funcs_t;
@@ -93,7 +94,8 @@ typedef struct hpm_panel_state {
 struct hpm_panel {
     const char *name;
     hpm_panel_if_type_t if_type;
-    const hpm_panel_timing_t timing;
+    const hpm_panel_timing_t *timing_list;
+    uint16_t timing_list_num;
     hpm_panel_state_t state;
     hpm_panel_hw_interface_t hw_if;
     hpm_panel_funcs_t funcs;
@@ -138,6 +140,27 @@ const char *hpm_panel_get_name(hpm_panel_t *panel);
 const hpm_panel_timing_t *hpm_panel_get_timing(hpm_panel_t *panel);
 
 /**
+ * @brief Get panel timing list
+ *
+ * @param [in] panel pointer of panel instance
+ * @param [out] timing_list pointer of timing list
+ * @param [out] timing_list_num pointer number of timing list
+ *
+ * @return 0: success, other: failed
+ */
+int hpm_panel_get_timing_list(hpm_panel_t *panel, const hpm_panel_timing_t **timing_list, uint16_t *timing_list_num);
+
+/**
+ * @brief Get panel nearest timing by fps
+ *
+ * @param [in] panel pointer of panel instance
+ * @param [in] fps_hz frame per second, UINT: Hz
+ *
+ * @return pointer of timing
+ */
+const hpm_panel_timing_t *hpm_panel_get_timing_by_fps(hpm_panel_t *panel, uint16_t fps_hz);
+
+/**
  * @brief Get panel interface type
  *
  * @param [in] panel pointer of panel instance
@@ -167,6 +190,14 @@ void hpm_panel_reset(hpm_panel_t *panel);
  * @param [in] panel pointer of panel instance
  */
 void hpm_panel_init(hpm_panel_t *panel);
+
+/**
+ * @brief Initialize the panel by specified timing
+ *
+ * @param [in] panel pointer of panel instance
+ * @param [in] timing pointer of timing, NULL means use default timing
+ */
+void hpm_panel_init_by_timing(hpm_panel_t *panel, const hpm_panel_timing_t *timing);
 
 /**
  * @brief Power on the panel

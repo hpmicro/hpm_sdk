@@ -92,7 +92,8 @@ void spi_master_check_transfer_data(SPI_Type *ptr)
 hpm_stat_t spi_tx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_ptr, uint32_t src, uint8_t data_width, uint32_t size)
 {
     dma_handshake_config_t config;
-
+    /* For TX: Disable TX DMA request first to ensure SPI starts correctly after DMA configuration */
+    spi_disable_tx_dma(TEST_SPI);
     dma_default_handshake_config(dma_ptr, &config);
     config.ch_index = ch_num;
     config.dst = (uint32_t)&spi_ptr->DATA;
@@ -172,15 +173,6 @@ int main(void)
 
     spi_tx_trans_count = sizeof(sent_buff) / TEST_SPI_DATA_LEN_IN_BYTE;
     spi_rx_trans_count = sizeof(receive_buff) / TEST_SPI_DATA_LEN_IN_BYTE;
-    stat = spi_setup_dma_transfer(TEST_SPI,
-                        &control_config,
-                        &cmd, &addr,
-                        spi_tx_trans_count, spi_rx_trans_count);
-    if (stat != status_success) {
-        printf("spi setup dma transfer failed\n");
-        while (1) {
-        }
-    }
     prepare_transfer_data();
 
     /* setup spi tx trigger dma transfer*/
@@ -228,6 +220,15 @@ int main(void)
         l1c_dc_invalidate(aligned_start, aligned_size);
     }
 #endif
+    stat = spi_setup_dma_transfer(TEST_SPI,
+                        &control_config,
+                        &cmd, &addr,
+                        spi_tx_trans_count, spi_rx_trans_count);
+    if (stat != status_success) {
+        printf("spi setup dma transfer failed\n");
+        while (1) {
+        }
+    }
 
     spi_master_check_transfer_data(TEST_SPI);
 

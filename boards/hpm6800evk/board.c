@@ -271,6 +271,18 @@ uint32_t board_init_i2c_clock(I2C_Type *ptr)
     return freq;
 }
 
+uint32_t board_init_i2c_eeprom_clock(I2C_Type *ptr)
+{
+    uint32_t freq = 0;
+
+    if (ptr == HPM_I2C1) {
+        clock_add_to_group(clock_i2c1, 0);
+        freq = clock_get_frequency(clock_i2c1);
+    }
+
+    return freq;
+}
+
 void board_init_i2c(I2C_Type *ptr)
 {
     i2c_config_t config;
@@ -300,6 +312,15 @@ uint32_t board_init_spi_clock(SPI_Type *ptr)
         clock_add_to_group(clock_spi2, 0);
         return clock_get_frequency(clock_spi2);
     } else if (ptr == HPM_SPI3) {
+        clock_add_to_group(clock_spi3, 0);
+        return clock_get_frequency(clock_spi3);
+    }
+    return 0;
+}
+
+uint32_t board_init_spi_eeprom_clock(SPI_Type *ptr)
+{
+    if (ptr == HPM_SPI3) {
         clock_add_to_group(clock_spi3, 0);
         return clock_get_frequency(clock_spi3);
     }
@@ -377,32 +398,32 @@ void board_led_write(uint8_t state)
 
 void board_init_pmp(void)
 {
+    uint32_t start_addr;
+    uint32_t end_addr;
+    uint32_t length;
+    pmp_entry_t pmp_entry[16] = {0};
+    uint8_t index = 0;
+
+    pmp_entry[index].pmp_addr = 0xFFFFFFFF;
+    pmp_entry[index].pmp_cfg.val = PMP_CFG(READ_EN, WRITE_EN, EXECUTE_EN, ADDR_MATCH_NAPOT, REG_UNLOCK);
+    index++;
+
+    /* Init noncachable memory */
     extern uint32_t __noncacheable_start__[];
     extern uint32_t __noncacheable_end__[];
-
-    uint32_t start_addr = (uint32_t) __noncacheable_start__;
-    uint32_t end_addr = (uint32_t) __noncacheable_end__;
-    uint32_t length = end_addr - start_addr;
-
-    if (length == 0) {
-        return;
+    start_addr = (uint32_t) __noncacheable_start__;
+    end_addr = (uint32_t) __noncacheable_end__;
+    length = end_addr - start_addr;
+    if (length > 0) {
+        /* Ensure the address and the length are power of 2 aligned */
+        assert((length & (length - 1U)) == 0U);
+        assert((start_addr & (length - 1U)) == 0U);
+        pmp_entry[index].pmp_addr = PMP_NAPOT_ADDR(start_addr, length);
+        pmp_entry[index].pmp_cfg.val = PMP_CFG(READ_EN, WRITE_EN, EXECUTE_EN, ADDR_MATCH_NAPOT, REG_UNLOCK);
+        pmp_entry[index].pma_addr = PMA_NAPOT_ADDR(start_addr, length);
+        pmp_entry[index].pma_cfg.val = PMA_CFG(ADDR_MATCH_NAPOT, MEM_TYPE_MEM_NON_CACHE_BUF, AMO_EN);
+        index++;
     }
-
-    /* Ensure the address and the length are power of 2 aligned */
-    assert((length & (length - 1U)) == 0U);
-    assert((start_addr & (length - 1U)) == 0U);
-
-    pmp_entry_t pmp_entry[4] = { 0 };
-    pmp_entry[0].pmp_addr = PMP_NAPOT_ADDR(0x0000000, 0x80000000);
-    pmp_entry[0].pmp_cfg.val = PMP_CFG(READ_EN, WRITE_EN, EXECUTE_EN, ADDR_MATCH_NAPOT, REG_UNLOCK);
-
-    pmp_entry[1].pmp_addr = PMP_NAPOT_ADDR(0x80000000, 0x80000000);
-    pmp_entry[1].pmp_cfg.val = PMP_CFG(READ_EN, WRITE_EN, EXECUTE_EN, ADDR_MATCH_NAPOT, REG_UNLOCK);
-
-    pmp_entry[2].pmp_addr = PMP_NAPOT_ADDR(start_addr, length);
-    pmp_entry[2].pmp_cfg.val = PMP_CFG(READ_EN, WRITE_EN, EXECUTE_EN, ADDR_MATCH_NAPOT, REG_UNLOCK);
-    pmp_entry[2].pma_addr = PMA_NAPOT_ADDR(start_addr, length);
-    pmp_entry[2].pma_cfg.val = PMA_CFG(ADDR_MATCH_NAPOT, MEM_TYPE_MEM_NON_CACHE_BUF, AMO_EN);
 
 #ifdef CONFIG_VGLITE
     extern uint32_t __gpu_start__[];
@@ -414,13 +435,14 @@ void board_init_pmp(void)
     if (gpu_length) {
         assert((gpu_length & (gpu_length - 1U)) == 0U);
         assert((gpu_start_addr & (gpu_length - 1U)) == 0U);
-        pmp_entry[3].pmp_addr = PMP_NAPOT_ADDR(gpu_start_addr, gpu_length);
-        pmp_entry[3].pmp_cfg.val = PMP_CFG(READ_EN, WRITE_EN, EXECUTE_EN, ADDR_MATCH_NAPOT, REG_UNLOCK);
-        pmp_entry[3].pma_addr = PMA_NAPOT_ADDR(gpu_start_addr, gpu_length);
-        pmp_entry[3].pma_cfg.val = PMA_CFG(ADDR_MATCH_NAPOT, MEM_TYPE_MEM_WB_NO_ALLOC, AMO_EN);
+        pmp_entry[index].pmp_addr = PMP_NAPOT_ADDR(gpu_start_addr, gpu_length);
+        pmp_entry[index].pmp_cfg.val = PMP_CFG(READ_EN, WRITE_EN, EXECUTE_EN, ADDR_MATCH_NAPOT, REG_UNLOCK);
+        pmp_entry[index].pma_addr = PMA_NAPOT_ADDR(gpu_start_addr, gpu_length);
+        pmp_entry[index].pma_cfg.val = PMA_CFG(ADDR_MATCH_NAPOT, MEM_TYPE_MEM_WB_NO_ALLOC, AMO_EN);
+        index++;
     }
 #endif
-    pmp_config(&pmp_entry[0], ARRAY_SIZE(pmp_entry));
+    pmp_config(&pmp_entry[0], index);
 }
 
 void board_init_display_system_clock(void)
@@ -472,7 +494,7 @@ void board_init_clock(void)
     /* Bump up DCDC voltage to 1275mv */
     pcfg_dcdc_set_voltage(HPM_PCFG, 1275);
 
-    /* Configure PLL1_CLK0 Post Divider to 1 */
+    /* Configure PLL0_CLK0 Post Divider to 1 */
     pllctlv2_set_postdiv(HPM_PLLCTLV2, pllctlv2_pll0, pllctlv2_clk0, pllctlv2_div_1p0);
     pllctlv2_init_pll_with_freq(HPM_PLLCTLV2, pllctlv2_pll0, BOARD_CPU_FREQ);
 
@@ -542,6 +564,15 @@ uint32_t board_init_can_clock(MCAN_Type *ptr)
     return freq;
 }
 
+void board_can_transceiver_phy_set(MCAN_Type *ptr, bool enable)
+{
+    init_can_transceiver_phy_pin(ptr);
+    if (ptr == HPM_MCAN3) {
+        gpio_set_pin_output_with_initial(BOARD_CAN_STB_GPIO_CTRL, BOARD_CAN_STB_GPIO_INDEX, BOARD_CAN_STB_GPIO_PIN, 0);
+        gpio_write_pin(BOARD_CAN_STB_GPIO_CTRL, BOARD_CAN_STB_GPIO_INDEX, BOARD_CAN_STB_GPIO_PIN, enable ? 0 : 1);
+    }
+}
+
 uint32_t board_init_uart_clock(UART_Type *ptr)
 {
     uint32_t freq = 0U;
@@ -557,6 +588,9 @@ uint32_t board_init_uart_clock(UART_Type *ptr)
     } else if (ptr == HPM_UART3) {
         clock_add_to_group(clock_uart3, 0);
         freq = clock_get_frequency(clock_uart3);
+    } else if (ptr == HPM_PUART) {
+        clock_add_to_group(clock_puart, 0);
+        freq = clock_get_frequency(clock_puart);
     } else {
         /* Not supported */
     }
@@ -594,7 +628,7 @@ void board_init_lcd_rgb_tm070rdh13(void)
 
     hpm_panel_hw_interface_t hw_if = {0};
     hpm_panel_t *panel = hpm_panel_find_device_default();
-    const hpm_panel_timing_t *timing = hpm_panel_get_timing(panel);
+    const hpm_panel_timing_t *timing = hpm_panel_get_timing_by_fps(panel, BOARD_LCD_FPS);
     uint32_t lcdc_pixel_clk_khz = board_lcdc_clock_init(clock_lcd0, timing->pixel_clock_khz);
     hw_if.set_reset_pin_level = set_reset_pin_level_tm070rdh13;
     hw_if.set_backlight = set_backlight_tm070rdh13;
@@ -607,7 +641,7 @@ void board_init_lcd_rgb_tm070rdh13(void)
                         lcdc_pixel_clk_khz);
 
     hpm_panel_reset(panel);
-    hpm_panel_init(panel);
+    hpm_panel_init_by_timing(panel, timing);
     hpm_panel_power_on(panel);
 }
 
@@ -641,11 +675,11 @@ void board_init_lcd_lvds_cc10128007(void)
     hpm_panel_hw_interface_t hw_if = {0};
 #if defined(CONFIG_HPM_PANEL_MULTI_ENABLE) && CONFIG_HPM_PANEL_MULTI_ENABLE
     hpm_panel_t *panel = hpm_panel_find_device(BOARD_MULTI_PANEL_LVDS_NAME);
-    const hpm_panel_timing_t *timing = hpm_panel_get_timing(panel);
+    const hpm_panel_timing_t *timing = hpm_panel_get_timing_by_fps(panel, BOARD_LCD_FPS);
     uint32_t lcdc_pixel_clk_khz = board_lcdc_clock_init(BOARD_MULTI_PANEL_LVDS_LCDC_CLK, timing->pixel_clock_khz);
 #else
     hpm_panel_t *panel = hpm_panel_find_device_default();
-    const hpm_panel_timing_t *timing = hpm_panel_get_timing(panel);
+    const hpm_panel_timing_t *timing = hpm_panel_get_timing_by_fps(panel, BOARD_LCD_FPS);
     uint32_t lcdc_pixel_clk_khz = board_lcdc_clock_init(clock_lcd0, timing->pixel_clock_khz);
 #endif
     hw_if.set_video_router = set_video_router_cc10128007;
@@ -662,7 +696,7 @@ void board_init_lcd_lvds_cc10128007(void)
                         lcdc_pixel_clk_khz);
 
     hpm_panel_reset(panel);
-    hpm_panel_init(panel);
+    hpm_panel_init_by_timing(panel, timing);
     hpm_panel_power_on(panel);
 }
 #endif
@@ -693,7 +727,7 @@ void board_init_lcd_mipi_mc10128007_31b(void)
 #else
     hpm_panel_t *panel = hpm_panel_find_device_default();
 #endif
-    const hpm_panel_timing_t *timing = hpm_panel_get_timing(panel);
+    const hpm_panel_timing_t *timing = hpm_panel_get_timing_by_fps(panel, BOARD_LCD_FPS);
     uint32_t lcdc_pixel_clk_khz = board_lcdc_clock_init(clock_lcd0, timing->pixel_clock_khz);
 
     hw_if.set_reset_pin_level = set_reset_pin_level_mc10128007_31b;
@@ -709,7 +743,7 @@ void board_init_lcd_mipi_mc10128007_31b(void)
                         lcdc_pixel_clk_khz);
 
     hpm_panel_reset(panel);
-    hpm_panel_init(panel);
+    hpm_panel_init_by_timing(panel, timing);
     hpm_panel_power_on(panel);
 }
 #endif
@@ -739,7 +773,7 @@ void board_init_lcd_lvds_tm103xdgp01(void)
 
     hpm_panel_hw_interface_t hw_if = {0};
     hpm_panel_t *panel = hpm_panel_find_device_default();
-    const hpm_panel_timing_t *timing = hpm_panel_get_timing(panel);
+    const hpm_panel_timing_t *timing = hpm_panel_get_timing_by_fps(panel, BOARD_LCD_FPS);
 
     /* In split mode: lcdc_pixel_clk = 2 * panel_pixel_clk */
     uint32_t lcdc_pixel_clk_khz = board_lcdc_clock_init(clock_lcd0, timing->pixel_clock_khz * 2);
@@ -756,7 +790,7 @@ void board_init_lcd_lvds_tm103xdgp01(void)
                         lcdc_pixel_clk_khz);
 
     hpm_panel_reset(panel);
-    hpm_panel_init(panel);
+    hpm_panel_init_by_timing(panel, timing);
     hpm_panel_power_on(panel);
 }
 #endif
@@ -1470,3 +1504,206 @@ uint32_t board_init_gptmr_clock(GPTMR_Type *ptr)
     return freq;
 }
 
+void init_uart_pins(UART_Type *ptr)
+{
+    if (ptr == HPM_UART0) {
+        init_uart0_pins();
+    } else if (ptr == HPM_UART3) {
+        init_uart3_pins();
+    } else if (ptr == HPM_PUART) {
+        init_puart_pins();
+    } else {
+        ;
+    }
+}
+
+/* for uart_lin case, need to configure pin as gpio to sent break signal */
+void init_uart_pin_as_gpio(UART_Type *ptr)
+{
+    if (ptr == HPM_UART3) {
+        init_uart3_pin_as_gpio();
+    }
+}
+
+void init_i2c_pins(I2C_Type *ptr)
+{
+    if (ptr == HPM_I2C3) {            /* Audio */
+        init_i2c3_pins();
+    } else if (ptr == HPM_I2C1) {         /* Storage */
+        init_i2c1_pins();
+    } else if (ptr == HPM_I2C0) {         /* Touch Panel/ Camera */
+        init_i2c0_pins();
+    } else {
+        ;
+    }
+}
+
+void init_spi_pins(SPI_Type *ptr)
+{
+    if (ptr == HPM_SPI3) {
+        init_spi3_pins();
+    }
+}
+
+void init_spi_pins_with_gpio_as_cs(SPI_Type *ptr)
+{
+    if (ptr == HPM_SPI3) {
+        init_spi3_pins_with_gpio_as_cs();
+    }
+}
+
+void init_pins(void)
+{
+#ifdef BOARD_CONSOLE_UART_BASE
+    init_uart_pins(BOARD_CONSOLE_UART_BASE);
+#endif
+}
+
+void init_gptmr_pins(GPTMR_Type *ptr)
+{
+    if (ptr == HPM_GPTMR2) {
+        init_gptmr2_pins();
+    }
+}
+
+void init_sdxc_cmd_pin(SDXC_Type *ptr, bool open_drain, bool is_1v8)
+{
+    (void) is_1v8;
+    if (ptr == HPM_SDXC0) {
+        if (open_drain) {
+            init_sdxc0_cmd_pin_enable_opendrain();
+        } else {
+            init_sdxc0_cmd_pin_disable_opendrain();
+        }
+    }
+    if (ptr == HPM_SDXC1) {
+        init_sdxc1_cmd_pin();
+    }
+}
+
+void init_sdxc_ds_pin(SDXC_Type *ptr)
+{
+    if (ptr == HPM_SDXC0) {
+        init_sdxc0_ds_pin();
+    }
+}
+
+void init_sdxc_pwr_pin(SDXC_Type *ptr, bool as_gpio)
+{
+    if (ptr == HPM_SDXC1) {
+        if (as_gpio) {
+            /* SD_PWR */
+            init_sdxc1_pwr_pin();
+            HPM_GPIO0->OE[GPIO_OE_GPIOD].SET = 1UL << 7;
+        }
+    }
+}
+
+void init_sdxc_vsel_pin(SDXC_Type *ptr, bool as_gpio)
+{
+    if (ptr == HPM_SDXC1) {
+        if (as_gpio) {
+            /* VSEL */
+            init_sdxc1_vsel_pin();
+            HPM_GPIO0->OE[GPIO_OE_GPIOD].SET = 1UL << 12;
+        }
+    }
+}
+
+void init_sdxc_cd_pin(SDXC_Type *ptr, bool as_gpio)
+{
+    if (ptr == HPM_SDXC1) {
+        if (as_gpio) {
+            /* CDN */
+            init_sdxc1_cd_pin();
+            HPM_GPIO0->OE[GPIO_OE_GPIOD].CLEAR = 1UL << 5;
+        }
+    }
+}
+
+void init_sdxc_clk_data_pins(SDXC_Type *ptr, uint32_t width, bool is_1v8)
+{
+    (void) is_1v8;
+    if (ptr == HPM_SDXC0) {
+        if (width == 4) {
+            init_sdxc0_clk_data_pins_width4();
+        } else if (width == 8) {
+            init_sdxc0_clk_data_pins_width8();
+        } else {
+            init_sdxc0_clk_data_pins();
+        }
+    }
+    if (ptr == HPM_SDXC1) {
+        init_sdxc1_clk_data_pins();
+    }
+}
+
+void init_usb_pins(USB_Type *ptr)
+{
+    if (ptr == HPM_USB0) {
+        init_usb0_pins();
+    }
+}
+
+void init_can_pins(MCAN_Type *ptr)
+{
+    if (ptr == HPM_MCAN3) {
+        init_mcan3_pins();
+    }
+}
+
+void init_can_transceiver_phy_pin(MCAN_Type *ptr)
+{
+    if (ptr == HPM_MCAN3) {
+        init_mcan3_transceiver_phy_pin();
+    } else {
+        /* Invalid CAN instance */
+    }
+}
+
+void init_i2s_pins(I2S_Type *ptr)
+{
+    if (ptr == HPM_I2S3) {
+        init_i2s3_pins();
+    }
+}
+
+void init_enet_pins(ENET_Type *ptr)
+{
+    if (ptr == HPM_ENET0) {
+        init_enet0_pins();
+    }
+}
+
+void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_output)
+{
+    if (ptr == HPM_GPTMR2) {
+        if (as_output) {
+            switch (channel) {
+            case 0:
+                init_gptmr2_channel0_pin_as_output();
+                break;
+            case 1:
+                init_gptmr2_channel1_pin_as_output();
+                break;
+            case 2:
+                init_gptmr2_channel2_pin_as_output();
+            default:
+                break;
+            }
+        } else {
+            switch (channel) {
+            case 0:
+                init_gptmr2_channel0_pin_as_capture();
+                break;
+            default:
+                break;
+            }
+        }
+    }
+}
+void board_init_brownout_indicate_pin(void)
+{
+    init_brownout_indicate_pin();
+    gpio_set_pin_output_with_initial(BOARD_BROWNOUT_INDICATE_GPIO_CTRL, GPIO_GET_PORT_INDEX(BOARD_BROWNOUT_INDICATE_PIN), GPIO_GET_PIN_INDEX(BOARD_BROWNOUT_INDICATE_PIN), 0);
+}

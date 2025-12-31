@@ -2911,303 +2911,6 @@ ICMP payload */
 
 /* Bitfield definition for register: MMC_IPC_INTR_MASK_RX */
 /*
- * RXICMPEROIM (RW)
- *
- * MMC Receive ICMP Error Octet Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxicmp_err_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXICMPEROIM_MASK (0x20000000UL)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXICMPEROIM_SHIFT (29U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXICMPEROIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXICMPEROIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXICMPEROIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXICMPEROIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXICMPEROIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXICMPEROIM_SHIFT)
-
-/*
- * RXICMPGOIM (RW)
- *
- * MMC Receive ICMP Good Octet Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxicmp_gd_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXICMPGOIM_MASK (0x10000000UL)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXICMPGOIM_SHIFT (28U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXICMPGOIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXICMPGOIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXICMPGOIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXICMPGOIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXICMPGOIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXICMPGOIM_SHIFT)
-
-/*
- * RXTCPEROIM (RW)
- *
- * MMC Receive TCP Error Octet Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxtcp_err_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXTCPEROIM_MASK (0x8000000UL)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXTCPEROIM_SHIFT (27U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXTCPEROIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXTCPEROIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXTCPEROIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXTCPEROIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXTCPEROIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXTCPEROIM_SHIFT)
-
-/*
- * RXTCPGOIM (RW)
- *
- * MMC Receive TCP Good Octet Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxtcp_gd_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXTCPGOIM_MASK (0x4000000UL)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXTCPGOIM_SHIFT (26U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXTCPGOIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXTCPGOIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXTCPGOIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXTCPGOIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXTCPGOIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXTCPGOIM_SHIFT)
-
-/*
- * RXUDPEROIM (RW)
- *
- * MMC Receive UDP Good Octet Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxudp_err_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXUDPEROIM_MASK (0x2000000UL)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXUDPEROIM_SHIFT (25U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXUDPEROIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXUDPEROIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXUDPEROIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXUDPEROIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXUDPEROIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXUDPEROIM_SHIFT)
-
-/*
- * RXUDPGOIM (RW)
- *
- * MMC Receive IPV6 No Payload Octet Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxudp_gd_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXUDPGOIM_MASK (0x1000000UL)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXUDPGOIM_SHIFT (24U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXUDPGOIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXUDPGOIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXUDPGOIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXUDPGOIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXUDPGOIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXUDPGOIM_SHIFT)
-
-/*
- * RXIPV6NOPAYOIM (RW)
- *
- * MMC Receive IPV6 Header Error Octet Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxipv6_nopay_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV6NOPAYOIM_MASK (0x800000UL)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV6NOPAYOIM_SHIFT (23U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV6NOPAYOIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXIPV6NOPAYOIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV6NOPAYOIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV6NOPAYOIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV6NOPAYOIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXIPV6NOPAYOIM_SHIFT)
-
-/*
- * RXIPV6HEROIM (RW)
- *
- * MMC Receive IPV6 Good Octet Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxipv6_hdrerr_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV6HEROIM_MASK (0x400000UL)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV6HEROIM_SHIFT (22U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV6HEROIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXIPV6HEROIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV6HEROIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV6HEROIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV6HEROIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXIPV6HEROIM_SHIFT)
-
-/*
- * RXIPV6GOIM (RW)
- *
- * MMC Receive IPV6 Good Octet Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxipv6_gd_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV6GOIM_MASK (0x200000UL)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV6GOIM_SHIFT (21U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV6GOIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXIPV6GOIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV6GOIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV6GOIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV6GOIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXIPV6GOIM_SHIFT)
-
-/*
- * RXIPV4UDSBLOIM (RW)
- *
- * MMC Receive IPV4 UDP Checksum Disabled Octet Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxipv4_udsbl_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4UDSBLOIM_MASK (0x100000UL)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4UDSBLOIM_SHIFT (20U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4UDSBLOIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXIPV4UDSBLOIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV4UDSBLOIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4UDSBLOIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV4UDSBLOIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXIPV4UDSBLOIM_SHIFT)
-
-/*
- * RXIPV4FRAGOIM (RW)
- *
- * MMC Receive IPV4 Fragmented Octet Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxipv4_frag_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4FRAGOIM_MASK (0x80000UL)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4FRAGOIM_SHIFT (19U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4FRAGOIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXIPV4FRAGOIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV4FRAGOIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4FRAGOIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV4FRAGOIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXIPV4FRAGOIM_SHIFT)
-
-/*
- * RXIPV4NOPAYOIM (RW)
- *
- * MMC Receive IPV4 No Payload Octet Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxipv4_nopay_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4NOPAYOIM_MASK (0x40000UL)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4NOPAYOIM_SHIFT (18U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4NOPAYOIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXIPV4NOPAYOIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV4NOPAYOIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4NOPAYOIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV4NOPAYOIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXIPV4NOPAYOIM_SHIFT)
-
-/*
- * RXIPV4HEROIM (RW)
- *
- * MMC Receive IPV4 Header Error Octet Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxipv4_hdrerr_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4HEROIM_MASK (0x20000UL)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4HEROIM_SHIFT (17U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4HEROIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXIPV4HEROIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV4HEROIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4HEROIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV4HEROIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXIPV4HEROIM_SHIFT)
-
-/*
- * RXIPV4GOIM (RW)
- *
- * MMC Receive IPV4 Good Octet Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxipv4_gd_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4GOIM_MASK (0x10000UL)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4GOIM_SHIFT (16U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4GOIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXIPV4GOIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV4GOIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4GOIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV4GOIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXIPV4GOIM_SHIFT)
-
-/*
- * RXICMPERFIM (RW)
- *
- * MMC Receive ICMP Error Frame Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxicmp_err_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXICMPERFIM_MASK (0x2000U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXICMPERFIM_SHIFT (13U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXICMPERFIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXICMPERFIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXICMPERFIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXICMPERFIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXICMPERFIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXICMPERFIM_SHIFT)
-
-/*
- * RXICMPGFIM (RW)
- *
- * MMC Receive ICMP Good Frame Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxicmp_gd_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXICMPGFIM_MASK (0x1000U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXICMPGFIM_SHIFT (12U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXICMPGFIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXICMPGFIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXICMPGFIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXICMPGFIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXICMPGFIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXICMPGFIM_SHIFT)
-
-/*
- * RXTCPERFIM (RW)
- *
- * MMC Receive TCP Error Frame Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxtcp_err_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXTCPERFIM_MASK (0x800U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXTCPERFIM_SHIFT (11U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXTCPERFIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXTCPERFIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXTCPERFIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXTCPERFIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXTCPERFIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXTCPERFIM_SHIFT)
-
-/*
- * RXTCPGFIM (RW)
- *
- * MMC Receive TCP Good Frame Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxtcp_gd_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXTCPGFIM_MASK (0x400U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXTCPGFIM_SHIFT (10U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXTCPGFIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXTCPGFIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXTCPGFIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXTCPGFIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXTCPGFIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXTCPGFIM_SHIFT)
-
-/*
- * RXUDPERFIM (RW)
- *
- * MMC Receive UDP Error Frame Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxudp_err_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXUDPERFIM_MASK (0x200U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXUDPERFIM_SHIFT (9U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXUDPERFIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXUDPERFIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXUDPERFIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXUDPERFIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXUDPERFIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXUDPERFIM_SHIFT)
-
-/*
- * RXUDPGFIM (RW)
- *
- * MMC Receive UDP Good Frame Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxudp_gd_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXUDPGFIM_MASK (0x100U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXUDPGFIM_SHIFT (8U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXUDPGFIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXUDPGFIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXUDPGFIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXUDPGFIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXUDPGFIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXUDPGFIM_SHIFT)
-
-/*
- * RXIPV6NOPAYFIM (RW)
- *
- * MMC Receive IPV6 No Payload Frame Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxipv6_nopay_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV6NOPAYFIM_MASK (0x80U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV6NOPAYFIM_SHIFT (7U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV6NOPAYFIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXIPV6NOPAYFIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV6NOPAYFIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV6NOPAYFIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV6NOPAYFIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXIPV6NOPAYFIM_SHIFT)
-
-/*
- * RXIPV6HERFIM (RW)
- *
- * MMC Receive IPV6 Header Error Frame Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxipv6_hdrerr_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV6HERFIM_MASK (0x40U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV6HERFIM_SHIFT (6U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV6HERFIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXIPV6HERFIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV6HERFIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV6HERFIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV6HERFIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXIPV6HERFIM_SHIFT)
-
-/*
- * RXIPV6GFIM (RW)
- *
- * MMC Receive IPV6 Good Frame Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxipv6_gd_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV6GFIM_MASK (0x20U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV6GFIM_SHIFT (5U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV6GFIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXIPV6GFIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV6GFIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV6GFIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV6GFIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXIPV6GFIM_SHIFT)
-
-/*
- * RXIPV4UDSBLFIM (RW)
- *
- * MMC Receive IPV4 UDP Checksum Disabled Frame Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxipv4_udsbl_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4UDSBLFIM_MASK (0x10U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4UDSBLFIM_SHIFT (4U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4UDSBLFIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXIPV4UDSBLFIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV4UDSBLFIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4UDSBLFIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV4UDSBLFIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXIPV4UDSBLFIM_SHIFT)
-
-/*
- * RXIPV4FRAGFIM (RW)
- *
- * MMC Receive IPV4 Fragmented Frame Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxipv4_frag_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4FRAGFIM_MASK (0x8U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4FRAGFIM_SHIFT (3U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4FRAGFIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXIPV4FRAGFIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV4FRAGFIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4FRAGFIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV4FRAGFIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXIPV4FRAGFIM_SHIFT)
-
-/*
- * RXIPV4NOPAYFIM (RW)
- *
- * MMC Receive IPV4 No Payload Frame Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxipv4_nopay_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4NOPAYFIM_MASK (0x4U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4NOPAYFIM_SHIFT (2U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4NOPAYFIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXIPV4NOPAYFIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV4NOPAYFIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4NOPAYFIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV4NOPAYFIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXIPV4NOPAYFIM_SHIFT)
-
-/*
- * RXIPV4HERFIM (RW)
- *
- * MMC Receive IPV4 Header Error Frame Counter Interrupt Mask
- * Setting this bit masks the interrupt when the rxipv4_hdrerr_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4HERFIM_MASK (0x2U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4HERFIM_SHIFT (1U)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4HERFIM_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_MASK_RX_RXIPV4HERFIM_SHIFT) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV4HERFIM_MASK)
-#define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4HERFIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV4HERFIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXIPV4HERFIM_SHIFT)
-
-/*
  * RXIPV4GFIM (RW)
  *
  * MMC Receive IPV4 Good Frame Counter Interrupt Mask
@@ -3219,303 +2922,6 @@ ICMP payload */
 #define ENET_MMC_IPC_INTR_MASK_RX_RXIPV4GFIM_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_MASK_RX_RXIPV4GFIM_MASK) >> ENET_MMC_IPC_INTR_MASK_RX_RXIPV4GFIM_SHIFT)
 
 /* Bitfield definition for register: MMC_IPC_INTR_RX */
-/*
- * RXICMPEROIS (RW)
- *
- * MMC Receive ICMP Error Octet Counter Interrupt Status
- * This bit is set when the rxicmp_err_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXICMPEROIS_MASK (0x20000000UL)
-#define ENET_MMC_IPC_INTR_RX_RXICMPEROIS_SHIFT (29U)
-#define ENET_MMC_IPC_INTR_RX_RXICMPEROIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXICMPEROIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXICMPEROIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXICMPEROIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXICMPEROIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXICMPEROIS_SHIFT)
-
-/*
- * RXICMPGOIS (RW)
- *
- * MMC Receive ICMP Good Octet Counter Interrupt Status
- * This bit is set when the rxicmp_gd_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXICMPGOIS_MASK (0x10000000UL)
-#define ENET_MMC_IPC_INTR_RX_RXICMPGOIS_SHIFT (28U)
-#define ENET_MMC_IPC_INTR_RX_RXICMPGOIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXICMPGOIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXICMPGOIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXICMPGOIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXICMPGOIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXICMPGOIS_SHIFT)
-
-/*
- * RXTCPEROIS (RW)
- *
- * MMC Receive TCP Error Octet Counter Interrupt Status
- * This bit is set when the rxtcp_err_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXTCPEROIS_MASK (0x8000000UL)
-#define ENET_MMC_IPC_INTR_RX_RXTCPEROIS_SHIFT (27U)
-#define ENET_MMC_IPC_INTR_RX_RXTCPEROIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXTCPEROIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXTCPEROIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXTCPEROIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXTCPEROIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXTCPEROIS_SHIFT)
-
-/*
- * RXTCPGOIS (RW)
- *
- * MMC Receive TCP Good Octet Counter Interrupt Status
- * This bit is set when the rxtcp_gd_octets counter reaches half of the maximum value or the maximum value
- */
-#define ENET_MMC_IPC_INTR_RX_RXTCPGOIS_MASK (0x4000000UL)
-#define ENET_MMC_IPC_INTR_RX_RXTCPGOIS_SHIFT (26U)
-#define ENET_MMC_IPC_INTR_RX_RXTCPGOIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXTCPGOIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXTCPGOIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXTCPGOIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXTCPGOIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXTCPGOIS_SHIFT)
-
-/*
- * RXUDPEROIS (RW)
- *
- * MMC Receive UDP Error Octet Counter Interrupt Status
- * This bit is set when the rxudp_err_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXUDPEROIS_MASK (0x2000000UL)
-#define ENET_MMC_IPC_INTR_RX_RXUDPEROIS_SHIFT (25U)
-#define ENET_MMC_IPC_INTR_RX_RXUDPEROIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXUDPEROIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXUDPEROIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXUDPEROIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXUDPEROIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXUDPEROIS_SHIFT)
-
-/*
- * RXUDPGOIS (RW)
- *
- * MMC Receive UDP Good Octet Counter Interrupt Status
- * This bit is set when the rxudp_gd_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXUDPGOIS_MASK (0x1000000UL)
-#define ENET_MMC_IPC_INTR_RX_RXUDPGOIS_SHIFT (24U)
-#define ENET_MMC_IPC_INTR_RX_RXUDPGOIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXUDPGOIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXUDPGOIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXUDPGOIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXUDPGOIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXUDPGOIS_SHIFT)
-
-/*
- * RXIPV6NOPAYOIS (RW)
- *
- * MMC Receive IPV6 No Payload Octet Counter Interrupt Status
- * This bit is set when the rxipv6_nopay_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXIPV6NOPAYOIS_MASK (0x800000UL)
-#define ENET_MMC_IPC_INTR_RX_RXIPV6NOPAYOIS_SHIFT (23U)
-#define ENET_MMC_IPC_INTR_RX_RXIPV6NOPAYOIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXIPV6NOPAYOIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXIPV6NOPAYOIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXIPV6NOPAYOIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXIPV6NOPAYOIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXIPV6NOPAYOIS_SHIFT)
-
-/*
- * RXIPV6HEROIS (RW)
- *
- * MMC Receive IPV6 Header Error Octet Counter Interrupt Status
- * This bit is set when the rxipv6_hdrerr_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXIPV6HEROIS_MASK (0x400000UL)
-#define ENET_MMC_IPC_INTR_RX_RXIPV6HEROIS_SHIFT (22U)
-#define ENET_MMC_IPC_INTR_RX_RXIPV6HEROIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXIPV6HEROIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXIPV6HEROIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXIPV6HEROIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXIPV6HEROIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXIPV6HEROIS_SHIFT)
-
-/*
- * RXIPV6GOIS (RW)
- *
- * MMC Receive IPV6 Good Octet Counter Interrupt Status
- * This bit is set when the rxipv6_gd_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXIPV6GOIS_MASK (0x200000UL)
-#define ENET_MMC_IPC_INTR_RX_RXIPV6GOIS_SHIFT (21U)
-#define ENET_MMC_IPC_INTR_RX_RXIPV6GOIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXIPV6GOIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXIPV6GOIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXIPV6GOIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXIPV6GOIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXIPV6GOIS_SHIFT)
-
-/*
- * RXIPV4UDSBLOIS (RW)
- *
- * MMC Receive IPV4 UDP Checksum Disabled Octet Counter Interrupt Status
- * This bit is set when the rxipv4_udsbl_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXIPV4UDSBLOIS_MASK (0x100000UL)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4UDSBLOIS_SHIFT (20U)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4UDSBLOIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXIPV4UDSBLOIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXIPV4UDSBLOIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4UDSBLOIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXIPV4UDSBLOIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXIPV4UDSBLOIS_SHIFT)
-
-/*
- * RXIPV4FRAGOIS (RW)
- *
- * MMC Receive IPV4 Fragmented Octet Counter Interrupt Status
- * This bit is set when the rxipv4_frag_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXIPV4FRAGOIS_MASK (0x80000UL)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4FRAGOIS_SHIFT (19U)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4FRAGOIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXIPV4FRAGOIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXIPV4FRAGOIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4FRAGOIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXIPV4FRAGOIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXIPV4FRAGOIS_SHIFT)
-
-/*
- * RXIPV4NOPAYOIS (RW)
- *
- * MMC Receive IPV4 No Payload Octet Counter Interrupt Status
- * This bit is set when the rxipv4_nopay_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXIPV4NOPAYOIS_MASK (0x40000UL)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4NOPAYOIS_SHIFT (18U)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4NOPAYOIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXIPV4NOPAYOIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXIPV4NOPAYOIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4NOPAYOIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXIPV4NOPAYOIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXIPV4NOPAYOIS_SHIFT)
-
-/*
- * RXIPV4HEROIS (RW)
- *
- * MMC Receive IPV4 Header Error Octet Counter Interrupt Status
- * This bit is set when the rxipv4_hdrerr_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXIPV4HEROIS_MASK (0x20000UL)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4HEROIS_SHIFT (17U)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4HEROIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXIPV4HEROIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXIPV4HEROIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4HEROIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXIPV4HEROIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXIPV4HEROIS_SHIFT)
-
-/*
- * RXIPV4GOIS (RW)
- *
- * MMC Receive IPV4 Good Octet Counter Interrupt Status
- * This bit is set when the rxipv4_gd_octets counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXIPV4GOIS_MASK (0x10000UL)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4GOIS_SHIFT (16U)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4GOIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXIPV4GOIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXIPV4GOIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4GOIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXIPV4GOIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXIPV4GOIS_SHIFT)
-
-/*
- * RXICMPERFIS (RW)
- *
- * MMC Receive ICMP Error Frame Counter Interrupt Status
- * This bit is set when the rxicmp_err_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXICMPERFIS_MASK (0x2000U)
-#define ENET_MMC_IPC_INTR_RX_RXICMPERFIS_SHIFT (13U)
-#define ENET_MMC_IPC_INTR_RX_RXICMPERFIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXICMPERFIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXICMPERFIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXICMPERFIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXICMPERFIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXICMPERFIS_SHIFT)
-
-/*
- * RXICMPGFIS (RW)
- *
- * MMC Receive ICMP Good Frame Counter Interrupt Status
- * This bit is set when the rxicmp_gd_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXICMPGFIS_MASK (0x1000U)
-#define ENET_MMC_IPC_INTR_RX_RXICMPGFIS_SHIFT (12U)
-#define ENET_MMC_IPC_INTR_RX_RXICMPGFIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXICMPGFIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXICMPGFIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXICMPGFIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXICMPGFIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXICMPGFIS_SHIFT)
-
-/*
- * RXTCPERFIS (RW)
- *
- * MMC Receive TCP Error Frame Counter Interrupt Status
- * This bit is set when the rxtcp_err_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXTCPERFIS_MASK (0x800U)
-#define ENET_MMC_IPC_INTR_RX_RXTCPERFIS_SHIFT (11U)
-#define ENET_MMC_IPC_INTR_RX_RXTCPERFIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXTCPERFIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXTCPERFIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXTCPERFIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXTCPERFIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXTCPERFIS_SHIFT)
-
-/*
- * RXTCPGFIS (RW)
- *
- * MMC Receive TCP Good Frame Counter Interrupt Status
- * This bit is set when the rxtcp_gd_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXTCPGFIS_MASK (0x400U)
-#define ENET_MMC_IPC_INTR_RX_RXTCPGFIS_SHIFT (10U)
-#define ENET_MMC_IPC_INTR_RX_RXTCPGFIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXTCPGFIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXTCPGFIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXTCPGFIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXTCPGFIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXTCPGFIS_SHIFT)
-
-/*
- * RXUDPERFIS (RW)
- *
- * MMC Receive UDP Error Frame Counter Interrupt Status
- * This bit is set when the rxudp_err_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXUDPERFIS_MASK (0x200U)
-#define ENET_MMC_IPC_INTR_RX_RXUDPERFIS_SHIFT (9U)
-#define ENET_MMC_IPC_INTR_RX_RXUDPERFIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXUDPERFIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXUDPERFIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXUDPERFIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXUDPERFIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXUDPERFIS_SHIFT)
-
-/*
- * RXUDPGFIS (RW)
- *
- * MMC Receive UDP Good Frame Counter Interrupt Status
- * This bit is set when the rxudp_gd_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXUDPGFIS_MASK (0x100U)
-#define ENET_MMC_IPC_INTR_RX_RXUDPGFIS_SHIFT (8U)
-#define ENET_MMC_IPC_INTR_RX_RXUDPGFIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXUDPGFIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXUDPGFIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXUDPGFIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXUDPGFIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXUDPGFIS_SHIFT)
-
-/*
- * RXIPV6NOPAYFIS (RW)
- *
- * MMC Receive IPV6 No Payload Frame Counter Interrupt Status
- * This bit is set when the rxipv6_nopay_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXIPV6NOPAYFIS_MASK (0x80U)
-#define ENET_MMC_IPC_INTR_RX_RXIPV6NOPAYFIS_SHIFT (7U)
-#define ENET_MMC_IPC_INTR_RX_RXIPV6NOPAYFIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXIPV6NOPAYFIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXIPV6NOPAYFIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXIPV6NOPAYFIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXIPV6NOPAYFIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXIPV6NOPAYFIS_SHIFT)
-
-/*
- * RXIPV6HERFIS (RW)
- *
- * MMC Receive IPV6 Header Error Frame Counter Interrupt Status
- * This bit is set when the rxipv6_hdrerr_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXIPV6HERFIS_MASK (0x40U)
-#define ENET_MMC_IPC_INTR_RX_RXIPV6HERFIS_SHIFT (6U)
-#define ENET_MMC_IPC_INTR_RX_RXIPV6HERFIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXIPV6HERFIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXIPV6HERFIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXIPV6HERFIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXIPV6HERFIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXIPV6HERFIS_SHIFT)
-
-/*
- * RXIPV6GFIS (RW)
- *
- * MMC Receive IPV6 Good Frame Counter Interrupt Status
- * This bit is set when the rxipv6_gd_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXIPV6GFIS_MASK (0x20U)
-#define ENET_MMC_IPC_INTR_RX_RXIPV6GFIS_SHIFT (5U)
-#define ENET_MMC_IPC_INTR_RX_RXIPV6GFIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXIPV6GFIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXIPV6GFIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXIPV6GFIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXIPV6GFIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXIPV6GFIS_SHIFT)
-
-/*
- * RXIPV4UDSBLFIS (RW)
- *
- * MMC Receive IPV4 UDP Checksum Disabled Frame Counter Interrupt Status
- * This bit is set when the rxipv4_udsbl_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXIPV4UDSBLFIS_MASK (0x10U)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4UDSBLFIS_SHIFT (4U)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4UDSBLFIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXIPV4UDSBLFIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXIPV4UDSBLFIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4UDSBLFIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXIPV4UDSBLFIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXIPV4UDSBLFIS_SHIFT)
-
-/*
- * RXIPV4FRAGFIS (RW)
- *
- * MMC Receive IPV4 Fragmented Frame Counter Interrupt Status
- * This bit is set when the rxipv4_frag_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXIPV4FRAGFIS_MASK (0x8U)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4FRAGFIS_SHIFT (3U)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4FRAGFIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXIPV4FRAGFIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXIPV4FRAGFIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4FRAGFIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXIPV4FRAGFIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXIPV4FRAGFIS_SHIFT)
-
-/*
- * RXIPV4NOPAYFIS (RW)
- *
- * MMC Receive IPV4 No Payload Frame Counter Interrupt Status
- * This bit is set when the rxipv4_nopay_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXIPV4NOPAYFIS_MASK (0x4U)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4NOPAYFIS_SHIFT (2U)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4NOPAYFIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXIPV4NOPAYFIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXIPV4NOPAYFIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4NOPAYFIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXIPV4NOPAYFIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXIPV4NOPAYFIS_SHIFT)
-
-/*
- * RXIPV4HERFIS (RW)
- *
- * MMC Receive IPV4 Header Error Frame Counter Interrupt Status
- * This bit is set when the rxipv4_hdrerr_frms counter reaches half of the maximum value or the maximum value.
- */
-#define ENET_MMC_IPC_INTR_RX_RXIPV4HERFIS_MASK (0x2U)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4HERFIS_SHIFT (1U)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4HERFIS_SET(x) (((uint32_t)(x) << ENET_MMC_IPC_INTR_RX_RXIPV4HERFIS_SHIFT) & ENET_MMC_IPC_INTR_RX_RXIPV4HERFIS_MASK)
-#define ENET_MMC_IPC_INTR_RX_RXIPV4HERFIS_GET(x) (((uint32_t)(x) & ENET_MMC_IPC_INTR_RX_RXIPV4HERFIS_MASK) >> ENET_MMC_IPC_INTR_RX_RXIPV4HERFIS_SHIFT)
-
 /*
  * RXIPV4GFIS (RW)
  *
@@ -4945,7 +4351,7 @@ ICMP payload */
 
 /* Bitfield definition for register: DMA_STATUS */
 /*
- * GLPII (RW)
+ * GLPII (RO)
  *
  * GLPII: GMAC LPI Interrupt (for Channel 0)
  * This bit indicates an interrupt event in the LPI logic of the MAC.
@@ -4959,11 +4365,10 @@ ICMP payload */
  */
 #define ENET_DMA_STATUS_GLPII_MASK (0x40000000UL)
 #define ENET_DMA_STATUS_GLPII_SHIFT (30U)
-#define ENET_DMA_STATUS_GLPII_SET(x) (((uint32_t)(x) << ENET_DMA_STATUS_GLPII_SHIFT) & ENET_DMA_STATUS_GLPII_MASK)
 #define ENET_DMA_STATUS_GLPII_GET(x) (((uint32_t)(x) & ENET_DMA_STATUS_GLPII_MASK) >> ENET_DMA_STATUS_GLPII_SHIFT)
 
 /*
- * TTI (RW)
+ * TTI (RO)
  *
  * Timestamp Trigger Interrupt
  * This bit indicates an interrupt event in the Timestamp Generator block of the DWC_gmac.
@@ -4973,11 +4378,10 @@ ICMP payload */
  */
 #define ENET_DMA_STATUS_TTI_MASK (0x20000000UL)
 #define ENET_DMA_STATUS_TTI_SHIFT (29U)
-#define ENET_DMA_STATUS_TTI_SET(x) (((uint32_t)(x) << ENET_DMA_STATUS_TTI_SHIFT) & ENET_DMA_STATUS_TTI_MASK)
 #define ENET_DMA_STATUS_TTI_GET(x) (((uint32_t)(x) & ENET_DMA_STATUS_TTI_MASK) >> ENET_DMA_STATUS_TTI_SHIFT)
 
 /*
- * GPI (RW)
+ * GPI (RO)
  *
  * GMAC PMT Interrupt
  * This bit indicates an interrupt event in the PMT module of the DWC_gmac.
@@ -4988,11 +4392,10 @@ ICMP payload */
  */
 #define ENET_DMA_STATUS_GPI_MASK (0x10000000UL)
 #define ENET_DMA_STATUS_GPI_SHIFT (28U)
-#define ENET_DMA_STATUS_GPI_SET(x) (((uint32_t)(x) << ENET_DMA_STATUS_GPI_SHIFT) & ENET_DMA_STATUS_GPI_MASK)
 #define ENET_DMA_STATUS_GPI_GET(x) (((uint32_t)(x) & ENET_DMA_STATUS_GPI_MASK) >> ENET_DMA_STATUS_GPI_SHIFT)
 
 /*
- * GMI (RW)
+ * GMI (RO)
  *
  * GMAC MMC Interrupt
  *  This bit reflects an interrupt event in the MMC module of the DWC_gmac.
@@ -5003,11 +4406,10 @@ ICMP payload */
  */
 #define ENET_DMA_STATUS_GMI_MASK (0x8000000UL)
 #define ENET_DMA_STATUS_GMI_SHIFT (27U)
-#define ENET_DMA_STATUS_GMI_SET(x) (((uint32_t)(x) << ENET_DMA_STATUS_GMI_SHIFT) & ENET_DMA_STATUS_GMI_MASK)
 #define ENET_DMA_STATUS_GMI_GET(x) (((uint32_t)(x) & ENET_DMA_STATUS_GMI_MASK) >> ENET_DMA_STATUS_GMI_SHIFT)
 
 /*
- * GLI (RW)
+ * GLI (RO)
  *
  * GMAC Line Interface Interrupt
  * When set, this bit reflects any of the following interrupt events in the DWC_gmac interfaces (if present and enabled in your configuration):
@@ -5022,11 +4424,10 @@ ICMP payload */
  */
 #define ENET_DMA_STATUS_GLI_MASK (0x4000000UL)
 #define ENET_DMA_STATUS_GLI_SHIFT (26U)
-#define ENET_DMA_STATUS_GLI_SET(x) (((uint32_t)(x) << ENET_DMA_STATUS_GLI_SHIFT) & ENET_DMA_STATUS_GLI_MASK)
 #define ENET_DMA_STATUS_GLI_GET(x) (((uint32_t)(x) & ENET_DMA_STATUS_GLI_MASK) >> ENET_DMA_STATUS_GLI_SHIFT)
 
 /*
- * EB (RW)
+ * EB (RO)
  *
  * Error Bits
  * This field indicates the type of error that caused a Bus Error, for example, error response on the AHB or AXI interface.
@@ -5040,11 +4441,10 @@ ICMP payload */
  */
 #define ENET_DMA_STATUS_EB_MASK (0x3800000UL)
 #define ENET_DMA_STATUS_EB_SHIFT (23U)
-#define ENET_DMA_STATUS_EB_SET(x) (((uint32_t)(x) << ENET_DMA_STATUS_EB_SHIFT) & ENET_DMA_STATUS_EB_MASK)
 #define ENET_DMA_STATUS_EB_GET(x) (((uint32_t)(x) & ENET_DMA_STATUS_EB_MASK) >> ENET_DMA_STATUS_EB_SHIFT)
 
 /*
- * TS (RW)
+ * TS (RO)
  *
  * Transmit Process State
  * This field indicates the Transmit DMA FSM state. This field does not generate an interrupt.
@@ -5059,11 +4459,10 @@ ICMP payload */
  */
 #define ENET_DMA_STATUS_TS_MASK (0x700000UL)
 #define ENET_DMA_STATUS_TS_SHIFT (20U)
-#define ENET_DMA_STATUS_TS_SET(x) (((uint32_t)(x) << ENET_DMA_STATUS_TS_SHIFT) & ENET_DMA_STATUS_TS_MASK)
 #define ENET_DMA_STATUS_TS_GET(x) (((uint32_t)(x) & ENET_DMA_STATUS_TS_MASK) >> ENET_DMA_STATUS_TS_SHIFT)
 
 /*
- * RS (RW)
+ * RS (RO)
  *
  * Receive Process State
  * This field indicates the Receive DMA FSM state. This field does not generate an interrupt.
@@ -5078,11 +4477,10 @@ ICMP payload */
  */
 #define ENET_DMA_STATUS_RS_MASK (0xE0000UL)
 #define ENET_DMA_STATUS_RS_SHIFT (17U)
-#define ENET_DMA_STATUS_RS_SET(x) (((uint32_t)(x) << ENET_DMA_STATUS_RS_SHIFT) & ENET_DMA_STATUS_RS_MASK)
 #define ENET_DMA_STATUS_RS_GET(x) (((uint32_t)(x) & ENET_DMA_STATUS_RS_MASK) >> ENET_DMA_STATUS_RS_SHIFT)
 
 /*
- * NIS (RW)
+ * NIS (W1C)
  *
  * Normal Interrupt Summary
  * Normal Interrupt Summary bit value is the logical OR of the following bits when the corresponding interrupt bits are enabled in
@@ -5100,7 +4498,7 @@ ICMP payload */
 #define ENET_DMA_STATUS_NIS_GET(x) (((uint32_t)(x) & ENET_DMA_STATUS_NIS_MASK) >> ENET_DMA_STATUS_NIS_SHIFT)
 
 /*
- * AIS (RW)
+ * AIS (W1C)
  *
  * Abnormal Interrupt Summary
  * Abnormal Interrupt Summary bit value is the logical OR of the following
@@ -5122,7 +4520,7 @@ ICMP payload */
 #define ENET_DMA_STATUS_AIS_GET(x) (((uint32_t)(x) & ENET_DMA_STATUS_AIS_MASK) >> ENET_DMA_STATUS_AIS_SHIFT)
 
 /*
- * ERI (RW)
+ * ERI (W1C)
  *
  * Early Receive Interrupt
  * This bit indicates that the DMA filled the first data buffer of the packet. This bit is cleared when the software writes 1 to this bit or Bit 6 (RI) of this register is set (whichever occurs earlier).
@@ -5133,7 +4531,7 @@ ICMP payload */
 #define ENET_DMA_STATUS_ERI_GET(x) (((uint32_t)(x) & ENET_DMA_STATUS_ERI_MASK) >> ENET_DMA_STATUS_ERI_SHIFT)
 
 /*
- * FBI (RW)
+ * FBI (W1C)
  *
  * Fatal Bus Error Interrupt
  * This bit indicates that a bus error occurred, as described in Bits [25:23]. When this bit is set, the corresponding DMA engine disables all of its bus accesses.
@@ -5144,7 +4542,7 @@ ICMP payload */
 #define ENET_DMA_STATUS_FBI_GET(x) (((uint32_t)(x) & ENET_DMA_STATUS_FBI_MASK) >> ENET_DMA_STATUS_FBI_SHIFT)
 
 /*
- * ETI (RW)
+ * ETI (W1C)
  *
  * Early Transmit Interrupt
  * This bit indicates that the frame to be transmitted is fully transferred to the MTL Transmit FIFO.
@@ -5155,7 +4553,7 @@ ICMP payload */
 #define ENET_DMA_STATUS_ETI_GET(x) (((uint32_t)(x) & ENET_DMA_STATUS_ETI_MASK) >> ENET_DMA_STATUS_ETI_SHIFT)
 
 /*
- * RWT (RW)
+ * RWT (W1C)
  *
  * Receive Watchdog Timeout
  * When set, this bit indicates that the Receive Watchdog Timer expired while receiving the current frame and the current frame is truncated after the watchdog timeout.
@@ -5166,7 +4564,7 @@ ICMP payload */
 #define ENET_DMA_STATUS_RWT_GET(x) (((uint32_t)(x) & ENET_DMA_STATUS_RWT_MASK) >> ENET_DMA_STATUS_RWT_SHIFT)
 
 /*
- * RPS (RW)
+ * RPS (W1C)
  *
  * Receive Process Stopped
  * This bit is asserted when the Receive Process enters the Stopped state.
@@ -5177,7 +4575,7 @@ ICMP payload */
 #define ENET_DMA_STATUS_RPS_GET(x) (((uint32_t)(x) & ENET_DMA_STATUS_RPS_MASK) >> ENET_DMA_STATUS_RPS_SHIFT)
 
 /*
- * RU (RW)
+ * RU (W1C)
  *
  * Receive Buffer Unavailable
  * This bit indicates that the host owns the Next Descriptor in the Receive List and the DMA cannot acquire it.
@@ -5192,7 +4590,7 @@ ICMP payload */
 #define ENET_DMA_STATUS_RU_GET(x) (((uint32_t)(x) & ENET_DMA_STATUS_RU_MASK) >> ENET_DMA_STATUS_RU_SHIFT)
 
 /*
- * RI (RW)
+ * RI (W1C)
  *
  * Receive Interrupt
  * This bit indicates that the frame reception is complete and the specific frame status information is updated in the descriptor.
@@ -5204,7 +4602,7 @@ ICMP payload */
 #define ENET_DMA_STATUS_RI_GET(x) (((uint32_t)(x) & ENET_DMA_STATUS_RI_MASK) >> ENET_DMA_STATUS_RI_SHIFT)
 
 /*
- * UNF (RW)
+ * UNF (W1C)
  *
  * Transmit Underflow
  * This bit indicates that the Transmit Buffer had an Underflow during frame transmission. Transmission is suspended and an Underflow Error TDES0[1] is set.
@@ -5215,7 +4613,7 @@ ICMP payload */
 #define ENET_DMA_STATUS_UNF_GET(x) (((uint32_t)(x) & ENET_DMA_STATUS_UNF_MASK) >> ENET_DMA_STATUS_UNF_SHIFT)
 
 /*
- * OVF (RW)
+ * OVF (W1C)
  *
  * Receive Overflow
  * This bit indicates that the Receive Buffer had an Overflow during frame reception. If the partial frame is transferred to the application, the overflow status is set in RDES0[11].
@@ -5226,7 +4624,7 @@ ICMP payload */
 #define ENET_DMA_STATUS_OVF_GET(x) (((uint32_t)(x) & ENET_DMA_STATUS_OVF_MASK) >> ENET_DMA_STATUS_OVF_SHIFT)
 
 /*
- * TJT (RW)
+ * TJT (W1C)
  *
  * Transmit Jabber Timeout
  * This bit indicates that the Transmit Jabber Timer expired, which happens when the frame size exceeds 2,048 (10,240 bytes when the Jumbo frame is enabled).
@@ -5238,7 +4636,7 @@ ICMP payload */
 #define ENET_DMA_STATUS_TJT_GET(x) (((uint32_t)(x) & ENET_DMA_STATUS_TJT_MASK) >> ENET_DMA_STATUS_TJT_SHIFT)
 
 /*
- * TU (RW)
+ * TU (W1C)
  *
  * Transmit Buffer Unavailable
  * This bit indicates that the host owns the Next Descriptor in the Transmit List and the DMA cannot acquire it. Transmission is suspended. Bits[22:20] explain the Transmit Process state transitions.
@@ -5250,7 +4648,7 @@ ICMP payload */
 #define ENET_DMA_STATUS_TU_GET(x) (((uint32_t)(x) & ENET_DMA_STATUS_TU_MASK) >> ENET_DMA_STATUS_TU_SHIFT)
 
 /*
- * TPS (RW)
+ * TPS (W1C)
  *
  * Transmit Process Stopped
  * This bit is set when the transmission is stopped.
@@ -5261,7 +4659,7 @@ ICMP payload */
 #define ENET_DMA_STATUS_TPS_GET(x) (((uint32_t)(x) & ENET_DMA_STATUS_TPS_MASK) >> ENET_DMA_STATUS_TPS_SHIFT)
 
 /*
- * TI (RW)
+ * TI (W1C)
  *
  * Transmit Interrupt
  * This bit indicates that the frame transmission is complete. When transmission is complete, Bit 31 (OWN) of TDES0 is reset, and the specific frame status information is updated in the descriptor.

@@ -8,7 +8,8 @@
 #ifndef HPM_SOC_FEATURE_H
 #define HPM_SOC_FEATURE_H
 
-#include "hpm_soc.h"
+#include "riscv/riscv_core.h"
+#include "hpm_soc_ip.h"
 #include "hpm_soc_ip_feature.h"
 
 /*
@@ -44,6 +45,8 @@
 #define I2S_SOC_MAX_CHANNEL_NUM (16U)
 #define I2S_SOC_MAX_TX_CHANNEL_NUM (8U)
 #define I2S_SOC_MAX_TX_FIFO_DEPTH (8U)
+#define I2S_PDM_DATA_LINE (0)
+#define I2S_DAO_DATA_LINE (0)
 #define PDM_I2S HPM_I2S0
 #define DAO_I2S HPM_I2S1
 #define PDM_SOC_SAMPLE_RATE_IN_HZ (16000U)

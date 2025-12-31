@@ -160,6 +160,8 @@ Pin Description
 
 - UART0 Pin:
 
+  The UART0 is used for debugging the console serial port of Core0.
+
 +-----------+-----+-----------+
 | Function  | Pin | Position  |
 +===========+=====+===========+
@@ -169,6 +171,8 @@ Pin Description
 +-----------+-----+-----------+
 
 - UART1 Pin:
+
+  The UART1 is used for debugging console serial ports of Core1 or for functional testing using UART, such as MICROROS_UART, USB_CDC-ACM_UART, MODBUS_STU, lin, etc.
 
 +-------------+-----+---------+---------------------------------+
 | Function    | Pin | Position| Remark                          |
@@ -219,7 +223,7 @@ Pin Description
 +-----------+--------+
 | Function  |Position|
 +===========+========+
-| CMP0.INN4 | J4[18] |
+| CMP0.INN3 | J4[2]  |
 +-----------+--------+
 
 - Quadrature Encoder Pin
@@ -473,3 +477,32 @@ The HALL pin of the hpm6200evk needs to be connected.
    * - Output IO(2bit)
      - PD08/PE14
      - LED8/LED3
+
+
+- ESP-HOSTED Pin
+
+.. list-table::
+   :header-rows: 1
+
+   * - Function
+     - Position
+     - Note
+   * - PF11
+     - P5[29]
+     - RESET Pin
+   * - PF15
+     - P5[33]
+     - HANDSHAKE Pin
+   * - PF21
+     - P5[32]
+     - DATA_READY Pin
+
+- BROWNOUT Interrupt Indicator Pin
+
+.. list-table::
+   :header-rows: 1
+
+   * - Function
+     - Position
+   * - PY05
+     - P5[40]

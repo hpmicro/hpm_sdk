@@ -1,6 +1,6 @@
 .. _tsn_lwip_tcpecho:
 
-lwip_tcpecho
+tsn_lwip_tcpecho
 ========================
 
 Overview
@@ -20,7 +20,7 @@ Board Settings
 Project Configurations
 ----------------------
 
-- Ethernet Port Settings: Refer to `Ethernet common project settings <../doc/Ethernet_Common_Project_Settings_en.rst>`_
+- Ethernet Port Settings: Refer to :ref:`TSW Common Project Settings <tsw_port_configurations_en>`
 
 - Ethernet DHCP Configurations
 

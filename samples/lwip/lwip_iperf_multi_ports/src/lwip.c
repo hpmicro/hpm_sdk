@@ -9,10 +9,10 @@
  * Includes
  *---------------------------------------------------------------------*/
 #include "common.h"
+#include "utils.h"
 #include "netconf.h"
 #include "sys_arch.h"
 #include "ethernetif.h"
-#include "lwip.h"
 #include "lwip/init.h"
 #include "lwip/timeouts.h"
 #include "lwip/apps/lwiperf.h"
@@ -29,106 +29,6 @@
 #ifndef IPERF_CLIENT_AMOUNT
 #define IPERF_CLIENT_AMOUNT (-1000) /* 10 seconds */
 #endif
-
-#if defined(__ENABLE_ENET_RECEIVE_INTERRUPT) && __ENABLE_ENET_RECEIVE_INTERRUPT
-volatile bool rx_flag[BOARD_ENET_COUNT];
-#endif
-
-typedef struct {
-    enet_rx_desc_t dma_rx_desc_tab[ENET_RX_BUFF_COUNT];
-    enet_tx_desc_t dma_tx_desc_tab[ENET_TX_BUFF_COUNT];
-    uint8_t        rx_buff[ENET_RX_BUFF_COUNT][ENET_RX_BUFF_SIZE];
-    uint8_t        tx_buff[ENET_TX_BUFF_COUNT][ENET_TX_BUFF_SIZE];
-} enet_desc_init_t;
-
-ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(ENET_SOC_DESC_ADDR_ALIGNMENT)
-enet_desc_init_t desc_init[BOARD_ENET_COUNT];
-enet_desc_t desc[BOARD_ENET_COUNT];
-uint8_t mac[BOARD_ENET_COUNT][ENET_MAC];
-
-struct netif gnetif[BOARD_ENET_COUNT];
-
-
-/*---------------------------------------------------------------------*
- * Initialization
- *---------------------------------------------------------------------*/
-static void enet_desc_init(enet_desc_t *pdesc, enet_desc_init_t *pdesc_init)
-{
-    pdesc->tx_desc_list_head = (enet_tx_desc_t *)core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)pdesc_init->dma_tx_desc_tab);
-    pdesc->rx_desc_list_head = (enet_rx_desc_t *)core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)pdesc_init->dma_rx_desc_tab);
-
-    pdesc->tx_buff_cfg.buffer = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)pdesc_init->tx_buff);
-    pdesc->tx_buff_cfg.count  = ENET_TX_BUFF_COUNT;
-    pdesc->tx_buff_cfg.size   = ENET_TX_BUFF_SIZE;
-
-    pdesc->rx_buff_cfg.buffer = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)pdesc_init->rx_buff);
-    pdesc->rx_buff_cfg.count  = ENET_RX_BUFF_COUNT;
-    pdesc->rx_buff_cfg.size   = ENET_RX_BUFF_SIZE;
-}
-
-static hpm_stat_t enet_init(uint8_t idx)
-{
-    enet_mac_config_t        enet_config;
-    enet_tx_control_config_t enet_tx_control_config;
-    enet_int_config_t        int_config = {0};
-    enet_base_t              *base;
-    enet_inf_type_t          itf;
-
-    if (idx > BOARD_ENET_COUNT) {
-        return status_invalid_argument;
-    }
-
-    base = board_get_enet_base(idx);
-    itf  = board_get_enet_phy_itf(idx);
-
-    /* Initialize td, rd and the corresponding buffers */
-    enet_desc_init(&desc[idx], &desc_init[idx]);
-
-    /* Get a default control config for tx descriptor */
-    enet_get_default_tx_control_config(base, &enet_tx_control_config);
-
-    /* Set the control config for tx descriptor */
-    memcpy(&desc[idx].tx_control_config, &enet_tx_control_config, sizeof(enet_tx_control_config_t));
-
-    /* Get a default MAC address */
-    enet_get_mac_address(idx, mac[idx]);
-
-    /* Set MAC0 address */
-    enet_set_mac_address(&enet_config, mac[idx]);
-
-    /* Set DMA PBL */
-    enet_config.dma_pbl = board_get_enet_dma_pbl(base);
-
-    /* Set SARC */
-    enet_config.sarc = enet_sarc_replace_mac0;
-
-    #if defined(__ENABLE_ENET_RECEIVE_INTERRUPT) && __ENABLE_ENET_RECEIVE_INTERRUPT
-    /* Enable Enet IRQ */
-    board_enable_enet_irq(base);
-
-    /* Get the default interrupt config */
-    enet_get_default_interrupt_config(ENET, &int_config);
-    #endif
-
-    /* Initialize Enet MAC */
-    if (enet_controller_init(base, itf, &desc[idx], &enet_config, &int_config) != status_success) {
-        printf("Enet%d MAC init failed!\n", idx);
-        return status_fail;
-    }
-
-    /* Initialize Enet PHY */
-    if (board_init_enet_phy(base) != status_success) {
-        printf("Enet%d PHY init failed!\n", idx);
-        return status_fail;
-    }
-
-    #if defined(__ENABLE_ENET_RECEIVE_INTERRUPT) && __ENABLE_ENET_RECEIVE_INTERRUPT
-    /* Disable LPI interrupt */
-    enet_disable_lpi_interrupt(base);
-    #endif
-
-    return status_success;
-}
 
 static void
 lwiperf_report(void *arg, enum lwiperf_report_type report_type,
@@ -176,6 +76,7 @@ static uint8_t select_mode(struct netif *netif, bool *server_mode, bool *tcp, en
     char code;
 
     if (!netif_is_link_up(netif)) {
+        printf("Warning: Please make sure that the specified network port is a link-up state!\n");
         return false;
     }
 
@@ -229,6 +130,7 @@ void *start_iperf(struct netif *netif)
     ip_addr_t remote_addr;
     void *session;
     enum lwiperf_client_type client_type;
+    uint8_t cmd_str_buff[20];
 
     if (!select_mode(netif, &server, &tcp, &client_type)) {
         return NULL;
@@ -241,14 +143,14 @@ void *start_iperf(struct netif *netif)
             session = lwiperf_start_udp_server(netif_ip_addr4(netif), LWIPERF_UDP_PORT_DEFAULT, lwiperf_report, NULL);
         }
     } else {
-        if (netif->num == 0) {
-            ip4addr_aton(HPM_STRINGIFY(REMOTE_IP0_CONFIG), &remote_addr);
-        } else {
-            ip4addr_aton(HPM_STRINGIFY(REMOTE_IP1_CONFIG), &remote_addr);
+        while (!fetch_ip_addr_from_serial_terminal(netif->num, cmd_str_buff, sizeof(cmd_str_buff))) {
+
         }
 
+        ip4addr_aton((char *)cmd_str_buff, &remote_addr);
+
         if (tcp) {
-            session = lwiperf_start_tcp_client(&remote_addr, LWIPERF_TCP_PORT_DEFAULT, LWIPERF_CLIENT, lwiperf_report, NULL);
+            session = lwiperf_start_tcp_client(&remote_addr, LWIPERF_TCP_PORT_DEFAULT, LWIPERF_CLIENT, lwiperf_report, netif);
         } else {
             udp_rate = netif->num  == 0 ? IPERF_UDP_CLIENT_RATE_RGMII : IPERF_UDP_CLIENT_RATE_RMII;
             session = lwiperf_start_udp_client(netif_ip_addr4(netif), LWIPERF_UDP_PORT_DEFAULT,
@@ -328,7 +230,7 @@ int main(void)
     /* Start a board timer */
     board_timer_create(LWIP_APP_TIMER_INTERVAL, sys_timer_callback);
 
-    /* Initialize the Lwip stack */
+    /* Initialize lwIP stack */
     lwip_init();
 
     /* Initialize network setting, services and apps */
@@ -341,8 +243,7 @@ int main(void)
 
     while (1) {
         for (uint8_t i = 0; i < BOARD_ENET_COUNT; i++) {
-            ethernetif_input(&gnetif[i]);
-            sys_check_timeouts();
+            enet_common_handler(&gnetif[i]);
             iperf(gnetif);
         }
     }

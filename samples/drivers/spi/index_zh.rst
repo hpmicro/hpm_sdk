@@ -864,4 +864,5 @@ SPI示例
    master_trans_large_amount_of_data/README_zh
    polling/master/README_zh
    polling/slave/README_zh
+   ssi_encoder_master/README_zh
 

@@ -6010,7 +6010,6 @@
       <BitField name="SW_DAC_DATA" start="16" size="12"/>
       <BitField name="DMA_AHB_EN" start="9" size="1"/>
       <BitField name="SYNC_MODE" start="8" size="1"/>
-      <BitField name="TRIG_MODE" start="7" size="1"/>
       <BitField name="HW_TRIG_EN" start="6" size="1"/>
       <BitField name="DAC_MODE" start="4" size="2"/>
       <BitField name="BUF_DATA_MODE" start="3" size="1"/>
@@ -6117,7 +6116,6 @@
       <BitField name="SW_DAC_DATA" start="16" size="12"/>
       <BitField name="DMA_AHB_EN" start="9" size="1"/>
       <BitField name="SYNC_MODE" start="8" size="1"/>
-      <BitField name="TRIG_MODE" start="7" size="1"/>
       <BitField name="HW_TRIG_EN" start="6" size="1"/>
       <BitField name="DAC_MODE" start="4" size="2"/>
       <BitField name="BUF_DATA_MODE" start="3" size="1"/>
@@ -18447,6 +18445,9 @@
       <BitField name="RLDIRQE" start="24" size="1"/>
       <BitField name="CMPIRQEX" start="0" size="24"/>
     </Register>
+    <Register name="CAP_EN_NEG" start="+0x228" size="0x4">
+      <BitField name="CAP_EN_NEG" start="0" size="24"/>
+    </Register>
     <Register name="DMAEN" start="+0x22c" size="0x4">
       <BitField name="FAULTEN" start="27" size="1"/>
       <BitField name="XRLDEN" start="26" size="1"/>
@@ -19060,6 +19061,9 @@
       <BitField name="HALFRLDIRQE" start="25" size="1"/>
       <BitField name="RLDIRQE" start="24" size="1"/>
       <BitField name="CMPIRQEX" start="0" size="24"/>
+    </Register>
+    <Register name="CAP_EN_NEG" start="+0x228" size="0x4">
+      <BitField name="CAP_EN_NEG" start="0" size="24"/>
     </Register>
     <Register name="DMAEN" start="+0x22c" size="0x4">
       <BitField name="FAULTEN" start="27" size="1"/>
@@ -19675,6 +19679,9 @@
       <BitField name="RLDIRQE" start="24" size="1"/>
       <BitField name="CMPIRQEX" start="0" size="24"/>
     </Register>
+    <Register name="CAP_EN_NEG" start="+0x228" size="0x4">
+      <BitField name="CAP_EN_NEG" start="0" size="24"/>
+    </Register>
     <Register name="DMAEN" start="+0x22c" size="0x4">
       <BitField name="FAULTEN" start="27" size="1"/>
       <BitField name="XRLDEN" start="26" size="1"/>
@@ -20288,6 +20295,9 @@
       <BitField name="HALFRLDIRQE" start="25" size="1"/>
       <BitField name="RLDIRQE" start="24" size="1"/>
       <BitField name="CMPIRQEX" start="0" size="24"/>
+    </Register>
+    <Register name="CAP_EN_NEG" start="+0x228" size="0x4">
+      <BitField name="CAP_EN_NEG" start="0" size="24"/>
     </Register>
     <Register name="DMAEN" start="+0x22c" size="0x4">
       <BitField name="FAULTEN" start="27" size="1"/>

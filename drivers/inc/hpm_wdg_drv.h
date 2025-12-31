@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2023,2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -84,7 +84,8 @@ typedef struct wdg_control_struct {
 #define WDG_WRITE_ENABLE_MAGIC_NUM (0x5AA5UL)   /**< WDG enable magic number */
 #define WDG_RESTART_MAGIC_NUM (0xCAFEUL)        /**< WDG restart magic number */
 
-#define WDG_EXT_CLK_FREQ (32768UL) /**< WDG External CLock frequency: 32768 Hz */
+#define WDG_EXT_CLK_FREQ (32768UL)              /**< WDG External Clock frequency: 32768 Hz */
+#define PWDG_PERIPH_CLK_FREQ (24000000UL)       /**< PWDG Peripheral Clock Frequency: 24 MHz */
 
 #ifdef __cplusplus
 extern "C" {

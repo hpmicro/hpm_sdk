@@ -313,6 +313,9 @@ DMA Configuration
            /* TODO */
        }
 
+- **Hint**:
+
+  - If you need to use a custom DMA callback function, you can use the `hpm_spi_rx_dma_mgr_install_custom_callback` and `hpm_spi_tx_dma_mgr_install_custom_callback` API. This API registers directly to the DMA manager and uses a user-defined callback.
 
 
 Read/Write Operations Supporting Master and Slave Modes

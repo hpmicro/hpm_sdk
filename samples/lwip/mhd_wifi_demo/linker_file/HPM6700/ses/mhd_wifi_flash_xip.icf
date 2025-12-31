@@ -11,9 +11,9 @@ define region NOR_CFG_OPTION = [ from 0x80000400 size 0x0C00 ];
 define region BOOT_HEADER = [ from 0x80001000 size 0x2000 ];
 define region FLASH = [from 0x80003000 size (_flash_size - 0x3000) ];   /* FLASH */
 define region ILM   = [from 0x00000000 size 256k];        /* ILM */
-define region DLM   = [from 0x00080000 size 256k];        /* DLM */
-define region AXI_SRAM = [from 0x01080000 size 1448K];    /* AXI SRAM0 */
-define region NONCACHEABLE_RAM = [from 0x011F8000 size 32k];    /* AXI SRAM1 */
+define region DLM   = [from 0x00080000 size 224K];        /* DLM */
+define region AXI_SRAM = [from 0x01080000 size 1520k ];    /* AXI SRAM0 */
+define region NONCACHEABLE_RAM = [from 0x00080000 + 224K size 32k];    /* DLM */
 define region SHARE_RAM = [from 0x0117C000 size 16k];
 define region AHB_SRAM = [from 0xF0300000 size 32k];
 define region APB_SRAM = [from 0xF40F0000 size 8k];
@@ -99,7 +99,7 @@ place at start of ILM with fixed order   { block vectors };
 define access readonly { section .gcc_except_table, section .gcc_except_table.* };
 define access readonly { section .eh_frame, section .eh_frame.* };
 define access readonly { section .sdata.DW.* };
-place in FLASH with minimum size order    {
+place in FLASH with minimum size order   {
                                            block tdata_load,                        // Thread-local-storage load image
                                            block ctors,                             // Constructors block
                                            block dtors,                             // Destructors block
@@ -155,7 +155,7 @@ initialize by copy with packing=auto      {
                                           };
 
 /* Place lwip stack into ILM */
-initialize by copy with packing=auto        {
+initialize by copy with packing=auto      {
                                              section .text.*tcpip_*,
                                              section .text.*lwip_*,
                                              section .text.*netifapi_*,
@@ -181,7 +181,7 @@ initialize by copy with packing=auto        {
                                              section .text.*sys_*mbox*,
                                              section .text.*recv_raw*,
                                              section .text.*event_callback*,
-                                             };
+                                          };
 
 /* Place application into ILM */
 initialize by copy with packing=auto      {
@@ -269,16 +269,16 @@ place in DLM                              {
                                           };
 
 
-place in NONCACHEABLE_RAM                   {
+place in NONCACHEABLE_RAM                 {
                                                 section .noncacheable.init, section .noncacheable.init.*,
                                                 section .noncacheable.non_init, section .noncacheable.non_init.*,
                                                 section .noncacheable.bss, section .noncacheable.bss.*,
                                                 section .noncacheable
-                                            };
+                                          };
 
-place in SHARE_RAM                        { section .sh_mem};                                     // Share memory
-place in AHB_SRAM                         { section .ahb_sram};                                   // AHB SRAM memory
-place in APB_SRAM                         { section .backup_sram};                                // Backup SRAM memory
+place in SHARE_RAM                        { section .sh_mem };                                     // Share memory
+place in AHB_SRAM                         { section .ahb_sram };                                   // AHB SRAM memory
+place in APB_SRAM                         { section .backup_sram };                                // Backup SRAM memory
 place in AXI_SRAM                         {
                                                 section .fast_ram.init, section .fast_ram.init.*,
                                                 section .fast_ram.non_init,  section .fast_ram.non_init.*,
@@ -286,6 +286,7 @@ place in AXI_SRAM                         {
                                                 section .fast_ram
                                            };   // Fast access memory
 place in AXI_SRAM                         { block heap };                                         // Heap reserved block
+place in AXI_SRAM                         { section .freertos_heap_5 };
 place at end of DLM                       { block stack };                                        // Stack reserved block
 
 /* Keep */

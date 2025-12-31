@@ -1,0 +1,10 @@
+excluded_targets:
+  - debug
+  - release
+  - flash_xip_hybrid
+  - flash_xip_hybrid_release
+  - sec_core_img
+  - sec_core_img_release
+
+excluded_ides:
+  - iar

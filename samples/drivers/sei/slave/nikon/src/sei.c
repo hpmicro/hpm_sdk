@@ -312,7 +312,7 @@ void isr_sei(void)
                 (sei_get_data_value(BOARD_SEI, SEI_DAT_4) >> 6) & 0x3F,
                 sei_get_data_value(BOARD_SEI, SEI_DAT_7),
                 sei_get_data_value(BOARD_SEI, SEI_DAT_8),
-                sei_get_data_value(BOARD_SEI, SEI_DAT_9) & 0xFF,
+                sei_get_crc_value(BOARD_SEI, SEI_DAT_9),
                 sample_latch_tm1, sample_latch_tm2, delta / (clock_get_frequency(BOARD_MOTOR_CLK_NAME) / 1000000));
         sample_latch_tm2 = sample_latch_tm1;
     }

@@ -37,6 +37,7 @@
 
 /* Standard includes. */
 #include "string.h"
+#include <stdio.h>
 
 #ifdef configCLINT_BASE_ADDRESS
     #warning The configCLINT_BASE_ADDRESS constant has been deprecated.  configMTIME_BASE_ADDRESS and configMTIMECMP_BASE_ADDRESS are currently being derived from the (possibly 0) configCLINT_BASE_ADDRESS setting.  Please update to define configMTIME_BASE_ADDRESS and configMTIMECMP_BASE_ADDRESS dirctly in place of configCLINT_BASE_ADDRESS.  See https: /*www.FreeRTOS.org/Using-FreeRTOS-on-RISC-V.html */
@@ -363,3 +364,41 @@ void portExitCriticalFromIsr(uint32_t uxSavedStatusValue)
     write_csr(CSR_MSTATUS, uxSavedStatusValue);
 }
 #endif
+#if defined(USE_NONVECTOR_MODE) && USE_NONVECTOR_MODE
+__attribute__ ((section(".isr_vector"))) void freertos_handle_interrupt(void)
+{
+    typedef void(*isr_func_t)(void);
+
+    /* Machine-level interrupt from PLIC */
+    uint32_t irq_index = __plic_claim_irq(HPM_PLIC_BASE, HPM_PLIC_TARGET_M_MODE);
+    if (irq_index) {
+    /* Workaround: irq number returned by __plic_claim_irq might be 0, which is caused by plic. So skip invalid irq_index as a workaround */
+#if !defined(DISABLE_IRQ_PREEMPTIVE) || (DISABLE_IRQ_PREEMPTIVE == 0)
+        enable_global_irq(CSR_MSTATUS_MIE_MASK);
+#endif
+        ((isr_func_t)__vector_table[irq_index])();
+        __plic_complete_irq(HPM_PLIC_BASE, HPM_PLIC_TARGET_M_MODE, irq_index);
+    }
+    disable_global_irq(CSR_MSTATUS_MIE_MASK);
+}
+#endif
+
+__attribute__((weak)) void freertos_exception_handler(void)
+{
+    uint32_t cause = read_csr(CSR_MCAUSE);
+    uint32_t mepc = read_csr(CSR_MEPC);
+    uint32_t mtval = read_csr(CSR_MTVAL);
+    printf("###########################\r\nException occur!\r\n");
+    printf("mcause: 0x%lx \r\nmepc: 0x%lx \r\nmtval: 0x%lx \r\n", cause, mepc, mtval);
+    
+    if (read_csr(CSR_MSCRATCH) == 0U) { 
+#if ( ( INCLUDE_xTaskGetCurrentTaskHandle == 1 ) || ( configUSE_MUTEXES == 1 ) )
+        TaskHandle_t current_thread;
+        current_thread = (TaskHandle_t) xTaskGetCurrentTaskHandle();
+        printf("Current Thread Name:  %s \n", pcTaskGetName(current_thread));
+        printf("Current Thread Stack: 0x%x \n", *(StackType_t *)(current_thread));
+#endif
+    } else {
+        printf("Trap may happen in ISR. ISR nested %d times\r\n", read_csr(CSR_MSCRATCH));
+    }
+}

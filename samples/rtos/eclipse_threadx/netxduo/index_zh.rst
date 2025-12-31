@@ -10,6 +10,7 @@ Netxduo 例程
     ftp/README_zh
     http/README_zh
     https/README_zh
+    dual_port/README_zh
     iperf/README_zh
     ping/README_zh
     sntp/README_zh

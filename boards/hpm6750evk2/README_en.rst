@@ -385,6 +385,34 @@ Pin Description
      * - PE24
        - J10[7]
 
+- ESP-HOSTED Pin
+
+.. list-table::
+   :header-rows: 1
+
+   * - Function
+     - Position
+     - Note
+   * - PZ11
+     - J11[3]
+     - RESET Pin
+   * - PZ10
+     - J11[4]
+     - HANDSHAKE Pin
+   * - PZ09
+     - J11[5]
+     - DATA_READY Pin
+
+- BROWNOUT Interrupt Indicator Pin
+
+.. list-table::
+   :header-rows: 1
+
+   * - Function
+     - Position
+   * - PE30
+     - J11[10]
+
 .. _hpm6750evk2_known_issues:
 
 Board Know Issue

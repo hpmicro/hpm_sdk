@@ -89,7 +89,7 @@
 #define HPM_TRGM0_INPUT_SRC_PWM1_TRGO_4                    (0x4CUL)  /* PWM1 trigger out4 */
 #define HPM_TRGM0_INPUT_SRC_PWM1_TRGO_5                    (0x4DUL)  /* PWM1 trigger out5 */
 #define HPM_TRGM0_INPUT_SRC_PWM1_TRGO_6                    (0x4EUL)  /* PWM1 trigger out6 */
-#define HPM_TRGM0_INPUT_SRC_PWM1_TRGO_7                    (0x46UL)  /* PWM1 trigger out7 */
+#define HPM_TRGM0_INPUT_SRC_PWM1_TRGO_7                    (0x4FUL)  /* PWM1 trigger out7 */
 #define HPM_TRGM0_INPUT_SRC_PWM2_TRGO_0                    (0x50UL)  /* PWM2 trigger out0 */
 #define HPM_TRGM0_INPUT_SRC_PWM2_TRGO_1                    (0x51UL)  /* PWM2 trigger out1 */
 #define HPM_TRGM0_INPUT_SRC_PWM2_TRGO_2                    (0x52UL)  /* PWM2 trigger out2 */

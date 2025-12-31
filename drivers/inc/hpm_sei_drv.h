@@ -9,9 +9,17 @@
 #define HPM_SEI_DRV_H
 
 #include "hpm_common.h"
-#include "hpm_sei_regs.h"
 #include "hpm_soc_feature.h"
-#include "hpm_soc_ip_feature.h"
+#include "hpm_sei_regs.h"
+
+/**
+ *
+ * @brief SEI driver APIs
+ * @defgroup sei_interface SEI driver APIs
+ * @ingroup io_interfaces
+ * @{
+ */
+
 
 /**
  * @brief sei arming action
@@ -1141,9 +1149,18 @@ hpm_stat_t sei_engine_config_init(SEI_Type *ptr, uint8_t idx, sei_engine_config_
  */
 void sei_set_instr(SEI_Type *ptr, uint8_t idx, uint8_t op, uint8_t ck, uint8_t crc, uint8_t data, uint8_t opr);
 
+/**
+ * @brief Get the SEI crc value
+ * @param [in] ptr SEI base address
+ * @param [in] idx SEI crc index, such as SEI_DAT_2, SEI_DAT_3, etc.
+ * @retval crc value
+ */
+uint32_t sei_get_crc_value(SEI_Type *ptr, uint8_t idx);
 
 #if defined(__cplusplus)
 }
 #endif /* __cplusplus */
-
+/**
+ * @}
+ */
 #endif

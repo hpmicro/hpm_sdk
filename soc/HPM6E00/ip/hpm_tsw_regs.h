@@ -388,8 +388,7 @@ typedef struct {
         __R  uint32_t TSN_EP_PTP_SR;           /* 0x2F048:  */
         __R  uint8_t  RESERVED19[4020];        /* 0x2F04C - 0x2FFFF: Reserved */
         __RW uint32_t SW_CTRL_PORT_MAIN_TAGGING; /* 0x30000: PVID Tagging Register */
-        __RW uint32_t SW_CTRL_PORT_MAIN_ENNABLE; /* 0x30004: Port Module Enable Register */
-        __R  uint8_t  RESERVED20[8184];        /* 0x30008 - 0x31FFF: Reserved */
+        __R  uint8_t  RESERVED20[8188];        /* 0x30004 - 0x31FFF: Reserved */
         __RW uint32_t SW_CTRL_EGRESS_ECSR_QDROP; /* 0x32000:  */
         __R  uint8_t  RESERVED21[8188];        /* 0x32004 - 0x33FFF: Reserved */
         struct {
@@ -6949,27 +6948,6 @@ typedef struct {
 #define TSW_TSNPORT_SW_CTRL_PORT_MAIN_TAGGING_PVID_SHIFT (0U)
 #define TSW_TSNPORT_SW_CTRL_PORT_MAIN_TAGGING_PVID_SET(x) (((uint32_t)(x) << TSW_TSNPORT_SW_CTRL_PORT_MAIN_TAGGING_PVID_SHIFT) & TSW_TSNPORT_SW_CTRL_PORT_MAIN_TAGGING_PVID_MASK)
 #define TSW_TSNPORT_SW_CTRL_PORT_MAIN_TAGGING_PVID_GET(x) (((uint32_t)(x) & TSW_TSNPORT_SW_CTRL_PORT_MAIN_TAGGING_PVID_MASK) >> TSW_TSNPORT_SW_CTRL_PORT_MAIN_TAGGING_PVID_SHIFT)
-
-/* Bitfield definition for register of struct array TSNPORT: SW_CTRL_PORT_MAIN_ENNABLE */
-/*
- * EN_SF (R/W)
- *
- * only applicable for CPU-Port at egress: '1' to use S&F FIFO and '0' disable S&F FIFO. Changing during frame operation can lead to frame corruption
- */
-#define TSW_TSNPORT_SW_CTRL_PORT_MAIN_ENNABLE_EN_SF_MASK (0x2U)
-#define TSW_TSNPORT_SW_CTRL_PORT_MAIN_ENNABLE_EN_SF_SHIFT (1U)
-#define TSW_TSNPORT_SW_CTRL_PORT_MAIN_ENNABLE_EN_SF_SET(x) (((uint32_t)(x) << TSW_TSNPORT_SW_CTRL_PORT_MAIN_ENNABLE_EN_SF_SHIFT) & TSW_TSNPORT_SW_CTRL_PORT_MAIN_ENNABLE_EN_SF_MASK)
-#define TSW_TSNPORT_SW_CTRL_PORT_MAIN_ENNABLE_EN_SF_GET(x) (((uint32_t)(x) & TSW_TSNPORT_SW_CTRL_PORT_MAIN_ENNABLE_EN_SF_MASK) >> TSW_TSNPORT_SW_CTRL_PORT_MAIN_ENNABLE_EN_SF_SHIFT)
-
-/*
- * EN_QCI (R/W)
- *
- * if QCI is present at selected egress port, '1' to use QCI and '0' disable QCI. Changing during frame operation can lead to frame corruption.
- */
-#define TSW_TSNPORT_SW_CTRL_PORT_MAIN_ENNABLE_EN_QCI_MASK (0x1U)
-#define TSW_TSNPORT_SW_CTRL_PORT_MAIN_ENNABLE_EN_QCI_SHIFT (0U)
-#define TSW_TSNPORT_SW_CTRL_PORT_MAIN_ENNABLE_EN_QCI_SET(x) (((uint32_t)(x) << TSW_TSNPORT_SW_CTRL_PORT_MAIN_ENNABLE_EN_QCI_SHIFT) & TSW_TSNPORT_SW_CTRL_PORT_MAIN_ENNABLE_EN_QCI_MASK)
-#define TSW_TSNPORT_SW_CTRL_PORT_MAIN_ENNABLE_EN_QCI_GET(x) (((uint32_t)(x) & TSW_TSNPORT_SW_CTRL_PORT_MAIN_ENNABLE_EN_QCI_MASK) >> TSW_TSNPORT_SW_CTRL_PORT_MAIN_ENNABLE_EN_QCI_SHIFT)
 
 /* Bitfield definition for register of struct array TSNPORT: SW_CTRL_EGRESS_ECSR_QDROP */
 /*

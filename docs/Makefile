@@ -7,6 +7,7 @@ SPHINXOPTS    ?=
 #SPHINXBUILD   ?= sphinx-build
 SPHINXBUILD   ?= python3 -m sphinx.cmd.build
 CMAKE_RST_GEN ?= python3 ../scripts/generate_cmake_rst.py --skip_private --skip_undocumented --headline="SDK CMake API Reference" ../cmake
+DOXYGEN 	  ?= doxygen
 
 all: html
 
@@ -21,7 +22,11 @@ en: Makefile cmake_intro
 zh: Makefile cmake_intro
 	@$(SPHINXBUILD) -M html "zh" "output/zh" $(SPHINXOPTS) $(O)
 
-html: en zh
+api_doc:
+	@rm -rf output/api_doc && mkdir output/api_doc
+	@export HPM_SDK_BASE=$(shell pwd)/../; cd output/api_doc && $(DOXYGEN) ../../doxygen/Doxyfile
+
+html: en zh api_doc
 .PHONY: all
 
 clean:

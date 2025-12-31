@@ -33,6 +33,12 @@ if (isdefinedsymbol(_extram_size)) {
   define symbol __size_exram__          = 256M;
 }
 
+if (isdefinedsymbol(_noncacheable_size)) {
+  define symbol __noncacheable_size__    = _noncacheable_size;
+} else {
+  define symbol __noncacheable_size__    = 32M;
+}
+
 define symbol __size_safestack__        = 256;
 
 /* Regions */
@@ -41,10 +47,10 @@ define region ILM = mem:[from 0x00000000 size 256k];         /* ILM */
 define region DLM = mem:[from 0x00080000 size 256k];         /* DLM */
 define region AXI_SRAM = mem:[from 0x01200000 size 512k];    /* AXI SRAM */
 define region SDRAM  = mem:[from 0x40000000 size __size_exram__ - 64M];
-define region NONCACHEABLE_RAM = mem:[from 0x40000000 + __size_exram__ - 64M size 32M];
+define region NONCACHEABLE_RAM = mem:[from 0x40000000 + __size_exram__ - 32M - __noncacheable_size__ size __noncacheable_size__];
 define region GPU_RAM = mem:[from 0x40000000 + __size_exram__ - 32M size 32M];
 define region AHB_SRAM = mem:[from 0xF0400000 size 32k];
-define region APB_SRAM = mem:[from 0xF4130000 size 16k];
+define region APB_SRAM = mem:[from 0xF4130000 size 8k];
 
 /* Blocks */
 define block vectors with fixed order                       { section .vector_table, section .isr_vector };

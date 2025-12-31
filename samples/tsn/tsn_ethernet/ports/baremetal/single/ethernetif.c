@@ -108,7 +108,7 @@ static void low_level_init(struct netif *netif)
     memcpy(netif->hwaddr, mac, ETH_HWADDR_LEN);
 
     /* Set netif maximum transfer unit */
-    netif->mtu = 1500;
+    netif->mtu = netifMTU;
 
     /* Accept broadcast address and ARP traffic */
     netif->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_IGMP;

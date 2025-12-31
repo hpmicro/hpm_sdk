@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 HPMicro
+ * Copyright (c) 2022-2025 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
@@ -404,6 +404,18 @@ uint32_t board_init_i2c_clock(I2C_Type *ptr)
     return freq;
 }
 
+uint32_t board_init_i2c_eeprom_clock(I2C_Type *ptr)
+{
+    uint32_t freq = 0;
+
+    if (ptr == HPM_I2C0) {
+        clock_add_to_group(clock_i2c0, 0);
+        freq = clock_get_frequency(clock_i2c0);
+    }
+
+    return freq;
+}
+
 void board_init_i2c(I2C_Type *ptr)
 {
     i2c_config_t config;
@@ -527,6 +539,15 @@ void board_led_write(uint8_t state)
     gpio_write_pin(BOARD_LED_GPIO_CTRL, BOARD_LED_GPIO_INDEX, BOARD_LED_GPIO_PIN, state);
 }
 
+void board_can_transceiver_phy_set(CAN_Type *ptr, bool enable)
+{
+    init_can_transceiver_phy_pin(ptr);
+    if (ptr == HPM_CAN0) {
+        gpio_set_pin_output_with_initial(BOARD_CAN_STB_GPIO_CTRL, BOARD_CAN_STB_GPIO_INDEX, BOARD_CAN_STB_GPIO_PIN, 0);
+        gpio_write_pin(BOARD_CAN_STB_GPIO_CTRL, BOARD_CAN_STB_GPIO_INDEX, BOARD_CAN_STB_GPIO_PIN, enable ? 0 : 1);
+    }
+}
+
 void board_init_cam_pins(void)
 {
     init_cam_pins();
@@ -552,7 +573,7 @@ void board_init_pmp(void)
     uint32_t start_addr;
     uint32_t end_addr;
     uint32_t length;
-    pmp_entry_t pmp_entry[16];
+    pmp_entry_t pmp_entry[16] = {0};
     uint8_t index = 0;
 
     /* Init noncachable memory */
@@ -1183,18 +1204,19 @@ hpm_stat_t board_init_enet_phy(ENET_Type *ptr)
     rtl8201_config_t phy_config1;
 
     if (ptr == HPM_ENET0) {
-        rtl8211_reset(ptr);
+        rtl8211_reset(ptr, RTL8211_ADDR);
         rtl8211_basic_mode_default_config(HPM_ENET0, &phy_config0);
-        if (rtl8211_basic_mode_init(HPM_ENET0, &phy_config0) == true) {
+        if (rtl8211_basic_mode_init(HPM_ENET0, RTL8211_ADDR, &phy_config0) == true) {
             return status_success;
         } else {
             printf("Enet0 phy init failed!\n");
             return status_fail;
         }
     } else if (ptr == HPM_ENET1) {
-        rtl8201_reset(HPM_ENET1);
+        rtl8201_reset(HPM_ENET1, RTL8201_ADDR);
         rtl8201_basic_mode_default_config(HPM_ENET1, &phy_config1);
-        if (rtl8201_basic_mode_init(HPM_ENET1, &phy_config1) == true) {
+        phy_config1.rmii_refclk_dir = BOARD_ENET_RMII_INT_REF_CLK;
+        if (rtl8201_basic_mode_init(HPM_ENET1, RTL8201_ADDR, &phy_config1) == true) {
             return status_success;
         } else {
             printf("Enet1 phy init failed!\n");
@@ -1226,9 +1248,9 @@ uint8_t board_get_enet_phy_itf(uint8_t idx)
 void board_get_enet_phy_status(uint8_t idx, void *status)
 {
     if (idx == 0) {
-        rtl8211_get_phy_status(HPM_ENET0, status);
+        rtl8211_get_phy_status(HPM_ENET0, RTL8211_ADDR, status);
     } else {
-        rtl8201_get_phy_status(HPM_ENET1, status);
+        rtl8201_get_phy_status(HPM_ENET1, RTL8201_ADDR, status);
     }
 }
 #endif
@@ -1284,3 +1306,235 @@ uint32_t board_init_gptmr_clock(GPTMR_Type *ptr)
     return freq;
 }
 
+
+void init_uart_pins(UART_Type *ptr)
+{
+    if (ptr == HPM_UART0) {
+        init_uart0_pins();
+    } else if (ptr == HPM_UART2) {
+        init_uart2_pins();
+    } else if (ptr == HPM_UART13) {
+        init_uart13_pins();
+    } else if (ptr == HPM_PUART) {
+        init_puart_pins();
+    }
+}
+
+void init_uart_pin_as_gpio(UART_Type *ptr)
+{
+    if (ptr == HPM_UART13) {
+        init_uart13_pins_as_gpio();
+    }
+}
+
+void init_lcd_pins(LCDC_Type *ptr)
+{
+    (void) ptr;
+    init_lcd0_pins();
+}
+
+void init_trgmux_pins(uint32_t pin)
+{
+    /* all trgmux pin ALT_SELECT fixed to 16*/
+    HPM_IOC->PAD[pin].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(16);
+}
+
+void init_i2c_pins(I2C_Type *ptr)
+{
+    if (ptr == HPM_I2C0) {
+        init_i2c0_pins();
+    } else {
+        while (1) {
+        }
+    }
+}
+
+void init_i2c_pins_as_gpio(I2C_Type *ptr)
+{
+    if (ptr == HPM_I2C0) {
+        /* I2C0 */
+        init_i2c0_pins_as_gpio();
+    } else {
+        while (1) {
+        }
+    }
+}
+
+void init_gpio_pins(void)
+{
+    init_gpio_pins_with_pull_up();
+#ifdef USING_GPIO0_FOR_GPIOZ
+    init_gpio_pins_using_gpio0();
+#endif
+}
+
+void init_spi_pins(SPI_Type *ptr)
+{
+    if (ptr == HPM_SPI2) {
+        init_spi2_pins();
+    }
+}
+
+void init_spi_pins_with_gpio_as_cs(SPI_Type *ptr)
+{
+    if (ptr == HPM_SPI2) {
+        init_spi2_pins_with_gpio_as_cs();
+    }
+}
+
+void init_pins(void)
+{
+}
+
+void init_gptmr_pins(GPTMR_Type *ptr)
+{
+    if (ptr == HPM_GPTMR3) {
+        init_gptmr3_pins();
+    }
+    if (ptr == HPM_GPTMR4) {
+        init_gptmr4_pins();
+    }
+    if (ptr == HPM_GPTMR5) {
+        init_gptmr5_pins();
+    }
+}
+
+void init_i2s_pins(I2S_Type *ptr)
+{
+    if (ptr == HPM_I2S0) {
+        init_i2s0_pins();
+    }
+}
+
+void init_enet_pins(ENET_Type *ptr)
+{
+    if (ptr == HPM_ENET0) {
+        init_enet0_pins();
+    } else if (ptr == HPM_ENET1) {
+        init_enet1_pins();
+    }
+}
+
+void init_pwm_pins(PWM_Type *ptr)
+{
+    if (ptr == HPM_PWM3) {
+        init_pwm3_pins();
+    } else if (ptr == HPM_PWM2) {
+        init_pwm2_pins();
+    }
+}
+
+void init_usb_pins(USB_Type *ptr)
+{
+    if (ptr == HPM_USB0) {
+        init_usb0_pins();
+    } else if (ptr == HPM_USB1) {
+        init_usb1_pins();
+    }
+}
+
+void init_can_pins(CAN_Type *ptr)
+{
+    if (ptr == HPM_CAN0) {
+        init_can0_pins();
+    }
+}
+
+void init_can_transceiver_phy_pin(CAN_Type *ptr)
+{
+    if (ptr == HPM_CAN0) {
+        init_mcan0_transceiver_phy_pin();
+    } else {
+        /* Invalid CAN instance */
+    }
+}
+
+void init_sdxc_cmd_pin(SDXC_Type *ptr, bool open_drain, bool is_1v8)
+{
+    if (ptr == HPM_SDXC1) {
+        /* SDXC1.CMD */
+        if (is_1v8) {
+            if (open_drain) {
+                init_sdxc1_cmd_pin_enable_1v8_enable_opendrain();
+            } else {
+                init_sdxc1_cmd_pin_enable_1v8_disable_opendrain();
+            }
+        } else {
+            if (open_drain) {
+                init_sdxc1_cmd_pin_disable_1v8_enable_opendrain();
+            } else {
+                init_sdxc1_cmd_pin_disable_1v8_disable_opendrain();
+            }
+        }
+    }
+}
+
+void init_sdxc_cd_pin(SDXC_Type  *ptr, bool as_gpio)
+{
+    if (ptr == HPM_SDXC1) {
+        if (as_gpio) {
+            /* SDXC1.CDN */
+            init_sdxc1_cd_pin();
+        }
+    }
+}
+
+void init_sdxc_clk_data_pins(SDXC_Type *ptr, uint32_t width, bool is_1v8)
+{
+    if (ptr == HPM_SDXC1) {
+        if (is_1v8) {
+            if (width == 4) {
+                init_sdxc1_clk_data_pins_width4_enable_1v8();
+            } else {
+                init_sdxc1_clk_data_pins_enable_1v8();
+            }
+        } else {
+            if (width == 4) {
+                init_sdxc1_clk_data_pins_width4_disable_1v8();
+            } else {
+                init_sdxc1_clk_data_pins_disable_1v8();
+            }
+        }
+    }
+}
+
+void init_sdxc_pwr_pin(SDXC_Type *ptr, bool as_gpio)
+{
+    if (ptr == HPM_SDXC1) {
+        if (as_gpio) {
+            /* SD_PWR */
+            init_sdxc1_pwr_pin();
+        }
+    }
+}
+
+void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_output)
+{
+    if (ptr == HPM_GPTMR3) {
+        if ((channel == 1) && (as_output == true)) {
+            init_gptmr3_channel_pin_as_output();
+        }
+    } else if (ptr == HPM_GPTMR4) {
+        if ((channel == 1) && (as_output == false)) {
+            init_gptmr4_channel_pin_as_capture();
+        }
+    } else if (ptr == HPM_GPTMR5) {
+        if (as_output == true) {
+            switch (channel) {
+            case 2:
+                init_gptmr5_channel2_pin_as_output();
+                break;
+            case 3:
+                init_gptmr5_channel3_pin_as_output();
+                break;
+            default:
+                break;
+            }
+        }
+    }
+}
+void board_init_brownout_indicate_pin(void)
+{
+    init_brownout_indicate_pin();
+    gpio_set_pin_output_with_initial(BOARD_BROWNOUT_INDICATE_GPIO_CTRL, GPIO_GET_PORT_INDEX(BOARD_BROWNOUT_INDICATE_PIN), GPIO_GET_PIN_INDEX(BOARD_BROWNOUT_INDICATE_PIN), 0);
+}

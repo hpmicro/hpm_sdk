@@ -9,6 +9,7 @@ Samples
 
 
     audio_codec/index_en
+    brownout/README_en
     canopen/index_en
     cherryrb/README_en
     cherrysh/index_en
@@ -57,4 +58,5 @@ Samples
     tsn/index_en
     vglite/index_en
     sent/index_en
+    eeprom/index_en
 

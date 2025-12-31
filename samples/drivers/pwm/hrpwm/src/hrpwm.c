@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -130,7 +130,6 @@ void generate_edge_aligned_waveform_fault_mode(void)
     pwm_cal_hrpwm_chn_wait(HRPWM, cmp_index);
     pwm_cal_hrpwm_chn_wait(HRPWM, cmp_index + 1);
 
-    pwm_enable_hrpwm(HRPWM);
     /*
      * reload and start counter
      */
@@ -195,8 +194,7 @@ void generate_edge_aligned_waveform_fault_mode(void)
     pwm_config_cmp(HRPWM, fault_recovery_cmp, &cmp_config[3]);
     pwm_issue_shadow_register_lock_event(HRPWM);
 
-
-    pwm_start_counter(HRPWM);
+    pwm_start_hrpwm_counter(HRPWM);
     pwm_issue_shadow_register_lock_event(HRPWM);
 
     duty_step = reload / TEST_LOOP;
@@ -235,8 +233,6 @@ void generate_central_aligned_waveform(void)
     pwm_cal_hrpwm_chn_wait(HRPWM, cmp_index);
     pwm_cal_hrpwm_chn_wait(HRPWM, cmp_index + 1);
 
-
-    pwm_enable_hrpwm(HRPWM);
     /*
      * reload and start counter
      */
@@ -282,7 +278,7 @@ void generate_central_aligned_waveform(void)
         };
     }
     pwm_load_cmp_shadow_on_match(HRPWM, cmp_index + 3,  &cmp_config[3]);
-    pwm_start_counter(HRPWM);
+    pwm_start_hrpwm_counter(HRPWM);
     pwm_issue_shadow_register_lock_event(HRPWM);
     duty_step = reload / TEST_LOOP;
     duty = reload / TEST_LOOP;
@@ -330,7 +326,6 @@ void generate_hrpwm_frequency_variable_waveform(void)
     pwm_cal_hrpwm_chn_wait(HRPWM, cmp_index);
     pwm_cal_hrpwm_chn_wait(HRPWM, cmp_index + 1);
 
-    pwm_enable_hrpwm(HRPWM);
     /*
      * reload and start counter
      */
@@ -368,7 +363,7 @@ void generate_hrpwm_frequency_variable_waveform(void)
     }
     pwm_load_cmp_shadow_on_match(HRPWM, cmp_index + 2, &cmp_config[1]);
 
-    pwm_start_counter(HRPWM);
+    pwm_start_hrpwm_counter(HRPWM);
     pwm_issue_shadow_register_lock_event(HRPWM);
     pwm_set_cnt_shadow_trig_reload(HRPWM, true);
 

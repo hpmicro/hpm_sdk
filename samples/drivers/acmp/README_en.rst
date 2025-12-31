@@ -29,7 +29,10 @@ Note:
 Running the example
 -------------------
 
-When the example runs successfully, ACMP will perform voltage comparison and output level reversal can be observed through the oscilloscope or multimeter, and the following message is displayed in the terminal(dac set value varies with the input analog signal level):
+When the example runs successfully, the program will adjust the output of the built-in DAC at certain intervals,
+traversing from the minimum value to the maximum value. Meanwhile, the ACMP will conduct real-time voltage comparison.
+Through an oscilloscope or multimeter, the level flip on the output pin of the analog comparator can be observed,
+and the serial terminal will output the following information.
 
 
 .. code-block:: console

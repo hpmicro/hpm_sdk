@@ -8,7 +8,8 @@
 #ifndef HPM_SOC_FEATURE_H
 #define HPM_SOC_FEATURE_H
 
-#include "hpm_soc.h"
+#include "riscv/riscv_core.h"
+#include "hpm_soc_ip.h"
 #include "hpm_soc_ip_feature.h"
 
 /*

@@ -129,7 +129,7 @@ a lot of data that needs to be copied, this should be set high. */
 #define MEMP_NUM_UDP_PCB        6
 #endif
 
-/* MEMP_NUM_TCP_PCB: the number of simulatenously active TCP
+/* MEMP_NUM_TCP_PCB: the number of simultaneously active TCP
    connections. */
 #ifndef MEMP_NUM_TCP_PCB
 #define MEMP_NUM_TCP_PCB        10

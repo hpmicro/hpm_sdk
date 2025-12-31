@@ -82,12 +82,6 @@ definitions. */
     #define portasmHAS_SIFIVE_CLINT 0
 #endif
 
-/* CSR definitions. */
-#define CSR_MSTATUS         0x300
-#define CSR_MTVEC           0x305
-#define CSR_MEPC            0x341
-#define CSR_MCAUSE          0x342
-
     PUBLIC xPortStartFirstTask
     PUBLIC pxPortInitialiseStack
     PUBLIC freertos_risc_v_trap_handler
@@ -95,6 +89,7 @@ definitions. */
     PUBLIC freertos_risc_v_interrupt_handler
     PUBLIC freertos_risc_v_mtimer_interrupt_handler
 
+    EXTERN freertos_exception_handler
     EXTERN vTaskSwitchContext
     EXTERN xTaskIncrementTick
     EXTERN pullMachineTimerCompareRegister
@@ -204,6 +199,7 @@ portUPDATE_MTIMER_COMPARE_REGISTER MACRO
  * pxCode
  */
     SECTION `.isr_vector`:CODE:NOROOT(2)
+    ALIGN 2
     CODE
 pxPortInitialiseStack:
     csrr t0, CSR_MSTATUS					/* Obtain current mstatus value. */
@@ -259,6 +255,7 @@ fpu_stack_init_done:
 /*-----------------------------------------------------------*/
 
     SECTION `.isr_vector`:CODE:NOROOT(2)
+    ALIGN 2
     CODE
 xPortStartFirstTask:
     load_x  sp, pxCurrentTCB            /* Load pxCurrentTCB. */
@@ -315,15 +312,18 @@ xPortStartFirstTask:
 /*-----------------------------------------------------------*/
 
     SECTION `.isr_vector`:CODE:NOROOT(2)
+    ALIGN 2
     CODE
 freertos_risc_v_application_exception_handler:
     csrr t0, CSR_MCAUSE     /* For viewing in the debugger only. */
     csrr t1, CSR_MEPC        /* For viewing in the debugger only */
     csrr t2, CSR_MSTATUS     /* For viewing in the debugger only */
+    call freertos_exception_handler
     j $
 /*-----------------------------------------------------------*/
 
     SECTION `.isr_vector`:CODE:NOROOT(2)
+    ALIGN 2
     CODE
 freertos_risc_v_exception_handler:
     portcontextSAVE_EXCEPTION_CONTEXT
@@ -331,22 +331,24 @@ freertos_risc_v_exception_handler:
     li t0, 11                           /* 11 == environment call. */
     bne a0, t0, other_exception         /* Not an M environment call, so some other exception. */
     call vTaskSwitchContext
-    portcontextRESTORE_CONTEXT
+    j freertos_vector_restore_context
 
 other_exception:
     call freertos_risc_v_application_exception_handler
-    portcontextRESTORE_CONTEXT
+    j freertos_vector_restore_context
 /*-----------------------------------------------------------*/
 
     SECTION `.isr_vector`:CODE:NOROOT(2)
+    ALIGN 2
     CODE
 freertos_risc_v_interrupt_handler:
     portcontextSAVE_INTERRUPT_CONTEXT
     call freertos_risc_v_application_interrupt_handler
-    portcontextRESTORE_CONTEXT
+    j freertos_vector_restore_context
 /*-----------------------------------------------------------*/
 
     SECTION `.isr_vector`:CODE:NOROOT(2)
+    ALIGN 2
     CODE
 freertos_risc_v_mtimer_interrupt_handler:
     portcontextSAVE_INTERRUPT_CONTEXT
@@ -355,10 +357,11 @@ freertos_risc_v_mtimer_interrupt_handler:
     beqz a0, exit_without_context_switch    /* Don't switch context if incrementing tick didn't unblock a task. */
     call vTaskSwitchContext
 exit_without_context_switch:
-    portcontextRESTORE_CONTEXT
+    j freertos_vector_restore_context
 /*-----------------------------------------------------------*/
 
     SECTION `.isr_vector`:CODE:NOROOT(2)
+    ALIGN 2
     CODE
 freertos_risc_v_trap_handler:
     portcontextSAVE_CONTEXT_INTERNAL
@@ -434,5 +437,5 @@ application_exception_handler:
     j processed_source                  /* No other exceptions handled yet. */
 
 processed_source:
-    portcontextRESTORE_CONTEXT
+    j freertos_vector_restore_context
     END

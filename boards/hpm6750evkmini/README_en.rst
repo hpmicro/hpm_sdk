@@ -329,6 +329,34 @@ Pin Description
      * - PE24
        - P2[16]
 
+- ESP-HOSTED Pin
+
+.. list-table::
+   :header-rows: 1
+
+   * - Function
+     - Position
+     - Note
+   * - PB13
+     - P1[3]
+     - RESET Pin
+   * - PB10
+     - P1[15]
+     - HANDSHAKE Pin
+   * - PB11
+     - P1[13]
+     - DATA_READY Pin
+
+- BROWNOUT Interrupt Indicator Pin
+
+.. list-table::
+   :header-rows: 1
+
+   * - Function
+     - Position
+   * - PZ09
+     - P1[8]
+
 Known Issues
 ------------
 

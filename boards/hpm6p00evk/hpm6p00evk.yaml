@@ -1,18 +1,18 @@
-# Copyright (c) 2021-2024 HPMicro
+# Copyright (c) 2021-2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 board:
-    soc: HPM6P81
-    device: HPM6P81xRTx
-    openocd-soc: hpm6p80-dual-core
-    openocd-probe: ft2232
+    soc: HPM6P81            # the name of SOC used on this board
+    device: HPM6P81xRTx     # device name used for jlink connection
+    openocd-soc: hpm6p80-dual-core    # used for openocd soc config file name: hpm6p80-dual-core.cfg
+    openocd-probe: ft2232    # used for openocd probe config file name: ft2232.cfg
     on-board-ram:
       type: sdram
-      size: 32M
+      size: 32M             # the size of on-board ram will be used in linker script as external ram size
       width: 16bit
     on-board-flash:
       type: qspi-nor-flash
-      size: 1M
+      size: 1M             # the size of on-board flash which will be used in linker script
     feature:
       - board_sdram
       - board_mtgv2
@@ -22,8 +22,11 @@ board:
       - board_audio_out # DAO
       - board_audio_codec # I2S codec
       - board_enet_phy
+      - board_enet_pps_output_pin
+      - board_enet_pps_input_pin
       - board_motor_control
       - board_puart_pin
       - board_femc_sram
       - board_gpt_pin
       - board_wkup_pin
+      - board_usb_otg

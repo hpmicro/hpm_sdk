@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -94,6 +94,8 @@ typedef struct {
     uint32_t buffer1;
     uint32_t buffer2;
     display_yuv2rgb_config_t csc_config;
+    uint32_t colorkey_low;
+    uint32_t colorkey_high;
 } cam_config_t;
 
 /**

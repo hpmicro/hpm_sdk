@@ -9,8 +9,9 @@
 #define HPM_QEIV2_DRV_H
 
 #include "hpm_common.h"
-#include "hpm_soc_ip_feature.h"
+#include "hpm_soc_feature.h"
 #include "hpm_qeiv2_regs.h"
+#include "hpm_qeiv2_soc_drv.h"
 /**
  * @brief QEIV2 driver APIs
  * @defgroup qeiv2_interface QEIV2 driver APIs

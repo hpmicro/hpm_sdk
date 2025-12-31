@@ -43,26 +43,35 @@ Running the example
    ----------------------------------------------------------------------
    SEI slave SSI sample
    Started sei engine!
-   MT:0xa5a, ST:0x5a5, sample_tm1:209155491, sample_tm2:0, sample_interval:1161974 us
-   MT:0xa5a, ST:0x5a6, sample_tm1:245155712, sample_tm2:209155491, sample_interval:200001 us
-   MT:0xa5a, ST:0x5a7, sample_tm1:281155932, sample_tm2:245155712, sample_interval:200001 us
-   MT:0xa5a, ST:0x5a8, sample_tm1:317156152, sample_tm2:281155932, sample_interval:200001 us
-   MT:0xa5a, ST:0x5a9, sample_tm1:353156373, sample_tm2:317156152, sample_interval:200001 us
-   MT:0xa5a, ST:0x5aa, sample_tm1:389156593, sample_tm2:353156373, sample_interval:200001 us
-   MT:0xa5a, ST:0x5ab, sample_tm1:425156813, sample_tm2:389156593, sample_interval:200001 us
-   MT:0xa5a, ST:0x5ac, sample_tm1:461157033, sample_tm2:425156813, sample_interval:200001 us
-   MT:0xa5a, ST:0x5ad, sample_tm1:497157253, sample_tm2:461157033, sample_interval:200001 us
-   MT:0xa5a, ST:0x5ae, sample_tm1:533157472, sample_tm2:497157253, sample_interval:200001 us
-   MT:0xa5a, ST:0x5af, sample_tm1:569157692, sample_tm2:533157472, sample_interval:200001 us
-   MT:0xa5a, ST:0x5b0, sample_tm1:605157912, sample_tm2:569157692, sample_interval:200001 us
-   MT:0xa5a, ST:0x5b1, sample_tm1:641158132, sample_tm2:605157912, sample_interval:200001 us
-   MT:0xa5a, ST:0x5b2, sample_tm1:677158352, sample_tm2:641158132, sample_interval:200001 us
-   MT:0xa5a, ST:0x5b3, sample_tm1:713158573, sample_tm2:677158352, sample_interval:200001 us
-   MT:0xa5a, ST:0x5b4, sample_tm1:749158793, sample_tm2:713158573, sample_interval:200001 us
-   MT:0xa5a, ST:0x5b5, sample_tm1:785159013, sample_tm2:749158793, sample_interval:200001 us
-   MT:0xa5a, ST:0x5b6, sample_tm1:821159233, sample_tm2:785159013, sample_interval:200001 us
-   MT:0xa5a, ST:0x5b7, sample_tm1:857159453, sample_tm2:821159233, sample_interval:200001 us
-   MT:0xa5a, ST:0x5b8, sample_tm1:893159673, sample_tm2:857159453, sample_interval:200001 us
-   MT:0xa5a, ST:0x5b9, sample_tm1:929159893, sample_tm2:893159673, sample_interval:200001 us
-   MT:0xa5a, ST:0x5ba, sample_tm1:965160112, sample_tm2:929159893, sample_interval:200001 us
+   MT:0xa5a, ST:0xfa5, sample_tm1:268206022, sample_tm2:0, sample_interval:1341030 us
+   MT:0xa5a, ST:0xfa6, sample_tm1:308206752, sample_tm2:268206022, sample_interval:200003 us
+   MT:0xa5a, ST:0xfa7, sample_tm1:348207481, sample_tm2:308206752, sample_interval:200003 us
+   MT:0xa5a, ST:0xfa8, sample_tm1:388208211, sample_tm2:348207481, sample_interval:200003 us
+   MT:0xa5a, ST:0xfa9, sample_tm1:428208940, sample_tm2:388208211, sample_interval:200003 us
+   MT:0xa5a, ST:0xfaa, sample_tm1:468209669, sample_tm2:428208940, sample_interval:200003 us
+   MT:0xa5a, ST:0xfab, sample_tm1:508210398, sample_tm2:468209669, sample_interval:200003 us
+   MT:0xa5a, ST:0xfac, sample_tm1:548211128, sample_tm2:508210398, sample_interval:200003 us
+   MT:0xa5a, ST:0xfad, sample_tm1:588211857, sample_tm2:548211128, sample_interval:200003 us
+   MT:0xa5a, ST:0xfae, sample_tm1:628212585, sample_tm2:588211857, sample_interval:200003 us
+   MT:0xa5a, ST:0xfaf, sample_tm1:668213314, sample_tm2:628212585, sample_interval:200003 us
+   MT:0xa5a, ST:0xfb0, sample_tm1:708214043, sample_tm2:668213314, sample_interval:200003 us
+   MT:0xa5a, ST:0xfb1, sample_tm1:748214771, sample_tm2:708214043, sample_interval:200003 us
+   MT:0xa5a, ST:0xfb2, sample_tm1:788215500, sample_tm2:748214771, sample_interval:200003 us
+   MT:0xa5a, ST:0xfb3, sample_tm1:828216228, sample_tm2:788215500, sample_interval:200003 us
+   MT:0xa5a, ST:0xfb4, sample_tm1:868216957, sample_tm2:828216228, sample_interval:200003 us
+   MT:0xa5a, ST:0xfb5, sample_tm1:908217685, sample_tm2:868216957, sample_interval:200003 us
+   MT:0xa5a, ST:0xfb6, sample_tm1:948218414, sample_tm2:908217685, sample_interval:200003 us
+   MT:0xa5a, ST:0xfb7, sample_tm1:988219142, sample_tm2:948218414, sample_interval:200003 us
+   MT:0xa5a, ST:0xfb8, sample_tm1:1028219871, sample_tm2:988219142, sample_interval:200003 us
+   MT:0xa5a, ST:0xfb9, sample_tm1:1068220599, sample_tm2:1028219871, sample_interval:200003 us
+   MT:0xa5a, ST:0xfba, sample_tm1:1108221327, sample_tm2:1068220599, sample_interval:200003 us
+   MT:0xa5a, ST:0xfbb, sample_tm1:1148222055, sample_tm2:1108221327, sample_interval:200003 us
+   MT:0xa5a, ST:0xfbc, sample_tm1:1188222783, sample_tm2:1148222055, sample_interval:200003 us
+   MT:0xa5a, ST:0xfbd, sample_tm1:1228223512, sample_tm2:1188222783, sample_interval:200003 us
+   MT:0xa5a, ST:0xfbe, sample_tm1:1268224240, sample_tm2:1228223512, sample_interval:200003 us
+   MT:0xa5a, ST:0xfbf, sample_tm1:1308224968, sample_tm2:1268224240, sample_interval:200003 us
+   MT:0xa5a, ST:0xfc0, sample_tm1:1348225695, sample_tm2:1308224968, sample_interval:200003 us
+   MT:0xa5a, ST:0xfc1, sample_tm1:1388226423, sample_tm2:1348225695, sample_interval:200003 us
+   MT:0xa5a, ST:0xfc2, sample_tm1:1428227151, sample_tm2:1388226423, sample_interval:200003 us
+
 

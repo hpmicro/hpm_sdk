@@ -27,12 +27,25 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include "board.h"
-#include "tusb.h"
-#include "hpm_mchtmr_drv.h"
-#include "hpm_clock_drv.h"
 
-//------------- prototypes -------------//
+#include "bsp/board_api.h"
+#include "tusb.h"
+#include "board.h"
+
+/* Blink pattern
+ * - 250 ms  : device not mounted
+ * - 1000 ms : device mounted
+ * - 2500 ms : device is suspended
+ */
+enum {
+  BLINK_NOT_MOUNTED = 250,
+  BLINK_MOUNTED     = 1000,
+  BLINK_SUSPENDED   = 2500,
+};
+
+static uint32_t blink_interval_ms = BLINK_NOT_MOUNTED;
+
+static void led_blinking_task(void);
 static void cdc_task(void);
 
 /*------------- MAIN -------------*/
@@ -40,47 +53,55 @@ int main(void)
 {
   board_init();
 
-  if (BOARD_DEVICE_RHPORT_NUM == 0) {
+  if (BOARD_TUD_RHPORT == 0) {
     board_init_usb(HPM_USB0);
 #ifdef HPM_USB1
-  } else if (BOARD_DEVICE_RHPORT_NUM == 1) {
+  } else if (BOARD_TUD_RHPORT == 1) {
     board_init_usb(HPM_USB1);
 #endif
   } else {
-    printf("Don't support HPM_USB%d!\n", BOARD_DEVICE_RHPORT_NUM);
+    printf("Don't support HPM_USB%d!\n", BOARD_TUD_RHPORT);
     while (1) {
-        ;
+      ;
     }
   }
 
-  printf("USB%d Device - CDC Dual Ports Demo\r\n", BOARD_DEVICE_RHPORT_NUM);
+  printf("USB%d Device - CDC Dual Ports Demo\r\n", BOARD_TUD_RHPORT);
 
-  tusb_init();
+  /* init device stack on configured roothub port */
+  tusb_rhport_init_t dev_init = {
+    .role  = TUSB_ROLE_DEVICE,
+    .speed = TUSB_SPEED_AUTO,
+  };
+  tusb_init(BOARD_TUD_RHPORT, &dev_init);
 
-  while (1)
-  {
-    tud_task(); // tinyusb device task
+  board_init_after_tusb();
+
+  while (1) {
+    tud_task(); /* tinyusb device task */
     cdc_task();
+    led_blinking_task();
   }
-
-  return 0;
 }
 
-// echo to either Serial0 or Serial1
-// with Serial0 as all lower case, Serial1 as all upper case
+/* echo to either Serial0 or Serial1
+ * with Serial0 as all lower case, Serial1 as all upper case
+ */
 static void echo_serial_port(uint8_t itf, uint8_t buf[], uint32_t count)
 {
-  for(uint32_t i=0; i<count; i++)
-  {
-    if (itf == 0)
-    {
-      // echo back 1st port as lower case
-      if (isupper(buf[i])) buf[i] += 'a' - 'A';
-    }
-    else
-    {
-      // echo back 2nd port as upper case
-      if (islower(buf[i])) buf[i] -= 'a' - 'A';
+  uint8_t const case_diff = 'a' - 'A';
+
+  for (uint32_t i = 0; i < count; i++) {
+    if (itf == 0) {
+      /* echo back 1st port as lower case */
+      if (isupper(buf[i])) {
+        buf[i] += case_diff;
+      }
+    } else {
+      /* echo back 2nd port as upper case */
+      if (islower(buf[i])) {
+        buf[i] -= case_diff;
+      }
     }
 
     tud_cdc_n_write_char(itf, buf[i]);
@@ -88,23 +109,31 @@ static void echo_serial_port(uint8_t itf, uint8_t buf[], uint32_t count)
   tud_cdc_n_write_flush(itf);
 }
 
-//--------------------------------------------------------------------+
-// USB CDC
-//--------------------------------------------------------------------+
+/* Invoked when device is mounted */
+void tud_mount_cb(void)
+{
+  blink_interval_ms = BLINK_MOUNTED;
+}
+
+/* Invoked when device is unmounted */
+void tud_umount_cb(void)
+{
+  blink_interval_ms = BLINK_NOT_MOUNTED;
+}
+
+/*--------------------------------------------------------------------*
+ * USB CDC
+ *--------------------------------------------------------------------*/
 static void cdc_task(void)
 {
-  uint8_t itf;
-
-  for (itf = 0; itf < CFG_TUD_CDC; itf++)
-  {
-    // connected() check for DTR bit
-    // Most but not all terminal client set this when making connection
-    // if ( tud_cdc_n_connected(itf) )
+  for (uint8_t itf = 0; itf < CFG_TUD_CDC; itf++) {
+    /* connected() check for DTR bit
+     * Most but not all terminal client set this when making connection
+     * if ( tud_cdc_n_connected(itf) )
+     */
     {
-      if ( tud_cdc_n_available(itf) )
-      {
-        uint8_t buf[512];
-
+      if (tud_cdc_n_available(itf)) {
+        uint8_t buf[64];
         uint32_t count = tud_cdc_n_read(itf, buf, sizeof(buf));
 
         // echo back to both serial ports
@@ -113,4 +142,36 @@ static void cdc_task(void)
       }
     }
   }
+}
+
+/* Invoked when cdc when line state changed e.g connected/disconnected */
+void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts)
+{
+  (void) itf;
+  (void) rts;
+
+  /* TODO set some indicator */
+  if (dtr) {
+    /* Terminal connected */
+  } else {
+    /* Terminal disconnected */
+  }
+}
+
+/*--------------------------------------------------------------------*
+ * BLINKING TASK
+ *--------------------------------------------------------------------*/
+void led_blinking_task(void)
+{
+  static uint32_t start_ms = 0;
+  static bool led_state    = false;
+
+  /* Blink every interval ms */
+  if (board_millis() - start_ms < blink_interval_ms) {
+    return; /* not enough time */
+  }
+  start_ms += blink_interval_ms;
+
+  board_led_write(led_state);
+  led_state = 1 - led_state; /* toggle */
 }

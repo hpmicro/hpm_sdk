@@ -33,6 +33,12 @@ if (isdefinedsymbol(_extram_size)) {
   define symbol __size_exram__          = 16M;
 }
 
+if (isdefinedsymbol(_noncacheable_size)) {
+  define symbol __noncacheable_size__    = _noncacheable_size;
+} else {
+  define symbol __noncacheable_size__    = 4M;
+}
+
 define symbol __size_safestack__        = 256;
 
 /* Regions */
@@ -41,8 +47,8 @@ define region ILM = mem:[from 0x00000000 size 256k];         /* ILM */
 define region DLM = mem:[from 0x00080000 size 256k];         /* DLM */
 define region AXI_SRAM = mem:[from 0x01080000 size 768k];    /* AXI SRAM */
 define region SHARE_RAM = mem:[from 0x0117C000 size 16k];
-define region SDRAM  = mem:[from 0x40000000 size __size_exram__ - 4M];
-define region NONCACHEABLE_RAM = mem:[from 0x40000000 + __size_exram__ - 4M size 4M];
+define region SDRAM  = mem:[from 0x40000000 size __size_exram__ - __noncacheable_size__];
+define region NONCACHEABLE_RAM = mem:[from 0x40000000 + __size_exram__ - __noncacheable_size__ size __noncacheable_size__];
 define region AHB_SRAM = mem:[from 0xF0300000 size 32k];
 define region APB_SRAM = mem:[from 0xF40F0000 size 8k];
 

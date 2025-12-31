@@ -6,7 +6,7 @@
  */
 
 #include "hpm_common.h"
-#include "hpm_soc_ip_feature.h"
+#include "hpm_soc_feature.h"
 #include "hpm_femc_drv.h"
 
 #ifndef HPM_FEMC_DRV_DEFAULT_PRESCALER

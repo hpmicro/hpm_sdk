@@ -830,6 +830,17 @@ static inline uint8_t i2c_get_fifo_size(I2C_Type *ptr)
 }
 
 /**
+ * @brief check if address hit
+ * @note as master: when the addressed slave returned an ACK. as slave: interrupts when the controller is addressed
+ * @param [in] ptr I2C base address
+ * @retval true if address hit
+ */
+static inline bool i2c_is_addrhit(I2C_Type *ptr)
+{
+    return ptr->STATUS & I2C_STATUS_ADDRHIT_MASK;
+}
+
+/**
  * @}
  */
 

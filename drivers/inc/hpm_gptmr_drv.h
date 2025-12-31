@@ -140,7 +140,7 @@ typedef enum gptmr_burst_counter_mode {
 /**
  * @brief GPTMR channel config
  */
-typedef struct gptmr_channel_config {
+typedef struct gptmr_channel_cfg {
     gptmr_work_mode_t mode;
     gptmr_dma_request_event_t dma_request_event;
     gptmr_synci_edge_t synci_edge;
@@ -787,6 +787,32 @@ gptmr_qei_type_t gptmr_get_qei_type(GPTMR_Type *ptr, gptmr_qei_ch_group_t ch_gro
 uint32_t gptmr_get_qei_phcnt(GPTMR_Type *ptr, gptmr_qei_ch_group_t ch_group);
 
 #endif
+
+/**
+ * @brief gptmr channel set comparator initial output polarity
+ * @param [in] ptr GPTMR base address
+ * @param [in] ch_index channel index
+ * @param [in] high  true: initial output is high level
+ */
+static inline void gptmr_channel_set_cmp_initial_polarity(GPTMR_Type *ptr, uint8_t ch_index, bool high)
+{
+    if (high) {
+        ptr->CHANNEL[ch_index].CR |= GPTMR_CHANNEL_CR_CMPINIT_MASK;
+    } else {
+        ptr->CHANNEL[ch_index].CR &= ~GPTMR_CHANNEL_CR_CMPINIT_MASK;
+    }
+}
+
+/**
+ * @brief gptmr channel get comparator initial output polarity
+ * @param [in] ptr GPTMR base address
+ * @param [in] ch_index channel index
+ * @retval bool true: initial output is high level
+ */
+static inline bool gptmr_channel_get_cmp_initial_polarity(GPTMR_Type *ptr, uint8_t ch_index)
+{
+    return (ptr->CHANNEL[ch_index].CR & GPTMR_CHANNEL_CR_CMPINIT_MASK) ? true : false;
+}
 
 /**
  * @}

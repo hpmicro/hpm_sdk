@@ -21,7 +21,7 @@ MTGV2 SEI tamagawa 例程演示了使用SEI与tamagawa编码器通信获取数�
 当工程正确运行后，串口终端会输出如下信息：
 Started sei engine!
 mtg sei tamagawa example
-SEI ISR CNT, TIME, SEI_POS, MTGV2_POS, MTGV2_VEL, MTGV2_POS-QEI_POS
+SEI ISR CNT, TIME, SEI_POS, MTGV2_POS, MTGV2_VEL, MTGV2_POS-SEI_POS
 
 8,0.112206,0.468197,0.468151,0,-0.000047
 12,0.115955,0.468197,0.468151,0,-0.000046

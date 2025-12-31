@@ -3,7 +3,7 @@
 # Software License Agreement (BSD License)
 #
 # Copyright (c) 2012, Willow Garage, Inc.
-# Copyright (c) 2024 HPMicro
+# Copyright (c) 2024-2025 HPMicro
 #
 # All rights reserved.
 #
@@ -61,7 +61,7 @@ def crawl_for_cmake(path, excluded_files=None):
     return cmake_files
 
 
-def generate_rst(files, skip_private=False, skip_undocumented=False, headline=None):
+def generate_rst(files, skip_private=False, skip_undocumented=False, headline=None, auto_label=False, custom_label=None, output_filename=None):
     """
     Each of the CMake files is traversed line by line, looking for lines like function(...) or macro(...).
 
@@ -115,10 +115,24 @@ def generate_rst(files, skip_private=False, skip_undocumented=False, headline=No
                     last_block = []
                     last_block_public = False
 
-    if headline is not None:
-        rst = [headline]
+    # Add label if specified
+    if custom_label is not None:
+        rst = ['.. _%s:\n' % custom_label]
+    elif auto_label:
+        if output_filename:
+            # Use the output filename without extension as label
+            label_name = os.path.splitext(os.path.basename(output_filename))[0]
+            rst = ['.. _%s:\n' % label_name]
+        else:
+            # If no output filename, use a default label
+            rst = ['.. _cmake_api:\n']
     else:
-        rst = ['Extracted CMake API reference']
+        rst = []
+
+    if headline is not None:
+        rst.append(headline)
+    else:
+        rst.append('Extracted CMake API reference')
     rst.append('=============================')
     rst.append('This page was auto-generated from cmake source files using %s\n' % os.path.basename(__file__))
     rst.append('.. ' + '!' * 70)
@@ -168,6 +182,9 @@ if __name__ == '__main__':
     parser.add_argument('--skip_private', action='store_true', help='Skip documented items not marked with @public')
     parser.add_argument('--skip_undocumented', action='store_true', help='Skip items without documentation.')
     parser.add_argument('--headline', help='The headline of generated doc.')
+    parser.add_argument('--auto_label', action='store_true', help='Automatically add label using filename (without extension) as label name (default: True)')
+    parser.add_argument('--no_auto_label', action='store_true', help='Disable automatic label generation')
+    parser.add_argument('--custom_label', help='Add custom label with specified name')
 
     args = parser.parse_args()
 
@@ -184,7 +201,9 @@ if __name__ == '__main__':
             sys.exit(-1)
 
     cmake_files = crawl_for_cmake(args.path, excluded_files)
-    lines = generate_rst(cmake_files, args.skip_private, args.skip_undocumented, args.headline)
+    # auto_label defaults to True unless --no_auto_label is specified
+    auto_label = not args.no_auto_label
+    lines = generate_rst(cmake_files, args.skip_private, args.skip_undocumented, args.headline, auto_label, args.custom_label, args.output)
     if args.output:
         with open(args.output, 'w') as f:
             f.write('\n'.join(lines))

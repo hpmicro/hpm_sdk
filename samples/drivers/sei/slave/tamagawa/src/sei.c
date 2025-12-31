@@ -424,14 +424,13 @@ void isr_sei(void)
             sei_set_data_value(BOARD_SEI, SEI_DAT_6, 0x17);
             sei_set_data_value(BOARD_SEI, SEI_DAT_8, 0x00);
             delta = (sample_latch_tm1 > sample_latch_tm2) ? (sample_latch_tm1 - sample_latch_tm2) : (sample_latch_tm1 - sample_latch_tm2 + 0xFFFFFFFFu);
-            printf("CMD:%#x, SF:%#x, ST:%#x, ENID:%#x, MT:%#x, ALMC:%#x, CRC:%#x, sample_tm1:%u, sample_tm2:%u, sample_interval:%d us\n",
+            printf("CMD:%#x, SF:%#x, ST:%#x, ENID:%#x, MT:%#x, ALMC:%#x, sample_tm1:%u, sample_tm2:%u, sample_interval:%d us\n",
                     sei_get_command_value(BOARD_SEI, BOARD_SEI_CTRL),
                     sei_get_data_value(BOARD_SEI, SEI_DAT_4),
                     sei_get_data_value(BOARD_SEI, SEI_DAT_5),
                     sei_get_data_value(BOARD_SEI, SEI_DAT_6),
                     sei_get_data_value(BOARD_SEI, SEI_DAT_7),
                     sei_get_data_value(BOARD_SEI, SEI_DAT_8),
-                    sei_get_data_value(BOARD_SEI, SEI_DAT_9) & 0xFF,
                     sample_latch_tm1, sample_latch_tm2, delta / (clock_get_frequency(BOARD_MOTOR_CLK_NAME) / 1000000));
             sample_latch_tm2 = sample_latch_tm1;
         }

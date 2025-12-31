@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021,2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -33,29 +33,13 @@ __attribute__((weak)) void system_init(void)
     write_csr(CSR_MCOUNTEREN, mcounteren | 1); /* Enable MCYCLE */
 #endif
 
-#ifdef USE_S_MODE_IRQ
-    disable_global_irq(CSR_MSTATUS_MIE_MASK | CSR_MSTATUS_SIE_MASK);
-#else
     disable_global_irq(CSR_MSTATUS_MIE_MASK);
-#endif
-
     disable_irq_from_intc();
-#ifdef USE_S_MODE_IRQ
-    disable_s_irq_from_intc();
-#endif
 
     enable_plic_feature();
     enable_irq_from_intc();
 
-#ifdef USE_S_MODE_IRQ
-    delegate_irq(CSR_MIDELEG_SEI_MASK | CSR_MIDELEG_SSI_MASK | CSR_MIDELEG_STI_MASK);
-    enable_s_irq_from_intc();
-#if !CONFIG_DISABLE_GLOBAL_IRQ_ON_STARTUP
-    enable_global_irq(CSR_MSTATUS_MIE_MASK | CSR_MSTATUS_SIE_MASK);
-#endif
-#else
 #if !CONFIG_DISABLE_GLOBAL_IRQ_ON_STARTUP
     enable_global_irq(CSR_MSTATUS_MIE_MASK);
-#endif
 #endif
 }

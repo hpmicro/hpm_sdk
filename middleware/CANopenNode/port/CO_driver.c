@@ -15,23 +15,7 @@
 #define SAMPLE_POINT_MARGIN 50
 #define CAN_SYNC_SEG 1
 
-extern CO_t *CO;
-
-inline void canopen_emcy_lock(void)
-{
-}
-
-inline void canopen_emcy_unlock(void)
-{
-}
-
-inline void canopen_od_lock(void)
-{
-}
-
-inline void canopen_od_unlock(void)
-{
-}
+extern CO_t *co;
 
 static void canopen_detach_all_rx_filters(CO_CANmodule_t *CANmodule)
 {
@@ -87,7 +71,7 @@ void CO_CANsetConfigurationMode(void *CANdriverState)
 	struct canopen_context *ctx = (struct canopen_context *)CANdriverState;
 	int err;
 
-	err = can_stop(ctx->dev);
+	err = can_stop((const struct device *)ctx->dev);
 	if (err != 0 && err != -EALREADY) {
 		printf("failed to stop CAN interface (err %d)\n", err);
 	}
@@ -104,221 +88,6 @@ void CO_CANsetNormalMode(CO_CANmodule_t *CANmodule)
 	}
 
 	CANmodule->CANnormal = true;
-}
-
-static uint16_t sample_point_for_bitrate(uint32_t bitrate)
-{
-	uint16_t sample_pnt;
-
-	if (bitrate > 800000) {
-		/* 75.0% */
-		sample_pnt = 750;
-	} else if (bitrate > 500000) {
-		/* 80.0% */
-		sample_pnt = 800;
-	} else {
-		/* 87.5% */
-		sample_pnt = 875;
-	}
-
-	return sample_pnt;
-}
-
-int update_sample_pnt(uint32_t total_tq, uint32_t sample_pnt, struct can_timing *res,
-			     const struct can_timing *min, const struct can_timing *max)
-{
-	uint16_t tseg1_max = max->phase_seg1 + max->prop_seg;
-	uint16_t tseg1_min = min->phase_seg1 + min->prop_seg;
-	uint32_t sample_pnt_res;
-	uint16_t tseg1, tseg2;
-
-	/* Calculate number of time quanta in tseg2 for given sample point */
-	tseg2 = total_tq - (total_tq * sample_pnt) / 1000;
-	tseg2 = CLAMP(tseg2, min->phase_seg2, max->phase_seg2);
-
-	/* Calculate number of time quanta in tseg1 */
-	tseg1 = total_tq - CAN_SYNC_SEG - tseg2;
-	if (tseg1 > tseg1_max) {
-		/* Sample point location must be decreased */
-		tseg1 = tseg1_max;
-		tseg2 = total_tq - CAN_SYNC_SEG - tseg1;
-
-		if (tseg2 > max->phase_seg2) {
-			return -ENOTSUP;
-		}
-	} else if (tseg1 < tseg1_min) {
-		/* Sample point location must be increased */
-		tseg1 = tseg1_min;
-		tseg2 = total_tq - CAN_SYNC_SEG - tseg1;
-
-		if (tseg2 < min->phase_seg2) {
-			return -ENOTSUP;
-		}
-	}
-
-	res->phase_seg2 = tseg2;
-
-	/* Attempt to distribute tseg1 evenly between prop_seq and phase_seg1 */
-	res->prop_seg = CLAMP(tseg1 / 2, min->prop_seg, max->prop_seg);
-	res->phase_seg1 = tseg1 - res->prop_seg;
-
-	if (res->phase_seg1 > max->phase_seg1) {
-		/* Even tseg1 distribution not possible, decrease phase_seg1 */
-		res->phase_seg1 = max->phase_seg1;
-		res->prop_seg = tseg1 - res->phase_seg1;
-	} else if (res->phase_seg1 < min->phase_seg1) {
-		/* Even tseg1 distribution not possible, increase phase_seg1 */
-		res->phase_seg1 = min->phase_seg1;
-		res->prop_seg = tseg1 - res->phase_seg1;
-	}
-
-	/* Calculate the resulting sample point */
-	sample_pnt_res = (CAN_SYNC_SEG + tseg1) * 1000 / total_tq;
-
-	/* Return the absolute sample point error */
-	return sample_pnt_res > sample_pnt ?
-		sample_pnt_res - sample_pnt :
-		sample_pnt - sample_pnt_res;
-}
-
-int can_calc_timing_internal(const struct device *dev, struct can_timing *res,
-				    const struct can_timing *min, const struct can_timing *max,
-				    uint32_t bitrate, uint16_t sample_pnt)
-{
-	uint32_t total_tq = CAN_SYNC_SEG + max->prop_seg + max->phase_seg1 + max->phase_seg2;
-	struct can_timing tmp_res = { 0 };
-	int err_min = INT_MAX;
-	uint32_t core_clock;
-	int prescaler;
-	int err;
-
-	if (bitrate == 0 || sample_pnt >= 1000) {
-		return -EINVAL;
-	}
-
-	err = can_get_core_clock(dev, &core_clock);
-	if (err != 0) {
-		return -EIO;
-	}
-
-	if (sample_pnt == 0U) {
-		sample_pnt = sample_point_for_bitrate(bitrate);
-	}
-
-	for (prescaler = MAX(core_clock / (total_tq * bitrate), min->prescaler);
-	     prescaler <= max->prescaler;
-	     prescaler++) {
-
-		if (core_clock % (prescaler * bitrate)) {
-			/* No integer total_tq for this prescaler setting */
-			continue;
-		}
-
-		total_tq = core_clock / (prescaler * bitrate);
-
-		err = update_sample_pnt(total_tq, sample_pnt, &tmp_res, min, max);
-		if (err < 0) {
-			/* Sample point cannot be met for this prescaler setting */
-			continue;
-		}
-
-		if (err < err_min) {
-			/* Improved sample point match */
-			err_min = err;
-			res->prop_seg = tmp_res.prop_seg;
-			res->phase_seg1 = tmp_res.phase_seg1;
-			res->phase_seg2 = tmp_res.phase_seg2;
-			res->prescaler = (uint16_t)prescaler;
-
-			if (err == 0) {
-				/* Perfect sample point match */
-				break;
-			}
-		}
-	}
-
-	if (err_min != 0U) {
-		printf("Sample point error: %d 1/1000\n", err_min);
-	}
-
-	/* Calculate default sjw as phase_seg2 / 2 and clamp the result */
-	res->sjw = MIN(res->phase_seg1, res->phase_seg2 / 2);
-	res->sjw = CLAMP(res->sjw, min->sjw, max->sjw);
-
-	return err_min == INT_MAX ? -ENOTSUP : err_min;
-}
-
-int can_calc_timing(const struct device *dev, struct can_timing *res,
-			   uint32_t bitrate, uint16_t sample_pnt)
-{
-	const struct can_timing *min = can_get_timing_min(dev);
-	const struct can_timing *max = can_get_timing_max(dev);
-
-	if (bitrate > 1000000) {
-		return -EINVAL;
-	}
-
-	return can_calc_timing_internal(dev, res, min, max, bitrate, sample_pnt);
-}
-
-int check_timing_in_range(const struct can_timing *timing,
-				 const struct can_timing *min,
-				 const struct can_timing *max)
-{
-	if (!IN_RANGE(timing->sjw, min->sjw, max->sjw) ||
-	    !IN_RANGE(timing->prop_seg, min->prop_seg, max->prop_seg) ||
-	    !IN_RANGE(timing->phase_seg1, min->phase_seg1, max->phase_seg1) ||
-	    !IN_RANGE(timing->phase_seg2, min->phase_seg2, max->phase_seg2) ||
-	    !IN_RANGE(timing->prescaler, min->prescaler, max->prescaler)) {
-		return -ENOTSUP;
-	}
-
-	if ((timing->sjw > timing->phase_seg1) || (timing->sjw > timing->phase_seg2)) {
-		return -ENOTSUP;
-	}
-
-	return 0;
-}
-
-int can_set_timing(const struct device *dev,
-			  const struct can_timing *timing)
-{
-	const struct can_driver_api *api = (const struct can_driver_api *)dev->api;
-	const struct can_timing *min = can_get_timing_min(dev);
-	const struct can_timing *max = can_get_timing_max(dev);
-	int err;
-
-	err = check_timing_in_range(timing, min, max);
-	if (err != 0) {
-		return err;
-	}
-
-	return api->set_timing(dev, timing);
-}
-
-int can_set_bitrate(const struct device *dev, uint32_t bitrate)
-{
-	struct can_timing timing = { 0 };
-	uint32_t min = can_get_bitrate_min(dev);
-	uint32_t max = can_get_bitrate_max(dev);
-	uint16_t sample_pnt;
-	int ret;
-
-	if ((bitrate < min) || (bitrate > max)) {
-		return -ENOTSUP;
-	}
-
-	sample_pnt = sample_point_for_bitrate(bitrate);
-	ret = can_calc_timing(dev, &timing, bitrate, sample_pnt);
-	if (ret < 0) {
-		return ret;
-	}
-
-	if (ret > SAMPLE_POINT_MARGIN) {
-		return -ERANGE;
-	}
-
-	return can_set_timing(dev, &timing);
 }
 
 CO_ReturnError_t CO_CANmodule_init(CO_CANmodule_t *CANmodule,
@@ -340,11 +109,11 @@ CO_ReturnError_t CO_CANmodule_init(CO_CANmodule_t *CANmodule,
 		return CO_ERROR_ILLEGAL_ARGUMENT;
 	}
 
-	max_filters = can_get_max_filters(ctx->dev, false);
-        if (max_filters < 0) {
-                printf("unable to determine number of CAN RX filters\n");
-                return CO_ERROR_SYSCALL;
-        }
+	max_filters = can_get_max_filters((const struct device *)ctx->dev, false);
+	if (max_filters < 0) {
+			printf("unable to determine number of CAN RX filters\n");
+			return CO_ERROR_SYSCALL;
+	}
 
 	canopen_detach_all_rx_filters(CANmodule);
 
@@ -438,16 +207,16 @@ CO_ReturnError_t CO_CANrxBufferInit(CO_CANmodule_t *CANmodule, uint16_t index,
 		return CO_ERROR_ILLEGAL_ARGUMENT;
 	}
 
-	buffer = &CANmodule->rxArray[index];
-	buffer->object = object;
-	buffer->CANrx_callback = CANrx_callback;
-	buffer->ident = ident;
-	buffer->mask = mask;
+	 buffer = &CANmodule->rxArray[index];
+	 buffer->object = object;
+	 buffer->CANrx_callback = CANrx_callback;
+	 buffer->ident = ident;
+	 buffer->mask = mask;
 
 #ifndef CONFIG_CAN_ACCEPT_RTR
 	if (rtr) {
 		printf("request for RTR frames, but RTR frames are rejected\n");
-		CO_errorReport(CO->em, CO_EM_GENERIC_SOFTWARE_ERROR,
+		CO_errorReport(co->em, CO_EM_GENERIC_SOFTWARE_ERROR,
 			       CO_EMC_SOFTWARE_INTERNAL, 0);
 		return CO_ERROR_ILLEGAL_ARGUMENT;
 	}
@@ -455,13 +224,13 @@ CO_ReturnError_t CO_CANrxBufferInit(CO_CANmodule_t *CANmodule, uint16_t index,
 	buffer->rtr = rtr;
 #endif /* CONFIG_CAN_ACCEPT_RTR */
 
-	filter.flags = 0U;
+	filter.flags = 0; /* Standard Identifier */
 	filter.id = ident;
 	filter.mask = mask;
 
-	if (buffer->filter_id != -ENOSPC) {
-		can_remove_rx_filter(CANmodule->CANptr, buffer->filter_id);
-	}
+	 if (buffer->filter_id != -ENOSPC) {
+	 	can_remove_rx_filter(CANmodule->CANptr, buffer->filter_id);
+	 }
 
 	buffer->filter_id = can_add_rx_filter(CANmodule->CANptr,
 					      canopen_rx_callback,
@@ -569,89 +338,11 @@ void CO_CANclearPendingSyncPDOs(CO_CANmodule_t *CANmodule)
 	}
 
 	if (tpdoDeleted) {
-		CO_errorReport(CO->em, CO_EM_TPDO_OUTSIDE_WINDOW,
+		CO_errorReport(co->em, CO_EM_TPDO_OUTSIDE_WINDOW,
 			       CO_EMC_COMMUNICATION, 0);
 	}
 }
 
-void CO_CANverifyErrors(CO_CANmodule_t *CANmodule)
-{
-	CO_EM_t *em = (CO_EM_t *)CO->em;
-	struct can_bus_err_cnt err_cnt;
-	enum can_state state;
-	uint8_t rx_overflows;
-	uint32_t errors;
-	int err;
-
-	/*
-	 * TODO: Zephyr lacks an API for reading the rx mailbox
-	 * overflow counter.
-	 */
-	rx_overflows  = 0;
-
-	err = can_get_state(CANmodule->CANptr, &state, &err_cnt);
-	if (err != 0) {
-		printf("failed to get CAN controller state (err %d)\n", err);
-		return;
-	}
-
-	errors = ((uint32_t)err_cnt.tx_err_cnt << 16) |
-		 ((uint32_t)err_cnt.rx_err_cnt << 8) |
-		 rx_overflows;
-
-	if (errors != (uint32_t)(CANmodule->errinfo)) {
-		CANmodule->errinfo = errors;
-
-		if (state == CAN_STATE_BUS_OFF) {
-			/* Bus off */
-			CO_errorReport(em, CO_EM_CAN_TX_BUS_OFF,
-				       CO_EMC_BUS_OFF_RECOVERED, errors);
-		} else {
-			/* Bus not off */
-			CO_errorReset(em, CO_EM_CAN_TX_BUS_OFF, errors);
-
-			if ((err_cnt.rx_err_cnt >= 96U) ||
-			    (err_cnt.tx_err_cnt >= 96U)) {
-				/* Bus warning */
-				CO_errorReport(em, CO_EM_CAN_BUS_WARNING,
-					       CO_EMC_NO_ERROR, errors);
-			} else {
-				/* Bus not warning */
-				CO_errorReset(em, CO_EM_CAN_BUS_WARNING,
-					      errors);
-			}
-
-			if (err_cnt.rx_err_cnt >= 128U) {
-				/* Bus rx passive */
-				CO_errorReport(em, CO_EM_CAN_RX_BUS_PASSIVE,
-					       CO_EMC_CAN_PASSIVE, errors);
-			} else {
-				/* Bus not rx passive */
-				CO_errorReset(em, CO_EM_CAN_RX_BUS_PASSIVE,
-					      errors);
-			}
-
-			if (err_cnt.tx_err_cnt >= 128U &&
-			    !CANmodule->firstCANtxMessage) {
-				/* Bus tx passive */
-				CO_errorReport(em, CO_EM_CAN_TX_BUS_PASSIVE,
-					       CO_EMC_CAN_PASSIVE, errors);
-			} else if (CO_isError(em, CO_EM_CAN_TX_BUS_PASSIVE)) {
-				/* Bus not tx passive */
-				CO_errorReset(em, CO_EM_CAN_TX_BUS_PASSIVE,
-					      errors);
-				CO_errorReset(em, CO_EM_CAN_TX_OVERFLOW,
-					      errors);
-			}
-		}
-
-		/* This code can be activated if we can read the overflows*/
-		if (false && rx_overflows != 0U) {
-			CO_errorReport(em, CO_EM_CAN_RXB_OVERFLOW,
-				       CO_EMC_CAN_OVERRUN, errors);
-		}
-	}
-}
 
 /******************************************************************************/
 /* Get error counters from the module. If necessary, function may use different way to determine errors. */

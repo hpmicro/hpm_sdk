@@ -8,6 +8,7 @@
 #ifndef HPM_DMAMUX_DRV_H
 #define HPM_DMAMUX_DRV_H
 #include "hpm_common.h"
+#include "hpm_soc_feature.h"
 #include "hpm_dmamux_regs.h"
 
 /**

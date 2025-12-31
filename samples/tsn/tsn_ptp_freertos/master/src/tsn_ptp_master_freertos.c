@@ -174,6 +174,7 @@ static void task_tsw_init(void *pvParameters)
     p->netdev->tsn_port = 0;
     p->netdev->prv = ep_prv;
     p->netdev->needed_head = TX_HDR_SIZE;
+    p->netdev->hw_queues = TSW_SOC_SHAP_MAX_QUEUES;
 
     tsn_ctrl_set_prio2q_map(p->netdev);
 

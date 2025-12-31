@@ -16,24 +16,26 @@
 #include "usbd_core.h"
 #include "usbd_cdc_acm.h"
 
-#ifndef task_repl_PRIORITY
-#define task_repl_PRIORITY (configMAX_PRIORITIES - 4U)
+#ifndef CHERRYSH_TASK_REPL_PRIORITY
+#define CHERRYSH_TASK_REPL_PRIORITY (configMAX_PRIORITIES - 4U)
 #endif
 
-#ifndef task_exec_PRIORITY
-#define task_exec_PRIORITY (configMAX_PRIORITIES - 5U)
+#ifndef CHERRYSH_TASK_EXEC_PRIORITY
+#define CHERRYSH_TASK_EXEC_PRIORITY (configMAX_PRIORITIES - 5U)
+#endif
+
+#ifndef CHERRYSH_TASK_REPL_STACK_SIZE
+#define CHERRYSH_TASK_REPL_STACK_SIZE 1024U
+#endif
+
+#ifndef CHERRYSH_TASK_EXEC_STACK_SIZE
+#define CHERRYSH_TASK_EXEC_STACK_SIZE 1024U
 #endif
 
 static chry_shell_t csh;
 static volatile bool login = false;
 static chry_ringbuffer_t shell_rb;
 static uint8_t mempool[1024];
-
-static StaticTask_t task_buffer_repl;
-static StaticTask_t task_buffer_exec;
-
-static StackType_t task_stack_repl[1024];
-static StackType_t task_stack_exec[1024];
 
 static TaskHandle_t task_hdl_repl = NULL;
 static TaskHandle_t task_hdl_exec = NULL;
@@ -322,7 +324,10 @@ int chry_shell_port_create_context(chry_shell_t *csh, int argc, const char **arg
         vTaskDelete(*p_task_hdl_exec);
     }
 
-    *p_task_hdl_exec = xTaskCreateStatic(task_exec, "task_exec", 1024U, NULL, task_exec_PRIORITY, task_stack_exec, &task_buffer_exec);
+    *p_task_hdl_exec = NULL;
+    if (xTaskCreate(task_exec, "task_exec", CHERRYSH_TASK_EXEC_STACK_SIZE, NULL, CHERRYSH_TASK_EXEC_PRIORITY, (TaskHandle_t *)p_task_hdl_exec) != pdPASS) {
+        return -1;
+    }
     return 0;
 }
 
@@ -458,7 +463,10 @@ int shell_init(uint8_t busid, uint32_t regbase, bool need_login)
 
     task_hdl_exec = NULL;
     event_hdl = xEventGroupCreateStatic(&event_grp);
-    task_hdl_repl = xTaskCreateStatic(task_repl, "task_repl", 1024U, NULL, task_repl_PRIORITY, task_stack_repl, &task_buffer_repl);
+    task_hdl_repl = NULL;
+    if (xTaskCreate(task_repl, "task_repl", CHERRYSH_TASK_REPL_STACK_SIZE, NULL, CHERRYSH_TASK_REPL_PRIORITY, (TaskHandle_t *)&task_hdl_repl) != pdPASS) {
+        return -1;
+    }
 
     return 0;
 }

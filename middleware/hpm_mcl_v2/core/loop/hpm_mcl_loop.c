@@ -262,7 +262,7 @@ hpm_mcl_stat_t hpm_mcl_detect_offline_para(mcl_loop_t *loop)
         loop->control->method.invpark(ud, uq, sinx, cosx, &alpha, &beta);
         loop->control->method.svpwm(alpha, beta, *loop->const_vbus, &duty);
         loop->rundata.offline_detection.last_ualpha = alpha;
-        loop->rundata.offline_detection.last_ualpha = beta;
+        loop->rundata.offline_detection.last_ubeta = beta;
         loop->control->method.dead_area_polarity_detection(&loop->control->cfg->dead_area_compensation_cfg, sens_d, sens_q, theta,
                                                 loop->const_time.dead_area_ts, *loop->const_time.current_ts, &duty_offset);
         duty.a += duty_offset.a_offset;

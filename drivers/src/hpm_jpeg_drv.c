@@ -294,11 +294,41 @@ hpm_stat_t jpeg_start_decode(JPEG_Type *ptr,
     ptr->WIDTH = config->width_in_pixel - 1;
     ptr->HEIGHT = config->height_in_pixel - 1;
 
+#if defined(HPM_JPEG_CSC_USE_BT601_FULL_RANGE) && (HPM_JPEG_CSC_USE_BT601_FULL_RANGE == 1)
+    /*
+     * BT.601 Full range
+     * Full range: The value of Y ranges from 0 to 255 (no black level offset).
+     * It is mostly used for internal processing in digital devices.
+     *
+     * [16-235] convert to [0-255] by [1.164 * (Y - 16)]
+     * (16 - 16 ) * 1.164 = 0
+     * (235 -16 ) * 1.164 = 255
+     *
+     * R = 1.164 * (Y - 16) + 1.596 * Cr
+     * G = 1.164 * (Y - 16) - 0.392 * Cb - 0.813 * Cr
+     * B = 1.164 * (Y - 16) + 2.017 * Cb
+     */
     ptr->CSC_COEF0 = 0x4ab01f0
         | JPEG_CSC_COEF0_YCBCR_MODE_SET(config->enable_ycbcr)
         | JPEG_CSC_COEF0_ENABLE_SET(jpeg_need_csc(config->out_pixel_format));
     ptr->CSC_COEF1 = 0x01980204;
     ptr->CSC_COEF2 = 0x0730079C;
+#else
+    /*
+     * BT.601 limited range(libjpeg default)
+     * Limited range (JPEG default): The value of Y ranges from 16 to 235 (black level = 16, white level = 235).
+     * This is designed to adapt to the transmission characteristics of analog signals and avoid overshoot.
+     *
+     * R = Y + 1.402 * Cr
+     * G = Y - 0.344136286 * Cb - 0.714136286 * Cr
+     * B = Y + 1.772 * Cb
+     */
+    ptr->CSC_COEF0 = (0x100U<<18) | (0x180U<<9) | 0x000U
+        | JPEG_CSC_COEF0_YCBCR_MODE_SET(config->enable_ycbcr)
+        | JPEG_CSC_COEF0_ENABLE_SET(jpeg_need_csc(config->out_pixel_format));
+    ptr->CSC_COEF1 = 0x016701C6;
+    ptr->CSC_COEF2 = 0x074907A8;
+#endif
 
     ptr->CFG = JPEG_CFG_CFG_OPATH_SEL_SET(jpeg_supported_pixel_format[config->out_pixel_format].opath)
         | JPEG_CFG_JDATA_FORMAT_SET(config->jpeg_format)

@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
+#include <stdio.h>
 
 #ifndef __ICCRISCV__
 #include <sys/stat.h>
@@ -18,6 +19,10 @@ static UART_Type* g_console_uart = NULL;
 hpm_stat_t console_init(console_config_t *cfg)
 {
     hpm_stat_t stat = status_fail;
+
+    /* disable buffer in standard library */
+    setvbuf(stdin, NULL, _IONBF, 0);
+    setvbuf(stdout, NULL, _IONBF, 0);
 
     if (cfg->type == CONSOLE_TYPE_UART) {
         uart_config_t config = {0};

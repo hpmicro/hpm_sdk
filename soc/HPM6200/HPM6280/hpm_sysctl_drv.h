@@ -14,7 +14,7 @@
 /**
  *
  * @brief SYSCTL driver APIs
- * @defgroup sysctl_interface SYSCTL driver APIs
+ * @defgroup sysctl_hpm6280_interface SYSCTL driver APIs for HPM6280
  * @ingroup io_interfaces
  * @{
  */

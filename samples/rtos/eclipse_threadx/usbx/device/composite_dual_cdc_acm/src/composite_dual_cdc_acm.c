@@ -19,7 +19,7 @@
 #define UX_DEMO_STACK_SIZE (1024 * 2)
 
 #ifndef USBX_MEMORY_SIZE
-#define USBX_MEMORY_SIZE (1024 * 64)
+#define USBX_MEMORY_SIZE (1024 * 32)
 #endif
 
 UX_SLAVE_CLASS_CDC_ACM_PARAMETER parameter1;

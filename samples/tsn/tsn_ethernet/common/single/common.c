@@ -105,10 +105,11 @@ void tsw_update_dhcp_state(struct netif *netif)
 
 ATTR_WEAK uint8_t tsw_get_mac_address(uint8_t *mac)
 {
+    char *strtok_result = NULL;
+    char tmp[32] = "";
     uint32_t macl, mach;
     uint32_t uuid[OTP_SOC_UUID_LEN / sizeof(uint32_t)];
     uint8_t idx = 0;
-    char *p = NULL;
     char *token;
 
     if (mac == NULL) {
@@ -142,11 +143,11 @@ ATTR_WEAK uint8_t tsw_get_mac_address(uint8_t *mac)
     }
 
     /* load MAC address from MACRO definitions */
-    p = HPM_STRINGIFY(MAC_CONFIG);
-    token = strtok(p, ":");
+    strcpy(tmp, HPM_STRINGIFY(MAC0_CONFIG));
+    token = strtok_r(tmp, ":", &strtok_result);
     mac[idx] = strtol(token, NULL, 16);
     while (token != NULL && ++idx < TSW_ENET_MAC) {
-        token = strtok(NULL, ":");
+        token = strtok_r(NULL, ":", &strtok_result);
         mac[idx] = strtol(token, NULL, 16);
     }
 
@@ -180,12 +181,16 @@ void tsw_self_adaptive_port_speed(void)
                 printf("Link Speed:  %s\n", speed_str[status.tsw_phy_speed]);
                 printf("Link Duplex: %s\n", duplex_str[status.tsw_phy_duplex]);
 
-                tsw_set_port_speed(BOARD_TSW, BOARD_TSW_PORT, port_speed[status.tsw_phy_speed]);
-
                 if (!status.tsw_phy_duplex) {
                     printf("Error: PHY is in half duplex now, but TSW MAC supports only full duplex mode!\n");
                     return;
                 }
+
+                tsw_set_port_speed(BOARD_TSW, BOARD_TSW_PORT, port_speed[status.tsw_phy_speed]);
+
+                /* Set broadcast frame and unknown frame actions */
+                tsw_set_broadcast_frame_action(BOARD_TSW, tsw_dst_port_cpu);
+                tsw_set_unknown_frame_action(BOARD_TSW, tsw_dst_port_cpu);
 
                 #if defined(NO_SYS) && !NO_SYS
                 msg = tsw_phy_link_up;
@@ -195,6 +200,11 @@ void tsw_self_adaptive_port_speed(void)
                 #endif
             } else {
                 printf("Link Status: Down\n");
+
+                /* Clear broadcast frame and unknown frame actions */
+                tsw_clear_unknown_frame_action(BOARD_TSW, tsw_dst_port_cpu);
+                tsw_clear_broadcast_frame_action(BOARD_TSW, tsw_dst_port_cpu);
+
                 #if defined(NO_SYS) && !NO_SYS
                 msg = tsw_phy_link_down;
                 sys_mbox_trypost_fromisr(&netif_status_mbox, &msg);

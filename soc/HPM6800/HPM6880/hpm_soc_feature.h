@@ -8,7 +8,8 @@
 #ifndef HPM_SOC_FEATURE_H
 #define HPM_SOC_FEATURE_H
 
-#include "hpm_soc.h"
+#include "riscv/riscv_core.h"
+#include "hpm_soc_ip.h"
 #include "hpm_soc_ip_feature.h"
 
 /*
@@ -44,6 +45,8 @@
 #define I2S_SOC_MAX_CHANNEL_NUM (16U)
 #define I2S_SOC_MAX_TX_CHANNEL_NUM (8U)
 #define I2S_SOC_MAX_TX_FIFO_DEPTH (8U)
+#define I2S_PDM_DATA_LINE (0)
+#define I2S_DAO_DATA_LINE (0)
 #define PDM_I2S HPM_I2S0
 #define DAO_I2S HPM_I2S1
 #define PDM_SOC_SAMPLE_RATE_IN_HZ (16000U)
@@ -62,14 +65,6 @@
 #define PLLCTL_SOC_PLL_HAS_DIV0(x) ((((x) == 1) || ((x) == 2)) ? 1 : 0)
 #define PLLCTL_SOC_PLL_HAS_DIV1(x) ((((x) == 1) || ((x) == 2)) ? 1 : 0)
 
-
-/*
- * PWM Section
- */
-#define PWM_SOC_PWM_MAX_COUNT (8U)
-#define PWM_SOC_CMP_MAX_COUNT (24U)
-#define PWM_SOC_OUTPUT_TO_PWM_MAX_COUNT (8U)
-#define PWM_SOC_OUTPUT_MAX_COUNT (24U)
 
 /*
  * DMA Section
@@ -217,14 +212,6 @@
 
 #define OTP_SOC_UUID_IDX   (88U)
 #define OTP_SOC_UUID_LEN   (16U) /* in bytes */
-
-/**
- * PWM Section
- *
- */
-#define PWM_SOC_HRPWM_SUPPORT  (0U)
-#define PWM_SOC_SHADOW_TRIG_SUPPORT (0U)
-#define PWM_SOC_TIMER_RESET_SUPPORT (0U)
 
 /**
  * @brief FFA Section

@@ -387,7 +387,7 @@ void hpm_log_init(hpm_log_config_t *cfg)
         ctx->critical_enter = cfg->critical_enter;
     }
 
-    if (!cfg || !ctx->critical_exit) {
+    if (!cfg || !cfg->critical_exit) {
         ctx->critical_exit = hpm_log_unlock;
     } else {
         ctx->critical_exit = cfg->critical_exit;

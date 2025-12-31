@@ -11,6 +11,13 @@
 #include "hpm_sysctl_drv.h"
 #include "hpm_csr_drv.h"
 
+/**
+ * @brief CLOCK driver APIs
+ * @defgroup clock_hpm6280_interface CLOCK driver APIs for HPM6280
+ * @{
+ *
+ */
+
 #define CLOCK_DIV_INVALID (~0UL)
 
 /**
@@ -384,5 +391,9 @@ void clock_update_core_clock(void);
 #ifdef __cplusplus
 }
 #endif
+
+/**
+ * @}
+ */
 
 #endif /* HPM_CLOCK_DRV_H */

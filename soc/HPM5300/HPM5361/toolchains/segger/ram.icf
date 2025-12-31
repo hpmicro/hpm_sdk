@@ -13,7 +13,6 @@ define region AHB_SRAM = [from 0xF0400000 size 32k];
 
 /* Blocks */
 define block vectors with fixed order       { section .vector_table, section .isr_vector, section .isr_vector.* };
-define block vectors_s with fixed order     { section .vector_s_table, section .isr_s_vector };
 define block ctors                          { section .ctors,     section .ctors.*, block with         alphabetical order { init_array } };
 define block dtors                          { section .dtors,     section .dtors.*, block with reverse alphabetical order { fini_array } };
 define block eh_frame                       { section .eh_frame,  section .eh_frame.* };
@@ -64,7 +63,7 @@ initialize by calling __SEGGER_init_ctors   { block ctors };                    
 
 /* Placement */
 place at start of ILM                       { symbol _start };
-place in ILM                                { block vectors, block vectors_s };                     // Vector table section
+place in ILM                                { block vectors };                     // Vector table section
 place in ILM                                { section .fast, section .fast.* };                     // "ramfunc" section
 place in ILM with minimum size order        {
                                               block tdata_load,                                     // Thread-local-storage load image

@@ -11,31 +11,6 @@
 #include "sys_arch.h"
 #include "lwip/netif.h"
 
-/* MAC Address */
-#ifndef MAC_CONFIG
-#define MAC_CONFIG 98:2c:bc:b1:9f:17
-#endif
-
-/* Static IP Address */
-#ifndef IP_CONFIG
-#define IP_CONFIG 192.168.100.10
-#endif
-
-/* Netmask */
-#ifndef NETMASK_CONFIG
-#define NETMASK_CONFIG 255.255.255.0
-#endif
-
-/* Gateway Address */
-#ifndef GW_CONFIG
-#define GW_CONFIG 192.168.100.1
-#endif
-
-/* Remote IP Address */
-#ifndef REMOTE_IP_CONFIG
-#define REMOTE_IP_CONFIG 192.168.100.5
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -52,6 +27,7 @@ void LwIP_DHCP_task(void *pvParameters);
 
 void netif_config(struct netif *netif);
 void netif_user_notification(struct netif *netif);
+void netif_show_ip_info(struct netif *netif);
 
 #if defined(NO_SYS) && !NO_SYS
 void netif_update_link_status(void *pvParameters);

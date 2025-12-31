@@ -17,9 +17,6 @@ Hardware
 --------
 
 - HPM6P00 MCU (600MHz dual-core, 1MB Flash and 800KB SRAM on chip)
-- Onboard Memory
-
-  - 16MB Quad SPI NOR Flash
 
 - Ethernet
 
@@ -301,6 +298,16 @@ Pin Description
      * - ADC Input
        - J4[2]
 
+- DAC Pin
+
+  .. list-table:: DAC Pin
+     :header-rows: 1
+
+     * - Function
+       - Position
+     * - DAC Output
+       - J5[1]
+
 - ACMP pin
 
   .. list-table:: ACMP pin
@@ -554,7 +561,7 @@ The HALL pin of the hpm6200evk needs to be connected.
      * - I2C1.SDA
        - P5[3]
 
-- Ethernet PPS PPS Pin  **todo**
+- Ethernet PPS PPS Pin
 
   .. list-table:: Ethernet PPS PPS Pin
      :header-rows: 1
@@ -563,11 +570,37 @@ The HALL pin of the hpm6200evk needs to be connected.
        - Pin
        - Position
      * - ENET0.EVTO0
-       - PE06
-       - J4[24]
-     * - ENET0.EVTO1
-       - PF20
-       - J4[4]
+       - PD11
+       - J4[10]
      * - ENET0.EVTI1
-       - PE07
-       - J4[26]
+       - PD12
+       - J4[11]
+
+- ESP-HOSTED Pin
+
+.. list-table::
+   :header-rows: 1
+
+   * - Function
+     - Position
+     - Note
+   * - PA16
+     - P5[11]
+     - RESET Pin
+   * - PC29
+     - P5[5]
+     - HANDSHAKE Pin
+   * - PC28
+     - P5[3]
+     - DATA_READY Pin
+
+- BROWNOUT Interrupt Indicator Pin
+
+.. list-table::
+   :header-rows: 1
+
+   * - Function
+     - Position
+   * - PY07
+     - P5[19]
+

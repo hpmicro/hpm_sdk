@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -148,13 +148,13 @@ hpm_stat_t sdmmchost_switch_to_1v8(sdmmc_host_t *host)
     /* 6. wait 1ms */
     sdmmchost_delay_ms(host, 1);
 
-    /* 7. Check DAT[3:0], make sure the value is 4'b0000 */
+    /* 7. Check DAT[3:0], make sure the value is NOT 4'b0000 (should be high after voltage switch) */
     delay_cnt = 1000000UL;
     do {
         data3_0_level = sdxc_get_data3_0_level(host->host_param.base);
         --delay_cnt;
     } while ((data3_0_level == 0U) && (delay_cnt > 0U));
-    if (delay_cnt < 1) {
+    if (data3_0_level == 0U) {
         return status_timeout;
     }
 
@@ -361,6 +361,12 @@ hpm_stat_t sdmmchost_transfer(sdmmc_host_t *host, const sdmmchost_xfer_t *conten
     hpm_stat_t status;
 
     do {
+        /* Add input validation */
+        if ((host == NULL) || (content == NULL)) {
+            status = status_invalid_argument;
+            break;
+        }
+
         status = sdmmchost_check_host_availability(host);
         if (status != status_success) {
             break;
@@ -374,12 +380,19 @@ hpm_stat_t sdmmchost_transfer(sdmmc_host_t *host, const sdmmchost_xfer_t *conten
         SDXC_Type *base = host->host_param.base;
         sdxc_adma_config_t dma_config = { 0 };
         uint32_t timeout_ms = HPM_SDMMC_HOST_TIMEOUT_DEFAULT;
-        if (content->data != NULL) {
+        sdxc_data_t *data = content->data;
+        if (data != NULL) {
+            if ((data->block_size == 0) || (data->block_cnt == 0)) {
+                status = status_invalid_argument;
+                break;
+            }
+
 #if defined(HPM_SDMMC_USE_ADMA2) && (HPM_SDMMC_USE_ADMA2 == 1)
             dma_config.dma_type = sdxc_dmasel_adma2;
 #else
             dma_config.dma_type = sdxc_dmasel_adma3;
 #endif
+            dma_config.core_id = host->host_param.hart_id;
              /* Ensure the ADMA descriptor starts at 8-byte aligned address */
             dma_config.adma_table = (uint32_t *)HPM_ALIGN_UP(&host->adma_table, HPM_SDMMC_HOST_ADMA3_ALIGN_SIZE);
             dma_config.adma_table_words = HPM_SDMMC_HOST_ADMA_TBL_SIZE;
@@ -390,11 +403,23 @@ hpm_stat_t sdmmchost_transfer(sdmmc_host_t *host, const sdmmchost_xfer_t *conten
              *  Here set the margin time to 500 milliseconds
              **************************************************************************************************************/
             uint32_t bus_width = sdxc_get_data_bus_width(host->host_param.base);
+            uint32_t block_cnt = data->block_cnt;
+            uint32_t block_size = data->block_size;
+
+            /* Validate inputs to prevent division by zero and overflow */
             uint32_t tx_rx_bytes_per_sec = host->clock_freq * bus_width / 8;
-            uint32_t block_cnt = content->data->block_cnt;
-            uint32_t block_size = content->data->block_size;
-            uint32_t read_write_size = block_cnt * block_size;
-            timeout_ms = (uint32_t) (1.0f * read_write_size / tx_rx_bytes_per_sec) * 1000 + 500;
+            /* Additional check for tx_rx_bytes_per_sec in case of overflow */
+            if (tx_rx_bytes_per_sec == 0) {
+                timeout_ms = HPM_SDMMC_HOST_TIMEOUT_DEFAULT;
+            } else {
+                /* Check for potential overflow in multiplication */
+                if (block_cnt > UINT32_MAX / block_size) {
+                    timeout_ms = HPM_SDMMC_HOST_TIMEOUT_DEFAULT;
+                } else {
+                    uint32_t read_write_size = block_cnt * block_size;
+                    timeout_ms = (uint32_t)(1.0f * read_write_size / tx_rx_bytes_per_sec) * 1000 + 500;
+                }
+            }
             sdxc_set_data_timeout(base, timeout_ms, NULL);
         }
 
@@ -418,13 +443,13 @@ hpm_stat_t sdmmchost_transfer(sdmmc_host_t *host, const sdmmchost_xfer_t *conten
             break;
         }
 
-        if (content->data != NULL) {
+        if (data != NULL) {
             status = sdmmchost_wait_xfer_done(host, timeout_ms);
             if (status != status_success) {
                 break;
             }
         }
-        status = sdxc_receive_cmd_response(host->host_param.base, &host->cmd);
+        status = sdxc_receive_cmd_response(base, &host->cmd);
     } while (false);
 
     return status;
@@ -435,6 +460,12 @@ hpm_stat_t sdmmchost_start_transfer(sdmmc_host_t *host, const sdmmchost_xfer_t *
     hpm_stat_t status;
 
     do {
+        /* Add input validation */
+        if ((host == NULL) || (content == NULL)) {
+            status = status_invalid_argument;
+            break;
+        }
+
         status = sdmmchost_check_host_availability(host);
         if (status != status_success) {
             break;
@@ -448,7 +479,12 @@ hpm_stat_t sdmmchost_start_transfer(sdmmc_host_t *host, const sdmmchost_xfer_t *
         SDXC_Type *base = host->host_param.base;
         sdxc_adma_config_t dma_config = { 0 };
         uint32_t timeout_ms = HPM_SDMMC_HOST_TIMEOUT_DEFAULT;
-        if (content->data != NULL) {
+        sdxc_data_t *data = content->data;
+        if (data != NULL) {
+            if ((data->block_size == 0) || (data->block_cnt == 0)) {
+                status = status_invalid_argument;
+                break;
+            }
 #if defined(HPM_SDMMC_USE_ADMA2) && (HPM_SDMMC_USE_ADMA2 == 1)
             dma_config.dma_type = sdxc_dmasel_adma2;
 #else
@@ -464,11 +500,25 @@ hpm_stat_t sdmmchost_start_transfer(sdmmc_host_t *host, const sdmmchost_xfer_t *
              *  Here set the margin time to 500 milliseconds
              **************************************************************************************************************/
             uint32_t bus_width = sdxc_get_data_bus_width(host->host_param.base);
-            uint32_t tx_rx_bytes_per_sec = host->clock_freq * bus_width / 8;
             uint32_t block_cnt = content->data->block_cnt;
             uint32_t block_size = content->data->block_size;
-            uint32_t read_write_size = block_cnt * block_size;
-            timeout_ms = (uint32_t) (1.0f * read_write_size / tx_rx_bytes_per_sec) * 1000 + 500;
+
+            /* Validate inputs to prevent division by zero and overflow */
+
+            uint32_t tx_rx_bytes_per_sec = host->clock_freq * bus_width / 8;
+            /* Additional check for tx_rx_bytes_per_sec in case of overflow */
+            if (tx_rx_bytes_per_sec == 0) {
+                timeout_ms = HPM_SDMMC_HOST_TIMEOUT_DEFAULT;
+            } else {
+                /* Check for potential overflow in multiplication */
+                if (block_cnt > UINT32_MAX / block_size) {
+                    timeout_ms = HPM_SDMMC_HOST_TIMEOUT_DEFAULT;
+                } else {
+                    uint32_t read_write_size = block_cnt * block_size;
+                    timeout_ms = (uint32_t)(1.0f * read_write_size / tx_rx_bytes_per_sec) * 1000 + 500;
+                }
+            }
+
             sdxc_set_data_timeout(base, timeout_ms, NULL);
         }
 
@@ -692,6 +742,11 @@ void sdmmchost_select_voltage(sdmmc_host_t *host, hpm_sdmmc_io_volt_t io_volt)
 
 ATTR_RAMFUNC void sdmmchost_irq_handler(sdmmc_host_t *host)
 {
+    /* Critical: Add null pointer check for IRQ handler */
+    if ((host == NULL) || (host->host_param.base == NULL)) {
+        return;
+    }
+
     SDXC_Type *base = host->host_param.base;
 
     uint32_t int_stat = sdxc_get_interrupt_status(base);

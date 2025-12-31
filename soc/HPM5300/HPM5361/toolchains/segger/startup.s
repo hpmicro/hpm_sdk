@@ -271,20 +271,12 @@ MARK_FUNC __SEGGER_init_done
     la t0, __vector_table
     csrw mtvec, t0
 
-#if defined (USE_S_MODE_IRQ)
-    la t0, __vector_s_table
-    csrw stvec, t0
-#endif
     /* Enable vectored external PLIC interrupt */
     csrsi CSR_MMISC_CTL, 2
 #else
     /* Initial machine trap-vector Base */
     la t0, HANDLER_TRAP
     csrw mtvec, t0
-#if defined (USE_S_MODE_IRQ)
-    la t0, HANDLER_S_TRAP
-    csrw stvec, t0
-#endif
 
     /* Disable vectored external PLIC interrupt */
     csrci CSR_MMISC_CTL, 2

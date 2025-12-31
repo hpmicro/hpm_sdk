@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -600,21 +600,24 @@ static inline hpm_stat_t hpm_adc_get_prd_result(adc_type *ptr, uint8_t ch, uint1
  * @brief Do a software trigger for sequence mode.
  *
  * @param[in] ptr An adc peripheral base address.
- *
+ * @retval status_success Trigger successful
+ * @retval status_invalid_argument Invalid module or module not supported
  */
 static inline hpm_stat_t hpm_adc_trigger_seq_by_sw(adc_type *ptr)
 {
-     if (ptr->module == adc_module_adc12) {
 #ifdef HPMSOC_HAS_HPMSDK_ADC12
+    if (ptr->module == adc_module_adc12) {
         return adc12_trigger_seq_by_sw(ptr->adc_base.adc12);
-#endif
-    } else if (ptr->module == adc_module_adc16) {
-#ifdef HPMSOC_HAS_HPMSDK_ADC16
-        return adc16_trigger_seq_by_sw(ptr->adc_base.adc16);
-#endif
-    } else {
-        return status_invalid_argument;
     }
+#endif
+
+#ifdef HPMSOC_HAS_HPMSDK_ADC16
+    if (ptr->module == adc_module_adc16) {
+        return adc16_trigger_seq_by_sw(ptr->adc_base.adc16);
+    }
+#endif
+
+    return status_invalid_argument;
 }
 
 #ifdef __cplusplus

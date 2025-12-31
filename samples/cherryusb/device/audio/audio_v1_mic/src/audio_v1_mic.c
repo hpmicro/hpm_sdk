@@ -497,8 +497,9 @@ static bool in_buff_is_full(void)
 static bool in_buff_is_empty(void)
 {
     bool empty = false;
+    uint32_t front = s_in_buffer_front;  /* defined the order of volatile accesses */
 
-    if (s_in_buffer_front == s_in_buffer_rear) {
+    if (front == s_in_buffer_rear) {
         empty = true;
     }
 

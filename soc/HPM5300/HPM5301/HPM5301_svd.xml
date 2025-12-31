@@ -10658,22 +10658,10 @@ if clr, use dac_cfg value</description>
                 <access>read-write</access>
               </field>
               <field>
-                <name>FLTLEN_SHIFT</name>
-                <description>this field is to extend filter length.
-0: filter length = fltlen
-1: filter length = fltlen * 2
-2: filter length = fltlen * 4
-7: filter length = fltlen * 128
-When the clock frequency is 200MHz, the maximum filter length is about 300uS.</description>
-                <bitOffset>9</bitOffset>
-                <bitWidth>3</bitWidth>
-                <access>read-write</access>
-              </field>
-              <field>
                 <name>FLTLEN</name>
                 <description>This bitfield define the ACMP output digital filter length. The unit is ACMP clock cycle.</description>
                 <bitOffset>0</bitOffset>
-                <bitWidth>9</bitWidth>
+                <bitWidth>12</bitWidth>
                 <access>read-write</access>
               </field>
             </fields>

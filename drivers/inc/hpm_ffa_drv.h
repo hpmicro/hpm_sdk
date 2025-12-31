@@ -8,9 +8,8 @@
 #define HPM_FFA_DRV_H
 
 #include "hpm_common.h"
-#include "hpm_ffa_regs.h"
 #include "hpm_soc_feature.h"
-#include "hpm_soc_ip_feature.h"
+#include "hpm_ffa_regs.h"
 
 /**
  * @brief FFA driver APIs

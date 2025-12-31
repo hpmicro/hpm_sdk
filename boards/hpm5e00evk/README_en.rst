@@ -152,8 +152,8 @@ The UART4 is used for some functional testing using UART, such as MICROROS_UART,
      - P5[10]
      -
    * - UART4.break
-     - PD13
-     - P5[18]
+     - PC11
+     - P5[24]
      - generate UART break signal
 
 - CAN Pin
@@ -191,7 +191,7 @@ The UART4 is used for some functional testing using UART, such as MICROROS_UART,
    * - Function
      - Pin
      - Position
-   * - CMP0.INN6
+   * - CMP1.INN6
      - PF26
      - J3[6]
 
@@ -433,3 +433,32 @@ This pin is used for UART LIN Slave baud rate adaptive demo to detect the clock 
      - Position
    * - PC30
      - P5[22]
+
+
+- ESP-HOSTED Pin
+
+.. list-table::
+   :header-rows: 1
+
+   * - Function
+     - Position
+     - Note
+   * - PC03
+     - P5[11]
+     - RESET Pin
+   * - PB30
+     - P5[15]
+     - HANDSHAKE Pin
+   * - PB31
+     - P5[13]
+     - DATA_READY Pin
+
+- BROWNOUT Interrupt Indicator Pin
+
+.. list-table::
+   :header-rows: 1
+
+   * - Function
+     - Position
+   * - PC16
+     - P5[8]

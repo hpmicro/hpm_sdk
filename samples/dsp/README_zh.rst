@@ -20,6 +20,17 @@ dsp_demo示例工程演示了DSP CFFT（复数快速傅里叶变换）和CIFFT�
 
 无特殊设置要求。
 
+工具链要求
+------------
+
+本DSP demo需要支持DSP的工具链才能使用硬件DSP指令：
+
+- **IDE**: Segger Embedded Studio (或其他支持DSP工具链的IDE)
+- **GCC工具链**: Andes RISC-V工具链（带DSP扩展支持）或 ZCC工具链（带DSP扩展支持）
+
+.. note::
+   不支持DSP扩展的标准GCC工具链无法正确编译和运行本demo。对于命令行构建，请确保已安装Andes工具链或ZCC工具链。
+
 运行现象
 ------------
 

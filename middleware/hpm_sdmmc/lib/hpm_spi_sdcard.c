@@ -306,7 +306,11 @@ hpm_stat_t sdcard_spi_write_block(uint32_t sector, uint8_t *buffer)
    /* Start data write token: 0xFE */
     data = SPISD_START_TOKEN;
     g_spi_dev->write_read_byte(&data, &dummy_read_byte);
-    g_spi_dev->write(buffer, SPI_SD_BLOCK_SIZE);
+    ret = g_spi_dev->write(buffer, SPI_SD_BLOCK_SIZE);
+    if (ret != status_success) {
+        g_spi_dev->cs_relese();
+        return ret;
+    }
     /* 2Bytes dummy CRC */
     g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
     g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
@@ -335,6 +339,9 @@ hpm_stat_t sdcard_spi_read_multi_block(uint8_t *buffer, uint32_t start_sector, u
     uint8_t response;
     hpm_stat_t stat = status_success;
     assert(g_spi_dev);
+    if ((buffer == NULL) || (num_sectors == 0)) {
+        return status_invalid_argument;
+    }
     if (g_card_type != card_type_sd_v2_hc) {
         start_sector = start_sector << 9;
     }
@@ -388,6 +395,9 @@ hpm_stat_t sdcard_spi_write_multi_block(uint8_t *buffer, uint32_t sector, uint32
     uint8_t end_token = SPISD_END_MULTI_WRITE_TOKEN;
     uint8_t response;
     uint32_t i;
+    if ((buffer == NULL) || (num_sectors == 0)) {
+        return status_invalid_argument;
+    }
     if (g_card_type != card_type_sd_v2_hc) {
         sector = sector << 9;
     }
@@ -415,7 +425,11 @@ hpm_stat_t sdcard_spi_write_multi_block(uint8_t *buffer, uint32_t sector, uint32
     for (i = 0; i < num_sectors; i++) {
         /* Start multi block write token: 0xFC */
         g_spi_dev->write_read_byte(&start_token, &dummy_read_byte);
-        g_spi_dev->write(&buffer[i * SPI_SD_BLOCK_SIZE], SPI_SD_BLOCK_SIZE);
+        sta = g_spi_dev->write(&buffer[i * SPI_SD_BLOCK_SIZE], SPI_SD_BLOCK_SIZE);
+        if (sta != status_success) {
+            g_spi_dev->cs_relese();
+            return sta;
+        }
         /* 2Bytes dummy CRC */
         g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
         g_spi_dev->write_read_byte(&dummy_write_byte, &dummy_read_byte);
@@ -573,7 +587,7 @@ static bool check_cid_data(bool check_crc)
 }
 
 static hpm_stat_t send_sdcard_command(uint8_t cmd, uint32_t arg, uint8_t crc)
-{;
+{
     uint8_t _cmd = cmd | 0x40;
     uint8_t packet[] = { arg >> 24, arg >> 16, arg >> 8, arg, crc};
     return g_spi_dev->write_cmd_data(_cmd, packet, sizeof(packet));
@@ -629,6 +643,7 @@ static hpm_stat_t read_sdcard_info(spi_sdcard_info_t *cardinfo)
 
     crc7 = crc7_calc(temp, sizeof(temp) - 1);
     if (crc7 != (temp[15] >> 1)) {
+        /* Some SD cards do not provide valid CRC in SPI mode, so only log the error but do not return failure here */
         SPI_SD_LOG("[spi_sdcard] not support read CSD info, because CRC7 check error\n");
     }
     /* Byte 0 */
@@ -773,6 +788,7 @@ static hpm_stat_t read_sdcard_info(spi_sdcard_info_t *cardinfo)
     cardinfo->cid.oid   = temp[1] << 8;
     /* Byte 2 */
     cardinfo->cid.oid  |= temp[2];
+    cardinfo->cid.pnm   = 0; /* Product name is 5 bytes, so initialize to 0 */
     /* Byte 3 */
     cardinfo->cid.pnm   = temp[3] << 24;
     /* Byte 4 */
@@ -782,7 +798,7 @@ static hpm_stat_t read_sdcard_info(spi_sdcard_info_t *cardinfo)
     /* Byte 6 */
     cardinfo->cid.pnm  |= temp[6];
     /* Byte 7 */
-    cardinfo->cid.pnm   = temp[7];
+    cardinfo->cid.pnm  |= temp[7];
     /* Byte 8 */
     cardinfo->cid.prv   = temp[8];
     /* Byte 9 */

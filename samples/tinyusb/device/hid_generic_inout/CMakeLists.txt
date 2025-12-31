@@ -10,11 +10,9 @@ set(CONFIG_USB_DEVICE_HID 1)
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
-project(usb_device_hid_generic_inout_example)
+project(tinyusb_device_hid_generic_inout_example)
 
-sdk_compile_definitions(-DCFG_TUSB_MCU=OPT_MCU_HPM)
-sdk_compile_definitions(-DUSB_HOST_MCU_CORE=HPM_CORE0)
-sdk_inc(inc)
+sdk_inc(src)
 
 sdk_app_src(src/main.c)
 

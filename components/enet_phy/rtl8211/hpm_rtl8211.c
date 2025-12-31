@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -17,12 +17,12 @@
  * Internal API
  *---------------------------------------------------------------------
  */
-static bool rtl8211_check_id(ENET_Type *ptr)
+static bool rtl8211_check_id(ENET_Type *ptr, uint32_t phy_addr)
 {
     uint16_t id1, id2;
 
-    id1 = enet_read_phy(ptr, RTL8211_ADDR, RTL8211_PHYID1);
-    id2 = enet_read_phy(ptr, RTL8211_ADDR, RTL8211_PHYID2);
+    id1 = enet_read_phy(ptr, phy_addr, RTL8211_PHYID1);
+    id2 = enet_read_phy(ptr, phy_addr, RTL8211_PHYID2);
 
     if (RTL8211_PHYID1_OUI_MSB_GET(id1) == RTL8211_ID1 && RTL8211_PHYID2_OUI_LSB_GET(id2) == RTL8211_ID2) {
         return true;
@@ -35,17 +35,20 @@ static bool rtl8211_check_id(ENET_Type *ptr)
  * API
  *---------------------------------------------------------------------
  */
-void rtl8211_reset(ENET_Type *ptr)
+bool rtl8211_reset(ENET_Type *ptr, uint32_t phy_addr)
 {
     uint16_t data;
+    uint32_t retry_cnt = ENET_PHY_SW_RESET_RETRY_CNT;
 
     /* PHY reset */
-    enet_write_phy(ptr, RTL8211_ADDR, RTL8211_BMCR, RTL8211_BMCR_RESET_SET(1));
+    enet_write_phy(ptr, phy_addr, RTL8211_BMCR, RTL8211_BMCR_RESET_SET(1));
 
     /* wait until the reset is completed */
     do {
-        data = enet_read_phy(ptr, RTL8211_ADDR, RTL8211_BMCR);
-    } while (RTL8211_BMCR_RESET_GET(data));
+        data = enet_read_phy(ptr, phy_addr, RTL8211_BMCR);
+    } while (RTL8211_BMCR_RESET_GET(data) && --retry_cnt);
+
+    return retry_cnt > 0 ? true : false;
 }
 
 void rtl8211_basic_mode_default_config(ENET_Type *ptr, rtl8211_config_t *config)
@@ -62,7 +65,7 @@ void rtl8211_basic_mode_default_config(ENET_Type *ptr, rtl8211_config_t *config)
     #endif
 }
 
-bool rtl8211_basic_mode_init(ENET_Type *ptr, rtl8211_config_t *config)
+bool rtl8211_basic_mode_init(ENET_Type *ptr, uint32_t phy_addr, rtl8211_config_t *config)
 {
     uint16_t data = 0;
 
@@ -80,21 +83,21 @@ bool rtl8211_basic_mode_init(ENET_Type *ptr, rtl8211_config_t *config)
     }
 
     /* check the id of rtl8211 */
-    if (rtl8211_check_id(ptr) == false) {
+    if (rtl8211_check_id(ptr, phy_addr) == false) {
         return false;
     }
 
-    enet_write_phy(ptr, RTL8211_ADDR, RTL8211_BMCR, data);
+    enet_write_phy(ptr, phy_addr, RTL8211_BMCR, data);
 
     return true;
 }
 
 
-void rtl8211_get_phy_status(ENET_Type *ptr, enet_phy_status_t *status)
+void rtl8211_get_phy_status(ENET_Type *ptr, uint32_t phy_addr, enet_phy_status_t *status)
 {
     uint16_t data;
 
-    data = enet_read_phy(ptr, RTL8211_ADDR, RTL8211_PHYSR);
+    data = enet_read_phy(ptr, phy_addr, RTL8211_PHYSR);
     status->enet_phy_link = RTL8211_PHYSR_LINK_REAL_TIME_GET(data);
     status->enet_phy_speed = RTL8211_PHYSR_SPEED_GET(data) == 0 ? enet_phy_port_speed_10mbps : RTL8211_PHYSR_SPEED_GET(data) == 1 ? enet_phy_port_speed_100mbps : enet_phy_port_speed_1000mbps;
     status->enet_phy_duplex = RTL8211_PHYSR_DUPLEX_GET(data);

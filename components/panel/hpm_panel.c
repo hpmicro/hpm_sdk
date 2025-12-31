@@ -56,7 +56,38 @@ const char *hpm_panel_get_name(hpm_panel_t *panel)
 
 const hpm_panel_timing_t *hpm_panel_get_timing(hpm_panel_t *panel)
 {
-    return &panel->timing;
+    return &panel->timing_list[0];
+}
+
+int hpm_panel_get_timing_list(hpm_panel_t *panel, const hpm_panel_timing_t **timing_list, uint16_t *timing_list_num)
+{
+    *timing_list = panel->timing_list;
+    *timing_list_num = panel->timing_list_num;
+
+    return 0;
+}
+
+const hpm_panel_timing_t *hpm_panel_get_timing_by_fps(hpm_panel_t *panel, uint16_t fps_hz)
+{
+    const hpm_panel_timing_t *nearly_timing;
+    const hpm_panel_timing_t *timing;
+    uint16_t nearly_diff_fps;
+    uint16_t diff_fps;
+
+    nearly_timing = &panel->timing_list[0];
+    nearly_diff_fps = nearly_timing->fps_hz > fps_hz ? (nearly_timing->fps_hz - fps_hz) : (fps_hz - nearly_timing->fps_hz);
+
+    for (int i = 0; i < panel->timing_list_num; i++) {
+        timing = &panel->timing_list[i];
+        diff_fps = timing->fps_hz > fps_hz ? (timing->fps_hz - fps_hz) : (fps_hz - timing->fps_hz);
+
+        if (diff_fps < nearly_diff_fps) {
+            nearly_diff_fps = diff_fps;
+            nearly_timing = timing;
+        }
+    }
+
+    return nearly_timing;
 }
 
 hpm_panel_if_type_t hpm_panel_get_if_type(hpm_panel_t *panel)
@@ -79,7 +110,13 @@ void hpm_panel_reset(hpm_panel_t *panel)
 void hpm_panel_init(hpm_panel_t *panel)
 {
     if (panel->funcs.init)
-        panel->funcs.init(panel);
+        panel->funcs.init(panel, NULL);
+}
+
+void hpm_panel_init_by_timing(hpm_panel_t *panel, const hpm_panel_timing_t *timing)
+{
+    if (panel->funcs.init)
+        panel->funcs.init(panel, timing);
 }
 
 void hpm_panel_power_on(hpm_panel_t *panel)

@@ -568,6 +568,9 @@ I2S中断
     - 使用DMA方式传输时需要进行数据移位操作
     - 移位位数 = 32 - 实际数据位宽
 
+I2S示例
+--------------
+
 .. toctree::
   :maxdepth: 3
 
@@ -576,4 +579,5 @@ I2S中断
   i2s_interrupt/README_zh
   i2s_master/README_zh
   i2s_slave/README_zh
+  dao_i2s_dma/README_zh
 

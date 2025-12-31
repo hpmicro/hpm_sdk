@@ -6,4 +6,5 @@ sdk_src(
     hpm_mcl_control.c
     hpm_mcl_filter.c
     hpm_mcl_path_plan.c
+    hpm_mcl_hybrid_ctrl.c
     )

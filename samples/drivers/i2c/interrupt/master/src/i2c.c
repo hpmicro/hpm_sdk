@@ -119,7 +119,12 @@ int main(void)
     intc_m_enable_irq_with_priority(TEST_I2C_IRQ, 1);
 
     /* i2c configure sent data */
-    i2c_master_configure_transfer(TEST_I2C, TEST_I2C_SLAVE_ADDRESS, sizeof(tx_buff), false);
+    if (i2c_master_configure_transfer(TEST_I2C, TEST_I2C_SLAVE_ADDRESS, sizeof(tx_buff), false) != status_success) {
+        printf("I2C master configure transfer failed!\n");
+        while (1) {
+        }
+    }
+
     i2c_enable_irq(TEST_I2C, I2C_EVENT_TRANSACTION_COMPLETE | I2C_EVENT_FIFO_EMPTY);
 
     /*  Wait for transfer completed. */
@@ -130,7 +135,12 @@ int main(void)
     board_delay_ms(100);
 
     /* i2c configure receive data */
-    i2c_master_configure_transfer(TEST_I2C, TEST_I2C_SLAVE_ADDRESS, sizeof(tx_buff), true);
+    if (i2c_master_configure_transfer(TEST_I2C, TEST_I2C_SLAVE_ADDRESS, sizeof(tx_buff), true) != status_success) {
+        printf("I2C master configure transfer failed!\n");
+        while (1) {
+        }
+    }
+
     i2c_enable_irq(TEST_I2C, I2C_EVENT_TRANSACTION_COMPLETE | I2C_EVENT_FIFO_FULL);
     /*  Wait for receive completed. */
     while (!i2c_receive_complete) {

@@ -17,8 +17,6 @@ HPM6P00EVK为HPM6P00系列MCU的评估板，提供了一系列接口，包括ADC
 ------------
 
 - HPM6P81 微控制器 (主频600Mhz双核，片上1MB Flash，800KB SRAM)
-- 板载存储
-  - 16MB Quad SPI NOR Flash
 - 以太网
   - 1000 Mbits PHY
 - USB
@@ -283,6 +281,16 @@ HPM6P00EVK为HPM6P00系列MCU的评估板，提供了一系列接口，包括ADC
    * - ADC输入
      - J4[2]
 
+- DAC 接口
+
+.. list-table::
+   :header-rows: 1
+
+   * - 功能
+     - 位置
+   * - DAC输出
+     - J5[1]
+
 - ACMP 接口
 
 .. list-table::
@@ -536,7 +544,7 @@ hpm6p00evk的HALL引脚需要单独接线
    * - I2C1.SDA
      - P5[3]
 
-- 以太网PPS引脚  ##todo
+- 以太网PPS引脚
 
 .. list-table::
    :header-rows: 1
@@ -545,11 +553,36 @@ hpm6p00evk的HALL引脚需要单独接线
      - 引脚
      - 位置
    * - ENET0.EVTO0
-     - PE06
-     - J4[24]
-   * - ENET0.EVTO1
-     - PF20
-     - J4[4]
+     - PD11
+     - J4[10]
    * - ENET0.EVTI1
-     - PE07
-     - J4[26]
+     - PD12
+     - J4[11]
+
+- ESP-HOSTED 引脚接口
+
+.. list-table::
+   :header-rows: 1
+
+   * - 功能
+     - 位置
+     - 备注
+   * - PA16
+     - P5[11]
+     - RESET引脚
+   * - PC29
+     - P5[5]
+     - HANDSHAKE引脚
+   * - PC28
+     - P5[3]
+     - DATA_READY引脚
+
+- BROWNOUT中断指示引脚
+
+.. list-table::
+   :header-rows: 1
+
+   * - 功能
+     - 位置
+   * - PY07
+     - P5[19]

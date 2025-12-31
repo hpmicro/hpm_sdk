@@ -3,4 +3,4 @@ excluded_targets:
   - release
 
 dependency:
-  - board_dual_usb
+  - board_usb_dual_port

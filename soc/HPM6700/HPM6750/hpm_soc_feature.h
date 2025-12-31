@@ -8,7 +8,9 @@
 #ifndef HPM_SOC_FEATURE_H
 #define HPM_SOC_FEATURE_H
 
-#include "hpm_soc.h"
+#include "riscv/riscv_core.h"
+#include "hpm_soc_ip.h"
+#include "hpm_soc_ip_feature.h"
 
 /*
  * Cache section
@@ -43,6 +45,8 @@
 #define I2S_SOC_MAX_CHANNEL_NUM (16U)
 #define I2S_SOC_MAX_TX_CHANNEL_NUM (8U)
 #define I2S_SOC_MAX_TX_FIFO_DEPTH (8U)
+#define I2S_PDM_DATA_LINE (0)
+#define I2S_DAO_DATA_LINE (0)
 #define PDM_I2S HPM_I2S0
 #define DAO_I2S HPM_I2S1
 #define PDM_SOC_SAMPLE_RATE_IN_HZ (16000U)
@@ -137,12 +141,12 @@
 #define ADC_SOC_PREEMPT_ENABLE_CTRL_SUPPORT        (0U)
 #define ADC_SOC_SEQ_MAX_DMA_BUFF_LEN_IN_4BYTES     (4096U)
 #define ADC_SOC_PMT_MAX_DMA_BUFF_LEN_IN_4BYTES     (48U)
-#define ADC_SOC_OTP_TSNS_REF25_MASK                (0xffffUL)
-#define ADC_SOC_OTP_TSNS_REF25_SHIFT               (21U)
-#define ADC_SOC_REF_TEMP                           (25U)
-#define ADC_SOC_REF_SLOPE                          (1.0f/6)
-#define ADC_SOC_TEMPSENS_REF25_VOL                 (3300U)
-#define ADC_SOC_VOUT25C_MAX_SAMPLE_VALUE           (65535U)
+#define ADC_SOC_OTP_TSNS_REF_TEMP_MASK             (0xffffUL)
+#define ADC_SOC_OTP_TSNS_REF_TEMP_SHIFT            (21U)
+#define ADC_SOC_REF_TEMP                           (47U)
+#define ADC_SOC_REF_SLOPE                          (1.0f/5)
+#define ADC_SOC_TEMPSENS_REF_TEMP_VOL              (3300U)
+#define ADC_SOC_VOUT_REF_TEMP_MAX_SAMPLE_VALUE     (65535U)
 
 #define ADC12_SOC_CLOCK_CLK_DIV                    (2U)
 #define ADC12_SOC_CALIBRATION_WAITING_LOOP_CNT     (10)

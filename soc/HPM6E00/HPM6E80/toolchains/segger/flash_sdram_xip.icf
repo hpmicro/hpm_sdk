@@ -14,8 +14,8 @@ define region ILM = [from 0x00000000 size 256k];    /* ILM */
 define region DLM = [from 0x00200000 size 256k];    /* DLM */
 define region AXI_SRAM = [from 0x01200000 size 768k];
 define region SHARE_RAM = [from 0x012FC000 size 16k];
-define region SDRAM  = [from 0x40000000 size _extram_size - 4M];
-define region NONCACHEABLE_RAM = [from 0x40000000 + _extram_size - 4M size 4M];
+define region SDRAM  = [from 0x40000000 size _extram_size - _noncacheable_size];
+define region NONCACHEABLE_RAM = [from 0x40000000 + _extram_size - _noncacheable_size size _noncacheable_size];
 define region AHB_SRAM = [from 0xF0200000 size 32k];
 
 /* Blocks */

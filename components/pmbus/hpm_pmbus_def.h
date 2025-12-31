@@ -268,6 +268,4 @@
 #define PMBUS_CODE_PMBUS_COMMAND_EXT              0xFF
 
 
-/*! @} End of pmbus_command_list */
-
 #endif /* __PMBUS_CMD_H */

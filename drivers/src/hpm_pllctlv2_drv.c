@@ -29,11 +29,9 @@ hpm_stat_t pllctlv2_set_pll_with_mfi_mfn(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll,
         (pll >= PLLCTL_SOC_PLL_MAX_COUNT)) {
         status = status_invalid_argument;
     } else {
-        if (PLLCTLV2_PLL_MFI_MFI_GET(ptr->PLL[pll].MFI) == mfi) {
-            ptr->PLL[pll].MFI = mfi - 1U;
-        }
-        ptr->PLL[pll].MFI = mfi;
         ptr->PLL[pll].MFN = mfn;
+        ptr->PLL[pll].MFI = mfi;
+
 
         while (!pllctlv2_pll_is_stable(ptr, pll)) {
             NOP();
@@ -54,15 +52,12 @@ hpm_stat_t pllctlv2_init_pll_with_freq(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll, u
         uint32_t mfn = freq_in_hz % PLLCTLV2_PLL_XTAL_FREQ;
         uint32_t mfi = freq_in_hz / PLLCTLV2_PLL_XTAL_FREQ;
 
-        if (PLLCTLV2_PLL_MFI_MFI_GET(ptr->PLL[pll].MFI) == mfi) {
-            ptr->PLL[pll].MFI = mfi - 1U;
-        }
-
-        ptr->PLL[pll].MFI = mfi;
         /*
          * NOTE: Default MFD value is 240M
          */
         ptr->PLL[pll].MFN = mfn * PLLCTLV2_PLL_MFN_FACTOR;
+        ptr->PLL[pll].MFI = mfi;
+
 
         while (!pllctlv2_pll_is_stable(ptr, pll)) {
             NOP();
@@ -151,7 +146,7 @@ uint32_t pllctlv2_get_pll_postdiv_freq_in_hz(PLLCTLV2_Type *ptr, pllctlv2_pll_t 
 void pllctlv2_setup_spread_spectrum(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll, uint8_t spread_range, uint32_t modulation_freq)
 {
     uint32_t vco_freq = pllctlv2_get_pll_freq_in_hz(ptr, pll);
-    uint32_t mfd = PLLCTLV2_PLL_MFD_MFD_GET(HPM_PLLCTLV2->PLL[pll].MFD);
+    uint32_t mfd = PLLCTLV2_PLL_MFD_MFD_GET(ptr->PLL[pll].MFD);
     uint32_t delta_freq = (vco_freq / PLLCTLV2_PLL_XTAL_FREQ) * spread_range * (mfd / 1000);
     uint32_t step = (delta_freq * 2) / (PLLCTLV2_PLL_XTAL_FREQ / modulation_freq);
 

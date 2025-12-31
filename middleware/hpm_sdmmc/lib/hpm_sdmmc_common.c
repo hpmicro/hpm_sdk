@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -98,7 +98,8 @@ hpm_stat_t sdmmc_set_block_count(sdmmc_host_t *host, uint32_t block_count)
     hpm_stat_t status = status_invalid_argument;
 
     do {
-        HPM_BREAK_IF(host == NULL);
+        HPM_BREAK_IF((host == NULL) || (block_count == 0));
+
         sdmmchost_cmd_t *host_cmd = &host->cmd;
         (void) memset(host_cmd, 0, sizeof(sdmmchost_cmd_t));
 
@@ -118,7 +119,8 @@ hpm_stat_t sdmmc_set_block_size(sdmmc_host_t *host, uint32_t block_size)
     hpm_stat_t status = status_invalid_argument;
 
     do {
-        HPM_BREAK_IF(host == NULL);
+        HPM_BREAK_IF((host == NULL) || ((block_size == 0) || (block_size > 2048)));
+
         sdmmchost_cmd_t *host_cmd = &host->cmd;
         (void) memset(host_cmd, 0, sizeof(sdmmchost_cmd_t));
 
@@ -149,7 +151,7 @@ hpm_stat_t sdmmc_enable_auto_tuning(const sdmmc_host_t *host)
         sdxc_enable_power(base, true);
 
         /* Start Auto tuning */
-        uint8_t tuning_cmd = (host->dev_type == sdmmc_dev_type_sd) ? 19U : 21U;
+        uint8_t tuning_cmd = (host->dev_type == sdmmc_dev_type_emmc) ? 21U : 19U;
         status = sdxc_perform_auto_tuning(host->host_param.base, tuning_cmd);
         HPM_BREAK_IF(status != status_success);
 
@@ -162,21 +164,44 @@ uint32_t extract_csd_field(const uint32_t *raw_csd, uint8_t end_offset, uint8_t 
 {
     uint32_t result = 0;
 
+    /* Input validation */
+    if ((raw_csd == NULL) || (end_offset < start_offset)) {
+        return 0;
+    }
+
+    /* Ensure offsets are within valid CSD range (128 bits = 0-127) */
+    if (end_offset >= 128 || start_offset >= 128) {
+        return 0;
+    }
+
     uint32_t start_word_index = start_offset / 32;
     uint32_t end_word_index = end_offset / 32;
     uint32_t end_offset_in_word = end_offset % 32;
     uint32_t start_offset_in_word = start_offset % 32;
 
+    /* Ensure word indices are within CSD array bounds (4 words) */
+    if ((start_word_index >= 4) || (end_word_index >= 4)) {
+        return 0;
+    }
+
     /* If all bits of the field are in the same raw_csd word */
     if (start_word_index == end_word_index) {
         uint32_t field_width = end_offset - start_offset + 1U;
-        uint32_t field_mask = ((1UL << field_width) - 1U) << start_offset;
+        /* Prevent shift overflow for field_width > 32 */
+        if (field_width > 32) {
+            return 0;
+        }
+        uint32_t field_mask = ((1UL << field_width) - 1U) << start_offset_in_word;
         result = (raw_csd[start_word_index] & field_mask) >> start_offset_in_word;
     } else {
         /* If the bits of the field crosses two raw_csd words */
         uint32_t lsb_width = 32U - start_offset_in_word;
         uint32_t result_lsb = raw_csd[start_word_index] >> start_offset_in_word;
         uint32_t msb_width = end_offset_in_word + 1UL;
+        /* Prevent shift overflow */
+        if (msb_width > 32) {
+            return 0;
+        }
         uint32_t result_msb = raw_csd[end_word_index] & ((1UL << msb_width) - 1U);
         result = (result_msb << lsb_width) | result_lsb;
     }

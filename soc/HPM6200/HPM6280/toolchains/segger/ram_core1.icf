@@ -8,8 +8,8 @@ define memory with size = 4G;
 
 /* Regions */
 define region ILM   = [from 0x00020000 size 128k];        /* ILM */
-define region DLM   = [from 0x000A0000 size 96k];         /* DLM */
-define region NONCACHEABLE_RAM = [from 0x000B8000 size 32k];    /* AXI SRAM1 */
+define region DLM   = [from 0x000A0000 size 128k - _noncacheable_size];         /* DLM */
+define region NONCACHEABLE_RAM = [from 0x000C0000 - _noncacheable_size size _noncacheable_size];    /* AXI SRAM1 */
 define region SHARE_RAM = [from 0x010BC000 size 16k];
 
 /* Blocks */

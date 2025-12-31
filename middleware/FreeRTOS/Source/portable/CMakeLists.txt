@@ -20,6 +20,7 @@ sdk_iar_src(
     IAR/RISC-V/chip_specific_extensions/HPMicro/hpm_port.c
     IAR/RISC-V/portASM.S
     IAR/RISC-V/default_isr.S
+    IAR/RISC-V/portContext.S
     )
 
 # Use PTMR to generate system tic if tickless stop mode is set

@@ -191,6 +191,9 @@ DMA Configuration
         /* TODO */
     }
 
+- **Hint**:
+  - If you need to use a custom DMA callback function, you can use the `hpm_i2c_dma_mgr_install_custom_callback` API. This API registers directly to the DMA manager and uses a user-defined callback.
+
 Read and Write Operations
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -344,6 +347,103 @@ Master Mode, Divided into Direct Read/Write Operations and Address Register Read
         /* Read failed, handle error case */
         printf("Failed to read data from I2C slave. Error code: %d\n", result);
     }
+
+
+- hpm_i2c_master_seq_transfer_blocking sequence transfer in blocking mode
+
+  - Supports performing multiple read and write operations in a single transfer, suitable for scenarios where multiple registers need to be accessed continuously
+  - API function prototype:
+
+    .. code-block:: c
+
+        hpm_stat_t hpm_i2c_master_seq_transfer_blocking(hpm_i2c_context_t *context, uint16_t device_address, uint8_t flags, uint8_t *buf, uint32_t size, uint32_t timeout);
+
+  - Parameter description
+
+    .. list-table::
+           :header-rows: 1
+
+           * - Parameter
+             - Type
+             - Description
+           * - context
+             - hpm_i2c_context_t*
+             - Pointer to the I2C context structure, containing I2C configuration information and status
+           * - device_address
+             - uint16_t
+             - Target slave device address for the sequence transfer. Depending on the is_10bit_addressing flag in the initialization configuration, this value can be 7-bit or 10-bit
+           * - flags
+             - uint8_t
+             - Transfer flags used to configure the behavior of the transfer. For example, whether to use a repeated start condition, whether to send a stop condition, etc.
+           * - buf
+             - uint8_t*
+             - Pointer to the buffer containing the data to be transmitted or received
+           * - size
+             - uint32_t
+             - Number of bytes in the buffer
+           * - timeout
+             - uint32_t
+             - Timeout in milliseconds. If the operation is not completed within this time, the function will return a timeout error
+
+  - Return values:
+
+    - ``status_success``: If the sequence transfer is successfully completed.
+
+    - ``status_invalid_argument``: If the provided size exceeds the maximum transfer count supported by the hardware
+
+    - ``status_timeout``: If the operation is not completed within the specified timeout
+
+    - ``status_i2c_no_addr_hit``: If no device response is detected at the target address
+
+    - ``status_i2c_transmit_not_completed``: If the data counter does not match the expected value before the end of the transfer
+
+  - **Example**: An I2C master device reads a data value from a register address of a slave device via the I2C bus
+
+    .. code-block:: c
+
+        /* Define I2C context and device address */
+        hpm_i2c_context_t i2c_context;
+        const uint16_t device_address = 0x3C; /* Example slave device address */
+        /* Prepare the receive buffer and its size */
+        uint8_t received_data[10]; /* Buffer for received data */
+        uint32_t size = sizeof(received_data); /* Buffer size */
+        uint32_t timeout = 1000; /* Timeout set to 1 second */
+        uint16_t register_address = 0x01; /* Register address to be read */
+        uint8_t flags = I2C_WR | I2C_NO_STOP; /* Write operation, no stop condition */
+        /* Initialize I2C context... omitted */
+        /* Use the hpm_i2c_master_seq_transfer_blocking API to write to the target register address of the slave device */
+        hpm_stat_t result = hpm_i2c_master_seq_transfer_blocking(
+            &i2c_context,
+            device_address,
+            flags,
+            &register_address,
+            sizeof(register_address),
+            timeout
+        );
+
+        if (result == status_success) {
+            /* Write successful */
+            flags = I2C_RD; /* Read operation */
+            result = hpm_i2c_master_seq_transfer_blocking(
+                &i2c_context,
+                device_address,
+                flags,
+                received_data,
+                size,
+                timeout
+            );
+            if (result == status_success) {
+                /* Read successful */
+                printf("Data successfully read from I2C slave.\n");
+                /* Process received_data here */
+            } else {
+                /* Read failed, handle error */
+                printf("Failed to read data from I2C slave. Error code: %d\n", result);
+            }
+        } else {
+            /* Write failed, handle error */
+            printf("Failed to read data from I2C slave. Error code: %d\n", result);
+        }
 
 - **Address Register Read/Write Operations**: Used for blocking operations in I2C master mode to write addresses and data to slave devices. It will wait until both address and data transmissions are completed or a timeout occurs.
 - These operations are divided into `hpm_i2c_master_addr_write_blocking` and `hpm_i2c_master_addr_read_blocking` APIs.
@@ -755,6 +855,94 @@ Master Mode, Divided into Direct Read/Write Operations and Address Register Read
     }
 
     /* TODO Since this is a non-blocking operation, the function returns immediately, allowing the program to continue executing other tasks. For example, wait for this transmission to complete */
+
+
+- hpm_i2c_master_seq_transfer_nonblocking sequence transfer in non-blocking mode
+
+  - API function prototype:
+
+    .. code-block:: c
+
+        hpm_stat_t hpm_i2c_master_seq_transfer_nonblocking(hpm_i2c_context_t *context, uint16_t device_address, uint8_t flags, uint8_t *buf, uint32_t size);
+
+    - Parameter description
+
+      .. list-table::
+           :header-rows: 1
+
+           * - Parameter
+             - Type
+             - Description
+           * - context
+             - hpm_i2c_context_t*
+             - Pointer to the I2C context structure, containing I2C configuration information and status
+           * - device_address
+             - uint16_t
+             - Target slave device address for the sequence transfer. Depending on the is_10bit_addressing flag in the initialization configuration, this value can be 7-bit or 10-bit
+           * - flags
+             - uint8_t
+             - Transfer flags used to configure the behavior of the transfer. For example, whether to use a repeated start condition, whether to send a stop condition, etc.
+           * - buf
+             - uint8_t*
+             - Pointer to the buffer containing the data to be transmitted or received
+           * - size
+             - uint32_t
+             - Number of bytes in the buffer
+
+    - Return values:
+      - ``status_success``: If the sequence transfer is successfully started.
+
+      - ``status_invalid_argument``: If the provided size exceeds the maximum transfer count supported by the hardware
+
+      - ``status_i2c_no_addr_hit``: If no device response is detected at the target address
+
+      - ``status_i2c_transmit_not_completed``: If the data counter does not match the expected value before the end of the transfer
+
+    - **Example**: An I2C master device reads a data value from a register address of a slave device via the I2C bus
+
+    .. code-block:: c
+
+        /* Define I2C context and device address */
+        hpm_i2c_context_t i2c_context;
+        const uint16_t device_address = 0x3C; /* Example slave device address */
+        /* Prepare the receive buffer and its size */
+        uint8_t received_data[10]; /* Buffer for received data */
+        uint32_t size = sizeof(received_data); /* Buffer size */
+        uint16_t register_address = 0x01; /* Register address to be read */
+        uint8_t flags = I2C_WR | I2C_NO_STOP; /* Write operation, no stop condition */
+        /* Initialize I2C context... omitted */
+        /* Use the hpm_i2c_master_seq_transfer_nonblocking API to write to the target register address of the slave device */
+        hpm_stat_t result = hpm_i2c_master_seq_transfer_nonblocking(
+            &i2c_context,
+            device_address,
+            flags,
+            &register_address,
+            sizeof(register_address),
+        );
+
+        if (result == status_success) {
+            printf("Data transmission started successfully\n");
+            /* Non-blocking operation, the function returns immediately, allowing the program to continue executing other tasks.
+               For example, execute the next section after this transfer is completed */
+            while (!(i2c_get_status(i2c_context.base) & I2C_STATUS_CMPL_MASK)) {
+            };
+            flags = I2C_RD; /* Read operation */
+            result = hpm_i2c_master_seq_transfer_nonblocking(
+                &i2c_context,
+                device_address,
+                flags,
+                received_data,
+                size
+            );
+            if (result == status_success) {
+                printf("Data reception started successfully\n");
+            } else {
+                printf("Failed to start data reception. Error code: %d\n", result);
+            }
+        } else {
+            printf("Failed to start data transmission. Error code: %d\n", result);
+        }
+
 
 - **Non-blocking Operation with Address Register Read/Write**: Used for non-blocking operations to write addresses and data to slave devices in I2C master mode.
 - Divided into ``hpm_i2c_master_addr_write_nonblocking`` and ``hpm_i2c_master_addr_read_nonblocking`` APIs

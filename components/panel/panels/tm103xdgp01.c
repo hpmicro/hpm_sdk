@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -75,8 +75,10 @@ static void reset(hpm_panel_t *panel)
     hpm_panel_delay_us(2000);
 }
 
-static void init(hpm_panel_t *panel)
+static void init(hpm_panel_t *panel, const hpm_panel_timing_t *timing)
 {
+    (void)timing;
+
     if (panel->hw_if.set_video_router)
         panel->hw_if.set_video_router();
 
@@ -84,10 +86,9 @@ static void init(hpm_panel_t *panel)
     lvds_panel_phy_init(panel);
 }
 
-hpm_panel_t panel_tm103xdgp01 = {
-    .name = "tm103xdgp01",
-    .if_type = HPM_PANEL_IF_TYPE_LVDS_SPLIT,
-    .timing = {
+static const hpm_panel_timing_t timing_list[] = {
+    {
+        .fps_hz = 60,
         .pixel_clock_khz = 45000,
         .hactive = 1920,
         .hfront_porch = 32,
@@ -98,7 +99,26 @@ hpm_panel_t panel_tm103xdgp01 = {
         .vfront_porch = 2,
         .vback_porch = 2,
         .vsync_len = 4,
-    },
+    }, {
+        .fps_hz = 30,
+        .pixel_clock_khz = 22500,
+        .hactive = 1920,
+        .hfront_porch = 32,
+        .hback_porch = 32,
+        .hsync_len = 64,
+
+        .vactive = 720,
+        .vfront_porch = 2,
+        .vback_porch = 2,
+        .vsync_len = 4,
+    }
+};
+
+hpm_panel_t panel_tm103xdgp01 = {
+    .name = "tm103xdgp01",
+    .if_type = HPM_PANEL_IF_TYPE_LVDS_SPLIT,
+    .timing_list = timing_list,
+    .timing_list_num = ARRAY_SIZE(timing_list),
     .funcs = {
         .reset = reset,
         .init = init,

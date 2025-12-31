@@ -27,10 +27,12 @@ void pwm_get_captured_count(PWM_Type *pwm_x, uint32_t *buf, pwm_counter_type_t c
     if (counter == pwm_counter_type_capture_falling_edge) {
         for (i = start_index; i < start_index + num; i++) {
             *buf = pwm_x->CAPNEG[i];
+            buf++;
         }
     } else {
         for (i = start_index; i < start_index + num; i++) {
             *buf = pwm_x->CAPPOS[i];
+            buf++;
         }
     }
 }
@@ -63,7 +65,8 @@ void pwm_get_default_pwm_config(PWM_Type *pwm_x, pwm_config_t *config)
 {
     (void) pwm_x;
     config->enable_output = false;
-    config->update_trigger = pwm_shadow_register_update_on_modify;
+    config->invert_output = false;
+    config->force_cmd_shadow_update_trigger = pwm_shadow_register_update_on_modify;
     config->fault_mode = pwm_fault_mode_force_output_highz;
     config->fault_recovery_trigger = pwm_fault_recovery_on_fault_clear;
     config->force_source = pwm_force_source_software;

@@ -6,7 +6,7 @@ excluded_targets:
 
 dependency:
   - board_sdram
-  - board_ap6255_evb
+  - board_ap6256_evb
 
 excluded_ides:
   - iar

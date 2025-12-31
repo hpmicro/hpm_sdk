@@ -288,6 +288,22 @@
 #define BOARD_APP_CLK_REF_PIN_NAME "J3[32] (PA09)"
 #define BOARD_APP_CLK_REF_CLK_NAME clock_ref0
 
+#define BOARD_APP_ESP_HOSTED_GPIO_RESET_PIN        IOC_PAD_PA09
+#define BOARD_APP_ESP_HOSTED_GPIO_HANDSHAKE_PIN    IOC_PAD_PB12
+#define BOARD_APP_ESP_HOSTED_GPIO_HANDSHAKE_IRQ    IRQn_GPIO0_B
+#define BOARD_APP_ESP_HOSTED_GPIO_DATA_READY_PIN   IOC_PAD_PB13
+#define BOARD_APP_ESP_HOSTED_GPIO_DATA_READY_IRQ   IRQn_GPIO0_B
+
+/* Brownout Indicate Pin */
+
+#define BOARD_BROWNOUT_INDICATE_GPIO_CTRL          HPM_GPIO0
+#define BOARD_BROWNOUT_INDICATE_PIN                IOC_PAD_PB13
+
+/* usb id pin */
+#define BOARD_USB_ID_GPIO_CTRL  HPM_GPIO0
+#define BOARD_USB_ID_GPIO_INDEX GPIO_DI_GPIOY
+#define BOARD_USB_ID_GPIO_PIN   (0U)
+
 #if defined(__cplusplus)
 extern "C" {
 #endif /* __cplusplus */
@@ -332,6 +348,19 @@ void board_init_i2c(I2C_Type *ptr);
 void board_init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp);
 void board_init_clk_ref_pin(void);
 uint32_t board_init_gptmr_clock(GPTMR_Type *ptr);
+
+/*
+ * Wrap pinmux initialization.
+ */
+void init_uart_pins(UART_Type *ptr);
+void init_uart_pin_as_gpio(UART_Type *ptr);
+void init_i2c_pins(I2C_Type *ptr);
+void init_spi_pins(SPI_Type *ptr);
+void init_spi_pins_with_gpio_as_cs(SPI_Type *ptr);
+void init_gptmr_pins(GPTMR_Type *ptr);
+void init_usb_pins(USB_Type *ptr);
+void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_output);
+void board_init_brownout_indicate_pin(void);
 
 #if defined(__cplusplus)
 }

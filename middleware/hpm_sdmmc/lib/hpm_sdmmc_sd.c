@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -266,7 +266,12 @@ static void sd_decode_csd(sd_card_t *card, const uint32_t *raw_csd)
     const uint32_t bitrate_unit_list[8] = {100UL * SPEED_1Kbps, SPEED_1Mbps, 10U * SPEED_1Mbps, 100U * SPEED_1Mbps, 0,
                                            0, 0, 0};
     const uint32_t time_value_list[16] = {0, 10, 12, 13, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80};
-    card->max_freq = bitrate_unit_list[bitrate_unit] / 10U * time_value_list[time_value];
+    /* Ensure array bounds safety */
+    if ((bitrate_unit < 8) && (time_value < 16) && (bitrate_unit_list[bitrate_unit] != 0) && (time_value_list[time_value] != 0)) {
+        card->max_freq = bitrate_unit_list[bitrate_unit] / 10U * time_value_list[time_value];
+    } else {
+        card->max_freq = SD_CLOCK_25MHZ; /* Default fallback frequency */
+    }
 }
 
 static hpm_stat_t sd_send_csd(sd_card_t *card)
@@ -485,6 +490,11 @@ static hpm_stat_t sd_send_scr(sd_card_t *card)
 
 void sd_decode_scr(sd_card_t *card, const uint32_t *raw_scr)
 {
+    /* Input validation */
+    if ((card == NULL) || (raw_scr == NULL)) {
+        return;
+    }
+
     sd_scr_t *scr = &card->scr;
 
     scr->scr_word[0] = raw_scr[0];
@@ -591,6 +601,11 @@ static hpm_stat_t sd_set_bus_timing(sd_card_t *card, sdmmc_speed_mode_t timing_m
 
 static void sd_decode_status(sd_card_t *card, uint32_t *raw_status)
 {
+    /* Input validation */
+    if ((card == NULL) || (raw_status == NULL)) {
+        return;
+    }
+
     sd_raw_status_t *sd_raw_status = (sd_raw_status_t *) raw_status;
 
     card->status.bus_width = sd_raw_status->data_bus_width;
@@ -1025,6 +1040,10 @@ hpm_stat_t sd_read_blocks(sd_card_t *card, uint8_t *buffer, uint32_t start_block
     do {
         HPM_BREAK_IF(status != status_success);
 
+        if ((buffer == NULL) || (block_count == 0) || ((start_block > (UINT32_MAX - block_count + 1)))) {
+            status = status_invalid_argument;
+            break;
+        }
         if (!card->host->card_init_done) {
             status = status_sdmmc_device_init_required;
             break;
@@ -1064,7 +1083,7 @@ hpm_stat_t sd_read_blocks(sd_card_t *card, uint8_t *buffer, uint32_t start_block
 #if !defined(HPM_SDMMC_ENABLE_CACHE_MAINTENANCE) || (HPM_SDMMC_ENABLE_CACHE_MAINTENANCE == 1)
             uint32_t buf_start = (uint32_t) data->rx_data;
             uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN(buf_start);
-            uint32_t end_addr = buf_start + card->block_size * block_count;
+            uint32_t end_addr = buf_start + card->block_size * read_block_count;
             uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP(end_addr);
             uint32_t aligned_size = aligned_end - aligned_start;
             /* FLUSH un-cacheline aligned memory region */
@@ -1097,6 +1116,11 @@ hpm_stat_t sd_write_blocks(sd_card_t *card, const uint8_t *buffer, uint32_t star
     hpm_stat_t status = sd_check_card_parameters(card);
     do {
         HPM_BREAK_IF(status != status_success);
+
+        if ((buffer == NULL) || (block_count == 0) || (start_block > (UINT32_MAX - block_count + 1))) {
+            status = status_invalid_argument;
+            break;
+        }
 
         if (!card->host->card_init_done) {
             status = status_sdmmc_device_init_required;
@@ -1202,6 +1226,11 @@ hpm_stat_t sd_erase_blocks(sd_card_t *card, uint32_t start_block, uint32_t block
     do {
         HPM_BREAK_IF(status != status_success);
 
+        if ((block_count == 0) || (start_block > (UINT32_MAX - block_count + 1))) {
+            status = status_invalid_argument;
+            break;
+        }
+
         if (!card->host->card_init_done) {
             status = status_sdmmc_device_init_required;
             break;
@@ -1258,11 +1287,14 @@ hpm_stat_t sd_set_max_current(sd_card_t *card, sd_max_current_t max_current)
 
 hpm_stat_t sd_polling_card_status_busy(sd_card_t *card, uint32_t timeout_ms)
 {
-    hpm_stat_t status = status_invalid_argument;
+    hpm_stat_t status = sd_check_card_parameters(card);
+    if (status != status_success) {
+        return status;
+    }
     bool is_busy = true;
 
     volatile uint64_t start_tick = hpm_csr_get_core_mcycle();
-    uint64_t timeout_ms_in_ticks = (uint64_t) timeout_ms * (clock_get_frequency(clock_cpu0) / 1000UL);
+    uint64_t timeout_ms_in_ticks = (uint64_t) timeout_ms * clock_get_core_clock_ticks_per_ms();
     do {
         HPM_BREAK_IF((card == NULL) || (card->host == NULL));
 

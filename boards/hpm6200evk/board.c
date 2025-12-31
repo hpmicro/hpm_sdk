@@ -399,6 +399,15 @@ void board_led_write(uint8_t state)
     gpio_write_pin(BOARD_LED_GPIO_CTRL, BOARD_LED_GPIO_INDEX, BOARD_LED_GPIO_PIN, state);
 }
 
+void board_can_transceiver_phy_set(MCAN_Type *ptr, bool enable)
+{
+    init_can_transceiver_phy_pin(ptr);
+    if (ptr == HPM_MCAN0) {
+        gpio_set_pin_output_with_initial(BOARD_CAN_STB_GPIO_CTRL, BOARD_CAN_STB_GPIO_INDEX, BOARD_CAN_STB_GPIO_PIN, 0);
+        gpio_write_pin(BOARD_CAN_STB_GPIO_CTRL, BOARD_CAN_STB_GPIO_INDEX, BOARD_CAN_STB_GPIO_PIN, enable ? 0 : 1);
+    }
+}
+
 void board_init_usb(USB_Type *ptr)
 {
     if (ptr == HPM_USB0) {
@@ -412,8 +421,12 @@ void board_init_pmp(void)
     uint32_t start_addr;
     uint32_t end_addr;
     uint32_t length;
-    pmp_entry_t pmp_entry[16];
+    pmp_entry_t pmp_entry[16] = {0};
     uint8_t index = 0;
+
+    pmp_entry[index].pmp_addr = 0xFFFFFFFF;
+    pmp_entry[index].pmp_cfg.val = PMP_CFG(READ_EN, WRITE_EN, EXECUTE_EN, ADDR_MATCH_NAPOT, REG_UNLOCK);
+    index++;
 
     /* Init noncachable memory */
     extern uint32_t __noncacheable_start__[];
@@ -729,3 +742,177 @@ uint32_t board_init_gptmr_clock(GPTMR_Type *ptr)
     return freq;
 }
 
+void init_uart_pins(UART_Type *ptr)
+{
+    if (ptr == HPM_UART0) {
+        init_uart0_pins();
+    } else if (ptr == HPM_UART1) {
+        init_uart1_pins();
+    } else if (ptr == HPM_UART2) {
+        init_uart2_pins();
+    } else if (ptr == HPM_PUART) {
+        init_puart_pins();
+    }
+}
+
+/* for uart_lin case, need to configure pin as gpio to sent break signal */
+void init_uart_pin_as_gpio(UART_Type *ptr)
+{
+    if (ptr == HPM_UART2) {
+        init_uart2_pin_as_gpio();
+    }
+}
+
+void init_i2c_pins_as_gpio(I2C_Type *ptr)
+{
+    if (ptr == HPM_I2C0) {
+        /* I2C0 */
+        init_i2c0_pins_as_gpio();
+    } else if (ptr == HPM_I2C3) {
+        /* I2C3 */
+        init_i2c3_pins_as_gpio();
+    } else {
+        while (1) {
+        }
+    }
+}
+
+void init_i2c_pins(I2C_Type *ptr)
+{
+    if (ptr == HPM_I2C0) {
+        init_i2c0_pins();
+    } else if (ptr == HPM_I2C3) {
+        init_i2c3_pins();
+    } else {
+        while (1) {
+        }
+    }
+}
+
+void init_gpio_pins(void)
+{
+    /* Button */
+#ifdef USING_GPIO0_FOR_GPIOZ
+    init_gpio_pins_using_gpio0();
+#endif
+}
+
+void init_spi_pins(SPI_Type *ptr)
+{
+    if (ptr == HPM_SPI1) {
+        init_spi1_pins();
+    }
+}
+
+void init_spi_pins_with_gpio_as_cs(SPI_Type *ptr)
+{
+    if (ptr == HPM_SPI1) {
+        init_spi1_pins_with_gpio_as_cs();
+    }
+}
+
+void init_pins(void)
+{
+#ifdef BOARD_CONSOLE_UART_BASE
+    init_uart_pins(BOARD_CONSOLE_UART_BASE);
+#endif
+}
+
+void init_gptmr_pins(GPTMR_Type *ptr)
+{
+    if (ptr == HPM_GPTMR1) {
+        init_gptmr1_pins();
+    }
+}
+
+void init_pwm_pins(PWM_Type *ptr)
+{
+    if (ptr == HPM_PWM0) {
+        init_pwm0_pins();
+    }
+}
+
+void init_hrpwm_pins(PWM_Type *ptr)
+{
+    if (ptr == HPM_PWM1) {
+        init_hrpwm1_pins();
+    }
+}
+
+void init_usb_pins(USB_Type *ptr)
+{
+    if (ptr == HPM_USB0) {
+        init_usb0_pins();
+    }
+}
+
+void init_can_pins(MCAN_Type *ptr)
+{
+    if (ptr == HPM_MCAN0) {
+        init_mcan0_pins();
+    }
+}
+
+void init_can_transceiver_phy_pin(MCAN_Type *ptr)
+{
+    if (ptr == HPM_MCAN0) {
+        init_mcan0_transceiver_phy_pin();
+    } else {
+        /* Invalid CAN instance */
+    }
+}
+
+void init_dac_pins(DAC_Type *ptr)
+{
+    if (ptr == HPM_DAC0) {
+        init_dac0_pins();
+    } else if (ptr == HPM_DAC1) {
+        init_dac1_pins();
+    }
+}
+
+void init_trgmux_pins(uint32_t pin)
+{
+    /* all trgmux pin ALT_SELECT fixed to 16*/
+    HPM_IOC->PAD[pin].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(17);
+}
+
+void init_lin_pins(LIN_Type *ptr)
+{
+    if (ptr == HPM_LIN0) {
+        init_lin0_pins();
+    } else if (ptr == HPM_LIN2) {
+        init_lin2_pins();
+        /* missing TREN pin */
+    }
+}
+
+void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_output)
+{
+    if (ptr == HPM_GPTMR1) {
+        if (as_output) {
+            switch (channel) {
+            case 0:
+                init_gptmr1_channel0_pin_as_output();
+                break;
+            case 1:
+                init_gptmr1_channel1_pin_as_output();
+                break;
+            case 2:
+                init_gptmr1_channel2_pin_as_output();
+                break;
+            default:
+                break;
+            }
+        } else {
+            if (channel == 0) {
+                init_gptmr1_channel0_pin_as_capture();
+            }
+        }
+    }
+}
+void board_init_brownout_indicate_pin(void)
+{
+    init_brownout_indicate_pin();
+    gpio_set_pin_output_with_initial(BOARD_BROWNOUT_INDICATE_GPIO_CTRL, GPIO_GET_PORT_INDEX(BOARD_BROWNOUT_INDICATE_PIN), GPIO_GET_PIN_INDEX(BOARD_BROWNOUT_INDICATE_PIN), 0);
+}

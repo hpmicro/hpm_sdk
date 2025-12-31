@@ -45,6 +45,7 @@ hpm_stat_t tsw_init(TSW_Type *ptr)
 {
     rtl8211_config_t phy_config;
     tsw_dma_config_t config;
+    tsw_frame_action_config_t internal_config, broadcast_config, unknown_config;
 
     /* Disable all MACs(TX/RX) */
     tsw_ep_disable_all_mac_ctrl(ptr, tsw_mac_type_emac);
@@ -100,12 +101,16 @@ hpm_stat_t tsw_init(TSW_Type *ptr)
     intc_m_enable_irq(IRQn_TSW_0);  /* Enable TSW CPU Port IRQ */
 #endif
 
-    /* Set broadcast frame and unknown frame actions */
-    tsw_set_broadcast_frame_action(BOARD_TSW, tsw_dst_port_cpu);
-    tsw_set_unknown_frame_action(BOARD_TSW, tsw_dst_port_cpu);
+    /* Set frame action for internal, broadcast and unknown frames */
+    tsw_get_default_frame_action_config(ptr, &internal_config);
+    tsw_get_default_frame_action_config(ptr, &broadcast_config);
+    tsw_get_default_frame_action_config(ptr, &unknown_config);
+    tsw_set_frame_action(ptr, &internal_config, tsw_frame_action_type_internal);
+    tsw_set_frame_action(ptr, &broadcast_config, tsw_frame_action_type_broadcast);
+    tsw_set_frame_action(ptr, &unknown_config, tsw_frame_action_type_unknown);
 
     /* Set MDC clock frequency to 2.5MHz */
-    tsw_ep_set_mdio_config(BOARD_TSW, BOARD_TSW_PORT, 19);
+    tsw_ep_set_mdio_config(ptr, BOARD_TSW_PORT, 19);
 
     /* Initialize PHY */
     rtl8211_reset(ptr, BOARD_TSW_PORT);

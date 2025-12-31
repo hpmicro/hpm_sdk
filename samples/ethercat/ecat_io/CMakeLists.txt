@@ -3,6 +3,8 @@
 
 cmake_minimum_required(VERSION 3.13)
 
+# If you do not want to use flash to simulate eeprom. It requests to regenerate
+# the SSC code, please refer to the README
 set(CONFIG_EEPROM_EMULATION 1) # using eeprom emulation compenent
 
 if("${HPM_BUILD_TYPE}" STREQUAL "")

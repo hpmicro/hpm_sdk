@@ -27,6 +27,7 @@ wm8960_config_t wm8960_config = {
     .play_source = wm8960_play_source_dac,
     .bus = wm8960_bus_left_justified,
     .format = { .mclk_hz = 0U, .sample_rate = 0U, .bit_width = 32U },
+    .lrclk_polarity = wm8960_lrclk_polarity_low_for_left_channel,
 };
 
 wm8960_control_t wm8960_control = {
@@ -43,6 +44,7 @@ sgtl_config_t sgtl5000_config = {
                 .sample_rate = 0,
                 .bit_width = 32,
                 .sclk_edge = sgtl_sclk_valid_edge_rising }, /*!< audio format */
+    .lrclk_polarity = sgtl_lrclk_polarity_low_for_left_channel,
 };
 
 sgtl_context_t sgtl5000_context = {
@@ -359,6 +361,7 @@ void speaker_init_i2s_dao_codec(void)
     wm8960_config.format.sample_rate = s_speaker_sample_rate;
     wm8960_config.format.bit_width = SPEAKER_AUDIO_DEPTH;
     wm8960_config.format.mclk_hz = s_speaker_i2s_mclk_hz;
+    wm8960_config.lrclk_polarity = (i2s_invert_fclk_out) ? wm8960_lrclk_polarity_high_for_left_channel : wm8960_lrclk_polarity_low_for_left_channel;
     if (wm8960_init(&wm8960_control, &wm8960_config) != status_success) {
         printf("Init Audio Codec failed\n");
     }
@@ -367,6 +370,7 @@ void speaker_init_i2s_dao_codec(void)
     sgtl5000_config.format.sample_rate = s_speaker_sample_rate;
     sgtl5000_config.format.bit_width = SPEAKER_AUDIO_DEPTH;
     sgtl5000_config.format.mclk_hz = s_speaker_i2s_mclk_hz;
+    sgtl5000_config.lrclk_polarity = (i2s_invert_fclk_out) ? sgtl_lrclk_polarity_high_for_left_channel : sgtl_lrclk_polarity_low_for_left_channel;
     if (sgtl_init(&sgtl5000_context, &sgtl5000_config) != status_success) {
         printf("Init Audio Codec failed\n");
     }
@@ -401,26 +405,28 @@ void isr_dma(void)
 void audio_v2_task(uint8_t busid)
 {
     (void)busid;
+    uint32_t front = s_speaker_out_buffer_front;  /* defined the order of volatile accesses */
 
     if (s_speaker_play_flag) {
         if (!speaker_out_buff_is_empty()) {
             if (s_speaker_dma_transfer_req) {
                 s_speaker_dma_transfer_req = false;
-                speaker_i2s_dma_start_transfer((uint32_t)&s_speaker_out_buffer[s_speaker_out_buffer_front], (s_speaker_sample_rate * SPEAKER_SLOT_BYTE_SIZE * OUT_CHANNEL_NUM) / 1000);
-                s_speaker_out_buffer_front += (s_speaker_sample_rate * SPEAKER_SLOT_BYTE_SIZE * OUT_CHANNEL_NUM) / 1000;
-                if (s_speaker_out_buffer_front >= AUDIO_BUFFER_COUNT * AUDIO_OUT_PACKET) {
-                    s_speaker_out_buffer_front = s_speaker_out_buffer_front - AUDIO_BUFFER_COUNT * AUDIO_OUT_PACKET;
+                speaker_i2s_dma_start_transfer((uint32_t)&s_speaker_out_buffer[front], (s_speaker_sample_rate * SPEAKER_SLOT_BYTE_SIZE * OUT_CHANNEL_NUM) / 1000);
+                front += (s_speaker_sample_rate * SPEAKER_SLOT_BYTE_SIZE * OUT_CHANNEL_NUM) / 1000;
+                if (front >= AUDIO_BUFFER_COUNT * AUDIO_OUT_PACKET) {
+                    front = front - AUDIO_BUFFER_COUNT * AUDIO_OUT_PACKET;
                 }
             } else if (s_speaker_dma_transfer_done) {
                 s_speaker_dma_transfer_done = false;
-                speaker_i2s_dma_start_transfer((uint32_t)&s_speaker_out_buffer[s_speaker_out_buffer_front], (s_speaker_sample_rate * SPEAKER_SLOT_BYTE_SIZE * OUT_CHANNEL_NUM) / 1000);
-                s_speaker_out_buffer_front += (s_speaker_sample_rate * SPEAKER_SLOT_BYTE_SIZE * OUT_CHANNEL_NUM) / 1000;
-                if (s_speaker_out_buffer_front >= AUDIO_BUFFER_COUNT * AUDIO_OUT_PACKET) {
-                    s_speaker_out_buffer_front = s_speaker_out_buffer_front - AUDIO_BUFFER_COUNT * AUDIO_OUT_PACKET;
+                speaker_i2s_dma_start_transfer((uint32_t)&s_speaker_out_buffer[front], (s_speaker_sample_rate * SPEAKER_SLOT_BYTE_SIZE * OUT_CHANNEL_NUM) / 1000);
+                front += (s_speaker_sample_rate * SPEAKER_SLOT_BYTE_SIZE * OUT_CHANNEL_NUM) / 1000;
+                if (front >= AUDIO_BUFFER_COUNT * AUDIO_OUT_PACKET) {
+                    front = front - AUDIO_BUFFER_COUNT * AUDIO_OUT_PACKET;
                 }
             } else {
                 ;    /* Do Nothing */
             }
+            s_speaker_out_buffer_front = front;
         }
     }
 }
@@ -701,8 +707,9 @@ static void speaker_i2s_dma_start_transfer(uint32_t addr, uint32_t size)
 static bool speaker_out_buff_is_empty(void)
 {
     bool empty = false;
+    uint32_t front = s_speaker_out_buffer_front;  /* defined the order of volatile accesses */
 
-    if (s_speaker_out_buffer_front == s_speaker_out_buffer_rear) {
+    if (front == s_speaker_out_buffer_rear) {
         empty = true;
     }
 
@@ -711,14 +718,16 @@ static bool speaker_out_buff_is_empty(void)
 
 static void speaker_calculate_feedback(void)
 {
+    uint32_t front;  /* defined the order of volatile accesses */
     s_speaker_feedback_tm++;
     if (s_speaker_feedback_tm == 1000) {    /* 1s */
         s_speaker_feedback_tm = 0;
 
-        if (s_speaker_out_buffer_rear >= s_speaker_out_buffer_front) {
-            s_speaker_out_buffer_used = s_speaker_out_buffer_rear - s_speaker_out_buffer_front;
+        front = s_speaker_out_buffer_front;
+        if (s_speaker_out_buffer_rear >= front) {
+            s_speaker_out_buffer_used = s_speaker_out_buffer_rear - front;
         } else {
-            s_speaker_out_buffer_used = (AUDIO_BUFFER_COUNT * AUDIO_OUT_PACKET) + s_speaker_out_buffer_rear - s_speaker_out_buffer_front;
+            s_speaker_out_buffer_used = (AUDIO_BUFFER_COUNT * AUDIO_OUT_PACKET) + s_speaker_out_buffer_rear - front;
         }
 
         if (s_speaker_out_buffer_used >= ((AUDIO_BUFFER_COUNT * AUDIO_OUT_PACKET) * 5u / 8u)) {

@@ -1,6 +1,6 @@
 .. _tsn_lwip_tcpecho:
 
-lwip_tcpecho
+tsn_lwip_tcpecho
 ========================
 
 概述
@@ -20,7 +20,7 @@ lwip_tcpecho
 工程配置
 ------------
 
-- 以太网端口配置：参考 :ref:`以太网通用工程设置 <ethernet_port_configurations_zh>`
+- 以太网端口配置：参考 :ref:`TSW通用工程设置 <tsw_port_configurations_zh>`
 
 - 以太网DHCP配置
 

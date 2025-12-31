@@ -50,9 +50,6 @@ SECTIONS
         KEEP(*(.vector_table))
         KEEP(*(.isr_vector))
         KEEP(*(.isr_vector.*))
-        KEEP(*(.vector_s_table))
-        KEEP(*(.isr_s_vector))
-        KEEP(*(.isr_s_vector.*))
         . = ALIGN(8);
         __vector_ram_end__ = .;
     } > ILM
@@ -244,8 +241,8 @@ SECTIONS
         __noncacheable_init_start__ = .;
         KEEP(*(.noncacheable.init))
         KEEP(*(.noncacheable.init.*))
-        __noncacheable_init_end__ = .;
         . = ALIGN(8);
+        __noncacheable_init_end__ = .;
     } > DLM
 
     .noncacheable (NOLOAD) : {
@@ -253,11 +250,12 @@ SECTIONS
         KEEP(*(.noncacheable))  /* Legacy sections, kept for backwards compatibility */
         KEEP(*(.noncacheable.non_init))
         KEEP(*(.noncacheable.non_init.*))
+        . = ALIGN(8);
         __noncacheable_bss_start__ = .;
         KEEP(*(.noncacheable.bss))
         KEEP(*(.noncacheable.bss.*))
-        __noncacheable_bss_end__ = .;
         . = ALIGN(8);
+        __noncacheable_bss_end__ = .;
     } > DLM
 
     __fast_ram_init_load_addr__ = etext + SIZEOF(.data) + SIZEOF(.fast) + SIZEOF(.tdata) + SIZEOF(.noncacheable.init);
@@ -266,8 +264,8 @@ SECTIONS
         __fast_ram_init_start__ = .;
         KEEP(*(.fast_ram.init))
         KEEP(*(.fast_ram.init.*))
-        __fast_ram_init_end__ = .;
         . = ALIGN(8);
+        __fast_ram_init_end__ = .;
     } > DLM
 
     .ahb_sram (NOLOAD) : {
@@ -280,17 +278,19 @@ SECTIONS
         KEEP(*(.fast_ram))  /* Legacy sections, kept for backwards compatibility */
         KEEP(*(.fast_ram.non_init))
         KEEP(*(.fast_ram.non_init.*))
+        . = ALIGN(8);
         __fast_ram_bss_start__ = .;
         KEEP(*(.fast_ram.bss))
         KEEP(*(.fast_ram.bss.*))
-        __fast_ram_bss_end__ = .;
         . = ALIGN(8);
+        __fast_ram_bss_end__ = .;
     } > DLM
 
     .heap (NOLOAD) : {
         . = ALIGN(8);
         __heap_start__ = .;
         . += HEAP_SIZE;
+        . = ALIGN(8);
         __heap_end__ = .;
     } > DLM
 

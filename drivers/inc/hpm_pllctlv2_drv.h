@@ -235,6 +235,46 @@ static inline void pllctlv2_set_pll_step_time(PLLCTLV2_Type *ptr, pllctlv2_pll_t
 }
 
 /**
+ * @brief Enable dither for the specified PLL
+ * @param [in] ptr Base address of the PLLCTLV2 peripheral
+ * @param [in] pll Index of the PLL to configure (pllctlv2_pll0 through pllctlv2_pll6)
+ */
+static inline void pllctlv2_enable_dither(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll)
+{
+    ptr->PLL[pll].ADVANCED |= PLLCTLV2_PLL_ADVANCED_DITHER_MASK;
+}
+
+/**
+ * @brief Disable dither for the specified PLL
+ * @param [in] ptr Base address of the PLLCTLV2 peripheral
+ * @param [in] pll Index of the PLL to configure (pllctlv2_pll0 through pllctlv2_pll6)
+ */
+static inline void pllctlv2_disable_dither(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll)
+{
+    ptr->PLL[pll].ADVANCED &= ~PLLCTLV2_PLL_ADVANCED_DITHER_MASK;
+}
+
+/**
+ * @brief Enable slow lock for the specified PLL
+ * @param [in] ptr Base address of the PLLCTLV2 peripheral
+ * @param [in] pll Index of the PLL to configure (pllctlv2_pll0 through pllctlv2_pll6)
+ */
+static inline void pllctlv2_enable_slow_lock(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll)
+{
+    ptr->PLL[pll].ADVANCED |= PLLCTLV2_PLL_ADVANCED_SLOW_MASK;
+}
+
+/**
+ * @brief Disable slow lock for the specified PLL
+ * @param [in] ptr Base address of the PLLCTLV2 peripheral
+ * @param [in] pll Index of the PLL to configure (pllctlv2_pll0 through pllctlv2_pll6)
+ */
+static inline void pllctlv2_disable_slow_lock(PLLCTLV2_Type *ptr, pllctlv2_pll_t pll)
+{
+    ptr->PLL[pll].ADVANCED &= ~PLLCTLV2_PLL_ADVANCED_SLOW_MASK;
+}
+
+/**
  * @brief Configures the post-divider for a specific PLL output clock
  * @param [in] ptr Base address of the PLLCTLV2 peripheral
  * @param [in] pll Index of the PLL to configure (pllctlv2_pll0 through pllctlv2_pll6)

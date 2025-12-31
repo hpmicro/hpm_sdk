@@ -9,14 +9,16 @@
 #include <stdio.h>
 #include "board.h"
 #include "netconf.h"
-#include "lwip/netifapi.h"
-#include "netif/etharp.h"
-#include "ethernetif.h"
-#include "common.h"
 
 #if defined(LWIP_DHCP) && LWIP_DHCP
 #include "lwip/dhcp.h"
 #endif
+
+#include "lwip/netifapi.h"
+#include "netif/etharp.h"
+#include "ethernetif.h"
+#include "common.h"
+#include "netinfo.h"
 
 #if defined(__ENABLE_FREERTOS) && __ENABLE_FREERTOS
 #include "FreeRTOS.h"
@@ -39,6 +41,7 @@ mac_init_t mac_init[BOARD_ENET_COUNT] = {
     {HPM_STRINGIFY(MAC1_CONFIG)}
 };
 
+enet_frame_pointer_t frame_pointer[BOARD_ENET_COUNT];
 
 #if defined(LWIP_DHCP) && LWIP_DHCP
 /**
@@ -50,19 +53,15 @@ void LwIP_DHCP_task(void *pvParameters)
 {
     struct netif *netif = (struct netif *)pvParameters;
 
-    for (uint8_t i = 0; i < BOARD_ENET_COUNT; i++) {
-        dhcp_start(&netif[i]);
-    }
+   dhcp_start(netif);
 
     for (;;) {
-        for (uint8_t i = 0; i < BOARD_ENET_COUNT; i++) {
-            enet_update_dhcp_state(&netif[i]);
+        enet_update_dhcp_state(netif);
 #if defined(__ENABLE_FREERTOS) && __ENABLE_FREERTOS
-            vTaskDelay(5);
+        vTaskDelay(5);
 #elif defined(__ENABLE_RTTHREAD_NANO) && __ENABLE_RTTHREAD_NANO
-            rt_thread_mdelay(5);
+        rt_thread_mdelay(5);
 #endif
-        }
     }
 }
 #endif
@@ -93,18 +92,28 @@ void netif_config(struct netif *netif, uint8_t i)
     netifapi_netif_set_up(netif);
     netifapi_netif_set_default(netif);
 #endif
-
+    netif->state = &frame_pointer[i];
     netif_set_link_callback(netif, netif_update_status);
+}
+
+void netif_show_ip_info(struct netif *netif)
+{
+#if defined(NO_SYS) && !NO_SYS
+    log_send_message("================ Network Interface %d ================\n", netif->num);
+    log_send_message("IPv4 Address: %s\n", ipaddr_ntoa(&netif->ip_addr));
+    log_send_message("IPv4 Netmask: %s\n", ipaddr_ntoa(&netif->netmask));
+    log_send_message("IPv4 Gateway: %s\n", ipaddr_ntoa(&netif->gw));
+#else
+    printf("================ Network Interface %d ================\n", netif->num);
+    printf("IPv4 Address: %s\n", ipaddr_ntoa(&netif->ip_addr));
+    printf("IPv4 Netmask: %s\n", ipaddr_ntoa(&netif->netmask));
+    printf("IPv4 Gateway: %s\n", ipaddr_ntoa(&netif->gw));
+#endif
 }
 
 void netif_user_notification(struct netif *netif)
 {
-    if (netif_is_up(netif)) {
-        printf("================ Network Interface %d ================\n", netif->num);
-        printf("IPv4 Address: %s\n", ipaddr_ntoa(&netif->ip_addr));
-        printf("IPv4 Netmask: %s\n", ipaddr_ntoa(&netif->netmask));
-        printf("IPv4 Gateway: %s\n", ipaddr_ntoa(&netif->gw));
-    }
+   (void)netif;
 }
 
 #if defined(NO_SYS) && !NO_SYS

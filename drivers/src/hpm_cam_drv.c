@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -27,6 +27,8 @@ void cam_get_default_config(CAM_Type *ptr, cam_config_t *config, display_pixel_f
     config->data_store_mode = CAM_DATA_STORE_MODE_NORMAL;
     config->color_format = pixel_format;
     config->sensor_bitwidth = CAM_SENSOR_BITWIDTH_10BITS;
+    config->colorkey_low = 0x00FFFFFF;
+    config->colorkey_high = 0x00000000;
 
     switch (pixel_format) {
     case display_pixel_format_yuv422:
@@ -141,6 +143,9 @@ hpm_stat_t cam_init(CAM_Type *ptr, cam_config_t *config)
     ptr->CSC_COEF2 = CAM_CSC_COEF2_C2_SET(config->csc_config.yuv2rgb_coef.c2)
                     | CAM_CSC_COEF2_C3_SET(config->csc_config.yuv2rgb_coef.c3);
 
+    ptr->CLRKEY_LOW = CAM_CLRKEY_LOW_LIMIT_SET(config->colorkey_low);
+    ptr->CLRKEY_HIGH = CAM_CLRKEY_HIGH_LIMIT_SET(config->colorkey_high);
+
     return stat;
 }
 
@@ -160,7 +165,8 @@ void cam_stop_safely(CAM_Type *ptr)
     * waiting for capture frame to complete
     */
     cam_clear_status(ptr, cam_status_end_of_frame);
-    while (cam_check_status(ptr, cam_status_end_of_frame) == false) {
+    while ((ptr->CR18 & CAM_CR18_CAM_ENABLE_MASK) &&
+            cam_check_status(ptr, cam_status_end_of_frame) == false) {
     }
     cam_stop(ptr);
 }

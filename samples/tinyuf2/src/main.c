@@ -42,11 +42,11 @@
 /* MACRO CONSTANT TYPEDEF PROTYPES */
 /*--------------------------------------------------------------------*/
 uint8_t RGB_USB_UNMOUNTED[] = { 0xff, 0x00, 0x00 }; /* Red */
-uint8_t RGB_USB_MOUNTED[]   = { 0x00, 0xff, 0x00 }; /* Green */
-uint8_t RGB_WRITING[]       = { 0xcc, 0x66, 0x00 };
-uint8_t RGB_ENTER_BOOTLOADER[]    = { 0x80, 0x00, 0xff }; /* Purple */
-uint8_t RGB_UNKNOWN[]       = { 0x00, 0x00, 0x88 }; /* for debug */
-uint8_t RGB_OFF[]           = { 0x00, 0x00, 0x00 };
+uint8_t RGB_USB_MOUNTED[] = { 0x00, 0xff, 0x00 };   /* Green */
+uint8_t RGB_WRITING[] = { 0xcc, 0x66, 0x00 };
+uint8_t RGB_ENTER_BOOTLOADER[] = { 0x80, 0x00, 0xff }; /* Purple */
+uint8_t RGB_UNKNOWN[] = { 0x00, 0x00, 0x88 };          /* for debug */
+uint8_t RGB_OFF[] = { 0x00, 0x00, 0x00 };
 
 static volatile uint32_t _timer_count;
 
@@ -56,14 +56,14 @@ int main(void)
 {
     uf2_board_init();
 
-    if (BOARD_DEVICE_RHPORT_NUM == 0) {
+    if (BOARD_TUD_RHPORT == 0) {
         board_init_usb(HPM_USB0);
 #ifdef HPM_USB1
-    } else if (BOARD_DEVICE_RHPORT_NUM == 1) {
+    } else if (BOARD_TUD_RHPORT == 1) {
         board_init_usb(HPM_USB1);
 #endif
     } else {
-        printf("Don't support HPM_USB%d!\n", BOARD_DEVICE_RHPORT_NUM);
+        printf("Don't support HPM_USB%d!\n", BOARD_TUD_RHPORT);
         while (1) {
             ;
         }
@@ -83,7 +83,13 @@ int main(void)
     uf2_board_dfu_init();
     uf2_board_flash_init();
     uf2_init();
-    tusb_init();
+
+    /* init device stack on configured roothub port */
+    tusb_rhport_init_t dev_init = {
+        .role = TUSB_ROLE_DEVICE,
+        .speed = TUSB_SPEED_AUTO,
+    };
+    tusb_init(BOARD_TUD_RHPORT, &dev_init);
 
     indicator_set(STATE_USB_UNPLUGGED);
 
@@ -93,7 +99,6 @@ int main(void)
     }
 #endif
 }
-
 
 /* return true if start DFU mode, else App mode */
 static bool check_dfu_mode(void)
@@ -134,11 +139,11 @@ void tud_umount_cb(void)
 uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t *buffer, uint16_t reqlen)
 {
     /* TODO not Implemented */
-    (void) itf;
-    (void) report_id;
-    (void) report_type;
-    (void) buffer;
-    (void) reqlen;
+    (void)itf;
+    (void)report_id;
+    (void)report_type;
+    (void)buffer;
+    (void)reqlen;
 
     return 0;
 }
@@ -148,11 +153,11 @@ uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t
 void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t const *buffer, uint16_t bufsize)
 {
     /* This example doesn't use multiple report and report ID */
-    (void) itf;
-    (void) report_id;
-    (void) report_type;
-    (void) buffer;
-    (void) bufsize;
+    (void)itf;
+    (void)report_id;
+    (void)report_type;
+    (void)buffer;
+    (void)bufsize;
 }
 
 /*--------------------------------------------------------------------*/
@@ -191,7 +196,6 @@ void indicator_set(uint32_t state)
         break; /* nothing to do */
     }
 }
-
 
 void uf2_board_timer_handler(void)
 {

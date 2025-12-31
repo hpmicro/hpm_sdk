@@ -668,6 +668,74 @@ hpm_stat_t hpm_i2c_slave_read_blocking(hpm_i2c_context_t *context, uint8_t *buf,
     return status_success;
 }
 
+hpm_stat_t hpm_i2c_master_seq_transfer_blocking(hpm_i2c_context_t *context, uint16_t device_address, uint8_t flags,
+                                                uint8_t *buf, uint32_t size, uint32_t timeout)
+{
+    hpm_stat_t stat = status_success;
+    uint32_t left;
+    I2C_Type *ptr = context->base;
+    uint32_t ticks_per_us = clock_get_core_clock_ticks_per_us();
+    uint64_t expected_ticks = 0;
+    hpm_i2c_cfg_t *obj = hpm_i2c_get_cfg_obj(ptr);
+    if ((size > I2C_SOC_TRANSFER_COUNT_MAX) || (obj == NULL) ||
+        ((flags & I2C_WR) && (flags & I2C_RD))) {
+        return status_invalid_argument;
+    }
+    /* W1C, clear CMPL bit to avoid blocking the transmission */
+    i2c_clear_status(ptr, I2C_STATUS_CMPL_MASK);
+    i2c_clear_fifo(ptr);
+    hpm_i2c_master_phase_config(ptr, device_address, flags, size, false);
+    i2c_master_issue_data_transmission(ptr);
+
+    if (!(flags & I2C_NO_ADDRESS)) {
+        /* Before starting to transmit data, judge addrhit to ensure that the slave address exists on the bus. */
+        /* i2c speed min is 100Kbps, and mem address max is 4 byte, 10us * (4 * 8) = 320us,  so 500us is enough */
+        expected_ticks = hpm_csr_get_core_cycle() + (uint64_t)ticks_per_us * 500UL; /* 500Us */
+        while (!(i2c_get_status(ptr) & I2C_STATUS_ADDRHIT_MASK)) {
+            if (hpm_csr_get_core_cycle() > expected_ticks) {
+                hpm_i2c_release_bus(ptr);
+                return status_i2c_no_addr_hit;
+            }
+        }
+        i2c_clear_status(ptr, I2C_STATUS_ADDRHIT_MASK);
+    }
+    expected_ticks = hpm_csr_get_core_cycle() + (uint64_t)ticks_per_us * 1000UL * timeout;
+    left = size;
+    while (left) {
+        if (flags & I2C_RD) {
+            if (!(i2c_get_status(ptr) & I2C_STATUS_FIFOEMPTY_MASK)) {
+                *(buf++) = i2c_read_byte(ptr);
+                left--;
+                continue;
+            }
+        } else {
+            if (!(i2c_get_status(ptr) & I2C_STATUS_FIFOFULL_MASK)) {
+                i2c_write_byte(ptr, *(buf++));
+                left--;
+                continue;
+            }
+        }
+
+        if (hpm_csr_get_core_cycle() > expected_ticks) {
+            hpm_i2c_release_bus(ptr);
+            stat = status_timeout;
+            break;
+        }
+    }
+    expected_ticks = hpm_csr_get_core_cycle() + (uint64_t)ticks_per_us * 1000UL * timeout;
+    while (!(i2c_get_status(ptr) & I2C_STATUS_CMPL_MASK)) {
+        if (hpm_csr_get_core_cycle() > expected_ticks) {
+            hpm_i2c_release_bus(ptr);
+            return status_timeout;
+        }
+    }
+
+    if (i2c_get_data_count(ptr) && (size)) {
+        stat =  status_i2c_transmit_not_completed;
+    }
+    return stat;
+}
+
 #if USE_I2C_DMA_MGR
 void hpm_i2c_dma_channel_tc_callback(DMA_Type *ptr, uint32_t channel, void *user_data)
 {
@@ -730,8 +798,10 @@ hpm_stat_t hpm_i2c_dma_mgr_install_callback(hpm_i2c_context_t *context, hpm_i2c_
         dma_mgr_enable_chn_irq(resource, DMA_MGR_INTERRUPT_MASK_TC);
         dma_mgr_enable_dma_irq_with_priority(resource, 1);
         obj->dma_complete = complete;
+        return status_success;
+    } else {
+        return status_fail;
     }
-    return status_success;
 }
 
 hpm_stat_t hpm_i2c_slave_read_nonblocking(hpm_i2c_context_t *context, uint8_t *buf, uint32_t size)
@@ -960,6 +1030,78 @@ dma_resource_t *hpm_i2c_get_dma_mgr_resource(hpm_i2c_context_t *context)
         return &obj->dma_resource;
     }
     return NULL;
+}
+
+hpm_stat_t hpm_i2c_dma_mgr_install_custom_callback(hpm_i2c_context_t *context, dma_mgr_chn_cb_t complete, void *user_data)
+{
+    dma_mgr_chn_conf_t chg_config;
+    I2C_Type *ptr = context->base;
+    dma_resource_t *resource = NULL;
+    hpm_i2c_cfg_t *obj = hpm_i2c_get_cfg_obj(ptr);
+    if (obj == NULL) {
+        return status_invalid_argument;
+    }
+    dma_mgr_get_default_chn_config(&chg_config);
+    chg_config.src_width = DMA_MGR_TRANSFER_WIDTH_BYTE;
+    chg_config.dst_width = DMA_MGR_TRANSFER_WIDTH_BYTE;
+    /* i2c dma config */
+    resource = &obj->dma_resource;
+    if (dma_mgr_request_resource(resource) == status_success) {
+        chg_config.src_mode = DMA_MGR_HANDSHAKE_MODE_HANDSHAKE;
+        chg_config.src_addr_ctrl = DMA_MGR_ADDRESS_CONTROL_FIXED;
+        chg_config.src_addr = (uint32_t)&ptr->DATA;
+        chg_config.dst_mode = DMA_MGR_HANDSHAKE_MODE_NORMAL;
+        chg_config.dst_addr_ctrl = DMA_MGR_ADDRESS_CONTROL_INCREMENT;
+        chg_config.en_dmamux = true;
+        chg_config.dmamux_src = obj->dmamux_src;
+        dma_mgr_setup_channel(resource, &chg_config);
+        dma_mgr_install_chn_tc_callback(resource, complete, user_data);
+        dma_mgr_enable_chn_irq(resource, DMA_MGR_INTERRUPT_MASK_TC);
+        dma_mgr_enable_dma_irq_with_priority(resource, 1);
+        return status_success;
+    } else {
+        return status_fail;
+    }
+}
+hpm_stat_t hpm_i2c_master_seq_transfer_nonblocking(hpm_i2c_context_t *context, uint16_t device_address, uint8_t flags, uint8_t *buf, uint32_t size)
+{
+    hpm_stat_t stat = status_success;
+    uint32_t buf_addr;
+    I2C_Type *ptr = context->base;
+    uint32_t ticks_per_us = clock_get_core_clock_ticks_per_us();
+    uint64_t expected_ticks = 0;
+    hpm_i2c_cfg_t *obj = hpm_i2c_get_cfg_obj(ptr);
+    if ((size > I2C_SOC_TRANSFER_COUNT_MAX) || (obj == NULL) ||
+        ((flags & I2C_WR) && (flags & I2C_RD))) {
+        return status_invalid_argument;
+    }
+
+    /* W1C, clear CMPL bit to avoid blocking the transmission */
+    i2c_clear_status(ptr, I2C_STATUS_CMPL_MASK);
+    i2c_clear_fifo(ptr);
+    hpm_i2c_master_phase_config(ptr, device_address, flags, size, false);
+    i2c_master_issue_data_transmission(ptr);
+
+    if (!(flags & I2C_NO_ADDRESS)) {
+        /* Before starting to transmit data, judge addrhit to ensure that the slave address exists on the bus. */
+        /* i2c speed min is 100Kbps, and mem address max is 4 byte, 10us * (4 * 8) = 320us,  so 500us is enough */
+        expected_ticks = hpm_csr_get_core_cycle() + (uint64_t)ticks_per_us * 500UL; /* 500Us */
+        while (!(i2c_get_status(ptr) & I2C_STATUS_ADDRHIT_MASK)) {
+            if (hpm_csr_get_core_cycle() > expected_ticks) {
+                hpm_i2c_release_bus(ptr);
+                return status_i2c_no_addr_hit;
+            }
+        }
+        i2c_clear_status(ptr, I2C_STATUS_ADDRHIT_MASK);
+    }
+    i2c_dma_enable(ptr);
+    buf_addr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)buf);
+    if ((flags & I2C_RD) == I2C_RD) {
+        hpm_i2c_read_trigger_dma(obj, buf_addr, size);
+    } else {
+        hpm_i2c_write_trigger_dma(obj, buf_addr, size);
+    }
+    return stat;
 }
 
 #endif

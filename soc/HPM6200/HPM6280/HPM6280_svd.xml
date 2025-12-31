@@ -2711,7 +2711,7 @@ Zero: Use all samples</description>
           <addressOffset>0x0</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0x0FFF03FF</resetMask>
+          <resetMask>0x0FFF037F</resetMask>
           <fields>
             <field>
               <name>SW_DAC_DATA</name>
@@ -2735,14 +2735,6 @@ Should only be used in buffer mode.</description>
 0: async dac clock and ahb_clock
   all HW trigger signals should be level and should be more than one dac clock cycle,  used to get accurate output frequency(which may not be divided from AHB clock)</description>
               <bitOffset>8</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>write-only</access>
-            </field>
-            <field>
-              <name>TRIG_MODE</name>
-              <description>0: single mode, one trigger pulse will send one 12bit data to DAC analog;
-1: continual mode, if trigger signal(either  or HW) is set, DAC will send data if FIFO is not empty, if trigger signal is clear, DAC will stop send data.</description>
-              <bitOffset>7</bitOffset>
               <bitWidth>1</bitWidth>
               <access>write-only</access>
             </field>
@@ -10396,6 +10388,24 @@ Note: user should configure pair bit and this bitfield before PWM output is enab
             <field>
               <name>CMPIRQEX</name>
               <description>comparator output compare or input capture flag interrupt enable</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>24</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>cap_en_neg</name>
+          <description>Capture irq mode</description>
+          <addressOffset>0x228</addressOffset>
+          <size>32</size>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0x00FFFFFF</resetMask>
+          <fields>
+            <field>
+              <name>CAP_EN_NEG</name>
+              <description>In capture mode, those bits setting for generate capture irq when capture falling edge.
+Default those bits is 0, generate capture irq when capture rising edge.</description>
               <bitOffset>0</bitOffset>
               <bitWidth>24</bitWidth>
               <access>read-write</access>

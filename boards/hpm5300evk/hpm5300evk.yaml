@@ -2,17 +2,18 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 board:
-    soc: HPM5361
-    device: HPM5361xCBx
-    openocd-soc: hpm5300
-    openocd-probe: ft2232
+    soc: HPM5361            # the name of SOC used on this board
+    device: HPM5361xCBx     # device name used for jlink connection
+    openocd-soc: hpm5300    # used for openocd soc config file name: hpm5300.cfg
+    openocd-probe: ft2232    # used for openocd probe config file name: ft2232.cfg
     on-board-flash:
       type: qspi-nor-flash
-      size: 1M
+      size: 1M             # the size of on-board flash which will be used in linker script
     feature:
       - board_gpt_pin
       - board_motor_control
       - board_wkup_pin
       - board_clk_ref_pin
+      - board_usb_otg
     excluded_samples:
       - samples/motor_ctrl/bldc_block

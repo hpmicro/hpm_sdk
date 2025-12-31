@@ -2,13 +2,13 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 board:
-    soc: HPM5E31
-    device: HPM5E31xGNx
-    openocd-soc: hpm5e00
-    openocd-probe: ft2232
+    soc: HPM5E31            # the name of SOC used on this board
+    device: HPM5E31xGNx     # device name used for jlink connection
+    openocd-soc: hpm5e00    # used for openocd soc config file name: hpm5e00.cfg
+    openocd-probe: ft2232    # used for openocd probe config file name: ft2232.cfg
     on-board-flash:
       type: qspi-nor-flash
-      size: 1M
+      size: 1M             # the size of on-board flash which will be used in linker script
     feature:
       - board_qei
       - board_motor_control
@@ -16,3 +16,5 @@ board:
       - board_enet_phy
       - board_wkup_pin
       - board_clk_ref_pin
+      - board_usb_otg
+      - board_eeprom_i2c

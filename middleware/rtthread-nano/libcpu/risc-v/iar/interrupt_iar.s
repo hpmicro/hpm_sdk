@@ -1,9 +1,13 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include "cpuport.h"
 #include "hpm_csr_regs.h"
+
+#if !defined(USE_NONVECTOR_MODE) || (USE_NONVECTOR_MODE == 0)
+    #error "Vector mode is not supported"
+#endif
 
     SECTION CSTACK:DATA:NOROOT(4)
 
@@ -16,6 +20,7 @@
 
     PUBLIC rtt_risc_v_trap_handler
     SECTION `.isr_vector`:CODE(2)
+    ALIGN 2
 rtt_risc_v_trap_handler:
 #ifdef ARCH_RISCV_FPU
     addi    sp, sp, -32 * FREGBYTES

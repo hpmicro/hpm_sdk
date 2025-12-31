@@ -358,6 +358,34 @@ HPM6800是一款主频达600MHz的单核微控制器。该芯片拥有最大1M�
    * - PD31
      - J20[7]
 
+- ESP-HOSTED 引脚接口
+
+.. list-table::
+   :header-rows: 1
+
+   * - 功能
+     - 位置
+     - 备注
+   * - PE11
+     - P2[13]
+     - RESET引脚
+   * - PE12
+     - P2[3]
+     - HANDSHAKE引脚
+   * - PE13
+     - P2[5]
+     - DATA_READY引脚
+
+- BROWNOUT中断指示引脚
+
+.. list-table::
+   :header-rows: 1
+
+   * - 功能
+     - 位置
+   * - PE27
+     - J19[5]
+
 .. _hpm6800evk_known_issues:
 
 开发板已知问题

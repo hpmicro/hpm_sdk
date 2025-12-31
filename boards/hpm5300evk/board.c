@@ -625,3 +625,177 @@ uint32_t board_init_gptmr_clock(GPTMR_Type *ptr)
     return freq;
 }
 
+void init_uart_pins(UART_Type *ptr)
+{
+    if (ptr == HPM_UART0) {
+        init_uart0_pins();
+    } else if (ptr == HPM_UART2) {
+        init_uart2_pins();
+    } else if (ptr == HPM_UART3) {
+        /* using for uart_lin function */
+        init_uart3_pins();
+    } else {
+        ;
+    }
+}
+
+void init_uart_pin_as_gpio(UART_Type *ptr)
+{
+    if (ptr == HPM_UART3) {
+        init_uart3_pin_as_gpio();
+    }
+}
+
+void init_i2c_pins(I2C_Type *ptr)
+{
+    if (ptr == HPM_I2C0) {
+        init_i2c0_pins();
+    } else if (ptr == HPM_I2C1) {
+        init_i2c1_pins();
+    } else {
+        ;
+    }
+}
+
+void init_spi_pins(SPI_Type *ptr)
+{
+    if (ptr == HPM_SPI1) {
+        init_spi1_pins();
+    }
+}
+
+void init_spi_pins_with_gpio_as_cs(SPI_Type *ptr)
+{
+    if (ptr == HPM_SPI1) {
+        init_spi1_pins_with_gpio_as_cs();
+    }
+}
+
+
+void init_gptmr_pins(GPTMR_Type *ptr)
+{
+    if (ptr == HPM_GPTMR0) {
+        init_gptmr0_pins();
+    }
+}
+
+void init_hall_trgm_pins(void)
+{
+    init_qeiv2_uvw_pins(HPM_QEI1);
+}
+
+void init_qei_trgm_pins(void)
+{
+    init_qeiv2_ab_pins(HPM_QEI1);
+}
+
+void init_pwm_pins(PWM_Type *ptr)
+{
+    if (ptr == HPM_PWM0) {
+        init_pwm0_pins();
+    }
+}
+
+void init_usb_pins(USB_Type *ptr)
+{
+    if (ptr == HPM_USB0) {
+        /* Package QFN48 and LQFP64 should be set PA24 and PA25 pins as analog type to enable USB_P and USB_N. */
+        /*
+         * HPM_IOC->PAD[IOC_PAD_PA24].FUNC_CTL = IOC_PAD_FUNC_CTL_ANALOG_MASK;
+         * HPM_IOC->PAD[IOC_PAD_PA25].FUNC_CTL = IOC_PAD_FUNC_CTL_ANALOG_MASK;
+         */
+        init_usb0_pins();
+    }
+}
+
+void init_can_pins(MCAN_Type *ptr)
+{
+    if (ptr == HPM_MCAN3) {
+        init_mcan3_pins();
+    }
+}
+
+void init_dac_pins(DAC_Type *ptr)
+{
+    if (ptr == HPM_DAC0) {
+        init_dac0_pins();
+    } else if (ptr == HPM_DAC1) {
+        init_dac1_pins();
+    }
+}
+
+void init_qeo_pins(QEO_Type *ptr)
+{
+    if (ptr == HPM_QEO0) {
+        init_qeo0_pins();
+    }
+}
+
+void init_sei_pins(SEI_Type *ptr, uint8_t sei_ctrl_idx)
+{
+    if (ptr == HPM_SEI) {
+        if (sei_ctrl_idx == SEI_CTRL_1) {
+            init_sei_ctrl1_pins();
+        }
+    }
+}
+
+void init_rdc_pin(void)
+{
+    init_rdc_pin_without_param();
+/*The GPIO is designed for debug */
+#ifdef RDC_SAMPLE_TEST_GPIO_OUTPUT
+    init_rdc_pin_for_sample_test();
+#endif
+}
+
+void init_qeiv2_uvw_pins(QEIV2_Type *ptr)
+{
+    if (ptr == HPM_QEI1) {
+        init_qeiv2_qei1_uvw_pins();
+    }
+}
+
+void init_qeiv2_ab_pins(QEIV2_Type *ptr)
+{
+    if (ptr == HPM_QEI1) {
+        init_qeiv2_qei1_ab_pins();
+    }
+}
+
+void init_qeiv2_abz_pins(QEIV2_Type *ptr)
+{
+    if (ptr == HPM_QEI1) {
+        init_qeiv2_qei1_abz_pins();
+    }
+}
+
+void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_output)
+{
+    if (ptr == HPM_GPTMR0) {
+        if (as_output) {
+            switch (channel) {
+            case 0:
+                init_gptmr0_channel0_pin_as_output();
+                break;
+            case 1:
+                init_gptmr0_channel1_pin_as_output();
+                break;
+            case 3:
+                init_gptmr0_channel3_pin_as_output();
+                break;
+            default:
+                break;
+            }
+        } else {
+            if (channel == 0) {
+                init_gptmr0_channel0_pin_as_capture();
+            }
+        }
+    }
+}
+void board_init_brownout_indicate_pin(void)
+{
+    init_brownout_indicate_pin();
+    gpio_set_pin_output_with_initial(BOARD_BROWNOUT_INDICATE_GPIO_CTRL, GPIO_GET_PORT_INDEX(BOARD_BROWNOUT_INDICATE_PIN), GPIO_GET_PIN_INDEX(BOARD_BROWNOUT_INDICATE_PIN), 0);
+}

@@ -34,14 +34,12 @@
 /*---------------------------------------------------------------------*
  * Include
  *---------------------------------------------------------------------*/
-#include "tusb_option.h"
-
-#if TUSB_OPT_DEVICE_ENABLED && CFG_TUSB_MCU == OPT_MCU_HPM
-
-#include "board.h"
+#include "hpm_common.h"
+#include "hpm_soc.h"
 #include "hpm_usb_device.h"
-#include "common/tusb_common.h"
 #include "device/dcd.h"
+
+#if CFG_TUD_ENABLED && defined(TUP_USBIP_CHIPIDEA_HS)
 
 /*---------------------------------------------------------------------*
  * Macro Enum Declaration
@@ -92,8 +90,10 @@ static void bus_reset(uint8_t rhport)
 }
 
 /* Initialize controller to device mode */
-void dcd_init(uint8_t rhport)
+bool dcd_init(uint8_t rhport, const tusb_rhport_init_t* rh_init)
 {
+    (void) rh_init;
+
     uint32_t int_mask;
 
     usb_device_handle[rhport].regs     = _dcd_controller[rhport].regs;
@@ -106,15 +106,15 @@ void dcd_init(uint8_t rhport)
     #endif /* USB_DEVICE_CONFIG_LOW_POWER_MODE */
                     );
 
-    usb_device_init(&usb_device_handle[rhport], int_mask);
-
-    return;
+    return usb_device_init(&usb_device_handle[rhport], int_mask);
 }
 
 /* De-initialize controller */
-void dcd_deinit(uint8_t rhport)
+bool dcd_deinit(uint8_t rhport)
 {
     usb_device_deinit(&usb_device_handle[rhport]);
+
+    return true;
 }
 
 /* Enable device interrupt */
@@ -151,6 +151,15 @@ void dcd_connect(uint8_t rhport)
 void dcd_disconnect(uint8_t rhport)
 {
     usb_device_disconnect(&usb_device_handle[rhport]);
+}
+
+void dcd_sof_enable(uint8_t rhport, bool en)
+{
+  if (en) {
+    usb_enable_interrupts(usb_device_handle[rhport].regs, USB_USBINTR_SRE_MASK);
+  } else {
+    usb_disable_interrupts(usb_device_handle[rhport].regs, USB_USBINTR_SRE_MASK);
+  }
 }
 
 /*---------------------------------------------------------------------*
@@ -245,8 +254,7 @@ void dcd_int_handler(uint8_t rhport)
 
     if (int_status & intr_port_change) {
         if (!usb_device_get_port_ccs(handle)) {
-            dcd_event_t event = {.rhport = rhport, .event_id = DCD_EVENT_UNPLUGGED};
-            dcd_event_handler(&event, true);
+            dcd_event_bus_signal(rhport, DCD_EVENT_UNPLUGGED, true);
         } else {
             dcd_event_t event = {.rhport = rhport, .event_id = DCD_EVENT_PLUGGED};
             if (usb_device_get_port_reset_status(handle) == 0) {
@@ -285,7 +293,7 @@ void dcd_int_handler(uint8_t rhport)
                             p_qtd->in_use = false;
                         }
 
-                        if (p_qtd->next == USB_SOC_DCD_QTD_NEXT_INVALID){
+                        if (p_qtd->next == USB_SOC_DCD_QTD_NEXT_INVALID) {
                             break;
                         } else {
                             p_qtd = (dcd_qtd_t *)p_qtd->next;
@@ -304,7 +312,7 @@ void dcd_int_handler(uint8_t rhport)
             /*------------- Set up Received -------------*/
             usb_device_clear_setup_status(handle, edpt_setup_status);
             dcd_qhd_t *qhd0 = usb_device_qhd_get(&usb_device_handle[rhport], 0);
-            dcd_event_setup_received(rhport, (uint8_t*) &qhd0->setup_request, true);
+            dcd_event_setup_received(rhport, (uint8_t *)(uintptr_t) &qhd0->setup_request, true);
         }
 
     }
@@ -316,19 +324,5 @@ void dcd_int_handler(uint8_t rhport)
     if (int_status & intr_nak) {}
     if (int_status & intr_error) TU_ASSERT(false, );
 }
-
-SDK_DECLARE_EXT_ISR_M(IRQn_USB0, isr_usb0)
-void isr_usb0(void)
-{
-    dcd_int_handler(0);
-}
-
-#ifdef HPM_USB1_BASE
-SDK_DECLARE_EXT_ISR_M(IRQn_USB1, isr_usb1)
-void isr_usb1(void)
-{
-    dcd_int_handler(1);
-}
-#endif
 
 #endif

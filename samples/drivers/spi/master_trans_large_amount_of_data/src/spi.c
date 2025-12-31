@@ -44,15 +44,14 @@ ATTR_PLACE_AT_NONCACHEABLE uint8_t receive_buff[SPI_TRANS_DATA_BUFF_SIZE];
 
 /* dma descriptors buff */
 #define SPI_TRANS_COUNT     MAX(sizeof(sent_buff), sizeof(receive_buff)) / TEST_SPI_DATA_LEN_IN_BYTE
-/* According to the maximum transmission capacity, the transmission count after subcontracting */
-#if (SPI_SOC_TRANSFER_COUNT_MAX >= SPI_TRANS_DATA_BUFF_SIZE)
-#define SPI_TRANS_COUNT2    SPI_TRANS_DATA_BUFF_SIZE
-#else
+/* when According to the maximum transmission capacity, the transmission count after subcontracting */
+/* Suitable for SOCs where SPI single transmission supports only 512-unit data length */
+#if (SPI_SOC_TRANSFER_COUNT_MAX == 512)
 #define SPI_TRANS_COUNT2    ((SPI_TRANS_COUNT + SPI_SOC_TRANSFER_COUNT_MAX - 1) / SPI_SOC_TRANSFER_COUNT_MAX)
-#endif
 /* dma descriptors need align 8 bytes */
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(8) dma_linked_descriptor_t dma_linked_descriptor[SPI_TRANS_COUNT2 * SPI_DMA_DESC_COUNT_PER_TRANS];
 ATTR_PLACE_AT_NONCACHEABLE uint32_t spi_transctrl[SPI_TRANS_COUNT2];
+#endif
 
 volatile bool spi_rx_dma_trans_done;
 volatile bool spi_tx_dma_trans_done;
@@ -80,8 +79,10 @@ spi_context_t spi_context = {
             .data_width = TEST_SPI_DMA_TRANS_DATA_WIDTH,
     },
     .running_core = BOARD_RUNNING_CORE,
+#if (SPI_SOC_TRANSFER_COUNT_MAX == 512)
     .dma_linked_descriptor = dma_linked_descriptor,
     .spi_transctrl = spi_transctrl,
+#endif
 };
 
 void prepare_spi_sent_data(void)

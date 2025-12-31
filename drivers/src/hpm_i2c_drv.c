@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -205,7 +205,7 @@ hpm_stat_t i2c_master_address_read(I2C_Type *ptr, const uint16_t device_address,
 
     /* Before starting to transmit data, judge addrhit to ensure that the slave address exists on the bus. */
     retry = 0;
-    while (!(ptr->STATUS & I2C_STATUS_ADDRHIT_MASK)) {
+    while (i2c_is_addrhit(ptr) == false) {
         if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
             break;
         }
@@ -244,6 +244,23 @@ hpm_stat_t i2c_master_address_read(I2C_Type *ptr, const uint16_t device_address,
 #endif
         | I2C_CTRL_DATACNT_SET(I2C_DATACNT_MAP(size_in_byte));
     ptr->CMD = I2C_CMD_ISSUE_DATA_TRANSMISSION;
+
+    /* Before restarting to transmit data, judge addrhit to ensure that the slave address exists on the bus. */
+    retry = 0;
+    while (i2c_is_addrhit(ptr) == false) {
+        if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
+            break;
+        }
+        retry++;
+    }
+    if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
+        /* the address misses, a stop needs to be added to prevent the bus from being busy. */
+        ptr->STATUS = I2C_STATUS_CMPL_MASK;
+        ptr->CTRL = I2C_CTRL_PHASE_STOP_MASK;
+        ptr->CMD = I2C_CMD_ISSUE_DATA_TRANSMISSION;
+        return status_i2c_no_addr_hit;
+    }
+    ptr->STATUS = I2C_STATUS_ADDRHIT_MASK;
 
     retry = 0;
     left = size_in_byte;
@@ -326,7 +343,7 @@ hpm_stat_t i2c_master_address_write(I2C_Type *ptr, const uint16_t device_address
 
     /* Before starting to transmit data, judge addrhit to ensure that the slave address exists on the bus. */
     retry = 0;
-    while (!(ptr->STATUS & I2C_STATUS_ADDRHIT_MASK)) {
+    while (i2c_is_addrhit(ptr) == false) {
         if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
             break;
         }
@@ -412,7 +429,7 @@ hpm_stat_t i2c_master_read(I2C_Type *ptr, const uint16_t device_address,
 
     /* Before starting to transmit data, judge addrhit to ensure that the slave address exists on the bus. */
     retry = 0;
-    while (!(ptr->STATUS & I2C_STATUS_ADDRHIT_MASK)) {
+    while (i2c_is_addrhit(ptr) == false) {
         if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
             break;
         }
@@ -505,7 +522,7 @@ hpm_stat_t i2c_master_write(I2C_Type *ptr, const uint16_t device_address,
 
     /* Before starting to transmit data, judge addrhit to ensure that the slave address exists on the bus. */
     retry = 0;
-    while (!(ptr->STATUS & I2C_STATUS_ADDRHIT_MASK)) {
+    while (i2c_is_addrhit(ptr) == false) {
         if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
             break;
         }
@@ -596,7 +613,7 @@ hpm_stat_t i2c_slave_write(I2C_Type *ptr, uint8_t *buf, const uint32_t size)
 
     /* wait for address hit */
     retry = 0;
-    while (!(ptr->STATUS & I2C_STATUS_ADDRHIT_MASK)) {
+    while (i2c_is_addrhit(ptr) == false) {
         if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
             break;
         }
@@ -663,7 +680,7 @@ hpm_stat_t i2c_slave_read(I2C_Type *ptr,
 
     /* wait for address hit */
     retry = 0;
-    while (!(ptr->STATUS & I2C_STATUS_ADDRHIT_MASK)) {
+    while (i2c_is_addrhit(ptr) == false) {
         if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
             break;
         }
@@ -750,7 +767,14 @@ hpm_stat_t i2c_master_start_dma_write(I2C_Type *i2c_ptr, const uint16_t device_a
     i2c_ptr->SETUP |= I2C_SETUP_DMAEN_MASK;
 
     i2c_ptr->CMD = I2C_CMD_ISSUE_DATA_TRANSMISSION;
-
+    /* wait for address hit */
+    retry = 0;
+    while (i2c_is_addrhit(i2c_ptr) == false) {
+         if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
+            return status_i2c_no_addr_hit;
+        }
+        retry++;
+    }
     return status_success;
 }
 
@@ -787,7 +811,14 @@ hpm_stat_t i2c_master_start_dma_read(I2C_Type *i2c_ptr, const uint16_t device_ad
     i2c_ptr->SETUP |= I2C_SETUP_DMAEN_MASK;
 
     i2c_ptr->CMD = I2C_CMD_ISSUE_DATA_TRANSMISSION;
-
+    /* wait for address hit */
+    retry = 0;
+    while (i2c_is_addrhit(i2c_ptr) == false) {
+         if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
+            return status_i2c_no_addr_hit;
+        }
+        retry++;
+    }
     return status_success;
 }
 
@@ -844,7 +875,14 @@ hpm_stat_t i2c_master_configure_transfer(I2C_Type *i2c_ptr, const uint16_t devic
                 | I2C_CTRL_DATACNT_SET(I2C_DATACNT_MAP(size));
 
     i2c_ptr->CMD = I2C_CMD_ISSUE_DATA_TRANSMISSION;
-
+    /* wait for address hit */
+    retry = 0;
+    while (i2c_is_addrhit(i2c_ptr) == false) {
+         if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
+            return status_i2c_no_addr_hit;
+        }
+        retry++;
+    }
     return status_success;
 }
 

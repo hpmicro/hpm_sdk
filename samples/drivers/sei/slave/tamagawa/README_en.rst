@@ -43,13 +43,13 @@ Running the example
    ----------------------------------------------------------------------
    SEI slave tamagawa sample
    Started sei engine!
-   CMD:0x1a, SF:0x0, ST:0xa5a5, ENID:0x17, MT:0x8888, ALMC:0x0, CRC:0x0, sample_tm1:135187399, sample_tm2:0, sample_interval:844921 us
-   CMD:0x1a, SF:0x0, ST:0xa5a6, ENID:0x17, MT:0x8888, ALMC:0x0, CRC:0x58, sample_tm1:167187056, sample_tm2:135187399, sample_interval:199997 us
-   CMD:0x1a, SF:0x0, ST:0xa5a7, ENID:0x17, MT:0x8888, ALMC:0x0, CRC:0x58, sample_tm1:199186714, sample_tm2:167187056, sample_interval:199997 us
-   CMD:0x1a, SF:0x0, ST:0xa5a8, ENID:0x17, MT:0x8888, ALMC:0x0, CRC:0x58, sample_tm1:231186372, sample_tm2:199186714, sample_interval:199997 us
-   CMD:0x1a, SF:0x0, ST:0xa5a9, ENID:0x17, MT:0x8888, ALMC:0x0, CRC:0x58, sample_tm1:263186030, sample_tm2:231186372, sample_interval:199997 us
-   CMD:0x1a, SF:0x0, ST:0xa5aa, ENID:0x17, MT:0x8888, ALMC:0x0, CRC:0x58, sample_tm1:295185688, sample_tm2:263186030, sample_interval:199997 us
-   CMD:0x1a, SF:0x0, ST:0xa5ab, ENID:0x17, MT:0x8888, ALMC:0x0, CRC:0x58, sample_tm1:327185345, sample_tm2:295185688, sample_interval:199997 us
+   CMD:0x1a, SF:0x0, ST:0xa5a5, ENID:0x17, MT:0x8888, ALMC:0x0, sample_tm1:135187399, sample_tm2:0, sample_interval:844921 us
+   CMD:0x1a, SF:0x0, ST:0xa5a6, ENID:0x17, MT:0x8888, ALMC:0x0, sample_tm1:167187056, sample_tm2:135187399, sample_interval:199997 us
+   CMD:0x1a, SF:0x0, ST:0xa5a7, ENID:0x17, MT:0x8888, ALMC:0x0, sample_tm1:199186714, sample_tm2:167187056, sample_interval:199997 us
+   CMD:0x1a, SF:0x0, ST:0xa5a8, ENID:0x17, MT:0x8888, ALMC:0x0, sample_tm1:231186372, sample_tm2:199186714, sample_interval:199997 us
+   CMD:0x1a, SF:0x0, ST:0xa5a9, ENID:0x17, MT:0x8888, ALMC:0x0, sample_tm1:263186030, sample_tm2:231186372, sample_interval:199997 us
+   CMD:0x1a, SF:0x0, ST:0xa5aa, ENID:0x17, MT:0x8888, ALMC:0x0, sample_tm1:295185688, sample_tm2:263186030, sample_interval:199997 us
+   CMD:0x1a, SF:0x0, ST:0xa5ab, ENID:0x17, MT:0x8888, ALMC:0x0, sample_tm1:327185345, sample_tm2:295185688, sample_interval:199997 us
 
 
 - Use PC serial debugging assistant send Hex data：`32 7F 01 4C`，which will set EEPROM page number to 1，the development board will response. Meanwhile, the console shows the following log.

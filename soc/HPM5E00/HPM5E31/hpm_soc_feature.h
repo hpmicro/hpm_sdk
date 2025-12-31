@@ -8,7 +8,8 @@
 #ifndef HPM_SOC_FEATURE_H
 #define HPM_SOC_FEATURE_H
 
-#include "hpm_soc.h"
+#include "riscv/riscv_core.h"
+#include "hpm_soc_ip.h"
 #include "hpm_soc_ip_feature.h"
 
 
@@ -61,6 +62,7 @@
 #define PWM_SOC_PWM_MAX_COUNT (8U)
 #define PWM_SOC_CMP_MAX_COUNT (24U)
 #define PWM_SOC_OUTPUT_TO_PWM_MAX_COUNT (8U)
+#define PWM_SOC_CALCULATE_MAX_COUNT (16U) /**< Number of general purpose calculate units */
 
 /*
  * DMA Section

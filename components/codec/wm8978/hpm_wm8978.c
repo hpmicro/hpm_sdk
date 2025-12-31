@@ -159,10 +159,22 @@ hpm_stat_t wm8978_cfg_audio_interface(wm8978_context_t *control, wm8978_audio_in
 {
     hpm_stat_t stat = status_success;
     uint16_t usReg = 0;
-    usReg  |= WM8978_FMT_SET(standard) | WM8978_WL_SET(word_len);
+    usReg |= WM8978_FMT_SET(standard) | WM8978_WL_SET(word_len);
+    if (standard == wm8978_pcm_b) {
+        usReg |= WM8978_LRP_SET(1);
+    }
     HPM_CHECK_RET(wm8978_write_reg(control, WM8978_AUDIO_INTERFACE, usReg));
     HPM_CHECK_RET(wm8978_write_reg(control, WM8978_CLOCK_GEN_CTRL, 0x000));
     return stat;
+}
+
+hpm_stat_t wm8978_invert_lrclk_polarity(wm8978_context_t *control, bool invert)
+{
+    if (invert) {
+        return wm8978_modify_reg(control, WM8978_AUDIO_INTERFACE, WM8978_LRP_MASK, WM8978_LRP_MASK);
+    } else {
+        return wm8978_modify_reg(control, WM8978_AUDIO_INTERFACE, WM8978_LRP_MASK, 0x00U);
+    }
 }
 
 hpm_stat_t wm8978_cfg_audio_channel(wm8978_context_t *control, uint8_t in_flags, uint8_t out_flags)

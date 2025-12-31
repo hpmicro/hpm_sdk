@@ -580,28 +580,94 @@ endfunction()
 # Check board capability based on board YAML and app YAML
 #
 # This function checks the board capability by executing a Python script with the provided
-# board YAML and app YAML files. It also takes the application binary directory and CMake
-# generator as arguments. The result of the script execution is stored in the specified result variable.
+# board YAML and app YAML files. The result of the script execution is stored in the specified result variable.
 #
 # Example:
-#   check_board_capability(board.yaml app.yaml bin_dir "Ninja" result_var)
+#   check_board_capability(board.yaml app.yaml result_var)
 #
 # :param board_yaml: The path to the board YAML file.
 # :param app_yaml: The path to the application YAML file.
-# :param app_bin_dir: The directory containing the application binaries.
-# :param cmake_generator: The CMake generator being used.
 # :param result: The variable to store the result of the capability check.
 # @private
 #
-function(check_board_capability board_yaml app_yaml app_bin_dir cmake_generator result)
+function(check_board_capability board_yaml app_yaml result)
     execute_process(
         COMMAND
         ${PYTHON_EXECUTABLE}
         ${HPM_SDK_BASE}/scripts/check_board_cap.py
         ${board_yaml}
         ${app_yaml}
+        RESULT_VARIABLE r
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+    set(${result} ${r} PARENT_SCOPE)
+endfunction()
+
+# Build linked project based on board YAML and app YAML
+#
+# This function builds a linked project by executing a Python script with the provided
+# board YAML and app YAML files. It also takes the application binary directory and CMake
+# generator as arguments. The result of the script execution is stored in the specified result variable.
+#
+# Example:
+#   build_linked_project(board.yaml app.yaml bin_dir "Ninja" result_var)
+#   build_linked_project(board.yaml app.yaml bin_dir "Ninja" result_var FALSE)
+#
+# :param board_yaml: The path to the board YAML file.
+# :param app_yaml: The path to the application YAML file.
+# :param app_bin_dir: The directory containing the application binaries.
+# :param cmake_generator: The CMake generator being used.
+# :param result: The variable to store the result of the build process.
+# :param build_linked: Optional. Set to FALSE to skip linked project compilation (default: TRUE).
+# @private
+#
+function(build_linked_project board_yaml app_yaml app_bin_dir cmake_generator result build_linked)
+    if(NOT DEFINED build_linked)
+        set(build_linked TRUE)
+    endif()
+
+    # Convert various input formats to boolean
+    # Accept: "ON/OFF", "TRUE/FALSE", "1/0", TRUE/FALSE
+    # For DISABLE_LINKED_PROJECT_BUILD: ON=disable (false), OFF=enable (true)
+    if(build_linked STREQUAL "ON" OR build_linked STREQUAL "TRUE" OR build_linked STREQUAL "1")
+        set(build_linked_param "false")  # ON means disable, so pass false
+    else()
+        set(build_linked_param "true")   # OFF means enable, so pass true
+    endif()
+
+    execute_process(
+        COMMAND
+        ${PYTHON_EXECUTABLE}
+        ${HPM_SDK_BASE}/scripts/build_linked_project.py
+        ${app_yaml}
+        ${board_yaml}
         ${app_bin_dir}
         ${cmake_generator}
+        ${build_linked_param}
+        RESULT_VARIABLE r
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+    set(${result} ${r} PARENT_SCOPE)
+endfunction()
+
+# Check if app.yaml contains linked project configuration
+#
+# This function checks if an application YAML file contains linked project configuration
+# by executing a Python script. The result is stored in the specified output variable.
+#
+# Example:
+#   check_linked_project(app.yaml result_var)
+#
+# :param app_yaml: The path to the application YAML file.
+# :param result: The variable to store the result (0 = has linked project, 1 = no linked project).
+# @private
+#
+function(check_linked_project app_yaml result)
+    execute_process(
+        COMMAND
+        ${PYTHON_EXECUTABLE}
+        ${HPM_SDK_BASE}/scripts/check_linked_project.py
+        ${app_yaml}
         RESULT_VARIABLE r
         OUTPUT_STRIP_TRAILING_WHITESPACE
         )

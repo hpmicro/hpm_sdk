@@ -60,7 +60,7 @@
 			<Setting CodeDefine="OP_PD_REQUIRED" Value="1"/>
 			<Setting CodeDefine="UC_SET_ECAT_LED" Value="0"/>
 			<Setting CodeDefine="ESC_SUPPORT_ECAT_LED" Value="1"/>
-			<Setting CodeDefine="ECAT_TIMER_INT" Value="0"/>
+			<Setting CodeDefine="ECAT_TIMER_INT" Value="1"/>
 			<Setting CodeDefine="EXPLICIT_DEVICE_ID" Value="1"/>
 			<Setting CodeDefine="EXT_DEBUGER_INTERFACE" Value="0">
 				<Flags Visible="False"/>

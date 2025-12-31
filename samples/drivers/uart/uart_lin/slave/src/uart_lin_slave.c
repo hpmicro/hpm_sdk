@@ -221,6 +221,8 @@ int main(void)
 
         if (uart_lin_send_complete) {
             /* Handle sent data */
+            while (!uart_check_status(TEST_UART, uart_stat_transmitter_empty)) { /* wait transmitter complete */
+            }
             uart_lin_send_complete = false;
             printf("uart lin receive ID: 0x%x\n", uart_lin_config.pid & 0x3f);
             printf("uart send %d data:\n", uart_lin_config.data.length);

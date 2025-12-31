@@ -10,6 +10,13 @@
 #include "hpm_common.h"
 #include "hpm_sysctl_drv.h"
 
+/**
+ * @brief CLOCK driver APIs
+ * @defgroup clock_hpm5e31_interface CLOCK driver APIs for HPM5E31
+ * @{
+ *
+ */
+
 #define CLOCK_DIV_INVALID (~0UL)
 
 /**
@@ -385,5 +392,9 @@ extern uint32_t hpm_core_clock;
 #ifdef __cplusplus
 }
 #endif
+
+/**
+ * @}
+ */
 
 #endif /* HPM_CLOCK_DRV_H */

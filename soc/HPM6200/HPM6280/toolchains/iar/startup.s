@@ -99,13 +99,15 @@ __iar_cstart_init_mvec:
  #if defined(CONFIG_FREERTOS) && CONFIG_FREERTOS
     EXTERN freertos_risc_v_trap_handler
     #define HANDLER_TRAP freertos_risc_v_trap_handler
-
+    #define HANDLER_S_TRAP freertos_risc_v_trap_handler
+    
     /* Use mscratch to store isr level */
     csrw mscratch, x0
 #elif defined(CONFIG_UCOS_III) && CONFIG_UCOS_III
     EXTERN ucos_risc_v_trap_handler
     #define HANDLER_TRAP ucos_risc_v_trap_handler
-
+    #define HANDLER_S_TRAP ucos_risc_v_trap_handler
+    
     /* Use mscratch to store isr level */
     csrw mscratch, x0
 #elif defined(CONFIG_THREADX) && CONFIG_THREADX
@@ -124,6 +126,7 @@ __iar_cstart_init_mvec:
     csrw mscratch, x0
 #else
     #define HANDLER_TRAP irq_handler_trap
+    #define HANDLER_S_TRAP irq_handler_s_trap
 #endif
 
 #if !defined(USE_NONVECTOR_MODE) || (USE_NONVECTOR_MODE == 0)
@@ -131,12 +134,22 @@ __iar_cstart_init_mvec:
     la t0, SFB(`.vector_table`)
     csrw mtvec, t0
 
+#if defined (USE_S_MODE_IRQ)
+    la t0, SFB(`.vector_s_table`)
+    csrw CSR_STVEC, t0
+#endif
+
     /* Enable vectored external PLIC interrupt */
     csrsi CSR_MMISC_CTL, 2
 #else
     /* Initial machine trap-vector Base */
     la t0, HANDLER_TRAP
     csrw mtvec, t0
+
+#if defined (USE_S_MODE_IRQ)
+    la t0, HANDLER_S_TRAP
+    csrw CSR_STVEC, t0
+#endif
 
     /* Disable vectored external PLIC interrupt */
     csrci CSR_MMISC_CTL, 2

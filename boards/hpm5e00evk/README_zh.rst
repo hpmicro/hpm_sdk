@@ -144,8 +144,8 @@ PPI接口
      - PC17
      - P5[10]
    * - UART4.break
-     - PD13
-     - P5[18]
+     - PC11
+     - P5[24]
 
 - CAN 接口
 
@@ -182,7 +182,7 @@ PPI接口
    * - 功能
      - 引脚
      - 位置
-   * - CMP0.INN6
+   * - CMP1.INN6
      - PF26
      - J3[6]
 
@@ -412,3 +412,31 @@ PPI接口
      - 位置
    * - PC30
      - P5[22]
+
+- ESP-HOSTED 引脚接口
+
+.. list-table::
+   :header-rows: 1
+
+   * - 功能
+     - 位置
+     - 备注
+   * - PC03
+     - P5[11]
+     - RESET引脚
+   * - PB30
+     - P5[15]
+     - HANDSHAKE引脚
+   * - PB31
+     - P5[13]
+     - DATA_READY引脚
+
+- BROWNOUT中断指示引脚
+
+.. list-table::
+   :header-rows: 1
+
+   * - 功能
+     - 位置
+   * - PC16
+     - P5[8]

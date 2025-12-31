@@ -1,0 +1,14 @@
+diff -Naur Src/ecateoe.c Src_fix/ecateoe.c
+--- Src/ecateoe.c	2025-07-10 20:24:17.900246700 +0800
++++ Src_fix/ecateoe.c	2025-07-10 20:25:26.508122900 +0800
+@@ -532,6 +532,10 @@
+         if (MBX_MailboxSendReq(pEoeSendStored, EOE_SERVICE) == 0)
+         {
+             pEoeSendStored = NULL;
++            if (bEoESendFramePending)
++            {
++                u8MailboxSendReqStored |= EOE_SERVICE;
++            }
+         }
+ /*ECATCHANGE_END(V5.13) EOE3*/
+     }

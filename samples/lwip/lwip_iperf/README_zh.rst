@@ -16,6 +16,8 @@ lwip_iperf
 
 - MCU用作UDP客户端 / PC用作UDP服务端
 
+  **注：当前的sample可以用iperf的v1.x.x、v2.x.x来测试**
+
 硬件设置
 ------------
 
@@ -35,6 +37,15 @@ lwip_iperf
     - sdk_compile_definitions(-DLWIP_DHCP=0): 禁用DHCP功能
 
     - sdk_compile_definitions(-DLWIP_DHCP=1): 启用DHCP功能
+
+- 构建配置
+
+  - 设置HPM_BUILD_TYPE为flash_xip
+  - 设置CMAKE_BUILD_TYPE为release
+
+- 编译配置
+
+  - MCU作为TCP / UDP client时，需要指定服务端IP, 并确保所指定的IP与MCU自身IP处于同一网段，可重定义IP0_CONFIG、NETMASK0_CONFIG、GW0_CONFIG来完成配置
 
 运行示例
 ------------
@@ -271,7 +282,7 @@ lwip_iperf
 
       .. code-block:: console
 
-          ------------------------------------------------------------
+         ------------------------------------------------------------
          Server listening on UDP port 5001
          Receiving 1470 byte datagrams
          UDP buffer size: 64.0 KByte (default)
@@ -287,7 +298,7 @@ lwip_iperf
          [  3]  3.0- 4.0 sec  11.2 MBytes  94.1 Mbits/sec   0.207 ms    0/ 8000 (0%)
          [  3] 3.00-4.00 sec  6000 datagrams received out-of-order
          [  3]  4.0- 5.0 sec  11.2 MBytes  94.1 Mbits/sec   0.208 ms    0/ 8000 (0%)
-         [  3] 4.00-5.00 sec  6000 datagrams received out-of-orderS
+         [  3] 4.00-5.00 sec  6000 datagrams received out-of-order
          [  3]  5.0- 6.0 sec  11.2 MBytes  94.1 Mbits/sec   0.207 ms    0/ 8000 (0%)
          [  3] 5.00-6.00 sec  6000 datagrams received out-of-order
          [  3]  6.0- 7.0 sec  11.2 MBytes  94.1 Mbits/sec   0.208 ms    0/ 8000 (0%)

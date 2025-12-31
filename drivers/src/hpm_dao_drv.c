@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021,2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -25,6 +25,25 @@ void dao_get_default_config(DAO_Type *ptr, dao_config_t *config)
 
 hpm_stat_t dao_init(DAO_Type *ptr, dao_config_t *config)
 {
+#if defined(HPM_IP_FEATURE_DAO_DATA_FORMAT_CONFIG) && (HPM_IP_FEATURE_DAO_DATA_FORMAT_CONFIG == 1)
+    /* Validate channel length must be 32 bits */
+    if (config->channel_length != i2s_channel_length_32_bits) {
+        return status_invalid_argument;
+    }
+#endif
+
+    /* Validate channel slot mask: must have exactly 2 slots enabled */
+    uint8_t slot_count = 0;
+    uint32_t mask = config->channel_slot_mask;
+    while (mask) {
+        slot_count += mask & 1;
+        mask >>= 1;
+    }
+
+    if (slot_count != 2) {
+        return status_invalid_argument;
+    }
+
     if (dao_is_running(ptr)) {
         dao_stop(ptr);
     }

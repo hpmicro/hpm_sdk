@@ -22,12 +22,13 @@
 #define FREQ_PRESET1_PLL2_CLK1 (500000000UL)
 #define FREQ_PRESET1_PLL3_CLK0 (516096000UL)
 #define FREQ_PRESET1_PLL4_CLK0 (594000000UL)
-#define FREQ_32KHz (32768UL)
+#define FREQ_32KHz             (32768UL)
 #define ADC_INSTANCE_NUM ARRAY_SIZE(HPM_SYSCTL->ADCCLK)
 #define I2S_INSTANCE_NUM ARRAY_SIZE(HPM_SYSCTL->I2SCLK)
-#define WDG_INSTANCE_NUM (2U)
+#define WDG_INSTANCE_NUM       (2U)
 #define BUS_FREQ_MAX           (200000000UL)
-#define FREQ_1MHz (1000000UL)
+#define FREQ_1MHz              (1000000UL)
+#define FREQ_1KHz              (1000UL)
 
 /* Clock On/Off definitions */
 #define CLOCK_ON (true)
@@ -594,7 +595,7 @@ uint32_t clock_get_core_clock_ticks_per_ms(void)
     if (hpm_core_clock == 0U) {
         clock_update_core_clock();
     }
-    return (hpm_core_clock + FREQ_1MHz - 1U) / 1000;
+    return (hpm_core_clock + FREQ_1KHz - 1U) / FREQ_1KHz;
 }
 
 void clock_cpu_delay_us(uint32_t us)

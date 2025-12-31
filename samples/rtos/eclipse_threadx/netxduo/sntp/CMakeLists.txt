@@ -6,6 +6,7 @@ cmake_minimum_required(VERSION 3.13)
 set(CONFIG_ECLIPSE_THREADX 1)
 set(CONFIG_ECLIPSE_THREADX_NETXDUO 1)
 set(CONFIG_ECLIPSE_THREADX_NETXDUO_ADDONS_SNTP 1)
+set(NONCACHEABLE_RAM_SIZE 128K)
 
 # Select the phy on the board
 set(CONFIG_ENET_PHY 1)
@@ -30,7 +31,7 @@ if (APP_USE_ENET_ITF_RGMII AND APP_USE_ENET_ITF_RMII)
 endif()
 
 if("${HPM_BUILD_TYPE}" STREQUAL "")
-    SET(HPM_BUILD_TYPE flash_sdram_xip)
+    SET(HPM_BUILD_TYPE flash_xip)
 endif()
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})

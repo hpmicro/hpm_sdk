@@ -14,3 +14,4 @@
     smbus/README_zh
     serial_nor/README_zh
     uart_lin/README_zh
+    eeprom_hal/README_zh

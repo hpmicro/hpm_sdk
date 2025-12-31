@@ -29,6 +29,17 @@ Hardware Configuration
 
 No special configuration is required.
 
+Toolchain Requirements
+----------------------
+
+This example requires a DSP-enabled toolchain for optimal performance:
+
+- **IDE**: Segger Embedded Studio (or other IDEs with DSP toolchain support)
+- **GCC Toolchain**: Andes RISC-V toolchain with DSP extension support or ZCC toolchain with DSP extension support
+
+.. note::
+   Standard GCC toolchains without DSP extensions will not be able to compile and run this demo correctly.
+
 Running the Program
 -------------------
 

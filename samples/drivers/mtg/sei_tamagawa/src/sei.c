@@ -10,12 +10,11 @@
 #include "hpm_mtg_regs.h"
 #include "hpm_soc_feature.h"
 #include "hpm_trgm_drv.h"
-#include "hpm_soc.h"
-#include "hpm_soc_feature.h"
 #include "hpm_trgm_soc_drv.h"
 #include "hpm_synt_drv.h"
 #include "hpm_sei_drv.h"
 #include "hpm_mtg_drv.h"
+#include "hpm_gptmr_drv.h"
 
 #ifndef APP_QEIV2_BASE
 #define APP_QEIV2_BASE BOARD_BLDC_QEIV2_BASE
@@ -37,8 +36,6 @@
 #define APP_MTG_TRA_INDEX  MTG_TRA_0
 #endif
 
-#include "hpm_gptmr_drv.h"
-#include "hpm_debug_console.h"
 
 uint32_t sei_mt, sei_st;
 volatile uint32_t sei_pos_update_count;

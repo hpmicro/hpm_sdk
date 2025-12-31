@@ -21,9 +21,6 @@ hpm_stat_t acmp_channel_config(ACMP_Type *ptr, uint8_t ch, acmp_channel_config_t
                     | ACMP_CHANNEL_CFG_FLTBYPS_SET(config->bypass_filter)
                     | ACMP_CHANNEL_CFG_DACEN_SET(config->enable_dac)
                     | ACMP_CHANNEL_CFG_HPMODE_SET(config->enable_hpmode)
-#if defined(HPM_IP_FEATURE_ACMP_FILT_LEN_EXTEND) && HPM_IP_FEATURE_ACMP_FILT_LEN_EXTEND
-                    | ACMP_CHANNEL_CFG_FLTLEN_SHIFT_SET(config->filter_length_shift)
-#endif
                     | ACMP_CHANNEL_CFG_FLTLEN_SET(config->filter_length);
     if (enable) {
         acmp_channel_enable_cmp(ptr, ch, true);

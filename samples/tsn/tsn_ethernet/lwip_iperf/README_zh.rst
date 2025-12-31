@@ -1,6 +1,6 @@
 .. _tsn_lwip_iperf:
 
-lwip_iperf
+tsn_lwip_iperf
 ========================
 
 概述
@@ -26,7 +26,7 @@ lwip_iperf
 工程配置
 ------------
 
-- 以太网端口配置：参考 : `以太网通用工程设置 <../doc/Ethernet_Common_Project_Settings_zh>`_
+- 以太网端口配置：参考 :ref:`TSW通用工程设置 <tsw_port_configurations_zh>`
 
 - 以太网DHCP配置
 
@@ -39,6 +39,15 @@ lwip_iperf
     - sdk_compile_definitions(-DENABLE_TSW_RECEIVE_INTERRUPT=0): 禁用TSW CPU端口接收中断
 
     - sdk_compile_definitions(-DENABLE_TSW_RECEIVE_INTERRUPT=1): 启用TSW CPU端口接收中断
+
+- 构建配置
+
+  - 设置HPM_BUILD_TYPE为flash_xip
+  - 设置CMAKE_BUILD_TYPE为release
+
+ - 编译配置
+
+  - MCU作为TCP / UDP client时，需要指定服务端IP, 并确保所指定的IP与MCU自身IP处于同一网段，可重定义IP_CONFIG、NETMASKC_CONFIG、GW_CONFIG来完成配置
 
 运行示例
 ------------

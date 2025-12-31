@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -19,6 +19,12 @@ extern const unsigned int __threadx_irq_stack_top[];
  */
 
 extern void _tx_timer_interrupt(void);
+/* A fiddle factor to estimate the number of gptmr counts that would have
+ * occurred while the gptmr counter is stopped during tickless idle
+ * calculations. */
+#ifndef portMISSED_GPTMR_COUNT
+#define portMISSED_GPTMR_COUNT           (0)
+#endif
 #define OS_MTIME_BASE_ADDRESS (HPM_MCHTMR_BASE)
 #define OS_MTIMECMP_BASE_ADDRESS (HPM_MCHTMR_BASE + 8UL)
 #define OS_CPU_CLOCK_HZ ((uint32_t)24000000)
@@ -41,6 +47,12 @@ void tx_cpu_ts_setup(void)
                    : "=r"(hart_id));
     p_mchtmr_cmp_reg = (volatile uint64_t *)(p_mchtmr_cmp_reg_base + (hart_id * sizeof(uint64_t)));
 
+#ifdef TX_LOW_POWER
+#ifdef HPMSOC_HAS_HPMSDK_PLLCTL
+    /* Keep mchtmr running during low power mode */
+    sysctl_set_cpu0_lp_mode(HPM_SYSCTL, cpu_lp_mode_ungate_cpu_clock);
+#endif
+#endif
     do {
         current_time_h = *p_mchtmr_counter_h;
         current_time_l = *p_mchtmr_counter_l;
@@ -60,7 +72,7 @@ volatile uint64_t cmp_before_wfi;
 /* SOC may enter wfi state without configure the timer, so we alloc a flag to
  * indicate wether we have configured the timer. */
 volatile bool flag_mtmr_configured = false;
-VOID low_power_timer_config(ULONG ticks)
+ATTR_RAMFUNC VOID low_power_timer_config(ULONG ticks)
 {
     volatile uint32_t hart_id;
     if (ticks < 1)
@@ -76,7 +88,7 @@ VOID low_power_timer_config(ULONG ticks)
     flag_mtmr_configured = true;
 }
 
-ULONG low_power_timer_adjust(VOID)
+ATTR_RAMFUNC ULONG low_power_timer_adjust(VOID)
 {
     uint64_t current_time;
     if (flag_mtmr_configured == false)
@@ -109,6 +121,31 @@ ULONG low_power_timer_adjust(VOID)
 #else
 #include "hpm_gptmr_drv.h"
 #include "hpm_clock_drv.h"
+#ifdef TX_LOW_POWER
+#include "hpm_sysctl_drv.h"
+#include "hpm_pcfg_drv.h"
+
+#ifndef THREADX_TIMER_RESOURCE
+    #define THREADX_TIMER_RESOURCE      BOARD_THREADX_LOWPOWER_TIMER
+#endif
+
+#ifndef THREADX_TIMER_CH
+    #define THREADX_TIMER_CH            BOARD_THREADX_LOWPOWER_TIMER_CHANNEL
+#endif
+
+#ifndef THREADX_TIMER_IRQ
+    #define THREADX_TIMER_IRQ           BOARD_THREADX_LOWPOWER_TIMER_IRQ
+#endif
+
+#ifndef THREADX_TIMER_CLOCK
+    #define THREADX_TIMER_CLOCK         BOARD_THREADX_LOWPOWER_TIMER_CLK_NAME
+#endif
+/* Store the count number of lowpower timer during one system timer tick period */
+volatile uint32_t lowpower_timer_count_per_tick;
+
+/* Store the expected number of ticks */
+volatile uint32_t expect_ticks;
+#else
 #ifndef THREADX_TIMER_RESOURCE
     #define THREADX_TIMER_RESOURCE      BOARD_THREADX_TIMER
 #endif
@@ -124,49 +161,6 @@ ULONG low_power_timer_adjust(VOID)
 #ifndef THREADX_TIMER_CLOCK
     #define THREADX_TIMER_CLOCK         BOARD_THREADX_TIMER_CLK_NAME
 #endif
-
-#ifdef TX_LOW_POWER
-#include "hpm_sysctl_drv.h"
-#include "hpm_pcfg_drv.h"
-#ifndef THREADX_LOWPOWER_TIMER_RESOURCE
-    #define THREADX_LOWPOWER_TIMER_RESOURCE      BOARD_THREADX_LOWPOWER_TIMER
-#endif
-
-#ifndef THREADX_LOWPOWER_TIMER_CH
-    #define THREADX_LOWPOWER_TIMER_CH            BOARD_THREADX_LOWPOWER_TIMER_CHANNEL
-#endif
-
-#ifndef THREADX_LOWPOWER_TIMER_IRQ
-    #define THREADX_LOWPOWER_TIMER_IRQ           BOARD_THREADX_LOWPOWER_TIMER_IRQ
-#endif
-
-#ifndef THREADX_LOWPOWER_TIMER_CLOCK
-    #define THREADX_LOWPOWER_TIMER_CLOCK         BOARD_THREADX_LOWPOWER_TIMER_CLK_NAME
-#endif
-
-/* Store the count number of lowpower timer during one system timer tick period */
-volatile uint32_t lowpower_timer_count_per_tick;
-
-/* Flag that indicate wether the lowpower timer is already reloaded,
- *    Ture: the lowpower timer is reloaded, SOC has sleep for expected ticks
- *    False: SOC wake up by other interrupts, time during sleep should be calculated.
- */
-volatile bool lowpower_reloaded = false;
-
-/* Store the expected number of ticks */
-volatile uint32_t expect_ticks;
-
-/* SOC may enter wfi state without configure the lowpower timer, so we alloc a flag to
- * indicate wether we have configured the lowpower timer. */
-volatile bool flag_lowpower_timer_configed = false;
-SDK_DECLARE_EXT_ISR_M(BOARD_THREADX_LOWPOWER_TIMER_IRQ, lowpower_tick_isr)
-void lowpower_tick_isr(void)
-{
-    if (gptmr_check_status(THREADX_LOWPOWER_TIMER_RESOURCE, GPTMR_CH_RLD_STAT_MASK(THREADX_LOWPOWER_TIMER_CH))) {
-        gptmr_clear_status(THREADX_LOWPOWER_TIMER_RESOURCE, GPTMR_CH_RLD_STAT_MASK(THREADX_LOWPOWER_TIMER_CH));
-        lowpower_reloaded = true;
-    }
-}
 #endif /* TX_LOW_POWER */
 SDK_DECLARE_EXT_ISR_M(THREADX_TIMER_IRQ, system_tick_isr)
 void system_tick_isr(void)
@@ -191,15 +185,6 @@ void tx_cpu_ts_setup(void)
     gptmr_enable_irq(THREADX_TIMER_RESOURCE, GPTMR_CH_RLD_IRQ_MASK(THREADX_TIMER_CH));
     intc_m_enable_irq_with_priority(THREADX_TIMER_IRQ, 2);
 #ifdef TX_LOW_POWER
-    /* Configure the lowpower timer at start */
-    clock_add_to_group(THREADX_LOWPOWER_TIMER_CLOCK, 0);
-    gptmr_channel_get_default_config(THREADX_LOWPOWER_TIMER_RESOURCE, &config);
-    config.debug_mode = false;
-    gptmr_freq = clock_get_frequency(THREADX_LOWPOWER_TIMER_CLOCK);
-    config.reload = gptmr_freq / TX_TIMER_TICKS_PER_SECOND;
-    gptmr_channel_config(THREADX_LOWPOWER_TIMER_RESOURCE, THREADX_LOWPOWER_TIMER_CH, &config, false);
-    gptmr_enable_irq(THREADX_LOWPOWER_TIMER_RESOURCE, GPTMR_CH_RLD_IRQ_MASK(THREADX_LOWPOWER_TIMER_CH));
-    intc_m_enable_irq_with_priority(THREADX_LOWPOWER_TIMER_IRQ, 2);
     lowpower_timer_count_per_tick = gptmr_freq / TX_TIMER_TICKS_PER_SECOND;
     /* Only shut down CPU clock, enter cpu WAIT mode */
     sysctl_set_cpu0_lp_mode(HPM_SYSCTL, cpu_lp_mode_gate_cpu_clock);
@@ -207,11 +192,14 @@ void tx_cpu_ts_setup(void)
 #endif
 }
 #ifdef TX_LOW_POWER
-VOID low_power_timer_config(ULONG ticks)
+ATTR_RAMFUNC VOID low_power_timer_config(ULONG ticks)
 {
     uint32_t reload_value;
     /* Sleep for (ticks -1) period, because the system tick source will resume after wakeup */
     reload_value = (ticks) * lowpower_timer_count_per_tick;
+    if( reload_value > portMISSED_GPTMR_COUNT) {
+        reload_value -= portMISSED_GPTMR_COUNT;
+    }
     expect_ticks = ticks;
     if (expect_ticks == 0)
         return;
@@ -219,31 +207,34 @@ VOID low_power_timer_config(ULONG ticks)
     gptmr_stop_counter(THREADX_TIMER_RESOURCE, THREADX_TIMER_CH);
     
     /* Set the new reload value. */
-    gptmr_channel_config_update_reload(THREADX_LOWPOWER_TIMER_RESOURCE, THREADX_LOWPOWER_TIMER_CH, reload_value);
-    gptmr_channel_update_count(THREADX_LOWPOWER_TIMER_RESOURCE, THREADX_LOWPOWER_TIMER_CH, 0);
+    gptmr_channel_config_update_reload(THREADX_TIMER_RESOURCE, THREADX_TIMER_CH, reload_value);
+    if (gptmr_check_status(THREADX_TIMER_RESOURCE, GPTMR_CH_RLD_STAT_MASK(THREADX_TIMER_CH))) {
+        gptmr_clear_status(THREADX_TIMER_RESOURCE, GPTMR_CH_RLD_STAT_MASK(THREADX_TIMER_CH));
+    }
     /* Start lowpower timer. */
-    gptmr_start_counter(THREADX_LOWPOWER_TIMER_RESOURCE, THREADX_LOWPOWER_TIMER_CH);
-    flag_lowpower_timer_configed = true;
+    gptmr_start_counter(THREADX_TIMER_RESOURCE, THREADX_TIMER_CH);
 }
 
-ULONG low_power_timer_adjust(VOID)
+ATTR_RAMFUNC ULONG low_power_timer_adjust(VOID)
 {
-    uint32_t complete_periods;
+    uint32_t complete_periods, count_within_one_tick;
 
-    /* Do nothing if lowpower timer is not configured */
-    if (flag_lowpower_timer_configed == false)
-        return 0;
-    else
-        flag_lowpower_timer_configed = false;
     /* Stop the lowpower timer */
-    gptmr_stop_counter(THREADX_LOWPOWER_TIMER_RESOURCE, THREADX_LOWPOWER_TIMER_CH);
-    if (lowpower_reloaded) {
+    gptmr_stop_counter(THREADX_TIMER_RESOURCE, THREADX_TIMER_CH);
+    if (gptmr_check_status(THREADX_TIMER_RESOURCE, GPTMR_CH_RLD_STAT_MASK(THREADX_TIMER_CH))) {
         complete_periods = expect_ticks;
     } else {
-        uint32_t current = gptmr_channel_get_counter(THREADX_LOWPOWER_TIMER_RESOURCE, THREADX_LOWPOWER_TIMER_CH, gptmr_counter_type_normal);
+        uint32_t current = gptmr_channel_get_counter(THREADX_TIMER_RESOURCE, THREADX_TIMER_CH, gptmr_counter_type_normal);
         complete_periods = current / lowpower_timer_count_per_tick;
+        count_within_one_tick = current % lowpower_timer_count_per_tick;
+        if ( count_within_one_tick > lowpower_timer_count_per_tick - portMISSED_GPTMR_COUNT ) {
+            complete_periods += 1;
+            gptmr_channel_update_count(THREADX_TIMER_RESOURCE, THREADX_TIMER_CH, 0);
+        } else {
+            gptmr_channel_update_count(THREADX_TIMER_RESOURCE, THREADX_TIMER_CH, count_within_one_tick);
+        }
     }
-    gptmr_channel_update_count(THREADX_LOWPOWER_TIMER_RESOURCE, THREADX_LOWPOWER_TIMER_CH, 0);
+    gptmr_channel_config_update_reload(THREADX_TIMER_RESOURCE, THREADX_TIMER_CH, lowpower_timer_count_per_tick);
 
     /* Start the system tick, so we recover the point before sleep */
     gptmr_start_counter(THREADX_TIMER_RESOURCE, THREADX_TIMER_CH);

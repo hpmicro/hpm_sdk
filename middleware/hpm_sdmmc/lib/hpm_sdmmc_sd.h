@@ -142,7 +142,6 @@ hpm_stat_t sd_init(sd_card_t *card);
  *
  * @param [in,out] card SD card context
  *
- * @return Operation status
  */
 void sd_deinit(const sd_card_t *card);
 
@@ -160,7 +159,6 @@ hpm_stat_t sd_card_init(sd_card_t *card);
  *
  * @param [in,out] card SD card context
  *
- * @return Operation status
  */
 void sd_card_deinit(sd_card_t *card);
 

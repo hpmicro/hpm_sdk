@@ -1,2 +1,2 @@
 dependency:
-  - board_puart_pin
+  - board_puart_pin || board_wkup_pin

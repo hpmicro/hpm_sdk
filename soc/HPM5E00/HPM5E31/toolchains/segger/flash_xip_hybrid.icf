@@ -33,7 +33,6 @@ define block rtthread_FSymTab                                { section FSymTab }
 define block rtthread_VSymTab                                { section VSymTab };
 define block rtthread_rti_fn with alphabetical order         { section .rti_fn* };
 define block rtthread_RTMSymTab                              { section RTMSymTab };
-define block noncacheables                                   { section .noncacheable.non_init, section .noncacheable.non_init.*, section .noncacheable.init, section .noncacheable.init.*, section .noncacheable.bss, section .noncacheable.bss.*, section .noncacheable };
 
 /* Symbols */
 define exported symbol __nor_cfg_option_load_addr__ = start of region NOR_CFG_OPTION;
@@ -42,8 +41,8 @@ define exported symbol __app_load_addr__ = start of region FLASH;
 define exported symbol __app_offset__ = __app_load_addr__ - __boot_header_load_addr__;
 define exported symbol __boot_header_length__ = size of block boot_header;
 
-define exported symbol __noncacheable_start__ = start of block noncacheables;
-define exported symbol __noncacheable_end__ = end of block noncacheables + 1;
+define exported symbol __noncacheable_start__ = start of region DLM;
+define exported symbol __noncacheable_end__ = end of region DLM + 1;
 
 define exported symbol _stack_safe = end of block stack + 1;
 define exported symbol _stack = end of block stack + 1;
@@ -112,7 +111,7 @@ place in DLM                              {
                                             readwrite,                                            // Catch-all for initialized/uninitialized data sections (e.g. .data, .noinit)
                                             zeroinit                                              // Catch-all for zero-initialized data sections (e.g. .bss)
                                           };
-place in DLM                              { block noncacheables };
+place in DLM                              { section .noncacheable.non_init, section .noncacheable.non_init.*, section .noncacheable.init, section .noncacheable.init.*, section .noncacheable.bss, section .noncacheable.bss.*, section .noncacheable };
 place in AHB_SRAM                         { section .ahb_sram, section .ahb_sram.*};                                   // AHB SRAM memory
 place in DLM                              { section .fast_ram.init, section .fast_ram.init.*, section .fast_ram.non_init,  section .fast_ram.non_init.*, section .fast_ram.bss, section .fast_ram.bss.*, section .fast_ram };   // Fast access memory
 place in DLM                              { block heap };                                         // Heap reserved block

@@ -27,6 +27,8 @@ extern volatile uint64_t * pullMachineTimerCompareRegister;
 #endif
 
 static uint32_t xMaximumPossibleSuppressedTicks = 0;
+volatile TickType_t gExpectedIdleTime;
+ATTR_RAMFUNC __attribute__( ( weak ) ) void vPortCorrectSysTick(void);
 
 #endif
 #endif /* configUSE_TICKLESS_IDLE */
@@ -62,6 +64,15 @@ void vPortSysTimerIsr(void)
     UBaseType_t uxSavedInterruptStatus;
 #endif
     BaseType_t need_switch;
+#if ( configUSE_TICKLESS_IDLE != 0 )
+#if !defined(USE_NONVECTOR_MODE) || (USE_NONVECTOR_MODE == 0)
+    /* correct system tick when wakeup after tickless mode */
+    if (gExpectedIdleTime != 0) {
+        vPortCorrectSysTick();
+        gExpectedIdleTime = 0;
+    }
+#endif
+#endif
     if (gptmr_check_status(FREERTOS_TIMER_RESOURCE, GPTMR_CH_RLD_STAT_MASK(FREERTOS_TIMER_CH))) {
         gptmr_clear_status(FREERTOS_TIMER_RESOURCE, GPTMR_CH_RLD_STAT_MASK(FREERTOS_TIMER_CH));
 #if !defined(DISABLE_IRQ_PREEMPTIVE) || (DISABLE_IRQ_PREEMPTIVE == 0)
@@ -295,10 +306,54 @@ void vPortSetupTimerInterrupt( void )
     }
 #elif defined (portTIMER_SOURCE_GPTMR)
 
+
+    ATTR_RAMFUNC __attribute__( ( weak ) ) void vPortCorrectSysTick(void)
+    {
+        uint32_t ulCompleteTickPeriods;
+        uint32_t ulCntCurrent, ulCntWithinOneTick;
+        /* Stop the Gptmr. using the tickless mode will inevitably result in some tiny
+         * drift of the time maintained by the kernel with respect to calendar
+         * time*/
+        gptmr_stop_counter(FREERTOS_TIMER_RESOURCE, FREERTOS_TIMER_CH);
+
+        /* Determine if the Gptmr has already counted to reload value and
+         * been set back to the zero (the reload back being
+         * correct for the entire expected idle time) or if the Gptmr is yet
+         * to count to reload value (in which case an interrupt other than the Gptmr
+         * must have brought the system out of sleep mode). */
+        if (gptmr_check_status(FREERTOS_TIMER_RESOURCE, GPTMR_CH_RLD_STAT_MASK(FREERTOS_TIMER_CH)))
+        {
+            ulCompleteTickPeriods = gExpectedIdleTime - 1UL;
+            gptmr_channel_update_count(FREERTOS_TIMER_RESOURCE, FREERTOS_TIMER_CH, 0);
+        }
+        else
+        {
+            ulCntCurrent = gptmr_channel_get_counter(FREERTOS_TIMER_RESOURCE, FREERTOS_TIMER_CH, gptmr_counter_type_normal);
+            ulCompleteTickPeriods = ulCntCurrent / uxGptimerIncrementsForOneTick;
+            ulCntWithinOneTick = ulCntCurrent % uxGptimerIncrementsForOneTick;
+            /* Don't allow a tiny difference from reload value, or values that have somehow
+             * overflowed because the post sleep hook did something
+             * that took too long. */
+            if ( ulCntWithinOneTick > uxGptimerIncrementsForOneTick - portMISSED_GPTMR_COUNT )
+            {
+                ulCompleteTickPeriods += 1;
+                gptmr_channel_update_count(FREERTOS_TIMER_RESOURCE, FREERTOS_TIMER_CH, 0);
+            }
+            else
+            {
+                gptmr_channel_update_count(FREERTOS_TIMER_RESOURCE, FREERTOS_TIMER_CH, ulCntWithinOneTick);
+            }
+        }
+
+        /* Restart Gptmr */
+        gptmr_channel_config_update_reload(FREERTOS_TIMER_RESOURCE, FREERTOS_TIMER_CH, uxGptimerIncrementsForOneTick);
+        gptmr_start_counter(FREERTOS_TIMER_RESOURCE, FREERTOS_TIMER_CH);
+        vTaskStepTick( ulCompleteTickPeriods );
+    }
+
     ATTR_RAMFUNC __attribute__( ( weak ) ) void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
     {
-        uint32_t ulReloadValue, ulCompleteTickPeriods;
-        uint32_t ulCntCurrent, ulCntWithinOneTick;
+        uint32_t ulReloadValue;
         TickType_t xModifiableIdleTime;
 
         /* Make sure the Gptmr reload value does not overflow the counter. */
@@ -364,6 +419,8 @@ void vPortSetupTimerInterrupt( void )
              * should not be executed again.  However, the original expected idle
              * time variable must remain unmodified, so a copy is taken. */
             xModifiableIdleTime = xExpectedIdleTime;
+
+            gExpectedIdleTime = xExpectedIdleTime;
             configPRE_SLEEP_PROCESSING( xModifiableIdleTime );
 
             if( xModifiableIdleTime > 0 )
@@ -373,10 +430,13 @@ void vPortSetupTimerInterrupt( void )
 
             configPOST_SLEEP_PROCESSING( xExpectedIdleTime );
 
+            /* Only disable freeRTOS timer irq when use nonvector mode */
+#if defined(USE_NONVECTOR_MODE) && (USE_NONVECTOR_MODE == 1)
             /* Re-enable interrupts to allow the interrupt that brought the MCU
              * out of sleep mode to execute immediately.  see comments above
              * __disable_interrupt() call above. */
             intc_m_disable_irq(FREERTOS_TIMER_IRQ);
+#endif
             /* Turn on MSTATUS.MIE so we will enter plic isr function */
 #if defined(USE_SYSCALL_INTERRUPT_PRIORITY) && USE_SYSCALL_INTERRUPT_PRIORITY
             portENABLE_GLOBAL_INTERRUPTS();
@@ -393,45 +453,13 @@ void vPortSetupTimerInterrupt( void )
 #else
             portDISABLE_INTERRUPTS();
 #endif
-
-            /* Stop the Gptmr. using the tickless mode will inevitably result in some tiny
-             * drift of the time maintained by the kernel with respect to calendar
-             * time*/
-            gptmr_stop_counter(FREERTOS_TIMER_RESOURCE, FREERTOS_TIMER_CH);
-
-            /* Determine if the Gptmr has already counted to reload value and
-             * been set back to the zero (the reload back being
-             * correct for the entire expected idle time) or if the Gptmr is yet
-             * to count to reload value (in which case an interrupt other than the Gptmr
-             * must have brought the system out of sleep mode). */
-            if (gptmr_check_status(FREERTOS_TIMER_RESOURCE, GPTMR_CH_RLD_STAT_MASK(FREERTOS_TIMER_CH)))
-            {
-                ulCompleteTickPeriods = xExpectedIdleTime - 1UL;
-                gptmr_channel_update_count(FREERTOS_TIMER_RESOURCE, FREERTOS_TIMER_CH, 0);
+            if (gExpectedIdleTime != 0) {
+                vPortCorrectSysTick();
+                gExpectedIdleTime = 0;
             }
-            else
-            {
-                ulCntCurrent = gptmr_channel_get_counter(FREERTOS_TIMER_RESOURCE, FREERTOS_TIMER_CH, gptmr_counter_type_normal);
-                ulCompleteTickPeriods = ulCntCurrent / uxGptimerIncrementsForOneTick;
-                ulCntWithinOneTick = ulCntCurrent % uxGptimerIncrementsForOneTick;
-                /* Don't allow a tiny difference from reload value, or values that have somehow
-                 * overflowed because the post sleep hook did something
-                 * that took too long. */
-                if ( ulCntWithinOneTick > uxGptimerIncrementsForOneTick - portMISSED_GPTMR_COUNT )
-                {
-                    ulCompleteTickPeriods += 1;
-                    gptmr_channel_update_count(FREERTOS_TIMER_RESOURCE, FREERTOS_TIMER_CH, 0);
-                }
-                else
-                {
-                    gptmr_channel_update_count(FREERTOS_TIMER_RESOURCE, FREERTOS_TIMER_CH, ulCntWithinOneTick);
-                }
-            }
-            /* Restart Gptmr */
-            gptmr_channel_config_update_reload(FREERTOS_TIMER_RESOURCE, FREERTOS_TIMER_CH, uxGptimerIncrementsForOneTick);
-            gptmr_start_counter(FREERTOS_TIMER_RESOURCE, FREERTOS_TIMER_CH);
-            vTaskStepTick( ulCompleteTickPeriods );
+#if defined(USE_NONVECTOR_MODE) && (USE_NONVECTOR_MODE == 1)
             intc_m_enable_irq(FREERTOS_TIMER_IRQ);
+#endif
             /* Exit with interrupts enabled. */
 #if defined(USE_SYSCALL_INTERRUPT_PRIORITY) && USE_SYSCALL_INTERRUPT_PRIORITY
             portENABLE_GLOBAL_INTERRUPTS();

@@ -49,11 +49,23 @@ hpm_stat_t wm8960_init(wm8960_control_t *control, wm8960_config_t *config)
     /* set data protocol */
     HPM_CHECK_RET(wm8960_set_protocol(control, config->bus));
 
+    /* Set LRCLK polarity */
+    if ((config->bus == wm8960_bus_left_justified) || (config->bus == wm8960_bus_right_justified)) {
+        if (config->lrclk_polarity == wm8960_lrclk_polarity_low_for_left_channel) {
+            HPM_CHECK_RET(wm8960_invert_lrclk_polarity(control, true));
+        } else {
+            HPM_CHECK_RET(wm8960_invert_lrclk_polarity(control, false));
+        }
+    } else if (config->bus == wm8960_bus_i2s) {
+        if (config->lrclk_polarity == wm8960_lrclk_polarity_high_for_left_channel) {
+            HPM_CHECK_RET(wm8960_invert_lrclk_polarity(control, true));
+        } else {
+            HPM_CHECK_RET(wm8960_invert_lrclk_polarity(control, false));
+        }
+    }
+
     /* set wm8960 as slave */
     HPM_CHECK_RET(wm8960_modify_reg(control, WM8960_IFACE1, WM8960_IFACE1_MS_MASK, WM8960_IFACE1_MS_SET(0)));
-
-    /* invert LRCLK */
-    HPM_CHECK_RET(wm8960_modify_reg(control, WM8960_IFACE1, WM8960_IFACE1_LRP_MASK, WM8960_IFACE1_LRP_SET(1)));
 
     HPM_CHECK_RET(wm8960_write_reg(control, WM8960_ADDCTL1, 0xC0));
     HPM_CHECK_RET(wm8960_write_reg(control, WM8960_ADDCTL4, 0x40));
@@ -103,7 +115,16 @@ hpm_stat_t wm8960_deinit(wm8960_control_t *control)
 
 hpm_stat_t wm8960_set_protocol(wm8960_control_t *control, wm8960_protocol_t protocol)
 {
-    return wm8960_modify_reg(control, WM8960_IFACE1, WM8960_IFACE1_FORMAT_MASK, (uint16_t)protocol);
+    return wm8960_modify_reg(control, WM8960_IFACE1, (WM8960_IFACE1_FORMAT_MASK | WM8960_IFACE1_LRP_MASK), (uint16_t)protocol);
+}
+
+hpm_stat_t wm8960_invert_lrclk_polarity(wm8960_control_t *control, bool invert)
+{
+    if (invert) {
+        return wm8960_modify_reg(control, WM8960_IFACE1, WM8960_IFACE1_LRP_MASK, WM8960_IFACE1_LRP_MASK);
+    } else {
+        return wm8960_modify_reg(control, WM8960_IFACE1, WM8960_IFACE1_LRP_MASK, 0x00U);
+    }
 }
 
 hpm_stat_t wm8960_set_module(wm8960_control_t *control, wm8960_module_t module, bool enable)

@@ -42,6 +42,11 @@ static hpm_stat_t write(void *ops, hpm_serial_nor_transfer_seq_t *cmd_seq);
 
 static hpm_stat_t read(void *ops, hpm_serial_nor_transfer_seq_t *cmd_seq);
 
+ATTR_WEAK void serial_nor_host_delay(uint32_t ms)
+{
+    (void)ms;
+}
+
 ATTR_WEAK hpm_stat_t serial_nor_host_ops_use_spi(hpm_serial_nor_t *dev)
 {
     if (dev == NULL) {
@@ -205,7 +210,7 @@ static hpm_stat_t init(void *ops)
         chg_config.dst_width = DMA_MGR_TRANSFER_WIDTH_BYTE;
         /* spi rx dma config */
         resource = &host->host_param.param.dma_control.rxdma_resource;
-        if (dma_mgr_request_resource(resource) == status_success) {
+        if ((resource->base == NULL) && (dma_mgr_request_resource(resource) == status_success)) {
             spi_base = (SPI_Type *)host->host_param.param.host_base;
             chg_config.src_mode = DMA_MGR_HANDSHAKE_MODE_HANDSHAKE;
             chg_config.src_addr_ctrl = DMA_MGR_ADDRESS_CONTROL_FIXED;
@@ -221,7 +226,7 @@ static hpm_stat_t init(void *ops)
         }
         /* spi tx dma config */
         resource = &host->host_param.param.dma_control.txdma_resource;
-        if (dma_mgr_request_resource(resource) == status_success) {
+        if ((resource->base == NULL) && (dma_mgr_request_resource(resource) == status_success)) {
             spi_base = (SPI_Type *)host->host_param.param.host_base;
             chg_config.src_mode = DMA_MGR_HANDSHAKE_MODE_NORMAL;
             chg_config.src_addr_ctrl = DMA_MGR_ADDRESS_CONTROL_INCREMENT;
@@ -281,6 +286,7 @@ static hpm_stat_t hpm_spi_transfer_via_dma(hpm_serial_nor_host_t *host, spi_cont
                                 dma_send_size, burst_size);
 #endif
         while (spi_is_active((SPI_Type *)host->host_param.param.host_base)) {
+            serial_nor_host_delay(1);
             timeout_count++;
             if (timeout_count >= HPM_SERIAL_NOR_SPI_RETRY_COUNT) {
                 stat = status_timeout;
@@ -294,6 +300,7 @@ static hpm_stat_t hpm_spi_transfer_via_dma(hpm_serial_nor_host_t *host, spi_cont
         while ((dma_transfer_statue & DMA_CHANNEL_STATUS_TC) == 0) {
             HPM_CHECK_RET(dma_mgr_check_chn_transfer_status(resource, &dma_transfer_statue));
 #endif
+            serial_nor_host_delay(1);
             timeout_count++;
             if (timeout_count >= HPM_SERIAL_NOR_SPI_RETRY_COUNT) {
                 stat = status_timeout;
@@ -308,7 +315,6 @@ static hpm_stat_t hpm_spi_transfer_via_dma(hpm_serial_nor_host_t *host, spi_cont
             data_width = DMA_TRANSFER_WIDTH_BYTE;
         }
         spi_set_tx_fifo_threshold((SPI_Type *)host->host_param.param.host_base, 3);
-        HPM_CHECK_RET(spi_setup_dma_transfer((SPI_Type *)host->host_param.param.host_base, control_config, &cmd, &addr, len, 0));
 #if (SERIAL_NOR_USE_DMA_MGR == 1)
         resource = &host->host_param.param.dma_control.txdma_resource;
         buf_addr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)buf);
@@ -325,7 +331,9 @@ static hpm_stat_t hpm_spi_transfer_via_dma(hpm_serial_nor_host_t *host, spi_cont
                                         core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)buf),
                                         data_width, len, burst_size);
 #endif
+        HPM_CHECK_RET(spi_setup_dma_transfer((SPI_Type *)host->host_param.param.host_base, control_config, &cmd, &addr, len, 0));
         while (spi_is_active((SPI_Type *)host->host_param.param.host_base)) {
+            serial_nor_host_delay(1);
             timeout_count++;
             if (timeout_count >= HPM_SERIAL_NOR_SPI_RETRY_COUNT) {
                 stat = status_timeout;
@@ -335,6 +343,9 @@ static hpm_stat_t hpm_spi_transfer_via_dma(hpm_serial_nor_host_t *host, spi_cont
         timeout_count = 0;
         spi_disable_data_merge((SPI_Type *)host->host_param.param.host_base);
     }
+    /* After the transfer is complete, disable SPI TX DMA and RX DMA to avoid affecting the next transfer. */
+    spi_disable_tx_dma((SPI_Type *)host->host_param.param.host_base);
+    spi_disable_rx_dma((SPI_Type *)host->host_param.param.host_base);
     return stat;
 }
 

@@ -11,7 +11,7 @@
 
 /**
  * @brief femc driver APIs
- * @defgroup dram_interface femc driver APIs
+ * @defgroup dram_interface FEMC driver APIs
  * @ingroup io_interfaces
  * @{
  *

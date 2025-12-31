@@ -538,6 +538,9 @@ Important Notes
     - Data shift operation is required when using DMA transfer
     - Shift bits = 32 - actual data width
 
+I2S Samples
+----------------
+
 .. toctree::
   :maxdepth: 3
 
@@ -546,4 +549,5 @@ Important Notes
   i2s_interrupt/README_en
   i2s_master/README_en
   i2s_slave/README_en
+  dao_i2s_dma/README_en
 

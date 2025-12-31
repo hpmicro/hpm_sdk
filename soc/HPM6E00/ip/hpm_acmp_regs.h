@@ -168,26 +168,11 @@ typedef struct {
 #define ACMP_CHANNEL_CFG_FLTMODE_GET(x) (((uint32_t)(x) & ACMP_CHANNEL_CFG_FLTMODE_MASK) >> ACMP_CHANNEL_CFG_FLTMODE_SHIFT)
 
 /*
- * FLTLEN_SHIFT (RW)
- *
- * this field is to extend filter length.
- * 0: filter length = fltlen
- * 1: filter length = fltlen * 2
- * 2: filter length = fltlen * 4
- * 7: filter length = fltlen * 128
- * When the clock frequency is 200MHz, the maximum filter length is about 300uS.
- */
-#define ACMP_CHANNEL_CFG_FLTLEN_SHIFT_MASK (0xE00U)
-#define ACMP_CHANNEL_CFG_FLTLEN_SHIFT_SHIFT (9U)
-#define ACMP_CHANNEL_CFG_FLTLEN_SHIFT_SET(x) (((uint32_t)(x) << ACMP_CHANNEL_CFG_FLTLEN_SHIFT_SHIFT) & ACMP_CHANNEL_CFG_FLTLEN_SHIFT_MASK)
-#define ACMP_CHANNEL_CFG_FLTLEN_SHIFT_GET(x) (((uint32_t)(x) & ACMP_CHANNEL_CFG_FLTLEN_SHIFT_MASK) >> ACMP_CHANNEL_CFG_FLTLEN_SHIFT_SHIFT)
-
-/*
  * FLTLEN (RW)
  *
  * This bitfield define the ACMP output digital filter length. The unit is ACMP clock cycle.
  */
-#define ACMP_CHANNEL_CFG_FLTLEN_MASK (0x1FFU)
+#define ACMP_CHANNEL_CFG_FLTLEN_MASK (0xFFFU)
 #define ACMP_CHANNEL_CFG_FLTLEN_SHIFT (0U)
 #define ACMP_CHANNEL_CFG_FLTLEN_SET(x) (((uint32_t)(x) << ACMP_CHANNEL_CFG_FLTLEN_SHIFT) & ACMP_CHANNEL_CFG_FLTLEN_MASK)
 #define ACMP_CHANNEL_CFG_FLTLEN_GET(x) (((uint32_t)(x) & ACMP_CHANNEL_CFG_FLTLEN_MASK) >> ACMP_CHANNEL_CFG_FLTLEN_SHIFT)

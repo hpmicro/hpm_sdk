@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -17,12 +17,12 @@
  * Internal API
  *---------------------------------------------------------------------
  */
-static bool jl1111_check_id(ENET_Type *ptr)
+static bool jl1111_check_id(ENET_Type *ptr, uint32_t phy_addr)
 {
     uint16_t id1, id2;
 
-    id1 = enet_read_phy(ptr, JL1111_ADDR, JL1111_PHYID1);
-    id2 = enet_read_phy(ptr, JL1111_ADDR, JL1111_PHYID2);
+    id1 = enet_read_phy(ptr, phy_addr, JL1111_PHYID1);
+    id2 = enet_read_phy(ptr, phy_addr, JL1111_PHYID2);
 
     if (JL1111_PHYID1_OUI_MSB_GET(id1) == JL1111_ID1 && JL1111_PHYID2_OUI_LSB_GET(id2) == JL1111_ID2) {
         return true;
@@ -35,17 +35,20 @@ static bool jl1111_check_id(ENET_Type *ptr)
  * API
  *---------------------------------------------------------------------
  */
-void jl1111_reset(ENET_Type *ptr)
+bool jl1111_reset(ENET_Type *ptr, uint32_t phy_addr)
 {
     uint16_t data;
+    uint32_t retry_cnt = ENET_PHY_SW_RESET_RETRY_CNT;
 
     /* PHY reset */
-    enet_write_phy(ptr, JL1111_ADDR, JL1111_BMCR, JL1111_BMCR_RESET_SET(1));
+    enet_write_phy(ptr, phy_addr, JL1111_BMCR, JL1111_BMCR_RESET_SET(1));
 
     /* wait until the reset is completed */
     do {
-        data = enet_read_phy(ptr, JL1111_ADDR, JL1111_BMCR);
-    } while (JL1111_BMCR_RESET_GET(data));
+        data = enet_read_phy(ptr, phy_addr, JL1111_BMCR);
+    } while (JL1111_BMCR_RESET_GET(data) && --retry_cnt);
+
+    return retry_cnt > 0 ? true : false;
 }
 
 void jl1111_basic_mode_default_config(ENET_Type *ptr, jl1111_config_t *config)
@@ -62,7 +65,7 @@ void jl1111_basic_mode_default_config(ENET_Type *ptr, jl1111_config_t *config)
     #endif
 }
 
-bool jl1111_basic_mode_init(ENET_Type *ptr, jl1111_config_t *config)
+bool jl1111_basic_mode_init(ENET_Type *ptr, uint32_t phy_addr, jl1111_config_t *config)
 {
     uint16_t data = 0;
 
@@ -80,24 +83,36 @@ bool jl1111_basic_mode_init(ENET_Type *ptr, jl1111_config_t *config)
     }
 
     /* check the id of jl1111 */
-    if (jl1111_check_id(ptr) == false) {
+    if (jl1111_check_id(ptr, phy_addr) == false) {
         return false;
     }
 
-    enet_write_phy(ptr, JL1111_ADDR, JL1111_BMCR, data);
+    enet_write_phy(ptr, phy_addr, JL1111_BMCR, data);
+
+#if defined(RMII) && RMII
+    jl1111_set_itf(ptr, phy_addr, jl1111_config_rmii_itf);
+    jl1111_set_rmii_skew(ptr, phy_addr, 0x0f, 0x0f);
+    if (config->rmii_refclk_dir == enet_phy_rmii_refclk_dir_in) {
+        jl1111_set_rmii_refclk_direction(ptr, phy_addr, jl1111_config_refclk_input);
+    } else {
+        jl1111_set_rmii_refclk_direction(ptr, phy_addr, jl1111_config_refclk_output);
+    }
+#elif defined(MII) && MII
+    jl1111_set_itf(ptr, phy_addr, jl1111_config_mii_itf);
+#endif
 
     return true;
 }
 
-void jl1111_get_phy_status(ENET_Type *ptr, enet_phy_status_t *status)
+void jl1111_get_phy_status(ENET_Type *ptr, uint32_t phy_addr, enet_phy_status_t *status)
 {
     uint16_t data, anar, anlpar;
 
-    data = enet_read_phy(ptr, JL1111_ADDR, JL1111_BMSR);
+    data = enet_read_phy(ptr, phy_addr, JL1111_BMSR);
     status->enet_phy_link = JL1111_BMSR_LINK_STATUS_GET(data);
 
-    anar = enet_read_phy(ptr, JL1111_ADDR, JL1111_ANAR);
-    anlpar = enet_read_phy(ptr, JL1111_ADDR, JL1111_ANLPAR);
+    anar = enet_read_phy(ptr, phy_addr, JL1111_ANAR);
+    anlpar = enet_read_phy(ptr, phy_addr, JL1111_ANLPAR);
     data = anar & anlpar;
 
     if (JL1111_ANAR_100BASE_TX_GET(data)) {
@@ -119,4 +134,72 @@ void jl1111_get_phy_status(ENET_Type *ptr, enet_phy_status_t *status)
     } else {
 
     }
+}
+
+void jl1111_set_itf(ENET_Type *ptr, uint32_t phy_addr, uint8_t itf)
+{
+    uint16_t data = 0;
+
+    /* select page 7 */
+    enet_write_phy(ptr, phy_addr, JL1111_PAGESEL, 7);
+
+    /* read register RMSR */
+    data = enet_read_phy(ptr, phy_addr, JL1111_RMSR_P7);
+
+    /* set interface */
+    if (itf == jl1111_config_mii_itf) {
+        data &= ~BIT3_MASK;   /* MII interface */
+    } else {
+        data |= BIT3_MASK;    /* RMII interface */
+    }
+
+    /* write register RMSR */
+    enet_write_phy(ptr, phy_addr, JL1111_RMSR_P7, data);
+}
+
+void jl1111_set_rmii_refclk_direction(ENET_Type *ptr, uint32_t phy_addr, uint8_t dir)
+{
+    uint16_t data = 0;
+
+    /* select page 7 */
+    enet_write_phy(ptr, phy_addr, JL1111_PAGESEL, 7);
+
+    /* read register RMSR */
+    data = enet_read_phy(ptr, phy_addr, JL1111_RMSR_P7);
+
+    /* set tx clock direction */
+    if (dir == jl1111_config_refclk_output) {
+        data &= ~BIT12_MASK; /* PHY output 50MHz */
+    } else {
+        data |= BIT12_MASK;  /* PHY input 50MHz */
+    }
+
+    /* write register RMSR */
+    enet_write_phy(ptr, phy_addr, JL1111_RMSR_P7, data);
+}
+
+void jl1111_set_rmii_skew(ENET_Type *ptr, uint32_t phy_addr, uint8_t tx_skew, uint8_t rx_skew)
+{
+    uint16_t data = 0;
+
+    /* select page 7 */
+    enet_write_phy(ptr, phy_addr, JL1111_PAGESEL, 7);
+
+    /* read register RMSR */
+    data = enet_read_phy(ptr, phy_addr, JL1111_RMSR_P7);
+
+    /* set TX skew */
+    data = (data & ~(0xf << 8)) | (tx_skew & 0xf) << 8;
+
+    /* set RX skew */
+    data = (data & ~(0xf << 4)) | (rx_skew & 0xf) << 4;
+
+    /* write register RMSR */
+    enet_write_phy(ptr, phy_addr, JL1111_RMSR_P7, data);
+}
+
+void jl1111_disable_broadcast_response(ENET_Type *ptr, uint32_t phy_addr)
+{
+    enet_write_phy(ptr, phy_addr, JL1111_PAGESEL, 128);
+    enet_write_phy(ptr, phy_addr, 19, (phy_addr << 5) | 0x1f);
 }

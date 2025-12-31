@@ -67,12 +67,12 @@ hpm_stat_t plb_lin_clock_detection_init(plb_lin_clock_t *cfg)
     config.src_fixed = true;
     config.data_width = DMA_TRANSFER_WIDTH_WORD;
     config.size_in_byte = 4;
+    config.en_infiniteloop = true;
 
     stat = dma_setup_handshake(cfg->device.dma, &config, true);
     if (stat != status_success) {
         return stat;
     }
-    dma_set_infinite_loop_mode(cfg->device.dma, cfg->device.dma_chn, true);
 
     return status_success;
 }

@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2025 HPMicro
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ */
+
 /* constants_dep.h */
 
 #ifndef CONSTANTS_DEP_H
@@ -19,8 +26,8 @@
 
  /* #define PTPD_DBGVV */
  /* #define PTPD_DBGV */
- #define PTPD_DBG 
- #define PTPD_ERR 
+ #define PTPD_DBG
+ #define PTPD_ERR
 
 #include <string.h>
 #include <stdio.h>
@@ -33,8 +40,7 @@
 #include "lwip/arch.h"
 #include "lwip/inet.h"
 #include "ethernetif.h"
-#include "lwip.h"
-#include "hpm_enet_drv.h"
+#include "common.h"
 
 #ifndef stdout
 #define stdout 1

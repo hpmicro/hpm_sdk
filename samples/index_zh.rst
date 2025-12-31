@@ -9,6 +9,7 @@
 
 
     audio_codec/index_zh
+    brownout/README_zh
     canopen/index_zh
     cherryrb/README_zh
     cherrysh/index_zh
@@ -57,4 +58,5 @@
     tsn/index_zh
     vglite/index_zh
     sent/index_zh
+    eeprom/index_zh
 

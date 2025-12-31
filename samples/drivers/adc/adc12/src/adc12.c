@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -294,7 +294,7 @@ void init_period_config(void)
 
     prd_cfg.ch           = BOARD_APP_ADC12_CH_1;
     prd_cfg.prescale     = 22;    /* Set divider: 2^22 clocks */
-    prd_cfg.period_count = 5;     /* 104.86ms when AHB clock at 200MHz is ADC clock source */
+    prd_cfg.period_count = 5;     /* 6 periods */
 
     adc12_set_prd_config(BOARD_APP_ADC12_BASE, &prd_cfg);
 }

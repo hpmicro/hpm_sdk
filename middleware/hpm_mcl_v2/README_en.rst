@@ -26,6 +26,12 @@ Key Features
   - Stepper Motor FOC Control
     - Support for trapezoidal curve path planning
     - Support for acceleration, deceleration, speed and time parameters
+  - Hybrid Force-Position Control
+    - PD controller with feedforward torque compensation
+    - Impedance control / Compliance control
+    - Configurable position stiffness and damping coefficients
+    - Output torque limiting protection
+    - Suitable for robot joint control and servo systems
 - Support for various encoder types
 - Dead zone compensation
 - DQ axis decoupling
@@ -46,6 +52,7 @@ Directory Structure
     - hpm_mcl_control.h/c - Core control algorithm implementation
     - hpm_mcl_filter.h/c - Filter implementation
     - hpm_mcl_path_plan.h/c - Stepper motor path planning implementation
+    - hpm_mcl_hybrid_ctrl.h/c - Hybrid force-position control implementation
   - loop/ - Control loop implementation
   - sensor/ - Sensor-related implementation
   - drivers/ - Driver layer implementation
@@ -104,6 +111,15 @@ Control Features
 - Stepper Motor FOC Control
   - Trapezoidal curve path planning
   - Support for acceleration, deceleration, speed and time parameters
+- Hybrid Force-Position Control
+  - Control law: tau = tau_ff + kp*(q_des - q) + kd*(dq_des - dq)
+  - Position stiffness adjustment (kp parameter)
+  - Damping coefficient adjustment (kd parameter)
+  - Feedforward torque compensation (gravity/friction compensation)
+  - Output torque limiting protection
+  - Speed filtering (IIR + first-order lowpass + deadzone)
+  - Support for torque-to-current conversion
+  - Suitable for impedance control and compliance control
 - Filters
   - IIR Filter (DF1 structure)
   - PLL Type I Filter

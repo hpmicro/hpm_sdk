@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -7,14 +7,17 @@
 
 #include "udp_echo.h"
 #include "lwip/api.h"
+#include "lwip/netbuf.h"
 #include "lwip/sys.h"
 
 static void udp_echo_thread(void *arg)
 {
     struct netconn *conn;
-    struct netbuf *buf;
-    char buffer[1500];
+    struct netbuf *inbuf;
+    struct netbuf *outbuf;
+    void *data;
     err_t err;
+
     LWIP_UNUSED_ARG(arg);
 
 #if LWIP_IPV6
@@ -27,18 +30,28 @@ static void udp_echo_thread(void *arg)
     LWIP_ERROR("udpecho: invalid conn", (conn != NULL), return;);
 
     while (1) {
-        err = netconn_recv(conn, &buf);
+        err = netconn_recv(conn, &inbuf);
         if (err == ERR_OK) {
-            if (netbuf_copy(buf, buffer, sizeof(buffer)) != buf->p->tot_len) {
-                LWIP_DEBUGF(LWIP_DBG_ON, ("netbuf_copy failed\n"));
-            } else {
-                buffer[buf->p->tot_len] = '\0';
-                err = netconn_send(conn, buf);
-                if (err != ERR_OK) {
-                    LWIP_DEBUGF(LWIP_DBG_ON, ("netconn_send failed: %d\n", (int)err));
+            /* create a new netbuf */
+            outbuf = netbuf_new();
+            if (outbuf != NULL) {
+                /* allocate memory for the new netbuf */
+                data = netbuf_alloc(outbuf, netbuf_len(inbuf));
+                if (data != NULL) {
+                    /* copy payload from inbuf to outbuf */
+                    if (netbuf_copy(inbuf, data, netbuf_len(inbuf)) == netbuf_len(inbuf)) {
+                        /* send using the new netbuf with source address and port */
+                        err = netconn_sendto(conn, outbuf, netbuf_fromaddr(inbuf), netbuf_fromport(inbuf));
+                        if (err != ERR_OK) {
+                            LWIP_DEBUGF(LWIP_DBG_ON, ("netconn_sendto failed: %d\n", (int)err));
+                        }
+                    } else {
+                        LWIP_DEBUGF(LWIP_DBG_ON, ("netbuf_copy failed\n"));
+                    }
                 }
+                netbuf_delete(outbuf);
             }
-            netbuf_delete(buf);
+            netbuf_delete(inbuf);
         }
     }
 }

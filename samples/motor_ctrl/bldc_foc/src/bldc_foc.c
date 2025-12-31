@@ -747,9 +747,12 @@ void pwm_init(void)
 
 void pwm_init(void)
 {
-    pwmv2_cmp_config_t cmp_cfg[2];
-    pwmv2_pair_config_t pwm_cfg;
-    pwmv2_cmp_calculate_cfg_t cal;
+    pwmv2_cmp_config_t cmp_cfg[2] = {0};
+    pwmv2_pair_config_t pwm_cfg = {0};
+    pwmv2_cmp_calculate_cfg_t cal = {0};
+
+    pwmv2_get_default_config(&pwm_cfg.pwm[0]);
+    pwmv2_get_default_config(&pwm_cfg.pwm[1]);
 
     cmp_cfg[0].cmp = PWM_RELOAD;
     cmp_cfg[0].enable_half_cmp = false;
@@ -845,8 +848,8 @@ void pwm_init(void)
 #else
 void pwm_init(void)
 {
-    pwmv2_cmp_config_t cmp_cfg[2];
-    pwmv2_pair_config_t pwm_cfg;
+    pwmv2_cmp_config_t cmp_cfg[2] = {0};
+    pwmv2_pair_config_t pwm_cfg = {0};
 
     cmp_cfg[0].cmp = PWM_RELOAD;
     cmp_cfg[0].enable_half_cmp = false;
@@ -861,6 +864,8 @@ void pwm_init(void)
     cmp_cfg[1].cmp_source_index = PWMV2_SHADOW_INDEX(2);
     cmp_cfg[1].update_trigger = pwm_shadow_register_update_on_reload;
 
+    pwmv2_get_default_config(&pwm_cfg.pwm[0]);
+    pwmv2_get_default_config(&pwm_cfg.pwm[1]);
     pwm_cfg.pwm[0].enable_output = true;
     pwm_cfg.pwm[0].enable_async_fault = false;
     pwm_cfg.pwm[0].enable_sync_fault = false;

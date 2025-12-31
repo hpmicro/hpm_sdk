@@ -68,6 +68,7 @@ static inline void rvbacktrace_get_stack(uintptr_t *estack)
 void rvbacktrace(void); // backtrace function for usr
 void rvbacktrace_trap(void *casue, void *epc); // backtrace function used in trap
 void rvbacktrace_fno(int (*print_func)(const char *fmt, ...));
+void rvbacktrace_exception(int (*print_func)(const char *fmt, ...));
 void rvbacktrace_fno_bm(int (*print_func)(const char *fmt, ...));
 int rvbacktrace_fomit(int (*print_func)(const char *fmt, ...));
 int rvbacktrace_fomit_trap(int (*print_func)(const char *fmt, ...));

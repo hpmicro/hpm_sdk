@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -13,8 +13,8 @@
 /* Please confirm the actual VREFH voltage according to your HW design! */
 #define ADC_VREFH_VOL   (3270U)
 
-/* Get REF25C data */
-#define ADC_GET_REF25_VAL() (otp_read_from_shadow(ADC_SOC_OTP_TSNS_REF25_SHIFT) & ADC_SOC_OTP_TSNS_REF25_MASK)
+/* Get reference temperature data */
+#define ADC_GET_REF_TEMP_VAL() (otp_read_from_shadow(ADC_SOC_OTP_TSNS_REF_TEMP_SHIFT) & ADC_SOC_OTP_TSNS_REF_TEMP_MASK)
 
 /* Make sure the sample time from 10us to 100us */
 #define ADC_SAMPLE_CYCLE (511U)
@@ -108,7 +108,7 @@ void oneshot_handler(void)
 {
     int16_t temp;
     uint16_t result;
-    uint16_t vout, vout25c;
+    uint16_t vout, vout_ref_temp;
 
     if (adc16_get_oneshot_result(BOARD_APP_ADC16_BASE, ADC16_SOC_TEMP_CH_NUM, &result) == status_success) {
         if (adc16_is_nonblocking_mode(BOARD_APP_ADC16_BASE)) {
@@ -119,11 +119,11 @@ void oneshot_handler(void)
             /* Calculate vout */
             vout = result * ADC_SCALING / ADC_MAX_SAMPLE_VALUE * ADC_VREFH_VOL / ADC_SCALING;
 
-            /* Calculate vout25c */
-            vout25c = (uint16_t)(ADC_GET_REF25_VAL() * ADC_SCALING / ADC_SOC_VOUT25C_MAX_SAMPLE_VALUE * ADC_SOC_TEMPSENS_REF25_VOL / ADC_SCALING);
+            /* Calculate vout of reference temp */
+            vout_ref_temp = (uint16_t)(ADC_GET_REF_TEMP_VAL() * ADC_SCALING / ADC_SOC_VOUT_REF_TEMP_MAX_SAMPLE_VALUE * ADC_SOC_TEMPSENS_REF_TEMP_VOL / ADC_SCALING);
 
             /* Calculate temperature */
-            temp = (int16_t)((vout - vout25c) * ADC_SOC_REF_SLOPE + ADC_SOC_REF_TEMP);
+            temp = (int16_t)((vout - vout_ref_temp) * ADC_SOC_REF_SLOPE + ADC_SOC_REF_TEMP);
 
             printf("Current Soc Temp: %d℃\n", temp);
     }

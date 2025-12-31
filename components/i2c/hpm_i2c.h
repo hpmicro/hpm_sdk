@@ -210,6 +210,23 @@ hpm_stat_t hpm_i2c_slave_write_blocking(hpm_i2c_context_t *context, uint8_t *buf
  */
 hpm_stat_t hpm_i2c_slave_read_blocking(hpm_i2c_context_t *context, uint8_t *buf, uint32_t size, uint32_t timeout);
 
+/**
+ * @brief I2C master sequence transfer in blocking mode
+ *
+ * This function performs a sequence transfer operation for an I2C master device.
+ * It can perform both read and write operations in a single sequence.
+ *
+ * @param [in] context A pointer to the struct of "hpm_i2c_context_t"
+ * @param [in] device_address Address of the I2C slave device (7-bit or 10-bit address, depending on the hardware)
+ * @param [in] flags Flags indicating the transfer direction and other options
+ * @param [in] buf Pointer to the buffer containing the data to be written
+ * @param [in] size Number of bytes to write
+ * @param [in] timeout Timeout for the operation, in milliseconds. If the operation does not complete within this time, the function will return an error
+ * @retval hpm_stat_t Operation status, indicating success or error codes
+ */
+hpm_stat_t hpm_i2c_master_seq_transfer_blocking(hpm_i2c_context_t *context, uint16_t device_address, uint8_t flags,
+                                                uint8_t *buf, uint32_t size, uint32_t timeout);
+
 #if USE_I2C_DMA_MGR
 /**
  * @brief Install I2C DMA transfer complete callback function
@@ -322,6 +339,37 @@ hpm_stat_t hpm_i2c_slave_write_nonblocking(hpm_i2c_context_t *context, uint8_t *
  * @return A pointer to the DMA resource if the configuration object exists; otherwise, returns NULL.
  */
 dma_resource_t *hpm_i2c_get_dma_mgr_resource(hpm_i2c_context_t *context);
+
+/**
+ * @brief Install I2C DMA transfer complete callback function
+ *
+ * This function is used to install a callback function for I2C DMA transfer.
+ * When the DMA transfer is complete, the callback function will be called.
+ * @note Unlike the hpm_i2c_dma_mgr_install_callback API, this API registers directly to the DMA manager and uses a user-defined callback
+ * @param [in] context A pointer to the struct of "hpm_i2c_context_t"
+ * @param [in] complete Pointer to the callback function that will be called when the I2C DMA transfer is complete.
+ * @param [in] user_data Pointer to the user data that will be passed to the callback function.
+ *
+ * @retval hpm_stat_t Operation status, indicating success or error codes
+ */
+hpm_stat_t hpm_i2c_dma_mgr_install_custom_callback(hpm_i2c_context_t *context, dma_mgr_chn_cb_t complete, void *user_data);
+
+
+/**
+ * @brief I2C master sequence transfer in non-blocking mode
+ *
+ * This function performs a sequence transfer operation for an I2C master device.
+ * It can perform both read and write operations in a single sequence.
+ * @note Unlike the hpm_i2c_master_seq_transfer_blocking API, this API does not wait for the transfer to complete.
+ *
+ * @param [in] context A pointer to the struct of "hpm_i2c_context_t"
+ * @param [in] device_address Address of the I2C slave device (7-bit or 10-bit address, depending on the hardware)
+ * @param [in] flags Flags indicating the transfer direction and other options
+ * @param [in] buf Pointer to the buffer containing the data to be written or read
+ * @param [in] size Number of bytes to write or read
+ * @retval hpm_stat_t Operation status, indicating success or error codes
+ */
+hpm_stat_t hpm_i2c_master_seq_transfer_nonblocking(hpm_i2c_context_t *context, uint16_t device_address, uint8_t flags, uint8_t *buf, uint32_t size);
 
 #endif
 #ifdef __cplusplus

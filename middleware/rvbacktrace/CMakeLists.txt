@@ -1,10 +1,11 @@
-# Copyright (c) 2024 HPMicro
+# Copyright (c) 2024-2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 
 sdk_inc(include)
 sdk_src(src/rv_backtrace.c)
 
+sdk_compile_definitions(-DUSE_RV_BACKTRACE=1)
 if(RV_BACKTRACE_USE_FP)
     sdk_src(src/rv_backtrace_fno.c)
     sdk_compile_options("-fno-omit-frame-pointer")

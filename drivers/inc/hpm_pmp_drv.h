@@ -32,7 +32,7 @@ typedef struct pmp_entry_struct {
         struct {
             uint8_t entry_addr_matching_mode   : 2;
             uint8_t mem_type_attribute         : 4;
-            uint8_t automic_mem_operation_ctrl : 1;
+            uint8_t atomic_mem_operation_ctrl  : 1;
             uint8_t reserved                   : 1;
         };
         uint8_t val;
@@ -70,7 +70,7 @@ typedef struct pma_attribute_struct {
         struct {
             uint8_t entry_addr_matching_mode   : 2;
             uint8_t mem_type_attribute         : 4;
-            uint8_t automic_mem_operation_ctrl : 1;
+            uint8_t atomic_mem_operation_ctrl  : 1;
             uint8_t reserved                   : 1;
         };
         uint8_t val;
@@ -115,25 +115,25 @@ typedef struct pma_attribute_struct {
 
 /**
  * @brief PMP Configuration
- * @param r - READ Access control, valid value: READ_EN, READ_DIS
- * @param w - Write access control, valid value: WRITE_EN, WRITE_DIS
- * @param x - Instruction Execution control, valid value: EXECUTE_EN, EXECUTE_DIS
- * @param m - Address matching mode, valid value:
- *            ADDR_MATCH_MODE_OFF - Null region
+ * @param [in] r - READ Access control, valid value: READ_EN, READ_DIS
+ * @param [in] w - Write access control, valid value: WRITE_EN, WRITE_DIS
+ * @param [in] x - Instruction Execution control, valid value: EXECUTE_EN, EXECUTE_DIS
+ * @param [in] m - Address matching mode, valid value:
+ *            ADDR_MATCH_MODE_OFF - Null region (disabled)
  *            ADDR_MATCH_TOR - Top of range. For pmp_addr0, any address < pmp_addr0 matches, for other regions,
  *                             any address which meets ( pmp_addr[i-1]  <= addr < pmp_addr) matches.
  *            ADDR_MATCH_NAPOT - Naturally aligned power-of-2 region, minimal size must be 8 bytes
- * @param l - Write lock and permission enforcement bit for Machine mode, valid value: REG_LOCK, REG_UNLOCK
+ * @param [in] l - Write lock and permission enforcement bit for Machine mode, valid value: REG_LOCK, REG_UNLOCK
  *            If set to REG_LOCK, the PMP entry is locked and cannot be modified by software until system reset.
  *            If set to REG_UNLOCK, the PMP entry can be modified by software.
  */
 #define PMP_CFG(r, w, x, m, l) ((r) | ((w) << 1) | ((x) << 2) | ((m) << 3) | ((l) << 7))
 /**
  * @brief PMA Configuration
- * @param m - Entry address matching mode, valid value:
+ * @param [in] m - Entry address matching mode, valid value:
  *            ADDR_MATCH_MODE_OFF - This PMA entry is disabled
  *            ADDR_MATCH_NAPOT - Naturally aligned power-of-2 region， the granularity is 4K bytes
- * @param t - Memory type attributes, valid value:
+ * @param [in] t - Memory type attributes, valid value:
  *            MEM_TYPE_DEV_NON_BUF - Device, Non-bufferable
  *            MEM_TYPE_DEV_BUF - Device, bufferable
  *            MEM_TYPE_MEM_NON_CACHE_NON_BUF - Memory, Non-cacheable, Non-bufferable
@@ -145,7 +145,7 @@ typedef struct pma_attribute_struct {
  *            MEM_TYPE_MEM_WB_READ_WRITE_ALLOC - Memory, Write-back, Write-Allocate, Read-Allocate
  *            MEM_TYPE_EMPTY_HOLE - Empty hole, nothing exists
  *
- * @param n - Indicate Whether Atomic Memory Operation instructions are not supported in this region, valid value:
+ * @param [in] n - Indicate whether Atomic Memory Operation instructions are supported in this region, valid value:
  *            AMO_EN - Atomic Memory Operations are supported
  *            AMO_DIS - Atomic Memory Operations are not supported
  */
@@ -156,16 +156,28 @@ typedef struct pma_attribute_struct {
 #define PMP_TOR_ADDR(addr) ((addr) >> 2)
 /**
  * @brief Format PMP Natural Aligned Region
- * @param x - start address
- * @param n - power-of-2 aligned length
+ * @param [in] x - start address (must be aligned to n)
+ * @param [in] n - power-of-2 aligned length (minimum 8 bytes)
+ * @note the API pmp_get_aligned_len can be used to get the aligned length
+ * @note NAPOT encoding: pmpaddr = (base + size/2 - 1) >> 2
+ *       The number of trailing 1 bits in pmpaddr encodes the region size:
+ *       - 0 trailing 1s: 8-byte region
+ *       - 1 trailing 1: 16-byte region
+ *       - N trailing 1s: 2^(N+3) byte region
  */
-#define PMP_NAPOT_ADDR(x, n) ((((uint32_t)(x) >> 2) | (((uint32_t)(n) - 1U) >> 3)) & ~((uint32_t)(n) >> 3))
+#define PMP_NAPOT_ADDR(x, n) (((uint32_t)(x) + (((uint32_t)(n)) >> 1) - 1U) >> 2)
 /**
  * @brief Format PMA Natural Aligned Region
- * @param x - start address
- * @param n - power-of-2 aligned length
+ * @param [in] x - start address (must be aligned to n)
+ * @param [in] n - power-of-2 aligned length (minimum 8 bytes)
+ * @note the API pmp_get_aligned_len can be used to get the aligned length
+ * @note NAPOT encoding: pmaaddr = (base + size/2 - 1) >> 2
+ *       The number of trailing 1 bits in pmaaddr encodes the region size:
+ *       - 0 trailing 1s: 8-byte region
+ *       - 1 trailing 1: 16-byte region
+ *       - N trailing 1s: 2^(N+3) byte region
  */
-#define PMA_NAPOT_ADDR(x, n) ((((uint32_t)(x) >> 2) | (((uint32_t)(n) - 1U) >> 3)) & ~((uint32_t)(n) >> 3))
+#define PMA_NAPOT_ADDR(x, n) (((uint32_t)(x) + (((uint32_t)(n)) >> 1) - 1U) >> 2)
 
 #ifdef __cplusplus
 extern "C" {
@@ -275,6 +287,14 @@ hpm_stat_t pmp_config_entry(const pmp_entry_t *entry, uint32_t entry_index);
  * @retval status_success           Configuration completed without errors
  */
 hpm_stat_t pmp_config(const pmp_entry_t *entry, uint32_t num_of_entries);
+
+
+/**
+ * @brief Get the aligned length of the PMP/PMA entry, the length is round up to next power of 2
+ * @param [in] len The length of the PMP/PMA entry
+ * @return The aligned length of the PMP/PMA entry
+ */
+uint32_t pmp_get_aligned_len(uint32_t len);
 
 /**
  * @brief Disable PMP and PMA

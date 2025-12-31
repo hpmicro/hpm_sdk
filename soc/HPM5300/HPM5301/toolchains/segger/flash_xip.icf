@@ -16,7 +16,6 @@ define region AHB_SRAM = [from 0xf0400000 size 32k]; /* AHB_SRAM */
 
 /* Blocks */
 define block vectors with fixed order       { section .vector_table, section .isr_vector, section .isr_vector.* };
-define block vectors_s with fixed order     { section .vector_s_table, section .isr_s_vector };
 define block ctors                          { section .ctors,     section .ctors.*, block with         alphabetical order { init_array } };
 define block dtors                          { section .dtors,     section .dtors.*, block with reverse alphabetical order { fini_array } };
 define block eh_frame                       { section .eh_frame,  section .eh_frame.* };
@@ -71,13 +70,13 @@ initialize by copy with packing=auto        { section .fast, section .fast.*, se
 
 initialize by calling __SEGGER_init_heap    { block heap  };                                        // Init the heap if there is one
 initialize by calling __SEGGER_init_ctors   { block ctors };                                        // Call constructors for global objects which need to be constructed before reaching main (if any). Make sure this is done after setting up heap.
-initialize by copy                          { block vectors, block vectors_s };
+initialize by copy                          { block vectors };
 
 /* Placement */
 place in NOR_CFG_OPTION                     { section .nor_cfg_option };
 place in BOOT_HEADER with fixed order       { block boot_header };
 place at start of FLASH with fixed order     { symbol _start };
-place at start of ILM with fixed order      { block vectors, block vectors_s };
+place at start of ILM with fixed order      { block vectors };
 place in FLASH with minimum size order       {
                                               block tdata_load,                        // Thread-local-storage load image
                                               block ctors,                             // Constructors block

@@ -819,6 +819,12 @@ typedef enum _sgtl_sclk_edge {
     sgtl_sclk_valid_edge_failing = 1U, /*!< SCLK failling edge */
 } sgtl_sclk_edge_t;
 
+typedef enum _sgtl_lrclk_polarity {
+    sgtl_lrclk_polarity_default               = 0U, /*!< LRCLK default polarity for Philips/Left Justified/Right Justified */
+    sgtl_lrclk_polarity_low_for_left_channel  = 1U, /*!< LRCLK low for left channel for Philips/Left Justified/Right Justified */
+    sgtl_lrclk_polarity_high_for_left_channel = 2U, /*!< LRCLK high for left channel for Philips/Left Justified/Right Justified */
+} sgtl_lrclk_polarity_t;
+
 /*! @brief Audio format configuration. */
 typedef struct _sgtl_audio_format {
     uint32_t mclk_hz;          /*!< master clock */
@@ -833,6 +839,7 @@ typedef struct _sgtl_config {
     sgtl_protocol_t bus;        /*!< Audio transfer protocol */
     bool master;          /*!< Master or slave. True means master, false means slave. */
     sgtl_audio_format_t format; /*!< audio format */
+    sgtl_lrclk_polarity_t lrclk_polarity; /*!< LRCLK polarity for Philips/Left Justified/Right Justified protocol */
 } sgtl_config_t;
 
 typedef struct {
@@ -889,6 +896,14 @@ hpm_stat_t sgtl_set_data_route(sgtl_context_t *context, sgtl_route_t route);
  * @param protocol Audio data transfer protocol.
  */
 hpm_stat_t sgtl_set_protocol(sgtl_context_t *context, sgtl_protocol_t protocol);
+
+/*!
+ * @brief Invert LRCLK polarity.
+ *
+ * @param context Sgtl5000 context structure.
+ * @param invert true for invert LRCLK polarity.
+ */
+hpm_stat_t sgtl_invert_lrclk_polarity(sgtl_context_t *context, bool invert);
 
 /*!
  * @brief Set sgtl5000 as master or slave.

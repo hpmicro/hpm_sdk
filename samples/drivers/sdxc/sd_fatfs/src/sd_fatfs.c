@@ -137,7 +137,7 @@ static FRESULT sd_mkfs(void)
 
 static FRESULT sd_write_file(void)
 {
-    FRESULT fresult = f_open(&s_file, "readme.txt", FA_WRITE | FA_CREATE_ALWAYS);
+    FRESULT fresult = f_open(&s_file, "hello.txt", FA_WRITE | FA_CREATE_ALWAYS);
     if (fresult != FR_OK) {
         printf("Create new file failed, cause: %d\n", show_error_string(fresult));
     } else {
@@ -159,7 +159,7 @@ static FRESULT sd_write_file(void)
 
 static FRESULT sd_read_file(void)
 {
-    FRESULT fresult = f_open(&s_file, "readme.txt", FA_READ);
+    FRESULT fresult = f_open(&s_file, "hello.txt", FA_READ);
     if (fresult != FR_OK) {
         printf("Open file failed, cause: %s\n", show_error_string(fresult));
     } else {

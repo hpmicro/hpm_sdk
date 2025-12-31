@@ -28,13 +28,20 @@ if (isdefinedsymbol(_flash_size)) {
   define symbol __size_flash__          = 8M;
 }
 
+if (isdefinedsymbol(_noncacheable_size)) {
+  define symbol __noncacheable_size__    = _noncacheable_size;
+} else {
+  define symbol __noncacheable_size__    = 64k;
+}
+
 /* Regions */
 define region NOR_CFG_OPTION = mem:[ from 0x80000400 size 0x0C00 ];
 define region BOOT_HEADER = mem:[ from 0x80001000 size 0x90 ];
 define region FLASH = mem:[from 0x80003000 size (__size_flash__ - 0x3000) ];   /* FLASH */
 define region ILM = mem:[from 0x00000000 size 128k];    /* ILM */
 define region DLM = mem:[from 0x00200000 size 128k];    /* DLM */
-define region AXI_SRAM = mem:[from 0x01200000 size 256k];
+define region AXI_SRAM = mem:[from 0x01200000 size 256k - __noncacheable_size__];
+define region NONCACHEABLE_RAM = mem:[from 0x01240000 - __noncacheable_size__ size __noncacheable_size__];
 define region AHB_SRAM = mem:[from 0xF0200000 size 32k];
 
 /* Blocks */
@@ -72,6 +79,9 @@ define exported symbol __app_load_addr__ = start(FLASH);
 define exported symbol __app_offset__ = __app_load_addr__ - __boot_header_load_addr__;
 define exported symbol __boot_header_length__ = size(BOOT_HEADER);
 
+define exported symbol __noncacheable_start__ = start(NONCACHEABLE_RAM);
+define exported symbol __noncacheable_end__ = end(NONCACHEABLE_RAM) + 1;
+
 /* Initialization */
 do not initialize                           { section .noncacheable, section .fast_ram };    // Legacy sections, kept for backwards compatibility
 do not initialize                           { section .non_init, section .non_init.*, section .*.non_init, section .*.non_init.* };
@@ -100,7 +110,8 @@ place in AXI_SRAM                           { block framebuffer };
 place in AXI_SRAM                           {
                                               block RW_DATA
                                             };
-place in DLM                                { section .noncacheable.non_init, section .noncacheable.non_init.*, section .noncacheable.init, section .noncacheable.init.*, section .noncacheable.bss, section .noncacheable.bss.*, section .noncacheable };  // Noncacheable
+
+place in NONCACHEABLE_RAM                   { section .noncacheable.non_init, section .noncacheable.non_init.*, section .noncacheable.init, section .noncacheable.init.*, section .noncacheable.bss, section .noncacheable.bss.*, section .noncacheable };  // Noncacheable
 place in AHB_SRAM                           { section .ahb_sram, section .ahb_sram.*};                                   // AHB SRAM memory
 place in DLM                                { section .fast_ram.init, section .fast_ram.init.*, section .fast_ram.non_init,  section .fast_ram.non_init.*, section .fast_ram.bss, section .fast_ram.bss.*, section .fast_ram };   // Fast access memory
 place in DLM                                { block HEAP };                                         // Heap reserved block

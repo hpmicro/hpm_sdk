@@ -20,6 +20,9 @@
 #if !defined(CONFIG_NDEBUG_CONSOLE) || !CONFIG_NDEBUG_CONSOLE
 #include "hpm_debug_console.h"
 #endif
+#if defined(CONFIG_EEPROM_DEVICE_I2C)
+#include "eeprom_device.h"
+#endif
 
 #define BOARD_NAME          "hpm6800evk"
 #define BOARD_UF2_SIGNATURE (0x0A4D5048UL)
@@ -103,6 +106,10 @@
 #define BOARD_APP_I2C_DMAMUX   HPM_DMAMUX
 #define BOARD_APP_I2C_DMA_SRC  HPM_DMA_SRC_I2C1
 
+#define BOARD_EEPROM_I2C_BASE     HPM_I2C1
+/* Abstract eeprom id definition */
+#define BOARD_EEPROM_ABSTRACT_ID E2P_DEVICE_AT24C02
+
 /* cam */
 #define BOARD_CAM_I2C_BASE     HPM_I2C0
 #define BOARD_CAM_I2C_CLK_NAME clock_i2c0
@@ -155,6 +162,10 @@
 /* pdm selection */
 #define BOARD_PDM_SINGLE_CHANNEL_MASK (0x02U)
 #define BOARD_PDM_DUAL_CHANNEL_MASK   (0x22U)
+
+/* DAO section */
+#define BOARD_DAO_SINGLE_CHANNEL_MASK (1U)
+#define BOARD_DAO_I2S_DMA_REQ         (HPM_DMA_SRC_I2S1_TX)
 
 /* i2c for i2s codec section */
 #define BOARD_CODEC_I2C_BASE     HPM_I2C3
@@ -239,6 +250,10 @@
 #define BOARD_APP_CAN_BASE HPM_MCAN3
 #define BOARD_APP_CAN_IRQn IRQn_MCAN3
 
+#define BOARD_CAN_STB_GPIO_CTRL HPM_GPIO0
+#define BOARD_CAN_STB_GPIO_INDEX GPIO_DI_GPIOD
+#define BOARD_CAN_STB_GPIO_PIN   13
+
 /*
  * timer for board delay
  */
@@ -281,6 +296,12 @@
 #define BOARD_APP_GPIO_PIN   6
 #define BOARD_BUTTON_PRESSED_VALUE 0
 
+#define BOARD_KEY1_GPIO_INDEX GPIO_DI_GPIOF
+#define BOARD_KEY1_GPIO_PIN   6
+#define BOARD_KEY2_GPIO_INDEX GPIO_DI_GPIOF
+#define BOARD_KEY2_GPIO_PIN   7
+#define BOARD_KEY_GPIO_IRQ    IRQn_GPIO0_F
+
 /* ACMP desction */
 #define BOARD_ACMP             0
 #define BOARD_ACMP_CHANNEL     ACMP_CHANNEL_CHN1
@@ -298,6 +319,10 @@
 #define BOARD_LCD_BASE HPM_LCDC
 #define BOARD_LCD_IRQ  IRQn_LCDC
 #define clock_display  clock_lcd0
+
+#ifndef BOARD_LCD_FPS
+#define BOARD_LCD_FPS 60
+#endif
 
 #ifndef BOARD_LCD_WIDTH
 #define BOARD_LCD_WIDTH PANEL_SIZE_WIDTH
@@ -486,6 +511,22 @@
 /* BGPR */
 #define BOARD_BGPR HPM_BGPR
 
+#define BOARD_APP_ESP_HOSTED_GPIO_RESET_PIN        IOC_PAD_PE11
+#define BOARD_APP_ESP_HOSTED_GPIO_HANDSHAKE_PIN    IOC_PAD_PE12
+#define BOARD_APP_ESP_HOSTED_GPIO_HANDSHAKE_IRQ    IRQn_GPIO0_E
+#define BOARD_APP_ESP_HOSTED_GPIO_DATA_READY_PIN   IOC_PAD_PE13
+#define BOARD_APP_ESP_HOSTED_GPIO_DATA_READY_IRQ   IRQn_GPIO0_E
+
+/* Brownout Indicate Pin */
+
+#define BOARD_BROWNOUT_INDICATE_GPIO_CTRL          HPM_GPIO0
+#define BOARD_BROWNOUT_INDICATE_PIN                IOC_PAD_PE27
+
+/* usb id pin */
+#define BOARD_USB_ID_GPIO_CTRL  HPM_GPIO0
+#define BOARD_USB_ID_GPIO_INDEX GPIO_DI_GPIOF
+#define BOARD_USB_ID_GPIO_PIN   (4U)
+
 #if defined(__cplusplus)
 extern "C" {
 #endif /* __cplusplus */
@@ -575,6 +616,34 @@ void board_write_mipi_csi_cam_rst(uint8_t state);
 void board_init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp);
 void board_init_clk_ref_pin(void);
 uint32_t board_init_gptmr_clock(GPTMR_Type *ptr);
+
+void board_can_transceiver_phy_set(MCAN_Type *ptr, bool enable);
+uint32_t board_init_i2c_eeprom_clock(I2C_Type *ptr);
+uint32_t board_init_spi_eeprom_clock(SPI_Type *ptr);
+
+/*
+ * Wrap pinmux initialization.
+ */
+void init_uart_pins(UART_Type *ptr);
+void init_uart_pin_as_gpio(UART_Type *ptr);
+void init_i2c_pins(I2C_Type *ptr);
+void init_spi_pins(SPI_Type *ptr);
+void init_spi_pins_with_gpio_as_cs(SPI_Type *ptr);
+void init_pins(void);
+void init_gptmr_pins(GPTMR_Type *ptr);
+void init_sdxc_cmd_pin(SDXC_Type *ptr, bool open_drain, bool is_1v8);
+void init_sdxc_ds_pin(SDXC_Type *ptr);
+void init_sdxc_pwr_pin(SDXC_Type *ptr, bool as_gpio);
+void init_sdxc_vsel_pin(SDXC_Type *ptr, bool as_gpio);
+void init_sdxc_cd_pin(SDXC_Type *ptr, bool as_gpio);
+void init_sdxc_clk_data_pins(SDXC_Type *ptr, uint32_t width, bool is_1v8);
+void init_usb_pins(USB_Type *ptr);
+void init_can_pins(MCAN_Type *ptr);
+void init_can_transceiver_phy_pin(MCAN_Type *ptr);
+void init_i2s_pins(I2S_Type *ptr);
+void init_enet_pins(ENET_Type *ptr);
+void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_output);
+void board_init_brownout_indicate_pin(void);
 
 #if defined(__cplusplus)
 }

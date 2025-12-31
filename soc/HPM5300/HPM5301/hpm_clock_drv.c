@@ -28,6 +28,7 @@
 #define WDG_INSTANCE_NUM (2U)
 #define BUS_FREQ_MAX           (200000000UL)
 #define FREQ_1MHz (1000000UL)
+#define FREQ_1KHz (1000UL)
 
 /* Clock On/Off definitions */
 #define CLOCK_ON (true)
@@ -525,7 +526,7 @@ uint32_t clock_get_core_clock_ticks_per_ms(void)
     if (hpm_core_clock == 0U) {
         clock_update_core_clock();
     }
-    return (hpm_core_clock + FREQ_1MHz - 1U) / 1000;
+    return (hpm_core_clock + FREQ_1KHz - 1U) / FREQ_1KHz;
 }
 
 void clock_cpu_delay_us(uint32_t us)

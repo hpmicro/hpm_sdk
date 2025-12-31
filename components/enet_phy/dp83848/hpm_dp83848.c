@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -17,12 +17,12 @@
  * Internal API
  *---------------------------------------------------------------------
  */
-static bool dp83848_check_id(ENET_Type *ptr)
+static bool dp83848_check_id(ENET_Type *ptr, uint32_t phy_addr)
 {
     uint16_t id1, id2;
 
-    id1 = enet_read_phy(ptr, DP83848_ADDR, DP83848_PHYIDR1);
-    id2 = enet_read_phy(ptr, DP83848_ADDR, DP83848_PHYIDR2);
+    id1 = enet_read_phy(ptr, phy_addr, DP83848_PHYIDR1);
+    id2 = enet_read_phy(ptr, phy_addr, DP83848_PHYIDR2);
 
     if (DP83848_PHYIDR1_OUI_MSB_GET(id1) == DP83848_ID1 && DP83848_PHYIDR2_OUI_LSB_GET(id2) == DP83848_ID2) {
         return true;
@@ -35,17 +35,20 @@ static bool dp83848_check_id(ENET_Type *ptr)
  * API
  *---------------------------------------------------------------------
  */
-void dp83848_reset(ENET_Type *ptr)
+bool dp83848_reset(ENET_Type *ptr, uint32_t phy_addr)
 {
     uint16_t data;
+    uint32_t retry_cnt = ENET_PHY_SW_RESET_RETRY_CNT;
 
     /* PHY reset */
-    enet_write_phy(ptr, DP83848_ADDR, DP83848_BMCR, DP83848_BMCR_RESET_SET(1));
+    enet_write_phy(ptr, phy_addr, DP83848_BMCR, DP83848_BMCR_RESET_SET(1));
 
     /* wait until the reset is completed */
     do {
-        data = enet_read_phy(ptr, DP83848_ADDR, DP83848_BMCR);
-    } while (DP83848_BMCR_RESET_GET(data));
+        data = enet_read_phy(ptr, phy_addr, DP83848_BMCR);
+    } while (DP83848_BMCR_RESET_GET(data) && --retry_cnt);
+
+    return retry_cnt > 0 ? true : false;
 }
 
 void dp83848_basic_mode_default_config(ENET_Type *ptr, dp83848_config_t *config)
@@ -62,7 +65,7 @@ void dp83848_basic_mode_default_config(ENET_Type *ptr, dp83848_config_t *config)
     #endif
 }
 
-bool dp83848_basic_mode_init(ENET_Type *ptr, dp83848_config_t *config)
+bool dp83848_basic_mode_init(ENET_Type *ptr, uint32_t phy_addr, dp83848_config_t *config)
 {
     uint16_t data = 0;
 
@@ -80,20 +83,20 @@ bool dp83848_basic_mode_init(ENET_Type *ptr, dp83848_config_t *config)
     }
 
     /* check the id of dp83848 */
-    if (dp83848_check_id(ptr) == false) {
+    if (dp83848_check_id(ptr, phy_addr) == false) {
         return false;
     }
 
-    enet_write_phy(ptr, DP83848_ADDR, DP83848_BMCR, data);
+    enet_write_phy(ptr, phy_addr, DP83848_BMCR, data);
 
     return true;
 }
 
-void dp83848_get_phy_status(ENET_Type *ptr, enet_phy_status_t *status)
+void dp83848_get_phy_status(ENET_Type *ptr, uint32_t phy_addr, enet_phy_status_t *status)
 {
     uint16_t data;
 
-    data = enet_read_phy(ptr, DP83848_ADDR, DP83848_PHYSTS);
+    data = enet_read_phy(ptr, phy_addr, DP83848_PHYSTS);
     status->enet_phy_link = DP83848_PHYSTS_LINK_STATUS_GET(data);
     status->enet_phy_speed = DP83848_PHYSTS_SPEED_STATUS_GET(data) ? enet_phy_port_speed_10mbps : enet_phy_port_speed_100mbps;
     status->enet_phy_duplex = DP83848_PHYSTS_DUPLEX_STATUS_GET(data);

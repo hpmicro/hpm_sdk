@@ -99,6 +99,10 @@ static void ehci_qh_free(struct usbh_bus *bus, struct ehci_qh_hw *qh)
     size_t flags;
 
     flags = usb_osal_enter_critical_section();
+    if (qh->urb) {
+        qh->urb->hcpriv = NULL;
+        qh->urb = NULL;
+    }
     qtd = EHCI_ADDR2QTD(qh->first_qtd);
 
     while (qtd) {
@@ -336,10 +340,8 @@ static struct ehci_qh_hw *ehci_control_urb_init(struct usbh_bus *bus, struct usb
     }
 
     qtd_setup = ehci_qtd_alloc(bus);
-    qtd_data = ehci_qtd_alloc(bus);
     qtd_status = ehci_qtd_alloc(bus);
-
-    USB_ASSERT_MSG(qtd_setup && qtd_data && qtd_status, "ctrl qtd alloc failed");
+    USB_ASSERT_MSG(qtd_setup && qtd_status, "ctrl qtd alloc failed");
 
     ehci_qh_fill(qh,
                  urb->hport->dev_addr,
@@ -363,6 +365,9 @@ static struct ehci_qh_hw *ehci_control_urb_init(struct usbh_bus *bus, struct usb
 
     /* fill data qtd */
     if (setup->wLength > 0) {
+        qtd_data = ehci_qtd_alloc(bus);
+        USB_ASSERT_MSG(qtd_data, "ctrl qtd alloc failed");
+
         if ((setup->bmRequestType & 0x80) == 0x80) {
             token = QTD_TOKEN_PID_IN;
         } else {
@@ -615,8 +620,6 @@ static void ehci_urb_waitup(struct usbh_bus *bus, struct usbh_urb *urb)
     struct ehci_qh_hw *qh;
 
     qh = (struct ehci_qh_hw *)urb->hcpriv;
-    qh->urb = NULL;
-    urb->hcpriv = NULL;
 
     qh->remove_in_iaad = 0;
 
@@ -1334,9 +1337,8 @@ int usbh_kill_urb(struct usbh_urb *urb)
     EHCI_HCOR->usbcmd |= (EHCI_USBCMD_PSEN | EHCI_USBCMD_ASEN);
 
     qh = (struct ehci_qh_hw *)urb->hcpriv;
-    urb->hcpriv = NULL;
+    qh->remove_in_iaad = 0;
     urb->errorcode = -USB_ERR_SHUTDOWN;
-    qh->urb = NULL;
 
     if (urb->timeout) {
         usb_osal_sem_give(qh->waitsem);
@@ -1346,16 +1348,21 @@ int usbh_kill_urb(struct usbh_urb *urb)
 
     if (remove_in_iaad) {
         volatile uint32_t timeout = 0;
+        EHCI_HCOR->usbsts = EHCI_USBSTS_IAA;
         EHCI_HCOR->usbcmd |= EHCI_USBCMD_IAAD;
         while (!(EHCI_HCOR->usbsts & EHCI_USBSTS_IAA)) {
-            usb_osal_msleep(1);
             timeout++;
-            if (timeout > 100) {
+            if (timeout > 200000) {
+                USB_LOG_ERR("iaad timeout\r\n");
                 usb_osal_leave_critical_section(flags);
                 return -USB_ERR_TIMEOUT;
             }
         }
         EHCI_HCOR->usbsts = EHCI_USBSTS_IAA;
+    }
+
+    if (urb->complete) {
+        urb->complete(urb->arg, urb->errorcode);
     }
 
     usb_osal_leave_critical_section(flags);

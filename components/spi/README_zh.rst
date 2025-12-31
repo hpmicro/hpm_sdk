@@ -65,7 +65,7 @@ SPI component
 
 
 
-  - SPI BIT order枚举类型，这个枚举用于指定SPI通信中的位顺序。 ``spi_msb_first`` 表示最高有效位优先，而 ``spi_lsb_first`` 表示最低有效位优先。。该枚举在 ``hpm_spi_drv.h`` 中定义。
+  - SPI BIT order枚举类型，这个枚举用于指定SPI通信中的位顺序。 ``spi_msb_first`` 表示最高有效位优先，而 ``spi_lsb_first`` 表示最低有效位优先。该枚举在 ``hpm_spi_drv.h`` 中定义。
 
     .. code-block:: c
 
@@ -299,7 +299,9 @@ DMA配置
                /* TODO */
            }
 
+- **提示**:
 
+  - 如果需要使用自定义的DMA回调函数，可以使用 ``hpm_spi_rx_dma_mgr_install_custom_callback`` 和 ``hpm_spi_tx_dma_mgr_install_custom_callback`` API。该API直接注册到DMA管理器，使用用户自定义的回调。
 
 读写操作，支持主从机模式
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

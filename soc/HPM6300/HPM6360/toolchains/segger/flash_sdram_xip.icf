@@ -13,8 +13,8 @@ define region FLASH = [from 0x80003000 size _flash_size - 0x3000 ];   /* FLASH *
 define region ILM = [from 0x00000000 size 128k];    /* ILM */
 define region DLM = [from 0x00080000 size 128k];    /* DLM */
 define region AXI_SRAM  = [from 0x01080000 size 512k];
-define region SDRAM  = [from 0x40000000 size _extram_size - 4M];
-define region NONCACHEABLE_RAM = [from 0x40000000 + _extram_size - 4M size 4M];
+define region SDRAM  = [from 0x40000000 size _extram_size - _noncacheable_size];
+define region NONCACHEABLE_RAM = [from 0x40000000 + _extram_size - _noncacheable_size size _noncacheable_size];
 define region AHB_SRAM = [from 0xF0300000 size 32k];
 
 /* Blocks */

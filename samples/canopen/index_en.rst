@@ -1,12 +1,12 @@
 .. _samples_canopen:
 
 CANOPEN
-========
+================
 
 .. toctree::
-  :maxdepth: 3
+    :maxdepth: 4
+    :glob:
 
 
-  master/README_en
-  slave/README_en
+    **/*_en
 

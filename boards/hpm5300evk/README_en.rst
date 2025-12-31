@@ -359,6 +359,35 @@ Pin Description
      * - PA30
        - P1[15]
 
+- ESP-HOSTED Pin
+
+.. list-table::
+   :header-rows: 1
+
+   * - Function
+     - Position
+     - Note
+   * - PB06
+     - P1[3]
+     - RESET Pin
+   * - PB12
+     - P1[37]
+     - HANDSHAKE Pin
+   * - PB13
+     - P1[35]
+     - DATA_READY Pin
+
+- BROWNOUT Interrupt Indicator Pin
+
+.. list-table::
+   :header-rows: 1
+
+   * - Function
+     - Position
+   * - PB11
+     - P1[40]
+
+
 .. _hpm5300evk_known_issues:
 
 Board Know Issue

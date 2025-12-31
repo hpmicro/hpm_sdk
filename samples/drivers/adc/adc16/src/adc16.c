@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -378,7 +378,7 @@ void init_period_config(void)
 
     prd_cfg.ch           = BOARD_APP_ADC16_CH_1;
     prd_cfg.prescale     = 22;    /* Set divider: 2^22 clocks */
-    prd_cfg.period_count = 5;     /* 104.86ms when AHB clock at 200MHz is ADC clock source */
+    prd_cfg.period_count = 5;     /* 6 periods */
 
     adc16_set_prd_config(BOARD_APP_ADC16_BASE, &prd_cfg);
 }
@@ -468,7 +468,7 @@ void sequence_handler(void)
 
     }
 
-#if !defined(ADC_SOC_NO_HW_TRIG_SRC) && !defined(ADC_SOC_NO_HW_TRIG_SRC)
+#if !defined(ADC_SOC_NO_HW_TRIG_SRC) && !defined(__ADC16_USE_SW_TRIG)
     adc16_seq_disable_hw_trigger(BOARD_APP_ADC16_BASE);
     /* Stop the trigger source output */
     stop_trigger_source(APP_ADC16_HW_TRIG_SRC);
@@ -479,7 +479,7 @@ void sequence_handler(void)
     /* Clear the flag */
     seq_complete_flag = 0;
 
-#if !defined(ADC_SOC_NO_HW_TRIG_SRC) && !defined(ADC_SOC_NO_HW_TRIG_SRC)
+#if !defined(ADC_SOC_NO_HW_TRIG_SRC) && !defined(__ADC16_USE_SW_TRIG)
     /* Start the trigger source output */
     start_trigger_source(APP_ADC16_HW_TRIG_SRC);
 
@@ -532,7 +532,7 @@ void preemption_handler(void)
 
     }
 
-#if !defined(ADC_SOC_NO_HW_TRIG_SRC) && !defined(ADC_SOC_NO_HW_TRIG_SRC)
+#if !defined(ADC_SOC_NO_HW_TRIG_SRC) && !defined(__ADC16_USE_SW_TRIG)
     /* Stop the trigger source output */
     stop_trigger_source(APP_ADC16_HW_TRIG_SRC);
 #endif
@@ -546,7 +546,7 @@ void preemption_handler(void)
     /* Clear the flag */
     trig_complete_flag = 0;
 
-#if !defined(ADC_SOC_NO_HW_TRIG_SRC) && !defined(ADC_SOC_NO_HW_TRIG_SRC)
+#if !defined(ADC_SOC_NO_HW_TRIG_SRC) && !defined(__ADC16_USE_SW_TRIG)
     /* Start the trigger source output */
      start_trigger_source(APP_ADC16_HW_TRIG_SRC);
 #endif
@@ -556,7 +556,7 @@ bool abort_handler(uint8_t conv_mode)
 {
     if (console_try_receive_byte() == ' ') {
 
-    #if !defined(ADC_SOC_NO_HW_TRIG_SRC) && !defined(ADC_SOC_NO_HW_TRIG_SRC)
+    #if !defined(ADC_SOC_NO_HW_TRIG_SRC) && !defined(__ADC16_USE_SW_TRIG)
         if (conv_mode == adc16_conv_mode_sequence) {
             adc16_seq_disable_hw_trigger(BOARD_APP_ADC16_BASE);
         }

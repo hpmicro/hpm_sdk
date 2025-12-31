@@ -275,6 +275,35 @@ Pin Description
        - J28[11]
        - the pin that controls SPI slave CS
 
+- ESP-HOSTED Pin
+
+.. list-table::
+   :header-rows: 1
+
+   * - Function
+     - Position
+     - Note
+   * - PA07
+     - J28[11]
+     - RESET Pin
+   * - PC13
+     - J28[13]
+     - HANDSHAKE Pin
+   * - PC14
+     - J28[15]
+     - DATA_READY Pin
+
+- BROWNOUT Interrupt Indicator Pin
+
+.. list-table::
+   :header-rows: 1
+
+   * - Function
+     - Position
+   * - PA07
+     - J28[11]
+
+
 .. _hpm6300evk_known_issues:
 
 Board Know Issue

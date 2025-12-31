@@ -17,13 +17,6 @@ USB HID Generic Inout
 
 * 使用USB Type-C线缆连接PC USB端口和开发板USB0端口或者USB1端口
 
-工程配置
-------------
-
-- 文件`CMakeLists.txt`中设置BOARD_DEVICE_RHPORT_NUM为0或1，0表示USB0, 1表示USB1
-
-- USB device 属性可通过tusb_config.h或CMakeListx.txt配置
-
 运行现象
 ------------
 
@@ -31,14 +24,17 @@ USB HID Generic Inout
 
 * 进入相对路径:“samples\tinyusb\device\hid_generic_inout”
 
-* 运行脚本: hid_echo.py
+* 运行脚本: python ./hid_test.py
 
-* 观察USB HID Write发log： PC 发送1024字节至MCU，首字节为output report id
+  * 注意： 确保已安装hid包，步骤如下：
 
-  .. image:: doc/1646393298095.png
-     :alt: 1646393298095.png
+    * 安装 `hid` 包 (https://pypi.org/project/hid/)，指令如下：
 
-* 观察USB HID Read接log：PC 接收1024字节从MCU，首字节为input report id
+      - $ pip install hid
 
-  .. image:: doc/1646386827393.png
-     :alt: 1646386827393.png
+    * `Hid` 包还需依赖 `hidapi` (https://github.com/libusb/hidapi)。Linux系统已经有了hidapi，可直接使用；但Windows还需要从网页下载hidapi，下载后将hidapi.dll（x64的还是x86的根据电脑系统选择）复制到python的安装根目录下。
+
+* 在终端里面输入数值，hid设备将会回复收到的数据，不足64字节的会补零。
+
+  .. image:: doc/hid_test.png
+     :alt: hid_test.png

@@ -530,9 +530,11 @@ void isr_dma(void)
 void request_handler_speaker_set_sampling_freq(void)
 {
     hpm_stat_t state;
-    state = speaker_init_i2s_playback(s_speaker_sample_rate, SPEAKER_AUDIO_DEPTH, OUT_CHANNEL_NUM);
+    uint32_t rate = s_speaker_sample_rate;
+
+    state = speaker_init_i2s_playback(rate, SPEAKER_AUDIO_DEPTH, OUT_CHANNEL_NUM);
     if (state == status_success) {
-        USB_LOG_INFO("Init I2S Clock Ok! Sample Rate: %d, speaker_i2s_mclk_hz: %d\r\n", s_speaker_sample_rate, s_speaker_i2s_mclk_hz);
+        USB_LOG_INFO("Init I2S Clock Ok! Sample Rate: %d, speaker_i2s_mclk_hz: %d\r\n", rate, s_speaker_i2s_mclk_hz);
     } else {
         USB_LOG_INFO("Init I2S Clock Fail!\r\n");
     }
@@ -548,12 +550,14 @@ void task_speaker_play(void *pvParameters)
         usb_osal_sem_take(countsema_speaker_data, USB_OSAL_WAITING_FOREVER);
 
         if (!speaker_out_buff_is_empty()) {
-            ret = speaker_i2s_dma_start_transfer((uint32_t)&s_speaker_out_buffer[s_speaker_out_buffer_front][0],
-                                           s_speaker_out_buffer_size[s_speaker_out_buffer_front]);
-            s_speaker_out_buffer_front++;
-            if (s_speaker_out_buffer_front >= AUDIO_BUFFER_COUNT) {
-                s_speaker_out_buffer_front = 0;
+            uint32_t front = s_speaker_out_buffer_front;  /* defined the order of volatile accesses */
+            ret = speaker_i2s_dma_start_transfer((uint32_t)&s_speaker_out_buffer[front][0],
+                                           s_speaker_out_buffer_size[front]);
+            front++;
+            if (front >= AUDIO_BUFFER_COUNT) {
+                front = 0;
             }
+            s_speaker_out_buffer_front = front;
 
             if (ret == status_success) {
                 /* wait dma tx done. */
@@ -847,8 +851,9 @@ static hpm_stat_t mic_i2s_dma_start_transfer(uint32_t addr, uint32_t size)
 static bool speaker_out_buff_is_empty(void)
 {
     bool empty = false;
+    uint32_t front = s_speaker_out_buffer_front;  /* defined the order of volatile accesses */
 
-    if (s_speaker_out_buffer_front == s_speaker_out_buffer_rear) {
+    if (front == s_speaker_out_buffer_rear) {
         empty = true;
     }
 
@@ -858,8 +863,9 @@ static bool speaker_out_buff_is_empty(void)
 static bool mic_in_buff_is_empty(void)
 {
     bool empty = false;
+    uint32_t front = s_mic_in_buffer_front;  /* defined the order of volatile accesses */
 
-    if (s_mic_in_buffer_front == s_mic_in_buffer_rear) {
+    if (front == s_mic_in_buffer_rear) {
         empty = true;
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -23,6 +23,10 @@
 #define PWM_UNLOCK_KEY (0xB0382607UL)
 #define PWM_CMP_UNABLE_OUTPUT_INDEX (16)
 
+/* DMA selector offset */
+#define PWMV2_DMA_SEL_CMP_OFFSET (0U)
+#define PWMV2_DMA_SEL_COUNTER_RELOAD_OFFSET (24U)
+
 /* IRQ enable bit mask */
 #define PWM_IRQ_FAULT(chn) PWMV2_IRQ_EN_FAULT_IRQ_EN_FAULT_SET((1 << chn))
 #define PWM_IRQ_BURSTEND(counter) PWMV2_IRQ_EN_BURSTEND_IRQ_EN_BURSTEND_SET((1 << counter))
@@ -45,10 +49,6 @@
     (force_output << (pwm_index << 1))
 
 #define PWM_DUTY_CYCLE_FP_MAX ((1U << 24) - 1)
-
-#ifndef PWMV2_SOC_CAL_COUNT_MAX
-    #define PWMV2_SOC_CAL_COUNT_MAX 8
-#endif
 
 #define PWMV2_SHADOW_INDEX(x)  PWMV2_SHADOW_VAL_##x
 #define PWMV2_CMP_INDEX(x) PWMV2_CMP_VAL_WORK_##x
@@ -216,6 +216,7 @@ typedef struct pwmv2_config {
     bool enable_sync_fault;             /**< enable the input faults from trig_mux */
     bool invert_output;                 /**< invert pwm output level */
     bool enable_four_cmp;                /**< Enable the four cmp functions */
+    bool enable_polarity_shadow;        /**< enable polarity shadow register function */
     pwmv2_async_fault_source_config_t async_fault_source;
     pwm_shadow_register_output_polarity_t update_polarity_time;
     pwm_logic_four_cmp_cfg_t logic;     /**< valid only for pwm0/2/4/6 when trig_sel4 is set */
@@ -228,6 +229,7 @@ typedef struct pwmv2_config {
     uint8_t force_trigmux_index;               /**< select one trigger from 8 as force signal */
     pwm_force_trigger_t force_trigger;          /**< @ref pwm_force_trigger_t */
     uint32_t dead_zone_in_half_cycle;   /**< dead zone in half cycle*/
+    uint8_t dead_zone_hrpwm;            /**< dead zone high resolution (0-255), only valid when PWM_SOC_HRPWM_SUPPORT is enabled */
 } pwmv2_config_t;
 
 /**
@@ -264,6 +266,18 @@ extern "C" {
  *
  */
 void pwmv2_deinit(PWMV2_Type *pwm_x);
+
+
+/**
+ * @brief get default pwm config
+ *
+ * @param[out] config @ref pwmv2_config_t
+ */
+static inline void pwmv2_get_default_config(pwmv2_config_t *config)
+{
+    *config = (pwmv2_config_t){0};
+}
+
 
 /**
  * @brief issue all shawdow register
@@ -390,8 +404,8 @@ static inline void pwmv2_set_shadow_val(PWMV2_Type *pwm_x, uint8_t index, uint32
  */
 static inline void pwmv2_force_output(PWMV2_Type *pwm_x, pwm_channel_t chn, pwm_force_mode_t mode, bool invert)
 {
-    pwm_x->FORCE_MODE = (pwm_x->FORCE_MODE & ~(PWMV2_FORCE_MODE_POLARITY_SET((1 << (chn << 1))) | PWMV2_FORCE_MODE_FORCE_MODE_SET((3 << (chn << 1))))) |
-                        PWMV2_FORCE_MODE_POLARITY_SET((invert << (chn << 1))) |
+    pwm_x->FORCE_MODE = (pwm_x->FORCE_MODE & ~(PWMV2_FORCE_MODE_POLARITY_SET((1 << chn)) | PWMV2_FORCE_MODE_FORCE_MODE_SET((3 << (chn << 1))))) |
+                        PWMV2_FORCE_MODE_POLARITY_SET((invert << chn)) |
                         PWMV2_FORCE_MODE_FORCE_MODE_SET((mode << (chn << 1)));
 }
 
@@ -771,6 +785,19 @@ static inline void pwmv2_set_dead_area(PWMV2_Type *pwm_x, pwm_channel_t chn, uin
 }
 
 /**
+ * @brief set pwm dead area with high resolution
+ *
+ * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
+ * @param chn @ref pwm_channel_t
+ * @param dead_cycle dead area in clock cycles (16-bit)
+ * @param dead_hrpwm dead area in high resolution ticks (8-bit, 0-255)
+ */
+static inline void pwmv2_set_dead_area_hrpwm(PWMV2_Type *pwm_x, pwm_channel_t chn, uint16_t dead_cycle, uint8_t dead_hrpwm)
+{
+    pwm_x->PWM[chn].DEAD_AREA = PWMV2_PWM_DEAD_AREA_DEAD_AREA_SET(((uint32_t)dead_cycle << 8) | dead_hrpwm);
+}
+
+/**
  * @brief Setting the comparator as an input to trigmux
  *
  * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
@@ -1051,7 +1078,7 @@ static inline uint32_t pwmv2_get_irq_status_all(PWMV2_Type *pwm_x)
  */
 static inline void pwmv2_clear_calculate_overflow_irq_status(PWMV2_Type *pwm_x)
 {
-    pwm_x->IRQ_STS &= PWMV2_IRQ_STS_IRQ_CAL_OVERFLOW_MASK;
+    pwm_x->IRQ_STS = PWMV2_IRQ_STS_IRQ_CAL_OVERFLOW_MASK;
 }
 
 /**
@@ -1335,7 +1362,7 @@ static inline void pwmv2_disable_fault_irq(PWMV2_Type *pwm_x, pwm_channel_t chan
  */
 static inline void pwmv2_enable_burstend_irq(PWMV2_Type *pwm_x, pwm_counter_t counter_index)
 {
-    pwm_x->IRQ_EN_BURSTEND |= PWMV2_IRQ_EN_FAULT_IRQ_EN_FAULT_SET(1 << counter_index);
+    pwm_x->IRQ_EN_BURSTEND |= PWMV2_IRQ_EN_BURSTEND_IRQ_EN_BURSTEND_SET(1 << counter_index);
 }
 
 /**
@@ -1346,7 +1373,7 @@ static inline void pwmv2_enable_burstend_irq(PWMV2_Type *pwm_x, pwm_counter_t co
  */
 static inline void pwmv2_disable_burstend_irq(PWMV2_Type *pwm_x, pwm_counter_t counter_index)
 {
-    pwm_x->IRQ_EN_BURSTEND &= ~PWMV2_IRQ_EN_FAULT_IRQ_EN_FAULT_SET(1 << counter_index);
+    pwm_x->IRQ_EN_BURSTEND &= ~PWMV2_IRQ_EN_BURSTEND_IRQ_EN_BURSTEND_SET(1 << counter_index);
 }
 
 /**
@@ -1376,14 +1403,22 @@ static inline void pwmv2_disable_dma_at_compare_point(PWMV2_Type *pwm_x, pwm_dma
 /**
  * @brief enable dma at reload point
  *
+ * @note Hardware limitation: counter reload event can only trigger its corresponding DMA channel.
+ *       - counter0 reload -> pwm_dma_0
+ *       - counter1 reload -> pwm_dma_1
+ *       - counter2 reload -> pwm_dma_2
+ *       - counter3 reload -> pwm_dma_3
+ *       Compare events (CMP0~CMP23) do not have such limitation and can trigger any DMA channel.
+ *
  * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
- * @param dma_channel @ref pwm_dma_chn_t
- * @param reload_index @ref pwm_counter_t
+ * @param dma_channel @ref pwm_dma_chn_t, DMA channel to enable
+ * @param reload_index @ref pwm_counter_t, this parameter is not used
  */
 static inline void pwmv2_enable_dma_at_reload_point(PWMV2_Type *pwm_x, pwm_dma_chn_t dma_channel, pwm_counter_t reload_index)
 {
+    (void)reload_index;
     pwm_x->DMA_EN = (pwm_x->DMA_EN & ~((PWMV2_DMA_EN_DMA0_SEL_MASK | PWMV2_DMA_EN_DMA0_EN_MASK) << (PWMV2_DMA_EN_DMA1_SEL_SHIFT * dma_channel))) |
-    ((PWMV2_DMA_EN_DMA0_SEL_SET(reload_index + 24) | PWMV2_DMA_EN_DMA0_EN_MASK) << (PWMV2_DMA_EN_DMA1_SEL_SHIFT * dma_channel));
+    ((PWMV2_DMA_EN_DMA0_SEL_SET(dma_channel + PWMV2_DMA_SEL_COUNTER_RELOAD_OFFSET) | PWMV2_DMA_EN_DMA0_EN_MASK) << (PWMV2_DMA_EN_DMA1_SEL_SHIFT * dma_channel));
 }
 
 /**

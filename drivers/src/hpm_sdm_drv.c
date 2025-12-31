@@ -64,7 +64,7 @@ void sdm_config_channel_common_setting(SDM_Type *ptr, uint8_t ch_index, sdm_chan
 void sdm_get_channel_default_filter_config(SDM_Type *ptr, sdm_filter_config_t *filter_config)
 {
     (void) ptr;
-    filter_config->fifo_threshold = 8;
+    filter_config->fifo_threshold = 7;  /* the number of data in fifo > fifo_threshold generate data ready signal */
     filter_config->en_fifo_threshold_int = true; /* dropped parameter, use en_data_ready_int */
     filter_config->manchester_threshold = 0;
     filter_config->wdg_threshold = 255;
@@ -115,8 +115,7 @@ void sdm_config_channel_filter(SDM_Type *ptr, uint8_t ch_index, sdm_filter_confi
                                 | SDM_CH_SDCTRLE_PWMSYNC_MASK
                                 | SDM_CH_SDCTRLE_CIC_SCL_MASK
                                 | SDM_CH_SDCTRLE_CIC_DEC_RATIO_MASK
-                                | SDM_CH_SDCTRLE_IGN_INI_SAMPLES_MASK
-                                | SDM_CH_SDCTRLP_EN_MASK);
+                                | SDM_CH_SDCTRLE_IGN_INI_SAMPLES_MASK);
 
     ptr->CH[ch_index].SDCTRLE |= SDM_CH_SDCTRLE_SGD_ORDR_SET(filter_config->filter_type)
                                 | SDM_CH_SDCTRLE_PWMSYNC_SET(filter_config->pwm_signal_sync)

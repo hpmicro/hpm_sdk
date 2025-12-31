@@ -101,6 +101,7 @@ struct canopen_context {
 	struct device *dev;
 };
 
+
 /* Data storage object for one entry */
 typedef struct {
     void* addr;

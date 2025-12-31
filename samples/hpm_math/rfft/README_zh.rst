@@ -28,7 +28,15 @@ RFFT 示例
 
 - HPM SDK
 - CMake 3.20.0 或更高版本
-- 交叉编译工具链
+- 支持DSP扩展的交叉编译工具链
+
+.. note::
+   本示例需要支持DSP的工具链才能使用硬件DSP指令以获得最佳性能：
+
+   - **IDE**: Segger Embedded Studio (或其他支持DSP工具链的IDE)
+   - **GCC工具链**: Andes RISC-V工具链（带DSP扩展支持）或 ZCC工具链（带DSP扩展支持）
+
+   不支持DSP扩展的标准GCC工具链无法正确编译和运行本示例。
 
 构建说明
 --------

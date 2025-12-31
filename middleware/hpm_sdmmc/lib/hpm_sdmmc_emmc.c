@@ -17,6 +17,7 @@
 
 #define EMMC_SECTOR_SIZE_DEFAULT (512U)
 
+#define SIZE_1KB (1024UL)
 #define SIZE_128KB (128UL * SIZE_1KB)
 #define SIZE_512KB (512UL * SIZE_1KB)
 
@@ -171,7 +172,13 @@ static void emmc_decode_csd(emmc_card_t *card, const uint32_t *raw_csd)
     const uint32_t bitrate_unit_list[8] = {100UL * SPEED_1Kbps, SPEED_1Mbps, 10U * SPEED_1Mbps, 100U * SPEED_1Mbps, 0,
                                            0, 0, 0};
     const uint32_t time_value_list[16] = {0, 10, 12, 13, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80};
-    csd->max_freq = bitrate_unit_list[bitrate_unit] / 10U * time_value_list[time_value];
+
+    /* Ensure array bounds safety and avoid division by zero */
+    if ((bitrate_unit >= 8) || (time_value >= 16) || (bitrate_unit_list[bitrate_unit] == 0) || (time_value_list[time_value] == 0)) {
+        csd->max_freq = MMC_CLOCK_26MHz;  /* Default fallback frequency */
+    } else {
+        csd->max_freq = bitrate_unit_list[bitrate_unit] / 10U * time_value_list[time_value];
+    }
 
     csd->card_command_class = (uint16_t) extract_csd_field(raw_csd, 95, 84);
 
@@ -826,11 +833,15 @@ hpm_stat_t emmc_read_blocks(emmc_card_t *card, uint8_t *buffer, uint32_t start_b
     do {
         HPM_BREAK_IF(status != status_success);
 
+        if ((buffer == NULL) || (block_count == 0) || (start_block > (UINT32_MAX - block_count + 1))) {
+            status = status_invalid_argument;
+            break;
+        }
+
         if (!card->host->card_init_done) {
             status = status_sdmmc_device_init_required;
             break;
         }
-
         sdmmchost_cmd_t *cmd = &card->host->cmd;
         sdmmchost_data_t *data = &card->host->data;
         sdmmchost_xfer_t *content = &card->host->xfer;
@@ -859,7 +870,7 @@ hpm_stat_t emmc_read_blocks(emmc_card_t *card, uint8_t *buffer, uint32_t start_b
 #if !defined(HPM_SDMMC_ENABLE_CACHE_MAINTENANCE) || (HPM_SDMMC_ENABLE_CACHE_MAINTENANCE == 1)
             uint32_t buf_start = (uint32_t) data->rx_data;
             uint32_t aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN(buf_start);
-            uint32_t end_addr = buf_start + card->device_attribute.sector_size * block_count;
+            uint32_t end_addr = buf_start + card->device_attribute.sector_size * read_block_count;
             uint32_t aligned_end = HPM_L1C_CACHELINE_ALIGN_UP(end_addr);
             uint32_t aligned_size = aligned_end - aligned_start;
             /* FLUSH un-cacheline aligned memory region */
@@ -892,6 +903,11 @@ hpm_stat_t emmc_write_blocks(emmc_card_t *card, const uint8_t *buffer, uint32_t 
     hpm_stat_t status = emmc_check_card_parameters(card);
     do {
         HPM_BREAK_IF(status != status_success);
+
+        if ((buffer == NULL) || (block_count == 0)) {
+            status = status_invalid_argument;
+            break;
+        }
 
         if (!card->host->card_init_done) {
             status = status_sdmmc_device_init_required;
@@ -974,6 +990,11 @@ hpm_stat_t emmc_erase_blocks(emmc_card_t *card,
     do {
         HPM_BREAK_IF(status != status_success);
 
+        if ((block_count == 0) || (start_block > UINT32_MAX - block_count + 1)) {
+            status = status_invalid_argument;
+            break;
+        }
+
         if (!card->host->card_init_done) {
             status = status_sdmmc_device_init_required;
             break;
@@ -993,7 +1014,8 @@ hpm_stat_t emmc_erase_blocks(emmc_card_t *card,
         HPM_BREAK_IF(status != status_success);
         /* Send Erase end */
         cmd->cmd_index = emmc_cmd_erase_group_end;
-        cmd->cmd_argument = start_block + block_count - 1U;
+        uint32_t erase_end_addr = start_block + block_count - 1U;
+        cmd->cmd_argument = erase_end_addr;
         status = emmc_send_cmd(card, cmd);
         HPM_BREAK_IF(status != status_success);
 

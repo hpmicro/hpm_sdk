@@ -64,17 +64,6 @@ typedef struct {
 #define DAC_CFG0_SYNC_MODE_GET(x) (((uint32_t)(x) & DAC_CFG0_SYNC_MODE_MASK) >> DAC_CFG0_SYNC_MODE_SHIFT)
 
 /*
- * TRIG_MODE (WO)
- *
- * 0: single mode, one trigger pulse will send one 12bit data to DAC analog;
- * 1: continual mode, if trigger signal(either  or HW) is set, DAC will send data if FIFO is not empty, if trigger signal is clear, DAC will stop send data.
- */
-#define DAC_CFG0_TRIG_MODE_MASK (0x80U)
-#define DAC_CFG0_TRIG_MODE_SHIFT (7U)
-#define DAC_CFG0_TRIG_MODE_SET(x) (((uint32_t)(x) << DAC_CFG0_TRIG_MODE_SHIFT) & DAC_CFG0_TRIG_MODE_MASK)
-#define DAC_CFG0_TRIG_MODE_GET(x) (((uint32_t)(x) & DAC_CFG0_TRIG_MODE_MASK) >> DAC_CFG0_TRIG_MODE_SHIFT)
-
-/*
  * HW_TRIG_EN (WO)
  *
  * set to use trigger signal from trigger_mux, user should config it to pulse in single mode, and level in continual mode

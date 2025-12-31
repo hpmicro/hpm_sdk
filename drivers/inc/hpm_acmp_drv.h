@@ -9,8 +9,8 @@
 #define HPM_ACMP_DRV_H
 
 #include "hpm_common.h"
+#include "hpm_soc_feature.h"
 #include "hpm_acmp_regs.h"
-#include "hpm_soc_ip_feature.h"
 
 /**
  * @brief ACMP driver APIs
@@ -85,9 +85,6 @@ typedef struct acmp_channel_config {
     bool enable_dac;
     bool enable_hpmode;
     uint16_t filter_length; /* ACMP output digital filter length in ACMP clock cycle */
-#if defined(HPM_IP_FEATURE_ACMP_FILT_LEN_EXTEND) && HPM_IP_FEATURE_ACMP_FILT_LEN_EXTEND
-    uint8_t filter_length_shift;
-#endif
 } acmp_channel_config_t;
 
 #ifdef __cplusplus
@@ -313,21 +310,6 @@ static inline void acmp_channel_set_filter_length(ACMP_Type *ptr, uint8_t ch, ui
     ptr->CHANNEL[ch].CFG = (ptr->CHANNEL[ch].CFG & ~ACMP_CHANNEL_CFG_FLTLEN_MASK)
                         | ACMP_CHANNEL_CFG_FLTLEN_SET(filter_length);
 }
-
-/**
- * @brief ACMP channel set comparator output filter extended length
- *
- * @param [in] ptr ACMP base address
- * @param [in] ch ACMP channel number
- * @param [in] filter_length shift: extended filter length
- */
-#if defined(HPM_IP_FEATURE_ACMP_FILT_LEN_EXTEND) && HPM_IP_FEATURE_ACMP_FILT_LEN_EXTEND
-static inline void acmp_channel_set_filter_length_extend(ACMP_Type *ptr, uint8_t ch, uint16_t filter_length_shift)
-{
-    ptr->CHANNEL[ch].CFG = (ptr->CHANNEL[ch].CFG & ~ACMP_CHANNEL_CFG_FLTLEN_SHIFT_MASK)
-                        | ACMP_CHANNEL_CFG_FLTLEN_SHIFT_SET(filter_length_shift);
-}
-#endif
 
 /**
  * @brief ADC channel config

@@ -9,7 +9,7 @@
 #define HPM_PPI_DRV_H
 
 #include "hpm_common.h"
-#include "hpm_soc_ip_feature.h"
+#include "hpm_soc_feature.h"
 #include "hpm_ppi_regs.h"
 
 /**

@@ -151,7 +151,12 @@ int main(void)
         while (1) {
         }
     }
-    i2c_master_start_dma_write(TEST_I2C, TEST_I2C_SLAVE_ADDRESS, TEST_TRANSFER_DATA_IN_BYTE);
+    if (i2c_master_start_dma_write(TEST_I2C, TEST_I2C_SLAVE_ADDRESS, TEST_TRANSFER_DATA_IN_BYTE) != status_success) {
+        printf("I2C master start dma write failed!\n");
+        dma_disable_channel(TEST_I2C_DMA, TEST_I2C_DMA_CH);
+        while (1) {
+        }
+    }
     i2c_handle_dma_transfer_complete(TEST_I2C);
 
     /* setup i2c dma rx */
@@ -165,7 +170,12 @@ int main(void)
         while (1) {
         }
     }
-    i2c_master_start_dma_read(TEST_I2C, TEST_I2C_SLAVE_ADDRESS, TEST_TRANSFER_DATA_IN_BYTE);
+    if (i2c_master_start_dma_read(TEST_I2C, TEST_I2C_SLAVE_ADDRESS, TEST_TRANSFER_DATA_IN_BYTE) != status_success) {
+        printf("I2C master start dma read failed!\n");
+        dma_disable_channel(TEST_I2C_DMA, TEST_I2C_DMA_CH);
+        while (1) {
+        }
+    }
     i2c_handle_dma_transfer_complete(TEST_I2C);
 #if PLACE_BUFF_AT_CACHEABLE
     if (l1c_dc_is_enabled()) {

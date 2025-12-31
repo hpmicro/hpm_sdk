@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -47,6 +47,24 @@ hpm_stat_t spi_wait_for_busy_status(SPI_Type *ptr)
     } while (!(status & SPI_STATUS_SPIACTIVE_MASK));
 
     if (retry > HPM_SPI_DRV_DEFAULT_RETRY_COUNT) {
+        return status_timeout;
+    }
+
+    return status_success;
+}
+
+hpm_stat_t spi_poll_reset_complete(SPI_Type *ptr, spi_reset_mask_t reset_mask, uint32_t retry)
+{
+    uint32_t count = 0;
+
+    do {
+        if (count > retry) {
+            break;
+        }
+        count++;
+    } while (ptr->CTRL & reset_mask);
+
+    if (count > retry) {
         return status_timeout;
     }
 
@@ -409,8 +427,8 @@ hpm_stat_t spi_control_init(SPI_Type *ptr, spi_control_config_t *config, uint32_
 
     /* reset txfifo, rxfifo and control */
     ptr->CTRL |= SPI_CTRL_TXFIFORST_MASK | SPI_CTRL_RXFIFORST_MASK | SPI_CTRL_SPIRST_MASK;
-
-    return status_success;
+    /* wait for all reset complete */
+    return spi_poll_reset_complete(ptr, spi_reset_all, HPM_SPI_DRV_DEFAULT_RETRY_COUNT);
 }
 
 hpm_stat_t spi_transfer(SPI_Type *ptr,

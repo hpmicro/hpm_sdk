@@ -9,8 +9,8 @@
 #define HPM_SDM_DRV_H
 
 #include "hpm_common.h"
+#include "hpm_soc_feature.h"
 #include "hpm_sdm_regs.h"
-#include "hpm_soc_ip_feature.h"
 
 /**
  * @brief SDM APIs
@@ -76,7 +76,7 @@ typedef struct {
 
 /* sample data config */
 typedef struct {
-    uint8_t fifo_threshold;           /**< fifo threshold to generate data ready interrupt */
+    uint8_t fifo_threshold;           /**< when the number of data in fifo > fifo_threshold will generate data ready signal */
     bool en_fifo_threshold_int;       /**< dropped parameter, use en_data_ready_int */
     uint8_t manchester_threshold  :8; /**< Manchester decode threshold */
     uint8_t wdg_threshold         :8; /**< wdog to detect MCLK stop error */

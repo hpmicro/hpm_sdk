@@ -34,6 +34,7 @@ sdk_src (
     hpm_otp_drv.c
     hpm_pdgo_drv.c
     hpm_trgm_soc_drv.c
+    hpm_qeiv2_soc_drv.c
 )
 
 if(${INCLUDE_BOOTHEADER})
@@ -72,5 +73,10 @@ if(NOT DEFINED USE_CUSTOM_LINKER)
         endif()
     else()
         set(SOC_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/toolchains/gcc/ram.ld PARENT_SCOPE)
+    endif()
+    if(DEFINED NONCACHEABLE_RAM_SIZE)
+        sdk_linker_global_symbols("_noncacheable_size=${NONCACHEABLE_RAM_SIZE}")
+    else()
+        sdk_linker_global_symbols("_noncacheable_size=64K")
     endif()
 endif()

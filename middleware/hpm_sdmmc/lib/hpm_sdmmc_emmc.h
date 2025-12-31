@@ -692,7 +692,6 @@ hpm_stat_t emmc_init(emmc_card_t *card);
  *
  * @param [in,out] card eMMC card context
  *
- * @return Command execution status
  */
 void emmc_deinit(emmc_card_t *card);
 

@@ -1,6 +1,10 @@
 #include "cpuport.h"
 #include "hpm_csr_regs.h"
 
+#if !defined(USE_NONVECTOR_MODE) || (USE_NONVECTOR_MODE == 0)
+    #error "Vector mode is not supported"
+#endif
+
 .global rtt_risc_v_trap_handler
 .section .isr_vector.rtt_risc_v_trap_handler, "ax"
 .align 2

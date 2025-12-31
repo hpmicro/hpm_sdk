@@ -16,6 +16,9 @@ void mipi_csi_get_defconfig(mipi_csi_config_t *cfg)
 
 void mipi_csi_init(MIPI_CSI_Type *ptr, mipi_csi_config_t *cfg)
 {
+    ptr->CSI2_RESETN = 0x00;
+    ptr->IPI_SOFTRSTN = 0x00;
+
     ptr->CSI2_RESETN = 0x01;
     ptr->IPI_SOFTRSTN = 0x01;
 

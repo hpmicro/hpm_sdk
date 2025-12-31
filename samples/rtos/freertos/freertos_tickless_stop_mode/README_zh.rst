@@ -11,18 +11,39 @@ FreeRTOS Tickless低功耗模式-Stop模式
 硬件设置
 ------------
 
-请参考开发板的README文档 :ref:`PUART引脚 <board_resource>` ，将PUART连接到PC上。
+- 有PUART的开发板
+
+  - 使用PUART作为Console
+
+  - 使用PUART作为唤醒源
+
+  - 将串口(PUART, 具体引脚信息请参考 :ref:`PUART引脚 <board_resource>` )连接到PC.
+
+- 没有PUART的开发板
+
+  - 使用正常的UART Console
+
+  - 使用WKUP引脚作为唤醒源
 
 运行现象
 ------------
 
-当工程正确运行后，LED会开始闪烁，串口终端会输出如下信息：
+当工程正确运行后，LED会开始闪烁. LED灯亮表示freertos处于正常运行模式，过一段时间后LED灯熄灭，表示freertos进入了tickless低功耗模式。再过一段时间后LED灯再次亮起，表示freertos退出了tickless低功耗模式。有PUART的开发板通过PUART发送数据也会唤醒freertos退出停止模式，没有PUART的开发板通过WKUP引脚作为唤醒源。串口终端会输出如下信息：
 
 .. code-block:: console
 
    task2 is running.
    task1 is running.
+   Enter stop mode, tick 1
+   Exit stop mode
+   task2 is running.
+   Enter stop mode, tick 4002
+   Exit stop mode
+   task2 is running.
+   Enter stop mode, tick 8003
+   Exit stop mode
    task1 is running.
-   task1 is running.
-   task1 is running.
-
+   Enter stop mode, tick 10002
+   Exit stop mode
+   task2 is running.
+   Enter stop mode, tick 12004

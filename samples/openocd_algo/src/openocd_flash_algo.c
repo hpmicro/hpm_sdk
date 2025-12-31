@@ -52,6 +52,7 @@ __attribute__ ((section(".flash_algo.text"))) uint32_t flash_init(uint32_t flash
         return stat;
     }
 
+    l1c_dc_disable();
     for (i = 0; i < sizeof(cfg_option); i++) {
         *((uint8_t *)&cfg_option + i) = 0;
     }

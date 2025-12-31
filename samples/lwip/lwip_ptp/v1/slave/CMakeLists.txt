@@ -12,12 +12,7 @@ set(CONFIG_PTPD_V1 1)
 
 set(CONFIG_ENET_PHY 1)
 set(APP_USE_ENET_PORT_COUNT 1)
-#set(APP_USE_ENET_ITF_RGMII 1)
-#set(APP_USE_ENET_ITF_RMII 1)
-#set(APP_USE_ENET_PHY_DP83867 1)
-#set(APP_USE_ENET_PHY_RTL8211 1)
-#set(APP_USE_ENET_PHY_DP83848 1)
-#set(APP_USE_ENET_PHY_RTL8201 1)
+# If you want to use a specific interface or PHY, please refer to "Ethernet_Common_Project_Settings_xx.rst"
 
 if(NOT DEFINED APP_USE_ENET_PORT_COUNT)
     message(FATAL_ERROR "APP_USE_ENET_PORT_COUNT is undefined!")
@@ -40,10 +35,12 @@ sdk_compile_definitions(-DSLAVE_ONLY=TRUE)
 sdk_compile_definitions(-DMAC_ADDR5=0x18)
 sdk_compile_definitions(-DIP_ADDR3=11)
 sdk_compile_definitions(-DUSE_LWIPOPTS_APP_H=1)
+sdk_compile_definitions(-DLWIP_SUPPORT_CUSTOM_PBUF=1)
 
 project(lwip_ptp_v1_slave_example)
 sdk_inc(../../../ports/baremetal/single)
 sdk_inc(../../../ports/baremetal/single/arch)
+sdk_inc(../../../common)
 sdk_inc(../../../common/single)
 sdk_inc(inc)
 

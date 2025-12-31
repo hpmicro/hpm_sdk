@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
+#include "board.h"
 #include "hpmicro_netx_conf.h"
 #include "hpmicro_enet_adapter.h"
 #include "hpm_common.h"
@@ -11,33 +12,93 @@
 #include "hpm_enet_phy.h"
 #include "hpm_otp_drv.h"
 
+#define IS_MAC_INVALID(MAC) (MAC[0] == 0 && \
+                             MAC[1] == 0 && \
+                             MAC[2] == 0 && \
+                             MAC[3] == 0 && \
+                             MAC[4] == 0 && \
+                             MAC[5] == 0)
+
+#ifndef MAC0_CONFIG
+#define MAC0_CONFIG 98:2c:bc:b1:9f:27
+#endif
+
+#ifndef MAC1_CONFIG
+#define MAC1_CONFIG 98:2c:bc:b1:9f:37
+#endif
+
 /* MAC ADDRESS */
-#define MAC_ADDR0 0x98
-#define MAC_ADDR1 0x2C
-#define MAC_ADDR2 0xBC
-#define MAC_ADDR3 0xB1
-#define MAC_ADDR4 0x9F
-#define MAC_ADDR5 0x17
+char *mac_init[] = {
+    HPM_STRINGIFY(MAC0_CONFIG),
+    HPM_STRINGIFY(MAC1_CONFIG)
+};
 
-ATTR_WEAK VOID _hardware_get_mac_address(UCHAR *mac)
+#if defined(ENET_MULTIPLE_PORT) && ENET_MULTIPLE_PORT
+ATTR_WEAK INT _hardware_get_mac_address(UCHAR *mac, uint8_t eth_idx)
+#else
+ATTR_WEAK INT _hardware_get_mac_address(UCHAR *mac)
+#endif
 {
-    UINT uuid[OTP_SOC_UUID_LEN / sizeof(UINT)];
-
-    for (UINT i = 0; i < ARRAY_SIZE(uuid); i++) {
-        uuid[i] = otp_read_from_shadow(OTP_SOC_UUID_IDX + i);
+    uint32_t macl, mach;
+    uint8_t idx = 0;
+    char tmp[32] = "";
+    char *strtok_result = NULL;
+    char *token;
+#if defined(ENET_MULTIPLE_PORT) && ENET_MULTIPLE_PORT
+    assert(eth_idx < BOARD_ENET_COUNT);
+#endif
+    if (mac == NULL) {
+        return -1;
     }
 
-    if (!IS_UUID_INVALID(uuid)) {
-        uuid[0] &= 0xfc;
-        memcpy(mac, &uuid, ENET_MAC);
+#if defined(ENET_MULTIPLE_PORT) && ENET_MULTIPLE_PORT
+    /* load mac address from OTP MAC area */
+    if (eth_idx == 0) {
+#endif
+        macl = otp_read_from_shadow(OTP_SOC_MAC0_IDX);
+        mach = otp_read_from_shadow(OTP_SOC_MAC0_IDX + 1);
+
+        mac[0] = (macl >>  0) & 0xff;
+        mac[1] = (macl >>  8) & 0xff;
+        mac[2] = (macl >> 16) & 0xff;
+        mac[3] = (macl >> 24) & 0xff;
+        mac[4] = (mach >>  0) & 0xff;
+        mac[5] = (mach >>  8) & 0xff;
+#if defined(ENET_MULTIPLE_PORT) && ENET_MULTIPLE_PORT
     } else {
-        mac[0] = MAC_ADDR0;
-        mac[1] = MAC_ADDR1;
-        mac[2] = MAC_ADDR2;
-        mac[3] = MAC_ADDR3;
-        mac[4] = MAC_ADDR4;
-        mac[5] = MAC_ADDR5;
+        macl = otp_read_from_shadow(OTP_SOC_MAC0_IDX + 1);
+        mach = otp_read_from_shadow(OTP_SOC_MAC0_IDX + 2);
+
+        mac[0] = (macl >> 16) & 0xff;
+        mac[1] = (macl >> 24) & 0xff;
+        mac[2] = (mach >>  0) & 0xff;
+        mac[3] = (mach >>  8) & 0xff;
+        mac[4] = (mach >> 16) & 0xff;
+        mac[5] = (mach >> 24) & 0xff;
     }
+#endif
+
+    if (!IS_MAC_INVALID(mac)) {
+        return 0;
+    }
+    /* load MAC address from MACRO definitions */
+#if defined(ENET_MULTIPLE_PORT) && ENET_MULTIPLE_PORT
+    strcpy(tmp, mac_init[eth_idx]);
+#else
+    strcpy(tmp, mac_init[0]);
+#endif
+    token = strtok_r(tmp, ":", &strtok_result);
+    mac[idx] = strtol(token, NULL, 16);
+    while (token != NULL && ++idx < ENET_MAC_SIZE) {
+        token = strtok_r(NULL, ":", &strtok_result);
+        mac[idx] = strtol(token, NULL, 16);
+    }
+
+    if (idx < ENET_MAC_SIZE) {
+        return -1;
+    }
+
+    return 0;
 }
 
 static INT enet_mac_init(ENET_Type *ptr, enet_mac_config_t *config, enet_inf_type_t inf_type)

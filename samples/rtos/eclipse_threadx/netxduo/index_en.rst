@@ -11,6 +11,7 @@ Netxduo samples
     http/README_en
     https/README_en
     iperf/README_en
+    dual_port/README_en
     ping/README_en
     sntp/README_en
     tcp_client/README_en

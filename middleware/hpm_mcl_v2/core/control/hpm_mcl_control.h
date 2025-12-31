@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -291,8 +291,8 @@ hpm_mcl_stat_t hpm_mcl_control_init(mcl_control_t *control, mcl_control_cfg_t *c
 /**
  * @brief Convert a 3p3z controller to a pid controller
  *
- * @param pid @ref mcl_control_pid_cfg_t
- * @param p3z3 @ref mcl_clc_coeff_cfg_t
+ * @param cfg_pid @ref mcl_control_pid_cfg_t
+ * @param cfg_3p3z @ref mcl_clc_coeff_cfg_t
  * @return hpm_mcl_stat_t
  */
 hpm_mcl_stat_t hpm_mcl_pid_to_3p3z(mcl_control_pid_cfg_t *cfg_pid, mcl_clc_coeff_cfg_t *cfg_3p3z);

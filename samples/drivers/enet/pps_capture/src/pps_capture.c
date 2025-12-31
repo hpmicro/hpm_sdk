@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -41,12 +41,8 @@ static void enet_ptp_init(void)
     enet_ptp_config_t config;
     enet_ptp_ts_update_t timestamp;
 
-    /* initial the ptp function */
-    config.ssinc = ENET_ONE_SEC_IN_NANOSEC / clock_get_frequency(BOARD_ENET_PPS_PTP_CLOCK);
-    config.timestamp_rollover_mode = enet_ts_dig_rollover_control;
-    config.update_method = enet_ptp_time_fine_update;
-    config.addend = 0xffffffff;
-
+    /* initialize ptp timer */
+    enet_get_default_ptp_config(BOARD_ENET_PPS, clock_get_frequency(BOARD_ENET_PPS_PTP_CLOCK), &config);
     enet_init_ptp(BOARD_ENET_PPS, &config);
 
     /* set the initial timestamp */

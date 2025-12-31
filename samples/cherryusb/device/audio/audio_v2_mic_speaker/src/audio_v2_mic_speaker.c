@@ -503,28 +503,30 @@ void isr_dma(void)
 
 void audio_v2_task(uint8_t busid)
 {
+    uint32_t front = s_speaker_out_buffer_front;  /* defined the order of volatile accesses */
     if (s_speaker_rx_flag) {
         if (!speaker_out_buff_is_empty()) {
             if (s_speaker_dma_transfer_req) {
                 s_speaker_dma_transfer_req = false;
-                speaker_i2s_dma_start_transfer((uint32_t)&s_speaker_out_buffer[s_speaker_out_buffer_front][0],
-                                               s_speaker_out_buffer_size[s_speaker_out_buffer_front]);
+                speaker_i2s_dma_start_transfer((uint32_t)&s_speaker_out_buffer[front][0],
+                                               s_speaker_out_buffer_size[front]);
 
-                s_speaker_out_buffer_front++;
-                if (s_speaker_out_buffer_front >= AUDIO_BUFFER_COUNT) {
-                    s_speaker_out_buffer_front = 0;
+                front++;
+                if (front >= AUDIO_BUFFER_COUNT) {
+                    front = 0;
                 }
             } else if (s_speaker_dma_transfer_done) {
                 s_speaker_dma_transfer_done = false;
-                speaker_i2s_dma_start_transfer((uint32_t)&s_speaker_out_buffer[s_speaker_out_buffer_front][0],
-                                               s_speaker_out_buffer_size[s_speaker_out_buffer_front]);
-                s_speaker_out_buffer_front++;
-                if (s_speaker_out_buffer_front >= AUDIO_BUFFER_COUNT) {
-                    s_speaker_out_buffer_front = 0;
+                speaker_i2s_dma_start_transfer((uint32_t)&s_speaker_out_buffer[front][0],
+                                               s_speaker_out_buffer_size[front]);
+                front++;
+                if (front >= AUDIO_BUFFER_COUNT) {
+                    front = 0;
                 }
             } else {
                 ;    /* Do Nothing */
             }
+            s_speaker_out_buffer_front = front;
         }
     }
 
@@ -824,8 +826,9 @@ static void mic_i2s_dma_start_transfer(uint32_t addr, uint32_t size)
 static bool speaker_out_buff_is_empty(void)
 {
     bool empty = false;
+    uint32_t front = s_speaker_out_buffer_front;  /* defined the order of volatile accesses */
 
-    if (s_speaker_out_buffer_front == s_speaker_out_buffer_rear) {
+    if (front == s_speaker_out_buffer_rear) {
         empty = true;
     }
 
@@ -835,8 +838,9 @@ static bool speaker_out_buff_is_empty(void)
 static bool mic_in_buff_is_empty(void)
 {
     bool empty = false;
+    uint32_t front = s_mic_in_buffer_front;  /* defined the order of volatile accesses */
 
-    if (s_mic_in_buffer_front == s_mic_in_buffer_rear) {
+    if (front == s_mic_in_buffer_rear) {
         empty = true;
     }
 

@@ -195,4 +195,31 @@ Pin Description
      * - PA09
        - J3[32]
 
+- ESP-HOSTED Pin
+
+.. list-table::
+   :header-rows: 1
+
+   * - Function
+     - Position
+     - Note
+   * - PA09
+     - J3[32]
+     - RESET Pin
+   * - PB12
+     - J3[27]
+     - HANDSHAKE Pin
+   * - PB13
+     - J3[28]
+     - DATA_READY Pin
+
+- BROWNOUT Interrupt Indicator Pin
+
+.. list-table::
+   :header-rows: 1
+
+   * - Function
+     - Position
+   * - PB13
+     - J3[28]
 

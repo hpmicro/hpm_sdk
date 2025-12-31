@@ -70,6 +70,8 @@ define exported symbol __boot_header_load_addr__ = start(BOOT_HEADER);
 define exported symbol __app_load_addr__ = start(FLASH);
 define exported symbol __app_offset__ = __app_load_addr__ - __boot_header_load_addr__;
 define exported symbol __boot_header_length__ = size(BOOT_HEADER);
+define exported symbol __noncacheable_start__ = start(DLM);
+define exported symbol __noncacheable_end__ = end(DLM) + 1;
 
 /* Initialization */
 do not initialize                           { section .noncacheable, section .fast_ram };    // Legacy sections, kept for backwards compatibility
@@ -99,6 +101,7 @@ place in DLM                                { block framebuffer };
 place in DLM                                {
                                               block RW_DATA
                                             };
+
 place in DLM                                { section .noncacheable.non_init, section .noncacheable.non_init.*, section .noncacheable.init, section .noncacheable.init.*, section .noncacheable.bss, section .noncacheable.bss.*, section .noncacheable };  // Noncacheable
 place in AHB_SRAM                           { section .ahb_sram, section .ahb_sram.*};                                   // AHB SRAM memory
 place in DLM                                { section .fast_ram.init, section .fast_ram.init.*, section .fast_ram.non_init,  section .fast_ram.non_init.*, section .fast_ram.bss, section .fast_ram.bss.*, section .fast_ram };   // Fast access memory

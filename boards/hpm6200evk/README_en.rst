@@ -278,6 +278,35 @@ Pin Description
      * - PA14
        - J1[7]
 
+- ESP-HOSTED Pin
+
+.. list-table::
+   :header-rows: 1
+
+   * - Function
+     - Position
+     - Note
+   * - PB06
+     - P1[35]
+     - RESET Pin
+   * - PB07
+     - P1[31]
+     - HANDSHAKE Pin
+   * - PB08
+     - P1[32]
+     - DATA_READY Pin
+
+- BROWNOUT Interrupt Indicator Pin
+
+.. list-table::
+   :header-rows: 1
+
+   * - Function
+     - Position
+   * - PB31
+     - P1[7]
+
+
 .. _hpm6200evk_known_issues:
 
 Board Know Issue

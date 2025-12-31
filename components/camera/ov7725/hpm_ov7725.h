@@ -12,12 +12,12 @@
 
 /**
  * @brief OV7725 sensor driver APIs
- * @defgroup ov7725_interface sensor driver APIs
+ * @defgroup sensor_ov7725_interface Sensor driver APIs for OV7725
  * @ingroup component_interfaces
  * @{
  *
-
  */
+
 /***********************************************************************************************************************
  *
  * Definitions

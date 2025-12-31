@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -26,7 +26,7 @@ ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ENET_SOC_BUFF_ADDR_ALIGNMENT)
 __RW uint8_t tx_buff[ENET_TX_BUFF_COUNT][ENET_TX_BUFF_SIZE]; /* Ethernet Transmit Buffer */
 
 enet_desc_t desc;
-uint8_t mac[ENET_MAC];
+uint8_t mac[ENET_MAC_SIZE];
 
 #if __ENABLE_ENET_RECEIVE_INTERRUPT
 volatile bool rx_flag;
@@ -152,26 +152,27 @@ static hpm_stat_t enet_init(ENET_Type *ptr)
     /* Initialize phy */
     #if defined(RGMII) && RGMII
         #if defined(__USE_DP83867) && __USE_DP83867
-        dp83867_reset(ptr);
+        dp83867_reset(ptr, DP83867_ADDR);
         #if __DISABLE_AUTO_NEGO
-        dp83867_set_mdi_crossover_mode(ENET, enet_phy_mdi_crossover_manual_mdix);
+        dp83867_set_mdi_crossover_mode(ENET, DP83867_ADDR, enet_phy_mdi_crossover_manual_mdix);
         #endif
         dp83867_basic_mode_default_config(ptr, &phy_config);
-        if (dp83867_basic_mode_init(ptr, &phy_config) == true) {
+        if (dp83867_basic_mode_init(ptr, DP83867_ADDR, &phy_config) == true) {
         #else
-        rtl8211_reset(ptr);
+        rtl8211_reset(ptr, RTL8211_ADDR);
         rtl8211_basic_mode_default_config(ptr, &phy_config);
-        if (rtl8211_basic_mode_init(ptr, &phy_config) == true) {
+        if (rtl8211_basic_mode_init(ptr, RTL8211_ADDR, &phy_config) == true) {
         #endif
     #else
         #if defined(__USE_DP83848) && __USE_DP83848
-        dp83848_reset(ptr);
+        dp83848_reset(ptr, DP83848_ADDR);
         dp83848_basic_mode_default_config(ptr, &phy_config);
-        if (dp83848_basic_mode_init(ptr, &phy_config) == true) {
+        if (dp83848_basic_mode_init(ptr, DP83848_ADDR, &phy_config) == true) {
         #else
-        rtl8201_reset(ptr);
+        rtl8201_reset(ptr, RTL8201_ADDR);
         rtl8201_basic_mode_default_config(ptr, &phy_config);
-        if (rtl8201_basic_mode_init(ptr, &phy_config) == true) {
+        phy_config.rmii_refclk_dir = BOARD_ENET_RMII_INT_REF_CLK;
+        if (rtl8201_basic_mode_init(ptr, RTL8201_ADDR, &phy_config) == true) {
         #endif
     #endif
             printf("Enet phy init passed !\n");

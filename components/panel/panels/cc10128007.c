@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -83,8 +83,10 @@ static void reset(hpm_panel_t *panel)
     hpm_panel_delay_us(2000);
 }
 
-static void init(hpm_panel_t *panel)
+static void init(hpm_panel_t *panel, const hpm_panel_timing_t *timing)
 {
+    (void)timing;
+
     if (panel->hw_if.set_video_router)
         panel->hw_if.set_video_router();
 
@@ -114,10 +116,9 @@ static void power_off(hpm_panel_t *panel)
     }
 }
 
-hpm_panel_t panel_cc10128007 = {
-    .name = "cc10128007",
-    .if_type = HPM_PANEL_IF_TYPE_LVDS_SINGLE,
-    .timing = {
+static const hpm_panel_timing_t timing_list[] = {
+    {
+        .fps_hz = 60,
         .pixel_clock_khz = 74250,
         .hactive = 800,
         .hfront_porch = 60,
@@ -128,7 +129,26 @@ hpm_panel_t panel_cc10128007 = {
         .vfront_porch = 18,
         .vback_porch = 18,
         .vsync_len = 6,
-    },
+    }, {
+        .fps_hz = 30,
+        .pixel_clock_khz = 37100,
+        .hactive = 800,
+        .hfront_porch = 60,
+        .hback_porch = 60,
+        .hsync_len = 40,
+
+        .vactive = 1280,
+        .vfront_porch = 18,
+        .vback_porch = 18,
+        .vsync_len = 6,
+    }
+};
+
+hpm_panel_t panel_cc10128007 = {
+    .name = "cc10128007",
+    .if_type = HPM_PANEL_IF_TYPE_LVDS_SINGLE,
+    .timing_list = timing_list,
+    .timing_list_num = ARRAY_SIZE(timing_list),
     .funcs = {
         .reset = reset,
         .init = init,

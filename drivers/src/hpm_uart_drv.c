@@ -8,7 +8,9 @@
 #include "hpm_common.h"
 #include "hpm_uart_drv.h"
 
+#ifndef HPM_UART_DRV_RETRY_COUNT
 #define HPM_UART_DRV_RETRY_COUNT (5000U)
+#endif
 #define HPM_UART_MINIMUM_BAUDRATE (200U)
 
 #ifndef HPM_UART_BAUDRATE_TOLERANCE
@@ -59,7 +61,7 @@ void uart_default_config(UART_Type *ptr, uart_config_t *config)
 
 static bool uart_calculate_baudrate(uint32_t freq, uint32_t baudrate, uint16_t *div_out, uint8_t *osc_out)
 {
-    uint16_t div, osc, delta;
+    uint32_t div, osc, delta;
     uint64_t tmp;
     if ((div_out == NULL) || (!freq) || (!baudrate)
             || (baudrate < HPM_UART_MINIMUM_BAUDRATE)
@@ -74,17 +76,17 @@ static bool uart_calculate_baudrate(uint32_t freq, uint32_t baudrate, uint16_t *
         /* osc range: HPM_UART_OSC_MIN - UART_SOC_OVERSAMPLE_MAX, even number */
         delta = 0;
         /* Calculate divider with rounding */
-        div = (uint16_t)((tmp + osc * (HPM_UART_BAUDRATE_SCALE / 2)) / (osc * HPM_UART_BAUDRATE_SCALE));
-        if (div < HPM_UART_BAUDRATE_DIV_MIN) {
+        div = (uint32_t)((tmp + osc * (HPM_UART_BAUDRATE_SCALE / 2)) / (osc * HPM_UART_BAUDRATE_SCALE));
+        if (div < HPM_UART_BAUDRATE_DIV_MIN || div > HPM_UART_BAUDRATE_DIV_MAX) {
             /* invalid div */
             continue;
         }
         if ((div * osc * HPM_UART_BAUDRATE_SCALE) > tmp) {
-            delta = (uint16_t)(((div * osc * HPM_UART_BAUDRATE_SCALE) - tmp) / HPM_UART_BAUDRATE_SCALE);
-        } else if (div * osc < tmp) {
-            delta = (uint16_t)((tmp - (div * osc * HPM_UART_BAUDRATE_SCALE)) / HPM_UART_BAUDRATE_SCALE);
+            delta = (uint32_t)((div * osc * HPM_UART_BAUDRATE_SCALE) - tmp);
+        } else if ((div * osc * HPM_UART_BAUDRATE_SCALE) < tmp) {
+            delta = (uint32_t)(tmp - (div * osc * HPM_UART_BAUDRATE_SCALE));
         }
-        if (delta && (((delta * 100 * HPM_UART_BAUDRATE_SCALE) / tmp) > HPM_UART_BAUDRATE_TOLERANCE)) {
+        if (delta && (((delta * 100) / tmp) > HPM_UART_BAUDRATE_TOLERANCE)) {
             continue;
         } else {
             *div_out = div;
@@ -109,7 +111,6 @@ hpm_stat_t uart_init(UART_Type *ptr, uart_config_t *config)
     if (!uart_calculate_baudrate(config->src_freq_in_hz, config->baudrate, &div, &osc)) {
         return status_uart_no_suitable_baudrate_parameter_found;
     }
-
     ptr->OSCR = (ptr->OSCR & ~UART_OSCR_OSC_MASK)
         | UART_OSCR_OSC_SET(osc);
     ptr->DLL = UART_DLL_DLL_SET(div >> 0);

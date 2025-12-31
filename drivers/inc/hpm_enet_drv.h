@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -35,9 +35,9 @@
 #define ENET_MAX_PAYLOAD          (1500U)  /**< Maximum Ethernet payload size */
 #define ENET_MAX_FRAME_SIZE       (1526U)  /**< ENET_HEADER + 2*ENET_VLAN_TAG + ENET_MAX_PAYLOAD + ENET_CRC */
 #define ENET_JUMBO_FRAME_PAYLOAD  (9000U)  /**< Jumbo frame payload size */
-#define ENET_MAC                  (6)      /**< Ethernet MAC size */
-#define ENET_ERROR                (0)      /**< ENET error */
-#define ENET_SUCCESS              (1)      /**< ENET success */
+#define ENET_MAC_SIZE             (6)      /**< Ethernet MAC size in bytes */
+#define ENET_ERROR                (1)      /**< ENET error */
+#define ENET_SUCCESS              (0)      /**< ENET success */
 
 #define ENET_ADJ_FREQ_BASE_ADDEND (0x80000000UL)  /**< PTP base adjustment addend */
 #define ENET_ONE_SEC_IN_NANOSEC   (1000000000UL)  /**< one second in nanoseconds */
@@ -459,6 +459,8 @@ typedef struct {
 typedef struct{
     uint32_t length;
     uint32_t buffer;
+    uint32_t seg;
+    uint8_t used;
     enet_rx_desc_t *rx_desc;
 } enet_frame_t;
 
@@ -549,6 +551,7 @@ typedef struct {
     uint32_t mmc_intr_mask_rx;
     uint32_t mmc_intr_tx;
     uint32_t mmc_intr_mask_tx;
+    uint32_t mmc_ipc_intr_mask_rx;
 } enet_int_config_t;
 
 /*
@@ -589,35 +592,52 @@ void enet_get_default_interrupt_config(ENET_Type *ptr, enet_int_config_t *config
 uint32_t enet_get_interrupt_status(ENET_Type *ptr);
 
 /**
- * @brief Mask the specified mmc interrupt evenets of received frames
+ * @brief Mask the specified mmc interrupt events of received frames
  *
  * @param[in] ptr An Ethernet peripheral base address
- * @param[in] mask A mask of the specified evenets
+ * @param[in] mask A mask of the specified events
  */
 void enet_mask_mmc_rx_interrupt_event(ENET_Type *ptr, uint32_t mask);
 
 /**
- * @brief Mask the specified mmc interrupt evenets of transmitted frames
+ * @brief Mask the specified mmc interrupt events of transmitted frames
  *
  * @param[in] ptr An Ethernet peripheral base address
- * @param[in] mask A mask of the specified evenets
+ * @param[in] mask A mask of the specified events
  */
 void enet_mask_mmc_tx_interrupt_event(ENET_Type *ptr, uint32_t mask);
 
 /**
- * @brief Get a staus of mmc receive interrupt events
+ * @brief Mask the specified mmc ipc interrupt events of received frames
+ *
+ * @param[in] ptr An Ethernet peripheral base address
+ * @param[in] mask A mask of the specified events
+ */
+void enet_mask_mmc_ipc_rx_interrupt_event(ENET_Type *ptr, uint32_t mask);
+
+/**
+ * @brief Get a status of mmc receive interrupt events
  *
  * @param[in] ptr An Ethernet peripheral base address
  * @return A result of interrupt status
  */
 uint32_t enet_get_mmc_rx_interrupt_status(ENET_Type *ptr);
+
 /**
- * @brief et a staus of mmc transmission interrupt events
+ * @brief et a status of mmc transmission interrupt events
  *
  * @param[in] ptr An Ethernet peripheral base address
  * @return A result of interrupt status
  */
 uint32_t enet_get_mmc_tx_interrupt_status(ENET_Type *ptr);
+
+/**
+ * @brief et a status of mmc ipc receive interrupt events
+ *
+ * @param[in] ptr An Ethernet peripheral base address
+ * @return A result of interrupt status
+ */
+uint32_t enet_get_mmc_ipc_rx_interrupt_status(ENET_Type *ptr);
 
 /**
  * @brief Initialize controller
@@ -775,6 +795,18 @@ void enet_dma_rx_desc_chain_init(ENET_Type *ptr,  enet_desc_t *desc);
 void enet_dma_flush(ENET_Type *ptr);
 
 /**
+ * @brief Get a default PTP config in flexible mode
+ *
+ * @param[in] ptr An Ethernet peripheral base address
+ * @param[in] ptp_clk_freq PTP clock frequency
+ * @param[out] config A pointer to an enet_ptp_config struct instance
+ * @return A result of enet_get_default_ptp_config executing
+ * @retval status_success Getting a default ptp config successfully. Please refer to @ref hpm_stat_t.
+ * @retval status_invalid_argument Getting a default ptp config unsuccessfully due to passing one or more invalid arguments. Please refer to @ref hpm_stat_t.
+ */
+hpm_stat_t enet_get_default_ptp_config(ENET_Type *ptr, uint32_t ptp_clk_freq, enet_ptp_config_t *config);
+
+/**
  * @brief Initialize a PTP timer
  *
  * @param[in] ptr An Ethernet peripheral base address
@@ -890,26 +922,22 @@ void enet_mask_interrupt_event(ENET_Type *ptr, uint32_t mask);
 void enet_unmask_interrupt_event(ENET_Type *ptr, uint32_t mask);
 
 /**
- * @brief Disable PTP auxiliary snapshot
- *
- * Disables the PTP auxiliary snapshot feature for the specified Ethernet controller.
- *
- * @param ptr Pointer to the Ethernet controller instance
- * @param idx PTP auxiliary snapshot trigger index
- *
- * @return None
- */
-void enet_enable_ptp_auxiliary_snapshot(ENET_Type *ptr, enet_ptp_auxi_snapshot_trigger_idx_t idx);
-
-/**
  * @brief Enable PTP auxiliary snapshot
  *
  * Enables the PTP auxiliary snapshot feature for the specified Ethernet controller.
  *
  * @param ptr Pointer to the Ethernet controller instance
  * @param idx PTP auxiliary snapshot trigger index
+ */
+void enet_enable_ptp_auxiliary_snapshot(ENET_Type *ptr, enet_ptp_auxi_snapshot_trigger_idx_t idx);
+
+/**
+ * @brief Disable PTP auxiliary snapshot
  *
- * @return None
+ * Disables the PTP auxiliary snapshot feature for the specified Ethernet controller.
+ *
+ * @param ptr Pointer to the Ethernet controller instance
+ * @param idx PTP auxiliary snapshot trigger index
  */
 void enet_disable_ptp_auxiliary_snapshot(ENET_Type *ptr, enet_ptp_auxi_snapshot_trigger_idx_t idx);
 

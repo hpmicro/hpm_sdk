@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -220,7 +220,7 @@ void dac_set_buffer_sw_trigger(DAC_Type *ptr)
     ptr->CFG2 |= DAC_CFG2_BUF_SW_TRIG_MASK;
 }
 
-void dac_set_buffer_DMA_reset(DAC_Type *ptr)
+void dac_set_buffer_dma_reset(DAC_Type *ptr)
 {
     ptr->CFG2 |= DAC_CFG2_DMA_RST1_MASK | DAC_CFG2_DMA_RST0_MASK | DAC_CFG2_FIFO_CLR_MASK;
 }
@@ -240,7 +240,7 @@ void dac_enable_conversion(DAC_Type *ptr, bool enable)
     ptr->ANA_CFG0 |= DAC_ANA_CFG0_DAC12BIT_EN_SET(enable);
 }
 
-hpm_stat_t dac_external_DMA_request_enable(DAC_Type *ptr, uint8_t buf_idx, bool enable)
+hpm_stat_t dac_external_dma_request_enable(DAC_Type *ptr, uint8_t buf_idx, bool enable)
 {
     if (buf_idx > DAC_BUF_ADDR_BUF1) {
         return status_invalid_argument;

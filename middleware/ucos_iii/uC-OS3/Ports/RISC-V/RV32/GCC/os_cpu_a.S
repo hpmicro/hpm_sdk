@@ -171,8 +171,10 @@ OSStartHighRdy:
 #********************************************************************************************************
 
 .type OSCtxSw, function
+.balign 4
 OSCtxSw:
 .type OSIntCtxSw, function
+.balign 4
 OSIntCtxSw:
 # MIE_MSIE -- enable software interrupt bit
     li     t0, RISCV_MIE_MSIE

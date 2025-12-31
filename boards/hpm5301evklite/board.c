@@ -353,6 +353,7 @@ uint32_t board_init_adc_clock(void *ptr, bool clk_src_bus)
     uint32_t freq = 0;
 
     if (ptr == (void *)HPM_ADC0) {
+        clock_add_to_group(clock_adc0, 0);
         if (clk_src_bus) {
             /* Configure the ADC clock from AHB (@200MHz by default)*/
             clock_set_adc_source(clock_adc0, clk_adc_src_ahb0);
@@ -505,3 +506,94 @@ uint32_t board_init_gptmr_clock(GPTMR_Type *ptr)
     return freq;
 }
 
+void init_uart_pins(UART_Type *ptr)
+{
+    if (ptr == HPM_UART0) {
+        init_uart0_pins();
+    } else if (ptr == HPM_UART3) {
+        init_uart3_pins();
+    } else {
+        ;
+    }
+}
+
+/* for uart_lin case, need to configure pin as gpio to sent break signal */
+void init_uart_pin_as_gpio(UART_Type *ptr)
+{
+    if (ptr == HPM_UART3) {
+        init_uart3_pin_as_gpio();
+    }
+}
+
+void init_i2c_pins(I2C_Type *ptr)
+{
+    if (ptr == HPM_I2C2) {
+        init_i2c2_pins();
+    } else if (ptr == HPM_I2C3) {
+        init_i2c3_pins();
+    }
+}
+
+void init_spi_pins(SPI_Type *ptr)
+{
+    if (ptr == HPM_SPI1) {
+        init_spi1_pins();
+    }
+}
+
+void init_spi_pins_with_gpio_as_cs(SPI_Type *ptr)
+{
+    if (ptr == HPM_SPI1) {
+        init_spi1_pins_with_gpio_as_cs();
+    }
+}
+
+void init_gptmr_pins(GPTMR_Type *ptr)
+{
+    if (ptr == HPM_GPTMR0) {
+        init_gptmr0_pins();
+    } else if (ptr == HPM_GPTMR1) {
+        init_gptmr1_pins();
+    }
+}
+
+void init_usb_pins(USB_Type *ptr)
+{
+    if (ptr == HPM_USB0) {
+        init_usb0_pins();
+    }
+}
+
+void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_output)
+{
+    if (ptr == HPM_GPTMR0) {
+        if (as_output) {
+            switch (channel) {
+            case 1:
+                init_gptmr0_channel1_pin_as_output();
+                break;
+            case 2:
+                init_gptmr0_channel2_pin_as_output();
+                break;
+            case 3:
+                init_gptmr0_channel3_pin_as_output();
+                break;
+            default:
+                break;
+            }
+        } else {
+            if (channel == 1) {
+                init_gptmr0_channel1_pin_as_capture();
+            }
+        }
+    } else if (ptr == HPM_GPTMR1) {
+        if ((as_output == true) && (channel == 3)) {
+            init_gptmr1_channel3_pin_as_output();
+        }
+    }
+}
+void board_init_brownout_indicate_pin(void)
+{
+    init_brownout_indicate_pin();
+    gpio_set_pin_output_with_initial(BOARD_BROWNOUT_INDICATE_GPIO_CTRL, GPIO_GET_PORT_INDEX(BOARD_BROWNOUT_INDICATE_PIN), GPIO_GET_PIN_INDEX(BOARD_BROWNOUT_INDICATE_PIN), 0);
+}

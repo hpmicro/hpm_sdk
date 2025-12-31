@@ -113,7 +113,7 @@ static void low_level_init(struct netif *netif)
     memcpy(netif->hwaddr, mac, ETH_HWADDR_LEN);
 
     /* Set netif maximum transfer unit */
-    netif->mtu = 1500;
+    netif->mtu = netifMTU;
 
     /* Set the default link status */
     netif->flags |= NETIF_FLAG_LINK_UP;
@@ -258,7 +258,7 @@ static struct pbuf *low_level_input(struct netif *netif)
     struct pbuf *p = NULL, *q;
     u32_t len;
     uint8_t *buffer;
-    enet_frame_t frame = {0, 0, 0};
+    enet_frame_t frame = {0};
     enet_rx_desc_t *dma_rx_desc;
     uint32_t buffer_offset = 0;
     uint32_t payload_offset = 0;

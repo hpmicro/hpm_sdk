@@ -297,11 +297,11 @@ void usbd_audio_open(uint8_t busid, uint8_t intf)
         AUDIO_FEEDBACK_TO_BUF_FS(s_speaker_feedback_buffer, feedback_value); /* uac1 can only use 10.14 */
         usbd_ep_start_write(busid, AUDIO_OUT_FEEDBACK_EP, s_speaker_feedback_buffer, FEEDBACK_ENDP_PACKET_SIZE);
 #endif
-        printf("OPEN1\r\n");
+        USB_LOG_INFO("OPEN1\r\n");
     } else {
         tx_flag = 1;
         ep_tx_busy_flag = false;
-        printf("OPEN2\r\n");
+        USB_LOG_INFO("OPEN2\r\n");
     }
 }
 
@@ -309,11 +309,11 @@ void usbd_audio_close(uint8_t busid, uint8_t intf)
 {
     if (intf == 1) {
         rx_flag = 0;
-        printf("CLOSE1\r\n");
+        USB_LOG_INFO("CLOSE1\r\n");
     } else {
         tx_flag = 0;
         ep_tx_busy_flag = false;
-        printf("CLOSE2\r\n");
+        USB_LOG_INFO("CLOSE2\r\n");
     }
 }
 
@@ -392,6 +392,8 @@ struct audio_entity_info audio_entity_table[] = {
       .bDescriptorSubtype = AUDIO_CONTROL_FEATURE_UNIT,
       .ep = AUDIO_OUT_EP },
 };
+
+// In windows, audio driver cannot remove auto, so when you modify any descriptor information, please modify string descriptors too.
 
 void audio_v1_init(uint8_t busid, uintptr_t reg_base)
 {

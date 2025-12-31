@@ -29,14 +29,10 @@ typedef struct {
  * 1: temperature
  * 4: debug reset
  * 5: jtag soft reset
- * 8: cpu0 lockup(not available)
- * 9: cpu1 lockup(not available)
- * 10: cpu0 request(not available)
- * 11: cpu1 request(not available)
  * 16: watch dog 0
  * 17: watch dog 1
- * 18: watch dog 2(not available)
- * 19: watch dog 3(not available)
+ * 18: watch dog 2
+ * 19: watch dog 3
  * 24: pmic watch dog
  * 30: jtag ieee reset
  * 31: software
@@ -55,14 +51,10 @@ typedef struct {
  * 1: temperature
  * 4: debug reset
  * 5: jtag soft reset
- * 8: cpu0 lockup(not available)
- * 9: cpu1 lockup(not available)
- * 10: cpu0 request(not available)
- * 11: cpu1 request(not available)
  * 16: watch dog 0
  * 17: watch dog 1
- * 18: watch dog 2(not available)
- * 19: watch dog 3(not available)
+ * 18: watch dog 2
+ * 19: watch dog 3
  * 24: pmic watch dog
  * 30: jtag ieee reset
  * 31: software
@@ -86,8 +78,8 @@ typedef struct {
  * 11: cpu1 request(not available)
  * 16: watch dog 0
  * 17: watch dog 1
- * 18: watch dog 2(not available)
- * 19: watch dog 3(not available)
+ * 18: watch dog 2
+ * 19: watch dog 3
  * 24: pmic watch dog
  * 30: jtag ieee reset
  * 31: software
@@ -112,8 +104,8 @@ typedef struct {
  * 11: cpu1 request(not available)
  * 16: watch dog 0
  * 17: watch dog 1
- * 18: watch dog 2(not available)
- * 19: watch dog 3(not available)
+ * 18: watch dog 2
+ * 19: watch dog 3
  * 24: pmic watch dog
  * 30: jtag ieee reset
  * 31: software
@@ -138,8 +130,8 @@ typedef struct {
  * 11: cpu1 request(not available)
  * 16: watch dog 0
  * 17: watch dog 1
- * 18: watch dog 2(not available)
- * 19: watch dog 3(not available)
+ * 18: watch dog 2
+ * 19: watch dog 3
  * 24: pmic watch dog
  * 30: jtag ieee reset
  * 31: software

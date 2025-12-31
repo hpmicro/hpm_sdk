@@ -21,6 +21,12 @@
 #if !defined(CONFIG_NDEBUG_CONSOLE) || !CONFIG_NDEBUG_CONSOLE
 #include "hpm_debug_console.h"
 #endif
+#if defined(CONFIG_ENET_PHY) && CONFIG_ENET_PHY
+#include "hpm_enet_phy.h"
+#endif
+#if defined(CONFIG_EEPROM_DEVICE_I2C)
+#include "eeprom_device.h"
+#endif
 
 #define BOARD_NAME          "hpm6750evk2"
 #define BOARD_UF2_SIGNATURE (0x0A4D5048UL)
@@ -170,6 +176,10 @@
 #define BOARD_CAP_I2C_CLK_GPIO_INDEX (GPIO_DI_GPIOZ)
 #define BOARD_CAP_I2C_CLK_GPIO_PIN   (11)
 
+#define BOARD_EEPROM_I2C_BASE     HPM_I2C0
+/* Abstract eeprom id definition */
+#define BOARD_EEPROM_ABSTRACT_ID E2P_DEVICE_M24C02
+
 /* ACMP desction */
 #define BOARD_ACMP             HPM_ACMP
 #define BOARD_ACMP_CLK         clock_acmp0
@@ -296,6 +306,9 @@
 #define BOARD_PDM_SINGLE_CHANNEL_MASK (1U)
 #define BOARD_PDM_DUAL_CHANNEL_MASK   (0x11U)
 
+/* DAO section */
+#define BOARD_DAO_I2S_DMA_REQ         (HPM_DMA_SRC_I2S1_TX)
+
 /* enet section */
 #define BOARD_ENET_COUNT         (2U)
 #define BOARD_ENET_PPS           HPM_ENET0
@@ -321,7 +334,7 @@
 #define BOARD_ENET_RMII_RST_GPIO_INDEX GPIO_DO_GPIOE
 #define BOARD_ENET_RMII_RST_GPIO_PIN   (26U)
 #define BOARD_ENET_RMII                HPM_ENET1
-#define BOARD_ENET_RMII_INT_REF_CLK    (1U)
+#define BOARD_ENET_RMII_INT_REF_CLK    enet_phy_rmii_refclk_dir_in
 #define BOARD_ENET_RMII_PTP_CLOCK      (clock_ptp1)
 #define BOARD_ENET_RMII_PPS0_PINOUT    (0)
 
@@ -359,6 +372,10 @@
 /* CAN section */
 #define BOARD_APP_CAN_BASE HPM_CAN0
 #define BOARD_APP_CAN_IRQn IRQn_CAN0
+
+#define BOARD_CAN_STB_GPIO_CTRL HPM_GPIO0
+#define BOARD_CAN_STB_GPIO_INDEX GPIO_DI_GPIOB
+#define BOARD_CAN_STB_GPIO_PIN   14
 
 /*
  * timer for board delay
@@ -630,8 +647,24 @@
 #define BOARD_APP_CLK_REF_PIN_NAME "J10[7] (PE24)"
 #define BOARD_APP_CLK_REF_CLK_NAME clock_ref1
 
+#define BOARD_APP_ESP_HOSTED_GPIO_RESET_PIN        IOC_PAD_PZ11
+#define BOARD_APP_ESP_HOSTED_GPIO_HANDSHAKE_PIN    IOC_PAD_PZ10
+#define BOARD_APP_ESP_HOSTED_GPIO_HANDSHAKE_IRQ    IRQn_GPIO0_Z
+#define BOARD_APP_ESP_HOSTED_GPIO_DATA_READY_PIN   IOC_PAD_PZ09
+#define BOARD_APP_ESP_HOSTED_GPIO_DATA_READY_IRQ   IRQn_GPIO0_Z
+
 /* BGPR */
 #define BOARD_BGPR HPM_BGPR
+
+/* usb id pin */
+#define BOARD_USB_ID_GPIO_CTRL  HPM_GPIO0
+#define BOARD_USB_ID_GPIO_INDEX GPIO_DI_GPIOF
+#define BOARD_USB_ID_GPIO_PIN   (10U)
+
+/* Brownout Indicate Pin */
+
+#define BOARD_BROWNOUT_INDICATE_GPIO_CTRL          HPM_GPIO0
+#define BOARD_BROWNOUT_INDICATE_PIN                IOC_PAD_PE30
 
 #if defined(__cplusplus)
 extern "C" {
@@ -764,6 +797,36 @@ void board_init_clk_ref_pin(void);
 
 uint32_t board_init_gptmr_clock(GPTMR_Type *ptr);
 
+void board_can_transceiver_phy_set(CAN_Type *ptr, bool enable);
+uint32_t board_init_i2c_eeprom_clock(I2C_Type *ptr);
+
+/*
+ * Wrap pinmux initialization.
+ */
+void init_uart_pins(UART_Type *ptr);
+void init_uart_pin_as_gpio(UART_Type *ptr);
+void init_lcd_pins(LCDC_Type *ptr);
+void init_trgmux_pins(uint32_t pin);
+void init_i2c_pins(I2C_Type *ptr);
+void init_i2c_pins_as_gpio(I2C_Type *ptr);
+void init_gpio_pins(void);
+void init_spi_pins(SPI_Type *ptr);
+void init_spi_pins_with_gpio_as_cs(SPI_Type *ptr);
+void init_pins(void);
+void init_gptmr_pins(GPTMR_Type *ptr);
+void init_i2s_pins(I2S_Type *ptr);
+void init_enet_pins(ENET_Type *ptr);
+void init_pwm_pins(PWM_Type *ptr);
+void init_usb_pins(USB_Type *ptr);
+void init_can_pins(CAN_Type *ptr);
+void init_can_transceiver_phy_pin(CAN_Type *ptr);
+void init_sdxc_cmd_pin(SDXC_Type *ptr, bool open_drain, bool is_1v8);
+void init_sdxc_cd_pin(SDXC_Type  *ptr, bool as_gpio);
+void init_sdxc_clk_data_pins(SDXC_Type *ptr, uint32_t width, bool is_1v8);
+void init_sdxc_pwr_pin(SDXC_Type *ptr, bool as_gpio);
+void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_output);
+
+void board_init_brownout_indicate_pin(void);
 #if defined(__cplusplus)
 }
 #endif /* __cplusplus */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -13,6 +13,10 @@
 
 #ifndef portasmHAS_SIFIVE_CLINT
     #define portasmHAS_SIFIVE_CLINT 0
+#endif
+
+#if !defined(USE_NONVECTOR_MODE) || (USE_NONVECTOR_MODE == 0)
+    #error "Vector mode is not supported"
 #endif
 
 #define portCONTEXT_SIZE ( 32 * portWORD_SIZE )
@@ -29,6 +33,7 @@
     EXTERN  OSTaskSwHook
     EXTERN  CPU_TS_Setup
     EXTERN  Software_IRQHandler
+    EXTERN  ucos_exception_handler
 ;********************************************************************************************************
 ;                                               EQUATES
 ;********************************************************************************************************
@@ -56,6 +61,7 @@ RISCV_PRCI_BASE_ADDR  DEFINE          0xE6401000
     EXTERN portasmHANDLE_INTERRUPT
 
     SECTION `.isr_vector`:CODE(2)
+    ALIGN 2
 ucos_risc_v_trap_handler:
     addi sp, sp, -4 * 32
     store_x     ra,   0 * 4(sp)
@@ -219,6 +225,7 @@ is_exception:
     csrr t0, mcause                        /* For viewing in the debugger only. */
     csrr t1, mepc                        /* For viewing in the debugger only */
     csrr t2, mstatus
+    call ucos_exception_handler
     j is_exception                        /* No other exceptions handled yet. */
 
 processed_source:

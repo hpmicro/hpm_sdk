@@ -14,7 +14,7 @@
 /**
  *
  * @brief PCFG driver APIs
- * @defgroup pcfg_interface PCFG driver APIs
+ * @defgroup pcfg_hpm5361_interface PCFG driver APIs for HPM5361
  * @ingroup io_interfaces
  * @{
  */
@@ -463,6 +463,20 @@ static inline void pcfg_irc24m_reload_trim(PCFG_Type *ptr)
 {
     ptr->RC24M &= ~PCFG_RC24M_RC_TRIMMED_MASK;
 }
+
+/**
+ * @brief dcdc switch to dcm mode
+ *
+ * @param[in] ptr base address
+ */
+void pcfg_dcdc_switch_to_dcm_mode(PCFG_Type *ptr);
+
+/**
+ * @brief dcdc switch to ccm mode
+ *
+ * @param[in] ptr base address
+ */
+void pcfg_dcdc_switch_to_ccm_mode(PCFG_Type *ptr);
 
 /**
  * @brief config irc24m track

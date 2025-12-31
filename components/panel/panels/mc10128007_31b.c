@@ -243,10 +243,9 @@ static void mipi_panel_init_cmd_send(hpm_panel_t *panel)
     hpm_panel_delay_ms(10);
 }
 
-static void mipi_panel_host_init(hpm_panel_t *panel)
+static void mipi_panel_host_init(hpm_panel_t *panel, const hpm_panel_timing_t *timing)
 {
     MIPI_DSI_Type *mipi_host = panel->hw_if.video.mipi.mipi_host_base;
-    const hpm_panel_timing_t *timing = &panel->timing;
     mipi_dsi_config_t mipi_cfg;
     mipi_dsi_get_defconfig_on_video(&mipi_cfg);
 
@@ -265,15 +264,21 @@ static void mipi_panel_host_init(hpm_panel_t *panel)
     mipi_dsi_init(mipi_host, &mipi_cfg);
 }
 
-static void mipi_panel_phy_init(hpm_panel_t *panel)
+static void mipi_panel_phy_init(hpm_panel_t *panel, const hpm_panel_timing_t *timing)
 {
     MIPI_DSI_Type *mipi_host = panel->hw_if.video.mipi.mipi_host_base;
     MIPI_DSI_PHY_Type *mipi_phy = panel->hw_if.video.mipi.mipi_phy_base;
 
-    mipi_dsi_phy_config_t mipi_phy_cfg = {
-        .lanes = 4,
-        .lane_mbps = 500
-    };
+    mipi_dsi_phy_config_t mipi_phy_cfg;
+
+    if (timing->pixel_clock_khz > 65000) {
+        mipi_phy_cfg.lanes = 4;
+        mipi_phy_cfg.lane_mbps = 500;
+    } else {
+        mipi_phy_cfg.lanes = 4;
+        mipi_phy_cfg.lane_mbps = 400;
+    }
+
     mipi_dsi_phy_powerdown(mipi_host);
     mipi_dsi_phy_init(mipi_phy, &mipi_phy_cfg);
     mipi_dsi_phy_poweron(mipi_host);
@@ -291,13 +296,17 @@ static void reset(hpm_panel_t *panel)
     hpm_panel_delay_ms(15);
 }
 
-static void init(hpm_panel_t *panel)
+static void init(hpm_panel_t *panel, const hpm_panel_timing_t *timing)
 {
     if (panel->hw_if.set_video_router)
         panel->hw_if.set_video_router();
 
-    mipi_panel_host_init(panel);
-    mipi_panel_phy_init(panel);
+    if (timing == NULL) {
+        timing = &panel->timing_list[0];
+    }
+
+    mipi_panel_host_init(panel, timing);
+    mipi_panel_phy_init(panel, timing);
     mipi_panel_init_cmd_send(panel);
 }
 
@@ -329,10 +338,9 @@ static void power_off(hpm_panel_t *panel)
     }
 }
 
-hpm_panel_t panel_mc10128007_31b = {
-    .name = "mc10128007_31b",
-    .if_type = HPM_PANEL_IF_TYPE_MIPI,
-    .timing = {
+static const hpm_panel_timing_t timing_list[] = {
+    {
+        .fps_hz = 60,
         .pixel_clock_khz = 71000,
         .hactive = 800,
         .hfront_porch = 52,
@@ -343,7 +351,26 @@ hpm_panel_t panel_mc10128007_31b = {
         .vfront_porch = 15,
         .vback_porch = 16,
         .vsync_len = 6,
-    },
+    }, {
+        .fps_hz = 30,
+        .pixel_clock_khz = 35500,
+        .hactive = 800,
+        .hfront_porch = 52,
+        .hback_porch = 48,
+        .hsync_len = 8,
+
+        .vactive = 1280,
+        .vfront_porch = 15,
+        .vback_porch = 16,
+        .vsync_len = 6,
+    }
+};
+
+hpm_panel_t panel_mc10128007_31b = {
+    .name = "mc10128007_31b",
+    .if_type = HPM_PANEL_IF_TYPE_MIPI,
+    .timing_list = timing_list,
+    .timing_list_num = ARRAY_SIZE(timing_list),
     .funcs = {
         .reset = reset,
         .init = init,

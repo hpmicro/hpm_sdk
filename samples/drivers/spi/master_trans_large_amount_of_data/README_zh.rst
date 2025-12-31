@@ -9,6 +9,13 @@ SPI_MASTER_TRANS_LARGE_AMOUNT_OF_DATA
 spi_master_trans_large_amount_of_data示例工程展示了SPI master如何使用hpm_spi component传输大量数据。
 在这个示例工程中，SPI Master以双工的方式收发数据(当传输数据数量超出SPI一次传输的上限时，hpm_spi component会使用DMA链的方式将SPI传输链接起来)。对于SPI master双工方式， 可以连接MOSI与MISO，进行回环测试。
 
+提示
+------
+
+- 本示例主要用于解决部分SOC的SPI单次最大传输长度限制为512单位的限制问题，通过DMA链式传输将多个SPI传输串联，实现大数据量的连续发送。
+- 对于无此限制的其他SOC，建议直接使用通用SPI驱动、组件接口或相关示例进行大容量数据传输。
+- 各SOC的SPI最大传输单位长度可参考其 hpm_soc_feature.h 文件中 SPI_SOC_TRANSFER_COUNT_MAX 宏定义。
+
 硬件设置
 ------------
 

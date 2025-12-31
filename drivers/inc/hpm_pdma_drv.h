@@ -286,8 +286,8 @@ hpm_stat_t pdma_fill_color(PDMA_Type *ptr, uint32_t dst, uint32_t dst_width,
  * @param [in] dst_width target buff pixel width
  * @param [in] src source buff address
  * @param [in] src_width source buff pixel width
- * @param [in] x x coordinate n buffer
- * @param [in] y y coordinate n buffer
+ * @param [in] x x coordinate in buffer
+ * @param [in] y y coordinate in buffer
  * @param [in] width output image width
  * @param [in] height output image height
  * @param [in] flip pdma_flip_t
@@ -297,6 +297,7 @@ hpm_stat_t pdma_fill_color(PDMA_Type *ptr, uint32_t dst, uint32_t dst_width,
  * @param [in] wait wait for execution to complete
  * @param [out] status pdma status
  * @retval hpm_stat_t: status_success if flip and rotate plane without any error
+ * @deprecated This API will be deleted in future versions. It is recommended to use the pdma_blit_ex API instead
  */
 hpm_stat_t pdma_flip_rotate(PDMA_Type *ptr, uint32_t dst, uint32_t dst_width,
                     uint32_t src, uint32_t src_width, uint32_t x, uint32_t y,
@@ -322,6 +323,7 @@ hpm_stat_t pdma_flip_rotate(PDMA_Type *ptr, uint32_t dst, uint32_t dst_width,
  * @param [in] wait wait for execution to complete
  * @param [out] status pdma status
  * @retval hpm_stat_t: status_success if flip and rotate plane without any error
+ * @deprecated This API will be deleted in future versions. It is recommended to use the pdma_blit_ex API instead
  */
 hpm_stat_t pdma_blit(PDMA_Type *ptr,
                      uint32_t dst, uint32_t dst_width,
@@ -350,6 +352,7 @@ hpm_stat_t pdma_blit(PDMA_Type *ptr,
  * @param [in] wait wait for execution to complete
  * @param [out] status pdma status
  * @retval hpm_stat_t: status_success if flip and rotate plane without any error
+ * @deprecated This API will be deleted in future versions. It is recommended to use the pdma_blit_ex API instead
  */
 hpm_stat_t pdma_scale(PDMA_Type *ptr,
                      uint32_t dst, uint32_t dst_width,

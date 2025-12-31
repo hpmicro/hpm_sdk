@@ -85,7 +85,7 @@ hpm_stat_t owr_release_bus(OWR_Type *ptr)
     return status_success;
 }
 
-hpm_stat_t owr_write_data(OWR_Type *ptr, uint32_t data)
+hpm_stat_t owr_write_data(OWR_Type *ptr, uint8_t data)
 {
     uint32_t status;
     uint32_t timeout = OWR_WR_TIMEOUT;
@@ -110,7 +110,7 @@ hpm_stat_t owr_write_data(OWR_Type *ptr, uint32_t data)
     return status_success;
 }
 
-hpm_stat_t owr_read_data(OWR_Type *ptr, uint32_t *data)
+hpm_stat_t owr_read_data(OWR_Type *ptr, uint8_t *data)
 {
     uint32_t status;
     uint32_t timeout = OWR_WR_TIMEOUT;
@@ -124,8 +124,7 @@ hpm_stat_t owr_read_data(OWR_Type *ptr, uint32_t *data)
     while (timeout--) {
         owr_get_irq_status(ptr, &status);
         if (status & owr_irq_receive_buff_full) {
-
-            *data = OWR_DATA_TXRX_DATA_GET(ptr->DATA);
+            *data = (uint8_t)OWR_DATA_TXRX_DATA_GET(ptr->DATA);
             owr_clear_irq_status(ptr, owr_irq_receive_buff_full);
             break;
         }

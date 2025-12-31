@@ -305,6 +305,34 @@ HPM6750是一款主频达816Mhz的双核微控制器。该芯片拥有最大2M�
    * - PE24
      - P2[16]
 
+- ESP-HOSTED 引脚接口
+
+.. list-table::
+   :header-rows: 1
+
+   * - 功能
+     - 位置
+     - 备注
+   * - PB13
+     - P1[3]
+     - RESET引脚
+   * - PB10
+     - P1[15]
+     - HANDSHAKE引脚
+   * - PB11
+     - P1[13]
+     - DATA_READY引脚
+
+- BROWNOUT中断指示引脚
+
+.. list-table::
+   :header-rows: 1
+
+   * - 功能
+     - 位置
+   * - PZ09
+     - P1[8]
+
 已知问题
 -----------
 

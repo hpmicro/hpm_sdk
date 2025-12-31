@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2024 HPMicro
+# Copyright (c) 2021-2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
@@ -14,10 +14,6 @@ sys.path.append(os.path.dirname(sys.argv[0]))
 import get_board_info
 
 APP_DEPENDENCY="dependency"
-APP_LINKED_PROJECT="linked_project"
-APP_LINKED_PROJECT_NAME="project_name"
-APP_LINKED_PROJECT_PATH="project_path"
-APP_LINKED_PROJECT_BUILD_TYPE="build_type"
 SOC_IP_FEATURE_FILE_NAME="hpm_soc_ip_feature.h"
 SOC_IP_FEATURE_PREFIX="HPM_IP_FEATURE_"
 
@@ -37,81 +33,8 @@ def get_app_dep(app_info):
         app_dep = app_info[APP_DEPENDENCY]
     return app_dep
 
-def get_linked_project(app_info):
-    linked_proj_info = None
-    if not app_info is None and APP_LINKED_PROJECT in app_info.keys():
-        linked_proj_info = app_info[APP_LINKED_PROJECT]
-    return linked_proj_info
-
 def is_sdk_sample(sdk_base, app_path):
     return re.match(r'^' + re.escape(sdk_base) + r'/samples/', re.sub(r'\\', '/', app_path))
-
-def is_sdk_board(sdk_base, board_dir):
-    return re.match(r'^' + re.escape(sdk_base) + r'/boards/', re.sub(r'\\', '/', board_dir))
-
-def get_compile_cmd_by_cmake_generator(cmake_generator):
-    cmd = "ninja"
-    if cmake_generator == "Ninja":
-        cmd = "ninja"
-    elif cmake_generator == "NMake Makefiles":
-        cmd = "nmake"
-    elif cmake_generator == "Unix Makefiles":
-        cmd = "make"
-    return cmd
-
-def build_linked_project(sdk_base, app_info, board_name, board_dir, app_bin_dir, cmake_generator, app_yml_base):
-    project_name=""
-    project_path=""
-    build_type=""
-    linked_proj_info = get_linked_project(app_info)
-    linked_proj_root_dir = ""
-    if (linked_proj_info == None):
-        return 0
-    else:
-        if APP_LINKED_PROJECT_NAME in linked_proj_info.keys():
-            project_name = linked_proj_info[APP_LINKED_PROJECT_NAME]
-        if APP_LINKED_PROJECT_PATH in linked_proj_info.keys():
-            project_path = linked_proj_info[APP_LINKED_PROJECT_PATH]
-        if APP_LINKED_PROJECT_BUILD_TYPE in linked_proj_info.keys():
-            build_type = linked_proj_info[APP_LINKED_PROJECT_BUILD_TYPE]
-        if APP_LINKED_PROJECT_PATH in linked_proj_info.keys():
-            linked_proj_root_dir = linked_proj_info[APP_LINKED_PROJECT_PATH]
-        else:
-            linked_proj_root_dir = os.path.join(sdk_base, "samples")
-
-        if project_path != "":
-            if not os.path.isabs(project_path):
-                p = os.path.realpath(os.path.join(app_yml_base, project_path))
-            else:
-                p = os.path.realpath(project_path)
-            if os.path.exists(p):
-                linked_proj_root_dir = p
-        if (project_name != "" and build_type != ""):
-            if linked_proj_root_dir == "":
-                linked_proj_root_dir = os.path.join(sdk_base, "samples", project_name)
-            linked_proj_build_dir = os.path.join(linked_proj_root_dir, os.path.basename(app_bin_dir))
-            if os.path.exists(linked_proj_build_dir):
-                if sys.platform == 'win32':
-                    # add suffix '\\?\' before the long path to avoid removing failed in windows.
-                    shutil.rmtree(r"\\?\\" + linked_proj_build_dir)
-                else:
-                    shutil.rmtree(linked_proj_build_dir)
-            os.makedirs(linked_proj_build_dir, exist_ok=True)
-            os.chdir(linked_proj_build_dir)
-            extra_option = ""
-            if not is_sdk_board(sdk_base, board_dir):
-                extra_option = "-DBOARD_SEARCH_PATH=" + os.path.dirname(board_dir)
-            print('-- Started to build core1 project...')
-            build_linked_proj_cmd = "cmake -G" + cmake_generator + " -DBOARD=" + board_name + " -DHPM_BUILD_TYPE=" + build_type + " " + extra_option + " -B " + linked_proj_build_dir + " -S " + linked_proj_root_dir
-            build_linked_proj_cmd += " && " + get_compile_cmd_by_cmake_generator(cmake_generator)
-            p = subprocess.Popen(build_linked_proj_cmd, shell=True,  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            retval = p.wait()
-            if retval != 0:
-                print("-- Failed to build core1 project!")
-            else:
-                print('-- Finished building core1 project successfully!')
-            return retval
-
 
 def get_soc_ip_feature_list(sdk_base, soc_series, soc_name):
     soc_ip_feature_file = os.path.join(sdk_base, "soc", soc_series, soc_name, SOC_IP_FEATURE_FILE_NAME)
@@ -160,17 +83,9 @@ def check_ip_dependency(sdk_base, soc_name, app_dependency):
 
 if __name__ == "__main__":
     board_cap = get_board_info.get_info(sys.argv[1], get_board_info.BOARD_INFO_FEATURE_KEY)
-    board_name = os.path.splitext(os.path.basename(sys.argv[1]))[0]
     board_excluded_samples = get_board_info.get_info(sys.argv[1], get_board_info.BOARD_INFO_EXCLUDED_SAMPLES_KEY)
     soc_name = get_board_info.get_info(sys.argv[1], get_board_info.BOARD_INFO_SOC_KEY)
-    board_dir = os.path.dirname(sys.argv[1])
     app_yml = os.path.realpath(sys.argv[2])
-    app_bin_dir = os.path.realpath("build")
-    if len(sys.argv) > 3:
-        app_bin_dir = os.path.realpath(sys.argv[3])
-    cmake_generator = "Ninja"
-    if len(sys.argv) > 4:
-        cmake_generator = sys.argv[4]
 
     if not os.path.exists(app_yml) or board_cap is None:
         sys.exit(0)
@@ -196,11 +111,5 @@ if __name__ == "__main__":
 
     if not check_ip_dependency(sdk_base, soc_name, app_dep):
         sys.exit(1)
-
-    # Build linked project if all dependencies are met
-    retval = build_linked_project(sdk_base, app_info, board_name, board_dir, app_bin_dir, cmake_generator, os.path.dirname(app_yml))
-    if (retval != 0):
-        sys.exit(2)
-
 
     sys.exit(0)

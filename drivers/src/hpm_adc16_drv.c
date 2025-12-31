@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -7,6 +7,10 @@
 
 #include "hpm_adc16_drv.h"
 #include "hpm_soc_feature.h"
+
+#ifndef ADC16_RETRY_TO_GET_RESULT_COUNT
+#define ADC16_RETRY_TO_GET_RESULT_COUNT (100U)
+#endif
 
 void adc16_get_default_config(adc16_config_t *config)
 {
@@ -301,6 +305,10 @@ hpm_stat_t adc16_init_seq_dma(ADC16_Type *ptr, adc16_dma_config_t *dma_config)
 
 hpm_stat_t adc16_set_prd_config(ADC16_Type *ptr, adc16_prd_config_t *config)
 {
+    uint16_t result;
+    uint32_t buf_cfg0_bkp;
+    uint8_t retry_cnt = 0;
+
     /* Check the specified channel number */
     if (ADC16_IS_CHANNEL_INVALID(config->ch)) {
         return status_invalid_argument;
@@ -311,6 +319,18 @@ hpm_stat_t adc16_set_prd_config(ADC16_Type *ptr, adc16_prd_config_t *config)
         return status_invalid_argument;
     }
 
+    /* save BUF_CFG0 */
+    buf_cfg0_bkp = ptr->BUF_CFG0;
+
+    ptr->BUF_CFG0 |= ADC16_BUF_CFG0_WAIT_DIS_MASK;
+
+#if defined(ADC_SOC_BUSMODE_ENABLE_CTRL_SUPPORT) && ADC_SOC_BUSMODE_ENABLE_CTRL_SUPPORT
+    ptr->BUF_CFG0 |= ADC16_BUF_CFG0_BUS_MODE_EN_MASK;
+#endif
+
+    /* The result will be synced to the register PRD_CFG[config->ch].PRD_RESULT after ADC finishs one conversion in oneshot mode. */
+    adc16_get_oneshot_result(ptr, config->ch, &result);
+
     /* Set periodic prescale */
     ptr->PRD_CFG[config->ch].PRD_CFG = (ptr->PRD_CFG[config->ch].PRD_CFG & ~ADC16_PRD_CFG_PRD_CFG_PRESCALE_MASK)
                                      | ADC16_PRD_CFG_PRD_CFG_PRESCALE_SET(config->prescale);
@@ -318,6 +338,16 @@ hpm_stat_t adc16_set_prd_config(ADC16_Type *ptr, adc16_prd_config_t *config)
     /* Set period count */
     ptr->PRD_CFG[config->ch].PRD_CFG = (ptr->PRD_CFG[config->ch].PRD_CFG & ~ADC16_PRD_CFG_PRD_CFG_PRD_MASK)
                                      | ADC16_PRD_CFG_PRD_CFG_PRD_SET(config->period_count);
+
+    /* The following logic is applied in the periodic mode to obtain the first valid result as early as possible. */
+    while (adc16_get_oneshot_result(ptr, config->ch, &result) != status_success) {
+        if (retry_cnt++ > ADC16_RETRY_TO_GET_RESULT_COUNT) {
+            break;
+        }
+    }
+
+    /* restore BUF_CFG0 */
+    ptr->BUF_CFG0 = buf_cfg0_bkp;
 
     return status_success;
 }
@@ -376,7 +406,7 @@ hpm_stat_t adc16_set_pmt_config(ADC16_Type *ptr, adc16_pmt_config_t *config)
         return status_invalid_argument;
     }
 
-    /* Check the triggier channel */
+    /* Check the trigger channel */
     if (ADC16_IS_TRIG_CH_INVLAID(config->trig_ch)) {
         return status_invalid_argument;
     }

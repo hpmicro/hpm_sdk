@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 HPMicro
+ * Copyright (c) 2022-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -134,7 +134,7 @@ ATTR_WEAK uint8_t enet_get_mac_address(uint8_t *mac)
 
     if (!IS_UUID_INVALID(uuid)) {
         uuid[0] &= 0xfc;
-        memcpy(mac, &uuid, ENET_MAC);
+        memcpy(mac, &uuid, ENET_MAC_SIZE);
         return ENET_MAC_ADDR_FROM_OTP_UUID;
     }
 
@@ -164,15 +164,15 @@ void enet_self_adaptive_port_speed(void)
 
 #if defined(RGMII) && RGMII
     #if defined(__USE_DP83867) && __USE_DP83867
-        dp83867_get_phy_status(ENET, &status);
+        dp83867_get_phy_status(ENET, DP83867_ADDR, &status);
     #else
-        rtl8211_get_phy_status(ENET, &status);
+        rtl8211_get_phy_status(ENET, RTL8211_ADDR, &status);
     #endif
 #else
     #if defined(__USE_DP83848) && __USE_DP83848
-        dp83848_get_phy_status(ENET, &status);
+        dp83848_get_phy_status(ENET, DP83848_ADDR, &status);
     #else
-        rtl8201_get_phy_status(ENET, &status);
+        rtl8201_get_phy_status(ENET, RTL8201_ADDR, &status);
     #endif
 #endif
 

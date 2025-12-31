@@ -47,7 +47,7 @@
 					</ChannelInfo>
 					<ChannelInfo>
 						<ProfileNo>402</ProfileNo>
-						<AddInfo>0</AddInfo>
+						<AddInfo>2</AddInfo>
 					</ChannelInfo>
 					<Dictionary>
 						<DataTypes>
@@ -1191,8 +1191,6 @@
 					</Entry>
 				</TxPdo>
 				<Profile>
-					<ProfileNo>402</ProfileNo>
-					<AddInfo>2</AddInfo>
 					<Dictionary>
 						<DataTypes>
 							<DataType>
@@ -1528,8 +1526,6 @@
 					</CoE>
 				</Mailbox>
 				<Profile>
-					<ProfileNo>402</ProfileNo>
-					<AddInfo>2</AddInfo>
 					<Dictionary>
 						<DataTypes>
 							<DataType>
@@ -1865,8 +1861,6 @@
 					</CoE>
 				</Mailbox>
 				<Profile>
-					<ProfileNo>402</ProfileNo>
-					<AddInfo>2</AddInfo>
 					<Dictionary>
 						<DataTypes>
 							<DataType>

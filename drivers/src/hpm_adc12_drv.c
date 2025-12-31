@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -7,6 +7,10 @@
 
 #include "hpm_adc12_drv.h"
 #include "hpm_soc_feature.h"
+
+#ifndef ADC12_RETRY_TO_GET_RESULT_COUNT
+#define ADC12_RETRY_TO_GET_RESULT_COUNT (100U)
+#endif
 
 void adc12_get_default_config(adc12_config_t *config)
 {
@@ -243,6 +247,10 @@ hpm_stat_t adc12_init_seq_dma(ADC12_Type *ptr, adc12_dma_config_t *dma_config)
 
 hpm_stat_t adc12_set_prd_config(ADC12_Type *ptr, adc12_prd_config_t *config)
 {
+    uint16_t result;
+    uint32_t buf_cfg0_bkp;
+    uint8_t retry_cnt = 0;
+
     /* Check the specified channel number */
     if (ADC12_IS_CHANNEL_INVALID(config->ch)) {
         return status_invalid_argument;
@@ -253,6 +261,14 @@ hpm_stat_t adc12_set_prd_config(ADC12_Type *ptr, adc12_prd_config_t *config)
         return status_invalid_argument;
     }
 
+    /* save BUF_CFG0 */
+    buf_cfg0_bkp = ptr->BUF_CFG0;
+
+    ptr->BUF_CFG0 |= ADC16_BUF_CFG0_WAIT_DIS_MASK;
+
+    /* The result will be synced to the register PRD_CFG[config->ch].PRD_RESULT after ADC finishs one conversion in oneshot mode. */
+    adc12_get_oneshot_result(ptr, config->ch, &result);
+
     /* Set periodic prescale */
     ptr->PRD_CFG[config->ch].PRD_CFG = (ptr->PRD_CFG[config->ch].PRD_CFG & ~ADC12_PRD_CFG_PRD_CFG_PRESCALE_MASK)
                                      | ADC12_PRD_CFG_PRD_CFG_PRESCALE_SET(config->prescale);
@@ -260,6 +276,16 @@ hpm_stat_t adc12_set_prd_config(ADC12_Type *ptr, adc12_prd_config_t *config)
     /* Set period count */
     ptr->PRD_CFG[config->ch].PRD_CFG = (ptr->PRD_CFG[config->ch].PRD_CFG & ~ADC12_PRD_CFG_PRD_CFG_PRD_MASK)
                                      | ADC12_PRD_CFG_PRD_CFG_PRD_SET(config->period_count);
+
+    /* The following logic is applied in the periodic mode to obtain the first valid result as early as possible. */
+    while (adc12_get_oneshot_result(ptr, config->ch, &result) != status_success) {
+        if (retry_cnt++ > ADC12_RETRY_TO_GET_RESULT_COUNT) {
+            break;
+        }
+    }
+
+    /* restore BUF_CFG0 */
+    ptr->BUF_CFG0 = buf_cfg0_bkp;
 
     return status_success;
 }
@@ -318,7 +344,7 @@ hpm_stat_t adc12_set_pmt_config(ADC12_Type *ptr, adc12_pmt_config_t *config)
         return status_invalid_argument;
     }
 
-	/* Check the triggier channel */
+	/* Check the trigger channel */
     if (ADC12_IS_TRIG_CH_INVLAID(config->trig_ch)) {
         return status_invalid_argument;
     }

@@ -429,7 +429,7 @@ typedef struct {
 /* TX_PHY register group index macro definition */
 #define LVB_TX_PHY_LVDS0_TX0 (0UL)
 #define LVB_TX_PHY_LVDS0_TX1 (1UL)
-#define LVB_TX_PHY_LVDS0_TX2 (1UL)
+#define LVB_TX_PHY_LVDS0_TX2 (2UL)
 #define LVB_TX_PHY_LVDS0_TX3 (3UL)
 #define LVB_TX_PHY_LVDS0_TXCK (4UL)
 #define LVB_TX_PHY_LVDS1_TX0 (5UL)

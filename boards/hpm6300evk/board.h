@@ -17,6 +17,10 @@
 #if !defined(CONFIG_NDEBUG_CONSOLE) || !CONFIG_NDEBUG_CONSOLE
 #include "hpm_debug_console.h"
 #endif
+#if defined(CONFIG_ENET_PHY) && CONFIG_ENET_PHY
+#include "hpm_enet_phy.h"
+#endif
+
 
 #define BOARD_NAME          "hpm6300evk"
 #define BOARD_UF2_SIGNATURE (0x0A4D5048UL)
@@ -229,7 +233,7 @@
 #define BOARD_ENET_RMII_RST_GPIO_INDEX
 #define BOARD_ENET_RMII_RST_GPIO_PIN
 #define BOARD_ENET_RMII             HPM_ENET0
-#define BOARD_ENET_RMII_INT_REF_CLK (1U)
+#define BOARD_ENET_RMII_INT_REF_CLK enet_phy_rmii_refclk_dir_in
 #define BOARD_ENET_RMII_PTP_CLOCK   (clock_ptp0)
 #define BOARD_ENET_RMII_PPS0_PINOUT (1)
 
@@ -459,6 +463,17 @@
 /* BGPR */
 #define BOARD_BGPR HPM_BGPR
 
+#define BOARD_APP_ESP_HOSTED_GPIO_RESET_PIN        IOC_PAD_PA07
+#define BOARD_APP_ESP_HOSTED_GPIO_HANDSHAKE_PIN    IOC_PAD_PC13
+#define BOARD_APP_ESP_HOSTED_GPIO_HANDSHAKE_IRQ    IRQn_GPIO0_C
+#define BOARD_APP_ESP_HOSTED_GPIO_DATA_READY_PIN   IOC_PAD_PC14
+#define BOARD_APP_ESP_HOSTED_GPIO_DATA_READY_IRQ   IRQn_GPIO0_C
+
+/* Brownout Indicate Pin */
+
+#define BOARD_BROWNOUT_INDICATE_GPIO_CTRL          HPM_GPIO0
+#define BOARD_BROWNOUT_INDICATE_PIN                IOC_PAD_PA07
+
 #if defined(__cplusplus)
 extern "C" {
 #endif /* __cplusplus */
@@ -541,6 +556,30 @@ uint8_t board_get_led_gpio_off_level(void);
 void board_init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp);
 
 uint32_t board_init_gptmr_clock(GPTMR_Type *ptr);
+
+/*
+ * Wrap pinmux initialization.
+ */
+void init_uart_pins(UART_Type *ptr);
+void init_uart_pin_as_gpio(UART_Type *ptr);
+void init_i2c_pins_as_gpio(I2C_Type *ptr);
+void init_i2c_pins(I2C_Type *ptr);
+void init_gpio_pins(void);
+void init_spi_pins(SPI_Type *ptr);
+void init_spi_pins_with_gpio_as_cs(SPI_Type *ptr);
+void init_pins(void);
+void init_gptmr_pins(GPTMR_Type *ptr);
+void init_enet_pins(ENET_Type *ptr);
+void init_pwm_pins(PWM_Type *ptr);
+void init_usb_pins(USB_Type *ptr);
+void init_can_pins(CAN_Type *ptr);
+void init_sdxc_cmd_pin(SDXC_Type *ptr, bool open_drain, bool is_1v8);
+void init_sdxc_cd_pin(SDXC_Type  *ptr, bool as_gpio);
+void init_sdxc_clk_data_pins(SDXC_Type *ptr, uint32_t width, bool is_1v8);
+void init_dac_pins(DAC_Type *ptr);
+void init_trgmux_pins(uint32_t pin);
+void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_output);
+void board_init_brownout_indicate_pin(void);
 
 #if defined(__cplusplus)
 }

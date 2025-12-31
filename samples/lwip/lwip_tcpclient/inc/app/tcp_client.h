@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -28,9 +28,10 @@ typedef struct {
     struct pbuf *p;
 } tcp_client_t;
 
-void tcp_client_init(void);
-void tcp_client_reconnect(struct netif *netif);
+extern ip4_addr_t server_ip;
 
+void tcp_client_init(ip4_addr_t *server_ip);
+void tcp_client_reconnect(struct netif *netif, ip4_addr_t *server_ip);
 #if defined(__cplusplus)
 }
 #endif /* __cplusplus */

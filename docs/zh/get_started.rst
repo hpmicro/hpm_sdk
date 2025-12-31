@@ -88,6 +88,7 @@
 
       1. **下载并解压工具链**
 
+         - 从 `HPMicro 官方 GitHub 发布页面 <https://github.com/hpmicro/riscv-gnu-toolchain/releases>`_ 下载 RISC-V GNU 工具链。
          - 将工具链包解压到特定路径（例如，``TOOLCHAIN_PATH``）。可执行文件 ``riscv32-unknown-elf-gcc`` 应位于 ``TOOLCHAIN_PATH/bin``。
 
       2. **设置环境变量**
@@ -230,6 +231,21 @@
 
          pip install --user -r "%HPM_SDK_BASE%/scripts/requirements.txt"
 
+.. _cmake_build_system:
+
+CMake 构建系统
+-------------------
+
+HPM SDK 提供了一个全面的基于 CMake 的构建系统，具有以下特性：
+
+- **跨平台兼容性**：支持 Windows、macOS 和 Linux
+- **多工具链支持**：包括 GNU GCC、NDS GCC 和 ZCC
+- **灵活的板卡配置**：支持自定义板卡
+- **IDE 集成**：支持各种开发环境
+- **SOC 无关的应用开发**：自动依赖管理
+
+有关使用 CMake 构建系统的详细信息，包括高级配置选项、自定义板卡设置和最佳实践，请参阅 :ref:`cmake_user_guide`。
+
 .. _build_application_gnu_gcc:
 
 使用 GNU GCC 工具链构建应用程序
@@ -304,7 +320,7 @@
 
 4. **安装 OpenOCD**
 
- - 可以通过包管理系统安装，或从 SourceForge 或 GitHub 下载。确保其版本 > 0.11。
+ - 从 `HPMicro 官方 GitHub 发布页面 <https://github.com/hpmicro/riscv-openocd/releases>`_ 下载 OpenOCD，或者编译该仓库的 `riscv-hpmicro` 分支。该仓库与 OpenOCD 上游相比仅添加了 Flash 操作算法。
 
 5. **设置环境变量**
 

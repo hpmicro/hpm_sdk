@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -37,7 +37,11 @@ typedef struct {
 } enet_desc_t_netx;
 
 INT enet_controller_netx_init(ENET_Type *ptr, enet_inf_type_t inf_type, enet_desc_t_netx *desc, enet_mac_config_t *config, enet_int_config_t *int_config);
-VOID _hardware_get_mac_address(UCHAR *mac);
+#if defined(ENET_MULTIPLE_PORT) && ENET_MULTIPLE_PORT
+INT _hardware_get_mac_address(UCHAR *mac, uint8_t eth_idx);
+#else
+INT _hardware_get_mac_address(UCHAR *mac);
+#endif
 VOID enet_dma_rx_desc_set_ch_buffer(ENET_Type *ptr, enet_desc_t_netx *desc, UCHAR ch, VOID *buf, size_t bytes);
 VOID enet_dma_rx_desc_give_to_hardware(ENET_Type *ptr, enet_desc_t_netx *desc, UCHAR ch);
 #endif

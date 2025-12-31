@@ -11,6 +11,13 @@
 #include "hpm_sysctl_drv.h"
 #include "hpm_csr_drv.h"
 
+/**
+ * @brief CLOCK driver APIs
+ * @defgroup clock_hpm6360_interface CLOCK driver APIs for HPM6360
+ * @{
+ *
+ */
+
 #define CLOCK_DIV_INVALID (~0UL)
 
 /**
@@ -403,5 +410,9 @@ extern uint32_t hpm_core_clock;
 #ifdef __cplusplus
 }
 #endif
+
+/**
+ * @}
+ */
 
 #endif /* HPM_CLOCK_DRV_H */

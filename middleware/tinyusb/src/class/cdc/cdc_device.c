@@ -43,347 +43,389 @@
 //--------------------------------------------------------------------+
 // MACRO CONSTANT TYPEDEF
 //--------------------------------------------------------------------+
-enum
-{
-  BULK_PACKET_SIZE = (TUD_OPT_HIGH_SPEED ? 512 : 64)
-};
+#define BULK_PACKET_SIZE (TUD_OPT_HIGH_SPEED ? 512 : 64)
 
-typedef struct
-{
+typedef struct {
+  uint8_t rhport;
   uint8_t itf_num;
-  uint8_t ep_notif;
-  uint8_t ep_in;
-  uint8_t ep_out;
-
-  // Bit 0:  DTR (Data Terminal Ready), Bit 1: RTS (Request to Send)
-  uint8_t line_state;
+  uint8_t ep_notify;
+  uint8_t line_state; // Bit 0: DTR, Bit 1: RTS
 
   /*------------- From this point, data is not cleared by bus reset -------------*/
-  char    wanted_char;
   TU_ATTR_ALIGNED(4) cdc_line_coding_t line_coding;
+  char wanted_char;
 
-  // FIFO
-  tu_fifo_t rx_ff;
-  tu_fifo_t tx_ff;
+  struct {
+    tu_edpt_stream_t tx;
+    tu_edpt_stream_t rx;
 
-  uint8_t rx_ff_buf[CFG_TUD_CDC_RX_BUFSIZE];
-  uint8_t tx_ff_buf[CFG_TUD_CDC_TX_BUFSIZE];
+    uint8_t tx_ff_buf[CFG_TUD_CDC_TX_BUFSIZE];
+    uint8_t rx_ff_buf[CFG_TUD_CDC_RX_BUFSIZE];
+  } stream;
+} cdcd_interface_t;
 
-  OSAL_MUTEX_DEF(rx_ff_mutex);
-  OSAL_MUTEX_DEF(tx_ff_mutex);
+#define ITF_MEM_RESET_SIZE offsetof(cdcd_interface_t, line_coding)
 
-  // Endpoint Transfer buffer
-  CFG_TUSB_MEM_ALIGN uint8_t epout_buf[CFG_TUD_CDC_EP_BUFSIZE];
-  CFG_TUSB_MEM_ALIGN uint8_t epin_buf[CFG_TUD_CDC_EP_BUFSIZE];
+typedef struct {
+  TUD_EPBUF_DEF(epout, CFG_TUD_CDC_EP_BUFSIZE);
+  TUD_EPBUF_DEF(epin, CFG_TUD_CDC_EP_BUFSIZE);
 
-}cdcd_interface_t;
+  #if CFG_TUD_CDC_NOTIFY
+  TUD_EPBUF_TYPE_DEF(cdc_notify_msg_t, epnotify);
+  #endif
+} cdcd_epbuf_t;
 
-#define ITF_MEM_RESET_SIZE   offsetof(cdcd_interface_t, wanted_char)
+//--------------------------------------------------------------------+
+// Weak stubs: invoked if no strong implementation is available
+//--------------------------------------------------------------------+
+TU_ATTR_WEAK void tud_cdc_rx_cb(uint8_t itf) {
+  (void)itf;
+}
+
+TU_ATTR_WEAK void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
+  (void)itf;
+  (void)wanted_char;
+}
+
+TU_ATTR_WEAK void tud_cdc_tx_complete_cb(uint8_t itf) {
+  (void)itf;
+}
+
+TU_ATTR_WEAK void tud_cdc_notify_complete_cb(uint8_t itf) {
+  (void)itf;
+}
+
+TU_ATTR_WEAK void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts) {
+  (void)itf;
+  (void)dtr;
+  (void)rts;
+}
+
+TU_ATTR_WEAK void tud_cdc_line_coding_cb(uint8_t itf, const cdc_line_coding_t *p_line_coding) {
+  (void)itf;
+  (void)p_line_coding;
+}
+
+TU_ATTR_WEAK void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms) {
+  (void)itf;
+  (void)duration_ms;
+}
 
 //--------------------------------------------------------------------+
 // INTERNAL OBJECT & FUNCTION DECLARATION
 //--------------------------------------------------------------------+
-CFG_TUD_MEM_SECTION tu_static cdcd_interface_t _cdcd_itf[CFG_TUD_CDC];
+static cdcd_interface_t _cdcd_itf[CFG_TUD_CDC];
+CFG_TUD_MEM_SECTION static cdcd_epbuf_t _cdcd_epbuf[CFG_TUD_CDC];
+static tud_cdc_configure_t _cdcd_cfg = TUD_CDC_CONFIGURE_DEFAULT();
 
-static bool _prep_out_transaction (cdcd_interface_t* p_cdc)
-{
-  uint8_t const rhport = 0;
-  uint16_t available = tu_fifo_remaining(&p_cdc->rx_ff);
-
-  // Prepare for incoming data but only allow what we can store in the ring buffer.
-  // TODO Actually we can still carry out the transfer, keeping count of received bytes
-  // and slowly move it to the FIFO when read().
-  // This pre-check reduces endpoint claiming
-  TU_VERIFY(available >= sizeof(p_cdc->epout_buf));
-
-  // claim endpoint
-  TU_VERIFY(usbd_edpt_claim(rhport, p_cdc->ep_out));
-
-  // fifo can be changed before endpoint is claimed
-  available = tu_fifo_remaining(&p_cdc->rx_ff);
-
-  if ( available >= sizeof(p_cdc->epout_buf) )
-  {
-    return usbd_edpt_xfer(rhport, p_cdc->ep_out, p_cdc->epout_buf, sizeof(p_cdc->epout_buf));
-  }else
-  {
-    // Release endpoint since we don't make any transfer
-    usbd_edpt_release(rhport, p_cdc->ep_out);
-
-    return false;
+TU_ATTR_ALWAYS_INLINE static inline uint8_t find_cdc_itf(uint8_t ep_addr) {
+  for (uint8_t idx = 0; idx < CFG_TUD_CDC; idx++) {
+    const cdcd_interface_t *p_cdc = &_cdcd_itf[idx];
+    if (ep_addr == p_cdc->stream.rx.ep_addr || ep_addr == p_cdc->stream.tx.ep_addr ||
+        (ep_addr == p_cdc->ep_notify && ep_addr != 0)) {
+      return idx;
+    }
   }
+  return TUSB_INDEX_INVALID_8;
 }
 
 //--------------------------------------------------------------------+
 // APPLICATION API
 //--------------------------------------------------------------------+
-bool tud_cdc_n_connected(uint8_t itf)
-{
-  // DTR (bit 0) active  is considered as connected
-  return tud_ready() && tu_bit_test(_cdcd_itf[itf].line_state, 0);
+bool tud_cdc_configure(const tud_cdc_configure_t* driver_cfg) {
+  TU_VERIFY(driver_cfg != NULL);
+  _cdcd_cfg = *driver_cfg;
+  return true;
 }
 
-uint8_t tud_cdc_n_get_line_state (uint8_t itf)
-{
+bool tud_cdc_n_ready(uint8_t itf) {
+  TU_VERIFY(itf < CFG_TUD_CDC);
+  TU_VERIFY(tud_ready());
+  const cdcd_interface_t *p_cdc = &_cdcd_itf[itf];
+
+  const bool in_opened  = tu_edpt_stream_is_opened(&p_cdc->stream.tx);
+  const bool out_opened = tu_edpt_stream_is_opened(&p_cdc->stream.rx);
+  return in_opened && out_opened;
+}
+
+bool tud_cdc_n_connected(uint8_t itf) {
+  TU_VERIFY(itf < CFG_TUD_CDC);
+  TU_VERIFY(tud_ready());
+  // DTR (bit 0) active  is considered as connected
+  return tu_bit_test(_cdcd_itf[itf].line_state, 0);
+}
+
+uint8_t tud_cdc_n_get_line_state(uint8_t itf) {
+  TU_VERIFY(itf < CFG_TUD_CDC, 0);
   return _cdcd_itf[itf].line_state;
 }
 
-void tud_cdc_n_get_line_coding (uint8_t itf, cdc_line_coding_t* coding)
-{
+void tud_cdc_n_get_line_coding(uint8_t itf, cdc_line_coding_t *coding) {
+  TU_VERIFY(itf < CFG_TUD_CDC, );
   (*coding) = _cdcd_itf[itf].line_coding;
 }
 
-void tud_cdc_n_set_wanted_char (uint8_t itf, char wanted)
-{
-  _cdcd_itf[itf].wanted_char = wanted;
+#if CFG_TUD_CDC_NOTIFY
+bool tud_cdc_n_notify_uart_state (uint8_t itf, const cdc_notify_uart_state_t *state) {
+  TU_VERIFY(itf < CFG_TUD_CDC);
+  cdcd_interface_t *p_cdc   = &_cdcd_itf[itf];
+  cdcd_epbuf_t     *p_epbuf = &_cdcd_epbuf[itf];
+  TU_VERIFY(tud_ready() && p_cdc->ep_notify != 0);
+  TU_VERIFY(usbd_edpt_claim(p_cdc->rhport, p_cdc->ep_notify));
+
+  cdc_notify_msg_t* notify_msg = &p_epbuf->epnotify;
+  notify_msg->request.bmRequestType = CDC_REQ_TYPE_NOTIF;
+  notify_msg->request.bRequest = CDC_NOTIF_SERIAL_STATE;
+  notify_msg->request.wValue = 0;
+  notify_msg->request.wIndex = p_cdc->itf_num;
+  notify_msg->request.wLength = sizeof(cdc_notify_uart_state_t);
+  notify_msg->serial_state = *state;
+
+  return usbd_edpt_xfer(p_cdc->rhport, p_cdc->ep_notify, (uint8_t *)notify_msg, 8 + sizeof(cdc_notify_uart_state_t));
 }
 
+bool tud_cdc_n_notify_conn_speed_change(uint8_t itf, const cdc_notify_conn_speed_change_t* conn_speed_change) {
+  TU_VERIFY(itf < CFG_TUD_CDC);
+  cdcd_interface_t *p_cdc   = &_cdcd_itf[itf];
+  cdcd_epbuf_t     *p_epbuf = &_cdcd_epbuf[itf];
+  TU_VERIFY(tud_ready() && p_cdc->ep_notify != 0);
+  TU_VERIFY(usbd_edpt_claim(p_cdc->rhport, p_cdc->ep_notify));
+
+  cdc_notify_msg_t* notify_msg = &p_epbuf->epnotify;
+  notify_msg->request.bmRequestType = CDC_REQ_TYPE_NOTIF;
+  notify_msg->request.bRequest = CDC_NOTIF_CONNECTION_SPEED_CHANGE;
+  notify_msg->request.wValue = 0;
+  notify_msg->request.wIndex = p_cdc->itf_num;
+  notify_msg->request.wLength = sizeof(cdc_notify_conn_speed_change_t);
+  notify_msg->conn_speed_change = *conn_speed_change;
+
+  return usbd_edpt_xfer(p_cdc->rhport, p_cdc->ep_notify, (uint8_t *)notify_msg, 8 + sizeof(cdc_notify_conn_speed_change_t));
+}
+#endif
+
+void tud_cdc_n_set_wanted_char(uint8_t itf, char wanted) {
+  TU_VERIFY(itf < CFG_TUD_CDC, );
+  _cdcd_itf[itf].wanted_char = wanted;
+}
 
 //--------------------------------------------------------------------+
 // READ API
 //--------------------------------------------------------------------+
-uint32_t tud_cdc_n_available(uint8_t itf)
-{
-  return tu_fifo_count(&_cdcd_itf[itf].rx_ff);
+uint32_t tud_cdc_n_available(uint8_t itf) {
+  TU_VERIFY(itf < CFG_TUD_CDC, 0);
+  return tu_edpt_stream_read_available(&_cdcd_itf[itf].stream.rx);
 }
 
-uint32_t tud_cdc_n_read(uint8_t itf, void* buffer, uint32_t bufsize)
-{
-  cdcd_interface_t* p_cdc = &_cdcd_itf[itf];
-  uint32_t num_read = tu_fifo_read_n(&p_cdc->rx_ff, buffer, (uint16_t) TU_MIN(bufsize, UINT16_MAX));
-  _prep_out_transaction(p_cdc);
-  return num_read;
+uint32_t tud_cdc_n_read(uint8_t itf, void* buffer, uint32_t bufsize) {
+  TU_VERIFY(itf < CFG_TUD_CDC, 0);
+  cdcd_interface_t *p_cdc = &_cdcd_itf[itf];
+  return tu_edpt_stream_read(p_cdc->rhport, &p_cdc->stream.rx, buffer, bufsize);
 }
 
-bool tud_cdc_n_peek(uint8_t itf, uint8_t* chr)
-{
-  return tu_fifo_peek(&_cdcd_itf[itf].rx_ff, chr);
+bool tud_cdc_n_peek(uint8_t itf, uint8_t *chr) {
+  TU_VERIFY(itf < CFG_TUD_CDC);
+  return tu_edpt_stream_peek(&_cdcd_itf[itf].stream.rx, chr);
 }
 
-void tud_cdc_n_read_flush (uint8_t itf)
-{
-  cdcd_interface_t* p_cdc = &_cdcd_itf[itf];
-  tu_fifo_clear(&p_cdc->rx_ff);
-  _prep_out_transaction(p_cdc);
+void tud_cdc_n_read_flush(uint8_t itf) {
+  TU_VERIFY(itf < CFG_TUD_CDC, );
+  cdcd_interface_t *p_cdc = &_cdcd_itf[itf];
+  tu_edpt_stream_clear(&p_cdc->stream.rx);
+  tu_edpt_stream_read_xfer(p_cdc->rhport, &p_cdc->stream.rx);
 }
 
 //--------------------------------------------------------------------+
 // WRITE API
 //--------------------------------------------------------------------+
-uint32_t tud_cdc_n_write(uint8_t itf, void const* buffer, uint32_t bufsize)
-{
-  cdcd_interface_t* p_cdc = &_cdcd_itf[itf];
-  uint16_t ret = tu_fifo_write_n(&p_cdc->tx_ff, buffer, (uint16_t) TU_MIN(bufsize, UINT16_MAX));
-
-  // flush if queue more than packet size
-  // may need to suppress -Wunreachable-code since most of the time CFG_TUD_CDC_TX_BUFSIZE < BULK_PACKET_SIZE
-  if ( (tu_fifo_count(&p_cdc->tx_ff) >= BULK_PACKET_SIZE) || ((CFG_TUD_CDC_TX_BUFSIZE < BULK_PACKET_SIZE) && tu_fifo_full(&p_cdc->tx_ff)) )
-  {
-    tud_cdc_n_write_flush(itf);
-  }
-
-  return ret;
+uint32_t tud_cdc_n_write(uint8_t itf, const void* buffer, uint32_t bufsize) {
+  TU_VERIFY(itf < CFG_TUD_CDC, 0);
+  cdcd_interface_t *p_cdc = &_cdcd_itf[itf];
+  return tu_edpt_stream_write(p_cdc->rhport, &p_cdc->stream.tx, buffer, bufsize);
 }
 
-uint32_t tud_cdc_n_write_flush (uint8_t itf)
-{
-  cdcd_interface_t* p_cdc = &_cdcd_itf[itf];
-
-  // Skip if usb is not ready yet
-  TU_VERIFY( tud_ready(), 0 );
-
-  // No data to send
-  if ( !tu_fifo_count(&p_cdc->tx_ff) ) return 0;
-
-  uint8_t const rhport = 0;
-
-  // Claim the endpoint
-  TU_VERIFY( usbd_edpt_claim(rhport, p_cdc->ep_in), 0 );
-
-  // Pull data from FIFO
-  uint16_t const count = tu_fifo_read_n(&p_cdc->tx_ff, p_cdc->epin_buf, sizeof(p_cdc->epin_buf));
-
-  if ( count )
-  {
-    TU_ASSERT( usbd_edpt_xfer(rhport, p_cdc->ep_in, p_cdc->epin_buf, count), 0 );
-    return count;
-  }else
-  {
-    // Release endpoint since we don't make any transfer
-    // Note: data is dropped if terminal is not connected
-    usbd_edpt_release(rhport, p_cdc->ep_in);
-    return 0;
-  }
+uint32_t tud_cdc_n_write_flush(uint8_t itf) {
+  TU_VERIFY(itf < CFG_TUD_CDC, 0);
+  cdcd_interface_t *p_cdc = &_cdcd_itf[itf];
+  return tu_edpt_stream_write_xfer(p_cdc->rhport, &p_cdc->stream.tx);
 }
 
-uint32_t tud_cdc_n_write_available (uint8_t itf)
-{
-  return tu_fifo_remaining(&_cdcd_itf[itf].tx_ff);
+uint32_t tud_cdc_n_write_available(uint8_t itf) {
+  TU_VERIFY(itf < CFG_TUD_CDC, 0);
+  cdcd_interface_t *p_cdc = &_cdcd_itf[itf];
+  return tu_edpt_stream_write_available(p_cdc->rhport, &p_cdc->stream.tx);
 }
 
-bool tud_cdc_n_write_clear (uint8_t itf)
-{
-  return tu_fifo_clear(&_cdcd_itf[itf].tx_ff);
+bool tud_cdc_n_write_clear(uint8_t itf) {
+  TU_VERIFY(itf < CFG_TUD_CDC);
+  cdcd_interface_t *p_cdc = &_cdcd_itf[itf];
+  return tu_edpt_stream_clear(&p_cdc->stream.tx);
 }
 
 //--------------------------------------------------------------------+
 // USBD Driver API
 //--------------------------------------------------------------------+
-void cdcd_init(void)
-{
+void cdcd_init(void) {
   tu_memclr(_cdcd_itf, sizeof(_cdcd_itf));
-
-  for(uint8_t i=0; i<CFG_TUD_CDC; i++)
-  {
-    cdcd_interface_t* p_cdc = &_cdcd_itf[i];
+  for (uint8_t i = 0; i < CFG_TUD_CDC; i++) {
+    cdcd_interface_t *p_cdc   = &_cdcd_itf[i];
+    cdcd_epbuf_t     *p_epbuf = &_cdcd_epbuf[i];
 
     p_cdc->wanted_char = (char) -1;
 
     // default line coding is : stop bit = 1, parity = none, data bits = 8
-    p_cdc->line_coding.bit_rate  = 115200;
+    p_cdc->line_coding.bit_rate = 115200;
     p_cdc->line_coding.stop_bits = 0;
-    p_cdc->line_coding.parity    = 0;
+    p_cdc->line_coding.parity = 0;
     p_cdc->line_coding.data_bits = 8;
 
-    // Config RX fifo
-    tu_fifo_config(&p_cdc->rx_ff, p_cdc->rx_ff_buf, TU_ARRAY_SIZE(p_cdc->rx_ff_buf), 1, false);
+    tu_edpt_stream_init(&p_cdc->stream.rx, false, false, false, p_cdc->stream.rx_ff_buf, CFG_TUD_CDC_RX_BUFSIZE,
+                        p_epbuf->epout, CFG_TUD_CDC_EP_BUFSIZE);
 
-    // Config TX fifo as overwritable at initialization and will be changed to non-overwritable
-    // if terminal supports DTR bit. Without DTR we do not know if data is actually polled by terminal.
-    // In this way, the most current data is prioritized.
-    tu_fifo_config(&p_cdc->tx_ff, p_cdc->tx_ff_buf, TU_ARRAY_SIZE(p_cdc->tx_ff_buf), 1, true);
-
-    tu_fifo_config_mutex(&p_cdc->rx_ff, NULL, osal_mutex_create(&p_cdc->rx_ff_mutex));
-    tu_fifo_config_mutex(&p_cdc->tx_ff, osal_mutex_create(&p_cdc->tx_ff_mutex), NULL);
+    // TX fifo can be configured to change to overwritable if not connected (DTR bit not set). Without DTR we do not
+    // know if data is actually polled by terminal. This way the most current data is prioritized.
+    // Default: is overwritable
+    tu_edpt_stream_init(&p_cdc->stream.tx, false, true, _cdcd_cfg.tx_overwritabe_if_not_connected,
+                        p_cdc->stream.tx_ff_buf, CFG_TUD_CDC_TX_BUFSIZE, p_epbuf->epin, CFG_TUD_CDC_EP_BUFSIZE);
   }
 }
 
-void cdcd_reset(uint8_t rhport)
-{
+bool cdcd_deinit(void) {
+  for (uint8_t i = 0; i < CFG_TUD_CDC; i++) {
+    cdcd_interface_t* p_cdc = &_cdcd_itf[i];
+    tu_edpt_stream_deinit(&p_cdc->stream.rx);
+    tu_edpt_stream_deinit(&p_cdc->stream.tx);
+  }
+  return true;
+}
+
+void cdcd_reset(uint8_t rhport) {
   (void) rhport;
 
-  for(uint8_t i=0; i<CFG_TUD_CDC; i++)
-  {
+  for (uint8_t i = 0; i < CFG_TUD_CDC; i++) {
     cdcd_interface_t* p_cdc = &_cdcd_itf[i];
-
     tu_memclr(p_cdc, ITF_MEM_RESET_SIZE);
-    tu_fifo_clear(&p_cdc->rx_ff);
-    tu_fifo_clear(&p_cdc->tx_ff);
-    tu_fifo_set_overwritable(&p_cdc->tx_ff, true);
+
+    tu_fifo_set_overwritable(&p_cdc->stream.tx.ff, _cdcd_cfg.tx_overwritabe_if_not_connected); // back to default
+    tu_edpt_stream_close(&p_cdc->stream.rx);
+    tu_edpt_stream_close(&p_cdc->stream.tx);
   }
 }
 
-uint16_t cdcd_open(uint8_t rhport, tusb_desc_interface_t const * itf_desc, uint16_t max_len)
-{
+uint16_t cdcd_open(uint8_t rhport, const tusb_desc_interface_t* itf_desc, uint16_t max_len) {
   // Only support ACM subclass
-  TU_VERIFY( TUSB_CLASS_CDC                           == itf_desc->bInterfaceClass &&
-             CDC_COMM_SUBCLASS_ABSTRACT_CONTROL_MODEL == itf_desc->bInterfaceSubClass, 0);
+  TU_VERIFY(TUSB_CLASS_CDC == itf_desc->bInterfaceClass &&
+              CDC_COMM_SUBCLASS_ABSTRACT_CONTROL_MODEL == itf_desc->bInterfaceSubClass,
+            0);
 
-  // Find available interface
-  cdcd_interface_t * p_cdc = NULL;
-  for(uint8_t cdc_id=0; cdc_id<CFG_TUD_CDC; cdc_id++)
-  {
-    if ( _cdcd_itf[cdc_id].ep_in == 0 )
-    {
-      p_cdc = &_cdcd_itf[cdc_id];
-      break;
-    }
-  }
-  TU_ASSERT(p_cdc, 0);
+  const uint8_t cdc_id = find_cdc_itf(0); // Find available interface
+  TU_ASSERT(cdc_id < CFG_TUD_CDC, 0);
+  cdcd_interface_t *p_cdc = &_cdcd_itf[cdc_id];
 
   //------------- Control Interface -------------//
+  p_cdc->rhport = rhport;
   p_cdc->itf_num = itf_desc->bInterfaceNumber;
 
-  uint16_t drv_len = sizeof(tusb_desc_interface_t);
-  uint8_t const * p_desc = tu_desc_next( itf_desc );
+  const uint8_t *p_desc   = (const uint8_t *)itf_desc;
+  const uint8_t *desc_end = p_desc + max_len;
 
-  // Communication Functional Descriptors
-  while ( TUSB_DESC_CS_INTERFACE == tu_desc_type(p_desc) && drv_len <= max_len )
-  {
-    drv_len += tu_desc_len(p_desc);
-    p_desc   = tu_desc_next(p_desc);
+  // Skip all class-specific descriptor
+  p_desc = tu_desc_next(itf_desc);
+  while (tu_desc_in_bounds(p_desc, desc_end) && TUSB_DESC_CS_INTERFACE == tu_desc_type(p_desc)) {
+    p_desc = tu_desc_next(p_desc);
   }
 
-  if ( TUSB_DESC_ENDPOINT == tu_desc_type(p_desc) )
-  {
-    // notification endpoint
-    tusb_desc_endpoint_t const * desc_ep = (tusb_desc_endpoint_t const *) p_desc;
+  // notification endpoint (optional)
+  if (TUSB_DESC_ENDPOINT == tu_desc_type(p_desc)) {
+    const tusb_desc_endpoint_t* desc_ep = (const tusb_desc_endpoint_t*) p_desc;
+    TU_ASSERT(usbd_edpt_open(rhport, desc_ep), 0);
+    p_cdc->ep_notify = desc_ep->bEndpointAddress;
 
-    TU_ASSERT( usbd_edpt_open(rhport, desc_ep), 0 );
-    p_cdc->ep_notif = desc_ep->bEndpointAddress;
-
-    drv_len += tu_desc_len(p_desc);
-    p_desc   = tu_desc_next(p_desc);
+    p_desc = tu_desc_next(p_desc);
   }
 
-  //------------- Data Interface (if any) -------------//
-  if ( (TUSB_DESC_INTERFACE == tu_desc_type(p_desc)) &&
-       (TUSB_CLASS_CDC_DATA == ((tusb_desc_interface_t const *) p_desc)->bInterfaceClass) )
-  {
-    // next to endpoint descriptor
-    drv_len += tu_desc_len(p_desc);
-    p_desc   = tu_desc_next(p_desc);
+  //------------- Data Interface (optional) -------------//
+  if (TUSB_DESC_INTERFACE == tu_desc_type(p_desc)) {
+    const tusb_desc_interface_t *data_itf_desc = (const tusb_desc_interface_t *)p_desc;
+    if (TUSB_CLASS_CDC_DATA == data_itf_desc->bInterfaceClass) {
+      for (uint8_t e = 0; e < data_itf_desc->bNumEndpoints; e++) {
+        if (!tu_desc_in_bounds(p_desc, desc_end)) {
+          break;
+        }
+        p_desc = tu_desc_next(p_desc);
 
-    // Open endpoint pair
-    TU_ASSERT( usbd_open_edpt_pair(rhport, p_desc, 2, TUSB_XFER_BULK, &p_cdc->ep_out, &p_cdc->ep_in), 0 );
+        const tusb_desc_endpoint_t *desc_ep = (const tusb_desc_endpoint_t *)p_desc;
+        TU_ASSERT(TUSB_DESC_ENDPOINT == desc_ep->bDescriptorType && TUSB_XFER_BULK == desc_ep->bmAttributes.xfer, 0);
 
-    drv_len += 2*sizeof(tusb_desc_endpoint_t);
+        TU_ASSERT(usbd_edpt_open(rhport, desc_ep), 0);
+        if (tu_edpt_dir(desc_ep->bEndpointAddress) == TUSB_DIR_IN) {
+          tu_edpt_stream_t *stream_tx = &p_cdc->stream.tx;
+
+          tu_edpt_stream_open(stream_tx, desc_ep);
+          if (_cdcd_cfg.tx_persistent) {
+            tu_edpt_stream_write_xfer(rhport, stream_tx); // flush pending data
+          } else {
+            tu_edpt_stream_clear(stream_tx);
+          }
+        } else {
+          tu_edpt_stream_t *stream_rx = &p_cdc->stream.rx;
+
+          tu_edpt_stream_open(stream_rx, desc_ep);
+          if (!_cdcd_cfg.rx_persistent) {
+            tu_edpt_stream_clear(stream_rx);
+          }
+          TU_ASSERT(tu_edpt_stream_read_xfer(rhport, stream_rx) > 0, 0); // prepare for incoming data
+        }
+      }
+
+      p_desc = tu_desc_next(p_desc);
+    }
   }
 
-  // Prepare for incoming data
-  _prep_out_transaction(p_cdc);
-
-  return drv_len;
+  return (uint16_t)(p_desc - (const uint8_t *)itf_desc);
 }
 
 // Invoked when a control transfer occurred on an interface of this class
 // Driver response accordingly to the request and the transfer stage (setup/data/ack)
 // return false to stall control endpoint (e.g unsupported request)
-bool cdcd_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_request_t const * request)
-{
+bool cdcd_control_xfer_cb(uint8_t rhport, uint8_t stage, const tusb_control_request_t* request) {
   // Handle class request only
   TU_VERIFY(request->bmRequestType_bit.type == TUSB_REQ_TYPE_CLASS);
 
-  uint8_t itf = 0;
-  cdcd_interface_t* p_cdc = _cdcd_itf;
+  uint8_t itf;
+  cdcd_interface_t* p_cdc;
 
   // Identify which interface to use
-  for ( ; ; itf++, p_cdc++)
-  {
-    if (itf >= TU_ARRAY_SIZE(_cdcd_itf)) return false;
-
-    if ( p_cdc->itf_num == request->wIndex ) break;
+  for (itf = 0; itf < CFG_TUD_CDC; itf++) {
+    p_cdc = &_cdcd_itf[itf];
+    if (p_cdc->itf_num == request->wIndex) {
+      break;
+    }
   }
+  TU_VERIFY(itf < CFG_TUD_CDC);
 
-  switch ( request->bRequest )
-  {
+  switch (request->bRequest) {
     case CDC_REQUEST_SET_LINE_CODING:
-      if (stage == CONTROL_STAGE_SETUP)
-      {
+      if (stage == CONTROL_STAGE_SETUP) {
         TU_LOG_DRV("  Set Line Coding\r\n");
         tud_control_xfer(rhport, request, &p_cdc->line_coding, sizeof(cdc_line_coding_t));
+      } else if (stage == CONTROL_STAGE_ACK) {
+        tud_cdc_line_coding_cb(itf, &p_cdc->line_coding);
+      } else {
+        // nothing to do
       }
-      else if ( stage == CONTROL_STAGE_ACK)
-      {
-        if ( tud_cdc_line_coding_cb ) tud_cdc_line_coding_cb(itf, &p_cdc->line_coding);
-      }
-    break;
+      break;
 
     case CDC_REQUEST_GET_LINE_CODING:
-      if (stage == CONTROL_STAGE_SETUP)
-      {
+      if (stage == CONTROL_STAGE_SETUP) {
         TU_LOG_DRV("  Get Line Coding\r\n");
         tud_control_xfer(rhport, request, &p_cdc->line_coding, sizeof(cdc_line_coding_t));
       }
-    break;
+      break;
 
     case CDC_REQUEST_SET_CONTROL_LINE_STATE:
-      if (stage == CONTROL_STAGE_SETUP)
-      {
+      if (stage == CONTROL_STAGE_SETUP) {
         tud_control_status(rhport, request);
-      }
-      else if (stage == CONTROL_STAGE_ACK)
-      {
+      } else if (stage == CONTROL_STAGE_ACK) {
         // CDC PSTN v1.2 section 6.3.12
         // Bit 0: Indicates if DTE is present or not.
         //        This signal corresponds to V.24 signal 108/2 and RS-232 signal DTR (Data Terminal Ready)
@@ -394,95 +436,85 @@ bool cdcd_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_request_t 
 
         p_cdc->line_state = (uint8_t) request->wValue;
 
-        // Disable fifo overwriting if DTR bit is set
-        tu_fifo_set_overwritable(&p_cdc->tx_ff, !dtr);
+        // If enabled: fifo overwriting is disabled if DTR bit is set and vice versa
+        if (_cdcd_cfg.tx_overwritabe_if_not_connected) {
+          tu_fifo_set_overwritable(&p_cdc->stream.tx.ff, !dtr);
+        } else {
+          tu_fifo_set_overwritable(&p_cdc->stream.tx.ff, false);
+        }
 
         TU_LOG_DRV("  Set Control Line State: DTR = %d, RTS = %d\r\n", dtr, rts);
-
-        // Invoke callback
-        if ( tud_cdc_line_state_cb ) tud_cdc_line_state_cb(itf, dtr, rts);
+        tud_cdc_line_state_cb(itf, dtr, rts); // invoke callback
+      } else {
+        // nothing to do
       }
-    break;
+      break;
+
     case CDC_REQUEST_SEND_BREAK:
-      if (stage == CONTROL_STAGE_SETUP)
-      {
+      if (stage == CONTROL_STAGE_SETUP) {
         tud_control_status(rhport, request);
-      }
-      else if (stage == CONTROL_STAGE_ACK)
-      {
+      } else if (stage == CONTROL_STAGE_ACK) {
         TU_LOG_DRV("  Send Break\r\n");
-        if ( tud_cdc_send_break_cb ) tud_cdc_send_break_cb(itf, request->wValue);
+        tud_cdc_send_break_cb(itf, request->wValue);
+      } else {
+        // nothing to do
       }
-    break;
+      break;
 
-    default: return false; // stall unsupported request
+    default:
+      return false; // stall unsupported request
   }
 
   return true;
 }
 
-bool cdcd_xfer_cb(uint8_t rhport, uint8_t ep_addr, xfer_result_t result, uint32_t xferred_bytes)
-{
-  (void) result;
+bool cdcd_xfer_cb(uint8_t rhport, uint8_t ep_addr, xfer_result_t result, uint32_t xferred_bytes) {
+  (void)result;
 
-  uint8_t itf;
-  cdcd_interface_t* p_cdc;
-
-  // Identify which interface to use
-  for (itf = 0; itf < CFG_TUD_CDC; itf++)
-  {
-    p_cdc = &_cdcd_itf[itf];
-    if ( ( ep_addr == p_cdc->ep_out ) || ( ep_addr == p_cdc->ep_in ) ) break;
-  }
+  uint8_t itf = find_cdc_itf(ep_addr);
   TU_ASSERT(itf < CFG_TUD_CDC);
+  cdcd_interface_t *p_cdc     = &_cdcd_itf[itf];
+  tu_edpt_stream_t *stream_rx = &p_cdc->stream.rx;
+  tu_edpt_stream_t *stream_tx = &p_cdc->stream.tx;
 
-  // Received new data
-  if ( ep_addr == p_cdc->ep_out )
-  {
-    tu_fifo_write_n(&p_cdc->rx_ff, p_cdc->epout_buf, (uint16_t) xferred_bytes);
+  // Received new data, move to fifo
+  if (ep_addr == stream_rx->ep_addr) {
+    tu_edpt_stream_read_xfer_complete(stream_rx, xferred_bytes);
 
-    // Check for wanted char and invoke callback if needed
-    if ( tud_cdc_rx_wanted_cb && (((signed char) p_cdc->wanted_char) != -1) )
-    {
-      for ( uint32_t i = 0; i < xferred_bytes; i++ )
-      {
-        if ( (p_cdc->wanted_char == p_cdc->epout_buf[i]) && !tu_fifo_empty(&p_cdc->rx_ff) )
-        {
+    // Check for wanted char and invoke wanted callback (multiple times if multiple wanted received)
+    if (((signed char)p_cdc->wanted_char) != -1) {
+      for (uint32_t i = 0; i < xferred_bytes; i++) {
+        if ((p_cdc->wanted_char == (char)stream_rx->ep_buf[i]) && !tu_edpt_stream_empty(stream_rx)) {
           tud_cdc_rx_wanted_cb(itf, p_cdc->wanted_char);
         }
       }
     }
 
-    // invoke receive callback (if there is still data)
-    if (tud_cdc_rx_cb && !tu_fifo_empty(&p_cdc->rx_ff) ) tud_cdc_rx_cb(itf);
+    // invoke receive callback if there is still data
+    if (!tu_edpt_stream_empty(stream_rx)) {
+      tud_cdc_rx_cb(itf);
+    }
 
-    // prepare for OUT transaction
-    _prep_out_transaction(p_cdc);
+    tu_edpt_stream_read_xfer(rhport, stream_rx); // prepare for more data
   }
 
   // Data sent to host, we continue to fetch from tx fifo to send.
   // Note: This will cause incorrect baudrate set in line coding.
   //       Though maybe the baudrate is not really important !!!
-  if ( ep_addr == p_cdc->ep_in )
-  {
+  if (ep_addr == stream_tx->ep_addr) {
     // invoke transmit callback to possibly refill tx fifo
-    if ( tud_cdc_tx_complete_cb ) tud_cdc_tx_complete_cb(itf);
+    tud_cdc_tx_complete_cb(itf);
 
-    if ( 0 == tud_cdc_n_write_flush(itf) )
-    {
-      // If there is no data left, a ZLP should be sent if
-      // xferred_bytes is multiple of EP Packet size and not zero
-      if ( !tu_fifo_count(&p_cdc->tx_ff) && xferred_bytes && (0 == (xferred_bytes & (BULK_PACKET_SIZE-1))) )
-      {
-        if ( usbd_edpt_claim(rhport, p_cdc->ep_in) )
-        {
-          usbd_edpt_xfer(rhport, p_cdc->ep_in, NULL, 0);
-        }
-      }
+    if (0 == tu_edpt_stream_write_xfer(rhport, stream_tx)) {
+      // If there is no data left, a ZLP should be sent if needed
+      tu_edpt_stream_write_zlp_if_needed(rhport, stream_tx, xferred_bytes);
     }
   }
 
-  // nothing to do with notif endpoint for now
+  // Sent notification to host
+  if (ep_addr == p_cdc->ep_notify) {
+    tud_cdc_notify_complete_cb(itf);
+  }
 
   return true;
 }

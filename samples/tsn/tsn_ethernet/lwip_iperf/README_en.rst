@@ -1,6 +1,6 @@
-.. _lwip_iperf:
+.. _tsn_lwip_iperf:
 
-lwip_iperf
+tsn_lwip_iperf
 ====================
 
 Overview
@@ -26,7 +26,7 @@ Board Settings
 Project Configurations
 ----------------------
 
-- Ethernet Port Settings: Refer to `Ethernet common project settings <../doc/Ethernet_Common_Project_Settings_en>`_
+- Ethernet Port Settings: Refer to :ref:`TSW Common Project Settings <tsw_port_configurations_en>`
 
 - Ethernet DHCP Configurations
 
@@ -40,6 +40,14 @@ Project Configurations
 
     - sdk_compile_definitions(-DENABLE_TSW_RECEIVE_INTERRUPT=1): Enable TSW receive interrupt on CPU port
 
+- Build Configurations (CMAKE)
+
+  - set HPM_BUILD_TYPE to flash_xip
+  - set CMAKE_BUILD_TYPE to release
+
+- Compilation configurations
+
+  - When the MCU acts as a TCP/UDP client, it is necessary to specify the server's IP address, and ensure that the specified IP is in the same segment as the MCU's own IP address. The IP_CONFIG, NETMASK_CONFIG, and GW_CONFIG can be redefined to complete the configurations.
 
 Run Example
 -----------

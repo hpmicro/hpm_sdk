@@ -10,9 +10,9 @@ define memory with size = 4G;
 define region ILM = [from 0x00000000 size 256k];    /* ILM */
 define region DLM = [from 0x00080000 size 256k];    /* DLM */
 define region AXI_SRAM = [from 0x01200000 size 256k];
-define region NONCACHEABLE_RAM = [from 0x01240000 size 256k];
+define region NONCACHEABLE_RAM = [from 0x01240000 size _noncacheable_size];
 define region AHB_SRAM = [from 0xF0400000 size 32k];
-define region APB_SRAM = [from 0xF4130000 size 16k];
+define region APB_SRAM = [from 0xF4130000 size 8k];
 
 /* Blocks */
 define block vectors with fixed order       { section .vector_table, section .isr_vector, section .isr_vector.* };

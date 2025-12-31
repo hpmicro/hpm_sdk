@@ -28,14 +28,20 @@ if (isdefinedsymbol(_flash_size)) {
   define symbol __size_flash__          = 8M;
 }
 
+if (isdefinedsymbol(_noncacheable_size)) {
+  define symbol __noncacheable_size__    = _noncacheable_size;
+} else {
+  define symbol __noncacheable_size__    = 256k;
+}
+
 /* Regions */
 define region NOR_CFG_OPTION = mem:[ from 0x80000400 size 0x0C00 ];
 define region BOOT_HEADER = mem:[ from 0x80001000 size 0x90 ];
 define region FLASH = mem:[from 0x80003000 size (__size_flash__ - 0x3000) ];   /* FLASH */
 define region ILM = mem:[from 0x00000000 size 256k];        /* ILM */
 define region DLM = mem:[from 0x00080000 size 256k];        /* DLM */
-define region AXI_SRAM = mem:[from 0x01080000 size 512k];   /* AXI SRAM0 */
-define region NONCACHEABLE_RAM = mem:[from 0x01100000 size 256k];    /* AXI SRAM1 */
+define region AXI_SRAM = mem:[from 0x01080000 size 768k - __noncacheable_size__];
+define region NONCACHEABLE_RAM = mem:[from 0x01140000 - __noncacheable_size__ size __noncacheable_size__];
 define region SHARE_RAM = mem:[from 0x0117C000 size 16k];
 define region AHB_SRAM = mem:[from 0xF0300000 size 32k];
 define region APB_SRAM = mem:[from 0xF40F0000 size 8k];

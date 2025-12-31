@@ -10,6 +10,15 @@ The spi_master_trans_large_amount_of_data shows SPI master use hpm_spi component
 In this example, SPI master transfers data on full duplex way(if the data count more than the maximum value of data transmitted at one transmission of SPI,
 hpm_spi component will use chianed dma descriptors to link SPI transmission). For SPI master duplex mode, MOSI and MISO can be connected for loopback test.
 
+Tips
+--------
+
+- This example addresses the limitation on some SOCs where SPI single transfer length is capped at 512 units, using DMA chaining to link multiple transfers for continuous large-data transmission.
+
+- For SOCs without this limitation, use standard SPI drivers, component interfaces, or relevant examples for high-volume data transfer.
+
+- Refer to the SPI_SOC_TRANSFER_COUNT_MAX macro in each SOC's hpm_soc_feature.h file for the maximum SPI transfer unit size.
+
 Board Setting
 -------------
 

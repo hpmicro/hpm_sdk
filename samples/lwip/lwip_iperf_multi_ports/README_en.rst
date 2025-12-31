@@ -16,6 +16,8 @@ This example shows TCP/UDP throughput performance test  through iperf (https://i
 
 - MCU acts as UDP Client / PC acts as UDP Server
 
+  **Note: The current sample can be tested using iperf's v1.x.x and v2.x.x versions.**
+
 Board Settings
 --------------
 
@@ -35,6 +37,15 @@ Project Configurations
     - sdk_compile_definitions(-DLWIP_DHCP=0): Disable DHCP feature
 
     - sdk_compile_definitions(-DLWIP_DHCP=1): Enable DHCP feature
+
+- Build Configurations (CMAKE)
+
+  - set HPM_BUILD_TYPE to flash_xip
+  - set CMAKE_BUILD_TYPE to release
+
+- Compilation configurations
+
+  - When the MCU acts as a TCP/UDP client, it is necessary to specify the server's IP address, and ensure that the specified IP is in the same segment as the MCU's own IP address. The IP0_CONFIG/IP1_CONFIG, NETMASK0_CONFIG/NETMASK1_CONFIG, and GW0_CONFIG/GW1_CONFIG can be redefined to complete the configurations.
 
 Run Example
 -----------

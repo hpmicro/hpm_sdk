@@ -598,7 +598,7 @@ void board_init_pmp(void)
     uint32_t start_addr;
     uint32_t end_addr;
     uint32_t length;
-    pmp_entry_t pmp_entry[16];
+    pmp_entry_t pmp_entry[16] = {0};
     uint8_t index = 0;
 
     /* Init noncachable memory */
@@ -1207,3 +1207,249 @@ uint32_t board_init_gptmr_clock(GPTMR_Type *ptr)
     return freq;
 }
 
+void init_uart_pins(UART_Type *ptr)
+{
+    if (ptr == HPM_UART0) {
+        init_uart0_pins();
+    } else if (ptr == HPM_UART6) {
+        init_uart6_pins();
+    } else if (ptr == HPM_UART7) {
+        init_uart7_pins();
+    } else if (ptr == HPM_UART13) {
+        init_uart13_pins();
+    } else if (ptr == HPM_UART14) {
+        init_uart14_pins();
+    } else if (ptr == HPM_PUART) {
+        init_puart_pins();
+    }
+}
+
+void init_uart_pin_as_gpio(UART_Type *ptr)
+{
+    if (ptr == HPM_UART7) {
+        init_uart7_pin_as_gpio();
+    } else if (ptr == HPM_UART13) {
+        init_uart13_pin_as_gpio();
+    }
+}
+
+void init_lcd_pins(LCDC_Type *ptr)
+{
+    (void) ptr;
+    init_lcd0_pins();
+}
+
+void init_i2c_pins(I2C_Type *ptr)
+{
+    if (ptr == HPM_I2C0) {
+        init_i2c0_pins();
+    } else if (ptr == HPM_I2C3) {
+        init_i2c3_pins();
+    } else {
+        while (1) {
+        }
+    }
+}
+
+void init_i2c_pins_as_gpio(I2C_Type *ptr)
+{
+    if (ptr == HPM_I2C0) {
+        /* I2C0 */
+        init_i2c0_pins_as_gpio();
+    } else {
+        while (1) {
+        }
+    }
+}
+
+void init_gpio_pins(void)
+{
+#ifdef USING_GPIO0_FOR_GPIOZ
+    init_gpio_pins_using_gpio0();
+#endif
+}
+
+void init_spi_pins(SPI_Type *ptr)
+{
+    if (ptr == HPM_SPI1) {
+        init_spi1_pins();
+    } else if (ptr == HPM_SPI2) {
+        init_spi2_pins();
+    } else if (ptr == HPM_SPI3) {
+        init_spi3_pins();
+    }
+}
+
+void init_spi_pins_with_gpio_as_cs(SPI_Type *ptr)
+{
+    if (ptr == HPM_SPI1) {
+        init_spi1_pins_with_gpio_as_cs();
+    } else if (ptr == HPM_SPI2) {
+        init_spi2_pins_with_gpio_as_cs();
+    } else if (ptr == HPM_SPI3) {
+        init_spi3_pins_with_gpio_as_cs();
+    }
+}
+
+void init_pins(void)
+{
+#ifdef BOARD_CONSOLE_UART_BASE
+    init_uart_pins(BOARD_CONSOLE_UART_BASE);
+#endif
+    init_femc_pins();
+}
+
+void init_gptmr_pins(GPTMR_Type *ptr)
+{
+    if (ptr == HPM_GPTMR5) {
+        init_gptmr5_pins();
+    }
+}
+
+void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_output)
+{
+    if (ptr == HPM_GPTMR5) {
+        if (as_output == true) {
+            switch (channel) {
+            case 0:
+                init_gptmr5_channel0_pin_as_output();
+                break;
+            case 1:
+                init_gptmr5_channel1_pin_as_output();
+                break;
+            case 2:
+                init_gptmr5_channel2_pin_as_output();
+                break;
+            default:
+                break;
+            }
+        } else {
+            if (channel == 0) {
+                init_gptmr5_channel0_pin_as_capture();
+            }
+        }
+    }
+}
+
+void init_i2s_pins(I2S_Type *ptr)
+{
+    if (ptr == HPM_I2S0) {
+        init_i2s0_pins();
+    }
+}
+
+void init_cam_pins(CAM_Type *ptr)
+{
+    if (ptr == HPM_CAM0) {
+        init_cam0_pins();
+    }
+}
+
+void init_enet_pins(ENET_Type *ptr)
+{
+    if (ptr == HPM_ENET1) {
+        init_enet1_pins();
+    }
+}
+
+void init_pwm_pins(PWM_Type *ptr)
+{
+    if (ptr == HPM_PWM0) {
+        init_pwm0_pins();
+    } else if (ptr == HPM_PWM1) {
+        init_pwm1_pins();
+    } else if (ptr == HPM_PWM3) {
+        init_pwm3_pins();
+    }
+}
+
+void init_usb_pins(USB_Type *ptr)
+{
+    if (ptr == HPM_USB0) {
+        init_usb0_pins();
+    }
+}
+
+void init_can_pins(CAN_Type *ptr)
+{
+    if (ptr == HPM_CAN1) {
+        init_can1_pins();
+    }
+}
+
+void init_sdxc_cmd_pin(SDXC_Type *ptr, bool open_drain, bool is_1v8)
+{
+    if (ptr == HPM_SDXC1) {
+        if (is_1v8) {
+            if (open_drain) {
+                init_sdxc1_cmd_pin_enable_1v8_enable_opendrain();
+            } else {
+                init_sdxc1_cmd_pin_enable_1v8_disable_opendrain();
+            }
+        } else {
+            if (open_drain) {
+                init_sdxc1_cmd_pin_disable_1v8_enable_opendrain();
+            } else {
+                init_sdxc1_cmd_pin_disable_1v8_disable_opendrain();
+            }
+        }
+    }
+}
+
+void init_sdxc_cd_pin(SDXC_Type *ptr, bool as_gpio)
+{
+    if (ptr == HPM_SDXC1) {
+        if (as_gpio) {
+            init_sdxc1_cd_pin_as_gpio();
+        } else {
+            init_sdxc1_cd_pin();
+        }
+    }
+}
+
+void init_sdxc_vsel_pin(SDXC_Type *ptr, bool as_gpio)
+{
+    if (ptr == HPM_SDXC1) {
+        if (as_gpio) {
+            init_sdxc1_vsel_pin_as_gpio();
+        } else {
+            init_sdxc1_vsel_pin();
+        }
+    }
+}
+
+void init_sdxc_clk_data_pins(SDXC_Type *ptr, uint32_t width, bool is_1v8)
+{
+    if (ptr == HPM_SDXC1) {
+        if (is_1v8) {
+            if (width == 4) {
+                init_sdxc1_clk_data_pins_width4_enable_1v8();
+            } else {
+                init_sdxc1_clk_data_pins_enable_1v8();
+            }
+        } else {
+            if (width == 4) {
+                init_sdxc1_clk_data_pins_width4_disable_1v8();
+            } else {
+                init_sdxc1_clk_data_pins_disable_1v8();
+            }
+        }
+    }
+}
+
+void init_trgmux_pins(uint32_t pin)
+{
+    /* all trgmux pin ALT_SELECT fixed to 16*/
+    HPM_IOC->PAD[pin].FUNC_CTL = IOC_PAD_FUNC_CTL_ALT_SELECT_SET(16);
+}
+
+void init_wifi_pins(void)
+{
+    init_wifi_int_rst_pins();
+    init_spi_pins(HPM_SPI0);
+}
+void board_init_brownout_indicate_pin(void)
+{
+    init_brownout_indicate_pin();
+    gpio_set_pin_output_with_initial(BOARD_BROWNOUT_INDICATE_GPIO_CTRL, GPIO_GET_PORT_INDEX(BOARD_BROWNOUT_INDICATE_PIN), GPIO_GET_PIN_INDEX(BOARD_BROWNOUT_INDICATE_PIN), 0);
+}

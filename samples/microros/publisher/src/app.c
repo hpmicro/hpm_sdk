@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -53,11 +53,12 @@ void appMain(void *arg)
 	/* create timer */
 	rcl_timer_t timer;
 	const unsigned int timer_timeout = 1000;
-	RCCHECK(rclc_timer_init_default(
+	RCCHECK(rclc_timer_init_default2(
 		&timer,
 		&support,
 		RCL_MS_TO_NS(timer_timeout),
-		timer_callback));
+		timer_callback,
+		1));
 
 	/* create executor */
 	rclc_executor_t executor;

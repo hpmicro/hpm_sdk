@@ -11,29 +11,29 @@ The publisher example demonstrates the message publishing function of microros n
 Board Setting
 -------------
 
-- One ubuntu host with ROS2 foxy version installed
+- One ubuntu host with ROS2 kilted version installed
 
 - Connect the host to the development board using a USB to serial port. The serial port number used by the development board can be found in board.h.
 
 Environment Setup
 -----------------
 
-ros2 foxy install:
+ros2 install:
 
-1. Installation steps on the official website [https://docs.ros.org/en/foxy/Installation/Alternatives/Ubuntu-Development-Setup.html].
+1. Installation steps on the official website [https://docs.ros.org/en/kilted/Installation/Alternatives/Ubuntu-Development-Setup.htmls].
 
 2. Installing through APT(If necessary，change the source of ubuntu)
 
 .. code-block:: bash
 
    sudo apt update
-   sudo apt install ros-foxy-desktop
+   sudo apt install ros-kilted-desktop
 
-After installing ROS2 foxy, it is necessary to install the agent on the host side, which is installed through Docker
+After installing ROS2, it is necessary to install the agent on the host side, which is installed through Docker
 
 .. code-block:: bash
 
-   docker run -it --rm --net=host -v /dev/shm:/dev/shm -v /dev:/dev --privileged microros/micro-ros-agent:foxy serial --dev ${serial}
+   docker run -it --rm --net=host -v /dev/shm:/dev/shm -v /dev:/dev --privileged microros/micro-ros-agent:kilted serial --dev ${serial}
 
 If you encounter a situation where the serial port cannot be opened, please change the permissions for the serial port
 
@@ -43,10 +43,6 @@ If you encounter a situation where the serial port cannot be opened, please chan
 
 After running the agent, reset the board.
 
-.. note::
-
-   - Currently, the static library linked by microros is compiled by GCC 11.1.0 and Andes Toolchain v520.
-
 Running the example
 -------------------
 
@@ -54,7 +50,7 @@ Open a new terminal
 
 .. code-block:: bash
 
-   source /opt/ros/foxy/setup.bash
+   source /opt/ros/kilted/setup.bash
 
 - type `ros2 node list` You can see the "publisher" node.
 - type `ros2 topic list` You can see /int32_Publisher topic name.

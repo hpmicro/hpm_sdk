@@ -1,5 +1,7 @@
-# Copyright (c) 2022-2024 HPMicro
+# Copyright (c) 2022-2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
+
+sdk_compile_definitions(-DCONFIG_ENET_PHY=1)
 
 sdk_inc(.)
 

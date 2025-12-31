@@ -89,8 +89,8 @@ void sdm_isr(void)
     if (sdm_get_channel_data_ready_status(TEST_SDM, TEST_SDM_CHANNEL)) {
         data_ready_in_sync_mode = true; /* Set flag for sync mode */
         /* Read data from FIFO based on threshold */
-        uint8_t fifo_threshold = sdm_get_ch_fifo_threshold(TEST_SDM, TEST_SDM_CHANNEL);
-        for (uint8_t i = 0; i < fifo_threshold; i++) {
+        uint8_t data_count = sdm_get_channel_fifo_data_count(TEST_SDM, TEST_SDM_CHANNEL);
+        for (uint8_t i = 0; i < data_count; i++) {
             if (sdm_output_is_32bit_data(TEST_SDM, TEST_SDM_CHANNEL)) {
                 filter_result[count++] = sdm_get_channel_fifo_data(TEST_SDM, TEST_SDM_CHANNEL);
             } else {
@@ -126,6 +126,7 @@ void test_sdm_filter_receive(void)
 
     /* config filter: filter type, oversampling rate, output data length, etc. */
     sdm_get_channel_default_filter_config(TEST_SDM, &filter_config);
+    filter_config.fifo_threshold = 0; /* received data number > 7 */
     filter_config.filter_type = sdm_filter_sinc3;
     filter_config.oversampling_rate = 256; /* 1- 256 */
     filter_config.ignore_invalid_samples = 2;
@@ -230,6 +231,7 @@ void test_sdm_filter_receive_interrupt(void)
 
     /* config filter: filter type, oversampling rate, output data length, etc. */
     sdm_get_channel_default_filter_config(TEST_SDM, &filter_config);
+    filter_config.fifo_threshold = 7; /* received data number > 7 */
     filter_config.filter_type = sdm_filter_sinc3;
     filter_config.oversampling_rate = 256; /* 1- 256 */
     filter_config.ignore_invalid_samples = 2;
@@ -286,7 +288,7 @@ void test_sdm_sync_filter_receive(void)
 
     /* config filter: filter type, oversampling rate, output data length, etc. */
     sdm_get_channel_default_filter_config(TEST_SDM, &filter_config);
-    filter_config.fifo_threshold = 8;
+    filter_config.fifo_threshold = 7; /* received data number > 7 */
     filter_config.filter_type = sdm_filter_sinc3;
     filter_config.oversampling_rate = 256; /** 1- 256 */
     filter_config.ignore_invalid_samples = 2;
@@ -358,7 +360,7 @@ void gen_pwm_as_sdm_clock(void)
     pwmv2_shadow_register_unlock(BOARD_SDM_CLK_PWM);
 
     /* set shdow register value */
-    pwmv2_set_shadow_val(BOARD_SDM_CLK_PWM, PWMV2_SHADOW_INDEX(0), reload, 0, false);
+    pwmv2_set_shadow_val(BOARD_SDM_CLK_PWM, PWMV2_SHADOW_INDEX(0), reload - 1, 0, false);
     pwmv2_set_shadow_val(BOARD_SDM_CLK_PWM, PWMV2_SHADOW_INDEX(1), ((reload >> 1) - (reload >> 2)), 0, false);
     pwmv2_set_shadow_val(BOARD_SDM_CLK_PWM, PWMV2_SHADOW_INDEX(2), ((reload >> 1) + (reload >> 2)), 0, false);
 

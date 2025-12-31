@@ -1,11 +1,10 @@
-# Copyright (c) 2023 HPMicro
+# Copyright (c) 2023-2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
 
 set(CONFIG_FREERTOS 1)
 set(CONFIG_MICROROS 1)
-set(CONFIG_MICROROS_FOXY 1)
 set(CONFIG_FREERTOS_HEAP custom)
 
 if("${HPM_BUILD_TYPE}" STREQUAL "")

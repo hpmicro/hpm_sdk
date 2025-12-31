@@ -17,6 +17,7 @@
 #include "netif/etharp.h"
 #include "ethernetif.h"
 #include "common.h"
+#include "netinfo.h"
 
 #if defined(__ENABLE_FREERTOS) && __ENABLE_FREERTOS
 #include "FreeRTOS.h"
@@ -29,6 +30,8 @@
 #if defined(NO_SYS) && !NO_SYS
 sys_mbox_t netif_status_mbox;
 #endif
+
+enet_frame_pointer_t frame_pointer[LWIP_NETIF_IDX];
 
 #if defined(LWIP_DHCP) && LWIP_DHCP
 /**
@@ -73,9 +76,9 @@ void netif_config(struct netif *netif)
     ip4_addr_set_zero(&ipaddr);
     ip4_addr_set_zero(&netmask);
 #else
-    ip4addr_aton(HPM_STRINGIFY(IP_CONFIG), &ipaddr);
-    ip4addr_aton(HPM_STRINGIFY(NETMASK_CONFIG), &netmask);
-    ip4addr_aton(HPM_STRINGIFY(GW_CONFIG), &gw);
+    ip4addr_aton(HPM_STRINGIFY(IP0_CONFIG), &ipaddr);
+    ip4addr_aton(HPM_STRINGIFY(NETMASK0_CONFIG), &netmask);
+    ip4addr_aton(HPM_STRINGIFY(GW0_CONFIG), &gw);
 #endif
 
 #if defined(NO_SYS) && NO_SYS
@@ -87,17 +90,26 @@ void netif_config(struct netif *netif)
     netifapi_netif_set_up(netif);
     netifapi_netif_set_default(netif);
 #endif
-
+    netif->state = &frame_pointer[0];
     netif_set_link_callback(netif, netif_update_status);
+}
+
+void netif_show_ip_info(struct netif *netif)
+{
+#if defined(NO_SYS) && !NO_SYS
+    log_send_message("IPv4 Address: %s\n", ipaddr_ntoa(&netif->ip_addr));
+    log_send_message("IPv4 Netmask: %s\n", ipaddr_ntoa(&netif->netmask));
+    log_send_message("IPv4 Gateway: %s\n", ipaddr_ntoa(&netif->gw));
+#else
+    printf("IPv4 Address: %s\n", ipaddr_ntoa(&netif->ip_addr));
+    printf("IPv4 Netmask: %s\n", ipaddr_ntoa(&netif->netmask));
+    printf("IPv4 Gateway: %s\n", ipaddr_ntoa(&netif->gw));
+#endif
 }
 
 void netif_user_notification(struct netif *netif)
 {
-    if (netif_is_up(netif)) {
-        printf("IPv4 Address: %s\n", ipaddr_ntoa(&netif->ip_addr));
-        printf("IPv4 Netmask: %s\n", ipaddr_ntoa(&netif->netmask));
-        printf("IPv4 Gateway: %s\n", ipaddr_ntoa(&netif->gw));
-    }
+   (void)netif;
 }
 
 #if defined(NO_SYS) && !NO_SYS

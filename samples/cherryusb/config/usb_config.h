@@ -265,12 +265,7 @@
 #endif
 
 /* ================ USB Device Port Configuration ================*/
-
 #define CONFIG_USBDEV_MAX_BUS USB_SOC_MAX_COUNT
-
-#ifndef CONFIG_USBDEV_EP_NUM
-#define CONFIG_USBDEV_EP_NUM USB_SOC_DCD_MAX_ENDPOINT_COUNT
-#endif
 
 #ifndef CONFIG_HPM_USBD_BASE
 #define CONFIG_HPM_USBD_BASE HPM_USB0_BASE
@@ -281,7 +276,6 @@
 
 /* ================ USB Host Port Configuration ==================*/
 #define CONFIG_USBHOST_MAX_BUS  USB_SOC_MAX_COUNT
-#define CONFIG_USBHOST_PIPE_NUM 10
 
 #ifndef CONFIG_HPM_USBH_BASE
 #define CONFIG_HPM_USBH_BASE HPM_USB0_BASE
@@ -290,11 +284,19 @@
 #define CONFIG_HPM_USBH_IRQn IRQn_USB0
 #endif
 
-/* ================ EHCI Configuration ================ */
+/* ================ USB Otg Port Configuration ==================*/
+#ifndef CONFIG_HPM_USBOTG_BASE
+#define CONFIG_HPM_USBOTG_BASE HPM_USB0_BASE
+#endif
+#ifndef CONFIG_HPM_USBOTG_IRQn
+#define CONFIG_HPM_USBOTG_IRQn IRQn_USB0
+#endif
 
+/* ================ EHCI Configuration ================ */
 #define CONFIG_USB_EHCI_HPMICRO         (1)
 #define CONFIG_USB_EHCI_HCCR_OFFSET     (0x100u)
 #define CONFIG_USB_EHCI_FRAME_LIST_SIZE 1024
+#define CONFIG_USB_EHCI_QH_NUM          10
 #define CONFIG_USB_EHCI_QTD_NUM         64
 
 /* ================ Addr Convert Configuration ==================*/

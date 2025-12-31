@@ -11,29 +11,29 @@ publisher例子展示了microros的节点通过XRCE-Client进行消息发布功�
 硬件设置
 ------------
 
-- 准备一台装有ros2 foxy版本的ubuntu主机
+- 准备一台装有ros2 kilted版本的ubuntu主机
 
 - 使用USB转串口将主机与开发板相连,开发板使用的串口号，见board.h
 
 环境设置
 ------------
 
-ros2 foxy版本的安装:
+ros2的安装:
 
-1. 可见[https://docs.ros.org/en/foxy/Installation/Alternatives/Ubuntu-Development-Setup.html]，根据官网步骤进行安装。
+1. 可见[https://docs.ros.org/en/kilted/Installation/Alternatives/Ubuntu-Development-Setup.html]，根据官网步骤进行安装。
 
 2. 可通过apt进行安装(如有需要，请更换源)
 
 .. code-block:: bash
 
    sudo apt update
-   sudo apt install ros-foxy-desktop
+   sudo apt install ros-kilted-desktop
 
-安装完毕ros2 foxy后，需要安装主机端的agent，这里通过docker安装。
+安装完毕ros2后，需要安装主机端的agent，这里通过docker安装。
 
 .. code-block:: bash
 
-   docker run -it --rm --net=host -v /dev/shm:/dev/shm -v /dev:/dev --privileged microros/micro-ros-agent:foxy serial --dev ${serial}
+   docker run -it --rm --net=host -v /dev/shm:/dev/shm -v /dev:/dev --privileged microros/micro-ros-agent:kilted serial --dev ${serial}
 
 如果遇到打不开串口的情况，请给串口改变权限
 
@@ -43,10 +43,6 @@ ros2 foxy版本的安装:
 
 运行agent后，复位板子，主机和板子之间建立通信。
 
-.. note::
-
-   - 目前microros链接的静态库是由GCC 11.1.0编译，Andes Toolchain v520编译
-
 运行现象
 ------------
 
@@ -54,7 +50,7 @@ ros2 foxy版本的安装:
 
 .. code-block:: bash
 
-   source /opt/ros/foxy/setup.bash
+   source /opt/ros/kilted/setup.bash
 
 - 输入 `ros2 node list` 可以看到“publisher”节点。
 - 输入 `ros2 topic list` 可以看到/int32_publisher话题名称。

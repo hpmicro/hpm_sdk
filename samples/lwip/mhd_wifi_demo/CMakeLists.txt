@@ -1,4 +1,4 @@
-# Copyright (c) 2024 HPMicro
+# Copyright (c) 2024-2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -9,9 +9,10 @@ endif()
 
 # Enable FreeRTOS
 set(CONFIG_FREERTOS 1)
+set(CONFIG_FREERTOS_HEAP "heap_5")
 
 # Set the Heap size
-set(HEAP_SIZE 524288)
+set(HEAP_SIZE 32768)
 
 # Enable LWIP stack
 set(CONFIG_LWIP 1)
@@ -62,12 +63,12 @@ sdk_compile_definitions(-DHPM_SDMMC_XFER_CALLBACK_ENABLE=0)
 sdk_compile_definitions(-D__DISABLE_AUTO_NEGO=0)
 sdk_compile_definitions(-DLWIP_DHCP=1)
 sdk_compile_definitions(-DLWIP_TIMEVAL_PRIVATE=0)
-sdk_compile_definitions(-DMEM_SIZE=512*1024)
+sdk_compile_definitions(-DMEM_SIZE=256*1024)
 sdk_compile_definitions(-DMEMP_NUM_PBUF=128)
 sdk_compile_definitions(-DPBUF_POOL_SIZE=128)
 sdk_compile_definitions(-DPBUF_POOL_BUFSIZE=1600)
-sdk_compile_definitions(-DTCP_WND=128*1024)
-sdk_compile_definitions(-DTCP_SND_BUF=256*1024)
+sdk_compile_definitions(-DTCP_WND=64*1024)
+sdk_compile_definitions(-DTCP_SND_BUF=64*1024)
 sdk_compile_definitions(-DMEMP_NUM_TCPIP_MSG_INPKT=256)
 
 # Enable the external RAM initialization logic
@@ -76,7 +77,9 @@ sdk_compile_definitions(-DINIT_EXT_RAM_FOR_DATA=1)
 # Set default optimization level
 sdk_compile_options(-O2)
 
-
+# Override the malloc and free functions to use the FreeRTOS heap
+sdk_compile_definitions(-Dmalloc=pvPortMalloc)
+sdk_compile_definitions(-Dfree=vPortFree)
 
 project(mhd_wifi_demo)
 sdk_inc(lwip_port)

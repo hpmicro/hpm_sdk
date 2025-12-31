@@ -356,6 +356,34 @@ HPM5300EVK提供了一系列HPM5300系列微控制器特色外设的接口，包
    * - PA30
      - P1[15]
 
+- ESP-HOSTED 引脚接口
+
+.. list-table::
+   :header-rows: 1
+
+   * - 功能
+     - 位置
+     - 备注
+   * - PB06
+     - P1[3]
+     - RESET引脚
+   * - PB12
+     - P1[37]
+     - HANDSHAKE引脚
+   * - PB13
+     - P1[35]
+     - DATA_READY引脚
+
+- BROWNOUT中断指示引脚
+
+.. list-table::
+   :header-rows: 1
+
+   * - 功能
+     - 位置
+   * - PB11
+     - P1[40]
+
 .. _hpm5300evk_known_issues:
 
 开发板已知问题

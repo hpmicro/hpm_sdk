@@ -50,6 +50,7 @@
  *
  */
 
+#include "common.h"
 #include "lwip/opt.h"
 #include "lwip/def.h"
 #include "lwip/mem.h"
@@ -59,7 +60,6 @@
 #include "lwip/timeouts.h"
 #include "netif/etharp.h"
 #include "ethernetif.h"
-#include "lwip.h"
 
 #if defined(NO_SYS) && !NO_SYS
 #if defined(__ENABLE_FREERTOS) && __ENABLE_FREERTOS
@@ -92,6 +92,8 @@
 xSemaphoreHandle s_xSemaphore = NULL;
 #endif
 
+LWIP_MEMPOOL_DECLARE(enet0_rx_pool, ENET_RX_BUFF_COUNT, sizeof(my_custom_pbuf_t), "Custom RX PBUF pool");
+
 /**
 * In this function, the hardware should be initialized.
 * Called from ethernetif_init().
@@ -108,10 +110,12 @@ static void low_level_init(struct netif *netif)
     memcpy(netif->hwaddr, mac, ETH_HWADDR_LEN);
 
     /* Set netif maximum transfer unit */
-    netif->mtu = 1500;
+    netif->mtu = netifMTU;
 
     /* Accept broadcast address and ARP traffic */
     netif->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_IGMP;
+
+    LWIP_MEMPOOL_INIT(enet0_rx_pool);
 
 #if defined(NO_SYS) && !NO_SYS
     /* create binary semaphore used for informing ethernetif of frame reception */
@@ -144,8 +148,6 @@ static void low_level_init(struct netif *netif)
 
 static err_t low_level_output(struct netif *netif, struct pbuf *p)
 {
-    (void)netif;
-
 #if defined(NO_SYS) && !NO_SYS
     static xSemaphoreHandle xTxSemaphore = NULL;
 #endif
@@ -238,6 +240,37 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
     return ERR_OK;
 }
 
+void free_rx_dma_descriptor(void *p)
+{
+    enet_frame_t *frame;
+
+    frame = (enet_frame_t *)p;
+
+    /* Set Own bit in Rx descriptors: gives the buffers back to DMA */
+    enet_rx_desc_t *dma_rx_desc = frame->rx_desc;
+
+    for (uint32_t i = 0; i < frame->seg; i++) {
+        dma_rx_desc->rdes0_bm.own = 1;
+        dma_rx_desc = (enet_rx_desc_t *)(dma_rx_desc->rdes3_bm.next_desc);
+    }
+
+    /* Clear Segment_Count */
+    frame->seg = 0;
+    frame->used = 0;
+    frame->length = 0;
+}
+
+void enet0_pbuf_free_custom(struct pbuf *p)
+{
+    SYS_ARCH_DECL_PROTECT(old_level);
+    my_custom_pbuf_t *my_pbuf = (my_custom_pbuf_t *)p;
+
+    SYS_ARCH_PROTECT(old_level);
+    free_rx_dma_descriptor((void *)my_pbuf->dma_descriptor);
+    LWIP_MEMPOOL_FREE(enet0_rx_pool, my_pbuf);
+    SYS_ARCH_UNPROTECT(old_level);
+}
+
 /**
 * Should allocate a pbuf and transfer the bytes of the incoming
 * packet from the interface into the pbuf.
@@ -248,80 +281,49 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 */
 static struct pbuf *low_level_input(struct netif *netif)
 {
-    (void)netif;
-
-    struct pbuf *p = NULL, *q;
-    u32_t len;
+    struct pbuf *p = NULL;
     uint8_t *buffer;
-    enet_frame_t frame = {0, 0, 0};
-    enet_rx_desc_t *dma_rx_desc;
-    uint32_t buffer_offset = 0;
-    uint32_t payload_offset = 0;
-    uint32_t bytes_left_to_copy = 0;
-    uint32_t i = 0;
+    uint32_t len;
+    my_custom_pbuf_t *my_pbuf;
+    enet_frame_pointer_t *fp = (enet_frame_pointer_t *)netif->state;
 
-    /* Check and get a received frame */
-    #if defined(__ENABLE_ENET_RECEIVE_INTERRUPT) && __ENABLE_ENET_RECEIVE_INTERRUPT || defined(NO_SYS) && !NO_SYS
-        frame = enet_get_received_frame_interrupt(&desc.rx_desc_list_cur, &desc.rx_frame_info, ENET_RX_BUFF_COUNT);
-    #else
+    if (fp->frame[fp->idx].used == 0) {
+        #if defined(__ENABLE_ENET_RECEIVE_INTERRUPT) && __ENABLE_ENET_RECEIVE_INTERRUPT || defined(NO_SYS) && !NO_SYS
+        fp->frame[fp->idx] = enet_get_received_frame_interrupt(&desc.rx_desc_list_cur, &desc.rx_frame_info, ENET_RX_BUFF_COUNT);
+        #else
         if (enet_check_received_frame(&desc.rx_desc_list_cur, &desc.rx_frame_info) == 1) {
-            frame = enet_get_received_frame(&desc.rx_desc_list_cur, &desc.rx_frame_info);
+            fp->frame[fp->idx] = enet_get_received_frame(&desc.rx_desc_list_cur, &desc.rx_frame_info);
         }
-    #endif
+        #endif
 
-    /* Obtain the size of the packet and put it into the "len" variable. */
-    len = frame.length;
-    buffer = (uint8_t *)frame.buffer;
+        /* Obtain the size of the packet and put it into the "len" variable. */
+        len = fp->frame[fp->idx].length;
+        buffer = (uint8_t *)fp->frame[fp->idx].buffer;
 
-    if (len > 0) {
-    /* Allocate a pbuf chain of pbufs from the Lwip buffer pool */
-        p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
+        if (len > 0) {
+            /* Allocate a pbuf chain of pbufs from the custom buffer pool */
+            fp->frame[fp->idx].used = 1;
+            my_pbuf = (my_custom_pbuf_t *)LWIP_MEMPOOL_ALLOC(enet0_rx_pool);
+            my_pbuf->p.custom_free_function = enet0_pbuf_free_custom;
+            my_pbuf->dma_descriptor = (void *)&fp->frame[fp->idx];
 
-        if (p != NULL) {
-            dma_rx_desc = frame.rx_desc;
-            buffer_offset = 0;
-            for (q = p; q != NULL; q = q->next) {
-                bytes_left_to_copy = q->len;
-                payload_offset = 0;
+            p = pbuf_alloced_custom(PBUF_RAW, fp->frame[fp->idx].length, PBUF_REF, &my_pbuf->p, (uint8_t *)fp->frame[fp->idx].buffer, ENET_RX_BUFF_SIZE);
 
-                /* Check if the length of bytes to copy in current pbuf is bigger than Rx buffer size*/
-                while ((bytes_left_to_copy + buffer_offset) > ENET_RX_BUFF_SIZE) {
-                    /* Copy data to pbuf*/
-                    memcpy((uint8_t *)((uint8_t *)q->payload + payload_offset), (uint8_t *)((uint8_t *)buffer + buffer_offset), (ENET_RX_BUFF_SIZE - buffer_offset));
-
-                    /* Point to next descriptor */
-                    dma_rx_desc = (enet_rx_desc_t *)(dma_rx_desc->rdes3_bm.next_desc);
-                    buffer = (uint8_t *)(dma_rx_desc->rdes2_bm.buffer1);
-
-                    bytes_left_to_copy = bytes_left_to_copy - (ENET_RX_BUFF_SIZE - buffer_offset);
-                    payload_offset = payload_offset + (ENET_RX_BUFF_SIZE - buffer_offset);
-                    buffer_offset = 0;
-                }
-
-            /* pass the buffer to pbuf */
-            q->payload = (void *)buffer;
-            l1c_dc_invalidate((uint32_t)buffer, ENET_RX_BUFF_SIZE);
-            buffer_offset = buffer_offset + bytes_left_to_copy;
-
-            #if defined(LWIP_PTP) && LWIP_PTP
-            /* Get the received timestamp */
-            p->time_sec  = frame.rx_desc->rdes7_bm.rtsh;
-            p->time_nsec = frame.rx_desc->rdes6_bm.rtsl;
-            #endif
+            if (p != NULL) {
+                l1c_dc_invalidate((uint32_t)buffer, ENET_RX_BUFF_SIZE);
+                #if defined(LWIP_PTP) && LWIP_PTP
+                /* Get the received timestamp */
+                p->time_sec  = fp->frame[fp->idx].rx_desc->rdes7_bm.rtsh;
+                p->time_nsec = fp->frame[fp->idx].rx_desc->rdes6_bm.rtsl;
+                #endif
             }
+
+            ++fp->idx;
+            fp->idx %= ENET_RX_BUFF_COUNT;
+
+            /* Clear Segment_Count */
+            desc.rx_frame_info.seg_count = 0;
         }
-
-        /* Release descriptors to DMA */
-        dma_rx_desc = frame.rx_desc;
-
-        /* Set Own bit in Rx descriptors: gives the buffers back to DMA */
-        for (i = 0; i < desc.rx_frame_info.seg_count; i++) {
-            dma_rx_desc->rdes0_bm.own = 1;
-            dma_rx_desc = (enet_rx_desc_t *)(dma_rx_desc->rdes3_bm.next_desc);
-        }
-
-        /* Clear Segment_Count */
-        desc.rx_frame_info.seg_count = 0;
     }
 
     /* Resume Rx Process */

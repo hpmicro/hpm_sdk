@@ -15,7 +15,8 @@ typedef enum wm8978_audio_interface {
     wm8978_right_justified = 0,  /* Right Justified */
     wm8978_left_justified,       /* Left Justified */
     wm8978_philips_i2s,          /* I2S format */
-    wm8978_pcm_mode,             /* DSP/PCM mode */
+    wm8978_pcm_a,                /* DSP/PCM mode A */
+    wm8978_pcm_b                 /* DSP/PCM mode B */
 } wm8978_audio_interface_t;
 
 typedef enum wm8978_word_length {
@@ -144,6 +145,14 @@ hpm_stat_t wm8978_cfg_audio_interface(wm8978_context_t *control,
                                         wm8978_word_length_t word_len);
 
 /**
+ * @brief Invert LRCLK polarity.
+ *
+ * @param control WM8979 control structure.
+ * @param invert true for invert LRCLK polarity.
+ */
+hpm_stat_t wm8978_invert_lrclk_polarity(wm8978_context_t *control, bool invert);
+
+/**
  * @brief Configure wm8978 audio channel
  *
  * @param [in] control WM8979 control structure.
@@ -186,7 +195,7 @@ hpm_stat_t wm8978_write_reg(wm8978_context_t *control, uint8_t reg, uint16_t val
 
 /**
  * @brief Read register from WM8978 using I2C.
- * @param [in] reg The register address in WM8978.
+ * @param [in] control WM8978 control structure.
  * @param [in] reg The register address in WM8978.
  * @param [out] val Value point read to.
  * @retval hpm_stat_t status_success if read reg without any error
@@ -206,10 +215,5 @@ hpm_stat_t wm8978_modify_reg(wm8978_context_t *control, uint8_t reg, uint16_t ma
 #ifdef __cplusplus
 }
 #endif
-
-/**
- * @}
- *
- */
 
 #endif /* HPM_WM8978_H */

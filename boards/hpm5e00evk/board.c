@@ -18,6 +18,7 @@
 #include "hpm_enet_drv.h"
 #include "hpm_usb_drv.h"
 #include "hpm_pcfg_drv.h"
+#include "hpm_esc_drv.h"
 
 /**
  * @brief FLASH configuration option definitions:
@@ -258,6 +259,18 @@ uint32_t board_init_i2c_clock(I2C_Type *ptr)
     return freq;
 }
 
+uint32_t board_init_i2c_eeprom_clock(I2C_Type *ptr)
+{
+    uint32_t freq = 0;
+
+    if (ptr == HPM_I2C0) {
+        clock_add_to_group(clock_i2c0, 0);
+        freq = clock_get_frequency(clock_i2c0);
+    }
+
+    return freq;
+}
+
 void board_init_i2c(I2C_Type *ptr)
 {
     i2c_config_t config;
@@ -333,8 +346,49 @@ void board_led_write(uint8_t state)
     gpio_write_pin(BOARD_LED_GPIO_CTRL, BOARD_LED_GPIO_INDEX, BOARD_LED_GPIO_PIN, state);
 }
 
+void board_can_transceiver_phy_set(MCAN_Type *ptr, bool enable)
+{
+    init_can_transceiver_phy_pin(ptr);
+    if (ptr == HPM_MCAN1) {
+        gpio_set_pin_output_with_initial(BOARD_CAN_STB_GPIO_CTRL, BOARD_CAN_STB_GPIO_INDEX, BOARD_CAN_STB_GPIO_PIN, 0);
+        gpio_write_pin(BOARD_CAN_STB_GPIO_CTRL, BOARD_CAN_STB_GPIO_INDEX, BOARD_CAN_STB_GPIO_PIN, enable ? 0 : 1);
+    }
+}
+
 void board_init_pmp(void)
 {
+    uint32_t start_addr;
+    uint32_t end_addr;
+    uint32_t length;
+    pmp_entry_t pmp_entry[16] = {0};
+    uint8_t index = 0;
+
+    pmp_entry[index].pmp_addr = 0xFFFFFFFF;
+    pmp_entry[index].pmp_cfg.val = PMP_CFG(READ_EN, WRITE_EN, EXECUTE_EN, ADDR_MATCH_NAPOT, REG_UNLOCK);
+    index++;
+
+    /* Init noncachable memory */
+    extern uint32_t __noncacheable_start__[];
+    extern uint32_t __noncacheable_end__[];
+    const uint32_t axi_sram_start = 0x01200000;  /* AXI SRAM start */
+    const uint32_t axi_sram_end = 0x01240000;    /* AXI SRAM end */
+    start_addr = (uint32_t) __noncacheable_start__;
+    end_addr = (uint32_t) __noncacheable_end__;
+    if ((start_addr >= axi_sram_start) && (end_addr <= axi_sram_end)) {
+        length = end_addr - start_addr;
+        if (length > 0) {
+            /* Ensure the address and the length are power of 2 aligned */
+            assert((length & (length - 1U)) == 0U);
+            assert((start_addr & (length - 1U)) == 0U);
+            pmp_entry[index].pmp_addr = PMP_NAPOT_ADDR(start_addr, length);
+            pmp_entry[index].pmp_cfg.val = PMP_CFG(READ_EN, WRITE_EN, EXECUTE_EN, ADDR_MATCH_NAPOT, REG_UNLOCK);
+            pmp_entry[index].pma_addr = PMA_NAPOT_ADDR(start_addr, length);
+            pmp_entry[index].pma_cfg.val = PMA_CFG(ADDR_MATCH_NAPOT, MEM_TYPE_MEM_NON_CACHE_BUF, AMO_EN);
+            index++;
+        }
+    }
+
+    pmp_config(&pmp_entry[0], index);
 }
 
 void board_init_clock(void)
@@ -376,6 +430,7 @@ void board_init_clock(void)
 
     /* Bump up DCDC voltage to 1275mv */
     pcfg_dcdc_set_voltage(HPM_PCFG, 1275);
+    pcfg_dcdc_switch_to_dcm_mode(HPM_PCFG);
 
     /* Configure PLL0 Post Divider */
     pllctlv2_set_postdiv(HPM_PLLCTLV2, pllctlv2_pll0, pllctlv2_clk0, pllctlv2_div_1p0);    /* PLL0CLK0: 480MHz */
@@ -506,8 +561,8 @@ hpm_stat_t board_init_enet_ptp_clock(ENET_Type *ptr)
     /* set clock source */
     if (ptr == HPM_ENET0) {
         clock_add_to_group(clock_ptp0, 0);
-        /* make sure pll0_clk0 output clock at 400MHz to get a clock at 100MHz for the enet0 ptp function */
-        /* clock_set_source_divider(clock_ptp0, clk_src_pll1_clk1, 4); */ /* 100MHz */
+        /* make sure pll1_clk0 output clock at 400MHz to get a clock at 100MHz for the enet0 ptp function */
+        clock_set_source_divider(clock_ptp0, clk_src_pll1_clk0, 4);  /* 100MHz */
     } else {
         return status_invalid_argument;
     }
@@ -520,7 +575,7 @@ hpm_stat_t board_init_enet_pins(ENET_Type *ptr)
     init_enet_pins(ptr);
 
     if (ptr == HPM_ENET0) {
-        gpio_set_pin_output_with_initial(BOARD_ENET_RGMII_RST_GPIO, BOARD_ENET_RGMII_RST_GPIO_INDEX, BOARD_ENET_RGMII_RST_GPIO_PIN, 0);
+        gpio_set_pin_output_with_initial(BOARD_ENET_RMII_RST_GPIO, BOARD_ENET_RMII_RST_GPIO_INDEX, BOARD_ENET_RMII_RST_GPIO_PIN, 0);
     }  else {
         return status_invalid_argument;
     }
@@ -531,9 +586,19 @@ hpm_stat_t board_init_enet_pins(ENET_Type *ptr)
 hpm_stat_t board_reset_enet_phy(ENET_Type *ptr)
 {
     if (ptr == HPM_ENET0) {
+    #if defined(RGMII) && RGMII
         gpio_write_pin(BOARD_ENET_RGMII_RST_GPIO, BOARD_ENET_RGMII_RST_GPIO_INDEX, BOARD_ENET_RGMII_RST_GPIO_PIN, 0);
         board_delay_ms(1);
         gpio_write_pin(BOARD_ENET_RGMII_RST_GPIO, BOARD_ENET_RGMII_RST_GPIO_INDEX, BOARD_ENET_RGMII_RST_GPIO_PIN, 1);
+    #elif defined (RMII) && RMII
+        gpio_write_pin(BOARD_ENET_RMII_RST_GPIO, BOARD_ENET_RMII_RST_GPIO_INDEX, BOARD_ENET_RMII_RST_GPIO_PIN, 0);
+        board_delay_ms(1);
+        gpio_write_pin(BOARD_ENET_RMII_RST_GPIO, BOARD_ENET_RMII_RST_GPIO_INDEX, BOARD_ENET_RMII_RST_GPIO_PIN, 1);
+    #elif defined (MII) && MII
+        gpio_write_pin(BOARD_ENET_MII_RST_GPIO, BOARD_ENET_MII_RST_GPIO_INDEX, BOARD_ENET_MII_RST_GPIO_PIN, 0);
+        board_delay_ms(1);
+        gpio_write_pin(BOARD_ENET_MII_RST_GPIO, BOARD_ENET_MII_RST_GPIO_INDEX, BOARD_ENET_MII_RST_GPIO_PIN, 1);
+    #endif
     } else {
         return status_invalid_argument;
     }
@@ -580,13 +645,17 @@ hpm_stat_t board_init_enet_rmii_reference_clock(ENET_Type *ptr, bool internal)
     /* Configure Enet clock to output reference clock */
     if (ptr == HPM_ENET0) {
         clock_add_to_group(clock_eth0, 0);
+        clock_add_to_group(clock_esc0, 0);
+        esc_core_enable_clock(HPM_ESC, true);
+        esc_phy_enable_clock(HPM_ESC, true);
+
         if (internal) {
-            /* set pll output frequency at 1GHz */
-            if (pllctlv2_init_pll_with_freq(HPM_PLLCTLV2, pllctlv2_pll2, 1000000000UL) == status_success) {
-                /* set pll2_clk1 output frequency at 250MHz from PLL2 divided by 4 (1 + 15 / 5) */
-                pllctlv2_set_postdiv(HPM_PLLCTLV2, pllctlv2_pll2, pllctlv2_clk1, pllctlv2_div_4p0);
+            /* set pll output frequency at 0.5GHz */
+            if (pllctlv2_init_pll_with_freq(HPM_PLLCTLV2, pllctlv2_pll2, 500000000UL) == status_success) {
+                /* set pll2_clk1 output frequency at 250MHz from PLL2 divided by 2 */
+                pllctlv2_set_postdiv(HPM_PLLCTLV2, pllctlv2_pll2, pllctlv2_clk1, pllctlv2_div_2p0);
                 /* set eth clock frequency at 50MHz for enet0 */
-                /* clock_set_source_divider(clock_eth0, clk_src_pll2_clk1, 5); */
+                clock_set_source_divider(clock_eth0, clk_src_pll2_clk1, 5);
             } else {
                 return status_fail;
             }
@@ -596,6 +665,21 @@ hpm_stat_t board_init_enet_rmii_reference_clock(ENET_Type *ptr, bool internal)
     }
 
     enet_rmii_enable_clock(ptr, internal);  /* defined in hpm_enet_soc_drv.h, not sure */
+
+    return status_success;
+}
+
+hpm_stat_t board_init_enet_mii_clock(ENET_Type *ptr)
+{
+    /* Configure Enet clock to output reference clock */
+    if (ptr == HPM_ENET0) {
+        clock_add_to_group(clock_eth0, 0);
+        clock_add_to_group(clock_esc0, 0);
+        esc_core_enable_clock(HPM_ESC, true);
+        esc_phy_enable_clock(HPM_ESC, true);
+    } else {
+        return status_invalid_argument;
+    }
 
     return status_success;
 }
@@ -691,3 +775,211 @@ uint32_t board_init_gptmr_clock(GPTMR_Type *ptr)
     return freq;
 }
 
+void init_uart_pins(UART_Type *ptr)
+{
+    if (ptr == HPM_UART0) {
+        init_uart0_pins();
+    } else if (ptr == HPM_UART4) {
+        init_uart4_pins();
+    } else {
+        ;
+    }
+}
+
+void init_uart_pin_as_gpio(UART_Type *ptr)
+{
+    if (ptr == HPM_UART5) {
+        init_uart5_pin_as_gpio();
+    }
+}
+
+void init_i2c_pins(I2C_Type *ptr)
+{
+    if (ptr == HPM_I2C0) {
+#if 1
+        init_i2c0_pins();
+#else
+        HPM_IOC->PAD[IOC_PAD_PD09].FUNC_CTL = IOC_PD09_FUNC_CTL_I2C0_SDA | IOC_PAD_FUNC_CTL_LOOP_BACK_MASK;    /* Codec0 */
+        HPM_IOC->PAD[IOC_PAD_PD08].FUNC_CTL = IOC_PD08_FUNC_CTL_I2C0_SCL | IOC_PAD_FUNC_CTL_LOOP_BACK_MASK;
+        HPM_IOC->PAD[IOC_PAD_PD09].PAD_CTL = IOC_PAD_PAD_CTL_OD_MASK;
+        HPM_IOC->PAD[IOC_PAD_PD08].PAD_CTL = IOC_PAD_PAD_CTL_OD_MASK;
+#endif
+    } else if (ptr == HPM_I2C1) { /* AT24C02 */
+    } else if (ptr == HPM_I2C2) { /* Codec1 */
+        init_i2c2_pins();
+    } else {
+        ;
+    }
+}
+
+void init_spi_pins(SPI_Type *ptr)
+{
+    if (ptr == HPM_SPI1) {
+        init_spi1_pins();
+    } else {
+        ;
+    }
+}
+
+void init_spi_pins_with_gpio_as_cs(SPI_Type *ptr)
+{
+    if (ptr == HPM_SPI1) {
+        init_spi1_pins_with_gpio_as_cs();
+    }
+}
+
+void init_gptmr_pins(GPTMR_Type *ptr)
+{
+    if (ptr == HPM_GPTMR0) {
+        init_gptmr0_pins();
+    } else if (ptr == HPM_GPTMR1) {
+        init_gptmr1_pins();
+    }
+}
+
+void init_hall_trgm_pins(void)
+{
+    init_qeiv2_uvw_pins(BOARD_BLDC_QEIV2_BASE);
+}
+
+void init_qei_trgm_pins(void)
+{
+    init_qeiv2_ab_pins(BOARD_BLDC_QEIV2_BASE);
+}
+
+void init_pwm_pins(PWMV2_Type *ptr)
+{
+    if (ptr == HPM_PWM0) {
+        init_pwm0_pins();
+    } else {
+        ;
+    }
+}
+
+void init_usb_pins(USB_Type *ptr)
+{
+    if (ptr == HPM_USB0) {
+        init_usb0_pins();
+    }
+}
+
+void init_qeo_pins(QEOV2_Type *ptr)
+{
+    if (ptr == HPM_QEO1) {
+        init_qeo1_pins();
+    }
+}
+
+void init_qeiv2_uvw_pins(QEIV2_Type *ptr)
+{
+    if (ptr == HPM_QEI0) {
+        init_qeiv2_qei0_uvw_pins();
+    } else {
+    }
+}
+
+void init_qeiv2_ab_pins(QEIV2_Type *ptr)
+{
+    if (ptr == HPM_QEI0) {
+        init_qeiv2_qei0_ab_pins();
+    } else {
+        ;
+    }
+}
+
+void init_qeiv2_abz_pins(QEIV2_Type *ptr)
+{
+    if (ptr == HPM_QEI0) {
+        init_qeiv2_qei0_abz_pins();
+    } else {
+        ;
+    }
+}
+
+void init_enet_pins(ENET_Type *ptr)
+{
+    if (ptr == HPM_ENET0) {
+#if defined(RGMII) && RGMII
+        init_enet0_pins_rgmii();
+#elif defined(RMII) && RMII
+        init_enet0_pins_rmii();
+#elif defined(MII) && MII
+        init_enet0_pins_mii();
+#endif
+    }
+}
+
+void init_owr_pins(OWR_Type *ptr)
+{
+    (void) ptr;
+    init_owr_pins_without_param();
+}
+
+void init_can_pins(MCAN_Type *ptr)
+{
+   if (ptr == HPM_MCAN1) {
+        init_mcan1_pins();
+    } else {
+        /* Invalid CAN instance */
+    }
+}
+
+void init_can_transceiver_phy_pin(MCAN_Type *ptr)
+{
+    if (ptr == HPM_MCAN1) {
+        init_mcan1_transceiver_phy_pin();
+    } else {
+        /* Invalid CAN instance */
+    }
+}
+
+void init_eui_pins(EUI_Type *ptr)
+{
+    if (ptr == HPM_EUI1) {
+        init_eui1_pins();
+    } else {
+        ;
+    }
+}
+
+void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_output)
+{
+    if (ptr == HPM_GPTMR0) {
+        if (as_output == true) {
+            if (channel == 2) {
+                init_gptmr0_channel2_pin_as_output();
+            } else if (channel == 3) {
+                init_gptmr0_channel3_pin_as_output();
+            } else {
+                ;
+            }
+        } else {
+            if (channel == 2) {
+                init_gptmr0_channel2_pin_as_capture();
+            } else if (channel == 3) {
+                init_gptmr0_channel3_pin_as_capture();
+            } else {
+                ;
+            }
+        }
+    } else if (ptr == HPM_GPTMR1) {
+        if (as_output == true) {
+            if (channel == 2) {
+                init_gptmr1_channel2_pin_as_output();
+            }
+        } else {
+            if (channel == 2) {
+                init_gptmr1_channel2_pin_as_capture();
+            } else if (channel == 3) {
+                init_gptmr1_channel3_pin_as_capture();
+            } else {
+                ;
+            }
+        }
+    }
+}
+void board_init_brownout_indicate_pin(void)
+{
+    init_brownout_indicate_pin();
+    gpio_set_pin_output_with_initial(BOARD_BROWNOUT_INDICATE_GPIO_CTRL, GPIO_GET_PORT_INDEX(BOARD_BROWNOUT_INDICATE_PIN), GPIO_GET_PIN_INDEX(BOARD_BROWNOUT_INDICATE_PIN), 0);
+}

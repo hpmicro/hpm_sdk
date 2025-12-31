@@ -79,6 +79,10 @@
 #define BOARD_ENET_PPS_IDX       enet_pps_0
 #define BOARD_ENET_PPS_PTP_CLOCK clock_ptp0
 
+#define BOARD_ENET_AUXI_SNAPSHOT           HPM_ENET0
+#define BOARD_ENET_AUXI_SNAPSHOT_IDX       enet_ptp_auxi_snapshot_trigger_1
+#define BOARD_ENET_AUXI_SNAPSHOT_PTP_CLOCK clock_ptp0
+
 #define BOARD_ENET_RGMII                HPM_ENET0
 #define BOARD_ENET_RGMII_RST_GPIO       HPM_GPIO0
 #define BOARD_ENET_RGMII_RST_GPIO_INDEX GPIO_DO_GPIOC
@@ -197,6 +201,10 @@
 /* pdm selection */
 #define BOARD_PDM_SINGLE_CHANNEL_MASK (1U)
 #define BOARD_PDM_DUAL_CHANNEL_MASK   (0x11U)
+
+/* DAO section */
+#define BOARD_DAO_SINGLE_CHANNEL_MASK (2U)
+#define BOARD_DAO_I2S_DMA_REQ         (HPM_DMA_SRC_I2S1_TX_0)
 
 /* dma section */
 #define BOARD_APP_XDMA      HPM_XDMA
@@ -320,6 +328,10 @@
 /* CAN section */
 #define BOARD_APP_CAN_BASE HPM_MCAN1
 #define BOARD_APP_CAN_IRQn IRQn_MCAN1
+
+#define BOARD_CAN_STB_GPIO_CTRL HPM_GPIO0
+#define BOARD_CAN_STB_GPIO_INDEX GPIO_DI_GPIOD
+#define BOARD_CAN_STB_GPIO_PIN   29
 
 /*
  * timer for board delay
@@ -648,6 +660,22 @@
 
 #define BOARD_PPI_ADC_CS_INDEX 2
 
+#define BOARD_APP_ESP_HOSTED_GPIO_RESET_PIN        IOC_PAD_PA16
+#define BOARD_APP_ESP_HOSTED_GPIO_HANDSHAKE_PIN    IOC_PAD_PC29
+#define BOARD_APP_ESP_HOSTED_GPIO_HANDSHAKE_IRQ    IRQn_GPIO0_C
+#define BOARD_APP_ESP_HOSTED_GPIO_DATA_READY_PIN   IOC_PAD_PC28
+#define BOARD_APP_ESP_HOSTED_GPIO_DATA_READY_IRQ   IRQn_GPIO0_C
+
+/* Brownout Indicate Pin */
+
+#define BOARD_BROWNOUT_INDICATE_GPIO_CTRL          HPM_GPIO0
+#define BOARD_BROWNOUT_INDICATE_PIN                IOC_PAD_PY07
+
+/* usb id pin */
+#define BOARD_USB_ID_GPIO_CTRL  HPM_GPIO0
+#define BOARD_USB_ID_GPIO_INDEX GPIO_DI_GPIOC
+#define BOARD_USB_ID_GPIO_PIN   (25U)
+
 #if defined(__cplusplus)
 extern "C" {
 #endif /* __cplusplus */
@@ -690,6 +718,7 @@ void board_init_acmp_pins(void);
 void board_init_dac_pins(DAC_Type *ptr);
 void board_init_usb(USB_Type *ptr);
 void board_init_enet_pps_pins(ENET_Type *ptr);
+void board_init_enet_pps_capture_pins(ENET_Type *ptr);
 uint8_t board_get_enet_dma_pbl(ENET_Type *ptr);
 hpm_stat_t board_reset_enet_phy(ENET_Type *ptr);
 hpm_stat_t board_init_enet_pins(ENET_Type *ptr);
@@ -718,6 +747,33 @@ void board_init_adc_qeiv2_pins(void);
 
 void board_init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_comp);
 uint32_t board_init_gptmr_clock(GPTMR_Type *ptr);
+void board_can_transceiver_phy_set(MCAN_Type *ptr, bool enable);
+
+/*
+ * Wrap pinmux initialization.
+ */
+void init_uart_pins(UART_Type *ptr);
+void init_uart_pin_as_gpio(UART_Type *ptr);
+void init_i2c_pins(I2C_Type *ptr);
+void init_spi_pins(SPI_Type *ptr);
+void init_spi_pins_with_gpio_as_cs(SPI_Type *ptr);
+void init_gptmr_pins(GPTMR_Type *ptr);
+void init_hall_trgm_pins(void);
+void init_qei_trgm_pins(void);
+void init_pwm_pins(PWMV2_Type *ptr);
+void init_usb_pins(USB_Type *ptr);
+void init_i2s_pins(I2S_Type *ptr);
+void init_qeo_pins(QEOV2_Type *ptr);
+void init_sei_pins(SEI_Type *ptr, uint8_t sei_ctrl_idx);
+void init_qeiv2_uvw_pins(QEIV2_Type *ptr);
+void init_qeiv2_ab_pins(QEIV2_Type *ptr);
+void init_qeiv2_abz_pins(QEIV2_Type *ptr);
+void init_enet_pins(ENET_Type *ptr);
+void init_can_pins(MCAN_Type *ptr);
+void init_can_transceiver_phy_pin(MCAN_Type *ptr);
+void init_dac_pins(DAC_Type *ptr);
+void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_output);
+void board_init_brownout_indicate_pin(void);
 
 #if defined(__cplusplus)
 }

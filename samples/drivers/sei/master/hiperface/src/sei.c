@@ -9,7 +9,26 @@
 #include "hpm_clock_drv.h"
 #include "hpm_synt_drv.h"
 #include "hpm_sei_drv.h"
+#include "hpm_gptmr_drv.h"
+#include "hpm_interrupt.h"
 
+#define DISCONNECT_TIMEOUT_MS (1000)
+
+static void encoder_disconnect_timer_config(uint32_t time_ms)
+{
+    uint32_t gptmr_freq;
+    gptmr_channel_config_t config;
+
+    clock_add_to_group(BOARD_GPTMR_CLK_NAME, 0);
+    gptmr_channel_get_default_config(BOARD_GPTMR, &config);
+    gptmr_freq = clock_get_frequency(BOARD_GPTMR_CLK_NAME);
+    config.reload = gptmr_freq / 1000 * time_ms;
+    gptmr_channel_config(BOARD_GPTMR, BOARD_GPTMR_CHANNEL, &config, false);
+    gptmr_start_counter(BOARD_GPTMR, BOARD_GPTMR_CHANNEL);
+
+    gptmr_enable_irq(BOARD_GPTMR, GPTMR_CH_RLD_IRQ_MASK(BOARD_GPTMR_CHANNEL));
+    intc_m_enable_irq_with_priority(BOARD_GPTMR_IRQ, 1);
+}
 
 int main(void)
 {
@@ -325,6 +344,9 @@ int main(void)
     trigger_input_conifg.trig_period_time = (200 * (clock_get_frequency(BOARD_MOTOR_CLK_NAME) / 1000));    /* unit: 1ms, 200ms */
     sei_trigger_input_config_init(BOARD_SEI, BOARD_SEI_CTRL, &trigger_input_conifg);
 
+    /* [10] encoder disconnect timer config */
+    encoder_disconnect_timer_config(DISCONNECT_TIMEOUT_MS);
+
     while (1) {
         ;
     }
@@ -343,6 +365,7 @@ void isr_sei(void)
     irq_flag &= sei_get_irq_enable_status(BOARD_SEI, BOARD_SEI_CTRL);
 
     if ((irq_flag & sei_irq_latch1_event) != 0) {
+        gptmr_channel_reset_count(BOARD_GPTMR, BOARD_GPTMR_CHANNEL);    /* reset disconnect timer */
         sample_latch_tm = sei_get_latch_time(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0);
         update_latch_tm = sei_get_latch_time(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_1);
         delta = (update_latch_tm > sample_latch_tm) ? (update_latch_tm - sample_latch_tm) : (update_latch_tm - sample_latch_tm + 0xFFFFFFFFu);
@@ -357,7 +380,7 @@ void isr_sei(void)
                 (sei_get_data_value(BOARD_SEI, SEI_DAT_7) & 0xFFF) << 20,
                 sei_get_data_value(BOARD_SEI, SEI_DAT_5),
 #endif
-                sei_get_data_value(BOARD_SEI, SEI_DAT_8) & 0xFF,
+                sei_get_crc_value(BOARD_SEI, SEI_DAT_8),
                 sample_latch_tm,
                 update_latch_tm,
                 delta / (clock_get_frequency(BOARD_MOTOR_CLK_NAME) / 1000000));
@@ -365,5 +388,14 @@ void isr_sei(void)
 
     if ((irq_flag & sei_irq_trx_err_event) != 0) {
         printf("TRX Error!\n");
+    }
+}
+
+SDK_DECLARE_EXT_ISR_M(BOARD_GPTMR_IRQ, disconnect_tmr_isr)
+void disconnect_tmr_isr(void)
+{
+    if (gptmr_check_status(BOARD_GPTMR, GPTMR_CH_RLD_STAT_MASK(BOARD_GPTMR_CHANNEL))) {
+        gptmr_clear_status(BOARD_GPTMR, GPTMR_CH_RLD_STAT_MASK(BOARD_GPTMR_CHANNEL));
+        printf("Encoder Disconnect Error!\n");
     }
 }

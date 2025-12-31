@@ -1,6 +1,6 @@
 .. _samples_tsn:
 
-tsn
+TSN
 ===
 
 .. toctree::

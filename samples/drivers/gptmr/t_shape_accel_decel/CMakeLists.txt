@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.13)
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
-
+sdk_ld_options("-lm")
 project(gptmr_t_shape_accel_decel)
 
 sdk_app_src(src/t_shape_accel_decel.c)

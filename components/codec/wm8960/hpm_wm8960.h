@@ -62,6 +62,12 @@ typedef enum wm8960_input {
     wm8960_input_line_input3             = 5  /* Input as line input, only use L/RINPUT3 */
 } wm8960_input_t;
 
+typedef enum wm8960_lrclk_polarity {
+    wm8960_lrclk_polarity_default               = 0U, /*!< LRCLK default polarity for Philips/Left Justified/Right Justified */
+    wm8960_lrclk_polarity_low_for_left_channel  = 1U, /*!< LRCLK low for left channel for Philips/Left Justified/Right Justified */
+    wm8960_lrclk_polarity_high_for_left_channel = 2U, /*!< LRCLK high for left channel for Philips/Left Justified/Right Justified */
+} wm8960_lrclk_polarity_t;
+
 /* wm8960 audio format */
 typedef struct wm8960_audio_format {
     uint32_t mclk_hz;     /* master clock frequency */
@@ -78,6 +84,7 @@ typedef struct wm8960_config {
     wm8960_input_t right_input;                /* Right input source for wm8960 */
     wm8960_play_source_t play_source;          /* play source */
     wm8960_audio_format_t format;              /* Audio format */
+    wm8960_lrclk_polarity_t lrclk_polarity;    /* LRCLK polarity for Philips/Left Justified/Right Justified protocol */
 } wm8960_config_t;
 
 typedef struct {
@@ -140,6 +147,14 @@ hpm_stat_t wm8960_set_right_input(wm8960_control_t *control, wm8960_input_t inpu
  * @param protocol Audio data transfer protocol.
  */
 hpm_stat_t wm8960_set_protocol(wm8960_control_t *control, wm8960_protocol_t protocol);
+
+/**
+ * @brief Invert LRCLK polarity.
+ *
+ * @param control WM8960 control structure.
+ * @param invert true for invert LRCLK polarity.
+ */
+hpm_stat_t wm8960_invert_lrclk_polarity(wm8960_control_t *control, bool invert);
 
 /**
  * @brief Set the volume of different modules in WM8960.

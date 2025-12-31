@@ -266,7 +266,7 @@ static void init_audio_player(char *fname)
         res = hpm_wav_decode_init(fname, wav_ctrl_ptr, &wav_header_buff);
         if (res == status_success) {
             s_file_type = WAV_FILE_TYPE;
-            f_lseek((FIL *)(&wav_ctrl_ptr->func.file), wav_ctrl_ptr->data_pos);
+            f_lseek((FIL *)(wav_ctrl_ptr->func.file), wav_ctrl_ptr->data_pos);
             if (status_success != init_i2s_playback(wav_ctrl_ptr->wav_head.fmt_chunk.samplerate,
                                     wav_ctrl_ptr->wav_head.fmt_chunk.bitspersample, wav_ctrl_ptr->wav_head.fmt_chunk.channels)) {
                 printf("config i2s transfer failed.\n");

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -17,6 +17,10 @@
     #error Assembler did not define __riscv_xlen
 #endif
 
+#if !defined(USE_NONVECTOR_MODE) || (USE_NONVECTOR_MODE == 0)
+    #error "Vector mode is not supported"
+#endif
+
 #define portCONTEXT_SIZE ( 32 * portWORD_SIZE )
 
 .global tx_risc_v_trap_handler
@@ -31,6 +35,7 @@
 .extern p_os_next_tic
 .extern timer_increment_per_tick /* size_t type so 32-bit on 32-bit core and 64-bits on 64-bit core. */
 .extern portasmHANDLE_INTERRUPT
+.extern threadx_exception_handler
 
 /*-----------------------------------------------------------*/
 .section .isr_vector.tx_risc_v_trap_handler, "ax"
@@ -124,6 +129,7 @@ is_exception:
     csrr t0, mcause                        /* For viewing in the debugger only. */
     csrr t1, mepc                        /* For viewing in the debugger only */
     csrr t2, mstatus
+    call threadx_exception_handler
     j is_exception                        /* No other exceptions handled yet. */
 
 processed_source:

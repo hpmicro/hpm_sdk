@@ -221,6 +221,10 @@
 #define BOARD_APP_CAN_BASE HPM_MCAN0
 #define BOARD_APP_CAN_IRQn IRQn_MCAN0
 
+#define BOARD_CAN_STB_GPIO_CTRL HPM_GPIO0
+#define BOARD_CAN_STB_GPIO_INDEX GPIO_DI_GPIOB
+#define BOARD_CAN_STB_GPIO_PIN   19
+
 /*
  * timer for board delay
  */
@@ -581,9 +585,24 @@
 /* BGPR */
 #define BOARD_BGPR HPM_BGPR
 
+/* usb id pin */
+#define BOARD_USB_ID_GPIO_CTRL  HPM_GPIO0
+#define BOARD_USB_ID_GPIO_INDEX GPIO_DI_GPIOC
+#define BOARD_USB_ID_GPIO_PIN   (0U)
+
 #define BOARD_APP_CLK_REF_PIN_NAME "J1[4] (PA14)"
 #define BOARD_APP_CLK_REF_CLK_NAME clock_ref0
 
+#define BOARD_APP_ESP_HOSTED_GPIO_RESET_PIN        IOC_PAD_PB06
+#define BOARD_APP_ESP_HOSTED_GPIO_HANDSHAKE_PIN    IOC_PAD_PB07
+#define BOARD_APP_ESP_HOSTED_GPIO_HANDSHAKE_IRQ    IRQn_GPIO0_B
+#define BOARD_APP_ESP_HOSTED_GPIO_DATA_READY_PIN   IOC_PAD_PB08
+#define BOARD_APP_ESP_HOSTED_GPIO_DATA_READY_IRQ   IRQn_GPIO0_B
+
+/* Brownout Indicate Pin */
+
+#define BOARD_BROWNOUT_INDICATE_GPIO_CTRL          HPM_GPIO0
+#define BOARD_BROWNOUT_INDICATE_PIN                IOC_PAD_PB31
 
 #if defined(__cplusplus)
 extern "C" {
@@ -658,6 +677,31 @@ void board_init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_com
 void board_init_clk_ref_pin(void);
 
 uint32_t board_init_gptmr_clock(GPTMR_Type *ptr);
+
+void board_can_transceiver_phy_set(MCAN_Type *ptr, bool enable);
+
+/*
+ * Wrap pinmux initialization.
+ */
+void init_uart_pins(UART_Type *ptr);
+void init_uart_pin_as_gpio(UART_Type *ptr);
+void init_i2c_pins_as_gpio(I2C_Type *ptr);
+void init_i2c_pins(I2C_Type *ptr);
+void init_gpio_pins(void);
+void init_spi_pins(SPI_Type *ptr);
+void init_spi_pins_with_gpio_as_cs(SPI_Type *ptr);
+void init_pins(void);
+void init_gptmr_pins(GPTMR_Type *ptr);
+void init_pwm_pins(PWM_Type *ptr);
+void init_hrpwm_pins(PWM_Type *ptr);
+void init_usb_pins(USB_Type *ptr);
+void init_can_pins(MCAN_Type *ptr);
+void init_can_transceiver_phy_pin(MCAN_Type *ptr);
+void init_dac_pins(DAC_Type *ptr);
+void init_trgmux_pins(uint32_t pin);
+void init_lin_pins(LIN_Type *ptr);
+void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_output);
+void board_init_brownout_indicate_pin(void);
 
 #if defined(__cplusplus)
 }

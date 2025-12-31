@@ -15,6 +15,7 @@
 #if !defined(USE_NONVECTOR_MODE) || (USE_NONVECTOR_MODE == 0)
 DEFINE_IRQ_HANDLER_WRAPPER MACRO
     PUBWEAK     irq_handler_wrapper_\1
+    ALIGN 2
 irq_handler_wrapper_\1
     j $
     ENDM

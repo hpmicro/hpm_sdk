@@ -10,6 +10,14 @@
 #include "hpm_camera_config.h"
 #include "hpm_common.h"
 
+/**
+ * @brief MT9M114 sensor driver APIs
+ * @defgroup sensor_mt9m114_interface Sensor driver APIs for MT9M114
+ * @ingroup component_interfaces
+ * @{
+ *
+ */
+
 /* MT9M114_ERROR_ACTION_BLOCK
  * 0 : return fail
  * 1 : print error message to console and block
@@ -36,13 +44,6 @@
 
 #define ACTIVE_SENSOR_WIDTH     (SENSOR_WIDTH - (2 * DUMMY_COLUMNS))
 #define ACTIVE_SENSOR_HEIGHT    (SENSOR_HEIGHT - (2 * DUMMY_LINES))
-
-/**
- * @brief MT9M114 sensor driver APIs
- * @defgroup MT9M114_interface sensor driver APIs
- * @ingroup component_interfaces
- * @{
- *
 
  */
 /***********************************************************************************************************************

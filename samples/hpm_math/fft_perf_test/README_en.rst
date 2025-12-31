@@ -30,7 +30,15 @@ Software Requirements
 
 - HPM SDK
 - CMake 3.20.0 or higher
-- Cross-compilation toolchain
+- Cross-compilation toolchain with DSP extension support
+
+.. note::
+   This example requires a DSP-enabled toolchain to utilize hardware DSP instructions for optimal performance:
+
+   - **IDE**: Segger Embedded Studio (or other IDEs with DSP toolchain support)
+   - **GCC Toolchain**: Andes RISC-V toolchain with DSP extension support or ZCC toolchain with DSP extension support
+
+   Standard GCC toolchains without DSP extensions will not be able to compile and run this demo correctly.
 
 Build Instructions
 ------------------

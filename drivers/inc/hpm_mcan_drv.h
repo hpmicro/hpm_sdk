@@ -343,6 +343,28 @@ typedef struct {
     uint32_t start_addr;                /*!< Start address (CAN Message Buffer Offset) */
 } mcan_rxbuf_config_t;
 
+
+/**
+ * @brief MCAN Data Length Code definitions
+ *
+ */
+#define MCAN_MSG_DLC_0_BYTES    (0U)
+#define MCAN_MSG_DLC_1_BYTES    (1U)
+#define MCAN_MSG_DLC_2_BYTES    (2U)
+#define MCAN_MSG_DLC_3_BYTES    (3U)
+#define MCAN_MSG_DLC_4_BYTES    (4U)
+#define MCAN_MSG_DLC_5_BYTES    (5U)
+#define MCAN_MSG_DLC_6_BYTES    (6U)
+#define MCAN_MSG_DLC_7_BYTES    (7U)
+#define MCAN_MSG_DLC_8_BYTES    (8U)
+#define MCAN_MSG_DLC_12_BYTES   (9U)
+#define MCAN_MSG_DLC_16_BYTES   (10U)
+#define MCAN_MSG_DLC_20_BYTES   (11U)
+#define MCAN_MSG_DLC_24_BYTES   (12U)
+#define MCAN_MSG_DLC_32_BYTES   (13U)
+#define MCAN_MSG_DLC_48_BYTES   (14U)
+#define MCAN_MSG_DLC_64_BYTES   (15U)
+
 /**
  * @brief MCAN Data Field Size Definitions
  */
@@ -494,11 +516,11 @@ typedef struct mcan_global_filter_config_struct {
 /**
  * @brief MCAN Filter type definitions
  */
-#define MCAN_FILTER_TYPE_RANGE_FILTER (0U)              /*!< CAN Identifier Range filter */
-#define MCAN_FILTER_TYPE_SPECIFIED_ID_FILTER (1U)       /*!< CAN Identifier ID filter */
-#define MCAN_FILTER_TYPE_CLASSIC_FILTER (2U)            /*!< CAN classic filter */
-#define MCAN_FILTER_TYPE_FILTER_DISABLED (3U)           /*!< CAN filter disabled */
-#define MCAN_FILTER_TYPE_DUAL_ID_EXT_FILTER_IGNORE_MASK /*!< CAN Identifier Range filter, ignoring extended ID mask */
+#define MCAN_FILTER_TYPE_RANGE_FILTER (0U)                      /*!< CAN Identifier Range filter */
+#define MCAN_FILTER_TYPE_SPECIFIED_ID_FILTER (1U)               /*!< CAN Identifier ID filter */
+#define MCAN_FILTER_TYPE_CLASSIC_FILTER (2U)                    /*!< CAN classic filter */
+#define MCAN_FILTER_TYPE_FILTER_DISABLED (3U)                   /*!< CAN filter disabled */
+#define MCAN_FILTER_TYPE_DUAL_ID_EXT_FILTER_IGNORE_MASK (4U)    /*!< CAN Identifier Range filter, ignoring extended ID mask */
 
 /**
  * @brief MCAN Filter Configuration Options

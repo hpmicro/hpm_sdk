@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -48,35 +48,47 @@ static void iperf_udp_client(void *thread_param)
     struct sockaddr_in server;
     uint32_t packet_count = 0;
     uint64_t sentlen = 0;
+    int sock = -1;
+    thread_t tid = NULL;
 
     int send_size = IPERF_BUFSZ > 1470 ? 1470 : IPERF_BUFSZ;
+
     uint32_t *buffer = malloc(IPERF_BUFSZ);
     if (buffer == NULL) {
-        return;
+        printf("No free space to allocate\n");
+        goto __shutdown_udp_client;
     }
     memset(buffer, 0x00, IPERF_BUFSZ);
-    int sock = socket(PF_INET, SOCK_DGRAM, 0);
+    sock = socket(PF_INET, SOCK_DGRAM, 0);
     if (sock < 0) {
         LOG_E("can't create socket!\r\n");
-        free(buffer);
-        return;
+        goto __shutdown_udp_client;
     }
     server.sin_family = PF_INET;
     server.sin_port = htons(param.port);
     server.sin_addr.s_addr = inet_addr(param.host);
     LOG_I("iperf udp mode run...\r\n");
     uint32_t tick1 = xTaskGetTickCount();
-    thread_t tid = xTaskGetCurrentTaskHandle();
+    tid = xTaskGetCurrentTaskHandle();
+    int ret;
     while (param.mode != IPERF_MODE_STOP) {
         packet_count++;
-        uint32_t tick = xTaskGetTickCount();
-        buffer[0] = htonl(packet_count);
-        buffer[1] = htonl(tick / configTICK_RATE_HZ);
-        buffer[2] = htonl((tick % configTICK_RATE_HZ) * 1000);
-        int ret = sendto(sock, buffer, send_size, 0, (struct sockaddr *)&server, sizeof(struct sockaddr_in));
-        if (ret > 0) {
-            sentlen += ret;
-        }
+        int32_t retry_cnt = 10;
+        do {
+            uint32_t tick = xTaskGetTickCount();
+            buffer[0] = htonl(packet_count);
+            buffer[1] = htonl(tick / configTICK_RATE_HZ);
+            buffer[2] = htonl((tick % configTICK_RATE_HZ) * 1000);
+            ret = sendto(sock, buffer, send_size, 0, (struct sockaddr *)&server, sizeof(struct sockaddr_in));
+            if (ret > 0) {
+                sentlen += ret;
+            }
+            if (ret < 0) {
+                vTaskDelay(1);
+                --retry_cnt;
+            }
+        } while ((ret < 0) && (retry_cnt >= 0));
+
         if (ret < 0) {
             LOG_E("%s: failed to send data out\r\n", pcTaskGetName(tid));
             break;
@@ -84,20 +96,25 @@ static void iperf_udp_client(void *thread_param)
 
         uint32_t tick2 = xTaskGetTickCount();
         if (tick2 - tick1 >= configTICK_RATE_HZ * 5) {
-            long data;
-            int integer, decimal;
-            data = sentlen * configTICK_RATE_HZ / 125 / (tick2 - tick1);
-            integer = data / 1000;
-            decimal = data % 1000;
-            LOG_I("%s: %d.%03d0 Mbps!\r\n", pcTaskGetName(tid), integer, decimal);
+            uint64_t total_data = sentlen * configTICK_RATE_HZ / 125 / (tick2 - tick1);
+            uint32_t integer = total_data / 1000;
+            uint32_t decimal = total_data % 1000;
+            LOG_I("%s: %u.%03u0 Mbps!\r\n", pcTaskGetName(tid), integer, decimal);
             tick1 = tick2;
             sentlen = 0;
         }
     }
-    LOG_I("Shutdown %s client!\r\n", pcTaskGetName(tid));
+__shutdown_udp_client:
+    if (tid != NULL) {
+        LOG_I("Shutdown %s client!\r\n", pcTaskGetName(tid));
+    }
     param.mode = IPERF_MODE_STOP;
-    closesocket(sock);
-    free(buffer);
+    if (sock >= 0) {
+        closesocket(sock);
+    }
+    if (buffer != NULL) {
+        free(buffer);
+    }
 
     vTaskDelete(NULL);
 }
@@ -110,12 +127,13 @@ static void iperf_udp_server(void *thread_param)
     int sender_len;
     uint32_t pcount = 0, last_pcount = 0;
     struct timeval timeout;
+    int sock = -1;
 
     uint32_t *buffer = malloc(IPERF_BUFSZ);
     if (buffer == NULL) {
-        return;
+        goto __udp_server_close;
     }
-    int sock = socket(PF_INET, SOCK_DGRAM, 0);
+    sock = socket(PF_INET, SOCK_DGRAM, 0);
     if (sock < 0) {
         LOG_E("can't create socket! exit!\r\n");
         goto __udp_server_close;
@@ -163,8 +181,12 @@ static void iperf_udp_server(void *thread_param)
     }
 __udp_server_close:
     param.mode = IPERF_MODE_STOP;
-    free(buffer);
-    closesocket(sock);
+    if (buffer != NULL) {
+        free(buffer);
+    }
+    if (sock >= 0) {
+        closesocket(sock);
+    }
 
     vTaskDelete(NULL);
 }
@@ -175,8 +197,8 @@ static void iperf_client(void *thread_param)
     int tips = 1;
     struct sockaddr_in addr;
 
-    uint8_t *send_buf = (uint8_t *) malloc(IPERF_BUFSZ);
-    if (!send_buf) {
+    uint8_t *send_buf = (uint8_t *)malloc(IPERF_BUFSZ);
+    if (send_buf == NULL) {
         return;
     }
 
@@ -207,15 +229,15 @@ static void iperf_client(void *thread_param)
             continue;
         }
 
-        LOG_I("Connect to iperf server successful!\r\n"); {
+        LOG_I("Connect to iperf server successful!\r\n");
+        {
             int flag = 1;
 
-            setsockopt(sock,
-                       IPPROTO_TCP,
+            setsockopt(sock, IPPROTO_TCP,
                        /* set option at TCP level */
                        TCP_NODELAY,
                        /* name of option */
-                       (void *) &flag,
+                       (void *)&flag,
                        /* the cast is historical cruft */
                        sizeof(int)); /* length of option value */
         }
@@ -448,7 +470,10 @@ int iperf(int argc, char **argv)
             param.host = NULL;
         }
         if (host) {
-            param.host = strdup(host);
+            uint32_t copy_size = strlen(host);
+            char *host_buffer = malloc(copy_size + 1);
+            strcpy(host_buffer, host);
+            param.host = host_buffer;
         }
 
         for (i = 0; i < numtid; i++) {

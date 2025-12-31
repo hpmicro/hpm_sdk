@@ -10,12 +10,11 @@
 #include "hpm_mtgv2_regs.h"
 #include "hpm_soc_feature.h"
 #include "hpm_trgm_drv.h"
-#include "hpm_soc.h"
-#include "hpm_soc_feature.h"
 #include "hpm_trgm_soc_drv.h"
 #include "hpm_synt_drv.h"
 #include "hpm_sei_drv.h"
 #include "hpm_mtgv2_drv.h"
+#include "hpm_gptmr_drv.h"
 
 #ifndef APP_QEIV2_BASE
 #define APP_QEIV2_BASE BOARD_BLDC_QEIV2_BASE
@@ -37,8 +36,6 @@
 #define APP_MTGV2_TRA_INDEX  MTGV2_TRA_0
 #endif
 
-#include "hpm_gptmr_drv.h"
-#include "hpm_debug_console.h"
 
 uint32_t sei_mt, sei_st;
 volatile uint32_t sei_pos_update_count;
@@ -354,7 +351,7 @@ static void mtg_test_loop(void)
 {
     mtg_lock_value_t result = {0};
     uint32_t mot_clock = clock_get_frequency(APP_MOTOR_CLK);
-    printf("SEI ISR CNT, TIME, SEI_POS, MTGV2_POS, MTGV2_VEL, MTGV2_POS-QEI_POS\r\n");
+    printf("SEI ISR CNT, TIME, SEI_POS, MTGV2_POS, MTGV2_VEL, MTGV2_POS-SEI_POS\r\n");
     static uint32_t last_isr_count;
     while (1) {
         if (last_isr_count != sei_pos_update_count) {

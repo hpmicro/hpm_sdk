@@ -53,13 +53,12 @@ hpm_stat_t gptmr_channel_config(GPTMR_Type *ptr,
         v |= GPTMR_CHANNEL_CR_DMAEN_MASK
             | GPTMR_CHANNEL_CR_DMASEL_SET(config->dma_request_event);
     }
+
     v |= GPTMR_CHANNEL_CR_CAPMODE_SET(config->mode)
         | GPTMR_CHANNEL_CR_DBGPAUSE_SET(config->debug_mode)
         | GPTMR_CHANNEL_CR_SWSYNCIEN_SET(config->enable_software_sync)
         | GPTMR_CHANNEL_CR_CMPINIT_SET(config->cmp_initial_polarity_high)
         | GPTMR_CHANNEL_CR_SYNCFLW_SET(config->enable_sync_follow_previous_channel)
-        | GPTMR_CHANNEL_CR_CMPEN_SET(config->enable_cmp_output)
-        | GPTMR_CHANNEL_CR_CEN_SET(enable)
         | config->synci_edge;
 #if defined(HPM_IP_FEATURE_GPTMR_CNT_MODE) && (HPM_IP_FEATURE_GPTMR_CNT_MODE  == 1)
     v |= GPTMR_CHANNEL_CR_CNT_MODE_SET(config->counter_mode);
@@ -79,6 +78,13 @@ hpm_stat_t gptmr_channel_config(GPTMR_Type *ptr,
         tmp_value--;
     }
     ptr->CHANNEL[ch_index].RLD = GPTMR_CHANNEL_RLD_RLD_SET(tmp_value);
+    ptr->CHANNEL[ch_index].CR = v;
+    /* the initial polarity must be configured before enabling the output compare function */
+    if (config->enable_cmp_output == true) {
+        v = ptr->CHANNEL[ch_index].CR | GPTMR_CHANNEL_CR_CMPEN_MASK | GPTMR_CHANNEL_CR_CEN_SET(enable);
+    } else {
+        v = (ptr->CHANNEL[ch_index].CR & ~GPTMR_CHANNEL_CR_CMPEN_MASK) | GPTMR_CHANNEL_CR_CEN_SET(enable);
+    }
     ptr->CHANNEL[ch_index].CR = v;
 #if defined(HPM_IP_FEATURE_GPTMR_MONITOR) && (HPM_IP_FEATURE_GPTMR_MONITOR  == 1)
     gptmr_channel_monitor_config(ptr, ch_index, &config->monitor_config, config->enable_monitor);

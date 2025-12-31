@@ -448,6 +448,10 @@ void usbd_video_close(uint8_t busid, uint8_t intf)
 
 void usbd_video_iso_callback(uint8_t busid, uint8_t ep, uint32_t nbytes)
 {
+    if (nbytes == 0) {
+        return;
+    }
+
     if (usbd_video_stream_split_transfer(busid, ep)) {
         /* one frame has done */
         video_iso_tx_busy = false;
@@ -465,11 +469,11 @@ void usbd_audio_open(uint8_t busid, uint8_t intf)
         audio_rx_flag = 1;
         /* setup first out ep read transfer */
         usbd_ep_start_read(busid, AUDIO_OUT_EP, audio_read_buffer, AUDIO_OUT_PACKET);
-        printf("OPEN1\r\n");
+        USB_LOG_RAW("OPEN1\r\n");
     } else if (intf == 4) {
         audio_tx_flag = 1;
         audio_iso_tx_busy = false;
-        printf("OPEN2\r\n");
+        USB_LOG_RAW("OPEN2\r\n");
     }
 }
 
@@ -477,11 +481,11 @@ void usbd_audio_close(uint8_t busid, uint8_t intf)
 {
     if (intf == 3) {
         audio_rx_flag = 0;
-        printf("CLOSE1\r\n");
+        USB_LOG_RAW("CLOSE1\r\n");
     } else if (intf == 4) {
         audio_tx_flag = 0;
         audio_iso_tx_busy = false;
-        printf("CLOSE2\r\n");
+        USB_LOG_RAW("CLOSE2\r\n");
     }
 }
 

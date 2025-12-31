@@ -1,4 +1,4 @@
-# Copyright (c) 2024 HPMicro
+# Copyright (c) 2024-2025 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 sdk_inc(toolchains)
@@ -33,6 +33,7 @@ sdk_src (
     hpm_clock_drv.c
     hpm_otp_drv.c
     hpm_trgm_soc_drv.c
+    hpm_qeiv2_soc_drv.c
 )
 
 if(${INCLUDE_BOOTHEADER})
@@ -43,10 +44,6 @@ endif()
 sdk_nds_compile_options(-mcpu=d45)
 sdk_zcc_compile_options(-mtune=andes-d45-series)
 sdk_zcc_ld_options(-mtune=andes-d45-series)
-
-if(${TOOLCHAIN_VARIANT} EQUAL "zcc")
-    set(RV_ARCH "${RV_ARCH}xandes" PARENT_SCOPE)
-endif()
 
 if(NOT HPM_SOC_DISABLE_B_EXT)
     get_toolchain_gcc_spec(spec)
@@ -61,27 +58,39 @@ if(NOT DEFINED USE_CUSTOM_LINKER)
         if(${INCLUDE_BOOTHEADER})
             if(${FLASH_XIP})
                 set(SOC_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/toolchains/gcc/flash_xip.ld PARENT_SCOPE)
+                set(DEFAULT_NONCACHABLE_RAM_SIZE 128K)
             else()
                 if(${FLASH_SDRAM_XIP})
                     set(SOC_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/toolchains/gcc/flash_sdram_xip.ld PARENT_SCOPE)
+                    set(DEFAULT_NONCACHABLE_RAM_SIZE 4M)
                 endif()
             endif()
         else()
             if(${FLASH_UF2})
                 set(SOC_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/toolchains/gcc/flash_uf2.ld PARENT_SCOPE)
+                set(DEFAULT_NONCACHABLE_RAM_SIZE 128K)
             else()
                 if(${FLASH_SDRAM_UF2})
                     set(SOC_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/toolchains/gcc/flash_sdram_uf2.ld PARENT_SCOPE)
+                    set(DEFAULT_NONCACHABLE_RAM_SIZE 4M)
                 else()
                     set(SOC_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/toolchains/gcc/flash.ld PARENT_SCOPE)
+                    set(DEFAULT_NONCACHABLE_RAM_SIZE 128K)
                 endif()
             endif()
         endif()
     else()
         if(BUILD_FOR_SECONDARY_CORE)
             set(SOC_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/toolchains/gcc/ram_core1.ld PARENT_SCOPE)
+            set(DEFAULT_NONCACHABLE_RAM_SIZE 32K)
         else()
             set(SOC_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/toolchains/gcc/ram.ld PARENT_SCOPE)
+            set(DEFAULT_NONCACHABLE_RAM_SIZE 128K)
         endif()
+    endif()
+    if(DEFINED NONCACHEABLE_RAM_SIZE)
+        sdk_linker_global_symbols("_noncacheable_size=${NONCACHEABLE_RAM_SIZE}")
+    else()
+        sdk_linker_global_symbols("_noncacheable_size=${DEFAULT_NONCACHABLE_RAM_SIZE}")
     endif()
 endif()

@@ -30,7 +30,7 @@
       lui a4, 0xe4200
       li a3, \irq
       store_x a3, 4(a4)
-      portcontextRESTORE_CONTEXT
+      j freertos_vector_restore_context
 .endm
 
 /* Define the weak user isr handler wrapper function for all interrupts and isr handler entry function placed in __vector_table

@@ -167,6 +167,7 @@ OSStartHighRdy:
 ;              writing into the MSIP register
 ;********************************************************************************************************
 
+    ALIGN 2
     SECTION `.isr_vector`:CODE(2)
 OSCtxSw:
     SECTION `.isr_vector`:CODE(2)

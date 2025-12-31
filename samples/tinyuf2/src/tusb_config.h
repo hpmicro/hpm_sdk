@@ -22,8 +22,9 @@
  * THE SOFTWARE.
  *
  */
+
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -33,43 +34,45 @@
 #define _TUSB_CONFIG_H_
 
 #ifdef __cplusplus
-extern "C" {
+ extern "C" {
 #endif
 
-    /*-------------------------------------------------------------------- */
-    /* COMMON CONFIGURATION */
-    /*-------------------------------------------------------------------- */
+/*--------------------------------------------------------------------+
+ * Board Specific Configuration
+ *--------------------------------------------------------------------*/
 
+/* RHPort number used for device can be defined by board.mk, default to port 0 */
+#ifndef BOARD_TUD_RHPORT
+#define BOARD_TUD_RHPORT      0
+#endif
+
+/* RHPort max operational speed can defined by board.mk */
+#ifndef BOARD_TUD_MAX_SPEED
+#define BOARD_TUD_MAX_SPEED   OPT_MODE_HIGH_SPEED
+#endif
+
+/*--------------------------------------------------------------------
+ * Common Configuration
+ *--------------------------------------------------------------------*/
+
+/* defined by compiler flags for flexibility */
 #ifndef CFG_TUSB_MCU
-#error CFG_TUSB_MCU must be defined in board.mk
+#error CFG_TUSB_MCU must be defined
 #endif
 
-/* RHPort number used for device can be defined by CMakeLists.txt, default to port 0 */
-#ifndef BOARD_DEVICE_RHPORT_NUM
-    #define BOARD_DEVICE_RHPORT_NUM     0
+#ifndef CFG_TUSB_OS
+#define CFG_TUSB_OS           OPT_OS_NONE
 #endif
 
-/* RHPort max operational speed can defined by by CMakeLists.txt */
-/* Default to Highspeed for MCU with internal HighSpeed PHY (can be port specific), otherwise FullSpeed */
-#ifndef BOARD_DEVICE_RHPORT_SPEED
-    #define BOARD_DEVICE_RHPORT_SPEED   OPT_MODE_HIGH_SPEED
-#endif
-
-/* Device mode with rhport and speed defined by CMakeLists.txt */
-#if   BOARD_DEVICE_RHPORT_NUM == 0
-    #define CFG_TUSB_RHPORT0_MODE     (OPT_MODE_DEVICE | BOARD_DEVICE_RHPORT_SPEED)
-#elif BOARD_DEVICE_RHPORT_NUM == 1
-    #define CFG_TUSB_RHPORT1_MODE     (OPT_MODE_DEVICE | BOARD_DEVICE_RHPORT_SPEED)
-#else
-    #error "Incorrect RHPort configuration"
-#endif
-
-#define CFG_TUSB_OS                OPT_OS_NONE
-
-    /* can be defined by compiler in DEBUG build */
 #ifndef CFG_TUSB_DEBUG
-#define CFG_TUSB_DEBUG           1
+#define CFG_TUSB_DEBUG        0
 #endif
+
+/* Enable Device stack */
+#define CFG_TUD_ENABLED       1
+
+/* Default is max speed that hardware controller could support with on-chip PHY */
+#define CFG_TUD_MAX_SPEED     BOARD_TUD_MAX_SPEED
 
     /* USB DMA on some MCUs can only access a specific SRAM region with restriction on alignment.
      * Tinyusb use follows macros to declare transferring memory so that they can be put
@@ -86,18 +89,15 @@ extern "C" {
 #define CFG_TUSB_MEM_ALIGN        __attribute__ ((aligned(4)))
 #endif
 
-#ifndef CFG_TUSB_REPORT_ID_COUNT
-#define CFG_TUSB_REPORT_ID_COUNT 0
-#endif
+/*--------------------------------------------------------------------
+ * DEVICE CONFIGURATION
+ *--------------------------------------------------------------------*/
 
-    /*-------------------------------------------------------------------- */
-    /* DEVICE CONFIGURATION */
-    /*-------------------------------------------------------------------- */
 #ifndef CFG_TUD_ENDPOINT0_SIZE
 #define CFG_TUD_ENDPOINT0_SIZE    64
 #endif
 
-    /*------------- CLASS -------------// */
+    /*------------- CLASS -------------*/
 #define CFG_TUD_CDC              0
 #define CFG_TUD_MSC              1
 #define CFG_TUD_HID              1
@@ -105,15 +105,10 @@ extern "C" {
 #define CFG_TUD_VENDOR           0
 
     /* MSC Buffer size of Device Mass storage */
-#define CFG_TUD_MSC_BUFSIZE      4096
+#define CFG_TUD_MSC_EP_BUFSIZE      4096
 
     /* HID buffer size Should be sufficient to hold ID (if any) + Data */
-#define CFG_TUD_HID_BUFSIZE      64
-
-    /* Vendor FIFO size of TX and RX */
-    /* If not configured vendor endpoints will not be buffered */
-#define CFG_TUD_VENDOR_RX_BUFSIZE 512
-#define CFG_TUD_VENDOR_TX_BUFSIZE 512
+#define CFG_TUD_HID_EP_BUFSIZE      64
 
 #ifdef __cplusplus
 }

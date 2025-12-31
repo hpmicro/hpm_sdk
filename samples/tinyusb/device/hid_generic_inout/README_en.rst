@@ -17,16 +17,6 @@ Board Setting
 
 - Connect a USB port on PC to one of USB port on the development board with a USB Type-C cable
 
-Project Configuration
----------------------
-
-- File `CMakeLists.txt`：
-
-  When BOARD_DEVICE_RHPORT_NUM is defined as 0, it means to use USB0.
-
-  When BOARD_DEVICE_RHPORT_NUM is defined as 1, it means to use USB1.
-- The property of USB device can be configured by "tusb_config.h" or "CMakeListx.txt"
-
 Running the example
 -------------------
 
@@ -34,14 +24,17 @@ When the project runs correctly
 
 - Enter the relative path to "samples\tinyusb\device\hid_generic_inout"
 
-- Run hid_echo.py
+- Run python ./hid_test.py
 
-- View  "USB HID Write" log： PC transmits 1024 bytes to MCU through USB and the first byte is the output report id
+  * Note: Ensure that the `hid` package is installed. The steps are as follows:
 
-  .. image:: doc/1646393298095.png
-     :alt: 1646393298095.png
+    * Install `hid` package (https://pypi.org/project/hid/) by
 
-- View "USB HID Read" log: PC receives 1024 bytes to MCU through USB and the first byte is the output report id
+      - $ pip install hid
 
-  .. image:: doc/1646386827393.png
-     :alt: 1646386827393.png
+    * `hid` package replies on `hidapi` (https://github.com/libusb/hidapi) for backend, which already available in Linux. However on windows, you may need to download its dlls from their release page and copy it over to folder where python is installed.
+
+- Enter the value in the terminal, and the hid device will reply with the received data. If it is less than 64 bytes, it will be padded with zeros.
+
+  .. image:: doc/hid_test.png
+     :alt: hid_test.png

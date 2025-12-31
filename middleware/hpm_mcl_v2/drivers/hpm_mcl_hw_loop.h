@@ -191,7 +191,7 @@ static inline hpm_mcl_stat_t hpm_mcl_disable_qeo_hardware_loop(mcl_hw_loop_t *lo
  * @brief Get VSC hardware loop status
  *
  * @param loop @ref mcl_hw_loop_t
- * @param status @ref bool
+ * @param status pointer to bool status
  * @return @ref hpm_mcl_stat_t
  */
 static inline hpm_mcl_stat_t hpm_mcl_get_vsc_hardware_loop_status(mcl_hw_loop_t *loop, bool *status)
@@ -206,7 +206,8 @@ static inline hpm_mcl_stat_t hpm_mcl_get_vsc_hardware_loop_status(mcl_hw_loop_t 
  * @brief Get CLC hardware loop status
  *
  * @param loop @ref mcl_hw_loop_t
- * @return true if CLC hardware loop is enabled, false otherwise
+ * @param status pointer to bool status
+ * @return @ref hpm_mcl_stat_t
  */
 static inline hpm_mcl_stat_t hpm_mcl_get_clc_hardware_loop_status(mcl_hw_loop_t *loop, bool *status)
 {
@@ -220,7 +221,7 @@ static inline hpm_mcl_stat_t hpm_mcl_get_clc_hardware_loop_status(mcl_hw_loop_t 
  * @brief Get QEO hardware loop status
  *
  * @param loop @ref mcl_hw_loop_t
- * @param status @ref bool
+ * @param status pointer to bool status
  * @return @ref hpm_mcl_stat_t
  */
 static inline hpm_mcl_stat_t hpm_mcl_get_qeo_hardware_loop_status(mcl_hw_loop_t *loop, bool *status)

@@ -53,6 +53,19 @@ typedef enum  {
     esc_ctrl_signal_func_alt_reset_out  = 8,
 } esc_ctrl_signal_function_t;
 
+/*
+ * @brief ESC IRQ mask
+ *
+ * @note The ESC(PDI) IRQ is always enabled, and this enum is only used to control sync0/sync1 and reset irq.
+ */
+typedef enum {
+    esc_irq_mask_none = 0,
+    esc_sync0_irq_mask = ESC_GPR_CFG1_SYNC0_IRQ_EN_MASK,
+    esc_sync1_irq_mask = ESC_GPR_CFG1_SYNC1_IRQ_EN_MASK,
+    esc_reset_irq_mask = ESC_GPR_CFG1_RSTO_IRQ_EN_MASK,
+    esc_irq_mask_all = ESC_GPR_CFG1_SYNC0_IRQ_EN_MASK | ESC_GPR_CFG1_SYNC1_IRQ_EN_MASK | ESC_GPR_CFG1_RSTO_IRQ_EN_MASK,
+} esc_irq_mask_t;
+
 
 typedef struct {
     bool eeprom_emulation;
@@ -364,6 +377,34 @@ static inline void esc_config_latch1_source(ESC_Type *ptr, bool latch0_from_trig
     } else {
         ptr->GPR_CFG1 |= ESC_GPR_CFG1_LATCH1_FROM_IO_MASK;
     }
+}
+
+/*!
+ * @brief ESC enable specific IRQ sources
+ *
+ * Note: The ESC(PDI) IRQ is always enabled, and this API is only used to enable sync0/sync1 and reset irq.
+ * Use esc_irq_mask_t enum values or combine them with | operator.
+ *
+ * @param[in] ptr ESC base address
+ * @param[in] irq_mask IRQ mask to enable (esc_irq_mask_t enum values)
+ */
+static inline void esc_enable_irq(ESC_Type *ptr, esc_irq_mask_t irq_mask)
+{
+    ptr->GPR_CFG1 |= (irq_mask & esc_irq_mask_all);
+}
+
+/*!
+ * @brief ESC disable specific IRQ sources
+ *
+ * Note: The ESC(PDI) IRQ is always enabled, and this API is only used to disable sync0/sync1 and reset irq.
+ * Use esc_irq_mask_t enum values or combine them with | operator.
+ *
+ * @param[in] ptr ESC base address
+ * @param[in] irq_mask IRQ mask to disable (esc_irq_mask_t enum values)
+ */
+static inline void esc_disable_irq(ESC_Type *ptr, esc_irq_mask_t irq_mask)
+{
+    ptr->GPR_CFG1 &= ~(irq_mask & esc_irq_mask_all);
 }
 
 #if defined(HPM_IP_FEATURE_ESC_SYNC_IRQ_MASK) && HPM_IP_FEATURE_ESC_SYNC_IRQ_MASK

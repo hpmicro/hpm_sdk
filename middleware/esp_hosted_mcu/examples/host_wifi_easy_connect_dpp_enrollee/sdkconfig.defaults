@@ -1,0 +1,7 @@
+CONFIG_FREERTOS_HZ=1000
+
+### don't use any saved Wi-Fi config on the co-processor
+CONFIG_WIFI_RMT_NVS_ENABLED=n
+
+### enable DPP feature
+CONFIG_ESP_HOSTED_ENABLE_DPP=y

@@ -289,6 +289,8 @@ int main(void)
         /* Handle transmission completion */
         if (uart_lin_send_complete) {
             uart_lin_send_complete = false;
+            while (!uart_check_status(TEST_UART, uart_stat_transmitter_empty)) { /* wait transmitter complete */
+            }
             printf("uart lin receive ID: 0x%x\n", uart_lin_config.pid & 0x3f);
             printf("uart send %d data:\n", uart_lin_config.data.length);
             for (uint8_t i = 0; i < uart_lin_config.data.length; i++) {

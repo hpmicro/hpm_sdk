@@ -7,6 +7,17 @@ MLPerf Tiny v0.7 HPMicro
 
 MLPerf 代码、使用方法和规则请参见`GitHub仓库 <https://github.com/mlcommons/tiny>`_.
 
+工具链要求
+------------
+
+本示例需要支持DSP的工具链才能使用硬件DSP指令进行神经网络加速：
+
+- **IDE**: Segger Embedded Studio (或其他支持DSP工具链的IDE)
+- **GCC工具链**: Andes RISC-V工具链（带DSP扩展支持）或 ZCC工具链（带DSP扩展支持）
+
+.. note::
+   不支持DSP扩展的标准GCC工具链无法正确编译和运行本示例。DSP指令对于高效的神经网络推理至关重要。
+
 代码选项
 ------------
 

@@ -42,10 +42,10 @@ typedef struct {
     __RW uint32_t PWMCFG[8];                   /* 0x200 - 0x21C: PWM channel configure register */
     __W  uint32_t SR;                          /* 0x220: Status register */
     __RW uint32_t IRQEN;                       /* 0x224: Interrupt request enable register */
-    __R  uint8_t  RESERVED7[4];                /* 0x228 - 0x22B: Reserved */
+    __RW uint32_t CAP_EN_NEG;                  /* 0x228: Capture irq mode */
     __RW uint32_t DMAEN;                       /* 0x22C: DMA request enable register */
     __RW uint32_t CMPCFG[16];                  /* 0x230 - 0x26C: Comparator configure register */
-    __R  uint8_t  RESERVED8[400];              /* 0x270 - 0x3FF: Reserved */
+    __R  uint8_t  RESERVED7[400];              /* 0x270 - 0x3FF: Reserved */
     __R  uint32_t ANASTS[8];                   /* 0x400 - 0x41C: analog status register */
     __RW uint32_t HRPWM_CFG;                   /* 0x420: hrpwm config register */
     __RW uint32_t ANA_CFG0;                    /* 0x424: analog config register */
@@ -822,6 +822,18 @@ typedef struct {
 #define PWM_IRQEN_CMPIRQEX_SHIFT (0U)
 #define PWM_IRQEN_CMPIRQEX_SET(x) (((uint32_t)(x) << PWM_IRQEN_CMPIRQEX_SHIFT) & PWM_IRQEN_CMPIRQEX_MASK)
 #define PWM_IRQEN_CMPIRQEX_GET(x) (((uint32_t)(x) & PWM_IRQEN_CMPIRQEX_MASK) >> PWM_IRQEN_CMPIRQEX_SHIFT)
+
+/* Bitfield definition for register: CAP_EN_NEG */
+/*
+ * CAP_EN_NEG (RW)
+ *
+ * In capture mode, those bits setting for generate capture irq when capture falling edge.
+ * Default those bits is 0, generate capture irq when capture rising edge.
+ */
+#define PWM_CAP_EN_NEG_CAP_EN_NEG_MASK (0xFFFFFFUL)
+#define PWM_CAP_EN_NEG_CAP_EN_NEG_SHIFT (0U)
+#define PWM_CAP_EN_NEG_CAP_EN_NEG_SET(x) (((uint32_t)(x) << PWM_CAP_EN_NEG_CAP_EN_NEG_SHIFT) & PWM_CAP_EN_NEG_CAP_EN_NEG_MASK)
+#define PWM_CAP_EN_NEG_CAP_EN_NEG_GET(x) (((uint32_t)(x) & PWM_CAP_EN_NEG_CAP_EN_NEG_MASK) >> PWM_CAP_EN_NEG_CAP_EN_NEG_SHIFT)
 
 /* Bitfield definition for register: DMAEN */
 /*

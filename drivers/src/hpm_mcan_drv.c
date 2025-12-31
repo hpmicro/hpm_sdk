@@ -59,14 +59,15 @@
 /**
  * @brief CANFD Data Timing related definitions
  */
-#define TSEG1_MIN_FOR_CANFD_DATA (2U)
-#define TSEG1_MAX_FOR_CANFD_DATA (31U)
-#define TSEG2_MIN_FOR_CANFD_DATA (0U)
-#define TSEG2_MAX_FOR_CANFD_DATA (15U)
-#define TSJW_MIN_FOR_CANFD_DATA (0U)
-#define TSJW_MAX_FOR_CANFD_DATA (15U)
+#define TSEG1_MIN_FOR_CANFD_DATA (1U)
+#define TSEG1_MAX_FOR_CANFD_DATA (32U)
+#define TSEG2_MIN_FOR_CANFD_DATA (2U)
+#define TSEG2_MAX_FOR_CANFD_DATA (16U)
+#define TSJW_MIN_FOR_CANFD_DATA (1U)
+#define TSJW_MAX_FOR_CANFD_DATA (16U)
 #define PRESCALER_MIN_FOR_CANFD_DATA (1U)
 #define PRESCALER_MAX_FOR_CANFD_DATA (32U)
+#define PRESCALER_MAX_FOR_CANFD_DATA_TDC_ENABLE (2U)
 
 #define NUM_TQ_MIN_FOR_CANFD_DATA (8U)
 #define NUM_TQ_MAX_FOR_CANFD_DATA (TSEG1_MAX_FOR_CANFD_DATA + TSEG2_MAX_FOR_CANFD_DATA)
@@ -166,7 +167,7 @@ static const mcan_filter_elem_t k_default_std_id_filter = {
     /* Don't care if mask is set to all 1s */
     .filter_id = 0U,
     /* Accept all messages */
-    .filter_mask = 0x7FFU,
+    .filter_mask = 0U,
 };
 
 static const mcan_filter_elem_t k_default_ext_id_filter = {
@@ -181,7 +182,7 @@ static const mcan_filter_elem_t k_default_ext_id_filter = {
     /* Don't care if mask is set to all 1s */
     .filter_id = 0,
     /* Accept all messages */
-    .filter_mask = 0x1FFFFFFFUL,
+    .filter_mask = 0U,
 };
 
 /***********************************************************************************************************************
@@ -287,11 +288,12 @@ static hpm_stat_t mcan_set_internal_timestamp(MCAN_Type *ptr, mcan_internal_time
  * @brief Check whether the MCAN bit timing parameter is valid
  * @param [in] option MCAN bit timing option
  * @param [in] param  MCAN bit timing parameter
+ * @param [in] tdc_enable TDC enable flag
  *
  * @retval true MCAN bit timing parameter is valid
  * @retval false MCAN bit timing parameter is invalid
  */
-static bool is_mcan_bit_timing_param_valid(mcan_bit_timing_option_t option, const mcan_bit_timing_param_t *param);
+static bool is_mcan_bit_timing_param_valid(mcan_bit_timing_option_t option, const mcan_bit_timing_param_t *param, bool tdc_enable);
 
 /***********************************************************************************************************************
  *
@@ -349,8 +351,12 @@ static hpm_stat_t mcan_calc_bit_timing_from_baudrate(uint32_t src_clk_freq,
 {
     hpm_stat_t status = status_invalid_argument;
     do {
-        if ((option > mcan_bit_timing_canfd_data) || (baudrate == 0U) ||
-            (src_clk_freq / baudrate < MIN_TQ_MUL_PRESCALE) || (timing_param == NULL)) {
+        if ((option > mcan_bit_timing_canfd_data) || (baudrate == 0U) || (timing_param == NULL)) {
+            break;
+        }
+
+        /* Check for potential overflow and division by zero */
+        if ((src_clk_freq == 0U) || (src_clk_freq / baudrate < MIN_TQ_MUL_PRESCALE)) {
             break;
         }
 
@@ -453,7 +459,7 @@ static hpm_stat_t mcan_set_bit_timing_from_baudrate(MCAN_Type *ptr,
     return status;
 }
 
-static bool is_mcan_bit_timing_param_valid(mcan_bit_timing_option_t option, const mcan_bit_timing_param_t *param)
+static bool is_mcan_bit_timing_param_valid(mcan_bit_timing_option_t option, const mcan_bit_timing_param_t *param, bool tdc_enable)
 {
     bool result = false;
     const mcan_bit_timing_table_t *tbl = &k_mcan_bit_timing_tbl[(uint8_t) option];
@@ -471,6 +477,12 @@ static bool is_mcan_bit_timing_param_valid(mcan_bit_timing_option_t option, cons
         if ((param->prescaler < tbl->prescaler_min) || (param->prescaler > tbl->prescaler_max)) {
             break;
         }
+        if (tdc_enable && (option == mcan_bit_timing_canfd_data)) {
+            /* When TDC is enabled, the prescaler value should be in range [1, 2] */
+            if (param->prescaler > PRESCALER_MAX_FOR_CANFD_DATA_TDC_ENABLE) {
+                break;
+            }
+        }
         result = true;
     } while (false);
 
@@ -479,6 +491,10 @@ static bool is_mcan_bit_timing_param_valid(mcan_bit_timing_option_t option, cons
 
 void mcan_get_default_ram_config(MCAN_Type *ptr, mcan_ram_config_t *simple_config, bool enable_canfd)
 {
+    if ((ptr == NULL) || (simple_config == NULL)) {
+        return;
+    }
+
     (void) memset(simple_config, 0, sizeof(mcan_ram_config_t));
     uint32_t start_addr = mcan_get_ram_offset(ptr);
 
@@ -553,7 +569,11 @@ void mcan_get_default_ram_config(MCAN_Type *ptr, mcan_ram_config_t *simple_confi
 
 void mcan_get_default_ram_flexible_config(MCAN_Type *ptr, mcan_ram_flexible_config_t *ram_config, bool enable_canfd)
 {
-    (void) memset(ram_config, 0, sizeof(mcan_ram_config_t));
+    if ((ptr == NULL) || (ram_config == NULL)) {
+        return;
+    }
+
+    (void) memset(ram_config, 0, sizeof(mcan_ram_flexible_config_t));
     uint32_t start_addr = mcan_get_ram_offset(ptr);
 
     if (!enable_canfd) {
@@ -609,7 +629,7 @@ void mcan_get_default_ram_flexible_config(MCAN_Type *ptr, mcan_ram_flexible_conf
         ram_config->txbuf_config.fifo_queue_size = MCAN_TXBUF_SIZE_CANFD_DEFAULT / 2;
         ram_config->txbuf_config.tx_fifo_queue_mode = MCAN_TXBUF_OPERATION_MODE_FIFO;
         ram_config->txbuf_elem_config.data_field_size = MCAN_DATA_FIELD_SIZE_64BYTES;
-        start_addr += MCAN_TXBUF_SIZE_CAN_DEFAULT * MCAN_TXRX_ELEM_SIZE_CAN_MAX;
+        start_addr += MCAN_TXBUF_SIZE_CANFD_DEFAULT * MCAN_TXRX_ELEM_SIZE_CANFD_MAX;
 
         ram_config->enable_rxfifo0 = true;
         ram_config->rxfifo0_config.start_addr = start_addr;
@@ -732,7 +752,7 @@ hpm_stat_t mcan_config_ram(MCAN_Type *ptr, mcan_ram_config_t *config)
             filter_config.list_size = config->ext_filter_elem_count;
             filter_config.list_start_addr = start_addr;
             ptr->XIDFC = filter_config.reg_val;
-            start_addr += MCAN_FILTER_ELEM_EXT_ID_SIZE * (uint32_t) config->std_filter_elem_count;
+            start_addr += MCAN_FILTER_ELEM_EXT_ID_SIZE * (uint32_t) config->ext_filter_elem_count;
         } else {
             ptr->XIDFC = MCAN_RAM_ADDR_INVALID;
         }
@@ -749,7 +769,7 @@ hpm_stat_t mcan_config_ram(MCAN_Type *ptr, mcan_ram_config_t *config)
                 }
                 mcan_rxfifo_config_t rxfifo_config = { .reg_val = 0 };
                 rxfifo_config.start_addr = start_addr;
-                rxfifo_config.watermark = 1U;
+                rxfifo_config.watermark = config->rxfifos[i].watermark;
                 rxfifo_config.operation_mode = config->rxfifos[i].operation_mode;
                 rxfifo_config.fifo_size = elem_count;
                 mcan_config_rxfifo(ptr, i, rxfifo_config.reg_val);
@@ -774,7 +794,8 @@ hpm_stat_t mcan_config_ram(MCAN_Type *ptr, mcan_ram_config_t *config)
         if (config->enable_rxbuf) {
             elem_bytes = mcan_get_data_field_size(config->rxbuf_data_field_size) + MCAN_MESSAGE_HEADER_SIZE_IN_BYTES;
             elem_count = config->rxbuf_elem_count;
-            if (elem_count > MCAN_RXFIFO_ELEM_CNT_MAX) {
+            if (elem_count > MCAN_RXBUF_ELEM_CNT_MAX) {
+                status = status_invalid_argument;
                 break;
             }
             ptr->RXBC = start_addr;
@@ -795,7 +816,7 @@ hpm_stat_t mcan_config_ram(MCAN_Type *ptr, mcan_ram_config_t *config)
             txbuf_config.tx_fifo_queue_mode = config->txfifo_or_txqueue_mode;
 
             elem_count = config->txbuf_fifo_or_queue_elem_count + config->txbuf_dedicated_txbuf_elem_count;
-            if (elem_count > MCAN_TXEVT_FIFO_ELEM_CNT_MAX) {
+            if (elem_count > MCAN_TXBUF_ELEM_CNT_MAX) {
                 break;
             }
 
@@ -855,7 +876,7 @@ hpm_stat_t mcan_config_ram_with_flexible_config(MCAN_Type *ptr, mcan_ram_flexibl
         }
 
         if (config->enable_ext_filter) {
-            if (config->std_filter_config.list_size > MCAN_EXT_FILTER_ELEM_CNT_MAX) {
+            if (config->ext_filter_config.list_size > MCAN_EXT_FILTER_ELEM_CNT_MAX) {
                 break;
             }
             ptr->XIDFC = config->ext_filter_config.reg_val;
@@ -1049,10 +1070,10 @@ hpm_stat_t mcan_init(MCAN_Type *ptr, mcan_config_t *config, uint32_t src_clk_fre
         mcan_enable_clock(ptr);
         uint32_t retry_cnt = 10000UL;
         do {
-            retry_cnt--;
             if (retry_cnt == 0UL) {
                 break;
             }
+            retry_cnt--;
         } while (!mcan_is_clock_enabled(ptr));
         if (retry_cnt == 0UL) {
             status = status_timeout;
@@ -1062,13 +1083,13 @@ hpm_stat_t mcan_init(MCAN_Type *ptr, mcan_config_t *config, uint32_t src_clk_fre
         ptr->CCCR |= MCAN_CCCR_INIT_MASK;
         retry_cnt = 10000UL;
         while ((ptr->CCCR & MCAN_CCCR_INIT_MASK) == 0U) {
-            retry_cnt--;
             if (retry_cnt == 0UL) {
+                status = status_timeout;
                 break;
             }
+            retry_cnt--;
         }
-        if (retry_cnt == 0UL) {
-            status = status_timeout;
+        if (status == status_timeout) {
             break;
         }
 
@@ -1101,12 +1122,12 @@ hpm_stat_t mcan_init(MCAN_Type *ptr, mcan_config_t *config, uint32_t src_clk_fre
         } else {
             bool param_valid;
             if (config->enable_canfd) {
-                param_valid = is_mcan_bit_timing_param_valid(mcan_bit_timing_canfd_nominal, &config->can_timing);
+                param_valid = is_mcan_bit_timing_param_valid(mcan_bit_timing_canfd_nominal, &config->can_timing, false);
                 if (!param_valid) {
                     status = status_mcan_invalid_bit_timing;
                     break;
                 }
-                param_valid = is_mcan_bit_timing_param_valid(mcan_bit_timing_canfd_data, &config->canfd_timing);
+                param_valid = is_mcan_bit_timing_param_valid(mcan_bit_timing_canfd_data, &config->canfd_timing, config->enable_tdc);
                 if (!param_valid) {
                     status = status_mcan_invalid_bit_timing;
                     break;
@@ -1114,7 +1135,7 @@ hpm_stat_t mcan_init(MCAN_Type *ptr, mcan_config_t *config, uint32_t src_clk_fre
                 mcan_set_can_nominal_bit_timing(ptr, &config->can_timing);
                 mcan_set_can_data_bit_timing(ptr, &config->canfd_timing);
             } else {
-                param_valid = is_mcan_bit_timing_param_valid(mcan_bit_timing_can2_0, &config->can_timing);
+                param_valid = is_mcan_bit_timing_param_valid(mcan_bit_timing_can2_0, &config->can_timing, false);
                 if (!param_valid) {
                     status = status_mcan_invalid_bit_timing;
                     break;
@@ -1281,7 +1302,6 @@ void mcan_deinit(MCAN_Type *ptr)
         ptr->TSCC = 0UL;
         ptr->GFC = 0UL;
         ptr->SIDFC = 0UL;
-        ptr->XIDAM = 0UL;
         ptr->XIDAM = 0x1FFFFFFFUL;
         ptr->RXBC = 0UL;
         ptr->RXF1C = 0UL;
@@ -1418,13 +1438,16 @@ static uint32_t mcan_get_txbuf_elem_addr(MCAN_Type *ptr, uint32_t index)
 
 uint8_t mcan_get_message_size_from_dlc(uint8_t dlc)
 {
-    uint32_t msg_size;
+    uint8_t msg_size = 0U;
     if (dlc <= 8U) {
         msg_size = dlc;
     } else if (dlc <= 12U) {
-        msg_size = 8 + (dlc - 8) * 4;
+        msg_size = 8U + (dlc - 8U) * 4U;
+    } else if (dlc < 16U) {
+        msg_size = 32U + (dlc - 13U) * 16U;
     } else {
-        msg_size = 32 + (dlc - 13) * 16U;
+        /* Wrong DLC encoding, should never happen */
+        msg_size = 0U;
     }
     return msg_size;
 }
@@ -1488,6 +1511,7 @@ hpm_stat_t mcan_write_txbuf(MCAN_Type *ptr, uint32_t index, mcan_tx_frame_t *tx_
             msg_hdr[0] = tx_frame_u32[0];
             msg_hdr[1] = tx_frame_u32[1];
 
+            assert(msg_size_words <= ARRAY_SIZE(tx_frame->data_32));
             for (uint32_t i = 0; i < msg_size_words; i++) {
                 msg_data[i] = tx_frame->data_32[i];
             }
@@ -1566,6 +1590,12 @@ hpm_stat_t mcan_read_rxfifo(MCAN_Type *ptr, uint32_t fifo_index, mcan_rx_message
 
     do {
         if ((ptr == NULL) || (rx_frame == NULL)) {
+            break;
+        }
+
+        /* Validate FIFO index - only 0 and 1 are valid */
+        if (fifo_index > 1U) {
+            status = status_invalid_argument;
             break;
         }
 
@@ -1878,7 +1908,8 @@ uint64_t mcan_read_64bit_tsu_timestamp(MCAN_Type *ptr, uint32_t index)
 {
     uint64_t ts_val = 0U;
     uint32_t real_index = index & 0x7U; /* Clear bit3 according to IP design */
-    if (index < ARRAY_SIZE(ptr->TS_SEL)) {
+    uint32_t elem_count = ARRAY_SIZE(ptr->TS_SEL);
+    if ((index < elem_count) && ((2U * real_index + 1) < elem_count)) {
         ts_val = ((uint64_t) (ptr->TS_SEL[2U * real_index + 1]) << 32U);
         ts_val |= ptr->TS_SEL[2U * real_index];
         /* Workaround: dummy read to clear the corresponding bits in TSS1 if the index is equal to/greater than 8 */
@@ -1905,6 +1936,7 @@ hpm_stat_t mcan_get_timestamp_from_tx_event(MCAN_Type *ptr,
         if (!is_tsu_used) {
             timestamp->is_16bit = true;
             timestamp->ts_16bit = tx_evt->tx_timestamp;
+            status = status_success;
         } else if (tx_evt->tx_timestamp_captured != 0U) {
             bool is_64bit_ts = mcan_is_64bit_tsu_timestamp_used(ptr);
             uint32_t ts_index = tx_evt->tx_timestamp_pointer;
@@ -1940,6 +1972,7 @@ hpm_stat_t mcan_get_timestamp_from_received_message(MCAN_Type *ptr,
         if (!is_tsu_used) {
             timestamp->is_16bit = true;
             timestamp->ts_16bit = rx_msg->rx_timestamp;
+            status = status_success;
         } else if (rx_msg->rx_timestamp_captured != 0U) {
             bool is_64bit_ts = mcan_is_64bit_tsu_timestamp_used(ptr);
             uint32_t ts_index = rx_msg->rx_timestamp_pointer;

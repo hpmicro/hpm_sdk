@@ -237,8 +237,8 @@ HPM6E00EVK为HPM6E00系列MCU的评估板，提供了一系列接口，包括ADC
 
    * - 功能
      - 位置
-   * - CMP0.INN4
-     - J4[18]
+   * - CMP0.INN3
+     - J4[2]
 
 - 正交旋转编码器接口
 
@@ -550,3 +550,32 @@ hpm6e00evk的HALL引脚需要单独接线
    * - 输出IO(2bit)
      - PD08/PE14
      - LED8/LED3
+
+
+- ESP-HOSTED 引脚接口
+
+.. list-table::
+   :header-rows: 1
+
+   * - 功能
+     - 位置
+     - 备注
+   * - PF11
+     - P5[29]
+     - RESET引脚
+   * - PF15
+     - P5[33]
+     - HANDSHAKE引脚
+   * - PF21
+     - P5[32]
+     - DATA_READY引脚
+
+- BROWNOUT中断指示引脚
+
+.. list-table::
+   :header-rows: 1
+
+   * - 功能
+     - 位置
+   * - PY05
+     - P5[40]

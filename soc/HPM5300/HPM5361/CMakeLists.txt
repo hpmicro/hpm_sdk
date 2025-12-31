@@ -32,6 +32,7 @@ sdk_src (
     hpm_sysctl_drv.c
     hpm_clock_drv.c
     hpm_otp_drv.c
+    hpm_qeiv2_soc_drv.c
 )
 
 if(NOT HPM_SOC_DISABLE_B_EXT)

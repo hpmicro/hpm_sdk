@@ -10,7 +10,7 @@
 #include "hpm_synt_drv.h"
 #include "hpm_sei_drv.h"
 
-static uint16_t mock_pos = 0x5A5;
+static uint16_t mock_pos = 0xFA5;
 static uint16_t mock_rev = 0xA5A;
 static uint32_t sample_latch_tm1;
 static uint32_t sample_latch_tm2;
@@ -254,7 +254,7 @@ void isr_sei(void)
                 sei_get_data_value(BOARD_SEI, SEI_DAT_2),
                 sei_get_data_value(BOARD_SEI, SEI_DAT_3),
                 sei_get_data_value(BOARD_SEI, SEI_DAT_4),
-                sei_get_data_value(BOARD_SEI, SEI_DAT_5) & 0x3F,
+                sei_get_crc_value(BOARD_SEI, SEI_DAT_5),
                 sample_latch_tm1, sample_latch_tm2, delta / (clock_get_frequency(BOARD_MOTOR_CLK_NAME) / 1000000));
         sample_latch_tm2 = sample_latch_tm1;
     }

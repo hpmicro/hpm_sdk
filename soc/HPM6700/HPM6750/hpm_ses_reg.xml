@@ -12702,6 +12702,9 @@
       <BitField name="RLDIRQE" start="24" size="1"/>
       <BitField name="CMPIRQEX" start="0" size="24"/>
     </Register>
+    <Register name="CAP_EN_NEG" start="+0x228" size="0x4">
+      <BitField name="CAP_EN_NEG" start="0" size="24"/>
+    </Register>
     <Register name="DMAEN" start="+0x22c" size="0x4">
       <BitField name="FAULTEN" start="27" size="1"/>
       <BitField name="XRLDEN" start="26" size="1"/>
@@ -13376,6 +13379,9 @@
       <BitField name="HALFRLDIRQE" start="25" size="1"/>
       <BitField name="RLDIRQE" start="24" size="1"/>
       <BitField name="CMPIRQEX" start="0" size="24"/>
+    </Register>
+    <Register name="CAP_EN_NEG" start="+0x228" size="0x4">
+      <BitField name="CAP_EN_NEG" start="0" size="24"/>
     </Register>
     <Register name="DMAEN" start="+0x22c" size="0x4">
       <BitField name="FAULTEN" start="27" size="1"/>
@@ -14052,6 +14058,9 @@
       <BitField name="RLDIRQE" start="24" size="1"/>
       <BitField name="CMPIRQEX" start="0" size="24"/>
     </Register>
+    <Register name="CAP_EN_NEG" start="+0x228" size="0x4">
+      <BitField name="CAP_EN_NEG" start="0" size="24"/>
+    </Register>
     <Register name="DMAEN" start="+0x22c" size="0x4">
       <BitField name="FAULTEN" start="27" size="1"/>
       <BitField name="XRLDEN" start="26" size="1"/>
@@ -14726,6 +14735,9 @@
       <BitField name="HALFRLDIRQE" start="25" size="1"/>
       <BitField name="RLDIRQE" start="24" size="1"/>
       <BitField name="CMPIRQEX" start="0" size="24"/>
+    </Register>
+    <Register name="CAP_EN_NEG" start="+0x228" size="0x4">
+      <BitField name="CAP_EN_NEG" start="0" size="24"/>
     </Register>
     <Register name="DMAEN" start="+0x22c" size="0x4">
       <BitField name="FAULTEN" start="27" size="1"/>
@@ -20993,63 +21005,9 @@
       <BitField name="FRMCNT" start="0" size="32"/>
     </Register>
     <Register name="MMC_IPC_INTR_MASK_RX" start="+0x200" size="0x4">
-      <BitField name="RXICMPEROIM" start="29" size="1"/>
-      <BitField name="RXICMPGOIM" start="28" size="1"/>
-      <BitField name="RXTCPEROIM" start="27" size="1"/>
-      <BitField name="RXTCPGOIM" start="26" size="1"/>
-      <BitField name="RXUDPEROIM" start="25" size="1"/>
-      <BitField name="RXUDPGOIM" start="24" size="1"/>
-      <BitField name="RXIPV6NOPAYOIM" start="23" size="1"/>
-      <BitField name="RXIPV6HEROIM" start="22" size="1"/>
-      <BitField name="RXIPV6GOIM" start="21" size="1"/>
-      <BitField name="RXIPV4UDSBLOIM" start="20" size="1"/>
-      <BitField name="RXIPV4FRAGOIM" start="19" size="1"/>
-      <BitField name="RXIPV4NOPAYOIM" start="18" size="1"/>
-      <BitField name="RXIPV4HEROIM" start="17" size="1"/>
-      <BitField name="RXIPV4GOIM" start="16" size="1"/>
-      <BitField name="RXICMPERFIM" start="13" size="1"/>
-      <BitField name="RXICMPGFIM" start="12" size="1"/>
-      <BitField name="RXTCPERFIM" start="11" size="1"/>
-      <BitField name="RXTCPGFIM" start="10" size="1"/>
-      <BitField name="RXUDPERFIM" start="9" size="1"/>
-      <BitField name="RXUDPGFIM" start="8" size="1"/>
-      <BitField name="RXIPV6NOPAYFIM" start="7" size="1"/>
-      <BitField name="RXIPV6HERFIM" start="6" size="1"/>
-      <BitField name="RXIPV6GFIM" start="5" size="1"/>
-      <BitField name="RXIPV4UDSBLFIM" start="4" size="1"/>
-      <BitField name="RXIPV4FRAGFIM" start="3" size="1"/>
-      <BitField name="RXIPV4NOPAYFIM" start="2" size="1"/>
-      <BitField name="RXIPV4HERFIM" start="1" size="1"/>
       <BitField name="RXIPV4GFIM" start="0" size="1"/>
     </Register>
     <Register name="MMC_IPC_INTR_RX" start="+0x208" size="0x4">
-      <BitField name="RXICMPEROIS" start="29" size="1"/>
-      <BitField name="RXICMPGOIS" start="28" size="1"/>
-      <BitField name="RXTCPEROIS" start="27" size="1"/>
-      <BitField name="RXTCPGOIS" start="26" size="1"/>
-      <BitField name="RXUDPEROIS" start="25" size="1"/>
-      <BitField name="RXUDPGOIS" start="24" size="1"/>
-      <BitField name="RXIPV6NOPAYOIS" start="23" size="1"/>
-      <BitField name="RXIPV6HEROIS" start="22" size="1"/>
-      <BitField name="RXIPV6GOIS" start="21" size="1"/>
-      <BitField name="RXIPV4UDSBLOIS" start="20" size="1"/>
-      <BitField name="RXIPV4FRAGOIS" start="19" size="1"/>
-      <BitField name="RXIPV4NOPAYOIS" start="18" size="1"/>
-      <BitField name="RXIPV4HEROIS" start="17" size="1"/>
-      <BitField name="RXIPV4GOIS" start="16" size="1"/>
-      <BitField name="RXICMPERFIS" start="13" size="1"/>
-      <BitField name="RXICMPGFIS" start="12" size="1"/>
-      <BitField name="RXTCPERFIS" start="11" size="1"/>
-      <BitField name="RXTCPGFIS" start="10" size="1"/>
-      <BitField name="RXUDPERFIS" start="9" size="1"/>
-      <BitField name="RXUDPGFIS" start="8" size="1"/>
-      <BitField name="RXIPV6NOPAYFIS" start="7" size="1"/>
-      <BitField name="RXIPV6HERFIS" start="6" size="1"/>
-      <BitField name="RXIPV6GFIS" start="5" size="1"/>
-      <BitField name="RXIPV4UDSBLFIS" start="4" size="1"/>
-      <BitField name="RXIPV4FRAGFIS" start="3" size="1"/>
-      <BitField name="RXIPV4NOPAYFIS" start="2" size="1"/>
-      <BitField name="RXIPV4HERFIS" start="1" size="1"/>
       <BitField name="RXIPV4GFIS" start="0" size="1"/>
     </Register>
     <Register name="RXIPV4_GD_FMS" start="+0x210" size="0x4">
@@ -21678,63 +21636,9 @@
       <BitField name="FRMCNT" start="0" size="32"/>
     </Register>
     <Register name="MMC_IPC_INTR_MASK_RX" start="+0x200" size="0x4">
-      <BitField name="RXICMPEROIM" start="29" size="1"/>
-      <BitField name="RXICMPGOIM" start="28" size="1"/>
-      <BitField name="RXTCPEROIM" start="27" size="1"/>
-      <BitField name="RXTCPGOIM" start="26" size="1"/>
-      <BitField name="RXUDPEROIM" start="25" size="1"/>
-      <BitField name="RXUDPGOIM" start="24" size="1"/>
-      <BitField name="RXIPV6NOPAYOIM" start="23" size="1"/>
-      <BitField name="RXIPV6HEROIM" start="22" size="1"/>
-      <BitField name="RXIPV6GOIM" start="21" size="1"/>
-      <BitField name="RXIPV4UDSBLOIM" start="20" size="1"/>
-      <BitField name="RXIPV4FRAGOIM" start="19" size="1"/>
-      <BitField name="RXIPV4NOPAYOIM" start="18" size="1"/>
-      <BitField name="RXIPV4HEROIM" start="17" size="1"/>
-      <BitField name="RXIPV4GOIM" start="16" size="1"/>
-      <BitField name="RXICMPERFIM" start="13" size="1"/>
-      <BitField name="RXICMPGFIM" start="12" size="1"/>
-      <BitField name="RXTCPERFIM" start="11" size="1"/>
-      <BitField name="RXTCPGFIM" start="10" size="1"/>
-      <BitField name="RXUDPERFIM" start="9" size="1"/>
-      <BitField name="RXUDPGFIM" start="8" size="1"/>
-      <BitField name="RXIPV6NOPAYFIM" start="7" size="1"/>
-      <BitField name="RXIPV6HERFIM" start="6" size="1"/>
-      <BitField name="RXIPV6GFIM" start="5" size="1"/>
-      <BitField name="RXIPV4UDSBLFIM" start="4" size="1"/>
-      <BitField name="RXIPV4FRAGFIM" start="3" size="1"/>
-      <BitField name="RXIPV4NOPAYFIM" start="2" size="1"/>
-      <BitField name="RXIPV4HERFIM" start="1" size="1"/>
       <BitField name="RXIPV4GFIM" start="0" size="1"/>
     </Register>
     <Register name="MMC_IPC_INTR_RX" start="+0x208" size="0x4">
-      <BitField name="RXICMPEROIS" start="29" size="1"/>
-      <BitField name="RXICMPGOIS" start="28" size="1"/>
-      <BitField name="RXTCPEROIS" start="27" size="1"/>
-      <BitField name="RXTCPGOIS" start="26" size="1"/>
-      <BitField name="RXUDPEROIS" start="25" size="1"/>
-      <BitField name="RXUDPGOIS" start="24" size="1"/>
-      <BitField name="RXIPV6NOPAYOIS" start="23" size="1"/>
-      <BitField name="RXIPV6HEROIS" start="22" size="1"/>
-      <BitField name="RXIPV6GOIS" start="21" size="1"/>
-      <BitField name="RXIPV4UDSBLOIS" start="20" size="1"/>
-      <BitField name="RXIPV4FRAGOIS" start="19" size="1"/>
-      <BitField name="RXIPV4NOPAYOIS" start="18" size="1"/>
-      <BitField name="RXIPV4HEROIS" start="17" size="1"/>
-      <BitField name="RXIPV4GOIS" start="16" size="1"/>
-      <BitField name="RXICMPERFIS" start="13" size="1"/>
-      <BitField name="RXICMPGFIS" start="12" size="1"/>
-      <BitField name="RXTCPERFIS" start="11" size="1"/>
-      <BitField name="RXTCPGFIS" start="10" size="1"/>
-      <BitField name="RXUDPERFIS" start="9" size="1"/>
-      <BitField name="RXUDPGFIS" start="8" size="1"/>
-      <BitField name="RXIPV6NOPAYFIS" start="7" size="1"/>
-      <BitField name="RXIPV6HERFIS" start="6" size="1"/>
-      <BitField name="RXIPV6GFIS" start="5" size="1"/>
-      <BitField name="RXIPV4UDSBLFIS" start="4" size="1"/>
-      <BitField name="RXIPV4FRAGFIS" start="3" size="1"/>
-      <BitField name="RXIPV4NOPAYFIS" start="2" size="1"/>
-      <BitField name="RXIPV4HERFIS" start="1" size="1"/>
       <BitField name="RXIPV4GFIS" start="0" size="1"/>
     </Register>
     <Register name="RXIPV4_GD_FMS" start="+0x210" size="0x4">

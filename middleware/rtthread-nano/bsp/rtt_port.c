@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2024 HPMicro
+ * Copyright (c) 2021 - 2025 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
@@ -12,7 +12,10 @@
 #include "rtconfig.h"
 #include <rthw.h>
 #include <rtthread.h>
-
+#include <stdio.h>
+#if defined(USE_RV_BACKTRACE) && USE_RV_BACKTRACE
+#include "rvbacktrace.h"
+#endif
 void os_tick_config(void);
 void rt_console_config(void);
 #ifdef RT_USING_HEAP
@@ -174,16 +177,49 @@ void rt_hw_cpu_reset(void)
 MSH_CMD_EXPORT_ALIAS(rt_hw_cpu_reset, reset, reset the board);
 
 /**
+ * @brief print trap related registers when exception occur
+ * 
+ */
+static void print_exception_related_regsiters(void)
+{
+    uint32_t cause = read_csr(CSR_MCAUSE);
+    uint32_t mepc = read_csr(CSR_MEPC);
+    uint32_t mtval = read_csr(CSR_MTVAL);
+    printf("###########################\r\nException occur!\r\n");
+    printf("mcause: 0x%lx \r\nmepc: 0x%lx \r\nmtval: 0x%lx \r\n", cause, mepc, mtval);
+    
+    if (rt_interrupt_get_nest() <= 1U) { 
+        rt_thread_t _backtrace_threadn;
+        _backtrace_threadn = (rt_thread_t) rt_thread_self();
+
+        printf("Thread Name:  %s \n", _backtrace_threadn->name);
+        printf("------------------------------------------------------\r\nhex dump of Current Thread TCB\n");
+        uint32_t *p = (uint32_t *)_backtrace_threadn;
+        for (uint32_t i = 0; i < sizeof(struct rt_thread); i++) {
+            printf("%03d:0x%08x  ", i, p[i]);
+            if (i % 4 == 3)
+                printf("\r\n");
+        }
+    } else {
+        printf("Trap may happen in ISR. ISR nested %d times\r\n", rt_interrupt_get_nest() - 1);
+    }
+}
+
+/**
  * @brief halt cpu when exception occur
  * 
  * @param cause mcause
  * @param epc mepc
  * @return long 
  */
-long exception_handler(long cause, long epc) 
+long rtt_exception_handler(long cause, long epc) 
 {
     (void)cause;
-    
+#if defined(USE_RV_BACKTRACE) && USE_RV_BACKTRACE
+    rvbacktrace_exception(rt_kprintf);
+#else
+    print_exception_related_regsiters();
+#endif
     while (1) {
 
     };

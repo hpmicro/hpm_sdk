@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -25,11 +25,18 @@ SDK_DECLARE_EXT_ISR_M(BOARD_APP_SDIO_SDXC_IRQ, wmhd_host_sdio_isr)
 #define mhd_task_PRIORITY       (configMAX_PRIORITIES - 6U)
 #define MHD_THREAD_STACK_SIZE   (4096)
 
+ATTR_PLACE_AT_WITH_ALIGNMENT(".freertos_heap_5", 4) static uint8_t freertos_heap_5_mem[256*1024];
+const HeapRegion_t xHeapRegions[] = {
+     {(uint8_t *)freertos_heap_5_mem, sizeof(freertos_heap_5_mem)},
+    {NULL, 0}
+};
+
 void task_init(void *param);
 
 
 int main(void)
 {
+    vPortDefineHeapRegions(xHeapRegions);
     board_init();
     board_init_led_pins();
 

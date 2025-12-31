@@ -128,7 +128,7 @@ ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(ENET_SOC_BUFF_ADDR_ALIGNMENT)
 __RW UCHAR tx_buff[ENET_TX_BUFF_COUNT][ENET_TX_BUFF_SIZE]; /* Ethernet Transmit Buffer */
 #endif
 
-UCHAR mac[ENET_MAC];
+UCHAR mac[ENET_MAC_SIZE];
 
 /* Define driver prototypes.  */
 static VOID _nx_driver_packet_send(NX_IP_DRIVER *driver_req_ptr);
@@ -146,15 +146,15 @@ VOID enet_self_adaptive_port_speed(VOID)
 
 #if defined(RGMII) && RGMII
 #if defined(__USE_DP83867) && __USE_DP83867
-    dp83867_get_phy_status(ENET, &status);
+    dp83867_get_phy_status(ENET, DP83867_ADDR, &status);
 #else
-    rtl8211_get_phy_status(ENET, &status);
+    rtl8211_get_phy_status(ENET, RTL8211_ADDR, &status);
 #endif
 #else
 #if defined(__USE_DP83848) && __USE_DP83848
-    dp83848_get_phy_status(ENET, &status);
+    dp83848_get_phy_status(ENET, DP83848_ADDR, &status);
 #else
-    rtl8201_get_phy_status(ENET, &status);
+    rtl8201_get_phy_status(ENET, RTL8201_ADDR, &status);
 #endif
 #endif
 
@@ -252,7 +252,7 @@ NX_PACKET *_nx_driver_hardware_get_frame(enet_rx_desc_t **parent_rx_desc_list_cu
     enet_rx_frame_info_t rx_frame_info = { 0 };
     NX_PACKET *packet_ptr_rx = NULL, *packet_ptr = NULL;
     INT first_idx = 0;
-    enet_frame_t frame = {0, 0, 0};
+    enet_frame_t frame = {0};
     UINT desc_scan_counter = 0;
     enet_rx_desc_t *rx_desc_list_cur = *parent_rx_desc_list_cur;
 
@@ -384,15 +384,49 @@ NX_PACKET *_nx_driver_hardware_get_frame(enet_rx_desc_t **parent_rx_desc_list_cu
 ATTR_RAMFUNC
 NX_PACKET *_nx_driver_hardware_get_frame(enet_rx_desc_t **parent_rx_desc_list_cur, UINT rx_desc_count)
 {
-    enet_frame_t frame = {0, 0, 0};
-    NX_PACKET *packet_ptr_rx = NULL;
+    enet_frame_t frame = {0};
+    NX_PACKET *packet_ptr_rx = NULL, *packet_ptr_new = NULL;
     (void)parent_rx_desc_list_cur;
     (void)rx_desc_count;
     frame = enet_get_received_frame_interrupt(&nx_driver_information.desc.rx_desc_list_cur, &nx_driver_information.desc.rx_frame_info, ENET_RX_BUFF_COUNT);
     if (frame.length > 0) {
-        if (nx_packet_allocate(nx_driver_information.nx_driver_information_packet_pool_ptr, &packet_ptr_rx,
+        if (nx_packet_allocate(nx_driver_information.nx_driver_information_packet_pool_ptr, &packet_ptr_new,
                 NX_RECEIVE_PACKET, NX_NO_WAIT) == NX_SUCCESS) {
-            memcpy((VOID *)packet_ptr_rx->nx_packet_data_start, (VOID *)frame.buffer, frame.length);
+            packet_ptr_rx = packet_ptr_new;
+            packet_ptr_new->nx_packet_length = frame.length;
+            uint32_t data_size = frame.length;
+            uint32_t offset = 0;
+            uint32_t byte_to_copy = data_size > ((uint32_t)packet_ptr_new->nx_packet_data_end - (uint32_t)packet_ptr_new->nx_packet_data_start) ? ((uint32_t)packet_ptr_new->nx_packet_data_end - (uint32_t)packet_ptr_new->nx_packet_data_start) : data_size;
+            memcpy((VOID *)packet_ptr_new->nx_packet_data_start, (VOID *)frame.buffer, byte_to_copy);
+            packet_ptr_new->nx_packet_append_ptr += byte_to_copy;
+            data_size -= byte_to_copy;
+            offset += byte_to_copy;
+            while (data_size > 0) { /* If one packet is not enought to hold the data */
+                if (nx_packet_allocate(nx_driver_information.nx_driver_information_packet_pool_ptr, &packet_ptr_new,
+                    NX_RECEIVE_PACKET, NX_NO_WAIT) == NX_SUCCESS) { /* Alloc success */
+                    byte_to_copy = data_size > ((uint32_t)packet_ptr_new->nx_packet_data_end - (uint32_t)packet_ptr_new->nx_packet_data_start) ? ((uint32_t)packet_ptr_new->nx_packet_data_end - (uint32_t)packet_ptr_new->nx_packet_data_start) : data_size;
+                    memcpy((VOID *)packet_ptr_new->nx_packet_data_start, (VOID *)(frame.buffer + offset), byte_to_copy);
+                    packet_ptr_new->nx_packet_append_ptr += byte_to_copy;
+                    data_size -= byte_to_copy;
+                    offset += byte_to_copy;
+                    /* Update the first packet's member value */
+                    if (packet_ptr_rx->nx_packet_last == NULL) {
+                        packet_ptr_rx->nx_packet_next = packet_ptr_new;
+                        packet_ptr_rx->nx_packet_last = packet_ptr_new;
+                    } else {
+                        packet_ptr_rx->nx_packet_last->nx_packet_next = packet_ptr_new;
+                        packet_ptr_rx->nx_packet_last = packet_ptr_new;
+                    }
+                } else { /* Alloc failed, release all the allocated packets */
+                    NX_PACKET *packet_ptr_next = NULL;
+                    NX_PACKET *packet_ptr_cur = packet_ptr_rx;
+                    do {
+                        packet_ptr_next = packet_ptr_cur->nx_packet_next;
+                        nx_packet_release(packet_ptr_cur);
+                        packet_ptr_cur = packet_ptr_next;
+                    } while(packet_ptr_cur != NULL);
+                }
+            }
         }
     }
     /* Release descriptors to DMA */
@@ -489,31 +523,34 @@ static UINT _nx_driver_hardware_initialize(NX_IP_DRIVER *driver_req_ptr)
     memcpy(&nx_driver_information.desc.tx_control_config, &enet_tx_control_config, sizeof(enet_tx_control_config_t));
 
     /* Get MAC address */
-    _hardware_get_mac_address(mac);
+    if (_hardware_get_mac_address(mac)) {
+        return NX_DRIVER_ERROR;
+    }
 
 /* Initialize phy */
 #if defined(RGMII) && RGMII
 #if defined(__USE_DP83867) && __USE_DP83867
-    dp83867_reset(ENET);
+    dp83867_reset(ENET, DP83867_ADDR);
 #if __DISABLE_AUTO_NEGO
-    dp83867_set_mdi_crossover_mode(ENET, enet_phy_mdi_crossover_manual_mdix);
+    dp83867_set_mdi_crossover_mode(ENET, DP83867_ADDR, enet_phy_mdi_crossover_manual_mdix);
 #endif
     dp83867_basic_mode_default_config(ENET, &phy_config);
-    if (dp83867_basic_mode_init(ENET, &phy_config) == true) {
+    if (dp83867_basic_mode_init(ENET, DP83867_ADDR, &phy_config) == true) {
 #else
-    rtl8211_reset(ENET);
+    rtl8211_reset(ENET, RTL8211_ADDR);
     rtl8211_basic_mode_default_config(ENET, &phy_config);
-    if (rtl8211_basic_mode_init(ENET, &phy_config) == true) {
+    if (rtl8211_basic_mode_init(ENET, RTL8211_ADDR, &phy_config) == true) {
 #endif
 #else
 #if defined(__USE_DP83848) && __USE_DP83848
-    dp83848_reset(ENET);
+    dp83848_reset(ENET, DP83848_ADDR);
     dp83848_basic_mode_default_config(ENET, &phy_config);
-    if (dp83848_basic_mode_init(ENET, &phy_config) == true) {
+    if (dp83848_basic_mode_init(ENET, DP83848_ADDR, &phy_config) == true) {
 #else
-    rtl8201_reset(ENET);
+    rtl8201_reset(ENET, RTL8201_ADDR);
     rtl8201_basic_mode_default_config(ENET, &phy_config);
-    if (rtl8201_basic_mode_init(ENET, &phy_config) == true) {
+    phy_config.rmii_refclk_dir = BOARD_ENET_RMII_INT_REF_CLK;
+    if (rtl8201_basic_mode_init(ENET, RTL8201_ADDR, &phy_config) == true) {
 #endif
 #endif
         printf("Enet phy init passed !\n");
@@ -682,19 +719,20 @@ static UINT _nx_driver_hardware_enable(NX_IP_DRIVER *driver_req_ptr)
     while (1) {
 #if defined(RGMII) && RGMII
 #if defined(__USE_DP83867) && __USE_DP83867
-        dp83867_get_phy_status(ENET, &status);
+        dp83867_get_phy_status(ENET, DP83867_ADDR, &status);
 #else
-        rtl8211_get_phy_status(ENET, &status);
+        rtl8211_get_phy_status(ENET, RTL8211_ADDR, &status);
 #endif
 #else
 #if defined(__USE_DP83848) && __USE_DP83848
-        dp83848_get_phy_status(ENET, &status);
+        dp83848_get_phy_status(ENET, DP83848_ADDR, &status);
 #else
-        rtl8201_get_phy_status(ENET, &status);
+        rtl8201_get_phy_status(ENET, RTL8201_ADDR, &status);
 #endif
 #endif
         if (status.enet_phy_link)
             break;
+        tx_thread_sleep(10);
     }
 
     /* Return success!  */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021,2022,2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -24,16 +24,15 @@ void *_sbrk(int incr)
 
     prev_heap_end = heap_end;
 
-    if ((unsigned int)heap_end + (unsigned int)incr > (unsigned int)(&__heap_end__))
+    /* Check if heap boundary would be exceeded */
+    if (heap_end + incr > &__heap_end__)
     {
         errno = ENOMEM;
-
         ret = (void *)-1;
     }
     else
     {
-        heap_end = (char *)((unsigned int)heap_end + (unsigned int)incr);
-
+        heap_end += incr;
         ret = (void *)prev_heap_end;
     }
 

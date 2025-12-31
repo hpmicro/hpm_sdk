@@ -1,0 +1,6 @@
+dependency:
+  - esc
+
+excluded_targets:
+  - debug
+  - release

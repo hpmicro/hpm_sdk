@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
 #include "hpm_panel.h"
+#include "hpm_common.h"
 
 static void reset(hpm_panel_t *panel)
 {
@@ -18,8 +19,10 @@ static void reset(hpm_panel_t *panel)
     hpm_panel_delay_ms(20);
 }
 
-static void init(hpm_panel_t *panel)
+static void init(hpm_panel_t *panel, const hpm_panel_timing_t *timing)
 {
+    (void)timing;
+
     if (panel->hw_if.set_video_router)
         panel->hw_if.set_video_router();
 }
@@ -46,10 +49,9 @@ static void power_off(hpm_panel_t *panel)
     }
 }
 
-hpm_panel_t panel_tm070rdh13 = {
-    .name = "tm070rdh13",
-    .if_type = HPM_PANEL_IF_TYPE_RGB,
-    .timing = {
+static const hpm_panel_timing_t timing_list[] = {
+    {
+        .fps_hz = 60,
         .pixel_clock_khz = 60000,
         .hactive = 800,
         .hfront_porch = 50,
@@ -62,7 +64,29 @@ hpm_panel_t panel_tm070rdh13 = {
         .vback_porch = 20,
         .vsync_len = 3,
         .vsync_pol = 1,
-    },
+
+    }, {
+        .fps_hz = 30,
+        .pixel_clock_khz = 30000,
+        .hactive = 800,
+        .hfront_porch = 50,
+        .hback_porch = 36,
+        .hsync_len = 10,
+        .hsync_pol = 1,
+
+        .vactive = 480,
+        .vfront_porch = 10,
+        .vback_porch = 20,
+        .vsync_len = 3,
+        .vsync_pol = 1,
+    }
+};
+
+hpm_panel_t panel_tm070rdh13 = {
+    .name = "tm070rdh13",
+    .if_type = HPM_PANEL_IF_TYPE_RGB,
+    .timing_list = timing_list,
+    .timing_list_num = ARRAY_SIZE(timing_list),
     .funcs = {
         .reset = reset,
         .init = init,

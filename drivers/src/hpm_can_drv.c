@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -7,6 +7,7 @@
 
 #include "hpm_can_drv.h"
 #include <assert.h>
+#include <time.h>
 
 /***********************************************************************************************************************
  *
@@ -62,7 +63,7 @@
 #define CAN_SAMPLEPOINT_MAX (875U)
 
 
-#define CAN_DEFAULT_FILTER_SETTING {0, can_filter_id_mode_both_frames, true, 0, (1UL << 29) - 1U }
+#define CAN_DEFAULT_FILTER_SETTING {0, can_filter_id_mode_both_frames, true, 0, 0x3FFFFFFFUL }
 
 /*
  * @brief CAN bit-timing table
@@ -144,8 +145,10 @@ static uint32_t find_optimal_prescaler(uint32_t num_tq_mul_prescaler, uint32_t s
     uint32_t prescaler = start_prescaler;
 
     while (!has_found) {
-
-        if ((num_tq_mul_prescaler / prescaler > max_tq) || (num_tq_mul_prescaler % prescaler != 0)) {
+        if (prescaler > NUM_PRESCALE_MAX) {
+            break;
+        }
+        if ((num_tq_mul_prescaler / prescaler > max_tq) || (num_tq_mul_prescaler % prescaler != 0U)) {
             ++prescaler;
             continue;
         } else {
@@ -172,8 +175,10 @@ hpm_stat_t can_calculate_bit_timing(uint32_t src_clk_freq, can_bit_timing_option
 {
     hpm_stat_t status = status_invalid_argument;
     do {
-        if ((option > can_bit_timing_canfd_data) || (baudrate == 0U) ||
-            (src_clk_freq / baudrate < MIN_TQ_MUL_PRESCALE) || (timing_param == NULL)) {
+        if ((option > can_bit_timing_canfd_data) || (baudrate == 0U) || (timing_param == NULL)) {
+            break;
+        }
+        if (src_clk_freq / baudrate < MIN_TQ_MUL_PRESCALE) {
             break;
         }
 
@@ -204,15 +209,17 @@ hpm_stat_t can_calculate_bit_timing(uint32_t src_clk_freq, can_bit_timing_option
 
             num_seg2 = (num_tq - tbl->min_diff_seg1_minus_seg2) / 2U;
             num_seg1 = num_tq - num_seg2;
-            while (num_seg2 > tbl->seg2_max) {
-                num_seg2--;
-                num_seg1++;
-            }
 
             /* Recommended sample point is 75% - 87.5% */
             while ((num_seg1 * 1000U) / num_tq < samplepoint_min) {
                 ++num_seg1;
                 --num_seg2;
+                if (num_seg2 <= tbl->seg2_min) {
+                    break;
+                }
+                if (num_seg1 >= tbl->seg1_max) {
+                    break;
+                }
             }
 
             if ((num_seg1 * 1000U) / num_tq > samplepoint_max) {
@@ -403,11 +410,11 @@ hpm_stat_t can_send_message_blocking(CAN_Type *base, const can_transmit_buf_t *m
         /* Wait until STB is not full */
         int32_t timeout_cnt = CAN_TIMEOUT_CNT;
         while (CAN_CMD_STA_CMD_CTRL_TSSTAT_GET(base->CMD_STA_CMD_CTRL) == CAN_STB_IS_FULL) {
-            timeout_cnt--;
             if (timeout_cnt <= 0) {
                 status = status_timeout;
                 break;
             }
+            timeout_cnt--;
         }
         if (status != status_success) {
             break;
@@ -514,8 +521,12 @@ hpm_stat_t can_receive_message_blocking(CAN_Type *base, can_receive_buf_t *messa
     do {
         HPM_BREAK_IF((base == NULL) || (message == NULL));
 
+        int32_t timeout_cnt = CAN_TIMEOUT_CNT;
         while (CAN_CMD_STA_CMD_CTRL_RSTAT_GET(base->CMD_STA_CMD_CTRL) == CAN_RXBUF_IS_EMPTY) {
-
+            timeout_cnt--;
+            if (timeout_cnt <= 0) {
+                return status_timeout;
+            }
         }
 
         /* Get the first 2 words (including CAN ID, Data length and other control bits) */
@@ -565,11 +576,11 @@ hpm_stat_t can_receive_message_blocking(CAN_Type *base, can_receive_buf_t *messa
 
 hpm_stat_t can_read_received_message(CAN_Type *base, can_receive_buf_t *message)
 {
-    hpm_stat_t status;
-
-    assert((base != NULL) && (message != NULL));
+    hpm_stat_t status = status_invalid_argument;
 
     do {
+        HPM_BREAK_IF((base == NULL) || (message == NULL));
+
         /* Get the first 2 words (including CAN ID, Data length and other control bits) */
         message->buffer[0] = base->RBUF[0];
         message->buffer[1] = base->RBUF[1];
@@ -597,6 +608,14 @@ hpm_stat_t can_read_received_message(CAN_Type *base, can_receive_buf_t *message)
             }
             break;
         }
+
+        /* Copy timestamp value.
+         * Note:
+         *  The value is valid only if the TIMEEN is set in TIMECFG register
+         *
+         */
+        message->buffer[CAN_TIMESTAMP_OFFSET_IN_RX_MSG_IN_WORDS] = base->RBUF[CAN_TIMESTAMP_OFFSET_IN_RX_MSG_IN_WORDS];
+        message->buffer[CAN_TIMESTAMP_OFFSET_IN_RX_MSG_IN_WORDS + 1] = base->RBUF[CAN_TIMESTAMP_OFFSET_IN_RX_MSG_IN_WORDS + 1];
 
         if (message->remote_frame == 0U) {
             uint32_t copy_words = can_get_data_words_from_dlc(message->dlc);
@@ -645,6 +664,9 @@ hpm_stat_t can_get_default_config(can_config_t *config)
         /* Default Interrupt enable settings */
         config->irq_txrx_enable_mask = 0;
         config->irq_error_enable_mask = 0;
+
+        config->time_stamping_position = CAN_TIME_STAMPING_POSITION_EOF;
+        config->enable_time_stamping = false;
 
         status = status_success;
     }
@@ -737,9 +759,10 @@ hpm_stat_t can_init(CAN_Type *base, can_config_t *config, uint32_t src_clk_freq)
             for (uint32_t i = 0; i < config->filter_list_num; i++) {
                 status = can_set_filter(base, &config->filter_list[i]);
                 if (status != status_success) {
-                    return status;
+                    break;
                 }
             }
+            HPM_BREAK_IF(status != status_success);
         }
 
         /* Set CAN FD standard */
@@ -769,9 +792,47 @@ hpm_stat_t can_init(CAN_Type *base, can_config_t *config, uint32_t src_clk_freq)
         can_enable_tx_rx_irq(base, config->irq_txrx_enable_mask);
         can_enable_error_irq(base, config->irq_error_enable_mask);
 
+        can_set_time_stamping_mode(base, config->time_stamping_position, config->enable_time_stamping);
+
         status = status_success;
     } while (false);
 
+    return status;
+}
+
+hpm_stat_t can_get_timestamp_for_transmitted_message(CAN_Type *base, can_timestamp_value_t *timestamp)
+{
+    hpm_stat_t status = status_invalid_argument;
+    do {
+        HPM_BREAK_IF((base == NULL) || (timestamp == NULL));
+
+        if (!can_is_time_stamping_enabled(base)) {
+            status = status_can_timestamping_disabled;
+            break;
+        }
+        timestamp->nano_sec = base->TTS[0];
+        timestamp->second = base->TTS[1];
+        status = status_success;
+
+    } while (false);
+    return status;
+}
+
+hpm_stat_t can_get_timestamp_from_received_message(CAN_Type *base, const can_receive_buf_t *message, can_timestamp_value_t *timestamp)
+{
+    hpm_stat_t status = status_invalid_argument;
+    do {
+        HPM_BREAK_IF((base == NULL) || (message == NULL) || (timestamp == NULL));
+
+        if (!can_is_time_stamping_enabled(base)) {
+            status = status_can_timestamping_disabled;
+            break;
+        }
+        timestamp->nano_sec = message->buffer[CAN_TIMESTAMP_OFFSET_IN_RX_MSG_IN_WORDS];
+        timestamp->second = message->buffer[CAN_TIMESTAMP_OFFSET_IN_RX_MSG_IN_WORDS + 1];
+        status = status_success;
+
+    } while (false);
     return status;
 }
 

@@ -12,8 +12,8 @@ define region BOOT_HEADER = [ from 0x80001000 size 0x2000 ];
 define region FLASH = [from 0x80003000 size _flash_size - 0x3000 ];   /* FLASH */
 define region ILM = [from 0x00000000 size 128k];    /* ILM */
 define region DLM = [from 0x00080000 size 128k];    /* DLM */
-define region NONCACHEABLE_RAM = [from 0x01080000 size 128k];
-define region AXI_SRAM = [from 0x010A0000 size 112k];
+define region NONCACHEABLE_RAM = [from 0x01080000 size _noncacheable_size];
+define region AXI_SRAM = [from 0x01080000 + _noncacheable_size size 240k - _noncacheable_size];
 define region SHARE_RAM = [from 0x010BC000 size 16k];
 define region AHB_SRAM = [from 0xF0300000 size 32k];
 

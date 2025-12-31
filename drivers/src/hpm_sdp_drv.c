@@ -5,7 +5,7 @@
  *
  */
 #include "hpm_sdp_drv.h"
-#include "hpm_soc_feature.h"
+#include "hpm_soc.h"
 
 /***********************************************************************************************************************
  * Definitions
@@ -1043,7 +1043,7 @@ hpm_stat_t sdp_trigger_action(SDP_Type *base, const sdp_action_t *action, const 
                                        SDP_SDPCR_MCPEN_MASK)) | sdp_cr;
         base->MODCTRL = sdp_mode_ctrl;
 
-        sdp_clear_status(HPM_SDP, ~0UL);
+        sdp_clear_status(base, ~0UL);
         base->CMDPTR = (uint32_t) cmd_pkt;
 
         /* Calculate the count of command packet in the command packet linked list */

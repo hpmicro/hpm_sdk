@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -18,6 +18,8 @@
 #include "hpm_pcfg_drv.h"
 #include "hpm_gpio_drv.h"
 #include "hpm_gpiom_drv.h"
+#include "hpm_uart_drv.h"
+#include "soc_low_power.h"
 
 #define task1_PRIORITY    (configMAX_PRIORITIES - 5U)
 #define task2_PRIORITY    (configMAX_PRIORITIES - 4U)
@@ -28,7 +30,7 @@ static void task1(void *pvParameters)
     for (;;) {
         printf("task1 is running.\n");
 
-        vTaskDelay(1000);
+        vTaskDelay(10000);
     }
 }
 
@@ -38,14 +40,25 @@ static void task2(void *pvParameters)
     for (;;) {
         printf("task2 is running.\n");
 
-        vTaskDelay(433);
+        vTaskDelay(4000);
+    }
+}
+
+SDK_DECLARE_EXT_ISR_M(BOARD_CONSOLE_UART_IRQ, console_uart_isr)
+void console_uart_isr(void)
+{
+    while (uart_check_status(BOARD_CONSOLE_UART_BASE, uart_stat_data_ready)) {
+        uart_read_byte(BOARD_CONSOLE_UART_BASE);
     }
 }
 
 int main(void)
 {
     board_init();
-    board_init_gpio_pins();
+    board_init_led_pins();
+    prepare_soc_low_power();
+    uart_enable_irq(BOARD_CONSOLE_UART_BASE, uart_intr_rx_data_avail_or_timeout);
+    intc_m_enable_irq_with_priority(BOARD_CONSOLE_UART_IRQ, 1);
 #ifdef BOARD_LED_GPIO_CTRL
     gpio_set_pin_output(BOARD_LED_GPIO_CTRL, BOARD_LED_GPIO_INDEX, BOARD_LED_GPIO_PIN);
     gpio_write_pin(BOARD_LED_GPIO_CTRL, BOARD_LED_GPIO_INDEX, BOARD_LED_GPIO_PIN, BOARD_LED_ON_LEVEL);

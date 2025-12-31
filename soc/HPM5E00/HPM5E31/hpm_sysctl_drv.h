@@ -14,7 +14,7 @@
 /**
  *
  * @brief SYSCTL driver APIs
- * @defgroup sysctl_interface SYSCTL driver APIs
+ * @defgroup sysctl_hpm5e31_interface SYSCTL driver APIs for HPM5E31
  * @ingroup io_interfaces
  * @{
  */
@@ -1187,7 +1187,7 @@ hpm_stat_t sysctl_enable_group_resource(SYSCTL_Type *ptr,
  * @param[in] resource target resource to be checked from group
  * @return enable true if resource enable, false if resource disable
  */
-bool sysctl_check_group_resource_enable(SYSCTL_Type *ptr, uint8_t group, sysctl_resource_t linkable_resource);
+bool sysctl_check_group_resource_enable(SYSCTL_Type *ptr, uint8_t group, sysctl_resource_t resource);
 
 /**
  * @brief Get group resource value

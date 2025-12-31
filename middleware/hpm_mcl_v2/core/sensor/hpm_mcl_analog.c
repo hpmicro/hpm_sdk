@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -122,7 +122,7 @@ hpm_mcl_stat_t hpm_mcl_analog_step_convert(mcl_analog_t *analog, float value, mc
                     *output = value;
                 }
             } else {
-                if ((angle >= (0.75f * MCL_PI)) && (angle <= (1.25f * MCL_PI))) {
+                if ((angle >= (0.75f * MCL_PI)) && (angle <= (1.75f * MCL_PI))) {
                     *output = -value;
                 } else {
                     *output = value;

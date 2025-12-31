@@ -31,7 +31,7 @@
  */
 
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -103,6 +103,7 @@ void sys_arch_netconn_sem_free(void);
 #define LWIP_NETCONN_THREAD_SEM_FREE()  sys_arch_netconn_sem_free()
 #endif /* LWIP_NETCONN_SEM_PER_THREAD */
 #else
+u32_t sys_now(void);
 void sys_timer_callback(void);
 void sys_arch_msleep(u32_t delay_ms);
 #define sys_msleep(ms) sys_arch_msleep(ms)

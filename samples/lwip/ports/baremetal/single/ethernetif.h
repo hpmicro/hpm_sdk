@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -8,9 +8,14 @@
 #ifndef ETHERNETIF_H
 #define ETHERNETIF_H
 
-
-#include "lwip/err.h"
+#include "lwip/pbuf.h"
 #include "lwip/netif.h"
+
+typedef struct my_custom_pbuf {
+   struct pbuf_custom p;
+   void *dma_descriptor;
+} my_custom_pbuf_t;
+
 #ifdef __cplusplus
 extern "C" {
 #endif

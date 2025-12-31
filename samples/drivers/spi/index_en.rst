@@ -863,4 +863,5 @@ SPI samples
    master_trans_large_amount_of_data/README_en
    polling/master/README_en
    polling/slave/README_en
+   ssi_encoder_master/README_en
 

@@ -8,5 +8,11 @@ endif()
 sdk_compile_definitions(-DNX_ENABLE_INTERFACE_CAPABILITY=1)
 
 sdk_inc(.)
-sdk_src(hpmicro_netx_driver.c)
+
+if(APP_USE_ENET_PORT_COUNT EQUAL 1)
+    sdk_src(hpmicro_netx_driver.c)
+else()
+    sdk_src(hpmicro_netx_driver_dual_port.c)
+endif()
+
 sdk_src(hpmicro_enet_adapter.c)

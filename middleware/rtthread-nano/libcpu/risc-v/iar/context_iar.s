@@ -19,6 +19,7 @@
 #endif
 
     SECTION `.isr_vector`:CODE:ROOT(3)
+    ALIGN 2
 /*
  * rt_base_t rt_hw_interrupt_disable(void);
  */

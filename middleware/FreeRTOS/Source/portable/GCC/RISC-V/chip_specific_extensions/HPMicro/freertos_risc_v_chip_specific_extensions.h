@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -12,7 +12,12 @@
 #include "hpm_csr_regs.h"
 
 #define portasmHAS_SIFIVE_CLINT         0
+#if defined(USE_NONVECTOR_MODE) && (USE_NONVECTOR_MODE != 0)
+#define portasmHANDLE_INTERRUPT         freertos_handle_interrupt
+  .extern freertos_handle_interrupt
+#else
 #define portasmHANDLE_INTERRUPT         irq_handler_trap
+#endif
 #ifndef portasmHAS_MTIME
 #define portasmHAS_MTIME                0
 #endif

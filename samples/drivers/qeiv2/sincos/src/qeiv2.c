@@ -238,13 +238,13 @@ static void qeiv2_init(void)
     trgm_adc_matrix_config(HPM_TRGM0, BOARD_APP_QEI_ADC_MATRIX_TO_ADC0, BOARD_APP_QEI_ADC_MATRIX_FROM_ADC_COS, false);
     trgm_adc_matrix_config(HPM_TRGM0, BOARD_APP_QEI_ADC_MATRIX_TO_ADC1, BOARD_APP_QEI_ADC_MATRIX_FROM_ADC_SIN, false);
     adc_config.adc_select = 0;
-    adc_config.adc_channel = BOARD_APP_QEI_ADC_COS_CHN;
+    adc_config.adc_channel = qeiv2_adc_channel_convert(BOARD_APP_QEI_ADC_COS_CHN, 0);
     adc_config.offset = 0x80000000;    /* middle point */
     adc_config.param0 = 0x4000;
     adc_config.param1 = 0;
     qeiv2_config_adcx(APP_QEI_BASE, &adc_config, true);
     adc_config.adc_select = 1;
-    adc_config.adc_channel = BOARD_APP_QEI_ADC_SIN_CHN;
+    adc_config.adc_channel = qeiv2_adc_channel_convert(BOARD_APP_QEI_ADC_SIN_CHN, 0);
     adc_config.offset = 0x80000000;    /* middle point */
     adc_config.param0 = 0;
     adc_config.param1 = 0x4000;

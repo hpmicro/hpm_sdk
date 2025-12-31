@@ -86,6 +86,29 @@ hpm_stat_t sgtl_init(sgtl_context_t *context, sgtl_config_t *config)
         return status_fail;
     }
 
+    /* Set LRCLK polarity */
+    if (config->bus == sgtl_bus_right_justified) {
+        if (config->lrclk_polarity == sgtl_lrclk_polarity_low_for_left_channel) {
+            if (status_success != sgtl_invert_lrclk_polarity(context, true)) {
+                return status_fail;
+            }
+        } else {
+            if (status_success != sgtl_invert_lrclk_polarity(context, false)) {
+                return status_fail;
+            }
+        }
+    } else if ((config->bus == sgtl_bus_left_justified) || (config->bus == sgtl_bus_i2s)) {
+        if (config->lrclk_polarity == sgtl_lrclk_polarity_high_for_left_channel) {
+            if (status_success != sgtl_invert_lrclk_polarity(context, true)) {
+                return status_fail;
+            }
+        } else {
+            if (status_success != sgtl_invert_lrclk_polarity(context, false)) {
+                return status_fail;
+            }
+        }
+    }
+
     if (sgtl_config_data_format(context, config->format.mclk_hz, config->format.sample_rate, config->format.bit_width) !=
         status_success) {
         return status_fail;
@@ -322,6 +345,15 @@ hpm_stat_t sgtl_set_protocol(sgtl_context_t *context, sgtl_protocol_t protocol)
         break;
     }
     return stat;
+}
+
+hpm_stat_t sgtl_invert_lrclk_polarity(sgtl_context_t *context, bool invert)
+{
+    if (invert) {
+        return sgtl_modify_reg(context, CHIP_I2S_CTRL, SGTL5000_I2S_LRPOL_CLR_MASK, SGTL5000_I2S_LRPOL_GET_MASK);
+    } else {
+        return sgtl_modify_reg(context, CHIP_I2S_CTRL, SGTL5000_I2S_LRPOL_CLR_MASK, 0x00);
+    }
 }
 
 hpm_stat_t sgtl_set_volume(sgtl_context_t *context, sgtl_module_t module, uint32_t volume)

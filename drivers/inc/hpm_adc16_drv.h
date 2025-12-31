@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -202,10 +202,9 @@ typedef struct {
 /** @brief ADC16 configuration struct for the period mode. */
 typedef struct {
     uint8_t ch;
-    uint8_t prescale;
-    uint8_t period_count;
+    uint8_t prescale;      /** 0: 1*PRD; 1: 2*PRD; 2: 4*PRD */
+    uint8_t period_count;  /** period_count = actual period reload - 1 */
 } adc16_prd_config_t;
-
 /** @brief ADC16 queue configuration struct for the sequence mode. */
 typedef struct {
     bool seq_int_en;

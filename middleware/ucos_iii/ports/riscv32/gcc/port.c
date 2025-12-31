@@ -11,6 +11,7 @@
 #include "os_cfg_app.h"
 
 /*  HPM example includes. */
+#include <stdio.h>
 #include "board.h"
 #include "os.h"
 #include "ucos_timer_source.h"
@@ -104,3 +105,31 @@ void vPortSysTimerIsr(void)
     }
 }
 #endif
+
+__attribute__((weak)) void ucos_exception_handler(void)
+{
+    uint32_t cause = read_csr(CSR_MCAUSE);
+    uint32_t mepc = read_csr(CSR_MEPC);
+    uint32_t mtval = read_csr(CSR_MTVAL);
+    printf("######################################################\r\nException occur!\r\n");
+    printf("mcause: 0x%lx \r\nmepc: 0x%lx \r\nmtval: 0x%lx \r\n", cause, mepc, mtval);
+    if (read_csr(CSR_MSCRATCH) == 0U) { 
+#if (OS_CFG_DBG_EN > 0u)
+        printf("Current Thread Name:  %s \n", OSTCBCurPtr->NamePtr);
+#else
+        printf("Current Thread 0x%x\r\n", (uint32_t)OSTCBCurPtr);
+#endif
+        printf("Current Thread stack 0x%x\r\n", (uint32_t)OSTCBCurPtr->StkPtr);
+        printf("Current Thread stack limit 0x%0x\r\n", (uint32_t)OSTCBCurPtr->StkLimitPtr);
+        printf("------------------------------------------------------\r\nhex dump of Current Thread TCB\n");
+        uint32_t *p = (uint32_t *)OSTCBCurPtr;
+        for (uint32_t i = 0; i < sizeof(OS_TCB); i++) {
+            printf("%03d:0x%08x  ", i, p[i]);
+            if (i % 4 == 3)
+                printf("\r\n");
+        }
+    } else {
+        printf("Trap may happen in ISR. ISR nested %d times\r\n", read_csr(CSR_MSCRATCH));
+    }
+    while(1);
+}

@@ -8,7 +8,7 @@ ECAT_IO
 
 ECAT_IO示例用于演示使用ESC外设和从站协议栈代码(SSC)实现ECAT数字IO从站的功能。
 
-该例程程序支持对ESC的EEPROM数据进行初始化，能够简化更新ESC的EEPROM的步骤。
+该例程程序支持对ESC的EEPROM数据进行初始化(不限制使用Flash模拟EEPROM或实际EEPROM)，能够简化更新ESC的EEPROM的步骤。
 
 如果程序代码中包含由SSC Tool生成的EEPROM数据(eeprom.h), 会检查ESC的EEPROM中存储的数据并根据条件进行更新。
 
@@ -55,9 +55,11 @@ ECAT_IO示例用于演示使用ESC外设和从站协议栈代码(SSC)实现ECAT�
 3.2 使用实际EEPROM
 ~~~~~~~~~~~~~~~~~~~~~~
 
-  - 如需使用实际的eeprom器件, 请在使用SSC Tool时将"Hardware"属性下的"ESC_EEPROM_EMULATION"和"CREATE_EEPROM_CONTENT"设置为0, 再生成从站协议栈代码。
+  - 请在使用SSC Tool生成代码时设置"Hardware"属性"ESC_EEPROM_EMULATION = 0", 然后重新生成协议栈代码。
 
-  - 使用实际eeprom时, 在文件`CMakeLists.txt`中, 设置"set(CONFIG_EEPROM_EMULATION 0)"。
+  - 注释掉生成的协议栈代码ecatappl.c中的"#define SET_EEPROM_PTR pEEPROM = aEepromData;"内容，解决编译错误。
+
+  - 在文件`CMakeLists.txt`中, 设置"set(CONFIG_EEPROM_EMULATION 0)"，重新构建工程。
 
 4. 生成从站协议栈代码
 ------------------------------
@@ -155,6 +157,8 @@ ECAT_IO示例用于演示使用ESC外设和从站协议栈代码(SSC)实现ECAT�
 
   .. image:: doc/ssc_patch.png
      :alt:
+
+  **注意**：在HPM5E00上硬件支持设置sync0和sync1不触发PDI中断，无需再使用该patch。
 
   **注意** ：如果你的电脑上没有安装patch命令，你需要安装2.5.9版或更高版本的GNU patch。如果已安装，请跳过此步骤。从 `网站 <http://gnuwin32.sourceforge.net/packages/patch.htm>`_ 下载patch命令（当前版本为2.5.9），并将"patch.exe"的安装路径添加到系统环境变量中以便能在命令行窗口中执行patch命令。
 

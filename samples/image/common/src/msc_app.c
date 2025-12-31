@@ -29,7 +29,7 @@ static bool disk_mounted;
  */
 bool file_system_mount(uint8_t dev_addr)
 {
-    char logic_drv_num[10] = {0};
+    char logic_drv_num[10] = { 0 };
     uint8_t phy_disk = dev_addr - 1;
 
     /* file system */
@@ -98,7 +98,7 @@ void tuh_msc_mount_cb(uint8_t dev_addr)
 void tuh_msc_unmount_cb(uint8_t dev_addr)
 {
     uint8_t phy_disk = dev_addr - 1;
-    char logic_drv_num[10] = {0};
+    char logic_drv_num[10] = { 0 };
 
     printf("A MassStorage device is unmounted.\r\n");
     sprintf(logic_drv_num, "%d", phy_disk);
@@ -126,7 +126,12 @@ void init_disk(void)
         }
     }
 
-    tusb_init();
+    /* init host stack on configured roothub port */
+    tusb_rhport_init_t host_init = {
+        .role = TUSB_ROLE_HOST,
+        .speed = TUSB_SPEED_AUTO,
+    };
+    tusb_init(BOARD_TUH_RHPORT, &host_init);
 }
 
 /*

@@ -101,3 +101,32 @@ hpm_stat_t pcfg_dcdc_set_lpmode_voltage(PCFG_Type *ptr, uint16_t mv)
     ptr->DCDC_LPMODE = (ptr->DCDC_LPMODE & ~PCFG_DCDC_LPMODE_STBY_VOLT_MASK) | PCFG_DCDC_LPMODE_STBY_VOLT_SET(mv);
     return stat;
 }
+
+void pcfg_dcdc_switch_to_dcm_mode(PCFG_Type *ptr)
+{
+    const uint8_t pcfc_dcdc_min_duty_cycle[] = {
+        0x6E, 0x6E, 0x70, 0x70, 0x70, 0x70, 0x72, 0x72,
+        0x72, 0x72, 0x74, 0x74, 0x74, 0x74, 0x76, 0x76,
+        0x76, 0x78, 0x78, 0x78, 0x78, 0x7A, 0x7A, 0x7A,
+        0x7A, 0x7C, 0x7C, 0x7C, 0x7E, 0x7E, 0x7E, 0x7E
+    };
+    uint16_t voltage;
+
+    ptr->DCDC_MODE |= 0x77000u;
+    ptr->DCDC_ADVMODE = (ptr->DCDC_ADVMODE & ~0x73F0067u) | 0x4120067u;
+    ptr->DCDC_PROT &= ~PCFG_DCDC_PROT_SHORT_CURRENT_MASK;
+    ptr->DCDC_PROT |= PCFG_DCDC_PROT_DISABLE_SHORT_MASK;
+    ptr->DCDC_MISC = 0x100000u;
+    voltage = PCFG_DCDC_MODE_VOLT_GET(ptr->DCDC_MODE);
+    voltage = (voltage - 600) / 25;
+    ptr->DCDC_ADVPARAM = (ptr->DCDC_ADVPARAM & ~PCFG_DCDC_ADVPARAM_MIN_DUT_MASK) | PCFG_DCDC_ADVPARAM_MIN_DUT_SET(pcfc_dcdc_min_duty_cycle[voltage]);
+}
+
+void pcfg_dcdc_switch_to_ccm_mode(PCFG_Type *ptr)
+{
+    for (uint32_t i = 0; i < 5000000; i++) {
+        NOP();
+    }
+    ptr->DCDC_ADVPARAM = (ptr->DCDC_ADVPARAM & ~PCFG_DCDC_ADVPARAM_MIN_DUT_MASK) | PCFG_DCDC_ADVPARAM_MIN_DUT_SET(0x6A);
+    ptr->DCDC_MODE = (ptr->DCDC_MODE & ~0x70000u) | 0x10000u;
+}

@@ -67,11 +67,11 @@
  *  If polarity is 1, it meansL:
  *      GPIO level 0 means enabled, 1 means disabled
  */
-#define SDXC_HOST_VSEL_PIN_POLARITY (SDXC_HOST_SUPPORT_CD << 16)
-#define SDXC_HOST_CD_PIN_POLARITY   (SDXC_HOST_VSEL_IN_IP << 16)
+#define SDXC_HOST_VSEL_PIN_POLARITY (SDXC_HOST_SUPPORT_VSEL << 16)
+#define SDXC_HOST_CD_PIN_POLARITY   (SDXC_HOST_SUPPORT_CD << 16)
 #define SDXC_HOST_PWR_PIN_POLARITY  (SDXC_HOST_SUPPORT_PWR << 16)
 #define SDXC_HOST_WP_PIN_POLARITY   (SDXC_HOST_SUPPORT_WP << 16)
-#define SDXC_HOST_RST_IN_POLARITY   (SDXC_HOST_SUPPORT_DS << 16)
+#define SDXC_HOST_RST_IN_POLARITY   (SDXC_HOST_SUPPORT_RST << 16)
 
 /**
  * @brief Command Response Type Selection
@@ -195,7 +195,7 @@ typedef enum _sdxc_xfer_direction {
 typedef enum _sdxc_command_type {
     sdxc_cmd_type_normal_cmd = 0U,
     sdxc_cmd_type_suspend_cmd = 1U,
-    sdxc_cmd_tye_resume_cmd = 2U,
+    sdxc_cmd_type_resume_cmd = 2U,
     sdxc_cmd_type_abort_cmd = 3U,
     sdxc_cmd_type_empty = 4U,
 } sdxc_command_type_t;
@@ -447,6 +447,7 @@ typedef struct _sdxc_xfer {
  */
 typedef struct _sdxc_adma_config {
     sdxc_dma_type_t dma_type;
+    uint8_t core_id;
     uint32_t *adma_table;
     uint32_t adma_table_words;
     const uint32_t *adma_desc_ptr;
@@ -1199,8 +1200,9 @@ hpm_stat_t sdxc_set_dma_config(SDXC_Type *base, const sdxc_adma_config_t *dma_cf
  * @brief Initialize SDXC controller
  * @param [in] base SDXC base address
  * @param [in] config SDXC configuration
+ * @return status_success if no error happened
  */
-void sdxc_init(SDXC_Type *base, const sdxc_config_t *config);
+hpm_stat_t sdxc_init(SDXC_Type *base, const sdxc_config_t *config);
 
 /**
  * @brief Set the Data Timeout Counter value for an SD/eMMC device

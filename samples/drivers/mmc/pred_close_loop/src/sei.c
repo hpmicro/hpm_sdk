@@ -99,7 +99,7 @@ void sei_record_data(void)
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV, SEI_INSTR_M_CK_FALL_RISE, SEI_DAT_0, SEI_DAT_5, 6);   /* CRC */
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV, SEI_INSTR_M_CK_HIGH, SEI_DAT_0, SEI_DATA_CONST_0, 0);       /* timeout */
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_WAIT, SEI_INSTR_M_CK_HIGH, SEI_DAT_0, SEI_DATA_CONST_1, 0);
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_HALT, SEI_INSTR_M_CK_LOW, SEI_DAT_0, SEI_DAT_0, 0);
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_HALT, 0, SEI_DAT_0, SEI_DAT_0, 0);
 
     /* [4] sample config*/
     sample_config.latch_select = SEI_LATCH_0;

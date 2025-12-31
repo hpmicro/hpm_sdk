@@ -526,6 +526,10 @@ lwiperf_tx_start_impl(const ip_addr_t *remote_ip, u16_t remote_port, lwiperf_set
 
   ip_addr_copy(remote_addr, *remote_ip);
 
+  if (report_arg != NULL) {
+    newpcb->netif_idx = ((struct netif *)report_arg)->num + 1;
+  }
+
   err = tcp_connect(newpcb, &remote_addr, remote_port, lwiperf_tcp_client_connected);
   if (err != ERR_OK) {
     lwiperf_tcp_close(client_conn, LWIPERF_TCP_ABORTED_LOCAL);

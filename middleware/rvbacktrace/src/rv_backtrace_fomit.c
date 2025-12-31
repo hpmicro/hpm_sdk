@@ -4,6 +4,7 @@
  * 2023-11-23     WangShun     the first version
  * 2024-09-19     WangShun     support rv32
  * 2024-11-13     HPMicro      support rvbacktrace in trap
+ * 2025-12-10     HPMicro      fix uncompressed instruction handling
  */
 
 #include "../include/rvbacktrace.h"
@@ -40,7 +41,7 @@ static int riscv_backtrace_framesize_get1(unsigned int inst)
     if ((inst & 0x800FFFFF) == 0x80010113) {
         imm = (inst >> 20) & 0x7FF;
         imm = (~imm & 0x7FF) + 1;
-        return imm >> 3;
+        return imm;
     }
 
     return -1;

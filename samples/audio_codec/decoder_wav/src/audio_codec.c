@@ -110,7 +110,7 @@ static void init_audio_player(char *fname)
         printf("wav sampebits: %d\n", wav_ctrl_ptr->wav_head.fmt_chunk.bitspersample);
         printf("wav channels: %d\n", wav_ctrl_ptr->wav_head.fmt_chunk.channels);
         printf("music playing time:%d seconds ...\n", wav_ctrl_ptr->sec_total);
-        f_lseek((FIL *)(&wav_ctrl_ptr->func.file), wav_ctrl_ptr->data_pos);
+        f_lseek((FIL *)(wav_ctrl_ptr->func.file), wav_ctrl_ptr->data_pos);
         if (status_success != init_i2s_playback(wav_ctrl_ptr->wav_head.fmt_chunk.samplerate,
                                 wav_ctrl_ptr->wav_head.fmt_chunk.bitspersample, wav_ctrl_ptr->wav_head.fmt_chunk.channels)) {
             printf("config i2s transfer failed.\n");

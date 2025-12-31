@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -375,7 +375,7 @@ hpm_stat_t sdio_io_rw_direct(sdio_card_t *card,
     hpm_stat_t status = status_invalid_argument;
 
     do {
-        HPM_BREAK_IF(card == NULL);
+        HPM_BREAK_IF((card == NULL) || (pdata == NULL));
         sdmmc_host_t *host = card->host;
         sdmmchost_cmd_t *cmd = &host->cmd;
         (void) memset(cmd, 0, sizeof(sdmmchost_cmd_t));
@@ -421,7 +421,7 @@ hpm_stat_t sdio_set_block_size(sdio_card_t *card, uint32_t func_idx, uint32_t bl
             break;
         }
         if (block_size == 0) {
-            block_size = MIN(SDMMC_BLOCK_SIZE_DEFAULT, block_size);
+            block_size = SDMMC_BLOCK_SIZE_DEFAULT;
         }
         status = sdio_io_write_byte(card,
                                     0,
@@ -467,7 +467,7 @@ hpm_stat_t sdio_io_rw_extend(sdio_card_t *card,
     hpm_stat_t status = status_invalid_argument;
 
     do {
-        HPM_BREAK_IF((card == NULL) || (card->host == NULL));
+        HPM_BREAK_IF((card == NULL) || (card->host == NULL) || (pbuf == NULL) || (blocks == 0) || (block_size == 0));
 
         if (!card->host->card_init_done) {
             status = status_sdmmc_device_init_required;
@@ -553,7 +553,7 @@ hpm_stat_t sdio_io_write_multi_bytes_to_fifo(sdio_card_t *card,
                                              uint8_t *pbuf,
                                              uint32_t length)
 {
-    if ((card == NULL) || (card->host == NULL) || (length < 1U)) {
+    if ((card == NULL) || (card->host == NULL) || (func_idx > SDIO_MAX_FUNC_NUM) || (card->sdio_func[func_idx] == NULL)) {
         return status_invalid_argument;
     }
     uint32_t block_size = MIN(card->sdio_func[func_idx]->current_block_size, length);
@@ -575,7 +575,7 @@ hpm_stat_t sdio_io_read_multi_bytes_from_fifo(sdio_card_t *card,
                                               uint8_t *pbuf,
                                               uint32_t length)
 {
-    if ((card == NULL) || (card->host == NULL) || (length < 1U)) {
+    if ((card == NULL) || (card->host == NULL) || (func_idx > SDIO_MAX_FUNC_NUM) || (card->sdio_func[func_idx] == NULL)) {
         return status_invalid_argument;
     }
     uint32_t block_size = MIN(card->sdio_func[func_idx]->current_block_size, length);
@@ -596,7 +596,7 @@ hpm_stat_t sdio_io_write_incr_multi_bytes(sdio_card_t *card,
                                           uint8_t *pbuf,
                                           uint32_t length)
 {
-    if ((card == NULL) || (card->host == NULL)) {
+    if ((card == NULL) || (card->host == NULL) ||  (func_idx > SDIO_MAX_FUNC_NUM) || (card->sdio_func[func_idx] == NULL)) {
         return status_invalid_argument;
     }
     uint32_t block_size = MIN(card->sdio_func[func_idx]->current_block_size, length);
@@ -617,7 +617,7 @@ hpm_stat_t sdio_io_read_incr_multi_bytes(sdio_card_t *card,
                                          uint8_t *pbuf,
                                          uint32_t length)
 {
-    if ((card == NULL) || (card->host == NULL)) {
+    if ((card == NULL) || (card->host == NULL) || (pbuf == NULL) || (length == 0) || (func_idx > SDIO_MAX_FUNC_NUM) || (card->sdio_func[func_idx] == NULL)) {
         return status_invalid_argument;
     }
     uint32_t block_size = MIN(card->sdio_func[func_idx]->current_block_size, length);
@@ -726,6 +726,15 @@ static hpm_stat_t sdio_set_timing(sdio_card_t *card)
 
             sdmmchost_set_speed_mode(card->host, speed_mode);
             card->host->clock_freq = sdmmchost_set_card_clock(card->host, clock_option, need_reverse);
+
+#if defined(HPM_SDMMC_SDIO_DEV_SUPPORT_AUTO_TUNING) && (HPM_SDMMC_SDIO_DEV_SUPPORT_AUTO_TUNING == 1)
+            /* Perform Tuning process if necessary */
+            if ((card->current_timing == sdmmc_sd_speed_sdr50) || (card->current_timing == sdmmc_sd_speed_sdr104)) {
+                status = sdmmc_enable_auto_tuning(card->host);
+                HPM_BREAK_IF(status != status_success);
+            }
+#endif
+            card->current_timing = speed_mode;
         }
     } while (false);
     return status;
@@ -765,12 +774,12 @@ hpm_stat_t sdio_card_init(sdio_card_t *card)
         status = sdio_read_cis(card, common_cis_ptr, &card->common_cis, false);
         HPM_BREAK_IF(status != status_success);
 
-        /* Change Bus Speed */
-        status = sdio_set_timing(card);
-        HPM_BREAK_IF(status != status_success);
-
         /* Change Bus width */
         status = sdio_set_bus_width(card);
+        HPM_BREAK_IF(status != status_success);
+
+        /* Change Bus Speed */
+        status = sdio_set_timing(card);
         HPM_BREAK_IF(status != status_success);
 
         sdmmchost_init_io(card->host, card->host->operation_mode);

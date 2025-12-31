@@ -175,7 +175,8 @@ static hpm_spi_cfg_t spi_dma_cfg_table[] = {
 static hpm_stat_t hpm_spi_tx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_ptr, uint32_t src, uint8_t data_width, uint32_t size)
 {
     dma_handshake_config_t config;
-
+    /* For TX: Disable TX DMA request first to ensure SPI starts correctly after DMA configuration */
+    spi_disable_tx_dma(spi_ptr);
     dma_default_handshake_config(dma_ptr, &config);
     config.ch_index = ch_num;
     config.dst = (uint32_t)&spi_ptr->DATA;
@@ -495,12 +496,6 @@ static hpm_stat_t spi_setup_trans_with_dma(spi_context_t *context, spi_control_c
     if (context->write_cs != NULL) {
         context->write_cs(context->cs_pin, SPI_CS_ACTIVE);
     }
-    stat = spi_setup_dma_transfer(spi_ptr, config,
-                                &context->cmd, &context->addr,
-                                context->tx_count, context->rx_count);
-    if (stat != status_success) {
-        return stat;
-    }
 
     if (trans_mode != spi_trans_write_only && trans_mode != spi_trans_dummy_write && trans_mode != spi_trans_no_data) {
         dmamux_config(dmamux_ptr, context->dma_context.rx_dmamux_ch, context->dma_context.rx_req, true);
@@ -525,6 +520,13 @@ static hpm_stat_t spi_setup_trans_with_dma(spi_context_t *context, spi_control_c
         if (stat != status_success) {
             return stat;
         }
+    }
+
+    stat = spi_setup_dma_transfer(spi_ptr, config,
+                                &context->cmd, &context->addr,
+                                context->tx_count, context->rx_count);
+    if (stat != status_success) {
+        return stat;
     }
 
     return stat;
@@ -569,7 +571,7 @@ hpm_stat_t hpm_spi_setup_dma_transfer(spi_context_t *context, spi_control_config
 
         stat = spi_setup_trans_with_dma_chain(context, config);
     } else {
-        /* one SPI transmissions with chained DMA */
+        /* one SPI transmissions with setup DMA */
         stat = spi_setup_trans_with_dma(context, config);
     }
 
@@ -1183,6 +1185,8 @@ hpm_stat_t hpm_spi_dma_mgr_install_callback(SPI_Type *ptr, spi_dma_complete_cb t
         dma_mgr_enable_chn_irq(resource, DMA_MGR_INTERRUPT_MASK_TC);
         dma_mgr_enable_dma_irq_with_priority(resource, 1);
         obj->rx_dma_complete = rx_complete;
+    } else {
+        return status_fail;
     }
      /* spi tx dma config */
     resource = &obj->txdma_resource;
@@ -1199,6 +1203,8 @@ hpm_stat_t hpm_spi_dma_mgr_install_callback(SPI_Type *ptr, spi_dma_complete_cb t
         dma_mgr_enable_chn_irq(resource, DMA_MGR_INTERRUPT_MASK_TC);
         dma_mgr_enable_dma_irq_with_priority(resource, 1);
         obj->tx_dma_complete = tx_complete;
+    } else {
+        return status_fail;
     }
     return status_success;
 }
@@ -1332,6 +1338,68 @@ dma_resource_t *hpm_spi_get_rx_dma_resource(SPI_Type *ptr)
         return &obj->rxdma_resource;
     }
     return NULL;
+}
+
+hpm_stat_t hpm_spi_rx_dma_mgr_install_custom_callback(SPI_Type *ptr, dma_mgr_chn_cb_t complete, void *user_data)
+{
+    dma_mgr_chn_conf_t chg_config;
+    dma_resource_t *resource = NULL;
+    hpm_spi_cfg_t *obj = hpm_spi_get_cfg_obj(ptr);
+    if (obj == NULL) {
+        return status_invalid_argument;
+    }
+    dma_mgr_get_default_chn_config(&chg_config);
+    chg_config.src_width = DMA_MGR_TRANSFER_WIDTH_BYTE;
+    chg_config.dst_width = DMA_MGR_TRANSFER_WIDTH_BYTE;
+    /* spi rx dma config */
+    resource = &obj->rxdma_resource;
+    if (dma_mgr_request_resource(resource) == status_success) {
+        chg_config.src_mode = DMA_MGR_HANDSHAKE_MODE_HANDSHAKE;
+        chg_config.src_addr_ctrl = DMA_MGR_ADDRESS_CONTROL_FIXED;
+        chg_config.src_addr = (uint32_t)&ptr->DATA;
+        chg_config.dst_mode = DMA_MGR_HANDSHAKE_MODE_NORMAL;
+        chg_config.dst_addr_ctrl = DMA_MGR_ADDRESS_CONTROL_INCREMENT;
+        chg_config.en_dmamux = true;
+        chg_config.dmamux_src = obj->rx_dmamux_src;
+        dma_mgr_setup_channel(resource, &chg_config);
+        dma_mgr_install_chn_tc_callback(resource, complete, user_data);
+        dma_mgr_enable_chn_irq(resource, DMA_MGR_INTERRUPT_MASK_TC);
+        dma_mgr_enable_dma_irq_with_priority(resource, 1);
+        return status_success;
+    } else {
+        return status_fail;
+    }
+}
+
+hpm_stat_t hpm_spi_tx_dma_mgr_install_custom_callback(SPI_Type *ptr, dma_mgr_chn_cb_t complete, void *user_data)
+{
+    dma_mgr_chn_conf_t chg_config;
+    dma_resource_t *resource = NULL;
+    hpm_spi_cfg_t *obj = hpm_spi_get_cfg_obj(ptr);
+    if (obj == NULL) {
+        return status_invalid_argument;
+    }
+    dma_mgr_get_default_chn_config(&chg_config);
+    chg_config.src_width = DMA_MGR_TRANSFER_WIDTH_BYTE;
+    chg_config.dst_width = DMA_MGR_TRANSFER_WIDTH_BYTE;
+     /* spi tx dma config */
+     resource = &obj->txdma_resource;
+     if (dma_mgr_request_resource(resource) == status_success) {
+         chg_config.src_mode = DMA_MGR_HANDSHAKE_MODE_NORMAL;
+         chg_config.src_addr_ctrl = DMA_MGR_ADDRESS_CONTROL_INCREMENT;
+         chg_config.dst_mode = DMA_MGR_HANDSHAKE_MODE_HANDSHAKE;
+         chg_config.dst_addr_ctrl = DMA_MGR_ADDRESS_CONTROL_FIXED;
+         chg_config.dst_addr = (uint32_t)&ptr->DATA;
+         chg_config.en_dmamux = true;
+         chg_config.dmamux_src = obj->tx_dmamux_src;
+         dma_mgr_setup_channel(resource, &chg_config);
+         dma_mgr_install_chn_tc_callback(resource, complete, user_data);
+         dma_mgr_enable_chn_irq(resource, DMA_MGR_INTERRUPT_MASK_TC);
+         dma_mgr_enable_dma_irq_with_priority(resource, 1);
+         return status_success;
+     } else {
+         return status_fail;
+     }
 }
 
 #endif

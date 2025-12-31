@@ -8,7 +8,8 @@
 #ifndef HPM_SOC_FEATURE_H
 #define HPM_SOC_FEATURE_H
 
-#include "hpm_soc.h"
+#include "riscv/riscv_core.h"
+#include "hpm_soc_ip.h"
 #include "hpm_soc_ip_feature.h"
 
 /*
@@ -58,13 +59,6 @@
 #define PLLCTL_SOC_PLL_HAS_DIV0(x) ((((x) == 1) || ((x) == 2)) ? 1 : 0)
 #define PLLCTL_SOC_PLL_HAS_DIV1(x) ((((x) == 1) || ((x) == 2)) ? 1 : 0)
 
-
-/*
- * PWM Section
- */
-#define PWM_SOC_PWM_MAX_COUNT (8U)
-#define PWM_SOC_CMP_MAX_COUNT (24U)
-#define PWM_SOC_OUTPUT_TO_PWM_MAX_COUNT (8U)
 
 /*
  * DMA Section

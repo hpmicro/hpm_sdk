@@ -18,7 +18,6 @@ import sphinx_rtd_theme
 
 HPM_SDK_BASE = Path(__file__).resolve().parents[2]
 HTML_STATIC_DIR = Path(__file__).resolve().parents[0] / "_static"
-DOXY_OUT = HTML_STATIC_DIR / "api_doc"
 
 sys.path.insert(0, str(HPM_SDK_BASE / "docs" / "_ext"))
  
@@ -39,17 +38,10 @@ extensions = [
     "sphinx.ext.viewcode",
     'sphinxcontrib.moderncmakedomain',
     "external_content",
-    "doxyrunner",
     'sphinx_tabs.tabs'
 ]
 
 templates_path = ['_templates']
-
-DOXY_OUT.mkdir(parents = True, exist_ok = True)
-doxyrunner_doxygen = os.environ.get("DOXYGEN_EXECUTABLE", "doxygen")
-doxyrunner_doxyfile = HPM_SDK_BASE / "docs" / "doxygen" / "Doxyfile" 
-doxyrunner_outdir = DOXY_OUT
-doxyrunner_outdir_var = "DOXYGEN_OUTPUT_DIR"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -67,11 +59,14 @@ external_content_contents = [
     (HPM_SDK_BASE,  "docs/*.rst"),
     (HPM_SDK_BASE / "docs/en", "[!_]*"),
     (HPM_SDK_BASE, "boards/**/*_en.rst",),
-    (HPM_SDK_BASE, "boards/**/doc"),
+    (HPM_SDK_BASE, "boards/**/doc/*.jpg"),
+    (HPM_SDK_BASE, "boards/**/doc/*.png"),
     (HPM_SDK_BASE, "components/**/*_en.rst"),
-    (HPM_SDK_BASE, "components/**/doc"),
+    (HPM_SDK_BASE, "components/**/doc/*.jpg"),
+    (HPM_SDK_BASE, "components/**/doc/*.png"),
     (HPM_SDK_BASE, "samples/**/*_en.rst",),
-    (HPM_SDK_BASE, "samples/**/doc"),
+    (HPM_SDK_BASE, "samples/**/doc/*.jpg"),
+    (HPM_SDK_BASE, "samples/**/doc/*.png"),
 ]
 
 

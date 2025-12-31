@@ -14,8 +14,8 @@
 
 /**
  *
- * @brief DMA driver APIs
- * @defgroup dma_interface DMA driver APIs
+ * @brief DMAv2 driver APIs
+ * @defgroup dmav2_interface DMAV2 driver APIs
  * @ingroup io_interfaces
  * @{
  */

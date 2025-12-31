@@ -21,6 +21,7 @@ NESTED_IRQ_HANDLING MACRO
 DEFINE_IRQ_HANDLER MACRO
     EXTERN irq_handler_wrapper_\1
     SECTION `.isr_vector` : CODE(3)
+    ALIGN 2
     PUBLIC default_isr_\1
 default_isr_\1:
     portcontextSAVE_INTERRUPT_CONTEXT
@@ -30,7 +31,7 @@ default_isr_\1:
     lui a4, 0xe4200
     li a3, \1
     store_x a3, 4(a4)
-    portcontextRESTORE_CONTEXT
+    j freertos_vector_restore_context
     ENDM
 
 /* Define the weak user isr handler wrapper function for all interrupts and isr handler entry function placed in __vector_table

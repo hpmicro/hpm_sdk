@@ -20,6 +20,17 @@ Board Setting
 
 No special settings are required.
 
+Toolchain Requirements
+----------------------
+
+This DSP demo requires a DSP-enabled toolchain to utilize hardware DSP instructions:
+
+- **IDE**: Segger Embedded Studio (or other IDEs with DSP toolchain support)
+- **GCC Toolchain**: Andes RISC-V toolchain with DSP extension support or ZCC toolchain with DSP extension support
+
+.. note::
+   Standard GCC toolchains without DSP extensions will not be able to compile and run this demo correctly. Please ensure you have the Andes toolchain or ZCC toolchain installed for command-line builds.
+
 Running the example
 -------------------
 

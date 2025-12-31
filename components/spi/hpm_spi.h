@@ -147,7 +147,7 @@ hpm_stat_t hpm_spi_set_sclk_frequency(SPI_Type *ptr, uint32_t freq);
  * @param [in] ptr SPI base address
  * @param [in] wbuff spi sent data buff address
  * @param [out] rbuff spi receive data buff address
- * @param [in] size spi sent data count(word unit), not greater than SPI_SOC_TRANSFER_COUNT_MAX
+ * @param [in] size spi sent data count(byte unit), not greater than SPI_SOC_TRANSFER_COUNT_MAX
  * @param [in] timeout  wait time. unit is millisecond
  * @retval hpm_stat_t status_success if spi in busy status
  */
@@ -160,7 +160,7 @@ hpm_stat_t hpm_spi_transmit_receive_blocking(SPI_Type *ptr, uint8_t *wbuff, uint
  *
  * @param [in] ptr SPI base address
  * @param [out] buff spi receive data buff address
- * @param [in] size spi sent data count(word unit), not greater than SPI_SOC_TRANSFER_COUNT_MAX
+ * @param [in] size spi sent data count(byte unit), not greater than SPI_SOC_TRANSFER_COUNT_MAX
  * @param [in] timeout  wait time. unit is millisecond
  * @retval hpm_stat_t status_success if spi in busy status
  */
@@ -173,7 +173,7 @@ hpm_stat_t hpm_spi_receive_blocking(SPI_Type *ptr, uint8_t *buff, uint32_t size,
  *
  * @param [in] ptr SPI base address
  * @param [in] buff spi sent data buff address
- * @param [in] size spi sent data count(word unit), not greater than SPI_SOC_TRANSFER_COUNT_MAX
+ * @param [in] size spi sent data count(byte unit), not greater than SPI_SOC_TRANSFER_COUNT_MAX
  * @param [in] timeout  wait time. unit is millisecond
  * @retval hpm_stat_t status_success if spi in busy status
  */
@@ -186,7 +186,7 @@ hpm_stat_t hpm_spi_transmit_blocking(SPI_Type *ptr, uint8_t *buff, uint32_t size
  *       main configuration spi dma related, call this API after configuring DMA best
  *
  * @param [in] ptr SPI base address
- * @param [in] size spi sent and receive  data count(word unit), not greater than SPI_SOC_TRANSFER_COUNT_MAX
+ * @param [in] size spi sent and receive  data count(byte unit), not greater than SPI_SOC_TRANSFER_COUNT_MAX
  * @retval hpm_stat_t status_success if spi in busy status
  */
 hpm_stat_t hpm_spi_transmit_receive_setup_dma(SPI_Type *ptr, uint32_t size);
@@ -198,7 +198,7 @@ hpm_stat_t hpm_spi_transmit_receive_setup_dma(SPI_Type *ptr, uint32_t size);
  *       main configuration spi dma related, call this API after configuring DMA best
  *
  * @param [in] ptr SPI base address
- * @param [in] size spi receive data count(word unit), not greater than SPI_SOC_TRANSFER_COUNT_MAX
+ * @param [in] size spi receive data count(byte unit), not greater than SPI_SOC_TRANSFER_COUNT_MAX
  * @retval hpm_stat_t status_success if spi in busy status
  */
 hpm_stat_t hpm_spi_receive_setup_dma(SPI_Type *ptr, uint32_t size);
@@ -210,7 +210,7 @@ hpm_stat_t hpm_spi_receive_setup_dma(SPI_Type *ptr, uint32_t size);
  *       main configuration spi dma related, call this API after configuring DMA best
  *
  * @param [in] ptr SPI base address
- * @param [in] size spi transmit data count(word unit), not greater than SPI_SOC_TRANSFER_COUNT_MAX
+ * @param [in] size spi transmit data count(byte unit), not greater than SPI_SOC_TRANSFER_COUNT_MAX
  * @retval hpm_stat_t status_success if spi in busy status
  */
 hpm_stat_t hpm_spi_transmit_setup_dma(SPI_Type *ptr, uint32_t size);
@@ -238,7 +238,7 @@ hpm_stat_t hpm_spi_dma_mgr_install_callback(SPI_Type *ptr,
  * @param [in] ptr SPI base address
  * @param [in] wbuff spi sent data buff address
  * @param [out] rbuff spi receive data buff address
- * @param [in] size spi sent data count(word unit), not greater than SPI_SOC_TRANSFER_COUNT_MAX
+ * @param [in] size spi sent data count(byte unit), not greater than SPI_SOC_TRANSFER_COUNT_MAX
  * @retval hpm_stat_t status_success if spi in busy status
  */
 hpm_stat_t hpm_spi_transmit_receive_nonblocking(SPI_Type *ptr, uint8_t *wbuff, uint8_t *rbuff, uint32_t size);
@@ -250,7 +250,7 @@ hpm_stat_t hpm_spi_transmit_receive_nonblocking(SPI_Type *ptr, uint8_t *wbuff, u
  *
  * @param [in] ptr SPI base address
  * @param [out] buff spi receive data buff address
- * @param [in] size spi sent data count(word unit), not greater than SPI_SOC_TRANSFER_COUNT_MAX
+ * @param [in] size spi sent data count(byte unit), not greater than SPI_SOC_TRANSFER_COUNT_MAX
  * @retval hpm_stat_t status_success if spi in busy status
  */
 hpm_stat_t hpm_spi_receive_nonblocking(SPI_Type *ptr, uint8_t *buff, uint32_t size);
@@ -262,7 +262,7 @@ hpm_stat_t hpm_spi_receive_nonblocking(SPI_Type *ptr, uint8_t *buff, uint32_t si
  *
  * @param [in] ptr SPI base address
  * @param [in] buff spi sent data buff address
- * @param [in] size spi sent data count(word unit), not greater than SPI_SOC_TRANSFER_COUNT_MAX
+ * @param [in] size spi sent data count(byte unit), not greater than SPI_SOC_TRANSFER_COUNT_MAX
  * @retval hpm_stat_t status_success if spi in busy status
  */
 hpm_stat_t hpm_spi_transmit_nonblocking(SPI_Type *ptr, uint8_t *buff, uint32_t size);
@@ -289,6 +289,30 @@ dma_resource_t *hpm_spi_get_tx_dma_resource(SPI_Type *ptr);
  * @return dma_resource_t* Pointer to the DMA resource; returns NULL if the SPI configuration object does not exist
  */
 dma_resource_t *hpm_spi_get_rx_dma_resource(SPI_Type *ptr);
+
+/**
+ * @brief Install custom callback for SPI DMA channel receive complete
+ *
+ * @note Unlike the hpm_spi_dma_mgr_install_callback API, this API registers directly to the DMA manager and uses a user-defined callback
+ *
+ * @param [in] ptr SPI base address
+ * @param [in] complete Pointer to the callback function that will be called when the SPI DMA receive is complete.
+ * @param [in] user_data Pointer to the user data that will be passed to the callback function.
+ * @retval hpm_stat_t Operation status, indicating success or error codes
+ */
+hpm_stat_t hpm_spi_rx_dma_mgr_install_custom_callback(SPI_Type *ptr, dma_mgr_chn_cb_t complete, void *user_data);
+
+/**
+ * @brief Install custom callback for SPI DMA channel transmit complete
+ *
+ * @note Unlike the hpm_spi_dma_mgr_install_callback API, this API registers directly to the DMA manager and uses a user-defined callback
+ *
+ * @param [in] ptr SPI base address
+ * @param [in] complete Pointer to the callback function that will be called when the SPI DMA transmit is complete.
+ * @param [in] user_data Pointer to the user data that will be passed to the callback function.
+ * @retval hpm_stat_t Operation status, indicating success or error codes
+ */
+hpm_stat_t hpm_spi_tx_dma_mgr_install_custom_callback(SPI_Type *ptr, dma_mgr_chn_cb_t complete, void *user_data);
 
 #endif
 

@@ -168,7 +168,7 @@ hpm_stat_t hpm_smbus_master_read(I2C_Type *ptr, uint8_t slave_address,
  * @note size should not not greater than I2C_SOC_TRANSFER_COUNT_MAX
  *
  * @param [in] ptr I2C base address
- * @param [in] buf pointer of the buffer to store data sent from device
+ * @param [in] data pointer of the buffer to store data sent from device
  * @param [in] size size of data to be sent in bytes
  * @retval hpm_stat_t status_success if writing is completed without any error
  */
@@ -181,7 +181,7 @@ hpm_stat_t hpm_smbus_slave_write(I2C_Type *ptr, uint8_t *data, uint32_t size);
  * @note size should not not greater than I2C_SOC_TRANSFER_COUNT_MAX
  *
  * @param [in] ptr I2C base address
- * @param [in] buf pointer of the buffer to store data read from device
+ * @param [in] data pointer of the buffer to store data read from device
  * @param [in] size size of data to be read in bytes
  * @retval hpm_stat_t: status_success if reading is completed without any error
  */

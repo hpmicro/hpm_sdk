@@ -252,7 +252,7 @@ uint32_t pllctl_get_pll_freq_in_hz(PLLCTL_Type *ptr, uint8_t pll)
         /* pll frac mode */
         fbdiv = PLLCTL_PLL_FREQ_FBDIV_FRAC_GET(ptr->PLL[pll].FREQ);
         frac = PLLCTL_PLL_FREQ_FRAC_GET(ptr->PLL[pll].FREQ);
-        freq = (uint32_t)((refclk * (fbdiv + ((double) frac / (1 << 24)))) + 0.5);
+        freq = (uint32_t)((refclk * (fbdiv + ((double) frac / (1 << 24)))) + (double) 0.5);
     }
     return freq;
 }

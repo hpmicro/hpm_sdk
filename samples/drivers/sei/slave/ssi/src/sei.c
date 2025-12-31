@@ -10,7 +10,7 @@
 #include "hpm_synt_drv.h"
 #include "hpm_sei_drv.h"
 
-static uint16_t mock_pos = 0x5A5;
+static uint16_t mock_pos = 0xFA5;
 static uint16_t mock_rev = 0xA5A;
 static uint32_t sample_latch_tm1;
 static uint32_t sample_latch_tm2;

@@ -16,10 +16,10 @@ MEMORY
     DLM (w) : ORIGIN = 0x00080000, LENGTH = 256K
     AXI_SRAM (wx) : ORIGIN = 0x1200000, LENGTH = 512K
     SDRAM (wx) : ORIGIN = 0x40000000, LENGTH = (_extram_size - 64M)
-    SDRAM_NONCACHEABLE (wx) : ORIGIN = 0x40000000 + (_extram_size - 64M), LENGTH = 32M
+    SDRAM_NONCACHEABLE (wx) : ORIGIN = 0x40000000 + (_extram_size - 32M - _noncacheable_size), LENGTH = _noncacheable_size
     SDRAM_GPU (wx) : ORIGIN = 0x40000000 + (_extram_size - 32M), LENGTH = 32M
     AHB_SRAM (w) : ORIGIN = 0xF0400000, LENGTH = 32k
-    APB_SRAM (w): ORIGIN = 0xF4130000, LENGTH = 16k
+    APB_SRAM (w): ORIGIN = 0xF4130000, LENGTH = 8k
 }
 
 SECTIONS
@@ -212,8 +212,8 @@ SECTIONS
         __noncacheable_init_start__ = .;
         KEEP(*(.noncacheable.init))
         KEEP(*(.noncacheable.init.*))
-        __noncacheable_init_end__ = .;
         . = ALIGN(8);
+        __noncacheable_init_end__ = .;
     } > SDRAM_NONCACHEABLE
 
     __fast_ram_init_load_addr__ = etext + SIZEOF(.data) + SIZEOF(.fast) + SIZEOF(.tdata) + SIZEOF(.noncacheable.init);
@@ -222,8 +222,8 @@ SECTIONS
         __fast_ram_init_start__ = .;
         KEEP(*(.fast_ram.init))
         KEEP(*(.fast_ram.init.*))
-        __fast_ram_init_end__ = .;
         . = ALIGN(8);
+        __fast_ram_init_end__ = .;
     } > DLM
 
     .bss (NOLOAD) : {
@@ -252,6 +252,7 @@ SECTIONS
         . = ALIGN(8);
         __heap_start__ = .;
         . += HEAP_SIZE;
+        . = ALIGN(8);
         __heap_end__ = .;
     } > SDRAM
 
@@ -260,11 +261,12 @@ SECTIONS
         KEEP(*(.noncacheable))  /* Legacy sections, kept for backwards compatibility */
         KEEP(*(.noncacheable.non_init))
         KEEP(*(.noncacheable.non_init.*))
+        . = ALIGN(8);
         __noncacheable_bss_start__ = .;
         KEEP(*(.noncacheable.bss))
         KEEP(*(.noncacheable.bss.*))
-        __noncacheable_bss_end__ = .;
         . = ALIGN(8);
+        __noncacheable_bss_end__ = .;
     } > SDRAM_NONCACHEABLE
 
     .gpu (NOLOAD) : {
@@ -289,11 +291,12 @@ SECTIONS
         KEEP(*(.fast_ram))  /* Legacy sections, kept for backwards compatibility */
         KEEP(*(.fast_ram.non_init))
         KEEP(*(.fast_ram.non_init.*))
+        . = ALIGN(8);
         __fast_ram_bss_start__ = .;
         KEEP(*(.fast_ram.bss))
         KEEP(*(.fast_ram.bss.*))
-        __fast_ram_bss_end__ = .;
         . = ALIGN(8);
+        __fast_ram_bss_end__ = .;
     } > DLM
 
     .stack (NOLOAD) : {

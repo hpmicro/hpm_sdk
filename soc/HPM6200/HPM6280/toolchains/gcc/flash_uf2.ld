@@ -14,8 +14,8 @@ MEMORY
     FLASH (rx) : ORIGIN = 0x80000000 + UF2_BOOTLOADER_RESERVED_LENGTH, LENGTH = _flash_size - UF2_BOOTLOADER_RESERVED_LENGTH
     ILM (wx) : ORIGIN = 0x00000000, LENGTH = 128K
     DLM (w) : ORIGIN = 0x00080000, LENGTH = 128K
-    AXI_SRAM_NONCACHEABLE (wx) : ORIGIN = 0x01080000, LENGTH = 128K
-    AXI_SRAM  (wx) : ORIGIN = 0x010A0000, LENGTH = 112K
+    AXI_SRAM_NONCACHEABLE (wx) : ORIGIN = 0x01080000, LENGTH = _noncacheable_size
+    AXI_SRAM  (wx) : ORIGIN = 0x01080000 + _noncacheable_size, LENGTH = 240K - _noncacheable_size
     SHARE_RAM (w) : ORIGIN = 0x010BC000, LENGTH = 16K
     AHB_SRAM (w) : ORIGIN = 0xF0300000, LENGTH = 32k
 }
@@ -207,8 +207,8 @@ SECTIONS
         __noncacheable_init_start__ = .;
         KEEP(*(.noncacheable.init))
         KEEP(*(.noncacheable.init.*))
-        __noncacheable_init_end__ = .;
         . = ALIGN(8);
+        __noncacheable_init_end__ = .;
     } > AXI_SRAM_NONCACHEABLE
 
     __fast_ram_init_load_addr__ = etext + SIZEOF(.data) + SIZEOF(.fast) + SIZEOF(.tdata) + SIZEOF(.noncacheable.init);
@@ -217,8 +217,8 @@ SECTIONS
         __fast_ram_init_start__ = .;
         KEEP(*(.fast_ram.init))
         KEEP(*(.fast_ram.init.*))
-        __fast_ram_init_end__ = .;
         . = ALIGN(8);
+        __fast_ram_init_end__ = .;
     } > DLM
 
     .bss (NOLOAD) : {
@@ -248,11 +248,12 @@ SECTIONS
         KEEP(*(.noncacheable))  /* Legacy sections, kept for backwards compatibility */
         KEEP(*(.noncacheable.non_init))
         KEEP(*(.noncacheable.non_init.*))
+        . = ALIGN(8);
         __noncacheable_bss_start__ = .;
         KEEP(*(.noncacheable.bss))
         KEEP(*(.noncacheable.bss.*))
-        __noncacheable_bss_end__ = .;
         . = ALIGN(8);
+        __noncacheable_bss_end__ = .;
     } > AXI_SRAM_NONCACHEABLE
 
     .ahb_sram (NOLOAD) : {
@@ -270,17 +271,19 @@ SECTIONS
         KEEP(*(.fast_ram))  /* Legacy sections, kept for backwards compatibility */
         KEEP(*(.fast_ram.non_init))
         KEEP(*(.fast_ram.non_init.*))
+        . = ALIGN(8);
         __fast_ram_bss_start__ = .;
         KEEP(*(.fast_ram.bss))
         KEEP(*(.fast_ram.bss.*))
-        __fast_ram_bss_end__ = .;
         . = ALIGN(8);
+        __fast_ram_bss_end__ = .;
     } > DLM
 
     .heap (NOLOAD) : {
         . = ALIGN(8);
         __heap_start__ = .;
         . += HEAP_SIZE;
+        . = ALIGN(8);
         __heap_end__ = .;
     } > DLM
 

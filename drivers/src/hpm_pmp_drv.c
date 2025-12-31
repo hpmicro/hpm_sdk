@@ -196,6 +196,8 @@ hpm_stat_t pmp_config_attributes(const pmp_attr_t *attrs, uint32_t num_of_entrie
             write_pmp_addr(attr->pmp_addr, i);
             write_pmp_cfg(pmp_cfg, idx);
         }
+        /* Synchronize instruction fetch with PMP changes */
+        fencei();
     } while (false);
     return status;
 }
@@ -217,7 +219,7 @@ hpm_stat_t pmp_lock_pmp_entry(uint32_t pmp_index)
     }
 
     pmp_cfg |= (PMP_REG_LOCK_MASK << offset);
-    write_pmp_cfg(idx, pmp_cfg);
+    write_pmp_cfg(pmp_cfg, idx);
 
     return status_success;
 }
@@ -386,7 +388,7 @@ hpm_stat_t pma_config_attributes(const pma_attr_t *attrs, uint32_t num_of_entrie
 {
     hpm_stat_t status = status_invalid_argument;
     do {
-        HPM_BREAK_IF((attrs == NULL) || (num_of_entries < 1) || (num_of_entries > 16U));
+        HPM_BREAK_IF((attrs == NULL) || (num_of_entries < 1) || (num_of_entries > PMA_ENTRY_MAX));
 
         status = status_success;
         for (uint32_t i = 0; i < num_of_entries; i++) {
@@ -415,6 +417,14 @@ hpm_stat_t pmp_config_entry(const pmp_entry_t *entry, uint32_t entry_index)
         uint32_t offset = (entry_index * 8) & 0x1F;
 
         uint32_t pmp_cfg = read_pmp_cfg(idx);
+
+        /* Check if the PMP entry is locked */
+        uint32_t pmpi_cfg = (pmp_cfg & (0xFFUL << offset)) >> offset;
+        if ((pmpi_cfg & PMP_REG_LOCK_MASK) != 0) {
+            status = status_fail;
+            break;
+        }
+
         pmp_cfg &= ~(0xFFUL << offset);
         pmp_cfg |= ((uint32_t)entry->pmp_cfg.val) << offset;
         write_pmp_addr(entry->pmp_addr, entry_index);
@@ -439,12 +449,21 @@ hpm_stat_t pmp_config(const pmp_entry_t *entry, uint32_t num_of_entries)
 {
     hpm_stat_t status = status_invalid_argument;
     do {
-        HPM_BREAK_IF((entry == NULL) || (num_of_entries < 1U) || (num_of_entries > 15U));
+        HPM_BREAK_IF((entry == NULL) || (num_of_entries < 1U) || (num_of_entries > PMP_ENTRY_MAX));
 
+        status = status_success;
         for (uint32_t i = 0; i < num_of_entries; i++) {
             uint32_t idx = i / 4;
             uint32_t offset = (i * 8) & 0x1F;
             uint32_t pmp_cfg = read_pmp_cfg(idx);
+
+            /* Check if the PMP entry is locked */
+            uint32_t pmpi_cfg = (pmp_cfg & (0xFFUL << offset)) >> offset;
+            if ((pmpi_cfg & PMP_REG_LOCK_MASK) != 0) {
+                status = status_fail;
+                break;
+            }
+
             pmp_cfg &= ~(0xFFUL << offset);
             pmp_cfg |= ((uint32_t)entry->pmp_cfg.val) << offset;
             write_pmp_addr(entry->pmp_addr, i);
@@ -458,9 +477,11 @@ hpm_stat_t pmp_config(const pmp_entry_t *entry, uint32_t num_of_entries)
 #endif
             ++entry;
         }
-        fencei();
 
-        status = status_success;
+        /* Only call fencei if all entries were configured successfully */
+        if (status == status_success) {
+            fencei();
+        }
 
     } while (false);
 
@@ -475,6 +496,8 @@ void pmp_disable(void)
     write_csr(CSR_MCACHE_CTL, 0x0);
     fencei();
 
+    /* Note: Locked PMP entries cannot be modified and will remain active.
+     * This function only clears unlocked entries. */
     write_csr(CSR_PMPCFG0, 0);
     write_csr(CSR_PMPCFG1, 0);
     write_csr(CSR_PMPCFG2, 0);
@@ -520,4 +543,21 @@ void pmp_disable(void)
     fencei();
     write_csr(CSR_MCACHE_CTL, mcache_ctl);
     fencei();
+}
+
+uint32_t pmp_get_aligned_len(uint32_t len)
+{
+    if (len == 0) {
+        return 0;
+    }
+
+    len--;             /* Handle case where n is already a power of 2 */
+    len |= len >> 1;   /* Set all bits below highest set bit (2-bit groups) */
+    len |= len >> 2;   /* Propagate through 4-bit groups */
+    len |= len >> 4;   /* Propagate through 8-bit groups */
+    len |= len >> 8;   /* Propagate through 16-bit groups */
+    len |= len >> 16;  /* Propagate through 32-bit groups */
+    len++;             /* Add 1 to get next power of 2 */
+
+    return len;
 }

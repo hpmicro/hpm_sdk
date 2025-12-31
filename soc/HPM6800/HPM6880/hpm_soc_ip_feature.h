@@ -34,6 +34,7 @@
 
 /* DAO related feature */
 #define HPM_IP_FEATURE_DAO_DATA_FORMAT_CONFIG 1
+#define HPM_IP_FEATURE_DAO_AUDIO_MONO_FIX 1
 
 /* CAM related feature */
 #define HPM_IP_FEATURE_CAM_INV_DEN 1

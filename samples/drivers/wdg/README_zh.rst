@@ -33,7 +33,7 @@ WDG
    *  4. Show valid Reset values                                  *
    *                                                              *
    *  NOTE:                                                       *
-   *    WDG total reset inverval =                                *
+   *    WDG total reset interval =                                *
    *    interrupt interval + reset interval                       *
    ****************************************************************
 

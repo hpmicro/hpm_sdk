@@ -47,6 +47,5 @@
 
 /* ACMP related feature */
 #define HPM_IP_FEATURE_ACMP_DAC_MATRIX 1
-#define HPM_IP_FEATURE_ACMP_FILT_LEN_EXTEND 1
 
 #endif /* HPM_SOC_IP_FEATURE_H */

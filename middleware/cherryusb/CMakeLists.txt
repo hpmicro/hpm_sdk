@@ -14,6 +14,7 @@ sdk_inc(port/ehci)
 sdk_inc(port/hpmicro)
 
 sdk_src(port/hpmicro/usb_glue_hpm.c)
+sdk_src(core/usbotg_core.c)
 
 if(CONFIG_USB_DEVICE_CDC OR CONFIG_USB_DEVICE_CDC_ACM OR CONFIG_USB_DEVICE_CDC_ECM
     OR CONFIG_USB_DEVICE_HID OR CONFIG_USB_DEVICE_MSC

@@ -22,13 +22,19 @@ if (isdefinedsymbol(HEAP_SIZE)) {
   define symbol __size_heap__          = 0x4000;
 }
 
+if (isdefinedsymbol(_noncacheable_size)) {
+  define symbol __noncacheable_size__    = _noncacheable_size;
+} else {
+  define symbol __noncacheable_size__    = 256k;
+}
+
 /* Regions */
 define region ILM = mem:[from 0x00000000 size 256k];        /* ILM */
 define region DLM = mem:[from 0x00080000 size 256k];        /* DLM */
-define region NONCACHEABLE_RAM = mem:[from 0x01240000 size 256k];    /* AXI SRAM */
-define region AXI_SRAM = mem:[from 0x01200000 size 256k];    /* AXI SRAM0 */
+define region NONCACHEABLE_RAM = mem:[from 0x01280000 - __noncacheable_size__ size __noncacheable_size__];    /* AXI SRAM */
+define region AXI_SRAM = mem:[from 0x01200000 size 512k - __noncacheable_size__];    /* AXI SRAM0 */
 define region AHB_SRAM = mem:[from 0xF0400000 size 32k];
-define region APB_SRAM = mem:[from 0xF4130000 size 16k];
+define region APB_SRAM = mem:[from 0xF4130000 size 8k];
 
 /* Blocks */
 define block vectors with fixed order                       { section .vector_table, section .isr_vector };

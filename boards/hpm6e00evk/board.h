@@ -18,6 +18,12 @@
 #if !defined(CONFIG_NDEBUG_CONSOLE) || !CONFIG_NDEBUG_CONSOLE
 #include "hpm_debug_console.h"
 #endif
+#if defined(CONFIG_ENET_PHY) && CONFIG_ENET_PHY
+#include "hpm_enet_phy.h"
+#endif
+#if defined(CONFIG_EEPROM_DEVICE_I2C)
+#include "eeprom_device.h"
+#endif
 
 #define BOARD_NAME          "hpm6e00evk"
 #define BOARD_UF2_SIGNATURE (0x0A4D5048UL)
@@ -35,7 +41,7 @@
 #define BOARD_ACMP_CHANNEL     ACMP_CHANNEL_CHN1
 #define BOARD_ACMP_IRQ         IRQn_ACMP0_1
 #define BOARD_ACMP_PLUS_INPUT  ACMP_INPUT_DAC_OUT  /* use internal DAC */
-#define BOARD_ACMP_MINUS_INPUT ACMP_INPUT_ANALOG_4 /* align with used pin */
+#define BOARD_ACMP_MINUS_INPUT ACMP_INPUT_ANALOG_3 /* align with used pin */
 
 /* uart section */
 #ifndef BOARD_APP_UART_BASE
@@ -89,7 +95,7 @@
 #define BOARD_ENET_RMII_RST_GPIO_INDEX
 #define BOARD_ENET_RMII_RST_GPIO_PIN
 #define BOARD_ENET_RMII             HPM_ENET0
-#define BOARD_ENET_RMII_INT_REF_CLK (1U)
+#define BOARD_ENET_RMII_INT_REF_CLK enet_phy_rmii_refclk_dir_in
 #define BOARD_ENET_RMII_PTP_CLOCK   (clock_ptp0)
 #define BOARD_ENET_RMII_PPS0_PINOUT (1)
 
@@ -110,6 +116,14 @@
 
 #define BOARD_TSW_PORT3_RGMII_TX_DLY (0U)
 #define BOARD_TSW_PORT3_RGMII_RX_DLY (0U)
+
+#define BOARD_TSW_PHY_SMI           HPM_ENET0
+#define BOARD_TSW_PORT1_PHY_ADDR    (0U)
+#define BOARD_TSW_PORT2_PHY_ADDR    (1U)
+#define BOARD_TSW_PORT3_PHY_ADDR    (2U)
+#define BOARD_TSW_PORT1_SMI_GROUP   (0U)
+#define BOARD_TSW_PORT2_SMI_GROUP   (0U)
+#define BOARD_TSW_PORT3_SMI_GROUP   (1U)
 
 /* usb cdc acm uart section */
 #define BOARD_USB_CDC_ACM_UART            BOARD_APP_UART_BASE
@@ -214,6 +228,10 @@
 #define BOARD_PDM_SINGLE_CHANNEL_MASK (1U)
 #define BOARD_PDM_DUAL_CHANNEL_MASK   (0x11U)
 
+/* DAO section */
+#define BOARD_DAO_SINGLE_CHANNEL_MASK (2U)
+#define BOARD_DAO_I2S_DMA_REQ         (HPM_DMA_SRC_I2S1_TX)
+
 /* dma section */
 #define BOARD_APP_XDMA      HPM_XDMA
 #define BOARD_APP_HDMA      HPM_HDMA
@@ -310,6 +328,10 @@
 /* CAN section */
 #define BOARD_APP_CAN_BASE HPM_MCAN4
 #define BOARD_APP_CAN_IRQn IRQn_MCAN4
+
+#define BOARD_CAN_STB_GPIO_CTRL HPM_GPIO0
+#define BOARD_CAN_STB_GPIO_INDEX GPIO_DI_GPIOZ
+#define BOARD_CAN_STB_GPIO_PIN   2
 
 /*
  * timer for board delay
@@ -643,6 +665,18 @@
 
 #define BOARD_ECAT_OUT_ON_LEVEL (1) /* ECAT control LED on level */
 
+/**
+ * Macro Definitions Must Match Pin Configuration in pinmux.c
+ *
+ * The `BOARD_ECAT_NMII_LINKn_CTRL_INDEX` macro must equal
+ * the `y` value in the pin's `IOC_PXxx_FUNC_CTL_ESC0_CTR_y` function assignment.
+ *
+ * Example:
+ *  - Signal:    ECAT_NMII_LINK0
+ *  - Pin:       PA15
+ *  - pinmux.c:  `IOC_PA15_FUNC_CTL_ESC0_CTR_3` // Note the value '3'
+ *  - Macro:     `#define BOARD_ECAT_NMII_LINK0_CTRL_INDEX 3` // Must also be '3'
+ */
 #define BOARD_ECAT_NMII_LINK0_CTRL_INDEX 3
 #define BOARD_ECAT_NMII_LINK1_CTRL_INDEX 0
 #define BOARD_ECAT_LED_RUN_CTRL_INDEX    1
@@ -652,6 +686,10 @@
 #define BOARD_ECAT_PHY_ADDR_OFFSET (0U)
 #define BOARD_ECAT_PORT0_PHY_ADDR  (0U) /* actual PHY address = BOARD_ECAT_PHY_ADDR_OFFSET + BOARD_ECAT_PORT0_PHY_ADDR */
 #define BOARD_ECAT_PORT1_PHY_ADDR  (1U) /* actual PHY address = BOARD_ECAT_PHY_ADDR_OFFSET + BOARD_ECAT_PORT1_PHY_ADDR */
+
+#define BOARD_EEPROM_I2C_BASE     HPM_I2C1
+/* Abstract eeprom id definition */
+#define BOARD_EEPROM_ABSTRACT_ID E2P_DEVICE_AT24C128
 
 /* I2C is required when ESC use actual eeprom devices, I2C use to init EEPROM content */
 #define BOARD_ECAT_INIT_EEPROM_I2C HPM_I2C1
@@ -746,11 +784,27 @@
 /* BGPR */
 #define BOARD_BGPR HPM_BGPR0
 
+/* usb id pin */
+#define BOARD_USB_ID_GPIO_CTRL  HPM_GPIO0
+#define BOARD_USB_ID_GPIO_INDEX GPIO_DI_GPIOF
+#define BOARD_USB_ID_GPIO_PIN   (22U)
+
 /* SDRAM Detect Pin */
 
 #define BOARD_SDRAM_DETECT_PORT               GPIO_IE_GPIOF
 #define BOARD_SDRAM_DETECT_PIN                (14U)
 #define BOARD_SDRAM_DETECT_ACTIVE_LEVEL       (1U)
+
+#define BOARD_APP_ESP_HOSTED_GPIO_RESET_PIN        IOC_PAD_PF11
+#define BOARD_APP_ESP_HOSTED_GPIO_HANDSHAKE_PIN    IOC_PAD_PF15
+#define BOARD_APP_ESP_HOSTED_GPIO_HANDSHAKE_IRQ    IRQn_GPIO0_F
+#define BOARD_APP_ESP_HOSTED_GPIO_DATA_READY_PIN   IOC_PAD_PF21
+#define BOARD_APP_ESP_HOSTED_GPIO_DATA_READY_IRQ   IRQn_GPIO0_F
+
+/* Brownout Indicate Pin */
+
+#define BOARD_BROWNOUT_INDICATE_GPIO_CTRL          HPM_GPIO0
+#define BOARD_BROWNOUT_INDICATE_PIN                IOC_PAD_PY05
 
 #if defined(__cplusplus)
 extern "C" {
@@ -801,6 +855,8 @@ hpm_stat_t board_init_enet_rgmii_clock_delay(ENET_Type *ptr);
 hpm_stat_t board_init_enet_ptp_clock(ENET_Type *ptr);
 hpm_stat_t board_enable_enet_irq(ENET_Type *ptr);
 hpm_stat_t board_disable_enet_irq(ENET_Type *ptr);
+hpm_stat_t board_init_tsw_smi(void);
+hpm_stat_t board_switch_tsw_smi_group(uint8_t i);
 void board_reset_tsw_phy(TSW_Type *ptr, uint8_t port);
 void board_init_tsw_pins(TSW_Type *ptr);
 void board_init_tsw_rgmii_clock_delay(TSW_Type *ptr, uint8_t port);
@@ -834,6 +890,35 @@ uint32_t board_init_gptmr_clock(GPTMR_Type *ptr);
 #ifdef INIT_EXT_RAM_FOR_DATA
 void board_verify_sdram_card_inserted(void);
 #endif
+void board_can_transceiver_phy_set(MCAN_Type *ptr, bool enable);
+
+/*
+ * Wrap pinmux initialization.
+ */
+void init_uart_pins(UART_Type *ptr);
+void init_uart_pin_as_gpio(UART_Type *ptr);
+void init_i2c_pins(I2C_Type *ptr);
+void init_spi_pins(SPI_Type *ptr);
+void init_spi_pins_with_gpio_as_cs(SPI_Type *ptr);
+void init_gptmr_pins(GPTMR_Type *ptr);
+void init_hall_trgm_pins(void);
+void init_qei_trgm_pins(void);
+void init_pwm_pins(PWMV2_Type *ptr);
+void init_usb_pins(USB_Type *ptr);
+void init_i2s_pins(I2S_Type *ptr);
+void init_qeo_pins(QEOV2_Type *ptr);
+void init_sei_pins(SEI_Type *ptr, uint8_t sei_ctrl_idx);
+void init_qeiv2_uvw_pins(QEIV2_Type *ptr);
+void init_qeiv2_ab_pins(QEIV2_Type *ptr);
+void init_qeiv2_abz_pins(QEIV2_Type *ptr);
+void init_rdc_pin(void);
+void init_enet_pins(ENET_Type *ptr);
+void init_can_pins(MCAN_Type *ptr);
+void init_can_transceiver_phy_pin(MCAN_Type *ptr);
+void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_output);
+
+void board_init_brownout_indicate_pin(void);
+uint32_t board_init_i2c_eeprom_clock(I2C_Type *ptr);
 #if defined(__cplusplus)
 }
 #endif /* __cplusplus */

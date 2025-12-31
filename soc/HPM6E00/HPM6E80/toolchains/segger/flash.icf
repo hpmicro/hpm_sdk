@@ -10,8 +10,8 @@ define memory with size = 4G;
 define region FLASH = [from 0x80000000 + 0x3000, size _flash_size - 0x3000];   /* FLASH */
 define region ILM = [from 0x00000000 size 256k];    /* ILM */
 define region DLM = [from 0x00200000 size 256k];    /* DLM */
-define region AXI_SRAM = [from 0x01200000 size 512k];
-define region NONCACHEABLE_RAM = [from 0x01280000 size 256k];
+define region AXI_SRAM = [from 0x01200000 size 768k - _noncacheable_size];
+define region NONCACHEABLE_RAM = [from 0x012C0000 - _noncacheable_size size _noncacheable_size];
 define region SHARE_RAM = [from 0x012FC000 size 16k];
 define region AHB_SRAM = [from 0xF0200000 size 32k];
 

@@ -15,6 +15,7 @@
 #include "../include/rvbacktrace.h"
 #include "rvcoredump.h"
 #include <string.h>
+#include "hpm_csr_drv.h"
 
 extern unsigned int rvstack_frame[STACK_FRAME_LEN]; // stack frame
 extern unsigned int rvstack_frame_len; // stack frame len
@@ -61,6 +62,45 @@ static void walk_stackframe(int (*print_func)(const char *fmt, ...))
         rvstack_frame[num] = pc; // save stack frame address
         num++;
     }
+}
+
+static void walk_stack_frame_from_trap(int (*print_func)(const char *fmt, ...))
+{
+    rt_uint32_t num = 0, i = 0;
+    int thread_object_len = 0;
+    unsigned long sp, fp, ra, pc; // stack pointer, frame pointer, return address, program counter
+    struct stackframe *frame;
+    _backtrace_threadn = (rt_thread_t) rt_thread_self();
+        _rt_susrstack = (rt_uint32_t) (uintptr_t) _backtrace_threadn->stack_addr; // stack start address
+        _rt_eusrstack = (rt_uint32_t) (uintptr_t) (_backtrace_threadn->stack_addr + _backtrace_threadn->stack_size); // stack end address
+
+        printf("------------------------------Thread: %s backtrace------------------------------\r\n",
+                _backtrace_threadn->name);
+        printf("Thread Name:  %s \n", _backtrace_threadn->name);
+        sp = (unsigned long) _backtrace_threadn->sp;
+        fp = ((rt_ubase_t *) (_backtrace_threadn->sp))[BACKTRACE_FP_POS]; // get current frame pointer
+        while (1)
+        {
+            frame = (struct stackframe *) (fp - BACKTRACE_LEN); //   get frame pointer
+
+            if ((rt_uint32_t *) frame > (rt_uint32_t *) (uintptr_t) _rt_eusrstack)
+            {
+                rvstack_frame_len = num;
+                rvbacktrace_addr2line((uint32_t *) &rvstack_frame[0], printf);
+                num = 0;
+                break;
+            }
+
+            sp = fp;  // get stack pointer
+            fp = frame->s_fp; // get frame pointer
+            ra = frame->s_ra; // get return address
+            pc = frame->s_ra - 4; // get program counter
+
+            //  print stack interval, return address, program counter
+            printf("[%d]Stack interval :[0x%lx - 0x%lx]  ra 0x%lx \n", num, sp, fp, ra);
+            rvstack_frame[num] = pc; // save stack frame address
+            num++;
+        }
 }
 
 #if defined(BACKTRACE_ALL)
@@ -135,7 +175,15 @@ static void rvbacktrace_all(void)
 
 MSH_CMD_EXPORT_ALIAS(rvbacktrace_all, rv_backtrace_all, backtrace all threads);
 #endif /* BACKTRACE_ALL */
-
+void rvbacktrace_exception(int (*print_func)(const char *fmt, ...))
+{
+    uint32_t cause = read_csr(CSR_MCAUSE);
+    uint32_t mepc = read_csr(CSR_MEPC);
+    uint32_t mtval = read_csr(CSR_MTVAL);
+    print_func("Exception occur!\r\n");
+    print_func("mcause: 0x%lx \r\nmepc: 0x%lx \r\nmtval: 0x%lx \r\n", cause, mepc, mtval);
+    walk_stack_frame_from_trap(print_func);
+}
 //  backtrace function
 void rvbacktrace_fno(int (*print_func)(const char *fmt, ...))
 {

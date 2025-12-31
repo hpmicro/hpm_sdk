@@ -13,7 +13,7 @@
 
 /**
  * @brief CLOCK driver APIs
- * @defgroup clock_interface CLOCK driver APIs
+ * @defgroup clock_hpm6750_interface CLOCK driver APIs for HPM6750
  * @{
  *
  */

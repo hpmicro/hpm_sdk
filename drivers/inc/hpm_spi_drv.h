@@ -7,6 +7,7 @@
 
 #ifndef HPM_SPI_DRV_H
 #define HPM_SPI_DRV_H
+#include "hpm_common.h"
 #include "hpm_spi_regs.h"
 #include "hpm_soc_feature.h"
 
@@ -152,6 +153,16 @@ typedef enum {
     spi_msb_first = 0,
     spi_lsb_first,
 } spi_shift_direction_t;
+
+/**
+ * @brief SPI reset mask enumeration
+ */
+typedef enum {
+    spi_reset_tx_fifo = SPI_CTRL_TXFIFORST_MASK, /**< TX FIFO reset */
+    spi_reset_rx_fifo = SPI_CTRL_RXFIFORST_MASK, /**< RX FIFO reset */
+    spi_reset_spi     = SPI_CTRL_SPIRST_MASK,    /**< SPI controller reset */
+    spi_reset_all     = (SPI_CTRL_TXFIFORST_MASK | SPI_CTRL_RXFIFORST_MASK | SPI_CTRL_SPIRST_MASK) /**< All resets */
+} spi_reset_mask_t;
 
 /**
  * @brief spi master interface timing config structure
@@ -350,6 +361,8 @@ hpm_stat_t spi_transfer(SPI_Type *ptr,
 
 /**
  * @brief spi setup dma transfer
+ *
+ * @note for DMA-based SPI transmit, disable the SPI TX DMA request before configuring and enabling the DMA channels, and then start the SPI transfer.
  *
  * @param [in] ptr SPI base address
  * @param [in] config spi_control_config_t
@@ -890,7 +903,8 @@ static inline uint8_t spi_get_directio_enable_status(SPI_Type *ptr)
  */
 static inline uint8_t spi_get_rx_fifo_valid_data_size(SPI_Type *ptr)
 {
-    return ((SPI_STATUS_RXNUM_7_6_GET(ptr->STATUS) << 6) | SPI_STATUS_RXNUM_5_0_GET(ptr->STATUS));
+    uint32_t status = ptr->STATUS;
+    return ((SPI_STATUS_RXNUM_7_6_GET(status) << 6) | SPI_STATUS_RXNUM_5_0_GET(status));
 }
 
 /**
@@ -902,7 +916,8 @@ static inline uint8_t spi_get_rx_fifo_valid_data_size(SPI_Type *ptr)
  */
 static inline uint8_t spi_get_tx_fifo_valid_data_size(SPI_Type *ptr)
 {
-    return ((SPI_STATUS_TXNUM_7_6_GET(ptr->STATUS) << 6) | SPI_STATUS_TXNUM_5_0_GET(ptr->STATUS));
+    uint32_t status = ptr->STATUS;
+    return ((SPI_STATUS_TXNUM_7_6_GET(status) << 6) | SPI_STATUS_TXNUM_5_0_GET(status));
 }
 
 /**
@@ -1248,6 +1263,16 @@ static inline void spi_master_enable_cs_select(SPI_Type *ptr, spi_cs_index_t cs)
 }
 
 #endif
+
+/**
+ * @brief spi poll reset complete
+ *
+ * @param [in] ptr SPI base address
+ * @param [in] reset_mask reset mask, use spi_reset_mask_t
+ * @param [in] retry retry count
+ * @retval hpm_stat_t status_success if spi reset complete
+ */
+hpm_stat_t spi_poll_reset_complete(SPI_Type *ptr, spi_reset_mask_t reset_mask, uint32_t retry);
 
 /**
  * @}

@@ -31,8 +31,8 @@ typedef struct {
 #define HPM_MCAN_TBSEL0_SHIFT (8U)
 
 #define MCAN_MSG_BUF_BASE_VALID_START (0xF0400000UL)    /* This is the start address of AHB_RAM */
-#define MCAN_MSG_BUG_SIZE_MAX         (32UL * 1024UL)   /* This is the total size of AHB_RAM */
-#define MCAN_MSG_BUF_BASE_VALID_END   (MCAN_MSG_BUF_BASE_VALID_START + MCAN_MSG_BUG_SIZE_MAX)
+#define MCAN_MSG_BUF_SIZE_MAX         (32UL * 1024UL)   /* This is the total size of AHB_RAM */
+#define MCAN_MSG_BUF_BASE_VALID_END   (MCAN_MSG_BUF_BASE_VALID_START + MCAN_MSG_BUF_SIZE_MAX)
 
 #define MCAN_MSG_BUF_ALIGNMENT_SIZE   (4U)
 
@@ -138,7 +138,7 @@ static inline hpm_stat_t mcan_set_msg_buf_attr(MCAN_Type *ptr, const mcan_msg_bu
     if ((attr == NULL) || \
         (attr->ram_base < MCAN_MSG_BUF_BASE_VALID_START) || \
         (attr->ram_base >= MCAN_MSG_BUF_BASE_VALID_END) || \
-        (attr->ram_size > MCAN_MSG_BUG_SIZE_MAX) || \
+        (attr->ram_size > MCAN_MSG_BUF_SIZE_MAX) || \
         (attr->ram_base + attr->ram_size > MCAN_MSG_BUF_BASE_VALID_END) || \
         (attr->ram_base % MCAN_MSG_BUF_ALIGNMENT_SIZE != 0U) || \
         (attr->ram_size % MCAN_MSG_BUF_ALIGNMENT_SIZE != 0)) {

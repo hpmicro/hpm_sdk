@@ -2,13 +2,13 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 board:
-    soc: HPM6280
-    device: HPM6280xPAx
-    openocd-soc: hpm6280-dual-core
-    openocd-probe: ft2232
+    soc: HPM6280            # the name of SOC used on this board
+    device: HPM6280xPAx     # device name used for jlink connection
+    openocd-soc: hpm6280-dual-core    # used for openocd soc config file name: hpm6280-dual-core.cfg
+    openocd-probe: ft2232    # used for openocd probe config file name: ft2232.cfg
     on-board-flash:
       type: qspi-nor-flash
-      size: 16M
+      size: 16M             # the size of on-board flash which will be used in linker script
     feature:
       - board_pwm_rgb_led
       - board_gpt_pin
@@ -16,3 +16,4 @@ board:
       - board_motor_control_phase_voltage_sampling
       - board_puart_pin
       - board_clk_ref_pin
+      - board_usb_otg

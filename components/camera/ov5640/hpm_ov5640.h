@@ -11,6 +11,15 @@
 #include "hpm_common.h"
 #include "hpm_camera_config.h"
 
+/**
+ * @brief OV5640 sensor driver APIs
+ * @defgroup sensor_ov5640_interface Sensor driver APIs for OV5640
+ * @ingroup component_interfaces
+ * @{
+ *
+ */
+
+
 #define OV5640_ACTIVE_IMAGE_WIDTH  (2592U)
 #define OV5640_ACTIVE_IMAGE_HEIGHT (1944U)
 #define OV5640_I2C_ADDR (0x3CU)
@@ -181,4 +190,10 @@ hpm_stat_t ov5640_mirror(camera_context_t *context, bool enable);
 #ifdef __cplusplus
 }
 #endif
+
+/**
+ * @}
+ *
+ */
+
 #endif /* HPM_OV5640_H */

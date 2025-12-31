@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -40,6 +40,7 @@ enum {
     status_can_filter_index_invalid = MAKE_STATUS(status_group_can, 7), /**< CAN filter index is invalid */
     status_can_filter_num_invalid = MAKE_STATUS(status_group_can, 8),   /**< CAN filter number is invalid */
     status_can_invalid_bit_timing = MAKE_STATUS(status_group_can, 9),   /**< Invalid CAN bit timing parameter */
+    status_can_timestamping_disabled = MAKE_STATUS(status_group_can, 10), /**< Time-stamping is disabled */
 };
 
 /**
@@ -79,7 +80,7 @@ enum {
 #define CAN_ERROR_PASSIVE_INT_ENABLE           (CAN_ERRINT_EPIE_MASK)      /**< CAN Passive Interrupt Enable */
 #define CAN_ERROR_PASSIVE_INT_FLAG             (CAN_ERRINT_EPIF_MASK)      /**< CAN Passive Interrupt Flag */
 #define CAN_ERROR_ARBITRATION_LOST_INT_ENABLE  (CAN_ERRINT_ALIE_MASK)      /**< CAN Arbitration Lost Interrupt Enable */
-#define CAN_ERROR_ARBITRATION_LOST_INT_FLAG    (CAN_ERRINT_ALIE_MASK)      /**< CAN arbitration Lost Interrupt Flag */
+#define CAN_ERROR_ARBITRATION_LOST_INT_FLAG    (CAN_ERRINT_ALIF_MASK)      /**< CAN arbitration Lost Interrupt Flag */
 #define CAN_ERROR_BUS_ERROR_INT_ENABLE         (CAN_ERRINT_BEIE_MASK)      /**< CAN BUS error Interrupt Enable */
 #define CAN_ERROR_BUS_ERROR_INT_FLAG           (CAN_ERRINT_BEIF_MASK)      /**< CAN BUS error Interrupt flag */
 
@@ -96,6 +97,18 @@ enum {
 #define CAN_KIND_OF_ERROR_OTHER_ERROR   (6U)        /**< Other errors */
 #define CAN_KIND_OF_ERROR_BUS_OFF       (7U)        /**< BUS off error */
 
+/**
+ * @brief  CAN Time-stamping position
+ */
+#define CAN_TIME_STAMPING_POSITION_SOF (0U) /**< Start of Frame */
+#define CAN_TIME_STAMPING_POSITION_EOF (1U) /**< End of Frame */
+
+#define CAN_TIMESTAMP_OFFSET_IN_RX_MSG_IN_WORDS 18
+
+typedef struct {
+    uint32_t nano_sec;
+    uint32_t second;
+} can_timestamp_value_t;
 /**
  * @brief CAN loopback types
  */
@@ -255,6 +268,8 @@ typedef struct {
     uint8_t irq_error_enable_mask;              /**< CAN Error IRQ Enable Mask */
     bool enable_tx_buffer_priority_mode;        /**< Enable Priority-based priority */
     bool enable_can_fd_iso_mode;                /**< Enable CAN-FD ISO mode */
+    uint8_t time_stamping_position;              /**< Time-stamping position */
+    bool enable_time_stamping;                   /**< Enable time-stamping */
 } can_config_t;
 
 
@@ -784,6 +799,40 @@ static inline uint8_t can_get_transmit_error_count(CAN_Type *base)
 }
 
 /**
+ * @brief Disable time-stamping feature
+ * @param [in] base CAN base address
+ */
+static inline void can_disable_time_stamping(CAN_Type *base)
+{
+    base->TIMECFG &= ~CAN_TIMECFG_TIMEEN_MASK;
+}
+
+/**
+ * @brief Determine whether time-stamping is enabled or not
+ * @param [in] base CAN base address
+ * @return Time-stamping enablement state
+ */
+static inline bool can_is_time_stamping_enabled(CAN_Type *base)
+{
+    return ((base->TIMECFG & CAN_TIMECFG_TIMEEN_MASK) != 0);
+}
+
+/**
+ * @brief Set the time-stamping mode for CAN controller
+ * @param [in] base CAN base address
+ * @param [in] position T   ime-stamping position. 0 - SOF, 1 - EOF
+ * @param [in] enable Time-stamping enable flag
+ */
+static inline void can_set_time_stamping_mode(CAN_Type *base, uint8_t position, bool enable)
+{
+    /*  Note: TIMEPOS can only be changed if TIMEEN is 0,  the TIMEEN bit must be cleared prior to he TIMEPOS change */
+    if (enable && can_is_time_stamping_enabled(base)) {
+        can_disable_time_stamping(base);
+    }
+    base->TIMECFG = CAN_TIMECFG_TIMEPOS_SET(position) | CAN_TIMECFG_TIMEEN_SET(enable);
+}
+
+/**
  * @brief Enable a specified CAN filter
  *
  * @param [in] base CAN base address
@@ -905,6 +954,22 @@ hpm_stat_t can_send_message_blocking(CAN_Type *base, const can_transmit_buf_t *m
  */
 hpm_stat_t can_send_high_priority_message_blocking(CAN_Type *base, const can_transmit_buf_t *message);
 
+/**
+ * @brief Get the timestamp for the transmitted message
+ * @param [in] base CAN base address
+ * @param [out] timestamp Buffer to hold the timestamp value
+ * @retval API execution status, status_success, status_invalid_argument or status_can_timestamping_disabled
+ */
+hpm_stat_t can_get_timestamp_for_transmitted_message(CAN_Type *base, can_timestamp_value_t *timestamp);
+
+/**
+ * @brief Get the timestamp from the received message
+ * @param [in] base CAN base address
+ * @param [in] message The pointer to a received message frame
+ * @param [out] timestamp Buffer to hold the timestamp value
+ * @retval API execution status, status_success, status_invalid_argument or status_can_timestamping_disabled
+ */
+hpm_stat_t can_get_timestamp_from_received_message(CAN_Type *base, const can_receive_buf_t *message, can_timestamp_value_t *timestamp);
 
 /**
  * @brief Send CAN message using non-blocking transfer
