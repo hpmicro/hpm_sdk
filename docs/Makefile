@@ -23,7 +23,7 @@ zh: Makefile cmake_intro
 	@$(SPHINXBUILD) -M html "zh" "output/zh" $(SPHINXOPTS) $(O)
 
 api_doc:
-	@rm -rf output/api_doc && mkdir output/api_doc
+	@rm -rf output/api_doc && mkdir -p output/api_doc
 	@export HPM_SDK_BASE=$(shell pwd)/../; cd output/api_doc && $(DOXYGEN) ../../doxygen/Doxyfile
 
 html: en zh api_doc
