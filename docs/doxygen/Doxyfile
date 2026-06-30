@@ -1274,6 +1274,15 @@ HTML_COLORSTYLE_SAT    = 100
 
 HTML_COLORSTYLE_GAMMA  = 80
 
+# The HTML_COLORSTYLE tag controls doxygen's built-in color scheme. Set to
+# AUTO_LIGHT so doxygen follows the user's system preference via its native CSS
+# variables; the customdoxygen.css extra stylesheet only needs to keep inline
+# code blocks readable in both modes (see its prefers-color-scheme block).
+# Possible values: LIGHT, DARK, AUTO_LIGHT, AUTO_DARK, TOGGLE.
+# Note: honored by doxygen >= 1.9.5 (e.g. RTD ubuntu-24.04 doxygen 1.9.8); ignored
+# by older versions (no effect on the legacy 1.9.1 build).
+HTML_COLORSTYLE        = AUTO_LIGHT
+
 # If the HTML_TIMESTAMP tag is set to YES then the footer of each generated HTML
 # page will contain the date and time when the page was generated. Setting this
 # to YES can help to show when doxygen was last run and thus if the

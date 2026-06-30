@@ -1,11 +1,17 @@
 /* Custom CSS for Doxygen-generated HTML
  * Copyright (c) 2015 Intel Corporation
  * SPDX-License-Identifier: Apache-2.0
+ *
+ * Colors consume doxygen's CSS variables (defined in doxygen.css for doxygen
+ * >= 1.9.5), so inline code, code fragments, and the project name automatically
+ * follow the page color scheme under HTML_COLORSTYLE=AUTO_LIGHT. The fallback
+ * after each var() applies on doxygen < 1.9.5, which has no variables and no
+ * dark theme, keeping those legacy builds in a consistent light appearance.
  */
 
 code {
   font-family: Monaco,Menlo,Consolas,"Courier New",monospace;
-  background-color: #D8D8D8;
+  background-color: var(--fragment-background-color, #D8D8D8);
   padding: 0 0.25em 0 0.25em;
 }
 
@@ -16,7 +22,7 @@ pre.fragment {
   word-break: break-all;
   word-wrap: break-word;
   white-space: pre;
-  background-color: #D8D8D8;
+  background-color: var(--fragment-background-color, #D8D8D8);
 }
 
 #projectlogo
@@ -27,10 +33,10 @@ pre.fragment {
 #projectname
 {
   font: 200% Tahoma, Arial,sans-serif;
-  color: #3D578C;
+  color: var(--page-link-color, #3D578C);
 }
 
 #projectbrief
 {
-  color: #3D578C;
+  color: var(--page-link-color, #3D578C);
 }
